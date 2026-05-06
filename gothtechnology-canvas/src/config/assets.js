@@ -3,7 +3,7 @@ export const LOCAL_ROOT = "assets";
 
 export const ASSET_URLS = {
   manifest: `${PACK_ROOT}/manifests/GOTHTECHNOLOGY_expanded_motion_manifest.json`,
-  background: `${PACK_ROOT}/backgrounds/GOTHTECHNOLOGY_BACKGROUND_ONLY_DARK_FOREST_ARENA_2048x621.png`,
+  background: `${LOCAL_ROOT}/user-stage/forest-fight-background.jpg`,
   farTrees: `${PACK_ROOT}/backgrounds/GOTHTECHNOLOGY_PARALLAX_FAR_TREES.png`,
   fog: `${PACK_ROOT}/backgrounds/GOTHTECHNOLOGY_FOG_OVERLAY_TRANSPARENT.png`,
   embers: `${PACK_ROOT}/backgrounds/GOTHTECHNOLOGY_EMBERS_OVERLAY_TRANSPARENT.png`,

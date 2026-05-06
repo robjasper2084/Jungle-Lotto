@@ -18,91 +18,91 @@
           "frames": [
             {
               "index": 0,
-              "name": "KALYX_AIR_ATTACK_00_Anticipation",
+              "name": "KALYX_AIR_ATTACK_00_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 0,
               "y": 0,
               "w": 256,
               "h": 256,
-              "duration_ms": 64,
-              "phase": "Anticipation"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 1,
-              "name": "KALYX_AIR_ATTACK_01_Windup",
+              "name": "KALYX_AIR_ATTACK_01_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 256,
               "y": 0,
               "w": 256,
               "h": 256,
-              "duration_ms": 64,
-              "phase": "Windup"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 2,
-              "name": "KALYX_AIR_ATTACK_02_Contact",
+              "name": "KALYX_AIR_ATTACK_02_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 512,
               "y": 0,
               "w": 256,
               "h": 256,
-              "duration_ms": 64,
-              "phase": "Contact"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 3,
-              "name": "KALYX_AIR_ATTACK_03_Pass",
+              "name": "KALYX_AIR_ATTACK_03_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 768,
               "y": 0,
               "w": 256,
               "h": 256,
-              "duration_ms": 64,
-              "phase": "Pass"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 4,
-              "name": "KALYX_AIR_ATTACK_04_Recover",
+              "name": "KALYX_AIR_ATTACK_04_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1024,
               "y": 0,
               "w": 256,
               "h": 256,
-              "duration_ms": 64,
-              "phase": "Recover"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 5,
-              "name": "KALYX_AIR_ATTACK_05_Reset",
+              "name": "KALYX_AIR_ATTACK_05_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1280,
               "y": 0,
               "w": 256,
               "h": 256,
-              "duration_ms": 64,
-              "phase": "Reset"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 6,
-              "name": "KALYX_AIR_ATTACK_06_AltContact",
+              "name": "KALYX_AIR_ATTACK_06_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1536,
               "y": 0,
               "w": 256,
               "h": 256,
-              "duration_ms": 64,
-              "phase": "AltContact"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 7,
-              "name": "KALYX_AIR_ATTACK_07_AltRecover",
+              "name": "KALYX_AIR_ATTACK_07_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1792,
               "y": 0,
               "w": 256,
               "h": 256,
-              "duration_ms": 64,
-              "phase": "AltRecover"
+              "duration_ms": 84,
+              "phase": "User161359"
             }
           ]
         },
@@ -115,91 +115,91 @@
           "frames": [
             {
               "index": 0,
-              "name": "KALYX_BLOCK_HIGH_00_Anticipation",
+              "name": "KALYX_BLOCK_HIGH_00_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 0,
               "y": 256,
               "w": 256,
               "h": 256,
-              "duration_ms": 70,
-              "phase": "Anticipation"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 1,
-              "name": "KALYX_BLOCK_HIGH_01_Windup",
+              "name": "KALYX_BLOCK_HIGH_01_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 256,
               "y": 256,
               "w": 256,
               "h": 256,
-              "duration_ms": 70,
-              "phase": "Windup"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 2,
-              "name": "KALYX_BLOCK_HIGH_02_Contact",
+              "name": "KALYX_BLOCK_HIGH_02_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 512,
               "y": 256,
               "w": 256,
               "h": 256,
-              "duration_ms": 70,
-              "phase": "Contact"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 3,
-              "name": "KALYX_BLOCK_HIGH_03_Pass",
+              "name": "KALYX_BLOCK_HIGH_03_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 768,
               "y": 256,
               "w": 256,
               "h": 256,
-              "duration_ms": 70,
-              "phase": "Pass"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 4,
-              "name": "KALYX_BLOCK_HIGH_04_Recover",
+              "name": "KALYX_BLOCK_HIGH_04_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1024,
               "y": 256,
               "w": 256,
               "h": 256,
-              "duration_ms": 70,
-              "phase": "Recover"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 5,
-              "name": "KALYX_BLOCK_HIGH_05_Reset",
+              "name": "KALYX_BLOCK_HIGH_05_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1280,
               "y": 256,
               "w": 256,
               "h": 256,
-              "duration_ms": 70,
-              "phase": "Reset"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 6,
-              "name": "KALYX_BLOCK_HIGH_06_AltContact",
+              "name": "KALYX_BLOCK_HIGH_06_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1536,
               "y": 256,
               "w": 256,
               "h": 256,
-              "duration_ms": 70,
-              "phase": "AltContact"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 7,
-              "name": "KALYX_BLOCK_HIGH_07_AltRecover",
+              "name": "KALYX_BLOCK_HIGH_07_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1792,
               "y": 256,
               "w": 256,
               "h": 256,
-              "duration_ms": 70,
-              "phase": "AltRecover"
+              "duration_ms": 84,
+              "phase": "User161359"
             }
           ]
         },
@@ -212,91 +212,91 @@
           "frames": [
             {
               "index": 0,
-              "name": "KALYX_BLOCK_LOW_00_Anticipation",
+              "name": "KALYX_BLOCK_LOW_00_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 0,
               "y": 512,
               "w": 256,
               "h": 256,
-              "duration_ms": 70,
-              "phase": "Anticipation"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 1,
-              "name": "KALYX_BLOCK_LOW_01_Windup",
+              "name": "KALYX_BLOCK_LOW_01_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 256,
               "y": 512,
               "w": 256,
               "h": 256,
-              "duration_ms": 70,
-              "phase": "Windup"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 2,
-              "name": "KALYX_BLOCK_LOW_02_Contact",
+              "name": "KALYX_BLOCK_LOW_02_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 512,
               "y": 512,
               "w": 256,
               "h": 256,
-              "duration_ms": 70,
-              "phase": "Contact"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 3,
-              "name": "KALYX_BLOCK_LOW_03_Pass",
+              "name": "KALYX_BLOCK_LOW_03_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 768,
               "y": 512,
               "w": 256,
               "h": 256,
-              "duration_ms": 70,
-              "phase": "Pass"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 4,
-              "name": "KALYX_BLOCK_LOW_04_Recover",
+              "name": "KALYX_BLOCK_LOW_04_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1024,
               "y": 512,
               "w": 256,
               "h": 256,
-              "duration_ms": 70,
-              "phase": "Recover"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 5,
-              "name": "KALYX_BLOCK_LOW_05_Reset",
+              "name": "KALYX_BLOCK_LOW_05_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1280,
               "y": 512,
               "w": 256,
               "h": 256,
-              "duration_ms": 70,
-              "phase": "Reset"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 6,
-              "name": "KALYX_BLOCK_LOW_06_AltContact",
+              "name": "KALYX_BLOCK_LOW_06_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1536,
               "y": 512,
               "w": 256,
               "h": 256,
-              "duration_ms": 70,
-              "phase": "AltContact"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 7,
-              "name": "KALYX_BLOCK_LOW_07_AltRecover",
+              "name": "KALYX_BLOCK_LOW_07_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1792,
               "y": 512,
               "w": 256,
               "h": 256,
-              "duration_ms": 70,
-              "phase": "AltRecover"
+              "duration_ms": 84,
+              "phase": "User161359"
             }
           ]
         },
@@ -309,135 +309,135 @@
           "frames": [
             {
               "index": 0,
-              "name": "KALYX_COMBO_1_00_Anticipation",
+              "name": "KALYX_COMBO_1_00_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 0,
               "y": 768,
               "w": 256,
               "h": 256,
-              "duration_ms": 52,
-              "phase": "Anticipation"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 1,
-              "name": "KALYX_COMBO_1_01_Windup",
+              "name": "KALYX_COMBO_1_01_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 256,
               "y": 768,
               "w": 256,
               "h": 256,
-              "duration_ms": 52,
-              "phase": "Windup"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 2,
-              "name": "KALYX_COMBO_1_02_Contact",
+              "name": "KALYX_COMBO_1_02_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 512,
               "y": 768,
               "w": 256,
               "h": 256,
-              "duration_ms": 52,
-              "phase": "Contact"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 3,
-              "name": "KALYX_COMBO_1_03_Pass",
+              "name": "KALYX_COMBO_1_03_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 768,
               "y": 768,
               "w": 256,
               "h": 256,
-              "duration_ms": 52,
-              "phase": "Pass"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 4,
-              "name": "KALYX_COMBO_1_04_Recover",
+              "name": "KALYX_COMBO_1_04_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1024,
               "y": 768,
               "w": 256,
               "h": 256,
-              "duration_ms": 52,
-              "phase": "Recover"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 5,
-              "name": "KALYX_COMBO_1_05_Reset",
+              "name": "KALYX_COMBO_1_05_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1280,
               "y": 768,
               "w": 256,
               "h": 256,
-              "duration_ms": 52,
-              "phase": "Reset"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 6,
-              "name": "KALYX_COMBO_1_06_AltContact",
+              "name": "KALYX_COMBO_1_06_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1536,
               "y": 768,
               "w": 256,
               "h": 256,
-              "duration_ms": 52,
-              "phase": "AltContact"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 7,
-              "name": "KALYX_COMBO_1_07_AltRecover",
+              "name": "KALYX_COMBO_1_07_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1792,
               "y": 768,
               "w": 256,
               "h": 256,
-              "duration_ms": 52,
-              "phase": "AltRecover"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 8,
-              "name": "KALYX_COMBO_1_08_PowerUp",
+              "name": "KALYX_COMBO_1_08_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 2048,
               "y": 768,
               "w": 256,
               "h": 256,
-              "duration_ms": 52,
-              "phase": "PowerUp"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 9,
-              "name": "KALYX_COMBO_1_09_Release",
+              "name": "KALYX_COMBO_1_09_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 2304,
               "y": 768,
               "w": 256,
               "h": 256,
-              "duration_ms": 52,
-              "phase": "Release"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 10,
-              "name": "KALYX_COMBO_1_10_FollowThrough",
+              "name": "KALYX_COMBO_1_10_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 2560,
               "y": 768,
               "w": 256,
               "h": 256,
-              "duration_ms": 52,
-              "phase": "FollowThrough"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 11,
-              "name": "KALYX_COMBO_1_11_Finish",
+              "name": "KALYX_COMBO_1_11_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 2816,
               "y": 768,
               "w": 256,
               "h": 256,
-              "duration_ms": 52,
-              "phase": "Finish"
+              "duration_ms": 54,
+              "phase": "User161359"
             }
           ]
         },
@@ -450,135 +450,135 @@
           "frames": [
             {
               "index": 0,
-              "name": "KALYX_COMBO_2_00_Anticipation",
+              "name": "KALYX_COMBO_2_00_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 0,
               "y": 1024,
               "w": 256,
               "h": 256,
-              "duration_ms": 52,
-              "phase": "Anticipation"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 1,
-              "name": "KALYX_COMBO_2_01_Windup",
+              "name": "KALYX_COMBO_2_01_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 256,
               "y": 1024,
               "w": 256,
               "h": 256,
-              "duration_ms": 52,
-              "phase": "Windup"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 2,
-              "name": "KALYX_COMBO_2_02_Contact",
+              "name": "KALYX_COMBO_2_02_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 512,
               "y": 1024,
               "w": 256,
               "h": 256,
-              "duration_ms": 52,
-              "phase": "Contact"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 3,
-              "name": "KALYX_COMBO_2_03_Pass",
+              "name": "KALYX_COMBO_2_03_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 768,
               "y": 1024,
               "w": 256,
               "h": 256,
-              "duration_ms": 52,
-              "phase": "Pass"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 4,
-              "name": "KALYX_COMBO_2_04_Recover",
+              "name": "KALYX_COMBO_2_04_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1024,
               "y": 1024,
               "w": 256,
               "h": 256,
-              "duration_ms": 52,
-              "phase": "Recover"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 5,
-              "name": "KALYX_COMBO_2_05_Reset",
+              "name": "KALYX_COMBO_2_05_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1280,
               "y": 1024,
               "w": 256,
               "h": 256,
-              "duration_ms": 52,
-              "phase": "Reset"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 6,
-              "name": "KALYX_COMBO_2_06_AltContact",
+              "name": "KALYX_COMBO_2_06_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1536,
               "y": 1024,
               "w": 256,
               "h": 256,
-              "duration_ms": 52,
-              "phase": "AltContact"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 7,
-              "name": "KALYX_COMBO_2_07_AltRecover",
+              "name": "KALYX_COMBO_2_07_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1792,
               "y": 1024,
               "w": 256,
               "h": 256,
-              "duration_ms": 52,
-              "phase": "AltRecover"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 8,
-              "name": "KALYX_COMBO_2_08_PowerUp",
+              "name": "KALYX_COMBO_2_08_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 2048,
               "y": 1024,
               "w": 256,
               "h": 256,
-              "duration_ms": 52,
-              "phase": "PowerUp"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 9,
-              "name": "KALYX_COMBO_2_09_Release",
+              "name": "KALYX_COMBO_2_09_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 2304,
               "y": 1024,
               "w": 256,
               "h": 256,
-              "duration_ms": 52,
-              "phase": "Release"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 10,
-              "name": "KALYX_COMBO_2_10_FollowThrough",
+              "name": "KALYX_COMBO_2_10_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 2560,
               "y": 1024,
               "w": 256,
               "h": 256,
-              "duration_ms": 52,
-              "phase": "FollowThrough"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 11,
-              "name": "KALYX_COMBO_2_11_Finish",
+              "name": "KALYX_COMBO_2_11_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 2816,
               "y": 1024,
               "w": 256,
               "h": 256,
-              "duration_ms": 52,
-              "phase": "Finish"
+              "duration_ms": 54,
+              "phase": "User161359"
             }
           ]
         },
@@ -591,91 +591,91 @@
           "frames": [
             {
               "index": 0,
-              "name": "KALYX_CROUCH_ATTACK_00_Anticipation",
+              "name": "KALYX_CROUCH_ATTACK_00_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 0,
               "y": 1280,
               "w": 256,
               "h": 256,
-              "duration_ms": 52,
-              "phase": "Anticipation"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 1,
-              "name": "KALYX_CROUCH_ATTACK_01_Windup",
+              "name": "KALYX_CROUCH_ATTACK_01_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 256,
               "y": 1280,
               "w": 256,
               "h": 256,
-              "duration_ms": 52,
-              "phase": "Windup"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 2,
-              "name": "KALYX_CROUCH_ATTACK_02_Contact",
+              "name": "KALYX_CROUCH_ATTACK_02_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 512,
               "y": 1280,
               "w": 256,
               "h": 256,
-              "duration_ms": 52,
-              "phase": "Contact"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 3,
-              "name": "KALYX_CROUCH_ATTACK_03_Pass",
+              "name": "KALYX_CROUCH_ATTACK_03_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 768,
               "y": 1280,
               "w": 256,
               "h": 256,
-              "duration_ms": 52,
-              "phase": "Pass"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 4,
-              "name": "KALYX_CROUCH_ATTACK_04_Recover",
+              "name": "KALYX_CROUCH_ATTACK_04_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1024,
               "y": 1280,
               "w": 256,
               "h": 256,
-              "duration_ms": 52,
-              "phase": "Recover"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 5,
-              "name": "KALYX_CROUCH_ATTACK_05_Reset",
+              "name": "KALYX_CROUCH_ATTACK_05_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1280,
               "y": 1280,
               "w": 256,
               "h": 256,
-              "duration_ms": 52,
-              "phase": "Reset"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 6,
-              "name": "KALYX_CROUCH_ATTACK_06_AltContact",
+              "name": "KALYX_CROUCH_ATTACK_06_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1536,
               "y": 1280,
               "w": 256,
               "h": 256,
-              "duration_ms": 52,
-              "phase": "AltContact"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 7,
-              "name": "KALYX_CROUCH_ATTACK_07_AltRecover",
+              "name": "KALYX_CROUCH_ATTACK_07_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1792,
               "y": 1280,
               "w": 256,
               "h": 256,
-              "duration_ms": 52,
-              "phase": "AltRecover"
+              "duration_ms": 84,
+              "phase": "User161359"
             }
           ]
         },
@@ -688,91 +688,91 @@
           "frames": [
             {
               "index": 0,
-              "name": "KALYX_CROUCH_IDLE_00_Anticipation",
+              "name": "KALYX_CROUCH_IDLE_00_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 0,
               "y": 1536,
               "w": 256,
               "h": 256,
-              "duration_ms": 70,
-              "phase": "Anticipation"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 1,
-              "name": "KALYX_CROUCH_IDLE_01_Windup",
+              "name": "KALYX_CROUCH_IDLE_01_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 256,
               "y": 1536,
               "w": 256,
               "h": 256,
-              "duration_ms": 70,
-              "phase": "Windup"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 2,
-              "name": "KALYX_CROUCH_IDLE_02_Contact",
+              "name": "KALYX_CROUCH_IDLE_02_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 512,
               "y": 1536,
               "w": 256,
               "h": 256,
-              "duration_ms": 70,
-              "phase": "Contact"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 3,
-              "name": "KALYX_CROUCH_IDLE_03_Pass",
+              "name": "KALYX_CROUCH_IDLE_03_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 768,
               "y": 1536,
               "w": 256,
               "h": 256,
-              "duration_ms": 70,
-              "phase": "Pass"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 4,
-              "name": "KALYX_CROUCH_IDLE_04_Recover",
+              "name": "KALYX_CROUCH_IDLE_04_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1024,
               "y": 1536,
               "w": 256,
               "h": 256,
-              "duration_ms": 70,
-              "phase": "Recover"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 5,
-              "name": "KALYX_CROUCH_IDLE_05_Reset",
+              "name": "KALYX_CROUCH_IDLE_05_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1280,
               "y": 1536,
               "w": 256,
               "h": 256,
-              "duration_ms": 70,
-              "phase": "Reset"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 6,
-              "name": "KALYX_CROUCH_IDLE_06_AltContact",
+              "name": "KALYX_CROUCH_IDLE_06_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1536,
               "y": 1536,
               "w": 256,
               "h": 256,
-              "duration_ms": 70,
-              "phase": "AltContact"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 7,
-              "name": "KALYX_CROUCH_IDLE_07_AltRecover",
+              "name": "KALYX_CROUCH_IDLE_07_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1792,
               "y": 1536,
               "w": 256,
               "h": 256,
-              "duration_ms": 70,
-              "phase": "AltRecover"
+              "duration_ms": 84,
+              "phase": "User161359"
             }
           ]
         },
@@ -785,91 +785,91 @@
           "frames": [
             {
               "index": 0,
-              "name": "KALYX_CROUCH_WALK_00_Anticipation",
+              "name": "KALYX_CROUCH_WALK_00_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 0,
               "y": 1792,
               "w": 256,
               "h": 256,
-              "duration_ms": 70,
-              "phase": "Anticipation"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 1,
-              "name": "KALYX_CROUCH_WALK_01_Windup",
+              "name": "KALYX_CROUCH_WALK_01_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 256,
               "y": 1792,
               "w": 256,
               "h": 256,
-              "duration_ms": 70,
-              "phase": "Windup"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 2,
-              "name": "KALYX_CROUCH_WALK_02_Contact",
+              "name": "KALYX_CROUCH_WALK_02_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 512,
               "y": 1792,
               "w": 256,
               "h": 256,
-              "duration_ms": 70,
-              "phase": "Contact"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 3,
-              "name": "KALYX_CROUCH_WALK_03_Pass",
+              "name": "KALYX_CROUCH_WALK_03_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 768,
               "y": 1792,
               "w": 256,
               "h": 256,
-              "duration_ms": 70,
-              "phase": "Pass"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 4,
-              "name": "KALYX_CROUCH_WALK_04_Recover",
+              "name": "KALYX_CROUCH_WALK_04_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1024,
               "y": 1792,
               "w": 256,
               "h": 256,
-              "duration_ms": 70,
-              "phase": "Recover"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 5,
-              "name": "KALYX_CROUCH_WALK_05_Reset",
+              "name": "KALYX_CROUCH_WALK_05_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1280,
               "y": 1792,
               "w": 256,
               "h": 256,
-              "duration_ms": 70,
-              "phase": "Reset"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 6,
-              "name": "KALYX_CROUCH_WALK_06_AltContact",
+              "name": "KALYX_CROUCH_WALK_06_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1536,
               "y": 1792,
               "w": 256,
               "h": 256,
-              "duration_ms": 70,
-              "phase": "AltContact"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 7,
-              "name": "KALYX_CROUCH_WALK_07_AltRecover",
+              "name": "KALYX_CROUCH_WALK_07_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1792,
               "y": 1792,
               "w": 256,
               "h": 256,
-              "duration_ms": 70,
-              "phase": "AltRecover"
+              "duration_ms": 84,
+              "phase": "User161359"
             }
           ]
         },
@@ -882,91 +882,91 @@
           "frames": [
             {
               "index": 0,
-              "name": "KALYX_DASH_BACK_00_Anticipation",
+              "name": "KALYX_DASH_BACK_00_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 0,
               "y": 2048,
               "w": 256,
               "h": 256,
-              "duration_ms": 50,
-              "phase": "Anticipation"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 1,
-              "name": "KALYX_DASH_BACK_01_Windup",
+              "name": "KALYX_DASH_BACK_01_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 256,
               "y": 2048,
               "w": 256,
               "h": 256,
-              "duration_ms": 50,
-              "phase": "Windup"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 2,
-              "name": "KALYX_DASH_BACK_02_Contact",
+              "name": "KALYX_DASH_BACK_02_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 512,
               "y": 2048,
               "w": 256,
               "h": 256,
-              "duration_ms": 50,
-              "phase": "Contact"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 3,
-              "name": "KALYX_DASH_BACK_03_Pass",
+              "name": "KALYX_DASH_BACK_03_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 768,
               "y": 2048,
               "w": 256,
               "h": 256,
-              "duration_ms": 50,
-              "phase": "Pass"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 4,
-              "name": "KALYX_DASH_BACK_04_Recover",
+              "name": "KALYX_DASH_BACK_04_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1024,
               "y": 2048,
               "w": 256,
               "h": 256,
-              "duration_ms": 50,
-              "phase": "Recover"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 5,
-              "name": "KALYX_DASH_BACK_05_Reset",
+              "name": "KALYX_DASH_BACK_05_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1280,
               "y": 2048,
               "w": 256,
               "h": 256,
-              "duration_ms": 50,
-              "phase": "Reset"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 6,
-              "name": "KALYX_DASH_BACK_06_AltContact",
+              "name": "KALYX_DASH_BACK_06_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1536,
               "y": 2048,
               "w": 256,
               "h": 256,
-              "duration_ms": 50,
-              "phase": "AltContact"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 7,
-              "name": "KALYX_DASH_BACK_07_AltRecover",
+              "name": "KALYX_DASH_BACK_07_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1792,
               "y": 2048,
               "w": 256,
               "h": 256,
-              "duration_ms": 50,
-              "phase": "AltRecover"
+              "duration_ms": 54,
+              "phase": "User161359"
             }
           ]
         },
@@ -979,91 +979,91 @@
           "frames": [
             {
               "index": 0,
-              "name": "KALYX_DASH_FORWARD_00_Anticipation",
+              "name": "KALYX_DASH_FORWARD_00_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 0,
               "y": 2304,
               "w": 256,
               "h": 256,
-              "duration_ms": 48,
-              "phase": "Anticipation"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 1,
-              "name": "KALYX_DASH_FORWARD_01_Windup",
+              "name": "KALYX_DASH_FORWARD_01_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 256,
               "y": 2304,
               "w": 256,
               "h": 256,
-              "duration_ms": 48,
-              "phase": "Windup"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 2,
-              "name": "KALYX_DASH_FORWARD_02_Contact",
+              "name": "KALYX_DASH_FORWARD_02_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 512,
               "y": 2304,
               "w": 256,
               "h": 256,
-              "duration_ms": 48,
-              "phase": "Contact"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 3,
-              "name": "KALYX_DASH_FORWARD_03_Pass",
+              "name": "KALYX_DASH_FORWARD_03_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 768,
               "y": 2304,
               "w": 256,
               "h": 256,
-              "duration_ms": 48,
-              "phase": "Pass"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 4,
-              "name": "KALYX_DASH_FORWARD_04_Recover",
+              "name": "KALYX_DASH_FORWARD_04_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1024,
               "y": 2304,
               "w": 256,
               "h": 256,
-              "duration_ms": 48,
-              "phase": "Recover"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 5,
-              "name": "KALYX_DASH_FORWARD_05_Reset",
+              "name": "KALYX_DASH_FORWARD_05_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1280,
               "y": 2304,
               "w": 256,
               "h": 256,
-              "duration_ms": 48,
-              "phase": "Reset"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 6,
-              "name": "KALYX_DASH_FORWARD_06_AltContact",
+              "name": "KALYX_DASH_FORWARD_06_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1536,
               "y": 2304,
               "w": 256,
               "h": 256,
-              "duration_ms": 48,
-              "phase": "AltContact"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 7,
-              "name": "KALYX_DASH_FORWARD_07_AltRecover",
+              "name": "KALYX_DASH_FORWARD_07_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1792,
               "y": 2304,
               "w": 256,
               "h": 256,
-              "duration_ms": 48,
-              "phase": "AltRecover"
+              "duration_ms": 54,
+              "phase": "User161359"
             }
           ]
         },
@@ -1076,91 +1076,91 @@
           "frames": [
             {
               "index": 0,
-              "name": "KALYX_DEFEAT_00_Anticipation",
+              "name": "KALYX_DEFEAT_00_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 0,
               "y": 2560,
               "w": 256,
               "h": 256,
-              "duration_ms": 90,
-              "phase": "Anticipation"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 1,
-              "name": "KALYX_DEFEAT_01_Windup",
+              "name": "KALYX_DEFEAT_01_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 256,
               "y": 2560,
               "w": 256,
               "h": 256,
-              "duration_ms": 90,
-              "phase": "Windup"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 2,
-              "name": "KALYX_DEFEAT_02_Contact",
+              "name": "KALYX_DEFEAT_02_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 512,
               "y": 2560,
               "w": 256,
               "h": 256,
-              "duration_ms": 90,
-              "phase": "Contact"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 3,
-              "name": "KALYX_DEFEAT_03_Pass",
+              "name": "KALYX_DEFEAT_03_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 768,
               "y": 2560,
               "w": 256,
               "h": 256,
-              "duration_ms": 90,
-              "phase": "Pass"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 4,
-              "name": "KALYX_DEFEAT_04_Recover",
+              "name": "KALYX_DEFEAT_04_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1024,
               "y": 2560,
               "w": 256,
               "h": 256,
-              "duration_ms": 90,
-              "phase": "Recover"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 5,
-              "name": "KALYX_DEFEAT_05_Reset",
+              "name": "KALYX_DEFEAT_05_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1280,
               "y": 2560,
               "w": 256,
               "h": 256,
-              "duration_ms": 90,
-              "phase": "Reset"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 6,
-              "name": "KALYX_DEFEAT_06_AltContact",
+              "name": "KALYX_DEFEAT_06_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1536,
               "y": 2560,
               "w": 256,
               "h": 256,
-              "duration_ms": 90,
-              "phase": "AltContact"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 7,
-              "name": "KALYX_DEFEAT_07_AltRecover",
+              "name": "KALYX_DEFEAT_07_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1792,
               "y": 2560,
               "w": 256,
               "h": 256,
-              "duration_ms": 90,
-              "phase": "AltRecover"
+              "duration_ms": 84,
+              "phase": "User161359"
             }
           ]
         },
@@ -1173,91 +1173,91 @@
           "frames": [
             {
               "index": 0,
-              "name": "KALYX_GET_UP_00_Anticipation",
+              "name": "KALYX_GET_UP_00_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 0,
               "y": 2816,
               "w": 256,
               "h": 256,
-              "duration_ms": 82,
-              "phase": "Anticipation"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 1,
-              "name": "KALYX_GET_UP_01_Windup",
+              "name": "KALYX_GET_UP_01_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 256,
               "y": 2816,
               "w": 256,
               "h": 256,
-              "duration_ms": 82,
-              "phase": "Windup"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 2,
-              "name": "KALYX_GET_UP_02_Contact",
+              "name": "KALYX_GET_UP_02_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 512,
               "y": 2816,
               "w": 256,
               "h": 256,
-              "duration_ms": 82,
-              "phase": "Contact"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 3,
-              "name": "KALYX_GET_UP_03_Pass",
+              "name": "KALYX_GET_UP_03_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 768,
               "y": 2816,
               "w": 256,
               "h": 256,
-              "duration_ms": 82,
-              "phase": "Pass"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 4,
-              "name": "KALYX_GET_UP_04_Recover",
+              "name": "KALYX_GET_UP_04_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1024,
               "y": 2816,
               "w": 256,
               "h": 256,
-              "duration_ms": 82,
-              "phase": "Recover"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 5,
-              "name": "KALYX_GET_UP_05_Reset",
+              "name": "KALYX_GET_UP_05_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1280,
               "y": 2816,
               "w": 256,
               "h": 256,
-              "duration_ms": 82,
-              "phase": "Reset"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 6,
-              "name": "KALYX_GET_UP_06_AltContact",
+              "name": "KALYX_GET_UP_06_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1536,
               "y": 2816,
               "w": 256,
               "h": 256,
-              "duration_ms": 82,
-              "phase": "AltContact"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 7,
-              "name": "KALYX_GET_UP_07_AltRecover",
+              "name": "KALYX_GET_UP_07_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1792,
               "y": 2816,
               "w": 256,
               "h": 256,
-              "duration_ms": 82,
-              "phase": "AltRecover"
+              "duration_ms": 84,
+              "phase": "User161359"
             }
           ]
         },
@@ -1270,91 +1270,91 @@
           "frames": [
             {
               "index": 0,
-              "name": "KALYX_HEAVY_KICK_00_Anticipation",
+              "name": "KALYX_HEAVY_KICK_00_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 0,
               "y": 3072,
               "w": 256,
               "h": 256,
-              "duration_ms": 52,
-              "phase": "Anticipation"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 1,
-              "name": "KALYX_HEAVY_KICK_01_Windup",
+              "name": "KALYX_HEAVY_KICK_01_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 256,
               "y": 3072,
               "w": 256,
               "h": 256,
-              "duration_ms": 52,
-              "phase": "Windup"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 2,
-              "name": "KALYX_HEAVY_KICK_02_Contact",
+              "name": "KALYX_HEAVY_KICK_02_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 512,
               "y": 3072,
               "w": 256,
               "h": 256,
-              "duration_ms": 52,
-              "phase": "Contact"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 3,
-              "name": "KALYX_HEAVY_KICK_03_Pass",
+              "name": "KALYX_HEAVY_KICK_03_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 768,
               "y": 3072,
               "w": 256,
               "h": 256,
-              "duration_ms": 52,
-              "phase": "Pass"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 4,
-              "name": "KALYX_HEAVY_KICK_04_Recover",
+              "name": "KALYX_HEAVY_KICK_04_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1024,
               "y": 3072,
               "w": 256,
               "h": 256,
-              "duration_ms": 52,
-              "phase": "Recover"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 5,
-              "name": "KALYX_HEAVY_KICK_05_Reset",
+              "name": "KALYX_HEAVY_KICK_05_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1280,
               "y": 3072,
               "w": 256,
               "h": 256,
-              "duration_ms": 52,
-              "phase": "Reset"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 6,
-              "name": "KALYX_HEAVY_KICK_06_AltContact",
+              "name": "KALYX_HEAVY_KICK_06_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1536,
               "y": 3072,
               "w": 256,
               "h": 256,
-              "duration_ms": 52,
-              "phase": "AltContact"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 7,
-              "name": "KALYX_HEAVY_KICK_07_AltRecover",
+              "name": "KALYX_HEAVY_KICK_07_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1792,
               "y": 3072,
               "w": 256,
               "h": 256,
-              "duration_ms": 52,
-              "phase": "AltRecover"
+              "duration_ms": 84,
+              "phase": "User161359"
             }
           ]
         },
@@ -1367,91 +1367,91 @@
           "frames": [
             {
               "index": 0,
-              "name": "KALYX_HEAVY_PUNCH_00_Anticipation",
+              "name": "KALYX_HEAVY_PUNCH_00_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 0,
               "y": 3328,
               "w": 256,
               "h": 256,
-              "duration_ms": 52,
-              "phase": "Anticipation"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 1,
-              "name": "KALYX_HEAVY_PUNCH_01_Windup",
+              "name": "KALYX_HEAVY_PUNCH_01_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 256,
               "y": 3328,
               "w": 256,
               "h": 256,
-              "duration_ms": 52,
-              "phase": "Windup"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 2,
-              "name": "KALYX_HEAVY_PUNCH_02_Contact",
+              "name": "KALYX_HEAVY_PUNCH_02_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 512,
               "y": 3328,
               "w": 256,
               "h": 256,
-              "duration_ms": 52,
-              "phase": "Contact"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 3,
-              "name": "KALYX_HEAVY_PUNCH_03_Pass",
+              "name": "KALYX_HEAVY_PUNCH_03_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 768,
               "y": 3328,
               "w": 256,
               "h": 256,
-              "duration_ms": 52,
-              "phase": "Pass"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 4,
-              "name": "KALYX_HEAVY_PUNCH_04_Recover",
+              "name": "KALYX_HEAVY_PUNCH_04_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1024,
               "y": 3328,
               "w": 256,
               "h": 256,
-              "duration_ms": 52,
-              "phase": "Recover"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 5,
-              "name": "KALYX_HEAVY_PUNCH_05_Reset",
+              "name": "KALYX_HEAVY_PUNCH_05_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1280,
               "y": 3328,
               "w": 256,
               "h": 256,
-              "duration_ms": 52,
-              "phase": "Reset"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 6,
-              "name": "KALYX_HEAVY_PUNCH_06_AltContact",
+              "name": "KALYX_HEAVY_PUNCH_06_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1536,
               "y": 3328,
               "w": 256,
               "h": 256,
-              "duration_ms": 52,
-              "phase": "AltContact"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 7,
-              "name": "KALYX_HEAVY_PUNCH_07_AltRecover",
+              "name": "KALYX_HEAVY_PUNCH_07_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1792,
               "y": 3328,
               "w": 256,
               "h": 256,
-              "duration_ms": 52,
-              "phase": "AltRecover"
+              "duration_ms": 84,
+              "phase": "User161359"
             }
           ]
         },
@@ -1464,69 +1464,69 @@
           "frames": [
             {
               "index": 0,
-              "name": "KALYX_HURT_HEAVY_00_Anticipation",
+              "name": "KALYX_HURT_HEAVY_00_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 0,
               "y": 3584,
               "w": 256,
               "h": 256,
-              "duration_ms": 62,
-              "phase": "Anticipation"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 1,
-              "name": "KALYX_HURT_HEAVY_01_Windup",
+              "name": "KALYX_HURT_HEAVY_01_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 256,
               "y": 3584,
               "w": 256,
               "h": 256,
-              "duration_ms": 62,
-              "phase": "Windup"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 2,
-              "name": "KALYX_HURT_HEAVY_02_Contact",
+              "name": "KALYX_HURT_HEAVY_02_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 512,
               "y": 3584,
               "w": 256,
               "h": 256,
-              "duration_ms": 62,
-              "phase": "Contact"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 3,
-              "name": "KALYX_HURT_HEAVY_03_Pass",
+              "name": "KALYX_HURT_HEAVY_03_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 768,
               "y": 3584,
               "w": 256,
               "h": 256,
-              "duration_ms": 62,
-              "phase": "Pass"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 4,
-              "name": "KALYX_HURT_HEAVY_04_Recover",
+              "name": "KALYX_HURT_HEAVY_04_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1024,
               "y": 3584,
               "w": 256,
               "h": 256,
-              "duration_ms": 62,
-              "phase": "Recover"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 5,
-              "name": "KALYX_HURT_HEAVY_05_Reset",
+              "name": "KALYX_HURT_HEAVY_05_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1280,
               "y": 3584,
               "w": 256,
               "h": 256,
-              "duration_ms": 62,
-              "phase": "Reset"
+              "duration_ms": 84,
+              "phase": "User161359"
             }
           ]
         },
@@ -1539,69 +1539,69 @@
           "frames": [
             {
               "index": 0,
-              "name": "KALYX_HURT_LIGHT_00_Anticipation",
+              "name": "KALYX_HURT_LIGHT_00_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 0,
               "y": 3840,
               "w": 256,
               "h": 256,
-              "duration_ms": 62,
-              "phase": "Anticipation"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 1,
-              "name": "KALYX_HURT_LIGHT_01_Windup",
+              "name": "KALYX_HURT_LIGHT_01_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 256,
               "y": 3840,
               "w": 256,
               "h": 256,
-              "duration_ms": 62,
-              "phase": "Windup"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 2,
-              "name": "KALYX_HURT_LIGHT_02_Contact",
+              "name": "KALYX_HURT_LIGHT_02_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 512,
               "y": 3840,
               "w": 256,
               "h": 256,
-              "duration_ms": 62,
-              "phase": "Contact"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 3,
-              "name": "KALYX_HURT_LIGHT_03_Pass",
+              "name": "KALYX_HURT_LIGHT_03_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 768,
               "y": 3840,
               "w": 256,
               "h": 256,
-              "duration_ms": 62,
-              "phase": "Pass"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 4,
-              "name": "KALYX_HURT_LIGHT_04_Recover",
+              "name": "KALYX_HURT_LIGHT_04_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1024,
               "y": 3840,
               "w": 256,
               "h": 256,
-              "duration_ms": 62,
-              "phase": "Recover"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 5,
-              "name": "KALYX_HURT_LIGHT_05_Reset",
+              "name": "KALYX_HURT_LIGHT_05_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1280,
               "y": 3840,
               "w": 256,
               "h": 256,
-              "duration_ms": 62,
-              "phase": "Reset"
+              "duration_ms": 84,
+              "phase": "User161359"
             }
           ]
         },
@@ -1614,91 +1614,91 @@
           "frames": [
             {
               "index": 0,
-              "name": "KALYX_IDLE_00_Anticipation",
+              "name": "KALYX_IDLE_00_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 0,
               "y": 4096,
               "w": 256,
               "h": 256,
-              "duration_ms": 95,
-              "phase": "Anticipation"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 1,
-              "name": "KALYX_IDLE_01_Windup",
+              "name": "KALYX_IDLE_01_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 256,
               "y": 4096,
               "w": 256,
               "h": 256,
-              "duration_ms": 95,
-              "phase": "Windup"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 2,
-              "name": "KALYX_IDLE_02_Contact",
+              "name": "KALYX_IDLE_02_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 512,
               "y": 4096,
               "w": 256,
               "h": 256,
-              "duration_ms": 95,
-              "phase": "Contact"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 3,
-              "name": "KALYX_IDLE_03_Pass",
+              "name": "KALYX_IDLE_03_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 768,
               "y": 4096,
               "w": 256,
               "h": 256,
-              "duration_ms": 95,
-              "phase": "Pass"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 4,
-              "name": "KALYX_IDLE_04_Recover",
+              "name": "KALYX_IDLE_04_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1024,
               "y": 4096,
               "w": 256,
               "h": 256,
-              "duration_ms": 95,
-              "phase": "Recover"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 5,
-              "name": "KALYX_IDLE_05_Reset",
+              "name": "KALYX_IDLE_05_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1280,
               "y": 4096,
               "w": 256,
               "h": 256,
-              "duration_ms": 95,
-              "phase": "Reset"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 6,
-              "name": "KALYX_IDLE_06_AltContact",
+              "name": "KALYX_IDLE_06_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1536,
               "y": 4096,
               "w": 256,
               "h": 256,
-              "duration_ms": 95,
-              "phase": "AltContact"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 7,
-              "name": "KALYX_IDLE_07_AltRecover",
+              "name": "KALYX_IDLE_07_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1792,
               "y": 4096,
               "w": 256,
               "h": 256,
-              "duration_ms": 95,
-              "phase": "AltRecover"
+              "duration_ms": 84,
+              "phase": "User161359"
             }
           ]
         },
@@ -1711,69 +1711,69 @@
           "frames": [
             {
               "index": 0,
-              "name": "KALYX_JUMP_FALL_00_Anticipation",
+              "name": "KALYX_JUMP_FALL_00_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 0,
               "y": 4352,
               "w": 256,
               "h": 256,
-              "duration_ms": 64,
-              "phase": "Anticipation"
+              "duration_ms": 72,
+              "phase": "User161359"
             },
             {
               "index": 1,
-              "name": "KALYX_JUMP_FALL_01_Windup",
+              "name": "KALYX_JUMP_FALL_01_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 256,
               "y": 4352,
               "w": 256,
               "h": 256,
-              "duration_ms": 64,
-              "phase": "Windup"
+              "duration_ms": 72,
+              "phase": "User161359"
             },
             {
               "index": 2,
-              "name": "KALYX_JUMP_FALL_02_Contact",
+              "name": "KALYX_JUMP_FALL_02_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 512,
               "y": 4352,
               "w": 256,
               "h": 256,
-              "duration_ms": 64,
-              "phase": "Contact"
+              "duration_ms": 72,
+              "phase": "User161359"
             },
             {
               "index": 3,
-              "name": "KALYX_JUMP_FALL_03_Pass",
+              "name": "KALYX_JUMP_FALL_03_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 768,
               "y": 4352,
               "w": 256,
               "h": 256,
-              "duration_ms": 64,
-              "phase": "Pass"
+              "duration_ms": 72,
+              "phase": "User161359"
             },
             {
               "index": 4,
-              "name": "KALYX_JUMP_FALL_04_Recover",
+              "name": "KALYX_JUMP_FALL_04_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1024,
               "y": 4352,
               "w": 256,
               "h": 256,
-              "duration_ms": 64,
-              "phase": "Recover"
+              "duration_ms": 72,
+              "phase": "User161359"
             },
             {
               "index": 5,
-              "name": "KALYX_JUMP_FALL_05_Reset",
+              "name": "KALYX_JUMP_FALL_05_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1280,
               "y": 4352,
               "w": 256,
               "h": 256,
-              "duration_ms": 64,
-              "phase": "Reset"
+              "duration_ms": 72,
+              "phase": "User161359"
             }
           ]
         },
@@ -1786,69 +1786,69 @@
           "frames": [
             {
               "index": 0,
-              "name": "KALYX_JUMP_PEAK_00_Anticipation",
+              "name": "KALYX_JUMP_PEAK_00_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 0,
               "y": 4608,
               "w": 256,
               "h": 256,
-              "duration_ms": 64,
-              "phase": "Anticipation"
+              "duration_ms": 72,
+              "phase": "User161359"
             },
             {
               "index": 1,
-              "name": "KALYX_JUMP_PEAK_01_Windup",
+              "name": "KALYX_JUMP_PEAK_01_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 256,
               "y": 4608,
               "w": 256,
               "h": 256,
-              "duration_ms": 64,
-              "phase": "Windup"
+              "duration_ms": 72,
+              "phase": "User161359"
             },
             {
               "index": 2,
-              "name": "KALYX_JUMP_PEAK_02_Contact",
+              "name": "KALYX_JUMP_PEAK_02_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 512,
               "y": 4608,
               "w": 256,
               "h": 256,
-              "duration_ms": 64,
-              "phase": "Contact"
+              "duration_ms": 72,
+              "phase": "User161359"
             },
             {
               "index": 3,
-              "name": "KALYX_JUMP_PEAK_03_Pass",
+              "name": "KALYX_JUMP_PEAK_03_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 768,
               "y": 4608,
               "w": 256,
               "h": 256,
-              "duration_ms": 64,
-              "phase": "Pass"
+              "duration_ms": 72,
+              "phase": "User161359"
             },
             {
               "index": 4,
-              "name": "KALYX_JUMP_PEAK_04_Recover",
+              "name": "KALYX_JUMP_PEAK_04_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1024,
               "y": 4608,
               "w": 256,
               "h": 256,
-              "duration_ms": 64,
-              "phase": "Recover"
+              "duration_ms": 72,
+              "phase": "User161359"
             },
             {
               "index": 5,
-              "name": "KALYX_JUMP_PEAK_05_Reset",
+              "name": "KALYX_JUMP_PEAK_05_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1280,
               "y": 4608,
               "w": 256,
               "h": 256,
-              "duration_ms": 64,
-              "phase": "Reset"
+              "duration_ms": 72,
+              "phase": "User161359"
             }
           ]
         },
@@ -1861,69 +1861,69 @@
           "frames": [
             {
               "index": 0,
-              "name": "KALYX_JUMP_RISE_00_Anticipation",
+              "name": "KALYX_JUMP_RISE_00_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 0,
               "y": 4864,
               "w": 256,
               "h": 256,
-              "duration_ms": 64,
-              "phase": "Anticipation"
+              "duration_ms": 72,
+              "phase": "User161359"
             },
             {
               "index": 1,
-              "name": "KALYX_JUMP_RISE_01_Windup",
+              "name": "KALYX_JUMP_RISE_01_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 256,
               "y": 4864,
               "w": 256,
               "h": 256,
-              "duration_ms": 64,
-              "phase": "Windup"
+              "duration_ms": 72,
+              "phase": "User161359"
             },
             {
               "index": 2,
-              "name": "KALYX_JUMP_RISE_02_Contact",
+              "name": "KALYX_JUMP_RISE_02_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 512,
               "y": 4864,
               "w": 256,
               "h": 256,
-              "duration_ms": 64,
-              "phase": "Contact"
+              "duration_ms": 72,
+              "phase": "User161359"
             },
             {
               "index": 3,
-              "name": "KALYX_JUMP_RISE_03_Pass",
+              "name": "KALYX_JUMP_RISE_03_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 768,
               "y": 4864,
               "w": 256,
               "h": 256,
-              "duration_ms": 64,
-              "phase": "Pass"
+              "duration_ms": 72,
+              "phase": "User161359"
             },
             {
               "index": 4,
-              "name": "KALYX_JUMP_RISE_04_Recover",
+              "name": "KALYX_JUMP_RISE_04_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1024,
               "y": 4864,
               "w": 256,
               "h": 256,
-              "duration_ms": 64,
-              "phase": "Recover"
+              "duration_ms": 72,
+              "phase": "User161359"
             },
             {
               "index": 5,
-              "name": "KALYX_JUMP_RISE_05_Reset",
+              "name": "KALYX_JUMP_RISE_05_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1280,
               "y": 4864,
               "w": 256,
               "h": 256,
-              "duration_ms": 64,
-              "phase": "Reset"
+              "duration_ms": 72,
+              "phase": "User161359"
             }
           ]
         },
@@ -1936,69 +1936,69 @@
           "frames": [
             {
               "index": 0,
-              "name": "KALYX_JUMP_START_00_Anticipation",
+              "name": "KALYX_JUMP_START_00_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 0,
               "y": 5120,
               "w": 256,
               "h": 256,
-              "duration_ms": 64,
-              "phase": "Anticipation"
+              "duration_ms": 72,
+              "phase": "User161359"
             },
             {
               "index": 1,
-              "name": "KALYX_JUMP_START_01_Windup",
+              "name": "KALYX_JUMP_START_01_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 256,
               "y": 5120,
               "w": 256,
               "h": 256,
-              "duration_ms": 64,
-              "phase": "Windup"
+              "duration_ms": 72,
+              "phase": "User161359"
             },
             {
               "index": 2,
-              "name": "KALYX_JUMP_START_02_Contact",
+              "name": "KALYX_JUMP_START_02_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 512,
               "y": 5120,
               "w": 256,
               "h": 256,
-              "duration_ms": 64,
-              "phase": "Contact"
+              "duration_ms": 72,
+              "phase": "User161359"
             },
             {
               "index": 3,
-              "name": "KALYX_JUMP_START_03_Pass",
+              "name": "KALYX_JUMP_START_03_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 768,
               "y": 5120,
               "w": 256,
               "h": 256,
-              "duration_ms": 64,
-              "phase": "Pass"
+              "duration_ms": 72,
+              "phase": "User161359"
             },
             {
               "index": 4,
-              "name": "KALYX_JUMP_START_04_Recover",
+              "name": "KALYX_JUMP_START_04_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1024,
               "y": 5120,
               "w": 256,
               "h": 256,
-              "duration_ms": 64,
-              "phase": "Recover"
+              "duration_ms": 72,
+              "phase": "User161359"
             },
             {
               "index": 5,
-              "name": "KALYX_JUMP_START_05_Reset",
+              "name": "KALYX_JUMP_START_05_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1280,
               "y": 5120,
               "w": 256,
               "h": 256,
-              "duration_ms": 64,
-              "phase": "Reset"
+              "duration_ms": 72,
+              "phase": "User161359"
             }
           ]
         },
@@ -2011,91 +2011,91 @@
           "frames": [
             {
               "index": 0,
-              "name": "KALYX_KNOCKDOWN_00_Anticipation",
+              "name": "KALYX_KNOCKDOWN_00_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 0,
               "y": 5376,
               "w": 256,
               "h": 256,
-              "duration_ms": 90,
-              "phase": "Anticipation"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 1,
-              "name": "KALYX_KNOCKDOWN_01_Windup",
+              "name": "KALYX_KNOCKDOWN_01_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 256,
               "y": 5376,
               "w": 256,
               "h": 256,
-              "duration_ms": 90,
-              "phase": "Windup"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 2,
-              "name": "KALYX_KNOCKDOWN_02_Contact",
+              "name": "KALYX_KNOCKDOWN_02_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 512,
               "y": 5376,
               "w": 256,
               "h": 256,
-              "duration_ms": 90,
-              "phase": "Contact"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 3,
-              "name": "KALYX_KNOCKDOWN_03_Pass",
+              "name": "KALYX_KNOCKDOWN_03_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 768,
               "y": 5376,
               "w": 256,
               "h": 256,
-              "duration_ms": 90,
-              "phase": "Pass"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 4,
-              "name": "KALYX_KNOCKDOWN_04_Recover",
+              "name": "KALYX_KNOCKDOWN_04_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1024,
               "y": 5376,
               "w": 256,
               "h": 256,
-              "duration_ms": 90,
-              "phase": "Recover"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 5,
-              "name": "KALYX_KNOCKDOWN_05_Reset",
+              "name": "KALYX_KNOCKDOWN_05_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1280,
               "y": 5376,
               "w": 256,
               "h": 256,
-              "duration_ms": 90,
-              "phase": "Reset"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 6,
-              "name": "KALYX_KNOCKDOWN_06_AltContact",
+              "name": "KALYX_KNOCKDOWN_06_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1536,
               "y": 5376,
               "w": 256,
               "h": 256,
-              "duration_ms": 90,
-              "phase": "AltContact"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 7,
-              "name": "KALYX_KNOCKDOWN_07_AltRecover",
+              "name": "KALYX_KNOCKDOWN_07_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1792,
               "y": 5376,
               "w": 256,
               "h": 256,
-              "duration_ms": 90,
-              "phase": "AltRecover"
+              "duration_ms": 84,
+              "phase": "User161359"
             }
           ]
         },
@@ -2108,69 +2108,69 @@
           "frames": [
             {
               "index": 0,
-              "name": "KALYX_LANDING_00_Anticipation",
+              "name": "KALYX_LANDING_00_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 0,
               "y": 5632,
               "w": 256,
               "h": 256,
-              "duration_ms": 70,
-              "phase": "Anticipation"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 1,
-              "name": "KALYX_LANDING_01_Windup",
+              "name": "KALYX_LANDING_01_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 256,
               "y": 5632,
               "w": 256,
               "h": 256,
-              "duration_ms": 70,
-              "phase": "Windup"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 2,
-              "name": "KALYX_LANDING_02_Contact",
+              "name": "KALYX_LANDING_02_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 512,
               "y": 5632,
               "w": 256,
               "h": 256,
-              "duration_ms": 70,
-              "phase": "Contact"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 3,
-              "name": "KALYX_LANDING_03_Pass",
+              "name": "KALYX_LANDING_03_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 768,
               "y": 5632,
               "w": 256,
               "h": 256,
-              "duration_ms": 70,
-              "phase": "Pass"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 4,
-              "name": "KALYX_LANDING_04_Recover",
+              "name": "KALYX_LANDING_04_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1024,
               "y": 5632,
               "w": 256,
               "h": 256,
-              "duration_ms": 70,
-              "phase": "Recover"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 5,
-              "name": "KALYX_LANDING_05_Reset",
+              "name": "KALYX_LANDING_05_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1280,
               "y": 5632,
               "w": 256,
               "h": 256,
-              "duration_ms": 70,
-              "phase": "Reset"
+              "duration_ms": 84,
+              "phase": "User161359"
             }
           ]
         },
@@ -2183,69 +2183,69 @@
           "frames": [
             {
               "index": 0,
-              "name": "KALYX_LIGHT_KICK_00_Anticipation",
+              "name": "KALYX_LIGHT_KICK_00_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 0,
               "y": 5888,
               "w": 256,
               "h": 256,
-              "duration_ms": 52,
-              "phase": "Anticipation"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 1,
-              "name": "KALYX_LIGHT_KICK_01_Windup",
+              "name": "KALYX_LIGHT_KICK_01_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 256,
               "y": 5888,
               "w": 256,
               "h": 256,
-              "duration_ms": 52,
-              "phase": "Windup"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 2,
-              "name": "KALYX_LIGHT_KICK_02_Contact",
+              "name": "KALYX_LIGHT_KICK_02_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 512,
               "y": 5888,
               "w": 256,
               "h": 256,
-              "duration_ms": 52,
-              "phase": "Contact"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 3,
-              "name": "KALYX_LIGHT_KICK_03_Pass",
+              "name": "KALYX_LIGHT_KICK_03_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 768,
               "y": 5888,
               "w": 256,
               "h": 256,
-              "duration_ms": 52,
-              "phase": "Pass"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 4,
-              "name": "KALYX_LIGHT_KICK_04_Recover",
+              "name": "KALYX_LIGHT_KICK_04_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1024,
               "y": 5888,
               "w": 256,
               "h": 256,
-              "duration_ms": 52,
-              "phase": "Recover"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 5,
-              "name": "KALYX_LIGHT_KICK_05_Reset",
+              "name": "KALYX_LIGHT_KICK_05_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1280,
               "y": 5888,
               "w": 256,
               "h": 256,
-              "duration_ms": 52,
-              "phase": "Reset"
+              "duration_ms": 84,
+              "phase": "User161359"
             }
           ]
         },
@@ -2258,69 +2258,69 @@
           "frames": [
             {
               "index": 0,
-              "name": "KALYX_LIGHT_PUNCH_00_Anticipation",
+              "name": "KALYX_LIGHT_PUNCH_00_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 0,
               "y": 6144,
               "w": 256,
               "h": 256,
-              "duration_ms": 52,
-              "phase": "Anticipation"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 1,
-              "name": "KALYX_LIGHT_PUNCH_01_Windup",
+              "name": "KALYX_LIGHT_PUNCH_01_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 256,
               "y": 6144,
               "w": 256,
               "h": 256,
-              "duration_ms": 52,
-              "phase": "Windup"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 2,
-              "name": "KALYX_LIGHT_PUNCH_02_Contact",
+              "name": "KALYX_LIGHT_PUNCH_02_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 512,
               "y": 6144,
               "w": 256,
               "h": 256,
-              "duration_ms": 52,
-              "phase": "Contact"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 3,
-              "name": "KALYX_LIGHT_PUNCH_03_Pass",
+              "name": "KALYX_LIGHT_PUNCH_03_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 768,
               "y": 6144,
               "w": 256,
               "h": 256,
-              "duration_ms": 52,
-              "phase": "Pass"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 4,
-              "name": "KALYX_LIGHT_PUNCH_04_Recover",
+              "name": "KALYX_LIGHT_PUNCH_04_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1024,
               "y": 6144,
               "w": 256,
               "h": 256,
-              "duration_ms": 52,
-              "phase": "Recover"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 5,
-              "name": "KALYX_LIGHT_PUNCH_05_Reset",
+              "name": "KALYX_LIGHT_PUNCH_05_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1280,
               "y": 6144,
               "w": 256,
               "h": 256,
-              "duration_ms": 52,
-              "phase": "Reset"
+              "duration_ms": 84,
+              "phase": "User161359"
             }
           ]
         },
@@ -2333,91 +2333,91 @@
           "frames": [
             {
               "index": 0,
-              "name": "KALYX_READY_STANCE_00_Anticipation",
+              "name": "KALYX_READY_STANCE_00_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 0,
               "y": 6400,
               "w": 256,
               "h": 256,
-              "duration_ms": 95,
-              "phase": "Anticipation"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 1,
-              "name": "KALYX_READY_STANCE_01_Windup",
+              "name": "KALYX_READY_STANCE_01_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 256,
               "y": 6400,
               "w": 256,
               "h": 256,
-              "duration_ms": 95,
-              "phase": "Windup"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 2,
-              "name": "KALYX_READY_STANCE_02_Contact",
+              "name": "KALYX_READY_STANCE_02_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 512,
               "y": 6400,
               "w": 256,
               "h": 256,
-              "duration_ms": 95,
-              "phase": "Contact"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 3,
-              "name": "KALYX_READY_STANCE_03_Pass",
+              "name": "KALYX_READY_STANCE_03_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 768,
               "y": 6400,
               "w": 256,
               "h": 256,
-              "duration_ms": 95,
-              "phase": "Pass"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 4,
-              "name": "KALYX_READY_STANCE_04_Recover",
+              "name": "KALYX_READY_STANCE_04_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1024,
               "y": 6400,
               "w": 256,
               "h": 256,
-              "duration_ms": 95,
-              "phase": "Recover"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 5,
-              "name": "KALYX_READY_STANCE_05_Reset",
+              "name": "KALYX_READY_STANCE_05_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1280,
               "y": 6400,
               "w": 256,
               "h": 256,
-              "duration_ms": 95,
-              "phase": "Reset"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 6,
-              "name": "KALYX_READY_STANCE_06_AltContact",
+              "name": "KALYX_READY_STANCE_06_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1536,
               "y": 6400,
               "w": 256,
               "h": 256,
-              "duration_ms": 95,
-              "phase": "AltContact"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 7,
-              "name": "KALYX_READY_STANCE_07_AltRecover",
+              "name": "KALYX_READY_STANCE_07_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1792,
               "y": 6400,
               "w": 256,
               "h": 256,
-              "duration_ms": 95,
-              "phase": "AltRecover"
+              "duration_ms": 84,
+              "phase": "User161359"
             }
           ]
         },
@@ -2430,113 +2430,113 @@
           "frames": [
             {
               "index": 0,
-              "name": "KALYX_RUN_BACK_00_Anticipation",
+              "name": "KALYX_RUN_BACK_00_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 0,
               "y": 6656,
               "w": 256,
               "h": 256,
-              "duration_ms": 58,
-              "phase": "Anticipation"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 1,
-              "name": "KALYX_RUN_BACK_01_Windup",
+              "name": "KALYX_RUN_BACK_01_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 256,
               "y": 6656,
               "w": 256,
               "h": 256,
-              "duration_ms": 58,
-              "phase": "Windup"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 2,
-              "name": "KALYX_RUN_BACK_02_Contact",
+              "name": "KALYX_RUN_BACK_02_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 512,
               "y": 6656,
               "w": 256,
               "h": 256,
-              "duration_ms": 58,
-              "phase": "Contact"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 3,
-              "name": "KALYX_RUN_BACK_03_Pass",
+              "name": "KALYX_RUN_BACK_03_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 768,
               "y": 6656,
               "w": 256,
               "h": 256,
-              "duration_ms": 58,
-              "phase": "Pass"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 4,
-              "name": "KALYX_RUN_BACK_04_Recover",
+              "name": "KALYX_RUN_BACK_04_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1024,
               "y": 6656,
               "w": 256,
               "h": 256,
-              "duration_ms": 58,
-              "phase": "Recover"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 5,
-              "name": "KALYX_RUN_BACK_05_Reset",
+              "name": "KALYX_RUN_BACK_05_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1280,
               "y": 6656,
               "w": 256,
               "h": 256,
-              "duration_ms": 58,
-              "phase": "Reset"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 6,
-              "name": "KALYX_RUN_BACK_06_AltContact",
+              "name": "KALYX_RUN_BACK_06_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1536,
               "y": 6656,
               "w": 256,
               "h": 256,
-              "duration_ms": 58,
-              "phase": "AltContact"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 7,
-              "name": "KALYX_RUN_BACK_07_AltRecover",
+              "name": "KALYX_RUN_BACK_07_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1792,
               "y": 6656,
               "w": 256,
               "h": 256,
-              "duration_ms": 58,
-              "phase": "AltRecover"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 8,
-              "name": "KALYX_RUN_BACK_08_PowerUp",
+              "name": "KALYX_RUN_BACK_08_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 2048,
               "y": 6656,
               "w": 256,
               "h": 256,
-              "duration_ms": 58,
-              "phase": "PowerUp"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 9,
-              "name": "KALYX_RUN_BACK_09_Release",
+              "name": "KALYX_RUN_BACK_09_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 2304,
               "y": 6656,
               "w": 256,
               "h": 256,
-              "duration_ms": 58,
-              "phase": "Release"
+              "duration_ms": 54,
+              "phase": "User161359"
             }
           ]
         },
@@ -2549,135 +2549,135 @@
           "frames": [
             {
               "index": 0,
-              "name": "KALYX_RUN_FORWARD_00_Anticipation",
+              "name": "KALYX_RUN_FORWARD_00_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 0,
               "y": 6912,
               "w": 256,
               "h": 256,
               "duration_ms": 54,
-              "phase": "Anticipation"
+              "phase": "User161359"
             },
             {
               "index": 1,
-              "name": "KALYX_RUN_FORWARD_01_Windup",
+              "name": "KALYX_RUN_FORWARD_01_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 256,
               "y": 6912,
               "w": 256,
               "h": 256,
               "duration_ms": 54,
-              "phase": "Windup"
+              "phase": "User161359"
             },
             {
               "index": 2,
-              "name": "KALYX_RUN_FORWARD_02_Contact",
+              "name": "KALYX_RUN_FORWARD_02_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 512,
               "y": 6912,
               "w": 256,
               "h": 256,
               "duration_ms": 54,
-              "phase": "Contact"
+              "phase": "User161359"
             },
             {
               "index": 3,
-              "name": "KALYX_RUN_FORWARD_03_Pass",
+              "name": "KALYX_RUN_FORWARD_03_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 768,
               "y": 6912,
               "w": 256,
               "h": 256,
               "duration_ms": 54,
-              "phase": "Pass"
+              "phase": "User161359"
             },
             {
               "index": 4,
-              "name": "KALYX_RUN_FORWARD_04_Recover",
+              "name": "KALYX_RUN_FORWARD_04_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1024,
               "y": 6912,
               "w": 256,
               "h": 256,
               "duration_ms": 54,
-              "phase": "Recover"
+              "phase": "User161359"
             },
             {
               "index": 5,
-              "name": "KALYX_RUN_FORWARD_05_Reset",
+              "name": "KALYX_RUN_FORWARD_05_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1280,
               "y": 6912,
               "w": 256,
               "h": 256,
               "duration_ms": 54,
-              "phase": "Reset"
+              "phase": "User161359"
             },
             {
               "index": 6,
-              "name": "KALYX_RUN_FORWARD_06_AltContact",
+              "name": "KALYX_RUN_FORWARD_06_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1536,
               "y": 6912,
               "w": 256,
               "h": 256,
               "duration_ms": 54,
-              "phase": "AltContact"
+              "phase": "User161359"
             },
             {
               "index": 7,
-              "name": "KALYX_RUN_FORWARD_07_AltRecover",
+              "name": "KALYX_RUN_FORWARD_07_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1792,
               "y": 6912,
               "w": 256,
               "h": 256,
               "duration_ms": 54,
-              "phase": "AltRecover"
+              "phase": "User161359"
             },
             {
               "index": 8,
-              "name": "KALYX_RUN_FORWARD_08_PowerUp",
+              "name": "KALYX_RUN_FORWARD_08_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 2048,
               "y": 6912,
               "w": 256,
               "h": 256,
               "duration_ms": 54,
-              "phase": "PowerUp"
+              "phase": "User161359"
             },
             {
               "index": 9,
-              "name": "KALYX_RUN_FORWARD_09_Release",
+              "name": "KALYX_RUN_FORWARD_09_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 2304,
               "y": 6912,
               "w": 256,
               "h": 256,
               "duration_ms": 54,
-              "phase": "Release"
+              "phase": "User161359"
             },
             {
               "index": 10,
-              "name": "KALYX_RUN_FORWARD_10_FollowThrough",
+              "name": "KALYX_RUN_FORWARD_10_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 2560,
               "y": 6912,
               "w": 256,
               "h": 256,
               "duration_ms": 54,
-              "phase": "FollowThrough"
+              "phase": "User161359"
             },
             {
               "index": 11,
-              "name": "KALYX_RUN_FORWARD_11_Finish",
+              "name": "KALYX_RUN_FORWARD_11_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 2816,
               "y": 6912,
               "w": 256,
               "h": 256,
               "duration_ms": 54,
-              "phase": "Finish"
+              "phase": "User161359"
             }
           ]
         },
@@ -2690,135 +2690,135 @@
           "frames": [
             {
               "index": 0,
-              "name": "KALYX_SPECIAL_PROJECTILE_00_Anticipation",
+              "name": "KALYX_SPECIAL_PROJECTILE_00_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 0,
               "y": 7168,
               "w": 256,
               "h": 256,
-              "duration_ms": 55,
-              "phase": "Anticipation"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 1,
-              "name": "KALYX_SPECIAL_PROJECTILE_01_Windup",
+              "name": "KALYX_SPECIAL_PROJECTILE_01_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 256,
               "y": 7168,
               "w": 256,
               "h": 256,
-              "duration_ms": 55,
-              "phase": "Windup"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 2,
-              "name": "KALYX_SPECIAL_PROJECTILE_02_Contact",
+              "name": "KALYX_SPECIAL_PROJECTILE_02_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 512,
               "y": 7168,
               "w": 256,
               "h": 256,
-              "duration_ms": 55,
-              "phase": "Contact"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 3,
-              "name": "KALYX_SPECIAL_PROJECTILE_03_Pass",
+              "name": "KALYX_SPECIAL_PROJECTILE_03_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 768,
               "y": 7168,
               "w": 256,
               "h": 256,
-              "duration_ms": 55,
-              "phase": "Pass"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 4,
-              "name": "KALYX_SPECIAL_PROJECTILE_04_Recover",
+              "name": "KALYX_SPECIAL_PROJECTILE_04_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1024,
               "y": 7168,
               "w": 256,
               "h": 256,
-              "duration_ms": 55,
-              "phase": "Recover"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 5,
-              "name": "KALYX_SPECIAL_PROJECTILE_05_Reset",
+              "name": "KALYX_SPECIAL_PROJECTILE_05_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1280,
               "y": 7168,
               "w": 256,
               "h": 256,
-              "duration_ms": 55,
-              "phase": "Reset"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 6,
-              "name": "KALYX_SPECIAL_PROJECTILE_06_AltContact",
+              "name": "KALYX_SPECIAL_PROJECTILE_06_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1536,
               "y": 7168,
               "w": 256,
               "h": 256,
-              "duration_ms": 55,
-              "phase": "AltContact"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 7,
-              "name": "KALYX_SPECIAL_PROJECTILE_07_AltRecover",
+              "name": "KALYX_SPECIAL_PROJECTILE_07_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1792,
               "y": 7168,
               "w": 256,
               "h": 256,
-              "duration_ms": 55,
-              "phase": "AltRecover"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 8,
-              "name": "KALYX_SPECIAL_PROJECTILE_08_PowerUp",
+              "name": "KALYX_SPECIAL_PROJECTILE_08_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 2048,
               "y": 7168,
               "w": 256,
               "h": 256,
-              "duration_ms": 55,
-              "phase": "PowerUp"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 9,
-              "name": "KALYX_SPECIAL_PROJECTILE_09_Release",
+              "name": "KALYX_SPECIAL_PROJECTILE_09_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 2304,
               "y": 7168,
               "w": 256,
               "h": 256,
-              "duration_ms": 55,
-              "phase": "Release"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 10,
-              "name": "KALYX_SPECIAL_PROJECTILE_10_FollowThrough",
+              "name": "KALYX_SPECIAL_PROJECTILE_10_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 2560,
               "y": 7168,
               "w": 256,
               "h": 256,
-              "duration_ms": 55,
-              "phase": "FollowThrough"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 11,
-              "name": "KALYX_SPECIAL_PROJECTILE_11_Finish",
+              "name": "KALYX_SPECIAL_PROJECTILE_11_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 2816,
               "y": 7168,
               "w": 256,
               "h": 256,
-              "duration_ms": 55,
-              "phase": "Finish"
+              "duration_ms": 54,
+              "phase": "User161359"
             }
           ]
         },
@@ -2831,69 +2831,69 @@
           "frames": [
             {
               "index": 0,
-              "name": "KALYX_SPECIAL_RECOVER_00_Anticipation",
+              "name": "KALYX_SPECIAL_RECOVER_00_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 0,
               "y": 7424,
               "w": 256,
               "h": 256,
-              "duration_ms": 55,
-              "phase": "Anticipation"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 1,
-              "name": "KALYX_SPECIAL_RECOVER_01_Windup",
+              "name": "KALYX_SPECIAL_RECOVER_01_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 256,
               "y": 7424,
               "w": 256,
               "h": 256,
-              "duration_ms": 55,
-              "phase": "Windup"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 2,
-              "name": "KALYX_SPECIAL_RECOVER_02_Contact",
+              "name": "KALYX_SPECIAL_RECOVER_02_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 512,
               "y": 7424,
               "w": 256,
               "h": 256,
-              "duration_ms": 55,
-              "phase": "Contact"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 3,
-              "name": "KALYX_SPECIAL_RECOVER_03_Pass",
+              "name": "KALYX_SPECIAL_RECOVER_03_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 768,
               "y": 7424,
               "w": 256,
               "h": 256,
-              "duration_ms": 55,
-              "phase": "Pass"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 4,
-              "name": "KALYX_SPECIAL_RECOVER_04_Recover",
+              "name": "KALYX_SPECIAL_RECOVER_04_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1024,
               "y": 7424,
               "w": 256,
               "h": 256,
-              "duration_ms": 55,
-              "phase": "Recover"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 5,
-              "name": "KALYX_SPECIAL_RECOVER_05_Reset",
+              "name": "KALYX_SPECIAL_RECOVER_05_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1280,
               "y": 7424,
               "w": 256,
               "h": 256,
-              "duration_ms": 55,
-              "phase": "Reset"
+              "duration_ms": 54,
+              "phase": "User161359"
             }
           ]
         },
@@ -2906,91 +2906,91 @@
           "frames": [
             {
               "index": 0,
-              "name": "KALYX_SPECIAL_START_00_Anticipation",
+              "name": "KALYX_SPECIAL_START_00_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 0,
               "y": 7680,
               "w": 256,
               "h": 256,
-              "duration_ms": 55,
-              "phase": "Anticipation"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 1,
-              "name": "KALYX_SPECIAL_START_01_Windup",
+              "name": "KALYX_SPECIAL_START_01_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 256,
               "y": 7680,
               "w": 256,
               "h": 256,
-              "duration_ms": 55,
-              "phase": "Windup"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 2,
-              "name": "KALYX_SPECIAL_START_02_Contact",
+              "name": "KALYX_SPECIAL_START_02_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 512,
               "y": 7680,
               "w": 256,
               "h": 256,
-              "duration_ms": 55,
-              "phase": "Contact"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 3,
-              "name": "KALYX_SPECIAL_START_03_Pass",
+              "name": "KALYX_SPECIAL_START_03_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 768,
               "y": 7680,
               "w": 256,
               "h": 256,
-              "duration_ms": 55,
-              "phase": "Pass"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 4,
-              "name": "KALYX_SPECIAL_START_04_Recover",
+              "name": "KALYX_SPECIAL_START_04_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1024,
               "y": 7680,
               "w": 256,
               "h": 256,
-              "duration_ms": 55,
-              "phase": "Recover"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 5,
-              "name": "KALYX_SPECIAL_START_05_Reset",
+              "name": "KALYX_SPECIAL_START_05_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1280,
               "y": 7680,
               "w": 256,
               "h": 256,
-              "duration_ms": 55,
-              "phase": "Reset"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 6,
-              "name": "KALYX_SPECIAL_START_06_AltContact",
+              "name": "KALYX_SPECIAL_START_06_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1536,
               "y": 7680,
               "w": 256,
               "h": 256,
-              "duration_ms": 55,
-              "phase": "AltContact"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 7,
-              "name": "KALYX_SPECIAL_START_07_AltRecover",
+              "name": "KALYX_SPECIAL_START_07_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1792,
               "y": 7680,
               "w": 256,
               "h": 256,
-              "duration_ms": 55,
-              "phase": "AltRecover"
+              "duration_ms": 54,
+              "phase": "User161359"
             }
           ]
         },
@@ -3003,135 +3003,135 @@
           "frames": [
             {
               "index": 0,
-              "name": "KALYX_SUPER_CHARGE_00_Anticipation",
+              "name": "KALYX_SUPER_CHARGE_00_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 0,
               "y": 7936,
               "w": 256,
               "h": 256,
-              "duration_ms": 50,
-              "phase": "Anticipation"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 1,
-              "name": "KALYX_SUPER_CHARGE_01_Windup",
+              "name": "KALYX_SUPER_CHARGE_01_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 256,
               "y": 7936,
               "w": 256,
               "h": 256,
-              "duration_ms": 50,
-              "phase": "Windup"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 2,
-              "name": "KALYX_SUPER_CHARGE_02_Contact",
+              "name": "KALYX_SUPER_CHARGE_02_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 512,
               "y": 7936,
               "w": 256,
               "h": 256,
-              "duration_ms": 50,
-              "phase": "Contact"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 3,
-              "name": "KALYX_SUPER_CHARGE_03_Pass",
+              "name": "KALYX_SUPER_CHARGE_03_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 768,
               "y": 7936,
               "w": 256,
               "h": 256,
-              "duration_ms": 50,
-              "phase": "Pass"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 4,
-              "name": "KALYX_SUPER_CHARGE_04_Recover",
+              "name": "KALYX_SUPER_CHARGE_04_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1024,
               "y": 7936,
               "w": 256,
               "h": 256,
-              "duration_ms": 50,
-              "phase": "Recover"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 5,
-              "name": "KALYX_SUPER_CHARGE_05_Reset",
+              "name": "KALYX_SUPER_CHARGE_05_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1280,
               "y": 7936,
               "w": 256,
               "h": 256,
-              "duration_ms": 50,
-              "phase": "Reset"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 6,
-              "name": "KALYX_SUPER_CHARGE_06_AltContact",
+              "name": "KALYX_SUPER_CHARGE_06_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1536,
               "y": 7936,
               "w": 256,
               "h": 256,
-              "duration_ms": 50,
-              "phase": "AltContact"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 7,
-              "name": "KALYX_SUPER_CHARGE_07_AltRecover",
+              "name": "KALYX_SUPER_CHARGE_07_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1792,
               "y": 7936,
               "w": 256,
               "h": 256,
-              "duration_ms": 50,
-              "phase": "AltRecover"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 8,
-              "name": "KALYX_SUPER_CHARGE_08_PowerUp",
+              "name": "KALYX_SUPER_CHARGE_08_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 2048,
               "y": 7936,
               "w": 256,
               "h": 256,
-              "duration_ms": 50,
-              "phase": "PowerUp"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 9,
-              "name": "KALYX_SUPER_CHARGE_09_Release",
+              "name": "KALYX_SUPER_CHARGE_09_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 2304,
               "y": 7936,
               "w": 256,
               "h": 256,
-              "duration_ms": 50,
-              "phase": "Release"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 10,
-              "name": "KALYX_SUPER_CHARGE_10_FollowThrough",
+              "name": "KALYX_SUPER_CHARGE_10_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 2560,
               "y": 7936,
               "w": 256,
               "h": 256,
-              "duration_ms": 50,
-              "phase": "FollowThrough"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 11,
-              "name": "KALYX_SUPER_CHARGE_11_Finish",
+              "name": "KALYX_SUPER_CHARGE_11_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 2816,
               "y": 7936,
               "w": 256,
               "h": 256,
-              "duration_ms": 50,
-              "phase": "Finish"
+              "duration_ms": 54,
+              "phase": "User161359"
             }
           ]
         },
@@ -3144,135 +3144,135 @@
           "frames": [
             {
               "index": 0,
-              "name": "KALYX_SUPER_RELEASE_00_Anticipation",
+              "name": "KALYX_SUPER_RELEASE_00_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 0,
               "y": 8192,
               "w": 256,
               "h": 256,
-              "duration_ms": 50,
-              "phase": "Anticipation"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 1,
-              "name": "KALYX_SUPER_RELEASE_01_Windup",
+              "name": "KALYX_SUPER_RELEASE_01_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 256,
               "y": 8192,
               "w": 256,
               "h": 256,
-              "duration_ms": 50,
-              "phase": "Windup"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 2,
-              "name": "KALYX_SUPER_RELEASE_02_Contact",
+              "name": "KALYX_SUPER_RELEASE_02_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 512,
               "y": 8192,
               "w": 256,
               "h": 256,
-              "duration_ms": 50,
-              "phase": "Contact"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 3,
-              "name": "KALYX_SUPER_RELEASE_03_Pass",
+              "name": "KALYX_SUPER_RELEASE_03_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 768,
               "y": 8192,
               "w": 256,
               "h": 256,
-              "duration_ms": 50,
-              "phase": "Pass"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 4,
-              "name": "KALYX_SUPER_RELEASE_04_Recover",
+              "name": "KALYX_SUPER_RELEASE_04_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1024,
               "y": 8192,
               "w": 256,
               "h": 256,
-              "duration_ms": 50,
-              "phase": "Recover"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 5,
-              "name": "KALYX_SUPER_RELEASE_05_Reset",
+              "name": "KALYX_SUPER_RELEASE_05_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1280,
               "y": 8192,
               "w": 256,
               "h": 256,
-              "duration_ms": 50,
-              "phase": "Reset"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 6,
-              "name": "KALYX_SUPER_RELEASE_06_AltContact",
+              "name": "KALYX_SUPER_RELEASE_06_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1536,
               "y": 8192,
               "w": 256,
               "h": 256,
-              "duration_ms": 50,
-              "phase": "AltContact"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 7,
-              "name": "KALYX_SUPER_RELEASE_07_AltRecover",
+              "name": "KALYX_SUPER_RELEASE_07_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1792,
               "y": 8192,
               "w": 256,
               "h": 256,
-              "duration_ms": 50,
-              "phase": "AltRecover"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 8,
-              "name": "KALYX_SUPER_RELEASE_08_PowerUp",
+              "name": "KALYX_SUPER_RELEASE_08_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 2048,
               "y": 8192,
               "w": 256,
               "h": 256,
-              "duration_ms": 50,
-              "phase": "PowerUp"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 9,
-              "name": "KALYX_SUPER_RELEASE_09_Release",
+              "name": "KALYX_SUPER_RELEASE_09_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 2304,
               "y": 8192,
               "w": 256,
               "h": 256,
-              "duration_ms": 50,
-              "phase": "Release"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 10,
-              "name": "KALYX_SUPER_RELEASE_10_FollowThrough",
+              "name": "KALYX_SUPER_RELEASE_10_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 2560,
               "y": 8192,
               "w": 256,
               "h": 256,
-              "duration_ms": 50,
-              "phase": "FollowThrough"
+              "duration_ms": 54,
+              "phase": "User161359"
             },
             {
               "index": 11,
-              "name": "KALYX_SUPER_RELEASE_11_Finish",
+              "name": "KALYX_SUPER_RELEASE_11_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 2816,
               "y": 8192,
               "w": 256,
               "h": 256,
-              "duration_ms": 50,
-              "phase": "Finish"
+              "duration_ms": 54,
+              "phase": "User161359"
             }
           ]
         },
@@ -3285,91 +3285,91 @@
           "frames": [
             {
               "index": 0,
-              "name": "KALYX_TAUNT_00_Anticipation",
+              "name": "KALYX_TAUNT_00_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 0,
               "y": 8448,
               "w": 256,
               "h": 256,
-              "duration_ms": 86,
-              "phase": "Anticipation"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 1,
-              "name": "KALYX_TAUNT_01_Windup",
+              "name": "KALYX_TAUNT_01_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 256,
               "y": 8448,
               "w": 256,
               "h": 256,
-              "duration_ms": 86,
-              "phase": "Windup"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 2,
-              "name": "KALYX_TAUNT_02_Contact",
+              "name": "KALYX_TAUNT_02_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 512,
               "y": 8448,
               "w": 256,
               "h": 256,
-              "duration_ms": 86,
-              "phase": "Contact"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 3,
-              "name": "KALYX_TAUNT_03_Pass",
+              "name": "KALYX_TAUNT_03_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 768,
               "y": 8448,
               "w": 256,
               "h": 256,
-              "duration_ms": 86,
-              "phase": "Pass"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 4,
-              "name": "KALYX_TAUNT_04_Recover",
+              "name": "KALYX_TAUNT_04_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1024,
               "y": 8448,
               "w": 256,
               "h": 256,
-              "duration_ms": 86,
-              "phase": "Recover"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 5,
-              "name": "KALYX_TAUNT_05_Reset",
+              "name": "KALYX_TAUNT_05_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1280,
               "y": 8448,
               "w": 256,
               "h": 256,
-              "duration_ms": 86,
-              "phase": "Reset"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 6,
-              "name": "KALYX_TAUNT_06_AltContact",
+              "name": "KALYX_TAUNT_06_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1536,
               "y": 8448,
               "w": 256,
               "h": 256,
-              "duration_ms": 86,
-              "phase": "AltContact"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 7,
-              "name": "KALYX_TAUNT_07_AltRecover",
+              "name": "KALYX_TAUNT_07_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1792,
               "y": 8448,
               "w": 256,
               "h": 256,
-              "duration_ms": 86,
-              "phase": "AltRecover"
+              "duration_ms": 84,
+              "phase": "User161359"
             }
           ]
         },
@@ -3382,91 +3382,91 @@
           "frames": [
             {
               "index": 0,
-              "name": "KALYX_THROW_FINISH_00_Anticipation",
+              "name": "KALYX_THROW_FINISH_00_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 0,
               "y": 8704,
               "w": 256,
               "h": 256,
-              "duration_ms": 52,
-              "phase": "Anticipation"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 1,
-              "name": "KALYX_THROW_FINISH_01_Windup",
+              "name": "KALYX_THROW_FINISH_01_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 256,
               "y": 8704,
               "w": 256,
               "h": 256,
-              "duration_ms": 52,
-              "phase": "Windup"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 2,
-              "name": "KALYX_THROW_FINISH_02_Contact",
+              "name": "KALYX_THROW_FINISH_02_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 512,
               "y": 8704,
               "w": 256,
               "h": 256,
-              "duration_ms": 52,
-              "phase": "Contact"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 3,
-              "name": "KALYX_THROW_FINISH_03_Pass",
+              "name": "KALYX_THROW_FINISH_03_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 768,
               "y": 8704,
               "w": 256,
               "h": 256,
-              "duration_ms": 52,
-              "phase": "Pass"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 4,
-              "name": "KALYX_THROW_FINISH_04_Recover",
+              "name": "KALYX_THROW_FINISH_04_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1024,
               "y": 8704,
               "w": 256,
               "h": 256,
-              "duration_ms": 52,
-              "phase": "Recover"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 5,
-              "name": "KALYX_THROW_FINISH_05_Reset",
+              "name": "KALYX_THROW_FINISH_05_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1280,
               "y": 8704,
               "w": 256,
               "h": 256,
-              "duration_ms": 52,
-              "phase": "Reset"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 6,
-              "name": "KALYX_THROW_FINISH_06_AltContact",
+              "name": "KALYX_THROW_FINISH_06_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1536,
               "y": 8704,
               "w": 256,
               "h": 256,
-              "duration_ms": 52,
-              "phase": "AltContact"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 7,
-              "name": "KALYX_THROW_FINISH_07_AltRecover",
+              "name": "KALYX_THROW_FINISH_07_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1792,
               "y": 8704,
               "w": 256,
               "h": 256,
-              "duration_ms": 52,
-              "phase": "AltRecover"
+              "duration_ms": 84,
+              "phase": "User161359"
             }
           ]
         },
@@ -3479,91 +3479,91 @@
           "frames": [
             {
               "index": 0,
-              "name": "KALYX_THROW_GRAB_00_Anticipation",
+              "name": "KALYX_THROW_GRAB_00_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 0,
               "y": 8960,
               "w": 256,
               "h": 256,
-              "duration_ms": 52,
-              "phase": "Anticipation"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 1,
-              "name": "KALYX_THROW_GRAB_01_Windup",
+              "name": "KALYX_THROW_GRAB_01_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 256,
               "y": 8960,
               "w": 256,
               "h": 256,
-              "duration_ms": 52,
-              "phase": "Windup"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 2,
-              "name": "KALYX_THROW_GRAB_02_Contact",
+              "name": "KALYX_THROW_GRAB_02_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 512,
               "y": 8960,
               "w": 256,
               "h": 256,
-              "duration_ms": 52,
-              "phase": "Contact"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 3,
-              "name": "KALYX_THROW_GRAB_03_Pass",
+              "name": "KALYX_THROW_GRAB_03_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 768,
               "y": 8960,
               "w": 256,
               "h": 256,
-              "duration_ms": 52,
-              "phase": "Pass"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 4,
-              "name": "KALYX_THROW_GRAB_04_Recover",
+              "name": "KALYX_THROW_GRAB_04_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1024,
               "y": 8960,
               "w": 256,
               "h": 256,
-              "duration_ms": 52,
-              "phase": "Recover"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 5,
-              "name": "KALYX_THROW_GRAB_05_Reset",
+              "name": "KALYX_THROW_GRAB_05_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1280,
               "y": 8960,
               "w": 256,
               "h": 256,
-              "duration_ms": 52,
-              "phase": "Reset"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 6,
-              "name": "KALYX_THROW_GRAB_06_AltContact",
+              "name": "KALYX_THROW_GRAB_06_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1536,
               "y": 8960,
               "w": 256,
               "h": 256,
-              "duration_ms": 52,
-              "phase": "AltContact"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 7,
-              "name": "KALYX_THROW_GRAB_07_AltRecover",
+              "name": "KALYX_THROW_GRAB_07_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1792,
               "y": 8960,
               "w": 256,
               "h": 256,
-              "duration_ms": 52,
-              "phase": "AltRecover"
+              "duration_ms": 84,
+              "phase": "User161359"
             }
           ]
         },
@@ -3576,91 +3576,91 @@
           "frames": [
             {
               "index": 0,
-              "name": "KALYX_VICTORY_00_Anticipation",
+              "name": "KALYX_VICTORY_00_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 0,
               "y": 9216,
               "w": 256,
               "h": 256,
-              "duration_ms": 86,
-              "phase": "Anticipation"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 1,
-              "name": "KALYX_VICTORY_01_Windup",
+              "name": "KALYX_VICTORY_01_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 256,
               "y": 9216,
               "w": 256,
               "h": 256,
-              "duration_ms": 86,
-              "phase": "Windup"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 2,
-              "name": "KALYX_VICTORY_02_Contact",
+              "name": "KALYX_VICTORY_02_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 512,
               "y": 9216,
               "w": 256,
               "h": 256,
-              "duration_ms": 86,
-              "phase": "Contact"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 3,
-              "name": "KALYX_VICTORY_03_Pass",
+              "name": "KALYX_VICTORY_03_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 768,
               "y": 9216,
               "w": 256,
               "h": 256,
-              "duration_ms": 86,
-              "phase": "Pass"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 4,
-              "name": "KALYX_VICTORY_04_Recover",
+              "name": "KALYX_VICTORY_04_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1024,
               "y": 9216,
               "w": 256,
               "h": 256,
-              "duration_ms": 86,
-              "phase": "Recover"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 5,
-              "name": "KALYX_VICTORY_05_Reset",
+              "name": "KALYX_VICTORY_05_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1280,
               "y": 9216,
               "w": 256,
               "h": 256,
-              "duration_ms": 86,
-              "phase": "Reset"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 6,
-              "name": "KALYX_VICTORY_06_AltContact",
+              "name": "KALYX_VICTORY_06_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1536,
               "y": 9216,
               "w": 256,
               "h": 256,
-              "duration_ms": 86,
-              "phase": "AltContact"
+              "duration_ms": 84,
+              "phase": "User161359"
             },
             {
               "index": 7,
-              "name": "KALYX_VICTORY_07_AltRecover",
+              "name": "KALYX_VICTORY_07_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1792,
               "y": 9216,
               "w": 256,
               "h": 256,
-              "duration_ms": 86,
-              "phase": "AltRecover"
+              "duration_ms": 84,
+              "phase": "User161359"
             }
           ]
         },
@@ -3673,135 +3673,135 @@
           "frames": [
             {
               "index": 0,
-              "name": "KALYX_WALK_BACK_00_Anticipation",
+              "name": "KALYX_WALK_BACK_00_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 0,
               "y": 9472,
               "w": 256,
               "h": 256,
-              "duration_ms": 78,
-              "phase": "Anticipation"
+              "duration_ms": 72,
+              "phase": "User161359"
             },
             {
               "index": 1,
-              "name": "KALYX_WALK_BACK_01_Windup",
+              "name": "KALYX_WALK_BACK_01_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 256,
               "y": 9472,
               "w": 256,
               "h": 256,
-              "duration_ms": 78,
-              "phase": "Windup"
+              "duration_ms": 72,
+              "phase": "User161359"
             },
             {
               "index": 2,
-              "name": "KALYX_WALK_BACK_02_Contact",
+              "name": "KALYX_WALK_BACK_02_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 512,
               "y": 9472,
               "w": 256,
               "h": 256,
-              "duration_ms": 78,
-              "phase": "Contact"
+              "duration_ms": 72,
+              "phase": "User161359"
             },
             {
               "index": 3,
-              "name": "KALYX_WALK_BACK_03_Pass",
+              "name": "KALYX_WALK_BACK_03_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 768,
               "y": 9472,
               "w": 256,
               "h": 256,
-              "duration_ms": 78,
-              "phase": "Pass"
+              "duration_ms": 72,
+              "phase": "User161359"
             },
             {
               "index": 4,
-              "name": "KALYX_WALK_BACK_04_Recover",
+              "name": "KALYX_WALK_BACK_04_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1024,
               "y": 9472,
               "w": 256,
               "h": 256,
-              "duration_ms": 78,
-              "phase": "Recover"
+              "duration_ms": 72,
+              "phase": "User161359"
             },
             {
               "index": 5,
-              "name": "KALYX_WALK_BACK_05_Reset",
+              "name": "KALYX_WALK_BACK_05_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1280,
               "y": 9472,
               "w": 256,
               "h": 256,
-              "duration_ms": 78,
-              "phase": "Reset"
+              "duration_ms": 72,
+              "phase": "User161359"
             },
             {
               "index": 6,
-              "name": "KALYX_WALK_BACK_06_AltContact",
+              "name": "KALYX_WALK_BACK_06_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1536,
               "y": 9472,
               "w": 256,
               "h": 256,
-              "duration_ms": 78,
-              "phase": "AltContact"
+              "duration_ms": 72,
+              "phase": "User161359"
             },
             {
               "index": 7,
-              "name": "KALYX_WALK_BACK_07_AltRecover",
+              "name": "KALYX_WALK_BACK_07_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1792,
               "y": 9472,
               "w": 256,
               "h": 256,
-              "duration_ms": 78,
-              "phase": "AltRecover"
+              "duration_ms": 72,
+              "phase": "User161359"
             },
             {
               "index": 8,
-              "name": "KALYX_WALK_BACK_08_PowerUp",
+              "name": "KALYX_WALK_BACK_08_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 2048,
               "y": 9472,
               "w": 256,
               "h": 256,
-              "duration_ms": 78,
-              "phase": "PowerUp"
+              "duration_ms": 72,
+              "phase": "User161359"
             },
             {
               "index": 9,
-              "name": "KALYX_WALK_BACK_09_Release",
+              "name": "KALYX_WALK_BACK_09_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 2304,
               "y": 9472,
               "w": 256,
               "h": 256,
-              "duration_ms": 78,
-              "phase": "Release"
+              "duration_ms": 72,
+              "phase": "User161359"
             },
             {
               "index": 10,
-              "name": "KALYX_WALK_BACK_10_FollowThrough",
+              "name": "KALYX_WALK_BACK_10_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 2560,
               "y": 9472,
               "w": 256,
               "h": 256,
-              "duration_ms": 78,
-              "phase": "FollowThrough"
+              "duration_ms": 72,
+              "phase": "User161359"
             },
             {
               "index": 11,
-              "name": "KALYX_WALK_BACK_11_Finish",
+              "name": "KALYX_WALK_BACK_11_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 2816,
               "y": 9472,
               "w": 256,
               "h": 256,
-              "duration_ms": 78,
-              "phase": "Finish"
+              "duration_ms": 72,
+              "phase": "User161359"
             }
           ]
         },
@@ -3814,141 +3814,142 @@
           "frames": [
             {
               "index": 0,
-              "name": "KALYX_WALK_FORWARD_00_Anticipation",
+              "name": "KALYX_WALK_FORWARD_00_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 0,
               "y": 9728,
               "w": 256,
               "h": 256,
               "duration_ms": 72,
-              "phase": "Anticipation"
+              "phase": "User161359"
             },
             {
               "index": 1,
-              "name": "KALYX_WALK_FORWARD_01_Windup",
+              "name": "KALYX_WALK_FORWARD_01_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 256,
               "y": 9728,
               "w": 256,
               "h": 256,
               "duration_ms": 72,
-              "phase": "Windup"
+              "phase": "User161359"
             },
             {
               "index": 2,
-              "name": "KALYX_WALK_FORWARD_02_Contact",
+              "name": "KALYX_WALK_FORWARD_02_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 512,
               "y": 9728,
               "w": 256,
               "h": 256,
               "duration_ms": 72,
-              "phase": "Contact"
+              "phase": "User161359"
             },
             {
               "index": 3,
-              "name": "KALYX_WALK_FORWARD_03_Pass",
+              "name": "KALYX_WALK_FORWARD_03_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 768,
               "y": 9728,
               "w": 256,
               "h": 256,
               "duration_ms": 72,
-              "phase": "Pass"
+              "phase": "User161359"
             },
             {
               "index": 4,
-              "name": "KALYX_WALK_FORWARD_04_Recover",
+              "name": "KALYX_WALK_FORWARD_04_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1024,
               "y": 9728,
               "w": 256,
               "h": 256,
               "duration_ms": 72,
-              "phase": "Recover"
+              "phase": "User161359"
             },
             {
               "index": 5,
-              "name": "KALYX_WALK_FORWARD_05_Reset",
+              "name": "KALYX_WALK_FORWARD_05_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1280,
               "y": 9728,
               "w": 256,
               "h": 256,
               "duration_ms": 72,
-              "phase": "Reset"
+              "phase": "User161359"
             },
             {
               "index": 6,
-              "name": "KALYX_WALK_FORWARD_06_AltContact",
+              "name": "KALYX_WALK_FORWARD_06_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1536,
               "y": 9728,
               "w": 256,
               "h": 256,
               "duration_ms": 72,
-              "phase": "AltContact"
+              "phase": "User161359"
             },
             {
               "index": 7,
-              "name": "KALYX_WALK_FORWARD_07_AltRecover",
+              "name": "KALYX_WALK_FORWARD_07_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 1792,
               "y": 9728,
               "w": 256,
               "h": 256,
               "duration_ms": 72,
-              "phase": "AltRecover"
+              "phase": "User161359"
             },
             {
               "index": 8,
-              "name": "KALYX_WALK_FORWARD_08_PowerUp",
+              "name": "KALYX_WALK_FORWARD_08_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 2048,
               "y": 9728,
               "w": 256,
               "h": 256,
               "duration_ms": 72,
-              "phase": "PowerUp"
+              "phase": "User161359"
             },
             {
               "index": 9,
-              "name": "KALYX_WALK_FORWARD_09_Release",
+              "name": "KALYX_WALK_FORWARD_09_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 2304,
               "y": 9728,
               "w": 256,
               "h": 256,
               "duration_ms": 72,
-              "phase": "Release"
+              "phase": "User161359"
             },
             {
               "index": 10,
-              "name": "KALYX_WALK_FORWARD_10_FollowThrough",
+              "name": "KALYX_WALK_FORWARD_10_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 2560,
               "y": 9728,
               "w": 256,
               "h": 256,
               "duration_ms": 72,
-              "phase": "FollowThrough"
+              "phase": "User161359"
             },
             {
               "index": 11,
-              "name": "KALYX_WALK_FORWARD_11_Finish",
+              "name": "KALYX_WALK_FORWARD_11_161359",
               "file": "characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
               "x": 2816,
               "y": 9728,
               "w": 256,
               "h": 256,
               "duration_ms": 72,
-              "phase": "Finish"
+              "phase": "User161359"
             }
           ]
         }
       },
       "full_atlas": "atlases/GOTHTECHNOLOGY_KALYX_FULL_MOTION_ATLAS_256_TRANSPARENT.png",
-      "runtime_atlas_note": "Packed for GitHub Pages deployment from current motion sheets."
+      "runtime_atlas_note": "Packed for GitHub Pages deployment from current motion sheets.",
+      "source_note": "Generated from cleaned user KALYX sheet hf_20260506_161359_0af80621-9afa-497f-b2bb-a76338190e68.png"
     },
     "MASTER_EZRA": {
       "motions": {
