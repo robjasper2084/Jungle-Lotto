@@ -1,7 +1,10 @@
 export class WebAudioBus {
-  constructor() {
+  constructor(musicUrl = "") {
     this.ctx = null;
     this.muted = false;
+    this.musicUrl = musicUrl;
+    this.music = null;
+    this.musicStarted = false;
   }
 
   ensure() {
@@ -9,10 +12,33 @@ export class WebAudioBus {
       const AudioContext = window.AudioContext || window.webkitAudioContext;
       if (AudioContext) this.ctx = new AudioContext();
     }
+    if (this.ctx?.state === "suspended") this.ctx.resume?.();
+    this.startMusic();
   }
 
   toggleMute() {
     this.muted = !this.muted;
+    if (this.music) {
+      this.music.muted = this.muted;
+      if (this.muted) this.music.pause();
+      else this.startMusic();
+    }
+  }
+
+  startMusic() {
+    if (!this.musicUrl || this.muted) return;
+    if (!this.music) {
+      this.music = new Audio(this.musicUrl);
+      this.music.loop = true;
+      this.music.preload = "auto";
+      this.music.volume = 0.34;
+      this.music.muted = this.muted;
+    }
+    if (this.musicStarted && !this.music.paused) return;
+    this.musicStarted = true;
+    this.music.play().catch(() => {
+      this.musicStarted = false;
+    });
   }
 
   beep(type = "hit") {

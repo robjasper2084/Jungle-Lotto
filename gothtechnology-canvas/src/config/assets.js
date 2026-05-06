@@ -8,6 +8,7 @@ export const ASSET_URLS = {
   fog: `${PACK_ROOT}/backgrounds/GOTHTECHNOLOGY_FOG_OVERLAY_TRANSPARENT.png`,
   embers: `${PACK_ROOT}/backgrounds/GOTHTECHNOLOGY_EMBERS_OVERLAY_TRANSPARENT.png`,
   ground: `${LOCAL_ROOT}/user-ground/obsidian-rock-ground.png`,
+  music: `${LOCAL_ROOT}/audio/lottomind-frequency.mp3`,
   effects: {
     hitSpark: `${PACK_ROOT}/effects/sheets/HIT_SPARK_GOLD_sheet.png`,
     blockShield: `${PACK_ROOT}/effects/sheets/BLOCK_SHIELD_BLUE_sheet.png`,

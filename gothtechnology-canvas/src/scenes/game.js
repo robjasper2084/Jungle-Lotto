@@ -25,7 +25,7 @@ export class GothTechnologyGame {
     this.canvas = canvas;
     this.ctx = canvas.getContext("2d", { alpha: false });
     this.input = new InputManager(window);
-    this.audio = new WebAudioBus();
+    this.audio = new WebAudioBus(ASSET_URLS.music);
     this.assets = null;
     this.phase = PHASE.LOADING;
     this.loadingProgress = 0;
