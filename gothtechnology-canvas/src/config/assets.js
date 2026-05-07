@@ -3,6 +3,8 @@ export const LOCAL_ROOT = "assets";
 
 export const ASSET_URLS = {
   manifest: `${PACK_ROOT}/manifests/GOTHTECHNOLOGY_expanded_motion_manifest.json`,
+  logo: `${LOCAL_ROOT}/user-title/lottomind-live-logo.png`,
+  titleBackdrop: `${LOCAL_ROOT}/user-title/kalyx-ezra-forest-title.jpg`,
   background: `${LOCAL_ROOT}/user-stage/forest-fight-background.jpg`,
   farTrees: `${PACK_ROOT}/backgrounds/GOTHTECHNOLOGY_PARALLAX_FAR_TREES.png`,
   fog: `${PACK_ROOT}/backgrounds/GOTHTECHNOLOGY_FOG_OVERLAY_TRANSPARENT.png`,
@@ -21,9 +23,9 @@ export const ASSET_URLS = {
     smoke: `${PACK_ROOT}/effects/sheets/SMOKE_PUFF_sheet.png`
   },
   assists: {
-    owl: `${PACK_ROOT}/characters/OWL_COMPANION/sheets/OWL_COMPANION_DIVE_ATTACK_sheet.png`,
-    raven: `${PACK_ROOT}/characters/SHADOW_RAVEN/sheets/SHADOW_RAVEN_DIVE_ATTACK_sheet.png`,
-    nocturna: `${PACK_ROOT}/characters/NOCTURNA_ASSIST/sheets/NOCTURNA_ASSIST_SCREECH_ATTACK_sheet.png`
+    owl: `${LOCAL_ROOT}/user-assists/ezra-owl-dive-clean.png`,
+    raven: `${LOCAL_ROOT}/user-assists/kalyx-shadow-raven-clean.png`,
+    nocturna: `${LOCAL_ROOT}/user-assists/nocturna-wraith-clean.png`
   },
   dossiers: {
     vespera: `${LOCAL_ROOT}/user-sheets/vespera-sheet.png`,
@@ -44,14 +46,38 @@ export const FIGHTERS = {
     name: "KALYX",
     title: "Shadow Rushdown",
     manifestKey: "KALYX",
+    spriteFacing: 1,
+    motionFacing: {
+      IDLE: -1,
+      BLOCK_HIGH: -1
+    },
     palette: "#f0a23b",
     accent: "#ffcf67",
     scale: 1.56,
+    stageMargin: 196,
     speed: 330,
     runSpeed: 470,
     dashSpeed: 760,
     jumpVelocity: -880,
     maxHealth: 1000,
+    attackOverrides: {
+      lightKick: {
+        motion: "HEAVY_PUNCH",
+        damage: 58,
+        chip: 5,
+        stun: 0.24,
+        blockstun: 0.18,
+        startup: 0.11,
+        active: [0.11, 0.28],
+        recovery: 0.22,
+        reach: 108,
+        width: 94,
+        height: 64,
+        y: -130,
+        knockback: 215,
+        level: "mid"
+      }
+    },
     assistNames: ["SHADOW RAVEN", "NOCTURNA WRAITH"],
     superName: "Shadow Roar",
     specialName: "Fire Slash"
@@ -61,14 +87,88 @@ export const FIGHTERS = {
     name: "MASTER EZRA",
     title: "Blue Control",
     manifestKey: "MASTER_EZRA",
+    spriteFacing: -1,
     palette: "#8bd4ff",
     accent: "#d8aa45",
     scale: 1.5,
     speed: 250,
     runSpeed: 365,
     dashSpeed: 620,
-    jumpVelocity: -790,
+    jumpVelocity: -890,
     maxHealth: 1060,
+    attackOverrides: {
+      lightKick: {
+        motion: "LIGHT_KICK",
+        damage: 58,
+        chip: 5,
+        stun: 0.26,
+        blockstun: 0.2,
+        startup: 0.1,
+        active: [0.1, 0.32],
+        recovery: 0.22,
+        reach: 138,
+        width: 136,
+        height: 82,
+        y: -116,
+        knockback: 210,
+        level: "mid"
+      },
+      heavyKick: {
+        motion: "HEAVY_KICK",
+        damage: 104,
+        chip: 10,
+        stun: 0.38,
+        blockstun: 0.28,
+        startup: 0.16,
+        active: [0.16, 0.42],
+        recovery: 0.34,
+        reach: 164,
+        width: 154,
+        height: 88,
+        y: -118,
+        knockback: 330,
+        level: "mid"
+      },
+      airAttack: {
+        motion: "AIR_ATTACK",
+        damage: 82,
+        chip: 5,
+        stun: 0.32,
+        blockstun: 0.24,
+        startup: 0.09,
+        active: [0.09, 0.38],
+        recovery: 0.18,
+        reach: 134,
+        width: 140,
+        height: 102,
+        y: -138,
+        knockback: 250,
+        level: "high"
+      }
+    },
+    motionRemap: {
+      RUN_FORWARD: "WALK_FORWARD",
+      RUN_BACK: "WALK_BACK",
+      DASH_FORWARD: "WALK_FORWARD",
+      DASH_BACK: "WALK_BACK"
+    },
+    motionScale: {
+      LIGHT_PUNCH: 1.68,
+      HEAVY_PUNCH: 1.68,
+      COMBO_1: 1.68,
+      COMBO_2: 1.68,
+      SPECIAL_START: 1.66,
+      SPECIAL_PROJECTILE: 1.66,
+      SPECIAL_RECOVER: 1.62,
+      LIGHT_KICK: 1.72,
+      HEAVY_KICK: 1.74,
+      AIR_ATTACK: 1.72,
+      JUMP_START: 1.66,
+      JUMP_RISE: 1.66,
+      JUMP_PEAK: 1.66,
+      JUMP_FALL: 1.66,
+      LANDING: 1.6
+    },
     assistNames: ["OWL COMPANION", "ARCANE GUARD"],
     superName: "Sky Judgment",
     specialName: "Blue Magic"

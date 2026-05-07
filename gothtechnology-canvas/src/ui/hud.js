@@ -100,7 +100,7 @@ export const drawFightHud = (ctx, game) => {
   ctx.fillStyle = "rgba(255, 246, 211, 0.72)";
   ctx.font = "700 12px system-ui";
   ctx.textAlign = "center";
-  const mode = `${game.training ? "TRAINING" : "ARCADE"} ${game.cpuEnabled ? "CPU EZRA" : "LOCAL 2P"} ${game.debug ? "DEBUG BOXES" : ""}`;
+  const mode = `${game.training ? "TRAINING" : "ARCADE"} ${game.cpuEnabled ? `CPU ${p2.config.name}` : "LOCAL 2P"} ${game.debug ? "DEBUG BOXES" : ""}`;
   ctx.fillText(mode, 640, 139);
   ctx.restore();
 };
@@ -109,18 +109,30 @@ export const drawTitle = (ctx, game) => {
   drawBackdropGrade(ctx);
   ctx.save();
   ctx.textAlign = "center";
-  ctx.fillStyle = COLORS.goldBright;
-  ctx.shadowColor = COLORS.goldBright;
-  ctx.shadowBlur = 18;
-  ctx.font = "900 76px Georgia";
-  ctx.fillText("GOTHTECHNOLOGY", CANVAS_WIDTH / 2, 190);
-  ctx.shadowBlur = 0;
+  const logo = game.assets?.images.logo;
+  if (logo) {
+    ctx.save();
+    ctx.shadowColor = "rgba(255, 214, 109, 0.42)";
+    ctx.shadowBlur = 28;
+    ctx.drawImage(logo, 502, 34, 276, 276);
+    ctx.restore();
+  } else {
+    ctx.fillStyle = COLORS.goldBright;
+    ctx.shadowColor = COLORS.goldBright;
+    ctx.shadowBlur = 18;
+    ctx.font = "900 76px Georgia";
+    ctx.fillText("LOTTO MIND LIVE", CANVAS_WIDTH / 2, 190);
+    ctx.shadowBlur = 0;
+  }
   ctx.fillStyle = COLORS.blue;
   ctx.font = "700 20px system-ui";
-  ctx.fillText("KALYX VS MASTER EZRA", CANVAS_WIDTH / 2, 236);
-  drawMenuButton(ctx, 494, 318, 292, 54, "START");
-  drawMenuButton(ctx, 494, 390, 292, 54, "TRAINING");
-  drawMenuButton(ctx, 494, 462, 292, 54, game.cpuEnabled ? "CPU EZRA: ON" : "CPU EZRA: OFF");
+  const leftName = game.player1Id === "MASTER_EZRA" ? "MASTER EZRA" : "KALYX";
+  const rightName = game.player2Id === "MASTER_EZRA" ? "MASTER EZRA" : "KALYX";
+  const cpuName = game.player2Id === "MASTER_EZRA" ? "EZRA" : "KALYX";
+  ctx.fillText(`${leftName} VS ${rightName}`, CANVAS_WIDTH / 2, 332);
+  drawMenuButton(ctx, 494, 364, 292, 54, "START");
+  drawMenuButton(ctx, 494, 432, 292, 54, "TRAINING");
+  drawMenuButton(ctx, 494, 500, 292, 54, game.cpuEnabled ? `CPU ${cpuName}: ON` : `CPU ${cpuName}: OFF`);
   ctx.fillStyle = "rgba(255, 246, 211, 0.55)";
   ctx.font = "700 13px system-ui";
   ctx.fillText("Docs: public/gothtechnology-canvas/docs", CANVAS_WIDTH / 2, 650);
@@ -148,12 +160,14 @@ export const drawCharacterSelect = (ctx, game) => {
   ctx.fillStyle = COLORS.white;
   ctx.font = "900 42px Georgia";
   ctx.fillText("CHARACTER SELECT", 640, 86);
-  drawDossierCard(ctx, 90, 128, 500, 420, "KALYX", "Fast rushdown / claws / fire slash", game.assets.images.dossierVespera, COLORS.gold);
-  drawDossierCard(ctx, 690, 128, 500, 420, "MASTER EZRA", "Zoning control / blue magic / owl arc", game.assets.images.dossierMalach, COLORS.blue);
+  drawDossierCard(ctx, 90, 128, 500, 420, "KALYX", game.player1Id === "KALYX" ? "PLAYER 1 / shadow rushdown" : "PLAYER 2 / shadow rushdown", game.assets.images.dossierVespera, game.player1Id === "KALYX" ? COLORS.goldBright : COLORS.gold);
+  drawDossierCard(ctx, 690, 128, 500, 420, "MASTER EZRA", game.player1Id === "MASTER_EZRA" ? "PLAYER 1 / blue control" : "PLAYER 2 / blue control", game.assets.images.dossierMalach, game.player1Id === "MASTER_EZRA" ? COLORS.goldBright : COLORS.blue);
+  drawSelectBadge(ctx, game.player1Id === "KALYX" ? 340 : 940, 146, "P1");
+  drawSelectBadge(ctx, game.player2Id === "KALYX" ? 340 : 940, 512, "P2");
   drawMenuButton(ctx, 494, 594, 292, 54, "VERSUS");
   ctx.fillStyle = "rgba(255, 246, 211, 0.58)";
   ctx.font = "700 13px system-ui";
-  ctx.fillText(game.cpuEnabled ? "MASTER EZRA CPU ENABLED" : "LOCAL TWO-PLAYER ENABLED", 640, 670);
+  ctx.fillText(game.cpuEnabled ? `${game.player2Id === "KALYX" ? "KALYX" : "MASTER EZRA"} CPU ENABLED` : "LOCAL TWO-PLAYER ENABLED", 640, 670);
   ctx.restore();
 };
 
@@ -169,11 +183,28 @@ export const drawVersus = (ctx, game) => {
   drawFighterPortrait(ctx, p2, 920, 572, 1.45);
   ctx.fillStyle = COLORS.white;
   ctx.font = "900 34px Georgia";
-  ctx.fillText("KALYX", 340, 210);
-  ctx.fillText("MASTER EZRA", 920, 210);
+  ctx.fillText(p1.config.name, 340, 210);
+  ctx.fillText(p2.config.name, 920, 210);
   ctx.fillStyle = COLORS.blue;
   ctx.font = "700 18px system-ui";
   ctx.fillText("BEST OF THREE / 99 SECONDS", 640, 628);
+  ctx.restore();
+};
+
+const drawSelectBadge = (ctx, x, y, label) => {
+  ctx.save();
+  ctx.fillStyle = "rgba(255, 214, 109, 0.96)";
+  ctx.strokeStyle = "rgba(5, 4, 3, 0.92)";
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.roundRect(x - 32, y - 22, 64, 34, 8);
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillStyle = "#050403";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.font = "900 18px system-ui";
+  ctx.fillText(label, x, y - 5);
   ctx.restore();
 };
 
@@ -189,7 +220,7 @@ export const drawPause = (ctx, game) => {
   ctx.fillStyle = COLORS.white;
   ctx.font = "700 16px system-ui";
   ctx.fillText(game.training ? "TRAINING MODE" : "ARCADE MATCH", 640, 336);
-  ctx.fillText(game.cpuEnabled ? "CPU MASTER EZRA" : "LOCAL TWO-PLAYER", 640, 366);
+  ctx.fillText(game.cpuEnabled ? `CPU ${game.fighters[1]?.config.name ?? "FIGHTER"}` : "LOCAL TWO-PLAYER", 640, 366);
   ctx.fillText(game.audio.muted ? "AUDIO MUTED" : "AUDIO ACTIVE", 640, 396);
   ctx.restore();
 };

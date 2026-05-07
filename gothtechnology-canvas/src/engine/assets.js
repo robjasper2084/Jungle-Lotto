@@ -2,16 +2,12 @@ import { ASSET_URLS, PACK_ROOT } from "../config/assets.js";
 
 const imageCache = new Map();
 
-export const loadImage = (key, url) =>
-  new Promise((resolve) => {
-    if (imageCache.has(url)) {
-      resolve(imageCache.get(url));
-      return;
-    }
+export const loadImage = (key, url) => {
+  if (imageCache.has(url)) return imageCache.get(url);
+  const promise = new Promise((resolve) => {
     const img = new Image();
     img.decoding = "async";
     img.onload = () => {
-      imageCache.set(url, img);
       resolve(img);
     };
     img.onerror = () => {
@@ -20,6 +16,9 @@ export const loadImage = (key, url) =>
     };
     img.src = url;
   });
+  imageCache.set(url, promise);
+  return promise;
+};
 
 export class AssetLoader {
   constructor(onProgress = () => {}) {
@@ -32,6 +31,8 @@ export class AssetLoader {
   async load() {
     this.manifest = await fetch(ASSET_URLS.manifest).then((r) => r.json());
     const baseImages = {
+      logo: ASSET_URLS.logo,
+      titleBackdrop: ASSET_URLS.titleBackdrop,
       background: ASSET_URLS.background,
       farTrees: ASSET_URLS.farTrees,
       fog: ASSET_URLS.fog,
@@ -96,12 +97,33 @@ export class AssetLoader {
 export const drawSpriteFrame = (ctx, animation, frameIndex, x, y, options = {}) => {
   if (!animation?.image) return false;
   const frame = animation.frames[frameIndex % animation.frames.length];
+  if (!frame || frame.w <= 0 || frame.h <= 0) return false;
   const scale = options.scale ?? 1;
   const w = frame.w * scale;
   const h = frame.h * scale;
   ctx.save();
+  ctx.globalCompositeOperation = options.composite ?? "source-over";
   ctx.translate(x, y);
   if (options.flip) ctx.scale(-1, 1);
+  if (options.underpaint) {
+    const underScale = options.underpaintScale ?? 1.018;
+    ctx.save();
+    ctx.globalAlpha = options.underpaintAlpha ?? 0.42;
+    ctx.filter = options.underpaintFilter ?? "brightness(0) saturate(1)";
+    ctx.drawImage(
+      animation.image,
+      frame.x,
+      frame.y,
+      frame.w,
+      frame.h,
+      (-w * underScale) / 2,
+      -h * underScale,
+      w * underScale,
+      h * underScale
+    );
+    ctx.restore();
+  }
+  ctx.filter = "none";
   ctx.globalAlpha = options.alpha ?? 1;
   ctx.drawImage(animation.image, frame.x, frame.y, frame.w, frame.h, -w / 2, -h, w, h);
   ctx.restore();

@@ -4,8 +4,8 @@ export const GROUND_Y = 588;
 export const ROUND_SECONDS = 99;
 export const GRAVITY = 2100;
 export const WORLD = {
-  left: 64,
-  right: 1216,
+  left: 170,
+  right: 1110,
   floor: GROUND_Y
 };
 

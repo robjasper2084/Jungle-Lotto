@@ -31,7 +31,7 @@ export class WebAudioBus {
       this.music = new Audio(this.musicUrl);
       this.music.loop = true;
       this.music.preload = "auto";
-      this.music.volume = 0.34;
+      this.music.volume = 0.68;
       this.music.muted = this.muted;
     }
     if (this.musicStarted && !this.music.paused) return;

@@ -3962,91 +3962,91 @@
           "frames": [
             {
               "index": 0,
-              "name": "MASTER_EZRA_AIR_ATTACK_00_CleanPose",
+              "name": "MASTER_EZRA_AIR_ATTACK_00_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 0,
               "y": 0,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 1,
-              "name": "MASTER_EZRA_AIR_ATTACK_01_CleanPose",
+              "name": "MASTER_EZRA_AIR_ATTACK_01_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 256,
               "y": 0,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 2,
-              "name": "MASTER_EZRA_AIR_ATTACK_02_CleanPose",
+              "name": "MASTER_EZRA_AIR_ATTACK_02_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 512,
               "y": 0,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 3,
-              "name": "MASTER_EZRA_AIR_ATTACK_03_CleanPose",
+              "name": "MASTER_EZRA_AIR_ATTACK_03_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 768,
               "y": 0,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 4,
-              "name": "MASTER_EZRA_AIR_ATTACK_04_CleanPose",
+              "name": "MASTER_EZRA_AIR_ATTACK_04_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1024,
               "y": 0,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 5,
-              "name": "MASTER_EZRA_AIR_ATTACK_05_CleanPose",
+              "name": "MASTER_EZRA_AIR_ATTACK_05_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1280,
               "y": 0,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 6,
-              "name": "MASTER_EZRA_AIR_ATTACK_06_CleanPose",
+              "name": "MASTER_EZRA_AIR_ATTACK_06_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1536,
               "y": 0,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 7,
-              "name": "MASTER_EZRA_AIR_ATTACK_07_CleanPose",
+              "name": "MASTER_EZRA_AIR_ATTACK_07_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1792,
               "y": 0,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             }
           ]
         },
@@ -4059,91 +4059,91 @@
           "frames": [
             {
               "index": 0,
-              "name": "MASTER_EZRA_BLOCK_HIGH_00_CleanPose",
+              "name": "MASTER_EZRA_BLOCK_HIGH_00_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 0,
               "y": 256,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 1,
-              "name": "MASTER_EZRA_BLOCK_HIGH_01_CleanPose",
+              "name": "MASTER_EZRA_BLOCK_HIGH_01_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 256,
               "y": 256,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 2,
-              "name": "MASTER_EZRA_BLOCK_HIGH_02_CleanPose",
+              "name": "MASTER_EZRA_BLOCK_HIGH_02_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 512,
               "y": 256,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 3,
-              "name": "MASTER_EZRA_BLOCK_HIGH_03_CleanPose",
+              "name": "MASTER_EZRA_BLOCK_HIGH_03_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 768,
               "y": 256,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 4,
-              "name": "MASTER_EZRA_BLOCK_HIGH_04_CleanPose",
+              "name": "MASTER_EZRA_BLOCK_HIGH_04_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1024,
               "y": 256,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 5,
-              "name": "MASTER_EZRA_BLOCK_HIGH_05_CleanPose",
+              "name": "MASTER_EZRA_BLOCK_HIGH_05_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1280,
               "y": 256,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 6,
-              "name": "MASTER_EZRA_BLOCK_HIGH_06_CleanPose",
+              "name": "MASTER_EZRA_BLOCK_HIGH_06_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1536,
               "y": 256,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 7,
-              "name": "MASTER_EZRA_BLOCK_HIGH_07_CleanPose",
+              "name": "MASTER_EZRA_BLOCK_HIGH_07_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1792,
               "y": 256,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             }
           ]
         },
@@ -4156,91 +4156,91 @@
           "frames": [
             {
               "index": 0,
-              "name": "MASTER_EZRA_BLOCK_LOW_00_CleanPose",
+              "name": "MASTER_EZRA_BLOCK_LOW_00_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 0,
               "y": 512,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 1,
-              "name": "MASTER_EZRA_BLOCK_LOW_01_CleanPose",
+              "name": "MASTER_EZRA_BLOCK_LOW_01_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 256,
               "y": 512,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 2,
-              "name": "MASTER_EZRA_BLOCK_LOW_02_CleanPose",
+              "name": "MASTER_EZRA_BLOCK_LOW_02_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 512,
               "y": 512,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 3,
-              "name": "MASTER_EZRA_BLOCK_LOW_03_CleanPose",
+              "name": "MASTER_EZRA_BLOCK_LOW_03_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 768,
               "y": 512,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 4,
-              "name": "MASTER_EZRA_BLOCK_LOW_04_CleanPose",
+              "name": "MASTER_EZRA_BLOCK_LOW_04_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1024,
               "y": 512,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 5,
-              "name": "MASTER_EZRA_BLOCK_LOW_05_CleanPose",
+              "name": "MASTER_EZRA_BLOCK_LOW_05_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1280,
               "y": 512,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 6,
-              "name": "MASTER_EZRA_BLOCK_LOW_06_CleanPose",
+              "name": "MASTER_EZRA_BLOCK_LOW_06_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1536,
               "y": 512,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 7,
-              "name": "MASTER_EZRA_BLOCK_LOW_07_CleanPose",
+              "name": "MASTER_EZRA_BLOCK_LOW_07_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1792,
               "y": 512,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             }
           ]
         },
@@ -4253,135 +4253,135 @@
           "frames": [
             {
               "index": 0,
-              "name": "MASTER_EZRA_COMBO_1_00_CleanPose",
+              "name": "MASTER_EZRA_COMBO_1_00_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 0,
               "y": 768,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 1,
-              "name": "MASTER_EZRA_COMBO_1_01_CleanPose",
+              "name": "MASTER_EZRA_COMBO_1_01_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 256,
               "y": 768,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 2,
-              "name": "MASTER_EZRA_COMBO_1_02_CleanPose",
+              "name": "MASTER_EZRA_COMBO_1_02_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 512,
               "y": 768,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 3,
-              "name": "MASTER_EZRA_COMBO_1_03_CleanPose",
+              "name": "MASTER_EZRA_COMBO_1_03_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 768,
               "y": 768,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 4,
-              "name": "MASTER_EZRA_COMBO_1_04_CleanPose",
+              "name": "MASTER_EZRA_COMBO_1_04_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1024,
               "y": 768,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 5,
-              "name": "MASTER_EZRA_COMBO_1_05_CleanPose",
+              "name": "MASTER_EZRA_COMBO_1_05_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1280,
               "y": 768,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 6,
-              "name": "MASTER_EZRA_COMBO_1_06_CleanPose",
+              "name": "MASTER_EZRA_COMBO_1_06_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1536,
               "y": 768,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 7,
-              "name": "MASTER_EZRA_COMBO_1_07_CleanPose",
+              "name": "MASTER_EZRA_COMBO_1_07_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1792,
               "y": 768,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 8,
-              "name": "MASTER_EZRA_COMBO_1_08_CleanPose",
+              "name": "MASTER_EZRA_COMBO_1_08_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 2048,
               "y": 768,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 9,
-              "name": "MASTER_EZRA_COMBO_1_09_CleanPose",
+              "name": "MASTER_EZRA_COMBO_1_09_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 2304,
               "y": 768,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 10,
-              "name": "MASTER_EZRA_COMBO_1_10_CleanPose",
+              "name": "MASTER_EZRA_COMBO_1_10_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 2560,
               "y": 768,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 11,
-              "name": "MASTER_EZRA_COMBO_1_11_CleanPose",
+              "name": "MASTER_EZRA_COMBO_1_11_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 2816,
               "y": 768,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             }
           ]
         },
@@ -4394,135 +4394,135 @@
           "frames": [
             {
               "index": 0,
-              "name": "MASTER_EZRA_COMBO_2_00_CleanPose",
+              "name": "MASTER_EZRA_COMBO_2_00_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 0,
               "y": 1024,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 1,
-              "name": "MASTER_EZRA_COMBO_2_01_CleanPose",
+              "name": "MASTER_EZRA_COMBO_2_01_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 256,
               "y": 1024,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 2,
-              "name": "MASTER_EZRA_COMBO_2_02_CleanPose",
+              "name": "MASTER_EZRA_COMBO_2_02_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 512,
               "y": 1024,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 3,
-              "name": "MASTER_EZRA_COMBO_2_03_CleanPose",
+              "name": "MASTER_EZRA_COMBO_2_03_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 768,
               "y": 1024,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 4,
-              "name": "MASTER_EZRA_COMBO_2_04_CleanPose",
+              "name": "MASTER_EZRA_COMBO_2_04_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1024,
               "y": 1024,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 5,
-              "name": "MASTER_EZRA_COMBO_2_05_CleanPose",
+              "name": "MASTER_EZRA_COMBO_2_05_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1280,
               "y": 1024,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 6,
-              "name": "MASTER_EZRA_COMBO_2_06_CleanPose",
+              "name": "MASTER_EZRA_COMBO_2_06_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1536,
               "y": 1024,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 7,
-              "name": "MASTER_EZRA_COMBO_2_07_CleanPose",
+              "name": "MASTER_EZRA_COMBO_2_07_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1792,
               "y": 1024,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 8,
-              "name": "MASTER_EZRA_COMBO_2_08_CleanPose",
+              "name": "MASTER_EZRA_COMBO_2_08_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 2048,
               "y": 1024,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 9,
-              "name": "MASTER_EZRA_COMBO_2_09_CleanPose",
+              "name": "MASTER_EZRA_COMBO_2_09_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 2304,
               "y": 1024,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 10,
-              "name": "MASTER_EZRA_COMBO_2_10_CleanPose",
+              "name": "MASTER_EZRA_COMBO_2_10_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 2560,
               "y": 1024,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 11,
-              "name": "MASTER_EZRA_COMBO_2_11_CleanPose",
+              "name": "MASTER_EZRA_COMBO_2_11_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 2816,
               "y": 1024,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             }
           ]
         },
@@ -4535,91 +4535,91 @@
           "frames": [
             {
               "index": 0,
-              "name": "MASTER_EZRA_CROUCH_ATTACK_00_CleanPose",
+              "name": "MASTER_EZRA_CROUCH_ATTACK_00_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 0,
               "y": 1280,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 1,
-              "name": "MASTER_EZRA_CROUCH_ATTACK_01_CleanPose",
+              "name": "MASTER_EZRA_CROUCH_ATTACK_01_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 256,
               "y": 1280,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 2,
-              "name": "MASTER_EZRA_CROUCH_ATTACK_02_CleanPose",
+              "name": "MASTER_EZRA_CROUCH_ATTACK_02_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 512,
               "y": 1280,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 3,
-              "name": "MASTER_EZRA_CROUCH_ATTACK_03_CleanPose",
+              "name": "MASTER_EZRA_CROUCH_ATTACK_03_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 768,
               "y": 1280,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 4,
-              "name": "MASTER_EZRA_CROUCH_ATTACK_04_CleanPose",
+              "name": "MASTER_EZRA_CROUCH_ATTACK_04_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1024,
               "y": 1280,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 5,
-              "name": "MASTER_EZRA_CROUCH_ATTACK_05_CleanPose",
+              "name": "MASTER_EZRA_CROUCH_ATTACK_05_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1280,
               "y": 1280,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 6,
-              "name": "MASTER_EZRA_CROUCH_ATTACK_06_CleanPose",
+              "name": "MASTER_EZRA_CROUCH_ATTACK_06_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1536,
               "y": 1280,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 7,
-              "name": "MASTER_EZRA_CROUCH_ATTACK_07_CleanPose",
+              "name": "MASTER_EZRA_CROUCH_ATTACK_07_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1792,
               "y": 1280,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             }
           ]
         },
@@ -4632,91 +4632,91 @@
           "frames": [
             {
               "index": 0,
-              "name": "MASTER_EZRA_CROUCH_IDLE_00_CleanPose",
+              "name": "MASTER_EZRA_CROUCH_IDLE_00_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 0,
               "y": 1536,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 1,
-              "name": "MASTER_EZRA_CROUCH_IDLE_01_CleanPose",
+              "name": "MASTER_EZRA_CROUCH_IDLE_01_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 256,
               "y": 1536,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 2,
-              "name": "MASTER_EZRA_CROUCH_IDLE_02_CleanPose",
+              "name": "MASTER_EZRA_CROUCH_IDLE_02_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 512,
               "y": 1536,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 3,
-              "name": "MASTER_EZRA_CROUCH_IDLE_03_CleanPose",
+              "name": "MASTER_EZRA_CROUCH_IDLE_03_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 768,
               "y": 1536,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 4,
-              "name": "MASTER_EZRA_CROUCH_IDLE_04_CleanPose",
+              "name": "MASTER_EZRA_CROUCH_IDLE_04_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1024,
               "y": 1536,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 5,
-              "name": "MASTER_EZRA_CROUCH_IDLE_05_CleanPose",
+              "name": "MASTER_EZRA_CROUCH_IDLE_05_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1280,
               "y": 1536,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 6,
-              "name": "MASTER_EZRA_CROUCH_IDLE_06_CleanPose",
+              "name": "MASTER_EZRA_CROUCH_IDLE_06_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1536,
               "y": 1536,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 7,
-              "name": "MASTER_EZRA_CROUCH_IDLE_07_CleanPose",
+              "name": "MASTER_EZRA_CROUCH_IDLE_07_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1792,
               "y": 1536,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             }
           ]
         },
@@ -4729,91 +4729,91 @@
           "frames": [
             {
               "index": 0,
-              "name": "MASTER_EZRA_CROUCH_WALK_00_CleanPose",
+              "name": "MASTER_EZRA_CROUCH_WALK_00_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 0,
               "y": 1792,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 1,
-              "name": "MASTER_EZRA_CROUCH_WALK_01_CleanPose",
+              "name": "MASTER_EZRA_CROUCH_WALK_01_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 256,
               "y": 1792,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 2,
-              "name": "MASTER_EZRA_CROUCH_WALK_02_CleanPose",
+              "name": "MASTER_EZRA_CROUCH_WALK_02_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 512,
               "y": 1792,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 3,
-              "name": "MASTER_EZRA_CROUCH_WALK_03_CleanPose",
+              "name": "MASTER_EZRA_CROUCH_WALK_03_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 768,
               "y": 1792,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 4,
-              "name": "MASTER_EZRA_CROUCH_WALK_04_CleanPose",
+              "name": "MASTER_EZRA_CROUCH_WALK_04_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1024,
               "y": 1792,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 5,
-              "name": "MASTER_EZRA_CROUCH_WALK_05_CleanPose",
+              "name": "MASTER_EZRA_CROUCH_WALK_05_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1280,
               "y": 1792,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 6,
-              "name": "MASTER_EZRA_CROUCH_WALK_06_CleanPose",
+              "name": "MASTER_EZRA_CROUCH_WALK_06_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1536,
               "y": 1792,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 7,
-              "name": "MASTER_EZRA_CROUCH_WALK_07_CleanPose",
+              "name": "MASTER_EZRA_CROUCH_WALK_07_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1792,
               "y": 1792,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             }
           ]
         },
@@ -4826,91 +4826,91 @@
           "frames": [
             {
               "index": 0,
-              "name": "MASTER_EZRA_DASH_BACK_00_CleanPose",
+              "name": "MASTER_EZRA_DASH_BACK_00_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 0,
               "y": 2048,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 1,
-              "name": "MASTER_EZRA_DASH_BACK_01_CleanPose",
+              "name": "MASTER_EZRA_DASH_BACK_01_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 256,
               "y": 2048,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 2,
-              "name": "MASTER_EZRA_DASH_BACK_02_CleanPose",
+              "name": "MASTER_EZRA_DASH_BACK_02_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 512,
               "y": 2048,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 3,
-              "name": "MASTER_EZRA_DASH_BACK_03_CleanPose",
+              "name": "MASTER_EZRA_DASH_BACK_03_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 768,
               "y": 2048,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 4,
-              "name": "MASTER_EZRA_DASH_BACK_04_CleanPose",
+              "name": "MASTER_EZRA_DASH_BACK_04_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1024,
               "y": 2048,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 5,
-              "name": "MASTER_EZRA_DASH_BACK_05_CleanPose",
+              "name": "MASTER_EZRA_DASH_BACK_05_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1280,
               "y": 2048,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 6,
-              "name": "MASTER_EZRA_DASH_BACK_06_CleanPose",
+              "name": "MASTER_EZRA_DASH_BACK_06_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1536,
               "y": 2048,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 7,
-              "name": "MASTER_EZRA_DASH_BACK_07_CleanPose",
+              "name": "MASTER_EZRA_DASH_BACK_07_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1792,
               "y": 2048,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             }
           ]
         },
@@ -4923,91 +4923,91 @@
           "frames": [
             {
               "index": 0,
-              "name": "MASTER_EZRA_DASH_FORWARD_00_CleanPose",
+              "name": "MASTER_EZRA_DASH_FORWARD_00_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 0,
               "y": 2304,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 1,
-              "name": "MASTER_EZRA_DASH_FORWARD_01_CleanPose",
+              "name": "MASTER_EZRA_DASH_FORWARD_01_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 256,
               "y": 2304,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 2,
-              "name": "MASTER_EZRA_DASH_FORWARD_02_CleanPose",
+              "name": "MASTER_EZRA_DASH_FORWARD_02_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 512,
               "y": 2304,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 3,
-              "name": "MASTER_EZRA_DASH_FORWARD_03_CleanPose",
+              "name": "MASTER_EZRA_DASH_FORWARD_03_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 768,
               "y": 2304,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 4,
-              "name": "MASTER_EZRA_DASH_FORWARD_04_CleanPose",
+              "name": "MASTER_EZRA_DASH_FORWARD_04_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1024,
               "y": 2304,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 5,
-              "name": "MASTER_EZRA_DASH_FORWARD_05_CleanPose",
+              "name": "MASTER_EZRA_DASH_FORWARD_05_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1280,
               "y": 2304,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 6,
-              "name": "MASTER_EZRA_DASH_FORWARD_06_CleanPose",
+              "name": "MASTER_EZRA_DASH_FORWARD_06_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1536,
               "y": 2304,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 7,
-              "name": "MASTER_EZRA_DASH_FORWARD_07_CleanPose",
+              "name": "MASTER_EZRA_DASH_FORWARD_07_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1792,
               "y": 2304,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             }
           ]
         },
@@ -5020,91 +5020,91 @@
           "frames": [
             {
               "index": 0,
-              "name": "MASTER_EZRA_DEFEAT_00_CleanPose",
+              "name": "MASTER_EZRA_DEFEAT_00_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 0,
               "y": 2560,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 1,
-              "name": "MASTER_EZRA_DEFEAT_01_CleanPose",
+              "name": "MASTER_EZRA_DEFEAT_01_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 256,
               "y": 2560,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 2,
-              "name": "MASTER_EZRA_DEFEAT_02_CleanPose",
+              "name": "MASTER_EZRA_DEFEAT_02_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 512,
               "y": 2560,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 3,
-              "name": "MASTER_EZRA_DEFEAT_03_CleanPose",
+              "name": "MASTER_EZRA_DEFEAT_03_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 768,
               "y": 2560,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 4,
-              "name": "MASTER_EZRA_DEFEAT_04_CleanPose",
+              "name": "MASTER_EZRA_DEFEAT_04_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1024,
               "y": 2560,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 5,
-              "name": "MASTER_EZRA_DEFEAT_05_CleanPose",
+              "name": "MASTER_EZRA_DEFEAT_05_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1280,
               "y": 2560,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 6,
-              "name": "MASTER_EZRA_DEFEAT_06_CleanPose",
+              "name": "MASTER_EZRA_DEFEAT_06_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1536,
               "y": 2560,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 7,
-              "name": "MASTER_EZRA_DEFEAT_07_CleanPose",
+              "name": "MASTER_EZRA_DEFEAT_07_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1792,
               "y": 2560,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             }
           ]
         },
@@ -5117,91 +5117,91 @@
           "frames": [
             {
               "index": 0,
-              "name": "MASTER_EZRA_GET_UP_00_CleanPose",
+              "name": "MASTER_EZRA_GET_UP_00_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 0,
               "y": 2816,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 1,
-              "name": "MASTER_EZRA_GET_UP_01_CleanPose",
+              "name": "MASTER_EZRA_GET_UP_01_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 256,
               "y": 2816,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 2,
-              "name": "MASTER_EZRA_GET_UP_02_CleanPose",
+              "name": "MASTER_EZRA_GET_UP_02_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 512,
               "y": 2816,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 3,
-              "name": "MASTER_EZRA_GET_UP_03_CleanPose",
+              "name": "MASTER_EZRA_GET_UP_03_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 768,
               "y": 2816,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 4,
-              "name": "MASTER_EZRA_GET_UP_04_CleanPose",
+              "name": "MASTER_EZRA_GET_UP_04_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1024,
               "y": 2816,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 5,
-              "name": "MASTER_EZRA_GET_UP_05_CleanPose",
+              "name": "MASTER_EZRA_GET_UP_05_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1280,
               "y": 2816,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 6,
-              "name": "MASTER_EZRA_GET_UP_06_CleanPose",
+              "name": "MASTER_EZRA_GET_UP_06_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1536,
               "y": 2816,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 7,
-              "name": "MASTER_EZRA_GET_UP_07_CleanPose",
+              "name": "MASTER_EZRA_GET_UP_07_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1792,
               "y": 2816,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             }
           ]
         },
@@ -5214,91 +5214,91 @@
           "frames": [
             {
               "index": 0,
-              "name": "MASTER_EZRA_HEAVY_KICK_00_CleanPose",
+              "name": "MASTER_EZRA_HEAVY_KICK_00_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 0,
               "y": 3072,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 1,
-              "name": "MASTER_EZRA_HEAVY_KICK_01_CleanPose",
+              "name": "MASTER_EZRA_HEAVY_KICK_01_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 256,
               "y": 3072,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 2,
-              "name": "MASTER_EZRA_HEAVY_KICK_02_CleanPose",
+              "name": "MASTER_EZRA_HEAVY_KICK_02_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 512,
               "y": 3072,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 3,
-              "name": "MASTER_EZRA_HEAVY_KICK_03_CleanPose",
+              "name": "MASTER_EZRA_HEAVY_KICK_03_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 768,
               "y": 3072,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 4,
-              "name": "MASTER_EZRA_HEAVY_KICK_04_CleanPose",
+              "name": "MASTER_EZRA_HEAVY_KICK_04_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1024,
               "y": 3072,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 5,
-              "name": "MASTER_EZRA_HEAVY_KICK_05_CleanPose",
+              "name": "MASTER_EZRA_HEAVY_KICK_05_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1280,
               "y": 3072,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 6,
-              "name": "MASTER_EZRA_HEAVY_KICK_06_CleanPose",
+              "name": "MASTER_EZRA_HEAVY_KICK_06_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1536,
               "y": 3072,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 7,
-              "name": "MASTER_EZRA_HEAVY_KICK_07_CleanPose",
+              "name": "MASTER_EZRA_HEAVY_KICK_07_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1792,
               "y": 3072,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             }
           ]
         },
@@ -5311,91 +5311,91 @@
           "frames": [
             {
               "index": 0,
-              "name": "MASTER_EZRA_HEAVY_PUNCH_00_CleanPose",
+              "name": "MASTER_EZRA_HEAVY_PUNCH_00_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 0,
               "y": 3328,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 1,
-              "name": "MASTER_EZRA_HEAVY_PUNCH_01_CleanPose",
+              "name": "MASTER_EZRA_HEAVY_PUNCH_01_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 256,
               "y": 3328,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 2,
-              "name": "MASTER_EZRA_HEAVY_PUNCH_02_CleanPose",
+              "name": "MASTER_EZRA_HEAVY_PUNCH_02_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 512,
               "y": 3328,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 3,
-              "name": "MASTER_EZRA_HEAVY_PUNCH_03_CleanPose",
+              "name": "MASTER_EZRA_HEAVY_PUNCH_03_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 768,
               "y": 3328,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 4,
-              "name": "MASTER_EZRA_HEAVY_PUNCH_04_CleanPose",
+              "name": "MASTER_EZRA_HEAVY_PUNCH_04_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1024,
               "y": 3328,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 5,
-              "name": "MASTER_EZRA_HEAVY_PUNCH_05_CleanPose",
+              "name": "MASTER_EZRA_HEAVY_PUNCH_05_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1280,
               "y": 3328,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 6,
-              "name": "MASTER_EZRA_HEAVY_PUNCH_06_CleanPose",
+              "name": "MASTER_EZRA_HEAVY_PUNCH_06_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1536,
               "y": 3328,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 7,
-              "name": "MASTER_EZRA_HEAVY_PUNCH_07_CleanPose",
+              "name": "MASTER_EZRA_HEAVY_PUNCH_07_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1792,
               "y": 3328,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             }
           ]
         },
@@ -5408,69 +5408,69 @@
           "frames": [
             {
               "index": 0,
-              "name": "MASTER_EZRA_HURT_HEAVY_00_CleanPose",
+              "name": "MASTER_EZRA_HURT_HEAVY_00_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 0,
               "y": 3584,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 1,
-              "name": "MASTER_EZRA_HURT_HEAVY_01_CleanPose",
+              "name": "MASTER_EZRA_HURT_HEAVY_01_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 256,
               "y": 3584,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 2,
-              "name": "MASTER_EZRA_HURT_HEAVY_02_CleanPose",
+              "name": "MASTER_EZRA_HURT_HEAVY_02_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 512,
               "y": 3584,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 3,
-              "name": "MASTER_EZRA_HURT_HEAVY_03_CleanPose",
+              "name": "MASTER_EZRA_HURT_HEAVY_03_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 768,
               "y": 3584,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 4,
-              "name": "MASTER_EZRA_HURT_HEAVY_04_CleanPose",
+              "name": "MASTER_EZRA_HURT_HEAVY_04_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1024,
               "y": 3584,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 5,
-              "name": "MASTER_EZRA_HURT_HEAVY_05_CleanPose",
+              "name": "MASTER_EZRA_HURT_HEAVY_05_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1280,
               "y": 3584,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             }
           ]
         },
@@ -5483,69 +5483,69 @@
           "frames": [
             {
               "index": 0,
-              "name": "MASTER_EZRA_HURT_LIGHT_00_CleanPose",
+              "name": "MASTER_EZRA_HURT_LIGHT_00_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 0,
               "y": 3840,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 1,
-              "name": "MASTER_EZRA_HURT_LIGHT_01_CleanPose",
+              "name": "MASTER_EZRA_HURT_LIGHT_01_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 256,
               "y": 3840,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 2,
-              "name": "MASTER_EZRA_HURT_LIGHT_02_CleanPose",
+              "name": "MASTER_EZRA_HURT_LIGHT_02_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 512,
               "y": 3840,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 3,
-              "name": "MASTER_EZRA_HURT_LIGHT_03_CleanPose",
+              "name": "MASTER_EZRA_HURT_LIGHT_03_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 768,
               "y": 3840,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 4,
-              "name": "MASTER_EZRA_HURT_LIGHT_04_CleanPose",
+              "name": "MASTER_EZRA_HURT_LIGHT_04_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1024,
               "y": 3840,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 5,
-              "name": "MASTER_EZRA_HURT_LIGHT_05_CleanPose",
+              "name": "MASTER_EZRA_HURT_LIGHT_05_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1280,
               "y": 3840,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             }
           ]
         },
@@ -5558,91 +5558,91 @@
           "frames": [
             {
               "index": 0,
-              "name": "MASTER_EZRA_IDLE_00_CleanPose",
+              "name": "MASTER_EZRA_IDLE_00_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 0,
               "y": 4096,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 1,
-              "name": "MASTER_EZRA_IDLE_01_CleanPose",
+              "name": "MASTER_EZRA_IDLE_01_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 256,
               "y": 4096,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 2,
-              "name": "MASTER_EZRA_IDLE_02_CleanPose",
+              "name": "MASTER_EZRA_IDLE_02_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 512,
               "y": 4096,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 3,
-              "name": "MASTER_EZRA_IDLE_03_CleanPose",
+              "name": "MASTER_EZRA_IDLE_03_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 768,
               "y": 4096,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 4,
-              "name": "MASTER_EZRA_IDLE_04_CleanPose",
+              "name": "MASTER_EZRA_IDLE_04_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1024,
               "y": 4096,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 5,
-              "name": "MASTER_EZRA_IDLE_05_CleanPose",
+              "name": "MASTER_EZRA_IDLE_05_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1280,
               "y": 4096,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 6,
-              "name": "MASTER_EZRA_IDLE_06_CleanPose",
+              "name": "MASTER_EZRA_IDLE_06_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1536,
               "y": 4096,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 7,
-              "name": "MASTER_EZRA_IDLE_07_CleanPose",
+              "name": "MASTER_EZRA_IDLE_07_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1792,
               "y": 4096,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             }
           ]
         },
@@ -5655,69 +5655,69 @@
           "frames": [
             {
               "index": 0,
-              "name": "MASTER_EZRA_JUMP_FALL_00_CleanPose",
+              "name": "MASTER_EZRA_JUMP_FALL_00_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 0,
               "y": 4352,
               "w": 256,
               "h": 256,
               "duration_ms": 74,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 1,
-              "name": "MASTER_EZRA_JUMP_FALL_01_CleanPose",
+              "name": "MASTER_EZRA_JUMP_FALL_01_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 256,
               "y": 4352,
               "w": 256,
               "h": 256,
               "duration_ms": 74,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 2,
-              "name": "MASTER_EZRA_JUMP_FALL_02_CleanPose",
+              "name": "MASTER_EZRA_JUMP_FALL_02_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 512,
               "y": 4352,
               "w": 256,
               "h": 256,
               "duration_ms": 74,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 3,
-              "name": "MASTER_EZRA_JUMP_FALL_03_CleanPose",
+              "name": "MASTER_EZRA_JUMP_FALL_03_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 768,
               "y": 4352,
               "w": 256,
               "h": 256,
               "duration_ms": 74,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 4,
-              "name": "MASTER_EZRA_JUMP_FALL_04_CleanPose",
+              "name": "MASTER_EZRA_JUMP_FALL_04_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1024,
               "y": 4352,
               "w": 256,
               "h": 256,
               "duration_ms": 74,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 5,
-              "name": "MASTER_EZRA_JUMP_FALL_05_CleanPose",
+              "name": "MASTER_EZRA_JUMP_FALL_05_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1280,
               "y": 4352,
               "w": 256,
               "h": 256,
               "duration_ms": 74,
-              "phase": "CleanPose"
+              "phase": "User162023"
             }
           ]
         },
@@ -5730,69 +5730,69 @@
           "frames": [
             {
               "index": 0,
-              "name": "MASTER_EZRA_JUMP_PEAK_00_CleanPose",
+              "name": "MASTER_EZRA_JUMP_PEAK_00_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 0,
               "y": 4608,
               "w": 256,
               "h": 256,
               "duration_ms": 74,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 1,
-              "name": "MASTER_EZRA_JUMP_PEAK_01_CleanPose",
+              "name": "MASTER_EZRA_JUMP_PEAK_01_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 256,
               "y": 4608,
               "w": 256,
               "h": 256,
               "duration_ms": 74,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 2,
-              "name": "MASTER_EZRA_JUMP_PEAK_02_CleanPose",
+              "name": "MASTER_EZRA_JUMP_PEAK_02_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 512,
               "y": 4608,
               "w": 256,
               "h": 256,
               "duration_ms": 74,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 3,
-              "name": "MASTER_EZRA_JUMP_PEAK_03_CleanPose",
+              "name": "MASTER_EZRA_JUMP_PEAK_03_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 768,
               "y": 4608,
               "w": 256,
               "h": 256,
               "duration_ms": 74,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 4,
-              "name": "MASTER_EZRA_JUMP_PEAK_04_CleanPose",
+              "name": "MASTER_EZRA_JUMP_PEAK_04_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1024,
               "y": 4608,
               "w": 256,
               "h": 256,
               "duration_ms": 74,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 5,
-              "name": "MASTER_EZRA_JUMP_PEAK_05_CleanPose",
+              "name": "MASTER_EZRA_JUMP_PEAK_05_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1280,
               "y": 4608,
               "w": 256,
               "h": 256,
               "duration_ms": 74,
-              "phase": "CleanPose"
+              "phase": "User162023"
             }
           ]
         },
@@ -5805,69 +5805,69 @@
           "frames": [
             {
               "index": 0,
-              "name": "MASTER_EZRA_JUMP_RISE_00_CleanPose",
+              "name": "MASTER_EZRA_JUMP_RISE_00_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 0,
               "y": 4864,
               "w": 256,
               "h": 256,
               "duration_ms": 74,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 1,
-              "name": "MASTER_EZRA_JUMP_RISE_01_CleanPose",
+              "name": "MASTER_EZRA_JUMP_RISE_01_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 256,
               "y": 4864,
               "w": 256,
               "h": 256,
               "duration_ms": 74,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 2,
-              "name": "MASTER_EZRA_JUMP_RISE_02_CleanPose",
+              "name": "MASTER_EZRA_JUMP_RISE_02_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 512,
               "y": 4864,
               "w": 256,
               "h": 256,
               "duration_ms": 74,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 3,
-              "name": "MASTER_EZRA_JUMP_RISE_03_CleanPose",
+              "name": "MASTER_EZRA_JUMP_RISE_03_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 768,
               "y": 4864,
               "w": 256,
               "h": 256,
               "duration_ms": 74,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 4,
-              "name": "MASTER_EZRA_JUMP_RISE_04_CleanPose",
+              "name": "MASTER_EZRA_JUMP_RISE_04_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1024,
               "y": 4864,
               "w": 256,
               "h": 256,
               "duration_ms": 74,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 5,
-              "name": "MASTER_EZRA_JUMP_RISE_05_CleanPose",
+              "name": "MASTER_EZRA_JUMP_RISE_05_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1280,
               "y": 4864,
               "w": 256,
               "h": 256,
               "duration_ms": 74,
-              "phase": "CleanPose"
+              "phase": "User162023"
             }
           ]
         },
@@ -5880,69 +5880,69 @@
           "frames": [
             {
               "index": 0,
-              "name": "MASTER_EZRA_JUMP_START_00_CleanPose",
+              "name": "MASTER_EZRA_JUMP_START_00_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 0,
               "y": 5120,
               "w": 256,
               "h": 256,
               "duration_ms": 74,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 1,
-              "name": "MASTER_EZRA_JUMP_START_01_CleanPose",
+              "name": "MASTER_EZRA_JUMP_START_01_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 256,
               "y": 5120,
               "w": 256,
               "h": 256,
               "duration_ms": 74,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 2,
-              "name": "MASTER_EZRA_JUMP_START_02_CleanPose",
+              "name": "MASTER_EZRA_JUMP_START_02_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 512,
               "y": 5120,
               "w": 256,
               "h": 256,
               "duration_ms": 74,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 3,
-              "name": "MASTER_EZRA_JUMP_START_03_CleanPose",
+              "name": "MASTER_EZRA_JUMP_START_03_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 768,
               "y": 5120,
               "w": 256,
               "h": 256,
               "duration_ms": 74,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 4,
-              "name": "MASTER_EZRA_JUMP_START_04_CleanPose",
+              "name": "MASTER_EZRA_JUMP_START_04_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1024,
               "y": 5120,
               "w": 256,
               "h": 256,
               "duration_ms": 74,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 5,
-              "name": "MASTER_EZRA_JUMP_START_05_CleanPose",
+              "name": "MASTER_EZRA_JUMP_START_05_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1280,
               "y": 5120,
               "w": 256,
               "h": 256,
               "duration_ms": 74,
-              "phase": "CleanPose"
+              "phase": "User162023"
             }
           ]
         },
@@ -5955,91 +5955,91 @@
           "frames": [
             {
               "index": 0,
-              "name": "MASTER_EZRA_KNOCKDOWN_00_CleanPose",
+              "name": "MASTER_EZRA_KNOCKDOWN_00_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 0,
               "y": 5376,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 1,
-              "name": "MASTER_EZRA_KNOCKDOWN_01_CleanPose",
+              "name": "MASTER_EZRA_KNOCKDOWN_01_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 256,
               "y": 5376,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 2,
-              "name": "MASTER_EZRA_KNOCKDOWN_02_CleanPose",
+              "name": "MASTER_EZRA_KNOCKDOWN_02_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 512,
               "y": 5376,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 3,
-              "name": "MASTER_EZRA_KNOCKDOWN_03_CleanPose",
+              "name": "MASTER_EZRA_KNOCKDOWN_03_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 768,
               "y": 5376,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 4,
-              "name": "MASTER_EZRA_KNOCKDOWN_04_CleanPose",
+              "name": "MASTER_EZRA_KNOCKDOWN_04_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1024,
               "y": 5376,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 5,
-              "name": "MASTER_EZRA_KNOCKDOWN_05_CleanPose",
+              "name": "MASTER_EZRA_KNOCKDOWN_05_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1280,
               "y": 5376,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 6,
-              "name": "MASTER_EZRA_KNOCKDOWN_06_CleanPose",
+              "name": "MASTER_EZRA_KNOCKDOWN_06_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1536,
               "y": 5376,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 7,
-              "name": "MASTER_EZRA_KNOCKDOWN_07_CleanPose",
+              "name": "MASTER_EZRA_KNOCKDOWN_07_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1792,
               "y": 5376,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             }
           ]
         },
@@ -6052,69 +6052,69 @@
           "frames": [
             {
               "index": 0,
-              "name": "MASTER_EZRA_LANDING_00_CleanPose",
+              "name": "MASTER_EZRA_LANDING_00_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 0,
               "y": 5632,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 1,
-              "name": "MASTER_EZRA_LANDING_01_CleanPose",
+              "name": "MASTER_EZRA_LANDING_01_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 256,
               "y": 5632,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 2,
-              "name": "MASTER_EZRA_LANDING_02_CleanPose",
+              "name": "MASTER_EZRA_LANDING_02_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 512,
               "y": 5632,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 3,
-              "name": "MASTER_EZRA_LANDING_03_CleanPose",
+              "name": "MASTER_EZRA_LANDING_03_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 768,
               "y": 5632,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 4,
-              "name": "MASTER_EZRA_LANDING_04_CleanPose",
+              "name": "MASTER_EZRA_LANDING_04_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1024,
               "y": 5632,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 5,
-              "name": "MASTER_EZRA_LANDING_05_CleanPose",
+              "name": "MASTER_EZRA_LANDING_05_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1280,
               "y": 5632,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             }
           ]
         },
@@ -6127,69 +6127,69 @@
           "frames": [
             {
               "index": 0,
-              "name": "MASTER_EZRA_LIGHT_KICK_00_CleanPose",
+              "name": "MASTER_EZRA_LIGHT_KICK_00_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 0,
               "y": 5888,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 1,
-              "name": "MASTER_EZRA_LIGHT_KICK_01_CleanPose",
+              "name": "MASTER_EZRA_LIGHT_KICK_01_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 256,
               "y": 5888,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 2,
-              "name": "MASTER_EZRA_LIGHT_KICK_02_CleanPose",
+              "name": "MASTER_EZRA_LIGHT_KICK_02_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 512,
               "y": 5888,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 3,
-              "name": "MASTER_EZRA_LIGHT_KICK_03_CleanPose",
+              "name": "MASTER_EZRA_LIGHT_KICK_03_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 768,
               "y": 5888,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 4,
-              "name": "MASTER_EZRA_LIGHT_KICK_04_CleanPose",
+              "name": "MASTER_EZRA_LIGHT_KICK_04_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1024,
               "y": 5888,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 5,
-              "name": "MASTER_EZRA_LIGHT_KICK_05_CleanPose",
+              "name": "MASTER_EZRA_LIGHT_KICK_05_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1280,
               "y": 5888,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             }
           ]
         },
@@ -6202,69 +6202,69 @@
           "frames": [
             {
               "index": 0,
-              "name": "MASTER_EZRA_LIGHT_PUNCH_00_CleanPose",
+              "name": "MASTER_EZRA_LIGHT_PUNCH_00_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 0,
               "y": 6144,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 1,
-              "name": "MASTER_EZRA_LIGHT_PUNCH_01_CleanPose",
+              "name": "MASTER_EZRA_LIGHT_PUNCH_01_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 256,
               "y": 6144,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 2,
-              "name": "MASTER_EZRA_LIGHT_PUNCH_02_CleanPose",
+              "name": "MASTER_EZRA_LIGHT_PUNCH_02_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 512,
               "y": 6144,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 3,
-              "name": "MASTER_EZRA_LIGHT_PUNCH_03_CleanPose",
+              "name": "MASTER_EZRA_LIGHT_PUNCH_03_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 768,
               "y": 6144,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 4,
-              "name": "MASTER_EZRA_LIGHT_PUNCH_04_CleanPose",
+              "name": "MASTER_EZRA_LIGHT_PUNCH_04_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1024,
               "y": 6144,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 5,
-              "name": "MASTER_EZRA_LIGHT_PUNCH_05_CleanPose",
+              "name": "MASTER_EZRA_LIGHT_PUNCH_05_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1280,
               "y": 6144,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             }
           ]
         },
@@ -6277,91 +6277,91 @@
           "frames": [
             {
               "index": 0,
-              "name": "MASTER_EZRA_READY_STANCE_00_CleanPose",
+              "name": "MASTER_EZRA_READY_STANCE_00_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 0,
               "y": 6400,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 1,
-              "name": "MASTER_EZRA_READY_STANCE_01_CleanPose",
+              "name": "MASTER_EZRA_READY_STANCE_01_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 256,
               "y": 6400,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 2,
-              "name": "MASTER_EZRA_READY_STANCE_02_CleanPose",
+              "name": "MASTER_EZRA_READY_STANCE_02_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 512,
               "y": 6400,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 3,
-              "name": "MASTER_EZRA_READY_STANCE_03_CleanPose",
+              "name": "MASTER_EZRA_READY_STANCE_03_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 768,
               "y": 6400,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 4,
-              "name": "MASTER_EZRA_READY_STANCE_04_CleanPose",
+              "name": "MASTER_EZRA_READY_STANCE_04_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1024,
               "y": 6400,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 5,
-              "name": "MASTER_EZRA_READY_STANCE_05_CleanPose",
+              "name": "MASTER_EZRA_READY_STANCE_05_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1280,
               "y": 6400,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 6,
-              "name": "MASTER_EZRA_READY_STANCE_06_CleanPose",
+              "name": "MASTER_EZRA_READY_STANCE_06_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1536,
               "y": 6400,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 7,
-              "name": "MASTER_EZRA_READY_STANCE_07_CleanPose",
+              "name": "MASTER_EZRA_READY_STANCE_07_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1792,
               "y": 6400,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             }
           ]
         },
@@ -6374,113 +6374,113 @@
           "frames": [
             {
               "index": 0,
-              "name": "MASTER_EZRA_RUN_BACK_00_CleanPose",
+              "name": "MASTER_EZRA_RUN_BACK_00_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 0,
               "y": 6656,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 1,
-              "name": "MASTER_EZRA_RUN_BACK_01_CleanPose",
+              "name": "MASTER_EZRA_RUN_BACK_01_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 256,
               "y": 6656,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 2,
-              "name": "MASTER_EZRA_RUN_BACK_02_CleanPose",
+              "name": "MASTER_EZRA_RUN_BACK_02_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 512,
               "y": 6656,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 3,
-              "name": "MASTER_EZRA_RUN_BACK_03_CleanPose",
+              "name": "MASTER_EZRA_RUN_BACK_03_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 768,
               "y": 6656,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 4,
-              "name": "MASTER_EZRA_RUN_BACK_04_CleanPose",
+              "name": "MASTER_EZRA_RUN_BACK_04_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1024,
               "y": 6656,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 5,
-              "name": "MASTER_EZRA_RUN_BACK_05_CleanPose",
+              "name": "MASTER_EZRA_RUN_BACK_05_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1280,
               "y": 6656,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 6,
-              "name": "MASTER_EZRA_RUN_BACK_06_CleanPose",
+              "name": "MASTER_EZRA_RUN_BACK_06_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1536,
               "y": 6656,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 7,
-              "name": "MASTER_EZRA_RUN_BACK_07_CleanPose",
+              "name": "MASTER_EZRA_RUN_BACK_07_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1792,
               "y": 6656,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 8,
-              "name": "MASTER_EZRA_RUN_BACK_08_CleanPose",
+              "name": "MASTER_EZRA_RUN_BACK_08_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 2048,
               "y": 6656,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 9,
-              "name": "MASTER_EZRA_RUN_BACK_09_CleanPose",
+              "name": "MASTER_EZRA_RUN_BACK_09_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 2304,
               "y": 6656,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             }
           ]
         },
@@ -6493,135 +6493,135 @@
           "frames": [
             {
               "index": 0,
-              "name": "MASTER_EZRA_RUN_FORWARD_00_CleanPose",
+              "name": "MASTER_EZRA_RUN_FORWARD_00_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 0,
               "y": 6912,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 1,
-              "name": "MASTER_EZRA_RUN_FORWARD_01_CleanPose",
+              "name": "MASTER_EZRA_RUN_FORWARD_01_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 256,
               "y": 6912,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 2,
-              "name": "MASTER_EZRA_RUN_FORWARD_02_CleanPose",
+              "name": "MASTER_EZRA_RUN_FORWARD_02_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 512,
               "y": 6912,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 3,
-              "name": "MASTER_EZRA_RUN_FORWARD_03_CleanPose",
+              "name": "MASTER_EZRA_RUN_FORWARD_03_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 768,
               "y": 6912,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 4,
-              "name": "MASTER_EZRA_RUN_FORWARD_04_CleanPose",
+              "name": "MASTER_EZRA_RUN_FORWARD_04_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1024,
               "y": 6912,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 5,
-              "name": "MASTER_EZRA_RUN_FORWARD_05_CleanPose",
+              "name": "MASTER_EZRA_RUN_FORWARD_05_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1280,
               "y": 6912,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 6,
-              "name": "MASTER_EZRA_RUN_FORWARD_06_CleanPose",
+              "name": "MASTER_EZRA_RUN_FORWARD_06_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1536,
               "y": 6912,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 7,
-              "name": "MASTER_EZRA_RUN_FORWARD_07_CleanPose",
+              "name": "MASTER_EZRA_RUN_FORWARD_07_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1792,
               "y": 6912,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 8,
-              "name": "MASTER_EZRA_RUN_FORWARD_08_CleanPose",
+              "name": "MASTER_EZRA_RUN_FORWARD_08_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 2048,
               "y": 6912,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 9,
-              "name": "MASTER_EZRA_RUN_FORWARD_09_CleanPose",
+              "name": "MASTER_EZRA_RUN_FORWARD_09_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 2304,
               "y": 6912,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 10,
-              "name": "MASTER_EZRA_RUN_FORWARD_10_CleanPose",
+              "name": "MASTER_EZRA_RUN_FORWARD_10_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 2560,
               "y": 6912,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 11,
-              "name": "MASTER_EZRA_RUN_FORWARD_11_CleanPose",
+              "name": "MASTER_EZRA_RUN_FORWARD_11_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 2816,
               "y": 6912,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             }
           ]
         },
@@ -6634,135 +6634,135 @@
           "frames": [
             {
               "index": 0,
-              "name": "MASTER_EZRA_SPECIAL_PROJECTILE_00_CleanPose",
+              "name": "MASTER_EZRA_SPECIAL_PROJECTILE_00_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 0,
               "y": 7168,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 1,
-              "name": "MASTER_EZRA_SPECIAL_PROJECTILE_01_CleanPose",
+              "name": "MASTER_EZRA_SPECIAL_PROJECTILE_01_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 256,
               "y": 7168,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 2,
-              "name": "MASTER_EZRA_SPECIAL_PROJECTILE_02_CleanPose",
+              "name": "MASTER_EZRA_SPECIAL_PROJECTILE_02_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 512,
               "y": 7168,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 3,
-              "name": "MASTER_EZRA_SPECIAL_PROJECTILE_03_CleanPose",
+              "name": "MASTER_EZRA_SPECIAL_PROJECTILE_03_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 768,
               "y": 7168,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 4,
-              "name": "MASTER_EZRA_SPECIAL_PROJECTILE_04_CleanPose",
+              "name": "MASTER_EZRA_SPECIAL_PROJECTILE_04_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1024,
               "y": 7168,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 5,
-              "name": "MASTER_EZRA_SPECIAL_PROJECTILE_05_CleanPose",
+              "name": "MASTER_EZRA_SPECIAL_PROJECTILE_05_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1280,
               "y": 7168,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 6,
-              "name": "MASTER_EZRA_SPECIAL_PROJECTILE_06_CleanPose",
+              "name": "MASTER_EZRA_SPECIAL_PROJECTILE_06_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1536,
               "y": 7168,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 7,
-              "name": "MASTER_EZRA_SPECIAL_PROJECTILE_07_CleanPose",
+              "name": "MASTER_EZRA_SPECIAL_PROJECTILE_07_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1792,
               "y": 7168,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 8,
-              "name": "MASTER_EZRA_SPECIAL_PROJECTILE_08_CleanPose",
+              "name": "MASTER_EZRA_SPECIAL_PROJECTILE_08_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 2048,
               "y": 7168,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 9,
-              "name": "MASTER_EZRA_SPECIAL_PROJECTILE_09_CleanPose",
+              "name": "MASTER_EZRA_SPECIAL_PROJECTILE_09_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 2304,
               "y": 7168,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 10,
-              "name": "MASTER_EZRA_SPECIAL_PROJECTILE_10_CleanPose",
+              "name": "MASTER_EZRA_SPECIAL_PROJECTILE_10_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 2560,
               "y": 7168,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 11,
-              "name": "MASTER_EZRA_SPECIAL_PROJECTILE_11_CleanPose",
+              "name": "MASTER_EZRA_SPECIAL_PROJECTILE_11_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 2816,
               "y": 7168,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             }
           ]
         },
@@ -6775,69 +6775,69 @@
           "frames": [
             {
               "index": 0,
-              "name": "MASTER_EZRA_SPECIAL_RECOVER_00_CleanPose",
+              "name": "MASTER_EZRA_SPECIAL_RECOVER_00_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 0,
               "y": 7424,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 1,
-              "name": "MASTER_EZRA_SPECIAL_RECOVER_01_CleanPose",
+              "name": "MASTER_EZRA_SPECIAL_RECOVER_01_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 256,
               "y": 7424,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 2,
-              "name": "MASTER_EZRA_SPECIAL_RECOVER_02_CleanPose",
+              "name": "MASTER_EZRA_SPECIAL_RECOVER_02_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 512,
               "y": 7424,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 3,
-              "name": "MASTER_EZRA_SPECIAL_RECOVER_03_CleanPose",
+              "name": "MASTER_EZRA_SPECIAL_RECOVER_03_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 768,
               "y": 7424,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 4,
-              "name": "MASTER_EZRA_SPECIAL_RECOVER_04_CleanPose",
+              "name": "MASTER_EZRA_SPECIAL_RECOVER_04_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1024,
               "y": 7424,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 5,
-              "name": "MASTER_EZRA_SPECIAL_RECOVER_05_CleanPose",
+              "name": "MASTER_EZRA_SPECIAL_RECOVER_05_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1280,
               "y": 7424,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             }
           ]
         },
@@ -6850,91 +6850,91 @@
           "frames": [
             {
               "index": 0,
-              "name": "MASTER_EZRA_SPECIAL_START_00_CleanPose",
+              "name": "MASTER_EZRA_SPECIAL_START_00_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 0,
               "y": 7680,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 1,
-              "name": "MASTER_EZRA_SPECIAL_START_01_CleanPose",
+              "name": "MASTER_EZRA_SPECIAL_START_01_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 256,
               "y": 7680,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 2,
-              "name": "MASTER_EZRA_SPECIAL_START_02_CleanPose",
+              "name": "MASTER_EZRA_SPECIAL_START_02_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 512,
               "y": 7680,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 3,
-              "name": "MASTER_EZRA_SPECIAL_START_03_CleanPose",
+              "name": "MASTER_EZRA_SPECIAL_START_03_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 768,
               "y": 7680,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 4,
-              "name": "MASTER_EZRA_SPECIAL_START_04_CleanPose",
+              "name": "MASTER_EZRA_SPECIAL_START_04_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1024,
               "y": 7680,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 5,
-              "name": "MASTER_EZRA_SPECIAL_START_05_CleanPose",
+              "name": "MASTER_EZRA_SPECIAL_START_05_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1280,
               "y": 7680,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 6,
-              "name": "MASTER_EZRA_SPECIAL_START_06_CleanPose",
+              "name": "MASTER_EZRA_SPECIAL_START_06_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1536,
               "y": 7680,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 7,
-              "name": "MASTER_EZRA_SPECIAL_START_07_CleanPose",
+              "name": "MASTER_EZRA_SPECIAL_START_07_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1792,
               "y": 7680,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             }
           ]
         },
@@ -6947,135 +6947,135 @@
           "frames": [
             {
               "index": 0,
-              "name": "MASTER_EZRA_SUPER_CHARGE_00_CleanPose",
+              "name": "MASTER_EZRA_SUPER_CHARGE_00_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 0,
               "y": 7936,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 1,
-              "name": "MASTER_EZRA_SUPER_CHARGE_01_CleanPose",
+              "name": "MASTER_EZRA_SUPER_CHARGE_01_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 256,
               "y": 7936,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 2,
-              "name": "MASTER_EZRA_SUPER_CHARGE_02_CleanPose",
+              "name": "MASTER_EZRA_SUPER_CHARGE_02_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 512,
               "y": 7936,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 3,
-              "name": "MASTER_EZRA_SUPER_CHARGE_03_CleanPose",
+              "name": "MASTER_EZRA_SUPER_CHARGE_03_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 768,
               "y": 7936,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 4,
-              "name": "MASTER_EZRA_SUPER_CHARGE_04_CleanPose",
+              "name": "MASTER_EZRA_SUPER_CHARGE_04_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1024,
               "y": 7936,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 5,
-              "name": "MASTER_EZRA_SUPER_CHARGE_05_CleanPose",
+              "name": "MASTER_EZRA_SUPER_CHARGE_05_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1280,
               "y": 7936,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 6,
-              "name": "MASTER_EZRA_SUPER_CHARGE_06_CleanPose",
+              "name": "MASTER_EZRA_SUPER_CHARGE_06_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1536,
               "y": 7936,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 7,
-              "name": "MASTER_EZRA_SUPER_CHARGE_07_CleanPose",
+              "name": "MASTER_EZRA_SUPER_CHARGE_07_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1792,
               "y": 7936,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 8,
-              "name": "MASTER_EZRA_SUPER_CHARGE_08_CleanPose",
+              "name": "MASTER_EZRA_SUPER_CHARGE_08_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 2048,
               "y": 7936,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 9,
-              "name": "MASTER_EZRA_SUPER_CHARGE_09_CleanPose",
+              "name": "MASTER_EZRA_SUPER_CHARGE_09_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 2304,
               "y": 7936,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 10,
-              "name": "MASTER_EZRA_SUPER_CHARGE_10_CleanPose",
+              "name": "MASTER_EZRA_SUPER_CHARGE_10_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 2560,
               "y": 7936,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 11,
-              "name": "MASTER_EZRA_SUPER_CHARGE_11_CleanPose",
+              "name": "MASTER_EZRA_SUPER_CHARGE_11_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 2816,
               "y": 7936,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             }
           ]
         },
@@ -7088,135 +7088,135 @@
           "frames": [
             {
               "index": 0,
-              "name": "MASTER_EZRA_SUPER_RELEASE_00_CleanPose",
+              "name": "MASTER_EZRA_SUPER_RELEASE_00_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 0,
               "y": 8192,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 1,
-              "name": "MASTER_EZRA_SUPER_RELEASE_01_CleanPose",
+              "name": "MASTER_EZRA_SUPER_RELEASE_01_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 256,
               "y": 8192,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 2,
-              "name": "MASTER_EZRA_SUPER_RELEASE_02_CleanPose",
+              "name": "MASTER_EZRA_SUPER_RELEASE_02_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 512,
               "y": 8192,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 3,
-              "name": "MASTER_EZRA_SUPER_RELEASE_03_CleanPose",
+              "name": "MASTER_EZRA_SUPER_RELEASE_03_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 768,
               "y": 8192,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 4,
-              "name": "MASTER_EZRA_SUPER_RELEASE_04_CleanPose",
+              "name": "MASTER_EZRA_SUPER_RELEASE_04_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1024,
               "y": 8192,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 5,
-              "name": "MASTER_EZRA_SUPER_RELEASE_05_CleanPose",
+              "name": "MASTER_EZRA_SUPER_RELEASE_05_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1280,
               "y": 8192,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 6,
-              "name": "MASTER_EZRA_SUPER_RELEASE_06_CleanPose",
+              "name": "MASTER_EZRA_SUPER_RELEASE_06_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1536,
               "y": 8192,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 7,
-              "name": "MASTER_EZRA_SUPER_RELEASE_07_CleanPose",
+              "name": "MASTER_EZRA_SUPER_RELEASE_07_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1792,
               "y": 8192,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 8,
-              "name": "MASTER_EZRA_SUPER_RELEASE_08_CleanPose",
+              "name": "MASTER_EZRA_SUPER_RELEASE_08_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 2048,
               "y": 8192,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 9,
-              "name": "MASTER_EZRA_SUPER_RELEASE_09_CleanPose",
+              "name": "MASTER_EZRA_SUPER_RELEASE_09_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 2304,
               "y": 8192,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 10,
-              "name": "MASTER_EZRA_SUPER_RELEASE_10_CleanPose",
+              "name": "MASTER_EZRA_SUPER_RELEASE_10_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 2560,
               "y": 8192,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 11,
-              "name": "MASTER_EZRA_SUPER_RELEASE_11_CleanPose",
+              "name": "MASTER_EZRA_SUPER_RELEASE_11_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 2816,
               "y": 8192,
               "w": 256,
               "h": 256,
               "duration_ms": 58,
-              "phase": "CleanPose"
+              "phase": "User162023"
             }
           ]
         },
@@ -7229,91 +7229,91 @@
           "frames": [
             {
               "index": 0,
-              "name": "MASTER_EZRA_TAUNT_00_CleanPose",
+              "name": "MASTER_EZRA_TAUNT_00_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 0,
               "y": 8448,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 1,
-              "name": "MASTER_EZRA_TAUNT_01_CleanPose",
+              "name": "MASTER_EZRA_TAUNT_01_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 256,
               "y": 8448,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 2,
-              "name": "MASTER_EZRA_TAUNT_02_CleanPose",
+              "name": "MASTER_EZRA_TAUNT_02_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 512,
               "y": 8448,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 3,
-              "name": "MASTER_EZRA_TAUNT_03_CleanPose",
+              "name": "MASTER_EZRA_TAUNT_03_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 768,
               "y": 8448,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 4,
-              "name": "MASTER_EZRA_TAUNT_04_CleanPose",
+              "name": "MASTER_EZRA_TAUNT_04_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1024,
               "y": 8448,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 5,
-              "name": "MASTER_EZRA_TAUNT_05_CleanPose",
+              "name": "MASTER_EZRA_TAUNT_05_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1280,
               "y": 8448,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 6,
-              "name": "MASTER_EZRA_TAUNT_06_CleanPose",
+              "name": "MASTER_EZRA_TAUNT_06_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1536,
               "y": 8448,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 7,
-              "name": "MASTER_EZRA_TAUNT_07_CleanPose",
+              "name": "MASTER_EZRA_TAUNT_07_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1792,
               "y": 8448,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             }
           ]
         },
@@ -7326,91 +7326,91 @@
           "frames": [
             {
               "index": 0,
-              "name": "MASTER_EZRA_THROW_FINISH_00_CleanPose",
+              "name": "MASTER_EZRA_THROW_FINISH_00_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 0,
               "y": 8704,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 1,
-              "name": "MASTER_EZRA_THROW_FINISH_01_CleanPose",
+              "name": "MASTER_EZRA_THROW_FINISH_01_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 256,
               "y": 8704,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 2,
-              "name": "MASTER_EZRA_THROW_FINISH_02_CleanPose",
+              "name": "MASTER_EZRA_THROW_FINISH_02_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 512,
               "y": 8704,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 3,
-              "name": "MASTER_EZRA_THROW_FINISH_03_CleanPose",
+              "name": "MASTER_EZRA_THROW_FINISH_03_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 768,
               "y": 8704,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 4,
-              "name": "MASTER_EZRA_THROW_FINISH_04_CleanPose",
+              "name": "MASTER_EZRA_THROW_FINISH_04_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1024,
               "y": 8704,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 5,
-              "name": "MASTER_EZRA_THROW_FINISH_05_CleanPose",
+              "name": "MASTER_EZRA_THROW_FINISH_05_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1280,
               "y": 8704,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 6,
-              "name": "MASTER_EZRA_THROW_FINISH_06_CleanPose",
+              "name": "MASTER_EZRA_THROW_FINISH_06_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1536,
               "y": 8704,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 7,
-              "name": "MASTER_EZRA_THROW_FINISH_07_CleanPose",
+              "name": "MASTER_EZRA_THROW_FINISH_07_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1792,
               "y": 8704,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             }
           ]
         },
@@ -7423,91 +7423,91 @@
           "frames": [
             {
               "index": 0,
-              "name": "MASTER_EZRA_THROW_GRAB_00_CleanPose",
+              "name": "MASTER_EZRA_THROW_GRAB_00_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 0,
               "y": 8960,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 1,
-              "name": "MASTER_EZRA_THROW_GRAB_01_CleanPose",
+              "name": "MASTER_EZRA_THROW_GRAB_01_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 256,
               "y": 8960,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 2,
-              "name": "MASTER_EZRA_THROW_GRAB_02_CleanPose",
+              "name": "MASTER_EZRA_THROW_GRAB_02_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 512,
               "y": 8960,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 3,
-              "name": "MASTER_EZRA_THROW_GRAB_03_CleanPose",
+              "name": "MASTER_EZRA_THROW_GRAB_03_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 768,
               "y": 8960,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 4,
-              "name": "MASTER_EZRA_THROW_GRAB_04_CleanPose",
+              "name": "MASTER_EZRA_THROW_GRAB_04_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1024,
               "y": 8960,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 5,
-              "name": "MASTER_EZRA_THROW_GRAB_05_CleanPose",
+              "name": "MASTER_EZRA_THROW_GRAB_05_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1280,
               "y": 8960,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 6,
-              "name": "MASTER_EZRA_THROW_GRAB_06_CleanPose",
+              "name": "MASTER_EZRA_THROW_GRAB_06_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1536,
               "y": 8960,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 7,
-              "name": "MASTER_EZRA_THROW_GRAB_07_CleanPose",
+              "name": "MASTER_EZRA_THROW_GRAB_07_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1792,
               "y": 8960,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             }
           ]
         },
@@ -7520,91 +7520,91 @@
           "frames": [
             {
               "index": 0,
-              "name": "MASTER_EZRA_VICTORY_00_CleanPose",
+              "name": "MASTER_EZRA_VICTORY_00_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 0,
               "y": 9216,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 1,
-              "name": "MASTER_EZRA_VICTORY_01_CleanPose",
+              "name": "MASTER_EZRA_VICTORY_01_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 256,
               "y": 9216,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 2,
-              "name": "MASTER_EZRA_VICTORY_02_CleanPose",
+              "name": "MASTER_EZRA_VICTORY_02_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 512,
               "y": 9216,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 3,
-              "name": "MASTER_EZRA_VICTORY_03_CleanPose",
+              "name": "MASTER_EZRA_VICTORY_03_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 768,
               "y": 9216,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 4,
-              "name": "MASTER_EZRA_VICTORY_04_CleanPose",
+              "name": "MASTER_EZRA_VICTORY_04_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1024,
               "y": 9216,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 5,
-              "name": "MASTER_EZRA_VICTORY_05_CleanPose",
+              "name": "MASTER_EZRA_VICTORY_05_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1280,
               "y": 9216,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 6,
-              "name": "MASTER_EZRA_VICTORY_06_CleanPose",
+              "name": "MASTER_EZRA_VICTORY_06_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1536,
               "y": 9216,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 7,
-              "name": "MASTER_EZRA_VICTORY_07_CleanPose",
+              "name": "MASTER_EZRA_VICTORY_07_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1792,
               "y": 9216,
               "w": 256,
               "h": 256,
               "duration_ms": 86,
-              "phase": "CleanPose"
+              "phase": "User162023"
             }
           ]
         },
@@ -7617,135 +7617,135 @@
           "frames": [
             {
               "index": 0,
-              "name": "MASTER_EZRA_WALK_BACK_00_CleanPose",
+              "name": "MASTER_EZRA_WALK_BACK_00_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 0,
               "y": 9472,
               "w": 256,
               "h": 256,
               "duration_ms": 74,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 1,
-              "name": "MASTER_EZRA_WALK_BACK_01_CleanPose",
+              "name": "MASTER_EZRA_WALK_BACK_01_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 256,
               "y": 9472,
               "w": 256,
               "h": 256,
               "duration_ms": 74,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 2,
-              "name": "MASTER_EZRA_WALK_BACK_02_CleanPose",
+              "name": "MASTER_EZRA_WALK_BACK_02_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 512,
               "y": 9472,
               "w": 256,
               "h": 256,
               "duration_ms": 74,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 3,
-              "name": "MASTER_EZRA_WALK_BACK_03_CleanPose",
+              "name": "MASTER_EZRA_WALK_BACK_03_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 768,
               "y": 9472,
               "w": 256,
               "h": 256,
               "duration_ms": 74,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 4,
-              "name": "MASTER_EZRA_WALK_BACK_04_CleanPose",
+              "name": "MASTER_EZRA_WALK_BACK_04_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1024,
               "y": 9472,
               "w": 256,
               "h": 256,
               "duration_ms": 74,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 5,
-              "name": "MASTER_EZRA_WALK_BACK_05_CleanPose",
+              "name": "MASTER_EZRA_WALK_BACK_05_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1280,
               "y": 9472,
               "w": 256,
               "h": 256,
               "duration_ms": 74,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 6,
-              "name": "MASTER_EZRA_WALK_BACK_06_CleanPose",
+              "name": "MASTER_EZRA_WALK_BACK_06_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1536,
               "y": 9472,
               "w": 256,
               "h": 256,
               "duration_ms": 74,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 7,
-              "name": "MASTER_EZRA_WALK_BACK_07_CleanPose",
+              "name": "MASTER_EZRA_WALK_BACK_07_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1792,
               "y": 9472,
               "w": 256,
               "h": 256,
               "duration_ms": 74,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 8,
-              "name": "MASTER_EZRA_WALK_BACK_08_CleanPose",
+              "name": "MASTER_EZRA_WALK_BACK_08_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 2048,
               "y": 9472,
               "w": 256,
               "h": 256,
               "duration_ms": 74,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 9,
-              "name": "MASTER_EZRA_WALK_BACK_09_CleanPose",
+              "name": "MASTER_EZRA_WALK_BACK_09_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 2304,
               "y": 9472,
               "w": 256,
               "h": 256,
               "duration_ms": 74,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 10,
-              "name": "MASTER_EZRA_WALK_BACK_10_CleanPose",
+              "name": "MASTER_EZRA_WALK_BACK_10_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 2560,
               "y": 9472,
               "w": 256,
               "h": 256,
               "duration_ms": 74,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 11,
-              "name": "MASTER_EZRA_WALK_BACK_11_CleanPose",
+              "name": "MASTER_EZRA_WALK_BACK_11_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 2816,
               "y": 9472,
               "w": 256,
               "h": 256,
               "duration_ms": 74,
-              "phase": "CleanPose"
+              "phase": "User162023"
             }
           ]
         },
@@ -7758,141 +7758,141 @@
           "frames": [
             {
               "index": 0,
-              "name": "MASTER_EZRA_WALK_FORWARD_00_CleanPose",
+              "name": "MASTER_EZRA_WALK_FORWARD_00_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 0,
               "y": 9728,
               "w": 256,
               "h": 256,
               "duration_ms": 74,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 1,
-              "name": "MASTER_EZRA_WALK_FORWARD_01_CleanPose",
+              "name": "MASTER_EZRA_WALK_FORWARD_01_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 256,
               "y": 9728,
               "w": 256,
               "h": 256,
               "duration_ms": 74,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 2,
-              "name": "MASTER_EZRA_WALK_FORWARD_02_CleanPose",
+              "name": "MASTER_EZRA_WALK_FORWARD_02_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 512,
               "y": 9728,
               "w": 256,
               "h": 256,
               "duration_ms": 74,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 3,
-              "name": "MASTER_EZRA_WALK_FORWARD_03_CleanPose",
+              "name": "MASTER_EZRA_WALK_FORWARD_03_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 768,
               "y": 9728,
               "w": 256,
               "h": 256,
               "duration_ms": 74,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 4,
-              "name": "MASTER_EZRA_WALK_FORWARD_04_CleanPose",
+              "name": "MASTER_EZRA_WALK_FORWARD_04_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1024,
               "y": 9728,
               "w": 256,
               "h": 256,
               "duration_ms": 74,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 5,
-              "name": "MASTER_EZRA_WALK_FORWARD_05_CleanPose",
+              "name": "MASTER_EZRA_WALK_FORWARD_05_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1280,
               "y": 9728,
               "w": 256,
               "h": 256,
               "duration_ms": 74,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 6,
-              "name": "MASTER_EZRA_WALK_FORWARD_06_CleanPose",
+              "name": "MASTER_EZRA_WALK_FORWARD_06_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1536,
               "y": 9728,
               "w": 256,
               "h": 256,
               "duration_ms": 74,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 7,
-              "name": "MASTER_EZRA_WALK_FORWARD_07_CleanPose",
+              "name": "MASTER_EZRA_WALK_FORWARD_07_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 1792,
               "y": 9728,
               "w": 256,
               "h": 256,
               "duration_ms": 74,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 8,
-              "name": "MASTER_EZRA_WALK_FORWARD_08_CleanPose",
+              "name": "MASTER_EZRA_WALK_FORWARD_08_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 2048,
               "y": 9728,
               "w": 256,
               "h": 256,
               "duration_ms": 74,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 9,
-              "name": "MASTER_EZRA_WALK_FORWARD_09_CleanPose",
+              "name": "MASTER_EZRA_WALK_FORWARD_09_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 2304,
               "y": 9728,
               "w": 256,
               "h": 256,
               "duration_ms": 74,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 10,
-              "name": "MASTER_EZRA_WALK_FORWARD_10_CleanPose",
+              "name": "MASTER_EZRA_WALK_FORWARD_10_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 2560,
               "y": 9728,
               "w": 256,
               "h": 256,
               "duration_ms": 74,
-              "phase": "CleanPose"
+              "phase": "User162023"
             },
             {
               "index": 11,
-              "name": "MASTER_EZRA_WALK_FORWARD_11_CleanPose",
+              "name": "MASTER_EZRA_WALK_FORWARD_11_162023",
               "file": "characters/MASTER_EZRA/runtime_atlas_user/MASTER_EZRA_RUNTIME_ATLAS.png",
               "x": 2816,
               "y": 9728,
               "w": 256,
               "h": 256,
               "duration_ms": 74,
-              "phase": "CleanPose"
+              "phase": "User162023"
             }
           ]
         }
       },
       "full_atlas": "atlases/GOTHTECHNOLOGY_MASTER_EZRA_FULL_MOTION_ATLAS_256_TRANSPARENT.png",
-      "source_note": "Generated from cleaned user 3x3 Ezra pose sheet hf_20260506_125213_1e19b874-486b-48be-a10c-223c2d1c4335.png",
+      "source_note": "Generated from user Ezra movement sheet hf_20260506_162023_87c994a8-9503-49c7-8e36-e553023fff03.png",
       "runtime_atlas_note": "Packed for GitHub Pages deployment from current motion sheets."
     }
   },

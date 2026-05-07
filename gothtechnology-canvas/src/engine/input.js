@@ -46,11 +46,16 @@ export class InputManager {
     this.pressed = new Set();
     this.released = new Set();
     this.touchHeld = new Set();
+    this.touchPointers = new Map();
     this.lastTap = new Map();
     this.dashWindow = 0.24;
 
     target.addEventListener("keydown", (event) => this.onKey(event, true), { passive: false });
     target.addEventListener("keyup", (event) => this.onKey(event, false), { passive: false });
+    target.addEventListener("blur", () => this.clear());
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) this.clear();
+    });
     this.bindTouchControls();
   }
 
@@ -67,11 +72,23 @@ export class InputManager {
       const action = button.getAttribute("data-touch");
       const hold = (event) => {
         event.preventDefault();
+        try {
+          button.setPointerCapture?.(event.pointerId);
+        } catch {
+          // Pointer capture is best-effort; touch release guards below still clean up.
+        }
+        this.touchPointers.set(event.pointerId, action);
         button.dataset.held = "true";
         this.press(action);
       };
       const release = (event) => {
         event.preventDefault();
+        try {
+          if (button.hasPointerCapture?.(event.pointerId)) button.releasePointerCapture(event.pointerId);
+        } catch {
+          // Some mobile browsers throw if capture was already released.
+        }
+        this.touchPointers.delete(event.pointerId);
         button.dataset.held = "false";
         this.release(action);
       };
@@ -79,7 +96,11 @@ export class InputManager {
       button.addEventListener("pointerup", release);
       button.addEventListener("pointercancel", release);
       button.addEventListener("pointerleave", release);
+      button.addEventListener("lostpointercapture", release);
+      button.addEventListener("contextmenu", (event) => event.preventDefault());
     });
+    window.addEventListener("pointerup", (event) => this.releaseTouchPointer(event.pointerId));
+    window.addEventListener("pointercancel", (event) => this.releaseTouchPointer(event.pointerId));
   }
 
   press(action) {
@@ -98,6 +119,32 @@ export class InputManager {
   release(action) {
     if (this.down.has(action)) this.released.add(action);
     this.down.delete(action);
+  }
+
+  clear() {
+    this.down.clear();
+    this.pressed.clear();
+    this.released.clear();
+    this.releaseTouchButtons();
+  }
+
+  releaseTouchButtons() {
+    this.touchPointers.clear();
+    document.querySelectorAll("[data-touch]").forEach((button) => {
+      button.dataset.held = "false";
+      const action = button.getAttribute("data-touch");
+      if (action) this.down.delete(action);
+    });
+  }
+
+  releaseTouchPointer(pointerId) {
+    const action = this.touchPointers.get(pointerId);
+    if (!action) return;
+    this.touchPointers.delete(pointerId);
+    this.release(action);
+    document.querySelectorAll(`[data-touch="${action}"]`).forEach((button) => {
+      button.dataset.held = "false";
+    });
   }
 
   isDown(action) {

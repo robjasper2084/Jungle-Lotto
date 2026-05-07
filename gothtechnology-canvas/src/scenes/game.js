@@ -1,6 +1,6 @@
 import { ASSET_URLS, FIGHTERS } from "../config/assets.js";
 import { ASSISTS, ATTACKS } from "../config/moves.js";
-import { CANVAS_HEIGHT, CANVAS_WIDTH, COLORS, GROUND_Y, PHASE, ROUND_SECONDS } from "../config/constants.js";
+import { CANVAS_HEIGHT, CANVAS_WIDTH, COLORS, GROUND_Y, PHASE, ROUND_SECONDS, WORLD } from "../config/constants.js";
 import { AssetLoader, drawSheetFrame } from "../engine/assets.js";
 import { WebAudioBus } from "../engine/audio.js";
 import { InputManager } from "../engine/input.js";
@@ -31,6 +31,8 @@ export class GothTechnologyGame {
     this.loadingProgress = 0;
     this.cpuEnabled = true;
     this.training = false;
+    this.player1Id = "MASTER_EZRA";
+    this.player2Id = "KALYX";
     this.debug = false;
     this.roundNumber = 1;
     this.roundTimer = ROUND_SECONDS;
@@ -47,6 +49,8 @@ export class GothTechnologyGame {
     this.parallax = 0;
     this.lastTime = performance.now();
     this.menuHitAreas = [];
+    this.cpuDecisionTimer = 0;
+    this.cpuDecision = {};
     this.raf = 0;
     this.stopped = false;
     this.bindPointer();
@@ -83,17 +87,28 @@ export class GothTechnologyGame {
       }
       const hit = this.menuHitAreas.find((area) => x >= area.x && x <= area.x + area.w && y >= area.y && y <= area.y + area.h);
       if (hit) hit.action();
+      else if (this.phase === PHASE.TITLE) this.startMatch(false);
+      else if (this.phase === PHASE.SELECT) this.startMatch(this.training);
       this.audio.ensure();
     });
   }
 
   createFighters() {
+    const p1Config = FIGHTERS[this.player1Id] ?? FIGHTERS.KALYX;
+    const p2Config = FIGHTERS[this.player2Id] ?? FIGHTERS.MASTER_EZRA;
     this.fighters = [
-      new Fighter({ id: "KALYX", slot: 1, config: { ...FIGHTERS.KALYX }, assets: this.assets, x: 360, facing: 1 }),
-      new Fighter({ id: "MASTER_EZRA", slot: 2, config: { ...FIGHTERS.MASTER_EZRA }, assets: this.assets, x: 920, facing: -1 })
+      new Fighter({ id: p1Config.id, slot: 1, config: { ...p1Config }, assets: this.assets, x: 360, facing: 1 }),
+      new Fighter({ id: p2Config.id, slot: 2, config: { ...p2Config }, assets: this.assets, x: 920, facing: -1 })
     ];
     this.fighters[0].resetRound(360, 1);
     this.fighters[1].resetRound(920, -1);
+  }
+
+  selectPlayer1(id) {
+    this.player1Id = id;
+    this.player2Id = id === "KALYX" ? "MASTER_EZRA" : "KALYX";
+    this.createFighters();
+    this.audio.beep("select");
   }
 
   startVersus() {
@@ -121,6 +136,8 @@ export class GothTechnologyGame {
     this.effects = [];
     this.hitstop = 0;
     this.flash = 0;
+    this.cpuDecisionTimer = 0;
+    this.cpuDecision = {};
     this.fighters[0].resetRound(360, 1);
     this.fighters[1].resetRound(920, -1);
     if (this.training) {
@@ -167,6 +184,7 @@ export class GothTechnologyGame {
       }
     }
 
+    this.faceFighters();
     const p1Actions = this.input.actions(1);
     if (Object.values(p1Actions).some(Boolean)) this.playerEngaged = true;
     const p2Actions = this.cpuEnabled ? this.cpuActions(dt) : this.input.actions(2);
@@ -185,6 +203,7 @@ export class GothTechnologyGame {
     this.effects = this.effects.filter((e) => !e.dead);
 
     this.keepFightersSeparated();
+    this.faceFighters();
     this.checkRoundEnd();
   }
 
@@ -197,17 +216,21 @@ export class GothTechnologyGame {
 
     if (this.phase === PHASE.TITLE) {
       this.menuHitAreas = [
-        { x: 494, y: 318, w: 292, h: 54, action: () => (this.phase = PHASE.SELECT) },
-        { x: 494, y: 390, w: 292, h: 54, action: () => { this.training = true; this.phase = PHASE.SELECT; } },
-        { x: 494, y: 462, w: 292, h: 54, action: () => { this.cpuEnabled = !this.cpuEnabled; } }
+        { x: 494, y: 364, w: 292, h: 54, action: () => this.startMatch(false) },
+        { x: 494, y: 432, w: 292, h: 54, action: () => this.startMatch(true) },
+        { x: 494, y: 500, w: 292, h: 54, action: () => { this.cpuEnabled = !this.cpuEnabled; } }
       ];
-      if (this.input.consume("ui.confirm")) this.phase = PHASE.SELECT;
+      if (this.input.consume("ui.confirm")) this.startMatch(false);
       return;
     }
 
     if (this.phase === PHASE.SELECT) {
-      this.menuHitAreas = [{ x: 494, y: 594, w: 292, h: 54, action: () => this.startVersus() }];
-      if (this.input.consume("ui.confirm")) this.startVersus();
+      this.menuHitAreas = [
+        { x: 90, y: 128, w: 500, h: 420, action: () => this.selectPlayer1("KALYX") },
+        { x: 690, y: 128, w: 500, h: 420, action: () => this.selectPlayer1("MASTER_EZRA") },
+        { x: 494, y: 594, w: 292, h: 54, action: () => this.startMatch(this.training) }
+      ];
+      if (this.input.consume("ui.confirm")) this.startMatch(this.training);
       if (this.input.consume("ui.back")) this.phase = PHASE.TITLE;
       return;
     }
@@ -224,42 +247,75 @@ export class GothTechnologyGame {
     if (this.phase === PHASE.PAUSE && this.input.consume("ui.back")) this.phase = PHASE.FIGHT;
   }
 
-  cpuActions() {
-    const ezra = this.fighters[1];
-    const kalyx = this.fighters[0];
-    const dist = kalyx.x - ezra.x;
+  cpuActions(dt = 1 / 60) {
+    const cpu = this.fighters[1];
+    const player = this.fighters[0];
+    const dist = player.x - cpu.x;
     const abs = Math.abs(dist);
     const actions = {};
-    if (ezra.isKO) return actions;
-    const away = dist > 0 ? "right" : "left";
-    const toward = dist > 0 ? "left" : "right";
-    if (ezra.health < kalyx.health - 160 && abs < 190) actions[away] = true;
-    else if (abs > 370) actions[toward] = true;
-    else if (abs < 126) actions[away] = true;
-    if (!this.playerEngaged && this.roundTimer > ROUND_SECONDS - 12) return actions;
-    if (kalyx.currentAttack && abs < 180 && Math.random() < 0.055) actions[away] = true;
-    if (kalyx.lastActions?.down && Math.random() < 0.025) actions.down = true;
+    if (cpu.isKO || (!this.playerEngaged && this.roundTimer > ROUND_SECONDS - 12)) return actions;
+
+    this.cpuDecisionTimer = Math.max(0, this.cpuDecisionTimer - dt);
+    if (this.cpuDecisionTimer > 0) {
+      return { ...this.cpuDecision };
+    }
+
+    const toward = dist > 0 ? "right" : "left";
+    const away = dist > 0 ? "left" : "right";
+    const margin = cpu.config.stageMargin ?? 0;
+    const minX = WORLD.left + margin;
+    const maxX = WORLD.right - margin;
+    const nearLeftEdge = cpu.x <= minX + 18;
+    const nearRightEdge = cpu.x >= maxX - 18;
+    const holdMin = 220;
+    const holdMax = 390;
+
+    if (nearLeftEdge) actions.right = true;
+    else if (nearRightEdge) actions.left = true;
+    else if (abs > holdMax) actions[toward] = true;
+    else if (abs < holdMin) actions[away] = true;
+
+    if (player.currentAttack && abs < 168 && Math.random() < 0.035) {
+      if (away === "left" && !nearLeftEdge) actions.left = true;
+      if (away === "right" && !nearRightEdge) actions.right = true;
+    }
+    if (player.lastActions?.down && Math.random() < 0.025) actions.down = true;
     if (abs > 240 && Math.random() < 0.008) actions.special = true;
-    if (ezra.meter >= 100 && abs > 190 && Math.random() < 0.004) actions.super = true;
+    if (cpu.meter >= 100 && abs > 190 && Math.random() < 0.004) actions.super = true;
     if (abs < 120 && Math.random() < 0.014) actions.lightKick = true;
     if (abs < 175 && Math.random() < 0.01) actions.heavyPunch = true;
     if (abs < 80 && Math.random() < 0.008) actions.throw = true;
-    if (ezra.assistCooldowns.assist1 <= 0 && Math.random() < 0.003) actions.assist1 = true;
+    if (cpu.assistCooldowns.assist1 <= 0 && Math.random() < 0.003) actions.assist1 = true;
+    this.cpuDecision = { ...actions };
+    this.cpuDecisionTimer = 0.46;
     return actions;
   }
 
   keepFightersSeparated() {
     const [a, b] = this.fighters;
-    const min = 62;
+    const min = 126;
     const delta = b.x - a.x;
-    if (Math.abs(delta) < min) {
-      const push = (min - Math.abs(delta)) / 2;
-      const dir = delta >= 0 ? 1 : -1;
-      a.x -= push * dir;
-      b.x += push * dir;
-      a.x = clamp(a.x, 64, 1216);
-      b.x = clamp(b.x, 64, 1216);
+    if (delta < min) {
+      const center = (a.x + b.x) / 2;
+      const aMargin = a.config.stageMargin ?? 0;
+      const bMargin = b.config.stageMargin ?? 0;
+      const aMin = WORLD.left + aMargin;
+      const aMax = WORLD.right - aMargin;
+      const bMin = WORLD.left + bMargin;
+      const bMax = WORLD.right - bMargin;
+      a.x = clamp(center - min / 2, aMin, Math.min(aMax, bMax - min));
+      b.x = clamp(a.x + min, Math.max(bMin, aMin + min), bMax);
+      if (b.x - a.x < min) a.x = clamp(b.x - min, aMin, aMax);
+      if (a.vx > 0) a.vx = Math.min(a.vx, 0);
+      if (b.vx < 0) b.vx = Math.max(b.vx, 0);
     }
+  }
+
+  faceFighters() {
+    const [a, b] = this.fighters;
+    if (!a || !b) return;
+    if (!a.isKO) a.facing = 1;
+    if (!b.isKO) b.facing = -1;
   }
 
   checkRoundEnd() {
@@ -378,19 +434,19 @@ export class GothTechnologyGame {
   drawBackground(ctx, menuMode) {
     ctx.fillStyle = "#050403";
     ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-    const bg = this.assets?.images.background;
+    const titleBackdrop = this.assets?.images.titleBackdrop;
+    const bg = menuMode && titleBackdrop ? titleBackdrop : this.assets?.images.background;
     const trees = this.assets?.images.farTrees;
     const fog = this.assets?.images.fog;
     const embers = this.assets?.images.embers;
     const ground = this.assets?.images.ground;
-    const stageTop = 72;
-    const groundBandTop = GROUND_Y - 42;
-    const groundTileTop = GROUND_Y - 23;
-    const groundTileHeight = 164;
-    if (bg) ctx.drawImage(bg, 0, stageTop, CANVAS_WIDTH, GROUND_Y - stageTop + 34);
+    const groundBandTop = GROUND_Y - 58;
+    const groundTileTop = GROUND_Y - 54;
+    const groundTileHeight = 214;
+    if (bg) ctx.drawImage(bg, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
     if (trees) {
       const x = -((this.parallax * 10) % CANVAS_WIDTH);
-      ctx.globalAlpha = 0.72;
+      ctx.globalAlpha = menuMode ? 0.22 : 0.14;
       ctx.drawImage(trees, x, 72, CANVAS_WIDTH, 380);
       ctx.drawImage(trees, x + CANVAS_WIDTH, 72, CANVAS_WIDTH, 380);
       ctx.globalAlpha = 1;
@@ -398,7 +454,8 @@ export class GothTechnologyGame {
     const grad = ctx.createLinearGradient(0, 0, 0, CANVAS_HEIGHT);
     grad.addColorStop(0, "rgba(0,0,0,0.74)");
     grad.addColorStop(0.35, menuMode ? "rgba(0,0,0,0.56)" : "rgba(0,0,0,0.16)");
-    grad.addColorStop(1, "rgba(0,0,0,0.84)");
+    grad.addColorStop(0.76, "rgba(0,0,0,0.28)");
+    grad.addColorStop(1, "rgba(0,0,0,0.76)");
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
     if (fog) {
@@ -408,21 +465,54 @@ export class GothTechnologyGame {
       ctx.drawImage(fog, x + CANVAS_WIDTH, 170, CANVAS_WIDTH, 270);
       ctx.globalAlpha = 1;
     }
-    ctx.fillStyle = "rgba(5, 4, 3, 0.92)";
+    ctx.fillStyle = "rgba(5, 4, 3, 0.22)";
     ctx.fillRect(0, groundBandTop, CANVAS_WIDTH, CANVAS_HEIGHT - groundBandTop);
-    const groundShadow = ctx.createLinearGradient(0, GROUND_Y - 56, 0, GROUND_Y + 18);
+    const groundShadow = ctx.createLinearGradient(0, GROUND_Y - 92, 0, GROUND_Y + 28);
     groundShadow.addColorStop(0, "rgba(0, 0, 0, 0)");
-    groundShadow.addColorStop(0.62, "rgba(7, 5, 4, 0.78)");
-    groundShadow.addColorStop(1, "rgba(0, 0, 0, 0.96)");
+    groundShadow.addColorStop(0.42, "rgba(18, 15, 12, 0.18)");
+    groundShadow.addColorStop(0.75, "rgba(7, 5, 4, 0.5)");
+    groundShadow.addColorStop(1, "rgba(0, 0, 0, 0.9)");
     ctx.fillStyle = groundShadow;
-    ctx.fillRect(0, GROUND_Y - 56, CANVAS_WIDTH, 90);
+    ctx.fillRect(0, GROUND_Y - 92, CANVAS_WIDTH, 128);
     if (ground) {
-      for (let x = -((this.parallax * 42) % 320); x < CANVAS_WIDTH + 320; x += 320) {
-        ctx.drawImage(ground, x, groundTileTop, 320, groundTileHeight);
+      const tileW = 640;
+      for (let x = -((this.parallax * 28) % tileW); x < CANVAS_WIDTH + tileW; x += tileW) {
+        ctx.drawImage(ground, x, groundTileTop, tileW, groundTileHeight);
       }
+      ctx.save();
+      ctx.globalCompositeOperation = "multiply";
+      const soil = ctx.createLinearGradient(0, GROUND_Y - 34, 0, CANVAS_HEIGHT);
+      soil.addColorStop(0, "rgba(58, 48, 38, 0.18)");
+      soil.addColorStop(0.34, "rgba(18, 13, 9, 0.48)");
+      soil.addColorStop(1, "rgba(0, 0, 0, 0.82)");
+      ctx.fillStyle = soil;
+      ctx.fillRect(0, GROUND_Y - 34, CANVAS_WIDTH, CANVAS_HEIGHT - GROUND_Y + 34);
+      ctx.restore();
     } else {
       ctx.fillStyle = "#11100d";
       ctx.fillRect(0, groundBandTop, CANVAS_WIDTH, CANVAS_HEIGHT - groundBandTop);
+    }
+    if (!menuMode) {
+      ctx.save();
+      for (const fighter of this.fighters) {
+        ctx.fillStyle = "rgba(0, 0, 0, 0.38)";
+        ctx.beginPath();
+        ctx.ellipse(fighter.x, GROUND_Y + 6, 82, 15, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "rgba(216, 170, 69, 0.08)";
+        ctx.beginPath();
+        ctx.ellipse(fighter.x + fighter.facing * 10, GROUND_Y + 4, 46, 6, 0, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.fillStyle = "rgba(180, 154, 110, 0.18)";
+      for (let i = 0; i < 22; i += 1) {
+        const x = (i * 79 + 37) % CANVAS_WIDTH;
+        const y = GROUND_Y + 8 + (i % 5) * 19;
+        ctx.beginPath();
+        ctx.ellipse(x, y, 4 + (i % 4) * 2, 1.4 + (i % 3), (i * 0.7) % Math.PI, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
     }
     if (embers) {
       const x = -((this.parallax * 36) % CANVAS_WIDTH);
@@ -431,8 +521,12 @@ export class GothTechnologyGame {
       ctx.drawImage(embers, x + CANVAS_WIDTH, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
       ctx.globalAlpha = 1;
     }
-    ctx.strokeStyle = "rgba(216, 170, 69, 0.18)";
-    ctx.lineWidth = 2;
+    const lip = ctx.createLinearGradient(0, GROUND_Y - 3, CANVAS_WIDTH, GROUND_Y - 3);
+    lip.addColorStop(0, "rgba(72, 58, 36, 0.1)");
+    lip.addColorStop(0.5, "rgba(242, 212, 143, 0.28)");
+    lip.addColorStop(1, "rgba(62, 50, 32, 0.1)");
+    ctx.strokeStyle = lip;
+    ctx.lineWidth = 1.4;
     ctx.beginPath();
     ctx.moveTo(0, GROUND_Y - 1);
     ctx.lineTo(CANVAS_WIDTH, GROUND_Y - 1);

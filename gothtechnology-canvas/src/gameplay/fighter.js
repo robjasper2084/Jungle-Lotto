@@ -2,6 +2,7 @@ import { GRAVITY, GROUND_Y, WORLD } from "../config/constants.js";
 import { ATTACKS } from "../config/moves.js";
 import { drawSpriteFrame } from "../engine/assets.js";
 import { approach, clamp, makeRect } from "../engine/math.js";
+import { SpriteEffect } from "./effects.js";
 
 const MOTION_LOCKS = new Set([
   "LIGHT_PUNCH",
@@ -59,6 +60,11 @@ export class Fighter {
     this.lastActions = {};
     this.moveHold = 0;
     this.lastMoveDir = 0;
+    this.dashTimer = 0;
+    this.dashCooldown = 0;
+    this.dashForward = true;
+    this.dashDir = facing;
+    this.landingLag = 0;
     this.isKO = false;
   }
 
@@ -81,6 +87,11 @@ export class Fighter {
     this.isKO = false;
     this.moveHold = 0;
     this.lastMoveDir = 0;
+    this.dashTimer = 0;
+    this.dashCooldown = 0;
+    this.dashForward = true;
+    this.dashDir = facing;
+    this.landingLag = 0;
     this.setMotion("READY_STANCE", true);
   }
 
@@ -98,7 +109,11 @@ export class Fighter {
   }
 
   get activeAnimation() {
-    return this.assets.animations[this.config.manifestKey]?.[this.motion] ?? this.assets.animations[this.config.manifestKey]?.IDLE;
+    return this.assets.animations[this.config.manifestKey]?.[this.displayMotion] ?? this.assets.animations[this.config.manifestKey]?.IDLE;
+  }
+
+  get displayMotion() {
+    return this.config.motionRemap?.[this.motion] ?? this.motion;
   }
 
   setMotion(motion, force = false) {
@@ -107,8 +122,14 @@ export class Fighter {
     this.motionElapsed = 0;
   }
 
+  getAttackData(name) {
+    const base = ATTACKS[name];
+    if (!base) return null;
+    return { ...base, ...(this.config.attackOverrides?.[name] ?? {}) };
+  }
+
   beginAttack(name, game) {
-    const data = ATTACKS[name];
+    const data = this.getAttackData(name);
     if (!data || this.currentAttack || this.hitstun || this.blockstun || this.knockdown || this.isKO) return false;
     if (name === "special" && this.specialCooldown > 0) return false;
     if (name === "super" && (this.superCooldown > 0 || this.meter < data.cost)) return false;
@@ -172,10 +193,14 @@ export class Fighter {
   }
 
   update(dt, actions, opponent, game) {
+    const wasGrounded = this.grounded;
     this.lastActions = actions;
     this.motionElapsed += dt;
     this.specialCooldown = Math.max(0, this.specialCooldown - dt);
     this.superCooldown = Math.max(0, this.superCooldown - dt);
+    this.dashTimer = Math.max(0, this.dashTimer - dt);
+    this.dashCooldown = Math.max(0, this.dashCooldown - dt);
+    this.landingLag = Math.max(0, this.landingLag - dt);
     this.invulnerable = Math.max(0, this.invulnerable - dt);
     this.hitstun = Math.max(0, this.hitstun - dt);
     this.blockstun = Math.max(0, this.blockstun - dt);
@@ -192,7 +217,8 @@ export class Fighter {
       this.setMotion("DEFEAT", true);
     }
 
-    this.facing = opponent.x >= this.x ? 1 : -1;
+    const faceDelta = opponent.x - this.x;
+    if (Math.abs(faceDelta) > 12) this.facing = faceDelta > 0 ? 1 : -1;
 
     if (this.knockdown > 0 && !this.isKO) {
       this.knockdown = Math.max(0, this.knockdown - dt);
@@ -236,31 +262,55 @@ export class Fighter {
       }
     }
 
-    const canMove = !locked && !this.currentAttack;
+    const dashing = this.dashTimer > 0;
+    const canMove = !locked && !this.currentAttack && this.landingLag <= 0 && !dashing;
     let desired = 0;
-    if (canMove) {
-      const left = actions.left ? -1 : 0;
-      const right = actions.right ? 1 : 0;
-      desired = left + right;
+    const left = actions.left ? -1 : 0;
+    const right = actions.right ? 1 : 0;
+    desired = left + right;
+    if (dashing) {
+      this.vx = approach(this.vx, 0, dt * 820);
+      this.setMotion(this.dashForward ? "DASH_FORWARD" : "DASH_BACK");
+    } else if (canMove) {
       if (desired !== 0 && desired === this.lastMoveDir) this.moveHold += dt;
       else this.moveHold = 0;
       this.lastMoveDir = desired;
       if (actions.up && this.grounded) {
         this.vy = this.config.jumpVelocity;
+        this.vx += desired * this.config.speed * 0.36;
         this.y -= 1;
         this.setMotion("JUMP_START", true);
         game.audio.beep("select");
       }
-      if (actions.dash && desired !== 0) {
-        this.vx = desired * this.config.dashSpeed;
-        this.setMotion(desired === this.facing ? "DASH_FORWARD" : "DASH_BACK", true);
+      if (actions.dash && desired !== 0 && this.grounded && this.dashCooldown <= 0) {
+        const movingForward = desired === this.facing;
+        this.dashForward = movingForward;
+        this.dashDir = desired;
+        this.dashTimer = movingForward ? 0.16 : 0.22;
+        this.dashCooldown = movingForward ? 0.34 : 0.44;
+        this.vx = desired * this.config.dashSpeed * (movingForward ? 1 : 0.78);
+        if (!movingForward) {
+          this.vy = Math.min(this.vy, -165);
+          this.y -= 1;
+        }
+        this.setMotion(movingForward ? "DASH_FORWARD" : "DASH_BACK", true);
+        game.audio.beep("select");
+        game.effects.push(new SpriteEffect({
+          x: this.x - desired * 28,
+          y: this.y + 22,
+          image: game.assets.images.dust,
+          frames: 8,
+          duration: 0.3,
+          scale: 0.72,
+          flip: desired < 0,
+          alpha: 0.58
+        }));
+      } else if (!this.grounded && desired !== 0) {
+        this.vx = approach(this.vx, desired * this.config.speed * 0.78, dt * 680);
       } else if (desired !== 0) {
         const movingForward = desired === this.facing;
-        const running = this.moveHold > 0.32;
-        const speed = running ? this.config.runSpeed : this.config.speed;
-        this.vx = desired * speed;
-        if (running) this.setMotion(movingForward ? "RUN_FORWARD" : "RUN_BACK");
-        else this.setMotion(movingForward ? "WALK_FORWARD" : "WALK_BACK");
+        this.vx = approach(this.vx, desired * this.config.speed, dt * 2100);
+        this.setMotion(movingForward ? "WALK_FORWARD" : "WALK_BACK");
       } else {
         this.moveHold = 0;
         this.lastMoveDir = 0;
@@ -282,9 +332,26 @@ export class Fighter {
     this.vy += GRAVITY * dt;
     this.x += this.vx * dt;
     this.y += this.vy * dt;
-    this.x = clamp(this.x, WORLD.left, WORLD.right);
+    const stageMargin = this.config.stageMargin ?? 0;
+    const minX = WORLD.left + stageMargin;
+    const maxX = WORLD.right - stageMargin;
+    this.x = clamp(this.x, minX, maxX);
+    if ((this.x <= minX && this.vx < 0) || (this.x >= maxX && this.vx > 0)) this.vx = 0;
     if (this.y >= GROUND_Y) {
-      if (!this.grounded && !this.currentAttack && !locked) this.setMotion("LANDING", true);
+      if (!wasGrounded && !this.currentAttack && !locked) {
+        this.setMotion("LANDING", true);
+        this.landingLag = 0.055;
+        game.effects.push(new SpriteEffect({
+          x: this.x,
+          y: GROUND_Y + 18,
+          image: game.assets.images.dust,
+          frames: 8,
+          duration: 0.34,
+          scale: 0.78,
+          flip: this.vx < 0,
+          alpha: 0.52
+        }));
+      }
       this.y = GROUND_Y;
       this.vy = 0;
     } else if (!locked && !this.currentAttack) {
@@ -308,7 +375,8 @@ export class Fighter {
   render(ctx, debug = false) {
     const anim = this.activeAnimation;
     let frameIndex = 0;
-    if (anim?.frames?.length) {
+    const steadyMotions = new Set(["IDLE", "READY_STANCE", "BLOCK_HIGH", "BLOCK_LOW", "CROUCH_IDLE"]);
+    if (anim?.frames?.length && !steadyMotions.has(this.motion)) {
       const duration = anim.frames.reduce((sum, frame) => sum + (frame.duration_ms ?? 85), 0) / 1000;
       const loop = !MOTION_LOCKS.has(this.motion) || this.motion === "DEFEAT" || this.motion === "VICTORY";
       const time = loop ? this.motionElapsed % duration : Math.min(this.motionElapsed, duration - 0.001);
@@ -321,12 +389,57 @@ export class Fighter {
         }
       }
     }
-    const pulse = this.invulnerable > 0 && Math.floor(this.invulnerable * 18) % 2 === 0 ? 0.72 : 1;
-    drawSpriteFrame(ctx, anim, frameIndex, this.x, this.y + 14, {
-      scale: this.config.scale,
-      flip: this.facing < 0,
-      alpha: pulse
+    const bodyAlpha = 1;
+    const sourceFacing = this.config.motionFacing?.[this.displayMotion] ?? this.config.motionFacing?.[this.motion] ?? this.config.spriteFacing ?? 1;
+    let flipSprite = this.facing !== sourceFacing;
+    if (this.id === "MASTER_EZRA") {
+      flipSprite = this.slot === 1;
+    }
+    const drawScale = this.config.motionScale?.[this.motion] ?? this.config.scale;
+    ctx.save();
+    ctx.globalAlpha = 1;
+    ctx.globalCompositeOperation = "source-over";
+    ctx.filter = "none";
+    if (this.dashTimer > 0) {
+      drawSpriteFrame(ctx, anim, frameIndex, this.x - this.dashDir * 32, this.y + 14, {
+        scale: drawScale,
+        flip: flipSprite,
+        alpha: 0.24,
+        composite: "source-over"
+      });
+    }
+    const drewPrimary = drawSpriteFrame(ctx, anim, frameIndex, this.x, this.y + 14, {
+      scale: drawScale,
+      flip: flipSprite,
+      alpha: bodyAlpha,
+      composite: "source-over",
+      underpaint: true,
+      underpaintAlpha: this.id === "MASTER_EZRA" ? 0.46 : 0.54
     });
+    if (!drewPrimary && this.assets.animations[this.config.manifestKey]?.READY_STANCE) {
+      drawSpriteFrame(ctx, this.assets.animations[this.config.manifestKey].READY_STANCE, 0, this.x, this.y + 14, {
+        scale: this.config.scale,
+        flip: flipSprite,
+        alpha: 1,
+        composite: "source-over",
+        underpaint: true,
+        underpaintAlpha: 0.55
+      });
+    }
+    ctx.restore();
+
+    if (this.invulnerable > 0 && !this.isKO) {
+      ctx.save();
+      ctx.globalAlpha = 0.18 + 0.08 * Math.sin(this.invulnerable * 24);
+      ctx.strokeStyle = this.id === "MASTER_EZRA" ? "rgba(139, 212, 255, 0.72)" : "rgba(216, 170, 69, 0.64)";
+      ctx.lineWidth = 2;
+      ctx.shadowColor = this.id === "MASTER_EZRA" ? "#8bd4ff" : "#d8aa45";
+      ctx.shadowBlur = 12;
+      ctx.beginPath();
+      ctx.ellipse(this.x, this.y - 98, 58, 88, 0, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+    }
 
     if (this.shieldTimer > 0) {
       ctx.save();

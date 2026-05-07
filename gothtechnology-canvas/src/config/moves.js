@@ -197,7 +197,8 @@ export const ASSISTS = {
       cooldown: 7.2,
       speed: 650,
       yOffset: -230,
-      hitbox: { w: 100, h: 70 }
+      hitbox: { w: 100, h: 70 },
+      sheet: { sourceX: 0, sourceY: 0, cellWidth: 256, cellHeight: 256, row: 0, frames: 4, frameRate: 14, visualScale: 0.66 }
     },
     assist2: {
       name: "Nocturna Wraith",
@@ -206,7 +207,8 @@ export const ASSISTS = {
       cooldown: 8.4,
       speed: 520,
       yOffset: -158,
-      hitbox: { w: 112, h: 100 }
+      hitbox: { w: 112, h: 100 },
+      sheet: { sourceX: 0, sourceY: 0, cellWidth: 256, cellHeight: 256, row: 0, frames: 4, frameRate: 11, visualScale: 0.7 }
     }
   },
   MASTER_EZRA: {
@@ -217,7 +219,8 @@ export const ASSISTS = {
       cooldown: 7.6,
       speed: 620,
       yOffset: -220,
-      hitbox: { w: 96, h: 70 }
+      hitbox: { w: 96, h: 70 },
+      sheet: { sourceX: 0, sourceY: 0, cellWidth: 256, cellHeight: 256, row: 0, frames: 4, frameRate: 14, visualScale: 0.7 }
     },
     assist2: {
       name: "Blue Ward",
