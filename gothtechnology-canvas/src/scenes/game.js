@@ -1,14 +1,14 @@
-import { ASSET_URLS, FIGHTERS } from "../config/assets.js?v=startup-bg1";
-import { ASSISTS, ATTACKS } from "../config/moves.js?v=startup-bg1";
+import { ASSET_URLS, FIGHTERS } from "../config/assets.js?v=music-flow1";
+import { ASSISTS, ATTACKS } from "../config/moves.js?v=music-flow1";
 import { CANVAS_HEIGHT, CANVAS_WIDTH, COLORS, GROUND_Y, PHASE, ROUND_SECONDS, WORLD } from "../config/constants.js";
-import { AssetLoader, drawSheetFrame } from "../engine/assets.js?v=startup-bg1";
-import { WebAudioBus } from "../engine/audio.js";
+import { AssetLoader, drawSheetFrame } from "../engine/assets.js?v=music-flow1";
+import { WebAudioBus } from "../engine/audio.js?v=music-flow1";
 import { InputManager } from "../engine/input.js";
 import { clamp, rectsOverlap } from "../engine/math.js";
-import { applyHit, resolveMelee } from "../gameplay/combat.js?v=startup-bg1";
+import { applyHit, resolveMelee } from "../gameplay/combat.js?v=music-flow1";
 import { SpriteEffect } from "../gameplay/effects.js";
-import { Fighter } from "../gameplay/fighter.js?v=startup-bg1";
-import { AssistStrike, Projectile } from "../gameplay/projectiles.js?v=startup-bg1";
+import { Fighter } from "../gameplay/fighter.js?v=music-flow1";
+import { AssistStrike, Projectile } from "../gameplay/projectiles.js?v=music-flow1";
 import {
   drawCharacterSelect,
   drawDiagnostics,
@@ -53,10 +53,14 @@ export class GothTechnologyGame {
     this.cpuDecision = {};
     this.raf = 0;
     this.stopped = false;
+    this.pendingFightMusic = false;
+    this.audio.preloadMusic();
+    this.audio.startMusic("menu");
     this.bindPointer();
   }
 
   async boot() {
+    this.audio.startMusic("menu");
     this.assets = await new AssetLoader((progress) => {
       this.loadingProgress = progress;
       this.render();
@@ -64,6 +68,7 @@ export class GothTechnologyGame {
     if (this.stopped) return;
     this.createFighters();
     this.phase = PHASE.TITLE;
+    this.syncMusicForPhase();
     this.raf = requestAnimationFrame((time) => this.loop(time));
   }
 
@@ -77,19 +82,20 @@ export class GothTechnologyGame {
       const rect = this.canvas.getBoundingClientRect();
       const x = ((event.clientX - rect.left) / rect.width) * CANVAS_WIDTH;
       const y = ((event.clientY - rect.top) / rect.height) * CANVAS_HEIGHT;
+      this.audio.ensure();
       if (this.phase === PHASE.ROUND_END) {
         this.startRound();
         return;
       }
       if (this.phase === PHASE.MATCH_END) {
         this.phase = PHASE.TITLE;
+        this.syncMusicForPhase();
         return;
       }
       const hit = this.menuHitAreas.find((area) => x >= area.x && x <= area.x + area.w && y >= area.y && y <= area.y + area.h);
       if (hit) hit.action();
       else if (this.phase === PHASE.TITLE) this.startMatch(false);
       else if (this.phase === PHASE.SELECT) this.startMatch(this.training);
-      this.audio.ensure();
     });
   }
 
@@ -114,6 +120,7 @@ export class GothTechnologyGame {
   startVersus() {
     this.phase = PHASE.VERSUS;
     this.roundMessageTimer = 1.35;
+    this.audio.stopMusic({ reset: true });
     this.audio.beep("select");
   }
 
@@ -126,6 +133,7 @@ export class GothTechnologyGame {
       f.roundWins = 0;
       f.meter = training ? 100 : 0;
     });
+    this.audio.stopMusic({ reset: true });
     this.startRound();
   }
 
@@ -146,6 +154,8 @@ export class GothTechnologyGame {
     }
     this.phase = PHASE.FIGHT;
     this.roundMessageTimer = 0.72;
+    this.pendingFightMusic = true;
+    this.audio.stopMusic({ reset: true });
   }
 
   loop(time) {
@@ -174,6 +184,10 @@ export class GothTechnologyGame {
     }
     if (this.roundMessageTimer > 0) {
       this.roundMessageTimer = Math.max(0, this.roundMessageTimer - dt);
+      if (this.roundMessageTimer <= 0 && this.pendingFightMusic) {
+        this.pendingFightMusic = false;
+        this.audio.startMusic("fight", { restart: true });
+      }
       return;
     }
     if (!this.training) this.roundTimer = Math.max(0, this.roundTimer - dt);
@@ -220,6 +234,7 @@ export class GothTechnologyGame {
         { x: 494, y: 432, w: 292, h: 54, action: () => this.startMatch(true) },
         { x: 494, y: 500, w: 292, h: 54, action: () => { this.cpuEnabled = !this.cpuEnabled; } }
       ];
+      this.audio.startMusic("menu");
       if (this.input.consume("ui.confirm")) this.startMatch(false);
       return;
     }
@@ -231,7 +246,10 @@ export class GothTechnologyGame {
         { x: 494, y: 594, w: 292, h: 54, action: () => this.startMatch(this.training) }
       ];
       if (this.input.consume("ui.confirm")) this.startMatch(this.training);
-      if (this.input.consume("ui.back")) this.phase = PHASE.TITLE;
+      if (this.input.consume("ui.back")) {
+        this.phase = PHASE.TITLE;
+        this.syncMusicForPhase();
+      }
       return;
     }
 
@@ -241,7 +259,10 @@ export class GothTechnologyGame {
       this.audio.beep("select");
     }
     if ((this.phase === PHASE.ROUND_END || this.phase === PHASE.MATCH_END) && this.input.consume("ui.confirm")) {
-      if (this.phase === PHASE.MATCH_END) this.phase = PHASE.TITLE;
+      if (this.phase === PHASE.MATCH_END) {
+        this.phase = PHASE.TITLE;
+        this.syncMusicForPhase();
+      }
       else this.startRound();
     }
     if (this.phase === PHASE.PAUSE && this.input.consume("ui.back")) this.phase = PHASE.FIGHT;
@@ -335,9 +356,25 @@ export class GothTechnologyGame {
     if (winner.roundWins >= 2) {
       this.matchWinner = winner;
       this.phase = PHASE.MATCH_END;
+      this.audio.startMusic("menu");
     } else {
       this.roundNumber += 1;
       this.phase = PHASE.ROUND_END;
+      this.audio.stopMusic({ reset: true });
+    }
+  }
+
+  syncMusicForPhase() {
+    if ([PHASE.LOADING, PHASE.TITLE, PHASE.SELECT, PHASE.MATCH_END].includes(this.phase)) {
+      this.audio.startMusic("menu");
+      return;
+    }
+    if (this.phase === PHASE.FIGHT) {
+      this.audio.startMusic("fight");
+      return;
+    }
+    if (this.phase === PHASE.VERSUS || this.phase === PHASE.ROUND_END) {
+      this.audio.stopMusic({ reset: true });
     }
   }
 

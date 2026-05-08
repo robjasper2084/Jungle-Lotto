@@ -1,4 +1,4 @@
-import { ASSET_URLS, PACK_ROOT } from "../config/assets.js?v=startup-bg1";
+import { ASSET_URLS, PACK_ROOT } from "../config/assets.js?v=music-flow1";
 
 const imageCache = new Map();
 

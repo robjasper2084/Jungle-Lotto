@@ -5,6 +5,8 @@ export class WebAudioBus {
     this.musicUrl = musicUrl;
     this.music = null;
     this.musicStarted = false;
+    this.musicMode = "silent";
+    this.pendingMode = "menu";
   }
 
   ensure() {
@@ -13,7 +15,8 @@ export class WebAudioBus {
       if (AudioContext) this.ctx = new AudioContext();
     }
     if (this.ctx?.state === "suspended") this.ctx.resume?.();
-    this.startMusic();
+    this.preloadMusic();
+    if (this.pendingMode !== "silent") this.startMusic(this.pendingMode);
   }
 
   toggleMute() {
@@ -21,24 +24,58 @@ export class WebAudioBus {
     if (this.music) {
       this.music.muted = this.muted;
       if (this.muted) this.music.pause();
-      else this.startMusic();
+      else if (this.pendingMode !== "silent") this.startMusic(this.pendingMode);
     }
   }
 
-  startMusic() {
-    if (!this.musicUrl || this.muted) return;
+  preloadMusic() {
+    if (!this.musicUrl) return null;
     if (!this.music) {
       this.music = new Audio(this.musicUrl);
       this.music.loop = true;
       this.music.preload = "auto";
       this.music.volume = 0.68;
       this.music.muted = this.muted;
+      this.music.load?.();
     }
-    if (this.musicStarted && !this.music.paused) return;
+    return this.music;
+  }
+
+  startMusic(mode = "menu", options = {}) {
+    this.pendingMode = mode;
+    if (!this.musicUrl || this.muted) return;
+    this.preloadMusic();
+    if (!this.music) return;
+    const restart = Boolean(options.restart);
+    if (restart) {
+      try {
+        this.music.currentTime = 0;
+      } catch (error) {
+        // Some browsers reject currentTime changes before metadata arrives.
+      }
+    }
+    this.music.volume = mode === "fight" ? 0.74 : 0.5;
+    if (this.musicStarted && !this.music.paused && this.musicMode === mode && !restart) return;
+    this.musicMode = mode;
     this.musicStarted = true;
     this.music.play().catch(() => {
       this.musicStarted = false;
     });
+  }
+
+  stopMusic(options = {}) {
+    this.pendingMode = "silent";
+    if (!this.music) return;
+    this.music.pause();
+    this.musicStarted = false;
+    this.musicMode = "silent";
+    if (options.reset) {
+      try {
+        this.music.currentTime = 0;
+      } catch (error) {
+        // Ignore metadata timing on mobile browsers.
+      }
+    }
   }
 
   beep(type = "hit") {
