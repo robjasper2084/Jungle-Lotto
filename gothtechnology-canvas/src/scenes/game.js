@@ -1,14 +1,14 @@
-import { ASSET_URLS, FIGHTERS } from "../config/assets.js?v=music-loop1";
-import { ASSISTS, ATTACKS } from "../config/moves.js?v=music-loop1";
+import { ASSET_URLS, FIGHTERS } from "../config/assets.js?v=fast-60feel1";
+import { ASSISTS, ATTACKS } from "../config/moves.js?v=fast-60feel1";
 import { CANVAS_HEIGHT, CANVAS_WIDTH, COLORS, GROUND_Y, PHASE, ROUND_SECONDS, WORLD } from "../config/constants.js";
-import { AssetLoader, drawSheetFrame } from "../engine/assets.js?v=music-loop1";
-import { WebAudioBus } from "../engine/audio.js?v=music-loop1";
+import { AssetLoader, drawSheetFrame } from "../engine/assets.js?v=fast-60feel1";
+import { WebAudioBus } from "../engine/audio.js?v=fast-60feel1";
 import { InputManager } from "../engine/input.js";
 import { clamp, rectsOverlap } from "../engine/math.js";
-import { applyHit, resolveMelee } from "../gameplay/combat.js?v=music-loop1";
+import { applyHit, resolveMelee } from "../gameplay/combat.js?v=fast-60feel1";
 import { SpriteEffect } from "../gameplay/effects.js";
-import { Fighter } from "../gameplay/fighter.js?v=music-loop1";
-import { AssistStrike, Projectile } from "../gameplay/projectiles.js?v=music-loop1";
+import { Fighter } from "../gameplay/fighter.js?v=fast-60feel1";
+import { AssistStrike, Projectile } from "../gameplay/projectiles.js?v=fast-60feel1";
 import {
   drawCharacterSelect,
   drawDiagnostics,
@@ -155,7 +155,7 @@ export class GothTechnologyGame {
 
   loop(time) {
     if (this.stopped) return;
-    const dt = Math.min(1 / 45, (time - this.lastTime) / 1000 || 0);
+    const dt = Math.min(1 / 60, (time - this.lastTime) / 1000 || 0);
     this.lastTime = time;
     this.update(dt);
     this.render();

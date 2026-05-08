@@ -1,4 +1,4 @@
-import { drawSheetFrame } from "../engine/assets.js?v=music-loop1";
+import { drawSheetFrame } from "../engine/assets.js?v=fast-60feel1";
 import { rectsOverlap } from "../engine/math.js";
 import { SpriteEffect } from "./effects.js";
 

@@ -1,5 +1,5 @@
 import { rectsOverlap } from "../engine/math.js";
-import { ATTACKS } from "../config/moves.js";
+import { ATTACKS } from "../config/moves.js?v=fast-60feel1";
 import { FloatingText, SpriteEffect } from "./effects.js";
 
 export function resolveMelee(attacker, defender, game) {

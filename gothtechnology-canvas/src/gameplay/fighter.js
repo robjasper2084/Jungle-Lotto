@@ -1,6 +1,6 @@
 import { GRAVITY, GROUND_Y, WORLD } from "../config/constants.js";
-import { ATTACKS } from "../config/moves.js";
-import { drawSpriteFrame } from "../engine/assets.js?v=music-loop1";
+import { ATTACKS } from "../config/moves.js?v=fast-60feel1";
+import { drawSpriteFrame } from "../engine/assets.js?v=fast-60feel1";
 import { approach, clamp, makeRect } from "../engine/math.js";
 import { SpriteEffect } from "./effects.js";
 
@@ -415,9 +415,11 @@ export class Fighter {
     let frameIndex = 0;
     const steadyMotions = new Set(["IDLE", "READY_STANCE", "BLOCK_HIGH", "BLOCK_LOW", "CROUCH_IDLE"]);
     if (anim?.frames?.length && !steadyMotions.has(this.motion)) {
+      const animTimeScale = this.config.motionTimeScale ?? 1;
       const duration = anim.frames.reduce((sum, frame) => sum + (frame.duration_ms ?? 85), 0) / 1000;
       const loop = !MOTION_LOCKS.has(this.motion) || this.motion === "DEFEAT" || this.motion === "VICTORY";
-      const time = loop ? this.motionElapsed % duration : Math.min(this.motionElapsed, duration - 0.001);
+      const scaledMotionTime = this.motionElapsed * animTimeScale;
+      const time = loop ? scaledMotionTime % duration : Math.min(scaledMotionTime, duration - 0.001);
       let acc = 0;
       for (let i = 0; i < anim.frames.length; i += 1) {
         acc += (anim.frames[i].duration_ms ?? 85) / 1000;
