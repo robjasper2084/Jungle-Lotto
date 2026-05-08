@@ -1,12 +1,9 @@
 export class WebAudioBus {
-  constructor(musicUrls = "") {
+  constructor(musicUrl = "") {
     this.ctx = null;
     this.muted = false;
-    this.musicUrls = typeof musicUrls === "string"
-      ? { menu: musicUrls, fight: musicUrls }
-      : { menu: musicUrls.menu ?? "", fight: musicUrls.fight ?? musicUrls.menu ?? "" };
+    this.musicUrl = musicUrl;
     this.music = null;
-    this.musicTracks = {};
     this.musicStarted = false;
     this.musicMode = "silent";
     this.pendingMode = "menu";
@@ -18,53 +15,37 @@ export class WebAudioBus {
       if (AudioContext) this.ctx = new AudioContext();
     }
     if (this.ctx?.state === "suspended") this.ctx.resume?.();
-    this.preloadMusic("menu");
-    this.preloadMusic("fight");
+    this.preloadMusic();
     if (this.pendingMode !== "silent") this.startMusic(this.pendingMode);
   }
 
   toggleMute() {
     this.muted = !this.muted;
-    for (const track of Object.values(this.musicTracks)) {
-      track.muted = this.muted;
-      if (this.muted) track.pause();
-    }
     if (this.music) {
-      if (this.muted) this.musicStarted = false;
+      this.music.muted = this.muted;
+      if (this.muted) this.music.pause();
       else if (this.pendingMode !== "silent") this.startMusic(this.pendingMode);
     }
   }
 
-  preloadMusic(mode = "menu") {
-    const url = this.musicUrls[mode] ?? this.musicUrls.menu;
-    if (!url) return null;
-    if (!this.musicTracks[mode]) {
-      const track = new Audio(url);
-      track.loop = true;
-      track.preload = "auto";
-      track.volume = mode === "fight" ? 0.74 : 0.5;
-      track.muted = this.muted;
-      track.load?.();
-      this.musicTracks[mode] = track;
+  preloadMusic() {
+    if (!this.musicUrl) return null;
+    if (!this.music) {
+      this.music = new Audio(this.musicUrl);
+      this.music.loop = true;
+      this.music.preload = "auto";
+      this.music.volume = 0.68;
+      this.music.muted = this.muted;
+      this.music.load?.();
     }
-    return this.musicTracks[mode];
+    return this.music;
   }
 
   startMusic(mode = "menu", options = {}) {
     this.pendingMode = mode;
-    if (this.muted) return;
-    const nextMusic = this.preloadMusic(mode);
-    if (!nextMusic) return;
-    if (this.music && this.music !== nextMusic) {
-      this.music.pause();
-      try {
-        this.music.currentTime = 0;
-      } catch (error) {
-        // Some browsers reject currentTime changes before metadata arrives.
-      }
-      this.musicStarted = false;
-    }
-    this.music = nextMusic;
+    if (!this.musicUrl || this.muted) return;
+    this.preloadMusic();
+    if (!this.music) return;
     const restart = Boolean(options.restart);
     if (restart) {
       try {
@@ -84,14 +65,13 @@ export class WebAudioBus {
 
   stopMusic(options = {}) {
     this.pendingMode = "silent";
-    const track = this.music;
-    if (!track) return;
-    track.pause();
+    if (!this.music) return;
+    this.music.pause();
     this.musicStarted = false;
     this.musicMode = "silent";
     if (options.reset) {
       try {
-        track.currentTime = 0;
+        this.music.currentTime = 0;
       } catch (error) {
         // Ignore metadata timing on mobile browsers.
       }

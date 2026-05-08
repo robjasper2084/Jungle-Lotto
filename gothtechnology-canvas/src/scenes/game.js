@@ -1,14 +1,14 @@
-import { ASSET_URLS, FIGHTERS } from "../config/assets.js?v=dual-music1";
-import { ASSISTS, ATTACKS } from "../config/moves.js?v=dual-music1";
+import { ASSET_URLS, FIGHTERS } from "../config/assets.js?v=music-restore1";
+import { ASSISTS, ATTACKS } from "../config/moves.js?v=music-restore1";
 import { CANVAS_HEIGHT, CANVAS_WIDTH, COLORS, GROUND_Y, PHASE, ROUND_SECONDS, WORLD } from "../config/constants.js";
-import { AssetLoader, drawSheetFrame } from "../engine/assets.js?v=dual-music1";
-import { WebAudioBus } from "../engine/audio.js?v=dual-music1";
+import { AssetLoader, drawSheetFrame } from "../engine/assets.js?v=music-restore1";
+import { WebAudioBus } from "../engine/audio.js?v=music-restore1";
 import { InputManager } from "../engine/input.js";
 import { clamp, rectsOverlap } from "../engine/math.js";
-import { applyHit, resolveMelee } from "../gameplay/combat.js?v=dual-music1";
+import { applyHit, resolveMelee } from "../gameplay/combat.js?v=music-restore1";
 import { SpriteEffect } from "../gameplay/effects.js";
-import { Fighter } from "../gameplay/fighter.js?v=dual-music1";
-import { AssistStrike, Projectile } from "../gameplay/projectiles.js?v=dual-music1";
+import { Fighter } from "../gameplay/fighter.js?v=music-restore1";
+import { AssistStrike, Projectile } from "../gameplay/projectiles.js?v=music-restore1";
 import {
   drawCharacterSelect,
   drawDiagnostics,
@@ -25,7 +25,7 @@ export class GothTechnologyGame {
     this.canvas = canvas;
     this.ctx = canvas.getContext("2d", { alpha: false });
     this.input = new InputManager(window);
-    this.audio = new WebAudioBus({ menu: ASSET_URLS.musicMenu, fight: ASSET_URLS.musicFight });
+    this.audio = new WebAudioBus(ASSET_URLS.music);
     this.assets = null;
     this.phase = PHASE.LOADING;
     this.loadingProgress = 0;
@@ -54,8 +54,7 @@ export class GothTechnologyGame {
     this.raf = 0;
     this.stopped = false;
     this.pendingFightMusic = false;
-    this.audio.preloadMusic("menu");
-    this.audio.preloadMusic("fight");
+    this.audio.preloadMusic();
     this.audio.startMusic("menu");
     this.bindPointer();
   }
