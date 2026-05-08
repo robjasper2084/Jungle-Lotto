@@ -1,14 +1,14 @@
-import { ASSET_URLS, FIGHTERS } from "../config/assets.js?v=music-restore1";
-import { ASSISTS, ATTACKS } from "../config/moves.js?v=music-restore1";
+import { ASSET_URLS, FIGHTERS } from "../config/assets.js?v=loading-music1";
+import { ASSISTS, ATTACKS } from "../config/moves.js?v=loading-music1";
 import { CANVAS_HEIGHT, CANVAS_WIDTH, COLORS, GROUND_Y, PHASE, ROUND_SECONDS, WORLD } from "../config/constants.js";
-import { AssetLoader, drawSheetFrame } from "../engine/assets.js?v=music-restore1";
-import { WebAudioBus } from "../engine/audio.js?v=music-restore1";
+import { AssetLoader, drawSheetFrame } from "../engine/assets.js?v=loading-music1";
+import { WebAudioBus } from "../engine/audio.js?v=loading-music1";
 import { InputManager } from "../engine/input.js";
 import { clamp, rectsOverlap } from "../engine/math.js";
-import { applyHit, resolveMelee } from "../gameplay/combat.js?v=music-restore1";
+import { applyHit, resolveMelee } from "../gameplay/combat.js?v=loading-music1";
 import { SpriteEffect } from "../gameplay/effects.js";
-import { Fighter } from "../gameplay/fighter.js?v=music-restore1";
-import { AssistStrike, Projectile } from "../gameplay/projectiles.js?v=music-restore1";
+import { Fighter } from "../gameplay/fighter.js?v=loading-music1";
+import { AssistStrike, Projectile } from "../gameplay/projectiles.js?v=loading-music1";
 import {
   drawCharacterSelect,
   drawDiagnostics,
@@ -53,7 +53,6 @@ export class GothTechnologyGame {
     this.cpuDecision = {};
     this.raf = 0;
     this.stopped = false;
-    this.pendingFightMusic = false;
     this.audio.preloadMusic();
     this.audio.startMusic("menu");
     this.bindPointer();
@@ -120,7 +119,6 @@ export class GothTechnologyGame {
   startVersus() {
     this.phase = PHASE.VERSUS;
     this.roundMessageTimer = 1.35;
-    this.audio.stopMusic({ reset: true });
     this.audio.beep("select");
   }
 
@@ -133,7 +131,6 @@ export class GothTechnologyGame {
       f.roundWins = 0;
       f.meter = training ? 100 : 0;
     });
-    this.audio.stopMusic({ reset: true });
     this.startRound();
   }
 
@@ -154,8 +151,6 @@ export class GothTechnologyGame {
     }
     this.phase = PHASE.FIGHT;
     this.roundMessageTimer = 0.72;
-    this.pendingFightMusic = true;
-    this.audio.stopMusic({ reset: true });
   }
 
   loop(time) {
@@ -184,10 +179,6 @@ export class GothTechnologyGame {
     }
     if (this.roundMessageTimer > 0) {
       this.roundMessageTimer = Math.max(0, this.roundMessageTimer - dt);
-      if (this.roundMessageTimer <= 0 && this.pendingFightMusic) {
-        this.pendingFightMusic = false;
-        this.audio.startMusic("fight", { restart: true });
-      }
       return;
     }
     if (!this.training) this.roundTimer = Math.max(0, this.roundTimer - dt);
@@ -360,7 +351,6 @@ export class GothTechnologyGame {
     } else {
       this.roundNumber += 1;
       this.phase = PHASE.ROUND_END;
-      this.audio.stopMusic({ reset: true });
     }
   }
 
@@ -370,11 +360,7 @@ export class GothTechnologyGame {
       return;
     }
     if (this.phase === PHASE.FIGHT) {
-      this.audio.startMusic("fight");
-      return;
-    }
-    if (this.phase === PHASE.VERSUS || this.phase === PHASE.ROUND_END) {
-      this.audio.stopMusic({ reset: true });
+      this.audio.startMusic("menu");
     }
   }
 
