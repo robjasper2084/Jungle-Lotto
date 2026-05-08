@@ -1,6 +1,6 @@
 import { GRAVITY, GROUND_Y, WORLD } from "../config/constants.js";
 import { ATTACKS } from "../config/moves.js";
-import { drawSpriteFrame } from "../engine/assets.js?v=kalyx-lowkick1";
+import { drawSpriteFrame } from "../engine/assets.js?v=dual-music1";
 import { approach, clamp, makeRect } from "../engine/math.js";
 import { SpriteEffect } from "./effects.js";
 
