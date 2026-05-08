@@ -1,14 +1,14 @@
-import { ASSET_URLS, FIGHTERS } from "../config/assets.js?v=ezra-match-size1";
-import { ASSISTS, ATTACKS } from "../config/moves.js?v=ezra-match-size1";
+import { ASSET_URLS, FIGHTERS } from "../config/assets.js?v=startup-bg1";
+import { ASSISTS, ATTACKS } from "../config/moves.js?v=startup-bg1";
 import { CANVAS_HEIGHT, CANVAS_WIDTH, COLORS, GROUND_Y, PHASE, ROUND_SECONDS, WORLD } from "../config/constants.js";
-import { AssetLoader, drawSheetFrame } from "../engine/assets.js?v=ezra-match-size1";
+import { AssetLoader, drawSheetFrame } from "../engine/assets.js?v=startup-bg1";
 import { WebAudioBus } from "../engine/audio.js";
 import { InputManager } from "../engine/input.js";
 import { clamp, rectsOverlap } from "../engine/math.js";
-import { applyHit, resolveMelee } from "../gameplay/combat.js?v=ezra-match-size1";
+import { applyHit, resolveMelee } from "../gameplay/combat.js?v=startup-bg1";
 import { SpriteEffect } from "../gameplay/effects.js";
-import { Fighter } from "../gameplay/fighter.js?v=ezra-match-size1";
-import { AssistStrike, Projectile } from "../gameplay/projectiles.js?v=ezra-match-size1";
+import { Fighter } from "../gameplay/fighter.js?v=startup-bg1";
+import { AssistStrike, Projectile } from "../gameplay/projectiles.js?v=startup-bg1";
 import {
   drawCharacterSelect,
   drawDiagnostics,

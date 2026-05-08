@@ -1,4 +1,4 @@
-import { GothTechnologyGame } from "./scenes/game.js?v=ezra-match-size1";
+import { GothTechnologyGame } from "./scenes/game.js?v=startup-bg1";
 
 const syncViewportHeight = () => {
   document.documentElement.style.setProperty("--app-height", `${window.innerHeight}px`);

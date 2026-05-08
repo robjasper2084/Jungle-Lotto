@@ -4,7 +4,7 @@ export const LOCAL_ROOT = "assets";
 export const ASSET_URLS = {
   manifest: `${PACK_ROOT}/manifests/GOTHTECHNOLOGY_expanded_motion_manifest.json`,
   logo: `${LOCAL_ROOT}/user-title/lottomind-live-logo.png`,
-  titleBackdrop: `${LOCAL_ROOT}/user-title/kalyx-ezra-forest-title.jpg`,
+  titleBackdrop: `${LOCAL_ROOT}/user-title/gothtechnology-startup-bg.png`,
   background: `${LOCAL_ROOT}/user-stage/forest-fight-background.jpg`,
   farTrees: `${PACK_ROOT}/backgrounds/GOTHTECHNOLOGY_PARALLAX_FAR_TREES.png`,
   fog: `${PACK_ROOT}/backgrounds/GOTHTECHNOLOGY_FOG_OVERLAY_TRANSPARENT.png`,

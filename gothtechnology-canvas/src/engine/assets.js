@@ -1,4 +1,4 @@
-import { ASSET_URLS, PACK_ROOT } from "../config/assets.js?v=ezra-match-size1";
+import { ASSET_URLS, PACK_ROOT } from "../config/assets.js?v=startup-bg1";
 
 const imageCache = new Map();
 
