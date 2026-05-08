@@ -1,4 +1,4 @@
-import { GothTechnologyGame } from "./scenes/game.js?v=music-flow1";
+import { GothTechnologyGame } from "./scenes/game.js?v=kalyx-lowkick1";
 
 const syncViewportHeight = () => {
   document.documentElement.style.setProperty("--app-height", `${window.innerHeight}px`);

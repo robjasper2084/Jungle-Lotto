@@ -1,6 +1,6 @@
 import { GRAVITY, GROUND_Y, WORLD } from "../config/constants.js";
 import { ATTACKS } from "../config/moves.js";
-import { drawSpriteFrame } from "../engine/assets.js?v=music-flow1";
+import { drawSpriteFrame } from "../engine/assets.js?v=kalyx-lowkick1";
 import { approach, clamp, makeRect } from "../engine/math.js";
 import { SpriteEffect } from "./effects.js";
 
@@ -434,7 +434,9 @@ export class Fighter {
       flipSprite = this.slot === 1;
     }
     const visualScale = this.config.motionVisualScale?.[this.displayMotion] ?? this.config.motionVisualScale?.[this.motion] ?? 1;
-    const drawScale = (this.config.stableScale ?? this.config.scale) * visualScale;
+    const frameScaleSet = this.config.motionFrameScale?.[this.displayMotion] ?? this.config.motionFrameScale?.[this.motion];
+    const frameVisualScale = Array.isArray(frameScaleSet) ? (frameScaleSet[frameIndex % frameScaleSet.length] ?? 1) : 1;
+    const drawScale = (this.config.stableScale ?? this.config.scale) * visualScale * frameVisualScale;
     ctx.save();
     ctx.globalAlpha = 1;
     ctx.globalCompositeOperation = "source-over";

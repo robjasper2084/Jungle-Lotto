@@ -1,4 +1,4 @@
-import { drawSheetFrame } from "../engine/assets.js?v=music-flow1";
+import { drawSheetFrame } from "../engine/assets.js?v=kalyx-lowkick1";
 import { rectsOverlap } from "../engine/math.js";
 import { SpriteEffect } from "./effects.js";
 

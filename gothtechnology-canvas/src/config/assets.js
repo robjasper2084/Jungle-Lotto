@@ -56,8 +56,11 @@ export const FIGHTERS = {
     scale: 1.56,
     stableScale: 1.56,
     motionVisualScale: {
-      LIGHT_KICK: 1.24,
+      LIGHT_KICK: 1,
       HEAVY_KICK: 1.22
+    },
+    motionFrameScale: {
+      LIGHT_KICK: [0.98, 1.22, 1.22, 0.96, 0.97, 1.22]
     },
     stageMargin: 196,
     speed: 330,
