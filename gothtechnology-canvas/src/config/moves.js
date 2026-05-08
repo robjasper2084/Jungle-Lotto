@@ -198,6 +198,7 @@ export const ASSISTS = {
       speed: 650,
       yOffset: -230,
       hitbox: { w: 100, h: 70 },
+      motion: "SPECIAL_START",
       sheet: { sourceX: 0, sourceY: 0, cellWidth: 256, cellHeight: 256, row: 0, frames: 4, frameRate: 14, visualScale: 0.66 }
     },
     assist2: {
@@ -208,6 +209,7 @@ export const ASSISTS = {
       speed: 520,
       yOffset: -158,
       hitbox: { w: 112, h: 100 },
+      motion: "HEAVY_PUNCH",
       sheet: { sourceX: 0, sourceY: 0, cellWidth: 256, cellHeight: 256, row: 0, frames: 4, frameRate: 11, visualScale: 0.7 }
     }
   },
@@ -220,17 +222,21 @@ export const ASSISTS = {
       speed: 620,
       yOffset: -220,
       hitbox: { w: 96, h: 70 },
+      motion: "SPECIAL_START",
       sheet: { sourceX: 0, sourceY: 0, cellWidth: 256, cellHeight: 256, row: 0, frames: 4, frameRate: 14, visualScale: 0.7 }
     },
     assist2: {
-      name: "Blue Ward",
-      imageKey: "blockShield",
-      damage: 0,
-      cooldown: 9.0,
-      speed: 0,
-      yOffset: -130,
-      hitbox: { w: 128, h: 156 },
-      shield: true
+      name: "Blue Fireball",
+      imageKey: "ezraBlueBurst",
+      damage: 86,
+      cooldown: 8.2,
+      speed: 760,
+      xOffset: 78,
+      yOffset: -188,
+      hitbox: { w: 96, h: 96 },
+      spawn: "hand",
+      motion: "HEAVY_PUNCH",
+      render: "handFireball"
     }
   }
 };

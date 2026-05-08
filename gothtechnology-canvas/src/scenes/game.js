@@ -1,14 +1,14 @@
-import { ASSET_URLS, FIGHTERS } from "../config/assets.js";
-import { ASSISTS, ATTACKS } from "../config/moves.js";
+import { ASSET_URLS, FIGHTERS } from "../config/assets.js?v=ezra-match-size1";
+import { ASSISTS, ATTACKS } from "../config/moves.js?v=ezra-match-size1";
 import { CANVAS_HEIGHT, CANVAS_WIDTH, COLORS, GROUND_Y, PHASE, ROUND_SECONDS, WORLD } from "../config/constants.js";
-import { AssetLoader, drawSheetFrame } from "../engine/assets.js";
+import { AssetLoader, drawSheetFrame } from "../engine/assets.js?v=ezra-match-size1";
 import { WebAudioBus } from "../engine/audio.js";
 import { InputManager } from "../engine/input.js";
 import { clamp, rectsOverlap } from "../engine/math.js";
-import { applyHit, resolveMelee } from "../gameplay/combat.js";
+import { applyHit, resolveMelee } from "../gameplay/combat.js?v=ezra-match-size1";
 import { SpriteEffect } from "../gameplay/effects.js";
-import { Fighter } from "../gameplay/fighter.js";
-import { AssistStrike, Projectile } from "../gameplay/projectiles.js";
+import { Fighter } from "../gameplay/fighter.js?v=ezra-match-size1";
+import { AssistStrike, Projectile } from "../gameplay/projectiles.js?v=ezra-match-size1";
 import {
   drawCharacterSelect,
   drawDiagnostics,
@@ -145,12 +145,12 @@ export class GothTechnologyGame {
       this.fighters[1].meter = 100;
     }
     this.phase = PHASE.FIGHT;
-    this.roundMessageTimer = 1.2;
+    this.roundMessageTimer = 0.72;
   }
 
   loop(time) {
     if (this.stopped) return;
-    const dt = Math.min(1 / 30, (time - this.lastTime) / 1000 || 0);
+    const dt = Math.min(1 / 45, (time - this.lastTime) / 1000 || 0);
     this.lastTime = time;
     this.update(dt);
     this.render();
@@ -287,7 +287,7 @@ export class GothTechnologyGame {
     if (abs < 80 && Math.random() < 0.008) actions.throw = true;
     if (cpu.assistCooldowns.assist1 <= 0 && Math.random() < 0.003) actions.assist1 = true;
     this.cpuDecision = { ...actions };
-    this.cpuDecisionTimer = 0.46;
+    this.cpuDecisionTimer = 0.26;
     return actions;
   }
 
@@ -372,9 +372,11 @@ export class GothTechnologyGame {
     if (!spec) return;
     owner.assistCooldowns[slot] = spec.cooldown;
     const img = this.assets.images[spec.imageKey];
+    const handSpawn = spec.spawn === "hand";
+    if (spec.motion) owner.setMotion(spec.motion, true);
     const assist = new AssistStrike({
       owner,
-      x: owner.x - owner.facing * 200,
+      x: handSpawn ? owner.x + owner.facing * (spec.xOffset ?? 104) : owner.x - owner.facing * 200,
       y: owner.y + spec.yOffset,
       direction: owner.facing,
       spec,
@@ -459,11 +461,37 @@ export class GothTechnologyGame {
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
     if (fog) {
-      const x = -((this.parallax * 22) % CANVAS_WIDTH);
-      ctx.globalAlpha = 0.34;
-      ctx.drawImage(fog, x, 170, CANVAS_WIDTH, 270);
-      ctx.drawImage(fog, x + CANVAS_WIDTH, 170, CANVAS_WIDTH, 270);
-      ctx.globalAlpha = 1;
+      ctx.save();
+      ctx.globalCompositeOperation = "screen";
+      const fogLayers = [
+        { speed: 11, y: 88, h: 214, alpha: menuMode ? 0.22 : 0.16, scale: 1.14 },
+        { speed: 24, y: 154, h: 284, alpha: menuMode ? 0.36 : 0.28, scale: 1 },
+        { speed: -15, y: 234, h: 172, alpha: menuMode ? 0.18 : 0.2, scale: 1.28 }
+      ];
+      for (const layer of fogLayers) {
+        const width = CANVAS_WIDTH * layer.scale;
+        const drift = ((this.parallax * layer.speed) % width + width) % width;
+        const x = -drift;
+        ctx.globalAlpha = layer.alpha;
+        ctx.drawImage(fog, x, layer.y, width, layer.h);
+        ctx.drawImage(fog, x + width, layer.y, width, layer.h);
+      }
+      const time = this.parallax;
+      for (let i = 0; i < 12; i += 1) {
+        const x = ((i * 127 + time * (18 + (i % 3) * 8)) % (CANVAS_WIDTH + 180)) - 90;
+        const y = 152 + (i % 5) * 36 + Math.sin(time * 0.8 + i) * 12;
+        const r = 84 + (i % 4) * 34;
+        const wisp = ctx.createRadialGradient(x, y, 0, x, y, r);
+        wisp.addColorStop(0, menuMode ? "rgba(210, 222, 220, 0.09)" : "rgba(210, 226, 226, 0.075)");
+        wisp.addColorStop(0.5, "rgba(140, 164, 166, 0.035)");
+        wisp.addColorStop(1, "rgba(0, 0, 0, 0)");
+        ctx.globalAlpha = 1;
+        ctx.fillStyle = wisp;
+        ctx.beginPath();
+        ctx.ellipse(x, y, r * 1.7, r * 0.34, Math.sin(i) * 0.08, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
     }
     ctx.fillStyle = "rgba(5, 4, 3, 0.22)";
     ctx.fillRect(0, groundBandTop, CANVAS_WIDTH, CANVAS_HEIGHT - groundBandTop);
@@ -532,4 +560,5 @@ export class GothTechnologyGame {
     ctx.lineTo(CANVAS_WIDTH, GROUND_Y - 1);
     ctx.stroke();
   }
+
 }

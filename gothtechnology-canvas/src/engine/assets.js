@@ -1,4 +1,4 @@
-import { ASSET_URLS, PACK_ROOT } from "../config/assets.js";
+import { ASSET_URLS, PACK_ROOT } from "../config/assets.js?v=ezra-match-size1";
 
 const imageCache = new Map();
 
@@ -123,7 +123,7 @@ export const drawSpriteFrame = (ctx, animation, frameIndex, x, y, options = {}) 
     );
     ctx.restore();
   }
-  ctx.filter = "none";
+  ctx.filter = options.filter ?? "none";
   ctx.globalAlpha = options.alpha ?? 1;
   ctx.drawImage(animation.image, frame.x, frame.y, frame.w, frame.h, -w / 2, -h, w, h);
   ctx.restore();

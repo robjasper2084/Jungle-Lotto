@@ -45,7 +45,7 @@ export function applyHit(attacker, defender, attack, game, meta = {}) {
   if (!isBlocked) {
     attacker.comboHits += 1;
     attacker.comboTimer = 1.25;
-    game.hitstop = Math.max(game.hitstop, meta.sourceName === "super" ? 0.09 : 0.045);
+    game.hitstop = Math.max(game.hitstop, meta.sourceName === "super" ? 0.065 : 0.03);
     game.effects.push(new FloatingText(`${damage}`, defender.x, defender.y - 178, "#ffd66d"));
     game.effects.push(new SpriteEffect({
       x: meta.box?.x + (meta.box?.w ?? 0) / 2 || defender.x,

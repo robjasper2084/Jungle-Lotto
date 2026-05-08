@@ -1,4 +1,4 @@
-import { drawSheetFrame } from "../engine/assets.js";
+import { drawSheetFrame } from "../engine/assets.js?v=ezra-match-size1";
 import { rectsOverlap } from "../engine/math.js";
 import { SpriteEffect } from "./effects.js";
 
@@ -209,7 +209,90 @@ export class AssistStrike extends Projectile {
     super.update(dt, game);
   }
 
+  renderHandFireball(ctx) {
+    const radius = this.radius;
+    const visualY = this.y + Math.sin(this.age * 16 + this.seed) * Math.min(10, radius * 0.2);
+    const color = "#8bd4ff";
+    ctx.save();
+    ctx.globalCompositeOperation = "lighter";
+    for (let i = this.trail.length - 1; i >= 0; i -= 1) {
+      const p = this.trail[i];
+      const t = 1 - i / Math.max(1, this.trail.length);
+      ctx.globalAlpha = 0.05 + t * 0.15;
+      ctx.fillStyle = `rgba(80, 188, 255, ${0.08 + t * 0.16})`;
+      ctx.shadowColor = color;
+      ctx.shadowBlur = 12 + t * 20;
+      ctx.beginPath();
+      ctx.ellipse(
+        p.x - this.direction * radius * (0.4 + t * 0.85),
+        p.y,
+        radius * (0.22 + t * 0.5),
+        radius * (0.08 + t * 0.18),
+        -0.08 * this.direction,
+        0,
+        Math.PI * 2
+      );
+      ctx.fill();
+    }
+
+    const glow = ctx.createRadialGradient(
+      this.x + this.direction * radius * 0.22,
+      visualY - radius * 0.08,
+      radius * 0.08,
+      this.x,
+      visualY,
+      radius * 1.34
+    );
+    glow.addColorStop(0, "rgba(255, 255, 255, 0.98)");
+    glow.addColorStop(0.22, "rgba(193, 242, 255, 0.94)");
+    glow.addColorStop(0.58, "rgba(63, 170, 255, 0.52)");
+    glow.addColorStop(1, "rgba(15, 54, 112, 0)");
+    ctx.fillStyle = glow;
+    ctx.shadowColor = color;
+    ctx.shadowBlur = 28;
+    ctx.beginPath();
+    ctx.ellipse(this.x, visualY, radius * 0.98, radius * 0.9, 0.05 * this.direction, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.strokeStyle = "rgba(255, 235, 166, 0.62)";
+    ctx.lineWidth = Math.max(2, radius * 0.06);
+    ctx.beginPath();
+    ctx.moveTo(this.x - this.direction * radius * 1.28, visualY - radius * 0.4);
+    ctx.quadraticCurveTo(
+      this.x - this.direction * radius * 0.12,
+      visualY - radius * 0.9,
+      this.x + this.direction * radius * 0.86,
+      visualY - radius * 0.08
+    );
+    ctx.quadraticCurveTo(
+      this.x - this.direction * radius * 0.1,
+      visualY + radius * 0.86,
+      this.x - this.direction * radius * 1.16,
+      visualY + radius * 0.34
+    );
+    ctx.stroke();
+
+    ctx.fillStyle = "rgba(255, 255, 255, 0.86)";
+    ctx.shadowBlur = 16;
+    ctx.beginPath();
+    ctx.ellipse(
+      this.x + this.direction * radius * 0.36,
+      visualY - radius * 0.16,
+      radius * 0.24,
+      radius * 0.13,
+      -0.18 * this.direction,
+      0,
+      Math.PI * 2
+    );
+    ctx.fill();
+    ctx.restore();
+  }
+
   render(ctx) {
+    if (this.spec.render === "handFireball") {
+      this.renderHandFireball(ctx);
+      return;
+    }
     if (this.spec.sheet && this.image) {
       const layout = this.spec.sheet;
       const frame = Math.floor(this.age * (layout.frameRate ?? 10)) % (layout.frames ?? 4);

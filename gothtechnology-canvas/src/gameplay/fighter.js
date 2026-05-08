@@ -1,6 +1,6 @@
 import { GRAVITY, GROUND_Y, WORLD } from "../config/constants.js";
 import { ATTACKS } from "../config/moves.js";
-import { drawSpriteFrame } from "../engine/assets.js";
+import { drawSpriteFrame } from "../engine/assets.js?v=ezra-match-size1";
 import { approach, clamp, makeRect } from "../engine/math.js";
 import { SpriteEffect } from "./effects.js";
 
@@ -28,6 +28,21 @@ const MOTION_LOCKS = new Set([
   "VICTORY",
   "DEFEAT"
 ]);
+
+const tuneAttackTiming = (data, feel = {}) => {
+  const startupScale = feel.attackStartupScale ?? 1;
+  const recoveryScale = feel.attackRecoveryScale ?? 1;
+  const activeScale = feel.attackActiveScale ?? 1;
+  const tuned = { ...data };
+  if (typeof data.startup === "number") tuned.startup = Math.max(0.035, data.startup * startupScale);
+  if (typeof data.recovery === "number") tuned.recovery = Math.max(0.06, data.recovery * recoveryScale);
+  if (Array.isArray(data.active)) {
+    const activeStart = Math.max(0.035, data.active[0] * startupScale);
+    const activeLength = Math.max(0.055, (data.active[1] - data.active[0]) * activeScale);
+    tuned.active = [activeStart, activeStart + activeLength];
+  }
+  return tuned;
+};
 
 export class Fighter {
   constructor({ id, slot, config, assets, x, facing }) {
@@ -65,6 +80,7 @@ export class Fighter {
     this.dashForward = true;
     this.dashDir = facing;
     this.landingLag = 0;
+    this.attackBuffer = null;
     this.isKO = false;
   }
 
@@ -92,6 +108,7 @@ export class Fighter {
     this.dashForward = true;
     this.dashDir = facing;
     this.landingLag = 0;
+    this.attackBuffer = null;
     this.setMotion("READY_STANCE", true);
   }
 
@@ -125,7 +142,7 @@ export class Fighter {
   getAttackData(name) {
     const base = ATTACKS[name];
     if (!base) return null;
-    return { ...base, ...(this.config.attackOverrides?.[name] ?? {}) };
+    return tuneAttackTiming({ ...base, ...(this.config.attackOverrides?.[name] ?? {}) }, this.config.feel);
   }
 
   beginAttack(name, game) {
@@ -157,6 +174,20 @@ export class Fighter {
   useAssist(slot, game) {
     if (this.assistCooldowns[slot] > 0 || this.isKO || this.knockdown) return;
     game.spawnAssist(this, slot);
+  }
+
+  readAttackIntent(actions) {
+    if (actions.throw) return "throw";
+    if (actions.super) return "super";
+    if (actions.special) return "special";
+    if (actions.heavyPunch) return "heavyPunch";
+    if (actions.heavyKick) return "heavyKick";
+    if (actions.lightPunch && actions.down) return "crouchAttack";
+    if (actions.lightKick && !this.grounded) return "airAttack";
+    if (actions.lightPunch && actions.lightKick) return "combo2";
+    if (actions.lightPunch) return "lightPunch";
+    if (actions.lightKick) return "lightKick";
+    return null;
   }
 
   getAttackBox() {
@@ -210,6 +241,10 @@ export class Fighter {
     for (const key of Object.keys(this.assistCooldowns)) {
       this.assistCooldowns[key] = Math.max(0, this.assistCooldowns[key] - dt);
     }
+    if (this.attackBuffer) {
+      this.attackBuffer.time -= dt;
+      if (this.attackBuffer.time <= 0) this.attackBuffer = null;
+    }
 
     if (!this.isKO && this.health <= 0) {
       this.isKO = true;
@@ -229,6 +264,10 @@ export class Fighter {
     }
 
     const locked = this.isKO || this.hitstun > 0 || this.blockstun > 0 || this.knockdown > 0;
+    const attackIntent = !locked ? this.readAttackIntent(actions) : null;
+    if (attackIntent && (this.currentAttack || this.landingLag > 0)) {
+      this.attackBuffer = { name: attackIntent, time: this.config.feel?.inputBuffer ?? 0.12 };
+    }
     if (!locked) {
       if (actions.assist1) this.useAssist("assist1", game);
       if (actions.assist2) this.useAssist("assist2", game);
@@ -236,16 +275,11 @@ export class Fighter {
         this.currentAttack = { name: "taunt", data: { motion: "TAUNT" }, elapsed: 0, duration: 0.82, hitTargets: new Set() };
         this.meter = Math.min(100, this.meter + 4);
         this.setMotion("TAUNT", true);
-      } else if (actions.throw) this.beginAttack("throw", game);
-      else if (actions.super) this.beginAttack("super", game);
-      else if (actions.special) this.beginAttack("special", game);
-      else if (actions.heavyPunch) this.beginAttack("heavyPunch", game);
-      else if (actions.heavyKick) this.beginAttack("heavyKick", game);
-      else if (actions.lightPunch && actions.down) this.beginAttack("crouchAttack", game);
-      else if (actions.lightKick && !this.grounded) this.beginAttack("airAttack", game);
-      else if (actions.lightPunch && actions.lightKick) this.beginAttack("combo2", game);
-      else if (actions.lightPunch) this.beginAttack("lightPunch", game);
-      else if (actions.lightKick) this.beginAttack("lightKick", game);
+      } else if (!this.currentAttack) {
+        const buffered = this.attackBuffer?.name;
+        const nextAttack = attackIntent ?? buffered;
+        if (nextAttack && this.beginAttack(nextAttack, game)) this.attackBuffer = null;
+      }
     }
 
     if (this.currentAttack) {
@@ -269,7 +303,7 @@ export class Fighter {
     const right = actions.right ? 1 : 0;
     desired = left + right;
     if (dashing) {
-      this.vx = approach(this.vx, 0, dt * 820);
+      this.vx = approach(this.vx, 0, dt * (this.config.feel?.dashBrake ?? 900));
       this.setMotion(this.dashForward ? "DASH_FORWARD" : "DASH_BACK");
     } else if (canMove) {
       if (desired !== 0 && desired === this.lastMoveDir) this.moveHold += dt;
@@ -306,15 +340,15 @@ export class Fighter {
           alpha: 0.58
         }));
       } else if (!this.grounded && desired !== 0) {
-        this.vx = approach(this.vx, desired * this.config.speed * 0.78, dt * 680);
+        this.vx = approach(this.vx, desired * this.config.speed * 0.86, dt * (this.config.feel?.airAccel ?? 760));
       } else if (desired !== 0) {
         const movingForward = desired === this.facing;
-        this.vx = approach(this.vx, desired * this.config.speed, dt * 2100);
+        this.vx = approach(this.vx, desired * this.config.speed, dt * (this.config.feel?.groundAccel ?? 2300));
         this.setMotion(movingForward ? "WALK_FORWARD" : "WALK_BACK");
       } else {
         this.moveHold = 0;
         this.lastMoveDir = 0;
-        this.vx = approach(this.vx, 0, dt * 1800);
+        this.vx = approach(this.vx, 0, dt * (this.config.feel?.groundDecel ?? 2000));
       }
 
       const away = opponent.x > this.x ? actions.left : actions.right;
@@ -322,11 +356,15 @@ export class Fighter {
         this.setMotion(actions.down ? "BLOCK_LOW" : "BLOCK_HIGH");
       } else if (actions.down && this.grounded) {
         this.setMotion("CROUCH_IDLE");
-      } else if (Math.abs(this.vx) < 10 && this.grounded && !MOTION_LOCKS.has(this.motion)) {
+      } else if (
+        Math.abs(this.vx) < 10 &&
+        this.grounded &&
+        (!MOTION_LOCKS.has(this.motion) || (!this.currentAttack && this.motionElapsed > 0.18))
+      ) {
         this.setMotion("IDLE");
       }
     } else {
-      this.vx = approach(this.vx, 0, dt * 1200);
+      this.vx = approach(this.vx, 0, dt * 1500);
     }
 
     this.vy += GRAVITY * dt;
@@ -340,7 +378,7 @@ export class Fighter {
     if (this.y >= GROUND_Y) {
       if (!wasGrounded && !this.currentAttack && !locked) {
         this.setMotion("LANDING", true);
-        this.landingLag = 0.055;
+        this.landingLag = this.config.feel?.landingLag ?? 0.04;
         game.effects.push(new SpriteEffect({
           x: this.x,
           y: GROUND_Y + 18,
@@ -395,11 +433,21 @@ export class Fighter {
     if (this.id === "MASTER_EZRA") {
       flipSprite = this.slot === 1;
     }
-    const drawScale = this.config.motionScale?.[this.motion] ?? this.config.scale;
+    const visualScale = this.config.motionVisualScale?.[this.displayMotion] ?? this.config.motionVisualScale?.[this.motion] ?? 1;
+    const drawScale = (this.config.stableScale ?? this.config.scale) * visualScale;
     ctx.save();
     ctx.globalAlpha = 1;
     ctx.globalCompositeOperation = "source-over";
     ctx.filter = "none";
+    const depthColor = this.id === "MASTER_EZRA" ? "rgba(139, 212, 255, 0.34)" : "rgba(216, 170, 69, 0.32)";
+    const warmRim = this.id === "MASTER_EZRA" ? "rgba(255, 220, 142, 0.18)" : "rgba(123, 236, 255, 0.16)";
+    ctx.save();
+    ctx.globalAlpha = 0.34;
+    ctx.fillStyle = "#000";
+    ctx.beginPath();
+    ctx.ellipse(this.x + this.facing * -10, GROUND_Y + 10, 74 * drawScale / this.config.scale, 15, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
     if (this.dashTimer > 0) {
       drawSpriteFrame(ctx, anim, frameIndex, this.x - this.dashDir * 32, this.y + 14, {
         scale: drawScale,
@@ -408,13 +456,31 @@ export class Fighter {
         composite: "source-over"
       });
     }
+    const extraDepthPasses = this.config.extraDepthPasses ?? false;
+    if (extraDepthPasses) {
+      drawSpriteFrame(ctx, anim, frameIndex, this.x - this.facing * 10, this.y + 20, {
+        scale: drawScale * 1.018,
+        flip: flipSprite,
+        alpha: 0.28,
+        composite: "source-over",
+        filter: "brightness(0) blur(2px)"
+      });
+      drawSpriteFrame(ctx, anim, frameIndex, this.x + this.facing * 5, this.y + 10, {
+        scale: drawScale * 1.01,
+        flip: flipSprite,
+        alpha: 0.16,
+        composite: "screen",
+        filter: "brightness(1.7) saturate(1.18)"
+      });
+    }
     const drewPrimary = drawSpriteFrame(ctx, anim, frameIndex, this.x, this.y + 14, {
       scale: drawScale,
       flip: flipSprite,
       alpha: bodyAlpha,
       composite: "source-over",
       underpaint: true,
-      underpaintAlpha: this.id === "MASTER_EZRA" ? 0.46 : 0.54
+      underpaintAlpha: this.id === "MASTER_EZRA" ? 0.56 : 0.6,
+      filter: extraDepthPasses ? "contrast(1.08) saturate(1.08) drop-shadow(0 9px 7px rgba(0, 0, 0, 0.46))" : "contrast(1.06) saturate(1.06)"
     });
     if (!drewPrimary && this.assets.animations[this.config.manifestKey]?.READY_STANCE) {
       drawSpriteFrame(ctx, this.assets.animations[this.config.manifestKey].READY_STANCE, 0, this.x, this.y + 14, {
@@ -426,6 +492,18 @@ export class Fighter {
         underpaintAlpha: 0.55
       });
     }
+    ctx.save();
+    ctx.globalCompositeOperation = "screen";
+    const bodyGlow = ctx.createLinearGradient(this.x - 58, this.y - 188, this.x + 66, this.y - 42);
+    bodyGlow.addColorStop(0, depthColor);
+    bodyGlow.addColorStop(0.56, "rgba(255,255,255,0)");
+    bodyGlow.addColorStop(1, warmRim);
+    ctx.fillStyle = bodyGlow;
+    ctx.globalAlpha = 0.26;
+    ctx.beginPath();
+    ctx.ellipse(this.x + this.facing * -12, this.y - 102, 58, 92, -0.12 * this.facing, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
     ctx.restore();
 
     if (this.invulnerable > 0 && !this.isKO) {
