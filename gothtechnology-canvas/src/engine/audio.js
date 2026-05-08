@@ -36,6 +36,12 @@ export class WebAudioBus {
       this.music.preload = "auto";
       this.music.volume = 0.68;
       this.music.muted = this.muted;
+      this.music.addEventListener("ended", () => {
+        this.musicStarted = false;
+        if (!this.muted && this.pendingMode !== "silent") {
+          this.startMusic(this.pendingMode, { restart: true });
+        }
+      });
       this.music.load?.();
     }
     return this.music;
@@ -46,6 +52,9 @@ export class WebAudioBus {
     if (!this.musicUrl || this.muted) return;
     this.preloadMusic();
     if (!this.music) return;
+    if (this.music.ended) {
+      options = { ...options, restart: true };
+    }
     const restart = Boolean(options.restart);
     if (restart) {
       try {
