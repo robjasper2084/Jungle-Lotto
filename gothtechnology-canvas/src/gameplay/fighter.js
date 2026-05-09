@@ -1,6 +1,6 @@
 import { GRAVITY, GROUND_Y, WORLD } from "../config/constants.js";
-import { ATTACKS } from "../config/moves.js?v=full-upgrade1";
-import { drawSpriteFrame } from "../engine/assets.js?v=full-upgrade1";
+import { ATTACKS } from "../config/moves.js?v=sprite-overrides1";
+import { drawSpriteFrame } from "../engine/assets.js?v=sprite-overrides1";
 import { approach, clamp, makeRect } from "../engine/math.js";
 import { SpriteEffect } from "./effects.js";
 
@@ -465,9 +465,9 @@ export class Fighter {
       }
     }
     const bodyAlpha = 1;
-    const sourceFacing = this.config.motionFacing?.[this.displayMotion] ?? this.config.motionFacing?.[this.motion] ?? this.config.spriteFacing ?? 1;
+    const sourceFacing = anim?.sourceFacing ?? this.config.motionFacing?.[this.displayMotion] ?? this.config.motionFacing?.[this.motion] ?? this.config.spriteFacing ?? 1;
     let flipSprite = this.facing !== sourceFacing;
-    if (this.id === "MASTER_EZRA") {
+    if (this.id === "MASTER_EZRA" && typeof anim?.sourceFacing !== "number") {
       flipSprite = this.slot === 1;
     }
     const visualScale = this.config.motionVisualScale?.[this.displayMotion] ?? this.config.motionVisualScale?.[this.motion] ?? 1;

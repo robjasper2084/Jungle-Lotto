@@ -1,4 +1,4 @@
-import { ASSET_URLS, PACK_ROOT } from "../config/assets.js?v=full-upgrade1";
+import { ASSET_URLS, PACK_ROOT, SPRITE_OVERRIDES } from "../config/assets.js?v=sprite-overrides1";
 
 const imageCache = new Map();
 
@@ -53,7 +53,13 @@ export class AssetLoader {
       dossierNocturna: ASSET_URLS.dossiers.nocturna,
       dossierMalach: ASSET_URLS.dossiers.malach,
       dossierMorvane: ASSET_URLS.dossiers.morvane,
-      dossierEffects: ASSET_URLS.dossiers.effects
+      dossierEffects: ASSET_URLS.dossiers.effects,
+      ...Object.fromEntries(
+        Object.entries(SPRITE_OVERRIDES).map(([characterId, override]) => [
+          `${characterId}_override`,
+          override.image
+        ])
+      )
     };
 
     const characterEntries = [];
@@ -90,7 +96,34 @@ export class AssetLoader {
       };
     }
 
+    this.applySpriteOverrides();
     return this;
+  }
+
+  applySpriteOverrides() {
+    for (const [characterId, override] of Object.entries(SPRITE_OVERRIDES)) {
+      const image = this.images[`${characterId}_override`];
+      if (!image) continue;
+      this.animations[characterId] ??= {};
+      const frameSize = override.frameSize ?? 256;
+      for (const [motion, frameIndexes] of Object.entries(override.motions ?? {})) {
+        this.animations[characterId][motion] = {
+          image,
+          frameCount: frameIndexes.length,
+          cellWidth: frameSize,
+          cellHeight: frameSize,
+          sourceFacing: override.sourceFacing ?? 1,
+          override: true,
+          frames: frameIndexes.map((frameIndex) => ({
+            x: frameIndex * frameSize,
+            y: 0,
+            w: frameSize,
+            h: frameSize,
+            duration_ms: 72
+          }))
+        };
+      }
+    }
   }
 }
 

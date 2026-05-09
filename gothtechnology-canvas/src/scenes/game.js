@@ -1,14 +1,14 @@
-import { ASSET_URLS, FIGHTERS } from "../config/assets.js?v=full-upgrade1";
-import { ASSISTS, ATTACKS } from "../config/moves.js?v=full-upgrade1";
+import { ASSET_URLS, FIGHTERS } from "../config/assets.js?v=sprite-overrides1";
+import { ASSISTS, ATTACKS } from "../config/moves.js?v=sprite-overrides1";
 import { CANVAS_HEIGHT, CANVAS_WIDTH, COLORS, GROUND_Y, PHASE, ROUND_SECONDS, WORLD } from "../config/constants.js";
-import { AssetLoader, drawSheetFrame } from "../engine/assets.js?v=full-upgrade1";
-import { WebAudioBus } from "../engine/audio.js?v=full-upgrade1";
+import { AssetLoader, drawSheetFrame } from "../engine/assets.js?v=sprite-overrides1";
+import { WebAudioBus } from "../engine/audio.js?v=sprite-overrides1";
 import { InputManager } from "../engine/input.js";
 import { clamp, rectsOverlap } from "../engine/math.js";
-import { applyHit, resolveMelee } from "../gameplay/combat.js?v=full-upgrade1";
+import { applyHit, resolveMelee } from "../gameplay/combat.js?v=sprite-overrides1";
 import { SpriteEffect } from "../gameplay/effects.js";
-import { Fighter } from "../gameplay/fighter.js?v=full-upgrade1";
-import { AssistStrike, Projectile } from "../gameplay/projectiles.js?v=full-upgrade1";
+import { Fighter } from "../gameplay/fighter.js?v=sprite-overrides1";
+import { AssistStrike, Projectile } from "../gameplay/projectiles.js?v=sprite-overrides1";
 import {
   drawCharacterSelect,
   drawDiagnostics,
@@ -18,7 +18,7 @@ import {
   drawRoundMessage,
   drawTitle,
   drawVersus
-} from "../ui/hud.js?v=full-upgrade1";
+} from "../ui/hud.js?v=sprite-overrides1";
 
 export class GothTechnologyGame {
   constructor(canvas) {

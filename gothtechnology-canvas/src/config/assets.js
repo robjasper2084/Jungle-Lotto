@@ -40,6 +40,76 @@ export const ASSET_URLS = {
   }
 };
 
+export const SPRITE_OVERRIDES = {
+  MASTER_EZRA: {
+    image: `${LOCAL_ROOT}/user-overrides/ezra-missing-moves-v3.png`,
+    frameSize: 256,
+    sourceFacing: 1,
+    motions: {
+      IDLE: [0],
+      READY_STANCE: [0],
+      WALK_FORWARD: [1, 2, 3, 4],
+      WALK_BACK: [5, 6, 7],
+      CROUCH_IDLE: [8],
+      BLOCK_LOW: [8],
+      BLOCK_HIGH: [11],
+      LIGHT_PUNCH: [12],
+      HEAVY_PUNCH: [13, 14],
+      COMBO_1: [12, 13],
+      COMBO_2: [13, 14],
+      LIGHT_KICK: [15],
+      HEAVY_KICK: [16],
+      AIR_ATTACK: [17],
+      SPECIAL_START: [18],
+      SPECIAL_PROJECTILE: [19],
+      SPECIAL_RECOVER: [11],
+      SUPER_CHARGE: [18],
+      SUPER_RELEASE: [18, 19],
+      HURT_LIGHT: [20],
+      HURT_HEAVY: [20],
+      KNOCKDOWN: [21],
+      DEFEAT: [21],
+      VICTORY: [22]
+    }
+  },
+  KALYX: {
+    image: `${LOCAL_ROOT}/user-overrides/kalyx-missing-moves-v3.png`,
+    frameSize: 256,
+    sourceFacing: 1,
+    motions: {
+      IDLE: [0],
+      READY_STANCE: [0],
+      WALK_FORWARD: [0, 1, 2, 10],
+      WALK_BACK: [13, 1, 0],
+      RUN_FORWARD: [2, 10, 13],
+      RUN_BACK: [13, 1],
+      DASH_FORWARD: [10],
+      DASH_BACK: [13],
+      CROUCH_IDLE: [8],
+      BLOCK_LOW: [15],
+      BLOCK_HIGH: [16],
+      LIGHT_PUNCH: [7],
+      HEAVY_PUNCH: [14],
+      COMBO_1: [7, 14],
+      COMBO_2: [14, 17],
+      LIGHT_KICK: [11],
+      HEAVY_KICK: [5],
+      AIR_ATTACK: [3, 4],
+      CROUCH_ATTACK: [17],
+      SPECIAL_START: [12],
+      SPECIAL_PROJECTILE: [12],
+      SPECIAL_RECOVER: [16],
+      SUPER_CHARGE: [4],
+      SUPER_RELEASE: [4, 5],
+      HURT_LIGHT: [9],
+      HURT_HEAVY: [9],
+      KNOCKDOWN: [15],
+      DEFEAT: [15],
+      VICTORY: [6]
+    }
+  }
+};
+
 export const FIGHTERS = {
   KALYX: {
     id: "KALYX",
