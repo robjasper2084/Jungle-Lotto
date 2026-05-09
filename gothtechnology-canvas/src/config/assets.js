@@ -55,6 +55,7 @@ export const FIGHTERS = {
     accent: "#ffcf67",
     scale: 1.56,
     stableScale: 1.56,
+    spriteFilter: "blur(0.22px) contrast(1.05) saturate(1.08)",
     motionVisualScale: {
       LIGHT_KICK: 1,
       HEAVY_KICK: 1.22

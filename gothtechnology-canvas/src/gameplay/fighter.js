@@ -1,6 +1,6 @@
 import { GRAVITY, GROUND_Y, WORLD } from "../config/constants.js";
-import { ATTACKS } from "../config/moves.js?v=fast-60feel1";
-import { drawSpriteFrame } from "../engine/assets.js?v=fast-60feel1";
+import { ATTACKS } from "../config/moves.js?v=kalyx-smooth1";
+import { drawSpriteFrame } from "../engine/assets.js?v=kalyx-smooth1";
 import { approach, clamp, makeRect } from "../engine/math.js";
 import { SpriteEffect } from "./effects.js";
 
@@ -484,7 +484,7 @@ export class Fighter {
       composite: "source-over",
       underpaint: true,
       underpaintAlpha: this.id === "MASTER_EZRA" ? 0.56 : 0.6,
-      filter: extraDepthPasses ? "contrast(1.08) saturate(1.08) drop-shadow(0 9px 7px rgba(0, 0, 0, 0.46))" : "contrast(1.06) saturate(1.06)"
+      filter: this.config.spriteFilter ?? (extraDepthPasses ? "contrast(1.08) saturate(1.08) drop-shadow(0 9px 7px rgba(0, 0, 0, 0.46))" : "contrast(1.06) saturate(1.06)")
     });
     if (!drewPrimary && this.assets.animations[this.config.manifestKey]?.READY_STANCE) {
       drawSpriteFrame(ctx, this.assets.animations[this.config.manifestKey].READY_STANCE, 0, this.x, this.y + 14, {

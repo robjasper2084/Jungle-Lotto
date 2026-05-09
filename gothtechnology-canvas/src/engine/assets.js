@@ -1,4 +1,4 @@
-import { ASSET_URLS, PACK_ROOT } from "../config/assets.js?v=fast-60feel1";
+import { ASSET_URLS, PACK_ROOT } from "../config/assets.js?v=kalyx-smooth1";
 
 const imageCache = new Map();
 
@@ -102,6 +102,8 @@ export const drawSpriteFrame = (ctx, animation, frameIndex, x, y, options = {}) 
   const w = frame.w * scale;
   const h = frame.h * scale;
   ctx.save();
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = "high";
   ctx.globalCompositeOperation = options.composite ?? "source-over";
   ctx.translate(x, y);
   if (options.flip) ctx.scale(-1, 1);
@@ -137,6 +139,8 @@ export const drawSheetFrame = (ctx, image, frameIndex, cellW, cellH, x, y, optio
   const sy = Math.floor(frameIndex / cols) * cellH;
   const scale = options.scale ?? 1;
   ctx.save();
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = "high";
   ctx.translate(x, y);
   if (options.flip) ctx.scale(-1, 1);
   ctx.globalAlpha = options.alpha ?? 1;
