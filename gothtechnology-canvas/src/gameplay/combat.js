@@ -1,5 +1,5 @@
 import { rectsOverlap } from "../engine/math.js";
-import { ATTACKS } from "../config/moves.js?v=kalyx-smooth1";
+import { ATTACKS } from "../config/moves.js?v=full-upgrade1";
 import { FloatingText, SpriteEffect } from "./effects.js";
 
 export function resolveMelee(attacker, defender, game) {
@@ -44,8 +44,11 @@ export function applyHit(attacker, defender, attack, game, meta = {}) {
 
   if (!isBlocked) {
     attacker.comboHits += 1;
+    attacker.comboDamage = (attacker.comboDamage ?? 0) + damage;
     attacker.comboTimer = 1.25;
     game.hitstop = Math.max(game.hitstop, meta.sourceName === "super" ? 0.065 : 0.03);
+    game.shake = Math.max(game.shake ?? 0, meta.sourceName === "super" ? 18 : (damage > 80 ? 10 : 5));
+    game.slowMo = Math.max(game.slowMo ?? 0, meta.sourceName === "super" ? 0.18 : 0);
     game.effects.push(new FloatingText(`${damage}`, defender.x, defender.y - 178, "#ffd66d"));
     game.effects.push(new SpriteEffect({
       x: meta.box?.x + (meta.box?.w ?? 0) / 2 || defender.x,
@@ -57,6 +60,7 @@ export function applyHit(attacker, defender, attack, game, meta = {}) {
     }));
     game.audio.beep(meta.sourceName === "super" ? "super" : "hit");
   } else {
+    game.shake = Math.max(game.shake ?? 0, 2.5);
     game.effects.push(new FloatingText("BLOCK", defender.x, defender.y - 165, "#9ed8ff"));
     game.effects.push(new SpriteEffect({
       x: defender.x + direction * -28,

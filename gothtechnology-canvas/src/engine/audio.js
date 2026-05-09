@@ -98,7 +98,10 @@ export class WebAudioBus {
       hit: [190, 0.12, "square", 0.08],
       block: [320, 0.1, "triangle", 0.05],
       select: [520, 0.08, "sine", 0.04],
+      dash: [420, 0.07, "triangle", 0.035],
+      jump: [680, 0.07, "sine", 0.035],
       special: [120, 0.26, "sawtooth", 0.07],
+      projectile: [150, 0.16, "sawtooth", 0.055],
       super: [75, 0.42, "sawtooth", 0.09],
       ko: [55, 0.8, "triangle", 0.11]
     }[type] ?? [240, 0.1, "sine", 0.05];

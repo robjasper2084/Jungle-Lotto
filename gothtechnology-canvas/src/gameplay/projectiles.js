@@ -1,4 +1,4 @@
-import { drawSheetFrame } from "../engine/assets.js?v=kalyx-smooth1";
+import { drawSheetFrame } from "../engine/assets.js?v=full-upgrade1";
 import { rectsOverlap } from "../engine/math.js";
 import { SpriteEffect } from "./effects.js";
 

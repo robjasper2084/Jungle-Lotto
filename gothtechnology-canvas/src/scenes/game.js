@@ -1,14 +1,14 @@
-import { ASSET_URLS, FIGHTERS } from "../config/assets.js?v=kalyx-smooth1";
-import { ASSISTS, ATTACKS } from "../config/moves.js?v=kalyx-smooth1";
+import { ASSET_URLS, FIGHTERS } from "../config/assets.js?v=full-upgrade1";
+import { ASSISTS, ATTACKS } from "../config/moves.js?v=full-upgrade1";
 import { CANVAS_HEIGHT, CANVAS_WIDTH, COLORS, GROUND_Y, PHASE, ROUND_SECONDS, WORLD } from "../config/constants.js";
-import { AssetLoader, drawSheetFrame } from "../engine/assets.js?v=kalyx-smooth1";
-import { WebAudioBus } from "../engine/audio.js?v=kalyx-smooth1";
+import { AssetLoader, drawSheetFrame } from "../engine/assets.js?v=full-upgrade1";
+import { WebAudioBus } from "../engine/audio.js?v=full-upgrade1";
 import { InputManager } from "../engine/input.js";
 import { clamp, rectsOverlap } from "../engine/math.js";
-import { applyHit, resolveMelee } from "../gameplay/combat.js?v=kalyx-smooth1";
+import { applyHit, resolveMelee } from "../gameplay/combat.js?v=full-upgrade1";
 import { SpriteEffect } from "../gameplay/effects.js";
-import { Fighter } from "../gameplay/fighter.js?v=kalyx-smooth1";
-import { AssistStrike, Projectile } from "../gameplay/projectiles.js?v=kalyx-smooth1";
+import { Fighter } from "../gameplay/fighter.js?v=full-upgrade1";
+import { AssistStrike, Projectile } from "../gameplay/projectiles.js?v=full-upgrade1";
 import {
   drawCharacterSelect,
   drawDiagnostics,
@@ -18,7 +18,7 @@ import {
   drawRoundMessage,
   drawTitle,
   drawVersus
-} from "../ui/hud.js";
+} from "../ui/hud.js?v=full-upgrade1";
 
 export class GothTechnologyGame {
   constructor(canvas) {
@@ -45,12 +45,15 @@ export class GothTechnologyGame {
     this.effects = [];
     this.playerEngaged = false;
     this.hitstop = 0;
+    this.shake = 0;
+    this.slowMo = 0;
     this.flash = 0;
     this.parallax = 0;
     this.lastTime = performance.now();
     this.menuHitAreas = [];
     this.cpuDecisionTimer = 0;
     this.cpuDecision = {};
+    this.inputLog = ["READY"];
     this.raf = 0;
     this.stopped = false;
     this.audio.preloadMusic();
@@ -140,6 +143,8 @@ export class GothTechnologyGame {
     this.assists = [];
     this.effects = [];
     this.hitstop = 0;
+    this.shake = 0;
+    this.slowMo = 0;
     this.flash = 0;
     this.cpuDecisionTimer = 0;
     this.cpuDecision = {};
@@ -155,8 +160,9 @@ export class GothTechnologyGame {
 
   loop(time) {
     if (this.stopped) return;
-    const dt = Math.min(1 / 60, (time - this.lastTime) / 1000 || 0);
+    const rawDt = Math.min(1 / 60, (time - this.lastTime) / 1000 || 0);
     this.lastTime = time;
+    const dt = this.slowMo > 0 ? rawDt * 0.55 : rawDt;
     this.update(dt);
     this.render();
     this.input.endFrame();
@@ -166,6 +172,8 @@ export class GothTechnologyGame {
   update(dt) {
     this.handleGlobalInput();
     this.parallax += dt;
+    this.shake = Math.max(0, this.shake - dt * 44);
+    this.slowMo = Math.max(0, this.slowMo - dt);
     this.flash = Math.max(0, this.flash - dt);
     if (this.phase === PHASE.VERSUS) {
       this.roundMessageTimer -= dt;
@@ -191,6 +199,7 @@ export class GothTechnologyGame {
 
     this.faceFighters();
     const p1Actions = this.input.actions(1);
+    this.captureInputLog(p1Actions);
     if (Object.values(p1Actions).some(Boolean)) this.playerEngaged = true;
     const p2Actions = this.cpuEnabled ? this.cpuActions(dt) : this.input.actions(2);
 
@@ -279,28 +288,56 @@ export class GothTechnologyGame {
     const maxX = WORLD.right - margin;
     const nearLeftEdge = cpu.x <= minX + 18;
     const nearRightEdge = cpu.x >= maxX - 18;
-    const holdMin = 220;
-    const holdMax = 390;
+    const holdMin = 188;
+    const holdMax = 342;
+    const playerAttacking = Boolean(player.currentAttack);
+    const cpuCanAct = !cpu.currentAttack && !cpu.hitstun && !cpu.blockstun && !cpu.knockdown;
 
     if (nearLeftEdge) actions.right = true;
     else if (nearRightEdge) actions.left = true;
     else if (abs > holdMax) actions[toward] = true;
     else if (abs < holdMin) actions[away] = true;
 
-    if (player.currentAttack && abs < 168 && Math.random() < 0.035) {
-      if (away === "left" && !nearLeftEdge) actions.left = true;
-      if (away === "right" && !nearRightEdge) actions.right = true;
+    if (playerAttacking && abs < 210) {
+      if (Math.random() < 0.58) {
+        if (away === "left" && !nearLeftEdge) actions.left = true;
+        if (away === "right" && !nearRightEdge) actions.right = true;
+        if (player.currentAttack?.data?.level === "low") actions.down = true;
+      }
+      if (cpuCanAct && abs < 120 && Math.random() < 0.14) actions.lightKick = true;
     }
-    if (player.lastActions?.down && Math.random() < 0.025) actions.down = true;
-    if (abs > 240 && Math.random() < 0.008) actions.special = true;
-    if (cpu.meter >= 100 && abs > 190 && Math.random() < 0.004) actions.super = true;
-    if (abs < 120 && Math.random() < 0.014) actions.lightKick = true;
-    if (abs < 175 && Math.random() < 0.01) actions.heavyPunch = true;
-    if (abs < 80 && Math.random() < 0.008) actions.throw = true;
-    if (cpu.assistCooldowns.assist1 <= 0 && Math.random() < 0.003) actions.assist1 = true;
+    if (player.lastActions?.down && Math.random() < 0.16) actions.down = true;
+    if (cpuCanAct && abs > 260 && Math.random() < 0.1) actions.special = true;
+    if (cpuCanAct && cpu.meter >= 100 && abs > 175 && Math.random() < 0.06) actions.super = true;
+    if (cpuCanAct && abs < 115 && Math.random() < 0.2) actions.lightKick = true;
+    if (cpuCanAct && abs < 175 && Math.random() < 0.16) actions.heavyPunch = true;
+    if (cpuCanAct && abs < 82 && Math.random() < 0.12) actions.throw = true;
+    if (cpuCanAct && abs > 180 && abs < 440 && cpu.assistCooldowns.assist1 <= 0 && Math.random() < 0.04) actions.assist1 = true;
+    if (cpuCanAct && abs < 230 && cpu.assistCooldowns.assist2 <= 0 && Math.random() < 0.035) actions.assist2 = true;
     this.cpuDecision = { ...actions };
-    this.cpuDecisionTimer = 0.26;
+    this.cpuDecisionTimer = 0.16 + Math.random() * 0.08;
     return actions;
+  }
+
+  captureInputLog(actions) {
+    const labels = [];
+    if (actions.left) labels.push("L");
+    if (actions.right) labels.push("R");
+    if (actions.up) labels.push("UP");
+    if (actions.down) labels.push("LOW");
+    if (actions.lightPunch) labels.push("LP");
+    if (actions.heavyPunch) labels.push("HP");
+    if (actions.lightKick) labels.push("LK");
+    if (actions.heavyKick) labels.push("HK");
+    if (actions.special) labels.push("SP");
+    if (actions.super) labels.push("MAX");
+    if (actions.throw) labels.push("THR");
+    if (actions.assist1) labels.push("A1");
+    if (actions.assist2) labels.push("A2");
+    if (actions.dash) labels.push("DASH");
+    if (!labels.length) return;
+    this.inputLog.unshift(labels.join("+"));
+    this.inputLog = this.inputLog.slice(0, 6);
   }
 
   keepFightersSeparated() {
@@ -387,7 +424,7 @@ export class GothTechnologyGame {
       scale: name === "super" ? 0.82 : 0.52,
       flip: owner.facing < 0
     }));
-    this.audio.beep(name === "super" ? "super" : "special");
+    this.audio.beep(name === "super" ? "super" : "projectile");
   }
 
   spawnAssist(owner, slot) {
@@ -429,15 +466,22 @@ export class GothTechnologyGame {
       return;
     }
 
+    ctx.save();
+    if (this.shake > 0) {
+      const shakeX = (Math.random() - 0.5) * this.shake;
+      const shakeY = (Math.random() - 0.5) * this.shake * 0.65;
+      ctx.translate(shakeX, shakeY);
+    }
     this.drawBackground(ctx, false);
     for (const assist of this.assists) assist.render(ctx);
     for (const projectile of this.projectiles) projectile.render(ctx);
     this.fighters[0].render(ctx, this.debug);
     this.fighters[1].render(ctx, this.debug);
     for (const effect of this.effects) effect.render(ctx);
+    ctx.restore();
     drawFightHud(ctx, this);
     if (this.roundMessageTimer > 0) {
-      drawRoundMessage(ctx, `ROUND ${this.roundNumber}`, "FIGHT");
+      drawRoundMessage(ctx, this.roundMessageTimer > 0.34 ? `ROUND ${this.roundNumber}` : "FIGHT", this.roundMessageTimer > 0.34 ? "READY" : "ENGAGE");
     }
     if (this.phase === PHASE.ROUND_END) {
       drawRoundMessage(ctx, "KO", "NEXT ROUND");

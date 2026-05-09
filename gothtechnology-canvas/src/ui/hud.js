@@ -1,5 +1,5 @@
 import { CANVAS_HEIGHT, CANVAS_WIDTH, COLORS, ROUND_SECONDS } from "../config/constants.js";
-import { drawSpriteFrame } from "../engine/assets.js";
+import { drawSpriteFrame } from "../engine/assets.js?v=full-upgrade1";
 
 const panel = (ctx, x, y, w, h, stroke = COLORS.gold) => {
   ctx.save();
@@ -89,12 +89,16 @@ export const drawFightHud = (ctx, game) => {
     ctx.fillStyle = COLORS.goldBright;
     ctx.font = "800 28px Georgia";
     ctx.fillText(`${p1.comboHits} HIT COMBO`, 64, 208);
+    ctx.font = "800 15px system-ui";
+    ctx.fillText(`${Math.round(p1.comboDamage ?? 0)} DAMAGE`, 66, 232);
   }
   if (p2.comboHits >= 2) {
     ctx.textAlign = "right";
     ctx.fillStyle = COLORS.blue;
     ctx.font = "800 28px Georgia";
     ctx.fillText(`${p2.comboHits} HIT COMBO`, 1216, 208);
+    ctx.font = "800 15px system-ui";
+    ctx.fillText(`${Math.round(p2.comboDamage ?? 0)} DAMAGE`, 1214, 232);
   }
 
   ctx.fillStyle = "rgba(255, 246, 211, 0.72)";
@@ -102,6 +106,15 @@ export const drawFightHud = (ctx, game) => {
   ctx.textAlign = "center";
   const mode = `${game.training ? "TRAINING" : "ARCADE"} ${game.cpuEnabled ? `CPU ${p2.config.name}` : "LOCAL 2P"} ${game.debug ? "DEBUG BOXES" : ""}`;
   ctx.fillText(mode, 640, 139);
+  if (game.training) {
+    panel(ctx, 468, 612, 344, 72, COLORS.blue);
+    ctx.fillStyle = COLORS.white;
+    ctx.font = "800 12px system-ui";
+    ctx.fillText("TRAINING: T MODE  B HITBOXES  R RESET  C CPU", 640, 632);
+    ctx.fillStyle = COLORS.goldBright;
+    ctx.font = "900 15px system-ui";
+    ctx.fillText(`INPUT ${game.inputLog?.slice(0, 5).join("  /  ") ?? "READY"}`, 640, 660);
+  }
   ctx.restore();
 };
 
@@ -212,16 +225,27 @@ export const drawPause = (ctx, game) => {
   ctx.save();
   ctx.fillStyle = "rgba(0, 0, 0, 0.62)";
   ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-  panel(ctx, 436, 204, 408, 284, COLORS.goldBright);
+  panel(ctx, 364, 154, 552, 404, COLORS.goldBright);
   ctx.textAlign = "center";
   ctx.fillStyle = COLORS.goldBright;
   ctx.font = "900 42px Georgia";
-  ctx.fillText("PAUSED", 640, 280);
+  ctx.fillText("PAUSED", 640, 224);
   ctx.fillStyle = COLORS.white;
   ctx.font = "700 16px system-ui";
-  ctx.fillText(game.training ? "TRAINING MODE" : "ARCADE MATCH", 640, 336);
-  ctx.fillText(game.cpuEnabled ? `CPU ${game.fighters[1]?.config.name ?? "FIGHTER"}` : "LOCAL TWO-PLAYER", 640, 366);
-  ctx.fillText(game.audio.muted ? "AUDIO MUTED" : "AUDIO ACTIVE", 640, 396);
+  ctx.fillText(game.training ? "TRAINING MODE" : "ARCADE MATCH", 640, 272);
+  ctx.fillText(game.cpuEnabled ? `CPU ${game.fighters[1]?.config.name ?? "FIGHTER"}` : "LOCAL TWO-PLAYER", 640, 300);
+  ctx.fillText(game.audio.muted ? "AUDIO MUTED" : "AUDIO ACTIVE", 640, 328);
+  ctx.textAlign = "left";
+  ctx.fillStyle = "rgba(255, 246, 211, 0.9)";
+  ctx.font = "800 14px system-ui";
+  const moves = [
+    "MOVE: A/D or arrows    JUMP: W    CROUCH: S",
+    "ATTACKS: LP J, HP U, LK K, HK I",
+    "SPECIAL: L    SUPER: O    THROW: H",
+    "ASSISTS: N / M    DASH: Shift or double tap",
+    "CHAINS: light > heavy > special > super"
+  ];
+  moves.forEach((line, index) => ctx.fillText(line, 430, 374 + index * 28));
   ctx.restore();
 };
 

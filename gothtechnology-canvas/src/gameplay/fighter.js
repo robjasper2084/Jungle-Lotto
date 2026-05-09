@@ -1,6 +1,6 @@
 import { GRAVITY, GROUND_Y, WORLD } from "../config/constants.js";
-import { ATTACKS } from "../config/moves.js?v=kalyx-smooth1";
-import { drawSpriteFrame } from "../engine/assets.js?v=kalyx-smooth1";
+import { ATTACKS } from "../config/moves.js?v=full-upgrade1";
+import { drawSpriteFrame } from "../engine/assets.js?v=full-upgrade1";
 import { approach, clamp, makeRect } from "../engine/math.js";
 import { SpriteEffect } from "./effects.js";
 
@@ -44,6 +44,16 @@ const tuneAttackTiming = (data, feel = {}) => {
   return tuned;
 };
 
+const CANCEL_CHAINS = {
+  lightPunch: new Set(["heavyPunch", "lightKick", "heavyKick", "special", "super"]),
+  lightKick: new Set(["heavyPunch", "heavyKick", "special", "super"]),
+  heavyPunch: new Set(["special", "super"]),
+  heavyKick: new Set(["special", "super"]),
+  crouchAttack: new Set(["special", "super"]),
+  combo1: new Set(["combo2", "special", "super"]),
+  combo2: new Set(["special", "super"])
+};
+
 export class Fighter {
   constructor({ id, slot, config, assets, x, facing }) {
     this.id = id;
@@ -59,6 +69,7 @@ export class Fighter {
     this.meter = 0;
     this.roundWins = 0;
     this.comboHits = 0;
+    this.comboDamage = 0;
     this.comboTimer = 0;
     this.motion = "IDLE";
     this.motionElapsed = 0;
@@ -93,6 +104,7 @@ export class Fighter {
     this.health = this.config.maxHealth;
     this.meter = Math.max(0, Math.min(this.meter, 100));
     this.comboHits = 0;
+    this.comboDamage = 0;
     this.comboTimer = 0;
     this.currentAttack = null;
     this.hitstun = 0;
@@ -171,6 +183,23 @@ export class Fighter {
     return true;
   }
 
+  canCancelInto(nextAttack) {
+    if (!this.currentAttack || !nextAttack) return false;
+    const chain = CANCEL_CHAINS[this.currentAttack.name];
+    if (!chain?.has(nextAttack)) return false;
+    const data = this.currentAttack.data;
+    const activeStart = data.active?.[0] ?? data.startup ?? 0.08;
+    return this.currentAttack.elapsed >= Math.max(0.035, activeStart * 0.72);
+  }
+
+  cancelInto(name, game) {
+    if (!this.canCancelInto(name)) return false;
+    this.currentAttack = null;
+    this.attackBuffer = null;
+    this.meter = Math.min(100, this.meter + 2);
+    return this.beginAttack(name, game);
+  }
+
   useAssist(slot, game) {
     if (this.assistCooldowns[slot] > 0 || this.isKO || this.knockdown) return;
     game.spawnAssist(this, slot);
@@ -237,7 +266,10 @@ export class Fighter {
     this.blockstun = Math.max(0, this.blockstun - dt);
     this.shieldTimer = Math.max(0, this.shieldTimer - dt);
     this.comboTimer = Math.max(0, this.comboTimer - dt);
-    if (this.comboTimer === 0) this.comboHits = 0;
+    if (this.comboTimer === 0) {
+      this.comboHits = 0;
+      this.comboDamage = 0;
+    }
     for (const key of Object.keys(this.assistCooldowns)) {
       this.assistCooldowns[key] = Math.max(0, this.assistCooldowns[key] - dt);
     }
@@ -267,6 +299,9 @@ export class Fighter {
     const attackIntent = !locked ? this.readAttackIntent(actions) : null;
     if (attackIntent && (this.currentAttack || this.landingLag > 0)) {
       this.attackBuffer = { name: attackIntent, time: this.config.feel?.inputBuffer ?? 0.12 };
+    }
+    if (!locked && attackIntent && this.currentAttack && this.cancelInto(attackIntent, game)) {
+      // Cancel handled before the current attack advances this frame.
     }
     if (!locked) {
       if (actions.assist1) this.useAssist("assist1", game);
@@ -314,7 +349,7 @@ export class Fighter {
         this.vx += desired * this.config.speed * 0.36;
         this.y -= 1;
         this.setMotion("JUMP_START", true);
-        game.audio.beep("select");
+        game.audio.beep("jump");
       }
       if (actions.dash && desired !== 0 && this.grounded && this.dashCooldown <= 0) {
         const movingForward = desired === this.facing;
@@ -328,7 +363,7 @@ export class Fighter {
           this.y -= 1;
         }
         this.setMotion(movingForward ? "DASH_FORWARD" : "DASH_BACK", true);
-        game.audio.beep("select");
+        game.audio.beep("dash");
         game.effects.push(new SpriteEffect({
           x: this.x - desired * 28,
           y: this.y + 22,

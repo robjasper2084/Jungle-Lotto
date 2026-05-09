@@ -1,4 +1,4 @@
-import { ASSET_URLS, PACK_ROOT } from "../config/assets.js?v=kalyx-smooth1";
+import { ASSET_URLS, PACK_ROOT } from "../config/assets.js?v=full-upgrade1";
 
 const imageCache = new Map();
 
