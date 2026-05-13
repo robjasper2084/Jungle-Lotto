@@ -1216,6 +1216,62 @@ small {
   min-height: 248px;
 }
 
+.dream-oracle-tools {
+  border-color: rgba(180, 119, 255, 0.44);
+  background:
+    radial-gradient(circle at 12% 18%, rgba(180, 119, 255, 0.14), transparent 34%),
+    radial-gradient(circle at 88% 0, rgba(0, 236, 255, 0.12), transparent 30%),
+    rgba(4, 13, 24, 0.94);
+}
+
+.dream-oracle-tools .tool-bento {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(156px, 172px);
+  grid-template-rows: repeat(2, minmax(118px, 1fr));
+  gap: 12px;
+  overflow-x: auto;
+  padding: 16px 18px 18px;
+  scroll-snap-type: x mandatory;
+}
+
+.dream-oracle-tools .circle-tool {
+  width: auto;
+  height: auto;
+  min-height: 118px;
+  flex-basis: auto;
+  justify-items: start;
+  align-content: end;
+  padding: 14px;
+  border-radius: 24px;
+  text-align: left;
+}
+
+.dream-oracle-tools .circle-tool:first-child {
+  grid-row: span 2;
+  min-height: 248px;
+}
+
+.dream-oracle-tools .circle-tool span,
+.dream-oracle-tools .circle-tool small {
+  text-align: left;
+}
+
+.dream-oracle-tools .circle-tool span {
+  max-width: 11ch;
+  color: var(--gold);
+  font-family: var(--title-font);
+  font-size: 16px;
+  line-height: 0.98;
+  text-transform: uppercase;
+}
+
+.dream-oracle-tools .circle-tool small {
+  color: #d8c9ff;
+  font-size: 9px;
+  line-height: 1.05;
+}
+
 .power-screen .tool-bank .tool-bento .circle-tool::before {
   content: "";
   position: absolute;

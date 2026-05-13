@@ -302,6 +302,24 @@ const RADAR_POSITIONS = [
   [60, 88], [40, 88], [88, 72], [12, 72], [88, 28], [12, 28], [50, 50],
 ];
 
+const ORACLE_STUDIO_GROUP = {
+  title: "Oracle Studio",
+  copy: "Reset, speak, interpret, radio, and save.",
+  tools: [
+    ["Reset Vault", "Tone wheel", "reset"],
+    ["Dream Oracle", "Voice meaning", "dreams"],
+    ["Radio Station", "Live audio", "radioStation"],
+    ["Music Hub", "Audio deck", "music"],
+    ["Generate Dreams", "AI scenes", "dreamVideo"],
+    ["Dream Video", "Storyboard", "dreamVideo"],
+    ["Viral Studio", "Video loops", "viralStudio"],
+    ["Psychic Engine", "Energy read", "psychic"],
+    ["Daily Fortune", "Morning signal", "dailyFortune"],
+    ["Name Numbers", "Name code", "nameNumbers"],
+    ["Future Read", "Symbol forecast", "futureRead"],
+  ],
+};
+
 const TOOL_GROUPS = [
   {
     title: "Main Lab",
@@ -317,23 +335,6 @@ const TOOL_GROUPS = [
       ["Pick 3 / Pick 4", "Daily digits", "dailyTools"],
       ["Straight / Box", "Helper", "pickGames"],
       ["Mirror Numbers", "Flip pairs", "sequence"],
-    ],
-  },
-  {
-    title: "Oracle Studio",
-    copy: "Reset, speak, interpret, radio, and save.",
-    tools: [
-      ["Reset Vault", "Tone wheel", "reset"],
-      ["Dream Oracle", "Voice meaning", "dreams"],
-      ["Radio Station", "Live audio", "radioStation"],
-      ["Music Hub", "Audio deck", "music"],
-      ["Generate Dreams", "AI scenes", "dreamVideo"],
-      ["Dream Video", "Storyboard", "dreamVideo"],
-      ["Viral Studio", "Video loops", "viralStudio"],
-      ["Psychic Engine", "Energy read", "psychic"],
-      ["Daily Fortune", "Morning signal", "dailyFortune"],
-      ["Name Numbers", "Name code", "nameNumbers"],
-      ["Future Read", "Symbol forecast", "futureRead"],
     ],
   },
   {
@@ -1054,7 +1055,7 @@ function searchCatalog() {
     if (!route || ROUTES[route] === undefined) return;
     entries.push({ title, sub, route, tags });
   };
-  TOOL_GROUPS.forEach((group) => group.tools.forEach(([title, sub, route]) => add(title, sub, route, `${group.title} ${group.copy}`)));
+  [ORACLE_STUDIO_GROUP, ...TOOL_GROUPS].forEach((group) => group.tools.forEach(([title, sub, route]) => add(title, sub, route, `${group.title} ${group.copy}`)));
   HOME_CAROUSEL.forEach(([title, sub, route]) => add(title, sub, route, "dashboard oracle flow"));
   Object.keys(ROUTES).forEach((route) => {
     const [title, sub] = routeMeta(route);
@@ -1532,6 +1533,16 @@ function dreamsView() {
     </div>
 
     ${localSignalPanel()}
+
+    <div class="panel tool-bank dream-oracle-tools">
+      <div class="section-head">
+        <div><h2>${ORACLE_STUDIO_GROUP.title}</h2><p>${ORACLE_STUDIO_GROUP.copy}</p></div>
+        <span>${ORACLE_STUDIO_GROUP.tools.length} tools</span>
+      </div>
+      <div class="circle-carousel tool-bento dream-studio-bento">
+        ${ORACLE_STUDIO_GROUP.tools.map(([title, sub, route], index) => circleTool(title, sub, route, index + 3)).join("")}
+      </div>
+    </div>
 
     <div class="panel record-label-panel dream-record-label art-panel" style="--panel-art:url('${ASSETS.music}')">
       <div>
