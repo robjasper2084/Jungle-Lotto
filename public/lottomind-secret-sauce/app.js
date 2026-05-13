@@ -1,0 +1,3054 @@
+const BASE = "/lottomind-secret-sauce";
+
+const ASSETS = {
+  logo: `${BASE}/assets/images/lottomind-brain-logo.2f28d70bc952673d95508151e29f46b1.png`,
+  reset: `${BASE}/assets/images/frequency-vault-lottomind-bg.ed65bffe05847e5e6d732d8354acb5b1.png`,
+  dream: `${BASE}/assets/images/dream-oracle-jungle-bg.a4c667c7a8153842972fe7cf8b06aa02.png`,
+  heatmap: `${BASE}/assets/images/lottomind-live-logo-brain.7f7239556a4a3e4035517b0bac125303.png`,
+  power: `${BASE}/assets/images/powertools-hero-bg.26c2f5fbc03f6f2f06a78067f283be94.png`,
+  powerTools: `${BASE}/assets/images/powertools-ai-fixed-games.13c13b9fed4bd95d952df4aacd3078ba.png`,
+  live: `${BASE}/assets/images/live-data-records-panel.404f88fa9201c5e14861577dc5bc8b97.png`,
+  credit: `${BASE}/assets/images/lottomind-credit-coin-circle.c6ba4693cc71d242dd0f2ff47a19ee98.png`,
+  mascot: `${BASE}/assets/images/lottomind-dashboard-mascot.748b27f5e08c765913273948ef52d2f9.png`,
+  sequence: `${BASE}/assets/images/sequence-engine-live-bg.7f7239556a4a3e4035517b0bac125303.png`,
+  arcade: `${BASE}/assets/arcade/jungle-vault-bg-gold.3c093c0c95965d35cbb0eddee93904f6.png`,
+  arcadeCoin: `${BASE}/assets/arcade/play-arcade-coin-button-transparent.34454e607e0af66d23931637bbd7a364.png`,
+  music: `${BASE}/assets/images/dashboard-music-hub-bg.fd20530e40e09f38ef442fddd2f4a17c.png`,
+  hot: `${BASE}/assets/images/strategy-hot-button.ed3ed607fe6f03236eadf0b34b330b37.png`,
+  cold: `${BASE}/assets/images/strategy-cold-button.59a58d8b98e1302eeb6284ec5c86a9d7.png`,
+  balanced: `${BASE}/assets/images/strategy-balanced-button.0b00547b9900f66b82bdaf63849aab4b.png`,
+  psychic: `${BASE}/assets/images/ai-psychic-engine-circle.95310af8f2dc5491754f875ec150e785.png`,
+};
+
+const AUDIO = {
+  reset: `${BASE}/audio/lottomind-frequency.mp3`,
+  startup: `${BASE}/audio/lottomind-startup.mp3`,
+  rain: `${BASE}/audio/LottoMind%20Rainfield.mp3`,
+  lucky: `${BASE}/audio/lucky-frequency-sessions.mp3`,
+  rain432: `${BASE}/audio/detroit-rain-432.mp3`,
+  vault174: `${BASE}/audio/LottoMind%20Vault%20174.mp3`,
+  digitalStatic: `${BASE}/audio/digital-static.mp3`,
+  goldReset: `${BASE}/audio/miracle-gold-reset.mp3`,
+  userFrequency: `${BASE}/audio/lottomind-frequency-user.mp3`,
+  userRainfield: `${BASE}/audio/lottomind-rainfield-user.mp3`,
+  userVault174: `${BASE}/audio/lottomind-vault-174-user.mp3`,
+};
+
+const TAB_INTROS = [AUDIO.digitalStatic, AUDIO.goldReset, AUDIO.userFrequency, AUDIO.userRainfield, AUDIO.userVault174];
+
+const ROUTE_AUDIO_POOLS = {
+  dashboard: [AUDIO.userFrequency, AUDIO.goldReset, AUDIO.startup],
+  powertools: [AUDIO.digitalStatic, AUDIO.lucky, AUDIO.userFrequency],
+  heatmap: [AUDIO.digitalStatic, AUDIO.rain432, AUDIO.userRainfield],
+  dreams: [AUDIO.userRainfield, AUDIO.goldReset, AUDIO.rain],
+  dreamOracle: [AUDIO.userRainfield, AUDIO.goldReset],
+  reset: null,
+  sequence: [AUDIO.userVault174, AUDIO.vault174, AUDIO.digitalStatic],
+  history: [AUDIO.userVault174, AUDIO.startup],
+  arcade: [AUDIO.digitalStatic, AUDIO.lucky],
+  arcadeGame: [AUDIO.digitalStatic, AUDIO.lucky],
+  game: [AUDIO.digitalStatic, AUDIO.lucky],
+  music: [AUDIO.userFrequency, AUDIO.userVault174, AUDIO.goldReset],
+  radioStation: [AUDIO.userFrequency, AUDIO.lucky],
+  store: [AUDIO.goldReset, AUDIO.userFrequency],
+  scanner: [AUDIO.digitalStatic, AUDIO.userRainfield],
+};
+
+const AUDIO_LIBRARY = [
+  ["LottoMind Frequency", `${BASE}/audio/lottomind-frequency.mp3`, "Dashboard-to-reset frequency bed"],
+  ["Digital Static", `${BASE}/audio/digital-static.mp3`, "Tab intro and scanner texture"],
+  ["Miracle Gold Reset", `${BASE}/audio/miracle-gold-reset.mp3`, "Gold reset intro"],
+  ["Lucky Frequency Sessions", `${BASE}/audio/lucky-frequency-sessions.mp3`, "Long-form focus session"],
+  ["Detroit Rain 432", `${BASE}/audio/detroit-rain-432.mp3`, "432 Hz rainfield calm"],
+  ["LottoMind Startup", `${BASE}/audio/lottomind-startup.mp3`, "Branded app intro"],
+  ["LottoMind Rainfield", `${BASE}/audio/LottoMind%20Rainfield.mp3`, "Rain layer from the old media kit"],
+  ["LottoMind Vault 174", `${BASE}/audio/LottoMind%20Vault%20174.mp3`, "Vault tone session"],
+];
+
+const STREAMING_LINKS = [
+  ["Apple Music", "Connect the LottoMind Records label lane to Apple Music.", "apple", ASSETS.logo, "https://music.apple.com/"],
+  ["YouTube", "Open videos, shorts, and branded dream reveals.", "youtube", ASSETS.power, "https://www.youtube.com/"],
+  ["YouTube Music", "Route long-form reset sessions into a player lane.", "youtube-music", ASSETS.music, "https://music.youtube.com/"],
+];
+
+const VIDEO_LIBRARY = [
+  ["Power Tools Dashboard", `${BASE}/videos/power-tools-dashboard-box.mp4`, ASSETS.power],
+  ["Power Tools Button", `${BASE}/videos/power-tools-button-green-screen.mp4`, ASSETS.powerTools],
+  ["Play Arcade Button", `${BASE}/videos/play-arcade-button-loop.mp4`, ASSETS.arcade],
+  ["Merch Store Button", `${BASE}/videos/merch-store-button-loop.mp4`, ASSETS.credit],
+];
+
+const ROUTES = {
+  dashboard: "",
+  powertools: "powertools",
+  reset: "meditation",
+  dreamOracle: "dream-oracle",
+  dreams: "dreams",
+  heatmap: "heatmap",
+  numberGenerator: "number-generator",
+  dailyTools: "daily-tools",
+  sequence: "sequence",
+  history: "history",
+  historyUi: "history-ui",
+  live: "live-results",
+  scanner: "scanner",
+  wallet: "credits-wallet",
+  store: "shop",
+  profile: "profile",
+  settings: "settings",
+  arcade: "arcade",
+  academy: "academy",
+  lottoIntel: "lotto-intelligence",
+  psychic: "psychic",
+  dreamVideo: "dream-video",
+  intelligenceLocker: "intelligence-locker",
+  predictions: "predictions",
+  jackpot: "jackpot",
+  wheelBuilder: "wheel-builder",
+  newsRadar: "news-radar",
+  marketplace: "marketplace",
+  proPlaybook: "pro-playbook",
+  challenges: "challenges",
+  game: "game",
+  liveData: "live-data",
+  ticketScanner: "ticket-scanner",
+  viralStudio: "viral-studio",
+  heatmapAnalytics: "heatmap-analytics",
+  ai: "lottomind-ai",
+  pickGames: "pick-games",
+  music: "music-hub",
+  radioStation: "radio-station",
+  horoscope: "horoscope",
+  luckyWeather: "lucky-weather",
+  storeLocator: "store-locator",
+  creditStore: "credit-store",
+  savedWallet: "saved-wallet",
+  dailyFortune: "daily-fortune",
+  luckProfile: "luck-profile",
+  futureRead: "future-read",
+  nameNumbers: "name-numbers",
+  intelligence: "intelligence",
+  nationwide: "nationwide-analysis",
+  detailedReport: "detailed-report",
+  records: "lottomind-records",
+  historical: "lottomind-historical",
+  gamesHub: "games-hub",
+  arcadeGame: "arcade/game",
+  achievements: "achievements",
+  vip: "vip",
+  community: "community",
+  contests: "contests",
+  cardGame: "card-game",
+  ludo: "ludo",
+  crossword: "crossword",
+  wordSearch: "word-search",
+  triviaPlay: "trivia-play",
+  triviaRewards: "trivia-rewards",
+  triviaRedeem: "trivia-redeem",
+  usLottery: "us-lottery",
+  energyMeter: "energy-meter",
+  onboarding: "onboarding",
+  splash: "splash",
+  paywall: "paywall",
+  thankYou: "thank-you",
+  original: "original",
+  notifications: "notifications",
+  help: "help",
+  policies: "policies",
+};
+
+const ROUTE_ALIASES = {
+  "": "dashboard",
+  "/": "dashboard",
+  meditation: "reset",
+  "dream-oracle": "dreams",
+  "history-ui": "historyUi",
+  "heatmap-analytics": "heatmapAnalytics",
+  "number-generator": "numberGenerator",
+  "daily-tools": "dailyTools",
+  "live-results": "live",
+  scanner: "scanner",
+  "ticket-scanner": "ticketScanner",
+  "viral-studio": "viralStudio",
+  "credits-wallet": "wallet",
+  "saved-wallet": "savedWallet",
+  "credit-store": "creditStore",
+  shop: "store",
+  "music-hub": "music",
+  "radio-station": "radioStation",
+  "lottomind-ai": "ai",
+  "lotto-intelligence": "lottoIntel",
+  "pick-games": "pickGames",
+  "dream-video": "dreamVideo",
+  "intelligence-locker": "intelligenceLocker",
+  predictions: "predictions",
+  "daily-lab": "dailyTools",
+  jackpot: "jackpot",
+  "wheel-builder": "wheelBuilder",
+  "news-radar": "newsRadar",
+  marketplace: "marketplace",
+  "pro-playbook": "proPlaybook",
+  challenges: "challenges",
+  game: "game",
+  horoscope: "horoscope",
+  "lucky-weather": "luckyWeather",
+  "store-locator": "storeLocator",
+  "daily-fortune": "dailyFortune",
+  "luck-profile": "luckProfile",
+  "future-read": "futureRead",
+  "name-numbers": "nameNumbers",
+  intelligence: "intelligence",
+  "nationwide-analysis": "nationwide",
+  "detailed-report": "detailedReport",
+  "lottomind-records": "records",
+  "lottomind-historical": "historical",
+  "games-hub": "gamesHub",
+  "arcade/game": "arcadeGame",
+  achievements: "achievements",
+  vip: "vip",
+  community: "community",
+  contests: "contests",
+  "card-game": "cardGame",
+  ludo: "ludo",
+  crossword: "crossword",
+  "word-search": "wordSearch",
+  "trivia-play": "triviaPlay",
+  "trivia-rewards": "triviaRewards",
+  "trivia-redeem": "triviaRedeem",
+  "us-lottery": "usLottery",
+  "energy-meter": "energyMeter",
+  onboarding: "onboarding",
+  splash: "splash",
+  paywall: "paywall",
+  "thank-you": "thankYou",
+  original: "original",
+  notifications: "notifications",
+  help: "help",
+  policies: "policies",
+};
+
+const LOTTO_GAMES = [
+  { id: "powerball", name: "Powerball", mainCount: 5, mainMax: 69, specialName: "Powerball", specialMax: 26 },
+  { id: "mega-millions", name: "Mega Millions", mainCount: 5, mainMax: 70, specialName: "Mega Ball", specialMax: 24 },
+  { id: "cash-5", name: "Cash 5", mainCount: 5, mainMax: 43 },
+  { id: "pick-3", name: "Pick 3", mainCount: 3, mainMax: 9 },
+  { id: "pick-4", name: "Pick 4", mainCount: 4, mainMax: 9 },
+];
+
+const DEMO_DRAWS = {
+  powerball: [[4, 11, 23, 36, 58], [7, 18, 32, 45, 61], [3, 14, 29, 41, 67], [9, 22, 34, 55, 62], [11, 19, 27, 44, 69], [5, 17, 36, 50, 64], [2, 23, 31, 48, 58], [14, 28, 33, 45, 60]],
+  "mega-millions": [[6, 16, 31, 42, 64], [9, 18, 25, 47, 70], [4, 21, 32, 55, 66], [12, 24, 39, 48, 63], [1, 16, 28, 42, 59], [8, 19, 31, 52, 65], [10, 22, 34, 47, 68], [6, 27, 38, 54, 70]],
+  "cash-5": [[2, 8, 16, 23, 37], [5, 11, 18, 29, 42], [1, 9, 16, 24, 35], [7, 14, 21, 33, 40], [3, 12, 23, 30, 41], [6, 15, 18, 28, 39], [4, 10, 20, 31, 37], [8, 13, 22, 34, 43]],
+  "pick-3": [[1, 7, 3], [8, 0, 4], [3, 3, 9], [2, 6, 8], [7, 1, 5], [0, 4, 9], [6, 2, 2], [9, 8, 1]],
+  "pick-4": [[1, 7, 3, 8], [8, 0, 4, 2], [3, 3, 9, 6], [2, 6, 8, 1], [7, 1, 5, 0], [0, 4, 9, 7], [6, 2, 2, 5], [9, 8, 1, 3]],
+};
+
+const DREAM_SYMBOLS = [
+  { term: "gold", number: 8, label: "gold", meaning: "value, clarity, and visible opportunity" },
+  { term: "money", number: 7, label: "money", meaning: "resources, exchange, and timing" },
+  { term: "water", number: 3, label: "water", meaning: "emotion, movement, and reset energy" },
+  { term: "snake", number: 13, label: "snake", meaning: "transformation and alertness" },
+  { term: "dog", number: 11, label: "dog", meaning: "loyalty and familiar patterns" },
+  { term: "baby", number: 9, label: "baby", meaning: "new starts and fresh cycles" },
+  { term: "car", number: 4, label: "car", meaning: "direction and momentum" },
+  { term: "house", number: 6, label: "house", meaning: "security and home signal" },
+  { term: "door", number: 12, label: "door", meaning: "choice point and threshold" },
+  { term: "fire", number: 5, label: "fire", meaning: "fast action and heat" },
+  { term: "moon", number: 18, label: "moon", meaning: "intuition and hidden cycles" },
+  { term: "angel", number: 22, label: "angel", meaning: "protection and guidance" },
+  { term: "bridge", number: 27, label: "bridge", meaning: "transition and connection" },
+  { term: "stairs", number: 31, label: "stairs", meaning: "progress by steps" },
+  { term: "flying", number: 33, label: "flying", meaning: "freedom and big-picture movement" },
+  { term: "key", number: 14, label: "key", meaning: "unlocking a path" },
+];
+
+const LIVE_RESULT_RECORDS = [
+  { id: "us-powerball", stateCode: "US", stateName: "Nationwide", gameId: "powerball", gameName: "Powerball", session: "evening", drawDate: "2026-04-22", numbers: [8, 12, 24, 41, 66], special: 15, jackpotMillions: 425 },
+  { id: "us-mega", stateCode: "US", stateName: "Nationwide", gameId: "mega-millions", gameName: "Mega Millions", session: "evening", drawDate: "2026-04-21", numbers: [6, 16, 31, 42, 64], special: 11, jackpotMillions: 310 },
+  { id: "ny-pick3-mid", stateCode: "NY", stateName: "New York", gameId: "pick-3", gameName: "Numbers", session: "midday", drawDate: "2026-04-24", numbers: [3, 3, 9] },
+  { id: "ny-pick4-eve", stateCode: "NY", stateName: "New York", gameId: "pick-4", gameName: "Win 4", session: "evening", drawDate: "2026-04-23", numbers: [2, 7, 4, 1] },
+  { id: "fl-pick3-mid", stateCode: "FL", stateName: "Florida", gameId: "pick-3", gameName: "Pick 3", session: "midday", drawDate: "2026-04-24", numbers: [1, 7, 3] },
+  { id: "fl-pick4-eve", stateCode: "FL", stateName: "Florida", gameId: "pick-4", gameName: "Pick 4", session: "evening", drawDate: "2026-04-23", numbers: [8, 0, 4, 2] },
+  { id: "tx-cash5", stateCode: "TX", stateName: "Texas", gameId: "cash-5", gameName: "Cash 5", session: "evening", drawDate: "2026-04-23", numbers: [2, 8, 16, 23, 37], jackpotMillions: 0.12 },
+  { id: "ca-lotto", stateCode: "CA", stateName: "California", gameId: "cash-5", gameName: "State Lotto", session: "evening", drawDate: "2026-04-23", numbers: [5, 11, 18, 29, 42], jackpotMillions: 18 },
+];
+
+const WEATHER_SIGNALS = [
+  { stateCode: "NY", name: "New York", condition: "Cloudy reset", temperature: 59, signal: "Neutral", numbers: [5, 19, 33] },
+  { stateCode: "FL", name: "Florida", condition: "Warm evening storms", temperature: 82, signal: "Rising", numbers: [8, 12, 24] },
+  { stateCode: "TX", name: "Texas", condition: "Dry heat", temperature: 78, signal: "Balanced", numbers: [7, 18, 31] },
+  { stateCode: "CA", name: "California", condition: "Cool coastal air", temperature: 66, signal: "Cooling", numbers: [6, 16, 42] },
+];
+
+const MARKETPLACE_ITEMS = [
+  ["Mind Credits", "Use credits for psychic reads, wheels, reports, and deep scans.", 100],
+  ["LottoMind VIP", "Unlock premium paths and reduced credit friction.", 250],
+  ["Dream Video Studio", "Turn dream notes into storyboard-ready concepts.", 180],
+  ["Learning Library", "Wheel basics, matrix rules, Pick 3/Pick 4 education.", 60],
+];
+
+const MERCH_ITEMS = [
+  ["Frequency Vault Hoodie", "Black and gold LottoMind hoodie with brain-circuit crest.", "$64"],
+  ["Oracle Studio Cap", "Structured cap with the LM coin mark.", "$34"],
+  ["LottoMind Coin Sticker Pack", "Glossy coin, brain, and radar sticker set.", "$14"],
+  ["Power Tools Desk Mat", "Wide command-deck mat for number work.", "$39"],
+];
+
+const RADAR_POSITIONS = [
+  [50, 14], [63, 18], [37, 18], [75, 26], [25, 26], [50, 30], [64, 34],
+  [36, 34], [82, 42], [18, 42], [50, 46], [68, 52], [32, 52], [84, 60],
+  [16, 60], [50, 64], [64, 68], [36, 68], [74, 76], [26, 76], [50, 82],
+  [60, 88], [40, 88], [88, 72], [12, 72], [88, 28], [12, 28], [50, 50],
+];
+
+const TOOL_GROUPS = [
+  {
+    title: "Main Lab",
+    copy: "Generators, scanner, live-vault heatmap, and pattern work.",
+    tools: [
+      ["Number Analyzer", "Trend lab", "numberGenerator"],
+      ["Ticket Scanner", "Scan tickets", "scanner"],
+      ["Live Vault Heatmap", "Radar map", "heatmap"],
+      ["Pattern Scanner", "Signal lock", "sequence"],
+      ["Smart Predictor", "AI insight", "ai"],
+      ["Lotto Intelligence", "Deep report", "lottoIntel"],
+      ["Energy Meter", "Signal score", "energyMeter"],
+      ["Pick 3 / Pick 4", "Daily digits", "dailyTools"],
+      ["Straight / Box", "Helper", "pickGames"],
+      ["Mirror Numbers", "Flip pairs", "sequence"],
+    ],
+  },
+  {
+    title: "Oracle Studio",
+    copy: "Reset, speak, interpret, radio, and save.",
+    tools: [
+      ["Reset Vault", "Tone wheel", "reset"],
+      ["Dream Oracle", "Voice meaning", "dreams"],
+      ["Radio Station", "Live audio", "radioStation"],
+      ["Music Hub", "Audio deck", "music"],
+      ["Generate Dreams", "AI scenes", "dreamVideo"],
+      ["Dream Video", "Storyboard", "dreamVideo"],
+      ["Viral Studio", "Video loops", "viralStudio"],
+      ["Psychic Engine", "Energy read", "psychic"],
+      ["Daily Fortune", "Morning signal", "dailyFortune"],
+      ["Name Numbers", "Name code", "nameNumbers"],
+      ["Future Read", "Symbol forecast", "futureRead"],
+    ],
+  },
+  {
+    title: "History Vault",
+    copy: "Live Vault, results, states, credits, and saved picks.",
+    tools: [
+      ["Live Results", "Draw feed", "live"],
+      ["Predictions", "Lock picks", "predictions"],
+      ["Jackpot Reality", "Net view", "jackpot"],
+      ["Wheel Builder", "Coverage", "wheelBuilder"],
+      ["Credit Vault", "Balance", "wallet"],
+      ["Marketplace", "Unlocks", "marketplace"],
+      ["LottoMind Records", "Archive", "records"],
+      ["Historical Lab", "Long view", "historical"],
+      ["Store Locator", "Nearby play", "storeLocator"],
+      ["History", "Saved runs", "history"],
+    ],
+  },
+  {
+    title: "Play + Learn",
+    copy: "Arcade, challenges, and learning loops.",
+    tools: [
+      ["Arcade", "Reward games", "arcade"],
+      ["Jackpot Run", "Play now", "arcadeGame"],
+      ["Academy", "Lessons", "academy"],
+      ["Pro Playbook", "Strategy", "proPlaybook"],
+      ["Achievements", "Missions", "achievements"],
+      ["Challenges", "Daily tasks", "challenges"],
+      ["Contests", "Prize board", "contests"],
+      ["Onboarding", "Start path", "onboarding"],
+      ["Paywall", "Premium gate", "paywall"],
+      ["Trivia", "Earn credits", "triviaRewards"],
+      ["Community", "Share runs", "community"],
+      ["US Lottery", "State index", "usLottery"],
+      ["Notifications", "Alerts", "notifications"],
+      ["Help", "Support", "help"],
+    ],
+  },
+];
+
+const HOME_CAROUSEL = [
+  ["Reset Studio", "Start with a calm signal before numbers.", "reset", ASSETS.reset],
+  ["Dream Oracle", "Speak or type the dream and receive numbers.", "dreams", ASSETS.dream],
+  ["Music Store / Record Label", "Play LottoMind Records audio and reset sessions.", "music", ASSETS.music],
+  ["Radio Station", "LottoMind Records live audio lane.", "radioStation", ASSETS.music],
+  ["Generate Your Dreams", "Turn dreams into scenes, readings, and lucky reveal cards.", "dreamVideo", ASSETS.dream],
+  ["Heatmap Radar", "Read hot, cold, and overdue movement.", "heatmap", ASSETS.heatmap],
+  ["Arcade Deck", "Run Power Tools like mission cards.", "powertools", ASSETS.power],
+  ["LottoMind Records", "Open saved reports, draw cards, and reading history.", "records", ASSETS.live],
+  ["Marketplace Vault", "Credits, VIP tools, and branded unlocks.", "marketplace", ASSETS.credit],
+  ["Video Studio", "Preview branded motion loops from the old app.", "dreamVideo", ASSETS.power],
+  ["Contests", "Challenge board, rewards, and future entries.", "contests", ASSETS.arcade],
+];
+
+const QUICK_TOOLS = TOOL_GROUPS.flatMap((group) => group.tools);
+
+const STORAGE = {
+  history: "lottomind.oracle.real.history.v1",
+  readings: "lottomind.oracle.real.dreams.v1",
+  psychic: "lottomind.oracle.real.psychic.v1",
+  credits: "lottomind.credit.balance.v1",
+  settings: "lottomind.oracle.real.settings.v1",
+  streams: "lottomind.oracle.real.streams.v1",
+  stores: "lottomind.oracle.real.stores.v1",
+};
+
+const DEFAULT_SETTINGS = {
+  music: true,
+  psychic: true,
+  sound: true,
+  motion: true,
+  responsible: true,
+};
+
+const STATE_PINS = ["NY", "FL", "TX", "CA", "GA", "MI", "PA", "NJ", "OH", "IL"];
+
+const state = {
+  route: routeFromLocation(),
+  gameId: localStorage.getItem("lottomind.oracle.real.game") || "powerball",
+  strategy: localStorage.getItem("lottomind.oracle.real.strategy") || "balanced",
+  selectedState: localStorage.getItem("lottomind.oracle.real.state") || "NY",
+  viewMode: localStorage.getItem("lottomind.oracle.real.view") || "app",
+  dreamText: "I dreamed I was flying over water and found a golden key near a moonlit bridge.",
+  numberInput: "7 23 38 42 11",
+  dailyInput: "194",
+  nameInput: "LottoMind",
+  barcodeInput: "",
+  aiPrompt: "Build me a balanced set from my dream, weather, and radar.",
+  currentSet: null,
+  currentDream: null,
+  currentPsychic: null,
+  currentVideo: null,
+  currentAi: null,
+  currentNameNumbers: null,
+  lastSequence: null,
+  audioPlaying: false,
+  volume: 0.18,
+  tone: "528",
+  duration: 300,
+  timerRemaining: 300,
+  timerRunning: false,
+  scanResult: null,
+  toast: "",
+  muted: !getSettings().music,
+  searchQuery: "",
+  showUtilityMenu: false,
+  showStatePicker: false,
+};
+
+if (!LOTTO_GAMES.some((game) => game.id === state.gameId)) {
+  state.gameId = "powerball";
+  localStorage.setItem("lottomind.oracle.real.game", state.gameId);
+}
+
+let resetAudio = null;
+let routeAudio = null;
+let routeAudioSrc = "";
+let routeAudioRoute = "";
+let routeAudioFadeId = null;
+let routeAudioStopId = null;
+let routeAudioPlayedRoute = "";
+let timerId = null;
+let toastId = null;
+
+function getGame(gameId = state.gameId) {
+  return LOTTO_GAMES.find((game) => game.id === gameId) || LOTTO_GAMES[0];
+}
+
+function hashSeed(value) {
+  return String(value).split("").reduce((acc, char, index) => (acc + char.charCodeAt(0) * (index + 7)) % 2147483647, 97);
+}
+
+function seededRandom(seed) {
+  let seedState = hashSeed(seed) || 1;
+  return () => {
+    seedState = (seedState * 48271) % 2147483647;
+    return seedState / 2147483647;
+  };
+}
+
+function uniqueSorted(numbers) {
+  return Array.from(new Set(numbers)).sort((a, b) => a - b);
+}
+
+function numberUniverse(game) {
+  return Array.from({ length: game.mainMax + (game.mainMax === 9 ? 1 : 0) }, (_, index) => (game.mainMax === 9 ? index : index + 1));
+}
+
+function getDrawLog(gameId = state.gameId) {
+  const dates = ["2026-04-20", "2026-04-17", "2026-04-14", "2026-04-10", "2026-04-07", "2026-04-03", "2026-03-31", "2026-03-27"];
+  const game = getGame(gameId);
+  const normalizedGameId = game.id;
+  const draws = DEMO_DRAWS[normalizedGameId] || DEMO_DRAWS.powerball;
+  return draws.map((numbers, index) => ({
+    id: `${normalizedGameId}-${index}`,
+    gameId: normalizedGameId,
+    drawDate: dates[index] || "2026-03-01",
+    numbers,
+    special: game.specialMax ? ((index * 7 + 3) % game.specialMax) + 1 : undefined,
+  }));
+}
+
+function getMatrixStats(gameId = state.gameId) {
+  const game = getGame(gameId);
+  const draws = getDrawLog(gameId);
+  const counts = new Map();
+  const lastSeen = new Map();
+  draws.forEach((draw) => {
+    draw.numbers.forEach((number) => {
+      counts.set(number, (counts.get(number) || 0) + 1);
+      if (!lastSeen.has(number) || draw.drawDate > lastSeen.get(number)) lastSeen.set(number, draw.drawDate);
+    });
+  });
+  const maxCount = Math.max(1, ...Array.from(counts.values()));
+  const rows = numberUniverse(game).map((number) => {
+    const timesDrawn = counts.get(number) || 0;
+    const heatScore = timesDrawn / maxCount;
+    const badge = heatScore >= 0.8 ? "hot" : heatScore >= 0.45 ? "active" : timesDrawn > 0 ? "cooling" : "cold";
+    return {
+      number,
+      timesDrawn,
+      percent: draws.length ? Math.round((timesDrawn / draws.length) * 1000) / 10 : 0,
+      lastDrawn: lastSeen.get(number) || null,
+      badge,
+      note: !lastSeen.get(number) ? "not seen" : badge === "hot" || badge === "active" ? "active" : "cooling",
+    };
+  });
+  return { game, drawCount: draws.length, rows, trustScore: Math.min(98, 72 + draws.length * 3) };
+}
+
+function getHeatmap(gameId = state.gameId) {
+  const report = getMatrixStats(gameId);
+  const maxCount = Math.max(1, ...report.rows.map((row) => row.timesDrawn));
+  return report.rows.map((row) => {
+    const score = row.timesDrawn / maxCount;
+    return {
+      number: row.number,
+      count: row.timesDrawn,
+      score,
+      label: score >= 0.8 ? "hot" : score >= 0.45 ? "active" : score > 0 ? "cool" : "cold",
+    };
+  });
+}
+
+function interpretDream(text, gameId = state.gameId) {
+  const game = getGame(gameId);
+  const lower = String(text || "").toLowerCase();
+  const matches = DREAM_SYMBOLS.filter((symbol) => lower.includes(symbol.term));
+  const rng = seededRandom(`${text}-${gameId}`);
+  const base = matches.map((symbol) => ((symbol.number - 1) % game.mainMax) + (game.mainMax === 9 ? 0 : 1));
+  while (base.length < game.mainCount) {
+    base.push(game.mainMax === 9 ? Math.floor(rng() * 10) : Math.floor(rng() * game.mainMax) + 1);
+  }
+  let numbers = game.mainMax === 9 ? base.slice(0, game.mainCount) : uniqueSorted(base).slice(0, game.mainCount);
+  while (numbers.length < game.mainCount) {
+    const next = game.mainMax === 9 ? Math.floor(rng() * 10) : Math.floor(rng() * game.mainMax) + 1;
+    if (game.mainMax === 9 || !numbers.includes(next)) numbers.push(next);
+  }
+  if (game.mainMax !== 9) numbers = uniqueSorted(numbers).slice(0, game.mainCount);
+  const meanings = matches.map((symbol) => `${titleCase(symbol.label)}: ${symbol.meaning}`);
+  const symbolNames = matches.map((symbol) => titleCase(symbol.label));
+  const symbolDetails = matches.map((symbol) => ({
+    label: titleCase(symbol.label),
+    number: ((symbol.number - 1) % game.mainMax) + (game.mainMax === 9 ? 0 : 1),
+    meaning: symbol.meaning,
+    source: symbol.term,
+  }));
+  const heatSignals = getHeatmap(gameId).filter((cell) => cell.label === "hot" || cell.label === "active").slice(0, 3).map((cell) => cell.number);
+  const wordCount = String(text || "").trim().split(/\s+/).filter(Boolean).length;
+  const dreamTone = matches.some((symbol) => ["gold", "angel", "key", "flying"].includes(symbol.label))
+    ? "Opportunity"
+    : matches.some((symbol) => ["water", "moon", "bridge"].includes(symbol.label))
+      ? "Intuitive reset"
+      : matches.some((symbol) => ["fire", "snake", "car"].includes(symbol.label))
+        ? "Action signal"
+        : "Open channel";
+  const dreamLayer = dreamTone === "Opportunity"
+    ? "The dream is leaning toward movement, openings, and useful timing. Treat bright objects, doors, keys, and flight as the lead lane."
+    : dreamTone === "Intuitive reset"
+      ? "The dream is leaning emotional and reflective. Water, moon, bridges, and travel signals point to a slower read before picking."
+      : dreamTone === "Action signal"
+        ? "The dream is pushing urgency. Fire, vehicles, snakes, or chase imagery should be balanced with one calmer radar number."
+        : "The Oracle needs one or two sharper symbols, but the text still creates a usable seed from rhythm and word shape.";
+  const summary = matches.length
+    ? `This dream points to ${dreamTone.toLowerCase()}: ${symbolNames.slice(0, 4).join(", ")} are the strongest symbols in the reading.`
+    : "This dream did not match a saved symbol directly, so the Oracle read the rhythm, imagery, and word pattern as an open signal.";
+  const guidance = matches.length
+    ? `Treat the dream as a symbolic prompt: keep the clearest symbol number, blend one radar number, then save before checking live results.`
+    : `Add one or two concrete images from the dream, like water, a door, gold, a bridge, or a key, then run the Oracle again for a sharper meaning.`;
+  const digitStream = numbers.map((number) => Math.abs(Number(number)) % 10);
+  while (digitStream.length < 4) digitStream.push(Math.floor(rng() * 10));
+  const pick3 = digitStream.slice(0, 3).join("");
+  const pick4 = digitStream.slice(0, 4).join("");
+  return {
+    id: `dream_${Date.now()}`,
+    title: matches.length ? "Dream meaning unlocked" : "Dream energy mapped",
+    symbols: matches.map((symbol) => symbol.label),
+    meanings,
+    numbers,
+    gameId,
+    gameName: game.name,
+    text,
+    tone: dreamTone,
+    summary,
+    guidance,
+    pick3,
+    pick4,
+    confidence: Math.min(96, 68 + matches.length * 7 + Math.floor(rng() * 10)),
+    bestWindow: matches.some((symbol) => ["moon", "water", "dream"].includes(symbol.label)) ? "Evening" : "Midday",
+    symbolDetails,
+    heatSignals,
+    dreamLayer,
+    wordCount,
+    numberLogic: [
+      `${game.name}: ${game.mainCount} main numbers from a ${game.mainMax}-number field${game.specialName ? ` plus ${game.specialName}` : ""}.`,
+      matches.length ? `Symbol seed: ${symbolDetails.map((symbol) => `${symbol.label}=${symbol.number}`).join(", ")}.` : "Symbol seed: open text rhythm because no saved symbol was matched.",
+      `Radar blend: ${heatSignals.join(", ")} are active heatmap support numbers for comparison.`,
+      `Daily bridge: Pick 3 ${pick3} / Pick 4 ${pick4} from the dream-number digit stream.`,
+    ],
+    actionSteps: [
+      "Keep the clearest dream symbol as the anchor number.",
+      "Compare the anchor against Heatmap Radar before saving.",
+      "Use the Pick 3 / Pick 4 bridge only as a side lane, not the whole read.",
+      "Save the reading if the symbols feel clear, then build a Dream Video storyboard if you want a visual version.",
+    ],
+    note: matches.length
+      ? `Matched ${matches.map((symbol) => symbol.label).join(", ")} and blended them with ${game.name} rules.`
+      : `No direct symbols found, so LottoMind used the dream text rhythm as a seed for ${game.name}.`,
+    createdAt: new Date().toISOString(),
+  };
+}
+
+function generateLottoSet(gameId = state.gameId, strategy = state.strategy, seedText = "") {
+  const game = getGame(gameId);
+  const heatmap = getHeatmap(gameId);
+  const rng = seededRandom(`${gameId}-${strategy}-${seedText}-${Date.now()}`);
+  const orderedHot = [...heatmap].sort((a, b) => b.count - a.count || a.number - b.number).map((cell) => cell.number);
+  const orderedCold = [...heatmap].sort((a, b) => a.count - b.count || a.number - b.number).map((cell) => cell.number);
+  const dreamNumbers = strategy === "dream" ? interpretDream(seedText || state.dreamText, gameId).numbers : [];
+  const pool =
+    strategy === "hot"
+      ? orderedHot
+      : strategy === "cold"
+        ? orderedCold
+        : strategy === "dream"
+          ? dreamNumbers.concat(orderedHot)
+          : orderedHot.slice(0, 12).concat(orderedCold.slice(0, 12), heatmap.map((cell) => cell.number));
+  const picked = [];
+  while (picked.length < game.mainCount) {
+    const candidate = pool[Math.floor(rng() * pool.length)] ?? (game.mainMax === 9 ? Math.floor(rng() * 10) : Math.floor(rng() * game.mainMax) + 1);
+    if (game.mainMax === 9 || !picked.includes(candidate)) picked.push(candidate);
+  }
+  const numbers = game.mainMax === 9 ? picked : uniqueSorted(picked);
+  const special = game.specialMax ? Math.floor(rng() * game.specialMax) + 1 : undefined;
+  return {
+    id: `set_${Date.now()}_${Math.floor(rng() * 10000)}`,
+    gameId,
+    gameName: game.name,
+    strategy,
+    numbers,
+    special,
+    specialName: game.specialName,
+    createdAt: new Date().toISOString(),
+    note:
+      strategy === "dream"
+        ? "Dream Oracle blend using symbol mapping and recent hot signals."
+        : strategy === "hot"
+          ? "Prioritizes the most active numbers in the local sample."
+          : strategy === "cold"
+            ? "Prioritizes the cold watch sample."
+            : strategy === "quick"
+              ? "Fast seeded entertainment pick."
+              : "Balanced blend of hot, cold, and neutral numbers.",
+  };
+}
+
+function analyzeSequence(numbers, max = 70) {
+  const clean = numbers.filter((number) => Number.isFinite(number));
+  const sum = clean.reduce((acc, number) => acc + number, 0);
+  const root = digitalRoot(sum);
+  const odd = clean.filter((number) => number % 2 === 1).length;
+  const even = clean.length - odd;
+  const midpoint = Math.ceil(max / 2);
+  const low = clean.filter((number) => number <= midpoint).length;
+  const high = clean.length - low;
+  const repeats = clean.filter((number, index) => clean.indexOf(number) !== index);
+  const sorted = [...clean].sort((a, b) => a - b);
+  const gaps = sorted.slice(1).map((number, index) => number - sorted[index]);
+  const consecutivePairs = sorted.flatMap((number, index) => (sorted[index + 1] === number + 1 ? [`${number}-${number + 1}`] : []));
+  const mirrorPairs = sorted.flatMap((number) => (sorted.includes(max + 1 - number) ? [`${number}/${max + 1 - number}`] : [])).filter((pair, index, list) => list.indexOf(pair) === index);
+  const range = sorted.length > 1 ? sorted[sorted.length - 1] - sorted[0] : 0;
+  const clusters = gaps.filter((gap) => gap <= 4).length;
+  const spread = range >= Math.floor(max * 0.55) ? "Wide" : range >= Math.floor(max * 0.28) ? "Balanced" : "Tight";
+  return {
+    numbers: clean,
+    sorted,
+    sum,
+    root,
+    odd,
+    even,
+    high,
+    low,
+    repeats: Array.from(new Set(repeats)),
+    gaps,
+    range,
+    clusters,
+    spread,
+    consecutivePairs,
+    mirrorPairs,
+    note: consecutivePairs.length > 0 ? "Consecutive pressure detected." : odd === even ? "Balanced odd/even structure." : "Asymmetric pattern with room for filtering.",
+  };
+}
+
+function digitalRoot(value) {
+  const safe = Math.abs(Number(value) || 0);
+  return safe === 0 ? 0 : ((safe - 1) % 9) + 1;
+}
+
+function analyzeDailyDigits(input) {
+  const digits = String(input || "").replace(/\D/g, "").split("").map(Number);
+  const count = digits.length <= 3 ? 3 : 4;
+  while (digits.length < count) digits.push(0);
+  const sliced = digits.slice(0, count);
+  const mirrors = sliced.map((digit) => (digit + 5) % 10);
+  const vtrac = sliced.map((digit) => (digit % 5) + 1);
+  const pairs = [];
+  for (let i = 0; i < sliced.length - 1; i += 1) pairs.push(`${sliced[i]}${sliced[i + 1]}`);
+  const boxedCount = factorial(count) / sliced.reduce((acc, digit) => acc * factorial(sliced.filter((item) => item === digit).length), 1);
+  return {
+    digits: sliced,
+    mirrors,
+    vtrac,
+    pairs,
+    boxedCount,
+    sum: sliced.reduce((acc, digit) => acc + digit, 0),
+    root: analyzeSequence(sliced, 9).root,
+    repeatDigits: Array.from(new Set(sliced.filter((digit, index) => sliced.indexOf(digit) !== index))),
+    sequence: analyzeSequence(sliced, 9),
+  };
+}
+
+function factorial(value) {
+  return value <= 1 ? 1 : value * factorial(value - 1);
+}
+
+function generatePsychicReading(input) {
+  const prompt = (input.prompt || "general luck and number energy").trim();
+  const game = input.game || "powerball";
+  const seed = `${prompt}|${input.dreamText || ""}|${input.userName || ""}|${input.birthDate || ""}|${game}|${new Date().toISOString().slice(0, 10)}`;
+  const rng = seededRandom(seed);
+  const energyScore = Math.floor(rng() * 101);
+  const luckCycle = energyScore >= 70 ? "Rising" : energyScore >= 40 ? "Neutral" : "Cooling";
+  const luckyColors = ["Gold", "Amethyst", "Champagne", "Moonlit Silver", "Royal Purple", "Amber"];
+  const playWindows = ["Morning reflection", "Midday reset", "Evening focus", "After a calm pause", "Before checking results"];
+  const symbols = ["moon phase", "gold line", "quiet signal", "dream gate", "lucky mirror", "star path"];
+  const gameConfig = getGame(game === "megaMillions" ? "mega-millions" : game === "pick3" ? "pick-3" : game === "pick4" ? "pick-4" : game);
+  const suggestedNumbers = [];
+  while (suggestedNumbers.length < 5) {
+    const next = Math.floor(rng() * gameConfig.mainMax) + (gameConfig.mainMax === 9 ? 0 : 1);
+    if (gameConfig.mainMax === 9 || !suggestedNumbers.includes(next)) suggestedNumbers.push(next);
+  }
+  return {
+    id: `psychic_${Date.now()}`,
+    title: `${luckCycle} ${luckyColors[Math.floor(rng() * luckyColors.length)]} Signal`,
+    message: `A symbolic ${symbols[Math.floor(rng() * symbols.length)]} shows a ${luckCycle.toLowerCase()} luck cycle. Treat this as number inspiration, not certainty.`,
+    luckCycle,
+    energyScore,
+    bestPlayWindow: playWindows[Math.floor(rng() * playWindows.length)],
+    suggestedNumbers: uniqueSorted(suggestedNumbers),
+    bonusNumber: gameConfig.specialMax ? Math.floor(rng() * gameConfig.specialMax) + 1 : undefined,
+    pick3: Array.from({ length: 3 }, () => Math.floor(rng() * 10)).join(""),
+    pick4: Array.from({ length: 4 }, () => Math.floor(rng() * 10)).join(""),
+    explanation: "This reading blends your prompt, today's date, and optional dream text into a deterministic entertainment seed.",
+    createdAt: new Date().toISOString(),
+  };
+}
+
+function parseNumbers(value) {
+  return String(value || "").split(/[\s,.-]+/).map((part) => Number(part.trim())).filter((number) => Number.isFinite(number));
+}
+
+function loadJson(key, fallback) {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function saveJson(key, value) {
+  localStorage.setItem(key, JSON.stringify(value));
+}
+
+function getSettings() {
+  return { ...DEFAULT_SETTINGS, ...loadJson(STORAGE.settings, {}) };
+}
+
+function saveSet(set) {
+  const history = loadJson(STORAGE.history, []);
+  saveJson(STORAGE.history, [set, ...history.filter((item) => item.id !== set.id)].slice(0, 60));
+  toast("Saved to History Vault");
+}
+
+function saveDream(reading) {
+  const history = loadJson(STORAGE.readings, []);
+  saveJson(STORAGE.readings, [reading, ...history.filter((item) => item.id !== reading.id)].slice(0, 50));
+  toast("Dream Oracle reading saved");
+}
+
+function savePsychic(reading) {
+  const history = loadJson(STORAGE.psychic, []);
+  saveJson(STORAGE.psychic, [reading, ...history.filter((item) => item.id !== reading.id)].slice(0, 50));
+}
+
+function getCredits() {
+  const raw = Number(localStorage.getItem(STORAGE.credits));
+  return Number.isFinite(raw) ? raw : 220;
+}
+
+function setCredits(value) {
+  localStorage.setItem(STORAGE.credits, String(Math.max(0, Math.round(value))));
+}
+
+function routeFromLocation() {
+  let path = window.location.pathname;
+  if (path.startsWith(BASE)) path = path.slice(BASE.length);
+  path = path.replace(/^\/+|\/+$/g, "");
+  return ROUTE_ALIASES[path] || Object.keys(ROUTES).find((key) => ROUTES[key] === path) || "dashboard";
+}
+
+function routeUrl(routeKey) {
+  const path = ROUTES[routeKey] || "";
+  return `${BASE}/${path}`.replace(/\/$/, "/");
+}
+
+function go(routeKey, replace = false) {
+  const next = ROUTES[routeKey] !== undefined ? routeKey : "dashboard";
+  stopRouteAudio();
+  state.route = next;
+  state.searchQuery = "";
+  state.showUtilityMenu = false;
+  state.showStatePicker = false;
+  stopAudioIfNeeded();
+  const method = replace ? "replaceState" : "pushState";
+  window.history[method]({}, "", routeUrl(next));
+  render();
+}
+
+function routeIntroSrc(routeKey = state.route) {
+  if (ROUTE_AUDIO_POOLS[routeKey] === null) return null;
+  const pool = ROUTE_AUDIO_POOLS[routeKey]
+    || (["numberGenerator", "dailyTools", "pickGames", "wheelBuilder", "predictions", "newsRadar", "lottoIntel", "ai", "intelligence", "energyMeter"].includes(routeKey) ? [AUDIO.lucky, AUDIO.digitalStatic, AUDIO.userFrequency] : null)
+    || (["store", "marketplace", "wallet", "creditStore", "savedWallet", "vip"].includes(routeKey) ? [AUDIO.goldReset, AUDIO.userFrequency, AUDIO.startup] : null)
+    || (["scanner", "ticketScanner", "viralStudio", "dreamVideo"].includes(routeKey) ? [AUDIO.digitalStatic, AUDIO.userRainfield, AUDIO.rain] : null)
+    || TAB_INTROS;
+  return pool[Math.floor(Math.random() * pool.length)] || null;
+}
+
+function fadeMedia(media, from, to, duration = 420, onDone) {
+  if (!media) return;
+  if (media === routeAudio) clearInterval(routeAudioFadeId);
+  const steps = 12;
+  let step = 0;
+  media.volume = Math.max(0, Math.min(0.8, from));
+  const fadeId = setInterval(() => {
+    step += 1;
+    const pct = Math.min(1, step / steps);
+    media.volume = Math.max(0, Math.min(0.8, from + (to - from) * pct));
+    if (pct >= 1) {
+      clearInterval(fadeId);
+      if (media === routeAudio) routeAudioFadeId = null;
+      if (onDone) onDone();
+    }
+  }, Math.max(16, duration / steps));
+  if (media === routeAudio) routeAudioFadeId = fadeId;
+}
+
+function stopRouteAudio() {
+  if (!routeAudio) return;
+  clearTimeout(routeAudioStopId);
+  const audio = routeAudio;
+  fadeMedia(audio, audio.volume || 0.04, 0, 320, () => {
+    audio.pause();
+    audio.currentTime = 0;
+  });
+}
+
+function syncRouteAudio() {
+  const settings = getSettings();
+  state.muted = !settings.music;
+  const src = state.muted || state.route === "reset" ? null : routeIntroSrc();
+  if (!src) {
+    stopRouteAudio();
+    routeAudioSrc = "";
+    routeAudioRoute = "";
+    return;
+  }
+  if (routeAudioPlayedRoute === state.route && routeAudioRoute === state.route) return;
+  if (!routeAudio || routeAudioRoute !== state.route || routeAudioSrc !== src) {
+    if (routeAudio) {
+      routeAudio.pause();
+      routeAudio.currentTime = 0;
+    }
+    routeAudio = new Audio(src);
+    routeAudio.loop = false;
+    routeAudio.muted = state.muted;
+    routeAudio.volume = 0;
+    routeAudioSrc = src;
+    routeAudioRoute = state.route;
+  }
+  if (routeAudio.paused) {
+    routeAudioPlayedRoute = state.route;
+    clearTimeout(routeAudioStopId);
+    routeAudio.play().then(() => {
+      fadeMedia(routeAudio, 0, Math.min(0.16, state.volume), 520);
+      routeAudioStopId = setTimeout(() => stopRouteAudio(), 20000);
+    }).catch(() => {});
+  }
+}
+
+function titleCase(value) {
+  return String(value).replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
+function escapeHtml(value) {
+  return String(value ?? "").replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" }[char]));
+}
+
+function ballsHtml(numbers, special, specialName = "Bonus") {
+  const main = numbers.map((number) => `<span class="lm-ball">${number}</span>`).join("");
+  const bonus = special !== undefined ? `<span class="lm-ball special" title="${escapeHtml(specialName)}">${special}</span>` : "";
+  return `<div class="lm-balls">${main}${bonus}</div>`;
+}
+
+function gamePills() {
+  return `<div class="lm-pill-row">${LOTTO_GAMES.map((game) => `<button class="lm-pill ${state.gameId === game.id ? "active" : ""}" data-action="set-game" data-game="${game.id}">${game.name}</button>`).join("")}</div>`;
+}
+
+function strategyPills() {
+  const strategies = [
+    ["balanced", "Balanced", ASSETS.balanced],
+    ["hot", "Hot", ASSETS.hot],
+    ["cold", "Cold", ASSETS.cold],
+    ["dream", "Dream", ASSETS.dream],
+    ["quick", "Quick", ASSETS.power],
+  ];
+  return `<div class="strategy-pills">${strategies.map(([key, label, art]) => `
+    <button class="strategy-pill ${state.strategy === key ? "active" : ""}" data-action="set-strategy" data-strategy="${key}" style="--pill-art:url('${art}')">
+      <span>${label}</span>
+      <small>${key === "balanced" ? "Best of both" : key === "hot" ? "Frequently drawn" : key === "cold" ? "Overdue numbers" : key === "dream" ? "Symbol seed" : "Fast pick"}</small>
+    </button>
+  `).join("")}</div>`;
+}
+
+function header() {
+  return `<header class="real-header">
+    <button class="round-icon menu-orb help-orb" data-action="menu" aria-label="Open help, settings, and policies"><span></span><em>HELP</em></button>
+    <button class="brand-lockup" data-route="store" aria-label="Open LottoMind merch store">
+      <img src="${ASSETS.logo}" alt="LottoMind logo" />
+      <span>Lotto<span>Mind</span><sup>TM</sup></span>
+      <i>Store</i>
+    </button>
+    <button class="round-icon mic-orb" data-action="voice-search" aria-label="Start voice input"><span></span><b>MIC</b></button>
+    <div class="top-controls segmented-switch shell-switch" role="group" aria-label="Pinned state and shell view mode">
+      <button class="pin-button meatball" data-action="cycle-state"><span>PIN</span><strong>${state.selectedState}</strong></button>
+      <button class="mode-toggle meatball ${state.viewMode === "shell" || state.viewMode === "auto" ? "active" : ""}" data-action="set-view" data-view="auto"><span>Auto</span></button>
+      <button class="mode-toggle meatball ${state.viewMode === "app" ? "active" : ""}" data-action="set-view" data-view="app"><span>App</span></button>
+      <button class="mode-toggle meatball ${state.viewMode === "web" ? "active" : ""}" data-action="set-view" data-view="web"><span>Web</span></button>
+    </div>
+    <label class="search-pill">
+      <span>Search</span>
+      <input data-action="search" value="${escapeHtml(state.searchQuery)}" placeholder="Search numbers, dreams, tools..." autocomplete="off" />
+      <button class="mic-chip" type="button" data-action="voice-search" aria-label="Voice search"><span></span></button>
+    </label>
+    <div class="function-search-results" hidden></div>
+    ${state.showStatePicker ? `<div class="state-picker">
+      ${STATE_PINS.map((pin) => `<button class="${pin === state.selectedState ? "active" : ""}" data-action="select-state" data-state="${pin}"><span>${pin}</span><small>${pin === state.selectedState ? "Pinned" : "Select"}</small></button>`).join("")}
+    </div>` : ""}
+    ${state.showUtilityMenu ? `<div class="utility-menu">
+      <div class="menu-title"><span>Settings Menu</span><strong>App controls, help, and policies</strong></div>
+      <button data-route="settings"><strong>Settings</strong><small>App, sound, motion</small></button>
+      <button data-route="help"><strong>Help</strong><small>Support and guide</small></button>
+      <button data-route="policies"><strong>Policies</strong><small>Privacy, terms, responsible play</small></button>
+    </div>` : ""}
+  </header>`;
+}
+
+function bottomNav() {
+  const items = [
+    ["dashboard", "Home", "LM"],
+    ["powertools", "Tools", "PT"],
+    ["heatmap", "Radar", "RD"],
+    ["dreams", "Dream", "DO"],
+    ["reset", "Reset", "Hz"],
+    ["sequence", "Seq", "SQ"],
+    ["history", "Vault", "HV"],
+    ["arcade", "Arcade", "AR"],
+  ];
+  return `<nav class="real-bottom-nav">${items.map(([route, label, icon]) => `
+    <button class="${state.route === route ? "active" : ""}" data-route="${route}">
+      <span class="nav-glyph">${icon}</span>
+      <small>${label}</small>
+    </button>
+  `).join("")}</nav>`;
+}
+
+function routeMeta(routeKey = state.route) {
+  const map = {
+    dashboard: ["Oracle Home", "Reset > Dream > Radar > Run"],
+    powertools: ["Power Tools", "Arcade command deck"],
+    heatmap: ["Heatmap", "Signal radar mission"],
+    dreams: ["Dream Oracle", "Speak, read, save"],
+    reset: ["Reset Vault", `${state.tone} Hz session`],
+    sequence: ["Sequence", "Pattern engine"],
+    history: ["History Vault", "Saved signals"],
+    dailyTools: ["Daily 3 / 4", `${state.selectedState} digit lab`],
+    numberGenerator: ["Generator", `${getGame().name} picks`],
+    live: ["Live Results", `${state.selectedState} draw board`],
+    scanner: ["Scanner", "Ticket scan lane"],
+    wallet: ["Credit Vault", `${getCredits()} credits`],
+    music: ["Music Store", "LottoMind Records label"],
+    radioStation: ["Radio Station", "LottoMind Records live lane"],
+    dreamVideo: ["Video Studio", "Dream and promo loops"],
+    viralStudio: ["Video Studio", "Branded motion kit"],
+    records: ["History Vault", "Draw and saved archive"],
+    marketplace: ["Marketplace", "Credits and unlocks"],
+    energyMeter: ["Energy Meter", "Signal score"],
+    lottoIntel: ["Lotto Intelligence", "Deep analysis"],
+    onboarding: ["Onboarding", "Start path"],
+    paywall: ["Premium", "Unlock gate"],
+    usLottery: ["US Lottery", "State index"],
+    notifications: ["Alerts", "Notification center"],
+    policies: ["Policies", "Privacy and responsible play"],
+    store: ["Merch Store", "Official gear"],
+  };
+  return map[routeKey] || [titleCase(routeKey.replace(/([A-Z])/g, " $1")), "Oracle function"];
+}
+
+function missionHud() {
+  const [title, subtitle] = routeMeta();
+  const stage = ["dashboard", "reset", "dreams", "heatmap", "powertools"].indexOf(state.route);
+  const progress = stage >= 0 ? ((stage + 1) / 5) * 100 : 68;
+  return `<section class="mission-hud" aria-label="Current mission">
+    <div class="hud-medal"><img src="${ASSETS.logo}" alt="" /></div>
+    <div class="hud-copy">
+      <span>${title}</span>
+      <strong>${subtitle}</strong>
+      <i><b style="width:${progress}%"></b></i>
+    </div>
+    <button class="hud-credit" data-route="wallet"><span>${getCredits()}</span><small>credits</small></button>
+  </section>`;
+}
+
+function searchCatalog() {
+  const entries = [];
+  const add = (title, sub, route, tags = "") => {
+    if (!route || ROUTES[route] === undefined) return;
+    entries.push({ title, sub, route, tags });
+  };
+  TOOL_GROUPS.forEach((group) => group.tools.forEach(([title, sub, route]) => add(title, sub, route, `${group.title} ${group.copy}`)));
+  HOME_CAROUSEL.forEach(([title, sub, route]) => add(title, sub, route, "dashboard oracle flow"));
+  Object.keys(ROUTES).forEach((route) => {
+    const [title, sub] = routeMeta(route);
+    add(title, sub, route, route.replace(/([A-Z])/g, " $1"));
+  });
+  [
+    ["Store Locator", "Nearby play locations and pinned state stores", "storeLocator", "retailer shop near me"],
+    ["Lucky Weather", "Local weather report and weather-number cues", "luckyWeather", "forecast radar horoscope temperature"],
+    ["Ticket Scanner", "Camera ticket scan and barcode reader", "scanner", "scan ticket barcode camera qr"],
+    ["Barcode Scanner", "Camera ticket scan and barcode reader", "scanner", "scan ticket barcode camera qr"],
+    ["Dream Journal", "Saved Dream Oracle readings", "dreams", "journal saved dream interpretation meaning"],
+    ["Dream Oracle", "Speak, interpret, and generate lucky numbers", "dreams", "oracle studio mic record"],
+    ["Music Store", "LottoMind Records, radio, Apple Music, YouTube", "music", "songs audio frequency record label"],
+    ["Settings", "Music toggle, sound, motion, and policies", "settings", "set help menu controls"],
+    ["Help", "Help, settings, and policies", "help", "support guide policy"],
+  ].forEach((item) => add(...item));
+  const seen = new Set();
+  return entries.filter((item) => {
+    const key = `${item.route}:${item.title}`.toLowerCase();
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+function functionSearchResults(value, limit = 8) {
+  const query = String(value || "").trim().toLowerCase();
+  if (!query) return [];
+  const terms = query.split(/\s+/).filter(Boolean);
+  return searchCatalog()
+    .map((item) => {
+      const haystack = `${item.title} ${item.sub} ${item.route} ${item.tags}`.toLowerCase();
+      let score = haystack.includes(query) ? 10 : 0;
+      terms.forEach((term) => {
+        if (item.title.toLowerCase().includes(term)) score += 6;
+        if (item.route.toLowerCase().includes(term)) score += 4;
+        if (haystack.includes(term)) score += 2;
+      });
+      return { ...item, score };
+    })
+    .filter((item) => item.score > 0)
+    .sort((a, b) => b.score - a.score || a.title.localeCompare(b.title))
+    .slice(0, limit);
+}
+
+function searchResultsHtml(value) {
+  const results = functionSearchResults(value);
+  if (!String(value || "").trim()) return "";
+  if (!results.length) {
+    return `<div class="search-empty"><strong>No function found</strong><small>Try scanner, dream, weather, store, music, radar, or settings.</small></div>`;
+  }
+  return results.map((item) => `<button class="function-result" data-route="${item.route}">
+    <span>${escapeHtml(item.title)}</span>
+    <small>${escapeHtml(item.sub)}</small>
+    <b>${escapeHtml(routeMeta(item.route)[0])}</b>
+  </button>`).join("");
+}
+
+function renderFunctionSearchResults(value = state.searchQuery) {
+  const panel = document.querySelector(".function-search-results");
+  if (!panel) return;
+  const hasQuery = String(value || "").trim().length > 0;
+  panel.hidden = !hasQuery;
+  panel.classList.toggle("open", hasQuery);
+  panel.innerHTML = searchResultsHtml(value);
+}
+
+function dashboardView() {
+  const current = state.currentSet || generateLottoSet(state.gameId, state.strategy, "dashboard");
+  const weather = WEATHER_SIGNALS.find((item) => item.stateCode === state.selectedState) || WEATHER_SIGNALS[0];
+  return `<section class="screen dashboard-screen">
+    <div class="oracle-hero panel art-panel" style="--panel-art:url('${ASSETS.dream}')">
+      <div>
+        <h1>Oracle Studio</h1>
+        <p>Reset, dream, read the map, then run Power Tools with every old feature wired inside one branded app.</p>
+        <div class="hero-actions">
+          <button class="primary-btn" data-route="dreams">Open Dream Oracle</button>
+          <button class="ghost-btn" data-route="powertools">Power Tools</button>
+        </div>
+      </div>
+      <img class="hero-mascot" src="${ASSETS.mascot}" alt="LottoMind mascot" />
+    </div>
+
+    <div class="panel quest-board">
+      <div class="section-head movie-head"><div><h2>Quest Board</h2><p>More logical game flow for the whole app.</p></div><span>4 steps</span></div>
+      <div class="quest-steps">
+        ${[
+          ["1", "Reset", "Load the right tone", "reset", ASSETS.reset],
+          ["2", "Oracle", "Speak or type the dream", "dreams", ASSETS.dream],
+          ["3", "Radar", "Read hot/cold movement", "heatmap", ASSETS.heatmap],
+          ["4", "Run", "Generate and save", "powertools", ASSETS.power],
+        ].map(([step, title, copy, route, art]) => `<button class="quest-step ${state.route === route ? "active" : ""}" data-route="${route}" style="--quest-art:url('${art}')"><b>${step}</b><strong>${title}</strong><small>${copy}</small></button>`).join("")}
+      </div>
+    </div>
+
+    <div class="carousel-panel panel">
+      <div class="section-head movie-head">
+        <div><h2>Oracle Flow</h2><p>Swipe through the main app functions.</p></div>
+        <button class="tiny-btn" data-route="powertools">All Tools</button>
+      </div>
+      <div class="snap-carousel">
+        ${HOME_CAROUSEL.map(([title, copy, route, art], index) => `
+          <button class="flow-card flow-card-${index % 4}" data-route="${route}" style="--card-art:url('${art}')">
+            <span>${title}</span>
+            <small>${copy}</small>
+          </button>
+        `).join("")}
+      </div>
+    </div>
+
+    <div class="panel snapshot-panel">
+      <div class="section-head"><div><h2>Today's Snapshot</h2><p>Local cues before you pick.</p></div></div>
+      <div class="snap-carousel small">
+        ${[
+          ["Weather", `${weather.temperature}F`, `${weather.condition} in ${weather.name}`],
+          ["Horoscope", "Leo", "Daily focus lane"],
+          ["Store Locator", "Near you", "Saved state pin"],
+          ["Daily Fortune", "Ready", "One tap symbolic read"],
+          ["Live Results", "Open", "Check latest draw cards"],
+          ["Credits", getCredits(), "Vault balance"],
+        ].map(([title, value, copy]) => `<button class="mini-tool" data-route="${title === "Weather" ? "luckyWeather" : title === "Horoscope" ? "horoscope" : title === "Live Results" ? "live" : title === "Credits" ? "wallet" : title === "Daily Fortune" ? "dailyFortune" : title === "Store Locator" ? "storeLocator" : "dashboard"}"><span>${title}</span><strong>${value}</strong><small>${copy}</small></button>`).join("")}
+      </div>
+    </div>
+
+    <div class="live-strip panel">
+      <div><h2>Live Results</h2><p>Next Draw in</p><strong>02:18:45</strong></div>
+      ${ballsHtml([12, 28, 33, 44, 50])}
+      <button class="chev-btn" data-route="live">View</button>
+    </div>
+
+    <div class="split-grid">
+      <button class="action-tile" data-route="academy"><strong>LottoMind Academy</strong><span>Learn. Grow. Win.</span></button>
+      <button class="action-tile" data-route="marketplace"><strong>Marketplace</strong><span>Credits, VIP tools, and unlocks</span></button>
+    </div>
+
+    <div class="panel">
+      <div class="section-head"><div><h2>Strategy</h2><p>Choose a number lane before you generate.</p></div></div>
+      ${strategyPills()}
+      <button class="primary-btn full" data-action="generate-set">Generate ${getGame().name}</button>
+      <div class="result-card compact">
+        <span>${current.gameName} ${titleCase(current.strategy)}</span>
+        ${ballsHtml(current.numbers, current.special, current.specialName)}
+      </div>
+    </div>
+  </section>`;
+}
+
+function circleTool(title, sub, route, index) {
+  const arts = [ASSETS.powerTools, ASSETS.heatmap, ASSETS.live, ASSETS.reset, ASSETS.dream, ASSETS.arcade, ASSETS.credit, ASSETS.psychic];
+  return `<button class="circle-tool" data-route="${route}" style="--circle-art:url('${arts[index % arts.length]}')">
+    <span>${title}</span>
+    <small>${sub}</small>
+  </button>`;
+}
+
+function powerToolsView() {
+  const current = state.currentSet || generateLottoSet(state.gameId, state.strategy, "power-tools");
+  return `<section class="screen power-screen">
+    <div class="panel arcade-deck art-panel" style="--panel-art:url('${ASSETS.power}')">
+      <div>
+        <h1 class="game-title">Arcade Command Deck</h1>
+        <p>Swipe tool medals, lock a state pin, then run the next analysis like a mission.</p>
+        <div class="hero-actions">
+          <button class="primary-btn" data-action="run-power-analysis">Run Analysis</button>
+          <button class="ghost-btn" data-route="numberGenerator">Number Generator</button>
+          <button class="ghost-btn" data-route="history">History Vault</button>
+          <button class="ghost-btn" data-route="radioStation">Radio Station</button>
+          <button class="ghost-btn" data-route="marketplace">Marketplace</button>
+        </div>
+      </div>
+      <div class="deck-coin command-crest"><img src="${ASSETS.logo}" alt="LottoMind logo" /><span>Power Tools</span></div>
+    </div>
+
+    ${gamePills()}
+
+    <div class="stat-row">
+      <div><strong>${getMatrixStats().trustScore}%</strong><span>Signal</span></div>
+      <div><strong>${state.selectedState}</strong><span>Pin</span></div>
+      <div><strong>${QUICK_TOOLS.length}</strong><span>Tools</span></div>
+    </div>
+
+    ${TOOL_GROUPS.map((group, groupIndex) => `
+      <div class="panel tool-bank">
+        <div class="section-head">
+          <div><h2>${group.title}</h2><p>${group.copy}</p></div>
+          <span>${group.tools.length} tools</span>
+        </div>
+        <div class="circle-carousel">
+          ${group.tools.map(([title, sub, route], index) => circleTool(title, sub, route, groupIndex * 4 + index)).join("")}
+        </div>
+      </div>
+    `).join("")}
+
+    <div class="panel result-card">
+      <span>Current Mission Output</span>
+      <h2>${current.gameName} ${titleCase(current.strategy)} Set</h2>
+      ${ballsHtml(current.numbers, current.special, current.specialName)}
+      <p>${current.note}</p>
+      <div class="hero-actions">
+        <button class="primary-btn" data-action="save-current-set">Save Set</button>
+        <button class="ghost-btn" data-route="history">Open Vault</button>
+      </div>
+    </div>
+  </section>`;
+}
+
+function resetView() {
+  const tones = [
+    ["174", "Deep Rest"],
+    ["220", "Ground"],
+    ["432", "Calm"],
+    ["741", "Clear"],
+    ["963", "Align"],
+    ["396", "Release"],
+    ["528", "Love Reset"],
+  ];
+  const pct = Math.round(state.volume * 100);
+  return `<section class="screen reset-screen">
+    <div class="panel tone-wheel art-panel" style="--panel-art:url('${ASSETS.reset}')">
+      <div class="tone-top">
+        <h1><span>Frequency</span> Reset</h1>
+        <span class="pro-badge">PRO</span>
+      </div>
+      <label class="search-pill slim"><span>Search</span><input placeholder="Search sounds, moods, or intentions..." /><button type="button">Music</button></label>
+      <div class="tone-chips">
+        <button class="lm-pill active">Calm</button><button class="lm-pill">Focus</button><button class="lm-pill">Sleep</button>
+      </div>
+      <div class="wheel-orbit">
+        ${tones.filter(([hz]) => hz !== state.tone).slice(0, 4).map(([hz, label], index) => `<button class="orbit-tone t${index + 1}" data-action="set-tone" data-tone="${hz}"><strong>${hz}</strong><small>${label}</small></button>`).join("")}
+        <button class="center-tone" data-action="set-tone" data-tone="${state.tone}"><strong>${state.tone} Hz</strong><small>${tones.find(([hz]) => hz === state.tone)?.[1] || "Reset"}</small></button>
+      </div>
+      <div class="session-card">
+        <div><strong>${formatTimer(state.timerRemaining)} Reset Session</strong><span>${pct}% volume</span></div>
+        <div class="progress"><i style="width:${100 - (state.timerRemaining / state.duration) * 100}%"></i></div>
+        <div class="transport">
+          <button data-action="volume-down">-</button>
+          <button class="play-btn" data-action="toggle-reset-audio">${state.audioPlaying ? "Pause" : "Play"}</button>
+          <button data-action="favorite-tone">Heart</button>
+          <button data-action="volume-up">+</button>
+        </div>
+        <div class="duration-row">
+          ${[180, 300, 600, 900, 1800, 3600].map((seconds) => `<button class="${state.duration === seconds ? "active" : ""}" data-action="set-duration" data-duration="${seconds}">${Math.round(seconds / 60)}m</button>`).join("")}
+        </div>
+      </div>
+    </div>
+
+    <div class="panel sound-session-panel">
+      <div class="section-head"><div><h2>Sound Sessions</h2><p>Tap a circle to load a tone, then play.</p></div></div>
+      <div class="sound-session-grid">
+        ${tones.map(([hz, label], index) => `<button class="sound-card tone-pill ${state.tone === hz ? "active" : ""}" data-action="set-tone" data-tone="${hz}" style="--tone-art:url('${index % 2 ? ASSETS.logo : ASSETS.music}')"><span>${hz} Hz</span><strong>${label}</strong><small>${hz === "528" ? "Love frequency" : hz === "741" ? "Clear signal" : "Focus support"}</small></button>`).join("")}
+      </div>
+    </div>
+  </section>`;
+}
+
+function localSignalPanel() {
+  const weather = WEATHER_SIGNALS.find((item) => item.stateCode === state.selectedState) || WEATHER_SIGNALS[0];
+  const stores = [
+    { state: "NY", name: "Hudson Lucky Mart", distance: "0.8 mi", radar: "Cloud cover shifting neutral" },
+    { state: "FL", name: "Sunrise Lotto Stop", distance: "1.2 mi", radar: "Storm band rising signal" },
+    { state: "TX", name: "Lone Star Ticket Hub", distance: "2.4 mi", radar: "Dry heat balanced lane" },
+    { state: "CA", name: "Coastal Numbers Market", distance: "1.7 mi", radar: "Marine layer cooling trend" },
+  ];
+  const store = stores.find((item) => item.state === state.selectedState) || stores[0];
+  return `<div class="panel local-signal-panel">
+    <div class="section-head"><div><h2>Local Weather Radar</h2><p>Weather report, store locator, and local number cues for ${state.selectedState}.</p></div><span>${weather.signal}</span></div>
+    <div class="local-signal-grid">
+      <button class="local-card weather-card" data-route="luckyWeather">
+        <span>Weather Report</span><strong>${weather.temperature}F</strong><small>${weather.condition} in ${weather.name}</small>
+      </button>
+      <button class="local-card radar-card" data-route="heatmap">
+        <span>Weather Radar</span>${ballsHtml(weather.numbers)}<small>${store.radar}</small>
+      </button>
+      <button class="local-card store-card-mini" data-route="storeLocator">
+        <span>Store Locator</span><strong>${store.name}</strong><small>${store.distance} from pinned area</small>
+      </button>
+    </div>
+  </div>`;
+}
+
+function dreamJournalPanel() {
+  const entries = loadJson(STORAGE.readings, []);
+  const preview = entries.length ? entries.slice(0, 4) : [
+    { title: "No saved dreams yet", note: "Run Dream Oracle, then tap Save Dream Pick to build your journal.", numbers: [] },
+  ];
+  return `<div class="panel dream-journal-panel">
+    <div class="section-head"><div><h2>Dream Journal</h2><p>Saved Dream Oracle readings and generated dream scenes.</p></div><span>${entries.length} saved</span></div>
+    <div class="result-list padded">
+      ${preview.map((entry) => `<div class="history-row journal-row">
+        <strong>${escapeHtml(entry.title || "Dream Journal Entry")}</strong>
+        ${entry.numbers?.length ? ballsHtml(entry.numbers) : ""}
+        <small>${escapeHtml(entry.note || entry.summary || "Dream entry ready.")}</small>
+      </div>`).join("")}
+    </div>
+    <div class="hero-actions padded">
+      <button class="primary-btn" data-action="save-dream">Save Current Dream</button>
+      <button class="ghost-btn" data-route="history">Open History Vault</button>
+      <button class="ghost-btn" data-action="build-dream-video">Generate Your Dreams</button>
+    </div>
+  </div>`;
+}
+
+function storeLocatorView() {
+  const weather = WEATHER_SIGNALS.find((item) => item.stateCode === state.selectedState) || WEATHER_SIGNALS[0];
+  const stores = [
+    ["NY", "Hudson Lucky Mart", "0.8 mi", "Open until 10 PM", [5, 19, 33]],
+    ["FL", "Sunrise Lotto Stop", "1.2 mi", "Storm-lane pickup", [8, 12, 24]],
+    ["TX", "Lone Star Ticket Hub", "2.4 mi", "Dry heat balance", [7, 18, 31]],
+    ["CA", "Coastal Numbers Market", "1.7 mi", "Cooling trend", [6, 16, 42]],
+    ["GA", "Peach State Play Center", "1.1 mi", "Warm evening lane", [4, 14, 28]],
+    ["MI", "Motor City Lucky Stop", "0.9 mi", "Cloud reset lane", [9, 21, 36]],
+  ];
+  const pinned = stores.filter((store) => store[0] === state.selectedState);
+  const visible = (pinned.length ? pinned.concat(stores.filter((store) => store[0] !== state.selectedState)) : stores).slice(0, 6);
+  return `<section class="screen store-locator-screen">
+    <div class="panel art-panel media-hero" style="--panel-art:url('${ASSETS.credit}')">
+      <div>
+        <span class="eyebrow">Store Finder</span>
+        <h1>Local Play Map</h1>
+        <p>Find saved demo retailers, local weather cues, and a quick radar path for ${state.selectedState}.</p>
+        <div class="hero-actions">
+          <button class="primary-btn" data-action="cycle-state">Change State Pin</button>
+          <button class="ghost-btn" data-route="luckyWeather">Weather Radar</button>
+          <button class="ghost-btn" data-route="heatmap">Signal Radar</button>
+        </div>
+      </div>
+      <button class="console-orb state-orb" data-action="cycle-state"><img src="${ASSETS.logo}" alt="" /><span>${state.selectedState}</span></button>
+    </div>
+    <div class="panel local-signal-panel">
+      <div class="section-head"><div><h2>Weather + Store Cue</h2><p>${weather.condition} in ${weather.name}. Use light local context before you pick.</p></div><span>${weather.temperature}F</span></div>
+      <div class="local-signal-grid">
+        <button class="local-card weather-card" data-route="luckyWeather"><span>Weather Report</span><strong>${weather.signal}</strong><small>${weather.numbers.join(" / ")}</small></button>
+        <button class="local-card radar-card" data-route="heatmap"><span>Radar</span>${ballsHtml(weather.numbers)}<small>Open hot/cold map</small></button>
+        <button class="local-card store-card-mini" data-action="save-store"><span>Saved Pin</span><strong>${state.selectedState}</strong><small>Tap to save locator state</small></button>
+      </div>
+    </div>
+    <div class="panel store-map-panel">
+      <div class="section-head"><div><h2>Nearby Store Cards</h2><p>Demo store finder with state-select routing and radar actions.</p></div><span>${visible.length} stores</span></div>
+      <div class="store-grid">
+        ${visible.map(([pin, name, distance, note, numbers]) => `<button class="store-card locator-card" data-action="select-state" data-state="${pin}">
+          <span>${pin} ${pin === state.selectedState ? "Pinned" : "Select"}</span>
+          <strong>${name}</strong>
+          <small>${distance} - ${note}</small>
+          ${ballsHtml(numbers)}
+        </button>`).join("")}
+      </div>
+    </div>
+  </section>`;
+}
+
+function luckyWeatherView() {
+  const weather = WEATHER_SIGNALS.find((item) => item.stateCode === state.selectedState) || WEATHER_SIGNALS[0];
+  return `<section class="screen weather-screen">
+    <div class="panel art-panel media-hero" style="--panel-art:url('${ASSETS.heatmap}')">
+      <div>
+        <span class="eyebrow">Local Weather Radar</span>
+        <h1>${weather.name} ${weather.temperature}F</h1>
+        <p>${weather.condition}. ${weather.signal} weather cue with horoscope, radar, and store routes attached.</p>
+        <div class="hero-actions">
+          <button class="primary-btn" data-route="heatmap">Open Radar</button>
+          <button class="ghost-btn" data-route="horoscope">Horoscope</button>
+          <button class="ghost-btn" data-route="storeLocator">Store Locator</button>
+        </div>
+      </div>
+      <button class="console-orb state-orb" data-action="cycle-state"><img src="${ASSETS.logo}" alt="" /><span>${state.selectedState}</span></button>
+    </div>
+    <div class="panel result-card">
+      <span>Weather number cue</span>
+      <h2>${weather.signal} ${weather.condition}</h2>
+      ${ballsHtml(weather.numbers)}
+      <p>Use these only as entertainment cues, then verify movement on Signal Radar.</p>
+    </div>
+  </section>`;
+}
+
+function nameNumberReport(value = state.nameInput) {
+  const clean = String(value || "LottoMind").toUpperCase().replace(/[^A-Z0-9 ]/g, "");
+  const letters = clean.replace(/[^A-Z0-9]/g, "").split("");
+  const values = letters.map((char) => (/\d/.test(char) ? Number(char) : ((char.charCodeAt(0) - 64 - 1) % 9) + 1));
+  const sum = values.reduce((total, number) => total + number, 0);
+  const root = digitalRoot(sum);
+  const pick3 = [values[0] || root, values[Math.floor(values.length / 2)] || sum % 10, values.at(-1) || 7].map((n) => n % 10).join("");
+  const pick4 = [root, sum % 10, (values[1] || 4) % 10, (values.at(-2) || 8) % 10].join("");
+  const numbers = uniqueSorted([root, (sum % 43) || 1, ...values.map((n, index) => ((n * (index + 2)) % 43) || 1)]).slice(0, 5);
+  return { clean, values, sum, root, pick3, pick4, numbers };
+}
+
+function nameNumbersView() {
+  const report = state.currentNameNumbers || nameNumberReport();
+  return `<section class="screen name-numbers-screen">
+    <div class="panel art-panel media-hero" style="--panel-art:url('${ASSETS.dream}')">
+      <div>
+        <span class="eyebrow">Name Code</span>
+        <h1>Name Numbers</h1>
+        <p>Convert names, artist names, labels, and intentions into Pick 3, Pick 4, and LottoMind seed numbers.</p>
+        <label class="field-label">Name or phrase <input data-bind="nameInput" value="${escapeHtml(state.nameInput)}" placeholder="Type a name..." /></label>
+        <div class="hero-actions">
+          <button class="primary-btn" data-action="analyze-name-numbers">Analyze Name</button>
+          <button class="ghost-btn" data-route="dreams">Dream Oracle</button>
+        </div>
+      </div>
+      <img class="deck-coin" src="${ASSETS.psychic}" alt="Name number coin" />
+    </div>
+    <div class="panel result-card name-code-card">
+      <span>Name code unlocked</span>
+      <h2>${escapeHtml(report.clean)}</h2>
+      ${ballsHtml(report.numbers)}
+      <div class="tool-grid padded">
+        ${metricCard("Sum", report.sum)}
+        ${metricCard("Root", report.root)}
+        ${metricCard("Pick 3", report.pick3)}
+        ${metricCard("Pick 4", report.pick4)}
+      </div>
+      <p>Letter lane: ${report.values.join(" - ") || "ready"}. Save the seed into Records or merge it with Dream Oracle.</p>
+      <div class="hero-actions"><button class="primary-btn" data-action="save-current-set">Save Seed</button><button class="ghost-btn" data-route="sequence">Open Sequence</button></div>
+    </div>
+  </section>`;
+}
+
+function aiCoachView() {
+  const report = state.currentAi || {
+    title: "AI Coach Ready",
+    copy: "Ask for a balanced set, radar summary, dream meaning, or next move.",
+    numbers: (state.currentSet || generateLottoSet(state.gameId, state.strategy, "ai-ready")).numbers,
+  };
+  return `<section class="screen ai-screen">
+    <div class="panel art-panel media-hero" style="--panel-art:url('${ASSETS.powerTools}')">
+      <div>
+        <span class="eyebrow">LottoMind AI</span>
+        <h1>AI Coach Console</h1>
+        <p>Smart picks, dream summaries, radar guidance, and quick navigation in one custom tool screen.</p>
+        <textarea class="dream-input compact" data-bind="aiPrompt" placeholder="Ask LottoMind AI...">${escapeHtml(state.aiPrompt)}</textarea>
+        <div class="hero-actions">
+          <button class="primary-btn" data-action="run-ai-coach">Run AI Coach</button>
+          <button class="ghost-btn" data-route="heatmap">Radar</button>
+          <button class="ghost-btn" data-route="dreams">Dream Oracle</button>
+        </div>
+      </div>
+      <img class="deck-coin" src="${ASSETS.psychic}" alt="LottoMind AI coin" />
+    </div>
+    <div class="panel result-card ai-result-card">
+      <span>AI function output</span>
+      <h2>${escapeHtml(report.title)}</h2>
+      ${ballsHtml(report.numbers)}
+      <p>${escapeHtml(report.copy)}</p>
+      <div class="tool-grid padded">
+        ${metricCard("Signal", `${getMatrixStats().trustScore}%`)}
+        ${metricCard("Pinned", state.selectedState)}
+        ${metricCard("Tone", `${state.tone} Hz`)}
+        ${metricCard("Credits", getCredits())}
+      </div>
+    </div>
+  </section>`;
+}
+
+function dreamsView() {
+  const reading = state.currentDream;
+  return `<section class="screen dreams-screen">
+    <div class="panel dream-stage art-panel" style="--panel-art:url('${ASSETS.dream}')">
+      <h1>Dream Oracle<sup>SM</sup> AI</h1>
+      <p>Describe your dream. The Oracle detects symbols, explains meaning, and generates lucky numbers.</p>
+      ${gamePills()}
+      <button class="big-mic branded-mic" data-action="start-dream-recording" aria-label="Record dream" style="--panel-art:url('${ASSETS.psychic}')">
+        <span class="mic-mark"></span>
+        <strong>Speak Dream</strong>
+        <small>Tap to record</small>
+      </button>
+      <textarea class="dream-input" data-bind="dreamText" placeholder="Speak or type your dream...">${escapeHtml(state.dreamText)}</textarea>
+      <div class="hero-actions">
+        <button class="primary-btn" data-action="interpret-dream">Interpret Dream</button>
+        <button class="ghost-btn" data-action="psychic-fusion">Psychic Fusion</button>
+        <button class="ghost-btn" data-action="build-dream-video">Generate Your Dreams</button>
+      </div>
+    </div>
+
+    ${localSignalPanel()}
+
+    <div class="panel record-label-panel dream-record-label art-panel" style="--panel-art:url('${ASSETS.music}')">
+      <div>
+        <span class="eyebrow">LottoMind Records</span>
+        <h2>Music Store</h2>
+        <p>Prominent dream-lane audio store for reset sessions, radio intros, and dream video sound beds.</p>
+      </div>
+      <div class="hero-actions">
+        <button class="primary-btn" data-route="music">Open Music Store</button>
+        <button class="ghost-btn" data-route="radioStation">Radio Station</button>
+        <button class="ghost-btn" data-route="dreamVideo">Dream Video</button>
+      </div>
+    </div>
+
+    <div class="panel oracle-info-panel">
+      <div class="section-head"><div><h2>What The Oracle Reads</h2><p>Each interpretation is broken into practical lanes.</p></div><span>5 layers</span></div>
+      <div class="dream-info-grid">
+        ${[
+          ["Symbols", "Finds dream images like water, gold, keys, doors, bridges, moon, fire, and flying."],
+          ["Meaning", "Explains the emotional or action signal behind the strongest symbols."],
+          ["Numbers", "Maps symbols into the selected game, then builds Pick 3 and Pick 4 bridges."],
+          ["Radar Merge", "Compares the dream set with active heatmap support numbers."],
+          ["Next Move", "Gives save, radar, video, and history actions so the reading keeps working."],
+        ].map(([title, copy]) => `<div><strong>${title}</strong><p>${copy}</p></div>`).join("")}
+      </div>
+    </div>
+
+    ${reading ? `<div class="panel result-card dream-reading-card">
+      <span>${reading.title}</span>
+      <h2>${reading.symbols.length ? reading.symbols.map(titleCase).join(", ") : "Seeded Dream Flow"}</h2>
+      <p class="dream-summary">${escapeHtml(reading.summary || reading.note)}</p>
+      <div class="dream-metrics">
+        <div><strong>${reading.confidence || 72}%</strong><small>Meaning Match</small></div>
+        <div><strong>${escapeHtml(reading.tone || "Oracle")}</strong><small>Dream Tone</small></div>
+        <div><strong>${escapeHtml(reading.bestWindow || "Anytime")}</strong><small>Play Window</small></div>
+      </div>
+      <div class="dream-meaning-block">
+        <div>
+          <span>Lucky Numbers</span>
+          ${ballsHtml(reading.numbers)}
+        </div>
+        <div>
+          <span>Daily Digit Bridge</span>
+          <div class="dream-digits"><b>${escapeHtml(reading.pick3 || "")}</b><b>${escapeHtml(reading.pick4 || "")}</b></div>
+        </div>
+      </div>
+      <div class="meaning-list">${(reading.meanings.length ? reading.meanings : ["Dream rhythm: no saved symbol was detected, so the Oracle mapped tone, word shape, and timing into an entertainment seed."]).map((item) => `<div>${escapeHtml(item)}</div>`).join("")}</div>
+      <div class="oracle-guidance"><strong>Oracle guidance</strong><p>${escapeHtml(reading.guidance || reading.note)}</p></div>
+      <div class="dream-report-panel">
+        <div class="section-head flush"><div><h2>Detailed Dream Report</h2><p>Symbol map, number logic, and next move.</p></div><span>${reading.wordCount || 0} words</span></div>
+        <div class="dream-symbol-grid">
+          ${(reading.symbolDetails?.length ? reading.symbolDetails : [{ label: "Open Seed", number: reading.numbers[0] || 0, meaning: "No saved symbol matched yet. Add concrete images like key, water, moon, door, gold, bridge, fire, or flying for a sharper read.", source: "text rhythm" }]).map((symbol) => `<article>
+            <span>${escapeHtml(symbol.label)}</span>
+            <strong>${escapeHtml(symbol.number)}</strong>
+            <p>${escapeHtml(symbol.meaning)}</p>
+            <small>source: ${escapeHtml(symbol.source)}</small>
+          </article>`).join("")}
+        </div>
+        <div class="dream-detail-grid">
+          <div>
+            <span>Number Logic</span>
+            ${(reading.numberLogic || [reading.note]).map((item) => `<p>${escapeHtml(item)}</p>`).join("")}
+          </div>
+          <div>
+            <span>Interpretation Layer</span>
+            <p>${escapeHtml(reading.dreamLayer || reading.summary || reading.note)}</p>
+            <p>Heatmap support: ${(reading.heatSignals || []).join(", ") || "Run Heatmap Radar for support numbers."}</p>
+          </div>
+          <div>
+            <span>Action Checklist</span>
+            ${(reading.actionSteps || []).map((item) => `<p>${escapeHtml(item)}</p>`).join("")}
+          </div>
+        </div>
+      </div>
+      <div class="hero-actions">
+        <button class="primary-btn" data-action="save-dream">Save Dream Pick</button>
+        <button class="ghost-btn" data-action="build-dream-video">Build Dream Video</button>
+        <button class="ghost-btn" data-route="heatmap">Open Radar</button>
+        <button class="ghost-btn" data-route="history">Open History</button>
+      </div>
+    </div>` : `<div class="panel empty-state"><h2>Dream engine ready</h2><p>Tap the mic or type a dream, then run the full interpretation.</p></div>`}
+
+    ${dreamJournalPanel()}
+
+    ${state.currentPsychic ? psychicResultCard(state.currentPsychic) : ""}
+  </section>`;
+}
+
+function numberGeneratorView() {
+  const current = state.currentSet || generateLottoSet(state.gameId, state.strategy, "number-generator");
+  return `<section class="screen">
+    <div class="panel art-panel" style="--panel-art:url('${ASSETS.powerTools}')">
+      <h1>Number Generator</h1>
+      <p>Old app generator logic ported into Oracle Studio controls.</p>
+      ${gamePills()}
+      ${strategyPills()}
+      <button class="primary-btn full" data-action="generate-set">Generate ${getGame().name}</button>
+    </div>
+    <div class="panel result-card">
+      <span>${current.gameName} ${titleCase(current.strategy)}</span>
+      ${ballsHtml(current.numbers, current.special, current.specialName)}
+      <p>${current.note}</p>
+      <div class="hero-actions">
+        <button class="primary-btn" data-action="save-current-set">Save Set</button>
+        <button class="ghost-btn" data-action="lock-prediction">Lock Prediction</button>
+        <button class="ghost-btn" data-route="radioStation">Radio Station</button>
+      </div>
+    </div>
+    <div class="panel radio-mini">
+      <div><span class="eyebrow">LottoMind Radio</span><h2>Frequency while you generate</h2><p>Open the dedicated radio lane for LottoMind Records tracks and reset audio.</p></div>
+      <button class="primary-btn" data-route="radioStation">Open Radio</button>
+    </div>
+  </section>`;
+}
+
+function dailyToolsView() {
+  const analysis = analyzeDailyDigits(state.dailyInput);
+  return `<section class="screen">
+    <div class="panel daily-lab">
+      <div class="section-head">
+        <div><span class="eyebrow">V2 State Power Tools</span><h1>Daily 3 / Daily 4</h1><p>State results, digit helpers, straight/box checks, mirrors, pairs, vtrac, and roots.</p></div>
+        <button class="pin-button small" data-action="cycle-state"><span>STATE</span><strong>${state.selectedState}</strong></button>
+      </div>
+      <label class="field-label">Digits <input data-bind="dailyInput" value="${escapeHtml(state.dailyInput)}" maxlength="4" /></label>
+      <div class="hero-actions">
+        <button class="primary-btn" data-action="analyze-daily">Analyze Digits</button>
+        <button class="ghost-btn" data-action="generate-daily">Generate Daily</button>
+      </div>
+    </div>
+    <div class="tool-grid">
+      ${metricCard("Digits", analysis.digits.join(""))}
+      ${metricCard("Sum / Root", `${analysis.sum} / ${analysis.root}`)}
+      ${metricCard("Mirrors", analysis.mirrors.join(""))}
+      ${metricCard("Vtrac", analysis.vtrac.join("-"))}
+      ${metricCard("Pairs", analysis.pairs.join(", "))}
+      ${metricCard("Box Ways", `${analysis.boxedCount}-way box`)}
+    </div>
+    <div class="panel result-card">
+      <span>Pattern read</span>
+      <p>${analysis.sequence.note}</p>
+      <p>Repeats: ${analysis.repeatDigits.length ? analysis.repeatDigits.join(", ") : "none"} | Odd ${analysis.sequence.odd} / Even ${analysis.sequence.even}</p>
+    </div>
+  </section>`;
+}
+
+function heatmapView() {
+  const heatmap = getHeatmap();
+  const stats = getMatrixStats();
+  const hot = [...heatmap].sort((a, b) => b.count - a.count || a.number - b.number).slice(0, 8);
+  const cold = [...heatmap].sort((a, b) => a.count - b.count || a.number - b.number).slice(0, 8);
+  const active = heatmap.filter((cell) => cell.label === "active").slice(0, 8);
+  const avgCount = heatmap.length ? Math.round((heatmap.reduce((sum, cell) => sum + cell.count, 0) / heatmap.length) * 10) / 10 : 0;
+  const topSignal = hot[0] || heatmap[0] || { number: "-", count: 0 };
+  const lowSignal = cold[0] || heatmap[0] || { number: "-", count: 0 };
+  const trendRange = `${lowSignal.count}-${topSignal.count}`;
+  return `<section class="screen heatmap-screen">
+    <div class="panel art-panel heatmap-hero" style="--panel-art:url('${ASSETS.heatmap}')">
+      <div>
+        <span class="eyebrow">Mission 03</span>
+        <h1>Signal Radar Map</h1>
+        <p>${stats.game.name} - ${stats.drawCount} local demo draws - ${stats.trustScore}% signal confidence.</p>
+      </div>
+      <div class="radar-summary">
+        <strong>${state.selectedState}</strong>
+        <small>State pin</small>
+        <em>${stats.trustScore}%</em>
+      </div>
+      ${gamePills()}
+    </div>
+    <div class="panel radar-controls">
+      ${[
+        ["Target Lock", "hot"],
+        ["Cold Sweep", "cold"],
+        ["Balance Lane", "balanced"],
+        ["Save Set", "history"],
+        ["Run Power Tools", "powertools"],
+        ["Store Locator", "storeLocator"],
+      ].map(([label, route]) => `<button class="control-chip" data-route="${route === "hot" || route === "cold" || route === "balanced" ? "heatmap" : route}"><span>${label}</span><small>${route === "hot" ? topSignal.number : route === "cold" ? lowSignal.number : route === "balanced" ? "mix" : "open"}</small></button>`).join("")}
+    </div>
+    <div class="panel news-radar-bridge">
+      <div class="section-head flush"><div><h2>News Radar</h2><p>Rule changes, unclaimed prizes, jackpot movement, and draw alerts now live inside Radar.</p></div><span>Alerts</span></div>
+      <div class="radar-news-grid">
+        ${[
+          { scope: "Matrix", title: "Rule Change Watch", action: "Check matrix-era alerts before using radar signals." },
+          { scope: "Jackpot", title: "Movement Desk", action: "Review jackpot movement and saved-game draw timing." },
+          { scope: "State", title: "Pinned Alerts", action: `Watch ${state.selectedState} delays, claims, and result notes.` },
+        ].map((alert) => `<button class="news-chip" data-route="newsRadar"><span>${alert.scope}</span><strong>${alert.title}</strong><small>${alert.action}</small></button>`).join("")}
+      </div>
+    </div>
+    <div class="panel quick-panel radar-quick-panel">
+      <div class="section-head"><div><h2>Radar Tool Deck</h2><p>Old functions grouped under the Radar tab as swipeable Oracle buttons.</p></div><span>${QUICK_TOOLS.length} tools</span></div>
+      <div class="circle-carousel">
+        ${QUICK_TOOLS.map(([title, sub, route], index) => circleTool(title, sub, route, index)).join("")}
+      </div>
+    </div>
+    <div class="panel radar-panel">
+      <div class="radar-titlebar">
+        <div><span>Live Board</span><strong>${stats.game.name} Signal Grid</strong></div>
+        <button class="tiny-btn" data-action="generate-set">Generate from Radar</button>
+      </div>
+      <div class="radar-map ${heatmap.length > 36 ? "dense" : ""}">
+        ${heatmap.map((cell, index) => radarDot(cell, index, heatmap.length)).join("")}
+      </div>
+      <div class="legend"><span class="hot"></span> Hot <span class="active"></span> Active <span class="cold"></span> Cold</div>
+    </div>
+    <div class="split-grid">
+      <div class="panel"><h2>Hot Watch</h2>${ballsHtml(hot.map((cell) => cell.number))}</div>
+      <div class="panel"><h2>Cold Watch</h2>${ballsHtml(cold.map((cell) => cell.number))}</div>
+    </div>
+    <div class="panel trend-card">
+      <div class="section-head flush"><div><h2>Trend Overview</h2><p>Draw-count bars, hot lane, cold lane, and balance cue.</p></div><span>${stats.drawCount} draws</span></div>
+      <div class="trend-summary-grid">
+        <div><span>Top signal</span><strong>${topSignal.number}</strong><small>${topSignal.count} hits</small></div>
+        <div><span>Cold watch</span><strong>${lowSignal.number}</strong><small>${lowSignal.count} hits</small></div>
+        <div><span>Avg draw count</span><strong>${avgCount}</strong><small>per number</small></div>
+        <div><span>Range</span><strong>${trendRange}</strong><small>low to high</small></div>
+      </div>
+      <div class="trend-bars">${heatmap.map((cell) => `<span class="${cell.label}" style="--h:${Math.max(18, 18 + cell.count * 16)}px"><i>${cell.count}</i><b>${cell.number}</b></span>`).join("")}</div>
+      <div class="trend-insights">
+        <div><strong>Hot lane</strong><p>${hot.slice(0, 5).map((cell) => cell.number).join(", ")} are drawing above the local sample average.</p></div>
+        <div><strong>Active middle</strong><p>${(active.length ? active : heatmap.slice(0, 5)).slice(0, 5).map((cell) => cell.number).join(", ")} are usable bridge numbers for balanced sets.</p></div>
+        <div><strong>Cold lane</strong><p>${cold.slice(0, 5).map((cell) => cell.number).join(", ")} are overdue in this demo matrix and should be used lightly.</p></div>
+      </div>
+    </div>
+    <div class="panel mission-brief">
+      <h2>Recommended Move</h2>
+      <p>Use one hot signal, one cold watch number, and a balanced middle number. Save the set before checking Live Results.</p>
+      <div class="hero-actions">
+        <button class="primary-btn" data-action="run-power-analysis">Build Radar Set</button>
+        <button class="ghost-btn" data-route="live">Check Live Results</button>
+      </div>
+    </div>
+  </section>`;
+}
+
+function radarDot(cell, index, total = 28) {
+  const large = total > RADAR_POSITIONS.length;
+  let x;
+  let y;
+  if (large) {
+    const ring = index % 4;
+    const step = Math.floor(index / 4);
+    const perRing = Math.ceil(total / 4);
+    const angle = (step / perRing) * Math.PI * 2 + ring * 0.34;
+    const radius = 16 + ring * 10;
+    x = 50 + Math.cos(angle) * radius;
+    y = 50 + Math.sin(angle) * radius;
+  } else {
+    [x, y] = RADAR_POSITIONS[index % RADAR_POSITIONS.length];
+  }
+  return `<button class="radar-dot ${cell.label}" style="left:${x}%;top:${y}%">${cell.number}</button>`;
+}
+
+function sequenceView() {
+  const numbers = parseNumbers(state.numberInput);
+  const report = state.lastSequence || analyzeSequence(numbers, getGame().mainMax);
+  const hot = getHeatmap().filter((cell) => cell.label === "hot" || cell.label === "active").slice(0, 6).map((cell) => cell.number);
+  const radarSet = state.currentSet || generateLottoSet(state.gameId, "balanced", `sequence-${state.numberInput}`);
+  const gapFocus = report.gaps.length ? Math.max(...report.gaps) : 0;
+  const pairMap = report.sorted.slice(0, -1).map((number, index) => `${number}-${report.sorted[index + 1]}`).join(" | ") || "none";
+  const rootLane = report.sorted.map((number) => ((number - 1) % 9) + 1).join(" / ") || "none";
+  const skipLane = report.repeats.length ? `Watch repeats ${report.repeats.join(", ")}` : "No repeat pressure";
+  return `<section class="screen">
+    <div class="panel art-panel sequence-console" style="--panel-art:url('${ASSETS.sequence}')">
+      <div>
+        <span class="eyebrow">Sequence Engine</span>
+        <h1>Pattern Control Room</h1>
+        <p>Full number structure read: sum, digital root, gaps, mirrors, repeats, high/low balance, and radar merge.</p>
+      </div>
+      ${gamePills()}
+      <label class="field-label">Number Stream <input data-bind="numberInput" value="${escapeHtml(state.numberInput)}" placeholder="7 23 38 42 11" /></label>
+      <div class="hero-actions">
+        <button class="primary-btn" data-action="analyze-sequence">Analyze Sequence</button>
+        <button class="ghost-btn" data-action="generate-set">Build Set</button>
+        <button class="ghost-btn" data-route="heatmap">Open Radar</button>
+      </div>
+    </div>
+    <div class="sequence-metrics">
+      ${metricCard("Sum", report.sum)}
+      ${metricCard("Digital Root", report.root)}
+      ${metricCard("Odd / Even", `${report.odd} / ${report.even}`)}
+      ${metricCard("High / Low", `${report.high} / ${report.low}`)}
+      ${metricCard("Spread", `${report.spread} ${report.range}`)}
+      ${metricCard("Clusters", report.clusters)}
+    </div>
+    <div class="panel sequence-option-panel">
+      <div class="section-head"><div><h2>Original Engine Options</h2><p>Smaller controls for the full old Sequence Engine logic.</p></div><span>8 lanes</span></div>
+      <div class="sequence-option-grid">
+        ${[
+          ["Sum Target", report.sum, "analyze-sequence"],
+          ["Root Lane", rootLane, "analyze-sequence"],
+          ["Gap Focus", `${gapFocus} max`, "analyze-sequence"],
+          ["Pair Map", pairMap, "analyze-sequence"],
+          ["Mirror Watch", report.mirrorPairs.join(", ") || "none", "analyze-sequence"],
+          ["Repeat Guard", skipLane, "analyze-sequence"],
+          ["Hot Merge", hot.join(", ") || "loading", "run-power-analysis"],
+          ["Radar Build", "balanced set", "generate-set"],
+        ].map(([title, value, action]) => `<button class="sequence-option" data-action="${action}"><span>${title}</span><strong>${escapeHtml(String(value))}</strong></button>`).join("")}
+      </div>
+    </div>
+    <div class="panel sequence-grid">
+      <div class="section-head"><div><h2>Engine Readout</h2><p>Use these lanes to decide what to keep, skip, or rebalance.</p></div></div>
+      <div class="tool-grid padded">
+        ${metricCard("Ordered Ladder", report.sorted.join(" - ") || "none")}
+        ${metricCard("Gap Map", report.gaps.join(" / ") || "none")}
+        ${metricCard("Consecutive", report.consecutivePairs.join(", ") || "none")}
+        ${metricCard("Mirror Watch", report.mirrorPairs.join(", ") || "none")}
+        ${metricCard("Repeats", report.repeats.join(", ") || "none")}
+        ${metricCard("Hot Merge", hot.join(", ") || "loading")}
+      </div>
+    </div>
+    <div class="panel result-card">
+      <span>Sequence recommendation</span>
+      <h2>${report.note}</h2>
+      <p>Blend one hot radar number, one cold watch number, and one number from the strongest gap lane. Save the result into LottoMind Records before checking live draws.</p>
+      ${ballsHtml(radarSet.numbers, radarSet.special, radarSet.specialName)}
+      <div class="hero-actions">
+        <button class="primary-btn" data-action="save-current-set">Save to Records</button>
+        <button class="ghost-btn" data-route="records">Open LottoMind Records</button>
+      </div>
+    </div>
+  </section>`;
+}
+
+function historyView() {
+  const sets = loadJson(STORAGE.history, []);
+  const dreams = loadJson(STORAGE.readings, []);
+  const psychic = loadJson(STORAGE.psychic, []);
+  return `<section class="screen">
+    <div class="panel art-panel" style="--panel-art:url('${ASSETS.live}')">
+      <h1>History Vault</h1>
+      <p>Saved numbers, dream readings, predictions, and psychic fusion results.</p>
+      <button class="ghost-btn" data-action="clear-history">Clear Vault</button>
+    </div>
+    <div class="panel vault-section live-vault-panel">
+      <div class="vault-heading"><span>Live Vault</span><h2>Live Results Archive</h2></div>
+      <p>Live Vault now sits inside History Vault so saved runs, draw cards, and radar checks stay together.</p>
+      <div class="result-list">
+        ${LIVE_RESULT_RECORDS.slice(0, 3).map((record) => `<button class="history-row live-vault-row" data-route="live"><strong>${record.gameName}</strong>${ballsHtml(record.numbers, record.special)}<small>${record.stateName} - ${record.drawDate} - ${record.session}</small></button>`).join("")}
+      </div>
+      <div class="hero-actions padded">
+        <button class="primary-btn" data-route="live">Open Live Vault</button>
+        <button class="ghost-btn" data-route="heatmap">Open Heatmap</button>
+      </div>
+    </div>
+    <div class="panel vault-section"><div class="vault-heading"><span>Saved</span><h2>Saved Sets</h2></div>${sets.length ? sets.map(savedSetRow).join("") : `<p>No saved sets yet. Generate one from Dashboard or Power Tools.</p>`}</div>
+    <div class="panel vault-section"><div class="vault-heading"><span>Oracle</span><h2>Dream Readings</h2></div>${dreams.length ? dreams.map((item) => `<div class="history-row"><strong>${escapeHtml(item.title)}</strong>${ballsHtml(item.numbers)}<small>${escapeHtml(item.note)}</small></div>`).join("") : `<p>No dream readings saved yet.</p>`}</div>
+    <div class="panel vault-section"><div class="vault-heading"><span>AI</span><h2>Psychic History</h2></div>${psychic.length ? psychic.map((item) => `<div class="history-row"><strong>${escapeHtml(item.title)}</strong>${ballsHtml(item.suggestedNumbers, item.bonusNumber)}<small>${escapeHtml(item.message)}</small></div>`).join("") : `<p>No psychic readings saved yet.</p>`}</div>
+  </section>`;
+}
+
+function savedSetRow(item) {
+  return `<div class="history-row">
+    <strong>${item.gameName} - ${titleCase(item.strategy)}</strong>
+    ${ballsHtml(item.numbers, item.special, item.specialName)}
+    <small>${new Date(item.createdAt).toLocaleString()} - ${escapeHtml(item.note)}</small>
+  </div>`;
+}
+
+function liveView() {
+  const rows = LIVE_RESULT_RECORDS.filter((item) => item.stateCode === state.selectedState || item.stateCode === "US");
+  return `<section class="screen">
+    <div class="panel art-panel" style="--panel-art:url('${ASSETS.live}')">
+      <h1>Live Results</h1>
+      <p>State and national demo draw center. Pin ${state.selectedState} controls the local rows.</p>
+      <button class="pin-button" data-action="cycle-state"><span>STATE</span><strong>${state.selectedState}</strong></button>
+    </div>
+    <div class="result-list">${rows.map((record) => `<div class="panel result-card live-row"><span>${record.stateName} - ${record.session}</span><h2>${record.gameName}</h2>${ballsHtml(record.numbers, record.special)}<p>${record.drawDate}${record.jackpotMillions ? ` - $${record.jackpotMillions}M` : ""}</p></div>`).join("")}</div>
+  </section>`;
+}
+
+function scannerView() {
+  return `<section class="screen">
+    <div class="panel art-panel scanner-hero" style="--panel-art:url('${ASSETS.powerTools}')">
+      <h1>Ticket Scanner</h1>
+      <p>Camera capture, barcode entry, and scan simulation are wired into LottoMind Records.</p>
+      <div class="scanner-frame">
+        <span></span><span></span><span></span><span></span>
+        <strong>Camera Scan Lane</strong>
+        <small>Use the camera button, upload a ticket photo, or enter the barcode.</small>
+      </div>
+      <label class="primary-btn file-btn">Open Camera / Upload
+        <input class="file-input" type="file" accept="image/*" capture="environment" data-action="scan-ticket" />
+      </label>
+      <label class="field-label">Barcode / QR number <input data-bind="barcodeInput" value="${escapeHtml(state.barcodeInput)}" placeholder="Scan or type barcode..." /></label>
+      <div class="hero-actions">
+        <button class="primary-btn" data-action="scan-barcode">Scan Barcode</button>
+        <button class="ghost-btn" data-action="simulate-scan">Run Scan Demo</button>
+        <button class="ghost-btn" data-route="history">Records</button>
+      </div>
+    </div>
+    <div class="panel result-card scanner-result">${state.scanResult ? `<span>Scanner output</span><h2>${state.scanResult.title}</h2>${ballsHtml(state.scanResult.numbers, state.scanResult.special)}<p>${state.scanResult.note}</p><div class="hero-actions"><button class="primary-btn" data-action="save-current-set">Save Scan</button><button class="ghost-btn" data-route="live">Check Results</button></div>` : `<p>No scan yet. Upload a ticket image, run the demo, or enter a barcode.</p>`}</div>
+  </section>`;
+}
+
+function walletView() {
+  const credits = getCredits();
+  return `<section class="screen">
+    <div class="panel art-panel" style="--panel-art:url('${ASSETS.credit}')">
+      <h1>Credit Vault</h1>
+      <p>Credits power readings, reports, and premium experiments.</p>
+      <div class="credit-balance">${credits}</div>
+    </div>
+    <div class="tool-grid">${MARKETPLACE_ITEMS.map(([title, copy, cost]) => `<button class="store-card" data-action="buy-item" data-cost="${cost}"><strong>${title}</strong><span>${copy}</span><small>${cost} credits</small></button>`).join("")}</div>
+  </section>`;
+}
+
+function musicHubView(isRadio = false) {
+  return `<section class="screen media-screen">
+    <div class="panel art-panel media-hero" style="--panel-art:url('${ASSETS.music}')">
+      <div>
+        <span class="eyebrow">${isRadio ? "LottoMind Radio" : "Music Hub"}</span>
+        <h1>${isRadio ? "Radio Station" : "Music Store"}</h1>
+        <p>${isRadio ? "A dedicated LottoMind Records radio lane for live focus audio, reset tracks, and branded station IDs." : "LottoMind Records label: imported frequency tracks, reset sessions, and branded audio loops connected back into Reset."}</p>
+        <div class="hero-actions">
+          <button class="primary-btn" data-route="reset">Open Reset Wheel</button>
+          <button class="ghost-btn" data-route="music">Music Store</button>
+          <button class="ghost-btn" data-route="dreamVideo">Open Video Studio</button>
+        </div>
+      </div>
+      <img class="deck-coin" src="${ASSETS.logo}" alt="LottoMind frequency logo" />
+    </div>
+    <div class="panel radio-station-panel">
+      <div>
+        <span class="eyebrow">On Air</span>
+        <h2>LottoMind Frequency Radio</h2>
+        <p>Tap a station card below to preview, then load the tone into Reset when you are ready.</p>
+      </div>
+      <div class="radio-dial"><strong>LM</strong><span>FM 528</span></div>
+    </div>
+    <div class="panel record-label-panel compact">
+      <div>
+        <span class="eyebrow">LottoMind Records Label</span>
+        <h2>Frequency Storefront</h2>
+        <p>Use this as the music store lane: preview tracks here, then load a reset tone when you want to play.</p>
+      </div>
+      <button class="primary-btn" data-route="reset">Load Reset Player</button>
+    </div>
+    <div class="panel streaming-connect-panel">
+      <div class="section-head">
+        <div><h2>Connect Music Platforms</h2><p>Bring back Apple Music, YouTube, and YouTube Music as LottoMind Records connection lanes.</p></div>
+        <span>${STREAMING_LINKS.length} lanes</span>
+      </div>
+      <div class="stream-connect-grid">
+        ${STREAMING_LINKS.map(([title, copy, key, art, url]) => `<button class="stream-card stream-${key}" data-action="connect-stream" data-stream="${title}" data-url="${url}" style="--stream-art:url('${art}')">
+          <span class="stream-record"></span>
+          <strong>${title}</strong>
+          <small>${copy}</small>
+          <b>${loadJson(STORAGE.streams, []).includes(title) ? "Connected" : "Connect"}</b>
+        </button>`).join("")}
+      </div>
+    </div>
+    <div class="panel audio-deck">
+      <div class="section-head"><div><h2>Imported Music</h2><p>Branded tracks and frequency sessions.</p></div><span>${AUDIO_LIBRARY.length} tracks</span></div>
+      <div class="audio-list">
+        ${AUDIO_LIBRARY.map(([title, src, copy], index) => `<article class="media-card record-track-card" style="--record-art:url('${[ASSETS.logo, ASSETS.music, ASSETS.reset, ASSETS.live][index % 4]}')">
+          <span class="vinyl-record" aria-hidden="true"></span>
+          <div class="track-copy"><strong>${title}</strong><small>${copy}</small></div>
+          <audio controls preload="none" src="${src}"></audio>
+          <button class="ghost-btn" data-action="load-reset-session" data-tone="${title.includes("174") ? "174" : title.includes("432") ? "432" : title.includes("Frequency") ? "528" : "396"}">Load in LottoMind Reset</button>
+        </article>`).join("")}
+      </div>
+    </div>
+    <div class="panel related-panel">
+      <div class="section-head"><div><h2>Sound Routes</h2><p>Fast paths connected to the rest of the app.</p></div></div>
+      <div class="circle-carousel">
+        ${[["Reset Wheel", "Tone player", "reset"], ["Radio Station", "Live audio", "radioStation"], ["Dream Oracle", "Speak", "dreams"], ["Video Studio", "Loops", "dreamVideo"], ["History Vault", "Archive", "history"]].map(([title, sub, route], index) => circleTool(title, sub, route, index + 2)).join("")}
+      </div>
+    </div>
+  </section>`;
+}
+
+function buildDreamVideoPlan(text = state.dreamText) {
+  const reading = state.currentDream || interpretDream(text, state.gameId);
+  const symbols = reading.symbols.length ? reading.symbols.map(titleCase) : ["Signal", "Doorway", "Number Reveal"];
+  const frames = [
+    ["Opening Vision", symbols[0] || "Dream Signal", "Wide branded scene, soft gold/cyan glow, slow reveal."],
+    ["Oracle Meaning", symbols[1] || "Symbol Bridge", reading.summary || reading.note],
+    ["Lucky Number Reveal", reading.numbers.join(" - "), "Show the number set as glowing LottoMind tokens."],
+    ["Save + Share", reading.pick3 || reading.pick4 || "Ready", "End card routes to Records and Power Tools."],
+  ];
+  return {
+    title: "Dream Video Storyboard",
+    tone: reading.tone || "Oracle",
+    prompt: text,
+    reading,
+    frames,
+    clips: VIDEO_LIBRARY.map(([title, src, poster], index) => ({ title, src, poster, use: frames[index % frames.length][0] })),
+  };
+}
+
+function videoStudioView() {
+  const storyboard = state.currentVideo || buildDreamVideoPlan(state.dreamText);
+  return `<section class="screen media-screen">
+    <div class="panel art-panel media-hero video-studio-hero" style="--panel-art:url('${ASSETS.dream}')">
+      <div>
+        <span class="eyebrow">Video Studio</span>
+        <h1>Dream Video Studio</h1>
+        <p>Record or type a dream, build a storyboard, then connect it to Dream Oracle, Records, and the branded motion kit.</p>
+        <div class="hero-actions">
+          <button class="primary-btn" data-action="build-dream-video">Build Storyboard</button>
+          <button class="ghost-btn" data-action="start-dream-recording">Mic Dream</button>
+          <button class="ghost-btn" data-route="dreams">Dream Oracle</button>
+          <button class="ghost-btn" data-route="settings">Settings</button>
+        </div>
+      </div>
+      <img class="deck-coin" src="${ASSETS.psychic}" alt="LottoMind dream video coin" />
+    </div>
+    <div class="panel video-builder">
+      <div class="section-head"><div><h2>Dream Prompt</h2><p>This text drives the storyboard and Oracle numbers.</p></div><span>${storyboard.tone}</span></div>
+      <textarea class="dream-input compact" data-bind="dreamText" placeholder="Speak or type the dream...">${escapeHtml(state.dreamText)}</textarea>
+      <div class="hero-actions">
+        <button class="primary-btn" data-action="build-dream-video">Generate Scenes</button>
+        <button class="ghost-btn" data-action="save-video-storyboard">Save Storyboard</button>
+        <button class="ghost-btn" data-route="records">Open Records</button>
+      </div>
+    </div>
+    <div class="panel storyboard-panel">
+      <div class="section-head"><div><h2>${storyboard.title}</h2><p>Four scene cards built from the Dream Oracle interpretation.</p></div><span>${storyboard.reading.confidence || 72}% match</span></div>
+      <div class="storyboard-grid">
+        ${storyboard.frames.map(([title, value, copy], index) => `<article class="story-card" style="--story-art:url('${[ASSETS.dream, ASSETS.psychic, ASSETS.heatmap, ASSETS.live][index]}')">
+          <span>Scene ${index + 1}</span>
+          <strong>${escapeHtml(title)}</strong>
+          <b>${escapeHtml(value)}</b>
+          <p>${escapeHtml(copy)}</p>
+        </article>`).join("")}
+      </div>
+    </div>
+    <div class="video-grid">
+      ${storyboard.clips.map(({ title, src, poster, use }) => `<article class="panel video-card studio-video-card">
+        <video src="${src}" poster="${poster}" muted loop playsinline controls preload="none"></video>
+        <div><strong>${title}</strong><small>${escapeHtml(use)} motion layer</small></div>
+      </article>`).join("")}
+    </div>
+    <div class="panel result-card">
+      <span>Dream Video Function</span>
+      <h2>${escapeHtml(storyboard.reading.summary || storyboard.reading.note)}</h2>
+      <p>Lucky reveal lane: ${storyboard.reading.numbers.join(", ")}. Save the storyboard, then open Records or Power Tools to keep working.</p>
+      <div class="hero-actions">
+        <button class="primary-btn" data-action="build-dream-video">Refresh Storyboard</button>
+        <button class="ghost-btn" data-route="records">Open Records</button>
+        <button class="ghost-btn" data-route="powertools">Power Tools</button>
+      </div>
+    </div>
+  </section>`;
+}
+
+function recordsView() {
+  const saved = loadJson(STORAGE.history, []);
+  const dreams = loadJson(STORAGE.readings, []);
+  const psychic = loadJson(STORAGE.psychic, []);
+  const rows = LIVE_RESULT_RECORDS.filter((item) => item.stateCode === state.selectedState || item.stateCode === "US");
+  return `<section class="screen records-screen">
+    <div class="panel art-panel media-hero" style="--panel-art:url('${ASSETS.live}')">
+      <div>
+        <span class="eyebrow">LottoMind Records</span>
+        <h1>Records Vault</h1>
+        <p>Live draw cards, saved sets, Dream Oracle readings, psychic reports, and historical lanes are collected here.</p>
+        <div class="hero-actions">
+          <button class="primary-btn" data-route="live">Live Results</button>
+          <button class="ghost-btn" data-route="history">Saved History</button>
+        </div>
+      </div>
+      <img class="deck-coin" src="${ASSETS.heatmap}" alt="LottoMind records coin" />
+    </div>
+    <div class="tool-grid">
+      ${metricCard("Draw Cards", rows.length)}
+      ${metricCard("Saved Sets", saved.length)}
+      ${metricCard("Dream Reads", dreams.length)}
+      ${metricCard("Psychic Reports", psychic.length)}
+    </div>
+    <div class="panel records-board">
+      <div class="section-head"><div><h2>Draw Record Cards</h2><p>State pin controls the local record lane.</p></div><span>${state.selectedState}</span></div>
+      <div class="result-list padded">${rows.map((record) => `<div class="history-row record-card"><strong>${record.gameName} - ${record.stateName}</strong>${ballsHtml(record.numbers, record.special)}<small>${record.drawDate} - ${record.session}${record.jackpotMillions ? ` - $${record.jackpotMillions}M` : ""}</small></div>`).join("")}</div>
+    </div>
+    <div class="panel"><h2>Saved Sets</h2>${saved.length ? saved.map(savedSetRow).join("") : `<p>No saved sets yet. Run a generator and tap Save to Records.</p>`}</div>
+    <div class="panel"><h2>Dream + Psychic Archive</h2>${dreams.concat(psychic).length ? dreams.map((item) => `<div class="history-row"><strong>${escapeHtml(item.title)}</strong>${ballsHtml(item.numbers)}<small>${escapeHtml(item.note)}</small></div>`).join("") + psychic.map((item) => `<div class="history-row"><strong>${escapeHtml(item.title)}</strong>${ballsHtml(item.suggestedNumbers, item.bonusNumber)}<small>${escapeHtml(item.message)}</small></div>`).join("") : `<p>No readings saved yet.</p>`}</div>
+  </section>`;
+}
+
+function marketplaceView() {
+  return `<section class="screen marketplace-screen">
+    <div class="panel art-panel media-hero" style="--panel-art:url('${ASSETS.credit}')">
+      <div>
+        <span class="eyebrow">Marketplace</span>
+        <h1>Credit Marketplace</h1>
+        <p>Credits, VIP unlocks, dream video tools, learning guides, and premium arcade rewards. Merch now has its own professional store.</p>
+        <div class="hero-actions">
+          <button class="primary-btn" data-route="wallet">Credit Vault</button>
+          <button class="ghost-btn" data-route="vip">VIP</button>
+          <button class="ghost-btn" data-route="store">Merch Store</button>
+        </div>
+      </div>
+      <img class="deck-coin" src="${ASSETS.credit}" alt="LottoMind credit coin" />
+    </div>
+    <div class="tool-grid">
+      ${MARKETPLACE_ITEMS.map(([title, copy, cost]) => `<button class="store-card" data-action="buy-item" data-cost="${cost}"><strong>${title}</strong><span>${copy}</span><small>${cost} credits</small></button>`).join("")}
+    </div>
+    <div class="panel related-panel">
+      <div class="section-head"><div><h2>Store Routes</h2><p>More old app functions connected here.</p></div></div>
+      <div class="circle-carousel">
+        ${[["Official Merch", "Shop", "store"], ["Credit Store", "Packs", "creditStore"], ["VIP", "Premium", "vip"], ["Achievements", "Rewards", "achievements"], ["Arcade", "Play", "arcade"]].map(([title, sub, route], index) => circleTool(title, sub, route, index + 4)).join("")}
+      </div>
+    </div>
+  </section>`;
+}
+
+function merchStoreView() {
+  return `<section class="screen merch-screen">
+    <div class="panel art-panel merch-hero" style="--panel-art:url('${ASSETS.credit}')">
+      <video class="hero-bg-video" src="${BASE}/videos/merch-store-button-loop.mp4" poster="${ASSETS.credit}" muted loop autoplay playsinline preload="metadata"></video>
+      <div>
+        <span class="eyebrow">Official Merch Store</span>
+        <h1>LottoMind Gear</h1>
+        <p>A separate branded shop for apparel, stickers, desk gear, and promo drops. Credits and VIP tools stay in Marketplace.</p>
+        <div class="store-badges">
+          <span>Secure demo checkout</span>
+          <span>Limited drops</span>
+          <span>Brand vault</span>
+        </div>
+        <div class="hero-actions">
+          <button class="primary-btn" data-route="marketplace">Credit Marketplace</button>
+          <button class="ghost-btn" data-route="wallet">Wallet</button>
+        </div>
+      </div>
+      <div class="merch-video-medallion"><img src="${ASSETS.credit}" alt="" /></div>
+    </div>
+    <div class="panel shop-toolbar">
+      <div><span>Shop Mode</span><strong>Merch is separate from credits</strong></div>
+      <div class="store-badges compact"><span>Apparel</span><span>Stickers</span><span>Desk Gear</span><span>Digital Drops</span></div>
+    </div>
+    <div class="merch-grid">
+      ${MERCH_ITEMS.map(([title, copy, price], index) => `<article class="panel product-card">
+        <div class="product-media" style="--product-art:url('${index === 0 ? ASSETS.mascot : index === 1 ? ASSETS.arcadeCoin : index === 2 ? ASSETS.logo : ASSETS.powerTools}')"></div>
+        <div>
+          <span>${index === 0 ? "Featured Drop" : "Official Drop"}</span>
+          <strong>${title}</strong>
+          <p>${copy}</p>
+          <div class="product-buy"><b>${price}</b><button class="primary-btn" data-route="thankYou">View Item</button></div>
+        </div>
+      </article>`).join("")}
+    </div>
+    <div class="panel merch-note">
+      <h2>Professional Store Layout</h2>
+      <p>Merch is now separated from credit purchases so the store can grow with product cards, media previews, and checkout-ready sections.</p>
+    </div>
+  </section>`;
+}
+
+function profileView() {
+  return `<section class="screen">
+    <div class="panel art-panel" style="--panel-art:url('${ASSETS.mascot}')">
+      <h1>LottoMaster Profile</h1>
+      <p>Your saved app state, credits, and streaks.</p>
+      <div class="stat-row">
+        <div><strong>${getCredits()}</strong><span>Credits</span></div>
+        <div><strong>${loadJson(STORAGE.history, []).length}</strong><span>Saved</span></div>
+        <div><strong>12</strong><span>Level</span></div>
+      </div>
+    </div>
+    <div class="panel">${["My Picks", "Transaction History", "Membership", "Notifications", "Settings", "Help"].map((label) => `<button class="list-button" data-route="${label === "Settings" ? "settings" : label === "Notifications" ? "notifications" : label === "My Picks" ? "history" : "wallet"}">${label}<span>Open</span></button>`).join("")}</div>
+  </section>`;
+}
+
+function settingsView() {
+  const settings = getSettings();
+  return `<section class="screen">
+    <div class="panel settings-panel">
+      <h1>App Settings</h1>
+      <p>Feature switches are saved locally.</p>
+      ${Object.entries(settings).map(([key, value]) => `<button class="list-button settings-toggle" data-action="toggle-setting" data-setting="${key}" aria-pressed="${value ? "true" : "false"}">
+        <span class="setting-copy"><strong>${key === "music" ? "Tab Intro Music" : titleCase(key)}</strong><small>${key === "music" ? "20-second tab intros" : key === "responsible" ? "Responsible play reminders" : `${titleCase(key)} controls`}</small></span>
+        <span class="switch-control ${value ? "on" : ""}"><i></i><b>${value ? "On" : "Off"}</b></span>
+      </button>`).join("")}
+    </div>
+  </section>`;
+}
+
+function arcadeView() {
+  const games = [
+    ["Jackpot Jungle Chase", "Swing, slide, and outrun the Probability Beast.", "arcadeGame"],
+    ["Gem Rush Run", "Grab gems and dodge number traps.", "arcadeGame"],
+    ["Lotto Minded", "Memory cards and number reflexes.", "cardGame"],
+    ["Trivia Rewards", "Answer and earn credits.", "triviaRewards"],
+    ["Boss Rush", "Fight the Heatmap Guardian.", "arcadeGame"],
+    ["Bonus Room", "Open a credit portal.", "arcadeGame"],
+  ];
+  const arcadeArt = [ASSETS.arcade, ASSETS.arcadeCoin, ASSETS.powerTools, ASSETS.mascot, ASSETS.heatmap, ASSETS.credit];
+  return `<section class="screen">
+    <div class="panel art-panel" style="--panel-art:url('${ASSETS.arcade}')">
+      <h1 class="game-title">LottoMind Arcade</h1>
+      <p>Original games, rewards, and future Jackpot Run hooks.</p>
+    </div>
+    <div class="panel arcade-motion">
+      <video src="${BASE}/videos/play-arcade-button-loop.mp4" poster="${ASSETS.arcade}" muted loop playsinline controls preload="none"></video>
+      <div><span>Arcade motion asset</span><strong>Play Arcade Button</strong><p>Moved out of Marketplace and into the Arcade tab.</p></div>
+    </div>
+    <div class="panel arcade-game-panel">
+      <div class="section-head"><div><h2>Game Select</h2><p>Scrollable arcade cards with clearer mission actions.</p></div><span>${games.length} games</span></div>
+      <div class="arcade-game-grid">${games.map(([title, copy, route], index) => `
+        <button class="arcade-game-card" data-route="${route}" style="--game-art:url('${arcadeArt[index % arcadeArt.length]}')">
+          <span>Stage ${String(index + 1).padStart(2, "0")}</span>
+          <strong>${title}</strong>
+          <small>${copy}</small>
+          <b>Play</b>
+        </button>
+      `).join("")}</div>
+    </div>
+    ${state.route !== "arcade" ? miniGameView(routeMeta(state.route)[0]) : ""}
+  </section>`;
+}
+
+function miniGameView(title = "Jackpot Run MVP") {
+  return `<div class="panel mini-game">
+    <h2>${escapeHtml(title)}</h2>
+    <p>Tap Run to score credits. This keeps the arcade route alive inside the new Oracle app.</p>
+    <div class="runner-lane"><span></span><i></i><b></b></div>
+    <button class="primary-btn full" data-action="play-mini-game">Run</button>
+  </div>`;
+}
+
+function psychicView() {
+  const reading = state.currentPsychic;
+  return `<section class="screen">
+    <div class="panel art-panel" style="--panel-art:url('${ASSETS.psychic}')">
+      <h1>AI Psychic Engine</h1>
+      <p>Entertainment reading with suggested numbers, energy score, and play window.</p>
+      <textarea class="dream-input compact" data-bind="dreamText">${escapeHtml(state.dreamText)}</textarea>
+      <button class="primary-btn full" data-action="psychic-fusion">Generate Reading</button>
+    </div>
+    ${reading ? psychicResultCard(reading) : ""}
+  </section>`;
+}
+
+function psychicResultCard(reading) {
+  return `<div class="panel result-card psychic-card">
+    <span>${reading.luckCycle} - ${reading.energyScore}% energy</span>
+    <h2>${escapeHtml(reading.title)}</h2>
+    <p>${escapeHtml(reading.message)}</p>
+    ${ballsHtml(reading.suggestedNumbers, reading.bonusNumber)}
+    <p>Pick 3: ${reading.pick3} | Pick 4: ${reading.pick4} | Best window: ${reading.bestPlayWindow}</p>
+    <small>For entertainment only. Lottery outcomes are random.</small>
+  </div>`;
+}
+
+function genericToolView(routeKey) {
+  const labels = {
+    ai: ["LottoMind AI", "Generate smart picks, run analysis, and save the result."],
+    lottoIntel: ["Lotto Intelligence", "Deep analysis, report cards, and trend education."],
+    pickGames: ["Pick Games", "Straight, box, mirror, and daily digit helpers."],
+    music: ["Music Hub", "Branded sound sessions and reset playlists."],
+    dreamVideo: ["Dream Video Studio", "Create storyboard-ready dream visuals from the Oracle text."],
+    horoscope: ["Horoscope", "Daily sign cue and symbolic number lane."],
+    luckyWeather: ["Lucky Weather", "Weather-linked number cues by state."],
+    storeLocator: ["Store Locator", "Pinned state retailer and play reminders."],
+    store: ["Official Merch Store", "Gear, guides, and branded unlocks."],
+    creditStore: ["Credit Store", "Buy local demo credits for premium tools."],
+    dailyFortune: ["Daily Fortune Drop", "One daily psychic-style signal."],
+    luckProfile: ["Luck Profile", "Your saved stats, streaks, and patterns."],
+    futureRead: ["Future Read Mode", "A symbolic forecast seeded from your prompt."],
+    nameNumbers: ["Name Numbers", "Convert names into number patterns."],
+    intelligence: ["Intelligence Analysis", "Context-aware pattern and smart pick review."],
+    intelligenceLocker: ["Intelligence Locker", "Saved AI analysis, guarded signals, and premium pattern notes."],
+    predictions: ["Predictions", "Lock generated sets and grade them against demo draw results."],
+    jackpot: ["Jackpot Reality", "Estimate cash, annuity, tax pressure, and safer budget context."],
+    wheelBuilder: ["Wheel Builder", "Build small coverage wheels from your selected number pool."],
+    newsRadar: ["News Radar", "Draw delay, matrix change, jackpot movement, and saved-game alerts."],
+    marketplace: ["Marketplace", "Credits, VIP tools, creator unlocks, and LottoMind guides."],
+    policies: ["Policies", "Privacy, terms, accessibility, and responsible play notes."],
+    proPlaybook: ["Pro Playbook", "Strategy lessons, matrix notes, and responsible play education."],
+    challenges: ["Challenges", "Daily tasks, streaks, arcade missions, and credit rewards."],
+    game: ["Jackpot Run", "The arcade runner route with reward-game hooks."],
+    nationwide: ["Nationwide Analysis", "State and national draw overview."],
+    detailedReport: ["Detailed Report", "A saved analysis summary from the current game."],
+    records: ["LottoMind Records", "Saved results and report cards."],
+    historical: ["Historical Lab", "Longer-range sample review."],
+    gamesHub: ["Games Hub", "All arcade and reward game routes."],
+    achievements: ["Achievements", "Daily tasks and credit rewards."],
+    vip: ["VIP", "Premium unlock and member perks."],
+    community: ["Community", "Share saved sets and reading cards."],
+    contests: ["Contests", "Challenge cards and future entries."],
+    cardGame: ["Card Game", "Flip cards for number memory practice."],
+    ludo: ["Ludo", "Board-game reward lane."],
+    crossword: ["Crossword", "Word puzzle and number clues."],
+    wordSearch: ["Word Search", "Find dream symbols and earn credits."],
+    triviaPlay: ["Trivia Play", "Answer LottoMind questions."],
+    triviaRewards: ["Trivia Rewards", "Redeem earned credits."],
+    triviaRedeem: ["Trivia Redeem", "Use arcade rewards."],
+    usLottery: ["US Lottery", "State draw index."],
+    notifications: ["Alerts", "Saved-state and draw reminders."],
+    help: ["Help", "Guide and support center."],
+    liveData: ["Live Data", "Realtime-ready draw and jackpot lanes."],
+    heatmapAnalytics: ["Heatmap Analytics", "Deeper hot/cold trend view."],
+    savedWallet: ["Saved Wallet", "Saved sets and credits together."],
+    ticketScanner: ["Ticket Scanner", "Ticket scan tools."],
+    energyMeter: ["Energy Meter", "Signal score, frequency mood, and play-readiness gauge."],
+    radioStation: ["Radio Station", "LottoMind Records live audio lane."],
+    onboarding: ["Onboarding", "First-run path for setup, state pin, and feature tour."],
+    splash: ["Splash", "Branded app launch surface."],
+    paywall: ["Premium Gate", "VIP unlocks, credit packs, and premium routes."],
+    thankYou: ["Thank You", "Purchase and signup confirmation surface."],
+    original: ["Original App", "Legacy reference route kept connected."],
+  };
+  const [title, copy] = labels[routeKey] || ["LottoMind Tool", "This function is wired to the new Oracle app action system."];
+  const set = generateLottoSet(state.gameId, routeKey.includes("fortune") || routeKey.includes("future") ? "dream" : state.strategy, routeKey);
+  const extra = specialToolBody(routeKey, set);
+  const related = relatedTools(routeKey);
+  const extraFirst = routeKey === "energyMeter";
+  return `<section class="screen">
+    <div class="panel art-panel feature-console" style="--panel-art:url('${toolArt(routeKey)}')">
+      <div>
+        <span class="eyebrow">${title.includes("Tool") ? "Tool Console" : "Custom Screen"}</span>
+        <h1>${title}</h1>
+        <p>${copy}</p>
+        <div class="hero-actions">
+          <button class="primary-btn" data-action="generate-set">Run Function</button>
+          <button class="ghost-btn" data-route="history">Open Vault</button>
+        </div>
+      </div>
+      <button class="console-orb state-orb" data-action="cycle-state" aria-label="Select state pin"><img src="${ASSETS.logo}" alt="" /><span>${state.selectedState}</span></button>
+    </div>
+    ${extraFirst ? extra : ""}
+    <div class="panel result-card">
+      <span>Function output</span>
+      ${ballsHtml(set.numbers, set.special, set.specialName)}
+      <p>${set.note}</p>
+    </div>
+    <div class="panel related-panel">
+      <div class="section-head"><div><h2>Next Best Actions</h2><p>Logical buttons connected to this feature.</p></div></div>
+      <div class="circle-carousel">${related.map(([label, sub, route], index) => circleTool(label, sub, route, index)).join("")}</div>
+    </div>
+    ${extraFirst ? "" : extra}
+  </section>`;
+}
+
+function toolArt(routeKey) {
+  if (["music", "energyMeter", "reset"].includes(routeKey)) return ASSETS.music;
+  if (["dreamVideo", "viralStudio", "psychic", "dailyFortune", "futureRead", "nameNumbers"].includes(routeKey)) return ASSETS.dream;
+  if (["records", "historical", "liveData", "live", "newsRadar", "heatmapAnalytics", "lottoIntel", "intelligence"].includes(routeKey)) return ASSETS.live;
+  if (["marketplace", "creditStore", "savedWallet", "store", "storeLocator", "paywall", "vip", "thankYou"].includes(routeKey)) return ASSETS.credit;
+  if (["arcadeGame", "game", "gamesHub", "cardGame", "ludo", "crossword", "wordSearch", "triviaPlay", "triviaRewards", "triviaRedeem"].includes(routeKey)) return ASSETS.arcade;
+  if (["sequence", "pickGames", "dailyTools", "numberGenerator", "predictions", "wheelBuilder"].includes(routeKey)) return ASSETS.sequence;
+  if (["onboarding", "splash", "profile", "settings", "notifications", "help", "policies", "community", "contests", "usLottery", "original"].includes(routeKey)) return ASSETS.mascot;
+  return ASSETS.powerTools;
+}
+
+function relatedTools(routeKey) {
+  if (["dreamVideo", "psychic", "dailyFortune", "futureRead", "nameNumbers"].includes(routeKey)) {
+    return [["Dream Oracle", "Interpret", "dreams"], ["Reset Vault", "Focus", "reset"], ["History Vault", "Save", "history"], ["Power Tools", "Run", "powertools"]];
+  }
+  if (["jackpot", "wheelBuilder", "predictions", "newsRadar", "liveData", "records", "historical"].includes(routeKey)) {
+    return [["Heatmap", "Radar", "heatmap"], ["Live Results", "Draws", "live"], ["Number Generator", "Build", "numberGenerator"], ["History Vault", "Save", "history"]];
+  }
+  if (["energyMeter", "music", "radioStation"].includes(routeKey)) {
+    return [["Radio Station", "Listen", "radioStation"], ["Reset Vault", "Tone", "reset"], ["Dream Oracle", "Speak", "dreams"], ["History Vault", "Save", "history"]];
+  }
+  if (["marketplace", "creditStore", "savedWallet", "vip"].includes(routeKey)) {
+    return [["Credit Vault", "Balance", "wallet"], ["Store", "Gear", "store"], ["VIP", "Upgrade", "vip"], ["Profile", "Stats", "profile"]];
+  }
+  return [["Power Tools", "Command", "powertools"], ["Generator", "Numbers", "numberGenerator"], ["Heatmap", "Radar", "heatmap"], ["History Vault", "Saved", "history"]];
+}
+
+function specialToolBody(routeKey, set) {
+  if (routeKey === "pickGames") {
+    const digits = parseNumbers(state.dailyInput).join("").slice(0, 4).padEnd(3, "7");
+    const combos = digits.split("");
+    const straight = combos.join("");
+    const box = uniqueSorted([
+      Number(combos.join("")),
+      Number([...combos].reverse().join("")),
+      Number([combos[1], combos[0], combos[2], combos[3]].filter(Boolean).join("")),
+    ].filter(Number.isFinite));
+    const mirrors = combos.map((digit) => (Number(digit) + 5) % 10);
+    return `<div class="panel pick-games-panel">
+      <div class="section-head"><div><h2>Pick Games Helper</h2><p>Straight, box, mirror, root, and pair helpers for daily digits.</p></div><span>${state.selectedState}</span></div>
+      <label class="field-label padded">Daily Digits <input data-bind="dailyInput" value="${escapeHtml(state.dailyInput)}" maxlength="4" /></label>
+      <div class="tool-grid padded">
+        ${metricCard("Straight", straight)}
+        ${metricCard("Box", box.join(" / ") || straight)}
+        ${metricCard("Mirror", mirrors.join(""))}
+        ${metricCard("Root", digitalRoot(combos.map(Number).reduce((sum, digit) => sum + digit, 0)))}
+      </div>
+      <div class="hero-actions padded"><button class="primary-btn" data-action="generate-daily">Generate Daily</button><button class="ghost-btn" data-route="dailyTools">Daily 3 / 4 Lab</button></div>
+    </div>`;
+  }
+  if (routeKey === "lottoIntel" || routeKey === "ai" || routeKey === "intelligence") {
+    const stats = getMatrixStats();
+    const sequence = analyzeSequence(set.numbers, getGame().mainMax);
+    return `<div class="panel intel-panel">
+      <div class="section-head"><div><h2>Lotto Intelligence Report</h2><p>Trend, sequence, confidence, and next action logic.</p></div><span>${stats.trustScore}% signal</span></div>
+      <div class="tool-grid padded">
+        ${metricCard("Sum", sequence.sum)}
+        ${metricCard("Root", sequence.root)}
+        ${metricCard("Odd / Even", sequence.oddEven)}
+        ${metricCard("High / Low", sequence.highLow)}
+      </div>
+      <div class="result-card compact"><span>AI Insight</span><h2>${set.gameName} ${titleCase(set.strategy)} Lane</h2>${ballsHtml(set.numbers, set.special, set.specialName)}<p>${set.note}</p></div>
+      <div class="hero-actions padded"><button class="primary-btn" data-action="lock-prediction">Lock Prediction</button><button class="ghost-btn" data-route="heatmap">Open Radar</button></div>
+    </div>`;
+  }
+  if (["dailyFortune", "futureRead", "nameNumbers", "contests", "challenges"].includes(routeKey)) {
+    const reading = interpretDream(state.dreamText, state.gameId);
+    const cards = routeKey === "contests"
+      ? [["Daily Entry", "Ready"], ["Credit Prize", "+50"], ["Arcade Score", "Open"], ["Share Card", "Soon"]]
+      : [["Oracle Tone", reading.tone], ["Lucky Window", reading.numberLogic?.playWindow || "Evening"], ["Pick 3", reading.pick3], ["Pick 4", reading.pick4]];
+    return `<div class="panel oracle-function-panel">
+      <div class="section-head"><div><h2>${routeKey === "contests" ? "Contest Board" : "Generate Your Dreams"}</h2><p>${routeKey === "contests" ? "Challenge cards and future contest entries connected into Arcade." : "Dream text becomes numbers, tone, and shareable reveal cards."}</p></div><span>${cards.length} cards</span></div>
+      <div class="tool-grid padded">${cards.map(([label, value]) => metricCard(label, value)).join("")}</div>
+      <div class="hero-actions padded"><button class="primary-btn" data-action="build-dream-video">Generate Dreams</button><button class="ghost-btn" data-route="arcade">Arcade</button><button class="ghost-btn" data-route="history">History Vault</button></div>
+    </div>`;
+  }
+  if (routeKey === "records" || routeKey === "historical" || routeKey === "liveData") {
+    const saved = loadJson(STORAGE.history, []);
+    const rows = LIVE_RESULT_RECORDS.filter((item) => item.stateCode === state.selectedState || item.stateCode === "US");
+    return `<div class="panel records-board">
+      <div class="section-head"><div><h2>LottoMind Records</h2><p>Draw cards, saved sets, and history lanes in one place.</p></div><span>${rows.length} draw cards</span></div>
+      <div class="result-list padded">
+        ${rows.map((record) => `<div class="history-row record-card">
+          <strong>${record.gameName} - ${record.stateName}</strong>
+          ${ballsHtml(record.numbers, record.special)}
+          <small>${record.drawDate} - ${record.session}${record.jackpotMillions ? ` - $${record.jackpotMillions}M` : ""}</small>
+        </div>`).join("")}
+      </div>
+      <div class="section-head"><div><h2>Saved From App</h2><p>Sets saved from Dashboard, Sequence, Power Tools, and Dreams.</p></div><span>${saved.length} saved</span></div>
+      <div class="result-list padded">
+        ${saved.length ? saved.slice(0, 8).map(savedSetRow).join("") : `<p>No saved sets yet. Run a generator and tap Save to Records.</p>`}
+      </div>
+    </div>`;
+  }
+  if (routeKey === "jackpot") {
+    const taxRates = { NY: 0.109, FL: 0, TX: 0, CA: 0 };
+    const jackpot = 425000000;
+    const cash = 198000000;
+    const stateTax = cash * (taxRates[state.selectedState] ?? 0.0575);
+    const federal = cash * 0.37;
+    const net = Math.max(0, cash - federal - stateTax);
+    return `<div class="tool-grid">
+      ${metricCard("Headline", "$425M")}
+      ${metricCard("Cash Value", "$198M")}
+      ${metricCard(`${state.selectedState} Tax`, `$${Math.round(stateTax / 1000000)}M`)}
+      ${metricCard("Est. Net", `$${Math.round(net / 1000000)}M`)}
+    </div>`;
+  }
+  if (routeKey === "wheelBuilder") {
+    const pool = uniqueSorted(parseNumbers(state.numberInput).concat(set.numbers)).slice(0, 10);
+    const tickets = [];
+    for (let i = 0; i < Math.min(6, pool.length); i += 1) {
+      tickets.push(uniqueSorted(pool.slice(i, i + getGame().mainCount).concat(pool.slice(0, Math.max(0, getGame().mainCount - (pool.length - i))))).slice(0, getGame().mainCount));
+    }
+    return `<div class="panel wheel-builder-panel">
+      <div class="section-head"><div><h2>Wheel Builder Engine</h2><p>Build compact coverage tickets from the current stream and generated set.</p></div><span>${pool.length} pool</span></div>
+      <label class="field-label padded">Number Pool <input data-bind="numberInput" value="${escapeHtml(state.numberInput)}" placeholder="7 23 38 42 11" /></label>
+      <div class="tool-grid padded">
+        ${metricCard("Pool", pool.join(" / ") || "Ready")}
+        ${metricCard("Tickets", tickets.length)}
+        ${metricCard("Main Count", getGame().mainCount)}
+        ${metricCard("Game", getGame().name)}
+      </div>
+      <div class="result-list padded">
+        ${tickets.map((ticket, index) => `<div class="history-row wheel-ticket"><strong>Wheel Ticket ${index + 1}</strong>${ballsHtml(ticket, getGame().specialMax ? ((ticket[0] * 3) % getGame().specialMax) + 1 : undefined)}<small>Balanced coverage lane. Entertainment helper only.</small></div>`).join("")}
+      </div>
+      <div class="hero-actions padded"><button class="primary-btn" data-action="save-current-set">Save Wheel Seed</button><button class="ghost-btn" data-route="numberGenerator">Edit Generator</button></div>
+    </div>`;
+  }
+  if (routeKey === "predictions") {
+    const saved = loadJson(STORAGE.history, []).filter((item) => item.locked).slice(0, 5);
+    return `<div class="panel"><h2>Locked Predictions</h2>${saved.length ? saved.map(savedSetRow).join("") : `<p>No locked predictions yet.</p><button class="primary-btn" data-action="lock-prediction">Lock Current Set</button>`}</div>`;
+  }
+  if (routeKey === "newsRadar") {
+    const rows = LIVE_RESULT_RECORDS.filter((item) => item.stateCode === state.selectedState || item.stateCode === "US").slice(0, 5);
+    const alerts = [
+      ["Matrix Watch", "Mega Millions current-era samples stay separated from legacy rules."],
+      ["Daily Games Lab Ready", "Pick 3 and Pick 4 support sums, roots, mirrors, repeats, and balance checks."],
+      ["Jackpot Movement Watch", "Cash value, withholding, and net estimate are separated from headline jackpot."],
+      ["Saved Games Alert Queue", "Personal alerts are ready for state, game, and draw-time preferences."],
+    ];
+    return `<div class="panel news-radar-panel">
+      <div class="section-head"><div><h2>News Radar Live Desk</h2><p>State draw alerts, jackpot movement, and app notices.</p></div><span>${state.selectedState}</span></div>
+      <div class="tool-grid padded">${metricCard("Alerts", alerts.length)}${metricCard("Draw Cards", rows.length)}${metricCard("Pinned", state.selectedState)}${metricCard("Signal", `${getMatrixStats().trustScore}%`)}</div>
+      <div class="result-list padded">${alerts.map(([title, copy]) => `<div class="history-row alert-card"><strong>${title}</strong><small>${copy}</small></div>`).join("")}</div>
+      <div class="result-list padded">${rows.map((record) => `<div class="history-row record-card"><strong>${record.gameName} - ${record.stateName}</strong>${ballsHtml(record.numbers, record.special)}<small>${record.drawDate} - ${record.session}${record.jackpotMillions ? ` - $${record.jackpotMillions}M` : ""}</small></div>`).join("")}</div>
+      <div class="hero-actions padded"><button class="primary-btn" data-route="live">Open Live Results</button><button class="ghost-btn" data-route="notifications">Open Alerts</button></div>
+    </div>`;
+  }
+  if (routeKey === "energyMeter") {
+    const stats = getMatrixStats();
+    const weather = WEATHER_SIGNALS.find((item) => item.stateCode === state.selectedState) || WEATHER_SIGNALS[0];
+    const toneScore = Number(state.tone) % 100;
+    const readiness = Math.min(99, Math.max(30, Math.round((stats.trustScore * 0.58) + (toneScore * 0.24) + (getCredits() > 0 ? 14 : 4))));
+    return `<div class="panel energy-meter-panel">
+      <div class="section-head"><div><h2>Energy Meter Console</h2><p>Frequency mood, signal confidence, and play-readiness in one gauge.</p></div><span>${readiness}% ready</span></div>
+      <div class="energy-gauge" style="--energy:${readiness}%"><strong>${readiness}%</strong><span>Readiness</span></div>
+      <div class="tool-grid padded">
+        ${metricCard("Tone", `${state.tone} Hz`)}
+        ${metricCard("Signal", `${stats.trustScore}%`)}
+        ${metricCard("Weather", `${weather.temperature}F`)}
+        ${metricCard("Credits", getCredits())}
+      </div>
+      <div class="hero-actions padded"><button class="primary-btn" data-route="reset">Tune Reset</button><button class="ghost-btn" data-route="radioStation">Radio Station</button><button class="ghost-btn" data-route="dreams">Dream Oracle</button></div>
+    </div>`;
+  }
+  if (routeKey === "marketplace") {
+    return `<div class="tool-grid">${MARKETPLACE_ITEMS.map(([title, copy, cost]) => `<button class="store-card" data-action="buy-item" data-cost="${cost}"><strong>${title}</strong><span>${copy}</span><small>${cost} credits</small></button>`).join("")}</div>`;
+  }
+  if (routeKey === "proPlaybook" || routeKey === "academy") {
+    const lessons = ["Matrix rules before trends", "Hot and cold numbers without chasing", "Pick 3 / Pick 4 straight and box basics", "Budget-first jackpot reality", "Dream symbols as entertainment seeds"];
+    return `<div class="panel"><h2>Learning Path</h2>${lessons.map((lesson, index) => `<div class="history-row"><strong>${index + 1}. ${lesson}</strong><small>Open, learn, then try the matching tool.</small></div>`).join("")}</div>`;
+  }
+  if (routeKey === "dreamVideo") {
+    return `<div class="panel"><h2>Dream Storyboard</h2><p>${escapeHtml(state.dreamText)}</p><div class="tool-grid">${["Opening symbol", "Lucky object", "Number reveal", "Share card"].map((label) => metricCard(label, "Ready")).join("")}</div></div>`;
+  }
+  return "";
+}
+
+function metricCard(label, value) {
+  return `<div class="metric-card"><span>${label}</span><strong>${escapeHtml(value)}</strong></div>`;
+}
+
+function formatTimer(seconds) {
+  const safe = Math.max(0, Number(seconds) || 0);
+  const min = Math.floor(safe / 60);
+  const sec = String(safe % 60).padStart(2, "0");
+  return `${min}:${sec}`;
+}
+
+function renderView() {
+  if (state.route === "dashboard") return dashboardView();
+  if (state.route === "powertools") return powerToolsView();
+  if (state.route === "reset") return resetView();
+  if (state.route === "dreams" || state.route === "dreamOracle") return dreamsView();
+  if (state.route === "heatmap") return heatmapView();
+  if (state.route === "numberGenerator") return numberGeneratorView();
+  if (state.route === "dailyTools") return dailyToolsView();
+  if (state.route === "sequence") return sequenceView();
+  if (state.route === "history") return historyView();
+  if (state.route === "live") return liveView();
+  if (state.route === "scanner" || state.route === "ticketScanner") return scannerView();
+  if (state.route === "wallet" || state.route === "creditStore" || state.route === "savedWallet") return walletView();
+  if (state.route === "storeLocator") return storeLocatorView();
+  if (state.route === "luckyWeather" || state.route === "horoscope") return luckyWeatherView();
+  if (state.route === "ai" || state.route === "lottoIntel" || state.route === "intelligence" || state.route === "intelligenceLocker") return aiCoachView();
+  if (state.route === "nameNumbers") return nameNumbersView();
+  if (state.route === "music" || state.route === "radioStation") return musicHubView(state.route === "radioStation");
+  if (state.route === "dreamVideo" || state.route === "viralStudio") return videoStudioView();
+  if (state.route === "records" || state.route === "historical" || state.route === "liveData" || state.route === "historyUi") return recordsView();
+  if (state.route === "marketplace" || state.route === "paywall") return marketplaceView();
+  if (state.route === "store") return merchStoreView();
+  if (state.route === "profile") return profileView();
+  if (state.route === "settings") return settingsView();
+  if (["arcade", "arcadeGame", "game", "cardGame", "triviaPlay", "triviaRewards", "triviaRedeem", "gamesHub"].includes(state.route)) return arcadeView();
+  if (state.route === "psychic") return psychicView();
+  return genericToolView(state.route);
+}
+
+function render() {
+  document.title = "LottoMind Oracle Real App";
+  const app = document.getElementById("app");
+  app.innerHTML = `<div class="real-shell route-${state.route}">
+    ${header()}
+    ${missionHud()}
+    <main class="real-main">${renderView()}</main>
+    ${bottomNav()}
+    ${state.toast ? `<div class="toast">${escapeHtml(state.toast)}</div>` : ""}
+  </div>`;
+  stopAudioIfNeeded();
+  syncRouteAudio();
+}
+
+function toast(message) {
+  state.toast = message;
+  clearTimeout(toastId);
+  toastId = setTimeout(() => {
+    state.toast = "";
+    render();
+  }, 1800);
+  render();
+}
+
+function stopAudioIfNeeded() {
+  if (state.route !== "reset") {
+    state.audioPlaying = false;
+    if (resetAudio) resetAudio.pause();
+    stopTimer();
+  } else {
+    stopRouteAudio();
+  }
+}
+
+function muteAllMedia(muted) {
+  if (resetAudio) {
+    resetAudio.muted = muted;
+    if (muted) resetAudio.pause();
+  }
+  if (routeAudio) {
+    routeAudio.muted = muted;
+    if (muted) routeAudio.pause();
+  }
+  document.querySelectorAll("audio, video").forEach((media) => {
+    media.muted = muted;
+    if (muted && typeof media.pause === "function") media.pause();
+  });
+}
+
+function ensureResetAudio() {
+  if (!resetAudio) {
+    resetAudio = new Audio(AUDIO.reset);
+    resetAudio.loop = true;
+  }
+  resetAudio.volume = state.volume;
+  resetAudio.muted = state.muted;
+  return resetAudio;
+}
+
+function toggleResetAudio() {
+  if (state.route !== "reset") return;
+  const audio = ensureResetAudio();
+  state.audioPlaying = !state.audioPlaying;
+  if (state.audioPlaying) {
+    audio.play().catch(() => toast("Tap play again if the browser blocked audio."));
+    startTimer();
+  } else {
+    audio.pause();
+    stopTimer();
+  }
+  render();
+}
+
+function startTimer() {
+  stopTimer();
+  state.timerRunning = true;
+  timerId = setInterval(() => {
+    if (state.route !== "reset") {
+      stopTimer();
+      return;
+    }
+    state.timerRemaining = Math.max(0, state.timerRemaining - 1);
+    if (state.timerRemaining <= 0) {
+      state.audioPlaying = false;
+      ensureResetAudio().pause();
+      stopTimer();
+      toast("Reset session complete");
+    } else {
+      render();
+    }
+  }, 1000);
+}
+
+function stopTimer() {
+  state.timerRunning = false;
+  clearInterval(timerId);
+}
+
+function bindInputs(target) {
+  const bind = target.getAttribute("data-bind");
+  if (!bind) return;
+  state[bind] = target.value;
+}
+
+function startDreamRecording() {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    if (state.route === "dreams" || state.route === "dreamVideo") {
+      state.dreamText = `${state.dreamText} I saw water, gold, a key, and a doorway.`;
+      toast("Mic not available here, so I added a sample spoken dream.");
+    } else {
+      toast("Mic navigation ready: type a search and press Enter if voice is blocked.");
+    }
+    return;
+  }
+  const recognition = new SpeechRecognition();
+  recognition.lang = "en-US";
+  recognition.interimResults = false;
+  recognition.onresult = (event) => {
+    const transcript = Array.from(event.results).map((result) => result[0].transcript).join(" ");
+    const wantsNavigation = /\b(open|go|show|take me|navigate|switch|launch)\b/i.test(transcript);
+    if (wantsNavigation) {
+      const route = routeFromSearch(transcript);
+      toast(`Voice opening ${routeMeta(route)[0]}`);
+      go(route);
+      return;
+    }
+    state.dreamText = transcript;
+    toast(state.route === "dreams" || state.route === "dreamVideo" ? "Dream recorded" : "Voice note saved to Dream Oracle");
+    render();
+  };
+  recognition.onerror = () => toast("Mic could not start. Type the dream and run it.");
+  recognition.start();
+  toast("Listening for your dream...");
+}
+
+function routeFromSearch(value) {
+  const [bestMatch] = functionSearchResults(value, 1);
+  if (bestMatch) return bestMatch.route;
+  const query = String(value || "").toLowerCase();
+  const matches = [
+    [["dream", "oracle", "meaning", "journal"], "dreams"],
+    [["music", "radio", "apple", "youtube", "record", "song", "audio"], "music"],
+    [["weather", "local", "horoscope"], "luckyWeather"],
+    [["store locator", "locator", "near", "retailer"], "storeLocator"],
+    [["ticket", "scan", "scanner", "barcode", "camera"], "scanner"],
+    [["ai", "coach", "smart", "predictor", "intelligence"], "ai"],
+    [["name", "code"], "nameNumbers"],
+    [["power", "tool", "analyzer"], "powertools"],
+    [["radar", "heat", "hot", "cold"], "heatmap"],
+    [["reset", "tone", "frequency", "meditation"], "reset"],
+    [["sequence", "pattern", "gap", "root"], "sequence"],
+    [["history", "vault", "saved", "records"], "history"],
+    [["arcade", "game", "play", "contest"], "arcade"],
+    [["credit", "wallet", "market", "premium"], "marketplace"],
+    [["number", "generator", "pick", "cash", "powerball", "mega"], "numberGenerator"],
+    [["video", "dream video", "viral"], "dreamVideo"],
+    [["help", "settings", "policy", "policies"], "help"],
+  ];
+  const found = matches.find(([terms]) => terms.some((term) => query.includes(term)));
+  return found ? found[1] : "powertools";
+}
+
+function handleAction(action, target) {
+  if (action === "menu") {
+    state.showUtilityMenu = !state.showUtilityMenu;
+    state.showStatePicker = false;
+    render();
+    return;
+  }
+  if (action === "toggle-global-audio") {
+    state.muted = !state.muted;
+    muteAllMedia(state.muted);
+    toast(state.muted ? "Music muted" : "Music ready");
+    return;
+  }
+  if (action === "voice-search") {
+    startDreamRecording();
+    return;
+  }
+  if (action === "set-game") {
+    state.gameId = target.getAttribute("data-game");
+    localStorage.setItem("lottomind.oracle.real.game", state.gameId);
+    state.currentSet = generateLottoSet(state.gameId, state.strategy, "game-change");
+    render();
+  }
+  if (action === "set-strategy") {
+    state.strategy = target.getAttribute("data-strategy");
+    localStorage.setItem("lottomind.oracle.real.strategy", state.strategy);
+    state.currentSet = generateLottoSet(state.gameId, state.strategy, state.strategy === "dream" ? state.dreamText : "strategy-change");
+    render();
+  }
+  if (action === "generate-set" || action === "run-power-analysis") {
+    state.currentSet = generateLottoSet(state.gameId, state.strategy, state.dreamText);
+    toast(action === "run-power-analysis" ? "Power analysis complete" : "Numbers generated");
+  }
+  if (action === "run-ai-coach") {
+    const generated = generateLottoSet(state.gameId, state.strategy, `${state.aiPrompt} ${state.dreamText}`);
+    state.currentSet = generated;
+    state.currentAi = {
+      title: "LottoMind AI Report",
+      numbers: generated.numbers,
+      copy: `${generated.note} Next move: compare against Radar, then save to History Vault.`,
+    };
+    toast("AI coach report generated");
+  }
+  if (action === "analyze-name-numbers") {
+    state.currentNameNumbers = nameNumberReport(state.nameInput);
+    state.currentSet = {
+      ...generateLottoSet(state.gameId, "dream", state.nameInput),
+      numbers: state.currentNameNumbers.numbers,
+      strategy: "name",
+      note: `Name code ${state.currentNameNumbers.clean}: root ${state.currentNameNumbers.root}, Pick 3 ${state.currentNameNumbers.pick3}, Pick 4 ${state.currentNameNumbers.pick4}.`,
+    };
+    toast("Name numbers analyzed");
+  }
+  if (action === "save-current-set") {
+    if (!state.currentSet) state.currentSet = generateLottoSet(state.gameId, state.strategy, state.dreamText);
+    saveSet(state.currentSet);
+  }
+  if (action === "lock-prediction") {
+    if (!state.currentSet) state.currentSet = generateLottoSet(state.gameId, state.strategy, state.dreamText);
+    saveSet({ ...state.currentSet, locked: true, note: `${state.currentSet.note} Locked for the next demo draw.` });
+  }
+  if (action === "interpret-dream") {
+    state.currentDream = interpretDream(state.dreamText, state.gameId);
+    state.currentSet = generateLottoSet(state.gameId, "dream", state.dreamText);
+    toast("Dream interpreted");
+  }
+  if (action === "save-dream") {
+    if (!state.currentDream) {
+      state.currentDream = interpretDream(state.dreamText, state.gameId);
+    }
+    saveDream(state.currentDream);
+  }
+  if (action === "psychic-fusion") {
+    state.currentPsychic = generatePsychicReading({ prompt: "oracle studio fusion", dreamText: state.dreamText, game: state.gameId });
+    savePsychic(state.currentPsychic);
+    toast("Psychic fusion generated");
+  }
+  if (action === "start-dream-recording") startDreamRecording();
+  if (action === "build-dream-video") {
+    const alreadyInStudio = state.route === "dreamVideo";
+    state.currentDream = interpretDream(state.dreamText, state.gameId);
+    state.currentVideo = buildDreamVideoPlan(state.dreamText);
+    if (!alreadyInStudio) {
+      go("dreamVideo");
+      return;
+    }
+    toast("Dream video storyboard built");
+  }
+  if (action === "save-video-storyboard") {
+    if (!state.currentVideo) state.currentVideo = buildDreamVideoPlan(state.dreamText);
+    saveDream({
+      ...state.currentVideo.reading,
+      title: "Dream Video Storyboard",
+      note: `${state.currentVideo.frames.map((frame) => frame[0]).join(" > ")} | ${state.currentVideo.reading.note}`,
+      savedAt: new Date().toISOString(),
+    });
+  }
+  if (action === "analyze-sequence") {
+    state.lastSequence = analyzeSequence(parseNumbers(state.numberInput), getGame().mainMax);
+    toast("Sequence analyzed");
+  }
+  if (action === "analyze-daily") toast("Daily digits analyzed");
+  if (action === "generate-daily") {
+    const pick = generateLottoSet(state.dailyInput.length >= 4 ? "pick-4" : "pick-3", "balanced", "daily");
+    state.dailyInput = pick.numbers.join("");
+    toast("Daily digits generated");
+  }
+  if (action === "cycle-state") {
+    state.showStatePicker = !state.showStatePicker;
+    state.showUtilityMenu = false;
+    render();
+  }
+  if (action === "select-state") {
+    state.selectedState = target.getAttribute("data-state") || state.selectedState;
+    state.showStatePicker = false;
+    localStorage.setItem("lottomind.oracle.real.state", state.selectedState);
+    toast(`${state.selectedState} pin selected`);
+  }
+  if (action === "set-view") {
+    state.viewMode = target.getAttribute("data-view");
+    localStorage.setItem("lottomind.oracle.real.view", state.viewMode);
+    toast(`${titleCase(state.viewMode)} view selected`);
+  }
+  if (action === "toggle-reset-audio") toggleResetAudio();
+  if (action === "load-reset-session") {
+    state.tone = target.getAttribute("data-tone") || state.tone;
+    state.timerRemaining = state.duration;
+    toast(`${state.tone} Hz loaded in Reset`);
+    go("reset");
+  }
+  if (action === "connect-stream") {
+    const stream = target.getAttribute("data-stream") || "Music platform";
+    const url = target.getAttribute("data-url");
+    const connected = loadJson(STORAGE.streams, []);
+    if (!connected.includes(stream)) saveJson(STORAGE.streams, connected.concat(stream));
+    if (url && typeof window.open === "function") window.open(url, "_blank", "noopener");
+    toast(`${stream} connected to LottoMind Records`);
+  }
+  if (action === "set-tone") {
+    state.tone = target.getAttribute("data-tone");
+    toast(`${state.tone} Hz loaded`);
+  }
+  if (action === "set-duration") {
+    state.duration = Number(target.getAttribute("data-duration")) || 300;
+    state.timerRemaining = state.duration;
+    toast(`${Math.round(state.duration / 60)} minute session loaded`);
+  }
+  if (action === "volume-up" || action === "volume-down") {
+    state.volume = Math.max(0.02, Math.min(0.8, state.volume + (action === "volume-up" ? 0.04 : -0.04)));
+    if (resetAudio) resetAudio.volume = state.volume;
+    render();
+  }
+  if (action === "favorite-tone") toast(`${state.tone} Hz saved as favorite`);
+  if (action === "simulate-scan" || action === "scan-ticket" || action === "scan-barcode") {
+    state.scanResult = generateLottoSet(state.gameId, "quick", "scan-demo");
+    state.scanResult.title = action === "scan-ticket" ? "Ticket image scanned" : action === "scan-barcode" ? "Barcode scan decoded" : "Scan demo complete";
+    state.scanResult.note = action === "scan-barcode" && state.barcodeInput ? `Barcode ${state.barcodeInput} decoded into a demo check lane. ${state.scanResult.note}` : state.scanResult.note;
+    state.currentSet = state.scanResult;
+    toast("Ticket scan complete");
+  }
+  if (action === "save-store") {
+    const savedStores = loadJson(STORAGE.stores, []);
+    if (!savedStores.includes(state.selectedState)) saveJson(STORAGE.stores, savedStores.concat(state.selectedState));
+    toast(`${state.selectedState} store locator saved`);
+  }
+  if (action === "buy-item") {
+    const cost = Number(target.getAttribute("data-cost")) || 0;
+    const next = getCredits() - cost;
+    if (next < 0) {
+      toast("Not enough credits");
+    } else {
+      setCredits(next);
+      toast("Credit purchase applied");
+    }
+  }
+  if (action === "toggle-setting") {
+    const settings = getSettings();
+    const key = target.getAttribute("data-setting");
+    settings[key] = !settings[key];
+    saveJson(STORAGE.settings, settings);
+    if (key === "music") {
+      state.muted = !settings.music;
+      routeAudioPlayedRoute = "";
+      muteAllMedia(state.muted);
+    }
+    render();
+  }
+  if (action === "clear-history") {
+    saveJson(STORAGE.history, []);
+    saveJson(STORAGE.readings, []);
+    saveJson(STORAGE.psychic, []);
+    toast("History cleared");
+  }
+  if (action === "play-mini-game") {
+    setCredits(getCredits() + 10);
+    toast("Arcade run complete: +10 credits");
+  }
+  render();
+}
+
+let pointerStart = null;
+let lastTouchActivation = 0;
+
+function activateInteractiveTarget(event) {
+  const eventTarget = event.target instanceof Element ? event.target : event.target?.parentElement;
+  if (!eventTarget) return;
+  const routeTarget = eventTarget.closest("[data-route]");
+  if (routeTarget) {
+    event.preventDefault();
+    stopRouteAudio();
+    go(routeTarget.getAttribute("data-route"));
+    return true;
+  }
+  const actionTarget = eventTarget.closest("[data-action]");
+  if (actionTarget) {
+    const action = actionTarget.getAttribute("data-action");
+    if (action === "search" || action === "scan-ticket") return false;
+    event.preventDefault();
+    stopRouteAudio();
+    handleAction(action, actionTarget);
+    return true;
+  }
+  return false;
+}
+
+document.addEventListener("pointerdown", (event) => {
+  if (event.pointerType === "mouse") return;
+  pointerStart = { x: event.clientX, y: event.clientY, target: event.target instanceof Element ? event.target : null };
+}, { passive: true });
+
+document.addEventListener("pointerup", (event) => {
+  if (event.pointerType === "mouse") return;
+  if (pointerStart) {
+    const dx = event.clientX - pointerStart.x;
+    const dy = event.clientY - pointerStart.y;
+    const moved = Math.hypot(dx, dy);
+    const startedInScroller = pointerStart.target?.closest?.(".circle-carousel, .snap-carousel, .arcade-game-grid, .merch-grid, .lm-pill-row, textarea, input");
+    pointerStart = null;
+    if (!startedInScroller && dx > 84 && Math.abs(dy) < 62) {
+      event.preventDefault();
+      stopRouteAudio();
+      window.history.back();
+      return;
+    }
+    if (moved > 12) return;
+  }
+  if (activateInteractiveTarget(event)) lastTouchActivation = Date.now();
+}, { passive: false });
+
+document.addEventListener("click", (event) => {
+  if (Date.now() - lastTouchActivation < 450) return;
+  if (activateInteractiveTarget(event)) return;
+  const target = event.target instanceof Element ? event.target : event.target?.parentElement;
+  if (!target?.closest?.(".search-pill, .function-search-results")) {
+    state.searchQuery = "";
+    renderFunctionSearchResults("");
+  }
+});
+
+document.addEventListener("input", (event) => {
+  const target = event.target instanceof Element ? event.target : event.target?.parentElement;
+  const searchInput = target?.closest?.('input[data-action="search"]');
+  if (searchInput) {
+    state.searchQuery = searchInput.value;
+    renderFunctionSearchResults(state.searchQuery);
+    return;
+  }
+  bindInputs(event.target);
+});
+
+document.addEventListener("keydown", (event) => {
+  const target = event.target instanceof Element ? event.target : event.target?.parentElement;
+  const searchInput = target?.closest?.('input[data-action="search"]');
+  if (!searchInput) return;
+  if (event.key === "Escape") {
+    state.searchQuery = "";
+    searchInput.value = "";
+    renderFunctionSearchResults("");
+    return;
+  }
+  if (event.key !== "Enter") return;
+  event.preventDefault();
+  const route = routeFromSearch(searchInput.value);
+  toast(`Opening ${routeMeta(route)[0]}`);
+  go(route);
+});
+
+document.addEventListener("focusin", (event) => {
+  const target = event.target instanceof Element ? event.target : event.target?.parentElement;
+  const searchInput = target?.closest?.('input[data-action="search"]');
+  if (searchInput) renderFunctionSearchResults(searchInput.value);
+});
+
+document.addEventListener("change", (event) => {
+  const actionTarget = event.target.closest("[data-action]");
+  if (actionTarget) handleAction(actionTarget.getAttribute("data-action"), actionTarget);
+});
+
+window.addEventListener("popstate", () => {
+  state.route = routeFromLocation();
+  stopAudioIfNeeded();
+  render();
+});
+
+render();
