@@ -1149,18 +1149,6 @@ function dashboardView() {
       </div>
     </div>
 
-    <div class="panel quest-board">
-      <div class="section-head movie-head"><div><h2>Quest Board</h2><p>More logical game flow for the whole app.</p></div><span>4 steps</span></div>
-      <div class="quest-steps">
-        ${[
-          ["1", "Reset", "Load the right tone", "reset", ASSETS.reset],
-          ["2", "Oracle", "Speak or type the dream", "dreams", ASSETS.dream],
-          ["3", "Radar", "Read hot/cold movement", "heatmap", ASSETS.heatmap],
-          ["4", "Run", "Generate and save", "powertools", ASSETS.power],
-        ].map(([step, title, copy, route, art]) => `<button class="quest-step ${state.route === route ? "active" : ""}" data-route="${route}" style="--quest-art:url('${art}')"><b>${step}</b><strong>${title}</strong><small>${copy}</small></button>`).join("")}
-      </div>
-    </div>
-
     <div class="carousel-panel panel">
       <div class="section-head movie-head">
         <div><h2>Oracle Flow</h2><p>Swipe through the main app functions.</p></div>
@@ -1174,6 +1162,19 @@ function dashboardView() {
             <small>${copy}</small>
           </button>
         `).join("")}
+      </div>
+    </div>
+
+    <div class="panel home-merch-video">
+      <video src="${BASE}/videos/merch-store-button-loop.mp4" poster="${ASSETS.credit}" muted loop autoplay playsinline preload="metadata"></video>
+      <div>
+        <span class="eyebrow">Official Merch Store</span>
+        <h2>LottoMind Gear Drop</h2>
+        <p>Shop branded gear, coin art, promo drops, and marketplace-ready merch lanes.</p>
+        <div class="hero-actions">
+          <button class="primary-btn" data-route="store">Open Merch Store</button>
+          <button class="ghost-btn" data-route="marketplace">Marketplace</button>
+        </div>
       </div>
     </div>
 
@@ -1217,7 +1218,7 @@ function powerToolsView() {
   return `<section class="screen power-screen">
     <div class="panel arcade-deck art-panel" style="--panel-art:url('${ASSETS.power}')">
       <div>
-        <h1 class="game-title">Arcade Command Deck</h1>
+        <h1 class="game-title">Command Deck</h1>
         <p>Swipe tool medals, lock a state pin, then run the next analysis like a mission.</p>
         <div class="hero-actions">
           <button class="primary-btn" data-action="run-power-analysis">Run Analysis</button>
@@ -2735,19 +2736,37 @@ function startDreamRecording() {
   recognition.onresult = (event) => {
     const transcript = Array.from(event.results).map((result) => result[0].transcript).join(" ");
     const wantsNavigation = /\b(open|go|show|take me|navigate|switch|launch)\b/i.test(transcript);
-    if (wantsNavigation) {
+    const isDreamCapture = state.route === "dreams" || state.route === "dreamVideo";
+    if (wantsNavigation || !isDreamCapture) {
       const route = routeFromSearch(transcript);
-      toast(`Voice opening ${routeMeta(route)[0]}`);
+      const label = routeMeta(route)[0];
+      state.searchQuery = transcript;
+      toast(`Voice opening ${label}`);
+      speakText(`Opening ${label}`);
       go(route);
       return;
     }
     state.dreamText = transcript;
-    toast(state.route === "dreams" || state.route === "dreamVideo" ? "Dream recorded" : "Voice note saved to Dream Oracle");
+    toast("Dream recorded");
+    speakText("Dream recorded. Run the Oracle when ready.");
     render();
   };
   recognition.onerror = () => toast("Mic could not start. Type the dream and run it.");
   recognition.start();
-  toast("Listening for your dream...");
+  toast(state.route === "dreams" || state.route === "dreamVideo" ? "Listening for your dream..." : "Listening for app search...");
+}
+
+function speakText(message) {
+  const settings = getSettings();
+  if (!settings.sound || !("speechSynthesis" in window)) return;
+  try {
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(message);
+    utterance.rate = 0.96;
+    utterance.pitch = 0.92;
+    utterance.volume = Math.min(0.86, Math.max(0.18, state.volume + 0.18));
+    window.speechSynthesis.speak(utterance);
+  } catch {}
 }
 
 function routeFromSearch(value) {
@@ -2986,6 +3005,7 @@ function activateInteractiveTarget(event) {
   const routeTarget = eventTarget.closest("[data-route]");
   if (routeTarget) {
     event.preventDefault();
+    if (routeTarget.closest(".function-search-results")) speakText(`Opening ${routeMeta(routeTarget.getAttribute("data-route"))[0]}`);
     stopRouteAudio();
     go(routeTarget.getAttribute("data-route"));
     return true;
@@ -3060,7 +3080,9 @@ document.addEventListener("keydown", (event) => {
   if (event.key !== "Enter") return;
   event.preventDefault();
   const route = routeFromSearch(searchInput.value);
-  toast(`Opening ${routeMeta(route)[0]}`);
+  const label = routeMeta(route)[0];
+  toast(`Opening ${label}`);
+  speakText(`Opening ${label}`);
   go(route);
 });
 
