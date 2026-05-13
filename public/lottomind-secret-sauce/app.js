@@ -35,6 +35,7 @@ const AUDIO = {
 };
 
 const TAB_INTROS = [AUDIO.digitalStatic, AUDIO.goldReset, AUDIO.userFrequency, AUDIO.userRainfield, AUDIO.userVault174];
+const ROUTE_AUDIO_DURATION_MS = 5000;
 
 const ROUTE_AUDIO_POOLS = {
   dashboard: [AUDIO.userFrequency, AUDIO.goldReset, AUDIO.startup],
@@ -909,7 +910,7 @@ function syncRouteAudio() {
     clearTimeout(routeAudioStopId);
     routeAudio.play().then(() => {
       fadeMedia(routeAudio, 0, Math.min(0.16, state.volume), 520);
-      routeAudioStopId = setTimeout(() => stopRouteAudio(), 20000);
+      routeAudioStopId = setTimeout(() => stopRouteAudio(), ROUTE_AUDIO_DURATION_MS);
     }).catch(() => {});
   }
 }
@@ -956,7 +957,7 @@ function header() {
       <span>Lotto<span>Mind</span><sup>TM</sup></span>
       <i>Store</i>
     </button>
-    <button class="round-icon mic-orb" data-action="voice-search" aria-label="Start voice input"><span></span><b>MIC</b></button>
+    <button class="round-icon mic-orb" data-action="voice-search" aria-label="Start voice input"><span></span><b>Voice</b></button>
     <div class="top-controls segmented-switch shell-switch" role="group" aria-label="Pinned state and shell view mode">
       <button class="pin-button meatball" data-action="cycle-state"><span>PIN</span><strong>${state.selectedState}</strong></button>
       <button class="mode-toggle meatball ${state.viewMode === "shell" || state.viewMode === "auto" ? "active" : ""}" data-action="set-view" data-view="auto"><span>Auto</span></button>
@@ -1137,6 +1138,16 @@ function dashboardView() {
       <img class="hero-mascot" src="${ASSETS.mascot}" alt="LottoMind mascot" />
     </div>
 
+    <div class="panel strategy-panel home-strategy-panel">
+      <div class="section-head"><div><h2>Strategy</h2><p>Choose a number lane before you generate.</p></div></div>
+      ${strategyPills()}
+      <button class="primary-btn full" data-action="generate-set">Generate ${getGame().name}</button>
+      <div class="result-card compact">
+        <span>${current.gameName} ${titleCase(current.strategy)}</span>
+        ${ballsHtml(current.numbers, current.special, current.specialName)}
+      </div>
+    </div>
+
     <div class="panel quest-board">
       <div class="section-head movie-head"><div><h2>Quest Board</h2><p>More logical game flow for the whole app.</p></div><span>4 steps</span></div>
       <div class="quest-steps">
@@ -1154,10 +1165,11 @@ function dashboardView() {
         <div><h2>Oracle Flow</h2><p>Swipe through the main app functions.</p></div>
         <button class="tiny-btn" data-route="powertools">All Tools</button>
       </div>
-      <div class="snap-carousel">
+      <div class="quest-steps oracle-flow-steps">
         ${HOME_CAROUSEL.map(([title, copy, route, art], index) => `
-          <button class="flow-card flow-card-${index % 4}" data-route="${route}" style="--card-art:url('${art}')">
-            <span>${title}</span>
+          <button class="quest-step oracle-flow-step" data-route="${route}" style="--quest-art:url('${art}')">
+            <b>${String(index + 1).padStart(2, "0")}</b>
+            <strong>${title}</strong>
             <small>${copy}</small>
           </button>
         `).join("")}
@@ -1187,16 +1199,6 @@ function dashboardView() {
     <div class="split-grid">
       <button class="action-tile" data-route="academy"><strong>LottoMind Academy</strong><span>Learn. Grow. Win.</span></button>
       <button class="action-tile" data-route="marketplace"><strong>Marketplace</strong><span>Credits, VIP tools, and unlocks</span></button>
-    </div>
-
-    <div class="panel">
-      <div class="section-head"><div><h2>Strategy</h2><p>Choose a number lane before you generate.</p></div></div>
-      ${strategyPills()}
-      <button class="primary-btn full" data-action="generate-set">Generate ${getGame().name}</button>
-      <div class="result-card compact">
-        <span>${current.gameName} ${titleCase(current.strategy)}</span>
-        ${ballsHtml(current.numbers, current.special, current.specialName)}
-      </div>
     </div>
   </section>`;
 }
@@ -1995,8 +1997,14 @@ function musicHubView(isRadio = false) {
     </div>
     <div class="panel related-panel">
       <div class="section-head"><div><h2>Sound Routes</h2><p>Fast paths connected to the rest of the app.</p></div></div>
-      <div class="circle-carousel">
-        ${[["Reset Wheel", "Tone player", "reset"], ["Radio Station", "Live audio", "radioStation"], ["Dream Oracle", "Speak", "dreams"], ["Video Studio", "Loops", "dreamVideo"], ["History Vault", "Archive", "history"]].map(([title, sub, route], index) => circleTool(title, sub, route, index + 2)).join("")}
+      <div class="sound-route-bento">
+        ${[["Reset Wheel", "Tone player", "reset", ASSETS.reset], ["Radio Station", "Live audio", "radioStation", ASSETS.music], ["Dream Oracle", "Speak", "dreams", ASSETS.dream], ["Video Studio", "Loops", "dreamVideo", ASSETS.arcade], ["History Vault", "Archive", "history", ASSETS.live]].map(([title, sub, route, art], index) => `
+          <button class="sound-route-card ${index === 0 ? "featured" : ""}" data-route="${route}" style="--route-art:url('${art}')">
+            <span>0${index + 1}</span>
+            <strong>${title}</strong>
+            <small>${sub}</small>
+          </button>
+        `).join("")}
       </div>
     </div>
   </section>`;
@@ -2201,7 +2209,7 @@ function settingsView() {
       <h1>App Settings</h1>
       <p>Feature switches are saved locally.</p>
       ${Object.entries(settings).map(([key, value]) => `<button class="list-button settings-toggle" data-action="toggle-setting" data-setting="${key}" aria-pressed="${value ? "true" : "false"}">
-        <span class="setting-copy"><strong>${key === "music" ? "Tab Intro Music" : titleCase(key)}</strong><small>${key === "music" ? "20-second tab intros" : key === "responsible" ? "Responsible play reminders" : `${titleCase(key)} controls`}</small></span>
+        <span class="setting-copy"><strong>${key === "music" ? "Tab Intro Music" : titleCase(key)}</strong><small>${key === "music" ? "5-second tab intros" : key === "responsible" ? "Responsible play reminders" : `${titleCase(key)} controls`}</small></span>
         <span class="switch-control ${value ? "on" : ""}"><i></i><b>${value ? "On" : "Off"}</b></span>
       </button>`).join("")}
     </div>
@@ -2222,6 +2230,17 @@ function arcadeView() {
     <div class="panel art-panel" style="--panel-art:url('${ASSETS.arcade}')">
       <h1 class="game-title">LottoMind Arcade</h1>
       <p>Original games, rewards, and future Jackpot Run hooks.</p>
+    </div>
+    <div class="panel quest-board arcade-quest-board">
+      <div class="section-head movie-head"><div><h2>Quest Board</h2><p>Arcade path from warmup to reward run.</p></div><span>4 steps</span></div>
+      <div class="quest-steps">
+        ${[
+          ["1", "Pick Stage", "Choose a game lane", "arcade", ASSETS.arcade],
+          ["2", "Run", "Start the mission", "arcadeGame", ASSETS.arcadeCoin],
+          ["3", "Score", "Earn credits", "triviaRewards", ASSETS.credit],
+          ["4", "Vault", "Save the run", "history", ASSETS.live],
+        ].map(([step, title, copy, route, art]) => `<button class="quest-step ${state.route === route ? "active" : ""}" data-route="${route}" style="--quest-art:url('${art}')"><b>${step}</b><strong>${title}</strong><small>${copy}</small></button>`).join("")}
+      </div>
     </div>
     <div class="panel arcade-motion">
       <video src="${BASE}/videos/play-arcade-button-loop.mp4" poster="${ASSETS.arcade}" muted loop playsinline controls preload="none"></video>
