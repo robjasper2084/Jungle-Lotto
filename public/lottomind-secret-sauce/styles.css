@@ -12,6 +12,7 @@
   --line: rgba(248, 223, 118, 0.62);
   --line2: rgba(0, 236, 255, 0.42);
   --shadow: 0 22px 58px rgba(0, 0, 0, 0.42);
+  --title-font: "Arial Black", "Trebuchet MS", Inter, ui-sans-serif, system-ui, sans-serif;
 }
 
 * {
@@ -1177,6 +1178,72 @@ small {
   background:
     radial-gradient(circle at 88% 12%, rgba(248, 223, 118, 0.12), transparent 36%),
     linear-gradient(180deg, rgba(2, 20, 36, 0.94), rgba(1, 7, 15, 0.96));
+}
+
+.power-screen .tool-bank .tool-bento {
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(156px, 172px);
+  grid-template-rows: repeat(2, minmax(118px, 1fr));
+  gap: 12px;
+  padding: 16px 18px 18px;
+  scroll-snap-type: x mandatory;
+  background:
+    radial-gradient(circle at 12% 10%, rgba(248, 223, 118, 0.14), transparent 30%),
+    linear-gradient(90deg, rgba(0, 236, 255, 0.11), transparent 42%),
+    rgba(0, 16, 28, 0.38);
+}
+
+.power-screen .tool-bank .tool-bento .circle-tool {
+  width: auto;
+  height: auto;
+  min-height: 118px;
+  flex-basis: auto;
+  justify-items: start;
+  align-content: end;
+  padding: 14px;
+  border-radius: 24px;
+  text-align: left;
+  scroll-snap-align: start;
+  box-shadow:
+    inset 0 0 0 999px rgba(0, 14, 26, 0.48),
+    inset 0 -38px 46px rgba(0, 0, 0, 0.52),
+    0 18px 34px rgba(0, 0, 0, 0.28),
+    0 0 22px rgba(0, 236, 255, 0.12);
+}
+
+.power-screen .tool-bank .main-lab-bento .circle-tool:first-child {
+  grid-row: span 2;
+  min-height: 248px;
+}
+
+.power-screen .tool-bank .tool-bento .circle-tool::before {
+  content: "";
+  position: absolute;
+  inset: 9px;
+  border: 1px solid rgba(0, 236, 255, 0.34);
+  border-radius: 18px;
+  pointer-events: none;
+  background: linear-gradient(180deg, transparent, rgba(0, 236, 255, 0.08));
+}
+
+.power-screen .tool-bank .tool-bento .circle-tool span,
+.power-screen .tool-bank .tool-bento .circle-tool small {
+  text-align: left;
+}
+
+.power-screen .tool-bank .tool-bento .circle-tool span {
+  max-width: 11ch;
+  color: var(--gold);
+  font-family: var(--title-font);
+  font-size: 16px;
+  line-height: 0.98;
+  text-transform: uppercase;
+}
+
+.power-screen .tool-bank .tool-bento .circle-tool small {
+  color: #cde8ff;
+  font-size: 9px;
+  line-height: 1.05;
 }
 
 .flow-card {
@@ -4538,6 +4605,61 @@ small {
   text-transform: uppercase;
 }
 
+h1,
+h2,
+.game-title,
+.section-head h2,
+.movie-head h2,
+.tone-top h1,
+.vault-heading h2,
+.feature-console h1,
+.scanner-hero h1,
+.store-locator-screen h1,
+.weather-screen h1,
+.name-numbers-screen h1,
+.ai-screen h1,
+.media-hero h1,
+.record-label-panel h2,
+.merch-hero h1,
+.route-sequence .art-panel h1,
+.route-luckyWeather .art-panel h1 {
+  font-family: var(--title-font);
+  letter-spacing: 0;
+  text-transform: uppercase;
+  color: #fff7cf;
+  text-shadow:
+    0 2px 0 rgba(0, 0, 0, 0.78),
+    0 0 16px rgba(248, 223, 118, 0.26),
+    0 0 28px rgba(0, 236, 255, 0.18);
+}
+
+h1,
+.game-title,
+.media-hero h1,
+.merch-hero h1,
+.route-sequence .art-panel h1 {
+  background: linear-gradient(180deg, #fff8d8 0%, #f8df76 48%, #7ff7ff 120%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.game-title {
+  -webkit-text-stroke: 0;
+}
+
+.power-screen .game-title {
+  font-family: var(--title-font);
+  text-transform: uppercase;
+}
+
+.section-head h2,
+h2 {
+  color: var(--gold);
+  font-size: clamp(20px, 4.8vw, 27px);
+  line-height: 0.96;
+}
+
 @media (max-width: 640px) {
   .top-controls.shell-switch {
     width: min(236px, calc(100vw - 104px));
@@ -4800,4 +4922,82 @@ small {
     width: 128px;
     justify-self: end;
   }
+}
+
+/* Final static-app overrides: keep newer title and bento treatments above older route-specific rules. */
+h1,
+h2,
+.game-title,
+.section-head h2,
+.movie-head h2,
+.tone-top h1,
+.vault-heading h2,
+.feature-console h1,
+.scanner-hero h1,
+.store-locator-screen h1,
+.weather-screen h1,
+.name-numbers-screen h1,
+.ai-screen h1,
+.media-hero h1,
+.record-label-panel h2,
+.merch-hero h1,
+.route-sequence .art-panel h1,
+.route-luckyWeather .art-panel h1,
+.power-screen .section-head h2,
+.dashboard-screen .movie-head h2,
+.quick-panel .section-head h2 {
+  font-family: var(--title-font);
+  letter-spacing: 0;
+  text-transform: uppercase;
+  text-shadow:
+    0 2px 0 rgba(0, 0, 0, 0.78),
+    0 0 16px rgba(248, 223, 118, 0.26),
+    0 0 28px rgba(0, 236, 255, 0.18);
+}
+
+h1,
+.game-title,
+.media-hero h1,
+.merch-hero h1,
+.route-sequence .art-panel h1 {
+  background: linear-gradient(180deg, #fff8d8 0%, #f8df76 48%, #7ff7ff 120%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  -webkit-text-stroke: 0;
+}
+
+h2,
+.section-head h2 {
+  color: var(--gold);
+  font-size: clamp(20px, 4.8vw, 27px);
+  line-height: 0.96;
+}
+
+.power-screen .tool-bank .tool-bento {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(156px, 172px);
+  grid-template-rows: repeat(2, minmax(118px, 1fr));
+  gap: 12px;
+  overflow-x: auto;
+  padding: 16px 18px 18px;
+  scroll-snap-type: x mandatory;
+}
+
+.power-screen .tool-bank .tool-bento .circle-tool {
+  width: auto;
+  height: auto;
+  min-height: 118px;
+  flex-basis: auto;
+  justify-items: start;
+  align-content: end;
+  padding: 14px;
+  border-radius: 24px;
+  text-align: left;
+}
+
+.power-screen .tool-bank .main-lab-bento .circle-tool:first-child {
+  grid-row: span 2;
+  min-height: 248px;
 }

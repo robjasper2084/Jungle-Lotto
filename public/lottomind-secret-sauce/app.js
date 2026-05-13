@@ -1243,7 +1243,7 @@ function powerToolsView() {
           <div><h2>${group.title}</h2><p>${group.copy}</p></div>
           <span>${group.tools.length} tools</span>
         </div>
-        <div class="circle-carousel">
+        <div class="circle-carousel tool-bento ${group.title === "Main Lab" ? "main-lab-bento" : ""}">
           ${group.tools.map(([title, sub, route], index) => circleTool(title, sub, route, groupIndex * 4 + index)).join("")}
         </div>
       </div>
