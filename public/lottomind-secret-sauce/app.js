@@ -1,4 +1,9 @@
-const BASE = "/lottomind-secret-sauce";
+const APP_SLUG = "/lottomind-secret-sauce";
+const BASE = (() => {
+  const path = window.location.pathname;
+  const slugIndex = path.indexOf(APP_SLUG);
+  return slugIndex >= 0 ? path.slice(0, slugIndex + APP_SLUG.length) : APP_SLUG;
+})();
 
 const ASSETS = {
   logo: `${BASE}/assets/images/lottomind-brain-logo.2f28d70bc952673d95508151e29f46b1.png`,
