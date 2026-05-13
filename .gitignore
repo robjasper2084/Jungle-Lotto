@@ -14,6 +14,7 @@ screenshots/
 # Local Codex/preview artifacts
 .pages-deploy/
 .reference/
+.local-untracked-backup/
 Crashpad/
 preview/
 .archive-*
