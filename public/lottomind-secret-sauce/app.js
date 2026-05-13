@@ -2163,7 +2163,7 @@ function merchStoreView() {
       <video class="hero-bg-video" src="${BASE}/videos/merch-store-button-loop.mp4" poster="${ASSETS.credit}" muted loop autoplay playsinline preload="metadata"></video>
       <div>
         <span class="eyebrow">Official Merch Store</span>
-        <h1>LottoMind Gear</h1>
+        <h1 class="game-title merch-title">LottoMind Gear</h1>
         <p>A separate branded shop for apparel, stickers, desk gear, and promo drops. Credits and VIP tools stay in Marketplace.</p>
         <div class="store-badges">
           <span>Secure demo checkout</span>
