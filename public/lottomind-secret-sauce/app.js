@@ -1136,7 +1136,7 @@ function dashboardView() {
           <button class="ghost-btn" data-route="powertools">Power Tools</button>
         </div>
       </div>
-      <img class="hero-mascot" src="${ASSETS.mascot}" alt="LottoMind mascot" />
+      <img class="hero-mascot hero-emblem" src="${ASSETS.logo}" alt="LottoMind oracle emblem" />
     </div>
 
     <div class="panel strategy-panel home-strategy-panel">
