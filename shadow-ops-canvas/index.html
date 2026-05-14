@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>LottoMind Vault Run</title>
+    <style>
+      :root { color-scheme: dark; --hot:#ffd66d; }
+      * { box-sizing:border-box; }
+      html, body { margin:0; min-height:100%; overflow:hidden; background:#030302; color:#f8f1d4; font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+      body { display:grid; place-items:center; }
+      .shell { position:relative; width:min(100vw,177.78vh); height:min(56.25vw,100vh); background:#050403; overflow:hidden; }
+      canvas { display:block; width:100%; height:100%; background:#050403; image-rendering:auto; touch-action:none; }
+      .touchbar { position:fixed; inset:auto 14px max(14px, env(safe-area-inset-bottom)) 14px; display:flex; justify-content:space-between; gap:14px; pointer-events:none; }
+      .cluster { display:grid; grid-template-columns:repeat(3,56px); gap:8px; pointer-events:auto; }
+      button { width:56px; height:56px; border:1px solid rgba(255,214,109,.72); border-radius:8px; background:rgba(8,7,6,.78); color:var(--hot); font:900 12px system-ui; }
+      @media (pointer:fine) and (min-width:900px){ .touchbar{display:none;} }
+    </style>
+  </head>
+  <body>
+    <div class="shell"><canvas id="game" width="1280" height="720"></canvas></div>
+    <div class="touchbar" aria-label="Touch controls">
+      <div class="cluster"><button data-key="ArrowLeft">LEFT</button><button data-key="ArrowUp">JUMP</button><button data-key="ArrowRight">RIGHT</button></div>
+      <div class="cluster"><button data-key="KeyZ">FIRE</button><button data-key="KeyX">SLASH</button><button data-key="Enter">START</button></div>
+    </div>
+    <script src="./src/game.js?v=github-pages-arcade1"></script>
+  </body>
+</html>
