@@ -237,6 +237,39 @@ const ROUTE_ALIASES = {
   policies: "policies",
 };
 
+const TRIVIA_QUESTIONS = [
+  {
+    q: "What is the safest first move before saving a Dream Oracle pick?",
+    options: ["Run the interpretation", "Clear the vault", "Mute every tab"],
+    answer: 0,
+    note: "Dream picks work best after the Oracle reads the symbols and creates the set.",
+  },
+  {
+    q: "Which LottoMind lane compares hot, cold, and balance signals?",
+    options: ["Signal Radar", "Merch Store", "Privacy Policy"],
+    answer: 0,
+    note: "Signal Radar is the quick scan lane for number movement.",
+  },
+  {
+    q: "Where should saved numbers and dream readings live?",
+    options: ["History Vault", "Search bar", "Mode switch"],
+    answer: 0,
+    note: "History Vault keeps saved sets, dream readings, and psychic readings together.",
+  },
+  {
+    q: "What does LottoMind Radio connect back into?",
+    options: ["Reset tones", "State taxes", "A scratch-off camera"],
+    answer: 0,
+    note: "Radio sessions can load frequency lanes into the Reset player.",
+  },
+  {
+    q: "Which reminder matters before every play session?",
+    options: ["Lottery outcomes are random", "More taps guarantee wins", "Only one number can repeat"],
+    answer: 0,
+    note: "LottoMind is entertainment and organization; lottery results are random.",
+  },
+];
+
 const LOTTO_GAMES = [
   { id: "powerball", name: "Powerball", mainCount: 5, mainMax: 69, specialName: "Powerball", specialMax: 26 },
   { id: "mega-millions", name: "Mega Millions", mainCount: 5, mainMax: 70, specialName: "Mega Ball", specialMax: 24 },
@@ -451,6 +484,11 @@ const state = {
   searchQuery: "",
   showUtilityMenu: false,
   showStatePicker: false,
+  triviaIndex: 0,
+  triviaScore: 0,
+  triviaStreak: 0,
+  triviaAnswered: null,
+  triviaComplete: false,
 };
 
 if (!LOTTO_GAMES.some((game) => game.id === state.gameId)) {
@@ -831,6 +869,7 @@ function setCredits(value) {
 function routeFromLocation() {
   let path = window.location.pathname;
   if (path.startsWith(BASE)) path = path.slice(BASE.length);
+  path = path.replace(/\/index\.html$/i, "").replace(/^index\.html$/i, "");
   path = path.replace(/^\/+|\/+$/g, "");
   return ROUTE_ALIASES[path] || Object.keys(ROUTES).find((key) => ROUTES[key] === path) || "dashboard";
 }
@@ -1910,13 +1949,7 @@ function historyView() {
   const sets = loadJson(STORAGE.history, []);
   const dreams = loadJson(STORAGE.readings, []);
   const psychic = loadJson(STORAGE.psychic, []);
-  return `<section class="screen">
-    <div class="panel art-panel" style="--panel-art:url('${ASSETS.live}')">
-      <h1>History Vault</h1>
-      <p>Saved numbers, dream readings, predictions, and psychic fusion results.</p>
-      <button class="ghost-btn" data-action="clear-history">Clear Vault</button>
-    </div>
-    <div class="panel vault-section live-vault-panel">
+  const liveVault = `<div class="panel vault-section live-vault-panel">
       <div class="vault-heading"><span>Live Vault</span><h2>Live Results Archive</h2></div>
       <p>Live Vault now sits inside History Vault so saved runs, draw cards, and radar checks stay together.</p>
       <div class="result-list">
@@ -1926,10 +1959,17 @@ function historyView() {
         <button class="primary-btn" data-route="live">Open Live Vault</button>
         <button class="ghost-btn" data-route="heatmap">Open Heatmap</button>
       </div>
+    </div>`;
+  return `<section class="screen">
+    <div class="panel art-panel" style="--panel-art:url('${ASSETS.live}')">
+      <h1>History Vault</h1>
+      <p>Saved numbers, dream readings, predictions, and psychic fusion results.</p>
+      <button class="ghost-btn" data-action="clear-history">Clear Vault</button>
     </div>
     <div class="panel vault-section"><div class="vault-heading"><span>Saved</span><h2>Saved Sets</h2></div>${sets.length ? sets.map(savedSetRow).join("") : `<p>No saved sets yet. Generate one from Dashboard or Power Tools.</p>`}</div>
     <div class="panel vault-section"><div class="vault-heading"><span>Oracle</span><h2>Dream Readings</h2></div>${dreams.length ? dreams.map((item) => `<div class="history-row"><strong>${escapeHtml(item.title)}</strong>${ballsHtml(item.numbers)}<small>${escapeHtml(item.note)}</small></div>`).join("") : `<p>No dream readings saved yet.</p>`}</div>
     <div class="panel vault-section"><div class="vault-heading"><span>AI</span><h2>Psychic History</h2></div>${psychic.length ? psychic.map((item) => `<div class="history-row"><strong>${escapeHtml(item.title)}</strong>${ballsHtml(item.suggestedNumbers, item.bonusNumber)}<small>${escapeHtml(item.message)}</small></div>`).join("") : `<p>No psychic readings saved yet.</p>`}</div>
+    ${liveVault}
   </section>`;
 }
 
@@ -2322,6 +2362,78 @@ function miniGameView(title = "Jackpot Run MVP") {
   </div>`;
 }
 
+function triviaGameView() {
+  const index = Math.min(state.triviaIndex, TRIVIA_QUESTIONS.length - 1);
+  const question = TRIVIA_QUESTIONS[index];
+  const answered = state.triviaAnswered;
+  const progress = Math.round(((index + (answered ? 1 : 0)) / TRIVIA_QUESTIONS.length) * 100);
+  return `<section class="screen trivia-screen">
+    <div class="panel art-panel trivia-hero" style="--panel-art:url('${ASSETS.arcade}')">
+      <div>
+        <span class="eyebrow">LottoMind Trivia</span>
+        <h1>Trivia Rewards</h1>
+        <p>Answer fast, build a streak, and turn arcade knowledge into credits.</p>
+        <div class="hero-actions">
+          <button class="primary-btn" data-action="restart-trivia">New Run</button>
+          <button class="ghost-btn" data-route="arcade">Game Select</button>
+        </div>
+      </div>
+      <div class="trivia-score-orb"><strong>${state.triviaScore}</strong><span>Score</span></div>
+    </div>
+    <div class="panel trivia-console">
+      <div class="trivia-status">
+        <span>Question ${index + 1} / ${TRIVIA_QUESTIONS.length}</span>
+        <strong>${state.triviaStreak}x streak</strong>
+      </div>
+      <div class="trivia-progress"><i style="width:${progress}%"></i></div>
+      <h2>${escapeHtml(question.q)}</h2>
+      <div class="trivia-options">
+        ${question.options.map((option, optionIndex) => {
+          const isPicked = answered?.selected === optionIndex;
+          const isCorrect = answered && question.answer === optionIndex;
+          const stateClass = answered ? (isCorrect ? "correct" : isPicked ? "wrong" : "muted") : "";
+          return `<button class="trivia-option ${stateClass}" data-action="answer-trivia" data-answer="${optionIndex}">
+            <span>${String.fromCharCode(65 + optionIndex)}</span>
+            <strong>${escapeHtml(option)}</strong>
+          </button>`;
+        }).join("")}
+      </div>
+      ${answered ? `<div class="trivia-feedback ${answered.correct ? "is-correct" : "is-wrong"}">
+        <strong>${answered.correct ? "Signal locked" : "Signal missed"}</strong>
+        <p>${escapeHtml(question.note)}</p>
+      </div>
+      <button class="primary-btn full" data-action="${index >= TRIVIA_QUESTIONS.length - 1 ? "claim-trivia-reward" : "next-trivia"}">${index >= TRIVIA_QUESTIONS.length - 1 ? "Claim Reward" : "Next Question"}</button>` : ""}
+    </div>
+  </section>`;
+}
+
+function triviaRewardsView() {
+  const reward = Math.max(25, Math.round(state.triviaScore / 12));
+  return `<section class="screen trivia-screen">
+    <div class="panel art-panel trivia-hero reward-hero" style="--panel-art:url('${ASSETS.credit}')">
+      <div>
+        <span class="eyebrow">Arcade Reward Vault</span>
+        <h1>LottoMind Trivia Loaded</h1>
+        <p>Your trivia lane is live. Run another round or return to the Arcade deck.</p>
+        <div class="hero-actions">
+          <button class="primary-btn" data-route="triviaPlay">Play Trivia</button>
+          <button class="ghost-btn" data-route="arcade">Arcade</button>
+        </div>
+      </div>
+      <div class="trivia-score-orb"><strong>${reward}</strong><span>Credit lane</span></div>
+    </div>
+    <div class="panel trivia-console trivia-reward-panel">
+      <div class="section-head"><div><h2>Reward Summary</h2><p>Credits earned from correct answers, streaks, and completion.</p></div><span>${getCredits()} credits</span></div>
+      <div class="trivia-reward-grid">
+        <div><span>Run Score</span><strong>${state.triviaScore}</strong></div>
+        <div><span>Best Streak</span><strong>${state.triviaStreak}x</strong></div>
+        <div><span>Questions</span><strong>${TRIVIA_QUESTIONS.length}</strong></div>
+      </div>
+      <button class="primary-btn full" data-action="restart-trivia">Start New Trivia Run</button>
+    </div>
+  </section>`;
+}
+
 function psychicView() {
   const reading = state.currentPsychic;
   return `<section class="screen">
@@ -2650,7 +2762,9 @@ function renderView() {
   if (state.route === "store") return merchStoreView();
   if (state.route === "profile") return profileView();
   if (state.route === "settings") return settingsView();
-  if (["arcade", "arcadeGame", "game", "cardGame", "triviaPlay", "triviaRewards", "triviaRedeem", "gamesHub"].includes(state.route)) return arcadeView();
+  if (state.route === "triviaPlay") return triviaGameView();
+  if (state.route === "triviaRewards" || state.route === "triviaRedeem") return triviaRewardsView();
+  if (["arcade", "arcadeGame", "game", "cardGame", "gamesHub"].includes(state.route)) return arcadeView();
   if (state.route === "psychic") return psychicView();
   return genericToolView(state.route);
 }
@@ -3028,6 +3142,45 @@ function handleAction(action, target) {
     saveJson(STORAGE.readings, []);
     saveJson(STORAGE.psychic, []);
     toast("History cleared");
+  }
+  if (action === "answer-trivia") {
+    const question = TRIVIA_QUESTIONS[state.triviaIndex] || TRIVIA_QUESTIONS[0];
+    const selected = Number(target.getAttribute("data-answer"));
+    if (!state.triviaAnswered && Number.isFinite(selected)) {
+      const correct = selected === question.answer;
+      state.triviaAnswered = { selected, correct };
+      if (correct) {
+        state.triviaStreak += 1;
+        state.triviaScore += 100 + (state.triviaStreak - 1) * 25;
+        setCredits(getCredits() + 5);
+      } else {
+        state.triviaStreak = 0;
+      }
+      toast(correct ? "Trivia signal locked: +5 credits" : "Try the next signal");
+    }
+  }
+  if (action === "next-trivia") {
+    state.triviaIndex = Math.min(state.triviaIndex + 1, TRIVIA_QUESTIONS.length - 1);
+    state.triviaAnswered = null;
+  }
+  if (action === "restart-trivia") {
+    state.triviaIndex = 0;
+    state.triviaScore = 0;
+    state.triviaStreak = 0;
+    state.triviaAnswered = null;
+    state.triviaComplete = false;
+    if (state.route !== "triviaPlay") {
+      go("triviaPlay");
+      return;
+    }
+  }
+  if (action === "claim-trivia-reward") {
+    const bonus = Math.max(25, Math.round(state.triviaScore / 12));
+    setCredits(getCredits() + bonus);
+    state.triviaComplete = true;
+    toast(`Trivia reward claimed: +${bonus} credits`);
+    go("triviaRewards");
+    return;
   }
   if (action === "play-mini-game") {
     setCredits(getCredits() + 10);
