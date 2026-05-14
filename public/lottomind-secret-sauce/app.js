@@ -23,6 +23,9 @@ const ASSETS = {
   cold: `${BASE}/assets/images/strategy-cold-button.59a58d8b98e1302eeb6284ec5c86a9d7.png`,
   balanced: `${BASE}/assets/images/strategy-balanced-button.0b00547b9900f66b82bdaf63849aab4b.png`,
   psychic: `${BASE}/assets/images/ai-psychic-engine-circle.95310af8f2dc5491754f875ec150e785.png`,
+  voiceCornerMic: `${BASE}/assets/custom/radio-search-mic.png`,
+  searchMic: `${BASE}/assets/custom/radio-search-mic.png`,
+  dreamOracleHost: `${BASE}/assets/custom/dream-oracle-host.png`,
 };
 
 const AUDIO = {
@@ -961,9 +964,10 @@ function header() {
     <button class="brand-lockup" data-route="store" aria-label="Open LottoMind merch store">
       <img src="${ASSETS.logo}" alt="LottoMind logo" />
       <span>Lotto<span>Mind</span><sup>TM</sup></span>
-      <i>Store</i>
+      <i class="store-tab">Store</i>
+      <i class="radio-tab" data-route="radioStation">Radio</i>
     </button>
-    <button class="round-icon mic-orb" data-action="voice-search" aria-label="Start voice input"><span></span><b>Voice</b></button>
+    <button class="round-icon mic-orb art-mic-orb" data-action="voice-search" aria-label="Start voice input"><img src="${ASSETS.voiceCornerMic}" alt="" /><b>Voice</b></button>
     <div class="top-controls segmented-switch shell-switch" role="group" aria-label="Pinned state and shell view mode">
       <button class="pin-button meatball" data-action="cycle-state"><span>PIN</span><strong>${state.selectedState}</strong></button>
       <button class="mode-toggle meatball ${state.viewMode === "shell" || state.viewMode === "auto" ? "active" : ""}" data-action="set-view" data-view="auto"><span>Auto</span></button>
@@ -973,7 +977,7 @@ function header() {
     <label class="search-pill">
       <span>Search</span>
       <input data-action="search" value="${escapeHtml(state.searchQuery)}" placeholder="Search numbers, dreams, tools..." autocomplete="off" />
-      <button class="mic-chip" type="button" data-action="voice-search" aria-label="Voice search"><span></span></button>
+      <button class="mic-chip art-search-mic" type="button" data-action="voice-search" aria-label="Voice search"><img src="${ASSETS.searchMic}" alt="" /></button>
     </label>
     <div class="function-search-results" hidden></div>
     ${state.showStatePicker ? `<div class="state-picker">
@@ -1212,7 +1216,13 @@ function dashboardView() {
 
 function circleTool(title, sub, route, index) {
   const arts = [ASSETS.powerTools, ASSETS.heatmap, ASSETS.live, ASSETS.reset, ASSETS.dream, ASSETS.arcade, ASSETS.credit, ASSETS.psychic];
+  const video = title === "Number Analyzer"
+    ? `<video class="circle-tool-video" src="${BASE}/videos/power-tools-dashboard-box.mp4" poster="${ASSETS.powerTools}" muted loop autoplay playsinline preload="metadata"></video>`
+    : title === "Reset Vault"
+      ? `<video class="circle-tool-video singer-video" src="${BASE}/videos/power-tools-button-green-screen.mp4" poster="${ASSETS.music}" muted loop autoplay playsinline preload="metadata"></video>`
+      : "";
   return `<button class="circle-tool" data-route="${route}" style="--circle-art:url('${arts[index % arts.length]}')">
+    ${video}
     <span>${title}</span>
     <small>${sub}</small>
   </button>`;
@@ -1278,6 +1288,7 @@ function resetView() {
     ["963", "Align"],
     ["396", "Release"],
     ["528", "Love Reset"],
+    ["528", "Heart Field"],
   ];
   const pct = Math.round(state.volume * 100);
   return `<section class="screen reset-screen">
@@ -1297,6 +1308,10 @@ function resetView() {
       <div class="session-card">
         <div><strong>${formatTimer(state.timerRemaining)} Reset Session</strong><span>${pct}% volume</span></div>
         <div class="progress"><i style="width:${100 - (state.timerRemaining / state.duration) * 100}%"></i></div>
+        <div class="ambient-generator">
+          <button data-action="load-reset-session" data-tone="432"><span>Rain Generator</span><small>432 Hz rainfield</small></button>
+          <button data-action="load-reset-session" data-tone="741"><span>White Noise</span><small>Clean static bed</small></button>
+        </div>
         <div class="transport">
           <button data-action="volume-down">-</button>
           <button class="play-btn" data-action="toggle-reset-audio">${state.audioPlaying ? "Pause" : "Play"}</button>
@@ -1312,7 +1327,7 @@ function resetView() {
     <div class="panel sound-session-panel">
       <div class="section-head"><div><h2>Sound Sessions</h2><p>Tap a circle to load a tone, then play.</p></div></div>
       <div class="sound-session-grid">
-        ${tones.map(([hz, label], index) => `<button class="sound-card tone-pill ${state.tone === hz ? "active" : ""}" data-action="set-tone" data-tone="${hz}" style="--tone-art:url('${index % 2 ? ASSETS.logo : ASSETS.music}')"><span>${hz} Hz</span><strong>${label}</strong><small>${hz === "528" ? "Love frequency" : hz === "741" ? "Clear signal" : "Focus support"}</small></button>`).join("")}
+        ${tones.map(([hz, label], index) => `<button class="sound-card tone-pill ${state.tone === hz ? "active" : ""}" data-action="set-tone" data-tone="${hz}" style="--tone-art:url('${index % 2 ? ASSETS.logo : ASSETS.music}')"><span>${hz} Hz</span><strong>${label}</strong><small>${label === "Heart Field" ? "528 Hz box" : hz === "528" ? "Love frequency" : hz === "741" ? "Clear signal" : "Focus support"}</small></button>`).join("")}
       </div>
     </div>
   </section>`;
@@ -1525,7 +1540,8 @@ function dreamsView() {
       <h1>Dream Oracle<sup>SM</sup> AI</h1>
       <p>Describe your dream. The Oracle detects symbols, explains meaning, and generates lucky numbers.</p>
       ${gamePills()}
-      <button class="big-mic branded-mic" data-action="start-dream-recording" aria-label="Record dream" style="--panel-art:url('${ASSETS.psychic}')">
+      <button class="big-mic branded-mic dream-oracle-host-mic" data-action="start-dream-recording" aria-label="Record dream" style="--panel-art:url('${ASSETS.dreamOracleHost}')">
+        <img class="dream-oracle-host-art" src="${ASSETS.dreamOracleHost}" alt="" />
         <span class="mic-mark"></span>
         <strong>Speak Dream</strong>
         <small>Tap to record</small>
@@ -2237,23 +2253,24 @@ function arcadeView() {
   const games = [
     ["Jackpot Jungle Chase", "Swing, slide, and outrun the Probability Beast.", "arcadeGame"],
     ["Gem Rush Run", "Grab gems and dodge number traps.", "arcadeGame"],
-    ["Lotto Minded", "Memory cards and number reflexes.", "cardGame"],
+    ["Lotto Minded", "Memory cards and number reflexes.", "triviaPlay"],
     ["Trivia Rewards", "Answer and earn credits.", "triviaRewards"],
     ["Boss Rush", "Fight the Heatmap Guardian.", "arcadeGame"],
     ["Bonus Room", "Open a credit portal.", "arcadeGame"],
   ];
-  const arcadeArt = [ASSETS.arcade, ASSETS.arcadeCoin, ASSETS.powerTools, ASSETS.mascot, ASSETS.heatmap, ASSETS.credit];
+  const arcadeArt = [ASSETS.arcade, ASSETS.arcadeCoin, ASSETS.searchMic, ASSETS.mascot, ASSETS.heatmap, ASSETS.credit];
   return `<section class="screen">
     <div class="panel art-panel" style="--panel-art:url('${ASSETS.arcade}')">
       <h1 class="game-title">LottoMind Arcade</h1>
       <p>Original games, rewards, and future Jackpot Run hooks.</p>
+      <div class="hero-actions arcade-launch-actions"><button class="primary-btn" data-route="triviaPlay">Launch Trivia Game</button><button class="ghost-btn" data-route="triviaRewards">Rewards</button></div>
     </div>
     <div class="panel quest-board arcade-quest-board">
       <div class="section-head movie-head"><div><h2>Quest Board</h2><p>Arcade path from warmup to reward run.</p></div><span>4 steps</span></div>
       <div class="quest-steps">
         ${[
-          ["1", "Pick Stage", "Choose a game lane", "arcade", ASSETS.arcade],
-          ["2", "Run", "Start the mission", "arcadeGame", ASSETS.arcadeCoin],
+          ["1", "Pick Stage", "Choose a game lane", "triviaPlay", ASSETS.arcade],
+          ["2", "Run", "Start the mission", "triviaPlay", ASSETS.arcadeCoin],
           ["3", "Score", "Earn credits", "triviaRewards", ASSETS.credit],
           ["4", "Vault", "Save the run", "history", ASSETS.live],
         ].map(([step, title, copy, route, art]) => `<button class="quest-step ${state.route === route ? "active" : ""}" data-route="${route}" style="--quest-art:url('${art}')"><b>${step}</b><strong>${title}</strong><small>${copy}</small></button>`).join("")}
@@ -2274,7 +2291,7 @@ function arcadeView() {
         </button>
       `).join("")}</div>
     </div>
-    ${state.route !== "arcade" ? miniGameView(routeMeta(state.route)[0]) : ""}
+    ${state.route !== "arcade" ? miniGameView(routeMeta(state.route)[0]) : miniGameView("Trivia Rewards")}
   </section>`;
 }
 
