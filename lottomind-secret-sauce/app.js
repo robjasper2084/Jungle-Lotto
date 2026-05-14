@@ -23,8 +23,9 @@ const ASSETS = {
   cold: `${BASE}/assets/images/strategy-cold-button.59a58d8b98e1302eeb6284ec5c86a9d7.png`,
   balanced: `${BASE}/assets/images/strategy-balanced-button.0b00547b9900f66b82bdaf63849aab4b.png`,
   psychic: `${BASE}/assets/images/ai-psychic-engine-circle.95310af8f2dc5491754f875ec150e785.png`,
-  voiceCornerMic: `${BASE}/assets/custom/radio-search-mic.png`,
-  searchMic: `${BASE}/assets/custom/radio-search-mic.png`,
+  commandDeck: `${BASE}/assets/custom/generated-command-deck.webp`,
+  voiceCornerMic: `${BASE}/assets/custom/generated-lottomind-mic.webp`,
+  searchMic: `${BASE}/assets/custom/generated-lottomind-mic.webp`,
   dreamOracleHost: `${BASE}/assets/custom/dream-oracle-host.png`,
 };
 
@@ -1208,14 +1209,14 @@ function dashboardView() {
     </div>
 
     <div class="split-grid">
-      <button class="action-tile" data-route="academy"><strong>LottoMind Academy</strong><span>Learn. Grow. Win.</span></button>
+      <button class="action-tile" data-action="menu"><strong>LottoMind Academy</strong><span>Help, settings, policies, and privacy</span></button>
       <button class="action-tile" data-route="marketplace"><strong>Marketplace</strong><span>Credits, VIP tools, and unlocks</span></button>
     </div>
   </section>`;
 }
 
 function circleTool(title, sub, route, index) {
-  const arts = [ASSETS.powerTools, ASSETS.heatmap, ASSETS.live, ASSETS.reset, ASSETS.dream, ASSETS.arcade, ASSETS.credit, ASSETS.psychic];
+  const arts = [ASSETS.commandDeck, ASSETS.powerTools, ASSETS.heatmap, ASSETS.live, ASSETS.reset, ASSETS.dream, ASSETS.arcade, ASSETS.credit, ASSETS.psychic, ASSETS.music];
   const video = title === "Number Analyzer"
     ? `<video class="circle-tool-video" src="${BASE}/videos/power-tools-dashboard-box.mp4" poster="${ASSETS.powerTools}" muted loop autoplay playsinline preload="metadata"></video>`
     : title === "Reset Vault"
@@ -1266,7 +1267,8 @@ function powerToolsView() {
       </div>
     `).join("")}
 
-    <div class="panel result-card">
+    <div class="panel result-card mission-output-card video-backed">
+      <video src="${BASE}/videos/power-tools-dashboard-box.mp4" muted loop autoplay playsinline preload="metadata"></video>
       <span>Current Mission Output</span>
       <h2>${current.gameName} ${titleCase(current.strategy)} Set</h2>
       ${ballsHtml(current.numbers, current.special, current.specialName)}
@@ -1297,7 +1299,7 @@ function resetView() {
         <h1><span>Frequency</span> Reset</h1>
         <span class="pro-badge">PRO</span>
       </div>
-      <label class="search-pill slim"><span>Search</span><input placeholder="Search sounds, moods, or intentions..." /><button type="button">Music</button></label>
+      <label class="search-pill slim ai-reset-search"><span>Ask AI</span><input placeholder="Ask lottery questions, draw news, moods, or intentions..." /><button type="button" data-route="ai">AI News</button></label>
       <div class="tone-chips">
         <button class="lm-pill active">Calm</button><button class="lm-pill">Focus</button><button class="lm-pill">Sleep</button>
       </div>
@@ -1322,6 +1324,15 @@ function resetView() {
           ${[180, 300, 600, 900, 1800, 3600].map((seconds) => `<button class="${state.duration === seconds ? "active" : ""}" data-action="set-duration" data-duration="${seconds}">${Math.round(seconds / 60)}m</button>`).join("")}
         </div>
       </div>
+    </div>
+
+    <div class="panel record-label-panel compact reset-record-store">
+      <div>
+        <span class="eyebrow">LottoMind Records Label</span>
+        <h2>Frequency Storefront</h2>
+        <p>Preview tracks and load reset tones from this Reset-side music lane.</p>
+      </div>
+      <button class="primary-btn" data-route="music">Open Music Store</button>
     </div>
 
     <div class="panel sound-session-panel">
@@ -1383,12 +1394,12 @@ function dreamJournalPanel() {
 function storeLocatorView() {
   const weather = WEATHER_SIGNALS.find((item) => item.stateCode === state.selectedState) || WEATHER_SIGNALS[0];
   const stores = [
-    ["NY", "Hudson Lucky Mart", "0.8 mi", "Open until 10 PM", [5, 19, 33]],
-    ["FL", "Sunrise Lotto Stop", "1.2 mi", "Storm-lane pickup", [8, 12, 24]],
-    ["TX", "Lone Star Ticket Hub", "2.4 mi", "Dry heat balance", [7, 18, 31]],
-    ["CA", "Coastal Numbers Market", "1.7 mi", "Cooling trend", [6, 16, 42]],
-    ["GA", "Peach State Play Center", "1.1 mi", "Warm evening lane", [4, 14, 28]],
-    ["MI", "Motor City Lucky Stop", "0.9 mi", "Cloud reset lane", [9, 21, 36]],
+    ["NY", "Hudson Lucky Mart", "0.8 mi", "Open until 10 PM", "lottery counter, scratch-off wall, ATM", [5, 19, 33]],
+    ["FL", "Sunrise Lotto Stop", "1.2 mi", "Storm-lane pickup", "quick-pick kiosk, parking lot, late snacks", [8, 12, 24]],
+    ["TX", "Lone Star Ticket Hub", "2.4 mi", "Dry heat balance", "draw screen, coffee bar, evening rush", [7, 18, 31]],
+    ["CA", "Coastal Numbers Market", "1.7 mi", "Cooling trend", "coastal route, service desk, ticket checker", [6, 16, 42]],
+    ["GA", "Peach State Play Center", "1.1 mi", "Warm evening lane", "neighborhood counter, receipt printer, neon sign", [4, 14, 28]],
+    ["MI", "Motor City Lucky Stop", "0.9 mi", "Cloud reset lane", "drive route, vending wall, jackpot board", [9, 21, 36]],
   ];
   const pinned = stores.filter((store) => store[0] === state.selectedState);
   const visible = (pinned.length ? pinned.concat(stores.filter((store) => store[0] !== state.selectedState)) : stores).slice(0, 6);
@@ -1417,12 +1428,18 @@ function storeLocatorView() {
     <div class="panel store-map-panel">
       <div class="section-head"><div><h2>Nearby Store Cards</h2><p>Demo store finder with state-select routing and radar actions.</p></div><span>${visible.length} stores</span></div>
       <div class="store-grid">
-        ${visible.map(([pin, name, distance, note, numbers]) => `<button class="store-card locator-card" data-action="select-state" data-state="${pin}">
+        ${visible.map(([pin, name, distance, note, detail, numbers]) => `<article class="store-card locator-card">
           <span>${pin} ${pin === state.selectedState ? "Pinned" : "Select"}</span>
           <strong>${name}</strong>
           <small>${distance} - ${note}</small>
+          <p>${detail}</p>
           ${ballsHtml(numbers)}
-        </button>`).join("")}
+          <div class="store-links">
+            <button data-action="select-state" data-state="${pin}">Pin ${pin}</button>
+            <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${name} lottery store ${pin}`)}" target="_blank" rel="noopener">Map</a>
+            <a href="https://www.google.com/search?q=${encodeURIComponent(`${name} lottery retailer ${pin}`)}" target="_blank" rel="noopener">Store Link</a>
+          </div>
+        </article>`).join("")}
       </div>
     </div>
   </section>`;
@@ -1995,14 +2012,14 @@ function musicHubView(isRadio = false) {
       </div>
       <div class="radio-dial"><strong>LM</strong><span>FM 528</span></div>
     </div>
-    <div class="panel record-label-panel compact">
+    ${isRadio ? "" : `<div class="panel record-label-panel compact">
       <div>
         <span class="eyebrow">LottoMind Records Label</span>
         <h2>Frequency Storefront</h2>
         <p>Use this as the music store lane: preview tracks here, then load a reset tone when you want to play.</p>
       </div>
       <button class="primary-btn" data-route="reset">Load Reset Player</button>
-    </div>
+    </div>`}
     <div class="panel streaming-connect-panel">
       <div class="section-head">
         <div><h2>Connect Music Platforms</h2><p>Bring back Apple Music, YouTube, and YouTube Music as LottoMind Records connection lanes.</p></div>
@@ -2033,6 +2050,7 @@ function musicHubView(isRadio = false) {
       <div class="sound-route-bento">
         ${[["Reset Wheel", "Tone player", "reset", ASSETS.reset], ["Radio Station", "Live audio", "radioStation", ASSETS.music], ["Dream Oracle", "Speak", "dreams", ASSETS.dream], ["Video Studio", "Loops", "dreamVideo", ASSETS.arcade], ["History Vault", "Archive", "history", ASSETS.live]].map(([title, sub, route, art], index) => `
           <button class="sound-route-card ${index === 0 ? "featured" : ""}" data-route="${route}" style="--route-art:url('${art}')">
+            ${index === 0 ? `<video class="route-video-bg" src="${BASE}/videos/power-tools-button-green-screen.mp4" muted loop autoplay playsinline preload="metadata"></video>` : ""}
             <span>0${index + 1}</span>
             <strong>${title}</strong>
             <small>${sub}</small>
@@ -2258,7 +2276,7 @@ function arcadeView() {
     ["Boss Rush", "Fight the Heatmap Guardian.", "arcadeGame"],
     ["Bonus Room", "Open a credit portal.", "arcadeGame"],
   ];
-  const arcadeArt = [ASSETS.arcade, ASSETS.arcadeCoin, ASSETS.searchMic, ASSETS.mascot, ASSETS.heatmap, ASSETS.credit];
+  const arcadeArt = [ASSETS.arcade, ASSETS.commandDeck, ASSETS.psychic, ASSETS.credit, ASSETS.heatmap, ASSETS.arcadeCoin];
   return `<section class="screen">
     <div class="panel art-panel" style="--panel-art:url('${ASSETS.arcade}')">
       <h1 class="game-title">LottoMind Arcade</h1>
