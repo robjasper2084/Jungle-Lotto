@@ -335,9 +335,25 @@ const MERCH_ITEMS = [
     title: "Frequency Vault Hoodie",
     copy: "Black and gold LottoMind hoodie with brain-circuit crest.",
     price: "$64",
-    type: "Apparel",
+    type: "Clothing",
     art: ASSETS.mascot,
     className: "hoodie",
+  },
+  {
+    title: "Oracle Studio Tee",
+    copy: "Soft black tee with gold LM coin and cyan circuit art.",
+    price: "$32",
+    type: "Clothing",
+    art: ASSETS.commandDeck,
+    className: "tee",
+  },
+  {
+    title: "Jackpot Run Tracksuit",
+    copy: "Luxury arcade warmup set for LottoMind game nights.",
+    price: "$88",
+    type: "Clothing",
+    art: ASSETS.arcade,
+    className: "tracksuit",
   },
   {
     title: "Oracle Studio Cap",
@@ -362,6 +378,30 @@ const MERCH_ITEMS = [
     type: "Desk Gear",
     art: ASSETS.powerTools,
     className: "desk-mat",
+  },
+  {
+    title: "Pick 3 / Pick 4 Playbook",
+    copy: "Digital guide for daily digits, roots, mirrors, and box logic.",
+    price: "$19",
+    type: "E-Book",
+    art: ASSETS.sequence,
+    className: "ebook",
+  },
+  {
+    title: "Dream Symbol Number Guide",
+    copy: "E-book mapping dream images into LottoMind Oracle number lanes.",
+    price: "$24",
+    type: "E-Book",
+    art: ASSETS.dream,
+    className: "dream-guide",
+  },
+  {
+    title: "Lotto Crossword Puzzle Pack",
+    copy: "Printable LottoMind crossword and word puzzle bundle.",
+    price: "$12",
+    type: "Digital Game",
+    art: ASSETS.arcadeCoin,
+    className: "crossword-pack",
   },
 ];
 
@@ -429,6 +469,8 @@ const TOOL_GROUPS = [
     tools: [
       ["Arcade", "Reward games", "arcade"],
       ["Jackpot Run", "Play now", "arcadeGame"],
+      ["Lotto Crossword", "Puzzle game", "crossword"],
+      ["Word Search", "Symbol hunt", "wordSearch"],
       ["Academy", "Lessons", "academy"],
       ["Pro Playbook", "Strategy", "proPlaybook"],
       ["Achievements", "Missions", "achievements"],
@@ -460,6 +502,8 @@ const HOME_CAROUSEL = [
 ];
 
 const QUICK_TOOLS = TOOL_GROUPS.flatMap((group) => group.tools);
+const PLAY_LEARN_GROUP = TOOL_GROUPS.find((group) => group.title === "Play + Learn");
+const POWER_TOOL_GROUPS = TOOL_GROUPS.filter((group) => group.title !== "Play + Learn");
 
 const STORAGE = {
   history: "lottomind.oracle.real.history.v1",
@@ -1053,10 +1097,11 @@ function header() {
       ${STATE_PINS.map((pin) => `<button class="${pin === state.selectedState ? "active" : ""}" data-action="select-state" data-state="${pin}"><span>${pin}</span><small>${pin === state.selectedState ? "Pinned" : "Select"}</small></button>`).join("")}
     </div>` : ""}
     ${state.showUtilityMenu ? `<div class="utility-menu">
-      <div class="menu-title"><span>Settings Menu</span><strong>App controls, help, and policies</strong></div>
-      <button data-route="settings"><strong>Settings</strong><small>App, sound, motion</small></button>
-      <button data-route="help"><strong>Help</strong><small>Support and guide</small></button>
-      <button data-route="policies"><strong>Policies</strong><small>Privacy, terms, responsible play</small></button>
+      <div class="menu-title"><span>Help Center</span><strong>How to use LottoMind, settings, and policies</strong></div>
+      <button data-route="help"><strong>How To Use</strong><small>Reset, Dream, Radar, Power Tools, Arcade</small></button>
+      <button data-route="settings"><strong>Settings</strong><small>Sound, motion, voice, and app mode</small></button>
+      <button data-route="notifications"><strong>Alerts</strong><small>Draw reminders and saved-state notices</small></button>
+      <button data-route="policies"><strong>Privacy + Policies</strong><small>Terms, accessibility, responsible play</small></button>
     </div>` : ""}
   </header>`;
 }
@@ -1100,6 +1145,9 @@ function routeMeta(routeKey = state.route) {
     viralStudio: ["Video Studio", "Branded motion kit"],
     records: ["History Vault", "Draw and saved archive"],
     marketplace: ["Marketplace", "Credits and unlocks"],
+    arcade: ["Arcade", "Reward games"],
+    crossword: ["Lotto Crossword", "Puzzle game"],
+    wordSearch: ["Word Search", "Symbol hunt"],
     energyMeter: ["Energy Meter", "Signal score"],
     lottoIntel: ["Lotto Intelligence", "Deep analysis"],
     onboarding: ["Onboarding", "Start path"],
@@ -1320,10 +1368,12 @@ function powerToolsView() {
     <div class="stat-row">
       <div><strong>${getMatrixStats().trustScore}%</strong><span>Signal</span></div>
       <div><strong>${state.selectedState}</strong><span>Pin</span></div>
-      <div><strong>${QUICK_TOOLS.length}</strong><span>Tools</span></div>
+      <div><strong>${POWER_TOOL_GROUPS.flatMap((group) => group.tools).length}</strong><span>Tools</span></div>
     </div>
 
-    ${TOOL_GROUPS.map((group, groupIndex) => `
+    ${localSignalPanel()}
+
+    ${POWER_TOOL_GROUPS.map((group, groupIndex) => `
       <div class="panel tool-bank">
         <div class="section-head">
           <div><h2>${group.title}</h2><p>${group.copy}</p></div>
@@ -1758,6 +1808,19 @@ function numberGeneratorView() {
         <button class="ghost-btn" data-route="radioStation">Radio Station</button>
       </div>
     </div>
+    <div class="panel number-generator-tools">
+      <div class="section-head">
+        <div><h2>Generator Add-Ons</h2><p>Wheel coverage, signal scoring, and deep report tools stay one tap from the generator.</p></div>
+        <span>3 tools</span>
+      </div>
+      <div class="circle-carousel">
+        ${[
+          ["Wheel Builder", "Coverage", "wheelBuilder"],
+          ["Energy Meter", "Signal score", "energyMeter"],
+          ["Lotto Intelligence", "Deep report", "lottoIntel"],
+        ].map(([title, sub, route], index) => circleTool(title, sub, route, index + 2)).join("")}
+      </div>
+    </div>
     <div class="panel radio-mini">
       <div><span class="eyebrow">LottoMind Radio</span><h2>Frequency while you generate</h2><p>Open the dedicated radio lane for LottoMind Records tracks and reset audio.</p></div>
       <button class="primary-btn" data-route="radioStation">Open Radio</button>
@@ -1829,16 +1892,6 @@ function heatmapView() {
         ["Store Locator", "storeLocator"],
       ].map(([label, route]) => `<button class="control-chip" data-route="${route === "hot" || route === "cold" || route === "balanced" ? "heatmap" : route}"><span>${label}</span><small>${route === "hot" ? topSignal.number : route === "cold" ? lowSignal.number : route === "balanced" ? "mix" : "open"}</small></button>`).join("")}
     </div>
-    <div class="panel news-radar-bridge">
-      <div class="section-head flush"><div><h2>News Radar</h2><p>Rule changes, unclaimed prizes, jackpot movement, and draw alerts now live inside Radar.</p></div><span>Alerts</span></div>
-      <div class="radar-news-grid">
-        ${[
-          { scope: "Matrix", title: "Rule Change Watch", action: "Check matrix-era alerts before using radar signals." },
-          { scope: "Jackpot", title: "Movement Desk", action: "Review jackpot movement and saved-game draw timing." },
-          { scope: "State", title: "Pinned Alerts", action: `Watch ${state.selectedState} delays, claims, and result notes.` },
-        ].map((alert) => `<button class="news-chip" data-route="newsRadar"><span>${alert.scope}</span><strong>${alert.title}</strong><small>${alert.action}</small></button>`).join("")}
-      </div>
-    </div>
     <div class="panel quick-panel radar-quick-panel">
       <div class="section-head"><div><h2>Radar Tool Deck</h2><p>Old functions grouped under the Radar tab as swipeable Oracle buttons.</p></div><span>${QUICK_TOOLS.length} tools</span></div>
       <div class="circle-carousel">
@@ -1858,6 +1911,16 @@ function heatmapView() {
     <div class="split-grid">
       <div class="panel"><h2>Hot Watch</h2>${ballsHtml(hot.map((cell) => cell.number))}</div>
       <div class="panel"><h2>Cold Watch</h2>${ballsHtml(cold.map((cell) => cell.number))}</div>
+    </div>
+    <div class="panel news-radar-bridge">
+      <div class="section-head flush"><div><h2>News Radar</h2><p>Rule changes, unclaimed prizes, jackpot movement, and draw alerts now live inside Radar.</p></div><span>Alerts</span></div>
+      <div class="radar-news-grid">
+        ${[
+          { scope: "Matrix", title: "Rule Change Watch", action: "Check matrix-era alerts before using radar signals." },
+          { scope: "Jackpot", title: "Movement Desk", action: "Review jackpot movement and saved-game draw timing." },
+          { scope: "State", title: "Pinned Alerts", action: `Watch ${state.selectedState} delays, claims, and result notes.` },
+        ].map((alert) => `<button class="news-chip" data-route="newsRadar"><span>${alert.scope}</span><strong>${alert.title}</strong><small>${alert.action}</small></button>`).join("")}
+      </div>
     </div>
     <div class="panel trend-card">
       <div class="section-head flush"><div><h2>Trend Overview</h2><p>Draw-count bars, hot lane, cold lane, and balance cue.</p></div><span>${stats.drawCount} draws</span></div>
@@ -2288,7 +2351,7 @@ function merchStoreView() {
     </div>
     <div class="panel shop-toolbar">
       <div><span>Shop Mode</span><strong>Merch is separate from credits</strong></div>
-      <div class="store-badges compact"><span>Apparel</span><span>Stickers</span><span>Desk Gear</span><span>Digital Drops</span></div>
+      <div class="store-badges compact"><span>Clothing</span><span>E-Books</span><span>Stickers</span><span>Desk Gear</span><span>Games</span></div>
     </div>
     <div class="panel merch-feature-preview">
       <div class="product-media merch-item-art ${selected.className}" style="--product-art:url('${selected.art}')"></div>
@@ -2351,11 +2414,13 @@ function arcadeView() {
     ["Jackpot Jungle Chase", "Swing, slide, and outrun the Probability Beast.", "arcadeGame"],
     ["Gem Rush Run", "Grab gems and dodge number traps.", "arcadeGame"],
     ["Lotto Minded", "Memory cards and number reflexes.", "triviaPlay"],
+    ["Lotto Crossword Puzzle", "Solve LottoMind clue lanes and number words.", "crossword"],
+    ["Word Search Vault", "Find dream symbols, states, and lucky terms.", "wordSearch"],
     ["Trivia Rewards", "Answer and earn credits.", "triviaRewards"],
     ["Boss Rush", "Fight the Heatmap Guardian.", "arcadeGame"],
     ["Bonus Room", "Open a credit portal.", "arcadeGame"],
   ];
-  const arcadeArt = [ASSETS.arcade, ASSETS.commandDeck, ASSETS.psychic, ASSETS.credit, ASSETS.heatmap, ASSETS.arcadeCoin];
+  const arcadeArt = [ASSETS.arcade, ASSETS.commandDeck, ASSETS.psychic, ASSETS.sequence, ASSETS.live, ASSETS.credit, ASSETS.heatmap, ASSETS.arcadeCoin];
   return `<section class="screen">
     <div class="panel art-panel" style="--panel-art:url('${ASSETS.arcade}')">
       <h1 class="game-title">LottoMind Arcade</h1>
@@ -2388,6 +2453,12 @@ function arcadeView() {
         </button>
       `).join("")}</div>
     </div>
+    ${PLAY_LEARN_GROUP ? `<div class="panel tool-bank arcade-learn-bank">
+      <div class="section-head"><div><h2>${PLAY_LEARN_GROUP.title}</h2><p>${PLAY_LEARN_GROUP.copy}</p></div><span>${PLAY_LEARN_GROUP.tools.length} tools</span></div>
+      <div class="circle-carousel tool-bento">
+        ${PLAY_LEARN_GROUP.tools.map(([title, sub, route], index) => circleTool(title, sub, route, index + 8)).join("")}
+      </div>
+    </div>` : ""}
     ${state.route !== "arcade" ? miniGameView(routeMeta(state.route)[0]) : miniGameView("Trivia Rewards")}
   </section>`;
 }
@@ -2615,6 +2686,26 @@ function relatedTools(routeKey) {
 }
 
 function specialToolBody(routeKey, set) {
+  if (routeKey === "help") {
+    return `<div class="panel help-center-panel">
+      <div class="section-head"><div><h2>How To Use LottoMind</h2><p>Follow the web-app flow without hunting through tabs.</p></div><span>Guide</span></div>
+      <div class="tool-grid padded">
+        ${[
+          ["1 Reset", "Open Reset Vault, pick a tone, and set your state pin."],
+          ["2 Dream", "Use Dream Oracle to type or speak the clearest symbols."],
+          ["3 Radar", "Check Heatmap for hot, cold, active, and news alerts."],
+          ["4 Generate", "Use Number Generator or Power Tools to build a set."],
+          ["5 Save", "Save sets, readings, and draw checks in History Vault."],
+          ["6 Arcade", "Play Trivia, Lotto Crossword, and reward games for credits."],
+        ].map(([title, copy]) => `<button class="store-card" data-route="${title.includes("Reset") ? "reset" : title.includes("Dream") ? "dreams" : title.includes("Radar") ? "heatmap" : title.includes("Generate") ? "numberGenerator" : title.includes("Save") ? "history" : "arcade"}"><strong>${title}</strong><span>${copy}</span></button>`).join("")}
+      </div>
+      <div class="hero-actions padded">
+        <button class="primary-btn" data-route="settings">Settings</button>
+        <button class="ghost-btn" data-route="policies">Privacy + Policies</button>
+        <button class="ghost-btn" data-route="notifications">Alerts</button>
+      </div>
+    </div>`;
+  }
   if (routeKey === "pickGames") {
     const digits = parseNumbers(state.dailyInput).join("").slice(0, 4).padEnd(3, "7");
     const combos = digits.split("");
@@ -2803,7 +2894,7 @@ function renderView() {
   if (state.route === "settings") return settingsView();
   if (state.route === "triviaPlay") return triviaGameView();
   if (state.route === "triviaRewards" || state.route === "triviaRedeem") return triviaRewardsView();
-  if (["arcade", "arcadeGame", "game", "cardGame", "gamesHub"].includes(state.route)) return arcadeView();
+  if (["arcade", "arcadeGame", "game", "cardGame", "gamesHub", "crossword", "wordSearch", "ludo"].includes(state.route)) return arcadeView();
   if (state.route === "psychic") return psychicView();
   return genericToolView(state.route);
 }

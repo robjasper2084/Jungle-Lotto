@@ -1666,6 +1666,441 @@ small {
   }
 }
 
+/* Logical web refinement pass: missing store/game content plus lighter animated future polish. */
+:root {
+  --brand-deck-art: url("assets/custom/generated-command-deck.webp");
+}
+
+@keyframes lmDeckDrift {
+  0% { background-position: 50% 50%, 0 0, 0 0; }
+  50% { background-position: 48% 46%, 26px 0, 0 18px; }
+  100% { background-position: 50% 50%, 52px 0, 0 36px; }
+}
+
+@keyframes lmScanLine {
+  0% { transform: translateX(-130%); opacity: 0; }
+  18% { opacity: 0.6; }
+  100% { transform: translateX(130%); opacity: 0; }
+}
+
+@keyframes lmSoftPulse {
+  0%, 100% { filter: saturate(1) brightness(1); box-shadow: 0 0 0 rgba(0, 236, 255, 0); }
+  50% { filter: saturate(1.25) brightness(1.08); box-shadow: 0 0 24px rgba(0, 236, 255, 0.2); }
+}
+
+@keyframes lmBallFloat {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-4px) scale(1.035); }
+}
+
+@keyframes lmTitleShimmer {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 180% 50%; }
+}
+
+.live-strip,
+.route-radioStation .radio-station-panel,
+.route-arcade .quest-board,
+.route-triviaPlay .trivia-console,
+.route-triviaRewards .trivia-console,
+.route-ai .art-panel,
+.route-sequence .result-card,
+.route-history .live-vault-panel,
+.route-powertools .arcade-deck,
+.route-powertools .local-signal-panel,
+.number-generator-tools,
+.reset-screen .sound-session-panel,
+.route-sequence .lm-pill-row {
+  position: relative;
+  overflow: hidden;
+  background-image:
+    linear-gradient(130deg, rgba(1, 9, 18, 0.9), rgba(4, 38, 58, 0.72), rgba(1, 9, 18, 0.92)),
+    repeating-linear-gradient(90deg, rgba(0, 236, 255, 0.09) 0 1px, transparent 1px 26px),
+    repeating-linear-gradient(0deg, rgba(248, 223, 118, 0.055) 0 1px, transparent 1px 22px),
+    var(--brand-deck-art);
+  background-size: cover, auto, auto, cover;
+  animation: lmDeckDrift 12s linear infinite;
+}
+
+.live-strip::before,
+.route-radioStation .radio-station-panel::before,
+.route-arcade .quest-board::before,
+.route-triviaPlay .trivia-console::before,
+.route-triviaRewards .trivia-console::before,
+.route-ai .art-panel::before,
+.route-sequence .result-card::before,
+.route-history .live-vault-panel::before,
+.route-powertools .arcade-deck::before,
+.route-powertools .local-signal-panel::before,
+.number-generator-tools::before,
+.reset-screen .sound-session-panel::before,
+.route-sequence .lm-pill-row::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(105deg, transparent 0 38%, rgba(127, 247, 255, 0.16) 46%, transparent 55% 100%),
+    radial-gradient(circle at 85% 18%, rgba(248, 223, 118, 0.16), transparent 28%);
+  transform: translateX(-130%);
+  animation: lmScanLine 5.8s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.live-strip > *,
+.route-radioStation .radio-station-panel > *,
+.route-arcade .quest-board > *,
+.route-triviaPlay .trivia-console > *,
+.route-triviaRewards .trivia-console > *,
+.route-ai .art-panel > *,
+.route-sequence .result-card > *,
+.route-history .live-vault-panel > *,
+.route-powertools .arcade-deck > *,
+.route-powertools .local-signal-panel > *,
+.number-generator-tools > *,
+.reset-screen .sound-session-panel > *,
+.route-sequence .lm-pill-row > * {
+  position: relative;
+  z-index: 1;
+}
+
+.art-mic-orb {
+  padding: 3px;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(0, 236, 255, 0.32), transparent 62%),
+    linear-gradient(145deg, rgba(0, 14, 26, 0.96), rgba(1, 7, 15, 0.98));
+  box-shadow:
+    inset 0 0 0 1px rgba(248, 223, 118, 0.25),
+    0 0 22px rgba(0, 236, 255, 0.3);
+}
+
+.art-mic-orb img,
+.art-search-mic img {
+  object-fit: contain;
+  object-position: 50% 50%;
+  transform: scale(0.82);
+  padding: 0;
+  filter: drop-shadow(0 0 9px rgba(0, 236, 255, 0.45));
+}
+
+.art-search-mic img {
+  transform: scale(0.78);
+}
+
+.route-dashboard .oracle-hero .hero-actions,
+.route-dashboard .strategy-panel .primary-btn.full,
+.route-storeLocator .art-panel .hero-actions,
+.route-dreams .dream-stage .hero-actions,
+.route-powertools .arcade-deck .hero-actions {
+  border-radius: 26px;
+  background:
+    linear-gradient(90deg, rgba(0, 236, 255, 0.12), rgba(248, 223, 118, 0.1), rgba(169, 131, 255, 0.14)),
+    rgba(0, 11, 23, 0.48);
+  box-shadow: inset 0 0 22px rgba(0, 236, 255, 0.09);
+}
+
+.route-dashboard .oracle-flow-step {
+  background-image:
+    linear-gradient(180deg, rgba(0, 10, 22, 0.34), rgba(0, 10, 22, 0.9)),
+    var(--quest-art),
+    var(--brand-deck-art);
+  animation: lmSoftPulse 6s ease-in-out infinite;
+}
+
+.route-dashboard .oracle-flow-step:nth-child(3n + 2) {
+  animation-delay: -1.8s;
+  border-color: rgba(248, 223, 118, 0.68);
+}
+
+.route-dashboard .oracle-flow-step:nth-child(3n) {
+  animation-delay: -3.2s;
+  border-color: rgba(169, 131, 255, 0.72);
+}
+
+.live-strip {
+  border-color: rgba(0, 236, 255, 0.82);
+  box-shadow:
+    inset 0 0 34px rgba(0, 236, 255, 0.12),
+    0 0 22px rgba(0, 236, 255, 0.14);
+}
+
+.live-strip .lm-ball {
+  animation: lmBallFloat 2.4s ease-in-out infinite;
+}
+
+.live-strip .lm-ball:nth-child(2) { animation-delay: 0.12s; }
+.live-strip .lm-ball:nth-child(3) { animation-delay: 0.24s; }
+.live-strip .lm-ball:nth-child(4) { animation-delay: 0.36s; }
+.live-strip .lm-ball:nth-child(5) { animation-delay: 0.48s; }
+
+.route-history .art-panel h1,
+.route-history .vault-heading h2,
+.route-triviaPlay .trivia-hero h1,
+.route-triviaRewards .trivia-hero h1,
+.route-triviaRewards .section-head h2,
+.route-newsRadar .related-panel .section-head h2,
+.number-generator-tools .section-head h2 {
+  font-family: var(--title-font);
+  letter-spacing: 0;
+  color: #fff6bf;
+  text-shadow:
+    0 2px 0 rgba(0, 0, 0, 0.78),
+    0 0 18px rgba(248, 223, 118, 0.24),
+    0 0 18px rgba(0, 236, 255, 0.18);
+}
+
+.route-ai .art-panel h1,
+.route-sequence .sequence-console h1,
+.route-arcade .art-panel .game-title,
+.route-store .merch-hero .merch-title {
+  color: #fff6bf;
+  background: none;
+  background-clip: initial;
+  -webkit-background-clip: initial;
+  -webkit-text-fill-color: currentColor;
+  -webkit-text-stroke: 0;
+  text-shadow:
+    0 2px 0 rgba(0, 0, 0, 0.75),
+    0 0 20px rgba(248, 223, 118, 0.18),
+    0 0 18px rgba(0, 236, 255, 0.16);
+}
+
+.route-store .merch-hero .merch-title {
+  background: linear-gradient(90deg, #fff6bf 0%, #f8df76 36%, #7ff7ff 52%, #fff6bf 72%);
+  background-size: 220% 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: lmTitleShimmer 3.6s linear infinite;
+}
+
+.route-sequence .lm-pill-row {
+  border-color: rgba(0, 236, 255, 0.78);
+  box-shadow: inset 0 0 22px rgba(0, 236, 255, 0.14);
+}
+
+.route-sequence .result-card,
+.route-history .live-vault-panel,
+.route-triviaPlay .trivia-console,
+.route-triviaRewards .trivia-console {
+  border-color: rgba(0, 236, 255, 0.82);
+}
+
+.trivia-score-orb {
+  border-color: rgba(248, 223, 118, 0.8);
+  background:
+    radial-gradient(circle at 50% 50%, rgba(0, 236, 255, 0.26), transparent 54%),
+    var(--brand-deck-art) center / cover,
+    rgba(1, 9, 18, 0.96);
+  box-shadow:
+    inset 0 0 24px rgba(0, 236, 255, 0.16),
+    0 0 22px rgba(248, 223, 118, 0.18);
+}
+
+.trivia-reward-panel {
+  padding: 16px;
+}
+
+.trivia-reward-grid {
+  gap: 10px;
+}
+
+.trivia-reward-grid div {
+  min-height: 72px;
+  padding: 12px;
+}
+
+.trivia-console h2,
+.big-mic.branded-mic strong,
+.dream-input,
+.lm-pill-row .lm-pill,
+.route-heatmap .split-grid .panel h2 {
+  font-family: var(--title-font);
+  letter-spacing: 0;
+}
+
+.big-mic.branded-mic strong {
+  color: #fff6bf;
+  font-size: clamp(28px, 6vw, 42px);
+  text-shadow:
+    0 2px 0 rgba(0, 0, 0, 0.82),
+    0 0 16px rgba(0, 236, 255, 0.28);
+}
+
+.route-heatmap .split-grid .panel h2 {
+  font-size: clamp(26px, 5vw, 36px);
+  line-height: 0.95;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+.route-heatmap .news-radar-bridge {
+  background:
+    radial-gradient(circle at 12% 0, rgba(248, 223, 118, 0.14), transparent 34%),
+    linear-gradient(145deg, rgba(2, 24, 38, 0.96), rgba(0, 10, 22, 0.96));
+  border-color: rgba(0, 236, 255, 0.62);
+}
+
+.news-chip {
+  background:
+    linear-gradient(180deg, rgba(2, 31, 46, 0.88), rgba(0, 11, 22, 0.98)),
+    var(--brand-deck-art) center / cover;
+}
+
+.route-powertools .local-signal-panel {
+  border-color: rgba(0, 236, 255, 0.7);
+}
+
+.number-generator-tools .circle-tool,
+.arcade-learn-bank .circle-tool {
+  border-radius: 18px 34px 18px 34px;
+  background:
+    linear-gradient(180deg, rgba(1, 14, 26, 0.18), rgba(0, 8, 18, 0.86)),
+    var(--circle-art) center / cover;
+}
+
+.arcade-learn-bank .tool-bento {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(148px, 166px);
+  grid-template-rows: repeat(2, minmax(104px, 1fr));
+  gap: 12px;
+  overflow-x: auto;
+  padding: 14px 16px 18px;
+  scroll-snap-type: x mandatory;
+}
+
+.arcade-learn-bank .circle-tool {
+  width: auto;
+  height: auto;
+  min-height: 104px;
+  align-content: end;
+  justify-items: start;
+  text-align: left;
+}
+
+.arcade-game-card {
+  animation: lmSoftPulse 7s ease-in-out infinite;
+}
+
+.arcade-game-card:nth-child(2n) { animation-delay: -2.2s; }
+.arcade-game-card:nth-child(3n) { animation-delay: -4.1s; }
+
+.arcade-motion video {
+  object-fit: cover;
+  background: var(--brand-deck-art) center / cover;
+}
+
+.merch-grid {
+  gap: 12px;
+}
+
+.merch-item-art.tee,
+.merch-item-art.tracksuit,
+.merch-item-art.ebook,
+.merch-item-art.dream-guide,
+.merch-item-art.crossword-pack,
+.merch-item-art.desk-mat {
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: 50% 42%;
+}
+
+.merch-item-art.ebook,
+.merch-item-art.dream-guide,
+.merch-item-art.crossword-pack {
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0), rgba(1, 8, 16, 0.82)),
+    radial-gradient(circle at 50% 42%, rgba(248, 223, 118, 0.18), transparent 48%),
+    var(--product-art) center / cover;
+}
+
+.product-card strong {
+  font-family: var(--title-font);
+  letter-spacing: 0;
+}
+
+.reset-screen .sound-session-grid {
+  position: relative;
+  overflow: hidden;
+  border-radius: 28px;
+  padding: 10px;
+  background:
+    linear-gradient(130deg, rgba(0, 11, 22, 0.86), rgba(0, 48, 64, 0.42)),
+    var(--brand-deck-art) center / cover;
+  animation: lmDeckDrift 14s linear infinite;
+}
+
+.reset-screen .sound-card {
+  backdrop-filter: blur(3px);
+  background:
+    linear-gradient(90deg, rgba(0, 236, 255, 0.12), rgba(248, 223, 118, 0.08)),
+    rgba(0, 13, 26, 0.64);
+}
+
+.utility-menu {
+  border-color: rgba(0, 236, 255, 0.74);
+  background:
+    linear-gradient(145deg, rgba(0, 12, 26, 0.97), rgba(2, 31, 45, 0.96)),
+    var(--brand-deck-art) center / cover;
+}
+
+.help-center-panel .store-card strong {
+  color: #fff6bf;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .live-strip,
+  .route-radioStation .radio-station-panel,
+  .route-arcade .quest-board,
+  .route-triviaPlay .trivia-console,
+  .route-triviaRewards .trivia-console,
+  .route-ai .art-panel,
+  .route-sequence .result-card,
+  .route-history .live-vault-panel,
+  .route-powertools .arcade-deck,
+  .route-powertools .local-signal-panel,
+  .number-generator-tools,
+  .reset-screen .sound-session-panel,
+  .route-sequence .lm-pill-row,
+  .route-dashboard .oracle-flow-step,
+  .arcade-game-card,
+  .live-strip .lm-ball,
+  .route-store .merch-hero .merch-title,
+  .reset-screen .sound-session-grid {
+    animation: none;
+  }
+
+  .live-strip::before,
+  .route-radioStation .radio-station-panel::before,
+  .route-arcade .quest-board::before,
+  .route-triviaPlay .trivia-console::before,
+  .route-triviaRewards .trivia-console::before,
+  .route-ai .art-panel::before,
+  .route-sequence .result-card::before,
+  .route-history .live-vault-panel::before,
+  .route-powertools .arcade-deck::before,
+  .route-powertools .local-signal-panel::before,
+  .number-generator-tools::before,
+  .reset-screen .sound-session-panel::before,
+  .route-sequence .lm-pill-row::before {
+    display: none;
+  }
+}
+
+@media (max-width: 680px) {
+  .trivia-reward-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .trivia-reward-grid div {
+    min-height: 66px;
+  }
+
+  .merch-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* Merch store requested fixes - keep these last so they win the older arcade overrides. */
 .art-mic-orb img {
   display: block;
