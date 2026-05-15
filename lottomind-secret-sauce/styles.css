@@ -1599,6 +1599,214 @@ small {
   font-weight: 950;
 }
 
+/* Merch store requested fixes - final cascade lock. */
+.art-mic-orb img,
+.art-search-mic img {
+  object-fit: contain;
+  object-position: 50% 50%;
+  transform: scale(1.02);
+  padding: 2px;
+}
+
+.route-store .merch-hero .merch-title {
+  color: #fff6bf;
+  background: none;
+  background-clip: initial;
+  -webkit-background-clip: initial;
+  -webkit-text-fill-color: currentColor;
+  -webkit-text-stroke: 0;
+}
+
+.merch-feature-preview {
+  display: grid;
+  grid-template-columns: minmax(180px, 0.72fr) minmax(0, 1fr);
+  gap: 18px;
+  align-items: center;
+  padding: 16px;
+  border-color: rgba(0, 236, 255, 0.56);
+  background:
+    radial-gradient(circle at 12% 8%, rgba(248, 223, 118, 0.16), transparent 30%),
+    radial-gradient(circle at 88% 0, rgba(0, 236, 255, 0.18), transparent 34%),
+    linear-gradient(135deg, rgba(2, 16, 31, 0.96), rgba(1, 8, 17, 0.94));
+}
+
+.merch-feature-preview h2 {
+  color: #fff6bf;
+  font-family: var(--title-font);
+  font-size: clamp(28px, 6vw, 46px);
+  line-height: 0.95;
+  text-transform: uppercase;
+}
+
+.merch-item-art {
+  min-height: 230px;
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0), rgba(1, 8, 16, 0.78)),
+    radial-gradient(circle at 50% 42%, rgba(248, 223, 118, 0.16), transparent 46%),
+    var(--product-art) center / cover;
+}
+
+.merch-item-art.hoodie { background-position: 50% 18%; }
+.merch-item-art.cap,
+.merch-item-art.stickers {
+  background-size: min(82%, 310px) auto;
+  background-repeat: no-repeat;
+  background-color: rgba(2, 14, 27, 0.98);
+  background-position: 50% 42%;
+}
+
+.product-card.active {
+  border-color: rgba(0, 236, 255, 0.9);
+  box-shadow: 0 0 22px rgba(0, 236, 255, 0.22);
+}
+
+@media (max-width: 680px) {
+  .merch-feature-preview {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Merch store requested fixes - keep these last so they win the older arcade overrides. */
+.art-mic-orb img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: 50% 50%;
+  transform: scale(1.02);
+  padding: 2px;
+  filter: saturate(1.22) contrast(1.12) brightness(1.04)
+    drop-shadow(0 0 10px rgba(0, 236, 255, 0.42));
+}
+
+.art-search-mic img {
+  object-fit: contain;
+  object-position: 50% 50%;
+  transform: scale(1.02);
+  padding: 2px;
+}
+
+.route-store .merch-hero .merch-title {
+  color: #fff6bf;
+  background: none;
+  background-clip: initial;
+  -webkit-background-clip: initial;
+  -webkit-text-fill-color: currentColor;
+  -webkit-text-stroke: 0;
+  text-shadow:
+    0 3px 0 rgba(0, 0, 0, 0.78),
+    0 0 18px rgba(248, 223, 118, 0.28),
+    0 0 30px rgba(0, 236, 255, 0.2);
+}
+
+.merch-feature-preview {
+  display: grid;
+  grid-template-columns: minmax(180px, 0.72fr) minmax(0, 1fr);
+  gap: 18px;
+  align-items: center;
+  padding: 16px;
+  border-color: rgba(0, 236, 255, 0.56);
+  background:
+    radial-gradient(circle at 12% 8%, rgba(248, 223, 118, 0.16), transparent 30%),
+    radial-gradient(circle at 88% 0, rgba(0, 236, 255, 0.18), transparent 34%),
+    linear-gradient(135deg, rgba(2, 16, 31, 0.96), rgba(1, 8, 17, 0.94));
+}
+
+.merch-feature-preview h2 {
+  margin: 4px 0 8px;
+  color: #fff6bf;
+  font-family: var(--title-font);
+  font-size: clamp(28px, 6vw, 46px);
+  line-height: 0.95;
+  text-transform: uppercase;
+  text-shadow:
+    0 2px 0 rgba(0, 0, 0, 0.78),
+    0 0 18px rgba(248, 223, 118, 0.22);
+}
+
+.merch-feature-preview span,
+.product-card span {
+  color: #00ecff;
+}
+
+.merch-item-art {
+  position: relative;
+  overflow: hidden;
+  min-height: 230px;
+  border-bottom: 1px solid rgba(0, 236, 255, 0.22);
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0), rgba(1, 8, 16, 0.78)),
+    radial-gradient(circle at 50% 42%, rgba(248, 223, 118, 0.16), transparent 46%),
+    var(--product-art) center / cover;
+}
+
+.merch-feature-preview .merch-item-art {
+  min-height: 260px;
+  border: 1px solid rgba(248, 223, 118, 0.38);
+  border-radius: 22px;
+}
+
+.merch-item-art::after {
+  content: "";
+  position: absolute;
+  inset: auto 18px 18px auto;
+  width: 78px;
+  aspect-ratio: 1;
+  border: 1px solid rgba(248, 223, 118, 0.58);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, rgba(0, 236, 255, 0.18), transparent 58%),
+    url("assets/images/lottomind-brain-logo.2f28d70bc952673d95508151e29f46b1.png") center / cover;
+  box-shadow: 0 0 24px rgba(0, 236, 255, 0.18);
+}
+
+.merch-item-art.hoodie {
+  background-position: 50% 18%;
+}
+
+.merch-item-art.cap {
+  background-size: min(82%, 310px) auto;
+  background-repeat: no-repeat;
+  background-color: rgba(2, 14, 27, 0.98);
+  background-position: 50% 42%;
+}
+
+.merch-item-art.stickers {
+  background-size: min(72%, 260px) auto;
+  background-repeat: no-repeat;
+  background-color: rgba(2, 14, 27, 0.98);
+}
+
+.merch-item-art.desk-mat {
+  background-position: 50% 50%;
+}
+
+.product-card {
+  overflow: hidden;
+  border-color: rgba(248, 223, 118, 0.38);
+  background:
+    radial-gradient(circle at 88% 0, rgba(0, 236, 255, 0.12), transparent 34%),
+    rgba(1, 8, 17, 0.96);
+}
+
+.product-card.active {
+  border-color: rgba(0, 236, 255, 0.9);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.05),
+    0 0 22px rgba(0, 236, 255, 0.22);
+}
+
+.product-card .primary-btn,
+.merch-feature-preview .primary-btn {
+  font-family: var(--title-font);
+}
+
+@media (max-width: 680px) {
+  .merch-feature-preview {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* Final winning overrides for the published .io pass. */
 .art-mic-orb img,
 .art-search-mic img {
@@ -7428,3 +7636,70 @@ h2 {
   font-weight: 950;
 }
 
+
+/* Merch store requested fixes - absolute final cascade lock. */
+.art-mic-orb img,
+.art-search-mic img {
+  object-fit: contain;
+  object-position: 50% 50%;
+  transform: scale(1.02);
+  padding: 2px;
+}
+
+.route-store .merch-hero .merch-title {
+  color: #fff6bf;
+  background: none;
+  background-clip: initial;
+  -webkit-background-clip: initial;
+  -webkit-text-fill-color: currentColor;
+  -webkit-text-stroke: 0;
+}
+
+.merch-feature-preview {
+  display: grid;
+  grid-template-columns: minmax(180px, 0.72fr) minmax(0, 1fr);
+  gap: 18px;
+  align-items: center;
+  padding: 16px;
+  border-color: rgba(0, 236, 255, 0.56);
+  background:
+    radial-gradient(circle at 12% 8%, rgba(248, 223, 118, 0.16), transparent 30%),
+    radial-gradient(circle at 88% 0, rgba(0, 236, 255, 0.18), transparent 34%),
+    linear-gradient(135deg, rgba(2, 16, 31, 0.96), rgba(1, 8, 17, 0.94));
+}
+
+.merch-feature-preview h2 {
+  color: #fff6bf;
+  font-family: var(--title-font);
+  font-size: clamp(28px, 6vw, 46px);
+  line-height: 0.95;
+  text-transform: uppercase;
+}
+
+.merch-item-art {
+  min-height: 230px;
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0), rgba(1, 8, 16, 0.78)),
+    radial-gradient(circle at 50% 42%, rgba(248, 223, 118, 0.16), transparent 46%),
+    var(--product-art) center / cover;
+}
+
+.merch-item-art.hoodie { background-position: 50% 18%; }
+.merch-item-art.cap,
+.merch-item-art.stickers {
+  background-size: min(82%, 310px) auto;
+  background-repeat: no-repeat;
+  background-color: rgba(2, 14, 27, 0.98);
+  background-position: 50% 42%;
+}
+
+.product-card.active {
+  border-color: rgba(0, 236, 255, 0.9);
+  box-shadow: 0 0 22px rgba(0, 236, 255, 0.22);
+}
+
+@media (max-width: 680px) {
+  .merch-feature-preview {
+    grid-template-columns: 1fr;
+  }
+}

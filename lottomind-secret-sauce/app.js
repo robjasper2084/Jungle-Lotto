@@ -331,10 +331,38 @@ const MARKETPLACE_ITEMS = [
 ];
 
 const MERCH_ITEMS = [
-  ["Frequency Vault Hoodie", "Black and gold LottoMind hoodie with brain-circuit crest.", "$64"],
-  ["Oracle Studio Cap", "Structured cap with the LM coin mark.", "$34"],
-  ["LottoMind Coin Sticker Pack", "Glossy coin, brain, and radar sticker set.", "$14"],
-  ["Power Tools Desk Mat", "Wide command-deck mat for number work.", "$39"],
+  {
+    title: "Frequency Vault Hoodie",
+    copy: "Black and gold LottoMind hoodie with brain-circuit crest.",
+    price: "$64",
+    type: "Apparel",
+    art: ASSETS.mascot,
+    className: "hoodie",
+  },
+  {
+    title: "Oracle Studio Cap",
+    copy: "Structured cap with the LM coin mark.",
+    price: "$34",
+    type: "Official Drop",
+    art: ASSETS.arcadeCoin,
+    className: "cap",
+  },
+  {
+    title: "LottoMind Coin Sticker Pack",
+    copy: "Glossy coin, brain, and radar sticker set.",
+    price: "$14",
+    type: "Sticker Pack",
+    art: ASSETS.logo,
+    className: "stickers",
+  },
+  {
+    title: "Power Tools Desk Mat",
+    copy: "Wide command-deck mat for number work.",
+    price: "$39",
+    type: "Desk Gear",
+    art: ASSETS.powerTools,
+    className: "desk-mat",
+  },
 ];
 
 const RADAR_POSITIONS = [
@@ -489,6 +517,7 @@ const state = {
   triviaStreak: 0,
   triviaAnswered: null,
   triviaComplete: false,
+  selectedMerchIndex: 0,
 };
 
 if (!LOTTO_GAMES.some((game) => game.id === state.gameId)) {
@@ -2237,6 +2266,7 @@ function marketplaceView() {
 }
 
 function merchStoreView() {
+  const selected = MERCH_ITEMS[state.selectedMerchIndex] || MERCH_ITEMS[0];
   return `<section class="screen merch-screen">
     <div class="panel art-panel merch-hero" style="--panel-art:url('${ASSETS.credit}')">
       <video class="hero-bg-video" src="${BASE}/videos/merch-store-button-loop.mp4" poster="${ASSETS.credit}" muted loop autoplay playsinline preload="metadata"></video>
@@ -2260,14 +2290,23 @@ function merchStoreView() {
       <div><span>Shop Mode</span><strong>Merch is separate from credits</strong></div>
       <div class="store-badges compact"><span>Apparel</span><span>Stickers</span><span>Desk Gear</span><span>Digital Drops</span></div>
     </div>
+    <div class="panel merch-feature-preview">
+      <div class="product-media merch-item-art ${selected.className}" style="--product-art:url('${selected.art}')"></div>
+      <div>
+        <span>${escapeHtml(selected.type)}</span>
+        <h2>${escapeHtml(selected.title)}</h2>
+        <p>${escapeHtml(selected.copy)}</p>
+        <div class="product-buy"><b>${escapeHtml(selected.price)}</b><button class="primary-btn" data-action="add-merch-demo" data-merch="${state.selectedMerchIndex}">Load Demo Checkout</button></div>
+      </div>
+    </div>
     <div class="merch-grid">
-      ${MERCH_ITEMS.map(([title, copy, price], index) => `<article class="panel product-card">
-        <div class="product-media" style="--product-art:url('${index === 0 ? ASSETS.mascot : index === 1 ? ASSETS.arcadeCoin : index === 2 ? ASSETS.logo : ASSETS.powerTools}')"></div>
+      ${MERCH_ITEMS.map((item, index) => `<article class="panel product-card ${index === state.selectedMerchIndex ? "active" : ""}">
+        <div class="product-media merch-item-art ${item.className}" style="--product-art:url('${item.art}')"></div>
         <div>
           <span>${index === 0 ? "Featured Drop" : "Official Drop"}</span>
-          <strong>${title}</strong>
-          <p>${copy}</p>
-          <div class="product-buy"><b>${price}</b><button class="primary-btn" data-route="thankYou">View Item</button></div>
+          <strong>${escapeHtml(item.title)}</strong>
+          <p>${escapeHtml(item.copy)}</p>
+          <div class="product-buy"><b>${escapeHtml(item.price)}</b><button class="primary-btn" data-action="view-merch-item" data-merch="${index}">View Item</button></div>
         </div>
       </article>`).join("")}
     </div>
@@ -3181,6 +3220,15 @@ function handleAction(action, target) {
     toast(`Trivia reward claimed: +${bonus} credits`);
     go("triviaRewards");
     return;
+  }
+  if (action === "view-merch-item") {
+    const index = Number(target.getAttribute("data-merch"));
+    if (Number.isFinite(index)) state.selectedMerchIndex = Math.max(0, Math.min(MERCH_ITEMS.length - 1, index));
+    toast(`${MERCH_ITEMS[state.selectedMerchIndex].title} loaded`);
+  }
+  if (action === "add-merch-demo") {
+    const item = MERCH_ITEMS[state.selectedMerchIndex] || MERCH_ITEMS[0];
+    toast(`${item.title} demo checkout ready`);
   }
   if (action === "play-mini-game") {
     setCredits(getCredits() + 10);
