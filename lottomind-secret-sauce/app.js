@@ -1371,8 +1371,6 @@ function powerToolsView() {
       <div><strong>${POWER_TOOL_GROUPS.flatMap((group) => group.tools).length}</strong><span>Tools</span></div>
     </div>
 
-    ${localSignalPanel()}
-
     ${POWER_TOOL_GROUPS.map((group, groupIndex) => `
       <div class="panel tool-bank">
         <div class="section-head">
@@ -1509,6 +1507,58 @@ function dreamJournalPanel() {
   </div>`;
 }
 
+function dreamGeneratePanel() {
+  const reading = interpretDream(state.dreamText, state.gameId);
+  const cards = [
+    ["Oracle Tone", reading.tone],
+    ["Lucky Window", reading.numberLogic?.playWindow || "Evening"],
+    ["Pick 3", reading.pick3],
+    ["Pick 4", reading.pick4],
+  ];
+  return `<div class="panel oracle-function-panel dream-generate-panel">
+    <div class="section-head"><div><h2>Generate Your Dreams</h2><p>Dream text becomes numbers, tone, and shareable reveal cards.</p></div><span>${cards.length} cards</span></div>
+    <div class="tool-grid padded">${cards.map(([label, value]) => metricCard(label, value)).join("")}</div>
+    <div class="hero-actions padded"><button class="primary-btn" data-action="build-dream-video">Generate Dreams</button><button class="ghost-btn" data-route="dreamVideo">Dream Video</button><button class="ghost-btn" data-route="history">History Vault</button></div>
+  </div>`;
+}
+
+function storeRouteMapPanel(stores) {
+  const points = [
+    [18, 32],
+    [58, 24],
+    [78, 48],
+    [36, 68],
+    [68, 76],
+    [24, 54],
+  ];
+  const routePath = points.slice(0, stores.length).map(([x, y], index) => `${index ? "L" : "M"} ${x} ${y}`).join(" ");
+  return `<div class="panel locator-route-map">
+    <div class="section-head"><div><h2>Route Map</h2><p>Tap any pin or route card for directions to a nearby play stop.</p></div><span>${stores.length} routes</span></div>
+    <div class="route-map-stage" aria-label="LottoMind route map">
+      <svg viewBox="0 0 100 100" aria-hidden="true" focusable="false">
+        <defs>
+          <filter id="lm-route-glow"><feGaussianBlur stdDeviation="1.1" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+        </defs>
+        <path class="route-grid-line" d="M8 20 H92 M8 40 H92 M8 60 H92 M8 80 H92 M20 8 V92 M40 8 V92 M60 8 V92 M80 8 V92"></path>
+        <path class="route-line" d="${routePath}" filter="url(#lm-route-glow)"></path>
+      </svg>
+      <span class="user-map-pin" style="--x:50%;--y:50%"><b>${state.selectedState}</b><small>You</small></span>
+      ${stores.map(([pin, name, distance], index) => {
+        const [x, y] = points[index] || points[0];
+        return `<a class="store-map-pin ${pin === state.selectedState ? "active" : ""}" style="--x:${x}%;--y:${y}%" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${name} lottery store ${pin}`)}" target="_blank" rel="noopener" aria-label="Open directions to ${escapeHtml(name)}"><b>${index + 1}</b><small>${pin}</small></a>`;
+      }).join("")}
+    </div>
+    <div class="route-leg-list">
+      ${stores.map(([pin, name, distance, note], index) => `<a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${name} lottery store ${pin}`)}" target="_blank" rel="noopener">
+        <span>${String(index + 1).padStart(2, "0")}</span>
+        <strong>${name}</strong>
+        <small>${distance} - ${note}</small>
+        <b>Directions</b>
+      </a>`).join("")}
+    </div>
+  </div>`;
+}
+
 function storeLocatorView() {
   const weather = WEATHER_SIGNALS.find((item) => item.stateCode === state.selectedState) || WEATHER_SIGNALS[0];
   const stores = [
@@ -1543,6 +1593,7 @@ function storeLocatorView() {
         <button class="local-card store-card-mini" data-action="save-store"><span>Saved Pin</span><strong>${state.selectedState}</strong><small>Tap to save locator state</small></button>
       </div>
     </div>
+    ${storeRouteMapPanel(visible)}
     <div class="panel store-map-panel">
       <div class="section-head"><div><h2>Nearby Store Cards</h2><p>Demo store finder with state-select routing and radar actions.</p></div><span>${visible.length} stores</span></div>
       <div class="store-grid">
@@ -1689,7 +1740,9 @@ function dreamsView() {
       </div>
     </div>
 
-    ${localSignalPanel()}
+    ${dreamGeneratePanel()}
+
+    ${!reading ? `<div class="panel empty-state dream-ready-spotlight"><h2>Dream engine ready</h2><p>Tap the mic or type a dream, then run the full interpretation.</p></div>` : ""}
 
     <div class="panel tool-bank dream-oracle-tools">
       <div class="section-head">
@@ -1698,19 +1751,6 @@ function dreamsView() {
       </div>
       <div class="circle-carousel tool-bento dream-studio-bento">
         ${ORACLE_STUDIO_GROUP.tools.map(([title, sub, route], index) => circleTool(title, sub, route, index + 3)).join("")}
-      </div>
-    </div>
-
-    <div class="panel record-label-panel dream-record-label art-panel" style="--panel-art:url('${ASSETS.music}')">
-      <div>
-        <span class="eyebrow">LottoMind Records</span>
-        <h2>Music Store</h2>
-        <p>Prominent dream-lane audio store for reset sessions, radio intros, and dream video sound beds.</p>
-      </div>
-      <div class="hero-actions">
-        <button class="primary-btn" data-route="music">Open Music Store</button>
-        <button class="ghost-btn" data-route="radioStation">Radio Station</button>
-        <button class="ghost-btn" data-route="dreamVideo">Dream Video</button>
       </div>
     </div>
 
@@ -1780,9 +1820,24 @@ function dreamsView() {
         <button class="ghost-btn" data-route="heatmap">Open Radar</button>
         <button class="ghost-btn" data-route="history">Open History</button>
       </div>
-    </div>` : `<div class="panel empty-state"><h2>Dream engine ready</h2><p>Tap the mic or type a dream, then run the full interpretation.</p></div>`}
+    </div>` : ""}
 
     ${dreamJournalPanel()}
+
+    ${localSignalPanel()}
+
+    <div class="panel record-label-panel dream-record-label art-panel" style="--panel-art:url('${ASSETS.music}')">
+      <div>
+        <span class="eyebrow">LottoMind Records</span>
+        <h2>Music Store</h2>
+        <p>Prominent dream-lane audio store for reset sessions, radio intros, and dream video sound beds.</p>
+      </div>
+      <div class="hero-actions">
+        <button class="primary-btn" data-route="music">Open Music Store</button>
+        <button class="ghost-btn" data-route="radioStation">Radio Station</button>
+        <button class="ghost-btn" data-route="dreamVideo">Dream Video</button>
+      </div>
+    </div>
 
     ${state.currentPsychic ? psychicResultCard(state.currentPsychic) : ""}
   </section>`;
@@ -1912,15 +1967,18 @@ function heatmapView() {
       <div class="panel"><h2>Hot Watch</h2>${ballsHtml(hot.map((cell) => cell.number))}</div>
       <div class="panel"><h2>Cold Watch</h2>${ballsHtml(cold.map((cell) => cell.number))}</div>
     </div>
-    <div class="panel news-radar-bridge">
-      <div class="section-head flush"><div><h2>News Radar</h2><p>Rule changes, unclaimed prizes, jackpot movement, and draw alerts now live inside Radar.</p></div><span>Alerts</span></div>
-      <div class="radar-news-grid">
-        ${[
-          { scope: "Matrix", title: "Rule Change Watch", action: "Check matrix-era alerts before using radar signals." },
-          { scope: "Jackpot", title: "Movement Desk", action: "Review jackpot movement and saved-game draw timing." },
-          { scope: "State", title: "Pinned Alerts", action: `Watch ${state.selectedState} delays, claims, and result notes.` },
-        ].map((alert) => `<button class="news-chip" data-route="newsRadar"><span>${alert.scope}</span><strong>${alert.title}</strong><small>${alert.action}</small></button>`).join("")}
+    <div class="split-grid radar-second-column">
+      <div class="panel news-radar-bridge">
+        <div class="section-head flush"><div><h2>News Radar</h2><p>Rule changes, unclaimed prizes, jackpot movement, and draw alerts now live inside Radar.</p></div><span>Alerts</span></div>
+        <div class="radar-news-grid">
+          ${[
+            { scope: "Matrix", title: "Rule Change Watch", action: "Check matrix-era alerts before using radar signals." },
+            { scope: "Jackpot", title: "Movement Desk", action: "Review jackpot movement and saved-game draw timing." },
+            { scope: "State", title: "Pinned Alerts", action: `Watch ${state.selectedState} delays, claims, and result notes.` },
+          ].map((alert) => `<button class="news-chip" data-route="newsRadar"><span>${alert.scope}</span><strong>${alert.title}</strong><small>${alert.action}</small></button>`).join("")}
+        </div>
       </div>
+      ${localSignalPanel()}
     </div>
     <div class="panel trend-card">
       <div class="section-head flush"><div><h2>Trend Overview</h2><p>Draw-count bars, hot lane, cold lane, and balance cue.</p></div><span>${stats.drawCount} draws</span></div>
@@ -2427,17 +2485,6 @@ function arcadeView() {
       <p>Original games, rewards, and future Jackpot Run hooks.</p>
       <div class="hero-actions arcade-launch-actions"><button class="primary-btn" data-route="triviaPlay">Launch Trivia Game</button><button class="ghost-btn" data-route="triviaRewards">Rewards</button></div>
     </div>
-    <div class="panel quest-board arcade-quest-board">
-      <div class="section-head movie-head"><div><h2>Quest Board</h2><p>Arcade path from warmup to reward run.</p></div><span>4 steps</span></div>
-      <div class="quest-steps">
-        ${[
-          ["1", "Pick Stage", "Choose a game lane", "triviaPlay", ASSETS.arcade],
-          ["2", "Run", "Start the mission", "triviaPlay", ASSETS.arcadeCoin],
-          ["3", "Score", "Earn credits", "triviaRewards", ASSETS.credit],
-          ["4", "Vault", "Save the run", "history", ASSETS.live],
-        ].map(([step, title, copy, route, art]) => `<button class="quest-step ${state.route === route ? "active" : ""}" data-route="${route}" style="--quest-art:url('${art}')"><b>${step}</b><strong>${title}</strong><small>${copy}</small></button>`).join("")}
-      </div>
-    </div>
     <div class="panel arcade-motion">
       <video src="${BASE}/videos/play-arcade-button-loop.mp4" poster="${ASSETS.arcade}" muted loop playsinline controls preload="none"></video>
       <div><span>Arcade motion asset</span><strong>Play Arcade Button</strong><p>Moved out of Marketplace and into the Arcade tab.</p></div>
@@ -2459,7 +2506,18 @@ function arcadeView() {
         ${PLAY_LEARN_GROUP.tools.map(([title, sub, route], index) => circleTool(title, sub, route, index + 8)).join("")}
       </div>
     </div>` : ""}
-    ${state.route !== "arcade" ? miniGameView(routeMeta(state.route)[0]) : miniGameView("Trivia Rewards")}
+    ${state.route === "crossword" ? crosswordGameView() : state.route === "wordSearch" ? wordSearchGameView() : state.route !== "arcade" ? miniGameView(routeMeta(state.route)[0]) : miniGameView("Trivia Rewards")}
+    <div class="panel quest-board arcade-quest-board">
+      <div class="section-head movie-head"><div><h2>Quest Board</h2><p>Arcade path from warmup to reward run.</p></div><span>4 steps</span></div>
+      <div class="quest-steps">
+        ${[
+          ["1", "Pick Stage", "Choose a game lane", "triviaPlay", ASSETS.arcade],
+          ["2", "Run", "Start the mission", "triviaPlay", ASSETS.arcadeCoin],
+          ["3", "Score", "Earn credits", "triviaRewards", ASSETS.credit],
+          ["4", "Vault", "Save the run", "history", ASSETS.live],
+        ].map(([step, title, copy, route, art]) => `<button class="quest-step ${state.route === route ? "active" : ""}" data-route="${route}" style="--quest-art:url('${art}')"><b>${step}</b><strong>${title}</strong><small>${copy}</small></button>`).join("")}
+      </div>
+    </div>
   </section>`;
 }
 
@@ -2472,17 +2530,61 @@ function miniGameView(title = "Jackpot Run MVP") {
   </div>`;
 }
 
+function crosswordGameView() {
+  const clues = [
+    ["1 Across", "Saved picks and readings live here", "Vault"],
+    ["2 Down", "Dream images become these", "Numbers"],
+    ["3 Across", "Hot, cold, active signal map", "Radar"],
+    ["4 Down", "Audio lane for reset focus", "Radio"],
+  ];
+  const letters = ["L", "O", "T", "T", "O", "", "M", "I", "N", "D", "R", "A", "D", "A", "R", "V", "A", "U", "L", "T", "", "P", "I", "C", "K"];
+  return `<div class="panel puzzle-game crossword-game crossword-showcase">
+    <div class="crossword-stage-head">
+      <div>
+        <span class="eyebrow">LottoMind Word Stage</span>
+        <h2>Lotto Crossword</h2>
+        <p>Fill LottoMind words from app clues, then lock the puzzle for credits.</p>
+      </div>
+      <span class="show-badge">Puzzle Game</span>
+    </div>
+    <div class="crossword-show-grid">
+      <div class="crossword-board" aria-label="LottoMind crossword board">
+        ${Array.from({ length: 25 }, (_, index) => `<span class="${[0, 4, 6, 12, 18, 20, 24].includes(index) ? "block" : ""}">${letters[index] || ""}</span>`).join("")}
+      </div>
+      <div class="puzzle-clues">
+        ${clues.map(([label, clue, answer]) => `<button data-action="play-mini-game"><span>${label}</span><strong>${clue}</strong><small>${answer}</small></button>`).join("")}
+      </div>
+    </div>
+    <div class="hero-actions padded"><button class="primary-btn" data-action="play-mini-game">Check Puzzle</button><button class="ghost-btn" data-route="wordSearch">Word Search</button></div>
+  </div>`;
+}
+
+function wordSearchGameView() {
+  const letters = "RADARLMVAULTDREAMORACLEPICKRESETWINMIND".slice(0, 36).split("");
+  const words = ["RADAR", "VAULT", "DREAM", "ORACLE", "PICK", "RESET"];
+  return `<div class="panel puzzle-game word-search-game">
+    <div class="section-head"><div><h2>Word Search Vault</h2><p>Find LottoMind feature words and earn arcade credits.</p></div><span>${words.length} words</span></div>
+    <div class="word-search-board" aria-label="LottoMind word search board">
+      ${letters.map((letter, index) => `<button data-action="play-mini-game" class="${index % 5 === 0 ? "lit" : ""}">${letter}</button>`).join("")}
+    </div>
+    <div class="word-bank">
+      ${words.map((word) => `<span>${word}</span>`).join("")}
+    </div>
+    <div class="hero-actions padded"><button class="primary-btn" data-action="play-mini-game">Lock Words</button><button class="ghost-btn" data-route="crossword">Crossword</button></div>
+  </div>`;
+}
+
 function triviaGameView() {
   const index = Math.min(state.triviaIndex, TRIVIA_QUESTIONS.length - 1);
   const question = TRIVIA_QUESTIONS[index];
   const answered = state.triviaAnswered;
   const progress = Math.round(((index + (answered ? 1 : 0)) / TRIVIA_QUESTIONS.length) * 100);
   return `<section class="screen trivia-screen">
-    <div class="panel art-panel trivia-hero" style="--panel-art:url('${ASSETS.arcade}')">
+    <div class="panel art-panel trivia-hero trivia-show-hero" style="--panel-art:url('${ASSETS.commandDeck}')">
       <div>
-        <span class="eyebrow">LottoMind Trivia</span>
-        <h1>Trivia Rewards</h1>
-        <p>Answer fast, build a streak, and turn arcade knowledge into credits.</p>
+        <span class="eyebrow">LottoMind Game Show</span>
+        <h1>Trivia Rewards Live</h1>
+        <p>Answer fast, build a streak, and turn arcade knowledge into credits under the LottoMind spotlight.</p>
         <div class="hero-actions">
           <button class="primary-btn" data-action="restart-trivia">New Run</button>
           <button class="ghost-btn" data-route="arcade">Game Select</button>
@@ -2490,12 +2592,13 @@ function triviaGameView() {
       </div>
       <div class="trivia-score-orb"><strong>${state.triviaScore}</strong><span>Score</span></div>
     </div>
-    <div class="panel trivia-console">
+    <div class="panel trivia-console trivia-game-show-console">
       <div class="trivia-status">
         <span>Question ${index + 1} / ${TRIVIA_QUESTIONS.length}</span>
         <strong>${state.triviaStreak}x streak</strong>
       </div>
       <div class="trivia-progress"><i style="width:${progress}%"></i></div>
+      <div class="trivia-stage-label"><span>Live Question Pod</span><b>${answered ? (answered.correct ? "Correct lock" : "Try next") : "Choose an answer"}</b></div>
       <h2>${escapeHtml(question.q)}</h2>
       <div class="trivia-options">
         ${question.options.map((option, optionIndex) => {
@@ -2520,10 +2623,10 @@ function triviaGameView() {
 function triviaRewardsView() {
   const reward = Math.max(25, Math.round(state.triviaScore / 12));
   return `<section class="screen trivia-screen">
-    <div class="panel art-panel trivia-hero reward-hero" style="--panel-art:url('${ASSETS.credit}')">
+    <div class="panel art-panel trivia-hero reward-hero trivia-show-hero" style="--panel-art:url('${ASSETS.commandDeck}')">
       <div>
         <span class="eyebrow">Arcade Reward Vault</span>
-        <h1>LottoMind Trivia Loaded</h1>
+        <h1>Winner's Credit Stage</h1>
         <p>Your trivia lane is live. Run another round or return to the Arcade deck.</p>
         <div class="hero-actions">
           <button class="primary-btn" data-route="triviaPlay">Play Trivia</button>
@@ -2532,7 +2635,7 @@ function triviaRewardsView() {
       </div>
       <div class="trivia-score-orb"><strong>${reward}</strong><span>Credit lane</span></div>
     </div>
-    <div class="panel trivia-console trivia-reward-panel">
+    <div class="panel trivia-console trivia-reward-panel trivia-game-show-console">
       <div class="section-head"><div><h2>Reward Summary</h2><p>Credits earned from correct answers, streaks, and completion.</p></div><span>${getCredits()} credits</span></div>
       <div class="trivia-reward-grid">
         <div><span>Run Score</span><strong>${state.triviaScore}</strong></div>
@@ -2650,11 +2753,11 @@ function genericToolView(routeKey) {
       ${ballsHtml(set.numbers, set.special, set.specialName)}
       <p>${set.note}</p>
     </div>
+    ${extraFirst ? "" : extra}
     <div class="panel related-panel">
       <div class="section-head"><div><h2>Next Best Actions</h2><p>Logical buttons connected to this feature.</p></div></div>
       <div class="circle-carousel">${related.map(([label, sub, route], index) => circleTool(label, sub, route, index)).join("")}</div>
     </div>
-    ${extraFirst ? "" : extra}
   </section>`;
 }
 
@@ -2743,7 +2846,21 @@ function specialToolBody(routeKey, set) {
       <div class="hero-actions padded"><button class="primary-btn" data-action="lock-prediction">Lock Prediction</button><button class="ghost-btn" data-route="heatmap">Open Radar</button></div>
     </div>`;
   }
-  if (["dailyFortune", "futureRead", "nameNumbers", "contests", "challenges"].includes(routeKey)) {
+  if (routeKey === "challenges") {
+    return `<div class="panel oracle-function-panel challenge-board-panel">
+      <div class="section-head"><div><h2>Challenge Board</h2><p>Daily arcade tasks, streak checks, and credit goals stay with Play + Learn.</p></div><span>4 tasks</span></div>
+      <div class="tool-grid padded">
+        ${[
+          ["Trivia Run", "Answer 5 questions"],
+          ["Crossword", "Solve clue lane"],
+          ["Word Search", "Find 6 terms"],
+          ["Radar Check", "Build one set"],
+        ].map(([label, value]) => metricCard(label, value)).join("")}
+      </div>
+      <div class="hero-actions padded"><button class="primary-btn" data-route="triviaPlay">Start Trivia</button><button class="ghost-btn" data-route="crossword">Crossword</button><button class="ghost-btn" data-route="wordSearch">Word Search</button></div>
+    </div>`;
+  }
+  if (["dailyFortune", "futureRead", "nameNumbers", "contests"].includes(routeKey)) {
     const reading = interpretDream(state.dreamText, state.gameId);
     const cards = routeKey === "contests"
       ? [["Daily Entry", "Ready"], ["Credit Prize", "+50"], ["Arcade Score", "Open"], ["Share Card", "Soon"]]
