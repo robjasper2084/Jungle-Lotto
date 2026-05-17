@@ -1,4 +1,4 @@
-import { ASSET_URLS, PACK_ROOT, SPRITE_OVERRIDES } from "../config/assets.js?v=sprite-overrides1";
+import { ASSET_URLS, PACK_ROOT, SPRITE_OVERRIDES } from "../config/assets.js?v=fighter-prop1";
 
 const imageCache = new Map();
 
@@ -105,21 +105,23 @@ export class AssetLoader {
       const image = this.images[`${characterId}_override`];
       if (!image) continue;
       this.animations[characterId] ??= {};
-      const frameSize = override.frameSize ?? 256;
+      const frameWidth = override.frameWidth ?? override.frameSize ?? 256;
+      const frameHeight = override.frameHeight ?? override.frameSize ?? 256;
+      const frameDuration = override.frameDuration ?? 58;
       for (const [motion, frameIndexes] of Object.entries(override.motions ?? {})) {
         this.animations[characterId][motion] = {
           image,
           frameCount: frameIndexes.length,
-          cellWidth: frameSize,
-          cellHeight: frameSize,
+          cellWidth: frameWidth,
+          cellHeight: frameHeight,
           sourceFacing: override.sourceFacing ?? 1,
           override: true,
           frames: frameIndexes.map((frameIndex) => ({
-            x: frameIndex * frameSize,
+            x: frameIndex * frameWidth,
             y: 0,
-            w: frameSize,
-            h: frameSize,
-            duration_ms: 72
+            w: frameWidth,
+            h: frameHeight,
+            duration_ms: frameDuration
           }))
         };
       }

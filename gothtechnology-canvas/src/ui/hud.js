@@ -1,5 +1,5 @@
 import { CANVAS_HEIGHT, CANVAS_WIDTH, COLORS, ROUND_SECONDS } from "../config/constants.js";
-import { drawSpriteFrame } from "../engine/assets.js?v=sprite-overrides1";
+import { drawSpriteFrame } from "../engine/assets.js?v=fighter-prop1";
 
 const panel = (ctx, x, y, w, h, stroke = COLORS.gold) => {
   ctx.save();
@@ -119,7 +119,7 @@ export const drawFightHud = (ctx, game) => {
 };
 
 export const drawTitle = (ctx, game) => {
-  drawBackdropGrade(ctx);
+  drawMenuCoverWash(ctx);
   ctx.save();
   ctx.textAlign = "center";
   const logo = game.assets?.images.logo;
@@ -142,18 +142,154 @@ export const drawTitle = (ctx, game) => {
   const leftName = game.player1Id === "MASTER_EZRA" ? "MASTER EZRA" : "KALYX";
   const rightName = game.player2Id === "MASTER_EZRA" ? "MASTER EZRA" : "KALYX";
   const cpuName = game.player2Id === "MASTER_EZRA" ? "EZRA" : "KALYX";
-  ctx.fillText(`${leftName} VS ${rightName}`, CANVAS_WIDTH / 2, 332);
-  drawMenuButton(ctx, 494, 364, 292, 54, "START");
-  drawMenuButton(ctx, 494, 432, 292, 54, "TRAINING");
-  drawMenuButton(ctx, 494, 500, 292, 54, game.cpuEnabled ? `CPU ${cpuName}: ON` : `CPU ${cpuName}: OFF`);
+  ctx.fillText(`${leftName} VS ${rightName}`, CANVAS_WIDTH / 2, 314);
+  drawMenuButton(ctx, 494, 338, 292, 54, "PICK FIGHTER");
+  drawMenuButton(ctx, 494, 406, 292, 54, "TRAINING SELECT");
+  drawMenuButton(ctx, 494, 474, 292, 54, "GAME SELECT");
+  drawMenuButton(ctx, 494, 542, 292, 54, game.cpuEnabled ? `CPU ${cpuName}: ON` : `CPU ${cpuName}: OFF`);
   ctx.fillStyle = "rgba(255, 246, 211, 0.55)";
   ctx.font = "700 13px system-ui";
-  ctx.fillText("Docs: public/gothtechnology-canvas/docs", CANVAS_WIDTH / 2, 650);
+  ctx.fillText("ENTER starts fighter select  /  GAME SELECT opens the arcade shelf", CANVAS_WIDTH / 2, 650);
   ctx.restore();
 };
 
-export const drawLoading = (ctx, progress) => {
-  drawBackdropGrade(ctx);
+export const drawGameSelect = (ctx, game, games) => {
+  drawMenuCoverWash(ctx);
+  ctx.save();
+  ctx.textAlign = "center";
+  ctx.fillStyle = COLORS.white;
+  ctx.font = "900 42px Georgia";
+  ctx.fillText("GAME SELECT", 640, 88);
+  ctx.fillStyle = COLORS.blue;
+  ctx.font = "700 15px system-ui";
+  ctx.fillText("CLICK A GAME OR PRESS LEFT / RIGHT, THEN ENTER", 640, 122);
+
+  drawGameCard(ctx, 88, 154, 512, 396, games[0], game.gameSelectIndex === 0, "fighter");
+  drawGameCard(ctx, 680, 154, 512, 396, games[1], game.gameSelectIndex === 1, "runGun");
+  drawMenuButton(ctx, 494, 596, 292, 54, "BACK");
+  ctx.restore();
+};
+
+const drawGameCard = (ctx, x, y, w, h, item, selected, variant) => {
+  const stroke = selected ? COLORS.goldBright : variant === "runGun" ? COLORS.blue : COLORS.gold;
+  panel(ctx, x, y, w, h, stroke);
+  ctx.save();
+  ctx.beginPath();
+  ctx.roundRect(x + 14, y + 14, w - 28, h - 112, 6);
+  ctx.clip();
+  const grad = ctx.createLinearGradient(x, y, x + w, y + h);
+  grad.addColorStop(0, variant === "runGun" ? "#080b12" : "#0b0808");
+  grad.addColorStop(0.56, variant === "runGun" ? "#101922" : "#15110c");
+  grad.addColorStop(1, "#020202");
+  ctx.fillStyle = grad;
+  ctx.fillRect(x + 14, y + 14, w - 28, h - 112);
+  if (variant === "fighter") drawFighterGameArt(ctx, x, y, w, h);
+  else drawRunGunGameArt(ctx, x, y, w, h);
+  ctx.restore();
+
+  ctx.save();
+  ctx.fillStyle = "rgba(0,0,0,0.76)";
+  ctx.fillRect(x + 14, y + h - 96, w - 28, 78);
+  ctx.textAlign = "left";
+  ctx.fillStyle = COLORS.goldBright;
+  ctx.font = "900 14px system-ui";
+  ctx.fillText(item.badge, x + 32, y + h - 70);
+  ctx.fillStyle = COLORS.white;
+  ctx.font = "900 29px Georgia";
+  ctx.fillText(item.title, x + 32, y + h - 42);
+  ctx.fillStyle = selected ? COLORS.goldBright : "rgba(255, 246, 211, 0.72)";
+  ctx.font = "700 13px system-ui";
+  ctx.fillText(item.subtitle.toUpperCase(), x + 32, y + h - 20);
+  if (selected) {
+    ctx.strokeStyle = COLORS.goldBright;
+    ctx.lineWidth = 4;
+    ctx.strokeRect(x + 8, y + 8, w - 16, h - 16);
+  }
+  ctx.restore();
+};
+
+const drawFighterGameArt = (ctx, x, y, w, h) => {
+  const baseY = y + 292;
+  ctx.strokeStyle = "rgba(255, 214, 109, 0.2)";
+  ctx.lineWidth = 2;
+  for (let i = 0; i < 8; i += 1) {
+    ctx.beginPath();
+    ctx.moveTo(x + 20 + i * 68, y + 26);
+    ctx.lineTo(x - 30 + i * 68, baseY + 4);
+    ctx.stroke();
+  }
+  drawMenuFighterSilhouette(ctx, x + 176, baseY, -1, COLORS.goldBright);
+  drawMenuFighterSilhouette(ctx, x + 336, baseY, 1, COLORS.blue);
+};
+
+const drawMenuFighterSilhouette = (ctx, x, y, facing, color) => {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.scale(facing, 1);
+  ctx.fillStyle = "rgba(0,0,0,0.9)";
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.ellipse(0, -116, 42, 72, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(0, -198, 24, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(30, -150);
+  ctx.lineTo(94, -166);
+  ctx.lineTo(102, -150);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(-18, -52);
+  ctx.lineTo(-44, 0);
+  ctx.moveTo(24, -52);
+  ctx.lineTo(58, 0);
+  ctx.stroke();
+  ctx.restore();
+};
+
+const drawRunGunGameArt = (ctx, x, y, w, h) => {
+  const horizon = y + 116;
+  ctx.fillStyle = "rgba(139, 212, 255, 0.14)";
+  for (let i = 0; i < 8; i += 1) ctx.fillRect(x + 40 + i * 58, horizon + i % 2 * 12, 34, 120);
+  ctx.fillStyle = "#15110c";
+  ctx.fillRect(x + 14, y + 272, w - 28, 36);
+  ctx.fillStyle = COLORS.gold;
+  for (let i = 0; i < 12; i += 1) ctx.fillRect(x + 28 + i * 42, y + 286, 18, 4);
+  ctx.save();
+  ctx.translate(x + 170, y + 272);
+  ctx.fillStyle = "#050403";
+  ctx.strokeStyle = COLORS.goldBright;
+  ctx.lineWidth = 3;
+  ctx.fillRect(-28, -92, 48, 78);
+  ctx.strokeRect(-28, -92, 48, 78);
+  ctx.beginPath();
+  ctx.arc(-4, -116, 18, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.stroke();
+  ctx.strokeStyle = COLORS.blue;
+  ctx.beginPath();
+  ctx.moveTo(18, -72);
+  ctx.lineTo(96, -82);
+  ctx.stroke();
+  ctx.fillStyle = COLORS.blue;
+  ctx.fillRect(98, -88, 18, 10);
+  ctx.restore();
+  for (let i = 0; i < 3; i += 1) {
+    ctx.fillStyle = "rgba(255, 214, 109, 0.9)";
+    ctx.beginPath();
+    ctx.arc(x + 326 + i * 46, y + 190 + i % 2 * 30, 15, 0, Math.PI * 2);
+    ctx.fill();
+  }
+};
+
+export const drawLoading = (ctx, progress, backdrop = null) => {
+  if (backdrop?.complete && backdrop.naturalWidth > 0) drawCoverImage(ctx, backdrop);
+  else drawBackdropGrade(ctx);
+  drawMenuCoverWash(ctx);
   ctx.save();
   ctx.textAlign = "center";
   ctx.fillStyle = COLORS.goldBright;
@@ -180,7 +316,8 @@ export const drawCharacterSelect = (ctx, game) => {
   drawMenuButton(ctx, 494, 594, 292, 54, "VERSUS");
   ctx.fillStyle = "rgba(255, 246, 211, 0.58)";
   ctx.font = "700 13px system-ui";
-  ctx.fillText(game.cpuEnabled ? `${game.player2Id === "KALYX" ? "KALYX" : "MASTER EZRA"} CPU ENABLED` : "LOCAL TWO-PLAYER ENABLED", 640, 670);
+  ctx.fillText("CLICK A CARD OR PRESS LEFT / RIGHT, THEN ENTER", 640, 652);
+  ctx.fillText(game.cpuEnabled ? `${game.player2Id === "KALYX" ? "KALYX" : "MASTER EZRA"} CPU ENABLED` : "LOCAL TWO-PLAYER ENABLED", 640, 676);
   ctx.restore();
 };
 
@@ -317,6 +454,23 @@ export const drawBackdropGrade = (ctx) => {
   grad.addColorStop(0, "#090908");
   grad.addColorStop(0.52, "#11100d");
   grad.addColorStop(1, "#020202");
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+};
+
+const drawCoverImage = (ctx, image) => {
+  const scale = Math.max(CANVAS_WIDTH / image.width, CANVAS_HEIGHT / image.height);
+  const w = image.width * scale;
+  const h = image.height * scale;
+  ctx.drawImage(image, (CANVAS_WIDTH - w) / 2, (CANVAS_HEIGHT - h) / 2, w, h);
+};
+
+const drawMenuCoverWash = (ctx) => {
+  const grad = ctx.createLinearGradient(0, 0, 0, CANVAS_HEIGHT);
+  grad.addColorStop(0, "rgba(0,0,0,0.38)");
+  grad.addColorStop(0.42, "rgba(0,0,0,0.18)");
+  grad.addColorStop(0.74, "rgba(0,0,0,0.42)");
+  grad.addColorStop(1, "rgba(0,0,0,0.78)");
   ctx.fillStyle = grad;
   ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 };

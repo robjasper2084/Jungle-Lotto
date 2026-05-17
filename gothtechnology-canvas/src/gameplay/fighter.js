@@ -1,6 +1,6 @@
 import { GRAVITY, GROUND_Y, WORLD } from "../config/constants.js";
-import { ATTACKS } from "../config/moves.js?v=sprite-overrides1";
-import { drawSpriteFrame } from "../engine/assets.js?v=sprite-overrides1";
+import { ATTACKS } from "../config/moves.js?v=fighter-prop1";
+import { drawSpriteFrame } from "../engine/assets.js?v=fighter-prop1";
 import { approach, clamp, makeRect } from "../engine/math.js";
 import { SpriteEffect } from "./effects.js";
 
@@ -83,6 +83,10 @@ export class Fighter {
     this.assistCooldowns = { assist1: 0, assist2: 0 };
     this.pendingProjectile = null;
     this.shieldTimer = 0;
+    this.guardTapTimer = 0;
+    this.guardFlash = 0;
+    this.throwTechTimer = 0;
+    this.wasGuarding = false;
     this.lastActions = {};
     this.moveHold = 0;
     this.lastMoveDir = 0;
@@ -113,6 +117,10 @@ export class Fighter {
     this.invulnerable = 1.2;
     this.pendingProjectile = null;
     this.isKO = false;
+    this.guardTapTimer = 0;
+    this.guardFlash = 0;
+    this.throwTechTimer = 0;
+    this.wasGuarding = false;
     this.moveHold = 0;
     this.lastMoveDir = 0;
     this.dashTimer = 0;
@@ -231,12 +239,13 @@ export class Fighter {
     };
   }
 
-  takeHit({ damage, stun, knockback, attackName, blocked, chipOnly }) {
+  takeHit({ damage, stun, knockback, attackName, blocked, chipOnly, perfectBlock }) {
     this.comboTimer = 0;
     if (blocked) {
       this.blockstun = stun;
       this.health = Math.max(1, this.health - damage);
       this.vx += knockback;
+      this.guardFlash = perfectBlock ? 0.28 : 0.16;
       this.setMotion(this.crouching ? "BLOCK_LOW" : "BLOCK_HIGH", true);
       return;
     }
@@ -265,6 +274,9 @@ export class Fighter {
     this.hitstun = Math.max(0, this.hitstun - dt);
     this.blockstun = Math.max(0, this.blockstun - dt);
     this.shieldTimer = Math.max(0, this.shieldTimer - dt);
+    this.guardTapTimer = Math.max(0, this.guardTapTimer - dt);
+    this.guardFlash = Math.max(0, this.guardFlash - dt);
+    this.throwTechTimer = Math.max(0, this.throwTechTimer - dt);
     this.comboTimer = Math.max(0, this.comboTimer - dt);
     if (this.comboTimer === 0) {
       this.comboHits = 0;
@@ -286,6 +298,11 @@ export class Fighter {
 
     const faceDelta = opponent.x - this.x;
     if (Math.abs(faceDelta) > 12) this.facing = faceDelta > 0 ? 1 : -1;
+    const holdingBack = opponent.x > this.x ? actions.left : actions.right;
+    const guarding = Boolean(holdingBack || (actions.down && this.grounded) || this.shieldTimer > 0);
+    if (guarding && !this.wasGuarding) this.guardTapTimer = 0.13;
+    this.wasGuarding = guarding;
+    if (actions.throw) this.throwTechTimer = 0.18;
 
     if (this.knockdown > 0 && !this.isKO) {
       this.knockdown = Math.max(0, this.knockdown - dt);
@@ -465,21 +482,15 @@ export class Fighter {
       }
     }
     const bodyAlpha = 1;
-    const sourceFacing = anim?.sourceFacing ?? this.config.motionFacing?.[this.displayMotion] ?? this.config.motionFacing?.[this.motion] ?? this.config.spriteFacing ?? 1;
-    let flipSprite = this.facing !== sourceFacing;
-    if (this.id === "MASTER_EZRA" && typeof anim?.sourceFacing !== "number") {
-      flipSprite = this.slot === 1;
-    }
-    const visualScale = this.config.motionVisualScale?.[this.displayMotion] ?? this.config.motionVisualScale?.[this.motion] ?? 1;
-    const frameScaleSet = this.config.motionFrameScale?.[this.displayMotion] ?? this.config.motionFrameScale?.[this.motion];
-    const frameVisualScale = Array.isArray(frameScaleSet) ? (frameScaleSet[frameIndex % frameScaleSet.length] ?? 1) : 1;
-    const drawScale = (this.config.stableScale ?? this.config.scale) * visualScale * frameVisualScale;
+    const sourceFacing = anim?.sourceFacing ?? this.config.spriteFacing ?? 1;
+    const flipSprite = this.facing !== sourceFacing;
+    const drawScale = this.config.stableScale ?? this.config.scale;
     ctx.save();
     ctx.globalAlpha = 1;
     ctx.globalCompositeOperation = "source-over";
     ctx.filter = "none";
-    const depthColor = this.id === "MASTER_EZRA" ? "rgba(139, 212, 255, 0.34)" : "rgba(216, 170, 69, 0.32)";
-    const warmRim = this.id === "MASTER_EZRA" ? "rgba(255, 220, 142, 0.18)" : "rgba(123, 236, 255, 0.16)";
+    const depthColor = this.id === "MASTER_EZRA" ? "rgba(118, 170, 255, 0.22)" : "rgba(216, 170, 69, 0.22)";
+    const warmRim = this.id === "MASTER_EZRA" ? "rgba(255, 220, 142, 0.12)" : "rgba(255, 198, 92, 0.12)";
     ctx.save();
     ctx.globalAlpha = 0.34;
     ctx.fillStyle = "#000";
@@ -518,8 +529,9 @@ export class Fighter {
       alpha: bodyAlpha,
       composite: "source-over",
       underpaint: true,
+      underpaintScale: 1,
       underpaintAlpha: this.id === "MASTER_EZRA" ? 0.56 : 0.6,
-      filter: this.config.spriteFilter ?? (extraDepthPasses ? "contrast(1.08) saturate(1.08) drop-shadow(0 9px 7px rgba(0, 0, 0, 0.46))" : "contrast(1.06) saturate(1.06)")
+      filter: this.config.spriteFilter ?? (extraDepthPasses ? "contrast(1.08) saturate(0.96) drop-shadow(0 9px 7px rgba(0, 0, 0, 0.46))" : "contrast(1.06) saturate(0.96)")
     });
     if (!drewPrimary && this.assets.animations[this.config.manifestKey]?.READY_STANCE) {
       drawSpriteFrame(ctx, this.assets.animations[this.config.manifestKey].READY_STANCE, 0, this.x, this.y + 14, {
@@ -538,7 +550,7 @@ export class Fighter {
     bodyGlow.addColorStop(0.56, "rgba(255,255,255,0)");
     bodyGlow.addColorStop(1, warmRim);
     ctx.fillStyle = bodyGlow;
-    ctx.globalAlpha = 0.26;
+    ctx.globalAlpha = 0.14;
     ctx.beginPath();
     ctx.ellipse(this.x + this.facing * -12, this.y - 102, 58, 92, -0.12 * this.facing, 0, Math.PI * 2);
     ctx.fill();
@@ -566,6 +578,21 @@ export class Fighter {
       ctx.shadowBlur = 18;
       ctx.beginPath();
       ctx.ellipse(this.x, this.y - 105, 58, 92, 0, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    if (this.guardFlash > 0 && !this.isKO) {
+      const t = Math.min(1, this.guardFlash / 0.28);
+      ctx.save();
+      ctx.globalCompositeOperation = "screen";
+      ctx.globalAlpha = 0.12 + t * 0.28;
+      ctx.strokeStyle = this.id === "MASTER_EZRA" ? "rgba(139, 212, 255, 0.9)" : "rgba(255, 214, 109, 0.86)";
+      ctx.lineWidth = 2 + t * 3;
+      ctx.shadowColor = this.id === "MASTER_EZRA" ? "#8bd4ff" : "#ffd66d";
+      ctx.shadowBlur = 14 + t * 16;
+      ctx.beginPath();
+      ctx.ellipse(this.x - this.facing * 18, this.y - 104, 52 + t * 16, 84 + t * 18, -0.1 * this.facing, 0, Math.PI * 2);
       ctx.stroke();
       ctx.restore();
     }

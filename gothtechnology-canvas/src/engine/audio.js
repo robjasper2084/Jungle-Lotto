@@ -1,9 +1,13 @@
 export class WebAudioBus {
-  constructor(musicUrl = "") {
+  constructor(musicUrl = "", fightMusicUrl = musicUrl) {
     this.ctx = null;
     this.muted = false;
-    this.musicUrl = musicUrl;
+    this.musicUrls = {
+      menu: musicUrl,
+      fight: fightMusicUrl || musicUrl
+    };
     this.music = null;
+    this.musicTracks = {};
     this.musicStarted = false;
     this.musicMode = "silent";
     this.pendingMode = "menu";
@@ -15,43 +19,56 @@ export class WebAudioBus {
       if (AudioContext) this.ctx = new AudioContext();
     }
     if (this.ctx?.state === "suspended") this.ctx.resume?.();
-    this.preloadMusic();
+    this.preloadMusic(this.pendingMode === "fight" ? "fight" : "menu");
     if (this.pendingMode !== "silent") this.startMusic(this.pendingMode);
   }
 
   toggleMute() {
     this.muted = !this.muted;
-    if (this.music) {
-      this.music.muted = this.muted;
-      if (this.muted) this.music.pause();
+    for (const track of Object.values(this.musicTracks)) {
+      track.muted = this.muted;
+      if (this.muted) track.pause();
       else if (this.pendingMode !== "silent") this.startMusic(this.pendingMode);
     }
   }
 
-  preloadMusic() {
-    if (!this.musicUrl) return null;
-    if (!this.music) {
-      this.music = new Audio(this.musicUrl);
-      this.music.loop = true;
-      this.music.preload = "auto";
-      this.music.volume = 0.68;
-      this.music.muted = this.muted;
-      this.music.addEventListener("ended", () => {
-        this.musicStarted = false;
-        if (!this.muted && this.pendingMode !== "silent") {
-          this.startMusic(this.pendingMode, { restart: true });
+  preloadMusic(mode = "menu") {
+    const normalized = mode === "fight" ? "fight" : "menu";
+    const url = this.musicUrls[normalized];
+    if (!url) return null;
+    if (!this.musicTracks[normalized]) {
+      const track = new Audio(url);
+      track.loop = true;
+      track.preload = "auto";
+      track.volume = normalized === "fight" ? 0.74 : 0.5;
+      track.muted = this.muted;
+      track.addEventListener("ended", () => {
+        if (this.music === track) this.musicStarted = false;
+        if (!this.muted && this.pendingMode === normalized) {
+          this.startMusic(normalized, { restart: true });
         }
       });
-      this.music.load?.();
+      track.load?.();
+      this.musicTracks[normalized] = track;
     }
-    return this.music;
+    return this.musicTracks[normalized];
   }
 
   startMusic(mode = "menu", options = {}) {
-    this.pendingMode = mode;
-    if (!this.musicUrl || this.muted) return;
-    this.preloadMusic();
-    if (!this.music) return;
+    const normalized = mode === "fight" ? "fight" : "menu";
+    this.pendingMode = normalized;
+    if (this.muted) return;
+    const nextTrack = this.preloadMusic(normalized);
+    if (!nextTrack) return;
+    if (this.music && this.music !== nextTrack) {
+      this.music.pause();
+      try {
+        this.music.currentTime = 0;
+      } catch (error) {
+        // Some browsers reject currentTime changes before metadata arrives.
+      }
+    }
+    this.music = nextTrack;
     if (this.music.ended) {
       options = { ...options, restart: true };
     }
@@ -63,9 +80,9 @@ export class WebAudioBus {
         // Some browsers reject currentTime changes before metadata arrives.
       }
     }
-    this.music.volume = mode === "fight" ? 0.74 : 0.5;
-    if (this.musicStarted && !this.music.paused && this.musicMode === mode && !restart) return;
-    this.musicMode = mode;
+    this.music.volume = normalized === "fight" ? 0.74 : 0.5;
+    if (this.musicStarted && !this.music.paused && this.musicMode === normalized && !restart) return;
+    this.musicMode = normalized;
     this.musicStarted = true;
     this.music.play().catch(() => {
       this.musicStarted = false;
@@ -74,17 +91,18 @@ export class WebAudioBus {
 
   stopMusic(options = {}) {
     this.pendingMode = "silent";
-    if (!this.music) return;
-    this.music.pause();
-    this.musicStarted = false;
-    this.musicMode = "silent";
-    if (options.reset) {
-      try {
-        this.music.currentTime = 0;
-      } catch (error) {
-        // Ignore metadata timing on mobile browsers.
+    for (const track of Object.values(this.musicTracks)) {
+      track.pause();
+      if (options.reset) {
+        try {
+          track.currentTime = 0;
+        } catch (error) {
+          // Ignore metadata timing on mobile browsers.
+        }
       }
     }
+    this.musicStarted = false;
+    this.musicMode = "silent";
   }
 
   beep(type = "hit") {

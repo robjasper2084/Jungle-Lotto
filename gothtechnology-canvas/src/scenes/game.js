@@ -1,31 +1,51 @@
-import { ASSET_URLS, FIGHTERS } from "../config/assets.js?v=sprite-overrides1";
-import { ASSISTS, ATTACKS } from "../config/moves.js?v=sprite-overrides1";
+import { ASSET_URLS, FIGHTERS } from "../config/assets.js?v=fighter-prop1";
+import { ASSISTS, ATTACKS } from "../config/moves.js?v=fighter-prop1";
 import { CANVAS_HEIGHT, CANVAS_WIDTH, COLORS, GROUND_Y, PHASE, ROUND_SECONDS, WORLD } from "../config/constants.js";
-import { AssetLoader, drawSheetFrame } from "../engine/assets.js?v=sprite-overrides1";
-import { WebAudioBus } from "../engine/audio.js?v=sprite-overrides1";
+import { AssetLoader, drawSheetFrame } from "../engine/assets.js?v=fighter-prop1";
+import { WebAudioBus } from "../engine/audio.js?v=fighter-prop1";
 import { InputManager } from "../engine/input.js";
 import { clamp, rectsOverlap } from "../engine/math.js";
-import { applyHit, resolveMelee } from "../gameplay/combat.js?v=sprite-overrides1";
+import { applyHit, resolveMelee } from "../gameplay/combat.js?v=fighter-prop1";
 import { SpriteEffect } from "../gameplay/effects.js";
-import { Fighter } from "../gameplay/fighter.js?v=sprite-overrides1";
-import { AssistStrike, Projectile } from "../gameplay/projectiles.js?v=sprite-overrides1";
+import { Fighter } from "../gameplay/fighter.js?v=fighter-prop1";
+import { AssistStrike, Projectile } from "../gameplay/projectiles.js?v=fighter-prop1";
 import {
   drawCharacterSelect,
   drawDiagnostics,
   drawFightHud,
+  drawGameSelect,
   drawLoading,
   drawPause,
   drawRoundMessage,
   drawTitle,
   drawVersus
-} from "../ui/hud.js?v=sprite-overrides1";
+} from "../ui/hud.js?v=fighter-prop1";
+
+const GAME_SELECT_ITEMS = [
+  {
+    id: "gothtechnology",
+    title: "GOTHTECHNOLOGY",
+    subtitle: "KALYX vs MASTER EZRA 1v1 arcade fighter",
+    badge: "FIGHTER"
+  },
+  {
+    id: "shadow-ops",
+    title: "SHADOW OPS",
+    subtitle: "Original run-and-gun side scroller prototype",
+    badge: "RUN + GUN",
+    href: "../shadow-ops-canvas/index.html"
+  }
+];
 
 export class GothTechnologyGame {
   constructor(canvas) {
     this.canvas = canvas;
     this.ctx = canvas.getContext("2d", { alpha: false });
     this.input = new InputManager(window);
-    this.audio = new WebAudioBus(ASSET_URLS.music);
+    this.audio = new WebAudioBus(ASSET_URLS.music, ASSET_URLS.fightMusic);
+    this.loadingBackdrop = new Image();
+    this.loadingBackdrop.decoding = "async";
+    this.loadingBackdrop.src = ASSET_URLS.titleBackdrop;
     this.assets = null;
     this.phase = PHASE.LOADING;
     this.loadingProgress = 0;
@@ -50,7 +70,10 @@ export class GothTechnologyGame {
     this.flash = 0;
     this.parallax = 0;
     this.lastTime = performance.now();
+    this.accumulator = 0;
+    this.fixedStep = 1 / 60;
     this.menuHitAreas = [];
+    this.gameSelectIndex = 0;
     this.cpuDecisionTimer = 0;
     this.cpuDecision = {};
     this.inputLog = ["READY"];
@@ -96,7 +119,7 @@ export class GothTechnologyGame {
       }
       const hit = this.menuHitAreas.find((area) => x >= area.x && x <= area.x + area.w && y >= area.y && y <= area.y + area.h);
       if (hit) hit.action();
-      else if (this.phase === PHASE.TITLE) this.startMatch(false);
+      else if (this.phase === PHASE.TITLE) this.openCharacterSelect(false);
       else if (this.phase === PHASE.SELECT) this.startMatch(this.training);
     });
   }
@@ -117,6 +140,38 @@ export class GothTechnologyGame {
     this.player2Id = id === "KALYX" ? "MASTER_EZRA" : "KALYX";
     this.createFighters();
     this.audio.beep("select");
+  }
+
+  openCharacterSelect(training = false) {
+    this.training = training;
+    this.phase = PHASE.SELECT;
+    this.createFighters();
+    this.syncMusicForPhase();
+    this.audio.beep("select");
+  }
+
+  openGameSelect() {
+    this.phase = PHASE.GAME_SELECT;
+    this.syncMusicForPhase();
+    this.audio.beep("select");
+  }
+
+  selectGame(index) {
+    this.gameSelectIndex = clamp(index, 0, GAME_SELECT_ITEMS.length - 1);
+    this.audio.beep("select");
+  }
+
+  launchSelectedGame() {
+    const item = GAME_SELECT_ITEMS[this.gameSelectIndex] ?? GAME_SELECT_ITEMS[0];
+    if (item.id === "gothtechnology") {
+      this.phase = PHASE.TITLE;
+      this.syncMusicForPhase();
+      this.audio.beep("select");
+      return;
+    }
+    if (item.href) {
+      window.location.href = new URL(item.href, window.location.href).href;
+    }
   }
 
   startVersus() {
@@ -155,17 +210,25 @@ export class GothTechnologyGame {
       this.fighters[1].meter = 100;
     }
     this.phase = PHASE.FIGHT;
+    this.syncMusicForPhase();
     this.roundMessageTimer = 0.72;
   }
 
   loop(time) {
     if (this.stopped) return;
-    const rawDt = Math.min(1 / 60, (time - this.lastTime) / 1000 || 0);
+    const rawDt = Math.min(0.05, (time - this.lastTime) / 1000 || 0);
     this.lastTime = time;
-    const dt = this.slowMo > 0 ? rawDt * 0.55 : rawDt;
-    this.update(dt);
+    this.accumulator += rawDt;
+    let steps = 0;
+    while (this.accumulator >= this.fixedStep && steps < 5) {
+      const dt = this.slowMo > 0 ? this.fixedStep * 0.55 : this.fixedStep;
+      this.update(dt);
+      this.accumulator -= this.fixedStep;
+      steps += 1;
+    }
+    if (steps === 5) this.accumulator = 0;
     this.render();
-    this.input.endFrame();
+    if (steps > 0) this.input.endFrame();
     this.raf = requestAnimationFrame((next) => this.loop(next));
   }
 
@@ -212,6 +275,7 @@ export class GothTechnologyGame {
     this.projectiles.forEach((projectile) => projectile.update(dt, this));
     this.assists.forEach((assist) => assist.update(dt, this));
     this.effects.forEach((effect) => effect.update(dt, this));
+    this.resolveProjectileClashes();
     this.projectiles = this.projectiles.filter((p) => !p.dead);
     this.assists = this.assists.filter((a) => !a.dead);
     this.effects = this.effects.filter((e) => !e.dead);
@@ -230,12 +294,29 @@ export class GothTechnologyGame {
 
     if (this.phase === PHASE.TITLE) {
       this.menuHitAreas = [
-        { x: 494, y: 364, w: 292, h: 54, action: () => this.startMatch(false) },
-        { x: 494, y: 432, w: 292, h: 54, action: () => this.startMatch(true) },
-        { x: 494, y: 500, w: 292, h: 54, action: () => { this.cpuEnabled = !this.cpuEnabled; } }
+        { x: 494, y: 338, w: 292, h: 54, action: () => this.openCharacterSelect(false) },
+        { x: 494, y: 406, w: 292, h: 54, action: () => this.openCharacterSelect(true) },
+        { x: 494, y: 474, w: 292, h: 54, action: () => this.openGameSelect() },
+        { x: 494, y: 542, w: 292, h: 54, action: () => { this.cpuEnabled = !this.cpuEnabled; } }
       ];
       this.audio.startMusic("menu");
-      if (this.input.consume("ui.confirm")) this.startMatch(false);
+      if (this.input.consume("ui.confirm")) this.openCharacterSelect(false);
+      return;
+    }
+
+    if (this.phase === PHASE.GAME_SELECT) {
+      this.menuHitAreas = [
+        { x: 88, y: 154, w: 512, h: 396, action: () => { this.selectGame(0); this.launchSelectedGame(); } },
+        { x: 680, y: 154, w: 512, h: 396, action: () => { this.selectGame(1); this.launchSelectedGame(); } },
+        { x: 494, y: 596, w: 292, h: 54, action: () => { this.phase = PHASE.TITLE; this.syncMusicForPhase(); } }
+      ];
+      if (this.input.consume("p1.left") || this.input.consume("p2.left")) this.selectGame(0);
+      if (this.input.consume("p1.right") || this.input.consume("p2.right")) this.selectGame(1);
+      if (this.input.consume("ui.confirm")) this.launchSelectedGame();
+      if (this.input.consume("ui.back")) {
+        this.phase = PHASE.TITLE;
+        this.syncMusicForPhase();
+      }
       return;
     }
 
@@ -245,6 +326,14 @@ export class GothTechnologyGame {
         { x: 690, y: 128, w: 500, h: 420, action: () => this.selectPlayer1("MASTER_EZRA") },
         { x: 494, y: 594, w: 292, h: 54, action: () => this.startMatch(this.training) }
       ];
+      if (
+        this.input.consume("p1.left") ||
+        this.input.consume("p1.right") ||
+        this.input.consume("p2.left") ||
+        this.input.consume("p2.right")
+      ) {
+        this.selectPlayer1(this.player1Id === "KALYX" ? "MASTER_EZRA" : "KALYX");
+      }
       if (this.input.consume("ui.confirm")) this.startMatch(this.training);
       if (this.input.consume("ui.back")) {
         this.phase = PHASE.TITLE;
@@ -292,11 +381,35 @@ export class GothTechnologyGame {
     const holdMax = 342;
     const playerAttacking = Boolean(player.currentAttack);
     const cpuCanAct = !cpu.currentAttack && !cpu.hitstun && !cpu.blockstun && !cpu.knockdown;
+    const incomingProjectile = this.projectiles.find((projectile) => (
+      projectile.owner.id !== cpu.id &&
+      !projectile.dead &&
+      Math.sign(cpu.x - projectile.x) === projectile.direction &&
+      Math.abs(cpu.x - projectile.x) < 390 &&
+      Math.abs(projectile.y - (cpu.y - 122)) < 118
+    ));
 
     if (nearLeftEdge) actions.right = true;
     else if (nearRightEdge) actions.left = true;
     else if (abs > holdMax) actions[toward] = true;
     else if (abs < holdMin) actions[away] = true;
+
+    if (incomingProjectile) {
+      actions[away] = true;
+      if (Math.random() < 0.68) actions.down = true;
+      if (cpuCanAct && Math.abs(cpu.x - incomingProjectile.x) > 240 && Math.random() < 0.28) actions.up = true;
+      if (cpuCanAct && abs > 280 && Math.random() < 0.18) actions.special = true;
+      this.cpuDecision = { ...actions };
+      this.cpuDecisionTimer = 0.08 + Math.random() * 0.06;
+      return actions;
+    }
+
+    const playerWhiffing = player.currentAttack && player.currentAttack.elapsed > (player.currentAttack.data?.active?.[1] ?? 0.14);
+    if (cpuCanAct && playerWhiffing && abs < 190 && Math.random() < 0.42) {
+      if (abs > 118) actions[toward] = true;
+      actions.heavyPunch = Math.random() < 0.56;
+      actions.lightKick = !actions.heavyPunch;
+    }
 
     if (playerAttacking && abs < 210) {
       if (Math.random() < 0.58) {
@@ -360,11 +473,34 @@ export class GothTechnologyGame {
     }
   }
 
+  resolveProjectileClashes() {
+    for (let i = 0; i < this.projectiles.length; i += 1) {
+      const a = this.projectiles[i];
+      if (a.dead) continue;
+      for (let j = i + 1; j < this.projectiles.length; j += 1) {
+        const b = this.projectiles[j];
+        if (b.dead || a.owner.id === b.owner.id) continue;
+        if (!rectsOverlap(a.rect, b.rect)) continue;
+        const x = (a.x + b.x) / 2;
+        const y = (a.y + b.y) / 2;
+        a.dead = true;
+        b.dead = true;
+        a.spawnBurst?.(this, x - 18, y, true);
+        b.spawnBurst?.(this, x + 18, y, true);
+        this.shake = Math.max(this.shake, 7);
+        this.hitstop = Math.max(this.hitstop, 0.035);
+        this.audio.beep("block");
+        return;
+      }
+    }
+  }
+
   faceFighters() {
     const [a, b] = this.fighters;
     if (!a || !b) return;
-    if (!a.isKO) a.facing = 1;
-    if (!b.isKO) b.facing = -1;
+    const direction = b.x >= a.x ? 1 : -1;
+    if (!a.isKO) a.facing = direction;
+    if (!b.isKO) b.facing = -direction;
   }
 
   checkRoundEnd() {
@@ -392,36 +528,51 @@ export class GothTechnologyGame {
   }
 
   syncMusicForPhase() {
-    if ([PHASE.LOADING, PHASE.TITLE, PHASE.SELECT, PHASE.MATCH_END].includes(this.phase)) {
+    if ([PHASE.LOADING, PHASE.TITLE, PHASE.GAME_SELECT, PHASE.SELECT, PHASE.MATCH_END].includes(this.phase)) {
       this.audio.startMusic("menu");
       return;
     }
     if (this.phase === PHASE.FIGHT) {
-      this.audio.startMusic("menu");
+      this.audio.startMusic("fight", { restart: true });
     }
   }
 
   spawnProjectile(owner, name) {
     const attack = ATTACKS[name];
+    const kind = name === "super" ? "super" : "special";
+    const handSockets = {
+      KALYX: {
+        special: { x: 132, y: -136 },
+        super: { x: 140, y: -142 }
+      },
+      MASTER_EZRA: {
+        special: { x: 126, y: -154 },
+        super: { x: 138, y: -160 }
+      }
+    };
+    const socket = handSockets[owner.id]?.[kind] ?? { x: 120, y: -140 };
+    const spawnX = owner.x + owner.facing * socket.x;
+    const spawnY = owner.y + socket.y;
     const image = owner.id === "KALYX"
       ? this.assets.images[name === "super" ? "kalyxFireSlash" : "kalyxShadowClaw"]
       : this.assets.images[name === "super" ? "ezraOwlArc" : "ezraBlueBurst"];
     this.projectiles.push(new Projectile({
       owner,
-      x: owner.x + owner.facing * 90,
-      y: owner.y - (name === "super" ? 128 : 122),
+      x: spawnX,
+      y: spawnY,
       direction: owner.facing,
       attack,
       image,
       kind: name,
       color: owner.id === "KALYX" ? "#f2a13d" : "#9ed8ff"
     }));
+    const effectScale = name === "super" ? 0.82 : 0.52;
     this.effects.push(new SpriteEffect({
-      x: owner.x + owner.facing * 54,
-      y: owner.y - 12,
+      x: spawnX - owner.facing * 10,
+      y: spawnY + 128 * effectScale,
       image: owner.id === "KALYX" ? this.assets.images.kalyxFireSlash : this.assets.images.ezraBlueBurst,
       duration: 0.38,
-      scale: name === "super" ? 0.82 : 0.52,
+      scale: effectScale,
       flip: owner.facing < 0
     }));
     this.audio.beep(name === "super" ? "super" : "projectile");
@@ -454,13 +605,14 @@ export class GothTechnologyGame {
     const ctx = this.ctx;
     ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
     if (this.phase === PHASE.LOADING) {
-      drawLoading(ctx, this.loadingProgress);
+      drawLoading(ctx, this.loadingProgress, this.loadingBackdrop);
       return;
     }
 
-    if ([PHASE.TITLE, PHASE.SELECT, PHASE.VERSUS].includes(this.phase)) {
+    if ([PHASE.TITLE, PHASE.GAME_SELECT, PHASE.SELECT, PHASE.VERSUS].includes(this.phase)) {
       this.drawBackground(ctx, true);
       if (this.phase === PHASE.TITLE) drawTitle(ctx, this);
+      if (this.phase === PHASE.GAME_SELECT) drawGameSelect(ctx, this, GAME_SELECT_ITEMS);
       if (this.phase === PHASE.SELECT) drawCharacterSelect(ctx, this);
       if (this.phase === PHASE.VERSUS) drawVersus(ctx, this);
       return;
@@ -473,6 +625,7 @@ export class GothTechnologyGame {
       ctx.translate(shakeX, shakeY);
     }
     this.drawBackground(ctx, false);
+    this.faceFighters();
     for (const assist of this.assists) assist.render(ctx);
     for (const projectile of this.projectiles) projectile.render(ctx);
     this.fighters[0].render(ctx, this.debug);

@@ -54,6 +54,7 @@ export const MOTIONS = [
 export const PHASE = {
   TITLE: "title",
   LOADING: "loading",
+  GAME_SELECT: "gameSelect",
   SELECT: "select",
   VERSUS: "versus",
   FIGHT: "fight",

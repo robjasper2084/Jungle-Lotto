@@ -1,4 +1,4 @@
-import { GothTechnologyGame } from "./scenes/game.js?v=sprite-overrides1";
+import { GothTechnologyGame } from "./scenes/game.js?v=fighter-prop1";
 
 const syncViewportHeight = () => {
   document.documentElement.style.setProperty("--app-height", `${window.innerHeight}px`);
