@@ -633,6 +633,9 @@ if (!LOTTO_GAMES.some((game) => game.id === state.gameId)) {
 }
 
 let resetAudio = null;
+let resetToneContext = null;
+let resetToneOscillator = null;
+let resetToneGain = null;
 let routeAudio = null;
 let routeAudioSrc = "";
 let routeAudioRoute = "";
@@ -1245,8 +1248,8 @@ const tabNotes = {
   Radar: 329.63,
   Dream: 349.23,
   Reset: 392.00,
-  Seq: 440.00,
-  Vault: 493.88,
+  Seq: 392.00,
+  Vault: 440.00,
   Arcade: 523.25,
 };
 
@@ -1263,14 +1266,14 @@ function playTabNote(frequency) {
     oscillator.frequency.setValueAtTime(frequency, audioCtx.currentTime);
 
     gainNode.gain.setValueAtTime(0.0001, audioCtx.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.25, audioCtx.currentTime + 0.02);
-    gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.45);
+    gainNode.gain.exponentialRampToValueAtTime(0.18, audioCtx.currentTime + 0.03);
+    gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 1.95);
 
     oscillator.connect(gainNode);
     gainNode.connect(audioCtx.destination);
 
     oscillator.start();
-    oscillator.stop(audioCtx.currentTime + 0.5);
+    oscillator.stop(audioCtx.currentTime + 2);
     oscillator.addEventListener("ended", () => audioCtx.close?.().catch(() => {}));
   } catch (error) {
     // Web Audio may be unavailable in restricted browser modes; navigation should still work.
@@ -3681,6 +3684,7 @@ function toast(message) {
 function stopAudioIfNeeded() {
   if (state.route !== "reset") {
     state.audioPlaying = false;
+    stopResetTone();
     if (resetAudio) resetAudio.pause();
     stopTimer();
   } else {
@@ -3693,6 +3697,7 @@ function muteAllMedia(muted) {
     resetAudio.muted = muted;
     if (muted) resetAudio.pause();
   }
+  if (muted) stopResetTone();
   if (routeAudio) {
     routeAudio.muted = muted;
     if (muted) routeAudio.pause();
@@ -3713,15 +3718,61 @@ function ensureResetAudio() {
   return resetAudio;
 }
 
+function stopResetTone() {
+  try {
+    if (resetToneGain && resetToneContext) {
+      resetToneGain.gain.cancelScheduledValues(resetToneContext.currentTime);
+      resetToneGain.gain.setTargetAtTime(0.0001, resetToneContext.currentTime, 0.04);
+    }
+    if (resetToneOscillator) {
+      resetToneOscillator.stop(resetToneContext.currentTime + 0.12);
+    }
+  } catch (error) {
+    // Tone may already be stopped by the browser.
+  }
+  resetToneOscillator = null;
+  resetToneGain = null;
+}
+
+function startResetTone() {
+  try {
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContext) return false;
+    if (!resetToneContext || resetToneContext.state === "closed") {
+      resetToneContext = new AudioContext();
+    }
+    stopResetTone();
+    const oscillator = resetToneContext.createOscillator();
+    const gainNode = resetToneContext.createGain();
+    const frequency = Number(state.tone) || 528;
+    oscillator.type = "sine";
+    oscillator.frequency.setValueAtTime(frequency, resetToneContext.currentTime);
+    gainNode.gain.setValueAtTime(0.0001, resetToneContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(Math.max(0.02, Math.min(0.22, state.volume * 0.32)), resetToneContext.currentTime + 0.08);
+    oscillator.connect(gainNode);
+    gainNode.connect(resetToneContext.destination);
+    oscillator.start();
+    resetToneOscillator = oscillator;
+    resetToneGain = gainNode;
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
+
 function toggleResetAudio() {
   if (state.route !== "reset") return;
-  const audio = ensureResetAudio();
   state.audioPlaying = !state.audioPlaying;
   if (state.audioPlaying) {
-    audio.play().catch(() => toast("Tap play again if the browser blocked audio."));
+    const started = startResetTone();
+    if (!started) {
+      const audio = ensureResetAudio();
+      audio.play().catch(() => toast("Tap play again if the browser blocked audio."));
+    }
     startTimer();
   } else {
-    audio.pause();
+    stopResetTone();
+    if (resetAudio) resetAudio.pause();
     stopTimer();
   }
   render();
@@ -3738,11 +3789,16 @@ function startTimer() {
     state.timerRemaining = Math.max(0, state.timerRemaining - 1);
     if (state.timerRemaining <= 0) {
       state.audioPlaying = false;
+      stopResetTone();
       ensureResetAudio().pause();
       stopTimer();
       toast("Reset session complete");
     } else {
+      const scrollY = state.route === "reset" ? window.scrollY : 0;
       render();
+      if (state.route === "reset") {
+        requestAnimationFrame(() => window.scrollTo({ top: scrollY, left: 0, behavior: "auto" }));
+      }
     }
   }, 1000);
 }
@@ -4054,7 +4110,10 @@ function handleAction(action, target) {
     state.tone = target.getAttribute("data-tone") || state.tone;
     state.timerRemaining = state.duration;
     toast(`${state.tone} Hz loaded in Reset`);
-    go("reset");
+    if (state.route !== "reset") {
+      go("reset");
+      return;
+    }
   }
   if (action === "connect-stream") {
     const stream = target.getAttribute("data-stream") || "Music platform";
@@ -4066,6 +4125,9 @@ function handleAction(action, target) {
   }
   if (action === "set-tone") {
     state.tone = target.getAttribute("data-tone");
+    if (resetToneOscillator && resetToneContext) {
+      resetToneOscillator.frequency.setTargetAtTime(Number(state.tone) || 528, resetToneContext.currentTime, 0.03);
+    }
     toast(`${state.tone} Hz loaded`);
   }
   if (action === "set-duration") {
@@ -4076,6 +4138,9 @@ function handleAction(action, target) {
   if (action === "volume-up" || action === "volume-down") {
     state.volume = Math.max(0.02, Math.min(0.8, state.volume + (action === "volume-up" ? 0.04 : -0.04)));
     if (resetAudio) resetAudio.volume = state.volume;
+    if (resetToneGain && resetToneContext) {
+      resetToneGain.gain.setTargetAtTime(Math.max(0.02, Math.min(0.22, state.volume * 0.32)), resetToneContext.currentTime, 0.03);
+    }
     render();
   }
   if (action === "favorite-tone") toast(`${state.tone} Hz saved as favorite`);
@@ -4280,9 +4345,22 @@ function activateInteractiveTarget(event) {
   if (actionTarget) {
     const action = actionTarget.getAttribute("data-action");
     if (action === "search" || action === "scan-ticket") return false;
+    const preserveResetScroll = Boolean(actionTarget.closest(".reset-screen")) && [
+      "toggle-reset-audio",
+      "set-tone",
+      "set-duration",
+      "volume-up",
+      "volume-down",
+      "favorite-tone",
+      "load-reset-session",
+    ].includes(action);
+    const scrollY = preserveResetScroll ? window.scrollY : 0;
     event.preventDefault();
     stopRouteAudio();
     handleAction(action, actionTarget);
+    if (preserveResetScroll) {
+      requestAnimationFrame(() => window.scrollTo({ top: scrollY, left: 0, behavior: "auto" }));
+    }
     return true;
   }
   return false;
