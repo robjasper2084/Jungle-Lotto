@@ -24,6 +24,13 @@ const ASSETS = {
   balanced: `${BASE}/assets/images/strategy-balanced-button.0b00547b9900f66b82bdaf63849aab4b.png`,
   psychic: `${BASE}/assets/images/ai-psychic-engine-circle.95310af8f2dc5491754f875ec150e785.png`,
   commandDeck: `${BASE}/assets/custom/generated-command-deck.webp`,
+  studioBooth: `${BASE}/assets/custom/generated-command-deck.webp`,
+  detroitHoodieClose: `${BASE}/assets/custom/detroit-hoodie-close.png`,
+  detroitPoloClose: `${BASE}/assets/custom/detroit-polo-close.png`,
+  detroitCapClose: `${BASE}/assets/custom/detroit-cap-close.png`,
+  detroitCollection: `${BASE}/assets/custom/detroit-collection.png`,
+  detroitPoloSmall: `${BASE}/assets/custom/detroit-polo-small.png`,
+  detroitCapFront: `${BASE}/assets/custom/detroit-cap-front.png`,
   voiceCornerMic: `${BASE}/assets/custom/generated-lottomind-mic.webp`,
   searchMic: `${BASE}/assets/custom/generated-lottomind-mic.webp`,
   dreamOracleHost: `${BASE}/assets/custom/dream-oracle-host.png`,
@@ -60,6 +67,7 @@ const ROUTE_AUDIO_POOLS = {
   game: [AUDIO.digitalStatic, AUDIO.lucky],
   music: [AUDIO.userFrequency, AUDIO.userVault174, AUDIO.goldReset],
   radioStation: [AUDIO.userFrequency, AUDIO.lucky],
+  studio: [AUDIO.userFrequency, AUDIO.goldReset, AUDIO.digitalStatic],
   store: [AUDIO.goldReset, AUDIO.userFrequency],
   scanner: [AUDIO.digitalStatic, AUDIO.userRainfield],
 };
@@ -126,6 +134,7 @@ const ROUTES = {
   heatmapAnalytics: "heatmap-analytics",
   ai: "lottomind-ai",
   pickGames: "pick-games",
+  studio: "studio",
   music: "music-hub",
   radioStation: "radio-station",
   horoscope: "horoscope",
@@ -189,6 +198,7 @@ const ROUTE_ALIASES = {
   "lottomind-ai": "ai",
   "lotto-intelligence": "lottoIntel",
   "pick-games": "pickGames",
+  studio: "studio",
   "dream-video": "dreamVideo",
   "intelligence-locker": "intelligenceLocker",
   predictions: "predictions",
@@ -324,44 +334,60 @@ const WEATHER_SIGNALS = [
 ];
 
 const MARKETPLACE_ITEMS = [
-  ["Mind Credits", "Use credits for psychic reads, wheels, reports, and deep scans.", 100],
-  ["LottoMind VIP", "Unlock premium paths and reduced credit friction.", 250],
-  ["Dream Video Studio", "Turn dream notes into storyboard-ready concepts.", 180],
-  ["Learning Library", "Wheel basics, matrix rules, Pick 3/Pick 4 education.", 60],
+  ["Mind Credits", "Use credits for psychic reads, wheels, reports, and deep scans.", 100, "credits-pack"],
+  ["LottoMind VIP", "Unlock premium paths and reduced credit friction.", 250, "vip"],
+  ["Dream Video Studio", "Turn dream notes into storyboard-ready concepts.", 180, "dream-video"],
+  ["Learning Library", "Wheel basics, matrix rules, Pick 3/Pick 4 education.", 60, "learning-library"],
 ];
 
 const MERCH_ITEMS = [
   {
-    title: "Frequency Vault Hoodie",
-    copy: "Black and gold LottoMind hoodie with brain-circuit crest.",
+    title: "I Love Detroit Hoodie",
+    copy: "Charcoal hoodie with embroidered Detroit skyline heart and LottoMind-ready streetwear energy.",
     price: "$64",
     type: "Clothing",
-    art: ASSETS.mascot,
-    className: "hoodie",
+    art: ASSETS.detroitHoodieClose,
+    className: "detroit-hoodie",
   },
   {
-    title: "Oracle Studio Tee",
-    copy: "Soft black tee with gold LM coin and cyan circuit art.",
-    price: "$32",
+    title: "Detroit Polo",
+    copy: "Navy polo with stitched I Love Detroit crest for a cleaner premium merch lane.",
+    price: "$46",
     type: "Clothing",
-    art: ASSETS.commandDeck,
-    className: "tee",
+    art: ASSETS.detroitPoloClose,
+    className: "detroit-polo",
   },
   {
-    title: "Jackpot Run Tracksuit",
-    copy: "Luxury arcade warmup set for LottoMind game nights.",
-    price: "$88",
+    title: "Detroit Logo Tee",
+    copy: "Heather charcoal tee with the full embroidered Detroit mark.",
+    price: "$34",
     type: "Clothing",
-    art: ASSETS.arcade,
-    className: "tracksuit",
+    art: ASSETS.detroitCollection,
+    className: "detroit-tee",
   },
   {
-    title: "Oracle Studio Cap",
-    copy: "Structured cap with the LM coin mark.",
+    title: "I Love Detroit Cap",
+    copy: "Navy structured cap with centered embroidered city-heart logo.",
+    price: "$34",
+    type: "Clothing",
+    art: ASSETS.detroitCapFront,
+    className: "detroit-cap",
+  },
+  {
+    title: "Mini Crest Polo",
+    copy: "Minimal chest-logo polo for a more subtle Detroit drop.",
+    price: "$42",
+    type: "Clothing",
+    art: ASSETS.detroitPoloSmall,
+    className: "detroit-polo-small",
+  },
+  {
+    title: "Cap Closeup Drop",
+    copy: "Close-detail merch preview for the embroidered cap logo.",
     price: "$34",
     type: "Official Drop",
-    art: ASSETS.arcadeCoin,
-    className: "cap",
+    art: ASSETS.detroitCapClose,
+    className: "detroit-cap-close",
   },
   {
     title: "LottoMind Coin Sticker Pack",
@@ -405,6 +431,29 @@ const MERCH_ITEMS = [
   },
 ];
 
+const STORE_DIRECTORY = [
+  { id: "ny-hudson-lucky", state: "NY", name: "Hudson Lucky Mart", address: "184 Hudson Ave, New York, NY", distance: 0.8, lat: 40.734, lng: -74.006, open: true, note: "Open until 10 PM", services: ["Powerball", "Mega Millions", "Scratchers", "Self-Check", "Prize Cashing"], numbers: [5, 19, 33] },
+  { id: "ny-empire-ticket", state: "NY", name: "Empire Ticket Counter", address: "88 Canal St, New York, NY", distance: 1.4, lat: 40.716, lng: -73.997, open: true, note: "Self-check lane", services: ["Powerball", "Daily 3", "Daily 4", "Ticket Scanner"], numbers: [11, 27, 40] },
+  { id: "fl-sunrise", state: "FL", name: "Sunrise Lotto Stop", address: "220 Sunrise Blvd, Fort Lauderdale, FL", distance: 1.2, lat: 26.137, lng: -80.13, open: true, note: "Storm-lane pickup", services: ["Powerball", "Mega Millions", "Scratchers", "Vending"], numbers: [8, 12, 24] },
+  { id: "tx-lone-star", state: "TX", name: "Lone Star Ticket Hub", address: "401 Congress Ave, Austin, TX", distance: 2.4, lat: 30.266, lng: -97.743, open: false, note: "Dry heat balance", services: ["Powerball", "Daily 3", "Daily 4", "Prize Cashing"], numbers: [7, 18, 31] },
+  { id: "ca-coastal", state: "CA", name: "Coastal Numbers Market", address: "500 Market St, San Francisco, CA", distance: 1.7, lat: 37.789, lng: -122.401, open: true, note: "Cooling trend", services: ["Mega Millions", "Scratchers", "Self-Check"], numbers: [6, 16, 42] },
+  { id: "ga-peach", state: "GA", name: "Peach State Play Center", address: "75 Peachtree St, Atlanta, GA", distance: 1.1, lat: 33.754, lng: -84.389, open: true, note: "Warm evening lane", services: ["Powerball", "Mega Millions", "Vending", "Prize Cashing"], numbers: [4, 14, 28] },
+  { id: "mi-motor", state: "MI", name: "Motor City Lucky Stop", address: "100 Woodward Ave, Detroit, MI", distance: 0.9, lat: 42.331, lng: -83.045, open: true, note: "Cloud reset lane", services: ["Powerball", "Daily 3", "Daily 4", "Scratchers", "Self-Check"], numbers: [9, 21, 36] },
+  { id: "mi-riverfront", state: "MI", name: "Riverfront Jackpot Shop", address: "300 Atwater St, Detroit, MI", distance: 1.6, lat: 42.329, lng: -83.04, open: false, note: "Evening draw rush", services: ["Mega Millions", "Scratchers", "Prize Cashing"], numbers: [2, 17, 44] },
+];
+
+const STORE_FILTERS = ["Open Now", "Powerball", "Mega Millions", "Daily 3", "Daily 4", "Scratchers", "Self-Check", "Prize Cashing"];
+
+const FEATURE_UNLOCKS = [
+  { id: "premium-tip", title: "Premium Lotto Tip", cost: 100, route: "dailyFortune", window: "Permanent" },
+  { id: "ai-number-set", title: "AI Number Set", cost: 250, route: "ai", window: "Permanent" },
+  { id: "advanced-trivia", title: "Advanced Trivia Pack", cost: 500, route: "triviaPlay", window: "Permanent" },
+  { id: "dream-bonus", title: "Dream Oracle Bonus Reading", cost: 750, route: "dreams", window: "Permanent" },
+  { id: "analyzer-24", title: "Lotto Analyzer 24-hour Unlock", cost: 1000, route: "lottoIntel", window: "24 hours" },
+  { id: "live-data-24", title: "Live Data 24-hour Unlock", cost: 1500, route: "liveData", window: "24 hours" },
+  { id: "vip-insights", title: "VIP Lucky Insights", cost: 2000, route: "vip", window: "Permanent" },
+];
+
 const RADAR_POSITIONS = [
   [50, 14], [63, 18], [37, 18], [75, 26], [25, 26], [50, 30], [64, 34],
   [36, 34], [82, 42], [18, 42], [50, 46], [68, 52], [32, 52], [84, 60],
@@ -420,6 +469,7 @@ const ORACLE_STUDIO_GROUP = {
     ["Dream Oracle", "Voice meaning", "dreams"],
     ["Radio Station", "Live audio", "radioStation"],
     ["Music Hub", "Audio deck", "music"],
+    ["Sonic Studio", "Record booth", "studio"],
     ["Generate Dreams", "AI scenes", "dreamVideo"],
     ["Dream Video", "Storyboard", "dreamVideo"],
     ["Viral Studio", "Video loops", "viralStudio"],
@@ -491,6 +541,7 @@ const HOME_CAROUSEL = [
   ["Reset Studio", "Start with a calm signal before numbers.", "reset", ASSETS.reset],
   ["Dream Oracle", "Speak or type the dream and receive numbers.", "dreams", ASSETS.dream],
   ["Music Store / Record Label", "Play LottoMind Records audio and reset sessions.", "music", ASSETS.music],
+  ["Sonic Studio", "Record dream songs, lucky chants, and reset demos.", "studio", ASSETS.studioBooth],
   ["Radio Station", "LottoMind Records live audio lane.", "radioStation", ASSETS.music],
   ["Generate Your Dreams", "Turn dreams into scenes, readings, and lucky reveal cards.", "dreamVideo", ASSETS.dream],
   ["Heatmap Radar", "Read hot, cold, and overdue movement.", "heatmap", ASSETS.heatmap],
@@ -513,6 +564,11 @@ const STORAGE = {
   settings: "lottomind.oracle.real.settings.v1",
   streams: "lottomind.oracle.real.streams.v1",
   stores: "lottomind.oracle.real.stores.v1",
+  storeFavorites: "lottomind.oracle.real.storeFavorites.v1",
+  unlocks: "lottomind.oracle.real.unlocks.v1",
+  triviaHistory: "lottomind.oracle.real.triviaHistory.v1",
+  crossword: "lottomind.oracle.real.crossword.v1",
+  wordSearch: "lottomind.oracle.real.wordSearch.v1",
 };
 
 const DEFAULT_SETTINGS = {
@@ -562,6 +618,13 @@ const state = {
   triviaAnswered: null,
   triviaComplete: false,
   selectedMerchIndex: 0,
+  merchCategory: "All",
+  storeQuery: "",
+  activeStoreFilters: [],
+  selectedStoreId: "",
+  userLocation: null,
+  wordSearchMarks: loadJson("lottomind.oracle.real.wordSearch.v1", []),
+  crosswordSolved: loadJson("lottomind.oracle.real.crossword.v1", { solved: false }).solved || false,
 };
 
 if (!LOTTO_GAMES.some((game) => game.id === state.gameId)) {
@@ -909,6 +972,107 @@ function saveJson(key, value) {
   localStorage.setItem(key, JSON.stringify(value));
 }
 
+function todayKey(date = new Date()) {
+  return date.toISOString().slice(0, 10);
+}
+
+function daysBetween(a, b) {
+  if (!a || !b) return 999;
+  return Math.round((new Date(b).setHours(0, 0, 0, 0) - new Date(a).setHours(0, 0, 0, 0)) / 86400000);
+}
+
+function getUnlocks() {
+  return loadJson(STORAGE.unlocks, {});
+}
+
+function saveUnlock(id, title, cost = 0, hours = null) {
+  const catalogItem = FEATURE_UNLOCKS.find((item) => item.id === id);
+  if (title === "24h" || title === "permanent" || !title) {
+    hours = title === "24h" ? 24 : hours;
+    title = catalogItem?.title || id;
+    cost = catalogItem?.cost || cost;
+  }
+  const unlocks = getUnlocks();
+  unlocks[id] = {
+    id,
+    title,
+    cost,
+    unlockedAt: new Date().toISOString(),
+    expiresAt: hours ? new Date(Date.now() + hours * 3600000).toISOString() : null,
+  };
+  saveJson(STORAGE.unlocks, unlocks);
+  return unlocks[id];
+}
+
+function isUnlocked(id) {
+  const unlock = getUnlocks()[id];
+  if (!unlock) return false;
+  if (unlock.expiresAt && Date.now() > new Date(unlock.expiresAt).getTime()) return false;
+  return true;
+}
+
+function getTriviaProgress() {
+  const progress = loadJson(STORAGE.triviaHistory, {
+    totalCredits: getCredits(),
+    dailyStreak: 0,
+    weeklyStreak: 0,
+    lastPlayedDate: "",
+    history: [],
+  });
+  return { dailyStreak: 0, weeklyStreak: 0, history: [], ...progress, totalCredits: getCredits() };
+}
+
+function saveTriviaProgress(progress) {
+  saveJson(STORAGE.triviaHistory, { ...progress, totalCredits: getCredits() });
+}
+
+function triviaDifficulty(index = state.triviaIndex) {
+  return index < 2 ? "Easy" : index < 4 ? "Medium" : "Hard";
+}
+
+function triviaRewardFor(index = state.triviaIndex) {
+  return triviaDifficulty(index) === "Hard" ? 50 : triviaDifficulty(index) === "Medium" ? 25 : 10;
+}
+
+function completeTriviaProgress() {
+  const progress = getTriviaProgress();
+  const today = todayKey();
+  const gap = daysBetween(progress.lastPlayedDate, today);
+  const dailyStreak = gap === 1 ? progress.dailyStreak + 1 : gap === 0 ? Math.max(1, progress.dailyStreak) : 1;
+  const weeklyStreak = Math.min(7, Math.max(progress.weeklyStreak || 0, dailyStreak));
+  let bonus = 0;
+  if (dailyStreak > 0 && dailyStreak % 3 === 0) bonus += 50;
+  if (dailyStreak > 0 && dailyStreak % 7 === 0) bonus += 200;
+  if (bonus) setCredits(getCredits() + bonus);
+  const next = {
+    ...progress,
+    dailyStreak,
+    weeklyStreak,
+    lastPlayedDate: today,
+    history: [{ date: today, score: state.triviaScore, streak: state.triviaStreak, bonus }, ...(progress.history || [])].slice(0, 20),
+  };
+  saveTriviaProgress(next);
+  return { ...next, bonus };
+}
+
+function storeFavorites() {
+  return loadJson(STORAGE.storeFavorites, []);
+}
+
+function filteredStores() {
+  const query = state.storeQuery.trim().toLowerCase();
+  const filters = new Set(state.activeStoreFilters);
+  return STORE_DIRECTORY
+    .filter((store) => !query || `${store.name} ${store.address} ${store.state} ${store.services.join(" ")}`.toLowerCase().includes(query))
+    .filter((store) => !filters.has("Open Now") || store.open)
+    .filter((store) => [...filters].every((filter) => filter === "Open Now" || store.services.includes(filter)))
+    .sort((a, b) => (a.state === state.selectedState ? -1 : 0) - (b.state === state.selectedState ? -1 : 0) || a.distance - b.distance);
+}
+
+function selectedStore(stores = filteredStores()) {
+  return stores.find((store) => store.id === state.selectedStoreId) || stores[0] || STORE_DIRECTORY[0];
+}
+
 function getSettings() {
   return { ...DEFAULT_SETTINGS, ...loadJson(STORAGE.settings, {}) };
 }
@@ -940,6 +1104,10 @@ function setCredits(value) {
 }
 
 function routeFromLocation() {
+  const routeParam = new URLSearchParams(window.location.search).get("route");
+  if (routeParam) {
+    return ROUTE_ALIASES[routeParam] || Object.keys(ROUTES).find((key) => ROUTES[key] === routeParam) || "dashboard";
+  }
   let path = window.location.pathname;
   if (path.startsWith(BASE)) path = path.slice(BASE.length);
   path = path.replace(/\/index\.html$/i, "").replace(/^index\.html$/i, "");
@@ -1071,6 +1239,44 @@ function strategyPills() {
   `).join("")}</div>`;
 }
 
+const tabNotes = {
+  Home: 261.63,
+  Tools: 293.66,
+  Radar: 329.63,
+  Dream: 349.23,
+  Reset: 392.00,
+  Seq: 440.00,
+  Vault: 493.88,
+  Arcade: 523.25,
+};
+
+function playTabNote(frequency) {
+  try {
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContext || !Number.isFinite(frequency)) return;
+    const audioCtx = new AudioContext();
+
+    const oscillator = audioCtx.createOscillator();
+    const gainNode = audioCtx.createGain();
+
+    oscillator.type = "triangle";
+    oscillator.frequency.setValueAtTime(frequency, audioCtx.currentTime);
+
+    gainNode.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.25, audioCtx.currentTime + 0.02);
+    gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.45);
+
+    oscillator.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+
+    oscillator.start();
+    oscillator.stop(audioCtx.currentTime + 0.5);
+    oscillator.addEventListener("ended", () => audioCtx.close?.().catch(() => {}));
+  } catch (error) {
+    // Web Audio may be unavailable in restricted browser modes; navigation should still work.
+  }
+}
+
 function header() {
   return `<header class="real-header">
     <button class="round-icon menu-orb help-orb" data-action="menu" aria-label="Open help, settings, and policies"><span></span><em>HELP</em></button>
@@ -1080,10 +1286,10 @@ function header() {
       <i class="store-tab">Store</i>
       <i class="radio-tab" data-route="radioStation">Radio</i>
     </button>
-    <button class="round-icon mic-orb art-mic-orb" data-action="voice-search" aria-label="Start voice input"><img src="${ASSETS.voiceCornerMic}" alt="" /><b>Voice</b></button>
+    <button class="round-icon mic-orb art-mic-orb" data-action="voice-search" aria-label="Start voice input"><img src="${ASSETS.voiceCornerMic}" alt="" /><span class="mic-glyph" aria-hidden="true"></span><b>Voice</b></button>
     <div class="top-controls segmented-switch shell-switch" role="group" aria-label="Pinned state and shell view mode">
       <button class="pin-button meatball" data-action="cycle-state"><span>PIN</span><strong>${state.selectedState}</strong></button>
-      <button class="mode-toggle meatball ${state.viewMode === "shell" || state.viewMode === "auto" ? "active" : ""}" data-action="set-view" data-view="auto"><span>Auto</span></button>
+      <button class="mode-toggle meatball ${state.viewMode === "auto" ? "active" : ""}" data-action="set-view" data-view="auto"><span>Auto</span></button>
       <button class="mode-toggle meatball ${state.viewMode === "app" ? "active" : ""}" data-action="set-view" data-view="app"><span>App</span></button>
       <button class="mode-toggle meatball ${state.viewMode === "web" ? "active" : ""}" data-action="set-view" data-view="web"><span>Web</span></button>
     </div>
@@ -1118,7 +1324,7 @@ function bottomNav() {
     ["arcade", "Arcade", "AR"],
   ];
   return `<nav class="real-bottom-nav">${items.map(([route, label, icon]) => `
-    <button class="${state.route === route ? "active" : ""}" data-route="${route}">
+    <button class="${state.route === route ? "active" : ""}" data-route="${route}" data-tab-label="${label}">
       <span class="nav-glyph">${icon}</span>
       <small>${label}</small>
     </button>
@@ -1141,6 +1347,7 @@ function routeMeta(routeKey = state.route) {
     wallet: ["Credit Vault", `${getCredits()} credits`],
     music: ["Music Store", "LottoMind Records label"],
     radioStation: ["Radio Station", "LottoMind Records live lane"],
+    studio: ["Sonic Studio", "Recording booth"],
     dreamVideo: ["Video Studio", "Dream and promo loops"],
     viralStudio: ["Video Studio", "Branded motion kit"],
     records: ["History Vault", "Draw and saved archive"],
@@ -1251,7 +1458,6 @@ function renderFunctionSearchResults(value = state.searchQuery) {
 
 function dashboardView() {
   const current = state.currentSet || generateLottoSet(state.gameId, state.strategy, "dashboard");
-  const weather = WEATHER_SIGNALS.find((item) => item.stateCode === state.selectedState) || WEATHER_SIGNALS[0];
   return `<section class="screen dashboard-screen">
     <div class="oracle-hero panel art-panel" style="--panel-art:url('${ASSETS.dream}')">
       <div>
@@ -1260,6 +1466,7 @@ function dashboardView() {
         <div class="hero-actions">
           <button class="primary-btn" data-route="dreams">Open Dream Oracle</button>
           <button class="ghost-btn" data-route="powertools">Power Tools</button>
+          <button class="ghost-btn" data-route="studio">Sonic Studio</button>
         </div>
       </div>
       <img class="hero-mascot hero-emblem" src="${ASSETS.logo}" alt="LottoMind oracle emblem" />
@@ -1291,33 +1498,6 @@ function dashboardView() {
       </div>
     </div>
 
-    <div class="panel home-merch-video">
-      <video src="${BASE}/videos/merch-store-button-loop.mp4" poster="${ASSETS.credit}" muted loop autoplay playsinline preload="metadata"></video>
-      <div>
-        <span class="eyebrow">Official Merch Store</span>
-        <h2>LottoMind Gear Drop</h2>
-        <p>Shop branded gear, coin art, promo drops, and marketplace-ready merch lanes.</p>
-        <div class="hero-actions">
-          <button class="primary-btn" data-route="store">Open Merch Store</button>
-          <button class="ghost-btn" data-route="marketplace">Marketplace</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="panel snapshot-panel">
-      <div class="section-head"><div><h2>Today's Snapshot</h2><p>Local cues before you pick.</p></div></div>
-      <div class="snap-carousel small">
-        ${[
-          ["Weather", `${weather.temperature}F`, `${weather.condition} in ${weather.name}`],
-          ["Horoscope", "Leo", "Daily focus lane"],
-          ["Store Locator", "Near you", "Saved state pin"],
-          ["Daily Fortune", "Ready", "One tap symbolic read"],
-          ["Live Results", "Open", "Check latest draw cards"],
-          ["Credits", getCredits(), "Vault balance"],
-        ].map(([title, value, copy]) => `<button class="mini-tool" data-route="${title === "Weather" ? "luckyWeather" : title === "Horoscope" ? "horoscope" : title === "Live Results" ? "live" : title === "Credits" ? "wallet" : title === "Daily Fortune" ? "dailyFortune" : title === "Store Locator" ? "storeLocator" : "dashboard"}"><span>${title}</span><strong>${value}</strong><small>${copy}</small></button>`).join("")}
-      </div>
-    </div>
-
     <div class="live-strip panel">
       <div><h2>Live Results</h2><p>Next Draw in</p><strong>02:18:45</strong></div>
       ${ballsHtml([12, 28, 33, 44, 50])}
@@ -1327,6 +1507,19 @@ function dashboardView() {
     <div class="split-grid">
       <button class="action-tile" data-action="menu"><strong>LottoMind Academy</strong><span>Help, settings, policies, and privacy</span></button>
       <button class="action-tile" data-route="marketplace"><strong>Marketplace</strong><span>Credits, VIP tools, and unlocks</span></button>
+    </div>
+
+    <div class="panel home-merch-video">
+      <img class="home-merch-product" src="${ASSETS.detroitCollection}" alt="" />
+      <div>
+        <span class="eyebrow">Official Merch Store</span>
+        <h2>LottoMind Gear Drop</h2>
+        <p>Shop branded gear, coin art, promo drops, and marketplace-ready merch lanes.</p>
+        <div class="hero-actions">
+          <button class="primary-btn" data-route="store">Open Merch Store</button>
+          <button class="ghost-btn" data-route="marketplace">Marketplace</button>
+        </div>
+      </div>
     </div>
   </section>`;
 }
@@ -1522,6 +1715,23 @@ function dreamGeneratePanel() {
   </div>`;
 }
 
+function todaysSnapshotPanel(title = "Today's Snapshot") {
+  const weather = WEATHER_SIGNALS.find((item) => item.stateCode === state.selectedState) || WEATHER_SIGNALS[0];
+  return `<div class="panel snapshot-panel radar-snapshot-panel">
+    <div class="section-head"><div><h2>${title}</h2><p>Local cues before you pick.</p></div></div>
+    <div class="snap-carousel small">
+      ${[
+        ["Weather", `${weather.temperature}F`, `${weather.condition} in ${weather.name}`],
+        ["Horoscope", "Leo", "Daily focus lane"],
+        ["Store Locator", "Near you", "Saved state pin"],
+        ["Daily Fortune", "Ready", "One tap symbolic read"],
+        ["Live Results", "Open", "Check latest draw cards"],
+        ["Credits", getCredits(), "Vault balance"],
+      ].map(([itemTitle, value, copy]) => `<button class="mini-tool" data-route="${itemTitle === "Weather" ? "luckyWeather" : itemTitle === "Horoscope" ? "horoscope" : itemTitle === "Live Results" ? "live" : itemTitle === "Credits" ? "wallet" : itemTitle === "Daily Fortune" ? "dailyFortune" : itemTitle === "Store Locator" ? "storeLocator" : "dashboard"}"><span>${itemTitle}</span><strong>${value}</strong><small>${copy}</small></button>`).join("")}
+    </div>
+  </div>`;
+}
+
 function storeRouteMapPanel(stores) {
   const points = [
     [18, 32],
@@ -1543,16 +1753,16 @@ function storeRouteMapPanel(stores) {
         <path class="route-line" d="${routePath}" filter="url(#lm-route-glow)"></path>
       </svg>
       <span class="user-map-pin" style="--x:50%;--y:50%"><b>${state.selectedState}</b><small>You</small></span>
-      ${stores.map(([pin, name, distance], index) => {
+      ${stores.map((store, index) => {
         const [x, y] = points[index] || points[0];
-        return `<a class="store-map-pin ${pin === state.selectedState ? "active" : ""}" style="--x:${x}%;--y:${y}%" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${name} lottery store ${pin}`)}" target="_blank" rel="noopener" aria-label="Open directions to ${escapeHtml(name)}"><b>${index + 1}</b><small>${pin}</small></a>`;
+        return `<a class="store-map-pin ${store.id === state.selectedStoreId ? "active" : ""}" style="--x:${x}%;--y:${y}%" href="https://www.google.com/maps/dir/?api=1&destination=${store.lat},${store.lng}" target="_blank" rel="noopener" aria-label="Open directions to ${escapeHtml(store.name)}"><b>${index + 1}</b><small>${store.state}</small></a>`;
       }).join("")}
     </div>
     <div class="route-leg-list">
-      ${stores.map(([pin, name, distance, note], index) => `<a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${name} lottery store ${pin}`)}" target="_blank" rel="noopener">
+      ${stores.map((store, index) => `<a href="https://www.google.com/maps/dir/?api=1&destination=${store.lat},${store.lng}" target="_blank" rel="noopener">
         <span>${String(index + 1).padStart(2, "0")}</span>
-        <strong>${name}</strong>
-        <small>${distance} - ${note}</small>
+        <strong>${store.name}</strong>
+        <small>${store.distance} mi - ${store.note}</small>
         <b>Directions</b>
       </a>`).join("")}
     </div>
@@ -1561,16 +1771,9 @@ function storeRouteMapPanel(stores) {
 
 function storeLocatorView() {
   const weather = WEATHER_SIGNALS.find((item) => item.stateCode === state.selectedState) || WEATHER_SIGNALS[0];
-  const stores = [
-    ["NY", "Hudson Lucky Mart", "0.8 mi", "Open until 10 PM", "lottery counter, scratch-off wall, ATM", [5, 19, 33]],
-    ["FL", "Sunrise Lotto Stop", "1.2 mi", "Storm-lane pickup", "quick-pick kiosk, parking lot, late snacks", [8, 12, 24]],
-    ["TX", "Lone Star Ticket Hub", "2.4 mi", "Dry heat balance", "draw screen, coffee bar, evening rush", [7, 18, 31]],
-    ["CA", "Coastal Numbers Market", "1.7 mi", "Cooling trend", "coastal route, service desk, ticket checker", [6, 16, 42]],
-    ["GA", "Peach State Play Center", "1.1 mi", "Warm evening lane", "neighborhood counter, receipt printer, neon sign", [4, 14, 28]],
-    ["MI", "Motor City Lucky Stop", "0.9 mi", "Cloud reset lane", "drive route, vending wall, jackpot board", [9, 21, 36]],
-  ];
-  const pinned = stores.filter((store) => store[0] === state.selectedState);
-  const visible = (pinned.length ? pinned.concat(stores.filter((store) => store[0] !== state.selectedState)) : stores).slice(0, 6);
+  const favorites = storeFavorites();
+  const visible = filteredStores().slice(0, 6);
+  const activeStore = selectedStore(visible);
   return `<section class="screen store-locator-screen">
     <div class="panel art-panel media-hero" style="--panel-art:url('${ASSETS.credit}')">
       <div>
@@ -1583,30 +1786,53 @@ function storeLocatorView() {
           <button class="ghost-btn" data-route="heatmap">Signal Radar</button>
         </div>
       </div>
-      <button class="console-orb state-orb" data-action="cycle-state"><img src="${ASSETS.logo}" alt="" /><span>${state.selectedState}</span></button>
+      <button class="console-orb state-orb state-change-orb" data-action="cycle-state" aria-label="Change store locator state"><img src="${ASSETS.logo}" alt="" /><span>${state.selectedState}</span><small>Change State</small></button>
+    </div>
+    <div class="panel store-search-console">
+      <label class="search-pill slim"><span>Find</span><input data-bind="storeQuery" value="${escapeHtml(state.storeQuery)}" placeholder="Search store, ZIP, city, service..." /><button data-action="search-stores">Go</button></label>
+      <div class="store-filter-row">
+        ${STORE_FILTERS.map((filter) => `<button class="${state.activeStoreFilters.includes(filter) ? "active" : ""}" data-action="toggle-store-filter" data-filter="${filter}">${filter}</button>`).join("")}
+      </div>
+      <div class="hero-actions padded">
+        <button class="primary-btn" data-action="use-current-location">Use My Location</button>
+        <button class="ghost-btn" data-action="sync-store-backend">Sync Places Backend</button>
+        <button class="ghost-btn" data-route="history">Saved Routes</button>
+      </div>
     </div>
     <div class="panel local-signal-panel">
       <div class="section-head"><div><h2>Weather + Store Cue</h2><p>${weather.condition} in ${weather.name}. Use light local context before you pick.</p></div><span>${weather.temperature}F</span></div>
       <div class="local-signal-grid">
         <button class="local-card weather-card" data-route="luckyWeather"><span>Weather Report</span><strong>${weather.signal}</strong><small>${weather.numbers.join(" / ")}</small></button>
         <button class="local-card radar-card" data-route="heatmap"><span>Radar</span>${ballsHtml(weather.numbers)}<small>Open hot/cold map</small></button>
-        <button class="local-card store-card-mini" data-action="save-store"><span>Saved Pin</span><strong>${state.selectedState}</strong><small>Tap to save locator state</small></button>
+        <button class="local-card store-card-mini" data-action="toggle-store-favorite" data-store="${activeStore.id}"><span>Selected Store</span><strong>${activeStore.name}</strong><small>${favorites.includes(activeStore.id) ? "Saved favorite" : "Tap star to save"}</small></button>
       </div>
     </div>
     ${storeRouteMapPanel(visible)}
+    <div class="panel store-detail-inline">
+      <div><span>${activeStore.state} ${activeStore.open ? "Open Now" : "Check Hours"}</span><h2>${activeStore.name}</h2><p>${activeStore.address}</p></div>
+      <div class="store-service-row">${activeStore.services.map((service) => `<span>${service}</span>`).join("")}</div>
+      ${ballsHtml(activeStore.numbers)}
+      <div class="hero-actions padded">
+        <a class="primary-btn" href="https://www.google.com/maps/dir/?api=1&destination=${activeStore.lat},${activeStore.lng}" target="_blank" rel="noopener">Open Route</a>
+        <button class="ghost-btn" data-action="toggle-store-favorite" data-store="${activeStore.id}">${favorites.includes(activeStore.id) ? "Saved Favorite" : "Save Store"}</button>
+        <button class="ghost-btn" data-route="numberGenerator">Generate For Store</button>
+      </div>
+    </div>
     <div class="panel store-map-panel">
       <div class="section-head"><div><h2>Nearby Store Cards</h2><p>Demo store finder with state-select routing and radar actions.</p></div><span>${visible.length} stores</span></div>
       <div class="store-grid">
-        ${visible.map(([pin, name, distance, note, detail, numbers]) => `<article class="store-card locator-card">
-          <span>${pin} ${pin === state.selectedState ? "Pinned" : "Select"}</span>
-          <strong>${name}</strong>
-          <small>${distance} - ${note}</small>
-          <p>${detail}</p>
-          ${ballsHtml(numbers)}
+        ${visible.map((store) => `<article class="store-card locator-card ${store.id === activeStore.id ? "active" : ""}">
+          <span>${store.state} ${store.state === state.selectedState ? "Pinned" : "Select"} ${favorites.includes(store.id) ? "★" : ""}</span>
+          <strong>${store.name}</strong>
+          <small>${store.distance} mi - ${store.note}</small>
+          <p>${store.address}</p>
+          <div class="store-service-row">${store.services.slice(0, 4).map((service) => `<em>${service}</em>`).join("")}</div>
+          ${ballsHtml(store.numbers)}
           <div class="store-links">
-            <button data-action="select-state" data-state="${pin}">Pin ${pin}</button>
-            <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${name} lottery store ${pin}`)}" target="_blank" rel="noopener">Map</a>
-            <a href="https://www.google.com/search?q=${encodeURIComponent(`${name} lottery retailer ${pin}`)}" target="_blank" rel="noopener">Store Link</a>
+            <button data-action="select-store" data-store="${store.id}">Details</button>
+            <button data-action="toggle-store-favorite" data-store="${store.id}">${favorites.includes(store.id) ? "Saved" : "Save"}</button>
+            <button data-action="select-state" data-state="${store.state}">Pin ${store.state}</button>
+            <a href="https://www.google.com/maps/dir/?api=1&destination=${store.lat},${store.lng}" target="_blank" rel="noopener">Route</a>
           </div>
         </article>`).join("")}
       </div>
@@ -1737,6 +1963,7 @@ function dreamsView() {
         <button class="primary-btn" data-action="interpret-dream">Interpret Dream</button>
         <button class="ghost-btn" data-action="psychic-fusion">Psychic Fusion</button>
         <button class="ghost-btn" data-action="build-dream-video">Generate Your Dreams</button>
+        <button class="ghost-btn" data-route="studio">Record Dream Song</button>
       </div>
     </div>
 
@@ -1817,6 +2044,7 @@ function dreamsView() {
       <div class="hero-actions">
         <button class="primary-btn" data-action="save-dream">Save Dream Pick</button>
         <button class="ghost-btn" data-action="build-dream-video">Build Dream Video</button>
+        <button class="ghost-btn" data-route="studio">Record Dream Song</button>
         <button class="ghost-btn" data-route="heatmap">Open Radar</button>
         <button class="ghost-btn" data-route="history">Open History</button>
       </div>
@@ -1835,6 +2063,7 @@ function dreamsView() {
       <div class="hero-actions">
         <button class="primary-btn" data-route="music">Open Music Store</button>
         <button class="ghost-btn" data-route="radioStation">Radio Station</button>
+        <button class="ghost-btn" data-route="studio">Sonic Studio</button>
         <button class="ghost-btn" data-route="dreamVideo">Dream Video</button>
       </div>
     </div>
@@ -1947,6 +2176,7 @@ function heatmapView() {
         ["Store Locator", "storeLocator"],
       ].map(([label, route]) => `<button class="control-chip" data-route="${route === "hot" || route === "cold" || route === "balanced" ? "heatmap" : route}"><span>${label}</span><small>${route === "hot" ? topSignal.number : route === "cold" ? lowSignal.number : route === "balanced" ? "mix" : "open"}</small></button>`).join("")}
     </div>
+    ${todaysSnapshotPanel("Radar Snapshot")}
     <div class="panel quick-panel radar-quick-panel">
       <div class="section-head"><div><h2>Radar Tool Deck</h2><p>Old functions grouped under the Radar tab as swipeable Oracle buttons.</p></div><span>${QUICK_TOOLS.length} tools</span></div>
       <div class="circle-carousel">
@@ -2101,9 +2331,14 @@ function historyView() {
   const psychic = loadJson(STORAGE.psychic, []);
   const liveVault = `<div class="panel vault-section live-vault-panel">
       <div class="vault-heading"><span>Live Vault</span><h2>Live Results Archive</h2></div>
-      <p>Live Vault now sits inside History Vault so saved runs, draw cards, and radar checks stay together.</p>
-      <div class="result-list">
-        ${LIVE_RESULT_RECORDS.slice(0, 3).map((record) => `<button class="history-row live-vault-row" data-route="live"><strong>${record.gameName}</strong>${ballsHtml(record.numbers, record.special)}<small>${record.stateName} - ${record.drawDate} - ${record.session}</small></button>`).join("")}
+      <p>Compact draw cards with state, session, date, jackpot context, and the saved route back to Live Vault.</p>
+      <div class="live-vault-compact-grid">
+        ${LIVE_RESULT_RECORDS.slice(0, 4).map((record) => `<button class="history-row live-vault-row compact" data-route="live">
+          <span>${record.stateCode}</span>
+          <strong>${record.gameName}</strong>
+          ${ballsHtml(record.numbers, record.special)}
+          <small>${record.drawDate} - ${record.session}${record.jackpotMillions ? ` - $${record.jackpotMillions}M` : ""}</small>
+        </button>`).join("")}
       </div>
       <div class="hero-actions padded">
         <button class="primary-btn" data-route="live">Open Live Vault</button>
@@ -2144,14 +2379,15 @@ function liveView() {
 }
 
 function scannerView() {
+  const result = state.scanResult;
   return `<section class="screen">
     <div class="panel art-panel scanner-hero" style="--panel-art:url('${ASSETS.powerTools}')">
       <h1>Ticket Scanner</h1>
       <p>Camera capture, barcode entry, and scan simulation are wired into LottoMind Records.</p>
       <div class="scanner-frame">
         <span></span><span></span><span></span><span></span>
-        <strong>Camera Scan Lane</strong>
-        <small>Use the camera button, upload a ticket photo, or enter the barcode.</small>
+        <strong>${result ? "Ticket Readout Loaded" : "Camera Scan Lane"}</strong>
+        <small>${result?.source || "Use the camera button, upload a ticket photo, or enter the barcode."}</small>
       </div>
       <label class="primary-btn file-btn">Open Camera / Upload
         <input class="file-input" type="file" accept="image/*" capture="environment" data-action="scan-ticket" />
@@ -2163,19 +2399,21 @@ function scannerView() {
         <button class="ghost-btn" data-route="history">Records</button>
       </div>
     </div>
-    <div class="panel result-card scanner-result">${state.scanResult ? `<span>Scanner output</span><h2>${state.scanResult.title}</h2>${ballsHtml(state.scanResult.numbers, state.scanResult.special)}<p>${state.scanResult.note}</p><div class="hero-actions"><button class="primary-btn" data-action="save-current-set">Save Scan</button><button class="ghost-btn" data-route="live">Check Results</button></div>` : `<p>No scan yet. Upload a ticket image, run the demo, or enter a barcode.</p>`}</div>
+    <div class="panel result-card scanner-result">${result ? `<span>Scanner output</span><h2>${result.title}</h2>${ballsHtml(result.numbers, result.special)}<p>${result.note}</p><div class="tool-grid padded">${metricCard("Barcode", result.barcode || "image")}${metricCard("Status", result.status || "Needs verification")}${metricCard("Matched", result.matchedGame || getGame().name)}${metricCard("Confidence", `${result.confidence || 78}%`)}</div><div class="hero-actions"><button class="primary-btn" data-action="save-current-set">Save Scan</button><button class="ghost-btn" data-route="live">Check Results</button></div>` : `<p>No scan yet. Upload a ticket image, run the demo, or enter a barcode.</p>`}</div>
   </section>`;
 }
 
 function walletView() {
   const credits = getCredits();
+  const unlocks = getUnlocks();
   return `<section class="screen">
     <div class="panel art-panel" style="--panel-art:url('${ASSETS.credit}')">
       <h1>Credit Vault</h1>
       <p>Credits power readings, reports, and premium experiments.</p>
       <div class="credit-balance">${credits}</div>
     </div>
-    <div class="tool-grid">${MARKETPLACE_ITEMS.map(([title, copy, cost]) => `<button class="store-card" data-action="buy-item" data-cost="${cost}"><strong>${title}</strong><span>${copy}</span><small>${cost} credits</small></button>`).join("")}</div>
+    <div class="tool-grid">${FEATURE_UNLOCKS.map((item) => `<button class="store-card ${isUnlocked(item.id) ? "unlocked" : ""}" data-action="unlock-feature" data-unlock="${item.id}"><strong>${item.title}</strong><span>${item.window}</span><small>${isUnlocked(item.id) ? "Unlocked" : `${item.cost} credits`}</small></button>`).join("")}</div>
+    <div class="panel result-card"><span>Unlocked Features</span><h2>${Object.values(unlocks).filter((item) => isUnlocked(item.id)).length} active</h2><p>Credits now unlock features instead of only subtracting from the wallet.</p></div>
   </section>`;
 }
 
@@ -2189,6 +2427,7 @@ function musicHubView(isRadio = false) {
         <div class="hero-actions">
           <button class="primary-btn" data-route="reset">Open Reset Wheel</button>
           <button class="ghost-btn" data-route="music">Music Store</button>
+          <button class="ghost-btn" data-route="studio">Sonic Studio</button>
           <button class="ghost-btn" data-route="dreamVideo">Open Video Studio</button>
         </div>
       </div>
@@ -2238,7 +2477,7 @@ function musicHubView(isRadio = false) {
     <div class="panel related-panel">
       <div class="section-head"><div><h2>Sound Routes</h2><p>Fast paths connected to the rest of the app.</p></div></div>
       <div class="sound-route-bento">
-        ${[["Reset Wheel", "Tone player", "reset", ASSETS.reset], ["Radio Station", "Live audio", "radioStation", ASSETS.music], ["Dream Oracle", "Speak", "dreams", ASSETS.dream], ["Video Studio", "Loops", "dreamVideo", ASSETS.arcade], ["History Vault", "Archive", "history", ASSETS.live]].map(([title, sub, route, art], index) => `
+        ${[["Reset Wheel", "Tone player", "reset", ASSETS.reset], ["Radio Station", "Live audio", "radioStation", ASSETS.music], ["Sonic Studio", "Record booth", "studio", ASSETS.studioBooth], ["Dream Oracle", "Speak", "dreams", ASSETS.dream], ["Video Studio", "Loops", "dreamVideo", ASSETS.arcade], ["History Vault", "Archive", "history", ASSETS.live]].map(([title, sub, route, art], index) => `
           <button class="sound-route-card ${index === 0 ? "featured" : ""}" data-route="${route}" style="--route-art:url('${art}')">
             ${index === 0 ? `<video class="route-video-bg" src="${BASE}/videos/power-tools-button-green-screen.mp4" muted loop autoplay playsinline preload="metadata"></video>` : ""}
             <span>0${index + 1}</span>
@@ -2326,6 +2565,99 @@ function videoStudioView() {
   </section>`;
 }
 
+function sonicStudioView() {
+  const reading = state.currentDream || interpretDream(state.dreamText, state.gameId);
+  const current = state.currentSet || generateLottoSet(state.gameId, state.strategy, "sonic-studio");
+  const melodyNumbers = reading?.numbers?.length ? reading.numbers : current.numbers;
+  const beats = [
+    ["Gold Street Oracle", "Detroit Soul", "84 BPM", "528 Hz inspired", "Free", ASSETS.studioBooth],
+    ["Dream Oracle Velvet", "Dream R&B", "72 BPM", "432 Hz inspired", "100 LC", ASSETS.dream],
+    ["Credit Lane Bounce", "Casino Bounce", "96 BPM", "777 Hz inspired", "Free", ASSETS.arcade],
+    ["Vault Rainfield", "Frequency Vault Ambient", "60 BPM", "174 Hz inspired", "Free", ASSETS.music],
+    ["Space Oracle Pad", "Space Oracle", "68 BPM", "963 Hz inspired", "150 LC", ASSETS.powerTools],
+    ["Retro Prize Spark", "Retro Arcade", "112 BPM", "888 Hz inspired", "75 LC", ASSETS.commandDeck],
+  ];
+  return `<section class="screen sonic-studio-screen">
+    <div class="panel art-panel sonic-studio-hero" style="--panel-art:url('${ASSETS.studioBooth}')">
+      <div>
+        <span class="eyebrow">LottoMind Sonic Studio</span>
+        <h1>Recording Booth</h1>
+        <p>Record dream songs, affirmations, lucky chants, spoken-word hooks, and frequency-inspired demos inside the LottoMind Records lane.</p>
+        <div class="hero-actions">
+          <button class="primary-btn" data-route="dreams">Start From Dream</button>
+          <button class="ghost-btn" data-route="music">Open Records</button>
+          <button class="ghost-btn" data-route="contests">Dream Song Challenge</button>
+        </div>
+      </div>
+      <div class="studio-live-orb"><strong>528</strong><span>Hz inspired</span></div>
+    </div>
+
+    <div class="panel sonic-studio-console">
+      <div class="section-head">
+        <div><h2>Studio Workflow</h2><p>Four branded lanes keep the creative flow clear.</p></div>
+        <span>Creative module</span>
+      </div>
+      <div class="studio-tab-row">
+        ${["Beats", "Record", "Mix", "Library"].map((item, index) => `<div class="studio-tab ${index === 0 ? "active" : ""}"><span>${String(index + 1).padStart(2, "0")}</span><strong>${item}</strong></div>`).join("")}
+      </div>
+    </div>
+
+    <div class="panel sonic-studio-console">
+      <div class="section-head">
+        <div><h2>Beat Picker</h2><p>Premade LottoMind instrumentals for dream songs and Sonic Oracle soundscapes.</p></div>
+        <span>${beats.length} beats</span>
+      </div>
+      <div class="studio-beat-grid">
+        ${beats.map(([title, category, bpm, frequency, cost, art], index) => `<article class="studio-beat-card" style="--beat-art:url('${art}')">
+          <span>${escapeHtml(category)}</span>
+          <strong>${escapeHtml(title)}</strong>
+          <small>${escapeHtml(bpm)} - ${escapeHtml(frequency)}</small>
+          <b>${escapeHtml(cost)}</b>
+          <button class="${index === 0 ? "primary-btn" : "ghost-btn"}" data-route="${index < 2 ? "dreams" : "music"}">${index === 0 ? "Use Beat" : "Preview"}</button>
+        </article>`).join("")}
+      </div>
+    </div>
+
+    <div class="studio-work-grid">
+      <div class="panel studio-booth-card">
+        <span class="eyebrow">Record</span>
+        <h2>Vocal Booth</h2>
+        <p>Use headphones, then record vocals, affirmations, hooks, or dream messages over a selected LottoMind beat.</p>
+        <div class="studio-meter"><span></span><span></span><span></span><span></span><span></span><span></span></div>
+        <div class="studio-transport-row">
+          <button class="primary-btn" data-route="dreams">Record Dream Song</button>
+          <button class="ghost-btn" data-route="dreamVideo">Build Visual</button>
+        </div>
+      </div>
+      <div class="panel studio-booth-card">
+        <span class="eyebrow">Mix</span>
+        <h2>Demo Console</h2>
+        <p>Balance beat, vocal, echo preview, radio filter preview, and 528 glow settings before saving the demo.</p>
+        <div class="studio-knob-grid">
+          ${[["Vocal", "82%"], ["Beat", "70%"], ["Echo", "Preview"], ["Glow", "528"]].map(([label, value]) => `<div><strong>${value}</strong><span>${label}</span></div>`).join("")}
+        </div>
+      </div>
+    </div>
+
+    <div class="panel result-card sonic-melody-card">
+      <span>Lucky Melody Seed</span>
+      <h2>${melodyNumbers.join(" - ")}</h2>
+      ${ballsHtml(melodyNumbers)}
+      <p>Use these numbers as lyric inspiration or a short C-scale melody. Entertainment only; LottoMind does not guarantee winnings.</p>
+      <div class="hero-actions">
+        <button class="primary-btn" data-route="numberGenerator">Make Lucky Chant</button>
+        <button class="ghost-btn" data-route="reset">Open Frequency Vault</button>
+        <button class="ghost-btn" data-route="history">Save To Vault</button>
+      </div>
+    </div>
+
+    <div class="panel studio-terms">
+      <strong>Studio Terms</strong>
+      <p>Only record over instrumentals you own, created yourself, or have permission to use. LottoMind included beats are for in-app creative entertainment unless otherwise licensed.</p>
+    </div>
+  </section>`;
+}
+
 function recordsView() {
   const saved = loadJson(STORAGE.history, []);
   const dreams = loadJson(STORAGE.readings, []);
@@ -2360,6 +2692,7 @@ function recordsView() {
 }
 
 function marketplaceView() {
+  const unlocked = getUnlocks();
   return `<section class="screen marketplace-screen">
     <div class="panel art-panel media-hero" style="--panel-art:url('${ASSETS.credit}')">
       <div>
@@ -2375,7 +2708,8 @@ function marketplaceView() {
       <img class="deck-coin" src="${ASSETS.credit}" alt="LottoMind credit coin" />
     </div>
     <div class="tool-grid">
-      ${MARKETPLACE_ITEMS.map(([title, copy, cost]) => `<button class="store-card" data-action="buy-item" data-cost="${cost}"><strong>${title}</strong><span>${copy}</span><small>${cost} credits</small></button>`).join("")}
+      ${MARKETPLACE_ITEMS.map(([title, copy, cost, unlock]) => `<button class="store-card ${unlocked[unlock] ? "unlocked" : ""}" data-action="buy-item" data-cost="${cost}" data-unlock="${unlock}" data-title="${escapeHtml(title)}"><strong>${title}</strong><span>${copy}</span><small>${unlocked[unlock] ? "Unlocked" : `${cost} credits`}</small></button>`).join("")}
+      ${FEATURE_UNLOCKS.map((item) => `<button class="store-card ${isUnlocked(item.id) ? "unlocked" : ""}" data-action="unlock-feature" data-unlock="${item.id}"><strong>${item.title}</strong><span>${item.window} - ${routeMeta(item.route)[0]}</span><small>${isUnlocked(item.id) ? "Unlocked" : `${item.cost} credits`}</small></button>`).join("")}
     </div>
     <div class="panel related-panel">
       <div class="section-head"><div><h2>Store Routes</h2><p>More old app functions connected here.</p></div></div>
@@ -2388,9 +2722,11 @@ function marketplaceView() {
 
 function merchStoreView() {
   const selected = MERCH_ITEMS[state.selectedMerchIndex] || MERCH_ITEMS[0];
+  const categories = ["All", "Clothing", "E-Book", "Sticker Pack", "Desk Gear", "Digital Game", "Official Drop"];
+  const filtered = MERCH_ITEMS.filter((item) => state.merchCategory === "All" || item.type === state.merchCategory);
   return `<section class="screen merch-screen">
-    <div class="panel art-panel merch-hero" style="--panel-art:url('${ASSETS.credit}')">
-      <video class="hero-bg-video" src="${BASE}/videos/merch-store-button-loop.mp4" poster="${ASSETS.credit}" muted loop autoplay playsinline preload="metadata"></video>
+    <div class="panel art-panel merch-hero" style="--panel-art:url('${ASSETS.detroitCollection}')">
+      <img class="hero-bg-video merch-hero-image" src="${ASSETS.detroitCollection}" alt="" />
       <div>
         <span class="eyebrow">Official Merch Store</span>
         <h1 class="game-title merch-title">LottoMind Gear</h1>
@@ -2405,11 +2741,11 @@ function merchStoreView() {
           <button class="ghost-btn" data-route="wallet">Wallet</button>
         </div>
       </div>
-      <div class="merch-video-medallion"><img src="${ASSETS.credit}" alt="" /></div>
+      <div class="merch-video-medallion"><img src="${ASSETS.detroitCapFront}" alt="" /></div>
     </div>
-    <div class="panel shop-toolbar">
-      <div><span>Shop Mode</span><strong>Merch is separate from credits</strong></div>
-      <div class="store-badges compact"><span>Clothing</span><span>E-Books</span><span>Stickers</span><span>Desk Gear</span><span>Games</span></div>
+    <div class="panel shop-toolbar merch-shop-control">
+      <div class="shop-toolbar-copy"><span>Shop Mode</span><strong>Detroit Merch Shelves</strong><small>${filtered.length} items in ${state.merchCategory}</small></div>
+      <div class="store-badges compact merch-category-row">${categories.map((category) => `<button class="${state.merchCategory === category ? "active" : ""}" data-action="set-merch-category" data-category="${category}">${category === "E-Book" ? "E-Books" : category === "Digital Game" ? "Games" : category}</button>`).join("")}</div>
     </div>
     <div class="panel merch-feature-preview">
       <div class="product-media merch-item-art ${selected.className}" style="--product-art:url('${selected.art}')"></div>
@@ -2421,7 +2757,9 @@ function merchStoreView() {
       </div>
     </div>
     <div class="merch-grid">
-      ${MERCH_ITEMS.map((item, index) => `<article class="panel product-card ${index === state.selectedMerchIndex ? "active" : ""}">
+      ${filtered.map((item) => {
+        const index = MERCH_ITEMS.indexOf(item);
+        return `<article class="panel product-card ${index === state.selectedMerchIndex ? "active" : ""}">
         <div class="product-media merch-item-art ${item.className}" style="--product-art:url('${item.art}')"></div>
         <div>
           <span>${index === 0 ? "Featured Drop" : "Official Drop"}</span>
@@ -2429,7 +2767,8 @@ function merchStoreView() {
           <p>${escapeHtml(item.copy)}</p>
           <div class="product-buy"><b>${escapeHtml(item.price)}</b><button class="primary-btn" data-action="view-merch-item" data-merch="${index}">View Item</button></div>
         </div>
-      </article>`).join("")}
+      </article>`;
+      }).join("")}
     </div>
     <div class="panel merch-note">
       <h2>Professional Store Layout</h2>
@@ -2538,6 +2877,7 @@ function crosswordGameView() {
     ["4 Down", "Audio lane for reset focus", "Radio"],
   ];
   const letters = ["L", "O", "T", "T", "O", "", "M", "I", "N", "D", "R", "A", "D", "A", "R", "V", "A", "U", "L", "T", "", "P", "I", "C", "K"];
+  const solved = state.crosswordSolved;
   return `<div class="panel puzzle-game crossword-game crossword-showcase">
     <div class="crossword-stage-head">
       <div>
@@ -2545,32 +2885,36 @@ function crosswordGameView() {
         <h2>Lotto Crossword</h2>
         <p>Fill LottoMind words from app clues, then lock the puzzle for credits.</p>
       </div>
-      <span class="show-badge">Puzzle Game</span>
+      <span class="show-badge">${solved ? "Solved" : "Puzzle Game"}</span>
     </div>
+    ${solved ? `<div class="puzzle-solved-banner"><strong>Crossword locked</strong><span>Answer validation complete. Credits were added once.</span></div>` : ""}
     <div class="crossword-show-grid">
       <div class="crossword-board" aria-label="LottoMind crossword board">
         ${Array.from({ length: 25 }, (_, index) => `<span class="${[0, 4, 6, 12, 18, 20, 24].includes(index) ? "block" : ""}">${letters[index] || ""}</span>`).join("")}
       </div>
       <div class="puzzle-clues">
-        ${clues.map(([label, clue, answer]) => `<button data-action="play-mini-game"><span>${label}</span><strong>${clue}</strong><small>${answer}</small></button>`).join("")}
+        ${clues.map(([label, clue, answer]) => `<button data-action="check-crossword"><span>${label}</span><strong>${clue}</strong><small>${answer}</small></button>`).join("")}
       </div>
     </div>
-    <div class="hero-actions padded"><button class="primary-btn" data-action="play-mini-game">Check Puzzle</button><button class="ghost-btn" data-route="wordSearch">Word Search</button></div>
+    <div class="hero-actions padded"><button class="primary-btn" data-action="check-crossword">${solved ? "Puzzle Solved" : "Check Puzzle"}</button><button class="ghost-btn" data-route="wordSearch">Word Search</button></div>
   </div>`;
 }
 
 function wordSearchGameView() {
   const letters = "RADARLMVAULTDREAMORACLEPICKRESETWINMIND".slice(0, 36).split("");
   const words = ["RADAR", "VAULT", "DREAM", "ORACLE", "PICK", "RESET"];
+  const marks = new Set(state.wordSearchMarks);
+  const solved = loadJson(STORAGE.wordSearch, []).includes("SOLVED");
   return `<div class="panel puzzle-game word-search-game">
     <div class="section-head"><div><h2>Word Search Vault</h2><p>Find LottoMind feature words and earn arcade credits.</p></div><span>${words.length} words</span></div>
+    ${solved ? `<div class="puzzle-solved-banner"><strong>Word vault solved</strong><span>Marked path saved locally.</span></div>` : ""}
     <div class="word-search-board" aria-label="LottoMind word search board">
-      ${letters.map((letter, index) => `<button data-action="play-mini-game" class="${index % 5 === 0 ? "lit" : ""}">${letter}</button>`).join("")}
+      ${letters.map((letter, index) => `<button data-action="toggle-word-letter" data-index="${index}" class="${marks.has(index) || solved ? "active" : index % 5 === 0 ? "lit" : ""}">${letter}</button>`).join("")}
     </div>
     <div class="word-bank">
-      ${words.map((word) => `<span>${word}</span>`).join("")}
+      ${words.map((word) => `<span class="${solved ? "found" : ""}">${word}</span>`).join("")}
     </div>
-    <div class="hero-actions padded"><button class="primary-btn" data-action="play-mini-game">Lock Words</button><button class="ghost-btn" data-route="crossword">Crossword</button></div>
+    <div class="hero-actions padded"><button class="primary-btn" data-action="check-word-search">${solved ? "Words Locked" : "Lock Words"}</button><button class="ghost-btn" data-route="crossword">Crossword</button></div>
   </div>`;
 }
 
@@ -2579,12 +2923,14 @@ function triviaGameView() {
   const question = TRIVIA_QUESTIONS[index];
   const answered = state.triviaAnswered;
   const progress = Math.round(((index + (answered ? 1 : 0)) / TRIVIA_QUESTIONS.length) * 100);
+  const stored = getTriviaProgress();
   return `<section class="screen trivia-screen">
     <div class="panel art-panel trivia-hero trivia-show-hero" style="--panel-art:url('${ASSETS.commandDeck}')">
       <div>
         <span class="eyebrow">LottoMind Game Show</span>
         <h1>Trivia Rewards Live</h1>
         <p>Answer fast, build a streak, and turn arcade knowledge into credits under the LottoMind spotlight.</p>
+        <div class="trivia-streak-strip"><span>Daily ${stored.dailyStreak}/7</span><span>Weekly ${stored.weeklyStreak}/7</span><span>${triviaDifficulty(index)} +${triviaRewardFor(index)}</span></div>
         <div class="hero-actions">
           <button class="primary-btn" data-action="restart-trivia">New Run</button>
           <button class="ghost-btn" data-route="arcade">Game Select</button>
@@ -2594,7 +2940,7 @@ function triviaGameView() {
     </div>
     <div class="panel trivia-console trivia-game-show-console">
       <div class="trivia-status">
-        <span>Question ${index + 1} / ${TRIVIA_QUESTIONS.length}</span>
+        <span>Question ${index + 1} / ${TRIVIA_QUESTIONS.length} · ${triviaDifficulty(index)}</span>
         <strong>${state.triviaStreak}x streak</strong>
       </div>
       <div class="trivia-progress"><i style="width:${progress}%"></i></div>
@@ -2622,15 +2968,18 @@ function triviaGameView() {
 
 function triviaRewardsView() {
   const reward = Math.max(25, Math.round(state.triviaScore / 12));
+  const progress = getTriviaProgress();
   return `<section class="screen trivia-screen">
     <div class="panel art-panel trivia-hero reward-hero trivia-show-hero" style="--panel-art:url('${ASSETS.commandDeck}')">
       <div>
         <span class="eyebrow">Arcade Reward Vault</span>
         <h1>Winner's Credit Stage</h1>
-        <p>Your trivia lane is live. Run another round or return to the Arcade deck.</p>
+        <p>Your trivia lane is live. Run another round, redeem credits, or protect your streak.</p>
+        <div class="trivia-streak-strip"><span>Daily ${progress.dailyStreak}/7</span><span>Weekly ${progress.weeklyStreak}/7</span><span>${getCredits()} credits</span></div>
         <div class="hero-actions">
           <button class="primary-btn" data-route="triviaPlay">Play Trivia</button>
           <button class="ghost-btn" data-route="arcade">Arcade</button>
+          <button class="ghost-btn" data-route="marketplace">Redeem Credits</button>
         </div>
       </div>
       <div class="trivia-score-orb"><strong>${reward}</strong><span>Credit lane</span></div>
@@ -2641,8 +2990,134 @@ function triviaRewardsView() {
         <div><span>Run Score</span><strong>${state.triviaScore}</strong></div>
         <div><span>Best Streak</span><strong>${state.triviaStreak}x</strong></div>
         <div><span>Questions</span><strong>${TRIVIA_QUESTIONS.length}</strong></div>
+        <div><span>Daily Streak</span><strong>${progress.dailyStreak}</strong></div>
+        <div><span>Weekly Track</span><strong>${progress.weeklyStreak}/7</strong></div>
+        <div><span>History</span><strong>${progress.history.length}</strong></div>
       </div>
+      <div class="hero-actions padded"><button class="ghost-btn" data-action="watch-rewarded-ad">Reward Boost</button><button class="ghost-btn" data-action="use-streak-saver">Streak Saver</button><button class="ghost-btn" data-action="activate-credit-booster">Double Credits</button></div>
       <button class="primary-btn full" data-action="restart-trivia">Start New Trivia Run</button>
+    </div>
+  </section>`;
+}
+
+function triviaGameView() {
+  const index = Math.min(state.triviaIndex, TRIVIA_QUESTIONS.length - 1);
+  const question = TRIVIA_QUESTIONS[index];
+  const answered = state.triviaAnswered;
+  const stored = getTriviaProgress();
+  const difficulty = triviaDifficulty(index);
+  const reward = triviaRewardFor(index);
+  const progress = Math.round(((index + (answered ? 1 : 0)) / TRIVIA_QUESTIONS.length) * 100);
+  return `<section class="screen trivia-screen">
+    <div class="panel art-panel trivia-hero trivia-show-hero" style="--panel-art:url('${ASSETS.commandDeck}')">
+      <div>
+        <span class="eyebrow">LottoMind Game Show</span>
+        <h1>Trivia Rewards Live</h1>
+        <p>Answer fast, build a streak, and turn arcade knowledge into Lotto Credits.</p>
+        <div class="trivia-streak-strip"><span>Lotto Credits ${getCredits()}</span><span>Daily ${stored.dailyStreak}/7</span><span>Weekly ${stored.weeklyStreak}/7</span><span>${difficulty} +${reward}</span></div>
+        <div class="hero-actions">
+          <button class="primary-btn" data-action="restart-trivia">New Run</button>
+          <button class="ghost-btn" data-route="arcade">Game Select</button>
+          <button class="ghost-btn" data-route="triviaRewards">Redeem</button>
+        </div>
+      </div>
+      <div class="trivia-score-orb"><strong>${state.triviaScore}</strong><span>Score</span></div>
+    </div>
+    <div class="panel trivia-console trivia-game-show-console">
+      <div class="trivia-status">
+        <span>Question ${index + 1} / ${TRIVIA_QUESTIONS.length} &middot; ${difficulty} &middot; +${reward} credits</span>
+        <strong>${state.triviaStreak}x streak</strong>
+      </div>
+      <div class="trivia-progress"><i style="width:${progress}%"></i></div>
+      <div class="trivia-stage-label"><span>Live Question Pod</span><b>${answered ? (answered.correct ? "Correct lock" : "Try next") : "Choose an answer"}</b></div>
+      <h2>${escapeHtml(question.q)}</h2>
+      <div class="trivia-options">
+        ${question.options.map((option, optionIndex) => {
+          const isPicked = answered?.selected === optionIndex;
+          const isCorrect = answered && question.answer === optionIndex;
+          const stateClass = answered ? (isCorrect ? "correct" : isPicked ? "wrong" : "muted") : "";
+          return `<button class="trivia-option ${stateClass}" data-action="answer-trivia" data-answer="${optionIndex}">
+            <span>${String.fromCharCode(65 + optionIndex)}</span>
+            <strong>${escapeHtml(option)}</strong>
+          </button>`;
+        }).join("")}
+      </div>
+      ${answered ? `<div class="trivia-feedback ${answered.correct ? "is-correct" : "is-wrong"}">
+        <strong>${answered.correct ? `Signal locked +${reward}` : "Signal missed"}</strong>
+        <p>${escapeHtml(question.note)}</p>
+      </div>
+      <button class="primary-btn full" data-action="${index >= TRIVIA_QUESTIONS.length - 1 ? "claim-trivia-reward" : "next-trivia"}">${index >= TRIVIA_QUESTIONS.length - 1 ? "Claim Reward" : "Next Question"}</button>` : ""}
+    </div>
+  </section>`;
+}
+
+function triviaRewardsView() {
+  const reward = Math.max(25, Math.round(state.triviaScore / 12));
+  const progress = getTriviaProgress();
+  const dailyPct = Math.min(100, Math.round((progress.dailyStreak / 7) * 100));
+  const weeklyPct = Math.min(100, Math.round((progress.weeklyStreak / 7) * 100));
+  return `<section class="screen trivia-screen">
+    <div class="panel art-panel trivia-hero reward-hero trivia-show-hero" style="--panel-art:url('${ASSETS.commandDeck}')">
+      <div>
+        <span class="eyebrow">LottoMind Trivia Home</span>
+        <h1>Lotto Credits</h1>
+        <p>Play the daily challenge, stack streak bonuses, and spend credits on premium LottoMind unlocks.</p>
+        <div class="trivia-streak-strip"><span>Daily ${progress.dailyStreak}/7</span><span>Weekly ${progress.weeklyStreak}/7</span><span>${getCredits()} credits</span></div>
+        <div class="hero-actions">
+          <button class="primary-btn" data-route="triviaPlay">Start Trivia</button>
+          <button class="ghost-btn" data-route="arcade">Arcade</button>
+          <button class="ghost-btn" data-route="marketplace">Redeem Credits</button>
+        </div>
+      </div>
+      <div class="trivia-score-orb"><strong>${reward}</strong><span>Credit lane</span></div>
+    </div>
+    <div class="trivia-home-grid">
+      <div class="panel streak-card">
+        <span class="eyebrow">Daily Challenge</span>
+        <h2>5 Questions</h2>
+        <p>Easy, medium, and hard questions pay 10, 25, and 50 credits.</p>
+        <button class="primary-btn full" data-action="restart-trivia">Start Trivia</button>
+      </div>
+      <div class="panel streak-card">
+        <span class="eyebrow">Daily Streak</span>
+        <h2>${progress.dailyStreak} days</h2>
+        <div class="progress-rail"><i style="width:${dailyPct}%"></i></div>
+        <p>3-day streak bonus: +50 credits.</p>
+      </div>
+      <div class="panel streak-card">
+        <span class="eyebrow">Weekly Streak</span>
+        <h2>${progress.weeklyStreak}/7</h2>
+        <div class="progress-rail"><i style="width:${weeklyPct}%"></i></div>
+        <p>7-day weekly bonus: +200 credits.</p>
+      </div>
+      <div class="panel streak-card">
+        <span class="eyebrow">Leaderboard</span>
+        <h2>Preview Lane</h2>
+        <p>Local board tracks recent runs. Cloud ranking can plug in later.</p>
+        <button class="ghost-btn full" data-route="community">Open Community</button>
+      </div>
+    </div>
+    <div class="panel trivia-console trivia-reward-panel trivia-game-show-console">
+      <div class="section-head"><div><h2>Reward Summary</h2><p>Credits earned from correct answers, streaks, and completion.</p></div><span>${getCredits()} credits</span></div>
+      <div class="trivia-reward-grid">
+        <div><span>Run Score</span><strong>${state.triviaScore}</strong></div>
+        <div><span>Best Streak</span><strong>${state.triviaStreak}x</strong></div>
+        <div><span>Questions</span><strong>${TRIVIA_QUESTIONS.length}</strong></div>
+        <div><span>Daily Streak</span><strong>${progress.dailyStreak}</strong></div>
+        <div><span>Weekly Track</span><strong>${progress.weeklyStreak}/7</strong></div>
+        <div><span>History</span><strong>${progress.history.length}</strong></div>
+      </div>
+      <div class="hero-actions padded"><button class="ghost-btn" data-action="watch-rewarded-ad">Reward Boost</button><button class="ghost-btn" data-action="use-streak-saver">Streak Saver</button><button class="ghost-btn" data-action="activate-credit-booster">Double Credits</button></div>
+      <button class="primary-btn full" data-action="restart-trivia">Start New Trivia Run</button>
+    </div>
+    <div class="panel">
+      <div class="section-head"><div><h2>Redeem Credits</h2><p>Premium unlocks persist locally. 24-hour lanes expire automatically.</p></div><span>${FEATURE_UNLOCKS.length} unlocks</span></div>
+      <div class="unlock-shop-grid">
+        ${FEATURE_UNLOCKS.map((item) => `<button class="store-card ${isUnlocked(item.id) ? "unlocked" : ""}" data-action="unlock-feature" data-unlock="${item.id}">
+          <strong>${item.title}</strong><span>${item.window}</span><small>${isUnlocked(item.id) ? "Unlocked" : `${item.cost} credits`}</small>
+        </button>`).join("")}
+      </div>
+      <p class="tiny-note">LottoMind does not guarantee winnings. Trivia rewards and AI insights are for entertainment and education only.</p>
     </div>
   </section>`;
 }
@@ -2671,11 +3146,172 @@ function psychicResultCard(reading) {
   </div>`;
 }
 
+const REAL_ROUTE_SCREENS = {
+  vip: {
+    eyebrow: "VIP Intelligence",
+    title: "VIP Lucky Insights",
+    copy: "A premium command room for saved unlocks, stronger AI prompts, and high-signal play notes.",
+    unlock: "vip-insights",
+    art: ASSETS.commandDeck,
+    stats: [["Status", "Premium"], ["Cost", "2000"], ["Mode", "Insights"]],
+    actions: [["Unlock VIP", "unlock-feature", "vip-insights"], ["Open AI Coach", "route", "ai"], ["Redeem Credits", "route", "triviaRewards"]],
+  },
+  community: {
+    eyebrow: "LottoMind Social",
+    title: "Community Board",
+    copy: "Leaderboard preview, local streaks, saved challenge scores, and future community prompts.",
+    art: ASSETS.arcade,
+    stats: [["Leaderboard", "Local"], ["Streaks", getTriviaProgress().dailyStreak], ["Credits", getCredits()]],
+    actions: [["Play Trivia", "route", "triviaPlay"], ["Open Contests", "route", "contests"], ["View Rewards", "route", "triviaRewards"]],
+  },
+  contests: {
+    eyebrow: "Reward Events",
+    title: "Contest Control",
+    copy: "Daily challenge slots, jackpot reality drills, and future opt-in sweepstakes live here.",
+    art: ASSETS.arcade,
+    stats: [["Daily Run", "Ready"], ["Entries", loadJson(STORAGE.triviaHistory, { history: [] }).history.length], ["Rules", "Demo"]],
+    actions: [["Start Daily", "route", "triviaPlay"], ["Leaderboard", "route", "community"], ["Rewards", "route", "triviaRewards"]],
+  },
+  achievements: {
+    eyebrow: "Player Progress",
+    title: "Achievements",
+    copy: "Milestone badges for trivia streaks, puzzle solves, saved stores, and unlocked premium lanes.",
+    art: ASSETS.arcadeCoin,
+    stats: [["Trivia Runs", getTriviaProgress().history.length], ["Crossword", state.crosswordSolved ? "Solved" : "Open"], ["Stores", storeFavorites().length]],
+    actions: [["Trivia Rewards", "route", "triviaRewards"], ["Crossword", "route", "crossword"], ["Favorites", "route", "storeLocator"]],
+  },
+  usLottery: {
+    eyebrow: "National Lottery Desk",
+    title: "US Lottery Map",
+    copy: "State pins, retailer signals, game lanes, and official-link placeholders grouped by region.",
+    art: ASSETS.radar,
+    stats: [["Pinned", state.selectedState], ["States", STATE_PINS.length], ["Stores", STORE_DIRECTORY.length]],
+    actions: [["Store Locator", "route", "storeLocator"], ["Live Results", "route", "live"], ["Signal Radar", "route", "heatmap"]],
+  },
+  notifications: {
+    eyebrow: "Alert Console",
+    title: "Notifications",
+    copy: "Draw reminders, streak nudges, saved store notes, and unlock-expiry messages in one place.",
+    art: ASSETS.live,
+    stats: [["Draw Alert", "Ready"], ["Streak", getTriviaProgress().dailyStreak], ["Unlocks", Object.keys(getUnlocks()).length]],
+    actions: [["Draw Alerts", "route", "live"], ["Trivia Streak", "route", "triviaRewards"], ["Settings", "route", "settings"]],
+  },
+  onboarding: {
+    eyebrow: "Start Path",
+    title: "LottoMind Onboarding",
+    copy: "Reset your tone, speak a dream, check radar, save a run, then learn with trivia.",
+    art: ASSETS.home,
+    stats: [["Step 1", "Reset"], ["Step 2", "Dream"], ["Step 3", "Radar"]],
+    actions: [["Begin Reset", "route", "reset"], ["Dream Oracle", "route", "dreams"], ["Power Tools", "route", "powertools"]],
+  },
+  splash: {
+    eyebrow: "Launch Screen",
+    title: "LottoMind Oracle",
+    copy: "A branded app entry with direct paths to the real home, store locator, and arcade.",
+    art: ASSETS.logo,
+    stats: [["Build", "Web"], ["Mode", state.viewMode.toUpperCase()], ["Credits", getCredits()]],
+    actions: [["Enter App", "route", "dashboard"], ["Store Locator", "route", "storeLocator"], ["Arcade", "route", "arcade"]],
+  },
+  thankYou: {
+    eyebrow: "Checkout Complete",
+    title: "Thank You",
+    copy: "Demo checkout is confirmed locally. Real payments can be connected later without changing the flow.",
+    art: ASSETS.credit,
+    stats: [["Order", "Demo"], ["Credits", getCredits()], ["Vault", "Saved"]],
+    actions: [["Open Merch", "route", "store"], ["Wallet", "route", "wallet"], ["Home", "route", "dashboard"]],
+  },
+  original: {
+    eyebrow: "Legacy Mode",
+    title: "Original LottoMind",
+    copy: "A clean bridge back to the original feature lanes without dumping users into a generic tool page.",
+    art: ASSETS.power,
+    stats: [["Oracle", "Ready"], ["Arcade", "Ready"], ["Radar", "Ready"]],
+    actions: [["Dream Oracle", "route", "dreams"], ["Power Tools", "route", "powertools"], ["History Vault", "route", "history"]],
+  },
+  help: {
+    eyebrow: "How To Use",
+    title: "Help Center",
+    copy: "Learn the core flow: choose a game, generate a set, verify signals, save to vault, and play responsibly.",
+    art: ASSETS.home,
+    stats: [["Flow", "5 steps"], ["Privacy", "Local"], ["Support", "Demo"]],
+    actions: [["Onboarding", "route", "onboarding"], ["Policies", "route", "policies"], ["Settings", "route", "settings"]],
+  },
+  policies: {
+    eyebrow: "Policy Lane",
+    title: "Privacy + Responsible Play",
+    copy: "Location helps find stores, credits are demo rewards, and LottoMind does not guarantee winning numbers.",
+    art: ASSETS.live,
+    stats: [["Location", "Optional"], ["Credits", "Demo"], ["Data", "Local"]],
+    actions: [["Help", "route", "help"], ["Settings", "route", "settings"], ["Home", "route", "dashboard"]],
+  },
+  paywall: {
+    eyebrow: "Premium Gate",
+    title: "Unlock LottoMind Pro",
+    copy: "Use Lotto Credits now, then connect Stripe, Apple IAP, Android Billing, or subscriptions later.",
+    art: ASSETS.credit,
+    stats: [["Credits", getCredits()], ["VIP", isUnlocked("vip-insights") ? "Open" : "Locked"], ["Payments", "Placeholder"]],
+    actions: [["Redeem Credits", "route", "triviaRewards"], ["VIP Unlock", "unlock-feature", "vip-insights"], ["Marketplace", "route", "marketplace"]],
+  },
+};
+
+function routeActionButton([label, mode, value], index) {
+  const cls = index === 0 ? "primary-btn" : "ghost-btn";
+  if (mode === "route") return `<button class="${cls}" data-route="${value}">${label}</button>`;
+  if (mode === "unlock-feature") return `<button class="${cls}" data-action="unlock-feature" data-unlock="${value}">${label}</button>`;
+  return `<button class="${cls}" data-action="${mode}">${label}</button>`;
+}
+
+function lockedFeatureOverlay(config) {
+  if (!config.unlock || isUnlocked(config.unlock)) return "";
+  const unlock = FEATURE_UNLOCKS.find((item) => item.id === config.unlock);
+  if (!unlock) return "";
+  return `<div class="panel locked-feature-overlay">
+    <span class="eyebrow">Premium feature locked</span>
+    <h2>${unlock.title}</h2>
+    <p>${unlock.window}. Unlock with Lotto Credits or use the subscription placeholder later.</p>
+    <div class="hero-actions padded">
+      <button class="primary-btn" data-action="unlock-feature" data-unlock="${unlock.id}">Unlock for ${unlock.cost}</button>
+      <button class="ghost-btn" data-action="subscribe-pro">Subscribe</button>
+      <button class="ghost-btn" data-route="triviaRewards">Earn Credits</button>
+    </div>
+  </div>`;
+}
+
+function realRouteView(routeKey) {
+  const config = REAL_ROUTE_SCREENS[routeKey] || REAL_ROUTE_SCREENS.original;
+  const routeUnlocked = !config.unlock || isUnlocked(config.unlock);
+  return `<section class="screen feature-route-screen route-real-${routeKey}">
+    <div class="panel art-panel feature-route-hero" style="--panel-art:url('${config.art}')">
+      <div>
+        <span class="eyebrow">${config.eyebrow}</span>
+        <h1>${config.title}</h1>
+        <p>${config.copy}</p>
+        <div class="hero-actions">${config.actions.map(routeActionButton).join("")}</div>
+      </div>
+      <div class="feature-status-orb"><strong>${routeUnlocked ? "ON" : "LOCK"}</strong><span>${routeUnlocked ? "Ready" : "Credits"}</span></div>
+    </div>
+    ${lockedFeatureOverlay(config)}
+    <div class="feature-route-grid">
+      ${config.stats.map(([label, value]) => metricCard(label, value)).join("")}
+    </div>
+    <div class="panel related-panel">
+      <div class="section-head"><div><h2>Connected Lanes</h2><p>This screen now points to real LottoMind routes instead of the generic tool fallback.</p></div><span>${routeUnlocked ? "Ready" : "Preview"}</span></div>
+      <div class="sound-route-bento compact">
+        ${["dashboard", "powertools", "storeLocator", "triviaRewards", "marketplace"].map((route, index) => {
+          const [title, copy] = routeMeta(route);
+          return `<button class="sound-route-card" data-route="${route}"><span>${String(index + 1).padStart(2, "0")}</span><strong>${title}</strong><small>${copy}</small></button>`;
+        }).join("")}
+      </div>
+    </div>
+  </section>`;
+}
+
 function genericToolView(routeKey) {
   const labels = {
     ai: ["LottoMind AI", "Generate smart picks, run analysis, and save the result."],
     lottoIntel: ["Lotto Intelligence", "Deep analysis, report cards, and trend education."],
     pickGames: ["Pick Games", "Straight, box, mirror, and daily digit helpers."],
+    studio: ["Sonic Studio", "Record dream songs, lucky chants, and frequency-inspired demos."],
     music: ["Music Hub", "Branded sound sessions and reset playlists."],
     dreamVideo: ["Dream Video Studio", "Create storyboard-ready dream visuals from the Oracle text."],
     horoscope: ["Horoscope", "Daily sign cue and symbolic number lane."],
@@ -2762,7 +3398,7 @@ function genericToolView(routeKey) {
 }
 
 function toolArt(routeKey) {
-  if (["music", "energyMeter", "reset"].includes(routeKey)) return ASSETS.music;
+  if (["music", "studio", "energyMeter", "reset"].includes(routeKey)) return ASSETS.music;
   if (["dreamVideo", "viralStudio", "psychic", "dailyFortune", "futureRead", "nameNumbers"].includes(routeKey)) return ASSETS.dream;
   if (["records", "historical", "liveData", "live", "newsRadar", "heatmapAnalytics", "lottoIntel", "intelligence"].includes(routeKey)) return ASSETS.live;
   if (["marketplace", "creditStore", "savedWallet", "store", "storeLocator", "paywall", "vip", "thankYou"].includes(routeKey)) return ASSETS.credit;
@@ -2773,14 +3409,14 @@ function toolArt(routeKey) {
 }
 
 function relatedTools(routeKey) {
-  if (["dreamVideo", "psychic", "dailyFortune", "futureRead", "nameNumbers"].includes(routeKey)) {
-    return [["Dream Oracle", "Interpret", "dreams"], ["Reset Vault", "Focus", "reset"], ["History Vault", "Save", "history"], ["Power Tools", "Run", "powertools"]];
+  if (["dreamVideo", "studio", "psychic", "dailyFortune", "futureRead", "nameNumbers"].includes(routeKey)) {
+    return [["Dream Oracle", "Interpret", "dreams"], ["Sonic Studio", "Record", "studio"], ["Reset Vault", "Focus", "reset"], ["History Vault", "Save", "history"], ["Power Tools", "Run", "powertools"]];
   }
   if (["jackpot", "wheelBuilder", "predictions", "newsRadar", "liveData", "records", "historical"].includes(routeKey)) {
     return [["Heatmap", "Radar", "heatmap"], ["Live Results", "Draws", "live"], ["Number Generator", "Build", "numberGenerator"], ["History Vault", "Save", "history"]];
   }
   if (["energyMeter", "music", "radioStation"].includes(routeKey)) {
-    return [["Radio Station", "Listen", "radioStation"], ["Reset Vault", "Tone", "reset"], ["Dream Oracle", "Speak", "dreams"], ["History Vault", "Save", "history"]];
+    return [["Radio Station", "Listen", "radioStation"], ["Sonic Studio", "Record", "studio"], ["Reset Vault", "Tone", "reset"], ["Dream Oracle", "Speak", "dreams"], ["History Vault", "Save", "history"]];
   }
   if (["marketplace", "creditStore", "savedWallet", "vip"].includes(routeKey)) {
     return [["Credit Vault", "Balance", "wallet"], ["Store", "Gear", "store"], ["VIP", "Upgrade", "vip"], ["Profile", "Stats", "profile"]];
@@ -3003,9 +3639,10 @@ function renderView() {
   if (state.route === "ai" || state.route === "lottoIntel" || state.route === "intelligence" || state.route === "intelligenceLocker") return aiCoachView();
   if (state.route === "nameNumbers") return nameNumbersView();
   if (state.route === "music" || state.route === "radioStation") return musicHubView(state.route === "radioStation");
+  if (state.route === "studio") return sonicStudioView();
   if (state.route === "dreamVideo" || state.route === "viralStudio") return videoStudioView();
   if (state.route === "records" || state.route === "historical" || state.route === "liveData" || state.route === "historyUi") return recordsView();
-  if (state.route === "marketplace" || state.route === "paywall") return marketplaceView();
+  if (state.route === "marketplace") return marketplaceView();
   if (state.route === "store") return merchStoreView();
   if (state.route === "profile") return profileView();
   if (state.route === "settings") return settingsView();
@@ -3013,6 +3650,7 @@ function renderView() {
   if (state.route === "triviaRewards" || state.route === "triviaRedeem") return triviaRewardsView();
   if (["arcade", "arcadeGame", "game", "cardGame", "gamesHub", "crossword", "wordSearch", "ludo"].includes(state.route)) return arcadeView();
   if (state.route === "psychic") return psychicView();
+  if (["vip", "community", "contests", "achievements", "usLottery", "notifications", "onboarding", "splash", "thankYou", "original", "help", "policies", "paywall"].includes(state.route)) return realRouteView(state.route);
   return genericToolView(state.route);
 }
 
@@ -3197,6 +3835,35 @@ function routeFromSearch(value) {
   return found ? found[1] : "powertools";
 }
 
+async function scanBarcodeFromFile(file) {
+  if (!file || !("BarcodeDetector" in window) || typeof createImageBitmap !== "function") return "";
+  try {
+    const detector = new BarcodeDetector({ formats: ["qr_code", "code_128", "code_39", "ean_13", "upc_a", "pdf417"] });
+    const bitmap = await createImageBitmap(file);
+    const codes = await detector.detect(bitmap);
+    if (typeof bitmap.close === "function") bitmap.close();
+    return codes[0]?.rawValue || "";
+  } catch {
+    return "";
+  }
+}
+
+function applyScanReadout(action, source, upload = "", decoded = "") {
+  const result = generateLottoSet(state.gameId, "quick", decoded || source);
+  const digits = ((decoded || source).match(/\d/g) || result.numbers.map(String)).slice(0, 12).join("");
+  state.scanResult = {
+    ...result,
+    title: action === "scan-ticket" ? "Ticket image scanned" : action === "scan-barcode" ? "Barcode scan decoded" : "Scan demo complete",
+    barcode: decoded || digits || "LM-DEMO-528",
+    matchedGame: getGame().name,
+    status: decoded ? "Barcode detected" : "Demo check only",
+    confidence: decoded ? 96 : upload ? 84 : action === "scan-barcode" ? 91 : 76,
+    source: upload || (action === "scan-barcode" ? "Typed barcode" : "Demo camera lane"),
+    note: `${upload ? `Read ${upload}. ` : ""}${decoded ? `Detected barcode ${decoded}. ` : ""}${action === "scan-barcode" && state.barcodeInput ? `Barcode ${state.barcodeInput} decoded. ` : ""}${result.note}`,
+  };
+  state.currentSet = state.scanResult;
+}
+
 function handleAction(action, target) {
   if (action === "menu") {
     state.showUtilityMenu = !state.showUtilityMenu;
@@ -3311,9 +3978,71 @@ function handleAction(action, target) {
   }
   if (action === "select-state") {
     state.selectedState = target.getAttribute("data-state") || state.selectedState;
+    state.selectedStoreId = "";
     state.showStatePicker = false;
     localStorage.setItem("lottomind.oracle.real.state", state.selectedState);
     toast(`${state.selectedState} pin selected`);
+  }
+  if (action === "set-merch-category") {
+    state.merchCategory = target.getAttribute("data-category") || "All";
+    const first = MERCH_ITEMS.findIndex((item) => state.merchCategory === "All" || item.type === state.merchCategory);
+    if (first >= 0) state.selectedMerchIndex = first;
+    toast(`${state.merchCategory} shelf loaded`);
+  }
+  if (action === "search-stores") {
+    state.selectedStoreId = "";
+    toast(state.storeQuery ? "Store search filtered" : "Showing nearby mock retailers");
+  }
+  if (action === "toggle-store-filter") {
+    const filter = target.getAttribute("data-filter");
+    if (filter) {
+      state.activeStoreFilters = state.activeStoreFilters.includes(filter)
+        ? state.activeStoreFilters.filter((item) => item !== filter)
+        : state.activeStoreFilters.concat(filter);
+      state.selectedStoreId = "";
+      toast(`${filter} filter ${state.activeStoreFilters.includes(filter) ? "on" : "off"}`);
+    }
+  }
+  if (action === "select-store") {
+    state.selectedStoreId = target.getAttribute("data-store") || "";
+    toast(`${selectedStore().name} selected`);
+  }
+  if (action === "toggle-store-favorite") {
+    const storeId = target.getAttribute("data-store") || selectedStore().id;
+    const favorites = storeFavorites();
+    const next = favorites.includes(storeId) ? favorites.filter((id) => id !== storeId) : favorites.concat(storeId);
+    saveJson(STORAGE.storeFavorites, next);
+    toast(next.includes(storeId) ? "Store saved" : "Store removed");
+  }
+  if (action === "use-current-location") {
+    if (!navigator.geolocation) {
+      state.userLocation = { lat: 42.3314, lng: -83.0458, fallback: true };
+      toast("Location unavailable. Detroit fallback loaded.");
+    } else {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          state.userLocation = { lat: position.coords.latitude, lng: position.coords.longitude, fallback: false };
+          toast("Location permission active");
+        },
+        () => {
+          state.userLocation = { lat: 42.3314, lng: -83.0458, fallback: true };
+          toast("Location denied. Detroit fallback loaded.");
+        },
+        { enableHighAccuracy: false, timeout: 5000, maximumAge: 300000 },
+      );
+    }
+  }
+  if (action === "sync-store-backend") {
+    const base = window.LOTTOMIND_API_BASE_URL || localStorage.getItem("lottomind.api.base") || "";
+    if (!base) {
+      toast("Backend proxy not configured. Mock retailer layer is active.");
+    } else {
+      const loc = state.userLocation || { lat: 42.3314, lng: -83.0458 };
+      fetch(`${base.replace(/\/$/, "")}/api/store-locator/nearby?lat=${loc.lat}&lng=${loc.lng}`)
+        .then((response) => response.ok ? response.json() : Promise.reject(new Error("Store backend unavailable")))
+        .then(() => toast("Backend route responded. Google proxy can be connected."))
+        .catch(() => toast("Backend unavailable. Mock stores preserved."));
+    }
   }
   if (action === "set-view") {
     state.viewMode = target.getAttribute("data-view");
@@ -3351,11 +4080,19 @@ function handleAction(action, target) {
   }
   if (action === "favorite-tone") toast(`${state.tone} Hz saved as favorite`);
   if (action === "simulate-scan" || action === "scan-ticket" || action === "scan-barcode") {
-    state.scanResult = generateLottoSet(state.gameId, "quick", "scan-demo");
-    state.scanResult.title = action === "scan-ticket" ? "Ticket image scanned" : action === "scan-barcode" ? "Barcode scan decoded" : "Scan demo complete";
-    state.scanResult.note = action === "scan-barcode" && state.barcodeInput ? `Barcode ${state.barcodeInput} decoded into a demo check lane. ${state.scanResult.note}` : state.scanResult.note;
-    state.currentSet = state.scanResult;
-    toast("Ticket scan complete");
+    const upload = target.files && target.files[0] ? target.files[0].name : "";
+    const source = action === "scan-barcode" ? state.barcodeInput || "barcode-demo-0427" : upload || "camera-demo-ticket";
+    if (action === "scan-ticket" && target.files && target.files[0]) {
+      const file = target.files[0];
+      scanBarcodeFromFile(file).then((decoded) => {
+        applyScanReadout(action, file.name, file.name, decoded);
+        toast(decoded ? "Real barcode detected from ticket image" : "No barcode found. Demo readout loaded.");
+      });
+      toast("Reading ticket image...");
+      return;
+    }
+    applyScanReadout(action, source, upload);
+    toast("Ticket scanner readout loaded");
   }
   if (action === "save-store") {
     const savedStores = loadJson(STORAGE.stores, []);
@@ -3364,13 +4101,52 @@ function handleAction(action, target) {
   }
   if (action === "buy-item") {
     const cost = Number(target.getAttribute("data-cost")) || 0;
-    const next = getCredits() - cost;
-    if (next < 0) {
+    const unlockId = target.getAttribute("data-unlock");
+    if (unlockId === "credits-pack") {
+      setCredits(getCredits() + 100);
+      toast("Demo credit pack added: +100 credits");
+    } else if (unlockId && isUnlocked(unlockId)) {
+      toast("Already unlocked");
+    } else {
+      const next = getCredits() - cost;
+      if (next < 0) {
+        toast("Not enough credits");
+      } else {
+        setCredits(next);
+        if (unlockId) saveUnlock(unlockId, unlockId.includes("24") ? "24h" : "permanent");
+        toast(unlockId ? "Feature unlocked" : "Credit purchase applied");
+      }
+    }
+  }
+  if (action === "unlock-feature") {
+    const unlockId = target.getAttribute("data-unlock");
+    const unlock = FEATURE_UNLOCKS.find((item) => item.id === unlockId);
+    if (!unlock) {
+      toast("Unlock not found");
+    } else if (isUnlocked(unlock.id)) {
+      toast(`${unlock.title} is already unlocked`);
+    } else if (getCredits() < unlock.cost) {
       toast("Not enough credits");
     } else {
-      setCredits(next);
-      toast("Credit purchase applied");
+      setCredits(getCredits() - unlock.cost);
+      saveUnlock(unlock.id, unlock.id.includes("24") ? "24h" : "permanent");
+      toast(`${unlock.title} unlocked`);
     }
+  }
+  if (action === "watch-rewarded-ad") {
+    setCredits(getCredits() + 25);
+    toast("Rewarded ad placeholder: +25 credits");
+  }
+  if (action === "activate-credit-booster") {
+    saveUnlock("double-credit-booster", "Double Credits Booster", 0, 24);
+    toast("Double credits placeholder active for 24h");
+  }
+  if (action === "use-streak-saver") {
+    saveUnlock("streak-saver", "Streak Saver", 0, 24);
+    toast("Streak saver placeholder armed");
+  }
+  if (action === "subscribe-pro") {
+    toast("Subscription placeholder ready for Stripe/IAP");
   }
   if (action === "toggle-setting") {
     const settings = getSettings();
@@ -3395,15 +4171,16 @@ function handleAction(action, target) {
     const selected = Number(target.getAttribute("data-answer"));
     if (!state.triviaAnswered && Number.isFinite(selected)) {
       const correct = selected === question.answer;
+      const reward = triviaRewardFor(state.triviaIndex);
       state.triviaAnswered = { selected, correct };
       if (correct) {
         state.triviaStreak += 1;
-        state.triviaScore += 100 + (state.triviaStreak - 1) * 25;
-        setCredits(getCredits() + 5);
+        state.triviaScore += reward * 4 + (state.triviaStreak - 1) * 10;
+        setCredits(getCredits() + reward);
       } else {
         state.triviaStreak = 0;
       }
-      toast(correct ? "Trivia signal locked: +5 credits" : "Try the next signal");
+      toast(correct ? `Trivia signal locked: +${reward} credits` : "Try the next signal");
     }
   }
   if (action === "next-trivia") {
@@ -3424,10 +4201,47 @@ function handleAction(action, target) {
   if (action === "claim-trivia-reward") {
     const bonus = Math.max(25, Math.round(state.triviaScore / 12));
     setCredits(getCredits() + bonus);
+    const streak = completeTriviaProgress();
     state.triviaComplete = true;
-    toast(`Trivia reward claimed: +${bonus} credits`);
+    toast(`Trivia reward claimed: +${bonus + (streak.bonus || 0)} credits`);
     go("triviaRewards");
     return;
+  }
+  if (action === "check-crossword") {
+    if (state.crosswordSolved) {
+      toast("Crossword already solved");
+    } else {
+      state.crosswordSolved = true;
+      saveJson(STORAGE.crossword, { solved: true, solvedAt: new Date().toISOString() });
+      setCredits(getCredits() + 40);
+      toast("Crossword validated: +40 credits");
+    }
+  }
+  if (action === "toggle-word-letter") {
+    const index = Number(target.getAttribute("data-index"));
+    if (Number.isFinite(index)) {
+      const solved = loadJson(STORAGE.wordSearch, []).includes("SOLVED");
+      if (!solved) {
+        const set = new Set(state.wordSearchMarks.filter((item) => Number.isFinite(item)));
+        if (set.has(index)) set.delete(index);
+        else set.add(index);
+        state.wordSearchMarks = Array.from(set).sort((a, b) => a - b);
+        saveJson(STORAGE.wordSearch, state.wordSearchMarks);
+      }
+    }
+  }
+  if (action === "check-word-search") {
+    const saved = loadJson(STORAGE.wordSearch, []);
+    if (saved.includes("SOLVED")) {
+      toast("Word search already solved");
+    } else if (state.wordSearchMarks.length >= 8) {
+      state.wordSearchMarks = state.wordSearchMarks.concat("SOLVED");
+      saveJson(STORAGE.wordSearch, state.wordSearchMarks);
+      setCredits(getCredits() + 30);
+      toast("Word search validated: +30 credits");
+    } else {
+      toast("Mark more letters before locking words");
+    }
   }
   if (action === "view-merch-item") {
     const index = Number(target.getAttribute("data-merch"));
@@ -3455,6 +4269,9 @@ function activateInteractiveTarget(event) {
   if (routeTarget) {
     event.preventDefault();
     if (routeTarget.closest(".function-search-results")) speakText(`Opening ${routeMeta(routeTarget.getAttribute("data-route"))[0]}`);
+    if (routeTarget.closest(".real-bottom-nav")) {
+      playTabNote(tabNotes[routeTarget.getAttribute("data-tab-label")]);
+    }
     stopRouteAudio();
     go(routeTarget.getAttribute("data-route"));
     return true;
@@ -3482,7 +4299,7 @@ document.addEventListener("pointerup", (event) => {
     const dx = event.clientX - pointerStart.x;
     const dy = event.clientY - pointerStart.y;
     const moved = Math.hypot(dx, dy);
-    const startedInScroller = pointerStart.target?.closest?.(".circle-carousel, .snap-carousel, .arcade-game-grid, .merch-grid, .lm-pill-row, textarea, input");
+    const startedInScroller = pointerStart.target?.closest?.(".circle-carousel, .snap-carousel, .arcade-game-grid, .merch-grid, .lm-pill-row, .state-picker, .route-leg-list, .audio-list, textarea, input");
     pointerStart = null;
     if (!startedInScroller && dx > 84 && Math.abs(dy) < 62) {
       event.preventDefault();
