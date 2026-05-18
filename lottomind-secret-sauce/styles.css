@@ -1408,6 +1408,25 @@ small {
   background: linear-gradient(180deg, transparent, rgba(0, 236, 255, 0.08));
 }
 
+.oracle-flow-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.58;
+  filter: saturate(1.25) contrast(1.12) brightness(0.82);
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+
+.oracle-flow-steps .oracle-flow-step:first-child {
+  background:
+    radial-gradient(circle at 50% 18%, rgba(248, 223, 118, 0.22), transparent 36%),
+    linear-gradient(180deg, rgba(1, 9, 18, 0.1), rgba(0, 0, 0, 0.88)),
+    var(--quest-art);
+}
+
 .oracle-flow-steps .oracle-flow-step small {
   max-width: 16ch;
 }

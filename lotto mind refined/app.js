@@ -1476,6 +1476,7 @@ function dashboardView() {
       <div class="quest-steps oracle-flow-steps">
         ${HOME_CAROUSEL.map(([title, copy, route, art], index) => `
           <button class="quest-step oracle-flow-step" data-route="${route}" style="--quest-art:url('${art}')">
+            ${index === 0 ? `<video class="oracle-flow-video" src="${BASE}/videos/power-tools-button-green-screen.mp4" muted loop autoplay playsinline preload="metadata"></video>` : ""}
             <b>${String(index + 1).padStart(2, "0")}</b>
             <strong>${title}</strong>
             <small>${copy}</small>
