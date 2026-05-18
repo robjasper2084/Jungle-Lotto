@@ -534,8 +534,8 @@ const TOOL_GROUPS = [
 
 const HOME_CAROUSEL = [
   ["Reset Studio", "Start with a calm signal before numbers.", "reset", ASSETS.reset],
-  ["Dream Oracle", "Speak or type the dream and receive numbers.", "dreams", ASSETS.dream],
   ["Music Store / Record Label", "Play LottoMind Records audio and reset sessions.", "music", ASSETS.music],
+  ["Dream Oracle", "Speak or type the dream and receive numbers.", "dreams", ASSETS.dream],
   ["Sonic Studio", "Record dream songs, lucky chants, and reset demos.", "studio", ASSETS.studioBooth],
   ["Radio Station", "LottoMind Records live audio lane.", "radioStation", ASSETS.music],
   ["Generate Your Dreams", "Turn dreams into scenes, readings, and lucky reveal cards.", "dreamVideo", ASSETS.dream],
@@ -1478,8 +1478,8 @@ function dashboardView() {
         ${HOME_CAROUSEL.map(([title, copy, route, art], index) => `
           <button class="quest-step oracle-flow-step" data-route="${route}" style="--quest-art:url('${art}')">
             ${index === 0 ? `<video class="oracle-flow-video" src="${BASE}/videos/oracle-flow-reset-new.mp4" muted loop autoplay playsinline preload="metadata"></video>` : ""}
-            ${index === 1 ? `<video class="oracle-flow-video" src="${BASE}/videos/oracle-flow-dream-new.mp4" muted loop autoplay playsinline preload="metadata"></video>` : ""}
-            ${index === 2 ? `<video class="oracle-flow-video" src="${BASE}/videos/oracle-flow-music-new.mp4" muted loop autoplay playsinline preload="metadata"></video>` : ""}
+            ${index === 1 ? `<video class="oracle-flow-video" src="${BASE}/videos/oracle-flow-music-new.mp4" muted loop autoplay playsinline preload="metadata"></video>` : ""}
+            ${index === 2 ? `<video class="oracle-flow-video" src="${BASE}/videos/oracle-flow-dream-new.mp4" muted loop autoplay playsinline preload="metadata"></video>` : ""}
             <b>${String(index + 1).padStart(2, "0")}</b>
             <strong>${title}</strong>
             <small>${copy}</small>
