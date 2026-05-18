@@ -1461,6 +1461,7 @@ function dashboardView() {
         <h1>Oracle Studio</h1>
         <p>Reset, dream, read the map, then run Power Tools with every old feature wired inside one branded app.</p>
         <div class="hero-actions">
+          <button class="ghost-btn" data-route="reset">Reset Vault</button>
           <button class="primary-btn" data-route="dreams">Open Dream Oracle</button>
           <button class="ghost-btn" data-route="powertools">Power Tools</button>
           <button class="ghost-btn" data-route="studio">Sonic Studio</button>
@@ -1725,7 +1726,7 @@ function todaysSnapshotPanel(title = "Today's Snapshot") {
         ["Daily Fortune", "Ready", "One tap symbolic read"],
         ["Live Results", "Open", "Check latest draw cards"],
         ["Credits", getCredits(), "Vault balance"],
-      ].map(([itemTitle, value, copy]) => `<button class="mini-tool" data-route="${itemTitle === "Weather" ? "luckyWeather" : itemTitle === "Horoscope" ? "horoscope" : itemTitle === "Live Results" ? "live" : itemTitle === "Credits" ? "wallet" : itemTitle === "Daily Fortune" ? "dailyFortune" : itemTitle === "Store Locator" ? "storeLocator" : "dashboard"}"><span>${itemTitle}</span><strong>${value}</strong><small>${copy}</small></button>`).join("")}
+      ].map(([itemTitle, value, copy]) => `<button class="mini-tool meatball-tool" data-route="${itemTitle === "Weather" ? "luckyWeather" : itemTitle === "Horoscope" ? "horoscope" : itemTitle === "Live Results" ? "live" : itemTitle === "Credits" ? "wallet" : itemTitle === "Daily Fortune" ? "dailyFortune" : itemTitle === "Store Locator" ? "storeLocator" : "dashboard"}"><span>${itemTitle}</span><strong>${value}</strong><small>${copy}</small></button>`).join("")}
     </div>
   </div>`;
 }

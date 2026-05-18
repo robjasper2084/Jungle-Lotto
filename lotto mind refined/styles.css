@@ -5792,6 +5792,44 @@ body .route-dreamVideo .video-studio-hero h1 {
   font-weight: 950;
 }
 
+.snapshot-panel .meatball-tool {
+  position: relative;
+  min-width: 112px;
+  min-height: 92px;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 4px;
+  padding: 18px 12px 12px;
+  border-radius: 26px;
+  border-color: rgba(248, 223, 118, 0.54);
+  clip-path: none;
+  background:
+    radial-gradient(circle at 50% 12%, rgba(248, 223, 118, 0.28), transparent 26%),
+    linear-gradient(180deg, rgba(3, 30, 48, 0.92), rgba(1, 9, 19, 0.96));
+  box-shadow:
+    inset 0 -20px 28px rgba(0, 0, 0, 0.58),
+    0 0 18px rgba(0, 236, 255, 0.16);
+}
+
+.snapshot-panel .meatball-tool::before {
+  content: "...";
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  width: 28px;
+  height: 18px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(0, 236, 255, 0.52);
+  border-radius: 999px;
+  color: var(--gold);
+  font-family: var(--title-font);
+  font-size: 13px;
+  line-height: 1;
+  background: rgba(0, 12, 24, 0.78);
+}
+
 .live-strip {
   position: relative;
   overflow: hidden;
@@ -11564,6 +11602,63 @@ body .route-dreams .dream-oracle-tools .circle-tool:first-child {
 
 body .route-dreams .dream-oracle-tools .circle-tool-video {
   display: none;
+}
+
+body .route-dreams .dream-stage > .hero-actions {
+  gap: 10px;
+}
+
+body .route-dreams .dream-stage > .hero-actions button {
+  min-height: 74px;
+  padding: 28px 12px 12px;
+  border: 1px solid rgba(248, 223, 118, 0.5);
+  border-radius: 24px;
+  clip-path: none;
+  background:
+    radial-gradient(circle at 50% 12%, rgba(248, 223, 118, 0.26), transparent 26%),
+    radial-gradient(circle at 12% 92%, rgba(0, 236, 255, 0.16), transparent 34%),
+    linear-gradient(180deg, rgba(4, 28, 46, 0.92), rgba(2, 9, 19, 0.96));
+  box-shadow:
+    inset 0 -18px 28px rgba(0, 0, 0, 0.54),
+    0 0 16px rgba(0, 236, 255, 0.14);
+  font-size: clamp(11px, 2.8vw, 13px);
+  line-height: 1.06;
+}
+
+body .route-dreams .dream-stage > .hero-actions button::before {
+  content: "...";
+  top: 8px;
+  right: 10px;
+  left: auto;
+  bottom: auto;
+  width: 28px;
+  height: 18px;
+  display: grid;
+  place-items: center;
+  clip-path: none;
+  border: 1px solid rgba(0, 236, 255, 0.52);
+  border-radius: 999px;
+  color: var(--gold);
+  font-size: 13px;
+  line-height: 1;
+  background: rgba(0, 12, 24, 0.78);
+  box-shadow: 0 0 12px rgba(0, 236, 255, 0.18);
+}
+
+body .route-dreams .dream-stage > .hero-actions button::after {
+  display: none;
+}
+
+body .route-dreams .dream-stage > .hero-actions .primary-btn {
+  background:
+    radial-gradient(circle at 50% 12%, rgba(255, 255, 255, 0.5), transparent 25%),
+    linear-gradient(180deg, #fff6bf, #f8df76 48%, #b88a23);
+}
+
+body .route-dreams .dream-stage > .hero-actions button:nth-child(2n) {
+  background:
+    radial-gradient(circle at 50% 12%, rgba(0, 236, 255, 0.24), transparent 26%),
+    linear-gradient(180deg, rgba(3, 29, 48, 0.94), rgba(0, 12, 24, 0.96));
 }
 
 @media (max-width: 390px) {
