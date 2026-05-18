@@ -483,7 +483,7 @@ const ORACLE_STUDIO_GROUP = {
 const TOOL_GROUPS = [
   {
     title: "Main Lab",
-    copy: "Generators, scanner, live-vault heatmap, and pattern work.",
+    copy: "Analysis, live results, credits, records, stores, and saved picks.",
     tools: [
       ["Number Analyzer", "Trend lab", "numberGenerator"],
       ["Ticket Scanner", "Scan tickets", "scanner"],
@@ -495,12 +495,6 @@ const TOOL_GROUPS = [
       ["Pick 3 / Pick 4", "Daily digits", "dailyTools"],
       ["Straight / Box", "Helper", "pickGames"],
       ["Mirror Numbers", "Flip pairs", "sequence"],
-    ],
-  },
-  {
-    title: "History Vault",
-    copy: "Live Vault, results, states, credits, and saved picks.",
-    tools: [
       ["Live Results", "Draw feed", "live"],
       ["Predictions", "Lock picks", "predictions"],
       ["Jackpot Reality", "Net view", "jackpot"],
@@ -1475,16 +1469,6 @@ function dashboardView() {
       <img class="hero-mascot hero-emblem" src="${ASSETS.logo}" alt="LottoMind oracle emblem" />
     </div>
 
-    <div class="panel strategy-panel home-strategy-panel">
-      <div class="section-head"><div><h2>Strategy</h2><p>Choose a number lane before you generate.</p></div></div>
-      ${strategyPills()}
-      <button class="primary-btn full" data-action="generate-set">Generate ${getGame().name}</button>
-      <div class="result-card compact">
-        <span>${current.gameName} ${titleCase(current.strategy)}</span>
-        ${ballsHtml(current.numbers, current.special, current.specialName)}
-      </div>
-    </div>
-
     <div class="carousel-panel panel">
       <div class="section-head movie-head">
         <div><h2>Oracle Flow</h2><p>Swipe through the main app functions.</p></div>
@@ -1498,6 +1482,16 @@ function dashboardView() {
             <small>${copy}</small>
           </button>
         `).join("")}
+      </div>
+    </div>
+
+    <div class="panel strategy-panel home-strategy-panel">
+      <div class="section-head"><div><h2>Strategy</h2><p>Choose a number lane before you generate.</p></div></div>
+      ${strategyPills()}
+      <button class="primary-btn full" data-action="generate-set">Generate ${getGame().name}</button>
+      <div class="result-card compact">
+        <span>${current.gameName} ${titleCase(current.strategy)}</span>
+        ${ballsHtml(current.numbers, current.special, current.specialName)}
       </div>
     </div>
 
