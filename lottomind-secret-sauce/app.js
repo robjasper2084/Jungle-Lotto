@@ -2623,13 +2623,13 @@ function videoStudioView() {
         <h1>Dream Video Studio</h1>
         <p>Record or type a dream, build a storyboard, then connect it to Dream Oracle, Records, and the branded motion kit.</p>
         <div class="hero-actions">
-          <button class="primary-btn" data-action="build-dream-video">Build Storyboard</button>
+          <button class="primary-btn" data-action="build-dream-video">Build Board</button>
           <button class="ghost-btn" data-action="start-dream-recording">Mic Dream</button>
           <button class="ghost-btn" data-route="dreams">Dream Oracle</button>
           <button class="ghost-btn" data-route="settings">Settings</button>
         </div>
       </div>
-      <img class="deck-coin" src="${ASSETS.psychic}" alt="LottoMind dream video coin" />
+      <img class="deck-coin" src="${ASSETS.logo}" alt="LottoMind dream video coin" />
     </div>
     <div class="panel video-builder">
       <div class="section-head"><div><h2>Dream Prompt</h2><p>This text drives the storyboard and Oracle numbers.</p></div><span>${storyboard.tone}</span></div>
