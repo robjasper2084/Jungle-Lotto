@@ -10216,3 +10216,38 @@ body .playbook-note p {
   color: #d6ecff;
   font-weight: 800;
 }
+
+/* Power Tools compact command medals */
+body .route-powertools .tool-bank .tool-bento {
+  grid-auto-columns: minmax(78px, 88px);
+  grid-template-rows: repeat(2, minmax(76px, 82px));
+  gap: 8px;
+  padding: 4px 2px 8px;
+}
+
+body .route-powertools .tool-bank .tool-bento .circle-tool,
+body .route-powertools .tool-bank .main-lab-bento .circle-tool:first-child {
+  min-width: 78px;
+  min-height: 78px;
+  height: 78px;
+  padding: 34px 7px 7px;
+  border-radius: 14px;
+  grid-row: auto;
+}
+
+body .route-powertools .tool-bank .tool-bento .circle-tool::before {
+  top: 7px;
+  left: 8px;
+  width: 27px;
+  height: 27px;
+}
+
+body .route-powertools .tool-bank .tool-bento .circle-tool span {
+  font-size: 9px;
+  line-height: 0.95;
+}
+
+body .route-powertools .tool-bank .tool-bento .circle-tool small {
+  font-size: 7px;
+  line-height: 0.95;
+}
