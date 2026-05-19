@@ -4445,6 +4445,8 @@ function handleAction(action, target) {
 
 let pointerStart = null;
 let lastTouchActivation = 0;
+let flowSwipe = null;
+let suppressFlowClickUntil = 0;
 
 function activateInteractiveTarget(event) {
   const eventTarget = event.target instanceof Element ? event.target : event.target?.parentElement;
@@ -4500,17 +4502,44 @@ function activateInteractiveTarget(event) {
 }
 
 document.addEventListener("pointerdown", (event) => {
+  const target = event.target instanceof Element ? event.target : event.target?.parentElement;
+  const flowScroller = target?.closest?.(".oracle-flow-steps");
+  if (flowScroller && event.pointerType !== "touch") {
+    flowSwipe = {
+      scroller: flowScroller,
+      startX: event.clientX,
+      scrollLeft: flowScroller.scrollLeft,
+      moved: false,
+    };
+    flowScroller.classList.add("is-swiping");
+  }
   if (event.pointerType === "mouse") return;
-  pointerStart = { x: event.clientX, y: event.clientY, target: event.target instanceof Element ? event.target : null };
+  pointerStart = { x: event.clientX, y: event.clientY, target };
 }, { passive: true });
 
+document.addEventListener("pointermove", (event) => {
+  if (!flowSwipe) return;
+  const dx = event.clientX - flowSwipe.startX;
+  if (Math.abs(dx) > 3) flowSwipe.moved = true;
+  flowSwipe.scroller.scrollLeft = flowSwipe.scrollLeft - dx;
+  event.preventDefault();
+}, { passive: false });
+
+function endFlowSwipe() {
+  if (!flowSwipe) return;
+  if (flowSwipe.moved) suppressFlowClickUntil = Date.now() + 360;
+  flowSwipe.scroller.classList.remove("is-swiping");
+  flowSwipe = null;
+}
+
 document.addEventListener("pointerup", (event) => {
+  endFlowSwipe();
   if (event.pointerType === "mouse") return;
   if (pointerStart) {
     const dx = event.clientX - pointerStart.x;
     const dy = event.clientY - pointerStart.y;
     const moved = Math.hypot(dx, dy);
-    const startedInScroller = pointerStart.target?.closest?.(".circle-carousel, .snap-carousel, .arcade-game-grid, .merch-grid, .lm-pill-row, .state-picker, .route-leg-list, .audio-list, textarea, input");
+    const startedInScroller = pointerStart.target?.closest?.(".quest-steps, .oracle-flow-steps, .circle-carousel, .snap-carousel, .arcade-game-grid, .merch-grid, .lm-pill-row, .state-picker, .route-leg-list, .audio-list, textarea, input");
     pointerStart = null;
     if (!startedInScroller && dx > 84 && Math.abs(dy) < 62) {
       event.preventDefault();
@@ -4523,7 +4552,13 @@ document.addEventListener("pointerup", (event) => {
   if (activateInteractiveTarget(event)) lastTouchActivation = Date.now();
 }, { passive: false });
 
+document.addEventListener("pointercancel", endFlowSwipe, { passive: true });
+
 document.addEventListener("click", (event) => {
+  if (Date.now() < suppressFlowClickUntil && (event.target instanceof Element ? event.target : event.target?.parentElement)?.closest?.(".oracle-flow-steps")) {
+    event.preventDefault();
+    return;
+  }
   if (Date.now() - lastTouchActivation < 450) return;
   if (activateInteractiveTarget(event)) return;
   const target = event.target instanceof Element ? event.target : event.target?.parentElement;

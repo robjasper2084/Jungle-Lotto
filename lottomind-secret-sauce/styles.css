@@ -10475,3 +10475,48 @@ body .route-dashboard .oracle-hero .hero-actions .primary-btn {
   color: #051523 !important;
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.45) !important;
 }
+
+/* Dashboard Oracle Flow swipe carousel */
+body .route-dashboard .carousel-panel {
+  overflow: hidden;
+}
+
+body .route-dashboard .oracle-flow-steps {
+  display: grid !important;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(136px, 42vw);
+  gap: 12px !important;
+  margin-inline: -18px;
+  padding: 14px 18px 18px !important;
+  overflow-x: auto !important;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: 18px;
+  -webkit-overflow-scrolling: touch;
+  cursor: grab;
+  user-select: none;
+}
+
+body .route-dashboard .oracle-flow-steps.is-swiping {
+  cursor: grabbing;
+  scroll-snap-type: none;
+}
+
+body .route-dashboard .oracle-flow-steps .oracle-flow-step {
+  width: auto !important;
+  min-width: 0 !important;
+  flex: none !important;
+  scroll-snap-align: start;
+  touch-action: pan-x;
+}
+
+body .route-dashboard .carousel-panel::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 16px;
+  width: 42px;
+  height: 158px;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgba(0, 8, 16, 0.86));
+}
