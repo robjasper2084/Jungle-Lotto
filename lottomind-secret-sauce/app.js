@@ -533,9 +533,9 @@ const TOOL_GROUPS = [
 ];
 
 const HOME_CAROUSEL = [
+  ["Sonic Studio / Record Booth", "Record dream songs, lucky chants, and reset demos.", "studio", ASSETS.studioBooth],
   ["Reset Studio", "Start with a calm signal before numbers.", "reset", ASSETS.reset],
   ["Dream Oracle", "Speak or type the dream and receive numbers.", "dreams", ASSETS.dream],
-  ["Sonic Studio / Record Booth", "Record dream songs, lucky chants, and reset demos.", "studio", ASSETS.studioBooth],
   ["Music Store / Record Label", "Play LottoMind Records audio and reset sessions.", "music", ASSETS.music],
   ["Radio Station", "LottoMind Records live audio lane.", "radioStation", ASSETS.music],
   ["Viral Studio", "Build video loops and short promo scenes.", "viralStudio", ASSETS.power],
@@ -547,6 +547,12 @@ const HOME_CAROUSEL = [
   ["Video Studio", "Preview branded motion loops from the old app.", "dreamVideo", ASSETS.power],
   ["Contests", "Challenge board, rewards, and future entries.", "contests", ASSETS.arcade],
 ];
+
+const HOME_CAROUSEL_VIDEOS = {
+  studio: `${BASE}/videos/oracle-flow-music-new.mp4`,
+  reset: `${BASE}/videos/oracle-flow-reset-new.mp4`,
+  dreams: `${BASE}/videos/oracle-flow-dream-new.mp4`,
+};
 
 const QUICK_TOOLS = TOOL_GROUPS.flatMap((group) => group.tools);
 const PLAY_LEARN_GROUP = TOOL_GROUPS.find((group) => group.title === "Play + Learn");
@@ -1552,22 +1558,29 @@ function dashboardView() {
       <img class="hero-mascot hero-emblem" src="${ASSETS.logo}" alt="LottoMind oracle emblem" />
     </div>
 
+    <div class="live-strip panel">
+      <div><h2>Live Results</h2><p>Next Draw in</p><strong>02:18:45</strong></div>
+      ${ballsHtml([12, 28, 33, 44, 50])}
+      <button class="chev-btn" data-route="live">View</button>
+    </div>
+
     <div class="carousel-panel panel">
       <div class="section-head movie-head">
         <div><h2>Oracle Flow</h2><p>Swipe through the main app functions.</p></div>
         <button class="tiny-btn" data-route="powertools">All Tools</button>
       </div>
       <div class="quest-steps oracle-flow-steps">
-        ${HOME_CAROUSEL.map(([title, copy, route, art], index) => `
+        ${HOME_CAROUSEL.map(([title, copy, route, art], index) => {
+          const flowVideo = HOME_CAROUSEL_VIDEOS[route];
+          return `
           <button class="quest-step oracle-flow-step" data-route="${route}" style="--quest-art:url('${art}')">
-            ${index === 0 ? `<video class="oracle-flow-video" src="${BASE}/videos/oracle-flow-reset-new.mp4" muted loop autoplay playsinline preload="metadata"></video>` : ""}
-            ${index === 1 ? `<video class="oracle-flow-video" src="${BASE}/videos/oracle-flow-dream-new.mp4" muted loop autoplay playsinline preload="metadata"></video>` : ""}
-            ${index === 2 ? `<video class="oracle-flow-video" src="${BASE}/videos/oracle-flow-music-new.mp4" muted loop autoplay playsinline preload="metadata"></video>` : ""}
+            ${flowVideo ? `<video class="oracle-flow-video" src="${flowVideo}" muted loop autoplay playsinline preload="metadata"></video>` : ""}
             <b>${String(index + 1).padStart(2, "0")}</b>
             <strong>${title}</strong>
             <small>${copy}</small>
           </button>
-        `).join("")}
+        `;
+        }).join("")}
       </div>
     </div>
 
@@ -1579,12 +1592,6 @@ function dashboardView() {
         <span>${current.gameName} ${titleCase(current.strategy)}</span>
         ${ballsHtml(current.numbers, current.special, current.specialName)}
       </div>
-    </div>
-
-    <div class="live-strip panel">
-      <div><h2>Live Results</h2><p>Next Draw in</p><strong>02:18:45</strong></div>
-      ${ballsHtml([12, 28, 33, 44, 50])}
-      <button class="chev-btn" data-route="live">View</button>
     </div>
 
     <div class="split-grid">
