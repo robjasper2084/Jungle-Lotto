@@ -2860,7 +2860,6 @@ function settingsView() {
 function arcadeView() {
   const games = [
     ["Jackpot Jungle Chase", "Swing, slide, and outrun the Probability Beast.", "arcadeGame"],
-    ["Gem Rush Run", "Grab gems and dodge number traps.", "arcadeGame"],
     ["Lotto Crossword Puzzle", "Solve LottoMind clue lanes and number words.", "crossword"],
     ["Word Search Vault", "Find dream symbols, states, and lucky terms.", "wordSearch"],
     ["Trivia Rewards", "Answer and earn credits.", "triviaRewards"],
@@ -3763,7 +3762,7 @@ function render() {
       <span class="vault-waveform"></span>
     </div>
     ${header()}
-    ${state.route !== "dashboard" ? `<button class="back-orb" data-action="go-back" type="button" aria-label="Go back to previous page"><strong>&lsaquo;</strong><span>Back</span><small>Previous page</small></button>` : ""}
+    ${state.route !== "dashboard" ? `<div class="history-nav-pills"><button class="back-orb" data-action="go-back" type="button" aria-label="Go back to previous page"><strong>&lsaquo;</strong><span>Back</span><small>Previous page</small></button><button class="back-orb forward-orb" data-action="go-forward" type="button" aria-label="Go forward to next page"><strong>&rsaquo;</strong><span>Forward</span><small>Next page</small></button></div>` : ""}
     ${missionHud()}
     <main class="real-main">${renderView()}</main>
     ${bottomNav()}
@@ -4035,6 +4034,10 @@ function handleAction(action, target) {
     } else {
       go("dashboard", true);
     }
+    return;
+  }
+  if (action === "go-forward") {
+    window.history.forward();
     return;
   }
   if (action === "menu") {
