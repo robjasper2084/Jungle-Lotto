@@ -24,7 +24,7 @@ const ASSETS = {
   balanced: `${BASE}/assets/images/strategy-balanced-button.0b00547b9900f66b82bdaf63849aab4b.png`,
   psychic: `${BASE}/assets/images/ai-psychic-engine-circle.95310af8f2dc5491754f875ec150e785.png`,
   commandDeck: `${BASE}/assets/custom/generated-command-deck.webp`,
-  studioBooth: `${BASE}/assets/custom/generated-command-deck.webp`,
+  studioBooth: `${BASE}/assets/images/dashboard-music-hub-bg.fd20530e40e09f38ef442fddd2f4a17c.png`,
   detroitHoodieClose: `${BASE}/assets/custom/detroit-hoodie-close.png`,
   detroitPoloClose: `${BASE}/assets/custom/detroit-polo-close.png`,
   detroitCapClose: `${BASE}/assets/custom/detroit-cap-close.png`,
@@ -2629,7 +2629,7 @@ function videoStudioView() {
           <button class="ghost-btn" data-route="settings">Settings</button>
         </div>
       </div>
-      <img class="deck-coin" src="${ASSETS.logo}" alt="LottoMind dream video coin" />
+      <img class="deck-coin" src="${ASSETS.live}" alt="LottoMind dream video brand artwork" />
     </div>
     <div class="panel video-builder">
       <div class="section-head"><div><h2>Dream Prompt</h2><p>This text drives the storyboard and Oracle numbers.</p></div><span>${storyboard.tone}</span></div>
@@ -2643,7 +2643,7 @@ function videoStudioView() {
     <div class="panel storyboard-panel">
       <div class="section-head"><div><h2>${storyboard.title}</h2><p>Four scene cards built from the Dream Oracle interpretation.</p></div><span>${storyboard.reading.confidence || 72}% match</span></div>
       <div class="storyboard-grid">
-        ${storyboard.frames.map(([title, value, copy], index) => `<article class="story-card" style="--story-art:url('${[ASSETS.dream, ASSETS.psychic, ASSETS.heatmap, ASSETS.live][index]}')">
+        ${storyboard.frames.map(([title, value, copy], index) => `<article class="story-card" style="--story-art:url('${[ASSETS.dream, ASSETS.reset, ASSETS.logo, ASSETS.live][index]}')">
           <span>Scene ${index + 1}</span>
           <strong>${escapeHtml(title)}</strong>
           <b>${escapeHtml(value)}</b>
@@ -2985,15 +2985,18 @@ function studioControlStrip() {
   </div>`;
 }
 
-function studioDrumPads() {
-  return `<div class="panel studio-module">
+function studioDrumPadSurface() {
+  return `
     <div class="section-head"><div><h2>MPC Pads</h2><p>Tap, click, or use shortcuts 1-4 / QWER / ASDF / ZXCV.</p></div><span>16 pads</span></div>
     <div class="studio-pad-grid">
       ${state.studio.pads.map((pad, index) => `<button class="studio-pad ${index === state.studio.selectedPad ? "selected" : ""} ${pad.sampleData ? "sampled" : ""}" data-action="studio-pad" data-studio-pad="${index}">
         <b>${pad.shortcut}</b><strong>${escapeHtml(pad.name)}</strong><small>${pad.sampleData ? "SAMPLE" : pad.type} / ${pad.velocity}</small><i>${pad.muted ? "Muted" : "Active"}</i>
       </button>`).join("")}
-    </div>
-  </div>`;
+    </div>`;
+}
+
+function studioDrumPads() {
+  return `<div class="panel studio-module">${studioDrumPadSurface()}</div>`;
 }
 
 function studioSequencerGrid() {
@@ -3010,16 +3013,33 @@ function studioSequencerGrid() {
   </div>`;
 }
 
-function studioKeyboardSection() {
+function studioKeyboardSurface() {
   const notes = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
-  return `<div class="panel studio-module">
+  return `
     <div class="section-head"><div><h2>Keyboard Synth</h2><p>Play notes and record them into the loop when sequence rec is armed.</p></div><span>Oct ${state.studio.octave}</span></div>
     <div class="studio-synth-controls">
       <label>Wave <select data-action="studio-set" data-studio-field="waveform">${["sine", "triangle", "sawtooth", "square"].map((item) => `<option ${item === state.studio.waveform ? "selected" : ""}>${item}</option>`).join("")}</select></label>
       <label>Octave <input type="number" min="1" max="7" data-action="studio-set" data-studio-field="octave" value="${state.studio.octave}" /></label>
       <label>Volume <input type="range" min="1" max="100" data-action="studio-set" data-studio-field="synthVolume" value="${state.studio.synthVolume}" /></label>
     </div>
-    <div class="studio-keyboard">${notes.map((note) => `<button class="${note.includes("#") ? "black" : "white"}" data-action="studio-note" data-note="${note}"><span>${note}</span></button>`).join("")}</div>
+    <div class="studio-keyboard">${notes.map((note) => `<button class="${note.includes("#") ? "black" : "white"}" data-action="studio-note" data-note="${note}"><span>${note}</span></button>`).join("")}</div>`;
+}
+
+function studioKeyboardSection() {
+  return `<div class="panel studio-module">${studioKeyboardSurface()}</div>`;
+}
+
+function studioRecordingBooth() {
+  return `<div class="panel studio-module studio-recording-booth">
+    <div class="section-head"><div><h2>Recording Booth</h2><p>Play pads, keyboard shortcuts, synth notes, and record ideas from one booth console.</p></div><span>MPC + Keys</span></div>
+    <div class="studio-booth-grid">
+      <div class="studio-booth-lane studio-booth-pads">${studioDrumPadSurface()}</div>
+      <div class="studio-booth-lane studio-booth-keys">${studioKeyboardSurface()}</div>
+    </div>
+    <div class="studio-booth-footer">
+      <span>Pad shortcuts: 1 2 3 4 / Q W E R / A S D F / Z X C V</span>
+      <span>Keyboard notes: A W S E D F T G Y H U J</span>
+    </div>
   </div>`;
 }
 
@@ -3118,10 +3138,7 @@ function sonicStudioView() {
     </div>
     ${studioTransportControls()}
     ${studioControlStrip()}
-    <div class="studio-main-grid">
-      ${studioDrumPads()}
-      ${studioKeyboardSection()}
-    </div>
+    ${studioRecordingBooth()}
     ${studioSequencerGrid()}
     <div class="studio-work-grid">
       ${studioSamplerPanel()}
@@ -3293,7 +3310,7 @@ function arcadeView() {
     ["Lotto Crossword Puzzle", "Solve LottoMind clue lanes and number words.", "crossword"],
     ["Word Search Vault", "Find dream symbols, states, and lucky terms.", "wordSearch"],
     ["Trivia Rewards", "Answer and earn credits.", "triviaRewards"],
-    ["Boss Rush", "Fight the Heatmap Guardian.", "arcadeGame", "https://robjasper2084.github.io/Jungle-Lotto/gothtechnology-canvas/index.html?fighter-prop1-live"],
+    ["Goth Tech Fighter", "Launch the live fighter-prop boss game.", "arcadeGame", "https://robjasper2084.github.io/Jungle-Lotto/gothtechnology-canvas/index.html?fighter-prop1-live"],
     ["Bonus Room", "Open a credit portal.", "arcadeGame"],
   ];
   const arcadeArt = [ASSETS.arcade, ASSETS.commandDeck, ASSETS.psychic, ASSETS.sequence, ASSETS.live, ASSETS.credit, ASSETS.heatmap, ASSETS.arcadeCoin];
@@ -4481,11 +4498,19 @@ async function getStudioMicStream() {
     render();
     return null;
   }
-  if (!studioMicStream) {
-    studioMicStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  try {
+    const hasLiveTrack = studioMicStream?.getAudioTracks?.().some((track) => track.readyState === "live");
+    if (!studioMicStream || !hasLiveTrack) {
+      studioMicStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    }
+    state.studioInputStatus = "Mic/line input ready";
+    return studioMicStream;
+  } catch {
+    studioMicStream = null;
+    state.studioInputStatus = "Mic permission was blocked or no input was found.";
+    render();
+    return null;
   }
-  state.studioInputStatus = "Mic/line input ready";
-  return studioMicStream;
 }
 
 function blobToDataUrl(blob) {
@@ -4533,7 +4558,7 @@ function stopStudioVocalRecording(trackIndex = state.studioRecordingTrack) {
   if (recorder && recorder.state !== "inactive") recorder.stop();
 }
 
-async function recordStudioSourceToPad(sourcePromise, label) {
+async function recordStudioSourceToPad(sourcePromise, label, releaseStream = true) {
   if (typeof MediaRecorder === "undefined") {
     toast("MediaRecorder is not available in this browser.");
     return;
@@ -4545,7 +4570,7 @@ async function recordStudioSourceToPad(sourcePromise, label) {
     const recorder = new MediaRecorder(stream);
     recorder.ondataavailable = (event) => { if (event.data?.size) chunks.push(event.data); };
     recorder.onstop = async () => {
-      stream.getTracks?.().forEach((track) => track.stop?.());
+      if (releaseStream && stream !== studioMicStream) stream.getTracks?.().forEach((track) => track.stop?.());
       const blob = new Blob(chunks, { type: recorder.mimeType || "audio/webm" });
       const data = await blobToDataUrl(blob);
       const padIndex = state.studio.selectedPad;
@@ -4723,7 +4748,7 @@ function handleAction(action, target) {
     return;
   }
   if (action === "studio-sample-mic") {
-    recordStudioSourceToPad(getStudioMicStream(), "Mic");
+    recordStudioSourceToPad(getStudioMicStream(), "Mic", false);
     return;
   }
   if (action === "studio-sample-tab") {

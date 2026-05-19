@@ -12978,3 +12978,105 @@ body .route-dashboard .carousel-panel .tiny-btn {
   text-transform: uppercase;
   box-shadow: 0 0 18px rgba(0, 236, 255, 0.18);
 }
+
+/* Late polish from browser comments */
+body .history-nav-pills {
+  display: none !important;
+}
+
+body .route-dreamVideo .video-studio-hero .deck-coin {
+  width: clamp(122px, 34vw, 176px);
+  height: clamp(122px, 34vw, 176px);
+  padding: 8px;
+  border: 1px solid rgba(0, 236, 255, 0.52);
+  border-radius: 30px;
+  object-fit: cover;
+  background:
+    radial-gradient(circle at 50% 45%, rgba(0, 236, 255, 0.22), transparent 54%),
+    linear-gradient(145deg, rgba(248, 223, 118, 0.18), rgba(0, 8, 18, 0.92));
+  box-shadow:
+    0 0 0 1px rgba(248, 223, 118, 0.2),
+    0 0 26px rgba(0, 236, 255, 0.26),
+    inset 0 0 24px rgba(0, 236, 255, 0.16);
+}
+
+body .route-dreamVideo .story-card:nth-child(2) {
+  border-color: rgba(0, 236, 255, 0.64);
+  background:
+    linear-gradient(180deg, rgba(0, 12, 24, 0.1), rgba(0, 8, 18, 0.92)),
+    radial-gradient(circle at 68% 26%, rgba(0, 236, 255, 0.34), transparent 34%),
+    var(--story-art);
+  background-size: cover;
+  background-position: center;
+}
+
+body .studio-recording-booth {
+  border-color: rgba(248, 223, 118, 0.58);
+  background:
+    radial-gradient(circle at 18% 18%, rgba(248, 223, 118, 0.18), transparent 28%),
+    radial-gradient(circle at 82% 22%, rgba(0, 236, 255, 0.18), transparent 32%),
+    linear-gradient(145deg, rgba(2, 22, 34, 0.96), rgba(3, 7, 18, 0.98));
+}
+
+body .studio-recording-booth > .section-head h2 {
+  color: #fff6bf;
+  font-family: var(--title-font), Impact, "Arial Black", sans-serif;
+  font-size: clamp(28px, 7vw, 44px);
+  line-height: 0.96;
+  text-shadow: 0 2px 0 #000, 0 0 18px rgba(248, 223, 118, 0.28), 0 0 16px rgba(0, 236, 255, 0.2);
+}
+
+body .studio-booth-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.22fr) minmax(0, 0.78fr);
+  gap: 12px;
+  padding: 12px;
+}
+
+body .studio-booth-lane,
+body .studio-beat-grid > * {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(0, 236, 255, 0.42);
+  border-radius: 20px;
+  background:
+    linear-gradient(135deg, rgba(0, 236, 255, 0.14), rgba(169, 131, 255, 0.1)),
+    rgba(0, 12, 24, 0.74);
+  box-shadow: inset 0 0 24px rgba(0, 236, 255, 0.08);
+}
+
+body .studio-booth-lane > .section-head {
+  padding: 12px 12px 0;
+}
+
+body .studio-recording-booth .studio-pad-grid {
+  padding: 12px;
+}
+
+body .studio-recording-booth .studio-keyboard {
+  padding: 12px;
+}
+
+body .studio-booth-footer {
+  display: grid;
+  gap: 6px;
+  padding: 0 14px 14px;
+  color: #9eefff;
+  font-family: var(--future-font);
+  font-size: 10px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+body .studio-beat-grid {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 10px !important;
+}
+
+@media (max-width: 760px) {
+  body .studio-booth-grid,
+  body .studio-beat-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
