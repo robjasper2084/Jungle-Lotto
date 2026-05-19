@@ -34,6 +34,7 @@ const ASSETS = {
   voiceCornerMic: `${BASE}/assets/custom/generated-lottomind-mic.webp`,
   searchMic: `${BASE}/assets/custom/generated-lottomind-mic.webp`,
   dreamOracleHost: `${BASE}/assets/custom/dream-oracle-host.png`,
+  lmLive: `${BASE}/assets/custom/lottomind-live-lm-logo.png`,
 };
 
 const AUDIO = {
@@ -1665,7 +1666,7 @@ function powerToolsView() {
           <button class="ghost-btn" data-route="marketplace">Marketplace</button>
         </div>
       </div>
-      <div class="deck-coin command-crest"><img src="${ASSETS.logo}" alt="LottoMind logo" /><span>Power Tools</span></div>
+      <div class="deck-coin command-crest lm-live-crest"><img src="${ASSETS.lmLive}" alt="LottoMind Live LM logo" /><span>Power Tools</span></div>
     </div>
 
     <label class="search-pill slim ai-power-search"><span>Ask AI</span><input placeholder="Ask LottoMind about tools, draws, dreams, or number lanes..." /><button type="button" data-route="ai">AI News</button></label>
