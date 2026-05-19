@@ -12158,10 +12158,16 @@ body .route-powertools .tool-bank .tool-bento .circle-tool small {
 
 /* Arcade compact layout pass */
 body .route-arcade .art-panel .game-title {
-  max-width: 14ch !important;
-  font-size: clamp(38px, 9vw, 58px) !important;
-  line-height: 0.88 !important;
+  max-width: 16ch !important;
+  font-size: clamp(26px, 6.2vw, 38px) !important;
+  line-height: 0.92 !important;
   -webkit-text-stroke: 0.5px rgba(255, 247, 211, 0.34) !important;
+}
+
+body .route-arcade .screen > .art-panel:first-child h1.game-title {
+  font-size: clamp(26px, 6.2vw, 38px) !important;
+  line-height: 0.92 !important;
+  max-width: 16ch !important;
 }
 
 body .route-arcade .arcade-game-grid {
