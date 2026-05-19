@@ -1569,6 +1569,8 @@ function powerToolsView() {
       <div class="deck-coin command-crest"><img src="${ASSETS.logo}" alt="LottoMind logo" /><span>Power Tools</span></div>
     </div>
 
+    <label class="search-pill slim ai-power-search"><span>Ask AI</span><input placeholder="Ask LottoMind about tools, draws, dreams, or number lanes..." /><button type="button" data-route="ai">AI News</button></label>
+
     ${gamePills()}
 
     <div class="stat-row">
@@ -1630,7 +1632,6 @@ function resetView() {
         <h1><span>Frequency</span> Reset</h1>
         <span class="pro-badge">PRO</span>
       </div>
-      <label class="search-pill slim ai-reset-search"><span>Ask AI</span><input placeholder="Ask lottery questions, draw news, moods, or intentions..." /><button type="button" data-route="ai">AI News</button></label>
       <div class="tone-chips">
         <button class="lm-pill active">Calm</button><button class="lm-pill">Focus</button><button class="lm-pill">Sleep</button>
       </div>
@@ -3665,6 +3666,40 @@ function formatTimer(seconds) {
   return `${min}:${sec}`;
 }
 
+function proPlaybookView() {
+  const lessons = [
+    ["Straight / Box Basics", "Read Pick 3 and Pick 4 lanes without changing the game rules.", "dailyTools"],
+    ["Budget Guardrails", "Set a session limit, save notes, and keep every play entertainment-only.", "settings"],
+    ["Pattern Notes", "Compare sums, roots, mirrors, gaps, and odd/even balance before saving.", "sequence"],
+    ["Dream Bridge", "Turn symbols into a clean number note, then send it back to the vault.", "dreams"],
+  ];
+  return `<section class="screen pro-playbook-screen">
+    <div class="panel art-panel playbook-hero" style="--panel-art:url('${ASSETS.power}')">
+      <span class="eyebrow">Pro Playbook</span>
+      <h1>Strategy Playbook</h1>
+      <p>Quick lessons for reading LottoMind tools, saving signals, and staying in control.</p>
+      <div class="hero-actions">
+        <button class="primary-btn" data-route="dailyTools">Daily Digit Lab</button>
+        <button class="ghost-btn" data-route="sequence">Pattern Scanner</button>
+      </div>
+    </div>
+    <div class="panel playbook-grid-panel">
+      <div class="section-head"><div><h2>Training Cards</h2><p>Tap a module to jump back into the matching tool.</p></div><span>4 cards</span></div>
+      <div class="playbook-grid">
+        ${lessons.map(([title, copy, route], index) => `<button class="playbook-card" data-route="${route}">
+          <span>${String(index + 1).padStart(2, "0")}</span>
+          <strong>${title}</strong>
+          <small>${copy}</small>
+        </button>`).join("")}
+      </div>
+    </div>
+    <div class="panel disclaimer-card playbook-note">
+      <strong>Responsible Play Note</strong>
+      <p>LottoMind tools are for entertainment, organization, and learning. They do not guarantee lottery outcomes.</p>
+    </div>
+  </section>`;
+}
+
 function renderView() {
   if (state.route === "dashboard") return dashboardView();
   if (state.route === "powertools") return powerToolsView();
@@ -3686,6 +3721,7 @@ function renderView() {
   if (state.route === "studio") return sonicStudioView();
   if (state.route === "dreamVideo" || state.route === "viralStudio") return videoStudioView();
   if (state.route === "futureRead") return futureReadView();
+  if (state.route === "proPlaybook") return proPlaybookView();
   if (state.route === "records" || state.route === "historical" || state.route === "liveData" || state.route === "historyUi") return recordsView();
   if (state.route === "marketplace") return marketplaceView();
   if (state.route === "store") return merchStoreView();
@@ -3704,6 +3740,7 @@ function render() {
   const app = document.getElementById("app");
   app.innerHTML = `<div class="real-shell route-${state.route}">
     ${header()}
+    ${state.route !== "dashboard" ? `<button class="back-orb" data-action="go-back" type="button" aria-label="Go back to previous page"><strong>&lsaquo;</strong><span>Back</span><small>Previous page</small></button>` : ""}
     ${missionHud()}
     <main class="real-main">${renderView()}</main>
     ${bottomNav()}
@@ -3963,6 +4000,14 @@ function applyScanReadout(action, source, upload = "", decoded = "") {
 }
 
 function handleAction(action, target) {
+  if (action === "go-back") {
+    if (window.history.length > 1) {
+      window.history.back();
+    } else {
+      go("dashboard", true);
+    }
+    return;
+  }
   if (action === "menu") {
     state.showUtilityMenu = !state.showUtilityMenu;
     state.showStatePicker = false;

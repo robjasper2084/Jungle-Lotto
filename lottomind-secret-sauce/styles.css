@@ -10067,3 +10067,152 @@ body .reset-screen .tone-top h1 span {
 body .future-read-screen .future-read-hero h1 {
   max-width: 11ch;
 }
+
+/* History, Power Tools, and Pro Playbook polish */
+body .back-orb {
+  width: max-content;
+  min-height: 44px;
+  margin: 0 0 10px 2px;
+  padding: 7px 14px 7px 8px;
+  display: inline-grid;
+  grid-template-columns: 32px auto;
+  grid-template-rows: auto auto;
+  column-gap: 8px;
+  align-items: center;
+  border: 1px solid rgba(0, 236, 255, 0.72);
+  border-radius: 999px;
+  color: #fff5ba;
+  background:
+    radial-gradient(circle at 18% 40%, rgba(0, 236, 255, 0.35), transparent 42%),
+    linear-gradient(135deg, rgba(1, 12, 23, 0.96), rgba(31, 26, 9, 0.9));
+  box-shadow: 0 0 22px rgba(0, 236, 255, 0.2), inset 0 0 18px rgba(248, 223, 118, 0.12);
+}
+
+body .back-orb strong {
+  grid-row: 1 / 3;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: #04111b;
+  font-size: 30px;
+  line-height: 1;
+  background: linear-gradient(180deg, #fff2a3, #c79625);
+  box-shadow: 0 0 16px rgba(248, 223, 118, 0.52);
+}
+
+body .back-orb span,
+body .back-orb small {
+  font-family: var(--future-font);
+  font-weight: 950;
+  text-transform: uppercase;
+  letter-spacing: 0;
+}
+
+body .back-orb small {
+  color: #8feeff;
+  font-size: 0.62rem;
+}
+
+body .ai-power-search {
+  margin-top: -4px;
+  margin-bottom: 6px;
+  border-color: rgba(0, 236, 255, 0.82);
+  background:
+    linear-gradient(90deg, rgba(0, 236, 255, 0.15), transparent 54%, rgba(248, 223, 118, 0.16)),
+    rgba(1, 10, 20, 0.92);
+}
+
+body .ai-power-search button {
+  color: #06101c;
+  background: linear-gradient(180deg, #fff4a8, #d8b846);
+}
+
+body .route-history .art-panel h1,
+body .route-history .vault-heading h2 {
+  font-family: Impact, Haettenschweiler, "Arial Black", var(--future-font);
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0;
+  color: #fff0a4;
+  text-shadow:
+    0 2px 0 #06101c,
+    0 0 14px rgba(248, 223, 118, 0.5),
+    0 0 24px rgba(0, 236, 255, 0.28);
+}
+
+body .route-history .art-panel h1 {
+  font-size: clamp(2.75rem, 11vw, 4.35rem);
+  line-height: 0.88;
+}
+
+body .route-history .vault-heading h2 {
+  font-size: clamp(2.15rem, 8.5vw, 3.35rem);
+  line-height: 0.9;
+}
+
+body .route-history .vault-heading span {
+  font-family: var(--future-font);
+  font-weight: 950;
+  color: #00ecff;
+  text-transform: uppercase;
+  letter-spacing: 0;
+}
+
+body .playbook-hero h1 {
+  font-family: Impact, Haettenschweiler, "Arial Black", var(--future-font);
+  font-size: clamp(2.5rem, 10vw, 4rem);
+  line-height: 0.9;
+  letter-spacing: 0;
+  text-transform: uppercase;
+  color: #fff0a4;
+  text-shadow: 0 2px 0 #06101c, 0 0 24px rgba(0, 236, 255, 0.24);
+}
+
+body .playbook-grid {
+  display: grid;
+  gap: 12px;
+}
+
+body .playbook-card {
+  min-height: 112px;
+  padding: 14px;
+  display: grid;
+  align-content: center;
+  gap: 7px;
+  text-align: left;
+  border: 1px solid rgba(248, 223, 118, 0.62);
+  border-radius: 18px;
+  color: #f9fbff;
+  background:
+    radial-gradient(circle at 12% 18%, rgba(0, 236, 255, 0.22), transparent 38%),
+    linear-gradient(145deg, rgba(4, 24, 39, 0.94), rgba(4, 7, 14, 0.96));
+  box-shadow: inset 0 0 20px rgba(0, 236, 255, 0.08), 0 0 18px rgba(0, 0, 0, 0.25);
+}
+
+body .playbook-card span {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: #06101c;
+  font-family: var(--future-font);
+  font-weight: 950;
+  background: linear-gradient(180deg, #fff4a8, #d4a928);
+}
+
+body .playbook-card strong {
+  font-family: var(--future-font);
+  color: #fff0a4;
+  font-size: 1.06rem;
+  text-transform: uppercase;
+  letter-spacing: 0;
+}
+
+body .playbook-card small,
+body .playbook-note p {
+  color: #d6ecff;
+  font-weight: 800;
+}
