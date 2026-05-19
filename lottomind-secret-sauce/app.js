@@ -3546,9 +3546,16 @@ function specialToolBody(routeKey, set) {
     const cards = routeKey === "contests"
       ? [["Daily Entry", "Ready"], ["Credit Prize", "+50"], ["Arcade Score", "Open"], ["Share Card", "Soon"]]
       : [["Oracle Tone", reading.tone], ["Lucky Window", reading.numberLogic?.playWindow || "Evening"], ["Pick 3", reading.pick3], ["Pick 4", reading.pick4]];
+    const contestScale = routeKey === "contests" ? `<div class="contest-scale">
+        <div><span>Entry</span><strong>Free</strong><small>Daily challenge card</small></div>
+        <div><span>Top 10</span><strong>+50</strong><small>Demo credits</small></div>
+        <div><span>Top 3</span><strong>+150</strong><small>Demo credits</small></div>
+        <div><span>Winner</span><strong>+500</strong><small>Demo credits</small></div>
+      </div>` : "";
     return `<div class="panel oracle-function-panel">
       <div class="section-head"><div><h2>${routeKey === "contests" ? "Contest Board" : "Generate Your Dreams"}</h2><p>${routeKey === "contests" ? "Challenge cards and future contest entries connected into Arcade." : "Dream text becomes numbers, tone, and shareable reveal cards."}</p></div><span>${cards.length} cards</span></div>
       <div class="tool-grid padded">${cards.map(([label, value]) => metricCard(label, value)).join("")}</div>
+      ${contestScale}
       <div class="hero-actions padded"><button class="primary-btn" data-action="build-dream-video">Generate Dreams</button><button class="ghost-btn" data-route="arcade">Arcade</button><button class="ghost-btn" data-route="history">History Vault</button></div>
     </div>`;
   }
