@@ -14,7 +14,7 @@ const ASSETS = {
   powerTools: `${BASE}/assets/images/powertools-ai-fixed-games.13c13b9fed4bd95d952df4aacd3078ba.png`,
   live: `${BASE}/assets/images/live-data-records-panel.404f88fa9201c5e14861577dc5bc8b97.png`,
   credit: `${BASE}/assets/images/lottomind-credit-coin-circle.c6ba4693cc71d242dd0f2ff47a19ee98.png`,
-  mascot: `${BASE}/assets/images/lottomind-dashboard-mascot.748b27f5e08c765913273948ef52d2f9.png`,
+  mascot: `${BASE}/assets/images/lottomind-brain-logo.2f28d70bc952673d95508151e29f46b1.png`,
   sequence: `${BASE}/assets/images/sequence-engine-live-bg.7f7239556a4a3e4035517b0bac125303.png`,
   arcade: `${BASE}/assets/arcade/jungle-vault-bg-gold.3c093c0c95965d35cbb0eddee93904f6.png`,
   arcadeCoin: `${BASE}/assets/arcade/play-arcade-coin-button-transparent.34454e607e0af66d23931637bbd7a364.png`,
@@ -1623,7 +1623,16 @@ function resetView() {
     ["528", "Heart Field"],
   ];
   const pct = Math.round(state.volume * 100);
+  const resetRecordsPanel = `<div class="panel record-label-panel compact reset-record-store reset-record-store-top">
+      <div>
+        <span class="eyebrow">LottoMind Records Label</span>
+        <h2>Frequency Storefront</h2>
+        <p>Preview tracks and load reset tones from this Reset-side music lane.</p>
+      </div>
+      <button class="primary-btn" data-route="music">Open Music Store</button>
+    </div>`;
   return `<section class="screen reset-screen">
+    ${resetRecordsPanel}
     <div class="panel tone-wheel art-panel" style="--panel-art:url('${ASSETS.reset}')">
       <div class="tone-top">
         <h1><span>Frequency</span> Reset</h1>
@@ -1654,15 +1663,6 @@ function resetView() {
           ${[180, 300, 600, 900, 1800, 3600].map((seconds) => `<button class="${state.duration === seconds ? "active" : ""}" data-action="set-duration" data-duration="${seconds}">${Math.round(seconds / 60)}m</button>`).join("")}
         </div>
       </div>
-    </div>
-
-    <div class="panel record-label-panel compact reset-record-store">
-      <div>
-        <span class="eyebrow">LottoMind Records Label</span>
-        <h2>Frequency Storefront</h2>
-        <p>Preview tracks and load reset tones from this Reset-side music lane.</p>
-      </div>
-      <button class="primary-btn" data-route="music">Open Music Store</button>
     </div>
 
     <div class="panel sound-session-panel">
@@ -1969,6 +1969,7 @@ function aiCoachView() {
 function dreamsView() {
   const reading = state.currentDream;
   return `<section class="screen dreams-screen">
+    ${!reading ? `<div class="panel empty-state dream-ready-spotlight dream-ready-top"><h2>Dream engine ready</h2><p>Tap the mic or type a dream, then run the full interpretation.</p></div>` : ""}
     <div class="panel dream-stage art-panel" style="--panel-art:url('${ASSETS.dream}')">
       <h1>Dream Oracle<sup>SM</sup> AI</h1>
       <p>Describe your dream. The Oracle detects symbols, explains meaning, and generates lucky numbers.</p>
@@ -1999,8 +2000,6 @@ function dreamsView() {
     </div>
 
     ${dreamGeneratePanel()}
-
-    ${!reading ? `<div class="panel empty-state dream-ready-spotlight"><h2>Dream engine ready</h2><p>Tap the mic or type a dream, then run the full interpretation.</p></div>` : ""}
 
     <div class="panel oracle-info-panel">
       <div class="section-head"><div><h2>What The Oracle Reads</h2><p>Each interpretation is broken into practical lanes.</p></div><span>5 layers</span></div>
@@ -2586,6 +2585,35 @@ function videoStudioView() {
   </section>`;
 }
 
+function futureReadView() {
+  const reading = interpretDream(state.dreamText, state.gameId);
+  const set = state.currentSet || generateLottoSet(state.gameId, "dream", state.dreamText || "future read");
+  return `<section class="screen future-read-screen">
+    <div class="panel art-panel oracle-function-panel future-read-hero" style="--panel-art:url('${ASSETS.dream}')">
+      <span class="eyebrow">Symbol Forecast</span>
+      <h1>Future Read Mode</h1>
+      <p>A symbolic entertainment forecast from your dream text, state pin, current game, and LottoMind signal lanes.</p>
+      <div class="hero-actions">
+        <button class="primary-btn" data-action="interpret-dream">Refresh Reading</button>
+        <button class="ghost-btn" data-route="dreams">Dream Oracle</button>
+        <button class="ghost-btn" data-route="history">History Vault</button>
+      </div>
+    </div>
+    <div class="panel result-card">
+      <span>${escapeHtml(reading.tone || "Oracle")}</span>
+      <h2>${escapeHtml(reading.title || "Future Signal")}</h2>
+      <p>${escapeHtml(reading.summary || reading.note || "Read the symbols, then save only what feels useful.")}</p>
+      ${ballsHtml(set.numbers, set.bonusNumber)}
+      <div class="tool-grid padded">
+        ${metricCard("Play Window", reading.numberLogic?.playWindow || "Evening")}
+        ${metricCard("Pick 3", reading.pick3 || "Ready")}
+        ${metricCard("Pick 4", reading.pick4 || "Ready")}
+        ${metricCard("State", state.selectedState)}
+      </div>
+    </div>
+  </section>`;
+}
+
 function sonicStudioView() {
   const reading = state.currentDream || interpretDream(state.dreamText, state.gameId);
   const current = state.currentSet || generateLottoSet(state.gameId, state.strategy, "sonic-studio");
@@ -2605,7 +2633,8 @@ function sonicStudioView() {
         <h1>Recording Booth</h1>
         <p>Record dream songs, affirmations, lucky chants, spoken-word hooks, and frequency-inspired demos inside the LottoMind Records lane.</p>
         <div class="hero-actions">
-          <button class="primary-btn" data-route="dreams">Start From Dream</button>
+          <button class="primary-btn" data-action="start-dream-recording">Start Recording</button>
+          <button class="ghost-btn" data-route="dreams">Start From Dream</button>
           <button class="ghost-btn" data-route="music">Open Records</button>
           <button class="ghost-btn" data-route="contests">Dream Song Challenge</button>
         </div>
@@ -2839,6 +2868,7 @@ function arcadeView() {
     ["Bonus Room", "Open a credit portal.", "arcadeGame"],
   ];
   const arcadeArt = [ASSETS.arcade, ASSETS.commandDeck, ASSETS.psychic, ASSETS.sequence, ASSETS.live, ASSETS.credit, ASSETS.heatmap, ASSETS.arcadeCoin];
+  const activeArcadePanel = state.route === "crossword" ? crosswordGameView() : state.route === "wordSearch" ? wordSearchGameView() : state.route !== "arcade" ? miniGameView(routeMeta(state.route)[0]) : "";
   return `<section class="screen">
     <div class="panel art-panel" style="--panel-art:url('${ASSETS.arcade}')">
       <h1 class="game-title">LottoMind Arcade</h1>
@@ -2849,6 +2879,7 @@ function arcadeView() {
       <video src="${BASE}/videos/play-arcade-button-loop.mp4" muted loop autoplay playsinline preload="metadata"></video>
       <div><span>Arcade motion asset</span><strong>Play Arcade Button</strong><p>Moved out of Marketplace and into the Arcade tab.</p></div>
     </div>
+    ${activeArcadePanel}
     <div class="panel arcade-game-panel">
       <div class="section-head"><div><h2>Game Select</h2><p>Scrollable arcade cards with clearer mission actions.</p></div><span>${games.length} games</span></div>
       <div class="arcade-game-grid">${games.map(([title, copy, route], index) => `
@@ -2866,7 +2897,7 @@ function arcadeView() {
         ${PLAY_LEARN_GROUP.tools.map(([title, sub, route], index) => circleTool(title, sub, route, index + 8)).join("")}
       </div>
     </div>` : ""}
-    ${state.route === "crossword" ? crosswordGameView() : state.route === "wordSearch" ? wordSearchGameView() : state.route !== "arcade" ? miniGameView(routeMeta(state.route)[0]) : miniGameView("Trivia Rewards")}
+    ${state.route === "arcade" ? miniGameView("Trivia Rewards") : ""}
     <div class="panel quest-board arcade-quest-board">
       <div class="section-head movie-head"><div><h2>Quest Board</h2><p>Arcade path from warmup to reward run.</p></div><span>4 steps</span></div>
       <div class="quest-steps">
@@ -3662,6 +3693,7 @@ function renderView() {
   if (state.route === "music" || state.route === "radioStation") return musicHubView(state.route === "radioStation");
   if (state.route === "studio") return sonicStudioView();
   if (state.route === "dreamVideo" || state.route === "viralStudio") return videoStudioView();
+  if (state.route === "futureRead") return futureReadView();
   if (state.route === "records" || state.route === "historical" || state.route === "liveData" || state.route === "historyUi") return recordsView();
   if (state.route === "marketplace") return marketplaceView();
   if (state.route === "store") return merchStoreView();
@@ -3850,7 +3882,7 @@ function bindInputs(target) {
 function startDreamRecording() {
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SpeechRecognition) {
-    if (state.route === "dreams" || state.route === "dreamVideo") {
+    if (state.route === "dreams" || state.route === "dreamVideo" || state.route === "studio") {
       state.dreamText = `${state.dreamText} I saw water, gold, a key, and a doorway.`;
       toast("Mic not available here, so I added a sample spoken dream.");
     } else {
@@ -3864,7 +3896,7 @@ function startDreamRecording() {
   recognition.onresult = (event) => {
     const transcript = Array.from(event.results).map((result) => result[0].transcript).join(" ");
     const wantsNavigation = /\b(open|go|show|take me|navigate|switch|launch)\b/i.test(transcript);
-    const isDreamCapture = state.route === "dreams" || state.route === "dreamVideo";
+    const isDreamCapture = state.route === "dreams" || state.route === "dreamVideo" || state.route === "studio";
     if (wantsNavigation || !isDreamCapture) {
       const route = routeFromSearch(transcript);
       const label = routeMeta(route)[0];
