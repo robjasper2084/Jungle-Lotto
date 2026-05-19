@@ -3200,26 +3200,36 @@ async function playVocalTrack(index, when = 0) {
 
 function studioTransportControls() {
   return `<div class="studio-transport-panel panel lm-studio-header-panel">
-    <div class="studio-brand-lock lm-studio-brand">
-      <img src="${ASSETS.lmLive}" alt="" />
-      <div><span>LottoMind</span><strong>Studio Mode</strong><small>${state.studioPlaying ? "Loop running" : "Ready for session"}</small></div>
+    <div class="lm-studio-appbar">
+      <div class="studio-brand-lock lm-studio-brand">
+        <span class="lm-studio-hex">LM</span>
+        <div><span>LottoMind</span><strong>Studio Mode</strong><small>${state.studioPlaying ? "Loop running" : "Ready for session"}</small></div>
+      </div>
+      <div class="lm-studio-title-block">
+        <h1>LottoMind <span>Studio Mode</span></h1>
+        <p>Futuristic MPC-style beat production, built for creators.</p>
+      </div>
+      <div class="lm-studio-header-tools">
+        <label class="lm-mini-card project-card">Project <select data-action="studio-set" data-studio-field="projectName">${["Future Vault", "Neon Dreams", "Detroit Reset", "Oracle Session"].map((item) => `<option ${item === state.studio.projectName ? "selected" : ""}>${item}</option>`).join("")}</select></label>
+        <div class="lm-icon-pack" aria-label="Project tools"><button type="button">Folder</button><button type="button">Save</button><button type="button">Cloud</button><button type="button">Menu</button></div>
+        <label class="lm-mini-card bpm-card">BPM <input type="number" min="40" max="220" data-action="studio-set" data-studio-field="bpm" value="${state.studio.bpm}" /><button type="button">Tap</button></label>
+        <div class="lm-status-card"><span class="${state.studioPlaying ? "online" : ""}"></span><div><small>Studio Status</small><strong>${state.studioPlaying ? "Online" : "Standby"}</strong></div></div>
+        <div class="lm-profile-card"><span>LM</span><b></b></div>
+      </div>
     </div>
-    <div class="lm-studio-title-block">
-      <h1>LottoMind <span>Studio Mode</span></h1>
-      <p>MPC-style pads, sampler, vocals, effects, keyboard synth, and creator-ready export.</p>
-    </div>
-    <div class="lm-top-controls">
-      <label class="lm-mini-card">Project <select data-action="studio-set" data-studio-field="projectName">${["Future Vault", "Neon Dreams", "Detroit Reset", "Oracle Session"].map((item) => `<option ${item === state.studio.projectName ? "selected" : ""}>${item}</option>`).join("")}</select></label>
-      <label class="lm-mini-card">BPM <input type="number" min="40" max="220" data-action="studio-set" data-studio-field="bpm" value="${state.studio.bpm}" /></label>
+    <div class="lm-studio-metrics">
       <label class="lm-mini-card">Grid <select data-action="studio-set" data-studio-field="division">${STUDIO_DIVISIONS.map((item) => `<option ${item === state.studio.division ? "selected" : ""}>${item}</option>`).join("")}</select></label>
-      <div class="lm-status-card"><span class="${state.studioPlaying ? "online" : ""}"></span><div><small>Studio Status</small><strong>${state.studioPlaying ? "Online" : "Standby"}</strong></div></div>
+      <div class="lm-metric-pill">16 Bars</div>
+      <div class="lm-metric-pill">4 Vocal Tracks</div>
+      <div class="lm-metric-pill">${state.studio.division} Timing</div>
+      <div class="lm-metric-pill fx">FX Rack</div>
     </div>
     <div class="lm-transport-row">
-      <button class="primary-btn play" data-action="studio-play">${state.studioPlaying ? "Restart" : "Play"}</button>
-      <button class="ghost-btn stop" data-action="studio-stop">Stop</button>
-      <button class="${state.studio.recArmed ? "record-btn active" : "record-btn"}" data-action="studio-toggle-rec">Rec</button>
-      <button class="${state.studio.recArmed ? "record-btn active seq" : "ghost-btn seq"}" data-action="studio-toggle-rec">Seq Rec</button>
-      <button class="${state.studioMasterRecording ? "record-btn active mix" : "ghost-btn mix"}" data-action="${state.studioMasterRecording ? "studio-stop-master-record" : "studio-start-master-record"}">Mix Rec</button>
+      <button class="primary-btn play" data-action="studio-play"><span class="transport-icon play-icon"></span><strong>${state.studioPlaying ? "Restart" : "Play"}</strong></button>
+      <button class="ghost-btn stop" data-action="studio-stop"><span class="transport-icon stop-icon"></span><strong>Stop</strong></button>
+      <button class="${state.studio.recArmed ? "record-btn active" : "record-btn"}" data-action="studio-toggle-rec"><span class="transport-icon rec-icon"></span><strong>Rec</strong></button>
+      <button class="${state.studio.recArmed ? "record-btn active seq" : "ghost-btn seq"}" data-action="studio-toggle-rec"><span class="transport-icon seq-icon"></span><strong>Seq Rec</strong></button>
+      <button class="${state.studioMasterRecording ? "record-btn active mix" : "ghost-btn mix"}" data-action="${state.studioMasterRecording ? "studio-stop-master-record" : "studio-start-master-record"}"><span class="transport-icon mix-icon"></span><strong>Mix Rec</strong></button>
     </div>
   </div>`;
 }
@@ -3228,13 +3238,13 @@ function studioControlStrip() {
   return `<div class="studio-control-strip panel lm-studio-tabs">
     <div class="lm-tab-row" aria-label="Studio navigation">
       ${[
-        ["Drum Machine", "studio-pads"],
-        ["Sampler", "studio-sampler"],
-        ["Vocals", "studio-vocals"],
-        ["Effects", "studio-effects"],
-        ["Memory", "studio-files"],
-        ["Export", "studio-files"],
-      ].map(([label, panel], index) => `<button class="studio-tab ${index === 0 ? "active" : ""}" data-action="studio-jump-panel" data-panel="${panel}">${label}</button>`).join("")}
+        ["Pads", "Drum Machine", "studio-pads"],
+        ["Note", "Sampler", "studio-sampler"],
+        ["Mic", "Vocals", "studio-vocals"],
+        ["FX", "Effects", "studio-effects"],
+        ["Bank", "Memory", "studio-files"],
+        ["Out", "Export", "studio-files"],
+      ].map(([icon, label, panel], index) => `<button class="studio-tab ${index === 0 ? "active" : ""}" data-action="studio-jump-panel" data-panel="${panel}"><i>${icon}</i>${label}</button>`).join("")}
     </div>
     <div class="lm-chip-row">
       ${["Score", "Options", "Metro", "Chain", "Rock", "HipHop", "Latin", "Random"].map((label) => `<button class="studio-chip ${label === "Metro" && state.studio.metronome ? "active" : ""}" data-action="${label === "Metro" ? "studio-toggle-metronome" : label === "Random" ? "studio-randomize" : "studio-kit"}">${label}</button>`).join("")}
@@ -3433,7 +3443,7 @@ function sonicStudioView() {
     ${studioTransportControls()}
     ${studioControlStrip()}
     <div class="lm-studio-grid">
-      ${studioRecordingBooth()}
+      ${studioDrumPads()}
       ${studioSequencerGrid()}
       ${studioVocalTracks()}
       ${studioSamplerPanel()}
