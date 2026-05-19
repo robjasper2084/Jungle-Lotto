@@ -490,6 +490,7 @@ const TOOL_GROUPS = [
       ["Live Vault Heatmap", "Radar map", "heatmap"],
       ["Pattern Scanner", "Signal lock", "sequence"],
       ["Smart Predictor", "AI insight", "ai"],
+      ["AI News", "Draw news", "ai"],
       ["Lotto Intelligence", "Deep report", "lottoIntel"],
       ["Energy Meter", "Signal score", "energyMeter"],
       ["Pick 3 / Pick 4", "Daily digits", "dailyTools"],
@@ -537,6 +538,7 @@ const HOME_CAROUSEL = [
   ["Sonic Studio / Record Booth", "Record dream songs, lucky chants, and reset demos.", "studio", ASSETS.studioBooth],
   ["Music Store / Record Label", "Play LottoMind Records audio and reset sessions.", "music", ASSETS.music],
   ["Radio Station", "LottoMind Records live audio lane.", "radioStation", ASSETS.music],
+  ["Viral Studio", "Build video loops and short promo scenes.", "viralStudio", ASSETS.power],
   ["Generate Your Dreams", "Turn dreams into scenes, readings, and lucky reveal cards.", "dreamVideo", ASSETS.dream],
   ["Heatmap Radar", "Read hot, cold, and overdue movement.", "heatmap", ASSETS.heatmap],
   ["Arcade Deck", "Run Power Tools like mission cards.", "powertools", ASSETS.power],
@@ -563,6 +565,7 @@ const STORAGE = {
   triviaHistory: "lottomind.oracle.real.triviaHistory.v1",
   crossword: "lottomind.oracle.real.crossword.v1",
   wordSearch: "lottomind.oracle.real.wordSearch.v1",
+  studio: "lottomind.studio.project.v1",
 };
 
 const DEFAULT_SETTINGS = {
@@ -574,6 +577,74 @@ const DEFAULT_SETTINGS = {
 };
 
 const STATE_PINS = ["NY", "FL", "TX", "CA", "GA", "MI", "PA", "NJ", "OH", "IL"];
+
+const STUDIO_DIVISIONS = ["1/4", "1/4T", "1/8", "1/8T", "1/16", "1/16T", "1/32", "1/32T", "1/64", "1/64T"];
+const STUDIO_PAD_SHORTCUTS = ["1", "2", "3", "4", "q", "w", "e", "r", "a", "s", "d", "f", "z", "x", "c", "v"];
+const STUDIO_PAD_DEFAULTS = [
+  ["Kick", "kick"], ["Snare", "snare"], ["Clap", "clap"], ["Closed Hat", "hat"],
+  ["Open Hat", "openhat"], ["Low Tom", "tom"], ["Mid Tom", "tom"], ["High Tom", "tom"],
+  ["Perc 1", "perc"], ["Perc 2", "perc"], ["Crash", "crash"], ["Ride", "ride"],
+  ["Vault FX", "fx"], ["Oracle Hit", "perc"], ["Cyan Bell", "bell"], ["Gold Riser", "fx"],
+];
+const STUDIO_NOTE_KEYS = {
+  z: "C", s: "C#", x: "D", d: "D#", c: "E", v: "F", g: "F#", b: "G", h: "G#", n: "A", j: "A#", m: "B",
+  q: "C", 2: "C#", w: "D", 3: "D#", e: "E", r: "F", 5: "F#", t: "G", 6: "G#", y: "A", 7: "A#", u: "B",
+};
+
+function createDefaultStudioProject() {
+  return {
+    bpm: 92,
+    division: "1/16",
+    swing: 8,
+    velocity: 82,
+    humanize: 6,
+    recArmed: false,
+    metronome: false,
+    selectedPad: 0,
+    waveform: "sawtooth",
+    octave: 4,
+    synthVolume: 55,
+    effects: { drive: 0, tone: 76, delay: 0, reverb: 0, punch: 12 },
+    pads: STUDIO_PAD_DEFAULTS.map(([name, type], index) => ({
+      name,
+      type,
+      velocity: 82,
+      muted: false,
+      sampleName: "",
+      sampleData: "",
+      trimStart: 0,
+      trimEnd: 100,
+      pitch: 0,
+      gain: 85,
+      reverse: false,
+      shortcut: STUDIO_PAD_SHORTCUTS[index],
+    })),
+    events: [],
+    vocals: Array.from({ length: 4 }, (_, index) => ({
+      name: `Vocal ${index + 1}`,
+      data: "",
+      fileName: "",
+      muted: false,
+      solo: false,
+      volume: 75,
+      startStep: 0,
+      sessionOnly: false,
+    })),
+  };
+}
+
+function studioProject() {
+  const saved = loadJson(STORAGE.studio, {});
+  const fallback = createDefaultStudioProject();
+  return {
+    ...fallback,
+    ...saved,
+    effects: { ...fallback.effects, ...(saved.effects || {}) },
+    pads: fallback.pads.map((pad, index) => ({ ...pad, ...(saved.pads?.[index] || {}) })),
+    vocals: fallback.vocals.map((track, index) => ({ ...track, ...(saved.vocals?.[index] || {}) })),
+    events: Array.isArray(saved.events) ? saved.events : [],
+  };
+}
 
 const state = {
   route: routeFromLocation(),
@@ -617,6 +688,12 @@ const state = {
   activeStoreFilters: [],
   selectedStoreId: "",
   userLocation: null,
+  studio: studioProject(),
+  studioPlaying: false,
+  studioStep: 0,
+  studioInputStatus: "Mic/line input idle",
+  studioRecordingTrack: null,
+  studioMasterRecording: false,
   wordSearchMarks: loadJson("lottomind.oracle.real.wordSearch.v1", []),
   crosswordSolved: loadJson("lottomind.oracle.real.crossword.v1", { solved: false }).solved || false,
 };
@@ -638,6 +715,19 @@ let routeAudioStopId = null;
 let routeAudioPlayedRoute = "";
 let timerId = null;
 let toastId = null;
+let studioCtx = null;
+let studioMaster = null;
+let studioFilter = null;
+let studioDelay = null;
+let studioFeedback = null;
+let studioDestination = null;
+let studioTimerId = null;
+let studioSampleBuffers = {};
+let studioMicStream = null;
+let studioMonitorSource = null;
+let studioRecorders = {};
+let studioMasterRecorder = null;
+let studioMasterChunks = [];
 
 function getGame(gameId = state.gameId) {
   return LOTTO_GAMES.find((game) => game.id === gameId) || LOTTO_GAMES[0];
@@ -1242,10 +1332,12 @@ const tabNotes = {
   Radar: 329.63,
   Dream: 349.23,
   Reset: 392.00,
-  Seq: 392.00,
-  Vault: 440.00,
+  Seq: 440.00,
+  Vault: 493.88,
   Arcade: 523.25,
 };
+
+const TAB_ROUTES = ["dashboard", "powertools", "heatmap", "dreams", "reset", "sequence", "history", "arcade"];
 
 function playTabNote(frequency) {
   try {
@@ -1276,21 +1368,13 @@ function playTabNote(frequency) {
 
 function header() {
   return `<header class="real-header">
-    <button class="round-icon menu-orb help-orb" data-action="menu" aria-label="Open help, settings, and policies"><span></span><em>HELP</em></button>
-    <button class="brand-lockup" data-route="store" aria-label="Open LottoMind merch store">
+    <button class="brand-lockup" data-route="dashboard" aria-label="Open LottoMind home">
       <img src="${ASSETS.logo}" alt="LottoMind logo" />
       <span>Lotto<span>Mind</span><sup>TM</sup></span>
-      <i class="store-tab">Store</i>
-      <i class="radio-tab" data-route="radioStation">Radio</i>
     </button>
-    <button class="round-icon mic-orb art-mic-orb" data-action="voice-search" aria-label="Start voice input"><img src="${ASSETS.voiceCornerMic}" alt="" /><span class="mic-glyph" aria-hidden="true"></span><b>Voice</b></button>
-    <div class="top-controls segmented-switch shell-switch" role="group" aria-label="Pinned state and shell view mode">
-      <button class="pin-button meatball" data-action="cycle-state"><span>PIN</span><strong>${state.selectedState}</strong></button>
-      <button class="mode-toggle meatball ${state.viewMode === "auto" ? "active" : ""}" data-action="set-view" data-view="auto"><span>Auto</span></button>
-      <button class="mode-toggle meatball ${state.viewMode === "app" ? "active" : ""}" data-action="set-view" data-view="app"><span>App</span></button>
-      <button class="mode-toggle meatball ${state.viewMode === "web" ? "active" : ""}" data-action="set-view" data-view="web"><span>Web</span></button>
-    </div>
-    <label class="search-pill">
+    <button class="pin-button top-state-button" data-action="cycle-state" aria-label="Change state pin"><span>State</span><strong>${state.selectedState}</strong></button>
+    <button class="round-icon menu-orb command-meatball" data-action="menu" aria-label="Open LottoMind command menu"><span></span><em>MENU</em></button>
+    <label class="search-pill top-search">
       <span>AI Search</span>
       <input data-action="search" value="${escapeHtml(state.searchQuery)}" placeholder="Ask LottoMind AI for tools, dreams, numbers..." autocomplete="off" />
       <button class="mic-chip art-search-mic" type="button" data-action="voice-search" aria-label="Voice search"><img src="${ASSETS.searchMic}" alt="" /></button>
@@ -1299,8 +1383,14 @@ function header() {
     ${state.showStatePicker ? `<div class="state-picker">
       ${STATE_PINS.map((pin) => `<button class="${pin === state.selectedState ? "active" : ""}" data-action="select-state" data-state="${pin}"><span>${pin}</span><small>${pin === state.selectedState ? "Pinned" : "Select"}</small></button>`).join("")}
     </div>` : ""}
-    ${state.showUtilityMenu ? `<div class="utility-menu">
-      <div class="menu-title"><span>Help Center</span><strong>How to use LottoMind, settings, and policies</strong></div>
+    ${state.showUtilityMenu ? `<div class="utility-menu command-dropdown">
+      <div class="menu-title"><span>Command Menu</span><strong>State, voice, store, radio, help</strong></div>
+      <div class="command-menu-grid">
+        <button data-action="cycle-state"><strong>Pin ${state.selectedState}</strong><small>Change state</small></button>
+        <button data-action="voice-search"><strong>Voice</strong><small>Speak command</small></button>
+        <button data-route="store"><strong>Store</strong><small>Gear drop</small></button>
+        <button data-route="radioStation"><strong>Radio</strong><small>Live audio</small></button>
+      </div>
       <button data-route="help"><strong>How To Use</strong><small>Reset, Dream, Radar, Power Tools, Arcade</small></button>
       <button data-route="settings"><strong>Settings</strong><small>Sound, motion, voice, and app mode</small></button>
       <button data-route="notifications"><strong>Alerts</strong><small>Draw reminders and saved-state notices</small></button>
@@ -1310,16 +1400,8 @@ function header() {
 }
 
 function bottomNav() {
-  const items = [
-    ["dashboard", "Home", "LM"],
-    ["powertools", "Tools", "PT"],
-    ["heatmap", "Radar", "RD"],
-    ["dreams", "Dream", "DO"],
-    ["reset", "Reset", "Hz"],
-    ["sequence", "Seq", "SQ"],
-    ["history", "Vault", "HV"],
-    ["arcade", "Arcade", "AR"],
-  ];
+  const labels = { dashboard: ["Home", "C"], powertools: ["Tools", "D"], heatmap: ["Radar", "E"], dreams: ["Dream", "F"], reset: ["Reset", "G"], sequence: ["Seq", "A"], history: ["Vault", "B"], arcade: ["Arcade", "C"] };
+  const items = TAB_ROUTES.map((route) => [route, ...labels[route]]);
   return `<nav class="real-bottom-nav">${items.map(([route, label, icon]) => `
     <button class="${state.route === route ? "active" : ""}" data-route="${route}" data-tab-label="${label}">
       <span class="nav-glyph">${icon}</span>
@@ -1511,7 +1593,16 @@ function dashboardView() {
     </div>
 
     <div class="panel home-merch-video">
-      <img class="home-merch-product" src="${ASSETS.detroitCollection}" alt="" />
+      <div class="home-merch-slideshow" aria-label="LottoMind merch preview slideshow">
+        ${[
+          ASSETS.detroitCollection,
+          ASSETS.detroitHoodieClose,
+          ASSETS.detroitPoloClose,
+          ASSETS.detroitCapFront,
+          ASSETS.detroitCapClose,
+        ].map((src, index) => `<img class="home-merch-product" src="${src}" alt="" style="--slide:${index}" />`).join("")}
+        <div class="merch-slide-dots" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></div>
+      </div>
       <div>
         <span class="eyebrow">Official Merch Store</span>
         <h2>LottoMind Gear Drop</h2>
@@ -1561,7 +1652,8 @@ function powerToolsView() {
         <div class="hero-actions">
           <button class="primary-btn" data-action="run-power-analysis">Run Analysis</button>
           <button class="ghost-btn" data-route="numberGenerator">Number Generator</button>
-          <button class="ghost-btn" data-route="history">History Vault</button>
+          <button class="ghost-btn" data-route="lottoIntel">Lotto Intelligence</button>
+          <button class="ghost-btn" data-route="dailyTools">Pick 3 / Pick 4</button>
           <button class="ghost-btn" data-route="radioStation">Radio Station</button>
           <button class="ghost-btn" data-route="marketplace">Marketplace</button>
         </div>
@@ -1982,8 +2074,6 @@ function dreamsView() {
       </div>
     </div>
 
-    ${dreamGeneratePanel()}
-
     <div class="panel tool-bank dream-oracle-tools">
       <div class="section-head">
         <div><h2>${ORACLE_STUDIO_GROUP.title}</h2><p>${ORACLE_STUDIO_GROUP.copy}</p></div>
@@ -1993,6 +2083,8 @@ function dreamsView() {
         ${ORACLE_STUDIO_GROUP.tools.map(([title, sub, route], index) => circleTool(title, sub, route, index + 3)).join("")}
       </div>
     </div>
+
+    ${dreamGeneratePanel()}
 
     <div class="panel oracle-info-panel">
       <div class="section-head"><div><h2>What The Oracle Reads</h2><p>Each interpretation is broken into practical lanes.</p></div><span>5 layers</span></div>
@@ -2190,12 +2282,6 @@ function heatmapView() {
       ].map(([label, route]) => `<button class="control-chip" data-route="${route === "hot" || route === "cold" || route === "balanced" ? "heatmap" : route}"><span>${label}</span><small>${route === "hot" ? topSignal.number : route === "cold" ? lowSignal.number : route === "balanced" ? "mix" : "open"}</small></button>`).join("")}
     </div>
     ${todaysSnapshotPanel("Radar Snapshot")}
-    <div class="panel quick-panel radar-quick-panel">
-      <div class="section-head"><div><h2>Radar Tool Deck</h2><p>Old functions grouped under the Radar tab as swipeable Oracle buttons.</p></div><span>${QUICK_TOOLS.length} tools</span></div>
-      <div class="circle-carousel">
-        ${QUICK_TOOLS.map(([title, sub, route], index) => circleTool(title, sub, route, index)).join("")}
-      </div>
-    </div>
     <div class="panel radar-panel">
       <div class="radar-titlebar">
         <div><span>Live Board</span><strong>${stats.game.name} Signal Grid</strong></div>
@@ -2205,6 +2291,12 @@ function heatmapView() {
         ${heatmap.map((cell, index) => radarDot(cell, index, heatmap.length)).join("")}
       </div>
       <div class="legend"><span class="hot"></span> Hot <span class="active"></span> Active <span class="cold"></span> Cold</div>
+    </div>
+    <div class="panel quick-panel radar-quick-panel">
+      <div class="section-head"><div><h2>Radar Tool Deck</h2><p>Old functions grouped under the Radar tab as swipeable Oracle buttons.</p></div><span>${QUICK_TOOLS.length} tools</span></div>
+      <div class="circle-carousel">
+        ${QUICK_TOOLS.map(([title, sub, route], index) => circleTool(title, sub, route, index)).join("")}
+      </div>
     </div>
     <div class="split-grid">
       <div class="panel"><h2>Hot Watch</h2>${ballsHtml(hot.map((cell) => cell.number))}</div>
@@ -2607,96 +2699,442 @@ function futureReadView() {
   </section>`;
 }
 
+function saveStudioProject() {
+  saveJson(STORAGE.studio, state.studio);
+}
+
+function studioStepsPerBeat(division = state.studio.division) {
+  const base = Number(String(division).match(/\d+/)?.[0] || 16);
+  const steps = base / 4;
+  return Math.max(1, String(division).includes("T") ? Math.round(steps * 1.5) : steps);
+}
+
+function studioTotalSteps(division = state.studio.division) {
+  return Math.max(16, Math.round(16 * 4 * studioStepsPerBeat(division)));
+}
+
+function studioVisibleSteps() {
+  return Math.min(64, studioTotalSteps());
+}
+
+function ensureStudioAudio() {
+  const AudioContext = window.AudioContext || window.webkitAudioContext;
+  if (!AudioContext) return null;
+  if (!studioCtx || studioCtx.state === "closed") {
+    studioCtx = new AudioContext();
+    studioMaster = studioCtx.createGain();
+    studioFilter = studioCtx.createBiquadFilter();
+    studioDelay = studioCtx.createDelay(1.5);
+    studioFeedback = studioCtx.createGain();
+    studioDestination = studioCtx.createMediaStreamDestination();
+    studioMaster.gain.value = 0.72;
+    studioFilter.type = "lowpass";
+    studioDelay.delayTime.value = 0.18;
+    studioFeedback.gain.value = 0;
+    studioMaster.connect(studioFilter);
+    studioFilter.connect(studioCtx.destination);
+    studioFilter.connect(studioDestination);
+    studioFilter.connect(studioDelay);
+    studioDelay.connect(studioFeedback);
+    studioFeedback.connect(studioDelay);
+    studioDelay.connect(studioCtx.destination);
+    studioDelay.connect(studioDestination);
+  }
+  if (studioCtx.state === "suspended") studioCtx.resume().catch(() => {});
+  updateStudioEffects();
+  return studioCtx;
+}
+
+function updateStudioEffects() {
+  if (!studioCtx || !studioFilter || !studioFeedback || !studioMaster) return;
+  const fx = state.studio.effects;
+  studioFilter.frequency.setTargetAtTime(600 + (Number(fx.tone) || 0) * 76, studioCtx.currentTime, 0.03);
+  studioFilter.Q.setTargetAtTime(0.4 + (Number(fx.punch) || 0) / 38, studioCtx.currentTime, 0.03);
+  studioFeedback.gain.setTargetAtTime(Math.min(0.62, (Number(fx.delay) || 0) / 155), studioCtx.currentTime, 0.03);
+  studioMaster.gain.setTargetAtTime(0.58 + Math.min(0.26, (Number(fx.drive) || 0) / 380), studioCtx.currentTime, 0.03);
+}
+
+function studioOutput() {
+  return studioMaster || ensureStudioAudio()?.destination;
+}
+
+function makeNoiseBuffer(duration = 0.18) {
+  const ctx = ensureStudioAudio();
+  if (!ctx) return null;
+  const buffer = ctx.createBuffer(1, Math.max(1, duration * ctx.sampleRate), ctx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < data.length; i += 1) data[i] = Math.random() * 2 - 1;
+  return buffer;
+}
+
+function triggerStudioSynthDrum(type = "perc", velocity = 0.8, when = 0) {
+  const ctx = ensureStudioAudio();
+  if (!ctx) {
+    toast("Tap again in a browser with Web Audio enabled.");
+    return;
+  }
+  const t = when || ctx.currentTime;
+  const out = studioOutput();
+  const gain = ctx.createGain();
+  gain.gain.setValueAtTime(0.0001, t);
+  gain.gain.exponentialRampToValueAtTime(Math.max(0.015, velocity * 0.72), t + 0.01);
+  gain.gain.exponentialRampToValueAtTime(0.0001, t + (type === "openhat" || type === "crash" || type === "ride" ? 0.55 : 0.2));
+  gain.connect(out);
+  if (type === "kick") {
+    const osc = ctx.createOscillator();
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(140, t);
+    osc.frequency.exponentialRampToValueAtTime(42, t + 0.16);
+    osc.connect(gain);
+    osc.start(t);
+    osc.stop(t + 0.22);
+    return;
+  }
+  if (["snare", "clap", "hat", "openhat", "crash", "ride"].includes(type)) {
+    const source = ctx.createBufferSource();
+    const filter = ctx.createBiquadFilter();
+    source.buffer = makeNoiseBuffer(type === "clap" ? 0.24 : type === "hat" ? 0.08 : 0.48);
+    filter.type = type === "snare" || type === "clap" ? "bandpass" : "highpass";
+    filter.frequency.value = type === "snare" ? 1800 : type === "clap" ? 1200 : 6200;
+    source.connect(filter);
+    filter.connect(gain);
+    source.start(t);
+    source.stop(t + (type === "hat" ? 0.09 : 0.5));
+    return;
+  }
+  const osc = ctx.createOscillator();
+  osc.type = type === "bell" ? "triangle" : type === "fx" ? "sawtooth" : "square";
+  osc.frequency.setValueAtTime(type === "tom" ? 180 : type === "bell" ? 740 : 360, t);
+  osc.frequency.exponentialRampToValueAtTime(type === "fx" ? 90 : 120, t + 0.22);
+  osc.connect(gain);
+  osc.start(t);
+  osc.stop(t + 0.32);
+}
+
+function readFileAsDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+async function decodeStudioSample(padIndex) {
+  const pad = state.studio.pads[padIndex];
+  if (!pad?.sampleData) return null;
+  if (studioSampleBuffers[padIndex]) return studioSampleBuffers[padIndex];
+  const ctx = ensureStudioAudio();
+  if (!ctx) return null;
+  const response = await fetch(pad.sampleData);
+  const arrayBuffer = await response.arrayBuffer();
+  const buffer = await ctx.decodeAudioData(arrayBuffer.slice(0));
+  studioSampleBuffers[padIndex] = buffer;
+  return buffer;
+}
+
+async function triggerStudioPad(index, record = true, when = 0, eventVelocity) {
+  const pad = state.studio.pads[index];
+  if (!pad || pad.muted) return;
+  const velocity = Math.max(0.02, (Number(eventVelocity ?? pad.velocity ?? state.studio.velocity) || 80) / 100);
+  flashStudioPad(index);
+  if (pad.sampleData) {
+    const ctx = ensureStudioAudio();
+    const buffer = await decodeStudioSample(index).catch(() => null);
+    if (ctx && buffer) {
+      const source = ctx.createBufferSource();
+      const gain = ctx.createGain();
+      source.buffer = buffer;
+      source.playbackRate.value = Math.pow(2, (Number(pad.pitch) || 0) / 12);
+      gain.gain.value = velocity * ((Number(pad.gain) || 80) / 100);
+      source.connect(gain);
+      gain.connect(studioOutput());
+      const start = Math.max(0, buffer.duration * ((Number(pad.trimStart) || 0) / 100));
+      const end = Math.max(start + 0.02, buffer.duration * ((Number(pad.trimEnd) || 100) / 100));
+      source.start(when || ctx.currentTime, start, end - start);
+    }
+  } else {
+    triggerStudioSynthDrum(pad.type, velocity, when);
+  }
+  if (record && state.studio.recArmed && state.studioPlaying) recordStudioEvent("pad", index, "", velocity);
+}
+
+function flashStudioPad(index) {
+  requestAnimationFrame(() => {
+    const el = document.querySelector(`[data-studio-pad="${index}"]`);
+    if (!el) return;
+    el.classList.add("flash");
+    setTimeout(() => el.classList.remove("flash"), 160);
+  });
+}
+
+function recordStudioEvent(type, pad = 0, note = "", velocity = 0.82) {
+  const total = studioTotalSteps();
+  const step = Math.max(0, Math.min(total - 1, Math.round(state.studioStep)));
+  const event = { id: `ev-${Date.now()}-${Math.random().toString(16).slice(2)}`, type, pad, note, step, velocity: Math.round(velocity * 100), offset: 0 };
+  state.studio.events = state.studio.events.filter((item) => !(item.type === type && item.pad === pad && item.note === note && item.step === step)).concat(event);
+  saveStudioProject();
+}
+
+function studioStepMs() {
+  return (60000 / Math.max(40, Number(state.studio.bpm) || 92)) / studioStepsPerBeat();
+}
+
+function playStudioStep(step) {
+  const total = studioTotalSteps();
+  const normalized = step % total;
+  const soloed = state.studio.vocals.some((track) => track.solo);
+  state.studio.events.filter((event) => event.step === normalized).forEach((event) => {
+    const jitter = (Math.random() - 0.5) * (Number(state.studio.humanize) || 0) * 0.002;
+    const velocity = Math.max(8, Math.min(100, (Number(event.velocity) || state.studio.velocity) + (Math.random() - 0.5) * (Number(state.studio.humanize) || 0)));
+    if (event.type === "pad") triggerStudioPad(event.pad, false, ensureStudioAudio()?.currentTime + Math.max(0, jitter), velocity);
+    if (event.type === "note") triggerStudioNote(event.note, false, velocity / 100);
+  });
+  state.studio.vocals.forEach((track, index) => {
+    if (!track.data || track.muted || (soloed && !track.solo)) return;
+    if (Number(track.startStep) === normalized) playVocalTrack(index);
+  });
+  if (state.studio.metronome && normalized % studioStepsPerBeat() === 0) triggerStudioSynthDrum("bell", 0.18);
+}
+
+function startStudioSequence() {
+  ensureStudioAudio();
+  stopStudioSequence(false);
+  state.studioPlaying = true;
+  const total = studioTotalSteps();
+  studioTimerId = setInterval(() => {
+    state.studioStep = (state.studioStep + 1) % total;
+    playStudioStep(state.studioStep);
+    renderStudioPlayhead();
+  }, Math.max(18, studioStepMs()));
+  playStudioStep(state.studioStep);
+  render();
+}
+
+function stopStudioSequence(update = true) {
+  clearInterval(studioTimerId);
+  studioTimerId = null;
+  state.studioPlaying = false;
+  state.studioStep = 0;
+  if (update) render();
+}
+
+function renderStudioPlayhead() {
+  const visible = studioVisibleSteps();
+  document.querySelectorAll(".studio-step").forEach((cell) => {
+    cell.classList.toggle("playing", Number(cell.getAttribute("data-step")) === state.studioStep % visible);
+  });
+}
+
+function triggerStudioNote(note = "C", record = true, velocity = 0.7) {
+  const ctx = ensureStudioAudio();
+  if (!ctx) return;
+  const noteIndex = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"].indexOf(note);
+  const freq = 440 * Math.pow(2, ((noteIndex < 0 ? 0 : noteIndex) + (Number(state.studio.octave) - 4) * 12 - 9) / 12);
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = state.studio.waveform || "sawtooth";
+  osc.frequency.value = freq;
+  gain.gain.setValueAtTime(0.0001, ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(velocity * ((Number(state.studio.synthVolume) || 55) / 100), ctx.currentTime + 0.02);
+  gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.44);
+  osc.connect(gain);
+  gain.connect(studioOutput());
+  osc.start();
+  osc.stop(ctx.currentTime + 0.5);
+  if (record && state.studio.recArmed && state.studioPlaying) recordStudioEvent("note", 0, note, velocity);
+}
+
+function downloadTextFile(name, text, type = "application/json") {
+  const blob = new Blob([text], { type });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = name;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 800);
+}
+
+function playVocalTrack(index) {
+  const track = state.studio.vocals[index];
+  if (!track?.data) return;
+  const audio = new Audio(track.data);
+  audio.volume = Math.max(0, Math.min(1, Number(track.volume) / 100 || 0.75));
+  audio.play().catch(() => toast("Vocal playback blocked until the page is tapped."));
+}
+
+function studioTransportControls() {
+  return `<div class="studio-transport-panel panel">
+    <div class="studio-brand-lock"><img src="${ASSETS.logo}" alt="" /><div><span>LottoMind Studio</span><strong>${state.studioPlaying ? "Loop running" : "Ready"}</strong></div></div>
+    <label>BPM <input type="number" min="40" max="220" data-action="studio-set" data-studio-field="bpm" value="${state.studio.bpm}" /></label>
+    <label>Grid <select data-action="studio-set" data-studio-field="division">${STUDIO_DIVISIONS.map((item) => `<option ${item === state.studio.division ? "selected" : ""}>${item}</option>`).join("")}</select></label>
+    <button class="primary-btn" data-action="studio-play">${state.studioPlaying ? "Restart" : "Play"}</button>
+    <button class="ghost-btn" data-action="studio-stop">Stop</button>
+    <button class="${state.studio.recArmed ? "record-btn active" : "record-btn"}" data-action="studio-toggle-rec">Seq Rec</button>
+    <button class="${state.studioMasterRecording ? "record-btn active" : "ghost-btn"}" data-action="${state.studioMasterRecording ? "studio-stop-master-record" : "studio-start-master-record"}">Audio Rec</button>
+  </div>`;
+}
+
+function studioControlStrip() {
+  return `<div class="studio-control-strip panel">
+    ${["Score", "Options", "Metro", "Chain", "Rock", "HipHop", "Latin", "Random"].map((label) => `<button class="studio-chip ${label === "Metro" && state.studio.metronome ? "active" : ""}" data-action="${label === "Metro" ? "studio-toggle-metronome" : label === "Random" ? "studio-randomize" : "studio-kit"}">${label}</button>`).join("")}
+    <label>Swing <input type="range" min="0" max="60" data-action="studio-set" data-studio-field="swing" value="${state.studio.swing}" /></label>
+    <label>Feel <input type="range" min="0" max="40" data-action="studio-set" data-studio-field="humanize" value="${state.studio.humanize}" /></label>
+    <label>Vel <input type="range" min="1" max="100" data-action="studio-set" data-studio-field="velocity" value="${state.studio.velocity}" /></label>
+    <button class="primary-btn" data-action="studio-humanize">Humanize</button>
+  </div>`;
+}
+
+function studioDrumPads() {
+  return `<div class="panel studio-module">
+    <div class="section-head"><div><h2>MPC Pads</h2><p>Tap, click, or use shortcuts 1-4 / QWER / ASDF / ZXCV.</p></div><span>16 pads</span></div>
+    <div class="studio-pad-grid">
+      ${state.studio.pads.map((pad, index) => `<button class="studio-pad ${index === state.studio.selectedPad ? "selected" : ""} ${pad.sampleData ? "sampled" : ""}" data-action="studio-pad" data-studio-pad="${index}">
+        <b>${pad.shortcut}</b><strong>${escapeHtml(pad.name)}</strong><small>${pad.sampleData ? "SAMPLE" : pad.type} / ${pad.velocity}</small><i>${pad.muted ? "Muted" : "Active"}</i>
+      </button>`).join("")}
+    </div>
+  </div>`;
+}
+
+function studioSequencerGrid() {
+  const visible = studioVisibleSteps();
+  const total = studioTotalSteps();
+  const padRows = state.studio.pads.slice(0, 8);
+  const hasEvent = (pad, step) => state.studio.events.some((event) => event.type === "pad" && event.pad === pad && event.step % visible === step);
+  return `<div class="panel studio-module studio-sequencer">
+    <div class="section-head"><div><h2>16-Bar Sequencer</h2><p>${state.studio.division} grid: showing ${visible} of ${total} loop ticks.</p></div><span>${state.studio.events.length} events</span></div>
+    <div class="studio-seq-grid" style="--steps:${visible}">
+      ${padRows.map((pad, padIndex) => `<div class="studio-seq-name">${escapeHtml(pad.name)}</div>${Array.from({ length: visible }, (_, step) => `<button class="studio-step ${hasEvent(padIndex, step) ? "on" : ""} ${step === state.studioStep % visible ? "playing" : ""}" data-action="studio-toggle-step" data-pad="${padIndex}" data-step="${step}" aria-label="${escapeHtml(pad.name)} step ${step + 1}"></button>`).join("")}`).join("")}
+    </div>
+    <div class="studio-seq-actions"><button class="ghost-btn" data-action="studio-clear-pattern">Clear Pattern</button><button class="ghost-btn" data-action="studio-save-project">Save Project</button></div>
+  </div>`;
+}
+
+function studioKeyboardSection() {
+  const notes = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+  return `<div class="panel studio-module">
+    <div class="section-head"><div><h2>Keyboard Synth</h2><p>Play notes and record them into the loop when sequence rec is armed.</p></div><span>Oct ${state.studio.octave}</span></div>
+    <div class="studio-synth-controls">
+      <label>Wave <select data-action="studio-set" data-studio-field="waveform">${["sine", "triangle", "sawtooth", "square"].map((item) => `<option ${item === state.studio.waveform ? "selected" : ""}>${item}</option>`).join("")}</select></label>
+      <label>Octave <input type="number" min="1" max="7" data-action="studio-set" data-studio-field="octave" value="${state.studio.octave}" /></label>
+      <label>Volume <input type="range" min="1" max="100" data-action="studio-set" data-studio-field="synthVolume" value="${state.studio.synthVolume}" /></label>
+    </div>
+    <div class="studio-keyboard">${notes.map((note) => `<button class="${note.includes("#") ? "black" : "white"}" data-action="studio-note" data-note="${note}"><span>${note}</span></button>`).join("")}</div>
+  </div>`;
+}
+
+function studioSamplerPanel() {
+  const pad = state.studio.pads[state.studio.selectedPad] || state.studio.pads[0];
+  return `<div class="panel studio-module">
+    <div class="section-head"><div><h2>Sampler</h2><p>Target pad: ${escapeHtml(pad.name)} ${pad.sampleData ? "(sample loaded)" : "(synth sound)"}</p></div><span>${String(state.studio.selectedPad + 1).padStart(2, "0")}</span></div>
+    <div class="studio-tools-grid">
+      <label>Target <select data-action="studio-set" data-studio-field="selectedPad">${state.studio.pads.map((item, index) => `<option value="${index}" ${index === state.studio.selectedPad ? "selected" : ""}>${index + 1}. ${escapeHtml(item.name)}</option>`).join("")}</select></label>
+      <label>Load sample <input type="file" accept="audio/*" data-action="studio-import-sample" /></label>
+      <label>Audio URL <input data-bind="studioSampleUrl" placeholder="https://... audio file" /></label>
+      <button class="ghost-btn" data-action="studio-load-url-sample">Load URL</button>
+      <button class="ghost-btn" data-action="studio-sample-mic">Sample Mic</button>
+      <button class="ghost-btn" data-action="studio-sample-tab">Sample Tab Audio</button>
+      <label>Start <input type="range" min="0" max="95" data-action="studio-pad-set" data-pad-field="trimStart" value="${pad.trimStart}" /></label>
+      <label>End <input type="range" min="5" max="100" data-action="studio-pad-set" data-pad-field="trimEnd" value="${pad.trimEnd}" /></label>
+      <label>Pitch <input type="range" min="-24" max="24" data-action="studio-pad-set" data-pad-field="pitch" value="${pad.pitch}" /></label>
+      <label>Gain <input type="range" min="1" max="140" data-action="studio-pad-set" data-pad-field="gain" value="${pad.gain}" /></label>
+      <button class="ghost-btn" data-action="studio-toggle-pad-reverse">${pad.reverse ? "Reverse On" : "Reverse Off"}</button>
+      <button class="primary-btn" data-action="studio-preview-sample">Preview</button>
+      <button class="ghost-btn" data-action="studio-export-sample">Export Sample</button>
+      <button class="ghost-btn" data-action="studio-clear-sample">Clear Sample</button>
+    </div>
+  </div>`;
+}
+
+function studioMicPanel() {
+  return `<div class="panel studio-module">
+    <div class="section-head"><div><h2>Mic / Line Input</h2><p>${escapeHtml(state.studioInputStatus)}</p></div><span>Headphones</span></div>
+    <div class="studio-tools-grid">
+      <button class="primary-btn" data-action="studio-refresh-inputs">Refresh Inputs</button>
+      <button class="ghost-btn" data-action="studio-monitor-input">Monitor Input</button>
+      <button class="ghost-btn" data-action="studio-stop-monitoring">Stop Monitoring</button>
+      <small class="studio-note">Use headphones while monitoring to avoid feedback. Browser permission is required.</small>
+    </div>
+  </div>`;
+}
+
+function studioVocalTracks() {
+  return `<div class="panel studio-module">
+    <div class="section-head"><div><h2>Vocal Tracks</h2><p>Record, import, preview, sync, mute, solo, and export four vocal lanes.</p></div><span>4 tracks</span></div>
+    <div class="studio-vocal-grid">
+      ${state.studio.vocals.map((track, index) => `<div class="studio-vocal-track">
+        <strong>${escapeHtml(track.name)}</strong><small>${track.data ? escapeHtml(track.fileName || "clip ready") : "empty"}</small>
+        <div class="studio-vocal-actions">
+          <button class="${state.studioRecordingTrack === index ? "record-btn active" : "record-btn"}" data-action="${state.studioRecordingTrack === index ? "studio-stop-vocal" : "studio-record-vocal"}" data-track="${index}">${state.studioRecordingTrack === index ? "Stop" : "Rec"}</button>
+          <button class="ghost-btn" data-action="studio-play-vocal" data-track="${index}">Play</button>
+          <label class="file-pill">Import<input type="file" accept="audio/*" data-action="studio-import-vocal" data-track="${index}" /></label>
+          <button class="ghost-btn" data-action="studio-export-vocal" data-track="${index}">Export</button>
+          <button class="ghost-btn" data-action="studio-clear-vocal" data-track="${index}">Clear</button>
+        </div>
+        <div class="studio-vocal-actions">
+          <button class="${track.muted ? "studio-chip active" : "studio-chip"}" data-action="studio-toggle-vocal-mute" data-track="${index}">Mute</button>
+          <button class="${track.solo ? "studio-chip active" : "studio-chip"}" data-action="studio-toggle-vocal-solo" data-track="${index}">Solo</button>
+          <label>Vol <input type="range" min="0" max="100" data-action="studio-vocal-set" data-track="${index}" data-vocal-field="volume" value="${track.volume}" /></label>
+          <label>Start <input type="number" min="0" max="${studioTotalSteps() - 1}" data-action="studio-vocal-set" data-track="${index}" data-vocal-field="startStep" value="${track.startStep}" /></label>
+        </div>
+      </div>`).join("")}
+    </div>
+  </div>`;
+}
+
+function studioEffectsRack() {
+  return `<div class="panel studio-module">
+    <div class="section-head"><div><h2>Master Effects</h2><p>Subtle LottoMind mix rack for drums, samples, synth, and exports.</p></div><span>Live</span></div>
+    <div class="studio-effects-grid">
+      ${Object.entries({ drive: "Drive", tone: "Tone", delay: "Delay", reverb: "Reverb", punch: "Punch" }).map(([key, label]) => `<label>${label}<input type="range" min="0" max="100" data-action="studio-effect-set" data-effect="${key}" value="${state.studio.effects[key]}" /></label>`).join("")}
+    </div>
+  </div>`;
+}
+
+function studioImportExportPanel() {
+  return `<div class="panel studio-module">
+    <div class="section-head"><div><h2>Import / Export</h2><p>Save projects, sound packs, pad samples, vocals, and full audio recordings.</p></div><span>JSON + audio</span></div>
+    <div class="studio-tools-grid">
+      <button class="primary-btn" data-action="studio-export-project">Export Project</button>
+      <label class="file-pill">Import Project<input type="file" accept="application/json,.json" data-action="studio-import-project" /></label>
+      <button class="ghost-btn" data-action="studio-export-pack">Export Sound Pack</button>
+      <label class="file-pill">Import Pack<input type="file" accept="application/json,.json" data-action="studio-import-pack" /></label>
+      <button class="ghost-btn" data-action="studio-export-sample">Export Selected Pad</button>
+      <button class="ghost-btn" data-action="studio-clear-pattern">Clear Pattern</button>
+      <small class="studio-note">Mic, tab capture, direct URL loading, and MediaRecorder depend on browser permissions and CORS. Protected media is not bypassed.</small>
+    </div>
+  </div>`;
+}
+
 function sonicStudioView() {
-  const reading = state.currentDream || interpretDream(state.dreamText, state.gameId);
-  const current = state.currentSet || generateLottoSet(state.gameId, state.strategy, "sonic-studio");
-  const melodyNumbers = reading?.numbers?.length ? reading.numbers : current.numbers;
-  const beats = [
-    ["Gold Street Oracle", "Detroit Soul", "84 BPM", "528 Hz inspired", "Free", ASSETS.studioBooth],
-    ["Dream Oracle Velvet", "Dream R&B", "72 BPM", "432 Hz inspired", "100 LC", ASSETS.dream],
-    ["Credit Lane Bounce", "Casino Bounce", "96 BPM", "777 Hz inspired", "Free", ASSETS.arcade],
-    ["Vault Rainfield", "Frequency Vault Ambient", "60 BPM", "174 Hz inspired", "Free", ASSETS.music],
-    ["Space Oracle Pad", "Space Oracle", "68 BPM", "963 Hz inspired", "150 LC", ASSETS.powerTools],
-    ["Retro Prize Spark", "Retro Arcade", "112 BPM", "888 Hz inspired", "75 LC", ASSETS.commandDeck],
-  ];
-  return `<section class="screen sonic-studio-screen">
-    <div class="panel art-panel sonic-studio-hero" style="--panel-art:url('${ASSETS.studioBooth}')">
+  return `<section class="screen sonic-studio-screen lottomind-studio-screen">
+    <div class="panel art-panel sonic-studio-hero lottomind-studio-hero" style="--panel-art:url('${ASSETS.studioBooth}')">
       <div>
-        <span class="eyebrow">LottoMind Sonic Studio</span>
-        <h1>Recording Booth</h1>
-        <p>Record dream songs, affirmations, lucky chants, spoken-word hooks, and frequency-inspired demos inside the LottoMind Records lane.</p>
-        <div class="hero-actions">
-          <button class="primary-btn" data-action="start-dream-recording">Start Recording</button>
-          <button class="ghost-btn" data-route="dreams">Start From Dream</button>
-          <button class="ghost-btn" data-route="music">Open Records</button>
-          <button class="ghost-btn" data-route="contests">Dream Song Challenge</button>
-        </div>
+        <span class="eyebrow">LottoMind Studio</span>
+        <h1>Future Vault Studio</h1>
+        <p>MPC pads, 16-bar sequencing, sampler, keyboard synth, mic recording, vocal tracks, effects, and import/export inside one LottoMind command booth.</p>
       </div>
-      <div class="studio-live-orb"><strong>528</strong><span>Hz inspired</span></div>
+      <div class="studio-live-orb"><strong>${state.studio.bpm}</strong><span>BPM</span></div>
     </div>
-
-    <div class="panel sonic-studio-console">
-      <div class="section-head">
-        <div><h2>Studio Workflow</h2><p>Four branded lanes keep the creative flow clear.</p></div>
-        <span>Creative module</span>
-      </div>
-      <div class="studio-tab-row">
-        ${["Beats", "Record", "Mix", "Library"].map((item, index) => `<div class="studio-tab ${index === 0 ? "active" : ""}"><span>${String(index + 1).padStart(2, "0")}</span><strong>${item}</strong></div>`).join("")}
-      </div>
+    ${studioTransportControls()}
+    ${studioControlStrip()}
+    <div class="studio-main-grid">
+      ${studioDrumPads()}
+      ${studioKeyboardSection()}
     </div>
-
-    <div class="panel sonic-studio-console">
-      <div class="section-head">
-        <div><h2>Beat Picker</h2><p>Premade LottoMind instrumentals for dream songs and Sonic Oracle soundscapes.</p></div>
-        <span>${beats.length} beats</span>
-      </div>
-      <div class="studio-beat-grid">
-        ${beats.map(([title, category, bpm, frequency, cost, art], index) => `<article class="studio-beat-card" style="--beat-art:url('${art}')">
-          <span>${escapeHtml(category)}</span>
-          <strong>${escapeHtml(title)}</strong>
-          <small>${escapeHtml(bpm)} - ${escapeHtml(frequency)}</small>
-          <b>${escapeHtml(cost)}</b>
-          <button class="${index === 0 ? "primary-btn" : "ghost-btn"}" data-route="${index < 2 ? "dreams" : "music"}">${index === 0 ? "Use Beat" : "Preview"}</button>
-        </article>`).join("")}
-      </div>
-    </div>
-
+    ${studioSequencerGrid()}
     <div class="studio-work-grid">
-      <div class="panel studio-booth-card">
-        <span class="eyebrow">Record</span>
-        <h2>Vocal Booth</h2>
-        <p>Use headphones, then record vocals, affirmations, hooks, or dream messages over a selected LottoMind beat.</p>
-        <div class="studio-meter"><span></span><span></span><span></span><span></span><span></span><span></span></div>
-        <div class="studio-transport-row">
-          <button class="primary-btn" data-route="dreams">Record Dream Song</button>
-          <button class="ghost-btn" data-route="dreamVideo">Build Visual</button>
-        </div>
-      </div>
-      <div class="panel studio-booth-card">
-        <span class="eyebrow">Mix</span>
-        <h2>Demo Console</h2>
-        <p>Balance beat, vocal, echo preview, radio filter preview, and 528 glow settings before saving the demo.</p>
-        <div class="studio-knob-grid">
-          ${[["Vocal", "82%"], ["Beat", "70%"], ["Echo", "Preview"], ["Glow", "528"]].map(([label, value]) => `<div><strong>${value}</strong><span>${label}</span></div>`).join("")}
-        </div>
-      </div>
+      ${studioSamplerPanel()}
+      ${studioMicPanel()}
     </div>
-
-    <div class="panel result-card sonic-melody-card">
-      <span>Lucky Melody Seed</span>
-      <h2>${melodyNumbers.join(" - ")}</h2>
-      ${ballsHtml(melodyNumbers)}
-      <p>Use these numbers as lyric inspiration or a short C-scale melody. Entertainment only; LottoMind does not guarantee winnings.</p>
-      <div class="hero-actions">
-        <button class="primary-btn" data-route="numberGenerator">Make Lucky Chant</button>
-        <button class="ghost-btn" data-route="reset">Open Frequency Vault</button>
-        <button class="ghost-btn" data-route="history">Save To Vault</button>
-      </div>
+    ${studioVocalTracks()}
+    <div class="studio-work-grid">
+      ${studioEffectsRack()}
+      ${studioImportExportPanel()}
     </div>
-
     <div class="panel studio-terms">
-      <strong>Studio Terms</strong>
-      <p>Only record over instrumentals you own, created yourself, or have permission to use. LottoMind included beats are for in-app creative entertainment unless otherwise licensed.</p>
+      <strong>Browser + rights note</strong>
+      <p>Only import or record audio you own or have permission to use. Mic, line, tab capture, direct URL loading, and MediaRecorder exports depend on Chrome/Edge-style browser support and permission prompts.</p>
     </div>
   </section>`;
 }
@@ -2855,7 +3293,7 @@ function arcadeView() {
     ["Lotto Crossword Puzzle", "Solve LottoMind clue lanes and number words.", "crossword"],
     ["Word Search Vault", "Find dream symbols, states, and lucky terms.", "wordSearch"],
     ["Trivia Rewards", "Answer and earn credits.", "triviaRewards"],
-    ["Boss Rush", "Fight the Heatmap Guardian.", "arcadeGame"],
+    ["Boss Rush", "Fight the Heatmap Guardian.", "arcadeGame", "https://robjasper2084.github.io/Jungle-Lotto/gothtechnology-canvas/index.html?fighter-prop1-live"],
     ["Bonus Room", "Open a credit portal.", "arcadeGame"],
   ];
   const arcadeArt = [ASSETS.arcade, ASSETS.commandDeck, ASSETS.psychic, ASSETS.sequence, ASSETS.live, ASSETS.credit, ASSETS.heatmap, ASSETS.arcadeCoin];
@@ -2873,8 +3311,8 @@ function arcadeView() {
     ${activeArcadePanel}
     <div class="panel arcade-game-panel">
       <div class="section-head"><div><h2>Game Select</h2><p>Scrollable arcade cards with clearer mission actions.</p></div><span>${games.length} games</span></div>
-      <div class="arcade-game-grid">${games.map(([title, copy, route], index) => `
-        <button class="arcade-game-card" data-route="${route}" style="--game-art:url('${arcadeArt[index % arcadeArt.length]}')">
+      <div class="arcade-game-grid">${games.map(([title, copy, route, externalUrl], index) => `
+        <button class="arcade-game-card" ${externalUrl ? `data-external-url="${externalUrl}"` : `data-route="${route}"`} style="--game-art:url('${arcadeArt[index % arcadeArt.length]}')">
           <span>Stage ${String(index + 1).padStart(2, "0")}</span>
           <strong>${title}</strong>
           <small>${copy}</small>
@@ -3741,16 +4179,30 @@ function renderView() {
 }
 
 function render() {
-  document.title = "LottoMind Oracle Real App";
+  document.title = "LottoMind Refined";
   const app = document.getElementById("app");
-  app.innerHTML = `<div class="real-shell route-${state.route}">
+  const previousShell = app.querySelector(".real-shell");
+  const previousRoute = previousShell?.dataset.route || "";
+  const previousScrollTop = previousShell?.scrollTop || 0;
+  app.innerHTML = `<div class="real-shell route-${state.route}" data-route="${state.route}">
+    <div class="future-vault-chrome" aria-hidden="true">
+      <span class="vault-ring ring-a"></span>
+      <span class="vault-ring ring-b"></span>
+      <span class="vault-scanline"></span>
+      <span class="vault-waveform"></span>
+    </div>
     ${header()}
-    ${state.route !== "dashboard" ? `<div class="history-nav-pills"><button class="back-orb" data-action="go-back" type="button" aria-label="Go back to previous page"><strong>&lsaquo;</strong><span>Back</span><small>Previous page</small></button><button class="back-orb forward-orb" data-action="go-forward" type="button" aria-label="Go forward to next page"><strong>&rsaquo;</strong><span>Forward</span><small>Next page</small></button></div>` : ""}
     ${missionHud()}
     <main class="real-main">${renderView()}</main>
     ${bottomNav()}
     ${state.toast ? `<div class="toast">${escapeHtml(state.toast)}</div>` : ""}
   </div>`;
+  if (previousShell && previousRoute === state.route && previousScrollTop > 0) {
+    requestAnimationFrame(() => {
+      const nextShell = document.querySelector(".real-shell");
+      if (nextShell) nextShell.scrollTop = previousScrollTop;
+    });
+  }
   stopAudioIfNeeded();
   syncRouteAudio();
 }
@@ -3766,6 +4218,7 @@ function toast(message) {
 }
 
 function stopAudioIfNeeded() {
+  if (state.route !== "studio" && state.studioPlaying) stopStudioSequence(false);
   if (state.route !== "reset") {
     state.audioPlaying = false;
     stopResetTone();
@@ -4004,6 +4457,136 @@ function applyScanReadout(action, source, upload = "", decoded = "") {
   state.currentSet = state.scanResult;
 }
 
+async function importStudioSampleFile(file, padIndex = state.studio.selectedPad) {
+  if (!file) return;
+  const data = await readFileAsDataUrl(file);
+  state.studio.pads[padIndex] = { ...state.studio.pads[padIndex], sampleName: file.name, sampleData: data };
+  delete studioSampleBuffers[padIndex];
+  saveStudioProject();
+  toast(`${file.name} loaded to ${state.studio.pads[padIndex].name}`);
+}
+
+async function importStudioVocalFile(file, trackIndex) {
+  if (!file) return;
+  const data = await readFileAsDataUrl(file);
+  const sessionOnly = String(data).length > 900000;
+  state.studio.vocals[trackIndex] = { ...state.studio.vocals[trackIndex], fileName: file.name, data: sessionOnly ? "" : data, sessionOnly };
+  saveStudioProject();
+  toast(sessionOnly ? "Vocal is too large for local save; keep this session-only." : `${file.name} loaded to vocal ${trackIndex + 1}`);
+}
+
+async function getStudioMicStream() {
+  if (!navigator.mediaDevices?.getUserMedia) {
+    state.studioInputStatus = "Mic/line input is not supported in this browser.";
+    render();
+    return null;
+  }
+  if (!studioMicStream) {
+    studioMicStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  }
+  state.studioInputStatus = "Mic/line input ready";
+  return studioMicStream;
+}
+
+function blobToDataUrl(blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+}
+
+async function startStudioVocalRecording(trackIndex) {
+  const stream = await getStudioMicStream();
+  if (!stream || typeof MediaRecorder === "undefined") {
+    toast("MediaRecorder or mic permission is not available.");
+    return;
+  }
+  const chunks = [];
+  const recorder = new MediaRecorder(stream);
+  studioRecorders[`vocal-${trackIndex}`] = recorder;
+  state.studioRecordingTrack = trackIndex;
+  recorder.ondataavailable = (event) => { if (event.data?.size) chunks.push(event.data); };
+  recorder.onstop = async () => {
+    const blob = new Blob(chunks, { type: recorder.mimeType || "audio/webm" });
+    const data = await blobToDataUrl(blob);
+    const sessionOnly = data.length > 900000;
+    state.studio.vocals[trackIndex] = {
+      ...state.studio.vocals[trackIndex],
+      data: sessionOnly ? "" : data,
+      fileName: `lottomind-vocal-${trackIndex + 1}.webm`,
+      sessionOnly,
+    };
+    state.studioRecordingTrack = null;
+    saveStudioProject();
+    toast(sessionOnly ? "Vocal captured, but too large for local save." : `Vocal ${trackIndex + 1} recorded`);
+    render();
+  };
+  recorder.start();
+  toast(`Recording vocal ${trackIndex + 1}`);
+  render();
+}
+
+function stopStudioVocalRecording(trackIndex = state.studioRecordingTrack) {
+  const recorder = studioRecorders[`vocal-${trackIndex}`];
+  if (recorder && recorder.state !== "inactive") recorder.stop();
+}
+
+async function recordStudioSourceToPad(sourcePromise, label) {
+  if (typeof MediaRecorder === "undefined") {
+    toast("MediaRecorder is not available in this browser.");
+    return;
+  }
+  try {
+    const stream = await sourcePromise;
+    if (!stream) return;
+    const chunks = [];
+    const recorder = new MediaRecorder(stream);
+    recorder.ondataavailable = (event) => { if (event.data?.size) chunks.push(event.data); };
+    recorder.onstop = async () => {
+      stream.getTracks?.().forEach((track) => track.stop?.());
+      const blob = new Blob(chunks, { type: recorder.mimeType || "audio/webm" });
+      const data = await blobToDataUrl(blob);
+      const padIndex = state.studio.selectedPad;
+      state.studio.pads[padIndex] = { ...state.studio.pads[padIndex], sampleName: `${label} sample`, sampleData: data };
+      delete studioSampleBuffers[padIndex];
+      saveStudioProject();
+      toast(`${label} sampled to ${state.studio.pads[padIndex].name}`);
+      render();
+    };
+    recorder.start();
+    toast(`Sampling ${label} for 3 seconds...`);
+    setTimeout(() => recorder.state !== "inactive" && recorder.stop(), 3000);
+  } catch {
+    toast(`${label} capture was blocked or unavailable.`);
+  }
+}
+
+function exportStudioSample(padIndex = state.studio.selectedPad) {
+  const pad = state.studio.pads[padIndex];
+  if (!pad?.sampleData) {
+    toast("No sample loaded on this pad.");
+    return;
+  }
+  const a = document.createElement("a");
+  a.href = pad.sampleData;
+  a.download = pad.sampleName || `lottomind-pad-${padIndex + 1}.webm`;
+  a.click();
+}
+
+function exportStudioVocal(trackIndex) {
+  const track = state.studio.vocals[trackIndex];
+  if (!track?.data) {
+    toast("No vocal clip on that track.");
+    return;
+  }
+  const a = document.createElement("a");
+  a.href = track.data;
+  a.download = track.fileName || `lottomind-vocal-${trackIndex + 1}.webm`;
+  a.click();
+}
+
 function handleAction(action, target) {
   if (action === "go-back") {
     if (window.history.length > 1) {
@@ -4015,6 +4598,287 @@ function handleAction(action, target) {
   }
   if (action === "go-forward") {
     window.history.forward();
+    return;
+  }
+  if (action === "studio-play") {
+    startStudioSequence();
+    return;
+  }
+  if (action === "studio-stop") {
+    stopStudioSequence();
+    return;
+  }
+  if (action === "studio-toggle-rec") {
+    state.studio.recArmed = !state.studio.recArmed;
+    saveStudioProject();
+    toast(state.studio.recArmed ? "Sequence record armed" : "Sequence record off");
+    return;
+  }
+  if (action === "studio-toggle-metronome") {
+    state.studio.metronome = !state.studio.metronome;
+    saveStudioProject();
+    render();
+    return;
+  }
+  if (action === "studio-set") {
+    const field = target.getAttribute("data-studio-field");
+    const numeric = ["bpm", "swing", "velocity", "humanize", "octave", "synthVolume", "selectedPad"];
+    state.studio[field] = numeric.includes(field) ? Number(target.value) : target.value;
+    if (field === "division") state.studioStep = 0;
+    saveStudioProject();
+    if (state.studioPlaying && ["bpm", "division"].includes(field)) startStudioSequence();
+    else render();
+    return;
+  }
+  if (action === "studio-pad-set") {
+    const field = target.getAttribute("data-pad-field");
+    const padIndex = state.studio.selectedPad;
+    state.studio.pads[padIndex][field] = Number(target.value);
+    saveStudioProject();
+    return;
+  }
+  if (action === "studio-effect-set") {
+    const effect = target.getAttribute("data-effect");
+    state.studio.effects[effect] = Number(target.value);
+    saveStudioProject();
+    updateStudioEffects();
+    return;
+  }
+  if (action === "studio-vocal-set") {
+    const track = Number(target.getAttribute("data-track"));
+    const field = target.getAttribute("data-vocal-field");
+    state.studio.vocals[track][field] = Number(target.value);
+    saveStudioProject();
+    return;
+  }
+  if (action === "studio-pad") {
+    const index = Number(target.getAttribute("data-studio-pad"));
+    state.studio.selectedPad = index;
+    triggerStudioPad(index);
+    saveStudioProject();
+    render();
+    return;
+  }
+  if (action === "studio-note") {
+    triggerStudioNote(target.getAttribute("data-note"));
+    return;
+  }
+  if (action === "studio-toggle-step") {
+    const pad = Number(target.getAttribute("data-pad"));
+    const step = Number(target.getAttribute("data-step"));
+    const existing = state.studio.events.find((event) => event.type === "pad" && event.pad === pad && event.step === step);
+    state.studio.events = existing
+      ? state.studio.events.filter((event) => event !== existing)
+      : state.studio.events.concat({ id: `step-${pad}-${step}-${Date.now()}`, type: "pad", pad, step, velocity: state.studio.velocity, offset: 0 });
+    saveStudioProject();
+    render();
+    return;
+  }
+  if (action === "studio-clear-pattern") {
+    state.studio.events = [];
+    saveStudioProject();
+    toast("Studio pattern cleared");
+    return;
+  }
+  if (action === "studio-humanize") {
+    const total = studioTotalSteps();
+    state.studio.events = state.studio.events.map((event) => ({
+      ...event,
+      velocity: Math.max(8, Math.min(100, Number(event.velocity || state.studio.velocity) + Math.round((Math.random() - 0.5) * state.studio.humanize))),
+      offset: Math.max(-0.48, Math.min(0.48, Number(event.offset || 0) + (Math.random() - 0.5) * state.studio.humanize / 50)),
+      step: ((Number(event.step) || 0) + total) % total,
+    }));
+    saveStudioProject();
+    toast("Human feel applied");
+    return;
+  }
+  if (action === "studio-randomize") {
+    state.studio.events = [];
+    const visible = studioVisibleSteps();
+    [0, 1, 2, 3].forEach((pad) => {
+      for (let step = 0; step < visible; step += pad === 0 ? 4 : pad === 3 ? 2 : 8) {
+        if (Math.random() > (pad === 0 ? 0.18 : 0.45)) state.studio.events.push({ id: `rnd-${pad}-${step}`, type: "pad", pad, step, velocity: 65 + Math.round(Math.random() * 30), offset: 0 });
+      }
+    });
+    saveStudioProject();
+    toast("Random groove generated");
+    render();
+    return;
+  }
+  if (action === "studio-import-sample") {
+    importStudioSampleFile(target.files?.[0]);
+    return;
+  }
+  if (action === "studio-load-url-sample") {
+    const url = state.studioSampleUrl || "";
+    if (!url) toast("Paste an audio URL first.");
+    else {
+      const padIndex = state.studio.selectedPad;
+      state.studio.pads[padIndex].sampleData = url;
+      state.studio.pads[padIndex].sampleName = "URL sample";
+      delete studioSampleBuffers[padIndex];
+      saveStudioProject();
+      toast("URL sample assigned. Browser CORS must allow playback.");
+    }
+    return;
+  }
+  if (action === "studio-sample-mic") {
+    recordStudioSourceToPad(getStudioMicStream(), "Mic");
+    return;
+  }
+  if (action === "studio-sample-tab") {
+    const capture = navigator.mediaDevices?.getDisplayMedia
+      ? navigator.mediaDevices.getDisplayMedia({ video: true, audio: true })
+      : Promise.resolve(null);
+    recordStudioSourceToPad(capture, "Tab audio");
+    return;
+  }
+  if (action === "studio-preview-sample") {
+    triggerStudioPad(state.studio.selectedPad, false);
+    return;
+  }
+  if (action === "studio-export-sample") {
+    exportStudioSample();
+    return;
+  }
+  if (action === "studio-clear-sample") {
+    const padIndex = state.studio.selectedPad;
+    state.studio.pads[padIndex] = { ...state.studio.pads[padIndex], sampleName: "", sampleData: "" };
+    delete studioSampleBuffers[padIndex];
+    saveStudioProject();
+    toast("Sample cleared");
+    render();
+    return;
+  }
+  if (action === "studio-toggle-pad-reverse") {
+    const pad = state.studio.pads[state.studio.selectedPad];
+    pad.reverse = !pad.reverse;
+    saveStudioProject();
+    render();
+    return;
+  }
+  if (action === "studio-refresh-inputs") {
+    if (!navigator.mediaDevices?.enumerateDevices) state.studioInputStatus = "Audio input listing is not supported.";
+    else navigator.mediaDevices.enumerateDevices().then((devices) => {
+      state.studioInputStatus = `${devices.filter((device) => device.kind === "audioinput").length} audio inputs available`;
+      render();
+    });
+    toast("Checking inputs");
+    return;
+  }
+  if (action === "studio-monitor-input") {
+    getStudioMicStream().then((stream) => {
+      const ctx = ensureStudioAudio();
+      if (!stream || !ctx) return;
+      if (studioMonitorSource) studioMonitorSource.disconnect();
+      studioMonitorSource = ctx.createMediaStreamSource(stream);
+      studioMonitorSource.connect(studioOutput());
+      state.studioInputStatus = "Monitoring live. Use headphones.";
+      render();
+    });
+    return;
+  }
+  if (action === "studio-stop-monitoring") {
+    if (studioMonitorSource) studioMonitorSource.disconnect();
+    studioMonitorSource = null;
+    state.studioInputStatus = "Monitoring stopped";
+    render();
+    return;
+  }
+  if (action === "studio-record-vocal") {
+    startStudioVocalRecording(Number(target.getAttribute("data-track")));
+    return;
+  }
+  if (action === "studio-stop-vocal") {
+    stopStudioVocalRecording(Number(target.getAttribute("data-track")));
+    return;
+  }
+  if (action === "studio-play-vocal") {
+    playVocalTrack(Number(target.getAttribute("data-track")));
+    return;
+  }
+  if (action === "studio-import-vocal") {
+    importStudioVocalFile(target.files?.[0], Number(target.getAttribute("data-track")));
+    return;
+  }
+  if (action === "studio-export-vocal") {
+    exportStudioVocal(Number(target.getAttribute("data-track")));
+    return;
+  }
+  if (action === "studio-clear-vocal") {
+    const track = Number(target.getAttribute("data-track"));
+    state.studio.vocals[track] = { ...createDefaultStudioProject().vocals[track] };
+    saveStudioProject();
+    render();
+    return;
+  }
+  if (action === "studio-toggle-vocal-mute" || action === "studio-toggle-vocal-solo") {
+    const track = Number(target.getAttribute("data-track"));
+    const key = action === "studio-toggle-vocal-mute" ? "muted" : "solo";
+    state.studio.vocals[track][key] = !state.studio.vocals[track][key];
+    saveStudioProject();
+    render();
+    return;
+  }
+  if (action === "studio-export-project") {
+    downloadTextFile("lottomind-studio-project.json", JSON.stringify(state.studio, null, 2));
+    return;
+  }
+  if (action === "studio-import-project") {
+    const file = target.files?.[0];
+    if (file) file.text().then((text) => {
+      state.studio = { ...createDefaultStudioProject(), ...JSON.parse(text) };
+      saveStudioProject();
+      toast("Studio project imported");
+      render();
+    }).catch(() => toast("Project JSON could not be imported."));
+    return;
+  }
+  if (action === "studio-export-pack") {
+    downloadTextFile("lottomind-sound-pack.json", JSON.stringify({ pads: state.studio.pads.map(({ name, sampleName, sampleData, trimStart, trimEnd, pitch, gain }) => ({ name, sampleName, sampleData, trimStart, trimEnd, pitch, gain })) }, null, 2));
+    return;
+  }
+  if (action === "studio-import-pack") {
+    const file = target.files?.[0];
+    if (file) file.text().then((text) => {
+      const pack = JSON.parse(text);
+      if (Array.isArray(pack.pads)) {
+        state.studio.pads = state.studio.pads.map((pad, index) => ({ ...pad, ...(pack.pads[index] || {}) }));
+        studioSampleBuffers = {};
+        saveStudioProject();
+        toast("Sound pack imported");
+        render();
+      }
+    }).catch(() => toast("Sound pack JSON could not be imported."));
+    return;
+  }
+  if (action === "studio-start-master-record") {
+    const ctx = ensureStudioAudio();
+    if (!ctx || typeof MediaRecorder === "undefined" || !studioDestination) {
+      toast("Master recording is not supported here.");
+      return;
+    }
+    studioMasterChunks = [];
+    studioMasterRecorder = new MediaRecorder(studioDestination.stream);
+    studioMasterRecorder.ondataavailable = (event) => { if (event.data?.size) studioMasterChunks.push(event.data); };
+    studioMasterRecorder.onstop = () => {
+      const blob = new Blob(studioMasterChunks, { type: studioMasterRecorder.mimeType || "audio/webm" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "lottomind-studio-master.webm";
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      state.studioMasterRecording = false;
+      render();
+    };
+    studioMasterRecorder.start();
+    state.studioMasterRecording = true;
+    render();
+    return;
+  }
+  if (action === "studio-stop-master-record") {
+    if (studioMasterRecorder?.state !== "inactive") studioMasterRecorder.stop();
     return;
   }
   if (action === "menu") {
@@ -4093,7 +4957,10 @@ function handleAction(action, target) {
     savePsychic(state.currentPsychic);
     toast("Psychic fusion generated");
   }
-  if (action === "start-dream-recording") startDreamRecording();
+  if (action === "start-dream-recording") {
+    startDreamRecording();
+    return;
+  }
   if (action === "build-dream-video") {
     const alreadyInStudio = state.route === "dreamVideo";
     state.currentDream = interpretDream(state.dreamText, state.gameId);
@@ -4428,7 +5295,13 @@ let suppressFlowClickUntil = 0;
 function activateInteractiveTarget(event) {
   const eventTarget = event.target instanceof Element ? event.target : event.target?.parentElement;
   if (!eventTarget) return;
-  const routeTarget = eventTarget.closest("[data-route]");
+  const routeTarget = eventTarget.closest("[data-route]:not(.real-shell)");
+  const externalTarget = eventTarget.closest("[data-external-url]");
+  if (externalTarget) {
+    event.preventDefault();
+    window.location.href = externalTarget.getAttribute("data-external-url");
+    return true;
+  }
   if (routeTarget) {
     event.preventDefault();
     const arcadeRouteKeys = ["arcade", "arcadeGame", "game", "cardGame", "gamesHub", "crossword", "wordSearch", "ludo", "triviaPlay", "triviaRewards", "triviaRedeem"];
@@ -4521,7 +5394,17 @@ document.addEventListener("pointerup", (event) => {
     if (!startedInScroller && dx > 84 && Math.abs(dy) < 62) {
       event.preventDefault();
       stopRouteAudio();
-      window.history.back();
+      const tabIndex = TAB_ROUTES.indexOf(state.route);
+      if (tabIndex > 0) go(TAB_ROUTES[tabIndex - 1]);
+      else window.history.back();
+      return;
+    }
+    if (!startedInScroller && dx < -84 && Math.abs(dy) < 62) {
+      event.preventDefault();
+      stopRouteAudio();
+      const tabIndex = TAB_ROUTES.indexOf(state.route);
+      if (tabIndex >= 0 && tabIndex < TAB_ROUTES.length - 1) go(TAB_ROUTES[tabIndex + 1]);
+      else window.history.forward();
       return;
     }
     if (moved > 12) return;
@@ -4558,6 +5441,27 @@ document.addEventListener("input", (event) => {
 
 document.addEventListener("keydown", (event) => {
   const target = event.target instanceof Element ? event.target : event.target?.parentElement;
+  const isTyping = target?.matches?.("input, textarea, select") || target?.closest?.("input, textarea, select");
+  if (state.route === "studio" && !isTyping) {
+    const key = event.key.toLowerCase();
+    const padIndex = STUDIO_PAD_SHORTCUTS.indexOf(key);
+    if (padIndex >= 0) {
+      event.preventDefault();
+      triggerStudioPad(padIndex);
+      return;
+    }
+    const note = STUDIO_NOTE_KEYS[key];
+    if (note) {
+      event.preventDefault();
+      triggerStudioNote(note);
+      return;
+    }
+    if (key === " ") {
+      event.preventDefault();
+      state.studioPlaying ? stopStudioSequence() : startStudioSequence();
+      return;
+    }
+  }
   const searchInput = target?.closest?.('input[data-action="search"]');
   if (!searchInput) return;
   if (event.key === "Escape") {
