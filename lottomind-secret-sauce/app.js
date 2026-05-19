@@ -1291,8 +1291,8 @@ function header() {
       <button class="mode-toggle meatball ${state.viewMode === "web" ? "active" : ""}" data-action="set-view" data-view="web"><span>Web</span></button>
     </div>
     <label class="search-pill">
-      <span>Search</span>
-      <input data-action="search" value="${escapeHtml(state.searchQuery)}" placeholder="Search numbers, dreams, tools..." autocomplete="off" />
+      <span>AI Search</span>
+      <input data-action="search" value="${escapeHtml(state.searchQuery)}" placeholder="Ask LottoMind AI for tools, dreams, numbers..." autocomplete="off" />
       <button class="mic-chip art-search-mic" type="button" data-action="voice-search" aria-label="Voice search"><img src="${ASSETS.searchMic}" alt="" /></button>
     </label>
     <div class="function-search-results" hidden></div>
@@ -1965,8 +1965,8 @@ function dreamsView() {
       <h1>Dream Oracle<sup>SM</sup> AI</h1>
       <p>Describe your dream. The Oracle detects symbols, explains meaning, and generates lucky numbers.</p>
       ${gamePills()}
-      <button class="big-mic branded-mic dream-oracle-host-mic" data-action="start-dream-recording" aria-label="Record dream" style="--panel-art:url('${ASSETS.dreamOracleHost}')">
-        <img class="dream-oracle-host-art" src="${ASSETS.dreamOracleHost}" alt="" />
+      <button class="big-mic branded-mic dream-oracle-host-mic" data-action="start-dream-recording" aria-label="Record dream" style="--panel-art:url('${ASSETS.voiceCornerMic}')">
+        <img class="dream-oracle-host-art" src="${ASSETS.voiceCornerMic}" alt="" />
         <span class="mic-mark"></span>
         <strong>Speak Dream</strong>
         <small>Tap to record</small>
@@ -2838,7 +2838,7 @@ function arcadeView() {
       <div class="hero-actions arcade-launch-actions"><button class="primary-btn" data-route="triviaPlay">Launch Trivia Game</button><button class="ghost-btn" data-route="triviaRewards">Rewards</button></div>
     </div>
     <div class="panel arcade-motion">
-      <video src="${BASE}/videos/play-arcade-button-loop.mp4" poster="${ASSETS.arcade}" muted loop playsinline controls preload="none"></video>
+      <video src="${BASE}/videos/play-arcade-button-loop.mp4" muted loop autoplay playsinline preload="metadata"></video>
       <div><span>Arcade motion asset</span><strong>Play Arcade Button</strong><p>Moved out of Marketplace and into the Arcade tab.</p></div>
     </div>
     <div class="panel arcade-game-panel">
@@ -4343,12 +4343,26 @@ function activateInteractiveTarget(event) {
   const routeTarget = eventTarget.closest("[data-route]");
   if (routeTarget) {
     event.preventDefault();
+    const arcadeRouteKeys = ["arcade", "arcadeGame", "game", "cardGame", "gamesHub", "crossword", "wordSearch", "ludo", "triviaPlay", "triviaRewards", "triviaRedeem"];
+    const preserveArcadeScroll = arcadeRouteKeys.includes(state.route)
+      && arcadeRouteKeys.includes(routeTarget.getAttribute("data-route"))
+      && Boolean(routeTarget.closest(".real-main"))
+      && !routeTarget.closest(".real-bottom-nav, .real-header");
+    const scrollY = preserveArcadeScroll ? window.scrollY : 0;
+    const shellScrollTop = preserveArcadeScroll ? (document.querySelector(".real-shell")?.scrollTop || 0) : 0;
     if (routeTarget.closest(".function-search-results")) speakText(`Opening ${routeMeta(routeTarget.getAttribute("data-route"))[0]}`);
     if (routeTarget.closest(".real-bottom-nav")) {
       playTabNote(tabNotes[routeTarget.getAttribute("data-tab-label")]);
     }
     stopRouteAudio();
     go(routeTarget.getAttribute("data-route"));
+    if (preserveArcadeScroll) {
+      requestAnimationFrame(() => {
+        window.scrollTo({ top: scrollY, left: 0, behavior: "auto" });
+        const shell = document.querySelector(".real-shell");
+        if (shell) shell.scrollTop = shellScrollTop;
+      });
+    }
     return true;
   }
   const actionTarget = eventTarget.closest("[data-action]");

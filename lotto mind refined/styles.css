@@ -11862,3 +11862,69 @@ body .real-bottom-nav button {
   min-width: 0;
   overflow: hidden;
 }
+/* Frequency Reset title polish. */
+body .reset-screen .tone-top h1 {
+  font-family: Impact, Haettenschweiler, "Arial Black", var(--title-font), system-ui, sans-serif;
+  font-size: clamp(42px, 11vw, 70px);
+  font-weight: 900;
+  line-height: 0.82;
+  color: #fff6bf;
+  -webkit-text-stroke: 1px rgba(255, 247, 211, 0.42);
+  text-shadow:
+    0 1px 0 #9c751e,
+    0 4px 0 rgba(0, 0, 0, 0.92),
+    0 12px 20px rgba(0, 0, 0, 0.82),
+    0 0 18px rgba(248, 223, 118, 0.34),
+    0 0 32px rgba(0, 236, 255, 0.2);
+}
+
+body .reset-screen .tone-top h1 span {
+  font-family: inherit;
+  font-size: clamp(17px, 4.1vw, 24px);
+}
+
+/* Arcade + AI search polish. */
+body .real-header .top-search,
+body .real-header .search-pill {
+  border-color: rgba(0, 236, 255, 0.72);
+  background:
+    linear-gradient(90deg, rgba(0, 236, 255, 0.18), rgba(1, 9, 18, 0.92) 42%, rgba(248, 223, 118, 0.1)),
+    rgba(1, 10, 20, 0.94);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.05),
+    inset 0 0 20px rgba(0, 236, 255, 0.1),
+    0 0 18px rgba(0, 236, 255, 0.18);
+}
+
+body .real-header .top-search span,
+body .real-header .search-pill span {
+  color: #7ff7ff;
+  font-family: var(--title-font);
+  text-shadow: 0 0 10px rgba(0, 236, 255, 0.7);
+}
+
+body .real-header .top-search input,
+body .real-header .search-pill input {
+  font-weight: 900;
+}
+
+body .arcade-motion video {
+  object-fit: cover;
+  filter: saturate(1.18) contrast(1.08) brightness(0.94);
+}
+
+body .dream-oracle-host-mic {
+  background:
+    radial-gradient(circle at 50% 36%, rgba(0, 236, 255, 0.24), transparent 40%),
+    radial-gradient(circle at 50% 58%, rgba(248, 223, 118, 0.16), transparent 50%),
+    rgba(1, 10, 20, 0.9);
+}
+
+body .dream-oracle-host-mic .dream-oracle-host-art {
+  object-fit: contain;
+  object-position: 50% 42%;
+  padding: 28px;
+  filter:
+    drop-shadow(0 0 18px rgba(0, 236, 255, 0.62))
+    drop-shadow(0 0 24px rgba(248, 223, 118, 0.24));
+}
