@@ -2853,7 +2853,6 @@ function arcadeView() {
   const games = [
     ["Jackpot Jungle Chase", "Swing, slide, and outrun the Probability Beast.", "arcadeGame"],
     ["Gem Rush Run", "Grab gems and dodge number traps.", "arcadeGame"],
-    ["Lotto Minded", "Memory cards and number reflexes.", "triviaPlay"],
     ["Lotto Crossword Puzzle", "Solve LottoMind clue lanes and number words.", "crossword"],
     ["Word Search Vault", "Find dream symbols, states, and lucky terms.", "wordSearch"],
     ["Trivia Rewards", "Answer and earn credits.", "triviaRewards"],
