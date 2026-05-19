@@ -1527,12 +1527,24 @@ function dashboardView() {
 
 function circleTool(title, sub, route, index) {
   const arts = [ASSETS.commandDeck, ASSETS.powerTools, ASSETS.heatmap, ASSETS.live, ASSETS.reset, ASSETS.dream, ASSETS.arcade, ASSETS.credit, ASSETS.psychic, ASSETS.music];
+  const routeArt = {
+    arcade: ASSETS.arcade,
+    arcadeGame: ASSETS.arcade,
+    gamesHub: ASSETS.arcade,
+    triviaPlay: ASSETS.arcadeCoin,
+    triviaRewards: ASSETS.credit,
+    crossword: ASSETS.sequence,
+    wordSearch: ASSETS.dream,
+    achievements: ASSETS.arcadeCoin,
+    challenges: ASSETS.commandDeck,
+    contests: ASSETS.arcade,
+  };
   const video = title === "Number Analyzer"
     ? `<video class="circle-tool-video" src="${BASE}/videos/power-tools-dashboard-box.mp4" poster="${ASSETS.powerTools}" muted loop autoplay playsinline preload="metadata"></video>`
     : title === "Reset Vault"
       ? `<video class="circle-tool-video singer-video" src="${BASE}/videos/power-tools-button-green-screen.mp4" poster="${ASSETS.music}" muted loop autoplay playsinline preload="metadata"></video>`
       : "";
-  return `<button class="circle-tool" data-route="${route}" style="--circle-art:url('${arts[index % arts.length]}')">
+  return `<button class="circle-tool" data-route="${route}" style="--circle-art:url('${routeArt[route] || arts[index % arts.length]}')">
     ${video}
     <span>${title}</span>
     <small>${sub}</small>
