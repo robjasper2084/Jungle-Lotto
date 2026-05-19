@@ -1749,7 +1749,7 @@ function resetView() {
         <div class="transport">
           <button data-action="volume-down">-</button>
           <button class="play-btn" data-action="toggle-reset-audio">${state.audioPlaying ? "Pause" : "Play"}</button>
-          <button data-action="favorite-tone">Heart</button>
+          <button data-action="favorite-tone">Save</button>
           <button data-action="volume-up">+</button>
         </div>
         <div class="duration-row">
@@ -2974,7 +2974,7 @@ function playVocalTrack(index) {
 function studioTransportControls() {
   return `<div class="studio-transport-panel panel lm-studio-header-panel">
     <div class="studio-brand-lock lm-studio-brand">
-      <img src="${ASSETS.logo}" alt="" />
+      <img src="${ASSETS.lmLive}" alt="" />
       <div><span>LottoMind</span><strong>Studio Mode</strong><small>${state.studioPlaying ? "Loop running" : "Ready for session"}</small></div>
     </div>
     <div class="lm-studio-title-block">
@@ -3358,11 +3358,11 @@ function settingsView() {
 
 function arcadeView() {
   const games = [
+    ["Goth Tech Fighter", "Featured live fighter-prop boss game.", "arcadeGame", "https://robjasper2084.github.io/Jungle-Lotto/gothtechnology-canvas/index.html?fighter-prop1-live", "featured-fighter"],
     ["Jackpot Jungle Chase", "Swing, slide, and outrun the Probability Beast.", "arcadeGame"],
     ["Lotto Crossword Puzzle", "Solve LottoMind clue lanes and number words.", "crossword"],
     ["Word Search Vault", "Find dream symbols, states, and lucky terms.", "wordSearch"],
     ["Trivia Rewards", "Answer and earn credits.", "triviaRewards"],
-    ["Goth Tech Fighter", "Launch the live fighter-prop boss game.", "arcadeGame", "https://robjasper2084.github.io/Jungle-Lotto/gothtechnology-canvas/index.html?fighter-prop1-live"],
     ["Bonus Room", "Open a credit portal.", "arcadeGame"],
   ];
   const arcadeArt = [ASSETS.arcade, ASSETS.commandDeck, ASSETS.psychic, ASSETS.sequence, ASSETS.live, ASSETS.credit, ASSETS.heatmap, ASSETS.arcadeCoin];
@@ -3380,12 +3380,12 @@ function arcadeView() {
     ${activeArcadePanel}
     <div class="panel arcade-game-panel">
       <div class="section-head"><div><h2>Game Select</h2><p>Scrollable arcade cards with clearer mission actions.</p></div><span>${games.length} games</span></div>
-      <div class="arcade-game-grid">${games.map(([title, copy, route, externalUrl], index) => `
-        <button class="arcade-game-card" ${externalUrl ? `data-external-url="${externalUrl}"` : `data-route="${route}"`} style="--game-art:url('${arcadeArt[index % arcadeArt.length]}')">
+      <div class="arcade-game-grid">${games.map(([title, copy, route, externalUrl, featureClass], index) => `
+        <button class="arcade-game-card ${featureClass || ""}" ${externalUrl ? `data-external-url="${externalUrl}"` : `data-route="${route}"`} style="--game-art:url('${arcadeArt[index % arcadeArt.length]}')">
           <span>Stage ${String(index + 1).padStart(2, "0")}</span>
           <strong>${title}</strong>
           <small>${copy}</small>
-          <b>Play</b>
+          <b>${featureClass ? "Launch" : "Play"}</b>
         </button>
       `).join("")}</div>
     </div>

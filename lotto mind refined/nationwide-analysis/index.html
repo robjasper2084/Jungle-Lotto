@@ -4,10 +4,20 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>LottoMind Refined</title>
-    <link rel="stylesheet" href="../styles.css?v=live-polish-ui4" />
+    <script>
+      (function () {
+        var slug = "/lotto%20mind%20refined";
+        var index = window.location.pathname.indexOf(slug);
+        var base = index >= 0 ? window.location.pathname.slice(0, index + slug.length) : slug;
+        window.__LOTTOMIND_BASE__ = base.replace(/\/$/, "");
+        document.write('<link rel="stylesheet" href="' + window.__LOTTOMIND_BASE__ + '/styles.css?v=studio-brand-arcade-reset-20260519" />');
+      })();
+    </script>
   </head>
   <body>
     <div id="app"></div>
-    <script src="../app.js?v=live-polish-ui4"></script>
+    <script>
+      document.write('<script src="' + window.__LOTTOMIND_BASE__ + '/app.js?v=studio-brand-arcade-reset-20260519"><\/script>');
+    </script>
   </body>
 </html>
