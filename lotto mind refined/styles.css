@@ -14745,3 +14745,190 @@ body .reset-screen .duration-row button {
   min-width: 0 !important;
   padding-inline: 4px !important;
 }
+
+/* Production Studio scheduler + dashboard polish */
+body .route-studio .lm-studio-header-panel {
+  grid-template-columns: 270px minmax(320px, 1fr) minmax(410px, 0.95fr) !important;
+  gap: 12px !important;
+  align-items: stretch !important;
+}
+
+body .route-studio .lm-top-controls {
+  align-content: stretch;
+}
+
+body .route-studio .lm-studio-grid {
+  grid-template-columns: minmax(300px, 0.82fr) minmax(520px, 1.48fr) minmax(360px, 1fr) !important;
+}
+
+body .route-studio .studio-recording-booth .studio-pad-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 7px !important;
+}
+
+body .route-studio .studio-recording-booth .studio-pad {
+  min-height: 68px !important;
+}
+
+body .route-studio .studio-seq-window-row {
+  display: grid;
+  grid-template-columns: minmax(110px, 0.8fr) minmax(96px, 0.6fr) minmax(110px, 0.8fr) minmax(138px, 1fr);
+  gap: 8px;
+  align-items: center;
+  padding: 8px 14px 0;
+}
+
+body .route-studio .studio-seq-window-row strong {
+  display: grid;
+  min-height: 36px;
+  place-items: center;
+  border: 1px solid rgba(255, 208, 90, 0.34);
+  border-radius: 999px;
+  color: #ffd05a;
+  background: rgba(255, 208, 90, 0.08);
+  font-family: var(--future-font), "Segoe UI", system-ui, sans-serif;
+  font-size: 10px;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+body .route-studio .studio-seq-window-row label {
+  display: grid;
+  grid-template-columns: 40px 1fr;
+  gap: 7px;
+  align-items: center;
+  color: #9fefff;
+  font-size: 10px;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+body .route-studio .studio-seq-window-row button,
+body .route-studio .studio-seq-window-row select {
+  min-height: 36px;
+  border-radius: 999px;
+  border: 1px solid rgba(41, 255, 242, 0.3);
+  color: #f6fbff;
+  background: rgba(8, 15, 29, 0.92);
+  font-family: var(--future-font), "Segoe UI", system-ui, sans-serif;
+  font-size: 10px;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+body .route-studio .studio-seq-window-row button:disabled {
+  opacity: 0.42;
+}
+
+body .route-studio .studio-bar-ruler span.active {
+  color: #ffd05a;
+  text-shadow: 0 0 12px rgba(255, 208, 90, 0.4);
+}
+
+body .route-studio .studio-seq-grid {
+  grid-template-columns: 92px repeat(var(--steps), 14px) !important;
+  gap: 2px !important;
+}
+
+body .route-studio .studio-seq-name {
+  min-height: 15px !important;
+  font-size: 8px !important;
+  text-transform: uppercase;
+}
+
+body .route-studio .studio-step {
+  width: 14px !important;
+  min-width: 14px !important;
+  height: 15px !important;
+  min-height: 15px !important;
+}
+
+body .route-studio .studio-playhead-strip {
+  left: calc(var(--playhead) + 104px) !important;
+}
+
+body .route-studio .studio-input-panel select {
+  max-width: 100%;
+}
+
+body .route-studio .record-btn.active {
+  color: #fff4f9 !important;
+  border-color: rgba(255, 79, 163, 0.72) !important;
+  background: linear-gradient(135deg, rgba(255, 79, 163, 0.42), rgba(91, 30, 90, 0.9)) !important;
+  box-shadow: 0 0 22px rgba(255, 79, 163, 0.22) !important;
+}
+
+body .route-dashboard .carousel-panel .tiny-btn,
+body .route-dashboard .movie-head .tiny-btn {
+  min-height: 42px !important;
+  padding: 0 18px !important;
+  border-radius: 999px !important;
+  border: 1px solid rgba(255, 208, 90, 0.62) !important;
+  color: #04101b !important;
+  background:
+    radial-gradient(circle at 28% 22%, rgba(255, 255, 255, 0.55), transparent 28%),
+    linear-gradient(135deg, #fff5a6, #39f4ff 62%, #b98cff) !important;
+  font-family: var(--future-font), "Segoe UI", system-ui, sans-serif !important;
+  font-size: 12px !important;
+  font-weight: 950 !important;
+  letter-spacing: 0 !important;
+  text-transform: uppercase;
+  text-shadow: none !important;
+  box-shadow: 0 0 20px rgba(41, 255, 242, 0.18), inset 0 0 12px rgba(255, 255, 255, 0.16);
+}
+
+body .route-dashboard .oracle-flow-steps .oracle-flow-step {
+  min-height: 230px !important;
+  isolation: isolate;
+}
+
+body .route-dashboard .oracle-flow-steps .oracle-flow-step::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(1, 6, 13, 0.08), rgba(0, 5, 10, 0.74));
+}
+
+body .route-dashboard .oracle-flow-steps .oracle-flow-step > b,
+body .route-dashboard .oracle-flow-steps .oracle-flow-step > strong,
+body .route-dashboard .oracle-flow-steps .oracle-flow-step > small {
+  position: relative;
+  z-index: 2;
+}
+
+body .route-dashboard .oracle-flow-video {
+  opacity: 0.86 !important;
+  filter: saturate(1.18) contrast(1.08);
+}
+
+body .route-dashboard .state-index-tile {
+  border-color: rgba(41, 255, 242, 0.58) !important;
+  background:
+    radial-gradient(circle at 18% 18%, rgba(41, 255, 242, 0.2), transparent 32%),
+    linear-gradient(135deg, rgba(4, 26, 41, 0.94), rgba(8, 13, 31, 0.94)) !important;
+}
+
+body .route-arcade .arcade-learn-bank .circle-tool:first-child {
+  border-color: rgba(255, 208, 90, 0.82) !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 245, 176, 0.16), 0 0 22px rgba(255, 208, 90, 0.18) !important;
+}
+
+body .route-arcade .arcade-learn-bank .circle-tool[data-route="paywall"] {
+  border-color: rgba(255, 208, 90, 0.58) !important;
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.15), rgba(0, 7, 15, 0.58)),
+    var(--circle-art) center / cover no-repeat !important;
+}
+
+@media (max-width: 980px) {
+  body .route-studio .lm-studio-header-panel,
+  body .route-studio .lm-studio-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  body .route-studio .studio-seq-window-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

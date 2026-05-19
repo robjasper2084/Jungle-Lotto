@@ -555,8 +555,21 @@ const HOME_CAROUSEL_VIDEOS = {
   dreams: `${BASE}/videos/oracle-flow-dream-new.mp4`,
 };
 
+function oracleFlowVideoFor(route, index = 0) {
+  const cycle = [
+    `${BASE}/videos/oracle-flow-music-new.mp4`,
+    `${BASE}/videos/oracle-flow-reset-new.mp4`,
+    `${BASE}/videos/oracle-flow-dream-new.mp4`,
+  ];
+  return HOME_CAROUSEL_VIDEOS[route] || cycle[index % cycle.length];
+}
+
 const QUICK_TOOLS = TOOL_GROUPS.flatMap((group) => group.tools);
 const PLAY_LEARN_GROUP = TOOL_GROUPS.find((group) => group.title === "Play + Learn");
+if (PLAY_LEARN_GROUP) {
+  const stateIndexTool = PLAY_LEARN_GROUP.tools.find((tool) => tool[2] === "usLottery");
+  if (stateIndexTool) PLAY_LEARN_GROUP.tools = [stateIndexTool, ...PLAY_LEARN_GROUP.tools.filter((tool) => tool !== stateIndexTool)];
+}
 const POWER_TOOL_GROUPS = TOOL_GROUPS.filter((group) => group.title !== "Play + Learn");
 
 const STORAGE = {
@@ -600,14 +613,18 @@ const STUDIO_NOTE_KEYS = {
 
 function createDefaultStudioProject() {
   return {
+    projectName: "Future Vault",
     bpm: 92,
     division: "1/16",
+    seqPage: 0,
+    seqZoom: 64,
     swing: 8,
     velocity: 82,
     humanize: 6,
     recArmed: false,
     metronome: false,
     selectedPad: 0,
+    inputDeviceId: "",
     waveform: "sawtooth",
     octave: 4,
     synthVolume: 55,
@@ -699,6 +716,8 @@ const state = {
   studioPlaying: false,
   studioStep: 0,
   studioInputStatus: "Mic/line input idle",
+  studioInputDevices: [],
+  studioSampleRecording: false,
   studioRecordingTrack: null,
   studioMasterRecording: false,
   wordSearchMarks: loadJson("lottomind.oracle.real.wordSearch.v1", []),
@@ -724,15 +743,27 @@ let timerId = null;
 let toastId = null;
 let studioCtx = null;
 let studioMaster = null;
+let studioDrive = null;
 let studioFilter = null;
+let studioCompressor = null;
 let studioDelay = null;
 let studioFeedback = null;
+let studioDelayWet = null;
+let studioReverb = null;
+let studioReverbWet = null;
 let studioDestination = null;
 let studioTimerId = null;
+let studioUiTimerId = null;
+let studioSchedulerStep = 0;
+let studioNextStepTime = 0;
 let studioSampleBuffers = {};
 let studioMicStream = null;
 let studioMonitorSource = null;
 let studioRecorders = {};
+let studioSampleRecorder = null;
+let studioSampleRecorderStream = null;
+let studioSampleChunks = [];
+let studioSampleLabel = "";
 let studioMasterRecorder = null;
 let studioMasterChunks = [];
 
@@ -1487,6 +1518,7 @@ function searchCatalog() {
     ["Barcode Scanner", "Camera ticket scan and barcode reader", "scanner", "scan ticket barcode camera qr"],
     ["Dream Journal", "Saved Dream Oracle readings", "dreams", "journal saved dream interpretation meaning"],
     ["Dream Oracle", "Speak, interpret, and generate lucky numbers", "dreams", "oracle studio mic record"],
+    ["LottoMind Studio", "Drum machine, sampler, vocals, keyboard, and mix export", "studio", "studio music studio record vocals drum machine sampler mpc beat sequencer"],
     ["Music Store", "LottoMind Records, radio, Apple Music, YouTube", "music", "songs audio frequency record label"],
     ["Settings", "Music toggle, sound, motion, and policies", "settings", "set help menu controls"],
     ["Help", "Help, settings, and policies", "help", "support guide policy"],
@@ -1572,7 +1604,7 @@ function dashboardView() {
       </div>
       <div class="quest-steps oracle-flow-steps">
         ${HOME_CAROUSEL.map(([title, copy, route, art], index) => {
-          const flowVideo = HOME_CAROUSEL_VIDEOS[route];
+          const flowVideo = oracleFlowVideoFor(route, index);
           return `
           <button class="quest-step oracle-flow-step" data-route="${route}" style="--quest-art:url('${art}')">
             ${flowVideo ? `<video class="oracle-flow-video" src="${flowVideo}" muted loop autoplay playsinline preload="metadata"></video>` : ""}
@@ -1596,6 +1628,8 @@ function dashboardView() {
     </div>
 
     <div class="split-grid">
+      <button class="action-tile state-index-tile" data-route="usLottery"><strong>US Lottery State Index</strong><span>State draw directory, games, and official route map</span></button>
+      <button class="action-tile" data-route="studio"><strong>LottoMind Studio</strong><span>Drum machine, sampler, vocals, and mix export</span></button>
       <button class="action-tile" data-action="menu"><strong>LottoMind Academy</strong><span>Help, settings, policies, and privacy</span></button>
       <button class="action-tile" data-route="marketplace"><strong>Marketplace</strong><span>Credits, VIP tools, and unlocks</span></button>
     </div>
@@ -1637,6 +1671,9 @@ function circleTool(title, sub, route, index) {
     achievements: ASSETS.arcadeCoin,
     challenges: ASSETS.commandDeck,
     contests: ASSETS.arcade,
+    paywall: ASSETS.lmLive,
+    usLottery: ASSETS.live,
+    notifications: ASSETS.commandDeck,
   };
   const video = title === "Number Analyzer"
     ? `<video class="circle-tool-video" src="${BASE}/videos/power-tools-dashboard-box.mp4" poster="${ASSETS.powerTools}" muted loop autoplay playsinline preload="metadata"></video>`
@@ -2707,14 +2744,57 @@ function futureReadView() {
   </section>`;
 }
 
-function saveStudioProject() {
-  saveJson(STORAGE.studio, state.studio);
+const STUDIO_SERIALIZE_LIMIT = 1200000;
+
+function studioSerializableProject(project = state.studio) {
+  let trimmed = false;
+  const copy = {
+    ...project,
+    pads: project.pads.map((pad) => {
+      if (pad.sampleData && String(pad.sampleData).length > STUDIO_SERIALIZE_LIMIT) {
+        trimmed = true;
+        return { ...pad, sampleData: "", sampleTooLarge: true, sessionOnly: true };
+      }
+      return { ...pad, sampleTooLarge: false };
+    }),
+    vocals: project.vocals.map((track) => {
+      if (track.data && String(track.data).length > STUDIO_SERIALIZE_LIMIT) {
+        trimmed = true;
+        return { ...track, data: "", sampleTooLarge: true, sessionOnly: true };
+      }
+      return { ...track, sampleTooLarge: false };
+    }),
+  };
+  return { project: copy, trimmed };
+}
+
+function saveStudioProject(showWarning = false) {
+  const { project, trimmed } = studioSerializableProject();
+  try {
+    saveJson(STORAGE.studio, project);
+    if (trimmed && showWarning) toast("Large audio stays session-only so local save stays stable.");
+  } catch {
+    toast("Studio project is too large for localStorage. Export JSON or clear large clips.");
+  }
 }
 
 function studioStepsPerBeat(division = state.studio.division) {
+  const exact = {
+    "1/4": 1,
+    "1/4T": 1.5,
+    "1/8": 2,
+    "1/8T": 3,
+    "1/16": 4,
+    "1/16T": 6,
+    "1/32": 8,
+    "1/32T": 12,
+    "1/64": 16,
+    "1/64T": 24,
+  };
+  if (exact[division]) return exact[division];
   const base = Number(String(division).match(/\d+/)?.[0] || 16);
   const steps = base / 4;
-  return Math.max(1, String(division).includes("T") ? Math.round(steps * 1.5) : steps);
+  return Math.max(1, String(division).includes("T") ? steps * 1.5 : steps);
 }
 
 function studioTotalSteps(division = state.studio.division) {
@@ -2722,7 +2802,47 @@ function studioTotalSteps(division = state.studio.division) {
 }
 
 function studioVisibleSteps() {
-  return Math.min(64, studioTotalSteps());
+  return Math.min(Number(state.studio.seqZoom) || 64, studioTotalSteps());
+}
+
+function studioStepSeconds() {
+  return (60 / Math.max(40, Number(state.studio.bpm) || 92)) / studioStepsPerBeat();
+}
+
+function studioSequencerWindow() {
+  const total = studioTotalSteps();
+  const visible = Math.max(16, Math.min(Number(state.studio.seqZoom) || 64, total));
+  const maxPage = Math.max(0, Math.ceil(total / visible) - 1);
+  const page = Math.max(0, Math.min(maxPage, Number(state.studio.seqPage) || 0));
+  state.studio.seqPage = page;
+  const start = page * visible;
+  const end = Math.min(total, start + visible);
+  return { total, visible, maxPage, page, start, end, count: end - start };
+}
+
+function makeStudioDriveCurve(amount = 0) {
+  const samples = 512;
+  const curve = new Float32Array(samples);
+  const k = Number(amount) * 1.2;
+  for (let i = 0; i < samples; i += 1) {
+    const x = (i * 2) / samples - 1;
+    curve[i] = ((1 + k) * x) / (1 + k * Math.abs(x));
+  }
+  return curve;
+}
+
+function makeStudioImpulseBuffer(seconds = 1.4, decay = 2.6) {
+  const ctx = studioCtx;
+  if (!ctx) return null;
+  const length = Math.max(1, Math.floor(ctx.sampleRate * seconds));
+  const impulse = ctx.createBuffer(2, length, ctx.sampleRate);
+  for (let channel = 0; channel < impulse.numberOfChannels; channel += 1) {
+    const data = impulse.getChannelData(channel);
+    for (let i = 0; i < length; i += 1) {
+      data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / length, decay);
+    }
+  }
+  return impulse;
 }
 
 function ensureStudioAudio() {
@@ -2731,22 +2851,44 @@ function ensureStudioAudio() {
   if (!studioCtx || studioCtx.state === "closed") {
     studioCtx = new AudioContext();
     studioMaster = studioCtx.createGain();
+    studioDrive = studioCtx.createWaveShaper();
     studioFilter = studioCtx.createBiquadFilter();
+    studioCompressor = studioCtx.createDynamicsCompressor();
     studioDelay = studioCtx.createDelay(1.5);
     studioFeedback = studioCtx.createGain();
+    studioDelayWet = studioCtx.createGain();
+    studioReverb = studioCtx.createConvolver();
+    studioReverbWet = studioCtx.createGain();
     studioDestination = studioCtx.createMediaStreamDestination();
     studioMaster.gain.value = 0.72;
+    studioDrive.oversample = "4x";
     studioFilter.type = "lowpass";
+    studioFilter.frequency.value = 6376;
+    studioCompressor.threshold.value = -26;
+    studioCompressor.knee.value = 24;
+    studioCompressor.ratio.value = 2;
+    studioCompressor.attack.value = 0.008;
+    studioCompressor.release.value = 0.18;
     studioDelay.delayTime.value = 0.18;
     studioFeedback.gain.value = 0;
-    studioMaster.connect(studioFilter);
-    studioFilter.connect(studioCtx.destination);
-    studioFilter.connect(studioDestination);
-    studioFilter.connect(studioDelay);
+    studioDelayWet.gain.value = 0;
+    studioReverbWet.gain.value = 0;
+    studioReverb.buffer = makeStudioImpulseBuffer(1.45, 2.8);
+    studioMaster.connect(studioDrive);
+    studioDrive.connect(studioFilter);
+    studioFilter.connect(studioCompressor);
+    studioCompressor.connect(studioCtx.destination);
+    studioCompressor.connect(studioDestination);
+    studioCompressor.connect(studioDelay);
+    studioCompressor.connect(studioReverb);
     studioDelay.connect(studioFeedback);
     studioFeedback.connect(studioDelay);
-    studioDelay.connect(studioCtx.destination);
-    studioDelay.connect(studioDestination);
+    studioDelay.connect(studioDelayWet);
+    studioDelayWet.connect(studioCtx.destination);
+    studioDelayWet.connect(studioDestination);
+    studioReverb.connect(studioReverbWet);
+    studioReverbWet.connect(studioCtx.destination);
+    studioReverbWet.connect(studioDestination);
   }
   if (studioCtx.state === "suspended") studioCtx.resume().catch(() => {});
   updateStudioEffects();
@@ -2756,9 +2898,17 @@ function ensureStudioAudio() {
 function updateStudioEffects() {
   if (!studioCtx || !studioFilter || !studioFeedback || !studioMaster) return;
   const fx = state.studio.effects;
+  if (studioDrive) studioDrive.curve = makeStudioDriveCurve(Math.max(0, Number(fx.drive) || 0) / 100);
   studioFilter.frequency.setTargetAtTime(600 + (Number(fx.tone) || 0) * 76, studioCtx.currentTime, 0.03);
   studioFilter.Q.setTargetAtTime(0.4 + (Number(fx.punch) || 0) / 38, studioCtx.currentTime, 0.03);
+  if (studioCompressor) {
+    studioCompressor.threshold.setTargetAtTime(-34 + (Number(fx.punch) || 0) * 0.22, studioCtx.currentTime, 0.03);
+    studioCompressor.ratio.setTargetAtTime(1 + (Number(fx.punch) || 0) / 28, studioCtx.currentTime, 0.03);
+  }
+  if (studioDelay) studioDelay.delayTime.setTargetAtTime(0.08 + (Number(fx.delay) || 0) * 0.005, studioCtx.currentTime, 0.03);
   studioFeedback.gain.setTargetAtTime(Math.min(0.62, (Number(fx.delay) || 0) / 155), studioCtx.currentTime, 0.03);
+  if (studioDelayWet) studioDelayWet.gain.setTargetAtTime(Math.min(0.46, (Number(fx.delay) || 0) / 170), studioCtx.currentTime, 0.03);
+  if (studioReverbWet) studioReverbWet.gain.setTargetAtTime(Math.min(0.45, (Number(fx.reverb) || 0) / 145), studioCtx.currentTime, 0.03);
   studioMaster.gain.setTargetAtTime(0.58 + Math.min(0.26, (Number(fx.drive) || 0) / 380), studioCtx.currentTime, 0.03);
 }
 
@@ -2831,14 +2981,25 @@ function readFileAsDataUrl(file) {
 async function decodeStudioSample(padIndex) {
   const pad = state.studio.pads[padIndex];
   if (!pad?.sampleData) return null;
-  if (studioSampleBuffers[padIndex]) return studioSampleBuffers[padIndex];
+  const cacheKey = `${padIndex}:${pad.reverse ? "r" : "f"}:${pad.sampleName || ""}:${String(pad.sampleData).slice(0, 48)}`;
+  if (studioSampleBuffers[cacheKey]) return studioSampleBuffers[cacheKey];
   const ctx = ensureStudioAudio();
   if (!ctx) return null;
   const response = await fetch(pad.sampleData);
   const arrayBuffer = await response.arrayBuffer();
-  const buffer = await ctx.decodeAudioData(arrayBuffer.slice(0));
-  studioSampleBuffers[padIndex] = buffer;
-  return buffer;
+  const decoded = await ctx.decodeAudioData(arrayBuffer.slice(0));
+  if (!pad.reverse) {
+    studioSampleBuffers[cacheKey] = decoded;
+    return decoded;
+  }
+  const reversed = ctx.createBuffer(decoded.numberOfChannels, decoded.length, decoded.sampleRate);
+  for (let channel = 0; channel < decoded.numberOfChannels; channel += 1) {
+    const source = decoded.getChannelData(channel);
+    const target = reversed.getChannelData(channel);
+    for (let i = 0; i < source.length; i += 1) target[i] = source[source.length - 1 - i];
+  }
+  studioSampleBuffers[cacheKey] = reversed;
+  return reversed;
 }
 
 async function triggerStudioPad(index, record = true, when = 0, eventVelocity) {
@@ -2859,7 +3020,7 @@ async function triggerStudioPad(index, record = true, when = 0, eventVelocity) {
       gain.connect(studioOutput());
       const start = Math.max(0, buffer.duration * ((Number(pad.trimStart) || 0) / 100));
       const end = Math.max(start + 0.02, buffer.duration * ((Number(pad.trimEnd) || 100) / 100));
-      source.start(when || ctx.currentTime, start, end - start);
+      source.start(Math.max(ctx.currentTime, when || ctx.currentTime), start, end - start);
     }
   } else {
     triggerStudioSynthDrum(pad.type, velocity, when);
@@ -2882,74 +3043,118 @@ function recordStudioEvent(type, pad = 0, note = "", velocity = 0.82) {
   const event = { id: `ev-${Date.now()}-${Math.random().toString(16).slice(2)}`, type, pad, note, step, velocity: Math.round(velocity * 100), offset: 0 };
   state.studio.events = state.studio.events.filter((item) => !(item.type === type && item.pad === pad && item.note === note && item.step === step)).concat(event);
   saveStudioProject();
+  renderStudioPlayhead();
 }
 
 function studioStepMs() {
   return (60000 / Math.max(40, Number(state.studio.bpm) || 92)) / studioStepsPerBeat();
 }
 
-function playStudioStep(step) {
+function studioSwingSeconds(step) {
+  const swing = Math.max(0, Math.min(60, Number(state.studio.swing) || 0));
+  return step % 2 ? studioStepSeconds() * (swing / 100) * 0.38 : 0;
+}
+
+function studioEventOffsetSeconds(event) {
+  return Math.max(-0.49, Math.min(0.49, Number(event.offset) || 0)) * studioStepSeconds();
+}
+
+function studioHumanFeelSeconds() {
+  const amount = Math.max(0, Math.min(40, Number(state.studio.humanize) || 0));
+  return (Math.random() - 0.5) * amount * 0.0007;
+}
+
+function playStudioStep(step, when = 0) {
+  const ctx = ensureStudioAudio();
+  if (!ctx) return;
   const total = studioTotalSteps();
   const normalized = step % total;
+  const stepWhen = Math.max(ctx.currentTime + 0.002, when || ctx.currentTime) + studioSwingSeconds(normalized);
   const soloed = state.studio.vocals.some((track) => track.solo);
   state.studio.events.filter((event) => event.step === normalized).forEach((event) => {
-    const jitter = (Math.random() - 0.5) * (Number(state.studio.humanize) || 0) * 0.002;
     const velocity = Math.max(8, Math.min(100, (Number(event.velocity) || state.studio.velocity) + (Math.random() - 0.5) * (Number(state.studio.humanize) || 0)));
-    if (event.type === "pad") triggerStudioPad(event.pad, false, ensureStudioAudio()?.currentTime + Math.max(0, jitter), velocity);
-    if (event.type === "note") triggerStudioNote(event.note, false, velocity / 100);
+    const eventWhen = Math.max(ctx.currentTime + 0.002, stepWhen + studioEventOffsetSeconds(event) + studioHumanFeelSeconds());
+    if (event.type === "pad") triggerStudioPad(event.pad, false, eventWhen, velocity);
+    if (event.type === "note") triggerStudioNote(event.note, false, velocity / 100, eventWhen);
   });
   state.studio.vocals.forEach((track, index) => {
     if (!track.data || track.muted || (soloed && !track.solo)) return;
-    if (Number(track.startStep) === normalized) playVocalTrack(index);
+    if (Number(track.startStep) === normalized) playVocalTrack(index, stepWhen);
   });
-  if (state.studio.metronome && normalized % studioStepsPerBeat() === 0) triggerStudioSynthDrum("bell", 0.18);
+  if (state.studio.metronome && normalized % studioStepsPerBeat() === 0) triggerStudioSynthDrum("bell", 0.18, stepWhen);
+}
+
+function studioSchedulerTick() {
+  const ctx = ensureStudioAudio();
+  if (!ctx || !state.studioPlaying) return;
+  const total = studioTotalSteps();
+  const lookahead = 0.13;
+  while (studioNextStepTime < ctx.currentTime + lookahead) {
+    state.studioStep = studioSchedulerStep % total;
+    playStudioStep(state.studioStep, studioNextStepTime);
+    studioSchedulerStep = (studioSchedulerStep + 1) % total;
+    studioNextStepTime += studioStepSeconds();
+  }
+  renderStudioPlayhead();
 }
 
 function startStudioSequence() {
-  ensureStudioAudio();
+  const ctx = ensureStudioAudio();
+  if (!ctx) {
+    toast("Web Audio is not available in this browser.");
+    return;
+  }
   stopStudioSequence(false);
   state.studioPlaying = true;
   const total = studioTotalSteps();
-  studioTimerId = setInterval(() => {
-    state.studioStep = (state.studioStep + 1) % total;
-    playStudioStep(state.studioStep);
-    renderStudioPlayhead();
-  }, Math.max(18, studioStepMs()));
-  playStudioStep(state.studioStep);
+  studioSchedulerStep = state.studioStep % total;
+  studioNextStepTime = ctx.currentTime + 0.045;
+  studioTimerId = setInterval(studioSchedulerTick, 25);
+  studioUiTimerId = setInterval(renderStudioPlayhead, 60);
+  studioSchedulerTick();
   render();
 }
 
 function stopStudioSequence(update = true) {
   clearInterval(studioTimerId);
+  clearInterval(studioUiTimerId);
   studioTimerId = null;
+  studioUiTimerId = null;
   state.studioPlaying = false;
   state.studioStep = 0;
   if (update) render();
 }
 
 function renderStudioPlayhead() {
-  const visible = studioVisibleSteps();
+  const { start, count } = studioSequencerWindow();
   document.querySelectorAll(".studio-step").forEach((cell) => {
-    cell.classList.toggle("playing", Number(cell.getAttribute("data-step")) === state.studioStep % visible);
+    cell.classList.toggle("playing", Number(cell.getAttribute("data-step")) === state.studioStep);
   });
+  const strip = document.querySelector(".studio-playhead-strip");
+  if (strip) {
+    const local = state.studioStep - start;
+    const percent = local >= 0 && local < count ? (local / Math.max(1, count - 1)) * 100 : -5;
+    strip.style.setProperty("--playhead", `${percent}%`);
+  }
 }
 
-function triggerStudioNote(note = "C", record = true, velocity = 0.7) {
+function triggerStudioNote(note = "C", record = true, velocity = 0.7, when = 0) {
   const ctx = ensureStudioAudio();
   if (!ctx) return;
+  const t = Math.max(ctx.currentTime, when || ctx.currentTime);
   const noteIndex = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"].indexOf(note);
   const freq = 440 * Math.pow(2, ((noteIndex < 0 ? 0 : noteIndex) + (Number(state.studio.octave) - 4) * 12 - 9) / 12);
   const osc = ctx.createOscillator();
   const gain = ctx.createGain();
   osc.type = state.studio.waveform || "sawtooth";
   osc.frequency.value = freq;
-  gain.gain.setValueAtTime(0.0001, ctx.currentTime);
-  gain.gain.exponentialRampToValueAtTime(velocity * ((Number(state.studio.synthVolume) || 55) / 100), ctx.currentTime + 0.02);
-  gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.44);
+  gain.gain.setValueAtTime(0.0001, t);
+  gain.gain.exponentialRampToValueAtTime(velocity * ((Number(state.studio.synthVolume) || 55) / 100), t + 0.02);
+  gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.44);
   osc.connect(gain);
   gain.connect(studioOutput());
-  osc.start();
-  osc.stop(ctx.currentTime + 0.5);
+  osc.start(t);
+  osc.stop(t + 0.5);
   if (record && state.studio.recArmed && state.studioPlaying) recordStudioEvent("note", 0, note, velocity);
 }
 
@@ -2963,12 +3168,34 @@ function downloadTextFile(name, text, type = "application/json") {
   setTimeout(() => URL.revokeObjectURL(url), 800);
 }
 
-function playVocalTrack(index) {
+async function decodeStudioAudioData(data, cacheKey = "") {
+  if (!data) return null;
+  if (cacheKey && studioSampleBuffers[cacheKey]) return studioSampleBuffers[cacheKey];
+  const ctx = ensureStudioAudio();
+  if (!ctx) return null;
+  const response = await fetch(data);
+  const arrayBuffer = await response.arrayBuffer();
+  const buffer = await ctx.decodeAudioData(arrayBuffer.slice(0));
+  if (cacheKey) studioSampleBuffers[cacheKey] = buffer;
+  return buffer;
+}
+
+async function playVocalTrack(index, when = 0) {
   const track = state.studio.vocals[index];
   if (!track?.data) return;
-  const audio = new Audio(track.data);
-  audio.volume = Math.max(0, Math.min(1, Number(track.volume) / 100 || 0.75));
-  audio.play().catch(() => toast("Vocal playback blocked until the page is tapped."));
+  const ctx = ensureStudioAudio();
+  const buffer = await decodeStudioAudioData(track.data, `vocal:${index}:${track.fileName || ""}`).catch(() => null);
+  if (!ctx || !buffer) {
+    toast("Vocal clip could not be decoded in this browser.");
+    return;
+  }
+  const source = ctx.createBufferSource();
+  const gain = ctx.createGain();
+  source.buffer = buffer;
+  gain.gain.value = Math.max(0, Math.min(1, Number(track.volume) / 100 || 0.75));
+  source.connect(gain);
+  gain.connect(studioOutput());
+  source.start(Math.max(ctx.currentTime + 0.002, when || ctx.currentTime));
 }
 
 function studioTransportControls() {
@@ -2982,7 +3209,7 @@ function studioTransportControls() {
       <p>MPC-style pads, sampler, vocals, effects, keyboard synth, and creator-ready export.</p>
     </div>
     <div class="lm-top-controls">
-      <label class="lm-mini-card">Project <strong>Future Vault</strong></label>
+      <label class="lm-mini-card">Project <select data-action="studio-set" data-studio-field="projectName">${["Future Vault", "Neon Dreams", "Detroit Reset", "Oracle Session"].map((item) => `<option ${item === state.studio.projectName ? "selected" : ""}>${item}</option>`).join("")}</select></label>
       <label class="lm-mini-card">BPM <input type="number" min="40" max="220" data-action="studio-set" data-studio-field="bpm" value="${state.studio.bpm}" /></label>
       <label class="lm-mini-card">Grid <select data-action="studio-set" data-studio-field="division">${STUDIO_DIVISIONS.map((item) => `<option ${item === state.studio.division ? "selected" : ""}>${item}</option>`).join("")}</select></label>
       <div class="lm-status-card"><span class="${state.studioPlaying ? "online" : ""}"></span><div><small>Studio Status</small><strong>${state.studioPlaying ? "Online" : "Standby"}</strong></div></div>
@@ -3037,25 +3264,37 @@ function studioDrumPads() {
 }
 
 function studioSequencerGrid() {
-  const visible = studioVisibleSteps();
-  const total = studioTotalSteps();
-  const padRows = state.studio.pads.slice(0, 8);
-  const hasEvent = (pad, step) => state.studio.events.some((event) => event.type === "pad" && event.pad === pad && event.step % visible === step);
-  const playhead = Math.max(0, Math.min(100, ((state.studioStep % visible) / Math.max(1, visible - 1)) * 100));
+  const { start, end, count, visible, total, page, maxPage } = studioSequencerWindow();
+  const padRows = state.studio.pads;
+  const hasEvent = (pad, step) => state.studio.events.some((event) => event.type === "pad" && event.pad === pad && event.step === step);
+  const localPlayhead = state.studioStep - start;
+  const playhead = localPlayhead >= 0 && localPlayhead < count ? Math.max(0, Math.min(100, (localPlayhead / Math.max(1, count - 1)) * 100)) : -5;
+  const stepsPerBar = studioStepsPerBeat() * 4;
+  const barStart = Math.floor(start / stepsPerBar) + 1;
+  const barEnd = Math.min(16, Math.ceil(end / stepsPerBar));
   return `<div id="studio-sequencer" class="panel studio-module studio-sequencer">
-    <div class="section-head studio-panel-head"><div><h2>16-Bar Sequencer</h2><p>${state.studio.division} grid: showing ${visible} of ${total} loop ticks.</p></div><span>${state.studio.events.length} events</span></div>
+    <div class="section-head studio-panel-head"><div><h2>16-Bar Sequencer</h2><p>${state.studio.division} grid: bars ${barStart}-${barEnd}, ticks ${start + 1}-${end} of ${total}.</p></div><span>${state.studio.events.length} events</span></div>
     <div class="studio-division-row">
       <span>Timing</span>
       ${STUDIO_DIVISIONS.map((item) => `<button class="${item === state.studio.division ? "active" : ""}" data-action="studio-set" data-studio-field="division" value="${item}">${item}</button>`).join("")}
     </div>
-    <div class="studio-bar-ruler">${Array.from({ length: 16 }, (_, index) => `<span>${index + 1}</span>`).join("")}</div>
+    <div class="studio-seq-window-row">
+      <button class="ghost-btn" data-action="studio-seq-page" data-dir="-1" ${page <= 0 ? "disabled" : ""}>Prev Window</button>
+      <strong>Window ${page + 1}/${maxPage + 1}</strong>
+      <button class="ghost-btn" data-action="studio-seq-page" data-dir="1" ${page >= maxPage ? "disabled" : ""}>Next Window</button>
+      <label>Zoom <select data-action="studio-set" data-studio-field="seqZoom">${[32, 64, 128, 256].map((item) => `<option value="${item}" ${visible === item ? "selected" : ""}>${item} ticks</option>`).join("")}</select></label>
+    </div>
+    <div class="studio-bar-ruler">${Array.from({ length: 16 }, (_, index) => `<span class="${index + 1 >= barStart && index + 1 <= barEnd ? "active" : ""}">${index + 1}</span>`).join("")}</div>
     <div class="studio-seq-grid-wrap">
       <div class="studio-playhead-strip" style="--playhead:${playhead}%"></div>
-      <div class="studio-seq-grid" style="--steps:${visible}">
-        ${padRows.map((pad, padIndex) => `<div class="studio-seq-name">${escapeHtml(pad.name)}</div>${Array.from({ length: visible }, (_, step) => `<button class="studio-step ${hasEvent(padIndex, step) ? "on" : ""} ${step === state.studioStep % visible ? "playing" : ""}" data-action="studio-toggle-step" data-pad="${padIndex}" data-step="${step}" aria-label="${escapeHtml(pad.name)} step ${step + 1}"></button>`).join("")}`).join("")}
+      <div class="studio-seq-grid" style="--steps:${count}">
+        ${padRows.map((pad, padIndex) => `<div class="studio-seq-name">${escapeHtml(pad.name)}</div>${Array.from({ length: count }, (_, offset) => {
+          const step = start + offset;
+          return `<button class="studio-step ${hasEvent(padIndex, step) ? "on" : ""} ${step === state.studioStep ? "playing" : ""}" data-action="studio-toggle-step" data-pad="${padIndex}" data-step="${step}" aria-label="${escapeHtml(pad.name)} step ${step + 1}"></button>`;
+        }).join("")}`).join("")}
       </div>
     </div>
-    <div class="studio-seq-actions"><button class="ghost-btn" data-action="studio-clear-pattern">Clear Pattern</button><button class="ghost-btn" data-action="studio-save-project">Save Project</button></div>
+    <div class="studio-seq-actions"><button class="ghost-btn" data-action="studio-clear-pattern">Clear Pattern</button><button class="ghost-btn" data-action="studio-save-project">Save Project</button><button class="ghost-btn" data-action="studio-export-stems">Export Stems</button></div>
   </div>`;
 }
 
@@ -3099,8 +3338,9 @@ function studioSamplerPanel() {
       <label>Load sample <input type="file" accept="audio/*" data-action="studio-import-sample" /></label>
       <label>Audio URL <input data-bind="studioSampleUrl" placeholder="https://... audio file" /></label>
       <button class="ghost-btn" data-action="studio-load-url-sample">Load URL</button>
-      <button class="ghost-btn" data-action="studio-sample-mic">Sample Mic</button>
-      <button class="ghost-btn" data-action="studio-sample-tab">Sample Tab Audio</button>
+      <button class="${state.studioSampleRecording ? "record-btn active" : "ghost-btn"}" data-action="studio-start-sample-mic">Start Mic Sample</button>
+      <button class="${state.studioSampleRecording ? "record-btn active" : "ghost-btn"}" data-action="studio-start-sample-tab">Start Tab Sample</button>
+      <button class="ghost-btn" data-action="studio-stop-sample">Stop Sample</button>
       <label>Start <input type="range" min="0" max="95" data-action="studio-pad-set" data-pad-field="trimStart" value="${pad.trimStart}" /></label>
       <label>End <input type="range" min="5" max="100" data-action="studio-pad-set" data-pad-field="trimEnd" value="${pad.trimEnd}" /></label>
       <label>Pitch <input type="range" min="-24" max="24" data-action="studio-pad-set" data-pad-field="pitch" value="${pad.pitch}" /></label>
@@ -3114,10 +3354,14 @@ function studioSamplerPanel() {
 }
 
 function studioMicPanel() {
+  const inputOptions = state.studioInputDevices.length
+    ? state.studioInputDevices.map((device, index) => `<option value="${escapeHtml(device.deviceId)}" ${device.deviceId === state.studio.inputDeviceId ? "selected" : ""}>${escapeHtml(device.label || `Input ${index + 1}`)}</option>`).join("")
+    : `<option value="">Default Input</option>`;
   return `<div id="studio-input" class="panel studio-module studio-input-panel">
     <div class="section-head studio-panel-head"><div><h2>Mic / Line Input</h2><p>${escapeHtml(state.studioInputStatus)}</p></div><span>Headphones</span></div>
     <div class="studio-tools-grid">
       <button class="primary-btn" data-action="studio-refresh-inputs">Refresh Inputs</button>
+      <label>Input Device <select data-action="studio-set" data-studio-field="inputDeviceId">${inputOptions}</select></label>
       <button class="ghost-btn" data-action="studio-monitor-input">Monitor Input</button>
       <button class="ghost-btn" data-action="studio-stop-monitoring">Stop Monitoring</button>
       <small class="studio-note">Use headphones while monitoring to avoid feedback. Browser permission is required.</small>
@@ -3176,6 +3420,7 @@ function studioImportExportPanel() {
       <button class="ghost-btn" data-action="studio-export-pack">Export Sound Pack</button>
       <label class="file-pill">Import Pack<input type="file" accept="application/json,.json" data-action="studio-import-pack" /></label>
       <button class="ghost-btn" data-action="studio-export-sample">Export Selected Pad</button>
+      <button class="ghost-btn" data-action="studio-export-stems">Export Stems</button>
       <button class="ghost-btn" data-action="studio-clear-pattern">Clear Pattern</button>
       <button class="${state.studioMasterRecording ? "record-btn active" : "ghost-btn"}" data-action="${state.studioMasterRecording ? "studio-stop-master-record" : "studio-start-master-record"}">${state.studioMasterRecording ? "Stop Mix Export" : "Record Full Mix"}</button>
       <small class="studio-note">Mic, tab capture, direct URL loading, and MediaRecorder depend on browser permissions and CORS. Protected media is not bypassed.</small>
@@ -4475,6 +4720,7 @@ function routeFromSearch(value) {
   if (bestMatch) return bestMatch.route;
   const query = String(value || "").toLowerCase();
   const matches = [
+    [["studio", "music studio", "record vocals", "drum machine", "sampler", "mpc", "sequencer"], "studio"],
     [["dream", "oracle", "meaning", "journal"], "dreams"],
     [["music", "radio", "apple", "youtube", "record", "song", "audio"], "music"],
     [["weather", "local", "horoscope"], "luckyWeather"],
@@ -4529,10 +4775,11 @@ function applyScanReadout(action, source, upload = "", decoded = "") {
 async function importStudioSampleFile(file, padIndex = state.studio.selectedPad) {
   if (!file) return;
   const data = await readFileAsDataUrl(file);
-  state.studio.pads[padIndex] = { ...state.studio.pads[padIndex], sampleName: file.name, sampleData: data };
-  delete studioSampleBuffers[padIndex];
-  saveStudioProject();
-  toast(`${file.name} loaded to ${state.studio.pads[padIndex].name}`);
+  const large = String(data).length > STUDIO_SERIALIZE_LIMIT;
+  state.studio.pads[padIndex] = { ...state.studio.pads[padIndex], sampleName: file.name, sampleData: data, sessionOnly: large };
+  studioSampleBuffers = {};
+  saveStudioProject(large);
+  toast(large ? `${file.name} loaded, but it may be session-only if localStorage is too small.` : `${file.name} loaded to ${state.studio.pads[padIndex].name}`);
 }
 
 async function importStudioVocalFile(file, trackIndex) {
@@ -4540,6 +4787,7 @@ async function importStudioVocalFile(file, trackIndex) {
   const data = await readFileAsDataUrl(file);
   const sessionOnly = String(data).length > 900000;
   state.studio.vocals[trackIndex] = { ...state.studio.vocals[trackIndex], fileName: file.name, data: sessionOnly ? "" : data, sessionOnly };
+  studioSampleBuffers = {};
   saveStudioProject();
   toast(sessionOnly ? "Vocal is too large for local save; keep this session-only." : `${file.name} loaded to vocal ${trackIndex + 1}`);
 }
@@ -4553,7 +4801,8 @@ async function getStudioMicStream() {
   try {
     const hasLiveTrack = studioMicStream?.getAudioTracks?.().some((track) => track.readyState === "live");
     if (!studioMicStream || !hasLiveTrack) {
-      studioMicStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const deviceId = state.studio.inputDeviceId;
+      studioMicStream = await navigator.mediaDevices.getUserMedia({ audio: deviceId ? { deviceId: { exact: deviceId } } : true });
     }
     state.studioInputStatus = "Mic/line input ready";
     return studioMicStream;
@@ -4562,6 +4811,28 @@ async function getStudioMicStream() {
     state.studioInputStatus = "Mic permission was blocked or no input was found.";
     render();
     return null;
+  }
+}
+
+async function refreshStudioInputs() {
+  if (!navigator.mediaDevices?.enumerateDevices) {
+    state.studioInputStatus = "Audio input listing is not supported.";
+    render();
+    return;
+  }
+  try {
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    state.studioInputDevices = devices.filter((device) => device.kind === "audioinput").map((device, index) => ({
+      deviceId: device.deviceId,
+      label: device.label || `Input ${index + 1}`,
+    }));
+    if (!state.studio.inputDeviceId && state.studioInputDevices[0]) state.studio.inputDeviceId = state.studioInputDevices[0].deviceId;
+    state.studioInputStatus = `${state.studioInputDevices.length} audio inputs available`;
+    saveStudioProject();
+    render();
+  } catch {
+    state.studioInputStatus = "Audio inputs could not be listed until mic permission is granted.";
+    render();
   }
 }
 
@@ -4595,6 +4866,7 @@ async function startStudioVocalRecording(trackIndex) {
       fileName: `lottomind-vocal-${trackIndex + 1}.webm`,
       sessionOnly,
     };
+    studioSampleBuffers = {};
     state.studioRecordingTrack = null;
     saveStudioProject();
     toast(sessionOnly ? "Vocal captured, but too large for local save." : `Vocal ${trackIndex + 1} recorded`);
@@ -4610,34 +4882,58 @@ function stopStudioVocalRecording(trackIndex = state.studioRecordingTrack) {
   if (recorder && recorder.state !== "inactive") recorder.stop();
 }
 
-async function recordStudioSourceToPad(sourcePromise, label, releaseStream = true) {
+async function startStudioSourceSample(sourcePromise, label, releaseStream = true) {
   if (typeof MediaRecorder === "undefined") {
     toast("MediaRecorder is not available in this browser.");
+    return;
+  }
+  if (studioSampleRecorder && studioSampleRecorder.state !== "inactive") {
+    toast("A sample recording is already running.");
     return;
   }
   try {
     const stream = await sourcePromise;
     if (!stream) return;
-    const chunks = [];
-    const recorder = new MediaRecorder(stream);
-    recorder.ondataavailable = (event) => { if (event.data?.size) chunks.push(event.data); };
-    recorder.onstop = async () => {
+    studioSampleChunks = [];
+    studioSampleLabel = label;
+    studioSampleRecorderStream = releaseStream ? stream : null;
+    studioSampleRecorder = new MediaRecorder(stream);
+    studioSampleRecorder.ondataavailable = (event) => { if (event.data?.size) studioSampleChunks.push(event.data); };
+    studioSampleRecorder.onstop = async () => {
       if (releaseStream && stream !== studioMicStream) stream.getTracks?.().forEach((track) => track.stop?.());
-      const blob = new Blob(chunks, { type: recorder.mimeType || "audio/webm" });
+      const blob = new Blob(studioSampleChunks, { type: studioSampleRecorder.mimeType || "audio/webm" });
       const data = await blobToDataUrl(blob);
       const padIndex = state.studio.selectedPad;
-      state.studio.pads[padIndex] = { ...state.studio.pads[padIndex], sampleName: `${label} sample`, sampleData: data };
-      delete studioSampleBuffers[padIndex];
-      saveStudioProject();
-      toast(`${label} sampled to ${state.studio.pads[padIndex].name}`);
+      const large = String(data).length > STUDIO_SERIALIZE_LIMIT;
+      state.studio.pads[padIndex] = { ...state.studio.pads[padIndex], sampleName: `${label} sample`, sampleData: data, sessionOnly: large };
+      studioSampleBuffers = {};
+      state.studioSampleRecording = false;
+      studioSampleRecorder = null;
+      studioSampleRecorderStream = null;
+      saveStudioProject(large);
+      toast(large ? `${label} sample captured, but large audio may stay session-only.` : `${label} sampled to ${state.studio.pads[padIndex].name}`);
       render();
     };
-    recorder.start();
-    toast(`Sampling ${label} for 3 seconds...`);
-    setTimeout(() => recorder.state !== "inactive" && recorder.stop(), 3000);
+    studioSampleRecorder.start();
+    state.studioSampleRecording = true;
+    toast(`Sampling ${label}. Tap Stop Sample when ready.`);
+    render();
   } catch {
     toast(`${label} capture was blocked or unavailable.`);
   }
+}
+
+function stopStudioSourceSample() {
+  if (studioSampleRecorder && studioSampleRecorder.state !== "inactive") {
+    studioSampleRecorder.stop();
+    return;
+  }
+  if (studioSampleRecorderStream) studioSampleRecorderStream.getTracks?.().forEach((track) => track.stop?.());
+  state.studioSampleRecording = false;
+  studioSampleRecorder = null;
+  studioSampleRecorderStream = null;
+  toast("No active sample recording.");
+  render();
 }
 
 function exportStudioSample(padIndex = state.studio.selectedPad) {
@@ -4662,6 +4958,25 @@ function exportStudioVocal(trackIndex) {
   a.href = track.data;
   a.download = track.fileName || `lottomind-vocal-${trackIndex + 1}.webm`;
   a.click();
+}
+
+function exportStudioStems() {
+  const { project, trimmed } = studioSerializableProject();
+  const stems = {
+    exportedAt: new Date().toISOString(),
+    browserNote: "Live stem audio rendering depends on browser capture/MediaRecorder support. This JSON contains the complete stem map and embedded audio where practical.",
+    bpm: project.bpm,
+    division: project.division,
+    loopBars: 16,
+    drums: project.events.filter((event) => event.type === "pad").map((event) => ({ ...event, padName: project.pads[event.pad]?.name })),
+    synth: project.events.filter((event) => event.type === "note"),
+    samples: project.pads.map((pad, index) => ({ index, name: pad.name, sampleName: pad.sampleName, sampleData: pad.sampleData, trimStart: pad.trimStart, trimEnd: pad.trimEnd, pitch: pad.pitch, gain: pad.gain, reverse: pad.reverse })),
+    vocals: project.vocals.map((track, index) => ({ index, name: track.name, fileName: track.fileName, data: track.data, startStep: track.startStep, volume: track.volume, muted: track.muted, solo: track.solo })),
+    effects: project.effects,
+    master: { swing: project.swing, velocity: project.velocity, humanize: project.humanize },
+  };
+  downloadTextFile("lottomind-studio-stems.json", JSON.stringify(stems, null, 2));
+  toast(trimmed ? "Stem map exported. Large clips were marked session-only." : "Stem map exported.");
 }
 
 function handleAction(action, target) {
@@ -4710,12 +5025,27 @@ function handleAction(action, target) {
   }
   if (action === "studio-set") {
     const field = target.getAttribute("data-studio-field");
-    const numeric = ["bpm", "swing", "velocity", "humanize", "octave", "synthVolume", "selectedPad"];
+    const numeric = ["bpm", "swing", "velocity", "humanize", "octave", "synthVolume", "selectedPad", "seqPage", "seqZoom"];
     state.studio[field] = numeric.includes(field) ? Number(target.value) : target.value;
-    if (field === "division") state.studioStep = 0;
+    if (field === "division" || field === "seqZoom") {
+      state.studioStep = 0;
+      state.studio.seqPage = 0;
+    }
+    if (field === "inputDeviceId") {
+      studioMicStream?.getTracks?.().forEach((track) => track.stop?.());
+      studioMicStream = null;
+      state.studioInputStatus = "Input device selected";
+    }
     saveStudioProject();
     if (state.studioPlaying && ["bpm", "division"].includes(field)) startStudioSequence();
     else render();
+    return;
+  }
+  if (action === "studio-seq-page") {
+    const { maxPage } = studioSequencerWindow();
+    state.studio.seqPage = Math.max(0, Math.min(maxPage, (Number(state.studio.seqPage) || 0) + Number(target.getAttribute("data-dir") || 0)));
+    saveStudioProject();
+    render();
     return;
   }
   if (action === "studio-pad-set") {
@@ -4782,10 +5112,11 @@ function handleAction(action, target) {
   }
   if (action === "studio-randomize") {
     state.studio.events = [];
-    const visible = studioVisibleSteps();
-    [0, 1, 2, 3].forEach((pad) => {
-      for (let step = 0; step < visible; step += pad === 0 ? 4 : pad === 3 ? 2 : 8) {
-        if (Math.random() > (pad === 0 ? 0.18 : 0.45)) state.studio.events.push({ id: `rnd-${pad}-${step}`, type: "pad", pad, step, velocity: 65 + Math.round(Math.random() * 30), offset: 0 });
+    const total = studioTotalSteps();
+    state.studio.pads.forEach((_, pad) => {
+      const interval = pad === 0 ? 4 : pad === 3 || pad === 4 ? 2 : pad < 8 ? 8 : 16;
+      for (let step = 0; step < total; step += interval) {
+        if (Math.random() > (pad === 0 ? 0.18 : pad < 5 ? 0.48 : 0.7)) state.studio.events.push({ id: `rnd-${pad}-${step}`, type: "pad", pad, step, velocity: 65 + Math.round(Math.random() * 30), offset: 0 });
       }
     });
     saveStudioProject();
@@ -4804,21 +5135,25 @@ function handleAction(action, target) {
       const padIndex = state.studio.selectedPad;
       state.studio.pads[padIndex].sampleData = url;
       state.studio.pads[padIndex].sampleName = "URL sample";
-      delete studioSampleBuffers[padIndex];
+      studioSampleBuffers = {};
       saveStudioProject();
       toast("URL sample assigned. Browser CORS must allow playback.");
     }
     return;
   }
-  if (action === "studio-sample-mic") {
-    recordStudioSourceToPad(getStudioMicStream(), "Mic", false);
+  if (action === "studio-start-sample-mic") {
+    startStudioSourceSample(getStudioMicStream(), "Mic", false);
     return;
   }
-  if (action === "studio-sample-tab") {
+  if (action === "studio-start-sample-tab") {
     const capture = navigator.mediaDevices?.getDisplayMedia
       ? navigator.mediaDevices.getDisplayMedia({ video: true, audio: true })
       : Promise.resolve(null);
-    recordStudioSourceToPad(capture, "Tab audio");
+    startStudioSourceSample(capture, "Tab audio");
+    return;
+  }
+  if (action === "studio-stop-sample") {
+    stopStudioSourceSample();
     return;
   }
   if (action === "studio-preview-sample") {
@@ -4832,7 +5167,7 @@ function handleAction(action, target) {
   if (action === "studio-clear-sample") {
     const padIndex = state.studio.selectedPad;
     state.studio.pads[padIndex] = { ...state.studio.pads[padIndex], sampleName: "", sampleData: "" };
-    delete studioSampleBuffers[padIndex];
+    studioSampleBuffers = {};
     saveStudioProject();
     toast("Sample cleared");
     render();
@@ -4841,16 +5176,13 @@ function handleAction(action, target) {
   if (action === "studio-toggle-pad-reverse") {
     const pad = state.studio.pads[state.studio.selectedPad];
     pad.reverse = !pad.reverse;
+    studioSampleBuffers = {};
     saveStudioProject();
     render();
     return;
   }
   if (action === "studio-refresh-inputs") {
-    if (!navigator.mediaDevices?.enumerateDevices) state.studioInputStatus = "Audio input listing is not supported.";
-    else navigator.mediaDevices.enumerateDevices().then((devices) => {
-      state.studioInputStatus = `${devices.filter((device) => device.kind === "audioinput").length} audio inputs available`;
-      render();
-    });
+    refreshStudioInputs();
     toast("Checking inputs");
     return;
   }
@@ -4896,6 +5228,7 @@ function handleAction(action, target) {
   if (action === "studio-clear-vocal") {
     const track = Number(target.getAttribute("data-track"));
     state.studio.vocals[track] = { ...createDefaultStudioProject().vocals[track] };
+    studioSampleBuffers = {};
     saveStudioProject();
     render();
     return;
@@ -4909,13 +5242,25 @@ function handleAction(action, target) {
     return;
   }
   if (action === "studio-export-project") {
-    downloadTextFile("lottomind-studio-project.json", JSON.stringify(state.studio, null, 2));
+    const { project, trimmed } = studioSerializableProject();
+    downloadTextFile("lottomind-studio-project.json", JSON.stringify(project, null, 2));
+    if (trimmed) toast("Project exported with large audio marked session-only.");
     return;
   }
   if (action === "studio-import-project") {
     const file = target.files?.[0];
     if (file) file.text().then((text) => {
-      state.studio = { ...createDefaultStudioProject(), ...JSON.parse(text) };
+      const incoming = JSON.parse(text);
+      const fallback = createDefaultStudioProject();
+      state.studio = {
+        ...fallback,
+        ...incoming,
+        effects: { ...fallback.effects, ...(incoming.effects || {}) },
+        pads: fallback.pads.map((pad, index) => ({ ...pad, ...(incoming.pads?.[index] || {}) })),
+        vocals: fallback.vocals.map((track, index) => ({ ...track, ...(incoming.vocals?.[index] || {}) })),
+        events: Array.isArray(incoming.events) ? incoming.events : [],
+      };
+      studioSampleBuffers = {};
       saveStudioProject();
       toast("Studio project imported");
       render();
@@ -4923,7 +5268,9 @@ function handleAction(action, target) {
     return;
   }
   if (action === "studio-export-pack") {
-    downloadTextFile("lottomind-sound-pack.json", JSON.stringify({ pads: state.studio.pads.map(({ name, sampleName, sampleData, trimStart, trimEnd, pitch, gain }) => ({ name, sampleName, sampleData, trimStart, trimEnd, pitch, gain })) }, null, 2));
+    const { project, trimmed } = studioSerializableProject();
+    downloadTextFile("lottomind-sound-pack.json", JSON.stringify({ pads: project.pads.map(({ name, sampleName, sampleData, trimStart, trimEnd, pitch, gain, reverse }) => ({ name, sampleName, sampleData, trimStart, trimEnd, pitch, gain, reverse })) }, null, 2));
+    if (trimmed) toast("Sound pack exported; large samples were left session-only.");
     return;
   }
   if (action === "studio-import-pack") {
@@ -4938,6 +5285,10 @@ function handleAction(action, target) {
         render();
       }
     }).catch(() => toast("Sound pack JSON could not be imported."));
+    return;
+  }
+  if (action === "studio-export-stems") {
+    exportStudioStems();
     return;
   }
   if (action === "studio-start-master-record") {
