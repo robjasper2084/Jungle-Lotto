@@ -2971,39 +2971,68 @@ function playVocalTrack(index) {
 }
 
 function studioTransportControls() {
-  return `<div class="studio-transport-panel panel">
-    <div class="studio-brand-lock"><img src="${ASSETS.logo}" alt="" /><div><span>LottoMind Studio</span><strong>${state.studioPlaying ? "Loop running" : "Ready"}</strong></div></div>
-    <label>BPM <input type="number" min="40" max="220" data-action="studio-set" data-studio-field="bpm" value="${state.studio.bpm}" /></label>
-    <label>Grid <select data-action="studio-set" data-studio-field="division">${STUDIO_DIVISIONS.map((item) => `<option ${item === state.studio.division ? "selected" : ""}>${item}</option>`).join("")}</select></label>
-    <button class="primary-btn" data-action="studio-play">${state.studioPlaying ? "Restart" : "Play"}</button>
-    <button class="ghost-btn" data-action="studio-stop">Stop</button>
-    <button class="${state.studio.recArmed ? "record-btn active" : "record-btn"}" data-action="studio-toggle-rec">Seq Rec</button>
-    <button class="${state.studioMasterRecording ? "record-btn active" : "ghost-btn"}" data-action="${state.studioMasterRecording ? "studio-stop-master-record" : "studio-start-master-record"}">Audio Rec</button>
+  return `<div class="studio-transport-panel panel lm-studio-header-panel">
+    <div class="studio-brand-lock lm-studio-brand">
+      <img src="${ASSETS.logo}" alt="" />
+      <div><span>LottoMind</span><strong>Studio Mode</strong><small>${state.studioPlaying ? "Loop running" : "Ready for session"}</small></div>
+    </div>
+    <div class="lm-studio-title-block">
+      <h1>LottoMind <span>Studio Mode</span></h1>
+      <p>MPC-style pads, sampler, vocals, effects, keyboard synth, and creator-ready export.</p>
+    </div>
+    <div class="lm-top-controls">
+      <label class="lm-mini-card">Project <strong>Future Vault</strong></label>
+      <label class="lm-mini-card">BPM <input type="number" min="40" max="220" data-action="studio-set" data-studio-field="bpm" value="${state.studio.bpm}" /></label>
+      <label class="lm-mini-card">Grid <select data-action="studio-set" data-studio-field="division">${STUDIO_DIVISIONS.map((item) => `<option ${item === state.studio.division ? "selected" : ""}>${item}</option>`).join("")}</select></label>
+      <div class="lm-status-card"><span class="${state.studioPlaying ? "online" : ""}"></span><div><small>Studio Status</small><strong>${state.studioPlaying ? "Online" : "Standby"}</strong></div></div>
+    </div>
+    <div class="lm-transport-row">
+      <button class="primary-btn play" data-action="studio-play">${state.studioPlaying ? "Restart" : "Play"}</button>
+      <button class="ghost-btn stop" data-action="studio-stop">Stop</button>
+      <button class="${state.studio.recArmed ? "record-btn active" : "record-btn"}" data-action="studio-toggle-rec">Rec</button>
+      <button class="${state.studio.recArmed ? "record-btn active seq" : "ghost-btn seq"}" data-action="studio-toggle-rec">Seq Rec</button>
+      <button class="${state.studioMasterRecording ? "record-btn active mix" : "ghost-btn mix"}" data-action="${state.studioMasterRecording ? "studio-stop-master-record" : "studio-start-master-record"}">Mix Rec</button>
+    </div>
   </div>`;
 }
 
 function studioControlStrip() {
-  return `<div class="studio-control-strip panel">
-    ${["Score", "Options", "Metro", "Chain", "Rock", "HipHop", "Latin", "Random"].map((label) => `<button class="studio-chip ${label === "Metro" && state.studio.metronome ? "active" : ""}" data-action="${label === "Metro" ? "studio-toggle-metronome" : label === "Random" ? "studio-randomize" : "studio-kit"}">${label}</button>`).join("")}
-    <label>Swing <input type="range" min="0" max="60" data-action="studio-set" data-studio-field="swing" value="${state.studio.swing}" /></label>
-    <label>Feel <input type="range" min="0" max="40" data-action="studio-set" data-studio-field="humanize" value="${state.studio.humanize}" /></label>
-    <label>Vel <input type="range" min="1" max="100" data-action="studio-set" data-studio-field="velocity" value="${state.studio.velocity}" /></label>
-    <button class="primary-btn" data-action="studio-humanize">Humanize</button>
+  return `<div class="studio-control-strip panel lm-studio-tabs">
+    <div class="lm-tab-row" aria-label="Studio navigation">
+      ${[
+        ["Drum Machine", "studio-pads"],
+        ["Sampler", "studio-sampler"],
+        ["Vocals", "studio-vocals"],
+        ["Effects", "studio-effects"],
+        ["Memory", "studio-files"],
+        ["Export", "studio-files"],
+      ].map(([label, panel], index) => `<button class="studio-tab ${index === 0 ? "active" : ""}" data-action="studio-jump-panel" data-panel="${panel}">${label}</button>`).join("")}
+    </div>
+    <div class="lm-chip-row">
+      ${["Score", "Options", "Metro", "Chain", "Rock", "HipHop", "Latin", "Random"].map((label) => `<button class="studio-chip ${label === "Metro" && state.studio.metronome ? "active" : ""}" data-action="${label === "Metro" ? "studio-toggle-metronome" : label === "Random" ? "studio-randomize" : "studio-kit"}">${label}</button>`).join("")}
+    </div>
+    <div class="lm-knob-control-row">
+      <label>Swing <input type="range" min="0" max="60" data-action="studio-set" data-studio-field="swing" value="${state.studio.swing}" /><strong>${state.studio.swing}%</strong></label>
+      <label>Velocity <input type="range" min="1" max="100" data-action="studio-set" data-studio-field="velocity" value="${state.studio.velocity}" /><strong>${state.studio.velocity}%</strong></label>
+      <label>Human Feel <input type="range" min="0" max="40" data-action="studio-set" data-studio-field="humanize" value="${state.studio.humanize}" /><strong>${state.studio.humanize}%</strong></label>
+      <button class="primary-btn humanize" data-action="studio-humanize">Humanize</button>
+    </div>
   </div>`;
 }
 
 function studioDrumPadSurface() {
+  const colors = ["cyan", "blue", "violet", "pink", "green", "gold"];
   return `
-    <div class="section-head"><div><h2>MPC Pads</h2><p>Tap, click, or use shortcuts 1-4 / QWER / ASDF / ZXCV.</p></div><span>16 pads</span></div>
+    <div class="section-head studio-panel-head"><div><h2>Drum Machine</h2><p>16 MPC pads with live click/tap and keyboard shortcuts.</p></div><span>Bank A</span></div>
     <div class="studio-pad-grid">
-      ${state.studio.pads.map((pad, index) => `<button class="studio-pad ${index === state.studio.selectedPad ? "selected" : ""} ${pad.sampleData ? "sampled" : ""}" data-action="studio-pad" data-studio-pad="${index}">
+      ${state.studio.pads.map((pad, index) => `<button class="studio-pad pad-${colors[index % colors.length]} ${index === state.studio.selectedPad ? "selected" : ""} ${pad.sampleData ? "sampled" : ""}" data-action="studio-pad" data-studio-pad="${index}">
         <b>${pad.shortcut}</b><strong>${escapeHtml(pad.name)}</strong><small>${pad.sampleData ? "SAMPLE" : pad.type} / ${pad.velocity}</small><i>${pad.muted ? "Muted" : "Active"}</i>
       </button>`).join("")}
     </div>`;
 }
 
 function studioDrumPads() {
-  return `<div class="panel studio-module">${studioDrumPadSurface()}</div>`;
+  return `<div id="studio-pads" class="panel studio-module studio-pads-panel">${studioDrumPadSurface()}</div>`;
 }
 
 function studioSequencerGrid() {
@@ -3011,10 +3040,19 @@ function studioSequencerGrid() {
   const total = studioTotalSteps();
   const padRows = state.studio.pads.slice(0, 8);
   const hasEvent = (pad, step) => state.studio.events.some((event) => event.type === "pad" && event.pad === pad && event.step % visible === step);
-  return `<div class="panel studio-module studio-sequencer">
-    <div class="section-head"><div><h2>16-Bar Sequencer</h2><p>${state.studio.division} grid: showing ${visible} of ${total} loop ticks.</p></div><span>${state.studio.events.length} events</span></div>
-    <div class="studio-seq-grid" style="--steps:${visible}">
-      ${padRows.map((pad, padIndex) => `<div class="studio-seq-name">${escapeHtml(pad.name)}</div>${Array.from({ length: visible }, (_, step) => `<button class="studio-step ${hasEvent(padIndex, step) ? "on" : ""} ${step === state.studioStep % visible ? "playing" : ""}" data-action="studio-toggle-step" data-pad="${padIndex}" data-step="${step}" aria-label="${escapeHtml(pad.name)} step ${step + 1}"></button>`).join("")}`).join("")}
+  const playhead = Math.max(0, Math.min(100, ((state.studioStep % visible) / Math.max(1, visible - 1)) * 100));
+  return `<div id="studio-sequencer" class="panel studio-module studio-sequencer">
+    <div class="section-head studio-panel-head"><div><h2>16-Bar Sequencer</h2><p>${state.studio.division} grid: showing ${visible} of ${total} loop ticks.</p></div><span>${state.studio.events.length} events</span></div>
+    <div class="studio-division-row">
+      <span>Timing</span>
+      ${STUDIO_DIVISIONS.map((item) => `<button class="${item === state.studio.division ? "active" : ""}" data-action="studio-set" data-studio-field="division" value="${item}">${item}</button>`).join("")}
+    </div>
+    <div class="studio-bar-ruler">${Array.from({ length: 16 }, (_, index) => `<span>${index + 1}</span>`).join("")}</div>
+    <div class="studio-seq-grid-wrap">
+      <div class="studio-playhead-strip" style="--playhead:${playhead}%"></div>
+      <div class="studio-seq-grid" style="--steps:${visible}">
+        ${padRows.map((pad, padIndex) => `<div class="studio-seq-name">${escapeHtml(pad.name)}</div>${Array.from({ length: visible }, (_, step) => `<button class="studio-step ${hasEvent(padIndex, step) ? "on" : ""} ${step === state.studioStep % visible ? "playing" : ""}" data-action="studio-toggle-step" data-pad="${padIndex}" data-step="${step}" aria-label="${escapeHtml(pad.name)} step ${step + 1}"></button>`).join("")}`).join("")}
+      </div>
     </div>
     <div class="studio-seq-actions"><button class="ghost-btn" data-action="studio-clear-pattern">Clear Pattern</button><button class="ghost-btn" data-action="studio-save-project">Save Project</button></div>
   </div>`;
@@ -3023,7 +3061,7 @@ function studioSequencerGrid() {
 function studioKeyboardSurface() {
   const notes = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
   return `
-    <div class="section-head"><div><h2>Keyboard Synth</h2><p>Play notes and record them into the loop when sequence rec is armed.</p></div><span>Oct ${state.studio.octave}</span></div>
+    <div class="section-head studio-panel-head"><div><h2>Keyboard / Synth</h2><p>Play notes and record them into the loop when sequence rec is armed.</p></div><span>Oct ${state.studio.octave}</span></div>
     <div class="studio-synth-controls">
       <label>Wave <select data-action="studio-set" data-studio-field="waveform">${["sine", "triangle", "sawtooth", "square"].map((item) => `<option ${item === state.studio.waveform ? "selected" : ""}>${item}</option>`).join("")}</select></label>
       <label>Octave <input type="number" min="1" max="7" data-action="studio-set" data-studio-field="octave" value="${state.studio.octave}" /></label>
@@ -3033,12 +3071,12 @@ function studioKeyboardSurface() {
 }
 
 function studioKeyboardSection() {
-  return `<div class="panel studio-module">${studioKeyboardSurface()}</div>`;
+  return `<div id="studio-keyboard" class="panel studio-module studio-keyboard-panel">${studioKeyboardSurface()}</div>`;
 }
 
 function studioRecordingBooth() {
-  return `<div class="panel studio-module studio-recording-booth">
-    <div class="section-head"><div><h2>Recording Booth</h2><p>Play pads, keyboard shortcuts, synth notes, and record ideas from one booth console.</p></div><span>MPC + Keys</span></div>
+  return `<div id="studio-booth" class="panel studio-module studio-recording-booth">
+    <div class="section-head studio-panel-head"><div><h2>Record Vocal Booth</h2><p>Play pads, keyboard shortcuts, synth notes, and record ideas from one booth console.</p></div><span>MPC + Keys</span></div>
     <div class="studio-booth-grid">
       <div class="studio-booth-lane studio-booth-pads">${studioDrumPadSurface()}</div>
       <div class="studio-booth-lane studio-booth-keys">${studioKeyboardSurface()}</div>
@@ -3052,8 +3090,9 @@ function studioRecordingBooth() {
 
 function studioSamplerPanel() {
   const pad = state.studio.pads[state.studio.selectedPad] || state.studio.pads[0];
-  return `<div class="panel studio-module">
-    <div class="section-head"><div><h2>Sampler</h2><p>Target pad: ${escapeHtml(pad.name)} ${pad.sampleData ? "(sample loaded)" : "(synth sound)"}</p></div><span>${String(state.studio.selectedPad + 1).padStart(2, "0")}</span></div>
+  return `<div id="studio-sampler" class="panel studio-module studio-sampler-panel">
+    <div class="section-head studio-panel-head"><div><h2>Sampler</h2><p>Target pad: ${escapeHtml(pad.name)} ${pad.sampleData ? "(sample loaded)" : "(synth sound)"}</p></div><span>${String(state.studio.selectedPad + 1).padStart(2, "0")}</span></div>
+    <div class="studio-sample-wave" aria-hidden="true">${Array.from({ length: 34 }, (_, index) => `<span style="--h:${18 + ((index * 9) % 56)}%"></span>`).join("")}</div>
     <div class="studio-tools-grid">
       <label>Target <select data-action="studio-set" data-studio-field="selectedPad">${state.studio.pads.map((item, index) => `<option value="${index}" ${index === state.studio.selectedPad ? "selected" : ""}>${index + 1}. ${escapeHtml(item.name)}</option>`).join("")}</select></label>
       <label>Load sample <input type="file" accept="audio/*" data-action="studio-import-sample" /></label>
@@ -3074,8 +3113,8 @@ function studioSamplerPanel() {
 }
 
 function studioMicPanel() {
-  return `<div class="panel studio-module">
-    <div class="section-head"><div><h2>Mic / Line Input</h2><p>${escapeHtml(state.studioInputStatus)}</p></div><span>Headphones</span></div>
+  return `<div id="studio-input" class="panel studio-module studio-input-panel">
+    <div class="section-head studio-panel-head"><div><h2>Mic / Line Input</h2><p>${escapeHtml(state.studioInputStatus)}</p></div><span>Headphones</span></div>
     <div class="studio-tools-grid">
       <button class="primary-btn" data-action="studio-refresh-inputs">Refresh Inputs</button>
       <button class="ghost-btn" data-action="studio-monitor-input">Monitor Input</button>
@@ -3086,11 +3125,12 @@ function studioMicPanel() {
 }
 
 function studioVocalTracks() {
-  return `<div class="panel studio-module">
-    <div class="section-head"><div><h2>Vocal Tracks</h2><p>Record, import, preview, sync, mute, solo, and export four vocal lanes.</p></div><span>4 tracks</span></div>
+  return `<div id="studio-vocals" class="panel studio-module studio-vocals-panel">
+    <div class="section-head studio-panel-head"><div><h2>4-Track Vocals</h2><p>Record, import, preview, sync, mute, solo, and export four vocal lanes.</p></div><span>Mic / Line</span></div>
     <div class="studio-vocal-grid">
       ${state.studio.vocals.map((track, index) => `<div class="studio-vocal-track">
-        <strong>${escapeHtml(track.name)}</strong><small>${track.data ? escapeHtml(track.fileName || "clip ready") : "empty"}</small>
+        <div class="studio-vocal-top"><b>${index + 1}</b><div><strong>${escapeHtml(track.name)}</strong><small>${track.data ? escapeHtml(track.fileName || "clip ready") : "empty"}</small></div></div>
+        <div class="studio-vocal-wave" aria-hidden="true">${Array.from({ length: 24 }, (_, bar) => `<span style="--h:${18 + ((bar * (index + 3) * 7) % 54)}%"></span>`).join("")}</div>
         <div class="studio-vocal-actions">
           <button class="${state.studioRecordingTrack === index ? "record-btn active" : "record-btn"}" data-action="${state.studioRecordingTrack === index ? "studio-stop-vocal" : "studio-record-vocal"}" data-track="${index}">${state.studioRecordingTrack === index ? "Stop" : "Rec"}</button>
           <button class="ghost-btn" data-action="studio-play-vocal" data-track="${index}">Play</button>
@@ -3110,55 +3150,59 @@ function studioVocalTracks() {
 }
 
 function studioEffectsRack() {
-  return `<div class="panel studio-module">
-    <div class="section-head"><div><h2>Master Effects</h2><p>Subtle LottoMind mix rack for drums, samples, synth, and exports.</p></div><span>Live</span></div>
+  const fx = [
+    ["drive", "Drive", "Saturation"],
+    ["tone", "Filter", "Cutoff"],
+    ["delay", "Delay", "Time"],
+    ["reverb", "Reverb", "Size"],
+    ["punch", "Comp", "Punch"],
+  ];
+  return `<div id="studio-effects" class="panel studio-module studio-effects-panel">
+    <div class="section-head studio-panel-head"><div><h2>Effects Rack</h2><p>Subtle LottoMind mix rack for drums, samples, synth, and exports.</p></div><span>Live</span></div>
     <div class="studio-effects-grid">
-      ${Object.entries({ drive: "Drive", tone: "Tone", delay: "Delay", reverb: "Reverb", punch: "Punch" }).map(([key, label]) => `<label>${label}<input type="range" min="0" max="100" data-action="studio-effect-set" data-effect="${key}" value="${state.studio.effects[key]}" /></label>`).join("")}
+      ${fx.map(([key, label, sub], index) => `<label class="studio-effect-card fx-${index}"><span>${label}</span><i></i><input type="range" min="0" max="100" data-action="studio-effect-set" data-effect="${key}" value="${state.studio.effects[key]}" /><strong>${state.studio.effects[key]}%</strong><small>${sub}</small></label>`).join("")}
     </div>
   </div>`;
 }
 
 function studioImportExportPanel() {
-  return `<div class="panel studio-module">
-    <div class="section-head"><div><h2>Import / Export</h2><p>Save projects, sound packs, pad samples, vocals, and full audio recordings.</p></div><span>JSON + audio</span></div>
+  return `<div id="studio-files" class="panel studio-module studio-files-panel">
+    <div class="section-head studio-panel-head"><div><h2>Project & Files</h2><p>Save/load projects, sound packs, pad samples, vocals, and full audio recordings.</p></div><span>Memory + Export</span></div>
     <div class="studio-tools-grid">
+      <button class="primary-btn" data-action="studio-save-project">Save Project</button>
       <button class="primary-btn" data-action="studio-export-project">Export Project</button>
       <label class="file-pill">Import Project<input type="file" accept="application/json,.json" data-action="studio-import-project" /></label>
       <button class="ghost-btn" data-action="studio-export-pack">Export Sound Pack</button>
       <label class="file-pill">Import Pack<input type="file" accept="application/json,.json" data-action="studio-import-pack" /></label>
       <button class="ghost-btn" data-action="studio-export-sample">Export Selected Pad</button>
       <button class="ghost-btn" data-action="studio-clear-pattern">Clear Pattern</button>
+      <button class="${state.studioMasterRecording ? "record-btn active" : "ghost-btn"}" data-action="${state.studioMasterRecording ? "studio-stop-master-record" : "studio-start-master-record"}">${state.studioMasterRecording ? "Stop Mix Export" : "Record Full Mix"}</button>
       <small class="studio-note">Mic, tab capture, direct URL loading, and MediaRecorder depend on browser permissions and CORS. Protected media is not bypassed.</small>
     </div>
   </div>`;
 }
 
 function sonicStudioView() {
-  return `<section class="screen sonic-studio-screen lottomind-studio-screen">
-    <div class="panel art-panel sonic-studio-hero lottomind-studio-hero" style="--panel-art:url('${ASSETS.studioBooth}')">
-      <div>
-        <span class="eyebrow">LottoMind Studio</span>
-        <h1>Future Vault Studio</h1>
-        <p>MPC pads, 16-bar sequencing, sampler, keyboard synth, mic recording, vocal tracks, effects, and import/export inside one LottoMind command booth.</p>
-      </div>
-      <div class="studio-live-orb"><strong>${state.studio.bpm}</strong><span>BPM</span></div>
-    </div>
+  return `<section class="screen sonic-studio-screen lottomind-studio-screen lm-studio-mode">
     ${studioTransportControls()}
     ${studioControlStrip()}
-    ${studioRecordingBooth()}
-    ${studioSequencerGrid()}
-    <div class="studio-work-grid">
+    <div class="lm-studio-grid">
+      ${studioRecordingBooth()}
+      ${studioSequencerGrid()}
+      ${studioVocalTracks()}
       ${studioSamplerPanel()}
+      ${studioEffectsRack()}
+      ${studioKeyboardSection()}
+      ${studioImportExportPanel()}
       ${studioMicPanel()}
     </div>
-    ${studioVocalTracks()}
-    <div class="studio-work-grid">
-      ${studioEffectsRack()}
-      ${studioImportExportPanel()}
-    </div>
-    <div class="panel studio-terms">
-      <strong>Browser + rights note</strong>
-      <p>Only import or record audio you own or have permission to use. Mic, line, tab capture, direct URL loading, and MediaRecorder exports depend on Chrome/Edge-style browser support and permission prompts.</p>
+    <div class="panel studio-terms lm-studio-footer">
+      <span>LottoMind Studio Mode v1.0</span>
+      <span class="online">All systems ${state.studioPlaying ? "running" : "ready"}</span>
+      <span>CPU 12%</span>
+      <span>RAM 28%</span>
+      <span>Disk 18%</span>
+      <p>Only import or record audio you own or have permission to use. Mic, line, tab capture, direct URL loading, and MediaRecorder exports depend on browser support and permission prompts.</p>
     </div>
   </section>`;
 }
@@ -4650,6 +4694,17 @@ function handleAction(action, target) {
     state.studio.metronome = !state.studio.metronome;
     saveStudioProject();
     render();
+    return;
+  }
+  if (action === "studio-save-project") {
+    saveStudioProject();
+    toast("Studio project saved");
+    return;
+  }
+  if (action === "studio-jump-panel") {
+    const panel = target.getAttribute("data-panel");
+    const el = panel ? document.getElementById(panel) : null;
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start", inline: "nearest" });
     return;
   }
   if (action === "studio-set") {
