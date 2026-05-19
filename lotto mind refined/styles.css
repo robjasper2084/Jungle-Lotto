@@ -14203,7 +14203,7 @@ body .route-dashboard .mission-hud > * {
 }
 
 body .route-dashboard .oracle-hero .hero-actions button {
-  font-family: var(--future-font), "Segoe UI", system-ui, sans-serif !important;
+  font-family: Impact, Haettenschweiler, "Arial Black", var(--future-font), sans-serif !important;
   text-shadow: none !important;
   filter: none !important;
   -webkit-text-stroke: 0 !important;
