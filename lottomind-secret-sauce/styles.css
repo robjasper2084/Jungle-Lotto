@@ -15814,3 +15814,156 @@ body .route-studio .beat-lotto-actions {
     grid-template-columns: 1fr;
   }
 }
+
+/* Power Tools Main Lab: Oracle Flow style command buttons */
+body .route-powertools .tool-bank .main-lab-bento {
+  counter-reset: lab-tool;
+  display: grid !important;
+  grid-auto-flow: column !important;
+  grid-template-columns: none !important;
+  grid-template-rows: repeat(2, minmax(154px, 1fr)) !important;
+  grid-auto-columns: minmax(142px, 42vw) !important;
+  gap: 12px !important;
+  margin-inline: -8px;
+  width: calc(100% + 16px) !important;
+  max-width: calc(100% + 16px) !important;
+  min-width: 0 !important;
+  box-sizing: border-box;
+  padding: 12px 8px 16px !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: 8px;
+  background:
+    linear-gradient(90deg, rgba(255, 208, 90, 0.12), transparent 11% 89%, rgba(41, 255, 242, 0.12)),
+    radial-gradient(circle at 18% 8%, rgba(41, 255, 242, 0.18), transparent 32%),
+    linear-gradient(180deg, rgba(0, 9, 18, 0.42), rgba(0, 5, 12, 0.78));
+  border-radius: 22px;
+  -webkit-overflow-scrolling: touch;
+}
+
+body .route-powertools .tool-bank:has(.main-lab-bento) {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+
+body .route-powertools .tool-bank .main-lab-bento .circle-tool,
+body .route-powertools .tool-bank .main-lab-bento .circle-tool:first-child {
+  counter-increment: lab-tool;
+  position: relative;
+  isolation: isolate;
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  min-height: 154px !important;
+  height: 154px !important;
+  display: grid !important;
+  align-content: end !important;
+  justify-items: start !important;
+  gap: 6px !important;
+  padding: 66px 12px 13px !important;
+  text-align: left !important;
+  scroll-snap-align: start;
+  border-radius: 18px !important;
+  border-color: rgba(255, 208, 90, 0.62) !important;
+  background:
+    linear-gradient(180deg, rgba(0, 8, 16, 0.04), rgba(0, 8, 16, 0.78) 67%, rgba(0, 4, 10, 0.96)),
+    var(--circle-art) center / cover no-repeat !important;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.06),
+    inset 0 -42px 54px rgba(0, 6, 14, 0.68),
+    0 0 0 1px rgba(41, 255, 242, 0.18),
+    0 18px 34px rgba(0, 0, 0, 0.44) !important;
+}
+
+body .route-powertools .tool-bank .main-lab-bento .circle-tool::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 16% 18%, rgba(255, 208, 90, 0.16), transparent 23%),
+    linear-gradient(180deg, rgba(4, 13, 24, 0.02), rgba(0, 4, 10, 0.64));
+}
+
+body .route-powertools .tool-bank .main-lab-bento .circle-tool::before {
+  content: counter(lab-tool, decimal-leading-zero);
+  position: absolute;
+  inset: auto auto auto auto;
+  top: 12px !important;
+  left: 12px !important;
+  z-index: 3;
+  width: 34px !important;
+  height: 34px !important;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255, 236, 143, 0.78) !important;
+  border-radius: 999px !important;
+  transform: none !important;
+  color: #06101c;
+  background:
+    radial-gradient(circle at 34% 24%, rgba(255, 255, 255, 0.76), transparent 22%),
+    linear-gradient(135deg, #fff3a1, #f5cf4f 60%, #36eaf7) !important;
+  font-family: var(--future-font), "Segoe UI", system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 1000;
+  line-height: 1;
+  letter-spacing: 0;
+  box-shadow: 0 0 18px rgba(255, 208, 90, 0.28), 0 0 18px rgba(41, 255, 242, 0.12) !important;
+}
+
+body .route-powertools .tool-bank .main-lab-bento .circle-tool-video {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.78 !important;
+  filter: saturate(1.2) contrast(1.1);
+}
+
+body .route-powertools .tool-bank .main-lab-bento .circle-tool span,
+body .route-powertools .tool-bank .main-lab-bento .circle-tool small {
+  position: relative;
+  z-index: 2;
+  max-width: 13ch;
+  text-align: left;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.72) !important;
+}
+
+body .route-powertools .tool-bank .main-lab-bento .circle-tool span {
+  color: #fff3b2 !important;
+  font-family: var(--title-font), Impact, "Arial Black", sans-serif !important;
+  font-size: clamp(15px, 3.45vw, 18px) !important;
+  line-height: 0.94 !important;
+  letter-spacing: 0 !important;
+}
+
+body .route-powertools .tool-bank .main-lab-bento .circle-tool small {
+  color: #d8eff8 !important;
+  font-family: var(--future-font), "Segoe UI", system-ui, sans-serif !important;
+  font-size: 9.5px !important;
+  font-weight: 900 !important;
+  line-height: 1.08 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+
+@media (max-width: 430px) {
+  body .route-powertools .tool-bank .main-lab-bento {
+    grid-auto-columns: minmax(132px, 45vw) !important;
+    grid-template-rows: repeat(2, 148px) !important;
+  }
+
+  body .route-powertools .tool-bank .main-lab-bento .circle-tool,
+  body .route-powertools .tool-bank .main-lab-bento .circle-tool:first-child {
+    min-height: 148px !important;
+    height: 148px !important;
+    padding: 62px 11px 12px !important;
+  }
+}
