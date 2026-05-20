@@ -13993,7 +13993,8 @@ body .route-studio .studio-vocal-track:nth-child(2) .studio-vocal-wave { color: 
 body .route-studio .studio-vocal-track:nth-child(3) .studio-vocal-wave { color: var(--lm-blue); }
 body .route-studio .studio-vocal-track:nth-child(4) .studio-vocal-wave { color: var(--lm-pink); }
 
-body .route-studio .studio-vocal-track:nth-child(3) {
+body .route-studio .studio-vocal-track:nth-child(3),
+body .route-studio .studio-vocal-track:nth-child(4) {
   display: none !important;
 }
 
