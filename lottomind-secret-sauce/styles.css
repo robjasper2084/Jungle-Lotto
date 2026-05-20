@@ -15967,3 +15967,427 @@ body .route-powertools .tool-bank .main-lab-bento .circle-tool small {
     padding: 62px 11px 12px !important;
   }
 }
+
+/* Studio Mode: back button, loop transport, branded circular FX rack */
+body .route-studio .lm-studio-header-panel {
+  padding-top: 42px !important;
+}
+
+body .route-studio .studio-corner-back {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  z-index: 6;
+  min-width: 86px;
+  min-height: 32px;
+  padding: 0 12px 0 32px;
+  border: 1px solid rgba(255, 208, 90, 0.58);
+  border-radius: 999px;
+  color: #fff5b8;
+  background:
+    radial-gradient(circle at 18px 50%, rgba(255, 208, 90, 0.98) 0 9px, rgba(255, 208, 90, 0.18) 10px 15px, transparent 16px),
+    linear-gradient(135deg, rgba(255, 208, 90, 0.18), rgba(6, 16, 30, 0.92) 48%, rgba(41, 255, 242, 0.16));
+  box-shadow: 0 0 20px rgba(255, 208, 90, 0.16), inset 0 0 16px rgba(41, 255, 242, 0.08);
+  font-family: var(--future-font), "Segoe UI", system-ui, sans-serif;
+  font-size: 10px;
+  font-weight: 1000;
+  line-height: 1;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+body .route-studio .studio-corner-back::before {
+  content: "<";
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #06101c;
+  font-size: 14px;
+  font-weight: 1000;
+}
+
+body .route-studio .lm-transport-row {
+  grid-template-columns: 1.12fr 0.92fr 0.92fr 1.05fr 0.9fr 1.08fr !important;
+}
+
+body .route-studio .lm-transport-row .loop,
+body .route-studio .studio-seq-actions .loop {
+  border-color: rgba(102, 242, 163, 0.52) !important;
+  color: #66f2a3 !important;
+  background:
+    radial-gradient(circle at 22% 48%, rgba(102, 242, 163, 0.18), transparent 28%),
+    linear-gradient(135deg, rgba(17, 90, 72, 0.56), rgba(10, 17, 31, 0.92)) !important;
+}
+
+body .route-studio .lm-transport-row .loop.active,
+body .route-studio .studio-seq-actions .loop.active {
+  color: #07120f !important;
+  background:
+    radial-gradient(circle at 24% 28%, rgba(255, 255, 255, 0.6), transparent 26%),
+    linear-gradient(135deg, #66f2a3, #29fff2 58%, #ffd05a) !important;
+  box-shadow: 0 0 22px rgba(102, 242, 163, 0.26), inset 0 0 18px rgba(255, 255, 255, 0.2) !important;
+}
+
+body .route-studio .loop-icon::before,
+body .route-studio .loop-icon::after {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  border: 2px solid currentColor;
+  border-left-color: transparent;
+  border-radius: 999px;
+}
+
+body .route-studio .loop-icon::after {
+  inset: 7px;
+  border-width: 1px;
+  opacity: 0.55;
+}
+
+body .route-studio .studio-effects-panel {
+  isolation: isolate;
+  background:
+    radial-gradient(circle at 50% 38%, rgba(41, 255, 242, 0.12), transparent 35%),
+    linear-gradient(180deg, rgba(12, 23, 42, 0.96), rgba(4, 9, 18, 0.98)) !important;
+}
+
+body .route-studio .studio-effects-panel::after {
+  content: "";
+  position: absolute;
+  inset: 58px 0 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.18;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(255, 208, 90, 0.24), transparent 38%),
+    url("assets/custom/lottomind-live-lm-logo.png") center 46% / min(68%, 360px) auto no-repeat;
+  filter: saturate(1.05) contrast(1.05);
+}
+
+body .route-studio .studio-effects-panel > * {
+  position: relative;
+  z-index: 1;
+}
+
+body .route-studio .studio-effects-grid {
+  grid-template-columns: repeat(5, minmax(92px, 1fr)) !important;
+  gap: 12px !important;
+  padding: 16px !important;
+  background:
+    linear-gradient(90deg, rgba(41, 255, 242, 0.08), rgba(255, 79, 163, 0.06), rgba(255, 208, 90, 0.06)),
+    rgba(1, 5, 12, 0.28);
+}
+
+body .route-studio .studio-effect-card {
+  aspect-ratio: 1 / 1;
+  min-height: 124px !important;
+  padding: 12px 10px !important;
+  border-radius: 999px !important;
+  background:
+    radial-gradient(circle at 50% 36%, rgba(255, 255, 255, 0.09), transparent 22%),
+    radial-gradient(circle at 50% 52%, rgba(0, 0, 0, 0.22), transparent 48%),
+    linear-gradient(145deg, rgba(12, 25, 46, 0.9), rgba(4, 9, 18, 0.96)) !important;
+  box-shadow:
+    inset 0 0 24px rgba(255, 255, 255, 0.04),
+    inset 0 -18px 28px rgba(0, 0, 0, 0.34),
+    0 0 22px color-mix(in srgb, currentColor 25%, transparent) !important;
+}
+
+body .route-studio .studio-effect-card i {
+  width: 56px !important;
+  height: 56px !important;
+  background:
+    radial-gradient(circle at 50% 50%, #07111e 0 31%, transparent 33%),
+    conic-gradient(currentColor 0 var(--fx-level, 0%), rgba(255, 255, 255, 0.12) var(--fx-level, 0%) 100%) !important;
+  box-shadow: 0 0 22px color-mix(in srgb, currentColor 38%, transparent), inset 0 0 16px rgba(0, 0, 0, 0.8) !important;
+}
+
+body .route-studio .studio-effect-card input[type="range"] {
+  width: min(92px, 78%);
+}
+
+body .route-studio .studio-effect-card span {
+  font-size: 10px !important;
+}
+
+body .route-studio .studio-effect-card strong {
+  font-size: 12px !important;
+}
+
+@media (max-width: 620px) {
+  body .route-studio .lm-transport-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  body .route-studio .studio-effects-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  body .route-studio .studio-effect-card {
+    min-height: 142px !important;
+  }
+}
+
+/* AI console + compact command HUD polish */
+body .real-header .top-state-button {
+  width: 52px !important;
+  height: 52px !important;
+  min-height: 52px !important;
+  aspect-ratio: 1 / 1;
+  padding: 4px !important;
+  border-radius: 50% !important;
+  display: grid;
+  place-items: center;
+  gap: 0;
+  background:
+    radial-gradient(circle at 35% 22%, rgba(255, 248, 189, 0.34), transparent 22%),
+    radial-gradient(circle at 50% 58%, rgba(41, 255, 242, 0.26), transparent 58%),
+    linear-gradient(145deg, rgba(0, 14, 28, 0.98), rgba(0, 5, 12, 0.98)) !important;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 208, 90, 0.22),
+    inset 0 0 18px rgba(41, 255, 242, 0.12),
+    0 0 20px rgba(41, 255, 242, 0.2) !important;
+}
+
+body .real-header .top-state-button span {
+  font-family: var(--future-font), "Segoe UI", system-ui, sans-serif !important;
+  font-size: 7px !important;
+  font-weight: 1000 !important;
+  letter-spacing: 0 !important;
+  text-transform: uppercase;
+}
+
+body .real-header .top-state-button strong {
+  font-family: var(--title-font), Impact, "Arial Black", sans-serif !important;
+  font-size: 15px !important;
+  letter-spacing: 0 !important;
+}
+
+body .route-powertools .tool-bank .section-head > span {
+  width: 42px !important;
+  height: 42px !important;
+  min-width: 42px !important;
+  padding: 0 !important;
+  display: grid !important;
+  place-items: center !important;
+  border-radius: 14px !important;
+  color: #06101c !important;
+  font-family: var(--future-font), "Segoe UI", system-ui, sans-serif !important;
+  font-size: 8px !important;
+  font-weight: 1000 !important;
+  line-height: 0.9 !important;
+  text-align: center !important;
+  letter-spacing: 0 !important;
+  background:
+    radial-gradient(circle at 35% 20%, rgba(255, 255, 255, 0.72), transparent 25%),
+    linear-gradient(145deg, #fff4a7, #5dffcf 62%, #27dfff) !important;
+  box-shadow:
+    0 0 18px rgba(93, 255, 207, 0.22),
+    inset 0 0 16px rgba(255, 255, 255, 0.24) !important;
+}
+
+body .route-ai .ai-coach-hero {
+  min-height: 450px;
+  align-items: start;
+  background-image:
+    linear-gradient(180deg, rgba(0, 4, 10, 0.22), rgba(0, 6, 14, 0.72)),
+    radial-gradient(circle at 50% 76%, rgba(41, 255, 242, 0.2), transparent 38%),
+    var(--panel-art) !important;
+  background-position: center !important;
+  background-size: cover !important;
+}
+
+body .route-ai .ai-coach-hero .deck-coin {
+  width: min(72%, 330px);
+  height: auto;
+  aspect-ratio: 1 / 1;
+  align-self: end;
+  justify-self: center;
+  object-fit: cover;
+  border-radius: 999px;
+  padding: 0;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(41, 255, 242, 0.2), transparent 64%),
+    rgba(0, 9, 18, 0.72);
+  clip-path: ellipse(48% 35% at 50% 58%);
+  filter: saturate(1.08) contrast(1.08) drop-shadow(0 0 26px rgba(41, 255, 242, 0.38));
+}
+
+body .route-ai .ai-coach-hero .hero-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid rgba(41, 255, 242, 0.28);
+  border-radius: 24px;
+  background:
+    linear-gradient(135deg, rgba(0, 236, 255, 0.1), rgba(255, 208, 90, 0.06)),
+    rgba(0, 8, 18, 0.48);
+  backdrop-filter: blur(12px);
+}
+
+body .route-ai .ai-coach-hero .hero-actions button {
+  min-height: 50px;
+  border-radius: 999px !important;
+  font-family: var(--future-font), "Segoe UI", system-ui, sans-serif !important;
+  font-size: clamp(12px, 3vw, 15px) !important;
+  font-weight: 1000 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+  text-shadow: none !important;
+}
+
+body .route-ai .ai-coach-hero .hero-actions button:nth-child(3) {
+  grid-column: span 2;
+  justify-self: start;
+  min-width: min(100%, 180px);
+}
+
+/* LottoMind Sonic Studio media branding pass */
+body .route-studio .lm-studio-header-panel {
+  position: relative !important;
+  overflow: hidden !important;
+  background:
+    linear-gradient(90deg, rgba(2, 8, 17, 0.95), rgba(4, 13, 28, 0.78) 46%, rgba(2, 8, 17, 0.96)),
+    radial-gradient(circle at 12% 12%, rgba(255, 208, 90, 0.2), transparent 30%),
+    radial-gradient(circle at 82% 22%, rgba(41, 255, 242, 0.18), transparent 34%),
+    var(--studio-hero-art) center / cover no-repeat !important;
+}
+
+body .route-studio .lm-studio-motion {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.2;
+  mix-blend-mode: screen;
+  filter: saturate(1.22) contrast(1.1) brightness(0.82);
+  pointer-events: none;
+}
+
+body .route-studio .lm-studio-header-panel > *:not(.lm-studio-motion) {
+  position: relative;
+  z-index: 1;
+}
+
+body .route-studio .lm-studio-hex {
+  color: transparent !important;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(255, 208, 90, 0.16), transparent 60%),
+    var(--studio-logo-art) center / cover no-repeat,
+    linear-gradient(145deg, rgba(255, 208, 90, 0.2), rgba(5, 12, 22, 0.96)) !important;
+  border-color: rgba(255, 208, 90, 0.88) !important;
+}
+
+body .route-studio .lm-profile-card span {
+  color: transparent !important;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(41, 255, 242, 0.18), transparent 58%),
+    var(--studio-profile-art) center / cover no-repeat !important;
+}
+
+body .route-studio .studio-module,
+body .route-studio .beat-lotto-panel {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden !important;
+  background:
+    linear-gradient(180deg, rgba(3, 9, 18, 0.72), rgba(2, 7, 15, 0.95) 72%),
+    radial-gradient(circle at 18% 10%, rgba(255, 208, 90, 0.12), transparent 32%),
+    radial-gradient(circle at 86% 6%, rgba(41, 255, 242, 0.14), transparent 30%),
+    var(--studio-module-art) center / cover no-repeat !important;
+}
+
+body .route-studio .studio-module > *,
+body .route-studio .beat-lotto-panel > * {
+  position: relative;
+  z-index: 1;
+}
+
+body .route-studio .studio-module:not(.studio-effects-panel)::after,
+body .route-studio .beat-lotto-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(105deg, rgba(41, 255, 242, 0.11), transparent 25% 76%, rgba(255, 208, 90, 0.12)),
+    radial-gradient(circle at 50% 92%, rgba(0, 0, 0, 0.46), transparent 45%),
+    repeating-linear-gradient(90deg, rgba(41, 255, 242, 0.06) 0 1px, transparent 1px 36px);
+}
+
+body .route-studio .studio-pads-panel::after,
+body .route-studio .studio-recording-booth::after,
+body .route-studio .studio-vocals-panel::after {
+  background:
+    linear-gradient(105deg, rgba(41, 255, 242, 0.08), transparent 22% 70%, rgba(255, 79, 163, 0.12)),
+    radial-gradient(circle at 76% 18%, rgba(255, 208, 90, 0.12), transparent 28%),
+    radial-gradient(circle at 50% 95%, rgba(0, 0, 0, 0.58), transparent 48%) !important;
+}
+
+body .route-studio .studio-sequencer::after,
+body .route-studio .studio-files-panel::after {
+  background:
+    linear-gradient(180deg, rgba(1, 7, 14, 0.28), rgba(1, 7, 14, 0.86)),
+    repeating-linear-gradient(0deg, rgba(41, 255, 242, 0.07) 0 1px, transparent 1px 28px),
+    radial-gradient(circle at 50% 90%, rgba(255, 208, 90, 0.1), transparent 40%) !important;
+}
+
+body .route-studio .studio-effects-panel::after {
+  background:
+    radial-gradient(circle at 50% 50%, rgba(255, 208, 90, 0.22), transparent 36%),
+    var(--studio-module-art, url("assets/custom/lottomind-live-lm-logo.png")) center 46% / min(68%, 360px) auto no-repeat !important;
+}
+
+body .route-studio .studio-panel-head {
+  padding: 10px 12px;
+  border: 1px solid rgba(41, 255, 242, 0.13);
+  border-radius: 14px;
+  background: linear-gradient(90deg, rgba(2, 8, 16, 0.7), rgba(10, 22, 40, 0.48));
+  backdrop-filter: blur(10px);
+}
+
+body .route-studio .studio-panel-head h2 {
+  color: #fff3b0 !important;
+  text-shadow: 0 0 18px rgba(255, 208, 90, 0.18) !important;
+}
+
+/* Add color back into the Power Tools signal HUD */
+body .route-powertools .stat-row {
+  border-color: rgba(41, 255, 242, 0.45) !important;
+  background:
+    linear-gradient(90deg, rgba(41, 255, 242, 0.18), rgba(255, 208, 90, 0.12), rgba(255, 79, 163, 0.14)),
+    rgba(1, 8, 18, 0.74) !important;
+  box-shadow:
+    inset 0 0 26px rgba(41, 255, 242, 0.12),
+    0 0 30px rgba(41, 255, 242, 0.16) !important;
+}
+
+body .route-powertools .stat-row > div:nth-child(1) {
+  border-color: rgba(41, 255, 242, 0.48) !important;
+  background:
+    radial-gradient(circle at 28% 18%, rgba(255, 255, 255, 0.22), transparent 26%),
+    linear-gradient(145deg, rgba(0, 219, 255, 0.38), rgba(2, 18, 34, 0.9)) !important;
+}
+
+body .route-powertools .stat-row > div:nth-child(2) {
+  border-color: rgba(255, 208, 90, 0.42) !important;
+  background:
+    radial-gradient(circle at 28% 18%, rgba(255, 255, 255, 0.2), transparent 26%),
+    linear-gradient(145deg, rgba(255, 208, 90, 0.26), rgba(16, 20, 42, 0.92) 54%, rgba(41, 255, 242, 0.16)) !important;
+}
+
+body .route-powertools .stat-row > div:nth-child(3) {
+  border-color: rgba(255, 79, 163, 0.44) !important;
+  background:
+    radial-gradient(circle at 28% 18%, rgba(255, 255, 255, 0.2), transparent 26%),
+    linear-gradient(145deg, rgba(255, 79, 163, 0.25), rgba(2, 18, 34, 0.9) 58%, rgba(102, 242, 163, 0.16)) !important;
+}
+
+body .route-powertools .stat-row > div:nth-child(1) strong { color: #2ffff5 !important; }
+body .route-powertools .stat-row > div:nth-child(2) strong { color: #fff3a6 !important; }
+body .route-powertools .stat-row > div:nth-child(3) strong { color: #ff89d0 !important; }

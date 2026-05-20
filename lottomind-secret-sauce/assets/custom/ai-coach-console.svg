@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 900" role="img" aria-label="LottoMind AI Coach Console artwork">
+  <defs>
+    <radialGradient id="bg" cx="48%" cy="42%" r="66%">
+      <stop offset="0" stop-color="#1ff7ff" stop-opacity=".5"/>
+      <stop offset=".34" stop-color="#0c2c4a" stop-opacity=".9"/>
+      <stop offset=".74" stop-color="#050915"/>
+      <stop offset="1" stop-color="#010208"/>
+    </radialGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fff8bd"/>
+      <stop offset=".52" stop-color="#f3cc4d"/>
+      <stop offset="1" stop-color="#865512"/>
+    </linearGradient>
+    <linearGradient id="cyan" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2ffff5"/>
+      <stop offset=".52" stop-color="#1a9cff"/>
+      <stop offset="1" stop-color="#8c4cff"/>
+    </linearGradient>
+    <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="8" result="b"/>
+      <feColorMatrix in="b" type="matrix" values="0 0 0 0 .1 0 0 0 0 .9 0 0 0 0 1 0 0 0 .85 0"/>
+      <feBlend in="SourceGraphic"/>
+    </filter>
+    <filter id="goldGlow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="7" result="b"/>
+      <feColorMatrix in="b" type="matrix" values="0 0 0 0 1 0 0 0 0 .74 0 0 0 0 .1 0 0 0 .82 0"/>
+      <feBlend in="SourceGraphic"/>
+    </filter>
+    <pattern id="grid" width="44" height="44" patternUnits="userSpaceOnUse">
+      <path d="M44 0H0v44" fill="none" stroke="#26f7ff" stroke-opacity=".12"/>
+    </pattern>
+  </defs>
+  <rect width="900" height="900" fill="#010208"/>
+  <rect width="900" height="900" fill="url(#bg)"/>
+  <rect width="900" height="900" fill="url(#grid)" opacity=".62"/>
+  <g fill="none" stroke-linecap="round">
+    <path d="M68 236h170l42-42h120M828 248H694l-34-34h-96M98 708h190l44-44h116M806 686H642l-54 54H426" stroke="#f5cf54" stroke-opacity=".46" stroke-width="4"/>
+    <path d="M78 326h160l42 42h112M812 340H652l-56 56h-90M94 596h182l36-36h110M804 560H640l-40-40h-92" stroke="#25f8ff" stroke-opacity=".55" stroke-width="4"/>
+  </g>
+  <g transform="translate(128 150)">
+    <rect width="644" height="558" rx="56" fill="#050d19" fill-opacity=".84" stroke="url(#cyan)" stroke-width="5"/>
+    <rect x="28" y="30" width="588" height="92" rx="30" fill="#071423" stroke="#f5cf54" stroke-opacity=".5" stroke-width="3"/>
+    <text x="56" y="71" font-family="Arial Black, Arial, sans-serif" font-size="24" fill="#f5cf54">AI COACH</text>
+    <text x="56" y="105" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#bdefff">smart picks • radar • dream routes</text>
+    <g transform="translate(72 170)" filter="url(#glow)">
+      <circle cx="250" cy="166" r="166" fill="none" stroke="#29fff2" stroke-width="5"/>
+      <circle cx="250" cy="166" r="112" fill="none" stroke="#8c4cff" stroke-width="3" opacity=".7"/>
+      <path d="M250 4v324M88 166h324" stroke="#29fff2" stroke-width="2" opacity=".55"/>
+      <path d="M140 220c42-88 90-132 144-132 62 0 100 76 78 136-20 58-104 76-166 24" stroke="url(#gold)" stroke-width="15"/>
+      <circle cx="176" cy="160" r="18" fill="#29fff2"/>
+      <circle cx="250" cy="98" r="20" fill="#f5cf54"/>
+      <circle cx="332" cy="178" r="18" fill="#ff58bd"/>
+    </g>
+    <g transform="translate(72 440)">
+      <rect width="500" height="72" rx="24" fill="#071423" stroke="#29fff2" stroke-opacity=".54" stroke-width="3"/>
+      <path d="M34 48h42l22-30 22 46 28-42 24 26h292" fill="none" stroke="#29fff2" stroke-width="6" stroke-linecap="round" filter="url(#glow)"/>
+      <circle cx="76" cy="48" r="8" fill="#f5cf54"/>
+      <circle cx="148" cy="48" r="8" fill="#ff58bd"/>
+      <circle cx="326" cy="48" r="8" fill="#29fff2"/>
+      <circle cx="464" cy="48" r="8" fill="#f5cf54"/>
+    </g>
+  </g>
+  <g filter="url(#goldGlow)">
+    <text x="95" y="96" font-family="Arial Black, Arial, sans-serif" font-size="58" fill="#fff3b0">LOTTOMIND AI</text>
+    <text x="100" y="800" font-family="Arial Black, Arial, sans-serif" font-size="54" fill="#f5cf54">COACH CONSOLE</text>
+  </g>
+</svg>
