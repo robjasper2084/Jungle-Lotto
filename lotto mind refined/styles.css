@@ -13549,7 +13549,7 @@ body .route-studio .lm-studio-tabs {
 body .route-studio .lm-tab-row,
 body .route-studio .lm-chip-row {
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-columns: repeat(8, minmax(0, 1fr));
   gap: 7px;
 }
 
@@ -13992,6 +13992,10 @@ body .route-studio .studio-vocal-track .studio-vocal-wave {
 body .route-studio .studio-vocal-track:nth-child(2) .studio-vocal-wave { color: var(--lm-violet); }
 body .route-studio .studio-vocal-track:nth-child(3) .studio-vocal-wave { color: var(--lm-blue); }
 body .route-studio .studio-vocal-track:nth-child(4) .studio-vocal-wave { color: var(--lm-pink); }
+
+body .route-studio .studio-vocal-track:nth-child(3) {
+  display: none !important;
+}
 
 body .route-studio .studio-effects-grid {
   display: grid;
@@ -14515,14 +14519,23 @@ body .route-studio .real-main {
 
 body .route-studio .lm-studio-mode {
   position: relative;
-  width: 100%;
-  max-width: 1500px;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
   margin: 0 auto;
   padding: 0 0 20px !important;
   background:
     linear-gradient(rgba(41, 255, 242, 0.04) 1px, transparent 1px),
     linear-gradient(90deg, rgba(41, 255, 242, 0.04) 1px, transparent 1px);
   background-size: 32px 32px;
+}
+
+body .route-studio .lm-studio-header-panel,
+body .route-studio .lm-studio-tabs,
+body .route-studio .lm-studio-grid,
+body .route-studio .lm-studio-footer {
+  max-width: 100% !important;
+  min-width: 0 !important;
 }
 
 body .route-studio .lm-studio-header-panel {
@@ -15289,7 +15302,7 @@ body .route-studio .lm-transport-row .mix {
 }
 
 body .route-studio .lm-tab-row {
-  grid-template-columns: repeat(6, minmax(118px, 1fr)) !important;
+  grid-template-columns: repeat(8, minmax(0, 1fr)) !important;
 }
 
 body .route-studio .studio-tab {
@@ -15297,13 +15310,15 @@ body .route-studio .studio-tab {
   min-height: 48px !important;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 5px;
+  min-width: 0;
+  padding-inline: 5px !important;
   border-radius: 8px !important;
   border-color: rgba(118, 151, 190, 0.2) !important;
   background: linear-gradient(180deg, rgba(9, 19, 33, 0.96), rgba(5, 10, 19, 0.96)) !important;
   color: #dce8f7 !important;
   font-family: Inter, "Segoe UI", var(--future-font), system-ui, sans-serif !important;
-  font-size: 12px !important;
+  font-size: 10px !important;
 }
 
 body .route-studio .studio-tab i {
@@ -15371,8 +15386,51 @@ body .route-studio .studio-pads-panel .studio-pad {
   }
 
   body .route-studio .lm-tab-row {
-    grid-template-columns: repeat(6, minmax(116px, 1fr)) !important;
+    grid-template-columns: repeat(8, minmax(66px, 1fr)) !important;
     overflow-x: auto;
+  }
+}
+
+@media (max-width: 980px) {
+  body .route-studio .lm-studio-grid {
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  body .route-studio .studio-sequencer {
+    order: 1 !important;
+  }
+
+  body .route-studio .studio-effects-panel {
+    order: 2 !important;
+  }
+
+  body .route-studio .beat-lotto-panel {
+    order: 3 !important;
+  }
+
+  body .route-studio .studio-pads-panel {
+    order: 4 !important;
+  }
+
+  body .route-studio .studio-sampler-panel {
+    order: 5 !important;
+  }
+
+  body .route-studio .studio-keyboard-panel {
+    order: 6 !important;
+  }
+
+  body .route-studio .studio-vocals-panel {
+    order: 7 !important;
+  }
+
+  body .route-studio .studio-files-panel {
+    order: 8 !important;
+  }
+
+  body .route-studio .studio-input-panel {
+    order: 9 !important;
   }
 }
 
@@ -15426,46 +15484,125 @@ body .route-studio .lm-studio-hex {
 
 @media (max-width: 700px) {
   body .route-studio .lm-studio-header-panel {
-    padding: 10px !important;
-    gap: 8px !important;
+    padding: 8px !important;
+    gap: 7px !important;
   }
 
   body .route-studio .lm-studio-appbar {
-    gap: 10px !important;
+    gap: 8px !important;
   }
 
   body .route-studio .lm-studio-brand {
-    grid-template-columns: 50px minmax(0, 1fr) !important;
-    min-height: 56px !important;
-    padding-bottom: 8px !important;
+    grid-template-columns: 44px minmax(0, 1fr) !important;
+    min-height: 48px !important;
+    padding-bottom: 6px !important;
   }
 
   body .route-studio .lm-studio-hex {
-    width: 46px !important;
-    min-width: 46px !important;
-    height: 52px !important;
-    font-size: 14px !important;
+    width: 40px !important;
+    min-width: 40px !important;
+    height: 44px !important;
+    font-size: 12px !important;
   }
 
   body .route-studio .lm-studio-brand span:not(.lm-studio-hex) {
-    font-size: 21px !important;
+    font-size: 18px !important;
   }
 
   body .route-studio .lm-studio-brand strong {
-    font-size: 12px !important;
-    letter-spacing: 4px !important;
+    font-size: 10px !important;
+    letter-spacing: 3px !important;
   }
 
   body .route-studio .lm-studio-title-block h1 {
-    font-size: clamp(25px, 8vw, 36px) !important;
+    font-size: clamp(21px, 6.5vw, 30px) !important;
+    line-height: 0.92 !important;
   }
 
   body .route-studio .lm-studio-title-block p {
-    font-size: 12px !important;
+    margin-top: 4px !important;
+    font-size: 11px !important;
+    line-height: 1.25 !important;
   }
 
   body .route-studio .lm-studio-header-tools {
-    grid-template-columns: minmax(200px, 1.2fr) minmax(92px, 0.65fr) minmax(150px, 0.9fr) !important;
+    grid-template-columns: minmax(170px, 1fr) minmax(80px, 0.52fr) minmax(118px, 0.74fr) !important;
+    gap: 7px !important;
+  }
+
+  body .route-studio .lm-mini-card,
+  body .route-studio .lm-status-card {
+    min-height: 40px !important;
+    padding: 6px 8px !important;
+    border-radius: 10px !important;
+  }
+
+  body .route-studio .lm-mini-card input,
+  body .route-studio .lm-mini-card select {
+    min-height: 28px !important;
+    padding: 0 8px !important;
+  }
+
+  body .route-studio .lm-studio-metrics {
+    grid-template-columns: repeat(5, minmax(96px, 1fr)) !important;
+    gap: 6px !important;
+    overflow-x: auto;
+  }
+
+  body .route-studio .lm-metric-pill {
+    min-height: 32px !important;
+    padding: 6px 8px !important;
+    font-size: 10px !important;
+  }
+
+  body .route-studio .lm-transport-row {
+    gap: 7px !important;
+  }
+
+  body .route-studio .lm-transport-row button {
+    min-height: 46px !important;
+    min-width: 86px;
+  }
+
+  body .route-studio .lm-tab-row {
+    gap: 6px !important;
+  }
+
+  body .route-studio .studio-tab {
+    min-height: 42px !important;
+    gap: 4px !important;
+    padding: 6px 5px !important;
+    font-size: 10px !important;
+  }
+
+  body .route-studio .studio-tab i {
+    min-width: 18px !important;
+    height: 18px !important;
+    font-size: 8px !important;
+  }
+
+  body .route-studio .lm-chip-row {
+    grid-template-columns: repeat(8, minmax(86px, 1fr)) !important;
+    gap: 6px !important;
+    overflow-x: auto;
+  }
+
+  body .route-studio .studio-chip {
+    min-height: 32px !important;
+    padding: 0 9px !important;
+    font-size: 10px !important;
+  }
+
+  body .route-studio .lm-knob-control-row {
+    grid-template-columns: repeat(4, minmax(118px, 1fr)) !important;
+    gap: 6px !important;
+    overflow-x: auto;
+  }
+
+  body .route-studio .lm-knob-control-row label,
+  body .route-studio .lm-knob-control-row button {
+    min-height: 34px !important;
+    padding: 6px 8px !important;
   }
 
   body .route-studio .project-card {
@@ -15479,5 +15616,200 @@ body .route-studio .lm-studio-hex {
 
   body .route-studio .lm-profile-card b {
     display: none;
+  }
+}
+
+/* LottoMind Studio v3: Beat2Lotto groove-number engine */
+body .route-studio .beat-lotto-panel {
+  grid-column: 1 / -1;
+  position: relative;
+  overflow: hidden;
+  border-color: rgba(255, 208, 90, 0.26) !important;
+  background:
+    radial-gradient(circle at 15% 20%, rgba(255, 208, 90, 0.14), transparent 28%),
+    radial-gradient(circle at 86% 12%, rgba(35, 246, 255, 0.12), transparent 26%),
+    linear-gradient(135deg, rgba(9, 15, 29, 0.94), rgba(19, 12, 37, 0.92)) !important;
+}
+
+body .route-studio .beat-lotto-panel::after {
+  content: "";
+  position: absolute;
+  inset: auto -12% -38% 45%;
+  height: 180px;
+  background: radial-gradient(circle, rgba(255, 208, 90, 0.18), transparent 70%);
+  pointer-events: none;
+  filter: blur(12px);
+}
+
+body .route-studio .beat-lotto-controls {
+  display: grid;
+  grid-template-columns: minmax(150px, 1fr) minmax(160px, 1fr) minmax(160px, 1fr) 90px minmax(120px, 0.7fr);
+  gap: 10px;
+  margin-top: 14px;
+}
+
+body .route-studio .beat-lotto-controls label,
+body .route-studio .beat-lotto-check {
+  display: grid;
+  gap: 6px;
+  align-content: center;
+  min-height: 56px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(127, 221, 255, 0.14);
+  background: rgba(3, 8, 16, 0.56);
+  color: #aebace;
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+body .route-studio .beat-lotto-controls select,
+body .route-studio .beat-lotto-controls input[type="number"] {
+  width: 100%;
+  min-height: 34px;
+  border: 1px solid rgba(255, 208, 90, 0.22);
+  border-radius: 10px;
+  background: rgba(3, 7, 14, 0.86);
+  color: #f8fbff;
+  padding: 6px 8px;
+}
+
+body .route-studio .beat-lotto-check {
+  grid-template-columns: 20px 1fr;
+  gap: 9px;
+  align-items: center;
+  color: var(--lm-gold);
+}
+
+body .route-studio .beat-lotto-metrics {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+
+body .route-studio .beat-lotto-metrics span {
+  display: grid;
+  gap: 3px;
+  padding: 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(35, 246, 255, 0.15);
+  background: rgba(35, 246, 255, 0.045);
+  box-shadow: inset 0 0 18px rgba(35, 246, 255, 0.05);
+}
+
+body .route-studio .beat-lotto-metrics strong {
+  color: #ffffff;
+  font-size: 1.18rem;
+  line-height: 1;
+}
+
+body .route-studio .beat-lotto-metrics small {
+  color: #8fa3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.62rem;
+}
+
+body .route-studio .beat-lotto-output {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 8px;
+  margin-top: 14px;
+  padding: 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 208, 90, 0.24);
+  background:
+    linear-gradient(90deg, rgba(255, 208, 90, 0.10), rgba(35, 246, 255, 0.05)),
+    rgba(0, 0, 0, 0.22);
+  box-shadow: inset 0 0 28px rgba(255, 208, 90, 0.06), 0 0 28px rgba(255, 208, 90, 0.08);
+}
+
+body .route-studio .beat-lotto-output > span {
+  color: var(--lm-cyan);
+  font-size: 0.72rem;
+  font-weight: 1000;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+body .route-studio .beat-lotto-output > strong {
+  color: #ffffff;
+  font-size: 1.2rem;
+}
+
+body .route-studio .beat-lotto-output .lm-balls {
+  margin-top: 2px;
+}
+
+body .route-studio .beat-lotto-output .lm-ball {
+  box-shadow: 0 0 20px rgba(35, 246, 255, 0.24), inset 0 0 14px rgba(255, 255, 255, 0.08);
+}
+
+body .route-studio .beat-lotto-output .lm-ball.special {
+  box-shadow: 0 0 24px rgba(255, 208, 90, 0.42), inset 0 0 14px rgba(255, 255, 255, 0.10);
+}
+
+body .route-studio .empty-lotto-pick {
+  display: grid;
+  place-items: center;
+  min-height: 58px;
+  border: 1px dashed rgba(127, 221, 255, 0.22);
+  border-radius: 14px;
+  color: #aebace;
+  background: rgba(0, 0, 0, 0.20);
+}
+
+body .route-studio .beat-lotto-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+
+body .route-studio .beat-lotto-list > div {
+  display: grid;
+  gap: 6px;
+  padding: 10px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.035);
+}
+
+body .route-studio .beat-lotto-list span {
+  color: #8fa3b8;
+  font-size: 0.68rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+body .route-studio .beat-lotto-list .lm-ball {
+  width: 30px;
+  height: 30px;
+  font-size: 0.78rem;
+}
+
+body .route-studio .beat-lotto-actions {
+  position: relative;
+  z-index: 1;
+}
+
+@media (max-width: 980px) {
+  body .route-studio .beat-lotto-controls,
+  body .route-studio .beat-lotto-metrics,
+  body .route-studio .beat-lotto-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 620px) {
+  body .route-studio .beat-lotto-controls,
+  body .route-studio .beat-lotto-metrics,
+  body .route-studio .beat-lotto-list {
+    grid-template-columns: 1fr;
   }
 }

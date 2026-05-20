@@ -610,6 +610,17 @@ const STUDIO_NOTE_KEYS = {
   z: "C", s: "C#", x: "D", d: "D#", c: "E", v: "F", g: "F#", b: "G", h: "G#", n: "A", j: "A#", m: "B",
   q: "C", 2: "C#", w: "D", 3: "D#", e: "E", r: "F", 5: "F#", t: "G", 6: "G#", y: "A", 7: "A#", u: "B",
 };
+const STUDIO_LOTTO_METHODS = [
+  ["beat-signature", "Beat Signature", "Repeatable picks from the exact groove, pads, BPM, swing, and effects."],
+  ["live-groove", "Live Groove", "Adds fresh browser entropy so the same beat can create a new lucky lane."],
+  ["function-lab", "Function Lab", "Transforms the rhythm through prime, Fibonacci, and velocity functions."],
+];
+const STUDIO_LOTTO_FUNCTIONS = [
+  ["groove-prime", "Prime Pulse"],
+  ["fibonacci", "Fibonacci Flow"],
+  ["velocity-map", "Velocity Map"],
+  ["syncopation", "Syncopation Code"],
+];
 
 function createDefaultStudioProject() {
   return {
@@ -629,6 +640,15 @@ function createDefaultStudioProject() {
     octave: 4,
     synthVolume: 55,
     effects: { drive: 0, tone: 76, delay: 0, reverb: 0, punch: 12 },
+    lotto: {
+      gameId: "powerball",
+      method: "beat-signature",
+      functionMode: "groove-prime",
+      setCount: 3,
+      entropy: false,
+      lastSet: null,
+      lastPicks: [],
+    },
     pads: STUDIO_PAD_DEFAULTS.map(([name, type], index) => ({
       name,
       type,
@@ -664,6 +684,7 @@ function studioProject() {
     ...fallback,
     ...saved,
     effects: { ...fallback.effects, ...(saved.effects || {}) },
+    lotto: { ...fallback.lotto, ...(saved.lotto || {}) },
     pads: fallback.pads.map((pad, index) => ({ ...pad, ...(saved.pads?.[index] || {}) })),
     vocals: fallback.vocals.map((track, index) => ({ ...track, ...(saved.vocals?.[index] || {}) })),
     events: Array.isArray(saved.events) ? saved.events : [],
@@ -1518,7 +1539,7 @@ function searchCatalog() {
     ["Barcode Scanner", "Camera ticket scan and barcode reader", "scanner", "scan ticket barcode camera qr"],
     ["Dream Journal", "Saved Dream Oracle readings", "dreams", "journal saved dream interpretation meaning"],
     ["Dream Oracle", "Speak, interpret, and generate lucky numbers", "dreams", "oracle studio mic record"],
-    ["LottoMind Studio", "Drum machine, sampler, vocals, keyboard, and mix export", "studio", "studio music studio record vocals drum machine sampler mpc beat sequencer"],
+    ["LottoMind Studio", "Drum machine, sampler, vocals, keyboard, Beat2Lotto, and mix export", "studio", "studio music studio record vocals drum machine sampler mpc beat sequencer beat lotto groove number engine"],
     ["Music Store", "LottoMind Records, radio, Apple Music, YouTube", "music", "songs audio frequency record label"],
     ["Settings", "Music toggle, sound, motion, and policies", "settings", "set help menu controls"],
     ["Help", "Help, settings, and policies", "help", "support guide policy"],
@@ -2820,6 +2841,277 @@ function studioSequencerWindow() {
   return { total, visible, maxPage, page, start, end, count: end - start };
 }
 
+function studioLottoConfig() {
+  const fallback = createDefaultStudioProject().lotto;
+  state.studio.lotto = { ...fallback, ...(state.studio.lotto || {}) };
+  return state.studio.lotto;
+}
+
+function studioEntropyToken() {
+  try {
+    const values = new Uint32Array(4);
+    window.crypto?.getRandomValues?.(values);
+    if (values.some(Boolean)) return Array.from(values).join("-");
+  } catch {}
+  return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
+function studioBeatFeatures() {
+  const total = studioTotalSteps();
+  const events = (state.studio.events || [])
+    .filter((event) => Number.isFinite(Number(event.step)))
+    .map((event) => ({
+      type: event.type || "pad",
+      pad: Math.max(0, Math.min(15, Number(event.pad) || 0)),
+      note: event.note || "",
+      step: ((Number(event.step) || 0) + total) % total,
+      velocity: Math.max(1, Math.min(127, Number(event.velocity) || Number(state.studio.velocity) || 82)),
+      offset: Number(event.offset) || 0,
+    }))
+    .sort((a, b) => a.step - b.step || a.pad - b.pad || String(a.note).localeCompare(String(b.note)));
+  const padCounts = Array.from({ length: 16 }, () => 0);
+  const velocities = [];
+  let noteCount = 0;
+  let drumCount = 0;
+  events.forEach((event) => {
+    if (event.type === "note") noteCount += 1;
+    else {
+      drumCount += 1;
+      padCounts[event.pad] = (padCounts[event.pad] || 0) + 1;
+    }
+    velocities.push(event.velocity);
+  });
+  const beatStep = Math.max(1, Math.round(studioStepsPerBeat()));
+  const downbeatHits = events.filter((event) => event.step % beatStep === 0).length;
+  const syncopatedHits = Math.max(0, events.length - downbeatHits);
+  const sampleCount = (state.studio.pads || []).filter((pad) => pad.sampleData).length;
+  const vocalCount = (state.studio.vocals || []).filter((track) => track.data).length;
+  const fx = state.studio.effects || {};
+  const effectEnergy = Object.values(fx).reduce((sum, value) => sum + (Number(value) || 0), 0);
+  const avgVelocity = velocities.length ? Math.round(velocities.reduce((sum, value) => sum + value, 0) / velocities.length) : Number(state.studio.velocity) || 82;
+  const accentSum = events.reduce((sum, event, index) => sum + (event.step + 1) * (event.pad + 1) + Math.round(event.velocity) * (index + 3), 0);
+  return {
+    total,
+    events,
+    eventCount: events.length,
+    drumCount,
+    noteCount,
+    padCounts,
+    padsUsed: padCounts.filter(Boolean).length,
+    density: Math.round((events.length / Math.max(1, total)) * 10000) / 100,
+    downbeatHits,
+    syncopatedHits,
+    sampleCount,
+    vocalCount,
+    avgVelocity,
+    effectEnergy,
+    accentSum,
+  };
+}
+
+function studioBeatSignature(extra = "") {
+  const features = studioBeatFeatures();
+  const slimPads = (state.studio.pads || []).map((pad, index) => ({
+    index,
+    name: pad.name,
+    type: pad.type,
+    velocity: pad.velocity,
+    sampleName: pad.sampleName || "",
+    trimStart: pad.trimStart,
+    trimEnd: pad.trimEnd,
+    pitch: pad.pitch,
+    gain: pad.gain,
+    reverse: Boolean(pad.reverse),
+    muted: Boolean(pad.muted),
+  }));
+  const slimVocals = (state.studio.vocals || []).map((track, index) => ({
+    index,
+    name: track.name,
+    fileName: track.fileName || "",
+    volume: track.volume,
+    startStep: track.startStep,
+    muted: Boolean(track.muted),
+    solo: Boolean(track.solo),
+    loaded: Boolean(track.data),
+  }));
+  const slimEvents = features.events.slice(0, 4096).map((event) => [
+    event.type,
+    event.pad,
+    event.note,
+    event.step,
+    Math.round(event.velocity),
+    Number(event.offset || 0).toFixed(4),
+  ]);
+  return JSON.stringify({
+    projectName: state.studio.projectName || "LottoMind Studio",
+    bpm: Number(state.studio.bpm) || 92,
+    division: state.studio.division || "1/16",
+    swing: Number(state.studio.swing) || 0,
+    velocity: Number(state.studio.velocity) || 82,
+    humanize: Number(state.studio.humanize) || 0,
+    effects: state.studio.effects || {},
+    features: {
+      total: features.total,
+      eventCount: features.eventCount,
+      padsUsed: features.padsUsed,
+      density: features.density,
+      downbeatHits: features.downbeatHits,
+      syncopatedHits: features.syncopatedHits,
+      sampleCount: features.sampleCount,
+      vocalCount: features.vocalCount,
+      avgVelocity: features.avgVelocity,
+      effectEnergy: features.effectEnergy,
+      accentSum: features.accentSum,
+    },
+    pads: slimPads,
+    vocals: slimVocals,
+    events: slimEvents,
+    extra,
+  });
+}
+
+function studioNumberFromRange(value, game) {
+  const raw = Math.abs(Math.floor(Number(value) || 0));
+  return game.mainMax === 9 ? raw % 10 : (raw % game.mainMax) + 1;
+}
+
+function studioBuildNumberCandidates(features, game, method, functionMode) {
+  const candidates = [];
+  const bpm = Math.round(Number(state.studio.bpm) || 92);
+  const swing = Math.round(Number(state.studio.swing) || 0);
+  const human = Math.round(Number(state.studio.humanize) || 0);
+  const total = Math.max(1, features.total);
+  const beatStep = Math.max(1, Math.round(studioStepsPerBeat()));
+  const primes = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71];
+  const fib = [1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610];
+  const fx = state.studio.effects || {};
+  features.events.forEach((event, index) => {
+    const pad = event.type === "note" ? 17 : event.pad + 1;
+    const step = event.step + 1;
+    const velocity = Math.round(event.velocity || features.avgVelocity || 82);
+    const offset = Math.round((Number(event.offset) || 0) * 1000);
+    const noteCode = String(event.note || "").split("").reduce((sum, char) => sum + char.charCodeAt(0), 0);
+    let raw = step + pad * 7 + velocity * 3 + bpm * 5 + swing * 2 + human + offset + noteCode;
+    if (functionMode === "fibonacci") raw += fib[(index + pad + features.padsUsed) % fib.length] * 3;
+    else if (functionMode === "velocity-map") raw = velocity * (pad + 3) + step * Math.max(1, features.padsUsed) + bpm + noteCode;
+    else if (functionMode === "syncopation") raw += (event.step % beatStep ? 37 : 11) * (index + 1) + features.syncopatedHits * 5;
+    else raw += primes[(index + pad + Math.round(features.density)) % primes.length] * 5;
+    if (method === "function-lab") raw += features.effectEnergy * 2 + features.sampleCount * 19 + features.vocalCount * 23;
+    candidates.push(studioNumberFromRange(raw, game));
+    candidates.push(studioNumberFromRange(raw + features.padCounts[event.pad] * 17 + total + index * 13, game));
+  });
+  features.padCounts.forEach((count, index) => {
+    if (!count) return;
+    candidates.push(studioNumberFromRange((index + 1) * count * 13 + bpm + swing + total, game));
+    candidates.push(studioNumberFromRange((index + 1) * 31 + count * features.avgVelocity + features.accentSum, game));
+  });
+  Object.entries(fx).forEach(([key, value], index) => {
+    const keyCode = key.split("").reduce((sum, char) => sum + char.charCodeAt(0), 0);
+    candidates.push(studioNumberFromRange(keyCode + Number(value || 0) * (index + 5) + bpm, game));
+  });
+  if (!candidates.length) {
+    [bpm, total, swing, human, features.avgVelocity, features.effectEnergy, features.sampleCount * 11, features.vocalCount * 17]
+      .forEach((value, index) => candidates.push(studioNumberFromRange(value + primes[index % primes.length] * 9, game)));
+  }
+  return candidates;
+}
+
+function studioPickMainNumbers(candidates, rng, game) {
+  const allowRepeats = game.mainMax === 9;
+  const picks = [];
+  const shuffled = candidates
+    .map((number, index) => ({ number, rank: rng() + index / Math.max(1, candidates.length * 1000) }))
+    .sort((a, b) => a.rank - b.rank)
+    .map((item) => item.number);
+  let cursor = 0;
+  let safety = 0;
+  while (picks.length < game.mainCount && safety < 5000) {
+    safety += 1;
+    const candidate = cursor < shuffled.length
+      ? shuffled[cursor]
+      : studioNumberFromRange(Math.floor(rng() * 100000000), game);
+    cursor += 1;
+    if (allowRepeats || !picks.includes(candidate)) picks.push(candidate);
+  }
+  return allowRepeats ? picks : uniqueSorted(picks);
+}
+
+function generateStudioLottoSet(index = 0) {
+  const lotto = studioLottoConfig();
+  const game = getGame(lotto.gameId || state.gameId);
+  const method = lotto.method || "beat-signature";
+  const functionMode = lotto.functionMode || "groove-prime";
+  const methodLabel = STUDIO_LOTTO_METHODS.find((item) => item[0] === method)?.[1] || "Beat Signature";
+  const functionLabel = STUDIO_LOTTO_FUNCTIONS.find((item) => item[0] === functionMode)?.[1] || "Prime Pulse";
+  const entropy = method === "live-groove" || lotto.entropy ? studioEntropyToken() : "locked";
+  const features = studioBeatFeatures();
+  const signature = studioBeatSignature(`${method}:${functionMode}:${game.id}:${index}:${entropy}`);
+  const rng = seededRandom(signature);
+  const candidates = studioBuildNumberCandidates(features, game, method, functionMode);
+  const numbers = studioPickMainNumbers(candidates, rng, game);
+  const special = game.specialMax
+    ? (Math.abs(hashSeed(`${signature}:special:${features.accentSum}`) + Math.floor(rng() * 1000000)) % game.specialMax) + 1
+    : undefined;
+  const compactFeatures = {
+    events: features.eventCount,
+    padsUsed: features.padsUsed,
+    density: features.density,
+    samples: features.sampleCount,
+    vocals: features.vocalCount,
+    avgVelocity: features.avgVelocity,
+  };
+  return {
+    id: `studio_${Date.now()}_${index}_${Math.floor(rng() * 10000)}`,
+    gameId: game.id,
+    gameName: game.name,
+    strategy: "beat-to-lotto",
+    numbers,
+    special,
+    specialName: game.specialName,
+    createdAt: new Date().toISOString(),
+    note: `Beat2Lotto ${methodLabel} using ${functionLabel}: ${features.eventCount} events, ${features.padsUsed} pads, ${features.density}% density, ${features.avgVelocity} avg velocity. Creative picks only; random draws are not predictable.`,
+    beat2Lotto: {
+      method,
+      methodLabel,
+      functionMode,
+      functionLabel,
+      gameId: game.id,
+      bpm: Number(state.studio.bpm) || 92,
+      division: state.studio.division,
+      features: compactFeatures,
+    },
+  };
+}
+
+function generateStudioLottoPicks() {
+  const lotto = studioLottoConfig();
+  const count = Math.max(1, Math.min(10, Number(lotto.setCount) || 3));
+  const picks = Array.from({ length: count }, (_, index) => generateStudioLottoSet(index));
+  state.studio.lotto = { ...lotto, lastPicks: picks, lastSet: picks[0] || null };
+  state.currentSet = state.studio.lotto.lastSet;
+  state.gameId = state.studio.lotto.lastSet?.gameId || state.gameId;
+  localStorage.setItem("lottomind.oracle.real.game", state.gameId);
+  saveStudioProject();
+  return picks;
+}
+
+function studioLottoSetText(set) {
+  if (!set) return "";
+  const main = (set.numbers || []).join("-");
+  const bonus = set.special !== undefined ? ` ${set.specialName || "Bonus"}: ${set.special}` : "";
+  return `${set.gameName}: ${main}${bonus}`;
+}
+
+function copyStudioLottoSet() {
+  const lotto = studioLottoConfig();
+  const text = (lotto.lastPicks || []).map(studioLottoSetText).filter(Boolean).join("\n");
+  if (!text) {
+    toast("Generate Beat2Lotto picks first.");
+    return;
+  }
+  navigator.clipboard?.writeText?.(text).then(() => toast("Beat2Lotto picks copied")).catch(() => toast(text));
+}
+
 function makeStudioDriveCurve(amount = 0) {
   const samples = 512;
   const curve = new Float32Array(samples);
@@ -3238,6 +3530,8 @@ function studioControlStrip() {
   return `<div class="studio-control-strip panel lm-studio-tabs">
     <div class="lm-tab-row" aria-label="Studio navigation">
       ${[
+        ["Seq", "16 Bars", "studio-sequencer"],
+        ["Beat", "Beat Lotto", "studio-beat-lotto"],
         ["Pads", "Drum Machine", "studio-pads"],
         ["Note", "Sampler", "studio-sampler"],
         ["Mic", "Vocals", "studio-vocals"],
@@ -3420,6 +3714,49 @@ function studioEffectsRack() {
   </div>`;
 }
 
+function studioBeatLottoPanel() {
+  const lotto = studioLottoConfig();
+  const features = studioBeatFeatures();
+  const lastSet = lotto.lastSet || null;
+  const lastPicks = Array.isArray(lotto.lastPicks) ? lotto.lastPicks : [];
+  const methodInfo = STUDIO_LOTTO_METHODS.find((item) => item[0] === lotto.method) || STUDIO_LOTTO_METHODS[0];
+  return `<div class="panel lm-studio-panel beat-lotto-panel lm-studio-glass" id="studio-beat-lotto">
+    <div class="panel-title-row">
+      <div><span class="eyebrow">Beat to Lotto</span><h2>Groove Number Engine</h2></div>
+      <span class="panel-badge">Creative Picks</span>
+    </div>
+    <p class="studio-note">Turn rhythm, pad hits, BPM, swing, human feel, samples, vocals, and FX settings into LottoMind number picks. This is a creative generator, not a prediction system.</p>
+    <div class="beat-lotto-controls">
+      <label>Game <select data-action="studio-lotto-set" data-lotto-field="gameId">${LOTTO_GAMES.map((game) => `<option value="${game.id}" ${game.id === (lotto.gameId || state.gameId) ? "selected" : ""}>${escapeHtml(game.name)}</option>`).join("")}</select></label>
+      <label>Method <select data-action="studio-lotto-set" data-lotto-field="method">${STUDIO_LOTTO_METHODS.map(([id, label]) => `<option value="${id}" ${id === lotto.method ? "selected" : ""}>${label}</option>`).join("")}</select></label>
+      <label>Function <select data-action="studio-lotto-set" data-lotto-field="functionMode">${STUDIO_LOTTO_FUNCTIONS.map(([id, label]) => `<option value="${id}" ${id === lotto.functionMode ? "selected" : ""}>${label}</option>`).join("")}</select></label>
+      <label>Sets <input type="number" min="1" max="10" value="${Number(lotto.setCount) || 3}" data-action="studio-lotto-set" data-lotto-field="setCount" /></label>
+      <label class="beat-lotto-check"><input type="checkbox" ${lotto.entropy ? "checked" : ""} data-action="studio-lotto-set" data-lotto-field="entropy" /> Fresh entropy</label>
+    </div>
+    <div class="beat-lotto-metrics">
+      <span><strong>${features.eventCount}</strong><small>Events</small></span>
+      <span><strong>${features.padsUsed}</strong><small>Pads</small></span>
+      <span><strong>${features.density}%</strong><small>Density</small></span>
+      <span><strong>${features.sampleCount}</strong><small>Samples</small></span>
+      <span><strong>${features.vocalCount}</strong><small>Vocals</small></span>
+      <span><strong>${features.avgVelocity}</strong><small>Avg Vel</small></span>
+    </div>
+    <div class="beat-lotto-output ${lastSet ? "has-set" : ""}">
+      <span>${escapeHtml(methodInfo[1])}</span>
+      <strong>${lastSet ? escapeHtml(lastSet.gameName) : "No picks yet"}</strong>
+      ${lastSet ? ballsHtml(lastSet.numbers || [], lastSet.special, lastSet.specialName) : `<div class="empty-lotto-pick">Program a beat or tap Random, then generate.</div>`}
+      ${lastSet ? `<small>${escapeHtml(lastSet.note)}</small>` : `<small>${escapeHtml(methodInfo[2])}</small>`}
+    </div>
+    ${lastPicks.length > 1 ? `<div class="beat-lotto-list">${lastPicks.slice(1, 10).map((set, index) => `<div><span>Alt ${index + 2}</span>${ballsHtml(set.numbers || [], set.special, set.specialName)}</div>`).join("")}</div>` : ""}
+    <div class="sample-actions bottom beat-lotto-actions">
+      <button class="gold-btn" data-action="studio-generate-lotto">Generate From Beat</button>
+      <button class="ghost-btn" data-action="studio-randomize-and-lotto">Random Beat + Picks</button>
+      <button class="ghost-btn" data-action="studio-copy-lotto">Copy Picks</button>
+      <button class="ghost-btn" data-action="studio-save-lotto">Save To Records</button>
+    </div>
+  </div>`;
+}
+
 function studioImportExportPanel() {
   return `<div id="studio-files" class="panel studio-module studio-files-panel">
     <div class="section-head studio-panel-head"><div><h2>Project & Files</h2><p>Save/load projects, sound packs, pad samples, vocals, and full audio recordings.</p></div><span>Memory + Export</span></div>
@@ -3446,6 +3783,7 @@ function sonicStudioView() {
       ${studioDrumPads()}
       ${studioSequencerGrid()}
       ${studioVocalTracks()}
+      ${studioBeatLottoPanel()}
       ${studioSamplerPanel()}
       ${studioEffectsRack()}
       ${studioKeyboardSection()}
@@ -4730,7 +5068,7 @@ function routeFromSearch(value) {
   if (bestMatch) return bestMatch.route;
   const query = String(value || "").toLowerCase();
   const matches = [
-    [["studio", "music studio", "record vocals", "drum machine", "sampler", "mpc", "sequencer"], "studio"],
+    [["studio", "music studio", "record vocals", "drum machine", "sampler", "mpc", "sequencer", "beat lotto", "beat2lotto", "groove number"], "studio"],
     [["dream", "oracle", "meaning", "journal"], "dreams"],
     [["music", "radio", "apple", "youtube", "record", "song", "audio"], "music"],
     [["weather", "local", "horoscope"], "luckyWeather"],
@@ -5120,6 +5458,57 @@ function handleAction(action, target) {
     toast("Human feel applied");
     return;
   }
+  if (action === "studio-lotto-set") {
+    const lotto = studioLottoConfig();
+    const field = target.getAttribute("data-lotto-field");
+    if (!field) return;
+    if (field === "entropy") lotto[field] = Boolean(target.checked);
+    else if (field === "setCount") lotto[field] = Math.max(1, Math.min(10, Number(target.value) || 3));
+    else lotto[field] = target.value;
+    if (field === "gameId") {
+      state.gameId = lotto.gameId;
+      localStorage.setItem("lottomind.oracle.real.game", state.gameId);
+    }
+    saveStudioProject();
+    render();
+    return;
+  }
+  if (action === "studio-generate-lotto") {
+    const picks = generateStudioLottoPicks();
+    toast(`Beat2Lotto generated ${picks.length} set${picks.length === 1 ? "" : "s"}`);
+    render();
+    return;
+  }
+  if (action === "studio-copy-lotto") {
+    copyStudioLottoSet();
+    return;
+  }
+  if (action === "studio-save-lotto") {
+    const lotto = studioLottoConfig();
+    if (!lotto.lastSet) generateStudioLottoPicks();
+    if (state.studio.lotto?.lastSet) saveSet({ ...state.studio.lotto.lastSet, savedFrom: "LottoMind Studio Beat2Lotto" });
+    else toast("Generate Beat2Lotto picks first.");
+    return;
+  }
+  if (action === "studio-randomize-and-lotto") {
+    state.studio.events = [];
+    const total = studioTotalSteps();
+    const stepsPerBeat = studioStepsPerBeat();
+    const kickEvery = Math.max(1, Math.round(stepsPerBeat));
+    const hatEvery = Math.max(1, Math.round(stepsPerBeat / 2));
+    for (let step = 0; step < total; step += 1) {
+      if (step % (kickEvery * 4) === 0) state.studio.events.push({ id: `rnd-k-${step}`, type: "pad", pad: 0, step, velocity: 78 + Math.round(Math.random() * 14), offset: 0 });
+      if (step % (kickEvery * 4) === kickEvery * 2 && Math.random() > 0.35) state.studio.events.push({ id: `rnd-k2-${step}`, type: "pad", pad: 0, step, velocity: 58 + Math.round(Math.random() * 18), offset: 0 });
+      if (step % (kickEvery * 2) === kickEvery) state.studio.events.push({ id: `rnd-s-${step}`, type: "pad", pad: 1, step, velocity: 72 + Math.round(Math.random() * 16), offset: 0 });
+      if (step % hatEvery === 0 && Math.random() > 0.12) state.studio.events.push({ id: `rnd-h-${step}`, type: "pad", pad: 3, step, velocity: 42 + Math.round(Math.random() * 30), offset: 0 });
+      if (step % (kickEvery * 8) === kickEvery * 6 && Math.random() > 0.45) state.studio.events.push({ id: `rnd-p-${step}`, type: "pad", pad: 8 + Math.floor(Math.random() * 4), step, velocity: 55 + Math.round(Math.random() * 28), offset: 0 });
+    }
+    generateStudioLottoPicks();
+    saveStudioProject();
+    toast("Random groove generated and converted to Lotto picks");
+    render();
+    return;
+  }
   if (action === "studio-randomize") {
     state.studio.events = [];
     const total = studioTotalSteps();
@@ -5266,6 +5655,7 @@ function handleAction(action, target) {
         ...fallback,
         ...incoming,
         effects: { ...fallback.effects, ...(incoming.effects || {}) },
+        lotto: { ...fallback.lotto, ...(incoming.lotto || {}) },
         pads: fallback.pads.map((pad, index) => ({ ...pad, ...(incoming.pads?.[index] || {}) })),
         vocals: fallback.vocals.map((track, index) => ({ ...track, ...(incoming.vocals?.[index] || {}) })),
         events: Array.isArray(incoming.events) ? incoming.events : [],
