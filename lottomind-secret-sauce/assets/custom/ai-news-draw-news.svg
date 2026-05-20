@@ -1,0 +1,95 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 900" role="img" aria-label="LottoMind AI News draw feed artwork">
+  <defs>
+    <radialGradient id="core" cx="47%" cy="42%" r="58%">
+      <stop offset="0" stop-color="#1de9ff" stop-opacity=".58"/>
+      <stop offset=".34" stop-color="#081f3d" stop-opacity=".88"/>
+      <stop offset=".72" stop-color="#050816" stop-opacity=".96"/>
+      <stop offset="1" stop-color="#01030a"/>
+    </radialGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fff8bd"/>
+      <stop offset=".42" stop-color="#f5cf54"/>
+      <stop offset="1" stop-color="#8b5a14"/>
+    </linearGradient>
+    <linearGradient id="cyan" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#33fff6"/>
+      <stop offset=".52" stop-color="#1aa8ff"/>
+      <stop offset="1" stop-color="#7e45ff"/>
+    </linearGradient>
+    <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="9" result="blur"/>
+      <feColorMatrix in="blur" type="matrix" values="0 0 0 0 0.1 0 0 0 0 0.8 0 0 0 0 1 0 0 0 .9 0"/>
+      <feBlend in="SourceGraphic"/>
+    </filter>
+    <filter id="goldGlow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feColorMatrix in="blur" type="matrix" values="0 0 0 0 1 0 0 0 0 .74 0 0 0 0 .14 0 0 0 .9 0"/>
+      <feBlend in="SourceGraphic"/>
+    </filter>
+    <pattern id="grid" width="45" height="45" patternUnits="userSpaceOnUse">
+      <path d="M45 0H0v45" fill="none" stroke="#1de9ff" stroke-opacity=".11" stroke-width="1"/>
+    </pattern>
+    <clipPath id="screenClip">
+      <rect x="120" y="170" width="660" height="520" rx="42"/>
+    </clipPath>
+  </defs>
+  <rect width="900" height="900" fill="#01030a"/>
+  <rect width="900" height="900" fill="url(#core)"/>
+  <rect width="900" height="900" fill="url(#grid)" opacity=".62"/>
+  <g opacity=".45" fill="none" stroke="#f5cf54" stroke-width="3">
+    <path d="M38 180h120l42-42h120"/>
+    <path d="M725 124h74v106h64"/>
+    <path d="M88 760h154l46-46h120"/>
+    <path d="M612 776h122l34-34h96"/>
+  </g>
+  <g opacity=".72" fill="none" stroke="#20f5ff" stroke-width="3">
+    <path d="M62 252h140l38 38h86"/>
+    <path d="M598 96h42v132h120"/>
+    <path d="M70 650h178l34-34h112"/>
+    <path d="M540 690h112l62 62h118"/>
+  </g>
+  <g clip-path="url(#screenClip)">
+    <rect x="120" y="170" width="660" height="520" rx="42" fill="#061322" opacity=".86"/>
+    <rect x="120" y="170" width="660" height="520" rx="42" fill="url(#grid)" opacity=".36"/>
+    <path d="M92 270c162 22 254 112 390 58 112-44 186-38 328 16v372H92Z" fill="#051021" opacity=".72"/>
+    <g opacity=".5" filter="url(#glow)">
+      <circle cx="460" cy="442" r="214" fill="none" stroke="#1de9ff" stroke-width="3"/>
+      <circle cx="460" cy="442" r="146" fill="none" stroke="#7e45ff" stroke-width="2"/>
+      <path d="M460 228v428M246 442h428" stroke="#1de9ff" stroke-width="2"/>
+    </g>
+    <g transform="translate(170 250)">
+      <rect width="315" height="235" rx="26" fill="#020711" stroke="#23fff2" stroke-opacity=".68" stroke-width="4"/>
+      <path d="M42 62h214M42 104h168M42 146h218M42 188h132" stroke="#fff1a2" stroke-linecap="round" stroke-width="15" opacity=".88"/>
+      <rect x="28" y="24" width="86" height="22" rx="11" fill="url(#cyan)" opacity=".96"/>
+      <rect x="132" y="24" width="124" height="22" rx="11" fill="#13375e" stroke="#1de9ff" stroke-opacity=".45"/>
+    </g>
+    <g transform="translate(515 250)">
+      <rect width="210" height="235" rx="26" fill="#020711" stroke="#f5cf54" stroke-opacity=".68" stroke-width="4"/>
+      <path d="M40 184c24-58 40-78 72-78s54 34 82 2" fill="none" stroke="#23fff2" stroke-width="12" stroke-linecap="round" filter="url(#glow)"/>
+      <circle cx="64" cy="74" r="36" fill="url(#gold)" filter="url(#goldGlow)"/>
+      <circle cx="145" cy="86" r="42" fill="url(#cyan)" filter="url(#glow)"/>
+      <text x="64" y="83" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="25" fill="#07111c">12</text>
+      <text x="145" y="96" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="27" fill="#06101c">33</text>
+    </g>
+    <g transform="translate(170 520)">
+      <rect width="555" height="100" rx="30" fill="#031022" stroke="#23fff2" stroke-opacity=".55" stroke-width="3"/>
+      <path d="M36 64h52l20-34 26 52 32-48 28 30h330" fill="none" stroke="#22fff1" stroke-width="6" stroke-linecap="round" filter="url(#glow)"/>
+      <circle cx="92" cy="64" r="10" fill="#f5cf54"/>
+      <circle cx="194" cy="64" r="10" fill="#ff5bbf"/>
+      <circle cx="344" cy="64" r="10" fill="#23fff2"/>
+      <circle cx="524" cy="64" r="10" fill="#f5cf54"/>
+    </g>
+  </g>
+  <rect x="120" y="170" width="660" height="520" rx="42" fill="none" stroke="url(#cyan)" stroke-width="5" opacity=".86"/>
+  <rect x="138" y="188" width="624" height="484" rx="32" fill="none" stroke="url(#gold)" stroke-width="2" opacity=".44"/>
+  <g filter="url(#goldGlow)">
+    <text x="140" y="118" font-family="Arial Black, Arial, sans-serif" font-size="74" fill="#fff5bd" letter-spacing="-2">AI NEWS</text>
+    <text x="145" y="755" font-family="Arial Black, Arial, sans-serif" font-size="54" fill="#f5cf54" letter-spacing="-1">DRAW FEED</text>
+  </g>
+  <text x="145" y="806" font-family="Arial, sans-serif" font-size="29" font-weight="700" fill="#b8eaff">live lottery signal briefing</text>
+  <g filter="url(#glow)">
+    <circle cx="742" cy="112" r="15" fill="#23fff2"/>
+    <circle cx="802" cy="706" r="12" fill="#23fff2"/>
+    <circle cx="92" cy="582" r="10" fill="#23fff2"/>
+  </g>
+</svg>
