@@ -1,0 +1,43 @@
+{
+  "version": "lottomind-studio-default-stem-kit-v7",
+  "sourceZip": "(Intro \u2014 MC talk, hostile energy) Stems (1).zip",
+  "targetRepoPath": "lotto mind refined/assets/studio/default-stems/",
+  "stems": [
+    {
+      "id": "lead-vocals",
+      "name": "Lead Vocals",
+      "fileName": "lottomind-default-01-lead-vocals.mp3",
+      "sourceFile": "0 Lead Vocals.mp3",
+      "role": "vocal",
+      "targetStem": 0,
+      "sourceBpm": 92
+    },
+    {
+      "id": "drums",
+      "name": "Drums",
+      "fileName": "lottomind-default-02-drums.mp3",
+      "sourceFile": "1 Drums.mp3",
+      "role": "drums",
+      "targetStem": 1,
+      "sourceBpm": 92
+    },
+    {
+      "id": "synth",
+      "name": "Synth",
+      "fileName": "lottomind-default-03-synth.mp3",
+      "sourceFile": "2 Synth.mp3",
+      "role": "music",
+      "targetStem": 2,
+      "sourceBpm": 92
+    },
+    {
+      "id": "other",
+      "name": "Other",
+      "fileName": "lottomind-default-04-other.mp3",
+      "sourceFile": "3 Other.mp3",
+      "role": "texture",
+      "targetStem": 3,
+      "sourceBpm": 92
+    }
+  ]
+}

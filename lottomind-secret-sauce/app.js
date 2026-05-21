@@ -35,18 +35,7 @@ const ASSETS = {
   searchMic: `${BASE}/assets/custom/generated-lottomind-mic.webp`,
   dreamOracleHost: `${BASE}/assets/custom/dream-oracle-host.png`,
   lmLive: `${BASE}/assets/custom/lottomind-live-lm-logo.png`,
-  aiNews: `${BASE}/assets/custom/ai-news-draw-news.svg`,
-  aiCoach: `${BASE}/assets/custom/ai-coach-console.svg`,
-  studioMotion: `${BASE}/assets/custom/studio/studio-motion.mp4`,
-  studioMascotGold: `${BASE}/assets/custom/studio/studio-mascot-gold.png`,
-  studioMascotCyan: `${BASE}/assets/custom/studio/studio-mascot-cyan.png`,
-  studioOracleCoin: `${BASE}/assets/custom/studio/studio-oracle-coin.png`,
-  studioMicHost: `${BASE}/assets/custom/studio/studio-mic-host.png`,
-  studioFrequencyVault: `${BASE}/assets/custom/studio/studio-frequency-vault.png`,
-  studioRecordsLogo: `${BASE}/assets/custom/studio/studio-records-logo.png`,
-  studioRecordsConsole: `${BASE}/assets/custom/studio/studio-records-console.png`,
-  studioLmCoin: `${BASE}/assets/custom/studio/studio-lm-coin.webp`,
-  studioBrainCoin: `${BASE}/assets/custom/studio/studio-brain-coin.webp`,
+  socialBoard: `${BASE}/assets/custom/social/lottomind-social-board.svg`,
 };
 
 const AUDIO = {
@@ -567,21 +556,8 @@ const HOME_CAROUSEL_VIDEOS = {
   dreams: `${BASE}/videos/oracle-flow-dream-new.mp4`,
 };
 
-function oracleFlowVideoFor(route, index = 0) {
-  const cycle = [
-    `${BASE}/videos/oracle-flow-music-new.mp4`,
-    `${BASE}/videos/oracle-flow-reset-new.mp4`,
-    `${BASE}/videos/oracle-flow-dream-new.mp4`,
-  ];
-  return HOME_CAROUSEL_VIDEOS[route] || cycle[index % cycle.length];
-}
-
 const QUICK_TOOLS = TOOL_GROUPS.flatMap((group) => group.tools);
 const PLAY_LEARN_GROUP = TOOL_GROUPS.find((group) => group.title === "Play + Learn");
-if (PLAY_LEARN_GROUP) {
-  const stateIndexTool = PLAY_LEARN_GROUP.tools.find((tool) => tool[2] === "usLottery");
-  if (stateIndexTool) PLAY_LEARN_GROUP.tools = [stateIndexTool, ...PLAY_LEARN_GROUP.tools.filter((tool) => tool !== stateIndexTool)];
-}
 const POWER_TOOL_GROUPS = TOOL_GROUPS.filter((group) => group.title !== "Play + Learn");
 
 const STORAGE = {
@@ -598,6 +574,7 @@ const STORAGE = {
   crossword: "lottomind.oracle.real.crossword.v1",
   wordSearch: "lottomind.oracle.real.wordSearch.v1",
   studio: "lottomind.studio.project.v1",
+  socialScores: "lottomind.oracle.real.socialScores.v1",
 };
 
 const DEFAULT_SETTINGS = {
@@ -618,6 +595,31 @@ const STUDIO_PAD_DEFAULTS = [
   ["Perc 1", "perc"], ["Perc 2", "perc"], ["Crash", "crash"], ["Ride", "ride"],
   ["Vault FX", "fx"], ["Oracle Hit", "perc"], ["Cyan Bell", "bell"], ["Gold Riser", "fx"],
 ];
+const STUDIO_DEFAULT_STEM_KIT_VERSION = "lottomind-default-stem-kit-v7";
+const STUDIO_DEFAULT_STEM_ASSETS = [
+  { id: "lead-vocals", name: "Lead Vocals", fileName: "lottomind-default-01-lead-vocals.mp3", url: `${BASE}/assets/studio/default-stems/lottomind-default-01-lead-vocals.mp3`, role: "vocal", targetStem: 0, sourceBpm: 92 },
+  { id: "drums", name: "Drums", fileName: "lottomind-default-02-drums.mp3", url: `${BASE}/assets/studio/default-stems/lottomind-default-02-drums.mp3`, role: "drums", targetStem: 1, sourceBpm: 92 },
+  { id: "synth", name: "Synth", fileName: "lottomind-default-03-synth.mp3", url: `${BASE}/assets/studio/default-stems/lottomind-default-03-synth.mp3`, role: "music", targetStem: 2, sourceBpm: 92 },
+  { id: "other", name: "Other", fileName: "lottomind-default-04-other.mp3", url: `${BASE}/assets/studio/default-stems/lottomind-default-04-other.mp3`, role: "texture", targetStem: 3, sourceBpm: 92 },
+];
+const STUDIO_DEFAULT_PAD_STEM_MAP = [
+  { pad: 0, stemId: "drums", name: "Stem Kick", type: "kick", trimStart: 0.00, trimEnd: 0.75 },
+  { pad: 1, stemId: "drums", name: "Stem Snare", type: "snare", trimStart: 0.75, trimEnd: 1.50 },
+  { pad: 2, stemId: "drums", name: "Stem Clap", type: "clap", trimStart: 1.50, trimEnd: 2.25 },
+  { pad: 3, stemId: "drums", name: "Stem Hat", type: "hat", trimStart: 2.25, trimEnd: 3.00 },
+  { pad: 4, stemId: "drums", name: "Stem Open Hat", type: "openhat", trimStart: 3.00, trimEnd: 3.75 },
+  { pad: 5, stemId: "drums", name: "Stem Perc 1", type: "perc", trimStart: 3.75, trimEnd: 4.50 },
+  { pad: 6, stemId: "drums", name: "Stem Perc 2", type: "perc", trimStart: 4.50, trimEnd: 5.25 },
+  { pad: 7, stemId: "drums", name: "Stem Fill", type: "tom", trimStart: 5.25, trimEnd: 6.00 },
+  { pad: 8, stemId: "synth", name: "Synth Chop 1", type: "bell", trimStart: 0.00, trimEnd: 1.15 },
+  { pad: 9, stemId: "synth", name: "Synth Chop 2", type: "bell", trimStart: 1.15, trimEnd: 2.30 },
+  { pad: 10, stemId: "synth", name: "Synth Chop 3", type: "fx", trimStart: 2.30, trimEnd: 3.45 },
+  { pad: 11, stemId: "synth", name: "Synth Chop 4", type: "fx", trimStart: 3.45, trimEnd: 4.60 },
+  { pad: 12, stemId: "other", name: "Other Hit 1", type: "perc", trimStart: 0.00, trimEnd: 1.40 },
+  { pad: 13, stemId: "other", name: "Other Hit 2", type: "perc", trimStart: 1.40, trimEnd: 2.80 },
+  { pad: 14, stemId: "lead-vocals", name: "Vocal Chop 1", type: "fx", trimStart: 0.00, trimEnd: 4.00 },
+  { pad: 15, stemId: "lead-vocals", name: "Vocal Chop 2", type: "fx", trimStart: 4.00, trimEnd: 8.00 },
+];
 const STUDIO_NOTE_KEYS = {
   z: "C", s: "C#", x: "D", d: "D#", c: "E", v: "F", g: "F#", b: "G", h: "G#", n: "A", j: "A#", m: "B",
   q: "C", 2: "C#", w: "D", 3: "D#", e: "E", r: "F", 5: "F#", t: "G", 6: "G#", y: "A", 7: "A#", u: "B",
@@ -625,7 +627,7 @@ const STUDIO_NOTE_KEYS = {
 const STUDIO_LOTTO_METHODS = [
   ["beat-signature", "Beat Signature", "Repeatable picks from the exact groove, pads, BPM, swing, and effects."],
   ["live-groove", "Live Groove", "Adds fresh browser entropy so the same beat can create a new lucky lane."],
-  ["function-lab", "Function Lab", "Transforms the rhythm through prime, Fibonacci, and velocity functions."],
+  ["function-lab", "Function Lab", "Transforms the rhythm through prime, Fibonacci, and chaos-style music functions."],
 ];
 const STUDIO_LOTTO_FUNCTIONS = [
   ["groove-prime", "Prime Pulse"],
@@ -634,21 +636,225 @@ const STUDIO_LOTTO_FUNCTIONS = [
   ["syncopation", "Syncopation Code"],
 ];
 
+
+const SOCIAL_CHALLENGE_TYPES = ["Trivia", "Crossword", "Word Search", "Studio Beat", "Dream Oracle"];
+const SOCIAL_PREVIEW_RIVALS = [
+  { name: "NeonOracle", score: 960, streak: 7, badge: "Demo rival", challenge: "Dream Oracle", source: "Demo rivals" },
+  { name: "VaultRunner", score: 870, streak: 5, badge: "Demo rival", challenge: "Trivia", source: "Demo rivals" },
+  { name: "RadarMuse", score: 740, streak: 4, badge: "Demo rival", challenge: "Heatmap", source: "Demo rivals" },
+  { name: "Beat2Lotto", score: 690, streak: 3, badge: "Demo rival", challenge: "Studio Beat", source: "Demo rivals" },
+  { name: "LuckyCipher", score: 520, streak: 2, badge: "Demo rival", challenge: "Crossword", source: "Demo rivals" },
+];
+const SOCIAL_PROMPTS = [
+  ["Post a Dream Prompt", "Share one dream symbol, then run the Oracle and save the clearest lane.", "dreams", "Dream"],
+  ["Share a Heatmap Read", "Compare one hot signal, one cold watch number, and a balance cue.", "heatmap", "Radar"],
+  ["Beat2Lotto Challenge", "Build a beat, convert the groove to creative picks, then save the result.", "studio", "Studio"],
+  ["Trivia Night", "Run a quick question streak and save the score to your local board.", "triviaPlay", "Arcade"],
+  ["State Streak Room", "Pin the state, check local retailer notes, and organize your route.", "storeLocator", "State"],
+  ["Contest Entry Board", "Open contest prompts and future entry lanes for credits and unlocks.", "contests", "Contest"],
+];
+
+function studioDefaultStemAssetById(id) {
+  return STUDIO_DEFAULT_STEM_ASSETS.find((asset) => asset.id === id) || null;
+}
+
+function isStudioDefaultStemUrl(value = "") {
+  const text = String(value || "");
+  return STUDIO_DEFAULT_STEM_ASSETS.some((asset) => text.includes(asset.fileName));
+}
+
+function studioDefaultStemSlot(index) {
+  const asset = STUDIO_DEFAULT_STEM_ASSETS.find((item) => Number(item.targetStem) === Number(index));
+  return {
+    name: asset ? asset.name : `Stem ${index + 1}`,
+    fileName: asset ? asset.fileName : "",
+    data: asset ? asset.url : "",
+    muted: false,
+    solo: false,
+    volume: 78,
+    startStep: 0,
+    sourceBpm: asset?.sourceBpm || 92,
+    sync: Boolean(asset),
+    sequenceEnabled: false,
+    sessionOnly: false,
+    padTarget: Math.min(15, 8 + index),
+    defaultStemId: asset?.id || "",
+    isDefaultStem: Boolean(asset),
+  };
+}
+
+function studioDefaultPadTemplate(pad, index) {
+  const map = STUDIO_DEFAULT_PAD_STEM_MAP.find((item) => item.pad === index);
+  const asset = map ? studioDefaultStemAssetById(map.stemId) : null;
+  if (!map || !asset) return pad;
+  return {
+    ...pad,
+    name: map.name || pad.name,
+    type: map.type || pad.type,
+    sampleName: `${asset.name} · ${map.name || `Pad ${index + 1}`}`,
+    sampleData: asset.url,
+    trimStart: map.trimStart,
+    trimEnd: map.trimEnd,
+    pitch: 0,
+    gain: 88,
+    reverse: false,
+    defaultStemId: asset.id,
+    stemSlice: `${asset.id}:${map.trimStart}-${map.trimEnd}`,
+    sampleTooLargeForSave: false,
+  };
+}
+
+function applyStudioDefaultStemPadMapToProject(project, { replacePads = false } = {}) {
+  if (!project?.pads) return project;
+  STUDIO_DEFAULT_PAD_STEM_MAP.forEach((map) => {
+    const pad = project.pads[map.pad];
+    const asset = studioDefaultStemAssetById(map.stemId);
+    if (!pad || !asset) return;
+    const canReplace = replacePads || !pad.sampleData || isStudioDefaultStemUrl(pad.sampleData);
+    if (!canReplace) return;
+    project.pads[map.pad] = studioDefaultPadTemplate({
+      ...pad,
+      shortcut: pad.shortcut || STUDIO_PAD_SHORTCUTS[map.pad],
+      velocity: Number(pad.velocity) || 82,
+      muted: Boolean(pad.muted),
+    }, map.pad);
+  });
+  return project;
+}
+
+function applyStudioDefaultStemKitToProject(project, { replaceStems = false, replacePads = false } = {}) {
+  if (!project) return project;
+  project.stems = Array.isArray(project.stems) ? project.stems : [];
+  while (project.stems.length < 8) project.stems.push(studioDefaultStemSlot(project.stems.length));
+  STUDIO_DEFAULT_STEM_ASSETS.forEach((asset) => {
+    const index = Math.max(0, Math.min(project.stems.length - 1, Number(asset.targetStem) || 0));
+    const existing = project.stems[index] || {};
+    const canReplace = replaceStems || !existing.data || isStudioDefaultStemUrl(existing.data) || existing.isDefaultStem;
+    if (!canReplace) return;
+    project.stems[index] = {
+      ...existing,
+      ...studioDefaultStemSlot(index),
+      name: asset.name,
+      fileName: asset.fileName,
+      data: asset.url,
+      sourceBpm: Number(existing.sourceBpm) || asset.sourceBpm || Number(project.bpm) || 92,
+      defaultStemId: asset.id,
+      isDefaultStem: true,
+      sessionOnly: false,
+    };
+  });
+  applyStudioDefaultStemPadMapToProject(project, { replacePads });
+  project.defaultStemKit = {
+    ...(project.defaultStemKit || {}),
+    version: STUDIO_DEFAULT_STEM_KIT_VERSION,
+    sourceName: "Intro MC Talk Stem Kit",
+    active: true,
+    initialized: true,
+    useAsPadSounds: true,
+    allowCustomReplacement: true,
+    lastLoadedAt: new Date().toISOString(),
+  };
+  return project;
+}
+
+function normalizeStudioDefaultStemKit(project) {
+  if (!project) return project;
+  project.defaultStemKit = {
+    version: STUDIO_DEFAULT_STEM_KIT_VERSION,
+    sourceName: "Intro MC Talk Stem Kit",
+    active: true,
+    initialized: false,
+    useAsPadSounds: true,
+    allowCustomReplacement: true,
+    ...(project.defaultStemKit || {}),
+  };
+  const customPads = (project.pads || []).some((pad) => pad.sampleData && !isStudioDefaultStemUrl(pad.sampleData));
+  const customStems = (project.stems || []).some((stem) => stem.data && !isStudioDefaultStemUrl(stem.data));
+  const missingDefaultStems = STUDIO_DEFAULT_STEM_ASSETS.some((asset) => {
+    const slot = (project.stems || [])[Number(asset.targetStem) || 0] || {};
+    return !slot.data || !isStudioDefaultStemUrl(slot.data);
+  });
+  if (!project.defaultStemKit.initialized || (missingDefaultStems && !customStems)) {
+    applyStudioDefaultStemKitToProject(project, { replaceStems: !customStems, replacePads: !customPads });
+    project.defaultStemKit.initialized = true;
+  } else if (project.defaultStemKit.useAsPadSounds && !customPads) {
+    applyStudioDefaultStemPadMapToProject(project, { replacePads: false });
+  }
+  return project;
+}
+
+function mapCurrentStudioStemsToPadKit({ replacePads = true } = {}) {
+  const loaded = (state.studio.stems || []).filter((stem) => stem?.data);
+  if (!loaded.length) {
+    toast("Import or load stems first, then map them into the drum pads.");
+    return;
+  }
+  const perStem = Math.max(1, Math.ceil(16 / loaded.length));
+  state.studio.pads = state.studio.pads.map((pad, index) => {
+    if (!replacePads && pad.sampleData && !isStudioDefaultStemUrl(pad.sampleData)) return pad;
+    const stem = loaded[Math.min(loaded.length - 1, Math.floor(index / perStem))] || loaded[index % loaded.length];
+    const slice = index % perStem;
+    const sliceWidth = Math.max(0.75, Math.min(4.0, 12 / perStem));
+    const trimStart = Math.min(96, Number((slice * sliceWidth).toFixed(2)));
+    const trimEnd = Math.min(100, Number((trimStart + sliceWidth).toFixed(2)));
+    return {
+      ...pad,
+      name: `${stem.name || stem.fileName || "Stem"} ${slice + 1}`.slice(0, 24),
+      sampleName: stem.fileName || stem.name || `Stem ${index + 1}`,
+      sampleData: stem.data,
+      trimStart,
+      trimEnd,
+      pitch: 0,
+      gain: Math.max(1, Math.min(120, Number(stem.volume) || 82)),
+      reverse: false,
+      defaultStemId: stem.defaultStemId || "custom-stem",
+      stemSlice: `${stem.name || "custom"}:${trimStart}-${trimEnd}`,
+      sampleTooLargeForSave: Boolean(stem.sessionOnly || String(stem.data || "").startsWith("blob:")),
+    };
+  });
+  state.studio.defaultStemKit = {
+    ...(state.studio.defaultStemKit || {}),
+    active: false,
+    initialized: true,
+    useAsPadSounds: true,
+    allowCustomReplacement: true,
+    lastCustomMapAt: new Date().toISOString(),
+  };
+  studioSampleBuffers = {};
+  saveStudioProject();
+  toast(`${loaded.length} stem${loaded.length === 1 ? "" : "s"} sliced into the 16 drum pads.`);
+  render();
+}
+
 function createDefaultStudioProject() {
   return {
-    projectName: "Future Vault",
     bpm: 92,
     division: "1/16",
-    seqPage: 0,
-    seqZoom: 64,
     swing: 8,
     velocity: 82,
     humanize: 6,
-    loopEnabled: true,
     recArmed: false,
     metronome: false,
+    stepPage: 0,
+    pageSize: 128,
+    projectName: "Neon Dreams",
     selectedPad: 0,
-    inputDeviceId: "",
+    selectedStem: 0,
+    defaultStemKit: {
+      version: STUDIO_DEFAULT_STEM_KIT_VERSION,
+      sourceName: "Intro MC Talk Stem Kit",
+      active: true,
+      initialized: true,
+      useAsPadSounds: true,
+      allowCustomReplacement: true,
+      lastLoadedAt: "",
+    },
+    dj: {
+      crossfader: 50,
+      recordLaunches: false,
+      deckA: { stemIndex: 0, volume: 82, pitch: 0, jog: 0, filter: 72, cueStep: 0, sync: true, loop: false, reverse: false, playing: false },
+      deckB: { stemIndex: 1, volume: 82, pitch: 0, jog: 0, filter: 72, cueStep: 0, sync: true, loop: false, reverse: false, playing: false },
+    },
     waveform: "sawtooth",
     octave: 4,
     synthVolume: 55,
@@ -662,7 +868,7 @@ function createDefaultStudioProject() {
       lastSet: null,
       lastPicks: [],
     },
-    pads: STUDIO_PAD_DEFAULTS.map(([name, type], index) => ({
+    pads: STUDIO_PAD_DEFAULTS.map(([name, type], index) => studioDefaultPadTemplate({
       name,
       type,
       velocity: 82,
@@ -675,7 +881,8 @@ function createDefaultStudioProject() {
       gain: 85,
       reverse: false,
       shortcut: STUDIO_PAD_SHORTCUTS[index],
-    })),
+    }, index)),
+    stems: Array.from({ length: 8 }, (_, index) => studioDefaultStemSlot(index)),
     events: [],
     vocals: Array.from({ length: 4 }, (_, index) => ({
       name: `Vocal ${index + 1}`,
@@ -693,15 +900,24 @@ function createDefaultStudioProject() {
 function studioProject() {
   const saved = loadJson(STORAGE.studio, {});
   const fallback = createDefaultStudioProject();
-  return {
+  const merged = {
     ...fallback,
     ...saved,
+    defaultStemKit: { ...fallback.defaultStemKit, ...(saved.defaultStemKit || {}) },
     effects: { ...fallback.effects, ...(saved.effects || {}) },
     lotto: { ...fallback.lotto, ...(saved.lotto || {}) },
+    dj: {
+      ...fallback.dj,
+      ...(saved.dj || {}),
+      deckA: { ...fallback.dj.deckA, ...(saved.dj?.deckA || {}) },
+      deckB: { ...fallback.dj.deckB, ...(saved.dj?.deckB || {}) },
+    },
     pads: fallback.pads.map((pad, index) => ({ ...pad, ...(saved.pads?.[index] || {}) })),
+    stems: fallback.stems.map((stem, index) => ({ ...stem, ...(saved.stems?.[index] || {}) })),
     vocals: fallback.vocals.map((track, index) => ({ ...track, ...(saved.vocals?.[index] || {}) })),
     events: Array.isArray(saved.events) ? saved.events : [],
   };
+  return normalizeStudioDefaultStemKit(merged);
 }
 
 const state = {
@@ -751,7 +967,9 @@ const state = {
   studioStep: 0,
   studioInputStatus: "Mic/line input idle",
   studioInputDevices: [],
-  studioSampleRecording: false,
+  studioInputDeviceId: localStorage.getItem("lottomind.studio.inputDeviceId") || "",
+  studioSampling: false,
+  studioSamplingLabel: "",
   studioRecordingTrack: null,
   studioMasterRecording: false,
   wordSearchMarks: loadJson("lottomind.oracle.real.wordSearch.v1", []),
@@ -780,24 +998,32 @@ let studioMaster = null;
 let studioDrive = null;
 let studioFilter = null;
 let studioCompressor = null;
-let studioDelay = null;
-let studioFeedback = null;
-let studioDelayWet = null;
+let studioDryGain = null;
 let studioReverb = null;
-let studioReverbWet = null;
+let studioReverbGain = null;
+let studioDelay = null;
+let studioDelayWet = null;
+let studioFeedback = null;
+let studioOutputGain = null;
 let studioDestination = null;
 let studioTimerId = null;
-let studioUiTimerId = null;
-let studioSchedulerStep = 0;
+let studioPlayheadTimers = [];
 let studioNextStepTime = 0;
+let studioLastScheduledStep = 0;
+let studioScheduleAheadSeconds = 0.12;
+let studioLookaheadMs = 24;
 let studioSampleBuffers = {};
+let studioStemBuffers = {};
+let studioActiveStemSources = [];
+let studioDjDecks = {};
+let studioVocalBuffers = {};
 let studioMicStream = null;
 let studioMonitorSource = null;
 let studioRecorders = {};
 let studioSampleRecorder = null;
-let studioSampleRecorderStream = null;
 let studioSampleChunks = [];
-let studioSampleLabel = "";
+let studioSampleStream = null;
+let studioSampleReleaseStream = true;
 let studioMasterRecorder = null;
 let studioMasterChunks = [];
 
@@ -1181,6 +1407,138 @@ function getTriviaProgress() {
   return { dailyStreak: 0, weeklyStreak: 0, history: [], ...progress, totalCredits: getCredits() };
 }
 
+function getSocialScores() {
+  const entries = loadJson(STORAGE.socialScores, []);
+  return (Array.isArray(entries) ? entries : [])
+    .filter((entry) => entry && Number.isFinite(Number(entry.score)))
+    .map((entry, index) => ({
+      id: entry.id || `social-score-${index}`,
+      name: String(entry.name || "Local Player").trim() || "Local Player",
+      score: Math.min(999999, Math.max(0, Math.round(Number(entry.score) || 0))),
+      challenge: SOCIAL_CHALLENGE_TYPES.includes(entry.challenge) ? entry.challenge : "Trivia",
+      streak: Math.max(0, Math.round(Number(entry.streak) || 0)),
+      createdAt: entry.createdAt || new Date().toISOString(),
+      source: entry.source || "Local preview",
+    }))
+    .slice(0, 20);
+}
+
+function saveSocialScore(score) {
+  const entry = {
+    id: score.id || `social-score-${Date.now()}`,
+    name: String(score.name || "Local Player").trim() || "Local Player",
+    score: Math.min(999999, Math.max(0, Math.round(Number(score.score) || 0))),
+    challenge: SOCIAL_CHALLENGE_TYPES.includes(score.challenge) ? score.challenge : "Trivia",
+    streak: Math.max(0, Math.round(Number(score.streak) || 0)),
+    createdAt: score.createdAt || new Date().toISOString(),
+    source: score.source || "Local preview",
+  };
+  const next = [entry, ...getSocialScores().filter((item) => item.id !== entry.id)].slice(0, 20);
+  saveJson(STORAGE.socialScores, next);
+  return entry;
+}
+
+function clearSocialScores() {
+  saveJson(STORAGE.socialScores, []);
+  return [];
+}
+
+function todayKey(date = new Date()) {
+  return date.toISOString().slice(0, 10);
+}
+
+function daysBetween(a, b) {
+  if (!a || !b) return 999;
+  return Math.round((new Date(b).setHours(0, 0, 0, 0) - new Date(a).setHours(0, 0, 0, 0)) / 86400000);
+}
+
+function getUnlocks() {
+  return loadJson(STORAGE.unlocks, {});
+}
+
+function saveUnlock(id, title, cost = 0, hours = null) {
+  const catalogItem = FEATURE_UNLOCKS.find((item) => item.id === id);
+  if (title === "24h" || title === "permanent" || !title) {
+    hours = title === "24h" ? 24 : hours;
+    title = catalogItem?.title || id;
+    cost = catalogItem?.cost || cost;
+  }
+  const unlocks = getUnlocks();
+  unlocks[id] = {
+    id,
+    title,
+    cost,
+    unlockedAt: new Date().toISOString(),
+    expiresAt: hours ? new Date(Date.now() + hours * 3600000).toISOString() : null,
+  };
+  saveJson(STORAGE.unlocks, unlocks);
+  return unlocks[id];
+}
+
+function isUnlocked(id) {
+  const unlock = getUnlocks()[id];
+  if (!unlock) return false;
+  if (unlock.expiresAt && Date.now() > new Date(unlock.expiresAt).getTime()) return false;
+  return true;
+}
+
+function getTriviaProgress() {
+  const progress = loadJson(STORAGE.triviaHistory, {
+    totalCredits: getCredits(),
+    dailyStreak: 0,
+    weeklyStreak: 0,
+    lastPlayedDate: "",
+    history: [],
+  });
+  return { dailyStreak: 0, weeklyStreak: 0, history: [], ...progress, totalCredits: getCredits() };
+}
+
+function localTriviaScoreRows(progress = getTriviaProgress()) {
+  return (Array.isArray(progress.history) ? progress.history : []).map((run, index) => ({
+    id: `trivia-run-${run.date || "local"}-${index}`,
+    name: "Local Player",
+    score: Math.min(999999, Math.max(0, Math.round(Number(run.score) || 0))),
+    challenge: "Trivia",
+    streak: Math.max(0, Math.round(Number(run.streak) || 0)),
+    createdAt: run.date || new Date().toISOString(),
+    source: "Local preview",
+  }));
+}
+
+function bestLocalTriviaScore(progress = getTriviaProgress()) {
+  return localTriviaScoreRows(progress).reduce((best, row) => Math.max(best, row.score), 0);
+}
+
+function socialDateLabel(value) {
+  if (!value) return "Local";
+  try {
+    return new Date(value).toLocaleDateString(undefined, { month: "short", day: "numeric" });
+  } catch {
+    return "Local";
+  }
+}
+
+function communityLeaderboardRows() {
+  const progress = getTriviaProgress();
+  const saved = getSocialScores().map((entry) => ({ ...entry, source: entry.source || "Saved challenge" }));
+  const localBest = bestLocalTriviaScore(progress);
+  const localRow = {
+    id: "local-player-best",
+    name: "Local Player",
+    score: localBest,
+    challenge: "Trivia",
+    streak: Math.max(Number(progress.dailyStreak) || 0, Number(progress.weeklyStreak) || 0),
+    createdAt: progress.lastPlayedDate || new Date().toISOString(),
+    source: "Local preview",
+  };
+  const demoRows = SOCIAL_PREVIEW_RIVALS.map((entry, index) => ({ ...entry, id: `demo-rival-${index}` }));
+  return [localRow, ...saved, ...localTriviaScoreRows(progress), ...demoRows]
+    .filter((entry, index, list) => list.findIndex((item) => item.id === entry.id) === index)
+    .sort((a, b) => Number(b.score) - Number(a.score) || Number(b.streak) - Number(a.streak))
+    .slice(0, 9)
+    .map((entry, index) => ({ ...entry, rank: index + 1 }));
+}
+
 function saveTriviaProgress(progress) {
   saveJson(STORAGE.triviaHistory, { ...progress, totalCredits: getCredits() });
 }
@@ -1552,7 +1910,6 @@ function searchCatalog() {
     ["Barcode Scanner", "Camera ticket scan and barcode reader", "scanner", "scan ticket barcode camera qr"],
     ["Dream Journal", "Saved Dream Oracle readings", "dreams", "journal saved dream interpretation meaning"],
     ["Dream Oracle", "Speak, interpret, and generate lucky numbers", "dreams", "oracle studio mic record"],
-    ["LottoMind Studio", "Drum machine, sampler, vocals, keyboard, Beat2Lotto, and mix export", "studio", "studio music studio record vocals drum machine sampler mpc beat sequencer beat lotto groove number engine"],
     ["Music Store", "LottoMind Records, radio, Apple Music, YouTube", "music", "songs audio frequency record label"],
     ["Settings", "Music toggle, sound, motion, and policies", "settings", "set help menu controls"],
     ["Help", "Help, settings, and policies", "help", "support guide policy"],
@@ -1638,7 +1995,7 @@ function dashboardView() {
       </div>
       <div class="quest-steps oracle-flow-steps">
         ${HOME_CAROUSEL.map(([title, copy, route, art], index) => {
-          const flowVideo = oracleFlowVideoFor(route, index);
+          const flowVideo = HOME_CAROUSEL_VIDEOS[route];
           return `
           <button class="quest-step oracle-flow-step" data-route="${route}" style="--quest-art:url('${art}')">
             ${flowVideo ? `<video class="oracle-flow-video" src="${flowVideo}" muted loop autoplay playsinline preload="metadata"></video>` : ""}
@@ -1662,8 +2019,6 @@ function dashboardView() {
     </div>
 
     <div class="split-grid">
-      <button class="action-tile state-index-tile" data-route="usLottery"><strong>US Lottery State Index</strong><span>State draw directory, games, and official route map</span></button>
-      <button class="action-tile" data-route="studio"><strong>LottoMind Studio</strong><span>Drum machine, sampler, vocals, and mix export</span></button>
       <button class="action-tile" data-action="menu"><strong>LottoMind Academy</strong><span>Help, settings, policies, and privacy</span></button>
       <button class="action-tile" data-route="marketplace"><strong>Marketplace</strong><span>Credits, VIP tools, and unlocks</span></button>
     </div>
@@ -1693,7 +2048,6 @@ function dashboardView() {
 }
 
 function circleTool(title, sub, route, index) {
-  const toolKey = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
   const arts = [ASSETS.commandDeck, ASSETS.powerTools, ASSETS.heatmap, ASSETS.live, ASSETS.reset, ASSETS.dream, ASSETS.arcade, ASSETS.credit, ASSETS.psychic, ASSETS.music];
   const routeArt = {
     arcade: ASSETS.arcade,
@@ -1706,26 +2060,13 @@ function circleTool(title, sub, route, index) {
     achievements: ASSETS.arcadeCoin,
     challenges: ASSETS.commandDeck,
     contests: ASSETS.arcade,
-    paywall: ASSETS.lmLive,
-    usLottery: ASSETS.live,
-    notifications: ASSETS.commandDeck,
-  };
-  const titleArt = {
-    "ai-news": ASSETS.aiNews,
-    "ticket-scanner": ASSETS.live,
-    "live-vault-heatmap": ASSETS.heatmap,
-    "lotto-intelligence": ASSETS.commandDeck,
-    "pick-3-pick-4": ASSETS.sequence,
-    "straight-box": ASSETS.sequence,
-    "live-results": ASSETS.live,
-    "energy-meter": ASSETS.lmLive,
   };
   const video = title === "Number Analyzer"
     ? `<video class="circle-tool-video" src="${BASE}/videos/power-tools-dashboard-box.mp4" poster="${ASSETS.powerTools}" muted loop autoplay playsinline preload="metadata"></video>`
     : title === "Reset Vault"
       ? `<video class="circle-tool-video singer-video" src="${BASE}/videos/power-tools-button-green-screen.mp4" poster="${ASSETS.music}" muted loop autoplay playsinline preload="metadata"></video>`
       : "";
-  return `<button class="circle-tool" data-route="${route}" data-tool="${toolKey}" style="--circle-art:url('${titleArt[toolKey] || routeArt[route] || arts[index % arts.length]}')">
+  return `<button class="circle-tool" data-route="${route}" style="--circle-art:url('${routeArt[route] || arts[index % arts.length]}')">
     ${video}
     <span>${title}</span>
     <small>${sub}</small>
@@ -1846,6 +2187,7 @@ function resetView() {
         ${tones.map(([hz, label], index) => `<button class="sound-card tone-pill ${state.tone === hz ? "active" : ""}" data-action="set-tone" data-tone="${hz}" style="--tone-art:url('${index % 2 ? ASSETS.logo : ASSETS.music}')"><span>${hz} Hz</span><strong>${label}</strong><small>${label === "Heart Field" ? "528 Hz box" : hz === "528" ? "Love frequency" : hz === "741" ? "Clear signal" : "Focus support"}</small></button>`).join("")}
       </div>
     </div>
+    ${importedMusicDeckPanel("reset-imported-music")}
   </section>`;
 }
 
@@ -2112,7 +2454,7 @@ function aiCoachView() {
     numbers: (state.currentSet || generateLottoSet(state.gameId, state.strategy, "ai-ready")).numbers,
   };
   return `<section class="screen ai-screen">
-    <div class="panel art-panel media-hero ai-coach-hero" style="--panel-art:url('${ASSETS.aiCoach}')">
+    <div class="panel art-panel media-hero" style="--panel-art:url('${ASSETS.powerTools}')">
       <div>
         <span class="eyebrow">LottoMind AI</span>
         <h1>AI Coach Console</h1>
@@ -2124,7 +2466,7 @@ function aiCoachView() {
           <button class="ghost-btn" data-route="dreams">Dream Oracle</button>
         </div>
       </div>
-      <img class="deck-coin" src="${ASSETS.aiCoach}" alt="LottoMind AI console artwork" />
+      <img class="deck-coin" src="${ASSETS.psychic}" alt="LottoMind AI coin" />
     </div>
     <div class="panel result-card ai-result-card">
       <span>AI function output</span>
@@ -2658,17 +3000,7 @@ function musicHubView(isRadio = false) {
         </button>`).join("")}
       </div>
     </div>
-    <div class="panel audio-deck">
-      <div class="section-head"><div><h2>Imported Music</h2><p>Branded tracks and frequency sessions.</p></div><span>${AUDIO_LIBRARY.length} tracks</span></div>
-      <div class="audio-list">
-        ${AUDIO_LIBRARY.map(([title, src, copy], index) => `<article class="media-card record-track-card" style="--record-art:url('${[ASSETS.logo, ASSETS.music, ASSETS.reset, ASSETS.live][index % 4]}')">
-          <span class="vinyl-record" aria-hidden="true"></span>
-          <div class="track-copy"><strong>${title}</strong><small>${copy}</small></div>
-          <audio controls preload="none" src="${src}"></audio>
-          <button class="ghost-btn" data-action="load-reset-session" data-tone="${title.includes("174") ? "174" : title.includes("432") ? "432" : title.includes("Frequency") ? "528" : "396"}">Load in LottoMind Reset</button>
-        </article>`).join("")}
-      </div>
-    </div>
+    ${importedMusicDeckPanel()}
     <div class="panel related-panel">
       <div class="section-head"><div><h2>Sound Routes</h2><p>Fast paths connected to the rest of the app.</p></div></div>
       <div class="sound-route-bento">
@@ -2683,6 +3015,20 @@ function musicHubView(isRadio = false) {
       </div>
     </div>
   </section>`;
+}
+
+function importedMusicDeckPanel(extraClass = "") {
+  return `<div class="panel audio-deck imported-music-deck ${extraClass}">
+      <div class="section-head"><div><h2>Imported Music</h2><p>Branded tracks and frequency sessions.</p></div><span>${AUDIO_LIBRARY.length} tracks</span></div>
+      <div class="audio-list record-audio-list">
+        ${AUDIO_LIBRARY.map(([title, src, copy], index) => `<article class="media-card record-track-card vinyl-style-card" style="--record-art:url('${[ASSETS.logo, ASSETS.music, ASSETS.reset, ASSETS.live][index % 4]}')">
+          <span class="vinyl-record" aria-hidden="true"></span>
+          <div class="track-copy"><strong>${title}</strong><small>${copy}</small></div>
+          <audio controls preload="none" src="${src}"></audio>
+          <button class="ghost-btn" data-action="load-reset-session" data-tone="${title.includes("174") ? "174" : title.includes("432") ? "432" : title.includes("Frequency") ? "528" : "396"}">Load in LottoMind Reset</button>
+        </article>`).join("")}
+      </div>
+    </div>`;
 }
 
 function buildDreamVideoPlan(text = state.dreamText) {
@@ -2789,37 +3135,40 @@ function futureReadView() {
   </section>`;
 }
 
-const STUDIO_SERIALIZE_LIMIT = 1200000;
-
-function studioSerializableProject(project = state.studio) {
-  let trimmed = false;
-  const copy = {
-    ...project,
-    pads: project.pads.map((pad) => {
-      if (pad.sampleData && String(pad.sampleData).length > STUDIO_SERIALIZE_LIMIT) {
-        trimmed = true;
-        return { ...pad, sampleData: "", sampleTooLarge: true, sessionOnly: true };
-      }
-      return { ...pad, sampleTooLarge: false };
-    }),
-    vocals: project.vocals.map((track) => {
-      if (track.data && String(track.data).length > STUDIO_SERIALIZE_LIMIT) {
-        trimmed = true;
-        return { ...track, data: "", sampleTooLarge: true, sessionOnly: true };
-      }
-      return { ...track, sampleTooLarge: false };
-    }),
+function saveStudioProject() {
+  const persistable = {
+    ...state.studio,
+    pads: state.studio.pads.map((pad) => ({
+      ...pad,
+      sampleData: String(pad.sampleData || "").startsWith("blob:") || String(pad.sampleData || "").length > 950000 ? "" : pad.sampleData,
+      sampleTooLargeForSave: pad.sampleTooLargeForSave || String(pad.sampleData || "").startsWith("blob:") || String(pad.sampleData || "").length > 950000,
+    })),
+    stems: (state.studio.stems || []).map((stem) => ({
+      ...stem,
+      data: String(stem.data || "").startsWith("blob:") || String(stem.data || "").length > 950000 ? "" : stem.data,
+      sessionOnly: stem.sessionOnly || String(stem.data || "").startsWith("blob:") || String(stem.data || "").length > 950000,
+    })),
+    vocals: state.studio.vocals.map((track) => ({
+      ...track,
+      data: String(track.data || "").length > 950000 ? "" : track.data,
+      sessionOnly: track.sessionOnly || String(track.data || "").length > 950000,
+    })),
   };
-  return { project: copy, trimmed };
-}
-
-function saveStudioProject(showWarning = false) {
-  const { project, trimmed } = studioSerializableProject();
   try {
-    saveJson(STORAGE.studio, project);
-    if (trimmed && showWarning) toast("Large audio stays session-only so local save stays stable.");
+    saveJson(STORAGE.studio, persistable);
   } catch {
-    toast("Studio project is too large for localStorage. Export JSON or clear large clips.");
+    const trimmed = {
+      ...persistable,
+      pads: persistable.pads.map((pad) => ({ ...pad, sampleData: "", sampleTooLargeForSave: Boolean(pad.sampleData) })),
+      stems: persistable.stems.map((stem) => ({ ...stem, data: "", sessionOnly: Boolean(stem.data) || stem.sessionOnly })),
+      vocals: persistable.vocals.map((track) => ({ ...track, data: "", sessionOnly: Boolean(track.data) || track.sessionOnly })),
+    };
+    try {
+      saveJson(STORAGE.studio, trimmed);
+      toast("Large audio was kept for this session; export sounds to keep them safely.");
+    } catch {
+      toast("Studio project is too large for browser storage. Export the project/sounds.");
+    }
   }
 }
 
@@ -2847,22 +3196,33 @@ function studioTotalSteps(division = state.studio.division) {
 }
 
 function studioVisibleSteps() {
-  return Math.min(Number(state.studio.seqZoom) || 64, studioTotalSteps());
+  const preferred = Math.max(32, Math.min(192, Number(state.studio.pageSize) || 128));
+  return Math.min(preferred, studioTotalSteps());
+}
+
+function studioStepPageCount() {
+  return Math.max(1, Math.ceil(studioTotalSteps() / studioVisibleSteps()));
+}
+
+function studioStepOffset() {
+  const pages = studioStepPageCount();
+  const page = Math.max(0, Math.min(pages - 1, Number(state.studio.stepPage) || 0));
+  state.studio.stepPage = page;
+  return page * studioVisibleSteps();
 }
 
 function studioStepSeconds() {
   return (60 / Math.max(40, Number(state.studio.bpm) || 92)) / studioStepsPerBeat();
 }
 
-function studioSequencerWindow() {
-  const total = studioTotalSteps();
-  const visible = Math.max(16, Math.min(Number(state.studio.seqZoom) || 64, total));
-  const maxPage = Math.max(0, Math.ceil(total / visible) - 1);
-  const page = Math.max(0, Math.min(maxPage, Number(state.studio.seqPage) || 0));
-  state.studio.seqPage = page;
-  const start = page * visible;
-  const end = Math.min(total, start + visible);
-  return { total, visible, maxPage, page, start, end, count: end - start };
+function studioStepMs() {
+  return studioStepSeconds() * 1000;
+}
+
+function studioSwingSeconds(step) {
+  const swing = Math.max(0, Math.min(75, Number(state.studio.swing) || 0));
+  if (studioStepsPerBeat() < 2 || step % 2 === 0) return 0;
+  return studioStepSeconds() * (swing / 100) * (String(state.studio.division).includes("T") ? 0.18 : 0.48);
 }
 
 function studioLottoConfig() {
@@ -2887,6 +3247,7 @@ function studioBeatFeatures() {
     .map((event) => ({
       type: event.type || "pad",
       pad: Math.max(0, Math.min(15, Number(event.pad) || 0)),
+      stem: Math.max(0, Math.min(7, Number(event.stem) || 0)),
       note: event.note || "",
       step: ((Number(event.step) || 0) + total) % total,
       velocity: Math.max(1, Math.min(127, Number(event.velocity) || Number(state.studio.velocity) || 82)),
@@ -2897,8 +3258,10 @@ function studioBeatFeatures() {
   const velocities = [];
   let noteCount = 0;
   let drumCount = 0;
+  let stemEventCount = 0;
   events.forEach((event) => {
     if (event.type === "note") noteCount += 1;
+    else if (event.type === "stem") stemEventCount += 1;
     else {
       drumCount += 1;
       padCounts[event.pad] = (padCounts[event.pad] || 0) + 1;
@@ -2910,6 +3273,18 @@ function studioBeatFeatures() {
   const syncopatedHits = Math.max(0, events.length - downbeatHits);
   const sampleCount = (state.studio.pads || []).filter((pad) => pad.sampleData).length;
   const vocalCount = (state.studio.vocals || []).filter((track) => track.data).length;
+  const stemCount = (state.studio.stems || []).filter((stem) => stem.data).length;
+  const defaultStemCount = (state.studio.stems || []).filter((stem) => stem.data && isStudioDefaultStemUrl(stem.data)).length;
+  const customStemCount = (state.studio.stems || []).filter((stem) => stem.data && !isStudioDefaultStemUrl(stem.data)).length;
+  const defaultPadSliceCount = (state.studio.pads || []).filter((pad) => pad.sampleData && isStudioDefaultStemUrl(pad.sampleData)).length;
+  const dj = state.studio.dj || createDefaultStudioProject().dj;
+  const djDecks = [dj.deckA || {}, dj.deckB || {}];
+  const djStemCount = djDecks.filter((deck) => state.studio.stems?.[Number(deck.stemIndex)]?.data).length;
+  const djMix = Math.round(Number(dj.crossfader) || 50);
+  const djEnergy = djDecks.reduce((sum, deck, index) => {
+    const stem = state.studio.stems?.[Number(deck.stemIndex)] || {};
+    return sum + (stem.data ? 71 + index * 13 : 0) + (Number(deck.volume) || 0) + Math.abs(Number(deck.pitch) || 0) + (Number(deck.filter) || 0);
+  }, djMix);
   const fx = state.studio.effects || {};
   const effectEnergy = Object.values(fx).reduce((sum, value) => sum + (Number(value) || 0), 0);
   const avgVelocity = velocities.length ? Math.round(velocities.reduce((sum, value) => sum + value, 0) / velocities.length) : Number(state.studio.velocity) || 82;
@@ -2920,6 +3295,7 @@ function studioBeatFeatures() {
     eventCount: events.length,
     drumCount,
     noteCount,
+    stemEventCount,
     padCounts,
     padsUsed: padCounts.filter(Boolean).length,
     density: Math.round((events.length / Math.max(1, total)) * 10000) / 100,
@@ -2927,6 +3303,13 @@ function studioBeatFeatures() {
     syncopatedHits,
     sampleCount,
     vocalCount,
+    stemCount,
+    defaultStemCount,
+    customStemCount,
+    defaultPadSliceCount,
+    djStemCount,
+    djMix,
+    djEnergy,
     avgVelocity,
     effectEnergy,
     accentSum,
@@ -2958,9 +3341,29 @@ function studioBeatSignature(extra = "") {
     solo: Boolean(track.solo),
     loaded: Boolean(track.data),
   }));
+  const slimStems = (state.studio.stems || []).map((stem, index) => ({
+    index,
+    name: stem.name,
+    fileName: stem.fileName || "",
+    volume: stem.volume,
+    startStep: stem.startStep,
+    sourceBpm: stem.sourceBpm,
+    sync: Boolean(stem.sync),
+    muted: Boolean(stem.muted),
+    solo: Boolean(stem.solo),
+    sequenceEnabled: Boolean(stem.sequenceEnabled),
+    loaded: Boolean(stem.data),
+    padTarget: stem.padTarget,
+  }));
+  const slimDj = {
+    crossfader: Number(state.studio.dj?.crossfader) || 50,
+    recordLaunches: Boolean(state.studio.dj?.recordLaunches),
+    deckA: { ...(state.studio.dj?.deckA || {}) },
+    deckB: { ...(state.studio.dj?.deckB || {}) },
+  };
   const slimEvents = features.events.slice(0, 4096).map((event) => [
     event.type,
-    event.pad,
+    event.type === "stem" ? event.stem : event.pad,
     event.note,
     event.step,
     Math.round(event.velocity),
@@ -2978,16 +3381,26 @@ function studioBeatSignature(extra = "") {
       total: features.total,
       eventCount: features.eventCount,
       padsUsed: features.padsUsed,
+      stemEventCount: features.stemEventCount,
       density: features.density,
       downbeatHits: features.downbeatHits,
       syncopatedHits: features.syncopatedHits,
       sampleCount: features.sampleCount,
       vocalCount: features.vocalCount,
+      stemCount: features.stemCount,
+      defaultStemCount: features.defaultStemCount,
+      customStemCount: features.customStemCount,
+      defaultPadSliceCount: features.defaultPadSliceCount,
+      djStemCount: features.djStemCount,
+      djMix: features.djMix,
+      djEnergy: features.djEnergy,
       avgVelocity: features.avgVelocity,
       effectEnergy: features.effectEnergy,
       accentSum: features.accentSum,
     },
     pads: slimPads,
+    stems: slimStems,
+    dj: slimDj,
     vocals: slimVocals,
     events: slimEvents,
     extra,
@@ -3009,6 +3422,14 @@ function studioBuildNumberCandidates(features, game, method, functionMode) {
   const primes = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71];
   const fib = [1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610];
   const fx = state.studio.effects || {};
+  const dj = state.studio.dj || createDefaultStudioProject().dj;
+  const djDecks = [dj.deckA || {}, dj.deckB || {}];
+  djDecks.forEach((deck, index) => {
+    const stem = state.studio.stems?.[Number(deck.stemIndex)] || {};
+    const stemCode = `${stem.name || ""}:${stem.fileName || ""}`.split("").reduce((sum, char) => sum + char.charCodeAt(0), 0);
+    const raw = stemCode + (Number(deck.volume) || 0) * 5 + (Number(deck.filter) || 0) * 7 + Math.round((Number(deck.pitch) || 0) * 11) + (Number(dj.crossfader) || 50) * (index + 3);
+    if (stem.data) candidates.push(studioNumberFromRange(raw + features.djEnergy + bpm, game));
+  });
   features.events.forEach((event, index) => {
     const pad = event.type === "note" ? 17 : event.pad + 1;
     const step = event.step + 1;
@@ -3111,9 +3532,10 @@ function generateStudioLottoPicks() {
   const lotto = studioLottoConfig();
   const count = Math.max(1, Math.min(10, Number(lotto.setCount) || 3));
   const picks = Array.from({ length: count }, (_, index) => generateStudioLottoSet(index));
-  state.studio.lotto = { ...lotto, lastPicks: picks, lastSet: picks[0] || null };
-  state.currentSet = state.studio.lotto.lastSet;
-  state.gameId = state.studio.lotto.lastSet?.gameId || state.gameId;
+  lotto.lastPicks = picks;
+  lotto.lastSet = picks[0] || null;
+  state.currentSet = lotto.lastSet;
+  state.gameId = lotto.lastSet?.gameId || state.gameId;
   localStorage.setItem("lottomind.oracle.real.game", state.gameId);
   saveStudioProject();
   return picks;
@@ -3139,7 +3561,8 @@ function copyStudioLottoSet() {
 function makeStudioDriveCurve(amount = 0) {
   const samples = 512;
   const curve = new Float32Array(samples);
-  const k = Number(amount) * 1.2;
+  const drive = Math.max(0.0001, Number(amount) || 0) / 100;
+  const k = drive * 62;
   for (let i = 0; i < samples; i += 1) {
     const x = (i * 2) / samples - 1;
     curve[i] = ((1 + k) * x) / (1 + k * Math.abs(x));
@@ -3147,9 +3570,7 @@ function makeStudioDriveCurve(amount = 0) {
   return curve;
 }
 
-function makeStudioImpulseBuffer(seconds = 1.4, decay = 2.6) {
-  const ctx = studioCtx;
-  if (!ctx) return null;
+function makeStudioImpulse(ctx, seconds = 1.8, decay = 2.35) {
   const length = Math.max(1, Math.floor(ctx.sampleRate * seconds));
   const impulse = ctx.createBuffer(2, length, ctx.sampleRate);
   for (let channel = 0; channel < impulse.numberOfChannels; channel += 1) {
@@ -3161,6 +3582,12 @@ function makeStudioImpulseBuffer(seconds = 1.4, decay = 2.6) {
   return impulse;
 }
 
+function resetStudioConnections() {
+  [studioMaster, studioDrive, studioFilter, studioCompressor, studioDryGain, studioReverb, studioReverbGain, studioDelay, studioDelayWet, studioFeedback, studioOutputGain].forEach((node) => {
+    try { node?.disconnect?.(); } catch {}
+  });
+}
+
 function ensureStudioAudio() {
   const AudioContext = window.AudioContext || window.webkitAudioContext;
   if (!AudioContext) return null;
@@ -3170,41 +3597,34 @@ function ensureStudioAudio() {
     studioDrive = studioCtx.createWaveShaper();
     studioFilter = studioCtx.createBiquadFilter();
     studioCompressor = studioCtx.createDynamicsCompressor();
-    studioDelay = studioCtx.createDelay(1.5);
-    studioFeedback = studioCtx.createGain();
-    studioDelayWet = studioCtx.createGain();
+    studioDryGain = studioCtx.createGain();
     studioReverb = studioCtx.createConvolver();
-    studioReverbWet = studioCtx.createGain();
+    studioReverbGain = studioCtx.createGain();
+    studioDelay = studioCtx.createDelay(2.5);
+    studioDelayWet = studioCtx.createGain();
+    studioFeedback = studioCtx.createGain();
+    studioOutputGain = studioCtx.createGain();
     studioDestination = studioCtx.createMediaStreamDestination();
     studioMaster.gain.value = 0.72;
     studioDrive.oversample = "4x";
     studioFilter.type = "lowpass";
-    studioFilter.frequency.value = 6376;
-    studioCompressor.threshold.value = -26;
-    studioCompressor.knee.value = 24;
-    studioCompressor.ratio.value = 2;
-    studioCompressor.attack.value = 0.008;
-    studioCompressor.release.value = 0.18;
-    studioDelay.delayTime.value = 0.18;
-    studioFeedback.gain.value = 0;
-    studioDelayWet.gain.value = 0;
-    studioReverbWet.gain.value = 0;
-    studioReverb.buffer = makeStudioImpulseBuffer(1.45, 2.8);
+    studioReverb.buffer = makeStudioImpulse(studioCtx, 1.9, 2.4);
+    resetStudioConnections();
     studioMaster.connect(studioDrive);
     studioDrive.connect(studioFilter);
     studioFilter.connect(studioCompressor);
-    studioCompressor.connect(studioCtx.destination);
-    studioCompressor.connect(studioDestination);
-    studioCompressor.connect(studioDelay);
+    studioCompressor.connect(studioDryGain);
+    studioDryGain.connect(studioOutputGain);
     studioCompressor.connect(studioReverb);
+    studioReverb.connect(studioReverbGain);
+    studioReverbGain.connect(studioOutputGain);
+    studioCompressor.connect(studioDelay);
+    studioDelay.connect(studioDelayWet);
+    studioDelayWet.connect(studioOutputGain);
     studioDelay.connect(studioFeedback);
     studioFeedback.connect(studioDelay);
-    studioDelay.connect(studioDelayWet);
-    studioDelayWet.connect(studioCtx.destination);
-    studioDelayWet.connect(studioDestination);
-    studioReverb.connect(studioReverbWet);
-    studioReverbWet.connect(studioCtx.destination);
-    studioReverbWet.connect(studioDestination);
+    studioOutputGain.connect(studioCtx.destination);
+    studioOutputGain.connect(studioDestination);
   }
   if (studioCtx.state === "suspended") studioCtx.resume().catch(() => {});
   updateStudioEffects();
@@ -3212,33 +3632,56 @@ function ensureStudioAudio() {
 }
 
 function updateStudioEffects() {
-  if (!studioCtx || !studioFilter || !studioFeedback || !studioMaster) return;
-  const fx = state.studio.effects;
-  if (studioDrive) studioDrive.curve = makeStudioDriveCurve(Math.max(0, Number(fx.drive) || 0) / 100);
-  studioFilter.frequency.setTargetAtTime(600 + (Number(fx.tone) || 0) * 76, studioCtx.currentTime, 0.03);
-  studioFilter.Q.setTargetAtTime(0.4 + (Number(fx.punch) || 0) / 38, studioCtx.currentTime, 0.03);
-  if (studioCompressor) {
-    studioCompressor.threshold.setTargetAtTime(-34 + (Number(fx.punch) || 0) * 0.22, studioCtx.currentTime, 0.03);
-    studioCompressor.ratio.setTargetAtTime(1 + (Number(fx.punch) || 0) / 28, studioCtx.currentTime, 0.03);
-  }
-  if (studioDelay) studioDelay.delayTime.setTargetAtTime(0.08 + (Number(fx.delay) || 0) * 0.005, studioCtx.currentTime, 0.03);
-  studioFeedback.gain.setTargetAtTime(Math.min(0.62, (Number(fx.delay) || 0) / 155), studioCtx.currentTime, 0.03);
-  if (studioDelayWet) studioDelayWet.gain.setTargetAtTime(Math.min(0.46, (Number(fx.delay) || 0) / 170), studioCtx.currentTime, 0.03);
-  if (studioReverbWet) studioReverbWet.gain.setTargetAtTime(Math.min(0.45, (Number(fx.reverb) || 0) / 145), studioCtx.currentTime, 0.03);
-  studioMaster.gain.setTargetAtTime(0.58 + Math.min(0.26, (Number(fx.drive) || 0) / 380), studioCtx.currentTime, 0.03);
+  if (!studioCtx || !studioFilter || !studioFeedback || !studioMaster || !studioDrive || !studioCompressor) return;
+  const fx = state.studio.effects || {};
+  const now = studioCtx.currentTime;
+  const drive = Math.max(0, Math.min(100, Number(fx.drive) || 0));
+  const tone = Math.max(0, Math.min(100, Number(fx.tone) || 76));
+  const delay = Math.max(0, Math.min(100, Number(fx.delay) || 0));
+  const reverb = Math.max(0, Math.min(100, Number(fx.reverb) || 0));
+  const punch = Math.max(0, Math.min(100, Number(fx.punch) || 0));
+  studioDrive.curve = makeStudioDriveCurve(drive);
+  studioMaster.gain.setTargetAtTime(0.66 + Math.min(0.16, drive / 700), now, 0.025);
+  studioFilter.frequency.setTargetAtTime(420 + Math.pow(tone / 100, 1.7) * 17000, now, 0.03);
+  studioFilter.Q.setTargetAtTime(0.38 + punch / 78, now, 0.03);
+  studioDelay.delayTime.setTargetAtTime(0.07 + (delay / 100) * 0.54, now, 0.03);
+  studioFeedback.gain.setTargetAtTime(Math.min(0.62, delay / 165), now, 0.03);
+  studioDelayWet?.gain.setTargetAtTime(Math.min(0.42, delay / 220), now, 0.03);
+  studioReverbGain?.gain.setTargetAtTime(Math.min(0.46, reverb / 190), now, 0.05);
+  studioDryGain?.gain.setTargetAtTime(1 - Math.min(0.22, reverb / 420), now, 0.05);
+  studioCompressor.threshold.setTargetAtTime(-30 + punch * 0.18, now, 0.04);
+  studioCompressor.knee.setTargetAtTime(18 + punch * 0.12, now, 0.04);
+  studioCompressor.ratio.setTargetAtTime(1.8 + punch / 22, now, 0.04);
+  studioCompressor.attack.setTargetAtTime(0.006, now, 0.04);
+  studioCompressor.release.setTargetAtTime(0.12 + (100 - punch) / 700, now, 0.04);
+  studioOutputGain?.gain.setTargetAtTime(0.95, now, 0.03);
 }
 
 function studioOutput() {
-  return studioMaster || ensureStudioAudio()?.destination;
+  ensureStudioAudio();
+  return studioMaster || studioCtx?.destination;
 }
 
-function makeNoiseBuffer(duration = 0.18) {
-  const ctx = ensureStudioAudio();
+function makeNoiseBuffer(duration = 0.18, ctxOverride = null) {
+  const ctx = ctxOverride || ensureStudioAudio();
   if (!ctx) return null;
-  const buffer = ctx.createBuffer(1, Math.max(1, duration * ctx.sampleRate), ctx.sampleRate);
+  const buffer = ctx.createBuffer(1, Math.max(1, Math.floor(duration * ctx.sampleRate)), ctx.sampleRate);
   const data = buffer.getChannelData(0);
   for (let i = 0; i < data.length; i += 1) data[i] = Math.random() * 2 - 1;
   return buffer;
+}
+
+function reverseStudioBuffer(buffer) {
+  if (!buffer) return null;
+  const ctx = ensureStudioAudio();
+  if (!ctx) return buffer;
+  const copy = ctx.createBuffer(buffer.numberOfChannels, buffer.length, buffer.sampleRate);
+  for (let channel = 0; channel < buffer.numberOfChannels; channel += 1) {
+    const input = buffer.getChannelData(channel);
+    const output = copy.getChannelData(channel);
+    for (let i = 0, j = input.length - 1; i < input.length; i += 1, j -= 1) output[i] = input[j];
+  }
+  return copy;
 }
 
 function triggerStudioSynthDrum(type = "perc", velocity = 0.8, when = 0) {
@@ -3247,42 +3690,44 @@ function triggerStudioSynthDrum(type = "perc", velocity = 0.8, when = 0) {
     toast("Tap again in a browser with Web Audio enabled.");
     return;
   }
-  const t = when || ctx.currentTime;
+  const t = Math.max(ctx.currentTime, when || ctx.currentTime);
   const out = studioOutput();
+  const amp = Math.max(0.01, Math.min(1, velocity));
   const gain = ctx.createGain();
   gain.gain.setValueAtTime(0.0001, t);
-  gain.gain.exponentialRampToValueAtTime(Math.max(0.015, velocity * 0.72), t + 0.01);
-  gain.gain.exponentialRampToValueAtTime(0.0001, t + (type === "openhat" || type === "crash" || type === "ride" ? 0.55 : 0.2));
+  gain.gain.exponentialRampToValueAtTime(Math.max(0.015, amp * 0.78), t + 0.008);
+  gain.gain.exponentialRampToValueAtTime(0.0001, t + (type === "openhat" || type === "crash" || type === "ride" ? 0.65 : 0.24));
   gain.connect(out);
   if (type === "kick") {
     const osc = ctx.createOscillator();
     osc.type = "sine";
-    osc.frequency.setValueAtTime(140, t);
-    osc.frequency.exponentialRampToValueAtTime(42, t + 0.16);
+    osc.frequency.setValueAtTime(155, t);
+    osc.frequency.exponentialRampToValueAtTime(42, t + 0.18);
     osc.connect(gain);
     osc.start(t);
-    osc.stop(t + 0.22);
+    osc.stop(t + 0.24);
     return;
   }
   if (["snare", "clap", "hat", "openhat", "crash", "ride"].includes(type)) {
     const source = ctx.createBufferSource();
     const filter = ctx.createBiquadFilter();
-    source.buffer = makeNoiseBuffer(type === "clap" ? 0.24 : type === "hat" ? 0.08 : 0.48);
+    source.buffer = makeNoiseBuffer(type === "clap" ? 0.28 : type === "hat" ? 0.08 : type === "openhat" ? 0.48 : 0.62, ctx);
     filter.type = type === "snare" || type === "clap" ? "bandpass" : "highpass";
-    filter.frequency.value = type === "snare" ? 1800 : type === "clap" ? 1200 : 6200;
+    filter.frequency.value = type === "snare" ? 1850 : type === "clap" ? 1250 : type === "ride" ? 7200 : 6400;
+    filter.Q.value = type === "hat" ? 3.2 : 1.1;
     source.connect(filter);
     filter.connect(gain);
     source.start(t);
-    source.stop(t + (type === "hat" ? 0.09 : 0.5));
+    source.stop(t + (type === "hat" ? 0.1 : type === "openhat" ? 0.48 : 0.62));
     return;
   }
   const osc = ctx.createOscillator();
   osc.type = type === "bell" ? "triangle" : type === "fx" ? "sawtooth" : "square";
-  osc.frequency.setValueAtTime(type === "tom" ? 180 : type === "bell" ? 740 : 360, t);
-  osc.frequency.exponentialRampToValueAtTime(type === "fx" ? 90 : 120, t + 0.22);
+  osc.frequency.setValueAtTime(type === "tom" ? 190 : type === "bell" ? 780 : 360, t);
+  osc.frequency.exponentialRampToValueAtTime(type === "fx" ? 88 : 120, t + 0.24);
   osc.connect(gain);
   osc.start(t);
-  osc.stop(t + 0.32);
+  osc.stop(t + 0.34);
 }
 
 function readFileAsDataUrl(file) {
@@ -3297,25 +3742,24 @@ function readFileAsDataUrl(file) {
 async function decodeStudioSample(padIndex) {
   const pad = state.studio.pads[padIndex];
   if (!pad?.sampleData) return null;
-  const cacheKey = `${padIndex}:${pad.reverse ? "r" : "f"}:${pad.sampleName || ""}:${String(pad.sampleData).slice(0, 48)}`;
+  const cacheKey = `${padIndex}:${pad.sampleData}`;
   if (studioSampleBuffers[cacheKey]) return studioSampleBuffers[cacheKey];
   const ctx = ensureStudioAudio();
   if (!ctx) return null;
   const response = await fetch(pad.sampleData);
   const arrayBuffer = await response.arrayBuffer();
-  const decoded = await ctx.decodeAudioData(arrayBuffer.slice(0));
-  if (!pad.reverse) {
-    studioSampleBuffers[cacheKey] = decoded;
-    return decoded;
-  }
-  const reversed = ctx.createBuffer(decoded.numberOfChannels, decoded.length, decoded.sampleRate);
-  for (let channel = 0; channel < decoded.numberOfChannels; channel += 1) {
-    const source = decoded.getChannelData(channel);
-    const target = reversed.getChannelData(channel);
-    for (let i = 0; i < source.length; i += 1) target[i] = source[source.length - 1 - i];
-  }
-  studioSampleBuffers[cacheKey] = reversed;
-  return reversed;
+  const buffer = await ctx.decodeAudioData(arrayBuffer.slice(0));
+  studioSampleBuffers[cacheKey] = buffer;
+  return buffer;
+}
+
+async function studioPadPlaybackBuffer(index) {
+  const pad = state.studio.pads[index];
+  const buffer = await decodeStudioSample(index).catch(() => null);
+  if (!buffer || !pad?.reverse) return buffer;
+  const reverseKey = `${index}:${pad.sampleData}:reverse`;
+  if (!studioSampleBuffers[reverseKey]) studioSampleBuffers[reverseKey] = reverseStudioBuffer(buffer);
+  return studioSampleBuffers[reverseKey] || buffer;
 }
 
 async function triggerStudioPad(index, record = true, when = 0, eventVelocity) {
@@ -3325,18 +3769,21 @@ async function triggerStudioPad(index, record = true, when = 0, eventVelocity) {
   flashStudioPad(index);
   if (pad.sampleData) {
     const ctx = ensureStudioAudio();
-    const buffer = await decodeStudioSample(index).catch(() => null);
+    const buffer = await studioPadPlaybackBuffer(index);
     if (ctx && buffer) {
       const source = ctx.createBufferSource();
       const gain = ctx.createGain();
       source.buffer = buffer;
       source.playbackRate.value = Math.pow(2, (Number(pad.pitch) || 0) / 12);
-      gain.gain.value = velocity * ((Number(pad.gain) || 80) / 100);
+      const startAt = Math.max(ctx.currentTime, when || ctx.currentTime);
+      gain.gain.setValueAtTime(Math.max(0.0001, velocity * ((Number(pad.gain) || 80) / 100)), startAt);
       source.connect(gain);
       gain.connect(studioOutput());
-      const start = Math.max(0, buffer.duration * ((Number(pad.trimStart) || 0) / 100));
-      const end = Math.max(start + 0.02, buffer.duration * ((Number(pad.trimEnd) || 100) / 100));
-      source.start(Math.max(ctx.currentTime, when || ctx.currentTime), start, end - start);
+      const trimStart = Math.max(0, Math.min(95, Number(pad.trimStart) || 0));
+      const trimEnd = Math.max(trimStart + 1, Math.min(100, Number(pad.trimEnd) || 100));
+      const start = Math.max(0, buffer.duration * (trimStart / 100));
+      const end = Math.max(start + 0.02, buffer.duration * (trimEnd / 100));
+      try { source.start(startAt, start, end - start); } catch { source.start(ctx.currentTime, start, end - start); }
     }
   } else {
     triggerStudioSynthDrum(pad.type, velocity, when);
@@ -3359,117 +3806,109 @@ function recordStudioEvent(type, pad = 0, note = "", velocity = 0.82) {
   const event = { id: `ev-${Date.now()}-${Math.random().toString(16).slice(2)}`, type, pad, note, step, velocity: Math.round(velocity * 100), offset: 0 };
   state.studio.events = state.studio.events.filter((item) => !(item.type === type && item.pad === pad && item.note === note && item.step === step)).concat(event);
   saveStudioProject();
-  renderStudioPlayhead();
 }
 
-function studioStepMs() {
-  return (60000 / Math.max(40, Number(state.studio.bpm) || 92)) / studioStepsPerBeat();
-}
-
-function studioSwingSeconds(step) {
-  const swing = Math.max(0, Math.min(60, Number(state.studio.swing) || 0));
-  return step % 2 ? studioStepSeconds() * (swing / 100) * 0.38 : 0;
-}
-
-function studioEventOffsetSeconds(event) {
-  return Math.max(-0.49, Math.min(0.49, Number(event.offset) || 0)) * studioStepSeconds();
-}
-
-function studioHumanFeelSeconds() {
-  const amount = Math.max(0, Math.min(40, Number(state.studio.humanize) || 0));
-  return (Math.random() - 0.5) * amount * 0.0007;
-}
-
-function playStudioStep(step, when = 0) {
+function scheduleStudioPlayhead(step, when) {
   const ctx = ensureStudioAudio();
-  if (!ctx) return;
+  const delay = Math.max(0, ((when || ctx?.currentTime || 0) - (ctx?.currentTime || 0)) * 1000);
+  const id = setTimeout(() => {
+    if (!state.studioPlaying) return;
+    state.studioStep = step % studioTotalSteps();
+    renderStudioPlayhead();
+  }, delay);
+  studioPlayheadTimers.push(id);
+  if (studioPlayheadTimers.length > 256) studioPlayheadTimers.splice(0, studioPlayheadTimers.length - 128).forEach(clearTimeout);
+}
+
+function scheduleStudioStep(step, when) {
   const total = studioTotalSteps();
-  const normalized = step % total;
-  const stepWhen = Math.max(ctx.currentTime + 0.002, when || ctx.currentTime) + studioSwingSeconds(normalized);
+  const normalized = ((step % total) + total) % total;
+  const baseSwing = studioSwingSeconds(normalized);
   const soloed = state.studio.vocals.some((track) => track.solo);
-  state.studio.events.filter((event) => event.step === normalized).forEach((event) => {
-    const velocity = Math.max(8, Math.min(100, (Number(event.velocity) || state.studio.velocity) + (Math.random() - 0.5) * (Number(state.studio.humanize) || 0)));
-    const eventWhen = Math.max(ctx.currentTime + 0.002, stepWhen + studioEventOffsetSeconds(event) + studioHumanFeelSeconds());
-    if (event.type === "pad") triggerStudioPad(event.pad, false, eventWhen, velocity);
-    if (event.type === "note") triggerStudioNote(event.note, false, velocity / 100, eventWhen);
+  const soloedStem = (state.studio.stems || []).some((stem) => stem.solo);
+  state.studio.events.filter((event) => Number(event.step) === normalized).forEach((event) => {
+    const savedOffset = (Number(event.offset) || 0) * studioStepSeconds();
+    const randomHuman = (Math.random() - 0.5) * (Number(state.studio.humanize) || 0) * 0.0008;
+    const eventTime = Math.max(ensureStudioAudio()?.currentTime || 0, when + baseSwing + savedOffset + randomHuman);
+    const velocity = Math.max(8, Math.min(100, (Number(event.velocity) || state.studio.velocity) + (Math.random() - 0.5) * (Number(state.studio.humanize) || 0) * 0.55));
+    if (event.type === "pad") triggerStudioPad(event.pad, false, eventTime, velocity);
+    if (event.type === "note") triggerStudioNote(event.note, false, velocity / 100, eventTime);
+    if (event.type === "stem") playStudioStem(event.stem, eventTime);
   });
   state.studio.vocals.forEach((track, index) => {
     if (!track.data || track.muted || (soloed && !track.solo)) return;
-    if (Number(track.startStep) === normalized) playVocalTrack(index, stepWhen);
+    if (Number(track.startStep) === normalized) playVocalTrack(index, when + baseSwing);
   });
-  if (state.studio.metronome && normalized % studioStepsPerBeat() === 0) triggerStudioSynthDrum("bell", 0.18, stepWhen);
+  (state.studio.stems || []).forEach((stem, index) => {
+    if (!stem.data || !stem.sequenceEnabled || stem.muted || (soloedStem && !stem.solo)) return;
+    if (Number(stem.startStep) === normalized) playStudioStem(index, when + baseSwing);
+  });
+  const beatStep = Math.max(1, Math.round(studioStepsPerBeat()));
+  if (state.studio.metronome && normalized % beatStep === 0) triggerStudioSynthDrum("bell", 0.18, when);
+  scheduleStudioPlayhead(normalized, when);
 }
 
 function studioSchedulerTick() {
   const ctx = ensureStudioAudio();
   if (!ctx || !state.studioPlaying) return;
   const total = studioTotalSteps();
-  const lookahead = 0.13;
-  while (studioNextStepTime < ctx.currentTime + lookahead) {
-    if (!state.studio.loopEnabled && studioSchedulerStep >= total) {
-      stopStudioSequence();
-      toast("16-bar sequence complete");
-      return;
-    }
-    state.studioStep = studioSchedulerStep % total;
-    playStudioStep(state.studioStep, studioNextStepTime);
-    studioSchedulerStep = studioSchedulerStep + 1;
-    if (state.studio.loopEnabled) studioSchedulerStep %= total;
+  while (studioNextStepTime < ctx.currentTime + studioScheduleAheadSeconds) {
+    scheduleStudioStep(studioLastScheduledStep, studioNextStepTime);
     studioNextStepTime += studioStepSeconds();
+    studioLastScheduledStep = (studioLastScheduledStep + 1) % total;
   }
-  renderStudioPlayhead();
 }
 
 function startStudioSequence() {
   const ctx = ensureStudioAudio();
-  if (!ctx) {
-    toast("Web Audio is not available in this browser.");
-    return;
-  }
+  if (!ctx) return;
   stopStudioSequence(false);
   state.studioPlaying = true;
   const total = studioTotalSteps();
-  studioSchedulerStep = state.studioStep % total;
-  studioNextStepTime = ctx.currentTime + 0.045;
-  studioTimerId = setInterval(studioSchedulerTick, 25);
-  studioUiTimerId = setInterval(renderStudioPlayhead, 60);
+  state.studioStep = ((Number(state.studioStep) || 0) + total) % total;
+  studioLastScheduledStep = state.studioStep;
+  studioNextStepTime = ctx.currentTime + 0.055;
+  state.studio.vocals.forEach((track, index) => { if (track.data) decodeStudioVocal(index).catch(() => {}); });
+  (state.studio.stems || []).forEach((stem, index) => { if (stem.data) decodeStudioStem(index).catch(() => {}); });
+  studioTimerId = setInterval(studioSchedulerTick, studioLookaheadMs);
   studioSchedulerTick();
   render();
 }
 
 function stopStudioSequence(update = true) {
   clearInterval(studioTimerId);
-  clearInterval(studioUiTimerId);
   studioTimerId = null;
-  studioUiTimerId = null;
+  studioPlayheadTimers.splice(0).forEach(clearTimeout);
+  stopStudioActiveStems();
+  stopStudioDjDecks();
   state.studioPlaying = false;
   state.studioStep = 0;
   if (update) render();
 }
 
 function renderStudioPlayhead() {
-  const { start, count } = studioSequencerWindow();
   document.querySelectorAll(".studio-step").forEach((cell) => {
     cell.classList.toggle("playing", Number(cell.getAttribute("data-step")) === state.studioStep);
   });
-  const strip = document.querySelector(".studio-playhead-strip");
-  if (strip) {
-    const local = state.studioStep - start;
-    const percent = local >= 0 && local < count ? (local / Math.max(1, count - 1)) * 100 : -5;
-    strip.style.setProperty("--playhead", `${percent}%`);
+  const readout = document.querySelector("[data-studio-playhead-readout]");
+  if (readout) {
+    const stepsPerBar = Math.max(1, Math.round(studioStepsPerBeat() * 4));
+    const bar = Math.floor(state.studioStep / stepsPerBar) + 1;
+    const tick = state.studioStep % stepsPerBar;
+    readout.textContent = `Bar ${bar} · Tick ${String(tick).padStart(3, "0")}`;
   }
 }
 
 function triggerStudioNote(note = "C", record = true, velocity = 0.7, when = 0) {
   const ctx = ensureStudioAudio();
   if (!ctx) return;
-  const t = Math.max(ctx.currentTime, when || ctx.currentTime);
   const noteIndex = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"].indexOf(note);
   const freq = 440 * Math.pow(2, ((noteIndex < 0 ? 0 : noteIndex) + (Number(state.studio.octave) - 4) * 12 - 9) / 12);
   const osc = ctx.createOscillator();
   const gain = ctx.createGain();
+  const t = Math.max(ctx.currentTime, when || ctx.currentTime);
   osc.type = state.studio.waveform || "sawtooth";
-  osc.frequency.value = freq;
+  osc.frequency.setValueAtTime(freq, t);
   gain.gain.setValueAtTime(0.0001, t);
   gain.gain.exponentialRampToValueAtTime(velocity * ((Number(state.studio.synthVolume) || 55) / 100), t + 0.02);
   gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.44);
@@ -3490,15 +3929,244 @@ function downloadTextFile(name, text, type = "application/json") {
   setTimeout(() => URL.revokeObjectURL(url), 800);
 }
 
-async function decodeStudioAudioData(data, cacheKey = "") {
-  if (!data) return null;
-  if (cacheKey && studioSampleBuffers[cacheKey]) return studioSampleBuffers[cacheKey];
+
+async function decodeStudioStem(index) {
+  const stem = state.studio.stems?.[index];
+  if (!stem?.data) return null;
+  const key = `${index}:${stem.data}`;
+  if (studioStemBuffers[key]) return studioStemBuffers[key];
   const ctx = ensureStudioAudio();
   if (!ctx) return null;
-  const response = await fetch(data);
+  const response = await fetch(stem.data);
   const arrayBuffer = await response.arrayBuffer();
   const buffer = await ctx.decodeAudioData(arrayBuffer.slice(0));
-  if (cacheKey) studioSampleBuffers[cacheKey] = buffer;
+  studioStemBuffers[key] = buffer;
+  return buffer;
+}
+
+function stopStudioActiveStems() {
+  studioActiveStemSources.splice(0).forEach((source) => {
+    try { source.stop(0); } catch {}
+    try { source.disconnect(); } catch {}
+  });
+}
+
+async function playStudioStem(index, when = 0) {
+  const stem = state.studio.stems?.[index];
+  if (!stem?.data || stem.muted) return;
+  const soloed = (state.studio.stems || []).some((item) => item.solo);
+  if (soloed && !stem.solo) return;
+  const ctx = ensureStudioAudio();
+  const buffer = await decodeStudioStem(index).catch(() => null);
+  if (!ctx || !buffer) {
+    toast("Stem could not be decoded in this browser.");
+    return;
+  }
+  const source = ctx.createBufferSource();
+  const gain = ctx.createGain();
+  const t = Math.max(ctx.currentTime, when || ctx.currentTime);
+  source.buffer = buffer;
+  const sourceBpm = Math.max(1, Number(stem.sourceBpm) || Number(state.studio.bpm) || 92);
+  const playbackRate = stem.sync ? Math.max(0.25, Math.min(4, (Number(state.studio.bpm) || 92) / sourceBpm)) : 1;
+  source.playbackRate.setValueAtTime(playbackRate, t);
+  gain.gain.setValueAtTime(Math.max(0, Math.min(1.2, Number(stem.volume) / 100 || 0.78)), t);
+  source.connect(gain);
+  gain.connect(studioOutput());
+  source.onended = () => {
+    studioActiveStemSources = studioActiveStemSources.filter((item) => item !== source);
+    try { source.disconnect(); } catch {}
+  };
+  studioActiveStemSources.push(source);
+  try { source.start(t); } catch { source.start(ctx.currentTime); }
+}
+
+function ensureStudioDjState() {
+  const fallback = createDefaultStudioProject().dj;
+  state.studio.dj = {
+    ...fallback,
+    ...(state.studio.dj || {}),
+    deckA: { ...fallback.deckA, ...(state.studio.dj?.deckA || {}) },
+    deckB: { ...fallback.deckB, ...(state.studio.dj?.deckB || {}) },
+  };
+  ["deckA", "deckB"].forEach((key, index) => {
+    const deck = state.studio.dj[key];
+    deck.stemIndex = Math.max(0, Math.min((state.studio.stems || []).length - 1, Number(deck.stemIndex) || index));
+    deck.volume = Math.max(0, Math.min(120, Number(deck.volume) || 82));
+    deck.pitch = Math.max(-50, Math.min(50, Number(deck.pitch) || 0));
+    deck.jog = Math.max(-12, Math.min(12, Number(deck.jog) || 0));
+    deck.filter = Math.max(0, Math.min(100, Number(deck.filter) || 72));
+    deck.cueStep = Math.max(0, Math.min(studioTotalSteps() - 1, Number(deck.cueStep) || 0));
+  });
+  state.studio.dj.crossfader = Math.max(0, Math.min(100, Number(state.studio.dj.crossfader) || 50));
+  return state.studio.dj;
+}
+
+function studioDjKey(deckId = "A") {
+  return String(deckId).toUpperCase() === "B" ? "deckB" : "deckA";
+}
+
+function studioDjDeck(deckId = "A") {
+  const dj = ensureStudioDjState();
+  return dj[studioDjKey(deckId)];
+}
+
+function studioDjStem(deckId = "A") {
+  const deck = studioDjDeck(deckId);
+  return state.studio.stems?.[Number(deck.stemIndex) || 0] || null;
+}
+
+function ensureStudioDjRuntime(deckId = "A") {
+  const id = String(deckId).toUpperCase() === "B" ? "B" : "A";
+  const ctx = ensureStudioAudio();
+  if (!ctx) return null;
+  if (!studioDjDecks[id] || studioDjDecks[id].ctx !== ctx) {
+    const filter = ctx.createBiquadFilter();
+    const gain = ctx.createGain();
+    filter.type = "lowpass";
+    filter.Q.value = 0.72;
+    gain.gain.value = 0;
+    filter.connect(gain);
+    gain.connect(studioOutput());
+    studioDjDecks[id] = { id, ctx, filter, gain, source: null, startedAt: 0, startOffset: 0 };
+  }
+  updateStudioDjDeckMix();
+  return studioDjDecks[id];
+}
+
+function studioDjPlaybackRate(deckId = "A") {
+  const deck = studioDjDeck(deckId);
+  const stem = studioDjStem(deckId);
+  const sourceBpm = Math.max(1, Number(stem?.sourceBpm) || Number(state.studio.bpm) || 92);
+  const sync = deck.sync ? (Number(state.studio.bpm) || 92) / sourceBpm : 1;
+  const pitch = 1 + (Math.max(-50, Math.min(50, Number(deck.pitch) || 0)) / 100);
+  const jog = 1 + (Math.max(-12, Math.min(12, Number(deck.jog) || 0)) / 100);
+  return Math.max(0.1, Math.min(4, sync * pitch * jog));
+}
+
+function updateStudioDjDeckMix() {
+  if (!studioCtx) return;
+  const dj = ensureStudioDjState();
+  const x = Math.max(0, Math.min(100, Number(dj.crossfader) || 50)) / 100;
+  const deckMix = { A: Math.cos(x * Math.PI / 2), B: Math.sin(x * Math.PI / 2) };
+  ["A", "B"].forEach((id) => {
+    const runtime = studioDjDecks[id];
+    if (!runtime?.gain || !runtime?.filter) return;
+    const deck = studioDjDeck(id);
+    const now = studioCtx.currentTime;
+    const volume = Math.max(0, Math.min(1.2, Number(deck.volume) / 100 || 0));
+    runtime.gain.gain.setTargetAtTime(volume * deckMix[id], now, 0.025);
+    const filter = Math.max(0, Math.min(100, Number(deck.filter) || 72));
+    runtime.filter.frequency.setTargetAtTime(260 + Math.pow(filter / 100, 1.85) * 17800, now, 0.03);
+    runtime.filter.Q.setTargetAtTime(0.35 + (100 - filter) / 95, now, 0.03);
+    if (runtime.source?.playbackRate) runtime.source.playbackRate.setTargetAtTime(studioDjPlaybackRate(id), now, 0.02);
+  });
+}
+
+function stopStudioDjDeck(deckId = "A", shouldRender = false) {
+  const id = String(deckId).toUpperCase() === "B" ? "B" : "A";
+  const runtime = studioDjDecks[id];
+  if (runtime?.source) {
+    try { runtime.source.onended = null; } catch {}
+    try { runtime.source.stop(0); } catch {}
+    try { runtime.source.disconnect(); } catch {}
+    runtime.source = null;
+  }
+  const deck = studioDjDeck(id);
+  deck.playing = false;
+  if (shouldRender) render();
+}
+
+function stopStudioDjDecks() {
+  stopStudioDjDeck("A", false);
+  stopStudioDjDeck("B", false);
+}
+
+async function playStudioDjDeck(deckId = "A", options = {}) {
+  const id = String(deckId).toUpperCase() === "B" ? "B" : "A";
+  const deck = studioDjDeck(id);
+  const stem = studioDjStem(id);
+  if (!stem?.data) {
+    toast(`Load a stem on Deck ${id} first.`);
+    return;
+  }
+  const ctx = ensureStudioAudio();
+  const buffer = await decodeStudioStem(Number(deck.stemIndex)).catch(() => null);
+  if (!ctx || !buffer) {
+    toast("Deck stem could not be decoded in this browser.");
+    return;
+  }
+  const runtime = ensureStudioDjRuntime(id);
+  if (!runtime) return;
+  stopStudioDjDeck(id, false);
+  const source = ctx.createBufferSource();
+  const useBuffer = deck.reverse ? reverseStudioBuffer(buffer) || buffer : buffer;
+  const startAt = Math.max(ctx.currentTime, Number(options.when) || ctx.currentTime);
+  const cueSeconds = Math.max(0, Number(deck.cueStep) || 0) * studioStepSeconds();
+  const startOffset = useBuffer.duration ? cueSeconds % useBuffer.duration : 0;
+  source.buffer = useBuffer;
+  source.loop = Boolean(deck.loop) && !options.cue;
+  if (source.loop) {
+    source.loopStart = 0;
+    source.loopEnd = useBuffer.duration;
+  }
+  source.playbackRate.setValueAtTime(studioDjPlaybackRate(id), startAt);
+  source.connect(runtime.filter);
+  runtime.source = source;
+  runtime.startedAt = startAt;
+  runtime.startOffset = startOffset;
+  source.onended = () => {
+    if (runtime.source === source) runtime.source = null;
+    const liveDeck = studioDjDeck(id);
+    liveDeck.playing = false;
+    try { source.disconnect(); } catch {}
+    if (state.route === "studio") render();
+  };
+  try {
+    if (options.cue) source.start(startAt, startOffset, Math.min(0.75, Math.max(0.12, useBuffer.duration - startOffset)));
+    else source.start(startAt, startOffset);
+  } catch {
+    source.start(ctx.currentTime);
+  }
+  if (!options.cue) {
+    deck.playing = true;
+    if (ensureStudioDjState().recordLaunches && state.studio.recArmed && state.studioPlaying) addStudioDjDeckLaunchToSequence(id, false);
+  }
+  updateStudioDjDeckMix();
+  if (!options.silent) render();
+}
+
+function addStudioDjDeckLaunchToSequence(deckId = "A", shouldRender = true) {
+  const id = String(deckId).toUpperCase() === "B" ? "B" : "A";
+  const deck = studioDjDeck(id);
+  const stemIndex = Math.max(0, Math.min((state.studio.stems || []).length - 1, Number(deck.stemIndex) || 0));
+  const step = Math.max(0, Math.min(studioTotalSteps() - 1, Math.round(Number(state.studioStep) || 0)));
+  const exists = state.studio.events.find((event) => event.type === "stem" && Number(event.stem) === stemIndex && Number(event.step) === step);
+  if (!exists) state.studio.events.push({ id: `dj-${id}-${stemIndex}-${step}-${Date.now()}`, type: "stem", stem: stemIndex, step, velocity: state.studio.velocity, offset: 0 });
+  state.studio.selectedStem = stemIndex;
+  saveStudioProject();
+  if (shouldRender) {
+    toast(`Deck ${id} stem launch added at step ${step + 1}`);
+    render();
+  }
+}
+
+function assignStudioDjDeckToPad(deckId = "A") {
+  const deck = studioDjDeck(deckId);
+  state.studio.selectedStem = Math.max(0, Math.min((state.studio.stems || []).length - 1, Number(deck.stemIndex) || 0));
+  assignStudioStemToPad(state.studio.selectedStem);
+}
+
+async function decodeStudioVocal(index) {
+  const track = state.studio.vocals[index];
+  if (!track?.data) return null;
+  const key = `${index}:${track.data}`;
+  if (studioVocalBuffers[key]) return studioVocalBuffers[key];
+  const ctx = ensureStudioAudio();
+  if (!ctx) return null;
+  const response = await fetch(track.data);
+  const arrayBuffer = await response.arrayBuffer();
+  const buffer = await ctx.decodeAudioData(arrayBuffer.slice(0));
+  studioVocalBuffers[key] = buffer;
   return buffer;
 }
 
@@ -3506,233 +4174,396 @@ async function playVocalTrack(index, when = 0) {
   const track = state.studio.vocals[index];
   if (!track?.data) return;
   const ctx = ensureStudioAudio();
-  const buffer = await decodeStudioAudioData(track.data, `vocal:${index}:${track.fileName || ""}`).catch(() => null);
+  const buffer = await decodeStudioVocal(index).catch(() => null);
   if (!ctx || !buffer) {
     toast("Vocal clip could not be decoded in this browser.");
     return;
   }
   const source = ctx.createBufferSource();
   const gain = ctx.createGain();
+  const t = Math.max(ctx.currentTime, when || ctx.currentTime);
   source.buffer = buffer;
-  gain.gain.value = Math.max(0, Math.min(1, Number(track.volume) / 100 || 0.75));
+  gain.gain.setValueAtTime(Math.max(0, Math.min(1, Number(track.volume) / 100 || 0.75)), t);
   source.connect(gain);
   gain.connect(studioOutput());
-  source.start(Math.max(ctx.currentTime + 0.002, when || ctx.currentTime));
+  try { source.start(t); } catch { source.start(ctx.currentTime); }
 }
 
 function studioTransportControls() {
-  return `<div class="studio-transport-panel panel lm-studio-header-panel" style="--studio-hero-art:url('${ASSETS.studioRecordsConsole}'); --studio-logo-art:url('${ASSETS.studioLmCoin}'); --studio-profile-art:url('${ASSETS.studioBrainCoin}')">
-    <video class="lm-studio-motion" src="${ASSETS.studioMotion}" poster="${ASSETS.studioRecordsConsole}" muted loop autoplay playsinline preload="metadata" aria-hidden="true"></video>
-    <div class="lm-studio-appbar">
-      <div class="studio-brand-lock lm-studio-brand">
-        <span class="lm-studio-hex">LM</span>
-        <div><span>LottoMind</span><strong>Studio Mode</strong><small>${state.studioPlaying ? "Loop running" : "Ready for session"}</small></div>
-      </div>
-      <div class="lm-studio-title-block">
-        <h1>LottoMind <span>Studio Mode</span></h1>
-        <p>Futuristic MPC-style beat production, built for creators.</p>
-      </div>
-      <div class="lm-studio-header-tools">
-        <button class="studio-corner-back" data-action="go-back" type="button"><span>Back</span></button>
-        <label class="lm-mini-card project-card">Project <select data-action="studio-set" data-studio-field="projectName">${["Future Vault", "Neon Dreams", "Detroit Reset", "Oracle Session"].map((item) => `<option ${item === state.studio.projectName ? "selected" : ""}>${item}</option>`).join("")}</select></label>
-        <div class="lm-icon-pack" aria-label="Project tools"><button type="button">Folder</button><button type="button">Save</button><button type="button">Cloud</button><button type="button">Menu</button></div>
-        <label class="lm-mini-card bpm-card">BPM <input type="number" min="40" max="220" data-action="studio-set" data-studio-field="bpm" value="${state.studio.bpm}" /><button type="button">Tap</button></label>
-        <div class="lm-status-card"><span class="${state.studioPlaying ? "online" : ""}"></span><div><small>Studio Status</small><strong>${state.studioPlaying ? "Online" : "Standby"}</strong></div></div>
-        <div class="lm-profile-card"><span>LM</span><b></b></div>
-      </div>
+  return `<div class="studio-transport-panel panel lm-studio-header-panel lm-studio-glass">
+    <div class="studio-brand-lock lm-studio-brand">
+      <div class="lm-studio-logo-mark">LM</div>
+      <div><span>LottoMind</span><strong>Studio</strong><small>Make Beats. Manifest Wins.</small></div>
     </div>
-    <div class="lm-studio-metrics">
+    <div class="lm-studio-title-block">
+      <h1>LottoMind <span>Studio</span></h1>
+      <p>Make Beats. Manifest Wins. A premium MPC, DJ, stem, vocal, and Beat2Lotto workstation.</p>
+      <small data-studio-playhead-readout>Bar ${Math.floor(state.studioStep / Math.max(1, Math.round(studioStepsPerBeat() * 4))) + 1} · Tick ${String(state.studioStep % Math.max(1, Math.round(studioStepsPerBeat() * 4))).padStart(3, "0")}</small>
+    </div>
+    <div class="lm-top-controls">
+      <label class="lm-mini-card">Project <input data-bind="studioProjectName" value="${escapeHtml(state.studio.projectName || "Neon Dreams")}" /></label>
+      <label class="lm-mini-card">BPM <input type="number" min="40" max="220" value="${state.studio.bpm}" data-action="studio-set" data-studio-field="bpm" /></label>
       <label class="lm-mini-card">Grid <select data-action="studio-set" data-studio-field="division">${STUDIO_DIVISIONS.map((item) => `<option ${item === state.studio.division ? "selected" : ""}>${item}</option>`).join("")}</select></label>
-      <div class="lm-metric-pill">16 Bars</div>
-      <div class="lm-metric-pill">4 Vocal Tracks</div>
-      <div class="lm-metric-pill">${state.studio.division} Timing</div>
-      <div class="lm-metric-pill fx">FX Rack</div>
+      <div class="lm-status-card"><span class="online-dot"></span><strong>Studio Status</strong><small>${state.studioPlaying ? "Online" : "Standby"}</small></div>
     </div>
-    <div class="lm-transport-row">
-      <button class="primary-btn play" data-action="studio-play"><span class="transport-icon play-icon"></span><strong>${state.studioPlaying ? "Restart" : "Play"}</strong></button>
-      <button class="ghost-btn stop" data-action="studio-stop"><span class="transport-icon stop-icon"></span><strong>Stop</strong></button>
-      <button class="${state.studio.recArmed ? "record-btn active" : "record-btn"}" data-action="studio-toggle-rec"><span class="transport-icon rec-icon"></span><strong>Rec</strong></button>
-      <button class="${state.studio.recArmed ? "record-btn active seq" : "ghost-btn seq"}" data-action="studio-toggle-rec"><span class="transport-icon seq-icon"></span><strong>Seq Rec</strong></button>
-      <button class="${state.studio.loopEnabled ? "ghost-btn loop active" : "ghost-btn loop"}" data-action="studio-toggle-loop"><span class="transport-icon loop-icon"></span><strong>Loop</strong></button>
-      <button class="${state.studioMasterRecording ? "record-btn active mix" : "ghost-btn mix"}" data-action="${state.studioMasterRecording ? "studio-stop-master-record" : "studio-start-master-record"}"><span class="transport-icon mix-icon"></span><strong>Mix Rec</strong></button>
+    <div class="studio-transport-actions">
+      <button class="primary-btn play-btn" data-action="studio-play">${state.studioPlaying ? "Restart" : "Play"}</button>
+      <button class="ghost-btn" data-action="studio-stop">Stop</button>
+      <button class="${state.studio.recArmed ? "record-btn active" : "record-btn"}" data-action="studio-toggle-rec">Seq Rec</button>
+      <button class="${state.studioMasterRecording ? "record-btn active" : "gold-btn"}" data-action="${state.studioMasterRecording ? "studio-stop-master-record" : "studio-start-master-record"}">${state.studioMasterRecording ? "Stop Mix" : "Mix Rec"}</button>
     </div>
   </div>`;
 }
 
 function studioControlStrip() {
-  return `<div class="studio-control-strip panel lm-studio-tabs">
-    <div class="lm-tab-row" aria-label="Studio navigation">
+  return `<div class="studio-control-strip panel lm-studio-nav lm-studio-glass">
+    <div class="studio-tabs">
       ${[
-        ["Seq", "16 Bars", "studio-sequencer"],
-        ["Beat", "Beat Lotto", "studio-beat-lotto"],
-        ["Pads", "Drum Machine", "studio-pads"],
-        ["Note", "Sampler", "studio-sampler"],
-        ["Mic", "Vocals", "studio-vocals"],
-        ["FX", "Effects", "studio-effects"],
-        ["Bank", "Memory", "studio-files"],
-        ["Out", "Export", "studio-files"],
-      ].map(([icon, label, panel], index) => `<button class="studio-tab ${index === 0 ? "active" : ""}" data-action="studio-jump-panel" data-panel="${panel}"><i>${icon}</i>${label}</button>`).join("")}
+        ["SEQ", "Beat Lotto", "studio-beat-lotto"],
+        ["▦", "Drum Machine", "studio-pads"],
+        ["♫", "Sampler", "studio-sampler"],
+        ["▣", "Stem Kit", "studio-default-stem-kit"],
+        ["⇄", "Stems", "studio-stems"],
+        ["◌", "DJ Decks", "studio-dj-decks"],
+        ["◉", "Vocals", "studio-vocals"],
+        ["✦", "Effects", "studio-effects"],
+        ["◈", "Memory", "studio-files"],
+        ["⇪", "Export", "studio-files"],
+      ].map(([icon, label, panel], index) => `<button class="${index === 0 ? "active" : ""}" data-action="studio-jump-panel" data-panel="${panel}"><span>${icon}</span>${label}</button>`).join("")}
     </div>
-    <div class="lm-chip-row">
-      ${["Score", "Options", "Metro", "Chain", "Rock", "HipHop", "Latin", "Random"].map((label) => `<button class="studio-chip ${label === "Metro" && state.studio.metronome ? "active" : ""}" data-action="${label === "Metro" ? "studio-toggle-metronome" : label === "Random" ? "studio-randomize" : "studio-kit"}">${label}</button>`).join("")}
+    <div class="studio-mode-strip">
+      ${["Score", "Options", "Metro", "Chain", "Rock", "HipHop", "Latin"].map((label) => `<button class="ghost-btn micro">${label}</button>`).join("")}
+      <button class="gold-btn micro" data-action="studio-randomize">Random</button>
+      <button class="gold-btn micro" data-action="studio-humanize">Humanize</button>
     </div>
-    <div class="lm-knob-control-row">
-      <label>Swing <input type="range" min="0" max="60" data-action="studio-set" data-studio-field="swing" value="${state.studio.swing}" /><strong>${state.studio.swing}%</strong></label>
-      <label>Velocity <input type="range" min="1" max="100" data-action="studio-set" data-studio-field="velocity" value="${state.studio.velocity}" /><strong>${state.studio.velocity}%</strong></label>
-      <label>Human Feel <input type="range" min="0" max="40" data-action="studio-set" data-studio-field="humanize" value="${state.studio.humanize}" /><strong>${state.studio.humanize}%</strong></label>
-      <button class="primary-btn humanize" data-action="studio-humanize">Humanize</button>
+    <div class="studio-stat-pills">
+      <span>16 Bars</span><span>4 Vocal Tracks</span><span>1/64T Timing</span><span>${(state.studio.stems || []).filter((stem) => stem.data).length} Stems</span><span>${(state.studio.pads || []).filter((pad) => pad.sampleData && isStudioDefaultStemUrl(pad.sampleData)).length} Default Slices</span><span>Dual DJ Decks</span><span>${state.studio.division} Timing</span><span>FX Rack</span>
     </div>
   </div>`;
 }
 
 function studioDrumPadSurface() {
   const colors = ["cyan", "blue", "violet", "pink", "green", "gold"];
-  return `
-    <div class="section-head studio-panel-head"><div><h2>Drum Machine</h2><p>16 MPC pads with live click/tap and keyboard shortcuts.</p></div><span>Bank A</span></div>
+  return `<div class="panel lm-studio-panel lm-studio-glass" id="studio-pads">
+    <div class="panel-title-row"><div><span class="eyebrow">Drum Pads</span><h2>Drum Machine</h2></div><span class="panel-badge">Bank A</span></div>
     <div class="studio-pad-grid">
-      ${state.studio.pads.map((pad, index) => `<button class="studio-pad pad-${colors[index % colors.length]} ${index === state.studio.selectedPad ? "selected" : ""} ${pad.sampleData ? "sampled" : ""}" data-action="studio-pad" data-studio-pad="${index}">
-        <b>${pad.shortcut}</b><strong>${escapeHtml(pad.name)}</strong><small>${pad.sampleData ? "SAMPLE" : pad.type} / ${pad.velocity}</small><i>${pad.muted ? "Muted" : "Active"}</i>
+      ${state.studio.pads.map((pad, index) => `<button class="studio-pad ${colors[index % colors.length]} ${state.studio.selectedPad === index ? "selected" : ""} ${pad.muted ? "muted" : ""} ${isStudioDefaultStemUrl(pad.sampleData) ? "stem-default" : ""}" data-action="studio-pad" data-studio-pad="${index}" data-default-stem="${isStudioDefaultStemUrl(pad.sampleData) ? "true" : "false"}">
+        <span class="pad-number">${index + 1}</span><strong>${escapeHtml(pad.name)}</strong><small>${pad.sampleData ? (isStudioDefaultStemUrl(pad.sampleData) ? "DEFAULT STEM" : "SAMPLE") : pad.type} · ${pad.velocity}</small><em>${escapeHtml(pad.shortcut || "")}</em>
       </button>`).join("")}
-    </div>`;
+    </div>
+    <div class="pad-footer"><button class="ghost-btn micro">‹</button><span>Bank A</span><button class="ghost-btn micro">›</button><button class="ghost-btn micro">Pad Editor</button></div>
+  </div>`;
 }
 
 function studioDrumPads() {
-  return `<div id="studio-pads" class="panel studio-module studio-pads-panel" style="--studio-module-art:url('${ASSETS.studioMascotGold}')">${studioDrumPadSurface()}</div>`;
+  return studioDrumPadSurface();
 }
 
 function studioSequencerGrid() {
-  const { start, end, count, visible, total, page, maxPage } = studioSequencerWindow();
-  const padRows = state.studio.pads;
-  const hasEvent = (pad, step) => state.studio.events.some((event) => event.type === "pad" && event.pad === pad && event.step === step);
-  const localPlayhead = state.studioStep - start;
-  const playhead = localPlayhead >= 0 && localPlayhead < count ? Math.max(0, Math.min(100, (localPlayhead / Math.max(1, count - 1)) * 100)) : -5;
-  const stepsPerBar = studioStepsPerBeat() * 4;
-  const barStart = Math.floor(start / stepsPerBar) + 1;
-  const barEnd = Math.min(16, Math.ceil(end / stepsPerBar));
-  return `<div id="studio-sequencer" class="panel studio-module studio-sequencer" style="--studio-module-art:url('${ASSETS.studioRecordsLogo}')">
-    <div class="section-head studio-panel-head"><div><h2>16-Bar Sequencer</h2><p>${state.studio.division} grid: bars ${barStart}-${barEnd}, ticks ${start + 1}-${end} of ${total}.</p></div><span>${state.studio.events.length} events</span></div>
-    <div class="studio-division-row">
-      <span>Timing</span>
+  const visible = studioVisibleSteps();
+  const total = studioTotalSteps();
+  const offset = studioStepOffset();
+  const page = Number(state.studio.stepPage) || 0;
+  const pages = studioStepPageCount();
+  const stepsPerBar = Math.max(1, Math.round(studioStepsPerBeat() * 4));
+  const hasEvent = (pad, step) => state.studio.events.some((event) => event.type === "pad" && Number(event.pad) === pad && Number(event.step) === step);
+  const hasStemEvent = (stem, step) => state.studio.events.some((event) => event.type === "stem" && Number(event.stem) === stem && Number(event.step) === step);
+  const barMarkers = Array.from({ length: 16 }, (_, index) => {
+    const absolute = index * stepsPerBar;
+    if (absolute < offset || absolute >= offset + visible) return "";
+    const left = ((absolute - offset) / Math.max(1, visible - 1)) * 100;
+    return `<span style="left:${left}%">${index + 1}</span>`;
+  }).join("");
+  const stemRows = (state.studio.stems || []).map((stem, stemIndex) => `<div class="seq-row seq-row-stem ${stem.data ? "loaded" : "empty"}">
+        <div class="seq-label stem-label"><span class="seq-dot stem-dot"></span>${escapeHtml(stem.name || `Stem ${stemIndex + 1}`)}<small>${stem.data ? "stem" : "empty"}</small></div>
+        <div class="seq-cells">
+          ${Array.from({ length: visible }, (_, step) => {
+            const absolute = offset + step;
+            const active = hasStemEvent(stemIndex, absolute) || (stem.sequenceEnabled && Number(stem.startStep) === absolute);
+            const isBar = absolute % stepsPerBar === 0;
+            const isBeat = absolute % Math.max(1, Math.round(studioStepsPerBeat())) === 0;
+            return `<button class="studio-step stem-step ${active ? "active" : ""} ${isBar ? "bar" : isBeat ? "beat" : ""} ${absolute === state.studioStep ? "playing" : ""}" data-action="studio-toggle-stem-step" data-stem="${stemIndex}" data-step="${absolute}" title="${escapeHtml(stem.name || `Stem ${stemIndex + 1}`)} trigger step ${absolute + 1}"></button>`;
+          }).join("")}
+        </div>
+      </div>`).join("");
+  return `<div class="panel lm-studio-panel lm-sequencer-panel lm-studio-glass" id="studio-sequencer">
+    <div class="panel-title-row"><div><span class="eyebrow">Sequencer · 16 Bars</span><h2>16-Bar Sequencer</h2></div><span class="panel-badge">${state.studio.events.length} events</span></div>
+    <div class="sequencer-meta">
+      <span>${state.studio.division} grid</span><span>Steps ${offset + 1}-${Math.min(total, offset + visible)} / ${total}</span><span>Page ${page + 1}/${pages}</span><span>${(state.studio.stems || []).filter((stem) => stem.data).length} stems ready</span>
+    </div>
+    <div class="timing-division-row">
       ${STUDIO_DIVISIONS.map((item) => `<button class="${item === state.studio.division ? "active" : ""}" data-action="studio-set" data-studio-field="division" value="${item}">${item}</button>`).join("")}
     </div>
-    <div class="studio-seq-window-row">
-      <button class="ghost-btn" data-action="studio-seq-page" data-dir="-1" ${page <= 0 ? "disabled" : ""}>Prev Window</button>
-      <strong>Window ${page + 1}/${maxPage + 1}</strong>
-      <button class="ghost-btn" data-action="studio-seq-page" data-dir="1" ${page >= maxPage ? "disabled" : ""}>Next Window</button>
-      <label>Zoom <select data-action="studio-set" data-studio-field="seqZoom">${[32, 64, 128, 256].map((item) => `<option value="${item}" ${visible === item ? "selected" : ""}>${item} ticks</option>`).join("")}</select></label>
+    <div class="sequencer-pager">
+      <button class="ghost-btn micro" data-action="studio-set-step-page" data-step-page="${Math.max(0, page - 1)}">‹ Prev</button>
+      <input type="range" min="0" max="${Math.max(0, pages - 1)}" value="${page}" data-action="studio-set-step-page" />
+      <button class="ghost-btn micro" data-action="studio-set-step-page" data-step-page="${Math.min(pages - 1, page + 1)}">Next ›</button>
     </div>
-    <div class="studio-bar-ruler">${Array.from({ length: 16 }, (_, index) => `<span class="${index + 1 >= barStart && index + 1 <= barEnd ? "active" : ""}">${index + 1}</span>`).join("")}</div>
-    <div class="studio-seq-grid-wrap">
-      <div class="studio-playhead-strip" style="--playhead:${playhead}%"></div>
-      <div class="studio-seq-grid" style="--steps:${count}">
-        ${padRows.map((pad, padIndex) => `<div class="studio-seq-name">${escapeHtml(pad.name)}</div>${Array.from({ length: count }, (_, offset) => {
-          const step = start + offset;
-          return `<button class="studio-step ${hasEvent(padIndex, step) ? "on" : ""} ${step === state.studioStep ? "playing" : ""}" data-action="studio-toggle-step" data-pad="${padIndex}" data-step="${step}" aria-label="${escapeHtml(pad.name)} step ${step + 1}"></button>`;
-        }).join("")}`).join("")}
-      </div>
+    <div class="sequencer-barline">${barMarkers}</div>
+    <div class="sequencer-grid" style="--visible-steps:${visible}">
+      ${state.studio.pads.map((pad, padIndex) => `<div class="seq-row">
+        <div class="seq-label"><span class="seq-dot"></span>${escapeHtml(pad.name)}</div>
+        <div class="seq-cells">
+          ${Array.from({ length: visible }, (_, step) => {
+            const absolute = offset + step;
+            const active = hasEvent(padIndex, absolute);
+            const isBar = absolute % stepsPerBar === 0;
+            const isBeat = absolute % Math.max(1, Math.round(studioStepsPerBeat())) === 0;
+            return `<button class="studio-step ${active ? "active" : ""} ${isBar ? "bar" : isBeat ? "beat" : ""} ${absolute === state.studioStep ? "playing" : ""}" data-action="studio-toggle-step" data-pad="${padIndex}" data-step="${absolute}" title="${escapeHtml(pad.name)} step ${absolute + 1}"></button>`;
+          }).join("")}
+        </div>
+      </div>`).join("")}
+      ${stemRows}
     </div>
-    <div class="studio-seq-actions">
-      <button class="primary-btn play" data-action="studio-play">Play 16 Bars</button>
-      <button class="ghost-btn stop" data-action="studio-stop">Stop</button>
-      <button class="${state.studio.loopEnabled ? "ghost-btn loop active" : "ghost-btn loop"}" data-action="studio-toggle-loop">Loop ${state.studio.loopEnabled ? "On" : "Off"}</button>
-      <button class="ghost-btn" data-action="studio-clear-pattern">Clear Pattern</button>
-      <button class="ghost-btn" data-action="studio-save-project">Save Project</button>
-      <button class="ghost-btn" data-action="studio-export-stems">Export Stems</button>
+    <div class="studio-mix-controls">
+      <label>BPM <input type="number" min="40" max="220" value="${state.studio.bpm}" data-action="studio-set" data-studio-field="bpm" /></label>
+      <label>Swing <input type="range" min="0" max="75" value="${state.studio.swing}" data-action="studio-set" data-studio-field="swing" /></label>
+      <label>Velocity <input type="range" min="1" max="100" value="${state.studio.velocity}" data-action="studio-set" data-studio-field="velocity" /></label>
+      <label>Human <input type="range" min="0" max="40" value="${state.studio.humanize}" data-action="studio-set" data-studio-field="humanize" /></label>
+      <button class="ghost-btn micro" data-action="studio-toggle-metronome">Metronome ${state.studio.metronome ? "On" : "Off"}</button>
+      <button class="ghost-btn micro" data-action="studio-clear-pattern">Clear</button>
     </div>
   </div>`;
 }
 
 function studioKeyboardSurface() {
   const notes = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
-  return `
-    <div class="section-head studio-panel-head"><div><h2>Keyboard / Synth</h2><p>Play notes and record them into the loop when sequence rec is armed.</p></div><span>Oct ${state.studio.octave}</span></div>
-    <div class="studio-synth-controls">
+  return `<div class="panel lm-studio-panel keyboard-panel lm-studio-glass" id="studio-keyboard">
+    <div class="panel-title-row"><div><span class="eyebrow">Keyboard / Synth</span><h2>Studio Keyboard</h2></div><span class="panel-badge">MIDI Ready</span></div>
+    <div class="keyboard-controls">
       <label>Wave <select data-action="studio-set" data-studio-field="waveform">${["sine", "triangle", "sawtooth", "square"].map((item) => `<option ${item === state.studio.waveform ? "selected" : ""}>${item}</option>`).join("")}</select></label>
-      <label>Octave <input type="number" min="1" max="7" data-action="studio-set" data-studio-field="octave" value="${state.studio.octave}" /></label>
-      <label>Volume <input type="range" min="1" max="100" data-action="studio-set" data-studio-field="synthVolume" value="${state.studio.synthVolume}" /></label>
+      <label>Octave <input type="number" min="1" max="7" value="${state.studio.octave}" data-action="studio-set" data-studio-field="octave" /></label>
+      <label>Vol <input type="range" min="1" max="100" value="${state.studio.synthVolume}" data-action="studio-set" data-studio-field="synthVolume" /></label>
     </div>
-    <div class="studio-keyboard">${notes.map((note) => `<button class="${note.includes("#") ? "black" : "white"}" data-action="studio-note" data-note="${note}"><span>${note}</span></button>`).join("")}</div>`;
+    <div class="studio-keyboard-keys">
+      ${notes.map((note) => `<button class="key ${note.includes("#") ? "black" : "white"}" data-action="studio-note" data-note="${note}">${note}</button>`).join("")}
+    </div>
+  </div>`;
 }
 
 function studioKeyboardSection() {
-  return `<div id="studio-keyboard" class="panel studio-module studio-keyboard-panel" style="--studio-module-art:url('${ASSETS.studioBrainCoin}')">${studioKeyboardSurface()}</div>`;
+  return studioKeyboardSurface();
 }
 
 function studioRecordingBooth() {
-  return `<div id="studio-booth" class="panel studio-module studio-recording-booth" style="--studio-module-art:url('${ASSETS.studioMicHost}')">
-    <div class="section-head studio-panel-head"><div><h2>Record Vocal Booth</h2><p>Play pads, keyboard shortcuts, synth notes, and record ideas from one booth console.</p></div><span>MPC + Keys</span></div>
-    <div class="studio-booth-grid">
-      <div class="studio-booth-lane studio-booth-pads">${studioDrumPadSurface()}</div>
-      <div class="studio-booth-lane studio-booth-keys">${studioKeyboardSurface()}</div>
+  return `<div class="lm-studio-feature-strip panel lm-studio-glass">
+    <article><strong>Drum Machine</strong><span>Program 16-bar LottoMind beats with timing up to 1/64T.</span></article>
+    <article><strong>Sampler</strong><span>Import, record, trim, pitch, reverse, and export custom pad sounds.</span></article>
+    <article><strong>Default Stem Kit</strong><span>The uploaded Lead Vocals, Drums, Synth, and Other stems load as the factory pad bank.</span></article>
+    <article><strong>Stem Loader</strong><span>Import beat stems, assign them to pads, and launch them from the 16-bar sequence.</span></article>
+    <article><strong>DJ Turntables</strong><span>Mix stems on Deck A and Deck B with crossfader, cue, sync, loop, filter, and pitch controls.</span></article>
+    <article><strong>4-Track Vocals</strong><span>Mic/line input, device routing, mute/solo, and synced clip playback.</span></article>
+    <article><strong>Beat2Lotto</strong><span>Transform generated beats, humanized grooves, samples, vocals, and FX settings into creative number picks.</span></article>
+    <article><strong>Effects + Export</strong><span>Drive, filter, delay, reverb, compression, project memory, and sound export.</span></article>
+  </div>`;
+}
+
+
+function studioDefaultStemKitPanel() {
+  const loadedDefaults = (state.studio.stems || []).filter((stem) => stem.data && isStudioDefaultStemUrl(stem.data)).length;
+  const customStems = (state.studio.stems || []).filter((stem) => stem.data && !isStudioDefaultStemUrl(stem.data)).length;
+  const defaultPadSlices = (state.studio.pads || []).filter((pad) => pad.sampleData && isStudioDefaultStemUrl(pad.sampleData)).length;
+  const kit = state.studio.defaultStemKit || {};
+  return `<div class="panel lm-studio-panel default-stem-kit-panel lm-studio-glass" id="studio-default-stem-kit">
+    <div class="panel-title-row"><div><span class="eyebrow">Default Stem Kit</span><h2>Stem-to-Pad Sound Engine</h2></div><span class="panel-badge">v9 Factory Kit</span></div>
+    <p class="studio-note">The uploaded Lead Vocals, Drums, Synth, and Other stems are built into LottoMind Studio as the default sound source. Pads trigger sliced stem chops, stem rows can launch full stems, and you can replace everything with custom stems anytime.</p>
+    <div class="default-stem-metrics">
+      <span><strong>${loadedDefaults}</strong><small>Factory Stems</small></span>
+      <span><strong>${customStems}</strong><small>Custom Stems</small></span>
+      <span><strong>${defaultPadSlices}</strong><small>Pad Slices</small></span>
+      <span><strong>${kit.allowCustomReplacement === false ? "Locked" : "Open"}</strong><small>Custom Swap</small></span>
     </div>
-    <div class="studio-booth-footer">
-      <span>Pad shortcuts: 1 2 3 4 / Q W E R / A S D F / Z X C V</span>
-      <span>Keyboard notes: A W S E D F T G Y H U J</span>
+    <div class="default-stem-actions">
+      <button class="gold-btn" data-action="studio-load-default-stem-kit">Load Default Stem Kit</button>
+      <button class="ghost-btn" data-action="studio-force-default-stem-kit">Replace Pads With Defaults</button>
+      <button class="ghost-btn" data-action="studio-map-default-stem-pads">Re-Slice Default Pads</button>
+      <button class="ghost-btn" data-action="studio-use-current-stems-as-kit">Use Current Stems As Pad Kit</button>
+      <label class="file-pill">Import Custom Stems<input type="file" accept="audio/*" multiple data-action="studio-import-stems" /></label>
+    </div>
+    <div class="default-stem-asset-grid">
+      ${STUDIO_DEFAULT_STEM_ASSETS.map((asset) => {
+        const stem = (state.studio.stems || [])[Number(asset.targetStem) || 0] || {};
+        const loaded = stem.data && isStudioDefaultStemUrl(stem.data);
+        return `<article class="default-stem-asset ${loaded ? "loaded" : ""}">
+          <span>${String((Number(asset.targetStem) || 0) + 1).padStart(2, "0")}</span>
+          <strong>${escapeHtml(asset.name)}</strong>
+          <small>${escapeHtml(asset.role)} · ${escapeHtml(asset.fileName)}</small>
+          <em>${loaded ? "Loaded as default" : stem.data ? "Slot has custom stem" : "Ready to load"}</em>
+        </article>`;
+      }).join("")}
     </div>
   </div>`;
 }
 
 function studioSamplerPanel() {
   const pad = state.studio.pads[state.studio.selectedPad] || state.studio.pads[0];
-  return `<div id="studio-sampler" class="panel studio-module studio-sampler-panel" style="--studio-module-art:url('${ASSETS.studioFrequencyVault}')">
-    <div class="section-head studio-panel-head"><div><h2>Sampler</h2><p>Target pad: ${escapeHtml(pad.name)} ${pad.sampleData ? "(sample loaded)" : "(synth sound)"}</p></div><span>${String(state.studio.selectedPad + 1).padStart(2, "0")}</span></div>
-    <div class="studio-sample-wave" aria-hidden="true">${Array.from({ length: 34 }, (_, index) => `<span style="--h:${18 + ((index * 9) % 56)}%"></span>`).join("")}</div>
-    <div class="studio-tools-grid">
+  return `<div class="panel lm-studio-panel sampler-panel lm-studio-glass" id="studio-sampler">
+    <div class="panel-title-row"><div><span class="eyebrow">Sampler</span><h2>Pad Sampler</h2></div><span class="panel-badge">Pad ${String(state.studio.selectedPad + 1).padStart(2, "0")}</span></div>
+    <div class="sample-wave"><span></span><span></span><span></span><span></span><span></span><strong>${escapeHtml(pad.sampleName || pad.name)}</strong></div>
+    <div class="sampler-target-row">
       <label>Target <select data-action="studio-set" data-studio-field="selectedPad">${state.studio.pads.map((item, index) => `<option value="${index}" ${index === state.studio.selectedPad ? "selected" : ""}>${index + 1}. ${escapeHtml(item.name)}</option>`).join("")}</select></label>
-      <label>Load sample <input type="file" accept="audio/*" data-action="studio-import-sample" /></label>
-      <label>Audio URL <input data-bind="studioSampleUrl" placeholder="https://... audio file" /></label>
-      <button class="ghost-btn" data-action="studio-load-url-sample">Load URL</button>
-      <button class="${state.studioSampleRecording ? "record-btn active" : "ghost-btn"}" data-action="studio-start-sample-mic">Start Mic Sample</button>
-      <button class="${state.studioSampleRecording ? "record-btn active" : "ghost-btn"}" data-action="studio-start-sample-tab">Start Tab Sample</button>
-      <button class="ghost-btn" data-action="studio-stop-sample">Stop Sample</button>
-      <label>Start <input type="range" min="0" max="95" data-action="studio-pad-set" data-pad-field="trimStart" value="${pad.trimStart}" /></label>
-      <label>End <input type="range" min="5" max="100" data-action="studio-pad-set" data-pad-field="trimEnd" value="${pad.trimEnd}" /></label>
-      <label>Pitch <input type="range" min="-24" max="24" data-action="studio-pad-set" data-pad-field="pitch" value="${pad.pitch}" /></label>
-      <label>Gain <input type="range" min="1" max="140" data-action="studio-pad-set" data-pad-field="gain" value="${pad.gain}" /></label>
+      <label class="file-pill">Import Sound<input type="file" accept="audio/*" data-action="studio-import-sample" /></label>
+    </div>
+    <div class="url-sample-row"><input placeholder="Direct audio URL, where CORS allows" value="${escapeHtml(state.studioSampleUrl || "")}" data-bind="studioSampleUrl" /><button class="ghost-btn" data-action="studio-load-url-sample">Load URL</button></div>
+    <div class="sample-actions">
+      <button class="gold-btn" data-action="studio-sample-mic">Sample Mic/Line</button>
+      <button class="ghost-btn" data-action="studio-sample-tab">Sample Browser/Tab</button>
+      <button class="record-btn ${state.studioSampling ? "active" : ""}" data-action="studio-stop-sampling">${state.studioSampling ? `Stop ${escapeHtml(state.studioSamplingLabel || "Sample")}` : "Stop Sample"}</button>
+    </div>
+    <div class="knob-grid">
+      <label>Start <input type="range" min="0" max="95" value="${pad.trimStart}" data-action="studio-pad-set" data-pad-field="trimStart" /></label>
+      <label>End <input type="range" min="1" max="100" value="${pad.trimEnd}" data-action="studio-pad-set" data-pad-field="trimEnd" /></label>
+      <label>Pitch <input type="range" min="-24" max="24" value="${pad.pitch}" data-action="studio-pad-set" data-pad-field="pitch" /></label>
+      <label>Gain <input type="range" min="1" max="120" value="${pad.gain}" data-action="studio-pad-set" data-pad-field="gain" /></label>
+    </div>
+    <div class="sample-actions bottom">
       <button class="ghost-btn" data-action="studio-toggle-pad-reverse">${pad.reverse ? "Reverse On" : "Reverse Off"}</button>
-      <button class="primary-btn" data-action="studio-preview-sample">Preview</button>
+      <button class="ghost-btn" data-action="studio-preview-sample">Preview</button>
       <button class="ghost-btn" data-action="studio-export-sample">Export Sample</button>
-      <button class="ghost-btn" data-action="studio-clear-sample">Clear Sample</button>
+      <button class="ghost-btn danger" data-action="studio-clear-sample">Clear</button>
+    </div>
+  </div>`;
+}
+
+
+function studioStemDeckPanel() {
+  const stems = state.studio.stems || [];
+  const selectedIndex = Math.max(0, Math.min(stems.length - 1, Number(state.studio.selectedStem) || 0));
+  const stem = stems[selectedIndex] || createDefaultStudioProject().stems[0];
+  const maxStep = Math.max(0, studioTotalSteps() - 1);
+  return `<div class="panel lm-studio-panel stem-panel lm-studio-glass" id="studio-stems">
+    <div class="panel-title-row"><div><span class="eyebrow">Stem Loader</span><h2>Stem Deck + Pad Mapping</h2></div><span class="panel-badge">${stems.filter((item) => item.data).length}/8 Loaded</span></div>
+    <p class="studio-note">Import beat stems, loops, drum breaks, melodies, or vocal chops. Launch them from the 16-bar sequencer, play them as synced stems, or assign any stem to an MPC pad as a custom sound.</p>
+    <div class="stem-loader-actions">
+      <label>Stem Slot <select data-action="studio-select-stem">${stems.map((item, index) => `<option value="${index}" ${index === selectedIndex ? "selected" : ""}>${index + 1}. ${escapeHtml(item.name || `Stem ${index + 1}`)}</option>`).join("")}</select></label>
+      <label class="file-pill">Import Stem<input type="file" accept="audio/*" data-action="studio-import-stem" /></label>
+      <label class="file-pill">Import Multi-Stems<input type="file" accept="audio/*" multiple data-action="studio-import-stems" /></label>
+      <button class="gold-btn" data-action="studio-stem-to-pad">Load To Selected Pad</button>
+      <button class="ghost-btn" data-action="studio-stems-to-pads">Map Loaded Stems To Pads</button>
+      <button class="ghost-btn" data-action="studio-use-current-stems-as-kit">Slice Current Stems To Pads</button>
+    </div>
+    <div class="stem-focus-card ${stem.data ? "loaded" : "empty"}">
+      <div class="stem-wave"><span></span><span></span><span></span><span></span><span></span><strong>${escapeHtml(stem.fileName || stem.name || `Stem ${selectedIndex + 1}`)}</strong></div>
+      <div class="stem-edit-grid">
+        <label>Name <input value="${escapeHtml(stem.name || `Stem ${selectedIndex + 1}`)}" data-action="studio-stem-set" data-stem-field="name" /></label>
+        <label>Volume <input type="range" min="0" max="120" value="${Number(stem.volume) || 78}" data-action="studio-stem-set" data-stem-field="volume" /></label>
+        <label>Start Step <input type="number" min="0" max="${maxStep}" value="${Number(stem.startStep) || 0}" data-action="studio-stem-set" data-stem-field="startStep" /></label>
+        <label>Source BPM <input type="number" min="40" max="220" value="${Number(stem.sourceBpm) || Number(state.studio.bpm) || 92}" data-action="studio-stem-set" data-stem-field="sourceBpm" /></label>
+        <label>Pad Target <select data-action="studio-stem-set" data-stem-field="padTarget">${state.studio.pads.map((pad, index) => `<option value="${index}" ${Number(stem.padTarget) === index ? "selected" : ""}>${index + 1}. ${escapeHtml(pad.name)}</option>`).join("")}</select></label>
+        <label class="stem-check"><input type="checkbox" ${stem.sync ? "checked" : ""} data-action="studio-stem-set" data-stem-field="sync" /> Sync to Studio BPM</label>
+        <label class="stem-check"><input type="checkbox" ${stem.sequenceEnabled ? "checked" : ""} data-action="studio-stem-set" data-stem-field="sequenceEnabled" /> Auto-launch at Start Step</label>
+      </div>
+      <div class="sample-actions bottom">
+        <button class="ghost-btn" data-action="studio-play-stem">Preview Stem</button>
+        <button class="ghost-btn" data-action="studio-export-stem">Export Stem</button>
+        <button class="ghost-btn ${stem.muted ? "active" : ""}" data-action="studio-toggle-stem-mute">Mute</button>
+        <button class="ghost-btn ${stem.solo ? "active" : ""}" data-action="studio-toggle-stem-solo">Solo</button>
+        <button class="ghost-btn danger" data-action="studio-clear-stem">Clear Stem</button>
+      </div>
+      <small class="studio-note">Large stems are session-only inside the browser. They will play now, but export or keep the original file if you need to reload them later.</small>
+    </div>
+    <div class="stem-slot-grid">
+      ${stems.map((item, index) => `<button class="stem-slot ${index === selectedIndex ? "selected" : ""} ${item.data ? "loaded" : "empty"} ${item.muted ? "muted" : ""} ${item.solo ? "solo" : ""}" data-action="studio-select-stem" value="${index}">
+        <span>${String(index + 1).padStart(2, "0")}</span><strong>${escapeHtml(item.name || `Stem ${index + 1}`)}</strong><small>${item.data ? escapeHtml(item.fileName || "loaded") : "drop/import audio"}</small><em>${item.sequenceEnabled ? "SEQ" : item.data ? "READY" : "EMPTY"}</em>
+      </button>`).join("")}
+    </div>
+  </div>`;
+}
+
+function studioDjDecksPanel() {
+  const dj = ensureStudioDjState();
+  const stems = state.studio.stems || [];
+  const maxStep = Math.max(0, studioTotalSteps() - 1);
+  const renderDeck = (deckId, title) => {
+    const key = studioDjKey(deckId);
+    const deck = dj[key];
+    const stemIndex = Math.max(0, Math.min(stems.length - 1, Number(deck.stemIndex) || 0));
+    const stem = stems[stemIndex] || {};
+    const playing = Boolean(deck.playing);
+    return `<div class="dj-deck-card deck-${deckId.toLowerCase()} ${playing ? "playing" : ""} ${stem.data ? "loaded" : "empty"}">
+      <div class="dj-deck-top">
+        <span class="eyebrow">Turntable ${deckId}</span>
+        <strong>${escapeHtml(title)}</strong>
+        <em>${stem.data ? escapeHtml(stem.fileName || stem.name || `Stem ${stemIndex + 1}`) : "No stem loaded"}</em>
+      </div>
+      <div class="turntable-wrap">
+        <button class="turntable-platter" data-action="studio-dj-cue" data-deck="${deckId}" title="Cue Deck ${deckId}">
+          <span class="platter-ring one"></span><span class="platter-ring two"></span><span class="platter-ring three"></span>
+          <strong>${deckId}</strong><small>${playing ? "ON AIR" : stem.data ? "CUE" : "LOAD"}</small>
+        </button>
+        <div class="tonearm"><span></span></div>
+      </div>
+      <div class="dj-stem-select-row">
+        <label>Stem Source <select data-action="studio-dj-set" data-deck="${deckId}" data-dj-field="stemIndex">
+          ${stems.map((item, index) => `<option value="${index}" ${index === stemIndex ? "selected" : ""}>${index + 1}. ${escapeHtml(item.name || `Stem ${index + 1}`)}${item.data ? " ✓" : ""}</option>`).join("")}
+        </select></label>
+        <label class="file-pill">Load Stem<input type="file" accept="audio/*" data-action="studio-dj-import-stem" data-deck="${deckId}" /></label>
+      </div>
+      <div class="dj-transport-row">
+        <button class="primary-btn" data-action="studio-dj-play" data-deck="${deckId}">${playing ? "Restart" : "Play"}</button>
+        <button class="ghost-btn" data-action="studio-dj-cue" data-deck="${deckId}">Cue</button>
+        <button class="ghost-btn" data-action="studio-dj-stop" data-deck="${deckId}">Stop</button>
+      </div>
+      <div class="dj-toggle-row">
+        <label class="dj-check"><input type="checkbox" ${deck.sync ? "checked" : ""} data-action="studio-dj-set" data-deck="${deckId}" data-dj-field="sync" /> BPM Sync</label>
+        <label class="dj-check"><input type="checkbox" ${deck.loop ? "checked" : ""} data-action="studio-dj-set" data-deck="${deckId}" data-dj-field="loop" /> Loop</label>
+        <label class="dj-check"><input type="checkbox" ${deck.reverse ? "checked" : ""} data-action="studio-dj-set" data-deck="${deckId}" data-dj-field="reverse" /> Reverse</label>
+      </div>
+      <div class="dj-control-grid">
+        <label>Volume <input type="range" min="0" max="120" value="${Number(deck.volume) || 82}" data-action="studio-dj-set" data-deck="${deckId}" data-dj-field="volume" /><span>${Number(deck.volume) || 82}%</span></label>
+        <label>Pitch <input type="range" min="-50" max="50" value="${Number(deck.pitch) || 0}" data-action="studio-dj-set" data-deck="${deckId}" data-dj-field="pitch" /><span>${Number(deck.pitch) || 0}%</span></label>
+        <label>Jog / Scratch <input type="range" min="-12" max="12" value="${Number(deck.jog) || 0}" data-action="studio-dj-set" data-deck="${deckId}" data-dj-field="jog" /><span>${Number(deck.jog) || 0}</span></label>
+        <label>Filter <input type="range" min="0" max="100" value="${Number(deck.filter) || 72}" data-action="studio-dj-set" data-deck="${deckId}" data-dj-field="filter" /><span>${Number(deck.filter) || 72}%</span></label>
+        <label>Cue Step <input type="number" min="0" max="${maxStep}" value="${Number(deck.cueStep) || 0}" data-action="studio-dj-set" data-deck="${deckId}" data-dj-field="cueStep" /><span>/${maxStep}</span></label>
+      </div>
+      <div class="dj-deck-actions">
+        <button class="ghost-btn micro" data-action="studio-dj-jog-reset" data-deck="${deckId}">Release Jog</button>
+        <button class="ghost-btn micro" data-action="studio-dj-to-pad" data-deck="${deckId}">Send To Pad</button>
+        <button class="ghost-btn micro" data-action="studio-dj-add-trigger" data-deck="${deckId}">Add Seq Launch</button>
+      </div>
+    </div>`;
+  };
+  return `<div class="panel lm-studio-panel dj-decks-panel lm-studio-glass" id="studio-dj-decks">
+    <div class="panel-title-row"><div><span class="eyebrow">DJ Stem Mixer</span><h2>Dual Turntables</h2></div><span class="panel-badge">Deck A/B</span></div>
+    <p class="studio-note">Load any stem onto the left or right deck, cue it like a turntable, blend with the crossfader, sync to Studio BPM, and record the mix through LottoMind Studio’s master recorder.</p>
+    <div class="dj-deck-layout">
+      ${renderDeck("A", "Left Stem Deck")}
+      <div class="dj-mixer-core">
+        <div class="mixer-vu"><span></span><span></span><span></span><span></span><span></span><span></span></div>
+        <label class="dj-crossfader">Crossfader <input type="range" min="0" max="100" value="${Number(dj.crossfader) || 50}" data-action="studio-dj-set" data-dj-field="crossfader" /><strong>A ${100 - (Number(dj.crossfader) || 50)} · B ${Number(dj.crossfader) || 50}</strong></label>
+        <label class="dj-check dj-record-check"><input type="checkbox" ${dj.recordLaunches ? "checked" : ""} data-action="studio-dj-set" data-dj-field="recordLaunches" /> Record deck launches to the 16-bar stem lanes</label>
+        <div class="dj-mixer-actions">
+          <button class="gold-btn" data-action="studio-dj-play-both">Play Both</button>
+          <button class="ghost-btn" data-action="studio-dj-stop-both">Stop Decks</button>
+          <button class="${state.studioMasterRecording ? "record-btn active" : "ghost-btn"}" data-action="${state.studioMasterRecording ? "studio-stop-master-record" : "studio-start-master-record"}">${state.studioMasterRecording ? "Stop DJ Mix" : "Record DJ Mix"}</button>
+        </div>
+        <small class="studio-note">Tip: import multi-stems first, then choose a different stem for Deck A and Deck B. Use headphones while monitoring mic input.</small>
+      </div>
+      ${renderDeck("B", "Right Stem Deck")}
     </div>
   </div>`;
 }
 
 function studioMicPanel() {
-  const inputOptions = state.studioInputDevices.length
-    ? state.studioInputDevices.map((device, index) => `<option value="${escapeHtml(device.deviceId)}" ${device.deviceId === state.studio.inputDeviceId ? "selected" : ""}>${escapeHtml(device.label || `Input ${index + 1}`)}</option>`).join("")
-    : `<option value="">Default Input</option>`;
-  return `<div id="studio-input" class="panel studio-module studio-input-panel" style="--studio-module-art:url('${ASSETS.studioMascotCyan}')">
-    <div class="section-head studio-panel-head"><div><h2>Mic / Line Input</h2><p>${escapeHtml(state.studioInputStatus)}</p></div><span>Headphones</span></div>
-    <div class="studio-tools-grid">
-      <button class="primary-btn" data-action="studio-refresh-inputs">Refresh Inputs</button>
-      <label>Input Device <select data-action="studio-set" data-studio-field="inputDeviceId">${inputOptions}</select></label>
-      <button class="ghost-btn" data-action="studio-monitor-input">Monitor Input</button>
-      <button class="ghost-btn" data-action="studio-stop-monitoring">Stop Monitoring</button>
-      <small class="studio-note">Use headphones while monitoring to avoid feedback. Browser permission is required.</small>
-    </div>
+  const options = (state.studioInputDevices || []).map((device, index) => `<option value="${escapeHtml(device.deviceId)}" ${device.deviceId === state.studioInputDeviceId ? "selected" : ""}>${escapeHtml(device.label || `Audio Input ${index + 1}`)}</option>`).join("");
+  return `<div class="panel lm-studio-panel mic-panel lm-studio-glass" id="studio-mic">
+    <div class="panel-title-row"><div><span class="eyebrow">Mic / Line Input</span><h2>Input Routing</h2></div><span class="panel-badge">Headphones</span></div>
+    <p class="studio-note">${escapeHtml(state.studioInputStatus)}</p>
+    <label>Input Device <select data-action="studio-select-input"><option value="">Default input</option>${options}</select></label>
+    <div class="sample-actions"><button class="ghost-btn" data-action="studio-refresh-inputs">Refresh Inputs</button><button class="gold-btn" data-action="studio-monitor-input">Monitor Input</button><button class="ghost-btn" data-action="studio-stop-monitoring">Stop Monitoring</button></div>
+    <small class="studio-note">Use headphones while monitoring to avoid feedback. Browser permission is required.</small>
   </div>`;
 }
 
 function studioVocalTracks() {
-  return `<div id="studio-vocals" class="panel studio-module studio-vocals-panel" style="--studio-module-art:url('${ASSETS.studioMascotGold}')">
-    <div class="section-head studio-panel-head"><div><h2>4-Track Vocals</h2><p>Record, import, preview, sync, mute, solo, and export four vocal lanes.</p></div><span>Mic / Line</span></div>
-    <div class="studio-vocal-grid">
-      ${state.studio.vocals.map((track, index) => `<div class="studio-vocal-track">
-        <div class="studio-vocal-top"><b>${index + 1}</b><div><strong>${escapeHtml(track.name)}</strong><small>${track.data ? escapeHtml(track.fileName || "clip ready") : "empty"}</small></div></div>
-        <div class="studio-vocal-wave" aria-hidden="true">${Array.from({ length: 24 }, (_, bar) => `<span style="--h:${18 + ((bar * (index + 3) * 7) % 54)}%"></span>`).join("")}</div>
-        <div class="studio-vocal-actions">
-          <button class="${state.studioRecordingTrack === index ? "record-btn active" : "record-btn"}" data-action="${state.studioRecordingTrack === index ? "studio-stop-vocal" : "studio-record-vocal"}" data-track="${index}">${state.studioRecordingTrack === index ? "Stop" : "Rec"}</button>
-          <button class="ghost-btn" data-action="studio-play-vocal" data-track="${index}">Play</button>
-          <label class="file-pill">Import<input type="file" accept="audio/*" data-action="studio-import-vocal" data-track="${index}" /></label>
-          <button class="ghost-btn" data-action="studio-export-vocal" data-track="${index}">Export</button>
-          <button class="ghost-btn" data-action="studio-clear-vocal" data-track="${index}">Clear</button>
-        </div>
-        <div class="studio-vocal-actions">
-          <button class="${track.muted ? "studio-chip active" : "studio-chip"}" data-action="studio-toggle-vocal-mute" data-track="${index}">Mute</button>
-          <button class="${track.solo ? "studio-chip active" : "studio-chip"}" data-action="studio-toggle-vocal-solo" data-track="${index}">Solo</button>
-          <label>Vol <input type="range" min="0" max="100" data-action="studio-vocal-set" data-track="${index}" data-vocal-field="volume" value="${track.volume}" /></label>
-          <label>Start <input type="number" min="0" max="${studioTotalSteps() - 1}" data-action="studio-vocal-set" data-track="${index}" data-vocal-field="startStep" value="${track.startStep}" /></label>
-        </div>
+  return `<div class="panel lm-studio-panel vocals-panel lm-studio-glass" id="studio-vocals">
+    <div class="panel-title-row"><div><span class="eyebrow">Mic/Line Input</span><h2>4-Track Vocals</h2></div><span class="panel-badge">4 Tracks</span></div>
+    <div class="vocal-track-list">
+      ${state.studio.vocals.map((track, index) => `<div class="vocal-track ${track.solo ? "solo" : ""} ${track.muted ? "muted" : ""}">
+        <div class="track-number">${index + 1}</div>
+        <div class="track-info"><strong>${escapeHtml(track.name)}</strong><small>${track.data ? escapeHtml(track.fileName || "clip ready") : "empty"}</small><div class="vocal-wave"><span></span><span></span><span></span><span></span><span></span></div></div>
+        <div class="track-actions"><button class="${state.studioRecordingTrack === index ? "record-btn active" : "record-btn"}" data-action="${state.studioRecordingTrack === index ? "studio-stop-vocal" : "studio-record-vocal"}" data-track="${index}">${state.studioRecordingTrack === index ? "Stop" : "Rec"}</button><button class="ghost-btn micro" data-action="studio-play-vocal" data-track="${index}">Play</button><label class="file-pill micro">Import<input type="file" accept="audio/*" data-action="studio-import-vocal" data-track="${index}" /></label><button class="ghost-btn micro" data-action="studio-export-vocal" data-track="${index}">Export</button></div>
+        <div class="track-mix"><button class="ghost-btn micro" data-action="studio-toggle-vocal-mute" data-track="${index}">M</button><button class="ghost-btn micro" data-action="studio-toggle-vocal-solo" data-track="${index}">S</button><label>Vol <input type="range" min="0" max="100" value="${track.volume}" data-action="studio-vocal-set" data-track="${index}" data-vocal-field="volume" /></label><label>Start <input type="number" min="0" max="${studioTotalSteps() - 1}" value="${track.startStep}" data-action="studio-vocal-set" data-track="${index}" data-vocal-field="startStep" /></label><button class="ghost-btn micro danger" data-action="studio-clear-vocal" data-track="${index}">Clear</button></div>
       </div>`).join("")}
     </div>
   </div>`;
@@ -3742,15 +4573,34 @@ function studioEffectsRack() {
   const fx = [
     ["drive", "Drive", "Saturation"],
     ["tone", "Filter", "Cutoff"],
-    ["delay", "Delay", "Time"],
-    ["reverb", "Reverb", "Size"],
+    ["delay", "Delay", "Echo"],
+    ["reverb", "Reverb", "Space"],
     ["punch", "Comp", "Punch"],
   ];
-  return `<div id="studio-effects" class="panel studio-module studio-effects-panel" style="--studio-module-art:url('${ASSETS.studioLmCoin}')">
-    <div class="section-head studio-panel-head"><div><h2>Effects Rack</h2><p>Subtle LottoMind mix rack for drums, samples, synth, and exports.</p></div><span>Live</span></div>
-    <div class="studio-effects-grid">
-      ${fx.map(([key, label, sub], index) => `<label class="studio-effect-card fx-${index}" style="--fx-level:${state.studio.effects[key]}%"><span>${label}</span><i></i><input type="range" min="0" max="100" data-action="studio-effect-set" data-effect="${key}" value="${state.studio.effects[key]}" /><strong>${state.studio.effects[key]}%</strong><small>${sub}</small></label>`).join("")}
+  return `<div class="panel lm-studio-panel effects-panel lm-studio-glass" id="studio-effects">
+    <div class="panel-title-row"><div><span class="eyebrow">Effects Rack</span><h2>Master FX Chain</h2></div><span class="panel-badge">Live</span></div>
+    <div class="fx-rack-grid">
+      ${fx.map(([key, label, sub]) => `<label class="fx-module"><strong>${label}</strong><span>${sub}</span><input type="range" min="0" max="100" value="${state.studio.effects[key]}" data-action="studio-effect-set" data-effect="${key}" /><em>${state.studio.effects[key]}%</em></label>`).join("")}
     </div>
+  </div>`;
+}
+
+function studioImportExportPanel() {
+  return `<div class="panel lm-studio-panel files-panel lm-studio-glass" id="studio-files">
+    <div class="panel-title-row"><div><span class="eyebrow">Project & Files</span><h2>Import / Export</h2></div><span class="panel-badge">Memory</span></div>
+    <div class="file-action-grid">
+      <button class="ghost-btn" data-action="studio-save-project">Save Browser Project</button>
+      <button class="ghost-btn" data-action="studio-export-project">Export Project JSON</button>
+      <label class="file-pill">Import Project<input type="file" accept="application/json,.json" data-action="studio-import-project" /></label>
+      <button class="ghost-btn" data-action="studio-export-pack">Export Sound Pack</button>
+      <label class="file-pill">Import Pack<input type="file" accept="application/json,.json" data-action="studio-import-pack" /></label>
+      <label class="file-pill">Import Stems<input type="file" accept="audio/*" multiple data-action="studio-import-stems" /></label>
+      <button class="ghost-btn" data-action="studio-export-sample">Export Selected Pad</button>
+      <button class="gold-btn" data-action="studio-export-stems">Export Sounds / Stems</button>
+      <button class="${state.studioMasterRecording ? "record-btn active" : "ghost-btn"}" data-action="${state.studioMasterRecording ? "studio-stop-master-record" : "studio-start-master-record"}">${state.studioMasterRecording ? "Stop Mix Export" : "Record Full Mix"}</button>
+    </div>
+    <div class="drag-zone">Drag & drop samples or stems here<br><small>or use Import Sound / Import Stems / Import Pack</small></div>
+    <small class="studio-note">Mic, tab capture, direct URL loading, and MediaRecorder depend on browser permissions and CORS. Protected media is not bypassed.</small>
   </div>`;
 }
 
@@ -3760,12 +4610,12 @@ function studioBeatLottoPanel() {
   const lastSet = lotto.lastSet || null;
   const lastPicks = Array.isArray(lotto.lastPicks) ? lotto.lastPicks : [];
   const methodInfo = STUDIO_LOTTO_METHODS.find((item) => item[0] === lotto.method) || STUDIO_LOTTO_METHODS[0];
-  return `<div class="panel lm-studio-panel beat-lotto-panel lm-studio-glass" id="studio-beat-lotto" style="--studio-module-art:url('${ASSETS.studioOracleCoin}')">
+  return `<div class="panel lm-studio-panel beat-lotto-panel lm-studio-glass" id="studio-beat-lotto">
     <div class="panel-title-row">
-      <div><span class="eyebrow">Beat to Lotto</span><h2>Groove Number Engine</h2></div>
+      <div><span class="eyebrow">Beat → Lotto</span><h2>Groove Number Engine</h2></div>
       <span class="panel-badge">Creative Picks</span>
     </div>
-    <p class="studio-note">Turn rhythm, pad hits, BPM, swing, human feel, samples, vocals, and FX settings into LottoMind number picks. This is a creative generator, not a prediction system.</p>
+    <p class="studio-note">Turn the rhythm, pad hits, BPM, swing, human feel, samples, vocals, and FX settings into LottoMind number picks. This is a creative generator, not a prediction system.</p>
     <div class="beat-lotto-controls">
       <label>Game <select data-action="studio-lotto-set" data-lotto-field="gameId">${LOTTO_GAMES.map((game) => `<option value="${game.id}" ${game.id === (lotto.gameId || state.gameId) ? "selected" : ""}>${escapeHtml(game.name)}</option>`).join("")}</select></label>
       <label>Method <select data-action="studio-lotto-set" data-lotto-field="method">${STUDIO_LOTTO_METHODS.map(([id, label]) => `<option value="${id}" ${id === lotto.method ? "selected" : ""}>${label}</option>`).join("")}</select></label>
@@ -3778,6 +4628,8 @@ function studioBeatLottoPanel() {
       <span><strong>${features.padsUsed}</strong><small>Pads</small></span>
       <span><strong>${features.density}%</strong><small>Density</small></span>
       <span><strong>${features.sampleCount}</strong><small>Samples</small></span>
+      <span><strong>${features.stemCount || 0}</strong><small>Stems</small></span>
+      <span><strong>${features.djStemCount || 0}</strong><small>DJ Decks</small></span>
       <span><strong>${features.vocalCount}</strong><small>Vocals</small></span>
       <span><strong>${features.avgVelocity}</strong><small>Avg Vel</small></span>
     </div>
@@ -3797,45 +4649,31 @@ function studioBeatLottoPanel() {
   </div>`;
 }
 
-function studioImportExportPanel() {
-  return `<div id="studio-files" class="panel studio-module studio-files-panel" style="--studio-module-art:url('${ASSETS.studioRecordsConsole}')">
-    <div class="section-head studio-panel-head"><div><h2>Project & Files</h2><p>Save/load projects, sound packs, pad samples, vocals, and full audio recordings.</p></div><span>Memory + Export</span></div>
-    <div class="studio-tools-grid">
-      <button class="primary-btn" data-action="studio-save-project">Save Project</button>
-      <button class="primary-btn" data-action="studio-export-project">Export Project</button>
-      <label class="file-pill">Import Project<input type="file" accept="application/json,.json" data-action="studio-import-project" /></label>
-      <button class="ghost-btn" data-action="studio-export-pack">Export Sound Pack</button>
-      <label class="file-pill">Import Pack<input type="file" accept="application/json,.json" data-action="studio-import-pack" /></label>
-      <button class="ghost-btn" data-action="studio-export-sample">Export Selected Pad</button>
-      <button class="ghost-btn" data-action="studio-export-stems">Export Stems</button>
-      <button class="ghost-btn" data-action="studio-clear-pattern">Clear Pattern</button>
-      <button class="${state.studioMasterRecording ? "record-btn active" : "ghost-btn"}" data-action="${state.studioMasterRecording ? "studio-stop-master-record" : "studio-start-master-record"}">${state.studioMasterRecording ? "Stop Mix Export" : "Record Full Mix"}</button>
-      <small class="studio-note">Mic, tab capture, direct URL loading, and MediaRecorder depend on browser permissions and CORS. Protected media is not bypassed.</small>
-    </div>
-  </div>`;
-}
-
 function sonicStudioView() {
-  return `<section class="screen sonic-studio-screen lottomind-studio-screen lm-studio-mode">
+  return `<section class="screen sonic-studio-screen lottomind-studio-screen lm-studio-mode lm-studio-v9">
     ${studioTransportControls()}
+    ${studioMicPanel()}
     ${studioControlStrip()}
+    ${studioRecordingBooth()}
     <div class="lm-studio-grid">
+      ${studioDefaultStemKitPanel()}
       ${studioDrumPads()}
       ${studioSequencerGrid()}
       ${studioVocalTracks()}
       ${studioBeatLottoPanel()}
       ${studioSamplerPanel()}
+      ${studioStemDeckPanel()}
+      ${studioDjDecksPanel()}
       ${studioEffectsRack()}
       ${studioKeyboardSection()}
       ${studioImportExportPanel()}
-      ${studioMicPanel()}
     </div>
-    <div class="panel studio-terms lm-studio-footer">
-      <span>LottoMind Studio Mode v1.0</span>
+    <div class="panel studio-terms lm-studio-footer lm-studio-glass">
+      <span>LottoMind Studio v9.0 · Custom Branded Interface</span>
       <span class="online">All systems ${state.studioPlaying ? "running" : "ready"}</span>
-      <span>CPU 12%</span>
-      <span>RAM 28%</span>
-      <span>Disk 18%</span>
+      <span>Audio-clock scheduler</span>
+      <span>FX chain active</span>
+      <span>${studioTotalSteps()} loop ticks</span><span>${(state.studio.stems || []).filter((stem) => stem.data).length} stems loaded</span><span>${(state.studio.pads || []).filter((pad) => pad.sampleData && isStudioDefaultStemUrl(pad.sampleData)).length} default pad slices</span><span>dual turntables ready</span>
       <p>Only import or record audio you own or have permission to use. Mic, line, tab capture, direct URL loading, and MediaRecorder exports depend on browser support and permission prompts.</p>
     </div>
   </section>`;
@@ -4489,6 +5327,154 @@ function realRouteView(routeKey) {
   </section>`;
 }
 
+function communityBoardView() {
+  const progress = getTriviaProgress();
+  const manualScores = getSocialScores();
+  const triviaRows = localTriviaScoreRows(progress);
+  const leaders = communityLeaderboardRows();
+  const localLeader = leaders.find((row) => row.source !== "Demo rivals");
+  const localRank = localLeader ? `#${localLeader.rank}` : "Local";
+  const bestScore = Math.max(bestLocalTriviaScore(progress), ...manualScores.map((score) => score.score), 0);
+  const dailyPct = Math.min(100, Math.round(((Number(progress.dailyStreak) || 0) / 7) * 100));
+  const weeklyPct = Math.min(100, Math.round(((Number(progress.weeklyStreak) || 0) / 7) * 100));
+  const savedRows = manualScores.length ? manualScores : [];
+  return `<section class="screen social-screen lottomind-social-screen">
+    <div class="panel art-panel social-hero" style="--panel-art:url('${ASSETS.socialBoard || ASSETS.arcade}')">
+      <div class="social-hero-copy">
+        <span class="eyebrow">LottoMind Social</span>
+        <h1>Community Board</h1>
+        <p>Leaderboard preview, local streaks, saved challenge scores, and future community prompts.</p>
+        <div class="hero-actions social-hero-actions">
+          <button class="primary-btn" data-route="triviaPlay">Play Trivia</button>
+          <button class="ghost-btn" data-route="contests">Open Contests</button>
+          <button class="ghost-btn" data-route="triviaRewards">Rewards</button>
+        </div>
+        <div class="social-status-strip">
+          <span>Local preview</span>
+          <span>Cloud community sync can plug in later</span>
+          <span>Demo rivals</span>
+        </div>
+      </div>
+      <div class="social-orb">
+        <strong>${localRank}</strong>
+        <span>Local Rank</span>
+      </div>
+    </div>
+
+    <div class="social-stats-grid">
+      ${metricCard("Local Rank", localRank)}
+      ${metricCard("Daily Streak", Number(progress.dailyStreak) || 0)}
+      ${metricCard("Weekly Track", `${Number(progress.weeklyStreak) || 0}/7`)}
+      ${metricCard("Credits", getCredits())}
+      ${metricCard("Saved Scores", manualScores.length)}
+    </div>
+
+    <div class="social-board-layout">
+      <div class="panel social-leaderboard">
+        <div class="section-head">
+          <div>
+            <h2>Leaderboard Preview</h2>
+            <p>Local preview only. Demo rivals show how a cloud community sync can plug in later.</p>
+          </div>
+          <span>${leaders.length} rows</span>
+        </div>
+        <div class="social-leader-list">
+          ${leaders.map((row) => `<article class="social-leader-row ${row.source === "Demo rivals" ? "is-demo" : "is-local"}">
+            <span class="social-rank">${String(row.rank).padStart(2, "0")}</span>
+            <div class="social-player">
+              <strong>${escapeHtml(row.name)}</strong>
+              <small>${escapeHtml(row.challenge || "Community")} / ${escapeHtml(row.source || "Local preview")}</small>
+            </div>
+            <div class="social-score">
+              <strong>${row.score}</strong>
+              <small>${row.streak ? `${row.streak} streak` : escapeHtml(row.badge || "Preview")}</small>
+            </div>
+          </article>`).join("")}
+        </div>
+      </div>
+
+      <div class="panel social-streak-panel">
+        <div class="section-head">
+          <div>
+            <h2>Local Streaks</h2>
+            <p>Streaks come from Trivia Rewards and local challenge saves.</p>
+          </div>
+          <span>Device</span>
+        </div>
+        <div class="social-streak-card">
+          <span>Daily Streak</span>
+          <strong>${Number(progress.dailyStreak) || 0}/7</strong>
+          <div class="social-progress"><i style="width:${dailyPct}%"></i></div>
+        </div>
+        <div class="social-streak-card">
+          <span>Weekly Streak</span>
+          <strong>${Number(progress.weeklyStreak) || 0}/7</strong>
+          <div class="social-progress"><i style="width:${weeklyPct}%"></i></div>
+        </div>
+        <div class="social-streak-metrics">
+          <div><span>Recent Trivia Runs</span><strong>${triviaRows.length}</strong></div>
+          <div><span>Best Local Score</span><strong>${bestScore}</strong></div>
+          <div><span>Credits</span><strong>${getCredits()}</strong></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel social-score-panel">
+      <div class="section-head">
+        <div>
+          <h2>Saved Challenge Scores</h2>
+          <p>Save local scores from Trivia, Crossword, Word Search, Studio Beat, or Dream Oracle.</p>
+        </div>
+        <span>${manualScores.length}/20 saved</span>
+      </div>
+      <div class="social-score-form">
+        <label><span>Player</span><input data-bind="socialNameInput" value="${escapeHtml(state.socialNameInput)}" placeholder="Local Player" /></label>
+        <label><span>Score</span><input type="number" min="0" max="999999" inputmode="numeric" data-bind="socialScoreInput" value="${escapeHtml(state.socialScoreInput)}" placeholder="0" /></label>
+        <div class="social-challenge-tabs">
+          ${SOCIAL_CHALLENGE_TYPES.map((challenge) => `<button class="${state.socialChallengeType === challenge ? "active" : ""}" data-action="set-social-challenge" data-challenge="${escapeHtml(challenge)}">${escapeHtml(challenge)}</button>`).join("")}
+        </div>
+        <div class="hero-actions">
+          <button class="primary-btn" data-action="save-social-score">Save Score</button>
+          <button class="ghost-btn" data-action="clear-social-scores">Clear Local Scores</button>
+        </div>
+      </div>
+      <div class="social-score-list">
+        ${savedRows.length ? savedRows.map((row) => `<article>
+          <div>
+            <strong>${escapeHtml(row.name)}</strong>
+            <small>${escapeHtml(row.challenge)} / ${socialDateLabel(row.createdAt)}</small>
+          </div>
+          <b>${row.score}</b>
+          <span>${row.streak} streak</span>
+        </article>`).join("") : `<div class="social-empty-score"><strong>No saved challenge scores yet.</strong><p>Add a score above or play Trivia to start your local board.</p></div>`}
+      </div>
+    </div>
+
+    <div class="panel social-prompts-panel">
+      <div class="section-head">
+        <div>
+          <h2>Future Community Prompts</h2>
+          <p>Friendly challenge cards route into real LottoMind screens and can be connected to cloud posting later.</p>
+        </div>
+        <span>${SOCIAL_PROMPTS.length} prompts</span>
+      </div>
+      <div class="social-prompt-grid">
+        ${SOCIAL_PROMPTS.map(([title, copy, route, tag], index) => `<article class="social-prompt-card prompt-${index}">
+          <span>${escapeHtml(tag)}</span>
+          <strong>${escapeHtml(title)}</strong>
+          <small>${escapeHtml(copy)}</small>
+          <button class="ghost-btn" data-route="${route}">Open ${escapeHtml(routeMeta(route)[0])}</button>
+        </article>`).join("")}
+      </div>
+    </div>
+
+    <div class="panel social-responsible-note">
+      <strong>Community features are for entertainment, organization, learning, and friendly challenges.</strong>
+      <p>LottoMind does not guarantee lottery outcomes.</p>
+    </div>
+  </section>`;
+}
+
 function genericToolView(routeKey) {
   const labels = {
     ai: ["LottoMind AI", "Generate smart picks, run analysis, and save the result."],
@@ -4876,6 +5862,7 @@ function renderView() {
   if (state.route === "triviaRewards" || state.route === "triviaRedeem") return triviaRewardsView();
   if (["arcade", "arcadeGame", "game", "cardGame", "gamesHub", "crossword", "wordSearch", "ludo"].includes(state.route)) return arcadeView();
   if (state.route === "psychic") return psychicView();
+  if (state.route === "community") return communityBoardView();
   if (["vip", "community", "contests", "achievements", "usLottery", "notifications", "onboarding", "splash", "thankYou", "original", "help", "policies", "paywall"].includes(state.route)) return realRouteView(state.route);
   return genericToolView(state.route);
 }
@@ -5108,9 +6095,9 @@ function routeFromSearch(value) {
   if (bestMatch) return bestMatch.route;
   const query = String(value || "").toLowerCase();
   const matches = [
-    [["studio", "music studio", "record vocals", "drum machine", "sampler", "mpc", "sequencer", "beat lotto", "beat2lotto", "groove number"], "studio"],
     [["dream", "oracle", "meaning", "journal"], "dreams"],
-    [["music", "radio", "apple", "youtube", "record", "song", "audio"], "music"],
+    [["studio", "music studio", "drum machine", "sampler", "record vocals", "beat maker", "mpc", "dj", "turntable", "turntables", "mix stems", "crossfader", "default stems", "stem kit", "custom stems"], "studio"],
+    [["music", "radio", "apple", "youtube", "song", "audio"], "music"],
     [["weather", "local", "horoscope"], "luckyWeather"],
     [["store locator", "locator", "near", "retailer"], "storeLocator"],
     [["ticket", "scan", "scanner", "barcode", "camera"], "scanner"],
@@ -5162,22 +6149,156 @@ function applyScanReadout(action, source, upload = "", decoded = "") {
 
 async function importStudioSampleFile(file, padIndex = state.studio.selectedPad) {
   if (!file) return;
+  if (!String(file.type || "").startsWith("audio/")) {
+    toast("Choose an audio file for the sampler.");
+    return;
+  }
   const data = await readFileAsDataUrl(file);
-  const large = String(data).length > STUDIO_SERIALIZE_LIMIT;
-  state.studio.pads[padIndex] = { ...state.studio.pads[padIndex], sampleName: file.name, sampleData: data, sessionOnly: large };
+  const large = String(data).length > 950000;
+  state.studio.pads[padIndex] = { ...state.studio.pads[padIndex], sampleName: file.name, sampleData: data, sampleTooLargeForSave: large };
   studioSampleBuffers = {};
-  saveStudioProject(large);
-  toast(large ? `${file.name} loaded, but it may be session-only if localStorage is too small.` : `${file.name} loaded to ${state.studio.pads[padIndex].name}`);
+  saveStudioProject();
+  toast(large ? `${file.name} loaded. Export it too; this sample may be too large for browser save.` : `${file.name} loaded to ${state.studio.pads[padIndex].name}`);
+  render();
 }
 
 async function importStudioVocalFile(file, trackIndex) {
   if (!file) return;
+  if (!String(file.type || "").startsWith("audio/")) {
+    toast("Choose an audio file for the vocal track.");
+    return;
+  }
   const data = await readFileAsDataUrl(file);
-  const sessionOnly = String(data).length > 900000;
+  const sessionOnly = String(data).length > 950000;
   state.studio.vocals[trackIndex] = { ...state.studio.vocals[trackIndex], fileName: file.name, data: sessionOnly ? "" : data, sessionOnly };
+  studioVocalBuffers = {};
+  saveStudioProject();
+  toast(sessionOnly ? "Vocal is too large for local save; export it or keep it session-only." : `${file.name} loaded to vocal ${trackIndex + 1}`);
+  render();
+}
+
+
+async function importStudioStemFile(file, stemIndex = state.studio.selectedStem) {
+  if (!file) return;
+  if (!String(file.type || "").startsWith("audio/")) {
+    toast("Choose an audio file for the stem loader.");
+    return;
+  }
+  const safeIndex = Math.max(0, Math.min((state.studio.stems || []).length - 1, Number(stemIndex) || 0));
+  const large = Number(file.size || 0) > 720000;
+  const data = large ? URL.createObjectURL(file) : await readFileAsDataUrl(file);
+  const shortName = file.name.replace(/\.[a-z0-9]+$/i, "").slice(0, 24) || `Stem ${safeIndex + 1}`;
+  state.studio.stems[safeIndex] = {
+    ...state.studio.stems[safeIndex],
+    name: shortName,
+    fileName: file.name,
+    data,
+    sessionOnly: large,
+    sourceBpm: Number(state.studio.stems[safeIndex]?.sourceBpm) || Number(state.studio.bpm) || 92,
+  };
+  state.studio.selectedStem = safeIndex;
+  studioStemBuffers = {};
+  saveStudioProject();
+  toast(large ? `${file.name} loaded as a session stem. Export it or keep the file nearby.` : `${file.name} loaded into Stem ${safeIndex + 1}`);
+  render();
+}
+
+async function importStudioStemFiles(files, startIndex = state.studio.selectedStem) {
+  const list = Array.from(files || []).filter((file) => String(file.type || "").startsWith("audio/"));
+  if (!list.length) {
+    toast("Choose one or more audio stem files.");
+    return;
+  }
+  const base = Math.max(0, Math.min((state.studio.stems || []).length - 1, Number(startIndex) || 0));
+  for (let i = 0; i < list.length && base + i < state.studio.stems.length; i += 1) {
+    await importStudioStemFile(list[i], base + i);
+  }
+  toast(`${Math.min(list.length, state.studio.stems.length - base)} stem${list.length === 1 ? "" : "s"} imported`);
+  render();
+}
+
+function assignStudioStemToPad(stemIndex = state.studio.selectedStem, padIndex = null) {
+  const stem = state.studio.stems?.[stemIndex];
+  if (!stem?.data) {
+    toast("Load a stem first, then assign it to a pad.");
+    return;
+  }
+  const targetPad = padIndex == null ? Math.max(0, Math.min(15, Number(stem.padTarget ?? state.studio.selectedPad) || 0)) : Math.max(0, Math.min(15, Number(padIndex) || 0));
+  state.studio.pads[targetPad] = {
+    ...state.studio.pads[targetPad],
+    name: state.studio.pads[targetPad].name || `Pad ${targetPad + 1}`,
+    sampleName: stem.fileName || stem.name || `Stem ${stemIndex + 1}`,
+    sampleData: stem.data,
+    trimStart: 0,
+    trimEnd: 100,
+    pitch: 0,
+    gain: Math.max(1, Math.min(120, Number(stem.volume) || 78)),
+    sampleTooLargeForSave: Boolean(stem.sessionOnly),
+  };
+  state.studio.selectedPad = targetPad;
   studioSampleBuffers = {};
   saveStudioProject();
-  toast(sessionOnly ? "Vocal is too large for local save; keep this session-only." : `${file.name} loaded to vocal ${trackIndex + 1}`);
+  toast(`${stem.name || `Stem ${stemIndex + 1}`} assigned to pad ${targetPad + 1}`);
+  render();
+}
+
+function assignLoadedStemsToPads() {
+  let count = 0;
+  (state.studio.stems || []).forEach((stem, index) => {
+    if (!stem.data) return;
+    assignStudioStemToPad(index, stem.padTarget ?? Math.min(15, 8 + index));
+    count += 1;
+  });
+  toast(count ? `${count} stem${count === 1 ? "" : "s"} mapped to drum pads` : "No loaded stems to map yet.");
+  render();
+}
+
+function exportStudioStem(stemIndex = state.studio.selectedStem) {
+  const stem = state.studio.stems?.[stemIndex];
+  if (!stem?.data) {
+    toast("No stem loaded in that slot.");
+    return;
+  }
+  const a = document.createElement("a");
+  a.href = stem.data;
+  a.download = stem.fileName || `lottomind-stem-${stemIndex + 1}.webm`;
+  a.click();
+}
+
+function clearStudioStem(stemIndex = state.studio.selectedStem) {
+  const safeIndex = Math.max(0, Math.min((state.studio.stems || []).length - 1, Number(stemIndex) || 0));
+  const current = state.studio.stems[safeIndex];
+  if (String(current?.data || "").startsWith("blob:")) {
+    try { URL.revokeObjectURL(current.data); } catch {}
+  }
+  state.studio.stems[safeIndex] = { ...createDefaultStudioProject().stems[safeIndex] };
+  state.studio.events = state.studio.events.filter((event) => !(event.type === "stem" && Number(event.stem) === safeIndex));
+  studioStemBuffers = {};
+  saveStudioProject();
+  toast(`Stem ${safeIndex + 1} cleared`);
+  render();
+}
+
+async function refreshStudioInputs() {
+  if (!navigator.mediaDevices?.enumerateDevices) {
+    state.studioInputStatus = "Audio input listing is not supported.";
+    render();
+    return [];
+  }
+  try {
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    state.studioInputDevices = devices.filter((device) => device.kind === "audioinput").map((device, index) => ({
+      deviceId: device.deviceId,
+      label: device.label || `Audio Input ${index + 1}`,
+    }));
+    state.studioInputStatus = `${state.studioInputDevices.length} audio inputs available`;
+    render();
+    return state.studioInputDevices;
+  } catch {
+    state.studioInputStatus = "Audio inputs could not be listed.";
+    render();
+    return [];
+  }
 }
 
 async function getStudioMicStream() {
@@ -5187,10 +6308,24 @@ async function getStudioMicStream() {
     return null;
   }
   try {
+    const selected = state.studioInputDeviceId || "";
     const hasLiveTrack = studioMicStream?.getAudioTracks?.().some((track) => track.readyState === "live");
-    if (!studioMicStream || !hasLiveTrack) {
-      const deviceId = state.studio.inputDeviceId;
-      studioMicStream = await navigator.mediaDevices.getUserMedia({ audio: deviceId ? { deviceId: { exact: deviceId } } : true });
+    const activeDevice = studioMicStream?.getAudioTracks?.()[0]?.getSettings?.().deviceId || "";
+    if (!studioMicStream || !hasLiveTrack || (selected && selected !== activeDevice)) {
+      studioMicStream?.getTracks?.().forEach((track) => track.stop?.());
+      studioMicStream = await navigator.mediaDevices.getUserMedia({
+        audio: selected ? {
+          deviceId: { exact: selected },
+          echoCancellation: false,
+          noiseSuppression: false,
+          autoGainControl: false,
+        } : {
+          echoCancellation: false,
+          noiseSuppression: false,
+          autoGainControl: false,
+        },
+      });
+      refreshStudioInputs();
     }
     state.studioInputStatus = "Mic/line input ready";
     return studioMicStream;
@@ -5199,28 +6334,6 @@ async function getStudioMicStream() {
     state.studioInputStatus = "Mic permission was blocked or no input was found.";
     render();
     return null;
-  }
-}
-
-async function refreshStudioInputs() {
-  if (!navigator.mediaDevices?.enumerateDevices) {
-    state.studioInputStatus = "Audio input listing is not supported.";
-    render();
-    return;
-  }
-  try {
-    const devices = await navigator.mediaDevices.enumerateDevices();
-    state.studioInputDevices = devices.filter((device) => device.kind === "audioinput").map((device, index) => ({
-      deviceId: device.deviceId,
-      label: device.label || `Input ${index + 1}`,
-    }));
-    if (!state.studio.inputDeviceId && state.studioInputDevices[0]) state.studio.inputDeviceId = state.studioInputDevices[0].deviceId;
-    state.studioInputStatus = `${state.studioInputDevices.length} audio inputs available`;
-    saveStudioProject();
-    render();
-  } catch {
-    state.studioInputStatus = "Audio inputs could not be listed until mic permission is granted.";
-    render();
   }
 }
 
@@ -5247,17 +6360,17 @@ async function startStudioVocalRecording(trackIndex) {
   recorder.onstop = async () => {
     const blob = new Blob(chunks, { type: recorder.mimeType || "audio/webm" });
     const data = await blobToDataUrl(blob);
-    const sessionOnly = data.length > 900000;
+    const sessionOnly = data.length > 950000;
     state.studio.vocals[trackIndex] = {
       ...state.studio.vocals[trackIndex],
       data: sessionOnly ? "" : data,
       fileName: `lottomind-vocal-${trackIndex + 1}.webm`,
       sessionOnly,
     };
-    studioSampleBuffers = {};
+    studioVocalBuffers = {};
     state.studioRecordingTrack = null;
     saveStudioProject();
-    toast(sessionOnly ? "Vocal captured, but too large for local save." : `Vocal ${trackIndex + 1} recorded`);
+    toast(sessionOnly ? "Vocal captured, but too large for local save. Export it now if needed." : `Vocal ${trackIndex + 1} recorded`);
     render();
   };
   recorder.start();
@@ -5270,58 +6383,90 @@ function stopStudioVocalRecording(trackIndex = state.studioRecordingTrack) {
   if (recorder && recorder.state !== "inactive") recorder.stop();
 }
 
-async function startStudioSourceSample(sourcePromise, label, releaseStream = true) {
+async function recordStudioSourceToPad(sourcePromise, label, releaseStream = true) {
   if (typeof MediaRecorder === "undefined") {
     toast("MediaRecorder is not available in this browser.");
     return;
   }
-  if (studioSampleRecorder && studioSampleRecorder.state !== "inactive") {
-    toast("A sample recording is already running.");
-    return;
-  }
   try {
+    if (studioSampleRecorder && studioSampleRecorder.state !== "inactive") {
+      toast("Stop the current sample before starting another.");
+      return;
+    }
     const stream = await sourcePromise;
     if (!stream) return;
     studioSampleChunks = [];
-    studioSampleLabel = label;
-    studioSampleRecorderStream = releaseStream ? stream : null;
+    studioSampleStream = stream;
+    studioSampleReleaseStream = releaseStream;
     studioSampleRecorder = new MediaRecorder(stream);
     studioSampleRecorder.ondataavailable = (event) => { if (event.data?.size) studioSampleChunks.push(event.data); };
     studioSampleRecorder.onstop = async () => {
-      if (releaseStream && stream !== studioMicStream) stream.getTracks?.().forEach((track) => track.stop?.());
+      if (studioSampleReleaseStream && studioSampleStream !== studioMicStream) studioSampleStream?.getTracks?.().forEach((track) => track.stop?.());
       const blob = new Blob(studioSampleChunks, { type: studioSampleRecorder.mimeType || "audio/webm" });
       const data = await blobToDataUrl(blob);
       const padIndex = state.studio.selectedPad;
-      const large = String(data).length > STUDIO_SERIALIZE_LIMIT;
-      state.studio.pads[padIndex] = { ...state.studio.pads[padIndex], sampleName: `${label} sample`, sampleData: data, sessionOnly: large };
+      const large = data.length > 950000;
+      state.studio.pads[padIndex] = { ...state.studio.pads[padIndex], sampleName: `${label} sample`, sampleData: data, sampleTooLargeForSave: large };
       studioSampleBuffers = {};
-      state.studioSampleRecording = false;
-      studioSampleRecorder = null;
-      studioSampleRecorderStream = null;
-      saveStudioProject(large);
-      toast(large ? `${label} sample captured, but large audio may stay session-only.` : `${label} sampled to ${state.studio.pads[padIndex].name}`);
+      state.studioSampling = false;
+      state.studioSamplingLabel = "";
+      saveStudioProject();
+      toast(large ? `${label} sample captured. Export it too; it may be too large for browser save.` : `${label} sampled to ${state.studio.pads[padIndex].name}`);
       render();
     };
     studioSampleRecorder.start();
-    state.studioSampleRecording = true;
-    toast(`Sampling ${label}. Tap Stop Sample when ready.`);
+    state.studioSampling = true;
+    state.studioSamplingLabel = label;
+    toast(`Sampling ${label}. Tap Stop Sample when finished.`);
     render();
   } catch {
+    state.studioSampling = false;
+    state.studioSamplingLabel = "";
     toast(`${label} capture was blocked or unavailable.`);
+    render();
   }
 }
 
-function stopStudioSourceSample() {
+function stopStudioPadSampling() {
   if (studioSampleRecorder && studioSampleRecorder.state !== "inactive") {
     studioSampleRecorder.stop();
     return;
   }
-  if (studioSampleRecorderStream) studioSampleRecorderStream.getTracks?.().forEach((track) => track.stop?.());
-  state.studioSampleRecording = false;
-  studioSampleRecorder = null;
-  studioSampleRecorderStream = null;
-  toast("No active sample recording.");
+  state.studioSampling = false;
+  state.studioSamplingLabel = "";
+  toast("No sampler recording is active.");
   render();
+}
+
+function exportStudioStems() {
+  const exportedAt = new Date().toISOString();
+  const sounds = [];
+  state.studio.pads.forEach((pad, index) => {
+    if (!pad.sampleData) return;
+    sounds.push({ type: "pad", index, name: pad.name, fileName: pad.sampleName || `pad-${index + 1}.webm` });
+    const a = document.createElement("a");
+    a.href = pad.sampleData;
+    a.download = pad.sampleName || `lottomind-pad-${index + 1}.webm`;
+    a.click();
+  });
+  (state.studio.stems || []).forEach((stem, index) => {
+    if (!stem.data) return;
+    sounds.push({ type: "stem", index, name: stem.name, fileName: stem.fileName || `stem-${index + 1}.webm`, startStep: stem.startStep, sync: Boolean(stem.sync) });
+    const a = document.createElement("a");
+    a.href = stem.data;
+    a.download = stem.fileName || `lottomind-stem-${index + 1}.webm`;
+    a.click();
+  });
+  state.studio.vocals.forEach((track, index) => {
+    if (!track.data) return;
+    sounds.push({ type: "vocal", index, name: track.name, fileName: track.fileName || `vocal-${index + 1}.webm` });
+    const a = document.createElement("a");
+    a.href = track.data;
+    a.download = track.fileName || `lottomind-vocal-${index + 1}.webm`;
+    a.click();
+  });
+  downloadTextFile("lottomind-studio-stems-dj-export-manifest.json", JSON.stringify({ exportedAt, bpm: state.studio.bpm, division: state.studio.division, defaultStemKit: state.studio.defaultStemKit || {}, dj: ensureStudioDjState(), sounds }, null, 2));
+  toast(sounds.length ? "Pad, stem, vocal, and DJ deck exports started with manifest." : "No imported samples, stems, or vocal clips to export yet.");
 }
 
 function exportStudioSample(padIndex = state.studio.selectedPad) {
@@ -5348,36 +6493,367 @@ function exportStudioVocal(trackIndex) {
   a.click();
 }
 
-function exportStudioStems() {
-  const { project, trimmed } = studioSerializableProject();
-  const stems = {
-    exportedAt: new Date().toISOString(),
-    browserNote: "Live stem audio rendering depends on browser capture/MediaRecorder support. This JSON contains the complete stem map and embedded audio where practical.",
-    bpm: project.bpm,
-    division: project.division,
-    loopBars: 16,
-    drums: project.events.filter((event) => event.type === "pad").map((event) => ({ ...event, padName: project.pads[event.pad]?.name })),
-    synth: project.events.filter((event) => event.type === "note"),
-    samples: project.pads.map((pad, index) => ({ index, name: pad.name, sampleName: pad.sampleName, sampleData: pad.sampleData, trimStart: pad.trimStart, trimEnd: pad.trimEnd, pitch: pad.pitch, gain: pad.gain, reverse: pad.reverse })),
-    vocals: project.vocals.map((track, index) => ({ index, name: track.name, fileName: track.fileName, data: track.data, startStep: track.startStep, volume: track.volume, muted: track.muted, solo: track.solo })),
-    effects: project.effects,
-    master: { swing: project.swing, velocity: project.velocity, humanize: project.humanize },
-  };
-  downloadTextFile("lottomind-studio-stems.json", JSON.stringify(stems, null, 2));
-  toast(trimmed ? "Stem map exported. Large clips were marked session-only." : "Stem map exported.");
+function handleStudioPolishAction(action, target) {
+  if (action === "studio-set-step-page") {
+    const value = target.getAttribute("data-step-page") ?? target.value;
+    state.studio.stepPage = Math.max(0, Math.min(studioStepPageCount() - 1, Number(value) || 0));
+    saveStudioProject();
+    render();
+    return true;
+  }
+  if (action === "studio-select-input") {
+    state.studioInputDeviceId = target.value || "";
+    localStorage.setItem("lottomind.studio.inputDeviceId", state.studioInputDeviceId);
+    studioMicStream?.getTracks?.().forEach((track) => track.stop?.());
+    studioMicStream = null;
+    state.studioInputStatus = state.studioInputDeviceId ? "Input selected. Tap Monitor or Record to activate it." : "Default input selected.";
+    render();
+    return true;
+  }
+  if (action === "studio-refresh-inputs") {
+    refreshStudioInputs();
+    toast("Checking studio inputs");
+    return true;
+  }
+  if (action === "studio-monitor-input") {
+    getStudioMicStream().then((stream) => {
+      const ctx = ensureStudioAudio();
+      if (!stream || !ctx) return;
+      if (studioMonitorSource) studioMonitorSource.disconnect();
+      studioMonitorSource = ctx.createMediaStreamSource(stream);
+      studioMonitorSource.connect(studioOutput());
+      state.studioInputStatus = "Monitoring live. Use headphones.";
+      render();
+    });
+    return true;
+  }
+  if (action === "studio-stop-monitoring") {
+    if (studioMonitorSource) studioMonitorSource.disconnect();
+    studioMonitorSource = null;
+    state.studioInputStatus = "Monitoring stopped";
+    render();
+    return true;
+  }
+  if (action === "studio-sample-mic") {
+    recordStudioSourceToPad(getStudioMicStream(), "Mic/Line", false);
+    return true;
+  }
+  if (action === "studio-sample-tab") {
+    const capture = navigator.mediaDevices?.getDisplayMedia
+      ? navigator.mediaDevices.getDisplayMedia({ video: true, audio: true })
+      : Promise.resolve(null);
+    recordStudioSourceToPad(capture, "Browser/Tab");
+    return true;
+  }
+  if (action === "studio-stop-sampling") {
+    stopStudioPadSampling();
+    return true;
+  }
+  if (action === "studio-dj-set") {
+    const dj = ensureStudioDjState();
+    const field = target.getAttribute("data-dj-field");
+    const deckId = target.getAttribute("data-deck");
+    const deckFields = ["stemIndex", "volume", "pitch", "jog", "filter", "cueStep", "sync", "loop", "reverse"];
+    if (!field) return true;
+    if (field === "crossfader") dj.crossfader = Math.max(0, Math.min(100, Number(target.value) || 0));
+    else if (field === "recordLaunches") dj.recordLaunches = Boolean(target.checked);
+    else if (deckFields.includes(field)) {
+      const deck = studioDjDeck(deckId || "A");
+      if (["sync", "loop", "reverse"].includes(field)) deck[field] = Boolean(target.checked);
+      else deck[field] = Number(target.value) || 0;
+      if (field === "stemIndex") deck[field] = Math.max(0, Math.min((state.studio.stems || []).length - 1, Number(deck[field]) || 0));
+      if (field === "cueStep") deck[field] = Math.max(0, Math.min(studioTotalSteps() - 1, Number(deck[field]) || 0));
+      if (field === "jog") deck[field] = Math.max(-12, Math.min(12, Number(deck[field]) || 0));
+      if (field === "pitch") deck[field] = Math.max(-50, Math.min(50, Number(deck[field]) || 0));
+    }
+    saveStudioProject();
+    updateStudioDjDeckMix();
+    if (["stemIndex", "sync", "loop", "reverse", "recordLaunches"].includes(field)) render();
+    return true;
+  }
+  if (action === "studio-dj-import-stem") {
+    const deckId = target.getAttribute("data-deck") || "A";
+    const deck = studioDjDeck(deckId);
+    importStudioStemFile(target.files?.[0], Number(deck.stemIndex) || 0).then(() => {
+      studioDjDeck(deckId).stemIndex = Number(deck.stemIndex) || 0;
+      saveStudioProject();
+      render();
+    });
+    return true;
+  }
+  if (action === "studio-dj-play") {
+    playStudioDjDeck(target.getAttribute("data-deck") || "A");
+    return true;
+  }
+  if (action === "studio-dj-cue") {
+    playStudioDjDeck(target.getAttribute("data-deck") || "A", { cue: true });
+    return true;
+  }
+  if (action === "studio-dj-stop") {
+    stopStudioDjDeck(target.getAttribute("data-deck") || "A", true);
+    return true;
+  }
+  if (action === "studio-dj-play-both") {
+    playStudioDjDeck("A", { silent: true });
+    playStudioDjDeck("B");
+    return true;
+  }
+  if (action === "studio-dj-stop-both") {
+    stopStudioDjDecks();
+    saveStudioProject();
+    render();
+    return true;
+  }
+  if (action === "studio-dj-jog-reset") {
+    studioDjDeck(target.getAttribute("data-deck") || "A").jog = 0;
+    saveStudioProject();
+    updateStudioDjDeckMix();
+    render();
+    return true;
+  }
+  if (action === "studio-dj-to-pad") {
+    assignStudioDjDeckToPad(target.getAttribute("data-deck") || "A");
+    return true;
+  }
+  if (action === "studio-dj-add-trigger") {
+    addStudioDjDeckLaunchToSequence(target.getAttribute("data-deck") || "A");
+    return true;
+  }
+  if (action === "studio-load-default-stem-kit") {
+    applyStudioDefaultStemKitToProject(state.studio, { replaceStems: false, replacePads: false });
+    studioSampleBuffers = {};
+    studioStemBuffers = {};
+    saveStudioProject();
+    toast("Default stem kit loaded without overwriting custom sounds.");
+    render();
+    return true;
+  }
+  if (action === "studio-force-default-stem-kit") {
+    applyStudioDefaultStemKitToProject(state.studio, { replaceStems: true, replacePads: true });
+    studioSampleBuffers = {};
+    studioStemBuffers = {};
+    saveStudioProject();
+    toast("Pads and stem slots replaced with the default LottoMind stem kit.");
+    render();
+    return true;
+  }
+  if (action === "studio-map-default-stem-pads") {
+    applyStudioDefaultStemPadMapToProject(state.studio, { replacePads: true });
+    studioSampleBuffers = {};
+    saveStudioProject();
+    toast("Default stems re-sliced across all 16 drum pads.");
+    render();
+    return true;
+  }
+  if (action === "studio-use-current-stems-as-kit") {
+    mapCurrentStudioStemsToPadKit({ replacePads: true });
+    return true;
+  }
+  if (action === "studio-export-stems") {
+    exportStudioStems();
+    return true;
+  }
+  if (action === "studio-select-stem") {
+    const raw = target.value ?? target.getAttribute("value") ?? target.getAttribute("data-stem") ?? "0";
+    state.studio.selectedStem = Math.max(0, Math.min((state.studio.stems || []).length - 1, Number(raw) || 0));
+    saveStudioProject();
+    render();
+    return true;
+  }
+  if (action === "studio-import-stem") {
+    importStudioStemFile(target.files?.[0], state.studio.selectedStem);
+    return true;
+  }
+  if (action === "studio-import-stems") {
+    importStudioStemFiles(target.files, state.studio.selectedStem);
+    return true;
+  }
+  if (action === "studio-stem-set") {
+    const stemIndex = Math.max(0, Math.min((state.studio.stems || []).length - 1, Number(state.studio.selectedStem) || 0));
+    const field = target.getAttribute("data-stem-field");
+    if (!field || !state.studio.stems?.[stemIndex]) return true;
+    if (["volume", "startStep", "sourceBpm", "padTarget"].includes(field)) state.studio.stems[stemIndex][field] = Number(target.value) || 0;
+    else if (["sync", "sequenceEnabled"].includes(field)) state.studio.stems[stemIndex][field] = Boolean(target.checked);
+    else state.studio.stems[stemIndex][field] = target.value;
+    if (field === "startStep") state.studio.stems[stemIndex][field] = Math.max(0, Math.min(studioTotalSteps() - 1, Number(target.value) || 0));
+    saveStudioProject();
+    if (["name", "sync", "sequenceEnabled", "padTarget"].includes(field)) render();
+    return true;
+  }
+  if (action === "studio-toggle-stem-mute" || action === "studio-toggle-stem-solo") {
+    const stemIndex = Math.max(0, Math.min((state.studio.stems || []).length - 1, Number(state.studio.selectedStem) || 0));
+    const key = action === "studio-toggle-stem-mute" ? "muted" : "solo";
+    state.studio.stems[stemIndex][key] = !state.studio.stems[stemIndex][key];
+    saveStudioProject();
+    render();
+    return true;
+  }
+  if (action === "studio-play-stem") {
+    playStudioStem(Number(state.studio.selectedStem) || 0);
+    return true;
+  }
+  if (action === "studio-export-stem") {
+    exportStudioStem(Number(state.studio.selectedStem) || 0);
+    return true;
+  }
+  if (action === "studio-clear-stem") {
+    clearStudioStem(Number(state.studio.selectedStem) || 0);
+    return true;
+  }
+  if (action === "studio-stem-to-pad") {
+    assignStudioStemToPad(Number(state.studio.selectedStem) || 0);
+    return true;
+  }
+  if (action === "studio-stems-to-pads") {
+    assignLoadedStemsToPads();
+    return true;
+  }
+  if (action === "studio-toggle-stem-step") {
+    const stem = Number(target.getAttribute("data-stem"));
+    const step = Number(target.getAttribute("data-step"));
+    const existing = state.studio.events.find((event) => event.type === "stem" && Number(event.stem) === stem && Number(event.step) === step);
+    state.studio.events = existing
+      ? state.studio.events.filter((event) => event !== existing)
+      : state.studio.events.concat({ id: `stem-${stem}-${step}-${Date.now()}`, type: "stem", stem, step, velocity: state.studio.velocity, offset: 0 });
+    state.studio.selectedStem = Math.max(0, Math.min((state.studio.stems || []).length - 1, stem || 0));
+    saveStudioProject();
+    render();
+    return true;
+  }
+  if (action === "studio-export-pack") {
+    const pack = {
+      version: "lottomind-studio-sound-pack-v7-default-stems-dj-decks",
+      defaultStemKit: state.studio.defaultStemKit || {},
+      exportedAt: new Date().toISOString(),
+      pads: state.studio.pads.map(({ name, sampleName, sampleData, trimStart, trimEnd, pitch, gain, reverse }) => ({ name, sampleName, sampleData, trimStart, trimEnd, pitch, gain, reverse })),
+      stems: (state.studio.stems || []).map(({ name, fileName, data, volume, startStep, sourceBpm, sync, sequenceEnabled, padTarget, sessionOnly }) => ({
+        name, fileName, data: sessionOnly || String(data || "").startsWith("blob:") ? "" : data, volume, startStep, sourceBpm, sync, sequenceEnabled, padTarget, sessionOnly,
+      })),
+      dj: ensureStudioDjState(),
+    };
+    downloadTextFile("lottomind-studio-sound-and-stem-pack.json", JSON.stringify(pack, null, 2));
+    return true;
+  }
+  if (action === "studio-import-pack") {
+    const file = target.files?.[0];
+    if (file) file.text().then((text) => {
+      const pack = JSON.parse(text);
+      if (Array.isArray(pack.pads)) state.studio.pads = state.studio.pads.map((pad, index) => ({ ...pad, ...(pack.pads[index] || {}) }));
+      if (Array.isArray(pack.stems)) state.studio.stems = createDefaultStudioProject().stems.map((stem, index) => ({ ...stem, ...(pack.stems[index] || {}) }));
+      if (pack.dj) state.studio.dj = { ...createDefaultStudioProject().dj, ...pack.dj, deckA: { ...createDefaultStudioProject().dj.deckA, ...(pack.dj.deckA || {}) }, deckB: { ...createDefaultStudioProject().dj.deckB, ...(pack.dj.deckB || {}) } };
+      if (pack.defaultStemKit) state.studio.defaultStemKit = { ...createDefaultStudioProject().defaultStemKit, ...pack.defaultStemKit };
+      studioSampleBuffers = {};
+      studioStemBuffers = {};
+      saveStudioProject();
+      toast(Array.isArray(pack.stems) ? "Sound + stem pack imported" : "Sound pack imported");
+      render();
+    }).catch(() => toast("Sound/stem pack JSON could not be imported."));
+    return true;
+  }
+  if (action === "studio-lotto-set") {
+    const lotto = studioLottoConfig();
+    const field = target.getAttribute("data-lotto-field");
+    if (!field) return true;
+    if (field === "entropy") lotto[field] = Boolean(target.checked);
+    else if (field === "setCount") lotto[field] = Math.max(1, Math.min(10, Number(target.value) || 3));
+    else lotto[field] = target.value;
+    if (field === "gameId") {
+      state.gameId = lotto.gameId;
+      localStorage.setItem("lottomind.oracle.real.game", state.gameId);
+    }
+    saveStudioProject();
+    render();
+    return true;
+  }
+  if (action === "studio-generate-lotto") {
+    const picks = generateStudioLottoPicks();
+    toast(`Beat2Lotto generated ${picks.length} set${picks.length === 1 ? "" : "s"}`);
+    render();
+    return true;
+  }
+  if (action === "studio-copy-lotto") {
+    copyStudioLottoSet();
+    return true;
+  }
+  if (action === "studio-save-lotto") {
+    const lotto = studioLottoConfig();
+    if (!lotto.lastSet) generateStudioLottoPicks();
+    if (state.studio.lotto?.lastSet) saveSet({ ...state.studio.lotto.lastSet, savedFrom: "LottoMind Studio Beat2Lotto" });
+    else toast("Generate Beat2Lotto picks first.");
+    return true;
+  }
+  if (action === "studio-randomize-and-lotto") {
+    state.studio.events = [];
+    const total = studioTotalSteps();
+    const stepsPerBeat = studioStepsPerBeat();
+    const kickEvery = Math.max(1, Math.round(stepsPerBeat));
+    const hatEvery = Math.max(1, Math.round(stepsPerBeat / 2));
+    for (let step = 0; step < total; step += 1) {
+      if (step % (kickEvery * 4) === 0) state.studio.events.push({ id: `rnd-k-${step}`, type: "pad", pad: 0, step, velocity: 78 + Math.round(Math.random() * 14), offset: 0 });
+      if (step % (kickEvery * 4) === kickEvery * 2 && Math.random() > 0.35) state.studio.events.push({ id: `rnd-k2-${step}`, type: "pad", pad: 0, step, velocity: 58 + Math.round(Math.random() * 18), offset: 0 });
+      if (step % (kickEvery * 2) === kickEvery) state.studio.events.push({ id: `rnd-s-${step}`, type: "pad", pad: 1, step, velocity: 72 + Math.round(Math.random() * 16), offset: 0 });
+      if (step % hatEvery === 0 && Math.random() > 0.12) state.studio.events.push({ id: `rnd-h-${step}`, type: "pad", pad: 3, step, velocity: 42 + Math.round(Math.random() * 30), offset: 0 });
+      if (step % (kickEvery * 8) === kickEvery * 6 && Math.random() > 0.45) state.studio.events.push({ id: `rnd-p-${step}`, type: "pad", pad: 8 + Math.floor(Math.random() * 4), step, velocity: 55 + Math.round(Math.random() * 28), offset: 0 });
+    }
+    generateStudioLottoPicks();
+    saveStudioProject();
+    toast("Random groove generated and converted to Lotto picks");
+    render();
+    return true;
+  }
+  if (action === "studio-randomize") {
+    state.studio.events = [];
+    const total = studioTotalSteps();
+    const stepsPerBeat = studioStepsPerBeat();
+    const kickEvery = Math.max(1, Math.round(stepsPerBeat));
+    const hatEvery = Math.max(1, Math.round(stepsPerBeat / 2));
+    for (let step = 0; step < total; step += 1) {
+      if (step % (kickEvery * 4) === 0) state.studio.events.push({ id: `rnd-k-${step}`, type: "pad", pad: 0, step, velocity: 78 + Math.round(Math.random() * 14), offset: 0 });
+      if (step % (kickEvery * 4) === kickEvery * 2 && Math.random() > 0.35) state.studio.events.push({ id: `rnd-k2-${step}`, type: "pad", pad: 0, step, velocity: 58 + Math.round(Math.random() * 18), offset: 0 });
+      if (step % (kickEvery * 2) === kickEvery) state.studio.events.push({ id: `rnd-s-${step}`, type: "pad", pad: 1, step, velocity: 72 + Math.round(Math.random() * 16), offset: 0 });
+      if (step % hatEvery === 0 && Math.random() > 0.12) state.studio.events.push({ id: `rnd-h-${step}`, type: "pad", pad: 3, step, velocity: 42 + Math.round(Math.random() * 30), offset: 0 });
+    }
+    saveStudioProject();
+    toast("Full 16-bar random groove generated");
+    render();
+    return true;
+  }
+  return false;
 }
 
 function handleAction(action, target) {
-  if (action === "go-back") {
-    if (window.history.length > 1) {
-      window.history.back();
-    } else {
-      go("dashboard", true);
-    }
+  if (handleStudioPolishAction(action, target)) return;
+  if (action === "set-social-challenge") {
+    const challenge = target.getAttribute("data-challenge") || "Trivia";
+    state.socialChallengeType = SOCIAL_CHALLENGE_TYPES.includes(challenge) ? challenge : "Trivia";
+    render();
     return;
   }
-  if (action === "go-forward") {
-    window.history.forward();
+  if (action === "save-social-score") {
+    const rawScore = String(state.socialScoreInput ?? "").trim();
+    const score = Number(rawScore);
+    if (!rawScore || !Number.isFinite(score) || score < 0 || score > 999999) {
+      toast("Enter a score from 0 to 999999");
+      return;
+    }
+    saveSocialScore({
+      name: state.socialNameInput,
+      score,
+      challenge: state.socialChallengeType,
+      streak: getTriviaProgress().dailyStreak,
+      createdAt: new Date().toISOString(),
+      source: "Saved challenge",
+    });
+    if (!String(state.socialNameInput || "").trim()) state.socialNameInput = "Local Player";
+    state.socialScoreInput = "";
+    toast("Challenge score saved");
+    render();
+    return;
+  }
+  if (action === "clear-social-scores") {
+    clearSocialScores();
+    toast("Local social scores cleared");
+    render();
     return;
   }
   if (action === "studio-play") {
@@ -6033,6 +7509,575 @@ function handleAction(action, target) {
       }
     }
   }
+  if (action === "go-back") {
+    if (window.history.length > 1) {
+      window.history.back();
+    } else {
+      go("dashboard", true);
+    }
+    return;
+  }
+  if (action === "go-forward") {
+    window.history.forward();
+    return;
+  }
+  if (action === "studio-play") {
+    startStudioSequence();
+    return;
+  }
+  if (action === "studio-stop") {
+    stopStudioSequence();
+    return;
+  }
+  if (action === "studio-toggle-rec") {
+    state.studio.recArmed = !state.studio.recArmed;
+    saveStudioProject();
+    toast(state.studio.recArmed ? "Sequence record armed" : "Sequence record off");
+    return;
+  }
+  if (action === "studio-toggle-metronome") {
+    state.studio.metronome = !state.studio.metronome;
+    saveStudioProject();
+    render();
+    return;
+  }
+  if (action === "studio-save-project") {
+    saveStudioProject();
+    toast("Studio project saved");
+    return;
+  }
+  if (action === "studio-jump-panel") {
+    const panel = target.getAttribute("data-panel");
+    const el = panel ? document.getElementById(panel) : null;
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start", inline: "nearest" });
+    return;
+  }
+  if (action === "studio-set") {
+    const field = target.getAttribute("data-studio-field");
+    const numeric = ["bpm", "swing", "velocity", "humanize", "octave", "synthVolume", "selectedPad"];
+    state.studio[field] = numeric.includes(field) ? Number(target.value) : target.value;
+    if (field === "division") state.studioStep = 0;
+    saveStudioProject();
+    if (state.studioPlaying && ["bpm", "division"].includes(field)) startStudioSequence();
+    else render();
+    return;
+  }
+  if (action === "studio-pad-set") {
+    const field = target.getAttribute("data-pad-field");
+    const padIndex = state.studio.selectedPad;
+    state.studio.pads[padIndex][field] = Number(target.value);
+    saveStudioProject();
+    return;
+  }
+  if (action === "studio-effect-set") {
+    const effect = target.getAttribute("data-effect");
+    state.studio.effects[effect] = Number(target.value);
+    saveStudioProject();
+    updateStudioEffects();
+    return;
+  }
+  if (action === "studio-vocal-set") {
+    const track = Number(target.getAttribute("data-track"));
+    const field = target.getAttribute("data-vocal-field");
+    state.studio.vocals[track][field] = Number(target.value);
+    saveStudioProject();
+    return;
+  }
+  if (action === "studio-pad") {
+    const index = Number(target.getAttribute("data-studio-pad"));
+    state.studio.selectedPad = index;
+    triggerStudioPad(index);
+    saveStudioProject();
+    render();
+    return;
+  }
+  if (action === "studio-note") {
+    triggerStudioNote(target.getAttribute("data-note"));
+    return;
+  }
+  if (action === "studio-toggle-step") {
+    const pad = Number(target.getAttribute("data-pad"));
+    const step = Number(target.getAttribute("data-step"));
+    const existing = state.studio.events.find((event) => event.type === "pad" && event.pad === pad && event.step === step);
+    state.studio.events = existing
+      ? state.studio.events.filter((event) => event !== existing)
+      : state.studio.events.concat({ id: `step-${pad}-${step}-${Date.now()}`, type: "pad", pad, step, velocity: state.studio.velocity, offset: 0 });
+    saveStudioProject();
+    render();
+    return;
+  }
+  if (action === "studio-clear-pattern") {
+    state.studio.events = [];
+    saveStudioProject();
+    toast("Studio pattern cleared");
+    return;
+  }
+  if (action === "studio-humanize") {
+    const total = studioTotalSteps();
+    state.studio.events = state.studio.events.map((event) => ({
+      ...event,
+      velocity: Math.max(8, Math.min(100, Number(event.velocity || state.studio.velocity) + Math.round((Math.random() - 0.5) * state.studio.humanize))),
+      offset: Math.max(-0.48, Math.min(0.48, Number(event.offset || 0) + (Math.random() - 0.5) * state.studio.humanize / 50)),
+      step: ((Number(event.step) || 0) + total) % total,
+    }));
+    saveStudioProject();
+    toast("Human feel applied");
+    return;
+  }
+  if (action === "studio-randomize") {
+    state.studio.events = [];
+    const visible = studioVisibleSteps();
+    [0, 1, 2, 3].forEach((pad) => {
+      for (let step = 0; step < visible; step += pad === 0 ? 4 : pad === 3 ? 2 : 8) {
+        if (Math.random() > (pad === 0 ? 0.18 : 0.45)) state.studio.events.push({ id: `rnd-${pad}-${step}`, type: "pad", pad, step, velocity: 65 + Math.round(Math.random() * 30), offset: 0 });
+      }
+    });
+    saveStudioProject();
+    toast("Random groove generated");
+    render();
+    return;
+  }
+  if (action === "studio-import-sample") {
+    importStudioSampleFile(target.files?.[0]);
+    return;
+  }
+  if (action === "studio-load-url-sample") {
+    const url = state.studioSampleUrl || "";
+    if (!url) toast("Paste an audio URL first.");
+    else {
+      const padIndex = state.studio.selectedPad;
+      state.studio.pads[padIndex].sampleData = url;
+      state.studio.pads[padIndex].sampleName = "URL sample";
+      delete studioSampleBuffers[padIndex];
+      saveStudioProject();
+      toast("URL sample assigned. Browser CORS must allow playback.");
+    }
+    return;
+  }
+  if (action === "studio-sample-mic") {
+    recordStudioSourceToPad(getStudioMicStream(), "Mic", false);
+    return;
+  }
+  if (action === "studio-sample-tab") {
+    const capture = navigator.mediaDevices?.getDisplayMedia
+      ? navigator.mediaDevices.getDisplayMedia({ video: true, audio: true })
+      : Promise.resolve(null);
+    recordStudioSourceToPad(capture, "Tab audio");
+    return;
+  }
+  if (action === "studio-preview-sample") {
+    triggerStudioPad(state.studio.selectedPad, false);
+    return;
+  }
+  if (action === "studio-export-sample") {
+    exportStudioSample();
+    return;
+  }
+  if (action === "studio-clear-sample") {
+    const padIndex = state.studio.selectedPad;
+    state.studio.pads[padIndex] = { ...state.studio.pads[padIndex], sampleName: "", sampleData: "" };
+    delete studioSampleBuffers[padIndex];
+    saveStudioProject();
+    toast("Sample cleared");
+    render();
+    return;
+  }
+  if (action === "studio-toggle-pad-reverse") {
+    const pad = state.studio.pads[state.studio.selectedPad];
+    pad.reverse = !pad.reverse;
+    saveStudioProject();
+    render();
+    return;
+  }
+  if (action === "studio-refresh-inputs") {
+    if (!navigator.mediaDevices?.enumerateDevices) state.studioInputStatus = "Audio input listing is not supported.";
+    else navigator.mediaDevices.enumerateDevices().then((devices) => {
+      state.studioInputStatus = `${devices.filter((device) => device.kind === "audioinput").length} audio inputs available`;
+      render();
+    });
+    toast("Checking inputs");
+    return;
+  }
+  if (action === "studio-monitor-input") {
+    getStudioMicStream().then((stream) => {
+      const ctx = ensureStudioAudio();
+      if (!stream || !ctx) return;
+      if (studioMonitorSource) studioMonitorSource.disconnect();
+      studioMonitorSource = ctx.createMediaStreamSource(stream);
+      studioMonitorSource.connect(studioOutput());
+      state.studioInputStatus = "Monitoring live. Use headphones.";
+      render();
+    });
+    return;
+  }
+  if (action === "studio-stop-monitoring") {
+    if (studioMonitorSource) studioMonitorSource.disconnect();
+    studioMonitorSource = null;
+    state.studioInputStatus = "Monitoring stopped";
+    render();
+    return;
+  }
+  if (action === "studio-record-vocal") {
+    startStudioVocalRecording(Number(target.getAttribute("data-track")));
+    return;
+  }
+  if (action === "studio-stop-vocal") {
+    stopStudioVocalRecording(Number(target.getAttribute("data-track")));
+    return;
+  }
+  if (action === "studio-play-vocal") {
+    playVocalTrack(Number(target.getAttribute("data-track")));
+    return;
+  }
+  if (action === "studio-import-vocal") {
+    importStudioVocalFile(target.files?.[0], Number(target.getAttribute("data-track")));
+    return;
+  }
+  if (action === "studio-export-vocal") {
+    exportStudioVocal(Number(target.getAttribute("data-track")));
+    return;
+  }
+  if (action === "studio-clear-vocal") {
+    const track = Number(target.getAttribute("data-track"));
+    state.studio.vocals[track] = { ...createDefaultStudioProject().vocals[track] };
+    saveStudioProject();
+    render();
+    return;
+  }
+  if (action === "studio-toggle-vocal-mute" || action === "studio-toggle-vocal-solo") {
+    const track = Number(target.getAttribute("data-track"));
+    const key = action === "studio-toggle-vocal-mute" ? "muted" : "solo";
+    state.studio.vocals[track][key] = !state.studio.vocals[track][key];
+    saveStudioProject();
+    render();
+    return;
+  }
+  if (action === "studio-export-project") {
+    downloadTextFile("lottomind-studio-project.json", JSON.stringify(state.studio, null, 2));
+    return;
+  }
+  if (action === "studio-import-project") {
+    const file = target.files?.[0];
+    if (file) file.text().then((text) => {
+      state.studio = { ...createDefaultStudioProject(), ...JSON.parse(text) };
+      saveStudioProject();
+      toast("Studio project imported");
+      render();
+    }).catch(() => toast("Project JSON could not be imported."));
+    return;
+  }
+  if (action === "studio-export-pack") {
+    downloadTextFile("lottomind-sound-pack.json", JSON.stringify({ pads: state.studio.pads.map(({ name, sampleName, sampleData, trimStart, trimEnd, pitch, gain }) => ({ name, sampleName, sampleData, trimStart, trimEnd, pitch, gain })) }, null, 2));
+    return;
+  }
+  if (action === "studio-import-pack") {
+    const file = target.files?.[0];
+    if (file) file.text().then((text) => {
+      const pack = JSON.parse(text);
+      if (Array.isArray(pack.pads)) {
+        state.studio.pads = state.studio.pads.map((pad, index) => ({ ...pad, ...(pack.pads[index] || {}) }));
+        studioSampleBuffers = {};
+        saveStudioProject();
+        toast("Sound pack imported");
+        render();
+      }
+    }).catch(() => toast("Sound pack JSON could not be imported."));
+    return;
+  }
+  if (action === "studio-start-master-record") {
+    const ctx = ensureStudioAudio();
+    if (!ctx || typeof MediaRecorder === "undefined" || !studioDestination) {
+      toast("Master recording is not supported here.");
+      return;
+    }
+    studioMasterChunks = [];
+    studioMasterRecorder = new MediaRecorder(studioDestination.stream);
+    studioMasterRecorder.ondataavailable = (event) => { if (event.data?.size) studioMasterChunks.push(event.data); };
+    studioMasterRecorder.onstop = () => {
+      const blob = new Blob(studioMasterChunks, { type: studioMasterRecorder.mimeType || "audio/webm" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "lottomind-studio-master.webm";
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      state.studioMasterRecording = false;
+      render();
+    };
+    studioMasterRecorder.start();
+    state.studioMasterRecording = true;
+    render();
+    return;
+  }
+  if (action === "studio-stop-master-record") {
+    if (studioMasterRecorder?.state !== "inactive") studioMasterRecorder.stop();
+    return;
+  }
+  if (action === "menu") {
+    state.showUtilityMenu = !state.showUtilityMenu;
+    state.showStatePicker = false;
+    render();
+    return;
+  }
+  if (action === "toggle-global-audio") {
+    state.muted = !state.muted;
+    muteAllMedia(state.muted);
+    toast(state.muted ? "Music muted" : "Music ready");
+    return;
+  }
+  if (action === "voice-search") {
+    startDreamRecording();
+    return;
+  }
+  if (action === "set-game") {
+    state.gameId = target.getAttribute("data-game");
+    localStorage.setItem("lottomind.oracle.real.game", state.gameId);
+    state.currentSet = generateLottoSet(state.gameId, state.strategy, "game-change");
+    render();
+  }
+  if (action === "set-strategy") {
+    state.strategy = target.getAttribute("data-strategy");
+    localStorage.setItem("lottomind.oracle.real.strategy", state.strategy);
+    state.currentSet = generateLottoSet(state.gameId, state.strategy, state.strategy === "dream" ? state.dreamText : "strategy-change");
+    render();
+  }
+  if (action === "generate-set" || action === "run-power-analysis") {
+    state.currentSet = generateLottoSet(state.gameId, state.strategy, state.dreamText);
+    toast(action === "run-power-analysis" ? "Power analysis complete" : "Numbers generated");
+  }
+  if (action === "run-ai-coach") {
+    const generated = generateLottoSet(state.gameId, state.strategy, `${state.aiPrompt} ${state.dreamText}`);
+    state.currentSet = generated;
+    state.currentAi = {
+      title: "LottoMind AI Report",
+      numbers: generated.numbers,
+      copy: `${generated.note} Next move: compare against Radar, then save to History Vault.`,
+    };
+    toast("AI coach report generated");
+  }
+  if (action === "analyze-name-numbers") {
+    state.currentNameNumbers = nameNumberReport(state.nameInput);
+    state.currentSet = {
+      ...generateLottoSet(state.gameId, "dream", state.nameInput),
+      numbers: state.currentNameNumbers.numbers,
+      strategy: "name",
+      note: `Name code ${state.currentNameNumbers.clean}: root ${state.currentNameNumbers.root}, Pick 3 ${state.currentNameNumbers.pick3}, Pick 4 ${state.currentNameNumbers.pick4}.`,
+    };
+    toast("Name numbers analyzed");
+  }
+  if (action === "save-current-set") {
+    if (!state.currentSet) state.currentSet = generateLottoSet(state.gameId, state.strategy, state.dreamText);
+    saveSet(state.currentSet);
+  }
+  if (action === "lock-prediction") {
+    if (!state.currentSet) state.currentSet = generateLottoSet(state.gameId, state.strategy, state.dreamText);
+    saveSet({ ...state.currentSet, locked: true, note: `${state.currentSet.note} Locked for the next demo draw.` });
+  }
+  if (action === "interpret-dream") {
+    state.currentDream = interpretDream(state.dreamText, state.gameId);
+    state.currentSet = generateLottoSet(state.gameId, "dream", state.dreamText);
+    toast("Dream interpreted");
+  }
+  if (action === "save-dream") {
+    if (!state.currentDream) {
+      state.currentDream = interpretDream(state.dreamText, state.gameId);
+    }
+    saveDream(state.currentDream);
+  }
+  if (action === "psychic-fusion") {
+    state.currentPsychic = generatePsychicReading({ prompt: "oracle studio fusion", dreamText: state.dreamText, game: state.gameId });
+    savePsychic(state.currentPsychic);
+    toast("Psychic fusion generated");
+  }
+  if (action === "start-dream-recording") {
+    startDreamRecording();
+    return;
+  }
+  if (action === "build-dream-video") {
+    const alreadyInStudio = state.route === "dreamVideo";
+    state.currentDream = interpretDream(state.dreamText, state.gameId);
+    state.currentVideo = buildDreamVideoPlan(state.dreamText);
+    if (!alreadyInStudio) {
+      go("dreamVideo");
+      return;
+    }
+    toast("Dream video storyboard built");
+  }
+  if (action === "save-video-storyboard") {
+    if (!state.currentVideo) state.currentVideo = buildDreamVideoPlan(state.dreamText);
+    saveDream({
+      ...state.currentVideo.reading,
+      title: "Dream Video Storyboard",
+      note: `${state.currentVideo.frames.map((frame) => frame[0]).join(" > ")} | ${state.currentVideo.reading.note}`,
+      savedAt: new Date().toISOString(),
+    });
+  }
+  if (action === "analyze-sequence") {
+    state.lastSequence = analyzeSequence(parseNumbers(state.numberInput), getGame().mainMax);
+    toast("Sequence analyzed");
+  }
+  if (action === "analyze-daily") toast("Daily digits analyzed");
+  if (action === "generate-daily") {
+    const pick = generateLottoSet(state.dailyInput.length >= 4 ? "pick-4" : "pick-3", "balanced", "daily");
+    state.dailyInput = pick.numbers.join("");
+    toast("Daily digits generated");
+  }
+  if (action === "cycle-state") {
+    state.showStatePicker = !state.showStatePicker;
+    state.showUtilityMenu = false;
+    render();
+  }
+  if (action === "select-state") {
+    state.selectedState = target.getAttribute("data-state") || state.selectedState;
+    state.selectedStoreId = "";
+    state.showStatePicker = false;
+    localStorage.setItem("lottomind.oracle.real.state", state.selectedState);
+    toast(`${state.selectedState} pin selected`);
+  }
+  if (action === "set-merch-category") {
+    state.merchCategory = target.getAttribute("data-category") || "All";
+    const first = MERCH_ITEMS.findIndex((item) => state.merchCategory === "All" || item.type === state.merchCategory);
+    if (first >= 0) state.selectedMerchIndex = first;
+    toast(`${state.merchCategory} shelf loaded`);
+  }
+  if (action === "search-stores") {
+    state.selectedStoreId = "";
+    toast(state.storeQuery ? "Store search filtered" : "Showing nearby mock retailers");
+  }
+  if (action === "toggle-store-filter") {
+    const filter = target.getAttribute("data-filter");
+    if (filter) {
+      state.activeStoreFilters = state.activeStoreFilters.includes(filter)
+        ? state.activeStoreFilters.filter((item) => item !== filter)
+        : state.activeStoreFilters.concat(filter);
+      state.selectedStoreId = "";
+      toast(`${filter} filter ${state.activeStoreFilters.includes(filter) ? "on" : "off"}`);
+    }
+  }
+  if (action === "select-store") {
+    state.selectedStoreId = target.getAttribute("data-store") || "";
+    toast(`${selectedStore().name} selected`);
+  }
+  if (action === "toggle-store-favorite") {
+    const storeId = target.getAttribute("data-store") || selectedStore().id;
+    const favorites = storeFavorites();
+    const next = favorites.includes(storeId) ? favorites.filter((id) => id !== storeId) : favorites.concat(storeId);
+    saveJson(STORAGE.storeFavorites, next);
+    toast(next.includes(storeId) ? "Store saved" : "Store removed");
+  }
+  if (action === "use-current-location") {
+    if (!navigator.geolocation) {
+      state.userLocation = { lat: 42.3314, lng: -83.0458, fallback: true };
+      toast("Location unavailable. Detroit fallback loaded.");
+    } else {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          state.userLocation = { lat: position.coords.latitude, lng: position.coords.longitude, fallback: false };
+          toast("Location permission active");
+        },
+        () => {
+          state.userLocation = { lat: 42.3314, lng: -83.0458, fallback: true };
+          toast("Location denied. Detroit fallback loaded.");
+        },
+        { enableHighAccuracy: false, timeout: 5000, maximumAge: 300000 },
+      );
+    }
+  }
+  if (action === "sync-store-backend") {
+    const base = window.LOTTOMIND_API_BASE_URL || localStorage.getItem("lottomind.api.base") || "";
+    if (!base) {
+      toast("Backend proxy not configured. Mock retailer layer is active.");
+    } else {
+      const loc = state.userLocation || { lat: 42.3314, lng: -83.0458 };
+      fetch(`${base.replace(/\/$/, "")}/api/store-locator/nearby?lat=${loc.lat}&lng=${loc.lng}`)
+        .then((response) => response.ok ? response.json() : Promise.reject(new Error("Store backend unavailable")))
+        .then(() => toast("Backend route responded. Google proxy can be connected."))
+        .catch(() => toast("Backend unavailable. Mock stores preserved."));
+    }
+  }
+  if (action === "set-view") {
+    state.viewMode = target.getAttribute("data-view");
+    localStorage.setItem("lottomind.oracle.real.view", state.viewMode);
+    toast(`${titleCase(state.viewMode)} view selected`);
+  }
+  if (action === "toggle-reset-audio") toggleResetAudio();
+  if (action === "load-reset-session") {
+    state.tone = target.getAttribute("data-tone") || state.tone;
+    state.timerRemaining = state.duration;
+    toast(`${state.tone} Hz loaded in Reset`);
+    if (state.route !== "reset") {
+      go("reset");
+      return;
+    }
+  }
+  if (action === "connect-stream") {
+    const stream = target.getAttribute("data-stream") || "Music platform";
+    const url = target.getAttribute("data-url");
+    const connected = loadJson(STORAGE.streams, []);
+    if (!connected.includes(stream)) saveJson(STORAGE.streams, connected.concat(stream));
+    if (url && typeof window.open === "function") window.open(url, "_blank", "noopener");
+    toast(`${stream} connected to LottoMind Records`);
+  }
+  if (action === "set-tone") {
+    state.tone = target.getAttribute("data-tone");
+    if (resetToneOscillator && resetToneContext) {
+      resetToneOscillator.frequency.setTargetAtTime(Number(state.tone) || 528, resetToneContext.currentTime, 0.03);
+    }
+    toast(`${state.tone} Hz loaded`);
+  }
+  if (action === "set-duration") {
+    state.duration = Number(target.getAttribute("data-duration")) || 300;
+    state.timerRemaining = state.duration;
+    toast(`${Math.round(state.duration / 60)} minute session loaded`);
+  }
+  if (action === "volume-up" || action === "volume-down") {
+    state.volume = Math.max(0.02, Math.min(0.8, state.volume + (action === "volume-up" ? 0.04 : -0.04)));
+    if (resetAudio) resetAudio.volume = state.volume;
+    if (resetToneGain && resetToneContext) {
+      resetToneGain.gain.setTargetAtTime(Math.max(0.02, Math.min(0.22, state.volume * 0.32)), resetToneContext.currentTime, 0.03);
+    }
+    render();
+  }
+  if (action === "favorite-tone") toast(`${state.tone} Hz saved as favorite`);
+  if (action === "simulate-scan" || action === "scan-ticket" || action === "scan-barcode") {
+    const upload = target.files && target.files[0] ? target.files[0].name : "";
+    const source = action === "scan-barcode" ? state.barcodeInput || "barcode-demo-0427" : upload || "camera-demo-ticket";
+    if (action === "scan-ticket" && target.files && target.files[0]) {
+      const file = target.files[0];
+      scanBarcodeFromFile(file).then((decoded) => {
+        applyScanReadout(action, file.name, file.name, decoded);
+        toast(decoded ? "Real barcode detected from ticket image" : "No barcode found. Demo readout loaded.");
+      });
+      toast("Reading ticket image...");
+      return;
+    }
+    applyScanReadout(action, source, upload);
+    toast("Ticket scanner readout loaded");
+  }
+  if (action === "save-store") {
+    const savedStores = loadJson(STORAGE.stores, []);
+    if (!savedStores.includes(state.selectedState)) saveJson(STORAGE.stores, savedStores.concat(state.selectedState));
+    toast(`${state.selectedState} store locator saved`);
+  }
+  if (action === "buy-item") {
+    const cost = Number(target.getAttribute("data-cost")) || 0;
+    const unlockId = target.getAttribute("data-unlock");
+    if (unlockId === "credits-pack") {
+      setCredits(getCredits() + 100);
+      toast("Demo credit pack added: +100 credits");
+    } else if (unlockId && isUnlocked(unlockId)) {
+      toast("Already unlocked");
+    } else {
+      const next = getCredits() - cost;
+      if (next < 0) {
+        toast("Not enough credits");
+      } else {
+        setCredits(next);
+        if (unlockId) saveUnlock(unlockId, unlockId.includes("24") ? "24h" : "permanent");
+        toast(unlockId ? "Feature unlocked" : "Credit purchase applied");
+      }
+    }
+  }
   if (action === "unlock-feature") {
     const unlockId = target.getAttribute("data-unlock");
     const unlock = FEATURE_UNLOCKS.find((item) => item.id === unlockId);
@@ -6217,6 +8262,7 @@ function activateInteractiveTarget(event) {
   if (actionTarget) {
     const action = actionTarget.getAttribute("data-action");
     if (action === "search" || action === "scan-ticket") return false;
+    if (actionTarget.matches?.("input, select, textarea") && actionTarget.type !== "button" && actionTarget.type !== "submit") return false;
     const preserveResetScroll = Boolean(actionTarget.closest(".reset-screen")) && [
       "toggle-reset-audio",
       "set-tone",
