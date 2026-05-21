@@ -18943,3 +18943,271 @@ body .route-studio .lm-tab-row .studio-tab:first-child {
     height: 82px !important;
   }
 }
+
+/* LottoMind Social Community Board */
+body .lottomind-social-screen {
+  display: grid;
+  gap: 14px;
+}
+
+body .social-hero {
+  min-height: 310px;
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  align-items: center;
+  gap: 18px;
+  overflow: hidden;
+  background:
+    linear-gradient(135deg, rgba(0, 238, 255, 0.16), rgba(151, 86, 255, 0.12)),
+    linear-gradient(180deg, rgba(5, 25, 35, 0.92), rgba(5, 8, 13, 0.96));
+  border-color: rgba(0, 238, 255, 0.72);
+  box-shadow: 0 0 0 1px rgba(212, 175, 55, 0.18), 0 22px 54px rgba(0, 238, 255, 0.16);
+}
+
+body .social-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: var(--panel-art);
+  background-size: cover;
+  background-position: center;
+  opacity: 0.28;
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+
+body .social-hero-copy,
+body .social-orb {
+  position: relative;
+  z-index: 1;
+}
+
+body .social-hero h1 {
+  margin: 2px 0 10px;
+  font-family: Impact, "Arial Black", system-ui, sans-serif;
+  font-size: clamp(2.3rem, 9vw, 4rem);
+  line-height: 0.9;
+  letter-spacing: 0;
+  color: #fff6bd;
+  text-shadow: 0 0 18px rgba(0, 238, 255, 0.44), 0 4px 0 rgba(0, 0, 0, 0.48);
+}
+
+body .social-hero p {
+  max-width: 34ch;
+  margin: 0 0 16px;
+  color: rgba(224, 241, 255, 0.9);
+  font-weight: 800;
+  line-height: 1.45;
+}
+
+body .social-orb {
+  justify-self: center;
+  width: min(220px, 54vw);
+  aspect-ratio: 1;
+  border: 1px solid rgba(212, 175, 55, 0.76);
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 42% 36%, rgba(255, 246, 189, 0.98), rgba(212, 175, 55, 0.45) 22%, transparent 28%),
+    radial-gradient(circle, rgba(0, 238, 255, 0.42), rgba(151, 86, 255, 0.2) 52%, rgba(4, 10, 16, 0.92) 72%);
+  box-shadow: inset 0 0 38px rgba(0, 238, 255, 0.2), 0 0 42px rgba(212, 175, 55, 0.2);
+}
+
+body .social-orb::before,
+body .social-orb::after {
+  content: "";
+  position: absolute;
+  inset: 18%;
+  border: 1px solid rgba(0, 238, 255, 0.5);
+  border-radius: inherit;
+}
+
+body .social-orb::after {
+  inset: 34%;
+  background: rgba(5, 12, 20, 0.66);
+  box-shadow: 0 0 34px rgba(0, 238, 255, 0.32);
+}
+
+body .social-stats-grid,
+body .social-prompt-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+body .social-stats-grid .metric-card {
+  min-height: 92px;
+  border-color: rgba(0, 238, 255, 0.46);
+  border-radius: 20px;
+  background: linear-gradient(145deg, rgba(8, 45, 62, 0.92), rgba(7, 14, 25, 0.96));
+}
+
+body .social-board-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  gap: 12px;
+}
+
+body .social-leaderboard,
+body .social-streak-panel,
+body .social-score-form,
+body .social-score-list,
+body .social-prompt-card {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(0, 238, 255, 0.42);
+  background: linear-gradient(145deg, rgba(4, 32, 46, 0.9), rgba(4, 8, 16, 0.96));
+  box-shadow: inset 0 0 28px rgba(0, 238, 255, 0.06);
+}
+
+body .social-leader-row {
+  display: grid;
+  grid-template-columns: 46px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  margin-top: 8px;
+  border: 1px solid rgba(212, 175, 55, 0.24);
+  border-radius: 16px;
+  background: rgba(3, 14, 24, 0.72);
+}
+
+body .social-rank {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  color: #061018;
+  background: linear-gradient(135deg, #fff4a8, #d4af37 56%, #00eaff);
+  font-weight: 1000;
+}
+
+body .social-player {
+  min-width: 0;
+}
+
+body .social-player strong,
+body .social-score strong {
+  display: block;
+  color: #fff6bd;
+  font-weight: 1000;
+}
+
+body .social-player span,
+body .social-score span {
+  display: block;
+  color: rgba(223, 239, 255, 0.72);
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+body .social-score {
+  text-align: right;
+}
+
+body .social-progress {
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+body .social-progress i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #00eaff, #d4af37, #ff5ac8);
+  box-shadow: 0 0 16px rgba(0, 238, 255, 0.42);
+}
+
+body .social-score-form {
+  display: grid;
+  gap: 10px;
+}
+
+body .social-score-form input {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid rgba(0, 238, 255, 0.34);
+  border-radius: 14px;
+  background: rgba(0, 0, 0, 0.34);
+  color: #eef8ff;
+  font: 800 0.9rem Inter, system-ui, sans-serif;
+}
+
+body .social-challenge-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+body .social-challenge-tabs button {
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid rgba(0, 238, 255, 0.34);
+  border-radius: 999px;
+  background: rgba(6, 18, 32, 0.78);
+  color: rgba(238, 248, 255, 0.84);
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+body .social-challenge-tabs button.active {
+  color: #071018;
+  background: linear-gradient(135deg, #fff4a8, #6dffb4, #00eaff);
+}
+
+body .social-score-list {
+  display: grid;
+  gap: 8px;
+}
+
+body .social-score-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  padding: 10px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+body .social-prompt-card {
+  display: grid;
+  gap: 8px;
+  min-height: 154px;
+  padding: 14px;
+  border-radius: 18px;
+}
+
+body .social-prompt-card h3 {
+  margin: 0;
+  color: #fff6bd;
+  font: 1000 1.02rem Inter, system-ui, sans-serif;
+}
+
+body .social-prompt-card p {
+  margin: 0;
+  color: rgba(222, 238, 255, 0.76);
+  font-size: 0.82rem;
+  font-weight: 750;
+}
+
+body .social-note {
+  color: rgba(230, 241, 255, 0.72);
+  font-size: 0.78rem;
+  font-weight: 750;
+}
+
+@media (max-width: 680px) {
+  body .social-hero,
+  body .social-board-grid,
+  body .social-prompt-grid {
+    grid-template-columns: 1fr;
+  }
+
+  body .social-orb {
+    width: 150px;
+  }
+}
