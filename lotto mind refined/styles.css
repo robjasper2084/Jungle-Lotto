@@ -19758,3 +19758,208 @@ body .lm-studio-mode.lm-studio-v9 .studio-keyboard-keys .key:not(.black) {
     grid-template-columns: 1fr !important;
   }
 }
+
+/* Studio UX order + landscape workstation extension. */
+body .lm-studio-mode.lm-studio-v9 .studio-help-menu {
+  display: flex !important;
+  align-items: center;
+  gap: 8px;
+}
+
+body .lm-studio-mode.lm-studio-v9 .studio-back-toggle,
+body .lm-studio-mode.lm-studio-v9 .studio-help-toggle {
+  min-height: 32px;
+  white-space: nowrap;
+}
+
+body .lm-studio-mode.lm-studio-v9 .studio-back-toggle {
+  padding: 7px 11px;
+  border-radius: 999px;
+  border: 1px solid rgba(41, 255, 242, 0.58);
+  color: #dffcff;
+  background:
+    radial-gradient(circle at 24% 20%, rgba(255, 255, 255, 0.16), transparent 28%),
+    linear-gradient(135deg, rgba(5, 29, 47, 0.96), rgba(9, 12, 31, 0.96));
+  font-size: 10px;
+  font-weight: 950;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  box-shadow: 0 0 18px rgba(41, 255, 242, 0.18);
+}
+
+body .real-shell.route-studio .sonic-studio-screen > .studio-transport-panel,
+body .real-shell:has(.lottomind-studio-screen) .sonic-studio-screen > .studio-transport-panel {
+  order: 1 !important;
+}
+
+body .real-shell.route-studio .sonic-studio-screen > #studio-beat-lotto,
+body .real-shell.route-studio .sonic-studio-screen > .beat-lotto-panel,
+body .real-shell:has(.lottomind-studio-screen) .sonic-studio-screen > #studio-beat-lotto,
+body .real-shell:has(.lottomind-studio-screen) .sonic-studio-screen > .beat-lotto-panel {
+  order: 2 !important;
+}
+
+body .real-shell.route-studio .sonic-studio-screen > .studio-control-strip,
+body .real-shell:has(.lottomind-studio-screen) .sonic-studio-screen > .studio-control-strip {
+  order: 3 !important;
+}
+
+body .real-shell.route-studio .sonic-studio-screen > .lm-studio-feature-strip,
+body .real-shell:has(.lottomind-studio-screen) .sonic-studio-screen > .lm-studio-feature-strip {
+  order: 4 !important;
+}
+
+body .real-shell.route-studio .sonic-studio-screen > .lm-studio-grid,
+body .real-shell:has(.lottomind-studio-screen) .sonic-studio-screen > .lm-studio-grid {
+  order: 5 !important;
+}
+
+body .real-shell.route-studio .sonic-studio-screen > .studio-terms,
+body .real-shell:has(.lottomind-studio-screen) .sonic-studio-screen > .studio-terms {
+  order: 6 !important;
+}
+
+body .real-shell.route-studio .lm-studio-grid > #studio-pads,
+body .real-shell:has(.lottomind-studio-screen) .lm-studio-grid > #studio-pads {
+  order: 1 !important;
+}
+
+body .real-shell.route-studio .lm-studio-grid > #studio-sequencer,
+body .real-shell:has(.lottomind-studio-screen) .lm-studio-grid > #studio-sequencer {
+  order: 2 !important;
+  grid-column: auto / span 2 !important;
+}
+
+body .real-shell.route-studio .lm-studio-grid > #studio-sampler,
+body .real-shell:has(.lottomind-studio-screen) .lm-studio-grid > #studio-sampler {
+  order: 3 !important;
+}
+
+body .real-shell.route-studio .lm-studio-grid > #studio-keyboard,
+body .real-shell:has(.lottomind-studio-screen) .lm-studio-grid > #studio-keyboard {
+  order: 4 !important;
+}
+
+body .real-shell.route-studio .lm-studio-grid > #studio-effects,
+body .real-shell:has(.lottomind-studio-screen) .lm-studio-grid > #studio-effects {
+  order: 5 !important;
+}
+
+body .real-shell.route-studio .lm-studio-grid > #studio-dj-decks,
+body .real-shell:has(.lottomind-studio-screen) .lm-studio-grid > #studio-dj-decks {
+  order: 6 !important;
+  grid-column: auto / span 2 !important;
+}
+
+body .real-shell.route-studio .lm-studio-grid > #studio-vocals,
+body .real-shell:has(.lottomind-studio-screen) .lm-studio-grid > #studio-vocals {
+  order: 7 !important;
+}
+
+body .real-shell.route-studio .lm-studio-grid > #studio-mic,
+body .real-shell:has(.lottomind-studio-screen) .lm-studio-grid > #studio-mic {
+  order: 8 !important;
+}
+
+body .real-shell.route-studio .lm-studio-grid > #studio-stems,
+body .real-shell:has(.lottomind-studio-screen) .lm-studio-grid > #studio-stems {
+  order: 9 !important;
+}
+
+body .real-shell.route-studio .lm-studio-grid > #studio-default-stem-kit,
+body .real-shell:has(.lottomind-studio-screen) .lm-studio-grid > #studio-default-stem-kit {
+  order: 10 !important;
+}
+
+body .real-shell.route-studio .lm-studio-grid > #studio-files,
+body .real-shell:has(.lottomind-studio-screen) .lm-studio-grid > #studio-files {
+  order: 11 !important;
+}
+
+@media (max-width: 1120px) {
+  body .real-shell.route-studio .lm-studio-grid > #studio-sequencer,
+  body .real-shell.route-studio .lm-studio-grid > #studio-dj-decks,
+  body .real-shell:has(.lottomind-studio-screen) .lm-studio-grid > #studio-sequencer,
+  body .real-shell:has(.lottomind-studio-screen) .lm-studio-grid > #studio-dj-decks {
+    grid-column: 1 / -1 !important;
+  }
+}
+
+@media (max-width: 980px) {
+  body .lm-studio-mode.lm-studio-v9 .studio-brand-lock {
+    padding-right: 124px !important;
+  }
+
+  body .lm-studio-mode.lm-studio-v9 .studio-help-menu {
+    top: 10px;
+    right: 10px;
+    gap: 6px;
+  }
+}
+
+@media (max-width: 520px) {
+  body .lm-studio-mode.lm-studio-v9 .studio-brand-lock {
+    padding-right: 112px !important;
+  }
+
+  body .lm-studio-mode.lm-studio-v9 .studio-back-toggle,
+  body .lm-studio-mode.lm-studio-v9 .studio-help-toggle {
+    min-height: 30px;
+    padding-inline: 9px;
+    font-size: 9px;
+  }
+}
+
+@media (orientation: landscape) and (min-width: 700px) and (max-height: 760px) {
+  body .real-shell.route-studio,
+  body .real-shell:has(.lottomind-studio-screen) {
+    width: 100vw !important;
+    max-width: none !important;
+    overflow-x: hidden !important;
+  }
+
+  body .real-shell.route-studio .real-main,
+  body .real-shell:has(.lottomind-studio-screen) .real-main {
+    padding-inline: 10px !important;
+  }
+
+  body .lm-studio-mode.lm-studio-v9 .lm-studio-header-panel {
+    grid-template-columns: minmax(210px, 0.7fr) minmax(360px, 1.3fr) !important;
+    align-items: start !important;
+  }
+
+  body .lm-studio-mode.lm-studio-v9 .lm-studio-title-block,
+  body .lm-studio-mode.lm-studio-v9 .lm-top-controls,
+  body .lm-studio-mode.lm-studio-v9 .studio-transport-actions {
+    grid-column: 1 / -1;
+  }
+
+  body .lm-studio-mode.lm-studio-v9 .lm-top-controls {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  }
+
+  body .lm-studio-mode.lm-studio-v9 .studio-transport-actions {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  }
+
+  body .lm-studio-mode.lm-studio-v9 .lm-studio-feature-strip {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  }
+
+  body .real-shell.route-studio .lm-studio-grid,
+  body .real-shell:has(.lottomind-studio-screen) .lm-studio-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  body .real-shell.route-studio .lm-studio-grid > *,
+  body .real-shell:has(.lottomind-studio-screen) .lm-studio-grid > * {
+    grid-column: auto / span 1 !important;
+  }
+
+  body .real-shell.route-studio .lm-studio-grid > #studio-sequencer,
+  body .real-shell.route-studio .lm-studio-grid > #studio-dj-decks,
+  body .real-shell:has(.lottomind-studio-screen) .lm-studio-grid > #studio-sequencer,
+  body .real-shell:has(.lottomind-studio-screen) .lm-studio-grid > #studio-dj-decks {
+    grid-column: 1 / -1 !important;
+  }
+}

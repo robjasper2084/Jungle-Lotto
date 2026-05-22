@@ -2080,6 +2080,7 @@ function circleTool(title, sub, route, index) {
     achievements: ASSETS.arcadeCoin,
     challenges: ASSETS.commandDeck,
     contests: ASSETS.arcade,
+    paywall: ASSETS.commandDeck,
   };
   const video = title === "Number Analyzer"
     ? `<video class="circle-tool-video" src="${BASE}/videos/power-tools-dashboard-box.mp4" poster="${ASSETS.powerTools}" muted loop autoplay playsinline preload="metadata"></video>`
@@ -4212,6 +4213,7 @@ async function playVocalTrack(index, when = 0) {
 function studioTransportControls() {
   return `<div class="studio-transport-panel panel lm-studio-header-panel lm-studio-glass">
     <div class="studio-help-menu ${state.studioHelpOpen ? "open" : ""}">
+      <button class="studio-back-toggle" data-action="studio-go-back" aria-label="Go back to the previous LottoMind page">Back</button>
       <button class="studio-help-toggle" data-action="studio-toggle-help" aria-expanded="${state.studioHelpOpen ? "true" : "false"}">Help</button>
       ${state.studioHelpOpen ? `<div class="studio-help-dropdown">
         <strong>How to use Studio</strong>
@@ -4693,19 +4695,19 @@ function sonicStudioView() {
   return `<section class="screen sonic-studio-screen lottomind-studio-screen lm-studio-mode lm-studio-v9">
     ${studioTransportControls()}
     ${studioBeatLottoPanel()}
-    ${studioMicPanel()}
     ${studioControlStrip()}
     ${studioRecordingBooth()}
     <div class="lm-studio-grid">
-      ${studioDefaultStemKitPanel()}
       ${studioDrumPads()}
       ${studioSequencerGrid()}
-      ${studioVocalTracks()}
       ${studioSamplerPanel()}
-      ${studioStemDeckPanel()}
-      ${studioDjDecksPanel()}
-      ${studioEffectsRack()}
       ${studioKeyboardSection()}
+      ${studioEffectsRack()}
+      ${studioDjDecksPanel()}
+      ${studioVocalTracks()}
+      ${studioMicPanel()}
+      ${studioStemDeckPanel()}
+      ${studioDefaultStemKitPanel()}
       ${studioImportExportPanel()}
     </div>
     <div class="panel studio-terms lm-studio-footer lm-studio-glass">
@@ -6932,6 +6934,12 @@ function handleAction(action, target) {
   if (action === "studio-toggle-help") {
     state.studioHelpOpen = !state.studioHelpOpen;
     render();
+    return;
+  }
+  if (action === "studio-go-back") {
+    state.studioHelpOpen = false;
+    if (window.history.length > 1) window.history.back();
+    else go("dashboard");
     return;
   }
   if (action === "studio-jump-panel") {
