@@ -19242,3 +19242,412 @@ body .social-note {
     width: 150px;
   }
 }
+
+/* Studio workstation canvas fix: the rest of LottoMind keeps the phone shell. */
+body .real-shell.route-studio,
+body .real-shell:has(.lottomind-studio-screen) {
+  width: min(100vw, 1440px) !important;
+  max-width: none !important;
+  overflow-x: auto !important;
+}
+
+body .real-shell.route-studio .real-main,
+body .real-shell.route-studio .lottomind-studio-screen,
+body .real-shell.route-studio .sonic-studio-screen,
+body .real-shell.route-studio .lm-studio-mode,
+body .real-shell:has(.lottomind-studio-screen) .real-main,
+body .real-shell:has(.lottomind-studio-screen) .lottomind-studio-screen,
+body .real-shell:has(.lottomind-studio-screen) .sonic-studio-screen,
+body .real-shell:has(.lottomind-studio-screen) .lm-studio-mode {
+  min-width: 0;
+  max-width: none !important;
+}
+
+body .real-shell.route-studio .lm-studio-grid,
+body .real-shell:has(.lottomind-studio-screen) .lm-studio-grid {
+  grid-template-columns: repeat(3, minmax(280px, 1fr)) !important;
+}
+
+body .real-shell.route-studio .lm-studio-grid > *,
+body .real-shell:has(.lottomind-studio-screen) .lm-studio-grid > * {
+  min-width: 0 !important;
+  grid-column: auto / span 1 !important;
+}
+
+body .real-shell.route-studio #studio-beat-lotto,
+body .real-shell:has(.lottomind-studio-screen) #studio-beat-lotto {
+  order: -1 !important;
+  grid-column: 1 / -1 !important;
+}
+
+body .real-shell.route-studio #studio-sequencer,
+body .real-shell.route-studio #studio-dj-decks,
+body .real-shell:has(.lottomind-studio-screen) #studio-sequencer,
+body .real-shell:has(.lottomind-studio-screen) #studio-dj-decks {
+  grid-column: auto / span 2 !important;
+}
+
+body .real-shell.route-studio .sonic-studio-screen > .beat-lotto-panel,
+body .real-shell:has(.lottomind-studio-screen) .sonic-studio-screen > .beat-lotto-panel {
+  order: 2 !important;
+}
+
+body .real-shell.route-studio .sonic-studio-screen > .studio-input-panel,
+body .real-shell:has(.lottomind-studio-screen) .sonic-studio-screen > .studio-input-panel {
+  order: 3 !important;
+}
+
+body .real-shell.route-studio .sonic-studio-screen > .studio-control-strip,
+body .real-shell:has(.lottomind-studio-screen) .sonic-studio-screen > .studio-control-strip {
+  order: 4 !important;
+}
+
+body .real-shell.route-studio .sonic-studio-screen > .lm-studio-grid,
+body .real-shell:has(.lottomind-studio-screen) .sonic-studio-screen > .lm-studio-grid {
+  order: 5 !important;
+}
+
+body .real-shell.route-studio .sonic-studio-screen > .studio-terms,
+body .real-shell:has(.lottomind-studio-screen) .sonic-studio-screen > .studio-terms {
+  order: 6 !important;
+}
+
+@media (max-width: 1120px) {
+  body .real-shell.route-studio,
+  body .real-shell:has(.lottomind-studio-screen) {
+    width: 100vw !important;
+    overflow-x: hidden !important;
+  }
+
+  body .real-shell.route-studio .lm-studio-grid,
+  body .real-shell:has(.lottomind-studio-screen) .lm-studio-grid {
+    grid-template-columns: 1fr !important;
+    grid-template-areas: none !important;
+  }
+
+  body .real-shell.route-studio .lm-studio-grid > *,
+  body .real-shell:has(.lottomind-studio-screen) .lm-studio-grid > * {
+    grid-column: 1 / -1 !important;
+  }
+
+  body .real-shell.route-studio #studio-sequencer,
+  body .real-shell.route-studio #studio-dj-decks,
+  body .real-shell:has(.lottomind-studio-screen) #studio-sequencer,
+  body .real-shell:has(.lottomind-studio-screen) #studio-dj-decks {
+    grid-column: 1 / -1 !important;
+  }
+}
+
+/* Studio/home polish: readable knobs, working FX controls, MPC color pads. */
+body .route-dashboard .oracle-hero .home-oracle-actions {
+  width: min(100%, 326px) !important;
+  gap: 10px !important;
+  margin-top: 16px !important;
+  margin-bottom: 12px !important;
+}
+
+body .route-dashboard .oracle-hero .home-oracle-actions .home-oracle-tile {
+  min-height: 64px !important;
+  grid-template-columns: 44px minmax(0, 1fr) !important;
+  column-gap: 9px !important;
+  padding: 9px 10px 9px 9px !important;
+  border-radius: 20px !important;
+  background:
+    linear-gradient(90deg, rgba(0, 8, 18, 0.38), rgba(0, 26, 40, 0.88)),
+    var(--home-action-art, var(--oracle-action-art)) center / cover no-repeat !important;
+}
+
+body .route-dashboard .oracle-hero .home-oracle-actions .home-oracle-tile i {
+  width: 42px !important;
+  height: 42px !important;
+  background:
+    radial-gradient(circle at 35% 28%, #fff8c5, transparent 18%),
+    radial-gradient(circle at 50% 52%, rgba(37, 245, 255, 0.42), transparent 44%),
+    conic-gradient(from -42deg, #ffec96, #1ff7ff, #0b2034, #ffdc65, #ffec96) !important;
+  box-shadow:
+    inset 0 0 0 4px rgba(0, 10, 18, 0.62),
+    inset 0 0 20px rgba(37, 245, 255, 0.22),
+    0 0 18px rgba(255, 225, 105, 0.26) !important;
+}
+
+body .route-dashboard .oracle-hero .home-oracle-actions .home-oracle-tile::after {
+  top: 16px !important;
+  left: 30px !important;
+  height: 20px !important;
+}
+
+body .route-dashboard .oracle-hero .home-oracle-actions .home-oracle-tile span {
+  max-width: none !important;
+  color: #fff3a4 !important;
+  font-family: "Arial Black", var(--future-font), system-ui, sans-serif !important;
+  font-size: 10px !important;
+  line-height: 1.03 !important;
+  text-shadow: 0 2px 5px rgba(0, 0, 0, 0.92) !important;
+}
+
+body .route-dashboard .oracle-hero .home-oracle-actions .home-oracle-tile small {
+  max-width: none !important;
+  color: #dff8ff !important;
+  font-size: 7.5px !important;
+  line-height: 1.08 !important;
+  text-shadow: 0 2px 5px rgba(0, 0, 0, 0.92) !important;
+}
+
+body .route-dashboard .oracle-hero > div > .hero-actions {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 10px !important;
+  width: min(100%, 348px) !important;
+  margin-top: 18px !important;
+}
+
+body .route-dashboard .oracle-hero > div > .hero-actions > button {
+  position: relative !important;
+  min-height: 64px !important;
+  padding: 12px 12px 12px 58px !important;
+  border-radius: 20px !important;
+  border: 1px solid rgba(255, 223, 125, 0.58) !important;
+  background:
+    linear-gradient(135deg, rgba(4, 37, 44, 0.95), rgba(9, 63, 83, 0.92) 48%, rgba(7, 18, 45, 0.94)) !important;
+  color: #fff4bc !important;
+  box-shadow:
+    inset 0 0 0 1px rgba(72, 245, 255, 0.16),
+    inset 0 18px 28px rgba(87, 245, 255, 0.08),
+    0 14px 26px rgba(0, 0, 0, 0.32),
+    0 0 20px rgba(0, 229, 255, 0.12) !important;
+  font-family: var(--lm-title-font) !important;
+  font-size: clamp(10px, 2vw, 12px) !important;
+  font-weight: 950 !important;
+  line-height: 1.05 !important;
+  letter-spacing: 0 !important;
+  text-align: left !important;
+  text-transform: uppercase !important;
+  white-space: normal !important;
+  overflow: hidden !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.72) !important;
+}
+
+body .route-dashboard .oracle-hero > div > .hero-actions > button::before {
+  content: "";
+  position: absolute;
+  left: 11px;
+  top: 50%;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  transform: translateY(-50%);
+  border: 1px solid rgba(255, 231, 151, 0.7);
+  background:
+    radial-gradient(circle at 36% 30%, rgba(255, 255, 230, 0.95) 0 10%, rgba(84, 249, 255, 0.5) 11% 22%, transparent 23%),
+    conic-gradient(from 210deg, rgba(255, 220, 87, 0.98), rgba(27, 245, 255, 0.9), rgba(91, 67, 255, 0.78), rgba(255, 79, 179, 0.74), rgba(255, 220, 87, 0.98)),
+    radial-gradient(circle, rgba(1, 25, 35, 0.95) 0 54%, rgba(255, 224, 111, 0.64) 55% 58%, rgba(0, 0, 0, 0.84) 61%);
+  box-shadow:
+    inset 0 0 13px rgba(255, 244, 191, 0.2),
+    0 0 16px rgba(56, 236, 255, 0.38);
+}
+
+body .route-dashboard .oracle-hero > div > .hero-actions > button::after {
+  content: "";
+  position: absolute;
+  left: 28px;
+  top: 14px;
+  width: 2px;
+  height: 18px;
+  border-radius: 999px;
+  background: rgba(255, 248, 198, 0.95);
+  box-shadow: 0 0 8px rgba(255, 236, 129, 0.65);
+  transform: rotate(38deg);
+  transform-origin: bottom center;
+}
+
+body .route-dashboard .oracle-hero > div > .hero-actions > .primary-btn {
+  background:
+    linear-gradient(135deg, rgba(24, 52, 50, 0.98), rgba(104, 80, 26, 0.96) 46%, rgba(9, 51, 83, 0.94)) !important;
+  color: #fffad2 !important;
+}
+
+body .route-dashboard .oracle-hero > div > .hero-actions > button:hover,
+body .route-dashboard .oracle-hero > div > .hero-actions > button:focus-visible {
+  border-color: rgba(65, 244, 255, 0.88) !important;
+  transform: translateY(-1px);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 245, 184, 0.16),
+    0 16px 30px rgba(0, 0, 0, 0.36),
+    0 0 24px rgba(58, 231, 255, 0.28) !important;
+}
+
+body .lm-studio-mode.lm-studio-v9 .studio-transport-panel {
+  position: relative;
+}
+
+body .lm-studio-mode.lm-studio-v9 .studio-help-menu {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 12;
+}
+
+body .lm-studio-mode.lm-studio-v9 .studio-help-toggle {
+  min-height: 34px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 215, 106, 0.55);
+  color: #190f00;
+  background:
+    radial-gradient(circle at 35% 18%, rgba(255, 255, 255, 0.78), transparent 30%),
+    linear-gradient(135deg, #fff0a5, #d59a24);
+  font-size: 11px;
+  font-weight: 1000;
+  text-transform: uppercase;
+  box-shadow: 0 0 18px rgba(255, 215, 106, 0.18);
+}
+
+body .lm-studio-mode.lm-studio-v9 .studio-help-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: min(285px, calc(100vw - 34px));
+  display: grid;
+  gap: 7px;
+  padding: 13px;
+  border: 1px solid rgba(39, 239, 255, 0.34);
+  border-radius: 14px;
+  background:
+    linear-gradient(145deg, rgba(5, 13, 24, 0.98), rgba(1, 5, 10, 0.98));
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.55), 0 0 24px rgba(39, 239, 255, 0.13);
+}
+
+body .lm-studio-mode.lm-studio-v9 .studio-help-dropdown strong {
+  color: #fff2a8;
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+body .lm-studio-mode.lm-studio-v9 .studio-help-dropdown span {
+  color: #c7d7e8;
+  font-size: 11px;
+  line-height: 1.28;
+}
+
+body .lm-studio-mode.lm-studio-v9 > #studio-beat-lotto {
+  order: 1 !important;
+  width: 100%;
+}
+
+body .lm-studio-mode.lm-studio-v9 .fx-rack-grid {
+  grid-template-columns: repeat(auto-fit, minmax(132px, 1fr)) !important;
+  gap: 12px !important;
+}
+
+body .lm-studio-mode.lm-studio-v9 .fx-module.fx-knob-module {
+  --fx-color: var(--lm-v9-gold);
+  min-height: 178px !important;
+  position: relative;
+  display: grid !important;
+  grid-template-rows: auto auto 88px auto;
+  place-items: center;
+  gap: 5px !important;
+  padding: 13px 10px !important;
+  border-color: color-mix(in srgb, var(--fx-color) 42%, transparent) !important;
+  background:
+    radial-gradient(circle at 50% 44%, color-mix(in srgb, var(--fx-color) 16%, transparent), transparent 46%),
+    linear-gradient(180deg, rgba(9, 20, 33, 0.96), rgba(2, 6, 12, 0.96)) !important;
+}
+
+body .lm-studio-mode.lm-studio-v9 .fx-module.fx-knob-module:nth-child(2) { --fx-color: var(--lm-v9-cyan); }
+body .lm-studio-mode.lm-studio-v9 .fx-module.fx-knob-module:nth-child(3) { --fx-color: var(--lm-v9-blue); }
+body .lm-studio-mode.lm-studio-v9 .fx-module.fx-knob-module:nth-child(4) { --fx-color: var(--lm-v9-violet); }
+body .lm-studio-mode.lm-studio-v9 .fx-module.fx-knob-module:nth-child(5) { --fx-color: var(--lm-v9-magenta); }
+
+body .lm-studio-mode.lm-studio-v9 .fx-knob-face {
+  position: relative;
+  width: 76px;
+  height: 76px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 50%, #02070c 0 27%, transparent 29%),
+    conic-gradient(from -135deg, var(--fx-color) 0 calc(var(--knob-value) * 0.75%), rgba(255, 255, 255, 0.08) 0 75%, rgba(0, 0, 0, 0.58) 75% 100%),
+    radial-gradient(circle at 36% 27%, rgba(255, 255, 255, 0.26), transparent 18%),
+    linear-gradient(145deg, #213549, #070d15 68%);
+  box-shadow:
+    inset 0 0 0 9px rgba(0, 0, 0, 0.34),
+    inset 0 -12px 18px rgba(0, 0, 0, 0.5),
+    0 0 24px color-mix(in srgb, var(--fx-color) 30%, transparent);
+}
+
+body .lm-studio-mode.lm-studio-v9 .fx-knob-face i {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  width: 4px;
+  height: 24px;
+  border-radius: 999px;
+  transform: translateX(-50%) rotate(var(--knob-angle));
+  transform-origin: 50% 30px;
+  background: linear-gradient(180deg, #fffbe1, var(--fx-color));
+  box-shadow: 0 0 9px color-mix(in srgb, var(--fx-color) 64%, transparent);
+}
+
+body .lm-studio-mode.lm-studio-v9 .fx-knob-input {
+  position: absolute;
+  left: 50%;
+  top: 58px;
+  width: 88px;
+  height: 88px;
+  min-height: 88px !important;
+  padding: 0 !important;
+  transform: translateX(-50%);
+  opacity: 0;
+  cursor: grab;
+}
+
+body .lm-studio-mode.lm-studio-v9 .fx-knob-input:active {
+  cursor: grabbing;
+}
+
+body .lm-studio-mode.lm-studio-v9 .fx-module.fx-knob-module em {
+  color: var(--fx-color);
+  font-size: 15px;
+  font-style: normal;
+  font-weight: 1000;
+}
+
+body .lm-studio-mode.lm-studio-v9 .studio-pad {
+  --pad-color: var(--lm-v9-cyan);
+  background:
+    radial-gradient(circle at 24% 18%, color-mix(in srgb, var(--pad-color) 38%, white 12%), transparent 24%),
+    linear-gradient(145deg, color-mix(in srgb, var(--pad-color) 30%, #10141d), #07111b 58%, #020508) !important;
+  border-color: color-mix(in srgb, var(--pad-color) 58%, transparent) !important;
+  box-shadow:
+    0 8px 0 rgba(0, 0, 0, 0.5),
+    0 0 21px color-mix(in srgb, var(--pad-color) 22%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.20),
+    inset 0 -16px 24px rgba(0, 0, 0, 0.45) !important;
+}
+
+body .lm-studio-mode.lm-studio-v9 .studio-pad.cyan { --pad-color: var(--lm-v9-cyan); }
+body .lm-studio-mode.lm-studio-v9 .studio-pad.blue { --pad-color: var(--lm-v9-blue); }
+body .lm-studio-mode.lm-studio-v9 .studio-pad.violet { --pad-color: var(--lm-v9-violet); }
+body .lm-studio-mode.lm-studio-v9 .studio-pad.pink { --pad-color: var(--lm-v9-magenta); }
+body .lm-studio-mode.lm-studio-v9 .studio-pad.green { --pad-color: var(--lm-v9-green); }
+body .lm-studio-mode.lm-studio-v9 .studio-pad.gold { --pad-color: var(--lm-v9-gold); }
+
+body .lm-studio-mode.lm-studio-v9 .studio-pad .pad-number {
+  color: #031015 !important;
+  background: var(--pad-color) !important;
+  box-shadow: 0 0 16px color-mix(in srgb, var(--pad-color) 62%, transparent) !important;
+}
+
+body .lm-studio-mode.lm-studio-v9 .studio-keyboard-keys .key.white,
+body .lm-studio-mode.lm-studio-v9 .studio-keyboard-keys .key:not(.black) {
+  background:
+    linear-gradient(180deg, #fff9ca 0%, #ffd766 48%, #a66d13 100%) !important;
+  color: #1b1100 !important;
+  border-color: rgba(255, 215, 106, 0.78) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.7),
+    inset 0 -12px 15px rgba(81, 47, 0, 0.35),
+    0 8px 20px rgba(255, 215, 106, 0.16) !important;
+}

@@ -968,6 +968,7 @@ const state = {
   studioInputStatus: "Mic/line input idle",
   studioInputDevices: [],
   studioInputDeviceId: localStorage.getItem("lottomind.studio.inputDeviceId") || "",
+  studioHelpOpen: false,
   studioSampling: false,
   studioSamplingLabel: "",
   studioRecordingTrack: null,
@@ -1026,6 +1027,25 @@ let studioSampleStream = null;
 let studioSampleReleaseStream = true;
 let studioMasterRecorder = null;
 let studioMasterChunks = [];
+let studioFxKnobDrag = null;
+
+function setStudioEffectInputValue(input, value) {
+  const nextValue = Math.max(0, Math.min(100, Math.round(Number(value) || 0)));
+  input.value = String(nextValue);
+  handleAction("studio-effect-set", input);
+}
+
+function updateStudioFxKnobFromPointer(input, event) {
+  const knob = input.closest(".fx-module")?.querySelector(".fx-knob-face") || input;
+  const rect = knob.getBoundingClientRect();
+  const centerX = rect.left + rect.width / 2;
+  const centerY = rect.top + rect.height / 2;
+  let angle = Math.atan2(event.clientY - centerY, event.clientX - centerX) * (180 / Math.PI) + 90;
+  if (angle > 180) angle -= 360;
+  if (angle < -180) angle += 360;
+  const clampedAngle = Math.max(-135, Math.min(135, angle));
+  setStudioEffectInputValue(input, ((clampedAngle + 135) / 270) * 100);
+}
 
 function getGame(gameId = state.gameId) {
   return LOTTO_GAMES.find((game) => game.id === gameId) || LOTTO_GAMES[0];
@@ -4191,6 +4211,16 @@ async function playVocalTrack(index, when = 0) {
 
 function studioTransportControls() {
   return `<div class="studio-transport-panel panel lm-studio-header-panel lm-studio-glass">
+    <div class="studio-help-menu ${state.studioHelpOpen ? "open" : ""}">
+      <button class="studio-help-toggle" data-action="studio-toggle-help" aria-expanded="${state.studioHelpOpen ? "true" : "false"}">Help</button>
+      ${state.studioHelpOpen ? `<div class="studio-help-dropdown">
+        <strong>How to use Studio</strong>
+        <span>Tap MPC pads or use keyboard shortcuts to play sounds.</span>
+        <span>Open Beat Lotto to turn the groove into creative picks.</span>
+        <span>Use FX knobs for drive, filter, delay, reverb, and punch.</span>
+        <span>Import only audio you own or have permission to use.</span>
+      </div>` : ""}
+    </div>
     <div class="studio-brand-lock lm-studio-brand">
       <div class="lm-studio-logo-mark">LM</div>
       <div><span>LottoMind</span><strong>Studio</strong><small>Make Beats. Manifest Wins.</small></div>
@@ -4580,7 +4610,17 @@ function studioEffectsRack() {
   return `<div class="panel lm-studio-panel effects-panel lm-studio-glass" id="studio-effects">
     <div class="panel-title-row"><div><span class="eyebrow">Effects Rack</span><h2>Master FX Chain</h2></div><span class="panel-badge">Live</span></div>
     <div class="fx-rack-grid">
-      ${fx.map(([key, label, sub]) => `<label class="fx-module"><strong>${label}</strong><span>${sub}</span><input type="range" min="0" max="100" value="${state.studio.effects[key]}" data-action="studio-effect-set" data-effect="${key}" /><em>${state.studio.effects[key]}%</em></label>`).join("")}
+      ${fx.map(([key, label, sub]) => {
+        const value = Math.max(0, Math.min(100, Number(state.studio.effects[key]) || 0));
+        const angle = -135 + value * 2.7;
+        return `<label class="fx-module fx-knob-module" style="--knob-value:${value};--knob-angle:${angle}deg">
+          <strong>${label}</strong>
+          <span>${sub}</span>
+          <span class="fx-knob-face" aria-hidden="true"><i></i></span>
+          <input class="fx-knob-input" type="range" min="0" max="100" value="${value}" data-action="studio-effect-set" data-effect="${key}" aria-label="${escapeHtml(label)} ${escapeHtml(sub)}" />
+          <em>${value}%</em>
+        </label>`;
+      }).join("")}
     </div>
   </div>`;
 }
@@ -4652,6 +4692,7 @@ function studioBeatLottoPanel() {
 function sonicStudioView() {
   return `<section class="screen sonic-studio-screen lottomind-studio-screen lm-studio-mode lm-studio-v9">
     ${studioTransportControls()}
+    ${studioBeatLottoPanel()}
     ${studioMicPanel()}
     ${studioControlStrip()}
     ${studioRecordingBooth()}
@@ -4660,7 +4701,6 @@ function sonicStudioView() {
       ${studioDrumPads()}
       ${studioSequencerGrid()}
       ${studioVocalTracks()}
-      ${studioBeatLottoPanel()}
       ${studioSamplerPanel()}
       ${studioStemDeckPanel()}
       ${studioDjDecksPanel()}
@@ -6889,6 +6929,11 @@ function handleAction(action, target) {
     toast("Studio project saved");
     return;
   }
+  if (action === "studio-toggle-help") {
+    state.studioHelpOpen = !state.studioHelpOpen;
+    render();
+    return;
+  }
   if (action === "studio-jump-panel") {
     const panel = target.getAttribute("data-panel");
     const el = panel ? document.getElementById(panel) : null;
@@ -6929,7 +6974,15 @@ function handleAction(action, target) {
   }
   if (action === "studio-effect-set") {
     const effect = target.getAttribute("data-effect");
-    state.studio.effects[effect] = Number(target.value);
+    const value = Math.max(0, Math.min(100, Number(target.value) || 0));
+    state.studio.effects[effect] = value;
+    const module = target.closest(".fx-module");
+    if (module) {
+      module.style.setProperty("--knob-value", value);
+      module.style.setProperty("--knob-angle", `${-135 + value * 2.7}deg`);
+      const readout = module.querySelector("em");
+      if (readout) readout.textContent = `${value}%`;
+    }
     saveStudioProject();
     updateStudioEffects();
     return;
@@ -7571,7 +7624,15 @@ function handleAction(action, target) {
   }
   if (action === "studio-effect-set") {
     const effect = target.getAttribute("data-effect");
-    state.studio.effects[effect] = Number(target.value);
+    const value = Math.max(0, Math.min(100, Number(target.value) || 0));
+    state.studio.effects[effect] = value;
+    const module = target.closest(".fx-module");
+    if (module) {
+      module.style.setProperty("--knob-value", value);
+      module.style.setProperty("--knob-angle", `${-135 + value * 2.7}deg`);
+      const readout = module.querySelector("em");
+      if (readout) readout.textContent = `${value}%`;
+    }
     saveStudioProject();
     updateStudioEffects();
     return;
@@ -8286,6 +8347,14 @@ function activateInteractiveTarget(event) {
 
 document.addEventListener("pointerdown", (event) => {
   const target = event.target instanceof Element ? event.target : event.target?.parentElement;
+  const fxKnobInput = target?.closest?.(".fx-knob-input");
+  if (fxKnobInput) {
+    studioFxKnobDrag = fxKnobInput;
+    fxKnobInput.setPointerCapture?.(event.pointerId);
+    updateStudioFxKnobFromPointer(fxKnobInput, event);
+    event.preventDefault();
+    return;
+  }
   const flowScroller = target?.closest?.(".oracle-flow-steps");
   if (flowScroller && event.pointerType !== "touch") {
     flowSwipe = {
@@ -8298,9 +8367,14 @@ document.addEventListener("pointerdown", (event) => {
   }
   if (event.pointerType === "mouse") return;
   pointerStart = { x: event.clientX, y: event.clientY, target };
-}, { passive: true });
+}, { passive: false });
 
 document.addEventListener("pointermove", (event) => {
+  if (studioFxKnobDrag) {
+    updateStudioFxKnobFromPointer(studioFxKnobDrag, event);
+    event.preventDefault();
+    return;
+  }
   if (!flowSwipe) return;
   const dx = event.clientX - flowSwipe.startX;
   if (Math.abs(dx) > 3) flowSwipe.moved = true;
@@ -8316,6 +8390,12 @@ function endFlowSwipe() {
 }
 
 document.addEventListener("pointerup", (event) => {
+  if (studioFxKnobDrag) {
+    studioFxKnobDrag.releasePointerCapture?.(event.pointerId);
+    studioFxKnobDrag = null;
+    event.preventDefault();
+    return;
+  }
   endFlowSwipe();
   if (event.pointerType === "mouse") return;
   if (pointerStart) {
@@ -8345,7 +8425,10 @@ document.addEventListener("pointerup", (event) => {
   if (activateInteractiveTarget(event)) lastTouchActivation = Date.now();
 }, { passive: false });
 
-document.addEventListener("pointercancel", endFlowSwipe, { passive: true });
+document.addEventListener("pointercancel", () => {
+  studioFxKnobDrag = null;
+  endFlowSwipe();
+}, { passive: true });
 
 document.addEventListener("click", (event) => {
   if (Date.now() < suppressFlowClickUntil && (event.target instanceof Element ? event.target : event.target?.parentElement)?.closest?.(".oracle-flow-steps")) {
@@ -8369,11 +8452,26 @@ document.addEventListener("input", (event) => {
     renderFunctionSearchResults(state.searchQuery);
     return;
   }
+  const studioFxInput = target?.closest?.('[data-action="studio-effect-set"]');
+  if (studioFxInput) {
+    handleAction("studio-effect-set", studioFxInput);
+    return;
+  }
   bindInputs(event.target);
 });
 
 document.addEventListener("keydown", (event) => {
   const target = event.target instanceof Element ? event.target : event.target?.parentElement;
+  const fxKnobInput = target?.closest?.(".fx-knob-input");
+  if (fxKnobInput && ["ArrowLeft", "ArrowDown", "ArrowRight", "ArrowUp", "Home", "End"].includes(event.key)) {
+    event.preventDefault();
+    const current = Number(fxKnobInput.value) || 0;
+    const step = event.shiftKey ? 10 : 3;
+    if (event.key === "Home") setStudioEffectInputValue(fxKnobInput, 0);
+    else if (event.key === "End") setStudioEffectInputValue(fxKnobInput, 100);
+    else setStudioEffectInputValue(fxKnobInput, current + (["ArrowRight", "ArrowUp"].includes(event.key) ? step : -step));
+    return;
+  }
   const isTyping = target?.matches?.("input, textarea, select") || target?.closest?.("input, textarea, select");
   if (state.route === "studio" && !isTyping) {
     const key = event.key.toLowerCase();
