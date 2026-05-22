@@ -19651,3 +19651,110 @@ body .lm-studio-mode.lm-studio-v9 .studio-keyboard-keys .key:not(.black) {
     inset 0 -12px 15px rgba(81, 47, 0, 0.35),
     0 8px 20px rgba(255, 215, 106, 0.16) !important;
 }
+
+/* Live Studio compacting fix: keep the workstation readable inside the app browser. */
+@media (max-width: 980px) {
+  body .real-shell.route-studio .sonic-studio-screen > #studio-beat-lotto,
+  body .real-shell:has(.sonic-studio-screen) .sonic-studio-screen > #studio-beat-lotto {
+    order: 1 !important;
+  }
+
+  body .real-shell.route-studio .sonic-studio-screen > .lm-studio-feature-strip,
+  body .real-shell:has(.sonic-studio-screen) .sonic-studio-screen > .lm-studio-feature-strip {
+    order: 2 !important;
+  }
+
+  body .real-shell.route-studio .sonic-studio-screen > .studio-control-strip,
+  body .real-shell:has(.sonic-studio-screen) .sonic-studio-screen > .studio-control-strip {
+    order: 3 !important;
+  }
+
+  body .real-shell.route-studio .sonic-studio-screen > .lm-studio-grid,
+  body .real-shell:has(.sonic-studio-screen) .sonic-studio-screen > .lm-studio-grid {
+    order: 4 !important;
+  }
+
+  body .real-shell.route-studio .sonic-studio-screen > .studio-terms,
+  body .real-shell:has(.sonic-studio-screen) .sonic-studio-screen > .studio-terms {
+    order: 5 !important;
+  }
+
+  body .lm-studio-mode.lm-studio-v9 .lm-studio-header-panel {
+    grid-template-columns: 1fr !important;
+    gap: 14px !important;
+  }
+
+  body .lm-studio-mode.lm-studio-v9 .studio-brand-lock {
+    padding-right: 72px !important;
+  }
+
+  body .lm-studio-mode.lm-studio-v9 .lm-top-controls {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+
+  body .lm-studio-mode.lm-studio-v9 .studio-transport-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+
+  body .lm-studio-mode.lm-studio-v9 .studio-transport-actions > button {
+    min-height: 48px !important;
+  }
+
+  body .lm-studio-mode.lm-studio-v9 .lm-studio-feature-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+
+  body .lm-studio-mode.lm-studio-v9 .lm-studio-feature-strip article {
+    min-height: 96px !important;
+  }
+
+  body .lm-studio-mode.lm-studio-v9 .studio-control-strip {
+    gap: 9px !important;
+  }
+
+  body .lm-studio-mode.lm-studio-v9 .studio-tabs,
+  body .lm-studio-mode.lm-studio-v9 .studio-mode-strip,
+  body .lm-studio-mode.lm-studio-v9 .studio-stat-pills {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    gap: 8px !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    padding-bottom: 4px !important;
+    scroll-snap-type: x proximity;
+  }
+
+  body .lm-studio-mode.lm-studio-v9 .studio-tabs button {
+    flex: 0 0 136px !important;
+    min-height: 42px !important;
+    scroll-snap-align: start;
+  }
+
+  body .lm-studio-mode.lm-studio-v9 .studio-mode-strip > *,
+  body .lm-studio-mode.lm-studio-v9 .studio-stat-pills > * {
+    flex: 0 0 auto !important;
+  }
+}
+
+@media (max-width: 520px) {
+  body .lm-studio-mode.lm-studio-v9 .studio-brand-lock {
+    grid-template-columns: 46px 1fr !important;
+    padding-right: 62px !important;
+  }
+
+  body .lm-studio-mode.lm-studio-v9 .lm-studio-logo-mark {
+    width: 46px !important;
+    height: 46px !important;
+  }
+
+  body .lm-studio-mode.lm-studio-v9 .lm-top-controls {
+    grid-template-columns: 1fr !important;
+  }
+
+  body .lm-studio-mode.lm-studio-v9 .lm-studio-feature-strip {
+    grid-template-columns: 1fr !important;
+  }
+}
