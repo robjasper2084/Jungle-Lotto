@@ -25,6 +25,10 @@ const ASSETS = {
   psychic: `${BASE}/assets/images/ai-psychic-engine-circle.95310af8f2dc5491754f875ec150e785.png`,
   commandDeck: `${BASE}/assets/custom/generated-command-deck.webp`,
   studioBooth: `${BASE}/assets/images/dashboard-music-hub-bg.fd20530e40e09f38ef442fddd2f4a17c.png`,
+  musicMotion: `${BASE}/assets/custom/studio/media/lottomind-music-hub-motion.mov`,
+  turntable: `${BASE}/assets/custom/music/lottomind-turntable.svg`,
+  youtubeOrb: `${BASE}/assets/custom/music/lottomind-video-orb.svg`,
+  paywallGate: `${BASE}/assets/custom/arcade/paywall-premium-gate.svg`,
   detroitHoodieClose: `${BASE}/assets/custom/detroit-hoodie-close.png`,
   detroitPoloClose: `${BASE}/assets/custom/detroit-polo-close.png`,
   detroitCapClose: `${BASE}/assets/custom/detroit-cap-close.png`,
@@ -87,7 +91,7 @@ const AUDIO_LIBRARY = [
 
 const STREAMING_LINKS = [
   ["Apple Music", "Connect the LottoMind Records label lane to Apple Music.", "apple", ASSETS.logo, "https://music.apple.com/"],
-  ["YouTube", "Open videos, shorts, and branded dream reveals.", "youtube", ASSETS.power, "https://www.youtube.com/"],
+  ["YouTube", "Open videos, shorts, and branded dream reveals.", "youtube", ASSETS.youtubeOrb, "https://www.youtube.com/"],
   ["YouTube Music", "Route long-form reset sessions into a player lane.", "youtube-music", ASSETS.music, "https://music.youtube.com/"],
 ];
 
@@ -247,6 +251,7 @@ const ROUTE_ALIASES = {
   notifications: "notifications",
   help: "help",
   policies: "policies",
+  legal: "policies",
 };
 
 const TRIVIA_QUESTIONS = [
@@ -269,7 +274,7 @@ const TRIVIA_QUESTIONS = [
     note: "History Vault keeps saved sets, dream readings, and psychic readings together.",
   },
   {
-    q: "What does LottoMind Radio connect back into?",
+    q: "What does Abundance Radio connect back into?",
     options: ["Reset tones", "State taxes", "A scratch-off camera"],
     answer: 0,
     note: "Radio sessions can load frequency lanes into the Reset player.",
@@ -469,7 +474,7 @@ const ORACLE_STUDIO_GROUP = {
   tools: [
     ["Reset Vault", "Tone wheel", "reset"],
     ["Dream Oracle", "Voice meaning", "dreams"],
-    ["Radio Station", "Live audio", "radioStation"],
+    ["Abundance Radio", "Live audio", "radioStation"],
     ["Music Hub", "Audio deck", "music"],
     ["Sonic Studio", "Record booth", "studio"],
     ["Generate Dreams", "AI scenes", "dreamVideo"],
@@ -507,6 +512,7 @@ const TOOL_GROUPS = [
       ["LottoMind Records", "Archive", "records"],
       ["Historical Lab", "Long view", "historical"],
       ["Store Locator", "Nearby play", "storeLocator"],
+      ["US Lottery", "State index", "usLottery"],
       ["History", "Saved runs", "history"],
     ],
   },
@@ -516,18 +522,14 @@ const TOOL_GROUPS = [
     tools: [
       ["Arcade", "Reward games", "arcade"],
       ["Jackpot Run", "Play now", "arcadeGame"],
-      ["Lotto Crossword", "Puzzle game", "crossword"],
-      ["Word Search", "Symbol hunt", "wordSearch"],
       ["Academy", "Lessons", "academy"],
       ["Pro Playbook", "Strategy", "proPlaybook"],
       ["Achievements", "Missions", "achievements"],
       ["Challenges", "Daily tasks", "challenges"],
       ["Contests", "Prize board", "contests"],
-      ["Onboarding", "Start path", "onboarding"],
       ["Paywall", "Premium gate", "paywall"],
       ["Trivia", "Earn credits", "triviaRewards"],
       ["Community", "Share runs", "community"],
-      ["US Lottery", "State index", "usLottery"],
       ["Notifications", "Alerts", "notifications"],
       ["Help", "Support", "help"],
     ],
@@ -539,7 +541,7 @@ const HOME_CAROUSEL = [
   ["Reset Studio", "Start with a calm signal before numbers.", "reset", ASSETS.reset],
   ["Dream Oracle", "Speak or type the dream and receive numbers.", "dreams", ASSETS.dream],
   ["Music Store / Record Label", "Play LottoMind Records audio and reset sessions.", "music", ASSETS.music],
-  ["Radio Station", "LottoMind Records live audio lane.", "radioStation", ASSETS.music],
+  ["Abundance Radio", "LottoMind Records live audio lane.", "radioStation", ASSETS.music],
   ["Viral Studio", "Build video loops and short promo scenes.", "viralStudio", ASSETS.power],
   ["Generate Your Dreams", "Turn dreams into scenes, readings, and lucky reveal cards.", "dreamVideo", ASSETS.dream],
   ["Heatmap Radar", "Read hot, cold, and overdue movement.", "heatmap", ASSETS.heatmap],
@@ -595,17 +597,20 @@ const STUDIO_PAD_DEFAULTS = [
   ["Perc 1", "perc"], ["Perc 2", "perc"], ["Crash", "crash"], ["Ride", "ride"],
   ["Vault FX", "fx"], ["Oracle Hit", "perc"], ["Cyan Bell", "bell"], ["Gold Riser", "fx"],
 ];
-const STUDIO_DEFAULT_STEM_KIT_VERSION = "lottomind-default-stem-kit-v7";
+const STUDIO_DEFAULT_STEM_KIT_VERSION = "lottomind-default-stem-kit-v8-boom-bap";
 const STUDIO_DEFAULT_STEM_ASSETS = [
   { id: "lead-vocals", name: "Lead Vocals", fileName: "lottomind-default-01-lead-vocals.mp3", url: `${BASE}/assets/studio/default-stems/lottomind-default-01-lead-vocals.mp3`, role: "vocal", targetStem: 0, sourceBpm: 92 },
   { id: "drums", name: "Drums", fileName: "lottomind-default-02-drums.mp3", url: `${BASE}/assets/studio/default-stems/lottomind-default-02-drums.mp3`, role: "drums", targetStem: 1, sourceBpm: 92 },
   { id: "synth", name: "Synth", fileName: "lottomind-default-03-synth.mp3", url: `${BASE}/assets/studio/default-stems/lottomind-default-03-synth.mp3`, role: "music", targetStem: 2, sourceBpm: 92 },
   { id: "other", name: "Other", fileName: "lottomind-default-04-other.mp3", url: `${BASE}/assets/studio/default-stems/lottomind-default-04-other.mp3`, role: "texture", targetStem: 3, sourceBpm: 92 },
+  { id: "boom-bap-kick", name: "Boom Bap Kick", fileName: "lottomind-boom-bap-kick.mp3", url: `${BASE}/assets/custom/studio/samples/lottomind-boom-bap-kick.mp3`, role: "kick", targetStem: 4, sourceBpm: 92 },
+  { id: "boom-bap-snare", name: "Boom Bap Snare", fileName: "lottomind-boom-bap-snare.mp3", url: `${BASE}/assets/custom/studio/samples/lottomind-boom-bap-snare.mp3`, role: "snare", targetStem: 5, sourceBpm: 92 },
+  { id: "boom-bap-clap", name: "Boom Bap Clap", fileName: "lottomind-boom-bap-clap.mp3", url: `${BASE}/assets/custom/studio/samples/lottomind-boom-bap-clap.mp3`, role: "clap", targetStem: 6, sourceBpm: 92 },
 ];
 const STUDIO_DEFAULT_PAD_STEM_MAP = [
-  { pad: 0, stemId: "drums", name: "Stem Kick", type: "kick", trimStart: 0.00, trimEnd: 0.75 },
-  { pad: 1, stemId: "drums", name: "Stem Snare", type: "snare", trimStart: 0.75, trimEnd: 1.50 },
-  { pad: 2, stemId: "drums", name: "Stem Clap", type: "clap", trimStart: 1.50, trimEnd: 2.25 },
+  { pad: 0, stemId: "boom-bap-kick", name: "Boom Bap Kick", type: "kick", trimStart: 0.00, trimEnd: 100.00 },
+  { pad: 1, stemId: "boom-bap-snare", name: "Boom Bap Snare", type: "snare", trimStart: 0.00, trimEnd: 100.00 },
+  { pad: 2, stemId: "boom-bap-clap", name: "Boom Bap Clap", type: "clap", trimStart: 0.00, trimEnd: 100.00 },
   { pad: 3, stemId: "drums", name: "Stem Hat", type: "hat", trimStart: 2.25, trimEnd: 3.00 },
   { pad: 4, stemId: "drums", name: "Stem Open Hat", type: "openhat", trimStart: 3.00, trimEnd: 3.75 },
   { pad: 5, stemId: "drums", name: "Stem Perc 1", type: "perc", trimStart: 3.75, trimEnd: 4.50 },
@@ -747,7 +752,7 @@ function applyStudioDefaultStemKitToProject(project, { replaceStems = false, rep
   project.defaultStemKit = {
     ...(project.defaultStemKit || {}),
     version: STUDIO_DEFAULT_STEM_KIT_VERSION,
-    sourceName: "Intro MC Talk Stem Kit",
+    sourceName: "Boom Bap Factory Stem Kit",
     active: true,
     initialized: true,
     useAsPadSounds: true,
@@ -761,7 +766,7 @@ function normalizeStudioDefaultStemKit(project) {
   if (!project) return project;
   project.defaultStemKit = {
     version: STUDIO_DEFAULT_STEM_KIT_VERSION,
-    sourceName: "Intro MC Talk Stem Kit",
+    sourceName: "Boom Bap Factory Stem Kit",
     active: true,
     initialized: false,
     useAsPadSounds: true,
@@ -842,7 +847,7 @@ function createDefaultStudioProject() {
     selectedStem: 0,
     defaultStemKit: {
       version: STUDIO_DEFAULT_STEM_KIT_VERSION,
-      sourceName: "Intro MC Talk Stem Kit",
+      sourceName: "Boom Bap Factory Stem Kit",
       active: true,
       initialized: true,
       useAsPadSounds: true,
@@ -1029,14 +1034,43 @@ let studioMasterRecorder = null;
 let studioMasterChunks = [];
 let studioFxKnobDrag = null;
 
-function setStudioEffectInputValue(input, value) {
-  const nextValue = Math.max(0, Math.min(100, Math.round(Number(value) || 0)));
+function studioRotaryBounds(input) {
+  const min = Number(input?.min ?? 0) || 0;
+  const max = Number(input?.max ?? 100) || 100;
+  return { min, max: Math.max(min + 1, max) };
+}
+
+function syncStudioRotaryInput(input) {
+  if (!input) return;
+  const { min, max } = studioRotaryBounds(input);
+  const raw = Math.max(min, Math.min(max, Number(input.value) || min));
+  const pct = ((raw - min) / (max - min)) * 100;
+  const wrap = input.closest(".fx-module, .dj-knob-control");
+  if (!wrap) return;
+  wrap.style.setProperty("--knob-value", pct);
+  wrap.style.setProperty("--knob-angle", `${-135 + pct * 2.7}deg`);
+  const readout = wrap.querySelector(".dj-knob-value, em");
+  if (readout && input.classList.contains("dj-knob-input")) {
+    readout.textContent = `${raw}${input.getAttribute("data-suffix") || ""}`;
+  } else if (readout) {
+    readout.textContent = `${raw}%`;
+  }
+}
+
+function setStudioRotaryInputValue(input, value) {
+  const { min, max } = studioRotaryBounds(input);
+  const nextValue = Math.max(min, Math.min(max, Math.round(Number(value) || min)));
   input.value = String(nextValue);
-  handleAction("studio-effect-set", input);
+  handleAction(input.getAttribute("data-action"), input);
+  syncStudioRotaryInput(input);
+}
+
+function setStudioEffectInputValue(input, value) {
+  setStudioRotaryInputValue(input, value);
 }
 
 function updateStudioFxKnobFromPointer(input, event) {
-  const knob = input.closest(".fx-module")?.querySelector(".fx-knob-face") || input;
+  const knob = input.closest(".fx-module, .dj-knob-control")?.querySelector(".fx-knob-face, .dj-knob-face") || input;
   const rect = knob.getBoundingClientRect();
   const centerX = rect.left + rect.width / 2;
   const centerY = rect.top + rect.height / 2;
@@ -1044,7 +1078,8 @@ function updateStudioFxKnobFromPointer(input, event) {
   if (angle > 180) angle -= 360;
   if (angle < -180) angle += 360;
   const clampedAngle = Math.max(-135, Math.min(135, angle));
-  setStudioEffectInputValue(input, ((clampedAngle + 135) / 270) * 100);
+  const { min, max } = studioRotaryBounds(input);
+  setStudioRotaryInputValue(input, min + ((clampedAngle + 135) / 270) * (max - min));
 }
 
 function getGame(gameId = state.gameId) {
@@ -1875,7 +1910,7 @@ function routeMeta(routeKey = state.route) {
     scanner: ["Scanner", "Ticket scan lane"],
     wallet: ["Credit Vault", `${getCredits()} credits`],
     music: ["Music Store", "LottoMind Records label"],
-    radioStation: ["Radio Station", "LottoMind Records live lane"],
+    radioStation: ["Abundance Radio", "LottoMind Records live lane"],
     studio: ["Sonic Studio", "Recording booth"],
     dreamVideo: ["Video Studio", "Dream and promo loops"],
     viralStudio: ["Video Studio", "Branded motion kit"],
@@ -2080,7 +2115,8 @@ function circleTool(title, sub, route, index) {
     achievements: ASSETS.arcadeCoin,
     challenges: ASSETS.commandDeck,
     contests: ASSETS.arcade,
-    paywall: ASSETS.commandDeck,
+    paywall: ASSETS.paywallGate,
+    usLottery: ASSETS.live,
   };
   const video = title === "Number Analyzer"
     ? `<video class="circle-tool-video" src="${BASE}/videos/power-tools-dashboard-box.mp4" poster="${ASSETS.powerTools}" muted loop autoplay playsinline preload="metadata"></video>`
@@ -2106,7 +2142,7 @@ function powerToolsView() {
           <button class="ghost-btn" data-route="numberGenerator">Number Generator</button>
           <button class="ghost-btn" data-route="lottoIntel">Lotto Intelligence</button>
           <button class="ghost-btn" data-route="dailyTools">Pick 3 / Pick 4</button>
-          <button class="ghost-btn" data-route="radioStation">Radio Station</button>
+          <button class="ghost-btn" data-route="radioStation">Abundance Radio</button>
           <button class="ghost-btn" data-route="marketplace">Marketplace</button>
         </div>
       </div>
@@ -2620,7 +2656,7 @@ function dreamsView() {
       </div>
       <div class="hero-actions">
         <button class="primary-btn" data-route="music">Open Music Store</button>
-        <button class="ghost-btn" data-route="radioStation">Radio Station</button>
+        <button class="ghost-btn" data-route="radioStation">Abundance Radio</button>
         <button class="ghost-btn" data-route="studio">Sonic Studio</button>
         <button class="ghost-btn" data-route="dreamVideo">Dream Video</button>
       </div>
@@ -2647,7 +2683,7 @@ function numberGeneratorView() {
       <div class="hero-actions">
         <button class="primary-btn" data-action="save-current-set">Save Set</button>
         <button class="ghost-btn" data-action="lock-prediction">Lock Prediction</button>
-        <button class="ghost-btn" data-route="radioStation">Radio Station</button>
+        <button class="ghost-btn" data-route="radioStation">Abundance Radio</button>
       </div>
     </div>
     <div class="panel number-generator-tools">
@@ -2664,7 +2700,7 @@ function numberGeneratorView() {
       </div>
     </div>
     <div class="panel radio-mini">
-      <div><span class="eyebrow">LottoMind Radio</span><h2>Frequency while you generate</h2><p>Open the dedicated radio lane for LottoMind Records tracks and reset audio.</p></div>
+      <div><span class="eyebrow">Abundance Radio</span><h2>Frequency while you generate</h2><p>Open the dedicated radio lane for LottoMind Records tracks and reset audio.</p></div>
       <button class="primary-btn" data-route="radioStation">Open Radio</button>
     </div>
   </section>`;
@@ -2976,12 +3012,13 @@ function walletView() {
 }
 
 function musicHubView(isRadio = false) {
+  const motionPanel = isRadio ? "" : musicHubMotionPanel();
   return `<section class="screen media-screen">
     <div class="panel art-panel media-hero" style="--panel-art:url('${ASSETS.music}')">
       <div>
-        <span class="eyebrow">${isRadio ? "LottoMind Radio" : "Music Hub"}</span>
-        <h1>${isRadio ? "Radio Station" : "Music Store"}</h1>
-        <p>${isRadio ? "A dedicated LottoMind Records radio lane for live focus audio, reset tracks, and branded station IDs." : "LottoMind Records label: imported frequency tracks, reset sessions, and branded audio loops connected back into Reset."}</p>
+        <span class="eyebrow">${isRadio ? "Abundance Radio" : "Music Hub"}</span>
+        <h1>${isRadio ? "Abundance Radio" : "Music Store"}</h1>
+        <p>${isRadio ? "A dedicated Abundance Radio lane for live focus audio, reset tracks, and branded station IDs." : "LottoMind Records label: imported frequency tracks, reset sessions, and branded audio loops connected back into Reset."}</p>
         <div class="hero-actions">
           <button class="primary-btn" data-route="reset">Open Reset Wheel</button>
           <button class="ghost-btn" data-route="music">Music Store</button>
@@ -2989,12 +3026,12 @@ function musicHubView(isRadio = false) {
           <button class="ghost-btn" data-route="dreamVideo">Open Video Studio</button>
         </div>
       </div>
-      <img class="deck-coin" src="${ASSETS.logo}" alt="LottoMind frequency logo" />
+      <img class="deck-coin" src="${ASSETS.turntable}" alt="LottoMind frequency record deck" />
     </div>
     <div class="panel radio-station-panel">
       <div>
         <span class="eyebrow">On Air</span>
-        <h2>LottoMind Frequency Radio</h2>
+        <h2>Abundance Frequency Radio</h2>
         <p>Tap a station card below to preview, then load the tone into Reset when you are ready.</p>
       </div>
       <div class="radio-dial"><strong>LM</strong><span>FM 528</span></div>
@@ -3022,10 +3059,12 @@ function musicHubView(isRadio = false) {
       </div>
     </div>
     ${importedMusicDeckPanel()}
+    ${musicHubTurntablePanel(isRadio)}
+    ${motionPanel}
     <div class="panel related-panel">
       <div class="section-head"><div><h2>Sound Routes</h2><p>Fast paths connected to the rest of the app.</p></div></div>
       <div class="sound-route-bento">
-        ${[["Reset Wheel", "Tone player", "reset", ASSETS.reset], ["Radio Station", "Live audio", "radioStation", ASSETS.music], ["Sonic Studio", "Record booth", "studio", ASSETS.studioBooth], ["Dream Oracle", "Speak", "dreams", ASSETS.dream], ["Video Studio", "Loops", "dreamVideo", ASSETS.arcade], ["History Vault", "Archive", "history", ASSETS.live]].map(([title, sub, route, art], index) => `
+        ${[["Reset Wheel", "Tone player", "reset", ASSETS.reset], ["Abundance Radio", "Live audio", "radioStation", ASSETS.music], ["Sonic Studio", "Record booth", "studio", ASSETS.studioBooth], ["Dream Oracle", "Speak", "dreams", ASSETS.dream], ["Video Studio", "Loops", "dreamVideo", ASSETS.arcade], ["History Vault", "Archive", "history", ASSETS.live]].map(([title, sub, route, art], index) => `
           <button class="sound-route-card ${index === 0 ? "featured" : ""}" data-route="${route}" style="--route-art:url('${art}')">
             ${index === 0 ? `<video class="route-video-bg" src="${BASE}/videos/power-tools-button-green-screen.mp4" muted loop autoplay playsinline preload="metadata"></video>` : ""}
             <span>0${index + 1}</span>
@@ -3050,6 +3089,57 @@ function importedMusicDeckPanel(extraClass = "") {
         </article>`).join("")}
       </div>
     </div>`;
+}
+
+function musicHubTurntablePanel(isRadio = false) {
+  const importedTracks = AUDIO_LIBRARY;
+  const stemTracks = STUDIO_DEFAULT_STEM_ASSETS;
+  const trackRows = (items, type) => items.map((item, index) => {
+    const isStem = type === "stem";
+    const title = isStem ? item.name : item[0];
+    const src = isStem ? item.url : item[1];
+    const copy = isStem ? `${titleCase(item.role)} stem - ${item.sourceBpm || state.studio.bpm} BPM` : item[2];
+    return `<article class="mini-turntable-row">
+      <span>${String(index + 1).padStart(2, "0")}</span>
+      <div><strong>${escapeHtml(title)}</strong><small>${escapeHtml(copy)}</small></div>
+      <audio controls preload="none" src="${src}"></audio>
+    </article>`;
+  }).join("");
+  return `<div class="panel music-turntable-panel ${isRadio ? "radio-turntable-panel" : ""}">
+    <div class="section-head">
+      <div><h2>${isRadio ? "Abundance Radio Decks" : "Imported Music Turntables"}</h2><p>Two compact decks for previewing LottoMind tracks and Studio stems.</p></div>
+      <span>2 decks</span>
+    </div>
+    <div class="music-turntable-grid">
+      <article class="mini-turntable-deck deck-a" style="--turntable-art:url('${ASSETS.turntable}')">
+        <div class="mini-turntable-head"><span>Deck A</span><strong>Imported Music</strong><small>Music Hub library</small></div>
+        <div class="mini-vinyl"><b>A</b></div>
+        <div class="mini-turntable-list">${trackRows(importedTracks, "audio")}</div>
+      </article>
+      <article class="mini-turntable-deck deck-b" style="--turntable-art:url('${ASSETS.studioBooth}')">
+        <div class="mini-turntable-head"><span>Deck B</span><strong>Studio Stems</strong><small>Kick, snare, clap, and default stems</small></div>
+        <div class="mini-vinyl"><b>B</b></div>
+        <div class="mini-turntable-list">${trackRows(stemTracks, "stem")}</div>
+      </article>
+    </div>
+  </div>`;
+}
+
+function musicHubMotionPanel() {
+  return `<div class="panel music-motion-panel">
+    <div class="section-head">
+      <div><h2>Studio Motion Reel</h2><p>Uploaded LottoMind video placed inside the Music Hub media lane.</p></div>
+      <span>Video</span>
+    </div>
+    <div class="music-motion-stage">
+      <video src="${ASSETS.musicMotion}" poster="${ASSETS.music}" controls muted playsinline preload="metadata"></video>
+      <div>
+        <span class="eyebrow">Fourth Lane</span>
+        <h3>LottoMind Records Motion</h3>
+        <p>This clip can sit under Imported Music as a branded visual bed for the record decks and Studio stems.</p>
+      </div>
+    </div>
+  </div>`;
 }
 
 function buildDreamVideoPlan(text = state.dreamText) {
@@ -4269,7 +4359,7 @@ function studioControlStrip() {
       <button class="gold-btn micro" data-action="studio-humanize">Humanize</button>
     </div>
     <div class="studio-stat-pills">
-      <span>16 Bars</span><span>4 Vocal Tracks</span><span>1/64T Timing</span><span>${(state.studio.stems || []).filter((stem) => stem.data).length} Stems</span><span>${(state.studio.pads || []).filter((pad) => pad.sampleData && isStudioDefaultStemUrl(pad.sampleData)).length} Default Slices</span><span>Dual DJ Decks</span><span>${state.studio.division} Timing</span><span>FX Rack</span>
+      <span>16 Bars</span><span>2 Vocal Tracks</span><span>1/64T Timing</span><span>${(state.studio.stems || []).filter((stem) => stem.data).length} Stems</span><span>${(state.studio.pads || []).filter((pad) => pad.sampleData && isStudioDefaultStemUrl(pad.sampleData)).length} Default Slices</span><span>Dual DJ Decks</span><span>${state.studio.division} Timing</span><span>FX Rack</span>
     </div>
   </div>`;
 }
@@ -4384,7 +4474,7 @@ function studioRecordingBooth() {
     <article><strong>Default Stem Kit</strong><span>The uploaded Lead Vocals, Drums, Synth, and Other stems load as the factory pad bank.</span></article>
     <article><strong>Stem Loader</strong><span>Import beat stems, assign them to pads, and launch them from the 16-bar sequence.</span></article>
     <article><strong>DJ Turntables</strong><span>Mix stems on Deck A and Deck B with crossfader, cue, sync, loop, filter, and pitch controls.</span></article>
-    <article><strong>4-Track Vocals</strong><span>Mic/line input, device routing, mute/solo, and synced clip playback.</span></article>
+    <article><strong>2-Track Vocals</strong><span>Mic/line input, device routing, mute/solo, and synced clip playback.</span></article>
     <article><strong>Beat2Lotto</strong><span>Transform generated beats, humanized grooves, samples, vocals, and FX settings into creative number picks.</span></article>
     <article><strong>Effects + Export</strong><span>Drive, filter, delay, reverb, compression, project memory, and sound export.</span></article>
   </div>`;
@@ -4398,7 +4488,7 @@ function studioDefaultStemKitPanel() {
   const kit = state.studio.defaultStemKit || {};
   return `<div class="panel lm-studio-panel default-stem-kit-panel lm-studio-glass" id="studio-default-stem-kit">
     <div class="panel-title-row"><div><span class="eyebrow">Default Stem Kit</span><h2>Stem-to-Pad Sound Engine</h2></div><span class="panel-badge">v9 Factory Kit</span></div>
-    <p class="studio-note">The uploaded Lead Vocals, Drums, Synth, and Other stems are built into LottoMind Studio as the default sound source. Pads trigger sliced stem chops, stem rows can launch full stems, and you can replace everything with custom stems anytime.</p>
+    <p class="studio-note">The uploaded Boom Bap kick, snare, and clap are built into LottoMind Studio as the first three default drum pads, with the factory stems still available for chops and deck mixes.</p>
     <div class="default-stem-metrics">
       <span><strong>${loadedDefaults}</strong><small>Factory Stems</small></span>
       <span><strong>${customStems}</strong><small>Custom Stems</small></span>
@@ -4506,6 +4596,32 @@ function studioDjDecksPanel() {
   const dj = ensureStudioDjState();
   const stems = state.studio.stems || [];
   const maxStep = Math.max(0, studioTotalSteps() - 1);
+  const clampDeckValue = (value, min, max, fallback = min) => Math.max(min, Math.min(max, Number.isFinite(Number(value)) ? Number(value) : fallback));
+  const knobControl = (deckId, label, field, min, max, rawValue, suffix = "", step = "1") => {
+    const value = clampDeckValue(rawValue, min, max, min);
+    const pct = max === min ? 0 : ((value - min) / (max - min)) * 100;
+    const angle = -135 + pct * 2.7;
+    const maxAttr = Math.max(max, min + 1);
+    const display = `${value}${suffix}`;
+    return `<label class="dj-knob-control" style="--knob-value:${pct};--knob-angle:${angle}deg">
+      <span class="dj-knob-label">${label}</span>
+      <span class="dj-knob-face" aria-hidden="true"><i></i></span>
+      <input class="dj-knob-input" type="range" min="${min}" max="${maxAttr}" step="${step}" value="${value}" data-action="studio-dj-set" data-deck="${deckId}" data-dj-field="${field}" data-suffix="${escapeHtml(suffix)}" />
+      <strong class="dj-knob-value">${display}</strong>
+    </label>`;
+  };
+  const waveformBars = (seed, active = false, count = 34) => {
+    const rand = seededRandom(seed || "studio-wave");
+    return Array.from({ length: count }, (_, index) => {
+      const height = Math.round(18 + rand() * 54 + (active ? Math.sin(index * 0.7) * 10 : 0));
+      return `<i style="--wave-h:${Math.max(12, Math.min(78, height))}%"></i>`;
+    }).join("");
+  };
+  const deckWaveform = (deckId, deck, stem, label) => `<div class="dj-live-waveform ${deck.playing ? "playing" : ""}">
+    <span>${deckId}</span>
+    <div>${waveformBars(`${deckId}-${stem?.fileName || stem?.name || "empty"}-${deck.filter}-${deck.volume}`, deck.playing)}</div>
+    <small>${escapeHtml(label || stem?.name || "No stem")}</small>
+  </div>`;
   const renderDeck = (deckId, title) => {
     const key = studioDjKey(deckId);
     const deck = dj[key];
@@ -4542,11 +4658,11 @@ function studioDjDecksPanel() {
         <label class="dj-check"><input type="checkbox" ${deck.reverse ? "checked" : ""} data-action="studio-dj-set" data-deck="${deckId}" data-dj-field="reverse" /> Reverse</label>
       </div>
       <div class="dj-control-grid">
-        <label>Volume <input type="range" min="0" max="120" value="${Number(deck.volume) || 82}" data-action="studio-dj-set" data-deck="${deckId}" data-dj-field="volume" /><span>${Number(deck.volume) || 82}%</span></label>
-        <label>Pitch <input type="range" min="-50" max="50" value="${Number(deck.pitch) || 0}" data-action="studio-dj-set" data-deck="${deckId}" data-dj-field="pitch" /><span>${Number(deck.pitch) || 0}%</span></label>
-        <label>Jog / Scratch <input type="range" min="-12" max="12" value="${Number(deck.jog) || 0}" data-action="studio-dj-set" data-deck="${deckId}" data-dj-field="jog" /><span>${Number(deck.jog) || 0}</span></label>
-        <label>Filter <input type="range" min="0" max="100" value="${Number(deck.filter) || 72}" data-action="studio-dj-set" data-deck="${deckId}" data-dj-field="filter" /><span>${Number(deck.filter) || 72}%</span></label>
-        <label>Cue Step <input type="number" min="0" max="${maxStep}" value="${Number(deck.cueStep) || 0}" data-action="studio-dj-set" data-deck="${deckId}" data-dj-field="cueStep" /><span>/${maxStep}</span></label>
+        ${knobControl(deckId, "Volume", "volume", 0, 120, Number(deck.volume) || 82, "%")}
+        ${knobControl(deckId, "Pitch", "pitch", -50, 50, Number(deck.pitch) || 0, "%")}
+        ${knobControl(deckId, "Jog / Scratch", "jog", -12, 12, Number(deck.jog) || 0)}
+        ${knobControl(deckId, "Filter", "filter", 0, 100, Number(deck.filter) || 72, "%")}
+        ${knobControl(deckId, "Cue Step", "cueStep", 0, Math.max(1, maxStep), Number(deck.cueStep) || 0, `/${maxStep}`)}
       </div>
       <div class="dj-deck-actions">
         <button class="ghost-btn micro" data-action="studio-dj-jog-reset" data-deck="${deckId}">Release Jog</button>
@@ -4555,6 +4671,11 @@ function studioDjDecksPanel() {
       </div>
     </div>`;
   };
+  const deckA = dj.deckA || studioDjDeck("A");
+  const deckB = dj.deckB || studioDjDeck("B");
+  const stemA = stems[Math.max(0, Math.min(stems.length - 1, Number(deckA.stemIndex) || 0))] || {};
+  const stemB = stems[Math.max(0, Math.min(stems.length - 1, Number(deckB.stemIndex) || 0))] || {};
+  const xfade = Math.max(0, Math.min(100, Number(dj.crossfader) || 50));
   return `<div class="panel lm-studio-panel dj-decks-panel lm-studio-glass" id="studio-dj-decks">
     <div class="panel-title-row"><div><span class="eyebrow">DJ Stem Mixer</span><h2>Dual Turntables</h2></div><span class="panel-badge">Deck A/B</span></div>
     <p class="studio-note">Load any stem onto the left or right deck, cue it like a turntable, blend with the crossfader, sync to Studio BPM, and record the mix through LottoMind Studio’s master recorder.</p>
@@ -4562,6 +4683,15 @@ function studioDjDecksPanel() {
       ${renderDeck("A", "Left Stem Deck")}
       <div class="dj-mixer-core">
         <div class="mixer-vu"><span></span><span></span><span></span><span></span><span></span><span></span></div>
+        <div class="dj-waveform-stack">
+          ${deckWaveform("A", deckA, stemA, "Left deck waveform")}
+          ${deckWaveform("B", deckB, stemB, "Right deck waveform")}
+        </div>
+        <label class="dj-crossfader dj-real-crossfader" style="--xfade:${xfade}">
+          <span>Crossfader</span>
+          <div class="dj-fader-rail"><b>A</b><input type="range" min="0" max="100" value="${xfade}" data-action="studio-dj-set" data-dj-field="crossfader" /><b>B</b></div>
+          <strong>A ${100 - xfade} - B ${xfade}</strong>
+        </label>
         <label class="dj-crossfader">Crossfader <input type="range" min="0" max="100" value="${Number(dj.crossfader) || 50}" data-action="studio-dj-set" data-dj-field="crossfader" /><strong>A ${100 - (Number(dj.crossfader) || 50)} · B ${Number(dj.crossfader) || 50}</strong></label>
         <label class="dj-check dj-record-check"><input type="checkbox" ${dj.recordLaunches ? "checked" : ""} data-action="studio-dj-set" data-dj-field="recordLaunches" /> Record deck launches to the 16-bar stem lanes</label>
         <div class="dj-mixer-actions">
@@ -4588,10 +4718,11 @@ function studioMicPanel() {
 }
 
 function studioVocalTracks() {
+  const visibleTracks = (state.studio.vocals || []).slice(0, 2);
   return `<div class="panel lm-studio-panel vocals-panel lm-studio-glass" id="studio-vocals">
-    <div class="panel-title-row"><div><span class="eyebrow">Mic/Line Input</span><h2>4-Track Vocals</h2></div><span class="panel-badge">4 Tracks</span></div>
+    <div class="panel-title-row"><div><span class="eyebrow">Mic/Line Input</span><h2>2-Track Vocals</h2></div><span class="panel-badge">2 Tracks</span></div>
     <div class="vocal-track-list">
-      ${state.studio.vocals.map((track, index) => `<div class="vocal-track ${track.solo ? "solo" : ""} ${track.muted ? "muted" : ""}">
+      ${visibleTracks.map((track, index) => `<div class="vocal-track ${track.solo ? "solo" : ""} ${track.muted ? "muted" : ""}">
         <div class="track-number">${index + 1}</div>
         <div class="track-info"><strong>${escapeHtml(track.name)}</strong><small>${track.data ? escapeHtml(track.fileName || "clip ready") : "empty"}</small><div class="vocal-wave"><span></span><span></span><span></span><span></span><span></span></div></div>
         <div class="track-actions"><button class="${state.studioRecordingTrack === index ? "record-btn active" : "record-btn"}" data-action="${state.studioRecordingTrack === index ? "studio-stop-vocal" : "studio-record-vocal"}" data-track="${index}">${state.studioRecordingTrack === index ? "Stop" : "Rec"}</button><button class="ghost-btn micro" data-action="studio-play-vocal" data-track="${index}">Play</button><label class="file-pill micro">Import<input type="file" accept="audio/*" data-action="studio-import-vocal" data-track="${index}" /></label><button class="ghost-btn micro" data-action="studio-export-vocal" data-track="${index}">Export</button></div>
@@ -4694,9 +4825,7 @@ function studioBeatLottoPanel() {
 function sonicStudioView() {
   return `<section class="screen sonic-studio-screen lottomind-studio-screen lm-studio-mode lm-studio-v9">
     ${studioTransportControls()}
-    ${studioBeatLottoPanel()}
     ${studioControlStrip()}
-    ${studioRecordingBooth()}
     <div class="lm-studio-grid">
       ${studioDrumPads()}
       ${studioSequencerGrid()}
@@ -4710,6 +4839,8 @@ function sonicStudioView() {
       ${studioDefaultStemKitPanel()}
       ${studioImportExportPanel()}
     </div>
+    ${studioBeatLottoPanel()}
+    ${studioRecordingBooth()}
     <div class="panel studio-terms lm-studio-footer lm-studio-glass">
       <span>LottoMind Studio v9.0 · Custom Branded Interface</span>
       <span class="online">All systems ${state.studioPlaying ? "running" : "ready"}</span>
@@ -4730,7 +4861,7 @@ function recordsView() {
     <div class="panel art-panel media-hero" style="--panel-art:url('${ASSETS.live}')">
       <div>
         <span class="eyebrow">LottoMind Records</span>
-        <h1>Records Vault</h1>
+        <h1>LottoMind Records</h1>
         <p>Live draw cards, saved sets, Dream Oracle readings, psychic reports, and historical lanes are collected here.</p>
         <div class="hero-actions">
           <button class="primary-btn" data-route="live">Live Results</button>
@@ -4873,8 +5004,6 @@ function arcadeView() {
   const games = [
     ["Goth Tech Fighter", "Featured live fighter-prop boss game.", "arcadeGame", "https://robjasper2084.github.io/Jungle-Lotto/gothtechnology-canvas/index.html?fighter-prop1-live", "featured-fighter"],
     ["Jackpot Jungle Chase", "Swing, slide, and outrun the Probability Beast.", "arcadeGame"],
-    ["Lotto Crossword Puzzle", "Solve LottoMind clue lanes and number words.", "crossword"],
-    ["Word Search Vault", "Find dream symbols, states, and lucky terms.", "wordSearch"],
     ["Trivia Rewards", "Answer and earn credits.", "triviaRewards"],
     ["Bonus Room", "Open a credit portal.", "arcadeGame"],
   ];
@@ -4991,7 +5120,7 @@ function triviaGameView() {
     <div class="panel art-panel trivia-hero trivia-show-hero" style="--panel-art:url('${ASSETS.commandDeck}')">
       <div>
         <span class="eyebrow">LottoMind Game Show</span>
-        <h1>Trivia Rewards Live</h1>
+        <h1>Game Show Trivia</h1>
         <p>Answer fast, build a streak, and turn arcade knowledge into credits under the LottoMind spotlight.</p>
         <div class="trivia-streak-strip"><span>Daily ${stored.dailyStreak}/7</span><span>Weekly ${stored.weeklyStreak}/7</span><span>${triviaDifficulty(index)} +${triviaRewardFor(index)}</span></div>
         <div class="hero-actions">
@@ -5075,7 +5204,7 @@ function triviaGameView() {
     <div class="panel art-panel trivia-hero trivia-show-hero" style="--panel-art:url('${ASSETS.commandDeck}')">
       <div>
         <span class="eyebrow">LottoMind Game Show</span>
-        <h1>Trivia Rewards Live</h1>
+        <h1>Game Show Trivia</h1>
         <p>Answer fast, build a streak, and turn arcade knowledge into Lotto Credits.</p>
         <div class="trivia-streak-strip"><span>Lotto Credits ${getCredits()}</span><span>Daily ${stored.dailyStreak}/7</span><span>Weekly ${stored.weeklyStreak}/7</span><span>${difficulty} +${reward}</span></div>
         <div class="hero-actions">
@@ -5302,7 +5431,7 @@ const REAL_ROUTE_SCREENS = {
   policies: {
     eyebrow: "Policy Lane",
     title: "Privacy + Responsible Play",
-    copy: "Location helps find stores, credits are demo rewards, and LottoMind does not guarantee winning numbers.",
+    copy: "Location helps find stores, credits are demo rewards, and LottoMind does not guarantee winning numbers. Music and audio are original or properly licensed for use in Lotto Mind. Lotto Mind is for entertainment and mindset support only and does not guarantee lottery results.",
     art: ASSETS.live,
     stats: [["Location", "Optional"], ["Credits", "Demo"], ["Data", "Local"]],
     actions: [["Help", "route", "help"], ["Settings", "route", "settings"], ["Home", "route", "dashboard"]],
@@ -5569,7 +5698,7 @@ function genericToolView(routeKey) {
     savedWallet: ["Saved Wallet", "Saved sets and credits together."],
     ticketScanner: ["Ticket Scanner", "Ticket scan tools."],
     energyMeter: ["Energy Meter", "Signal score, frequency mood, and play-readiness gauge."],
-    radioStation: ["Radio Station", "LottoMind Records live audio lane."],
+    radioStation: ["Abundance Radio", "LottoMind Records live audio lane."],
     onboarding: ["Onboarding", "First-run path for setup, state pin, and feature tour."],
     splash: ["Splash", "Branded app launch surface."],
     paywall: ["Premium Gate", "VIP unlocks, credit packs, and premium routes."],
@@ -5627,7 +5756,7 @@ function relatedTools(routeKey) {
     return [["Heatmap", "Radar", "heatmap"], ["Live Results", "Draws", "live"], ["Number Generator", "Build", "numberGenerator"], ["History Vault", "Save", "history"]];
   }
   if (["energyMeter", "music", "radioStation"].includes(routeKey)) {
-    return [["Radio Station", "Listen", "radioStation"], ["Sonic Studio", "Record", "studio"], ["Reset Vault", "Tone", "reset"], ["Dream Oracle", "Speak", "dreams"], ["History Vault", "Save", "history"]];
+    return [["Abundance Radio", "Listen", "radioStation"], ["Sonic Studio", "Record", "studio"], ["Reset Vault", "Tone", "reset"], ["Dream Oracle", "Speak", "dreams"], ["History Vault", "Save", "history"]];
   }
   if (["marketplace", "creditStore", "savedWallet", "vip"].includes(routeKey)) {
     return [["Credit Vault", "Balance", "wallet"], ["Store", "Gear", "store"], ["VIP", "Upgrade", "vip"], ["Profile", "Stats", "profile"]];
@@ -5812,7 +5941,7 @@ function specialToolBody(routeKey, set) {
         ${metricCard("Weather", `${weather.temperature}F`)}
         ${metricCard("Credits", getCredits())}
       </div>
-      <div class="hero-actions padded"><button class="primary-btn" data-route="reset">Tune Reset</button><button class="ghost-btn" data-route="radioStation">Radio Station</button><button class="ghost-btn" data-route="dreams">Dream Oracle</button></div>
+      <div class="hero-actions padded"><button class="primary-btn" data-route="reset">Tune Reset</button><button class="ghost-btn" data-route="radioStation">Abundance Radio</button><button class="ghost-btn" data-route="dreams">Dream Oracle</button></div>
     </div>`;
   }
   if (routeKey === "marketplace") {
@@ -6610,6 +6739,13 @@ function handleStudioPolishAction(action, target) {
     }
     saveStudioProject();
     updateStudioDjDeckMix();
+    syncStudioRotaryInput(target);
+    const crossfader = target.closest(".dj-real-crossfader");
+    if (crossfader && field === "crossfader") {
+      crossfader.style.setProperty("--xfade", String(dj.crossfader));
+      const readout = crossfader.querySelector("strong");
+      if (readout) readout.textContent = `A ${100 - dj.crossfader} - B ${dj.crossfader}`;
+    }
     if (["stemIndex", "sync", "loop", "reverse", "recordLaunches"].includes(field)) render();
     return true;
   }
@@ -8355,7 +8491,7 @@ function activateInteractiveTarget(event) {
 
 document.addEventListener("pointerdown", (event) => {
   const target = event.target instanceof Element ? event.target : event.target?.parentElement;
-  const fxKnobInput = target?.closest?.(".fx-knob-input");
+  const fxKnobInput = target?.closest?.(".fx-knob-input, .dj-knob-input");
   if (fxKnobInput) {
     studioFxKnobDrag = fxKnobInput;
     fxKnobInput.setPointerCapture?.(event.pointerId);
@@ -8460,9 +8596,10 @@ document.addEventListener("input", (event) => {
     renderFunctionSearchResults(state.searchQuery);
     return;
   }
-  const studioFxInput = target?.closest?.('[data-action="studio-effect-set"]');
-  if (studioFxInput) {
-    handleAction("studio-effect-set", studioFxInput);
+  const studioRotaryInput = target?.closest?.(".fx-knob-input, .dj-knob-input");
+  if (studioRotaryInput) {
+    handleAction(studioRotaryInput.getAttribute("data-action"), studioRotaryInput);
+    syncStudioRotaryInput(studioRotaryInput);
     return;
   }
   bindInputs(event.target);
@@ -8470,14 +8607,15 @@ document.addEventListener("input", (event) => {
 
 document.addEventListener("keydown", (event) => {
   const target = event.target instanceof Element ? event.target : event.target?.parentElement;
-  const fxKnobInput = target?.closest?.(".fx-knob-input");
+  const fxKnobInput = target?.closest?.(".fx-knob-input, .dj-knob-input");
   if (fxKnobInput && ["ArrowLeft", "ArrowDown", "ArrowRight", "ArrowUp", "Home", "End"].includes(event.key)) {
     event.preventDefault();
     const current = Number(fxKnobInput.value) || 0;
     const step = event.shiftKey ? 10 : 3;
-    if (event.key === "Home") setStudioEffectInputValue(fxKnobInput, 0);
-    else if (event.key === "End") setStudioEffectInputValue(fxKnobInput, 100);
-    else setStudioEffectInputValue(fxKnobInput, current + (["ArrowRight", "ArrowUp"].includes(event.key) ? step : -step));
+    const { min, max } = studioRotaryBounds(fxKnobInput);
+    if (event.key === "Home") setStudioRotaryInputValue(fxKnobInput, min);
+    else if (event.key === "End") setStudioRotaryInputValue(fxKnobInput, max);
+    else setStudioRotaryInputValue(fxKnobInput, current + (["ArrowRight", "ArrowUp"].includes(event.key) ? step : -step));
     return;
   }
   const isTyping = target?.matches?.("input, textarea, select") || target?.closest?.("input, textarea, select");
