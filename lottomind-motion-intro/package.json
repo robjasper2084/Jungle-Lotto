@@ -1,0 +1,26 @@
+{
+  "name": "lottomind-motion-intro",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Standalone Remotion motion-graphic intro package for LottoMind Stem Studio.",
+  "scripts": {
+    "dev": "remotion studio src/index.ts",
+    "typecheck": "tsc --noEmit",
+    "render:main": "remotion render src/index.ts MainIntro out/lottomind-main-intro.mp4",
+    "render:presentation": "remotion render src/index.ts PresentationIntro out/lottomind-presentation-intro.mp4",
+    "render:logo": "remotion render src/index.ts LogoSting out/lottomind-logo-sting.mp4",
+    "render:vertical": "remotion render src/index.ts VerticalSocialIntro out/lottomind-vertical-intro.mp4",
+    "render:transparent": "remotion render src/index.ts TransparentLogoSting out/lottomind-transparent-logo-sting.webm"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.228",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "remotion": "4.0.228"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "typescript": "^5.4.0"
+  }
+}
