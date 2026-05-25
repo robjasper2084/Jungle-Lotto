@@ -2,11 +2,10 @@ const year = document.querySelector("#site-year");
 if (year) year.textContent = String(new Date().getFullYear());
 
 const viewButtons = Array.from(document.querySelectorAll("[data-view-mode]"));
-const mobileButtons = Array.from(document.querySelectorAll("[data-mobile-toggle]"));
-const mobileSection = document.querySelector("#mobile");
 const appStage = document.querySelector("#app-view");
+const heroMotion = document.querySelector(".hero-motion");
+const reducedMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
 const viewStorageKey = "lottomindedUltra.viewMode";
-const mobileStorageKey = "lottomindedUltra.mobileMode";
 
 function getStoredValue(key) {
   try {
@@ -22,14 +21,6 @@ function setStoredValue(key, value) {
   } catch (error) {
     // Static file previews can disable storage. The visible UI still updates.
   }
-}
-
-function setButtonLabel(button, enabled) {
-  const label = button.querySelector("strong") || button;
-  if (!button.dataset.offLabel) {
-    button.dataset.offLabel = label.textContent.trim();
-  }
-  label.textContent = enabled ? button.dataset.onLabel || "Mobile On" : button.dataset.offLabel;
 }
 
 function setViewMode(mode, shouldScroll = false) {
@@ -48,36 +39,12 @@ function setViewMode(mode, shouldScroll = false) {
   }
 }
 
-function setMobileMode(enabled, shouldScroll = false) {
-  document.body.classList.toggle("mobile-mode", enabled);
-  mobileButtons.forEach((button) => {
-    button.setAttribute("aria-pressed", String(enabled));
-    setButtonLabel(button, enabled);
-  });
-  setStoredValue(mobileStorageKey, enabled ? "on" : "off");
-  if (!enabled || !shouldScroll) return;
-
-  if (document.body.classList.contains("app-mode") && appStage) {
-    appStage.scrollIntoView({ behavior: "smooth", block: "start" });
-  } else if (mobileSection) {
-    mobileSection.scrollIntoView({ behavior: "smooth", block: "start" });
-  }
-}
-
 const savedViewMode = getStoredValue(viewStorageKey) || "site";
-const savedMobileMode = getStoredValue(mobileStorageKey) === "on";
 setViewMode(savedViewMode);
-setMobileMode(savedMobileMode);
 
 viewButtons.forEach((button) => {
   button.addEventListener("click", () => {
     setViewMode(button.dataset.viewMode, true);
-  });
-});
-
-mobileButtons.forEach((button) => {
-  button.addEventListener("click", () => {
-    setMobileMode(!document.body.classList.contains("mobile-mode"), true);
   });
 });
 
@@ -88,3 +55,17 @@ document.querySelector('a[href="#app-view"]')?.addEventListener("click", () => {
 document.querySelector('a[href="#top"]')?.addEventListener("click", () => {
   setViewMode("site", false);
 });
+
+function syncHeroMotionPreference() {
+  if (!heroMotion) return;
+  if (reducedMotionQuery.matches) {
+    heroMotion.pause();
+    return;
+  }
+  heroMotion.play().catch(() => {
+    // Some static-file previews block autoplay until the user interacts.
+  });
+}
+
+reducedMotionQuery.addEventListener?.("change", syncHeroMotionPreference);
+syncHeroMotionPreference();

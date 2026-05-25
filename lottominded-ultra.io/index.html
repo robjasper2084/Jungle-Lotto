@@ -20,25 +20,21 @@
       </a>
       <nav aria-label="Primary">
         <a href="#top">Website</a>
-        <a href="#app-view">Web App</a>
         <a href="#studio">Studio</a>
-        <a href="#motion">Motion Intro</a>
         <a href="#features">Features</a>
         <a href="#prompt">Prompts</a>
       </nav>
-      <div class="view-switch" role="group" aria-label="Website, web app, and mobile view controls">
+      <div class="view-switch" role="group" aria-label="Website and web app view controls">
         <button class="view-toggle" type="button" data-view-mode="site" aria-pressed="true">Website</button>
         <button class="view-toggle" type="button" data-view-mode="app" aria-pressed="false">Web App</button>
-        <button class="mobile-toggle" type="button" data-mobile-toggle aria-pressed="false">
-          <span class="toggle-track" aria-hidden="true"><span></span></span>
-          <strong>Mobile</strong>
-        </button>
       </div>
     </header>
 
     <main>
       <section class="hero" id="top">
-        <img class="hero-art" src="./assets/brand/generated-cinematic-hero.png" alt="" />
+        <video class="hero-motion" autoplay muted loop playsinline preload="auto" aria-hidden="true">
+          <source src="./assets/video/lottomind-logo-sting.mp4" type="video/mp4" />
+        </video>
         <div class="hero-copy">
           <img class="hero-mark" src="./assets/brand/lm-orb-mark.webp" alt="" />
           <h1 aria-label="LOTTOMINDED ULTRA"><span>LOTTO</span><span>MINDED</span><span>ULTRA</span></h1>
@@ -49,12 +45,8 @@
           <div class="hero-actions">
             <button class="primary-action" type="button" data-view-mode="app">Launch Web App</button>
             <button class="secondary-action" type="button" data-view-mode="site">Website View</button>
-            <button class="secondary-action" type="button" data-mobile-toggle aria-pressed="false">Mobile View</button>
             <a class="secondary-action" href="#features">Explore Features</a>
           </div>
-        </div>
-        <div class="hero-console" aria-hidden="true">
-          <img src="./assets/brand/lm-host-dark-wide.png" alt="" />
         </div>
         <div class="domain-strip" aria-label="Brand identity">
           <strong>Stem Studio • Beat DNA • AI Prompts • Mastering • Creative Signals</strong>
@@ -68,12 +60,10 @@
             <h2>Web App View</h2>
             <p>
               Open the full LottoMind Stem Studio workstation inside this branded page.
-              Switch to Mobile View to test the same app in a phone-style performance frame.
             </p>
           </div>
           <div class="app-stage-actions">
             <button class="secondary-action" type="button" data-view-mode="site">Back to Website</button>
-            <button class="primary-action" type="button" data-mobile-toggle aria-pressed="false">Mobile View</button>
             <a class="secondary-action" href="../lottomind-stem-studio/index.html">Open Direct</a>
           </div>
         </div>
@@ -97,15 +87,13 @@
         </div>
         <div class="studio-preview" aria-label="Studio capability preview">
           <div class="meter-row"><span></span><span></span><span></span><span></span></div>
-          <div class="preview-grid">
-            <img src="./assets/brand/generated-cinematic-hero.png" alt="Cinematic LottoMind studio workstation artwork" />
-            <img src="./assets/brand/beat-dna-hood-orb.png" alt="Beat DNA cyber mascot artwork" />
+          <div class="preview-grid preview-grid-single">
             <img src="./assets/brand/studio-mode-console.png" alt="LottoMind studio console artwork" />
           </div>
         </div>
       </section>
 
-      <section class="motion-band marketing-section" id="motion">
+      <section class="motion-band marketing-section" id="motion" hidden aria-hidden="true">
         <div class="motion-copy">
           <h2>Remotion intro installed on the home page.</h2>
           <p>
@@ -172,37 +160,13 @@
         </div>
       </section>
 
-      <section class="mobile-band marketing-section" id="mobile">
-        <div class="mobile-copy">
-          <h2>Mobile studio mode.</h2>
-          <p>
-            Toggle a phone-style view for touch-first sessions, quick checks, and mobile sharing.
-            The preview loads the same local studio route, so pads, transport, prompts, and project controls stay connected to the real app experience.
-          </p>
-          <div class="access-actions">
-            <button class="primary-action" type="button" data-mobile-toggle aria-pressed="false">Turn On Mobile Mode</button>
-            <a class="secondary-action" href="../lottomind-stem-studio/index.html">Open Full Studio</a>
-          </div>
-        </div>
-        <div class="phone-shell" aria-label="Mobile studio preview">
-          <div class="phone-status">
-            <span>LM</span>
-            <strong>Mobile Preview</strong>
-            <span>Beat DNA</span>
-          </div>
-          <iframe title="LOTTOMINDED ULTRA mobile web app preview" src="../lottomind-stem-studio/index.html"></iframe>
-        </div>
-      </section>
-
       <section class="access-band marketing-section">
         <h2>Ready for studio sessions.</h2>
         <p>
-          Use the browser studio for full desktop production, or turn on Mobile Mode for a focused touch-first preview.
-          Everything remains local-first with no backend service required.
+          Use the browser studio for full production. Everything remains local-first with no backend service required.
         </p>
         <div class="access-actions">
           <a class="primary-action" href="../lottomind-stem-studio/index.html">Launch Full Studio</a>
-          <a class="secondary-action" href="#mobile">Use Mobile Mode</a>
         </div>
         <p class="safety-note">
           Load or record audio you own or have permission to use. Generated music prompts should describe original work

@@ -62,7 +62,6 @@ h2,
 h3,
 .brand,
 nav a,
-.mobile-toggle,
 .primary-action,
 .secondary-action,
 button,
@@ -159,51 +158,6 @@ button {
   cursor: pointer;
 }
 
-.mobile-toggle {
-  display: inline-flex;
-  gap: 10px;
-  align-items: center;
-  justify-content: center;
-  min-height: 38px;
-  padding: 0 16px 0 12px;
-  border: 1px solid rgba(120, 210, 255, 0.28);
-  border-radius: 999px;
-  color: var(--text);
-  background: rgba(255, 255, 255, 0.055);
-  box-shadow: 0 0 24px rgba(41, 247, 255, 0.08);
-}
-
-.mobile-toggle[aria-pressed="true"],
-body.mobile-mode [data-mobile-toggle] {
-  color: #03100b;
-  border-color: rgba(41, 247, 255, 0.55);
-  background: linear-gradient(135deg, var(--cyan), var(--green));
-}
-
-.toggle-track {
-  position: relative;
-  width: 44px;
-  height: 24px;
-  border-radius: 999px;
-  background: rgba(3, 5, 10, 0.84);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.24);
-}
-
-.toggle-track span {
-  position: absolute;
-  top: 4px;
-  left: 4px;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: var(--green);
-  box-shadow: 0 0 14px rgba(94, 255, 157, 0.85);
-}
-
-body.mobile-mode .toggle-track span {
-  left: 24px;
-}
-
 .primary-action {
   border-color: rgba(255, 224, 113, 0.5);
   color: #071018;
@@ -248,16 +202,16 @@ body.mobile-mode .toggle-track span {
   background: linear-gradient(transparent, rgba(3, 5, 10, 0.98));
 }
 
-.hero-art {
+.hero-motion {
   position: absolute;
   inset: 0;
   z-index: -2;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: 50% center;
-  opacity: 0.86;
-  filter: saturate(1.2) contrast(1.08);
+  object-position: center;
+  opacity: 0.72;
+  filter: saturate(1.32) contrast(1.12) brightness(0.82);
 }
 
 .hero-copy {
@@ -316,27 +270,6 @@ body.mobile-mode .toggle-track span {
   margin-top: 26px;
 }
 
-.hero-console {
-  position: absolute;
-  right: clamp(18px, 5vw, 76px);
-  bottom: 36px;
-  z-index: 1;
-  width: min(36vw, 520px);
-  border: 1px solid rgba(255, 224, 113, 0.24);
-  border-radius: var(--radius);
-  overflow: hidden;
-  background: rgba(3, 5, 10, 0.68);
-  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.44), 0 0 42px rgba(41, 247, 255, 0.12);
-}
-
-.hero-console img {
-  display: block;
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  object-fit: cover;
-  opacity: 0.78;
-}
-
 .domain-strip {
   position: relative;
   z-index: 2;
@@ -360,8 +293,7 @@ body.mobile-mode .toggle-track span {
 .feature-band,
 .prompt-band,
 .access-band,
-.motion-band,
-.mobile-band {
+.motion-band {
   width: min(calc(100% - 32px), var(--max));
   margin: 0 auto;
   padding: 76px 0;
@@ -384,7 +316,6 @@ body.app-mode .hero {
   min-height: 46vh;
 }
 
-body.app-mode .hero-console,
 body.app-mode .domain-strip {
   display: none;
 }
@@ -455,23 +386,9 @@ body.app-mode .domain-strip {
   background: #03050a;
 }
 
-body.mobile-mode .app-frame-shell {
-  max-width: 430px;
-  margin-inline: auto;
-  padding: 12px;
-  border-radius: 34px;
-}
-
-body.mobile-mode .app-frame-shell iframe {
-  height: 720px;
-  min-height: 720px;
-  border-radius: 24px;
-}
-
 .studio-band,
 .prompt-band,
-.motion-band,
-.mobile-band {
+.motion-band {
   display: grid;
   grid-template-columns: minmax(0, 0.9fr) minmax(320px, 1.1fr);
   gap: clamp(22px, 5vw, 58px);
@@ -534,6 +451,10 @@ p {
   gap: 12px;
 }
 
+.preview-grid-single {
+  grid-template-columns: 1fr;
+}
+
 .preview-grid img {
   width: 100%;
   aspect-ratio: 4 / 3;
@@ -547,6 +468,11 @@ p {
 .preview-grid img:first-child {
   grid-row: span 2;
   aspect-ratio: 3 / 4;
+}
+
+.preview-grid-single img:first-child {
+  grid-row: auto;
+  aspect-ratio: 16 / 9;
 }
 
 .motion-band {
@@ -570,64 +496,6 @@ p {
   object-fit: cover;
   border-radius: calc(var(--radius) - 2px);
   background: #000;
-}
-
-.mobile-band {
-  align-items: center;
-}
-
-.phone-shell {
-  position: relative;
-  width: min(420px, 100%);
-  min-height: 760px;
-  justify-self: center;
-  padding: 18px;
-  border: 1px solid rgba(41, 247, 255, 0.3);
-  border-radius: 34px;
-  background:
-    linear-gradient(145deg, rgba(41, 247, 255, 0.1), rgba(255, 79, 216, 0.06)),
-    rgba(0, 0, 0, 0.54);
-  box-shadow:
-    0 40px 110px rgba(0, 0, 0, 0.44),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.08);
-  transform: scale(0.94);
-  transform-origin: center;
-  opacity: 0.82;
-}
-
-body.mobile-mode .phone-shell {
-  opacity: 1;
-  border-color: rgba(94, 255, 157, 0.56);
-  box-shadow:
-    0 44px 120px rgba(0, 0, 0, 0.5),
-    0 0 60px rgba(41, 247, 255, 0.16),
-    inset 0 0 0 1px rgba(94, 255, 157, 0.22);
-  transform: scale(1);
-}
-
-.phone-status {
-  display: flex;
-  justify-content: space-between;
-  gap: 8px;
-  align-items: center;
-  min-height: 36px;
-  padding: 0 10px 10px;
-  color: var(--gold);
-  font-size: 0.72rem;
-  text-transform: uppercase;
-}
-
-.phone-status strong {
-  color: var(--text);
-}
-
-.phone-shell iframe {
-  display: block;
-  width: 100%;
-  height: 690px;
-  border: 1px solid rgba(120, 210, 255, 0.24);
-  border-radius: 24px;
-  background: #03050a;
 }
 
 .feature-band h2 {
@@ -714,8 +582,7 @@ footer {
 
   .studio-band,
   .prompt-band,
-  .motion-band,
-  .mobile-band {
+  .motion-band {
     grid-template-columns: 1fr;
   }
 
@@ -737,10 +604,6 @@ footer {
     padding-top: 102px;
   }
 
-  .hero-console {
-    width: min(48vw, 420px);
-    opacity: 0.44;
-  }
 }
 
 @media (max-width: 560px) {
@@ -760,20 +623,18 @@ footer {
     width: 100%;
   }
 
-  nav a,
-  .mobile-toggle {
+  nav a {
     width: 100%;
     padding-inline: 10px;
   }
 
   .view-switch {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     border-radius: var(--radius);
   }
 
-  .view-toggle,
-  .mobile-toggle {
+  .view-toggle {
     min-width: 0;
     border-radius: var(--radius);
   }
@@ -783,13 +644,9 @@ footer {
     padding-inline: 24px;
   }
 
-  .hero-art {
-    object-position: 62% center;
-    opacity: 0.48;
-  }
-
-  .hero-console {
-    display: none;
+  .hero-motion {
+    object-position: center;
+    opacity: 0.54;
   }
 
   .hero h1 {
@@ -818,17 +675,6 @@ footer {
     aspect-ratio: 4 / 3;
   }
 
-  .phone-shell {
-    width: min(100%, 390px);
-    min-height: 690px;
-    padding: 12px;
-    border-radius: 28px;
-  }
-
-  .phone-shell iframe {
-    height: 610px;
-    border-radius: 20px;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -839,5 +685,9 @@ footer {
 
   .motion-video-shell video {
     animation: none;
+  }
+
+  .hero-motion {
+    opacity: 0.38;
   }
 }
