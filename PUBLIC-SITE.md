@@ -5,8 +5,8 @@ The repository now has a root static landing page so visitors can open the proje
 ## Public Routes
 
 - Home: `https://robjasper2084.github.io/Jungle-Lotto/`
-- Studio app: `https://robjasper2084.github.io/Jungle-Lotto/lottomind-stem-studio/`
-- Brand page: `https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/`
+- Studio app: `https://robjasper2084.github.io/Jungle-Lotto/lottomind-stem-studio/index.html`
+- Brand page: `https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/index.html`
 
 ## GitHub Pages Setup
 
