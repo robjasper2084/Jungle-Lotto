@@ -3,41 +3,75 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>LottoMind Arcade</title>
-    <style>
-      :root { color-scheme: dark; --gold:#d8aa45; --hot:#ffd66d; }
-      * { box-sizing: border-box; }
-      body { margin:0; min-height:100vh; background:radial-gradient(circle at 22% 18%, rgba(157,78,221,.2), transparent 28rem), radial-gradient(circle at 78% 12%, rgba(216,170,69,.18), transparent 25rem), #030302; color:#f8f1d4; font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
-      main { width:min(1080px, calc(100vw - 32px)); min-height:100vh; margin:0 auto; display:grid; align-content:center; gap:28px; padding:42px 0; }
-      h1 { margin:0; color:var(--hot); font-family:Georgia,"Times New Roman",serif; font-size:clamp(2.6rem,8vw,5.8rem); line-height:.92; letter-spacing:0; text-shadow:0 0 28px rgba(216,170,69,.3); }
-      p { max-width:720px; margin:10px 0 0; color:rgba(248,241,212,.74); font-size:clamp(1rem,2vw,1.2rem); line-height:1.45; }
-      .grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; }
-      .game { min-height:260px; display:grid; align-content:end; gap:14px; padding:22px; border:1px solid rgba(255,214,109,.34); border-radius:8px; background:linear-gradient(180deg,rgba(0,0,0,.05),rgba(0,0,0,.88)), var(--art); background-size:cover; background-position:center; box-shadow:0 24px 80px rgba(0,0,0,.45), inset 0 0 0 1px rgba(255,255,255,.04); }
-      .tag { color:rgba(255,214,109,.78); font-size:.78rem; font-weight:900; letter-spacing:.08em; text-transform:uppercase; }
-      h2 { margin:0; color:#fff2bc; font-size:clamp(1.4rem,3vw,2rem); }
-      a { width:fit-content; min-height:48px; display:inline-flex; align-items:center; justify-content:center; padding:0 18px; border:1px solid rgba(255,214,109,.7); border-radius:8px; background:rgba(216,170,69,.12); color:var(--hot); font-weight:900; text-decoration:none; box-shadow:0 0 22px rgba(216,170,69,.16); }
-      @media (max-width:760px){ .grid{grid-template-columns:1fr;} .game{min-height:220px;} }
-    </style>
+    <meta
+      name="description"
+      content="LottoMind Stem Studio is a public static website and standalone browser music workstation for Beat DNA, stem mixing, Suno prompts, AI video prompts, and creative number signals."
+    />
+    <title>LottoMind Stem Studio</title>
+    <meta name="theme-color" content="#03050a" />
+    <link rel="icon" href="./lottomind-stem-studio/assets/brand/lm-stem-logo.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="./public-site.css" />
   </head>
   <body>
+    <header class="topbar">
+      <a class="brand" href="./" aria-label="LottoMind Stem Studio home">
+        <img src="./lottomind-stem-studio/assets/brand/lm-stem-logo.svg" alt="" />
+        <span>LottoMind Stem Studio</span>
+      </a>
+      <nav aria-label="Site">
+        <a href="./lottomind-stem-studio/">Launch Studio</a>
+        <a href="./lottomind-stem-studio/docs/DAW-COMPOSER-SUITE.md">Docs</a>
+      </nav>
+    </header>
+
     <main>
-      <header>
-        <div class="tag">LottoMind Arcade</div>
-        <h1>Choose Your Game</h1>
-        <p>Play the full Gothtechnology fighter or jump into the Vault Run side-scroller from one GitHub Pages arcade hub.</p>
-      </header>
-      <section class="grid" aria-label="Game selection">
-        <article class="game" style="--art:url('./gothtechnology-canvas/assets/user-stage/forest-fight-background.jpg')">
-          <div class="tag">Fighting Game</div>
-          <h2>GOTHTECHNOLOGY</h2>
-          <a href="./gothtechnology-canvas/index.html?fighter-prop1">Play Fighter</a>
+      <section class="hero">
+        <div class="hero-copy">
+          <h1>LottoMind Stem Studio</h1>
+          <p>
+            Make Beats. Build Prompts. Generate Creative Signals. A public, static,
+            local-first browser music workstation for Beat DNA, stem mixing, Suno and video prompts,
+            and entertainment-only creative number signals.
+          </p>
+          <div class="actions">
+            <a class="primary" href="./lottomind-stem-studio/">Open the Web App</a>
+          </div>
+        </div>
+        <img class="hero-art" src="./lottomind-stem-studio/assets/brand/lm-stem-hero.svg" alt="" />
+      </section>
+
+      <section class="share-panel">
+        <div>
+          <h2>Public links after GitHub Pages is enabled</h2>
+          <p>Use these routes when sharing the project online.</p>
+        </div>
+        <div class="link-grid">
+          <button type="button" data-copy="https://robjasper2084.github.io/Jungle-Lotto/">Copy GitHub Pages Home</button>
+          <button type="button" data-copy="https://robjasper2084.github.io/Jungle-Lotto/lottomind-stem-studio/">Copy Studio URL</button>
+        </div>
+      </section>
+
+      <section class="feature-grid" aria-label="Highlights">
+        <article>
+          <h3>Standalone Web Studio</h3>
+          <p>No backend, no cloud upload, no paid API. Runs from static hosting with Web Audio, Canvas, IndexedDB, File API, and optional Web MIDI.</p>
         </article>
-        <article class="game" style="--art:url('./gothtechnology-canvas/assets/user-stage/forest-fight-background.jpg')">
-          <div class="tag">Arcade Run</div>
-          <h2>Vault Run</h2>
-          <a href="./shadow-ops-canvas/index.html?v=github-pages-arcade1">Play Vault Run</a>
+        <article>
+          <h3>Touch Performance</h3>
+          <p>Pressure-capable devices use real pressure. Regular touch screens simulate velocity from finger position, tap movement, and sensitivity settings.</p>
+        </article>
+        <article>
+          <h3>Beat DNA Signals</h3>
+          <p>Generate local, copy-ready Suno prompts, AI video prompts, and entertainment-only creative number signals from your project. No scraping, no auto-submit, no outcome claims.</p>
         </article>
       </section>
     </main>
+
+    <footer>
+      <span>LottoMind Stem Studio</span>
+      <span>Static GitHub Pages-ready music app.</span>
+    </footer>
+
+    <script src="./public-site.js" defer></script>
   </body>
 </html>
