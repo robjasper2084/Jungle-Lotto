@@ -9,6 +9,7 @@ The package creates futuristic presentation-ready intro videos for product demos
 - `MainIntro` - 1920x1080, 30fps, 12 seconds, 360 frames
 - `PresentationIntro` - 1920x1080, 30fps, 8 seconds, 240 frames
 - `LogoSting` - 1920x1080, 30fps, 5 seconds, 150 frames
+- `FuturisticLogoSting` - 1920x1080, 30fps, 5 seconds, 150 frames, uploaded LM logo with circuit/waveform motion
 - `VerticalSocialIntro` - 1080x1920, 30fps, 10 seconds, 300 frames
 - `TransparentLogoSting` - 1920x1080, 30fps, 5 seconds, alpha-friendly design
 
@@ -30,6 +31,7 @@ npm run dev
 npm run render:main
 npm run render:presentation
 npm run render:logo
+npm run render:futuristic-logo
 npm run render:vertical
 npm run render:transparent
 ```

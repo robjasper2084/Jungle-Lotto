@@ -10,91 +10,104 @@
     <title>LOTTOMINDED ULTRA | Browser Music Workstation</title>
     <meta name="theme-color" content="#03050a" />
     <link rel="icon" href="./assets/brand/lm-orb-mark.webp" type="image/webp" />
-    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./styles.css?v=ultra-motion-7" />
   </head>
   <body>
-    <header class="site-header">
-      <a class="brand" href="./" aria-label="LOTTOMINDED ULTRA home">
-        <img src="./assets/brand/lm-orb-mark.webp" alt="" />
-        <span>LOTTOMINDED ULTRA</span>
-      </a>
+    <header class="site-header" data-site-header>
+      <div class="site-header-main">
+        <a class="brand" href="./" aria-label="LOTTOMINDED ULTRA home">
+          <img src="./assets/brand/lm-orb-mark.webp" alt="" />
+          <span>LOTTOMINDED ULTRA</span>
+        </a>
+        <button type="button" class="site-back-button" data-site-back aria-label="Go back to the previous page">Back</button>
+        <button type="button" class="site-header-toggle" data-header-toggle aria-expanded="true">Shrink Menu</button>
+      </div>
       <nav aria-label="Primary">
         <a href="#top">Website</a>
-        <a href="#studio">Studio</a>
-        <a href="#features">Features</a>
-        <a href="#prompt">Prompts</a>
+        <a href="https://lottomind.one/">Lottomind.one</a>
+        <a href="./features-app.html">Features</a>
+        <a href="./prompt-lab.html#beat2lotto">Beat2Lotto+</a>
+        <a href="./merch-store.html">Merch + Gallery</a>
+        <a href="./prompt-lab.html">Prompts</a>
+        <a href="#how-to-use">How to Use</a>
       </nav>
-      <div class="view-switch" role="group" aria-label="Website and web app view controls">
-        <button class="view-toggle" type="button" data-view-mode="site" aria-pressed="true">Website</button>
-        <button class="view-toggle" type="button" data-view-mode="app" aria-pressed="false">Web App</button>
+      <div class="direct-launch" aria-label="Direct studio launch">
+        <a class="direct-action direct-primary" href="../lottomind-stem-studio/index.html">Open Direct</a>
+        <a class="direct-action" href="./prompt-lab.html#beat-suno">Suno</a>
+        <a class="direct-action" href="./prompt-lab.html#beat-video">Video</a>
+        <a class="direct-action" href="./prompt-lab.html#beat2lotto">Beat2Lotto+</a>
+        <a class="direct-action" href="./merch-store.html">Merch</a>
+        <a class="direct-action" href="../lottomind-stem-studio/index.html#ai-master">Master</a>
+        <button class="direct-action soundtrack-toggle" type="button" data-soundtrack-toggle>Play Demo Music</button>
       </div>
     </header>
+    <audio id="siteSoundtrack" src="./assets/audio/default-stems/2%20Drums.mp3" preload="auto" loop></audio>
+
+    <aside class="startup-video-modal" data-startup-video aria-label="Lottominded Ultra intro video">
+      <div class="startup-video-panel" role="dialog" aria-modal="true" aria-labelledby="startupVideoTitle">
+        <button class="startup-video-close" type="button" data-startup-video-close aria-label="Close intro video">X</button>
+        <p class="eyebrow">Lottominded Ultra Signal</p>
+        <h2 id="startupVideoTitle">Enter the frequency vault.</h2>
+        <video class="startup-video-player" autoplay muted loop playsinline controls preload="metadata">
+          <source src="./assets/video/lottomind-uploaded-hero.mp4" type="video/mp4" />
+          <source src="./assets/video/E2887E5E-CD89-45E3-ABC2-E32ED00C2652.MOV" />
+        </video>
+        <p class="startup-video-copy">
+          Local-first music tools, Beat DNA prompts, cinematic video ideas, and entertainment-only creative signals.
+        </p>
+      </div>
+    </aside>
 
     <main>
-      <section class="hero" id="top">
+      <section class="hero kinetic-hero" id="top" data-kinetic-hero>
         <video class="hero-motion" autoplay muted loop playsinline preload="auto" aria-hidden="true">
+          <source src="./assets/video/lottomind-uploaded-hero.mp4" type="video/mp4" />
+          <source src="./assets/video/E2887E5E-CD89-45E3-ABC2-E32ED00C2652.MOV" />
           <source src="./assets/video/lottomind-logo-sting.mp4" type="video/mp4" />
         </video>
+        <div class="hero-circuit-layer" aria-hidden="true"></div>
+        <div class="hero-mouse-light" aria-hidden="true"></div>
         <div class="hero-copy">
-          <img class="hero-mark" src="./assets/brand/lm-orb-mark.webp" alt="" />
           <h1 aria-label="LOTTOMINDED ULTRA"><span>LOTTO</span><span>MINDED</span><span>ULTRA</span></h1>
           <p>
-            Make beats, mix stems, master tracks, trigger touch-reactive pads, build Suno and video prompts,
-            and generate Beat DNA creative signals from one cinematic browser studio.
+            A cinematic local-first studio for building beats, shaping stems, mastering mixes, and turning
+            Beat DNA into Suno prompts, video concepts, and entertainment-only creative signals.
           </p>
           <div class="hero-actions">
-            <button class="primary-action" type="button" data-view-mode="app">Launch Web App</button>
-            <button class="secondary-action" type="button" data-view-mode="site">Website View</button>
+            <a class="secondary-action" href="https://lottomind.one/">Lottomind.one</a>
             <a class="secondary-action" href="#features">Explore Features</a>
           </div>
         </div>
+        <figure class="hero-brand-art" aria-hidden="true">
+          <img src="./assets/brand/lm-frequency-vault-hero.webp" alt="" />
+        </figure>
         <div class="domain-strip" aria-label="Brand identity">
-          <strong>Stem Studio • Beat DNA • AI Prompts • Mastering • Creative Signals</strong>
+          <strong>Stem Studio &middot; Beat DNA &middot; AI Prompts &middot; Mastering &middot; Creative Signals</strong>
           <span>Local-first production tools wrapped in a cinematic LM Records brand system.</span>
         </div>
       </section>
 
-      <section class="app-stage" id="app-view" aria-label="LOTTOMINDED ULTRA web app preview">
-        <div class="app-stage-head">
-          <div>
-            <h2>Web App View</h2>
-            <p>
-              Open the full LottoMind Stem Studio workstation inside this branded page.
-            </p>
-          </div>
-          <div class="app-stage-actions">
-            <button class="secondary-action" type="button" data-view-mode="site">Back to Website</button>
-            <a class="secondary-action" href="../lottomind-stem-studio/index.html">Open Direct</a>
-          </div>
-        </div>
-        <div class="app-frame-shell">
-          <div class="app-frame-bar">
-            <span>LOTTOMINDED ULTRA</span>
-            <strong>Stem Studio live preview</strong>
-            <span>Local browser app</span>
-          </div>
-          <iframe title="LOTTOMINDED ULTRA web app" src="../lottomind-stem-studio/index.html"></iframe>
-        </div>
-      </section>
-
-      <section class="studio-band marketing-section" id="studio">
+      <section class="studio-band studio-band-clean marketing-section reveal-section" id="studio" data-reveal>
         <div>
-          <h2>One local studio, many performance modes.</h2>
+          <h2>Command the whole session from one cinematic deck.</h2>
           <p>
-            Load stems you own, shape channels, trigger pads, sequence patterns, sketch melodies, record input,
-            blend DJ decks, and export project data without cloud calls or backend services.
+            Drop in your own stems, ride the mixer, launch pads, sketch keys, slice patterns, record takes,
+            blend decks, master the output, and turn the beat into prompts and creative signals without leaving
+            your local browser.
           </p>
         </div>
-        <div class="studio-preview" aria-label="Studio capability preview">
-          <div class="meter-row"><span></span><span></span><span></span><span></span></div>
-          <div class="preview-grid preview-grid-single">
-            <img src="./assets/brand/studio-mode-console.png" alt="LottoMind studio console artwork" />
-          </div>
-        </div>
       </section>
 
-      <section class="feature-band marketing-section" id="features">
-        <h2>Built for producers who move fast.</h2>
+      <section class="feature-band marketing-section reveal-section" id="features" data-reveal>
+        <h2>Trailer-grade tools for the producer in motion.</h2>
+        <p class="feature-lede">
+          LOTTOMINDED ULTRA turns the browser into a cinematic control room: stems on deck, pressure-ready pads,
+          waveform editing, AI-assisted mastering, Beat DNA prompts, and creative signal tools ready for every session.
+        </p>
+        <div class="feature-actions">
+          <a class="primary-action" href="./features-app.html">Open Feature Console</a>
+          <a class="secondary-action" href="../lottomind-stem-studio/index.html">Launch Studio</a>
+        </div>
         <div class="feature-grid">
           <article>
             <h3>Stem Mixer</h3>
@@ -119,13 +132,69 @@
         </div>
       </section>
 
-      <section class="prompt-band marketing-section" id="prompt">
+      <section class="how-to-band marketing-section reveal-section" id="how-to-use" data-reveal>
+        <div>
+          <h2>How to drive the ULTRA studio.</h2>
+          <p>
+            Start with a sound, shape it like a performance, then turn the session into finished exports,
+            AI prompts, video briefs, and entertainment-only Beat2Lotto+ signals.
+          </p>
+        </div>
+        <div class="instruction-grid" aria-label="How to use Lottominded Ultra">
+          <article><strong>1</strong><h3>Launch or Load</h3><p>Open the full studio, load local stems, or drag in audio you own.</p></article>
+          <article><strong>2</strong><h3>Build the Beat</h3><p>Use pads, piano roll, patterns, decks, mixer faders, and waveform edits.</p></article>
+          <article><strong>3</strong><h3>Perform + Sync</h3><p>Play all sources, sync-start both decks, loop, pause, resume, and record the mix.</p></article>
+          <article><strong>4</strong><h3>Master Locally</h3><p>Run AI-assisted mastering, EQ Brain, loudness checks, and export-ready WAV tools.</p></article>
+          <article><strong>5</strong><h3>Generate Prompts</h3><p>Create Suno song prompts, video prompts, hooks, storyboards, and exclude prompts.</p></article>
+          <article><strong>6</strong><h3>Creative Signals</h3><p>Use Beat2Lotto+ for beat-seeded entertainment picks. Not a prediction.</p></article>
+        </div>
+        <div class="manual-dropdowns" aria-label="Instruction manual">
+          <details open>
+            <summary>Instruction Manual - Quick Start</summary>
+            <ol>
+              <li>Open Direct to launch the full studio, or use the standalone prompt apps below.</li>
+              <li>Load audio you own, create a beat, or type a session seed.</li>
+              <li>Use Play All, Pause, Resume, Loop, Loop All, and synced deck controls to perform the session.</li>
+              <li>Generate Suno prompts, video prompts, and Beat2Lotto+ number signals from the same creative seed.</li>
+            </ol>
+          </details>
+          <details>
+            <summary>Beat2Lotto+ Audio Import Manual</summary>
+            <ol>
+              <li>Open Beat2Lotto+ and import a browser-supported audio file.</li>
+              <li>The app analyzes duration, peak, RMS, zero crossings, transient activity, and an energy signature locally.</li>
+              <li>Choose Pick 3, Pick 4, Cash 5, Lotto 6, Powerball-style, or Mega Millions-style output.</li>
+              <li>Generate beat-seeded entertainment picks. These are creative number generations, not predictions.</li>
+              <li>Verify game rules, matrices, draw times, prizes, and eligibility with official lottery sources before playing.</li>
+            </ol>
+          </details>
+          <details>
+            <summary>Sheet Music + Keyboard Prompt Manual</summary>
+            <ol>
+              <li>Upload a sheet image or PDF in Beat2Lotto+.</li>
+              <li>Preview the sheet locally, then confirm the melody with the on-screen keyboard or editable note lane.</li>
+              <li>Generate a music prompt from the note phrase, BPM, and session seed.</li>
+              <li>Generate a video prompt that turns the notes into camera motion, glowing staff lines, and beat-synced visuals.</li>
+            </ol>
+          </details>
+          <details>
+            <summary>Safety + Rights Manual</summary>
+            <p>
+              Use audio, sheet music, samples, and references you own or have permission to process. The website
+              does not upload audio, submit prompts to outside tools, sell tickets, or process wagers.
+            </p>
+          </details>
+        </div>
+      </section>
+
+      <section class="prompt-band marketing-section reveal-section" id="prompt" data-reveal>
         <img src="./assets/brand/beat-dna-hood-orb.png" alt="" />
         <div>
-          <h2>Beat DNA turns your session into creative output.</h2>
+          <h2>Turn the beat into the brief.</h2>
           <p>
-            Analyze your current beat, stems, pads, BPM, effects, arrangement, and mixer choices into copy-ready
-            Suno prompts, AI video prompts, and creative number signals. The website and app never submit, scrape, or upload audio.
+            Your rhythm, stems, pads, BPM, effects, arrangement, and mixer moves become copy-ready Suno song briefs,
+            AI video direction, hook ideas, negative prompts, and entertainment-only creative signals. Nothing is uploaded,
+            scraped, or auto-submitted.
           </p>
           <ul>
             <li>Simple Mode Prompt</li>
@@ -134,9 +203,26 @@
             <li>Instrumental and Exclude prompts</li>
           </ul>
         </div>
+        <div class="prompt-launch-panel" aria-label="Prompt Lab launch">
+          <article>
+            <h3>Beat -> Suno Prompt</h3>
+            <p>Generate song briefs, style language, arrangement notes, hooks, and exclusions from a beat idea or loaded session.</p>
+            <a class="primary-action" href="./prompt-lab.html#beat-suno">Open Suno Lab</a>
+          </article>
+          <article>
+            <h3>Beat -> Video Prompt</h3>
+            <p>Build cinematic prompts with subject, camera movement, beat-synced edits, negative prompts, and social-ready pacing.</p>
+            <a class="primary-action" href="./prompt-lab.html#beat-video">Open Video Lab</a>
+          </article>
+          <article>
+            <h3>Beat2Lotto+ Signals</h3>
+            <p>Import a beat or type Beat DNA to create entertainment-only number signals. Creative number generation. Not a prediction.</p>
+            <a class="primary-action" href="./prompt-lab.html#beat2lotto">Open Beat2Lotto+</a>
+          </article>
+        </div>
       </section>
 
-      <section class="access-band marketing-section">
+      <section class="access-band marketing-section reveal-section" data-reveal>
         <h2>Ready for studio sessions.</h2>
         <p>
           Use the browser studio for full production. Everything remains local-first with no backend service required.
@@ -157,6 +243,6 @@
       <span id="site-year"></span>
     </footer>
 
-    <script src="./site.js" defer></script>
+    <script src="./site.js?v=ultra-motion-7" defer></script>
   </body>
 </html>

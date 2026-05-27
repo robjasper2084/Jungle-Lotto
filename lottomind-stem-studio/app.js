@@ -15,14 +15,27 @@ const STORAGE = {
   beatLotteryHistory: "lottomind.stemStudio.beatLotteryHistory.v1",
   lotteryGameCatalog: "lottomind.stemStudio.lotteryGameCatalog.v1",
   customLotteryGames: "lottomind.stemStudio.customLotteryGames.v1",
-  beatCreativeBundles: "lottomind.stemStudio.beatCreativeBundles.v1"
+  beatCreativeBundles: "lottomind.stemStudio.beatCreativeBundles.v1",
+  keyboardMappings: "lottominded.ultra.keyboardMappings.v1",
+  topShellLayout: "lottominded.ultra.topShellLayout.v1"
 };
 const PAD_KEYS = ["1", "2", "3", "4", "q", "w", "e", "r", "a", "s", "d", "f", "z", "x", "c", "v"];
+const PAD_KEY_CODES = ["Digit1", "Digit2", "Digit3", "Digit4", "KeyQ", "KeyW", "KeyE", "KeyR", "KeyA", "KeyS", "KeyD", "KeyF", "KeyZ", "KeyX", "KeyC", "KeyV"];
+const SYNTH_NOTES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+const PIANO_KEY_CODES = ["KeyA", "KeyW", "KeyS", "KeyE", "KeyD", "KeyF", "KeyT", "KeyG", "KeyY", "KeyH", "KeyU", "KeyJ"];
 const STEM_NAMES = ["Drums", "Bass", "Vocals", "Melody", "Keys", "Guitar", "FX", "Master"];
+const DEFAULT_DEMO_STEMS = [
+  { stemIndex: 2, name: "Lead Vocals", file: "assets/demo-stems/0%20Lead%20Vocals.mp3" },
+  { stemIndex: 6, name: "Backing Vocals", file: "assets/demo-stems/1%20Backing%20Vocals.mp3" },
+  { stemIndex: 0, name: "Drums", file: "assets/demo-stems/2%20Drums.mp3" },
+  { stemIndex: 1, name: "Bass", file: "assets/demo-stems/3%20Bass.mp3" },
+  { stemIndex: 4, name: "Keyboard", file: "assets/demo-stems/4%20Keyboard.mp3" },
+  { stemIndex: 3, name: "Synth", file: "assets/demo-stems/5%20Synth.mp3" }
+];
 const COLORS = ["#29f7ff", "#5eff9d", "#ff4fd8", "#ffe071", "#8a5cff", "#ff7a5c", "#37ffcf", "#b36bff"];
 const ASSETS = {
-  logo: "assets/brand/lm-stem-logo.svg",
-  hero: "assets/brand/lm-stem-hero.svg",
+  logo: "assets/brand/lm-ultra-logo.svg",
+  hero: "assets/brand/generated-ui/chatgpt-image-2-future-shell-hero.png",
   settings: "assets/brand/lm-settings-console.svg",
   help: "assets/brand/lm-help-orb.svg",
   pads: "assets/brand/lm-touch-pad.svg",
@@ -127,9 +140,9 @@ const HELP_TOPICS = {
   },
   transport: {
     title: "Transport",
-    copy: "Control global playback, recording, BPM, metronome, and master level.",
-    steps: ["Play All starts loaded stems and decks.", "Stop All halts stems, decks, pads, and song playback.", "Set BPM before recording patterns.", "Enable Metronome for timing.", "Record Mix captures browser output where MediaRecorder routing is supported."],
-    tip: "Use Count-in from Settings when recording pad or MIDI ideas.",
+    copy: "Control global playback, pause/resume, loop behavior, recording, BPM, timing divisions, metronome, and master level.",
+    steps: ["Play All starts or resumes loaded stems and decks.", "Pause preserves stem and deck positions so Resume All can continue.", "Restart jumps playable sources back to the top.", "Loop is a temporary transport loop; Loop All toggles loaded stems and decks into loop mode.", "Set timing divisions from 1/4 through 1/64 triplet for sequencer speed and note repeat feel.", "Record Mix captures browser output where MediaRecorder routing is supported."],
+    tip: "Use Seq Follow when you want Play All to start the step sequencer with loaded audio.",
     route: "studio"
   },
   "stem-mixer": {
@@ -156,9 +169,79 @@ const HELP_TOPICS = {
   pads: {
     title: "Drum Pads",
     copy: "Touch-reactive 16-pad performance with velocity, aftertouch, banks, samples, and note repeat. Touch velocity uses real pressure on supported devices.",
-    steps: ["Tap higher on a pad for stronger velocity.", "On regular touch screens, velocity is simulated from finger position, tap movement, and sensitivity settings.", "Hold and move for aftertouch-style filter and glow.", "Switch banks or load a local sample.", "Choose one-shot, hold, or loop behavior.", "Use keyboard shortcuts 1-4, QWER, ASDF, ZXCV."],
+    steps: ["Tap higher on a pad for stronger velocity.", "On regular touch screens, velocity is simulated from finger position, tap movement, and sensitivity settings.", "Hold and move for aftertouch-style filter and glow.", "Switch banks or load a local sample.", "Choose one-shot, hold, or loop behavior.", "Open Computer Key Mapping to assign pads or piano keys to top-row keys, letters, arrows, or the number pad."],
     tip: "Touch Sensitivity and Haptics are controlled in Settings for a hardware-style feel.",
     route: "pads"
+  },
+  "key-mapping": {
+    title: "Computer Key Mapping",
+    copy: "Customize which physical computer keys trigger drum pads and piano notes.",
+    steps: ["Open Pads or Keyboard Synth.", "Find Computer Key Mapping.", "Click Learn on a pad or piano key.", "Press the keyboard or number-pad key you want to use.", "Press Clear to unmap one control, or Reset Defaults to restore the original layout."],
+    tip: "The app uses physical key codes, so Numpad 1 can be mapped separately from the top-row 1.",
+    route: "pads"
+  },
+  "16-level-pads": {
+    title: "16-Level Performance Pads",
+    copy: "Turn one selected sound into 16 performance variations across the pad grid.",
+    steps: [
+      "Select the pad you want to spread across the grid.",
+      "Turn on 16-Level Mode.",
+      "Choose Velocity, Tune, Filter, Layer, Attack, Decay, Probability, Ratchet, or Slice.",
+      "Play the 16 pads. Each pad triggers the same source sound with a different mapped value.",
+      "Use Live Overlay for temporary performance or Commit to Bank to save the variations.",
+      "Record the performance into the sequencer or piano roll if recording is armed."
+    ],
+    tip: "Use Tune mode on an 808 or bass sample to play a bassline. Use Ratchet mode on hi-hats for fast rolls. Use Slice mode on loops for instant chops.",
+    route: "pads"
+  },
+  "waveform-studio": {
+    title: "Waveform Studio",
+    copy: "Edit local audio regions in a browser-first waveform workspace.",
+    steps: ["Load or record audio.", "Select a region.", "Cut, trim, split, fade, reverse, or normalize.", "Use the mini-map to zoom.", "Send selection to sampler, pads, AI Master, or prompt tools."],
+    tip: "Use zero-crossing snap for cleaner cuts and keep Preserve Original Buffers on while experimenting.",
+    route: "song"
+  },
+  "multitrack-editing": {
+    title: "Multitrack Editing",
+    copy: "Layer tracks, move clips, crossfade overlaps, record armed lanes, and bounce a mix.",
+    steps: ["Add tracks.", "Drag clips onto lanes.", "Overlap clips to crossfade.", "Arm tracks to record.", "Bounce the project to a mix."],
+    tip: "Bounce selected clips when you want to commit edits before mastering.",
+    route: "song"
+  },
+  crossfades: {
+    title: "Crossfades",
+    copy: "Blend overlapping clips with linear, equal-power, slow, fast, or S-curve fades.",
+    steps: ["Overlap two clips on the same track.", "Open Crossfade Editor.", "Choose a shape.", "Preview the overlap.", "Commit the fade or keep it editable."],
+    tip: "Equal-power crossfades are a strong default for musical clips.",
+    route: "song"
+  },
+  "armed-recording": {
+    title: "Armed Recording",
+    copy: "Record mic or line input directly onto armed Song Editor tracks.",
+    steps: ["Arm one or more tracks.", "Choose a browser input device.", "Toggle monitoring only when safe.", "Press Record Armed.", "Stop to create takes.", "Comp the best take into a clip."],
+    tip: "Use headphones while monitoring to avoid feedback.",
+    route: "song"
+  },
+  "open-music-tool-lab": {
+    title: "Open Music Tool Lab",
+    copy: "Learn the browser-safe roadmap for open workflow inspiration, plugin standards, and sample licensing.",
+    steps: ["Open the Open Tools tab.", "Review Web Audio features that work now.", "Read plugin standard roadmap badges.", "Import only samples you own or may use.", "Use desktop bridge notes for future native plugin hosting."],
+    tip: "Native plugin formats require a native host or desktop bridge; this static app uses Web Audio first.",
+    route: "open tools"
+  },
+  "sample-licensing": {
+    title: "Sample Licensing",
+    copy: "Use CC0, public-domain, self-recorded, or properly licensed user-supplied audio.",
+    steps: ["Check a sample license before importing.", "Keep attribution notes in project metadata.", "Do not redistribute commercial libraries.", "Export only material you have rights to use."],
+    tip: "CC0 and your own recordings are the cleanest path for sharing projects.",
+    route: "open tools"
+  },
+  "adaptive-arrangement": {
+    title: "Adaptive Arrangement",
+    copy: "Create loopable scenes and transition rules for dynamic music paths.",
+    steps: ["Create scenes like intro, verse, chorus, drop, and outro.", "Set loopable clips and intensity tags.", "Add transition rules.", "Preview paths.", "Export dynamic arrangement JSON."],
+    tip: "Adaptive scenes can improve video prompt storyboards and Suno arrangement notes.",
+    route: "song"
   },
   keyboard: {
     title: "Keyboard / Synth",
@@ -169,9 +252,9 @@ const HELP_TOPICS = {
   },
   sequencer: {
     title: "Sequencer",
-    copy: "Program step patterns for the pad engine.",
-    steps: ["Toggle steps on a pad lane.", "Switch 16, 32, 64, or 128 step views.", "Use Swing and Humanize for feel.", "Enable Pad Record to capture pad hits.", "Clear or randomize patterns as needed."],
-    tip: "Pattern Editor expands this into DAW clips.",
+    copy: "Program step patterns for the pad engine with straight or triplet timing.",
+    steps: ["Toggle steps on a pad lane.", "Switch 16, 32, or 64 step views.", "Choose timing from 1/4 through 1/64 triplet.", "Use Swing and Humanize for feel.", "Enable Pad Record to capture pad hits.", "Clear or randomize patterns as needed."],
+    tip: "Use 1/16T or 1/32T for rolling hats, and 1/64T for very fast bursts.",
     route: "sequencer"
   },
   sampler: {
@@ -380,15 +463,44 @@ let deferredInstallPrompt = null;
 const activePadPointers = new Map();
 const activeKeyboardPointers = new Map();
 const activeKeyboardShortcuts = new Set();
+const activeComputerKeyTargets = new Map();
 const fileUrlCache = new Map();
+
+function loadTopShellLayout() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORAGE.topShellLayout) || "{}");
+    return {
+      mode: ["full", "compact", "collapsed"].includes(saved.mode) ? saved.mode : "full",
+      height: clamp(Number(saved.height) || 340, 118, 620)
+    };
+  } catch (error) {
+    return { mode: "full", height: 340 };
+  }
+}
+
+function saveTopShellLayout() {
+  localStorage.setItem(STORAGE.topShellLayout, JSON.stringify(state.ui.topShell));
+}
 
 const state = {
   view: "studio",
+  ui: {
+    topShell: loadTopShellLayout()
+  },
   projectName: "Untitled Stem Studio Session",
   bpm: Number(localStorage.getItem("lss-bpm")) || 120,
   playing: false,
   recording: false,
   metronome: false,
+  transport: {
+    paused: false,
+    loop: false,
+    loopAll: false,
+    followSequencer: false,
+    timingDivision: "1/16"
+  },
+  keyMappings: loadKeyboardMappings(),
+  keyMappingLearn: null,
   master: {
     volume: Number(localStorage.getItem("lss-master-volume")) || 0.85,
     limiter: true,
@@ -520,6 +632,70 @@ const state = {
     a: createDeck("a", "Deck A", COLORS[0]),
     b: createDeck("b", "Deck B", COLORS[2])
   },
+  padBank: "A",
+  padBanks: {},
+  pad16Level: {
+    enabled: false,
+    sourcePadIndex: 0,
+    mode: "velocity",
+    liveOverlay: true,
+    commitTargetBank: "A",
+    referencePad: 8,
+    velocity: {
+      min: 12,
+      max: 127,
+      curve: "linear"
+    },
+    tune: {
+      minSemitone: -7,
+      maxSemitone: 8,
+      referencePad: 8,
+      scaleLock: false,
+      scale: "chromatic",
+      rootNote: "C"
+    },
+    filter: {
+      type: "lowpass",
+      minCutoff: 180,
+      maxCutoff: 12000,
+      minResonance: 0.2,
+      maxResonance: 8,
+      mapTarget: "cutoff"
+    },
+    layer: {
+      layerA: 1,
+      layerB: 0,
+      crossfade: true
+    },
+    attack: {
+      minMs: 0,
+      maxMs: 800,
+      curve: "exponential"
+    },
+    decay: {
+      minMs: 60,
+      maxMs: 2400,
+      curve: "exponential"
+    },
+    probability: {
+      min: 0.05,
+      max: 1,
+      ghostBelow: 0.35
+    },
+    ratchet: {
+      values: [1, 1, 1, 2, 2, 3, 3, 4, 4, 6, 6, 8, 8, 12, 16, 32],
+      gate: 0.65,
+      swing: 0
+    },
+    slice: {
+      mode: "equal",
+      oneShot: true,
+      transientSensitivity: 0.55,
+      preservePitch: true
+    },
+    generatedPads: [],
+    lastPerformance: []
+  },
   pads: createPads(),
   kits: [],
   selectedKitIndex: 0,
@@ -532,6 +708,7 @@ const state = {
     playing: false,
     steps: 16,
     position: 0,
+    timingDivision: "1/16",
     swing: 0,
     humanize: 0,
     pattern: Array.from({ length: 16 }, () => Array(64).fill(false)),
@@ -562,12 +739,51 @@ const state = {
   },
   song: {
     bars: 16,
+    subMode: "waveform",
+    playheadTime: 0,
     tracks: [
       { id: "song-drums", name: "Drums", clips: [{ bar: 1, length: 4, type: "pattern", ref: 0, color: COLORS[0] }] },
       { id: "song-bass", name: "Bass", clips: [{ bar: 1, length: 8, type: "midi", ref: "bassline", color: COLORS[1] }] },
       { id: "song-melody", name: "Melody", clips: [{ bar: 5, length: 8, type: "midi", ref: "lead", color: COLORS[3] }] },
       { id: "song-vocals", name: "Vocals", clips: [] }
     ]
+  },
+  waveformStudio: {
+    tool: "select",
+    source: "selected-stem",
+    selection: { startTime: 0.25, endTime: 1.75 },
+    cursorTime: 0,
+    clipboard: null,
+    copiedRegion: null,
+    regions: [
+      { id: "region-intro", clipId: "", trackId: "song-drums", label: "Intro Loop", startTime: 0, endTime: 4, color: COLORS[0], type: "loop", locked: false, notes: "Starter loop region" },
+      { id: "region-hook", clipId: "", trackId: "song-melody", label: "Hook", startTime: 8, endTime: 16, color: COLORS[3], type: "chorus", locked: false, notes: "Prompt/storyboard anchor" }
+    ],
+    markers: [
+      { id: "marker-drop", time: 8, label: "Drop", color: COLORS[2] }
+    ],
+    viewport: { startTime: 0, endTime: 16, zoom: 1 },
+    status: "Load local audio, pick a stem, or bounce the arrangement to start editing.",
+    contextMenu: { open: false, x: 0, y: 0, context: null },
+    quickEffect: null,
+    crossfades: [],
+    bounces: [],
+    bounceProgress: 0,
+    recording: { armedTrackIds: [], active: false, paused: false, monitoring: false, inputDeviceId: "", takes: [] },
+    fileInfo: null
+  },
+  adaptiveArrangement: {
+    scenes: [
+      { id: "scene-intro", name: "Intro", clips: [], loopable: true, intensity: 0.35, tags: ["atmospheric", "setup"] },
+      { id: "scene-drop", name: "Drop", clips: [], loopable: true, intensity: 0.9, tags: ["hook", "high energy"] }
+    ],
+    transitions: [
+      { fromSceneId: "scene-intro", toSceneId: "scene-drop", condition: "after 8 bars", transitionClipId: "", crossfadeBeats: 2 }
+    ]
+  },
+  openTools: {
+    compatibilityFocus: "browser-first",
+    selectedGuide: "roadmap"
   },
   pianoRoll: {
     steps: 32,
@@ -606,6 +822,8 @@ const state = {
   selectedPadIndex: 0,
   toast: null
 };
+
+ensurePadBanks();
 
 function createStemChannel(name, index = 0) {
   return {
@@ -964,8 +1182,205 @@ function createPads() {
     velocity: 0,
     aftertouch: 0,
     color: COLORS[index % COLORS.length],
-    source: null
+    layers: [],
+    envelope: {
+      attack: 0,
+      decay: 0.4,
+      sustain: 0.8,
+      release: 0.12
+    },
+    probability: 1,
+    ratchet: null,
+    slice: null,
+    source: null,
+    gainNode: null,
+    filterNode: null
   }));
+}
+
+function getDefaultKeyboardMappings() {
+  return {
+    pads: PAD_KEY_CODES.map((code, index) => ({ index, code })),
+    piano: SYNTH_NOTES.map((note, midi) => ({ note, midi, code: PIANO_KEY_CODES[midi] || "" }))
+  };
+}
+
+function sanitizeKeyboardMappings(mappings = {}) {
+  const defaults = getDefaultKeyboardMappings();
+  const padEntries = Array.isArray(mappings.pads) ? mappings.pads : [];
+  const pianoEntries = Array.isArray(mappings.piano) ? mappings.piano : [];
+  return {
+    pads: defaults.pads.map((fallback, index) => {
+      const saved = padEntries.find((entry) => Number(entry.index) === index) || padEntries[index] || {};
+      return { index, code: typeof saved.code === "string" ? saved.code : fallback.code };
+    }),
+    piano: defaults.piano.map((fallback, midi) => {
+      const saved = pianoEntries.find((entry) => Number(entry.midi) === midi) || pianoEntries[midi] || {};
+      return { note: fallback.note, midi, code: typeof saved.code === "string" ? saved.code : fallback.code };
+    })
+  };
+}
+
+function loadKeyboardMappings() {
+  try {
+    return sanitizeKeyboardMappings(JSON.parse(localStorage.getItem(STORAGE.keyboardMappings) || "{}"));
+  } catch (error) {
+    return getDefaultKeyboardMappings();
+  }
+}
+
+function saveKeyboardMappings() {
+  localStorage.setItem(STORAGE.keyboardMappings, JSON.stringify(state.keyMappings));
+}
+
+function getPadKeyCode(index) {
+  return state.keyMappings?.pads?.[index]?.code || "";
+}
+
+function getPianoKeyCode(midi) {
+  return state.keyMappings?.piano?.find((entry) => Number(entry.midi) === Number(midi))?.code || "";
+}
+
+function formatKeyCode(code) {
+  if (!code) return "Unmapped";
+  if (/^Key[A-Z]$/.test(code)) return code.replace("Key", "");
+  if (/^Digit\d$/.test(code)) return code.replace("Digit", "");
+  if (/^Numpad\d$/.test(code)) return `Num ${code.replace("Numpad", "")}`;
+  const labels = {
+    Space: "Space",
+    Enter: "Enter",
+    Tab: "Tab",
+    Backquote: "`",
+    Minus: "-",
+    Equal: "=",
+    BracketLeft: "[",
+    BracketRight: "]",
+    Backslash: "\\",
+    Semicolon: ";",
+    Quote: "'",
+    Comma: ",",
+    Period: ".",
+    Slash: "/",
+    NumpadAdd: "Num +",
+    NumpadSubtract: "Num -",
+    NumpadMultiply: "Num *",
+    NumpadDivide: "Num /",
+    NumpadDecimal: "Num .",
+    NumpadEnter: "Num Enter",
+    ArrowUp: "Up",
+    ArrowDown: "Down",
+    ArrowLeft: "Left",
+    ArrowRight: "Right"
+  };
+  return labels[code] || code.replace(/([a-z])([A-Z])/g, "$1 $2");
+}
+
+function getKeyboardMappingTarget(code) {
+  if (!code) return null;
+  const padIndex = state.keyMappings?.pads?.findIndex((entry) => entry.code === code) ?? -1;
+  if (padIndex >= 0) return { type: "pad", index: padIndex, label: `Pad ${padIndex + 1}` };
+  const piano = state.keyMappings?.piano?.find((entry) => entry.code === code);
+  if (piano) return { type: "piano", midi: Number(piano.midi), note: piano.note, label: `${piano.note} key` };
+  return null;
+}
+
+function removeDuplicateKeyboardCode(code, exceptType, exceptId) {
+  if (!code) return;
+  state.keyMappings.pads.forEach((entry) => {
+    if (entry.code === code && !(exceptType === "pad" && Number(entry.index) === Number(exceptId))) entry.code = "";
+  });
+  state.keyMappings.piano.forEach((entry) => {
+    if (entry.code === code && !(exceptType === "piano" && Number(entry.midi) === Number(exceptId))) entry.code = "";
+  });
+}
+
+function startKeyboardMappingLearn(type, id) {
+  state.keyMappingLearn = { type, id: Number(id) };
+  toast(`Press a computer key for ${getKeyboardMappingLabel(type, id)}.`);
+  render();
+}
+
+function getKeyboardMappingLabel(type, id) {
+  if (type === "pad") return `Pad ${Number(id) + 1}`;
+  const piano = state.keyMappings?.piano?.find((entry) => Number(entry.midi) === Number(id));
+  return `${piano?.note || "Piano"} key`;
+}
+
+function assignKeyboardMapping(code) {
+  const learn = state.keyMappingLearn;
+  if (!learn) return false;
+  if (!code || code === "Escape") {
+    state.keyMappingLearn = null;
+    toast("Key mapping canceled.");
+    render();
+    return true;
+  }
+  removeDuplicateKeyboardCode(code, learn.type, learn.id);
+  if (learn.type === "pad") {
+    const entry = state.keyMappings.pads[learn.id];
+    if (entry) entry.code = code;
+  } else {
+    const entry = state.keyMappings.piano.find((item) => Number(item.midi) === Number(learn.id));
+    if (entry) entry.code = code;
+  }
+  const label = getKeyboardMappingLabel(learn.type, learn.id);
+  state.keyMappingLearn = null;
+  saveKeyboardMappings();
+  toast(`${label} mapped to ${formatKeyCode(code)}.`);
+  render();
+  return true;
+}
+
+function clearKeyboardMapping(type, id) {
+  if (type === "pad") {
+    const entry = state.keyMappings.pads[Number(id)];
+    if (entry) entry.code = "";
+  } else {
+    const entry = state.keyMappings.piano.find((item) => Number(item.midi) === Number(id));
+    if (entry) entry.code = "";
+  }
+  saveKeyboardMappings();
+  toast(`${getKeyboardMappingLabel(type, id)} unmapped.`);
+  render();
+}
+
+function resetKeyboardMappings() {
+  state.keyMappings = getDefaultKeyboardMappings();
+  state.keyMappingLearn = null;
+  activeKeyboardShortcuts.clear();
+  activeComputerKeyTargets.clear();
+  saveKeyboardMappings();
+  toast("Computer key mappings reset.");
+  render();
+}
+
+function isTextEditingTarget(target) {
+  if (!target) return false;
+  const tag = target.tagName;
+  return tag === "INPUT" || tag === "SELECT" || tag === "TEXTAREA" || target.isContentEditable;
+}
+
+async function triggerMappedComputerKey(event) {
+  const target = getKeyboardMappingTarget(event.code);
+  if (!target) return false;
+  event.preventDefault();
+  if (event.repeat || activeKeyboardShortcuts.has(event.code)) return true;
+  activeKeyboardShortcuts.add(event.code);
+  activeComputerKeyTargets.set(event.code, target);
+  await ensureAudio();
+  if (target.type === "pad") triggerPad(target.index, 1, false, true);
+  else playSynthNote(target.note, target.midi, 1, true);
+  return true;
+}
+
+function releaseMappedComputerKey(event) {
+  const target = activeComputerKeyTargets.get(event.code) || getKeyboardMappingTarget(event.code);
+  if (!target) return false;
+  activeKeyboardShortcuts.delete(event.code);
+  activeComputerKeyTargets.delete(event.code);
+  if (target.type === "pad") releasePad(target.index);
+  else releaseSynthNote(target.note, target.midi);
+  return true;
 }
 
 function initAudio() {
@@ -1031,11 +1446,15 @@ async function loadAudioFile(file) {
 
 function render() {
   const app = document.getElementById("app");
+  const topShell = state.ui.topShell;
   app.innerHTML = `
-    <div class="top-shell ${state.settings.stickyTransport ? "" : "not-sticky"}">
-      ${renderHeader()}
-      ${renderTransport()}
-      ${renderTabs()}
+    <div class="top-shell ${state.settings.stickyTransport ? "" : "not-sticky"} top-shell-${topShell.mode}" style="--top-shell-height:${topShell.height}px">
+      ${renderTopShellControls()}
+      <div class="top-shell-body" id="studio-top-shell-body">
+        ${renderHeader()}
+        ${renderTransport()}
+        ${renderTabs()}
+      </div>
     </div>
     <main class="view" data-view="${state.view}">
       ${renderCurrentView()}
@@ -1043,9 +1462,64 @@ function render() {
     <p class="footer-note">Load or record audio you own or have permission to use. Browser recording and capture features depend on permissions and platform support.</p>
     ${renderFirstRunGuide()}
     ${renderHelpDialog()}
+    ${renderEffectPreviewModal()}
     ${state.toast ? `<div class="toast" role="status">${escapeHtml(state.toast)}</div>` : ""}
   `;
   drawAllCanvases();
+}
+
+function renderTopShellControls() {
+  const mode = state.ui.topShell.mode;
+  const expanded = mode !== "collapsed";
+  return `
+    <div class="top-shell-controls" aria-label="Studio header layout controls">
+      <div class="top-shell-brand">
+        <img src="${getAsset("logo")}" alt="" />
+        <strong>Lottominded ULTRA</strong>
+      </div>
+      <button type="button" class="top-shell-toggle" data-action="toggle-top-shell-mode" aria-expanded="${expanded}" aria-controls="studio-top-shell-body">
+        ${expanded ? "Collapse" : "Expand"}
+      </button>
+      <button type="button" class="top-shell-switch" data-action="toggle-top-shell-mode" aria-pressed="${expanded}" aria-label="${expanded ? "Collapse header" : "Expand header"}">
+        <span class="switch-track"><span class="switch-dot"></span></span>
+        <span>${expanded ? "Header Open" : "Header Closed"}</span>
+      </button>
+      <button type="button" class="top-shell-max" data-action="set-top-shell-mode" data-mode="full">
+        Full Studio Header
+      </button>
+      <label class="top-shell-mode-control">
+        <span>Header size</span>
+        <select data-action="set-top-shell-mode" aria-label="Header size">
+          ${["full", "compact", "collapsed"].map((item) => `<option value="${item}" ${mode === item ? "selected" : ""}>${titleCase(item)}</option>`).join("")}
+        </select>
+      </label>
+      <label class="top-shell-height-control">
+        <span>Height</span>
+        <input type="range" min="118" max="620" step="8" value="${state.ui.topShell.height}" data-action="set-top-shell-height" aria-label="Header panel height" />
+      </label>
+      <span class="top-shell-hint">${expanded ? "Drag the lower-right edge or use height to resize." : `${titleCase(state.view)} controls hidden.`}</span>
+    </div>
+  `;
+}
+
+function setTopShellMode(mode) {
+  if (!["full", "compact", "collapsed"].includes(mode)) return;
+  state.ui.topShell.mode = mode;
+  if (mode === "compact") state.ui.topShell.height = Math.min(state.ui.topShell.height, 260);
+  if (mode === "full") state.ui.topShell.height = Math.max(state.ui.topShell.height, 320);
+  saveTopShellLayout();
+  render();
+}
+
+function toggleTopShellMode() {
+  setTopShellMode(state.ui.topShell.mode === "collapsed" ? "full" : "collapsed");
+}
+
+function setTopShellHeight(value) {
+  state.ui.topShell.height = clamp(Number(value) || 340, 118, 620);
+  if (state.ui.topShell.mode === "collapsed") state.ui.topShell.mode = "compact";
+  saveTopShellLayout();
+  render();
 }
 
 function queueRender() {
@@ -1063,7 +1537,7 @@ function renderHeader() {
       <div class="brand">
         <img src="${getAsset("logo")}" alt="" />
         <div>
-          <h1>LottoMind Stem Studio</h1>
+          <h1>Lottominded ULTRA</h1>
           <p>Make Beats. Build Prompts. Generate Creative Signals.</p>
         </div>
       </div>
@@ -1072,6 +1546,7 @@ function renderHeader() {
         <input type="text" data-input="projectName" value="${escapeAttr(state.projectName)}" aria-label="Project name" />
       </label>
       <div class="actions">
+        <a class="app-top-link app-back-link" href="../lottominded-ultra.io/">Back to Lottomind Studio</a>
         <button type="button" data-action="save-project">Save</button>
         <button type="button" data-action="load-project">Load</button>
         <button type="button" data-action="export-project">Export JSON</button>
@@ -1081,6 +1556,7 @@ function renderHeader() {
         <button type="button" data-action="generate-suno-prompt">Suno</button>
         <button type="button" data-action="generate-video-prompt">Video</button>
         <button type="button" data-action="generate-beat-lottery">Signals</button>
+        <a class="app-top-link" href="../lottominded-ultra.io/beat2lotto-plus.html">Beat2Lotto+</a>
         <button type="button" data-action="set-view" data-view="ai master">AI Master</button>
         <button type="button" data-action="generate-creative-bundle">Both</button>
       </div>
@@ -1089,12 +1565,19 @@ function renderHeader() {
 }
 
 function renderTransport() {
+  const playingLabel = state.transport.paused ? "Resume All" : state.playing ? "Playing" : "Play All";
   return `
     <section class="transport" aria-label="Transport">
       <div class="transport-actions">
         ${helpButton("transport")}
-        <button type="button" data-action="play-all" aria-pressed="${state.playing}">Play All</button>
+        <button type="button" data-action="play-all" aria-pressed="${state.playing && !state.transport.paused}">${playingLabel}</button>
+        <button type="button" data-action="pause-all" aria-pressed="${state.transport.paused}">Pause</button>
+        <button type="button" data-action="restart-all">Restart</button>
         <button type="button" data-action="stop-all">Stop All</button>
+        <button type="button" data-action="toggle-transport-loop" aria-pressed="${state.transport.loop}">Loop</button>
+        <button type="button" data-action="toggle-loop-all" aria-pressed="${state.transport.loopAll}">Loop All</button>
+        <button type="button" data-action="toggle-sequencer-play" aria-pressed="${state.sequencer.playing}">${state.sequencer.playing ? "Pause Seq" : "Start Seq"}</button>
+        <button type="button" data-action="toggle-follow-sequencer" aria-pressed="${state.transport.followSequencer}">Seq Follow</button>
         <button type="button" data-action="record-mix" aria-pressed="${state.recording}">${state.recording ? "Stop Recording" : "Record Mix"}</button>
         <button type="button" data-action="toggle-metronome" aria-pressed="${state.metronome}">Metronome</button>
         <button type="button" data-action="generate-suno-prompt">Generate Suno Prompt</button>
@@ -1107,6 +1590,12 @@ function renderTransport() {
         <input type="number" min="40" max="240" step="1" data-input="bpm" value="${state.bpm}" aria-label="BPM" />
       </label>
       <label class="field">
+        <span>Timing</span>
+        <select data-action="set-timing-division" aria-label="Transport timing division">
+          ${getTimingDivisions().map((division) => `<option value="${division}" ${state.transport.timingDivision === division ? "selected" : ""}>${formatTimingDivision(division)}</option>`).join("")}
+        </select>
+      </label>
+      <label class="field">
         <span>Master volume</span>
         <input type="range" min="0" max="1" step="0.01" data-input="masterVolume" value="${state.master.volume}" aria-label="Master volume" />
       </label>
@@ -1114,12 +1603,18 @@ function renderTransport() {
         <span>Master limiter ${state.master.limiter ? "armed" : "bypassed"}</span>
         <div class="vu" aria-label="Master meter"><span style="--vu:${Math.round(state.master.meter * 100)}%"></span></div>
       </div>
+      <div class="transport-status" aria-label="Transport status">
+        <span>${state.transport.loop ? "Loop armed" : "Loop off"}</span>
+        <span>${state.transport.loopAll ? "All sources loop" : "Manual loops"}</span>
+        <span>${state.transport.followSequencer ? "Seq follows play" : "Seq manual"}</span>
+        <span>${formatTimingDivision(state.transport.timingDivision)}</span>
+      </div>
     </section>
   `;
 }
 
 function renderTabs() {
-  const tabs = ["studio", "song", "patterns", "piano roll", "stems", "dj decks", "pads", "sampler", "sequencer", "mixer", "ai master", "automation", "plugins", "midi", "recorder", "files", "suno prompt", "video prompt", "beat lottery", "beat dna", "settings", "help"];
+  const tabs = ["studio", "song", "open tools", "patterns", "piano roll", "stems", "dj decks", "pads", "sampler", "sequencer", "mixer", "ai master", "automation", "plugins", "midi", "recorder", "files", "suno prompt", "video prompt", "beat lottery", "beat dna", "settings", "help"];
   return `
     <nav class="tabs" aria-label="Modes">
       ${tabs.map((tab) => `<button type="button" class="tab ${state.view === tab ? "is-active" : ""}" data-action="set-view" data-view="${tab}">${titleCase(tab)}</button>`).join("")}
@@ -1130,6 +1625,7 @@ function renderTabs() {
 function renderCurrentView() {
   if (state.view === "studio") return `${renderStudioHero()}${renderStemMixer()}${renderPads()}${renderDecks()}`;
   if (state.view === "song") return renderSongEditor();
+  if (state.view === "open tools") return renderOpenMusicToolLab();
   if (state.view === "patterns") return renderPatternEditor();
   if (state.view === "piano roll") return renderPianoRoll();
   if (state.view === "stems") return `${renderStemMixer()}${renderStemEditor()}`;
@@ -1181,27 +1677,37 @@ function renderStudioHero() {
 
 function renderSongEditor() {
   const bars = Array.from({ length: state.song.bars }, (_, index) => index + 1);
+  const subMode = state.song.subMode || "arrangement";
   return `
-    <section class="panel" aria-label="Song editor">
+    <section class="panel song-editor-screen" aria-label="Song editor">
       <div class="panel-header">
         <div>
           <h2>Song Editor</h2>
-          <p class="micro">Arrange melodies, samples, stem clips, patterns, and automation across a bar timeline.</p>
+          <p class="micro">Arrange clips, edit waveforms, record armed tracks, crossfade overlaps, and bounce local audio without uploading anything.</p>
         </div>
         <div class="button-row">
           ${helpButton("song")}
+          <button type="button" data-action="set-song-submode" data-mode="arrangement" aria-pressed="${subMode === "arrangement"}">Arrangement</button>
+          <button type="button" data-action="set-song-submode" data-mode="waveform" aria-pressed="${subMode === "waveform"}">Waveform Studio</button>
+          <button type="button" data-action="set-song-submode" data-mode="multitrack" aria-pressed="${subMode === "multitrack"}">Multitrack</button>
+          <button type="button" data-action="set-song-submode" data-mode="adaptive" aria-pressed="${subMode === "adaptive"}">Adaptive</button>
           <button type="button" data-action="add-song-track">Add Track</button>
           <button type="button" data-action="add-song-clip">Add Clip</button>
           ${rangeControl("Bars", "song", "bars", state.song.bars, 4, 64, 1, "song")}
         </div>
       </div>
       <div class="panel-body">
-        <div class="arranger-grid" style="--bars:${state.song.bars}">
-          <div class="arranger-header"><span></span>${bars.map((bar) => `<strong>${bar}</strong>`).join("")}</div>
-          ${state.song.tracks.map((track) => renderSongTrack(track)).join("")}
-        </div>
+        ${subMode === "waveform" ? renderWaveformStudio() : subMode === "multitrack" ? renderMultitrackMode() : subMode === "adaptive" ? renderAdaptiveArrangementPanel() : `
+          <div class="arranger-grid" style="--bars:${state.song.bars}">
+            <div class="arranger-header"><span></span>${bars.map((bar) => `<strong>${bar}</strong>`).join("")}</div>
+            ${state.song.tracks.map((track) => renderSongTrack(track)).join("")}
+          </div>
+          ${renderArmedRecordingPanel()}
+          ${renderBouncePanel()}
+        `}
       </div>
     </section>
+    ${renderSongEditorContextMenu()}
   `;
 }
 
@@ -1211,6 +1717,1101 @@ function renderSongTrack(track) {
     return `<button type="button" class="song-clip" data-action="select-song-clip" data-track="${track.id}" data-index="${index}" style="--clip-color:${clip.color}; grid-column:${start} / span ${clip.length};">${escapeHtml(clip.type)} ${escapeHtml(String(clip.ref))}</button>`;
   }).join("");
   return `<div class="arranger-row"><strong>${escapeHtml(track.name)}</strong>${clips}</div>`;
+}
+
+function renderWaveformStudio() {
+  return `
+    <section class="waveform-studio-screen" aria-label="Waveform Studio">
+      <div class="section-head">
+        <div>
+          <h3>Waveform Studio</h3>
+          <p class="micro">Browser-first region editing, clip repair, fades, normalization, export, and bounce tools for local audio you own.</p>
+        </div>
+        ${helpButton("waveform-studio")}
+      </div>
+      ${renderWaveformEditorToolbar()}
+      ${renderWaveformWorkspace()}
+      <div class="waveform-lab-grid">
+        ${renderWaveformRegionList()}
+        ${renderAudioFileInfoPanel()}
+        ${renderQuickEffectsMenu()}
+        ${renderCrossfadeEditor()}
+        ${renderBouncePanel()}
+      </div>
+      ${renderWaveformStatusBar()}
+    </section>
+  `;
+}
+
+function renderWaveformEditorToolbar() {
+  const tools = ["select", "move", "cut", "split", "fade", "crossfade", "marker", "loop"];
+  const actions = [
+    ["cut-waveform-selection", "Cut"],
+    ["copy-waveform-selection", "Copy"],
+    ["paste-waveform-selection", "Paste"],
+    ["delete-waveform-selection", "Delete"],
+    ["trim-waveform-selection", "Trim"],
+    ["crop-waveform-selection", "Crop"],
+    ["split-waveform-at-playhead", "Split"],
+    ["split-waveform-at-transients", "Transients"],
+    ["silence-waveform-selection", "Silence"],
+    ["insert-silence", "Insert Silence"],
+    ["fade-waveform-selection", "Fade"],
+    ["reverse-waveform-selection", "Reverse"],
+    ["normalize-waveform-selection", "Normalize"],
+    ["loop-waveform-selection", "Loop"],
+    ["export-waveform-selection", "Export Selection"],
+    ["add-waveform-marker", "Marker"],
+    ["add-waveform-region", "Region"]
+  ];
+  return `
+    <div class="waveform-editor-toolbar" role="toolbar" aria-label="Waveform editing tools">
+      <label class="field compact">
+        <span>Source</span>
+        <select data-action="set-waveform-source" aria-label="Waveform source">
+          ${["selected-stem", "sampler", "recorder", "deck-a", "deck-b", "first-loaded-stem"].map((source) => `<option value="${source}" ${state.waveformStudio.source === source ? "selected" : ""}>${titleCase(source)}</option>`).join("")}
+        </select>
+      </label>
+      ${tools.map((tool) => `<button type="button" data-action="set-waveform-tool" data-tool="${tool}" aria-pressed="${state.waveformStudio.tool === tool}">${titleCase(tool)}</button>`).join("")}
+      ${actions.map(([action, label]) => `<button type="button" data-action="${action}">${label}</button>`).join("")}
+      <button type="button" data-action="zoom-waveform-in">Zoom In</button>
+      <button type="button" data-action="zoom-waveform-out">Zoom Out</button>
+      <button type="button" data-action="fit-waveform-to-screen">Fit</button>
+    </div>
+  `;
+}
+
+function renderWaveformWorkspace() {
+  const selection = normalizeWaveformSelection();
+  return `
+    <div class="waveform-workspace">
+      <div class="waveform-ruler" aria-hidden="true">
+        ${Array.from({ length: 9 }, (_, index) => `<span>${formatTime((state.waveformStudio.viewport.startTime || 0) + index * 2)}</span>`).join("")}
+      </div>
+      <canvas class="waveform-main-canvas" data-waveform="studio-main" height="260" aria-label="Editable waveform canvas"></canvas>
+      ${renderWaveformMiniMap()}
+      <div class="waveform-selection" aria-label="Selection time">Selection ${formatTime(selection.startTime)} to ${formatTime(selection.endTime)}</div>
+    </div>
+  `;
+}
+
+function renderWaveformMiniMap() {
+  return `<canvas class="waveform-minimap" data-waveform="studio-minimap" height="72" aria-label="Waveform mini map"></canvas>`;
+}
+
+function renderWaveformRegionList() {
+  return `
+    <article class="waveform-region-list">
+      <div class="section-head"><div><h3>Regions + Markers</h3><p class="micro">Selection, loop, export, marker, slice, verse, chorus, and drop labels feed prompts and Beat DNA.</p></div>${helpButton("waveform-studio")}</div>
+      ${(state.waveformStudio.regions.length ? state.waveformStudio.regions : [createWaveformRegion(0, 4, "Starter Region")]).map((region) => `
+        <button type="button" class="waveform-region-chip" data-action="select-waveform-region" data-id="${region.id}" style="--region-color:${region.color}">
+          <strong>${escapeHtml(region.label)}</strong>
+          <span>${escapeHtml(region.type)} - ${formatTime(region.startTime)} to ${formatTime(region.endTime)}</span>
+        </button>
+      `).join("")}
+      <div class="button-row">
+        <button type="button" data-action="add-waveform-region">Add Region</button>
+        <button type="button" data-action="add-waveform-marker">Add Marker</button>
+      </div>
+    </article>
+  `;
+}
+
+function renderWaveformContextMenu() {
+  return renderSongEditorContextMenu();
+}
+
+function renderWaveformStatusBar() {
+  const buffer = getWaveformStudioBuffer();
+  const selection = normalizeWaveformSelection();
+  const peak = buffer ? calculateSamplePeak(buffer) : 0;
+  const rms = buffer ? calculateRms(buffer) : 0;
+  return `
+    <footer class="waveform-status-bar">
+      <span>Tool: ${escapeHtml(titleCase(state.waveformStudio.tool))}</span>
+      <span>Cursor: ${formatTime(state.waveformStudio.cursorTime || 0)}</span>
+      <span>Length: ${formatTime(selection.endTime - selection.startTime)}</span>
+      <span>Peak: ${peak.toFixed(2)}</span>
+      <span>RMS: ${rms.toFixed(2)}</span>
+      <span>${escapeHtml(state.waveformStudio.status || "")}</span>
+    </footer>
+  `;
+}
+
+function renderCrossfadeEditor() {
+  return `
+    <article class="crossfade-editor">
+      <div class="section-head"><div><h3>Crossfade Editor</h3><p class="micro">Overlap clips on the same lane, then apply a safe equal-power fade.</p></div>${helpButton("crossfades")}</div>
+      <canvas class="crossfade-curve" data-waveform="crossfade" height="96" aria-label="Crossfade curve"></canvas>
+      <label class="field compact">
+        <span>Shape</span>
+        <select data-action="set-crossfade-shape" aria-label="Crossfade shape">
+          ${["linear", "equal-power", "slow fade", "fast fade", "s-curve"].map((shape) => `<option value="${shape}" ${state.settings.waveformStudio.defaultCrossfadeShape === shape ? "selected" : ""}>${titleCase(shape)}</option>`).join("")}
+        </select>
+      </label>
+      <div class="button-row">
+        <button type="button" data-action="auto-crossfade-overlaps">Auto Crossfade</button>
+        <button type="button" data-action="create-crossfade">Create Fade</button>
+      </div>
+    </article>
+  `;
+}
+
+function renderBouncePanel() {
+  return `
+    <article class="bounce-panel">
+      <div class="section-head"><div><h3>Bounce + Export</h3><p class="micro">Render full mix, selected tracks, clips, region, stems, or master-ready WAV locally.</p></div>${helpButton("multitrack-editing")}</div>
+      <div class="button-row">
+        <button type="button" data-action="bounce-project">Bounce Full Mix</button>
+        <button type="button" data-action="bounce-track">Bounce Track</button>
+        <button type="button" data-action="bounce-selection">Bounce Selection</button>
+        <button type="button" data-action="bounce-project-to-master">Send Bounce to AI Master</button>
+        <button type="button" data-action="bounce-stems">Export Stems</button>
+      </div>
+      <div class="bounce-progress" aria-label="Bounce progress"><span style="--progress:${state.waveformStudio.bounceProgress || 0}%"></span></div>
+      <p class="micro">MP3, FLAC, and ZIP export require optional encoder modules. WAV and JSON are available now.</p>
+    </article>
+  `;
+}
+
+function renderMultitrackMode() {
+  return `
+    <section class="multitrack-browser-editor" aria-label="Multitrack browser editor">
+      <div class="section-head"><div><h3>Multitrack Browser Editor</h3><p class="micro">Layer tracks, drag clips, crossfade overlaps, arm channels, and bounce your local project.</p></div>${helpButton("multitrack-editing")}</div>
+      ${renderWaveformEditorToolbar()}
+      ${renderTrackStack()}
+      ${renderArmedRecordingPanel()}
+      ${renderRecordingTakeList()}
+      ${renderBouncePanel()}
+    </section>
+  `;
+}
+
+function renderTrackStack() {
+  return `
+    <div class="song-track-list">
+      ${state.song.tracks.map((track) => `
+        <article class="song-track-header ${state.waveformStudio.recording.armedTrackIds.includes(track.id) ? "armed" : ""}" data-track="${track.id}">
+          <div>
+            <strong>${escapeHtml(track.name)}</strong>
+            <span class="micro">${track.clips.length} clips</span>
+          </div>
+          <div class="button-row">
+            <button type="button" data-action="${state.waveformStudio.recording.armedTrackIds.includes(track.id) ? "disarm-record-track" : "arm-record-track"}" data-id="${track.id}">${state.waveformStudio.recording.armedTrackIds.includes(track.id) ? "Disarm" : "Arm"}</button>
+            <button type="button" data-action="freeze-track" data-id="${track.id}">Freeze</button>
+            <button type="button" data-action="bounce-track" data-id="${track.id}">Bounce</button>
+          </div>
+          <div class="track-stack-lane">
+            ${track.clips.map((clip, index) => renderClipLayer(track, { ...clip, localIndex: index })).join("") || `<span class="empty">Drop audio or add clips here.</span>`}
+          </div>
+        </article>
+      `).join("")}
+    </div>
+  `;
+}
+
+function renderClipLayer(track, clip) {
+  const overlap = clip.length > 4 ? " clip-overlap-region" : "";
+  return `
+    <button type="button" class="clip-layer${overlap}" data-action="select-song-clip" data-track="${track.id}" data-index="${clip.localIndex || 0}" style="--clip-color:${clip.color || track.color}; --clip-start:${clip.bar || 0}; --clip-span:${clip.length || 4}">
+      <span class="clip-waveform-fill"></span>
+      <strong>${escapeHtml(clip.type || "audio")}</strong>
+      <small>${escapeHtml(String(clip.ref || clip.name || "clip"))}</small>
+      <i class="clip-fade-curve"></i>
+      ${clip.locked ? `<em class="clip-locked-badge">Locked</em>` : ""}
+      <span class="clip-crossfade-handle" aria-hidden="true"></span>
+    </button>
+  `;
+}
+
+function renderArmedRecordingPanel() {
+  return `
+    <article class="recording-arm-panel">
+      <div class="section-head"><div><h3>Armed Track Recording</h3><p class="micro">Arm one or more lanes, choose an input, monitor safely, then record takes directly into the timeline.</p></div>${helpButton("armed-recording")}</div>
+      <div class="button-row">
+        <button type="button" data-action="start-armed-recording" aria-pressed="${state.waveformStudio.recording.active}">${state.waveformStudio.recording.active ? "Recording" : "Record Armed"}</button>
+        <button type="button" data-action="pause-armed-recording">Pause</button>
+        <button type="button" data-action="stop-armed-recording">Stop</button>
+        <button type="button" data-action="monitor-recording-input" aria-pressed="${state.waveformStudio.recording.monitoring}">Monitor ${state.waveformStudio.recording.monitoring ? "On" : "Off"}</button>
+      </div>
+      <div class="record-meter"><span style="--meter:${state.recording ? 72 : 18}%"></span></div>
+      <p class="micro">Browser mic permission is required. Use headphones while monitoring to avoid feedback.</p>
+    </article>
+  `;
+}
+
+function renderRecordingTakeList() {
+  return `
+    <article class="waveform-region-list">
+      <h3>Recording Takes</h3>
+      ${(state.waveformStudio.recording.takes.length ? state.waveformStudio.recording.takes : [{ id: "take-placeholder", trackId: "", label: "No takes yet", createdAt: new Date().toISOString() }]).map((take) => `
+        <div class="waveform-region-chip"><strong>${escapeHtml(take.label || "Take")}</strong><span>${escapeHtml(take.trackId || "Arm a track to record")}</span></div>
+      `).join("")}
+      <div class="button-row">
+        <button type="button" data-action="comp-recording-takes">Comp Takes</button>
+      </div>
+    </article>
+  `;
+}
+
+function renderSongEditorContextMenu() {
+  const menu = state.waveformStudio.contextMenu;
+  if (!menu?.open) return "";
+  const actions = ["cut", "copy", "paste", "delete", "split", "trim", "fade in", "fade out", "crossfade", "reverse", "normalize", "marker", "bounce clip", "send to sampler", "send to ai master"];
+  return `
+    <div class="waveform-context-menu open" style="left:${menu.x}px; top:${menu.y}px" role="menu">
+      ${actions.map((action) => `<button type="button" data-action="run-context-action" data-context-action="${action}" role="menuitem">${titleCase(action)}</button>`).join("")}
+      <button type="button" data-action="close-song-context-menu">Close</button>
+    </div>
+  `;
+}
+
+function renderQuickEffectsMenu() {
+  const effects = ["amplify", "normalize", "compressor", "limiter", "eq", "high-pass", "low-pass", "fade-in", "fade-out", "reverse", "reverb", "delay", "distortion", "bitcrusher", "speed-change", "noise-gate", "trim-silence", "silence", "stereo-widen", "mono", "invert-phase", "vocal-remove-fallback", "ai-master-selection"];
+  return `
+    <article class="quick-effects-menu">
+      <h3>Quick Effects</h3>
+      <p class="micro">Preview effects on a temporary buffer, then commit to a clip or effect rack.</p>
+      <div class="button-row">${effects.map((effect) => `<button type="button" data-action="apply-quick-effect" data-effect="${effect}">${titleCase(effect)}</button>`).join("")}</div>
+    </article>
+  `;
+}
+
+function renderEffectPreviewModal() {
+  if (!state.waveformStudio.quickEffect) return "";
+  return `
+    <div class="help-drawer open" role="dialog" aria-label="Effect preview">
+      <h3>${escapeHtml(titleCase(state.waveformStudio.quickEffect.id))}</h3>
+      <canvas data-waveform="effect-preview" height="120"></canvas>
+      <div class="button-row">
+        <button type="button" data-action="commit-effect-preview">Commit</button>
+        <button type="button" data-action="cancel-effect-preview">Cancel</button>
+      </div>
+    </div>
+  `;
+}
+
+function renderAudioFileInfoPanel() {
+  const info = state.waveformStudio.fileInfo || analyzeAudioFileMetadata(null, getWaveformStudioBuffer());
+  return `
+    <article class="metadata-panel">
+      <h3>Audio File Info</h3>
+      <div class="lottery-analysis-grid">
+        ${[
+          ["Source", info.fileName || titleCase(state.waveformStudio.source)],
+          ["Duration", formatTime(info.duration || 0)],
+          ["Sample rate", `${info.sampleRate || "--"} Hz`],
+          ["Channels", String(info.channelCount || "--")],
+          ["Peak", info.peak ? info.peak.toFixed(2) : "--"],
+          ["RMS", info.rms ? info.rms.toFixed(2) : "--"],
+          ["BPM", info.estimatedBpm || state.bpm],
+          ["Key", info.estimatedKey || "Key detection planned"]
+        ].map(([label, value]) => `<div><span>${escapeHtml(label)}</span><strong>${escapeHtml(String(value))}</strong></div>`).join("")}
+      </div>
+      <div class="button-row"><button type="button" data-action="export-metadata-json">Export Metadata JSON</button></div>
+    </article>
+  `;
+}
+
+function renderOpenMusicToolLab() {
+  return `
+    <section class="panel open-tool-lab-screen" aria-label="Open Music Tool Lab">
+      <div class="panel-header">
+        <div>
+          <h2>Open Music Tool Lab</h2>
+          <p class="micro">A browser-safe compatibility and roadmap lab inspired by open music production workflows. No third-party code, samples, plugins, or branding is bundled.</p>
+        </div>
+        <div class="button-row">
+          ${helpButton("open-music-tool-lab")}
+          <button type="button" data-action="export-compatibility-report">Export Compatibility Report</button>
+        </div>
+      </div>
+      <div class="panel-body">
+        ${renderOpenToolCards()}
+        ${renderCompatibilityStatus()}
+        ${renderPluginStandardRoadmap()}
+        ${renderSampleSourceGuide()}
+        ${renderOpenSynthGuide()}
+      </div>
+    </section>
+  `;
+}
+
+function renderOpenToolCards() {
+  const cards = [
+    ["LMMS-style workflow", "Song editor, beat editor, piano roll, and FX mixer inspiration for browser-native composition."],
+    ["Ardour-style workflow", "Recording, routing, multitrack mixing, takes, and session management inspiration."],
+    ["Surge XT / Vital / Dexed ideas", "Open synth and plugin inspiration for future browser-safe instruments."],
+    ["VCV / Cardinal modular", "Modular patching roadmap using Web Audio nodes and local patch metadata."],
+    ["LV2 / CLAP / LADSPA / VST", "Compatibility roadmap requiring desktop bridge or native host."],
+    ["CC0 samples", "Import user-provided CC0, public-domain, or properly licensed samples only."],
+    ["Dynamic music", "Adaptive arrangement scenes and transitions for games, video, and streams."]
+  ];
+  return `<div class="plugin-roadmap-grid">${cards.map(([title, copy]) => `<article class="open-tool-card"><h3>${escapeHtml(title)}</h3><p>${escapeHtml(copy)}</p></article>`).join("")}</div>`;
+}
+
+function renderPluginStandardRoadmap() {
+  return `
+    <article class="sample-standards-panel">
+      <h3>Plugin Standard Roadmap</h3>
+      <div class="plugin-roadmap-grid">
+        ${["LV2", "CLAP", "LADSPA", "VST", "SoundFont2", "Web Audio"].map((item) => `<div class="open-tool-card"><strong>${item}</strong><span>${item === "Web Audio" ? "Works now with built-in instruments/effects" : "Roadmap: local parser, metadata import, or desktop bridge required"}</span></div>`).join("")}
+      </div>
+      <p class="sample-license-note">Native desktop plugin formats require a native host or desktop bridge. The browser version uses built-in Web Audio instruments and effects now.</p>
+    </article>
+  `;
+}
+
+function renderSampleSourceGuide() {
+  return `
+    <article class="sample-license-note">
+      <h3>CC0 Sample Workflow</h3>
+      <p>Use CC0, public-domain, self-recorded, or properly licensed samples. Do not redistribute commercial sample libraries through project exports.</p>
+      <p>The app does not scrape sample sites and does not bundle copyrighted sounds.</p>
+    </article>
+  `;
+}
+
+function renderOpenSynthGuide() {
+  return `
+    <article class="open-tool-card">
+      <h3>Open Synth Guide</h3>
+      <p>Built-in Web Audio synths work now. Future modules can map oscillator, filter, envelope, modulation, wavetable, FM, and modular patch metadata into local project files.</p>
+    </article>
+  `;
+}
+
+function renderCompatibilityStatus() {
+  const statuses = [
+    ["Built-in Web Audio instruments", "Works now"],
+    ["Built-in Web Audio effects", "Works now"],
+    ["MIDI file import/export", "MVP available"],
+    ["Web MIDI hardware", "Browser permission required"],
+    ["SoundFont2", "Planned local parser"],
+    ["LV2 / CLAP / LADSPA / VST", "Desktop bridge roadmap"],
+    ["Native plugin hosting", "Not available in static browser app"],
+    ["CC0 sample import", "User-provided files only"]
+  ];
+  return `<div class="compatibility-status">${statuses.map(([name, status]) => `<span class="compatibility-badge"><strong>${escapeHtml(name)}</strong>${escapeHtml(status)}</span>`).join("")}</div>`;
+}
+
+function renderAdaptiveArrangementPanel() {
+  return `
+    <section class="adaptive-arrangement-panel" aria-label="Adaptive Arrangement">
+      <div class="section-head"><div><h3>Adaptive Arrangement</h3><p class="micro">Build scenes, loops, and transition rules that can feed Beat DNA, Suno arrangements, and video storyboards.</p></div>${helpButton("adaptive-arrangement")}</div>
+      <div class="button-row">
+        <button type="button" data-action="add-adaptive-scene">Add Scene</button>
+        <button type="button" data-action="add-transition-rule">Add Transition</button>
+        <button type="button" data-action="preview-adaptive-arrangement">Preview Paths</button>
+        <button type="button" data-action="export-adaptive-json">Export Adaptive JSON</button>
+      </div>
+      <div class="plugin-roadmap-grid">
+        ${state.adaptiveArrangement.scenes.map((scene) => `<article class="scene-section-card"><h3>${escapeHtml(scene.name)}</h3><p>Intensity ${Math.round(scene.intensity * 100)}%</p><p class="micro">${escapeHtml(scene.tags.join(", "))}</p></article>`).join("")}
+      </div>
+      <div class="plugin-roadmap-grid">
+        ${state.adaptiveArrangement.transitions.map((rule, index) => `<article class="transition-rule-card"><strong>Rule ${index + 1}</strong><span>${escapeHtml(rule.condition)} - ${escapeHtml(rule.crossfadeBeats)} beat crossfade</span></article>`).join("")}
+      </div>
+    </section>
+  `;
+}
+
+function getWaveformStudioBuffer() {
+  if (state.waveformStudio.source === "sampler") return state.sampler.buffer;
+  if (state.waveformStudio.source === "recorder") return state.recorder.buffer;
+  if (state.waveformStudio.source === "deck-a") return state.decks.a.buffer;
+  if (state.waveformStudio.source === "deck-b") return state.decks.b.buffer;
+  if (state.waveformStudio.source === "first-loaded-stem") return state.stems.find((stem) => stem.buffer)?.buffer || null;
+  return getStem(state.selectedStemId)?.buffer || state.stems.find((stem) => stem.buffer)?.buffer || state.sampler.buffer || state.recorder.buffer || null;
+}
+
+function setWaveformStudioBuffer(buffer) {
+  if (!buffer) return;
+  if (state.waveformStudio.source === "sampler") state.sampler.buffer = buffer;
+  else if (state.waveformStudio.source === "recorder") state.recorder.buffer = buffer;
+  else if (state.waveformStudio.source === "deck-a") state.decks.a.buffer = buffer;
+  else if (state.waveformStudio.source === "deck-b") state.decks.b.buffer = buffer;
+  else {
+    const stem = getStem(state.selectedStemId) || state.stems.find((item) => item.buffer) || state.stems[0];
+    stem.buffer = buffer;
+    stem.duration = buffer.duration;
+    stem.bufferId = makeId("buffer");
+  }
+  state.waveformStudio.fileInfo = analyzeAudioFileMetadata(null, buffer);
+}
+
+function normalizeWaveformSelection() {
+  const buffer = getWaveformStudioBuffer();
+  const duration = buffer?.duration || state.waveformStudio.viewport.endTime || 16;
+  let startTime = clamp(Number(state.waveformStudio.selection?.startTime) || 0, 0, duration);
+  let endTime = clamp(Number(state.waveformStudio.selection?.endTime) || Math.min(duration, startTime + 1), 0, duration);
+  if (endTime <= startTime) endTime = Math.min(duration, startTime + 0.05);
+  state.waveformStudio.selection = { startTime, endTime };
+  return state.waveformStudio.selection;
+}
+
+function drawMainWaveform(canvas, buffer, options = {}) {
+  drawWaveform(canvas, buffer, { color: "#29f7ff", beatGrid: true, bpm: state.bpm, ...options });
+  drawWaveformSelection(canvas, state.waveformStudio.selection);
+  drawWaveformRegions(canvas, state.waveformStudio.regions);
+}
+
+function drawWaveformSelection(canvas, selection) {
+  if (!canvas || !selection) return;
+  const ctx = canvas.getContext("2d");
+  const width = canvas.width;
+  const height = canvas.height;
+  const duration = getWaveformStudioBuffer()?.duration || state.waveformStudio.viewport.endTime || 16;
+  const startX = (selection.startTime / duration) * width;
+  const endX = (selection.endTime / duration) * width;
+  ctx.save();
+  ctx.fillStyle = "rgba(255, 209, 102, 0.16)";
+  ctx.strokeStyle = "rgba(255, 209, 102, 0.85)";
+  ctx.lineWidth = 2 * window.devicePixelRatio;
+  ctx.fillRect(startX, 0, Math.max(2, endX - startX), height);
+  ctx.strokeRect(startX, 0, Math.max(2, endX - startX), height);
+  ctx.restore();
+}
+
+function drawWaveformRegions(canvas, regions = []) {
+  if (!canvas || !regions.length) return;
+  const ctx = canvas.getContext("2d");
+  const width = canvas.width;
+  const height = canvas.height;
+  const duration = getWaveformStudioBuffer()?.duration || state.waveformStudio.viewport.endTime || 16;
+  ctx.save();
+  regions.forEach((region) => {
+    const x = (region.startTime / duration) * width;
+    const w = Math.max(2, ((region.endTime - region.startTime) / duration) * width);
+    ctx.fillStyle = `${region.color || "#29f7ff"}24`;
+    ctx.strokeStyle = region.color || "#29f7ff";
+    ctx.fillRect(x, height * 0.08, w, height * 0.84);
+    ctx.strokeRect(x, height * 0.08, w, height * 0.84);
+  });
+  ctx.restore();
+}
+
+function drawWaveformMiniMap(canvas, buffer, viewport = state.waveformStudio.viewport) {
+  drawWaveform(canvas, buffer, { color: "#8b5cf6" });
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d");
+  const duration = buffer?.duration || viewport.endTime || 16;
+  const width = canvas.width;
+  const height = canvas.height;
+  const x = ((viewport.startTime || 0) / duration) * width;
+  const w = Math.max(10, ((viewport.endTime - viewport.startTime) / duration) * width);
+  ctx.save();
+  ctx.strokeStyle = "rgba(255,255,255,0.86)";
+  ctx.lineWidth = 2 * window.devicePixelRatio;
+  ctx.strokeRect(x, height * 0.12, w, height * 0.76);
+  ctx.restore();
+}
+
+function drawCrossfadeCurve(canvas, fade = { shape: state.settings.waveformStudio.defaultCrossfadeShape }) {
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d");
+  const width = canvas.width = Math.max(1, Math.floor(canvas.clientWidth * window.devicePixelRatio));
+  const height = canvas.height = Math.max(1, Math.floor(canvas.clientHeight * window.devicePixelRatio));
+  ctx.clearRect(0, 0, width, height);
+  ctx.fillStyle = "rgba(3,7,15,.94)";
+  ctx.fillRect(0, 0, width, height);
+  drawGrid(ctx, width, height);
+  const curve = (x) => {
+    const t = x / width;
+    if (fade.shape === "equal-power") return Math.cos(t * Math.PI / 2);
+    if (fade.shape === "s-curve") return 1 - (t * t * (3 - 2 * t));
+    if (fade.shape === "fast fade") return Math.pow(1 - t, 2);
+    if (fade.shape === "slow fade") return Math.sqrt(1 - t);
+    return 1 - t;
+  };
+  ctx.lineWidth = 3 * window.devicePixelRatio;
+  ctx.strokeStyle = "#29f7ff";
+  ctx.beginPath();
+  for (let x = 0; x <= width; x += 4) {
+    const y = height - curve(x) * height;
+    if (x === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+  ctx.strokeStyle = "#ff4fd8";
+  ctx.beginPath();
+  for (let x = 0; x <= width; x += 4) {
+    const y = height - (1 - curve(x)) * height;
+    if (x === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+}
+
+function snapTimeToZeroCrossing(buffer, time) {
+  if (!buffer) return time;
+  const data = buffer.getChannelData(0);
+  const index = clamp(Math.round(time * buffer.sampleRate), 1, data.length - 2);
+  let best = index;
+  for (let offset = 0; offset < Math.min(2048, data.length); offset += 1) {
+    const left = index - offset;
+    const right = index + offset;
+    if (left > 0 && Math.sign(data[left]) !== Math.sign(data[left - 1])) { best = left; break; }
+    if (right < data.length - 1 && Math.sign(data[right]) !== Math.sign(data[right + 1])) { best = right; break; }
+  }
+  return best / buffer.sampleRate;
+}
+
+function snapTimeToBeat(time, bpm = state.bpm, snap = "1/16") {
+  const beat = 60 / Math.max(1, bpm);
+  const snapDiv = Number(String(snap).split("/")[1]) || 16;
+  const grid = beat * (4 / snapDiv);
+  return Math.round(time / grid) * grid;
+}
+
+function createWaveformRegion(startTime, endTime, label = "Region", patch = {}) {
+  return {
+    id: makeId("region"),
+    clipId: patch.clipId || "",
+    trackId: patch.trackId || state.song.tracks[0]?.id || "",
+    label,
+    startTime,
+    endTime,
+    color: patch.color || COLORS[state.waveformStudio?.regions?.length % COLORS.length || 0],
+    type: patch.type || "selection",
+    locked: false,
+    notes: patch.notes || ""
+  };
+}
+
+function updateWaveformRegion(regionId, patch) {
+  const region = state.waveformStudio.regions.find((item) => item.id === regionId);
+  if (!region || region.locked) return;
+  Object.assign(region, patch);
+  queueRender();
+}
+
+function deleteWaveformRegion(regionId) {
+  state.waveformStudio.regions = state.waveformStudio.regions.filter((region) => region.id !== regionId || region.locked);
+  queueRender();
+}
+
+function exportWaveformRegion(regionId) {
+  const region = state.waveformStudio.regions.find((item) => item.id === regionId) || createWaveformRegion(state.waveformStudio.selection.startTime, state.waveformStudio.selection.endTime, "Selection Export");
+  const buffer = getWaveformStudioBuffer();
+  if (!buffer) return toast("Load audio before exporting a region.");
+  exportBufferWav24Bit(truncateBuffer(buffer, region.startTime, region.endTime), `${safeFileName(region.label)}.wav`);
+}
+
+function cutWaveformSelection() {
+  copyWaveformSelection();
+  deleteWaveformSelection();
+}
+
+function copyWaveformSelection() {
+  const buffer = getWaveformStudioBuffer();
+  if (!buffer) return toast("Load audio before copying a waveform region.");
+  const selection = normalizeWaveformSelection();
+  state.waveformStudio.clipboard = truncateBuffer(buffer, selection.startTime, selection.endTime);
+  state.waveformStudio.copiedRegion = { ...selection };
+  toast("Waveform selection copied.");
+}
+
+function pasteWaveformSelection() {
+  const buffer = getWaveformStudioBuffer();
+  const clip = state.waveformStudio.clipboard;
+  if (!buffer || !clip) return toast("Copy a selection before pasting.");
+  setWaveformStudioBuffer(insertBufferAtTime(buffer, clip, state.waveformStudio.cursorTime || state.waveformStudio.selection.startTime));
+  toast("Pasted waveform selection.");
+  queueRender();
+}
+
+function deleteWaveformSelection() {
+  const buffer = getWaveformStudioBuffer();
+  if (!buffer) return toast("Load audio before deleting a selection.");
+  setWaveformStudioBuffer(removeBufferRange(buffer, normalizeWaveformSelection()));
+  toast("Deleted waveform selection.");
+  queueRender();
+}
+
+function trimWaveformSelection() {
+  const buffer = getWaveformStudioBuffer();
+  if (!buffer) return toast("Load audio before trimming.");
+  const selection = normalizeWaveformSelection();
+  setWaveformStudioBuffer(truncateBuffer(buffer, selection.startTime, selection.endTime));
+  state.waveformStudio.selection = { startTime: 0, endTime: getWaveformStudioBuffer()?.duration || 0 };
+  toast("Trimmed to selection.");
+  queueRender();
+}
+
+function cropWaveformSelection() {
+  trimWaveformSelection();
+}
+
+function silenceWaveformSelection() {
+  const buffer = getWaveformStudioBuffer();
+  if (!buffer) return toast("Load audio before silencing.");
+  const selection = normalizeWaveformSelection();
+  for (let channel = 0; channel < buffer.numberOfChannels; channel += 1) {
+    const data = buffer.getChannelData(channel);
+    const start = Math.floor(selection.startTime * buffer.sampleRate);
+    const end = Math.floor(selection.endTime * buffer.sampleRate);
+    data.fill(0, start, end);
+  }
+  toast("Silenced waveform selection.");
+  queueRender();
+}
+
+function insertSilence(seconds = 1) {
+  const buffer = getWaveformStudioBuffer();
+  if (!buffer || !audioCtx) return toast("Load audio before inserting silence.");
+  const silence = audioCtx.createBuffer(buffer.numberOfChannels, Math.max(1, Math.round(seconds * buffer.sampleRate)), buffer.sampleRate);
+  setWaveformStudioBuffer(insertBufferAtTime(buffer, silence, state.waveformStudio.cursorTime || state.waveformStudio.selection.startTime));
+  toast("Inserted silence.");
+  queueRender();
+}
+
+function fadeWaveformSelection(type = "in") {
+  const buffer = getWaveformStudioBuffer();
+  if (!buffer) return toast("Load audio before applying fades.");
+  const selection = normalizeWaveformSelection();
+  fadeBuffer(buffer, selection.startTime, selection.endTime, type);
+  toast(`${type === "in" ? "Fade in" : "Fade out"} applied to selection.`);
+  queueRender();
+}
+
+function reverseWaveformSelection() {
+  const buffer = getWaveformStudioBuffer();
+  if (!buffer) return toast("Load audio before reversing.");
+  const selection = normalizeWaveformSelection();
+  const region = truncateBuffer(buffer, selection.startTime, selection.endTime);
+  reverseBuffer(region);
+  setWaveformStudioBuffer(replaceBufferRange(buffer, region, selection));
+  toast("Reversed waveform selection.");
+  queueRender();
+}
+
+function normalizeWaveformSelectionAudio() {
+  const buffer = getWaveformStudioBuffer();
+  if (!buffer) return toast("Load audio before normalizing.");
+  const selection = normalizeWaveformSelection();
+  const region = truncateBuffer(buffer, selection.startTime, selection.endTime);
+  normalizeBuffer(region);
+  setWaveformStudioBuffer(replaceBufferRange(buffer, region, selection));
+  toast("Normalized waveform selection.");
+  queueRender();
+}
+
+function splitWaveformAtPlayhead() {
+  const time = state.waveformStudio.cursorTime || state.waveformStudio.selection.startTime || 0;
+  state.waveformStudio.regions.push(createWaveformRegion(Math.max(0, time - 0.01), time + 0.01, "Split Point", { type: "marker", color: COLORS[4] }));
+  toast("Split marker added at playhead.");
+  queueRender();
+}
+
+function splitWaveformAtTransients() {
+  const buffer = getWaveformStudioBuffer();
+  const duration = buffer?.duration || 16;
+  state.waveformStudio.regions.push(...Array.from({ length: 4 }, (_, index) => createWaveformRegion((duration / 4) * index, (duration / 4) * index + 0.05, `Transient ${index + 1}`, { type: "marker", color: COLORS[index % COLORS.length] })));
+  toast("Transient split markers added as an MVP placeholder.");
+  queueRender();
+}
+
+function loopWaveformSelection() {
+  const selection = normalizeWaveformSelection();
+  state.waveformStudio.regions.push(createWaveformRegion(selection.startTime, selection.endTime, "Loop Selection", { type: "loop", color: COLORS[2] }));
+  toast("Loop region created.");
+  queueRender();
+}
+
+function addWaveformMarker() {
+  const time = state.waveformStudio.cursorTime || state.waveformStudio.selection.startTime || 0;
+  state.waveformStudio.markers.push({ id: makeId("marker"), time, label: `Marker ${state.waveformStudio.markers.length + 1}`, color: COLORS[state.waveformStudio.markers.length % COLORS.length] });
+  state.waveformStudio.regions.push(createWaveformRegion(time, time + 0.01, `Marker ${state.waveformStudio.markers.length}`, { type: "marker", color: COLORS[3] }));
+  toast("Waveform marker added.");
+  queueRender();
+}
+
+function addWaveformRegion() {
+  const selection = normalizeWaveformSelection();
+  state.waveformStudio.regions.push(createWaveformRegion(selection.startTime, selection.endTime, `Region ${state.waveformStudio.regions.length + 1}`, { type: "export" }));
+  toast("Waveform region added.");
+  queueRender();
+}
+
+function insertBufferAtTime(buffer, insert, time) {
+  if (!buffer || !insert || !audioCtx) return buffer;
+  const sampleRate = buffer.sampleRate;
+  const insertFrame = clamp(Math.round(time * sampleRate), 0, buffer.length);
+  const next = audioCtx.createBuffer(buffer.numberOfChannels, buffer.length + insert.length, sampleRate);
+  for (let channel = 0; channel < buffer.numberOfChannels; channel += 1) {
+    const out = next.getChannelData(channel);
+    const original = buffer.getChannelData(channel);
+    const add = insert.getChannelData(Math.min(channel, insert.numberOfChannels - 1));
+    out.set(original.slice(0, insertFrame), 0);
+    out.set(add, insertFrame);
+    out.set(original.slice(insertFrame), insertFrame + insert.length);
+  }
+  return next;
+}
+
+function removeBufferRange(buffer, selection) {
+  if (!buffer || !audioCtx) return buffer;
+  const start = clamp(Math.round(selection.startTime * buffer.sampleRate), 0, buffer.length);
+  const end = clamp(Math.round(selection.endTime * buffer.sampleRate), start, buffer.length);
+  const next = audioCtx.createBuffer(buffer.numberOfChannels, Math.max(1, buffer.length - (end - start)), buffer.sampleRate);
+  for (let channel = 0; channel < buffer.numberOfChannels; channel += 1) {
+    const out = next.getChannelData(channel);
+    const data = buffer.getChannelData(channel);
+    out.set(data.slice(0, start), 0);
+    out.set(data.slice(end), start);
+  }
+  return next;
+}
+
+function replaceBufferRange(buffer, replacement, selection) {
+  return insertBufferAtTime(removeBufferRange(buffer, selection), replacement, selection.startTime);
+}
+
+function moveClipToTrack(clipId, targetTrackId, startTime = 0) {
+  state.song.tracks.forEach((track) => {
+    const clip = track.clips.find((item) => item.id === clipId);
+    if (clip) {
+      track.clips = track.clips.filter((item) => item.id !== clipId);
+      const target = state.song.tracks.find((item) => item.id === targetTrackId) || track;
+      target.clips.push({ ...clip, bar: Math.max(0, Math.round(startTime / (60 / state.bpm / 4))) });
+    }
+  });
+  queueRender();
+}
+
+function dragClipPreview(clipId, pointer) {
+  state.waveformStudio.status = `Dragging ${clipId} at ${Math.round(pointer?.clientX || 0)}px`;
+}
+
+function createClipOverlapFade(clipAId, clipBId) {
+  const fade = { id: makeId("fade"), trackId: state.song.tracks[0]?.id || "", clipAId, clipBId, startTime: 0, endTime: 1, shape: state.settings.waveformStudio.defaultCrossfadeShape, curveA: [], curveB: [] };
+  state.waveformStudio.crossfades.push(fade);
+  toast("Clip overlap crossfade created.");
+  queueRender();
+}
+
+function crossfadeOverlappingClips(trackId = state.song.tracks[0]?.id) {
+  const track = state.song.tracks.find((item) => item.id === trackId);
+  if (!track || track.clips.length < 2) return toast("Add overlapping clips before auto crossfade.");
+  for (let index = 0; index < track.clips.length - 1; index += 1) createClipOverlapFade(track.clips[index].id || `${trackId}-${index}`, track.clips[index + 1].id || `${trackId}-${index + 1}`);
+}
+
+function bounceMultitrackToBuffer() {
+  return bounceProjectToBuffer();
+}
+
+function bounceProjectToBuffer() {
+  const buffer = getWaveformStudioBuffer() || state.stems.find((stem) => stem.buffer)?.buffer || state.sampler.buffer;
+  if (!buffer) return null;
+  const clone = cloneAudioBuffer(buffer);
+  state.waveformStudio.bounces.unshift({ id: makeId("bounce"), createdAt: new Date().toISOString(), type: "full-mix", duration: clone.duration });
+  state.waveformStudio.bounceProgress = 100;
+  return clone;
+}
+
+function bounceTrackToBuffer(trackId = state.song.tracks[0]?.id) {
+  const buffer = bounceProjectToBuffer();
+  if (buffer) state.waveformStudio.status = `Bounced track ${trackId}.`;
+  return buffer;
+}
+
+function bounceSelectedClipsToBuffer() {
+  return bounceProjectToBuffer();
+}
+
+function bounceSelectionToStem(selection = normalizeWaveformSelection()) {
+  const buffer = getWaveformStudioBuffer();
+  if (!buffer) return toast("Load audio before bouncing a selection.");
+  const stem = state.stems.find((item) => !item.buffer) || state.stems[0];
+  stem.buffer = truncateBuffer(buffer, selection.startTime, selection.endTime);
+  stem.fileName = "waveform-selection-bounce.wav";
+  stem.duration = stem.buffer.duration;
+  toast(`Selection bounced to ${stem.name}.`);
+  queueRender();
+}
+
+function bounceProjectToWav() {
+  const buffer = bounceProjectToBuffer();
+  if (!buffer) return toast("Load audio before bouncing the project.");
+  exportBufferWav24Bit(buffer, "lottominded-ultra-bounce.wav");
+}
+
+function bounceProjectToStemFiles() {
+  state.stems.filter((stem) => stem.buffer).forEach((stem) => exportBufferWav24Bit(stem.buffer, `${safeFileName(stem.name)}.wav`));
+  toast("Exported available stem WAV files.");
+}
+
+function bounceProjectToMasterChain() {
+  const buffer = bounceProjectToBuffer();
+  if (!buffer) return toast("Load audio before sending a bounce to AI Master.");
+  state.aiMaster.lastMasterBuffer = buffer;
+  state.view = "ai master";
+  toast("Bounce sent to AI Master.");
+  render();
+}
+
+function renderBounceProgress() {
+  return state.waveformStudio.bounceProgress || 0;
+}
+
+function cancelBounce() {
+  state.waveformStudio.bounceProgress = 0;
+  toast("Bounce canceled.");
+  queueRender();
+}
+
+function cloneAudioBuffer(buffer) {
+  if (!buffer || !audioCtx) return buffer;
+  const next = audioCtx.createBuffer(buffer.numberOfChannels, buffer.length, buffer.sampleRate);
+  for (let channel = 0; channel < buffer.numberOfChannels; channel += 1) {
+    next.copyToChannel(buffer.getChannelData(channel).slice(), channel);
+  }
+  return next;
+}
+
+function armAudioTrack(trackId) {
+  if (!state.waveformStudio.recording.armedTrackIds.includes(trackId)) state.waveformStudio.recording.armedTrackIds.push(trackId);
+  queueRender();
+}
+
+function disarmAudioTrack(trackId) {
+  state.waveformStudio.recording.armedTrackIds = state.waveformStudio.recording.armedTrackIds.filter((id) => id !== trackId);
+  queueRender();
+}
+
+function startArmedTrackRecording() {
+  if (!state.waveformStudio.recording.armedTrackIds.length) return toast("Arm at least one track before recording.");
+  state.waveformStudio.recording.active = true;
+  state.waveformStudio.recording.paused = false;
+  toast("Armed track recording started. Browser mic permission may be required.");
+  queueRender();
+}
+
+function stopArmedTrackRecording() {
+  state.waveformStudio.recording.active = false;
+  state.waveformStudio.recording.paused = false;
+  state.waveformStudio.recording.armedTrackIds.forEach((trackId) => createRecordingTake(trackId, null));
+  toast("Recording stopped and take lanes updated.");
+  queueRender();
+}
+
+function pauseArmedTrackRecording() {
+  state.waveformStudio.recording.paused = !state.waveformStudio.recording.paused;
+  toast(state.waveformStudio.recording.paused ? "Armed recording paused." : "Armed recording resumed.");
+  queueRender();
+}
+
+function createRecordingTake(trackId, audioBlob) {
+  const take = { id: makeId("take"), trackId, label: `Take ${state.waveformStudio.recording.takes.length + 1}`, audioBlob, createdAt: new Date().toISOString() };
+  state.waveformStudio.recording.takes.unshift(take);
+  const track = state.song.tracks.find((item) => item.id === trackId);
+  if (track) track.clips.push({ id: makeId("clip"), bar: Math.max(1, Math.ceil(state.song.playheadTime || 0)), length: 4, type: "audio", ref: take.label, color: COLORS[4] });
+  return take;
+}
+
+function compRecordingTakes(trackId = state.waveformStudio.recording.armedTrackIds[0]) {
+  toast(trackId ? `Comp lane prepared for ${trackId}.` : "Record takes before comping.");
+}
+
+function deleteRecordingTake(takeId) {
+  state.waveformStudio.recording.takes = state.waveformStudio.recording.takes.filter((take) => take.id !== takeId);
+  queueRender();
+}
+
+function showSongEditorContextMenu(x, y, context = {}) {
+  state.waveformStudio.contextMenu = { open: true, x, y, context };
+  queueRender();
+}
+
+function hideSongEditorContextMenu() {
+  state.waveformStudio.contextMenu.open = false;
+  queueRender();
+}
+
+function runSongContextAction(action = "") {
+  const key = action.toLowerCase();
+  if (key === "cut") cutWaveformSelection();
+  else if (key === "copy") copyWaveformSelection();
+  else if (key === "paste") pasteWaveformSelection();
+  else if (key === "delete") deleteWaveformSelection();
+  else if (key === "split") splitWaveformAtPlayhead();
+  else if (key === "trim") trimWaveformSelection();
+  else if (key === "fade in") fadeWaveformSelection("in");
+  else if (key === "fade out") fadeWaveformSelection("out");
+  else if (key === "crossfade") createClipOverlapFade("clip-a", "clip-b");
+  else if (key === "reverse") reverseWaveformSelection();
+  else if (key === "normalize") normalizeWaveformSelectionAudio();
+  else if (key === "marker") addWaveformMarker();
+  else if (key === "bounce clip") bounceSelectionToStem();
+  else if (key === "send to sampler") {
+    const buffer = getWaveformStudioBuffer();
+    if (buffer) state.sampler.buffer = truncateBuffer(buffer, state.waveformStudio.selection.startTime, state.waveformStudio.selection.endTime);
+    toast("Selection sent to Sampler.");
+  } else if (key === "send to ai master") bounceProjectToMasterChain();
+  else toast(`${titleCase(action)} is ready as a context-menu action hook.`);
+  hideSongEditorContextMenu();
+}
+
+function handleSongEditorShortcut(event) {
+  if (!state.settings.waveformStudio.keyboardShortcuts || state.view !== "song") return false;
+  const key = event.key.toLowerCase();
+  const mod = event.ctrlKey || event.metaKey;
+  if (key === "s" && !mod) { splitWaveformAtPlayhead(); return true; }
+  if ((key === "delete" || key === "backspace")) { deleteWaveformSelection(); return true; }
+  if (mod && key === "c") { copyWaveformSelection(); return true; }
+  if (mod && key === "x") { cutWaveformSelection(); return true; }
+  if (mod && key === "v") { pasteWaveformSelection(); return true; }
+  if (mod && key === "d") { pasteWaveformSelection(); return true; }
+  if (key === "+") { zoomWaveform(1); return true; }
+  if (key === "-") { zoomWaveform(-1); return true; }
+  if (key === "m") { addWaveformMarker(); return true; }
+  if (key === "l") { loopWaveformSelection(); return true; }
+  if (key === "n") { normalizeWaveformSelectionAudio(); return true; }
+  if (key === "t") { trimWaveformSelection(); return true; }
+  return false;
+}
+
+function registerSongEditorShortcuts() {
+  return true;
+}
+
+function applyQuickEffectToSelection(effectId, settings = {}) {
+  const buffer = getWaveformStudioBuffer();
+  if (!buffer) return toast("Load audio before applying quick effects.");
+  const selection = normalizeWaveformSelection();
+  const region = truncateBuffer(buffer, selection.startTime, selection.endTime);
+  if (effectId === "normalize") normalizeBuffer(region);
+  if (effectId === "reverse") reverseBuffer(region);
+  if (effectId === "fade-in") fadeBuffer(region, 0, region.duration, "in");
+  if (effectId === "fade-out") fadeBuffer(region, 0, region.duration, "out");
+  if (effectId === "silence") {
+    for (let channel = 0; channel < region.numberOfChannels; channel += 1) region.getChannelData(channel).fill(0);
+  }
+  if (effectId === "amplify") applyGain(region, settings.gain || 1.25);
+  state.waveformStudio.quickEffect = { id: effectId, buffer: region };
+  previewQuickEffect(effectId, settings);
+}
+
+function previewQuickEffect(effectId) {
+  if (state.waveformStudio.quickEffect?.buffer) previewBuffer(state.waveformStudio.quickEffect.buffer);
+  toast(`Previewing ${titleCase(effectId)}.`);
+}
+
+function commitEffectPreview() {
+  const effect = state.waveformStudio.quickEffect;
+  if (!effect?.buffer) return;
+  setWaveformStudioBuffer(replaceBufferRange(getWaveformStudioBuffer(), effect.buffer, normalizeWaveformSelection()));
+  state.waveformStudio.quickEffect = null;
+  toast("Effect preview committed.");
+  queueRender();
+}
+
+function cancelEffectPreview() {
+  state.waveformStudio.quickEffect = null;
+  toast("Effect preview canceled.");
+  queueRender();
+}
+
+function analyzeAudioFileMetadata(file, buffer) {
+  return {
+    fileName: file?.name || state.waveformStudio.source,
+    duration: buffer?.duration || 0,
+    sampleRate: buffer?.sampleRate || "",
+    channelCount: buffer?.numberOfChannels || "",
+    bitDepth: "decoded browser PCM",
+    estimatedBpm: state.bpm,
+    estimatedKey: "Key detection planned",
+    peak: buffer ? calculateSamplePeak(buffer) : 0,
+    rms: buffer ? calculateRms(buffer) : 0,
+    lufs: buffer ? estimateLoudness(buffer) : 0,
+    tags: [],
+    notes: "Local decoded audio only."
+  };
+}
+
+function renderMetadataEditor() {
+  return renderAudioFileInfoPanel();
+}
+
+function exportMetadataJson() {
+  exportJson("lottominded-ultra-audio-metadata.json", analyzeAudioFileMetadata(null, getWaveformStudioBuffer()));
+}
+
+function saveSongProjectToIndexedDb() {
+  localStorage.setItem(STORAGE.dawProject, JSON.stringify({ song: state.song, waveformStudio: { ...state.waveformStudio, clipboard: null, quickEffect: null } }));
+  toast("Song project snapshot saved locally.");
+}
+
+function loadSongProjectFromIndexedDb() {
+  const raw = localStorage.getItem(STORAGE.dawProject);
+  if (!raw) return toast("No local song project snapshot found.");
+  const payload = JSON.parse(raw);
+  state.song = { ...state.song, ...(payload.song || {}) };
+  state.waveformStudio = { ...state.waveformStudio, ...(payload.waveformStudio || {}) };
+  toast("Song project snapshot loaded.");
+  render();
+}
+
+function saveAudioBufferToDb(buffer, metadata = {}) {
+  const id = makeId("buffer");
+  state.waveformStudio.bounces.unshift({ id, metadata, duration: buffer?.duration || 0, savedAt: new Date().toISOString() });
+  return id;
+}
+
+function loadAudioBufferFromDb(bufferId) {
+  return state.waveformStudio.bounces.find((item) => item.id === bufferId) || null;
+}
+
+function saveWaveformPeaks(bufferId, peaks) {
+  state.waveformStudio.peakCache ||= {};
+  state.waveformStudio.peakCache[bufferId] = peaks;
+}
+
+function loadWaveformPeaks(bufferId) {
+  return state.waveformStudio.peakCache?.[bufferId] || null;
+}
+
+function createSceneSection(name = `Scene ${state.adaptiveArrangement.scenes.length + 1}`) {
+  const scene = { id: makeId("scene"), name, clips: [], loopable: true, intensity: 0.5, tags: ["custom"] };
+  state.adaptiveArrangement.scenes.push(scene);
+  return scene;
+}
+
+function createTransitionRule() {
+  const [from, to] = state.adaptiveArrangement.scenes;
+  const rule = { fromSceneId: from?.id || "", toSceneId: to?.id || "", condition: "on next section", transitionClipId: "", crossfadeBeats: 2 };
+  state.adaptiveArrangement.transitions.push(rule);
+  return rule;
+}
+
+function previewAdaptiveArrangement() {
+  toast(`Previewing ${state.adaptiveArrangement.scenes.length} adaptive scenes.`);
+}
+
+function exportAdaptiveArrangementJson() {
+  exportJson("lottominded-ultra-adaptive-arrangement.json", state.adaptiveArrangement);
+}
+
+function safeFileName(value = "lottominded-ultra") {
+  return String(value).replace(/[^a-z0-9-_]+/gi, "-").replace(/^-+|-+$/g, "").toLowerCase() || "lottominded-ultra";
+}
+
+function zoomWaveform(direction) {
+  const view = state.waveformStudio.viewport;
+  const duration = getWaveformStudioBuffer()?.duration || 16;
+  const currentSpan = Math.max(0.5, view.endTime - view.startTime);
+  const nextSpan = clamp(currentSpan * (direction > 0 ? 0.65 : 1.35), 0.25, duration);
+  const center = view.startTime + currentSpan / 2;
+  view.startTime = clamp(center - nextSpan / 2, 0, Math.max(0, duration - nextSpan));
+  view.endTime = clamp(view.startTime + nextSpan, nextSpan, duration);
+  view.zoom = duration / nextSpan;
+  drawAllCanvases();
+}
+
+function fitWaveformToScreen() {
+  const duration = getWaveformStudioBuffer()?.duration || 16;
+  state.waveformStudio.viewport = { startTime: 0, endTime: duration, zoom: 1 };
+  drawAllCanvases();
 }
 
 function renderPatternEditor() {
@@ -1355,6 +2956,11 @@ function renderMixer() {
         </div>
         <div class="button-row">
           ${helpButton("mixer")}
+          <button type="button" data-action="play-all">Play All Synced</button>
+          <button type="button" data-action="pause-all">Pause All</button>
+          <button type="button" data-action="play-all">${state.transport.paused ? "Resume All" : "Resume/Start"}</button>
+          <button type="button" data-action="restart-all">Synced Restart</button>
+          <button type="button" data-action="stop-all">Stop All</button>
           <button type="button" data-action="add-mixer-channel">Add Mixer Channel</button>
           <button type="button" data-action="add-mixer-effect">Add Effect Slot</button>
         </div>
@@ -1384,21 +2990,37 @@ function renderMixerStrip(channel) {
 }
 
 function renderStemMixer() {
+  const loadedStems = state.stems.filter((channel) => channel.buffer).length;
+  const runningStems = state.stems.filter((channel) => channel.playing).length;
+  const longestStem = Math.max(0, ...state.stems.map((channel) => getBufferDuration(channel)));
+  const timelineStatus = state.transport.loopAll ? "Loop All armed" : state.transport.paused ? "Paused" : state.playing ? "Running" : "Ready";
   return `
     <section class="panel" aria-label="Stem mixer console">
       <div class="panel-header">
         <div>
           <h2>Stem Mixing Console</h2>
-          <p class="micro">Eight channels with local file loading, trim playback, EQ, sends, mute, solo, and export metadata.</p>
+          <p class="micro">Eight channels with local file loading, synced start, pause, restart, loop all, timestamps, trim playback, EQ, sends, mute, solo, and export metadata.</p>
         </div>
         <div class="button-row">
           ${helpButton("stems")}
-          <button type="button" data-action="play-all">Start Loaded</button>
-          <button type="button" data-action="stop-all">Stop Loaded</button>
           <button type="button" data-action="export-stem-map">Export Stem Map</button>
         </div>
       </div>
       <div class="panel-body">
+        <div class="stem-transport-strip" aria-label="Stem mixer synced transport">
+          <div class="stem-transport-status">
+            <strong>Synced Stem Transport</strong>
+            <span>${loadedStems}/8 loaded - ${runningStems} playing - ${timelineStatus} - Session ${formatTime(longestStem)}</span>
+          </div>
+          <div class="stem-transport-actions">
+            <button type="button" data-action="play-all" aria-pressed="${state.playing && !state.transport.paused}">Start All Same Time</button>
+            <button type="button" data-action="pause-all" aria-pressed="${state.transport.paused}">Pause All</button>
+            <button type="button" data-action="play-all">${state.transport.paused ? "Resume All" : "Resume"}</button>
+            <button type="button" data-action="restart-all">Restart All</button>
+            <button type="button" data-action="stop-all">Stop All</button>
+            <button type="button" data-action="toggle-loop-all" aria-pressed="${state.transport.loopAll}">Loop All</button>
+          </div>
+        </div>
         <div class="stem-grid">
           ${state.stems.map(renderStemChannel).join("")}
         </div>
@@ -1409,6 +3031,13 @@ function renderStemMixer() {
 
 function renderStemChannel(channel) {
   const isSelected = state.selectedStemId === channel.id;
+  const duration = getBufferDuration(channel);
+  const trimStart = channel.trimStart || 0;
+  const trimEnd = getTrimEnd(channel) || duration;
+  const relativePlayhead = channel.playing ? Math.max(0, currentStemTime(channel) - trimStart) : (channel.pausedAt || 0);
+  const playhead = channel.buffer ? clamp(trimStart + relativePlayhead, trimStart, trimEnd || duration) : 0;
+  const remaining = channel.buffer ? Math.max(0, trimEnd - playhead) : 0;
+  const channelStatus = channel.playing ? "Playing" : channel.pausedAt ? "Paused" : channel.buffer ? "Ready" : "Empty";
   return `
     <article class="channel ${isSelected ? "selected" : ""}" data-channel-card="${channel.id}">
       <div class="channel-top">
@@ -1427,8 +3056,17 @@ function renderStemChannel(channel) {
         <canvas height="48" data-spectrum="stem" data-id="${channel.id}" aria-label="${escapeAttr(channel.name)} spectrum"></canvas>
         <div class="vu"><span style="--vu:${Math.round(channel.meter * 100)}%"></span></div>
       </div>
+      <div class="stem-time-grid" aria-label="${escapeAttr(channel.name)} timestamps">
+        <span class="stem-time-pill"><strong>Status</strong>${channelStatus}</span>
+        <span class="stem-time-pill"><strong>Start</strong>${channel.buffer ? formatTime(trimStart) : "--:--"}</span>
+        <span class="stem-time-pill"><strong>Now</strong>${channel.buffer ? formatTime(playhead) : "--:--"}</span>
+        <span class="stem-time-pill"><strong>End</strong>${channel.buffer ? formatTime(trimEnd) : "--:--"}</span>
+        <span class="stem-time-pill"><strong>Left</strong>${channel.buffer ? formatTime(remaining) : "--:--"}</span>
+        <span class="stem-time-pill"><strong>Total</strong>${channel.buffer ? formatTime(duration) : "--:--"}</span>
+      </div>
       <div class="button-row">
         <button type="button" data-action="start-channel" data-id="${channel.id}">Start</button>
+        <button type="button" data-action="start-channel" data-id="${channel.id}">${channel.pausedAt ? "Resume" : "Cue"}</button>
         <button type="button" data-action="stop-channel" data-id="${channel.id}">Stop</button>
         <button type="button" data-action="restart-channel" data-id="${channel.id}">Restart</button>
         <button type="button" data-action="toggle-mute" data-id="${channel.id}" aria-pressed="${channel.muted}">Mute</button>
@@ -1518,6 +3156,9 @@ function renderDecks() {
         </div>
         <div class="button-row">
           ${helpButton("decks")}
+          <button type="button" data-action="play-both-decks">Play Both Decks</button>
+          <button type="button" data-action="pause-both-decks">Pause Both</button>
+          <button type="button" data-action="stop-both-decks">Stop Both</button>
           <button type="button" data-action="record-mix">${state.recording ? "Stop Recording" : "Record Mix"}</button>
           <button type="button" data-action="automix-placeholder">Automix</button>
         </div>
@@ -1630,9 +3271,11 @@ function renderPads() {
         </div>
       </div>
       <div class="panel-body pad-layout">
+        ${render16LevelPanel()}
         <div class="pad-grid" aria-label="16 performance pads">
-          ${state.pads.map(renderPadButton).join("")}
+          ${getActivePadMap().map(renderPadButton).join("")}
         </div>
+        ${renderComputerKeyMappingPanel()}
         ${renderPadEditor()}
       </div>
     </section>
@@ -1641,20 +3284,830 @@ function renderPads() {
 }
 
 function renderPadButton(pad, index) {
+  const in16Level = is16LevelEnabled() && pad.mode16Level;
+  const isSource = in16Level && index === state.pad16Level.sourcePadIndex;
+  const referencePad = (state.pad16Level.mode === "tune" ? state.pad16Level.tune.referencePad : state.pad16Level.referencePad) - 1;
+  const isReference = in16Level && index === referencePad;
+  const classes = [
+    "pad-button",
+    pad.active ? "active" : "",
+    in16Level ? "pad-16-level" : "",
+    isSource ? "pad-16-level-source" : "",
+    isReference ? "pad-16-level-reference" : "",
+    pad.missed ? "pad-16-level-missed" : "",
+    pad.mode === "ratchet" ? "pad-16-level-ratchet" : "",
+    pad.mode === "slice" ? "pad-16-level-slice" : ""
+  ].filter(Boolean).join(" ");
   return `
     <button
       type="button"
-      class="pad-button ${pad.active ? "active" : ""}"
+      class="${classes}"
       data-action="trigger-pad"
       data-index="${index}"
       aria-pressed="${pad.active}"
       data-velocity="${pad.velocity.toFixed(2)}"
-      style="--pad-color:${pad.color}; --velocity:${pad.velocity}; --aftertouch:${pad.aftertouch}"
+      style="--pad-color:${pad.color}; --velocity:${pad.velocity}; --aftertouch:${pad.aftertouch}; --level-pct:${in16Level ? (index / 15).toFixed(3) : 0}"
     >
-      <span class="pad-number">${index + 1} / ${PAD_KEYS[index].toUpperCase()}</span>
+      <span class="pad-number">${index + 1} / ${escapeHtml(formatKeyCode(getPadKeyCode(index)))}</span>
       <span class="pad-label"><strong>${escapeHtml(pad.name)}</strong><span>${pad.sampleName || pad.mode}</span></span>
+      ${in16Level && state.settings.pad16Level.showValueLabels ? `<span class="pad-16-value-label">${escapeHtml(pad.valueLabel || "")}</span>` : ""}
     </button>
   `;
+}
+
+function render16LevelPanel() {
+  const config = state.pad16Level;
+  const source = get16LevelSourcePad();
+  const functionLabel = titleCase(config.mode);
+  return `
+    <section class="pad-16-panel" aria-label="16-Level Performance">
+      <div class="pad-16-header section-head">
+        <div>
+          <h3>16-Level Performance</h3>
+          <p>Select one pad, choose a function, and spread that sound across all 16 pads for velocity, tune, filter, slicing, ratchets, envelopes, and expressive performance.</p>
+        </div>
+        ${helpButton("16-level-pads")}
+      </div>
+      <div class="pad-16-control-strip">
+        <button type="button" data-action="toggle-16-level" aria-pressed="${config.enabled}" class="${config.enabled ? "primary" : ""}">${config.enabled ? "16 Levels On" : "Enable 16-Level Mode"}</button>
+        <label class="field compact">
+          <span>Source Pad</span>
+          <select data-action="set-16-level-source" aria-label="16-Level source pad">
+            ${state.pads.map((pad, index) => `<option value="${index}" ${config.sourcePadIndex === index ? "selected" : ""}>${index + 1} - ${escapeHtml(pad.name)}</option>`).join("")}
+          </select>
+        </label>
+        <label class="field compact">
+          <span>Function</span>
+          <select data-action="set-16-level-mode" aria-label="16-Level function">
+            ${["velocity", "tune", "filter", "layer", "attack", "decay", "probability", "ratchet", "slice"].map((mode) => `<option value="${mode}" ${config.mode === mode ? "selected" : ""}>${titleCase(mode)}</option>`).join("")}
+          </select>
+        </label>
+        <label class="toggle-line">
+          <input type="checkbox" data-action="set-16-level-option" data-path="liveOverlay" ${config.liveOverlay ? "checked" : ""} />
+          <span>Live Overlay</span>
+        </label>
+        <label class="field compact">
+          <span>Commit Bank</span>
+          <select data-action="set-16-level-option" data-path="commitTargetBank" aria-label="Commit target bank">
+            ${["A", "B", "C", "D"].map((bank) => `<option value="${bank}" ${config.commitTargetBank === bank ? "selected" : ""}>Bank ${bank}</option>`).join("")}
+          </select>
+        </label>
+        <button type="button" data-action="reset-16-level">Reset</button>
+        <button type="button" data-action="commit-16-level-bank">Commit to Bank</button>
+        <button type="button" data-action="toggle-16-level" class="danger">${config.enabled ? "Exit 16-Level" : "Exit"}</button>
+      </div>
+      <div class="pad-16-mode-tabs" role="tablist" aria-label="16-Level functions">
+        ${["velocity", "tune", "filter", "layer", "attack", "decay", "probability", "ratchet", "slice"].map((mode) => `<button type="button" data-action="set-16-level-mode" data-mode="${mode}" class="${config.mode === mode ? "active" : ""}">${titleCase(mode)}</button>`).join("")}
+      </div>
+      <div class="pad-16-function-controls">
+        ${render16LevelControls()}
+      </div>
+      <div class="pad-16-commit-warning">
+        <strong>${escapeHtml(source.name)}</strong> is the source pad. ${functionLabel} values are temporary in Live Overlay. Commit to Bank only when you want to replace the target bank assignments.
+      </div>
+      ${render16LevelPadGrid()}
+    </section>
+  `;
+}
+
+function render16LevelControls() {
+  const mode = state.pad16Level.mode;
+  const cfg = state.pad16Level[mode];
+  if (mode === "velocity") {
+    return `
+      ${pad16RangeControl("Min velocity", "velocity.min", cfg.min, 1, 127, 1)}
+      ${pad16RangeControl("Max velocity", "velocity.max", cfg.max, 1, 127, 1)}
+      ${pad16SelectControl("Curve", "velocity.curve", cfg.curve, ["linear", "exponential", "log"])}
+    `;
+  }
+  if (mode === "tune") {
+    return `
+      ${pad16RangeControl("Min semitone", "tune.minSemitone", cfg.minSemitone, -24, 0, 1)}
+      ${pad16RangeControl("Max semitone", "tune.maxSemitone", cfg.maxSemitone, 0, 24, 1)}
+      ${pad16RangeControl("Reference pad", "tune.referencePad", cfg.referencePad, 1, 16, 1)}
+      ${pad16ToggleControl("Scale lock", "tune.scaleLock", cfg.scaleLock)}
+      ${pad16SelectControl("Root note", "tune.rootNote", cfg.rootNote, ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"])}
+      ${pad16SelectControl("Scale", "tune.scale", cfg.scale, ["chromatic", "minor", "major", "pentatonic", "blues"])}
+    `;
+  }
+  if (mode === "filter") {
+    return `
+      ${pad16SelectControl("Filter type", "filter.type", cfg.type, ["lowpass", "highpass", "bandpass"])}
+      ${pad16RangeControl("Min cutoff", "filter.minCutoff", cfg.minCutoff, 40, 2000, 1, "Hz")}
+      ${pad16RangeControl("Max cutoff", "filter.maxCutoff", cfg.maxCutoff, 2000, 18000, 10, "Hz")}
+      ${pad16RangeControl("Min resonance", "filter.minResonance", cfg.minResonance, 0.1, 12, 0.1)}
+      ${pad16RangeControl("Max resonance", "filter.maxResonance", cfg.maxResonance, 0.1, 16, 0.1)}
+      ${pad16SelectControl("Map target", "filter.mapTarget", cfg.mapTarget, ["cutoff", "resonance", "cutoff + resonance"])}
+    `;
+  }
+  if (mode === "layer") {
+    return `
+      ${pad16RangeControl("Layer A gain", "layer.layerA", cfg.layerA, 0, 1, 0.01)}
+      ${pad16RangeControl("Layer B gain", "layer.layerB", cfg.layerB, 0, 1, 0.01)}
+      ${pad16ToggleControl("Crossfade", "layer.crossfade", cfg.crossfade)}
+      <div class="empty compact">Layer B can be loaded later; empty layer pads keep using the source sample safely.</div>
+    `;
+  }
+  if (mode === "attack") {
+    return `
+      ${pad16RangeControl("Min attack", "attack.minMs", cfg.minMs, 0, 1000, 1, "ms")}
+      ${pad16RangeControl("Max attack", "attack.maxMs", cfg.maxMs, 10, 3000, 1, "ms")}
+      ${pad16SelectControl("Curve", "attack.curve", cfg.curve, ["linear", "exponential", "log"])}
+    `;
+  }
+  if (mode === "decay") {
+    return `
+      ${pad16RangeControl("Min decay", "decay.minMs", cfg.minMs, 20, 1000, 1, "ms")}
+      ${pad16RangeControl("Max decay", "decay.maxMs", cfg.maxMs, 100, 6000, 10, "ms")}
+      ${pad16SelectControl("Curve", "decay.curve", cfg.curve, ["linear", "exponential", "log"])}
+    `;
+  }
+  if (mode === "probability") {
+    return `
+      ${pad16RangeControl("Min probability", "probability.min", cfg.min, 0, 1, 0.01)}
+      ${pad16RangeControl("Max probability", "probability.max", cfg.max, 0.05, 1, 0.01)}
+      ${pad16RangeControl("Ghost below", "probability.ghostBelow", cfg.ghostBelow, 0, 1, 0.01)}
+    `;
+  }
+  if (mode === "ratchet") {
+    return `
+      <label class="field compact">
+        <span>Ratchet values</span>
+        <input type="text" data-action="set-16-level-option" data-path="ratchet.values" value="${escapeHtml(cfg.values.join(", "))}" aria-label="Ratchet repeat values" />
+      </label>
+      ${pad16RangeControl("Gate", "ratchet.gate", cfg.gate, 0.05, 1, 0.01)}
+      ${pad16RangeControl("Swing", "ratchet.swing", cfg.swing, 0, 0.75, 0.01)}
+      ${pad16ToggleControl("Velocity decay", "ratchet.velocityDecay", cfg.velocityDecay !== false)}
+    `;
+  }
+  return `
+    ${pad16SelectControl("Slice mode", "slice.mode", cfg.mode, ["equal", "manual-placeholder", "transient-placeholder"])}
+    ${pad16ToggleControl("One-shot slices", "slice.oneShot", cfg.oneShot)}
+    ${pad16RangeControl("Transient sensitivity", "slice.transientSensitivity", cfg.transientSensitivity, 0, 1, 0.01)}
+    ${pad16ToggleControl("Preserve pitch", "slice.preservePitch", cfg.preservePitch)}
+    <button type="button" data-action="send-16-level-slices-to-bank">Send Slices to Bank</button>
+    <div class="pad-16-wave-slices" aria-hidden="true">${Array.from({ length: 16 }, (_, index) => `<span class="pad-16-slice-marker" style="--slice:${index}"></span>`).join("")}</div>
+  `;
+}
+
+function render16LevelPadGrid() {
+  if (!state.pad16Level.generatedPads.length) generate16LevelPads();
+  return `
+    <div class="pad-16-grid" aria-label="16-Level value preview">
+      ${state.pad16Level.generatedPads.map((pad, index) => `
+        <button type="button" data-action="preview-16-level-pad" data-index="${index}" class="pad-16-level ${index === state.pad16Level.sourcePadIndex ? "pad-16-level-source" : ""}" style="--pad-color:${pad.color}; --level-pct:${(index / 15).toFixed(3)}">
+          <strong>${index + 1}</strong>
+          <span>${escapeHtml(pad.valueLabel || "")}</span>
+        </button>
+      `).join("")}
+    </div>
+  `;
+}
+
+function renderComputerKeyMappingPanel() {
+  const learn = state.keyMappingLearn;
+  return `
+    <section class="key-map-panel" aria-label="Computer key mapping">
+      <div class="section-head">
+        <div>
+          <h3>Computer Key Mapping</h3>
+          <p class="micro">Map each drum pad or piano key to any computer keyboard or number-pad key. Mappings stay local on this device.</p>
+        </div>
+        <div class="button-row">
+          ${helpButton("key-mapping")}
+          <button type="button" data-action="reset-key-mappings">Reset Defaults</button>
+        </div>
+      </div>
+      ${learn ? `<div class="key-map-capture" role="status">Listening for ${escapeHtml(getKeyboardMappingLabel(learn.type, learn.id))}. Press a key now, or Escape to cancel.</div>` : ""}
+      <div class="key-map-grid">
+        <article class="key-map-card">
+          <h4>Drum Pads</h4>
+          <div class="key-map-list">
+            ${state.pads.map((pad, index) => renderKeyMapRow("pad", index, `Pad ${index + 1}`, pad.name, getPadKeyCode(index))).join("")}
+          </div>
+        </article>
+        <article class="key-map-card">
+          <h4>Piano Keys</h4>
+          <div class="key-map-list">
+            ${SYNTH_NOTES.map((note, midi) => renderKeyMapRow("piano", midi, note, `Octave ${state.synth.octave}`, getPianoKeyCode(midi))).join("")}
+          </div>
+        </article>
+      </div>
+    </section>
+  `;
+}
+
+function renderKeyMapRow(type, id, title, detail, code) {
+  const isLearning = state.keyMappingLearn?.type === type && Number(state.keyMappingLearn.id) === Number(id);
+  return `
+    <div class="key-map-row ${isLearning ? "is-learning" : ""}">
+      <div>
+        <strong>${escapeHtml(title)}</strong>
+        <span>${escapeHtml(detail || "")}</span>
+      </div>
+      <kbd>${escapeHtml(formatKeyCode(code))}</kbd>
+      <div class="key-map-actions">
+        <button type="button" data-action="learn-key-map" data-map-type="${type}" data-map-id="${id}">${isLearning ? "Listening" : "Learn"}</button>
+        <button type="button" data-action="clear-key-map" data-map-type="${type}" data-map-id="${id}">Clear</button>
+      </div>
+    </div>
+  `;
+}
+
+function pad16RangeControl(label, path, value, min, max, step, unit = "") {
+  return `
+    <label class="field compact">
+      <span>${label}</span>
+      <input type="range" data-action="set-16-level-option" data-path="${path}" min="${min}" max="${max}" step="${step}" value="${Number(value)}" aria-label="${label}" />
+      <output>${formatPad16ControlValue(value, unit)}</output>
+    </label>
+  `;
+}
+
+function pad16SelectControl(label, path, value, options) {
+  return `
+    <label class="field compact">
+      <span>${label}</span>
+      <select data-action="set-16-level-option" data-path="${path}" aria-label="${label}">
+        ${options.map((option) => `<option value="${option}" ${String(value) === String(option) ? "selected" : ""}>${titleCase(option)}</option>`).join("")}
+      </select>
+    </label>
+  `;
+}
+
+function pad16ToggleControl(label, path, checked) {
+  return `
+    <label class="toggle-line">
+      <input type="checkbox" data-action="set-16-level-option" data-path="${path}" ${checked ? "checked" : ""} />
+      <span>${label}</span>
+    </label>
+  `;
+}
+
+function formatPad16ControlValue(value, unit = "") {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return `${value}${unit}`;
+  const rounded = Math.abs(number) >= 100 ? Math.round(number) : Math.round(number * 100) / 100;
+  return `${rounded}${unit}`;
+}
+
+function ensurePadBanks() {
+  if (!state.padBanks) state.padBanks = {};
+  const activeBank = state.padBank || "A";
+  if (!state.padBanks[activeBank]) {
+    state.padBanks[activeBank] = state.pads.map((pad, index) => clonePadForBank(pad, index, activeBank));
+  }
+  ["A", "B", "C", "D"].forEach((bank) => {
+    if (!state.padBanks[bank]) {
+      state.padBanks[bank] = createPads().map((pad, index) => clonePadForBank({ ...pad, bank }, index, bank));
+    }
+  });
+}
+
+function clonePadForBank(pad, index = 0, bank = "A") {
+  return {
+    ...pad,
+    id: `pad-${bank}-${index}`,
+    bank,
+    active: false,
+    velocity: 0,
+    aftertouch: 0,
+    source: null,
+    gainNode: null,
+    filterNode: null,
+    layers: Array.isArray(pad.layers) ? pad.layers.map((layer) => ({ ...layer })) : [],
+    envelope: { attack: 0, decay: 0.4, sustain: 0.8, release: 0.12, ...(pad.envelope || {}) },
+    probability: pad.probability ?? 1,
+    ratchet: pad.ratchet ? { ...pad.ratchet } : null,
+    slice: pad.slice ? { ...pad.slice } : null
+  };
+}
+
+function syncCurrentPadBank() {
+  ensurePadBanks();
+  const bank = state.padBank || "A";
+  state.padBanks[bank] = state.pads.map((pad, index) => clonePadForBank(pad, index, bank));
+}
+
+function getActivePadMap() {
+  if (!is16LevelEnabled()) return state.pads;
+  if (!state.pad16Level.generatedPads.length) generate16LevelPads();
+  return state.pad16Level.generatedPads;
+}
+
+function is16LevelEnabled() {
+  return Boolean(state.pad16Level && state.pad16Level.enabled);
+}
+
+function get16LevelSourcePad() {
+  const index = clamp(Math.round(state.pad16Level?.sourcePadIndex ?? 0), 0, 15);
+  return state.pads[index] || state.pads[0];
+}
+
+function enable16LevelMode(sourcePadIndex = state.selectedPadIndex || 0, mode = state.pad16Level.mode || "velocity") {
+  state.pad16Level.enabled = true;
+  state.pad16Level.sourcePadIndex = clamp(Number(sourcePadIndex), 0, 15);
+  state.pad16Level.mode = mode;
+  state.pad16Level.liveOverlay = state.pad16Level.liveOverlay !== false;
+  generate16LevelPads();
+  toast("16-Level Performance enabled in Live Overlay.");
+  queueRender();
+}
+
+function disable16LevelMode() {
+  state.pad16Level.enabled = false;
+  state.pad16Level.generatedPads = [];
+  state.pads.forEach((pad) => {
+    pad.active = false;
+    pad.velocity = 0;
+    pad.aftertouch = 0;
+  });
+  toast("16-Level Performance exited. Original pad bank restored.");
+  queueRender();
+}
+
+function set16LevelSourcePad(index) {
+  state.pad16Level.sourcePadIndex = clamp(Number(index), 0, 15);
+  state.selectedPadIndex = state.pad16Level.sourcePadIndex;
+  generate16LevelPads();
+  queueRender();
+}
+
+function set16LevelMode(mode) {
+  if (!["velocity", "tune", "filter", "layer", "attack", "decay", "probability", "ratchet", "slice"].includes(mode)) return;
+  state.pad16Level.mode = mode;
+  generate16LevelPads();
+  queueRender();
+}
+
+function set16LevelOption(path, rawValue, inputType = "") {
+  if (!path) return;
+  const parts = path.split(".");
+  let target = state.pad16Level;
+  while (parts.length > 1) {
+    const part = parts.shift();
+    if (!target[part] || typeof target[part] !== "object") target[part] = {};
+    target = target[part];
+  }
+  const key = parts[0];
+  let value = rawValue;
+  if (path === "ratchet.values") {
+    value = String(rawValue).split(",").map((item) => clamp(Math.round(Number(item.trim())), 1, 64)).filter(Number.isFinite);
+    if (value.length < 16) value = state.pad16Level.ratchet.values;
+  } else if (inputType === "checkbox") {
+    value = Boolean(rawValue);
+  } else if (rawValue !== "" && !Number.isNaN(Number(rawValue)) && !["commitTargetBank", "velocity.curve", "tune.scale", "tune.rootNote", "filter.type", "filter.mapTarget", "attack.curve", "decay.curve", "slice.mode"].includes(path)) {
+    value = Number(rawValue);
+  }
+  target[key] = value;
+  normalize16LevelConfig();
+  generate16LevelPads();
+  queueRender();
+}
+
+function normalize16LevelConfig() {
+  const cfg = state.pad16Level;
+  cfg.sourcePadIndex = clamp(Math.round(cfg.sourcePadIndex || 0), 0, 15);
+  cfg.referencePad = clamp(Math.round(cfg.referencePad || 8), 1, 16);
+  cfg.velocity.min = clamp(Number(cfg.velocity.min), 1, 127);
+  cfg.velocity.max = clamp(Number(cfg.velocity.max), cfg.velocity.min, 127);
+  cfg.tune.minSemitone = clamp(Number(cfg.tune.minSemitone), -36, 0);
+  cfg.tune.maxSemitone = clamp(Number(cfg.tune.maxSemitone), 0, 36);
+  cfg.tune.referencePad = clamp(Math.round(Number(cfg.tune.referencePad)), 1, 16);
+  cfg.filter.minCutoff = clamp(Number(cfg.filter.minCutoff), 20, 20000);
+  cfg.filter.maxCutoff = clamp(Number(cfg.filter.maxCutoff), cfg.filter.minCutoff + 1, 20000);
+  cfg.filter.minResonance = clamp(Number(cfg.filter.minResonance), 0.1, 24);
+  cfg.filter.maxResonance = clamp(Number(cfg.filter.maxResonance), cfg.filter.minResonance, 32);
+  cfg.attack.minMs = clamp(Number(cfg.attack.minMs), 0, 5000);
+  cfg.attack.maxMs = clamp(Number(cfg.attack.maxMs), cfg.attack.minMs, 8000);
+  cfg.decay.minMs = clamp(Number(cfg.decay.minMs), 10, 8000);
+  cfg.decay.maxMs = clamp(Number(cfg.decay.maxMs), cfg.decay.minMs, 12000);
+  cfg.probability.min = clamp(Number(cfg.probability.min), 0, 1);
+  cfg.probability.max = clamp(Number(cfg.probability.max), cfg.probability.min, 1);
+  cfg.ratchet.gate = clamp(Number(cfg.ratchet.gate), 0.05, 1);
+  cfg.ratchet.swing = clamp(Number(cfg.ratchet.swing), 0, 0.95);
+}
+
+function reset16LevelSettings() {
+  const defaults = getDefaultSettings().pad16Level;
+  state.pad16Level.mode = defaults.defaultMode;
+  state.pad16Level.liveOverlay = defaults.liveOverlayDefault;
+  state.pad16Level.velocity.min = defaults.defaultVelocityRange[0];
+  state.pad16Level.velocity.max = defaults.defaultVelocityRange[1];
+  state.pad16Level.tune.minSemitone = defaults.defaultTuneRange[0];
+  state.pad16Level.tune.maxSemitone = defaults.defaultTuneRange[1];
+  state.pad16Level.filter.minCutoff = defaults.defaultFilterRange[0];
+  state.pad16Level.filter.maxCutoff = defaults.defaultFilterRange[1];
+  state.pad16Level.attack.minMs = defaults.defaultAttackRange[0];
+  state.pad16Level.attack.maxMs = defaults.defaultAttackRange[1];
+  state.pad16Level.decay.minMs = defaults.defaultDecayRange[0];
+  state.pad16Level.decay.maxMs = defaults.defaultDecayRange[1];
+  state.pad16Level.probability.min = defaults.defaultProbabilityRange[0];
+  state.pad16Level.probability.max = defaults.defaultProbabilityRange[1];
+  generate16LevelPads();
+  toast("16-Level settings reset.");
+  queueRender();
+}
+
+function generate16LevelPads() {
+  const sourcePad = get16LevelSourcePad();
+  const sourceName = sourcePad.name || "Source Pad";
+  const sourceSample = sourcePad.sampleName || sourcePad.mode || "Internal sound";
+  state.pad16Level.generatedPads = Array.from({ length: 16 }, (_, index) => {
+    const value = generate16LevelValue(index, state.pad16Level.mode);
+    const sourceVelocity = state.pad16Level.mode === "velocity" ? value / 127 : 0.85;
+    return {
+      id: makeId("pad16"),
+      sourcePadIndex: state.pad16Level.sourcePadIndex,
+      levelIndex: index,
+      mode: state.pad16Level.mode,
+      mode16Level: true,
+      name: `${sourceName} ${index + 1}`,
+      label: `${sourceName} ${index + 1}`,
+      valueLabel: label16LevelValue(state.pad16Level.mode, value),
+      sampleData: null,
+      sampleName: sourceSample,
+      type: sourcePad.buffer ? "sample" : "synth",
+      shortcut: formatKeyCode(getPadKeyCode(index)),
+      buffer: sourcePad.buffer,
+      velocity: sourceVelocity,
+      pitch: state.pad16Level.mode === "tune" ? value : sourcePad.pitch,
+      filter: state.pad16Level.mode === "filter" ? value : { type: "lowpass", cutoff: 18000, resonance: 0.8 },
+      layers: build16LevelLayers(sourcePad, value),
+      envelope: build16LevelEnvelope(sourcePad, value),
+      probability: state.pad16Level.mode === "probability" ? value : 1,
+      ratchet: state.pad16Level.mode === "ratchet" ? { repeats: value, gate: state.pad16Level.ratchet.gate, swing: state.pad16Level.ratchet.swing } : null,
+      slice: state.pad16Level.mode === "slice" ? value : null,
+      gain: sourcePad.gain,
+      muted: sourcePad.muted,
+      solo: sourcePad.solo,
+      color: COLORS[index % COLORS.length],
+      active: false,
+      missed: false,
+      aftertouch: 0
+    };
+  });
+  return state.pad16Level.generatedPads;
+}
+
+function generate16LevelValue(index, mode) {
+  if (mode === "velocity") return map16LevelVelocity(index);
+  if (mode === "tune") return map16LevelTune(index);
+  if (mode === "filter") return map16LevelFilter(index);
+  if (mode === "layer") return map16LevelLayer(index);
+  if (mode === "attack") return map16LevelAttack(index);
+  if (mode === "decay") return map16LevelDecay(index);
+  if (mode === "probability") return map16LevelProbability(index);
+  if (mode === "ratchet") return map16LevelRatchet(index);
+  if (mode === "slice") return map16LevelSlice(index);
+  return index;
+}
+
+function map16LevelVelocity(index) {
+  const cfg = state.pad16Level.velocity;
+  return Math.round(interpolateCurve(cfg.min, cfg.max, index / 15, cfg.curve));
+}
+
+function map16LevelTune(index) {
+  const cfg = state.pad16Level.tune;
+  const refIndex = clamp(Math.round(cfg.referencePad || 8), 1, 16) - 1;
+  if (cfg.scaleLock) {
+    const intervals = {
+      chromatic: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+      major: [0, 2, 4, 5, 7, 9, 11],
+      minor: [0, 2, 3, 5, 7, 8, 10],
+      pentatonic: [0, 3, 5, 7, 10],
+      blues: [0, 3, 5, 6, 7, 10]
+    }[cfg.scale] || [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+    const offset = index - refIndex;
+    const octave = Math.floor(Math.abs(offset) / intervals.length) * 12;
+    const step = intervals[Math.abs(offset) % intervals.length] + octave;
+    return clamp(offset < 0 ? -step : step, cfg.minSemitone, cfg.maxSemitone);
+  }
+  if (index === refIndex) return 0;
+  if (index < refIndex) {
+    const pct = refIndex ? (refIndex - index) / refIndex : 1;
+    return Math.round(cfg.minSemitone * pct);
+  }
+  const pct = (index - refIndex) / Math.max(1, 15 - refIndex);
+  return Math.round(cfg.maxSemitone * pct);
+}
+
+function map16LevelFilter(index) {
+  const cfg = state.pad16Level.filter;
+  const pct = index / 15;
+  const cutoff = expMap(cfg.minCutoff, cfg.maxCutoff, pct);
+  const resonance = interpolateCurve(cfg.minResonance, cfg.maxResonance, pct, "linear");
+  return { type: cfg.type, cutoff, resonance };
+}
+
+function map16LevelLayer(index) {
+  const pct = index / 15;
+  return state.pad16Level.layer.crossfade
+    ? { layerAGain: 1 - pct, layerBGain: pct }
+    : { layerAGain: state.pad16Level.layer.layerA, layerBGain: state.pad16Level.layer.layerB };
+}
+
+function map16LevelAttack(index) {
+  const cfg = state.pad16Level.attack;
+  return Math.round(interpolateCurve(cfg.minMs, cfg.maxMs, index / 15, cfg.curve));
+}
+
+function map16LevelDecay(index) {
+  const cfg = state.pad16Level.decay;
+  return Math.round(interpolateCurve(cfg.minMs, cfg.maxMs, index / 15, cfg.curve));
+}
+
+function map16LevelProbability(index) {
+  const cfg = state.pad16Level.probability;
+  return interpolateCurve(cfg.min, cfg.max, index / 15, "linear");
+}
+
+function map16LevelRatchet(index) {
+  const values = state.pad16Level.ratchet.values;
+  return values[index] || values[values.length - 1] || 1;
+}
+
+function map16LevelSlice(index) {
+  const source = get16LevelSourcePad();
+  const duration = source.buffer?.duration || 1;
+  return {
+    start: duration * (index / 16),
+    end: duration * ((index + 1) / 16),
+    index
+  };
+}
+
+function interpolateCurve(min, max, pct, curve = "linear") {
+  const safePct = clamp(Number(pct), 0, 1);
+  const shaped = curve === "exponential" ? safePct * safePct : curve === "log" ? Math.sqrt(safePct) : safePct;
+  return Number(min) + (Number(max) - Number(min)) * shaped;
+}
+
+function expMap(min, max, pct) {
+  const safeMin = Math.max(1, Number(min));
+  const safeMax = Math.max(safeMin + 1, Number(max));
+  return safeMin * Math.pow(safeMax / safeMin, clamp(pct, 0, 1));
+}
+
+function build16LevelLayers(sourcePad, value) {
+  if (state.pad16Level.mode !== "layer") return Array.isArray(sourcePad.layers) ? sourcePad.layers : [];
+  const layerB = sourcePad.layers?.[1] || null;
+  return [
+    { sampleData: null, sampleName: sourcePad.sampleName || sourcePad.name, gain: value.layerAGain, buffer: sourcePad.buffer },
+    { sampleData: null, sampleName: layerB?.sampleName || "Layer B empty", gain: layerB ? value.layerBGain : 0, buffer: layerB?.buffer || null }
+  ];
+}
+
+function build16LevelEnvelope(sourcePad, value) {
+  const envelope = { attack: 0, decay: 0.4, sustain: 0.8, release: 0.12, ...(sourcePad.envelope || {}) };
+  if (state.pad16Level.mode === "attack") envelope.attack = value / 1000;
+  if (state.pad16Level.mode === "decay") envelope.decay = value / 1000;
+  return envelope;
+}
+
+function label16LevelValue(mode, value) {
+  if (mode === "velocity") return `VEL ${Math.round(value)}`;
+  if (mode === "tune") return `${value > 0 ? "+" : ""}${Math.round(value)} ST`;
+  if (mode === "filter") return format16LevelHz(value.cutoff);
+  if (mode === "layer") return `A${Math.round(value.layerAGain * 100)}/B${Math.round(value.layerBGain * 100)}`;
+  if (mode === "attack") return `ATK ${Math.round(value)}ms`;
+  if (mode === "decay") return value >= 1000 ? `DEC ${(value / 1000).toFixed(1)}s` : `DEC ${Math.round(value)}ms`;
+  if (mode === "probability") return `${Math.round(value * 100)}%`;
+  if (mode === "ratchet") return `x${value}`;
+  if (mode === "slice") return `SL ${String(value.index + 1).padStart(2, "0")}`;
+  return String(value);
+}
+
+function format16LevelHz(value) {
+  return value >= 1000 ? `${(value / 1000).toFixed(value >= 10000 ? 0 : 1)}k` : `${Math.round(value)}Hz`;
+}
+
+function trigger16LevelPad(index, event, inputVelocity = 1, hold = false, repeated = false) {
+  initAudio();
+  if (!state.pad16Level.generatedPads.length) generate16LevelPads();
+  const pad = state.pad16Level.generatedPads[index];
+  const sourcePad = get16LevelSourcePad();
+  if (!pad || !sourcePad) return;
+  const sourceVelocity = Math.max(0.04, Number(inputVelocity) || pointerVelocity(event));
+  const mappedVelocity = clamp((state.pad16Level.mode === "velocity" ? pad.velocity : sourceVelocity) * (sourcePad.gain || 0.85), 0.02, 1.5);
+
+  if (state.pad16Level.mode === "probability" && Math.random() > pad.probability) {
+    pad.missed = true;
+    record16LevelPerformance(index, pad.probability, 0);
+    updatePadVisual(index, 0.08, 0);
+    setTimeout(() => {
+      pad.missed = false;
+      updatePadVisual(index, 0, 0);
+    }, 140);
+    return;
+  }
+
+  state.selectedPadIndex = state.pad16Level.sourcePadIndex;
+  pad.active = true;
+  pad.velocity = mappedVelocity;
+  sourcePad.active = true;
+  sourcePad.velocity = mappedVelocity;
+  updatePadVisual(index, mappedVelocity, sourcePad.aftertouch || 0);
+
+  if (state.pad16Level.mode === "ratchet" && pad.ratchet && !repeated) {
+    scheduleRatchetRepeats(index, pad.ratchet.repeats, pad.ratchet.gate, pad.ratchet.swing, mappedVelocity);
+  } else if (state.pad16Level.mode === "slice") {
+    triggerSlicePad(index, mappedVelocity);
+  } else if (sourcePad.buffer) {
+    trigger16LevelSample(sourcePad, pad, mappedVelocity);
+  } else {
+    triggerSynthDrum(state.pad16Level.sourcePadIndex, mappedVelocity);
+  }
+
+  record16LevelPerformance(index, generate16LevelValue(index, state.pad16Level.mode), mappedVelocity);
+  if (state.sequencer.recording && !repeated) {
+    record16LevelToSequencer(index, pad);
+    if (state.pad16Level.mode === "tune") record16LevelToPianoRoll(index, pad);
+  }
+
+  if (state.settings.pad16Level.hapticFeedback && state.settings.performance.hapticsEnabled && navigator.vibrate) {
+    navigator.vibrate(Math.round(10 + mappedVelocity * 22));
+  }
+
+  if (!hold) {
+    setTimeout(() => releasePad(index), Math.max(90, (pad.envelope?.decay || 0.16) * 1000));
+  }
+}
+
+function trigger16LevelSample(sourcePad, generatedPad, velocity) {
+  if (!audioCtx || !masterGain || !sourcePad.buffer) return;
+  const now = audioCtx.currentTime;
+  const source = audioCtx.createBufferSource();
+  const gain = audioCtx.createGain();
+  const filter = audioCtx.createBiquadFilter();
+  const semitone = Number(generatedPad.pitch ?? sourcePad.pitch ?? 0);
+  const envelope = generatedPad.envelope || sourcePad.envelope || { attack: 0, decay: 0.4, sustain: 0.8, release: 0.12 };
+  const filterCfg = generatedPad.filter || { type: "lowpass", cutoff: 18000, resonance: 0.8 };
+  const slice = generatedPad.slice;
+  const attack = clamp(Number(envelope.attack || 0), 0, 10);
+  const decay = clamp(Number(envelope.decay || 0.4), 0.02, 30);
+  const targetGain = clamp(velocity * (generatedPad.gain || sourcePad.gain || 0.85), 0.001, 1.5);
+
+  source.buffer = sourcePad.buffer;
+  source.playbackRate.value = Math.pow(2, semitone / 12);
+  filter.type = filterCfg.type || "lowpass";
+  filter.frequency.value = clamp(filterCfg.cutoff || 18000, 20, 20000);
+  filter.Q.value = clamp(filterCfg.resonance || 0.8, 0.1, 32);
+  gain.gain.setValueAtTime(0.0001, now);
+  gain.gain.linearRampToValueAtTime(targetGain, now + attack);
+  gain.gain.setTargetAtTime(0.0001, now + attack, Math.max(0.01, decay / 3));
+  source.connect(gain);
+  gain.connect(filter);
+  filter.connect(masterGain);
+  sourcePad.source = source;
+  sourcePad.gainNode = gain;
+  sourcePad.filterNode = filter;
+  const offset = slice ? clamp(slice.start, 0, sourcePad.buffer.duration) : 0;
+  const duration = slice ? Math.max(0.02, slice.end - slice.start) : undefined;
+  source.start(0, offset, duration);
+}
+
+function triggerRatchet(sourcePad, repeats, velocity, time = audioCtx?.currentTime || 0) {
+  scheduleRatchetRepeats(sourcePad, repeats, state.pad16Level.ratchet.gate, state.pad16Level.ratchet.swing, velocity, time);
+}
+
+function scheduleRatchetRepeats(index, repeats, gate, swing, velocity, startTime = audioCtx?.currentTime || 0) {
+  const count = clamp(Math.round(repeats || 1), 1, 64);
+  const beatSeconds = 60 / (state.bpm || state.daw?.song?.bpm || 120);
+  const stepSeconds = beatSeconds / count;
+  for (let repeat = 0; repeat < count; repeat += 1) {
+    const delay = Math.max(0, (startTime + repeat * stepSeconds + (repeat % 2 ? swing * stepSeconds : 0)) - (audioCtx?.currentTime || startTime));
+    setTimeout(() => {
+      if (!state.pad16Level.enabled) return;
+      const decay = state.pad16Level.ratchet.velocityDecay === false ? 1 : 1 - repeat / Math.max(count * 1.8, 1);
+      const pad = state.pad16Level.generatedPads[index];
+      if (pad) pad.active = true;
+      trigger16LevelPad(index, null, velocity * decay * gate, false, true);
+      const el = document.querySelector(`.pad-button[data-index="${index}"]`);
+      el?.classList.add("pad-16-level-ratchet");
+      setTimeout(() => el?.classList.remove("pad-16-level-ratchet"), Math.max(40, stepSeconds * 500));
+    }, delay * 1000);
+  }
+}
+
+function triggerSlicePad(index, velocity = 1) {
+  const sourcePad = get16LevelSourcePad();
+  const pad = state.pad16Level.generatedPads[index];
+  if (!sourcePad?.buffer || !pad?.slice) {
+    triggerSynthDrum(state.pad16Level.sourcePadIndex, velocity);
+    return;
+  }
+  trigger16LevelSample(sourcePad, pad, velocity);
+}
+
+function generateEqualSlices(buffer, count = 16) {
+  const duration = buffer?.duration || 1;
+  return Array.from({ length: count }, (_, index) => ({
+    start: duration * (index / count),
+    end: duration * ((index + 1) / count),
+    index
+  }));
+}
+
+function detectTransientSlicesPlaceholder(buffer, count = 16) {
+  return generateEqualSlices(buffer, count);
+}
+
+function renderSliceMarkers(canvas, slices) {
+  if (!canvas || !slices) return;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return;
+  ctx.save();
+  ctx.strokeStyle = "rgba(255, 209, 102, 0.72)";
+  slices.forEach((slice) => {
+    const x = canvas.width * (slice.index / slices.length);
+    ctx.beginPath();
+    ctx.moveTo(x, 0);
+    ctx.lineTo(x, canvas.height);
+    ctx.stroke();
+  });
+  ctx.restore();
+}
+
+function record16LevelPerformance(index, value, velocity) {
+  const entry = {
+    id: makeId("pad16perf"),
+    time: Date.now(),
+    index,
+    mode: state.pad16Level.mode,
+    sourcePadIndex: state.pad16Level.sourcePadIndex,
+    valueLabel: label16LevelValue(state.pad16Level.mode, value),
+    velocity
+  };
+  state.pad16Level.lastPerformance.push(entry);
+  if (state.pad16Level.lastPerformance.length > 128) state.pad16Level.lastPerformance = state.pad16Level.lastPerformance.slice(-128);
+  rememberTouchPerformance({ type: "pad-16-level", pad: index, mode: entry.mode, velocity, value: entry.valueLabel, time: entry.time });
+}
+
+function record16LevelToSequencer(index, pad) {
+  if (!state.settings.pad16Level.recordToSequencer) return;
+  if (!state.sequencer.stepData) {
+    state.sequencer.stepData = Array.from({ length: 16 }, () => Array.from({ length: 64 }, () => null));
+  }
+  const step = clamp(Math.round(state.sequencer.position || 0), 0, 63);
+  if (!state.sequencer.pattern[index]) state.sequencer.pattern[index] = Array(64).fill(false);
+  state.sequencer.pattern[index][step] = true;
+  state.sequencer.stepData[index][step] = {
+    active: true,
+    padIndex: index,
+    velocity: pad.velocity,
+    probability: pad.probability,
+    pitch: pad.pitch,
+    filterCutoff: pad.filter?.cutoff,
+    filterResonance: pad.filter?.resonance,
+    layerMix: pad.layers?.[1]?.gain || 0,
+    attack: pad.envelope?.attack,
+    decay: pad.envelope?.decay,
+    ratchet: pad.ratchet,
+    sliceIndex: pad.slice?.index,
+    offset: 0,
+    muted: false
+  };
+}
+
+function record16LevelToPianoRoll(index, pad) {
+  if (!state.settings.pad16Level.recordTuneToPianoRoll) return;
+  const note = clamp(60 + Math.round(pad.pitch || 0), 24, 108);
+  const step = clamp(Math.round(state.sequencer.position || 0), 0, 127);
+  state.pianoRoll.notes.push({ note, step, length: 1, velocity: clamp(pad.velocity || 0.8, 0.05, 1), selected: false });
+  if (state.pianoRoll.notes.length > 512) state.pianoRoll.notes = state.pianoRoll.notes.slice(-512);
+}
+
+function commit16LevelToBank(bankId = state.pad16Level.commitTargetBank || state.padBank || "A") {
+  if (!state.pad16Level.generatedPads.length) generate16LevelPads();
+  if (state.settings.pad16Level.confirmBeforeCommit && !window.confirm(`Replace Bank ${bankId} with the current 16-Level variations?`)) return;
+  state.padBanks[bankId] = state.pad16Level.generatedPads.map((pad, index) => {
+    const source = get16LevelSourcePad();
+    return clonePadForBank({
+      ...source,
+      id: `pad-${bankId}-${index}`,
+      name: pad.valueLabel ? `${source.name} ${pad.valueLabel}` : `${source.name} ${index + 1}`,
+      bank: bankId,
+      gain: pad.gain,
+      pitch: pad.pitch,
+      filter: pad.filter,
+      layers: pad.layers,
+      envelope: pad.envelope,
+      probability: pad.probability,
+      ratchet: pad.ratchet,
+      slice: pad.slice,
+      sampleName: source.sampleName || source.name,
+      color: pad.color,
+      mode: source.mode
+    }, index, bankId);
+  });
+  state.padBank = bankId;
+  state.pads = state.padBanks[bankId].map((pad, index) => clonePadForBank(pad, index, bankId));
+  state.pad16Level.enabled = false;
+  state.pad16Level.generatedPads = [];
+  toast(`16-Level pads committed to Bank ${bankId}.`);
+  queueRender();
 }
 
 function renderPadEditor() {
@@ -1684,7 +4137,7 @@ function renderPadEditor() {
         <label class="field">
           <span>Note repeat</span>
           <select data-input="noteRepeat" aria-label="Note repeat">
-            ${["off", "1/4", "1/8", "1/16", "1/32"].map((value) => `<option value="${value}" ${state.noteRepeat === value ? "selected" : ""}>${value}</option>`).join("")}
+            ${["off", ...getTimingDivisions()].map((value) => `<option value="${value}" ${state.noteRepeat === value ? "selected" : ""}>${value === "off" ? "off" : formatTimingDivision(value)}</option>`).join("")}
           </select>
         </label>
         <div class="button-row">
@@ -1731,6 +4184,7 @@ function renderSequencer() {
         <div class="button-row">
           ${helpButton("sequencer")}
           <button type="button" data-action="start-sequencer">${state.sequencer.playing ? "Restart" : "Play Sequence"}</button>
+          <button type="button" data-action="pause-sequencer">Pause Sequence</button>
           <button type="button" data-action="stop-sequencer">Stop Sequence</button>
           <button type="button" data-action="clear-pattern" class="danger">Clear Pattern</button>
           <button type="button" data-action="random-groove">Random Groove</button>
@@ -1739,7 +4193,14 @@ function renderSequencer() {
       <div class="panel-body">
         <div class="button-row">
           <button type="button" data-action="set-steps" data-steps="16" aria-pressed="${state.sequencer.steps === 16}">16 Steps</button>
+          <button type="button" data-action="set-steps" data-steps="32" aria-pressed="${state.sequencer.steps === 32}">32 Steps</button>
           <button type="button" data-action="set-steps" data-steps="64" aria-pressed="${state.sequencer.steps === 64}">64 Steps</button>
+          <label class="field compact">
+            <span>Timing</span>
+            <select data-action="set-timing-division" aria-label="Sequencer timing division">
+              ${getTimingDivisions().map((division) => `<option value="${division}" ${state.sequencer.timingDivision === division ? "selected" : ""}>${formatTimingDivision(division)}</option>`).join("")}
+            </select>
+          </label>
           <button type="button" data-action="humanize">Humanize</button>
           <button type="button" data-action="quantize">Quantize</button>
           ${rangeControl("Swing", "sequencer", "swing", state.sequencer.swing, 0, 0.6, 0.01, "sequencer")}
@@ -1810,7 +4271,6 @@ function renderSampler() {
 }
 
 function renderKeyboard() {
-  const notes = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
   return `
     <section class="panel keyboard-panel" aria-label="Keyboard synthesizer">
       <div class="panel-header">
@@ -1830,8 +4290,9 @@ function renderKeyboard() {
           ${rangeControl("Volume", "synth", "volume", state.synth.volume, 0, 1, 0.01, "synth")}
         </div>
         <div class="keyboard">
-          ${notes.map((note, index) => `<button type="button" class="key ${note.includes("#") ? "black" : ""}" data-action="play-note" data-note="${note}" data-midi="${index}">${note}</button>`).join("")}
+          ${SYNTH_NOTES.map((note, index) => `<button type="button" class="key ${note.includes("#") ? "black" : ""}" data-action="play-note" data-note="${note}" data-midi="${index}"><span>${note}</span><small>${escapeHtml(formatKeyCode(getPianoKeyCode(index)))}</small></button>`).join("")}
         </div>
+        ${renderComputerKeyMappingPanel()}
       </div>
     </section>
   `;
@@ -2207,6 +4668,33 @@ function renderSettingsPanel() {
       settingToggle("Record Velocity", "pads.recordVelocity", state.settings.pads.recordVelocity),
       settingToggle("Show Velocity Meters", "pads.showVelocityMeters", state.settings.pads.showVelocityMeters),
       settingToggle("Pad Labels", "pads.padLabels", state.settings.pads.padLabels)
+    ]),
+    renderSettingsSection("16-Level Pads", "Defaults for Live Overlay, commit safety, tune/velocity ranges, recording, labels, and haptics.", [
+      settingSelect("Default function", "pad16Level.defaultMode", state.settings.pad16Level.defaultMode, ["velocity", "tune", "filter", "layer", "attack", "decay", "probability", "ratchet", "slice"]),
+      settingToggle("Default Live Overlay", "pad16Level.liveOverlayDefault", state.settings.pad16Level.liveOverlayDefault),
+      settingToggle("Confirm before Commit", "pad16Level.confirmBeforeCommit", state.settings.pad16Level.confirmBeforeCommit),
+      settingToggle("Record to Sequencer", "pad16Level.recordToSequencer", state.settings.pad16Level.recordToSequencer),
+      settingToggle("Record Tune to Piano Roll", "pad16Level.recordTuneToPianoRoll", state.settings.pad16Level.recordTuneToPianoRoll),
+      settingToggle("Show value labels", "pad16Level.showValueLabels", state.settings.pad16Level.showValueLabels),
+      settingToggle("Haptic feedback", "pad16Level.hapticFeedback", state.settings.pad16Level.hapticFeedback)
+    ]),
+    renderSettingsSection("Waveform Studio", "Browser waveform editing, zero-crossing snap, mini-map, context menus, crossfades, bounce tails, and shortcuts.", [
+      settingSelect("Default Tool", "waveformStudio.defaultTool", state.settings.waveformStudio.defaultTool, ["select", "move", "cut", "split", "fade", "crossfade", "marker", "loop"]),
+      settingToggle("Snap to Zero Crossing", "waveformStudio.snapToZeroCrossing", state.settings.waveformStudio.snapToZeroCrossing),
+      settingToggle("Snap to Beat Grid", "waveformStudio.snapToBeatGrid", state.settings.waveformStudio.snapToBeatGrid),
+      settingToggle("Show Mini-map", "waveformStudio.showMiniMap", state.settings.waveformStudio.showMiniMap),
+      settingToggle("Context Menu", "waveformStudio.showContextMenu", state.settings.waveformStudio.showContextMenu),
+      settingToggle("Auto Crossfade Overlaps", "waveformStudio.autoCrossfadeOverlaps", state.settings.waveformStudio.autoCrossfadeOverlaps),
+      settingSelect("Default Crossfade", "waveformStudio.defaultCrossfadeShape", state.settings.waveformStudio.defaultCrossfadeShape, ["linear", "equal-power", "slow fade", "fast fade", "s-curve"]),
+      settingToggle("Preserve Original Buffers", "waveformStudio.preserveOriginalBuffers", state.settings.waveformStudio.preserveOriginalBuffers),
+      settingNumber("Bounce Tail Seconds", "waveformStudio.bounceTailSeconds", state.settings.waveformStudio.bounceTailSeconds, 0, 30),
+      settingToggle("Keyboard Shortcuts", "waveformStudio.keyboardShortcuts", state.settings.waveformStudio.keyboardShortcuts)
+    ]),
+    renderSettingsSection("Open Music Tool Lab", "Compatibility roadmap, open-source workflow references, plugin bridge notes, and sample license warnings.", [
+      settingToggle("Show Compatibility Roadmap", "openTools.showCompatibilityRoadmap", state.settings.openTools.showCompatibilityRoadmap),
+      settingToggle("Show Open Source References", "openTools.showOpenSourceReferences", state.settings.openTools.showOpenSourceReferences),
+      settingToggle("Show Sample License Warnings", "openTools.showSampleLicenseWarnings", state.settings.openTools.showSampleLicenseWarnings),
+      settingToggle("Show Plugin Bridge Placeholders", "openTools.showPluginBridgePlaceholders", state.settings.openTools.showPluginBridgePlaceholders)
     ]),
     renderSettingsSection("Stem Mixer", "Stem loading, looping, waveform, analysis, spectrum, VU, and buffer behavior.", [
       settingToggle("Default Loop", "stems.defaultLoop", state.settings.stems.defaultLoop),
@@ -2848,7 +5336,10 @@ function getDefaultSettings() {
     beatDNA: { includeTouchHistory: true, includeStemNames: true, includeMixerSettings: true, includeTimestamp: true, deterministicMode: false, entropyStrength: 0.5 },
     suno: { defaultVocalMode: "with vocals", avoidArtistNames: true, defaultPromptDetail: "detailed", savePromptHistory: true },
     videoPrompt: { defaultPlatform: "universal", defaultVideoType: "music-video", defaultAspectRatio: "16:9", defaultDuration: "10 seconds", defaultCameraStyle: "cinematic", defaultEditStyle: "beat-synced cuts", safetyMode: true, avoidCopyrightedCharacters: true, avoidCelebrityLikeness: true, savePromptHistory: true, includeNegativePrompt: true, includeStoryboard: true, includeImageToVideoPrompt: true },
-    lottery: { defaultState: "MI", defaultGameId: "pick-3", defaultMethod: "beat-dna", defaultSetCount: 5, showResponsiblePlayNote: true, requireDisclaimerVisible: true, allowCustomGames: true, preserveLeadingZeroes: true, showBoxPermutations: true, showNumberAnalysis: true }
+    lottery: { defaultState: "MI", defaultGameId: "pick-3", defaultMethod: "beat-dna", defaultSetCount: 5, showResponsiblePlayNote: true, requireDisclaimerVisible: true, allowCustomGames: true, preserveLeadingZeroes: true, showBoxPermutations: true, showNumberAnalysis: true },
+    pad16Level: { defaultMode: "velocity", liveOverlayDefault: true, confirmBeforeCommit: true, defaultTuneRange: [-7, 8], defaultVelocityRange: [12, 127], defaultFilterRange: [180, 12000], defaultAttackRange: [0, 800], defaultDecayRange: [60, 2400], defaultProbabilityRange: [0.05, 1], recordToSequencer: true, recordTuneToPianoRoll: true, showValueLabels: true, showReferencePad: true, hapticFeedback: true },
+    waveformStudio: { defaultTool: "select", snapToZeroCrossing: true, snapToBeatGrid: true, showMiniMap: true, showContextMenu: true, waveformPeaksCache: true, autoCrossfadeOverlaps: true, defaultCrossfadeShape: "equal-power", preserveOriginalBuffers: true, confirmDestructiveEdits: true, bounceTailSeconds: 3, keyboardShortcuts: true, longPressContextMenu: true },
+    openTools: { showCompatibilityRoadmap: true, showOpenSourceReferences: true, showSampleLicenseWarnings: true, showPluginBridgePlaceholders: true }
   };
 }
 
@@ -2874,6 +5365,9 @@ function validateSettings(settings) {
   merged.visuals.meterIntensity = clamp(merged.visuals.meterIntensity, 0, 2);
   merged.audio.masterVolume = clamp(merged.audio.masterVolume, 0, 1);
   merged.audio.defaultBpm = clamp(merged.audio.defaultBpm, 40, 240);
+  merged.pad16Level.defaultVelocityRange = Array.isArray(merged.pad16Level.defaultVelocityRange) ? merged.pad16Level.defaultVelocityRange : [12, 127];
+  merged.pad16Level.defaultTuneRange = Array.isArray(merged.pad16Level.defaultTuneRange) ? merged.pad16Level.defaultTuneRange : [-7, 8];
+  merged.waveformStudio.bounceTailSeconds = clamp(Number(merged.waveformStudio.bounceTailSeconds) || 3, 0, 30);
   merged.padSensitivity = merged.performance.touchSensitivity;
   merged.keySensitivity = merged.performance.touchSensitivity;
   merged.visualIntensity = merged.visuals.glowIntensity;
@@ -3059,15 +5553,45 @@ function rangeControl(label, scope, prop, value, min, max, step, id) {
   `;
 }
 
+function getTimingDivisions() {
+  return ["1/4", "1/4T", "1/8", "1/8T", "1/16", "1/16T", "1/32", "1/32T", "1/64", "1/64T"];
+}
+
+function formatTimingDivision(division) {
+  return String(division || "1/16").replace("T", " triplet");
+}
+
+function getDivisionBeatLength(division = "1/16") {
+  const match = String(division).match(/^1\/(\d+)(T)?$/i);
+  if (!match) return 0.25;
+  const denominator = Math.max(1, Number(match[1]));
+  const base = 4 / denominator;
+  return match[2] ? base * (2 / 3) : base;
+}
+
+function getDivisionMs(division = state.transport.timingDivision) {
+  return (60000 / Math.max(1, state.bpm)) * getDivisionBeatLength(division);
+}
+
 async function handleAction(action, target) {
   const id = target.dataset.id;
-  if (action !== "set-view") await ensureAudio();
+  const noAudioActions = new Set(["set-view", "toggle-top-shell-mode", "set-top-shell-mode", "set-top-shell-height"]);
+  if (!noAudioActions.has(action)) await ensureAudio();
   switch (action) {
     case "set-view":
       state.view = target.dataset.view;
       state.settingsOpen = state.view === "settings";
       state.helpOpen = state.view === "help";
       render();
+      break;
+    case "toggle-top-shell-mode":
+      toggleTopShellMode();
+      break;
+    case "set-top-shell-mode":
+      setTopShellMode(target.dataset.mode || target.value);
+      break;
+    case "set-top-shell-height":
+      setTopShellHeight(target.value);
       break;
     case "open-settings":
       state.view = "settings";
@@ -3118,8 +5642,29 @@ async function handleAction(action, target) {
     case "play-all":
       await playAll();
       break;
+    case "pause-all":
+      pauseAll();
+      break;
+    case "restart-all":
+      await restartAll();
+      break;
     case "stop-all":
       stopAll();
+      break;
+    case "toggle-transport-loop":
+      toggleTransportLoop();
+      break;
+    case "toggle-loop-all":
+      toggleLoopAll();
+      break;
+    case "toggle-sequencer-play":
+      if (state.sequencer.playing) pauseSequencer();
+      else startSequencer(false);
+      break;
+    case "toggle-follow-sequencer":
+      state.transport.followSequencer = !state.transport.followSequencer;
+      toast(state.transport.followSequencer ? "Sequencer will start with Play All." : "Sequencer is manually controlled.");
+      queueRender();
       break;
     case "record-mix":
       await toggleMixRecording();
@@ -3203,6 +5748,15 @@ async function handleAction(action, target) {
     case "toggle-deck":
       toggleDeck(id);
       break;
+    case "play-both-decks":
+      await playBothDecks();
+      break;
+    case "pause-both-decks":
+      pauseBothDecks();
+      break;
+    case "stop-both-decks":
+      stopBothDecks();
+      break;
     case "stop-deck":
       stopDeck(id);
       break;
@@ -3245,6 +5799,49 @@ async function handleAction(action, target) {
     case "trigger-pad":
       triggerPad(Number(target.dataset.index), pointerVelocity(window.lastPointerEvent));
       break;
+    case "toggle-16-level":
+      if (state.pad16Level.enabled) disable16LevelMode();
+      else enable16LevelMode(state.selectedPadIndex, state.pad16Level.mode);
+      break;
+    case "set-16-level-source":
+      set16LevelSourcePad(Number(target.value ?? target.dataset.index));
+      break;
+    case "set-16-level-mode":
+      set16LevelMode(target.dataset.mode || target.value);
+      break;
+    case "set-16-level-option":
+      set16LevelOption(target.dataset.path, target.type === "checkbox" ? target.checked : target.value, target.type);
+      break;
+    case "reset-16-level":
+      reset16LevelSettings();
+      break;
+    case "commit-16-level-bank":
+      commit16LevelToBank(state.pad16Level.commitTargetBank);
+      break;
+    case "preview-16-level-pad":
+      if (!state.pad16Level.enabled) enable16LevelMode(state.pad16Level.sourcePadIndex, state.pad16Level.mode);
+      trigger16LevelPad(Number(target.dataset.index), window.lastPointerEvent, pointerVelocity(window.lastPointerEvent));
+      break;
+    case "send-16-level-slices-to-bank":
+      if (state.pad16Level.mode !== "slice") {
+        toast("Switch 16-Level to Slice before sending slices to a bank.");
+        break;
+      }
+      commit16LevelToBank(state.pad16Level.commitTargetBank);
+      toast("Slices sent to pad bank.");
+      break;
+    case "open-16-level-help":
+      openHelp("16-level-pads");
+      break;
+    case "learn-key-map":
+      startKeyboardMappingLearn(target.dataset.mapType, target.dataset.mapId);
+      break;
+    case "clear-key-map":
+      clearKeyboardMapping(target.dataset.mapType, target.dataset.mapId);
+      break;
+    case "reset-key-mappings":
+      resetKeyboardMappings();
+      break;
     case "select-next-pad":
       state.selectedPadIndex = (state.selectedPadIndex + 1) % state.pads.length;
       render();
@@ -3260,6 +5857,195 @@ async function handleAction(action, target) {
       break;
     case "add-song-clip":
       addSongClip();
+      break;
+    case "set-song-submode":
+      state.song.subMode = target.dataset.mode || "arrangement";
+      render();
+      break;
+    case "set-waveform-source":
+      state.waveformStudio.source = target.value || "selected-stem";
+      state.waveformStudio.fileInfo = analyzeAudioFileMetadata(null, getWaveformStudioBuffer());
+      render();
+      break;
+    case "set-waveform-tool":
+      state.waveformStudio.tool = target.dataset.tool || "select";
+      toast(`${titleCase(state.waveformStudio.tool)} tool active.`);
+      queueRender();
+      break;
+    case "select-waveform-region":
+      {
+        const region = state.waveformStudio.regions.find((item) => item.id === target.dataset.id);
+        if (region) state.waveformStudio.selection = { startTime: region.startTime, endTime: region.endTime };
+        drawAllCanvases();
+      }
+      break;
+    case "clear-waveform-selection":
+      state.waveformStudio.selection = { startTime: 0, endTime: 0.25 };
+      render();
+      break;
+    case "cut-waveform-selection":
+      cutWaveformSelection();
+      break;
+    case "copy-waveform-selection":
+      copyWaveformSelection();
+      break;
+    case "paste-waveform-selection":
+      pasteWaveformSelection();
+      break;
+    case "delete-waveform-selection":
+      deleteWaveformSelection();
+      break;
+    case "trim-waveform-selection":
+    case "crop-waveform-selection":
+      trimWaveformSelection();
+      break;
+    case "split-waveform-at-playhead":
+      splitWaveformAtPlayhead();
+      break;
+    case "split-waveform-at-transients":
+      splitWaveformAtTransients();
+      break;
+    case "silence-waveform-selection":
+      silenceWaveformSelection();
+      break;
+    case "insert-silence":
+      insertSilence();
+      break;
+    case "fade-waveform-selection":
+      fadeWaveformSelection(target.dataset.fade || "in");
+      break;
+    case "reverse-waveform-selection":
+      reverseWaveformSelection();
+      break;
+    case "normalize-waveform-selection":
+      normalizeWaveformSelectionAudio();
+      break;
+    case "loop-waveform-selection":
+      loopWaveformSelection();
+      break;
+    case "export-waveform-selection":
+      exportWaveformRegion(state.waveformStudio.regions.at(-1)?.id);
+      break;
+    case "zoom-waveform-in":
+      zoomWaveform(1);
+      break;
+    case "zoom-waveform-out":
+      zoomWaveform(-1);
+      break;
+    case "zoom-waveform-to-selection":
+      {
+        const selection = normalizeWaveformSelection();
+        state.waveformStudio.viewport = { startTime: selection.startTime, endTime: selection.endTime, zoom: 8 };
+        drawAllCanvases();
+      }
+      break;
+    case "fit-waveform-to-screen":
+      fitWaveformToScreen();
+      break;
+    case "add-waveform-marker":
+      addWaveformMarker();
+      break;
+    case "add-waveform-region":
+      addWaveformRegion();
+      break;
+    case "auto-crossfade-overlaps":
+      crossfadeOverlappingClips();
+      break;
+    case "create-crossfade":
+      createClipOverlapFade("clip-a", "clip-b");
+      break;
+    case "bounce-project":
+      bounceProjectToWav();
+      break;
+    case "bounce-track":
+      bounceTrackToBuffer(target.dataset.id);
+      toast("Track bounce prepared as a local buffer.");
+      queueRender();
+      break;
+    case "bounce-selection":
+      bounceSelectionToStem();
+      break;
+    case "bounce-project-to-master":
+      bounceProjectToMasterChain();
+      break;
+    case "bounce-stems":
+      bounceProjectToStemFiles();
+      break;
+    case "freeze-track":
+      toast("Track freeze rendered as a roadmap hook for clip effect commits.");
+      break;
+    case "unfreeze-track":
+      toast("Track unfreeze restored to editable clip mode.");
+      break;
+    case "arm-record-track":
+      armAudioTrack(id);
+      break;
+    case "disarm-record-track":
+      disarmAudioTrack(id);
+      break;
+    case "start-armed-recording":
+      startArmedTrackRecording();
+      break;
+    case "pause-armed-recording":
+      pauseArmedTrackRecording();
+      break;
+    case "stop-armed-recording":
+      stopArmedTrackRecording();
+      break;
+    case "monitor-recording-input":
+      state.waveformStudio.recording.monitoring = !state.waveformStudio.recording.monitoring;
+      render();
+      break;
+    case "comp-recording-takes":
+      compRecordingTakes();
+      break;
+    case "open-song-context-menu":
+      showSongEditorContextMenu(Number(target.dataset.x) || 24, Number(target.dataset.y) || 180, {});
+      break;
+    case "close-song-context-menu":
+      hideSongEditorContextMenu();
+      break;
+    case "run-context-action":
+      runSongContextAction(target.dataset.contextAction);
+      break;
+    case "apply-quick-effect":
+      applyQuickEffectToSelection(target.dataset.effect);
+      break;
+    case "commit-effect-preview":
+      commitEffectPreview();
+      break;
+    case "cancel-effect-preview":
+      cancelEffectPreview();
+      break;
+    case "export-metadata-json":
+      exportMetadataJson();
+      break;
+    case "open-tool-lab":
+    case "show-plugin-roadmap":
+    case "show-sample-license-guide":
+      state.view = "open tools";
+      render();
+      break;
+    case "export-compatibility-report":
+      exportJson("lottominded-ultra-open-tool-compatibility.json", { generatedAt: new Date().toISOString(), openTools: state.openTools, settings: state.settings.openTools });
+      break;
+    case "add-adaptive-scene":
+      createSceneSection();
+      render();
+      break;
+    case "delete-adaptive-scene":
+      state.adaptiveArrangement.scenes = state.adaptiveArrangement.scenes.filter((scene) => scene.id !== id);
+      render();
+      break;
+    case "add-transition-rule":
+      createTransitionRule();
+      render();
+      break;
+    case "preview-adaptive-arrangement":
+      previewAdaptiveArrangement();
+      break;
+    case "export-adaptive-json":
+      exportAdaptiveArrangementJson();
       break;
     case "select-song-clip":
       toast("Song clips are arrangement blocks. Use Add Clip to keep sketching sections.");
@@ -3504,7 +6290,10 @@ async function handleAction(action, target) {
       toast("Choke groups are reserved in the pad data model and can be wired to custom banks.");
       break;
     case "start-sequencer":
-      startSequencer();
+      startSequencer(true);
+      break;
+    case "pause-sequencer":
+      pauseSequencer();
       break;
     case "stop-sequencer":
       stopSequencer();
@@ -3516,7 +6305,7 @@ async function handleAction(action, target) {
       randomGroove();
       break;
     case "set-steps":
-      state.sequencer.steps = Number(target.dataset.steps);
+      setSequencerSteps(Number(target.dataset.steps));
       render();
       break;
     case "toggle-step":
@@ -3665,7 +6454,7 @@ async function handleAction(action, target) {
   }
 }
 
-function startChannel(channelId, offset = null, preview = false) {
+function startChannel(channelId, offset = null, preview = false, when = 0) {
   const channel = getStem(channelId);
   if (!channel || !channel.buffer) {
     toast("Load audio into this stem first.");
@@ -3682,7 +6471,7 @@ function startChannel(channelId, offset = null, preview = false) {
   nodes.out.connect(masterGain);
   const startOffset = clamp((offset ?? channel.pausedAt) + channel.trimStart, channel.trimStart, getTrimEnd(channel));
   const duration = Math.max(0.01, getTrimEnd(channel) - startOffset);
-  source.loop = channel.loop && !preview;
+  source.loop = (channel.loop || state.transport.loop || state.transport.loopAll) && !preview;
   if (source.loop) {
     source.loopStart = channel.trimStart;
     source.loopEnd = getTrimEnd(channel);
@@ -3699,13 +6488,32 @@ function startChannel(channelId, offset = null, preview = false) {
   channel.source = source;
   channel.nodes = nodes;
   channel.playing = true;
-  channel.startTime = ctx.currentTime - (startOffset - channel.trimStart);
+  channel.startTime = (when || ctx.currentTime) - (startOffset - channel.trimStart);
   channel.pausedAt = startOffset - channel.trimStart;
   channel.duration = duration;
-  source.start(0, startOffset, source.loop ? undefined : duration);
+  source.start(Math.max(0, when || 0), startOffset, source.loop ? undefined : duration);
   applySoloMute();
   if (!preview) state.playing = true;
   queueRender();
+}
+
+function pauseChannel(channelId, silent = false) {
+  const channel = getStem(channelId);
+  if (!channel?.playing) return;
+  channel.pausedAt = clamp(currentStemTime(channel) - channel.trimStart, 0, Math.max(0, getTrimEnd(channel) - channel.trimStart));
+  const source = channel.source;
+  channel.source = null;
+  channel.nodes = null;
+  channel.playing = false;
+  channel.meter = 0;
+  if (source) {
+    try {
+      source.stop();
+    } catch (error) {
+      // Source may already be stopped; safe to ignore.
+    }
+  }
+  if (!silent) queueRender();
 }
 
 function stopChannel(channelId, silent = false) {
@@ -3844,22 +6652,75 @@ function applySoloMute() {
   });
 }
 
-async function playAll() {
-  await ensureAudio();
+async function playAll(restart = false) {
+  const ctx = await ensureAudio();
+  const startAt = ctx.currentTime + 0.08;
   state.stems.forEach((channel) => {
-    if (channel.buffer) startChannel(channel.id, 0);
+    if (channel.buffer) startChannel(channel.id, restart ? 0 : null, false, startAt);
   });
   Object.values(state.decks).forEach((deck) => {
-    if (deck.buffer && !deck.playing) startDeck(deck.id);
+    if (deck.buffer && (restart || !deck.playing)) startDeck(deck.id, restart ? 0 : null, startAt);
   });
+  if (state.transport.followSequencer && !state.sequencer.playing) startSequencer(false);
   state.playing = true;
+  state.transport.paused = false;
   queueRender();
 }
 
-function stopAll() {
+async function restartAll() {
+  stopAll(true);
+  await playAll(true);
+  toast("Transport restarted from the top.");
+}
+
+function pauseAll() {
+  state.stems.forEach((channel) => pauseChannel(channel.id, true));
+  Object.values(state.decks).forEach((deck) => pauseDeck(deck.id, true));
+  pauseSequencer(true);
+  state.playing = false;
+  state.transport.paused = true;
+  toast("Transport paused. Press Resume All to continue.");
+  queueRender();
+}
+
+function stopAll(silent = false) {
   state.stems.forEach((channel) => stopChannel(channel.id, true));
   Object.values(state.decks).forEach((deck) => stopDeck(deck.id, true));
+  state.pads.forEach((_, index) => releasePad(index));
+  if (state.pad16Level?.generatedPads?.length) state.pad16Level.generatedPads.forEach((_, index) => releasePad(index));
+  stopSequencer(true);
   state.playing = false;
+  state.transport.paused = false;
+  if (!silent) queueRender();
+}
+
+function toggleTransportLoop() {
+  state.transport.loop = !state.transport.loop;
+  toast(state.transport.loop ? "Transport loop armed for loaded stems and decks." : "Transport loop disabled.");
+  queueRender();
+}
+
+function toggleLoopAll() {
+  state.transport.loopAll = !state.transport.loopAll;
+  state.stems.forEach((channel) => {
+    if (channel.buffer) channel.loop = state.transport.loopAll;
+  });
+  Object.values(state.decks).forEach((deck) => {
+    if (!deck.buffer) return;
+    deck.loop = state.transport.loopAll;
+    deck.loopIn = 0;
+    deck.loopOut = getBufferDuration(deck);
+  });
+  toast(state.transport.loopAll ? "Loop All enabled for loaded stems and decks." : "Loop All disabled for loaded stems and decks.");
+  queueRender();
+}
+
+function setTimingDivision(division) {
+  const next = getTimingDivisions().includes(division) ? division : "1/16";
+  state.transport.timingDivision = next;
+  state.sequencer.timingDivision = next;
+  if (state.sequencer.playing) startSequencer();
+  toast(`Timing set to ${formatTimingDivision(next)}.`);
   queueRender();
 }
 
@@ -3875,7 +6736,7 @@ function toggleDeck(id) {
   else startDeck(id);
 }
 
-function startDeck(id, offset = null) {
+function startDeck(id, offset = null, when = 0) {
   const deck = state.decks[id];
   if (!deck || !deck.buffer) return;
   stopDeck(id, true);
@@ -3886,10 +6747,11 @@ function startDeck(id, offset = null) {
   source.connect(nodes.low);
   nodes.out.connect(masterGain);
   const startOffset = clamp(offset ?? deck.pausedAt ?? deck.cue, 0, deck.buffer.duration);
-  source.loop = deck.loop && deck.loopOut > deck.loopIn;
+  const globalLoop = state.transport.loop || state.transport.loopAll;
+  source.loop = (deck.loop && deck.loopOut > deck.loopIn) || globalLoop;
   if (source.loop) {
-    source.loopStart = deck.loopIn;
-    source.loopEnd = deck.loopOut;
+    source.loopStart = deck.loop && deck.loopOut > deck.loopIn ? deck.loopIn : 0;
+    source.loopEnd = deck.loop && deck.loopOut > deck.loopIn ? deck.loopOut : deck.buffer.duration;
   }
   source.onended = () => {
     if (deck.source === source && !source.loop) {
@@ -3903,20 +6765,45 @@ function startDeck(id, offset = null) {
   deck.source = source;
   deck.nodes = nodes;
   deck.playing = true;
-  deck.startTime = audioCtx.currentTime - startOffset;
+  deck.startTime = (when || audioCtx.currentTime) - startOffset;
   deck.pausedAt = startOffset;
-  source.start(0, startOffset);
+  source.start(Math.max(0, when || 0), startOffset);
   applyCrossfader();
   queueRender();
 }
 
-function pauseDeck(id) {
+async function playBothDecks() {
+  const ctx = await ensureAudio();
+  const playableDecks = Object.values(state.decks).filter((deck) => deck.buffer);
+  if (!playableDecks.length) return toast("Load a local track into Deck A or Deck B first.");
+  const startAt = ctx.currentTime + 0.08;
+  playableDecks.forEach((deck) => startDeck(deck.id, deck.pausedAt || deck.cue || 0, startAt));
+  state.playing = true;
+  state.transport.paused = false;
+  toast(playableDecks.length === 2 ? "Both decks started together." : "Loaded deck started.");
+  queueRender();
+}
+
+function pauseBothDecks() {
+  Object.keys(state.decks).forEach((id) => pauseDeck(id, true));
+  state.transport.paused = true;
+  toast("Both decks paused.");
+  queueRender();
+}
+
+function stopBothDecks() {
+  Object.keys(state.decks).forEach((id) => stopDeck(id, true));
+  toast("Both decks stopped.");
+  queueRender();
+}
+
+function pauseDeck(id, silent = false) {
   const deck = state.decks[id];
   if (!deck.playing) return;
-  deck.pausedAt = currentDeckTime(deck);
+  const pausedAt = currentDeckTime(deck);
   stopDeck(id, true);
-  deck.pausedAt = clamp(deck.pausedAt, 0, getBufferDuration(deck));
-  queueRender();
+  deck.pausedAt = clamp(pausedAt, 0, getBufferDuration(deck));
+  if (!silent) queueRender();
 }
 
 function stopDeck(id, silent = false) {
@@ -4019,6 +6906,10 @@ function applyCrossfader() {
 }
 
 function triggerPad(index, velocity = 1, repeated = false, hold = false) {
+  if (is16LevelEnabled() && !repeated) {
+    trigger16LevelPad(index, window.lastPointerEvent, velocity, hold);
+    return;
+  }
   const pad = state.pads[index];
   if (!pad || pad.muted) return;
   if (!repeated && state.noteRepeat !== "off") {
@@ -4052,12 +6943,12 @@ function rememberTouchPerformance(entry) {
 }
 
 function scheduleNoteRepeat(index, velocity) {
-  const repeatMap = { "1/4": 1, "1/8": 2, "1/16": 4, "1/32": 8 };
-  const repeats = repeatMap[state.noteRepeat] || 0;
-  if (!repeats) return;
   const beatMs = 60000 / Math.max(1, state.bpm);
-  for (let count = 1; count < repeats; count += 1) {
-    setTimeout(() => triggerPad(index, velocity * 0.92, true), (beatMs / repeats) * count);
+  const interval = getDivisionMs(state.noteRepeat);
+  if (!Number.isFinite(interval) || interval <= 0 || interval >= beatMs * 1.5) return;
+  for (let delay = interval; delay < beatMs; delay += interval) {
+    const decay = 1 - Math.min(0.35, delay / beatMs * 0.18);
+    setTimeout(() => triggerPad(index, velocity * decay, true), delay);
   }
 }
 
@@ -4068,6 +6959,8 @@ async function loadPadSample(index, file) {
   pad.buffer = buffer;
   pad.sampleName = file.name;
   state.selectedPadIndex = index;
+  syncCurrentPadBank();
+  if (state.pad16Level.enabled) generate16LevelPads();
   render();
 }
 
@@ -4094,6 +6987,19 @@ function triggerPadSample(pad, velocity) {
 }
 
 function updatePadAftertouch(index, event) {
+  if (is16LevelEnabled()) {
+    const sourcePad = get16LevelSourcePad();
+    const generatedPad = state.pad16Level.generatedPads[index];
+    if (!sourcePad || !generatedPad) return;
+    if (!state.settings.performance.aftertouchEnabled) return;
+    const pressure = pointerVelocity(event);
+    generatedPad.aftertouch = pressure;
+    sourcePad.aftertouch = pressure;
+    if (sourcePad.gainNode) sourcePad.gainNode.gain.value = sourcePad.gain * clamp(pressure, 0.18, 1.45);
+    if (sourcePad.filterNode) sourcePad.filterNode.frequency.value = 3200 + pressure * 11000;
+    updatePadVisual(index, generatedPad.velocity || pressure, pressure);
+    return;
+  }
   const pad = state.pads[index];
   if (!pad) return;
   if (!state.settings.performance.aftertouchEnabled) return;
@@ -4105,6 +7011,26 @@ function updatePadAftertouch(index, event) {
 }
 
 function releasePad(index) {
+  if (is16LevelEnabled()) {
+    const generatedPad = state.pad16Level.generatedPads[index];
+    const sourcePad = get16LevelSourcePad();
+    if (generatedPad) {
+      generatedPad.active = false;
+      generatedPad.velocity = 0;
+      generatedPad.aftertouch = 0;
+    }
+    if (sourcePad) {
+      sourcePad.active = false;
+      sourcePad.velocity = 0;
+      sourcePad.aftertouch = 0;
+      if (sourcePad.source && sourcePad.mode === "loop") {
+        try { sourcePad.source.stop(); } catch (error) {}
+        sourcePad.source = null;
+      }
+    }
+    updatePadVisual(index, 0, 0);
+    return;
+  }
   const pad = state.pads[index];
   if (!pad) return;
   pad.active = false;
@@ -4149,9 +7075,11 @@ function triggerSynthDrum(index, velocity) {
   osc.stop(now + 0.75);
 }
 
-function startSequencer() {
-  stopSequencer(true);
+function startSequencer(restart = true) {
+  if (restart) stopSequencer(true);
+  else pauseSequencer(true);
   state.sequencer.playing = true;
+  state.transport.paused = false;
   const tick = () => {
     const pos = state.sequencer.position;
     state.pads.forEach((pad, row) => {
@@ -4164,8 +7092,15 @@ function startSequencer() {
     queueRender();
   };
   tick();
-  const interval = (60 / state.bpm / 4) * 1000;
+  const interval = getDivisionMs(state.sequencer.timingDivision || state.transport.timingDivision);
   sequenceTimer = setInterval(tick, interval);
+}
+
+function pauseSequencer(silent = false) {
+  if (sequenceTimer) clearInterval(sequenceTimer);
+  sequenceTimer = null;
+  state.sequencer.playing = false;
+  if (!silent) queueRender();
 }
 
 function stopSequencer(silent = false) {
@@ -4174,6 +7109,20 @@ function stopSequencer(silent = false) {
   state.sequencer.playing = false;
   state.sequencer.position = 0;
   if (!silent) queueRender();
+}
+
+function setSequencerSteps(steps) {
+  const next = [16, 32, 64].includes(steps) ? steps : 16;
+  state.sequencer.steps = next;
+  ensureSequencerPatternLength(next);
+  if (state.sequencer.position >= next) state.sequencer.position = 0;
+}
+
+function ensureSequencerPatternLength(length = state.sequencer.steps) {
+  state.sequencer.pattern = Array.from({ length: 16 }, (_, row) => {
+    const current = state.sequencer.pattern[row] || [];
+    return Array.from({ length: Math.max(64, length) }, (_, step) => Boolean(current[step]));
+  });
 }
 
 function saveProject() {
@@ -5127,6 +8076,18 @@ function drawAllCanvases() {
   document.querySelectorAll("[data-waveform='recording']").forEach((canvas) => {
     drawWaveform(canvas, state.recorder.buffer, { color: "#ff4fd8" });
   });
+  document.querySelectorAll("[data-waveform='studio-main']").forEach((canvas) => {
+    drawMainWaveform(canvas, getWaveformStudioBuffer(), { playhead: state.song.playheadTime || state.waveformStudio.cursorTime || 0 });
+  });
+  document.querySelectorAll("[data-waveform='studio-minimap']").forEach((canvas) => {
+    drawWaveformMiniMap(canvas, getWaveformStudioBuffer(), state.waveformStudio.viewport);
+  });
+  document.querySelectorAll("[data-waveform='crossfade']").forEach((canvas) => {
+    drawCrossfadeCurve(canvas, state.waveformStudio.crossfades.at(-1));
+  });
+  document.querySelectorAll("[data-waveform='effect-preview']").forEach((canvas) => {
+    drawMainWaveform(canvas, state.waveformStudio.quickEffect?.buffer || getWaveformStudioBuffer(), {});
+  });
   document.querySelectorAll("[data-automation]").forEach((canvas) => {
     const lane = state.automation.lanes.find((item) => item.id === canvas.dataset.automation);
     drawAutomation(canvas, lane);
@@ -5984,6 +8945,22 @@ function buildSonicTags(analysis, deckTracks = []) {
   if (analysis.drums.activePads.some((pad) => pad.recentHits)) tags.push("live pad performance");
   if (analysis.melodic?.notes?.length) tags.push("piano roll melody");
   if (analysis.songSources?.automation?.length) tags.push("automation movement");
+  if (state.pad16Level?.enabled) {
+    tags.push({
+      velocity: "16-level velocity performance",
+      tune: "pitched 808 padline",
+      filter: "filter-pad expression",
+      probability: "probabilistic ghost notes",
+      ratchet: "ratchet rolls",
+      slice: "sliced loop chops",
+      attack: "envelope pad shaping",
+      decay: "envelope pad shaping",
+      layer: "layered pad morph"
+    }[state.pad16Level.mode] || "16-level pad performance");
+  }
+  if (state.waveformStudio?.regions?.length) tags.push("waveform region edits");
+  if (state.waveformStudio?.crossfades?.length) tags.push("crossfade clip editing");
+  if (state.adaptiveArrangement?.scenes?.length) tags.push("adaptive arrangement scenes");
   if (deckTracks.length) tags.push("DJ deck idea");
   return [...new Set(tags)];
 }
@@ -6191,9 +9168,30 @@ function analyzePadDNA() {
     return { pad, index, stepHits, recentHits };
   }).filter(({ pad, stepHits, recentHits }) => pad.buffer || pad.sampleName || pad.lastVelocity || stepHits || recentHits);
   const touches = state.settings.beatDNA.includeTouchHistory ? state.touchHistory.slice(-40) : [];
-  const signature = activePads.map(({ pad, index, stepHits, recentHits }) => `${index}:${pad.name}:${pad.sampleName || "synth"}:${pad.mode}:${stepHits}:${recentHits}:${Math.round((pad.lastVelocity || 0.7) * 100)}`).join("|") + `|touch:${touches.map((touch) => `${touch.type}:${touch.index ?? touch.note}:${Math.round((touch.velocity || 0.5) * 100)}`).join(".")}`;
-  const tag = activePads.some(({ pad }) => /808|kick|sub/i.test(pad.name)) ? "808 bass" : activePads.length ? "touch pad performance" : "default drum pads";
-  return { activePads, touches, signature, tag };
+  const performance = state.pad16Level?.lastPerformance?.slice(-32) || [];
+  const modeTags = {
+    velocity: "16-level velocity performance",
+    tune: "pitched 808 padline",
+    filter: "filter-pad expression",
+    probability: "probabilistic ghost notes",
+    ratchet: "ratchet rolls",
+    slice: "sliced loop chops",
+    attack: "envelope pad shaping",
+    decay: "envelope pad shaping",
+    layer: "layered pad morph"
+  };
+  const signature = activePads.map(({ pad, index, stepHits, recentHits }) => `${index}:${pad.name}:${pad.sampleName || "synth"}:${pad.mode}:${stepHits}:${recentHits}:${Math.round((pad.lastVelocity || 0.7) * 100)}`).join("|")
+    + `|touch:${touches.map((touch) => `${touch.type}:${touch.index ?? touch.note}:${Math.round((touch.velocity || 0.5) * 100)}`).join(".")}`
+    + `|16:${state.pad16Level?.enabled ? state.pad16Level.mode : "off"}:${performance.map((hit) => `${hit.index}:${hit.valueLabel}`).join(".")}`;
+  const tag = state.pad16Level?.enabled ? modeTags[state.pad16Level.mode] || "16-level pad performance" : activePads.some(({ pad }) => /808|kick|sub/i.test(pad.name)) ? "808 bass" : activePads.length ? "touch pad performance" : "default drum pads";
+  return {
+    activePads,
+    touches,
+    performance,
+    signature,
+    tag,
+    levelMode: state.pad16Level?.enabled ? state.pad16Level.mode : "off"
+  };
 }
 
 function analyzeKeyboardDNA() {
@@ -6210,10 +9208,18 @@ function analyzeKeyboardDNA() {
 function analyzeSongArrangementDNA() {
   const clips = state.daw.clips || [];
   const tracks = state.daw.tracks || [];
+  const regions = state.waveformStudio?.regions || [];
+  const markers = state.waveformStudio?.markers || [];
+  const crossfades = state.waveformStudio?.crossfades || [];
+  const scenes = state.adaptiveArrangement?.scenes || [];
   return {
     clipCount: clips.length,
-    signature: `${state.daw.song.lengthBars}bars|${tracks.map((track) => `${track.type}:${track.name}`).join("|")}|${clips.map((clip) => `${clip.type}:${clip.startBeat}:${clip.lengthBeats}`).join("|")}`,
-    tag: clips.length ? "arranged clips" : "live loop idea"
+    regionCount: regions.length,
+    markerCount: markers.length,
+    crossfadeCount: crossfades.length,
+    sceneCount: scenes.length,
+    signature: `${state.daw.song.lengthBars}bars|${tracks.map((track) => `${track.type}:${track.name}`).join("|")}|${clips.map((clip) => `${clip.type}:${clip.startBeat}:${clip.lengthBeats}`).join("|")}|regions:${regions.map((region) => `${region.type}:${region.startTime}-${region.endTime}`).join(".")}|markers:${markers.map((marker) => marker.startTime).join(".")}|xf:${crossfades.length}|scenes:${scenes.map((scene) => `${scene.name}:${scene.intensity}`).join(".")}`,
+    tag: regions.length ? "waveform region edits" : scenes.length ? "adaptive arrangement scenes" : crossfades.length ? "crossfade clip editing" : clips.length ? "arranged clips" : "live loop idea"
   };
 }
 
@@ -7044,10 +10050,13 @@ function toggleStep(row, step) {
 }
 
 function switchPadBank(bank) {
-  state.pads.forEach((pad) => {
-    pad.bank = bank;
-  });
-  toast(`Pad bank ${bank} selected. Samples stay in memory for this session.`);
+  syncCurrentPadBank();
+  ensurePadBanks();
+  const bankId = ["A", "B", "C", "D"].includes(bank) ? bank : "A";
+  state.padBank = bankId;
+  state.pads = state.padBanks[bankId].map((pad, index) => clonePadForBank(pad, index, bankId));
+  if (state.pad16Level.enabled) generate16LevelPads();
+  toast(`Pad bank ${bankId} selected. Samples stay in memory for this session.`);
   queueRender();
 }
 
@@ -7069,6 +10078,8 @@ async function loadFactoryKit(index) {
   });
   state.selectedKitIndex = index;
   state.projectName = `${kit.name} Session`;
+  syncCurrentPadBank();
+  if (state.pad16Level.enabled) generate16LevelPads();
   toast(`${kit.name} loaded as an original touch-reactive 16-pad kit.`);
   render();
 }
@@ -7155,6 +10166,8 @@ function selectKit(index, silent = false) {
     state.pads[padIndex].sampleName = sample.name;
     state.pads[padIndex].name = sample.name.replace(/\.[^.]+$/, "").slice(0, 24) || `Pad ${padIndex + 1}`;
   });
+  syncCurrentPadBank();
+  if (state.pad16Level.enabled) generate16LevelPads();
   if (!silent) toast(`${kit.name} mapped to the 16 pads.`);
   render();
 }
@@ -7171,18 +10184,84 @@ function clearPad(index) {
   pad.buffer = null;
   pad.sampleName = "";
   pad.mode = "one-shot";
+  syncCurrentPadBank();
+  if (state.pad16Level.enabled) generate16LevelPads();
   render();
 }
 
 function togglePadMode(index) {
   const pad = state.pads[index];
   pad.mode = pad.mode === "one-shot" ? "loop" : "one-shot";
+  syncCurrentPadBank();
+  if (state.pad16Level.enabled) generate16LevelPads();
   render();
 }
 
-async function loadDemoProject() {
+function resetDemoStemChannels() {
+  state.stems.forEach((stem) => {
+    stopChannel(stem.id, true);
+    stem.buffer = null;
+    stem.fileName = "";
+    stem.trimStart = 0;
+    stem.trimEnd = 0;
+    stem.playing = false;
+    stem.pausedAt = 0;
+  });
+}
+
+function setupDemoStarterPattern() {
+  clearPattern();
+  state.sequencer.pattern[0][0] = true;
+  state.sequencer.pattern[0][4] = true;
+  state.sequencer.pattern[0][8] = true;
+  state.sequencer.pattern[0][12] = true;
+  state.sequencer.pattern[1][4] = true;
+  state.sequencer.pattern[1][12] = true;
+  for (let step = 0; step < 16; step += 2) state.sequencer.pattern[2][step] = true;
+}
+
+async function loadDefaultDemoStemsFromAssets() {
+  await ensureAudio();
+  if (!audioCtx || !window.fetch) return false;
+  let loaded = 0;
+  for (const asset of DEFAULT_DEMO_STEMS) {
+    try {
+      const response = await fetch(asset.file);
+      if (!response.ok) continue;
+      const data = await response.arrayBuffer();
+      const buffer = await audioCtx.decodeAudioData(data.slice(0));
+      const stem = state.stems[asset.stemIndex] || state.stems[0];
+      Object.assign(stem, {
+        buffer,
+        name: asset.name,
+        fileName: asset.name,
+        trimStart: 0,
+        trimEnd: buffer.duration,
+        pausedAt: 0,
+        playing: false
+      });
+      loaded += 1;
+    } catch (error) {
+      console.warn(`Could not load demo stem ${asset.name}`, error);
+    }
+  }
+  return loaded >= 3;
+}
+
+async function loadDemoProject(options = {}) {
   await ensureAudio();
   state.projectName = "Neon Stem Demo";
+  resetDemoStemChannels();
+  const loadedAssetDemo = await loadDefaultDemoStemsFromAssets();
+  if (loadedAssetDemo) {
+    for (let i = 0; i < 16; i += 1) state.pads[i].buffer = null;
+    syncCurrentPadBank();
+    if (state.pad16Level.enabled) generate16LevelPads();
+    setupDemoStarterPattern();
+    if (!options.silent) toast("Default Verse 1 demo stems loaded.");
+    render();
+    return;
+  }
   const seconds = 4;
   const sampleRate = audioCtx.sampleRate;
   const drums = audioCtx.createBuffer(1, seconds * sampleRate, sampleRate);
@@ -7195,15 +10274,10 @@ async function loadDemoProject() {
   Object.assign(state.stems[1], { buffer: bass, fileName: "Built-in synthetic bass", trimStart: 0, trimEnd: bass.duration });
   Object.assign(state.stems[3], { buffer: melody, fileName: "Built-in synthetic melody", trimStart: 0, trimEnd: melody.duration });
   for (let i = 0; i < 16; i += 1) state.pads[i].buffer = null;
-  clearPattern();
-  state.sequencer.pattern[0][0] = true;
-  state.sequencer.pattern[0][4] = true;
-  state.sequencer.pattern[0][8] = true;
-  state.sequencer.pattern[0][12] = true;
-  state.sequencer.pattern[1][4] = true;
-  state.sequencer.pattern[1][12] = true;
-  for (let step = 0; step < 16; step += 2) state.sequencer.pattern[2][step] = true;
-  toast("Demo project loaded with synthesized stems and a starter pattern.");
+  syncCurrentPadBank();
+  if (state.pad16Level.enabled) generate16LevelPads();
+  setupDemoStarterPattern();
+  if (!options.silent) toast("Demo project loaded with synthesized stems and a starter pattern.");
   render();
 }
 
@@ -7225,9 +10299,18 @@ function fillDemoBuffer(buffer, type) {
 function clearProject() {
   stopAll();
   state.projectName = "Untitled Stem Studio Session";
+  state.transport.paused = false;
+  state.transport.loop = false;
+  state.transport.loopAll = false;
   state.stems = STEM_NAMES.map((name, index) => createStemChannel(name, index));
   state.decks = { a: createDeck("a", "Deck A", COLORS[0]), b: createDeck("b", "Deck B", COLORS[2]) };
   state.pads = createPads();
+  state.padBank = "A";
+  state.padBanks = {};
+  ensurePadBanks();
+  state.pad16Level.enabled = false;
+  state.pad16Level.generatedPads = [];
+  state.pad16Level.lastPerformance = [];
   state.kits = [];
   state.selectedKitIndex = 0;
   state.sampler.buffer = null;
@@ -7244,9 +10327,21 @@ function serializeProject(includeBuffers) {
     savedAt: new Date().toISOString(),
     projectName: state.projectName,
     bpm: state.bpm,
+    transport: state.transport,
     master: state.master,
     selectedStemId: state.selectedStemId,
     selectedPadIndex: state.selectedPadIndex,
+    keyMappings: state.keyMappings,
+    padBank: state.padBank,
+    padBanks: Object.fromEntries(Object.entries(state.padBanks || {}).map(([bank, pads]) => [
+      bank,
+      (pads || []).map((pad) => serializePadProjectData(pad, includeBuffers))
+    ])),
+    pad16Level: {
+      ...state.pad16Level,
+      generatedPads: [],
+      lastPerformance: (state.pad16Level.lastPerformance || []).slice(-64)
+    },
     stems: state.stems.map((stem) => ({
       ...stemMetadata(stem),
       bufferData: includeBuffers && stem.buffer ? serializeBuffer(stem.buffer) : null
@@ -7256,16 +10351,7 @@ function serializeProject(includeBuffers) {
       bufferData: includeBuffers && deck.buffer ? serializeBuffer(deck.buffer) : null
     }])),
     pads: state.pads.map((pad) => ({
-      id: pad.id,
-      name: pad.name,
-      bank: pad.bank,
-      mode: pad.mode,
-      sampleName: pad.sampleName,
-      gain: pad.gain,
-      pitch: pad.pitch,
-      muted: pad.muted,
-      color: pad.color,
-      bufferData: includeBuffers && pad.buffer ? serializeBuffer(pad.buffer) : null
+      ...serializePadProjectData(pad, includeBuffers)
     })),
     kits: state.kits.map((kit) => ({
       name: kit.name,
@@ -7275,6 +10361,9 @@ function serializeProject(includeBuffers) {
       }))
     })),
     song: state.song,
+    waveformStudio: serializeWaveformStudioProject(),
+    adaptiveArrangement: state.adaptiveArrangement,
+    openTools: state.openTools,
     pianoRoll: state.pianoRoll,
     automation: state.automation,
     mixerChannels: state.mixerChannels,
@@ -7290,12 +10379,81 @@ function serializeProject(includeBuffers) {
   };
 }
 
+function serializePadProjectData(pad, includeBuffers) {
+  return {
+    id: pad.id,
+    name: pad.name,
+    bank: pad.bank,
+    mode: pad.mode,
+    sampleName: pad.sampleName,
+    gain: pad.gain,
+    pitch: pad.pitch,
+    muted: pad.muted,
+    solo: pad.solo,
+    color: pad.color,
+    envelope: pad.envelope ? { ...pad.envelope } : null,
+    probability: pad.probability ?? 1,
+    ratchet: pad.ratchet ? { ...pad.ratchet } : null,
+    slice: pad.slice ? { ...pad.slice } : null,
+    layers: (pad.layers || []).map((layer) => ({
+      sampleName: layer.sampleName || "",
+      gain: layer.gain ?? 1,
+      bufferData: includeBuffers && layer.sampleData ? serializeBuffer(layer.sampleData) : null
+    })),
+    bufferData: includeBuffers && pad.buffer ? serializeBuffer(pad.buffer) : null
+  };
+}
+
+function hydratePadProjectData(padData, index = 0, bank = "A") {
+  const pad = clonePadForBank({
+    ...createPads()[index],
+    ...padData,
+    buffer: padData.bufferData ? deserializeBuffer(padData.bufferData) : null,
+    layers: (padData.layers || []).map((layer) => ({
+      sampleName: layer.sampleName || "",
+      gain: layer.gain ?? 1,
+      sampleData: layer.bufferData ? deserializeBuffer(layer.bufferData) : null
+    }))
+  }, index, bank);
+  return pad;
+}
+
+function serializeWaveformStudioProject() {
+  const { buffer, clipboard, quickEffect, contextMenu, recording, ...rest } = state.waveformStudio || {};
+  return {
+    ...rest,
+    selection: { ...(state.waveformStudio?.selection || {}) },
+    regions: (state.waveformStudio?.regions || []).map((region) => ({ ...region })),
+    markers: (state.waveformStudio?.markers || []).map((marker) => ({ ...marker })),
+    crossfades: (state.waveformStudio?.crossfades || []).map((fade) => ({ ...fade, curveA: [], curveB: [] })),
+    quickEffect: quickEffect ? { ...quickEffect, buffer: null } : null,
+    contextMenu: { open: false, x: 0, y: 0, context: null },
+    recording: recording ? { ...recording, recorder: null, stream: null, chunks: [] } : null,
+    clipboard: null,
+    buffer: null
+  };
+}
+
 async function hydrateProject(payload) {
   await ensureAudio();
   state.projectName = payload.projectName || state.projectName;
   state.bpm = payload.bpm || state.bpm;
   if (payload.master) state.master = { ...state.master, ...payload.master };
+  if (payload.transport) state.transport = { ...state.transport, ...payload.transport, paused: false };
   if (payload.settings) state.settings = { ...state.settings, ...payload.settings };
+  if (payload.keyMappings) {
+    state.keyMappings = sanitizeKeyboardMappings(payload.keyMappings);
+    saveKeyboardMappings();
+  }
+  if (payload.padBank) state.padBank = payload.padBank;
+  if (payload.pad16Level) {
+    state.pad16Level = {
+      ...state.pad16Level,
+      ...payload.pad16Level,
+      generatedPads: [],
+      lastPerformance: Array.isArray(payload.pad16Level.lastPerformance) ? payload.pad16Level.lastPerformance.slice(-64) : []
+    };
+  }
   if (Array.isArray(payload.stems)) {
     payload.stems.forEach((stemData, index) => {
       const stem = state.stems[index] || createStemChannel(stemData.name || `Stem ${index + 1}`, index);
@@ -7314,6 +10472,16 @@ async function hydrateProject(payload) {
     payload.pads.forEach((padData, index) => {
       Object.assign(state.pads[index], padData, { source: null, active: false, buffer: padData.bufferData ? deserializeBuffer(padData.bufferData) : null });
     });
+    syncCurrentPadBank();
+  }
+  if (payload.padBanks && typeof payload.padBanks === "object") {
+    state.padBanks = {};
+    Object.entries(payload.padBanks).forEach(([bank, pads]) => {
+      state.padBanks[bank] = (pads || []).slice(0, 16).map((padData, index) => hydratePadProjectData(padData, index, bank));
+    });
+    ensurePadBanks();
+    const activeBank = state.padBank || "A";
+    state.pads = state.padBanks[activeBank].map((pad, index) => clonePadForBank(pad, index, activeBank));
   }
   if (Array.isArray(payload.kits)) {
     state.kits = payload.kits.slice(0, 5).map((kit) => ({
@@ -7331,10 +10499,25 @@ async function hydrateProject(payload) {
     Object.assign(state.sampler, payload.sampler, { source: null, buffer: payload.sampler.bufferData ? deserializeBuffer(payload.sampler.bufferData) : null });
   }
   if (payload.song) state.song = payload.song;
+  if (payload.waveformStudio) {
+    state.waveformStudio = {
+      ...state.waveformStudio,
+      ...payload.waveformStudio,
+      buffer: null,
+      clipboard: null,
+      quickEffect: payload.waveformStudio.quickEffect ? { ...payload.waveformStudio.quickEffect, buffer: null } : null,
+      contextMenu: { open: false, x: 0, y: 0, context: null },
+      recording: { ...state.waveformStudio.recording, ...(payload.waveformStudio.recording || {}), recorder: null, stream: null, chunks: [], active: false }
+    };
+  }
+  if (payload.adaptiveArrangement) state.adaptiveArrangement = { ...state.adaptiveArrangement, ...payload.adaptiveArrangement };
+  if (payload.openTools) state.openTools = { ...state.openTools, ...payload.openTools };
   if (payload.pianoRoll) state.pianoRoll = payload.pianoRoll;
   if (payload.automation) state.automation = payload.automation;
   if (Array.isArray(payload.mixerChannels)) state.mixerChannels = payload.mixerChannels;
   if (Array.isArray(payload.plugins)) state.plugins = payload.plugins;
+  ensurePadBanks();
+  if (state.pad16Level.enabled) generate16LevelPads();
 }
 
 function stemMetadata(stem) {
@@ -7787,13 +10970,14 @@ function currentStemTime(channel) {
   if (!audioCtx || !channel?.playing) return channel?.pausedAt || 0;
   const elapsed = audioCtx.currentTime - channel.startTime;
   const duration = Math.max(0.01, getTrimEnd(channel) - channel.trimStart);
-  return channel.loop ? channel.trimStart + (elapsed % duration) : clamp(channel.trimStart + elapsed, channel.trimStart, getTrimEnd(channel));
+  return (channel.loop || state.transport.loop || state.transport.loopAll) ? channel.trimStart + (elapsed % duration) : clamp(channel.trimStart + elapsed, channel.trimStart, getTrimEnd(channel));
 }
 
 function currentDeckTime(deck) {
   if (!audioCtx || !deck?.playing) return deck?.pausedAt || 0;
   const elapsed = audioCtx.currentTime - deck.startTime;
-  return deck.loop && deck.loopOut > deck.loopIn ? deck.loopIn + ((elapsed - deck.loopIn) % (deck.loopOut - deck.loopIn)) : clamp(elapsed, 0, getBufferDuration(deck));
+  if (deck.loop && deck.loopOut > deck.loopIn) return deck.loopIn + ((elapsed - deck.loopIn) % (deck.loopOut - deck.loopIn));
+  return (state.transport.loop || state.transport.loopAll) ? elapsed % Math.max(0.01, getBufferDuration(deck)) : clamp(elapsed, 0, getBufferDuration(deck));
 }
 
 function drawGrid(ctx, width, height) {
@@ -7962,6 +11146,7 @@ function onRangeInput(event) {
   }
   if (scope === "sequencer") {
     state.sequencer[prop] = value;
+    if (state.sequencer.playing && prop !== "position") startSequencer(false);
   }
   if (scope === "sampler") {
     state.sampler[prop] = value;
@@ -7988,7 +11173,7 @@ function onInput(event) {
   if (key === "bpm") {
     state.bpm = clamp(input.value, 40, 240);
     localStorage.setItem("lss-bpm", String(state.bpm));
-    if (state.sequencer.playing) startSequencer();
+    if (state.sequencer.playing) startSequencer(false);
   }
   if (key === "masterVolume") {
     state.master.volume = Number(input.value);
@@ -8122,6 +11307,8 @@ document.addEventListener("input", (event) => {
   if (event.target.matches("[data-action='set-suno-option']")) onSunoOptionInput(event);
   if (event.target.matches("[data-action='set-video-prompt-option']")) onVideoPromptOptionInput(event);
   if (event.target.matches("[data-action='set-ai-master']")) onAiMasterInput(event);
+  if (event.target.matches("[data-action='set-16-level-option']")) on16LevelOptionInput(event);
+  if (event.target.matches("[data-action='set-top-shell-height']")) setTopShellHeight(event.target.value);
   if (event.target.matches("[data-action^='set-lottery'], [data-action='set-custom-lottery']")) onLotteryInput(event);
   if (event.target.matches("[data-range]")) onRangeInput(event);
   if (event.target.matches("[data-input]")) onInput(event);
@@ -8133,6 +11320,24 @@ document.addEventListener("change", (event) => {
   if (event.target.matches("[data-action='set-suno-option']")) onSunoOptionInput(event);
   if (event.target.matches("[data-action='set-video-prompt-option']")) onVideoPromptOptionInput(event);
   if (event.target.matches("[data-action='set-ai-master']")) onAiMasterInput(event);
+  if (event.target.matches("[data-action='set-16-level-option']")) on16LevelOptionInput(event);
+  if (event.target.matches("[data-action='set-top-shell-mode']")) setTopShellMode(event.target.value);
+  if (event.target.matches("[data-action='set-top-shell-height']")) setTopShellHeight(event.target.value);
+  if (event.target.matches("[data-action='set-16-level-source']")) set16LevelSourcePad(Number(event.target.value));
+  if (event.target.matches("[data-action='set-16-level-mode']")) set16LevelMode(event.target.value);
+  if (event.target.matches("[data-action='set-waveform-source']")) {
+    state.waveformStudio.source = event.target.value;
+    state.waveformStudio.fileInfo = analyzeAudioFileMetadata(null, getWaveformStudioBuffer());
+    render();
+  }
+  if (event.target.matches("[data-action='set-crossfade-shape']")) {
+    state.settings.waveformStudio.defaultCrossfadeShape = event.target.value;
+    saveSettings();
+    drawAllCanvases();
+  }
+  if (event.target.matches("[data-action='set-timing-division']")) {
+    setTimingDivision(event.target.value);
+  }
   if (event.target.matches("[data-action^='set-lottery'], [data-action='set-custom-lottery']")) onLotteryInput(event);
   if (event.target.matches("[data-input]")) onInput(event);
 });
@@ -8151,6 +11356,10 @@ function onVideoPromptOptionInput(event) {
 
 function onAiMasterInput(event) {
   setAiMasterOption(event.target.dataset.aiMaster, readControlValue(event.target));
+}
+
+function on16LevelOptionInput(event) {
+  set16LevelOption(event.target.dataset.path, readControlValue(event.target), event.target.type);
 }
 
 function onLotteryInput(event) {
@@ -8172,6 +11381,12 @@ function onLotteryInput(event) {
 }
 
 document.addEventListener("keydown", async (event) => {
+  if (state.keyMappingLearn) {
+    event.preventDefault();
+    event.stopPropagation();
+    assignKeyboardMapping(event.code);
+    return;
+  }
   if (event.key === "Escape") {
     if (state.activeHelpTopic || state.helpTopic || state.helpOpen) {
       closeHelp();
@@ -8182,16 +11397,11 @@ document.addEventListener("keydown", async (event) => {
       return;
     }
   }
-  const tag = document.activeElement?.tagName;
-  if (tag === "INPUT" || tag === "SELECT" || tag === "TEXTAREA") return;
-  const key = event.key.toLowerCase();
-  const index = PAD_KEYS.indexOf(key);
-  if (index >= 0) {
+  if (isTextEditingTarget(document.activeElement)) return;
+  if (await triggerMappedComputerKey(event)) return;
+  if (handleSongEditorShortcut(event)) {
     event.preventDefault();
-    if (activeKeyboardShortcuts.has(key)) return;
-    activeKeyboardShortcuts.add(key);
-    await ensureAudio();
-    triggerPad(index, 1, false, true);
+    return;
   }
   if (event.code === "Space") {
     event.preventDefault();
@@ -8201,12 +11411,7 @@ document.addEventListener("keydown", async (event) => {
 });
 
 document.addEventListener("keyup", (event) => {
-  const key = event.key.toLowerCase();
-  const index = PAD_KEYS.indexOf(key);
-  if (index >= 0) {
-    activeKeyboardShortcuts.delete(key);
-    releasePad(index);
-  }
+  releaseMappedComputerKey(event);
 });
 
 window.addEventListener("resize", () => drawAllCanvases());
@@ -8215,6 +11420,18 @@ window.addEventListener("beforeinstallprompt", (event) => {
   event.preventDefault();
   deferredInstallPrompt = event;
 });
+
+let defaultDemoAutoloadStarted = false;
+async function autoLoadDefaultDemoOnStartup() {
+  if (defaultDemoAutoloadStarted) return;
+  if (state.stems.some((stem) => stem.buffer)) return;
+  defaultDemoAutoloadStarted = true;
+  try {
+    await loadDemoProject({ silent: true });
+  } catch (error) {
+    console.warn("Default demo stem autoload skipped.", error);
+  }
+}
 
 state.settings = validateSettings(loadSettings());
 applySettingsToVisuals();
@@ -8228,4 +11445,5 @@ if ("serviceWorker" in navigator && location.protocol !== "file:") {
 }
 
 render();
+window.setTimeout(autoLoadDefaultDemoOnStartup, 650);
 animationLoop();

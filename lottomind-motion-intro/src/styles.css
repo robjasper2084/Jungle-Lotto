@@ -24,6 +24,109 @@
   background: transparent;
 }
 
+.future-sting {
+  overflow: hidden;
+  color: var(--white);
+  font-family: "Bank Gothic", "Eurostile", "Rajdhani", "Segoe UI", Inter, Arial, sans-serif;
+  background:
+    radial-gradient(circle at 50% 42%, rgba(0, 245, 255, 0.2), transparent 24%),
+    radial-gradient(circle at 50% 68%, rgba(255, 209, 102, 0.1), transparent 34%),
+    #02040a;
+}
+
+.future-circuit-bg,
+.future-particles {
+  position: absolute;
+  inset: 0;
+}
+
+.future-particles span {
+  position: absolute;
+  border-radius: 999px;
+  box-shadow: 0 0 22px currentColor;
+}
+
+.future-scanline {
+  position: absolute;
+  left: -10%;
+  top: 0;
+  width: 120%;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, rgba(0, 245, 255, 0.95), rgba(255, 209, 102, 0.75), transparent);
+  box-shadow: 0 0 44px rgba(0, 245, 255, 0.5);
+}
+
+.future-logo-stage {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  display: grid;
+  place-items: center;
+  transform-origin: center;
+}
+
+.future-logo-halo {
+  position: absolute;
+  inset: -8%;
+  z-index: 0;
+  border: 2px solid rgba(0, 245, 255, 0.32);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, transparent 58%, rgba(0, 245, 255, 0.12) 59%, transparent 66%),
+    conic-gradient(from 90deg, rgba(0, 245, 255, 0.7), rgba(255, 209, 102, 0.55), rgba(139, 92, 246, 0.64), rgba(0, 245, 255, 0.7));
+  filter: blur(1px);
+  opacity: 0.42;
+}
+
+.future-logo-image {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow:
+    0 0 0 1px rgba(255, 209, 102, 0.24),
+    0 0 70px rgba(0, 245, 255, 0.28);
+}
+
+.future-title-lockup {
+  position: absolute;
+  left: 50%;
+  bottom: 105px;
+  width: min(1280px, 84%);
+  text-align: center;
+}
+
+.future-title-lockup h1 {
+  margin: 0;
+  font-size: 102px;
+  line-height: 0.92;
+  color: transparent;
+  background: linear-gradient(96deg, #f8fbff 0%, #00f5ff 24%, #ffd166 52%, #f8fbff 74%, #8b5cf6 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  text-transform: uppercase;
+  text-shadow:
+    0 0 34px rgba(0, 245, 255, 0.28),
+    0 0 70px rgba(255, 209, 102, 0.14);
+}
+
+.future-title-lockup p,
+.future-eyebrow {
+  margin: 14px 0 0;
+  color: rgba(248, 251, 255, 0.82);
+  font-size: 28px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.future-eyebrow {
+  margin-bottom: 12px;
+  color: var(--green);
+  font-size: 20px;
+}
+
 .background-svg,
 .particle-layer,
 .waveform-ribbon,

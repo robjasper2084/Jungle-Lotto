@@ -1,4 +1,5 @@
 import { Composition } from "remotion";
+import { FuturisticLogoSting } from "./components/FuturisticLogoSting";
 import { Intro } from "./Intro";
 import "./styles.css";
 
@@ -48,6 +49,14 @@ export const RemotionRoot = () => (
       width={1920}
       height={1080}
       defaultProps={{ variant: "transparent" }}
+    />
+    <Composition
+      id="FuturisticLogoSting"
+      component={FuturisticLogoSting}
+      durationInFrames={150}
+      fps={30}
+      width={1920}
+      height={1080}
     />
   </>
 );

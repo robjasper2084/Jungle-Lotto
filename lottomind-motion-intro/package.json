@@ -9,6 +9,7 @@
     "render:main": "remotion render src/index.ts MainIntro out/lottomind-main-intro.mp4",
     "render:presentation": "remotion render src/index.ts PresentationIntro out/lottomind-presentation-intro.mp4",
     "render:logo": "remotion render src/index.ts LogoSting out/lottomind-logo-sting.mp4",
+    "render:futuristic-logo": "remotion render src/index.ts FuturisticLogoSting out/lottominded-ultra-futuristic-logo-sting.mp4",
     "render:vertical": "remotion render src/index.ts VerticalSocialIntro out/lottomind-vertical-intro.mp4",
     "render:transparent": "remotion render src/index.ts TransparentLogoSting out/lottomind-transparent-logo-sting.webm"
   },
