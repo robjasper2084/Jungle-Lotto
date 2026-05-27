@@ -457,6 +457,8 @@ let mediaRecorder = null;
 let micStream = null;
 let sequenceTimer = null;
 let animationFrame = null;
+let ultraCockpitFrame = null;
+let ultraCockpitRunning = false;
 let dbPromise = null;
 let renderQueued = false;
 let deferredInstallPrompt = null;
@@ -1448,7 +1450,7 @@ function render() {
   const app = document.getElementById("app");
   const topShell = state.ui.topShell;
   app.innerHTML = `
-    <div class="top-shell ${state.settings.stickyTransport ? "" : "not-sticky"} top-shell-${topShell.mode}" style="--top-shell-height:${topShell.height}px">
+    <div class="top-shell ultra-cockpit-shell ${state.settings.stickyTransport ? "" : "not-sticky"} top-shell-${topShell.mode}" style="--top-shell-height:${topShell.height}px">
       ${renderTopShellControls()}
       <div class="top-shell-body" id="studio-top-shell-body">
         ${renderHeader()}
@@ -1466,6 +1468,7 @@ function render() {
     ${state.toast ? `<div class="toast" role="status">${escapeHtml(state.toast)}</div>` : ""}
   `;
   drawAllCanvases();
+  initUltraCockpit();
 }
 
 function renderTopShellControls() {
@@ -1533,32 +1536,38 @@ function queueRender() {
 
 function renderHeader() {
   return `
-    <header class="header">
-      <div class="brand">
-        <img src="${getAsset("logo")}" alt="" />
-        <div>
-          <h1>Lottominded ULTRA</h1>
-          <p>Make Beats. Build Prompts. Generate Creative Signals.</p>
+    <header class="header ultra-cockpit-header">
+      <div class="ultra-brand-zone">
+        <a class="app-top-link app-back-link ultra-back-pill" href="../lottominded-ultra.io/" aria-label="Back to Studio">
+          <span aria-hidden="true">←</span>
+          <span>Back to Studio</span>
+        </a>
+        <div class="brand ultra-brand-copy">
+          <img class="ultra-brand-orb" src="${getAsset("logo")}" alt="" />
+          <div>
+            <h1>Lottominded ULTRA</h1>
+            <p>Make Beats. Build Prompts. Generate Creative Signals.</p>
+          </div>
         </div>
       </div>
-      <label class="project-field">
-        <span class="micro">Project name</span>
-        <input type="text" data-input="projectName" value="${escapeAttr(state.projectName)}" aria-label="Project name" />
-      </label>
-      <div class="actions">
-        <a class="app-top-link app-back-link" href="../lottominded-ultra.io/">Back to Lottomind Studio</a>
-        <button type="button" data-action="save-project">Save</button>
-        <button type="button" data-action="load-project">Load</button>
-        <button type="button" data-action="export-project">Export JSON</button>
-        <button type="button" data-action="demo-project">Demo</button>
-        <button type="button" data-action="open-settings" aria-label="Open settings">Settings</button>
-        <button type="button" data-action="open-help" aria-label="Open help">Help</button>
-        <button type="button" data-action="generate-suno-prompt">Suno</button>
-        <button type="button" data-action="generate-video-prompt">Video</button>
-        <button type="button" data-action="generate-beat-lottery">Signals</button>
-        <a class="app-top-link" href="../lottominded-ultra.io/beat2lotto-plus.html">Beat2Lotto+</a>
-        <button type="button" data-action="set-view" data-view="ai master">AI Master</button>
-        <button type="button" data-action="generate-creative-bundle">Both</button>
+      <div class="ultra-project-zone">
+        <label class="project-field ultra-project-input">
+          <span class="micro">Project name</span>
+          <input type="text" data-input="projectName" value="${escapeAttr(state.projectName)}" aria-label="Project name" />
+        </label>
+        <div class="ultra-status-pills" aria-label="Project status">
+          <span class="ultra-status-pill">Local</span>
+          <span class="ultra-status-pill">${state.savedAt ? "Saved" : "Unsaved"}</span>
+          <span class="ultra-status-pill">${state.bpm} BPM</span>
+          <span class="ultra-status-pill">${escapeHtml(state.daw?.song?.key || "C minor")}</span>
+        </div>
+      </div>
+      <div class="actions ultra-file-zone" aria-label="File and utility actions">
+        <button type="button" data-action="save-project" aria-label="Save project"><span aria-hidden="true">▣</span><span>Save</span></button>
+        <button type="button" data-action="load-project" aria-label="Load project"><span aria-hidden="true">▤</span><span>Load</span></button>
+        <button type="button" data-action="export-project" aria-label="Export project JSON"><span aria-hidden="true">⇩</span><span>Export</span></button>
+        <button type="button" data-action="demo-project" aria-label="Load demo"><span aria-hidden="true">◎</span><span>Demo</span></button>
+        <button type="button" data-action="open-settings" aria-label="Open settings"><span aria-hidden="true">⚙</span><span>Settings</span></button>
       </div>
     </header>
   `;
@@ -1567,41 +1576,57 @@ function renderHeader() {
 function renderTransport() {
   const playingLabel = state.transport.paused ? "Resume All" : state.playing ? "Playing" : "Play All";
   return `
-    <section class="transport" aria-label="Transport">
-      <div class="transport-actions">
-        ${helpButton("transport")}
-        <button type="button" data-action="play-all" aria-pressed="${state.playing && !state.transport.paused}">${playingLabel}</button>
-        <button type="button" data-action="pause-all" aria-pressed="${state.transport.paused}">Pause</button>
-        <button type="button" data-action="restart-all">Restart</button>
-        <button type="button" data-action="stop-all">Stop All</button>
-        <button type="button" data-action="toggle-transport-loop" aria-pressed="${state.transport.loop}">Loop</button>
-        <button type="button" data-action="toggle-loop-all" aria-pressed="${state.transport.loopAll}">Loop All</button>
-        <button type="button" data-action="toggle-sequencer-play" aria-pressed="${state.sequencer.playing}">${state.sequencer.playing ? "Pause Seq" : "Start Seq"}</button>
-        <button type="button" data-action="toggle-follow-sequencer" aria-pressed="${state.transport.followSequencer}">Seq Follow</button>
-        <button type="button" data-action="record-mix" aria-pressed="${state.recording}">${state.recording ? "Stop Recording" : "Record Mix"}</button>
-        <button type="button" data-action="toggle-metronome" aria-pressed="${state.metronome}">Metronome</button>
-        <button type="button" data-action="generate-suno-prompt">Generate Suno Prompt</button>
-        <button type="button" data-action="generate-video-prompt">Generate Video Prompt</button>
-        <button type="button" data-action="generate-beat-lottery">Generate Number Signals</button>
-        <button type="button" data-action="generate-creative-bundle">Generate Both</button>
+    <section class="transport ultra-command-deck" aria-label="ULTRA Studio Cockpit controls">
+      <div class="ultra-transport-rail" aria-label="Transport rail">
+        <button type="button" class="ultra-help-button" data-action="open-help-topic" data-help-topic="transport" aria-label="Transport help">?</button>
+        <button type="button" class="ultra-transport-button play" data-action="play-all" aria-pressed="${state.playing && !state.transport.paused}"><span aria-hidden="true">▶</span><span>${playingLabel}</span></button>
+        <button type="button" class="ultra-transport-button" data-action="pause-all" aria-pressed="${state.transport.paused}"><span aria-hidden="true">Ⅱ</span><span>Pause</span></button>
+        <button type="button" class="ultra-transport-button" data-action="restart-all"><span aria-hidden="true">↻</span><span>Restart</span></button>
+        <button type="button" class="ultra-transport-button stop" data-action="stop-all"><span aria-hidden="true">■</span><span>Stop All</span></button>
+        <button type="button" class="ultra-transport-button loop" data-action="toggle-transport-loop" aria-pressed="${state.transport.loop}"><span aria-hidden="true">∞</span><span>Loop</span></button>
+        <button type="button" class="ultra-transport-button loop" data-action="toggle-loop-all" aria-pressed="${state.transport.loopAll}"><span aria-hidden="true">∞</span><span>Loop All</span></button>
+        <button type="button" class="ultra-transport-button" data-action="toggle-sequencer-play" aria-pressed="${state.sequencer.playing}"><span aria-hidden="true">▦</span><span>${state.sequencer.playing ? "Pause Seq" : "Start Seq"}</span></button>
+        <button type="button" class="ultra-transport-button" data-action="toggle-follow-sequencer" aria-pressed="${state.transport.followSequencer}"><span aria-hidden="true">⌁</span><span>Seq Follow</span></button>
+        <button type="button" class="ultra-transport-button record" data-action="record-mix" aria-pressed="${state.recording}"><span aria-hidden="true">●</span><span>${state.recording ? "Stop Rec" : "Record Mix"}</span></button>
+        <button type="button" class="ultra-transport-button" data-action="toggle-metronome" aria-pressed="${state.metronome}"><span aria-hidden="true">◌</span><span>Metronome</span></button>
       </div>
-      <label class="field">
-        <span>BPM</span>
-        <input type="number" min="40" max="240" step="1" data-input="bpm" value="${state.bpm}" aria-label="BPM" />
-      </label>
-      <label class="field">
-        <span>Timing</span>
-        <select data-action="set-timing-division" aria-label="Transport timing division">
-          ${getTimingDivisions().map((division) => `<option value="${division}" ${state.transport.timingDivision === division ? "selected" : ""}>${formatTimingDivision(division)}</option>`).join("")}
-        </select>
-      </label>
-      <label class="field">
-        <span>Master volume</span>
-        <input type="range" min="0" max="1" step="0.01" data-input="masterVolume" value="${state.master.volume}" aria-label="Master volume" />
-      </label>
-      <div class="field">
-        <span>Master limiter ${state.master.limiter ? "armed" : "bypassed"}</span>
-        <div class="vu" aria-label="Master meter"><span style="--vu:${Math.round(state.master.meter * 100)}%"></span></div>
+      <div class="ultra-creative-rail" aria-label="Creative mode rail">
+        <button type="button" class="ultra-mode-tab suno ${state.view === "suno prompt" ? "active" : ""}" data-action="generate-suno-prompt"><span aria-hidden="true">♪</span><span>Suno</span></button>
+        <button type="button" class="ultra-mode-tab video ${state.view === "video prompt" ? "active" : ""}" data-action="generate-video-prompt"><span aria-hidden="true">▣</span><span>Video</span></button>
+        <button type="button" class="ultra-mode-tab signals ${state.view === "beat lottery" ? "active" : ""}" data-action="generate-beat-lottery"><span aria-hidden="true">#</span><span>Signals</span></button>
+        <a class="app-top-link ultra-mode-tab beat2lotto" href="../lottominded-ultra.io/beat2lotto-plus.html"><span aria-hidden="true">◎</span><span>Beat2Lotto+</span></a>
+        <button type="button" class="ultra-mode-tab master ${state.view === "ai master" ? "active" : ""}" data-action="set-view" data-view="ai master"><span aria-hidden="true">▥</span><span>AI Master</span></button>
+        <button type="button" class="ultra-mode-tab bundle" data-action="generate-creative-bundle"><span aria-hidden="true">✦</span><span>Both</span></button>
+      </div>
+      <div class="ultra-timing-strip" aria-label="Timing strip">
+        <label class="field ultra-timing-card ultra-bpm-control">
+          <span>BPM</span>
+          <input type="number" min="40" max="240" step="1" data-input="bpm" value="${state.bpm}" aria-label="BPM" />
+        </label>
+        <label class="field ultra-timing-card">
+          <span>Timing</span>
+          <select data-action="set-timing-division" aria-label="Transport timing division">
+            ${getTimingDivisions().map((division) => `<option value="${division}" ${state.transport.timingDivision === division ? "selected" : ""}>${formatTimingDivision(division)}</option>`).join("")}
+          </select>
+        </label>
+        <label class="field ultra-timing-card">
+          <span>Key</span>
+          <select data-action="set-daw-song-key" aria-label="Song key">
+            ${["C minor", "C major", "D minor", "E minor", "F minor", "G minor", "A minor", "B minor"].map((key) => `<option value="${key}" ${state.daw?.song?.key === key ? "selected" : ""}>${key}</option>`).join("")}
+          </select>
+        </label>
+        <label class="field ultra-timing-card">
+          <span>Swing</span>
+          <input type="range" min="0" max="0.7" step="0.01" data-range="sequencer" data-prop="swing" value="${state.sequencer.swing}" aria-label="Sequencer swing" />
+        </label>
+        <label class="field ultra-timing-card">
+          <span>Master</span>
+          <input type="range" min="0" max="1" step="0.01" data-input="masterVolume" value="${state.master.volume}" aria-label="Master volume" />
+        </label>
+        <div class="field ultra-timing-card ultra-master-mini-meter">
+          <span>Limiter ${state.master.limiter ? "armed" : "bypassed"}</span>
+          <div class="vu" aria-label="Master meter"><span style="--vu:${Math.round(state.master.meter * 100)}%"></span></div>
+        </div>
       </div>
       <div class="transport-status" aria-label="Transport status">
         <span>${state.transport.loop ? "Loop armed" : "Loop off"}</span>
@@ -1616,7 +1641,7 @@ function renderTransport() {
 function renderTabs() {
   const tabs = ["studio", "song", "open tools", "patterns", "piano roll", "stems", "dj decks", "pads", "sampler", "sequencer", "mixer", "ai master", "automation", "plugins", "midi", "recorder", "files", "suno prompt", "video prompt", "beat lottery", "beat dna", "settings", "help"];
   return `
-    <nav class="tabs" aria-label="Modes">
+    <nav class="tabs ultra-left-dock" aria-label="Modes">
       ${tabs.map((tab) => `<button type="button" class="tab ${state.view === tab ? "is-active" : ""}" data-action="set-view" data-view="${tab}">${titleCase(tab)}</button>`).join("")}
     </nav>
   `;
@@ -1654,11 +1679,21 @@ function renderStudioHero() {
   const loadedPads = state.pads.filter((pad) => pad.buffer).length;
   const activeDecks = Object.values(state.decks).filter((deck) => deck.buffer).length;
   return `
-    <section class="hero" aria-label="LottoMind Stem Studio overview">
-      <div class="hero-content">
-        <div>
+    <section class="hero ultra-workspace-shell" aria-label="LottoMind Stem Studio overview">
+      <aside class="ultra-left-dock ultra-workspace-dock" aria-label="Quick workspace dock">
+        ${["studio", "song", "pads", "stems", "mixer", "ai master", "suno prompt", "video prompt", "beat lottery", "settings"].map((tab) => `<button type="button" class="ultra-dock-button ${state.view === tab ? "is-active" : ""}" data-action="set-view" data-view="${tab}">${titleCase(tab).replace("Beat Lottery", "Beat2Lotto+")}</button>`).join("")}
+      </aside>
+      <div class="hero-content ultra-main-stage ultra-workspace-hero">
+        <div class="ultra-hero-copy">
+          <p class="micro">ULTRA Studio Cockpit</p>
           <h2>Beat DNA • Stem Mixing • Suno Prompts • Creative Number Signals</h2>
-          <p>Load stems, trim waveforms, perform touch-reactive pads, sequence drums, mix two local decks, build Suno prompts, and generate entertainment-only creative signals from your beat.</p>
+          <p>Load stems, trim waveforms, perform pads, sequence drums, mix decks, master locally, and generate creative outputs from the same beat DNA.</p>
+          <div class="ultra-quick-card-grid">
+            <button type="button" class="ultra-quick-card" data-action="set-view" data-view="song">Build Beat</button>
+            <button type="button" class="ultra-quick-card" data-action="set-view" data-view="stems">Mix Stems</button>
+            <button type="button" class="ultra-quick-card" data-action="set-view" data-view="ai master">Master Track</button>
+            <button type="button" class="ultra-quick-card" data-action="generate-creative-bundle">Generate Bundle</button>
+          </div>
         </div>
         <div class="hero-stats" aria-label="Session summary">
           <div class="stat"><strong>${loadedStems}/8</strong><span class="micro">Stems loaded</span></div>
@@ -1666,11 +1701,26 @@ function renderStudioHero() {
           <div class="stat"><strong>${activeDecks}/2</strong><span class="micro">Deck tracks</span></div>
           <div class="stat"><strong>${state.bpm}</strong><span class="micro">BPM</span></div>
         </div>
+        <div class="ultra-waveform-rail" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
       </div>
-      <div class="hero-art" aria-hidden="true">
-        <div class="hero-orbit"></div>
+      <div class="hero-art ultra-beat-dna-orb" aria-hidden="true">
+        <div class="hero-orbit ultra-scanline"></div>
         <img src="${getAsset("hero")}" alt="" />
       </div>
+      <aside class="ultra-right-inspector" aria-label="Project inspector">
+        <div class="ultra-inspector-card">
+          <span class="micro">Current project</span>
+          <strong>${escapeHtml(state.projectName)}</strong>
+        </div>
+        <div class="ultra-inspector-card">
+          <span class="micro">Transport</span>
+          <strong>${state.playing ? "Playing" : state.transport.paused ? "Paused" : "Ready"}</strong>
+        </div>
+        <div class="ultra-inspector-card">
+          <span class="micro">Last Beat DNA</span>
+          <strong>${state.beatDNA?.summary ? escapeHtml(state.beatDNA.summary.slice(0, 32)) : "Awaiting signal"}</strong>
+        </div>
+      </aside>
     </section>
   `;
 }
@@ -11338,6 +11388,11 @@ document.addEventListener("change", (event) => {
   if (event.target.matches("[data-action='set-timing-division']")) {
     setTimingDivision(event.target.value);
   }
+  if (event.target.matches("[data-action='set-daw-song-key']")) {
+    state.daw.song = state.daw.song || {};
+    state.daw.song.key = event.target.value;
+    render();
+  }
   if (event.target.matches("[data-action^='set-lottery'], [data-action='set-custom-lottery']")) onLotteryInput(event);
   if (event.target.matches("[data-input]")) onInput(event);
 });
@@ -11380,6 +11435,66 @@ function onLotteryInput(event) {
   }
 }
 
+function initUltraCockpit() {
+  setActiveCreativeMode(state.view);
+  syncTransportButtonStates();
+  updateUltraMeters();
+  animateUltraWaveform();
+}
+
+function setActiveCreativeMode(mode) {
+  document.querySelectorAll(".ultra-mode-tab").forEach((button) => {
+    const view = button.dataset.view;
+    const action = button.dataset.action;
+    const active = view === mode ||
+      (mode === "suno prompt" && action === "generate-suno-prompt") ||
+      (mode === "video prompt" && action === "generate-video-prompt") ||
+      (mode === "beat lottery" && action === "generate-beat-lottery") ||
+      (mode === "ai master" && view === "ai master");
+    button.classList.toggle("active", Boolean(active));
+  });
+}
+
+function syncTransportButtonStates() {
+  document.querySelectorAll(".ultra-transport-button").forEach((button) => {
+    const pressed = button.getAttribute("aria-pressed") === "true";
+    button.classList.toggle("is-active", pressed);
+  });
+}
+
+function updateUltraMeters() {
+  document.querySelectorAll(".ultra-master-mini-meter .vu span").forEach((meter) => {
+    const lift = state.playing ? Math.max(state.master.meter, 0.18 + Math.random() * 0.38) : state.master.meter;
+    meter.style.setProperty("--vu", `${Math.round(clamp(lift, 0, 1) * 100)}%`);
+  });
+}
+
+function animateUltraWaveform() {
+  if (ultraCockpitRunning || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  ultraCockpitRunning = true;
+  const tick = (time) => {
+    document.querySelectorAll(".ultra-waveform-rail span").forEach((bar, index) => {
+      const pct = 24 + Math.sin(time / 260 + index * 1.3) * 20 + (state.playing ? 24 : 0);
+      bar.style.setProperty("--wave-height", `${Math.max(12, Math.round(pct))}%`);
+    });
+    updateUltraMeters();
+    ultraCockpitFrame = requestAnimationFrame(tick);
+  };
+  ultraCockpitFrame = requestAnimationFrame(tick);
+}
+
+function toggleMobileDock() {
+  document.body.classList.toggle("ultra-mobile-dock-open");
+}
+
+function toggleInspector() {
+  document.body.classList.toggle("ultra-inspector-open");
+}
+
+function compactHeaderOnScroll() {
+  document.body.classList.toggle("ultra-header-compact", window.scrollY > 80);
+}
+
 document.addEventListener("keydown", async (event) => {
   if (state.keyMappingLearn) {
     event.preventDefault();
@@ -11415,6 +11530,17 @@ document.addEventListener("keyup", (event) => {
 });
 
 window.addEventListener("resize", () => drawAllCanvases());
+window.addEventListener("scroll", compactHeaderOnScroll, { passive: true });
+
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden && ultraCockpitFrame) {
+    cancelAnimationFrame(ultraCockpitFrame);
+    ultraCockpitFrame = null;
+    ultraCockpitRunning = false;
+  } else if (!document.hidden) {
+    animateUltraWaveform();
+  }
+});
 
 window.addEventListener("beforeinstallprompt", (event) => {
   event.preventDefault();
