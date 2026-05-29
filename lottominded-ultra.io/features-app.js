@@ -20,13 +20,14 @@ const features = [
   { name: "Beat Lottery", route: "#beat-lottery", color: "rgba(94,255,157,0.24)", copy: "Create beat-seeded entertainment number sets with responsible-play reminders and configurable game formats." },
   { name: "Creative Bundle", route: "#creative-bundle", color: "rgba(41,247,255,0.2)", copy: "Generate Beat DNA, Suno prompt, video prompt, and creative number signals together from one session." },
   { name: "Sampler", route: "#sampler", color: "rgba(255,224,113,0.22)", copy: "Trim samples, preview slices, assign pads, adjust gain, pitch, and playback feel." },
+  { name: "How To Drive Manual", href: "./how-to-use.html", color: "rgba(255,224,113,0.25)", copy: "Open the step-by-step guide for studio controls, Beat2Lotto+ audio import, sheet music notes, safety, and prompt workflows." },
   { name: "Open Tools Lab", route: "#help", color: "rgba(138,92,255,0.22)", copy: "See local audio workflow notes, open music tool inspiration, sample licensing, and compatibility roadmap." }
 ];
 
 const grid = document.querySelector("#featureToolGrid");
 if (grid) {
   grid.innerHTML = features.map((feature, index) => `
-    <a class="feature-tool-card" href="${studioUrl}${feature.route}" style="--feature-color:${feature.color}" data-feature-index="${index}">
+    <a class="feature-tool-card" href="${feature.href || `${studioUrl}${feature.route}`}" style="--feature-color:${feature.color}" data-feature-index="${index}">
       <h3>${feature.name}</h3>
       <p>${feature.copy}</p>
       <span>Open Module</span>
