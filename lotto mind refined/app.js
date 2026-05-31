@@ -28,6 +28,8 @@ const ASSETS = {
   musicMotion: `${BASE}/assets/custom/studio/media/lottomind-music-hub-motion.mov`,
   turntable: `${BASE}/assets/custom/music/lottomind-turntable.svg`,
   youtubeOrb: `${BASE}/assets/custom/music/lottomind-video-orb.svg`,
+  aiCoach: `${BASE}/assets/custom/ai-coach-console.svg`,
+  aiNews: `${BASE}/assets/custom/ai-news-draw-news.svg`,
   paywallGate: `${BASE}/assets/custom/arcade/paywall-premium-gate.svg`,
   detroitHoodieClose: `${BASE}/assets/custom/detroit-hoodie-close.png`,
   detroitPoloClose: `${BASE}/assets/custom/detroit-polo-close.png`,
@@ -40,6 +42,11 @@ const ASSETS = {
   dreamOracleHost: `${BASE}/assets/custom/dream-oracle-host.png`,
   lmLive: `${BASE}/assets/custom/lottomind-live-lm-logo.png`,
   socialBoard: `${BASE}/assets/custom/social/lottomind-social-board.svg`,
+  studioRecordsConsole: `${BASE}/assets/custom/studio/studio-records-console.png`,
+  ticketScannerVideo: `${BASE}/videos/ticket-scanner-demo.mp4`,
+  radarTicketScannerVideo: `${BASE}/videos/radar-ticket-scanner-tile.mp4`,
+  dreamStageVideo: `${BASE}/videos/ticket-scanner-demo.mp4`,
+  oracleHeroVideo: `${BASE}/videos/lottomind-ultra-flow.mp4`,
 };
 
 const AUDIO = {
@@ -2024,6 +2031,7 @@ function dashboardView() {
   const current = state.currentSet || generateLottoSet(state.gameId, state.strategy, "dashboard");
   return `<section class="screen dashboard-screen">
     <div class="oracle-hero panel art-panel" style="--panel-art:url('${ASSETS.dream}')">
+      <video class="oracle-hero-bg-video ambient-video" src="${ASSETS.oracleHeroVideo}" muted loop autoplay playsinline preload="metadata"></video>
       <div>
         <h1>Oracle Studio</h1>
         <p>Reset, dream, read the map, then run Power Tools with every old feature wired inside one branded app.</p>
@@ -2053,7 +2061,7 @@ function dashboardView() {
           const flowVideo = HOME_CAROUSEL_VIDEOS[route];
           return `
           <button class="quest-step oracle-flow-step" data-route="${route}" style="--quest-art:url('${art}')">
-            ${flowVideo ? `<video class="oracle-flow-video" src="${flowVideo}" muted loop autoplay playsinline preload="metadata"></video>` : ""}
+            ${flowVideo ? `<video class="oracle-flow-video ambient-video" src="${flowVideo}" muted loop autoplay playsinline preload="auto"></video>` : ""}
             <b>${String(index + 1).padStart(2, "0")}</b>
             <strong>${title}</strong>
             <small>${copy}</small>
@@ -2105,6 +2113,26 @@ function dashboardView() {
 function circleTool(title, sub, route, index) {
   const arts = [ASSETS.commandDeck, ASSETS.powerTools, ASSETS.heatmap, ASSETS.live, ASSETS.reset, ASSETS.dream, ASSETS.arcade, ASSETS.credit, ASSETS.psychic, ASSETS.music];
   const routeArt = {
+    numberGenerator: ASSETS.powerTools,
+    scanner: ASSETS.powerTools,
+    ticketScanner: ASSETS.powerTools,
+    heatmap: ASSETS.heatmap,
+    sequence: ASSETS.sequence,
+    ai: ASSETS.aiNews,
+    lottoIntel: ASSETS.aiCoach,
+    energyMeter: ASSETS.music,
+    dailyTools: ASSETS.commandDeck,
+    pickGames: ASSETS.commandDeck,
+    live: ASSETS.live,
+    predictions: ASSETS.dream,
+    jackpot: ASSETS.live,
+    wheelBuilder: ASSETS.sequence,
+    wallet: ASSETS.credit,
+    marketplace: ASSETS.socialBoard,
+    records: ASSETS.live,
+    historical: ASSETS.live,
+    history: ASSETS.studioRecordsConsole,
+    storeLocator: ASSETS.arcade,
     arcade: ASSETS.arcade,
     arcadeGame: ASSETS.arcade,
     gamesHub: ASSETS.arcade,
@@ -2116,14 +2144,23 @@ function circleTool(title, sub, route, index) {
     challenges: ASSETS.commandDeck,
     contests: ASSETS.arcade,
     paywall: ASSETS.paywallGate,
+    notifications: ASSETS.socialBoard,
     usLottery: ASSETS.live,
   };
   const video = title === "Number Analyzer"
     ? `<video class="circle-tool-video" src="${BASE}/videos/power-tools-dashboard-box.mp4" poster="${ASSETS.powerTools}" muted loop autoplay playsinline preload="metadata"></video>`
+    : route === "scanner" || route === "ticketScanner"
+      ? `<video class="circle-tool-video scanner-tile-video" src="${ASSETS.radarTicketScannerVideo}" poster="${ASSETS.powerTools}" muted loop autoplay playsinline preload="metadata"></video>`
     : title === "Reset Vault"
       ? `<video class="circle-tool-video singer-video" src="${BASE}/videos/power-tools-button-green-screen.mp4" poster="${ASSETS.music}" muted loop autoplay playsinline preload="metadata"></video>`
       : "";
-  return `<button class="circle-tool" data-route="${route}" style="--circle-art:url('${routeArt[route] || arts[index % arts.length]}')">
+  const art = title === "Smart Predictor" ? ASSETS.aiCoach
+    : title === "AI News" ? ASSETS.aiNews
+      : title === "Energy Meter" ? ASSETS.music
+        : title === "Predictions" ? ASSETS.dream
+          : title === "History" ? ASSETS.studioRecordsConsole
+            : routeArt[route] || arts[index % arts.length];
+  return `<button class="circle-tool" data-route="${route}" style="--circle-art:url('${art}')">
     ${video}
     <span>${title}</span>
     <small>${sub}</small>
@@ -2545,6 +2582,7 @@ function dreamsView() {
   return `<section class="screen dreams-screen">
     ${!reading ? `<div class="panel empty-state dream-ready-spotlight dream-ready-top"><h2>Dream engine ready</h2><p>Tap the mic or type a dream, then run the full interpretation.</p></div>` : ""}
     <div class="panel dream-stage art-panel" style="--panel-art:url('${ASSETS.dream}')">
+      <video class="dream-stage-video ambient-video" src="${ASSETS.dreamStageVideo}" muted loop autoplay playsinline preload="metadata"></video>
       <h1>Dream Oracle<sup>SM</sup> AI</h1>
       <p>Describe your dream. The Oracle detects symbols, explains meaning, and generates lucky numbers.</p>
       ${gamePills()}
@@ -2737,8 +2775,8 @@ function dailyToolsView() {
 }
 
 function heatmapView() {
-  const heatmap = getHeatmap();
-  const stats = getMatrixStats();
+  const heatmap = getHeatmap("powerball");
+  const stats = getMatrixStats("powerball");
   const hot = [...heatmap].sort((a, b) => b.count - a.count || a.number - b.number).slice(0, 8);
   const cold = [...heatmap].sort((a, b) => a.count - b.count || a.number - b.number).slice(0, 8);
   const active = heatmap.filter((cell) => cell.label === "active").slice(0, 8);
@@ -2770,7 +2808,12 @@ function heatmapView() {
         ["Store Locator", "storeLocator"],
       ].map(([label, route]) => `<button class="control-chip" data-route="${route === "hot" || route === "cold" || route === "balanced" ? "heatmap" : route}"><span>${label}</span><small>${route === "hot" ? topSignal.number : route === "cold" ? lowSignal.number : route === "balanced" ? "mix" : "open"}</small></button>`).join("")}
     </div>
-    ${todaysSnapshotPanel("Radar Snapshot")}
+    <div class="panel quick-panel radar-quick-panel">
+      <div class="section-head"><div><h2>Radar Tool Deck</h2><p>Old functions grouped under the Radar tab as swipeable Oracle buttons.</p></div><span>${QUICK_TOOLS.length} tools</span></div>
+      <div class="circle-carousel">
+        ${QUICK_TOOLS.map(([title, sub, route], index) => circleTool(title, sub, route, index)).join("")}
+      </div>
+    </div>
     <div class="panel radar-panel">
       <div class="radar-titlebar">
         <div><span>Live Board</span><strong>${stats.game.name} Signal Grid</strong></div>
@@ -2781,10 +2824,20 @@ function heatmapView() {
       </div>
       <div class="legend"><span class="hot"></span> Hot <span class="active"></span> Active <span class="cold"></span> Cold</div>
     </div>
-    <div class="panel quick-panel radar-quick-panel">
-      <div class="section-head"><div><h2>Radar Tool Deck</h2><p>Old functions grouped under the Radar tab as swipeable Oracle buttons.</p></div><span>${QUICK_TOOLS.length} tools</span></div>
-      <div class="circle-carousel">
-        ${QUICK_TOOLS.map(([title, sub, route], index) => circleTool(title, sub, route, index)).join("")}
+    ${todaysSnapshotPanel("Radar Snapshot")}
+    <div class="panel trend-card">
+      <div class="section-head flush"><div><h2>Trend Overview</h2><p>Draw-count bars, hot lane, cold lane, and balance cue.</p></div><span>${stats.drawCount} draws</span></div>
+      <div class="trend-summary-grid">
+        <div><span>Top signal</span><strong>${topSignal.number}</strong><small>${topSignal.count} hits</small></div>
+        <div><span>Cold watch</span><strong>${lowSignal.number}</strong><small>${lowSignal.count} hits</small></div>
+        <div><span>Avg draw count</span><strong>${avgCount}</strong><small>per number</small></div>
+        <div><span>Range</span><strong>${trendRange}</strong><small>low to high</small></div>
+      </div>
+      <div class="trend-bars">${heatmap.map((cell) => `<span class="${cell.label}" style="--h:${Math.max(18, 18 + cell.count * 16)}px"><i>${cell.count}</i><b>${cell.number}</b></span>`).join("")}</div>
+      <div class="trend-insights">
+        <div><strong>Hot lane</strong><p>${hot.slice(0, 5).map((cell) => cell.number).join(", ")} are drawing above the local sample average.</p></div>
+        <div><strong>Active middle</strong><p>${(active.length ? active : heatmap.slice(0, 5)).slice(0, 5).map((cell) => cell.number).join(", ")} are usable bridge numbers for balanced sets.</p></div>
+        <div><strong>Cold lane</strong><p>${cold.slice(0, 5).map((cell) => cell.number).join(", ")} are overdue in this demo matrix and should be used lightly.</p></div>
       </div>
     </div>
     <div class="split-grid">
@@ -2803,21 +2856,6 @@ function heatmapView() {
         </div>
       </div>
       ${localSignalPanel()}
-    </div>
-    <div class="panel trend-card">
-      <div class="section-head flush"><div><h2>Trend Overview</h2><p>Draw-count bars, hot lane, cold lane, and balance cue.</p></div><span>${stats.drawCount} draws</span></div>
-      <div class="trend-summary-grid">
-        <div><span>Top signal</span><strong>${topSignal.number}</strong><small>${topSignal.count} hits</small></div>
-        <div><span>Cold watch</span><strong>${lowSignal.number}</strong><small>${lowSignal.count} hits</small></div>
-        <div><span>Avg draw count</span><strong>${avgCount}</strong><small>per number</small></div>
-        <div><span>Range</span><strong>${trendRange}</strong><small>low to high</small></div>
-      </div>
-      <div class="trend-bars">${heatmap.map((cell) => `<span class="${cell.label}" style="--h:${Math.max(18, 18 + cell.count * 16)}px"><i>${cell.count}</i><b>${cell.number}</b></span>`).join("")}</div>
-      <div class="trend-insights">
-        <div><strong>Hot lane</strong><p>${hot.slice(0, 5).map((cell) => cell.number).join(", ")} are drawing above the local sample average.</p></div>
-        <div><strong>Active middle</strong><p>${(active.length ? active : heatmap.slice(0, 5)).slice(0, 5).map((cell) => cell.number).join(", ")} are usable bridge numbers for balanced sets.</p></div>
-        <div><strong>Cold lane</strong><p>${cold.slice(0, 5).map((cell) => cell.number).join(", ")} are overdue in this demo matrix and should be used lightly.</p></div>
-      </div>
     </div>
     <div class="panel mission-brief">
       <h2>Recommended Move</h2>
@@ -2979,6 +3017,7 @@ function scannerView() {
       <h1>Ticket Scanner</h1>
       <p>Camera capture, barcode entry, and scan simulation are wired into LottoMind Records.</p>
       <div class="scanner-frame">
+        <video class="scanner-video" src="${ASSETS.ticketScannerVideo}" muted loop autoplay playsinline preload="metadata"></video>
         <span></span><span></span><span></span><span></span>
         <strong>${result ? "Ticket Readout Loaded" : "Camera Scan Lane"}</strong>
         <small>${result?.source || "Use the camera button, upload a ticket photo, or enter the barcode."}</small>
@@ -6065,6 +6104,16 @@ function render() {
   }
   stopAudioIfNeeded();
   syncRouteAudio();
+  startAmbientVideos();
+}
+
+function startAmbientVideos() {
+  requestAnimationFrame(() => {
+    document.querySelectorAll(".ambient-video").forEach((video) => {
+      video.muted = true;
+      video.play?.().catch(() => {});
+    });
+  });
 }
 
 function toast(message) {

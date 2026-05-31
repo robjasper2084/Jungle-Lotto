@@ -7444,6 +7444,21 @@ h2:not(.game-title),
   font-size: 18px;
 }
 
+.radar-titlebar .tiny-btn {
+  min-height: 40px;
+  padding: 8px 18px;
+  border-radius: 999px;
+  font-family: var(--future-font), "Segoe UI", system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 950;
+  line-height: 0.96;
+  letter-spacing: 0;
+  text-align: center;
+  text-transform: uppercase;
+  color: #f8fbff;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.68);
+}
+
 .radar-map {
   position: relative;
   height: min(80vw, 410px);
@@ -9943,6 +9958,7 @@ body .route-dreamVideo .video-studio-hero .hero-actions .primary-btn::before {
   margin-top: 14px;
   border: 1px solid rgba(0, 236, 255, 0.5);
   border-radius: 24px;
+  overflow: hidden;
   background:
     linear-gradient(90deg, transparent 0 48%, rgba(0, 236, 255, 0.28) 49% 51%, transparent 52%),
     linear-gradient(transparent 0 48%, rgba(0, 236, 255, 0.28) 49% 51%, transparent 52%),
@@ -9950,8 +9966,32 @@ body .route-dreamVideo .video-studio-hero .hero-actions .primary-btn::before {
   box-shadow: inset 0 0 28px rgba(0, 236, 255, 0.1);
 }
 
+.scanner-frame::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    linear-gradient(90deg, transparent 0 48%, rgba(0, 236, 255, 0.28) 49% 51%, transparent 52%),
+    linear-gradient(transparent 0 48%, rgba(0, 236, 255, 0.28) 49% 51%, transparent 52%),
+    radial-gradient(circle at 50% 50%, transparent 0 36%, rgba(0, 8, 18, 0.62) 72%),
+    linear-gradient(180deg, rgba(0, 9, 18, 0.16), rgba(0, 7, 14, 0.72));
+  pointer-events: none;
+}
+
+.scanner-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.72;
+  filter: saturate(1.16) contrast(1.08) brightness(0.78);
+}
+
 .scanner-frame span {
   position: absolute;
+  z-index: 2;
   width: 34px;
   height: 34px;
   border-color: var(--gold);
@@ -9963,14 +10003,25 @@ body .route-dreamVideo .video-studio-hero .hero-actions .primary-btn::before {
 .scanner-frame span:nth-child(4) { right: 14px; bottom: 14px; border-right: 3px solid; border-bottom: 3px solid; }
 
 .scanner-frame strong {
+  position: relative;
+  z-index: 2;
+  padding: 6px 12px;
+  border-radius: 999px;
   color: var(--gold);
   font-size: 24px;
   font-weight: 950;
+  background: rgba(0, 8, 17, 0.62);
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.82);
 }
 
 .scanner-frame small {
+  position: relative;
+  z-index: 2;
   max-width: 28ch;
+  padding: 4px 10px;
+  border-radius: 999px;
   text-align: center;
+  background: rgba(0, 8, 17, 0.58);
 }
 
 .file-btn {
@@ -12476,6 +12527,7 @@ body .route-dashboard .oracle-hero .hero-actions .primary-btn {
 
 /* Dashboard Oracle Flow swipe carousel */
 body .route-dashboard .carousel-panel {
+  isolation: isolate;
   overflow: hidden;
 }
 
@@ -20558,4 +20610,712 @@ body .real-shell:has(.lottomind-studio-screen) .sonic-studio-screen > .studio-te
   body .mini-turntable-list {
     max-height: none;
   }
+}
+
+body .route-powertools .arcade-deck .command-crest {
+  overflow: hidden;
+  border-color: rgba(0, 236, 255, 0.52) !important;
+  background:
+    radial-gradient(circle at 50% 44%, rgba(0, 236, 255, 0.2), transparent 42%),
+    radial-gradient(circle at 50% 66%, rgba(248, 223, 118, 0.18), transparent 62%),
+    linear-gradient(180deg, rgba(4, 20, 32, 0.74), rgba(0, 8, 15, 0.94)) !important;
+  box-shadow:
+    0 0 30px rgba(0, 236, 255, 0.2),
+    inset 0 0 36px rgba(0, 236, 255, 0.12) !important;
+}
+
+body .route-powertools .arcade-deck .command-crest::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+  background:
+    linear-gradient(145deg, rgba(255, 251, 210, 0.1), transparent 38%),
+    radial-gradient(circle at 50% 100%, rgba(0, 236, 255, 0.24), transparent 58%);
+  pointer-events: none;
+}
+
+body .route-powertools .arcade-deck .command-crest img {
+  z-index: 0;
+  width: 76% !important;
+  height: 76% !important;
+  opacity: 0.74 !important;
+  mix-blend-mode: screen;
+  filter: saturate(0.88) contrast(0.92) brightness(0.92) drop-shadow(0 0 12px rgba(0, 236, 255, 0.34)) !important;
+  -webkit-mask-image: radial-gradient(circle, #000 45%, rgba(0, 0, 0, 0.75) 61%, transparent 79%);
+  mask-image: radial-gradient(circle, #000 45%, rgba(0, 0, 0, 0.75) 61%, transparent 79%);
+}
+
+body .route-powertools .arcade-deck .command-crest span {
+  z-index: 2;
+}
+
+body .route-heatmap .heatmap-hero .radar-summary {
+  width: 99px !important;
+  height: 99px !important;
+}
+
+body .route-heatmap .heatmap-hero .radar-summary strong,
+body .route-heatmap .heatmap-hero .radar-summary em {
+  font-size: 18px !important;
+}
+
+body .route-heatmap .heatmap-hero .radar-summary small {
+  font-size: 8px !important;
+}
+
+body .route-arcade .circle-tool[data-route="notifications"] {
+  --circle-art: url("./assets/custom/social/lottomind-social-board.svg") !important;
+}
+
+body .route-powertools .arcade-deck {
+  grid-template-columns: minmax(0, 1fr) !important;
+}
+
+body .route-powertools .arcade-deck .command-crest {
+  display: none !important;
+}
+
+body .route-powertools .arcade-deck .hero-actions {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 10px !important;
+  max-width: none !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+body .route-powertools .arcade-deck .hero-actions button {
+  position: relative !important;
+  overflow: hidden !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  height: auto !important;
+  min-height: 104px !important;
+  padding: 56px 7px 9px !important;
+  border: 1px solid rgba(248, 223, 118, 0.58) !important;
+  border-radius: 18px !important;
+  color: var(--gold) !important;
+  -webkit-text-fill-color: var(--gold) !important;
+  font-family: var(--future-font), "Segoe UI", system-ui, sans-serif !important;
+  font-size: clamp(10px, 2.7vw, 12px) !important;
+  font-weight: 950 !important;
+  line-height: 0.98 !important;
+  letter-spacing: 0 !important;
+  text-align: center !important;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.72) !important;
+  background:
+    radial-gradient(circle at 50% 18%, rgba(0, 236, 255, 0.24), transparent 28%),
+    radial-gradient(circle at 50% 22%, rgba(248, 223, 118, 0.18), transparent 34%),
+    linear-gradient(180deg, rgba(5, 18, 31, 0.82), rgba(0, 6, 14, 0.94)),
+    url("./assets/custom/generated-command-deck.webp") center / cover !important;
+  box-shadow:
+    inset 0 -22px 28px rgba(0, 0, 0, 0.72),
+    inset 0 0 0 1px rgba(0, 236, 255, 0.12),
+    0 0 18px rgba(0, 236, 255, 0.14) !important;
+}
+
+body .route-powertools .arcade-deck .hero-actions button::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 9px;
+  width: 42px;
+  height: 42px;
+  transform: translateX(-50%);
+  border: 1px solid rgba(248, 223, 118, 0.58);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 34% 28%, rgba(255, 251, 210, 0.88), transparent 16%),
+    conic-gradient(from 28deg, rgba(248, 223, 118, 0.9), rgba(0, 236, 255, 0.24), rgba(248, 223, 118, 0.78), rgba(0, 236, 255, 0.18), rgba(248, 223, 118, 0.9)),
+    radial-gradient(circle, rgba(0, 236, 255, 0.2), rgba(0, 8, 16, 0.88) 68%);
+  box-shadow:
+    0 0 16px rgba(248, 223, 118, 0.28),
+    inset 0 0 14px rgba(0, 236, 255, 0.22);
+  pointer-events: none;
+}
+
+body .route-heatmap .radar-controls {
+  justify-content: flex-start;
+  gap: 12px !important;
+  padding: 12px !important;
+}
+
+body .route-heatmap .radar-controls .control-chip,
+body .route-heatmap .radar-controls .control-chip:first-child {
+  flex: 0 0 88px !important;
+  width: 88px !important;
+  min-width: 88px !important;
+  min-height: 88px !important;
+  height: 88px !important;
+  display: grid !important;
+  place-items: center !important;
+  align-content: center !important;
+  justify-content: center !important;
+  padding: 12px 8px !important;
+  border-radius: 50% !important;
+  text-align: center !important;
+  color: #f8fbff !important;
+  background:
+    radial-gradient(circle at 35% 22%, rgba(255, 251, 210, 0.46), transparent 20%),
+    radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--chip-glow, var(--cyan)) 32%, transparent), transparent 55%),
+    linear-gradient(180deg, rgba(4, 28, 47, 0.96), rgba(1, 8, 18, 0.96)) !important;
+  box-shadow:
+    inset 0 0 18px rgba(0, 236, 255, 0.1),
+    0 0 16px color-mix(in srgb, var(--chip-glow, var(--cyan)) 22%, transparent) !important;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.72) !important;
+}
+
+body .route-heatmap .radar-controls .control-chip:nth-child(1) { --chip-glow: #ffe36f; --chip-core: #c68a22; --chip-text: #06101c; }
+body .route-heatmap .radar-controls .control-chip:nth-child(2) { --chip-glow: #6a7bff; --chip-core: #1a285f; --chip-text: #f8fbff; }
+body .route-heatmap .radar-controls .control-chip:nth-child(3) { --chip-glow: #19e8ff; --chip-core: #063f4f; --chip-text: #f8fbff; }
+body .route-heatmap .radar-controls .control-chip:nth-child(4) { --chip-glow: #38ff9f; --chip-core: #08422a; --chip-text: #f8fbff; }
+body .route-heatmap .radar-controls .control-chip:nth-child(5) { --chip-glow: #d080ff; --chip-core: #3c1d58; --chip-text: #fff7ff; }
+body .route-heatmap .radar-controls .control-chip:nth-child(6) { --chip-glow: #ff8b45; --chip-core: #5a2b0d; --chip-text: #fff8ee; }
+
+body .route-heatmap .radar-controls .control-chip:first-child {
+  color: #06101c !important;
+  background:
+    radial-gradient(circle at 38% 20%, rgba(255, 255, 255, 0.62), transparent 26%),
+    linear-gradient(180deg, #fff2a6 0%, #ffd96b 48%, #a6731f 100%) !important;
+}
+
+body .route-heatmap .radar-controls .control-chip:not(:first-child) {
+  color: var(--chip-text, #f8fbff) !important;
+  background:
+    radial-gradient(circle at 34% 18%, rgba(255, 255, 255, 0.18), transparent 24%),
+    radial-gradient(circle at 50% 52%, color-mix(in srgb, var(--chip-glow) 46%, transparent), transparent 56%),
+    linear-gradient(180deg, color-mix(in srgb, var(--chip-core) 88%, #ffffff 8%), color-mix(in srgb, var(--chip-core) 88%, #000000 24%)) !important;
+}
+
+body .route-heatmap .radar-quick-panel .circle-tool[data-route="scanner"] .scanner-tile-video,
+body .route-heatmap .radar-quick-panel .circle-tool[data-route="ticketScanner"] .scanner-tile-video {
+  display: block !important;
+  opacity: 0.86 !important;
+  mix-blend-mode: normal !important;
+  filter: saturate(1.1) contrast(1.05) brightness(0.82);
+}
+
+body .route-heatmap .radar-quick-panel .circle-tool[data-route="scanner"],
+body .route-heatmap .radar-quick-panel .circle-tool[data-route="ticketScanner"] {
+  background:
+    linear-gradient(180deg, rgba(1, 9, 18, 0.06), rgba(0, 0, 0, 0.78)),
+    var(--circle-art) !important;
+}
+
+body .route-heatmap .radar-controls .control-chip span,
+body .route-heatmap .radar-controls .control-chip small {
+  max-width: 68px;
+  text-align: center;
+}
+
+body .route-heatmap .radar-controls .control-chip span {
+  color: currentColor !important;
+  font-size: 10px !important;
+  line-height: 0.98 !important;
+}
+
+body .route-heatmap .radar-controls .control-chip small {
+  color: currentColor !important;
+  font-size: 8px !important;
+  line-height: 1 !important;
+  opacity: 0.92;
+}
+
+body .route-dashboard .carousel-panel .movie-head .tiny-btn {
+  min-height: 40px;
+  padding: 8px 18px;
+  border-radius: 999px;
+  font-family: var(--future-font), "Segoe UI", system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 950;
+  line-height: 0.96;
+  letter-spacing: 0;
+  text-align: center;
+  text-transform: uppercase;
+  color: #06101c;
+  -webkit-text-fill-color: #06101c;
+  background:
+    radial-gradient(circle at 26% 0, rgba(255, 255, 255, 0.62), transparent 38%),
+    linear-gradient(145deg, #fff2a5, #33efff) !important;
+  text-shadow: none;
+}
+
+body .route-powertools .tool-bank .section-head p {
+  max-width: 34ch;
+  color: #d9eaff !important;
+  font-family: var(--future-font), "Segoe UI", system-ui, sans-serif !important;
+  font-size: 13px !important;
+  font-weight: 850 !important;
+  line-height: 1.22 !important;
+  letter-spacing: 0 !important;
+}
+
+body .route-powertools .tool-bank .tool-bento .circle-tool {
+  background:
+    linear-gradient(180deg, rgba(0, 10, 20, 0.08), rgba(0, 0, 0, 0.82)),
+    radial-gradient(circle at 50% 24%, rgba(248, 223, 118, 0.18), transparent 34%),
+    var(--circle-art) center / cover !important;
+}
+
+body .route-powertools .tool-bank .tool-bento .circle-tool::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  background:
+    linear-gradient(180deg, transparent 0 48%, rgba(0, 0, 0, 0.7) 100%),
+    radial-gradient(circle at 16% 20%, rgba(0, 236, 255, 0.2), transparent 28%);
+  pointer-events: none;
+}
+
+body .route-powertools .tool-bank .tool-bento .circle-tool > * {
+  position: relative;
+  z-index: 1;
+}
+
+body .route-powertools .tool-bank .tool-bento .circle-tool .scanner-tile-video {
+  display: none !important;
+}
+
+body .route-arcade .screen > .art-panel:first-child h1.game-title {
+  color: #fff4b8 !important;
+  font-family: var(--future-font), "Segoe UI", system-ui, sans-serif !important;
+  font-size: clamp(38px, 9vw, 58px) !important;
+  font-weight: 950 !important;
+  line-height: 0.94 !important;
+  letter-spacing: 0 !important;
+  text-transform: uppercase !important;
+  text-shadow:
+    0 2px 0 rgba(0, 0, 0, 0.82),
+    0 0 18px rgba(248, 223, 118, 0.3),
+    0 0 28px rgba(0, 236, 255, 0.18) !important;
+}
+
+body .reset-screen .record-label-panel.compact .primary-btn {
+  min-height: 38px !important;
+  padding: 8px 14px !important;
+  border-radius: 14px !important;
+  font-family: var(--future-font), "Segoe UI", system-ui, sans-serif !important;
+  font-size: 12px !important;
+  font-weight: 950 !important;
+  line-height: 1 !important;
+  letter-spacing: 0 !important;
+  text-transform: uppercase !important;
+}
+
+body .reset-screen .record-label-panel.compact p {
+  max-width: 30ch;
+  color: #d9eaff !important;
+  font-family: var(--future-font), "Segoe UI", system-ui, sans-serif !important;
+  font-size: 14px !important;
+  font-weight: 850 !important;
+  line-height: 1.3 !important;
+  letter-spacing: 0 !important;
+}
+
+body .route-dreams .dream-stage h1 {
+  position: relative;
+  z-index: 2;
+  color: #fff5bf !important;
+  font-family: var(--future-font), "Segoe UI", system-ui, sans-serif !important;
+  font-size: clamp(38px, 8vw, 56px) !important;
+  font-weight: 950 !important;
+  line-height: 0.94 !important;
+  letter-spacing: 0 !important;
+  text-align: center !important;
+  text-transform: uppercase !important;
+  -webkit-text-stroke: 0 !important;
+  text-shadow:
+    0 2px 0 rgba(0, 0, 0, 0.82),
+    0 0 18px rgba(248, 223, 118, 0.28),
+    0 0 28px rgba(0, 236, 255, 0.18) !important;
+}
+
+body .route-dreams .dream-stage h1 sup {
+  margin-left: 4px;
+  color: #35f3ff;
+  font-size: 0.32em;
+  vertical-align: super;
+  text-shadow: 0 0 12px rgba(0, 236, 255, 0.5);
+}
+
+body .route-dreams .dream-stage {
+  isolation: isolate;
+  overflow: hidden;
+}
+
+body .route-dreams .dream-stage::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 50% 18%, rgba(255, 237, 166, 0.18), transparent 34%),
+    linear-gradient(180deg, rgba(0, 11, 16, 0.08), rgba(0, 22, 24, 0.56) 58%, rgba(0, 9, 14, 0.84));
+}
+
+body .route-dreams .dream-stage > *:not(.dream-stage-video) {
+  position: relative;
+  z-index: 2;
+}
+
+body .route-dreams .dream-stage .dream-stage-video {
+  position: absolute;
+  inset: -3%;
+  z-index: 0;
+  width: 106%;
+  height: 106%;
+  object-fit: cover;
+  opacity: 0.34;
+  filter: saturate(1.18) contrast(1.1) brightness(0.88);
+  mix-blend-mode: screen;
+  pointer-events: none;
+  -webkit-mask-image: radial-gradient(circle at 50% 34%, rgba(0, 0, 0, 0.95), rgba(0, 0, 0, 0.7) 46%, rgba(0, 0, 0, 0.18) 78%, transparent 100%);
+  mask-image: radial-gradient(circle at 50% 34%, rgba(0, 0, 0, 0.95), rgba(0, 0, 0, 0.7) 46%, rgba(0, 0, 0, 0.18) 78%, transparent 100%);
+}
+
+body .route-dreams .dream-oracle-tools .circle-tool span,
+body .route-dreams .dream-oracle-tools .circle-tool small {
+  font-family: var(--future-font), "Segoe UI", system-ui, sans-serif !important;
+  letter-spacing: 0 !important;
+  text-align: center !important;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.72) !important;
+}
+
+body .route-dreams .dream-oracle-tools .circle-tool span {
+  color: #fff2a6 !important;
+  font-size: 11px !important;
+  font-weight: 950 !important;
+  line-height: 0.98 !important;
+}
+
+body .route-dreams .dream-oracle-tools .circle-tool small {
+  color: #dff8ff !important;
+  font-size: 7px !important;
+  font-weight: 850 !important;
+  line-height: 1.02 !important;
+}
+
+body .route-dreams .dream-oracle-tools .section-head h2 {
+  font-family: var(--future-font), "Segoe UI", system-ui, sans-serif !important;
+  font-weight: 950 !important;
+  letter-spacing: 0 !important;
+}
+
+body .route-dreams .oracle-function-panel .section-head h2 {
+  color: #fff4b8 !important;
+  font-family: var(--future-font), "Segoe UI", system-ui, sans-serif !important;
+  font-size: clamp(30px, 6.5vw, 42px) !important;
+  font-weight: 950 !important;
+  line-height: 0.98 !important;
+  letter-spacing: 0 !important;
+  text-transform: uppercase !important;
+  text-shadow:
+    0 2px 0 rgba(0, 0, 0, 0.82),
+    0 0 18px rgba(248, 223, 118, 0.24),
+    0 0 24px rgba(0, 236, 255, 0.14) !important;
+}
+
+body .route-dreams .dream-generate-panel .hero-actions,
+body .route-dreams .dream-journal-panel .hero-actions {
+  display: flex !important;
+  flex-wrap: wrap;
+  gap: 10px !important;
+}
+
+body .route-dreams .dream-generate-panel .hero-actions button,
+body .route-dreams .dream-journal-panel .hero-actions button {
+  min-height: 42px !important;
+  padding: 8px 16px !important;
+  border-radius: 999px !important;
+  clip-path: none !important;
+  font-family: var(--future-font), "Segoe UI", system-ui, sans-serif !important;
+  font-size: 12px !important;
+  font-weight: 950 !important;
+  line-height: 1 !important;
+  letter-spacing: 0 !important;
+  text-transform: uppercase !important;
+}
+
+body .route-powertools .arcade-deck .hero-actions button:nth-child(1) { --hero-chip-a: #d8c38a; --hero-chip-b: #6f613e; --hero-chip-text: #081018; }
+body .route-powertools .arcade-deck .hero-actions button:nth-child(2) { --hero-chip-a: #9fb6a3; --hero-chip-b: #314f43; --hero-chip-text: #061018; }
+body .route-powertools .arcade-deck .hero-actions button:nth-child(3) { --hero-chip-a: #c2b47a; --hero-chip-b: #4f5b36; --hero-chip-text: #071016; }
+body .route-powertools .arcade-deck .hero-actions button:nth-child(4) { --hero-chip-a: #b18a66; --hero-chip-b: #5d3b2b; --hero-chip-text: #fff2dc; }
+body .route-powertools .arcade-deck .hero-actions button:nth-child(5) { --hero-chip-a: #7fa889; --hero-chip-b: #255342; --hero-chip-text: #f2ffe9; }
+body .route-powertools .arcade-deck .hero-actions button:nth-child(6) { --hero-chip-a: #bd8d65; --hero-chip-b: #6a3f26; --hero-chip-text: #fff4e3; }
+
+body .route-powertools .arcade-deck .hero-actions button {
+  color: var(--hero-chip-text, #fff7d7) !important;
+  -webkit-text-fill-color: var(--hero-chip-text, #fff7d7) !important;
+  border-color: color-mix(in srgb, var(--hero-chip-a, #f8df76) 74%, transparent) !important;
+  background:
+    radial-gradient(circle at 50% 18%, rgba(255, 255, 255, 0.38), transparent 24%),
+    linear-gradient(145deg, color-mix(in srgb, var(--hero-chip-a, #f8df76) 88%, #ffffff 4%), color-mix(in srgb, var(--hero-chip-b, #00ecff) 88%, #000000 12%)) !important;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08),
+    0 0 18px color-mix(in srgb, var(--hero-chip-a, #00ecff) 28%, transparent) !important;
+}
+
+body .route-powertools .stat-row {
+  gap: 8px !important;
+  padding: 6px !important;
+  border-radius: 18px !important;
+  background:
+    linear-gradient(90deg, rgba(0, 236, 255, 0.12), rgba(91, 127, 150, 0.1), rgba(248, 223, 118, 0.07)),
+    rgba(0, 9, 18, 0.72) !important;
+  box-shadow:
+    inset 0 0 18px rgba(0, 236, 255, 0.1),
+    0 0 18px rgba(0, 236, 255, 0.08) !important;
+}
+
+body .route-powertools .stat-row > div {
+  min-height: 42px !important;
+  padding: 6px 8px !important;
+  border-radius: 14px !important;
+  border-color: rgba(127, 247, 255, 0.38) !important;
+  background:
+    linear-gradient(180deg, rgba(9, 34, 50, 0.86), rgba(1, 9, 19, 0.94)) !important;
+}
+
+body .route-powertools .stat-row strong {
+  font-size: clamp(18px, 4vw, 24px) !important;
+  line-height: 0.9 !important;
+}
+
+body .route-powertools .stat-row span {
+  color: #35f3ff !important;
+  font-size: 8px !important;
+  line-height: 1 !important;
+  letter-spacing: 0 !important;
+}
+
+body .route-dashboard .oracle-hero {
+  isolation: isolate !important;
+  overflow: hidden !important;
+}
+
+body .route-dashboard .oracle-hero::after {
+  content: "" !important;
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 1 !important;
+  pointer-events: none !important;
+  background:
+    radial-gradient(circle at 72% 40%, rgba(255, 237, 166, 0.16), transparent 28%),
+    linear-gradient(90deg, rgba(0, 9, 13, 0.18), rgba(0, 25, 34, 0.36) 52%, rgba(0, 7, 11, 0.62)) !important;
+}
+
+body .route-dashboard .oracle-hero > *:not(.oracle-hero-bg-video) {
+  position: relative !important;
+  z-index: 2 !important;
+}
+
+body .route-dashboard .oracle-hero .oracle-hero-bg-video {
+  position: absolute !important;
+  inset: -3% !important;
+  z-index: 0 !important;
+  width: 106% !important;
+  height: 106% !important;
+  object-fit: cover !important;
+  object-position: center center !important;
+  opacity: 0.42 !important;
+  filter: saturate(1.22) contrast(1.12) brightness(0.9) !important;
+  mix-blend-mode: screen !important;
+  pointer-events: none !important;
+  -webkit-mask-image: radial-gradient(circle at 50% 42%, rgba(0, 0, 0, 0.98), rgba(0, 0, 0, 0.68) 55%, rgba(0, 0, 0, 0.2) 88%, transparent 100%) !important;
+  mask-image: radial-gradient(circle at 50% 42%, rgba(0, 0, 0, 0.98), rgba(0, 0, 0, 0.68) 55%, rgba(0, 0, 0, 0.2) 88%, transparent 100%) !important;
+}
+
+body .real-header .top-state-button {
+  width: 41px !important;
+  min-width: 41px !important;
+  height: 41px !important;
+  min-height: 41px !important;
+  padding: 4px !important;
+  border-radius: 14px !important;
+}
+
+body .real-header .top-state-button span {
+  font-size: 6px !important;
+}
+
+body .real-header .top-state-button strong {
+  font-size: 11px !important;
+}
+
+body .route-music .media-hero h1,
+body .route-musicHub .media-hero h1 {
+  max-width: 12ch !important;
+  color: #fff6c7 !important;
+  font-family: var(--future-font), "Segoe UI", system-ui, sans-serif !important;
+  font-size: clamp(38px, 9vw, 58px) !important;
+  font-weight: 950 !important;
+  line-height: 0.94 !important;
+  letter-spacing: 0 !important;
+  text-transform: uppercase !important;
+  -webkit-text-stroke: 0 !important;
+  text-shadow:
+    0 2px 0 rgba(0, 0, 0, 0.82),
+    0 0 18px rgba(248, 223, 118, 0.28),
+    0 0 26px rgba(0, 236, 255, 0.2) !important;
+}
+
+body .route-heatmap .radar-controls {
+  gap: 10px !important;
+  padding: 10px !important;
+  align-items: stretch !important;
+}
+
+body .route-heatmap .radar-controls .control-chip,
+body .route-heatmap .radar-controls .control-chip:first-child {
+  flex: 0 0 126px !important;
+  width: 126px !important;
+  min-width: 126px !important;
+  height: 58px !important;
+  min-height: 58px !important;
+  display: grid !important;
+  place-items: center !important;
+  align-content: center !important;
+  justify-content: center !important;
+  padding: 8px 12px !important;
+  border: 1px solid rgba(71, 246, 255, 0.56) !important;
+  border-radius: 18px !important;
+  color: var(--chip-text, #f8fbff) !important;
+  text-align: center !important;
+  background:
+    radial-gradient(circle at 24% 18%, rgba(255, 255, 255, 0.18), transparent 24%),
+    linear-gradient(180deg, color-mix(in srgb, var(--chip-core, #073247) 82%, #ffffff 8%), color-mix(in srgb, var(--chip-core, #073247) 86%, #000000 26%)) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    inset 0 -14px 20px rgba(0, 0, 0, 0.22),
+    0 0 16px color-mix(in srgb, var(--chip-glow, #00ecff) 24%, transparent) !important;
+}
+
+body .route-heatmap .radar-controls .control-chip:first-child {
+  color: #06101c !important;
+  border-color: rgba(255, 227, 111, 0.72) !important;
+  background:
+    radial-gradient(circle at 28% 18%, rgba(255, 255, 255, 0.5), transparent 26%),
+    linear-gradient(180deg, #fff2a6 0%, #ffd96b 52%, #9d681b 100%) !important;
+}
+
+body .route-heatmap .radar-controls .control-chip span,
+body .route-heatmap .radar-controls .control-chip small {
+  max-width: 100% !important;
+}
+
+body .route-heatmap .radar-controls .control-chip span {
+  font-size: 10px !important;
+  line-height: 1 !important;
+}
+
+body .route-heatmap .radar-controls .control-chip small {
+  margin-top: 2px !important;
+  font-size: 8px !important;
+  line-height: 1 !important;
+}
+
+body .route-arcade .mini-game {
+  position: relative !important;
+  display: grid !important;
+  gap: 14px !important;
+  padding: 18px !important;
+  overflow: hidden !important;
+  border-color: rgba(0, 236, 255, 0.64) !important;
+  background:
+    radial-gradient(circle at 80% 10%, rgba(248, 223, 118, 0.18), transparent 28%),
+    linear-gradient(135deg, rgba(0, 236, 255, 0.12), rgba(7, 16, 36, 0.96) 46%, rgba(1, 8, 16, 0.98)) !important;
+  box-shadow:
+    inset 0 0 0 1px rgba(248, 223, 118, 0.08),
+    0 0 26px rgba(0, 236, 255, 0.16),
+    var(--shadow) !important;
+}
+
+body .route-arcade .mini-game h2 {
+  margin: 0 !important;
+  color: #fff3ad !important;
+  font-family: var(--future-font), "Segoe UI", system-ui, sans-serif !important;
+  font-size: clamp(24px, 5vw, 34px) !important;
+  font-weight: 950 !important;
+  line-height: 0.98 !important;
+  letter-spacing: 0 !important;
+  text-transform: uppercase !important;
+  text-shadow:
+    0 2px 0 rgba(0, 0, 0, 0.8),
+    0 0 18px rgba(248, 223, 118, 0.26) !important;
+}
+
+body .route-arcade .mini-game p {
+  max-width: 34ch !important;
+  margin: 0 !important;
+  color: #dcecff !important;
+  font-family: var(--future-font), "Segoe UI", system-ui, sans-serif !important;
+  font-size: 14px !important;
+  font-weight: 850 !important;
+  line-height: 1.35 !important;
+  letter-spacing: 0 !important;
+}
+
+body .route-arcade .mini-game .runner-lane {
+  height: 132px !important;
+  margin: 4px 0 0 !important;
+  border-color: rgba(0, 236, 255, 0.5) !important;
+  border-radius: 18px !important;
+  background:
+    linear-gradient(90deg, rgba(0, 236, 255, 0.14) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.06), transparent 42%),
+    radial-gradient(circle at 50% 52%, rgba(0, 236, 255, 0.18), transparent 34%),
+    #051326 !important;
+  background-size: 42px 100%, 100% 100%, 100% 100%, 100% 100% !important;
+  box-shadow:
+    inset 0 0 24px rgba(0, 236, 255, 0.1),
+    inset 0 -24px 26px rgba(0, 0, 0, 0.34) !important;
+}
+
+body .route-arcade .mini-game .runner-lane::before {
+  content: "";
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  bottom: 24px;
+  height: 3px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(248, 223, 118, 0.2), rgba(0, 236, 255, 0.78), rgba(248, 223, 118, 0.2));
+}
+
+body .route-arcade .mini-game .runner-lane span {
+  left: 26px !important;
+  bottom: 32px !important;
+  width: 42px !important;
+  height: 42px !important;
+  background: radial-gradient(circle at 35% 25%, #fff9c7, #d8c55d 62%, #705818 100%) !important;
+  box-shadow: 0 0 18px rgba(248, 223, 118, 0.42) !important;
+}
+
+body .route-arcade .mini-game .runner-lane i,
+body .route-arcade .mini-game .runner-lane b {
+  bottom: 34px !important;
+  width: 28px !important;
+  height: 28px !important;
+  box-shadow: 0 0 16px rgba(0, 236, 255, 0.42) !important;
+}
+
+body .route-arcade .mini-game .runner-lane b {
+  background: radial-gradient(circle at 35% 25%, #ffc0b9, #d74d40 62%, #661a17 100%) !important;
+}
+
+body .route-arcade .mini-game .primary-btn.full {
+  min-height: 48px !important;
+  border-radius: 14px !important;
+  font-family: var(--future-font), "Segoe UI", system-ui, sans-serif !important;
+  font-size: 14px !important;
+  font-weight: 950 !important;
+  letter-spacing: 0 !important;
+  text-transform: uppercase !important;
 }
