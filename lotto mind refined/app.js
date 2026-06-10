@@ -574,6 +574,12 @@ const STORAGE = {
   readings: "lottomind.oracle.real.dreams.v1",
   psychic: "lottomind.oracle.real.psychic.v1",
   credits: "lottomind.credit.balance.v1",
+  vaultPlan: "lottomind_plan",
+  vaultCredits: "lottomind_credits",
+  vaultLedger: "lottomind_credit_ledger",
+  vaultUnlockedUntil: "lottomind_unlocked_until",
+  vaultDailyUsage: "lottomind_daily_usage",
+  vaultBetaAccess: "lottomind_beta_access",
   settings: "lottomind.oracle.real.settings.v1",
   streams: "lottomind.oracle.real.streams.v1",
   stores: "lottomind.oracle.real.stores.v1",
@@ -585,6 +591,8 @@ const STORAGE = {
   studio: "lottomind.studio.project.v1",
   socialScores: "lottomind.oracle.real.socialScores.v1",
 };
+
+const VAULT_DISCLAIMER = "LottoMind and LottoCredits are for entertainment, organization, music creation, and creative number journaling only. LottoCredits have no cash value and cannot be redeemed for money, prizes, lottery tickets, or gambling. LottoMind does not predict winning lottery numbers.";
 
 const DEFAULT_SETTINGS = {
   music: true,
@@ -1674,12 +1682,89 @@ function savePsychic(reading) {
 }
 
 function getCredits() {
-  const raw = Number(localStorage.getItem(STORAGE.credits));
+  const raw = Number(localStorage.getItem(STORAGE.vaultCredits) ?? localStorage.getItem(STORAGE.credits));
   return Number.isFinite(raw) ? raw : 220;
 }
 
 function setCredits(value) {
-  localStorage.setItem(STORAGE.credits, String(Math.max(0, Math.round(value))));
+  const normalized = String(Math.max(0, Math.round(value)));
+  localStorage.setItem(STORAGE.vaultCredits, normalized);
+  localStorage.setItem(STORAGE.credits, normalized);
+}
+
+function readVaultNumber(key, fallback = 0) {
+  const value = Number(localStorage.getItem(key));
+  return Number.isFinite(value) ? value : fallback;
+}
+
+function readVaultLedger() {
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE.vaultLedger) || "[]");
+  } catch {
+    return [];
+  }
+}
+
+function writeVaultLedger(entry) {
+  const ledger = [entry, ...readVaultLedger()].slice(0, 40);
+  localStorage.setItem(STORAGE.vaultLedger, JSON.stringify(ledger));
+}
+
+function getVaultState() {
+  const plan = localStorage.getItem(STORAGE.vaultPlan) || "free";
+  const unlockedUntil = readVaultNumber(STORAGE.vaultUnlockedUntil);
+  const passActive = unlockedUntil > Date.now();
+  const vaultActive = ["gold", "ultra"].includes(plan) || passActive;
+  return {
+    plan,
+    credits: getCredits(),
+    unlockedUntil,
+    passActive,
+    vaultActive,
+    betaAccess: localStorage.getItem(STORAGE.vaultBetaAccess) === "true"
+  };
+}
+
+function setVaultPlan(plan) {
+  const normalized = ["free", "gold", "ultra"].includes(plan) ? plan : "free";
+  localStorage.setItem(STORAGE.vaultPlan, normalized);
+}
+
+function addVaultCredits(amount, reason) {
+  const nextCredits = getCredits() + amount;
+  setCredits(nextCredits);
+  writeVaultLedger({ amount, reason, createdAt: new Date().toISOString(), balance: nextCredits });
+  return nextCredits;
+}
+
+function applyVaultLaunchState() {
+  const params = new URLSearchParams(window.location.search);
+  let changed = false;
+  const incomingPlan = (params.get("plan") || "").toLowerCase();
+  if (["free", "gold", "ultra"].includes(incomingPlan)) {
+    setVaultPlan(incomingPlan);
+    changed = true;
+  }
+  const incomingCredits = Number(params.get("credits"));
+  if (Number.isFinite(incomingCredits) && incomingCredits >= 0) {
+    setCredits(Math.max(getCredits(), incomingCredits));
+    changed = true;
+  }
+  if (params.get("vault") === "active" && !["gold", "ultra"].includes(localStorage.getItem(STORAGE.vaultPlan) || "")) {
+    setVaultPlan("gold");
+    changed = true;
+  }
+  if (params.get("pass") === "24hr") {
+    localStorage.setItem(STORAGE.vaultUnlockedUntil, String(Date.now() + 24 * 60 * 60 * 1000));
+    changed = true;
+  }
+  if (params.get("beta") === "active") {
+    localStorage.setItem(STORAGE.vaultBetaAccess, "true");
+    changed = true;
+  }
+  if (changed) {
+    writeVaultLedger({ amount: 0, reason: "Ultra gateway launch sync", createdAt: new Date().toISOString(), balance: getCredits() });
+  }
 }
 
 function routeFromLocation() {
@@ -1950,6 +2035,27 @@ function missionHud() {
       <i><b style="width:${progress}%"></b></i>
     </div>
     <button class="hud-credit" data-route="wallet"><span>${getCredits()}</span><small>credits</small></button>
+  </section>`;
+}
+
+function vaultGatewayStrip() {
+  const vault = getVaultState();
+  const planLabel = vault.plan === "ultra" ? "Ultra Vault" : vault.plan === "gold" ? "Gold Vault" : vault.passActive ? "24-hour Pass" : "Free Demo";
+  const activeCopy = vault.vaultActive
+    ? "Vault Access Active. Premium LottoMind Refined tools unlocked."
+    : "Free demo active. Premium LottoMind Refined tools stay locked until Gold, Ultra, credits, or a 24-hour pass is active.";
+  return `<section class="vault-gateway-strip ${vault.vaultActive ? "is-active" : ""}" aria-label="LottoMind Vault Gateway">
+    <div>
+      <span>LottoMind Vault Gateway</span>
+      <strong>${planLabel}</strong>
+      <small>${activeCopy}</small>
+    </div>
+    <div class="vault-strip-actions">
+      <button class="primary-btn" data-route="paywall">Open Premium App</button>
+      <button class="ghost-btn" data-route="wallet">${vault.credits} LottoCredits</button>
+      <button class="ghost-btn" data-action="join-beta-waitlist">Download Beta Coming Soon</button>
+    </div>
+    <p>${VAULT_DISCLAIMER}</p>
   </section>`;
 }
 
@@ -6092,6 +6198,7 @@ function render() {
     </div>
     ${header()}
     ${missionHud()}
+    ${vaultGatewayStrip()}
     <main class="real-main">${renderView()}</main>
     ${bottomNav()}
     ${state.toast ? `<div class="toast">${escapeHtml(state.toast)}</div>` : ""}
@@ -7049,6 +7156,12 @@ function handleStudioPolishAction(action, target) {
 }
 
 function handleAction(action, target) {
+  if (action === "join-beta-waitlist") {
+    if (localStorage.getItem(STORAGE.vaultBetaAccess) !== "true") addVaultCredits(25, "Beta waitlist demo award");
+    localStorage.setItem(STORAGE.vaultBetaAccess, "true");
+    toast("Beta access saved. You earned 25 LottoCredits.");
+    return;
+  }
   if (handleStudioPolishAction(action, target)) return;
   if (action === "set-social-challenge") {
     const challenge = target.getAttribute("data-challenge") || "Trivia";
@@ -8722,4 +8835,5 @@ window.addEventListener("popstate", () => {
   render();
 });
 
+applyVaultLaunchState();
 render();
