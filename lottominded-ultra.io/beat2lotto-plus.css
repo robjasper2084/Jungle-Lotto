@@ -54,12 +54,26 @@
     rgba(5, 12, 22, 0.92);
   box-shadow: 0 0 70px rgba(41, 247, 255, 0.18), inset 0 0 40px rgba(94, 255, 157, 0.18);
 }
+.beat2lotto-coin-orb {
+  overflow: hidden;
+  padding: clamp(0.55rem, 1.35vw, 0.9rem);
+  isolation: isolate;
+}
 
-.beat2lotto-orb span {
-  font-family: var(--display-font);
-  font-size: clamp(5rem, 16vw, 10rem);
-  color: var(--gold);
-  text-shadow: 0 0 28px rgba(255, 224, 113, 0.42);
+.beat2lotto-coin-orb img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  object-position: center;
+  border-radius: 50%;
+  filter: saturate(1.08) contrast(1.05);
+  box-shadow: 0 0 0 1px rgba(255, 224, 113, 0.34), 0 0 24px rgba(255, 224, 113, 0.2);
+}
+.prompt-lab-beat2lotto-top .beat2lotto-coin-orb img {
+  object-fit: cover;
+  object-position: center;
 }
 
 .beat2lotto-console {
@@ -122,6 +136,70 @@
   font-size: 0.82rem;
 }
 
+.beat-playback-card {
+  display: grid;
+  gap: 9px;
+  padding: 12px;
+  border: 1px solid rgba(41, 247, 255, 0.28);
+  border-radius: 12px;
+  background:
+    radial-gradient(circle at 84% 12%, rgba(41, 247, 255, 0.14), transparent 10rem),
+    rgba(3, 7, 16, 0.62);
+}
+
+.beat-playback-card[hidden] {
+  display: none;
+}
+
+.beat-playback-card audio {
+  width: 100%;
+  min-height: 36px;
+  border: 1px solid rgba(255, 224, 113, 0.2);
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.34);
+  accent-color: #ffe071;
+}
+
+.beat-playback-card button {
+  min-height: 42px;
+  border: 1px solid rgba(41, 247, 255, 0.34);
+  border-radius: 8px;
+  color: #061018;
+  font-family: var(--display-font);
+  font-weight: 900;
+  text-transform: uppercase;
+  background: linear-gradient(135deg, #fff08a, #5eff9d 52%, #29f7ff);
+  cursor: pointer;
+}
+
+.beat-playback-card button:disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+}
+
+.beat-playback-meter {
+  overflow: hidden;
+  height: 8px;
+  border: 1px solid rgba(255, 224, 113, 0.22);
+  border-radius: 999px;
+  background: rgba(3, 7, 16, 0.82);
+}
+
+.beat-playback-meter span {
+  display: block;
+  width: calc(var(--beat-live-energy, 0) * 100%);
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #ffe071, #5eff9d, #29f7ff);
+  box-shadow: 0 0 1.1rem rgba(41, 247, 255, 0.42);
+  transition: width 80ms linear;
+}
+
+.beat-playback-card small {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
 .lotto-controls label {
   display: grid;
   gap: 6px;
@@ -170,18 +248,33 @@
   min-width: 44px;
   height: 44px;
   padding: 0 10px;
-  border: 1px solid rgba(41, 247, 255, 0.42);
+  border: 1px solid rgba(255, 224, 113, 0.78);
   border-radius: 999px;
-  color: #f8fbff;
+  color: #241300;
   font-weight: 900;
-  background: radial-gradient(circle at 35% 28%, rgba(255, 255, 255, 0.22), transparent 32%), rgba(8, 17, 32, 0.88);
-  box-shadow: 0 0 18px rgba(41, 247, 255, 0.18);
+  background:
+    radial-gradient(circle at 32% 24%, #fffbe7 0 16%, #fff0a6 24%, transparent 34%),
+    radial-gradient(circle at 70% 78%, rgba(87, 47, 0, 0.82), transparent 48%),
+    linear-gradient(145deg, #fff0a6 0%, #ffd15a 38%, #d8941e 70%, #5a3300 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.38),
+    inset 0 -9px 18px rgba(82, 43, 0, 0.42),
+    0 0 18px rgba(255, 207, 82, 0.28),
+    0 10px 24px rgba(0, 0, 0, 0.34);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.36);
 }
 
 .lotto-ball.special {
-  border-color: rgba(255, 224, 113, 0.72);
-  color: #1a1200;
-  background: linear-gradient(135deg, var(--gold), var(--green));
+  border-color: rgba(255, 246, 188, 0.92);
+  color: #201000;
+  background:
+    radial-gradient(circle at 30% 20%, #ffffff 0 14%, #fff7be 24%, transparent 36%),
+    linear-gradient(145deg, #fff3a8 0%, #ffe071 38%, #f4b63d 68%, #704100 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.46),
+    inset 0 -9px 18px rgba(82, 43, 0, 0.38),
+    0 0 24px rgba(255, 224, 113, 0.38),
+    0 12px 28px rgba(0, 0, 0, 0.34);
 }
 
 .lotto-note {
@@ -340,4 +433,603 @@
   .piano-keyboard {
     grid-template-columns: repeat(7, minmax(34px, 1fr));
   }
+}
+
+.beat2lotto-hero h1 {
+  background-size: 220% 100%;
+  animation: lmTextShine 5.4s ease-in-out infinite;
+}
+
+.beat2lotto-console,
+.lotto-output-panel,
+.prompt-output-card {
+  position: relative;
+  isolation: isolate;
+}
+
+.beat2lotto-console::before,
+.lotto-output-panel::before,
+.prompt-output-card::before {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  content: "";
+  pointer-events: none;
+  border-radius: inherit;
+  background:
+    linear-gradient(115deg, transparent 0 38%, rgba(41, 247, 255, 0.2) 48%, rgba(255, 224, 113, 0.2) 58%, transparent 72%);
+  opacity: 0;
+  transform: translateX(-70%);
+}
+
+.beat2lotto-console:hover::before,
+.lotto-output-panel:hover::before,
+.prompt-output-card:focus-within::before {
+  opacity: 1;
+  animation: lmBorderBeam 1100ms ease both;
+}
+
+.lotto-output-grid.is-results-fresh .lotto-set-card {
+  animation:
+    lmPop 560ms cubic-bezier(0.16, 0.92, 0.28, 1) both,
+    lmPulseGlow 1600ms ease-in-out 420ms;
+  animation-delay: var(--motion-delay, 0ms), calc(var(--motion-delay, 0ms) + 420ms);
+}
+
+.lotto-set-card {
+  transform-origin: center;
+}
+
+.lotto-ball {
+  animation: lottoBallGlow 2.8s ease-in-out infinite;
+}
+
+.lotto-ball:nth-child(2) { animation-delay: 120ms; }
+.lotto-ball:nth-child(3) { animation-delay: 240ms; }
+.lotto-ball:nth-child(4) { animation-delay: 360ms; }
+.lotto-ball:nth-child(5) { animation-delay: 480ms; }
+.lotto-ball:nth-child(6) { animation-delay: 600ms; }
+
+textarea.is-typing-output {
+  caret-color: var(--gold);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 224, 113, 0.5),
+    0 0 24px rgba(41, 247, 255, 0.16);
+}
+
+button.is-copy-pulsed {
+  animation: lmCopyPulse 760ms ease both;
+}
+
+@keyframes lmPop {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 18px, 0) scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@keyframes lottoBallGlow {
+  0%, 100% {
+    filter: drop-shadow(0 0 8px rgba(255, 224, 113, 0.18));
+    transform: translateY(0);
+  }
+  50% {
+    filter: drop-shadow(0 0 18px rgba(41, 247, 255, 0.28));
+    transform: translateY(-2px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .beat2lotto-hero h1,
+  .lotto-output-grid.is-results-fresh .lotto-set-card,
+  .lotto-ball,
+  button.is-copy-pulsed {
+    animation: none !important;
+  }
+
+  .beat2lotto-console::before,
+  .lotto-output-panel::before,
+  .prompt-output-card::before {
+    display: none;
+  }
+}
+
+/* Beat2Lotto+ Ballpass page polish. */
+.beat2lotto-current-page {
+  --b2l-ballpass-x: 56%;
+  --b2l-ballpass-y: 38%;
+}
+
+.beat2lotto-current-page #b2lBallpassGame.b2l-game-generator-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  opacity: 0.94;
+  mix-blend-mode: screen;
+  filter: saturate(1.12) contrast(1.04);
+  contain: strict;
+}
+
+.beat2lotto-current-page .b2l-game-generator-vignette {
+  background:
+    radial-gradient(circle at var(--b2l-ballpass-x) var(--b2l-ballpass-y), rgba(41, 247, 255, 0.2), transparent 20rem),
+    radial-gradient(circle at 82% 24%, rgba(255, 79, 216, 0.1), transparent 26rem),
+    linear-gradient(180deg, rgba(2, 5, 12, 0.14), rgba(2, 5, 12, 0.72));
+}
+
+.beat2lotto-current-page .b2l-static-balls {
+  opacity: 0.32;
+  filter: saturate(0.9) contrast(0.92);
+}
+
+.beat2lotto-current-page .beat2lotto-current-main {
+  overflow: visible;
+  padding-inline: clamp(0.75rem, 2vw, 2rem);
+}
+
+.beat2lotto-current-page .beat2lotto-shell {
+  width: min(calc(100vw - clamp(1.5rem, 4vw, 4rem)), 1280px);
+  max-width: 100%;
+  overflow: visible;
+}
+
+.beat2lotto-current-page .prompt-lab-beat2lotto-top {
+  min-height: auto;
+  overflow: visible;
+}
+
+.beat2lotto-current-page .beat2lotto-hero {
+  grid-template-columns: minmax(0, 1fr) minmax(13rem, 0.32fr);
+  gap: clamp(1.2rem, 4vw, 3.5rem);
+  min-height: min(58vh, 680px);
+  overflow: visible;
+  padding-block: clamp(4.5rem, 10vw, 7rem) clamp(2rem, 5vw, 4rem);
+}
+
+.beat2lotto-current-page .beat2lotto-hero > div {
+  min-width: 0;
+}
+
+.beat2lotto-current-page .beat2lotto-hero h1,
+.beat2lotto-current-page .lotto-output-head h2 {
+  max-width: 100%;
+  overflow: visible;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+
+.beat2lotto-current-page .beat2lotto-hero h1 {
+  font-size: clamp(3rem, 8.7vw, 8rem);
+  line-height: 0.9;
+  letter-spacing: 0;
+}
+
+.beat2lotto-current-page .lotto-output-head h2 {
+  font-size: clamp(2rem, 4.7vw, 4.8rem);
+  line-height: 0.9;
+}
+
+.beat2lotto-current-page .beat2lotto-console {
+  grid-template-columns: minmax(16rem, 0.34fr) minmax(0, 1fr);
+  overflow: visible;
+}
+
+.beat2lotto-current-page.home-page.has-sphere-header .home-sphere-header nav {
+  width: min(100%, 62rem) !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  scrollbar-width: none !important;
+}
+
+.beat2lotto-current-page.home-page.has-sphere-header .home-sphere-header nav::-webkit-scrollbar {
+  display: none !important;
+}
+
+.beat2lotto-current-page.home-page.has-sphere-header .home-sphere-header nav a,
+.beat2lotto-current-page.home-page.has-sphere-header .home-sphere-header nav a:is(:hover, :focus-visible, .is-pressed, .is-touch-active, .is-sphere-pressed, :active) {
+  overflow-wrap: anywhere !important;
+  word-break: break-word !important;
+  hyphens: auto !important;
+}
+
+@media (max-width: 980px) {
+  .beat2lotto-current-page .beat2lotto-hero {
+    grid-template-columns: 1fr;
+    min-height: auto;
+  }
+
+  .beat2lotto-current-page .beat2lotto-orb {
+    width: min(18rem, 64vw);
+    justify-self: center;
+  }
+
+  .beat2lotto-current-page .beat2lotto-console {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 620px) {
+  .beat2lotto-current-page .beat2lotto-hero {
+    padding-top: 9.25rem;
+  }
+
+  .beat2lotto-current-page .beat2lotto-hero h1 {
+    font-size: clamp(2.6rem, 17vw, 5.2rem);
+  }
+
+  .beat2lotto-current-page .lotto-output-head h2 {
+    font-size: clamp(1.8rem, 11vw, 3.35rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .beat2lotto-current-page #b2lBallpassGame.b2l-game-generator-bg {
+    opacity: 0.46;
+  }
+}
+
+/* Final anti-clipping pass for Ballpass view headlines and sphere tabs. */
+.beat2lotto-current-page .beat2lotto-hero,
+.beat2lotto-current-page .beat2lotto-console,
+.beat2lotto-current-page .lotto-output-panel,
+.beat2lotto-current-page .lotto-output-head,
+.beat2lotto-current-page .beat2lotto-current-main,
+.beat2lotto-current-page .beat2lotto-shell {
+  overflow: visible !important;
+}
+
+.beat2lotto-current-page .beat2lotto-hero h1 {
+  display: block;
+  inline-size: 100%;
+  max-inline-size: 100%;
+  min-height: calc(1em * 1.1);
+  padding-block: 0.08em 0.14em;
+  font-size: clamp(2.8rem, 6.25vw, 5.8rem);
+  line-height: 1.1;
+  letter-spacing: 0;
+  overflow: visible !important;
+  overflow-wrap: anywhere;
+  word-break: normal;
+  white-space: nowrap;
+  contain: none;
+}
+
+.beat2lotto-current-page .lotto-output-head h2 {
+  display: block;
+  inline-size: 100%;
+  max-inline-size: 100%;
+  min-height: calc(1em * 1.1);
+  padding-block: 0.08em 0.14em;
+  font-size: clamp(1.85rem, 3.9vw, 3.9rem);
+  line-height: 1.1;
+  letter-spacing: 0;
+  overflow: visible !important;
+  overflow-wrap: anywhere;
+  word-break: normal;
+  contain: none;
+}
+
+.beat2lotto-current-page.home-page.has-sphere-header .home-sphere-header nav a {
+  min-inline-size: clamp(4.5rem, 7.4vw, 5.8rem) !important;
+  padding-inline: 0.28rem !important;
+}
+
+@media (max-width: 620px) {
+  .beat2lotto-current-page .beat2lotto-hero h1 {
+    font-size: clamp(2.4rem, 14vw, 4.6rem);
+    white-space: normal;
+  }
+
+  .beat2lotto-current-page .lotto-output-head h2 {
+    font-size: clamp(1.7rem, 9.5vw, 3rem);
+  }
+}
+
+/* Live-events style player clone for Beat2Lotto+ uploaded media. */
+.beat2lotto-current-page {
+  padding-bottom: 126px;
+}
+
+.beat2lotto-live-player {
+  --player-progress: 0;
+  --beat-live-energy: 0;
+  position: fixed !important;
+  right: auto;
+  bottom: max(10px, env(safe-area-inset-bottom));
+  left: 50%;
+  z-index: 90;
+  display: grid;
+  grid-template-columns: 74px minmax(170px, 1.05fr) minmax(140px, 0.75fr) 44px 58px 44px minmax(92px, auto) minmax(132px, 0.44fr);
+  gap: 12px;
+  align-items: center;
+  width: min(calc(100% - 24px), 1180px);
+  min-height: 82px;
+  padding: 10px 16px;
+  border: 2px solid rgba(0, 166, 255, 0.92);
+  border-radius: 16px;
+  color: #eaf9ff;
+  background:
+    radial-gradient(circle at 14% 35%, rgba(94, 255, 157, 0.18), transparent 13rem),
+    radial-gradient(circle at 58% 12%, rgba(255, 224, 113, 0.19), transparent 18rem),
+    linear-gradient(92deg, rgba(4, 41, 72, 0.96), rgba(17, 43, 91, 0.97) 60%, rgba(8, 27, 63, 0.98));
+  box-shadow:
+    0 0 0 1px rgba(41, 247, 255, 0.24),
+    0 0 calc(22px + var(--beat-live-energy) * 24px) rgba(0, 166, 255, 0.42),
+    0 20px 70px rgba(0, 0, 0, 0.5),
+    inset 0 0 34px rgba(41, 247, 255, 0.08);
+  transform: translateX(-50%);
+  backdrop-filter: blur(18px);
+}
+
+.beat2lotto-live-player.is-disabled {
+  opacity: 0.82;
+}
+
+.beat2lotto-live-player::before {
+  position: absolute;
+  inset: 7px 14px auto;
+  height: 1px;
+  content: "";
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgba(41, 247, 255, 0.86), rgba(255, 224, 113, 0.62), transparent);
+  opacity: 0.82;
+}
+
+.beat2lotto-live-player .now-art {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 62px;
+  height: 54px;
+  border: 1px solid rgba(255, 224, 113, 0.72);
+  border-radius: 999px;
+  overflow: hidden;
+  color: #062132;
+  font-size: 0.78rem;
+  font-weight: 950;
+  background:
+    radial-gradient(circle at 34% 28%, rgba(255, 255, 255, 0.9), transparent 1.25rem),
+    radial-gradient(circle at 50% 55%, rgba(255, 224, 113, 0.96), rgba(94, 255, 157, 0.78) 48%, rgba(7, 18, 35, 0.92) 74%);
+  box-shadow:
+    0 0 18px rgba(255, 224, 113, 0.24),
+    inset 0 0 16px rgba(41, 247, 255, 0.38);
+}
+
+.beat2lotto-live-player .now-copy {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.beat2lotto-live-player .now-copy small,
+.beat2lotto-live-player .now-copy span {
+  display: block;
+  overflow: hidden;
+  color: rgba(226, 244, 255, 0.72);
+  font-size: 0.76rem;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.beat2lotto-live-player .now-copy strong {
+  display: block;
+  overflow: hidden;
+  color: #e9fbff;
+  font-size: 0.98rem;
+  line-height: 1.1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.beat2lotto-live-player .now-wave {
+  position: relative;
+  height: 42px;
+  overflow: hidden;
+  border: 1px solid rgba(41, 247, 255, 0.24);
+  border-radius: 8px;
+  background:
+    radial-gradient(circle at calc(20% + var(--beat-live-energy) * 34%) 50%, rgba(94, 255, 157, 0.22), transparent 34%),
+    linear-gradient(90deg, rgba(41, 247, 255, 0.16), rgba(255, 79, 216, 0.18)),
+    rgba(3, 12, 26, 0.7);
+  box-shadow: inset 0 0 calc(14px + var(--beat-live-energy) * 16px) rgba(41, 247, 255, 0.12);
+}
+
+.beat2lotto-live-player .now-wave::before,
+.beat2lotto-live-player .now-wave i {
+  position: absolute;
+  inset: 0;
+  content: "";
+}
+
+.beat2lotto-live-player .now-wave::before {
+  background:
+    linear-gradient(90deg, transparent, rgba(255, 224, 113, 0.18), transparent),
+    repeating-linear-gradient(90deg, transparent 0 12px, rgba(255, 255, 255, 0.08) 12px 13px, transparent 13px 24px);
+  opacity: calc(0.52 + var(--beat-live-energy) * 0.38);
+}
+
+.beat2lotto-live-player .now-wave i {
+  width: 210%;
+  background:
+    radial-gradient(ellipse at 3% 50%, transparent 0 12px, rgba(41, 247, 255, 0.82) 13px 14px, transparent 15px 28px),
+    radial-gradient(ellipse at 16% 50%, transparent 0 15px, rgba(138, 92, 255, 0.9) 16px 17px, transparent 18px 34px),
+    radial-gradient(ellipse at 23% 50%, transparent 0 9px, rgba(255, 224, 113, 0.82) 10px 11px, transparent 12px 25px),
+    radial-gradient(ellipse at 31% 50%, transparent 0 18px, rgba(41, 247, 255, 0.88) 19px 20px, transparent 21px 38px),
+    radial-gradient(ellipse at 40% 50%, transparent 0 7px, rgba(255, 79, 216, 0.82) 8px 9px, transparent 10px 24px);
+  background-size: 50% 100%;
+  opacity: 0.9;
+  transform: translateX(calc(var(--player-progress) * -48%));
+  transition: transform 120ms linear;
+}
+
+.beat2lotto-live-player button {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  border: 1px solid rgba(120, 210, 255, 0.32);
+  border-radius: 999px;
+  color: #dffcff;
+  font-size: 0.76rem;
+  font-weight: 950;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.04)),
+    rgba(18, 48, 88, 0.84);
+  box-shadow: inset 0 0 18px rgba(41, 247, 255, 0.08);
+  cursor: pointer;
+}
+
+.beat2lotto-live-player button:disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+}
+
+.beat2lotto-live-player .big {
+  width: 58px;
+  min-width: 58px;
+  min-height: 58px;
+  border-color: rgba(138, 92, 255, 0.9);
+  font-size: 1rem;
+  box-shadow:
+    0 0 24px rgba(138, 92, 255, 0.32),
+    inset 0 0 22px rgba(41, 247, 255, 0.1);
+}
+
+.beat2lotto-live-player .time {
+  color: rgba(226, 244, 255, 0.74);
+  font-size: 0.82rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.beat2lotto-live-player .points {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 2px 10px;
+  align-items: center;
+  min-width: 0;
+  color: rgba(226, 244, 255, 0.74);
+  text-transform: uppercase;
+}
+
+.beat2lotto-live-player .points b,
+.beat2lotto-live-player .points span {
+  font-size: 0.64rem;
+  line-height: 1.15;
+}
+
+.beat2lotto-live-player .points span {
+  grid-column: 1 / -1;
+  color: rgba(226, 244, 255, 0.64);
+}
+
+.beat2lotto-live-player .points strong {
+  color: #ffe071;
+  font-size: 1.06rem;
+}
+
+@media (max-width: 980px) {
+  .beat2lotto-current-page {
+    padding-bottom: 154px;
+  }
+
+  .beat2lotto-live-player {
+    grid-template-columns: 54px minmax(0, 1fr) 42px 52px 42px;
+    gap: 8px;
+    width: min(calc(100% - 18px), 720px);
+    min-height: 100px;
+    padding: 10px;
+  }
+
+  .beat2lotto-live-player .now-art {
+    width: 48px;
+    height: 48px;
+  }
+
+  .beat2lotto-live-player .now-wave {
+    grid-column: 1 / -1;
+    height: 28px;
+  }
+
+  .beat2lotto-live-player .time,
+  .beat2lotto-live-player .points {
+    display: none;
+  }
+
+  .beat2lotto-live-player button {
+    width: 42px;
+    min-width: 42px;
+    min-height: 42px;
+  }
+
+  .beat2lotto-live-player .big {
+    width: 52px;
+    min-width: 52px;
+    min-height: 52px;
+  }
+}
+
+@media (max-width: 560px) {
+  .beat2lotto-current-page {
+    padding-bottom: 164px;
+  }
+
+  .beat2lotto-live-player {
+    grid-template-columns: 44px minmax(0, 1fr) 38px 48px 38px;
+    gap: 7px;
+    border-radius: 13px;
+    padding: 9px;
+  }
+
+  .beat2lotto-live-player .now-art {
+    width: 42px;
+    height: 42px;
+    font-size: 0.68rem;
+  }
+
+  .beat2lotto-live-player .now-copy strong {
+    font-size: 0.82rem;
+  }
+
+  .beat2lotto-live-player .now-copy small,
+  .beat2lotto-live-player .now-copy span {
+    font-size: 0.66rem;
+  }
+
+  .beat2lotto-live-player button {
+    width: 38px;
+    min-width: 38px;
+    min-height: 38px;
+  }
+
+  .beat2lotto-live-player .big {
+    width: 48px;
+    min-width: 48px;
+    min-height: 48px;
+  }
+}
+
+.prompt-lab-page.has-manual-instrument-header .home-signal-marquee {
+  min-height: 62px;
+}
+
+.prompt-lab-page.has-manual-instrument-header .home-signal-marquee-track span {
+  min-height: 62px;
+  padding-inline: clamp(25px, 4.48vw, 76px);
+  font-size: clamp(1.4rem, 3.36vw, 2.6rem);
+}
+
+.prompt-lab-beat2lotto-top .beat2lotto-coin-orb img[src*="beat2lotto-static-logo-coin"] {
+  object-fit: cover;
+  object-position: center;
+  transform: scale(1.02);
 }

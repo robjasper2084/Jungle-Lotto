@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="LOTTOMINDED ULTRA Lottery Spheres is an interactive branded sphere room for creative number signals, Beat DNA, and local-first studio routing."
+    />
+    <title>LOTTOMINDED ULTRA | Lottery Spheres</title>
+    <meta name="theme-color" content="#03050a" />
+    <link rel="icon" href="./assets/brand/lm-orb-mark.webp" type="image/webp" />
+    <link rel="stylesheet" href="./styles.css?v=verified-transitions-1" />
+    <script>
+      try {
+        if (sessionStorage.getItem("lmTransitionArriving") === "yes") {
+          document.documentElement.classList.add("lm-transition-arriving");
+        }
+      } catch (error) {}
+    </script>
+    <link rel="stylesheet" href="./assets/css/lm-page-transition.css?v=verified-transitions-1" />
+    <link rel="stylesheet" href="./lottery-spheres.css?v=spheres-player-color-1" />
+  </head>
+  <body class="lottery-spheres-page">
+    <div class="lm-page-transition" data-lm-page-transition aria-hidden="true">
+      <div class="lm-page-transition__flash"></div>
+      <video class="lm-page-transition__video" data-lm-transition-video muted playsinline preload="metadata"></video>
+      <div class="lm-page-transition__vignette"></div>
+      <div class="lm-page-transition__scanlines"></div>
+      <p class="lm-page-transition__label" data-lm-transition-label>Opening signal</p>
+    </div>
+    <header class="site-header home-like-header lottery-spheres-header" data-site-header>
+      <div class="site-header-main">
+        <a class="brand" href="./how-to-use.html" aria-label="LOTTOMINDED ULTRA home">
+          <img src="./assets/brand/lm-orb-mark.webp" alt="" />
+          <span>LOTTOMINDED ULTRA</span>
+        </a>
+        <button type="button" class="site-header-toggle" data-header-toggle aria-expanded="true">Menu</button>
+      </div>
+      <nav aria-label="Lottery Spheres navigation">
+        <a href="./how-to-use.html" data-icon="HM">Home</a>
+        <a href="./features-app.html" data-icon="FX">Features</a>
+        <a href="https://robjasper2084.github.io/Jungle-Lotto/lotto%20mind%20refined/" data-icon="LM" data-vault-launch data-plan="free">LottoMind App</a>
+        <a href="./beat2lotto-plus.html#beat2lotto" data-icon="B2">Beat2Lotto+&trade;</a>
+        <a href="./merch-store.html" data-icon="MC">Merch</a>
+        <a href="./lottomind-stem-studio/index.html" data-icon="ST">Studio</a>
+      </nav>
+    </header>
+
+    <div class="sphere-audio-gate" data-sphere-audio-gate role="dialog" aria-modal="true" aria-label="Sphere background music">
+      <div class="sphere-audio-panel">
+        <p class="section-kicker">Vault Frequency</p>
+        <h2>LottoMind Vault 174 Hz</h2>
+        <p>Start the sphere room soundtrack so the golden balls throb with the beat.</p>
+        <div class="sphere-audio-actions">
+          <button class="primary-action" type="button" data-sphere-audio-start>Start Music</button>
+          <button class="secondary-action" type="button" data-sphere-audio-skip>Enter Quiet</button>
+        </div>
+        <p class="sphere-audio-status" data-sphere-audio-status aria-live="polite"></p>
+      </div>
+    </div>
+    <audio data-sphere-soundtrack src="./assets/audio/lottomind-vault-174-hz.mp3" loop preload="metadata"></audio>
+
+    <main>
+      <section class="sphere-stage" id="spheres" data-spheres-stage aria-label="Interactive LOTTOMINDED lottery spheres">
+        <canvas class="sphere-canvas" data-spheres-canvas aria-hidden="true"></canvas>
+        <div class="sphere-scanline" aria-hidden="true"></div>
+        <div class="sphere-grid" aria-hidden="true"></div>
+
+        <div class="sphere-copy">
+          <p class="section-kicker">Beat2Lotto+&trade; Signal Room</p>
+          <h1 class="kinetic-word" data-kinetic="LOTTERY SPHERES IN MOTION" tabindex="0">Lottery Spheres in Motion</h1>
+          <p>
+            Guide the glowing balls, reroll a creative set, and send the signal back into the
+            LOTTOMINDED ULTRA&trade; studio. Creative number generation only. Not a prediction.
+          </p>
+          <div class="sphere-actions">
+            <button class="primary-action" type="button" data-reroll-spheres>Reroll Spheres</button>
+          <a class="secondary-action" href="./beat2lotto-plus.html#beat2lotto">Open Beat2Lotto+&trade;</a>
+            <a class="secondary-action" href="./lottomind-stem-studio/index.html">Launch Studio</a>
+          </div>
+        </div>
+
+        <aside class="sphere-readout" aria-label="Current creative signal">
+          <img src="./assets/brand/lm-orb-mark.webp" alt="" />
+          <span>Current Signal</span>
+          <strong data-sphere-signal>05 - 12 - 19 - 27 - 33</strong>
+          <div class="sphere-live-stats" aria-label="Live signal motion stats">
+            <div>
+              <span>Energy</span>
+              <meter min="0" max="100" value="58" data-sphere-energy>58</meter>
+            </div>
+            <div>
+              <span>Orbit</span>
+              <strong data-sphere-orbit>Calm</strong>
+            </div>
+          </div>
+          <p>Move your pointer through the sphere field to bend the orbit path.</p>
+          <div class="sphere-generated-sets" data-sphere-generated-sets aria-live="polite">
+            <strong>Move trigger</strong>
+            <span data-sphere-move-count>Move the balls 3 times to generate sets.</span>
+            <dl>
+              <div><dt>Pick 6</dt><dd data-sphere-pick6>--</dd></div>
+              <div><dt>Pick 3</dt><dd data-sphere-pick3>--</dd></div>
+              <div><dt>Pick 4</dt><dd data-sphere-pick4>--</dd></div>
+            </dl>
+          </div>
+        </aside>
+      </section>
+
+      <section class="sphere-info-grid" aria-label="Lottery Spheres actions">
+        <article tabindex="0">
+          <span>01</span>
+          <h2 data-kinetic="Orbit">Orbit</h2>
+          <p>The sphere field reacts to pointer movement, with neon light trails and soft collision drift.</p>
+        </article>
+        <article tabindex="0">
+          <span>02</span>
+          <h2 data-kinetic="Signal">Signal</h2>
+          <p>Reroll generates a fresh entertainment-only creative set for the Beat2Lotto+&trade; workflow.</p>
+        </article>
+        <article tabindex="0">
+          <span>03</span>
+          <h2 data-kinetic="Studio">Studio</h2>
+          <p>Jump back to Prompt Lab or the full local-first studio without leaving the branded flow.</p>
+        </article>
+      </section>
+
+    </main>
+
+    <footer class="lm-live-player spheres-live-player" id="player" data-live-player aria-label="Lottery Spheres live mix player">
+      <audio data-live-player-audio preload="metadata" src="./assets/audio/digital-static-live-mix.mp3"></audio>
+      <div class="now-art"></div>
+      <div class="now-copy"><small>Now Playing</small><strong>Neon Horizons 2025 - Main Stage</strong><span>Mind of the Future Live Mix</span></div>
+      <div class="now-wave" aria-hidden="true"><i></i></div>
+      <button type="button" aria-label="Back 15 seconds" data-live-player-prev>&lt;&lt;</button>
+      <button type="button" class="big" aria-label="Play live mix" aria-pressed="false" data-live-player-toggle>&#9654;</button>
+      <button type="button" aria-label="Forward 15 seconds" data-live-player-next>&gt;&gt;</button>
+      <span class="time" data-live-player-time>0:00 / --:--</span>
+      <div class="points"><b>Ultra Points</b><strong>12,450</strong><span>Rank Ultra Elite</span></div>
+    </footer>
+    <footer>
+      <span>LOTTOMINDED ULTRA</span>
+      <span>All rights reserved.</span>
+      <span>2026</span>
+    </footer>
+
+    <script src="./assets/js/lm-page-transition-audio.js?v=verified-transitions-1" defer></script>
+    <script src="./assets/js/lm-page-transition.js?v=transition-hotfix-2" defer></script>
+    <script src="./site.js?v=transition-hotfix-2" defer></script>
+    <script src="./lottery-spheres.js?v=sphere-live-duck-1" defer></script>
+  </body>
+</html>

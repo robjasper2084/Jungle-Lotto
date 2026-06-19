@@ -10,180 +10,323 @@
     <title>LOTTOMINDED ULTRA | Browser Music Workstation</title>
     <meta name="theme-color" content="#03050a" />
     <link rel="icon" href="./assets/brand/lm-orb-mark.webp" type="image/webp" />
-    <link rel="stylesheet" href="./styles.css?v=prompt-top-2" />
+    <link rel="stylesheet" href="./styles.css?v=verified-transitions-1" />
+    <script>
+      try {
+        if (sessionStorage.getItem("lmTransitionArriving") === "yes") {
+          document.documentElement.classList.add("lm-transition-arriving");
+        }
+      } catch (error) {}
+    </script>
+    <link rel="stylesheet" href="./assets/css/lm-page-transition.css?v=verified-transitions-1" />
+    <link rel="stylesheet" href="./assets/css/home-raytrace.css?v=home-raytrace-pass-13" />
   </head>
-  <body>
-    <header class="site-header" data-site-header>
+  <body class="home-page has-startup-modal has-sphere-header">
+    <div class="lm-page-transition" data-lm-page-transition aria-hidden="true">
+      <div class="lm-page-transition__flash"></div>
+      <video class="lm-page-transition__video" data-lm-transition-video muted playsinline preload="metadata"></video>
+      <div class="lm-page-transition__vignette"></div>
+      <div class="lm-page-transition__scanlines"></div>
+      <p class="lm-page-transition__label" data-lm-transition-label>Opening signal</p>
+    </div>
+    <header class="site-header home-like-header home-sphere-header" data-site-header>
       <div class="site-header-main">
         <a class="brand" href="./" aria-label="LOTTOMINDED ULTRA home">
           <img src="./assets/brand/lm-orb-mark.webp" alt="" />
           <span>LOTTOMINDED ULTRA</span>
         </a>
-        <button type="button" class="site-back-button" data-site-back aria-label="Go back to the previous page">Back</button>
-        <button type="button" class="site-header-toggle" data-header-toggle aria-expanded="true">Shrink Menu</button>
+        <button type="button" class="site-header-toggle" data-header-toggle aria-expanded="true">Menu</button>
       </div>
-      <nav aria-label="Primary">
-        <a href="#top">Website</a>
-        <a href="https://lottomind.one/">Lottomind.one</a>
-        <a href="./features-app.html">Features</a>
-        <a href="./prompt-lab.html#beat2lotto">Beat2Lotto+</a>
-        <a href="./merch-store.html">Merch + Gallery</a>
-        <a href="./prompt-lab.html">Prompts</a>
-        <a href="./how-to-use.html">How to Use</a>
+      <nav aria-label="Home sphere navigation">
+        <a href="./index.html#top" data-icon="HM">Home</a>
+        <a href="./features-app.html" data-icon="FX">Features</a>
+        <a href="https://robjasper2084.github.io/Jungle-Lotto/lotto%20mind%20refined/" data-icon="LM" data-vault-launch data-plan="free">LottoMind App</a>
+        <a href="./live-events.html" data-icon="EV">Events</a>
+        <a href="./lottery-spheres.html#spheres" data-icon="SP">Spheres</a>
+        <a href="./beat2lotto-plus.html#beat2lotto" data-icon="B2">Beat2Lotto+&trade;</a>
+        <a href="./merch-store.html" data-icon="DR">Merch</a>
+        <a href="./how-to-use.html" data-icon="GO">Guide</a>
       </nav>
       <div class="direct-launch" aria-label="Direct studio launch">
-        <a class="direct-action direct-primary" href="../lottomind-stem-studio/index.html">Open Direct</a>
-        <a class="direct-action" href="./prompt-lab.html#beat-suno">Suno</a>
-        <a class="direct-action" href="./prompt-lab.html#beat-video">Video</a>
-        <a class="direct-action" href="./prompt-lab.html#beat2lotto">Beat2Lotto+</a>
-        <a class="direct-action" href="./merch-store.html">Merch</a>
-        <a class="direct-action" href="../lottomind-stem-studio/index.html#ai-master">Master</a>
-        <button class="direct-action soundtrack-toggle" type="button" data-soundtrack-toggle>Play Demo Music</button>
+        <a class="direct-action direct-primary" href="./lottomind-stem-studio/index.html">Launch Studio</a>
       </div>
     </header>
-    <audio id="siteSoundtrack" src="./assets/audio/default-stems/2%20Drums.mp3" preload="auto" loop></audio>
 
-    <aside class="startup-video-modal" data-startup-video aria-label="Lottominded Ultra intro video">
+    <section class="ultra-piano-header reveal-section home-piano-header" data-reveal aria-label="Interactive piano navigation header" hidden>
+      <div class="ultra-piano-bg" aria-hidden="true"></div>
+      <div class="ultra-instrument-shell">
+        <div class="ultra-keyboard-wrap" aria-label="Piano navigation keys" data-instrument-keyboard>
+          <div class="ultra-black-keys" aria-label="Sharp key navigation">
+            <button class="piano-key black" type="button" data-note="C#4" data-brand="LM" data-action="back" aria-label="Back key C sharp"><strong>C#</strong><small>Back</small></button>
+            <button class="piano-key black" type="button" data-note="D#4" data-brand="STEM" data-href="./lottomind-stem-studio/index.html" aria-label="Open studio key D sharp"><strong>D#</strong><small>Direct</small></button>
+            <button class="piano-key black" type="button" data-note="F#4" data-brand="SUNO" data-href="./prompt-lab.html#beat-suno" aria-label="Suno prompt key F sharp"><strong>F#</strong><small>Suno</small></button>
+            <button class="piano-key black" type="button" data-note="G#4" data-brand="VID" data-href="./prompt-lab.html#beat-video" aria-label="Video prompt key G sharp"><strong>G#</strong><small>Video</small></button>
+            <button class="piano-key black" type="button" data-note="A#4" data-brand="C" data-action="toggle-scale" aria-label="Play C scale key A sharp"><strong>A#</strong><small>C Scale</small></button>
+            <button class="piano-key black" type="button" data-note="C#5" data-brand="SP" data-href="./lottery-spheres.html#spheres" aria-label="SELCIRM spheres key C sharp five"><strong>C#'</strong><small>Spheres</small></button>
+            <button class="piano-key black" type="button" data-note="D#5" data-brand="DR" data-href="./merch-store.html" aria-label="Merch key D sharp five"><strong>D#'</strong><small>Merch</small></button>
+            <button class="piano-key black" type="button" data-note="F#5" data-brand="B2+" data-href="./prompt-lab.html#beat2lotto" aria-label="Beat2Lotto key F sharp five"><strong>F#'</strong><small>Beat2</small></button>
+            <button class="piano-key black" type="button" data-note="G#5" data-brand="GO" data-href="./how-to-use.html" aria-label="Guide key G sharp five"><strong>G#'</strong><small>Guide</small></button>
+            <button class="piano-key black" type="button" data-note="A#5" data-brand="TOP" data-href="./index.html#top" aria-label="Website top key A sharp five"><strong>A#'</strong><small>Top</small></button>
+          </div>
+          <div class="ultra-white-keys" aria-label="C scale page navigation">
+            <a class="piano-key white is-active-guide" data-note="C4" data-brand="LM" href="./index.html" aria-label="Home key C"><strong>C</strong><small>Website</small></a>
+            <a class="piano-key white" data-note="D4" data-brand="LOTTO" href="https://lottomind.one/" aria-label="Lottomind key D"><strong>D</strong><small>Lottomind</small></a>
+            <a class="piano-key white is-accent-gold" data-note="E4" data-brand="STUDIO" href="./lottomind-stem-studio/index.html" aria-label="Launch studio key E"><strong>E</strong><small>Studio</small></a>
+            <a class="piano-key white" data-note="F4" data-brand="FX" href="./features-app.html" aria-label="Features key F"><strong>F</strong><small>Features</small></a>
+            <a class="piano-key white" data-note="G4" data-brand="PR" href="./prompt-lab.html" aria-label="Prompt lab key G"><strong>G</strong><small>Prompts</small></a>
+            <a class="piano-key white is-accent-pink" data-note="A4" data-brand="MERCH" href="./merch-store.html" aria-label="Merch and gallery key A"><strong>A</strong><small>Merch</small></a>
+            <a class="piano-key white" data-note="B4" data-brand="GUIDE" href="./how-to-use.html" aria-label="Guide key B"><strong>B</strong><small>Guide</small></a>
+            <a class="piano-key white" data-note="C5" data-brand="B2+" href="./prompt-lab.html#beat2lotto" aria-label="Beat2Lotto key C five"><strong>C'</strong><small>Beat2Lotto+</small></a>
+            <a class="piano-key white" data-note="D5" data-brand="SP" href="./lottery-spheres.html#spheres" aria-label="SELCIRM spheres key D five"><strong>D'</strong><small>Spheres</small></a>
+            <a class="piano-key white is-accent-gold" data-note="E5" data-brand="SONG" href="./prompt-lab.html#beat-suno" aria-label="Music prompt key E five"><strong>E'</strong><small>Music</small></a>
+            <a class="piano-key white" data-note="F5" data-brand="VID" href="./prompt-lab.html#beat-video" aria-label="Video prompt key F five"><strong>F'</strong><small>Video</small></a>
+            <a class="piano-key white" data-note="G5" data-brand="HELP" href="./features-app.html#support" aria-label="Feature support key G five"><strong>G'</strong><small>Support</small></a>
+            <a class="piano-key white is-accent-pink" data-note="A5" data-brand="DROP" href="./merch-store.html#drop" aria-label="Merch drop key A five"><strong>A'</strong><small>Drop</small></a>
+            <a class="piano-key white" data-note="B5" data-brand="LAB" href="./prompt-lab.html" aria-label="Prompt lab key B five"><strong>B'</strong><small>Lab</small></a>
+            <a class="piano-key white is-accent-gold" data-note="C6" data-brand="ULTRA" href="./lottomind-stem-studio/index.html" aria-label="Launch studio key C six"><strong>C''</strong><small>Studio+</small></a>
+          </div>
+          <div class="ultra-keyboard-footer" aria-hidden="true">
+            <span>Home</span><i></i><span>Signal</span><i></i><span>Route</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="home-signal-marquee" aria-label="Beat2Lotto creative signal notice">
+      <a class="home-signal-marquee-track" href="./prompt-lab.html#beat2lotto">
+        <span>Beat-seeded signals.</span>
+        <span>Creative sets only.</span>
+        <span>Not a prediction.</span>
+        <span>Open Beat2Lotto+&trade;</span>
+      </a>
+      <a class="home-signal-marquee-track" href="./prompt-lab.html#beat2lotto" aria-hidden="true" tabindex="-1">
+        <span>Beat-seeded signals.</span>
+        <span>Creative sets only.</span>
+        <span>Not a prediction.</span>
+        <span>Open Beat2Lotto+&trade;</span>
+      </a>
+    </section>
+
+    <aside class="startup-video-modal" data-startup-video aria-label="Lottominded Ultra startup music">
       <div class="startup-video-panel" role="dialog" aria-modal="true" aria-labelledby="startupVideoTitle">
-        <button class="startup-video-close" type="button" data-startup-video-close aria-label="Close intro video">X</button>
+        <button class="startup-video-close" type="button" data-startup-video-close aria-label="Enter site and start music">X</button>
         <p class="eyebrow">Lottominded Ultra Signal</p>
-        <h2 id="startupVideoTitle">Enter the frequency vault.</h2>
+        <h2 id="startupVideoTitle">Start the home frequency.</h2>
         <video class="startup-video-player" autoplay muted loop playsinline controls preload="metadata">
-          <source src="./assets/video/lottomind-uploaded-hero.mp4" type="video/mp4" />
+          <source src="./assets/video/bloom-through-gloom-hero.mp4" type="video/mp4" />
         </video>
+        <div class="startup-video-actions">
+          <button class="primary-action" type="button" data-startup-music-start>Start Music</button>
+          <button class="secondary-action" type="button" data-startup-video-close>Enter Site</button>
+        </div>
         <p class="startup-video-copy">
-          Local-first music tools, Beat DNA prompts, cinematic video ideas, and entertainment-only creative signals.
+          Tap Start Music to load the home page with the LOTTOMINDED ULTRA soundtrack from the top.
+        </p>
+        <p class="startup-video-credit">
+          Produced by LOTTOMINDED&trade;. Recording artist: Bloom Through Gloom.
         </p>
       </div>
     </aside>
 
-    <main>
+    <main class="home-sphere-main" data-spheres-stage data-spheres-theme="golden" data-spheres-accent-src="./assets/brand/jazz-network-gold-coin.jpeg">
+      <canvas class="home-sphere-canvas" data-spheres-canvas aria-hidden="true"></canvas>
+      <canvas class="home-raytrace-canvas" data-home-raytrace-canvas aria-hidden="true"></canvas>
+      <div class="home-sphere-grid" aria-hidden="true"></div>
+      <div class="home-sphere-scanline" aria-hidden="true"></div>
       <section class="hero kinetic-hero" id="top" data-kinetic-hero>
-        <video class="hero-motion" autoplay muted loop playsinline preload="auto" aria-hidden="true">
-          <source src="./assets/video/lottomind-uploaded-hero.mp4" type="video/mp4" />
+        <video class="hero-motion" autoplay muted loop playsinline preload="metadata" aria-hidden="true">
+          <source src="./assets/video/bloom-through-gloom-hero.mp4" type="video/mp4" />
           <source src="./assets/video/lottomind-logo-sting.mp4" type="video/mp4" />
         </video>
         <div class="hero-circuit-layer" aria-hidden="true"></div>
+        <div class="motion-orb-layer" aria-hidden="true"></div>
+        <div class="signal-particle-layer" aria-hidden="true">
+          <span></span><span></span><span></span><span></span><span></span><span></span>
+        </div>
         <div class="hero-mouse-light" aria-hidden="true"></div>
-        <div class="hero-copy" hidden>
-          <h1 aria-label="LOTTOMINDED ULTRA"><span>LOTTO</span><span>MINDED</span><span>ULTRA</span></h1>
+        <div class="hero-copy motion-text-split" data-motion="blur">
+          <div class="studio-boot-sequence" aria-hidden="true">
+            <span>Boot LM Records vault</span>
+            <span>Lock Beat DNA</span>
+            <span>Signal online</span>
+          </div>
+          <h1 aria-label="LOTTOMINDED ULTRA trademark"><span>LOTTO</span><span>MINDED</span><span>ULTRA<span class="tm" aria-hidden="true"></span></span></h1>
           <p>
-            A cinematic local-first studio for building beats, shaping stems, mastering mixes, and turning
-            Beat DNA into Suno prompts, video concepts, and entertainment-only creative signals.
+            LottoMind turns dreams, favorite numbers, notes, moods, and creative ideas into one organized app flow with
+            Number Radar, Dream Oracle, saved sets, and entertainment-only signal tools.
           </p>
           <div class="hero-actions">
             <a class="secondary-action" href="https://lottomind.one/">Lottomind.one</a>
-            <a class="secondary-action" href="#features">Explore Features</a>
+            <a class="secondary-action" href="./features-app.html">Explore Features</a>
+            <a class="secondary-action" href="#lottomind-refined">LottoMind App Beta</a>
           </div>
         </div>
-        <figure class="hero-brand-art" aria-hidden="true">
-          <img src="./assets/brand/lm-frequency-vault-hero.webp" alt="" />
-        </figure>
+        <aside class="hero-brand-art home-spheres-column" aria-label="Interactive LOTTOMINDED lottery spheres">
+          <div class="home-spheres-orbit-mark" aria-hidden="true">
+            <img src="./assets/brand/jazz-network-gold-coin.jpeg" alt="" />
+          </div>
+          <div class="home-spheres-copy">
+            <p class="section-kicker">Beat2Lotto+&trade; Signal Room</p>
+            <h2 class="kinetic-word" data-kinetic="LOTTERY SPHERES IN MOTION" tabindex="0">Lottery Spheres in Motion</h2>
+            <p>
+              Guide the glowing balls, reroll a creative set, and send the signal back into the LOTTOMINDED ULTRA&trade;
+              studio. Creative number generation only. Not a prediction.
+            </p>
+          </div>
+          <div class="home-sphere-readout-panel" aria-label="Current creative signal">
+            <img src="./assets/brand/lm-orb-mark.webp" alt="" />
+            <span>Current Signal</span>
+            <strong data-sphere-signal>05 - 12 - 19 - 27 - 33</strong>
+            <div class="sphere-live-stats" aria-label="Live signal motion stats">
+              <div>
+                <span>Energy</span>
+                <meter min="0" max="100" value="58" data-sphere-energy>58</meter>
+              </div>
+              <div>
+                <span>Orbit</span>
+                <strong data-sphere-orbit>Calm</strong>
+              </div>
+            </div>
+            <p>Move your pointer through the sphere field to bend the orbit path.</p>
+            <div class="sphere-generated-sets" data-sphere-generated-sets aria-live="polite">
+              <strong>Move trigger</strong>
+              <span data-sphere-move-count>Move the balls 3 times to generate sets.</span>
+              <dl>
+                <div>
+                  <dt>Pick 6</dt>
+                  <dd data-sphere-pick6>--</dd>
+                </div>
+                <div>
+                  <dt>Pick 3</dt>
+                  <dd data-sphere-pick3>--</dd>
+                </div>
+                <div>
+                  <dt>Pick 4</dt>
+                  <dd data-sphere-pick4>--</dd>
+                </div>
+              </dl>
+            </div>
+          </div>
+          <div class="sphere-actions home-sphere-actions">
+            <button class="primary-action" type="button" data-reroll-spheres>Reroll Spheres</button>
+            <a class="secondary-action" href="./beat2lotto-plus.html#beat2lotto">Open Beat2Lotto+&trade;</a>
+            <a class="secondary-action" href="./lottomind-stem-studio/index.html">Launch Studio</a>
+          </div>
+        </aside>
         <div class="domain-strip" aria-label="Brand identity">
-          <strong>Stem Studio &middot; Beat DNA &middot; AI Prompts &middot; Mastering &middot; Creative Signals</strong>
-          <span>Local-first production tools wrapped in a cinematic LM Records brand system.</span>
+          <video class="domain-strip-video" autoplay muted loop playsinline preload="metadata" aria-hidden="true">
+            <source src="./assets/video/lottomind-logo-sting.mp4" type="video/mp4" />
+          </video>
+          <span class="domain-eq" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+          <strong>LottoMind App &middot; Dream Oracle &middot; Number Radar &middot; Saved Wallet &middot; Creative Signals</strong>
+          <span>Local-first app tools for organizing ideas, notes, number sets, and creative play.</span>
         </div>
+        <aside class="home-game-pip" data-game-pip aria-label="GOTHTECHNOLOGY game popup" aria-hidden="true">
+          <div class="home-game-pip-head">
+            <strong>GOTHTECHNOLOGY</strong>
+            <button type="button" data-game-pip-close aria-label="Close game popup">Close</button>
+          </div>
+          <iframe data-src="./games/gothtechnology2/index.html?shadow-ops-fix-1" title="Playable GOTHTECHNOLOGY game" loading="lazy"></iframe>
+        </aside>
       </section>
 
       <section class="prompt-band prompt-band-top marketing-section reveal-section" id="prompt" data-reveal>
-        <div class="prompt-brief-card">
-          <h2>Turn the beat into the brief.</h2>
+        <div class="prompt-brief-card" data-prompt-sphere-card>
+          <div class="prompt-card-sphere-field" data-prompt-sphere-field aria-hidden="true">
+            <span class="prompt-card-sphere-ball" style="--ball-x: 72%; --ball-y: 12%; --ball-size: 92px; --ball-delay: -0.8s;">32</span>
+            <span class="prompt-card-sphere-ball" style="--ball-x: 18%; --ball-y: 28%; --ball-size: 126px; --ball-delay: -2.1s;">07</span>
+            <span class="prompt-card-sphere-ball" style="--ball-x: 86%; --ball-y: 54%; --ball-size: 74px; --ball-delay: -1.2s;">55</span>
+            <span class="prompt-card-sphere-ball" style="--ball-x: 34%; --ball-y: 78%; --ball-size: 104px; --ball-delay: -3.4s;">19</span>
+            <span class="prompt-card-sphere-ball" style="--ball-x: 66%; --ball-y: 84%; --ball-size: 84px; --ball-delay: -2.7s;">68</span>
+          </div>
+          <h2 class="kinetic-word" data-kinetic="TURN IDEAS INTO YOUR LOTTOMIND APP FLOW." tabindex="0">Turn ideas into your LottoMind app flow.</h2>
           <p>
-            Your rhythm, stems, pads, BPM, effects, arrangement, and mixer moves become copy-ready Suno song briefs,
-            AI video direction, hook ideas, negative prompts, and entertainment-only creative signals. Nothing is uploaded,
-            scraped, or auto-submitted.
+            Save dream notes, moods, favorite numbers, draw reminders, and creative seeds in one app-style workflow.
+            Use Number Radar and Dream Oracle for entertainment-only organization and creative play. Nothing predicts
+            results, uploads data, or auto-submits picks.
           </p>
           <ul>
-            <li>Simple Mode Prompt</li>
-            <li>Custom Style Prompt</li>
-            <li>Lyrics / Hook Prompt</li>
-            <li>Instrumental and Exclude prompts</li>
+            <li>Dream Notes</li>
+            <li>Number Radar</li>
+            <li>Saved Wallet</li>
+            <li>Daily Tools</li>
           </ul>
         </div>
-        <article class="prompt-launch-card">
-          <h3>Beat -> Suno Prompt</h3>
-          <p>Generate song briefs, style language, arrangement notes, hooks, and exclusions from a beat idea or loaded session.</p>
-          <a class="primary-action" href="./prompt-lab.html#beat-suno">Open Suno Lab</a>
-        </article>
-        <article class="prompt-launch-card">
-          <h3>Beat -> Video Prompt</h3>
-          <p>Build cinematic prompts with subject, camera movement, beat-synced edits, negative prompts, and social-ready pacing.</p>
-          <a class="primary-action" href="./prompt-lab.html#beat-video">Open Video Lab</a>
-        </article>
-        <article class="prompt-launch-card prompt-signals-card">
-          <h3>Beat2Lotto+ Signals</h3>
-          <p>Import a beat or type Beat DNA to create entertainment-only number signals. Creative number generation. Not a prediction.</p>
-          <a class="primary-action" href="./prompt-lab.html#beat2lotto">Open Beat2Lotto+</a>
-        </article>
+        <div class="prompt-video-card audio-enabled-card" aria-label="Bloom Through Gloom studio video">
+          <video autoplay muted loop playsinline controls preload="metadata" data-inline-sound-video data-inline-sound-volume="0.86">
+            <source src="./assets/video/home-prompt-bloom-blend.mp4" type="video/mp4" />
+            <source src="./assets/video/bloom-through-gloom-hero.mp4" type="video/mp4" />
+          </video>
+          <button class="inline-sound-button" type="button" data-inline-sound-button>Sound on</button>
+          <span>Produced by LOTTOMINDED&trade; Recording artist Bloom Through Gloom</span>
+        </div>
       </section>
 
-      <section class="studio-band studio-band-clean marketing-section reveal-section" id="studio" data-reveal>
-        <div>
-          <h2>Command the whole session from one cinematic deck.</h2>
+      <section class="refined-app-band marketing-section reveal-section" id="lottomind-refined" data-reveal>
+        <div class="refined-app-copy">
+          <video class="refined-copy-video-bg" autoplay muted loop playsinline preload="metadata" aria-hidden="true">
+            <source src="./assets/video/bloom-through-gloom-hero.mp4" type="video/mp4" />
+            <source src="./assets/video/home-prompt-bloom-blend.mp4" type="video/mp4" />
+          </video>
+          <p class="eyebrow">Ultra Studio -> LottoMind Refined App -> Vault Membership</p>
+          <h2 class="kinetic-word" data-kinetic="ENTER THE LOTTOMIND REFINED APP" tabindex="0">Enter the LottoMind Refined App</h2>
           <p>
-            Drop in your own stems, ride the mixer, launch pads, sketch keys, slice patterns, record takes,
-            blend decks, master the output, and turn the beat into prompts and creative signals without leaving
-            your local browser.
+            Step from the LOTTOMINDED ULTRA studio into the full LottoMind Refined experience - AI number tools,
+            Dream Oracle, saved numbers, credits, scanner tools, rewards, and premium Vault access.
           </p>
+          <div class="vault-status-card" data-vault-status aria-live="polite">
+            Free demo path active. Premium tools unlock through Gold, Ultra, LottoCredits, or a 10-minute demo pass.
+          </div>
+          <div class="refined-actions">
+            <a class="primary-action" href="https://robjasper2084.github.io/Jungle-Lotto/lotto%20mind%20refined/" data-vault-launch data-plan="free">Launch LottoMind Refined</a>
+            <button class="secondary-action" type="button" data-vault-open>Unlock Vault</button>
+            <button class="secondary-action" type="button" data-beta-waitlist>Download Beta Coming Soon</button>
+          </div>
         </div>
-      </section>
-
-      <section class="feature-band marketing-section reveal-section" id="features" data-reveal>
-        <h2>Trailer-grade tools for the producer in motion.</h2>
-        <p class="feature-lede">
-          LOTTOMINDED ULTRA turns the browser into a cinematic control room: stems on deck, pressure-ready pads,
-          waveform editing, AI-assisted mastering, Beat DNA prompts, and creative signal tools ready for every session.
-        </p>
-        <div class="feature-actions">
-          <a class="primary-action" href="./features-app.html">Open Feature Console</a>
-          <a class="secondary-action" href="../lottomind-stem-studio/index.html">Launch Studio</a>
-        </div>
-        <div class="feature-grid">
+        <div class="refined-bridge-grid" aria-label="LottoMind product bridge">
+          <video class="refined-bridge-video-bg" autoplay muted loop playsinline preload="metadata" aria-hidden="true">
+            <source src="./assets/video/bloom-through-gloom-hero.mp4" type="video/mp4" />
+            <source src="./assets/video/home-prompt-bloom-blend.mp4" type="video/mp4" />
+          </video>
           <article>
-            <h3>Stem Mixer</h3>
-            <p>Eight default channels with trim, mute, solo, EQ, filter, sends, meters, waveform views, and stem-map export.</p>
+            <span>01</span>
+            <h3>Create the Signal</h3>
+            <p>Beat DNA, prompts, music workstation, and creative number signals begin inside LOTTOMINDED ULTRA.</p>
           </article>
           <article>
-            <h3>Touch Pads</h3>
-            <p>Real pressure where supported, simulated velocity on regular touch screens, banks, note repeat, samples, and keyboard shortcuts.</p>
+            <span>02</span>
+            <h3>Enter LottoMind Refined</h3>
+            <p>AI number tools, Dream Oracle, scanner, saved numbers, rewards, and app workflows open in the Refined demo.</p>
           </article>
           <article>
-            <h3>DAW Composer</h3>
-            <p>Song editor, patterns, piano roll, automation lanes, MIDI import/export, mixer channels, and Web Audio plugin hooks.</p>
-          </article>
-          <article>
-            <h3>Pro Master + EQ Brain</h3>
-            <p>Streaming-safe mastering targets, smart EQ moves, loudness checks, reference matching, and export reports.</p>
-          </article>
-          <article>
-            <h3>DJ Decks</h3>
-            <p>Two original local-file decks with cue points, pitch, pitch bend, EQ, filter, crossfader, waveforms, and deck recording hooks.</p>
+            <span>03</span>
+            <h3>Unlock the Vault</h3>
+            <p>Gold or Ultra membership, credits, beta access, premium tools, and 10-minute demo passes share one demo state.</p>
           </article>
         </div>
-      </section>
-
-
-      <section class="access-band marketing-section reveal-section" data-reveal>
-        <h2>Ready for studio sessions.</h2>
-        <p>
-          Use the browser studio for full production. Everything remains local-first with no backend service required.
-        </p>
-        <div class="access-actions">
-          <a class="primary-action" href="../lottomind-stem-studio/index.html">Launch Full Studio</a>
-        </div>
-        <p class="safety-note">
-          Load or record audio you own or have permission to use. Generated music prompts should describe original work
-          and avoid artist imitation or copyrighted lyrics. Creative number signals are entertainment-only and not predictions.
+        <p class="vault-disclaimer">
+          LottoMind and LottoCredits are for entertainment, organization, music creation, and creative number journaling only.
+          LottoCredits have no cash value and cannot be redeemed for money, prizes, lottery tickets, or gambling.
+          LottoMind does not predict winning lottery numbers.
         </p>
       </section>
+
     </main>
+
+    <audio id="siteSoundtrack" preload="metadata">
+      <source src="./assets/audio/lottominded-main-theme.mp3?v=first-startup-1" type="audio/mpeg" />
+    </audio>
 
     <footer>
       <span>LOTTOMINDED ULTRA</span>
-      <span>Local-first browser music workstation.</span>
+      <span>All rights reserved.</span>
       <span id="site-year"></span>
     </footer>
 
-    <script src="./site.js?v=prompt-top-2" defer></script>
+    <script src="./assets/js/lm-page-transition-audio.js?v=verified-transitions-1" defer></script>
+    <script src="./assets/js/lm-page-transition.js?v=transition-hotfix-2" defer></script>
+    <script src="./site.js?v=transition-hotfix-2" defer></script>
+    <script src="./lottery-spheres.js?v=home-spheres-column-1" defer></script>
+    <script src="./assets/js/home-raytrace.js?v=home-raytrace-pass-13" defer></script>
   </body>
 </html>
