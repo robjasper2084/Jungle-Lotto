@@ -31,8 +31,9 @@ const GAME_SELECT_ITEMS = [
   {
     id: "shadow-ops",
     title: "SHADOW OPS",
-    subtitle: "Kalyx shadow mission inside the fighter build",
-    badge: "TRAINING OPS"
+    subtitle: "Original run-and-gun side scroller prototype",
+    badge: "RUN + GUN",
+    href: "../shadow-ops-canvas/index.html"
   }
 ];
 
@@ -165,14 +166,6 @@ export class GothTechnologyGame {
     if (item.id === "gothtechnology") {
       this.phase = PHASE.TITLE;
       this.syncMusicForPhase();
-      this.audio.beep("select");
-      return;
-    }
-    if (item.id === "shadow-ops") {
-      this.player1Id = "KALYX";
-      this.player2Id = "MASTER_EZRA";
-      this.createFighters();
-      this.startMatch(true);
       this.audio.beep("select");
       return;
     }

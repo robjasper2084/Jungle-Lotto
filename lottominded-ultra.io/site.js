@@ -5,18 +5,18 @@
   const navItems = [
     { label: "Home", href: "./index.html#top", icon: "HM" },
     { label: "Features", href: "./features-app.html", icon: "FX" },
-    {
-      label: "LottoMind App",
-      href: "https://robjasper2084.github.io/Jungle-Lotto/lotto%20mind%20refined/",
-      icon: "LM",
-      attrs: ' data-vault-launch data-plan="free"',
-    },
     { label: "Streams", href: "./live-events.html", icon: "EV" },
     { label: "Spheres", href: "./lottery-spheres.html#spheres", icon: "SP" },
     { label: "Beat2Lotto+", href: "./beat2lotto-plus.html#beat2lotto", icon: "B2" },
     { label: "Merch", href: "./merch-store.html", icon: "MC" },
     { label: "Guide", href: "./how-to-use.html", icon: "GD" },
     { label: "Studio", href: "./lottomind-stem-studio/index.html", icon: "ST" },
+    {
+      label: "LottoMind App",
+      href: "https://robjasper2084.github.io/Jungle-Lotto/lotto%20mind%20refined/",
+      icon: "LM",
+      attrs: ' data-vault-launch data-plan="free"',
+    },
   ];
 
   const currentPage = (window.location.pathname.split("/").pop() || "index.html").toLowerCase();
@@ -73,6 +73,8 @@ const startupVideoModal = document.querySelector("[data-startup-video]");
 const startupVideoCloseButtons = document.querySelectorAll("[data-startup-video-close]");
 const startupMusicStart = document.querySelector("[data-startup-music-start]");
 const startupVideoPlayer = startupVideoModal?.querySelector("video");
+let startupReturnTimer = 0;
+let startupReturnAutoCloseTimer = 0;
 const domainStrip = document.querySelector(".domain-strip");
 const gamePip = document.querySelector("[data-game-pip]");
 const gamePipClose = document.querySelector("[data-game-pip-close]");
@@ -92,6 +94,8 @@ const compactHeaderLabels =
 const conciseSoundtrackLabels = document.body.classList.contains("home-page");
 const HEADER_COLLAPSED_KEY = "lottominded.ultra.siteHeaderCollapsed.v1";
 const STARTUP_MODAL_SEEN_KEY = "lottominded.ultra.homeStartupSeen.v1";
+const STARTUP_MODAL_RETURN_DELAY = 40000;
+const STARTUP_MODAL_RETURN_VISIBLE_MS = 60000;
 const MEMBER_SIGNUP_KEY = "lottominded.ultra.memberSignup.v1";
 const PROMPT_ACCESS_KEY = "lottominded.ultra.promptAccess.v1";
 const PROMPT_ACCESS_PASSWORD = "lottomind";
@@ -542,7 +546,7 @@ function initVideoPerformanceMode() {
   const videos = Array.from(document.querySelectorAll("video"));
   if (!videos.length) return;
 
-  const maxActiveDecorativeVideos = reducedMotionQuery.matches ? 0 : 2;
+  const maxActiveDecorativeVideos = reducedMotionQuery.matches ? 0 : 1;
   const visibleVideos = new Set();
   let transitionCooldownUntil = document.documentElement.classList.contains("lm-transition-arriving")
     ? performance.now() + 900
@@ -565,7 +569,7 @@ function initVideoPerformanceMode() {
   const managedVideos = videos.filter(canManageVideo);
   if (!managedVideos.length) return;
 
-  const isNearViewport = (video, margin = 520) => {
+  const isNearViewport = (video, margin = 360) => {
     const rect = video.getBoundingClientRect();
     return rect.bottom >= -margin && rect.top <= window.innerHeight + margin;
   };
@@ -597,7 +601,7 @@ function initVideoPerformanceMode() {
   };
 
   const unloadVideoSources = (video) => {
-    if (isSoundActive(video) || isNearViewport(video, 120)) return;
+    if (isSoundActive(video) || isNearViewport(video, 80)) return;
     let changed = false;
     if (video.dataset.lmLazySrc && video.hasAttribute("src")) {
       video.removeAttribute("src");
@@ -656,6 +660,8 @@ function initVideoPerformanceMode() {
       return;
     }
 
+    visibleVideos.forEach(restoreVideoSources);
+
     const candidates = Array.from(visibleVideos)
       .filter(isPlayableDecorativeVideo)
       .sort((a, b) => distanceFromViewportCenter(a) - distanceFromViewportCenter(b));
@@ -700,7 +706,7 @@ function initVideoPerformanceMode() {
     }
     video.dataset.lmVideoOptimized = "true";
     if (reducedMotionQuery.matches && video.autoplay && video.muted) pauseManagedVideo(video);
-    if (isNearViewport(video, 360)) {
+    if (isNearViewport(video, 220)) {
       restoreVideoSources(video);
     } else {
       unloadVideoSources(video);
@@ -720,7 +726,7 @@ function initVideoPerformanceMode() {
         }
       });
       scheduleVideoRefresh();
-    }, { rootMargin: "280px 0px", threshold: 0.02 });
+    }, { rootMargin: "180px 0px", threshold: 0.02 });
 
     managedVideos.forEach((video) => observer.observe(video));
   } else {
@@ -862,12 +868,12 @@ function setupUniversalFloatingMenu() {
     ["Home", "./how-to-use.html"],
     ["Features", "./features-app.html"],
     ["Events", "./live-events.html"],
-    ["LottoMind App", "https://robjasper2084.github.io/Jungle-Lotto/lotto%20mind%20refined/"],
     ["Spheres", "./lottery-spheres.html#spheres"],
     ["Beat2Lotto+", "./beat2lotto-plus.html#beat2lotto"],
     ["Merch", "./merch-store.html"],
     ["Guide", "./how-to-use.html"],
-    ["Studio", "./lottomind-stem-studio/index.html"]
+    ["Studio", "./lottomind-stem-studio/index.html"],
+    ["LottoMind App", "https://robjasper2084.github.io/Jungle-Lotto/lotto%20mind%20refined/"]
   ];
 
   const existingToggle = document.querySelector("[data-universal-menu-toggle], .motion-menu-toggle, .pl-floating");
@@ -1138,6 +1144,183 @@ function setupSharedLivePlayers() {
 }
 
 setupSharedLivePlayers();
+
+function setupSphereOrbLivePlayers() {
+  const players = Array.from(document.querySelectorAll(".sphere-orb-live-player"));
+  if (!players.length) return;
+
+  document.body.classList.add("has-sphere-orb-player");
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const interactiveSelector = "button, a, input, textarea, select, audio, video, [role='button']";
+
+  players.forEach((player, index) => {
+    if (player.dataset.sphereOrbReady === "true") return;
+
+    const storageKey = `lottominded.ultra.orbPlayer.${location.pathname.replace(/[^a-z0-9]+/gi, "-")}.${index}.v1`;
+    const ripples = document.createElement("div");
+    let position = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+    let drag = null;
+    let lastRipple = { time: 0, x: 0, y: 0 };
+    let resizeFrame = 0;
+
+    ripples.className = "spheres-player-ripples";
+    ripples.setAttribute("aria-hidden", "true");
+    document.body.appendChild(ripples);
+
+    player.dataset.sphereOrbReady = "true";
+    player.classList.add("is-floatable");
+    player.setAttribute("aria-grabbed", "false");
+
+    const getPlayerSize = () => {
+      const rect = player.getBoundingClientRect();
+      return {
+        width: rect.width || 300,
+        height: rect.height || 300
+      };
+    };
+
+    const clampPosition = (x, y) => {
+      const margin = 12;
+      const { width, height } = getPlayerSize();
+      const halfWidth = width / 2;
+      const halfHeight = height / 2;
+      const minX = Math.min(window.innerWidth / 2, halfWidth + margin);
+      const maxX = Math.max(window.innerWidth / 2, window.innerWidth - halfWidth - margin);
+      const minY = Math.min(window.innerHeight / 2, halfHeight + margin);
+      const maxY = Math.max(window.innerHeight / 2, window.innerHeight - halfHeight - margin);
+      return {
+        x: Math.min(maxX, Math.max(minX, x)),
+        y: Math.min(maxY, Math.max(minY, y))
+      };
+    };
+
+    const savePosition = () => {
+      try {
+        localStorage.setItem(storageKey, JSON.stringify(position));
+      } catch {
+        // Ignore locked-down storage modes.
+      }
+    };
+
+    const applyPosition = (x, y, options = {}) => {
+      position = clampPosition(x, y);
+      player.style.setProperty("--spheres-player-left", `${Math.round(position.x)}px`);
+      player.style.setProperty("--spheres-player-top", `${Math.round(position.y)}px`);
+      if (options.save) savePosition();
+    };
+
+    const defaultPosition = () => {
+      const { height } = getPlayerSize();
+      const bottomOffset = document.body.classList.contains("beat2lotto-current-page") ? 148 : 126;
+      return clampPosition(window.innerWidth / 2, window.innerHeight - height / 2 - bottomOffset);
+    };
+
+    const loadPosition = () => {
+      try {
+        const saved = JSON.parse(localStorage.getItem(storageKey) || "null");
+        if (Number.isFinite(saved?.x) && Number.isFinite(saved?.y)) {
+          applyPosition(saved.x, saved.y);
+          return;
+        }
+      } catch {
+        // Fall back to the default bottom-center position.
+      }
+      const next = defaultPosition();
+      applyPosition(next.x, next.y);
+    };
+
+    const spawnRipple = (x, y, force = false) => {
+      if (reduceMotion.matches) return;
+      const now = performance.now();
+      const distance = Math.hypot(x - lastRipple.x, y - lastRipple.y);
+      if (!force && now - lastRipple.time < 58 && distance < 18) return;
+
+      lastRipple = { time: now, x, y };
+      const ripple = document.createElement("span");
+      const size = Math.min(190, Math.max(64, 58 + distance * 1.35));
+      ripple.className = "spheres-player-ripple";
+      ripple.style.setProperty("--ripple-x", `${Math.round(x)}px`);
+      ripple.style.setProperty("--ripple-y", `${Math.round(y)}px`);
+      ripple.style.setProperty("--ripple-size", `${Math.round(size)}px`);
+      ripples.appendChild(ripple);
+
+      while (ripples.childElementCount > 26) ripples.firstElementChild?.remove();
+      window.setTimeout(() => ripple.remove(), 960);
+    };
+
+    const beginDrag = (event) => {
+      if (drag) return;
+      if (event.button !== undefined && event.button !== 0) return;
+      if (event.target.closest(interactiveSelector)) return;
+
+      drag = {
+        id: event.pointerId ?? "mouse",
+        startX: event.clientX,
+        startY: event.clientY,
+        originX: position.x,
+        originY: position.y
+      };
+
+      player.classList.add("is-dragging");
+      player.setAttribute("aria-grabbed", "true");
+      if (Number.isFinite(event.pointerId)) player.setPointerCapture?.(event.pointerId);
+      spawnRipple(position.x, position.y, true);
+      event.preventDefault();
+    };
+
+    const moveDrag = (event) => {
+      const pointerId = event.pointerId ?? "mouse";
+      if (!drag || pointerId !== drag.id) return;
+      applyPosition(
+        drag.originX + event.clientX - drag.startX,
+        drag.originY + event.clientY - drag.startY
+      );
+      spawnRipple(position.x, position.y);
+      event.preventDefault();
+    };
+
+    const endDrag = (event) => {
+      const pointerId = event.pointerId ?? "mouse";
+      if (!drag || pointerId !== drag.id) return;
+      if (Number.isFinite(event.pointerId)) player.releasePointerCapture?.(event.pointerId);
+      player.classList.remove("is-dragging");
+      player.setAttribute("aria-grabbed", "false");
+      spawnRipple(position.x, position.y, true);
+      savePosition();
+      drag = null;
+    };
+
+    const cancelDrag = () => {
+      if (!drag) return;
+      player.classList.remove("is-dragging");
+      player.setAttribute("aria-grabbed", "false");
+      savePosition();
+      drag = null;
+    };
+
+    player.addEventListener("pointerdown", beginDrag);
+    player.addEventListener("pointermove", moveDrag);
+    player.addEventListener("pointerup", endDrag);
+    player.addEventListener("pointercancel", endDrag);
+    window.addEventListener("pointermove", moveDrag);
+    window.addEventListener("pointerup", endDrag);
+    window.addEventListener("pointercancel", endDrag);
+    player.addEventListener("lostpointercapture", cancelDrag);
+    window.addEventListener("blur", cancelDrag);
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) cancelDrag();
+    });
+
+    window.addEventListener("resize", () => {
+      window.cancelAnimationFrame(resizeFrame);
+      resizeFrame = window.requestAnimationFrame(() => applyPosition(position.x, position.y, { save: true }));
+    }, { passive: true });
+
+    window.requestAnimationFrame(loadPosition);
+  });
+}
+
+setupSphereOrbLivePlayers();
 
 
 const REFINED_APP_URL = "https://robjasper2084.github.io/Jungle-Lotto/lotto%20mind%20refined/";
@@ -1717,7 +1900,64 @@ function setupHomePianoHoverToggle(pianoHeader) {
   siteHeader.addEventListener("focusin", () => setHidden(false));
 }
 
+function setupSiteHeaderClickToggle() {
+  if (!siteHeader) return;
+  if (siteHeader.dataset.clickHeaderToggleReady === "true") return;
+  siteHeader.dataset.clickHeaderToggleReady = "true";
+
+  siteHeader.classList.remove("is-home-header-hidden", "is-sphere-hover-hidden", "is-universal-header-hidden");
+  document.body.classList.remove("is-home-header-hidden", "is-sphere-header-hidden", "is-universal-header-hidden");
+
+  const toggle = document.createElement("button");
+  toggle.className = "header-click-toggle";
+  toggle.type = "button";
+  toggle.textContent = "NAV";
+  toggle.setAttribute("aria-label", "Show site header");
+  toggle.setAttribute("aria-expanded", "true");
+  document.body.append(toggle);
+
+  const interactiveSelector = [
+    "a",
+    "button",
+    "input",
+    "textarea",
+    "select",
+    "label",
+    "[role='button']",
+    "[data-no-header-toggle]",
+    ".universal-menu-toggle",
+    ".universal-floating-trigger",
+    ".direct-action",
+    ".direct-launch"
+  ].join(",");
+
+  const setHidden = (hidden) => {
+    siteHeader.classList.toggle("is-click-header-hidden", hidden);
+    document.body.classList.toggle("is-click-header-hidden", hidden);
+    toggle.setAttribute("aria-expanded", String(!hidden));
+    toggle.setAttribute("aria-label", hidden ? "Show site header" : "Hide site header");
+  };
+
+  siteHeader.addEventListener("click", (event) => {
+    if (event.defaultPrevented || event.target.closest(interactiveSelector)) return;
+    setHidden(true);
+  });
+
+  toggle.addEventListener("click", () => {
+    setHidden(siteHeader.classList.contains("is-click-header-hidden") ? false : true);
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && siteHeader.classList.contains("is-click-header-hidden")) {
+      setHidden(false);
+    }
+  });
+
+  setHidden(false);
+}
+
 function setupHomeHeaderHoverReveal() {
+  return setupSiteHeaderClickToggle();
   const canUseHoverReveal =
     document.body.classList.contains("home-page") ||
     document.body.classList.contains("prompt-lab-page");
@@ -1772,6 +2012,7 @@ function setupHomeHeaderHoverReveal() {
 setupHomeHeaderHoverReveal();
 
 function setupHomeSphereHeaderToggle() {
+  return setupSiteHeaderClickToggle();
   if (!siteHeader) return;
   if (!document.body.classList.contains("home-page") || !document.body.classList.contains("has-sphere-header")) return;
   if (siteHeader.dataset.sphereHeaderToggleReady === "true") return;
@@ -1863,6 +2104,7 @@ function setupHomeSphereHeaderToggle() {
 setupHomeSphereHeaderToggle();
 
 function setupPlainSiteHeaderHoverToggle() {
+  return setupSiteHeaderClickToggle();
   if (!siteHeader) return;
   if (document.body.classList.contains("has-manual-instrument-header")) return;
   if (document.body.classList.contains("has-sphere-header")) return;
@@ -1982,6 +2224,11 @@ function setHeaderCollapsed(collapsed) {
 
 function syncHeroMotionPreference() {
   if (!heroMotion) return;
+  const startupOpen = startupVideoModal && !startupVideoModal.classList.contains("is-hidden");
+  if (startupOpen) {
+    heroMotion.pause();
+    return;
+  }
   if (reducedMotionQuery.matches) {
     heroMotion.pause();
     return;
@@ -2384,18 +2631,26 @@ function rememberStartupVideoSeen() {
   }
 }
 
+function clearStartupReturnAutoClose() {
+  if (!startupReturnAutoCloseTimer) return;
+  window.clearTimeout(startupReturnAutoCloseTimer);
+  startupReturnAutoCloseTimer = 0;
+}
+
 async function closeStartupVideo(options = {}) {
+  clearStartupReturnAutoClose();
   if (options.remember !== false) rememberStartupVideoSeen();
   startupVideoModal?.classList.add("is-hidden");
   startupVideoModal?.setAttribute("aria-hidden", "true");
   document.body.classList.remove("has-startup-modal");
   startupVideoPlayer?.pause();
+  syncHeroMotionPreference();
   if (options.playMusic === false) return;
   await playSiteSoundtrack({ fromPage: true, restart: true, volume: 0.5 });
 }
 
 function showStartupVideo() {
-  if (!startupVideoModal || hasSeenStartupVideo()) {
+  if (!startupVideoModal) {
     startupVideoModal?.classList.add("is-hidden");
     startupVideoModal?.setAttribute("aria-hidden", "true");
     document.body.classList.remove("has-startup-modal");
@@ -2404,6 +2659,7 @@ function showStartupVideo() {
   document.body.classList.add("has-startup-modal");
   startupVideoModal.classList.remove("is-hidden");
   startupVideoModal.setAttribute("aria-hidden", "false");
+  syncHeroMotionPreference();
   rememberStartupVideoSeen();
   if (!reducedMotionQuery.matches) {
     startupVideoPlayer.muted = false;
@@ -2415,6 +2671,36 @@ function showStartupVideo() {
       // Browsers may block autoplay until the first user gesture.
     });
   }
+}
+
+function showStartupVideoReturn() {
+  if (!startupVideoModal) return;
+  document.body.classList.add("has-startup-modal");
+  startupVideoModal.classList.remove("is-hidden");
+  startupVideoModal.setAttribute("aria-hidden", "false");
+  syncHeroMotionPreference();
+  if (!reducedMotionQuery.matches && startupVideoPlayer) {
+    startupVideoPlayer.muted = false;
+    startupVideoPlayer.defaultMuted = false;
+    startupVideoPlayer.removeAttribute("muted");
+    startupVideoPlayer.volume = 0.72;
+    startupVideoPlayer.currentTime = 0;
+    startupVideoPlayer.play().catch(() => {
+      // Browsers may block timed playback until the first user gesture.
+    });
+  }
+  clearStartupReturnAutoClose();
+  startupReturnAutoCloseTimer = window.setTimeout(() => {
+    closeStartupVideo({ remember: false, playMusic: false });
+  }, STARTUP_MODAL_RETURN_VISIBLE_MS);
+}
+
+function scheduleStartupVideoReturn() {
+  if (!startupVideoModal || startupReturnTimer) return;
+  startupReturnTimer = window.setTimeout(() => {
+    startupReturnTimer = 0;
+    showStartupVideoReturn();
+  }, STARTUP_MODAL_RETURN_DELAY);
 }
 
 function getGamePipOffset() {
@@ -2463,6 +2749,8 @@ function setupGuidePuckField() {
     active: false,
     lastMove: 0,
   };
+  let guideFieldInView = true;
+  let guideFrame = 0;
 
   const puckState = pucks.map((element, index) => {
     const columns = Math.min(3, pucks.length);
@@ -2507,9 +2795,21 @@ function setupGuidePuckField() {
     field.style.setProperty("--guide-field-y", `${(event.clientY / window.innerHeight - 0.5) * 18}px`);
     document.body.style.setProperty("--guide-pointer-x", `${event.clientX}px`);
     document.body.style.setProperty("--guide-pointer-y", `${event.clientY}px`);
+    scheduleGuideField();
+  }
+
+  function canRenderGuideField() {
+    return !reducedMotionQuery.matches && !document.hidden && guideFieldInView;
+  }
+
+  function scheduleGuideField() {
+    if (guideFrame || !canRenderGuideField()) return;
+    guideFrame = window.requestAnimationFrame(renderGuideField);
   }
 
   function renderGuideField(now) {
+    guideFrame = 0;
+    if (!canRenderGuideField()) return;
     const hot = pointer.active && now - pointer.lastMove < 1600;
     const driftScale = reducedMotionQuery.matches ? 0 : 1;
 
@@ -2541,13 +2841,24 @@ function setupGuidePuckField() {
       puck.element.style.transform = `translate3d(${puck.x}px, ${puck.y}px, 0) rotate(${puck.rotation}deg)`;
     });
 
-    window.requestAnimationFrame(renderGuideField);
+    scheduleGuideField();
   }
 
   resizeGuideField();
   document.addEventListener("pointermove", moveGuidePointer, { passive: true });
-  window.addEventListener("resize", resizeGuideField, { passive: true });
-  window.requestAnimationFrame(renderGuideField);
+  window.addEventListener("resize", () => {
+    resizeGuideField();
+    scheduleGuideField();
+  }, { passive: true });
+  document.addEventListener("visibilitychange", scheduleGuideField);
+  if ("IntersectionObserver" in window) {
+    const observer = new IntersectionObserver((entries) => {
+      guideFieldInView = entries.some((entry) => entry.isIntersecting);
+      scheduleGuideField();
+    }, { rootMargin: "220px 0px", threshold: 0.01 });
+    observer.observe(field);
+  }
+  scheduleGuideField();
 }
 
 setupGuidePuckField();
@@ -2763,6 +3074,8 @@ function setupPromptBallpassGame() {
   puck.src = "./assets/brand/lottomind-branded-puck.png";
 
   const pointer = { x: 0.72, y: 0.48, active: false, burst: 0 };
+  let ballpassInView = true;
+  let ballpassFrame = 0;
   const balls = Array.from({ length: 9 }, (_, index) => ({
     t: index / 9,
     speed: 0.00012 + index * 0.00001,
@@ -2780,11 +3093,22 @@ function setupPromptBallpassGame() {
     context.setTransform(ratio, 0, 0, ratio, 0, 0);
   }
 
+  function canDrawBallpass() {
+    return !reducedMotionQuery.matches && !document.hidden && ballpassInView;
+  }
+
+  function scheduleBallpass() {
+    if (ballpassFrame || !canDrawBallpass()) return;
+    ballpassFrame = window.requestAnimationFrame(drawBallpass);
+  }
+
   function drawBallpass(now) {
+    ballpassFrame = 0;
+    if (!canDrawBallpass()) return;
     const width = canvas.clientWidth;
     const height = canvas.clientHeight;
     if (!width || !height) {
-      window.requestAnimationFrame(drawBallpass);
+      scheduleBallpass();
       return;
     }
 
@@ -2853,7 +3177,7 @@ function setupPromptBallpassGame() {
     }
     context.restore();
 
-    window.requestAnimationFrame(drawBallpass);
+    scheduleBallpass();
   }
 
   game.addEventListener("pointermove", (event) => {
@@ -2861,127 +3185,36 @@ function setupPromptBallpassGame() {
     pointer.x = Math.max(0.08, Math.min(0.92, (event.clientX - rect.left) / rect.width));
     pointer.y = Math.max(0.12, Math.min(0.88, (event.clientY - rect.top) / rect.height));
     pointer.active = true;
+    scheduleBallpass();
   }, { passive: true });
   game.addEventListener("pointerleave", () => {
     pointer.active = false;
   });
   game.addEventListener("click", () => {
     pointer.burst = 1;
+    scheduleBallpass();
   });
-  window.addEventListener("resize", resizeBallpass, { passive: true });
-  puck.addEventListener("load", () => pointer.burst = 0.6);
+  window.addEventListener("resize", () => {
+    resizeBallpass();
+    scheduleBallpass();
+  }, { passive: true });
+  document.addEventListener("visibilitychange", scheduleBallpass);
+  if ("IntersectionObserver" in window) {
+    const observer = new IntersectionObserver((entries) => {
+      ballpassInView = entries.some((entry) => entry.isIntersecting);
+      scheduleBallpass();
+    }, { rootMargin: "180px 0px", threshold: 0.01 });
+    observer.observe(game);
+  }
+  puck.addEventListener("load", () => {
+    pointer.burst = 0.6;
+    scheduleBallpass();
+  });
   resizeBallpass();
-  window.requestAnimationFrame(drawBallpass);
+  scheduleBallpass();
 }
 
 setupPromptBallpassGame();
-
-// Use the mascot artwork as a lightweight mouse pointer without the old lens overlay.
-
-function setupMascotMotionCursor() {
-  if (window.matchMedia("(pointer: coarse)").matches || reducedMotionQuery.matches) return;
-
-  const cursor = document.createElement("div");
-  cursor.className = "mascot-motion-cursor";
-  cursor.setAttribute("aria-hidden", "true");
-  document.body.classList.add("has-mascot-motion-cursor");
-  document.body.append(cursor);
-
-  const position = { x: -120, y: -120 };
-  const last = { x: -120, y: -120, time: 0 };
-  let state = "idle";
-  let facing = 1;
-  let idleTimer = 0;
-  let heldScrollState = "";
-  let visible = false;
-
-  function setPose() {
-    cursor.classList.toggle("is-up", state === "up");
-    cursor.classList.toggle("is-down", state === "down");
-  }
-
-  function render() {
-    setPose();
-    const tilt = state === "up" ? -5 : state === "down" ? 3 : state === "right" ? 3 : state === "left" ? -3 : 0;
-    const x = Math.round(position.x + 1);
-    const y = Math.round(position.y + 1);
-    cursor.style.transform = `translate3d(${x}px, ${y}px, 0) rotate(${tilt}deg)`;
-    if (visible) cursor.classList.add("is-visible");
-    window.requestAnimationFrame(render);
-  }
-
-  document.addEventListener("pointermove", (event) => {
-    if (isEditableTarget(event.target)) {
-      cursor.classList.remove("is-visible");
-      visible = false;
-      return;
-    }
-
-    const now = performance.now();
-    const dx = last.time ? event.clientX - last.x : 0;
-    const dy = last.time ? event.clientY - last.y : 0;
-    const absX = Math.abs(dx);
-    const absY = Math.abs(dy);
-
-    position.x = event.clientX;
-    position.y = event.clientY;
-    visible = true;
-    window.clearTimeout(idleTimer);
-
-    if (absX >= 2 && absX >= absY * 0.35) {
-      state = dx < 0 ? "left" : "right";
-      facing = dx < 0 ? -1 : 1;
-      heldScrollState = "";
-    } else if (heldScrollState) {
-      state = heldScrollState;
-    } else if (absX < 2 && absY < 2) {
-      state = "idle";
-    } else {
-      state = facing < 0 ? "left" : "right";
-    }
-
-    last.x = event.clientX;
-    last.y = event.clientY;
-    last.time = now;
-    idleTimer = window.setTimeout(() => {
-      if (heldScrollState) return;
-      state = "idle";
-    }, 180);
-  }, { passive: true });
-
-  window.addEventListener("wheel", (event) => {
-    if (isEditableTarget(event.target)) return;
-    visible = true;
-    window.clearTimeout(idleTimer);
-
-    if (Math.abs(event.deltaX) > Math.abs(event.deltaY) && Math.abs(event.deltaX) > 2) {
-      state = event.deltaX < 0 ? "left" : "right";
-      facing = event.deltaX < 0 ? -1 : 1;
-      heldScrollState = "";
-    } else if (event.deltaY > 0) {
-      state = "down";
-      heldScrollState = "down";
-    } else if (event.deltaY < 0) {
-      state = "up";
-      heldScrollState = "up";
-    }
-
-  }, { passive: true });
-
-  document.addEventListener("pointerleave", () => {
-    visible = false;
-    cursor.classList.remove("is-visible");
-  }, { passive: true });
-
-  window.addEventListener("blur", () => {
-    visible = false;
-    cursor.classList.remove("is-visible");
-  });
-
-  window.requestAnimationFrame(render);
-}
-
-setupMascotMotionCursor();
 
 function showGamePip() {
   if (!gamePip) return;
@@ -3016,6 +3249,8 @@ function hideGamePip(options = {}) {
   if (!gamePip) return;
   gamePip.classList.remove("is-open");
   gamePip.setAttribute("aria-hidden", "true");
+  domainStrip?.classList.remove("is-active");
+  domainStrip?.setAttribute("aria-pressed", "false");
   if (gamePipFrame) gamePipFrame.removeAttribute("src");
   if (options.resumeSoundtrack) resumeGamePipSoundtrack();
   gamePipShouldResumeSoundtrack = false;
@@ -3060,6 +3295,7 @@ function endGamePipDrag(event) {
 }
 
 showStartupVideo();
+scheduleStartupVideoReturn();
 
 startupVideoCloseButtons.forEach((button) => {
   button.addEventListener("click", () => closeStartupVideo());
@@ -3132,19 +3368,30 @@ soundtrackButtons.forEach((button) => {
   });
 });
 
-domainStrip?.addEventListener("pointerenter", () => {
+function setDomainStripOpen(open) {
   if (gamePipDragState) return;
-  if (gamePip?.classList.contains("is-open")) {
-    if (Date.now() - gamePipOpenedAt > 400) {
-      hideGamePip({ resumeSoundtrack: true });
-    }
+  if (!domainStrip) return;
+  domainStrip.classList.toggle("is-active", open);
+  domainStrip.setAttribute("aria-pressed", String(open));
+  if (open) {
+    showGamePip();
     return;
   }
-  showGamePip();
+  hideGamePip({ resumeSoundtrack: true });
+}
+
+domainStrip?.addEventListener("click", () => {
+  setDomainStripOpen(!gamePip?.classList.contains("is-open"));
+});
+
+domainStrip?.addEventListener("keydown", (event) => {
+  if (event.code !== "Enter" && event.code !== "Space") return;
+  event.preventDefault();
+  setDomainStripOpen(!gamePip?.classList.contains("is-open"));
 });
 
 gamePip?.addEventListener("pointerenter", () => window.clearTimeout(gamePipHideTimer));
-gamePipClose?.addEventListener("click", () => hideGamePip({ resumeSoundtrack: true }));
+gamePipClose?.addEventListener("click", () => setDomainStripOpen(false));
 gamePipHead?.addEventListener("pointerdown", startGamePipDrag);
 document.addEventListener("pointermove", updateGamePipDrag);
 document.addEventListener("pointerup", endGamePipDrag);
@@ -3335,3 +3582,242 @@ document.addEventListener("click", (event) => {
 generateMiniSunoPrompt();
 generateMiniVideoPrompt();
 generateMiniNumberSignals();
+
+function setupMascotPointer() {
+  if (!document.body || document.querySelector(".lm-mascot-pointer")) return;
+
+  const frames = {
+    front: new URL("cursor/lm-mascot-front.png", SITE_ASSET_BASE_URL).href,
+    stepA: new URL("cursor/lm-mascot-step-a.png", SITE_ASSET_BASE_URL).href,
+    stepB: new URL("cursor/lm-mascot-step-b.png", SITE_ASSET_BASE_URL).href,
+    run: new URL("cursor/lm-mascot-run.png", SITE_ASSET_BASE_URL).href,
+    runA: new URL("cursor/lm-mascot-run-a.png", SITE_ASSET_BASE_URL).href,
+    runB: new URL("cursor/lm-mascot-run-b.png", SITE_ASSET_BASE_URL).href,
+    runC: new URL("cursor/lm-mascot-run-c.png", SITE_ASSET_BASE_URL).href,
+    runD: new URL("cursor/lm-mascot-run-d.png", SITE_ASSET_BASE_URL).href,
+    climbUp: new URL("cursor/lm-mascot-climb-up.png", SITE_ASSET_BASE_URL).href,
+    climbDown: new URL("cursor/lm-mascot-climb-down.png", SITE_ASSET_BASE_URL).href,
+    fallA: new URL("cursor/lm-mascot-fall-a.png", SITE_ASSET_BASE_URL).href,
+    fallB: new URL("cursor/lm-mascot-fall-b.png", SITE_ASSET_BASE_URL).href,
+    fallC: new URL("cursor/lm-mascot-fall-c.png", SITE_ASSET_BASE_URL).href,
+    fallDown: new URL("cursor/lm-mascot-fall-down.png", SITE_ASSET_BASE_URL).href,
+  };
+
+  Object.values(frames).forEach((src) => {
+    const preload = new Image();
+    preload.src = src;
+  });
+
+  const pointer = document.createElement("div");
+  pointer.className = "lm-mascot-pointer";
+  pointer.setAttribute("aria-hidden", "true");
+  pointer.innerHTML = `
+    <span class="lm-mascot-pointer__shadow"></span>
+    <span class="lm-mascot-pointer__sprite">
+      <img src="${frames.front}" alt="" decoding="async" />
+    </span>
+  `;
+  document.body.appendChild(pointer);
+
+  const image = pointer.querySelector("img");
+  const reduceMotion = reducedMotionQuery.matches;
+  const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+  const state = {
+    x: window.innerWidth * 0.82,
+    y: window.innerHeight * 0.42,
+    targetX: window.innerWidth * 0.82,
+    targetY: window.innerHeight * 0.42,
+    lastX: window.innerWidth * 0.82,
+    lastY: window.innerHeight * 0.42,
+    lastMove: 0,
+    lastType: finePointer ? "mouse" : "touch",
+    facing: 1,
+    frame: "front",
+    scrollPose: "",
+    scrollPoseUntil: 0,
+    hasMoved: false,
+  };
+  let lastScrollY = window.scrollY || window.pageYOffset || 0;
+  let lastTouchY = null;
+
+  function setFrame(name) {
+    if (state.frame === name || !frames[name]) return;
+    state.frame = name;
+    image.src = frames[name];
+  }
+
+  function setPointerClass(name, active) {
+    pointer.classList.toggle(name, Boolean(active));
+  }
+
+  function syncTarget(clientX, clientY, pointerType = "mouse") {
+    if (!Number.isFinite(clientX) || !Number.isFinite(clientY)) return;
+    if (state.hasMoved) {
+      const deltaX = clientX - state.targetX;
+      const deltaY = clientY - state.targetY;
+      if (Math.abs(deltaY) > 8 && Math.abs(deltaY) > Math.abs(deltaX) * 0.72) {
+        setScrollPose(deltaY < 0 ? "up" : "down");
+      }
+    }
+    state.targetX = clientX;
+    state.targetY = clientY;
+    state.lastMove = performance.now();
+    state.lastType = pointerType || "mouse";
+    state.hasMoved = true;
+
+    setPointerClass("is-touch", state.lastType === "touch");
+    if (state.lastType === "mouse") {
+      document.body.classList.add("has-mascot-pointer");
+    }
+    paintMascot(performance.now());
+  }
+
+  function syncFromPointer(event) {
+    if (event.pointerType === "pen") return;
+    syncTarget(event.clientX, event.clientY, event.pointerType || "mouse");
+  }
+
+  function syncFromTouch(event) {
+    const touch = event.touches?.[0] || event.changedTouches?.[0];
+    if (!touch) return;
+    if (Number.isFinite(lastTouchY) && Math.abs(touch.clientY - lastTouchY) > 6) {
+      setScrollPose(touch.clientY < lastTouchY ? "up" : "down");
+    }
+    lastTouchY = touch.clientY;
+    syncTarget(touch.clientX, touch.clientY, "touch");
+  }
+
+  function setScrollPose(direction) {
+    if (direction !== "up" && direction !== "down") return;
+    state.scrollPose = direction;
+    state.scrollPoseUntil = performance.now() + 620;
+    state.hasMoved = true;
+    document.body.classList.add("has-mascot-pointer");
+  }
+
+  function syncFromWheel(event) {
+    if (!Number.isFinite(event.deltaY) || Math.abs(event.deltaY) < 2) return;
+    setScrollPose(event.deltaY < 0 ? "up" : "down");
+  }
+
+  function syncFromScroll() {
+    const nextScrollY = window.scrollY || window.pageYOffset || 0;
+    const delta = nextScrollY - lastScrollY;
+    lastScrollY = nextScrollY;
+    if (Math.abs(delta) < 2) return;
+    setScrollPose(delta < 0 ? "up" : "down");
+  }
+
+  function updateFrame(speed, vx, vy, now) {
+    const moving = speed > 0.55;
+    const running = speed > 7.2;
+    const sideMotion = Math.abs(vx) > Math.abs(vy) * 0.72;
+    const verticalMotion = Math.abs(vy) > Math.abs(vx) * 0.72;
+    const upwardMotion = moving && verticalMotion && vy < -0.35;
+    const downwardMotion = moving && verticalMotion && vy > 0.35;
+    const runFrames = ["runA", "runB", "runC", "runD"];
+    const fallFrames = ["fallA", "fallB", "fallC", "fallDown"];
+    const climbing = Boolean(state.scrollPose && now < state.scrollPoseUntil);
+    const scrollingUp = climbing && state.scrollPose === "up";
+    const scrollingDown = climbing && state.scrollPose === "down";
+
+    setPointerClass("is-climbing-up", scrollingUp);
+    setPointerClass("is-flying-up", scrollingUp);
+    setPointerClass("is-running-down", false);
+    setPointerClass("is-falling-down", scrollingDown);
+    if (climbing) {
+      setPointerClass("is-walking", !reduceMotion);
+      setPointerClass("is-running", false);
+      setPointerClass("is-side", false);
+      setPointerClass("is-forward", scrollingDown);
+      setPointerClass("is-backward", scrollingUp);
+      setFrame(scrollingUp ? "climbUp" : fallFrames[Math.floor(now / 112) % fallFrames.length]);
+      return;
+    }
+
+    setPointerClass("is-climbing-up", false);
+    setPointerClass("is-flying-up", upwardMotion);
+    setPointerClass("is-running-down", false);
+    setPointerClass("is-falling-down", downwardMotion);
+
+    if (upwardMotion || downwardMotion) {
+      setPointerClass("is-walking", !reduceMotion);
+      setPointerClass("is-running", false);
+      setPointerClass("is-side", false);
+      setPointerClass("is-forward", downwardMotion);
+      setPointerClass("is-backward", upwardMotion);
+      setFrame(upwardMotion ? "climbUp" : fallFrames[Math.floor(now / (running ? 86 : 118)) % fallFrames.length]);
+      return;
+    }
+
+    setPointerClass("is-walking", moving && !reduceMotion);
+    setPointerClass("is-running", running && !reduceMotion);
+    setPointerClass("is-side", moving && sideMotion);
+    setPointerClass("is-forward", moving && !sideMotion && vy > 0);
+    setPointerClass("is-backward", moving && !sideMotion && vy < 0);
+
+    if (!moving) {
+      setFrame("front");
+      return;
+    }
+
+    if (sideMotion) {
+      if (vx < -0.25) state.facing = -1;
+      if (vx > 0.25) state.facing = 1;
+      pointer.style.setProperty("--lm-mascot-facing", String(state.facing));
+      if (running) {
+        setFrame(runFrames[Math.floor(now / 90) % runFrames.length]);
+      } else {
+        setFrame(Math.floor(now / 150) % 2 ? "stepB" : "stepA");
+      }
+      return;
+    }
+
+    if (running) {
+      setFrame(runFrames[Math.floor(now / 95) % runFrames.length]);
+    } else {
+      setFrame("front");
+    }
+  }
+
+  function paintMascot(now) {
+    const ease = state.lastType === "touch" ? 0.3 : 0.22;
+    state.x += (state.targetX - state.x) * ease;
+    state.y += (state.targetY - state.y) * ease;
+
+    const vx = state.x - state.lastX;
+    const vy = state.y - state.lastY;
+    const speed = Math.hypot(vx, vy);
+    const visible = state.hasMoved && (state.lastType !== "touch" || now - state.lastMove < 1800);
+
+    pointer.style.setProperty("--lm-mascot-x", `${state.x}px`);
+    pointer.style.setProperty("--lm-mascot-y", `${state.y}px`);
+    setPointerClass("is-visible", visible);
+    updateFrame(speed, vx, vy, now);
+
+    state.lastX = state.x;
+    state.lastY = state.y;
+  }
+
+  function tick(now) {
+    paintMascot(now);
+    window.requestAnimationFrame(tick);
+  }
+
+  document.addEventListener("pointermove", syncFromPointer, { passive: true });
+  document.addEventListener("pointerdown", syncFromPointer, { passive: true });
+  document.addEventListener("touchstart", syncFromTouch, { passive: true });
+  document.addEventListener("touchmove", syncFromTouch, { passive: true });
+  document.addEventListener("touchend", () => {
+    lastTouchY = null;
+  }, { passive: true });
+  window.addEventListener("wheel", syncFromWheel, { passive: true });
+  window.addEventListener("scroll", syncFromScroll, { passive: true });
+  window.addEventListener("blur", () => {
+    pointer.classList.remove("is-visible", "is-walking", "is-running", "is-climbing-up", "is-flying-up", "is-running-down", "is-falling-down");
+  });
+
+  window.requestAnimationFrame(tick);
+}
+
+setupMascotPointer();

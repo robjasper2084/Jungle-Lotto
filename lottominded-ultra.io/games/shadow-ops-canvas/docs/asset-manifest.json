@@ -1,0 +1,59 @@
+{
+  "project": "LottoMind Vault Run",
+  "runtime": "static HTML5 canvas",
+  "concept": {
+    "path": "docs/lottomind-vault-run-concept.png",
+    "generatedWith": "built-in Image Gen concept pass",
+    "purpose": "visual direction for the playable run-and-gun screen"
+  },
+  "currentAssets": {
+    "heroTitle": "assets/hero/lottomind-hero-main.png",
+    "playerAtlas": "assets/mascot/lottomind-mascot-runner-atlas.png",
+    "playerAtlasSource": "assets/mascot/lottomind-mascot-runner-atlas-green.png",
+    "legacyPlayerAtlas": "assets/mascot/master-ezra-shadowops-atlas.png",
+    "soulLocationBackplate": "assets/backgrounds/higgsfield-soul-location-backplate.png",
+    "soulLocationFarParallax": "assets/backgrounds/higgsfield-soul-location-far-parallax.png",
+    "soulLocationForegroundGround": "assets/backgrounds/higgsfield-soul-location-foreground-ground.png",
+    "enemyAtlas": "../gothtechnology2/assets/GOTHTECHNOLOGY_EXPANDED_SPRITE_PACK_V2/characters/KALYX/runtime_atlas_user/KALYX_RUNTIME_ATLAS.png",
+    "legacyStageBackground": "../gothtechnology2/assets/user-stage/forest-fight-background.jpg"
+  },
+  "higgsfieldSoulLocationJobs": {
+    "backplate": {
+      "jobId": "9d5e3610-b033-4a65-825f-66cbfbf97c6c",
+      "model": "soul_location"
+    },
+    "farParallax": {
+      "jobId": "3de587f4-e766-40ea-bfec-7115713ad9f7",
+      "model": "soul_location",
+      "note": "Saved for iteration; not wired into gameplay because it generated an unwanted corner mark."
+    },
+    "foregroundGround": {
+      "jobId": "52fb6afa-fe65-4542-94bf-632dafedba35",
+      "model": "soul_location"
+    }
+  },
+  "plannedProductionAssets": [
+    "player run strip",
+    "player idle/aim strip",
+    "player jump/duck strip",
+    "player slash strip",
+    "heart-fire projectile sheet",
+    "hit spark sheet",
+    "enemy runner strip",
+    "enemy drone strip",
+    "enemy shield unit strip",
+    "Signal Warden boss sheet",
+    "three parallax background layers",
+    "platform tile strip",
+    "props and pickups sheet",
+    "HUD portrait and icon sheet"
+  ],
+  "promptPack": "docs/asset-generation-prompts.md",
+  "rules": [
+    "Use original LottoMind assets only.",
+    "Do not copy Contra IP, characters, logos, enemies, or level layouts.",
+    "Use one full strip per animation whenever possible.",
+    "Normalize sprite frames to a shared bottom-center anchor before runtime use.",
+    "Keep game rules code-native and image assets purely visual."
+  ]
+}

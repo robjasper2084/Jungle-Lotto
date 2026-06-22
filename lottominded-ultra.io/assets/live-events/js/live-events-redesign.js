@@ -15,6 +15,18 @@
   const livePlayerNext = livePlayer?.querySelector("[data-live-player-next]");
   const livePlayerTime = livePlayer?.querySelector("[data-live-player-time]");
   const livePlayerWave = livePlayer?.querySelector(".now-wave");
+  const streamStartup = document.querySelector("[data-stream-startup-audio]");
+  const streamStartupPlay = streamStartup?.querySelector("[data-stream-startup-play]");
+  const streamStartupCloseButtons = streamStartup?.querySelectorAll("[data-stream-startup-close]");
+  const streamStartupStatus = streamStartup?.querySelector("[data-stream-startup-status]");
+  const twitchLiveCard = document.querySelector("#twitch-live");
+  const liveBallpassCanvas = document.querySelector("[data-live-ballpass-bg]");
+  const previewIframes = Array.from(document.querySelectorAll(".event-card .video-thumb iframe"));
+  const decorativeVideos = Array.from(document.querySelectorAll("video")).filter((video) => (
+    !video.closest("#twitch-live") &&
+    !video.closest("[data-lm-page-transition]") &&
+    video.hasAttribute("autoplay")
+  ));
   let liveAudioContext = null;
   let liveAudioAnalyser = null;
   let liveAudioData = null;
@@ -244,23 +256,288 @@
     liveAudioAnalyser.connect(liveAudioContext.destination);
   }
 
+  async function startLivePlayer(options = {}) {
+    if (!livePlayerAudio) return false;
+    try {
+      livePlayerAudio.volume = options.volume ?? 0.72;
+      if (options.restart) livePlayerAudio.currentTime = 0;
+      const playPromise = livePlayerAudio.play();
+      const playStarted = await Promise.race([
+        playPromise.then(() => true).catch(() => false),
+        new Promise((resolve) => window.setTimeout(() => resolve(false), options.timeout ?? 900))
+      ]);
+      if (!playStarted) throw new Error("Playback was blocked or delayed.");
+      await new Promise((resolve) => window.requestAnimationFrame(resolve));
+      if (livePlayerAudio.paused || livePlayerAudio.ended) throw new Error("Playback did not stay active.");
+      if (!options.deferAnalyser) {
+        setupLiveAnalyser();
+        await Promise.race([
+          liveAudioContext?.resume?.().catch(() => {}),
+          new Promise((resolve) => window.setTimeout(resolve, 500))
+        ]);
+      }
+      livePlayer?.classList.remove("needs-user-audio");
+      startLiveWave();
+      updateLivePlayer();
+      return true;
+    } catch {
+      livePlayer?.classList.add("needs-user-audio");
+      updateLivePlayer();
+      return false;
+    }
+  }
+
   async function toggleLivePlayer() {
     if (!livePlayerAudio) return;
     if (livePlayerAudio.paused || livePlayerAudio.ended) {
-      try {
-        setupLiveAnalyser();
-        await liveAudioContext?.resume?.();
-        livePlayerAudio.volume = 0.72;
-        await livePlayerAudio.play();
-        startLiveWave();
-      } catch {
-        livePlayer?.classList.add("needs-user-audio");
-      }
+      await startLivePlayer({ restart: livePlayerAudio.ended, volume: 0.72 });
     } else {
       livePlayerAudio.pause();
       resetLiveWave();
     }
     updateLivePlayer();
+  }
+
+  function closeStreamStartupPrompt() {
+    streamStartup?.classList.add("is-hidden");
+    streamStartup?.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("has-stream-startup-audio");
+    if (streamStartupStatus) streamStartupStatus.textContent = "";
+  }
+
+  function showStreamStartupPrompt(message = "Tap Start Music to play the stream audio.") {
+    if (!streamStartup) return;
+    document.body.classList.add("has-stream-startup-audio");
+    streamStartup.classList.remove("is-hidden");
+    streamStartup.setAttribute("aria-hidden", "false");
+    if (streamStartupStatus) streamStartupStatus.textContent = message;
+  }
+
+  async function startStreamOpenAudio(options = {}) {
+    if (!livePlayerAudio?.hasAttribute("data-stream-open-audio")) return;
+    livePlayer?.setAttribute("data-stream-open-state", "attempting");
+    const started = await startLivePlayer({
+      restart: true,
+      volume: options.volume ?? 0.56,
+      deferAnalyser: !options.userGesture
+    });
+    if (started) {
+      livePlayer?.setAttribute("data-stream-open-state", "playing");
+      closeStreamStartupPrompt();
+      return;
+    }
+    livePlayer?.setAttribute("data-stream-open-state", "blocked");
+    showStreamStartupPrompt("Your browser needs one tap before it can play Verse 1.");
+  }
+
+  function scheduleStreamOpenAudio() {
+    if (!livePlayerAudio?.hasAttribute("data-stream-open-audio")) return;
+    if (livePlayerAudio.dataset.streamOpenReady === "true") return;
+    livePlayerAudio.dataset.streamOpenReady = "true";
+    const run = () => window.setTimeout(() => startStreamOpenAudio({ volume: 0.56 }), 420);
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", run, { once: true });
+    } else {
+      run();
+    }
+  }
+
+  function setTwitchFocusMode(isFocused) {
+    document.body.classList.toggle("is-twitch-focused", isFocused);
+
+    decorativeVideos.forEach((video) => {
+      if (isFocused) {
+        if (!video.paused) {
+          video.dataset.twitchPaused = "true";
+          video.pause();
+        }
+        return;
+      }
+      if (video.dataset.twitchPaused === "true") {
+        video.dataset.twitchPaused = "false";
+        video.play?.().catch(() => {});
+      }
+    });
+
+    previewIframes.forEach((frame) => {
+      if (isFocused) {
+        const currentSrc = frame.getAttribute("src");
+        if (currentSrc) {
+          frame.dataset.twitchPausedSrc = currentSrc;
+          frame.removeAttribute("src");
+        }
+        return;
+      }
+      if (!frame.getAttribute("src") && frame.dataset.twitchPausedSrc) {
+        frame.setAttribute("src", frame.dataset.twitchPausedSrc);
+      }
+    });
+  }
+
+  function setupTwitchStreamStability() {
+    if (!twitchLiveCard) return;
+    if (!("IntersectionObserver" in window)) return;
+
+    const observer = new IntersectionObserver((entries) => {
+      const active = entries.some((entry) => entry.isIntersecting && entry.intersectionRatio > 0.18);
+      setTwitchFocusMode(active);
+    }, { rootMargin: "0px 0px -10% 0px", threshold: [0, 0.18, 0.36] });
+
+    observer.observe(twitchLiveCard);
+    window.addEventListener("pagehide", () => setTwitchFocusMode(false), { once: true });
+  }
+
+  function setupLiveBallpassBackground() {
+    if (!liveBallpassCanvas) return;
+    const section = liveBallpassCanvas.closest(".live-ballpass-section") || liveBallpassCanvas.parentElement;
+    const ctx = liveBallpassCanvas.getContext("2d", { alpha: true });
+    if (!section || !ctx) return;
+
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const balls = [
+      { x: 0.15, y: 0.28, r: 0.082, hue: 184, speed: 0.38, offset: 0.2 },
+      { x: 0.46, y: 0.18, r: 0.06, hue: 51, speed: 0.3, offset: 1.8 },
+      { x: 0.74, y: 0.32, r: 0.07, hue: 288, speed: 0.42, offset: 3.2 },
+      { x: 0.27, y: 0.72, r: 0.055, hue: 153, speed: 0.34, offset: 4.4 },
+      { x: 0.63, y: 0.78, r: 0.09, hue: 43, speed: 0.28, offset: 2.7 }
+    ];
+    let width = 1;
+    let height = 1;
+    let dpr = 1;
+    let frame = 0;
+    let inView = true;
+
+    function resize() {
+      const rect = section.getBoundingClientRect();
+      width = Math.max(1, Math.round(rect.width));
+      height = Math.max(1, Math.round(rect.height));
+      dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+      liveBallpassCanvas.width = Math.round(width * dpr);
+      liveBallpassCanvas.height = Math.round(height * dpr);
+      liveBallpassCanvas.style.width = `${width}px`;
+      liveBallpassCanvas.style.height = `${height}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      draw(performance.now());
+    }
+
+    function ballPoint(ball, t) {
+      return {
+        x: (ball.x + Math.sin(t * ball.speed + ball.offset) * 0.12) * width,
+        y: (ball.y + Math.cos(t * (ball.speed * 0.72) + ball.offset) * 0.12) * height,
+        r: Math.max(34, Math.min(width, height) * ball.r)
+      };
+    }
+
+    function strokeRay(a, b, alpha) {
+      const gradient = ctx.createLinearGradient(a.x, a.y, b.x, b.y);
+      gradient.addColorStop(0, `hsla(${a.hue || 184}, 100%, 62%, 0)`);
+      gradient.addColorStop(0.5, `hsla(${((a.hue || 184) + (b.hue || 51)) / 2}, 100%, 72%, ${alpha})`);
+      gradient.addColorStop(1, `hsla(${b.hue || 51}, 100%, 62%, 0)`);
+      ctx.strokeStyle = gradient;
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.moveTo(a.x, a.y);
+      ctx.lineTo(b.x, b.y);
+      ctx.stroke();
+    }
+
+    function draw(now) {
+      const t = now * 0.001;
+      ctx.clearRect(0, 0, width, height);
+      ctx.globalCompositeOperation = "source-over";
+
+      ctx.strokeStyle = "rgba(41, 247, 255, 0.08)";
+      ctx.lineWidth = 1;
+      for (let i = -2; i < 9; i += 1) {
+        const x = (i / 7) * width + Math.sin(t * 0.2 + i) * 18;
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x + width * 0.18, height);
+        ctx.stroke();
+      }
+
+      const points = balls.map((ball) => ({ ...ballPoint(ball, t), hue: ball.hue }));
+      ctx.globalCompositeOperation = "screen";
+      points.forEach((point, index) => {
+        for (let otherIndex = index + 1; otherIndex < points.length; otherIndex += 1) {
+          const other = points[otherIndex];
+          const distance = Math.hypot(point.x - other.x, point.y - other.y);
+          if (distance < width * 0.5) {
+            strokeRay(point, other, Math.max(0.08, 0.32 - distance / width));
+          }
+        }
+      });
+
+      points.forEach((point, index) => {
+        const pulse = 1 + Math.sin(t * 2.2 + index) * 0.08;
+        const radius = point.r * pulse;
+        const glow = ctx.createRadialGradient(point.x - radius * 0.32, point.y - radius * 0.34, radius * 0.08, point.x, point.y, radius);
+        glow.addColorStop(0, "rgba(255,255,255,0.92)");
+        glow.addColorStop(0.26, `hsla(${point.hue}, 100%, 72%, 0.72)`);
+        glow.addColorStop(0.62, `hsla(${point.hue + 36}, 90%, 54%, 0.26)`);
+        glow.addColorStop(1, "rgba(0,0,0,0)");
+        ctx.fillStyle = glow;
+        ctx.beginPath();
+        ctx.arc(point.x, point.y, radius, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.strokeStyle = `hsla(${point.hue}, 100%, 72%, 0.38)`;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(point.x, point.y, radius * 0.68, 0, Math.PI * 2);
+        ctx.stroke();
+      });
+
+      ctx.globalCompositeOperation = "source-over";
+    }
+
+    function stop() {
+      if (!frame) return;
+      window.cancelAnimationFrame(frame);
+      frame = 0;
+    }
+
+    function tick(now) {
+      frame = 0;
+      if (!inView || document.hidden) return;
+      draw(now);
+      if (!reduceMotion.matches) {
+        frame = window.requestAnimationFrame(tick);
+      }
+    }
+
+    function start() {
+      stop();
+      if (!inView || document.hidden) return;
+      if (reduceMotion.matches) {
+        draw(performance.now());
+        return;
+      }
+      frame = window.requestAnimationFrame(tick);
+    }
+
+    resize();
+    if ("ResizeObserver" in window) {
+      const resizeObserver = new ResizeObserver(resize);
+      resizeObserver.observe(section);
+    } else {
+      window.addEventListener("resize", resize, { passive: true });
+    }
+    if ("IntersectionObserver" in window) {
+      const observer = new IntersectionObserver((entries) => {
+        inView = entries.some((entry) => entry.isIntersecting);
+        start();
+      }, { threshold: [0, 0.12] });
+      observer.observe(section);
+    }
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) {
+        stop();
+      } else {
+        start();
+      }
+    });
+    start();
   }
 
   if (livePlayerAudio && livePlayerToggle) {
@@ -283,6 +560,24 @@
     updateLivePlayer();
     resetLiveWave();
   }
+
+  scheduleStreamOpenAudio();
+  setupTwitchStreamStability();
+  setupLiveBallpassBackground();
+
+  streamStartupPlay?.addEventListener("click", async () => {
+    if (streamStartupStatus) streamStartupStatus.textContent = "Starting stream audio...";
+    await startStreamOpenAudio({ volume: 0.56, userGesture: true });
+  });
+  streamStartupCloseButtons?.forEach((button) => {
+    button.addEventListener("click", closeStreamStartupPrompt);
+  });
+  streamStartup?.addEventListener("click", (event) => {
+    if (event.target === streamStartup) closeStreamStartupPrompt();
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && !streamStartup?.classList.contains("is-hidden")) closeStreamStartupPrompt();
+  });
 
   function escapeHtml(value) {
     return String(value).replace(/[&<>"']/g, (character) => ({

@@ -19,6 +19,7 @@
   const sphereSoundtrack = document.querySelector("[data-sphere-soundtrack]");
   const liveMixAudio = document.querySelector("[data-live-player] [data-live-player-audio]");
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const sphereAudioGateEnabled = false;
   const sphereSoundtrackFullVolume = 0.58;
   const sphereSoundtrackDuckedVolume = 0.22;
   let sphereSoundtrackStarted = false;
@@ -49,6 +50,7 @@
   let dpr = 1;
   let balls = [];
   let raf = 0;
+  let stageInView = true;
   let energy = 58;
   let audioPulse = 0;
   let audioPulseUntil = 0;
@@ -158,6 +160,15 @@
     if (moveCountOutput) moveCountOutput.textContent = "Move the balls 3 times to generate sets.";
   }
 
+  function canRender() {
+    return !reduceMotion.matches && !document.hidden && stageInView;
+  }
+
+  function scheduleRender() {
+    if (raf || !canRender()) return;
+    raf = window.requestAnimationFrame(render);
+  }
+
   function resize() {
     const rect = stage.getBoundingClientRect();
     width = Math.max(320, rect.width);
@@ -170,7 +181,9 @@
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     seedBalls();
     window.cancelAnimationFrame(raf);
-    render(performance.now());
+    raf = 0;
+    render(performance.now(), true);
+    scheduleRender();
   }
 
   function drawBackdrop(time, pulse = 0) {
@@ -299,12 +312,6 @@
       ball.vy += (dy / distance) * force * touchForce;
     }
 
-    if (pulse > 0.02) {
-      const kick = pulse * (ball.asset ? 0.95 : 0.58);
-      ball.vx += Math.cos(time * 0.004 + ball.phase + audioPulseIndex) * kick;
-      ball.vy += Math.sin(time * 0.0036 + ball.phase) * kick;
-    }
-
     ball.vx *= 0.972;
     ball.vy *= 0.972;
     ball.x += ball.vx;
@@ -363,45 +370,15 @@
     }
   }
 
-  function updateSphereAudioPulse(time) {
-    if (!audioAnalyser || !audioData || sphereSoundtrack?.paused || reduceMotion.matches) return;
-    audioAnalyser.getByteFrequencyData(audioData);
-    let bassTotal = 0;
-    let bodyTotal = 0;
-    let bassCount = 0;
-    let bodyCount = 0;
-
-    audioData.forEach((value, index) => {
-      if (index >= 2 && index <= 12) {
-        bassTotal += value;
-        bassCount += 1;
-      }
-      if (index > 12 && index <= 32) {
-        bodyTotal += value;
-        bodyCount += 1;
-      }
-    });
-
-    const bass = bassTotal / Math.max(1, bassCount) / 255;
-    const body = bodyTotal / Math.max(1, bodyCount) / 255;
-    const nextPulse = clamp01(bass * 0.95 + body * 0.34);
-    if (nextPulse > 0.1) {
-      audioPulse = Math.max(audioPulse * 0.9, nextPulse);
-      audioPulseUntil = performance.now() + 260;
-    }
-
-    if (nextPulse > 0.34 && time - lastBeatPulseAt > 150) {
-      lastBeatPulseAt = time;
-      audioPulseIndex += 1;
-      balls.forEach((ball, index) => {
-        const angle = (index / Math.max(1, balls.length)) * Math.PI * 2 + audioPulseIndex * 0.19;
-        ball.vx += Math.cos(angle) * nextPulse * (ball.asset ? 0.95 : 0.42);
-        ball.vy += Math.sin(angle) * nextPulse * (ball.asset ? 0.82 : 0.36);
-      });
-    }
+  function updateSphereAudioPulse() {
+    // Keep the sphere field calm; music should not push or throb the pucks.
+    audioPulse = 0;
+    audioPulseUntil = 0;
   }
 
-  function render(time) {
+  function render(time, force = false) {
+    raf = 0;
+    if (!force && !canRender()) return;
     updateSphereAudioPulse(time);
     const pulse = reduceMotion.matches ? 0 : audioPulse;
     if (audioPulse > 0.004) audioPulse *= time < audioPulseUntil ? 0.94 : 0.82;
@@ -427,9 +404,7 @@
     });
     balls.forEach((ball) => drawBall(ball, time, pulse));
 
-    if (!reduceMotion.matches) {
-      raf = window.requestAnimationFrame(render);
-    }
+    scheduleRender();
   }
 
   let lastPointerTouchAt = 0;
@@ -505,6 +480,7 @@
     document.addEventListener("mouseleave", releasePointer, { passive: true });
     document.addEventListener("visibilitychange", () => {
       if (document.hidden) releasePointer();
+      scheduleRender();
     });
   } else {
     stage.addEventListener("lostpointercapture", releasePointer, { passive: true });
@@ -515,7 +491,20 @@
     stage.addEventListener("touchcancel", releasePointer, { passive: true });
   }
 
-  if (sphereSoundtrack && audioGate) setAudioGateOpen(true);
+  if ("IntersectionObserver" in window) {
+    const observer = new IntersectionObserver((entries) => {
+      stageInView = entries.some((entry) => entry.isIntersecting);
+      scheduleRender();
+    }, { rootMargin: "220px 0px", threshold: 0.01 });
+    observer.observe(stage);
+  }
+  document.addEventListener("visibilitychange", scheduleRender);
+
+  if (sphereSoundtrack && audioGate && sphereAudioGateEnabled) {
+    setAudioGateOpen(true);
+  } else {
+    setAudioGateOpen(false);
+  }
   audioStartButton?.addEventListener("click", startSphereAudio);
   audioSkipButton?.addEventListener("click", () => {
     sphereSoundtrackUserSkipped = true;
@@ -550,14 +539,8 @@
   window.addEventListener("lottomind:beat-energy", (event) => {
     const nextPulse = clamp01(event.detail?.energy);
     if (!nextPulse) return;
-    audioPulse = Math.max(audioPulse, nextPulse);
-    audioPulseUntil = performance.now() + 900;
-    audioPulseIndex = Number(event.detail?.index) || audioPulseIndex + 1;
-    balls.forEach((ball, index) => {
-      const angle = (index / Math.max(1, balls.length)) * Math.PI * 2 + audioPulseIndex * 0.13;
-      ball.vx += Math.cos(angle) * nextPulse * (ball.asset ? 1.25 : 0.68);
-      ball.vy += Math.sin(angle) * nextPulse * (ball.asset ? 1.05 : 0.58);
-    });
+    audioPulse = 0;
+    audioPulseUntil = 0;
   });
 
   rerollButton?.addEventListener("click", () => {
@@ -573,4 +556,185 @@
 
   window.addEventListener("resize", resize, { passive: true });
   resize();
+})();
+
+(() => {
+  const player = document.querySelector(".spheres-live-player[data-live-player]");
+  if (!player || player.dataset.spheresFloatReady === "true") return;
+
+  const storageKey = "lottominded.ultra.spheresPlayerPosition.v1";
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const interactiveSelector = "button, a, input, textarea, select, audio, video, [role='button']";
+  const ripples = document.createElement("div");
+  let position = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+  let drag = null;
+  let lastRipple = { time: 0, x: 0, y: 0 };
+  let rippleHue = Math.floor(Math.random() * 360);
+  let resizeFrame = 0;
+
+  ripples.className = "spheres-player-ripples";
+  ripples.setAttribute("aria-hidden", "true");
+  document.body.appendChild(ripples);
+
+  player.dataset.spheresFloatReady = "true";
+  player.classList.add("is-floatable");
+  player.setAttribute("aria-grabbed", "false");
+
+  function getPlayerSize() {
+    const rect = player.getBoundingClientRect();
+    return {
+      width: rect.width || 300,
+      height: rect.height || 300
+    };
+  }
+
+  function clampPosition(x, y) {
+    const margin = 12;
+    const { width, height } = getPlayerSize();
+    const halfWidth = width / 2;
+    const halfHeight = height / 2;
+    const minX = Math.min(window.innerWidth / 2, halfWidth + margin);
+    const maxX = Math.max(window.innerWidth / 2, window.innerWidth - halfWidth - margin);
+    const minY = Math.min(window.innerHeight / 2, halfHeight + margin);
+    const maxY = Math.max(window.innerHeight / 2, window.innerHeight - halfHeight - margin);
+    return {
+      x: Math.min(maxX, Math.max(minX, x)),
+      y: Math.min(maxY, Math.max(minY, y))
+    };
+  }
+
+  function defaultPosition() {
+    const { height } = getPlayerSize();
+    return clampPosition(window.innerWidth / 2, window.innerHeight - height / 2 - 18);
+  }
+
+  function savePosition() {
+    try {
+      localStorage.setItem(storageKey, JSON.stringify(position));
+    } catch {
+      // Storage can be unavailable in private or locked-down browser modes.
+    }
+  }
+
+  function applyPosition(x, y, options = {}) {
+    position = clampPosition(x, y);
+    player.style.setProperty("--spheres-player-left", `${Math.round(position.x)}px`);
+    player.style.setProperty("--spheres-player-top", `${Math.round(position.y)}px`);
+    if (options.save) savePosition();
+  }
+
+  function loadPosition() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(storageKey) || "null");
+      if (Number.isFinite(saved?.x) && Number.isFinite(saved?.y)) {
+        applyPosition(saved.x, saved.y);
+        return;
+      }
+    } catch {
+      // Ignore invalid saved data and fall back to the default bottom-center position.
+    }
+    const next = defaultPosition();
+    applyPosition(next.x, next.y);
+  }
+
+  function spawnRipple(x, y, force = false) {
+    if (reduceMotion.matches) return;
+    const now = performance.now();
+    const distance = Math.hypot(x - lastRipple.x, y - lastRipple.y);
+    if (!force && now - lastRipple.time < 34 && distance < 8) return;
+
+    const angle = Math.atan2(y - lastRipple.y, x - lastRipple.x) * (180 / Math.PI);
+    lastRipple = { time: now, x, y };
+    const ripple = document.createElement("span");
+    const size = Math.min(520, Math.max(force ? 260 : 150, 132 + distance * 2.55));
+    const stretch = Math.min(2.25, Math.max(1.18, 1 + distance / 170));
+    rippleHue = (rippleHue + 37 + distance * 0.4) % 360;
+    ripple.className = "spheres-player-ripple";
+    ripple.style.setProperty("--ripple-x", `${Math.round(x)}px`);
+    ripple.style.setProperty("--ripple-y", `${Math.round(y)}px`);
+    ripple.style.setProperty("--ripple-size", `${Math.round(size)}px`);
+    ripple.style.setProperty("--ripple-scale-x", stretch.toFixed(2));
+    ripple.style.setProperty("--ripple-rotate", `${Number.isFinite(angle) ? Math.round(angle) : 0}deg`);
+    ripple.style.setProperty("--ripple-hue", `${Math.round(rippleHue)}`);
+    ripple.style.setProperty("--ripple-hue-alt", `${Math.round((rippleHue + 82) % 360)}`);
+    ripple.style.setProperty("--ripple-hue-third", `${Math.round((rippleHue + 176) % 360)}`);
+    ripples.appendChild(ripple);
+
+    while (ripples.childElementCount > 56) ripples.firstElementChild?.remove();
+    window.setTimeout(() => ripple.remove(), 2600);
+  }
+
+  function beginDrag(event) {
+    if (drag) return;
+    if (event.button !== undefined && event.button !== 0) return;
+    if (event.target.closest(interactiveSelector)) return;
+
+    const pointerId = event.pointerId ?? "mouse";
+    drag = {
+      id: pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      originX: position.x,
+      originY: position.y
+    };
+
+    player.classList.add("is-dragging");
+    player.setAttribute("aria-grabbed", "true");
+    if (Number.isFinite(event.pointerId)) player.setPointerCapture?.(event.pointerId);
+    spawnRipple(position.x, position.y, true);
+    event.preventDefault();
+  }
+
+  function moveDrag(event) {
+    const pointerId = event.pointerId ?? "mouse";
+    if (!drag || pointerId !== drag.id) return;
+    applyPosition(
+      drag.originX + event.clientX - drag.startX,
+      drag.originY + event.clientY - drag.startY
+    );
+    spawnRipple(position.x, position.y);
+    event.preventDefault();
+  }
+
+  function endDrag(event) {
+    const pointerId = event.pointerId ?? "mouse";
+    if (!drag || pointerId !== drag.id) return;
+    if (Number.isFinite(event.pointerId)) player.releasePointerCapture?.(event.pointerId);
+    player.classList.remove("is-dragging");
+    player.setAttribute("aria-grabbed", "false");
+    spawnRipple(position.x, position.y, true);
+    savePosition();
+    drag = null;
+  }
+
+  function cancelDrag() {
+    if (!drag) return;
+    player.classList.remove("is-dragging");
+    player.setAttribute("aria-grabbed", "false");
+    savePosition();
+    drag = null;
+  }
+
+  player.addEventListener("pointerdown", beginDrag);
+  player.addEventListener("pointermove", moveDrag);
+  player.addEventListener("pointerup", endDrag);
+  player.addEventListener("pointercancel", endDrag);
+  window.addEventListener("pointermove", moveDrag);
+  window.addEventListener("pointerup", endDrag);
+  window.addEventListener("pointercancel", endDrag);
+  player.addEventListener("mousedown", beginDrag);
+  window.addEventListener("mousemove", moveDrag);
+  window.addEventListener("mouseup", endDrag);
+  player.addEventListener("lostpointercapture", cancelDrag);
+  window.addEventListener("blur", cancelDrag);
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) cancelDrag();
+  });
+
+  window.addEventListener("resize", () => {
+    window.cancelAnimationFrame(resizeFrame);
+    resizeFrame = window.requestAnimationFrame(() => applyPosition(position.x, position.y, { save: true }));
+  }, { passive: true });
+
+  window.requestAnimationFrame(loadPosition);
 })();

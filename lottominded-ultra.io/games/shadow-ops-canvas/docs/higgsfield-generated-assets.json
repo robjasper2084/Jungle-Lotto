@@ -1,0 +1,74 @@
+﻿[
+    {
+        "id":  "level1_bg_far",
+        "path":  "C:\\Users\\digit\\Documents\\phone\\lottomind ultra website\\games\\shadow-ops-canvas\\assets\\levels\\level1_bg_far.webp",
+        "bytes":  323820,
+        "jobId":  "6c39c332-f904-4c84-b169-06879650abc6"
+    },
+    {
+        "id":  "level2_bg_far",
+        "path":  "C:\\Users\\digit\\Documents\\phone\\lottomind ultra website\\games\\shadow-ops-canvas\\assets\\levels\\level2_bg_far.webp",
+        "bytes":  510582,
+        "jobId":  "d4878a23-cb6b-4fb3-86ad-a6692dd82a0c"
+    },
+    {
+        "id":  "level3_bg_far",
+        "path":  "C:\\Users\\digit\\Documents\\phone\\lottomind ultra website\\games\\shadow-ops-canvas\\assets\\levels\\level3_bg_far.webp",
+        "bytes":  326118,
+        "jobId":  "75e11491-7283-408d-be71-64b324635ffc"
+    },
+    {
+        "id":  "platform_tiles_level1",
+        "path":  "C:\\Users\\digit\\Documents\\phone\\lottomind ultra website\\games\\shadow-ops-canvas\\assets\\levels\\platform_tiles_level1.png",
+        "bytes":  6067316,
+        "jobId":  "ad841d52-1af3-4805-8031-571c4aca5c79"
+    },
+    {
+        "id":  "platform_tiles_level2",
+        "path":  "C:\\Users\\digit\\Documents\\phone\\lottomind ultra website\\games\\shadow-ops-canvas\\assets\\levels\\platform_tiles_level2.png",
+        "bytes":  5951963,
+        "jobId":  "1f5573c8-008a-4b9e-9405-86b8ed8bb3bd"
+    },
+    {
+        "id":  "platform_tiles_level3",
+        "path":  "C:\\Users\\digit\\Documents\\phone\\lottomind ultra website\\games\\shadow-ops-canvas\\assets\\levels\\platform_tiles_level3.png",
+        "bytes":  5185256,
+        "jobId":  "45eda9e0-01ad-4316-9561-6bd4ed433b1e"
+    },
+    {
+        "id":  "canopy_drone_queen",
+        "path":  "C:\\Users\\digit\\Documents\\phone\\lottomind ultra website\\games\\shadow-ops-canvas\\assets\\bosses\\canopy_drone_queen.png",
+        "bytes":  6587708,
+        "jobId":  "73b8a80c-3303-4f8b-b8e0-f4887bd6ed92"
+    },
+    {
+        "id":  "jackpot_forge_titan",
+        "path":  "C:\\Users\\digit\\Documents\\phone\\lottomind ultra website\\games\\shadow-ops-canvas\\assets\\bosses\\jackpot_forge_titan.png",
+        "bytes":  5986891,
+        "jobId":  "ebe51201-7b38-4a3b-a233-64b0815fde17"
+    },
+    {
+        "id":  "midas_heartcore_overlord",
+        "path":  "C:\\Users\\digit\\Documents\\phone\\lottomind ultra website\\games\\shadow-ops-canvas\\assets\\bosses\\midas_heartcore_overlord.png",
+        "bytes":  7805119,
+        "jobId":  "f2295ea8-7ee6-4d11-8867-9697250132cd"
+    },
+    {
+        "id":  "level_card_frame",
+        "path":  "C:\\Users\\digit\\Documents\\phone\\lottomind ultra website\\games\\shadow-ops-canvas\\assets\\ui\\level_card_frame.png",
+        "bytes":  6352809,
+        "jobId":  "affccc6b-4b99-43b4-bb12-e824d786bbba"
+    },
+    {
+        "id":  "boss_health_frame",
+        "path":  "C:\\Users\\digit\\Documents\\phone\\lottomind ultra website\\games\\shadow-ops-canvas\\assets\\ui\\boss_health_frame.png",
+        "bytes":  5660153,
+        "jobId":  "cf9ebb8d-c87c-4f21-8867-309566b1d563"
+    },
+    {
+        "id":  "final_victory_badge",
+        "path":  "C:\\Users\\digit\\Documents\\phone\\lottomind ultra website\\games\\shadow-ops-canvas\\assets\\ui\\final_victory_badge.png",
+        "bytes":  7076911,
+        "jobId":  "8c895fb4-1e38-4cdd-93c9-268a9cdf617f"
+    }
+]

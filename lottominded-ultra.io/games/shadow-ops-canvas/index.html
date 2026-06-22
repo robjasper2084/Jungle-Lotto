@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>LottoMind Vault Run | Shadow Ops</title>
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="./style.css?v=three-levels-bosses-1" />
+  </head>
+  <body>
+    <main class="game-shell" aria-label="LottoMind Vault Run browser game">
+      <canvas id="game" width="1280" height="720" aria-label="LottoMind Vault Run playfield"></canvas>
+
+      <section id="loadingScreen" class="screen screen--loading">
+        <div class="screen-panel">
+          <p class="small-label">LottoMind Vault Run</p>
+          <h1>Loading Shadow Ops</h1>
+          <div class="load-track" aria-label="Loading progress">
+            <span id="loadBar"></span>
+          </div>
+          <p id="loadText" class="screen-copy">Preparing the vault grid...</p>
+        </div>
+      </section>
+
+      <section id="titleScreen" class="screen screen--title is-hidden">
+        <div class="title-copy">
+          <p class="small-label">Shadow Ops</p>
+          <h1>LottoMind Vault Run</h1>
+          <p class="screen-copy">Break three vault worlds, claim each key set, defeat every boss, and escape through the final heartcore portal.</p>
+          <div class="button-row">
+            <button class="primary" data-action="start">Start Run</button>
+            <button data-action="settings">Settings</button>
+          </div>
+          <p class="control-strip">Move A/D or arrows. Jump Space. Aim W/S. Fire J/Z. Dash K/X. Overdrive L.</p>
+        </div>
+      </section>
+
+      <section id="pauseScreen" class="screen screen--pause is-hidden">
+        <div class="screen-panel">
+          <p class="small-label">Paused</p>
+          <h2>Vault Link Held</h2>
+          <p class="screen-copy">The run is frozen at the current checkpoint.</p>
+          <div class="button-row">
+            <button class="primary" data-action="resume">Resume</button>
+            <button data-action="restart">Restart</button>
+            <button data-action="settings">Settings</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="settingsScreen" class="screen screen--settings is-hidden">
+        <div class="screen-panel">
+          <p class="small-label">Settings</p>
+          <h2>Field Console</h2>
+          <label class="toggle-row">
+            <span>Sound FX</span>
+            <input id="soundToggle" type="checkbox" />
+          </label>
+          <label class="toggle-row">
+            <span>Pulse Music</span>
+            <input id="musicToggle" type="checkbox" />
+          </label>
+          <label class="toggle-row">
+            <span>Reduced Motion</span>
+            <input id="motionToggle" type="checkbox" />
+          </label>
+          <label class="toggle-row">
+            <span>Touch Controls</span>
+            <input id="touchToggle" type="checkbox" />
+          </label>
+          <div class="button-row">
+            <button class="primary" data-action="close-settings">Done</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="resultsScreen" class="screen screen--results is-hidden">
+        <div class="screen-panel results-panel">
+          <p id="resultKicker" class="small-label">Run Complete</p>
+          <h2 id="resultTitle">Extraction Clear</h2>
+          <p id="resultCopy" class="screen-copy">The signal core is secured.</p>
+          <div class="result-grid">
+            <span>Score <strong id="resultScore">0</strong></span>
+            <span>Time <strong id="resultTime">00:00</strong></span>
+            <span>Kills <strong id="resultKills">0</strong></span>
+            <span>Accuracy <strong id="resultAccuracy">0%</strong></span>
+            <span>Damage <strong id="resultDamage">0</strong></span>
+            <span>Max Combo <strong id="resultCombo">0</strong></span>
+            <span>Rank <strong id="resultRank">C</strong></span>
+            <span>Best <strong id="resultBest">0</strong></span>
+          </div>
+          <div class="button-row">
+            <button class="primary" data-action="restart">Replay</button>
+            <button data-action="title">Title</button>
+          </div>
+        </div>
+      </section>
+
+      <div id="hud" class="hud is-hidden" aria-live="polite">
+        <div class="hud-left">
+          <img src="./assets/hero/lottomind-hero-main.png" alt="" class="portrait" />
+          <div>
+            <div id="hudTitle" class="hud-title">LOTTOMIND VAULT RUN</div>
+            <div id="hpHearts" class="hearts" aria-label="Health"></div>
+            <div class="lives">Lives <span id="livesText">3</span></div>
+          </div>
+        </div>
+        <div class="hud-mid">
+          <span>Level <strong id="levelText">1</strong></span>
+          <span>Score <strong id="scoreText">000000</strong></span>
+          <span id="comboWrap">Combo <strong id="comboText">x0</strong></span>
+          <span>Shards <strong id="shardText">0</strong></span>
+          <span>Keys <strong id="keyText">0/3</strong></span>
+        </div>
+        <div class="hud-right">
+          <div class="meter-label">Overdrive</div>
+          <div class="meter"><span id="overdriveBar"></span></div>
+          <button id="pauseButton" class="icon-button" aria-label="Pause" data-action="pause">II</button>
+        </div>
+      </div>
+
+      <div id="bossHud" class="boss-hud is-hidden">
+        <span id="bossName">Vault Sentinel</span>
+        <div class="boss-meter"><span id="bossBar"></span></div>
+        <strong id="bossPhase">Phase 1</strong>
+      </div>
+
+      <div id="objectiveChip" class="objective-chip is-hidden">Collect 3 vault keys</div>
+
+      <div id="touchControls" class="touchbar" aria-label="Touch controls">
+        <div class="touch-cluster touch-cluster--move">
+          <button data-touch="left" aria-label="Move left">L</button>
+          <button data-touch="jump" aria-label="Jump">JMP</button>
+          <button data-touch="down" aria-label="Crouch">DUCK</button>
+          <button data-touch="right" aria-label="Move right">R</button>
+        </div>
+        <div class="touch-cluster">
+          <button data-touch="fire" aria-label="Fire">FIRE</button>
+          <button data-touch="dash" aria-label="Dash">DASH</button>
+          <button data-touch="overdrive" aria-label="Overdrive">OD</button>
+        </div>
+      </div>
+    </main>
+    <script src="./src/game.js?v=three-levels-bosses-1"></script>
+  </body>
+</html>
