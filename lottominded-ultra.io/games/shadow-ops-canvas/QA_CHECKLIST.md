@@ -7,26 +7,26 @@
 - Title screen shows Start Run and Settings.
 - No console errors on first load.
 
-## Core Loop
+## Campaign Loop
 
 - Start run from title.
-- Move left/right, jump, crouch, aim up/down, fire, dash, overdrive.
-- Collect shards and health pickups.
-- Collect 3 keys and verify gate opens.
-- Enter boss chamber and verify boss health HUD appears.
-- Defeat Vault Sentinel across phase changes.
-- Reach extraction portal and view victory results.
-- Lose all lives and view failed-run results.
+- Level 1 intro card appears, then Neon Jungle Vault gameplay starts.
+- Collect 3 Level 1 keys, open the gate, enter the boss chamber, and defeat Canopy Drone Queen.
+- Level complete card transitions to Level 2.
+- Level 2 intro card appears, then Golden Circuit Foundry gameplay starts with conveyors, moving platform, and laser hazards.
+- Defeat Jackpot Forge Titan and transition to Level 3.
+- Level 3 intro card appears, then Astral Vault Core gameplay starts with floating platforms and beam hazards.
+- Defeat Midas Heartcore Overlord and trigger final victory/results.
 - Replay from results.
 
 ## Combat
 
-- Player shots damage enemies and boss.
+- Player shots damage enemies and bosses.
+- Boss HUD appears only during boss fights and shows boss name, phase, attack state, and health.
 - Shield guard blocks frontal non-overdrive shots.
-- Enemy shots and contact damage hearts.
 - Dash and overdrive grant short invulnerability.
-- Combo increases on kills and expires after a short timer.
-- Accuracy, kills, damage, score, max combo, and rank update on results.
+- Dynamic boss hazards telegraph before damage.
+- Checkpoints restore the player without resetting the whole campaign.
 
 ## Responsive/Input
 
@@ -34,20 +34,37 @@
 - Pointer aim works when the cursor is active over the canvas.
 - Touch controls work on a small viewport.
 - Gamepad works when available.
-- Pause on Escape/P and on browser focus loss.
+- Pause on Escape/P and on browser focus loss in normal mode.
 - Settings toggles persist across refresh.
 
 ## Visual
 
-- HUD does not cover the center playfield.
-- Boss HUD only appears during boss fight.
+- Level 1, Level 2, and Level 3 look distinct at a glance.
+- Generated Higgsfield backgrounds render locally with no hotlinks.
+- Boss sprites are visible in their arenas.
+- HUD stays legible and does not cover the center playfield.
 - Objective chip is transient.
-- Soul Location backgrounds render and parallax.
-- Player atlas is framed without clipping.
-- Procedural enemies, boss, pickups, gate, portal, and projectiles are readable.
+- No checkerboard artifacts appear in the live playfield.
 
-## Performance
+## Browser QA Performed
 
-- Fixed timestep remains stable at common desktop and mobile viewport sizes.
-- Reduced Motion lowers particle count.
-- No runaway entity growth after several minutes of play.
+- `node --check src/game.js`: passed.
+- In-app browser load at `http://127.0.0.1:8150/games/shadow-ops-canvas/index.html?bg=soul-location-1&v=three-levels-bosses-1&debug=1`: passed.
+- Title screen screenshot: passed.
+- Start Level 1 screenshot: passed.
+- Debug boss jump screenshot with Canopy Drone Queen: passed.
+- Debug Level 1 -> Level 2 -> Level 3 transition screenshots: passed.
+- Direct Level 3 final victory screenshot: passed.
+- Console warnings/errors during QA: none observed.
+- Encounter director debug wave screenshot: passed.
+- Boss chamber and final results smoke test after encounter-director update: passed.
+- Public non-debug title load after cache-bust update: passed.
+- Higgsfield mission FX and cleaned-platform asset pass screenshots: passed.
+- Debug Wave and Boss smoke screenshots after asset pass: passed.
+- Console warnings/errors during asset-pass QA: none observed.
+
+## Remaining Manual Checks
+
+- Full non-debug 10-15 minute campaign clear.
+- Touch-only pass on a physical phone.
+- Gamepad-only pass with a connected controller.
