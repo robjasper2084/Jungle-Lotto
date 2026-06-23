@@ -42,10 +42,6 @@ Create a complete 2D flying drone sprite strip. Original compact black drone wit
 
 Create a complete 2D side-view shield unit sprite strip. Original shadow-tech guard carrying a violet translucent circuit shield and short blade. One horizontal strip with exactly 8 frames: walk, brace, shield block, stagger, recover, dash start, dash, dash end. Facing left, bottom-aligned, same proportions. Bright pure chroma green background #00ff00, no text, no labels, no scenery.
 
-## Higgsfield Enemy Motion Sheet
-
-Production enemy sprite motion sheet for a 2D browser run-and-gun game called LottoMind Vault Run, transparent background, 16:9 wide canvas. No hero, no mascot, no main character. Create exactly 12 isolated enemy sprites arranged in a clean 3 rows by 4 columns grid, black graphite armor with gold circuit trim, violet neon accents, amber visors, pink energy effects, matching a neon jungle cyber-vault side-scroller screenshot. Row 1 hover drone animation frames: idle hover, rotor blur, firing downward beam, hurt flash. Row 2 crawler enemy frames: crawl step A, crawl step B, leap attack, destroyed burst. Row 3 shield guard and turret frames: shield guard march, shield guard block with purple energy shield, turret charge glow, turret firing barrel flash. Bottom aligned inside each cell, same scale within each enemy type, crisp cutout sprites, polished 3D toy-render depth, readable at small side-scroller scale. No scenery, no floor, no UI, no text, no watermark.
-
 ## Signal Warden Boss Sheet
 
 Create a large 2D side-view boss sprite sheet for an original Signal Warden vault guardian. Black and gold cyber armor, purple energy core, no resemblance to Contra bosses. 4 rows by 4 columns, 16 frames total: idle, beam charge, sweep beam, summon drones, shield dash, hurt. Consistent scale, bottom-aligned in cells, transparent style or chroma green #00ff00 background, no labels, no scenery.
@@ -62,14 +58,7 @@ Create a modular 2D platform tile strip for a cyber-jungle vault floor. 8 tiles 
 
 Create a 4x4 sprite sheet of original LottoMind vault props and pickups: heart health pickup, vault key chip, combo gem, power core, checkpoint beacon, locked vault crate, small terminal, signal antenna, broken cable, vine-covered circuit block. Center each prop in a 256x256 cell, transparent style or chroma green #00ff00, no readable text.
 
-## Higgsfield Mission FX And Collectibles Sheet
-
-Production mission FX and collectible sprite sheet for a 2D browser run-and-gun game called LottoMind Vault Run, transparent background, 16:9 wide canvas. No hero, no mascot, no player character. Create exactly 20 isolated game sprites arranged in a clean 4 rows by 5 columns grid, matching a neon jungle cyber-vault screenshot: black graphite, gold circuit trim, violet neon, hot pink heart energy, cyan highlights. Row 1: five pink heart bullet frames from small spark to full glowing heart projectile with trail. Row 2: five hit spark and impact frames, violet/gold shield crack, pink burst, cyan shard pop. Row 3: five mission collectibles: ruby shard, gold vault keycard, purple overdrive lightning coin, medkit heart capsule, boss phase token. Row 4: five mission devices: glowing vault lock tile, small terminal crate, extraction portal ring, M brand circuit panel, checkpoint beacon. Centered in each cell, same scale family, crisp polished 3D game sprite cutouts, readable at small side-scroller scale. No scenery, no floor, no UI frame, no words, no watermark.
-
-## Higgsfield Background Props Sheet
-
-Production modular background and platform prop sprite sheet for a 2D browser run-and-gun game called LottoMind Vault Run, transparent background, 16:9 wide canvas. No hero, no mascot, no player character, no enemies. Create exactly 16 isolated side-scroller environment assets arranged in a clean 4 rows by 4 columns grid, matching a neon jungle cyber-vault screenshot: black graphite metal, gold circuit lines, violet neon glow, hot pink heart energy, vines and jungle overgrowth, polished 3D depth. Include: 4 modular platform chunks with beveled gold circuit edges, 3 hanging vine clusters, 2 ladder/door pieces, 2 glowing M-branded circuit wall panels, 2 terminal crates, 1 vault lock block, 1 small mushroom/foliage neon cluster, 1 foreground plant cluster. Bottom aligned inside each cell where appropriate, transparent cutout sprites, game-ready, readable at side-scroller scale. No floor spanning the whole image, no full background, no text, no UI, no watermark.
-
 ## HUD Portrait And Icons
 
 Create a transparent icon sheet for code-native HUD use. Include mascot portrait, HP heart, combo gem, vault key, shield pulse, pierce shot, spread shot, pause glyph. 4x2 grid, each icon centered in 256x256 cell, cyber gold/purple style, no readable text except abstract "LM" mark if needed.
+

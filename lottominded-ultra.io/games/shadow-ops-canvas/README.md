@@ -1,23 +1,24 @@
 # LottoMind Vault Run
 
-A static HTML5 Canvas run-and-gun campaign with original LottoMind black/gold/purple arcade art. The player clears three vault sectors, collects each level's three keys, defeats a unique boss, and escapes through the final heartcore portal.
+A static HTML5 Canvas run-and-gun game inspired by classic side-scrolling arcade structure, using original LottoMind art direction and local generated assets. The player collects three vault keys, opens the gate, fights the Vault Sentinel, and escapes through the extraction portal.
 
-## Campaign Loop
+## Play Loop
 
-1. Start at the title screen.
-2. Play Level 1: Neon Jungle Vault, collect keys, and defeat Canopy Drone Queen.
-3. Transition to Level 2: Golden Circuit Foundry, time conveyors/lasers, and defeat Jackpot Forge Titan.
-4. Transition to Level 3: Astral Vault Core, cross floating platforms, and defeat Midas Heartcore Overlord.
-5. View final results with score, time, kills, accuracy, damage, max combo, rank, best score, fastest clear, and saved unlock progress.
+1. Start a run from the title screen.
+2. Move, jump, crouch, aim, dash, and fire heart rounds through the jungle vault.
+3. Collect shards for score and overdrive charge.
+4. Find all 3 vault keys to open the gate.
+5. Enter the chamber, defeat the multi-phase Vault Sentinel, then reach the portal.
+6. Review score, time, kills, accuracy, damage taken, max combo, rank, best score, and fastest clear.
 
 ## Controls
 
 - Move: `A/D` or arrow keys
-- Jump: `W`, `Space`, or Up
-- Crouch: `S` or Down
+- Jump: `Space`
+- Aim: `W/S` or up/down arrows
 - Fire: `J` or `Z`
 - Dash: `K`, `X`, or Shift
-- Overdrive: `E`, `C`, `Q`, `L`, or `O`
+- Overdrive: `L` or `O`
 - Pause: `P` or Escape
 - Start/confirm: Enter
 
@@ -29,19 +30,19 @@ Serve the parent website folder and open:
 
 `http://127.0.0.1:8150/games/shadow-ops-canvas/index.html?bg=soul-location-1`
 
-Add `&debug=1` to show QA jump buttons for keys, Level 2, Level 3, boss, defeat, and victory.
+The game has no bundler, backend, or external runtime requirement.
 
 ## Files
 
 - `index.html`: semantic game shell, overlays, HUD, touch controls
 - `style.css`: responsive game UI styling
-- `src/game.js`: fixed-timestep simulation, data-driven levels, boss states, rendering, audio, saves
-- `design/assets.csv`: Higgsfield asset contract
-- `assets/levels/`: Nano Banana 2 backgrounds and platform tile source sheets
-- `assets/bosses/`: Nano Banana 2 boss cutouts
-- `assets/ui/`: Nano Banana 2 level frame, boss frame, victory badge
-- `docs/higgsfield-generated-assets.json`: generated job IDs and local file inventory
+- `src/game.js`: fixed-timestep simulation, input, progression, rendering, audio, saves
+- `assets/`: local generated hero, mascot, and Soul Location background images
+- `docs/`: earlier concept and generated-asset metadata
+- `ASSET_MANIFEST.md`: active runtime asset inventory
+- `ASSET_PROMPTS.md`: prompts for future sprite/background generation
+- `QA_CHECKLIST.md`: manual and browser QA checklist
 
 ## Save Data
 
-Best score, fastest final victory clear, highest unlocked level, and settings are stored in `localStorage` under versioned LottoMind keys.
+Best score, fastest victory clear, and settings are stored in `localStorage` under versioned LottoMind keys.

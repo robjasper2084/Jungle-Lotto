@@ -25,9 +25,8 @@ The existing `shadow-ops-canvas` slice already has:
 - Title, play, win, and loss states.
 - Side-view movement, jump, crouch, fire, and slash actions.
 - Player projectile, enemy projectile, hit bursts, pickups, score, combo, and HP.
-- Generated LottoMind mascot player atlas, three Higgsfield level backgrounds, three boss sprites, and four standard enemy sprites.
-- Cyber-jungle, foundry, and astral vault stages from the current Lottomind game universe.
-- Authored reinforcement waves that trigger mid-level pressure without replacing the current hero art.
+- Generated LottoMind mascot player atlas and Kalyx enemy atlas.
+- Forest/cyber background from the existing Lottomind game universe.
 
 ## Core Loop
 
@@ -120,7 +119,7 @@ Quality gates:
 3. Design doc and asset prompt manifest: done.
 4. Replace remaining code-drawn FX/pickups with generated sheets.
 5. Add platform collision and short authored level chunks.
-6. Add authored encounter director: done. Enemy animation sheets remain a future art pass.
+6. Add enemy families and encounter director.
 7. Add checkpoint/vault gate objective.
 8. Add mobile layout polish and pause/settings.
 9. Add score summary and restart flow.

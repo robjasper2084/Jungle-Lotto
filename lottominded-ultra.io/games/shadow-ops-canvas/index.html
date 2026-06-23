@@ -3,17 +3,17 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <title>LottoMind Number Run | Shadow Ops</title>
+    <title>LottoMind Vault Run | Shadow Ops</title>
     <link rel="icon" href="data:," />
-    <link rel="stylesheet" href="./style.css?v=number-run-trailer-lottery-2" />
+    <link rel="stylesheet" href="./style.css?v=three-levels-bosses-1" />
   </head>
   <body>
-    <main class="game-shell" aria-label="LottoMind Number Run browser game">
-      <canvas id="game" width="1280" height="720" aria-label="LottoMind Number Run playfield"></canvas>
+    <main class="game-shell" aria-label="LottoMind Vault Run browser game">
+      <canvas id="game" width="1280" height="720" aria-label="LottoMind Vault Run playfield"></canvas>
 
       <section id="loadingScreen" class="screen screen--loading">
         <div class="screen-panel">
-          <p class="small-label">LottoMind Number Run</p>
+          <p class="small-label">LottoMind Vault Run</p>
           <h1>Loading Shadow Ops</h1>
           <div class="load-track" aria-label="Loading progress">
             <span id="loadBar"></span>
@@ -23,32 +23,15 @@
       </section>
 
       <section id="titleScreen" class="screen screen--title is-hidden">
-        <video
-          id="titleTrailer"
-          class="title-trailer"
-          src="./assets/video/lottomind-number-run-what-up-doe-trailer.mp4"
-          muted
-          loop
-          playsinline
-          preload="metadata"
-          aria-hidden="true"
-        ></video>
-        <div class="title-cinema" aria-hidden="true">
-          <span class="cinema-line cinema-line--one"></span>
-          <span class="cinema-line cinema-line--two"></span>
-          <span class="cinema-line cinema-line--three"></span>
-          <div class="mascot-greeting">What up doe.</div>
-        </div>
         <div class="title-copy">
           <p class="small-label">Shadow Ops</p>
-          <h1>LottoMind Number Run</h1>
-          <p class="screen-copy">Break three number vaults, claim each key set, defeat every boss, and turn your run stats into a final lottery drop.</p>
+          <h1>LottoMind Vault Run</h1>
+          <p class="screen-copy">Break three vault worlds, claim each key set, defeat every boss, and escape through the final heartcore portal.</p>
           <div class="button-row">
-            <button class="primary" data-action="start-solo">Solo Run</button>
-            <button data-action="start-coop">2 Player Co-op</button>
+            <button class="primary" data-action="start">Start Run</button>
             <button data-action="settings">Settings</button>
           </div>
-          <p class="control-strip">P1: WASD/arrows, Space, J/K/L. P2: T/F/G/H, R, Y/U/I or numpad.</p>
+          <p class="control-strip">Move A/D or arrows. Jump Space. Aim W/S. Fire J/Z. Dash K/X. Overdrive L.</p>
         </div>
       </section>
 
@@ -106,24 +89,6 @@
             <span>Rank <strong id="resultRank">C</strong></span>
             <span>Best <strong id="resultBest">0</strong></span>
           </div>
-          <div class="lottery-panel" aria-label="Generated lottery numbers">
-            <div class="lottery-panel__header">
-              <span>Stat-Synced Lottery Drop</span>
-              <strong id="resultLotterySeed">SEED 0000</strong>
-            </div>
-            <div class="lottery-row">
-              <span>Pick 3</span>
-              <strong id="resultPick3">000</strong>
-            </div>
-            <div class="lottery-row">
-              <span>Pick 4</span>
-              <strong id="resultPick4">0000</strong>
-            </div>
-            <div class="lottery-row lottery-row--wide">
-              <span>Lotto 6</span>
-              <strong id="resultLotto6">00 00 00 00 00 00</strong>
-            </div>
-          </div>
           <div class="button-row">
             <button class="primary" data-action="restart">Replay</button>
             <button data-action="title">Title</button>
@@ -135,7 +100,7 @@
         <div class="hud-left">
           <img src="./assets/hero/lottomind-hero-main.png" alt="" class="portrait" />
           <div>
-            <div id="hudTitle" class="hud-title">LOTTOMIND NUMBER RUN</div>
+            <div id="hudTitle" class="hud-title">LOTTOMIND VAULT RUN</div>
             <div id="hpHearts" class="hearts" aria-label="Health"></div>
             <div class="lives">Lives <span id="livesText">3</span></div>
           </div>
@@ -150,7 +115,7 @@
         <div class="hud-right">
           <div class="meter-label">Overdrive</div>
           <div class="meter"><span id="overdriveBar"></span></div>
-          <button id="pauseButton" class="icon-button pause-icon" aria-label="Pause" data-action="pause"><span aria-hidden="true"></span></button>
+          <button id="pauseButton" class="icon-button" aria-label="Pause" data-action="pause">II</button>
         </div>
       </div>
 
@@ -173,10 +138,9 @@
           <button data-touch="fire" aria-label="Fire">FIRE</button>
           <button data-touch="dash" aria-label="Dash">DASH</button>
           <button data-touch="overdrive" aria-label="Overdrive">OD</button>
-          <button class="pause-icon" data-touch="pause" aria-label="Pause"><span aria-hidden="true"></span></button>
         </div>
       </div>
     </main>
-    <script src="./src/game.js?v=number-run-trailer-lottery-2"></script>
+    <script src="./src/game.js?v=three-levels-bosses-1"></script>
   </body>
 </html>

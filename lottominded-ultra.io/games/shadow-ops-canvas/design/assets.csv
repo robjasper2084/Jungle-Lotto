@@ -11,11 +11,3 @@ midas_heartcore_overlord,final boss sprite,image,"Giant crowned black-and-gold A
 level_card_frame,title UI frame,image,"Gold sci-fi frame for level intro title cards","16:9 png","circuit-trim HUD matching concept screenshot",generate
 boss_health_frame,boss HUD frame,image,"Wide gold and purple boss health bar frame","16:9 png","circuit-trim HUD matching concept screenshot",generate
 final_victory_badge,results badge,image,"Original Lottomind vault victory badge for final results","1:1 png","circuit-trim HUD matching concept screenshot",generate
-enemy_crawler,enemy sprite,image,"Low cyber crawler with black armor, gold circuits, violet trim and amber visor","1:1 png cutout","toy-premium enemy silhouette; transparent/isolated asset",generate
-enemy_drone,enemy sprite,image,"Hover drone with round black shell, twin violet rotors, gold circuits and amber visor","1:1 png cutout","toy-premium enemy silhouette; transparent/isolated asset",generate
-enemy_shield_guard,enemy sprite,image,"Cyber shield guard with black/gold armor and violet energy shield","1:1 png cutout","toy-premium enemy silhouette; transparent/isolated asset",generate
-enemy_turret,enemy sprite,image,"Mounted turret cannon module with black armor, gold circuits and violet core","1:1 png cutout","toy-premium enemy silhouette; transparent/isolated asset",generate
-mission_collectibles_sheet,mission sprite sheet,image,"Animated shards, keycards, health hearts, and overdrive medallions with LottoMind M accents","8x4 png sheet","black/gold/purple branded mission motion",local
-extraction_portal_sheet,mission sprite sheet,image,"Animated gold, cyan, and magenta extraction portal ring with LottoMind M core","8x1 png sheet","black/gold/purple branded mission motion",local
-vault_gate_sheet,mission sprite sheet,image,"Animated branded vault gate column with gold circuitry and M lock plate","4x1 png sheet","black/gold/purple branded mission motion",local
-branded_background_props_sheet,background prop sheet,image,"M medallions, terminals, relays, plaques, and signal cores placed behind platforms","3x2 png sheet","black/gold/purple branded background fill",local
