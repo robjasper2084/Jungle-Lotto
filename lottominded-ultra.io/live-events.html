@@ -10,7 +10,7 @@
     <title>LOTTOMINDED ULTRA | Live Events</title>
     <meta name="theme-color" content="#03050a" />
     <link rel="icon" href="./assets/brand/lm-orb-mark.webp" type="image/webp" />
-    <link rel="stylesheet" href="./styles.css?v=mascot-chase-run-1" />
+    <link rel="stylesheet" href="./styles.css?v=visual-polish-batch-2" />
     <script>
       try {
         if (sessionStorage.getItem("lmTransitionArriving") === "yes") {
@@ -19,7 +19,7 @@
       } catch (error) {}
     </script>
     <link rel="stylesheet" href="./assets/css/lm-page-transition.css?v=compositor-pass-1" />
-    <link rel="stylesheet" href="./assets/live-events/css/live-events-redesign.css?v=live-player-fixed-1" />
+    <link rel="stylesheet" href="./assets/live-events/css/live-events-redesign.css?v=static-wars-hero-controls-1" />
   </head>
   <body class="live-events-page lm-live-page">
     <div class="lm-page-transition" data-lm-page-transition aria-hidden="true">
@@ -44,23 +44,38 @@
     </aside>
     <aside class="shadow-ops-modal" data-shadow-ops-modal aria-hidden="true">
       <div class="shadow-ops-panel" role="dialog" aria-modal="true" aria-labelledby="shadowOpsTitle">
-        <button class="shadow-ops-close" type="button" data-shadow-ops-close aria-label="Close Shadow Ops">X</button>
-        <div class="shadow-ops-copy">
-          <p class="eyebrow">Game Studio Event Drop</p>
-          <h2 id="shadowOpsTitle">Shadow Ops</h2>
-          <p>Live tactical stealth preview for the featured stream room. Watch the signal, choose the route, and keep the mission clean.</p>
+        <button class="shadow-ops-close" type="button" data-shadow-ops-close aria-label="Close 2084 Static Wars">X</button>
+        <div class="shadow-ops-brief">
+          <div class="shadow-ops-copy">
+            <p class="eyebrow">Arcade Event Drop</p>
+            <h2 id="shadowOpsTitle">2084 Static Wars</h2>
+            <p>Live tactical game feed for the featured stream room. Drop into the neon grid, hold the signal, and keep the mission clean.</p>
+          </div>
           <div class="shadow-ops-actions">
-            <button class="live-btn primary" type="button" data-shadow-ops-start>Start Briefing</button>
+            <button class="live-btn primary" type="button" data-shadow-ops-start>Launch Game</button>
             <button class="live-btn" type="button" data-shadow-ops-close>Back to Stream</button>
           </div>
         </div>
-        <div class="shadow-ops-hud" aria-hidden="true">
-          <div class="shadow-ops-radar"><i></i><i></i><i></i><span></span></div>
-          <ul>
-            <li><b>Mission</b><span>Vault perimeter</span></li>
-            <li><b>Status</b><span data-shadow-ops-status>Standby</span></li>
-            <li><b>Signal</b><span>84%</span></li>
-          </ul>
+        <div class="shadow-ops-gamebay">
+          <div class="shadow-ops-gamebar" aria-hidden="true">
+            <span>LM-2084 uplink</span>
+            <b data-shadow-ops-status>Standby</b>
+            <i>Signal 84%</i>
+          </div>
+          <div class="shadow-ops-frame-shell">
+            <iframe
+              data-shadow-ops-frame
+              data-src="http://127.0.0.1:8146/index.html"
+              title="Playable 2084 Static Wars game"
+              loading="lazy"
+              allow="autoplay; fullscreen; gamepad"
+            ></iframe>
+          </div>
+          <div class="shadow-ops-hud" aria-hidden="true">
+            <span>Quantum route locked</span>
+            <span>Arcade telemetry live</span>
+            <span>Event drop armed</span>
+          </div>
         </div>
       </div>
     </aside>
@@ -143,7 +158,7 @@
             <a class="live-btn" href="#replays">Replays</a>
             <a class="live-btn" href="./beat2lotto-plus.html#beat2lotto">Beat2Lotto+</a>
             <a class="live-btn" href="./lottomind-stem-studio/index.html">Launch Studio</a>
-            <button class="live-btn shadow-ops-trigger" type="button" data-shadow-ops-open>Shadow Ops</button>
+            <button class="live-btn shadow-ops-trigger" type="button" data-shadow-ops-open>2084 Static Wars</button>
           </div>
         </div>
         <article class="lm-stage-card">
@@ -331,8 +346,8 @@
 
     <script src="./assets/js/lm-page-transition-audio.js?v=verified-transitions-1" defer></script>
     <script src="./assets/js/lm-page-transition.js?v=transition-hotfix-2" defer></script>
-    <script src="./site.js?v=mascot-chase-run-1" defer></script>
-    <script src="./assets/live-events/js/live-events-redesign.js?v=shadow-ops-1" defer></script>
+    <script src="./site.js?v=visual-polish-batch-2" defer></script>
+    <script src="./assets/live-events/js/live-events-redesign.js?v=static-wars-popup-1" defer></script>
     <script src="./assets/live-events/js/live-events-console.js?v=live-console-1" defer></script>
   </body>
 </html>

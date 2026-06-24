@@ -24,6 +24,7 @@
   const shadowOpsCloseButtons = shadowOpsModal?.querySelectorAll("[data-shadow-ops-close]");
   const shadowOpsStart = shadowOpsModal?.querySelector("[data-shadow-ops-start]");
   const shadowOpsStatus = shadowOpsModal?.querySelector("[data-shadow-ops-status]");
+  const shadowOpsFrame = shadowOpsModal?.querySelector("[data-shadow-ops-frame]");
   const twitchLiveCard = document.querySelector("#twitch-live");
   const liveBallpassCanvas = document.querySelector("[data-live-ballpass-bg]");
   const previewIframes = Array.from(document.querySelectorAll(".event-card .video-thumb iframe"));
@@ -352,15 +353,32 @@
     shadowOpsModal.classList.add("is-open");
     shadowOpsModal.setAttribute("aria-hidden", "false");
     document.body.classList.add("has-shadow-ops-modal");
-    if (shadowOpsStatus) shadowOpsStatus.textContent = "Standby";
+    loadShadowOpsGame();
+    if (shadowOpsStatus) shadowOpsStatus.textContent = "Game feed live";
     window.setTimeout(() => shadowOpsModal.querySelector("button")?.focus(), 20);
   }
 
   function closeShadowOpsModal() {
     if (!shadowOpsModal) return;
     shadowOpsModal.classList.remove("is-open");
+    shadowOpsModal.classList.remove("is-briefing");
     shadowOpsModal.setAttribute("aria-hidden", "true");
     document.body.classList.remove("has-shadow-ops-modal");
+    unloadShadowOpsGame();
+    if (shadowOpsStatus) shadowOpsStatus.textContent = "Standby";
+  }
+
+  function loadShadowOpsGame() {
+    if (!shadowOpsFrame) return;
+    const gameSource = shadowOpsFrame.dataset.src;
+    if (gameSource && shadowOpsFrame.getAttribute("src") !== gameSource) {
+      shadowOpsFrame.setAttribute("src", gameSource);
+    }
+  }
+
+  function unloadShadowOpsGame() {
+    if (!shadowOpsFrame) return;
+    shadowOpsFrame.removeAttribute("src");
   }
 
   function scheduleShadowOpsModal() {
@@ -612,8 +630,11 @@
     button.addEventListener("click", closeShadowOpsModal);
   });
   shadowOpsStart?.addEventListener("click", () => {
-    if (shadowOpsStatus) shadowOpsStatus.textContent = "Briefing active";
+    loadShadowOpsGame();
+    if (shadowOpsStatus) shadowOpsStatus.textContent = "Pilot control";
     shadowOpsModal?.classList.add("is-briefing");
+    shadowOpsFrame?.focus();
+    shadowOpsFrame?.contentWindow?.focus?.();
     playUiTone(5);
   });
   shadowOpsModal?.addEventListener("click", (event) => {
