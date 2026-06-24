@@ -479,15 +479,134 @@ body.lm-live-page::before {
 }
 
 .shadow-ops-copy h2 {
+  position: relative;
+  isolation: isolate;
   margin: 0;
-  color: #f5fbff;
-  max-width: 8ch;
-  font-size: clamp(2.55rem, 5vw, 5.65rem);
-  line-height: 0.86;
+  max-width: 9ch;
+  color: transparent;
+  background:
+    linear-gradient(180deg, #ffffff 0 18%, #a8f6ff 38%, #43ffe4 56%, #f7faff 72%, #8f7cff 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  font-family: "Orbitron", "Audiowide", "Rajdhani", var(--lm-live-display, var(--display-font)), system-ui, sans-serif;
+  font-size: 5.15rem;
+  font-weight: 1000;
+  letter-spacing: 0.018em;
+  line-height: 0.82;
   text-transform: uppercase;
   text-shadow:
-    0 0 24px rgba(41, 247, 255, 0.46),
-    0 0 46px rgba(94, 255, 157, 0.16);
+    0 0 10px rgba(41, 247, 255, 0.44),
+    0 0 28px rgba(41, 247, 255, 0.28),
+    0 0 52px rgba(255, 79, 216, 0.14);
+  cursor: default;
+  transform-origin: 50% 58%;
+  transition:
+    filter 180ms ease,
+    letter-spacing 180ms ease,
+    transform 180ms ease;
+}
+
+.shadow-ops-copy h2::before,
+.shadow-ops-copy h2::after {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  content: attr(data-title);
+  color: #f5fbff;
+  pointer-events: none;
+  text-transform: uppercase;
+  opacity: 0;
+}
+
+.shadow-ops-copy h2::before {
+  color: rgba(41, 247, 255, 0.76);
+  text-shadow: 0 0 18px rgba(41, 247, 255, 0.74);
+  clip-path: polygon(0 5%, 100% 5%, 100% 33%, 0 41%);
+  transform: translate(-0.08em, -0.02em);
+}
+
+.shadow-ops-copy h2::after {
+  color: rgba(255, 79, 216, 0.72);
+  text-shadow: 0 0 18px rgba(255, 79, 216, 0.7);
+  clip-path: polygon(0 56%, 100% 46%, 100% 100%, 0 100%);
+  transform: translate(0.08em, 0.025em);
+}
+
+.shadow-ops-copy h2:is(:hover, :focus, :focus-visible),
+.shadow-ops-copy:is(:hover, :focus-within) h2 {
+  outline: none;
+  filter: saturate(1.36) brightness(1.12);
+  letter-spacing: 0.045em;
+  animation: staticWarsTitleSurge 900ms cubic-bezier(0.18, 0.86, 0.24, 1) both;
+}
+
+.shadow-ops-copy h2:is(:hover, :focus, :focus-visible)::before,
+.shadow-ops-copy:is(:hover, :focus-within) h2::before {
+  animation: staticWarsTitleGlitchA 900ms steps(2, end) both;
+}
+
+.shadow-ops-copy h2:is(:hover, :focus, :focus-visible)::after,
+.shadow-ops-copy:is(:hover, :focus-within) h2::after {
+  animation: staticWarsTitleGlitchB 900ms steps(2, end) both;
+}
+
+@keyframes staticWarsTitleSurge {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+
+  32% {
+    transform: translate3d(0, -0.035em, 0) scale(1.045);
+  }
+
+  48% {
+    transform: translate3d(0.025em, 0.015em, 0) skewX(-2deg) scale(1.03);
+  }
+
+  64% {
+    transform: translate3d(-0.018em, 0, 0) skewX(1.5deg) scale(1.055);
+  }
+}
+
+@keyframes staticWarsTitleGlitchA {
+  0%,
+  18%,
+  100% {
+    opacity: 0;
+  }
+
+  24%,
+  48%,
+  72% {
+    opacity: 0.86;
+  }
+
+  34%,
+  58% {
+    opacity: 0.32;
+    transform: translate(0.1em, -0.035em);
+  }
+}
+
+@keyframes staticWarsTitleGlitchB {
+  0%,
+  12%,
+  100% {
+    opacity: 0;
+  }
+
+  28%,
+  52%,
+  78% {
+    opacity: 0.78;
+  }
+
+  40%,
+  66% {
+    opacity: 0.28;
+    transform: translate(-0.09em, 0.035em);
+  }
 }
 
 .shadow-ops-copy p {
@@ -1978,7 +2097,7 @@ body.lm-live-page.is-twitch-focused .video-mini-thumb video {
   }
   .shadow-ops-copy h2 {
     max-width: none;
-    font-size: clamp(2.4rem, 10vw, 4.6rem);
+    font-size: 3.45rem;
   }
   .shadow-ops-gamebay {
     min-height: min(58vw, 420px);
@@ -1994,6 +2113,9 @@ body.lm-live-page.is-twitch-focused .video-mini-thumb video {
 @media (prefers-reduced-motion: reduce) {
   body.lm-live-page::before,
   .lm-output-meter i,
+  .shadow-ops-copy h2,
+  .shadow-ops-copy h2::before,
+  .shadow-ops-copy h2::after,
   .shadow-ops-radar::before,
   .shadow-ops-panel::after,
   .hero-actions::before {

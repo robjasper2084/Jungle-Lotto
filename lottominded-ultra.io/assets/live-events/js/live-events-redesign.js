@@ -38,6 +38,8 @@
   let liveAudioData = null;
   let liveAudioSource = null;
   let liveWaveFrame = null;
+  let shadowOpsShouldResumeLiveAudio = false;
+  let shadowOpsLiveAudioVolume = 0.56;
   const chatBots = [
     {
       name: "DetroitPulse",
@@ -304,6 +306,40 @@
     updateLivePlayer();
   }
 
+  function pauseLiveAudioForShadowOps() {
+    if (!livePlayerAudio || livePlayerAudio.paused || livePlayerAudio.ended) return;
+    shadowOpsShouldResumeLiveAudio = true;
+    shadowOpsLiveAudioVolume = livePlayerAudio.volume || 0.56;
+    livePlayerAudio.pause();
+    resetLiveWave();
+    updateLivePlayer();
+    livePlayer?.setAttribute("data-shadow-ops-audio", "paused");
+  }
+
+  async function resumeLiveAudioAfterShadowOps() {
+    if (!livePlayerAudio) return;
+    if (!shadowOpsShouldResumeLiveAudio) {
+      livePlayer?.removeAttribute("data-shadow-ops-audio");
+      return;
+    }
+
+    shadowOpsShouldResumeLiveAudio = false;
+    livePlayer?.removeAttribute("data-shadow-ops-audio");
+    if (!livePlayerAudio.paused && !livePlayerAudio.ended) return;
+
+    const restored = await startLivePlayer({
+      restart: livePlayerAudio.ended,
+      volume: shadowOpsLiveAudioVolume,
+      timeout: 1200
+    });
+    if (!restored) showStreamStartupPrompt("Tap Start Music to bring the stream audio back.");
+  }
+
+  function handleShadowOpsGameEngaged() {
+    if (!shadowOpsModal?.classList.contains("is-open")) return;
+    pauseLiveAudioForShadowOps();
+  }
+
   function closeStreamStartupPrompt() {
     streamStartup?.classList.add("is-hidden");
     streamStartup?.setAttribute("aria-hidden", "true");
@@ -365,6 +401,7 @@
     shadowOpsModal.setAttribute("aria-hidden", "true");
     document.body.classList.remove("has-shadow-ops-modal");
     unloadShadowOpsGame();
+    resumeLiveAudioAfterShadowOps();
     if (shadowOpsStatus) shadowOpsStatus.textContent = "Standby";
   }
 
@@ -630,12 +667,20 @@
     button.addEventListener("click", closeShadowOpsModal);
   });
   shadowOpsStart?.addEventListener("click", () => {
+    pauseLiveAudioForShadowOps();
     loadShadowOpsGame();
     if (shadowOpsStatus) shadowOpsStatus.textContent = "Pilot control";
     shadowOpsModal?.classList.add("is-briefing");
     shadowOpsFrame?.focus();
     shadowOpsFrame?.contentWindow?.focus?.();
     playUiTone(5);
+  });
+  shadowOpsFrame?.addEventListener("pointerdown", handleShadowOpsGameEngaged);
+  shadowOpsFrame?.addEventListener("focus", handleShadowOpsGameEngaged);
+  window.addEventListener("blur", () => {
+    window.setTimeout(() => {
+      if (document.activeElement === shadowOpsFrame) handleShadowOpsGameEngaged();
+    }, 0);
   });
   shadowOpsModal?.addEventListener("click", (event) => {
     if (event.target === shadowOpsModal) closeShadowOpsModal();
