@@ -11155,22 +11155,26 @@ body.vault-gateway-open {
 
 @media (max-width: 1180px) {
   .home-page.has-sphere-header .home-sphere-header {
-    grid-template-columns: 1fr !important;
-    grid-template-areas:
-      "brand"
-      "nav"
-      "actions" !important;
-    row-gap: 0.8rem !important;
+    grid-template-columns: minmax(180px, auto) minmax(0, 1fr) auto !important;
+    grid-template-areas: "brand nav actions" !important;
+    column-gap: clamp(10px, 1.4vw, 18px) !important;
+    row-gap: 0.45rem !important;
   }
 
-  .home-page.has-sphere-header .home-sphere-header .site-header-main,
-  .home-page.has-sphere-header .home-sphere-header nav,
-  .home-page.has-sphere-header .home-sphere-header .direct-launch {
-    justify-self: center !important;
+  .home-page.has-sphere-header .home-sphere-header .site-header-main {
+    justify-self: start !important;
   }
 
   .home-page.has-sphere-header .home-sphere-header nav {
-    width: min(calc(100vw - 2rem), 58rem) !important;
+    justify-self: center !important;
+  }
+
+  .home-page.has-sphere-header .home-sphere-header .direct-launch {
+    justify-self: end !important;
+  }
+
+  .home-page.has-sphere-header .home-sphere-header nav {
+    width: min(100%, 58rem) !important;
     overflow: visible !important;
   }
 }
@@ -12257,6 +12261,72 @@ body.beat2lotto-current-page #player.sphere-orb-live-player.is-floatable.is-drag
 
 body.features-cinematic-page #player.feature-live-player.sphere-orb-live-player {
   --player-orb-size: clamp(216px, 27.2vw, 272px);
+  background:
+    radial-gradient(circle at 22% 18%, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.26) 10%, transparent 22%),
+    radial-gradient(circle at 28% 36%, rgba(94, 255, 157, 0.66), transparent 30%),
+    radial-gradient(circle at 72% 32%, rgba(255, 79, 216, 0.58), transparent 32%),
+    radial-gradient(circle at 48% 78%, rgba(41, 247, 255, 0.54), transparent 35%),
+    radial-gradient(circle at 68% 72%, rgba(255, 224, 113, 0.4), transparent 28%),
+    linear-gradient(145deg, rgba(4, 52, 66, 0.98), rgba(32, 13, 61, 0.98)) !important;
+  background-size: 112% 112%, 168% 168%, 172% 172%, 160% 160%, 150% 150%, 100% 100% !important;
+  animation: featurePlayerLavaFlow 8.5s ease-in-out infinite alternate !important;
+}
+
+body.features-cinematic-page #player.feature-live-player.sphere-orb-live-player::before {
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  background:
+    radial-gradient(circle at 22% 28%, rgba(94, 255, 157, 0.38), transparent 22%),
+    radial-gradient(circle at 78% 36%, rgba(255, 79, 216, 0.32), transparent 25%),
+    radial-gradient(circle at 45% 76%, rgba(41, 247, 255, 0.34), transparent 28%),
+    conic-gradient(from 24deg, rgba(94, 255, 157, 0.18), rgba(41, 247, 255, 0.1), rgba(255, 79, 216, 0.18), rgba(255, 224, 113, 0.12), rgba(94, 255, 157, 0.18)) !important;
+  filter: blur(0.2px) saturate(1.25) !important;
+  mix-blend-mode: screen !important;
+  animation: featurePlayerLavaBlobs 7.8s ease-in-out infinite alternate !important;
+}
+
+body.features-cinematic-page #player.feature-live-player.sphere-orb-live-player::after {
+  animation: featurePlayerLavaNumber 10s ease-in-out infinite alternate !important;
+}
+
+@keyframes featurePlayerLavaFlow {
+  0% {
+    background-position: 0% 0%, 8% 18%, 88% 12%, 34% 90%, 76% 72%, 0 0;
+    filter: saturate(1.04) hue-rotate(0deg);
+  }
+  42% {
+    background-position: 12% 6%, 52% 26%, 54% 58%, 12% 62%, 42% 28%, 0 0;
+    filter: saturate(1.2) hue-rotate(10deg);
+  }
+  100% {
+    background-position: 4% 10%, 82% 64%, 22% 30%, 72% 40%, 18% 74%, 0 0;
+    filter: saturate(1.12) hue-rotate(-8deg);
+  }
+}
+
+@keyframes featurePlayerLavaBlobs {
+  0% {
+    transform: rotate(0deg) scale(1);
+    opacity: 0.78;
+  }
+  50% {
+    transform: rotate(18deg) scale(1.08);
+    opacity: 0.95;
+  }
+  100% {
+    transform: rotate(-14deg) scale(1.03);
+    opacity: 0.84;
+  }
+}
+
+@keyframes featurePlayerLavaNumber {
+  0% {
+    color: rgba(6, 20, 35, 0.24);
+    transform: translate3d(0, 0, 0) rotate(-2deg);
+  }
+  100% {
+    color: rgba(119, 94, 255, 0.24);
+    transform: translate3d(-6%, 5%, 0) rotate(4deg);
+  }
 }
 
 .spheres-player-ripples {
@@ -12324,6 +12394,12 @@ body.features-cinematic-page #player.feature-live-player.sphere-orb-live-player 
   .spheres-player-ripple {
     display: none;
   }
+
+  body.features-cinematic-page #player.feature-live-player.sphere-orb-live-player,
+  body.features-cinematic-page #player.feature-live-player.sphere-orb-live-player::before,
+  body.features-cinematic-page #player.feature-live-player.sphere-orb-live-player::after {
+    animation: none !important;
+  }
 }
 
 .lm-mascot-pointer {
@@ -12331,12 +12407,14 @@ body.features-cinematic-page #player.feature-live-player.sphere-orb-live-player 
   --lm-mascot-y: -160px;
   --lm-mascot-facing: 1;
   --lm-mascot-hotspot-y: 50%;
+  --lm-mascot-size-w: clamp(76px, 8vw, 112px);
+  --lm-mascot-size-h: clamp(100px, 11vw, 146px);
   position: fixed;
   left: 0;
   top: 0;
   z-index: 2147482500;
-  width: clamp(62px, 7.2vw, 96px);
-  height: clamp(82px, 10vw, 132px);
+  width: var(--lm-mascot-size-w);
+  height: var(--lm-mascot-size-h);
   pointer-events: none;
   opacity: 0;
   transform: translate3d(
@@ -12348,6 +12426,57 @@ body.features-cinematic-page #player.feature-live-player.sphere-orb-live-player 
   will-change: transform, opacity;
   contain: layout style;
   overflow: visible;
+}
+
+.lm-heart-pointer {
+  --lm-heart-x: -160px;
+  --lm-heart-y: -160px;
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 2147482600;
+  width: clamp(14px, 1.55vw, 20px);
+  height: clamp(14px, 1.55vw, 20px);
+  pointer-events: none;
+  opacity: 0;
+  transform: translate3d(
+      calc(var(--lm-heart-x) - 50%),
+      calc(var(--lm-heart-y) - 50%),
+      0
+    )
+    rotate(-45deg);
+  transform-origin: 50% 50%;
+  border-radius: 4px;
+  background: linear-gradient(135deg, #ff4ea3, #ffe36d 48%, #35f8ff);
+  box-shadow:
+    0 0 12px rgba(255, 78, 163, 0.72),
+    0 0 22px rgba(53, 248, 255, 0.4);
+  transition: opacity 120ms ease;
+  will-change: transform, opacity;
+}
+
+.lm-heart-pointer::before,
+.lm-heart-pointer::after {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  content: "";
+  border-radius: 50%;
+  background: inherit;
+}
+
+.lm-heart-pointer::before {
+  left: 0;
+  top: -50%;
+}
+
+.lm-heart-pointer::after {
+  left: 50%;
+  top: 0;
+}
+
+.lm-heart-pointer.is-visible {
+  opacity: 1;
 }
 
 .lm-mascot-pointer.is-visible {
@@ -12379,21 +12508,22 @@ body.features-cinematic-page #player.feature-live-player.sphere-orb-live-player 
 }
 
 .lm-mascot-pointer__sprite img {
-  inset: auto auto 0 50%;
-  width: auto;
-  height: 112%;
+  inset: 0;
+  width: 100%;
+  height: 100%;
   object-fit: contain;
-  transform: translateX(-50%) scaleX(var(--lm-mascot-facing));
+  object-position: 50% 100%;
+  transform: scaleX(var(--lm-mascot-facing));
   transform-origin: 50% 92%;
   transition: opacity 120ms ease, transform 120ms ease;
 }
 
 .lm-mascot-pointer.is-forward .lm-mascot-pointer__sprite img {
-  transform: translateX(-50%) translateY(2px) scaleX(var(--lm-mascot-facing));
+  transform: translateY(2px) scaleX(var(--lm-mascot-facing));
 }
 
 .lm-mascot-pointer.is-backward .lm-mascot-pointer__sprite img {
-  transform: translateX(-50%) translateY(-2px) scaleX(var(--lm-mascot-facing));
+  transform: translateY(-2px) scaleX(var(--lm-mascot-facing));
 }
 
 .lm-mascot-pointer.is-walking .lm-mascot-pointer__sprite {
@@ -12429,15 +12559,15 @@ body.features-cinematic-page #player.feature-live-player.sphere-orb-live-player 
 
 .lm-mascot-pointer.is-climbing-up .lm-mascot-pointer__sprite img,
 .lm-mascot-pointer.is-flying-up .lm-mascot-pointer__sprite img {
-  transform: translateX(-50%) translateY(-8px) rotate(-5deg) scaleX(var(--lm-mascot-facing));
+  transform: translateY(-8px) rotate(-5deg) scaleX(var(--lm-mascot-facing));
 }
 
 .lm-mascot-pointer.is-running-down .lm-mascot-pointer__sprite img {
-  transform: translateX(-50%) translateY(7px) scaleX(var(--lm-mascot-facing));
+  transform: translateY(7px) scaleX(var(--lm-mascot-facing));
 }
 
 .lm-mascot-pointer.is-falling-down .lm-mascot-pointer__sprite img {
-  transform: translateX(-50%) translateY(10px) rotate(7deg) scaleX(var(--lm-mascot-facing));
+  transform: translateY(10px) rotate(7deg) scaleX(var(--lm-mascot-facing));
 }
 
 .lm-mascot-pointer.is-climbing-up .lm-mascot-pointer__shadow,
@@ -12449,12 +12579,10 @@ body.features-cinematic-page #player.feature-live-player.sphere-orb-live-player 
 
 .lm-mascot-pointer.is-touch {
   --lm-mascot-hotspot-y: 50%;
-  width: clamp(76px, 12vw, 118px);
-  height: clamp(100px, 16vw, 154px);
 }
 
 .lm-mascot-pointer.is-falling-down {
-  --lm-mascot-hotspot-y: 62%;
+  --lm-mascot-hotspot-y: 50%;
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -12544,6 +12672,7 @@ body.features-cinematic-page #player.feature-live-player.sphere-orb-live-player 
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .lm-heart-pointer,
   .lm-mascot-pointer,
   .lm-mascot-pointer__sprite,
   .lm-mascot-pointer__shadow,

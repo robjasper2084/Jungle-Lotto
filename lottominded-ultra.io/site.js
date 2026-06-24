@@ -3585,22 +3585,47 @@ generateMiniNumberSignals();
 
 function setupMascotPointer() {
   if (!document.body || document.querySelector(".lm-mascot-pointer")) return;
+  document.documentElement.dataset.cursorMode = "mascot";
+  document.body.dataset.cursorMode = "mascot";
 
+  const frameUrl = (name) => new URL(`cursor/${name}`, SITE_ASSET_BASE_URL).href;
   const frames = {
-    front: new URL("cursor/lm-mascot-front.png", SITE_ASSET_BASE_URL).href,
-    stepA: new URL("cursor/lm-mascot-step-a.png", SITE_ASSET_BASE_URL).href,
-    stepB: new URL("cursor/lm-mascot-step-b.png", SITE_ASSET_BASE_URL).href,
-    run: new URL("cursor/lm-mascot-run.png", SITE_ASSET_BASE_URL).href,
-    runA: new URL("cursor/lm-mascot-run-a.png", SITE_ASSET_BASE_URL).href,
-    runB: new URL("cursor/lm-mascot-run-b.png", SITE_ASSET_BASE_URL).href,
-    runC: new URL("cursor/lm-mascot-run-c.png", SITE_ASSET_BASE_URL).href,
-    runD: new URL("cursor/lm-mascot-run-d.png", SITE_ASSET_BASE_URL).href,
-    climbUp: new URL("cursor/lm-mascot-climb-up.png", SITE_ASSET_BASE_URL).href,
-    climbDown: new URL("cursor/lm-mascot-climb-down.png", SITE_ASSET_BASE_URL).href,
-    fallA: new URL("cursor/lm-mascot-fall-a.png", SITE_ASSET_BASE_URL).href,
-    fallB: new URL("cursor/lm-mascot-fall-b.png", SITE_ASSET_BASE_URL).href,
-    fallC: new URL("cursor/lm-mascot-fall-c.png", SITE_ASSET_BASE_URL).href,
-    fallDown: new URL("cursor/lm-mascot-fall-down.png", SITE_ASSET_BASE_URL).href,
+    front: frameUrl("lm-mascot-front.png"),
+    stepA: frameUrl("lm-mascot-step-a.png"),
+    stepB: frameUrl("lm-mascot-step-b.png"),
+    run: frameUrl("lm-mascot-run.png"),
+    flyUp1: frameUrl("lm-mascot-fly-up-1.png"),
+    flyUp2: frameUrl("lm-mascot-fly-up-2.png"),
+    flyUp3: frameUrl("lm-mascot-fly-up-3.png"),
+    flyUp4: frameUrl("lm-mascot-fly-up-4.png"),
+    fallDown1: frameUrl("lm-mascot-fall-down-1.png"),
+    fallDown2: frameUrl("lm-mascot-fall-down-2.png"),
+    fallDown3: frameUrl("lm-mascot-fall-down-3.png"),
+    fallDown4: frameUrl("lm-mascot-fall-down-4.png"),
+    walkRight1: frameUrl("lm-mascot-walk-right-1.png"),
+    walkRight2: frameUrl("lm-mascot-walk-right-2.png"),
+    walkRight3: frameUrl("lm-mascot-walk-right-3.png"),
+    walkRight4: frameUrl("lm-mascot-walk-right-4.png"),
+    walkLeft1: frameUrl("lm-mascot-walk-left-1.png"),
+    walkLeft2: frameUrl("lm-mascot-walk-left-2.png"),
+    walkLeft3: frameUrl("lm-mascot-walk-left-3.png"),
+    walkLeft4: frameUrl("lm-mascot-walk-left-4.png"),
+    runRight1: frameUrl("lm-mascot-run-right-1.png"),
+    runRight2: frameUrl("lm-mascot-run-right-2.png"),
+    runRight3: frameUrl("lm-mascot-run-right-3.png"),
+    runRight4: frameUrl("lm-mascot-run-right-4.png"),
+    runLeft1: frameUrl("lm-mascot-run-left-1.png"),
+    runLeft2: frameUrl("lm-mascot-run-left-2.png"),
+    runLeft3: frameUrl("lm-mascot-run-left-3.png"),
+    runLeft4: frameUrl("lm-mascot-run-left-4.png"),
+  };
+  const frameSequences = {
+    flyUp: ["flyUp1", "flyUp2", "flyUp3", "flyUp4"],
+    fallDown: ["fallDown1", "fallDown2", "fallDown3", "fallDown4"],
+    walkLeft: ["walkLeft1", "walkLeft2", "walkLeft3", "walkLeft4"],
+    walkRight: ["walkRight1", "walkRight2", "walkRight3", "walkRight4"],
+    runLeft: ["runLeft1", "runLeft2", "runLeft3", "runLeft4"],
+    runRight: ["runRight1", "runRight2", "runRight3", "runRight4"],
   };
 
   Object.values(frames).forEach((src) => {
@@ -3618,6 +3643,10 @@ function setupMascotPointer() {
     </span>
   `;
   document.body.appendChild(pointer);
+  const heartPointer = document.createElement("span");
+  heartPointer.className = "lm-heart-pointer";
+  heartPointer.setAttribute("aria-hidden", "true");
+  document.body.appendChild(heartPointer);
 
   const image = pointer.querySelector("img");
   const reduceMotion = reducedMotionQuery.matches;
@@ -3635,6 +3664,8 @@ function setupMascotPointer() {
     frame: "front",
     scrollPose: "",
     scrollPoseUntil: 0,
+    inputSpeed: 0,
+    inputAngle: 0,
     hasMoved: false,
   };
   let lastScrollY = window.scrollY || window.pageYOffset || 0;
@@ -3646,18 +3677,31 @@ function setupMascotPointer() {
     image.src = frames[name];
   }
 
+  function pickFrame(sequence, now, interval = 120) {
+    const framesInSequence = frameSequences[sequence] || [];
+    if (!framesInSequence.length) return "front";
+    return framesInSequence[Math.floor(now / interval) % framesInSequence.length];
+  }
+
   function setPointerClass(name, active) {
     pointer.classList.toggle(name, Boolean(active));
   }
 
   function syncTarget(clientX, clientY, pointerType = "mouse") {
     if (!Number.isFinite(clientX) || !Number.isFinite(clientY)) return;
+    const deltaX = clientX - state.targetX;
+    const deltaY = clientY - state.targetY;
     if (state.hasMoved) {
-      const deltaX = clientX - state.targetX;
-      const deltaY = clientY - state.targetY;
+      const inputDistance = Math.hypot(deltaX, deltaY);
+      if (inputDistance > 0.5) {
+        state.inputSpeed = Math.max(state.inputSpeed * 0.45, inputDistance);
+        state.inputAngle = Math.atan2(deltaY, deltaX);
+      }
       if (Math.abs(deltaY) > 8 && Math.abs(deltaY) > Math.abs(deltaX) * 0.72) {
         setScrollPose(deltaY < 0 ? "up" : "down");
       }
+    } else {
+      state.inputAngle = 0;
     }
     state.targetX = clientX;
     state.targetY = clientY;
@@ -3690,7 +3734,9 @@ function setupMascotPointer() {
   function setScrollPose(direction) {
     if (direction !== "up" && direction !== "down") return;
     state.scrollPose = direction;
-    state.scrollPoseUntil = performance.now() + 620;
+    state.scrollPoseUntil = performance.now() + 1250;
+    state.inputSpeed = Math.max(state.inputSpeed, 24);
+    state.inputAngle = direction === "up" ? -Math.PI / 2 : Math.PI / 2;
     state.hasMoved = true;
     document.body.classList.add("has-mascot-pointer");
   }
@@ -3709,14 +3755,14 @@ function setupMascotPointer() {
   }
 
   function updateFrame(speed, vx, vy, now) {
-    const moving = speed > 0.55;
-    const running = speed > 7.2;
-    const sideMotion = Math.abs(vx) > Math.abs(vy) * 0.72;
-    const verticalMotion = Math.abs(vy) > Math.abs(vx) * 0.72;
-    const upwardMotion = moving && verticalMotion && vy < -0.35;
-    const downwardMotion = moving && verticalMotion && vy > 0.35;
-    const runFrames = ["runA", "runB", "runC", "runD"];
-    const fallFrames = ["fallA", "fallB", "fallC", "fallDown"];
+    const motionX = state.inputSpeed > 0.6 ? Math.cos(state.inputAngle) * state.inputSpeed : vx;
+    const motionY = state.inputSpeed > 0.6 ? Math.sin(state.inputAngle) * state.inputSpeed : vy;
+    const moving = speed > 0.55 || state.inputSpeed > 1.2;
+    const running = state.inputSpeed > 20 || speed > 5.4;
+    const sideMotion = Math.abs(motionX) > Math.abs(motionY) * 0.62;
+    const verticalMotion = Math.abs(motionY) > Math.abs(motionX) * 0.72;
+    const upwardMotion = moving && verticalMotion && motionY < -0.35;
+    const downwardMotion = moving && verticalMotion && motionY > 0.35;
     const climbing = Boolean(state.scrollPose && now < state.scrollPoseUntil);
     const scrollingUp = climbing && state.scrollPose === "up";
     const scrollingDown = climbing && state.scrollPose === "down";
@@ -3731,7 +3777,7 @@ function setupMascotPointer() {
       setPointerClass("is-side", false);
       setPointerClass("is-forward", scrollingDown);
       setPointerClass("is-backward", scrollingUp);
-      setFrame(scrollingUp ? "climbUp" : fallFrames[Math.floor(now / 112) % fallFrames.length]);
+      setFrame(scrollingUp ? pickFrame("flyUp", now, 104) : pickFrame("fallDown", now, 118));
       return;
     }
 
@@ -3746,7 +3792,7 @@ function setupMascotPointer() {
       setPointerClass("is-side", false);
       setPointerClass("is-forward", downwardMotion);
       setPointerClass("is-backward", upwardMotion);
-      setFrame(upwardMotion ? "climbUp" : fallFrames[Math.floor(now / (running ? 86 : 118)) % fallFrames.length]);
+      setFrame(upwardMotion ? pickFrame("flyUp", now, running ? 82 : 108) : pickFrame("fallDown", now, running ? 92 : 118));
       return;
     }
 
@@ -3762,28 +3808,32 @@ function setupMascotPointer() {
     }
 
     if (sideMotion) {
-      if (vx < -0.25) state.facing = -1;
-      if (vx > 0.25) state.facing = 1;
+      if (motionX < -0.25) state.facing = -1;
+      if (motionX > 0.25) state.facing = 1;
       pointer.style.setProperty("--lm-mascot-facing", String(state.facing));
       if (running) {
-        setFrame(runFrames[Math.floor(now / 90) % runFrames.length]);
+        setFrame(pickFrame(motionX < 0 ? "runLeft" : "runRight", now, 74));
       } else {
-        setFrame(Math.floor(now / 150) % 2 ? "stepB" : "stepA");
+        setFrame(pickFrame(motionX < 0 ? "walkLeft" : "walkRight", now, 112));
       }
       return;
     }
 
     if (running) {
-      setFrame(runFrames[Math.floor(now / 95) % runFrames.length]);
+      setFrame(pickFrame(state.facing < 0 ? "runLeft" : "runRight", now, 95));
     } else {
       setFrame("front");
     }
   }
 
   function paintMascot(now) {
-    const ease = state.lastType === "touch" ? 0.3 : 0.22;
-    state.x += (state.targetX - state.x) * ease;
-    state.y += (state.targetY - state.y) * ease;
+    const chaseDistance = state.lastType === "touch" ? 74 : 58;
+    const chaseX = state.targetX - Math.cos(state.inputAngle) * chaseDistance;
+    const chaseY = state.targetY - Math.sin(state.inputAngle) * chaseDistance;
+    const ease = state.lastType === "touch" ? 0.2 : 0.135;
+    state.x += (chaseX - state.x) * ease;
+    state.y += (chaseY - state.y) * ease;
+    state.inputSpeed *= 0.86;
 
     const vx = state.x - state.lastX;
     const vy = state.y - state.lastY;
@@ -3792,7 +3842,10 @@ function setupMascotPointer() {
 
     pointer.style.setProperty("--lm-mascot-x", `${state.x}px`);
     pointer.style.setProperty("--lm-mascot-y", `${state.y}px`);
+    heartPointer.style.setProperty("--lm-heart-x", `${state.targetX}px`);
+    heartPointer.style.setProperty("--lm-heart-y", `${state.targetY}px`);
     setPointerClass("is-visible", visible);
+    heartPointer.classList.toggle("is-visible", visible);
     updateFrame(speed, vx, vy, now);
 
     state.lastX = state.x;
@@ -3815,6 +3868,7 @@ function setupMascotPointer() {
   window.addEventListener("scroll", syncFromScroll, { passive: true });
   window.addEventListener("blur", () => {
     pointer.classList.remove("is-visible", "is-walking", "is-running", "is-climbing-up", "is-flying-up", "is-running-down", "is-falling-down");
+    heartPointer.classList.remove("is-visible");
   });
 
   window.requestAnimationFrame(tick);

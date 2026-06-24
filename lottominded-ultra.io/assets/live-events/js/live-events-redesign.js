@@ -19,6 +19,11 @@
   const streamStartupPlay = streamStartup?.querySelector("[data-stream-startup-play]");
   const streamStartupCloseButtons = streamStartup?.querySelectorAll("[data-stream-startup-close]");
   const streamStartupStatus = streamStartup?.querySelector("[data-stream-startup-status]");
+  const shadowOpsModal = document.querySelector("[data-shadow-ops-modal]");
+  const shadowOpsOpeners = document.querySelectorAll("[data-shadow-ops-open]");
+  const shadowOpsCloseButtons = shadowOpsModal?.querySelectorAll("[data-shadow-ops-close]");
+  const shadowOpsStart = shadowOpsModal?.querySelector("[data-shadow-ops-start]");
+  const shadowOpsStatus = shadowOpsModal?.querySelector("[data-shadow-ops-status]");
   const twitchLiveCard = document.querySelector("#twitch-live");
   const liveBallpassCanvas = document.querySelector("[data-live-ballpass-bg]");
   const previewIframes = Array.from(document.querySelectorAll(".event-card .video-thumb iframe"));
@@ -342,6 +347,30 @@
     }
   }
 
+  function openShadowOpsModal() {
+    if (!shadowOpsModal) return;
+    shadowOpsModal.classList.add("is-open");
+    shadowOpsModal.setAttribute("aria-hidden", "false");
+    document.body.classList.add("has-shadow-ops-modal");
+    if (shadowOpsStatus) shadowOpsStatus.textContent = "Standby";
+    window.setTimeout(() => shadowOpsModal.querySelector("button")?.focus(), 20);
+  }
+
+  function closeShadowOpsModal() {
+    if (!shadowOpsModal) return;
+    shadowOpsModal.classList.remove("is-open");
+    shadowOpsModal.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("has-shadow-ops-modal");
+  }
+
+  function scheduleShadowOpsModal() {
+    if (!shadowOpsModal) return;
+    window.setTimeout(() => {
+      if (document.body.classList.contains("has-stream-startup-audio")) return;
+      openShadowOpsModal();
+    }, 1600);
+  }
+
   function setTwitchFocusMode(isFocused) {
     document.body.classList.toggle("is-twitch-focused", isFocused);
 
@@ -562,6 +591,7 @@
   }
 
   scheduleStreamOpenAudio();
+  scheduleShadowOpsModal();
   setupTwitchStreamStability();
   setupLiveBallpassBackground();
 
@@ -575,8 +605,23 @@
   streamStartup?.addEventListener("click", (event) => {
     if (event.target === streamStartup) closeStreamStartupPrompt();
   });
+  shadowOpsOpeners.forEach((button) => {
+    button.addEventListener("click", openShadowOpsModal);
+  });
+  shadowOpsCloseButtons?.forEach((button) => {
+    button.addEventListener("click", closeShadowOpsModal);
+  });
+  shadowOpsStart?.addEventListener("click", () => {
+    if (shadowOpsStatus) shadowOpsStatus.textContent = "Briefing active";
+    shadowOpsModal?.classList.add("is-briefing");
+    playUiTone(5);
+  });
+  shadowOpsModal?.addEventListener("click", (event) => {
+    if (event.target === shadowOpsModal) closeShadowOpsModal();
+  });
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape" && !streamStartup?.classList.contains("is-hidden")) closeStreamStartupPrompt();
+    if (event.key === "Escape" && shadowOpsModal?.classList.contains("is-open")) closeShadowOpsModal();
   });
 
   function escapeHtml(value) {
