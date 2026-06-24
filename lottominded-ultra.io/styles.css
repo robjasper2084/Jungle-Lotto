@@ -2379,6 +2379,126 @@ button {
     0 0 28px rgba(41, 247, 255, 0.26);
 }
 
+.home-spheres-copy h2.kinetic-word {
+  position: relative;
+  isolation: isolate;
+  transform-origin: 50% 52%;
+}
+
+.home-spheres-copy h2.kinetic-word::before,
+.home-spheres-copy h2.kinetic-word::after {
+  position: absolute;
+  inset: -0.12em -0.18em;
+  z-index: -1;
+  content: "";
+  border-radius: 0.08em;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.home-spheres-copy h2.kinetic-word::before {
+  background:
+    repeating-linear-gradient(
+      0deg,
+      rgba(41, 247, 255, 0) 0 0.18rem,
+      rgba(41, 247, 255, 0.58) 0.18rem 0.27rem,
+      rgba(255, 224, 113, 0.26) 0.27rem 0.36rem,
+      rgba(255, 79, 216, 0) 0.36rem 0.58rem
+    ),
+    linear-gradient(90deg, rgba(41, 247, 255, 0), rgba(41, 247, 255, 0.34), rgba(255, 224, 113, 0.22), rgba(255, 79, 216, 0));
+  mix-blend-mode: screen;
+}
+
+.home-spheres-copy h2.kinetic-word::after {
+  background:
+    radial-gradient(circle at 48% 50%, rgba(255, 255, 255, 0.52), transparent 0 12%, transparent 36%),
+    linear-gradient(90deg, rgba(41, 247, 255, 0), rgba(41, 247, 255, 0.7), rgba(255, 79, 216, 0.52), rgba(255, 224, 113, 0));
+  filter: blur(0.38rem);
+}
+
+.home-spheres-copy h2.kinetic-word:is(:hover, :focus-visible, .is-pointer-reactive, .is-touch-active, .is-focus-reactive),
+.home-spheres-copy:is(:hover, :focus-within, .is-pointer-reactive, .is-touch-active, .is-focus-reactive) h2.kinetic-word {
+  animation: homeSpheresPushExplode 780ms cubic-bezier(0.18, 0.9, 0.22, 1) both;
+}
+
+.home-spheres-copy h2.kinetic-word:is(:hover, :focus-visible, .is-pointer-reactive, .is-touch-active, .is-focus-reactive)::before,
+.home-spheres-copy:is(:hover, :focus-within, .is-pointer-reactive, .is-touch-active, .is-focus-reactive) h2.kinetic-word::before {
+  animation: homeSpheresScanLines 780ms linear both;
+}
+
+.home-spheres-copy h2.kinetic-word:is(:hover, :focus-visible, .is-pointer-reactive, .is-touch-active, .is-focus-reactive)::after,
+.home-spheres-copy:is(:hover, :focus-within, .is-pointer-reactive, .is-touch-active, .is-focus-reactive) h2.kinetic-word::after {
+  animation: homeSpheresScanGlow 780ms ease-out both;
+}
+
+@keyframes homeSpheresPushExplode {
+  0% {
+    letter-spacing: 0;
+    filter: drop-shadow(0 0 0 rgba(41, 247, 255, 0));
+    transform: perspective(800px) translateZ(0) scale(1);
+  }
+
+  38% {
+    letter-spacing: 0.018em;
+    filter:
+      drop-shadow(0.08em 0 rgba(41, 247, 255, 0.8))
+      drop-shadow(-0.08em 0 rgba(255, 79, 216, 0.58))
+      drop-shadow(0 0 1.1rem rgba(255, 224, 113, 0.46));
+    transform: perspective(800px) translateZ(56px) scale(1.1);
+  }
+
+  62% {
+    letter-spacing: 0.042em;
+    filter:
+      drop-shadow(0.14em 0 rgba(41, 247, 255, 0.7))
+      drop-shadow(-0.12em 0 rgba(255, 79, 216, 0.5))
+      drop-shadow(0 0 1.6rem rgba(41, 247, 255, 0.46));
+    transform: perspective(800px) translateZ(74px) scale(1.16);
+  }
+
+  100% {
+    letter-spacing: 0;
+    filter: drop-shadow(0 0 0.55rem rgba(41, 247, 255, 0.18));
+    transform: perspective(800px) translateZ(0) scale(1);
+  }
+}
+
+@keyframes homeSpheresScanLines {
+  0% {
+    opacity: 0;
+    background-position: 0 -2.5rem, -130% 0;
+    transform: scaleX(0.94);
+  }
+
+  24%,
+  68% {
+    opacity: 0.78;
+  }
+
+  100% {
+    opacity: 0;
+    background-position: 0 3rem, 145% 0;
+    transform: scaleX(1.08);
+  }
+}
+
+@keyframes homeSpheresScanGlow {
+  0% {
+    opacity: 0;
+    transform: scaleX(0.72);
+  }
+
+  42% {
+    opacity: 0.7;
+    transform: scaleX(1.12);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scaleX(1.22);
+  }
+}
+
 .home-spheres-copy p {
   margin: 0;
   color: #dbeeff;
@@ -3823,6 +3943,10 @@ p {
   pointer-events: none;
   opacity: 0.62;
   filter: saturate(1.08);
+}
+
+.home-page #prompt .prompt-card-sphere-field {
+  display: none;
 }
 
 .prompt-card-sphere-field::before {
@@ -10822,18 +10946,20 @@ body.vault-gateway-open {
   height: clamp(4.55rem, 5.55vw, 5.7rem) !important;
   max-width: 5.7rem !important;
   padding: 1.36rem 0.46rem 1.02rem !important;
-  color: #f9ffff !important;
+  color: #ffffff !important;
   background:
     radial-gradient(circle at 28% 18%, rgba(255, 255, 255, 0.76) 0 9%, rgba(255, 255, 255, 0.2) 10% 22%, transparent 34%),
     radial-gradient(circle at 48% 46%, color-mix(in srgb, var(--sphere-nav-core, #9dfff7) 82%, #ffffff 6%) 0 22%, transparent 53%),
     radial-gradient(circle at 50% 56%, color-mix(in srgb, var(--sphere-nav-accent, #29f7ff) 48%, #ffe071 12%) 0 46%, rgba(7, 24, 34, 0.86) 62%, rgba(0, 0, 0, 0.96) 82%),
     linear-gradient(145deg, rgba(255, 255, 255, 0.22), transparent 45%) !important;
-  font-size: clamp(0.68rem, 0.82vw, 0.86rem) !important;
+  font-size: clamp(0.72rem, 0.88vw, 0.9rem) !important;
+  font-weight: 1000 !important;
   letter-spacing: 0 !important;
   text-shadow:
-    0 2px 0 rgba(0, 0, 0, 0.96),
-    0 0 0.55rem rgba(1, 12, 20, 0.92),
-    0 0 0.72rem color-mix(in srgb, var(--sphere-nav-accent, #29f7ff) 42%, transparent) !important;
+    0 2px 1px rgba(0, 0, 0, 1),
+    0 -1px 0 rgba(255, 255, 255, 0.3),
+    0 0 0.42rem rgba(1, 12, 20, 1),
+    0 0 0.9rem color-mix(in srgb, var(--sphere-nav-accent, #29f7ff) 66%, transparent) !important;
 }
 
 .home-page.has-sphere-header .home-sphere-header nav a::before {
@@ -11506,7 +11632,7 @@ body.vault-gateway-open {
   overflow: hidden !important;
   border: 1px solid rgba(221, 255, 255, 0.48) !important;
   border-radius: 50% !important;
-  color: #effcff !important;
+  color: #ffffff !important;
   background:
     radial-gradient(circle at 28% 20%, rgba(255, 255, 255, 0.62), transparent 0 14%, transparent 30%),
     radial-gradient(circle at 50% 50%, var(--sphere-nav-core, rgba(157, 255, 247, 0.82)) 0 16%, transparent 52%),
@@ -11520,13 +11646,15 @@ body.vault-gateway-open {
     0 0 1.1rem color-mix(in srgb, var(--sphere-nav-accent, #29f7ff) 62%, transparent) !important;
   filter: saturate(1.08) contrast(1.05) !important;
   font-family: var(--font-heading) !important;
-  font-size: clamp(0.5rem, 0.62vw, 0.64rem) !important;
-  font-weight: 900 !important;
+  font-size: clamp(0.56rem, 0.7vw, 0.72rem) !important;
+  font-weight: 1000 !important;
   line-height: 1.05 !important;
   text-align: center !important;
   text-shadow:
-    0 2px 0 rgba(0, 0, 0, 0.92),
-    0 0 0.5rem rgba(41, 247, 255, 0.5) !important;
+    0 2px 1px rgba(0, 0, 0, 1),
+    0 -1px 0 rgba(255, 255, 255, 0.28),
+    0 0 0.28rem rgba(0, 0, 0, 0.96),
+    0 0 0.72rem rgba(41, 247, 255, 0.72) !important;
   text-transform: uppercase !important;
   white-space: normal !important;
 }
@@ -12559,7 +12687,7 @@ body.features-cinematic-page #player.feature-live-player.sphere-orb-live-player:
 
 .lm-mascot-pointer.is-climbing-up .lm-mascot-pointer__sprite img,
 .lm-mascot-pointer.is-flying-up .lm-mascot-pointer__sprite img {
-  transform: translateY(-8px) rotate(-5deg) scaleX(var(--lm-mascot-facing));
+  transform: translateY(-8px) rotate(-5deg) scale(1.04) scaleX(var(--lm-mascot-facing));
 }
 
 .lm-mascot-pointer.is-running-down .lm-mascot-pointer__sprite img {
@@ -12745,4 +12873,679 @@ body.features-cinematic-page .vault-gateway-actions button {
     0 0 28px rgba(41, 247, 255, 0.36),
     0 16px 42px rgba(0, 0, 0, 0.5) !important;
   will-change: left, top !important;
+}
+
+/* Visual polish batch: keep the Spheres and Beat2Lotto headers on the home-style lotto-ball system. */
+.lottery-spheres-page .site-header:is(.lottery-spheres-header, .home-sphere-header.global-sphere-header),
+body.beat2lotto-current-page .site-header.home-sphere-header.global-sphere-header {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 100 !important;
+  display: grid !important;
+  grid-template-columns: minmax(13rem, 18rem) minmax(32rem, 60rem) auto !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: clamp(0.8rem, 1.4vw, 1.45rem) !important;
+  width: 100% !important;
+  max-width: none !important;
+  min-height: clamp(6.7rem, 9vw, 8.8rem) !important;
+  margin: 0 !important;
+  padding: clamp(0.7rem, 1.2vw, 1rem) clamp(1rem, 2.2vw, 1.8rem) !important;
+  border: 0 !important;
+  border-bottom: 1px solid rgba(41, 247, 255, 0.22) !important;
+  border-radius: 0 !important;
+  background:
+    linear-gradient(180deg, rgba(2, 8, 14, 0.98), rgba(3, 10, 17, 0.92) 72%, rgba(3, 5, 10, 0.98)),
+    radial-gradient(circle at 55% 0%, rgba(41, 247, 255, 0.18), transparent 46%) !important;
+  box-shadow: 0 0.8rem 2.3rem rgba(0, 0, 0, 0.34) !important;
+}
+
+.lottery-spheres-page .site-header:is(.lottery-spheres-header, .home-sphere-header.global-sphere-header) .site-header-main,
+body.beat2lotto-current-page .site-header.home-sphere-header.global-sphere-header .site-header-main {
+  justify-self: start !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  width: auto !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.lottery-spheres-page .site-header:is(.lottery-spheres-header, .home-sphere-header.global-sphere-header) .brand,
+body.beat2lotto-current-page .site-header.home-sphere-header.global-sphere-header .brand {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.72rem !important;
+  min-width: max-content !important;
+  color: #f8feff !important;
+  text-shadow: 0 0 0.72rem rgba(41, 247, 255, 0.34), 0 0 1.2rem rgba(255, 224, 113, 0.16) !important;
+}
+
+.lottery-spheres-page .site-header:is(.lottery-spheres-header, .home-sphere-header.global-sphere-header) .brand img,
+body.beat2lotto-current-page .site-header.home-sphere-header.global-sphere-header .brand img {
+  width: 2.35rem !important;
+  height: 2.35rem !important;
+}
+
+.lottery-spheres-page .site-header:is(.lottery-spheres-header, .home-sphere-header.global-sphere-header) nav,
+body.beat2lotto-current-page .site-header.home-sphere-header.global-sphere-header nav {
+  justify-self: center !important;
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: min(100%, 60rem) !important;
+  min-height: clamp(5.25rem, 7vw, 6rem) !important;
+  gap: clamp(0.38rem, 0.8vw, 0.74rem) !important;
+  padding: 0.5rem clamp(0.8rem, 1.45vw, 1.2rem) !important;
+  overflow: hidden !important;
+  border: 2px solid rgba(41, 247, 255, 0.86) !important;
+  border-radius: 999px !important;
+  background:
+    radial-gradient(circle at 50% 44%, rgba(255, 224, 113, 0.22), transparent 0 28%),
+    linear-gradient(90deg, rgba(7, 24, 34, 0.86), rgba(10, 85, 116, 0.62) 48%, rgba(6, 23, 34, 0.9)),
+    rgba(2, 12, 20, 0.95) !important;
+  box-shadow:
+    inset 0 0 0 1px rgba(205, 255, 255, 0.12),
+    inset 0 -1.25rem 2rem rgba(0, 0, 0, 0.38),
+    0 0 1.2rem rgba(41, 247, 255, 0.32),
+    0 0 2.8rem rgba(41, 247, 255, 0.14) !important;
+}
+
+.lottery-spheres-page .site-header:is(.lottery-spheres-header, .home-sphere-header.global-sphere-header) nav::after,
+body.beat2lotto-current-page .site-header.home-sphere-header.global-sphere-header nav::after {
+  display: block !important;
+  content: "" !important;
+}
+
+.lottery-spheres-page .site-header:is(.lottery-spheres-header, .home-sphere-header.global-sphere-header) nav a,
+.lottery-spheres-page .site-header:is(.lottery-spheres-header, .home-sphere-header.global-sphere-header) nav a:is(:hover, :focus-visible, .is-pressed, .is-touch-active, .is-sphere-pressed, :active),
+body.beat2lotto-current-page .site-header.home-sphere-header.global-sphere-header nav a,
+body.beat2lotto-current-page .site-header.home-sphere-header.global-sphere-header nav a:is(:hover, :focus-visible, .is-pressed, .is-touch-active, .is-sphere-pressed, :active) {
+  --sphere-nav-ball-size: clamp(68px, 5.35vw, 78px);
+  display: grid !important;
+  flex: 0 0 var(--sphere-nav-ball-size) !important;
+  place-items: center !important;
+  width: var(--sphere-nav-ball-size) !important;
+  height: var(--sphere-nav-ball-size) !important;
+  max-width: var(--sphere-nav-ball-size) !important;
+  max-height: var(--sphere-nav-ball-size) !important;
+  min-width: var(--sphere-nav-ball-size) !important;
+  min-height: var(--sphere-nav-ball-size) !important;
+  aspect-ratio: 1 !important;
+  padding: 1.28rem 0.4rem 1.08rem !important;
+  border-radius: 50% !important;
+  color: #ffffff !important;
+  font-family: var(--font-heading) !important;
+  font-size: clamp(0.56rem, 0.7vw, 0.72rem) !important;
+  font-weight: 1000 !important;
+  line-height: 1.05 !important;
+  text-shadow:
+    0 2px 1px rgba(0, 0, 0, 1),
+    0 -1px 0 rgba(255, 255, 255, 0.28),
+    0 0 0.28rem rgba(0, 0, 0, 0.96),
+    0 0 0.72rem rgba(41, 247, 255, 0.72) !important;
+  white-space: normal !important;
+}
+
+.lottery-spheres-page .site-header:is(.lottery-spheres-header, .home-sphere-header.global-sphere-header) nav a::before,
+.lottery-spheres-page .site-header:is(.lottery-spheres-header, .home-sphere-header.global-sphere-header) nav a::after,
+body.beat2lotto-current-page .site-header.home-sphere-header.global-sphere-header nav a::before,
+body.beat2lotto-current-page .site-header.home-sphere-header.global-sphere-header nav a::after {
+  display: grid !important;
+}
+
+body.beat2lotto-current-page .b2l-game-generator-bg,
+body.beat2lotto-current-page .b2l-game-generator-vignette {
+  display: none !important;
+}
+
+body.beat2lotto-current-page #player.sphere-orb-live-player {
+  --player-orb-size: clamp(292px, 36.72vw, 367px);
+}
+
+body.beat2lotto-current-page .lotto-output-head h2 {
+  position: relative;
+  isolation: isolate;
+  width: min(100%, 760px);
+  max-width: 100%;
+  min-height: clamp(5.25rem, 10vw, 8.5rem);
+  display: grid;
+  align-items: center;
+  padding: clamp(1rem, 2.1vw, 1.55rem) clamp(1.1rem, 2.5vw, 2rem);
+  overflow: hidden;
+  border: 1px solid rgba(41, 247, 255, 0.58);
+  border-radius: 8px;
+  color: #f5fbff;
+  background:
+    linear-gradient(90deg, rgba(3, 14, 24, 0.34), rgba(3, 22, 33, 0.16)),
+    url("./assets/generated/beat-seeded-entertainment-picks.webp") center / cover no-repeat;
+  box-shadow:
+    0 0 0 1px rgba(255, 226, 121, 0.18),
+    0 0 28px rgba(41, 247, 255, 0.22),
+    inset 0 0 36px rgba(0, 0, 0, 0.42);
+  text-shadow:
+    0 2px 1px rgba(0, 0, 0, 0.9),
+    0 0 14px rgba(41, 247, 255, 0.45),
+    0 0 22px rgba(255, 226, 121, 0.25);
+}
+
+body.beat2lotto-current-page .lotto-output-head h2::before {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  content: "";
+  background:
+    linear-gradient(90deg, rgba(2, 9, 18, 0.86) 0 20%, rgba(2, 9, 18, 0.38) 46%, rgba(2, 9, 18, 0.78) 100%),
+    repeating-linear-gradient(90deg, rgba(41, 247, 255, 0.12) 0 1px, transparent 1px 72px);
+  mix-blend-mode: multiply;
+}
+
+body.beat2lotto-current-page .lotto-output-head h2::after {
+  position: absolute;
+  inset: 8%;
+  z-index: -1;
+  content: "";
+  border: 1px solid rgba(255, 226, 121, 0.26);
+  border-radius: 6px;
+  box-shadow: inset 0 0 24px rgba(41, 247, 255, 0.12);
+  pointer-events: none;
+}
+
+.spheres-player-ripple {
+  border-color: rgba(255, 244, 178, 0.72) !important;
+  background:
+    radial-gradient(circle, rgba(255, 255, 255, 0.28) 0 7%, rgba(41, 247, 255, 0.26) 12%, rgba(94, 255, 157, 0.18) 26%, rgba(255, 79, 216, 0.14) 42%, transparent 68%),
+    conic-gradient(from 18deg, rgba(41, 247, 255, 0.08), rgba(255, 244, 178, 0.4), rgba(255, 79, 216, 0.25), rgba(94, 255, 157, 0.34), rgba(41, 247, 255, 0.18)) !important;
+  box-shadow:
+    0 0 30px rgba(41, 247, 255, 0.34),
+    0 0 54px rgba(255, 79, 216, 0.18),
+    inset 0 0 42px rgba(255, 255, 255, 0.12) !important;
+  animation-duration: 1750ms !important;
+}
+
+@keyframes spheresPlayerRipple {
+  0% {
+    opacity: 0.9;
+    transform: translate(-50%, -50%) scale(0.12);
+    filter: blur(0) saturate(1.25);
+  }
+  54% {
+    opacity: 0.48;
+    filter: blur(0.8px) saturate(1.6);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.72);
+    filter: blur(3.8px) saturate(1.85);
+  }
+}
+
+@media (max-width: 980px) {
+  .lottery-spheres-page .site-header:is(.lottery-spheres-header, .home-sphere-header.global-sphere-header),
+  body.beat2lotto-current-page .site-header.home-sphere-header.global-sphere-header {
+    grid-template-columns: 1fr !important;
+    justify-items: center !important;
+  }
+
+  .lottery-spheres-page .site-header:is(.lottery-spheres-header, .home-sphere-header.global-sphere-header) .site-header-main,
+  body.beat2lotto-current-page .site-header.home-sphere-header.global-sphere-header .site-header-main {
+    justify-self: center !important;
+  }
+}
+
+/* Lottery Spheres uses the home-style tab bar instead of the oversized orb navigation. */
+.lottery-spheres-page .site-header.home-sphere-header.global-sphere-header {
+  grid-template-columns: minmax(13rem, 18rem) minmax(26rem, 1fr) auto !important;
+  gap: 1rem !important;
+  width: min(calc(100% - 1.5rem), 114rem) !important;
+  min-height: 4.875rem !important;
+  margin: 0.625rem auto 0.75rem !important;
+  padding: 0.625rem 1.125rem !important;
+  border: 1px solid rgba(130, 200, 255, 0.18) !important;
+  border-radius: 22px !important;
+  background:
+    linear-gradient(135deg, rgba(15, 39, 58, 0.9), rgba(7, 12, 24, 0.94)),
+    radial-gradient(circle at 20% 10%, rgba(41, 247, 255, 0.16), transparent 34%),
+    radial-gradient(circle at 86% 62%, rgba(138, 92, 255, 0.16), transparent 40%) !important;
+}
+
+.lottery-spheres-page .site-header.home-sphere-header.global-sphere-header nav {
+  justify-content: center !important;
+  flex-wrap: wrap !important;
+  width: 100% !important;
+  min-height: 0 !important;
+  gap: 0.625rem !important;
+  padding: 0 !important;
+  overflow: visible !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.lottery-spheres-page .site-header.home-sphere-header.global-sphere-header nav::after {
+  display: none !important;
+  content: none !important;
+}
+
+.lottery-spheres-page .site-header.home-sphere-header.global-sphere-header nav a,
+.lottery-spheres-page .site-header.home-sphere-header.global-sphere-header nav a:is(:hover, :focus-visible, .is-pressed, .is-touch-active, .is-sphere-pressed, :active) {
+  display: inline-flex !important;
+  flex: 0 1 auto !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: auto !important;
+  height: auto !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-width: none !important;
+  aspect-ratio: auto !important;
+  padding: 0.75rem 0.875rem !important;
+  border: 1px solid rgba(130, 200, 255, 0.18) !important;
+  border-radius: 12px !important;
+  color: #eaf7ff !important;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.012)) !important;
+  box-shadow: none !important;
+  filter: none !important;
+  font-family: var(--ui-font) !important;
+  font-size: 0.78rem !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.05em !important;
+  line-height: 1.05 !important;
+  text-shadow: none !important;
+  white-space: nowrap !important;
+}
+
+.lottery-spheres-page .site-header.home-sphere-header.global-sphere-header nav a::before,
+.lottery-spheres-page .site-header.home-sphere-header.global-sphere-header nav a::after {
+  display: none !important;
+  content: none !important;
+}
+
+.lottery-spheres-page .site-header.home-sphere-header.global-sphere-header nav a:is([aria-current="page"], .nav-signal-active),
+.lottery-spheres-page .site-header.home-sphere-header.global-sphere-header nav a:is(:hover, :focus-visible) {
+  border-color: rgba(138, 92, 255, 0.82) !important;
+  background:
+    linear-gradient(180deg, rgba(138, 92, 255, 0.22), rgba(41, 247, 255, 0.055)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.065), rgba(255, 255, 255, 0.014)) !important;
+  box-shadow: 0 0 1.375rem rgba(138, 92, 255, 0.26) !important;
+}
+
+@media (max-width: 980px) {
+  .lottery-spheres-page .site-header.home-sphere-header.global-sphere-header {
+    grid-template-columns: 1fr !important;
+    align-items: stretch !important;
+  }
+
+  .lottery-spheres-page .site-header.home-sphere-header.global-sphere-header nav {
+    justify-content: flex-start !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    padding-bottom: 0.25rem !important;
+    scrollbar-width: none !important;
+  }
+
+  .lottery-spheres-page .site-header.home-sphere-header.global-sphere-header nav::-webkit-scrollbar {
+    display: none !important;
+  }
+}
+
+/* Global header alignment: every generated page header uses the home tab system. */
+body .site-header.home-like-header:is(.home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) {
+  grid-template-columns: minmax(220px, auto) minmax(0, 1fr) auto !important;
+  grid-template-areas: "brand nav actions" !important;
+  align-items: center !important;
+  gap: 8px clamp(12px, 2vw, 24px) !important;
+  width: 100% !important;
+  max-width: none !important;
+  min-height: 78px !important;
+  margin: 0 !important;
+  padding: 8px clamp(16px, 4vw, 42px) !important;
+  border: 0 !important;
+  border-bottom: 1px solid rgba(41, 247, 255, 0.22) !important;
+  border-radius: 0 !important;
+  background:
+    linear-gradient(180deg, rgba(2, 6, 13, 0.97), rgba(4, 9, 17, 0.88)),
+    rgba(3, 5, 10, 0.92) !important;
+  box-shadow: 0 10px 34px rgba(0, 0, 0, 0.34) !important;
+}
+
+body .site-header.home-like-header:is(.home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) .site-header-main {
+  grid-area: brand !important;
+  flex-wrap: nowrap !important;
+  justify-self: start !important;
+  justify-content: flex-start !important;
+  width: auto !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+body .site-header.home-like-header:is(.home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) .brand {
+  font-size: 0.95rem !important;
+  letter-spacing: 0 !important;
+  white-space: nowrap !important;
+}
+
+body .site-header.home-like-header:is(.home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) .brand img {
+  width: 36px !important;
+  height: 36px !important;
+}
+
+body .site-header.home-like-header:is(.home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) .site-header-toggle {
+  display: none !important;
+}
+
+body .site-header.home-like-header:is(.home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) nav {
+  grid-area: nav !important;
+  position: relative !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-self: center !important;
+  justify-self: end !important;
+  justify-content: flex-end !important;
+  width: auto !important;
+  max-width: 100% !important;
+  min-height: 0 !important;
+  gap: 4px !important;
+  padding: 4px !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(41, 247, 255, 0.22) !important;
+  border-radius: 999px !important;
+  background:
+    linear-gradient(135deg, rgba(41, 247, 255, 0.085), rgba(138, 92, 255, 0.055)),
+    rgba(3, 7, 16, 0.68) !important;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.035),
+    0 0 24px rgba(41, 247, 255, 0.08) !important;
+}
+
+body .site-header.home-like-header:is(.home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) nav::after {
+  display: none !important;
+  content: none !important;
+}
+
+body .site-header.home-like-header:is(.home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) nav a,
+body .site-header.home-like-header:is(.home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) nav a:is(:hover, :focus-visible, .is-pressed, .is-touch-active, .is-sphere-pressed, :active) {
+  position: relative !important;
+  z-index: 1 !important;
+  display: inline-flex !important;
+  flex: 0 1 auto !important;
+  gap: 0.32rem !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: auto !important;
+  height: auto !important;
+  min-width: 0 !important;
+  min-height: 29px !important;
+  max-width: none !important;
+  max-height: none !important;
+  aspect-ratio: auto !important;
+  padding: 0.34rem 0.54rem 0.34rem 0.38rem !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(130, 200, 255, 0.2) !important;
+  border-radius: 999px !important;
+  color: #f5fbff !important;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(41, 247, 255, 0.04)),
+    rgba(255, 255, 255, 0.02) !important;
+  box-shadow: none !important;
+  filter: none !important;
+  font-family: var(--display-font) !important;
+  font-size: 0.58rem !important;
+  font-weight: 900 !important;
+  letter-spacing: 0 !important;
+  line-height: 1 !important;
+  text-align: center !important;
+  text-shadow: none !important;
+  text-transform: uppercase !important;
+  white-space: nowrap !important;
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    background 180ms ease !important;
+}
+
+body .site-header.home-like-header:is(.home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) nav a::before {
+  position: relative !important;
+  top: auto !important;
+  left: auto !important;
+  display: inline-grid !important;
+  flex: 0 0 1.12rem !important;
+  width: 1.12rem !important;
+  height: 1.12rem !important;
+  place-items: center !important;
+  content: attr(data-icon) !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  color: #f7fbff !important;
+  background:
+    linear-gradient(135deg, rgba(41, 247, 255, 0.64), rgba(255, 224, 113, 0.38)),
+    url("./assets/brand/lm-orb-mark.webp") center / cover !important;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.24),
+    0 0 16px rgba(41, 247, 255, 0.2) !important;
+  font-family: var(--body-font) !important;
+  font-size: 0.4rem !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.86) !important;
+  transform: none !important;
+}
+
+body .site-header.home-like-header:is(.home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) nav a::after {
+  position: absolute !important;
+  inset: auto 10px 4px 1.88rem !important;
+  display: block !important;
+  width: auto !important;
+  height: 2px !important;
+  content: "" !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  background: linear-gradient(90deg, var(--cyan), var(--green)) !important;
+  box-shadow: none !important;
+  opacity: 0 !important;
+  transition: opacity 160ms ease !important;
+}
+
+body .site-header.home-like-header:is(.home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) nav a:is(:hover, :focus-visible, [aria-current="page"], .nav-signal-active) {
+  border-color: rgba(41, 247, 255, 0.34) !important;
+  background:
+    linear-gradient(180deg, rgba(41, 247, 255, 0.12), rgba(138, 92, 255, 0.06)),
+    rgba(255, 255, 255, 0.025) !important;
+  box-shadow: 0 0 18px rgba(41, 247, 255, 0.12) !important;
+}
+
+body .site-header.home-like-header:is(.home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) nav a:is(:hover, :focus-visible, [aria-current="page"], .nav-signal-active)::after {
+  opacity: 0.86 !important;
+}
+
+body .site-header.home-like-header:is(.home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) .direct-launch {
+  grid-area: actions !important;
+  align-self: center !important;
+  justify-self: end !important;
+  gap: 6px !important;
+  min-width: 0 !important;
+  padding: 0 !important;
+}
+
+body .site-header.home-like-header:is(.home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) .direct-action {
+  min-height: 29px !important;
+  padding-inline: 12px !important;
+  border-color: rgba(94, 255, 157, 0.26) !important;
+  border-radius: 999px !important;
+  color: #eafff6 !important;
+  background:
+    linear-gradient(180deg, rgba(94, 255, 157, 0.12), rgba(41, 247, 255, 0.06)),
+    rgba(255, 255, 255, 0.025) !important;
+  box-shadow: inset 0 -1px 0 rgba(94, 255, 157, 0.18) !important;
+  font-size: 0.64rem !important;
+}
+
+body .site-header.home-like-header:is(.home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) .direct-action.direct-primary {
+  border-color: rgba(94, 255, 157, 0.46) !important;
+  color: #06120f !important;
+  background: linear-gradient(135deg, #e9ff82, #29f7ff) !important;
+}
+
+@media (max-width: 980px) {
+  body .site-header.home-like-header:is(.home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) {
+    grid-template-columns: 1fr !important;
+    grid-template-areas:
+      "brand"
+      "nav"
+      "actions" !important;
+  }
+
+  body .site-header.home-like-header:is(.home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) nav {
+    justify-self: stretch !important;
+    justify-content: flex-start !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    scrollbar-width: none !important;
+  }
+
+  body .site-header.home-like-header:is(.home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) nav::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  body .site-header.home-like-header:is(.home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) .direct-launch {
+    justify-self: start !important;
+  }
+}
+
+body:is(.lottery-spheres-page, .beat2lotto-current-page) .site-header.home-like-header.home-sphere-header.global-sphere-header {
+  grid-template-columns: minmax(220px, auto) minmax(0, 1fr) auto !important;
+  grid-template-areas: "brand nav actions" !important;
+  width: 100% !important;
+  max-width: none !important;
+  min-height: 78px !important;
+  margin: 0 !important;
+  padding: 8px clamp(16px, 4vw, 42px) !important;
+  border: 0 !important;
+  border-bottom: 1px solid rgba(41, 247, 255, 0.22) !important;
+  border-radius: 0 !important;
+}
+
+body:is(.lottery-spheres-page, .beat2lotto-current-page) .site-header.home-like-header.home-sphere-header.global-sphere-header nav {
+  justify-self: end !important;
+  justify-content: flex-end !important;
+  width: auto !important;
+  min-height: 0 !important;
+  gap: 4px !important;
+  padding: 4px !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(41, 247, 255, 0.22) !important;
+  border-radius: 999px !important;
+  background:
+    linear-gradient(135deg, rgba(41, 247, 255, 0.085), rgba(138, 92, 255, 0.055)),
+    rgba(3, 7, 16, 0.68) !important;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.035),
+    0 0 24px rgba(41, 247, 255, 0.08) !important;
+}
+
+body:is(.lottery-spheres-page, .beat2lotto-current-page) .site-header.home-like-header.home-sphere-header.global-sphere-header nav::after {
+  display: none !important;
+  content: none !important;
+}
+
+body:is(.lottery-spheres-page, .beat2lotto-current-page) .site-header.home-like-header.home-sphere-header.global-sphere-header nav a,
+body:is(.lottery-spheres-page, .beat2lotto-current-page) .site-header.home-like-header.home-sphere-header.global-sphere-header nav a:is(:hover, :focus-visible, .is-pressed, .is-touch-active, .is-sphere-pressed, :active) {
+  display: inline-flex !important;
+  flex: 0 1 auto !important;
+  gap: 0.32rem !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: auto !important;
+  height: auto !important;
+  min-width: 0 !important;
+  min-height: 32px !important;
+  max-width: none !important;
+  max-height: none !important;
+  aspect-ratio: auto !important;
+  padding: 0.34rem 0.54rem 0.34rem 0.38rem !important;
+  border: 1px solid rgba(130, 200, 255, 0.2) !important;
+  border-radius: 999px !important;
+  color: #f5fbff !important;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(41, 247, 255, 0.04)),
+    rgba(255, 255, 255, 0.02) !important;
+  box-shadow: none !important;
+  filter: none !important;
+  font-family: var(--display-font) !important;
+  font-size: 0.58rem !important;
+  font-weight: 900 !important;
+  letter-spacing: 0 !important;
+  line-height: 1 !important;
+  text-shadow: none !important;
+  white-space: nowrap !important;
+}
+
+body:is(.lottery-spheres-page, .beat2lotto-current-page) .site-header.home-like-header.home-sphere-header.global-sphere-header nav a::before {
+  position: relative !important;
+  top: auto !important;
+  left: auto !important;
+  display: inline-grid !important;
+  flex: 0 0 1.12rem !important;
+  width: 1.12rem !important;
+  height: 1.12rem !important;
+  place-items: center !important;
+  content: attr(data-icon) !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  color: #f7fbff !important;
+  background:
+    linear-gradient(135deg, rgba(41, 247, 255, 0.64), rgba(255, 224, 113, 0.38)),
+    url("./assets/brand/lm-orb-mark.webp") center / cover !important;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.24),
+    0 0 16px rgba(41, 247, 255, 0.2) !important;
+  font-family: var(--body-font) !important;
+  font-size: 0.4rem !important;
+  line-height: 1 !important;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.86) !important;
+  transform: none !important;
+}
+
+body:is(.lottery-spheres-page, .beat2lotto-current-page) .site-header.home-like-header.home-sphere-header.global-sphere-header nav a::after {
+  position: absolute !important;
+  inset: auto 10px 4px 1.88rem !important;
+  display: block !important;
+  width: auto !important;
+  height: 2px !important;
+  content: "" !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  background: linear-gradient(90deg, var(--cyan), var(--green)) !important;
+  box-shadow: none !important;
+  opacity: 0 !important;
+}
+
+@media (max-width: 980px) {
+  body:is(.lottery-spheres-page, .beat2lotto-current-page) .site-header.home-like-header.home-sphere-header.global-sphere-header {
+    grid-template-columns: 1fr !important;
+    grid-template-areas:
+      "brand"
+      "nav"
+      "actions" !important;
+  }
+
+  body:is(.lottery-spheres-page, .beat2lotto-current-page) .site-header.home-like-header.home-sphere-header.global-sphere-header nav {
+    justify-self: stretch !important;
+    justify-content: flex-start !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+  }
 }

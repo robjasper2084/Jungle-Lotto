@@ -488,7 +488,7 @@ body.lm-live-page::before {
     linear-gradient(180deg, #ffffff 0 18%, #a8f6ff 38%, #43ffe4 56%, #f7faff 72%, #8f7cff 100%);
   -webkit-background-clip: text;
   background-clip: text;
-  font-family: "Orbitron", "Audiowide", "Rajdhani", var(--lm-live-display, var(--display-font)), system-ui, sans-serif;
+  font-family: var(--lm-live-display, var(--display-font));
   font-size: 5.15rem;
   font-weight: 1000;
   letter-spacing: 0.018em;
