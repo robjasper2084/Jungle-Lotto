@@ -571,7 +571,7 @@ body.has-merch-shadow-popup {
 .merch-shadow-popup-panel {
   position: relative;
   display: grid;
-  grid-template-columns: minmax(16rem, 0.35fr) minmax(36rem, 1fr);
+  grid-template-columns: minmax(19rem, 0.42fr) minmax(32rem, 1fr);
   gap: clamp(1rem, 2vw, 1.5rem);
   width: min(88rem, 94vw);
   max-height: min(50rem, 88vh);
@@ -623,7 +623,7 @@ body.has-merch-shadow-popup {
   flex-direction: column;
   justify-content: center;
   gap: 0.85rem;
-  padding: clamp(1.25rem, 3vw, 2.4rem);
+  padding: clamp(1.25rem, 2.6vw, 2.15rem);
 }
 
 .merch-shadow-popup-kicker {
@@ -636,13 +636,15 @@ body.has-merch-shadow-popup {
 }
 
 .merch-shadow-popup-copy h2 {
+  max-width: 8.2ch;
   margin: 0;
   color: #effbff;
   font-family: "Anton", "Impact", sans-serif;
-  font-size: clamp(2.6rem, 7vw, 6rem);
+  font-size: clamp(2.6rem, 5.05vw, 4.72rem);
   font-weight: 900;
   letter-spacing: 0;
   line-height: 0.9;
+  text-wrap: balance;
   text-transform: uppercase;
   text-shadow:
     0 0 0.45rem rgba(41, 247, 255, 0.7),
