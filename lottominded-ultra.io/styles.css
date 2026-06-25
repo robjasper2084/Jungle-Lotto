@@ -11938,21 +11938,7 @@ body.vault-gateway-open {
 }
 
 .lottery-spheres-page .site-header:is(.lottery-spheres-header, .home-sphere-header.global-sphere-header) .site-header-toggle {
-  justify-self: end !important;
-  display: grid !important;
-  place-items: center !important;
-  width: 2.875rem !important;
-  height: 2.875rem !important;
-  min-width: 2.875rem !important;
-  padding: 0 !important;
-  border: 1px solid rgba(130, 200, 255, 0.2) !important;
-  border-radius: 12px !important;
-  color: #eaf7ff !important;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.012)) !important;
-  box-shadow: none !important;
-  font-size: 0.58rem !important;
-  line-height: 1 !important;
-  text-transform: uppercase !important;
+  display: none !important;
 }
 
 .lottery-spheres-page .site-header:is(.lottery-spheres-header, .home-sphere-header.global-sphere-header) nav {
@@ -12041,9 +12027,7 @@ body.vault-gateway-open {
   }
 
   .lottery-spheres-page .site-header:is(.lottery-spheres-header, .home-sphere-header.global-sphere-header) .site-header-toggle {
-    position: absolute !important;
-    top: 0.85rem !important;
-    right: 0.85rem !important;
+    display: none !important;
   }
 
   .lottery-spheres-page .site-header:is(.lottery-spheres-header, .home-sphere-header.global-sphere-header) nav {

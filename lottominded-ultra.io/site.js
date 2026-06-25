@@ -42,7 +42,6 @@
           <img src="./assets/brand/lm-orb-mark.webp" alt="" />
           <span>LOTTOMINDED ULTRA</span>
         </a>
-        <button class="site-header-toggle" type="button" data-header-toggle aria-expanded="true">Menu</button>
       </div>
       <nav aria-label="LOTTOMINDED ULTRA sphere navigation">
         ${navMarkup}
