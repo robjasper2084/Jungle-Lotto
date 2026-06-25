@@ -1749,7 +1749,7 @@
     return source.startsWith("DROP") ? source : `DROP ${source.slice(-4).toUpperCase().padStart(4, "0")}`;
   }
 
-  function formatTicketCopy(ticket, prefix = `.KLMN with KNDNSS - Level ${ticket.levelId} Vault Drop`) {
+  function formatTicketCopy(ticket, prefix = `KLMN with KNDNSS - Level ${ticket.levelId} Vault Drop`) {
     return [
       prefix,
       `Pick 3: ${ticket.pick3}`,
@@ -5502,7 +5502,7 @@
       dom.hpHearts.appendChild(row);
     }
     dom.livesText.textContent = players.map((p) => `${p.label} ${p.lives}`).join(" | ");
-    dom.hudTitle.textContent = run.runMode === "coop" ? ".KLMN WITH KNDNSS CO-OP" : run.coOp ? ".KLMN WITH KNDNSS 2P" : ".KLMN WITH KNDNSS";
+    dom.hudTitle.textContent = run.runMode === "coop" ? "KLMN WITH KNDNSS CO-OP" : run.coOp ? "KLMN WITH KNDNSS 2P" : "KLMN WITH KNDNSS";
     dom.levelText.textContent = `${run.level.id} ${run.level.shortName}`;
     dom.scoreText.textContent = String(run.stats.score).padStart(6, "0");
     dom.comboText.textContent = `x${run.combo}`;
