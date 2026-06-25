@@ -253,21 +253,6 @@ function makeMascotStandee(world) {
   const width = height * (538 / 1023);
   const geometry = new THREE.PlaneGeometry(width, height);
 
-  const glow = new THREE.Mesh(
-    new THREE.PlaneGeometry(width * 1.18, height * 1.1),
-    new THREE.MeshBasicMaterial({
-      color: 0xa522ff,
-      transparent: true,
-      opacity: 0.16,
-      blending: THREE.AdditiveBlending,
-      depthWrite: false,
-      side: THREE.DoubleSide
-    })
-  );
-  glow.position.set(0, 0.03, -0.05);
-  glow.renderOrder = 18;
-  group.add(glow);
-
   const mascot = new THREE.Mesh(
     geometry,
     new THREE.MeshBasicMaterial({
@@ -309,7 +294,6 @@ function makeMascotStandee(world) {
     const bob = Math.sin(time * 1.12 + group.userData.phase) * 0.038;
     group.position.y = 1.52 + bob;
     group.rotation.y = -0.08 + Math.sin(time * 0.55) * 0.03;
-    glow.material.opacity = 0.13 + Math.sin(time * 1.8) * 0.035;
   };
 
   addInteractive(world, group, "hoodie-mascot-center");
@@ -601,6 +585,10 @@ function bindTitleWorldEvents(world) {
     world.targetYaw -= dx * 0.0048;
     world.targetPitch = THREE.MathUtils.clamp(world.targetPitch + dy * 0.0032, -0.18, 0.44);
     world.lastPointer = { x: event.clientX, y: event.clientY };
+  });
+
+  world.root.addEventListener("pointermove", (event) => {
+    updatePointer(event);
   });
 
   const endDrag = (event) => {

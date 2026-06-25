@@ -111,7 +111,7 @@ button.primary {
 
 .screen--title::before,
 .screen--title::after {
-  content: "";
+  content: none;
   position: absolute;
   inset: 0;
   z-index: 1;
@@ -210,10 +210,7 @@ button.primary {
 }
 
 .title-cinema {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  pointer-events: none;
+  display: none;
 }
 
 .cinema-line {
@@ -290,7 +287,7 @@ h1 {
   font-family: Inter, ui-sans-serif, system-ui, sans-serif;
   font-size: clamp(3.1rem, 7.1vw, 6.65rem);
   line-height: 0.92;
-  text-transform: uppercase;
+  text-transform: none;
   background: linear-gradient(180deg, #ffffff, #fff3d1 42%, #ffd66d 78%, #ff4f9a);
   -webkit-background-clip: text;
   background-clip: text;
