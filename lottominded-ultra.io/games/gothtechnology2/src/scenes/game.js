@@ -79,6 +79,12 @@ export class GothTechnologyGame {
     this.inputLog = ["READY"];
     this.raf = 0;
     this.stopped = false;
+    this.rewards = null;
+    this.rewardTask = Promise.resolve();
+    this.rewardMatchKey = "";
+    this.rewardRoundTicks = 0;
+    this.rewardTotalTicks = 0;
+    this.rewardMeaningfulActions = 0;
     this.audio.preloadMusic();
     this.audio.startMusic("menu");
     this.bindPointer();
@@ -99,7 +105,41 @@ export class GothTechnologyGame {
 
   stop() {
     this.stopped = true;
+    this.rewards?.close?.();
     if (this.raf) cancelAnimationFrame(this.raf);
+  }
+
+  startRewardSession() {
+    this.rewards?.close?.();
+    this.rewardTask = Promise.resolve();
+    this.rewardMatchKey = `fighter-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+    this.rewardRoundTicks = 0;
+    this.rewardTotalTicks = 0;
+    this.rewardMeaningfulActions = 0;
+    this.rewards = window.LottoMindGameRewards?.createClient?.({
+      gameId: "fighter",
+      buildId: "fighter-2026-06-25",
+      mode: this.training ? "training" : this.cpuEnabled ? "versus_cpu" : "local_pvp",
+      onStatus: (event) => {
+        if (event.status === "error") console.warn("[GOTHTECHNOLOGY rewards]", event.detail);
+      }
+    }) || null;
+  }
+
+  emitRewardEvent(type, payload, options = {}) {
+    if (!this.rewards) return;
+    this.rewardTask = this.rewardTask.then(async () => {
+      const event = await this.rewards.emit({ type, payload });
+      if (options.flush) await this.rewards.flush();
+      if (options.finalize && event) {
+        await this.rewards.finalize({
+          idempotencyKey: options.idempotencyKey || this.rewardMatchKey || event.eventId,
+          completionEventId: event.eventId
+        });
+      }
+    }).catch((error) => {
+      console.warn("[GOTHTECHNOLOGY rewards]", error);
+    });
   }
 
   bindPointer() {
@@ -182,6 +222,7 @@ export class GothTechnologyGame {
 
   startMatch(training = this.training) {
     this.training = training;
+    this.startRewardSession();
     this.roundNumber = 1;
     this.roundTimer = ROUND_SECONDS;
     this.matchWinner = null;
@@ -189,11 +230,22 @@ export class GothTechnologyGame {
       f.roundWins = 0;
       f.meter = training ? 100 : 0;
     });
+    this.emitRewardEvent("fighter.match_started", {
+      playerCharacter: this.player1Id,
+      opponentCharacter: this.player2Id,
+      cpuEnabled: this.cpuEnabled,
+      trainingMode: this.training,
+      debug: this.debug,
+      configuredRoundTimer: ROUND_SECONDS,
+      buildId: "fighter-2026-06-25"
+    });
     this.startRound();
   }
 
   startRound() {
     this.roundTimer = ROUND_SECONDS;
+    this.rewardRoundTicks = 0;
+    this.rewardMeaningfulActions = 0;
     this.projectiles = [];
     this.assists = [];
     this.effects = [];
@@ -212,6 +264,11 @@ export class GothTechnologyGame {
     this.phase = PHASE.FIGHT;
     this.syncMusicForPhase();
     this.roundMessageTimer = 0.72;
+    this.emitRewardEvent("fighter.round_started", {
+      roundNumber: this.roundNumber,
+      playerHealth: Math.round(this.fighters[0].config.maxHealth),
+      opponentHealth: Math.round(this.fighters[1].config.maxHealth)
+    });
   }
 
   loop(time) {
@@ -282,6 +339,8 @@ export class GothTechnologyGame {
 
     this.keepFightersSeparated();
     this.faceFighters();
+    this.rewardRoundTicks += 1;
+    this.rewardTotalTicks += 1;
     this.checkRoundEnd();
   }
 
@@ -449,6 +508,7 @@ export class GothTechnologyGame {
     if (actions.assist2) labels.push("A2");
     if (actions.dash) labels.push("DASH");
     if (!labels.length) return;
+    this.rewardMeaningfulActions += 1;
     this.inputLog.unshift(labels.join("+"));
     this.inputLog = this.inputLog.slice(0, 6);
   }
@@ -515,12 +575,37 @@ export class GothTechnologyGame {
     this.audio.beep("ko");
     winner.roundWins += 1;
     const loser = winner === p1 ? p2 : p1;
+    const reason = p1.health <= 0 && p2.health <= 0 ? "double_KO" : this.roundTimer <= 0 ? "timeout" : "KO";
+    const winnerSide = winner === p1 ? "player" : "opponent";
+    this.emitRewardEvent("fighter.round_completed", {
+      roundNumber: this.roundNumber,
+      winnerSide,
+      reason,
+      durationTicks: Math.round(this.rewardRoundTicks),
+      playerHealthRemaining: Math.max(0, Math.round(p1.health)),
+      opponentHealthRemaining: Math.max(0, Math.round(p2.health)),
+      playerDamageDealt: Math.max(0, Math.round(p2.config.maxHealth - Math.max(0, p2.health))),
+      playerDamageReceived: Math.max(0, Math.round(p1.config.maxHealth - Math.max(0, p1.health))),
+      meaningfulActionCount: this.rewardMeaningfulActions
+    }, { flush: true });
     winner.setMotion("VICTORY", true);
     loser.setMotion("DEFEAT", true);
     if (winner.roundWins >= 2) {
       this.matchWinner = winner;
       this.phase = PHASE.MATCH_END;
       this.audio.startMusic("menu");
+      this.emitRewardEvent("fighter.match_completed", {
+        winningSide: winnerSide,
+        playerRoundWins: p1.roundWins,
+        opponentRoundWins: p2.roundWins,
+        roundsPlayed: this.roundNumber,
+        totalMatchTicks: Math.round(this.rewardTotalTicks),
+        playerCharacter: this.player1Id,
+        opponentCharacter: this.player2Id,
+        cpuEnabled: this.cpuEnabled,
+        trainingMode: this.training,
+        debug: this.debug
+      }, { finalize: true, idempotencyKey: this.rewardMatchKey });
     } else {
       this.roundNumber += 1;
       this.phase = PHASE.ROUND_END;

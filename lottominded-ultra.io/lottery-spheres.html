@@ -10,7 +10,7 @@
     <title>LOTTOMINDED ULTRA | Lottery Spheres</title>
     <meta name="theme-color" content="#03050a" />
     <link rel="icon" href="./assets/brand/lm-orb-mark.webp" type="image/webp" />
-    <link rel="stylesheet" href="./styles.css?v=sphere-menu-remove-1" />
+    <link rel="stylesheet" href="./styles.css?v=rewards-popups-2" />
     <script>
       try {
         if (sessionStorage.getItem("lmTransitionArriving") === "yes") {
@@ -19,7 +19,7 @@
       } catch (error) {}
     </script>
     <link rel="stylesheet" href="./assets/css/lm-page-transition.css?v=compositor-pass-1" />
-    <link rel="stylesheet" href="./lottery-spheres.css?v=spheres-player-original-size-1" />
+    <link rel="stylesheet" href="./lottery-spheres.css?v=spheres-number-run-2" />
   </head>
   <body class="lottery-spheres-page">
     <div class="lm-page-transition" data-lm-page-transition aria-hidden="true">
@@ -61,6 +61,31 @@
     </div>
     <audio data-sphere-soundtrack src="./assets/audio/lottomind-vault-174-hz.mp3" loop preload="metadata"></audio>
 
+    <aside class="sphere-shadow-popup is-hidden" data-sphere-shadow-popup aria-hidden="true" aria-labelledby="sphereShadowTitle">
+      <div class="sphere-shadow-popup-panel" role="dialog" aria-modal="true">
+        <button class="sphere-shadow-popup-close" type="button" data-sphere-shadow-close aria-label="Close Number Run game">X</button>
+        <div class="sphere-shadow-popup-copy">
+          <p class="sphere-shadow-popup-kicker">Sphere Vault Signal</p>
+          <h2 id="sphereShadowTitle">Number Run</h2>
+          <p>Break the number vaults, collect every key, and bring the signal back into the sphere room.</p>
+        </div>
+        <div class="sphere-shadow-popup-stage" aria-label="LottoMind Number Run game popup">
+          <iframe
+            data-sphere-shadow-frame
+            data-src="./games/shadow-ops-canvas/index.html?bg=soul-location-1&amp;v=higgsfield-trailer-1"
+            title="LottoMind Number Run playable game"
+            loading="lazy"
+            allow="autoplay; fullscreen; gamepad"
+          ></iframe>
+        </div>
+        <div class="sphere-shadow-popup-rail" aria-hidden="true">
+          <span>Sphere route locked</span>
+          <span>Number run live</span>
+          <span>Signal drop armed</span>
+        </div>
+      </div>
+    </aside>
+
     <main>
       <section class="sphere-stage" id="spheres" data-spheres-stage aria-label="Interactive LOTTOMINDED lottery spheres">
         <canvas class="sphere-canvas" data-spheres-canvas aria-hidden="true"></canvas>
@@ -76,7 +101,8 @@
           </p>
           <div class="sphere-actions">
             <button class="primary-action" type="button" data-reroll-spheres>Reroll Spheres</button>
-          <a class="secondary-action" href="./beat2lotto-plus.html#beat2lotto">Open Beat2Lotto+&trade;</a>
+            <button class="secondary-action" type="button" data-sphere-shadow-open>Open Number Run</button>
+            <a class="secondary-action" href="./beat2lotto-plus.html#beat2lotto">Open Beat2Lotto+&trade;</a>
             <a class="secondary-action" href="./lottomind-stem-studio/index.html">Launch Studio</a>
           </div>
         </div>
@@ -147,7 +173,7 @@
 
     <script src="./assets/js/lm-page-transition-audio.js?v=verified-transitions-1" defer></script>
     <script src="./assets/js/lm-page-transition.js?v=transition-hotfix-2" defer></script>
-    <script src="./site.js?v=sphere-menu-remove-1" defer></script>
-    <script src="./lottery-spheres.js?v=perf-fixes-1" defer></script>
+    <script src="./site.js?v=rewards-popups-2" defer></script>
+    <script src="./lottery-spheres.js?v=spheres-number-run-2" defer></script>
   </body>
 </html>

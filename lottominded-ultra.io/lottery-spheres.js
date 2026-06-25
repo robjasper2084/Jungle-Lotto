@@ -18,6 +18,10 @@
   const audioStatus = document.querySelector("[data-sphere-audio-status]");
   const sphereSoundtrack = document.querySelector("[data-sphere-soundtrack]");
   const liveMixAudio = document.querySelector("[data-live-player] [data-live-player-audio]");
+  const shadowPopup = document.querySelector("[data-sphere-shadow-popup]");
+  const shadowFrame = document.querySelector("[data-sphere-shadow-frame]");
+  const shadowOpenButtons = document.querySelectorAll("[data-sphere-shadow-open]");
+  const shadowCloseButtons = document.querySelectorAll("[data-sphere-shadow-close]");
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
   const sphereAudioGateEnabled = false;
   const sphereSoundtrackFullVolume = 0.58;
@@ -63,6 +67,47 @@
   let moveTriggerCount = 0;
   let lastMovePoint = null;
   let lastMoveTriggerAt = 0;
+  let shadowResumeSphereSoundtrack = false;
+  let shadowResumeLiveMix = false;
+
+  function openShadowPopup() {
+    if (!shadowPopup) return;
+    if (shadowFrame && !shadowFrame.getAttribute("src")) {
+      shadowFrame.setAttribute("src", shadowFrame.dataset.src || "");
+    }
+    shadowResumeSphereSoundtrack = Boolean(sphereSoundtrack && !sphereSoundtrack.paused);
+    shadowResumeLiveMix = Boolean(liveMixAudio && !liveMixAudio.paused);
+    sphereSoundtrack?.pause();
+    liveMixAudio?.pause();
+    shadowPopup.classList.remove("is-hidden");
+    shadowPopup.setAttribute("aria-hidden", "false");
+    document.body.classList.add("has-sphere-shadow-popup");
+  }
+
+  function closeShadowPopup() {
+    if (!shadowPopup) return;
+    shadowPopup.classList.add("is-hidden");
+    shadowPopup.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("has-sphere-shadow-popup");
+    shadowFrame?.removeAttribute("src");
+    if (shadowResumeSphereSoundtrack && sphereSoundtrack) {
+      sphereSoundtrack.play().catch(() => {});
+    }
+    if (shadowResumeLiveMix && liveMixAudio) {
+      liveMixAudio.play().catch(() => {});
+    }
+    shadowResumeSphereSoundtrack = false;
+    shadowResumeLiveMix = false;
+  }
+
+  shadowOpenButtons.forEach((button) => button.addEventListener("click", openShadowPopup));
+  shadowCloseButtons.forEach((button) => button.addEventListener("click", closeShadowPopup));
+  shadowPopup?.addEventListener("click", (event) => {
+    if (event.target === shadowPopup) closeShadowPopup();
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && !shadowPopup?.classList.contains("is-hidden")) closeShadowPopup();
+  });
 
   function clamp01(value) {
     return Math.max(0, Math.min(1, Number(value) || 0));

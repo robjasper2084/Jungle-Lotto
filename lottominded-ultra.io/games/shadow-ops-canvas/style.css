@@ -1132,6 +1132,62 @@ body.touch-hidden .touchbar {
   display: none;
 }
 
+body.is-embedded .screen {
+  padding: clamp(8px, 1.8vw, 18px);
+}
+
+body.is-embedded .results-panel {
+  width: min(390px, calc(100vw - 22px));
+  max-height: calc(100vh - 28px);
+  padding: clamp(10px, 1.7vw, 14px);
+}
+
+body.is-embedded .results-panel h2 {
+  font-size: clamp(1.45rem, 3.2vw, 2.2rem);
+}
+
+body.is-embedded .results-panel .screen-copy {
+  margin-top: 6px;
+  font-size: clamp(0.68rem, 1.35vw, 0.82rem);
+}
+
+body.is-embedded .results-panel .result-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 5px;
+  margin-top: 9px;
+}
+
+body.is-embedded .results-panel .result-grid span {
+  min-height: 34px;
+  padding: 5px 6px;
+  font-size: 0.52rem;
+}
+
+body.is-embedded .results-panel .result-grid strong {
+  font-size: 0.75rem;
+}
+
+body.is-embedded .results-panel .lottery-panel {
+  margin-top: 7px;
+  padding: 7px;
+}
+
+body.is-embedded .results-panel .button-row {
+  gap: 5px;
+  margin-top: 8px;
+}
+
+body.is-embedded .results-panel .button-row button {
+  min-height: 32px;
+  font-size: 0.58rem;
+}
+
+body.is-embedded .touchbar {
+  inset: auto max(8px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
+  transform: scale(0.78);
+  transform-origin: bottom center;
+}
+
 body.compact-play .game-shell {
   place-items: start center;
 }

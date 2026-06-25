@@ -3,6 +3,7 @@
 
   const canvas = document.getElementById("game");
   const ctx = canvas.getContext("2d");
+  if (window.self !== window.top) document.body.classList.add("is-embedded");
 
   const W = 1280;
   const H = 720;
@@ -23,6 +24,10 @@
   const MUSIC_VOLUME = 0.32;
   const BOSS_MUSIC_VOLUME = 0.38;
   const SFX_GAIN_BOOST = 1.65;
+  const REWARD_BUILD_ID = "shadow-ops-2026-06-25";
+  let rewardClient = null;
+  let rewardTask = Promise.resolve();
+  let rewardRunKey = "";
 
   const ASSETS = {
     backplate: "./assets/backgrounds/higgsfield-soul-location-backplate.png",
@@ -296,6 +301,55 @@
       ]
     }
   ];
+
+  function beginRewardRun(modeKey) {
+    rewardClient?.close?.();
+    rewardTask = Promise.resolve();
+    rewardRunKey = `shadow-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+    rewardClient = window.LottoMindGameRewards?.createClient?.({
+      gameId: "shadow_ops",
+      buildId: REWARD_BUILD_ID,
+      mode: modeKey === "solo" ? "solo" : "arcade",
+      onStatus: (event) => {
+        if (event.status === "error") console.warn("[Shadow Ops rewards]", event.detail);
+      }
+    }) || null;
+    emitRewardEvent("shadow.run_started", {
+      runMode: modeKey,
+      difficulty: settings.difficulty || "arcade",
+      localPlayerCount: modeKey === "solo" ? 1 : 2,
+      debug: DEBUG
+    });
+  }
+
+  function emitRewardEvent(type, payload, options = {}) {
+    if (!rewardClient) return;
+    rewardTask = rewardTask.then(async () => {
+      const event = await rewardClient.emit({ type, payload });
+      if (options.flush) await rewardClient.flush();
+      if (options.finalize && event) {
+        await rewardClient.finalize({
+          idempotencyKey: options.idempotencyKey || rewardRunKey || event.eventId,
+          completionEventId: event.eventId
+        });
+      }
+    }).catch((error) => {
+      console.warn("[Shadow Ops rewards]", error);
+    });
+  }
+
+  function rewardLevelId(state) {
+    return String(state.level?.id ?? state.levelIndex + 1);
+  }
+
+  function rewardRequiredKeys(state) {
+    const id = rewardLevelId(state);
+    return [1, 2, 3].map((index) => `level-${id}-key-${index}`);
+  }
+
+  function rewardLivesRemaining(state) {
+    return allPlayers(state).reduce((total, player) => total + Math.max(0, player.lives || 0), 0);
+  }
 
   const PLAYER_ROWS = {
     run: 0,
@@ -1325,6 +1379,7 @@
     const twoPlayer = runMode === "two-player" || coOp || runMode === true;
     const modeKey = coOp ? "coop" : twoPlayer ? "two-player" : "solo";
     pendingRunMode = modeKey;
+    beginRewardRun(modeKey);
     run = createRun({ coOp: twoPlayer, runMode: modeKey });
     setMode("playing");
     pulseTimer = 0;
@@ -1512,6 +1567,11 @@
     for (const player of allPlayers(state)) {
       addBurst(state, player.x + 28, player.y + 80, player.index === 1 ? colors.cyan : colors.gold, 24, 220);
     }
+    emitRewardEvent("shadow.level_started", {
+      levelId: rewardLevelId(state),
+      levelIndex: state.levelIndex,
+      difficulty: settings.difficulty || "arcade"
+    });
   }
 
   function resetPlayerForLevel(p, playerIndex, fresh) {
@@ -2529,6 +2589,10 @@
       addBurst(state, gx + 44, 430, colors.gold, 60, 520);
       playTone(320, 0.12, "triangle", 0.06);
       playTone(640, 0.18, "sine", 0.04);
+      emitRewardEvent("shadow.gate_opened", {
+        levelId: rewardLevelId(state),
+        uniqueKeysCollected: state.keys
+      });
     }
   }
 
@@ -2563,6 +2627,10 @@
       addBurst(state, pickup.x, pickup.y, colors.gold, 28, 340);
       playTone(520, 0.08, "triangle", 0.045);
       playTone(960, 0.12, "sine", 0.035);
+      emitRewardEvent("shadow.key_collected", {
+        levelId: rewardLevelId(state),
+        keyId: `level-${rewardLevelId(state)}-key-${state.keys}`
+      });
     }
     if (pickup.type === "health") {
       p.hp = clamp(p.hp + 1, 0, p.maxHp);
@@ -3093,6 +3161,14 @@
     addCombo(state, 3);
     addBurst(state, boss.x + boss.w * 0.5, boss.y + boss.h * 0.5, colors.gold, 90, 720);
     addFxBurst(state, boss.x + boss.w * 0.5, boss.y + boss.h * 0.5, FX_ROWS.hitSpark, 310, 0.7);
+    emitRewardEvent("shadow.boss_defeated", {
+      levelId: rewardLevelId(state),
+      bossId: boss.kind,
+      elapsedTicks: Math.round(state.levelTime * 60),
+      playerLivesRemaining: rewardLivesRemaining(state),
+      score: state.stats.score,
+      kills: state.stats.kills
+    });
     addShake(state, FEEDBACK.slamShake);
     setObjective(state, "Vault Lottery Terminal unlocked", 4);
     playTone(180, 0.08, "sawtooth", 0.05);
@@ -3148,6 +3224,10 @@
       setObjective(state, `Defeat ${state.boss.name}`, 3.5);
       playTone(120, 0.12, "sawtooth", 0.055);
       playTone(70, 0.22, "triangle", 0.045);
+      emitRewardEvent("shadow.boss_started", {
+        levelId: rewardLevelId(state),
+        bossId: state.boss.kind
+      });
     }
 
     if (state.extractionOpen && activePlayers(state).some((p) => p.x + p.w * 0.5 > extractionX(state))) {
@@ -3209,6 +3289,9 @@
     if (state.levelCompleteTimer > 0) return;
     const finalLevel = state.levelIndex >= LEVELS.length - 1;
     const ticket = ensureLevelTicket(state, "auto-extraction");
+    emitRewardEvent("shadow.extraction_reached", {
+      levelId: rewardLevelId(state)
+    });
     state.levelResults.push({
       id: state.level.id,
       title: state.level.title,
@@ -3234,6 +3317,20 @@
     }
     playTone(finalLevel ? 180 : 260, 0.20, "triangle", 0.055);
     playTone(finalLevel ? 520 : 720, 0.18, "sine", 0.04);
+    emitRewardEvent("shadow.level_completed", {
+      levelId: rewardLevelId(state),
+      levelTimeMs: Math.round(state.levelTime * 1000),
+      campaignTimeMs: Math.round(state.campaignTime * 1000),
+      score: state.stats.score,
+      kills: state.stats.kills,
+      maximumCombo: state.stats.maxCombo,
+      livesRemaining: rewardLivesRemaining(state),
+      requiredKeyIds: rewardRequiredKeys(state),
+      bossId: state.level.boss,
+      bossDefeated: state.bossDefeated,
+      extractionReached: state.extractionOpen,
+      difficulty: settings.difficulty || "arcade"
+    }, { flush: !finalLevel });
   }
 
   function updateCamera(state, dt = STEP) {
@@ -3396,6 +3493,16 @@
     dom.resultPick4.textContent = finalTicket.pick4;
     renderPick6Balls(dom.resultLotto6, finalTicket.pick6);
     renderRunLotteryDrops(run);
+    if (victory) {
+      emitRewardEvent("shadow.campaign_completed", {
+        completedLevelIds: run.levelResults.map((level) => String(level.id)),
+        totalCampaignTimeMs: Math.round(run.campaignTime * 1000),
+        score: stats.score,
+        kills: stats.kills,
+        maximumCombo: stats.maxCombo,
+        difficulty: settings.difficulty || "arcade"
+      }, { finalize: true, idempotencyKey: rewardRunKey });
+    }
     setMode("results");
   }
 

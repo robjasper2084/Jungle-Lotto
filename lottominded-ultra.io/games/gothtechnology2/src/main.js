@@ -1,4 +1,4 @@
-import { GothTechnologyGame } from "./scenes/game.js?v=shadow-ops-fix-1";
+import { GothTechnologyGame } from "./scenes/game.js?v=rewards-sdk-1";
 
 const syncViewportHeight = () => {
   document.documentElement.style.setProperty("--app-height", `${window.innerHeight}px`);

@@ -92,9 +92,10 @@ const compactHeaderLabels =
   document.body.classList.contains("manual-page");
 const conciseSoundtrackLabels = document.body.classList.contains("home-page");
 const HEADER_COLLAPSED_KEY = "lottominded.ultra.siteHeaderCollapsed.v1";
-const STARTUP_MODAL_SEEN_KEY = "lottominded.ultra.homeStartupSeen.v3";
 const STARTUP_MODAL_RETURN_DELAY = 40000;
 const STARTUP_MODAL_RETURN_VISIBLE_MS = 60000;
+const GAME_PIP_AUTO_DELAY = 90000;
+const GAME_PIP_AUTO_KEY = "lottominded.ultra.homeGamePipAutoShown.v1";
 const MEMBER_SIGNUP_KEY = "lottominded.ultra.memberSignup.v1";
 const PROMPT_ACCESS_KEY = "lottominded.ultra.promptAccess.v1";
 const PROMPT_ACCESS_PASSWORD = "lottomind";
@@ -2615,18 +2616,27 @@ function setupInlineSoundVideos() {
 setupInlineSoundVideos();
 
 function hasSeenStartupVideo() {
-  try {
-    return localStorage.getItem(STARTUP_MODAL_SEEN_KEY) === "true";
-  } catch {
-    return false;
-  }
+  return Boolean(window.__lottomindStartupVideoSeenThisLoad);
 }
 
 function rememberStartupVideoSeen() {
+  window.__lottomindStartupVideoSeenThisLoad = true;
+}
+
+function hasAutoShownGamePip() {
   try {
-    localStorage.setItem(STARTUP_MODAL_SEEN_KEY, "true");
+    return sessionStorage.getItem(GAME_PIP_AUTO_KEY) === "true";
   } catch {
-    // Storage may be unavailable in private or locked-down browser modes.
+    return Boolean(window.__lottomindHomeGamePipAutoShown);
+  }
+}
+
+function rememberAutoShownGamePip() {
+  window.__lottomindHomeGamePipAutoShown = true;
+  try {
+    sessionStorage.setItem(GAME_PIP_AUTO_KEY, "true");
+  } catch {
+    // Session storage can be unavailable in locked-down browsers.
   }
 }
 
@@ -2655,6 +2665,7 @@ function showStartupVideo() {
     document.body.classList.remove("has-startup-modal");
     return;
   }
+  if (hasSeenStartupVideo()) return;
   document.body.classList.add("has-startup-modal");
   startupVideoModal.classList.remove("is-hidden");
   startupVideoModal.setAttribute("aria-hidden", "false");
@@ -2674,6 +2685,7 @@ function showStartupVideo() {
 
 function showStartupVideoReturn() {
   if (!startupVideoModal) return;
+  if (hasSeenStartupVideo()) return;
   document.body.classList.add("has-startup-modal");
   startupVideoModal.classList.remove("is-hidden");
   startupVideoModal.setAttribute("aria-hidden", "false");
@@ -3237,6 +3249,15 @@ function showGamePip() {
   }
 }
 
+function scheduleAutoGamePip() {
+  if (!gamePip || hasAutoShownGamePip()) return;
+  window.setTimeout(() => {
+    if (!gamePip || hasAutoShownGamePip() || document.visibilityState === "hidden") return;
+    rememberAutoShownGamePip();
+    showGamePip();
+  }, GAME_PIP_AUTO_DELAY);
+}
+
 function resumeGamePipSoundtrack() {
   if (!siteSoundtrack || !gamePipShouldResumeSoundtrack) return;
   playSiteSoundtrack({
@@ -3297,6 +3318,7 @@ function endGamePipDrag(event) {
 
 showStartupVideo();
 scheduleStartupVideoReturn();
+scheduleAutoGamePip();
 
 startupVideoCloseButtons.forEach((button) => {
   button.addEventListener("click", () => closeStartupVideo());

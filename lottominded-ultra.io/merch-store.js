@@ -14,6 +14,8 @@ const merchShadowCloseButtons = document.querySelectorAll("[data-merch-shadow-cl
 let merchHeroVideo = document.querySelector(".merch-hero-video");
 let merchHeroSoundToggle = document.querySelector("[data-merch-hero-sound-toggle]");
 const CART_STORAGE_KEY = "lottomind.merch.cart.v1";
+const MERCH_SHADOW_AUTO_DELAY = 90000;
+const MERCH_SHADOW_AUTO_KEY = "lottomind.merch.shadowAutoShown.v1";
 let merchHeroToggleAt = 0;
 let merchShadowReturnFocus = null;
 
@@ -226,6 +228,8 @@ async function playMerchCapsuleSound() {
   resetMerchCapsuleVideo();
   try {
     merchSoundVideo.muted = false;
+    merchSoundVideo.defaultMuted = false;
+    merchSoundVideo.removeAttribute("muted");
     merchSoundVideo.volume = 0.78;
     await merchSoundVideo.play();
     played = true;
@@ -249,6 +253,8 @@ function startMerchCapsuleOnPageOpen() {
   if (!merchSoundVideo) return;
   merchSoundVideo.autoplay = true;
   merchSoundVideo.playsInline = true;
+  merchSoundVideo.setAttribute("autoplay", "");
+  merchSoundVideo.setAttribute("playsinline", "");
   playMerchCapsuleSound();
 }
 
@@ -289,6 +295,32 @@ function closeMerchShadowPopup() {
   merchShadowFrame?.removeAttribute("src");
   merchShadowReturnFocus?.focus?.({ preventScroll: true });
   merchShadowReturnFocus = null;
+}
+
+function hasAutoShownMerchShadowPopup() {
+  try {
+    return sessionStorage.getItem(MERCH_SHADOW_AUTO_KEY) === "true";
+  } catch {
+    return Boolean(window.__lottomindMerchShadowAutoShown);
+  }
+}
+
+function rememberAutoShownMerchShadowPopup() {
+  window.__lottomindMerchShadowAutoShown = true;
+  try {
+    sessionStorage.setItem(MERCH_SHADOW_AUTO_KEY, "true");
+  } catch {
+    // Session storage may be unavailable in private browser modes.
+  }
+}
+
+function scheduleAutoMerchShadowPopup() {
+  if (!merchShadowPopup || hasAutoShownMerchShadowPopup()) return;
+  window.setTimeout(() => {
+    if (!merchShadowPopup || hasAutoShownMerchShadowPopup() || document.visibilityState === "hidden") return;
+    rememberAutoShownMerchShadowPopup();
+    openMerchShadowPopup();
+  }, MERCH_SHADOW_AUTO_DELAY);
 }
 
 function toggleMerchHeroSound(event) {
@@ -462,6 +494,7 @@ merchSoundVideo?.addEventListener("volumechange", () => {
 
 window.addEventListener("load", () => {
   window.setTimeout(startMerchCapsuleOnPageOpen, 180);
+  scheduleAutoMerchShadowPopup();
 });
 
 if (document.readyState === "loading") {
