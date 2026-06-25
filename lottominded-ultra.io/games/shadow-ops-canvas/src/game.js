@@ -21,8 +21,10 @@
   const LOTTERY_DISCLAIMER = "Random number generator - not an official lottery ticket or guarantee.";
   const GAME_MUSIC_SRC = "./assets/audio/digital-static-10.mp3";
   const MUSIC_TRACK_VERSION = "digital-static-10";
-  const MUSIC_VOLUME = 0.32;
-  const BOSS_MUSIC_VOLUME = 0.38;
+  const MENU_MUSIC_VOLUME = 0.46;
+  const GAMEPLAY_MUSIC_VOLUME = 0.22;
+  const BOSS_MUSIC_VOLUME = 0.28;
+  const AMBIENT_MUSIC_VOLUME = 0.16;
   const SFX_GAIN_BOOST = 1.65;
   const REWARD_BUILD_ID = "shadow-ops-2026-06-25";
   let rewardClient = null;
@@ -5566,7 +5568,7 @@
     gameMusic = new Audio(GAME_MUSIC_SRC);
     gameMusic.loop = true;
     gameMusic.preload = "auto";
-    gameMusic.volume = MUSIC_VOLUME;
+    gameMusic.volume = MENU_MUSIC_VOLUME;
     return gameMusic;
   }
 
@@ -5588,12 +5590,26 @@
     }
   }
 
+  function currentMusicVolume() {
+    if (mode === "playing") {
+      return run?.boss && !run.bossDefeated ? BOSS_MUSIC_VOLUME : GAMEPLAY_MUSIC_VOLUME;
+    }
+    if (mode === "paused" || mode === "lottery") return AMBIENT_MUSIC_VOLUME;
+    if (mode === "settings" && (modeBeforeSettings === "paused" || modeBeforeSettings === "playing")) {
+      return AMBIENT_MUSIC_VOLUME;
+    }
+    return MENU_MUSIC_VOLUME;
+  }
+
+  function shouldPlayGameMusic() {
+    return settings.music && ["title", "playing", "paused", "settings", "results", "lottery"].includes(mode);
+  }
+
   function syncGameMusic() {
     if (!gameMusic && !settings.music) return;
     const track = ensureGameMusic();
-    const shouldPlay = settings.music && mode === "playing";
-    track.volume = run?.boss && !run.bossDefeated ? BOSS_MUSIC_VOLUME : MUSIC_VOLUME;
-    if (!shouldPlay) {
+    track.volume = currentMusicVolume();
+    if (!shouldPlayGameMusic()) {
       track.pause();
       return;
     }
