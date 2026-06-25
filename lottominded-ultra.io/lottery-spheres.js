@@ -26,6 +26,8 @@
   const sphereAudioGateEnabled = false;
   const sphereSoundtrackFullVolume = 0.58;
   const sphereSoundtrackDuckedVolume = 0.22;
+  const sphereShadowAutoDelay = 1200;
+  const sphereShadowAutoKey = "lottomind.spheres.shadowAutoShown.v1";
   let sphereSoundtrackStarted = false;
   let sphereSoundtrackUserSkipped = false;
   let liveMixDucking = false;
@@ -70,8 +72,26 @@
   let shadowResumeSphereSoundtrack = false;
   let shadowResumeLiveMix = false;
 
+  function hasAutoShownShadowPopup() {
+    try {
+      return sessionStorage.getItem(sphereShadowAutoKey) === "true";
+    } catch {
+      return Boolean(window.__lottomindSphereShadowAutoShown);
+    }
+  }
+
+  function rememberAutoShownShadowPopup() {
+    window.__lottomindSphereShadowAutoShown = true;
+    try {
+      sessionStorage.setItem(sphereShadowAutoKey, "true");
+    } catch {
+      // Session storage can be unavailable in locked-down browsers.
+    }
+  }
+
   function openShadowPopup() {
     if (!shadowPopup) return;
+    if (!shadowPopup.classList.contains("is-hidden")) return;
     if (shadowFrame && !shadowFrame.getAttribute("src")) {
       shadowFrame.setAttribute("src", shadowFrame.dataset.src || "");
     }
@@ -108,6 +128,17 @@
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape" && !shadowPopup?.classList.contains("is-hidden")) closeShadowPopup();
   });
+
+  function scheduleAutoShadowPopup() {
+    if (!shadowPopup || hasAutoShownShadowPopup()) return;
+    window.setTimeout(() => {
+      if (!shadowPopup || hasAutoShownShadowPopup() || document.visibilityState === "hidden") return;
+      rememberAutoShownShadowPopup();
+      openShadowPopup();
+    }, sphereShadowAutoDelay);
+  }
+
+  scheduleAutoShadowPopup();
 
   function clamp01(value) {
     return Math.max(0, Math.min(1, Number(value) || 0));
