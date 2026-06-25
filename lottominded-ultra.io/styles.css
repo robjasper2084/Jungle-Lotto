@@ -13108,6 +13108,34 @@ body.beat2lotto-current-page #player.sphere-orb-live-player {
   --player-orb-size: clamp(292px, 36.72vw, 367px);
 }
 
+/* Beat2Lotto header: lengthen the orb tray so the full tab set reads cleanly. */
+body.beat2lotto-current-page .site-header.home-sphere-header.global-sphere-header {
+  grid-template-columns: minmax(10.5rem, 13.4rem) minmax(0, 1fr) minmax(3.4rem, auto) !important;
+  gap: clamp(0.4rem, 0.82vw, 0.86rem) !important;
+  padding-inline: clamp(0.5rem, 1.1vw, 1rem) !important;
+}
+
+body.beat2lotto-current-page .site-header.home-sphere-header.global-sphere-header nav {
+  width: min(100%, 72rem) !important;
+  min-width: min(100%, 45rem) !important;
+  gap: clamp(0.22rem, 0.56vw, 0.56rem) !important;
+  padding-inline: clamp(0.56rem, 1vw, 0.92rem) !important;
+}
+
+body.beat2lotto-current-page .site-header.home-sphere-header.global-sphere-header .brand {
+  gap: 0.54rem !important;
+}
+
+body.beat2lotto-current-page .site-header.home-sphere-header.global-sphere-header .brand img {
+  width: 2rem !important;
+  height: 2rem !important;
+}
+
+body.beat2lotto-current-page .site-header.home-sphere-header.global-sphere-header .direct-launch {
+  justify-self: end !important;
+  min-width: 3.4rem !important;
+}
+
 /* Lottery Spheres header: keep the exact home artwork-orb tab treatment. */
 .lottery-spheres-page .site-header:is(.lottery-spheres-header, .home-sphere-header.global-sphere-header) nav a,
 .lottery-spheres-page .site-header:is(.lottery-spheres-header, .home-sphere-header.global-sphere-header) nav a:is([aria-current], .nav-signal-active),
