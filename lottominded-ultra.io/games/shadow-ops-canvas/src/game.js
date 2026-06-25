@@ -1381,6 +1381,7 @@
     pendingRunMode = modeKey;
     beginRewardRun(modeKey);
     run = createRun({ coOp: twoPlayer, runMode: modeKey });
+    restartGameMusic();
     setMode("playing");
     pulseTimer = 0;
     playTone(420, 0.08, "triangle", 0.05);
@@ -5567,6 +5568,24 @@
     gameMusic.preload = "auto";
     gameMusic.volume = MUSIC_VOLUME;
     return gameMusic;
+  }
+
+  function restartGameMusic() {
+    if (!settings.music && !gameMusic) return;
+    const track = ensureGameMusic();
+    musicPlayBlocked = false;
+    track.pause();
+    try {
+      track.currentTime = 0;
+    } catch {
+      track.addEventListener("loadedmetadata", () => {
+        try {
+          track.currentTime = 0;
+        } catch {
+          // Some mobile browsers delay seekability until the first user-started play.
+        }
+      }, { once: true });
+    }
   }
 
   function syncGameMusic() {
