@@ -401,6 +401,10 @@
   align-items: center;
 }
 
+.merch-signal-action {
+  cursor: pointer;
+}
+
 .merch-hero-product {
   position: relative;
   align-self: center;
@@ -536,7 +540,7 @@ body.has-merch-shadow-popup {
 .merch-shadow-popup {
   position: fixed;
   inset: 0;
-  z-index: 90;
+  z-index: 2147482800;
   display: grid;
   place-items: center;
   padding: clamp(1rem, 3vw, 2.5rem);
@@ -547,6 +551,19 @@ body.has-merch-shadow-popup {
   backdrop-filter: blur(18px) saturate(1.25);
 }
 
+.merch-shadow-popup::before {
+  position: absolute;
+  inset: 0;
+  content: "";
+  pointer-events: none;
+  background:
+    linear-gradient(rgba(41, 247, 255, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(41, 247, 255, 0.05) 1px, transparent 1px),
+    radial-gradient(circle at 50% 50%, transparent 0 38%, rgba(2, 5, 12, 0.52) 72%);
+  background-size: 4.5rem 4.5rem, 4.5rem 4.5rem, auto;
+  mask-image: radial-gradient(circle at 50% 50%, #000 0 72%, transparent 100%);
+}
+
 .merch-shadow-popup.is-hidden {
   display: none;
 }
@@ -554,13 +571,13 @@ body.has-merch-shadow-popup {
 .merch-shadow-popup-panel {
   position: relative;
   display: grid;
-  grid-template-columns: minmax(14rem, 0.48fr) minmax(24rem, 1fr);
+  grid-template-columns: minmax(16rem, 0.35fr) minmax(36rem, 1fr);
   gap: clamp(1rem, 2vw, 1.5rem);
-  width: min(72rem, 94vw);
-  max-height: min(46rem, 88vh);
+  width: min(88rem, 94vw);
+  max-height: min(50rem, 88vh);
   overflow: hidden;
   border: 1px solid rgba(41, 247, 255, 0.78);
-  border-radius: 1.35rem;
+  border-radius: 8px;
   background:
     linear-gradient(135deg, rgba(4, 16, 34, 0.96), rgba(7, 10, 26, 0.9) 52%, rgba(18, 52, 50, 0.88)),
     rgba(4, 9, 20, 0.92);
@@ -569,6 +586,7 @@ body.has-merch-shadow-popup {
     0 0 2rem rgba(41, 247, 255, 0.3),
     0 1.8rem 5rem rgba(0, 0, 0, 0.66);
   isolation: isolate;
+  animation: merchShadowModalIn 360ms cubic-bezier(0.2, 0.8, 0.18, 1) both;
 }
 
 .merch-shadow-popup-panel::before {
@@ -643,6 +661,7 @@ body.has-merch-shadow-popup {
   position: relative;
   align-self: center;
   min-width: 0;
+  height: clamp(24rem, 58vh, 38rem);
   margin: clamp(1rem, 2vw, 1.5rem);
   margin-left: 0;
   overflow: hidden;
@@ -671,8 +690,8 @@ body.has-merch-shadow-popup {
 .merch-shadow-popup-stage iframe {
   display: block;
   width: 100%;
-  aspect-ratio: 16 / 9;
-  min-height: clamp(18rem, 48vw, 34rem);
+  height: 100%;
+  min-height: 100%;
   border: 0;
   background: #020813;
 }
@@ -1282,6 +1301,81 @@ body.has-merch-shadow-popup {
   user-select: none;
 }
 
+.merch-rail-shell {
+  position: relative;
+  min-width: 0;
+  isolation: isolate;
+}
+
+.merch-product-rail-shell {
+  grid-column: 2;
+}
+
+.merch-gallery-rail-shell {
+  grid-column: 1;
+  grid-row: 2;
+  width: min(100%, 42rem);
+}
+
+.merch-rail-shell::before,
+.merch-rail-shell::after {
+  position: absolute;
+  top: 0;
+  bottom: 0.95rem;
+  z-index: 3;
+  width: clamp(2rem, 5vw, 4rem);
+  content: "";
+  pointer-events: none;
+}
+
+.merch-rail-shell::before {
+  left: -0.1rem;
+  background: linear-gradient(90deg, rgba(2, 7, 15, 0.92), transparent);
+}
+
+.merch-rail-shell::after {
+  right: -0.1rem;
+  background: linear-gradient(270deg, rgba(2, 7, 15, 0.92), transparent);
+}
+
+.merch-rail-controls {
+  position: absolute;
+  right: 0.25rem;
+  top: -3.15rem;
+  z-index: 5;
+  display: flex;
+  gap: 0.45rem;
+}
+
+.merch-rail-controls button {
+  display: grid;
+  width: 2.45rem;
+  height: 2.45rem;
+  place-items: center;
+  border: 1px solid rgba(41, 247, 255, 0.54);
+  border-radius: 50%;
+  color: #f8fbff;
+  background:
+    radial-gradient(circle at 34% 24%, rgba(255, 255, 255, 0.28), transparent 36%),
+    linear-gradient(145deg, rgba(4, 52, 66, 0.98), rgba(18, 16, 44, 0.98));
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08),
+    0 0 1rem rgba(41, 247, 255, 0.2);
+  font-family: var(--display-font);
+  font-size: 1.05rem;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.merch-rail-controls button:is(:hover, :focus-visible) {
+  border-color: rgba(255, 224, 113, 0.72);
+  color: #fff6c7;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.12),
+    0 0 1.25rem rgba(41, 247, 255, 0.32),
+    0 0 1.8rem rgba(255, 224, 113, 0.16);
+}
+
 .product-grid.merch-swipe-rail {
   display: flex;
   grid-template-columns: none;
@@ -1289,7 +1383,8 @@ body.has-merch-shadow-popup {
   gap: clamp(0.85rem, 2vw, 1.05rem);
   overflow-x: auto;
   overflow-y: hidden;
-  padding: 0.3rem 0.25rem 1rem;
+  width: 100%;
+  padding: 0.3rem 0.75rem 1rem;
   perspective: none;
 }
 
@@ -1713,10 +1808,10 @@ body.has-merch-shadow-popup {
   grid-template-columns: none;
   align-items: stretch;
   gap: 0.75rem;
-  width: min(100%, 42rem);
+  width: 100%;
   overflow-x: auto;
   overflow-y: hidden;
-  padding: 0.2rem 0.25rem 0.95rem;
+  padding: 0.2rem 0.75rem 0.95rem;
 }
 
 .gallery-grid article {
@@ -1761,6 +1856,7 @@ body.has-merch-shadow-popup {
   position: fixed;
   top: 6rem;
   right: 1rem;
+  z-index: 2147482400;
   width: min(30rem, calc(100vw - 2rem));
   max-height: calc(100vh - 8rem);
   overflow: auto;
@@ -1771,13 +1867,19 @@ body.has-merch-shadow-popup {
     linear-gradient(145deg, rgba(7, 20, 34, 0.98), rgba(3, 5, 10, 0.98));
   box-shadow: 0 2rem 5rem rgba(0, 0, 0, 0.5);
   padding: 1.15rem;
+  opacity: 0;
+  pointer-events: none;
   transform: translateX(calc(100% + 2rem));
-  transition: transform 260ms ease;
-  z-index: 40;
+  visibility: hidden;
+  transition: transform 260ms ease, opacity 260ms ease, visibility 0s linear 260ms;
 }
 
 .bag-drawer.is-open {
+  opacity: 1;
+  pointer-events: auto;
   transform: translateX(0);
+  visibility: visible;
+  transition-delay: 0s;
 }
 
 .cart-close {
@@ -2078,6 +2180,19 @@ body.has-merch-shadow-popup {
   }
 }
 
+@keyframes merchShadowModalIn {
+  from {
+    opacity: 0;
+    transform: translateY(1.4rem) scale(0.96);
+    filter: blur(2px) saturate(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0) saturate(1);
+  }
+}
+
 @keyframes merch-product-rise {
   from {
     opacity: 0;
@@ -2280,6 +2395,7 @@ body.has-merch-shadow-popup {
   .gallery-section,
   .merch-section-copy,
   .motion-gallery,
+  .merch-rail-shell,
   .product-grid,
   .gallery-motion-rail,
   .gallery-grid {
@@ -2297,6 +2413,8 @@ body.has-merch-shadow-popup {
 
   .merch-drop-section .merch-section-copy,
   .gallery-section .merch-section-copy,
+  .merch-product-rail-shell,
+  .merch-gallery-rail-shell,
   .gallery-motion-rail,
   .gallery-grid,
   .product-grid {
@@ -2309,6 +2427,14 @@ body.has-merch-shadow-popup {
     display: flex;
     grid-template-columns: none;
     width: 100%;
+  }
+
+  .merch-rail-controls {
+    position: relative;
+    top: auto;
+    right: auto;
+    justify-content: flex-end;
+    margin: 0 0 0.55rem;
   }
 
   .product-grid.merch-swipe-rail .product-card,
@@ -2359,10 +2485,11 @@ body.has-merch-shadow-popup {
 
   .merch-shadow-popup-stage {
     margin: 0 clamp(1rem, 4vw, 1.35rem);
+    height: min(56vw, 22rem);
   }
 
   .merch-shadow-popup-stage iframe {
-    min-height: min(56vw, 22rem);
+    min-height: 100%;
   }
 
   .merch-shadow-popup-rail {
@@ -2400,7 +2527,7 @@ body.has-merch-shadow-popup {
   }
 
   .merch-shadow-popup-stage iframe {
-    min-height: 15rem;
+    min-height: 100%;
   }
 }
 
@@ -2494,6 +2621,7 @@ body.has-merch-shadow-popup {
   .merch-strip-track,
   .merch-strip a,
   .product-grid::before,
+  .merch-shadow-popup-panel,
   .product-card,
   .product-card::before,
   .product-card::after,

@@ -1127,11 +1127,11 @@
 
 /* Glossy lotto-ball player shell */
 .lottery-spheres-page {
-  padding-bottom: clamp(240px, 30.4vw, 312px);
+  padding-bottom: clamp(300px, 38vw, 390px);
 }
 
 .lottery-spheres-page .spheres-live-player {
-  --player-orb-size: clamp(216px, 27.2vw, 272px);
+  --player-orb-size: clamp(270px, 34vw, 340px);
   bottom: max(14px, env(safe-area-inset-bottom));
   z-index: 240;
   grid-template-areas:
@@ -1294,11 +1294,11 @@
 
 @media (max-width: 560px) {
   .lottery-spheres-page {
-    padding-bottom: 240px;
+    padding-bottom: 320px;
   }
 
   .lottery-spheres-page .spheres-live-player {
-    --player-orb-size: min(62vw, 226px);
+    --player-orb-size: min(78vw, 282px);
     padding: 16px;
   }
 

@@ -30,7 +30,7 @@ function TitleVaultWorld(root, targetCanvas) {
   this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.75));
   if (THREE.SRGBColorSpace) this.renderer.outputColorSpace = THREE.SRGBColorSpace;
   this.textureLoader = new THREE.TextureLoader();
-  this.backdropTexture = loadTitleTexture(this, "title3d_ref_backdrop_v2.jpg");
+  this.backdropTexture = loadTitleTexture(this, "title3d_clean_backdrop_nohero_2.jpg");
   this.platformTexture = loadTitleTexture(this, "title3d_ref_platform_tile_v2.jpg", { repeat: [2.4, 2.4] });
   this.wallTexture = loadTitleTexture(this, "title3d_ref_wall_tile_v2.jpg", { repeat: [1.45, 2.25] });
 
@@ -61,6 +61,7 @@ function TitleVaultWorld(root, targetCanvas) {
   });
   this.observer.observe(this.root, { attributes: true, attributeFilter: ["class"] });
   this.canvas.dataset.titleWorldReady = "true";
+  window.__titleVaultWorld = this;
   requestAnimationFrame(() => animateTitleWorld(this));
 }
 
@@ -77,47 +78,15 @@ function buildScene(world) {
   scene.add(rimLight);
 
   makeHiggsfieldBackdrop(world);
-  makeReferenceWallPlanes(world);
-
-  const floorMat = new THREE.MeshStandardMaterial({
-    color: 0x06070b,
-    map: world.platformTexture,
-    metalness: 0.58,
-    roughness: 0.36,
-    emissive: 0x160022,
-    emissiveIntensity: 0.35
-  });
-  const floor = new THREE.Mesh(new THREE.PlaneGeometry(28, 18, 28, 18), floorMat);
-  floor.rotation.x = -Math.PI / 2;
-  floor.position.set(0, -0.08, -1.5);
-  scene.add(floor);
-
-  const grid = new THREE.GridHelper(28, 32, 0xffd66d, 0x38dbff);
-  grid.position.set(0, -0.05, -1.5);
-  grid.material.transparent = true;
-  grid.material.opacity = 0.18;
-  scene.add(grid);
-
+  makeTitleFloorGrid(world);
   makePlatform(world, -4.6, 0.42, 0.6, 3.1, 0.34, 1.2);
   makePlatform(world, 0.2, 0.35, -1.4, 5.6, 0.32, 1.45);
   makePlatform(world, 4.6, 0.52, -2.7, 3.2, 0.38, 1.4);
   makePlatform(world, 6.4, 1.8, -4.2, 2.5, 0.28, 1.05);
-
-  makeVaultGate(world, 1.15, 1.62, -4.65);
   makeDrone(world, -1.5, 3.0, -3.15, 0.0);
   makeDrone(world, 1.4, 3.28, -3.6, 1.4);
   makeDrone(world, 4.0, 2.75, -2.35, 2.6);
-  makeHeartCrystal(world, -2.55, 1.02, -0.5, 0.88);
-  makeHeartCrystal(world, 3.55, 1.2, -1.55, 0.72);
-  makeEnergyNode(world, -5.3, 1.16, -0.35, 0x38dbff, "vault-pad-left");
-  makeEnergyNode(world, 5.6, 1.28, -2.2, 0xffd66d, "vault-pad-right");
-  makeReferenceAssetLayer(world);
-
-  for (let i = 0; i < 8; i += 1) {
-    makeCircuitPylon(world, -7.4 + i * 2.18, 0.88 + (i % 3) * 0.18, -6.2 - (i % 2) * 0.5, i);
-  }
-
-  makeParticleField(world);
+  makeTitleFogAndEmblems(world);
 }
 
 function titleAssetUrl(file) {
@@ -161,6 +130,58 @@ function makeHiggsfieldBackdrop(world) {
   haze.position.set(0.3, 3.15, -7.92);
   haze.renderOrder = -9;
   world.scene.add(haze);
+}
+
+function makeTitleFloorGrid(world) {
+  const floorMat = new THREE.MeshStandardMaterial({
+    color: 0x06070b,
+    map: world.platformTexture,
+    metalness: 0.58,
+    roughness: 0.36,
+    emissive: 0x160022,
+    emissiveIntensity: 0.35
+  });
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(28, 18, 28, 18), floorMat);
+  floor.rotation.x = -Math.PI / 2;
+  floor.position.set(0, -0.08, -1.5);
+  world.scene.add(floor);
+
+  const grid = new THREE.GridHelper(28, 32, 0xffd66d, 0x38dbff);
+  grid.position.set(0, -0.05, -1.5);
+  grid.material.transparent = true;
+  grid.material.opacity = 0.18;
+  sceneSafeAdd(world.scene, grid);
+}
+
+function makeTitleFogAndEmblems(world) {
+  makeTitleSprite(world, "ref_cards/fog_floor_v2.png", 0.15, 0.72, -3.8, 9.6, 2.08, {
+    opacity: 0.26,
+    blending: THREE.AdditiveBlending,
+    renderOrder: -5
+  });
+  makeTitleSprite(world, "ref_cards/fog_center_v2.png", 0.2, 2.0, -5.25, 6.6, 3.1, {
+    opacity: 0.24,
+    blending: THREE.AdditiveBlending,
+    renderOrder: -4
+  });
+  makeTitleSprite(world, "ref_cards/m_emblem_v2.png", -6.35, 2.25, -3.35, 1.45, 1.58, {
+    name: "lottomind-emblem",
+    interactive: true,
+    opacity: 0.72,
+    bob: 0.014,
+    alphaTest: 0.08
+  });
+  makeTitleSprite(world, "ref_cards/lock_badge_v2.png", 6.18, 1.38, -2.28, 0.72, 0.9, {
+    name: "vault-lock-emblem",
+    interactive: true,
+    opacity: 0.9,
+    bob: 0.03,
+    alphaTest: 0.1
+  });
+}
+
+function sceneSafeAdd(scene, object) {
+  scene.add(object);
 }
 
 function makeReferenceWallPlanes(world) {

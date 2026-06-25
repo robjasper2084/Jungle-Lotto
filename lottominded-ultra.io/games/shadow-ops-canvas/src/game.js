@@ -310,7 +310,6 @@
     loadingScreen: document.getElementById("loadingScreen"),
     titleScreen: document.getElementById("titleScreen"),
     titleWorld: document.getElementById("titleWorld"),
-    titleTrailer: document.getElementById("titleTrailer"),
     pauseScreen: document.getElementById("pauseScreen"),
     settingsScreen: document.getElementById("settingsScreen"),
     resultsScreen: document.getElementById("resultsScreen"),
@@ -1279,7 +1278,6 @@
     dom.difficultySelect.value = DIFFICULTY[settings.difficulty] ? settings.difficulty : "arcade";
     document.body.classList.toggle("touch-hidden", !settings.touch);
     document.body.classList.toggle("touch-forced", settings.touch);
-    syncTitleTrailer();
     syncGameMusic();
   }
 
@@ -1307,23 +1305,8 @@
     dom.resultsScreen.classList.toggle("is-hidden", next !== "results");
     dom.lotteryTerminalScreen.classList.toggle("is-hidden", next !== "lottery");
     dom.hud.classList.toggle("is-hidden", !(next === "playing" || next === "paused" || next === "settings" || next === "lottery"));
-    syncTitleTrailer();
     syncGameMusic();
     updateHUD();
-  }
-
-  function syncTitleTrailer() {
-    if (!dom.titleTrailer) return;
-    const hasInteractiveWorld = Boolean(dom.titleWorld);
-    const shouldPlay = mode === "title" && !settings.reducedMotion && !hasInteractiveWorld;
-    dom.titleTrailer.classList.toggle("is-playing", shouldPlay);
-    if (!shouldPlay) {
-      dom.titleTrailer.pause();
-      return;
-    }
-    dom.titleTrailer.muted = true;
-    const playPromise = dom.titleTrailer.play();
-    if (playPromise?.catch) playPromise.catch(() => {});
   }
 
   function openSettings() {
@@ -3514,7 +3497,7 @@
   function drawLoadingCanvas() {
     ctx.fillStyle = "#030302";
     ctx.fillRect(0, 0, W, H);
-    drawCover(images.hero, 0, 0, 0.5);
+    drawTitleBackdropWash();
     ctx.fillStyle = "rgba(0,0,0,.72)";
     ctx.fillRect(0, 0, W, H);
     ctx.fillStyle = colors.gold;
@@ -3523,9 +3506,7 @@
   }
 
   function drawTitleCanvas() {
-    if (!drawCover(images.hero, 0, 0, 1)) {
-      drawBackground(0, 0);
-    }
+    drawTitleBackdropWash();
     const wash = ctx.createLinearGradient(0, 0, W, 0);
     wash.addColorStop(0, "rgba(0,0,0,.76)");
     wash.addColorStop(0.44, "rgba(0,0,0,.42)");
@@ -3533,6 +3514,29 @@
     wash.addColorStop(1, "rgba(0,0,0,.70)");
     ctx.fillStyle = wash;
     ctx.fillRect(0, 0, W, H);
+  }
+
+  function drawTitleBackdropWash() {
+    ctx.fillStyle = "#020104";
+    ctx.fillRect(0, 0, W, H);
+    if (images.backplate?.complete && images.backplate.naturalWidth) {
+      drawCover(images.backplate, 0, 0, 0.44);
+    }
+    ctx.save();
+    ctx.globalCompositeOperation = "screen";
+    const cyan = ctx.createRadialGradient(W * 0.22, H * 0.26, 20, W * 0.22, H * 0.26, 520);
+    cyan.addColorStop(0, "rgba(56,219,255,.12)");
+    cyan.addColorStop(0.42, "rgba(56,219,255,.04)");
+    cyan.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = cyan;
+    ctx.fillRect(0, 0, W, H);
+    const magenta = ctx.createRadialGradient(W * 0.82, H * 0.56, 30, W * 0.82, H * 0.56, 620);
+    magenta.addColorStop(0, "rgba(255,79,154,.16)");
+    magenta.addColorStop(0.36, "rgba(165,34,255,.08)");
+    magenta.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = magenta;
+    ctx.fillRect(0, 0, W, H);
+    ctx.restore();
   }
 
   function drawGame(state) {

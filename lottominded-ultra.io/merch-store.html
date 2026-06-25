@@ -10,7 +10,7 @@
     <title>LOTTOMINDED ULTRA | Merch + Gallery Store</title>
     <meta name="theme-color" content="#03050a" />
     <link rel="icon" href="./assets/brand/lm-orb-mark.webp" type="image/webp" />
-    <link rel="stylesheet" href="./styles.css?v=visual-polish-batch-2" />
+    <link rel="stylesheet" href="./styles.css?v=mascot-front-idle-5pct-1" />
     <script>
       try {
         if (sessionStorage.getItem("lmTransitionArriving") === "yes") {
@@ -19,7 +19,7 @@
       } catch (error) {}
     </script>
     <link rel="stylesheet" href="./assets/css/lm-page-transition.css?v=compositor-pass-1" />
-    <link rel="stylesheet" href="./merch-store.css?v=merch-mobile-audit-1" />
+    <link rel="stylesheet" href="./merch-store.css?v=merch-audit-fixes-1" />
     <link rel="stylesheet" href="./assets/css/juneteenth-event-popup.css?v=juneteenth-popup-half-1" />
   </head>
   <body class="merch-store-page has-sphere-tabs">
@@ -69,6 +69,7 @@
           <div class="merch-hero-actions">
             <a class="primary-action" href="#drop">Explore the Drop</a>
             <a class="secondary-action" href="#gallery">View Gallery</a>
+            <button class="secondary-action merch-signal-action" type="button" data-merch-shadow-open aria-haspopup="dialog">Open Signal Game</button>
           </div>
         </div>
         <div class="merch-hero-product" data-merch-sound-card>
@@ -127,7 +128,12 @@
             or another storefront later.
           </p>
         </div>
-        <div class="product-grid merch-swipe-rail" aria-label="Merch products" data-swipe-rail tabindex="0">
+        <div class="merch-rail-shell merch-product-rail-shell" data-rail-shell>
+          <div class="merch-rail-controls" aria-label="Merch products rail controls">
+            <button type="button" data-rail-prev aria-controls="merchProductRail" aria-label="Previous merch products">&lt;</button>
+            <button type="button" data-rail-next aria-controls="merchProductRail" aria-label="Next merch products">&gt;</button>
+          </div>
+        <div id="merchProductRail" class="product-grid merch-swipe-rail" aria-label="Merch products" data-swipe-rail tabindex="0">
           <article class="product-card">
             <img src="./assets/merch/detroit-embroidered-hoodie-closeup.opt.webp" alt="Close-up of embroidered Detroit hoodie graphic" loading="lazy" decoding="async" />
             <span class="product-hover-price" aria-hidden="true">$200</span>
@@ -219,6 +225,7 @@
             </div>
           </article>
         </div>
+        </div>
       </section>
 
       <section class="merch-section gallery-section" id="gallery" data-reveal data-merch-akari>
@@ -242,7 +249,12 @@
             <source src="./assets/merch/gallery-motion-upload-20260518.opt.mp4" type="video/mp4" />
           </video>
         </div>
-        <div class="gallery-grid merch-swipe-rail" data-swipe-rail tabindex="0">
+        <div class="merch-rail-shell merch-gallery-rail-shell" data-rail-shell>
+          <div class="merch-rail-controls" aria-label="Gallery rail controls">
+            <button type="button" data-rail-prev aria-controls="merchGalleryRail" aria-label="Previous gallery items">&lt;</button>
+            <button type="button" data-rail-next aria-controls="merchGalleryRail" aria-label="Next gallery items">&gt;</button>
+          </div>
+        <div id="merchGalleryRail" class="gallery-grid merch-swipe-rail" data-swipe-rail tabindex="0" aria-label="Gallery artwork">
           <article><img src="./assets/merch/lottomind-keychain-counter-display.webp" alt="LottoMind collectible keychain package gallery artwork" loading="lazy" decoding="async" /><span>Keychain Drop</span><strong class="gallery-price">$25</strong></article>
           <article><img src="./assets/merch/boogie-man-sweater.opt.webp" alt="Boogie Man knit sweater gallery artwork" loading="lazy" decoding="async" /><span>Boogie Knit</span><strong class="gallery-price">$365</strong></article>
           <article><img src="./assets/merch/city-of-detroit-1701-mark.opt.webp" alt="City of Detroit 1701 gallery artwork" loading="lazy" decoding="async" /><span>City 1701 Mark</span><strong class="gallery-price">$42</strong></article>
@@ -259,12 +271,13 @@
           <article><img src="./assets/merch/gallery-orb-05.opt.webp" alt="Neon LottoMind gallery artwork" loading="lazy" decoding="async" /><span>Cyber Brain Plate</span><strong class="gallery-price">$54</strong></article>
           <article><img src="./assets/merch/gallery-orb-06.opt.webp" alt="Neon LottoMind gallery artwork" loading="lazy" decoding="async" /><span>Studio Signal</span><strong class="gallery-price">$38</strong></article>
         </div>
+        </div>
       </section>
 
-      <aside class="bag-drawer cart-drawer" data-bag-drawer aria-label="Shopping cart drawer">
+      <aside class="bag-drawer cart-drawer" data-bag-drawer role="dialog" aria-modal="false" aria-hidden="true" aria-labelledby="merchCartTitle">
         <button class="cart-close" type="button" data-bag-close aria-label="Close shopping cart">X</button>
         <p class="cart-eyebrow">Lottomind&trade; Merch</p>
-        <h2>Shopping Cart</h2>
+        <h2 id="merchCartTitle">Shopping Cart</h2>
         <p>Local cart preview. Connect Shopify, Stripe Checkout, or another storefront when products are ready to sell.</p>
         <ul data-bag-items></ul>
         <div class="cart-total-row" aria-label="Cart subtotal">
@@ -272,37 +285,38 @@
           <strong data-bag-total>$0</strong>
         </div>
         <div class="cart-actions">
-          <button type="button" data-cart-clear>Clear Cart</button>
-          <button type="button" data-cart-checkout>Checkout Preview</button>
+          <button type="button" data-cart-clear aria-label="Clear all items from shopping cart">Clear Cart</button>
+          <button type="button" data-cart-checkout aria-label="Preview checkout connection status">Checkout Preview</button>
         </div>
-        <p class="cart-note" data-cart-note>Shipping and taxes are not calculated in this local preview.</p>
+        <p class="cart-note" data-cart-note aria-live="polite">Shipping and taxes are not calculated in this local preview.</p>
       </aside>
 
-      <aside class="merch-shadow-popup is-hidden" data-merch-shadow-popup aria-hidden="true" aria-labelledby="merchShadowTitle">
-        <div class="merch-shadow-popup-panel" role="dialog" aria-modal="true">
-          <button class="merch-shadow-popup-close" type="button" data-merch-shadow-close aria-label="Close Shadow Ops game">X</button>
-          <div class="merch-shadow-popup-copy">
-            <p class="merch-shadow-popup-kicker">Merch Vault Signal</p>
-            <h2 id="merchShadowTitle">Shadow Ops Canvas</h2>
-            <p>Limited capsule feed. Enter the signal room, hold the line, and return to the drop when the mission is clear.</p>
-          </div>
-          <div class="merch-shadow-popup-stage" aria-label="Shadow Ops Canvas game popup">
-            <iframe
-              title="Shadow Ops Canvas game"
-              data-merch-shadow-frame
-              data-src="./games/shadow-ops-canvas/index.html?bg=soul-location-1&amp;v=higgsfield-trailer-1"
-              allow="autoplay; fullscreen; gamepad"
-              loading="lazy"
-            ></iframe>
-          </div>
-          <div class="merch-shadow-popup-rail" aria-hidden="true">
-            <span>SOUL LOCATION LOCKED</span>
-            <span>TRAILER FEED LIVE</span>
-            <span>MERCH DROP ARMED</span>
-          </div>
-        </div>
-      </aside>
     </main>
+
+    <aside class="merch-shadow-popup is-hidden" data-merch-shadow-popup aria-hidden="true" aria-labelledby="merchShadowTitle">
+      <div class="merch-shadow-popup-panel" role="dialog" aria-modal="true" aria-describedby="merchShadowDescription" tabindex="-1">
+        <button class="merch-shadow-popup-close" type="button" data-merch-shadow-close aria-label="Close Shadow Ops game">X</button>
+        <div class="merch-shadow-popup-copy">
+          <p class="merch-shadow-popup-kicker">Merch Vault Signal</p>
+          <h2 id="merchShadowTitle">Shadow Ops Canvas</h2>
+          <p id="merchShadowDescription">Limited capsule feed. Enter the signal room, hold the line, and return to the drop when the mission is clear.</p>
+        </div>
+        <div class="merch-shadow-popup-stage" aria-label="Shadow Ops Canvas game popup">
+          <iframe
+            title="Shadow Ops Canvas game"
+            data-merch-shadow-frame
+            data-src="./games/shadow-ops-canvas/index.html?bg=soul-location-1&amp;v=higgsfield-trailer-1"
+            allow="autoplay; fullscreen; gamepad"
+            loading="lazy"
+          ></iframe>
+        </div>
+        <div class="merch-shadow-popup-rail" aria-hidden="true">
+          <span>SOUL LOCATION LOCKED</span>
+          <span>TRAILER FEED LIVE</span>
+          <span>MERCH DROP ARMED</span>
+        </div>
+      </div>
+    </aside>
 
     <footer>
       <span>LOTTOMINDED ULTRA</span>
@@ -312,9 +326,9 @@
 
     <script src="./assets/js/lm-page-transition-audio.js?v=verified-transitions-1" defer></script>
     <script src="./assets/js/lm-page-transition.js?v=transition-hotfix-2" defer></script>
-    <script src="./site.js?v=mascot-existing-assets-2" defer></script>
+    <script src="./site.js?v=mascot-front-idle-5pct-1" defer></script>
     <script src="./live-events.js?v=audio-artlines-2" defer></script>
-    <script src="./merch-store.js?v=shadow-ops-popup-1" defer></script>
+    <script src="./merch-store.js?v=merch-audit-fixes-1" defer></script>
     <script src="./assets/js/juneteenth-event-popup.js?v=juneteenth-event-3" defer></script>
   </body>
 </html>

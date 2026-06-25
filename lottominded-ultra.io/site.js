@@ -3629,11 +3629,15 @@ function setupMascotPointer() {
   const frameSequences = {
     flyUp: ["flyUp1", "flyUp2", "flyUp3", "flyUp4"],
     fallDown: ["fallDown1", "fallDown2", "fallDown3", "fallDown4"],
-    walkLeft: ["stepA", "walkLeft1", "stepB", "walkLeft3", "walkLeft4", "stepB"],
-    walkRight: ["stepA", "walkLeft1", "stepB", "walkLeft3", "walkLeft4", "stepB"],
-    runLeft: ["runA", "run", "runB", "runC", "runD", "runB"],
-    runRight: ["runA", "run", "runB", "runC", "runD", "runB"],
+    walkLeft: ["walkLeft1", "walkLeft2", "walkLeft3", "walkLeft4"],
+    walkRight: ["walkRight1", "walkRight2", "walkRight3", "walkRight4"],
+    runLeft: ["runLeft1", "runLeft2", "runLeft3", "runLeft4"],
+    runRight: ["runRight1", "runRight2", "runRight3", "runRight4"],
   };
+  const directionalFrames = new Set(
+    ["walkLeft", "walkRight", "runLeft", "runRight"]
+      .flatMap((sequence) => frameSequences[sequence] || [])
+  );
 
   Object.values(frames).forEach((src) => {
     const preload = new Image();
@@ -3684,6 +3688,11 @@ function setupMascotPointer() {
   function setFrame(name) {
     if (state.frame === name || !frames[name]) return;
     state.frame = name;
+    if (directionalFrames.has(name)) {
+      pointer.style.setProperty("--lm-mascot-frame-facing", "1");
+    } else {
+      pointer.style.removeProperty("--lm-mascot-frame-facing");
+    }
     image.src = frames[name];
   }
 
@@ -3823,8 +3832,15 @@ function setupMascotPointer() {
     setPointerClass("is-backward", moving && !sideMotion && vy < 0);
 
     if (!moving) {
-      setPointerClass("is-side", Boolean(state.lastSideDirection));
-      setFrame(state.lastSideDirection ? "sideIdle" : "front");
+      state.facing = 1;
+      state.sidePose = "";
+      state.lastSideDirection = "";
+      pointer.style.setProperty("--lm-mascot-facing", "1");
+      pointer.style.removeProperty("--lm-mascot-frame-facing");
+      setPointerClass("is-side", false);
+      setPointerClass("is-forward", false);
+      setPointerClass("is-backward", false);
+      setFrame("front");
       return;
     }
 
