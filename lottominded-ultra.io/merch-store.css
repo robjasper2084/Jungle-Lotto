@@ -1309,6 +1309,7 @@ body.has-merch-shadow-popup {
 
 .merch-product-rail-shell {
   grid-column: 2;
+  min-width: 0;
 }
 
 .merch-gallery-rail-shell {

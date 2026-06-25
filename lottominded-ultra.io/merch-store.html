@@ -19,7 +19,7 @@
       } catch (error) {}
     </script>
     <link rel="stylesheet" href="./assets/css/lm-page-transition.css?v=compositor-pass-1" />
-    <link rel="stylesheet" href="./merch-store.css?v=shadow-popup-fit-2" />
+    <link rel="stylesheet" href="./merch-store.css?v=product-grid-static-1" />
     <link rel="stylesheet" href="./assets/css/juneteenth-event-popup.css?v=juneteenth-popup-half-1" />
   </head>
   <body class="merch-store-page has-sphere-tabs">
@@ -128,12 +128,8 @@
             or another storefront later.
           </p>
         </div>
-        <div class="merch-rail-shell merch-product-rail-shell" data-rail-shell>
-          <div class="merch-rail-controls" aria-label="Merch products rail controls">
-            <button type="button" data-rail-prev aria-controls="merchProductRail" aria-label="Previous merch products">&lt;</button>
-            <button type="button" data-rail-next aria-controls="merchProductRail" aria-label="Next merch products">&gt;</button>
-          </div>
-        <div id="merchProductRail" class="product-grid merch-swipe-rail" aria-label="Merch products" data-swipe-rail tabindex="0">
+        <div class="merch-product-rail-shell">
+          <div id="merchProductRail" class="product-grid" aria-label="Merch products">
           <article class="product-card">
             <img src="./assets/merch/detroit-embroidered-hoodie-closeup.opt.webp" alt="Close-up of embroidered Detroit hoodie graphic" loading="lazy" decoding="async" />
             <span class="product-hover-price" aria-hidden="true">$200</span>
@@ -224,7 +220,7 @@
               <div class="product-row"><strong>$75</strong><button type="button" data-add-item="LottoMind Coin Set" data-item-price="75">Add to Cart</button></div>
             </div>
           </article>
-        </div>
+          </div>
         </div>
       </section>
 
@@ -328,7 +324,7 @@
     <script src="./assets/js/lm-page-transition.js?v=transition-hotfix-2" defer></script>
     <script src="./site.js?v=rewards-popups-2" defer></script>
     <script src="./live-events.js?v=audio-artlines-2" defer></script>
-    <script src="./merch-store.js?v=shadow-popup-fit-2" defer></script>
+    <script src="./merch-store.js?v=product-grid-static-1" defer></script>
     <script src="./assets/js/juneteenth-event-popup.js?v=juneteenth-event-3" defer></script>
   </body>
 </html>
