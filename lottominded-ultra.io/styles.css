@@ -13135,7 +13135,7 @@ body.beat2lotto-current-page #player.sphere-orb-live-player {
     rgba(3, 7, 16, 0.88) !important;
   background-repeat: no-repeat !important;
   background-position: center !important;
-  background-size: 100% 100%, 100% 100%, 100% 100%, 158% 158%, 100% 100%, 100% 100%, 100% 100%, auto !important;
+  background-size: 100% 100%, 100% 100%, 100% 100%, cover, 100% 100%, 100% 100%, 100% 100%, auto !important;
   background-blend-mode: screen, screen, overlay, normal, screen, multiply, multiply, normal !important;
   box-shadow:
     inset -0.72rem -0.9rem 1.1rem rgba(0, 0, 0, 0.68),
@@ -13160,7 +13160,7 @@ body.beat2lotto-current-page #player.sphere-orb-live-player {
     rgba(9, 22, 35, 0.88) !important;
   background-repeat: no-repeat !important;
   background-position: center !important;
-  background-size: 100% 100%, 100% 100%, 100% 100%, 164% 164%, 100% 100%, 100% 100%, 100% 100%, auto !important;
+  background-size: 100% 100%, 100% 100%, 100% 100%, cover, 100% 100%, 100% 100%, 100% 100%, auto !important;
   background-blend-mode: screen, screen, overlay, normal, screen, multiply, multiply, normal !important;
 }
 
