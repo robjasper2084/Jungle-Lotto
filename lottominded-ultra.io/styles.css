@@ -13217,6 +13217,11 @@ body.beat2lotto-current-page #player.sphere-orb-live-player {
   text-shadow: none !important;
 }
 
+/* Lottery Spheres uses a sticky in-flow header, so remove the fixed-home-header spacer. */
+body.lottery-spheres-page.home-page.has-sphere-header main {
+  padding-top: 0 !important;
+}
+
 body.beat2lotto-current-page .lotto-output-head h2 {
   position: relative;
   isolation: isolate;
