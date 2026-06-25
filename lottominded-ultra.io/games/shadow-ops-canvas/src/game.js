@@ -20,8 +20,8 @@
   const LOTTERY_DISCLAIMER = "Random number generator - not an official lottery ticket or guarantee.";
   const GAME_MUSIC_SRC = "./assets/audio/digital-static-10.mp3";
   const MUSIC_TRACK_VERSION = "digital-static-10";
-  const MUSIC_VOLUME = 0.18;
-  const BOSS_MUSIC_VOLUME = 0.22;
+  const MUSIC_VOLUME = 0.32;
+  const BOSS_MUSIC_VOLUME = 0.38;
   const SFX_GAIN_BOOST = 1.65;
 
   const ASSETS = {
@@ -309,6 +309,8 @@
   const dom = {
     loadingScreen: document.getElementById("loadingScreen"),
     titleScreen: document.getElementById("titleScreen"),
+    titleWorld: document.getElementById("titleWorld"),
+    titleTrailer: document.getElementById("titleTrailer"),
     pauseScreen: document.getElementById("pauseScreen"),
     settingsScreen: document.getElementById("settingsScreen"),
     resultsScreen: document.getElementById("resultsScreen"),
@@ -664,6 +666,15 @@
     key: 1,
     overdrive: 2,
     health: 3
+  };
+
+  const PICKUP_DRAW_SCALE = {
+    shard: 0.66,
+    key: 0.58,
+    health: 0.62,
+    overdrive: 0.62,
+    shield: 0.56,
+    weapon: 0.62
   };
 
   const GENERATED_PROP_CELLS = [
@@ -1235,13 +1246,14 @@
 
   function handleAction(action) {
     if (action === "start" || action === "start-solo") startRun("solo");
+    if (action === "start-two-player") startRun("two-player");
     if (action === "start-coop") startRun("coop");
     if (action === "resume") resumeRun();
     if (action === "pause") {
       if (mode === "paused") resumeRun();
       else pauseRun();
     }
-    if (action === "restart") startRun(run?.coOp ? "coop" : pendingRunMode);
+    if (action === "restart") startRun(run?.runMode || (run?.coOp ? "two-player" : pendingRunMode));
     if (action === "title") setMode("title");
     if (action === "settings") openSettings();
     if (action === "close-settings") closeSettings();
@@ -1267,6 +1279,7 @@
     dom.difficultySelect.value = DIFFICULTY[settings.difficulty] ? settings.difficulty : "arcade";
     document.body.classList.toggle("touch-hidden", !settings.touch);
     document.body.classList.toggle("touch-forced", settings.touch);
+    syncTitleTrailer();
     syncGameMusic();
   }
 
@@ -1294,8 +1307,23 @@
     dom.resultsScreen.classList.toggle("is-hidden", next !== "results");
     dom.lotteryTerminalScreen.classList.toggle("is-hidden", next !== "lottery");
     dom.hud.classList.toggle("is-hidden", !(next === "playing" || next === "paused" || next === "settings" || next === "lottery"));
+    syncTitleTrailer();
     syncGameMusic();
     updateHUD();
+  }
+
+  function syncTitleTrailer() {
+    if (!dom.titleTrailer) return;
+    const hasInteractiveWorld = Boolean(dom.titleWorld);
+    const shouldPlay = mode === "title" && !settings.reducedMotion && !hasInteractiveWorld;
+    dom.titleTrailer.classList.toggle("is-playing", shouldPlay);
+    if (!shouldPlay) {
+      dom.titleTrailer.pause();
+      return;
+    }
+    dom.titleTrailer.muted = true;
+    const playPromise = dom.titleTrailer.play();
+    if (playPromise?.catch) playPromise.catch(() => {});
   }
 
   function openSettings() {
@@ -1310,9 +1338,11 @@
   }
 
   function startRun(runMode = pendingRunMode) {
-    const coOp = runMode === "coop" || runMode === true;
-    pendingRunMode = coOp ? "coop" : "solo";
-    run = createRun({ coOp });
+    const coOp = runMode === "coop";
+    const twoPlayer = runMode === "two-player" || coOp || runMode === true;
+    const modeKey = coOp ? "coop" : twoPlayer ? "two-player" : "solo";
+    pendingRunMode = modeKey;
+    run = createRun({ coOp: twoPlayer, runMode: modeKey });
     setMode("playing");
     pulseTimer = 0;
     playTone(420, 0.08, "triangle", 0.05);
@@ -1384,6 +1414,7 @@
     const players = options.coOp ? [player1, player2] : [player1];
     const state = {
       coOp: Boolean(options.coOp),
+      runMode: options.runMode || (options.coOp ? "two-player" : "solo"),
       time: 0,
       campaignTime: 0,
       levelIndex: 0,
@@ -4174,16 +4205,21 @@
     for (const pickup of state.pickups) {
       if (pickup.taken) continue;
       const y = pickup.y + Math.sin(pickup.bob) * 8;
-      const visualR = pickup.type === "weapon" ? pickup.r * 2.55 : pickup.type === "key" ? pickup.r * 2.45 : pickup.r * 2.35;
+      const displayR = pickupDisplayRadius(pickup);
+      const visualR = displayR * (pickup.type === "weapon" ? 2.95 : pickup.type === "key" ? 2.9 : 2.8);
       if (!visualBoundsFullyInView(state, pickup.x - visualR, pickup.x + visualR, 6)) continue;
-      if (drawPickupSprite(pickup.type, pickup.x, y, pickup.r, state.time, pickup.bob)) continue;
-      if (pickup.type === "shard") drawShard(pickup.x, y, pickup.r);
-      if (pickup.type === "key") drawKey(pickup.x, y, pickup.r);
-      if (pickup.type === "health") drawHeart(pickup.x, y, pickup.r, colors.pink);
-      if (pickup.type === "overdrive") drawOverdrivePickup(pickup.x, y, pickup.r);
-      if (pickup.type === "shield") drawShieldPickup(pickup.x, y, pickup.r);
-      if (pickup.type === "weapon") drawWeaponPickup(pickup.x, y, pickup.r, pickup.weapon);
+      if (drawPickupSprite(pickup.type, pickup.x, y, displayR, state.time, pickup.bob)) continue;
+      if (pickup.type === "shard") drawShard(pickup.x, y, displayR);
+      if (pickup.type === "key") drawKey(pickup.x, y, displayR);
+      if (pickup.type === "health") drawHeart(pickup.x, y, displayR, colors.pink);
+      if (pickup.type === "overdrive") drawOverdrivePickup(pickup.x, y, displayR);
+      if (pickup.type === "shield") drawShieldPickup(pickup.x, y, displayR);
+      if (pickup.type === "weapon") drawWeaponPickup(pickup.x, y, displayR, pickup.weapon);
     }
+  }
+
+  function pickupDisplayRadius(pickup) {
+    return pickup.r * (PICKUP_DRAW_SCALE[pickup.type] || 0.62);
   }
 
   function drawShieldPickup(x, y, r) {
@@ -5352,7 +5388,7 @@
       dom.hpHearts.appendChild(row);
     }
     dom.livesText.textContent = players.map((p) => `${p.label} ${p.lives}`).join(" | ");
-    dom.hudTitle.textContent = run.coOp ? "LOTTOMIND NUMBER RUN CO-OP" : "LOTTOMIND NUMBER RUN";
+    dom.hudTitle.textContent = run.runMode === "coop" ? "LOTTOMIND NUMBER RUN CO-OP" : run.coOp ? "LOTTOMIND NUMBER RUN 2P" : "LOTTOMIND NUMBER RUN";
     dom.levelText.textContent = `${run.level.id} ${run.level.shortName}`;
     dom.scoreText.textContent = String(run.stats.score).padStart(6, "0");
     dom.comboText.textContent = `x${run.combo}`;

@@ -93,7 +93,7 @@ const compactHeaderLabels =
   document.body.classList.contains("manual-page");
 const conciseSoundtrackLabels = document.body.classList.contains("home-page");
 const HEADER_COLLAPSED_KEY = "lottominded.ultra.siteHeaderCollapsed.v1";
-const STARTUP_MODAL_SEEN_KEY = "lottominded.ultra.homeStartupSeen.v1";
+const STARTUP_MODAL_SEEN_KEY = "lottominded.ultra.homeStartupSeen.v3";
 const STARTUP_MODAL_RETURN_DELAY = 40000;
 const STARTUP_MODAL_RETURN_VISIBLE_MS = 60000;
 const MEMBER_SIGNUP_KEY = "lottominded.ultra.memberSignup.v1";
@@ -1237,15 +1237,15 @@ function setupSphereOrbLivePlayers() {
 
       lastRipple = { time: now, x, y };
       const ripple = document.createElement("span");
-      const size = Math.min(190, Math.max(64, 58 + distance * 1.35));
+      const size = Math.min(340, Math.max(96, 88 + distance * 1.95));
       ripple.className = "spheres-player-ripple";
       ripple.style.setProperty("--ripple-x", `${Math.round(x)}px`);
       ripple.style.setProperty("--ripple-y", `${Math.round(y)}px`);
       ripple.style.setProperty("--ripple-size", `${Math.round(size)}px`);
       ripples.appendChild(ripple);
 
-      while (ripples.childElementCount > 26) ripples.firstElementChild?.remove();
-      window.setTimeout(() => ripple.remove(), 960);
+      while (ripples.childElementCount > 42) ripples.firstElementChild?.remove();
+      window.setTimeout(() => ripple.remove(), 1850);
     };
 
     const beginDrag = (event) => {
@@ -3219,12 +3219,14 @@ setupPromptBallpassGame();
 function showGamePip() {
   if (!gamePip) return;
   if (gamePip.classList.contains("is-open")) return;
+  if (gamePip.parentElement !== document.body) document.body.appendChild(gamePip);
   window.clearTimeout(gamePipHideTimer);
   if (gamePipFrame && !gamePipFrame.getAttribute("src")) {
     gamePipFrame.setAttribute("src", gamePipFrame.dataset.src || "");
   }
   gamePip.classList.add("is-open");
   gamePip.setAttribute("aria-hidden", "false");
+  setGamePipOffset(0, 0);
   gamePipOpenedAt = Date.now();
   if (siteSoundtrack) {
     gamePipShouldResumeSoundtrack = !siteSoundtrack.paused;
@@ -3591,9 +3593,14 @@ function setupMascotPointer() {
   const frameUrl = (name) => new URL(`cursor/${name}`, SITE_ASSET_BASE_URL).href;
   const frames = {
     front: frameUrl("lm-mascot-front.png"),
+    sideIdle: frameUrl("lm-mascot-step-a.png"),
     stepA: frameUrl("lm-mascot-step-a.png"),
     stepB: frameUrl("lm-mascot-step-b.png"),
     run: frameUrl("lm-mascot-run.png"),
+    runA: frameUrl("lm-mascot-run-a.png"),
+    runB: frameUrl("lm-mascot-run-b.png"),
+    runC: frameUrl("lm-mascot-run-c.png"),
+    runD: frameUrl("lm-mascot-run-d.png"),
     flyUp1: frameUrl("lm-mascot-fly-up-1.png"),
     flyUp2: frameUrl("lm-mascot-fly-up-2.png"),
     flyUp3: frameUrl("lm-mascot-fly-up-3.png"),
@@ -3622,10 +3629,10 @@ function setupMascotPointer() {
   const frameSequences = {
     flyUp: ["flyUp1", "flyUp2", "flyUp3", "flyUp4"],
     fallDown: ["fallDown1", "fallDown2", "fallDown3", "fallDown4"],
-    walkLeft: ["walkLeft1", "walkLeft2", "walkLeft3", "walkLeft4"],
-    walkRight: ["walkRight1", "walkRight2", "walkRight3", "walkRight4"],
-    runLeft: ["runLeft1", "runLeft2", "runLeft3", "runLeft4"],
-    runRight: ["runRight1", "runRight2", "runRight3", "runRight4"],
+    walkLeft: ["stepA", "walkLeft1", "stepB", "walkLeft3", "walkLeft4", "stepB"],
+    walkRight: ["stepA", "walkLeft1", "stepB", "walkLeft3", "walkLeft4", "stepB"],
+    runLeft: ["runA", "run", "runB", "runC", "runD", "runB"],
+    runRight: ["runA", "run", "runB", "runC", "runD", "runB"],
   };
 
   Object.values(frames).forEach((src) => {
@@ -3664,6 +3671,9 @@ function setupMascotPointer() {
     frame: "front",
     scrollPose: "",
     scrollPoseUntil: 0,
+    sidePose: "",
+    sidePoseUntil: 0,
+    lastSideDirection: "",
     inputSpeed: 0,
     inputAngle: 0,
     hasMoved: false,
@@ -3696,6 +3706,13 @@ function setupMascotPointer() {
       if (inputDistance > 0.5) {
         state.inputSpeed = Math.max(state.inputSpeed * 0.45, inputDistance);
         state.inputAngle = Math.atan2(deltaY, deltaX);
+      }
+      if (Math.abs(deltaX) > 1.5 && Math.abs(deltaX) >= Math.abs(deltaY) * 0.45) {
+        state.facing = deltaX < 0 ? -1 : 1;
+        state.sidePose = deltaX < 0 ? "left" : "right";
+        state.lastSideDirection = state.sidePose;
+        state.sidePoseUntil = performance.now() + 520;
+        pointer.style.setProperty("--lm-mascot-facing", String(state.facing));
       }
       if (Math.abs(deltaY) > 8 && Math.abs(deltaY) > Math.abs(deltaX) * 0.72) {
         setScrollPose(deltaY < 0 ? "up" : "down");
@@ -3757,13 +3774,16 @@ function setupMascotPointer() {
   function updateFrame(speed, vx, vy, now) {
     const motionX = state.inputSpeed > 0.6 ? Math.cos(state.inputAngle) * state.inputSpeed : vx;
     const motionY = state.inputSpeed > 0.6 ? Math.sin(state.inputAngle) * state.inputSpeed : vy;
-    const moving = speed > 0.55 || state.inputSpeed > 1.2;
+    const sidePoseActive = Boolean(state.sidePose && now < state.sidePoseUntil);
+    const sidePoseDirection = state.sidePose === "left" ? -1 : 1;
+    const sideMotionX = sidePoseActive ? sidePoseDirection : motionX;
+    const moving = speed > 0.55 || state.inputSpeed > 1.2 || sidePoseActive;
     const running = state.inputSpeed > 20 || speed > 5.4;
-    const sideMotion = Math.abs(motionX) > Math.abs(motionY) * 0.62;
-    const verticalMotion = Math.abs(motionY) > Math.abs(motionX) * 0.72;
+    const sideMotion = sidePoseActive || Math.abs(motionX) > Math.abs(motionY) * 0.62;
+    const verticalMotion = !sidePoseActive && Math.abs(motionY) > Math.abs(motionX) * 0.72;
     const upwardMotion = moving && verticalMotion && motionY < -0.35;
     const downwardMotion = moving && verticalMotion && motionY > 0.35;
-    const climbing = Boolean(state.scrollPose && now < state.scrollPoseUntil);
+    const climbing = Boolean(state.scrollPose && now < state.scrollPoseUntil && !sidePoseActive);
     const scrollingUp = climbing && state.scrollPose === "up";
     const scrollingDown = climbing && state.scrollPose === "down";
 
@@ -3803,34 +3823,36 @@ function setupMascotPointer() {
     setPointerClass("is-backward", moving && !sideMotion && vy < 0);
 
     if (!moving) {
-      setFrame("front");
+      setPointerClass("is-side", Boolean(state.lastSideDirection));
+      setFrame(state.lastSideDirection ? "sideIdle" : "front");
       return;
     }
 
     if (sideMotion) {
-      if (motionX < -0.25) state.facing = -1;
-      if (motionX > 0.25) state.facing = 1;
+      if (sideMotionX < -0.25) state.facing = -1;
+      if (sideMotionX > 0.25) state.facing = 1;
+      state.lastSideDirection = state.facing < 0 ? "left" : "right";
       pointer.style.setProperty("--lm-mascot-facing", String(state.facing));
       if (running) {
-        setFrame(pickFrame(motionX < 0 ? "runLeft" : "runRight", now, 74));
+        setFrame(pickFrame(sideMotionX < 0 ? "runLeft" : "runRight", now, 58));
       } else {
-        setFrame(pickFrame(motionX < 0 ? "walkLeft" : "walkRight", now, 112));
+        setFrame(pickFrame(sideMotionX < 0 ? "walkLeft" : "walkRight", now, 92));
       }
       return;
     }
 
     if (running) {
-      setFrame(pickFrame(state.facing < 0 ? "runLeft" : "runRight", now, 95));
+      setFrame(pickFrame(state.facing < 0 ? "runLeft" : "runRight", now, 72));
     } else {
-      setFrame("front");
+      setFrame(state.lastSideDirection ? "sideIdle" : "front");
     }
   }
 
   function paintMascot(now) {
-    const chaseDistance = state.lastType === "touch" ? 74 : 58;
+    const chaseDistance = state.lastType === "touch" ? 100 : 112;
     const chaseX = state.targetX - Math.cos(state.inputAngle) * chaseDistance;
     const chaseY = state.targetY - Math.sin(state.inputAngle) * chaseDistance;
-    const ease = state.lastType === "touch" ? 0.2 : 0.135;
+    const ease = state.lastType === "touch" ? 0.12 : 0.07;
     state.x += (chaseX - state.x) * ease;
     state.y += (chaseY - state.y) * ease;
     state.inputSpeed *= 0.86;

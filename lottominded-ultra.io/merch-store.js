@@ -7,6 +7,9 @@ const cartNote = document.querySelector("[data-cart-note]");
 const merchSoundCard = document.querySelector("[data-merch-sound-card]");
 const merchSoundVideo = document.querySelector("[data-merch-sound-video]");
 const merchSoundToggle = document.querySelector("[data-merch-sound-toggle]");
+const merchShadowPopup = document.querySelector("[data-merch-shadow-popup]");
+const merchShadowFrame = document.querySelector("[data-merch-shadow-frame]");
+const merchShadowCloseButtons = document.querySelectorAll("[data-merch-shadow-close]");
 let merchHeroVideo = document.querySelector(".merch-hero-video");
 let merchHeroSoundToggle = document.querySelector("[data-merch-hero-sound-toggle]");
 const CART_STORAGE_KEY = "lottomind.merch.cart.v1";
@@ -245,6 +248,24 @@ function pauseMerchCapsuleSound() {
   merchSoundToggle.classList.remove("is-playing");
 }
 
+function openMerchShadowPopup() {
+  if (!merchShadowPopup) return;
+  if (merchShadowFrame && !merchShadowFrame.getAttribute("src")) {
+    merchShadowFrame.setAttribute("src", merchShadowFrame.dataset.src || "");
+  }
+  merchShadowPopup.classList.remove("is-hidden");
+  merchShadowPopup.setAttribute("aria-hidden", "false");
+  document.body.classList.add("has-merch-shadow-popup");
+}
+
+function closeMerchShadowPopup() {
+  if (!merchShadowPopup) return;
+  merchShadowPopup.classList.add("is-hidden");
+  merchShadowPopup.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("has-merch-shadow-popup");
+  merchShadowFrame?.removeAttribute("src");
+}
+
 function toggleMerchHeroSound(event) {
   const now = performance.now();
   if (event?.type === "click" && now - merchHeroToggleAt < 320) {
@@ -395,6 +416,7 @@ merchSoundVideo?.addEventListener("volumechange", () => {
 
 window.addEventListener("load", () => {
   window.setTimeout(startMerchCapsuleOnPageOpen, 180);
+  window.setTimeout(openMerchShadowPopup, 520);
 });
 
 if (document.readyState === "loading") {
@@ -408,6 +430,18 @@ window.addEventListener("pageshow", startMerchCapsuleOnPageOpen);
 document.addEventListener("visibilitychange", () => {
   if (document.visibilityState === "visible") {
     startMerchCapsuleOnPageOpen();
+  }
+});
+
+merchShadowCloseButtons.forEach((button) => button.addEventListener("click", closeMerchShadowPopup));
+merchShadowPopup?.addEventListener("click", (event) => {
+  if (event.target === merchShadowPopup) {
+    closeMerchShadowPopup();
+  }
+});
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && !merchShadowPopup?.classList.contains("is-hidden")) {
+    closeMerchShadowPopup();
   }
 });
 

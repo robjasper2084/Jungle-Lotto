@@ -5,8 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>LottoMind Number Run | Shadow Ops</title>
     <link rel="icon" href="data:," />
-    <link rel="preload" href="./assets/audio/digital-static-10.mp3" as="audio" type="audio/mpeg" />
-    <link rel="stylesheet" href="./style.css?v=sound-mix-1" />
+    <link rel="stylesheet" href="./style.css?v=title3d-ref-assets-1" />
   </head>
   <body>
     <main class="game-shell" aria-label="LottoMind Number Run browser game">
@@ -24,6 +23,18 @@
       </section>
 
       <section id="titleScreen" class="screen screen--title is-hidden">
+        <canvas id="titleWorld" class="title-world" aria-hidden="true"></canvas>
+        <video
+          id="titleTrailer"
+          class="title-trailer"
+          src="./assets/video/lottomind-number-run-startup-higgsfield-20260624.mp4"
+          muted
+          loop
+          playsinline
+          preload="metadata"
+          poster="./assets/title3d/title3d_ref_backdrop_v2.jpg"
+          aria-hidden="true"
+        ></video>
         <div class="title-cinema" aria-hidden="true">
           <span class="cinema-line cinema-line--one"></span>
           <span class="cinema-line cinema-line--two"></span>
@@ -36,6 +47,7 @@
           <p class="screen-copy">Break three number vaults, claim each key set, defeat every boss, and turn your run stats into a final lottery drop.</p>
           <div class="button-row">
             <button class="primary" data-action="start-solo">Solo Run</button>
+            <button data-action="start-two-player">2 Player Run</button>
             <button data-action="start-coop">2 Player Co-op</button>
             <button data-action="settings">Settings</button>
           </div>
@@ -227,6 +239,7 @@
         </div>
       </div>
     </main>
-    <script src="./src/game.js?v=sound-mix-1"></script>
+    <script type="module" src="./src/title-3d.js?v=title3d-ref-assets-1"></script>
+    <script src="./src/game.js?v=title3d-ref-assets-1"></script>
   </body>
 </html>

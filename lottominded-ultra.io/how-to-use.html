@@ -10,7 +10,7 @@
     <title>LottoMind™ | Simple User Guide</title>
     <meta name="theme-color" content="#070707" />
     <link rel="icon" href="./assets/brand/lm-orb-mark.webp" type="image/webp" />
-    <link rel="stylesheet" href="./styles.css?v=mascot-chase-run-1" />
+    <link rel="stylesheet" href="./styles.css?v=visual-polish-batch-2" />
     <script>
       try {
         if (sessionStorage.getItem("lmTransitionArriving") === "yes") {
@@ -57,33 +57,65 @@
         color: var(--text);
         font-family: var(--body);
         background:
-          radial-gradient(circle at 18% 8%, rgba(41, 247, 255, 0.16), transparent 32rem),
-          radial-gradient(circle at 84% 16%, rgba(212, 175, 55, 0.2), transparent 30rem),
+          radial-gradient(circle at 18% 8%, rgba(41, 247, 255, 0.12), transparent 32rem),
+          radial-gradient(circle at 84% 16%, rgba(212, 175, 55, 0.14), transparent 30rem),
           linear-gradient(rgba(41, 247, 255, 0.045) 1px, transparent 1px),
           linear-gradient(90deg, rgba(255, 223, 117, 0.035) 1px, transparent 1px),
-          linear-gradient(145deg, #010307, #061521 46%, #070707 100%);
+          linear-gradient(145deg, rgba(1, 3, 7, 0.76), rgba(6, 21, 33, 0.68) 46%, rgba(7, 7, 7, 0.82) 100%);
         background-size: auto, auto, 72px 72px, 72px 72px, auto;
+        background-attachment: fixed;
         isolation: isolate;
+      }
+
+      body > :not(.guide-ray-background):not(.guide-game-vignette):not(.lm-page-transition) {
+        position: relative;
+        z-index: 1;
       }
 
       body::before {
         position: fixed;
         inset: 0;
-        z-index: -3;
+        z-index: 0;
         content: "";
         pointer-events: none;
         background:
-          radial-gradient(circle at 50% 0%, rgba(255, 223, 117, 0.12), transparent 34rem),
-          linear-gradient(120deg, transparent 0 24%, rgba(41, 247, 255, 0.08) 24.5% 25.2%, transparent 25.6% 100%),
-          linear-gradient(150deg, rgba(255, 223, 117, 0.055), transparent 32%, rgba(41, 247, 255, 0.06) 58%, transparent 78%);
+          radial-gradient(circle at 50% 0%, rgba(255, 223, 117, 0.1), transparent 34rem),
+          linear-gradient(120deg, transparent 0 24%, rgba(41, 247, 255, 0.075) 24.5% 25.2%, transparent 25.6% 100%),
+          linear-gradient(150deg, rgba(255, 223, 117, 0.05), transparent 32%, rgba(41, 247, 255, 0.055) 58%, transparent 78%);
+      }
+
+      .guide-ray-background {
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        overflow: hidden;
+        pointer-events: none;
+        background:
+          radial-gradient(circle at 64% 28%, rgba(41, 247, 255, 0.16), transparent 24rem),
+          radial-gradient(circle at 20% 72%, rgba(255, 223, 117, 0.12), transparent 22rem),
+          linear-gradient(145deg, #02040a, #071527 54%, #050507);
+      }
+
+      .guide-ray-background[data-ray-background="fallback"] {
+        background:
+          radial-gradient(circle at 34% 28%, rgba(41, 247, 255, 0.22), transparent 20rem),
+          linear-gradient(120deg, transparent 0 22%, rgba(41, 247, 255, 0.18) 22.4% 23%, transparent 23.4% 100%),
+          linear-gradient(145deg, #02040a, #071527 54%, #050507);
+      }
+
+      .guide-ray-canvas {
+        display: block;
+        width: 100%;
+        height: 100%;
       }
 
       .guide-puck-field {
         position: fixed;
         inset: 0;
-        z-index: -2;
+        z-index: 0;
         overflow: hidden;
         pointer-events: none;
+        opacity: 0.56;
       }
 
       .guide-puck-field span {
@@ -1708,7 +1740,7 @@
       #featureRaytraceGame.guide-pong-background {
         position: fixed;
         inset: 0;
-        z-index: -5;
+        z-index: 0;
         width: 100%;
         height: 100%;
         pointer-events: none;
@@ -1719,11 +1751,11 @@
       .guide-game-vignette {
         position: fixed;
         inset: 0;
-        z-index: -2;
+        z-index: 0;
         pointer-events: none;
         background:
-          radial-gradient(circle at 50% 32%, rgba(5, 224, 255, 0.13), transparent 34rem),
-          linear-gradient(180deg, rgba(4, 7, 13, 0.3), rgba(4, 7, 13, 0.82));
+          radial-gradient(circle at 50% 32%, rgba(5, 224, 255, 0.11), transparent 34rem),
+          linear-gradient(180deg, rgba(4, 7, 13, 0.24), rgba(4, 7, 13, 0.78));
       }
 
       body.has-guide-game-bg .guide-puck-field {
@@ -1783,7 +1815,7 @@
       }
     </style>
   </head>
-  <body class="has-guide-startup-audio home-page has-sphere-header has-global-sphere-header has-guide-game-bg">
+  <body class="has-guide-startup-audio home-page has-sphere-header has-global-sphere-header has-guide-game-bg has-guide-ray-bg">
     <div class="lm-page-transition" data-lm-page-transition aria-hidden="true">
       <div class="lm-page-transition__flash"></div>
       <video class="lm-page-transition__video" data-lm-transition-video muted playsinline preload="metadata"></video>
@@ -1791,7 +1823,7 @@
       <div class="lm-page-transition__scanlines"></div>
       <p class="lm-page-transition__label" data-lm-transition-label>Opening signal</p>
     </div>
-    <canvas id="featureRaytraceGame" class="guide-pong-background" aria-hidden="true"></canvas>
+    <div id="guideRayBackground" class="guide-ray-background" data-guide-ray-background aria-hidden="true"></div>
     <div class="guide-game-vignette" aria-hidden="true"></div>
     <div class="guide-puck-field" aria-hidden="true">
       <span></span>
@@ -2249,10 +2281,10 @@
     <audio id="guideStartupSoundtrack" preload="metadata" data-guide-startup-soundtrack>
       <source src="./assets/audio/lottomind-heart-639hz.mp3?v=guide-heart-639-1" type="audio/mpeg" />
     </audio>
-    <script src="./assets/features-app/js/features-raytrace-game.js?v=perf-fixes-1" defer></script>
     <script src="./assets/js/lm-page-transition-audio.js?v=verified-transitions-1" defer></script>
     <script src="./assets/js/lm-page-transition.js?v=transition-hotfix-2" defer></script>
-    <script src="./site.js?v=mascot-chase-run-1" defer></script>
+    <script src="./site.js?v=mascot-existing-assets-2" defer></script>
+    <script type="module" src="./assets/guide/guide-ray-background.js?v=raytrace-guide-bg-1"></script>
     <script>
       (() => {
         const accessPassword = "lottomind";

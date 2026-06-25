@@ -39,6 +39,7 @@
 | `fxSheet` | `assets/mission/higgsfield_separate_fx_repair_runtime_v4.png` | Active repaired FX sheet with frames 2, 3, 4, 5, 6, 17, 18, and 19 cleaned again for transparent cells |
 | `gameplayFx` | `assets/mission/chatgpt_gameplay_fx_sheet_runtime_v2.png` | Active gameplay FX sheet for weapon pickups, arena locks, enemy tells, boss weak points, terminal rewards, and status cues |
 | `gameMusic` | `assets/audio/digital-static-10.mp3` | Active looping gameplay music track, played only during run gameplay and controlled by the Music setting |
+| `titleTrailer` | `assets/video/lottomind-number-run-startup-higgsfield-20260624.mp4` | Active muted Higgsfield startup trailer, generated from the original hero and cyber-jungle background references |
 | `missionBatchProps` | `assets/mission/higgsfield_batch_props_runtime_v3.png` | Ghost-cleaned 5x4 Higgsfield reference batch for ruby vial, terminals, mossy cyber platforms, pipes, relays, vault plates, and portal props |
 | `missionBatchWorld` | `assets/mission/higgsfield_photo_world_retry_runtime_v3.png` | Ghost-cleaned Higgsfield reference batch for platform pieces, wall panels, vines, ladders, terminals, pipes, mushrooms, ruby vial, and world-fill objects |
 | `missionBatchFx` | `assets/mission/higgsfield_batch_fx_retry_runtime_v3.png` | Ghost-cleaned 5x4 Higgsfield reference retry batch for hearts, ruby pickups, keys, shield/overdrive icons, sparks, and short beams |

@@ -10,7 +10,7 @@
     <title>LOTTOMINDED ULTRA | Merch + Gallery Store</title>
     <meta name="theme-color" content="#03050a" />
     <link rel="icon" href="./assets/brand/lm-orb-mark.webp" type="image/webp" />
-    <link rel="stylesheet" href="./styles.css?v=mascot-chase-run-1" />
+    <link rel="stylesheet" href="./styles.css?v=visual-polish-batch-2" />
     <script>
       try {
         if (sessionStorage.getItem("lmTransitionArriving") === "yes") {
@@ -277,6 +277,31 @@
         </div>
         <p class="cart-note" data-cart-note>Shipping and taxes are not calculated in this local preview.</p>
       </aside>
+
+      <aside class="merch-shadow-popup is-hidden" data-merch-shadow-popup aria-hidden="true" aria-labelledby="merchShadowTitle">
+        <div class="merch-shadow-popup-panel" role="dialog" aria-modal="true">
+          <button class="merch-shadow-popup-close" type="button" data-merch-shadow-close aria-label="Close Shadow Ops game">X</button>
+          <div class="merch-shadow-popup-copy">
+            <p class="merch-shadow-popup-kicker">Merch Vault Signal</p>
+            <h2 id="merchShadowTitle">Shadow Ops Canvas</h2>
+            <p>Limited capsule feed. Enter the signal room, hold the line, and return to the drop when the mission is clear.</p>
+          </div>
+          <div class="merch-shadow-popup-stage" aria-label="Shadow Ops Canvas game popup">
+            <iframe
+              title="Shadow Ops Canvas game"
+              data-merch-shadow-frame
+              data-src="./games/shadow-ops-canvas/index.html?bg=soul-location-1&amp;v=higgsfield-trailer-1"
+              allow="autoplay; fullscreen; gamepad"
+              loading="lazy"
+            ></iframe>
+          </div>
+          <div class="merch-shadow-popup-rail" aria-hidden="true">
+            <span>SOUL LOCATION LOCKED</span>
+            <span>TRAILER FEED LIVE</span>
+            <span>MERCH DROP ARMED</span>
+          </div>
+        </div>
+      </aside>
     </main>
 
     <footer>
@@ -287,9 +312,9 @@
 
     <script src="./assets/js/lm-page-transition-audio.js?v=verified-transitions-1" defer></script>
     <script src="./assets/js/lm-page-transition.js?v=transition-hotfix-2" defer></script>
-    <script src="./site.js?v=mascot-chase-run-1" defer></script>
+    <script src="./site.js?v=mascot-existing-assets-2" defer></script>
     <script src="./live-events.js?v=audio-artlines-2" defer></script>
-    <script src="./merch-store.js?v=cart-audit-1" defer></script>
+    <script src="./merch-store.js?v=shadow-ops-popup-1" defer></script>
     <script src="./assets/js/juneteenth-event-popup.js?v=juneteenth-event-3" defer></script>
   </body>
 </html>
