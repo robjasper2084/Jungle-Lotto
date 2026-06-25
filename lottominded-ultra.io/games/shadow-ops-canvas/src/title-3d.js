@@ -33,6 +33,7 @@ function TitleVaultWorld(root, targetCanvas) {
   this.backdropTexture = loadTitleTexture(this, "title3d_clean_backdrop_nohero_2.jpg");
   this.platformTexture = loadTitleTexture(this, "title3d_ref_platform_tile_v2.jpg", { repeat: [2.4, 2.4] });
   this.wallTexture = loadTitleTexture(this, "title3d_ref_wall_tile_v2.jpg", { repeat: [1.45, 2.25] });
+  this.mascotStandeeTexture = loadTitleTexture(this, "title3d_hoodie_mascot_standee_alpha.png");
 
   this.clock = new THREE.Clock();
   this.raycaster = new THREE.Raycaster();
@@ -83,6 +84,7 @@ function buildScene(world) {
   makePlatform(world, 0.2, 0.35, -1.4, 5.6, 0.32, 1.45);
   makePlatform(world, 4.6, 0.52, -2.7, 3.2, 0.38, 1.4);
   makePlatform(world, 6.4, 1.8, -4.2, 2.5, 0.28, 1.05);
+  makeMascotStandee(world);
   makeDrone(world, -1.5, 3.0, -3.15, 0.0);
   makeDrone(world, 1.4, 3.28, -3.6, 1.4);
   makeDrone(world, 4.0, 2.75, -2.35, 2.6);
@@ -237,6 +239,80 @@ function makePlatform(world, x, y, z, width, height, depth) {
   );
   glow.position.set(x, y + height * 0.62, z + depth * 0.55);
   world.scene.add(glow);
+}
+
+function makeMascotStandee(world) {
+  const group = new THREE.Group();
+  group.name = "hoodie-mascot-3d-center";
+  group.position.set(1.12, 1.52, -0.98);
+  group.rotation.y = -0.08;
+  group.userData.phase = 0.35;
+  world.scene.add(group);
+
+  const height = 2.28;
+  const width = height * (538 / 1023);
+  const geometry = new THREE.PlaneGeometry(width, height);
+
+  const glow = new THREE.Mesh(
+    new THREE.PlaneGeometry(width * 1.18, height * 1.1),
+    new THREE.MeshBasicMaterial({
+      color: 0xa522ff,
+      transparent: true,
+      opacity: 0.16,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+      side: THREE.DoubleSide
+    })
+  );
+  glow.position.set(0, 0.03, -0.05);
+  glow.renderOrder = 18;
+  group.add(glow);
+
+  const mascot = new THREE.Mesh(
+    geometry,
+    new THREE.MeshBasicMaterial({
+      map: world.mascotStandeeTexture,
+      transparent: true,
+      alphaTest: 0.08,
+      depthWrite: false,
+      side: THREE.DoubleSide
+    })
+  );
+  mascot.name = "hoodie-mascot-cutout";
+  mascot.renderOrder = 22;
+  group.add(mascot);
+
+  const base = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.62, 0.76, 0.1, 56),
+    new THREE.MeshStandardMaterial({
+      color: 0x0c090f,
+      metalness: 0.72,
+      roughness: 0.24,
+      emissive: 0x2b083c,
+      emissiveIntensity: 0.68
+    })
+  );
+  base.position.set(0, -height * 0.5 - 0.08, 0.02);
+  group.add(base);
+
+  const ring = new THREE.Mesh(
+    new THREE.TorusGeometry(0.68, 0.018, 8, 72),
+    new THREE.MeshBasicMaterial({ color: 0xffd66d, transparent: true, opacity: 0.78 })
+  );
+  ring.position.copy(base.position);
+  ring.position.y += 0.062;
+  ring.rotation.x = Math.PI / 2;
+  ring.userData.spin = 0.55;
+  group.add(ring);
+
+  group.userData.animate = (time) => {
+    const bob = Math.sin(time * 1.12 + group.userData.phase) * 0.038;
+    group.position.y = 1.52 + bob;
+    group.rotation.y = -0.08 + Math.sin(time * 0.55) * 0.03;
+    glow.material.opacity = 0.13 + Math.sin(time * 1.8) * 0.035;
+  };
+
+  addInteractive(world, group, "hoodie-mascot-center");
 }
 
 function makeReferenceAssetLayer(world) {
