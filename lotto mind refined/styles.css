@@ -9347,7 +9347,7 @@ body .route-dreamVideo .video-studio-hero .hero-actions .primary-btn::before {
 .dream-symbol-grid article:nth-child(3) { --symbol-art: url("assets/lottomind-enhance/brain-pin.webp") center / cover; }
 .dream-symbol-grid article:nth-child(4) { --symbol-art: url("assets/images/dream-oracle-jungle-bg.a4c667c7a8153842972fe7cf8b06aa02.png") center / cover; }
 .dream-symbol-grid article:nth-child(5) { --symbol-art: url("assets/images/live-data-records-panel.404f88fa9201c5e14861577dc5bc8b97.png") center / cover; }
-.dream-symbol-grid article:nth-child(6) { --symbol-art: url("assets/images/ai-psychic-engine-circle.95310af8f2dc5491754f875ec150e785.png") center / cover; }
+.dream-symbol-grid article:nth-child(6) { --symbol-art: url("assets/custom/studio/studio-oracle-coin.png") center / cover; }
 
 .dream-symbol-grid span,
 .result-card > span,
@@ -21318,4 +21318,163 @@ body .route-arcade .mini-game .primary-btn.full {
   font-weight: 950 !important;
   letter-spacing: 0 !important;
   text-transform: uppercase !important;
+}
+
+/* LottoMind refined category-art polish */
+body .hero-emblem-link {
+  display: inline-grid;
+  place-items: center;
+  border-radius: 50%;
+  text-decoration: none;
+  outline: 0;
+}
+
+body .route-dashboard .oracle-hero .hero-emblem-link {
+  grid-column: 2 !important;
+  grid-row: 1 !important;
+  justify-self: center !important;
+  align-self: center !important;
+}
+
+body .hero-emblem-link:focus-visible,
+body .hero-emblem-link:hover {
+  filter: drop-shadow(0 0 18px rgba(248, 223, 118, 0.48)) drop-shadow(0 0 22px rgba(0, 236, 255, 0.36));
+}
+
+body .circle-tool[data-art-kind],
+body .oracle-flow-step[data-art-kind],
+body .action-tile[data-art-kind],
+body .route-dashboard .oracle-hero > div > .hero-actions > button[data-art-kind],
+body .route-dreams .dream-stage > .hero-actions button[data-art-kind],
+body .route-powertools .arcade-deck .hero-actions button[data-art-kind] {
+  --kind-a: #00dfff;
+  --kind-b: #d8b34a;
+  --kind-c: #48ffb1;
+}
+
+body [data-art-kind="ai"] { --kind-a: #8a5cff; --kind-b: #00dfff; --kind-c: #effbff; }
+body [data-art-kind="arcade"] { --kind-a: #d8b34a; --kind-b: #ff7ac8; --kind-c: #00dfff; }
+body [data-art-kind="dream"] { --kind-a: #48ffb1; --kind-b: #8a5cff; --kind-c: #d8b34a; }
+body [data-art-kind="history"] { --kind-a: #d8b34a; --kind-b: #9fb6a3; --kind-c: #00dfff; }
+body [data-art-kind="marketplace"],
+body [data-art-kind="wallet"] { --kind-a: #d8b34a; --kind-b: #48ffb1; --kind-c: #effbff; }
+body [data-art-kind="music"] { --kind-a: #ff7ac8; --kind-b: #00dfff; --kind-c: #d8b34a; }
+body [data-art-kind="scanner"],
+body [data-art-kind="heatmap"] { --kind-a: #00dfff; --kind-b: #48ffb1; --kind-c: #effbff; }
+body [data-art-kind="sequence"] { --kind-a: #00dfff; --kind-b: #8a5cff; --kind-c: #d8b34a; }
+body [data-art-kind="store"] { --kind-a: #d8b34a; --kind-b: #00dfff; --kind-c: #48ffb1; }
+
+body .circle-tool[data-art-kind] {
+  background:
+    radial-gradient(circle at 22% 20%, color-mix(in srgb, var(--kind-c) 34%, transparent), transparent 30%),
+    linear-gradient(138deg, color-mix(in srgb, var(--kind-a) 22%, transparent), transparent 38%, color-mix(in srgb, var(--kind-b) 18%, transparent)),
+    linear-gradient(180deg, rgba(0, 14, 26, 0.34), rgba(0, 5, 12, 0.9)),
+    var(--circle-art) center / cover no-repeat !important;
+  border-color: color-mix(in srgb, var(--kind-a) 72%, var(--kind-b) 28%) !important;
+  box-shadow:
+    inset 0 0 0 999px rgba(0, 10, 18, 0.2),
+    inset 0 -28px 38px rgba(0, 0, 0, 0.64),
+    0 0 24px color-mix(in srgb, var(--kind-a) 24%, transparent),
+    0 0 34px color-mix(in srgb, var(--kind-b) 14%, transparent) !important;
+}
+
+body .circle-tool[data-art-kind]::after {
+  content: "";
+  position: absolute;
+  inset: 8px;
+  border-radius: inherit;
+  pointer-events: none;
+  background:
+    linear-gradient(115deg, transparent 0 32%, color-mix(in srgb, var(--kind-c) 18%, transparent) 46%, transparent 64%),
+    radial-gradient(circle at 76% 24%, color-mix(in srgb, var(--kind-b) 24%, transparent), transparent 22%);
+  mix-blend-mode: screen;
+  opacity: 0.72;
+}
+
+body .action-tile[data-art-kind] {
+  position: relative;
+  overflow: hidden;
+  background:
+    linear-gradient(90deg, rgba(0, 10, 18, 0.6), rgba(0, 22, 34, 0.82)),
+    var(--tile-art) center / cover no-repeat !important;
+  border-color: color-mix(in srgb, var(--kind-a) 66%, transparent) !important;
+  box-shadow: inset 0 0 0 999px rgba(0, 8, 15, 0.32), 0 0 22px color-mix(in srgb, var(--kind-a) 18%, transparent) !important;
+}
+
+body .route-powertools .arcade-deck .hero-actions button[data-art-kind],
+body .route-dreams .dream-stage > .hero-actions button[data-art-kind] {
+  border-color: color-mix(in srgb, var(--kind-a) 62%, var(--kind-b) 24%) !important;
+  background:
+    radial-gradient(circle at 12% 18%, color-mix(in srgb, var(--kind-b) 24%, transparent), transparent 34%),
+    linear-gradient(135deg, rgba(4, 16, 28, 0.88), color-mix(in srgb, var(--kind-a) 22%, rgba(0, 10, 18, 0.88))) !important;
+  color: #f6fbff !important;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--kind-c) 16%, transparent), 0 0 18px color-mix(in srgb, var(--kind-a) 18%, transparent) !important;
+}
+
+body .route-ai .art-panel[data-art-kind="ai"],
+body .route-history .art-panel[data-art-kind="history"],
+body .route-arcade .art-panel[data-art-kind="arcade"],
+body .record-label-panel[data-art-kind="music"] {
+  border-color: color-mix(in srgb, var(--kind-a, #00dfff) 68%, transparent) !important;
+  background:
+    radial-gradient(circle at 78% 24%, color-mix(in srgb, var(--kind-a, #00dfff) 24%, transparent), transparent 34%),
+    linear-gradient(105deg, rgba(0, 12, 24, 0.92), rgba(1, 22, 32, 0.62)),
+    var(--panel-art) center / cover no-repeat !important;
+  box-shadow:
+    inset 0 0 0 999px rgba(0, 9, 16, 0.32),
+    0 0 30px color-mix(in srgb, var(--kind-a, #00dfff) 18%, transparent) !important;
+}
+
+body .route-ai .ai-coach-mascot {
+  width: min(42vw, 210px) !important;
+  max-height: 260px !important;
+  padding: 0 !important;
+  border-radius: 24px !important;
+  object-fit: contain !important;
+  object-position: center bottom !important;
+  background:
+    radial-gradient(circle at 50% 58%, rgba(0, 236, 255, 0.18), transparent 48%),
+    linear-gradient(180deg, rgba(3, 16, 31, 0.22), rgba(3, 16, 31, 0.72)) !important;
+  filter:
+    drop-shadow(0 0 18px rgba(0, 236, 255, 0.3))
+    drop-shadow(0 0 22px rgba(248, 223, 118, 0.16)) !important;
+}
+
+body .big-mic.branded-mic.is-recording {
+  border-color: #fff0a5 !important;
+  box-shadow:
+    0 0 34px rgba(248, 223, 118, 0.42),
+    0 0 44px rgba(0, 236, 255, 0.24),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.46) !important;
+  animation: dreamMicPulse 1.65s ease-in-out infinite;
+}
+
+body .big-mic.branded-mic.is-recording::before {
+  border-color: rgba(255, 242, 160, 0.76);
+  background:
+    radial-gradient(circle at 50% 50%, rgba(248, 223, 118, 0.2), transparent 42%),
+    radial-gradient(circle at 50% 50%, rgba(0, 236, 255, 0.16), transparent 62%);
+}
+
+body .dream-dictation-status {
+  padding: 10px 14px;
+  border: 1px solid rgba(248, 223, 118, 0.48);
+  border-radius: 14px;
+  color: #fff4b8;
+  background: rgba(3, 16, 31, 0.72);
+  box-shadow: inset 0 0 18px rgba(0, 236, 255, 0.1);
+  font-size: 12px;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+@keyframes dreamMicPulse {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-2px) scale(1.015); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body .big-mic.branded-mic.is-recording {
+    animation: none !important;
+  }
 }
