@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-label="LottoMind academy abstract artwork">
+  <defs>
+    <radialGradient id="node" cx="52%" cy="44%" r="48%"><stop offset="0" stop-color="#effbff"/><stop offset=".24" stop-color="#d8b34a"/><stop offset=".52" stop-color="#48ffb1"/><stop offset="1" stop-color="#03101f"/></radialGradient>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#020711"/><stop offset=".54" stop-color="#073042"/><stop offset="1" stop-color="#071417"/></linearGradient>
+  </defs>
+  <rect width="800" height="600" fill="url(#bg)"/>
+  <circle cx="420" cy="286" r="158" fill="url(#node)" opacity=".78"/>
+  <g opacity=".72" fill="none" stroke-linecap="round">
+    <path d="M170 420h116v-92h88v-86h96v-76h154" stroke="#d8b34a" stroke-width="10"/>
+    <path d="M164 178h128v84h112v88h94v78h138" stroke="#00dfff" stroke-width="8"/>
+    <path d="M250 486c84-96 174-142 270-138 76 4 128-18 186-86" stroke="#48ffb1" stroke-width="6" opacity=".62"/>
+  </g>
+  <g fill="#effbff">
+    <circle cx="170" cy="420" r="14"/><circle cx="286" cy="328" r="12"/><circle cx="374" cy="242" r="12"/><circle cx="470" cy="166" r="12"/><circle cx="624" cy="166" r="14"/>
+  </g>
+  <g fill="#d8b34a"><circle cx="164" cy="178" r="11"/><circle cx="292" cy="262" r="12"/><circle cx="404" cy="350" r="10"/><circle cx="498" cy="428" r="12"/><circle cx="636" cy="428" r="10"/></g>
+</svg>

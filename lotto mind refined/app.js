@@ -53,8 +53,77 @@ const ASSETS = {
   hfDreamOracle: `${BASE}/assets/custom/higgsfield-fresh/lm-dream-oracle-panel.png`,
   hfResetFrequency: `${BASE}/assets/custom/higgsfield-fresh/lm-reset-frequency-panel.png`,
   hfMusicStore: `${BASE}/assets/custom/higgsfield-fresh/lm-music-store-panel.png`,
-  hfAcademy: `${BASE}/assets/custom/higgsfield-fresh/lm-academy-panel.png`,
-  hfMarketplace: `${BASE}/assets/custom/higgsfield-fresh/lm-marketplace-panel.png`,
+  hfAcademy: `${BASE}/assets/custom/higgsfield-fresh/lm-academy-panel.png?v=nano-banana2-20260626`,
+  hfMarketplace: `${BASE}/assets/custom/higgsfield-fresh/lm-marketplace-panel.png?v=nano-banana2-20260626`,
+  dreamToolResetVault: `${BASE}/assets/custom/higgsfield-dream-tools/reset-vault.png?v=nano-banana2-dream-tools-20260626`,
+  dreamToolDreamOracle: `${BASE}/assets/custom/higgsfield-dream-tools/dream-oracle.png?v=nano-banana2-dream-tools-20260626`,
+  dreamToolAbundanceRadio: `${BASE}/assets/custom/higgsfield-dream-tools/abundance-radio.png?v=nano-banana2-dream-tools-20260626`,
+  dreamToolMusicHub: `${BASE}/assets/custom/higgsfield-dream-tools/music-hub.png?v=nano-banana2-dream-tools-20260626`,
+  dreamToolSonicStudio: `${BASE}/assets/custom/higgsfield-dream-tools/sonic-studio.png?v=nano-banana2-dream-tools-20260626`,
+  dreamToolGenerateDreams: `${BASE}/assets/custom/higgsfield-dream-tools/generate-dreams.png?v=nano-banana2-dream-tools-20260626`,
+  dreamToolDreamVideo: `${BASE}/assets/custom/higgsfield-dream-tools/dream-video.png?v=nano-banana2-dream-tools-20260626`,
+  dreamToolViralStudio: `${BASE}/assets/custom/higgsfield-dream-tools/viral-studio.png?v=nano-banana2-dream-tools-20260626`,
+  dreamToolPsychicEngine: `${BASE}/assets/custom/higgsfield-dream-tools/psychic-engine.png?v=nano-banana2-dream-tools-20260626`,
+  dreamToolDailyFortune: `${BASE}/assets/custom/higgsfield-dream-tools/daily-fortune.png?v=nano-banana2-dream-tools-20260626`,
+  dreamToolNameNumbers: `${BASE}/assets/custom/higgsfield-dream-tools/name-numbers.png?v=nano-banana2-dream-tools-20260626`,
+  dreamToolFutureRead: `${BASE}/assets/custom/higgsfield-dream-tools/future-read.png?v=nano-banana2-dream-tools-20260626`,
+  dreamKnobResetVault: `${BASE}/assets/custom/higgsfield-dream-knobs/reset-vault.png?v=nano-banana2-dream-knobs-20260626`,
+  dreamKnobDreamOracle: `${BASE}/assets/custom/higgsfield-dream-knobs/dream-oracle.png?v=nano-banana2-dream-knobs-20260626`,
+  dreamKnobAbundanceRadio: `${BASE}/assets/custom/higgsfield-dream-knobs/abundance-radio.png?v=nano-banana2-dream-knobs-20260626`,
+  dreamKnobMusicHub: `${BASE}/assets/custom/higgsfield-dream-knobs/music-hub.png?v=nano-banana2-dream-knobs-20260626`,
+  dreamKnobSonicStudio: `${BASE}/assets/custom/higgsfield-dream-knobs/sonic-studio.png?v=nano-banana2-dream-knobs-20260626`,
+  dreamKnobGenerateDreams: `${BASE}/assets/custom/higgsfield-dream-knobs/generate-dreams.png?v=nano-banana2-dream-knobs-20260626`,
+  dreamKnobDreamVideo: `${BASE}/assets/custom/higgsfield-dream-knobs/dream-video.png?v=nano-banana2-dream-knobs-20260626`,
+  dreamKnobViralStudio: `${BASE}/assets/custom/higgsfield-dream-knobs/viral-studio.png?v=nano-banana2-dream-knobs-20260626`,
+  dreamKnobPsychicEngine: `${BASE}/assets/custom/higgsfield-dream-knobs/psychic-engine.png?v=nano-banana2-dream-knobs-20260626`,
+  dreamKnobDailyFortune: `${BASE}/assets/custom/higgsfield-dream-knobs/daily-fortune.png?v=nano-banana2-dream-knobs-20260626`,
+  dreamKnobNameNumbers: `${BASE}/assets/custom/higgsfield-dream-knobs/name-numbers.png?v=nano-banana2-dream-knobs-20260626`,
+  dreamKnobFutureRead: `${BASE}/assets/custom/higgsfield-dream-knobs/future-read.png?v=nano-banana2-dream-knobs-20260626`,
+  powerToolNumberAnalyzer: `${BASE}/assets/custom/higgsfield-power-tools/number-analyzer.png?v=nano-banana2-power-tools-20260626`,
+  powerToolTicketScanner: `${BASE}/assets/custom/higgsfield-power-tools/ticket-scanner.png?v=nano-banana2-power-tools-20260626`,
+  powerToolLiveVaultHeatmap: `${BASE}/assets/custom/higgsfield-power-tools/live-vault-heatmap.png?v=nano-banana2-power-tools-20260626`,
+  powerToolPatternScanner: `${BASE}/assets/custom/higgsfield-power-tools/pattern-scanner.png?v=nano-banana2-power-tools-20260626`,
+  powerToolSmartPredictor: `${BASE}/assets/custom/higgsfield-power-tools/smart-predictor.png?v=nano-banana2-power-tools-20260626`,
+  powerToolAiNews: `${BASE}/assets/custom/higgsfield-power-tools/ai-news.png?v=nano-banana2-power-tools-20260626`,
+  powerToolLottoIntelligence: `${BASE}/assets/custom/higgsfield-power-tools/lotto-intelligence.png?v=nano-banana2-power-tools-20260626`,
+  powerToolEnergyMeter: `${BASE}/assets/custom/higgsfield-power-tools/energy-meter.png?v=nano-banana2-power-tools-20260626`,
+  powerToolPick34: `${BASE}/assets/custom/higgsfield-power-tools/pick-3-pick-4.png?v=nano-banana2-power-tools-20260626`,
+  powerToolStraightBox: `${BASE}/assets/custom/higgsfield-power-tools/straight-box.png?v=nano-banana2-power-tools-20260626`,
+  powerToolMirrorNumbers: `${BASE}/assets/custom/higgsfield-power-tools/mirror-numbers.png?v=nano-banana2-power-tools-20260626`,
+  powerToolLiveResults: `${BASE}/assets/custom/higgsfield-power-tools/live-results.png?v=nano-banana2-power-tools-20260626`,
+  powerToolPredictions: `${BASE}/assets/custom/higgsfield-power-tools/predictions.png?v=nano-banana2-power-tools-20260626`,
+  powerToolJackpotReality: `${BASE}/assets/custom/higgsfield-power-tools/jackpot-reality.png?v=nano-banana2-power-tools-20260626`,
+  powerToolWheelBuilder: `${BASE}/assets/custom/higgsfield-power-tools/wheel-builder.png?v=nano-banana2-power-tools-20260626`,
+  powerToolCreditVault: `${BASE}/assets/custom/higgsfield-power-tools/credit-vault.png?v=nano-banana2-power-tools-20260626`,
+  powerToolMarketplace: `${BASE}/assets/custom/higgsfield-power-tools/marketplace.png?v=nano-banana2-power-tools-20260626`,
+  powerToolLottoMindRecords: `${BASE}/assets/custom/higgsfield-power-tools/lottomind-records.png?v=nano-banana2-power-tools-20260626`,
+  powerToolHistoricalLab: `${BASE}/assets/custom/higgsfield-power-tools/historical-lab.png?v=nano-banana2-power-tools-20260626`,
+  powerToolStoreLocator: `${BASE}/assets/custom/higgsfield-power-tools/store-locator.png?v=nano-banana2-power-tools-20260626`,
+  powerToolUsLottery: `${BASE}/assets/custom/higgsfield-power-tools/us-lottery.png?v=nano-banana2-power-tools-20260626`,
+  powerToolHistory: `${BASE}/assets/custom/higgsfield-power-tools/history.png?v=nano-banana2-power-tools-20260626`,
+  heatmapToolNumberAnalyzer: `${BASE}/assets/custom/higgsfield-heatmap-tools/radar-number-analyzer.png?v=nano-banana2-heatmap-tools-20260626`,
+  heatmapToolTicketScanner: `${BASE}/assets/custom/higgsfield-heatmap-tools/radar-ticket-scanner.png?v=nano-banana2-heatmap-tools-20260626`,
+  heatmapToolLiveVaultHeatmap: `${BASE}/assets/custom/higgsfield-heatmap-tools/radar-live-vault-heatmap.png?v=nano-banana2-heatmap-tools-20260626`,
+  oracleFlowSonicStudio: `${BASE}/assets/custom/higgsfield-oracle-flow/sonic-studio-record-booth.png?v=nano-banana2-oracle-flow-20260626`,
+  oracleFlowResetStudio: `${BASE}/assets/custom/higgsfield-oracle-flow/reset-studio.png?v=nano-banana2-oracle-flow-20260626`,
+  oracleFlowDreamOracle: `${BASE}/assets/custom/higgsfield-oracle-flow/dream-oracle.png?v=nano-banana2-oracle-flow-20260626`,
+  oracleFlowMusicStore: `${BASE}/assets/custom/higgsfield-oracle-flow/music-store-record-label.png?v=nano-banana2-oracle-flow-20260626`,
+  oracleFlowAbundanceRadio: `${BASE}/assets/custom/higgsfield-oracle-flow/abundance-radio.png?v=nano-banana2-oracle-flow-20260626`,
+  strategyBalanced: `${BASE}/assets/custom/higgsfield-strategies/balanced.png?v=nano-banana2-strategies-20260626`,
+  strategyHot: `${BASE}/assets/custom/higgsfield-strategies/hot.png?v=nano-banana2-strategies-20260626`,
+  strategyCold: `${BASE}/assets/custom/higgsfield-strategies/cold.png?v=nano-banana2-strategies-20260626`,
+  strategyDreamSymbol: `${BASE}/assets/custom/higgsfield-strategies/dream-symbol.png?v=nano-banana2-strategies-20260626`,
+  dreamActionInterpret: `${BASE}/assets/custom/higgsfield-dream-actions/interpret-dream.png?v=nano-banana2-dream-actions-20260626`,
+  dreamActionPsychicFusion: `${BASE}/assets/custom/higgsfield-dream-actions/psychic-fusion.png?v=nano-banana2-dream-actions-20260626`,
+  dreamActionGenerateDreams: `${BASE}/assets/custom/higgsfield-dream-actions/generate-your-dreams.png?v=nano-banana2-dream-actions-20260626`,
+  dreamActionRecordDreamSong: `${BASE}/assets/custom/higgsfield-dream-actions/record-dream-song.png?v=nano-banana2-dream-actions-20260626`,
+  generatorAddonWheelBuilder: `${BASE}/assets/custom/higgsfield-generator-addons/wheel-builder.png?v=nano-banana2-generator-addons-20260626`,
+  generatorAddonEnergyMeter: `${BASE}/assets/custom/higgsfield-generator-addons/energy-meter.png?v=nano-banana2-generator-addons-20260626`,
+  generatorAddonLottoIntel: `${BASE}/assets/custom/higgsfield-generator-addons/lotto-intelligence.png?v=nano-banana2-generator-addons-20260626`,
+  recordButtonMusicStore: `${BASE}/assets/custom/higgsfield-record-buttons/open-music-store-record.png?v=nano-banana2-record-buttons-20260626`,
+  recordButtonAbundanceRadio: `${BASE}/assets/custom/higgsfield-record-buttons/abundance-radio-record.png?v=nano-banana2-record-buttons-20260626`,
+  recordButtonSonicStudio: `${BASE}/assets/custom/higgsfield-record-buttons/sonic-studio-record.png?v=nano-banana2-record-buttons-20260626`,
+  recordButtonDreamVideo: `${BASE}/assets/custom/higgsfield-record-buttons/dream-video-record.png?v=nano-banana2-record-buttons-20260626`,
   arcadeAcademy: `${BASE}/assets/custom/higgsfield-arcade-tools/arcade-academy.png`,
   arcadeAchievements: `${BASE}/assets/custom/higgsfield-arcade-tools/arcade-achievements.png`,
   arcadeArcade: `${BASE}/assets/custom/higgsfield-arcade-tools/arcade-arcade.png`,
@@ -69,7 +138,7 @@ const ASSETS = {
   arcadeTrivia: `${BASE}/assets/custom/higgsfield-arcade-tools/arcade-trivia.png`,
   ticketScannerVideo: `${BASE}/videos/ticket-scanner-demo.mp4`,
   radarTicketScannerVideo: `${BASE}/videos/radar-ticket-scanner-tile.mp4`,
-  dreamStageVideo: `${BASE}/videos/ticket-scanner-demo.mp4`,
+  dreamStageVideo: `${BASE}/videos/dream-oracle-bg.mp4?v=dream-bg-video-20260626`,
   oracleHeroVideo: `${BASE}/videos/lottomind-ultra-flow.mp4`,
 };
 
@@ -107,6 +176,87 @@ const ARCADE_TOOL_ART = {
   community: ASSETS.arcadeCommunity,
   notifications: ASSETS.arcadeNotifications,
   help: ASSETS.arcadeHelp,
+};
+
+const DREAM_TOOL_ART = {
+  "Reset Vault": ASSETS.dreamKnobResetVault,
+  "Dream Oracle": ASSETS.dreamKnobDreamOracle,
+  "Abundance Radio": ASSETS.dreamKnobAbundanceRadio,
+  "Music Hub": ASSETS.dreamKnobMusicHub,
+  "Sonic Studio": ASSETS.dreamKnobSonicStudio,
+  "Generate Dreams": ASSETS.dreamKnobGenerateDreams,
+  "Dream Video": ASSETS.dreamKnobDreamVideo,
+  "Viral Studio": ASSETS.dreamKnobViralStudio,
+  "Psychic Engine": ASSETS.dreamKnobPsychicEngine,
+  "Daily Fortune": ASSETS.dreamKnobDailyFortune,
+  "Name Numbers": ASSETS.dreamKnobNameNumbers,
+  "Future Read": ASSETS.dreamKnobFutureRead,
+};
+
+const POWER_TOOL_ART = {
+  "Number Analyzer": ASSETS.powerToolNumberAnalyzer,
+  "Ticket Scanner": ASSETS.powerToolTicketScanner,
+  "Live Vault Heatmap": ASSETS.powerToolLiveVaultHeatmap,
+  "Pattern Scanner": ASSETS.powerToolPatternScanner,
+  "Smart Predictor": ASSETS.powerToolSmartPredictor,
+  "AI News": ASSETS.powerToolAiNews,
+  "Lotto Intelligence": ASSETS.powerToolLottoIntelligence,
+  "Energy Meter": ASSETS.powerToolEnergyMeter,
+  "Pick 3 / Pick 4": ASSETS.powerToolPick34,
+  "Straight / Box": ASSETS.powerToolStraightBox,
+  "Mirror Numbers": ASSETS.powerToolMirrorNumbers,
+  "Live Results": ASSETS.powerToolLiveResults,
+  "Predictions": ASSETS.powerToolPredictions,
+  "Jackpot Reality": ASSETS.powerToolJackpotReality,
+  "Wheel Builder": ASSETS.powerToolWheelBuilder,
+  "Credit Vault": ASSETS.powerToolCreditVault,
+  "Marketplace": ASSETS.powerToolMarketplace,
+  "LottoMind Records": ASSETS.powerToolLottoMindRecords,
+  "Historical Lab": ASSETS.powerToolHistoricalLab,
+  "Store Locator": ASSETS.powerToolStoreLocator,
+  "US Lottery": ASSETS.powerToolUsLottery,
+  "History": ASSETS.powerToolHistory,
+};
+
+const HEATMAP_TOOL_ART = {
+  "Number Analyzer": ASSETS.heatmapToolNumberAnalyzer,
+  "Ticket Scanner": ASSETS.heatmapToolTicketScanner,
+  "Live Vault Heatmap": ASSETS.heatmapToolLiveVaultHeatmap,
+};
+
+const ORACLE_FLOW_ART = {
+  "Sonic Studio / Record Booth": ASSETS.oracleFlowSonicStudio,
+  "Reset Studio": ASSETS.oracleFlowResetStudio,
+  "Dream Oracle": ASSETS.oracleFlowDreamOracle,
+  "Music Store / Record Label": ASSETS.oracleFlowMusicStore,
+  "Abundance Radio": ASSETS.oracleFlowAbundanceRadio,
+};
+
+const STRATEGY_ART = {
+  balanced: ASSETS.strategyBalanced,
+  hot: ASSETS.strategyHot,
+  cold: ASSETS.strategyCold,
+  dream: ASSETS.strategyDreamSymbol,
+};
+
+const DREAM_ACTION_ART = {
+  interpretDream: ASSETS.dreamActionInterpret,
+  psychicFusion: ASSETS.dreamActionPsychicFusion,
+  generateDreams: ASSETS.dreamActionGenerateDreams,
+  recordDreamSong: ASSETS.dreamActionRecordDreamSong,
+};
+
+const GENERATOR_ADDON_ART = {
+  "Wheel Builder": ASSETS.generatorAddonWheelBuilder,
+  "Energy Meter": ASSETS.generatorAddonEnergyMeter,
+  "Lotto Intelligence": ASSETS.generatorAddonLottoIntel,
+};
+
+const RECORD_BUTTON_ART = {
+  music: ASSETS.recordButtonMusicStore,
+  radioStation: ASSETS.recordButtonAbundanceRadio,
+  studio: ASSETS.recordButtonSonicStudio,
+  dreamVideo: ASSETS.recordButtonDreamVideo,
 };
 
 const CATEGORY_KIND_BY_ROUTE = {
@@ -1932,7 +2082,7 @@ function strategyPills() {
     ["quick", "Quick", ASSETS.power],
   ];
   return `<div class="strategy-pills">${strategies.map(([key, label, art]) => `
-    <button class="strategy-pill ${state.strategy === key ? "active" : ""}" data-action="set-strategy" data-strategy="${key}" style="--pill-art:url('${art}')">
+    <button class="strategy-pill ${state.strategy === key ? "active" : ""}" data-action="set-strategy" data-strategy="${key}" style="--pill-art:url('${STRATEGY_ART[key] || art}')">
       <span>${label}</span>
       <small>${key === "balanced" ? "Best of both" : key === "hot" ? "Frequently drawn" : key === "cold" ? "Overdue numbers" : key === "dream" ? "Symbol seed" : "Fast pick"}</small>
     </button>
@@ -2181,10 +2331,11 @@ function dashboardView() {
       </div>
       <div class="quest-steps oracle-flow-steps">
         ${HOME_CAROUSEL.map(([title, copy, route, art], index) => {
-          const flowVideo = HOME_CAROUSEL_VIDEOS[route];
+          const customFlowArt = ORACLE_FLOW_ART[title];
+          const flowVideo = customFlowArt ? "" : HOME_CAROUSEL_VIDEOS[route];
           const flowKind = categoryKindForTool(title, route);
           return `
-          <button class="quest-step oracle-flow-step" data-route="${route}" data-art-kind="${flowKind}" style="--quest-art:url('${art}')">
+          <button class="quest-step oracle-flow-step" data-route="${route}" data-art-kind="${flowKind}" style="--quest-art:url('${customFlowArt || art}')">
             ${flowVideo ? `<video class="oracle-flow-video ambient-video" src="${flowVideo}" muted loop autoplay playsinline preload="auto"></video>` : ""}
             <b>${String(index + 1).padStart(2, "0")}</b>
             <strong>${title}</strong>
@@ -2278,16 +2429,16 @@ function categoryArtForTool(title, route, index) {
   return titleArt || ARCADE_TOOL_ART[route] || CATEGORY_ART[kind] || fallback[index % fallback.length];
 }
 
-function circleTool(title, sub, route, index) {
+function circleTool(title, sub, route, index, options = {}) {
   const artKind = categoryKindForTool(title, route);
-  const video = title === "Number Analyzer"
+  const video = title === "Number Analyzer" && !options.preferStaticArt
     ? `<video class="circle-tool-video" src="${BASE}/videos/power-tools-dashboard-box.mp4" poster="${ASSETS.powerTools}" muted loop autoplay playsinline preload="metadata"></video>`
-    : route === "scanner" || route === "ticketScanner"
+    : (route === "scanner" || route === "ticketScanner") && !options.preferStaticArt
       ? `<video class="circle-tool-video scanner-tile-video" src="${ASSETS.radarTicketScannerVideo}" poster="${ASSETS.powerTools}" muted loop autoplay playsinline preload="metadata"></video>`
-    : title === "Reset Vault"
+    : title === "Reset Vault" && !options.preferStaticArt
       ? `<video class="circle-tool-video singer-video" src="${BASE}/videos/power-tools-button-green-screen.mp4" poster="${ASSETS.music}" muted loop autoplay playsinline preload="metadata"></video>`
       : "";
-  const art = categoryArtForTool(title, route, index);
+  const art = options.art || categoryArtForTool(title, route, index);
   return `<button class="circle-tool" data-route="${route}" data-art-kind="${artKind}" style="--circle-art:url('${art}')">
     ${video}
     <span>${title}</span>
@@ -2331,7 +2482,10 @@ function powerToolsView() {
           <span>${group.tools.length} tools</span>
         </div>
         <div class="circle-carousel tool-bento ${group.title === "Main Lab" ? "main-lab-bento" : ""}">
-          ${group.tools.map(([title, sub, route], index) => circleTool(title, sub, route, groupIndex * 4 + index)).join("")}
+          ${group.tools.map(([title, sub, route], index) => circleTool(title, sub, route, groupIndex * 4 + index, {
+            art: group.title === "Main Lab" ? POWER_TOOL_ART[title] : undefined,
+            preferStaticArt: group.title === "Main Lab",
+          })).join("")}
         </div>
       </div>
     `).join("")}
@@ -2713,7 +2867,7 @@ function dreamsView() {
   return `<section class="screen dreams-screen">
     ${!reading ? `<div class="panel empty-state dream-ready-spotlight dream-ready-top"><h2>Dream engine ready</h2><p>Tap the mic or type a dream, then run the full interpretation.</p></div>` : ""}
     <div class="panel dream-stage art-panel" style="--panel-art:url('${ASSETS.dream}')">
-      <video class="dream-stage-video ambient-video" src="${ASSETS.dreamStageVideo}" muted loop autoplay playsinline preload="metadata"></video>
+      <video class="dream-stage-video ambient-video" src="${ASSETS.dreamStageVideo}" poster="${ASSETS.dream}" muted loop autoplay playsinline preload="auto"></video>
       <h1>Dream Oracle<sup>SM</sup> AI</h1>
       <p>Describe your dream. The Oracle detects symbols, explains meaning, and generates lucky numbers.</p>
       ${gamePills()}
@@ -2726,10 +2880,10 @@ function dreamsView() {
       <textarea class="dream-input" data-bind="dreamText" placeholder="Speak or type your dream...">${escapeHtml(state.dreamText)}</textarea>
       ${state.dreamListening ? `<div class="dream-dictation-status" role="status">Live dictation active${state.dreamInterimText ? `: ${escapeHtml(state.dreamInterimText)}` : ""}</div>` : ""}
       <div class="hero-actions">
-        <button class="primary-btn" data-action="interpret-dream" data-art-kind="dream">Interpret Dream</button>
-        <button class="ghost-btn" data-action="psychic-fusion" data-art-kind="ai">Psychic Fusion</button>
-        <button class="ghost-btn" data-action="build-dream-video" data-art-kind="dream">Generate Your Dreams</button>
-        <button class="ghost-btn" data-route="studio" data-art-kind="music">Record Dream Song</button>
+        <button class="primary-btn" data-action="interpret-dream" data-art-kind="dream" style="--button-art:url('${DREAM_ACTION_ART.interpretDream}')">Interpret Dream</button>
+        <button class="ghost-btn" data-action="psychic-fusion" data-art-kind="ai" style="--button-art:url('${DREAM_ACTION_ART.psychicFusion}')">Psychic Fusion</button>
+        <button class="ghost-btn" data-action="build-dream-video" data-art-kind="dream" style="--button-art:url('${DREAM_ACTION_ART.generateDreams}')">Generate Your Dreams</button>
+        <button class="ghost-btn" data-route="studio" data-art-kind="music" style="--button-art:url('${DREAM_ACTION_ART.recordDreamSong}')">Record Dream Song</button>
       </div>
     </div>
 
@@ -2739,7 +2893,7 @@ function dreamsView() {
         <span>${ORACLE_STUDIO_GROUP.tools.length} tools</span>
       </div>
       <div class="circle-carousel tool-bento dream-studio-bento">
-        ${ORACLE_STUDIO_GROUP.tools.map(([title, sub, route], index) => circleTool(title, sub, route, index + 3)).join("")}
+        ${ORACLE_STUDIO_GROUP.tools.map(([title, sub, route], index) => circleTool(title, sub, route, index + 3, { art: DREAM_TOOL_ART[title], preferStaticArt: true })).join("")}
       </div>
     </div>
 
@@ -2825,10 +2979,10 @@ function dreamsView() {
         <p>Prominent dream-lane audio store for reset sessions, radio intros, and dream video sound beds.</p>
       </div>
       <div class="hero-actions">
-        <button class="primary-btn" data-route="music">Open Music Store</button>
-        <button class="ghost-btn" data-route="radioStation">Abundance Radio</button>
-        <button class="ghost-btn" data-route="studio">Sonic Studio</button>
-        <button class="ghost-btn" data-route="dreamVideo">Dream Video</button>
+        <button class="primary-btn record-disc-btn" data-route="music" style="--record-art:url('${RECORD_BUTTON_ART.music}')">Open Music Store</button>
+        <button class="ghost-btn record-disc-btn" data-route="radioStation" style="--record-art:url('${RECORD_BUTTON_ART.radioStation}')">Abundance Radio</button>
+        <button class="ghost-btn record-disc-btn" data-route="studio" style="--record-art:url('${RECORD_BUTTON_ART.studio}')">Sonic Studio</button>
+        <button class="ghost-btn record-disc-btn" data-route="dreamVideo" style="--record-art:url('${RECORD_BUTTON_ART.dreamVideo}')">Dream Video</button>
       </div>
     </div>
 
@@ -2866,7 +3020,7 @@ function numberGeneratorView() {
           ["Wheel Builder", "Coverage", "wheelBuilder"],
           ["Energy Meter", "Signal score", "energyMeter"],
           ["Lotto Intelligence", "Deep report", "lottoIntel"],
-        ].map(([title, sub, route], index) => circleTool(title, sub, route, index + 2)).join("")}
+        ].map(([title, sub, route], index) => circleTool(title, sub, route, index + 2, { art: GENERATOR_ADDON_ART[title], preferStaticArt: true })).join("")}
       </div>
     </div>
     <div class="panel radio-mini">
@@ -2943,7 +3097,10 @@ function heatmapView() {
     <div class="panel quick-panel radar-quick-panel">
       <div class="section-head"><div><h2>Radar Tool Deck</h2><p>Old functions grouped under the Radar tab as swipeable Oracle buttons.</p></div><span>${QUICK_TOOLS.length} tools</span></div>
       <div class="circle-carousel">
-        ${QUICK_TOOLS.map(([title, sub, route], index) => circleTool(title, sub, route, index)).join("")}
+        ${QUICK_TOOLS.map(([title, sub, route], index) => circleTool(title, sub, route, index, {
+          art: HEATMAP_TOOL_ART[title],
+          preferStaticArt: Boolean(HEATMAP_TOOL_ART[title]),
+        })).join("")}
       </div>
     </div>
     <div class="panel radar-panel">

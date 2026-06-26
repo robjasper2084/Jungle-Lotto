@@ -22647,7 +22647,326 @@ body .records-screen > .media-hero > div {
   min-width: 0;
 }
 
+body .route-dashboard .split-grid .action-tile[data-art-kind] {
+  min-height: 112px;
+  align-content: end;
+  background:
+    linear-gradient(180deg, rgba(0, 8, 16, 0.06), rgba(0, 8, 16, 0.74) 64%, rgba(0, 8, 16, 0.92)),
+    linear-gradient(90deg, rgba(0, 10, 18, 0.54), rgba(0, 22, 34, 0.28)),
+    var(--tile-art) center / cover no-repeat !important;
+  box-shadow:
+    inset 0 0 0 999px rgba(0, 8, 15, 0.18),
+    inset 0 -34px 42px rgba(0, 0, 0, 0.42),
+    0 0 22px color-mix(in srgb, var(--kind-a, #00ecff) 18%, transparent) !important;
+}
+
+body .route-dashboard .split-grid .action-tile[data-art-kind]::after {
+  background:
+    linear-gradient(110deg, transparent 0 42%, rgba(255, 255, 255, 0.16) 47%, transparent 54% 100%),
+    repeating-linear-gradient(90deg, rgba(0, 236, 255, 0.08) 0 1px, transparent 1px 18px);
+  opacity: 0.36;
+}
+
+body .route-dashboard .split-grid .action-tile[data-art-kind] strong {
+  font-size: clamp(17px, 3.7vw, 21px) !important;
+  line-height: 0.98 !important;
+  overflow-wrap: anywhere;
+}
+
+body .route-dashboard .split-grid .action-tile[data-art-kind] span {
+  font-size: clamp(11px, 2.5vw, 13px);
+  line-height: 1.18 !important;
+}
+
+body .strategy-pill {
+  background:
+    linear-gradient(90deg, rgba(0, 8, 16, 0.34), rgba(0, 20, 30, 0.72) 54%, rgba(0, 8, 16, 0.86)),
+    var(--pill-art) center / cover no-repeat !important;
+  box-shadow:
+    inset 0 0 0 999px rgba(0, 10, 18, 0.14),
+    inset 0 -16px 20px rgba(0, 0, 0, 0.34),
+    0 0 18px rgba(0, 236, 255, 0.18) !important;
+}
+
+body .strategy-pill::before {
+  background-image:
+    radial-gradient(circle at 50% 50%, rgba(248, 223, 118, 0.22), transparent 58%),
+    var(--pill-art) !important;
+}
+
+body .route-dreams .dream-stage > .hero-actions button[style*="--button-art"] {
+  background:
+    linear-gradient(180deg, rgba(255, 247, 211, 0.1), rgba(0, 8, 18, 0.38) 36%, rgba(0, 5, 12, 0.88)),
+    var(--button-art) center / cover no-repeat !important;
+  color: #fff8cf !important;
+  text-shadow:
+    0 2px 0 rgba(0, 0, 0, 0.88),
+    0 0 14px rgba(248, 223, 118, 0.28) !important;
+}
+
+body .route-dreams .dream-stage > .hero-actions button[style*="--button-art"]::before {
+  background:
+    linear-gradient(180deg, rgba(255, 247, 211, 0.16), transparent 34%, rgba(0, 0, 0, 0.32)),
+    radial-gradient(circle at 24% 18%, rgba(0, 236, 255, 0.22), transparent 30%) !important;
+}
+
+body .route-dreams .dream-stage .dream-stage-video {
+  opacity: 0.58 !important;
+  filter: saturate(1.24) contrast(1.08) brightness(0.96) !important;
+  mix-blend-mode: screen !important;
+  transform: scale(1.02);
+}
+
+body .route-dreams .dream-stage::after {
+  background:
+    radial-gradient(circle at 50% 22%, rgba(255, 237, 166, 0.14), transparent 32%),
+    linear-gradient(180deg, rgba(0, 9, 15, 0.04), rgba(0, 18, 24, 0.44) 58%, rgba(0, 7, 12, 0.76)) !important;
+}
+
+body .route-dreams .dream-record-label .hero-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+body .route-dreams .dream-record-label .record-disc-btn {
+  position: relative;
+  min-height: 66px;
+  min-width: 0;
+  display: grid;
+  align-items: center;
+  justify-items: start;
+  padding: 10px 10px 10px 62px !important;
+  border-radius: 20px 999px 20px 999px !important;
+  overflow: hidden;
+  color: #fff8cf !important;
+  background:
+    linear-gradient(100deg, rgba(0, 9, 18, 0.2), rgba(0, 16, 26, 0.72) 46%, rgba(0, 5, 12, 0.94)),
+    var(--record-art) center / cover no-repeat !important;
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.3),
+    inset 0 -7px 0 rgba(0, 4, 10, 0.9),
+    inset 0 -24px 32px rgba(0, 0, 0, 0.5),
+    0 6px 0 rgba(0, 7, 15, 0.98),
+    0 0 20px rgba(0, 236, 255, 0.24) !important;
+  text-align: left;
+  text-shadow:
+    0 2px 0 rgba(0, 0, 0, 0.86),
+    0 0 12px rgba(248, 223, 118, 0.28);
+}
+
+body .route-dreams .dream-record-label .record-disc-btn::before {
+  content: "";
+  position: absolute;
+  left: 9px;
+  top: 50%;
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  transform: translateY(-50%);
+  background:
+    radial-gradient(circle at 50% 50%, rgba(0, 0, 0, 0.96) 0 5px, rgba(248, 223, 118, 0.84) 6px 12px, transparent 13px),
+    var(--record-art) center / cover no-repeat;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.38),
+    inset 0 0 0 6px rgba(0, 0, 0, 0.18),
+    0 0 0 2px rgba(0, 236, 255, 0.42),
+    0 0 18px rgba(0, 236, 255, 0.34);
+}
+
+body .route-dreams .dream-record-label .record-disc-btn::after {
+  background:
+    linear-gradient(110deg, transparent 0 32%, rgba(255, 255, 255, 0.22) 44%, transparent 56% 100%),
+    radial-gradient(circle at 24px 50%, transparent 0 9px, rgba(255, 255, 255, 0.18) 10px 11px, transparent 12px) !important;
+  opacity: 0.78 !important;
+}
+
+body .route-dreams .dream-record-label .record-disc-btn:hover,
+body .route-dreams .dream-record-label .record-disc-btn:focus-visible {
+  transform: translateY(-3px) !important;
+  filter: saturate(1.12) brightness(1.08) !important;
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.36),
+    inset 0 -7px 0 rgba(0, 4, 10, 0.9),
+    0 8px 0 rgba(0, 7, 15, 0.98),
+    0 0 26px rgba(0, 236, 255, 0.34) !important;
+}
+
+body .route-dreams .dream-record-label .record-disc-btn:active {
+  transform: translateY(4px) scale(0.985) !important;
+  filter: brightness(0.92) saturate(1.06) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    inset 0 5px 14px rgba(0, 0, 0, 0.58),
+    0 2px 0 rgba(0, 7, 15, 0.98),
+    0 3px 9px rgba(0, 0, 0, 0.34) !important;
+}
+
+body .route-powertools .arcade-deck h1.game-title {
+  max-width: 9.5ch !important;
+  margin-bottom: 12px !important;
+  font-family: "Segoe UI Black", var(--future-font), "Arial Black", system-ui, sans-serif !important;
+  font-size: clamp(42px, 9.2vw, 62px) !important;
+  font-weight: 950 !important;
+  line-height: 0.9 !important;
+  letter-spacing: 0 !important;
+  text-transform: uppercase !important;
+  color: #fff6bd !important;
+  background: none !important;
+  background-clip: initial !important;
+  -webkit-background-clip: initial !important;
+  -webkit-text-fill-color: #fff6bd !important;
+  -webkit-text-stroke: 0 !important;
+  text-shadow:
+    0 2px 0 rgba(0, 0, 0, 0.92),
+    0 0 14px rgba(248, 223, 118, 0.34),
+    0 0 24px rgba(0, 236, 255, 0.22) !important;
+}
+
+body .route-powertools .arcade-deck h1.game-title::after {
+  width: min(100%, 184px) !important;
+  height: 4px !important;
+  margin-top: 10px !important;
+  background:
+    linear-gradient(90deg, #f8df76 0%, #00ecff 54%, transparent 100%) !important;
+  box-shadow:
+    0 0 12px rgba(0, 236, 255, 0.34),
+    0 0 16px rgba(248, 223, 118, 0.18) !important;
+}
+
+/* Dream Oracle Studio: Higgsfield mixer-knob controls */
+body .route-dreams .dream-oracle-tools .dream-studio-bento .circle-tool[data-art-kind],
+body .route-dreams .dream-oracle-tools .dream-studio-bento .circle-tool[data-art-kind]:first-child {
+  min-height: 116px !important;
+  padding: 74px 7px 10px !important;
+  border-radius: 20px !important;
+  isolation: isolate;
+  background:
+    radial-gradient(circle at 50% 8%, rgba(255, 246, 190, 0.18), transparent 22%),
+    radial-gradient(circle at 50% 32%, rgba(0, 236, 255, 0.2), transparent 38%),
+    linear-gradient(180deg, rgba(4, 20, 30, 0.94), rgba(0, 5, 12, 0.98)) !important;
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.22),
+    inset 0 -8px 0 rgba(0, 4, 10, 0.92),
+    inset 0 -24px 32px rgba(0, 0, 0, 0.5),
+    0 6px 0 rgba(0, 7, 15, 0.98),
+    0 0 20px rgba(0, 236, 255, 0.24) !important;
+}
+
+body .route-dreams .dream-oracle-tools .dream-studio-bento .circle-tool[data-art-kind]::before {
+  content: "";
+  position: absolute;
+  left: 50% !important;
+  top: 8px !important;
+  z-index: 1;
+  width: 62px !important;
+  height: 62px !important;
+  border-radius: 50%;
+  transform: translateX(-50%) rotate(var(--knob-rest, 0deg));
+  transform-origin: 50% 50%;
+  background: var(--circle-art) center / cover no-repeat !important;
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.34),
+    inset 0 -8px 14px rgba(0, 0, 0, 0.42),
+    0 0 0 2px rgba(0, 236, 255, 0.48),
+    0 0 18px rgba(0, 236, 255, 0.32),
+    0 8px 16px rgba(0, 0, 0, 0.42);
+  transition: transform 220ms cubic-bezier(0.2, 0.8, 0.2, 1), filter 180ms ease, box-shadow 180ms ease;
+}
+
+body .route-dreams .dream-oracle-tools .dream-studio-bento .circle-tool[data-art-kind]::after {
+  inset: 8px !important;
+  z-index: 0;
+  background:
+    linear-gradient(118deg, transparent 0 34%, rgba(255, 255, 255, 0.16) 46%, transparent 58%),
+    radial-gradient(circle at 50% 30px, rgba(0, 236, 255, 0.16), transparent 36px) !important;
+  mix-blend-mode: screen !important;
+  opacity: 0.66 !important;
+}
+
+body .route-dreams .dream-oracle-tools .dream-studio-bento .circle-tool[data-art-kind] span,
+body .route-dreams .dream-oracle-tools .dream-studio-bento .circle-tool[data-art-kind] small {
+  position: relative;
+  z-index: 2;
+}
+
+body .route-dreams .dream-oracle-tools .dream-studio-bento .circle-tool[data-art-kind]:nth-child(3n + 1) { --knob-rest: -12deg; }
+body .route-dreams .dream-oracle-tools .dream-studio-bento .circle-tool[data-art-kind]:nth-child(3n + 2) { --knob-rest: 8deg; }
+body .route-dreams .dream-oracle-tools .dream-studio-bento .circle-tool[data-art-kind]:nth-child(3n) { --knob-rest: 18deg; }
+
+body .route-dreams .dream-oracle-tools .dream-studio-bento .circle-tool[data-art-kind]:hover::before,
+body .route-dreams .dream-oracle-tools .dream-studio-bento .circle-tool[data-art-kind]:focus-visible::before {
+  transform: translateX(-50%) rotate(calc(var(--knob-rest, 0deg) + 28deg)) scale(1.04);
+  filter: brightness(1.08) saturate(1.12);
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.42),
+    inset 0 -8px 14px rgba(0, 0, 0, 0.34),
+    0 0 0 2px rgba(248, 223, 118, 0.5),
+    0 0 22px rgba(0, 236, 255, 0.44),
+    0 9px 18px rgba(0, 0, 0, 0.4);
+}
+
+body .route-dreams .dream-oracle-tools .dream-studio-bento .circle-tool[data-art-kind]:active::before {
+  transform: translateX(-50%) rotate(calc(var(--knob-rest, 0deg) + 78deg)) scale(0.96);
+  filter: brightness(0.94) saturate(1.04);
+}
+
+body .weather-screen .state-orb span {
+  margin-top: 4px;
+  font-family: var(--title-font), Impact, "Arial Black", sans-serif !important;
+  font-size: clamp(22px, 5vw, 30px) !important;
+  line-height: 0.9 !important;
+  letter-spacing: 0 !important;
+  color: #fff6bd !important;
+  -webkit-text-fill-color: #fff6bd !important;
+  text-shadow:
+    0 2px 0 rgba(0, 0, 0, 0.82),
+    0 0 12px rgba(248, 223, 118, 0.42),
+    0 0 18px rgba(0, 236, 255, 0.36) !important;
+}
+
+body .route-ai .ai-screen > .media-hero {
+  grid-template-columns: minmax(0, 1fr) clamp(92px, 28vw, 126px) !important;
+  align-items: center !important;
+  column-gap: clamp(10px, 3vw, 18px) !important;
+  overflow: hidden;
+}
+
+body .route-ai .ai-screen > .media-hero > div {
+  min-width: 0;
+  position: relative;
+  z-index: 2;
+}
+
+body .route-ai .ai-screen > .media-hero .dream-input {
+  max-width: min(100%, 196px);
+}
+
+body .route-ai .ai-coach-mascot {
+  --coach-medallion-size: clamp(92px, 28vw, 126px);
+  width: var(--coach-medallion-size) !important;
+  height: var(--coach-medallion-size) !important;
+  max-width: 126px !important;
+  max-height: 126px !important;
+  padding: 5px !important;
+  justify-self: end !important;
+  align-self: center !important;
+  object-fit: cover !important;
+  object-position: center !important;
+}
+
 @media (max-width: 380px) {
+  body .route-ai .ai-screen > .media-hero {
+    grid-template-columns: minmax(0, 1fr) 84px !important;
+    column-gap: 8px !important;
+  }
+
+  body .route-ai .ai-coach-mascot {
+    --coach-medallion-size: 84px;
+    max-width: 84px !important;
+    max-height: 84px !important;
+  }
+
   body .records-screen > .media-hero {
     grid-template-columns: minmax(0, 1fr) 72px !important;
   }

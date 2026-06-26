@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-label="LottoMind arcade abstract artwork">
+  <defs>
+    <radialGradient id="core" cx="46%" cy="42%" r="40%"><stop offset="0" stop-color="#fff4b8"/><stop offset=".23" stop-color="#ff7ac8"/><stop offset=".58" stop-color="#8a5cff"/><stop offset="1" stop-color="#03101f"/></radialGradient>
+    <radialGradient id="orb" cx="68%" cy="60%" r="34%"><stop offset="0" stop-color="#effbff"/><stop offset=".28" stop-color="#00dfff"/><stop offset=".66" stop-color="#06324a"/><stop offset="1" stop-color="#03101f"/></radialGradient>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#070817"/><stop offset=".5" stop-color="#231136"/><stop offset="1" stop-color="#020711"/></linearGradient>
+  </defs>
+  <rect width="800" height="600" fill="url(#bg)"/>
+  <g opacity=".26" stroke="#00dfff" stroke-width="2" fill="none">
+    <path d="M0 470h800M0 396h800M0 322h800M0 248h800M0 174h800"/>
+    <path d="M104 600 380 0M268 600 544 0M432 600 708 0M-60 600 216 0"/>
+  </g>
+  <circle cx="360" cy="262" r="148" fill="url(#core)" opacity=".88"/>
+  <circle cx="566" cy="368" r="118" fill="url(#orb)" opacity=".82"/>
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M180 352h118l42-72 58 142 58-238 44 112h120" stroke="#d8b34a" stroke-width="12" opacity=".76"/>
+    <path d="M160 192h120v78H160zM520 152h116v116H520zM226 432h82v82h-82z" stroke="#48ffb1" stroke-width="8" opacity=".55"/>
+  </g>
+  <g fill="#ff7ac8"><circle cx="180" cy="352" r="14"/><circle cx="620" cy="352" r="14"/><circle cx="578" cy="210" r="13"/></g>
+</svg>

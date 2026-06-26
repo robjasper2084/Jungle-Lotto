@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-label="LottoMind history vault abstract artwork">
+  <defs>
+    <radialGradient id="vault" cx="54%" cy="46%" r="42%"><stop offset="0" stop-color="#fff7c8"/><stop offset=".3" stop-color="#d8b34a"/><stop offset=".68" stop-color="#082a43"/><stop offset="1" stop-color="#03101f"/></radialGradient>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#02070f"/><stop offset=".5" stop-color="#06263a"/><stop offset="1" stop-color="#090f19"/></linearGradient>
+  </defs>
+  <rect width="800" height="600" fill="url(#bg)"/>
+  <g opacity=".2" stroke="#d8b34a" stroke-width="2" fill="none">
+    <path d="M92 90h616v420H92zM150 148h500v304H150z"/>
+    <path d="M184 210h432M184 282h432M184 354h432M246 148v304M400 148v304M554 148v304"/>
+  </g>
+  <circle cx="410" cy="304" r="152" fill="url(#vault)" opacity=".82"/>
+  <circle cx="410" cy="304" r="108" fill="none" stroke="#effbff" stroke-width="8" opacity=".5"/>
+  <circle cx="410" cy="304" r="54" fill="#03101f" stroke="#00dfff" stroke-width="8"/>
+  <g fill="none" stroke-linecap="round">
+    <path d="M180 472h96v-62h106v-74h112v-58h128" stroke="#00dfff" stroke-width="8" opacity=".62"/>
+    <path d="M206 128h108v56h172v-38h108" stroke="#48ffb1" stroke-width="6" opacity=".5"/>
+  </g>
+  <g fill="#d8b34a"><circle cx="180" cy="472" r="12"/><circle cx="276" cy="410" r="10"/><circle cx="382" cy="336" r="12"/><circle cx="494" cy="278" r="10"/><circle cx="622" cy="278" r="13"/></g>
+</svg>
