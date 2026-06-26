@@ -22627,6 +22627,37 @@ body :where(button, .file-pill, a.primary-btn, a.ghost-btn, [role="button"])[ari
     0 3px 0 rgba(0, 8, 16, 0.72) !important;
 }
 
+body .records-screen > .media-hero {
+  grid-template-columns: minmax(0, 1fr) minmax(78px, 96px) !important;
+  gap: 10px !important;
+  align-items: center !important;
+}
+
+body .records-screen > .media-hero .deck-coin {
+  width: clamp(78px, 24vw, 104px) !important;
+  max-width: 100% !important;
+  max-height: 104px !important;
+  justify-self: end !important;
+  align-self: center !important;
+  object-fit: contain !important;
+  object-position: center !important;
+}
+
+body .records-screen > .media-hero > div {
+  min-width: 0;
+}
+
+@media (max-width: 380px) {
+  body .records-screen > .media-hero {
+    grid-template-columns: minmax(0, 1fr) 72px !important;
+  }
+
+  body .records-screen > .media-hero .deck-coin {
+    width: 72px !important;
+    max-height: 72px !important;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   body :where(button, .file-pill, a.primary-btn, a.ghost-btn, [role="button"]) {
     transition: none !important;
