@@ -5196,7 +5196,6 @@ function arcadeView() {
         ${PLAY_LEARN_GROUP.tools.map(([title, sub, route], index) => circleTool(title, sub, route, index + 8)).join("")}
       </div>
     </div>` : ""}
-    ${state.route === "arcade" ? miniGameView("Trivia Rewards") : ""}
     <div class="panel quest-board arcade-quest-board">
       <div class="section-head movie-head"><div><h2>Quest Board</h2><p>Arcade path from warmup to reward run.</p></div><span>4 steps</span></div>
       <div class="quest-steps">
