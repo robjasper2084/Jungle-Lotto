@@ -368,6 +368,12 @@ const ROUTE_ALIASES = {
   legal: "policies",
 };
 
+const RESET_PRESETS = {
+  calm: { label: "Calm", tone: "432", duration: 300 },
+  focus: { label: "Focus", tone: "741", duration: 900 },
+  sleep: { label: "Sleep", tone: "174", duration: 1800 },
+};
+
 const TRIVIA_QUESTIONS = [
   {
     q: "What is the safest first move before saving a Dream Oracle pick?",
@@ -1063,6 +1069,7 @@ const state = {
   audioPlaying: false,
   volume: 0.18,
   tone: "528",
+  resetPreset: "calm",
   duration: 300,
   timerRemaining: 300,
   timerRunning: false,
@@ -1809,6 +1816,10 @@ function routeUrl(routeKey) {
   return `${BASE}/${path}`.replace(/\/$/, "/");
 }
 
+function isResetRoute(routeKey = state.route) {
+  return (ROUTE_ALIASES[routeKey] || routeKey) === "reset";
+}
+
 function go(routeKey, replace = false) {
   const next = ROUTES[routeKey] !== undefined ? routeKey : "dashboard";
   stopRouteAudio();
@@ -2351,6 +2362,7 @@ function resetView() {
     ["528", "Heart Field"],
   ];
   const pct = Math.round(state.volume * 100);
+  const currentPreset = RESET_PRESETS[state.resetPreset] || RESET_PRESETS.calm;
   const resetRecordsPanel = `<div class="panel record-label-panel compact reset-record-store reset-record-store-top">
       <div>
         <span class="eyebrow">LottoMind Records Label</span>
@@ -2367,18 +2379,18 @@ function resetView() {
         <span class="pro-badge">PRO</span>
       </div>
       <div class="tone-chips">
-        <button class="lm-pill active">Calm</button><button class="lm-pill">Focus</button><button class="lm-pill">Sleep</button>
+        ${Object.entries(RESET_PRESETS).map(([key, preset]) => `<button class="lm-pill ${state.resetPreset === key ? "active" : ""}" data-action="load-reset-preset" data-preset="${key}">${preset.label}</button>`).join("")}
       </div>
       <div class="wheel-orbit">
-        ${tones.filter(([hz]) => hz !== state.tone).slice(0, 4).map(([hz, label], index) => `<button class="orbit-tone t${index + 1}" data-action="set-tone" data-tone="${hz}"><strong>${hz}</strong><small>${label}</small></button>`).join("")}
-        <button class="center-tone" data-action="set-tone" data-tone="${state.tone}"><strong>${state.tone} Hz</strong><small>${tones.find(([hz]) => hz === state.tone)?.[1] || "Reset"}</small></button>
+        ${tones.filter(([hz]) => hz !== state.tone).slice(0, 4).map(([hz, label], index) => `<button class="orbit-tone t${index + 1}" data-action="load-reset-session" data-tone="${hz}" data-autoplay="true"><strong>${hz}</strong><small>${label}</small></button>`).join("")}
+        <button class="center-tone" data-action="load-reset-session" data-tone="${state.tone}" data-autoplay="true"><strong>${state.tone} Hz</strong><small>${tones.find(([hz]) => hz === state.tone)?.[1] || "Reset"}</small></button>
       </div>
       <div class="session-card">
-        <div><strong>${formatTimer(state.timerRemaining)} Reset Session</strong><span>${pct}% volume</span></div>
+        <div><strong>${formatTimer(state.timerRemaining)} ${currentPreset.label} Session</strong><span>${pct}% volume</span></div>
         <div class="progress"><i style="width:${100 - (state.timerRemaining / state.duration) * 100}%"></i></div>
         <div class="ambient-generator">
-          <button data-action="load-reset-session" data-tone="432"><span>Rain Generator</span><small>432 Hz rainfield</small></button>
-          <button data-action="load-reset-session" data-tone="741"><span>White Noise</span><small>Clean static bed</small></button>
+          <button class="${state.tone === "432" ? "active" : ""}" data-action="load-reset-session" data-tone="432" data-autoplay="true"><span>Rain Generator</span><small>432 Hz rainfield</small></button>
+          <button class="${state.tone === "741" ? "active" : ""}" data-action="load-reset-session" data-tone="741" data-autoplay="true"><span>White Noise</span><small>Clean static bed</small></button>
         </div>
         <div class="transport">
           <button data-action="volume-down">-</button>
@@ -2395,7 +2407,7 @@ function resetView() {
     <div class="panel sound-session-panel">
       <div class="section-head"><div><h2>Sound Sessions</h2><p>Tap a circle to load a tone, then play.</p></div></div>
       <div class="sound-session-grid">
-        ${tones.map(([hz, label], index) => `<button class="sound-card tone-pill ${state.tone === hz ? "active" : ""}" data-action="set-tone" data-tone="${hz}" style="--tone-art:url('${index % 2 ? ASSETS.logo : ASSETS.music}')"><span>${hz} Hz</span><strong>${label}</strong><small>${label === "Heart Field" ? "528 Hz box" : hz === "528" ? "Love frequency" : hz === "741" ? "Clear signal" : "Focus support"}</small></button>`).join("")}
+        ${tones.map(([hz, label], index) => `<button class="sound-card tone-pill ${state.tone === hz ? "active" : ""}" data-action="load-reset-session" data-tone="${hz}" data-autoplay="true" style="--tone-art:url('${index % 2 ? ASSETS.logo : ASSETS.music}')"><span>${hz} Hz</span><strong>${label}</strong><small>${label === "Heart Field" ? "528 Hz box" : hz === "528" ? "Love frequency" : hz === "741" ? "Clear signal" : "Focus support"}</small></button>`).join("")}
       </div>
     </div>
     ${importedMusicDeckPanel("reset-imported-music")}
@@ -6234,6 +6246,7 @@ function render() {
     ${bottomNav()}
     ${state.toast ? `<div class="toast">${escapeHtml(state.toast)}</div>` : ""}
   </div>`;
+  bindResetControls();
   if (previousShell && previousRoute === state.route && previousScrollTop > 0) {
     requestAnimationFrame(() => {
       const nextShell = document.querySelector(".real-shell");
@@ -6243,6 +6256,23 @@ function render() {
   stopAudioIfNeeded();
   syncRouteAudio();
   startAmbientVideos();
+}
+
+function handleResetControlEvent(event) {
+  const target = event.currentTarget;
+  const action = target?.getAttribute?.("data-action");
+  if (!action) return;
+  const scrollY = window.scrollY;
+  event.preventDefault();
+  event.stopPropagation();
+  handleAction(action, target);
+  requestAnimationFrame(() => window.scrollTo({ top: scrollY, left: 0, behavior: "auto" }));
+}
+
+function bindResetControls() {
+  document.querySelectorAll(".reset-screen button[data-action]").forEach((control) => {
+    control.onclick = handleResetControlEvent;
+  });
 }
 
 function startAmbientVideos() {
@@ -6266,7 +6296,7 @@ function toast(message) {
 
 function stopAudioIfNeeded() {
   if (state.route !== "studio" && state.studioPlaying) stopStudioSequence(false);
-  if (state.route !== "reset") {
+  if (!isResetRoute()) {
     state.audioPlaying = false;
     stopResetTone();
     if (resetAudio) resetAudio.pause();
@@ -6344,8 +6374,40 @@ function startResetTone() {
   }
 }
 
+function presetKeyForTone(tone) {
+  return Object.entries(RESET_PRESETS).find(([, preset]) => preset.tone === String(tone))?.[0] || state.resetPreset || "calm";
+}
+
+function loadResetSession(tone, options = {}) {
+  const presetKey = options.presetKey || presetKeyForTone(tone);
+  const preset = RESET_PRESETS[presetKey] || RESET_PRESETS.calm;
+  state.resetPreset = presetKey;
+  state.tone = String(tone || preset.tone || state.tone || "528");
+  if (options.duration || preset.tone === state.tone) {
+    state.duration = Number(options.duration || preset.duration || state.duration) || 300;
+  }
+  state.timerRemaining = state.duration;
+  if (options.autoplay) {
+    state.audioPlaying = true;
+    const started = startResetTone();
+    if (!started) {
+      const audio = ensureResetAudio();
+      audio.play().catch(() => toast("Tap play again if the browser blocked audio."));
+    }
+    startTimer();
+  }
+  toast(`${state.tone} Hz generated`);
+  render();
+}
+
+function loadResetPreset(presetKey) {
+  const key = RESET_PRESETS[presetKey] ? presetKey : "calm";
+  const preset = RESET_PRESETS[key];
+  loadResetSession(preset.tone, { presetKey: key, duration: preset.duration, autoplay: true });
+}
+
 function toggleResetAudio() {
-  if (state.route !== "reset") return;
+  if (!isResetRoute()) return;
   state.audioPlaying = !state.audioPlaying;
   if (state.audioPlaying) {
     const started = startResetTone();
@@ -6366,7 +6428,7 @@ function startTimer() {
   stopTimer();
   state.timerRunning = true;
   timerId = setInterval(() => {
-    if (state.route !== "reset") {
+    if (!isResetRoute()) {
       stopTimer();
       return;
     }
@@ -6378,9 +6440,9 @@ function startTimer() {
       stopTimer();
       toast("Reset session complete");
     } else {
-      const scrollY = state.route === "reset" ? window.scrollY : 0;
+      const scrollY = isResetRoute() ? window.scrollY : 0;
       render();
-      if (state.route === "reset") {
+      if (isResetRoute()) {
         requestAnimationFrame(() => window.scrollTo({ top: scrollY, left: 0, behavior: "auto" }));
       }
     }
@@ -7897,14 +7959,19 @@ function handleAction(action, target) {
     toast(`${titleCase(state.viewMode)} view selected`);
   }
   if (action === "toggle-reset-audio") toggleResetAudio();
+  if (action === "load-reset-preset") {
+    loadResetPreset(target.getAttribute("data-preset"));
+    return;
+  }
   if (action === "load-reset-session") {
-    state.tone = target.getAttribute("data-tone") || state.tone;
-    state.timerRemaining = state.duration;
-    toast(`${state.tone} Hz loaded in Reset`);
-    if (state.route !== "reset") {
+    if (!isResetRoute()) {
+      state.tone = target.getAttribute("data-tone") || state.tone;
+      state.timerRemaining = state.duration;
       go("reset");
       return;
     }
+    loadResetSession(target.getAttribute("data-tone") || state.tone, { autoplay: target.getAttribute("data-autoplay") === "true" });
+    return;
   }
   if (action === "connect-stream") {
     const stream = target.getAttribute("data-stream") || "Music platform";
@@ -8474,14 +8541,19 @@ function handleAction(action, target) {
     toast(`${titleCase(state.viewMode)} view selected`);
   }
   if (action === "toggle-reset-audio") toggleResetAudio();
+  if (action === "load-reset-preset") {
+    loadResetPreset(target.getAttribute("data-preset"));
+    return;
+  }
   if (action === "load-reset-session") {
-    state.tone = target.getAttribute("data-tone") || state.tone;
-    state.timerRemaining = state.duration;
-    toast(`${state.tone} Hz loaded in Reset`);
-    if (state.route !== "reset") {
+    if (!isResetRoute()) {
+      state.tone = target.getAttribute("data-tone") || state.tone;
+      state.timerRemaining = state.duration;
       go("reset");
       return;
     }
+    loadResetSession(target.getAttribute("data-tone") || state.tone, { autoplay: target.getAttribute("data-autoplay") === "true" });
+    return;
   }
   if (action === "connect-stream") {
     const stream = target.getAttribute("data-stream") || "Music platform";
@@ -8754,6 +8826,7 @@ function activateInteractiveTarget(event) {
       "volume-up",
       "volume-down",
       "favorite-tone",
+      "load-reset-preset",
       "load-reset-session",
     ].includes(action);
     const scrollY = preserveResetScroll ? window.scrollY : 0;
