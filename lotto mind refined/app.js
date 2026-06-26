@@ -44,6 +44,8 @@ const ASSETS = {
   socialBoard: `${BASE}/assets/custom/social/lottomind-social-board.svg`,
   studioRecordsConsole: `${BASE}/assets/custom/studio/studio-records-console.png`,
   studioMicHost: `${BASE}/assets/custom/studio/studio-mic-host.png`,
+  aiCoachHost: `${BASE}/assets/custom/coach/ai-coach-host.png`,
+  mysticNewsBg: `${BASE}/assets/custom/news/mystic-news-bg.svg`,
   hfPowerTools: `${BASE}/assets/custom/higgsfield-fresh/lm-power-tools-panel.png`,
   hfAiMicrophone: `${BASE}/assets/custom/higgsfield-fresh/lm-ai-microphone-panel.png`,
   hfHistoryVault: `${BASE}/assets/custom/higgsfield-fresh/lm-history-vault-panel.png`,
@@ -53,6 +55,18 @@ const ASSETS = {
   hfMusicStore: `${BASE}/assets/custom/higgsfield-fresh/lm-music-store-panel.png`,
   hfAcademy: `${BASE}/assets/custom/higgsfield-fresh/lm-academy-panel.png`,
   hfMarketplace: `${BASE}/assets/custom/higgsfield-fresh/lm-marketplace-panel.png`,
+  arcadeAcademy: `${BASE}/assets/custom/higgsfield-arcade-tools/arcade-academy.png`,
+  arcadeAchievements: `${BASE}/assets/custom/higgsfield-arcade-tools/arcade-achievements.png`,
+  arcadeArcade: `${BASE}/assets/custom/higgsfield-arcade-tools/arcade-arcade.png`,
+  arcadeChallenges: `${BASE}/assets/custom/higgsfield-arcade-tools/arcade-challenges.png`,
+  arcadeCommunity: `${BASE}/assets/custom/higgsfield-arcade-tools/arcade-community.png`,
+  arcadeContests: `${BASE}/assets/custom/higgsfield-arcade-tools/arcade-contests.png`,
+  arcadeHelp: `${BASE}/assets/custom/higgsfield-arcade-tools/arcade-help.png`,
+  arcadeJackpotRun: `${BASE}/assets/custom/higgsfield-arcade-tools/arcade-jackpot-run.png`,
+  arcadeNotifications: `${BASE}/assets/custom/higgsfield-arcade-tools/arcade-notifications.png`,
+  arcadePaywall: `${BASE}/assets/custom/higgsfield-arcade-tools/arcade-paywall.png`,
+  arcadeProPlaybook: `${BASE}/assets/custom/higgsfield-arcade-tools/arcade-pro-playbook.png`,
+  arcadeTrivia: `${BASE}/assets/custom/higgsfield-arcade-tools/arcade-trivia.png`,
   ticketScannerVideo: `${BASE}/videos/ticket-scanner-demo.mp4`,
   radarTicketScannerVideo: `${BASE}/videos/radar-ticket-scanner-tile.mp4`,
   dreamStageVideo: `${BASE}/videos/ticket-scanner-demo.mp4`,
@@ -77,6 +91,22 @@ const CATEGORY_ART = {
   store: ASSETS.detroitCollection,
   wallet: ASSETS.credit,
   reset: ASSETS.hfResetFrequency,
+};
+
+const ARCADE_TOOL_ART = {
+  arcade: ASSETS.arcadeArcade,
+  arcadeGame: ASSETS.arcadeJackpotRun,
+  academy: ASSETS.arcadeAcademy,
+  proPlaybook: ASSETS.arcadeProPlaybook,
+  achievements: ASSETS.arcadeAchievements,
+  challenges: ASSETS.arcadeChallenges,
+  contests: ASSETS.arcadeContests,
+  paywall: ASSETS.arcadePaywall,
+  triviaPlay: ASSETS.arcadeTrivia,
+  triviaRewards: ASSETS.arcadeTrivia,
+  community: ASSETS.arcadeCommunity,
+  notifications: ASSETS.arcadeNotifications,
+  help: ASSETS.arcadeHelp,
 };
 
 const CATEGORY_KIND_BY_ROUTE = {
@@ -2212,7 +2242,7 @@ function categoryArtForTool(title, route, index) {
   const kind = categoryKindForTool(title, route);
   const titleArt = {
     "AI News": ASSETS.aiNews,
-    "Smart Predictor": ASSETS.aiCoach,
+    "Smart Predictor": ASSETS.aiCoachHost,
     "LottoMind Records": ASSETS.studioRecordsConsole,
     "History": ASSETS.studioRecordsConsole,
     "Ticket Scanner": ASSETS.powerTools,
@@ -2220,10 +2250,21 @@ function categoryArtForTool(title, route, index) {
     "Dream Oracle": ASSETS.dream,
     "Music Hub": ASSETS.music,
     "Sonic Studio": ASSETS.studioRecordsConsole,
-    "Trivia": ASSETS.arcadeCoin,
+    "Arcade": ASSETS.arcadeArcade,
+    "Jackpot Run": ASSETS.arcadeJackpotRun,
+    "Academy": ASSETS.arcadeAcademy,
+    "Pro Playbook": ASSETS.arcadeProPlaybook,
+    "Achievements": ASSETS.arcadeAchievements,
+    "Challenges": ASSETS.arcadeChallenges,
+    "Contests": ASSETS.arcadeContests,
+    "Paywall": ASSETS.arcadePaywall,
+    "Trivia": ASSETS.arcadeTrivia,
+    "Community": ASSETS.arcadeCommunity,
+    "Notifications": ASSETS.arcadeNotifications,
+    "Help": ASSETS.arcadeHelp,
   }[title];
   const fallback = [ASSETS.commandDeck, ASSETS.powerTools, ASSETS.heatmap, ASSETS.live, ASSETS.reset, ASSETS.dream, ASSETS.arcade, ASSETS.credit, ASSETS.psychic, ASSETS.music];
-  return titleArt || CATEGORY_ART[kind] || fallback[index % fallback.length];
+  return titleArt || ARCADE_TOOL_ART[route] || CATEGORY_ART[kind] || fallback[index % fallback.length];
 }
 
 function circleTool(title, sub, route, index) {
@@ -2636,7 +2677,7 @@ function aiCoachView() {
           <button class="ghost-btn" data-route="dreams">Dream Oracle</button>
         </div>
       </div>
-      <img class="deck-coin ai-coach-mascot" src="${ASSETS.studioMicHost}" alt="LottoMind AI microphone mascot" />
+      <img class="deck-coin ai-coach-mascot" src="${ASSETS.aiCoachHost}" alt="LottoMind AI coach host" />
     </div>
     <div class="panel result-card ai-result-card">
       <span>AI function output</span>
@@ -5125,7 +5166,7 @@ function arcadeView() {
     ["Trivia Rewards", "Answer and earn credits.", "triviaRewards"],
     ["Bonus Room", "Open a credit portal.", "arcadeGame"],
   ];
-  const arcadeArt = [ASSETS.arcade, ASSETS.commandDeck, ASSETS.psychic, ASSETS.sequence, ASSETS.live, ASSETS.credit, ASSETS.heatmap, ASSETS.arcadeCoin];
+  const arcadeArt = [ASSETS.arcadeArcade, ASSETS.arcadeJackpotRun, ASSETS.arcadeTrivia, ASSETS.arcadePaywall];
   const activeArcadePanel = state.route === "crossword" ? crosswordGameView() : state.route === "wordSearch" ? wordSearchGameView() : state.route !== "arcade" ? miniGameView(routeMeta(state.route)[0]) : "";
   return `<section class="screen">
     <div class="panel art-panel" data-art-kind="arcade" style="--panel-art:url('${CATEGORY_ART.arcade}')">
@@ -6037,11 +6078,30 @@ function specialToolBody(routeKey, set) {
       ["Jackpot Movement Watch", "Cash value, withholding, and net estimate are separated from headline jackpot."],
       ["Saved Games Alert Queue", "Personal alerts are ready for state, game, and draw-time preferences."],
     ];
-    return `<div class="panel news-radar-panel">
-      <div class="section-head"><div><h2>News Radar Live Desk</h2><p>State draw alerts, jackpot movement, and app notices.</p></div><span>${state.selectedState}</span></div>
-      <div class="tool-grid padded">${metricCard("Alerts", alerts.length)}${metricCard("Draw Cards", rows.length)}${metricCard("Pinned", state.selectedState)}${metricCard("Signal", `${getMatrixStats().trustScore}%`)}</div>
-      <div class="result-list padded">${alerts.map(([title, copy]) => `<div class="history-row alert-card"><strong>${title}</strong><small>${copy}</small></div>`).join("")}</div>
+    return `<div class="panel news-radar-panel daily-mystic-news-panel" style="--mystic-news-art:url('${ASSETS.mysticNewsBg}')">
+      <div class="daily-mystic-hero">
+        <span class="eyebrow">Daily Mystic News</span>
+        <h2>News Radar Live Desk</h2>
+        <p>State draw alerts, jackpot movement, matrix notes, and app notices styled as a focused LottoMind briefing.</p>
+      </div>
+      <div class="daily-mystic-stats">${metricCard("Alerts", alerts.length)}${metricCard("Draw Cards", rows.length)}${metricCard("Pinned", state.selectedState)}</div>
+      <div class="daily-mystic-filter-row" aria-label="News radar filters">
+        ${["Matrix", "Daily Games", "Jackpot", "Saved Alerts"].map((label, index) => `<button class="${index === 0 ? "active" : ""}" data-route="newsRadar">${label}</button>`).join("")}
+      </div>
+      <div class="daily-mystic-grid">${alerts.map(([title, copy], index) => `<article class="daily-mystic-card premium-news-card">
+        <button class="daily-mystic-card-main" data-route="notifications">
+          <img src="${ASSETS.mysticNewsBg}" alt="" />
+          <span class="mystic-source-logo"><img src="${ASSETS.logo}" alt="" /></span>
+          <div class="mystic-card-copy">
+            <div class="mystic-card-topline"><span>${String(index + 1).padStart(2, "0")}</span><b>${state.selectedState}</b></div>
+            <h3>${title}</h3>
+            <p>${copy}</p>
+            <em>Open alerts for notification setup.</em>
+          </div>
+        </button>
+      </article>`).join("")}</div>
       <div class="result-list padded">${rows.map((record) => `<div class="history-row record-card"><strong>${record.gameName} - ${record.stateName}</strong>${ballsHtml(record.numbers, record.special)}<small>${record.drawDate} - ${record.session}${record.jackpotMillions ? ` - $${record.jackpotMillions}M` : ""}</small></div>`).join("")}</div>
+      <p class="daily-mystic-note ethical">Entertainment and planning context only. Always verify official results with the lottery source before playing.</p>
       <div class="hero-actions padded"><button class="primary-btn" data-route="live">Open Live Results</button><button class="ghost-btn" data-route="notifications">Open Alerts</button></div>
     </div>`;
   }
@@ -8634,9 +8694,20 @@ function handleAction(action, target) {
 }
 
 let pointerStart = null;
+let touchStart = null;
 let lastTouchActivation = 0;
 let flowSwipe = null;
 let suppressFlowClickUntil = 0;
+
+function interactiveGesturePoint(event) {
+  const touch = event.changedTouches?.[0] || event.touches?.[0];
+  if (touch) return { x: touch.clientX, y: touch.clientY };
+  return { x: event.clientX, y: event.clientY };
+}
+
+function startedInNativeTouchSurface(target) {
+  return Boolean(target?.closest?.(".quest-steps, .oracle-flow-steps, .circle-carousel, .snap-carousel, .arcade-game-grid, .merch-grid, .lm-pill-row, .state-picker, .route-leg-list, .audio-list, textarea, input, select, [contenteditable='true']"));
+}
 
 function activateInteractiveTarget(event) {
   const eventTarget = event.target instanceof Element ? event.target : event.target?.parentElement;
@@ -8755,7 +8826,7 @@ document.addEventListener("pointerup", (event) => {
     const dx = event.clientX - pointerStart.x;
     const dy = event.clientY - pointerStart.y;
     const moved = Math.hypot(dx, dy);
-    const startedInScroller = pointerStart.target?.closest?.(".quest-steps, .oracle-flow-steps, .circle-carousel, .snap-carousel, .arcade-game-grid, .merch-grid, .lm-pill-row, .state-picker, .route-leg-list, .audio-list, textarea, input");
+    const startedInScroller = startedInNativeTouchSurface(pointerStart.target);
     pointerStart = null;
     if (!startedInScroller && dx > 84 && Math.abs(dy) < 62) {
       event.preventDefault();
@@ -8780,7 +8851,40 @@ document.addEventListener("pointerup", (event) => {
 
 document.addEventListener("pointercancel", () => {
   studioFxKnobDrag = null;
+  pointerStart = null;
   endFlowSwipe();
+}, { passive: true });
+
+document.addEventListener("touchstart", (event) => {
+  if (Date.now() - lastTouchActivation < 320) return;
+  const target = event.target instanceof Element ? event.target : event.target?.parentElement;
+  const point = interactiveGesturePoint(event);
+  touchStart = { x: point.x, y: point.y, target };
+}, { passive: true });
+
+document.addEventListener("touchmove", (event) => {
+  if (!touchStart) return;
+  const point = interactiveGesturePoint(event);
+  const moved = Math.hypot(point.x - touchStart.x, point.y - touchStart.y);
+  if (moved > 12) touchStart.moved = true;
+}, { passive: true });
+
+document.addEventListener("touchend", (event) => {
+  if (!touchStart) return;
+  if (Date.now() - lastTouchActivation < 320) {
+    touchStart = null;
+    return;
+  }
+  const start = touchStart;
+  touchStart = null;
+  const point = interactiveGesturePoint(event);
+  const moved = Math.hypot(point.x - start.x, point.y - start.y);
+  if (start.moved || moved > 12 || startedInNativeTouchSurface(start.target)) return;
+  if (activateInteractiveTarget(event)) lastTouchActivation = Date.now();
+}, { passive: false });
+
+document.addEventListener("touchcancel", () => {
+  touchStart = null;
 }, { passive: true });
 
 document.addEventListener("click", (event) => {
