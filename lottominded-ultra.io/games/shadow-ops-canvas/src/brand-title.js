@@ -26,24 +26,34 @@
     document.getElementById("game")?.setAttribute("aria-label", `${BRAND} playfield`);
 
     document.querySelectorAll("#titleScreen h1, #loadingScreen .small-label, #hudTitle").forEach((node) => {
-      node.textContent = rewriteText(node.textContent);
+      const next = rewriteText(node.textContent);
+      if (next !== node.textContent) node.textContent = next;
     });
+  };
 
-    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
-    const nodes = [];
-    while (walker.nextNode()) nodes.push(walker.currentNode);
-    nodes.forEach((node) => {
-      const next = rewriteText(node.nodeValue);
-      if (next !== node.nodeValue) node.nodeValue = next;
+  let pending = false;
+  const scheduleBrand = () => {
+    if (pending) return;
+    pending = true;
+    requestAnimationFrame(() => {
+      pending = false;
+      applyBrand();
     });
   };
 
   const boot = () => {
     applyBrand();
-    new MutationObserver(applyBrand).observe(document.body, {
+    const observer = new MutationObserver(scheduleBrand);
+    document.querySelectorAll("#titleScreen h1, #loadingScreen .small-label, #hudTitle").forEach((node) => {
+      observer.observe(node, {
+        childList: true,
+        characterData: true,
+        subtree: true
+      });
+    });
+    new MutationObserver(scheduleBrand).observe(document.body, {
       childList: true,
-      characterData: true,
-      subtree: true
+      subtree: false
     });
   };
 
