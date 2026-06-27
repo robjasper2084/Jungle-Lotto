@@ -10817,16 +10817,27 @@ h2 {
   display: grid;
   place-items: center;
   justify-self: end;
+  overflow: hidden;
   border: 1px solid rgba(248, 223, 118, 0.54);
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(0, 236, 255, 0.2), rgba(1, 9, 18, 0.86) 62%);
-  box-shadow: 0 0 32px rgba(0, 236, 255, 0.28), inset 0 0 28px rgba(248, 223, 118, 0.12);
+  background:
+    radial-gradient(circle at 46% 34%, rgba(255, 246, 190, 0.18), transparent 34%),
+    radial-gradient(circle, rgba(0, 236, 255, 0.22), rgba(1, 9, 18, 0.88) 66%);
+  box-shadow:
+    0 0 0 4px rgba(0, 236, 255, 0.08),
+    0 0 32px rgba(0, 236, 255, 0.28),
+    inset 0 0 0 8px rgba(0, 9, 18, 0.44),
+    inset 0 0 28px rgba(248, 223, 118, 0.12);
 }
 
 .merch-video-medallion img {
-  width: 82%;
-  height: 82%;
-  object-fit: contain;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: 50% 48%;
+  filter: saturate(1.08) contrast(1.04) brightness(0.9);
+  transform: scale(1.08);
 }
 
 .merch-hero h1,
@@ -22911,6 +22922,123 @@ body .route-dreams .dream-oracle-tools .dream-studio-bento .circle-tool[data-art
   filter: brightness(0.94) saturate(1.04);
 }
 
+/* Power Tools Main Lab: preserve artwork as mixer-knob faces */
+body .route-powertools .tool-bank .main-lab-bento {
+  grid-auto-rows: 96px !important;
+}
+
+body .route-powertools .tool-bank .main-lab-bento .circle-tool[data-art-kind],
+body .route-powertools .tool-bank .main-lab-bento .circle-tool[data-art-kind]:first-child {
+  position: relative !important;
+  min-height: 96px !important;
+  height: 96px !important;
+  padding: 58px 5px 7px !important;
+  border-radius: 18px !important;
+  isolation: isolate;
+  overflow: hidden !important;
+  background:
+    radial-gradient(circle at 50% 8%, rgba(255, 246, 190, 0.18), transparent 23%),
+    radial-gradient(circle at 50% 32%, color-mix(in srgb, var(--kind-a, #00dfff) 18%, transparent), transparent 38%),
+    linear-gradient(180deg, rgba(4, 20, 30, 0.95), rgba(0, 5, 12, 0.98)) !important;
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.24),
+    inset 0 -8px 0 rgba(0, 4, 10, 0.94),
+    inset 0 -24px 30px rgba(0, 0, 0, 0.48),
+    0 6px 0 rgba(0, 7, 15, 0.98),
+    0 0 20px color-mix(in srgb, var(--kind-a, #00dfff) 24%, transparent) !important;
+}
+
+body .route-powertools .tool-bank .main-lab-bento .circle-tool[data-art-kind]::before {
+  content: "";
+  position: absolute;
+  left: 50% !important;
+  top: 7px !important;
+  z-index: 1;
+  width: 48px !important;
+  height: 48px !important;
+  border-radius: 50%;
+  transform: translateX(-50%) rotate(var(--power-knob-rest, 0deg));
+  transform-origin: 50% 50%;
+  background:
+    radial-gradient(circle at 34% 24%, rgba(255, 255, 255, 0.24), transparent 18px),
+    linear-gradient(132deg, rgba(255, 246, 190, 0.18), transparent 38%, rgba(0, 0, 0, 0.24) 78%),
+    var(--circle-art) center / cover no-repeat !important;
+  background-blend-mode: screen, normal, normal !important;
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.36),
+    inset 0 -7px 12px rgba(0, 0, 0, 0.44),
+    0 0 0 2px color-mix(in srgb, var(--kind-a, #00dfff) 52%, rgba(255, 255, 255, 0.1)),
+    0 0 16px color-mix(in srgb, var(--kind-a, #00dfff) 34%, transparent),
+    0 7px 14px rgba(0, 0, 0, 0.44);
+  transition: transform 220ms cubic-bezier(0.2, 0.8, 0.2, 1), filter 180ms ease, box-shadow 180ms ease;
+}
+
+body .route-powertools .tool-bank .main-lab-bento .circle-tool[data-art-kind]::after {
+  inset: 7px !important;
+  z-index: 0;
+  background:
+    linear-gradient(118deg, transparent 0 34%, rgba(255, 255, 255, 0.14) 46%, transparent 58%),
+    radial-gradient(circle at 50% 26px, color-mix(in srgb, var(--kind-a, #00dfff) 14%, transparent), transparent 33px) !important;
+  mix-blend-mode: screen !important;
+  opacity: 0.62 !important;
+}
+
+body .route-powertools .tool-bank .main-lab-bento .circle-tool[data-art-kind] span,
+body .route-powertools .tool-bank .main-lab-bento .circle-tool[data-art-kind] small {
+  position: relative;
+  z-index: 2;
+}
+
+body .route-powertools .tool-bank .main-lab-bento .circle-tool[data-art-kind] span {
+  font-size: 8px !important;
+  line-height: 0.95 !important;
+}
+
+body .route-powertools .tool-bank .main-lab-bento .circle-tool[data-art-kind] small {
+  font-size: 5.8px !important;
+  line-height: 0.92 !important;
+}
+
+body .route-powertools .tool-bank .main-lab-bento .circle-tool[data-art-kind]:nth-child(4n + 1) { --power-knob-rest: -14deg; }
+body .route-powertools .tool-bank .main-lab-bento .circle-tool[data-art-kind]:nth-child(4n + 2) { --power-knob-rest: 6deg; }
+body .route-powertools .tool-bank .main-lab-bento .circle-tool[data-art-kind]:nth-child(4n + 3) { --power-knob-rest: 16deg; }
+body .route-powertools .tool-bank .main-lab-bento .circle-tool[data-art-kind]:nth-child(4n) { --power-knob-rest: -4deg; }
+
+body .route-powertools .tool-bank .main-lab-bento .circle-tool[data-art-kind]:hover::before,
+body .route-powertools .tool-bank .main-lab-bento .circle-tool[data-art-kind]:focus-visible::before {
+  transform: translateX(-50%) rotate(calc(var(--power-knob-rest, 0deg) + 30deg)) scale(1.04);
+  filter: brightness(1.08) saturate(1.12);
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.44),
+    inset 0 -7px 12px rgba(0, 0, 0, 0.34),
+    0 0 0 2px rgba(248, 223, 118, 0.52),
+    0 0 22px color-mix(in srgb, var(--kind-a, #00dfff) 44%, transparent),
+    0 8px 16px rgba(0, 0, 0, 0.42);
+}
+
+body .route-powertools .tool-bank .main-lab-bento .circle-tool[data-art-kind]:active::before {
+  transform: translateX(-50%) rotate(calc(var(--power-knob-rest, 0deg) + 82deg)) scale(0.94);
+  filter: brightness(0.94) saturate(1.04);
+}
+
+@media (max-width: 430px) {
+  body .route-powertools .tool-bank .main-lab-bento {
+    grid-auto-rows: 104px !important;
+  }
+
+  body .route-powertools .tool-bank .main-lab-bento .circle-tool[data-art-kind],
+  body .route-powertools .tool-bank .main-lab-bento .circle-tool[data-art-kind]:first-child {
+    min-height: 104px !important;
+    height: 104px !important;
+    padding-top: 64px !important;
+  }
+
+  body .route-powertools .tool-bank .main-lab-bento .circle-tool[data-art-kind]::before {
+    width: 54px !important;
+    height: 54px !important;
+  }
+}
+
 body .weather-screen .state-orb span {
   margin-top: 4px;
   font-family: var(--title-font), Impact, "Arial Black", sans-serif !important;
@@ -22926,7 +23054,7 @@ body .weather-screen .state-orb span {
 }
 
 body .route-ai .ai-screen > .media-hero {
-  grid-template-columns: minmax(0, 1fr) clamp(92px, 28vw, 126px) !important;
+  grid-template-columns: minmax(0, 1fr) clamp(76px, 20vw, 96px) !important;
   align-items: center !important;
   column-gap: clamp(10px, 3vw, 18px) !important;
   overflow: hidden;
@@ -22939,16 +23067,21 @@ body .route-ai .ai-screen > .media-hero > div {
 }
 
 body .route-ai .ai-screen > .media-hero .dream-input {
-  max-width: min(100%, 196px);
+  max-width: min(100%, 286px);
+}
+
+body .route-ai .ai-screen > .media-hero .dream-input.compact {
+  min-height: 132px;
+  line-height: 1.35;
 }
 
 body .route-ai .ai-coach-mascot {
-  --coach-medallion-size: clamp(92px, 28vw, 126px);
+  --coach-medallion-size: clamp(76px, 20vw, 96px);
   width: var(--coach-medallion-size) !important;
   height: var(--coach-medallion-size) !important;
-  max-width: 126px !important;
-  max-height: 126px !important;
-  padding: 5px !important;
+  max-width: 96px !important;
+  max-height: 96px !important;
+  padding: 4px !important;
   justify-self: end !important;
   align-self: center !important;
   object-fit: cover !important;
@@ -22957,14 +23090,14 @@ body .route-ai .ai-coach-mascot {
 
 @media (max-width: 380px) {
   body .route-ai .ai-screen > .media-hero {
-    grid-template-columns: minmax(0, 1fr) 84px !important;
+    grid-template-columns: minmax(0, 1fr) 72px !important;
     column-gap: 8px !important;
   }
 
   body .route-ai .ai-coach-mascot {
-    --coach-medallion-size: 84px;
-    max-width: 84px !important;
-    max-height: 84px !important;
+    --coach-medallion-size: 72px;
+    max-width: 72px !important;
+    max-height: 72px !important;
   }
 
   body .records-screen > .media-hero {
@@ -22981,4 +23114,298 @@ body .route-ai .ai-coach-mascot {
   body :where(button, .file-pill, a.primary-btn, a.ghost-btn, [role="button"]) {
     transition: none !important;
   }
+}
+
+/* LottoMind typography and artwork clarity pass */
+:root {
+  --title-font: "Oxanium", "Orbitron", "Rajdhani", "Arial Black", system-ui, sans-serif;
+  --future-font: "Sora", "Space Grotesk", "Inter Tight", "Trebuchet MS", system-ui, sans-serif;
+  --number-font: "Rajdhani", "IBM Plex Mono", "Consolas", monospace;
+}
+
+body {
+  font-family: var(--future-font);
+  letter-spacing: 0;
+}
+
+body .game-title,
+body .art-panel h1,
+body .dream-stage h1,
+body .section-head h2,
+body .record-label-panel h2,
+body .quest-board h2,
+body .vault-section h2,
+body .result-card h2,
+body .home-merch-video h2,
+body .arcade-deck h1.game-title,
+body .route-arcade .screen > .art-panel:first-child h1.game-title,
+body .route-history .art-panel h1 {
+  font-family: var(--title-font) !important;
+  font-weight: 850 !important;
+  letter-spacing: 0 !important;
+  line-height: 0.94 !important;
+  text-transform: uppercase !important;
+  color: #fff8c9 !important;
+  -webkit-text-fill-color: #fff8c9 !important;
+  -webkit-text-stroke: 0 !important;
+  text-shadow:
+    0 1px 0 rgba(0, 0, 0, 0.96),
+    0 2px 8px rgba(0, 0, 0, 0.54),
+    0 0 13px rgba(248, 223, 118, 0.24),
+    0 0 18px rgba(0, 236, 255, 0.2) !important;
+}
+
+body .art-panel h1,
+body .dream-stage h1,
+body .route-history .art-panel h1,
+body .route-arcade .screen > .art-panel:first-child h1.game-title {
+  font-size: clamp(34px, 7.4vw, 54px) !important;
+}
+
+body .section-head h2,
+body .record-label-panel h2,
+body .quest-board h2,
+body .home-merch-video h2,
+body .result-card h2 {
+  font-size: clamp(25px, 5.6vw, 38px) !important;
+}
+
+body .eyebrow,
+body .panel > span,
+body .circle-tool span,
+body .circle-tool small,
+body .metric-card span,
+body .stat-row span,
+body .ball,
+body .nav-item b {
+  font-family: var(--number-font) !important;
+  letter-spacing: 0 !important;
+}
+
+body .name-numbers-screen > .media-hero {
+  grid-template-columns: minmax(0, 1fr) clamp(76px, 19vw, 108px) !important;
+  align-items: center !important;
+  overflow: hidden;
+}
+
+body .name-numbers-screen > .media-hero .deck-coin {
+  width: clamp(66px, 17vw, 92px) !important;
+  height: clamp(66px, 17vw, 92px) !important;
+  max-width: clamp(66px, 17vw, 92px) !important;
+  max-height: clamp(66px, 17vw, 92px) !important;
+  justify-self: end;
+  object-fit: contain;
+  border-radius: 50%;
+  padding: 6px;
+  background:
+    radial-gradient(circle at 42% 36%, rgba(255, 248, 201, 0.22), transparent 32%),
+    radial-gradient(circle, rgba(0, 236, 255, 0.26), rgba(0, 9, 20, 0.68) 64%, rgba(0, 0, 0, 0.84));
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.28),
+    0 0 0 2px rgba(0, 236, 255, 0.48),
+    0 0 24px rgba(0, 236, 255, 0.28),
+    0 12px 24px rgba(0, 0, 0, 0.44);
+}
+
+body .name-numbers-screen .name-code-card {
+  background:
+    linear-gradient(145deg, rgba(7, 28, 44, 0.96), rgba(3, 12, 22, 0.96)),
+    radial-gradient(circle at 80% 12%, rgba(0, 236, 255, 0.16), transparent 32%) !important;
+}
+
+body .route-arcade .arcade-learn-bank .circle-tool[data-art-kind] {
+  min-height: 92px !important;
+  padding: 50px 8px 8px !important;
+  background:
+    linear-gradient(180deg, rgba(2, 14, 26, 0.2), rgba(0, 5, 14, 0.82)),
+    var(--circle-art) center / cover no-repeat !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.24),
+    inset 0 -7px 0 rgba(0, 4, 10, 0.92),
+    0 5px 0 rgba(0, 7, 15, 0.96),
+    0 0 0 1px rgba(0, 236, 255, 0.68),
+    0 0 18px rgba(0, 236, 255, 0.22) !important;
+}
+
+body .route-arcade .arcade-learn-bank .circle-tool[data-art-kind]::before {
+  opacity: 0.22 !important;
+  background:
+    linear-gradient(180deg, rgba(0, 236, 255, 0.08), transparent 38%),
+    radial-gradient(circle at 18% 18%, rgba(255, 248, 201, 0.24), transparent 22%) !important;
+  mix-blend-mode: screen !important;
+}
+
+body .route-arcade .arcade-learn-bank .circle-tool[data-art-kind]::after {
+  opacity: 0.2 !important;
+  background:
+    linear-gradient(115deg, transparent 0 44%, rgba(255, 255, 255, 0.14) 50%, transparent 58%) !important;
+}
+
+body .route-arcade .arcade-learn-bank .circle-tool[data-art-kind] span,
+body .route-arcade .arcade-learn-bank .circle-tool[data-art-kind] small {
+  position: relative;
+  z-index: 2;
+  max-width: 100%;
+  padding: 0 2px;
+  color: #fff8c9 !important;
+  -webkit-text-fill-color: #fff8c9 !important;
+  text-shadow:
+    0 1px 0 rgba(0, 0, 0, 0.95),
+    0 0 8px rgba(0, 0, 0, 0.88),
+    0 0 10px rgba(0, 236, 255, 0.26) !important;
+}
+
+body .route-arcade .arcade-learn-bank .circle-tool[data-art-kind] span {
+  font-size: 11px !important;
+  line-height: 0.94 !important;
+}
+
+body .route-arcade .arcade-learn-bank .circle-tool[data-art-kind] small {
+  font-size: 7px !important;
+  line-height: 0.95 !important;
+}
+
+@media (max-width: 430px) {
+  body .name-numbers-screen > .media-hero {
+    grid-template-columns: minmax(0, 1fr) 76px !important;
+  }
+
+  body .name-numbers-screen > .media-hero .deck-coin {
+    width: 70px !important;
+    height: 70px !important;
+    max-width: 70px !important;
+    max-height: 70px !important;
+  }
+
+  body .route-arcade .arcade-learn-bank .circle-tool[data-art-kind] {
+    min-height: 98px !important;
+  }
+}
+
+body .route-dreams .dream-stage h1,
+body .route-dreams .oracle-function-panel .section-head h2,
+body .route-dreams .record-label-panel h2,
+body .route-dashboard .oracle-hero h1,
+body .route-dashboard .home-merch-video h2,
+body .route-arcade .quest-board h2,
+body .route-nameNumbers .art-panel h1,
+body .route-nameNumbers .result-card h2 {
+  font-family: var(--title-font) !important;
+  font-weight: 850 !important;
+  letter-spacing: 0 !important;
+  color: #fff8c9 !important;
+  -webkit-text-fill-color: #fff8c9 !important;
+  text-shadow:
+    0 1px 0 rgba(0, 0, 0, 0.96),
+    0 2px 8px rgba(0, 0, 0, 0.54),
+    0 0 13px rgba(248, 223, 118, 0.24),
+    0 0 18px rgba(0, 236, 255, 0.2) !important;
+}
+
+body .route-store .merch-shop-control.shop-toolbar {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  gap: 12px !important;
+  align-items: stretch !important;
+  padding: 16px !important;
+  border-radius: 16px !important;
+  overflow: hidden !important;
+  background:
+    radial-gradient(circle at 16% 0, rgba(248, 223, 118, 0.14), transparent 34%),
+    linear-gradient(135deg, rgba(0, 42, 48, 0.94), rgba(10, 18, 36, 0.96)) !important;
+}
+
+body .route-store .merch-shop-control .shop-toolbar-copy {
+  min-width: 0 !important;
+}
+
+body .route-store .merch-shop-control .shop-toolbar-copy strong {
+  font-size: clamp(21px, 6vw, 30px) !important;
+  line-height: 1 !important;
+}
+
+body .route-store .merch-shop-control .merch-category-row {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 8px !important;
+  overflow: visible !important;
+  padding: 0 !important;
+}
+
+body .route-store .shop-toolbar .merch-category-row button {
+  min-width: 0 !important;
+  min-height: 38px !important;
+  width: 100% !important;
+  border-radius: 12px !important;
+  white-space: nowrap !important;
+}
+
+@media (min-width: 560px) {
+  body .route-store .merch-shop-control .merch-category-row {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+}
+
+/* Reset page: keep the frequency center button anchored and give Imported Music cards their record artwork. */
+body .route-reset .reset-screen .center-tone {
+  transform: translate(-50%, -50%) !important;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    filter 160ms ease;
+  will-change: filter;
+}
+
+body .route-reset .reset-screen .center-tone:hover,
+body .route-reset .reset-screen .center-tone:focus-visible,
+body .route-reset .reset-screen .center-tone:active {
+  transform: translate(-50%, -50%) !important;
+}
+
+body .route-reset .imported-music-deck .record-track-card {
+  min-height: 286px !important;
+  grid-template-columns: 112px minmax(0, 1fr) !important;
+  place-items: end stretch !important;
+  align-content: end !important;
+  justify-items: stretch !important;
+  text-align: left !important;
+  overflow: hidden !important;
+  background:
+    linear-gradient(180deg, rgba(1, 10, 20, 0.08), rgba(1, 10, 20, 0.84) 66%),
+    radial-gradient(circle at 20% 22%, rgba(0, 236, 255, 0.28), transparent 34%),
+    var(--record-art) center / cover no-repeat !important;
+}
+
+body .route-reset .imported-music-deck .record-track-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 34% 34%, rgba(255, 255, 255, 0.2), transparent 13%),
+    linear-gradient(125deg, transparent 0 36%, rgba(255, 255, 255, 0.12) 43%, transparent 52%);
+  mix-blend-mode: screen;
+  opacity: 0.72;
+}
+
+body .route-reset .imported-music-deck .record-track-card .vinyl-record {
+  width: 102px !important;
+  height: 102px !important;
+  grid-row: 1 / span 3 !important;
+  align-self: center !important;
+  justify-self: center !important;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(248, 223, 118, 0.98) 0 7%, rgba(1, 11, 22, 0.96) 8% 18%, transparent 19%),
+    repeating-radial-gradient(circle, rgba(0, 236, 255, 0.26) 0 2px, rgba(0, 0, 0, 0.32) 3px 7px),
+    var(--record-art) center / cover no-repeat !important;
+  box-shadow:
+    0 0 24px rgba(0, 236, 255, 0.34),
+    inset 0 0 18px rgba(0, 0, 0, 0.72);
+}
+
+body .route-reset .imported-music-deck .record-track-card .track-copy,
+body .route-reset .imported-music-deck .record-track-card audio,
+body .route-reset .imported-music-deck .record-track-card .ghost-btn {
+  position: relative;
+  z-index: 1;
 }

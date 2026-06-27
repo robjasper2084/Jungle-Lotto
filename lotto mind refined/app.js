@@ -43,6 +43,8 @@ const ASSETS = {
   lmLive: `${BASE}/assets/custom/lottomind-live-lm-logo.png`,
   socialBoard: `${BASE}/assets/custom/social/lottomind-social-board.svg`,
   studioRecordsConsole: `${BASE}/assets/custom/studio/studio-records-console.png`,
+  studioRecordsLogo: `${BASE}/assets/custom/studio/studio-records-logo.png`,
+  studioFrequencyVault: `${BASE}/assets/custom/studio/studio-frequency-vault.png`,
   studioMicHost: `${BASE}/assets/custom/studio/studio-mic-host.png`,
   aiCoachHost: `${BASE}/assets/custom/coach/ai-coach-host.png`,
   mysticNewsBg: `${BASE}/assets/custom/news/mystic-news-bg.svg`,
@@ -143,6 +145,7 @@ const ASSETS = {
 };
 
 const LOTTO_ULTRA_MERCH_URL = "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/merch-store.html";
+const LOTTO_ULTRA_SPHERES_URL = "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/lottery-spheres.html#spheres";
 
 const CATEGORY_ART = {
   power: ASSETS.hfPowerTools,
@@ -343,14 +346,14 @@ const ROUTE_AUDIO_POOLS = {
 };
 
 const AUDIO_LIBRARY = [
-  ["LottoMind Frequency", `${BASE}/audio/lottomind-frequency.mp3`, "Dashboard-to-reset frequency bed"],
-  ["Digital Static", `${BASE}/audio/digital-static.mp3`, "Tab intro and scanner texture"],
-  ["Miracle Gold Reset", `${BASE}/audio/miracle-gold-reset.mp3`, "Gold reset intro"],
-  ["Lucky Frequency Sessions", `${BASE}/audio/lucky-frequency-sessions.mp3`, "Long-form focus session"],
-  ["Detroit Rain 432", `${BASE}/audio/detroit-rain-432.mp3`, "432 Hz rainfield calm"],
-  ["LottoMind Startup", `${BASE}/audio/lottomind-startup.mp3`, "Branded app intro"],
-  ["LottoMind Rainfield", `${BASE}/audio/LottoMind%20Rainfield.mp3`, "Rain layer from the old media kit"],
-  ["LottoMind Vault 174", `${BASE}/audio/LottoMind%20Vault%20174.mp3`, "Vault tone session"],
+  ["LottoMind Frequency", `${BASE}/audio/lottomind-frequency.mp3`, "Dashboard-to-reset frequency bed", ASSETS.recordButtonMusicStore],
+  ["Digital Static", `${BASE}/audio/digital-static.mp3`, "Tab intro and scanner texture", ASSETS.studioRecordsConsole],
+  ["Miracle Gold Reset", `${BASE}/audio/miracle-gold-reset.mp3`, "Gold reset intro", ASSETS.studioFrequencyVault],
+  ["Lucky Frequency Sessions", `${BASE}/audio/lucky-frequency-sessions.mp3`, "Long-form focus session", ASSETS.recordButtonAbundanceRadio],
+  ["Detroit Rain 432", `${BASE}/audio/detroit-rain-432.mp3`, "432 Hz rainfield calm", ASSETS.recordButtonSonicStudio],
+  ["LottoMind Startup", `${BASE}/audio/lottomind-startup.mp3`, "Branded app intro", ASSETS.recordButtonDreamVideo],
+  ["LottoMind Rainfield", `${BASE}/audio/LottoMind%20Rainfield.mp3`, "Rain layer from the old media kit", ASSETS.studioRecordsLogo],
+  ["LottoMind Vault 174", `${BASE}/audio/LottoMind%20Vault%20174.mp3`, "Vault tone session", ASSETS.recordButtonMusicStore],
 ];
 
 const STREAMING_LINKS = [
@@ -617,96 +620,169 @@ const MARKETPLACE_ITEMS = [
   ["Learning Library", "Wheel basics, matrix rules, Pick 3/Pick 4 education.", 60, "learning-library"],
 ];
 
-const MERCH_ITEMS = [
+const MERCH_PRICE_FALLBACKS = {
+  detroitHoodie: 64,
+  detroitPolo: 46,
+  detroitLogoTee: 34,
+  detroitCap: 34,
+  miniCrestPolo: 42,
+  capCloseupDrop: 34,
+  stickerPack: 14,
+  deskMat: 39,
+  pick34Playbook: 19,
+  dreamSymbolGuide: 24,
+  crosswordPack: 12,
+  innovationFloorModelHoodie: 49,
+  innovationFloorHoodie: 84,
+  boogieManKnitSweater: 365,
+  city1701Mark: 42,
+  cityOfDetroit1701Hoodie: 72,
+  cyberBrainGlowHoodie: 150,
+  lottomindCoinSet: 75,
+  neuralVaultI: 68,
+  frequencyHalo: 38,
+  liveOrbStudy: 72,
+  cyberBrainPlate: 54,
+};
+
+const MERCH_CATALOG_FALLBACK = [
   {
-    title: "I Love Detroit Hoodie",
-    copy: "Charcoal hoodie with embroidered Detroit skyline heart and LottoMind-ready streetwear energy.",
-    price: "$64",
+    priceKey: "detroitHoodie",
+    title: "Detroit Embroidery Hoodie",
+    copy: "Close-detail fleece concept with textured skyline embroidery and launch-team color hits.",
     type: "Clothing",
-    art: ASSETS.detroitHoodieClose,
     className: "detroit-hoodie",
   },
   {
-    title: "Detroit Polo",
-    copy: "Navy polo with stitched I Love Detroit crest for a cleaner premium merch lane.",
-    price: "$46",
+    priceKey: "innovationFloorModelHoodie",
+    title: "Innovation Floor Model Hoodie",
+    copy: "Studio-ready navy hoodie with oversized Innovation Floor mark and clean editorial product fit.",
     type: "Clothing",
-    art: ASSETS.detroitPoloClose,
-    className: "detroit-polo",
+    className: "innovation-model-hoodie",
   },
   {
-    title: "Detroit Logo Tee",
-    copy: "Heather charcoal tee with the full embroidered Detroit mark.",
-    price: "$34",
+    priceKey: "innovationFloorHoodie",
+    title: "Innovation Floor Hoodie",
+    copy: "Navy heavyweight fleece with a bold Innovation Floor skyline graphic and launch-team presence.",
     type: "Clothing",
-    art: ASSETS.detroitCollection,
-    className: "detroit-tee",
+    className: "innovation-floor-hoodie",
   },
   {
-    title: "I Love Detroit Cap",
-    copy: "Navy structured cap with centered embroidered city-heart logo.",
-    price: "$34",
+    priceKey: "detroitCap",
+    title: "1701 Signal Cap",
+    copy: "Navy structured cap with embroidered skyline signal mark and everyday launch-team fit.",
     type: "Clothing",
-    art: ASSETS.detroitCapFront,
     className: "detroit-cap",
   },
   {
-    title: "Mini Crest Polo",
-    copy: "Minimal chest-logo polo for a more subtle Detroit drop.",
-    price: "$42",
+    priceKey: "detroitPolo",
+    title: "Metro Signal Polo",
+    copy: "Clean collared piece for demos, pop-ups, listening sessions, and product meetings.",
     type: "Clothing",
-    art: ASSETS.detroitPoloSmall,
-    className: "detroit-polo-small",
+    className: "detroit-polo",
   },
   {
-    title: "Cap Closeup Drop",
-    copy: "Close-detail merch preview for the embroidered cap logo.",
-    price: "$34",
-    type: "Official Drop",
-    art: ASSETS.detroitCapClose,
-    className: "detroit-cap-close",
+    priceKey: "boogieManKnitSweater",
+    title: "Boogie Man Knit Sweater",
+    copy: "Collector knit with skyline, moon, waveform, and bold nocturne graphic language.",
+    type: "Clothing",
+    className: "boogie-knit",
   },
   {
-    title: "LottoMind Coin Sticker Pack",
-    copy: "Glossy coin, brain, and radar sticker set.",
-    price: "$14",
-    type: "Sticker Pack",
-    art: ASSETS.logo,
-    className: "stickers",
+    priceKey: "cityOfDetroit1701Hoodie",
+    title: "City of Detroit 1701 Hoodie",
+    copy: "Navy fleece with the 1701 skyline badge, sun mark, and everyday streetwear silhouette.",
+    type: "Clothing",
+    className: "detroit-1701-hoodie",
   },
   {
-    title: "Power Tools Desk Mat",
-    copy: "Wide command-deck mat for number work.",
-    price: "$39",
-    type: "Desk Gear",
-    art: ASSETS.powerTools,
-    className: "desk-mat",
+    priceKey: "cyberBrainGlowHoodie",
+    title: "Cyber Brain Glow Hoodie",
+    copy: "Black tech-fleece visual with electric brain circuitry and blue stage-light energy.",
+    type: "Clothing",
+    className: "cyber-brain-hoodie",
   },
   {
-    title: "Pick 3 / Pick 4 Playbook",
-    copy: "Digital guide for daily digits, roots, mirrors, and box logic.",
-    price: "$19",
-    type: "E-Book",
-    art: ASSETS.sequence,
-    className: "ebook",
+    priceKey: "lottomindCoinSet",
+    title: "LottoMind Coin Set",
+    copy: "Black hoodie and cap drop with purple coin emblem, gold edgework, and matched set styling.",
+    type: "Clothing",
+    className: "coin-set",
   },
   {
-    title: "Dream Symbol Number Guide",
-    copy: "E-book mapping dream images into LottoMind Oracle number lanes.",
-    price: "$24",
-    type: "E-Book",
-    art: ASSETS.dream,
-    className: "dream-guide",
+    priceKey: "city1701Mark",
+    title: "City 1701 Mark",
+    copy: "Gallery-ready city mark artwork for the 1701 merch lane.",
+    type: "Gallery Art",
+    className: "city-1701-mark",
   },
   {
-    title: "Lotto Crossword Puzzle Pack",
-    copy: "Printable LottoMind crossword and word puzzle bundle.",
-    price: "$12",
-    type: "Digital Game",
-    art: ASSETS.arcadeCoin,
-    className: "crossword-pack",
+    priceKey: "neuralVaultI",
+    title: "Neural Vault I",
+    copy: "Neon LottoMind gallery artwork with vault-orb energy.",
+    type: "Gallery Art",
+    className: "neural-vault",
+  },
+  {
+    priceKey: "frequencyHalo",
+    title: "Frequency Halo",
+    copy: "Frequency-ring gallery artwork for the studio signal lane.",
+    type: "Gallery Art",
+    className: "frequency-halo",
+  },
+  {
+    priceKey: "liveOrbStudy",
+    title: "Live Orb Study",
+    copy: "Live-data orb artwork with blue-gold LottoMind motion.",
+    type: "Gallery Art",
+    className: "live-orb-study",
+  },
+  {
+    priceKey: "cyberBrainPlate",
+    title: "Cyber Brain Plate",
+    copy: "Cyber brain gallery plate with circuit glow and stage-light depth.",
+    type: "Gallery Art",
+    className: "cyber-brain-plate",
   },
 ];
+
+const MERCH_ART_BY_KEY = {
+  detroitHoodie: ASSETS.detroitHoodieClose,
+  innovationFloorModelHoodie: ASSETS.detroitCollection,
+  innovationFloorHoodie: ASSETS.detroitCollection,
+  detroitCap: ASSETS.detroitCapFront,
+  detroitPolo: ASSETS.detroitPoloClose,
+  boogieManKnitSweater: ASSETS.detroitCollection,
+  cityOfDetroit1701Hoodie: ASSETS.detroitCollection,
+  cyberBrainGlowHoodie: ASSETS.powerTools,
+  lottomindCoinSet: ASSETS.lmLive,
+  city1701Mark: ASSETS.detroitCollection,
+  neuralVaultI: ASSETS.logo,
+  frequencyHalo: ASSETS.reset,
+  liveOrbStudy: ASSETS.live,
+  cyberBrainPlate: ASSETS.aiCoachHost,
+};
+
+function merchPriceValue(priceKey) {
+  const sharedPrices = window.LOTTOMIND_MERCH_PRICES || {};
+  const value = Number(sharedPrices[priceKey] ?? MERCH_PRICE_FALLBACKS[priceKey] ?? 0);
+  return Number.isFinite(value) ? value : 0;
+}
+
+function merchPriceLabel(priceKey) {
+  return `$${merchPriceValue(priceKey).toFixed(0)}`;
+}
+
+const SHARED_MERCH_CATALOG = Array.isArray(window.LOTTOMIND_MERCH_CATALOG) ? window.LOTTOMIND_MERCH_CATALOG : MERCH_CATALOG_FALLBACK;
+const MERCH_ITEMS = SHARED_MERCH_CATALOG.map((item) => ({
+  title: item.title,
+  copy: item.copy,
+  priceKey: item.priceKey,
+  price: merchPriceLabel(item.priceKey),
+  type: item.type,
+  art: MERCH_ART_BY_KEY[item.priceKey] || ASSETS.detroitCollection,
+  className: item.className || item.priceKey,
+}));
 
 const STORE_DIRECTORY = [
   { id: "ny-hudson-lucky", state: "NY", name: "Hudson Lucky Mart", address: "184 Hudson Ave, New York, NY", distance: 0.8, lat: 40.734, lng: -74.006, open: true, note: "Open until 10 PM", services: ["Powerball", "Mega Millions", "Scratchers", "Self-Check", "Prize Cashing"], numbers: [5, 19, 33] },
@@ -848,6 +924,8 @@ const STORAGE = {
   studio: "lottomind.studio.project.v1",
   socialScores: "lottomind.oracle.real.socialScores.v1",
 };
+
+const WEB_CREDIT_STORAGE_KEY = "lottomind_credits";
 
 const DEFAULT_SETTINGS = {
   music: true,
@@ -1254,6 +1332,8 @@ const state = {
   wordSearchMarks: loadJson("lottomind.oracle.real.wordSearch.v1", []),
   crosswordSolved: loadJson("lottomind.oracle.real.crossword.v1", { solved: false }).solved || false,
 };
+
+syncCreditsFromLaunchParams();
 
 if (!LOTTO_GAMES.some((game) => game.id === state.gameId)) {
   state.gameId = "powerball";
@@ -1940,13 +2020,45 @@ function savePsychic(reading) {
   saveJson(STORAGE.psychic, [reading, ...history.filter((item) => item.id !== reading.id)].slice(0, 50));
 }
 
+function normalizeCreditValue(value) {
+  const numeric = Number(value);
+  return Number.isFinite(numeric) ? Math.max(0, Math.round(numeric)) : null;
+}
+
+function readCreditValue(key) {
+  return normalizeCreditValue(localStorage.getItem(key));
+}
+
 function getCredits() {
-  const raw = Number(localStorage.getItem(STORAGE.credits));
-  return Number.isFinite(raw) ? raw : 220;
+  const appCredits = readCreditValue(STORAGE.credits);
+  if (appCredits !== null) return appCredits;
+
+  const webCredits = readCreditValue(WEB_CREDIT_STORAGE_KEY);
+  if (webCredits !== null) {
+    localStorage.setItem(STORAGE.credits, String(webCredits));
+    return webCredits;
+  }
+
+  return 0;
 }
 
 function setCredits(value) {
-  localStorage.setItem(STORAGE.credits, String(Math.max(0, Math.round(value))));
+  const credits = normalizeCreditValue(value) ?? 0;
+  localStorage.setItem(STORAGE.credits, String(credits));
+  localStorage.setItem(WEB_CREDIT_STORAGE_KEY, String(credits));
+}
+
+function syncCreditsFromLaunchParams() {
+  const params = new URLSearchParams(window.location.search);
+  const launchCredits = normalizeCreditValue(params.get("credits"));
+  if (launchCredits !== null) {
+    setCredits(launchCredits);
+    return;
+  }
+
+  const webCredits = readCreditValue(WEB_CREDIT_STORAGE_KEY);
+  const appCredits = readCreditValue(STORAGE.credits);
+  if (webCredits !== null && appCredits === null) setCredits(webCredits);
 }
 
 function routeFromLocation() {
@@ -2313,7 +2425,7 @@ function dashboardView() {
           <button class="ghost-btn" data-route="studio">Sonic Studio</button>
         </div>
       </div>
-      <a class="hero-emblem-link" href="${LOTTO_ULTRA_MERCH_URL}" aria-label="Open LottoMind merch page">
+      <a class="hero-emblem-link" href="${LOTTO_ULTRA_SPHERES_URL}" aria-label="Open LottoMind lottery spheres page">
         <img class="hero-mascot hero-emblem" src="${ASSETS.logo}" alt="LottoMind oracle emblem" />
       </a>
     </div>
@@ -2332,11 +2444,9 @@ function dashboardView() {
       <div class="quest-steps oracle-flow-steps">
         ${HOME_CAROUSEL.map(([title, copy, route, art], index) => {
           const customFlowArt = ORACLE_FLOW_ART[title];
-          const flowVideo = customFlowArt ? "" : HOME_CAROUSEL_VIDEOS[route];
           const flowKind = categoryKindForTool(title, route);
           return `
           <button class="quest-step oracle-flow-step" data-route="${route}" data-art-kind="${flowKind}" style="--quest-art:url('${customFlowArt || art}')">
-            ${flowVideo ? `<video class="oracle-flow-video ambient-video" src="${flowVideo}" muted loop autoplay playsinline preload="auto"></video>` : ""}
             <b>${String(index + 1).padStart(2, "0")}</b>
             <strong>${title}</strong>
             <small>${copy}</small>
@@ -2867,7 +2977,6 @@ function dreamsView() {
   return `<section class="screen dreams-screen">
     ${!reading ? `<div class="panel empty-state dream-ready-spotlight dream-ready-top"><h2>Dream engine ready</h2><p>Tap the mic or type a dream, then run the full interpretation.</p></div>` : ""}
     <div class="panel dream-stage art-panel" style="--panel-art:url('${ASSETS.dream}')">
-      <video class="dream-stage-video ambient-video" src="${ASSETS.dreamStageVideo}" poster="${ASSETS.dream}" muted loop autoplay playsinline preload="auto"></video>
       <h1>Dream Oracle<sup>SM</sup> AI</h1>
       <p>Describe your dream. The Oracle detects symbols, explains meaning, and generates lucky numbers.</p>
       ${gamePills()}
@@ -3409,7 +3518,7 @@ function importedMusicDeckPanel(extraClass = "") {
   return `<div class="panel audio-deck imported-music-deck ${extraClass}">
       <div class="section-head"><div><h2>Imported Music</h2><p>Branded tracks and frequency sessions.</p></div><span>${AUDIO_LIBRARY.length} tracks</span></div>
       <div class="audio-list record-audio-list">
-        ${AUDIO_LIBRARY.map(([title, src, copy], index) => `<article class="media-card record-track-card vinyl-style-card" style="--record-art:url('${[ASSETS.logo, ASSETS.music, ASSETS.reset, ASSETS.live][index % 4]}')">
+        ${AUDIO_LIBRARY.map(([title, src, copy, art], index) => `<article class="media-card record-track-card vinyl-style-card" style="--record-art:url('${art || [ASSETS.logo, ASSETS.music, ASSETS.reset, ASSETS.live][index % 4]}')">
           <span class="vinyl-record" aria-hidden="true"></span>
           <div class="track-copy"><strong>${title}</strong><small>${copy}</small></div>
           <audio controls preload="none" src="${src}"></audio>
@@ -5244,7 +5353,7 @@ function marketplaceView() {
 
 function merchStoreView() {
   const selected = MERCH_ITEMS[state.selectedMerchIndex] || MERCH_ITEMS[0];
-  const categories = ["All", "Clothing", "E-Book", "Sticker Pack", "Desk Gear", "Digital Game", "Official Drop"];
+  const categories = ["All", ...Array.from(new Set(MERCH_ITEMS.map((item) => item.type)))];
   const filtered = MERCH_ITEMS.filter((item) => state.merchCategory === "All" || item.type === state.merchCategory);
   return `<section class="screen merch-screen">
     <div class="panel art-panel merch-hero" style="--panel-art:url('${ASSETS.detroitCollection}')">
@@ -5263,7 +5372,7 @@ function merchStoreView() {
           <button class="ghost-btn" data-route="wallet">Wallet</button>
         </div>
       </div>
-      <div class="merch-video-medallion"><img src="${ASSETS.detroitCapFront}" alt="" /></div>
+      <div class="merch-video-medallion"><img src="${ASSETS.detroitCapClose}" alt="" /></div>
     </div>
     <div class="panel shop-toolbar merch-shop-control">
       <div class="shop-toolbar-copy"><span>Shop Mode</span><strong>Detroit Merch Shelves</strong><small>${filtered.length} items in ${state.merchCategory}</small></div>
@@ -8209,576 +8318,6 @@ function handleAction(action, target) {
   if (action === "go-forward") {
     window.history.forward();
     return;
-  }
-  if (action === "studio-play") {
-    startStudioSequence();
-    return;
-  }
-  if (action === "studio-stop") {
-    stopStudioSequence();
-    return;
-  }
-  if (action === "studio-toggle-rec") {
-    state.studio.recArmed = !state.studio.recArmed;
-    saveStudioProject();
-    toast(state.studio.recArmed ? "Sequence record armed" : "Sequence record off");
-    return;
-  }
-  if (action === "studio-toggle-metronome") {
-    state.studio.metronome = !state.studio.metronome;
-    saveStudioProject();
-    render();
-    return;
-  }
-  if (action === "studio-save-project") {
-    saveStudioProject();
-    toast("Studio project saved");
-    return;
-  }
-  if (action === "studio-jump-panel") {
-    const panel = target.getAttribute("data-panel");
-    const el = panel ? document.getElementById(panel) : null;
-    if (el) el.scrollIntoView({ behavior: "smooth", block: "start", inline: "nearest" });
-    return;
-  }
-  if (action === "studio-set") {
-    const field = target.getAttribute("data-studio-field");
-    const numeric = ["bpm", "swing", "velocity", "humanize", "octave", "synthVolume", "selectedPad"];
-    state.studio[field] = numeric.includes(field) ? Number(target.value) : target.value;
-    if (field === "division") state.studioStep = 0;
-    saveStudioProject();
-    if (state.studioPlaying && ["bpm", "division"].includes(field)) startStudioSequence();
-    else render();
-    return;
-  }
-  if (action === "studio-pad-set") {
-    const field = target.getAttribute("data-pad-field");
-    const padIndex = state.studio.selectedPad;
-    state.studio.pads[padIndex][field] = Number(target.value);
-    saveStudioProject();
-    return;
-  }
-  if (action === "studio-effect-set") {
-    const effect = target.getAttribute("data-effect");
-    const value = Math.max(0, Math.min(100, Number(target.value) || 0));
-    state.studio.effects[effect] = value;
-    const module = target.closest(".fx-module");
-    if (module) {
-      module.style.setProperty("--knob-value", value);
-      module.style.setProperty("--knob-angle", `${-135 + value * 2.7}deg`);
-      const readout = module.querySelector("em");
-      if (readout) readout.textContent = `${value}%`;
-    }
-    saveStudioProject();
-    updateStudioEffects();
-    return;
-  }
-  if (action === "studio-vocal-set") {
-    const track = Number(target.getAttribute("data-track"));
-    const field = target.getAttribute("data-vocal-field");
-    state.studio.vocals[track][field] = Number(target.value);
-    saveStudioProject();
-    return;
-  }
-  if (action === "studio-pad") {
-    const index = Number(target.getAttribute("data-studio-pad"));
-    state.studio.selectedPad = index;
-    triggerStudioPad(index);
-    saveStudioProject();
-    render();
-    return;
-  }
-  if (action === "studio-note") {
-    triggerStudioNote(target.getAttribute("data-note"));
-    return;
-  }
-  if (action === "studio-toggle-step") {
-    const pad = Number(target.getAttribute("data-pad"));
-    const step = Number(target.getAttribute("data-step"));
-    const existing = state.studio.events.find((event) => event.type === "pad" && event.pad === pad && event.step === step);
-    state.studio.events = existing
-      ? state.studio.events.filter((event) => event !== existing)
-      : state.studio.events.concat({ id: `step-${pad}-${step}-${Date.now()}`, type: "pad", pad, step, velocity: state.studio.velocity, offset: 0 });
-    saveStudioProject();
-    render();
-    return;
-  }
-  if (action === "studio-clear-pattern") {
-    state.studio.events = [];
-    saveStudioProject();
-    toast("Studio pattern cleared");
-    return;
-  }
-  if (action === "studio-humanize") {
-    const total = studioTotalSteps();
-    state.studio.events = state.studio.events.map((event) => ({
-      ...event,
-      velocity: Math.max(8, Math.min(100, Number(event.velocity || state.studio.velocity) + Math.round((Math.random() - 0.5) * state.studio.humanize))),
-      offset: Math.max(-0.48, Math.min(0.48, Number(event.offset || 0) + (Math.random() - 0.5) * state.studio.humanize / 50)),
-      step: ((Number(event.step) || 0) + total) % total,
-    }));
-    saveStudioProject();
-    toast("Human feel applied");
-    return;
-  }
-  if (action === "studio-randomize") {
-    state.studio.events = [];
-    const visible = studioVisibleSteps();
-    [0, 1, 2, 3].forEach((pad) => {
-      for (let step = 0; step < visible; step += pad === 0 ? 4 : pad === 3 ? 2 : 8) {
-        if (Math.random() > (pad === 0 ? 0.18 : 0.45)) state.studio.events.push({ id: `rnd-${pad}-${step}`, type: "pad", pad, step, velocity: 65 + Math.round(Math.random() * 30), offset: 0 });
-      }
-    });
-    saveStudioProject();
-    toast("Random groove generated");
-    render();
-    return;
-  }
-  if (action === "studio-import-sample") {
-    importStudioSampleFile(target.files?.[0]);
-    return;
-  }
-  if (action === "studio-load-url-sample") {
-    const url = state.studioSampleUrl || "";
-    if (!url) toast("Paste an audio URL first.");
-    else {
-      const padIndex = state.studio.selectedPad;
-      state.studio.pads[padIndex].sampleData = url;
-      state.studio.pads[padIndex].sampleName = "URL sample";
-      delete studioSampleBuffers[padIndex];
-      saveStudioProject();
-      toast("URL sample assigned. Browser CORS must allow playback.");
-    }
-    return;
-  }
-  if (action === "studio-sample-mic") {
-    recordStudioSourceToPad(getStudioMicStream(), "Mic", false);
-    return;
-  }
-  if (action === "studio-sample-tab") {
-    const capture = navigator.mediaDevices?.getDisplayMedia
-      ? navigator.mediaDevices.getDisplayMedia({ video: true, audio: true })
-      : Promise.resolve(null);
-    recordStudioSourceToPad(capture, "Tab audio");
-    return;
-  }
-  if (action === "studio-preview-sample") {
-    triggerStudioPad(state.studio.selectedPad, false);
-    return;
-  }
-  if (action === "studio-export-sample") {
-    exportStudioSample();
-    return;
-  }
-  if (action === "studio-clear-sample") {
-    const padIndex = state.studio.selectedPad;
-    state.studio.pads[padIndex] = { ...state.studio.pads[padIndex], sampleName: "", sampleData: "" };
-    delete studioSampleBuffers[padIndex];
-    saveStudioProject();
-    toast("Sample cleared");
-    render();
-    return;
-  }
-  if (action === "studio-toggle-pad-reverse") {
-    const pad = state.studio.pads[state.studio.selectedPad];
-    pad.reverse = !pad.reverse;
-    saveStudioProject();
-    render();
-    return;
-  }
-  if (action === "studio-refresh-inputs") {
-    if (!navigator.mediaDevices?.enumerateDevices) state.studioInputStatus = "Audio input listing is not supported.";
-    else navigator.mediaDevices.enumerateDevices().then((devices) => {
-      state.studioInputStatus = `${devices.filter((device) => device.kind === "audioinput").length} audio inputs available`;
-      render();
-    });
-    toast("Checking inputs");
-    return;
-  }
-  if (action === "studio-monitor-input") {
-    getStudioMicStream().then((stream) => {
-      const ctx = ensureStudioAudio();
-      if (!stream || !ctx) return;
-      if (studioMonitorSource) studioMonitorSource.disconnect();
-      studioMonitorSource = ctx.createMediaStreamSource(stream);
-      studioMonitorSource.connect(studioOutput());
-      state.studioInputStatus = "Monitoring live. Use headphones.";
-      render();
-    });
-    return;
-  }
-  if (action === "studio-stop-monitoring") {
-    if (studioMonitorSource) studioMonitorSource.disconnect();
-    studioMonitorSource = null;
-    state.studioInputStatus = "Monitoring stopped";
-    render();
-    return;
-  }
-  if (action === "studio-record-vocal") {
-    startStudioVocalRecording(Number(target.getAttribute("data-track")));
-    return;
-  }
-  if (action === "studio-stop-vocal") {
-    stopStudioVocalRecording(Number(target.getAttribute("data-track")));
-    return;
-  }
-  if (action === "studio-play-vocal") {
-    playVocalTrack(Number(target.getAttribute("data-track")));
-    return;
-  }
-  if (action === "studio-import-vocal") {
-    importStudioVocalFile(target.files?.[0], Number(target.getAttribute("data-track")));
-    return;
-  }
-  if (action === "studio-export-vocal") {
-    exportStudioVocal(Number(target.getAttribute("data-track")));
-    return;
-  }
-  if (action === "studio-clear-vocal") {
-    const track = Number(target.getAttribute("data-track"));
-    state.studio.vocals[track] = { ...createDefaultStudioProject().vocals[track] };
-    saveStudioProject();
-    render();
-    return;
-  }
-  if (action === "studio-toggle-vocal-mute" || action === "studio-toggle-vocal-solo") {
-    const track = Number(target.getAttribute("data-track"));
-    const key = action === "studio-toggle-vocal-mute" ? "muted" : "solo";
-    state.studio.vocals[track][key] = !state.studio.vocals[track][key];
-    saveStudioProject();
-    render();
-    return;
-  }
-  if (action === "studio-export-project") {
-    downloadTextFile("lottomind-studio-project.json", JSON.stringify(state.studio, null, 2));
-    return;
-  }
-  if (action === "studio-import-project") {
-    const file = target.files?.[0];
-    if (file) file.text().then((text) => {
-      state.studio = { ...createDefaultStudioProject(), ...JSON.parse(text) };
-      saveStudioProject();
-      toast("Studio project imported");
-      render();
-    }).catch(() => toast("Project JSON could not be imported."));
-    return;
-  }
-  if (action === "studio-export-pack") {
-    downloadTextFile("lottomind-sound-pack.json", JSON.stringify({ pads: state.studio.pads.map(({ name, sampleName, sampleData, trimStart, trimEnd, pitch, gain }) => ({ name, sampleName, sampleData, trimStart, trimEnd, pitch, gain })) }, null, 2));
-    return;
-  }
-  if (action === "studio-import-pack") {
-    const file = target.files?.[0];
-    if (file) file.text().then((text) => {
-      const pack = JSON.parse(text);
-      if (Array.isArray(pack.pads)) {
-        state.studio.pads = state.studio.pads.map((pad, index) => ({ ...pad, ...(pack.pads[index] || {}) }));
-        studioSampleBuffers = {};
-        saveStudioProject();
-        toast("Sound pack imported");
-        render();
-      }
-    }).catch(() => toast("Sound pack JSON could not be imported."));
-    return;
-  }
-  if (action === "studio-start-master-record") {
-    const ctx = ensureStudioAudio();
-    if (!ctx || typeof MediaRecorder === "undefined" || !studioDestination) {
-      toast("Master recording is not supported here.");
-      return;
-    }
-    studioMasterChunks = [];
-    studioMasterRecorder = new MediaRecorder(studioDestination.stream);
-    studioMasterRecorder.ondataavailable = (event) => { if (event.data?.size) studioMasterChunks.push(event.data); };
-    studioMasterRecorder.onstop = () => {
-      const blob = new Blob(studioMasterChunks, { type: studioMasterRecorder.mimeType || "audio/webm" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "lottomind-studio-master.webm";
-      a.click();
-      setTimeout(() => URL.revokeObjectURL(url), 1000);
-      state.studioMasterRecording = false;
-      render();
-    };
-    studioMasterRecorder.start();
-    state.studioMasterRecording = true;
-    render();
-    return;
-  }
-  if (action === "studio-stop-master-record") {
-    if (studioMasterRecorder?.state !== "inactive") studioMasterRecorder.stop();
-    return;
-  }
-  if (action === "menu") {
-    state.showUtilityMenu = !state.showUtilityMenu;
-    state.showStatePicker = false;
-    render();
-    return;
-  }
-  if (action === "toggle-global-audio") {
-    state.muted = !state.muted;
-    muteAllMedia(state.muted);
-    toast(state.muted ? "Music muted" : "Music ready");
-    return;
-  }
-  if (action === "voice-search") {
-    startDreamRecording();
-    return;
-  }
-  if (action === "set-game") {
-    state.gameId = target.getAttribute("data-game");
-    localStorage.setItem("lottomind.oracle.real.game", state.gameId);
-    state.currentSet = generateLottoSet(state.gameId, state.strategy, "game-change");
-    render();
-  }
-  if (action === "set-strategy") {
-    state.strategy = target.getAttribute("data-strategy");
-    localStorage.setItem("lottomind.oracle.real.strategy", state.strategy);
-    state.currentSet = generateLottoSet(state.gameId, state.strategy, state.strategy === "dream" ? state.dreamText : "strategy-change");
-    render();
-  }
-  if (action === "generate-set" || action === "run-power-analysis") {
-    state.currentSet = generateLottoSet(state.gameId, state.strategy, state.dreamText);
-    toast(action === "run-power-analysis" ? "Power analysis complete" : "Numbers generated");
-  }
-  if (action === "run-ai-coach") {
-    const generated = generateLottoSet(state.gameId, state.strategy, `${state.aiPrompt} ${state.dreamText}`);
-    state.currentSet = generated;
-    state.currentAi = {
-      title: "LottoMind AI Report",
-      numbers: generated.numbers,
-      copy: `${generated.note} Next move: compare against Radar, then save to History Vault.`,
-    };
-    toast("AI coach report generated");
-  }
-  if (action === "analyze-name-numbers") {
-    state.currentNameNumbers = nameNumberReport(state.nameInput);
-    state.currentSet = {
-      ...generateLottoSet(state.gameId, "dream", state.nameInput),
-      numbers: state.currentNameNumbers.numbers,
-      strategy: "name",
-      note: `Name code ${state.currentNameNumbers.clean}: root ${state.currentNameNumbers.root}, Pick 3 ${state.currentNameNumbers.pick3}, Pick 4 ${state.currentNameNumbers.pick4}.`,
-    };
-    toast("Name numbers analyzed");
-  }
-  if (action === "save-current-set") {
-    if (!state.currentSet) state.currentSet = generateLottoSet(state.gameId, state.strategy, state.dreamText);
-    saveSet(state.currentSet);
-  }
-  if (action === "lock-prediction") {
-    if (!state.currentSet) state.currentSet = generateLottoSet(state.gameId, state.strategy, state.dreamText);
-    saveSet({ ...state.currentSet, locked: true, note: `${state.currentSet.note} Locked for the next demo draw.` });
-  }
-  if (action === "interpret-dream") {
-    state.currentDream = interpretDream(state.dreamText, state.gameId);
-    state.currentSet = generateLottoSet(state.gameId, "dream", state.dreamText);
-    toast("Dream interpreted");
-  }
-  if (action === "save-dream") {
-    if (!state.currentDream) {
-      state.currentDream = interpretDream(state.dreamText, state.gameId);
-    }
-    saveDream(state.currentDream);
-  }
-  if (action === "psychic-fusion") {
-    state.currentPsychic = generatePsychicReading({ prompt: "oracle studio fusion", dreamText: state.dreamText, game: state.gameId });
-    savePsychic(state.currentPsychic);
-    toast("Psychic fusion generated");
-  }
-  if (action === "start-dream-recording") {
-    startDreamRecording();
-    return;
-  }
-  if (action === "build-dream-video") {
-    const alreadyInStudio = state.route === "dreamVideo";
-    state.currentDream = interpretDream(state.dreamText, state.gameId);
-    state.currentVideo = buildDreamVideoPlan(state.dreamText);
-    if (!alreadyInStudio) {
-      go("dreamVideo");
-      return;
-    }
-    toast("Dream video storyboard built");
-  }
-  if (action === "save-video-storyboard") {
-    if (!state.currentVideo) state.currentVideo = buildDreamVideoPlan(state.dreamText);
-    saveDream({
-      ...state.currentVideo.reading,
-      title: "Dream Video Storyboard",
-      note: `${state.currentVideo.frames.map((frame) => frame[0]).join(" > ")} | ${state.currentVideo.reading.note}`,
-      savedAt: new Date().toISOString(),
-    });
-  }
-  if (action === "analyze-sequence") {
-    state.lastSequence = analyzeSequence(parseNumbers(state.numberInput), getGame().mainMax);
-    toast("Sequence analyzed");
-  }
-  if (action === "analyze-daily") toast("Daily digits analyzed");
-  if (action === "generate-daily") {
-    const pick = generateLottoSet(state.dailyInput.length >= 4 ? "pick-4" : "pick-3", "balanced", "daily");
-    state.dailyInput = pick.numbers.join("");
-    toast("Daily digits generated");
-  }
-  if (action === "cycle-state") {
-    state.showStatePicker = !state.showStatePicker;
-    state.showUtilityMenu = false;
-    render();
-  }
-  if (action === "select-state") {
-    state.selectedState = target.getAttribute("data-state") || state.selectedState;
-    state.selectedStoreId = "";
-    state.showStatePicker = false;
-    localStorage.setItem("lottomind.oracle.real.state", state.selectedState);
-    toast(`${state.selectedState} pin selected`);
-  }
-  if (action === "set-merch-category") {
-    state.merchCategory = target.getAttribute("data-category") || "All";
-    const first = MERCH_ITEMS.findIndex((item) => state.merchCategory === "All" || item.type === state.merchCategory);
-    if (first >= 0) state.selectedMerchIndex = first;
-    toast(`${state.merchCategory} shelf loaded`);
-  }
-  if (action === "search-stores") {
-    state.selectedStoreId = "";
-    toast(state.storeQuery ? "Store search filtered" : "Showing nearby mock retailers");
-  }
-  if (action === "toggle-store-filter") {
-    const filter = target.getAttribute("data-filter");
-    if (filter) {
-      state.activeStoreFilters = state.activeStoreFilters.includes(filter)
-        ? state.activeStoreFilters.filter((item) => item !== filter)
-        : state.activeStoreFilters.concat(filter);
-      state.selectedStoreId = "";
-      toast(`${filter} filter ${state.activeStoreFilters.includes(filter) ? "on" : "off"}`);
-    }
-  }
-  if (action === "select-store") {
-    state.selectedStoreId = target.getAttribute("data-store") || "";
-    toast(`${selectedStore().name} selected`);
-  }
-  if (action === "toggle-store-favorite") {
-    const storeId = target.getAttribute("data-store") || selectedStore().id;
-    const favorites = storeFavorites();
-    const next = favorites.includes(storeId) ? favorites.filter((id) => id !== storeId) : favorites.concat(storeId);
-    saveJson(STORAGE.storeFavorites, next);
-    toast(next.includes(storeId) ? "Store saved" : "Store removed");
-  }
-  if (action === "use-current-location") {
-    if (!navigator.geolocation) {
-      state.userLocation = { lat: 42.3314, lng: -83.0458, fallback: true };
-      toast("Location unavailable. Detroit fallback loaded.");
-    } else {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          state.userLocation = { lat: position.coords.latitude, lng: position.coords.longitude, fallback: false };
-          toast("Location permission active");
-        },
-        () => {
-          state.userLocation = { lat: 42.3314, lng: -83.0458, fallback: true };
-          toast("Location denied. Detroit fallback loaded.");
-        },
-        { enableHighAccuracy: false, timeout: 5000, maximumAge: 300000 },
-      );
-    }
-  }
-  if (action === "sync-store-backend") {
-    const base = window.LOTTOMIND_API_BASE_URL || localStorage.getItem("lottomind.api.base") || "";
-    if (!base) {
-      toast("Backend proxy not configured. Mock retailer layer is active.");
-    } else {
-      const loc = state.userLocation || { lat: 42.3314, lng: -83.0458 };
-      fetch(`${base.replace(/\/$/, "")}/api/store-locator/nearby?lat=${loc.lat}&lng=${loc.lng}`)
-        .then((response) => response.ok ? response.json() : Promise.reject(new Error("Store backend unavailable")))
-        .then(() => toast("Backend route responded. Google proxy can be connected."))
-        .catch(() => toast("Backend unavailable. Mock stores preserved."));
-    }
-  }
-  if (action === "set-view") {
-    state.viewMode = target.getAttribute("data-view");
-    localStorage.setItem("lottomind.oracle.real.view", state.viewMode);
-    toast(`${titleCase(state.viewMode)} view selected`);
-  }
-  if (action === "toggle-reset-audio") toggleResetAudio();
-  if (action === "load-reset-preset") {
-    loadResetPreset(target.getAttribute("data-preset"));
-    return;
-  }
-  if (action === "load-reset-session") {
-    if (!isResetRoute()) {
-      state.tone = target.getAttribute("data-tone") || state.tone;
-      state.timerRemaining = state.duration;
-      go("reset");
-      return;
-    }
-    loadResetSession(target.getAttribute("data-tone") || state.tone, { autoplay: target.getAttribute("data-autoplay") === "true" });
-    return;
-  }
-  if (action === "connect-stream") {
-    const stream = target.getAttribute("data-stream") || "Music platform";
-    const url = target.getAttribute("data-url");
-    const connected = loadJson(STORAGE.streams, []);
-    if (!connected.includes(stream)) saveJson(STORAGE.streams, connected.concat(stream));
-    if (url && typeof window.open === "function") window.open(url, "_blank", "noopener");
-    toast(`${stream} connected to LottoMind Records`);
-  }
-  if (action === "set-tone") {
-    state.tone = target.getAttribute("data-tone");
-    if (resetToneOscillator && resetToneContext) {
-      resetToneOscillator.frequency.setTargetAtTime(Number(state.tone) || 528, resetToneContext.currentTime, 0.03);
-    }
-    toast(`${state.tone} Hz loaded`);
-  }
-  if (action === "set-duration") {
-    state.duration = Number(target.getAttribute("data-duration")) || 300;
-    state.timerRemaining = state.duration;
-    toast(`${Math.round(state.duration / 60)} minute session loaded`);
-  }
-  if (action === "volume-up" || action === "volume-down") {
-    state.volume = Math.max(0.02, Math.min(0.8, state.volume + (action === "volume-up" ? 0.04 : -0.04)));
-    if (resetAudio) resetAudio.volume = state.volume;
-    if (resetToneGain && resetToneContext) {
-      resetToneGain.gain.setTargetAtTime(Math.max(0.02, Math.min(0.22, state.volume * 0.32)), resetToneContext.currentTime, 0.03);
-    }
-    render();
-  }
-  if (action === "favorite-tone") toast(`${state.tone} Hz saved as favorite`);
-  if (action === "simulate-scan" || action === "scan-ticket" || action === "scan-barcode") {
-    const upload = target.files && target.files[0] ? target.files[0].name : "";
-    const source = action === "scan-barcode" ? state.barcodeInput || "barcode-demo-0427" : upload || "camera-demo-ticket";
-    if (action === "scan-ticket" && target.files && target.files[0]) {
-      const file = target.files[0];
-      scanBarcodeFromFile(file).then((decoded) => {
-        applyScanReadout(action, file.name, file.name, decoded);
-        toast(decoded ? "Real barcode detected from ticket image" : "No barcode found. Demo readout loaded.");
-      });
-      toast("Reading ticket image...");
-      return;
-    }
-    applyScanReadout(action, source, upload);
-    toast("Ticket scanner readout loaded");
-  }
-  if (action === "save-store") {
-    const savedStores = loadJson(STORAGE.stores, []);
-    if (!savedStores.includes(state.selectedState)) saveJson(STORAGE.stores, savedStores.concat(state.selectedState));
-    toast(`${state.selectedState} store locator saved`);
-  }
-  if (action === "buy-item") {
-    const cost = Number(target.getAttribute("data-cost")) || 0;
-    const unlockId = target.getAttribute("data-unlock");
-    if (unlockId === "credits-pack") {
-      setCredits(getCredits() + 100);
-      toast("Demo credit pack added: +100 credits");
-    } else if (unlockId && isUnlocked(unlockId)) {
-      toast("Already unlocked");
-    } else {
-      const next = getCredits() - cost;
-      if (next < 0) {
-        toast("Not enough credits");
-      } else {
-        setCredits(next);
-        if (unlockId) saveUnlock(unlockId, unlockId.includes("24") ? "24h" : "permanent");
-        toast(unlockId ? "Feature unlocked" : "Credit purchase applied");
-      }
-    }
   }
   if (action === "unlock-feature") {
     const unlockId = target.getAttribute("data-unlock");

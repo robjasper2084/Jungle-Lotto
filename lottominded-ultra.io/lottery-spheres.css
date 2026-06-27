@@ -231,9 +231,9 @@
   min-height: 100svh;
   display: grid;
   grid-template-columns: minmax(18rem, 0.86fr) minmax(16rem, 0.44fr);
-  align-items: end;
+  align-items: start;
   gap: clamp(1.5rem, 4vw, 4rem);
-  padding: clamp(8rem, 13vh, 10rem) clamp(1rem, 5vw, 5rem) clamp(2rem, 7vw, 5rem);
+  padding: clamp(7.1rem, 10vh, 8rem) clamp(1rem, 5vw, 5rem) clamp(2rem, 7vw, 5rem);
   overflow: hidden;
   isolation: isolate;
 }
@@ -901,7 +901,7 @@ body.has-sphere-shadow-popup {
   }
 
   .sphere-stage {
-    align-items: end;
+    align-items: start;
     min-height: 92svh;
   }
 
@@ -918,7 +918,7 @@ body.has-sphere-shadow-popup {
 
 @media (max-width: 560px) {
   .sphere-stage {
-    padding-top: 3rem;
+    padding-top: 1.25rem;
   }
 
   .sphere-copy {
