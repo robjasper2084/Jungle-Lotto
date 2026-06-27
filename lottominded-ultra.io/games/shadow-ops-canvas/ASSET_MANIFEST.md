@@ -4,6 +4,7 @@
 
 | Key | Path | Use |
 | --- | --- | --- |
+| `environmentPack` | `assets/environment3d/cyber-vault-v1/environment-pack-manifest.json` | Optional manifest-driven cyber-vault startup/title background pack, enabled with `?envpack=cyber-vault-v1`; gameplay level backgrounds remain unchanged |
 | `hero` | `assets/hero/lottomind-hero-main.png` | Title image and HUD portrait source |
 | `player` | `assets/mascot/lottomind-mascot-runner-atlas.png` | Active original runtime player animation atlas |
 | `level1Bg` | `assets/backgrounds/higgsfield_photo_neon_jungle_bg_20260624.jpeg` | Active Higgsfield concept-matched Level 1 Neon Jungle Vault background |
@@ -43,6 +44,22 @@
 | `missionBatchProps` | `assets/mission/higgsfield_batch_props_runtime_v3.png` | Ghost-cleaned 5x4 Higgsfield reference batch for ruby vial, terminals, mossy cyber platforms, pipes, relays, vault plates, and portal props |
 | `missionBatchWorld` | `assets/mission/higgsfield_photo_world_retry_runtime_v3.png` | Ghost-cleaned Higgsfield reference batch for platform pieces, wall panels, vines, ladders, terminals, pipes, mushrooms, ruby vial, and world-fill objects |
 | `missionBatchFx` | `assets/mission/higgsfield_batch_fx_retry_runtime_v3.png` | Ghost-cleaned 5x4 Higgsfield reference retry batch for hearts, ruby pickups, keys, shield/overdrive icons, sparks, and short beams |
+
+## Optional Environment Pack: `cyber-vault-v1`
+
+Enable on the startup/title screen with `?envpack=cyber-vault-v1`. Gameplay level backgrounds remain the normal level art. Remove that query parameter to roll back instantly.
+
+| Path | Use |
+| --- | --- |
+| `assets/environment3d/cyber-vault-v1/layers/far-purple-nebula-sky.png` | Far purple nebula sky parallax layer |
+| `assets/environment3d/cyber-vault-v1/layers/distant-cyber-vault-silhouettes.png` | Distant cyber-vault tower silhouette parallax layer |
+| `assets/environment3d/cyber-vault-v1/layers/mid-circuit-wall.png` | Mid-background black-gold circuit wall layer |
+| `assets/environment3d/cyber-vault-v1/layers/hologram-fog-overlay.png` | Subtle hologram and fog overlay layer |
+| `assets/environment3d/cyber-vault-v1/platforms/platform-modules-sheet.png` | Modular side-scrolling platform sheet |
+| `assets/environment3d/cyber-vault-v1/props/interactive-cyber-vault-props-sheet.png` | Interactive cyber-vault prop sheet |
+| `assets/environment3d/cyber-vault-v1/overlays/foreground-overlay-sheet.png` | Foreground/fog/glow/particle overlay sheet |
+| `assets/environment3d/cyber-vault-v1/props/heart-core-reactor-states-sheet.png` | Heart-core reactor variants for boss arena backgrounds |
+| `assets/environment3d/cyber-vault-v1/preview/shadow-ops-environment-pack-preview.png` | Generated 4K preview contact sheet |
 
 ## Generated Supporting Assets
 

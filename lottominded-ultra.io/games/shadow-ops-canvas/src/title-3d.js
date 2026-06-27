@@ -3,6 +3,10 @@ import * as THREE from "../assets/vendor/three.module.min.js";
 const titleScreen = document.getElementById("titleScreen");
 const canvas = document.getElementById("titleWorld");
 const TITLE_ASSET_BASE = "../assets/title3d/";
+const TITLE_ENV_PACK_ID = (new URLSearchParams(window.location.search).get("envpack") || "").trim();
+const TITLE_ENV_PACK_BASES = {
+  "cyber-vault-v1": "../assets/environment3d/cyber-vault-v1/"
+};
 
 if (titleScreen && canvas) {
   try {
@@ -34,6 +38,13 @@ function TitleVaultWorld(root, targetCanvas) {
   this.platformTexture = loadTitleTexture(this, "title3d_ref_platform_tile_v2.jpg", { repeat: [2.4, 2.4] });
   this.wallTexture = loadTitleTexture(this, "title3d_ref_wall_tile_v2.jpg", { repeat: [1.45, 2.25] });
   this.mascotStandeeTexture = loadTitleTexture(this, "title3d_hoodie_mascot_standee_alpha.png");
+  this.environmentPackBase = TITLE_ENV_PACK_BASES[TITLE_ENV_PACK_ID] || "";
+  this.environmentPackTextures = this.environmentPackBase ? {
+    far: loadTextureFromBase(this, this.environmentPackBase, "layers/far-purple-nebula-sky.png"),
+    silhouette: loadTextureFromBase(this, this.environmentPackBase, "layers/distant-cyber-vault-silhouettes.png"),
+    wall: loadTextureFromBase(this, this.environmentPackBase, "layers/mid-circuit-wall.png"),
+    fog: loadTextureFromBase(this, this.environmentPackBase, "layers/hologram-fog-overlay.png")
+  } : null;
 
   this.clock = new THREE.Clock();
   this.raycaster = new THREE.Raycaster();
@@ -95,8 +106,19 @@ function titleAssetUrl(file) {
   return new URL(`${TITLE_ASSET_BASE}${file}`, import.meta.url).href;
 }
 
+function assetUrl(base, file) {
+  return new URL(`${base}${file}`, import.meta.url).href;
+}
+
 function loadTitleTexture(world, file, options = {}) {
-  const texture = world.textureLoader.load(titleAssetUrl(file));
+  return configureTexture(world, world.textureLoader.load(titleAssetUrl(file)), options);
+}
+
+function loadTextureFromBase(world, base, file, options = {}) {
+  return configureTexture(world, world.textureLoader.load(assetUrl(base, file)), options);
+}
+
+function configureTexture(world, texture, options = {}) {
   if (THREE.SRGBColorSpace) texture.colorSpace = THREE.SRGBColorSpace;
   texture.anisotropy = Math.min(8, world.renderer.capabilities.getMaxAnisotropy?.() || 1);
   if (options.repeat) {
@@ -108,6 +130,10 @@ function loadTitleTexture(world, file, options = {}) {
 }
 
 function makeHiggsfieldBackdrop(world) {
+  if (world.environmentPackTextures) {
+    makeEnvironmentPackBackdrop(world);
+    return;
+  }
   const material = new THREE.MeshBasicMaterial({
     map: world.backdropTexture,
     transparent: true,
@@ -132,6 +158,41 @@ function makeHiggsfieldBackdrop(world) {
   haze.position.set(0.3, 3.15, -7.92);
   haze.renderOrder = -9;
   world.scene.add(haze);
+}
+
+function makeEnvironmentPackBackdrop(world) {
+  const layers = [
+    { texture: world.environmentPackTextures.far, z: -8.45, opacity: 0.96, order: -14, scale: [17.9, 10.1] },
+    { texture: world.environmentPackTextures.silhouette, z: -8.2, opacity: 0.78, order: -13, scale: [17.9, 10.1] },
+    { texture: world.environmentPackTextures.wall, z: -7.92, opacity: 0.58, order: -12, scale: [18.0, 10.12] },
+    { texture: world.environmentPackTextures.fog, z: -7.58, opacity: 0.34, order: -11, scale: [18.0, 10.12], additive: true }
+  ];
+  for (const layer of layers) {
+    const material = new THREE.MeshBasicMaterial({
+      map: layer.texture,
+      transparent: true,
+      opacity: layer.opacity,
+      depthWrite: false,
+      blending: layer.additive ? THREE.AdditiveBlending : THREE.NormalBlending
+    });
+    const plane = new THREE.Mesh(new THREE.PlaneGeometry(layer.scale[0], layer.scale[1]), material);
+    plane.position.set(0.45, 3.12, layer.z);
+    plane.renderOrder = layer.order;
+    world.scene.add(plane);
+  }
+
+  const readabilityWash = new THREE.Mesh(
+    new THREE.PlaneGeometry(18.2, 10.2),
+    new THREE.MeshBasicMaterial({
+      color: 0x020104,
+      transparent: true,
+      opacity: 0.18,
+      depthWrite: false
+    })
+  );
+  readabilityWash.position.set(0.32, 3.14, -7.34);
+  readabilityWash.renderOrder = -10;
+  world.scene.add(readabilityWash);
 }
 
 function makeTitleFloorGrid(world) {

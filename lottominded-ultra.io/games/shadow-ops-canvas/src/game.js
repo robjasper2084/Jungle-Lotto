@@ -15,7 +15,9 @@
   const EXTRACTION_X = 6180;
   const STORAGE_KEY = "lottomind-vault-run-save-v1";
   const SETTINGS_KEY = "lottomind-vault-run-settings-v1";
-  const DEBUG = new URLSearchParams(window.location.search).has("debug");
+  const QUERY = new URLSearchParams(window.location.search);
+  const DEBUG = QUERY.has("debug");
+  const DRAW_DECORATIVE_WORLD_PROPS = false;
   const ACTIVE_STORAGE_KEY = DEBUG ? `${STORAGE_KEY}-debug` : STORAGE_KEY;
   const LOTTERY_STORAGE_KEY = DEBUG ? "lottomind-number-run-lottery-v1-debug" : "lottomind-number-run-lottery-v1";
   const LOTTERY_DISCLAIMER = "Random number generator - not an official lottery ticket or guarantee.";
@@ -445,7 +447,9 @@
   let musicPlayBlocked = false;
 
   const touchMedia = window.matchMedia("(pointer: coarse)");
+  const anyTouchMedia = window.matchMedia("(any-pointer: coarse)");
   const compactMedia = window.matchMedia("(max-width: 820px), (max-height: 620px)");
+  const hasTouchEvents = "ontouchstart" in window || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0;
 
   const defaults = {
     sound: true,
@@ -454,7 +458,7 @@
     reducedMotion: window.matchMedia("(prefers-reduced-motion: reduce)").matches,
     reducedShake: false,
     highContrastShots: false,
-    touch: touchMedia.matches || compactMedia.matches,
+    touch: touchMedia.matches || anyTouchMedia.matches || hasTouchEvents || compactMedia.matches,
     difficulty: "arcade"
   };
 
@@ -487,6 +491,7 @@
   const touchDown = new Set();
   const touchPressed = new Set();
   const touchReleased = new Set();
+  const touchPointers = new Map();
   let padDown = new Set();
   let padPressed = new Set();
   let padReleased = new Set();
@@ -494,6 +499,12 @@
   const pointer = {
     x: W * 0.75,
     y: H * 0.5,
+    activeUntil: 0
+  };
+  const virtualAim = {
+    x: 1,
+    y: 0,
+    strength: 0,
     activeUntil: 0
   };
 
@@ -1089,10 +1100,25 @@
     });
 
     window.addEventListener("blur", () => {
+      clearTouchActions();
       if (mode === "playing" && !DEBUG) pauseRun();
     });
 
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) clearTouchActions();
+    });
+
+    window.addEventListener("pagehide", clearTouchActions);
+    window.addEventListener("orientationchange", clearTouchActions);
+
+    document.addEventListener("gesturestart", (event) => event.preventDefault(), { passive: false });
+    document.addEventListener("gesturechange", (event) => event.preventDefault(), { passive: false });
+    document.addEventListener("touchmove", (event) => {
+      if (event.target.closest?.(".game-shell")) event.preventDefault();
+    }, { passive: false });
+
     canvas.addEventListener("pointermove", (event) => {
+      if (event.pointerType === "touch") event.preventDefault();
       const point = canvasPoint(event);
       pointer.x = point.x;
       pointer.y = point.y;
@@ -1100,6 +1126,7 @@
     });
 
     canvas.addEventListener("pointerdown", (event) => {
+      if (event.pointerType === "touch") event.preventDefault();
       initAudio();
       const point = canvasPoint(event);
       pointer.x = point.x;
@@ -1110,8 +1137,28 @@
       }
     });
 
-    canvas.addEventListener("pointerup", () => {
+    canvas.addEventListener("pointerup", (event) => {
+      if (event.pointerType === "touch") event.preventDefault();
       touchAction("fire", false);
+    });
+    canvas.addEventListener("pointercancel", clearTouchActions);
+    window.addEventListener("lottomind:virtual-aim", (event) => {
+      const detail = event.detail || {};
+      const strength = Number(detail.distance) || 0;
+      if (!detail.active) {
+        virtualAim.activeUntil = 0;
+        virtualAim.strength = 0;
+        return;
+      }
+      if (strength > 0.06) {
+        const x = Number(detail.x) || 0;
+        const y = Number(detail.y) || 0;
+        const length = Math.hypot(x, y) || 1;
+        virtualAim.x = x / length;
+        virtualAim.y = y / length;
+        virtualAim.strength = strength;
+        virtualAim.activeUntil = performance.now() + 180;
+      }
     });
 
     canvas.addEventListener("contextmenu", (event) => event.preventDefault());
@@ -1122,6 +1169,7 @@
         event.preventDefault();
         if (button.setPointerCapture && event.pointerId !== undefined) button.setPointerCapture(event.pointerId);
         initAudio();
+        if (event.pointerId !== undefined) touchPointers.set(event.pointerId, action);
         touchAction(action, true);
       };
       const up = (event) => {
@@ -1129,13 +1177,19 @@
         if (button.releasePointerCapture && event.pointerId !== undefined && button.hasPointerCapture(event.pointerId)) {
           button.releasePointerCapture(event.pointerId);
         }
-        touchAction(action, false);
+        const heldAction = event.pointerId !== undefined ? touchPointers.get(event.pointerId) : action;
+        if (event.pointerId !== undefined) touchPointers.delete(event.pointerId);
+        if (heldAction) touchAction(heldAction, false);
       };
       button.addEventListener("pointerdown", down);
       button.addEventListener("pointerup", up);
       button.addEventListener("pointercancel", up);
       button.addEventListener("pointerleave", up);
-      button.addEventListener("lostpointercapture", () => touchAction(action, false));
+      button.addEventListener("lostpointercapture", (event) => {
+        const heldAction = event.pointerId !== undefined ? touchPointers.get(event.pointerId) : action;
+        if (event.pointerId !== undefined) touchPointers.delete(event.pointerId);
+        if (heldAction) touchAction(heldAction, false);
+      });
     });
 
     document.querySelectorAll("[data-action]").forEach((button) => {
@@ -1285,6 +1339,14 @@
     };
   }
 
+  function clearTouchActions() {
+    if (!touchDown.size && !touchPressed.size && !touchReleased.size && !touchPointers.size) return;
+    for (const action of touchDown) touchReleased.add(action);
+    touchDown.clear();
+    touchPressed.clear();
+    touchPointers.clear();
+  }
+
   function touchAction(action, down) {
     if (action === "pause" && down && mode === "lottery") {
       closeLotteryTerminal();
@@ -1294,8 +1356,7 @@
       if (!touchDown.has(action)) touchPressed.add(action);
       touchDown.add(action);
     } else {
-      touchDown.delete(action);
-      touchReleased.add(action);
+      if (touchDown.delete(action)) touchReleased.add(action);
     }
   }
 
@@ -1338,7 +1399,7 @@
   }
 
   function syncViewportMode() {
-    const compact = window.innerWidth <= 820 || window.innerHeight <= 620 || touchMedia.matches;
+    const compact = window.innerWidth <= 820 || window.innerHeight <= 620 || touchMedia.matches || anyTouchMedia.matches || hasTouchEvents;
     document.body.classList.toggle("compact-play", compact);
     if (compact && !settings.touch) {
       settings.touch = true;
@@ -2485,6 +2546,11 @@
   }
 
   function getAim(state, p) {
+    const virtualAimFresh = performance.now() < virtualAim.activeUntil && mode === "playing";
+    if (virtualAimFresh && p.index === 0) {
+      return { x: virtualAim.x, y: virtualAim.y };
+    }
+
     const pointerFresh = performance.now() < pointer.activeUntil && mode === "playing";
     if (pointerFresh && p.index === 0) {
       const worldX = pointer.x + state.cameraX;
@@ -3655,8 +3721,10 @@
     const shake = cameraShake(state);
     ctx.translate(shake.x - state.cameraX, shake.y - (state.cameraY || 0));
     drawBacklightRays(state);
-    drawBrandProps(state);
-    drawBatchSceneryProps(state);
+    if (DRAW_DECORATIVE_WORLD_PROPS) {
+      drawBrandProps(state);
+      drawBatchSceneryProps(state);
+    }
     drawPlatforms(state);
     drawGate(state);
     drawArenaLockGates(state);

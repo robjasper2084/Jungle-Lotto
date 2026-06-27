@@ -32,6 +32,9 @@ body {
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   letter-spacing: 0;
   user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  touch-action: none;
 }
 
 button,
@@ -51,6 +54,8 @@ button {
   text-transform: uppercase;
   cursor: pointer;
   box-shadow: inset 0 0 0 1px rgba(255, 214, 109, 0.08);
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 button:hover,
@@ -168,8 +173,8 @@ button.primary {
 .title-copy {
   width: min(644px, calc(100vw - 36px));
   padding: clamp(23px, 3.9vw, 39px);
-  justify-self: start;
-  margin-left: clamp(0px, 4vw, 52px);
+  justify-self: center;
+  margin-left: 0;
   position: relative;
   z-index: 2;
   overflow: hidden;
@@ -1056,6 +1061,7 @@ h2 {
 }
 
 .touchbar {
+  --touch-size: clamp(52px, 7.5vw, 68px);
   position: absolute;
   inset: auto max(14px, env(safe-area-inset-right)) max(14px, env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left));
   display: flex;
@@ -1069,26 +1075,28 @@ h2 {
 
 .touch-cluster {
   display: grid;
-  grid-template-columns: repeat(5, 56px);
+  grid-template-columns: repeat(5, var(--touch-size));
   gap: 8px;
   pointer-events: auto;
 }
 
 .touch-cluster--move {
-  grid-template-columns: repeat(4, 56px);
+  grid-template-columns: repeat(4, var(--touch-size));
 }
 
 .touch-cluster button {
-  width: 56px;
-  min-width: 56px;
-  height: 56px;
-  min-height: 56px;
+  width: var(--touch-size);
+  min-width: var(--touch-size);
+  height: var(--touch-size);
+  min-height: var(--touch-size);
   padding: 0;
   background: linear-gradient(180deg, rgba(18, 12, 22, 0.86), rgba(5, 4, 7, 0.78));
   color: var(--gold);
   font-size: 0.68rem;
   box-shadow: 0 12px 28px rgba(0, 0, 0, 0.42), inset 0 0 0 1px rgba(255, 214, 109, 0.12);
   touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .touch-use {
@@ -1279,6 +1287,7 @@ body.compact-play #game {
   }
 
   .touchbar {
+    --touch-size: clamp(48px, 11.5vw, 54px);
     inset: auto max(8px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
     gap: 8px;
   }
@@ -1314,18 +1323,18 @@ body.compact-play #game {
   }
 
   .touch-cluster {
-    grid-template-columns: repeat(5, 40px);
+    grid-template-columns: repeat(5, var(--touch-size));
   }
 
   .touch-cluster--move {
-    grid-template-columns: repeat(4, 40px);
+    grid-template-columns: repeat(4, var(--touch-size));
   }
 
   .touch-cluster button {
-    width: 40px;
-    min-width: 40px;
-    height: 40px;
-    min-height: 40px;
+    width: var(--touch-size);
+    min-width: var(--touch-size);
+    height: var(--touch-size);
+    min-height: var(--touch-size);
     font-size: 0.54rem;
   }
 
