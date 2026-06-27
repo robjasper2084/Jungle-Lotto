@@ -188,8 +188,8 @@
         width: 100%;
         height: 100%;
         object-fit: cover;
-        opacity: 0.36;
-        filter: saturate(1.18) contrast(1.08) brightness(0.72);
+        opacity: 0.56;
+        filter: saturate(1.2) contrast(1.08) brightness(0.88);
         pointer-events: none;
       }
 
@@ -1826,7 +1826,7 @@
     </div>
     <div class="guide-startup-audio" data-guide-startup-audio aria-label="LottoMind guide startup music">
       <div class="guide-startup-panel" role="dialog" aria-modal="true" aria-labelledby="guideStartupTitle">
-        <video class="guide-startup-video-bg" loop playsinline preload="metadata" aria-hidden="true" data-guide-startup-video>
+        <video class="guide-startup-video-bg" autoplay loop playsinline preload="auto" aria-hidden="true" data-guide-startup-video>
           <source src="./assets/video/lottominded-ultra-launch-30s-video-editing-mcp-cut.mp4?v=guide-modal-bg-1" type="video/mp4" />
         </video>
         <button class="guide-startup-close" type="button" data-guide-startup-close aria-label="Enter guide without music">X</button>
