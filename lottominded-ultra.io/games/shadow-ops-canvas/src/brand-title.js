@@ -1,8 +1,10 @@
 (() => {
-  const BRAND = ".KLN WITH KNDNSS";
-  const BRAND_COOP = ".KLN WITH KNDNSS CO-OP";
-  const BRAND_2P = ".KLN WITH KNDNSS 2P";
+  const BRAND = "KLNM WITH KNDNSS";
+  const BRAND_COOP = "KLNM WITH KNDNSS CO-OP";
+  const BRAND_2P = "KLNM WITH KNDNSS 2P";
   const LEGACY_PATTERNS = [
+    /\.KLN WITH KNDNSS/g,
+    /KLN WITH KNDNSS/g,
     /KLMN with KNDNSS/g,
     /KLMN WITH KNDNSS/g,
     /Lil- MAN's KLMN with KNDNSS/g,
