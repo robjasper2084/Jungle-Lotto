@@ -22922,6 +22922,98 @@ body .route-dreams .dream-oracle-tools .dream-studio-bento .circle-tool[data-art
   filter: brightness(0.94) saturate(1.04);
 }
 
+/* Dream Oracle Studio: make tool links behave like Command Deck pressable controls. */
+body .route-dreams .dream-oracle-tools .dream-studio-bento {
+  gap: 10px !important;
+  grid-auto-rows: 104px !important;
+}
+
+body .route-dreams .dream-oracle-tools .dream-studio-bento .circle-tool[data-art-kind],
+body .route-dreams .dream-oracle-tools .dream-studio-bento .circle-tool[data-art-kind]:first-child {
+  min-height: 104px !important;
+  height: 104px !important;
+  padding: 56px 7px 9px !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(248, 223, 118, 0.6) !important;
+  border-radius: 18px !important;
+  color: var(--gold) !important;
+  background:
+    radial-gradient(circle at 50% 16%, rgba(0, 236, 255, 0.28), transparent 30%),
+    radial-gradient(circle at 50% 22%, rgba(248, 223, 118, 0.18), transparent 36%),
+    linear-gradient(180deg, rgba(5, 18, 31, 0.62), rgba(0, 6, 14, 0.9)),
+    var(--circle-art) center / cover no-repeat !important;
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.25),
+    inset 0 -22px 28px rgba(0, 0, 0, 0.72),
+    inset 0 0 0 1px rgba(0, 236, 255, 0.12),
+    0 6px 0 rgba(0, 7, 15, 0.98),
+    0 0 18px rgba(0, 236, 255, 0.16) !important;
+  transform: translateY(0);
+  transition:
+    transform 160ms ease,
+    filter 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease !important;
+}
+
+body .route-dreams .dream-oracle-tools .dream-studio-bento .circle-tool[data-art-kind]::before {
+  top: 9px !important;
+  width: 42px !important;
+  height: 42px !important;
+  border: 1px solid rgba(248, 223, 118, 0.64) !important;
+  background:
+    radial-gradient(circle at 34% 28%, rgba(255, 251, 210, 0.88), transparent 16%),
+    var(--circle-art) center / cover no-repeat !important;
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.34),
+    inset 0 -8px 14px rgba(0, 0, 0, 0.42),
+    0 0 0 2px rgba(0, 236, 255, 0.34),
+    0 0 16px rgba(248, 223, 118, 0.28),
+    0 7px 13px rgba(0, 0, 0, 0.46) !important;
+}
+
+body .route-dreams .dream-oracle-tools .dream-studio-bento .circle-tool[data-art-kind]::after {
+  inset: 0 !important;
+  border-radius: inherit !important;
+  background:
+    linear-gradient(118deg, transparent 0 34%, rgba(255, 255, 255, 0.2) 46%, transparent 58%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.14), transparent 34%, rgba(0, 0, 0, 0.32)) !important;
+  opacity: 0.78 !important;
+}
+
+body .route-dreams .dream-oracle-tools .dream-studio-bento .circle-tool[data-art-kind]:hover,
+body .route-dreams .dream-oracle-tools .dream-studio-bento .circle-tool[data-art-kind]:focus-visible {
+  border-color: rgba(0, 236, 255, 0.88) !important;
+  filter: brightness(1.08) saturate(1.18);
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.32),
+    inset 0 -22px 28px rgba(0, 0, 0, 0.62),
+    inset 0 0 0 1px rgba(248, 223, 118, 0.2),
+    0 8px 0 rgba(0, 7, 15, 0.98),
+    0 0 24px rgba(0, 236, 255, 0.3) !important;
+  transform: translateY(-3px);
+}
+
+body .route-dreams .dream-oracle-tools .dream-studio-bento .circle-tool[data-art-kind]:hover::before,
+body .route-dreams .dream-oracle-tools .dream-studio-bento .circle-tool[data-art-kind]:focus-visible::before {
+  transform: translateX(-50%) rotate(calc(var(--knob-rest, 0deg) + 16deg)) scale(1.04);
+}
+
+body .route-dreams .dream-oracle-tools .dream-studio-bento .circle-tool[data-art-kind]:active {
+  filter: brightness(0.96) saturate(1.08);
+  box-shadow:
+    inset 0 7px 12px rgba(0, 0, 0, 0.58),
+    inset 0 -10px 20px rgba(0, 0, 0, 0.72),
+    inset 0 0 0 1px rgba(248, 223, 118, 0.22),
+    0 2px 0 rgba(0, 7, 15, 1),
+    0 0 12px rgba(0, 236, 255, 0.16) !important;
+  transform: translateY(3px);
+}
+
+body .route-dreams .dream-oracle-tools .dream-studio-bento .circle-tool[data-art-kind]:active::before {
+  transform: translateX(-50%) rotate(calc(var(--knob-rest, 0deg) + 46deg)) scale(0.95);
+}
+
 /* Power Tools Main Lab: preserve artwork as mixer-knob faces */
 body .route-powertools .tool-bank .main-lab-bento {
   grid-auto-rows: 96px !important;
