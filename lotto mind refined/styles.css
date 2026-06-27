@@ -22588,8 +22588,6 @@ body .screen {
   scroll-behavior: smooth;
 }
 
-body .real-main,
-body .screen,
 body .screen > .panel,
 body .screen > .result-card,
 body .screen > .art-panel,
@@ -22626,12 +22624,10 @@ body .merch-grid {
 @keyframes lmRouteSurfaceSettle {
   from {
     opacity: 0.92;
-    transform: translate3d(0, 6px, 0);
   }
 
   to {
     opacity: 1;
-    transform: translate3d(0, 0, 0);
   }
 }
 
