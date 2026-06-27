@@ -1106,6 +1106,31 @@
           transform: scale(1.32);
         }
       }
+
+      .burst-heading,
+      .manual-burst-heading {
+        cursor: inherit;
+        transition: none;
+      }
+
+      .plain-copy:hover .burst-heading,
+      .manual-card:hover .manual-burst-heading,
+      .burst-heading:hover,
+      .burst-heading:focus,
+      .burst-heading:focus-visible {
+        color: inherit;
+        filter: none;
+        transform: none;
+        text-shadow: inherit;
+      }
+
+      .burst-heading::before,
+      .burst-heading::after,
+      .guide-word-rain {
+        display: none !important;
+        animation: none !important;
+      }
+
       .section-head p,
       .manual-card p,
       .faq p,
@@ -2502,41 +2527,6 @@
             release();
           });
         });
-        const triggerGuideWordRain = (heading) => {
-          if (!heading || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-          if (heading.dataset.wordRainActive === "true") return;
-          heading.dataset.wordRainActive = "true";
-          window.setTimeout(() => {
-            const sourceWords = (heading.textContent || "Lottomind signal").replace(/[^a-z0-9\s]/gi, "").trim().split(/\s+/).filter(Boolean);
-            const words = sourceWords.length ? sourceWords : ["Lottomind", "Signal"];
-            const rain = document.createElement("div");
-            rain.className = "guide-word-rain";
-            rain.setAttribute("aria-hidden", "true");
-            const lanes = Math.min(28, Math.max(12, Math.ceil(window.innerWidth / 58)));
-            for (let index = 0; index < lanes; index += 1) {
-              const column = document.createElement("span");
-              const start = index % words.length;
-              column.textContent = Array.from({ length: 9 }, (_, wordIndex) => words[(start + wordIndex) % words.length]).join("\n");
-              column.style.setProperty("--rain-x", `${Math.round((index + 0.35) * (100 / lanes))}%`);
-              column.style.setProperty("--rain-delay", `${(index % 8) * 0.055}s`);
-              column.style.setProperty("--rain-hue", `${(188 + index * 31) % 360}`);
-              column.style.setProperty("--rain-speed", `${3.8 + (index % 6) * 0.22}s`);
-              rain.append(column);
-            }
-            document.body.append(rain);
-            window.setTimeout(() => {
-              rain.remove();
-              heading.dataset.wordRainActive = "false";
-            }, 5600);
-          }, 720);
-        };
-
-        document.querySelectorAll(".burst-heading").forEach((heading) => {
-          ["pointerenter", "pointerup", "mouseenter", "mouseover", "click", "touchstart", "focus"].forEach((eventName) => {
-            heading.addEventListener(eventName, () => triggerGuideWordRain(heading), { passive: true });
-          });
-        });
-
         const gate = document.querySelector("[data-password-gate]");
         const form = document.querySelector("[data-password-form]");
         const input = document.querySelector("[data-password-input]");
