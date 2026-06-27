@@ -22581,6 +22581,60 @@ body :where(
   touch-action: manipulation;
 }
 
+/* Whole-app smoothness pass: keep route changes and scroll strips on cheap compositor paths. */
+body .real-shell,
+body .real-main,
+body .screen {
+  scroll-behavior: smooth;
+}
+
+body .real-main,
+body .screen,
+body .screen > .panel,
+body .screen > .result-card,
+body .screen > .art-panel,
+body .circle-carousel,
+body .snap-carousel,
+body .quest-steps,
+body .oracle-flow-steps {
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
+body .screen > .panel,
+body .screen > .result-card,
+body .screen > .art-panel {
+  contain: layout style;
+}
+
+body .circle-carousel,
+body .snap-carousel,
+body .quest-steps,
+body .oracle-flow-steps,
+body .audio-list,
+body .merch-grid {
+  scroll-behavior: smooth;
+  overscroll-behavior: contain;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  body .real-main > .screen {
+    animation: lmRouteSurfaceSettle 180ms cubic-bezier(0.18, 0.82, 0.24, 1) both;
+  }
+}
+
+@keyframes lmRouteSurfaceSettle {
+  from {
+    opacity: 0.92;
+    transform: translate3d(0, 6px, 0);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
 body :where(
   button,
   .file-pill,
@@ -22614,7 +22668,15 @@ body :where(
   a.primary-btn,
   a.ghost-btn,
   [role="button"]
-):active {
+):active,
+body :where(
+  button,
+  .file-pill,
+  a.primary-btn,
+  a.ghost-btn,
+  [role="button"],
+  [data-route]:not(.real-shell)
+).is-pressing {
   transform: translateY(5px) scale(0.985) translateZ(0);
   filter: brightness(0.9) saturate(1.04);
   box-shadow:
@@ -23205,6 +23267,22 @@ body .route-ai .ai-coach-mascot {
 @media (prefers-reduced-motion: reduce) {
   body :where(button, .file-pill, a.primary-btn, a.ghost-btn, [role="button"]) {
     transition: none !important;
+  }
+
+  body .real-shell,
+  body .real-main,
+  body .screen,
+  body .circle-carousel,
+  body .snap-carousel,
+  body .quest-steps,
+  body .oracle-flow-steps,
+  body .audio-list,
+  body .merch-grid {
+    scroll-behavior: auto !important;
+  }
+
+  body .real-main > .screen {
+    animation: none !important;
   }
 }
 

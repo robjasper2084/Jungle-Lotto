@@ -1350,6 +1350,7 @@ let routeAudioRoute = "";
 let routeAudioFadeId = null;
 let routeAudioStopId = null;
 let routeAudioPlayedRoute = "";
+const mediaFadeFrames = new WeakMap();
 let timerId = null;
 let toastId = null;
 let dreamRecognition = null;
@@ -2107,21 +2108,31 @@ function routeIntroSrc(routeKey = state.route) {
 
 function fadeMedia(media, from, to, duration = 420, onDone) {
   if (!media) return;
-  if (media === routeAudio) clearInterval(routeAudioFadeId);
-  const steps = 12;
-  let step = 0;
+  const existingFrame = mediaFadeFrames.get(media);
+  if (existingFrame) cancelAnimationFrame(existingFrame);
+  if (media === routeAudio && routeAudioFadeId) cancelAnimationFrame(routeAudioFadeId);
+  const startedAt = performance.now();
+  const startVolume = Math.max(0, Math.min(0.8, from));
+  const endVolume = Math.max(0, Math.min(0.8, to));
   media.volume = Math.max(0, Math.min(0.8, from));
-  const fadeId = setInterval(() => {
-    step += 1;
-    const pct = Math.min(1, step / steps);
-    media.volume = Math.max(0, Math.min(0.8, from + (to - from) * pct));
+  const tick = (now) => {
+    const pct = Math.min(1, (now - startedAt) / Math.max(1, duration));
+    const eased = pct < 0.5 ? 2 * pct * pct : 1 - Math.pow(-2 * pct + 2, 2) / 2;
+    media.volume = startVolume + (endVolume - startVolume) * eased;
     if (pct >= 1) {
-      clearInterval(fadeId);
+      media.volume = endVolume;
+      mediaFadeFrames.delete(media);
       if (media === routeAudio) routeAudioFadeId = null;
       if (onDone) onDone();
+      return;
     }
-  }, Math.max(16, duration / steps));
-  if (media === routeAudio) routeAudioFadeId = fadeId;
+    const frameId = requestAnimationFrame(tick);
+    mediaFadeFrames.set(media, frameId);
+    if (media === routeAudio) routeAudioFadeId = frameId;
+  };
+  const frameId = requestAnimationFrame(tick);
+  mediaFadeFrames.set(media, frameId);
+  if (media === routeAudio) routeAudioFadeId = frameId;
 }
 
 function stopRouteAudio() {
@@ -6545,7 +6556,13 @@ function startAmbientVideos() {
   requestAnimationFrame(() => {
     document.querySelectorAll(".ambient-video").forEach((video) => {
       video.muted = true;
-      video.play?.().catch(() => {});
+      const box = video.getBoundingClientRect();
+      const visible = box.bottom > -160 && box.top < window.innerHeight + 160;
+      if (visible) {
+        video.play?.().catch(() => {});
+      } else {
+        video.pause?.();
+      }
     });
   });
 }
@@ -8476,6 +8493,18 @@ function startedInNativeTouchSurface(target) {
   return Boolean(target?.closest?.(".quest-steps, .oracle-flow-steps, .circle-carousel, .snap-carousel, .arcade-game-grid, .merch-grid, .lm-pill-row, .state-picker, .route-leg-list, .audio-list, textarea, input, select, [contenteditable='true']"));
 }
 
+function pressableControlFromEvent(event) {
+  const target = event.target instanceof Element ? event.target : event.target?.parentElement;
+  if (!target) return null;
+  const control = target.closest?.("button, .file-pill, a.primary-btn, a.ghost-btn, [role='button'], [data-route]:not(.real-shell)");
+  if (!control || control.matches?.("input, textarea, select, [contenteditable='true']")) return null;
+  return control;
+}
+
+function clearPressedControls() {
+  document.querySelectorAll(".is-pressing").forEach((control) => control.classList.remove("is-pressing"));
+}
+
 function activateInteractiveTarget(event) {
   const eventTarget = event.target instanceof Element ? event.target : event.target?.parentElement;
   if (!eventTarget) return;
@@ -8539,6 +8568,8 @@ function activateInteractiveTarget(event) {
 
 document.addEventListener("pointerdown", (event) => {
   const target = event.target instanceof Element ? event.target : event.target?.parentElement;
+  const pressedControl = pressableControlFromEvent(event);
+  if (pressedControl) pressedControl.classList.add("is-pressing");
   const fxKnobInput = target?.closest?.(".fx-knob-input, .dj-knob-input");
   if (fxKnobInput) {
     studioFxKnobDrag = fxKnobInput;
@@ -8582,6 +8613,7 @@ function endFlowSwipe() {
 }
 
 document.addEventListener("pointerup", (event) => {
+  clearPressedControls();
   if (studioFxKnobDrag) {
     studioFxKnobDrag.releasePointerCapture?.(event.pointerId);
     studioFxKnobDrag = null;
@@ -8618,6 +8650,7 @@ document.addEventListener("pointerup", (event) => {
 }, { passive: false });
 
 document.addEventListener("pointercancel", () => {
+  clearPressedControls();
   studioFxKnobDrag = null;
   pointerStart = null;
   endFlowSwipe();
@@ -8652,6 +8685,7 @@ document.addEventListener("touchend", (event) => {
 }, { passive: false });
 
 document.addEventListener("touchcancel", () => {
+  clearPressedControls();
   touchStart = null;
 }, { passive: true });
 
