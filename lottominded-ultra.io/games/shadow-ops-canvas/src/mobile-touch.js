@@ -126,8 +126,13 @@
         background: radial-gradient(circle at 36% 28%, #fff7cf, #ff4f9a 36%, #8f37ff 72%, #18081f);
         box-shadow: 0 0 24px rgba(255, 79, 154, 0.48);
         transform: translate(-50%, -50%);
-        transition: transform 80ms ease-out;
+        transition: transform 44ms linear;
         pointer-events: none;
+      }
+      body.touch-forced .virtual-stick--fire .virtual-stick__knob {
+        width: 46%;
+        height: 46%;
+        transition: transform 28ms linear;
       }
       body.touch-forced .virtual-stick__label {
         position: absolute;
@@ -148,6 +153,14 @@
           0 16px 40px rgba(0, 0, 0, 0.5),
           0 0 0 3px rgba(56, 219, 255, 0.15),
           0 0 32px rgba(255, 79, 154, 0.34);
+      }
+      body.touch-forced .virtual-stick--fire.is-active {
+        border-color: rgba(255, 79, 154, 0.98);
+        box-shadow:
+          0 16px 40px rgba(0, 0, 0, 0.5),
+          0 0 0 4px rgba(255, 79, 154, 0.14),
+          0 0 38px rgba(255, 79, 154, 0.42),
+          0 0 30px rgba(56, 219, 255, 0.18);
       }
       body.touch-forced .touch-quick {
         display: grid;
@@ -335,7 +348,7 @@
       </div>
       <div class="virtual-stick virtual-stick--fire" data-stick="fire" aria-label="Fire joystick" role="group">
         <span class="virtual-stick__knob"></span>
-        <span class="virtual-stick__label">Fire</span>
+        <span class="virtual-stick__label">Aim / Fire</span>
       </div>
     `;
     touchbar.appendChild(layer);
@@ -352,8 +365,14 @@
 
     bindStick(layer.querySelector('[data-stick="fire"]'), {
       actions: ["fire"],
-      update: ({ active }) => {
+      activation: 0.035,
+      deadZone: 0.045,
+      knobTravel: 48,
+      smoothing: 0.7,
+      activeOnHold: true,
+      update: ({ x, y, active, distance }) => {
         setVirtualAction("fire", active);
+        dispatchVirtualAim(x, y, distance, active);
       }
     });
 
@@ -389,12 +408,17 @@
     if (!stick) return;
     const knob = stick.querySelector(".virtual-stick__knob");
     let pointerId = null;
+    let visualX = 0;
+    let visualY = 0;
 
     const reset = () => {
       pointerId = null;
+      visualX = 0;
+      visualY = 0;
       stick.classList.remove("is-active");
       if (knob) knob.style.transform = "translate(-50%, -50%)";
       releaseVirtualActions(config.actions);
+      config.update?.({ x: 0, y: 0, distance: 0, rawDistance: 0, active: false });
     };
 
     const update = (event) => {
@@ -407,15 +431,23 @@
       const centerY = rect.top + radius;
       const rawX = (event.clientX - centerX) / radius;
       const rawY = (event.clientY - centerY) / radius;
-      const distance = Math.min(1, Math.hypot(rawX, rawY));
+      const rawDistance = Math.hypot(rawX, rawY);
+      const deadZone = config.deadZone ?? 0.12;
+      const clampedDistance = Math.min(1, rawDistance);
+      const distance = clampedDistance <= deadZone ? 0 : (clampedDistance - deadZone) / (1 - deadZone);
       const angle = Math.atan2(rawY, rawX);
       const x = Math.cos(angle) * distance;
       const y = Math.sin(angle) * distance;
+      const active = config.activeOnHold || rawDistance > (config.activation ?? 0.18);
+      const travel = config.knobTravel ?? Math.min(46, radius * 0.5);
+      const smoothing = config.smoothing ?? 1;
+      visualX += (x - visualX) * smoothing;
+      visualY += (y - visualY) * smoothing;
 
       if (knob) {
-        knob.style.transform = `translate(calc(-50% + ${x * 34}px), calc(-50% + ${y * 34}px))`;
+        knob.style.transform = `translate(calc(-50% + ${visualX * travel}px), calc(-50% + ${visualY * travel}px))`;
       }
-      config.update({ x, y, active: distance > 0.18 });
+      config.update({ x, y, distance, rawDistance, active });
     };
 
     stick.addEventListener("pointerdown", (event) => {
@@ -429,6 +461,31 @@
     stick.addEventListener("pointerup", reset);
     stick.addEventListener("pointercancel", reset);
     stick.addEventListener("lostpointercapture", reset);
+  };
+
+  const dispatchVirtualAim = (x, y, distance, active) => {
+    window.dispatchEvent(new CustomEvent("lottomind:virtual-aim", {
+      detail: {
+        x,
+        y,
+        distance,
+        active
+      }
+    }));
+    const canvas = document.getElementById("game");
+    if (!canvas || !active || distance <= 0.06 || typeof PointerEvent !== "function") return;
+    const rect = canvas.getBoundingClientRect();
+    const clientX = rect.left + rect.width * (0.44 + x * 0.34);
+    const clientY = rect.top + rect.height * (0.58 + y * 0.34);
+    canvas.dispatchEvent(new PointerEvent("pointermove", {
+      bubbles: true,
+      cancelable: true,
+      clientX,
+      clientY,
+      pointerType: "touch",
+      pointerId: 9127,
+      isPrimary: true
+    }));
   };
 
   const preventGameGesture = (event) => {
