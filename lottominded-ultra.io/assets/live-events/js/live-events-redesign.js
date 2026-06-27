@@ -24,7 +24,9 @@
   const shadowOpsCloseButtons = shadowOpsModal?.querySelectorAll("[data-shadow-ops-close]");
   const shadowOpsStart = shadowOpsModal?.querySelector("[data-shadow-ops-start]");
   const shadowOpsStatus = shadowOpsModal?.querySelector("[data-shadow-ops-status]");
+  const shadowOpsFrameShell = shadowOpsModal?.querySelector(".shadow-ops-frame-shell");
   const shadowOpsFrame = shadowOpsModal?.querySelector("[data-shadow-ops-frame]");
+  const shadowOpsFullscreen = shadowOpsModal?.querySelector("[data-shadow-ops-fullscreen]");
   const twitchLiveCard = document.querySelector("#twitch-live");
   const liveBallpassCanvas = document.querySelector("[data-live-ballpass-bg]");
   const previewIframes = Array.from(document.querySelectorAll(".event-card .video-thumb iframe"));
@@ -396,6 +398,9 @@
 
   function closeShadowOpsModal() {
     if (!shadowOpsModal) return;
+    if (isShadowOpsFullscreen()) {
+      exitShadowOpsFullscreen();
+    }
     shadowOpsModal.classList.remove("is-open");
     shadowOpsModal.classList.remove("is-briefing");
     shadowOpsModal.setAttribute("aria-hidden", "true");
@@ -416,6 +421,90 @@
   function unloadShadowOpsGame() {
     if (!shadowOpsFrame) return;
     shadowOpsFrame.removeAttribute("src");
+  }
+
+  function currentFullscreenElement() {
+    return document.fullscreenElement || document.webkitFullscreenElement || null;
+  }
+
+  function isShadowOpsFullscreen() {
+    const activeElement = currentFullscreenElement();
+    return Boolean(
+      shadowOpsFrameShell?.classList.contains("is-expanded") ||
+      (activeElement && (activeElement === shadowOpsFrameShell || activeElement === shadowOpsFrame))
+    );
+  }
+
+  function setShadowOpsFrameExpanded(isExpanded) {
+    shadowOpsFrameShell?.classList.toggle("is-expanded", isExpanded);
+    document.body.classList.toggle("has-shadow-ops-frame-expanded", isExpanded);
+  }
+
+  function updateShadowOpsFullscreenState() {
+    if (!shadowOpsFullscreen) return;
+    const isActive = isShadowOpsFullscreen();
+    shadowOpsFullscreen.classList.toggle("is-active", isActive);
+    shadowOpsFullscreen.textContent = isActive ? "Exit Full Screen" : "Full Screen";
+    shadowOpsFullscreen.setAttribute("aria-pressed", String(isActive));
+    shadowOpsFullscreen.setAttribute("aria-label", isActive ? "Exit 2084 Static WAV full screen" : "Open 2084 Static WAV full screen");
+  }
+
+  async function enterShadowOpsFullscreen() {
+    if (!shadowOpsFrameShell) return;
+    loadShadowOpsGame();
+    pauseLiveAudioForShadowOps();
+    shadowOpsModal?.classList.add("is-briefing");
+    if (shadowOpsStatus) shadowOpsStatus.textContent = "Full screen";
+
+    try {
+      if (shadowOpsFrameShell.requestFullscreen) {
+        await shadowOpsFrameShell.requestFullscreen();
+      } else if (shadowOpsFrameShell.webkitRequestFullscreen) {
+        await shadowOpsFrameShell.webkitRequestFullscreen();
+      } else {
+        setShadowOpsFrameExpanded(true);
+      }
+      if (!currentFullscreenElement()) {
+        setShadowOpsFrameExpanded(true);
+      }
+      updateShadowOpsFullscreenState();
+      shadowOpsFrame?.focus();
+      shadowOpsFrame?.contentWindow?.focus?.();
+    } catch (error) {
+      setShadowOpsFrameExpanded(true);
+      updateShadowOpsFullscreenState();
+      if (shadowOpsStatus) shadowOpsStatus.textContent = "Full screen";
+    }
+  }
+
+  async function exitShadowOpsFullscreen() {
+    if (!isShadowOpsFullscreen()) {
+      updateShadowOpsFullscreenState();
+      return;
+    }
+    try {
+      if (shadowOpsFrameShell?.classList.contains("is-expanded")) {
+        setShadowOpsFrameExpanded(false);
+      } else if (document.exitFullscreen) {
+        await document.exitFullscreen();
+      } else if (document.webkitExitFullscreen) {
+        await document.webkitExitFullscreen();
+      }
+    } catch (error) {
+      if (shadowOpsStatus) shadowOpsStatus.textContent = "Exit full screen blocked";
+    }
+    updateShadowOpsFullscreenState();
+    if (shadowOpsStatus && shadowOpsModal?.classList.contains("is-open")) {
+      shadowOpsStatus.textContent = shadowOpsModal.classList.contains("is-briefing") ? "Pilot control" : "Game feed live";
+    }
+  }
+
+  function toggleShadowOpsFullscreen() {
+    if (isShadowOpsFullscreen()) {
+      exitShadowOpsFullscreen();
+      return;
+    }
+    enterShadowOpsFullscreen();
   }
 
   function scheduleShadowOpsModal() {
@@ -675,6 +764,9 @@
     shadowOpsFrame?.contentWindow?.focus?.();
     playUiTone(5);
   });
+  shadowOpsFullscreen?.addEventListener("click", toggleShadowOpsFullscreen);
+  document.addEventListener("fullscreenchange", updateShadowOpsFullscreenState);
+  document.addEventListener("webkitfullscreenchange", updateShadowOpsFullscreenState);
   shadowOpsFrame?.addEventListener("pointerdown", handleShadowOpsGameEngaged);
   shadowOpsFrame?.addEventListener("focus", handleShadowOpsGameEngaged);
   window.addEventListener("blur", () => {
@@ -687,6 +779,10 @@
   });
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape" && !streamStartup?.classList.contains("is-hidden")) closeStreamStartupPrompt();
+    if (event.key === "Escape" && isShadowOpsFullscreen()) {
+      exitShadowOpsFullscreen();
+      return;
+    }
     if (event.key === "Escape" && shadowOpsModal?.classList.contains("is-open")) closeShadowOpsModal();
   });
 

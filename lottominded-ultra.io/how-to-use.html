@@ -181,9 +181,27 @@
           0 30px 90px rgba(0, 0, 0, 0.62);
       }
 
+      .guide-startup-video-bg {
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        opacity: 0.36;
+        filter: saturate(1.18) contrast(1.08) brightness(0.72);
+        pointer-events: none;
+      }
+
+      .guide-startup-panel > :not(.guide-startup-video-bg) {
+        position: relative;
+        z-index: 2;
+      }
+
       .guide-startup-panel::before {
         position: absolute;
         inset: auto -9rem -10rem auto;
+        z-index: 1;
         width: 22rem;
         aspect-ratio: 1;
         border-radius: 50%;
@@ -228,7 +246,7 @@
         position: absolute;
         top: 16px;
         right: 16px;
-        z-index: 1;
+        z-index: 3;
         width: 42px;
         height: 42px;
         border: 1px solid rgba(255, 223, 117, 0.38);
@@ -250,6 +268,12 @@
 
         to {
           transform: translate3d(0.8rem, 1rem, 0) rotate(10deg) scale(1.04);
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .guide-startup-video-bg {
+          display: none;
         }
       }
 
@@ -1802,6 +1826,9 @@
     </div>
     <div class="guide-startup-audio" data-guide-startup-audio aria-label="LottoMind guide startup music">
       <div class="guide-startup-panel" role="dialog" aria-modal="true" aria-labelledby="guideStartupTitle">
+        <video class="guide-startup-video-bg" loop playsinline preload="metadata" aria-hidden="true" data-guide-startup-video>
+          <source src="./assets/video/lottominded-ultra-launch-30s-video-editing-mcp-cut.mp4?v=guide-modal-bg-1" type="video/mp4" />
+        </video>
         <button class="guide-startup-close" type="button" data-guide-startup-close aria-label="Enter guide without music">X</button>
         <p class="eyebrow">LottoMind&trade; Guide</p>
         <h2 id="guideStartupTitle">Start the guide music.</h2>
@@ -2258,6 +2285,7 @@
         const accessPassword = "lottomind";
         const guideStartup = document.querySelector("[data-guide-startup-audio]");
         const guideStartupAudio = document.querySelector("[data-guide-startup-soundtrack]");
+        const guideStartupVideo = document.querySelector("[data-guide-startup-video]");
         const guideStartupStatus = document.querySelector("[data-guide-startup-status]");
         const header = document.querySelector("[data-guide-header]");
         const sensor = document.querySelector("[data-guide-header-sensor]");
@@ -2283,21 +2311,36 @@
         };
 
         const closeGuideStartup = () => {
+          guideStartupVideo?.pause?.();
           guideStartup?.classList.add("is-hidden");
           document.body.classList.remove("has-guide-startup-audio");
         };
 
         const playGuideStartup = async () => {
-          if (!guideStartupAudio) {
+          if (!guideStartupAudio && !guideStartupVideo) {
             closeGuideStartup();
             return;
           }
           try {
-            guideStartupAudio.volume = 0.52;
-            guideStartupAudio.loop = true;
-            guideStartupAudio.currentTime = 0;
-            await guideStartupAudio.play();
-            closeGuideStartup();
+            if (guideStartupVideo) {
+              guideStartupVideo.muted = false;
+              guideStartupVideo.volume = 0.72;
+              guideStartupVideo.loop = true;
+              guideStartupVideo.currentTime = 0;
+            }
+            if (guideStartupAudio) {
+              guideStartupAudio.volume = 0.52;
+              guideStartupAudio.loop = true;
+              guideStartupAudio.currentTime = 0;
+            }
+            await Promise.all([
+              guideStartupVideo?.play?.(),
+              guideStartupAudio?.play?.(),
+            ].filter(Boolean));
+            guideStartup?.classList.remove("is-audio-blocked");
+            if (guideStartupStatus) {
+              guideStartupStatus.textContent = "Guide signal playing. Enter when ready.";
+            }
           } catch (error) {
             if (guideStartupStatus) {
               guideStartupStatus.textContent = "Tap Start Music again if your browser needs another gesture.";
