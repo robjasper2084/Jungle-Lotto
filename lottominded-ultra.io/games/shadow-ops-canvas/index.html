@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
     <title>KLNM WITH KNDNSS | Shadow Ops</title>
     <link rel="icon" href="data:," />
-    <link rel="stylesheet" href="./style.css?v=startup-photo-1" />
+    <link rel="stylesheet" href="./style.css?v=startup-card-photo-1" />
   </head>
   <body>
     <main class="game-shell" aria-label="KLNM WITH KNDNSS browser game">
@@ -23,9 +23,21 @@
       </section>
 
       <section id="titleScreen" class="screen screen--title is-hidden">
+        <div id="startupScene" aria-hidden="true">
+          <canvas id="startup3dCanvas" width="1280" height="720"></canvas>
+          <div class="startup-scene-layer startup-scene-far"></div>
+          <div class="startup-scene-layer startup-scene-mid"></div>
+          <div class="startup-scene-layer startup-scene-emissive"></div>
+          <div class="startup-scene-layer startup-scene-fog"></div>
+          <div class="startup-scene-layer startup-scene-rails"></div>
+          <div class="startup-scene-layer startup-scene-mask"></div>
+        </div>
         <div class="title-copy">
           <p class="small-label">Shadow Ops</p>
           <h1>KLNM WITH KNDNSS</h1>
+          <figure class="title-product-card" aria-label="LottoMind collectible keychain package">
+            <img src="./assets/backgrounds/lottomind-store-startup.png" alt="" />
+          </figure>
           <p class="screen-copy">Break three number vaults, claim each key set, defeat every boss, and turn your run stats into a final lottery drop.</p>
           <div class="button-row">
             <button class="primary" data-action="start-solo">Solo Run</button>
@@ -222,6 +234,7 @@
       </div>
     </main>
     <script src="../../assets/js/lm-game-rewards-sdk.js?v=rewards-sdk-1"></script>
+    <script type="module" src="./src/startup3d.js?v=startup-webgl-1"></script>
     <script src="./src/mobile-touch.js?v=touch-aim-1"></script>
     <script src="./src/game.js?v=game-bg-restore-1"></script>
     <script src="./src/brand-title-v2.js?v=kln-title-2"></script>
