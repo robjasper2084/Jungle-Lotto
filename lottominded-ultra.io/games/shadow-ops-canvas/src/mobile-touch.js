@@ -68,6 +68,8 @@
         --touch-size: clamp(56px, 8vw, 74px);
         --stick-size: clamp(112px, 17vw, 154px);
         inset: auto max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left)) !important;
+        width: calc(100vw - max(12px, env(safe-area-inset-left)) - max(12px, env(safe-area-inset-right)));
+        max-width: 1120px;
         gap: clamp(8px, 2vw, 16px);
         align-items: end;
         justify-content: space-between;
@@ -186,6 +188,22 @@
         border-color: rgba(56, 219, 255, 0.95);
         color: #fff7cf;
       }
+      body.touch-forced .touch-quick .touch-quick-dash {
+        border-color: rgba(255, 214, 109, 0.92);
+        background:
+          linear-gradient(180deg, rgba(255, 214, 109, 0.2), rgba(5, 4, 7, 0.78)),
+          rgba(18, 12, 22, 0.88);
+        color: #fff0b8;
+      }
+      body.touch-forced .touch-quick .touch-quick-dash::after {
+        content: "tap";
+        display: block;
+        margin-top: 2px;
+        color: rgba(255, 247, 207, 0.68);
+        font-size: 0.48rem;
+        line-height: 1;
+        text-transform: uppercase;
+      }
       body.touch-forced .touch-quick-use.is-hidden {
         display: none;
       }
@@ -219,17 +237,23 @@
       body.touch-forced.touch-landscape #game {
         margin-top: 0 !important;
       }
+      body.touch-forced.touch-landscape .touchbar {
+        --touch-size: clamp(46px, 8.5vh, 64px);
+        --stick-size: clamp(106px, 19vh, 146px);
+      }
       body.touch-forced.touch-portrait .game-shell {
         place-items: start center !important;
       }
       body.touch-forced.touch-portrait #game {
         width: 100vw !important;
-        height: min(56.25vw, calc(100dvh - 172px)) !important;
+        height: min(56.25vw, calc(100dvh - 214px)) !important;
         margin-top: clamp(118px, 15dvh, 168px) !important;
       }
       body.touch-forced.touch-portrait .touchbar {
         --touch-size: clamp(48px, 13vw, 62px);
         --stick-size: clamp(96px, 25vw, 122px);
+        width: calc(100vw - max(10px, env(safe-area-inset-left)) - max(10px, env(safe-area-inset-right)));
+        inset: auto max(10px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left)) !important;
         flex-wrap: wrap;
         row-gap: 8px;
         align-content: end;
@@ -254,8 +278,9 @@
         grid-template-columns: repeat(4, var(--touch-size)) !important;
       }
       body.touch-forced.touch-portrait .hud {
-        transform: scale(0.94);
+        transform: scale(0.9);
         transform-origin: top center;
+        width: calc(111.111vw - 18px);
       }
       body.touch-forced.touch-portrait .objective-chip {
         top: clamp(104px, 15dvh, 148px) !important;
@@ -267,6 +292,21 @@
         body.touch-forced.touch-portrait .touchbar {
           --touch-size: clamp(44px, 12vw, 52px);
           --stick-size: clamp(86px, 24vw, 106px);
+        }
+      }
+      @media (orientation: landscape) and (max-height: 520px) {
+        body.touch-forced.touch-landscape .touchbar {
+          --touch-size: clamp(42px, 12vh, 58px);
+          --stick-size: clamp(96px, 24vh, 132px);
+          bottom: max(8px, env(safe-area-inset-bottom)) !important;
+        }
+        body.touch-forced .touch-quick {
+          grid-template-columns: repeat(2, clamp(48px, 12vh, 62px));
+          gap: 6px;
+        }
+        body.touch-forced .touch-quick button {
+          height: clamp(42px, 10vh, 54px);
+          min-height: 42px;
         }
       }
       @media (max-width: 380px) {
@@ -341,7 +381,7 @@
         <span class="virtual-stick__label">Move</span>
       </div>
       <div class="touch-quick" aria-label="Quick actions">
-        <button type="button" data-virtual-action="dash">Dash</button>
+        <button type="button" class="touch-quick-dash" data-virtual-action="dash">Dash</button>
         <button type="button" data-virtual-action="overdrive">OD</button>
         <button type="button" class="touch-quick-use is-hidden" data-virtual-action="interact">Use</button>
         <button type="button" data-virtual-action="pause">Pause</button>
@@ -365,10 +405,10 @@
 
     bindStick(layer.querySelector('[data-stick="fire"]'), {
       actions: ["fire"],
-      activation: 0.035,
-      deadZone: 0.045,
-      knobTravel: 48,
-      smoothing: 0.7,
+      activation: 0.12,
+      deadZone: 0.14,
+      knobTravel: 42,
+      smoothing: 0.58,
       activeOnHold: true,
       update: ({ x, y, active, distance }) => {
         setVirtualAction("fire", active);
@@ -471,20 +511,6 @@
         distance,
         active
       }
-    }));
-    const canvas = document.getElementById("game");
-    if (!canvas || !active || distance <= 0.06 || typeof PointerEvent !== "function") return;
-    const rect = canvas.getBoundingClientRect();
-    const clientX = rect.left + rect.width * (0.44 + x * 0.34);
-    const clientY = rect.top + rect.height * (0.58 + y * 0.34);
-    canvas.dispatchEvent(new PointerEvent("pointermove", {
-      bubbles: true,
-      cancelable: true,
-      clientX,
-      clientY,
-      pointerType: "touch",
-      pointerId: 9127,
-      isPrimary: true
     }));
   };
 
