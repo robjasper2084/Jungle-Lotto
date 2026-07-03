@@ -2,6 +2,11 @@
   const root = document.querySelector(".lm-live-page");
   if (!root) return;
 
+  document.querySelectorAll("[data-shadow-ops-modal], .shadow-ops-modal").forEach((modal) => modal.remove());
+  document.querySelectorAll("[data-shadow-ops-open], .shadow-ops-trigger").forEach((trigger) => trigger.remove());
+  document.querySelectorAll("[data-stream-startup-audio], .stream-startup-audio").forEach((modal) => modal.remove());
+  document.body.classList.remove("has-shadow-ops-modal", "has-shadow-ops-frame-expanded", "has-stream-startup-audio");
+
   const liveStart = Date.now() - (12 * 60 + 45) * 1000;
   const started = document.querySelector(".started");
   const padButtons = document.querySelectorAll(".lm-category-grid button, .lm-interactions button, .lm-synth-tabs button");
@@ -15,10 +20,6 @@
   const livePlayerNext = livePlayer?.querySelector("[data-live-player-next]");
   const livePlayerTime = livePlayer?.querySelector("[data-live-player-time]");
   const livePlayerWave = livePlayer?.querySelector(".now-wave");
-  const streamStartup = document.querySelector("[data-stream-startup-audio]");
-  const streamStartupPlay = streamStartup?.querySelector("[data-stream-startup-play]");
-  const streamStartupCloseButtons = streamStartup?.querySelectorAll("[data-stream-startup-close]");
-  const streamStartupStatus = streamStartup?.querySelector("[data-stream-startup-status]");
   const shadowOpsModal = document.querySelector("[data-shadow-ops-modal]");
   const shadowOpsOpeners = document.querySelectorAll("[data-shadow-ops-open]");
   const shadowOpsCloseButtons = shadowOpsModal?.querySelectorAll("[data-shadow-ops-close]");
@@ -334,7 +335,7 @@
       volume: shadowOpsLiveAudioVolume,
       timeout: 1200
     });
-    if (!restored) showStreamStartupPrompt("Tap Start Music to bring the stream audio back.");
+    if (!restored) closeStreamStartupPrompt();
   }
 
   function handleShadowOpsGameEngaged() {
@@ -343,18 +344,7 @@
   }
 
   function closeStreamStartupPrompt() {
-    streamStartup?.classList.add("is-hidden");
-    streamStartup?.setAttribute("aria-hidden", "true");
     document.body.classList.remove("has-stream-startup-audio");
-    if (streamStartupStatus) streamStartupStatus.textContent = "";
-  }
-
-  function showStreamStartupPrompt(message = "Tap Start Music to play the stream audio.") {
-    if (!streamStartup) return;
-    document.body.classList.add("has-stream-startup-audio");
-    streamStartup.classList.remove("is-hidden");
-    streamStartup.setAttribute("aria-hidden", "false");
-    if (streamStartupStatus) streamStartupStatus.textContent = message;
   }
 
   async function startStreamOpenAudio(options = {}) {
@@ -371,7 +361,7 @@
       return;
     }
     livePlayer?.setAttribute("data-stream-open-state", "blocked");
-    showStreamStartupPrompt("Your browser needs one tap before it can play Verse 1.");
+    closeStreamStartupPrompt();
   }
 
   function scheduleStreamOpenAudio() {
@@ -510,7 +500,6 @@
   function scheduleShadowOpsModal() {
     if (!shadowOpsModal) return;
     window.setTimeout(() => {
-      if (document.body.classList.contains("has-stream-startup-audio")) return;
       openShadowOpsModal();
     }, 1600);
   }
@@ -558,6 +547,99 @@
 
     observer.observe(twitchLiveCard);
     window.addEventListener("pagehide", () => setTwitchFocusMode(false), { once: true });
+  }
+
+  function setupLiveLazyEmbeds() {
+    const frames = Array.from(document.querySelectorAll("iframe[data-src]")).filter((frame) => {
+      if (frame.dataset.liveLazy === "off") return false;
+      const source = frame.getAttribute("src") || frame.dataset.src || "";
+      return /(youtube|youtu\.be|twitch\.tv|games\/|shadow-ops|gothtechnology)/i.test(source);
+    });
+    if (!frames.length) return;
+
+    const loadMargin = 0;
+    let refreshFrame = 0;
+
+    const isNearViewport = (frame, margin) => {
+      const rect = frame.getBoundingClientRect();
+      return rect.bottom >= -margin && rect.top <= window.innerHeight + margin;
+    };
+
+    const isProtectedFrame = (frame) => {
+      if (frame.closest(".shadow-ops-modal.is-open")) return true;
+      if (document.activeElement === frame) return true;
+      return Boolean(
+        frame.closest("#twitch-live") &&
+        document.body.classList.contains("is-twitch-focused") &&
+        isNearViewport(frame, 0)
+      );
+    };
+
+    const loadFrame = (frame) => {
+      if (document.hidden) return;
+      const source = frame.dataset.src;
+      if (!source || frame.getAttribute("src") === source) return;
+      frame.setAttribute("src", source);
+      frame.dataset.liveLazyLoaded = "true";
+    };
+
+    const unloadFrame = (frame) => {
+      if (isProtectedFrame(frame)) return;
+      const currentSource = frame.getAttribute("src");
+      if (!currentSource) return;
+      if (!frame.dataset.src) frame.dataset.src = currentSource;
+      frame.removeAttribute("src");
+      frame.dataset.liveLazyLoaded = "false";
+    };
+
+    const refreshEmbeds = () => {
+      refreshFrame = 0;
+      frames.forEach((frame) => {
+        if (isNearViewport(frame, loadMargin)) {
+          loadFrame(frame);
+          return;
+        }
+        unloadFrame(frame);
+      });
+    };
+
+    const scheduleRefresh = () => {
+      if (refreshFrame) return;
+      refreshFrame = window.requestAnimationFrame(refreshEmbeds);
+    };
+
+    frames.forEach((frame) => {
+      if (frame.getAttribute("src") && !isNearViewport(frame, loadMargin) && !isProtectedFrame(frame)) {
+        unloadFrame(frame);
+      }
+      frame.setAttribute("loading", "lazy");
+      frame.dataset.liveLazyManaged = "true";
+    });
+
+    if ("IntersectionObserver" in window) {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            loadFrame(entry.target);
+          } else {
+            unloadFrame(entry.target);
+          }
+        });
+      }, { rootMargin: `${loadMargin}px 0px`, threshold: 0.01 });
+      frames.forEach((frame) => observer.observe(frame));
+    }
+
+    window.addEventListener("scroll", scheduleRefresh, { passive: true });
+    window.addEventListener("resize", scheduleRefresh);
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) {
+        frames.forEach(unloadFrame);
+      } else {
+        scheduleRefresh();
+      }
+    });
+    window.addEventListener("pagehide", () => frames.forEach(unloadFrame), { once: true });
+    scheduleRefresh();
   }
 
   function setupLiveBallpassBackground() {
@@ -735,20 +817,10 @@
   }
 
   scheduleStreamOpenAudio();
-  scheduleShadowOpsModal();
   setupTwitchStreamStability();
+  setupLiveLazyEmbeds();
   setupLiveBallpassBackground();
 
-  streamStartupPlay?.addEventListener("click", async () => {
-    if (streamStartupStatus) streamStartupStatus.textContent = "Starting stream audio...";
-    await startStreamOpenAudio({ volume: 0.56, userGesture: true });
-  });
-  streamStartupCloseButtons?.forEach((button) => {
-    button.addEventListener("click", closeStreamStartupPrompt);
-  });
-  streamStartup?.addEventListener("click", (event) => {
-    if (event.target === streamStartup) closeStreamStartupPrompt();
-  });
   shadowOpsOpeners.forEach((button) => {
     button.addEventListener("click", openShadowOpsModal);
   });
@@ -778,7 +850,7 @@
     if (event.target === shadowOpsModal) closeShadowOpsModal();
   });
   document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape" && !streamStartup?.classList.contains("is-hidden")) closeStreamStartupPrompt();
+    if (event.key === "Escape") closeStreamStartupPrompt();
     if (event.key === "Escape" && isShadowOpsFullscreen()) {
       exitShadowOpsFullscreen();
       return;
