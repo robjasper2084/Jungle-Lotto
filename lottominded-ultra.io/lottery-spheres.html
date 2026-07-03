@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
@@ -21,7 +21,6 @@
     <link rel="stylesheet" href="./assets/css/lm-page-transition.css?v=compositor-pass-2" />
     <link rel="stylesheet" href="./lottery-spheres.css?v=shadow-ops-large-fullscreen-20260626" />
     <link rel="stylesheet" href="./lottery-spheres-console.css?v=console-float-5" />
-    <link rel="stylesheet" href="./beat2lotto-plus.css?v=spheres-bottom-generator-1" />
   </head>
   <body class="lottery-spheres-page">
     <div class="lm-page-transition" data-lm-page-transition aria-hidden="true">
@@ -157,70 +156,6 @@
         </article>
       </section>
 
-      <section class="beat2lotto-console spheres-beat2lotto-console" aria-label="Beat2Lotto+ generator">
-        <div class="lotto-controls">
-          <label class="file-drop">
-            <span>Import beat or music</span>
-            <input id="lottoAudioFile" type="file" accept="audio/*" />
-            <small>Local analysis only. Audio never uploads.</small>
-          </label>
-          <div class="beat-playback-card" id="beatPlayback" hidden>
-            <audio id="lottoAudioPlayer" preload="metadata" controls></audio>
-            <button type="button" id="playBeatAudio" disabled>Play uploaded beat</button>
-            <div class="beat-playback-meter" aria-hidden="true">
-              <span id="beatPlaybackEnergy"></span>
-            </div>
-            <small id="beatPlaybackStatus">Upload music to unlock playback.</small>
-          </div>
-          <div id="beatAnalysis" class="beat-analysis-card" aria-live="polite">
-            <strong>No beat imported yet</strong>
-            <span>Generate from typed Beat DNA, or load audio to seed the digits.</span>
-          </div>
-          <label>
-            <span>Session seed</span>
-            <input id="lottoSeed" type="text" value="neon drums, 120 BPM, late-night bounce" />
-          </label>
-          <label>
-            <span>BPM</span>
-            <input id="lottoBpm" type="number" min="40" max="220" value="120" />
-          </label>
-          <label>
-            <span>Game format</span>
-            <select id="lottoGame">
-              <option value="pick3">Pick 3</option>
-              <option value="pick4">Pick 4</option>
-              <option value="cash5">Cash 5 / Fantasy 5</option>
-              <option value="lotto6">Lotto 6</option>
-              <option value="powerball">Powerball Style</option>
-              <option value="mega">Mega Millions Style</option>
-            </select>
-          </label>
-          <label>
-            <span>Sets</span>
-            <input id="lottoCount" type="number" min="1" max="12" value="5" />
-          </label>
-          <label>
-            <span>Method</span>
-            <select id="lottoMethod">
-              <option>Beat DNA</option>
-              <option>Rhythm Signature</option>
-              <option>Drum Pattern</option>
-              <option>Stem Mix</option>
-              <option>Random + Beat DNA</option>
-            </select>
-          </label>
-          <button class="primary-action" type="button" id="generateLotto">Generate Number Signals</button>
-          <button class="secondary-action" type="button" id="copyLotto">Copy All</button>
-        </div>
-
-        <div class="lotto-output-panel">
-          <div class="lotto-output-head">
-            <h2>Beat-seeded entertainment picks</h2>
-            <span>Creative number generation - Not a prediction</span>
-          </div>
-          <div id="lottoOutput" class="lotto-output-grid" aria-live="polite"></div>
-        </div>
-      </section>
 
       <section class="sd-news" id="lottery-news" aria-labelledby="lotteryNewsTitle">
         <div class="sd-news__header">
@@ -346,7 +281,6 @@
     <script src="./assets/js/lm-page-transition.js?v=transition-smooth-1" defer></script>
     <script src="./site.js?v=touch-nav-fix-1" defer></script>
     <script src="./assets/features-app/js/features-cinematic-motion.js?v=instrument-console-bottom-20260626" defer></script>
-    <script src="./beat2lotto-plus.js?v=spheres-bottom-generator-1" defer></script>
     <script src="./lottery-spheres.js?v=shadow-ops-large-fullscreen-20260626" defer></script>
     <script src="./lottery-news-widget.js?v=lottery-spheres-news-1" defer></script>
   </body>

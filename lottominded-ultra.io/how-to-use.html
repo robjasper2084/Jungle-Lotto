@@ -155,7 +155,7 @@
         <iframe
           class="static-wave-gameframe"
           title="2084 Static Wave gameplay"
-          src="https://robjasper2084.github.io/lottominded-ultra.io/games/opengw-levels/index.html?fresh=how-to-static-wave"
+          src="./games/shadow-ops-canvas/index.html?v=guide-game-load-1"
           allow="fullscreen; autoplay; gamepad; keyboard-map *"
           allowfullscreen
           data-static-wave-frame
@@ -165,10 +165,7 @@
 
     <script>
       (() => {
-        const localGame = "http://127.0.0.1:53887/games/opengw-levels/index.html?fresh=how-to-static-wave";
-        const publicGame = "https://robjasper2084.github.io/lottominded-ultra.io/games/opengw-levels/index.html?fresh=how-to-static-wave";
-        const useLocalGame = /^(127\.0\.0\.1|localhost)$/i.test(window.location.hostname);
-        const targetGame = useLocalGame ? localGame : publicGame;
+        const targetGame = new URL("./games/shadow-ops-canvas/index.html?v=guide-game-load-1", window.location.href).href;
 
         const header = document.querySelector("[data-site-header]");
         const shell = document.querySelector("[data-static-wave-shell]");

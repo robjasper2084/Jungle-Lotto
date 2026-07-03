@@ -63,6 +63,138 @@ const heroMotion = document.querySelector(".hero-motion");
 const kineticHero = document.querySelector("[data-kinetic-hero]");
 const revealSections = document.querySelectorAll("[data-reveal]");
 const reducedMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+const mobilePerformanceQuery = window.matchMedia("(max-width: 900px), (pointer: coarse)");
+if (mobilePerformanceQuery.matches) {
+  document.documentElement.classList.add("lm-mobile-performance");
+}
+
+function setupStaticPerformanceDefaults() {
+  const deferVideoSources = (video) => {
+    if (video.hasAttribute("src") && !video.dataset.src) video.dataset.src = video.getAttribute("src");
+    if (video.hasAttribute("src")) video.removeAttribute("src");
+    video.querySelectorAll("source").forEach((source) => {
+      if (source.hasAttribute("src") && !source.dataset.src) source.dataset.src = source.getAttribute("src");
+      if (source.hasAttribute("src")) source.removeAttribute("src");
+    });
+  };
+
+  document.querySelectorAll("img").forEach((image) => {
+    if (!image.hasAttribute("loading")) image.setAttribute("loading", "lazy");
+    if (!image.hasAttribute("decoding")) image.setAttribute("decoding", "async");
+  });
+
+  const shouldConserveMedia =
+    mobilePerformanceQuery.matches ||
+    reducedMotionQuery.matches ||
+    Boolean(navigator.connection?.saveData) ||
+    /(^|-)2g$/i.test(navigator.connection?.effectiveType || "");
+
+  if (shouldConserveMedia) document.documentElement.classList.add("lm-mobile-performance");
+
+  document.querySelectorAll("video").forEach((video) => {
+    const isStartupVideo = video.closest("[data-startup-video], [data-guide-startup-audio], [data-stream-startup-audio]");
+    const isTransitionVideo =
+      video.matches("[data-lm-transition-video], .page-wipe-video") ||
+      video.closest("[data-lm-page-transition], .page-wipe");
+    const isUserPlayable =
+      video.hasAttribute("controls") ||
+      video.hasAttribute("data-inline-sound-video") ||
+      video.hasAttribute("data-merch-sound-video");
+
+    if (isTransitionVideo) {
+      video.preload = "none";
+      video.setAttribute("preload", "none");
+      return;
+    }
+
+    if (isStartupVideo) {
+      video.preload = "none";
+      video.setAttribute("preload", "none");
+      deferVideoSources(video);
+      try {
+        video.pause();
+      } catch (error) {}
+      return;
+    }
+
+    if (video.hasAttribute("autoplay")) {
+      if (!isUserPlayable) video.dataset.autoplayOnVisible = "true";
+      video.dataset.autoplayDeferred = "true";
+      video.removeAttribute("autoplay");
+      video.autoplay = false;
+    }
+
+    video.preload = "none";
+    video.setAttribute("preload", "none");
+    if (!isUserPlayable || video.dataset.autoplayOnVisible === "true") deferVideoSources(video);
+    try {
+      video.pause();
+    } catch (error) {}
+  });
+}
+
+function restoreDeferredVideoSources(video) {
+  if (!video) return false;
+  let changed = false;
+  if (video.dataset.src && !video.hasAttribute("src")) {
+    video.setAttribute("src", video.dataset.src);
+    changed = true;
+  }
+  video.querySelectorAll("source").forEach((source) => {
+    if (source.dataset.src && !source.hasAttribute("src")) {
+      source.setAttribute("src", source.dataset.src);
+      changed = true;
+    }
+  });
+  if (changed) video.load?.();
+  return changed;
+}
+
+function setupDeferredEmbeds() {
+  const heavyEmbeds = Array.from(document.querySelectorAll("iframe[src], iframe[data-src]")).filter((frame) => {
+    if (frame.dataset.noDefer === "true" || frame.dataset.criticalEmbed === "true") return false;
+    const source = frame.getAttribute("src") || frame.dataset.src || "";
+    return /(youtube|youtu\.be|twitch\.tv|games\/|opengw-levels|shadow-ops|gothtechnology)/i.test(source);
+  });
+
+  if (!heavyEmbeds.length) return;
+
+  const restoreEmbed = (frame) => {
+    if (!frame.dataset.src || frame.getAttribute("src")) return;
+    frame.setAttribute("src", frame.dataset.src);
+  };
+
+  const deferEmbed = (frame) => {
+    const currentSrc = frame.getAttribute("src");
+    if (currentSrc && !frame.dataset.src) frame.dataset.src = currentSrc;
+    if (currentSrc) frame.removeAttribute("src");
+    frame.setAttribute("loading", "lazy");
+    frame.dataset.embedDeferred = "true";
+  };
+
+  heavyEmbeds.forEach(deferEmbed);
+
+  if (!("IntersectionObserver" in window)) {
+    heavyEmbeds.forEach(restoreEmbed);
+    return;
+  }
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        restoreEmbed(entry.target);
+        observer.unobserve(entry.target);
+      });
+    },
+    { rootMargin: mobilePerformanceQuery.matches ? "180px 0px" : "420px 0px", threshold: 0.01 },
+  );
+
+  heavyEmbeds.forEach((frame) => observer.observe(frame));
+}
+
+setupStaticPerformanceDefaults();
+setupDeferredEmbeds();
 const siteHeader = document.querySelector("[data-site-header]");
 const headerToggle = document.querySelector("[data-header-toggle]");
 const siteBackButton = document.querySelector("[data-site-back]");
@@ -475,8 +607,8 @@ function initPageTransitions() {
   const transitionVideoUrl = new URL("video/lm-transition-open-3s.mp4", SITE_ASSET_BASE_URL).href;
   const transitionPosterUrl = new URL("video/lm-portal-a-poster.jpg", SITE_ASSET_BASE_URL).href;
   wipe.innerHTML = `
-    <video class="page-wipe-video" muted playsinline preload="metadata" poster="${transitionPosterUrl}">
-      <source src="${transitionVideoUrl}" type="video/mp4">
+    <video class="page-wipe-video" muted playsinline preload="none" poster="${transitionPosterUrl}">
+      <source data-src="${transitionVideoUrl}" type="video/mp4">
     </video>
     <div class="page-wipe-signal" aria-hidden="true"></div>
   `;
@@ -513,6 +645,10 @@ function initPageTransitions() {
     wipe.classList.add("is-active");
     if (wipeVideo) {
       try {
+        wipeVideo.querySelectorAll("source[data-src]").forEach((source) => {
+          if (!source.hasAttribute("src")) source.setAttribute("src", source.dataset.src);
+        });
+        wipeVideo.load();
         wipeVideo.currentTime = 0;
         wipeVideo.play()?.catch?.(() => {});
       } catch {
@@ -521,7 +657,7 @@ function initPageTransitions() {
     }
     window.setTimeout(() => {
       window.location.href = destination.href;
-    }, Math.max(260, audioNavigationDelay));
+    }, Math.max(220, Math.min(audioNavigationDelay, 320)));
   });
 
   window.addEventListener("pageshow", () => {
@@ -546,7 +682,17 @@ function initVideoPerformanceMode() {
   const videos = Array.from(document.querySelectorAll("video"));
   if (!videos.length) return;
 
-  const maxActiveDecorativeVideos = reducedMotionQuery.matches ? 0 : 1;
+  const shouldConserveMedia =
+    reducedMotionQuery.matches ||
+    mobilePerformanceQuery.matches ||
+    Boolean(navigator.connection?.saveData) ||
+    /(^|-)2g$/i.test(navigator.connection?.effectiveType || "");
+  const isCriticalHeroVideo = (video) => video.matches(".hero-motion, [data-critical-hero-video]");
+  const maxActiveDecorativeVideos = shouldConserveMedia
+    ? videos.some(isCriticalHeroVideo)
+      ? 1
+      : 0
+    : 1;
   const visibleVideos = new Set();
   let transitionCooldownUntil = document.documentElement.classList.contains("lm-transition-arriving")
     ? performance.now() + 900
@@ -560,11 +706,20 @@ function initVideoPerformanceMode() {
   const canManageVideo = (video) =>
     !isTransitionVideo(video) &&
     video.dataset.lmVideoUnmanaged !== "true" &&
-    (video.autoplay || video.loop || video.muted || video.hasAttribute("poster"));
+    (video.dataset.autoplayOnVisible === "true" || video.autoplay || video.loop || video.muted || video.hasAttribute("poster"));
 
   const isSoundActive = (video) =>
     video.classList.contains("is-sound-active") ||
     (!video.muted && !video.paused);
+
+  const isUserPlayableVideo = (video) =>
+    video.hasAttribute("controls") ||
+    video.hasAttribute("data-inline-sound-video") ||
+    video.hasAttribute("data-merch-sound-video");
+
+  const isHiddenMedia = (video) =>
+    Boolean(video.closest(".is-hidden, [hidden]")) ||
+    Boolean(video.parentElement?.closest("[aria-hidden='true']"));
 
   const managedVideos = videos.filter(canManageVideo);
   if (!managedVideos.length) return;
@@ -576,11 +731,13 @@ function initVideoPerformanceMode() {
 
   const rememberVideoSources = (video) => {
     if (video.dataset.lmLazySourcesReady === "true") return;
-    if (video.hasAttribute("src")) {
-      video.dataset.lmLazySrc = video.getAttribute("src");
+    const videoSource = video.getAttribute("src") || video.dataset.src;
+    if (videoSource) {
+      video.dataset.lmLazySrc = videoSource;
     }
     video.querySelectorAll("source").forEach((source) => {
-      if (source.hasAttribute("src")) source.dataset.lmLazySrc = source.getAttribute("src");
+      const sourceUrl = source.getAttribute("src") || source.dataset.src;
+      if (sourceUrl) source.dataset.lmLazySrc = sourceUrl;
     });
     video.dataset.lmLazySourcesReady = "true";
   };
@@ -600,8 +757,9 @@ function initVideoPerformanceMode() {
     if (changed) video.load();
   };
 
-  const unloadVideoSources = (video) => {
-    if (isSoundActive(video) || isNearViewport(video, 80)) return;
+  const unloadVideoSources = (video, options = {}) => {
+    const force = options.force === true;
+    if (isSoundActive(video) || (!force && isNearViewport(video, 80))) return;
     let changed = false;
     if (video.dataset.lmLazySrc && video.hasAttribute("src")) {
       video.removeAttribute("src");
@@ -633,9 +791,9 @@ function initVideoPerformanceMode() {
     if (document.body.classList.contains("lm-page-is-transitioning") || performance.now() < transitionCooldownUntil) {
       return false;
     }
-    if (video.closest(".is-hidden, [hidden]")) return false;
+    if (isHiddenMedia(video)) return false;
     if (isSoundActive(video)) return false;
-    return Boolean(video.autoplay || video.loop) && video.muted;
+    return Boolean(video.dataset.autoplayOnVisible === "true" || video.autoplay) && video.muted;
   };
 
   const distanceFromViewportCenter = (video) => {
@@ -660,10 +818,18 @@ function initVideoPerformanceMode() {
       return;
     }
 
-    visibleVideos.forEach(restoreVideoSources);
+    const userPlayableVideos = new Set();
+    const activeVideos = new Set();
+    visibleVideos.forEach((video) => {
+      if (isUserPlayableVideo(video)) {
+        restoreVideoSources(video);
+        userPlayableVideos.add(video);
+      }
+    });
 
     const candidates = Array.from(visibleVideos)
       .filter(isPlayableDecorativeVideo)
+      .filter((video) => !shouldConserveMedia || isCriticalHeroVideo(video))
       .sort((a, b) => distanceFromViewportCenter(a) - distanceFromViewportCenter(b));
 
     let activeCount = 0;
@@ -674,6 +840,7 @@ function initVideoPerformanceMode() {
       }
 
       activeCount += 1;
+      activeVideos.add(video);
       restoreVideoSources(video);
       if (!video.paused) return;
       video.play()?.catch?.(() => {
@@ -685,6 +852,9 @@ function initVideoPerformanceMode() {
       if (!visibleVideos.has(video)) {
         pauseManagedVideo(video);
         unloadVideoSources(video);
+      } else if (!activeVideos.has(video) && !userPlayableVideos.has(video)) {
+        pauseManagedVideo(video);
+        unloadVideoSources(video, { force: true });
       }
     });
 
@@ -700,16 +870,15 @@ function initVideoPerformanceMode() {
     rememberVideoSources(video);
     video.playsInline = true;
     video.setAttribute("playsinline", "");
-    if (!video.hasAttribute("preload") || video.getAttribute("preload") === "auto") {
-      video.setAttribute("preload", "metadata");
-      video.preload = "metadata";
-    }
+    const preloadMode = video.dataset.preloadMetadata === "true" && !shouldConserveMedia ? "metadata" : "none";
+    video.setAttribute("preload", preloadMode);
+    video.preload = preloadMode;
     video.dataset.lmVideoOptimized = "true";
-    if (reducedMotionQuery.matches && video.autoplay && video.muted) pauseManagedVideo(video);
-    if (isNearViewport(video, 220)) {
+    if ((shouldConserveMedia || video.dataset.autoplayOnVisible === "true" || video.autoplay) && video.muted) pauseManagedVideo(video);
+    if (isUserPlayableVideo(video) && !isHiddenMedia(video) && isNearViewport(video, 220)) {
       restoreVideoSources(video);
     } else {
-      unloadVideoSources(video);
+      unloadVideoSources(video, { force: true });
     }
   });
 
@@ -717,7 +886,6 @@ function initVideoPerformanceMode() {
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
-          restoreVideoSources(entry.target);
           visibleVideos.add(entry.target);
         } else {
           visibleVideos.delete(entry.target);
@@ -1324,6 +1492,7 @@ setupSphereOrbLivePlayers();
 
 
 const REFINED_APP_URL = "https://robjasper2084.github.io/Jungle-Lotto/lotto%20mind%20refined/";
+const LOCAL_REFINED_APP_URL = "http://127.0.0.1:8162/lotto%20mind%20refined/";
 const VAULT_KEYS = {
   plan: "lottomind_plan",
   credits: "lottomind_credits",
@@ -1334,6 +1503,8 @@ const VAULT_KEYS = {
 };
 const VAULT_DISCLAIMER = "LottoMind and LottoCredits are for entertainment, organization, music creation, and creative number journaling only. LottoCredits have no cash value and cannot be redeemed for money, prizes, lottery tickets, or gambling. LottoMind does not predict winning lottery numbers.";
 const VAULT_DEMO_PASS_MS = 10 * 60 * 1000;
+const VAULT_BUY_CREDITS_URL = "./features-app.html?buy=credits#vault-gateway";
+let vaultDemoExpiryTimer = 0;
 
 function readVaultNumber(key, fallback = 0) {
   const value = Number(localStorage.getItem(key));
@@ -1385,7 +1556,39 @@ function setVaultState(next = {}) {
   if (typeof next.betaAccess === "boolean") {
     localStorage.setItem(VAULT_KEYS.betaAccess, String(next.betaAccess));
   }
-  window.dispatchEvent(new CustomEvent("lottomind:vault-updated", { detail: getVaultState() }));
+  const updated = getVaultState();
+  scheduleVaultDemoExpiry(updated);
+  window.dispatchEvent(new CustomEvent("lottomind:vault-updated", { detail: updated }));
+}
+
+function redirectToVaultCredits(reason = "demo-expired") {
+  try {
+    sessionStorage.setItem("lottomind_vault_redirect_reason", reason);
+  } catch {
+    /* Session storage can be unavailable in strict browser modes. */
+  }
+  const target = new URL(VAULT_BUY_CREDITS_URL, window.location.href);
+  if (window.location.href === target.href) {
+    window.dispatchEvent(new CustomEvent("lottomind:vault-buy-credits"));
+    return;
+  }
+  window.location.href = target.toString();
+}
+
+function scheduleVaultDemoExpiry(state = getVaultState()) {
+  window.clearTimeout(vaultDemoExpiryTimer);
+  if (!state.passActive || !state.unlockedUntil) return;
+  const remaining = Number(state.unlockedUntil) - Date.now();
+  if (remaining <= 0) {
+    localStorage.setItem(VAULT_KEYS.unlockedUntil, "0");
+    redirectToVaultCredits();
+    return;
+  }
+  vaultDemoExpiryTimer = window.setTimeout(() => {
+    localStorage.setItem(VAULT_KEYS.unlockedUntil, "0");
+    window.dispatchEvent(new CustomEvent("lottomind:vault-updated", { detail: getVaultState() }));
+    redirectToVaultCredits();
+  }, Math.min(remaining, 2147483647));
 }
 
 function addVaultCredits(amount, reason) {
@@ -1395,9 +1598,18 @@ function addVaultCredits(amount, reason) {
   writeVaultLedger({ amount, reason, createdAt: new Date().toISOString(), balance: nextCredits });
 }
 
+function refinedLaunchHref(href) {
+  const isLocalHost = ["127.0.0.1", "localhost", "::1"].includes(window.location.hostname);
+  if (!isLocalHost) return href || REFINED_APP_URL;
+  const candidate = href || REFINED_APP_URL;
+  return /robjasper2084\.github\.io\/Jungle-Lotto\/lotto%20mind%20refined\/?$/i.test(candidate)
+    ? LOCAL_REFINED_APP_URL
+    : candidate;
+}
+
 function buildRefinedLaunchUrl(state = getVaultState(), override = {}) {
   const plan = override.plan || state.plan || "free";
-  const launchUrl = new URL(override.href || REFINED_APP_URL, window.location.href);
+  const launchUrl = new URL(refinedLaunchHref(override.href), window.location.href);
   const params = launchUrl.searchParams;
   params.set("plan", plan);
   params.set("credits", String(state.credits || 0));
@@ -1411,6 +1623,9 @@ function buildRefinedLaunchUrl(state = getVaultState(), override = {}) {
 function setupLottoMindVaultGateway() {
   const hasGatewayTargets = document.querySelector("[data-vault-launch], [data-vault-open], [data-beta-waitlist]") || document.body.classList.contains("home-page");
   if (!hasGatewayTargets) return;
+  document.querySelectorAll("[data-vault-launch]").forEach((link) => {
+    if (link.href) link.href = refinedLaunchHref(link.href);
+  });
 
   const badge = document.createElement("button");
   badge.className = "vault-credit-badge";
@@ -1462,6 +1677,11 @@ function setupLottoMindVaultGateway() {
     modal.setAttribute("aria-hidden", "false");
     document.body.classList.add("vault-gateway-open");
     window.setTimeout(() => modal.querySelector("button")?.focus(), 20);
+  };
+
+  const openBuyCredits = () => {
+    pendingLaunchOverride = {};
+    open("Your 10-minute demo has ended. Buy credits or continue with standard access.");
   };
 
   const close = () => {
@@ -1543,7 +1763,13 @@ function setupLottoMindVaultGateway() {
     open();
   });
   window.addEventListener("lottomind:vault-updated", () => update());
+  window.addEventListener("lottomind:vault-buy-credits", openBuyCredits);
   update();
+  scheduleVaultDemoExpiry();
+  const buyCreditsRequested = new URLSearchParams(window.location.search).get("buy") === "credits";
+  if (buyCreditsRequested) {
+    window.setTimeout(openBuyCredits, 120);
+  }
 }
 
 setupLottoMindVaultGateway();
@@ -1557,6 +1783,8 @@ function getReactivePoint(event) {
 }
 
 function setupUniversalInteractionReactivity() {
+  if (mobilePerformanceQuery.matches || reducedMotionQuery.matches) return;
+
   const reactiveTargets = document.querySelectorAll([
     "[data-site-header]",
     ".guide-header",
@@ -2671,15 +2899,13 @@ function showStartupVideo() {
   startupVideoModal.setAttribute("aria-hidden", "false");
   syncHeroMotionPreference();
   rememberStartupVideoSeen();
-  if (!reducedMotionQuery.matches) {
-    startupVideoPlayer.muted = false;
-    startupVideoPlayer.defaultMuted = false;
-    startupVideoPlayer.removeAttribute("muted");
-    startupVideoPlayer.volume = 0.86;
-    startupVideoPlayer.autoplay = true;
-    startupVideoPlayer?.play().catch(() => {
-      // Browsers may block autoplay until the first user gesture.
-    });
+  if (startupVideoPlayer) {
+    startupVideoPlayer.muted = true;
+    startupVideoPlayer.defaultMuted = true;
+    startupVideoPlayer.setAttribute("muted", "");
+    startupVideoPlayer.volume = 0;
+    startupVideoPlayer.autoplay = false;
+    startupVideoPlayer.removeAttribute("autoplay");
   }
 }
 
@@ -2690,15 +2916,14 @@ function showStartupVideoReturn() {
   startupVideoModal.classList.remove("is-hidden");
   startupVideoModal.setAttribute("aria-hidden", "false");
   syncHeroMotionPreference();
-  if (!reducedMotionQuery.matches && startupVideoPlayer) {
-    startupVideoPlayer.muted = false;
-    startupVideoPlayer.defaultMuted = false;
-    startupVideoPlayer.removeAttribute("muted");
-    startupVideoPlayer.volume = 0.72;
+  if (startupVideoPlayer) {
+    startupVideoPlayer.muted = true;
+    startupVideoPlayer.defaultMuted = true;
+    startupVideoPlayer.setAttribute("muted", "");
+    startupVideoPlayer.volume = 0;
     startupVideoPlayer.currentTime = 0;
-    startupVideoPlayer.play().catch(() => {
-      // Browsers may block timed playback until the first user gesture.
-    });
+    startupVideoPlayer.autoplay = false;
+    startupVideoPlayer.removeAttribute("autoplay");
   }
   clearStartupReturnAutoClose();
   startupReturnAutoCloseTimer = window.setTimeout(() => {
@@ -3324,6 +3549,14 @@ startupVideoCloseButtons.forEach((button) => {
   button.addEventListener("click", () => closeStartupVideo());
 });
 startupMusicStart?.addEventListener("click", () => closeStartupVideo());
+startupVideoPlayer?.addEventListener("pointerdown", () => {
+  restoreDeferredVideoSources(startupVideoPlayer);
+  startupVideoPlayer.muted = true;
+  startupVideoPlayer.defaultMuted = true;
+  startupVideoPlayer.setAttribute("muted", "");
+  startupVideoPlayer.volume = 0;
+  startupVideoPlayer.play?.().catch(() => {});
+}, { passive: true });
 startupVideoModal?.addEventListener("click", (event) => {
   if (event.target === startupVideoModal) closeStartupVideo();
 });
@@ -3607,6 +3840,8 @@ generateMiniVideoPrompt();
 generateMiniNumberSignals();
 
 function setupMascotPointer() {
+  if (mobilePerformanceQuery.matches || reducedMotionQuery.matches) return;
+  if (document.body?.classList.contains("features-cinematic-page")) return;
   if (!document.body || document.querySelector(".lm-mascot-pointer")) return;
   document.documentElement.dataset.cursorMode = "mascot";
   document.body.dataset.cursorMode = "mascot";
