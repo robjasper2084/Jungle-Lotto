@@ -13,7 +13,7 @@
     enabled: true,
     volume: 0.38,
     playCloseBeforeNavigate: true,
-    closeDelay: 520,
+    closeDelay: 180,
     playCloseOnArrival: false,
     files: {
       open: "lm-portal-open.mp3",
@@ -213,7 +213,7 @@
   function scheduleCloseBeforeNavigate() {
     if (!AUDIO_CONFIG.playCloseBeforeNavigate) return 0;
     window.setTimeout(() => playSound("close"), AUDIO_CONFIG.closeDelay);
-    return AUDIO_CONFIG.closeDelay + 140;
+    return AUDIO_CONFIG.closeDelay + 100;
   }
 
   function playCloseOnArrival() {
