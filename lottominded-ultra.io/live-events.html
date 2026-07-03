@@ -18,8 +18,52 @@
         }
       } catch (error) {}
     </script>
+    <style>
+      .shadow-ops-modal,
+      [data-shadow-ops-modal],
+      .shadow-ops-trigger,
+      [data-shadow-ops-open] {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+      }
+
+      body.has-shadow-ops-modal,
+      body.has-shadow-ops-frame-expanded {
+        overflow: auto !important;
+      }
+    </style>
+    <script>
+      (() => {
+        const shadowOpsSelector = "[data-shadow-ops-modal], .shadow-ops-modal, [data-shadow-ops-open], .shadow-ops-trigger";
+        const removeShadowOps = () => {
+          document.querySelectorAll(shadowOpsSelector).forEach((element) => element.remove());
+          document.body?.classList.remove("has-shadow-ops-modal", "has-shadow-ops-frame-expanded");
+        };
+
+        const startShadowOpsGuard = () => {
+          removeShadowOps();
+          if (!document.documentElement || !("MutationObserver" in window)) return;
+          new MutationObserver((mutations) => {
+            const hasShadowOpsMutation = mutations.some((mutation) =>
+              Array.from(mutation.addedNodes).some((node) =>
+                node.nodeType === 1 && (node.matches?.(shadowOpsSelector) || node.querySelector?.(shadowOpsSelector))
+              )
+            );
+            if (hasShadowOpsMutation) removeShadowOps();
+          }).observe(document.documentElement, { childList: true, subtree: true });
+        };
+
+        if (document.readyState === "loading") {
+          document.addEventListener("DOMContentLoaded", startShadowOpsGuard, { once: true });
+        } else {
+          startShadowOpsGuard();
+        }
+      })();
+    </script>
     <link rel="stylesheet" href="./assets/css/lm-page-transition.css?v=compositor-pass-1" />
-    <link rel="stylesheet" href="./assets/live-events/css/live-events-redesign.css?v=live-audio-prompt-removed-1" />
+    <link rel="stylesheet" href="./assets/live-events/css/live-events-redesign.css?v=shadow-ops-removed-2" />
   </head>
   <body class="live-events-page lm-live-page has-sphere-tabs">
     <div class="lm-page-transition" data-lm-page-transition aria-hidden="true">
@@ -254,7 +298,7 @@
     <script src="./assets/js/lm-page-transition-audio.js?v=verified-transitions-1" defer></script>
     <script src="./assets/js/lm-page-transition.js?v=transition-hotfix-2" defer></script>
     <script src="./site.js?v=mascot-front-idle-5pct-1" defer></script>
-    <script src="./assets/live-events/js/live-events-redesign.js?v=live-audio-prompt-removed-1" defer></script>
+    <script src="./assets/live-events/js/live-events-redesign.js?v=shadow-ops-removed-2" defer></script>
     <script src="./assets/live-events/js/live-events-console.js?v=live-console-1" defer></script>
   </body>
 </html>
