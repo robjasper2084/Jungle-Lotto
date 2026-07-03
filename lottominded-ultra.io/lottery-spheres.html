@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
@@ -10,7 +10,7 @@
     <title>LOTTOMINDED ULTRA | Lottery Spheres</title>
     <meta name="theme-color" content="#03050a" />
     <link rel="icon" href="./assets/brand/lm-orb-mark.webp" type="image/webp" />
-    <link rel="stylesheet" href="./styles.css?v=rewards-popups-2" />
+    <link rel="stylesheet" href="./styles.css?v=instrument-console-bottom-20260626" />
     <script>
       try {
         if (sessionStorage.getItem("lmTransitionArriving") === "yes") {
@@ -19,13 +19,14 @@
       } catch (error) {}
     </script>
     <link rel="stylesheet" href="./assets/css/lm-page-transition.css?v=compositor-pass-1" />
-    <link rel="stylesheet" href="./lottery-spheres.css?v=spheres-number-run-2" />
+    <link rel="stylesheet" href="./lottery-spheres.css?v=shadow-ops-large-fullscreen-20260626" />
     <link rel="stylesheet" href="./lottery-spheres-console.css?v=console-float-1" />
+    <link rel="stylesheet" href="./beat2lotto-plus.css?v=spheres-bottom-generator-1" />
   </head>
   <body class="lottery-spheres-page">
     <div class="lm-page-transition" data-lm-page-transition aria-hidden="true">
       <div class="lm-page-transition__flash"></div>
-      <video class="lm-page-transition__video" data-lm-transition-video muted playsinline preload="metadata"></video>
+      <video class="lm-page-transition__video" data-lm-transition-video muted playsinline preload="none"></video>
       <div class="lm-page-transition__vignette"></div>
       <div class="lm-page-transition__scanlines"></div>
       <p class="lm-page-transition__label" data-lm-transition-label>Opening signal</p>
@@ -71,12 +72,14 @@
           <p>Break the number vaults, collect every key, and bring the signal back into the sphere room.</p>
         </div>
         <div class="sphere-shadow-popup-stage" aria-label="Shadow Ops Canvas game popup">
+          <button class="sphere-shadow-fullscreen" type="button" data-sphere-shadow-fullscreen aria-label="Play Shadow Ops fullscreen">Fullscreen</button>
           <iframe
             data-sphere-shadow-frame
             data-src="./games/shadow-ops-canvas/index.html?bg=soul-location-1&amp;v=higgsfield-trailer-1"
             title="Shadow Ops Canvas playable game"
             loading="lazy"
             allow="autoplay; fullscreen; gamepad"
+            allowfullscreen
           ></iframe>
         </div>
         <div class="sphere-shadow-popup-rail" aria-hidden="true">
@@ -103,6 +106,7 @@
           <div class="sphere-actions">
             <button class="primary-action" type="button" data-reroll-spheres>Reroll Spheres</button>
             <button class="secondary-action" type="button" data-sphere-shadow-open>Open Shadow Ops</button>
+            <a class="secondary-action" href="#lottery-news">Latest Lottery News</a>
             <a class="secondary-action" href="./beat2lotto-plus.html#beat2lotto">Open Beat2Lotto+&trade;</a>
             <a class="secondary-action" href="./lottomind-stem-studio/index.html">Launch Studio</a>
           </div>
@@ -153,7 +157,124 @@
         </article>
       </section>
 
+      <section class="beat2lotto-console spheres-beat2lotto-console" aria-label="Beat2Lotto+ generator">
+        <div class="lotto-controls">
+          <label class="file-drop">
+            <span>Import beat or music</span>
+            <input id="lottoAudioFile" type="file" accept="audio/*" />
+            <small>Local analysis only. Audio never uploads.</small>
+          </label>
+          <div class="beat-playback-card" id="beatPlayback" hidden>
+            <audio id="lottoAudioPlayer" preload="metadata" controls></audio>
+            <button type="button" id="playBeatAudio" disabled>Play uploaded beat</button>
+            <div class="beat-playback-meter" aria-hidden="true">
+              <span id="beatPlaybackEnergy"></span>
+            </div>
+            <small id="beatPlaybackStatus">Upload music to unlock playback.</small>
+          </div>
+          <div id="beatAnalysis" class="beat-analysis-card" aria-live="polite">
+            <strong>No beat imported yet</strong>
+            <span>Generate from typed Beat DNA, or load audio to seed the digits.</span>
+          </div>
+          <label>
+            <span>Session seed</span>
+            <input id="lottoSeed" type="text" value="neon drums, 120 BPM, late-night bounce" />
+          </label>
+          <label>
+            <span>BPM</span>
+            <input id="lottoBpm" type="number" min="40" max="220" value="120" />
+          </label>
+          <label>
+            <span>Game format</span>
+            <select id="lottoGame">
+              <option value="pick3">Pick 3</option>
+              <option value="pick4">Pick 4</option>
+              <option value="cash5">Cash 5 / Fantasy 5</option>
+              <option value="lotto6">Lotto 6</option>
+              <option value="powerball">Powerball Style</option>
+              <option value="mega">Mega Millions Style</option>
+            </select>
+          </label>
+          <label>
+            <span>Sets</span>
+            <input id="lottoCount" type="number" min="1" max="12" value="5" />
+          </label>
+          <label>
+            <span>Method</span>
+            <select id="lottoMethod">
+              <option>Beat DNA</option>
+              <option>Rhythm Signature</option>
+              <option>Drum Pattern</option>
+              <option>Stem Mix</option>
+              <option>Random + Beat DNA</option>
+            </select>
+          </label>
+          <button class="primary-action" type="button" id="generateLotto">Generate Number Signals</button>
+          <button class="secondary-action" type="button" id="copyLotto">Copy All</button>
+        </div>
+
+        <div class="lotto-output-panel">
+          <div class="lotto-output-head">
+            <h2>Beat-seeded entertainment picks</h2>
+            <span>Creative number generation - Not a prediction</span>
+          </div>
+          <div id="lottoOutput" class="lotto-output-grid" aria-live="polite"></div>
+        </div>
+      </section>
+
+      <section class="sd-news" id="lottery-news" aria-labelledby="lotteryNewsTitle">
+        <div class="sd-news__header">
+          <div>
+            <p class="section-kicker">StrangeDeck News</p>
+            <h2 id="lotteryNewsTitle">Latest Lottery News</h2>
+            <p>
+              Lottery information should be verified with the official lottery operator, and play should remain responsible.
+            </p>
+          </div>
+          <div class="sd-news__links" aria-label="Lottery news links">
+            <a href="#spheres">Spheres</a>
+            <a href="#sources">Sources</a>
+            <a href="./index.html">View all StrangeDeck News</a>
+            <a href="./rss.xml">RSS</a>
+          </div>
+        </div>
+        <div class="sd-news-grid" data-lottery-news-list aria-live="polite">
+          <article class="sd-news-card sd-news-card--placeholder">
+            <span class="sd-news-badge">Loading</span>
+            <h3>Checking lottery sources</h3>
+            <p>Latest Lottery articles will appear here without interrupting the spheres.</p>
+          </article>
+        </div>
+        <p class="sd-news__fallback" data-lottery-news-status></p>
+      </section>
+
+      <section class="sd-news-sources" id="sources" aria-labelledby="lotterySourcesTitle">
+        <p class="section-kicker">Lottery Sources</p>
+        <h2 id="lotterySourcesTitle">Source Verification</h2>
+        <p>
+          Latest Lottery News uses sourced StrangeDeck briefs from <code>articles.json</code>. Official results and prize claims should be checked against the relevant lottery operator before relying on them.
+        </p>
+        <div class="sd-news__links">
+          <a href="./articles.json">articles.json</a>
+          <a href="./rss.xml">rss.xml</a>
+          <a href="./index.html">Full StrangeDeck News</a>
+        </div>
+      </section>
+
     </main>
+
+    <aside class="sd-news-modal" data-lottery-news-modal aria-hidden="true" hidden>
+      <div class="sd-news-modal__panel" role="dialog" aria-modal="true" aria-labelledby="lotteryNewsModalTitle">
+        <button class="sd-news-modal__close" type="button" data-lottery-news-close aria-label="Close lottery news article">X</button>
+        <p class="sd-news-badge" data-lottery-news-modal-category>Lottery</p>
+        <h2 id="lotteryNewsModalTitle" data-lottery-news-modal-title>Lottery News</h2>
+        <div class="sd-news-modal__meta" data-lottery-news-modal-meta></div>
+        <p class="sd-news-modal__body" data-lottery-news-modal-body></p>
+        <p class="sd-news-modal__verify" data-lottery-news-modal-verify></p>
+        <div class="sd-news-modal__tags" data-lottery-news-modal-tags></div>
+        <div class="sd-news-modal__sources" data-lottery-news-modal-sources></div>
+      </div>
+    </aside>
 
     <section class="instrument-console ultra-page-instrument-console neon-panel" aria-label="Studio instrument console bottom copy">
       <div class="console-pill"><small>Signal Route</small><strong>Ultra Mode</strong></div>
@@ -223,8 +344,10 @@
 
     <script src="./assets/js/lm-page-transition-audio.js?v=verified-transitions-1" defer></script>
     <script src="./assets/js/lm-page-transition.js?v=transition-hotfix-2" defer></script>
-    <script src="./site.js?v=rewards-popups-2" defer></script>
+    <script src="./site.js?v=touch-nav-fix-1" defer></script>
     <script src="./assets/features-app/js/features-cinematic-motion.js?v=instrument-console-bottom-20260626" defer></script>
-    <script src="./lottery-spheres.js?v=spheres-shadow-auto-1" defer></script>
+    <script src="./beat2lotto-plus.js?v=spheres-bottom-generator-1" defer></script>
+    <script src="./lottery-spheres.js?v=shadow-ops-large-fullscreen-20260626" defer></script>
+    <script src="./lottery-news-widget.js?v=lottery-spheres-news-1" defer></script>
   </body>
 </html>
