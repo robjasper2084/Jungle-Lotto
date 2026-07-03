@@ -1,6 +1,6 @@
 /* Spheres-only floating studio console. */
 body.lottery-spheres-page {
-  padding-bottom: clamp(9rem, 17vh, 13rem);
+  padding-bottom: clamp(38rem, 54vh, 46rem);
 }
 
 body.lottery-spheres-page .ultra-page-instrument-console {
@@ -8,7 +8,8 @@ body.lottery-spheres-page .ultra-page-instrument-console {
   --lm-console-mint: #8effd4;
   --lm-console-gold: #f8d96b;
   --lm-console-violet: #9a64ff;
-  position: sticky;
+  position: fixed;
+  left: 50%;
   bottom: max(1rem, env(safe-area-inset-bottom));
   z-index: 90;
   display: grid;
@@ -17,7 +18,7 @@ body.lottery-spheres-page .ultra-page-instrument-console {
   align-items: stretch;
   width: min(calc(100% - clamp(1rem, 3vw, 3rem)), 1560px);
   min-height: clamp(8.5rem, 12vw, 11.4rem);
-  margin: clamp(2rem, 4vw, 3.5rem) auto clamp(1rem, 2vw, 1.4rem);
+  margin: 0;
   padding: clamp(0.85rem, 1.35vw, 1.25rem);
   border: 1px solid rgba(33, 247, 255, 0.78);
   border-radius: clamp(1.3rem, 2vw, 2rem);
@@ -30,7 +31,8 @@ body.lottery-spheres-page .ultra-page-instrument-console {
     0 0 2.6rem rgba(33, 247, 255, 0.28),
     inset 0 0 0 1px rgba(255, 255, 255, 0.06);
   backdrop-filter: blur(18px) saturate(1.2);
-  transform: translateZ(0);
+  transform: translateX(-50%) translateZ(0);
+  will-change: transform;
 }
 
 body.lottery-spheres-page .ultra-page-instrument-console::before {
@@ -269,7 +271,7 @@ body.lottery-spheres-page .ultra-page-instrument-console .status-wave {
 
 @media (max-width: 920px) {
   body.lottery-spheres-page {
-    padding-bottom: 15rem;
+    padding-bottom: clamp(40rem, 86vh, 52rem);
   }
 
   body.lottery-spheres-page .ultra-page-instrument-console {
