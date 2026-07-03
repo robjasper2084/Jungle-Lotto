@@ -28,6 +28,19 @@
   const playerPrev = player?.querySelector("[data-feature-player-prev]");
   const playerNext = player?.querySelector("[data-feature-player-next]");
   const playerTime = player?.querySelector("[data-feature-player-time]");
+  const isHealingGenerator = Boolean(player?.matches("[data-healing-frequency-generator]"));
+  const healingToneButtons = Array.from(player?.querySelectorAll("[data-healing-tone]") || []);
+  const healingHz = player?.querySelector("[data-healing-hz]");
+  const healingTitle = player?.querySelector("[data-healing-title]");
+  const healingDesc = player?.querySelector("[data-healing-desc]");
+  const healingOutput = player?.querySelector("[data-healing-output]");
+  const healingState = player?.querySelector("[data-healing-state]");
+  const healingPresets = healingToneButtons.map((button, index) => ({
+    button,
+    hz: Number(button.dataset.healingTone || 528),
+    label: button.dataset.healingLabel || "Reset",
+    hue: [190, 176, 160, 48, 184, 270][index % 6],
+  }));
   const maxEntryLoops = 2;
   let completedEntryLoops = 0;
   let audioCtx = null;
@@ -46,16 +59,20 @@
   let delayWet = null;
   let reverbNode = null;
   let reverbWet = null;
+  let limiter = null;
   let eqData = null;
   let eqFrame = 0;
   let idlePhase = 0;
   let visualImpulse = 0;
   let lastBeatPaintAt = 0;
   let lastEqSnapshot = { average: 0, bass: 0, mid: 0, high: 0 };
-  const featureEntryVolume = 0.18;
-  const featureManualVolume = 0.58;
+  let healingIndex = Math.max(0, healingPresets.findIndex((preset) => preset.hz === 528));
+  let healingVoice = null;
+  let healingActive = false;
+  const featureEntryVolume = 0.12;
+  const featureManualVolume = 0.38;
   const mediaSources = new WeakSet();
-  const fxState = { drive: 0.16, reverb: 0.22, delay: 0.18, master: 0.72 };
+  const fxState = { drive: 0.14, reverb: 0.2, delay: 0.16, master: 0.56 };
 
   function setEqStatus(text) {
     eqStatuses.forEach((status) => {
@@ -64,10 +81,14 @@
     document.body.dataset.featureEqStatus = text;
   }
 
+  function clampFxValue(value) {
+    return Math.max(0, Math.min(1, Number(value) || 0));
+  }
+
   function makeDriveCurve(amount = 0) {
     const samples = 512;
     const curve = new Float32Array(samples);
-    const drive = 1 + amount * 18;
+    const drive = 1 + amount * 34;
     const normal = Math.tanh(drive);
     for (let index = 0; index < samples; index += 1) {
       const x = (index * 2) / samples - 1;
@@ -99,6 +120,9 @@
       button.dataset.fxReadout = `${Math.round(value * 100)}%`;
       button.style.setProperty("--knob-fx", value.toFixed(3));
       button.setAttribute("aria-pressed", String(value > 0.05));
+      button.setAttribute("aria-valuemin", "0");
+      button.setAttribute("aria-valuemax", "100");
+      button.setAttribute("aria-valuenow", String(Math.round(value * 100)));
       button.title = `${labels[name] || "Effect"} ${Math.round(value * 100)}%`;
     });
     document.body.dataset.featureFxDrive = fxState.drive.toFixed(2);
@@ -111,38 +135,45 @@
   function applyFxState(label = "") {
     if (audioCtx) {
       const now = audioCtx.currentTime;
-      driveInput?.gain.setTargetAtTime(1 + fxState.drive * 2.4, now, 0.03);
+      driveInput?.gain.setTargetAtTime(1 + fxState.drive * 3.8, now, 0.03);
       if (driveNode) {
         driveNode.curve = makeDriveCurve(fxState.drive);
         driveNode.oversample = "4x";
       }
-      bassFilter?.gain.setTargetAtTime(1.2 + fxState.drive * 1.4, now, 0.04);
-      midFilter?.gain.setTargetAtTime(-0.8 + fxState.reverb * 0.9, now, 0.04);
-      highFilter?.gain.setTargetAtTime(0.9 + fxState.delay * 1.8 - fxState.drive * 1.1, now, 0.04);
-      toneFilter?.frequency.setTargetAtTime(14200 - fxState.drive * 5200, now, 0.04);
-      toneFilter?.Q.setTargetAtTime(0.45 + fxState.drive * 4.2, now, 0.04);
-      delayNode?.delayTime.setTargetAtTime(0.07 + fxState.delay * 0.36, now, 0.04);
-      delayFeedback?.gain.setTargetAtTime(fxState.delay * 0.42, now, 0.04);
-      delayWet?.gain.setTargetAtTime(fxState.delay * 0.28, now, 0.04);
-      reverbWet?.gain.setTargetAtTime(fxState.reverb * 0.36, now, 0.04);
-      master?.gain.setTargetAtTime(0.32 + fxState.master * 0.78, now, 0.04);
+      dryGain?.gain.setTargetAtTime(0.92 - fxState.delay * 0.12 - fxState.reverb * 0.1, now, 0.05);
+      bassFilter?.gain.setTargetAtTime(0.4 + fxState.drive * 3.8, now, 0.04);
+      midFilter?.gain.setTargetAtTime(-1.2 + fxState.reverb * 1.4 - fxState.drive * 0.8, now, 0.04);
+      highFilter?.gain.setTargetAtTime(0.5 + fxState.delay * 2.7 - fxState.drive * 2.2, now, 0.04);
+      toneFilter?.frequency.setTargetAtTime(15000 - fxState.drive * 9400, now, 0.04);
+      toneFilter?.Q.setTargetAtTime(0.45 + fxState.drive * 6.8, now, 0.04);
+      delayNode?.delayTime.setTargetAtTime(0.06 + fxState.delay * 0.48, now, 0.04);
+      delayFeedback?.gain.setTargetAtTime(fxState.delay * 0.58, now, 0.04);
+      delayWet?.gain.setTargetAtTime(fxState.delay * 0.48, now, 0.04);
+      reverbWet?.gain.setTargetAtTime(fxState.reverb * 0.66, now, 0.04);
+      master?.gain.setTargetAtTime(0.22 + fxState.master * 0.52, now, 0.04);
     }
     syncKnobControls(label);
   }
 
-  function nudgeFxControl(name) {
-    if (!name || !(name in fxState)) return;
+  function setFxControlValue(name, value, labelPrefix = "") {
+    if (!name || !(name in fxState)) return false;
     getContext();
-    const step = name === "master" ? 0.16 : 0.24;
-    if (name === "master") {
-      fxState.master = fxState.master >= 0.96 ? 0.48 : Math.min(1, fxState.master + step);
-    } else {
-      fxState[name] = fxState[name] >= 0.96 ? 0 : Math.min(1, fxState[name] + step);
-    }
-    const label = `${name.charAt(0).toUpperCase()}${name.slice(1)} ${Math.round(fxState[name] * 100)}%`;
+    fxState[name] = clampFxValue(value);
+    const label = `${labelPrefix}${name.charAt(0).toUpperCase()}${name.slice(1)} ${Math.round(fxState[name] * 100)}%`;
     applyFxState(label);
     visualImpulse = Math.max(visualImpulse, 0.78);
     startEqRender();
+    return true;
+  }
+
+  function nudgeFxControl(name) {
+    if (!name || !(name in fxState)) return;
+    const step = name === "master" ? 0.08 : 0.12;
+    if (name === "master") {
+      setFxControlValue(name, fxState.master >= 0.98 ? 0.36 : fxState.master + step);
+    } else {
+      setFxControlValue(name, fxState[name] >= 0.98 ? 0 : fxState[name] + step);
+    }
   }
 
 
@@ -154,20 +185,28 @@
   }
 
   function syncPlayerUi() {
-    if (!featureTrack) return;
-    const duration = Number.isFinite(featureTrack.duration) ? featureTrack.duration : 0;
-    const progress = duration ? Math.min(1, Math.max(0, featureTrack.currentTime / duration)) : 0;
+    const preset = getHealingPreset();
+    if (!featureTrack && !isHealingGenerator) return;
+    const duration = featureTrack && Number.isFinite(featureTrack.duration) ? featureTrack.duration : 0;
+    const progress = featureTrack && duration ? Math.min(1, Math.max(0, featureTrack.currentTime / duration)) : (healingActive ? 1 : 0);
+    const isPlaying = isHealingGenerator ? healingActive : Boolean(featureTrack && !featureTrack.paused && !featureTrack.ended);
     if (player) {
       player.style.setProperty("--player-progress", progress.toFixed(3));
-      player.classList.toggle("is-playing", !featureTrack.paused && !featureTrack.ended);
+      player.classList.toggle("is-playing", isPlaying);
     }
     if (playerToggle) {
-      playerToggle.innerHTML = featureTrack.paused ? "&#9654;" : "II";
-      playerToggle.setAttribute("aria-pressed", String(!featureTrack.paused));
+      playerToggle.innerHTML = isPlaying ? "II" : "&#9654;";
+      playerToggle.setAttribute("aria-pressed", String(isPlaying));
+      if (isHealingGenerator && preset) {
+        playerToggle.setAttribute("aria-label", isPlaying ? `Pause ${preset.hz} Hz ${preset.label}` : `Start ${preset.hz} Hz ${preset.label}`);
+      }
     }
     if (playerTime) {
-      playerTime.textContent = `${formatMediaTime(featureTrack.currentTime)} / ${formatMediaTime(duration)}`;
+      playerTime.textContent = isHealingGenerator && preset
+        ? `${preset.hz} Hz / ${isPlaying ? "active" : "ready"}`
+        : `${formatMediaTime(featureTrack?.currentTime || 0)} / ${formatMediaTime(duration)}`;
     }
+    syncHealingUi();
   }
 
   function setBeatVars(energy = 0, bass = 0) {
@@ -212,6 +251,7 @@
       reverbNode = audioCtx.createConvolver();
       reverbWet = audioCtx.createGain();
       master = audioCtx.createGain();
+      limiter = audioCtx.createDynamicsCompressor();
 
       toneFilter.type = "lowpass";
       bassFilter.type = "lowshelf";
@@ -225,6 +265,11 @@
       delayWet.gain.value = 0;
       delayFeedback.gain.value = 0;
       reverbWet.gain.value = 0;
+      limiter.threshold.value = -18;
+      limiter.knee.value = 24;
+      limiter.ratio.value = 8;
+      limiter.attack.value = 0.006;
+      limiter.release.value = 0.18;
       reverbNode.buffer = buildImpulseResponse(audioCtx);
 
       effectInput.connect(driveInput);
@@ -243,7 +288,8 @@
       highFilter.connect(reverbNode);
       reverbNode.connect(reverbWet);
       reverbWet.connect(master);
-      master.connect(analyser);
+      master.connect(limiter);
+      limiter.connect(analyser);
       applyFxState();
     }
 
@@ -252,6 +298,123 @@
 
   function getOutput() {
     return getContext() ? effectInput : null;
+  }
+
+  function getHealingPreset() {
+    if (!healingPresets.length) return null;
+    return healingPresets[(healingIndex + healingPresets.length) % healingPresets.length];
+  }
+
+  function syncHealingUi() {
+    if (!isHealingGenerator) return;
+    const preset = getHealingPreset();
+    if (!preset || !player) return;
+    healingToneButtons.forEach((button, index) => {
+      const isActive = index === healingIndex;
+      button.classList.toggle("is-selected", isActive);
+      button.setAttribute("aria-pressed", String(isActive));
+    });
+    player.dataset.healingActive = String(healingActive);
+    player.dataset.healingFrequency = String(preset.hz);
+    player.style.setProperty("--healing-hue", String(preset.hue));
+    player.style.setProperty("--healing-energy", healingActive ? "1" : "0");
+    if (healingHz) healingHz.textContent = String(preset.hz);
+    if (healingTitle) healingTitle.textContent = `${preset.hz} Hz ${preset.label}`;
+    if (healingDesc) healingDesc.textContent = healingActive ? "Generated tone active" : "Tap Play to start a pure tone";
+    if (healingOutput) healingOutput.textContent = preset.label.split(" ")[0];
+    if (healingState) healingState.textContent = healingActive ? "Tone Active" : "Tap Play";
+  }
+
+  function selectHealingPreset(index, { restart = false } = {}) {
+    if (!healingPresets.length) return;
+    healingIndex = (index + healingPresets.length) % healingPresets.length;
+    if (restart || healingActive) startHealingTone({ restart: true });
+    syncHealingUi();
+    syncPlayerUi();
+  }
+
+  function stopHealingTone({ sync = true } = {}) {
+    if (!healingVoice || !audioCtx) {
+      healingVoice = null;
+      healingActive = false;
+      if (sync) syncHealingUi();
+      return;
+    }
+    const now = audioCtx.currentTime;
+    healingVoice.gain.gain.cancelScheduledValues(now);
+    healingVoice.gain.gain.setTargetAtTime(0.0001, now, 0.08);
+    healingVoice.oscillators.forEach((oscillator) => {
+      try {
+        oscillator.stop(now + 0.34);
+      } catch {
+        // The voice may already be stopped.
+      }
+    });
+    healingVoice = null;
+    healingActive = false;
+    if (sync) syncHealingUi();
+  }
+
+  function startHealingTone({ restart = false } = {}) {
+    const preset = getHealingPreset();
+    if (!isHealingGenerator || !preset) return false;
+    const output = getOutput();
+    if (!audioCtx || !output) {
+      healingVoice = null;
+      healingActive = true;
+      visualImpulse = Math.max(visualImpulse, 0.86);
+      setEqStatus(`${preset.hz} Hz ${preset.label}`);
+      startEqRender();
+      syncHealingUi();
+      return true;
+    }
+    if (restart) stopHealingTone({ sync: false });
+    if (healingVoice) {
+      healingActive = true;
+      syncHealingUi();
+      return true;
+    }
+
+    try {
+      if (audioCtx.state === "suspended") audioCtx.resume().catch(() => {});
+      const now = audioCtx.currentTime;
+      const gain = audioCtx.createGain();
+      const filter = audioCtx.createBiquadFilter();
+      const body = audioCtx.createOscillator();
+      const low = audioCtx.createOscillator();
+      const shimmer = audioCtx.createOscillator();
+
+      body.type = "sine";
+      low.type = "triangle";
+      shimmer.type = "sine";
+      body.frequency.setValueAtTime(preset.hz, now);
+      low.frequency.setValueAtTime(Math.max(44, preset.hz / 2), now);
+      shimmer.frequency.setValueAtTime(preset.hz * 2, now);
+      shimmer.detune.setValueAtTime(4, now);
+      filter.type = "lowpass";
+      filter.frequency.setValueAtTime(Math.min(6200, 1800 + preset.hz * 4), now);
+      filter.Q.setValueAtTime(0.72, now);
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.linearRampToValueAtTime(0.038, now + 0.18);
+
+      body.connect(filter);
+      low.connect(filter);
+      shimmer.connect(filter);
+      filter.connect(gain);
+      gain.connect(output);
+      [body, low, shimmer].forEach((oscillator) => oscillator.start(now));
+      healingVoice = { oscillators: [body, low, shimmer], gain };
+      healingActive = true;
+      visualImpulse = Math.max(visualImpulse, 0.86);
+      setEqStatus(`${preset.hz} Hz ${preset.label}`);
+      startEqRender();
+      syncHealingUi();
+      return true;
+    } catch {
+      healingActive = false;
+      syncHealingUi();
+      return false;
+    }
   }
 
   function connectPlayableMedia(media) {
@@ -445,16 +608,89 @@
     startEqRender();
   }
 
-  document.querySelectorAll("button:not(.piano-key):not([data-feature-player-control]), .rail-cards a, .feature-cta").forEach((el, index) => {
+  if (isHealingGenerator) {
+    healingToneButtons.forEach((button, index) => {
+      button.addEventListener("click", () => selectHealingPreset(index, { restart: healingActive }));
+    });
+    syncHealingUi();
+  }
+
+  document.querySelectorAll("button:not(.piano-key):not([data-feature-player-control]):not([data-fx-control]):not([data-healing-tone]), .rail-cards a, .feature-cta").forEach((el, index) => {
     el.addEventListener("pointerdown", () => playTone(index), { passive: true });
   });
 
+  let activeKnobDrag = null;
+
   knobButtons.forEach((button) => {
-    button.addEventListener("click", () => nudgeFxControl(button.dataset.fxControl));
-    button.addEventListener("keydown", (event) => {
-      if (event.repeat || (event.key !== "Enter" && event.key !== " ")) return;
+    button.setAttribute("role", "slider");
+    button.addEventListener("pointerdown", (event) => {
+      if (!button.dataset.fxControl) return;
       event.preventDefault();
-      nudgeFxControl(button.dataset.fxControl);
+      getContext();
+      button.setPointerCapture?.(event.pointerId);
+      activeKnobDrag = {
+        button,
+        name: button.dataset.fxControl,
+        pointerId: event.pointerId,
+        startX: event.clientX,
+        startY: event.clientY,
+        startValue: fxState[button.dataset.fxControl] ?? 0,
+        moved: false,
+      };
+      button.classList.add("is-adjusting");
+      setFxControlValue(activeKnobDrag.name, activeKnobDrag.startValue, "Adjust ");
+    });
+    button.addEventListener("pointermove", (event) => {
+      if (!activeKnobDrag || activeKnobDrag.button !== button || activeKnobDrag.pointerId !== event.pointerId) return;
+      const deltaY = activeKnobDrag.startY - event.clientY;
+      const deltaX = event.clientX - activeKnobDrag.startX;
+      if (Math.abs(deltaY) > 2 || Math.abs(deltaX) > 4) activeKnobDrag.moved = true;
+      const travel = activeKnobDrag.name === "master" ? 170 : 140;
+      setFxControlValue(activeKnobDrag.name, activeKnobDrag.startValue + deltaY / travel + deltaX / (travel * 2), "Adjust ");
+    });
+    button.addEventListener("pointerup", (event) => {
+      if (!activeKnobDrag || activeKnobDrag.button !== button || activeKnobDrag.pointerId !== event.pointerId) return;
+      const shouldClickNudge = !activeKnobDrag.moved;
+      activeKnobDrag = null;
+      button.classList.remove("is-adjusting");
+      button.releasePointerCapture?.(event.pointerId);
+      if (shouldClickNudge) nudgeFxControl(button.dataset.fxControl);
+    });
+    button.addEventListener("pointercancel", (event) => {
+      if (!activeKnobDrag || activeKnobDrag.button !== button || activeKnobDrag.pointerId !== event.pointerId) return;
+      activeKnobDrag = null;
+      button.classList.remove("is-adjusting");
+      button.releasePointerCapture?.(event.pointerId);
+    });
+    button.addEventListener("wheel", (event) => {
+      if (!button.dataset.fxControl) return;
+      event.preventDefault();
+      const step = event.shiftKey ? 0.03 : 0.08;
+      setFxControlValue(button.dataset.fxControl, (fxState[button.dataset.fxControl] ?? 0) + (event.deltaY < 0 ? step : -step), "Adjust ");
+    }, { passive: false });
+    button.addEventListener("keydown", (event) => {
+      const name = button.dataset.fxControl;
+      if (!name || event.repeat) return;
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        nudgeFxControl(name);
+      }
+      if (event.key === "ArrowUp" || event.key === "ArrowRight") {
+        event.preventDefault();
+        setFxControlValue(name, fxState[name] + 0.06, "Adjust ");
+      }
+      if (event.key === "ArrowDown" || event.key === "ArrowLeft") {
+        event.preventDefault();
+        setFxControlValue(name, fxState[name] - 0.06, "Adjust ");
+      }
+      if (event.key === "Home") {
+        event.preventDefault();
+        setFxControlValue(name, name === "master" ? 0.24 : 0, "Adjust ");
+      }
+      if (event.key === "End") {
+        event.preventDefault();
+        setFxControlValue(name, 1, "Adjust ");
+      }
     });
   });
   syncKnobControls();
@@ -466,17 +702,16 @@
         featureTrackConnected: featureTrack ? mediaSources.has(featureTrack) : false,
         featureTrackPaused: featureTrack ? featureTrack.paused : true,
         featureTrackVolume: featureTrack ? featureTrack.volume : 0,
+        healing: {
+          active: healingActive,
+          preset: getHealingPreset() ? { hz: getHealingPreset().hz, label: getHealingPreset().label } : null
+        },
         effects: { ...fxState },
         eq: { ...lastEqSnapshot }
       };
     },
     setEffect(name, value) {
-      if (!(name in fxState)) return false;
-      fxState[name] = Math.max(0, Math.min(1, Number(value) || 0));
-      applyFxState(`${name.charAt(0).toUpperCase()}${name.slice(1)} ${Math.round(fxState[name] * 100)}%`);
-      visualImpulse = Math.max(visualImpulse, 0.78);
-      startEqRender();
-      return true;
+      return setFxControlValue(name, value);
     }
   };
 
@@ -501,43 +736,65 @@
       resetBeatVars();
       return;
     }
-    if (featureTrack && !featureTrack.paused) startEqRender();
+    if ((featureTrack && !featureTrack.paused) || healingActive) startEqRender();
   });
   const scanTimer = window.setInterval(scanPageMedia, 2200);
   startEqRender();
 
 
-  if (featureTrack) {
-    playerToggle?.addEventListener("click", async () => {
-      if (featureTrack.paused) {
-        await startFeatureTrack({ restart: featureTrack.ended || completedEntryLoops >= maxEntryLoops });
-      } else {
-        featureTrack.pause();
+  playerToggle?.addEventListener("click", async () => {
+    if (isHealingGenerator) {
+      if (healingActive) {
+        stopHealingTone();
         resetBeatVars();
         setEqStatus("Paused");
-        syncPlayerUi();
-      }
-    });
-
-    playerPrev?.addEventListener("click", () => {
-      try {
-        featureTrack.currentTime = Math.max(0, featureTrack.currentTime - 15);
-      } catch {
-        // Metadata may not be ready yet.
+      } else {
+        startHealingTone({ restart: true });
       }
       syncPlayerUi();
-    });
-
-    playerNext?.addEventListener("click", () => {
-      const duration = Number.isFinite(featureTrack.duration) ? featureTrack.duration : featureTrack.currentTime + 15;
-      try {
-        featureTrack.currentTime = Math.min(duration, featureTrack.currentTime + 15);
-      } catch {
-        // Metadata may not be ready yet.
-      }
+      return;
+    }
+    if (!featureTrack) return;
+    if (featureTrack.paused) {
+        await startFeatureTrack({ restart: featureTrack.ended || completedEntryLoops >= maxEntryLoops });
+    } else {
+      featureTrack.pause();
+      resetBeatVars();
+      setEqStatus("Paused");
       syncPlayerUi();
-    });
+    }
+  });
 
+  playerPrev?.addEventListener("click", () => {
+    if (isHealingGenerator) {
+      selectHealingPreset(healingIndex - 1, { restart: healingActive });
+      return;
+    }
+    if (!featureTrack) return;
+    try {
+      featureTrack.currentTime = Math.max(0, featureTrack.currentTime - 15);
+    } catch {
+      // Metadata may not be ready yet.
+    }
+    syncPlayerUi();
+  });
+
+  playerNext?.addEventListener("click", () => {
+    if (isHealingGenerator) {
+      selectHealingPreset(healingIndex + 1, { restart: healingActive });
+      return;
+    }
+    if (!featureTrack) return;
+    const duration = Number.isFinite(featureTrack.duration) ? featureTrack.duration : featureTrack.currentTime + 15;
+    try {
+      featureTrack.currentTime = Math.min(duration, featureTrack.currentTime + 15);
+    } catch {
+      // Metadata may not be ready yet.
+    }
+    syncPlayerUi();
+  });
+
+  if (featureTrack) {
     featureTrack.addEventListener("ended", () => {
       completedEntryLoops += 1;
       resetBeatVars();
@@ -556,6 +813,7 @@
       } catch {
         // Metadata may not be ready yet.
       }
+      stopHealingTone();
       setEqStatus("Complete");
       syncPlayerUi();
     });
@@ -568,6 +826,7 @@
     });
     featureTrack.addEventListener("pause", () => {
       if (!featureTrack.ended) {
+        stopHealingTone();
         resetBeatVars();
         setEqStatus("Paused");
         syncPlayerUi();
@@ -579,6 +838,8 @@
     featureTrack.addEventListener("seeking", syncPlayerUi);
     syncPlayerUi();
     window.setTimeout(() => startFeatureTrack({ restart: true, entry: true }), 320);
+  } else {
+    syncPlayerUi();
   }
   const pianos = Array.from(document.querySelectorAll("[data-playable-piano]"));
   if (!pianos.length) return;
