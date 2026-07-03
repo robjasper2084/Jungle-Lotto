@@ -54,133 +54,28 @@
         z-index: 20;
       }
 
-      .beat2-game-shell {
-        position: relative;
+      body.beat2lotto-game-page .beat2-game-shell {
+        position: fixed;
+        inset: var(--guide-header-height) 0 0;
         z-index: 2;
-        display: grid;
-        grid-template-rows: auto 1fr;
-        gap: clamp(0.45rem, 0.8vw, 0.7rem);
-        height: calc(100svh - var(--guide-header-height));
+        display: block;
+        height: auto;
         min-height: 0;
-        padding: clamp(0.4rem, 0.85vw, 0.7rem);
-      }
-
-      .beat2-game-status {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 0.8rem;
-        min-height: 3.45rem;
-        border: 1px solid rgba(41, 247, 255, 0.5);
-        border-radius: 1rem;
-        padding: 0.55rem clamp(0.8rem, 1.4vw, 1.2rem);
-        background:
-          linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 48%),
-          rgba(2, 13, 25, 0.76);
-        box-shadow:
-          inset 0 0 0 1px rgba(255, 255, 255, 0.045),
-          inset 0 0 34px rgba(41, 247, 255, 0.1),
-          0 18px 48px rgba(0, 0, 0, 0.36);
-        backdrop-filter: blur(16px);
-      }
-
-      .beat2-game-kicker {
-        margin: 0 0 0.18rem;
-        color: #29f7ff;
-        font: 900 0.68rem / 1 var(--font-body, system-ui, sans-serif);
-        letter-spacing: 0.14em;
-        text-transform: uppercase;
-      }
-
-      .beat2-game-status h1 {
-        margin: 0;
-        color: #fff7ba;
-        font: 950 clamp(1.15rem, 2vw, 1.75rem) / 0.95 var(--font-display, Impact, sans-serif);
-        letter-spacing: 0;
-        text-transform: uppercase;
-        text-shadow: 0 0 22px rgba(255, 224, 113, 0.28);
-      }
-
-      .beat2-game-status p {
-        margin: 0.22rem 0 0;
-        max-width: 54rem;
-        color: rgba(232, 249, 255, 0.82);
-        font: 750 clamp(0.82rem, 1.05vw, 0.98rem) / 1.35 var(--font-body, system-ui, sans-serif);
-      }
-
-      .beat2-game-actions {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.45rem;
-        flex: 0 0 auto;
-      }
-
-      .beat2-game-actions :is(button, a) {
-        appearance: none;
-        min-height: 2.45rem;
-        border: 1px solid rgba(255, 224, 113, 0.62);
-        border-radius: 999px;
-        padding: 0.6rem 0.95rem;
-        color: #f8ffff;
-        background:
-          linear-gradient(180deg, rgba(255, 255, 255, 0.22), transparent 38%),
-          linear-gradient(135deg, rgba(4, 24, 38, 0.98), rgba(7, 48, 66, 0.86));
-        box-shadow:
-          inset 0 0.16rem 0 rgba(255, 255, 255, 0.22),
-          inset 0 -0.24rem 0 rgba(0, 0, 0, 0.42),
-          0 0 18px rgba(41, 247, 255, 0.2);
-        cursor: pointer;
-        font: 900 0.7rem / 1 var(--font-body, system-ui, sans-serif);
-        letter-spacing: 0.08em;
-        text-decoration: none;
-        text-transform: uppercase;
-        transition: transform 150ms ease, filter 150ms ease, box-shadow 150ms ease;
-        touch-action: manipulation;
-      }
-
-      .beat2-game-actions :is(button, a):hover,
-      .beat2-game-actions :is(button, a):focus-visible {
-        transform: translateY(-0.12rem);
-        filter: brightness(1.12) saturate(1.18);
-        outline: none;
-      }
-
-      .beat2-game-actions :is(button, a):active {
-        transform: translateY(0.1rem);
-        box-shadow:
-          inset 0 0.08rem 0 rgba(255, 255, 255, 0.16),
-          inset 0 0.18rem 0.42rem rgba(0, 0, 0, 0.55),
-          0 0 10px rgba(41, 247, 255, 0.12);
+        padding: 0;
+        overflow: hidden;
+        background: #02040a;
       }
 
       .beat2-gamebox {
         position: relative;
+        width: 100%;
+        height: 100%;
         min-height: 0;
-        border: 1px solid rgba(41, 247, 255, 0.68);
-        border-radius: clamp(0.85rem, 1vw, 1.2rem);
-        background:
-          linear-gradient(135deg, rgba(4, 14, 27, 0.96), rgba(5, 27, 44, 0.84)),
-          radial-gradient(circle at 72% 12%, rgba(125, 82, 255, 0.2), transparent 28rem);
-        box-shadow:
-          inset 0 0 0 1px rgba(255, 255, 255, 0.06),
-          inset 0 0 60px rgba(41, 247, 255, 0.14),
-          0 0 44px rgba(41, 247, 255, 0.2),
-          0 38px 110px rgba(0, 0, 0, 0.58);
+        border: 0;
+        border-radius: 0;
+        background: #02040a;
+        box-shadow: none;
         overflow: hidden;
-        isolation: isolate;
-      }
-
-      .beat2-gamebox::after {
-        content: "";
-        position: absolute;
-        inset: 0;
-        z-index: 2;
-        pointer-events: none;
-        border-radius: inherit;
-        background:
-          linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 15%),
-          radial-gradient(circle at 50% 0%, rgba(255, 224, 113, 0.1), transparent 26rem);
-        mix-blend-mode: screen;
       }
 
       .beat2-gameframe {
@@ -194,50 +89,20 @@
         background: #02040a;
       }
 
-      .beat2-game-fallback {
-        position: absolute;
-        left: 1rem;
-        bottom: 1rem;
-        z-index: 5;
-        margin: 0;
-        color: rgba(232, 249, 255, 0.72);
-        font: 800 0.78rem / 1.3 var(--font-body, system-ui, sans-serif);
-        pointer-events: none;
-      }
-
       @media (max-width: 900px) {
         body.beat2lotto-game-page {
-          overflow-y: auto;
+          overflow: hidden;
         }
 
-        .beat2-game-shell {
+        body.beat2lotto-game-page .beat2-game-shell {
           height: auto;
-          min-height: calc(100svh - var(--guide-header-height));
-          grid-template-rows: auto minmax(34rem, 1fr);
-          padding: 0.45rem;
-        }
-
-        .beat2-game-status {
-          align-items: stretch;
-          flex-direction: column;
-        }
-
-        .beat2-game-actions {
-          flex-wrap: wrap;
-        }
-
-        .beat2-game-actions :is(button, a) {
-          flex: 1 1 8.5rem;
+          min-height: 0;
         }
       }
 
       @media (max-width: 520px) {
-        .beat2-game-shell {
-          grid-template-rows: auto minmax(29rem, 1fr);
-        }
-
-        .beat2-game-status h1 {
-          font-size: clamp(1.1rem, 9vw, 1.7rem);
+        body.beat2lotto-game-page .beat2-game-shell {
+          height: auto;
         }
       }
     </style>
@@ -271,22 +136,7 @@
       </div>
     </header>
 
-    <main id="beat2lotto" class="beat2-game-shell" aria-label="Shadow Ops Canvas gameplay page">
-      <section class="beat2-game-status" aria-label="Shadow Ops status and launch controls">
-        <div>
-          <p class="beat2-game-kicker">Beat2Lotto+ Gameplay Portal</p>
-          <h1>Shadow Ops Canvas</h1>
-          <p>
-            The game now runs inside the LottoMinded shell so the header, sphere tabs, and page navigation stay available.
-          </p>
-        </div>
-        <div class="beat2-game-actions">
-          <button type="button" data-beat2-game-focus>Focus Game</button>
-          <button type="button" data-beat2-game-fullscreen>Full Screen</button>
-          <a href="./games/shadow-ops-canvas/index.html?v=embedded-8142-1" target="_blank" rel="noopener" data-beat2-game-open>Open Game</a>
-        </div>
-      </section>
-
+    <main id="beat2lotto" class="beat2-game-shell" aria-label="Shadow Ops Canvas game">
       <section class="beat2-gamebox" data-beat2-game-shell aria-label="Shadow Ops Canvas game viewport">
         <iframe
           class="beat2-gameframe"
@@ -296,9 +146,6 @@
           allowfullscreen
           data-beat2-game-frame
         ></iframe>
-        <p class="beat2-game-fallback">
-          Bundled Shadow Ops Canvas build is loaded from this site.
-        </p>
       </section>
     </main>
 
@@ -309,12 +156,8 @@
         const header = document.querySelector("[data-site-header]");
         const shell = document.querySelector("[data-beat2-game-shell]");
         const frame = document.querySelector("[data-beat2-game-frame]");
-        const openLink = document.querySelector("[data-beat2-game-open]");
-        const focusButton = document.querySelector("[data-beat2-game-focus]");
-        const fullscreenButton = document.querySelector("[data-beat2-game-fullscreen]");
 
         if (frame) frame.src = targetGame;
-        if (openLink) openLink.href = targetGame;
 
         const syncHeaderHeight = () => {
           if (!header) return;
@@ -328,26 +171,14 @@
           new ResizeObserver(syncHeaderHeight).observe(header);
         }
 
-        focusButton?.addEventListener("click", () => {
-          frame?.focus();
-        });
-
-        fullscreenButton?.addEventListener("click", async () => {
-          if (!shell) return;
+        shell?.addEventListener("dblclick", async () => {
           try {
             if (document.fullscreenElement) {
               await document.exitFullscreen();
             } else {
               await shell.requestFullscreen();
             }
-          } catch (error) {
-            window.open(targetGame, "_blank", "noopener");
-          }
-        });
-
-        document.addEventListener("fullscreenchange", () => {
-          if (!fullscreenButton) return;
-          fullscreenButton.textContent = document.fullscreenElement ? "Exit Full" : "Full Screen";
+          } catch (error) {}
         });
       })();
     </script>
