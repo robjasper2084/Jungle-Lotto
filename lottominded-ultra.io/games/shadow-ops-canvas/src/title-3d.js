@@ -3,7 +3,7 @@ import * as THREE from "../assets/vendor/three.module.min.js";
 const titleScreen = document.getElementById("titleScreen");
 const canvas = document.getElementById("titleWorld");
 const TITLE_ASSET_BASE = "../assets/title3d/";
-const TITLE_ENV_PACK_ID = (new URLSearchParams(window.location.search).get("envpack") || "").trim();
+const TITLE_ENV_PACK_ID = (new URLSearchParams(window.location.search).get("envpack") || "cyber-vault-v1").trim();
 const TITLE_ENV_PACK_BASES = {
   "cyber-vault-v1": "../assets/environment3d/cyber-vault-v1/"
 };
@@ -37,7 +37,6 @@ function TitleVaultWorld(root, targetCanvas) {
   this.backdropTexture = loadTitleTexture(this, "title3d_clean_backdrop_nohero_2.jpg");
   this.platformTexture = loadTitleTexture(this, "title3d_ref_platform_tile_v2.jpg", { repeat: [2.4, 2.4] });
   this.wallTexture = loadTitleTexture(this, "title3d_ref_wall_tile_v2.jpg", { repeat: [1.45, 2.25] });
-  this.mascotStandeeTexture = loadTitleTexture(this, "title3d_hoodie_mascot_standee_alpha.png");
   this.environmentPackBase = TITLE_ENV_PACK_BASES[TITLE_ENV_PACK_ID] || "";
   this.environmentPackTextures = this.environmentPackBase ? {
     far: loadTextureFromBase(this, this.environmentPackBase, "layers/far-purple-nebula-sky.png"),
@@ -61,6 +60,7 @@ function TitleVaultWorld(root, targetCanvas) {
   this.visible = !root.classList.contains("is-hidden");
   this.interactives = [];
   this.pulses = [];
+  this.energySparks = [];
   this.hovered = null;
   this.reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -91,14 +91,18 @@ function buildScene(world) {
 
   makeHiggsfieldBackdrop(world);
   makeTitleFloorGrid(world);
+  makeReferenceWallPlanes(world);
+  makeCyberVaultReactor(world);
+  makeCircuitPylonRow(world);
   makePlatform(world, -4.6, 0.42, 0.6, 3.1, 0.34, 1.2);
   makePlatform(world, 0.2, 0.35, -1.4, 5.6, 0.32, 1.45);
   makePlatform(world, 4.6, 0.52, -2.7, 3.2, 0.38, 1.4);
   makePlatform(world, 6.4, 1.8, -4.2, 2.5, 0.28, 1.05);
-  makeMascotStandee(world);
+  makeVaultGate(world, 6.15, 1.72, -2.58);
   makeDrone(world, -1.5, 3.0, -3.15, 0.0);
   makeDrone(world, 1.4, 3.28, -3.6, 1.4);
   makeDrone(world, 4.0, 2.75, -2.35, 2.6);
+  makeParticleField(world);
   makeTitleFogAndEmblems(world);
 }
 
@@ -214,6 +218,20 @@ function makeTitleFloorGrid(world) {
   grid.material.transparent = true;
   grid.material.opacity = 0.18;
   sceneSafeAdd(world.scene, grid);
+
+  const horizon = new THREE.Mesh(
+    new THREE.PlaneGeometry(24, 0.08),
+    new THREE.MeshBasicMaterial({
+      color: 0x38dbff,
+      transparent: true,
+      opacity: 0.34,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false
+    })
+  );
+  horizon.position.set(0, 1.05, -5.55);
+  horizon.renderOrder = -2;
+  world.scene.add(horizon);
 }
 
 function makeTitleFogAndEmblems(world) {
@@ -272,6 +290,124 @@ function makeReferenceWallPlanes(world) {
   world.scene.add(right);
 }
 
+function makeCyberVaultReactor(world) {
+  const group = new THREE.Group();
+  group.name = "cyber-vault-heart-reactor";
+  group.position.set(2.85, 2.68, -4.58);
+  group.rotation.y = -0.2;
+  group.userData.phase = 0;
+  world.scene.add(group);
+
+  const armorMat = new THREE.MeshStandardMaterial({
+    color: 0x111018,
+    metalness: 0.86,
+    roughness: 0.23,
+    emissive: 0x230029,
+    emissiveIntensity: 0.62
+  });
+  const goldMat = new THREE.MeshStandardMaterial({
+    color: 0xffd66d,
+    metalness: 0.82,
+    roughness: 0.18,
+    emissive: 0x7a4300,
+    emissiveIntensity: 0.82
+  });
+  const magentaMat = new THREE.MeshStandardMaterial({
+    color: 0xff4fda,
+    metalness: 0.25,
+    roughness: 0.16,
+    emissive: 0xff2fbc,
+    emissiveIntensity: 2.4
+  });
+
+  const outer = new THREE.Mesh(new THREE.TorusGeometry(1.12, 0.09, 18, 128), armorMat);
+  const mid = new THREE.Mesh(new THREE.TorusGeometry(0.86, 0.045, 12, 112), goldMat);
+  const inner = new THREE.Mesh(new THREE.TorusGeometry(0.56, 0.035, 10, 96), magentaMat);
+  outer.rotation.z = 0.12;
+  mid.rotation.z = -0.38;
+  inner.rotation.z = 0.66;
+  outer.userData.spin = 0.08;
+  mid.userData.spin = -0.13;
+  inner.userData.spin = 0.22;
+  group.add(outer, mid, inner);
+
+  const heart = new THREE.Mesh(makeHeartGeometry(), magentaMat);
+  heart.position.set(0, -0.04, 0.06);
+  heart.scale.setScalar(0.64);
+  group.add(heart);
+
+  for (let i = 0; i < 10; i += 1) {
+    const angle = (i / 10) * Math.PI * 2;
+    const blade = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.5, 0.08), i % 2 ? armorMat : goldMat);
+    blade.position.set(Math.cos(angle) * 1.22, Math.sin(angle) * 1.22, -0.08);
+    blade.rotation.z = angle;
+    group.add(blade);
+  }
+
+  for (let i = 0; i < 18; i += 1) {
+    const spark = new THREE.Mesh(
+      new THREE.SphereGeometry(0.025 + (i % 3) * 0.008, 10, 8),
+      new THREE.MeshBasicMaterial({
+        color: i % 2 ? 0xffd66d : 0xff4fda,
+        transparent: true,
+        opacity: 0.8,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false
+      })
+    );
+    spark.userData.orbitRadius = 0.72 + Math.random() * 0.72;
+    spark.userData.orbitSpeed = 0.35 + Math.random() * 0.55;
+    spark.userData.orbitPhase = Math.random() * Math.PI * 2;
+    spark.userData.baseY = (Math.random() - 0.5) * 1.1;
+    group.add(spark);
+    world.energySparks.push(spark);
+  }
+
+  group.userData.animate = (time) => {
+    const pulse = 1 + Math.sin(time * 2.15) * 0.035;
+    group.scale.setScalar(pulse);
+    heart.scale.setScalar(0.64 + Math.sin(time * 3.2) * 0.045);
+    magentaMat.emissiveIntensity = 2.1 + Math.sin(time * 2.3) * 0.55;
+    for (const spark of world.energySparks) {
+      const t = time * spark.userData.orbitSpeed + spark.userData.orbitPhase;
+      spark.position.set(Math.cos(t) * spark.userData.orbitRadius, spark.userData.baseY + Math.sin(t * 1.7) * 0.18, Math.sin(t) * 0.22 + 0.04);
+      spark.material.opacity = 0.42 + Math.sin(time * 2.8 + spark.userData.orbitPhase) * 0.28;
+    }
+  };
+
+  addInteractive(world, group, "heart-core-reactor");
+}
+
+function makeHeartGeometry() {
+  const shape = new THREE.Shape();
+  shape.moveTo(0, 0.34);
+  shape.bezierCurveTo(0.58, 0.92, 1.34, 0.34, 0.72, -0.32);
+  shape.bezierCurveTo(0.42, -0.64, 0.16, -0.78, 0, -1.04);
+  shape.bezierCurveTo(-0.16, -0.78, -0.42, -0.64, -0.72, -0.32);
+  shape.bezierCurveTo(-1.34, 0.34, -0.58, 0.92, 0, 0.34);
+  const geometry = new THREE.ExtrudeGeometry(shape, {
+    depth: 0.08,
+    bevelEnabled: true,
+    bevelSegments: 3,
+    bevelSize: 0.025,
+    bevelThickness: 0.025
+  });
+  geometry.center();
+  return geometry;
+}
+
+function makeCircuitPylonRow(world) {
+  for (let i = 0; i < 8; i += 1) {
+    const x = -6.8 + i * 1.9;
+    const y = 0.95 + (i % 3) * 0.16;
+    const z = -4.95 + (i % 2) * 0.55;
+    makeCircuitPylon(world, x, y, z, i);
+  }
+  for (let i = 0; i < 5; i += 1) {
+    makeEnergyNode(world, -5.4 + i * 2.7, 0.58, -2.1 - i * 0.28, i % 2 ? 0xffd66d : 0xa522ff, `floor-energy-node-${i}`);
+  }
+}
+
 function makePlatform(world, x, y, z, width, height, depth) {
   const body = new THREE.Mesh(
     new THREE.BoxGeometry(width, height, depth),
@@ -300,64 +436,6 @@ function makePlatform(world, x, y, z, width, height, depth) {
   );
   glow.position.set(x, y + height * 0.62, z + depth * 0.55);
   world.scene.add(glow);
-}
-
-function makeMascotStandee(world) {
-  const group = new THREE.Group();
-  group.name = "hoodie-mascot-3d-center";
-  group.position.set(1.12, 1.52, -0.98);
-  group.rotation.y = -0.08;
-  group.userData.phase = 0.35;
-  world.scene.add(group);
-
-  const height = 2.28;
-  const width = height * (538 / 1023);
-  const geometry = new THREE.PlaneGeometry(width, height);
-
-  const mascot = new THREE.Mesh(
-    geometry,
-    new THREE.MeshBasicMaterial({
-      map: world.mascotStandeeTexture,
-      transparent: true,
-      alphaTest: 0.08,
-      depthWrite: false,
-      side: THREE.DoubleSide
-    })
-  );
-  mascot.name = "hoodie-mascot-cutout";
-  mascot.renderOrder = 22;
-  group.add(mascot);
-
-  const base = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.62, 0.76, 0.1, 56),
-    new THREE.MeshStandardMaterial({
-      color: 0x0c090f,
-      metalness: 0.72,
-      roughness: 0.24,
-      emissive: 0x2b083c,
-      emissiveIntensity: 0.68
-    })
-  );
-  base.position.set(0, -height * 0.5 - 0.08, 0.02);
-  group.add(base);
-
-  const ring = new THREE.Mesh(
-    new THREE.TorusGeometry(0.68, 0.018, 8, 72),
-    new THREE.MeshBasicMaterial({ color: 0xffd66d, transparent: true, opacity: 0.78 })
-  );
-  ring.position.copy(base.position);
-  ring.position.y += 0.062;
-  ring.rotation.x = Math.PI / 2;
-  ring.userData.spin = 0.55;
-  group.add(ring);
-
-  group.userData.animate = (time) => {
-    const bob = Math.sin(time * 1.12 + group.userData.phase) * 0.038;
-    group.position.y = 1.52 + bob;
-    group.rotation.y = -0.08 + Math.sin(time * 0.55) * 0.03;
-  };
-
-  addInteractive(world, group, "hoodie-mascot-center");
 }
 
 function makeReferenceAssetLayer(world) {

@@ -273,37 +273,49 @@ button.primary {
 }
 
 .title-copy {
-  width: min(760px, calc(100vw - 36px));
-  padding: clamp(23px, 3.9vw, 39px);
+  width: min(1060px, calc(100vw - 36px));
+  min-height: clamp(410px, 54vh, 560px);
+  padding: clamp(24px, 3.8vw, 44px);
   justify-self: center;
   margin-left: 0;
   position: relative;
   z-index: 2;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) clamp(132px, 20vw, 184px);
+  grid-template-columns: minmax(390px, 0.52fr) minmax(220px, 0.48fr);
   grid-template-areas:
-    "label art"
-    "title art"
-    "copy art"
-    "actions actions"
-    "controls controls";
-  column-gap: clamp(16px, 3vw, 28px);
-  align-items: center;
+    "label media"
+    "title media"
+    "copy media"
+    "actions media"
+    "controls media";
+  column-gap: clamp(18px, 3vw, 34px);
+  align-content: end;
   overflow: hidden;
-  border-color: rgba(56, 219, 255, 0.56);
+  isolation: isolate;
+  border-color: rgba(56, 219, 255, 0.74);
   background:
-    linear-gradient(135deg, rgba(56, 219, 255, 0.16), transparent 26%),
-    linear-gradient(315deg, rgba(255, 214, 109, 0.14), transparent 30%),
-    rgba(3, 8, 13, 0.82);
+    linear-gradient(90deg, rgba(3, 7, 13, 0.96) 0%, rgba(4, 8, 14, 0.88) 38%, rgba(4, 8, 14, 0.48) 66%, rgba(4, 8, 14, 0.28) 100%),
+    linear-gradient(180deg, rgba(2, 4, 8, 0.58) 0%, rgba(2, 4, 8, 0.12) 42%, rgba(2, 4, 8, 0.7) 100%),
+    radial-gradient(circle at 30% 72%, rgba(255, 79, 154, 0.2), transparent 38%),
+    url("./assets/backgrounds/robot-rahbe-gameplay-keyart-flipped.png?v=gameplay-title-flipped-1");
+  background-size: cover;
+  background-position: 62% center;
+  background-repeat: no-repeat;
   box-shadow:
-    0 0 0 1px rgba(255, 214, 109, 0.18),
-    0 22px 70px rgba(0, 0, 0, 0.58),
-    inset 0 0 38px rgba(56, 219, 255, 0.07);
-  backdrop-filter: blur(13px);
+    0 0 0 1px rgba(255, 214, 109, 0.22),
+    0 28px 80px rgba(0, 0, 0, 0.64),
+    inset 0 0 48px rgba(56, 219, 255, 0.1);
+  backdrop-filter: none;
+}
+
+.title-copy > :not(.title-product-card) {
+  position: relative;
+  z-index: 3;
 }
 
 .title-copy > .small-label {
   grid-area: label;
+  text-transform: none;
 }
 
 .title-copy > h1 {
@@ -327,6 +339,7 @@ button.primary {
   content: "";
   position: absolute;
   pointer-events: none;
+  z-index: 4;
 }
 
 .title-copy::before {
@@ -347,25 +360,22 @@ button.primary {
 }
 
 .title-product-card {
-  grid-area: art;
+  grid-area: media;
+  position: relative;
+  display: block;
   justify-self: end;
   align-self: center;
-  position: relative;
-  z-index: 1;
-  width: clamp(138px, 17vw, 172px);
-  height: clamp(220px, 28vw, 286px);
-  min-height: 0;
+  width: min(430px, 100%);
+  aspect-ratio: 16 / 9;
   margin: 0;
   overflow: hidden;
-  border: 1px solid rgba(56, 219, 255, 0.66);
+  border: 1px solid rgba(56, 219, 255, 0.7);
   border-radius: 8px;
-  background:
-    linear-gradient(135deg, rgba(56, 219, 255, 0.18), transparent 42%),
-    rgba(3, 8, 13, 0.72);
+  background: rgba(3, 7, 13, 0.58);
   box-shadow:
-    0 0 0 1px rgba(255, 214, 109, 0.18),
-    0 18px 34px rgba(0, 0, 0, 0.34),
-    inset 0 0 32px rgba(56, 219, 255, 0.12);
+    0 0 0 1px rgba(255, 214, 109, 0.16),
+    0 18px 54px rgba(0, 0, 0, 0.44),
+    inset 0 0 24px rgba(56, 219, 255, 0.08);
 }
 
 .title-product-card::after {
@@ -379,14 +389,72 @@ button.primary {
   mix-blend-mode: screen;
 }
 
+.title-product-card--gameplay {
+  display: none !important;
+  grid-area: 1 / 1 / -1 / -1;
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  justify-self: stretch;
+  align-self: stretch;
+  aspect-ratio: auto;
+  margin: 0;
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+  box-shadow: none;
+  pointer-events: none;
+}
+
+.title-product-card--gameplay img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 68% 48%;
+  filter: saturate(1.18) contrast(1.08) brightness(0.82);
+  transform: scale(1.035);
+  opacity: 0.74;
+}
+
+.title-product-card--gameplay figcaption {
+  display: none;
+}
+
 .title-product-card img {
   width: 100%;
   height: 100%;
   display: block;
   object-fit: cover;
-  object-position: 50% 50%;
-  filter: saturate(1.08) contrast(1.04) brightness(0.92);
-  transform: scale(1.18);
+  object-position: 50% 48%;
+  filter: saturate(1.12) contrast(1.08) brightness(0.9);
+  transform: scale(1.02);
+}
+
+.title-product-card figcaption {
+  position: absolute;
+  left: 10px;
+  bottom: 8px;
+  z-index: 2;
+  border: 1px solid rgba(255, 214, 109, 0.54);
+  border-radius: 999px;
+  background: rgba(5, 7, 11, 0.74);
+  color: rgba(255, 243, 209, 0.88);
+  font-size: 0.58rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  padding: 5px 8px;
+  text-transform: uppercase;
+}
+
+.title-product-card--gameplay::after {
+  background:
+    linear-gradient(90deg, rgba(3, 7, 13, 0.96) 0%, rgba(3, 7, 13, 0.84) 38%, rgba(3, 7, 13, 0.4) 62%, rgba(3, 7, 13, 0.18) 100%),
+    linear-gradient(180deg, rgba(2, 5, 9, 0.56) 0%, rgba(2, 5, 9, 0.12) 38%, rgba(2, 5, 9, 0.7) 100%),
+    radial-gradient(circle at 78% 46%, transparent 0%, rgba(0, 0, 0, 0.28) 42%, rgba(0, 0, 0, 0.72) 100%);
+  mix-blend-mode: normal;
+  z-index: 2;
 }
 
 .title-cinema {
@@ -465,9 +533,13 @@ h1 {
 .title-copy h1 {
   color: transparent;
   font-family: Inter, ui-sans-serif, system-ui, sans-serif;
-  font-size: clamp(3.1rem, 7.1vw, 6.65rem);
-  line-height: 0.92;
+  max-width: 100%;
+  font-size: clamp(3rem, 6.2vw, 6rem);
+  line-height: 0.95;
   text-transform: none;
+  overflow-wrap: normal;
+  word-break: normal;
+  text-wrap: balance;
   background: linear-gradient(180deg, #ffffff, #fff3d1 42%, #ffd66d 78%, #ff4f9a);
   -webkit-background-clip: text;
   background-clip: text;
@@ -493,9 +565,44 @@ h2 {
   margin-top: 22px;
 }
 
-.button-row button {
+.button-row button,
+.button-row .button-link {
   min-width: 118px;
   padding: 0 16px;
+}
+
+.button-link {
+  min-height: 44px;
+  border: 1px solid rgba(255, 214, 109, 0.68);
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(5, 4, 12, 0.74);
+  color: var(--cream);
+  font-family: inherit;
+  font-size: 0.74rem;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  padding: 0 18px;
+  text-decoration: none;
+  text-transform: uppercase;
+  touch-action: manipulation;
+  transition: transform 140ms ease, border-color 140ms ease, box-shadow 140ms ease;
+}
+
+.button-link.primary {
+  border-color: transparent;
+  background: linear-gradient(135deg, #ffe58a, #ff5b9d 58%, #9234ff);
+  color: #1a0715;
+}
+
+.button-link:hover,
+.button-link:focus-visible {
+  border-color: rgba(56, 219, 255, 0.86);
+  box-shadow: 0 0 18px rgba(56, 219, 255, 0.18);
+  outline: none;
+  transform: translateY(-1px);
 }
 
 .control-strip {
@@ -982,6 +1089,47 @@ h2 {
   font-size: 0.68rem;
 }
 
+.purchase-panel {
+  width: min(820px, calc(100vw - 36px));
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) clamp(190px, 26vw, 280px);
+  gap: clamp(18px, 3vw, 28px);
+  align-items: center;
+  border-color: rgba(56, 219, 255, 0.62);
+  background:
+    linear-gradient(135deg, rgba(10, 22, 34, 0.94), rgba(7, 5, 13, 0.92)),
+    radial-gradient(circle at 82% 20%, rgba(255, 79, 154, 0.2), transparent 34%);
+}
+
+.purchase-panel h2 {
+  margin: 8px 0 0;
+  color: var(--cream);
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  font-size: clamp(2.1rem, 5vw, 4.4rem);
+  line-height: 0.94;
+  text-transform: uppercase;
+}
+
+.purchase-product-card {
+  position: relative;
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid rgba(255, 214, 109, 0.6);
+  border-radius: 8px;
+  aspect-ratio: 3 / 4;
+  background: rgba(0, 0, 0, 0.46);
+  box-shadow: 0 20px 44px rgba(0, 0, 0, 0.45), 0 0 28px rgba(255, 79, 154, 0.14);
+}
+
+.purchase-product-card img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  object-position: 50% 48%;
+  filter: saturate(1.08) contrast(1.06) brightness(0.94);
+}
+
 .lottery-panel {
   display: grid;
   gap: 8px;
@@ -1397,19 +1545,39 @@ body.compact-play #game {
 
 @media (orientation: portrait) {
   .title-copy {
-    width: min(720px, calc(100vw - 36px));
-    grid-template-columns: minmax(0, 1fr) clamp(136px, 20vw, 168px);
-    column-gap: clamp(16px, 3vw, 24px);
+    width: min(760px, calc(100vw - 36px));
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "label"
+      "title"
+      "copy"
+      "actions"
+      "controls";
+    background:
+      linear-gradient(180deg, rgba(3, 7, 13, 0.9) 0%, rgba(5, 9, 15, 0.72) 52%, rgba(5, 8, 13, 0.94) 100%),
+      radial-gradient(circle at 50% 80%, rgba(255, 79, 154, 0.18), transparent 42%),
+      url("./assets/backgrounds/robot-rahbe-gameplay-keyart-flipped.png?v=gameplay-title-flipped-1");
+    background-size: cover;
+    background-position: 64% center;
   }
 
   .title-product-card {
-    width: clamp(132px, 18vw, 160px);
-    height: clamp(204px, 27vw, 260px);
-    transform: translateY(-4px);
+    display: none;
   }
 
-  .title-product-card img {
-    transform: scale(1.16);
+  .title-product-card.title-product-card--gameplay {
+    display: block;
+  }
+
+  .title-product-card--gameplay img {
+    object-position: 64% 50%;
+    opacity: 0.48;
+  }
+
+  .title-product-card--gameplay::after {
+    background:
+      linear-gradient(180deg, rgba(3, 7, 13, 0.86) 0%, rgba(3, 7, 13, 0.68) 44%, rgba(3, 7, 13, 0.94) 100%),
+      radial-gradient(circle at 70% 42%, transparent 0%, rgba(0, 0, 0, 0.42) 45%, rgba(0, 0, 0, 0.76) 100%);
   }
 }
 
@@ -1423,29 +1591,47 @@ body.compact-play #game {
   .title-copy {
     justify-self: center;
     margin-left: 0;
+    width: min(600px, calc(100vw - 28px));
+    min-height: clamp(520px, 72dvh, 680px);
     grid-template-columns: 1fr;
     grid-template-areas:
       "label"
       "title"
-      "art"
       "copy"
       "actions"
       "controls";
     row-gap: 12px;
+    background:
+      linear-gradient(180deg, rgba(3, 7, 13, 0.92) 0%, rgba(5, 9, 15, 0.78) 48%, rgba(5, 8, 13, 0.96) 100%),
+      radial-gradient(circle at 50% 78%, rgba(255, 79, 154, 0.18), transparent 42%),
+      url("./assets/backgrounds/robot-rahbe-gameplay-keyart-flipped.png?v=gameplay-title-flipped-1");
+    background-size: cover;
+    background-position: 63% center;
   }
 
   .title-product-card {
-    justify-self: center;
-    align-self: auto;
-    width: min(100%, 340px);
-    height: clamp(132px, 24vh, 188px);
-    min-height: 0;
-    transform: none;
+    display: none;
   }
 
-  .title-product-card img {
-    object-position: 52% 50%;
-    transform: scale(1.08);
+  .title-product-card.title-product-card--gameplay {
+    display: block;
+  }
+
+  .title-product-card--gameplay img {
+    object-position: 63% 48%;
+    opacity: 0.44;
+  }
+
+  .purchase-panel {
+    grid-template-columns: 1fr;
+    width: min(560px, calc(100vw - 28px));
+    max-height: calc(100dvh - 28px);
+    overflow: auto;
+  }
+
+  .purchase-product-card {
+    width: min(280px, 72vw);
+    justify-self: center;
   }
 
   .hud {
@@ -1456,44 +1642,16 @@ body.compact-play #game {
   .hud-left,
   .hud-mid,
   .hud-right {
-    background:
-      linear-gradient(135deg, rgba(255, 214, 109, 0.12), transparent 18px) 0 0 / 72px 100%,
-      rgba(4, 3, 5, 0.72);
+    min-height: 54px;
   }
 
   .hud-mid {
     grid-column: 1 / -1;
-    grid-row: 2;
-    justify-content: stretch;
-    grid-template-columns: repeat(5, 1fr);
-    width: 100%;
-    gap: 8px;
-    padding: 8px 10px;
-    min-height: 58px;
+    order: 3;
   }
 
   .hud-right {
-    min-width: 144px;
-  }
-
-  .portrait {
-    width: 44px;
-    height: 44px;
-  }
-
-  .objective-chip {
-    top: 132px;
-  }
-
-  .boss-hud {
-    bottom: 88px;
-    grid-template-columns: 1fr;
-    width: min(430px, calc(100vw - 28px));
-    text-align: center;
-  }
-
-  .boss-meter {
-    width: 100%;
+    min-width: 146px;
   }
 }
 
@@ -1512,29 +1670,6 @@ body.compact-play #game {
     max-height: calc(100dvh - 28px);
     overflow: auto;
     row-gap: 10px;
-  }
-
-  .title-product-card {
-    height: clamp(130px, 20dvh, 176px);
-  }
-
-  body.compact-play .game-shell,
-  body.touch-forced .game-shell {
-    place-items: start center;
-  }
-
-  body.compact-play #game,
-  body.touch-forced #game {
-    width: 100vw;
-    height: min(56.25vw, calc(100dvh - 214px));
-    margin-top: clamp(118px, 16dvh, 168px);
-  }
-
-  body.touch-forced .touchbar {
-    --touch-size: clamp(46px, 12vw, 56px);
-    width: calc(100vw - max(10px, env(safe-area-inset-left)) - max(10px, env(safe-area-inset-right)));
-    inset: auto max(10px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left));
-    align-items: end;
   }
 }
 
@@ -1608,10 +1743,6 @@ body.compact-play #game {
     padding: 7px 8px;
   }
 
-  .hud-title {
-    font-size: 0.68rem;
-  }
-
   .hearts {
     gap: 5px;
   }
@@ -1660,7 +1791,8 @@ body.compact-play #game {
     gap: 8px;
   }
 
-  .button-row button {
+  .button-row button,
+  .button-row .button-link {
     min-height: 42px;
     padding-inline: 10px;
   }
@@ -1679,6 +1811,7 @@ body.compact-play #game {
 
 @media (max-height: 620px) {
   .title-copy {
+    min-height: min(430px, calc(100dvh - 22px));
     padding: 16px;
   }
 
@@ -1692,6 +1825,11 @@ body.compact-play #game {
 
   .button-row {
     margin-top: 14px;
+  }
+
+  .button-row button,
+  .button-row .button-link {
+    min-height: 38px;
   }
 
   .control-strip {
@@ -1734,39 +1872,17 @@ body.compact-play #game {
   }
 
   .title-copy {
-    width: min(720px, calc(100vw - 28px));
+    width: min(820px, calc(100vw - 28px));
     max-height: calc(100dvh - 22px);
+    min-height: min(420px, calc(100dvh - 22px));
     padding: clamp(14px, 3vh, 22px);
-    grid-template-columns: minmax(0, 1fr) clamp(112px, 17vw, 158px);
-    column-gap: clamp(12px, 2.2vw, 20px);
+    background-position: 66% center;
   }
 
   .title-copy h1 {
     font-size: clamp(2.15rem, 10vh, 4rem);
   }
-
-  .title-product-card {
-    min-height: clamp(120px, 42vh, 170px);
-  }
-
-  .screen-copy {
-    font-size: clamp(0.74rem, 2.2vh, 0.94rem);
-  }
-
-  .button-row button {
-    min-height: 38px;
-  }
-
-  .control-strip {
-    font-size: 0.62rem;
-  }
-
-  body.touch-forced .touchbar {
-    --touch-size: clamp(42px, 12vh, 58px);
-    bottom: max(8px, env(safe-area-inset-bottom));
-  }
 }
-
 @keyframes startup-depth-far {
   from {
     transform: translate3d(-0.35%, -0.18%, 0) scale(1.04);
@@ -1859,4 +1975,429 @@ body.compact-play #game {
     transition-duration: 0.01ms !important;
     animation-duration: 0.01ms !important;
   }
+}
+
+/* loading-theme-boot */
+.screen--loading {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background:
+    linear-gradient(90deg, rgba(3, 7, 13, 0.94), rgba(7, 2, 18, 0.72) 48%, rgba(0, 0, 0, 0.8)),
+    radial-gradient(circle at 72% 42%, rgba(255, 79, 218, 0.22), transparent 34%),
+    url("./assets/backgrounds/robot-rahbe-gameplay-keyart-flipped.png?v=gameplay-title-flipped-1") center / cover no-repeat;
+}
+
+.screen--loading::before,
+.screen--loading::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.screen--loading::before {
+  z-index: 1;
+  background:
+    repeating-linear-gradient(0deg, rgba(56, 219, 255, 0.07) 0 1px, transparent 1px 9px),
+    repeating-linear-gradient(90deg, rgba(255, 214, 109, 0.06) 0 1px, transparent 1px 84px);
+  opacity: 0.42;
+}
+
+.screen--loading::after {
+  z-index: 2;
+  background:
+    radial-gradient(ellipse at 52% 58%, rgba(255, 79, 154, 0.2), transparent 42%),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.34), transparent 34%, rgba(0, 0, 0, 0.62));
+}
+
+.loading-panel {
+  position: relative;
+  z-index: 3;
+  width: min(620px, calc(100vw - 36px));
+  overflow: hidden;
+  border-color: rgba(56, 219, 255, 0.7);
+  background:
+    linear-gradient(145deg, rgba(4, 14, 24, 0.95), rgba(18, 8, 26, 0.92)),
+    linear-gradient(90deg, rgba(255, 214, 109, 0.12), transparent 42%, rgba(255, 79, 218, 0.12));
+  box-shadow:
+    0 24px 70px rgba(0, 0, 0, 0.72),
+    0 0 32px rgba(56, 219, 255, 0.2),
+    inset 0 0 0 1px rgba(255, 214, 109, 0.1);
+}
+
+.loading-panel::before {
+  content: "";
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  width: min(220px, 42%);
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(56, 219, 255, 0.75), rgba(255, 214, 109, 0.9));
+  box-shadow: 0 34px 0 rgba(255, 214, 109, 0.35), -94px 72px 0 rgba(255, 79, 218, 0.38);
+}
+
+.loading-panel .small-label {
+  color: var(--gold);
+  text-shadow: 0 0 14px rgba(255, 214, 109, 0.3);
+}
+
+.loading-panel h1 {
+  max-width: 11ch;
+  margin-top: 10px;
+  font-family: var(--font-display);
+  font-size: clamp(3rem, 9vw, 5.9rem);
+  line-height: 0.86;
+  text-transform: uppercase;
+  background: linear-gradient(180deg, #f7fbff 0%, #ffe47f 56%, #ff4f9a 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.loading-panel .screen-copy {
+  color: rgba(234, 241, 248, 0.82);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.88rem;
+}
+
+.loading-panel .load-track {
+  height: 16px;
+  border-radius: 999px;
+  border-color: rgba(56, 219, 255, 0.58);
+  background:
+    linear-gradient(90deg, rgba(255, 214, 109, 0.12), rgba(56, 219, 255, 0.08)),
+    rgba(0, 0, 0, 0.58);
+  box-shadow: inset 0 0 18px rgba(0, 0, 0, 0.75), 0 0 24px rgba(255, 79, 218, 0.18);
+}
+
+.loading-panel .load-track span {
+  background:
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.24) 0 12px, transparent 12px 24px),
+    linear-gradient(90deg, #ff4f9a, #b83cff 45%, #ffd66d 72%, #38dbff);
+  box-shadow: 0 0 20px rgba(255, 79, 218, 0.58);
+}
+
+@media (max-width: 640px), (orientation: portrait) {
+  .screen--loading {
+    background-position: 58% center;
+  }
+
+  .loading-panel {
+    width: min(92vw, 540px);
+    padding: 28px 24px;
+  }
+
+  .loading-panel h1 {
+    font-size: clamp(2.7rem, 14vw, 4.5rem);
+  }
+}
+/* startup3d-return-clean */
+#startupScene {
+  background:
+    radial-gradient(ellipse at 58% 38%, rgba(185, 45, 255, 0.18), transparent 34%),
+    radial-gradient(ellipse at 50% 82%, rgba(255, 214, 109, 0.12), transparent 42%),
+    linear-gradient(180deg, #05020d, #12051e 46%, #030302) !important;
+}
+
+.startup-scene-layer {
+  background-image: none !important;
+}
+
+.startup-scene-far {
+  background:
+    repeating-linear-gradient(90deg, rgba(56, 219, 255, 0.05) 0 1px, transparent 1px 72px),
+    repeating-linear-gradient(0deg, rgba(255, 214, 109, 0.04) 0 1px, transparent 1px 68px) !important;
+  opacity: 0.35;
+}
+
+.startup-scene-mid,
+.startup-scene-emissive {
+  background:
+    radial-gradient(circle at 62% 42%, rgba(255, 79, 218, 0.2), transparent 24%),
+    linear-gradient(90deg, transparent, rgba(56, 219, 255, 0.12), transparent) !important;
+}
+
+.startup-scene-fog,
+.startup-scene-rails,
+.startup-scene-mask {
+  background:
+    linear-gradient(180deg, transparent 0 52%, rgba(145, 51, 255, 0.13) 62%, transparent 82%) !important;
+}
+/* startup3d-title-canvas-hide */
+body.is-title-mode #game {
+  opacity: 0;
+  pointer-events: none;
+}
+
+body:not(.is-title-mode) #game {
+  opacity: 1;
+}
+
+/* startup3d-howto-corridor */
+.screen--title {
+  background:
+    radial-gradient(ellipse at 50% 30%, rgba(70, 210, 255, 0.14), transparent 35%),
+    radial-gradient(ellipse at 54% 76%, rgba(255, 72, 170, 0.18), transparent 45%),
+    linear-gradient(180deg, #03040f 0%, #0a0620 54%, #020104 100%) !important;
+}
+
+.screen--title::before {
+  background:
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.03) 0 1px, transparent 1px 6px),
+    linear-gradient(90deg, rgba(20, 220, 255, 0.12), transparent 22% 78%, rgba(255, 187, 70, 0.16));
+  opacity: 0.24;
+}
+
+.screen--title::after {
+  background:
+    linear-gradient(90deg, rgba(0, 0, 0, 0.74), rgba(0, 0, 0, 0.08) 28%, rgba(0, 0, 0, 0.1) 72%, rgba(0, 0, 0, 0.78)),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.68), transparent 32%, transparent 62%, rgba(0, 0, 0, 0.88));
+  opacity: 0.72;
+}
+
+#startupScene {
+  background:
+    radial-gradient(ellipse at 50% 18%, rgba(58, 199, 255, 0.2), transparent 30%),
+    radial-gradient(ellipse at 50% 63%, rgba(178, 54, 255, 0.24), transparent 40%),
+    radial-gradient(ellipse at 50% 100%, rgba(255, 196, 70, 0.14), transparent 44%),
+    linear-gradient(180deg, #020412 0%, #080628 48%, #020105 100%) !important;
+  perspective: 920px;
+  transform: none !important;
+}
+
+#startupScene::before {
+  display: none;
+}
+
+#startupScene::after {
+  z-index: 11;
+  background:
+    radial-gradient(ellipse at 50% 35%, transparent 0 26%, rgba(0, 0, 0, 0.2) 62%, rgba(0, 0, 0, 0.82) 100%),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.72), transparent 24% 76%, rgba(0, 0, 0, 0.76)),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.64), transparent 30%, rgba(0, 0, 0, 0.78));
+  opacity: 0.92;
+}
+
+#startup3dCanvas {
+  filter: saturate(1.16) contrast(1.04);
+}
+
+#startupScene.is-webgl-ready .startup-scene-layer {
+  opacity: 0 !important;
+  animation: none !important;
+}
+
+.startup-scene-far,
+.startup-scene-mid,
+.startup-scene-emissive,
+.startup-scene-fog,
+.startup-scene-rails,
+.startup-scene-mask {
+  background-image: none !important;
+}
+
+.startup-scene-far {
+  z-index: 2;
+  background:
+    radial-gradient(ellipse at 50% 36%, rgba(89, 50, 255, 0.2), transparent 34%),
+    repeating-linear-gradient(90deg, transparent 0 98px, rgba(34, 210, 255, 0.1) 99px 100px, transparent 101px 156px),
+    linear-gradient(90deg, rgba(255, 208, 88, 0.1), transparent 16% 84%, rgba(255, 208, 88, 0.11)) !important;
+  opacity: 0.48 !important;
+  transform: scale(1.04);
+}
+
+.startup-scene-mid {
+  z-index: 8;
+  background:
+    linear-gradient(58deg, transparent 0 42%, rgba(48, 210, 255, 0.2) 44%, transparent 48%),
+    linear-gradient(122deg, transparent 0 50%, rgba(255, 94, 198, 0.16) 52%, transparent 57%),
+    radial-gradient(ellipse at 50% 42%, rgba(58, 210, 255, 0.16), transparent 34%) !important;
+  mix-blend-mode: screen;
+  opacity: 0.42 !important;
+  animation: startup-howto-beams 7s ease-in-out infinite alternate !important;
+}
+
+.startup-scene-emissive {
+  z-index: 9;
+  background:
+    radial-gradient(circle at 50% 49%, rgba(255, 70, 190, 0.2), transparent 16%),
+    radial-gradient(ellipse at 50% 63%, rgba(255, 202, 86, 0.13), transparent 24%),
+    linear-gradient(90deg, transparent, rgba(50, 218, 255, 0.14), transparent) !important;
+  mix-blend-mode: screen;
+  opacity: 0.54 !important;
+  filter: blur(0.4px) saturate(1.2);
+  animation: startup-emissive-pulse 5.4s ease-in-out infinite !important;
+}
+
+.startup-scene-fog {
+  z-index: 10;
+  background:
+    radial-gradient(ellipse at 26% 68%, rgba(132, 50, 255, 0.16), transparent 28%),
+    radial-gradient(ellipse at 74% 70%, rgba(255, 74, 176, 0.12), transparent 30%),
+    linear-gradient(180deg, transparent 0 58%, rgba(32, 7, 46, 0.34) 84%, transparent) !important;
+  mix-blend-mode: screen;
+  opacity: 0.5 !important;
+  animation: startup-fog-drift 14s ease-in-out infinite alternate !important;
+}
+
+.startup-scene-rails {
+  z-index: 9;
+  background:
+    linear-gradient(90deg, transparent 0 10%, rgba(255, 210, 86, 0.36) 12%, transparent 14% 86%, rgba(255, 210, 86, 0.34) 88%, transparent 90%),
+    linear-gradient(90deg, transparent 0 22%, rgba(48, 218, 255, 0.22) 24%, transparent 26% 74%, rgba(48, 218, 255, 0.2) 76%, transparent 78%) !important;
+  background-position: center bottom;
+  mix-blend-mode: screen;
+  opacity: 0.34 !important;
+  transform: translate3d(0, 16%, 0) scale(1.08);
+}
+
+.startup-scene-mask {
+  z-index: 12;
+  background:
+    radial-gradient(ellipse at 50% 42%, transparent 0 42%, rgba(0, 0, 0, 0.62) 100%) !important;
+  opacity: 0.82 !important;
+}
+
+@keyframes startup-howto-floor {
+  from {
+    background-position: 0 0, 0 0, 0 0, 0 0;
+  }
+
+  to {
+    background-position: 0 0, 38px 0, 0 48px, 0 0;
+  }
+}
+
+@keyframes startup-howto-beams {
+  from {
+    transform: translate3d(-1.6%, -0.8%, 0) scale(1.02);
+    opacity: 0.34;
+  }
+
+  to {
+    transform: translate3d(1.6%, 0.8%, 0) scale(1.045);
+    opacity: 0.52;
+  }
+}
+
+/* startup3d-opengw-reference */
+.screen--title {
+  background:
+    linear-gradient(135deg, rgba(5, 7, 13, 0.96), rgba(20, 7, 34, 0.9) 48%, rgba(5, 7, 13, 0.98)),
+    #05070d !important;
+}
+
+#startupScene {
+  background: #05070d !important;
+  opacity: 0;
+  transform: scale(1.015) !important;
+  transition: opacity 360ms ease, transform 520ms ease;
+}
+
+.screen--title:not(.is-hidden) #startupScene {
+  opacity: 1;
+  transform: scale(1) !important;
+}
+
+#startupScene::before,
+#startupScene::after {
+  display: block;
+}
+
+#startupScene::before {
+  z-index: 8;
+  background:
+    repeating-linear-gradient(0deg, rgba(246, 251, 255, 0.035) 0 1px, transparent 1px 5px),
+    linear-gradient(90deg, rgba(41, 247, 255, 0.12), transparent 18% 82%, rgba(255, 223, 117, 0.12));
+  mix-blend-mode: screen;
+  opacity: 0.26;
+  animation: startup-scanlines 6s linear infinite;
+}
+
+#startupScene::after {
+  z-index: 11;
+  background:
+    linear-gradient(90deg, rgba(5, 7, 13, 0.62), rgba(5, 7, 13, 0.04) 24%, rgba(5, 7, 13, 0.04) 76%, rgba(5, 7, 13, 0.62)),
+    linear-gradient(180deg, rgba(5, 7, 13, 0.62), transparent 28%, transparent 68%, rgba(5, 7, 13, 0.74));
+  opacity: 0.62;
+}
+
+#startup3dCanvas {
+  background: #05070d;
+  filter: saturate(1.08) contrast(1.02);
+}
+
+#startupScene.is-webgl-ready #startup3dCanvas {
+  opacity: 1;
+}
+
+#startupScene.is-webgl-ready .startup-scene-layer {
+  opacity: 0 !important;
+  animation: none !important;
+}
+
+.startup-scene-layer {
+  inset: -5%;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+.startup-scene-far {
+  z-index: 1;
+  background-image: url("./assets/startup-3d/startup-3d-far.webp") !important;
+  opacity: 0.96 !important;
+  transform: scale(1.04);
+  animation: startup-depth-far 18s ease-in-out infinite alternate !important;
+}
+
+.startup-scene-mid {
+  z-index: 2;
+  background-image: url("./assets/startup-3d/startup-3d-mid.webp") !important;
+  mix-blend-mode: screen;
+  opacity: 0.36 !important;
+  transform: scale(1.03);
+  animation: startup-depth-mid 13s ease-in-out infinite alternate !important;
+}
+
+.startup-scene-emissive {
+  z-index: 3;
+  background-image: url("./assets/startup-3d/startup-3d-emissive.webp") !important;
+  mix-blend-mode: screen;
+  opacity: 0.34 !important;
+  filter: blur(1.4px) saturate(1.25);
+  transform: scale(1.035);
+  animation: startup-emissive-pulse 4.6s ease-in-out infinite !important;
+}
+
+.startup-scene-fog {
+  z-index: 4;
+  background-image: url("./assets/startup-3d/startup-3d-fog-bands.webp") !important;
+  mix-blend-mode: screen;
+  opacity: 0.32 !important;
+  transform: translate3d(0, 0, 0) scale(1.02);
+  animation: startup-fog-drift 15s ease-in-out infinite alternate !important;
+}
+
+.startup-scene-rails {
+  z-index: 5;
+  background-image: url("./assets/startup-3d/startup-3d-near-rails.webp") !important;
+  background-position: center bottom;
+  mix-blend-mode: screen;
+  opacity: 0.52 !important;
+  transform: translate3d(0, 1.2%, 0) scale(1.06);
+  transform-origin: center bottom;
+  animation: startup-rails-breathe 7s ease-in-out infinite !important;
+}
+
+.startup-scene-mask {
+  z-index: 6;
+  background-image: url("./assets/startup-3d/startup-3d-depth-mask.webp") !important;
+  opacity: 0.58 !important;
+}
+
+.title-product-card.title-product-card--gameplay {
+  display: none !important;
 }

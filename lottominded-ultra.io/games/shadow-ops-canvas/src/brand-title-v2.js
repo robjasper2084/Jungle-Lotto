@@ -1,12 +1,16 @@
-(() => {
-  const BRAND = "KLNM WITH KNDNSS";
-  const BRAND_COOP = "KLNM WITH KNDNSS CO-OP";
-  const BRAND_2P = "KLNM WITH KNDNSS 2P";
+﻿(() => {
+  const BRAND = "ROBOT RAHBE";
+  const BRAND_COOP = "ROBOT RAHBE CO-OP";
+  const BRAND_2P = "ROBOT RAHBE 2P";
   const LEGACY_PATTERNS = [
+    /KLNM WITH KNDNSS/g,
     /\.KLN WITH KNDNSS/g,
     /KLN WITH KNDNSS/g,
     /KLMN with KNDNSS/g,
     /KLMN WITH KNDNSS/g,
+    /\. LIL MAN'S/g,
+    /\. LiL Man's/g,
+    /LIL MAN'S/g,
     /Lil- MAN's KLMN with KNDNSS/g,
     /\.KLMN with KNDNSS/g
   ];
@@ -23,7 +27,7 @@
   };
 
   const applyBrand = () => {
-    document.title = `${BRAND} | Shadow Ops`;
+    document.title = BRAND;
     document.querySelector(".game-shell")?.setAttribute("aria-label", `${BRAND} browser game`);
     document.getElementById("game")?.setAttribute("aria-label", `${BRAND} playfield`);
 

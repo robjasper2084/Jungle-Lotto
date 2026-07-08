@@ -67,6 +67,7 @@
     missionCollectibles: "./assets/mission/mission_collectibles_sheet_clean.png",
     missionPortal: "./assets/mission/extraction_portal_sheet.png",
     missionGate: "./assets/mission/vault_gate_sheet.png",
+    cyberGateSheet: "./assets/mission/chatgpt_cyber_vault_gate_sheet_v1.png",
     missionBrandProps: "./assets/mission/branded_background_props_sheet.png",
     enemyMotion: "./assets/characters/higgsfield_enemy_motion_sheet_runtime.png",
     missionProps: "./assets/mission/higgsfield_missing_world_props_runtime_v3.png",
@@ -146,7 +147,26 @@
       hazards: [
         { type: "floor", x: 1810, y: 620, w: 230, h: 36, cycle: 2.7, active: 0.72, phase: 0.1 },
         { type: "floor", x: 3625, y: 620, w: 250, h: 36, cycle: 2.4, active: 0.65, phase: 1.1 }
-      ]
+      ],
+      underground: {
+        id: "rootline-underworks",
+        title: "ROOTLINE UNDERWORKS",
+        shortName: "Underworks",
+        width: 2360,
+        entrance: { x: 3895, y: 620, returnX: 3895, radius: 150 },
+        spawn: { x: 126, y: 620 },
+        exitX: 2200,
+        objective: "Recover 3 rootline power cells",
+        palette: { platform: "#121018", trim: "#ffd66d", glow: "#a522ff", fog: "#25123f" },
+        platforms: [[0,620,580,34,"tunnel"],[700,560,420,30,"root"],[1220,620,560,34,"conduit"],[1900,620,460,34,"exit"],[420,466,300,28,"root"],[1030,430,340,28,"upper"],[1570,500,350,28,"upper"]],
+        spawns: [["crawler",520,620],["drone",910,380],["turret",1640,500],["crawler",1840,620]],
+        shardRows: [[300,548,4],[760,500,4],[1290,548,5],[1600,438,4]],
+        cells: [[520,410],[1120,370],[1810,440]],
+        bonuses: [["health",2070,548],["overdrive",1460,548]],
+        weaponDrops: [["rapid",970,500]],
+        hazards: [{ type: "floor", x: 630, y: 620, w: 150, h: 36, cycle: 2.3, active: 0.68, phase: 0.15 },{ type: "laser", x: 1430, y: 408, w: 32, h: 212, cycle: 3.0, active: 0.72, phase: 1.05 }],
+        checkpoint: { x: 1120, y: 620 }
+      }
     },
     {
       id: 2,
@@ -223,7 +243,26 @@
         { type: "floor", x: 2100, y: 620, w: 180, h: 40, cycle: 2.2, active: 0.76, phase: 0.5 },
         { type: "laser", x: 2860, y: 350, w: 36, h: 270, cycle: 3.1, active: 0.9, phase: 1.4 },
         { type: "laser", x: 4150, y: 370, w: 36, h: 250, cycle: 2.8, active: 0.82, phase: 0.2 }
-      ]
+      ],
+      underground: {
+        id: "furnace-service-depths",
+        title: "FURNACE SERVICE DEPTHS",
+        shortName: "Service Depths",
+        width: 2600,
+        entrance: { x: 4380, y: 620, returnX: 4380, radius: 155 },
+        spawn: { x: 130, y: 620 },
+        exitX: 2440,
+        objective: "Stabilize 3 furnace power cells",
+        palette: { platform: "#1a1110", trim: "#ffce55", glow: "#ff4f9a", fog: "#35121f" },
+        platforms: [[0,620,520,34,"service"],[640,620,470,34,"conveyor",{ conveyor: 70 }],[1230,565,470,34,"forge"],[1820,620,780,34,"exit"],[470,455,310,28,"upper"],[1030,388,300,28,"moving",{ move: { axis: "y", amp: 58, speed: 1.15 } }],[1540,445,350,28,"upper"]],
+        spawns: [["crawler",480,620],["shield",830,620],["turret",1540,445],["drone",2020,380],["shield",2260,620]],
+        shardRows: [[260,548,4],[710,548,5],[1050,328,4],[1830,548,5],[2180,548,4]],
+        cells: [[570,395],[1290,505],[2200,548]],
+        bonuses: [["health",2350,548],["overdrive",1610,385]],
+        weaponDrops: [["spread",1010,548]],
+        hazards: [{ type: "floor", x: 1110, y: 620, w: 170, h: 38, cycle: 2.0, active: 0.76, phase: 0.35 },{ type: "laser", x: 1740, y: 366, w: 34, h: 254, cycle: 2.7, active: 0.82, phase: 1.2 }],
+        checkpoint: { x: 1320, y: 565 }
+      }
     },
     {
       id: 3,
@@ -302,7 +341,26 @@
         { type: "laser", x: 2020, y: 390, w: 34, h: 230, cycle: 2.6, active: 0.72, phase: 0.4 },
         { type: "beam", x: 3500, y: 500, w: 420, h: 38, cycle: 3.4, active: 0.82, phase: 1.1 },
         { type: "floor", x: 4880, y: 620, w: 230, h: 40, cycle: 2.3, active: 0.68, phase: 1.6 }
-      ]
+      ],
+      underground: {
+        id: "astral-catacombs",
+        title: "ASTRAL CATACOMBS",
+        shortName: "Catacombs",
+        width: 2880,
+        entrance: { x: 5120, y: 530, returnX: 5120, radius: 160 },
+        spawn: { x: 132, y: 620 },
+        exitX: 2700,
+        objective: "Bind 3 astral power cells",
+        palette: { platform: "#0f1321", trim: "#e9db8a", glow: "#38dbff", fog: "#121d3f" },
+        platforms: [[0,620,520,34,"catacomb"],[690,565,360,30,"float"],[1180,485,340,28,"float"],[1660,620,470,34,"bridge"],[2240,555,360,28,"float"],[2580,620,300,34,"exit"],[410,430,300,28,"float"],[1540,398,340,28,"moving",{ move: { axis: "y", amp: 66, speed: 1.28 } }]],
+        spawns: [["crawler",470,620],["drone",820,380],["shield",1240,485],["turret",1710,620],["drone",2260,380],["shield",2510,555]],
+        shardRows: [[270,548,4],[720,500,4],[1230,425,5],[1700,548,4],[2280,495,5]],
+        cells: [[480,372],[1450,338],[2380,495]],
+        bonuses: [["health",2600,548],["overdrive",1880,548]],
+        weaponDrops: [["beam",1180,425]],
+        hazards: [{ type: "beam", x: 1030, y: 520, w: 330, h: 34, cycle: 3.0, active: 0.76, phase: 0.8 },{ type: "laser", x: 2140, y: 362, w: 36, h: 258, cycle: 2.6, active: 0.78, phase: 1.5 }],
+        checkpoint: { x: 1540, y: 398 }
+      }
     }
   ];
 
@@ -367,6 +425,7 @@
   const dom = {
     loadingScreen: document.getElementById("loadingScreen"),
     titleScreen: document.getElementById("titleScreen"),
+    purchaseScreen: document.getElementById("purchaseScreen"),
     pauseScreen: document.getElementById("pauseScreen"),
     settingsScreen: document.getElementById("settingsScreen"),
     resultsScreen: document.getElementById("resultsScreen"),
@@ -834,6 +893,31 @@
     ]
   };
 
+  const WORLD_ASSET_MODULES = {
+    1: [
+      { type: "wall", x: 132, y: 340, w: 196, h: 260, variant: 0 },
+      { type: "crate", x: 1260, y: 565, w: 150, h: 70, variant: 1 },
+      { type: "wall", x: 3825, y: 315, w: 176, h: 305, variant: 2 },
+      { type: "console", x: 4316, y: 560, w: 136, h: 80, variant: 0 },
+      { type: "wall", x: 5710, y: 355, w: 220, h: 245, variant: 1 },
+      { type: "crate", x: 6048, y: 565, w: 164, h: 70, variant: 2 }
+    ],
+    2: [
+      { type: "wall", x: 540, y: 350, w: 210, h: 250, variant: 1 },
+      { type: "console", x: 2040, y: 545, w: 145, h: 78, variant: 1 },
+      { type: "wall", x: 4325, y: 315, w: 188, h: 305, variant: 2 },
+      { type: "crate", x: 5050, y: 560, w: 170, h: 76, variant: 0 },
+      { type: "wall", x: 6420, y: 340, w: 232, h: 260, variant: 0 }
+    ],
+    3: [
+      { type: "wall", x: 420, y: 334, w: 206, h: 272, variant: 2 },
+      { type: "crate", x: 2060, y: 562, w: 164, h: 74, variant: 1 },
+      { type: "console", x: 4020, y: 542, w: 150, h: 84, variant: 2 },
+      { type: "wall", x: 5260, y: 315, w: 190, h: 305, variant: 1 },
+      { type: "wall", x: 7205, y: 338, w: 242, h: 260, variant: 0 }
+    ]
+  };
+
   for (const key of assetKeys) {
     const image = new Image();
     image.onload = image.onerror = () => {
@@ -1217,6 +1301,11 @@
       <button type="button" data-debug="level3">L3</button>
       <button type="button" data-debug="boss">Boss</button>
       <button type="button" data-debug="wave">Wave</button>
+      <button type="button" data-debug="underground-entrance">UG Door</button>
+      <button type="button" data-debug="underground-enter">UG Enter</button>
+      <button type="button" data-debug="underground-cells">UG Cells</button>
+      <button type="button" data-debug="underground-complete">UG Clear</button>
+      <button type="button" data-debug="surface-return">Surface</button>
       <button type="button" data-debug="sentinel">Defeat</button>
       <button type="button" data-debug="terminal">Terminal</button>
       <button type="button" data-debug="generate">Generate</button>
@@ -1243,12 +1332,16 @@
     }
     if (action === "keys") {
       run.keys = 3;
+      run.undergroundCells[undergroundKey(run)] = 3;
+      run.undergroundComplete[undergroundKey(run)] = true;
       run.gateOpen = true;
       warpPlayers(run, gateX(run) + 170);
       setObjective(run, "Debug: vault gate open", 2);
     }
     if (action === "boss") {
       run.keys = 3;
+      run.undergroundCells[undergroundKey(run)] = 3;
+      run.undergroundComplete[undergroundKey(run)] = true;
       run.gateOpen = true;
       warpPlayers(run, bossStartX(run) + 120);
       updateProgression(run);
@@ -1265,6 +1358,37 @@
         setObjective(run, `Debug: ${wave.objective}`, 2);
       }
     }
+    if (action === "underground-entrance") {
+      if (isUnderground(run)) returnToSurface(run);
+      const entrance = run.level.underground?.entrance;
+      if (entrance) {
+        placePlayersAt(run, entrance.x - 48, (entrance.y || 620) - 86);
+        run.cameraX = clamp(entrance.x - 420, 0, worldWidth(run) - W);
+        setObjective(run, "Debug: underground entrance", 1.8);
+      }
+    }
+    if (action === "underground-enter") {
+      if (!isUnderground(run)) enterUnderground(run);
+      setObjective(run, "Debug: underground sector", 1.8);
+    }
+    if (action === "underground-cells") {
+      if (!isUnderground(run)) enterUnderground(run);
+      const key = undergroundKey(run);
+      run.undergroundCells[key] = 3;
+      for (const pickup of run.pickups) if (pickup.type === "cell") pickup.taken = true;
+      setObjective(run, "Debug: all power cells recovered", 1.8);
+    }
+    if (action === "underground-complete") {
+      const key = undergroundKey(run);
+      run.undergroundCells[key] = 3;
+      run.undergroundComplete[key] = true;
+      if (isUnderground(run)) returnToSurface(run);
+      setObjective(run, "Debug: underground cleared", 1.8);
+    }
+    if (action === "surface-return") {
+      if (isUnderground(run)) returnToSurface(run);
+      setObjective(run, "Debug: surface sector", 1.4);
+    }
     if (action === "sentinel") {
       if (!run.boss) {
         warpPlayers(run, bossStartX(run) + 120);
@@ -1274,6 +1398,8 @@
     }
     if (action === "terminal") {
       run.keys = 3;
+      run.undergroundCells[undergroundKey(run)] = 3;
+      run.undergroundComplete[undergroundKey(run)] = true;
       run.gateOpen = true;
       if (!run.bossDefeated) {
         if (!run.boss) {
@@ -1370,6 +1496,8 @@
     }
     if (action === "restart") startRun(run?.runMode || (run?.coOp ? "two-player" : pendingRunMode));
     if (action === "title") setMode("title");
+    if (action === "purchase") setMode("purchase");
+    if (action === "close-purchase") setMode("title");
     if (action === "settings") openSettings();
     if (action === "close-settings") closeSettings();
     if (action === "generate-lottery") generateLotteryFromTerminal();
@@ -1408,14 +1536,24 @@
 
   function updateLoading() {
     const percent = assetKeys.length ? Math.round((loadedAssets / assetKeys.length) * 100) : 100;
+    const stages = [
+      "Syncing cyber-vault terrain",
+      "Charging heart-shot FX",
+      "Calibrating drone routes",
+      "Priming lottery drop terminal",
+    ];
+    const stageIndex = Math.min(stages.length - 1, Math.floor((percent / 100) * stages.length));
     dom.loadBar.style.width = `${percent}%`;
-    dom.loadText.textContent = loadedAssets >= assetKeys.length ? "Vault grid online." : `Preparing assets ${percent}%`;
+    dom.loadText.textContent =
+      loadedAssets >= assetKeys.length ? "Heart-core online. Enter the run." : `${stages[stageIndex]} ${percent}%`;
   }
 
   function setMode(next) {
     mode = next;
+    document.body.classList.toggle("is-title-mode", next === "title");
     dom.loadingScreen.classList.toggle("is-hidden", next !== "loading");
     dom.titleScreen.classList.toggle("is-hidden", next !== "title");
+    dom.purchaseScreen.classList.toggle("is-hidden", next !== "purchase");
     dom.pauseScreen.classList.toggle("is-hidden", next !== "paused");
     dom.settingsScreen.classList.toggle("is-hidden", next !== "settings");
     dom.resultsScreen.classList.toggle("is-hidden", next !== "results");
@@ -1520,6 +1658,13 @@
       campaignTime: 0,
       levelIndex: 0,
       level: LEVELS[0],
+      area: "surface",
+      zones: { surface: null, underground: null },
+      undergroundCells: {},
+      undergroundComplete: {},
+      areaPrompt: { inRange: false, type: null, text: "", x: 0, y: 0 },
+      areaTransition: 0,
+      areaNotice: "",
       levelTime: 0,
       introTimer: 2.6,
       levelCompleteTimer: 0,
@@ -1584,6 +1729,13 @@
     const level = LEVELS[index] || LEVELS[0];
     state.levelIndex = index;
     state.level = level;
+    state.area = "surface";
+    state.zones = { surface: null, underground: null };
+    state.undergroundCells[String(level.id)] = 0;
+    state.undergroundComplete[String(level.id)] = false;
+    state.areaPrompt = { inRange: false, type: null, text: "", x: 0, y: 0 };
+    state.areaTransition = 0;
+    state.areaNotice = "";
     state.levelTime = 0;
     state.introTimer = fresh ? 2.8 : 2.35;
     state.levelCompleteTimer = 0;
@@ -1667,6 +1819,230 @@
     p.trail = [];
   }
 
+  function isUnderground(state) {
+    return state?.area === "underground";
+  }
+
+  function activeArea(state) {
+    if (!state) return null;
+    return isUnderground(state) ? state.level?.underground || state.level : state.level;
+  }
+
+  function activeAreaWidth(state) {
+    return activeArea(state)?.width || state?.level?.width || WORLD_W;
+  }
+
+  function undergroundKey(state) {
+    return String(state?.level?.id || 1);
+  }
+
+  function undergroundCellCount(state) {
+    return state?.undergroundCells?.[undergroundKey(state)] || 0;
+  }
+
+  function undergroundComplete(state) {
+    return Boolean(state?.undergroundComplete?.[undergroundKey(state)]);
+  }
+
+  function gateReady(state) {
+    return Boolean(state && state.keys >= 3 && undergroundComplete(state));
+  }
+
+  function currentObjectiveText(state) {
+    if (!state) return "Collect 3 vault keys";
+    if (isUnderground(state)) return undergroundCellCount(state) >= 3 ? "Return to the surface" : "Recover 3 power cells";
+    if (state.bossDefeated) return "Reach extraction and claim the terminal drop";
+    if (state.gateOpen) return "Enter the boss chamber";
+    if (state.keys < 3) return state.level?.objective || "Collect 3 vault keys";
+    if (!undergroundComplete(state)) return "Enter the underground sector";
+    return "Open the boss gate";
+  }
+
+  function createZoneState(state, area, areaName) {
+    return {
+      areaName,
+      area,
+      cameraX: 0,
+      cameraY: 0,
+      cameraLookX: 0,
+      platforms: buildPlatforms(area),
+      pickups: buildPickups(area),
+      enemies: (area.spawns || []).map(([type, x, groundY]) => makeEnemy(type, x, groundY)),
+      playerShots: [],
+      enemyShots: [],
+      hazards: [],
+      levelHazards: (area.hazards || []).map((hazard) => ({ ...hazard, pulse: 0, hitCd: 0 })),
+      particles: [],
+      fxBursts: [],
+      reinforcementFlags: new Set(),
+      waveRewardFlags: new Set(),
+      gateOpen: areaName === "surface" ? state.gateOpen : false,
+      gatePulse: state.gatePulse || 0,
+      arenaLock: areaName === "surface" ? state.arenaLock : null,
+      boss: areaName === "surface" ? state.boss : null,
+      bossDefeated: areaName === "surface" ? state.bossDefeated : false,
+      extractionOpen: areaName === "surface" ? state.extractionOpen : false,
+      objective: area.objective || currentObjectiveText(state),
+      objectiveTimer: 3,
+      checkpoints: allPlayers(state).map((p) => ({ id: p.id, x: p.checkpointX, y: p.checkpointY }))
+    };
+  }
+  function captureActiveZone(state) {
+    return {
+      areaName: state.area || "surface",
+      area: activeArea(state),
+      cameraX: state.cameraX,
+      cameraY: state.cameraY,
+      cameraLookX: state.cameraLookX,
+      platforms: state.platforms,
+      pickups: state.pickups,
+      enemies: state.enemies,
+      playerShots: [],
+      enemyShots: [],
+      hazards: [],
+      levelHazards: state.levelHazards,
+      particles: state.particles,
+      fxBursts: state.fxBursts,
+      reinforcementFlags: state.reinforcementFlags,
+      waveRewardFlags: state.waveRewardFlags,
+      gateOpen: state.gateOpen,
+      gatePulse: state.gatePulse,
+      arenaLock: state.arenaLock,
+      boss: state.boss,
+      bossDefeated: state.bossDefeated,
+      extractionOpen: state.extractionOpen,
+      objective: state.objective,
+      objectiveTimer: state.objectiveTimer,
+      checkpoints: allPlayers(state).map((p) => ({ id: p.id, x: p.checkpointX, y: p.checkpointY }))
+    };
+  }
+
+  function applyZoneState(state, zone) {
+    state.area = zone.areaName || "surface";
+    state.cameraX = zone.cameraX || 0;
+    state.cameraY = zone.cameraY || 0;
+    state.cameraLookX = zone.cameraLookX || 0;
+    state.platforms = zone.platforms || [];
+    state.pickups = zone.pickups || [];
+    state.enemies = zone.enemies || [];
+    state.playerShots = [];
+    state.enemyShots = [];
+    state.hazards = [];
+    state.levelHazards = zone.levelHazards || [];
+    state.particles = zone.particles || [];
+    state.fxBursts = zone.fxBursts || [];
+    state.reinforcementFlags = zone.reinforcementFlags || new Set();
+    state.waveRewardFlags = zone.waveRewardFlags || new Set();
+    state.gateOpen = state.area === "surface" ? Boolean(zone.gateOpen) : false;
+    state.gatePulse = zone.gatePulse || 0;
+    state.arenaLock = state.area === "surface" ? zone.arenaLock : null;
+    state.boss = state.area === "surface" ? zone.boss : null;
+    state.bossDefeated = state.area === "surface" ? Boolean(zone.bossDefeated) : false;
+    state.extractionOpen = state.area === "surface" ? Boolean(zone.extractionOpen) : false;
+    state.objective = zone.objective || currentObjectiveText(state);
+    state.objectiveTimer = Math.max(zone.objectiveTimer || 0, 1.4);
+    for (const p of allPlayers(state)) {
+      const saved = zone.checkpoints?.find((entry) => entry.id === p.id);
+      if (saved) {
+        p.checkpointX = saved.x;
+        p.checkpointY = saved.y;
+      }
+    }
+  }
+
+  function placePlayersAt(state, x, groundY = 620) {
+    for (const [index, p] of allPlayers(state).entries()) {
+      p.x = x + index * 86;
+      p.y = groundY - p.standingH;
+      p.vx = 0;
+      p.vy = 0;
+      p.dashTime = 0;
+      p.crouching = false;
+      p.h = p.standingH;
+      p.checkpointX = p.x;
+      p.checkpointY = p.y;
+      p.invuln = Math.max(p.invuln || 0, 0.8);
+      p.trail = [];
+    }
+    state.cameraX = clamp(x - 220, 0, Math.max(0, activeAreaWidth(state) - W));
+    state.cameraY = 0;
+    state.cameraLookX = 0;
+  }
+
+  function startAreaTransition(state, label) {
+    state.areaTransition = 0.38;
+    state.areaNotice = label || activeArea(state)?.title || "AREA LINK";
+    clearInputState();
+  }
+  function enterUnderground(state) {
+    const area = state?.level?.underground;
+    if (!state || !area || isUnderground(state)) return false;
+    state.zones.surface = captureActiveZone(state);
+    if (!state.zones.underground) state.zones.underground = createZoneState(state, area, "underground");
+    applyZoneState(state, state.zones.underground);
+    placePlayersAt(state, area.spawn?.x || 126, area.spawn?.y || 620);
+    setObjective(state, area.objective || "Recover 3 power cells", 3.2);
+    addBurst(state, area.spawn?.x || 126, 560, colors.purple, 42, 440);
+    playTone(180, 0.12, "triangle", 0.052);
+    playTone(520, 0.16, "sine", 0.036);
+    startAreaTransition(state, area.title);
+    return true;
+  }
+
+  function returnToSurface(state) {
+    const area = state?.level?.underground;
+    if (!state || !area || !isUnderground(state)) return false;
+    state.zones.underground = captureActiveZone(state);
+    const completedNow = undergroundCellCount(state) >= 3 && !undergroundComplete(state);
+    if (undergroundCellCount(state) >= 3) state.undergroundComplete[undergroundKey(state)] = true;
+    if (!state.zones.surface) state.zones.surface = createZoneState(state, state.level, "surface");
+    applyZoneState(state, state.zones.surface);
+    placePlayersAt(state, area.entrance?.returnX || area.entrance?.x || 360, area.entrance?.y || 620);
+    setObjective(state, completedNow ? "Underground sector complete: open the boss gate" : currentObjectiveText(state), 3.2);
+    addBurst(state, area.entrance?.returnX || area.entrance?.x || 360, (area.entrance?.y || 620) - 70, completedNow ? colors.gold : colors.cyan, 46, 460);
+    playTone(completedNow ? 620 : 360, 0.12, "triangle", 0.054);
+    playTone(980, 0.16, "sine", 0.034);
+    startAreaTransition(state, completedNow ? "SECTOR COMPLETE" : state.level.title);
+    return true;
+  }
+
+  function playerInAreaPortal(state, player) {
+    const area = state?.level?.underground;
+    if (!state || !area || !player) return false;
+    if (!isUnderground(state) && undergroundComplete(state)) return false;
+    const centerX = player.x + player.w * 0.5;
+    const centerY = player.y + player.h * 0.5;
+    const cfg = isUnderground(state)
+      ? { x: area.exitX, y: 620, radius: 150 }
+      : { x: area.entrance?.x || 0, y: area.entrance?.y || 620, radius: area.entrance?.radius || 145 };
+    return Math.abs(centerX - cfg.x) <= cfg.radius && Math.abs(centerY - cfg.y + 30) <= 210;
+  }
+
+  function updateAreaPrompt(state) {
+    state.areaPrompt = { inRange: false, type: null, text: "", x: 0, y: 0 };
+    const area = state?.level?.underground;
+    if (!state || !area) return;
+    const player = activePlayers(state).find((p) => playerInAreaPortal(state, p));
+    if (!player) {
+      if (!state.terminal?.inRange) dom.touchUseButton.classList.add("is-hidden");
+      return;
+    }
+    if (isUnderground(state)) {
+      state.areaPrompt = { inRange: true, type: "exit", text: undergroundCellCount(state) >= 3 ? "DOWN / S - RETURN SURFACE" : "DOWN / S - RETURN SURFACE (CELLS STILL MISSING)", x: area.exitX, y: 560 };
+    } else {
+      state.areaPrompt = { inRange: true, type: "entrance", text: "DOWN / S - ENTER UNDERGROUND", x: area.entrance?.x || 0, y: (area.entrance?.y || 620) - 70 };
+    }
+    dom.touchUseButton.textContent = state.areaPrompt.type === "entrance" ? "DOWN" : "UP";
+    dom.touchUseButton.setAttribute("aria-label", state.areaPrompt.text);
+    dom.touchUseButton.classList.toggle("is-hidden", mode !== "playing");
+    if (state.objectiveTimer <= 0.35) setObjective(state, state.areaPrompt.text, 0.9);
+  }
+
+  function tryUseAreaPortal(state) {
+    updateAreaPrompt(state);
+    if (!state.areaPrompt?.inRange) return false;
+    return state.areaPrompt.type === "entrance" ? enterUnderground(state) : returnToSurface(state);
+  }
   function allPlayers(state) {
     if (!state) return [];
     return state.players?.length ? state.players : [state.player].filter(Boolean);
@@ -1717,14 +2093,15 @@
 
   function buildPickups(level) {
     const pickups = [];
-    for (const [x, y, count] of level.shardRows) {
+    for (const [x, y, count] of level.shardRows || []) {
       for (let i = 0; i < count; i += 1) {
         pickups.push({ type: "shard", x: x + i * 54, y, r: 15, taken: false, bob: i * 0.6 });
       }
     }
-    level.keys.forEach(([x, y], index) => pickups.push({ type: "key", x, y, r: 22, taken: false, bob: index * 1.4 }));
-    level.bonuses.forEach(([type, x, y], index) => pickups.push({ type, x, y, r: 20, taken: false, bob: index * 0.7 }));
+    (level.keys || []).forEach(([x, y], index) => pickups.push({ type: "key", x, y, r: 22, taken: false, bob: index * 1.4 }));
+    (level.bonuses || []).forEach(([type, x, y], index) => pickups.push({ type, x, y, r: 20, taken: false, bob: index * 0.7 }));
     (level.weaponDrops || []).forEach(([weapon, x, y], index) => pickups.push({ type: "weapon", weapon, x, y, r: 21, taken: false, bob: index * 0.9 }));
+    (level.cells || []).forEach(([x, y], index) => pickups.push({ type: "cell", cellIndex: index, x, y, r: 23, taken: false, bob: index * 1.1 }));
     return pickups;
   }
 
@@ -1776,7 +2153,7 @@
   }
 
   function worldWidth(state) {
-    return state?.level?.width || WORLD_W;
+    return activeAreaWidth(state);
   }
 
   function gateX(state) {
@@ -1809,7 +2186,7 @@
     return source.startsWith("DROP") ? source : `DROP ${source.slice(-4).toUpperCase().padStart(4, "0")}`;
   }
 
-  function formatTicketCopy(ticket, prefix = `KLMN with KNDNSS - Level ${ticket.levelId} Vault Drop`) {
+  function formatTicketCopy(ticket, prefix = `ROBOT RAHBE - Level ${ticket.levelId} Vault Drop`) {
     return [
       prefix,
       `Pick 3: ${ticket.pick3}`,
@@ -1832,7 +2209,11 @@
       state.terminal.copyStatusTimer = Math.max(0, state.terminal.copyStatusTimer - dt);
       if (state.terminal.copyStatusTimer <= 0) dom.lotteryCopyStatus.textContent = "";
     }
-    dom.touchUseButton.classList.toggle("is-hidden", !(mode === "playing" && state.terminal.inRange));
+    if (!state.areaPrompt?.inRange) {
+      dom.touchUseButton.textContent = "USE";
+      dom.touchUseButton.setAttribute("aria-label", "Use terminal");
+    }
+    dom.touchUseButton.classList.toggle("is-hidden", !(mode === "playing" && (state.terminal.inRange || state.areaPrompt?.inRange)));
     if (state.terminal.inRange && !currentLevelTicket(state) && state.objectiveTimer <= 0.4) {
       setObjective(state, "Press X or USE to access terminal", 0.8);
     }
@@ -2141,8 +2522,20 @@
       openSettings();
       return;
     }
+    updateAreaPrompt(run);
+    if ((actionPressed("interact") || actionPressed("down") || keyboardPressed.has("p2-down")) && tryUseAreaPortal(run)) {
+      return;
+    }
     if (actionPressed("interact")) {
       tryOpenLotteryTerminal();
+      return;
+    }
+
+    if (run.areaTransition > 0) {
+      run.areaTransition = Math.max(0, run.areaTransition - dt);
+      updateParticles(run, dt);
+      updateFxBursts(run, dt);
+      updateCamera(run, dt);
       return;
     }
 
@@ -2176,14 +2569,19 @@
       return;
     }
     updatePlatforms(run, dt);
+    updateAreaPrompt(run);
     updatePlayers(run, dt);
     updateGate(run, dt);
     updatePickups(run, dt);
-    updateLotteryTerminal(run, dt);
-    updateEncounterDirector(run);
+    if (isUnderground(run)) {
+      run.terminal.inRange = false;
+    } else {
+      updateLotteryTerminal(run, dt);
+      updateEncounterDirector(run);
+      updateArenaLock(run, dt);
+      updateBoss(run, dt);
+    }
     updateEnemies(run, dt);
-    updateArenaLock(run, dt);
-    updateBoss(run, dt);
     updateProjectiles(run, dt);
     updateLevelHazards(run, dt);
     updateHazards(run, dt);
@@ -2335,7 +2733,7 @@
     const left = playerActionDown(p, "left");
     const right = playerActionDown(p, "right");
     const moving = Number(right) - Number(left);
-    const wantsCrouch = playerActionDown(p, "down") && p.grounded && p.dashTime <= 0 && !jumpPressed;
+    const wantsCrouch = playerActionDown(p, "down") && p.grounded && p.dashTime <= 0 && !jumpPressed && !playerInAreaPortal(state, p);
     const oldBottom = p.y + p.h;
 
     p.knockbackTime = Math.max(0, (p.knockbackTime || 0) - dt);
@@ -2481,11 +2879,13 @@
     p.x = clamp(p.x, 8, worldWidth(state) - p.w - 10);
     p.wallSide = detectWallSide(state, p);
 
-    const gx = gateX(state);
-    if (!state.gateOpen && p.x + p.w > gx && p.x < gx + 88 && p.y + p.h > 330) {
-      p.x = gx - p.w;
-      p.vx = Math.min(0, p.vx);
-      if (state.keys < 3) setObjective(state, "Gate locked: collect 3 vault keys", 1.4);
+    if (!isUnderground(state)) {
+      const gx = gateX(state);
+      if (!state.gateOpen && p.x + p.w > gx && p.x < gx + 88 && p.y + p.h > 330) {
+        p.x = gx - p.w;
+        p.vx = Math.min(0, p.vx);
+        setObjective(state, state.keys < 3 ? "Gate locked: collect 3 vault keys" : "Gate locked: clear the underground sector", 1.4);
+      }
     }
     if (arenaLockActive(state)) {
       const lock = state.arenaLock;
@@ -2644,10 +3044,14 @@
   }
 
   function updateGate(state, dt) {
+    if (isUnderground(state)) return;
     state.gatePulse += dt;
     const gx = gateX(state);
     const opener = activePlayers(state).find((player) => player.x + player.w > gx - 90);
-    if (!state.gateOpen && state.keys >= 3 && opener) {
+    if (!state.gateOpen && state.keys >= 3 && !undergroundComplete(state) && opener) {
+      setObjective(state, "Gate locked: enter the underground sector", 1.4);
+    }
+    if (!state.gateOpen && gateReady(state) && opener) {
       state.gateOpen = true;
       for (const player of allPlayers(state)) {
         player.checkpointX = gx + 210;
@@ -2691,7 +3095,7 @@
       state.keys += 1;
       addScore(state, 500);
       p.overdrive = clamp(p.overdrive + 18, 0, 100);
-      setObjective(state, state.keys >= 3 ? "All keys secured: open the vault gate" : `Vault key secured ${state.keys}/3`, 2.4);
+      setObjective(state, state.keys >= 3 ? (undergroundComplete(state) ? "All keys and cells secured: open the vault gate" : "Keys secured: enter the underground sector") : `Vault key secured ${state.keys}/3`, 2.4);
       addBurst(state, pickup.x, pickup.y, colors.gold, 28, 340);
       playTone(520, 0.08, "triangle", 0.045);
       playTone(960, 0.12, "sine", 0.035);
@@ -2699,6 +3103,17 @@
         levelId: rewardLevelId(state),
         keyId: `level-${rewardLevelId(state)}-key-${state.keys}`
       });
+    }
+    if (pickup.type === "cell") {
+      const key = undergroundKey(state);
+      state.undergroundCells[key] = clamp((state.undergroundCells[key] || 0) + 1, 0, 3);
+      addScore(state, 650);
+      p.overdrive = clamp(p.overdrive + 16, 0, 100);
+      const count = undergroundCellCount(state);
+      setObjective(state, count >= 3 ? "All power cells recovered: return to the surface" : `Power cell recovered ${count}/3`, 2.4);
+      addBurst(state, pickup.x, pickup.y, colors.purple, 34, 380);
+      playTone(580, 0.08, "triangle", 0.045);
+      playTone(1180, 0.12, "sine", 0.032);
     }
     if (pickup.type === "health") {
       p.hp = clamp(p.hp + 1, 0, p.maxHp);
@@ -3280,7 +3695,12 @@
 
   function updateProgression(state) {
     if (state.objectiveTimer > 0) state.objectiveTimer -= STEP;
+    else {
+      state.objective = currentObjectiveText(state);
+      state.objectiveTimer = 1.2;
+    }
     updateCheckpoints(state);
+    if (isUnderground(state)) return;
 
     if (!state.boss && state.gateOpen && maxPlayerX(state) > bossStartX(state)) {
       state.boss = makeBoss(state);
@@ -3304,6 +3724,20 @@
   }
 
   function updateCheckpoints(state) {
+    if (isUnderground(state)) {
+      const checkpoint = activeArea(state)?.checkpoint;
+      if (checkpoint) {
+        for (const p of activePlayers(state)) {
+          if (p.x > checkpoint.x && p.checkpointX < checkpoint.x) {
+            p.checkpointX = checkpoint.x;
+            p.checkpointY = (checkpoint.y || 620) - p.standingH;
+            if (state.objectiveTimer <= 0.3) setObjective(state, `${p.label} underground checkpoint synced`, 1.5);
+            addBurst(state, p.x + p.w * 0.5, p.y + p.h * 0.5, colors.cyan, 14, 180);
+          }
+        }
+      }
+      return;
+    }
     const marks = [1500, 3000, Math.max(3600, gateX(state) - 420), bossStartX(state) + 70];
     for (const p of activePlayers(state)) {
       for (const mark of marks) {
@@ -3661,23 +4095,43 @@
       drawLoadingCanvas();
       return;
     }
+    if (mode === "title") {
+      return;
+    }
     if (!run) {
-      drawTitleCanvas();
       return;
     }
     drawGame(run);
-    if (mode === "title") drawTitleCanvas();
   }
 
   function drawLoadingCanvas() {
     ctx.fillStyle = "#030302";
     ctx.fillRect(0, 0, W, H);
     drawTitleBackdropWash();
-    ctx.fillStyle = "rgba(0,0,0,.72)";
+    const wash = ctx.createLinearGradient(0, 0, W, H);
+    wash.addColorStop(0, "rgba(3,7,13,.92)");
+    wash.addColorStop(0.48, "rgba(13,5,28,.72)");
+    wash.addColorStop(1, "rgba(0,0,0,.9)");
+    ctx.fillStyle = wash;
     ctx.fillRect(0, 0, W, H);
+
+    ctx.save();
+    ctx.translate(W * 0.5, H * 0.5);
+    ctx.strokeStyle = "rgba(255,214,109,.42)";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(-250, -58, 500, 116);
+    ctx.strokeStyle = "rgba(56,219,255,.22)";
+    ctx.strokeRect(-238, -46, 476, 92);
+    ctx.fillStyle = "rgba(255,79,154,.18)";
+    ctx.fillRect(-230, 30, 460, 8);
     ctx.fillStyle = colors.gold;
-    ctx.font = "900 28px system-ui";
-    ctx.fillText("LOADING SHADOW OPS", 470, 364);
+    ctx.font = "900 30px system-ui";
+    ctx.textAlign = "center";
+    ctx.fillText("ROBOT RAHBE", 0, -10);
+    ctx.fillStyle = colors.cyan;
+    ctx.font = "800 14px system-ui";
+    ctx.fillText("VAULT CORE SYNC", 0, 24);
+    ctx.restore();
   }
 
   function drawTitleCanvas() {
@@ -3720,15 +4174,19 @@
     const shake = cameraShake(state);
     ctx.translate(shake.x - state.cameraX, shake.y - (state.cameraY || 0));
     drawBacklightRays(state);
+    drawWorldAssetPass(state);
     if (DRAW_DECORATIVE_WORLD_PROPS) {
       drawBrandProps(state);
       drawBatchSceneryProps(state);
     }
     drawPlatforms(state);
+    drawAreaPortals(state);
     drawGate(state);
-    drawArenaLockGates(state);
-    drawExtraction(state);
-    drawLotteryTerminal(state);
+    if (!isUnderground(state)) {
+      drawArenaLockGates(state);
+      drawExtraction(state);
+      drawLotteryTerminal(state);
+    }
     drawPickups(state);
     drawLevelHazards(state);
     drawHazards(state);
@@ -3750,12 +4208,17 @@
       dom.objectiveChip.classList.add("is-hidden");
     }
     drawLevelOverlay(state);
+    drawAreaTransition(state);
   }
 
   function drawBackground(stateOrCameraX, timeArg = 0) {
     const state = typeof stateOrCameraX === "object" ? stateOrCameraX : null;
     const cameraX = state ? state.cameraX : stateOrCameraX;
     const time = state ? state.time : timeArg;
+    if (state && isUnderground(state)) {
+      drawUndergroundBackground(state);
+      return;
+    }
     const bgKey = state?.level?.background;
     ctx.fillStyle = "#030302";
     ctx.fillRect(0, 0, W, H);
@@ -3787,6 +4250,73 @@
     shade.addColorStop(0, "rgba(0,0,0,.04)");
     shade.addColorStop(0.58, "rgba(0,0,0,.04)");
     shade.addColorStop(1, "rgba(0,0,0,.36)");
+    ctx.fillStyle = shade;
+    ctx.fillRect(0, 0, W, H);
+  }
+
+  function withAlpha(color, alpha) {
+    const hex = String(color || "").trim();
+    const match = /^#?([0-9a-f]{6})$/i.exec(hex);
+    if (!match) return `rgba(165,34,255,${alpha})`;
+    const value = match[1];
+    const r = parseInt(value.slice(0, 2), 16);
+    const g = parseInt(value.slice(2, 4), 16);
+    const b = parseInt(value.slice(4, 6), 16);
+    return `rgba(${r},${g},${b},${alpha})`;
+  }
+
+  function drawUndergroundBackground(state) {
+    const cameraX = state.cameraX;
+    const areaPalette = activeArea(state)?.palette || {};
+    const glowColor = areaPalette.glow || "#a522ff";
+    const fogColor = areaPalette.fog || "#25123f";
+    const deepColor = areaPalette.platform || "#12071f";
+    ctx.fillStyle = "#030204";
+    ctx.fillRect(0, 0, W, H);
+    const sky = ctx.createLinearGradient(0, 80, 0, H);
+    sky.addColorStop(0, deepColor);
+    sky.addColorStop(0.55, fogColor);
+    sky.addColorStop(1, "#050209");
+    ctx.fillStyle = sky;
+    ctx.fillRect(0, 92, W, H - 92);
+    ctx.save();
+    ctx.translate(-cameraX * 0.08, 0);
+    ctx.globalAlpha = 0.48;
+    for (let x = -220; x < W + 460; x += 260) {
+      ctx.fillStyle = "rgba(7,6,12,.7)";
+      ctx.fillRect(x, 155, 150, 455);
+      ctx.strokeStyle = "rgba(255,214,109,.16)";
+      ctx.lineWidth = 2;
+      for (let y = 175; y < 585; y += 58) {
+        ctx.beginPath();
+        ctx.moveTo(x + 18, y);
+        ctx.lineTo(x + 92, y);
+        ctx.lineTo(x + 126, y + 19);
+        ctx.stroke();
+      }
+    }
+    ctx.restore();
+    ctx.save();
+    ctx.translate(-cameraX * 0.18, 0);
+    ctx.globalCompositeOperation = "screen";
+    for (let x = -280; x < W + 560; x += 380) {
+      const g = ctx.createRadialGradient(x + 180, 445, 8, x + 180, 445, 250);
+      g.addColorStop(0, withAlpha(glowColor, 0.18));
+      g.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.fillStyle = g;
+      ctx.fillRect(x, 210, 360, 430);
+    }
+    ctx.restore();
+    ctx.save();
+    ctx.globalAlpha = 0.26;
+    ctx.fillStyle = "rgba(0,0,0,.42)";
+    for (let x = -(cameraX * 0.34 % 180); x < W + 180; x += 180) ctx.fillRect(x, 92, 3, H - 92);
+    for (let y = 140; y < H; y += 72) ctx.fillRect(0, y, W, 2);
+    ctx.restore();
+    const shade = ctx.createLinearGradient(0, 0, 0, H);
+    shade.addColorStop(0, "rgba(0,0,0,.2)");
+    shade.addColorStop(0.42, "rgba(0,0,0,.03)");
+    shade.addColorStop(1, "rgba(0,0,0,.42)");
     ctx.fillStyle = shade;
     ctx.fillRect(0, 0, W, H);
   }
@@ -4080,6 +4610,261 @@
     }
   }
 
+  function drawWorldAssetPass(state) {
+    if (!state) return;
+    const area = activeArea(state);
+    const palette = state.level?.palette || {};
+    const modules = isUnderground(state)
+      ? buildUndergroundWorldModules(state, area)
+      : buildSurfaceWorldModules(state);
+    for (const module of modules) {
+      const pad = module.type === "wall" ? module.w * 0.45 : module.w * 0.8;
+      if (module.x + module.w < state.cameraX - pad || module.x - module.w > state.cameraX + W + pad) continue;
+      if (module.type === "portal") {
+        drawPortalHousingAsset(module.x, module.y, module.kind || "entrance", palette, { ...module, time: state.time });
+      } else if (module.type === "gate") {
+        drawGateFrameAsset(module.x, module.y, module.w, module.h, palette, module);
+      } else if (module.type === "crate") {
+        drawVaultCrateAsset(module.x, module.y, module.w, module.h, palette, module.variant || 0);
+      } else if (module.type === "console") {
+        drawVaultConsoleAsset(module.x, module.y, module.w, module.h, palette, module.variant || 0);
+      } else {
+        drawCircuitWallAsset(module.x, module.y, module.w, module.h, palette, module.variant || 0);
+      }
+    }
+  }
+
+  function buildSurfaceWorldModules(state) {
+    const modules = [...(WORLD_ASSET_MODULES[state.level.id] || [])];
+    const underground = state.level.underground;
+    if (underground?.entrance) {
+      modules.push({
+        type: "portal",
+        kind: undergroundComplete(state) ? "sealed" : "entrance",
+        x: underground.entrance.x,
+        y: underground.entrance.y || 620,
+        w: 112,
+        h: 164
+      });
+    }
+    modules.push({
+      type: "gate",
+      x: gateX(state) - 36,
+      y: 392,
+      w: 104,
+      h: 212,
+      open: state.gateOpen
+    });
+    modules.push({
+      type: "portal",
+      kind: state.extractionOpen ? "exit" : "dormant",
+      x: extractionX(state),
+      y: 620,
+      w: 136,
+      h: 174
+    });
+    return modules;
+  }
+
+  function buildUndergroundWorldModules(state, area) {
+    const modules = [
+      { type: "wall", x: 150, y: 340, w: 230, h: 260, variant: 2 },
+      { type: "wall", x: Math.max(520, area.width * 0.36), y: 314, w: 260, h: 286, variant: 1 },
+      { type: "console", x: Math.max(680, area.width * 0.5), y: 548, w: 150, h: 84, variant: 2 },
+      { type: "wall", x: Math.max(1120, area.width - 560), y: 334, w: 230, h: 270, variant: 0 },
+      { type: "crate", x: Math.max(820, area.width * 0.64), y: 560, w: 170, h: 78, variant: 1 },
+      { type: "portal", kind: undergroundComplete(state) ? "exit" : "cell-lock", x: area.exitX, y: area.exitY || 620, w: 150, h: 220 }
+    ];
+    return modules;
+  }
+
+  function drawCircuitWallAsset(x, y, w, h, palette, variant = 0) {
+    const trim = palette.trim || colors.gold;
+    const glow = palette.glow || colors.purple;
+    ctx.save();
+    ctx.globalAlpha = 0.92;
+    ctx.shadowColor = withAlpha(glow, 0.24);
+    ctx.shadowBlur = 14;
+    const panel = ctx.createLinearGradient(x, y, x + w, y + h);
+    panel.addColorStop(0, "#08070b");
+    panel.addColorStop(0.46, "#15111a");
+    panel.addColorStop(1, "#050407");
+    ctx.fillStyle = panel;
+    roundedRect(x, y, w, h, 10, true, false);
+    ctx.shadowBlur = 0;
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = withAlpha(trim, 0.58);
+    roundedRect(x + 4, y + 4, w - 8, h - 8, 8, false, true);
+    ctx.strokeStyle = withAlpha(glow, 0.38);
+    ctx.lineWidth = 2;
+    const step = variant % 2 ? 42 : 36;
+    for (let cy = y + 34; cy < y + h - 28; cy += step) {
+      ctx.beginPath();
+      ctx.moveTo(x + 18, cy);
+      ctx.lineTo(x + w * 0.36, cy);
+      ctx.lineTo(x + w * 0.48, cy + 15);
+      ctx.lineTo(x + w - 26, cy + 15);
+      ctx.stroke();
+      ctx.fillStyle = withAlpha(trim, 0.7);
+      ctx.beginPath();
+      ctx.arc(x + w - 26, cy + 15, 3.2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalCompositeOperation = "screen";
+    const core = ctx.createLinearGradient(x, y, x + w, y);
+    core.addColorStop(0, "rgba(0,0,0,0)");
+    core.addColorStop(0.5, withAlpha(glow, 0.18));
+    core.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = core;
+    ctx.fillRect(x + 14, y + 18, w - 28, h - 36);
+    ctx.restore();
+  }
+
+  function drawVaultCrateAsset(x, y, w, h, palette, variant = 0) {
+    const trim = palette.trim || colors.gold;
+    const glow = palette.glow || colors.purple;
+    ctx.save();
+    ctx.globalAlpha = 0.94;
+    const g = ctx.createLinearGradient(x, y - h, x + w, y);
+    g.addColorStop(0, "#2b2527");
+    g.addColorStop(0.55, "#111015");
+    g.addColorStop(1, "#070609");
+    ctx.fillStyle = g;
+    roundedRect(x - w * 0.5, y - h, w, h, 8, true, false);
+    ctx.strokeStyle = withAlpha(trim, 0.62);
+    ctx.lineWidth = 3;
+    roundedRect(x - w * 0.5 + 4, y - h + 4, w - 8, h - 8, 7, false, true);
+    ctx.fillStyle = withAlpha(glow, 0.22);
+    ctx.fillRect(x - w * 0.28, y - h * 0.28, w * 0.56, 5);
+    ctx.strokeStyle = withAlpha(trim, 0.5);
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(x - w * 0.36, y - h * 0.72);
+    ctx.lineTo(x - w * 0.08, y - h * 0.72);
+    ctx.lineTo(x + w * 0.12, y - h * 0.5);
+    ctx.lineTo(x + w * 0.36, y - h * 0.5);
+    ctx.stroke();
+    if (variant % 2 === 0) {
+      ctx.fillStyle = withAlpha(trim, 0.78);
+      ctx.fillRect(x - 10, y - h * 0.56, 20, 16);
+    }
+    ctx.restore();
+  }
+
+  function drawVaultConsoleAsset(x, y, w, h, palette, variant = 0) {
+    const trim = palette.trim || colors.gold;
+    const glow = palette.glow || colors.purple;
+    ctx.save();
+    ctx.globalAlpha = 0.96;
+    const baseX = x - w * 0.5;
+    const baseY = y - h;
+    ctx.fillStyle = "#08070b";
+    roundedRect(baseX, baseY, w, h, 10, true, false);
+    ctx.strokeStyle = withAlpha(trim, 0.64);
+    ctx.lineWidth = 3;
+    roundedRect(baseX + 3, baseY + 3, w - 6, h - 6, 8, false, true);
+    ctx.globalCompositeOperation = "screen";
+    const meter = ctx.createLinearGradient(baseX + 16, baseY + 26, baseX + w - 18, baseY + 26);
+    meter.addColorStop(0, withAlpha(glow, 0.22));
+    meter.addColorStop(0.48, withAlpha(glow, 0.72));
+    meter.addColorStop(1, "rgba(255,214,109,.58)");
+    ctx.fillStyle = meter;
+    roundedRect(baseX + 16, baseY + 22, w - 32, 12, 6, true, false);
+    ctx.globalCompositeOperation = "source-over";
+    ctx.strokeStyle = withAlpha(glow, 0.62);
+    ctx.lineWidth = 2;
+    for (let i = 0; i < 3; i += 1) {
+      const cx = baseX + 30 + i * 30 + variant * 4;
+      ctx.beginPath();
+      ctx.moveTo(cx, baseY + 48);
+      ctx.lineTo(cx + 14, baseY + 62);
+      ctx.lineTo(cx + 28, baseY + 62);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  function drawGateFrameAsset(x, y, w, h, palette, module = {}) {
+    const gateImage = images.cyberGateSheet;
+    if (gateImage?.complete && gateImage.naturalWidth) {
+      const frame = module.open ? 1 : 0;
+      const targetW = Math.max(118, w + 56);
+      const targetH = Math.max(164, h + 8);
+      drawSheetCell(gateImage, 6, 1, frame, 0, x - (targetW - w) * 0.5, y - 4, targetW, targetH, module.open ? 0.64 : 0.78);
+      return;
+    }
+    const trim = palette.trim || colors.gold;
+    const glow = module.open ? colors.cyan : palette.glow || colors.purple;
+    ctx.save();
+    ctx.globalAlpha = module.open ? 0.34 : 0.62;
+    const pillarW = Math.max(18, Math.min(28, w * 0.2));
+    drawCircuitWallAsset(x - pillarW, y + 4, pillarW, h - 8, palette, 1);
+    drawCircuitWallAsset(x + w, y + 4, pillarW, h - 8, palette, 2);
+    ctx.globalCompositeOperation = "screen";
+    ctx.strokeStyle = withAlpha(glow, module.open ? 0.46 : 0.62);
+    ctx.lineWidth = 6;
+    ctx.beginPath();
+    ctx.moveTo(x + 8, y + 20);
+    ctx.lineTo(x + w - 8, y + 20);
+    ctx.moveTo(x + 8, y + h - 20);
+    ctx.lineTo(x + w - 8, y + h - 20);
+    ctx.stroke();
+    ctx.fillStyle = withAlpha(trim, 0.18);
+    ctx.fillRect(x + w * 0.48, y + 38, w * 0.04, h - 76);
+    ctx.restore();
+  }
+
+  function drawPortalHousingAsset(x, groundY, kind, palette, module = {}) {
+    const trim = palette.trim || colors.gold;
+    const glow = kind === "exit" ? colors.cyan : palette.glow || colors.purple;
+    const w = module.w || 150;
+    const h = module.h || 220;
+    const left = x - w * 0.5;
+    const top = groundY - h;
+    const pulse = 0.76 + Math.sin((module.time || 0) * 4 + x * 0.01) * 0.12;
+    ctx.save();
+    ctx.globalAlpha = kind === "dormant" ? 0.52 : 0.78;
+    const body = ctx.createLinearGradient(left, top, left + w, top + h);
+    body.addColorStop(0, "#09070c");
+    body.addColorStop(0.55, "#15101a");
+    body.addColorStop(1, "#050306");
+    ctx.fillStyle = body;
+    roundedRect(left, top, w, h, 14, true, false);
+    ctx.strokeStyle = withAlpha(trim, 0.7);
+    ctx.lineWidth = 4;
+    roundedRect(left + 5, top + 5, w - 10, h - 10, 12, false, true);
+    ctx.globalCompositeOperation = "screen";
+    const inner = ctx.createRadialGradient(x, top + h * 0.48, 8, x, top + h * 0.48, w * 0.72);
+    inner.addColorStop(0, withAlpha(glow, 0.58 * pulse));
+    inner.addColorStop(0.45, withAlpha(glow, 0.14));
+    inner.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = inner;
+    ctx.fillRect(left + 10, top + 14, w - 20, h - 28);
+    ctx.globalCompositeOperation = "source-over";
+    ctx.strokeStyle = withAlpha(glow, 0.82);
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(x - 22, top + h * 0.32);
+    ctx.lineTo(x, top + h * 0.49);
+    ctx.lineTo(x + 22, top + h * 0.32);
+    ctx.moveTo(x, top + h * 0.49);
+    ctx.lineTo(x, top + h * 0.72);
+    ctx.stroke();
+    ctx.fillStyle = withAlpha(glow, 0.6);
+    roundedRect(x - 28, groundY - 34, 56, 20, 6, true, false);
+    ctx.strokeStyle = withAlpha(trim, 0.42);
+    ctx.lineWidth = 2;
+    for (let i = 0; i < 3; i += 1) {
+      const yy = top + 72 + i * 32;
+      ctx.beginPath();
+      ctx.moveTo(left + 18, yy);
+      ctx.lineTo(left + 42, yy);
+      ctx.lineTo(left + 54, yy + 10);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
   function drawPlatforms(state) {
     const palette = state.level?.palette || { platform: "#282024", trim: colors.gold, glow: colors.purple };
     for (const plat of state.platforms) {
@@ -4162,18 +4947,73 @@
     return true;
   }
 
+  function drawAreaPortals(state) {
+    const area = activeArea(state);
+    const underground = state.level.underground;
+    if (!underground) return;
+    const portals = isUnderground(state)
+      ? [{ type: "exit", x: area.exitX, y: area.exitY || 620, label: undergroundComplete(state) ? "RETURN" : "3 CELLS" }]
+      : [{ type: "entrance", x: underground.entrance.x, y: underground.entrance.y || 620, label: "UNDER" }];
+    for (const portal of portals) {
+      const pulse = 0.62 + Math.sin(state.time * 4.8) * 0.18;
+      ctx.save();
+      ctx.translate(portal.x, portal.y - 82);
+      ctx.globalCompositeOperation = "screen";
+      const color = portal.type === "exit" ? colors.cyan : colors.purple;
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 4;
+      roundedRect(-38, -84, 76, 112, 16, false, true);
+      ctx.globalAlpha = 0.35 + pulse * 0.35;
+      ctx.fillStyle = color;
+      ctx.fillRect(-22, 8, 44, 10);
+      ctx.beginPath();
+      ctx.moveTo(-16, -46);
+      ctx.lineTo(0, -25);
+      ctx.lineTo(16, -46);
+      ctx.stroke();
+      ctx.globalAlpha = 0.92;
+      ctx.font = "900 10px 'Arial Black', sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillStyle = "#ffe88a";
+      ctx.fillText(portal.label, 0, 49);
+      ctx.restore();
+    }
+  }
+
   function drawGate(state) {
+    if (isUnderground(state)) return;
     const openLift = state.gateOpen ? 265 : 0;
     const pulse = 0.55 + Math.sin(state.gatePulse * 6) * 0.18;
     const gx = gateX(state);
+    const cyberGateImage = images.cyberGateSheet;
+    if (cyberGateImage?.complete && cyberGateImage.naturalWidth) {
+      const ready = gateReady(state);
+      const frame = state.gateOpen ? 1 : ready ? 0 : 5;
+      const targetW = 168;
+      const targetH = 252;
+      drawSheetCell(cyberGateImage, 6, 1, frame, 0, gx - 40, 360 - openLift, targetW, targetH, 0.98);
+      if (!state.gateOpen) {
+        ctx.save();
+        ctx.globalCompositeOperation = "screen";
+        ctx.strokeStyle = ready ? `rgba(56,219,255,${pulse * 0.9})` : `rgba(255,79,154,${pulse})`;
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.moveTo(gx + 43, 390);
+        ctx.lineTo(gx + 43, 590);
+        ctx.stroke();
+        ctx.restore();
+      }
+      return;
+    }
     const gateImage = images.missionGate;
     if (gateImage?.complete && gateImage.naturalWidth) {
-      const frame = state.gateOpen ? Math.floor(state.time * 10) % 4 : state.keys >= 3 ? Math.floor(state.time * 7) % 4 : Math.floor(state.time * 2) % 2;
+      const ready = gateReady(state);
+      const frame = state.gateOpen ? Math.floor(state.time * 10) % 4 : ready ? Math.floor(state.time * 7) % 4 : Math.floor(state.time * 2) % 2;
       drawSheetCell(gateImage, 4, 1, frame, 0, gx - 26, 312 - openLift, 144, 320, 0.98);
       if (!state.gateOpen) {
         ctx.save();
         ctx.globalCompositeOperation = "screen";
-        ctx.strokeStyle = state.keys >= 3 ? `rgba(56,219,255,${pulse})` : `rgba(255,79,154,${pulse})`;
+        ctx.strokeStyle = ready ? `rgba(56,219,255,${pulse})` : `rgba(255,79,154,${pulse})`;
         ctx.lineWidth = 5;
         ctx.beginPath();
         ctx.moveTo(gx + 46, 350);
@@ -4192,7 +5032,7 @@
     ctx.lineWidth = 4;
     ctx.strokeRect(5, 6, 82, 282);
     ctx.globalAlpha = pulse;
-    ctx.strokeStyle = state.keys >= 3 ? colors.cyan : colors.pink;
+    ctx.strokeStyle = gateReady(state) ? colors.cyan : colors.pink;
     ctx.lineWidth = 3;
     for (let y = 38; y < 250; y += 42) {
       ctx.beginPath();
@@ -4364,6 +5204,26 @@
     }
   }
 
+  function drawAreaTransition(state) {
+    if (!state.areaTransition) return;
+    const alpha = clamp(state.areaTransition / 0.34, 0, 1);
+    ctx.save();
+    ctx.fillStyle = `rgba(3,2,8,${0.72 * alpha})`;
+    ctx.fillRect(0, 0, W, H);
+    ctx.globalCompositeOperation = "screen";
+    ctx.fillStyle = `rgba(255,79,218,${0.14 * alpha})`;
+    ctx.fillRect(0, H * 0.46 - 24, W, 48);
+    ctx.globalCompositeOperation = "source-over";
+    ctx.textAlign = "center";
+    ctx.fillStyle = "#fff4bd";
+    ctx.font = "900 30px 'Arial Black', sans-serif";
+    ctx.fillText(state.areaNotice || currentObjectiveText(state), W * 0.5, H * 0.48);
+    ctx.font = "900 12px 'Arial Black', sans-serif";
+    ctx.fillStyle = colors.cyan;
+    ctx.fillText(isUnderground(state) ? "UNDERGROUND SECTOR" : "SURFACE SECTOR", W * 0.5, H * 0.48 + 28);
+    ctx.restore();
+  }
+
   function drawToast(state) {
     if (!state.toastTimer || !state.toast) return;
     const alpha = clamp(state.toastTimer / 0.35, 0, 1);
@@ -4394,6 +5254,7 @@
       if (pickup.type === "key") drawKey(pickup.x, y, displayR);
       if (pickup.type === "health") drawHeart(pickup.x, y, displayR, colors.pink);
       if (pickup.type === "overdrive") drawOverdrivePickup(pickup.x, y, displayR);
+      if (pickup.type === "cell") drawPowerCell(pickup.x, y, displayR);
       if (pickup.type === "shield") drawShieldPickup(pickup.x, y, displayR);
       if (pickup.type === "weapon") drawWeaponPickup(pickup.x, y, displayR, pickup.weapon);
     }
@@ -4401,6 +5262,36 @@
 
   function pickupDisplayRadius(pickup) {
     return pickup.r * (PICKUP_DRAW_SCALE[pickup.type] || 0.62);
+  }
+
+  function drawPowerCell(x, y, r) {
+    ctx.save();
+    ctx.translate(x, y);
+    const pulse = 0.82 + Math.sin((run?.time || 0) * 5.2 + x * 0.02) * 0.12;
+    ctx.globalCompositeOperation = "screen";
+    const glow = ctx.createRadialGradient(0, 0, 2, 0, 0, r * 3.3);
+    glow.addColorStop(0, `rgba(255,79,218,${0.52 * pulse})`);
+    glow.addColorStop(0.45, `rgba(56,219,255,${0.24 * pulse})`);
+    glow.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = glow;
+    ctx.beginPath();
+    ctx.arc(0, 0, r * 2.8, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalCompositeOperation = "source-over";
+    ctx.fillStyle = "rgba(8,7,12,.94)";
+    ctx.strokeStyle = colors.gold;
+    ctx.lineWidth = 3;
+    roundedRect(-r * 1.15, -r * 1.15, r * 2.3, r * 2.3, 8, true, true);
+    ctx.strokeStyle = colors.purple;
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.moveTo(-r * 0.45, 0);
+    ctx.lineTo(0, -r * 0.52);
+    ctx.lineTo(r * 0.45, 0);
+    ctx.lineTo(0, r * 0.52);
+    ctx.closePath();
+    ctx.stroke();
+    ctx.restore();
   }
 
   function drawShieldPickup(x, y, r) {
@@ -5569,12 +6460,12 @@
       dom.hpHearts.appendChild(row);
     }
     dom.livesText.textContent = players.map((p) => `${p.label} ${p.lives}`).join(" | ");
-    dom.hudTitle.textContent = run.runMode === "coop" ? "KLMN WITH KNDNSS CO-OP" : run.coOp ? "KLMN WITH KNDNSS 2P" : "KLMN WITH KNDNSS";
-    dom.levelText.textContent = `${run.level.id} ${run.level.shortName}`;
+    dom.hudTitle.textContent = run.runMode === "coop" ? "ROBOT RAHBE CO-OP" : run.coOp ? "ROBOT RAHBE 2P" : "ROBOT RAHBE";
+    dom.levelText.textContent = `${run.level.id} ${run.level.shortName} ${isUnderground(run) ? "UNDERGROUND" : "SURFACE"}`;
     dom.scoreText.textContent = String(run.stats.score).padStart(6, "0");
     dom.comboText.textContent = `x${run.combo}`;
     dom.shardText.textContent = String(run.shards);
-    dom.keyText.textContent = `${run.keys}/3`;
+    dom.keyText.textContent = isUnderground(run) ? `Cells ${undergroundCellCount(run)}/3` : `${run.keys}/3`;
     const leadPlayer = activePlayers(run)[0] || run.player;
     const weaponLabel = leadPlayer?.weaponTimer > 0 ? `${WEAPON_META[leadPlayer.weapon]?.label || "HEART"} ${Math.ceil(leadPlayer.weaponTimer)}` : leadPlayer?.luckyShield > 0 ? "SHIELD" : "HEART";
     dom.weaponText.textContent = weaponLabel;

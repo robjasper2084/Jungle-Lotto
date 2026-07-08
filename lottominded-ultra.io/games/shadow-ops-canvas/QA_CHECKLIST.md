@@ -19,6 +19,18 @@
 - Defeat Midas Heartcore Overlord and trigger final victory/results.
 - Replay from results.
 
+
+## Underground Sectors
+
+- Level 1 surface entrance opens Rootline Underworks.
+- Level 2 surface entrance opens Furnace Service Depths.
+- Level 3 surface entrance opens Astral Catacombs.
+- `S`/Down/touch `DOWN` enters at the portal and does normal crouch elsewhere.
+- Each underground sector has exactly three cell pickups.
+- Returning through the exit after all three cells marks the sector complete.
+- Boss gate stays locked with three keys until the underground sector is complete.
+- Bosses, arena locks, extraction portal, and lottery terminal do not spawn/update underground.
+- Debug buttons `UG Door`, `UG Enter`, `UG Cells`, `UG Clear`, and `Surface` smoke-test the new loop.
 ## Combat
 
 - Player shots damage enemies and bosses.
@@ -49,6 +61,10 @@
 ## Browser QA Performed
 
 - `node --check src/game.js`: passed.
+- `node --check` against a temp copy of `src/game.js` after underground-sector changes: passed.
+- Static debug URL `http://127.0.0.1:8150/games/shadow-ops-canvas/index.html?v=underground-levels-1&debug=1`: returned HTTP 200.
+- In-app browser debug load showed the new UG Door/UG Enter/UG Cells/UG Clear/Surface controls and no active boot error.
+- Keyboard start smoke test reached Level 1 HUD with `1 Neon Jungle SURFACE`.
 - In-app browser load at `http://127.0.0.1:8150/games/shadow-ops-canvas/index.html?bg=soul-location-1&v=three-levels-bosses-1&debug=1`: passed.
 - Title screen screenshot: passed.
 - Start Level 1 screenshot: passed.

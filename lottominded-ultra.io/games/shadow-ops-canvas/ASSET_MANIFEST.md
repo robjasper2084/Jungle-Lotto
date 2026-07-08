@@ -35,6 +35,7 @@
 | `missionCollectibles` | `assets/mission/mission_collectibles_sheet.png` | Animated shards, keycards, health hearts, and overdrive pickups |
 | `missionPortal` | `assets/mission/extraction_portal_sheet.png` | Animated extraction portal ring |
 | `missionGate` | `assets/mission/vault_gate_sheet.png` | Animated branded vault gate column |
+| `cyberGateSheet` | `assets/mission/chatgpt_cyber_vault_gate_sheet_v1.png` | Active transparent cyber-vault gate sheet for closed, open, damaged, and decorative gate states |
 | `missionBrandProps` | `assets/mission/branded_background_props_sheet.png` | Branded background medallions, terminals, relays, and plaques |
 | `missionProps` | `assets/mission/higgsfield_missing_world_props_runtime_v3.png` | Ghost-cleaned Higgsfield background prop cutouts layered into the level scenery |
 | `fxSheet` | `assets/mission/higgsfield_separate_fx_repair_runtime_v4.png` | Active repaired FX sheet with frames 2, 3, 4, 5, 6, 17, 18, and 19 cleaned again for transparent cells |
@@ -76,6 +77,7 @@ Enable on the startup/title screen with `?envpack=cyber-vault-v1`. Gameplay leve
 | `assets/mission/mission_collectibles_sheet.png` | Local optimized sprite sheet; active runtime pickup animation. |
 | `assets/mission/extraction_portal_sheet.png` | Local optimized sprite sheet; active runtime extraction animation. |
 | `assets/mission/vault_gate_sheet.png` | Local optimized sprite sheet; active runtime vault gate animation. |
+| `assets/mission/chatgpt_cyber_vault_gate_sheet_v1.png` | Active transparent six-cell cyber-vault gate replacement sheet generated locally after ChatGPT Image and Higgsfield tooling were unavailable/unusable in-session. |
 | `assets/mission/branded_background_props_sheet.png` | Local optimized sprite sheet; active runtime branded background props. |
 | `assets/characters/higgsfield_enemy_motion_sheet.webp` | Higgsfield source download for enemy motion; cleaned into active transparent PNG. |
 | `assets/characters/higgsfield_enemy_motion_sheet_alpha.png` | Transparent 3x4 enemy motion source sheet. |

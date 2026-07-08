@@ -13,7 +13,7 @@ const debug = {
   pointerX: 0,
   pointerY: 0,
   ready: false,
-  renderer: "shadow-ops-startup-webgl-perspective"
+  renderer: "robot-rahbe-startup-opengw-reference"
 };
 
 window.__startup3dDebug = debug;
@@ -97,7 +97,7 @@ async function initStartupScene() {
   gl.disable(gl.CULL_FACE);
   gl.disable(gl.DEPTH_TEST);
   gl.enable(gl.BLEND);
-  gl.clearColor(0.018, 0.006, 0.032, 1);
+  gl.clearColor(0.006, 0.008, 0.028, 1);
 
   attachInteraction(interaction);
   resize(gl);
@@ -169,7 +169,7 @@ function renderScene(state, time) {
     position: [cameraDrift * -0.28, 1.38 + pointer.y * 0.12, -16.5],
     rotation: [0, 0, 0],
     scale: [15.8, 8.9, 1],
-    tint: [0.9, 0.98, 1.12, 1]
+    tint: [0.92, 0.96, 1.12, 1]
   });
 
   gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
@@ -178,14 +178,14 @@ function renderScene(state, time) {
     position: [-7.2 - pointer.x * 0.72, 0.96 + pointer.y * 0.12, -10.8 + boost * 0.18],
     rotation: [0, 0.34 + pointer.x * 0.04, 0],
     scale: [7.3, 8.1, 1],
-    tint: [0.75, 1.08, 1.25, 1]
+    tint: [0.72, 1.08, 1.24, 1]
   });
   drawTextured(state, viewProj, state.textures.mid, {
     opacity: 0.22 + boost * 0.04,
     position: [7.2 - pointer.x * 0.72, 0.96 + pointer.y * 0.12, -10.8 + boost * 0.18],
     rotation: [0, -0.34 + pointer.x * 0.04, 0],
     scale: [7.3, 8.1, 1],
-    tint: [1.18, 0.72, 1.08, 1]
+    tint: [1.16, 0.72, 1.08, 1]
   });
 
   gl.useProgram(gridProgram);
@@ -198,8 +198,8 @@ function renderScene(state, time) {
   gl.uniform2f(uniforms.grid.pointer, pointer.x, pointer.y);
   gl.uniform1f(uniforms.grid.interaction, pointer.activity);
   gl.uniform4fv(uniforms.grid.ripples, state.interaction.rippleUniforms);
-  gl.uniform3f(uniforms.grid.colorA, 0.86, 0.12, 1.0);
-  gl.uniform3f(uniforms.grid.colorB, 1.0, 0.72, 0.22);
+  gl.uniform3f(uniforms.grid.colorA, 0.1, 0.94, 1.0);
+  gl.uniform3f(uniforms.grid.colorB, 1.0, 0.16, 0.78);
   gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
   gl.drawArrays(gl.TRIANGLES, 0, state.floor.count);
 
@@ -229,6 +229,30 @@ function renderScene(state, time) {
   gl.disableVertexAttribArray(gl.getAttribLocation(gridProgram, "a_position"));
 }
 
+function drawNebulaBackdrop(gl, width, height, time, pointer) {
+  const pulse = 0.5 + Math.sin(time * 0.22) * 0.5;
+  const pointerWash = Math.max(0, Math.abs(pointer.x) * 0.012 + Math.abs(pointer.y) * 0.006);
+  gl.disable(gl.SCISSOR_TEST);
+  gl.clearColor(0.006 + pointerWash, 0.008 + pulse * 0.003, 0.026 + pointerWash * 1.8, 1);
+  gl.clear(gl.COLOR_BUFFER_BIT);
+}
+
+function drawPortalGlow(gl, width, height, time, pointer) {
+  gl.enable(gl.SCISSOR_TEST);
+  const pulse = 0.5 + Math.sin(time * 1.2) * 0.5;
+  const cx = Math.floor(width * (0.58 + pointer.x * 0.035));
+  const cy = Math.floor(height * (0.54 + pointer.y * 0.025));
+  const sizes = [0.34, 0.24, 0.14, 0.06];
+  sizes.forEach((size, index) => {
+    const w = Math.floor(width * size * (1 + pulse * 0.04));
+    const h = Math.floor(height * size * 0.34 * (1 + pulse * 0.06));
+    gl.scissor(cx - Math.floor(w / 2), cy - Math.floor(h / 2), Math.max(1, w), Math.max(1, h));
+    const strength = (sizes.length - index) / sizes.length;
+    gl.clearColor(0.08 * strength, 0.015 * strength, 0.12 * strength + pulse * 0.025, 1);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+  });
+  gl.disable(gl.SCISSOR_TEST);
+}
 function drawTextured(state, viewProj, texture, options) {
   const { gl, texturedProgram, quad, uniforms } = state;
   const model = compose(options.position, options.rotation, options.scale);

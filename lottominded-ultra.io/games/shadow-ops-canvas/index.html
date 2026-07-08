@@ -3,22 +3,22 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
-    <title>KLNM WITH KNDNSS | Shadow Ops</title>
+    <title>ROBOT RAHBE</title>
     <link rel="icon" href="data:," />
-    <link rel="stylesheet" href="./style.css?v=orientation-fit-1" />
+    <link rel="stylesheet" href="./style.css?v=title-card-blend-4" />
   </head>
   <body>
-    <main class="game-shell" aria-label="KLNM WITH KNDNSS browser game">
-      <canvas id="game" width="1280" height="720" aria-label="KLNM WITH KNDNSS playfield"></canvas>
+    <main class="game-shell" aria-label="ROBOT RAHBE browser game">
+      <canvas id="game" width="1280" height="720" aria-label="ROBOT RAHBE playfield"></canvas>
 
       <section id="loadingScreen" class="screen screen--loading">
-        <div class="screen-panel">
-          <p class="small-label">KLNM WITH KNDNSS</p>
-          <h1>Loading Shadow Ops</h1>
+        <div class="screen-panel loading-panel">
+          <p class="small-label">ROBOT RAHBE</p>
+          <h1>Vault Core Sync</h1>
           <div class="load-track" aria-label="Loading progress">
             <span id="loadBar"></span>
           </div>
-          <p id="loadText" class="screen-copy">Preparing the vault grid...</p>
+          <p id="loadText" class="screen-copy">Charging heart-core grid...</p>
         </div>
       </section>
 
@@ -33,19 +33,38 @@
           <div class="startup-scene-layer startup-scene-mask"></div>
         </div>
         <div class="title-copy">
-          <p class="small-label">. LiL Man's</p>
-          <h1>KLNM WITH KNDNSS</h1>
-          <figure class="title-product-card" aria-label="LottoMind collectible keychain package">
-            <img src="./assets/backgrounds/lottomind-store-startup.png" alt="" />
+          <p class="small-label">Lil-Man Presents</p>
+          <h1>ROBOT RAHBE</h1>
+          <figure class="title-product-card title-product-card--gameplay" aria-label="Robot Rahbe gameplay key art">
+            <img src="./assets/backgrounds/robot-rahbe-gameplay-keyart-flipped.png?v=gameplay-title-flipped-1" alt="" />
+            <figcaption>Gameplay key art</figcaption>
           </figure>
           <p class="screen-copy">Break three number vaults, claim each key set, defeat every boss, and turn your run stats into a final lottery drop.</p>
           <div class="button-row">
             <button class="primary" data-action="start-solo">Solo Run</button>
             <button data-action="start-two-player">2 Player Run</button>
             <button data-action="start-coop">2 Player Co-op</button>
+            <button data-action="purchase">Buy Collectible</button>
             <button data-action="settings">Settings</button>
           </div>
           <p class="control-strip">P1: WASD/arrows, Space, J/K/L. P2: T/F/G/H, R, Y/U/I or numpad.</p>
+        </div>
+      </section>
+
+      <section id="purchaseScreen" class="screen screen--purchase is-hidden">
+        <div class="screen-panel purchase-panel">
+          <div class="purchase-copy">
+            <p class="small-label">Collectible Drop</p>
+            <h2>Robot Rahbe Keychain</h2>
+            <p class="screen-copy">Open the merch vault to view the LottoMind collectible keychain and add it from the store page.</p>
+            <div class="button-row">
+              <a class="button-link primary" href="../../merch-store.html#keychains" target="_blank" rel="noopener">Open Store</a>
+              <button data-action="close-purchase">Back</button>
+            </div>
+          </div>
+          <figure class="purchase-product-card" aria-label="LottoMind collectible keychain package">
+            <img src="../../assets/merch/lottomind-keychain-counter-display.webp" alt="" />
+          </figure>
         </div>
       </section>
 
@@ -187,7 +206,7 @@
         <div class="hud-left">
           <img src="./assets/hero/lottomind-hero-main.png" alt="" class="portrait" />
           <div>
-            <div id="hudTitle" class="hud-title">KLNM WITH KNDNSS</div>
+            <div id="hudTitle" class="hud-title">ROBOT RAHBE</div>
             <div id="hpHearts" class="hearts" aria-label="Health"></div>
             <div class="lives">Lives <span id="livesText">3</span></div>
           </div>
@@ -234,9 +253,9 @@
       </div>
     </main>
     <script src="../../assets/js/lm-game-rewards-sdk.js?v=rewards-sdk-1"></script>
-    <script type="module" src="./src/startup3d.js?v=startup-webgl-1"></script>
     <script src="./src/mobile-touch.js?v=touch-control-1"></script>
-    <script src="./src/game.js?v=game-bg-restore-1"></script>
-    <script src="./src/brand-title-v2.js?v=kln-title-2"></script>
+    <script type="module" src="./src/startup3d.js?v=startup3d-opengw-1"></script>
+    <script src="./src/game.js?v=asset-fill-gates-2"></script>
+    <script src="./src/brand-title-v2.js?v=title-fit-1"></script>
   </body>
 </html>

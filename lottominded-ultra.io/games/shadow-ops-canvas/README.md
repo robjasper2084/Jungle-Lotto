@@ -23,13 +23,23 @@ A static HTML5 Canvas run-and-gun campaign with original LottoMind black/gold/pu
 
 Gamepad and touch controls are supported. Touch controls can be hidden in Settings.
 
+
+## Underground Sectors
+
+Each campaign level now has one optional-but-required underground sector before the boss gate opens:
+
+- Level 1: Rootline Underworks below Neon Jungle Vault.
+- Level 2: Furnace Service Depths below Golden Circuit Foundry.
+- Level 3: Astral Catacombs below Astral Vault Core.
+
+After collecting the three surface keys, enter the underground portal with `S`/Down or the touch `DOWN` button. Recover all three power cells, return to the surface through the exit portal, then open the boss gate. Bosses and lottery terminals stay on the surface; projectiles and hazards are cleared during the sector transition.
 ## Local Run
 
 Serve the parent website folder and open:
 
 `http://127.0.0.1:8150/games/shadow-ops-canvas/index.html?bg=soul-location-1`
 
-Add `&debug=1` to show QA jump buttons for keys, Level 2, Level 3, boss, defeat, and victory.
+Add `&debug=1` to show QA jump buttons for keys, Level 2, Level 3, underground door/enter/cells/clear/surface, boss, defeat, terminal, and victory.
 
 ## Files
 
