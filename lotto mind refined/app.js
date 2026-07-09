@@ -2425,7 +2425,7 @@ function dashboardView() {
   const current = state.currentSet || generateLottoSet(state.gameId, state.strategy, "dashboard");
   return `<section class="screen dashboard-screen">
     <div class="oracle-hero panel art-panel" style="--panel-art:url('${ASSETS.dream}')">
-      <video class="oracle-hero-bg-video ambient-video" src="${ASSETS.oracleHeroVideo}" muted loop autoplay playsinline preload="metadata"></video>
+      <video class="oracle-hero-bg-video ambient-video" data-src="${ASSETS.oracleHeroVideo}" muted loop playsinline preload="none" data-autoplay-on-visible="true"></video>
       <div>
         <h1>Oracle Studio</h1>
         <p>Reset, dream, read the map, then run Power Tools with every old feature wired inside one branded app.</p>
@@ -2553,11 +2553,11 @@ function categoryArtForTool(title, route, index) {
 function circleTool(title, sub, route, index, options = {}) {
   const artKind = categoryKindForTool(title, route);
   const video = title === "Number Analyzer" && !options.preferStaticArt
-    ? `<video class="circle-tool-video" src="${BASE}/videos/power-tools-dashboard-box.mp4" poster="${ASSETS.powerTools}" muted loop autoplay playsinline preload="metadata"></video>`
+    ? `<video class="circle-tool-video" data-src="${BASE}/videos/power-tools-dashboard-box.mp4" poster="${ASSETS.powerTools}" muted loop playsinline preload="none" data-autoplay-on-visible="true"></video>`
     : (route === "scanner" || route === "ticketScanner") && !options.preferStaticArt
-      ? `<video class="circle-tool-video scanner-tile-video" src="${ASSETS.radarTicketScannerVideo}" poster="${ASSETS.powerTools}" muted loop autoplay playsinline preload="metadata"></video>`
+      ? `<video class="circle-tool-video scanner-tile-video" data-src="${ASSETS.radarTicketScannerVideo}" poster="${ASSETS.powerTools}" muted loop playsinline preload="none" data-autoplay-on-visible="true"></video>`
     : title === "Reset Vault" && !options.preferStaticArt
-      ? `<video class="circle-tool-video singer-video" src="${BASE}/videos/power-tools-button-green-screen.mp4" poster="${ASSETS.music}" muted loop autoplay playsinline preload="metadata"></video>`
+      ? `<video class="circle-tool-video singer-video" data-src="${BASE}/videos/power-tools-button-green-screen.mp4" poster="${ASSETS.music}" muted loop playsinline preload="none" data-autoplay-on-visible="true"></video>`
       : "";
   const art = options.art || categoryArtForTool(title, route, index);
   return `<button class="circle-tool" data-route="${route}" data-art-kind="${artKind}" style="--circle-art:url('${art}')">
@@ -2612,7 +2612,7 @@ function powerToolsView() {
     `).join("")}
 
     <div class="panel result-card mission-output-card video-backed">
-      <video src="${BASE}/videos/power-tools-dashboard-box.mp4" muted loop autoplay playsinline preload="metadata"></video>
+      <video data-src="${BASE}/videos/power-tools-dashboard-box.mp4" muted loop playsinline preload="none" data-autoplay-on-visible="true"></video>
       <span>Current Mission Output</span>
       <h2>${current.gameName} ${titleCase(current.strategy)} Set</h2>
       ${ballsHtml(current.numbers, current.special, current.specialName)}
@@ -3426,7 +3426,7 @@ function scannerView() {
       <h1>Ticket Scanner</h1>
       <p>Camera capture, barcode entry, and scan simulation are wired into LottoMind Records.</p>
       <div class="scanner-frame">
-        <video class="scanner-video" src="${ASSETS.ticketScannerVideo}" muted loop autoplay playsinline preload="metadata"></video>
+        <video class="scanner-video" data-src="${ASSETS.ticketScannerVideo}" muted loop playsinline preload="none" data-autoplay-on-visible="true"></video>
         <span></span><span></span><span></span><span></span>
         <strong>${result ? "Ticket Readout Loaded" : "Camera Scan Lane"}</strong>
         <small>${result?.source || "Use the camera button, upload a ticket photo, or enter the barcode."}</small>
@@ -3514,7 +3514,7 @@ function musicHubView(isRadio = false) {
       <div class="sound-route-bento">
         ${[["Reset Wheel", "Tone player", "reset", ASSETS.reset], ["Abundance Radio", "Live audio", "radioStation", ASSETS.music], ["Sonic Studio", "Record booth", "studio", ASSETS.studioBooth], ["Dream Oracle", "Speak", "dreams", ASSETS.dream], ["Video Studio", "Loops", "dreamVideo", ASSETS.arcade], ["History Vault", "Archive", "history", ASSETS.live]].map(([title, sub, route, art], index) => `
           <button class="sound-route-card ${index === 0 ? "featured" : ""}" data-route="${route}" style="--route-art:url('${art}')">
-            ${index === 0 ? `<video class="route-video-bg" src="${BASE}/videos/power-tools-button-green-screen.mp4" muted loop autoplay playsinline preload="metadata"></video>` : ""}
+            ${index === 0 ? `<video class="route-video-bg" data-src="${BASE}/videos/power-tools-button-green-screen.mp4" muted loop playsinline preload="none" data-autoplay-on-visible="true"></video>` : ""}
             <span>0${index + 1}</span>
             <strong>${title}</strong>
             <small>${sub}</small>
@@ -3580,7 +3580,7 @@ function musicHubMotionPanel() {
       <span>Video</span>
     </div>
     <div class="music-motion-stage">
-      <video src="${ASSETS.musicMotion}" poster="${ASSETS.music}" controls muted playsinline preload="metadata"></video>
+      <video data-src="${ASSETS.musicMotion}" poster="${ASSETS.music}" controls muted playsinline preload="none"></video>
       <div>
         <span class="eyebrow">Fourth Lane</span>
         <h3>LottoMind Records Motion</h3>
@@ -5453,7 +5453,7 @@ function arcadeView() {
     ["GOTHTECHNOLOGY", "Featured live fighter-prop boss game.", "arcadeGame", "https://robjasper2084.github.io/Jungle-Lotto/gothtechnology-canvas/index.html?fighter-prop1-live", "featured-fighter"],
     ["Jackpot Jungle Chase", "Swing, slide, and outrun the Probability Beast.", "arcadeGame", "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/games/shadow-ops-canvas/index.html?v=title3d-mascot-center-1"],
     ["Trivia Rewards", "Answer and earn credits.", "triviaRewards"],
-    ["Bonus Room", "Open a credit portal.", "arcadeGame"],
+    ["Bonus Room", "Open the 2084 Static WAV credit portal.", "arcadeGame", "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/live-events.html?staticwav=1#twitch-live"],
   ];
   const arcadeArt = [ASSETS.arcadeArcade, ASSETS.arcadeJackpotRun, ASSETS.arcadeTrivia, ASSETS.arcadePaywall];
   const activeArcadePanel = state.route === "crossword" ? crosswordGameView() : state.route === "wordSearch" ? wordSearchGameView() : state.route !== "arcade" ? miniGameView(routeMeta(state.route)[0]) : "";
@@ -5464,7 +5464,7 @@ function arcadeView() {
       <div class="hero-actions arcade-launch-actions"><button class="primary-btn" data-route="triviaPlay">Launch Trivia Game</button><button class="ghost-btn" data-route="triviaRewards">Rewards</button></div>
     </div>
     <div class="panel arcade-motion">
-      <video src="${BASE}/videos/play-arcade-button-loop.mp4" muted loop autoplay playsinline preload="metadata"></video>
+          <video data-src="${BASE}/videos/play-arcade-button-loop.mp4" muted loop playsinline preload="none" data-autoplay-on-visible="true"></video>
       <div><span>Arcade motion asset</span><strong>Play Arcade Button</strong><p>Moved out of Marketplace and into the Arcade tab.</p></div>
     </div>
     ${activeArcadePanel}
@@ -6504,6 +6504,70 @@ function renderView() {
   return genericToolView(state.route);
 }
 
+let deferredMediaObserver = null;
+
+function shouldConserveInlineMedia() {
+  return Boolean(
+    window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ||
+    window.matchMedia?.("(pointer: coarse)")?.matches ||
+    navigator.connection?.saveData ||
+    /2g/.test(navigator.connection?.effectiveType || ""),
+  );
+}
+
+function hydrateDeferredMedia(root = document) {
+  const media = Array.from(root.querySelectorAll("video[data-src], video source[data-src]"))
+    .map((element) => element.tagName === "SOURCE" ? element.closest("video") : element)
+    .filter(Boolean);
+  const uniqueVideos = Array.from(new Set(media));
+  if (!uniqueVideos.length) return;
+
+  const conserveMedia = shouldConserveInlineMedia();
+  const restore = (video, autoplayed) => {
+    if (video.dataset.mediaReady === "true") return autoplayed;
+    if (video.dataset.src && !video.getAttribute("src")) {
+      video.setAttribute("src", video.dataset.src);
+    }
+    video.querySelectorAll("source[data-src]").forEach((source) => {
+      if (!source.getAttribute("src")) source.setAttribute("src", source.dataset.src);
+    });
+    video.preload = "none";
+    video.setAttribute("preload", "none");
+    video.load?.();
+    video.dataset.mediaReady = "true";
+    if (video.dataset.autoplayOnVisible === "true" && !conserveMedia && autoplayed < 1) {
+      video.muted = true;
+      video.play?.().catch(() => {});
+      return autoplayed + 1;
+    }
+    return autoplayed;
+  };
+
+  if (deferredMediaObserver) deferredMediaObserver.disconnect();
+  let autoplayed = 0;
+
+  if (!("IntersectionObserver" in window)) {
+    uniqueVideos.forEach((video) => {
+      autoplayed = restore(video, autoplayed);
+    });
+    return;
+  }
+
+  deferredMediaObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (!entry.isIntersecting) return;
+      autoplayed = restore(entry.target, autoplayed);
+      deferredMediaObserver.unobserve(entry.target);
+    });
+  }, { rootMargin: conserveMedia ? "80px" : "220px", threshold: 0.04 });
+
+  uniqueVideos.forEach((video) => {
+    video.preload = "none";
+    video.setAttribute("preload", "none");
+    deferredMediaObserver.observe(video);
+  });
+}
+
 function render() {
   document.title = "LottoMind Refined";
   const app = document.getElementById("app");
@@ -6532,6 +6596,7 @@ function render() {
   }
   stopAudioIfNeeded();
   syncRouteAudio();
+  hydrateDeferredMedia(app);
   startAmbientVideos();
 }
 
@@ -6554,11 +6619,12 @@ function bindResetControls() {
 
 function startAmbientVideos() {
   requestAnimationFrame(() => {
+    const conserveMedia = shouldConserveInlineMedia();
     document.querySelectorAll(".ambient-video").forEach((video) => {
       video.muted = true;
       const box = video.getBoundingClientRect();
       const visible = box.bottom > -160 && box.top < window.innerHeight + 160;
-      if (visible) {
+      if (visible && !conserveMedia && video.dataset.mediaReady === "true") {
         video.play?.().catch(() => {});
       } else {
         video.pause?.();
@@ -8482,6 +8548,8 @@ let touchStart = null;
 let lastTouchActivation = 0;
 let flowSwipe = null;
 let suppressFlowClickUntil = 0;
+const TAP_MOVE_THRESHOLD = 18;
+const ROUTE_SWIPE_THRESHOLD = 96;
 
 function interactiveGesturePoint(event) {
   const touch = event.changedTouches?.[0] || event.touches?.[0];
@@ -8628,7 +8696,7 @@ document.addEventListener("pointerup", (event) => {
     const moved = Math.hypot(dx, dy);
     const startedInScroller = startedInNativeTouchSurface(pointerStart.target);
     pointerStart = null;
-    if (!startedInScroller && dx > 84 && Math.abs(dy) < 62) {
+    if (!startedInScroller && dx > ROUTE_SWIPE_THRESHOLD && Math.abs(dy) < 62) {
       event.preventDefault();
       stopRouteAudio();
       const tabIndex = TAB_ROUTES.indexOf(state.route);
@@ -8636,7 +8704,7 @@ document.addEventListener("pointerup", (event) => {
       else window.history.back();
       return;
     }
-    if (!startedInScroller && dx < -84 && Math.abs(dy) < 62) {
+    if (!startedInScroller && dx < -ROUTE_SWIPE_THRESHOLD && Math.abs(dy) < 62) {
       event.preventDefault();
       stopRouteAudio();
       const tabIndex = TAB_ROUTES.indexOf(state.route);
@@ -8644,7 +8712,7 @@ document.addEventListener("pointerup", (event) => {
       else window.history.forward();
       return;
     }
-    if (moved > 12) return;
+    if (moved > TAP_MOVE_THRESHOLD) return;
   }
   if (activateInteractiveTarget(event)) lastTouchActivation = Date.now();
 }, { passive: false });
@@ -8667,7 +8735,7 @@ document.addEventListener("touchmove", (event) => {
   if (!touchStart) return;
   const point = interactiveGesturePoint(event);
   const moved = Math.hypot(point.x - touchStart.x, point.y - touchStart.y);
-  if (moved > 12) touchStart.moved = true;
+  if (moved > TAP_MOVE_THRESHOLD) touchStart.moved = true;
 }, { passive: true });
 
 document.addEventListener("touchend", (event) => {
@@ -8680,7 +8748,7 @@ document.addEventListener("touchend", (event) => {
   touchStart = null;
   const point = interactiveGesturePoint(event);
   const moved = Math.hypot(point.x - start.x, point.y - start.y);
-  if (start.moved || moved > 12 || startedInNativeTouchSurface(start.target)) return;
+  if (start.moved || moved > TAP_MOVE_THRESHOLD || startedInNativeTouchSurface(start.target)) return;
   if (activateInteractiveTarget(event)) lastTouchActivation = Date.now();
 }, { passive: false });
 

@@ -23575,3 +23575,86 @@ body .route-reset .imported-music-deck .record-track-card .ghost-btn {
   position: relative;
   z-index: 1;
 }
+
+/* Whole-app performance guardrails for mobile and iPad tap responsiveness. */
+button,
+a,
+input,
+textarea,
+select,
+[role="button"],
+[data-route],
+[data-action] {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: rgba(0, 236, 255, 0.14);
+}
+
+.panel,
+.art-panel,
+.result-card,
+.tool-bank,
+.quest-board,
+.shop-toolbar,
+.audio-deck,
+.arcade-game-panel,
+.mini-game,
+.record-label-panel,
+.oracle-function-panel {
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 520px;
+}
+
+.real-bottom-nav,
+.real-header,
+.search-pill,
+.console-orb,
+.state-orb {
+  transform: translateZ(0);
+}
+
+@media (max-width: 900px), (pointer: coarse), (prefers-reduced-motion: reduce) {
+  .real-shell *,
+  .real-shell *::before,
+  .real-shell *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+
+  .real-shell :is(
+    .panel,
+    .real-header,
+    .search-pill,
+    .real-bottom-nav,
+    .circle-tool,
+    .arcade-game-card,
+    .primary-btn,
+    .ghost-btn,
+    .tiny-btn,
+    .stat-row,
+    .result-card
+  ) {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+    filter: none !important;
+    mix-blend-mode: normal !important;
+  }
+
+  .real-shell :is(.circle-tool, .arcade-game-card, .primary-btn, .ghost-btn, .tiny-btn, .console-orb) {
+    transition:
+      transform 120ms ease,
+      box-shadow 120ms ease,
+      border-color 120ms ease !important;
+  }
+
+  .real-shell :is(.circle-tool, .arcade-game-card, .primary-btn, .ghost-btn, .tiny-btn, .console-orb):active,
+  .real-shell .is-pressing {
+    transform: translateY(2px) scale(0.985) !important;
+  }
+
+  .real-shell video[autoplay],
+  .real-shell .decorative-video,
+  .real-shell .animated-bg {
+    display: none !important;
+  }
+}
