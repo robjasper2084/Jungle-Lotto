@@ -5051,111 +5051,66 @@
 
   function drawGate(state) {
     if (isUnderground(state)) return;
-    const ready = gateReady(state);
-    const open = state.gateOpen;
+    const openLift = state.gateOpen ? 265 : 0;
     const pulse = 0.55 + Math.sin(state.gatePulse * 6) * 0.18;
     const gx = gateX(state);
-    const block = gateBlockBox(state);
-    const x = block.x + 12;
-    const y = 82;
-    const w = 160;
-    const h = 552;
     const cyberGateImage = images.cyberGateSheet;
-
-    ctx.save();
-    ctx.shadowColor = open ? "rgba(56,219,255,0.72)" : ready ? "rgba(255,214,109,0.72)" : "rgba(255,79,154,0.62)";
-    ctx.shadowBlur = open ? 18 : 24;
-
-    if (open) {
-      ctx.globalAlpha = 0.82;
-      ctx.fillStyle = "rgba(6,6,11,0.62)";
-      ctx.strokeStyle = "rgba(56,219,255,0.72)";
-      ctx.lineWidth = 3;
-      roundedRect(x - 10, y + 38, 30, h - 58, 10, true, true);
-      roundedRect(x + w - 20, y + 38, 30, h - 58, 10, true, true);
-      ctx.globalCompositeOperation = "screen";
-      const openBeam = ctx.createLinearGradient(x + 22, y, x + w - 22, y);
-      openBeam.addColorStop(0, "rgba(56,219,255,0)");
-      openBeam.addColorStop(0.5, `rgba(56,219,255,${0.1 + pulse * 0.2})`);
-      openBeam.addColorStop(1, "rgba(56,219,255,0)");
-      ctx.fillStyle = openBeam;
-      ctx.fillRect(x + 20, y + 102, w - 40, h - 178);
-      ctx.restore();
+    if (cyberGateImage?.complete && cyberGateImage.naturalWidth) {
+      const ready = gateReady(state);
+      const frame = state.gateOpen ? 1 : ready ? 0 : 5;
+      const targetW = 168;
+      const targetH = 252;
+      drawSheetCell(cyberGateImage, 6, 1, frame, 0, gx - 40, 360 - openLift, targetW, targetH, 0.98);
+      if (!state.gateOpen) {
+        ctx.save();
+        ctx.globalCompositeOperation = "screen";
+        ctx.strokeStyle = ready ? `rgba(56,219,255,${pulse * 0.9})` : `rgba(255,79,154,${pulse})`;
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.moveTo(gx + 43, 390);
+        ctx.lineTo(gx + 43, 590);
+        ctx.stroke();
+        ctx.restore();
+      }
       return;
     }
-
-    const shell = ctx.createLinearGradient(x, y, x + w, y + h);
-    shell.addColorStop(0, "rgba(5,6,12,0.98)");
-    shell.addColorStop(0.48, "rgba(19,17,28,0.98)");
-    shell.addColorStop(1, "rgba(5,6,12,0.98)");
-    ctx.fillStyle = shell;
-    ctx.strokeStyle = ready ? "rgba(255,214,109,0.96)" : "rgba(255,214,109,0.74)";
-    ctx.lineWidth = 4;
-    roundedRect(x, y, w, h, 18, true, true);
-
-    ctx.lineWidth = 2;
-    ctx.strokeStyle = "rgba(255,214,109,0.48)";
-    for (let i = 0; i < 6; i++) {
-      const yy = y + 52 + i * 76;
-      ctx.beginPath();
-      ctx.moveTo(x + 18, yy);
-      ctx.lineTo(x + 58, yy);
-      ctx.lineTo(x + 78, yy + 18);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(x + w - 18, yy + 28);
-      ctx.lineTo(x + w - 54, yy + 28);
-      ctx.lineTo(x + w - 76, yy + 46);
-      ctx.stroke();
-    }
-
-    if (cyberGateImage?.complete && cyberGateImage.naturalWidth) {
-      const frame = ready ? 0 : 5;
-      drawSheetCell(cyberGateImage, 6, 1, frame, 0, x - 12, y + 126, w + 24, 286, 0.96);
-    }
-
-    ctx.globalCompositeOperation = "screen";
-    ctx.strokeStyle = ready ? `rgba(56,219,255,${pulse * 0.9})` : `rgba(255,79,154,${pulse})`;
-    ctx.lineWidth = 6;
-    ctx.beginPath();
-    ctx.moveTo(x + w * 0.5, y + 38);
-    ctx.lineTo(x + w * 0.5, y + h - 36);
-    ctx.stroke();
-
-    const core = ctx.createRadialGradient(x + w * 0.5, y + h * 0.48, 4, x + w * 0.5, y + h * 0.48, 58);
-    core.addColorStop(0, ready ? "rgba(56,219,255,0.9)" : "rgba(255,79,154,0.84)");
-    core.addColorStop(0.45, "rgba(165,34,255,0.24)");
-    core.addColorStop(1, "rgba(0,0,0,0)");
-    ctx.fillStyle = core;
-    ctx.beginPath();
-    ctx.arc(x + w * 0.5, y + h * 0.48, 62, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.globalCompositeOperation = "source-over";
-    ctx.fillStyle = "rgba(8,8,15,0.88)";
-    ctx.strokeStyle = ready ? colors.cyan : colors.gold;
-    ctx.lineWidth = 3;
-    roundedRect(x + 34, y + h - 96, w - 68, 54, 12, true, true);
-    const keyCount = Math.min(3, state.keys);
-    const cellCount = Math.min(3, undergroundCellCount(state));
-    for (let i = 0; i < 3; i++) {
-      ctx.fillStyle = i < keyCount ? colors.gold : "rgba(255,214,109,0.18)";
-      ctx.beginPath();
-      ctx.arc(x + 55 + i * 24, y + h - 72, 6, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = i < cellCount ? colors.cyan : "rgba(56,219,255,0.14)";
-      ctx.fillRect(x + 49 + i * 24, y + h - 55, 12, 5);
-    }
-    ctx.restore();
-
-    if (cyberGateImage?.complete && cyberGateImage.naturalWidth) return;
-
     const gateImage = images.missionGate;
     if (gateImage?.complete && gateImage.naturalWidth) {
-      const frame = ready ? Math.floor(state.time * 7) % 4 : Math.floor(state.time * 2) % 2;
-      drawSheetCell(gateImage, 4, 1, frame, 0, gx - 26, 312, 144, 320, 0.98);
+      const ready = gateReady(state);
+      const frame = state.gateOpen ? Math.floor(state.time * 10) % 4 : ready ? Math.floor(state.time * 7) % 4 : Math.floor(state.time * 2) % 2;
+      drawSheetCell(gateImage, 4, 1, frame, 0, gx - 26, 312 - openLift, 144, 320, 0.98);
+      if (!state.gateOpen) {
+        ctx.save();
+        ctx.globalCompositeOperation = "screen";
+        ctx.strokeStyle = ready ? `rgba(56,219,255,${pulse})` : `rgba(255,79,154,${pulse})`;
+        ctx.lineWidth = 5;
+        ctx.beginPath();
+        ctx.moveTo(gx + 46, 350);
+        ctx.lineTo(gx + 46, 610);
+        ctx.stroke();
+        ctx.restore();
+      }
       return;
     }
+
+    ctx.save();
+    ctx.translate(gx, 330 - openLift);
+    ctx.fillStyle = "rgba(6,5,8,.92)";
+    ctx.fillRect(0, 0, 92, 292);
+    ctx.strokeStyle = state.gateOpen ? colors.cyan : colors.gold;
+    ctx.lineWidth = 4;
+    ctx.strokeRect(5, 6, 82, 282);
+    ctx.globalAlpha = pulse;
+    ctx.strokeStyle = gateReady(state) ? colors.cyan : colors.pink;
+    ctx.lineWidth = 3;
+    for (let y = 38; y < 250; y += 42) {
+      ctx.beginPath();
+      ctx.moveTo(16, y);
+      ctx.lineTo(44, y);
+      ctx.lineTo(70, y + 18);
+      ctx.stroke();
+    }
+    ctx.restore();
   }
 
   function drawExtraction(state) {
