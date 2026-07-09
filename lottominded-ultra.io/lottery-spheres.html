@@ -10,7 +10,7 @@
     <title>LOTTOMINDED ULTRA | Lottery Spheres</title>
     <meta name="theme-color" content="#03050a" />
     <link rel="icon" href="./assets/brand/lm-orb-mark.webp" type="image/webp" />
-    <link rel="stylesheet" href="./styles.css?v=instrument-console-bottom-20260626" />
+    <link rel="stylesheet" href="./styles.css?v=healing-orb-plus10-1" />
     <script>
       try {
         if (sessionStorage.getItem("lmTransitionArriving") === "yes") {
@@ -18,9 +18,9 @@
         }
       } catch (error) {}
     </script>
-    <link rel="stylesheet" href="./assets/css/lm-page-transition.css?v=compositor-pass-2" />
-    <link rel="stylesheet" href="./lottery-spheres.css?v=shadow-ops-large-fullscreen-20260626" />
-    <link rel="stylesheet" href="./lottery-spheres-console.css?v=console-float-5" />
+    <link rel="stylesheet" href="./assets/css/lm-page-transition.css?v=transition-mascot-walk-1" />
+    <link rel="stylesheet" href="./lottery-spheres.css?v=spheres-bottom-orbit-wide-1" />
+    <link rel="stylesheet" href="./lottery-spheres-console.css?v=console-badge-front-1" />
   </head>
   <body class="lottery-spheres-page">
     <div class="lm-page-transition" data-lm-page-transition aria-hidden="true">
@@ -39,9 +39,10 @@
       </div>
       <nav aria-label="Lottery Spheres navigation">
         <a href="./how-to-use.html" data-icon="HM">Home</a>
+        <a href="./memberships.html" data-icon="MB">Memberships</a>
         <a href="./features-app.html" data-icon="FX">Features</a>
         <a href="./lottery-spheres.html#spheres" data-icon="SP" aria-current="page">Spheres</a>
-        <a href="https://robjasper2084.github.io/Jungle-Lotto/lotto%20mind%20refined/" data-icon="LM" data-vault-launch data-plan="free">LottoMind App</a>
+        <a href="http://127.0.0.1:8170/lotto%20mind%20refined/" data-icon="LM">LottoMind App</a>
         <a href="./beat2lotto-plus.html#beat2lotto" data-icon="B2">Beat2Lotto+&trade;</a>
         <a href="./merch-store.html" data-icon="MC">Merch</a>
         <a href="./lottomind-stem-studio/index.html" data-icon="ST">Studio</a>
@@ -97,6 +98,7 @@
 
         <div class="sphere-copy">
           <p class="section-kicker">Beat2Lotto+&trade; Signal Room</p>
+          <a class="sphere-app-chip" href="http://127.0.0.1:8170/lotto%20mind%20refined/">Open LottoMind App</a>
           <h1 class="kinetic-word" data-kinetic="LOTTERY SPHERES IN MOTION" tabindex="0">Lottery Spheres in Motion</h1>
           <p>
             Guide the glowing balls, reroll a creative set, and send the signal back into the
@@ -106,6 +108,7 @@
             <button class="primary-action" type="button" data-reroll-spheres>Reroll Spheres</button>
             <button class="secondary-action" type="button" data-sphere-shadow-open>Open Shadow Ops</button>
             <a class="secondary-action" href="#lottery-news">Latest Lottery News</a>
+            <a class="secondary-action" href="http://127.0.0.1:8170/lotto%20mind%20refined/">Open LottoMind App</a>
             <a class="secondary-action" href="./beat2lotto-plus.html#beat2lotto">Open Beat2Lotto+&trade;</a>
             <a class="secondary-action" href="./lottomind-stem-studio/index.html">Launch Studio</a>
           </div>
@@ -182,6 +185,59 @@
         </div>
         <p class="sd-news__fallback" data-lottery-news-status></p>
       </section>
+
+      <aside class="hero-brand-art home-spheres-column spheres-bottom-orbit" id="spheres-bottom-orbit" aria-labelledby="spheresBottomTitle">
+        <div class="home-spheres-orbit-mark" aria-hidden="true">
+          <img src="./assets/brand/jazz-network-gold-coin.jpeg" alt="" />
+        </div>
+        <div class="home-spheres-copy">
+          <p class="section-kicker">Beat2Lotto+&trade; Signal Room</p>
+          <h2 id="spheresBottomTitle">Lottery Spheres in Motion</h2>
+          <p>
+            Guide the glowing balls, reroll a creative set, and send the signal back into the LOTTOMINDED ULTRA&trade;
+            studio. Creative number generation only. Not a prediction.
+          </p>
+        </div>
+        <div class="home-sphere-readout-panel" aria-label="Current creative signal">
+          <img src="./assets/brand/lm-orb-mark.webp" alt="" />
+          <span>Current Signal</span>
+          <strong data-sphere-signal>05 - 12 - 19 - 27 - 33</strong>
+          <div class="sphere-live-stats" aria-label="Live signal motion stats">
+            <div>
+              <span>Energy</span>
+              <meter min="0" max="100" value="58" data-sphere-energy>58</meter>
+            </div>
+            <div>
+              <span>Orbit</span>
+              <strong data-sphere-orbit>Calm</strong>
+            </div>
+          </div>
+          <p>Move your pointer through the sphere field to bend the orbit path.</p>
+          <div class="sphere-generated-sets" data-sphere-generated-sets aria-live="polite">
+            <strong>Move trigger</strong>
+            <span data-sphere-move-count>Move the balls 3 times to generate sets.</span>
+            <dl>
+              <div>
+                <dt>Pick 6</dt>
+                <dd data-sphere-pick6>--</dd>
+              </div>
+              <div>
+                <dt>Pick 3</dt>
+                <dd data-sphere-pick3>--</dd>
+              </div>
+              <div>
+                <dt>Pick 4</dt>
+                <dd data-sphere-pick4>--</dd>
+              </div>
+            </dl>
+          </div>
+        </div>
+        <div class="sphere-actions home-sphere-actions">
+          <button class="primary-action" type="button" data-reroll-spheres>Reroll Spheres</button>
+          <a class="secondary-action" href="./beat2lotto-plus.html#beat2lotto">Open Beat2Lotto+&trade;</a>
+          <a class="secondary-action" href="./lottomind-stem-studio/index.html">Launch Studio</a>
+        </div>
+      </aside>
 
       <section class="sd-news-sources" id="sources" aria-labelledby="lotterySourcesTitle">
         <p class="section-kicker">Lottery Sources</p>
@@ -279,9 +335,9 @@
 
     <script src="./assets/js/lm-page-transition-audio.js?v=verified-transitions-2" defer></script>
     <script src="./assets/js/lm-page-transition.js?v=transition-smooth-1" defer></script>
-    <script src="./site.js?v=touch-nav-fix-1" defer></script>
+    <script src="./site.js?v=member-app-gate-1" defer></script>
     <script src="./assets/features-app/js/features-cinematic-motion.js?v=instrument-console-bottom-20260626" defer></script>
-    <script src="./lottery-spheres.js?v=shadow-ops-large-fullscreen-20260626" defer></script>
+    <script src="./lottery-spheres.js?v=spheres-bottom-orbit-2" defer></script>
     <script src="./lottery-news-widget.js?v=lottery-spheres-news-1" defer></script>
   </body>
 </html>

@@ -2533,7 +2533,7 @@ button {
 }
 
 .home-page.has-sphere-header .hero {
-  grid-template-columns: minmax(0, 0.9fr) minmax(340px, 0.72fr);
+  grid-template-columns: minmax(0, 0.92fr) minmax(330px, 0.58fr);
   align-content: center;
   align-items: center;
   gap: clamp(22px, 4vw, 56px);
@@ -2546,6 +2546,59 @@ button {
 
 .home-page.has-sphere-header .hero .domain-strip {
   grid-column: 1 / -1;
+}
+
+.home-page .hero-brand-art.home-hero-video-card {
+  position: relative;
+  z-index: 2;
+  display: grid !important;
+  gap: clamp(12px, 1.5vw, 18px);
+  align-self: stretch;
+  min-width: 0;
+  padding: clamp(16px, 2.2vw, 26px);
+  overflow: hidden;
+  border: 1px solid rgba(41, 247, 255, 0.32);
+  border-radius: 10px;
+  background:
+    radial-gradient(circle at 22% 18%, rgba(255, 224, 113, 0.16), transparent 12rem),
+    radial-gradient(circle at 88% 24%, rgba(41, 247, 255, 0.18), transparent 14rem),
+    linear-gradient(145deg, rgba(5, 18, 28, 0.82), rgba(3, 5, 10, 0.76));
+  box-shadow:
+    0 34px 90px rgba(0, 0, 0, 0.38),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.055);
+  backdrop-filter: blur(10px);
+}
+
+.home-hero-video-frame {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 224, 113, 0.28);
+  border-radius: 8px;
+  background: rgba(2, 5, 10, 0.82);
+  box-shadow: 0 24px 62px rgba(0, 0, 0, 0.36), 0 0 32px rgba(41, 247, 255, 0.14);
+}
+
+.home-hero-video-frame video {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  filter: saturate(1.12) contrast(1.08);
+}
+
+.home-page .home-hero-video-card h2 {
+  margin: 0;
+  color: #e6fbff;
+  font-size: clamp(1.85rem, 3vw, 3.35rem);
+  line-height: 0.98;
+  text-transform: uppercase;
+}
+
+.home-page .home-hero-video-card p:not(.section-kicker) {
+  margin: 0;
+  color: #cfe1ef;
+  font-size: clamp(0.95rem, 1.2vw, 1.08rem);
+  line-height: 1.45;
 }
 
 .home-page .hero-brand-art.home-spheres-column {
@@ -2576,7 +2629,7 @@ button {
   transition: transform 180ms ease-out;
 }
 
-.home-page .home-spheres-column img {
+:is(.home-page, .lottery-spheres-page) .home-spheres-column img {
   width: auto;
   aspect-ratio: auto;
   border: 0;
@@ -2596,7 +2649,7 @@ button {
   pointer-events: none;
 }
 
-.home-page .home-spheres-orbit-mark img {
+:is(.home-page, .lottery-spheres-page) .home-spheres-orbit-mark img {
   width: 100%;
   aspect-ratio: 1;
   border-radius: 50%;
@@ -2765,7 +2818,7 @@ button {
     rgba(3, 5, 10, 0.58);
 }
 
-.home-page .home-sphere-readout-panel > img {
+:is(.home-page, .lottery-spheres-page) .home-sphere-readout-panel > img {
   width: 2.8rem;
   height: 2.8rem;
 }
@@ -2796,7 +2849,7 @@ button {
   line-height: 1.48;
 }
 
-.home-page .sphere-live-stats {
+:is(.home-page, .lottery-spheres-page) .sphere-live-stats {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 1rem;
@@ -2805,51 +2858,51 @@ button {
   border-top: 1px solid rgba(130, 200, 255, 0.18);
 }
 
-.home-page .sphere-live-stats div {
+:is(.home-page, .lottery-spheres-page) .sphere-live-stats div {
   display: grid;
   gap: 0.25rem;
 }
 
-.home-page .sphere-live-stats span {
+:is(.home-page, .lottery-spheres-page) .sphere-live-stats span {
   color: #b8cadc;
   font-size: 0.7rem;
   font-weight: 800;
   text-transform: uppercase;
 }
 
-.home-page .sphere-live-stats meter {
+:is(.home-page, .lottery-spheres-page) .sphere-live-stats meter {
   width: 100%;
   height: 0.55rem;
   accent-color: #29f7ff;
 }
 
-.home-page .sphere-live-stats strong {
+:is(.home-page, .lottery-spheres-page) .sphere-live-stats strong {
   color: #5eff9d;
   font-size: 0.95rem;
   text-transform: uppercase;
 }
 
-.home-page .sphere-generated-sets {
+:is(.home-page, .lottery-spheres-page) .sphere-generated-sets {
   display: grid;
   gap: 0.48rem;
   padding-top: 0.55rem;
   border-top: 1px solid rgba(41, 247, 255, 0.18);
 }
 
-.home-page .sphere-generated-sets dl {
+:is(.home-page, .lottery-spheres-page) .sphere-generated-sets dl {
   display: grid;
   gap: 0.34rem;
   margin: 0;
 }
 
-.home-page .sphere-generated-sets div {
+:is(.home-page, .lottery-spheres-page) .sphere-generated-sets div {
   display: grid;
   grid-template-columns: 4.25rem minmax(0, 1fr);
   gap: 0.7rem;
   align-items: baseline;
 }
 
-.home-page .home-sphere-actions {
+:is(.home-page, .lottery-spheres-page) .home-sphere-actions {
   position: relative;
   z-index: 1;
   display: flex;
@@ -2858,11 +2911,77 @@ button {
   margin-top: 0.1rem;
 }
 
-.home-page .home-sphere-actions .primary-action,
-.home-page .home-sphere-actions .secondary-action {
+:is(.home-page, .lottery-spheres-page) .home-sphere-actions .primary-action,
+:is(.home-page, .lottery-spheres-page) .home-sphere-actions .secondary-action {
   min-height: 2.75rem;
   padding-inline: 1rem;
   font-size: 0.78rem;
+}
+
+.lottery-spheres-page .hero-brand-art.spheres-bottom-orbit {
+  position: relative;
+  z-index: 1;
+  display: grid !important;
+  grid-template-columns: minmax(360px, 0.82fr) minmax(420px, 1.18fr);
+  gap: clamp(18px, 2.6vw, 38px);
+  align-items: stretch;
+  width: min(calc(100% - clamp(24px, 4vw, 72px)), 1460px);
+  max-width: min(calc(100% - clamp(24px, 4vw, 72px)), 1460px);
+  min-width: 0;
+  margin: clamp(2.2rem, 4vw, 4rem) auto clamp(2.8rem, 5vw, 5.5rem);
+  padding: clamp(22px, 3vw, 42px);
+  overflow: hidden;
+  border: 1px solid rgba(41, 247, 255, 0.36);
+  border-radius: 8px;
+  background:
+    radial-gradient(circle at 18% 14%, rgba(255, 224, 113, 0.18), transparent 13rem),
+    radial-gradient(circle at 88% 22%, rgba(41, 247, 255, 0.24), transparent 16rem),
+    linear-gradient(145deg, rgba(5, 18, 31, 0.86), rgba(4, 6, 14, 0.78));
+  box-shadow:
+    0 34px 90px rgba(0, 0, 0, 0.38),
+    0 0 0 1px rgba(255, 224, 113, 0.08),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.055);
+  backdrop-filter: blur(10px);
+  scroll-margin-top: clamp(6rem, 9vw, 8rem);
+}
+
+.lottery-spheres-page .spheres-bottom-orbit .home-spheres-copy {
+  align-content: center;
+  padding-right: clamp(0rem, 2vw, 1rem);
+}
+
+.lottery-spheres-page .spheres-bottom-orbit .home-spheres-copy h2 {
+  max-width: 12ch;
+  font-size: clamp(2.45rem, 4vw, 4.6rem);
+}
+
+.lottery-spheres-page .spheres-bottom-orbit .home-sphere-readout-panel {
+  align-self: stretch;
+  min-width: 0;
+}
+
+.lottery-spheres-page .spheres-bottom-orbit .home-sphere-actions {
+  grid-column: 1 / -1;
+  justify-content: flex-start;
+  margin-top: clamp(0.4rem, 1.4vw, 1rem);
+}
+
+.lottery-spheres-page .spheres-bottom-orbit .home-sphere-actions .primary-action:focus-visible,
+.lottery-spheres-page .spheres-bottom-orbit .home-sphere-actions .secondary-action:focus-visible {
+  outline: 2px solid #fff0a8;
+  outline-offset: 3px;
+}
+
+@media (max-width: 860px) {
+  .lottery-spheres-page .hero-brand-art.spheres-bottom-orbit {
+    grid-template-columns: 1fr;
+    width: min(calc(100% - 24px), 720px);
+    max-width: min(calc(100% - 24px), 720px);
+  }
+
+  .lottery-spheres-page .spheres-bottom-orbit .home-spheres-copy {
+    padding-right: 0;
+  }
 }
 
 .hero-actions,
@@ -10659,6 +10778,7 @@ body.universal-menu-open {
   }
 
   .home-page.has-sphere-header .hero .hero-copy,
+  .home-page.has-sphere-header .hero-brand-art.home-hero-video-card,
   .home-page.has-sphere-header .hero-brand-art.home-spheres-column,
   .home-page.has-sphere-header .hero .domain-strip {
     grid-column: auto;
@@ -11810,6 +11930,24 @@ body.vault-gateway-open {
   order: 20 !important;
 }
 
+.home-page.has-sphere-header .home-sphere-header nav a.is-member-app-locked {
+  --sphere-nav-note: "MB" !important;
+  --sphere-nav-accent: #ffe071 !important;
+  filter: saturate(0.92) brightness(0.88);
+  box-shadow:
+    0 0 0 2px rgba(255, 224, 113, 0.42),
+    0 0 18px rgba(255, 224, 113, 0.35),
+    inset 0 0 18px rgba(0, 0, 0, 0.42) !important;
+}
+
+.feature-nav a.is-member-app-locked,
+.universal-page-menu-links a.is-member-app-locked,
+.membership-hero-actions a.is-member-app-locked,
+.membership-app-grid a.is-member-app-locked {
+  border-color: rgba(255, 224, 113, 0.72) !important;
+  box-shadow: 0 0 18px rgba(255, 224, 113, 0.2);
+}
+
 .feature-nav a[href*="lottomind.one"],
 .feature-nav a[href*="Jungle-Lotto"] {
   order: 20;
@@ -12402,6 +12540,112 @@ body.has-sphere-orb-player.beat2lotto-current-page {
   padding-bottom: clamp(300px, 38vw, 390px) !important;
 }
 
+/* Features page Beat2Lotto fit pass. */
+body.features-cinematic-page .feature-stage {
+  padding-bottom: clamp(210px, 23vw, 300px);
+}
+
+body.features-cinematic-page .features-beat2lotto-console {
+  grid-template-columns: minmax(250px, 0.72fr) minmax(0, 1.28fr);
+  align-items: stretch;
+  width: min(100%, 1080px);
+  min-height: 0;
+  margin: clamp(14px, 2.4vw, 26px) auto clamp(18px, 3vw, 34px);
+  padding: clamp(14px, 1.7vw, 22px);
+  gap: clamp(14px, 2vw, 24px);
+  overflow: hidden;
+}
+
+body.features-cinematic-page .features-beat2lotto-console .lotto-controls,
+body.features-cinematic-page .features-beat2lotto-console .lotto-output-panel {
+  min-width: 0;
+}
+
+body.features-cinematic-page .features-beat2lotto-console .lotto-controls {
+  align-self: start;
+  gap: 10px;
+}
+
+body.features-cinematic-page .features-beat2lotto-console .file-drop,
+body.features-cinematic-page .features-beat2lotto-console .beat-analysis-card {
+  padding: 12px;
+}
+
+body.features-cinematic-page .features-beat2lotto-console :is(input, select) {
+  width: 100%;
+  min-width: 0;
+  min-height: 34px;
+}
+
+body.features-cinematic-page .features-beat2lotto-console .primary-action,
+body.features-cinematic-page .features-beat2lotto-console .secondary-action {
+  width: 100%;
+  min-height: 42px;
+  padding-inline: 0.8rem;
+  white-space: normal;
+}
+
+body.features-cinematic-page .features-beat2lotto-console .lotto-output-panel {
+  display: grid;
+  align-content: start;
+  min-height: clamp(390px, 38vw, 560px);
+  padding: clamp(14px, 2vw, 22px);
+  border: 1px solid rgba(41, 247, 255, 0.2);
+  border-radius: 14px;
+  background:
+    radial-gradient(circle at 74% 18%, rgba(255, 224, 113, 0.12), transparent 14rem),
+    linear-gradient(145deg, rgba(4, 22, 38, 0.72), rgba(13, 16, 58, 0.58));
+}
+
+body.features-cinematic-page .features-beat2lotto-console .lotto-output-head {
+  max-width: 720px;
+}
+
+body.features-cinematic-page .features-beat2lotto-console .lotto-output-head h2 {
+  max-width: 12ch;
+  margin: 0;
+  font-size: clamp(2.15rem, 4vw, 4.6rem);
+  line-height: 0.9;
+  letter-spacing: 0;
+  text-wrap: balance;
+}
+
+body.features-cinematic-page .features-beat2lotto-console .lotto-output-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-self: start;
+  margin-top: clamp(16px, 2.2vw, 26px);
+}
+
+@media (max-width: 980px) {
+  body.features-cinematic-page .features-beat2lotto-console {
+    grid-template-columns: 1fr;
+    width: min(100%, 760px);
+  }
+
+  body.features-cinematic-page .features-beat2lotto-console .lotto-output-panel {
+    min-height: 0;
+  }
+
+  body.features-cinematic-page .features-beat2lotto-console .lotto-output-head h2 {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 620px) {
+  body.features-cinematic-page .feature-stage {
+    padding-bottom: clamp(180px, 62vw, 260px);
+  }
+
+  body.features-cinematic-page .features-beat2lotto-console {
+    width: min(100%, calc(100vw - 20px));
+    padding: 12px;
+    border-radius: 14px;
+  }
+
+  body.features-cinematic-page .features-beat2lotto-console .lotto-output-grid {
+    grid-template-columns: 1fr;
+  }
+}
 #player.sphere-orb-live-player {
   --player-progress: 0;
   --player-orb-size: clamp(270px, 34vw, 340px);
@@ -12628,7 +12872,113 @@ body.has-sphere-orb-player.beat2lotto-current-page {
   touch-action: manipulation !important;
 }
 
-body.beat2lotto-current-page #player.sphere-orb-live-player {
+body.beat2lotto-current-page /* Features page Beat2Lotto fit pass. */
+body.features-cinematic-page .feature-stage {
+  padding-bottom: clamp(210px, 23vw, 300px);
+}
+
+body.features-cinematic-page .features-beat2lotto-console {
+  grid-template-columns: minmax(250px, 0.72fr) minmax(0, 1.28fr);
+  align-items: stretch;
+  width: min(100%, 1080px);
+  min-height: 0;
+  margin: clamp(14px, 2.4vw, 26px) auto clamp(18px, 3vw, 34px);
+  padding: clamp(14px, 1.7vw, 22px);
+  gap: clamp(14px, 2vw, 24px);
+  overflow: hidden;
+}
+
+body.features-cinematic-page .features-beat2lotto-console .lotto-controls,
+body.features-cinematic-page .features-beat2lotto-console .lotto-output-panel {
+  min-width: 0;
+}
+
+body.features-cinematic-page .features-beat2lotto-console .lotto-controls {
+  align-self: start;
+  gap: 10px;
+}
+
+body.features-cinematic-page .features-beat2lotto-console .file-drop,
+body.features-cinematic-page .features-beat2lotto-console .beat-analysis-card {
+  padding: 12px;
+}
+
+body.features-cinematic-page .features-beat2lotto-console :is(input, select) {
+  width: 100%;
+  min-width: 0;
+  min-height: 34px;
+}
+
+body.features-cinematic-page .features-beat2lotto-console .primary-action,
+body.features-cinematic-page .features-beat2lotto-console .secondary-action {
+  width: 100%;
+  min-height: 42px;
+  padding-inline: 0.8rem;
+  white-space: normal;
+}
+
+body.features-cinematic-page .features-beat2lotto-console .lotto-output-panel {
+  display: grid;
+  align-content: start;
+  min-height: clamp(390px, 38vw, 560px);
+  padding: clamp(14px, 2vw, 22px);
+  border: 1px solid rgba(41, 247, 255, 0.2);
+  border-radius: 14px;
+  background:
+    radial-gradient(circle at 74% 18%, rgba(255, 224, 113, 0.12), transparent 14rem),
+    linear-gradient(145deg, rgba(4, 22, 38, 0.72), rgba(13, 16, 58, 0.58));
+}
+
+body.features-cinematic-page .features-beat2lotto-console .lotto-output-head {
+  max-width: 720px;
+}
+
+body.features-cinematic-page .features-beat2lotto-console .lotto-output-head h2 {
+  max-width: 12ch;
+  margin: 0;
+  font-size: clamp(2.15rem, 4vw, 4.6rem);
+  line-height: 0.9;
+  letter-spacing: 0;
+  text-wrap: balance;
+}
+
+body.features-cinematic-page .features-beat2lotto-console .lotto-output-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-self: start;
+  margin-top: clamp(16px, 2.2vw, 26px);
+}
+
+@media (max-width: 980px) {
+  body.features-cinematic-page .features-beat2lotto-console {
+    grid-template-columns: 1fr;
+    width: min(100%, 760px);
+  }
+
+  body.features-cinematic-page .features-beat2lotto-console .lotto-output-panel {
+    min-height: 0;
+  }
+
+  body.features-cinematic-page .features-beat2lotto-console .lotto-output-head h2 {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 620px) {
+  body.features-cinematic-page .feature-stage {
+    padding-bottom: clamp(180px, 62vw, 260px);
+  }
+
+  body.features-cinematic-page .features-beat2lotto-console {
+    width: min(100%, calc(100vw - 20px));
+    padding: 12px;
+    border-radius: 14px;
+  }
+
+  body.features-cinematic-page .features-beat2lotto-console .lotto-output-grid {
+    grid-template-columns: 1fr;
+  }
+}
+#player.sphere-orb-live-player {
   border-color: rgba(255, 221, 109, 0.84) !important;
   color: #f3fbff !important;
   background:
@@ -12816,7 +13166,113 @@ body.features-cinematic-page #player.feature-live-player.sphere-orb-live-player:
 }
 
 @media (max-width: 560px) {
-  #player.sphere-orb-live-player {
+  /* Features page Beat2Lotto fit pass. */
+body.features-cinematic-page .feature-stage {
+  padding-bottom: clamp(210px, 23vw, 300px);
+}
+
+body.features-cinematic-page .features-beat2lotto-console {
+  grid-template-columns: minmax(250px, 0.72fr) minmax(0, 1.28fr);
+  align-items: stretch;
+  width: min(100%, 1080px);
+  min-height: 0;
+  margin: clamp(14px, 2.4vw, 26px) auto clamp(18px, 3vw, 34px);
+  padding: clamp(14px, 1.7vw, 22px);
+  gap: clamp(14px, 2vw, 24px);
+  overflow: hidden;
+}
+
+body.features-cinematic-page .features-beat2lotto-console .lotto-controls,
+body.features-cinematic-page .features-beat2lotto-console .lotto-output-panel {
+  min-width: 0;
+}
+
+body.features-cinematic-page .features-beat2lotto-console .lotto-controls {
+  align-self: start;
+  gap: 10px;
+}
+
+body.features-cinematic-page .features-beat2lotto-console .file-drop,
+body.features-cinematic-page .features-beat2lotto-console .beat-analysis-card {
+  padding: 12px;
+}
+
+body.features-cinematic-page .features-beat2lotto-console :is(input, select) {
+  width: 100%;
+  min-width: 0;
+  min-height: 34px;
+}
+
+body.features-cinematic-page .features-beat2lotto-console .primary-action,
+body.features-cinematic-page .features-beat2lotto-console .secondary-action {
+  width: 100%;
+  min-height: 42px;
+  padding-inline: 0.8rem;
+  white-space: normal;
+}
+
+body.features-cinematic-page .features-beat2lotto-console .lotto-output-panel {
+  display: grid;
+  align-content: start;
+  min-height: clamp(390px, 38vw, 560px);
+  padding: clamp(14px, 2vw, 22px);
+  border: 1px solid rgba(41, 247, 255, 0.2);
+  border-radius: 14px;
+  background:
+    radial-gradient(circle at 74% 18%, rgba(255, 224, 113, 0.12), transparent 14rem),
+    linear-gradient(145deg, rgba(4, 22, 38, 0.72), rgba(13, 16, 58, 0.58));
+}
+
+body.features-cinematic-page .features-beat2lotto-console .lotto-output-head {
+  max-width: 720px;
+}
+
+body.features-cinematic-page .features-beat2lotto-console .lotto-output-head h2 {
+  max-width: 12ch;
+  margin: 0;
+  font-size: clamp(2.15rem, 4vw, 4.6rem);
+  line-height: 0.9;
+  letter-spacing: 0;
+  text-wrap: balance;
+}
+
+body.features-cinematic-page .features-beat2lotto-console .lotto-output-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-self: start;
+  margin-top: clamp(16px, 2.2vw, 26px);
+}
+
+@media (max-width: 980px) {
+  body.features-cinematic-page .features-beat2lotto-console {
+    grid-template-columns: 1fr;
+    width: min(100%, 760px);
+  }
+
+  body.features-cinematic-page .features-beat2lotto-console .lotto-output-panel {
+    min-height: 0;
+  }
+
+  body.features-cinematic-page .features-beat2lotto-console .lotto-output-head h2 {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 620px) {
+  body.features-cinematic-page .feature-stage {
+    padding-bottom: clamp(180px, 62vw, 260px);
+  }
+
+  body.features-cinematic-page .features-beat2lotto-console {
+    width: min(100%, calc(100vw - 20px));
+    padding: 12px;
+    border-radius: 14px;
+  }
+
+  body.features-cinematic-page .features-beat2lotto-console .lotto-output-grid {
+    grid-template-columns: 1fr;
+  }
+}
+#player.sphere-orb-live-player {
     --player-orb-size: min(78vw, 282px);
     padding: 20px !important;
   }
@@ -12957,51 +13413,51 @@ body.features-cinematic-page #player.feature-live-player.sphere-orb-live-player:
   object-position: 50% 100%;
   transform: scaleX(var(--lm-mascot-frame-facing, var(--lm-mascot-facing)));
   transform-origin: 50% 92%;
-  transition: opacity 120ms ease, transform 120ms ease;
+  transition: opacity 120ms ease;
 }
 
 .lm-mascot-pointer.is-forward .lm-mascot-pointer__sprite img {
-  transform: translateY(2px) scaleX(var(--lm-mascot-frame-facing, var(--lm-mascot-facing)));
+  transform: translateY(1px) scaleX(var(--lm-mascot-frame-facing, var(--lm-mascot-facing)));
 }
 
 .lm-mascot-pointer.is-backward .lm-mascot-pointer__sprite img {
-  transform: translateY(-2px) scaleX(var(--lm-mascot-frame-facing, var(--lm-mascot-facing)));
+  transform: translateY(-1px) scaleX(var(--lm-mascot-frame-facing, var(--lm-mascot-facing)));
 }
 
 .lm-mascot-pointer.is-walking .lm-mascot-pointer__sprite {
-  animation: lmMascotWalkBob 280ms ease-in-out infinite;
+  animation: lmMascotWalkBob 468ms cubic-bezier(0.42, 0, 0.2, 1) infinite;
 }
 
 .lm-mascot-pointer.is-walking .lm-mascot-pointer__shadow {
-  animation: lmMascotStepShadow 280ms ease-in-out infinite;
+  animation: lmMascotStepShadow 468ms cubic-bezier(0.42, 0, 0.2, 1) infinite;
 }
 
 .lm-mascot-pointer.is-running .lm-mascot-pointer__sprite {
-  animation-duration: 170ms;
+  animation-duration: 324ms;
   animation-timing-function: cubic-bezier(0.3, 0, 0.2, 1);
 }
 
 .lm-mascot-pointer.is-running .lm-mascot-pointer__shadow {
-  animation-duration: 170ms;
+  animation-duration: 324ms;
   opacity: 0.82;
 }
 
 .lm-mascot-pointer.is-climbing-up .lm-mascot-pointer__sprite,
 .lm-mascot-pointer.is-flying-up .lm-mascot-pointer__sprite {
-  animation: lmMascotFlyUp 190ms ease-in-out infinite;
+  animation: lmMascotFlyUp 516ms cubic-bezier(0.42, 0, 0.2, 1) infinite;
 }
 
 .lm-mascot-pointer.is-falling-down .lm-mascot-pointer__sprite {
-  animation: lmMascotFall 260ms cubic-bezier(0.32, 0, 0.18, 1) infinite;
+  animation: lmMascotFall 576ms cubic-bezier(0.32, 0, 0.18, 1) infinite;
 }
 
 .lm-mascot-pointer.is-running-down .lm-mascot-pointer__sprite {
-  animation: lmMascotRunDown 168ms cubic-bezier(0.3, 0, 0.2, 1) infinite;
+  animation: lmMascotRunDown 324ms cubic-bezier(0.3, 0, 0.2, 1) infinite;
 }
 
 .lm-mascot-pointer.is-climbing-up .lm-mascot-pointer__sprite img,
 .lm-mascot-pointer.is-flying-up .lm-mascot-pointer__sprite img {
-  transform: translateY(-8px) rotate(-5deg) scale(1.1) scaleX(var(--lm-mascot-frame-facing, var(--lm-mascot-facing)));
+  transform: translateY(-8px) rotate(-5deg) scale(1.2705) scaleX(var(--lm-mascot-frame-facing, var(--lm-mascot-facing)));
 }
 
 .lm-mascot-pointer.is-running-down .lm-mascot-pointer__sprite img {
@@ -13016,7 +13472,7 @@ body.features-cinematic-page #player.feature-live-player.sphere-orb-live-player:
 .lm-mascot-pointer.is-flying-up .lm-mascot-pointer__shadow,
 .lm-mascot-pointer.is-running-down .lm-mascot-pointer__shadow,
 .lm-mascot-pointer.is-falling-down .lm-mascot-pointer__shadow {
-  animation: lmMascotStepShadow 220ms ease-in-out infinite;
+  animation: lmMascotStepShadow 516ms ease-in-out infinite;
 }
 
 .lm-mascot-pointer.is-touch {
@@ -13046,26 +13502,59 @@ body.features-cinematic-page #player.feature-live-player.sphere-orb-live-player:
 }
 
 @keyframes lmMascotWalkBob {
-  0%,
-  100% {
+  0% {
     transform: translateY(0) rotate(-1deg);
   }
 
+  16% {
+    transform: translateY(-2px) rotate(-0.4deg);
+  }
+
+  33% {
+    transform: translateY(-3.5px) rotate(0.8deg);
+  }
+
   50% {
-    transform: translateY(-5px) rotate(1.5deg);
+    transform: translateY(-2px) rotate(1deg);
+  }
+
+  66% {
+    transform: translateY(0) rotate(0.2deg);
+  }
+
+  83% {
+    transform: translateY(-2px) rotate(-0.8deg);
+  }
+
+  100% {
+    transform: translateY(0) rotate(-1deg);
   }
 }
 
 @keyframes lmMascotStepShadow {
-  0%,
-  100% {
+  0% {
     transform: translateX(-50%) scaleX(0.86);
     opacity: 0.64;
+  }
+
+  25% {
+    transform: translateX(-50%) scaleX(1);
+    opacity: 0.76;
   }
 
   50% {
     transform: translateX(-50%) scaleX(1.08);
     opacity: 0.82;
+  }
+
+  75% {
+    transform: translateX(-50%) scaleX(0.96);
+    opacity: 0.72;
+  }
+
+  100% {
+    transform: translateX(-50%) scaleX(0.86);
+    opacity: 0.64;
   }
 }
 
@@ -13081,35 +13570,68 @@ body.features-cinematic-page #player.feature-live-player.sphere-orb-live-player:
 }
 
 @keyframes lmMascotFlyUp {
-  0%,
-  100% {
+  0% {
     transform: translateY(-2px) rotate(-3deg);
   }
 
+  25% {
+    transform: translateY(-7px) rotate(-1deg);
+  }
+
   50% {
-    transform: translateY(-12px) rotate(2deg);
+    transform: translateY(-10px) rotate(1.5deg);
+  }
+
+  75% {
+    transform: translateY(-7px) rotate(0.4deg);
+  }
+
+  100% {
+    transform: translateY(-2px) rotate(-3deg);
   }
 }
 
 @keyframes lmMascotRunDown {
-  0%,
-  100% {
+  0% {
     transform: translateY(2px) rotate(-1deg);
   }
 
+  25% {
+    transform: translateY(6px) rotate(0.4deg);
+  }
+
   50% {
-    transform: translateY(10px) rotate(1.5deg);
+    transform: translateY(8px) rotate(1.2deg);
+  }
+
+  75% {
+    transform: translateY(5px) rotate(0.2deg);
+  }
+
+  100% {
+    transform: translateY(2px) rotate(-1deg);
   }
 }
 
 @keyframes lmMascotFall {
-  0%,
-  100% {
+  0% {
     transform: translateY(3px) rotate(4deg);
   }
 
+  25% {
+    transform: translateY(8px) rotate(7deg);
+  }
+
   50% {
-    transform: translateY(14px) rotate(11deg);
+    transform: translateY(11px) rotate(9deg);
+  }
+
+  75% {
+    transform: translateY(7px) rotate(6deg);
+  }
+
+  100% {
+    transform: translateY(3px) rotate(4deg);
   }
 }
 
@@ -13177,6 +13699,112 @@ body.features-cinematic-page .vault-gateway-actions button {
   font-size: 0.72rem;
 }
 
+/* Features page Beat2Lotto fit pass. */
+body.features-cinematic-page .feature-stage {
+  padding-bottom: clamp(210px, 23vw, 300px);
+}
+
+body.features-cinematic-page .features-beat2lotto-console {
+  grid-template-columns: minmax(250px, 0.72fr) minmax(0, 1.28fr);
+  align-items: stretch;
+  width: min(100%, 1080px);
+  min-height: 0;
+  margin: clamp(14px, 2.4vw, 26px) auto clamp(18px, 3vw, 34px);
+  padding: clamp(14px, 1.7vw, 22px);
+  gap: clamp(14px, 2vw, 24px);
+  overflow: hidden;
+}
+
+body.features-cinematic-page .features-beat2lotto-console .lotto-controls,
+body.features-cinematic-page .features-beat2lotto-console .lotto-output-panel {
+  min-width: 0;
+}
+
+body.features-cinematic-page .features-beat2lotto-console .lotto-controls {
+  align-self: start;
+  gap: 10px;
+}
+
+body.features-cinematic-page .features-beat2lotto-console .file-drop,
+body.features-cinematic-page .features-beat2lotto-console .beat-analysis-card {
+  padding: 12px;
+}
+
+body.features-cinematic-page .features-beat2lotto-console :is(input, select) {
+  width: 100%;
+  min-width: 0;
+  min-height: 34px;
+}
+
+body.features-cinematic-page .features-beat2lotto-console .primary-action,
+body.features-cinematic-page .features-beat2lotto-console .secondary-action {
+  width: 100%;
+  min-height: 42px;
+  padding-inline: 0.8rem;
+  white-space: normal;
+}
+
+body.features-cinematic-page .features-beat2lotto-console .lotto-output-panel {
+  display: grid;
+  align-content: start;
+  min-height: clamp(390px, 38vw, 560px);
+  padding: clamp(14px, 2vw, 22px);
+  border: 1px solid rgba(41, 247, 255, 0.2);
+  border-radius: 14px;
+  background:
+    radial-gradient(circle at 74% 18%, rgba(255, 224, 113, 0.12), transparent 14rem),
+    linear-gradient(145deg, rgba(4, 22, 38, 0.72), rgba(13, 16, 58, 0.58));
+}
+
+body.features-cinematic-page .features-beat2lotto-console .lotto-output-head {
+  max-width: 720px;
+}
+
+body.features-cinematic-page .features-beat2lotto-console .lotto-output-head h2 {
+  max-width: 12ch;
+  margin: 0;
+  font-size: clamp(2.15rem, 4vw, 4.6rem);
+  line-height: 0.9;
+  letter-spacing: 0;
+  text-wrap: balance;
+}
+
+body.features-cinematic-page .features-beat2lotto-console .lotto-output-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-self: start;
+  margin-top: clamp(16px, 2.2vw, 26px);
+}
+
+@media (max-width: 980px) {
+  body.features-cinematic-page .features-beat2lotto-console {
+    grid-template-columns: 1fr;
+    width: min(100%, 760px);
+  }
+
+  body.features-cinematic-page .features-beat2lotto-console .lotto-output-panel {
+    min-height: 0;
+  }
+
+  body.features-cinematic-page .features-beat2lotto-console .lotto-output-head h2 {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 620px) {
+  body.features-cinematic-page .feature-stage {
+    padding-bottom: clamp(180px, 62vw, 260px);
+  }
+
+  body.features-cinematic-page .features-beat2lotto-console {
+    width: min(100%, calc(100vw - 20px));
+    padding: 12px;
+    border-radius: 14px;
+  }
+
+  body.features-cinematic-page .features-beat2lotto-console .lotto-output-grid {
+    grid-template-columns: 1fr;
+  }
+}
 #player.sphere-orb-live-player {
   -webkit-backdrop-filter: none !important;
   backdrop-filter: none !important;
@@ -13319,7 +13947,113 @@ body.beat2lotto-current-page .b2l-game-generator-vignette {
   display: none !important;
 }
 
-body.beat2lotto-current-page #player.sphere-orb-live-player {
+body.beat2lotto-current-page /* Features page Beat2Lotto fit pass. */
+body.features-cinematic-page .feature-stage {
+  padding-bottom: clamp(210px, 23vw, 300px);
+}
+
+body.features-cinematic-page .features-beat2lotto-console {
+  grid-template-columns: minmax(250px, 0.72fr) minmax(0, 1.28fr);
+  align-items: stretch;
+  width: min(100%, 1080px);
+  min-height: 0;
+  margin: clamp(14px, 2.4vw, 26px) auto clamp(18px, 3vw, 34px);
+  padding: clamp(14px, 1.7vw, 22px);
+  gap: clamp(14px, 2vw, 24px);
+  overflow: hidden;
+}
+
+body.features-cinematic-page .features-beat2lotto-console .lotto-controls,
+body.features-cinematic-page .features-beat2lotto-console .lotto-output-panel {
+  min-width: 0;
+}
+
+body.features-cinematic-page .features-beat2lotto-console .lotto-controls {
+  align-self: start;
+  gap: 10px;
+}
+
+body.features-cinematic-page .features-beat2lotto-console .file-drop,
+body.features-cinematic-page .features-beat2lotto-console .beat-analysis-card {
+  padding: 12px;
+}
+
+body.features-cinematic-page .features-beat2lotto-console :is(input, select) {
+  width: 100%;
+  min-width: 0;
+  min-height: 34px;
+}
+
+body.features-cinematic-page .features-beat2lotto-console .primary-action,
+body.features-cinematic-page .features-beat2lotto-console .secondary-action {
+  width: 100%;
+  min-height: 42px;
+  padding-inline: 0.8rem;
+  white-space: normal;
+}
+
+body.features-cinematic-page .features-beat2lotto-console .lotto-output-panel {
+  display: grid;
+  align-content: start;
+  min-height: clamp(390px, 38vw, 560px);
+  padding: clamp(14px, 2vw, 22px);
+  border: 1px solid rgba(41, 247, 255, 0.2);
+  border-radius: 14px;
+  background:
+    radial-gradient(circle at 74% 18%, rgba(255, 224, 113, 0.12), transparent 14rem),
+    linear-gradient(145deg, rgba(4, 22, 38, 0.72), rgba(13, 16, 58, 0.58));
+}
+
+body.features-cinematic-page .features-beat2lotto-console .lotto-output-head {
+  max-width: 720px;
+}
+
+body.features-cinematic-page .features-beat2lotto-console .lotto-output-head h2 {
+  max-width: 12ch;
+  margin: 0;
+  font-size: clamp(2.15rem, 4vw, 4.6rem);
+  line-height: 0.9;
+  letter-spacing: 0;
+  text-wrap: balance;
+}
+
+body.features-cinematic-page .features-beat2lotto-console .lotto-output-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-self: start;
+  margin-top: clamp(16px, 2.2vw, 26px);
+}
+
+@media (max-width: 980px) {
+  body.features-cinematic-page .features-beat2lotto-console {
+    grid-template-columns: 1fr;
+    width: min(100%, 760px);
+  }
+
+  body.features-cinematic-page .features-beat2lotto-console .lotto-output-panel {
+    min-height: 0;
+  }
+
+  body.features-cinematic-page .features-beat2lotto-console .lotto-output-head h2 {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 620px) {
+  body.features-cinematic-page .feature-stage {
+    padding-bottom: clamp(180px, 62vw, 260px);
+  }
+
+  body.features-cinematic-page .features-beat2lotto-console {
+    width: min(100%, calc(100vw - 20px));
+    padding: 12px;
+    border-radius: 14px;
+  }
+
+  body.features-cinematic-page .features-beat2lotto-console .lotto-output-grid {
+    grid-template-columns: 1fr;
+  }
+}
+#player.sphere-orb-live-player {
   --player-orb-size: clamp(292px, 36.72vw, 367px);
 }
 
@@ -14098,4 +14832,1167 @@ body.home-page.has-sphere-header .home-sphere-scanline,
 body.home-page.has-sphere-header .home-spheres-orbit-mark {
   display: none !important;
   visibility: hidden !important;
+}
+/* Memberships page */
+footer a.footer-link {
+  color: #9df8ff;
+  font-family: var(--display-font);
+  font-size: 0.8rem;
+  font-weight: 900;
+  letter-spacing: 0;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+footer a.footer-link:hover,
+footer a.footer-link:focus-visible {
+  color: #fff0a8;
+  outline: none;
+  text-shadow: 0 0 16px rgba(41, 247, 255, 0.55);
+}
+
+.memberships-page {
+  position: relative;
+  isolation: isolate;
+  min-height: 100vh;
+  overflow-x: hidden;
+  background:
+    radial-gradient(circle at 14% 9%, rgba(94, 255, 157, 0.12), transparent 28rem),
+    radial-gradient(circle at 82% 18%, rgba(255, 224, 113, 0.13), transparent 26rem),
+    radial-gradient(circle at 50% 72%, rgba(138, 92, 255, 0.12), transparent 32rem),
+    var(--bg);
+}
+
+.membership-pong-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  width: 100vw;
+  height: 100vh;
+  border: 0;
+  opacity: 0.62;
+  filter: saturate(1.12) contrast(1.04) brightness(0.74);
+  pointer-events: auto;
+}
+
+.memberships-page .site-header,
+.membership-main,
+.memberships-page > footer,
+.memberships-page .vault-credit-badge,
+.memberships-page .universal-menu-toggle {
+  position: relative;
+  z-index: 2;
+}
+
+.memberships-page .site-header {
+  z-index: 80;
+}
+
+.membership-background-control {
+  border: 1px solid rgba(41, 247, 255, 0.42);
+  cursor: pointer;
+}
+
+.memberships-page.is-membership-pong-focused .membership-pong-bg {
+  opacity: 0.74;
+  filter: saturate(1.22) contrast(1.08) brightness(0.82);
+}
+
+.memberships-page .home-sphere-header nav a:first-child {
+  --sphere-nav-note: "25";
+  --sphere-nav-accent: #ff4fd8;
+  --sphere-nav-core: rgba(255, 164, 235, 0.84);
+  --sphere-nav-image: url("./assets/brand/guide-puck-gold-mascot-close.png");
+}
+
+.membership-main {
+  position: relative;
+  display: grid;
+  gap: clamp(28px, 5vw, 64px);
+  width: min(1180px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: clamp(118px, 13vw, 158px) 0 clamp(54px, 8vw, 96px);
+}
+
+.membership-main::before {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  content: "";
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(41, 247, 255, 0.045) 1px, transparent 1px),
+    linear-gradient(0deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+  background-size: 96px 96px;
+  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.85), transparent 82%);
+}
+
+.membership-hero {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 0.42fr);
+  gap: clamp(22px, 5vw, 62px);
+  align-items: end;
+  min-height: clamp(430px, 62vh, 660px);
+  padding: clamp(24px, 4vw, 48px);
+  border: 1px solid rgba(41, 247, 255, 0.32);
+  border-radius: 18px;
+  overflow: hidden;
+  background:
+    linear-gradient(135deg, rgba(8, 28, 48, 0.9), rgba(8, 11, 25, 0.94) 58%, rgba(42, 30, 75, 0.82)),
+    var(--panel);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.04),
+    0 28px 88px rgba(0, 0, 0, 0.44),
+    inset 0 0 52px rgba(41, 247, 255, 0.08);
+}
+
+.membership-hero::before,
+.membership-hero::after {
+  position: absolute;
+  inset: 0;
+  content: "";
+  pointer-events: none;
+}
+
+.membership-hero::before {
+  background:
+    radial-gradient(circle at 72% 30%, rgba(255, 224, 113, 0.2), transparent 18rem),
+    radial-gradient(circle at 20% 80%, rgba(94, 255, 157, 0.18), transparent 20rem),
+    linear-gradient(90deg, rgba(41, 247, 255, 0.08) 1px, transparent 1px);
+  background-size: auto, auto, 58px 58px;
+}
+
+.membership-hero::after {
+  inset: auto clamp(18px, 4vw, 52px) clamp(14px, 4vw, 42px);
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(41, 247, 255, 0.78), rgba(255, 224, 113, 0.7), transparent);
+}
+
+.membership-hero-copy,
+.membership-signal-card {
+  position: relative;
+  z-index: 1;
+}
+
+.membership-hero-copy {
+  max-width: 760px;
+}
+
+.membership-hero-copy h1 {
+  max-width: 11ch;
+  margin: 0;
+  color: #e8fbff;
+  font-size: clamp(3.2rem, 8vw, 7.8rem);
+  line-height: 0.88;
+  text-transform: uppercase;
+  text-shadow:
+    0 0 28px rgba(41, 247, 255, 0.34),
+    0 8px 0 rgba(0, 0, 0, 0.26);
+}
+
+.membership-hero-copy > p:not(.studio-boot-sequence) {
+  max-width: 680px;
+  margin: 24px 0 0;
+  color: #d8e8f6;
+  font-size: clamp(1rem, 1.8vw, 1.32rem);
+  line-height: 1.55;
+}
+
+.membership-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.membership-signal-card {
+  display: grid;
+  gap: 12px;
+  align-content: start;
+  min-height: 320px;
+  padding: clamp(18px, 3vw, 28px);
+  border: 1px solid rgba(255, 224, 113, 0.34);
+  border-radius: 16px;
+  background:
+    radial-gradient(circle at 72% 14%, rgba(255, 224, 113, 0.22), transparent 8rem),
+    linear-gradient(145deg, rgba(5, 16, 31, 0.92), rgba(14, 36, 63, 0.8));
+}
+
+.membership-signal-card img {
+  width: 58px;
+  height: 58px;
+  border-radius: 999px;
+  box-shadow: 0 0 28px rgba(41, 247, 255, 0.38);
+}
+
+.membership-signal-card span,
+.membership-section-heading span,
+.plan-label,
+.plan-featured-tag {
+  color: #fff0a8;
+  font-family: var(--display-font);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.membership-signal-card strong {
+  color: #f6fbff;
+  font-size: clamp(1.8rem, 3vw, 2.45rem);
+  line-height: 0.95;
+  text-transform: uppercase;
+}
+
+.membership-signal-card p {
+  margin: 0;
+  color: #c8dff0;
+  line-height: 1.5;
+}
+
+.membership-disclaimer {
+  border: 1px solid rgba(255, 224, 113, 0.42);
+  border-radius: 14px;
+  padding: clamp(18px, 3vw, 26px);
+  color: #fff5bf;
+  background:
+    linear-gradient(90deg, rgba(255, 224, 113, 0.12), rgba(41, 247, 255, 0.07)),
+    rgba(8, 17, 32, 0.92);
+}
+
+.membership-disclaimer p {
+  max-width: 1040px;
+  margin: 0;
+  font-weight: 800;
+  line-height: 1.55;
+}
+
+.membership-section {
+  display: grid;
+  gap: clamp(18px, 3vw, 28px);
+}
+
+.membership-section-heading {
+  display: grid;
+  gap: 10px;
+  max-width: 820px;
+}
+
+.membership-section-heading h2 {
+  margin: 0;
+  color: #f6fbff;
+  font-size: clamp(2.1rem, 4.8vw, 4.4rem);
+  line-height: 0.96;
+  text-transform: uppercase;
+}
+
+.membership-section-heading p {
+  margin: 0;
+  color: #c8dff0;
+  font-size: clamp(0.98rem, 1.6vw, 1.16rem);
+  line-height: 1.55;
+}
+
+.membership-plan-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.membership-plan-card,
+.membership-feature-grid article,
+.membership-app-grid article,
+.credit-pack-grid article,
+.stripe-structure-grid article,
+.membership-steps li {
+  position: relative;
+  border: 1px solid rgba(41, 247, 255, 0.24);
+  border-radius: 14px;
+  background:
+    linear-gradient(145deg, rgba(6, 21, 37, 0.92), rgba(12, 18, 38, 0.9)),
+    var(--panel);
+  box-shadow:
+    0 18px 60px rgba(0, 0, 0, 0.28),
+    inset 0 0 28px rgba(41, 247, 255, 0.05);
+}
+
+.membership-plan-card {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: 18px;
+  min-height: 430px;
+  padding: 22px;
+}
+
+.membership-plan-card:hover,
+.membership-plan-card:focus-within,
+.membership-feature-grid article:hover,
+.credit-pack-grid article:hover,
+.stripe-structure-grid article:hover {
+  border-color: rgba(255, 224, 113, 0.64);
+  transform: translateY(-2px);
+  box-shadow:
+    0 26px 78px rgba(0, 0, 0, 0.38),
+    0 0 28px rgba(41, 247, 255, 0.14),
+    inset 0 0 32px rgba(255, 224, 113, 0.05);
+}
+
+.membership-plan-card.is-featured {
+  border-color: rgba(255, 224, 113, 0.72);
+  background:
+    radial-gradient(circle at 76% 16%, rgba(255, 224, 113, 0.26), transparent 9rem),
+    linear-gradient(145deg, rgba(11, 42, 59, 0.95), rgba(26, 20, 62, 0.93));
+  box-shadow:
+    0 0 0 1px rgba(255, 224, 113, 0.18),
+    0 34px 92px rgba(0, 0, 0, 0.46),
+    0 0 42px rgba(255, 224, 113, 0.16);
+}
+
+.plan-featured-tag {
+  justify-self: start;
+  padding: 7px 10px;
+  border: 1px solid rgba(255, 224, 113, 0.46);
+  border-radius: 999px;
+  color: #041226;
+  background: linear-gradient(135deg, #fff0a8, #29f7ff);
+}
+
+.membership-plan-card h3 {
+  margin: 10px 0 0;
+  color: #f6fbff;
+  font-size: clamp(2.35rem, 4vw, 3.35rem);
+  line-height: 0.95;
+}
+
+.membership-plan-card h3 span {
+  color: #9df8ff;
+  font-size: 1rem;
+}
+
+.plan-year {
+  margin: 8px 0 0;
+  color: #fff0a8;
+  font-weight: 850;
+}
+
+.membership-plan-card ul {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.membership-plan-card li {
+  position: relative;
+  padding-left: 20px;
+  color: #d8e8f6;
+  line-height: 1.35;
+}
+
+.membership-plan-card li::before {
+  position: absolute;
+  left: 0;
+  content: "+";
+  color: #29f7ff;
+  font-weight: 950;
+}
+
+.membership-plan-card .primary-action,
+.membership-plan-card .secondary-action,
+.membership-hero-actions .primary-action,
+.membership-hero-actions .secondary-action {
+  justify-self: start;
+  width: auto;
+}
+
+.membership-feature-grid,
+.membership-app-grid,
+.stripe-structure-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.membership-feature-grid article,
+.membership-app-grid article,
+.stripe-structure-grid article {
+  padding: clamp(18px, 3vw, 26px);
+}
+
+.membership-feature-grid h3,
+.membership-app-grid h3,
+.stripe-structure-grid h3 {
+  margin: 0 0 10px;
+  color: #f6fbff;
+  font-size: clamp(1.25rem, 2vw, 1.75rem);
+  text-transform: uppercase;
+}
+
+.membership-feature-grid p,
+.membership-app-grid p,
+.stripe-structure-grid p {
+  margin: 0;
+  color: #c8dff0;
+  line-height: 1.5;
+}
+
+.membership-app-grid article {
+  display: grid;
+  gap: 14px;
+  align-content: start;
+}
+
+.membership-app-grid span {
+  color: #fff0a8;
+  font-family: var(--display-font);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.membership-app-grid .primary-action,
+.membership-app-grid .secondary-action {
+  justify-self: start;
+  width: auto;
+}
+
+.stripe-structure-grid p + p {
+  margin-top: 7px;
+}
+
+.stripe-structure-grid code {
+  color: #fff0a8;
+  font-weight: 850;
+}
+
+.credit-pack-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.credit-pack-grid article {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: center;
+  padding: 22px;
+}
+
+.credit-pack-grid span {
+  color: #d8e8f6;
+  font-weight: 800;
+}
+
+.credit-pack-grid strong {
+  color: #fff0a8;
+  font-size: 1.6rem;
+}
+
+.membership-steps ol,
+.membership-steps li {
+  margin: 0;
+}
+
+.membership-steps ol {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 16px;
+  padding: 0;
+  list-style: none;
+  counter-reset: membership-step;
+}
+
+.membership-steps li {
+  display: grid;
+  gap: 10px;
+  align-content: start;
+  padding: 22px;
+  counter-increment: membership-step;
+}
+
+.membership-steps li::before {
+  content: "0" counter(membership-step);
+  color: #fff0a8;
+  font-family: var(--display-font);
+  font-size: 1.5rem;
+  font-weight: 950;
+}
+
+.membership-steps strong {
+  color: #f6fbff;
+}
+
+.membership-steps span {
+  color: #c8dff0;
+  line-height: 1.45;
+}
+
+.stripe-placeholder-panel {
+  padding: clamp(18px, 4vw, 34px);
+  border: 1px solid rgba(41, 247, 255, 0.32);
+  border-radius: 16px;
+  background:
+    radial-gradient(circle at 90% 10%, rgba(255, 224, 113, 0.12), transparent 16rem),
+    rgba(3, 7, 15, 0.86);
+}
+
+.stripe-placeholder-panel stripe-pricing-table {
+  display: block;
+  min-height: 220px;
+}
+
+.memberships-page a:focus-visible,
+.memberships-page button:focus-visible {
+  outline: 2px solid #fff0a8;
+  outline-offset: 4px;
+}
+
+@media (max-width: 1120px) {
+  .membership-plan-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .membership-steps ol {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 820px) {
+  .membership-main {
+    width: min(100% - 24px, 720px);
+    padding-top: 106px;
+  }
+
+  .membership-hero {
+    grid-template-columns: 1fr;
+    align-items: start;
+    min-height: auto;
+  }
+
+  .membership-signal-card {
+    min-height: 0;
+  }
+
+  .membership-feature-grid,
+  .membership-app-grid,
+  .credit-pack-grid,
+  .stripe-structure-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 620px) {
+  .membership-main {
+    width: min(100% - 18px, 520px);
+    gap: 34px;
+    padding-top: 94px;
+  }
+
+  .membership-hero {
+    padding: 20px;
+    border-radius: 14px;
+  }
+
+  .membership-hero-copy h1 {
+    font-size: clamp(2.65rem, 15vw, 4.5rem);
+  }
+
+  .membership-plan-grid,
+  .membership-steps ol {
+    grid-template-columns: 1fr;
+  }
+
+  .membership-plan-card {
+    min-height: 0;
+  }
+
+  .credit-pack-grid article {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+/* Features Beat2Lotto final fit overrides. */
+body.features-cinematic-page #player.feature-live-player.sphere-orb-live-player {
+  --player-orb-size: clamp(359px, 32.43vw, 436px) !important;
+  left: var(--spheres-player-left, calc(100vw - clamp(179.5px, 16.22vw, 218px) - clamp(14px, 2vw, 32px))) !important;
+  top: var(--spheres-player-top, clamp(292px, 38vh, 470px)) !important;
+}
+
+body.features-cinematic-page .features-beat2lotto-console .lotto-output-panel {
+  min-height: clamp(340px, 31vw, 470px) !important;
+}
+
+body.features-cinematic-page .features-beat2lotto-console .lotto-output-grid {
+  gap: 10px !important;
+}
+
+body.features-cinematic-page .features-beat2lotto-console .lotto-set-card {
+  padding: 11px !important;
+  border-radius: 12px !important;
+}
+
+body.features-cinematic-page .features-beat2lotto-console .lotto-set-card strong {
+  margin-bottom: 8px !important;
+  font-size: 0.78rem !important;
+}
+
+body.features-cinematic-page .features-beat2lotto-console .lotto-number-row {
+  gap: 6px !important;
+}
+
+body.features-cinematic-page .features-beat2lotto-console .lotto-ball {
+  min-width: 34px !important;
+  height: 34px !important;
+  padding-inline: 8px !important;
+  font-size: 0.88rem !important;
+}
+
+body.features-cinematic-page .features-beat2lotto-console .lotto-note {
+  display: -webkit-box !important;
+  max-height: 2.7em !important;
+  margin-top: 7px !important;
+  overflow: hidden !important;
+  color: rgba(216, 232, 246, 0.72) !important;
+  font-size: 0.7rem !important;
+  line-height: 1.35 !important;
+  -webkit-box-orient: vertical !important;
+  -webkit-line-clamp: 2 !important;
+}
+
+/* Home page Beat2Lotto bottom panel. */
+body.home-page .home-beat2lotto-console {
+  position: relative;
+  z-index: 1;
+  grid-template-columns: minmax(260px, 0.56fr) minmax(0, 1.44fr);
+  align-items: stretch;
+  width: min(100% - 2rem, 1120px);
+  margin: clamp(2rem, 6vw, 4.6rem) auto clamp(1.5rem, 4vw, 3.2rem);
+  padding: clamp(0.9rem, 2vw, 1.45rem);
+  overflow: hidden;
+  border-color: rgba(41, 247, 255, 0.46);
+  border-radius: 8px;
+  background:
+    radial-gradient(circle at 88% 14%, rgba(255, 224, 113, 0.12), transparent 18rem),
+    radial-gradient(circle at 18% 82%, rgba(41, 247, 255, 0.16), transparent 16rem),
+    linear-gradient(140deg, rgba(3, 14, 24, 0.92), rgba(10, 11, 45, 0.82));
+  box-shadow:
+    0 0 0 1px rgba(41, 247, 255, 0.12),
+    0 1.4rem 4rem rgba(0, 0, 0, 0.44),
+    0 0 2.2rem rgba(41, 247, 255, 0.12);
+}
+
+body.home-page .home-beat2lotto-console .lotto-controls,
+body.home-page .home-beat2lotto-console .lotto-output-panel {
+  min-width: 0;
+}
+
+body.home-page .home-beat2lotto-console .lotto-controls {
+  align-self: start;
+}
+
+body.home-page .home-beat2lotto-console :is(input, select) {
+  width: 100%;
+  min-width: 0;
+  min-height: 38px;
+}
+
+body.home-page .home-beat2lotto-console .primary-action,
+body.home-page .home-beat2lotto-console .secondary-action {
+  width: 100%;
+  min-height: 44px;
+  white-space: normal;
+}
+
+body.home-page .home-beat2lotto-console .lotto-output-panel {
+  display: grid;
+  align-content: start;
+  min-height: clamp(340px, 32vw, 500px);
+  padding: clamp(1rem, 2.2vw, 1.55rem);
+  border: 1px solid rgba(41, 247, 255, 0.2);
+  border-radius: 8px;
+  background:
+    radial-gradient(circle at 74% 18%, rgba(255, 224, 113, 0.12), transparent 14rem),
+    linear-gradient(145deg, rgba(4, 22, 38, 0.72), rgba(13, 16, 58, 0.58));
+}
+
+body.home-page .home-beat2lotto-console .lotto-output-head {
+  max-width: 720px;
+}
+
+body.home-page .home-beat2lotto-console .lotto-output-head h2 {
+  max-width: 12ch;
+  margin: 0;
+  font-size: clamp(2.1rem, 4vw, 4.45rem);
+  line-height: 0.9;
+  letter-spacing: 0;
+  text-wrap: balance;
+}
+
+body.home-page .home-beat2lotto-console .lotto-output-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-self: start;
+  margin-top: clamp(1rem, 2.2vw, 1.65rem);
+}
+
+body.home-page .home-support-console {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr) auto 350px;
+  gap: 16px;
+  align-items: center;
+  width: min(100% - 2rem, 1480px);
+  margin: clamp(1.5rem, 4vw, 3rem) auto clamp(2rem, 5vw, 4rem);
+  padding: clamp(1rem, 2vw, 1.45rem);
+  overflow: hidden;
+  border-color: rgba(41, 247, 255, 0.46);
+  border-radius: 8px;
+  background:
+    radial-gradient(circle at 90% 12%, rgba(41, 247, 255, 0.16), transparent 20rem),
+    radial-gradient(circle at 18% 85%, rgba(255, 224, 113, 0.12), transparent 18rem),
+    linear-gradient(140deg, rgba(3, 14, 24, 0.92), rgba(10, 11, 45, 0.82));
+  box-shadow:
+    0 0 0 1px rgba(41, 247, 255, 0.12),
+    0 1.4rem 4rem rgba(0, 0, 0, 0.44),
+    0 0 2.2rem rgba(41, 247, 255, 0.12);
+}
+
+body.home-page .support-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+body.home-page .support-metrics div {
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid rgba(130, 200, 255, 0.13);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.24);
+}
+
+body.home-page .support-metrics span,
+body.home-page .mail-panel span {
+  color: var(--muted);
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+body.home-page .support-metrics strong {
+  display: block;
+  margin-top: 5px;
+  color: var(--green);
+  font-size: 1.14rem;
+  text-transform: uppercase;
+}
+
+body.home-page .support-main h2 {
+  margin: 4px 0 8px;
+  max-width: 14ch;
+  font-size: clamp(1.5rem, 2.7vw, 2.4rem);
+  line-height: 0.98;
+  letter-spacing: 0;
+}
+
+body.home-page .support-main p {
+  color: var(--muted);
+}
+
+body.home-page .support-chips {
+  display: flex;
+  gap: 9px;
+  flex-wrap: wrap;
+}
+
+body.home-page .support-chips a,
+body.home-page .support-chips button {
+  min-height: 44px;
+  padding: 0 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(41, 247, 255, 0.46);
+  border-radius: 8px;
+  color: #f5fffb;
+  font-size: 0.74rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  text-transform: uppercase;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.2), transparent 42%),
+    linear-gradient(180deg, rgba(7, 58, 86, 0.96), rgba(2, 8, 18, 0.98));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.34),
+    inset 0 -0.28rem 0 rgba(0, 0, 0, 0.34),
+    0 0.22rem 0 rgba(0, 0, 0, 0.66),
+    0 0 18px rgba(41, 247, 255, 0.14);
+  cursor: pointer;
+}
+
+body.home-page .support-chips :is(a, button):is(:hover, :focus-visible),
+body.home-page .feature-live-chat-actions a:is(:hover, :focus-visible) {
+  border-color: rgba(142, 255, 212, 0.92);
+  filter: saturate(1.16) brightness(1.08);
+  outline: 2px solid rgba(142, 255, 212, 0.42);
+  outline-offset: 3px;
+}
+
+body.home-page .mail-panel {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+}
+
+body.home-page .mail-panel label {
+  display: grid;
+  gap: 6px;
+}
+
+body.home-page .mail-panel input {
+  min-width: 0;
+  min-height: 44px;
+  padding: 0 13px;
+  border: 1px solid rgba(130, 200, 255, 0.18);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.28);
+  color: white;
+}
+
+body.home-page .mail-panel button {
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+body.home-page .feature-live-chat-panel {
+  position: fixed;
+  left: clamp(18px, 4vw, 72px);
+  bottom: clamp(112px, 12vh, 150px);
+  z-index: 180;
+  display: grid;
+  width: min(430px, calc(100vw - 32px));
+  max-height: min(640px, calc(100vh - 176px));
+  grid-template-rows: auto minmax(320px, 1fr) auto;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 8px;
+  background:
+    radial-gradient(circle at 20% 18%, rgba(41, 247, 255, 0.22), transparent 38%),
+    radial-gradient(circle at 88% 24%, rgba(255, 224, 113, 0.18), transparent 34%),
+    linear-gradient(145deg, rgba(4, 19, 35, 0.98), rgba(10, 7, 27, 0.98));
+  box-shadow:
+    0 0 0 1px rgba(41, 247, 255, 0.2),
+    0 26px 74px rgba(0, 0, 0, 0.68),
+    0 0 54px rgba(41, 247, 255, 0.18);
+}
+
+body.home-page .feature-live-chat-panel[hidden] {
+  display: none !important;
+}
+
+body.home-page .feature-live-chat-panel:target {
+  display: grid !important;
+}
+
+body.home-page .feature-live-chat-head,
+body.home-page .feature-live-chat-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+body.home-page .feature-live-chat-head h2 {
+  margin: 3px 0 0;
+  font-size: clamp(1.22rem, 2.2vw, 1.85rem);
+  line-height: 1.02;
+}
+
+body.home-page .feature-live-chat-close {
+  flex: 0 0 auto;
+  width: 38px;
+  min-width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: inline-grid;
+  place-items: center;
+  border: 1px solid rgba(41, 247, 255, 0.36);
+  color: #ecfbff;
+  font-size: 0.76rem;
+  font-weight: 900;
+  text-decoration: none;
+  background: rgba(4, 22, 40, 0.82);
+}
+
+body.home-page .feature-live-chat-frame {
+  min-height: 420px;
+  overflow: hidden;
+  border: 1px solid rgba(41, 247, 255, 0.22);
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(41, 247, 255, 0.09), rgba(0, 0, 0, 0.18)),
+    rgba(1, 8, 17, 0.96);
+}
+
+body.home-page .feature-live-chat-frame iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 420px;
+  border: 0;
+  color-scheme: dark;
+}
+
+body.home-page .feature-live-chat-actions {
+  flex-wrap: wrap;
+}
+
+body.home-page .feature-live-chat-actions a {
+  min-height: 38px;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(41, 247, 255, 0.36);
+  border-radius: 999px;
+  color: #ecfbff;
+  font-size: 0.68rem;
+  font-weight: 900;
+  text-decoration: none;
+  text-transform: uppercase;
+  background: rgba(4, 22, 40, 0.82);
+}
+
+body.home-page .home-status-bar {
+  position: relative;
+  z-index: 1;
+  width: min(100% - 2rem, 1480px);
+  margin: clamp(0.6rem, 2.2vw, 1.35rem) auto clamp(2rem, 5vw, 4rem);
+  padding: 14px 18px;
+  display: grid;
+  grid-template-columns: 44px minmax(180px, 1fr) repeat(3, max-content) minmax(190px, 0.72fr) auto;
+  gap: 12px;
+  align-items: center;
+  border: 1px solid rgba(41, 247, 255, 0.42);
+  border-radius: 8px;
+  color: var(--muted);
+  background:
+    radial-gradient(circle at 12% 20%, rgba(41, 247, 255, 0.18), transparent 16rem),
+    radial-gradient(circle at 88% 28%, rgba(255, 224, 113, 0.12), transparent 14rem),
+    linear-gradient(135deg, rgba(3, 13, 24, 0.94), rgba(9, 11, 36, 0.86));
+  box-shadow:
+    0 0 0 1px rgba(41, 247, 255, 0.1),
+    0 1rem 3.2rem rgba(0, 0, 0, 0.42),
+    0 0 2.2rem rgba(41, 247, 255, 0.12);
+}
+
+body.home-page .home-status-bar .bottom-mark {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(41, 247, 255, 0.46);
+  border-radius: 8px;
+  color: #2df7ff;
+  font-weight: 900;
+  background: rgba(0, 222, 255, 0.12);
+}
+
+body.home-page .home-status-bar strong,
+body.home-page .home-status-bar span,
+body.home-page .home-status-bar a {
+  min-width: 0;
+  font-size: 0.76rem;
+  line-height: 1.25;
+  text-transform: uppercase;
+}
+
+body.home-page .home-status-bar strong {
+  color: #eaf8ff;
+  font-weight: 900;
+}
+
+body.home-page .home-status-bar span {
+  color: #a8bdd5;
+}
+
+body.home-page .home-status-bar b {
+  color: var(--green);
+}
+
+body.home-page .home-status-bar .feature-safety-note {
+  color: #fff0bf;
+  font-weight: 800;
+}
+
+body.home-page .home-status-bar .studio-launch {
+  min-height: 42px;
+  padding: 0 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  border: 1px solid rgba(41, 247, 255, 0.54);
+  border-radius: 8px;
+  color: #f6fffb;
+  font-weight: 900;
+  text-decoration: none;
+  white-space: nowrap;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.2), transparent 42%),
+    linear-gradient(180deg, rgba(7, 58, 86, 0.96), rgba(2, 8, 18, 0.98));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    inset 0 -0.28rem 0 rgba(0, 0, 0, 0.34),
+    0 0 18px rgba(41, 247, 255, 0.14);
+}
+
+body.home-page .home-status-bar .studio-launch:is(:hover, :focus-visible) {
+  border-color: rgba(142, 255, 212, 0.92);
+  filter: saturate(1.16) brightness(1.08);
+  outline: 2px solid rgba(142, 255, 212, 0.42);
+  outline-offset: 3px;
+}
+
+@media (max-width: 1280px) {
+  body.home-page .home-support-console {
+    grid-template-columns: minmax(0, 1fr) minmax(280px, 0.86fr);
+  }
+
+  body.home-page .support-metrics {
+    grid-column: 1 / -1;
+  }
+
+  body.home-page .support-main,
+  body.home-page .support-chips {
+    grid-column: 1 / 2;
+  }
+
+  body.home-page .mail-panel {
+    grid-column: 2 / 3;
+    grid-row: 2 / 4;
+    align-self: end;
+  }
+
+}
+
+@media (max-width: 980px) {
+  body.home-page .home-beat2lotto-console {
+    grid-template-columns: 1fr;
+    width: min(100% - 1.25rem, 760px);
+  }
+
+  body.home-page .home-support-console {
+    grid-template-columns: 1fr;
+    width: min(100% - 1.25rem, 760px);
+  }
+
+  body.home-page .home-status-bar {
+    width: min(100% - 1.25rem, 760px);
+    grid-template-columns: 44px minmax(0, 1fr);
+  }
+
+  body.home-page .home-status-bar span,
+  body.home-page .home-status-bar .feature-safety-note,
+  body.home-page .home-status-bar .studio-launch {
+    grid-column: 2 / -1;
+  }
+
+  body.home-page .support-main h2 {
+    max-width: 100%;
+  }
+
+  body.home-page .feature-live-chat-panel {
+    left: 12px;
+    right: auto;
+    bottom: 96px;
+    width: min(430px, calc(100vw - 24px));
+    max-height: min(620px, calc(100vh - 126px));
+  }
+
+  body.home-page .feature-live-chat-frame,
+  body.home-page .feature-live-chat-frame iframe {
+    min-height: 360px;
+  }
+
+  body.home-page .home-beat2lotto-console .lotto-output-panel {
+    min-height: 0;
+  }
+
+  body.home-page .home-beat2lotto-console .lotto-output-head h2 {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 620px) {
+  body.home-page .home-beat2lotto-console {
+    width: min(100% - 1rem, 100%);
+    padding: 0.75rem;
+  }
+
+  body.home-page .home-support-console {
+    width: min(100% - 1rem, 100%);
+    padding: 0.75rem;
+  }
+
+  body.home-page .home-status-bar {
+    width: min(100% - 1rem, 100%);
+    padding: 0.75rem;
+    gap: 9px;
+  }
+
+  body.home-page .support-metrics,
+  body.home-page .mail-panel {
+    grid-template-columns: 1fr;
+  }
+
+  body.home-page .feature-live-chat-panel {
+    left: 12px;
+    right: 12px;
+    bottom: 88px;
+    width: auto;
+    padding: 12px;
+  }
+
+  body.home-page .feature-live-chat-head {
+    align-items: flex-start;
+  }
+
+  body.home-page .feature-live-chat-actions {
+    align-items: stretch;
+  }
+
+  body.home-page .feature-live-chat-actions a {
+    flex: 1 1 140px;
+  }
+
+  body.home-page .home-beat2lotto-console .lotto-output-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 980px) {
+  body.features-cinematic-page #player.feature-live-player.sphere-orb-live-player {
+    --player-orb-size: clamp(298px, 46vw, 387px) !important;
+    left: var(--spheres-player-left, calc(100vw - clamp(149px, 23vw, 193.5px) - 14px)) !important;
+    top: var(--spheres-player-top, clamp(230px, 34vh, 360px)) !important;
+  }
+}
+
+@media (max-width: 620px) {
+  body.features-cinematic-page #player.feature-live-player.sphere-orb-live-player {
+    --player-orb-size: min(92vw, 343px) !important;
+    left: var(--spheres-player-left, 50vw) !important;
+    top: var(--spheres-player-top, calc(100vh - min(46vw, 171.5px) - 86px)) !important;
+  }
 }

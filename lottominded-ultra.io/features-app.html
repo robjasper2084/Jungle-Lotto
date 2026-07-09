@@ -7,7 +7,7 @@
     <title>LOTTOMINDED ULTRA | Feature Signal Route</title>
     <meta name="theme-color" content="#03050a" />
     <link rel="icon" href="./assets/brand/lm-orb-mark.webp" type="image/webp" />
-    <link rel="stylesheet" href="./styles.css?v=touch-nav-fix-2" />
+    <link rel="stylesheet" href="./styles.css?v=feature-140-spheres-big-1" />
     <script>
       try {
         if (sessionStorage.getItem("lmTransitionArriving") === "yes") {
@@ -15,20 +15,28 @@
         }
       } catch (error) {}
     </script>
-    <link rel="stylesheet" href="./assets/css/lm-page-transition.css?v=compositor-pass-2" />
-    <link rel="stylesheet" href="./assets/features-app/css/features-cinematic-raytrace.css?v=features-generator-cleanup-1" />
-    <link rel="stylesheet" href="./beat2lotto-plus.css?v=features-generator-1" />
+    <link rel="stylesheet" href="./assets/css/lm-page-transition.css?v=compositor-pass-1" />
+    <link rel="stylesheet" href="./assets/features-app/css/features-cinematic-raytrace.css?v=compositor-pass-3" />
     <link rel="stylesheet" href="./lottomind-button-assets.css?v=ultra-buttons-1" />
   </head>
   <body class="features-cinematic-page">
     <div class="lm-page-transition" data-lm-page-transition aria-hidden="true">
       <div class="lm-page-transition__flash"></div>
-      <video class="lm-page-transition__video" data-lm-transition-video muted playsinline preload="none"></video>
+      <video class="lm-page-transition__video" data-lm-transition-video muted playsinline preload="metadata"></video>
       <div class="lm-page-transition__vignette"></div>
       <div class="lm-page-transition__scanlines"></div>
       <p class="lm-page-transition__label" data-lm-transition-label>Opening signal</p>
     </div>
     <div class="feature-page-noise" aria-hidden="true"></div>
+    <div class="feature-video-backdrops" aria-hidden="true">
+      <video class="feature-video-backdrop feature-video-backdrop-a" autoplay muted loop playsinline preload="metadata" poster="./assets/video/lm-feature-portal-poster.jpg">
+        <source src="./assets/video/lm-feature-portal-loop.mp4" type="video/mp4" />
+      </video>
+      <video class="feature-video-backdrop feature-video-backdrop-b" muted playsinline preload="none" poster="./assets/video/lm-feature-signal-poster.jpg" data-lm-video-unmanaged="true">
+        <source src="./assets/video/lm-feature-signal-loop.mp4" type="video/mp4" />
+      </video>
+    </div>
+
     <header class="feature-topbar neon-panel" data-cinematic-reveal>
       <a class="feature-brand" href="./how-to-use.html" aria-label="LOTTOMINDED ULTRA home">
         <img src="./assets/features-app/svg/lm-wordmark.svg" alt="LOTTOMINDED ULTRA" />
@@ -124,74 +132,7 @@
         <article class="stack-panel unlock neon-panel" id="members"><button type="button">+</button><p>Unlock</p><h3>Premium tools. AI upgrades. Unlimited organization.</h3></article>
       </section>
 
-      <section class="beat2lotto-console features-beat2lotto-console neon-panel" aria-label="Beat2Lotto+ generator">
-        <div class="lotto-controls">
-          <label class="file-drop">
-            <span>Import beat or music</span>
-            <input id="lottoAudioFile" type="file" accept="audio/*" />
-            <small>Local analysis only. Audio never uploads.</small>
-          </label>
-          <div class="beat-playback-card" id="beatPlayback" hidden>
-            <audio id="lottoAudioPlayer" preload="metadata" controls></audio>
-            <button type="button" id="playBeatAudio" disabled>Play uploaded beat</button>
-            <div class="beat-playback-meter" aria-hidden="true">
-              <span id="beatPlaybackEnergy"></span>
-            </div>
-            <small id="beatPlaybackStatus">Upload music to unlock playback.</small>
-          </div>
-          <div id="beatAnalysis" class="beat-analysis-card" aria-live="polite">
-            <strong>No beat imported yet</strong>
-            <span>Generate from typed Beat DNA, or load audio to seed the digits.</span>
-          </div>
-          <label>
-            <span>Session seed</span>
-            <input id="lottoSeed" type="text" value="neon drums, 120 BPM, late-night bounce" />
-          </label>
-          <label>
-            <span>BPM</span>
-            <input id="lottoBpm" type="number" min="40" max="220" value="120" />
-          </label>
-          <label>
-            <span>Game format</span>
-            <select id="lottoGame">
-              <option value="pick3">Pick 3</option>
-              <option value="pick4">Pick 4</option>
-              <option value="cash5">Cash 5 / Fantasy 5</option>
-              <option value="lotto6">Lotto 6</option>
-              <option value="powerball">Powerball Style</option>
-              <option value="mega">Mega Millions Style</option>
-            </select>
-          </label>
-          <label>
-            <span>Sets</span>
-            <input id="lottoCount" type="number" min="1" max="12" value="5" />
-          </label>
-          <label>
-            <span>Method</span>
-            <select id="lottoMethod">
-              <option>Beat DNA</option>
-              <option>Rhythm Signature</option>
-              <option>Drum Pattern</option>
-              <option>Stem Mix</option>
-              <option>Random + Beat DNA</option>
-            </select>
-          </label>
-          <button class="primary-action" type="button" id="generateLotto">Generate Number Signals</button>
-          <button class="secondary-action" type="button" id="copyLotto">Copy All</button>
-        </div>
-
-        <div class="lotto-output-panel">
-          <div class="lotto-output-head">
-            <h2>Beat-seeded entertainment picks</h2>
-            <span>Creative number generation - Not a prediction</span>
-          </div>
-          <div id="lottoOutput" class="lotto-output-grid" aria-live="polite"></div>
-        </div>
-      </section>
       <section class="support-console neon-panel" id="support" data-cinematic-reveal>
-
-
-
         <div class="support-metrics"><div><span>Signal Strength</span><strong>100%</strong></div><div><span>Sync</span><strong>100%</strong></div><div><span>Data Feed</span><strong>Live</strong></div></div>
         <div class="support-main"><p class="micro-title">Support & Contact</p><h2>Create. Analyze. Synchronize. Explore.</h2><p>Powerful tools. Studio grade. Unlimited possibilities. Reach support or join the mailing list for drops.</p></div>
         <div class="support-chips"><a href="mailto:robjasper2084@gmail.com">Email Support</a><a href="#support">Live Chat</a><a href="#support">Join Discord</a></div>
@@ -248,40 +189,34 @@
       <div class="console-status"><small>Studio Status</small><strong>Online</strong><div class="status-wave" aria-hidden="true"></div></div>
     </section>
 
-    <footer class="lm-live-player feature-live-player healing-frequency-generator sphere-orb-live-player neon-panel" id="player" data-feature-live-player data-healing-frequency-generator aria-label="Healing frequency generator">
-      <div class="now-art healing-frequency-orb" aria-hidden="true"><span data-healing-hz>528</span><small>Hz</small></div>
-      <div class="now-copy healing-copy">
-        <small>Healing Frequency</small>
-        <strong data-healing-title>528 Hz Love Reset</strong>
-        <span data-healing-desc>Generated tone only</span>
-      </div>
-      <div class="healing-tone-pads" role="group" aria-label="Healing frequency presets">
-        <button type="button" data-healing-tone="174" data-healing-label="Deep Rest" aria-pressed="false">174<span>Deep</span></button>
-        <button type="button" data-healing-tone="220" data-healing-label="Ground" aria-pressed="false">220<span>Ground</span></button>
-        <button type="button" data-healing-tone="432" data-healing-label="Calm" aria-pressed="false">432<span>Calm</span></button>
-        <button type="button" data-healing-tone="528" data-healing-label="Love Reset" aria-pressed="true">528<span>Love</span></button>
-        <button type="button" data-healing-tone="741" data-healing-label="Clear" aria-pressed="false">741<span>Clear</span></button>
-        <button type="button" data-healing-tone="963" data-healing-label="Align" aria-pressed="false">963<span>Align</span></button>
+    <footer class="lm-live-player feature-live-player sphere-orb-live-player neon-panel" id="player" data-feature-live-player aria-label="Feature page audio player">
+      <div class="now-art" aria-hidden="true"><span>1025</span></div>
+      <div class="now-copy">
+        <small>Now Playing</small>
+        <strong>Digital Static - Feature Page</strong>
+        <span>Beat-reactive background mix</span>
       </div>
       <div class="now-wave" aria-hidden="true"><i></i></div>
-      <button type="button" data-feature-player-control data-feature-player-prev aria-label="Previous healing frequency">&lt;&lt;</button>
-      <button type="button" class="big" data-feature-player-control data-feature-player-toggle aria-label="Start 528 Hz Love Reset" aria-pressed="false">&#9654;</button>
-      <button type="button" data-feature-player-control data-feature-player-next aria-label="Next healing frequency">&gt;&gt;</button>
-      <span class="time" data-feature-player-time>528 Hz / ready</span>
-      <div class="points healing-meta" aria-label="Frequency output">
-        <b>Generator</b>
-        <strong data-healing-output>Love</strong>
-        <span data-healing-state>Tap Play</span>
+      <button type="button" data-feature-player-control data-feature-player-prev aria-label="Rewind Digital Static">&lt;&lt;</button>
+      <button type="button" class="big" data-feature-player-control data-feature-player-toggle aria-label="Play or pause Digital Static" aria-pressed="false">&#9654;</button>
+      <button type="button" data-feature-player-control data-feature-player-next aria-label="Fast-forward Digital Static">&gt;&gt;</button>
+      <span class="time" data-feature-player-time>0:00 / --:--</span>
+      <div class="points" aria-label="Ultra points">
+        <b>Ultra Points</b>
+        <strong>12,450</strong>
+        <span>Rank Ultra Elite</span>
       </div>
     </footer>
     <footer class="feature-bottom-bar neon-panel" data-cinematic-reveal>
       <div class="bottom-mark">LM</div><strong>All tools, one signal route.</strong><span>Signal Strength <b>100%</b></span><span>Data Feed <b>Live</b></span><span>Users Online <b>12,458</b></span><span class="feature-safety-note">Entertainment only. Not a prediction. All rights reserved.</span><a href="./lottomind-stem-studio/index.html" class="studio-launch">Launch Studio <span>&gt;</span></a>
     </footer>
 
-    <script src="./assets/js/lm-page-transition-audio.js?v=verified-transitions-2" defer></script>
-    <script src="./assets/js/lm-page-transition.js?v=transition-smooth-1" defer></script>
-    <script src="./site.js?v=features-generator-cleanup-1" defer></script>
-    <script src="./beat2lotto-plus.js?v=features-generator-1" defer></script>
-    <script src="./assets/features-app/js/features-cinematic-motion.js?v=healing-tone-only-20pct-3" defer></script>
+    <audio id="featureDigitalStatic" preload="metadata" data-feature-entry-track>
+      <source src="./assets/audio/digital-static-live-mix.mp3?v=hud-spheres-b2l-8124-3" type="audio/mpeg" />
+    </audio>
+    <script src="./assets/js/lm-page-transition-audio.js?v=verified-transitions-1" defer></script>
+    <script src="./assets/js/lm-page-transition.js?v=transition-hotfix-2" defer></script>
+    <script src="./site.js?v=member-app-gate-1" defer></script>
+    <script src="./assets/features-app/js/features-cinematic-motion.js?v=compositor-pass-2" defer></script>
   </body>
 </html>

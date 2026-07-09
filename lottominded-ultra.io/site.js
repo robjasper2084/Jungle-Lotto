@@ -4,19 +4,19 @@
 
   const navItems = [
     { label: "Home", href: "./index.html#top", icon: "HM" },
+    { label: "Memberships", href: "./memberships.html", icon: "MB" },
     { label: "Features", href: "./features-app.html", icon: "FX" },
-    { label: "Streams", href: "./live-events.html", icon: "EV" },
-    { label: "Spheres", href: "./lottery-spheres.html#spheres", icon: "SP" },
-    { label: "Beat2Lotto+", href: "./beat2lotto-plus.html#beat2lotto", icon: "B2" },
-    { label: "Merch", href: "./merch-store.html", icon: "MC" },
-    { label: "Guide", href: "./how-to-use.html", icon: "GD" },
-    { label: "Studio", href: "./lottomind-stem-studio/index.html", icon: "ST" },
     {
       label: "LottoMind App",
-      href: "https://robjasper2084.github.io/Jungle-Lotto/lotto%20mind%20refined/",
+      href: "http://127.0.0.1:8170/lotto%20mind%20refined/",
       icon: "LM",
-      attrs: ' data-vault-launch data-plan="free"',
+      attrs: ' data-member-app-link="true" data-members-only="true" aria-label="LottoMind App membership required"',
     },
+    { label: "Events", href: "./live-events.html", icon: "EV" },
+    { label: "Spheres", href: "./lottery-spheres.html#spheres", icon: "SP" },
+    { label: "Beat2Lotto+", href: "./beat2lotto-plus.html#beat2lotto", icon: "B2" },
+    { label: "Merch", href: "./merch-store.html", icon: "DR" },
+    { label: "Guide", href: "./how-to-use.html", icon: "GO" },
   ];
 
   const currentPage = (window.location.pathname.split("/").pop() || "index.html").toLowerCase();
@@ -1033,6 +1033,8 @@ function setupUniversalFloatingMenu() {
   if (document.getElementById("universalPageMenu")) return;
 
   const links = [
+    ["Memberships", "./memberships.html"],
+    ["LottoMind App", "http://127.0.0.1:8170/lotto%20mind%20refined/"],
     ["Home", "./how-to-use.html"],
     ["Features", "./features-app.html"],
     ["Events", "./live-events.html"],
@@ -1040,8 +1042,7 @@ function setupUniversalFloatingMenu() {
     ["Beat2Lotto+", "./beat2lotto-plus.html#beat2lotto"],
     ["Merch", "./merch-store.html"],
     ["Guide", "./how-to-use.html"],
-    ["Studio", "./lottomind-stem-studio/index.html"],
-    ["LottoMind App", "https://robjasper2084.github.io/Jungle-Lotto/lotto%20mind%20refined/"]
+    ["Studio", "./lottomind-stem-studio/index.html"]
   ];
 
   const existingToggle = document.querySelector("[data-universal-menu-toggle], .motion-menu-toggle, .pl-floating");
@@ -1324,7 +1325,10 @@ function setupSphereOrbLivePlayers() {
   players.forEach((player, index) => {
     if (player.dataset.sphereOrbReady === "true") return;
 
-    const storageKey = `lottominded.ultra.orbPlayer.${location.pathname.replace(/[^a-z0-9]+/gi, "-")}.${index}.v1`;
+    const positionVersion = document.body.classList.contains("features-cinematic-page") && player.matches("[data-healing-frequency-generator]")
+      ? "v2"
+      : "v1";
+    const storageKey = `lottominded.ultra.orbPlayer.${location.pathname.replace(/[^a-z0-9]+/gi, "-")}.${index}.${positionVersion}`;
     const ripples = document.createElement("div");
     let position = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
     let drag = null;
@@ -1378,7 +1382,12 @@ function setupSphereOrbLivePlayers() {
     };
 
     const defaultPosition = () => {
-      const { height } = getPlayerSize();
+      const { width, height } = getPlayerSize();
+      if (document.body.classList.contains("features-cinematic-page") && player.matches("[data-healing-frequency-generator]")) {
+        const sideGap = Math.max(14, Math.min(32, window.innerWidth * 0.02));
+        const topLane = Math.max(height / 2 + 12, Math.min(window.innerHeight * 0.38, 470));
+        return clampPosition(window.innerWidth - width / 2 - sideGap, topLane);
+      }
       const bottomOffset = document.body.classList.contains("beat2lotto-current-page") ? 148 : 126;
       return clampPosition(window.innerWidth / 2, window.innerHeight - height / 2 - bottomOffset);
     };
@@ -1491,8 +1500,9 @@ function setupSphereOrbLivePlayers() {
 setupSphereOrbLivePlayers();
 
 
-const REFINED_APP_URL = "https://robjasper2084.github.io/Jungle-Lotto/lotto%20mind%20refined/";
-const LOCAL_REFINED_APP_URL = "http://127.0.0.1:8162/lotto%20mind%20refined/";
+const REFINED_APP_URL = "http://127.0.0.1:8170/lotto%20mind%20refined/";
+const LOCAL_REFINED_APP_URL = "http://127.0.0.1:8170/lotto%20mind%20refined/";
+const MEMBER_APP_UNLOCK_URL = "./memberships.html?unlock=lottomind-app#membership-plans";
 const VAULT_KEYS = {
   plan: "lottomind_plan",
   credits: "lottomind_credits",
@@ -1542,6 +1552,71 @@ function getVaultState() {
     vaultActive,
     betaAccess: localStorage.getItem(VAULT_KEYS.betaAccess) === "true"
   };
+}
+
+function hasLottoMindAppAccess() {
+  const state = getVaultState();
+  const paidPlans = ["gold", "ultra", "vault", "founder", "lifetime"];
+  return hasMemberAccess() || paidPlans.includes(state.plan) || state.betaAccess;
+}
+
+function isLottoMindAppUrl(href = "") {
+  return /lotto(?:mind|(?:%20|\s)+mind)(?:%20|\s)*refined|lottomind\.one/i.test(href);
+}
+
+function getMemberAppUnlockUrl() {
+  return new URL(MEMBER_APP_UNLOCK_URL, window.location.href).toString();
+}
+
+function updateMemberOnlyAppLinks() {
+  const hasAccess = hasLottoMindAppAccess();
+  document.querySelectorAll("a[href], [data-member-app-link]").forEach((link) => {
+    const href = link.getAttribute("href") || link.dataset.href || "";
+    if (!link.dataset.memberAppLink && !isLottoMindAppUrl(href)) return;
+    if (!link.dataset.memberAppHref && isLottoMindAppUrl(href)) {
+      link.dataset.memberAppHref = href;
+    }
+    link.dataset.memberAppLink = "true";
+    link.dataset.membersOnly = "true";
+    link.classList.toggle("is-member-app-locked", !hasAccess);
+    link.classList.toggle("is-member-app-unlocked", hasAccess);
+    link.setAttribute("aria-label", hasAccess ? "Open LottoMind App" : "LottoMind App membership required");
+    link.setAttribute("title", hasAccess ? "Open LottoMind App" : "Membership required to unlock LottoMind App");
+    if (link.matches("a")) {
+      link.setAttribute("href", hasAccess ? link.dataset.memberAppHref || REFINED_APP_URL : getMemberAppUnlockUrl());
+    }
+  });
+}
+
+function setupMemberOnlyAppLinks() {
+  updateMemberOnlyAppLinks();
+  document.addEventListener(
+    "click",
+    (event) => {
+      const link = event.target.closest?.("a[href], [data-member-app-link]");
+      if (!link) return;
+      const href = link.getAttribute("href") || link.dataset.href || "";
+      if (!link.dataset.memberAppLink && !isLottoMindAppUrl(href)) return;
+      if (hasLottoMindAppAccess()) return;
+
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      try {
+        sessionStorage.setItem("lottomind_app_unlock_required", "true");
+      } catch {
+        /* Session storage can be unavailable in strict browser modes. */
+      }
+      const unlockUrl = getMemberAppUnlockUrl();
+      if (document.body.classList.contains("memberships-page")) {
+        window.location.href = unlockUrl;
+        return;
+      }
+      window.location.href = unlockUrl;
+    },
+    true,
+  );
+  window.addEventListener("lottomind:vault-updated", updateMemberOnlyAppLinks);
+  window.addEventListener("storage", updateMemberOnlyAppLinks);
 }
 
 function setVaultState(next = {}) {
@@ -1599,12 +1674,7 @@ function addVaultCredits(amount, reason) {
 }
 
 function refinedLaunchHref(href) {
-  const isLocalHost = ["127.0.0.1", "localhost", "::1"].includes(window.location.hostname);
-  if (!isLocalHost) return href || REFINED_APP_URL;
-  const candidate = href || REFINED_APP_URL;
-  return /robjasper2084\.github\.io\/Jungle-Lotto\/lotto%20mind%20refined\/?$/i.test(candidate)
-    ? LOCAL_REFINED_APP_URL
-    : candidate;
+  return href || REFINED_APP_URL;
 }
 
 function buildRefinedLaunchUrl(state = getVaultState(), override = {}) {
@@ -1621,6 +1691,7 @@ function buildRefinedLaunchUrl(state = getVaultState(), override = {}) {
 }
 
 function setupLottoMindVaultGateway() {
+  if (document.body.classList.contains("memberships-page")) return;
   const hasGatewayTargets = document.querySelector("[data-vault-launch], [data-vault-open], [data-beta-waitlist]") || document.body.classList.contains("home-page");
   if (!hasGatewayTargets) return;
   document.querySelectorAll("[data-vault-launch]").forEach((link) => {
@@ -1773,6 +1844,7 @@ function setupLottoMindVaultGateway() {
 }
 
 setupLottoMindVaultGateway();
+setupMemberOnlyAppLinks();
 function getReactivePoint(event) {
   if (event?.touches?.length) return { x: event.touches[0].clientX, y: event.touches[0].clientY, touch: true };
   if (event?.changedTouches?.length) return { x: event.changedTouches[0].clientX, y: event.changedTouches[0].clientY, touch: true };
@@ -3883,12 +3955,12 @@ function setupMascotPointer() {
     runLeft4: frameUrl("lm-mascot-run-left-4.png"),
   };
   const frameSequences = {
-    flyUp: ["flyUp1", "flyUp2", "flyUp3", "flyUp4"],
-    fallDown: ["fallDown1", "fallDown2", "fallDown3", "fallDown4"],
-    walkLeft: ["walkLeft1", "walkLeft2", "walkLeft3", "walkLeft4"],
-    walkRight: ["walkRight1", "walkRight2", "walkRight3", "walkRight4"],
-    runLeft: ["runLeft1", "runLeft2", "runLeft3", "runLeft4"],
-    runRight: ["runRight1", "runRight2", "runRight3", "runRight4"],
+    flyUp: ["flyUp1", "flyUp2", "flyUp3", "flyUp4", "flyUp3", "flyUp2"],
+    fallDown: ["fallDown1", "fallDown2", "fallDown3", "fallDown4", "fallDown3", "fallDown2"],
+    walkLeft: ["walkLeft1", "walkLeft2", "walkLeft3", "walkLeft4", "walkLeft3", "walkLeft2"],
+    walkRight: ["walkRight1", "walkRight2", "walkRight3", "walkRight4", "walkRight3", "walkRight2"],
+    runLeft: ["runLeft1", "runLeft2", "runLeft3", "runLeft4", "runLeft3", "runLeft2"],
+    runRight: ["runRight1", "runRight2", "runRight3", "runRight4", "runRight3", "runRight2"],
   };
   const directionalFrames = new Set(
     ["walkLeft", "walkRight", "runLeft", "runRight"]
@@ -4062,7 +4134,7 @@ function setupMascotPointer() {
       setPointerClass("is-side", false);
       setPointerClass("is-forward", scrollingDown);
       setPointerClass("is-backward", scrollingUp);
-      setFrame(scrollingUp ? pickFrame("flyUp", now, 104) : pickFrame("fallDown", now, 118));
+      setFrame(scrollingUp ? pickFrame("flyUp", now, 86) : pickFrame("fallDown", now, 96));
       return;
     }
 
@@ -4077,7 +4149,7 @@ function setupMascotPointer() {
       setPointerClass("is-side", false);
       setPointerClass("is-forward", downwardMotion);
       setPointerClass("is-backward", upwardMotion);
-      setFrame(upwardMotion ? pickFrame("flyUp", now, running ? 82 : 108) : pickFrame("fallDown", now, running ? 92 : 118));
+      setFrame(upwardMotion ? pickFrame("flyUp", now, running ? 70 : 86) : pickFrame("fallDown", now, running ? 78 : 96));
       return;
     }
 
@@ -4106,15 +4178,15 @@ function setupMascotPointer() {
       state.lastSideDirection = state.facing < 0 ? "left" : "right";
       pointer.style.setProperty("--lm-mascot-facing", String(state.facing));
       if (running) {
-        setFrame(pickFrame(sideMotionX < 0 ? "runLeft" : "runRight", now, 58));
+        setFrame(pickFrame(sideMotionX < 0 ? "runLeft" : "runRight", now, 54));
       } else {
-        setFrame(pickFrame(sideMotionX < 0 ? "walkLeft" : "walkRight", now, 92));
+        setFrame(pickFrame(sideMotionX < 0 ? "walkLeft" : "walkRight", now, 78));
       }
       return;
     }
 
     if (running) {
-      setFrame(pickFrame(state.facing < 0 ? "runLeft" : "runRight", now, 72));
+      setFrame(pickFrame(state.facing < 0 ? "runLeft" : "runRight", now, 58));
     } else {
       setFrame(state.lastSideDirection ? "sideIdle" : "front");
     }

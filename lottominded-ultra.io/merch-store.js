@@ -9,7 +9,6 @@ const merchSoundVideo = document.querySelector("[data-merch-sound-video]");
 const merchSoundToggle = document.querySelector("[data-merch-sound-toggle]");
 const merchShadowPopup = document.querySelector("[data-merch-shadow-popup]");
 const merchShadowFrame = document.querySelector("[data-merch-shadow-frame]");
-const merchShadowPanel = document.querySelector(".merch-shadow-popup-panel");
 const merchShadowCloseButtons = document.querySelectorAll("[data-merch-shadow-close]");
 let merchHeroVideo = document.querySelector(".merch-hero-video");
 let merchHeroSoundToggle = document.querySelector("[data-merch-hero-sound-toggle]");
@@ -17,7 +16,6 @@ const CART_STORAGE_KEY = "lottomind.merch.cart.v1";
 const MERCH_SHADOW_AUTO_DELAY = 90000;
 const MERCH_SHADOW_AUTO_KEY = "lottomind.merch.shadowAutoShown.v1";
 let merchHeroToggleAt = 0;
-let merchShadowReturnFocus = null;
 
 function loadCart() {
   try {
@@ -92,7 +90,7 @@ function updateBag() {
               <button type="button" data-cart-increase="${escapeHtml(item.id)}" aria-label="Increase ${escapeHtml(item.name)}">+</button>
             </div>
             <strong>${formatMoney(item.price * item.quantity)}</strong>
-            <button class="cart-remove" type="button" data-cart-remove="${escapeHtml(item.id)}" aria-label="Remove ${escapeHtml(item.name)} from shopping cart">Remove</button>
+            <button class="cart-remove" type="button" data-cart-remove="${escapeHtml(item.id)}">Remove</button>
           </li>
         `).join("")
       : `<li class="cart-empty">Your cart is empty. Add a hoodie, cap, polo, or gallery piece.</li>`;
@@ -104,15 +102,6 @@ function updateBag() {
       : "Shipping and taxes are not calculated in this local preview.";
   }
   saveCart();
-}
-
-function setBagDrawerOpen(open, options = {}) {
-  if (!bagDrawer) return;
-  bagDrawer.classList.toggle("is-open", open);
-  bagDrawer.setAttribute("aria-hidden", String(!open));
-  if (open && options.focus) {
-    bagDrawer.querySelector("[data-bag-close]")?.focus({ preventScroll: true });
-  }
 }
 
 function addToCart(button) {
@@ -127,7 +116,7 @@ function addToCart(button) {
     bag.push({ id, name, price, quantity: 1 });
   }
   updateBag();
-  setBagDrawerOpen(true);
+  bagDrawer?.classList.add("is-open");
   bagDrawer?.classList.add("is-cart-popping");
   button.classList.add("is-add-popping");
 
@@ -265,26 +254,14 @@ function pauseMerchCapsuleSound() {
   merchSoundToggle.classList.remove("is-playing");
 }
 
-function getMerchShadowFocusable() {
-  if (!merchShadowPopup) return [];
-  return Array.from(
-    merchShadowPopup.querySelectorAll("button, [href], iframe, input, select, textarea, [tabindex]:not([tabindex='-1'])"),
-  ).filter((element) => !element.hasAttribute("disabled") && element.getAttribute("aria-hidden") !== "true");
-}
-
-function openMerchShadowPopup(trigger = document.activeElement) {
+function openMerchShadowPopup() {
   if (!merchShadowPopup) return;
-  merchShadowReturnFocus = trigger instanceof HTMLElement ? trigger : document.activeElement;
   if (merchShadowFrame && !merchShadowFrame.getAttribute("src")) {
     merchShadowFrame.setAttribute("src", merchShadowFrame.dataset.src || "");
   }
   merchShadowPopup.classList.remove("is-hidden");
   merchShadowPopup.setAttribute("aria-hidden", "false");
   document.body.classList.add("has-merch-shadow-popup");
-  pauseMerchIntroAudio();
-  window.requestAnimationFrame(() => {
-    merchShadowPanel?.focus({ preventScroll: true });
-  });
 }
 
 function closeMerchShadowPopup() {
@@ -293,8 +270,6 @@ function closeMerchShadowPopup() {
   merchShadowPopup.setAttribute("aria-hidden", "true");
   document.body.classList.remove("has-merch-shadow-popup");
   merchShadowFrame?.removeAttribute("src");
-  merchShadowReturnFocus?.focus?.({ preventScroll: true });
-  merchShadowReturnFocus = null;
 }
 
 function hasAutoShownMerchShadowPopup() {
@@ -371,13 +346,6 @@ document.addEventListener("pointermove", (event) => {
 });
 
 document.addEventListener("click", (event) => {
-  const shadowOpenButton = event.target.closest("[data-merch-shadow-open]");
-  if (shadowOpenButton) {
-    event.preventDefault();
-    openMerchShadowPopup(shadowOpenButton);
-    return;
-  }
-
   if (event.target.closest("[data-merch-hero-sound-toggle]")) {
     toggleMerchHeroSound(event);
     return;
@@ -402,20 +370,6 @@ document.addEventListener("click", (event) => {
       const behavior = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
       target.scrollIntoView({ behavior, block: "start" });
       history.pushState(null, "", stripLink.getAttribute("href"));
-    }
-    return;
-  }
-
-  const railButton = event.target.closest("[data-rail-prev], [data-rail-next]");
-  if (railButton) {
-    const railId = railButton.getAttribute("aria-controls");
-    const rail = (railId && document.getElementById(railId)) || railButton.closest("[data-rail-shell]")?.querySelector("[data-swipe-rail]");
-    if (rail) {
-      event.preventDefault();
-      const direction = railButton.matches("[data-rail-prev]") ? -1 : 1;
-      const behavior = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
-      rail.scrollBy({ left: direction * Math.max(220, rail.clientWidth * 0.82), behavior });
-      rail.focus({ preventScroll: true });
     }
     return;
   }
@@ -464,12 +418,12 @@ document.addEventListener("click", (event) => {
   }
 
   if (event.target.closest("[data-bag-toggle]")) {
-    setBagDrawerOpen(!bagDrawer?.classList.contains("is-open"), { focus: true });
+    bagDrawer?.classList.toggle("is-open");
     return;
   }
 
   if (event.target.closest("[data-bag-close]")) {
-    setBagDrawerOpen(false);
+    bagDrawer?.classList.remove("is-open");
   }
 });
 
@@ -511,22 +465,6 @@ document.addEventListener("visibilitychange", () => {
   }
 });
 
-document.querySelectorAll("[data-add-item]").forEach((button) => {
-  if (button.dataset.addItem) {
-    button.setAttribute("aria-label", `Add ${button.dataset.addItem} to shopping cart`);
-  }
-});
-
-document.querySelectorAll("[data-swipe-rail]").forEach((rail) => {
-  rail.addEventListener("keydown", (event) => {
-    if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
-    event.preventDefault();
-    const direction = event.key === "ArrowLeft" ? -1 : 1;
-    const behavior = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
-    rail.scrollBy({ left: direction * Math.max(220, rail.clientWidth * 0.82), behavior });
-  });
-});
-
 merchShadowCloseButtons.forEach((button) => button.addEventListener("click", closeMerchShadowPopup));
 merchShadowPopup?.addEventListener("click", (event) => {
   if (event.target === merchShadowPopup) {
@@ -534,23 +472,8 @@ merchShadowPopup?.addEventListener("click", (event) => {
   }
 });
 document.addEventListener("keydown", (event) => {
-  if (merchShadowPopup?.classList.contains("is-hidden")) return;
-  if (event.key === "Escape") {
+  if (event.key === "Escape" && !merchShadowPopup?.classList.contains("is-hidden")) {
     closeMerchShadowPopup();
-    return;
-  }
-  if (event.key === "Tab") {
-    const focusable = getMerchShadowFocusable();
-    if (!focusable.length) return;
-    const first = focusable[0];
-    const last = focusable[focusable.length - 1];
-    if (event.shiftKey && document.activeElement === first) {
-      event.preventDefault();
-      last.focus();
-    } else if (!event.shiftKey && document.activeElement === last) {
-      event.preventDefault();
-      first.focus();
-    }
   }
 });
 

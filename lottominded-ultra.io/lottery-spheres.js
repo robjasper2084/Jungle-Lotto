@@ -4,14 +4,13 @@
   if (!stage || !canvas) return;
 
   const ctx = canvas.getContext("2d", { alpha: true });
-  const signalOutput = document.querySelector("[data-sphere-signal]");
-  const energyMeter = document.querySelector("[data-sphere-energy]");
-  const orbitOutput = document.querySelector("[data-sphere-orbit]");
-  const rerollButton = document.querySelector("[data-reroll-spheres]");
-  const moveCountOutput = document.querySelector("[data-sphere-move-count]");
-  const pick6Output = document.querySelector("[data-sphere-pick6]");
-  const pick3Output = document.querySelector("[data-sphere-pick3]");
-  const pick4Output = document.querySelector("[data-sphere-pick4]");
+  const signalOutputs = document.querySelectorAll("[data-sphere-signal]");
+  const energyMeters = document.querySelectorAll("[data-sphere-energy]");
+  const orbitOutputs = document.querySelectorAll("[data-sphere-orbit]");
+  const moveCountOutputs = document.querySelectorAll("[data-sphere-move-count]");
+  const pick6Outputs = document.querySelectorAll("[data-sphere-pick6]");
+  const pick3Outputs = document.querySelectorAll("[data-sphere-pick3]");
+  const pick4Outputs = document.querySelectorAll("[data-sphere-pick4]");
   const audioGate = document.querySelector("[data-sphere-audio-gate]");
   const audioStartButton = document.querySelector("[data-sphere-audio-start]");
   const audioSkipButton = document.querySelector("[data-sphere-audio-skip]");
@@ -22,10 +21,12 @@
   const shadowFrame = document.querySelector("[data-sphere-shadow-frame]");
   const shadowOpenButtons = document.querySelectorAll("[data-sphere-shadow-open]");
   const shadowCloseButtons = document.querySelectorAll("[data-sphere-shadow-close]");
+  const shadowFullscreenButton = document.querySelector("[data-sphere-shadow-fullscreen]");
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
   const sphereAudioGateEnabled = false;
   const sphereSoundtrackFullVolume = 0.58;
   const sphereSoundtrackDuckedVolume = 0.22;
+  const sphereShadowAutoOpenEnabled = false;
   const sphereShadowAutoDelay = 1200;
   const sphereShadowAutoKey = "lottomind.spheres.shadowAutoShown.v1";
   let sphereSoundtrackStarted = false;
@@ -107,6 +108,7 @@
   function closeShadowPopup() {
     if (!shadowPopup) return;
     shadowPopup.classList.add("is-hidden");
+    shadowPopup.classList.remove("is-expanded");
     shadowPopup.setAttribute("aria-hidden", "true");
     document.body.classList.remove("has-sphere-shadow-popup");
     shadowFrame?.removeAttribute("src");
@@ -120,8 +122,32 @@
     shadowResumeLiveMix = false;
   }
 
+  function requestShadowFullscreen() {
+    const stageTarget = shadowPopup?.querySelector(".sphere-shadow-popup-stage");
+    if (!shadowPopup || !stageTarget) return;
+    if (document.fullscreenElement) {
+      document.exitFullscreen?.().catch(() => {});
+      return;
+    }
+    const fullscreenTarget = stageTarget.requestFullscreen ? stageTarget : shadowFrame;
+    if (fullscreenTarget?.requestFullscreen) {
+      fullscreenTarget.requestFullscreen().catch(() => {
+        shadowPopup.classList.add("is-expanded");
+      });
+      return;
+    }
+    shadowPopup.classList.toggle("is-expanded");
+  }
+
+  document.addEventListener("fullscreenchange", () => {
+    if (!document.fullscreenElement) {
+      shadowPopup?.classList.remove("is-expanded");
+    }
+  });
+
   shadowOpenButtons.forEach((button) => button.addEventListener("click", openShadowPopup));
   shadowCloseButtons.forEach((button) => button.addEventListener("click", closeShadowPopup));
+  shadowFullscreenButton?.addEventListener("click", requestShadowFullscreen);
   shadowPopup?.addEventListener("click", (event) => {
     if (event.target === shadowPopup) closeShadowPopup();
   });
@@ -130,6 +156,7 @@
   });
 
   function scheduleAutoShadowPopup() {
+    if (!sphereShadowAutoOpenEnabled) return;
     if (!shadowPopup || hasAutoShownShadowPopup()) return;
     window.setTimeout(() => {
       if (!shadowPopup || hasAutoShownShadowPopup() || document.visibilityState === "hidden") return;
@@ -175,37 +202,51 @@
   }
 
   function setSignal(numbers) {
-    if (signalOutput) signalOutput.textContent = numbers.map(pad).join(" - ");
+    const signalText = numbers.map(pad).join(" - ");
+    signalOutputs.forEach((output) => {
+      output.textContent = signalText;
+    });
   }
 
   function setGeneratedSets() {
     const pick6 = makeUniqueSet(6, 69);
     const pick3 = makeDigitSet(3);
     const pick4 = makeDigitSet(4);
-    if (pick6Output) {
-      pick6Output.innerHTML = pick6
+    const pick6Markup = pick6
         .map((number, index) => `<span class="${index === 5 ? "is-sixth-digit" : ""}">${pad(number)}</span>`)
         .join('<span class="pick-separator"> - </span>');
-    }
-    if (pick3Output) pick3Output.textContent = pick3.join(" - ");
-    if (pick4Output) pick4Output.textContent = pick4.join(" - ");
-    if (moveCountOutput) moveCountOutput.textContent = "Generated after 3 ball moves. Move 3 more times for a fresh set.";
+    pick6Outputs.forEach((output) => {
+      output.innerHTML = pick6Markup;
+    });
+    pick3Outputs.forEach((output) => {
+      output.textContent = pick3.join(" - ");
+    });
+    pick4Outputs.forEach((output) => {
+      output.textContent = pick4.join(" - ");
+    });
+    moveCountOutputs.forEach((output) => {
+      output.textContent = "Generated after 3 ball moves. Move 3 more times for a fresh set.";
+    });
     setSignal(pick6.slice(0, 5));
   }
 
   function updateMoveTriggerLabel() {
-    if (!moveCountOutput || moveTriggerCount === 0) return;
-    moveCountOutput.textContent = `${moveTriggerCount}/3 ball moves captured.`;
+    if (moveTriggerCount === 0) return;
+    moveCountOutputs.forEach((output) => {
+      output.textContent = `${moveTriggerCount}/3 ball moves captured.`;
+    });
   }
 
   function setEnergy(value) {
     energy = Math.max(18, Math.min(100, value));
-    if (energyMeter) {
-      energyMeter.value = energy;
-      energyMeter.textContent = String(Math.round(energy));
-    }
-    if (!orbitOutput) return;
-    orbitOutput.textContent = energy > 78 ? "Surge" : energy > 52 ? "Active" : "Calm";
+    energyMeters.forEach((meter) => {
+      meter.value = energy;
+      meter.textContent = String(Math.round(energy));
+    });
+    const orbitText = energy > 78 ? "Surge" : energy > 52 ? "Active" : "Calm";
+    orbitOutputs.forEach((output) => {
+      output.textContent = orbitText;
+    });
   }
 
   function seedBalls() {
@@ -233,7 +274,9 @@
     });
     moveTriggerCount = 0;
     lastMovePoint = null;
-    if (moveCountOutput) moveCountOutput.textContent = "Move the balls 3 times to generate sets.";
+    moveCountOutputs.forEach((output) => {
+      output.textContent = "Move the balls 3 times to generate sets.";
+    });
   }
 
   function canRender() {
@@ -619,10 +662,17 @@
     audioPulseUntil = 0;
   });
 
-  rerollButton?.addEventListener("click", () => {
+  function rerollSpheres() {
     seedBalls();
     window.cancelAnimationFrame(raf);
     render(performance.now());
+  }
+
+  document.addEventListener("click", (event) => {
+    const button = event.target.closest?.("[data-reroll-spheres]");
+    if (!button) return;
+    event.preventDefault();
+    rerollSpheres();
   });
 
   reduceMotion.addEventListener?.("change", () => {

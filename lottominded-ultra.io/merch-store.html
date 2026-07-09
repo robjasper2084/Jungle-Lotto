@@ -10,7 +10,7 @@
     <title>LOTTOMINDED ULTRA | Merch + Gallery Store</title>
     <meta name="theme-color" content="#03050a" />
     <link rel="icon" href="./assets/brand/lm-orb-mark.webp" type="image/webp" />
-    <link rel="stylesheet" href="./styles.css?v=rewards-popups-2" />
+    <link rel="stylesheet" href="./styles.css?v=healing-orb-plus10-1" />
     <script>
       try {
         if (sessionStorage.getItem("lmTransitionArriving") === "yes") {
@@ -18,14 +18,13 @@
         }
       } catch (error) {}
     </script>
-    <link rel="stylesheet" href="./assets/css/lm-page-transition.css?v=compositor-pass-2" />
-    <link rel="stylesheet" href="./merch-store.css?v=product-grid-static-1" />
-    <link rel="stylesheet" href="./assets/css/juneteenth-event-popup.css?v=juneteenth-popup-half-1" />
+    <link rel="stylesheet" href="./assets/css/lm-page-transition.css?v=transition-mascot-walk-1" />
+    <link rel="stylesheet" href="./merch-store.css?v=hero-sound-compact-1" />
   </head>
   <body class="merch-store-page has-sphere-tabs">
     <div class="lm-page-transition" data-lm-page-transition aria-hidden="true">
       <div class="lm-page-transition__flash"></div>
-      <video class="lm-page-transition__video" data-lm-transition-video muted playsinline preload="metadata"></video>
+      <video class="lm-page-transition__video" data-lm-transition-video muted playsinline preload="none"></video>
       <div class="lm-page-transition__vignette"></div>
       <div class="lm-page-transition__scanlines"></div>
       <p class="lm-page-transition__label" data-lm-transition-label>Opening signal</p>
@@ -40,8 +39,9 @@
       </div>
       <nav aria-label="Merch sphere navigation">
         <a href="./how-to-use.html" data-icon="HM">Home</a>
+        <a href="./memberships.html" data-icon="MB">Memberships</a>
         <a href="./features-app.html" data-icon="FX">Features</a>
-        <a href="https://robjasper2084.github.io/Jungle-Lotto/lotto%20mind%20refined/" data-icon="LM" data-vault-launch data-plan="free">LottoMind App</a>
+        <a href="http://127.0.0.1:8170/lotto%20mind%20refined/" data-icon="LM">LottoMind App</a>
         <a href="./live-events.html" data-icon="EV">Events</a>
         <a href="./lottery-spheres.html#spheres" data-icon="SP">Spheres</a>
         <a href="./beat2lotto-plus.html#beat2lotto" data-icon="B2">Beat2Lotto+&trade;</a>
@@ -56,8 +56,8 @@
 
     <main class="merch-main">
       <section class="merch-hero" data-merch-tilt>
-        <video class="merch-hero-video" autoplay muted loop playsinline preload="metadata">
-          <source src="./assets/merch/merch-motion-01.opt.mp4" type="video/mp4" />
+        <video class="merch-hero-video" muted loop playsinline preload="none" data-autoplay-on-visible="true">
+          <source data-src="./assets/merch/merch-motion-01.opt.mp4" type="video/mp4" />
         </video>
         <button class="merch-hero-video-toggle" type="button" data-merch-hero-sound-toggle aria-pressed="false">Hero sound</button>
         <div class="merch-hero-glass">
@@ -69,11 +69,10 @@
           <div class="merch-hero-actions">
             <a class="primary-action" href="#drop">Explore the Drop</a>
             <a class="secondary-action" href="#gallery">View Gallery</a>
-            <button class="secondary-action merch-signal-action" type="button" data-merch-shadow-open aria-haspopup="dialog">Open Signal Game</button>
           </div>
         </div>
         <div class="merch-hero-product" data-merch-sound-card>
-          <video class="merch-product-video" autoplay muted loop playsinline controls preload="metadata" poster="./assets/merch/metro-cap-hero.opt.webp" data-merch-sound-video>
+          <video class="merch-product-video" muted loop playsinline controls preload="none" poster="./assets/merch/metro-cap-hero.opt.webp" data-merch-sound-video>
             <source src="./assets/video/E2887E5E-CD89-45E3-ABC2-E32ED00C2652.mobile.mp4" type="video/mp4" />
             <source src="./assets/video/merch-hero-blended.mp4" type="video/mp4" />
           </video>
@@ -119,8 +118,8 @@
         <div class="merch-section-copy">
           <h2>Drop-ready apparel with a studio signal.</h2>
           <div class="merch-drop-video" aria-hidden="true">
-            <video autoplay muted loop playsinline preload="metadata">
-              <source src="./assets/merch/merch-drop-signal-20260518.opt.mp4" type="video/mp4" />
+            <video muted loop playsinline preload="none" data-autoplay-on-visible="true">
+              <source data-src="./assets/merch/merch-drop-signal-20260518.opt.mp4" type="video/mp4" />
             </video>
           </div>
           <p>
@@ -128,8 +127,7 @@
             or another storefront later.
           </p>
         </div>
-        <div class="merch-product-rail-shell">
-          <div id="merchProductRail" class="product-grid" aria-label="Merch products">
+        <div class="product-grid merch-swipe-rail" aria-label="Merch products" data-swipe-rail tabindex="0">
           <article class="product-card">
             <img src="./assets/merch/detroit-embroidered-hoodie-closeup.opt.webp" alt="Close-up of embroidered Detroit hoodie graphic" loading="lazy" decoding="async" />
             <span class="product-hover-price" aria-hidden="true">$200</span>
@@ -220,7 +218,6 @@
               <div class="product-row"><strong>$75</strong><button type="button" data-add-item="LottoMind Coin Set" data-item-price="75">Add to Cart</button></div>
             </div>
           </article>
-          </div>
         </div>
       </section>
 
@@ -241,16 +238,11 @@
           </p>
         </div>
         <div class="gallery-motion-rail" aria-label="Gallery motion previews">
-          <video autoplay muted loop playsinline preload="metadata">
-            <source src="./assets/merch/gallery-motion-upload-20260518.opt.mp4" type="video/mp4" />
+          <video muted loop playsinline preload="none" data-autoplay-on-visible="true">
+            <source data-src="./assets/merch/gallery-motion-upload-20260518.opt.mp4" type="video/mp4" />
           </video>
         </div>
-        <div class="merch-rail-shell merch-gallery-rail-shell" data-rail-shell>
-          <div class="merch-rail-controls" aria-label="Gallery rail controls">
-            <button type="button" data-rail-prev aria-controls="merchGalleryRail" aria-label="Previous gallery items">&lt;</button>
-            <button type="button" data-rail-next aria-controls="merchGalleryRail" aria-label="Next gallery items">&gt;</button>
-          </div>
-        <div id="merchGalleryRail" class="gallery-grid merch-swipe-rail" data-swipe-rail tabindex="0" aria-label="Gallery artwork">
+        <div class="gallery-grid merch-swipe-rail" data-swipe-rail tabindex="0">
           <article><img src="./assets/merch/lottomind-keychain-counter-display.webp" alt="LottoMind collectible keychain package gallery artwork" loading="lazy" decoding="async" /><span>Keychain Drop</span><strong class="gallery-price">$25</strong></article>
           <article><img src="./assets/merch/boogie-man-sweater.opt.webp" alt="Boogie Man knit sweater gallery artwork" loading="lazy" decoding="async" /><span>Boogie Knit</span><strong class="gallery-price">$365</strong></article>
           <article><img src="./assets/merch/city-of-detroit-1701-mark.opt.webp" alt="City of Detroit 1701 gallery artwork" loading="lazy" decoding="async" /><span>City 1701 Mark</span><strong class="gallery-price">$42</strong></article>
@@ -267,13 +259,12 @@
           <article><img src="./assets/merch/gallery-orb-05.opt.webp" alt="Neon LottoMind gallery artwork" loading="lazy" decoding="async" /><span>Cyber Brain Plate</span><strong class="gallery-price">$54</strong></article>
           <article><img src="./assets/merch/gallery-orb-06.opt.webp" alt="Neon LottoMind gallery artwork" loading="lazy" decoding="async" /><span>Studio Signal</span><strong class="gallery-price">$38</strong></article>
         </div>
-        </div>
       </section>
 
-      <aside class="bag-drawer cart-drawer" data-bag-drawer role="dialog" aria-modal="false" aria-hidden="true" aria-labelledby="merchCartTitle">
+      <aside class="bag-drawer cart-drawer" data-bag-drawer aria-label="Shopping cart drawer">
         <button class="cart-close" type="button" data-bag-close aria-label="Close shopping cart">X</button>
         <p class="cart-eyebrow">Lottomind&trade; Merch</p>
-        <h2 id="merchCartTitle">Shopping Cart</h2>
+        <h2>Shopping Cart</h2>
         <p>Local cart preview. Connect Shopify, Stripe Checkout, or another storefront when products are ready to sell.</p>
         <ul data-bag-items></ul>
         <div class="cart-total-row" aria-label="Cart subtotal">
@@ -281,38 +272,86 @@
           <strong data-bag-total>$0</strong>
         </div>
         <div class="cart-actions">
-          <button type="button" data-cart-clear aria-label="Clear all items from shopping cart">Clear Cart</button>
-          <button type="button" data-cart-checkout aria-label="Preview checkout connection status">Checkout Preview</button>
+          <button type="button" data-cart-clear>Clear Cart</button>
+          <button type="button" data-cart-checkout>Checkout Preview</button>
         </div>
-        <p class="cart-note" data-cart-note aria-live="polite">Shipping and taxes are not calculated in this local preview.</p>
+        <p class="cart-note" data-cart-note>Shipping and taxes are not calculated in this local preview.</p>
       </aside>
 
+      <aside class="merch-shadow-popup is-hidden" data-merch-shadow-popup aria-hidden="true" aria-labelledby="merchShadowTitle">
+        <div class="merch-shadow-popup-panel" role="dialog" aria-modal="true">
+          <button class="merch-shadow-popup-close" type="button" data-merch-shadow-close aria-label="Close GothTechnology game">X</button>
+          <div class="merch-shadow-popup-copy">
+            <p class="merch-shadow-popup-kicker">Merch Vault Signal</p>
+            <h2 id="merchShadowTitle">GothTechnology</h2>
+            <p>Limited capsule feed. Step into the fighter signal, test the move set, and return to the drop when the match is clear.</p>
+          </div>
+          <div class="merch-shadow-popup-stage" aria-label="GothTechnology game popup">
+            <iframe
+              title="GothTechnology game"
+              data-merch-shadow-frame
+              data-src="./games/gothtechnology2/index.html?v=merch-gothtechnology-1"
+              allow="autoplay; fullscreen; gamepad"
+              loading="lazy"
+            ></iframe>
+          </div>
+          <div class="merch-shadow-popup-rail" aria-hidden="true">
+            <span>FIGHTER SIGNAL LOCKED</span>
+            <span>GOTHTECH FEED LIVE</span>
+            <span>MERCH DROP ARMED</span>
+          </div>
+        </div>
+      </aside>
     </main>
 
-    <aside class="merch-shadow-popup is-hidden" data-merch-shadow-popup aria-hidden="true" aria-labelledby="merchShadowTitle">
-      <div class="merch-shadow-popup-panel" role="dialog" aria-modal="true" aria-describedby="merchShadowDescription" tabindex="-1">
-        <button class="merch-shadow-popup-close" type="button" data-merch-shadow-close aria-label="Close Shadow Ops game">X</button>
-        <div class="merch-shadow-popup-copy">
-          <p class="merch-shadow-popup-kicker">Merch Vault Signal</p>
-          <h2 id="merchShadowTitle">Shadow Ops Canvas</h2>
-          <p id="merchShadowDescription">Limited capsule feed. Enter the signal room, hold the line, and return to the drop when the mission is clear.</p>
+    <section class="instrument-console ultra-page-instrument-console neon-panel" aria-label="Studio instrument console bottom copy">
+      <div class="console-pill"><small>Signal Route</small><strong>Ultra Mode</strong></div>
+      <div class="console-keyboard">
+        <div class="mode-tabs">
+          <button class="is-active" type="button">Piano</button>
+          <button type="button">Synth</button>
+          <button type="button">Pad</button>
+          <button type="button">Bass</button>
+          <button type="button">Lead</button>
+          <button type="button">FX</button>
         </div>
-        <div class="merch-shadow-popup-stage" aria-label="Shadow Ops Canvas game popup">
-          <iframe
-            title="Shadow Ops Canvas game"
-            data-merch-shadow-frame
-            data-src="./games/shadow-ops-canvas/index.html?bg=soul-location-1&amp;v=higgsfield-trailer-1"
-            allow="autoplay; fullscreen; gamepad"
-            loading="lazy"
-          ></iframe>
-        </div>
-        <div class="merch-shadow-popup-rail" aria-hidden="true">
-          <span>SOUL LOCATION LOCKED</span>
-          <span>TRAILER FEED LIVE</span>
-          <span>MERCH DROP ARMED</span>
+        <div class="playable-piano" data-playable-piano aria-label="Playable C minor blues piano">
+          <button class="piano-key is-root" type="button" data-note="C3" data-frequency="130.81"><span>C</span></button>
+          <button class="piano-key is-accidental" type="button" data-note="Eb3" data-frequency="155.56"><span>Eb</span></button>
+          <button class="piano-key" type="button" data-note="F3" data-frequency="174.61"><span>F</span></button>
+          <button class="piano-key is-accidental" type="button" data-note="Gb3" data-frequency="185"><span>Gb</span></button>
+          <button class="piano-key" type="button" data-note="G3" data-frequency="196"><span>G</span></button>
+          <button class="piano-key is-accidental" type="button" data-note="Bb3" data-frequency="233.08"><span>Bb</span></button>
+          <button class="piano-key is-root" type="button" data-note="C4" data-frequency="261.63"><span>C</span></button>
+          <button class="piano-key is-accidental" type="button" data-note="Eb4" data-frequency="311.13"><span>Eb</span></button>
+          <button class="piano-key" type="button" data-note="F4" data-frequency="349.23"><span>F</span></button>
+          <button class="piano-key is-accidental" type="button" data-note="Gb4" data-frequency="369.99"><span>Gb</span></button>
+          <button class="piano-key" type="button" data-note="G4" data-frequency="392"><span>G</span></button>
+          <button class="piano-key is-accidental" type="button" data-note="Bb4" data-frequency="466.16"><span>Bb</span></button>
+          <button class="piano-key is-root" type="button" data-note="C5" data-frequency="523.25"><span>C</span></button>
+          <button class="piano-key is-accidental" type="button" data-note="Eb5" data-frequency="622.25"><span>Eb</span></button>
+          <button class="piano-key" type="button" data-note="F5" data-frequency="698.46"><span>F</span></button>
+          <button class="piano-key is-accidental" type="button" data-note="Gb5" data-frequency="739.99"><span>Gb</span></button>
+          <button class="piano-key" type="button" data-note="G5" data-frequency="783.99"><span>G</span></button>
+          <button class="piano-key is-accidental" type="button" data-note="Bb5" data-frequency="932.33"><span>Bb</span></button>
         </div>
       </div>
-    </aside>
+      <div class="console-eq" data-live-eq aria-label="Live signal equalizer">
+        <small>Signal EQ</small>
+        <div class="live-eq-meter" aria-hidden="true">
+          <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+          <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+        </div>
+        <span class="eq-source-status" data-eq-status>Listening</span>
+      </div>
+      <div class="console-knobs" aria-label="Studio effect controls">
+        <button type="button" data-fx-control="drive" aria-label="Adjust drive effect" aria-pressed="false"><i></i><span>Drive</span></button>
+        <button type="button" data-fx-control="reverb" aria-label="Adjust reverb effect" aria-pressed="false"><i></i><span>Reverb</span></button>
+        <button type="button" data-fx-control="delay" aria-label="Adjust delay effect" aria-pressed="false"><i></i><span>Delay</span></button>
+        <button type="button" class="master" data-fx-control="master" aria-label="Adjust master volume" aria-pressed="true"><i></i><span>Master</span></button>
+      </div>
+      <div class="console-status"><small>Studio Status</small><strong>Online</strong><div class="status-wave" aria-hidden="true"></div></div>
+    </section>
 
     <footer>
       <span>LOTTOMINDED ULTRA</span>
@@ -322,9 +361,9 @@
 
     <script src="./assets/js/lm-page-transition-audio.js?v=verified-transitions-2" defer></script>
     <script src="./assets/js/lm-page-transition.js?v=transition-smooth-1" defer></script>
-    <script src="./site.js?v=rewards-popups-2" defer></script>
+    <script src="./site.js?v=member-app-gate-1" defer></script>
+    <script src="./assets/features-app/js/features-cinematic-motion.js?v=instrument-console-bottom-20260626" defer></script>
     <script src="./live-events.js?v=audio-artlines-2" defer></script>
-    <script src="./merch-store.js?v=product-grid-static-1" defer></script>
-    <script src="./assets/js/juneteenth-event-popup.js?v=juneteenth-event-3" defer></script>
+    <script src="./merch-store.js?v=shadow-popup-fit-1" defer></script>
   </body>
 </html>

@@ -1,5 +1,5 @@
 {
-  "active_asset_count": 41,
+  "active_asset_count": 42,
   "issue_count": 4,
   "active_assets": [
     {
@@ -2420,6 +2420,18 @@
           "frame": 4
         }
       ]
+    },
+    {
+      "key": "cyberGateSheet",
+      "path": "assets/mission/chatgpt_cyber_vault_gate_sheet_v1.png",
+      "exists": true,
+      "issues": [],
+      "size": [
+        1536,
+        256
+      ],
+      "mode": "RGBA",
+      "green_spill_pixels": 84
     },
     {
       "key": "missionBrandProps",

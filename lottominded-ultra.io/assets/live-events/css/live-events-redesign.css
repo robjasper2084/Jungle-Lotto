@@ -50,114 +50,6 @@ body.lm-live-page::before {
   animation: liveGrid 18s linear infinite;
 }
 
-.stream-startup-audio {
-  position: fixed;
-  inset: 0;
-  z-index: 900;
-  display: grid;
-  align-items: start;
-  justify-items: center;
-  padding: clamp(154px, 17vh, 226px) clamp(18px, 4vw, 48px) clamp(18px, 4vw, 48px);
-  background:
-    radial-gradient(circle at 50% 35%, rgba(41, 247, 255, 0.18), transparent 24rem),
-    rgba(1, 4, 10, 0.72);
-  backdrop-filter: blur(18px);
-}
-
-.stream-startup-audio.is-hidden {
-  display: none;
-}
-
-.stream-startup-audio-panel {
-  position: relative;
-  width: min(560px, 92vw);
-  padding: clamp(24px, 4vw, 42px);
-  overflow: hidden;
-  border: 1px solid rgba(41, 247, 255, 0.42);
-  border-radius: 22px;
-  background:
-    linear-gradient(145deg, rgba(41, 247, 255, 0.12), rgba(138, 92, 255, 0.08)),
-    rgba(5, 12, 24, 0.94);
-  box-shadow:
-    0 28px 90px rgba(0, 0, 0, 0.64),
-    0 0 40px rgba(41, 247, 255, 0.22),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.06);
-}
-
-.stream-startup-audio-panel::before {
-  position: absolute;
-  inset: 0;
-  content: "";
-  pointer-events: none;
-  background:
-    linear-gradient(90deg, rgba(41, 247, 255, 0.08) 1px, transparent 1px),
-    linear-gradient(0deg, rgba(255, 255, 255, 0.045) 1px, transparent 1px);
-  background-size: 42px 42px;
-  opacity: 0.58;
-}
-
-.stream-startup-audio-panel > * {
-  position: relative;
-  z-index: 1;
-}
-
-.stream-startup-audio-panel h2 {
-  max-width: 9ch;
-  margin: 10px 0 14px;
-  color: #eaffff;
-  font-size: clamp(2.6rem, 8vw, 5.3rem);
-  line-height: 0.92;
-  text-transform: uppercase;
-  text-shadow: 0 0 24px rgba(41, 247, 255, 0.24);
-}
-
-.stream-startup-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-top: 24px;
-}
-
-.stream-startup-actions button,
-.stream-startup-close {
-  min-height: 44px;
-  border: 1px solid rgba(160, 210, 255, 0.34);
-  border-radius: 12px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.035));
-  color: var(--lm-live-text);
-  cursor: pointer;
-  font-weight: 900;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 10px 20px rgba(0, 0, 0, 0.34);
-}
-
-.stream-startup-actions button {
-  min-width: 148px;
-  padding: 0 18px;
-}
-
-.stream-startup-actions .primary-action {
-  border-color: rgba(255, 224, 113, 0.68);
-  background: linear-gradient(135deg, rgba(255, 224, 113, 0.95), rgba(41, 247, 255, 0.86));
-  color: #03111a;
-}
-
-.stream-startup-close {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  z-index: 2;
-  width: 42px;
-  padding: 0;
-}
-
-.stream-startup-status {
-  min-height: 1.2em;
-  color: var(--lm-live-gold);
-  font-weight: 800;
-}
-
 .lm-live-topbar,
 .lm-synth-rail,
 .panel-glow,
@@ -2032,17 +1924,22 @@ body.lm-live-page.is-twitch-focused .video-mini-thumb video {
   z-index: 60 !important;
   display: grid;
   grid-template-columns: 86px minmax(220px, 340px) minmax(200px, 1fr) 52px 64px 52px 150px 280px;
-  gap: 12px;
+  gap: 14px;
   align-items: center;
-  min-height: 86px;
-  padding: 10px 18px;
+  min-height: 104px;
+  padding: 12px 22px;
   border-radius: 16px;
   backdrop-filter: blur(18px);
 }
 
+body.live-events-page .vault-credit-badge {
+  bottom: calc(max(10px, env(safe-area-inset-bottom)) + 124px);
+  z-index: 96;
+}
+
 .now-art {
-  width: 64px;
-  height: 54px;
+  width: 77px;
+  height: 65px;
   border-radius: 8px;
 }
 
@@ -2054,6 +1951,12 @@ body.lm-live-page.is-twitch-focused .video-mini-thumb video {
 
 .now-copy strong {
   display: block;
+  font-size: 1.2em;
+}
+
+.lm-live-player .now-copy small,
+.lm-live-player .now-copy span {
+  font-size: 1.2em;
 }
 
 .now-wave {
@@ -2088,7 +1991,7 @@ body.lm-live-page.is-twitch-focused .video-mini-thumb video {
   --wave-glint-shift: 0px;
   position: relative;
   overflow: hidden;
-  height: 42px;
+  height: 50px;
   border-radius: 8px;
   background:
     radial-gradient(circle at var(--live-bass-x) 50%, rgba(94, 255, 157, var(--live-bass-alpha)), transparent 34%),
@@ -2154,20 +2057,20 @@ body.lm-live-page.is-twitch-focused .video-mini-thumb video {
 }
 
 .lm-live-player button {
-  min-height: 46px;
+  min-height: 55px;
   border-radius: 50%;
 }
 
 .lm-live-player .big {
-  width: 60px;
-  min-height: 60px;
+  width: 72px;
+  min-height: 72px;
   border-color: rgba(138,92,255,.9);
   box-shadow: 0 0 22px rgba(138,92,255,.28);
 }
 
 .time {
   color: var(--lm-live-muted);
-  font-size: .84rem;
+  font-size: 1rem;
 }
 
 .points {
@@ -2348,5 +2251,165 @@ body.lm-live-page.is-twitch-focused .video-mini-thumb video {
   .live-btn:hover,
   .lm-category-grid button:hover {
     transform: none;
+  }
+}
+
+/* Finish pass: keep the shared orb header and give Static WAV enough room to show the full game. */
+body.live-events-page .lm-live-topbar {
+  display: none !important;
+}
+
+body.live-events-page .shadow-ops-panel {
+  grid-template-columns: minmax(220px, 0.28fr) minmax(680px, 1fr);
+  width: min(1500px, 96vw);
+  min-height: min(900px, calc(100vh - 48px));
+}
+
+body.live-events-page .shadow-ops-gamebay {
+  grid-template-rows: auto minmax(460px, 1fr) auto;
+  min-height: clamp(560px, 76vh, 820px);
+}
+
+body.live-events-page .shadow-ops-frame-shell {
+  aspect-ratio: 16 / 9;
+  min-height: clamp(420px, 66vh, 760px);
+}
+
+body.has-shadow-ops-frame-expanded .shadow-ops-panel {
+  width: min(1680px, 98vw);
+  min-height: 92vh;
+  grid-template-columns: minmax(180px, 0.2fr) minmax(760px, 1fr);
+}
+
+body.has-shadow-ops-frame-expanded .shadow-ops-gamebay {
+  min-height: 84vh;
+}
+
+@media (max-width: 920px) {
+  body.live-events-page .shadow-ops-panel,
+  body.has-shadow-ops-frame-expanded .shadow-ops-panel {
+    grid-template-columns: 1fr;
+    width: min(96vw, 900px);
+    min-height: auto;
+  }
+
+  body.live-events-page .shadow-ops-gamebay,
+  body.has-shadow-ops-frame-expanded .shadow-ops-gamebay {
+    min-height: min(74vh, 620px);
+  }
+
+  body.live-events-page .shadow-ops-frame-shell {
+    min-height: min(58vh, 520px);
+  }
+}
+
+/* Final game-bay pass: make Static WAV prioritize the playable frame, not the surrounding canvas. */
+body.live-events-page .shadow-ops-modal.is-open {
+  padding: clamp(12px, 2vw, 28px);
+}
+
+body.live-events-page .shadow-ops-panel {
+  grid-template-columns: minmax(150px, 0.18fr) minmax(780px, 1fr) !important;
+  gap: clamp(14px, 1.7vw, 24px) !important;
+  width: min(1620px, 98vw) !important;
+  min-height: min(920px, calc(100vh - 32px)) !important;
+  padding: clamp(16px, 1.8vw, 26px) !important;
+}
+
+body.live-events-page .shadow-ops-brief {
+  min-width: 0 !important;
+}
+
+body.live-events-page .shadow-ops-copy h2 {
+  font-size: clamp(3.6rem, 5.2vw, 6.8rem) !important;
+  line-height: 0.86 !important;
+}
+
+body.live-events-page .shadow-ops-copy p:not(.eyebrow) {
+  max-width: 26ch;
+}
+
+body.live-events-page .shadow-ops-gamebay {
+  grid-template-rows: auto minmax(0, 1fr) auto !important;
+  min-height: clamp(620px, 82vh, 860px) !important;
+}
+
+body.live-events-page .shadow-ops-frame-shell {
+  width: 100% !important;
+  min-height: clamp(520px, 74vh, 790px) !important;
+  aspect-ratio: 16 / 9 !important;
+}
+
+body.live-events-page .shadow-ops-frame-shell iframe {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+body.live-events-page .shadow-ops-hud {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+body.has-shadow-ops-frame-expanded .shadow-ops-panel {
+  grid-template-columns: minmax(118px, 0.12fr) minmax(900px, 1fr) !important;
+  width: min(1760px, 99vw) !important;
+}
+
+body.has-shadow-ops-frame-expanded .shadow-ops-gamebay {
+  min-height: 90vh !important;
+}
+
+body.has-shadow-ops-frame-expanded .shadow-ops-frame-shell {
+  min-height: 82vh !important;
+}
+
+@media (max-width: 1180px) {
+  body.live-events-page .shadow-ops-panel,
+  body.has-shadow-ops-frame-expanded .shadow-ops-panel {
+    grid-template-columns: 1fr !important;
+  }
+
+  body.live-events-page .shadow-ops-brief {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    align-items: end !important;
+    min-height: auto !important;
+  }
+
+  body.live-events-page .shadow-ops-copy h2 {
+    font-size: clamp(2.5rem, 9vw, 5rem) !important;
+  }
+
+  body.live-events-page .shadow-ops-actions {
+    align-self: end !important;
+    grid-template-columns: repeat(2, minmax(120px, 1fr)) !important;
+  }
+}
+
+@media (max-width: 760px) {
+  body.live-events-page .shadow-ops-modal.is-open {
+    padding: 8px;
+  }
+
+  body.live-events-page .shadow-ops-panel {
+    width: 98vw !important;
+    max-height: 94vh !important;
+    overflow-y: auto !important;
+    padding: 12px !important;
+  }
+
+  body.live-events-page .shadow-ops-brief {
+    grid-template-columns: 1fr !important;
+  }
+
+  body.live-events-page .shadow-ops-copy p:not(.eyebrow) {
+    max-width: none;
+  }
+
+  body.live-events-page .shadow-ops-gamebay {
+    min-height: min(78vh, 650px) !important;
+  }
+
+  body.live-events-page .shadow-ops-frame-shell {
+    min-height: min(68vh, 560px) !important;
   }
 }

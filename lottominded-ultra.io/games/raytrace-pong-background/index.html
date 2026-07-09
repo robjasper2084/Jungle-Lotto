@@ -1,0 +1,819 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>2D Raytrace Pong Background</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --fg: #eef7ff;
+      --muted: rgba(238, 247, 255, 0.72);
+      --panel: rgba(3, 10, 24, 0.50);
+      --line: rgba(170, 220, 255, 0.22);
+    }
+
+    * { box-sizing: border-box; }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: #02040c;
+      color: var(--fg);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    canvas#rayPong {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 0;
+      display: block;
+      background: radial-gradient(circle at 50% 45%, #06162b 0%, #02040c 55%, #000 100%);
+    }
+
+    .grain,
+    .vignette {
+      pointer-events: none;
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+    }
+
+    .grain {
+      opacity: 0.22;
+      mix-blend-mode: soft-light;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+      background-size: 3px 3px, 5px 5px;
+    }
+
+    .vignette {
+      background:
+        radial-gradient(circle at 50% 50%, transparent 0 48%, rgba(0,0,0,0.28) 76%, rgba(0,0,0,0.76) 100%),
+        linear-gradient(180deg, rgba(0,0,0,0.18), transparent 25%, transparent 75%, rgba(0,0,0,0.22));
+    }
+
+    main {
+      position: relative;
+      z-index: 2;
+      min-height: 100dvh;
+      display: grid;
+      place-items: center;
+      padding: clamp(1rem, 3vw, 3rem);
+      pointer-events: none;
+    }
+
+    .hero {
+      width: min(840px, calc(100vw - 2rem));
+      padding: clamp(1.4rem, 4vw, 3.2rem);
+      border: 1px solid rgba(181, 228, 255, 0.18);
+      border-radius: 28px;
+      background:
+        linear-gradient(135deg, rgba(255,255,255,0.09), rgba(255,255,255,0.025)),
+        rgba(2, 9, 23, 0.28);
+      backdrop-filter: blur(14px) saturate(120%);
+      box-shadow: 0 24px 90px rgba(0, 0, 0, 0.44), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+      text-align: center;
+    }
+
+    .eyebrow {
+      margin: 0 0 0.65rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      font-size: 0.72rem;
+      color: rgba(170, 231, 255, 0.86);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2.35rem, 7vw, 6.6rem);
+      line-height: 0.92;
+      letter-spacing: -0.075em;
+      text-wrap: balance;
+    }
+
+    .hero p:last-child {
+      margin: 1.15rem auto 0;
+      max-width: 620px;
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: clamp(0.98rem, 1.9vw, 1.15rem);
+      text-wrap: pretty;
+    }
+
+    .hud {
+      position: fixed;
+      z-index: 3;
+      left: clamp(12px, 2.4vw, 32px);
+      bottom: clamp(12px, 2.4vw, 32px);
+      width: min(390px, calc(100vw - 24px));
+      padding: 14px 16px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: var(--panel);
+      backdrop-filter: blur(12px);
+      box-shadow: 0 18px 60px rgba(0, 0, 0, 0.36);
+      user-select: none;
+    }
+
+    .hud-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .score {
+      font-variant-numeric: tabular-nums;
+      font-size: 1.35rem;
+      letter-spacing: 0.12em;
+      color: #f7fbff;
+      text-shadow: 0 0 14px rgba(113, 220, 255, 0.55);
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      border: 1px solid rgba(128, 214, 255, 0.24);
+      border-radius: 999px;
+      padding: 0.35rem 0.65rem;
+      color: rgba(222, 244, 255, 0.82);
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.11em;
+      white-space: nowrap;
+    }
+
+    .dot {
+      width: 0.55rem;
+      height: 0.55rem;
+      border-radius: 50%;
+      background: #80f3ff;
+      box-shadow: 0 0 18px #80f3ff;
+    }
+
+    .help {
+      margin: 10px 0 0;
+      color: rgba(226, 243, 255, 0.70);
+      font-size: 0.82rem;
+      line-height: 1.45;
+    }
+
+    kbd {
+      display: inline-block;
+      min-width: 1.45em;
+      padding: 0.08rem 0.38rem;
+      border: 1px solid rgba(255,255,255,0.18);
+      border-bottom-color: rgba(255,255,255,0.35);
+      border-radius: 0.4rem;
+      background: rgba(255,255,255,0.08);
+      color: rgba(244, 250, 255, 0.92);
+      font: inherit;
+      font-size: 0.78em;
+      text-align: center;
+    }
+
+    @media (max-width: 720px) {
+      .hero { margin-top: -8vh; }
+      .hud { right: 12px; }
+      .help { font-size: 0.76rem; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .grain { opacity: 0.14; }
+    }
+
+    body.is-embedded main,
+    body.is-embedded .hero,
+    body.is-embedded .hud {
+      display: none;
+    }
+
+    body.is-embedded canvas#rayPong {
+      cursor: crosshair;
+      pointer-events: auto;
+    }
+
+    body.is-embedded .grain {
+      opacity: 0.18;
+    }
+  </style>
+</head>
+<body>
+  <script>
+    if (new URLSearchParams(window.location.search).has('embed')) {
+      document.body.classList.add('is-embedded');
+    }
+  </script>
+  <canvas id="rayPong" aria-label="Interactive raytraced Pong background"></canvas>
+  <div class="grain"></div>
+  <div class="vignette"></div>
+
+  <main>
+    <section class="hero" aria-label="Foreground content example">
+      <p class="eyebrow">Playable background canvas</p>
+      <h1>Raytrace Pong</h1>
+      <p>
+        A lightweight, original 2D light-tracing Pong scene. It autoplay-loops as a background, then becomes interactive when you use the controls.
+      </p>
+    </section>
+  </main>
+
+  <aside class="hud" aria-live="polite">
+    <div class="hud-row">
+      <div class="score" id="score">00 · 00</div>
+      <div class="pill"><span class="dot"></span><span id="mode">autoplay</span></div>
+    </div>
+    <p class="help">
+      Move left paddle with <kbd>W</kbd>/<kbd>S</kbd> or your pointer. Move right paddle with <kbd>↑</kbd>/<kbd>↓</kbd>. <kbd>Space</kbd> pauses, <kbd>R</kbd> resets.
+    </p>
+  </aside>
+
+  <script>
+    (() => {
+      'use strict';
+
+      const canvas = document.getElementById('rayPong');
+      const ctx = canvas.getContext('2d', { alpha: false });
+      const scoreEl = document.getElementById('score');
+      const modeEl = document.getElementById('mode');
+      const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      const TAU = Math.PI * 2;
+      const EPS = 0.001;
+      const keys = new Set();
+      const impacts = [];
+      const sparks = [];
+
+      let W = 0;
+      let H = 0;
+      let dpr = 1;
+      let frame = 0;
+      let lastTime = performance.now();
+      let pointerY = 0;
+      let pointerActiveUntil = 0;
+      let keyboardActiveUntil = 0;
+      let paused = false;
+
+      const state = {
+        scoreL: 0,
+        scoreR: 0,
+        paddleW: 14,
+        paddleH: 120,
+        paddleMargin: 48,
+        leftY: 0,
+        rightY: 0,
+        ball: { x: 0, y: 0, vx: 440, vy: 120, r: 9 },
+        ballTrail: [],
+        serveDelay: 0,
+        hue: 190,
+        quality: 170
+      };
+
+      const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+      const lerp = (a, b, t) => a + (b - a) * t;
+      const dot = (a, b) => a.x * b.x + a.y * b.y;
+      const cross = (a, b) => a.x * b.y - a.y * b.x;
+      const length = (x, y) => Math.hypot(x, y) || 1;
+      const nowMs = () => performance.now();
+
+      function resize() {
+        const oldW = W || window.innerWidth;
+        const oldH = H || window.innerHeight;
+        W = window.innerWidth;
+        H = window.innerHeight;
+        dpr = Math.min(2, window.devicePixelRatio || 1);
+        canvas.width = Math.floor(W * dpr);
+        canvas.height = Math.floor(H * dpr);
+        canvas.style.width = W + 'px';
+        canvas.style.height = H + 'px';
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+        state.paddleW = clamp(W * 0.012, 10, 18);
+        state.paddleH = clamp(H * 0.18, 86, 156);
+        state.paddleMargin = clamp(W * 0.052, 30, 74);
+        state.ball.r = clamp(Math.min(W, H) * 0.014, 7, 13);
+        state.quality = Math.round(clamp(W * H / 6200, 96, reducedMotion ? 130 : 220));
+
+        const sx = W / oldW;
+        const sy = H / oldH;
+        state.leftY = clamp(state.leftY * sy, 0, H - state.paddleH);
+        state.rightY = clamp(state.rightY * sy, 0, H - state.paddleH);
+        state.ball.x = clamp(state.ball.x * sx || W / 2, state.ball.r, W - state.ball.r);
+        state.ball.y = clamp(state.ball.y * sy || H / 2, state.ball.r, H - state.ball.r);
+
+        if (!state.leftY && !state.rightY) {
+          state.leftY = H / 2 - state.paddleH / 2;
+          state.rightY = H / 2 - state.paddleH / 2;
+          resetBall(Math.random() > 0.5 ? 1 : -1, true);
+        }
+
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.fillStyle = '#02040c';
+        ctx.fillRect(0, 0, W, H);
+      }
+
+      function resetBall(direction = 1, first = false) {
+        const speed = clamp(Math.min(W, H) * (reducedMotion ? 0.44 : 0.64), 320, 660);
+        const angle = (Math.random() * 0.9 - 0.45);
+        state.ball.x = W / 2;
+        state.ball.y = H / 2 + (Math.random() - 0.5) * H * 0.18;
+        state.ball.vx = Math.cos(angle) * speed * direction;
+        state.ball.vy = Math.sin(angle) * speed;
+        state.ballTrail.length = 0;
+        state.serveDelay = first ? 0 : 0.42;
+        addImpact(state.ball.x, state.ball.y, 1.4, 25);
+        updateHud();
+      }
+
+      function updateHud() {
+        scoreEl.textContent = String(state.scoreL).padStart(2, '0') + ' · ' + String(state.scoreR).padStart(2, '0');
+      }
+
+      function rectSegments(rect, reflect = 0.82) {
+        const x = rect.x;
+        const y = rect.y;
+        const w = rect.w;
+        const h = rect.h;
+        return [
+          { a: { x, y }, b: { x: x + w, y }, reflect },
+          { a: { x: x + w, y }, b: { x: x + w, y: y + h }, reflect },
+          { a: { x: x + w, y: y + h }, b: { x, y: y + h }, reflect },
+          { a: { x, y: y + h }, b: { x, y }, reflect }
+        ];
+      }
+
+      function paddleRects() {
+        return {
+          left: {
+            x: state.paddleMargin,
+            y: state.leftY,
+            w: state.paddleW,
+            h: state.paddleH
+          },
+          right: {
+            x: W - state.paddleMargin - state.paddleW,
+            y: state.rightY,
+            w: state.paddleW,
+            h: state.paddleH
+          }
+        };
+      }
+
+      function sceneSegments() {
+        const pads = paddleRects();
+        return [
+          { a: { x: 0, y: 0 }, b: { x: W, y: 0 }, reflect: 0.86 },
+          { a: { x: W, y: 0 }, b: { x: W, y: H }, reflect: 0.70 },
+          { a: { x: W, y: H }, b: { x: 0, y: H }, reflect: 0.86 },
+          { a: { x: 0, y: H }, b: { x: 0, y: 0 }, reflect: 0.70 },
+          ...rectSegments(pads.left, 0.92),
+          ...rectSegments(pads.right, 0.92)
+        ];
+      }
+
+      function raycast(origin, dir, segments) {
+        let nearest = null;
+        let nearestT = Infinity;
+
+        for (const seg of segments) {
+          const sx = seg.b.x - seg.a.x;
+          const sy = seg.b.y - seg.a.y;
+          const s = { x: sx, y: sy };
+          const denom = cross(dir, s);
+          if (Math.abs(denom) < EPS) continue;
+
+          const qmp = { x: seg.a.x - origin.x, y: seg.a.y - origin.y };
+          const t = cross(qmp, s) / denom;
+          const u = cross(qmp, dir) / denom;
+
+          if (t > 0.25 && u >= -EPS && u <= 1 + EPS && t < nearestT) {
+            const len = length(sx, sy);
+            let nx = -sy / len;
+            let ny = sx / len;
+            if (dir.x * nx + dir.y * ny > 0) {
+              nx = -nx;
+              ny = -ny;
+            }
+            nearestT = t;
+            nearest = {
+              x: origin.x + dir.x * t,
+              y: origin.y + dir.y * t,
+              t,
+              normal: { x: nx, y: ny },
+              reflect: seg.reflect || 0.8
+            };
+          }
+        }
+
+        return nearest;
+      }
+
+      function drawBeam(x1, y1, x2, y2, intensity, bounce, hue) {
+        const dist = Math.hypot(x2 - x1, y2 - y1);
+        if (dist < 0.5) return;
+
+        const alpha = clamp(intensity, 0, 1);
+        const warmHue = hue + bounce * 12;
+
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+
+        ctx.strokeStyle = `hsla(${warmHue}, 100%, 64%, ${0.030 * alpha})`;
+        ctx.lineWidth = (10 - bounce * 1.4) * alpha + 1.5;
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+
+        ctx.strokeStyle = `hsla(${warmHue + 22}, 100%, 76%, ${0.115 * alpha})`;
+        ctx.lineWidth = Math.max(0.75, 1.5 - bounce * 0.16);
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+      }
+
+      function traceRays(t) {
+        const segments = sceneSegments();
+        const ball = state.ball;
+        const speed = Math.hypot(ball.vx, ball.vy);
+        const baseHue = (state.hue + Math.sin(t * 0.0003) * 22 + speed * 0.025) % 360;
+        const count = Math.max(36, Math.round(state.quality * (reducedMotion ? 0.58 : 1)));
+        const maxBounces = reducedMotion ? 2 : 3;
+        const velocityAngle = Math.atan2(ball.vy, ball.vx);
+        const spin = t * 0.00014;
+
+        ctx.globalCompositeOperation = 'lighter';
+
+        for (let i = 0; i < count; i++) {
+          const fanBias = Math.sin(i * 12.9898 + t * 0.0017) * 0.018;
+          let angle = i / count * TAU + spin + fanBias;
+
+          // Slightly overweight the ball direction so it feels like a moving light source.
+          if (i % 9 === 0) angle = lerp(angle, velocityAngle + (Math.random() - 0.5) * 0.85, 0.33);
+
+          let origin = { x: ball.x, y: ball.y };
+          let dir = { x: Math.cos(angle), y: Math.sin(angle) };
+          let intensity = 0.86 + 0.12 * Math.sin(i * 0.73 + t * 0.002);
+
+          for (let bounce = 0; bounce < maxBounces; bounce++) {
+            const hit = raycast(origin, dir, segments);
+            let end;
+
+            if (hit) {
+              end = { x: hit.x, y: hit.y };
+            } else {
+              end = { x: origin.x + dir.x * Math.max(W, H) * 1.6, y: origin.y + dir.y * Math.max(W, H) * 1.6 };
+            }
+
+            const distanceFade = clamp(1 - Math.hypot(end.x - origin.x, end.y - origin.y) / Math.max(W, H) / 1.35, 0.2, 1);
+            drawBeam(origin.x, origin.y, end.x, end.y, intensity * distanceFade, bounce, baseHue + i * 0.08);
+
+            if (!hit) break;
+
+            const dDotN = dot(dir, hit.normal);
+            dir = {
+              x: dir.x - 2 * dDotN * hit.normal.x,
+              y: dir.y - 2 * dDotN * hit.normal.y
+            };
+            const invLen = 1 / length(dir.x, dir.y);
+            dir.x *= invLen;
+            dir.y *= invLen;
+            origin = { x: hit.x + dir.x * 0.75, y: hit.y + dir.y * 0.75 };
+            intensity *= hit.reflect * 0.72;
+          }
+        }
+      }
+
+      function drawBackgroundFade() {
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.fillStyle = reducedMotion ? 'rgba(2, 4, 12, 0.34)' : 'rgba(2, 4, 12, 0.19)';
+        ctx.fillRect(0, 0, W, H);
+
+        const g = ctx.createRadialGradient(W * 0.5, H * 0.46, 0, W * 0.5, H * 0.5, Math.max(W, H) * 0.7);
+        g.addColorStop(0, 'rgba(12, 45, 80, 0.16)');
+        g.addColorStop(0.48, 'rgba(3, 13, 35, 0.04)');
+        g.addColorStop(1, 'rgba(0, 0, 0, 0.16)');
+        ctx.fillStyle = g;
+        ctx.fillRect(0, 0, W, H);
+      }
+
+      function drawField(t) {
+        ctx.globalCompositeOperation = 'lighter';
+        const centerAlpha = 0.14 + 0.04 * Math.sin(t * 0.002);
+        ctx.strokeStyle = `rgba(140, 220, 255, ${centerAlpha})`;
+        ctx.lineWidth = 1;
+        ctx.setLineDash([5, 13]);
+        ctx.beginPath();
+        ctx.moveTo(W / 2, 26);
+        ctx.lineTo(W / 2, H - 26);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        ctx.strokeStyle = 'rgba(120, 214, 255, 0.12)';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(18, 18, W - 36, H - 36);
+      }
+
+      function drawRectGlow(rect, hue) {
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.save();
+        ctx.shadowBlur = 26;
+        ctx.shadowColor = `hsla(${hue}, 100%, 65%, 0.9)`;
+        ctx.fillStyle = `hsla(${hue}, 100%, 72%, 0.84)`;
+        roundRect(ctx, rect.x, rect.y, rect.w, rect.h, rect.w * 0.5);
+        ctx.fill();
+        ctx.restore();
+
+        ctx.fillStyle = 'rgba(255,255,255,0.92)';
+        roundRect(ctx, rect.x + rect.w * 0.33, rect.y + 8, rect.w * 0.34, rect.h - 16, rect.w * 0.25);
+        ctx.fill();
+      }
+
+      function roundRect(context, x, y, w, h, r) {
+        const radius = Math.min(r, w / 2, h / 2);
+        context.beginPath();
+        context.moveTo(x + radius, y);
+        context.arcTo(x + w, y, x + w, y + h, radius);
+        context.arcTo(x + w, y + h, x, y + h, radius);
+        context.arcTo(x, y + h, x, y, radius);
+        context.arcTo(x, y, x + w, y, radius);
+        context.closePath();
+      }
+
+      function drawBall(t) {
+        const ball = state.ball;
+        state.ballTrail.push({ x: ball.x, y: ball.y, r: ball.r, life: 1 });
+        if (state.ballTrail.length > 24) state.ballTrail.shift();
+
+        ctx.globalCompositeOperation = 'lighter';
+        for (let i = 0; i < state.ballTrail.length; i++) {
+          const p = state.ballTrail[i];
+          const a = (i + 1) / state.ballTrail.length;
+          const radius = p.r * (0.9 + (1 - a) * 3.6);
+          const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, radius);
+          g.addColorStop(0, `rgba(204, 251, 255, ${0.17 * a})`);
+          g.addColorStop(0.4, `rgba(96, 216, 255, ${0.07 * a})`);
+          g.addColorStop(1, 'rgba(96, 216, 255, 0)');
+          ctx.fillStyle = g;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, radius, 0, TAU);
+          ctx.fill();
+        }
+
+        const pulse = 1 + Math.sin(t * 0.012) * 0.04;
+        const outer = ball.r * 8.5 * pulse;
+        const glow = ctx.createRadialGradient(ball.x, ball.y, 0, ball.x, ball.y, outer);
+        glow.addColorStop(0, 'rgba(255,255,255,0.92)');
+        glow.addColorStop(0.10, 'rgba(190,250,255,0.62)');
+        glow.addColorStop(0.32, 'rgba(78,205,255,0.22)');
+        glow.addColorStop(1, 'rgba(42,170,255,0)');
+        ctx.fillStyle = glow;
+        ctx.beginPath();
+        ctx.arc(ball.x, ball.y, outer, 0, TAU);
+        ctx.fill();
+
+        ctx.fillStyle = 'rgba(255,255,255,0.96)';
+        ctx.beginPath();
+        ctx.arc(ball.x, ball.y, ball.r, 0, TAU);
+        ctx.fill();
+      }
+
+      function drawScores() {
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.save();
+        ctx.font = `700 ${clamp(W * 0.085, 56, 132)}px ui-sans-serif, system-ui, sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = 'rgba(180, 230, 255, 0.075)';
+        ctx.fillText(String(state.scoreL).padStart(2, '0'), W * 0.30, H * 0.20);
+        ctx.fillText(String(state.scoreR).padStart(2, '0'), W * 0.70, H * 0.20);
+        ctx.restore();
+      }
+
+      function addImpact(x, y, force = 1, count = 16) {
+        impacts.push({ x, y, life: 1, force, hue: state.hue + Math.random() * 50 });
+        for (let i = 0; i < count; i++) {
+          const a = Math.random() * TAU;
+          const speed = (80 + Math.random() * 260) * force;
+          sparks.push({
+            x,
+            y,
+            vx: Math.cos(a) * speed,
+            vy: Math.sin(a) * speed,
+            life: 0.5 + Math.random() * 0.55,
+            maxLife: 0.9,
+            hue: 180 + Math.random() * 70
+          });
+        }
+      }
+
+      function drawAndUpdateImpacts(dt) {
+        ctx.globalCompositeOperation = 'lighter';
+
+        for (let i = impacts.length - 1; i >= 0; i--) {
+          const p = impacts[i];
+          p.life -= dt * 1.7;
+          if (p.life <= 0) {
+            impacts.splice(i, 1);
+            continue;
+          }
+          const r = (1 - p.life) * 120 * p.force + 12;
+          ctx.strokeStyle = `hsla(${p.hue}, 100%, 70%, ${0.22 * p.life})`;
+          ctx.lineWidth = 2 + 10 * p.life;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, r, 0, TAU);
+          ctx.stroke();
+        }
+
+        for (let i = sparks.length - 1; i >= 0; i--) {
+          const s = sparks[i];
+          s.life -= dt;
+          if (s.life <= 0) {
+            sparks.splice(i, 1);
+            continue;
+          }
+          s.vx *= Math.pow(0.12, dt);
+          s.vy *= Math.pow(0.12, dt);
+          s.x += s.vx * dt;
+          s.y += s.vy * dt;
+          const alpha = clamp(s.life / s.maxLife, 0, 1);
+          ctx.strokeStyle = `hsla(${s.hue}, 100%, 72%, ${0.32 * alpha})`;
+          ctx.lineWidth = 1.2 + alpha * 2.8;
+          ctx.beginPath();
+          ctx.moveTo(s.x, s.y);
+          ctx.lineTo(s.x - s.vx * dt * 1.4, s.y - s.vy * dt * 1.4);
+          ctx.stroke();
+        }
+      }
+
+      function movePaddle(currentY, targetY, dt, sharpness) {
+        return clamp(lerp(currentY, targetY - state.paddleH / 2, 1 - Math.exp(-sharpness * dt)), 0, H - state.paddleH);
+      }
+
+      function stepGame(dt, t) {
+        const ball = state.ball;
+        const activeNow = nowMs();
+        const keyboardManual = activeNow < keyboardActiveUntil;
+        const pointerManual = activeNow < pointerActiveUntil;
+        const manual = keyboardManual || pointerManual;
+        modeEl.textContent = paused ? 'paused' : manual ? 'manual' : 'autoplay';
+
+        const paddleSpeed = clamp(H * 1.08, 540, 900);
+
+        if (keys.has('KeyW') || keys.has('KeyS')) {
+          const dir = (keys.has('KeyS') ? 1 : 0) - (keys.has('KeyW') ? 1 : 0);
+          state.leftY = clamp(state.leftY + dir * paddleSpeed * dt, 0, H - state.paddleH);
+        } else if (pointerManual) {
+          state.leftY = movePaddle(state.leftY, pointerY, dt, 11.5);
+        } else {
+          const ghost = ball.y + Math.sin(t * 0.0016) * H * 0.05;
+          state.leftY = movePaddle(state.leftY, ghost, dt, 3.5);
+        }
+
+        if (keys.has('ArrowUp') || keys.has('ArrowDown')) {
+          const dir = (keys.has('ArrowDown') ? 1 : 0) - (keys.has('ArrowUp') ? 1 : 0);
+          state.rightY = clamp(state.rightY + dir * paddleSpeed * dt, 0, H - state.paddleH);
+        } else {
+          const lead = ball.y + ball.vy * 0.14 + Math.sin(t * 0.0011 + 2) * H * 0.04;
+          state.rightY = movePaddle(state.rightY, lead, dt, 4.4);
+        }
+
+        if (state.serveDelay > 0) {
+          state.serveDelay -= dt;
+          return;
+        }
+
+        ball.x += ball.vx * dt;
+        ball.y += ball.vy * dt;
+
+        if (ball.y - ball.r < 0 && ball.vy < 0) {
+          ball.y = ball.r;
+          ball.vy *= -1;
+          state.hue = (state.hue + 18) % 360;
+          addImpact(ball.x, ball.y, 0.55, 8);
+        } else if (ball.y + ball.r > H && ball.vy > 0) {
+          ball.y = H - ball.r;
+          ball.vy *= -1;
+          state.hue = (state.hue + 18) % 360;
+          addImpact(ball.x, ball.y, 0.55, 8);
+        }
+
+        const pads = paddleRects();
+        collideWithPaddle(pads.left, 1);
+        collideWithPaddle(pads.right, -1);
+
+        if (ball.x < -state.paddleMargin) {
+          state.scoreR = (state.scoreR + 1) % 100;
+          resetBall(1);
+        } else if (ball.x > W + state.paddleMargin) {
+          state.scoreL = (state.scoreL + 1) % 100;
+          resetBall(-1);
+        }
+      }
+
+      function collideWithPaddle(rect, outgoingDirection) {
+        const ball = state.ball;
+        const closestX = clamp(ball.x, rect.x, rect.x + rect.w);
+        const closestY = clamp(ball.y, rect.y, rect.y + rect.h);
+        const dx = ball.x - closestX;
+        const dy = ball.y - closestY;
+
+        if (dx * dx + dy * dy > ball.r * ball.r) return;
+        if (outgoingDirection > 0 && ball.vx > 0) return;
+        if (outgoingDirection < 0 && ball.vx < 0) return;
+
+        const hit = clamp((ball.y - (rect.y + rect.h / 2)) / (rect.h / 2), -1, 1);
+        const speed = clamp(Math.hypot(ball.vx, ball.vy) * 1.045 + 24, 340, 920);
+        const angle = hit * 0.88;
+        ball.vx = Math.cos(angle) * speed * outgoingDirection;
+        ball.vy = Math.sin(angle) * speed + (Math.random() - 0.5) * 22;
+        ball.x = outgoingDirection > 0 ? rect.x + rect.w + ball.r + 0.5 : rect.x - ball.r - 0.5;
+        state.hue = (state.hue + 36 + Math.abs(hit) * 28) % 360;
+        addImpact(ball.x, ball.y, 1.08, 22);
+      }
+
+      function render(dt, t) {
+        drawBackgroundFade();
+        drawField(t);
+        traceRays(t);
+        drawScores();
+
+        const pads = paddleRects();
+        drawRectGlow(pads.left, state.hue + 18);
+        drawRectGlow(pads.right, state.hue + 52);
+        drawBall(t);
+        drawAndUpdateImpacts(dt);
+      }
+
+      function loop(t) {
+        const dt = Math.min(0.033, Math.max(0, (t - lastTime) / 1000));
+        lastTime = t;
+        frame++;
+
+        if (!document.hidden && !paused) {
+          stepGame(dt, t);
+        }
+        render(dt, t);
+
+        requestAnimationFrame(loop);
+      }
+
+      window.addEventListener('resize', resize, { passive: true });
+
+      window.addEventListener('pointermove', (event) => {
+        pointerY = event.clientY;
+        pointerActiveUntil = nowMs() + 2600;
+      }, { passive: true });
+
+      window.addEventListener('pointerdown', (event) => {
+        pointerY = event.clientY;
+        pointerActiveUntil = nowMs() + 4200;
+      }, { passive: true });
+
+      window.addEventListener('keydown', (event) => {
+        const playable = ['KeyW', 'KeyS', 'ArrowUp', 'ArrowDown', 'Space', 'KeyR'];
+        if (!playable.includes(event.code)) return;
+        event.preventDefault();
+
+        if (event.code === 'Space') {
+          paused = !paused;
+          modeEl.textContent = paused ? 'paused' : 'manual';
+          return;
+        }
+
+        if (event.code === 'KeyR') {
+          state.scoreL = 0;
+          state.scoreR = 0;
+          resetBall(Math.random() > 0.5 ? 1 : -1);
+          return;
+        }
+
+        keys.add(event.code);
+        keyboardActiveUntil = nowMs() + 4000;
+      });
+
+      window.addEventListener('keyup', (event) => {
+        keys.delete(event.code);
+        keyboardActiveUntil = nowMs() + 2000;
+      });
+
+      document.addEventListener('visibilitychange', () => {
+        lastTime = performance.now();
+      });
+
+      resize();
+      updateHud();
+      requestAnimationFrame(loop);
+    })();
+  </script>
+</body>
+</html>

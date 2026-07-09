@@ -10,7 +10,7 @@
     <title>LOTTOMINDED ULTRA | Live Events</title>
     <meta name="theme-color" content="#03050a" />
     <link rel="icon" href="./assets/brand/lm-orb-mark.webp" type="image/webp" />
-    <link rel="stylesheet" href="./styles.css?v=mascot-front-idle-5pct-1" />
+    <link rel="stylesheet" href="./styles.css?v=healing-orb-plus10-1" />
     <script>
       try {
         if (sessionStorage.getItem("lmTransitionArriving") === "yes") {
@@ -62,8 +62,8 @@
         }
       })();
     </script>
-    <link rel="stylesheet" href="./assets/css/lm-page-transition.css?v=compositor-pass-2" />
-    <link rel="stylesheet" href="./assets/live-events/css/live-events-redesign.css?v=shadow-ops-removed-2" />
+    <link rel="stylesheet" href="./assets/css/lm-page-transition.css?v=transition-mascot-walk-1" />
+    <link rel="stylesheet" href="./assets/live-events/css/live-events-redesign.css?v=live-badge-above-player-1" />
   </head>
   <body class="live-events-page lm-live-page has-sphere-tabs">
     <div class="lm-page-transition" data-lm-page-transition aria-hidden="true">
@@ -83,6 +83,7 @@
       </div>
       <nav aria-label="Ultra sphere navigation">
         <a href="./index.html#top" data-icon="HM">Home</a>
+        <a href="./memberships.html" data-icon="MB">Memberships</a>
         <a href="./features-app.html" data-icon="FX">Features</a>
         <a class="nav-signal-active" href="./live-events.html" data-icon="EV" aria-current="page">Events</a>
         <a href="./lottery-spheres.html#spheres" data-icon="SP">Spheres</a>
@@ -90,7 +91,7 @@
         <a href="./merch-store.html" data-icon="MC">Merch</a>
         <a href="./how-to-use.html" data-icon="GD">Guide</a>
         <a href="./lottomind-stem-studio/index.html" data-icon="ST">Studio</a>
-        <a href="https://robjasper2084.github.io/Jungle-Lotto/lotto%20mind%20refined/" data-icon="LM" data-vault-launch data-plan="free">LottoMind App</a>
+        <a href="http://127.0.0.1:8170/lotto%20mind%20refined/" data-icon="LM">LottoMind App</a>
       </nav>
       <div class="direct-launch" aria-label="Direct studio launch">
         <a class="direct-action direct-primary" href="./lottomind-stem-studio/index.html">Launch Studio</a>
@@ -125,22 +126,31 @@
         </article>
       </section>
 
-      <aside class="lm-community panel-glow" id="community">
-        <header><strong>Ultra Community</strong><span>2,846 online</span></header>
-        <div class="chat-tabs"><a class="is-active" href="https://m.twitch.tv/lottominded/home" target="_blank" rel="noopener noreferrer">Twitch Chat</a><a href="#twitch-live">Live Video</a><a href="https://m.twitch.tv/lottominded/home" target="_blank" rel="noopener noreferrer">Channel</a></div>
-        <div class="twitch-chat-frame" aria-label="LottoMinded Twitch live chat">
-          <iframe
-            data-src="https://www.twitch.tv/embed/lottominded/chat?parent=127.0.0.1&parent=localhost&parent=robjasper2084.github.io&darkpopout"
-            title="LottoMinded Twitch live chat"
-            loading="lazy"
-          ></iframe>
-          <div class="twitch-chat-fallback">
-            <strong>Twitch chat connected</strong>
-            <span>If chat does not load, open the LottoMinded Twitch page.</span>
-            <a class="live-btn primary" href="https://m.twitch.tv/lottominded/home" target="_blank" rel="noopener noreferrer">Open Twitch Chat</a>
+      <section class="lm-section panel-glow" id="upcoming">
+        <header class="section-head"><h2>Upcoming Streams</h2><a href="#upcoming">View All</a></header>
+        <article class="twitch-live-card" id="twitch-live" aria-label="LottoMinded Twitch live stream">
+          <div class="twitch-live-copy">
+            <p class="status-live"><span></span>Twitch Live</p>
+            <h3>LottoMinded Channel</h3>
+            <p>Live stream video is connected to the LottoMinded Twitch page. If the player is blocked by Twitch or browser settings, open the channel directly.</p>
+            <a class="live-btn primary" href="https://m.twitch.tv/lottominded/home" target="_blank" rel="noopener noreferrer">Open Twitch</a>
           </div>
+          <div class="twitch-player-frame">
+            <iframe
+              data-src="https://player.twitch.tv/?channel=lottominded&parent=127.0.0.1&parent=localhost&parent=robjasper2084.github.io&muted=true"
+              title="LottoMinded Twitch live stream"
+              loading="lazy"
+              allow="autoplay; fullscreen; picture-in-picture"
+              allowfullscreen
+            ></iframe>
+          </div>
+        </article>
+        <div class="stream-list">
+          <article><time>May<br /><b>25</b><small>6:00 PM</small></time><span class="mini-thumb video-mini-thumb"><video muted loop playsinline preload="none" aria-label="Retro Waves Live video thumbnail" data-autoplay-on-visible="true"><source data-src="./assets/video/retro-waves-live-thumb.mp4" type="video/mp4" /></video></span><div><h3>Retro Waves Live</h3><p>Synthwave - Live Set</p></div><a class="twitch-link" href="https://m.twitch.tv/lottominded/home" target="_blank" rel="noopener noreferrer">Watch Twitch</a></article>
+          <article><time>May<br /><b>25</b><small>8:30 PM</small></time><span class="mini-thumb alt"></span><div><h3>The Cosmic Collective</h3><p>Jam Band - Live</p></div><a class="twitch-link" href="https://m.twitch.tv/lottominded/home" target="_blank" rel="noopener noreferrer">Watch Twitch</a></article>
+          <article><time>May<br /><b>26</b><small>11:00 AM</small></time><span class="mini-thumb gold"></span><div><h3>Creator Economy 2025</h3><p>Conference - Panel</p></div><a class="twitch-link" href="https://m.twitch.tv/lottominded/home" target="_blank" rel="noopener noreferrer">Watch Twitch</a></article>
         </div>
-      </aside>
+      </section>
 
       <section class="lm-section panel-glow live-ballpass-section" id="featured">
         <canvas class="live-ballpass-field" data-live-ballpass-bg aria-hidden="true"></canvas>
@@ -188,31 +198,22 @@
         </div>
       </section>
 
-      <section class="lm-section panel-glow" id="upcoming">
-        <header class="section-head"><h2>Upcoming Streams</h2><a href="#upcoming">View All</a></header>
-        <article class="twitch-live-card" id="twitch-live" aria-label="LottoMinded Twitch live stream">
-          <div class="twitch-live-copy">
-            <p class="status-live"><span></span>Twitch Live</p>
-            <h3>LottoMinded Channel</h3>
-            <p>Live stream video is connected to the LottoMinded Twitch page. If the player is blocked by Twitch or browser settings, open the channel directly.</p>
-            <a class="live-btn primary" href="https://m.twitch.tv/lottominded/home" target="_blank" rel="noopener noreferrer">Open Twitch</a>
+      <aside class="lm-community panel-glow" id="community">
+        <header><strong>Ultra Community</strong><span>2,846 online</span></header>
+        <div class="chat-tabs"><a class="is-active" href="https://m.twitch.tv/lottominded/home" target="_blank" rel="noopener noreferrer">Twitch Chat</a><a href="#twitch-live">Live Video</a><a href="https://m.twitch.tv/lottominded/home" target="_blank" rel="noopener noreferrer">Channel</a></div>
+        <div class="twitch-chat-frame" aria-label="LottoMinded Twitch live chat">
+          <iframe
+            data-src="https://www.twitch.tv/embed/lottominded/chat?parent=127.0.0.1&parent=localhost&parent=robjasper2084.github.io&darkpopout"
+            title="LottoMinded Twitch live chat"
+            loading="lazy"
+          ></iframe>
+          <div class="twitch-chat-fallback">
+            <strong>Twitch chat connected</strong>
+            <span>If chat does not load, open the LottoMinded Twitch page.</span>
+            <a class="live-btn primary" href="https://m.twitch.tv/lottominded/home" target="_blank" rel="noopener noreferrer">Open Twitch Chat</a>
           </div>
-          <div class="twitch-player-frame">
-            <iframe
-              data-src="https://player.twitch.tv/?channel=lottominded&parent=127.0.0.1&parent=localhost&parent=robjasper2084.github.io&muted=true"
-              title="LottoMinded Twitch live stream"
-              loading="lazy"
-              allow="autoplay; fullscreen; picture-in-picture"
-              allowfullscreen
-            ></iframe>
-          </div>
-        </article>
-        <div class="stream-list">
-          <article><time>May<br /><b>25</b><small>6:00 PM</small></time><span class="mini-thumb video-mini-thumb"><video muted loop playsinline preload="none" aria-label="Retro Waves Live video thumbnail" data-autoplay-on-visible="true"><source data-src="./assets/video/retro-waves-live-thumb.mp4" type="video/mp4" /></video></span><div><h3>Retro Waves Live</h3><p>Synthwave - Live Set</p></div><a class="twitch-link" href="https://m.twitch.tv/lottominded/home" target="_blank" rel="noopener noreferrer">Watch Twitch</a></article>
-          <article><time>May<br /><b>25</b><small>8:30 PM</small></time><span class="mini-thumb alt"></span><div><h3>The Cosmic Collective</h3><p>Jam Band - Live</p></div><a class="twitch-link" href="https://m.twitch.tv/lottominded/home" target="_blank" rel="noopener noreferrer">Watch Twitch</a></article>
-          <article><time>May<br /><b>26</b><small>11:00 AM</small></time><span class="mini-thumb gold"></span><div><h3>Creator Economy 2025</h3><p>Conference - Panel</p></div><a class="twitch-link" href="https://m.twitch.tv/lottominded/home" target="_blank" rel="noopener noreferrer">Watch Twitch</a></article>
         </div>
-      </section>
+      </aside>
 
       <section class="lm-category-grid panel-glow">
         <header class="section-head"><h2>Event Categories</h2><a href="#featured">View All</a></header>
@@ -297,7 +298,7 @@
 
     <script src="./assets/js/lm-page-transition-audio.js?v=verified-transitions-2" defer></script>
     <script src="./assets/js/lm-page-transition.js?v=transition-smooth-1" defer></script>
-    <script src="./site.js?v=mascot-front-idle-5pct-1" defer></script>
+    <script src="./site.js?v=member-app-gate-1" defer></script>
     <script src="./assets/live-events/js/live-events-redesign.js?v=shadow-ops-removed-2" defer></script>
     <script src="./assets/live-events/js/live-events-console.js?v=live-console-1" defer></script>
   </body>

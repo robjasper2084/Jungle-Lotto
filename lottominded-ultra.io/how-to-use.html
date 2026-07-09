@@ -5,12 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="A dedicated LOTTOMINDED ULTRA guide portal for the 2084 Static Wave gameplay experience."
+      content="A dedicated LOTTOMINDED ULTRA guide portal for the OpenGW Levels gameplay experience."
     />
-    <title>2084 Static Wave | LottoMind Guide</title>
+    <title>OpenGW Levels | LottoMind Guide</title>
     <meta name="theme-color" content="#03050a" />
     <link rel="icon" href="./assets/brand/lm-orb-mark.webp" type="image/webp" />
-    <link rel="stylesheet" href="./styles.css?v=static-wave-guide-shell-2" />
+    <link rel="stylesheet" href="./styles.css?v=healing-orb-plus10-1" />
     <link rel="stylesheet" href="./lottomind-button-assets.css?v=static-wave-guide-shell-1" />
     <script>
       try {
@@ -19,7 +19,7 @@
         }
       } catch (error) {}
     </script>
-    <link rel="stylesheet" href="./assets/css/lm-page-transition.css?v=compositor-pass-2" />
+    <link rel="stylesheet" href="./assets/css/lm-page-transition.css?v=transition-mascot-walk-1" />
     <style>
       :root {
         color-scheme: dark;
@@ -131,6 +131,7 @@
       </div>
       <nav aria-label="LOTTOMINDED ULTRA sphere navigation">
         <a href="./index.html#top" data-icon="HM">Home</a>
+        <a href="./memberships.html" data-icon="MB">Memberships</a>
         <a href="./features-app.html" data-icon="FX">Features</a>
         <a href="./live-events.html" data-icon="EV">Streams</a>
         <a href="./lottery-spheres.html#spheres" data-icon="SP">Spheres</a>
@@ -138,24 +139,19 @@
         <a href="./merch-store.html" data-icon="MC">Merch</a>
         <a href="./how-to-use.html" data-icon="GD" aria-current="page">Guide</a>
         <a href="./lottomind-stem-studio/index.html" data-icon="ST">Studio</a>
-        <a
-          href="https://robjasper2084.github.io/Jungle-Lotto/lotto%20mind%20refined/"
-          data-icon="LM"
-          data-vault-launch
-          data-plan="free"
-        >LottoMind App</a>
+        <a href="http://127.0.0.1:8170/lotto%20mind%20refined/" data-icon="LM">LottoMind App</a>
       </nav>
       <div class="direct-launch" aria-label="Direct studio launch">
         <a class="direct-action direct-primary" href="./lottomind-stem-studio/index.html">Launch Studio</a>
       </div>
     </header>
 
-    <main class="static-wave-shell" aria-label="2084 Static Wave game">
-      <section class="static-wave-gamebox" data-static-wave-shell aria-label="2084 Static Wave game viewport">
+    <main class="static-wave-shell" aria-label="OpenGW Levels game">
+      <section class="static-wave-gamebox" data-static-wave-shell aria-label="OpenGW Levels game viewport">
         <iframe
           class="static-wave-gameframe"
-          title="2084 Static Wave gameplay"
-          src="./games/shadow-ops-canvas/index.html?v=guide-game-load-1"
+          title="OpenGW Levels gameplay"
+          src="./games/opengw-levels/index.html?local=gameplay-keyart-1"
           allow="fullscreen; autoplay; gamepad; keyboard-map *"
           allowfullscreen
           data-static-wave-frame
@@ -165,7 +161,7 @@
 
     <script>
       (() => {
-        const targetGame = new URL("./games/shadow-ops-canvas/index.html?v=guide-game-load-1", window.location.href).href;
+        const targetGame = "./games/opengw-levels/index.html?local=gameplay-keyart-1";
 
         const header = document.querySelector("[data-site-header]");
         const shell = document.querySelector("[data-static-wave-shell]");

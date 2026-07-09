@@ -16,7 +16,7 @@ body.lottery-spheres-page .ultra-page-instrument-console {
   grid-template-columns: minmax(11rem, 0.8fr) minmax(39rem, 2.7fr) minmax(16rem, 1fr) minmax(19rem, 1.35fr) minmax(11rem, 0.8fr);
   gap: clamp(0.72rem, 1.1vw, 1.05rem);
   align-items: stretch;
-  width: min(calc(100% - clamp(1rem, 3vw, 3rem)), 1560px);
+  width: calc(100vw - clamp(0.75rem, 1.4vw, 1.75rem));
   min-height: clamp(8.5rem, 12vw, 11.4rem);
   margin: 0;
   padding: clamp(0.85rem, 1.35vw, 1.25rem);
@@ -33,6 +33,10 @@ body.lottery-spheres-page .ultra-page-instrument-console {
   backdrop-filter: blur(18px) saturate(1.2);
   transform: translateX(-50%) translateZ(0);
   will-change: transform;
+}
+
+body.lottery-spheres-page .vault-credit-badge {
+  z-index: 96;
 }
 
 body.lottery-spheres-page .ultra-page-instrument-console::before {
