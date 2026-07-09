@@ -13,6 +13,10 @@
   const GATE_X = 4280;
   const BOSS_START_X = 5000;
   const EXTRACTION_X = 6180;
+  const GATE_BLOCK_X_OFFSET = -48;
+  const GATE_BLOCK_W = 184;
+  const GATE_BLOCK_TOP = -120;
+  const GATE_BLOCK_BOTTOM = 648;
   const STORAGE_KEY = "lottomind-vault-run-save-v1";
   const SETTINGS_KEY = "lottomind-vault-run-settings-v1";
   const QUERY = new URLSearchParams(window.location.search);
@@ -2160,6 +2164,21 @@
     return state?.level?.gateX || GATE_X;
   }
 
+  function gateBlockBox(state) {
+    return {
+      x: gateX(state) + GATE_BLOCK_X_OFFSET,
+      y: GATE_BLOCK_TOP,
+      w: GATE_BLOCK_W,
+      h: GATE_BLOCK_BOTTOM - GATE_BLOCK_TOP
+    };
+  }
+
+  function gateLockedMessage(state) {
+    if (state.keys < 3) return "Gate locked: collect 3 vault keys";
+    if (!undergroundComplete(state)) return "Gate locked: clear the underground sector";
+    return "Gate ready: move in close to unlock";
+  }
+
   function bossStartX(state) {
     return state?.level?.bossStartX || BOSS_START_X;
   }
@@ -2875,18 +2894,28 @@
   }
 
   function movePlayer(state, dt, p) {
+    const prevX = p.x;
     p.x += p.vx * dt;
     p.x = clamp(p.x, 8, worldWidth(state) - p.w - 10);
-    p.wallSide = detectWallSide(state, p);
 
-    if (!isUnderground(state)) {
-      const gx = gateX(state);
-      if (!state.gateOpen && p.x + p.w > gx && p.x < gx + 88 && p.y + p.h > 330) {
-        p.x = gx - p.w;
-        p.vx = Math.min(0, p.vx);
-        setObjective(state, state.keys < 3 ? "Gate locked: collect 3 vault keys" : "Gate locked: clear the underground sector", 1.4);
+    if (!isUnderground(state) && !state.gateOpen) {
+      const gate = gateBlockBox(state);
+      if (overlap({ x: p.x, y: p.y, w: p.w, h: p.h }, gate)) {
+        const wasLeft = prevX + p.w <= gate.x + 8 || p.x + p.w * 0.5 < gate.x + gate.w * 0.5;
+        if (wasLeft) {
+          p.x = gate.x - p.w - 2;
+          p.vx = Math.min(0, p.vx);
+        } else {
+          p.x = gate.x + gate.w + 2;
+          p.vx = Math.max(0, p.vx);
+        }
+        p.wallSide = 0;
+        p.wallStick = 0;
+        p.dashTime = 0;
+        setObjective(state, gateLockedMessage(state), 1.4);
       }
     }
+    p.wallSide = detectWallSide(state, p);
     if (arenaLockActive(state)) {
       const lock = state.arenaLock;
       if (p.x < lock.left) {
@@ -3702,7 +3731,7 @@
     updateCheckpoints(state);
     if (isUnderground(state)) return;
 
-    if (!state.boss && state.gateOpen && maxPlayerX(state) > bossStartX(state)) {
+    if (!state.boss && !state.bossDefeated && state.gateOpen && maxPlayerX(state) > bossStartX(state) - 120) {
       state.boss = makeBoss(state);
       state.bossIntroPan = CAMERA.bossIntroPan;
       for (const p of allPlayers(state)) {
@@ -4947,6 +4976,67 @@
     return true;
   }
 
+  function drawVaultPortalAsset(state, portal) {
+    const pulse = 0.62 + Math.sin(state.time * 4.8) * 0.18;
+    const color = portal.type === "exit" ? colors.cyan : colors.purple;
+    const accent = portal.type === "exit" ? colors.gold : colors.pink;
+    const portalImage = images.missionPortal;
+    const frame = Math.floor(state.time * 9) % 8;
+    const x = portal.x;
+    const y = portal.y - 82;
+
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.shadowColor = color;
+    ctx.shadowBlur = 18 + pulse * 18;
+
+    const halo = ctx.createRadialGradient(0, -24, 8, 0, -24, 92);
+    halo.addColorStop(0, portal.type === "exit" ? "rgba(56,219,255,0.58)" : "rgba(255,79,154,0.52)");
+    halo.addColorStop(0.45, "rgba(165,34,255,0.2)");
+    halo.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = halo;
+    ctx.beginPath();
+    ctx.ellipse(0, -24, 82, 116, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    if (portalImage?.complete && portalImage.naturalWidth) {
+      drawSheetCell(portalImage, 8, 1, frame, 0, -72, -154, 144, 196, 0.82);
+    }
+
+    ctx.shadowBlur = 10 + pulse * 10;
+    ctx.fillStyle = "rgba(6,7,14,0.78)";
+    ctx.strokeStyle = accent;
+    ctx.lineWidth = 3;
+    roundedRect(-44, -106, 88, 144, 18, true, true);
+
+    ctx.globalCompositeOperation = "screen";
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.ellipse(0, -36, 31 + pulse * 4, 64 + pulse * 8, 0, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(-18, -48);
+    ctx.lineTo(0, -24);
+    ctx.lineTo(18, -48);
+    ctx.stroke();
+
+    ctx.fillStyle = color;
+    ctx.globalAlpha = 0.28 + pulse * 0.32;
+    ctx.fillRect(-27, 14, 54, 8);
+    ctx.globalAlpha = 1;
+    ctx.globalCompositeOperation = "source-over";
+
+    ctx.font = "900 10px 'Arial Black', sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillStyle = "#ffe88a";
+    ctx.shadowColor = "rgba(0,0,0,0.8)";
+    ctx.shadowBlur = 4;
+    ctx.fillText(portal.label, 0, 58);
+    ctx.restore();
+  }
+
   function drawAreaPortals(state) {
     const area = activeArea(state);
     const underground = state.level.underground;
@@ -4955,93 +5045,117 @@
       ? [{ type: "exit", x: area.exitX, y: area.exitY || 620, label: undergroundComplete(state) ? "RETURN" : "3 CELLS" }]
       : [{ type: "entrance", x: underground.entrance.x, y: underground.entrance.y || 620, label: "UNDER" }];
     for (const portal of portals) {
-      const pulse = 0.62 + Math.sin(state.time * 4.8) * 0.18;
-      ctx.save();
-      ctx.translate(portal.x, portal.y - 82);
-      ctx.globalCompositeOperation = "screen";
-      const color = portal.type === "exit" ? colors.cyan : colors.purple;
-      ctx.strokeStyle = color;
-      ctx.lineWidth = 4;
-      roundedRect(-38, -84, 76, 112, 16, false, true);
-      ctx.globalAlpha = 0.35 + pulse * 0.35;
-      ctx.fillStyle = color;
-      ctx.fillRect(-22, 8, 44, 10);
-      ctx.beginPath();
-      ctx.moveTo(-16, -46);
-      ctx.lineTo(0, -25);
-      ctx.lineTo(16, -46);
-      ctx.stroke();
-      ctx.globalAlpha = 0.92;
-      ctx.font = "900 10px 'Arial Black', sans-serif";
-      ctx.textAlign = "center";
-      ctx.fillStyle = "#ffe88a";
-      ctx.fillText(portal.label, 0, 49);
-      ctx.restore();
+      drawVaultPortalAsset(state, portal);
     }
   }
 
   function drawGate(state) {
     if (isUnderground(state)) return;
-    const openLift = state.gateOpen ? 265 : 0;
+    const ready = gateReady(state);
+    const open = state.gateOpen;
     const pulse = 0.55 + Math.sin(state.gatePulse * 6) * 0.18;
     const gx = gateX(state);
+    const block = gateBlockBox(state);
+    const x = block.x + 12;
+    const y = 82;
+    const w = 160;
+    const h = 552;
     const cyberGateImage = images.cyberGateSheet;
-    if (cyberGateImage?.complete && cyberGateImage.naturalWidth) {
-      const ready = gateReady(state);
-      const frame = state.gateOpen ? 1 : ready ? 0 : 5;
-      const targetW = 168;
-      const targetH = 252;
-      drawSheetCell(cyberGateImage, 6, 1, frame, 0, gx - 40, 360 - openLift, targetW, targetH, 0.98);
-      if (!state.gateOpen) {
-        ctx.save();
-        ctx.globalCompositeOperation = "screen";
-        ctx.strokeStyle = ready ? `rgba(56,219,255,${pulse * 0.9})` : `rgba(255,79,154,${pulse})`;
-        ctx.lineWidth = 4;
-        ctx.beginPath();
-        ctx.moveTo(gx + 43, 390);
-        ctx.lineTo(gx + 43, 590);
-        ctx.stroke();
-        ctx.restore();
-      }
-      return;
-    }
-    const gateImage = images.missionGate;
-    if (gateImage?.complete && gateImage.naturalWidth) {
-      const ready = gateReady(state);
-      const frame = state.gateOpen ? Math.floor(state.time * 10) % 4 : ready ? Math.floor(state.time * 7) % 4 : Math.floor(state.time * 2) % 2;
-      drawSheetCell(gateImage, 4, 1, frame, 0, gx - 26, 312 - openLift, 144, 320, 0.98);
-      if (!state.gateOpen) {
-        ctx.save();
-        ctx.globalCompositeOperation = "screen";
-        ctx.strokeStyle = ready ? `rgba(56,219,255,${pulse})` : `rgba(255,79,154,${pulse})`;
-        ctx.lineWidth = 5;
-        ctx.beginPath();
-        ctx.moveTo(gx + 46, 350);
-        ctx.lineTo(gx + 46, 610);
-        ctx.stroke();
-        ctx.restore();
-      }
+
+    ctx.save();
+    ctx.shadowColor = open ? "rgba(56,219,255,0.72)" : ready ? "rgba(255,214,109,0.72)" : "rgba(255,79,154,0.62)";
+    ctx.shadowBlur = open ? 18 : 24;
+
+    if (open) {
+      ctx.globalAlpha = 0.82;
+      ctx.fillStyle = "rgba(6,6,11,0.62)";
+      ctx.strokeStyle = "rgba(56,219,255,0.72)";
+      ctx.lineWidth = 3;
+      roundedRect(x - 10, y + 38, 30, h - 58, 10, true, true);
+      roundedRect(x + w - 20, y + 38, 30, h - 58, 10, true, true);
+      ctx.globalCompositeOperation = "screen";
+      const openBeam = ctx.createLinearGradient(x + 22, y, x + w - 22, y);
+      openBeam.addColorStop(0, "rgba(56,219,255,0)");
+      openBeam.addColorStop(0.5, `rgba(56,219,255,${0.1 + pulse * 0.2})`);
+      openBeam.addColorStop(1, "rgba(56,219,255,0)");
+      ctx.fillStyle = openBeam;
+      ctx.fillRect(x + 20, y + 102, w - 40, h - 178);
+      ctx.restore();
       return;
     }
 
-    ctx.save();
-    ctx.translate(gx, 330 - openLift);
-    ctx.fillStyle = "rgba(6,5,8,.92)";
-    ctx.fillRect(0, 0, 92, 292);
-    ctx.strokeStyle = state.gateOpen ? colors.cyan : colors.gold;
+    const shell = ctx.createLinearGradient(x, y, x + w, y + h);
+    shell.addColorStop(0, "rgba(5,6,12,0.98)");
+    shell.addColorStop(0.48, "rgba(19,17,28,0.98)");
+    shell.addColorStop(1, "rgba(5,6,12,0.98)");
+    ctx.fillStyle = shell;
+    ctx.strokeStyle = ready ? "rgba(255,214,109,0.96)" : "rgba(255,214,109,0.74)";
     ctx.lineWidth = 4;
-    ctx.strokeRect(5, 6, 82, 282);
-    ctx.globalAlpha = pulse;
-    ctx.strokeStyle = gateReady(state) ? colors.cyan : colors.pink;
-    ctx.lineWidth = 3;
-    for (let y = 38; y < 250; y += 42) {
+    roundedRect(x, y, w, h, 18, true, true);
+
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = "rgba(255,214,109,0.48)";
+    for (let i = 0; i < 6; i++) {
+      const yy = y + 52 + i * 76;
       ctx.beginPath();
-      ctx.moveTo(16, y);
-      ctx.lineTo(44, y);
-      ctx.lineTo(70, y + 18);
+      ctx.moveTo(x + 18, yy);
+      ctx.lineTo(x + 58, yy);
+      ctx.lineTo(x + 78, yy + 18);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(x + w - 18, yy + 28);
+      ctx.lineTo(x + w - 54, yy + 28);
+      ctx.lineTo(x + w - 76, yy + 46);
       ctx.stroke();
     }
+
+    if (cyberGateImage?.complete && cyberGateImage.naturalWidth) {
+      const frame = ready ? 0 : 5;
+      drawSheetCell(cyberGateImage, 6, 1, frame, 0, x - 12, y + 126, w + 24, 286, 0.96);
+    }
+
+    ctx.globalCompositeOperation = "screen";
+    ctx.strokeStyle = ready ? `rgba(56,219,255,${pulse * 0.9})` : `rgba(255,79,154,${pulse})`;
+    ctx.lineWidth = 6;
+    ctx.beginPath();
+    ctx.moveTo(x + w * 0.5, y + 38);
+    ctx.lineTo(x + w * 0.5, y + h - 36);
+    ctx.stroke();
+
+    const core = ctx.createRadialGradient(x + w * 0.5, y + h * 0.48, 4, x + w * 0.5, y + h * 0.48, 58);
+    core.addColorStop(0, ready ? "rgba(56,219,255,0.9)" : "rgba(255,79,154,0.84)");
+    core.addColorStop(0.45, "rgba(165,34,255,0.24)");
+    core.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = core;
+    ctx.beginPath();
+    ctx.arc(x + w * 0.5, y + h * 0.48, 62, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.globalCompositeOperation = "source-over";
+    ctx.fillStyle = "rgba(8,8,15,0.88)";
+    ctx.strokeStyle = ready ? colors.cyan : colors.gold;
+    ctx.lineWidth = 3;
+    roundedRect(x + 34, y + h - 96, w - 68, 54, 12, true, true);
+    const keyCount = Math.min(3, state.keys);
+    const cellCount = Math.min(3, undergroundCellCount(state));
+    for (let i = 0; i < 3; i++) {
+      ctx.fillStyle = i < keyCount ? colors.gold : "rgba(255,214,109,0.18)";
+      ctx.beginPath();
+      ctx.arc(x + 55 + i * 24, y + h - 72, 6, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = i < cellCount ? colors.cyan : "rgba(56,219,255,0.14)";
+      ctx.fillRect(x + 49 + i * 24, y + h - 55, 12, 5);
+    }
     ctx.restore();
+
+    if (cyberGateImage?.complete && cyberGateImage.naturalWidth) return;
+
+    const gateImage = images.missionGate;
+    if (gateImage?.complete && gateImage.naturalWidth) {
+      const frame = ready ? Math.floor(state.time * 7) % 4 : Math.floor(state.time * 2) % 2;
+      drawSheetCell(gateImage, 4, 1, frame, 0, gx - 26, 312, 144, 320, 0.98);
+      return;
+    }
   }
 
   function drawExtraction(state) {
@@ -5050,9 +5164,29 @@
     const x = extractionX(state);
     const y = 468;
     const portalImage = images.missionPortal;
+    ctx.save();
+    ctx.shadowColor = "rgba(255,79,154,0.72)";
+    ctx.shadowBlur = 26;
+    ctx.globalCompositeOperation = "screen";
+    const outer = ctx.createRadialGradient(x, y, 10, x, y, 138);
+    outer.addColorStop(0, "rgba(255,243,209,0.82)");
+    outer.addColorStop(0.28, "rgba(255,79,154,0.58)");
+    outer.addColorStop(0.7, "rgba(56,219,255,0.18)");
+    outer.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = outer;
+    ctx.beginPath();
+    ctx.ellipse(x, y, 104, 148, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalCompositeOperation = "source-over";
+    ctx.fillStyle = "rgba(5,6,12,0.72)";
+    ctx.strokeStyle = colors.gold;
+    ctx.lineWidth = 4;
+    roundedRect(x - 82, y - 138, 164, 276, 34, true, true);
+    ctx.globalCompositeOperation = "screen";
     if (portalImage?.complete && portalImage.naturalWidth) {
       const frame = Math.floor(t * 10) % 8;
       drawSheetCell(portalImage, 8, 1, frame, 0, x - 96, y - 132, 192, 256, 0.96);
+      ctx.restore();
       return;
     }
 
@@ -5070,6 +5204,7 @@
     ctx.beginPath();
     ctx.ellipse(x, y, 70 + Math.sin(t * 5) * 8, 112, 0, 0, Math.PI * 2);
     ctx.stroke();
+    ctx.restore();
   }
 
   function drawArenaLockGates(state) {
