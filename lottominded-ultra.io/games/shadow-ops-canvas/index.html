@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
     <title>ROBOT RAHBE</title>
     <link rel="icon" href="data:," />
-    <link rel="stylesheet" href="./style.css?v=title-card-blend-4" />
+    <link rel="stylesheet" href="./style.css?v=result-share-1" />
   </head>
   <body>
     <main class="game-shell" aria-label="ROBOT RAHBE browser game">
@@ -47,7 +47,19 @@
             <button data-action="purchase">Buy Collectible</button>
             <button data-action="settings">Settings</button>
           </div>
-          <p class="control-strip">P1: WASD/arrows, Space, J/K/L. P2: T/F/G/H, R, Y/U/I or numpad.</p>
+          <p class="control-strip" aria-label="Player one controls: W A S D to move, Space to jump, J to fire, K to dash, and L for overdrive.">
+            <span class="control-player">P1</span>
+            <span class="wasd-keypad" aria-hidden="true">
+              <kbd class="control-key control-key--w">W</kbd>
+              <kbd class="control-key">A</kbd>
+              <kbd class="control-key">S</kbd>
+              <kbd class="control-key">D</kbd>
+            </span>
+            <kbd class="control-key control-key--wide" title="Jump">SPACE</kbd>
+            <kbd class="control-key" title="Fire">J</kbd>
+            <kbd class="control-key" title="Dash">K</kbd>
+            <kbd class="control-key" title="Overdrive">L</kbd>
+          </p>
         </div>
       </section>
 
@@ -140,7 +152,7 @@
           </div>
           <div class="lottery-panel" aria-label="Generated lottery numbers">
             <div class="lottery-panel__header">
-              <span>Level 3 Vault Drop</span>
+              <span id="resultLotteryLevel">Level 1 Vault Drop</span>
               <strong id="resultLotterySeed">DROP 0000</strong>
             </div>
             <div class="lottery-row">
@@ -155,7 +167,7 @@
               <span>Pick 6 Mega</span>
               <strong id="resultLotto6">-- -- -- -- -- + --</strong>
             </div>
-            <p class="lottery-disclaimer">Random number generator - not an official lottery ticket or guarantee.</p>
+            <p class="lottery-disclaimer">Beat2Lotto and LottoMind are entertainment and creative number-generation tools. Generated numbers do not predict or guarantee lottery results.</p>
             <details class="lottery-drops">
               <summary>Run Lottery Drops</summary>
               <div id="runLotteryDrops" class="lottery-drops__list"></div>
@@ -164,6 +176,15 @@
           <div class="button-row">
             <button class="primary" data-action="restart">Replay</button>
             <button data-action="copy-all-lottery">Copy All Drops</button>
+            <div class="result-share">
+              <button id="shareResultButton" type="button" data-action="share-result" aria-expanded="false" aria-controls="resultShareMenu">Share Result</button>
+              <div id="resultShareMenu" class="result-share__menu" role="group" aria-label="Share result" hidden>
+                <button type="button" data-share-platform="facebook">Facebook</button>
+                <button type="button" data-share-platform="instagram">Instagram</button>
+                <button type="button" data-share-platform="x">X</button>
+              </div>
+              <span id="resultShareStatus" class="result-share__status" aria-live="polite"></span>
+            </div>
             <button data-action="title">Title</button>
           </div>
         </div>
@@ -191,11 +212,13 @@
           <div class="terminal-meta">
             <span id="terminalRerolls">Rerolls 0/2</span>
             <span>Cost 25 shards</span>
+            <span id="collectorTerminalBadge" class="collector-terminal-badge" hidden>Vault Guardian Series 01</span>
           </div>
-          <p class="lottery-disclaimer">Random number generator - not an official lottery ticket or guarantee.</p>
+          <p class="lottery-disclaimer">Beat2Lotto and LottoMind are entertainment and creative number-generation tools. Generated numbers do not predict or guarantee lottery results.</p>
           <p id="lotteryCopyStatus" class="copy-status" aria-live="polite"></p>
           <div class="button-row">
             <button id="generateLotteryButton" class="primary" data-action="generate-lottery">Generate Numbers</button>
+            <button id="premiumLotteryButton" class="premium-lottery-button" type="button" disabled>Premium Convert</button>
             <button id="copyLotteryButton" data-action="copy-lottery" disabled>Copy</button>
             <button data-action="close-lottery">Continue</button>
           </div>
@@ -253,9 +276,9 @@
       </div>
     </main>
     <script src="../../assets/js/lm-game-rewards-sdk.js?v=rewards-sdk-1"></script>
-    <script src="./src/mobile-touch.js?v=touch-control-1"></script>
+    <script src="./src/mobile-touch.js?v=touch-control-3"></script>
     <script type="module" src="./src/startup3d.js?v=startup3d-opengw-1"></script>
-    <script src="./src/game.js?v=gate-wall-undo-1"></script>
+  <script src="./src/game.js?v=result-share-4"></script>
     <script src="./src/brand-title-v2.js?v=title-fit-1"></script>
   </body>
 </html>

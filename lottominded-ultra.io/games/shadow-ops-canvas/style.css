@@ -611,6 +611,82 @@ h2 {
   font-size: 0.84rem;
   font-weight: 700;
   line-height: 1.45;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.control-player {
+  color: var(--gold);
+  font-size: 0.7rem;
+  font-weight: 950;
+}
+
+.wasd-keypad {
+  display: grid;
+  grid-template-columns: repeat(3, 24px);
+  grid-template-rows: repeat(2, 22px);
+  gap: 3px;
+}
+
+.wasd-keypad .control-key--w {
+  grid-column: 2;
+}
+
+.wasd-keypad .control-key:not(.control-key--w):nth-of-type(2) {
+  grid-column: 1;
+}
+
+.control-key {
+  box-sizing: border-box;
+  display: inline-grid;
+  place-items: center;
+  width: 24px;
+  min-width: 24px;
+  height: 22px;
+  padding: 0;
+  border: 1px solid rgba(255, 214, 109, 0.72);
+  border-bottom-width: 3px;
+  border-radius: 4px;
+  background:
+    linear-gradient(180deg, rgba(34, 25, 42, 0.96), rgba(7, 5, 10, 0.98));
+  color: #fff3d1;
+  font: 900 0.64rem/1 system-ui, sans-serif;
+  letter-spacing: 0;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    0 3px 8px rgba(0, 0, 0, 0.38),
+    0 0 8px rgba(165, 34, 255, 0.14);
+}
+
+.control-key--wide {
+  width: 58px;
+  min-width: 58px;
+}
+
+@media (max-width: 520px) {
+  .control-strip {
+    margin-top: 12px;
+    gap: 5px;
+  }
+
+  .wasd-keypad {
+    grid-template-columns: repeat(3, 22px);
+    grid-template-rows: repeat(2, 20px);
+  }
+
+  .control-key {
+    width: 22px;
+    min-width: 22px;
+    height: 20px;
+    font-size: 0.58rem;
+  }
+
+  .control-key--wide {
+    width: 52px;
+    min-width: 52px;
+  }
 }
 
 .load-track {
@@ -1089,6 +1165,49 @@ h2 {
   font-size: 0.68rem;
 }
 
+.result-share {
+  position: relative;
+  display: grid;
+  gap: 6px;
+}
+
+.result-share__menu {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 7px);
+  z-index: 4;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(82px, 1fr));
+  gap: 6px;
+  padding: 7px;
+  border: 1px solid rgba(56, 219, 255, 0.68);
+  border-radius: 6px;
+  background: rgba(3, 6, 12, 0.97);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.58), inset 0 0 20px rgba(143, 55, 255, 0.1);
+}
+
+.result-share__menu[hidden] {
+  display: none;
+}
+
+.results-panel .result-share__menu button {
+  min-width: 82px;
+  min-height: 34px;
+  padding-inline: 9px;
+  font-size: 0.6rem;
+}
+
+.result-share__status {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 4px);
+  width: min(260px, 70vw);
+  color: var(--cyan);
+  font-size: 0.56rem;
+  line-height: 1.3;
+  text-align: right;
+}
+
 .purchase-panel {
   width: min(820px, calc(100vw - 36px));
   display: grid;
@@ -1343,6 +1462,46 @@ h2 {
   text-transform: uppercase;
 }
 
+.collector-terminal-badge {
+  padding: 5px 8px;
+  border: 1px solid rgba(255, 214, 109, 0.72);
+  border-radius: 4px;
+  color: #fff0a8;
+  background: rgba(38, 79, 77, 0.68);
+  box-shadow: 0 0 14px rgba(255, 214, 109, 0.18);
+}
+
+.premium-lottery-button {
+  border-color: rgba(255, 214, 109, 0.82) !important;
+  color: #fff3ad !important;
+  background: linear-gradient(180deg, rgba(58, 91, 89, 0.98), rgba(15, 38, 53, 0.98)) !important;
+}
+
+.premium-lottery-button:not(:disabled):hover,
+.premium-lottery-button:not(:disabled):focus-visible {
+  color: #061219 !important;
+  background: linear-gradient(90deg, #eddc76, #42e4e6) !important;
+  box-shadow: 0 0 22px rgba(68, 228, 230, 0.3);
+}
+
+.premium-lottery-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
+.lottery-ticket.is-premium-conversion {
+  border-color: rgba(255, 214, 109, 0.78);
+  background:
+    linear-gradient(90deg, rgba(255, 214, 109, 0.12), transparent 46%),
+    linear-gradient(135deg, rgba(42, 227, 235, 0.08), rgba(9, 18, 35, 0.96));
+  box-shadow: inset 0 0 22px rgba(62, 223, 230, 0.1), 0 0 20px rgba(255, 214, 109, 0.08);
+}
+
+body.has-collector-access .lottery-terminal-panel {
+  border-color: rgba(255, 214, 109, 0.62);
+  box-shadow: 0 0 45px rgba(60, 224, 234, 0.12), inset 0 0 28px rgba(255, 214, 109, 0.05);
+}
+
 .drop-status {
   color: var(--cyan);
 }
@@ -1399,6 +1558,14 @@ h2 {
 body.touch-forced .touchbar {
   width: calc(100vw - max(14px, env(safe-area-inset-left)) - max(14px, env(safe-area-inset-right)));
   max-width: 1120px;
+}
+
+body.touch-forced:not(.is-playing-mode) .touchbar {
+  display: none !important;
+}
+
+body.touch-forced.is-playing-mode .touchbar {
+  display: flex;
 }
 
 .touch-cluster {

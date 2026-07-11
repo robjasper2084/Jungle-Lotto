@@ -21,6 +21,8 @@
   const SETTINGS_KEY = "lottomind-vault-run-settings-v1";
   const QUERY = new URLSearchParams(window.location.search);
   const DEBUG = QUERY.has("debug");
+  const LOCAL_STATIC_HOST = /^(127\.0\.0\.1|localhost)$/i.test(window.location.hostname);
+  const REWARDS_DISABLED = LOCAL_STATIC_HOST && !QUERY.get("rewardsApi") && !window.LOTTOMIND_REWARDS_API_BASE_URL;
   const DRAW_DECORATIVE_WORLD_PROPS = false;
   const ACTIVE_STORAGE_KEY = DEBUG ? `${STORAGE_KEY}-debug` : STORAGE_KEY;
   const LOTTERY_STORAGE_KEY = DEBUG ? "lottomind-number-run-lottery-v1-debug" : "lottomind-number-run-lottery-v1";
@@ -72,6 +74,13 @@
     missionPortal: "./assets/mission/extraction_portal_sheet.png",
     missionGate: "./assets/mission/vault_gate_sheet.png",
     cyberGateSheet: "./assets/mission/chatgpt_cyber_vault_gate_sheet_v1.png",
+    missionPortalV2: "./assets/mission/robot_rahbe_portal_v2.png",
+    missionGateV2: "./assets/mission/robot_rahbe_vault_gate_v2.png",
+    powerupPack: "./assets/mission/robot_rahbe_powerups_v1.png",
+    arenaGateV1: "./assets/mission/robot_rahbe_arena_gate_v1.png",
+    floorLaserDormant: "./assets/mission/robot_rahbe_floor_laser_v1_frames/01.png",
+    floorLaserCharge: "./assets/mission/robot_rahbe_floor_laser_v1_frames/02.png",
+    floorLaserActive: "./assets/mission/robot_rahbe_floor_laser_v1_frames/03.png",
     missionBrandProps: "./assets/mission/branded_background_props_sheet.png",
     enemyMotion: "./assets/characters/higgsfield_enemy_motion_sheet_runtime.png",
     missionProps: "./assets/mission/higgsfield_missing_world_props_runtime_v3.png",
@@ -376,6 +385,7 @@
       gameId: "shadow_ops",
       buildId: REWARD_BUILD_ID,
       mode: modeKey === "solo" ? "solo" : "arcade",
+      disabled: REWARDS_DISABLED,
       onStatus: (event) => {
         if (event.status === "error") console.warn("[Shadow Ops rewards]", event.detail);
       }
@@ -468,17 +478,24 @@
     resultRank: document.getElementById("resultRank"),
     resultBest: document.getElementById("resultBest"),
     resultLotterySeed: document.getElementById("resultLotterySeed"),
+    resultLotteryLevel: document.getElementById("resultLotteryLevel"),
     resultPick3: document.getElementById("resultPick3"),
     resultPick4: document.getElementById("resultPick4"),
     resultLotto6: document.getElementById("resultLotto6"),
     runLotteryDrops: document.getElementById("runLotteryDrops"),
+    shareResultButton: document.getElementById("shareResultButton"),
+    resultShareMenu: document.getElementById("resultShareMenu"),
+    resultShareStatus: document.getElementById("resultShareStatus"),
     lotteryTerminalTitle: document.getElementById("lotteryTerminalTitle"),
     lotteryTerminalStatus: document.getElementById("lotteryTerminalStatus"),
+    lotteryTicket: document.getElementById("lotteryTicket"),
     terminalPick3: document.getElementById("terminalPick3"),
     terminalPick4: document.getElementById("terminalPick4"),
     terminalPick6: document.getElementById("terminalPick6"),
     terminalRerolls: document.getElementById("terminalRerolls"),
     generateLotteryButton: document.getElementById("generateLotteryButton"),
+    premiumLotteryButton: document.getElementById("premiumLotteryButton"),
+    collectorTerminalBadge: document.getElementById("collectorTerminalBadge"),
     copyLotteryButton: document.getElementById("copyLotteryButton"),
     lotteryCopyStatus: document.getElementById("lotteryCopyStatus"),
     touchUseButton: document.getElementById("touchUseButton"),
@@ -507,6 +524,18 @@
   let sfxLimiter = null;
   let gameMusic = null;
   let musicPlayBlocked = false;
+  let accountState = {
+    authenticated: false,
+    verified: false,
+    offline: false,
+    credits: 0,
+    collector: null,
+    memberships: [],
+    entitlements: {},
+    features: {},
+    creditActions: {}
+  };
+  let premiumLotteryPending = null;
 
   const touchMedia = window.matchMedia("(pointer: coarse)");
   const anyTouchMedia = window.matchMedia("(any-pointer: coarse)");
@@ -648,6 +677,7 @@
   const MISSION_BATCH_COLS = 5;
   const MISSION_BATCH_ROWS = 4;
   const CANNON_TURRET_FRAMES = 8;
+  const CANNON_TURRET_BOTTOM_PAD = [33, 35, 49, 49, 49, 35, 33, 35];
   const CANNON_TURRET = {
     width: 70,
     height: 56,
@@ -663,6 +693,7 @@
   const DRONE_LASER_FRAMES = 8;
   const DRONE_FX_FRAMES = 8;
   const CRAWLER_WALK_FRAMES = 8;
+  const CRAWLER_WALK_BOTTOM_PAD = 13;
   const CRAWLER_DOG = {
     width: 58,
     height: 42,
@@ -674,6 +705,7 @@
     fallbackStaticScaleY: 0.96
   };
   const SHIELD_ROBOT_FRAMES = 8;
+  const SHIELD_ROBOT_BOTTOM_PAD = [35, 37, 43, 35, 49, 41, 31, 103];
   const TURRET_TELEGRAPH_LENGTH = 280;
   const GAMEPLAY_FX = {
     weapon: {
@@ -789,13 +821,6 @@
     [430, 1016, 340, 124]
   ];
 
-  const PICKUP_FX_FRAMES = {
-    shard: 0,
-    key: 1,
-    overdrive: 2,
-    health: 3
-  };
-
   const PICKUP_DRAW_SCALE = {
     shard: 0.66,
     key: 0.58,
@@ -803,6 +828,15 @@
     overdrive: 0.62,
     shield: 0.56,
     weapon: 0.62
+  };
+
+  const POWERUP_PACK = {
+    health: { frame: 0, row: 0, color: colors.pink },
+    overdrive: { frame: 1, row: 0, color: colors.purple },
+    shield: { frame: 2, row: 0, color: colors.cyan },
+    spread: { frame: 0, row: 1, color: colors.pink },
+    rapid: { frame: 1, row: 1, color: colors.cyan },
+    beam: { frame: 2, row: 1, color: colors.purple }
   };
 
   const GENERATED_PROP_CELLS = [
@@ -878,7 +912,7 @@
       { sheet: "world", cell: 6, x: 2200, y: 616, w: 200, h: 184, alpha: 0.5, phase: 2.2, anchor: "bottom" },
       { sheet: "world", cell: 10, x: 3170, y: 613, w: 146, h: 172, alpha: 0.68, phase: 0.7, anchor: "bottom" },
       { sheet: "props", cell: 2, x: 3920, y: 615, w: 122, h: 156, alpha: 0.78, phase: 1.1, anchor: "bottom" },
-      { sheet: "props", cell: 7, x: 4620, y: 613, w: 210, h: 112, alpha: 0.74, phase: 2.9, anchor: "bottom" },
+      { kind: "floorRelay", x: 4620, y: 613, w: 210, h: 112, alpha: 0.88, phase: 2.9, anchor: "bottom" },
       { sheet: "world", cell: 15, x: 5750, y: 616, w: 130, h: 170, alpha: 0.7, phase: 1.5, anchor: "bottom" }
     ],
     2: [
@@ -940,6 +974,7 @@
   window.addEventListener("resize", syncViewportMode);
   window.addEventListener("orientationchange", syncViewportMode);
   bindInputs();
+  installAccountBridge();
   if (DEBUG) installDebugPanel();
   updateLoading();
   requestAnimationFrame(loop);
@@ -1174,9 +1209,6 @@
         event.preventDefault();
       }
       if (action === "start" && mode === "title") startRun("solo");
-      if (action === "pause" && mode === "playing") pauseRun();
-      else if (action === "pause" && mode === "paused") resumeRun();
-      else if (action === "pause" && mode === "lottery") closeLotteryTerminal();
     });
 
     window.addEventListener("keyup", (event) => {
@@ -1286,6 +1318,12 @@
       });
     });
 
+    document.querySelectorAll("[data-share-platform]").forEach((button) => {
+      button.addEventListener("click", () => shareResult(button.dataset.sharePlatform));
+    });
+
+    dom.premiumLotteryButton?.addEventListener("click", requestPremiumLotteryConversion);
+
     dom.soundToggle.addEventListener("change", () => updateSetting("sound", dom.soundToggle.checked));
     dom.musicToggle.addEventListener("change", () => updateSetting("music", dom.musicToggle.checked));
     dom.motionToggle.addEventListener("change", () => updateSetting("reducedMotion", dom.motionToggle.checked));
@@ -1307,6 +1345,7 @@
       <button type="button" data-debug="wave">Wave</button>
       <button type="button" data-debug="underground-entrance">UG Door</button>
       <button type="button" data-debug="underground-enter">UG Enter</button>
+      <button type="button" data-debug="underground-gate">UG Gate</button>
       <button type="button" data-debug="underground-cells">UG Cells</button>
       <button type="button" data-debug="underground-complete">UG Clear</button>
       <button type="button" data-debug="surface-return">Surface</button>
@@ -1374,6 +1413,16 @@
     if (action === "underground-enter") {
       if (!isUnderground(run)) enterUnderground(run);
       setObjective(run, "Debug: underground sector", 1.8);
+    }
+    if (action === "underground-gate") {
+      if (!isUnderground(run)) enterUnderground(run);
+      const key = undergroundKey(run);
+      const area = activeArea(run);
+      run.undergroundCells[key] = 0;
+      run.undergroundComplete[key] = false;
+      placePlayersAt(run, area.exitX - 250, (area.exitY || 620) - 86);
+      run.cameraX = clamp(area.exitX - W * 0.66, 0, worldWidth(run) - W);
+      setObjective(run, "Debug: underground gate locked", 1.8);
     }
     if (action === "underground-cells") {
       if (!isUnderground(run)) enterUnderground(run);
@@ -1507,6 +1556,7 @@
     if (action === "generate-lottery") generateLotteryFromTerminal();
     if (action === "copy-lottery") copyTerminalTicket();
     if (action === "copy-all-lottery") copyAllLotteryDrops();
+    if (action === "share-result") toggleResultShareMenu();
     if (action === "close-lottery") closeLotteryTerminal();
   }
 
@@ -1555,6 +1605,7 @@
   function setMode(next) {
     mode = next;
     document.body.classList.toggle("is-title-mode", next === "title");
+    document.body.classList.toggle("is-playing-mode", next === "playing");
     dom.loadingScreen.classList.toggle("is-hidden", next !== "loading");
     dom.titleScreen.classList.toggle("is-hidden", next !== "title");
     dom.purchaseScreen.classList.toggle("is-hidden", next !== "purchase");
@@ -1563,6 +1614,7 @@
     dom.resultsScreen.classList.toggle("is-hidden", next !== "results");
     dom.lotteryTerminalScreen.classList.toggle("is-hidden", next !== "lottery");
     dom.hud.classList.toggle("is-hidden", !(next === "playing" || next === "paused" || next === "settings" || next === "lottery"));
+    updatePremiumLotteryButton();
     syncGameMusic();
     updateHUD();
   }
@@ -1595,11 +1647,13 @@
 
   function pauseRun() {
     if (!run || mode !== "playing") return;
+    clearInputState();
     setMode("paused");
   }
 
   function resumeRun() {
     if (!run) return;
+    clearInputState();
     setMode("playing");
   }
 
@@ -1811,7 +1865,7 @@
     p.airDashUsed = false;
     p.hp = p.maxHp;
     p.facing = 1;
-    p.invuln = fresh ? 0 : 1.2;
+    p.invuln = fresh ? 1.8 : 1.2;
     p.overdrive = fresh ? p.overdrive : Math.max(p.overdrive, 42);
     p.overdriveTime = 0;
     p.weapon = fresh ? "heart" : p.weapon;
@@ -2317,6 +2371,139 @@
     canvas.focus?.();
   }
 
+  function installAccountBridge() {
+    window.addEventListener("message", (event) => {
+      if (event.origin !== location.origin || event.source !== window.parent || !event.data) return;
+      const message = event.data;
+      if (message.type === "lottomind:account-state") {
+        const next = message.snapshot || {};
+        accountState = {
+          authenticated: Boolean(next.authenticated),
+          verified: Boolean(next.verified),
+          offline: Boolean(next.offline),
+          credits: Number.isFinite(Number(next.credits)) ? Math.max(0, Number(next.credits)) : 0,
+          collector: next.collector || null,
+          memberships: Array.isArray(next.memberships) ? next.memberships : [],
+          entitlements: next.entitlements && typeof next.entitlements === "object" ? next.entitlements : {},
+          features: next.features && typeof next.features === "object" ? next.features : {},
+          creditActions: next.creditActions && typeof next.creditActions === "object" ? next.creditActions : {}
+        };
+        document.body.classList.toggle("has-collector-access", accountState.collector?.status === "active");
+        updatePremiumLotteryButton();
+        return;
+      }
+      if (!premiumLotteryPending || message.requestId !== premiumLotteryPending.requestId) return;
+      if (message.type === "lottomind:credit-action-denied") {
+        premiumLotteryPending = null;
+        dom.lotteryCopyStatus.textContent = message.message || creditDenialMessage(message.reason);
+        updatePremiumLotteryButton();
+        return;
+      }
+      if (message.type !== "lottomind:credit-action-approved") return;
+      const pending = premiumLotteryPending;
+      premiumLotteryPending = null;
+      try {
+        completePremiumLotteryConversion();
+        accountState.credits = Number.isFinite(Number(message.balance)) ? Math.max(0, Number(message.balance)) : accountState.credits;
+        window.parent.postMessage({
+          type: "lottomind:credit-action-completed",
+          requestId: pending.requestId,
+          transactionId: message.transactionId
+        }, location.origin);
+      } catch (_error) {
+        window.parent.postMessage({
+          type: "lottomind:credit-action-failed",
+          requestId: pending.requestId,
+          transactionId: message.transactionId
+        }, location.origin);
+        dom.lotteryCopyStatus.textContent = "Premium conversion did not complete. The wallet is restoring the credits.";
+      }
+      updatePremiumLotteryButton();
+    });
+    if (window.parent !== window) {
+      window.parent.postMessage({ type: "lottomind:game-ready" }, location.origin);
+    }
+    updatePremiumLotteryButton();
+  }
+
+  function creditDenialMessage(reason) {
+    if (reason === "AUTH_REQUIRED") return "Sign in through Collector Access to use premium actions.";
+    if (reason === "ACCOUNT_OFFLINE") return "The verified wallet is offline. Premium actions are paused.";
+    if (reason === "INSUFFICIENT_CREDITS") return "Not enough Lotto Credits for this premium action.";
+    if (reason === "CANCELLED") return "Premium conversion cancelled. No credits were used.";
+    return "Premium conversion is unavailable right now.";
+  }
+
+  function premiumLotteryPrice() {
+    const configured = Number(accountState.creditActions?.["beat2lotto.premium-number-conversion"]);
+    return Number.isFinite(configured) && configured > 0 ? configured : null;
+  }
+
+  function updatePremiumLotteryButton() {
+    const button = dom.premiumLotteryButton;
+    if (!button) return;
+    const price = premiumLotteryPrice();
+    const activeCollector = accountState.collector?.status === "active";
+    dom.collectorTerminalBadge.hidden = !activeCollector;
+    button.textContent = premiumLotteryPending
+      ? "Verifying Wallet..."
+      : !accountState.authenticated
+        ? "Sign In for Premium"
+        : accountState.offline || !accountState.verified
+          ? "Wallet Offline"
+          : price
+            ? `Premium Convert · ${price} Credits`
+            : "Premium Convert";
+    button.disabled = Boolean(
+      premiumLotteryPending ||
+      mode !== "lottery" ||
+      !run ||
+      !accountState.authenticated ||
+      accountState.offline ||
+      !accountState.verified ||
+      !price ||
+      accountState.credits < price
+    );
+    button.title = button.disabled && accountState.authenticated && price && accountState.credits < price
+      ? `Requires ${price} Lotto Credits. Verified balance: ${accountState.credits}.`
+      : "Convert the current entertainment pick using the verified Lotto Credit wallet.";
+  }
+
+  function requestPremiumLotteryConversion() {
+    if (premiumLotteryPending || !run || mode !== "lottery") return;
+    const price = premiumLotteryPrice();
+    if (!accountState.authenticated || !accountState.verified || accountState.offline || !price || accountState.credits < price) {
+      updatePremiumLotteryButton();
+      return;
+    }
+    const requestId = crypto.randomUUID ? crypto.randomUUID() : `premium-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    premiumLotteryPending = { requestId };
+    dom.lotteryCopyStatus.textContent = "Waiting for verified wallet confirmation...";
+    updatePremiumLotteryButton();
+    window.parent.postMessage({
+      type: "lottomind:credit-action-request",
+      requestId,
+      action: "beat2lotto.premium-number-conversion"
+    }, location.origin);
+  }
+
+  function completePremiumLotteryConversion() {
+    if (!run || mode !== "lottery") throw new Error("Lottery terminal is not active");
+    const existing = currentLevelTicket(run);
+    const ticket = claimLotteryTicket(run, "premium-number-conversion", {
+      replace: Boolean(existing),
+      rerollsUsed: existing?.rerollsUsed || run.terminal.rerollsUsed || 0
+    });
+    dom.lotteryTicket?.classList.add("is-premium-conversion");
+    dom.lotteryCopyStatus.textContent = "Premium entertainment pick converted and saved.";
+    if (!settings.reducedMotion) {
+      showTicketPlaceholders();
+      setTimeout(() => updateTerminalDom(ticket), 420);
+    } else {
+      updateTerminalDom(ticket);
+    }
+  }
+
   function generateLotteryFromTerminal() {
     if (!run || mode !== "lottery") return;
     const existing = currentLevelTicket(run);
@@ -2355,6 +2542,7 @@
     dom.generateLotteryButton.textContent = ticket ? "Reroll Numbers" : "Generate Numbers";
     dom.generateLotteryButton.disabled = Boolean(ticket && (rerollsUsed >= 2 || run.shards < 25));
     dom.copyLotteryButton.disabled = !ticket;
+    updatePremiumLotteryButton();
   }
 
   function renderPick6Balls(target, value) {
@@ -2384,7 +2572,10 @@
   async function copyText(text) {
     try {
       if (navigator.clipboard?.writeText) {
-        await navigator.clipboard.writeText(text);
+        await Promise.race([
+          navigator.clipboard.writeText(text),
+          new Promise((_, reject) => window.setTimeout(() => reject(new Error("Clipboard timeout")), 900))
+        ]);
         return true;
       }
     } catch {}
@@ -2420,6 +2611,65 @@
     await copyText(tickets.map((ticket) => formatTicketCopy(ticket)).join("\n\n"));
   }
 
+  function toggleResultShareMenu(forceOpen) {
+    if (!dom.resultShareMenu || !dom.shareResultButton) return;
+    const open = typeof forceOpen === "boolean" ? forceOpen : dom.resultShareMenu.hidden;
+    dom.resultShareMenu.hidden = !open;
+    dom.shareResultButton.setAttribute("aria-expanded", String(open));
+    if (open && dom.resultShareStatus) dom.resultShareStatus.textContent = "";
+  }
+
+  function resultShareText() {
+    const pick6Balls = Array.from(dom.resultLotto6?.querySelectorAll(".pick6-ball") || []).map((ball) => ball.textContent.trim());
+    const pick6 = pick6Balls.length ? pick6Balls.join(" ") : dom.resultLotto6?.textContent?.trim().replace(/\s+/g, " ") || "------";
+    return [
+      `ROBOT RAHBE - ${dom.resultTitle?.textContent || "Run Result"}`,
+      `Score ${dom.resultScore?.textContent || "0"} | Rank ${dom.resultRank?.textContent || "-"} | Time ${dom.resultTime?.textContent || "00:00"}`,
+      `Pick 3 ${dom.resultPick3?.textContent || "---"} | Pick 4 ${dom.resultPick4?.textContent || "----"} | Pick 6 Mega ${pick6}`
+    ].join("\n");
+  }
+
+  function resultShareUrl() {
+    const url = new URL(window.location.href);
+    url.searchParams.delete("debug");
+    url.searchParams.delete("touch");
+    url.searchParams.delete("shareTest");
+    return url.toString();
+  }
+
+  function openShareTarget(target) {
+    if (QUERY.has("shareTest")) {
+      document.body.setAttribute("data-share-target", target);
+      return;
+    }
+    window.open(target, "_blank", "noopener,noreferrer");
+  }
+
+  async function shareResult(platform) {
+    const text = resultShareText();
+    const url = resultShareUrl();
+    if (platform === "instagram") {
+      openShareTarget("https://www.instagram.com/");
+      const copied = await copyText(`${text}\n${url}`);
+      if (dom.resultShareStatus) {
+        dom.resultShareStatus.textContent = copied ? "Result copied. Paste it into Instagram." : "Open Instagram and share your result.";
+      }
+      toggleResultShareMenu(false);
+      return;
+    }
+    let target = "";
+    if (platform === "facebook") {
+      target = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}&quote=${encodeURIComponent(text)}`;
+    } else if (platform === "x") {
+      target = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
+    }
+    if (target) openShareTarget(target);
+    if (platform !== "instagram" && dom.resultShareStatus) {
+      dom.resultShareStatus.textContent = `Opening ${platform === "x" ? "X" : "Facebook"}...`;
+    }
+    toggleResultShareMenu(false);
+  }
+
   function clearInputState() {
     keyboardDown.clear();
     keyboardPressed.clear();
@@ -2452,6 +2702,7 @@
       fireFlash: 0,
       damageCd: 0,
       dead: false,
+      deathTimer: 0,
       baseY: groundY,
       phase: Math.random() * Math.PI * 2
     };
@@ -3176,7 +3427,10 @@
 
   function updateEnemies(state, dt) {
     for (const enemy of state.enemies) {
-      if (enemy.dead) continue;
+      if (enemy.dead) {
+        enemy.deathTimer = Math.max(0, (enemy.deathTimer || 0) - dt);
+        continue;
+      }
       const target = nearestPlayer(state, enemy.x + enemy.w * 0.5, enemy.y + enemy.h * 0.5);
       if (!target) continue;
       enemy.hurt = Math.max(0, enemy.hurt - dt);
@@ -3201,7 +3455,10 @@
         }
       }
     }
-    state.enemies = state.enemies.filter((enemy) => !enemy.dead && (enemy.x > state.cameraX - 260 || state.arenaLock?.id === enemy.waveId));
+    state.enemies = state.enemies.filter((enemy) => {
+      const visibleAfterDefeat = !enemy.dead || enemy.deathTimer > 0;
+      return visibleAfterDefeat && (enemy.x > state.cameraX - 260 || state.arenaLock?.id === enemy.waveId);
+    });
   }
 
   function updateCrawler(state, enemy, dt, p) {
@@ -3360,6 +3617,8 @@
     addFxBurst(state, enemy.x + enemy.w * 0.5, enemy.y + enemy.h * 0.45, FX_ROWS.hitSpark, enemy.hp <= 0 ? 176 : 124, 0.38);
     if (enemy.hp <= 0) {
       enemy.dead = true;
+      enemy.deathTimer = 0.34;
+      enemy.vx = 0;
       state.stats.kills += 1;
       if (sourcePlayer) sourcePlayer.overdrive = clamp(sourcePlayer.overdrive + 8, 0, 100);
       addCombo(state, 1);
@@ -3434,6 +3693,7 @@
     boss.hurt = Math.max(0, boss.hurt - dt);
     boss.shieldTime = Math.max(0, boss.shieldTime - dt);
     boss.telegraph = Math.max(0, boss.telegraph - dt);
+    boss.attackAnim = Math.max(0, (boss.attackAnim || 0) - dt);
     boss.y = boss.baseY + Math.sin(boss.time * boss.floatSpeed) * boss.floatAmp;
 
     const nextPhase = boss.hp <= boss.maxHp * 0.33 ? 3 : boss.hp <= boss.maxHp * 0.66 ? 2 : 1;
@@ -3474,6 +3734,7 @@
   }
 
   function bossAttack(state, boss) {
+    boss.attackAnim = 0.46;
     if (boss.kind === "jackpotForgeTitan") {
       bossAttackForge(state, boss);
       return;
@@ -3805,10 +4066,11 @@
       shieldTime: 0,
       shieldCycle: forgeBoss ? 3.2 : 4.8,
       attackCd: 1.2,
+      attackAnim: 0,
       attackName: finalBoss ? "Guardian Core" : forgeBoss ? "Ground Slam" : "Aimed Violet Bolts",
       phaseTitle: bossPhaseTitle(level.boss, 1),
-      floatAmp: forgeBoss ? 6 : 18,
-      floatSpeed: forgeBoss ? 0.65 : 1.4
+      floatAmp: forgeBoss ? 0 : 18,
+      floatSpeed: forgeBoss ? 0 : 1.4
     };
   }
 
@@ -4019,11 +4281,14 @@
     dom.resultCombo.textContent = String(stats.maxCombo);
     dom.resultRank.textContent = rank;
     dom.resultBest.textContent = best.fastest ? `${best.score} / ${formatTime(best.fastest)}` : String(best.score);
+    if (dom.resultLotteryLevel) dom.resultLotteryLevel.textContent = `Level ${finalTicket.levelId || run.level.id} Vault Drop`;
     dom.resultLotterySeed.textContent = ticketDropLabel(finalTicket);
     dom.resultPick3.textContent = finalTicket.pick3;
     dom.resultPick4.textContent = finalTicket.pick4;
     renderPick6Balls(dom.resultLotto6, finalTicket.pick6);
     renderRunLotteryDrops(run);
+    toggleResultShareMenu(false);
+    if (dom.resultShareStatus) dom.resultShareStatus.textContent = "";
     if (victory) {
       emitRewardEvent("shadow.campaign_completed", {
         completedLevelIds: run.levelResults.map((level) => String(level.id)),
@@ -4612,6 +4877,11 @@
     for (const prop of props) {
       if (prop.x + prop.w < state.cameraX - 200 || prop.x - prop.w > state.cameraX + W + 200) continue;
       if (!visualBoundsFullyInView(state, prop.x - prop.w * 0.62, prop.x + prop.w * 0.62, 6)) continue;
+      if (prop.kind === "floorRelay") {
+        const motion = settings.reducedMotion ? 0 : Math.sin(state.time * 1.15 + prop.phase) * 2.5;
+        drawVaultFloorRelayAsset(prop.x, prop.y + motion, prop.w, prop.h, state.level?.palette || {}, prop.alpha || 0.88);
+        continue;
+      }
       const image = prop.sheet === "world" ? images.missionBatchWorld : images.missionBatchProps;
       if (!image?.complete || !image.naturalWidth) continue;
 
@@ -4639,14 +4909,71 @@
     }
   }
 
+  function drawVaultFloorRelayAsset(x, y, w, h, palette, alpha = 0.88) {
+    const trim = palette?.trim || colors.gold;
+    const glow = palette?.glow || colors.purple;
+    const accent = palette?.accent || colors.pink;
+    const top = y - h * 0.35;
+    const baseH = h * 0.34;
+
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.shadowColor = withAlpha(glow, 0.3);
+    ctx.shadowBlur = 16;
+
+    const rail = ctx.createLinearGradient(x - w * 0.5, top, x + w * 0.5, top + baseH);
+    rail.addColorStop(0, "rgba(14, 10, 18, 0)");
+    rail.addColorStop(0.12, "#0b0710");
+    rail.addColorStop(0.5, "#22152b");
+    rail.addColorStop(0.88, "#0b0710");
+    rail.addColorStop(1, "rgba(14, 10, 18, 0)");
+    ctx.fillStyle = rail;
+    roundedRect(x - w * 0.5, top, w, baseH, 8, true, false);
+
+    ctx.shadowBlur = 0;
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = withAlpha(trim, 0.64);
+    roundedRect(x - w * 0.46, top + 4, w * 0.92, baseH - 8, 7, false, true);
+
+    ctx.globalCompositeOperation = "screen";
+    const core = ctx.createLinearGradient(x - w * 0.38, top, x + w * 0.38, top);
+    core.addColorStop(0, withAlpha(glow, 0.02));
+    core.addColorStop(0.5, withAlpha(accent, 0.52));
+    core.addColorStop(1, withAlpha(glow, 0.02));
+    ctx.fillStyle = core;
+    roundedRect(x - w * 0.36, top + baseH * 0.4, w * 0.72, 7, 4, true, false);
+
+    ctx.strokeStyle = withAlpha(trim, 0.44);
+    ctx.lineWidth = 1.5;
+    for (let i = -2; i <= 2; i += 1) {
+      const px = x + i * w * 0.13;
+      ctx.beginPath();
+      ctx.moveTo(px - 14, top + baseH * 0.18);
+      ctx.lineTo(px + 6, top + baseH * 0.18);
+      ctx.lineTo(px + 16, top + baseH * 0.36);
+      ctx.stroke();
+    }
+
+    ctx.fillStyle = withAlpha(trim, 0.75);
+    for (let i = -1; i <= 1; i += 1) {
+      ctx.beginPath();
+      ctx.arc(x + i * w * 0.22, top + baseH * 0.52, 3.5, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
   function drawWorldAssetPass(state) {
-    if (!state) return;
+    if (!state || !DRAW_DECORATIVE_WORLD_PROPS) return;
     const area = activeArea(state);
     const palette = state.level?.palette || {};
     const modules = isUnderground(state)
       ? buildUndergroundWorldModules(state, area)
       : buildSurfaceWorldModules(state);
     for (const module of modules) {
+      // Functional gates and portals render later in a single authoritative pass.
+      // Drawing their decorative housings here caused doubled, translucent panels.
+      if (module.type === "wall" || module.type === "portal" || module.type === "gate") continue;
       const pad = module.type === "wall" ? module.w * 0.45 : module.w * 0.8;
       if (module.x + module.w < state.cameraX - pad || module.x - module.w > state.cameraX + W + pad) continue;
       if (module.type === "portal") {
@@ -4814,6 +5141,16 @@
   }
 
   function drawGateFrameAsset(x, y, w, h, palette, module = {}) {
+    const gateV2 = images.missionGateV2;
+    if (gateV2?.complete && gateV2.naturalWidth) {
+      const targetW = Math.max(118, w + 38);
+      const targetH = Math.max(178, h + 10);
+      ctx.save();
+      ctx.globalAlpha = module.open ? 0.42 : 0.94;
+      ctx.drawImage(gateV2, x - (targetW - w) * 0.5, y - 6, targetW, targetH);
+      ctx.restore();
+      return;
+    }
     const gateImage = images.cyberGateSheet;
     if (gateImage?.complete && gateImage.naturalWidth) {
       const frame = module.open ? 1 : 0;
@@ -4844,6 +5181,19 @@
   }
 
   function drawPortalHousingAsset(x, groundY, kind, palette, module = {}) {
+    const portalV2 = images.missionPortalV2;
+    if (portalV2?.complete && portalV2.naturalWidth) {
+      const w = module.w || 150;
+      const h = module.h || 220;
+      const pulse = 0.8 + Math.sin((module.time || 0) * 4 + x * 0.01) * 0.12;
+      ctx.save();
+      ctx.shadowColor = kind === "exit" ? colors.cyan : colors.purple;
+      ctx.shadowBlur = 12 + pulse * 10;
+      ctx.globalAlpha = kind === "dormant" ? 0.56 : 0.94;
+      ctx.drawImage(portalV2, x - w * 0.5, groundY - h, w, h);
+      ctx.restore();
+      return;
+    }
     const trim = palette.trim || colors.gold;
     const glow = kind === "exit" ? colors.cyan : palette.glow || colors.purple;
     const w = module.w || 150;
@@ -4980,10 +5330,46 @@
     const pulse = 0.62 + Math.sin(state.time * 4.8) * 0.18;
     const color = portal.type === "exit" ? colors.cyan : colors.purple;
     const accent = portal.type === "exit" ? colors.gold : colors.pink;
-    const portalImage = images.missionPortal;
-    const frame = Math.floor(state.time * 9) % 8;
+    const portalImage = images.missionPortalV2;
+    const arenaGate = images.arenaGateV1;
     const x = portal.x;
-    const y = portal.y - 82;
+    const groundY = portal.y;
+    const y = groundY - 82;
+
+    if (portal.type === "cell-lock") {
+      ctx.save();
+      const gateW = 104;
+      const gateH = 326;
+      ctx.shadowColor = colors.purple;
+      ctx.shadowBlur = 10 + pulse * 12;
+      if (arenaGate?.complete && arenaGate.naturalWidth) {
+        drawSheetCellFit(arenaGate, 1, 1, 0, 0, x, groundY, gateW, gateH, 0.98, {
+          anchor: "bottom",
+          sourceInset: 2
+        });
+      } else {
+        ctx.fillStyle = "#09070c";
+        ctx.strokeStyle = colors.gold;
+        ctx.lineWidth = 4;
+        roundedRect(x - gateW * 0.5, groundY - gateH, gateW, gateH, 12, true, true);
+      }
+      ctx.globalCompositeOperation = "screen";
+      ctx.strokeStyle = `rgba(255,79,154,${0.34 + pulse * 0.34})`;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(x, groundY - gateH * 0.69);
+      ctx.lineTo(x, groundY - gateH * 0.31);
+      ctx.stroke();
+      ctx.globalCompositeOperation = "source-over";
+      ctx.font = "900 10px 'Arial Black', sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillStyle = "#ffe88a";
+      ctx.shadowColor = "rgba(0,0,0,0.9)";
+      ctx.shadowBlur = 4;
+      ctx.fillText(portal.label, x, groundY + 18);
+      ctx.restore();
+      return;
+    }
 
     ctx.save();
     ctx.translate(x, y);
@@ -4999,34 +5385,27 @@
     ctx.ellipse(0, -24, 82, 116, 0, 0, Math.PI * 2);
     ctx.fill();
 
-    if (portalImage?.complete && portalImage.naturalWidth) {
-      drawSheetCell(portalImage, 8, 1, frame, 0, -72, -154, 144, 196, 0.82);
-    }
-
-    ctx.shadowBlur = 10 + pulse * 10;
-    ctx.fillStyle = "rgba(6,7,14,0.78)";
-    ctx.strokeStyle = accent;
-    ctx.lineWidth = 3;
-    roundedRect(-44, -106, 88, 144, 18, true, true);
-
     ctx.globalCompositeOperation = "screen";
-    ctx.strokeStyle = color;
-    ctx.lineWidth = 4;
+    const core = ctx.createRadialGradient(0, -35, 4, 0, -35, 55);
+    core.addColorStop(0, withAlpha(color, 0.42 + pulse * 0.18));
+    core.addColorStop(0.62, withAlpha(color, 0.14));
+    core.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = core;
     ctx.beginPath();
-    ctx.ellipse(0, -36, 31 + pulse * 4, 64 + pulse * 8, 0, 0, Math.PI * 2);
-    ctx.stroke();
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(-18, -48);
-    ctx.lineTo(0, -24);
-    ctx.lineTo(18, -48);
-    ctx.stroke();
-
-    ctx.fillStyle = color;
-    ctx.globalAlpha = 0.28 + pulse * 0.32;
-    ctx.fillRect(-27, 14, 54, 8);
-    ctx.globalAlpha = 1;
+    ctx.ellipse(0, -35, 38, 78, 0, 0, Math.PI * 2);
+    ctx.fill();
     ctx.globalCompositeOperation = "source-over";
+    if (portalImage?.complete && portalImage.naturalWidth) {
+      ctx.globalAlpha = 0.98;
+      ctx.drawImage(portalImage, -72, -154, 144, 196);
+    } else {
+      ctx.strokeStyle = accent;
+      ctx.lineWidth = 5;
+      ctx.beginPath();
+      ctx.ellipse(0, -35, 45, 88, 0, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
 
     ctx.font = "900 10px 'Arial Black', sans-serif";
     ctx.textAlign = "center";
@@ -5042,7 +5421,12 @@
     const underground = state.level.underground;
     if (!underground) return;
     const portals = isUnderground(state)
-      ? [{ type: "exit", x: area.exitX, y: area.exitY || 620, label: undergroundComplete(state) ? "RETURN" : "3 CELLS" }]
+      ? [{
+          type: undergroundComplete(state) ? "exit" : "cell-lock",
+          x: area.exitX,
+          y: area.exitY || 620,
+          label: undergroundComplete(state) ? "RETURN" : "3 CELLS"
+        }]
       : [{ type: "entrance", x: underground.entrance.x, y: underground.entrance.y || 620, label: "UNDER" }];
     for (const portal of portals) {
       drawVaultPortalAsset(state, portal);
@@ -5054,6 +5438,30 @@
     const openLift = state.gateOpen ? 265 : 0;
     const pulse = 0.55 + Math.sin(state.gatePulse * 6) * 0.18;
     const gx = gateX(state);
+    const gateV2 = images.missionGateV2;
+    if (gateV2?.complete && gateV2.naturalWidth) {
+      const ready = gateReady(state);
+      const targetW = 166;
+      const targetH = 252;
+      ctx.save();
+      ctx.globalAlpha = state.gateOpen ? 0.46 : 0.98;
+      ctx.shadowColor = state.gateOpen ? colors.cyan : ready ? colors.cyan : colors.purple;
+      ctx.shadowBlur = 8 + pulse * 12;
+      ctx.drawImage(gateV2, gx - 38, 360 - openLift, targetW, targetH);
+      ctx.restore();
+      if (!state.gateOpen) {
+        ctx.save();
+        ctx.globalCompositeOperation = "screen";
+        ctx.strokeStyle = ready ? `rgba(56,219,255,${pulse * 0.88})` : `rgba(255,79,154,${pulse * 0.68})`;
+        ctx.lineWidth = ready ? 4 : 2;
+        ctx.beginPath();
+        ctx.moveTo(gx + 45, 402);
+        ctx.lineTo(gx + 45, 570);
+        ctx.stroke();
+        ctx.restore();
+      }
+      return;
+    }
     const cyberGateImage = images.cyberGateSheet;
     if (cyberGateImage?.complete && cyberGateImage.naturalWidth) {
       const ready = gateReady(state);
@@ -5118,7 +5526,7 @@
     const t = state.time;
     const x = extractionX(state);
     const y = 468;
-    const portalImage = images.missionPortal;
+    const portalImage = images.missionPortalV2;
     ctx.save();
     ctx.shadowColor = "rgba(255,79,154,0.72)";
     ctx.shadowBlur = 26;
@@ -5139,8 +5547,7 @@
     roundedRect(x - 82, y - 138, 164, 276, 34, true, true);
     ctx.globalCompositeOperation = "screen";
     if (portalImage?.complete && portalImage.naturalWidth) {
-      const frame = Math.floor(t * 10) % 8;
-      drawSheetCell(portalImage, 8, 1, frame, 0, x - 96, y - 132, 192, 256, 0.96);
+      ctx.drawImage(portalImage, x - 96, y - 142, 192, 276);
       ctx.restore();
       return;
     }
@@ -5167,6 +5574,23 @@
     const lock = state.arenaLock;
     const pulse = 0.45 + Math.sin(state.time * 6) * 0.18;
     for (const x of [lock.left, lock.right]) {
+      const arenaGate = images.arenaGateV1;
+      if (arenaGate?.complete && arenaGate.naturalWidth) {
+        ctx.save();
+        ctx.shadowColor = colors.purple;
+        ctx.shadowBlur = 10 + pulse * 14;
+        drawSheetCellFit(arenaGate, 1, 1, 0, 0, x, 640, 116, 390, 0.96, {
+          anchor: "bottom",
+          sourceInset: 2
+        });
+        ctx.globalCompositeOperation = "screen";
+        ctx.fillStyle = "rgba(255,79,154," + (0.08 + pulse * 0.1) + ")";
+        ctx.beginPath();
+        ctx.ellipse(x, 446, 34, 104, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+        continue;
+      }
       ctx.save();
       ctx.globalCompositeOperation = "screen";
       const g = ctx.createLinearGradient(x, 210, x, 640);
@@ -5216,6 +5640,7 @@
     const cfg = lotteryTerminalConfig(state);
     if (cfg.x < state.cameraX - 140 || cfg.x > state.cameraX + W + 140) return;
     const unlocked = lotteryTerminalUnlocked(state);
+    if (!unlocked) return;
     const claimed = Boolean(currentLevelTicket(state));
     const inRange = state.terminal.inRange;
     const pulse = settings.reducedMotion ? 0 : Math.sin(state.time * 4) * 0.5 + 0.5;
@@ -5340,7 +5765,7 @@
       const visualR = displayR * (pickup.type === "weapon" ? 2.95 : pickup.type === "key" ? 2.9 : 2.8);
       if (!visualBoundsFullyInView(state, pickup.x - visualR, pickup.x + visualR, 6)) continue;
       if (drawPickupSprite(pickup.type, pickup.x, y, displayR, state.time, pickup.bob)) continue;
-      if (pickup.type === "shard") drawShard(pickup.x, y, displayR);
+      if (pickup.type === "shard") drawBrokenHeartShard(pickup.x, y, displayR, pickup.bob);
       if (pickup.type === "key") drawKey(pickup.x, y, displayR);
       if (pickup.type === "health") drawHeart(pickup.x, y, displayR, colors.pink);
       if (pickup.type === "overdrive") drawOverdrivePickup(pickup.x, y, displayR);
@@ -5385,6 +5810,7 @@
   }
 
   function drawShieldPickup(x, y, r) {
+    if (drawPowerupPackIcon("shield", x, y, r)) return;
     ctx.save();
     ctx.translate(x, y);
     ctx.globalCompositeOperation = "screen";
@@ -5399,6 +5825,7 @@
 
   function drawWeaponPickup(x, y, r, weapon = "rapid") {
     const meta = WEAPON_META[weapon] || WEAPON_META.rapid;
+    if (drawPowerupPackIcon(weapon, x, y, r)) return;
     const assetSize = r * 4.72;
     const wobble = Math.sin((run?.time || 0) * 4 + x * 0.01) * 0.06;
     ctx.save();
@@ -5432,19 +5859,8 @@
   }
 
   function drawPickupSprite(type, x, y, r, time, bob) {
+    if (type !== "key") return false;
     const row = PICKUP_SPRITE_ROWS[type];
-    const fxFrame = PICKUP_FX_FRAMES[type];
-    const fxImage = images.fxSheet;
-    if (fxFrame !== undefined && fxImage?.complete && fxImage.naturalWidth) {
-      const size = r * (type === "key" ? 5.4 : type === "health" ? 4.7 : type === "overdrive" ? 4.85 : 4.65);
-      const spin = settings.reducedMotion ? 0 : Math.sin(time * 4 + bob) * 2;
-      ctx.save();
-      ctx.translate(x, y);
-      if (spin) ctx.rotate((spin * Math.PI) / 180);
-      const drawn = drawSheetCellFit(fxImage, FX_SHEET_COLS, FX_SHEET_ROWS, fxFrame, 2, 0, 0, size * 1.08, size, 0.98, { sourceInset: 0 });
-      ctx.restore();
-      if (drawn) return true;
-    }
     const image = images.missionCollectibles;
     if (row === undefined || !image?.complete || !image.naturalWidth) return false;
     const frame = Math.floor((time * 8 + bob) % 8);
@@ -5458,48 +5874,83 @@
     return true;
   }
 
-  function drawShard(x, y, r) {
-    const g = ctx.createRadialGradient(x, y, 1, x, y, r * 2);
-    g.addColorStop(0, "#ffffff");
-    g.addColorStop(0.35, colors.cyan);
-    g.addColorStop(1, "rgba(56,219,255,0)");
-    ctx.fillStyle = g;
+  function drawBrokenHeartShard(x, y, r, seed = 0) {
+    const side = Math.floor(seed + x / 54) % 2 === 0 ? -1 : 1;
+    const pulse = 0.9 + Math.sin((run?.time || 0) * 5.4 + seed) * 0.08;
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.scale(side, 1);
+
+    const glow = ctx.createRadialGradient(0, 0, 1, 0, 0, r * 2.35);
+    glow.addColorStop(0, `rgba(255,255,255,${0.34 * pulse})`);
+    glow.addColorStop(0.32, `rgba(255,79,154,${0.45 * pulse})`);
+    glow.addColorStop(1, "rgba(255,79,154,0)");
+    ctx.fillStyle = glow;
     ctx.beginPath();
-    ctx.arc(x, y, r * 2, 0, Math.PI * 2);
+    ctx.arc(0, 0, r * 2.25, 0, Math.PI * 2);
     ctx.fill();
-    ctx.fillStyle = colors.cyan;
-    ctx.strokeStyle = colors.cream;
-    ctx.lineWidth = 2;
+
+    const fill = ctx.createLinearGradient(-r, -r, r * 0.2, r);
+    fill.addColorStop(0, "#fff1f8");
+    fill.addColorStop(0.28, "#ff7fbd");
+    fill.addColorStop(1, "#d61870");
+    ctx.fillStyle = fill;
+    ctx.strokeStyle = colors.gold;
+    ctx.lineWidth = Math.max(1.8, r * 0.17);
+    ctx.shadowColor = colors.pink;
+    ctx.shadowBlur = 10;
     ctx.beginPath();
-    ctx.moveTo(x, y - r);
-    ctx.lineTo(x + r * 0.8, y);
-    ctx.lineTo(x, y + r);
-    ctx.lineTo(x - r * 0.8, y);
+    ctx.moveTo(0.08 * r, 0.94 * r);
+    ctx.bezierCurveTo(-0.28 * r, 0.58 * r, -0.98 * r, 0.12 * r, -0.94 * r, -0.42 * r);
+    ctx.bezierCurveTo(-0.9 * r, -1.02 * r, -0.28 * r, -1.14 * r, 0.02 * r, -0.7 * r);
+    ctx.lineTo(-0.16 * r, -0.38 * r);
+    ctx.lineTo(0.12 * r, -0.12 * r);
+    ctx.lineTo(-0.1 * r, 0.16 * r);
+    ctx.lineTo(0.14 * r, 0.42 * r);
+    ctx.lineTo(-0.05 * r, 0.66 * r);
     ctx.closePath();
     ctx.fill();
     ctx.stroke();
+
+    ctx.shadowBlur = 0;
+    ctx.strokeStyle = "rgba(255,244,255,.92)";
+    ctx.lineWidth = Math.max(1.2, r * 0.1);
+    ctx.beginPath();
+    ctx.moveTo(-0.16 * r, -0.38 * r);
+    ctx.lineTo(0.12 * r, -0.12 * r);
+    ctx.lineTo(-0.1 * r, 0.16 * r);
+    ctx.lineTo(0.14 * r, 0.42 * r);
+    ctx.stroke();
+    ctx.restore();
   }
 
   function drawKey(x, y, r) {
     ctx.save();
     ctx.translate(x, y);
-    ctx.fillStyle = "rgba(255,214,109,.16)";
+    ctx.rotate(-0.12);
+    ctx.fillStyle = "rgba(255,214,109,.18)";
     ctx.beginPath();
     ctx.arc(0, 0, r * 2.5, 0, Math.PI * 2);
     ctx.fill();
+    ctx.shadowColor = colors.gold;
+    ctx.shadowBlur = 12;
     ctx.strokeStyle = colors.gold;
-    ctx.lineWidth = 4;
-    ctx.strokeRect(-r, -r, r * 2, r * 2);
+    ctx.lineWidth = Math.max(3, r * 0.28);
     ctx.beginPath();
-    ctx.moveTo(-r * 0.45, 0);
-    ctx.lineTo(r * 0.6, 0);
-    ctx.moveTo(0, -r * 0.55);
-    ctx.lineTo(0, r * 0.55);
+    ctx.arc(-r * 0.62, -r * 0.18, r * 0.48, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(-r * 0.16, -r * 0.05);
+    ctx.lineTo(r * 0.88, r * 0.28);
+    ctx.lineTo(r * 0.72, r * 0.7);
+    ctx.moveTo(r * 0.48, r * 0.16);
+    ctx.lineTo(r * 0.34, r * 0.54);
     ctx.stroke();
     ctx.restore();
   }
 
   function drawHeart(x, y, r, color) {
+    if (drawPowerupPackIcon("health", x, y, r)) return;
     ctx.save();
     const g = ctx.createRadialGradient(x, y, 1, x, y, r * 2.8);
     g.addColorStop(0, "#ffffff");
@@ -5520,6 +5971,7 @@
   }
 
   function drawOverdrivePickup(x, y, r) {
+    if (drawPowerupPackIcon("overdrive", x, y, r)) return;
     ctx.save();
     ctx.strokeStyle = colors.purple;
     ctx.fillStyle = "rgba(165,34,255,.24)";
@@ -5541,43 +5993,46 @@
     ctx.restore();
   }
 
+  function drawPowerupPackIcon(type, x, y, r) {
+    const cell = POWERUP_PACK[type];
+    const image = images.powerupPack;
+    if (!cell || !image?.complete || !image.naturalWidth) return false;
+    const t = run?.time || 0;
+    const pulse = 0.82 + Math.sin(t * 5 + x * 0.013) * 0.12;
+    const size = r * (type === "spread" ? 5.35 : type === "beam" ? 5.25 : 5.05);
+    ctx.save();
+    ctx.translate(x, y);
+    if (!settings.reducedMotion) ctx.rotate(Math.sin(t * 3.2 + x * 0.009) * 0.035);
+    ctx.globalCompositeOperation = "screen";
+    const glow = ctx.createRadialGradient(0, 0, 2, 0, 0, r * 2.9);
+    glow.addColorStop(0, withAlpha(cell.color, 0.32 * pulse));
+    glow.addColorStop(0.62, withAlpha(cell.color, 0.12));
+    glow.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = glow;
+    ctx.beginPath();
+    ctx.arc(0, 0, r * 2.9, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalCompositeOperation = "source-over";
+    ctx.shadowColor = cell.color;
+    ctx.shadowBlur = 10 + pulse * 8;
+    const drawn = drawSheetCellFit(image, 3, 2, cell.frame, cell.row, 0, 0, size, size, 0.98, { sourceInset: 3 });
+    ctx.restore();
+    return drawn;
+  }
+
   function drawLevelHazards(state) {
     for (const hazard of state.levelHazards) {
       const active = isLevelHazardActive(state, hazard);
       const warning = isLevelHazardWarning(state, hazard);
       const box = levelHazardBox(hazard);
       ctx.save();
-      ctx.globalAlpha = active ? 0.95 : warning ? 0.62 : 0.22;
-      if (hazard.type === "floor") {
-        const g = ctx.createLinearGradient(0, box.y, 0, box.y + box.h);
-        g.addColorStop(0, active ? "rgba(255,79,154,.74)" : "rgba(255,214,109,.25)");
-        g.addColorStop(1, "rgba(165,34,255,.12)");
-        ctx.fillStyle = g;
-        ctx.fillRect(box.x, box.y, box.w, box.h);
-        ctx.strokeStyle = active ? colors.pink : colors.gold;
-        ctx.lineWidth = 3;
-        ctx.strokeRect(box.x, box.y, box.w, box.h);
-      } else {
-        ctx.fillStyle = active ? "rgba(255,79,154,.42)" : "rgba(255,214,109,.14)";
-        ctx.fillRect(box.x, box.y, box.w, box.h);
-        ctx.strokeStyle = active ? colors.pink : colors.gold;
-        ctx.lineWidth = hazard.type === "beam" ? 5 : 3;
-        ctx.strokeRect(box.x, box.y, box.w, box.h);
-        if (active) {
-          ctx.globalCompositeOperation = "screen";
-          ctx.fillStyle = "rgba(165,34,255,.24)";
-          ctx.fillRect(box.x - 18, box.y - 18, box.w + 36, box.h + 36);
-        }
-      }
-      if (warning) {
-        const frame = active ? Math.floor(state.time * 12) % 8 : Math.min(3, Math.floor(state.time * 8) % 4);
-        const alpha = active ? 0.82 : 0.48;
-        if (hazard.type === "laser") {
-          drawFxCell(FX_ROWS.bossBeam, frame, box.x + box.w * 0.5, box.y + box.h * 0.5, box.h * 1.08, Math.max(70, box.w * 3), alpha, Math.PI * 0.5);
-        } else {
-          drawFxCell(FX_ROWS.bossBeam, frame, box.x + box.w * 0.5, box.y + box.h * 0.5, Math.max(130, box.w), Math.max(62, box.h * 2.2), alpha, 0);
-        }
-      }
+      drawVaultHazardAsset(box.x, box.y, box.w, box.h, {
+        type: hazard.type,
+        active,
+        warning,
+        alpha: active ? 0.95 : warning ? 0.7 : 0.34,
+        pulse: Math.sin(state.time * 8 + (hazard.phase || 0)) * 0.5 + 0.5
+      });
       ctx.restore();
     }
   }
@@ -5586,21 +6041,136 @@
     for (const hazard of state.hazards) {
       const active = hazard.charge <= 0;
       const y = hazard.beam ? hazard.y : hazard.y - hazard.h;
-      ctx.fillStyle = active ? "rgba(255,79,154,.46)" : "rgba(255,214,109,.22)";
-      ctx.fillRect(hazard.x, y, hazard.w, hazard.h);
-      ctx.strokeStyle = active ? colors.pink : colors.gold;
-      ctx.lineWidth = 3;
-      ctx.strokeRect(hazard.x, y, hazard.w, hazard.h);
+      const pulse = Math.sin(state.time * 10 + hazard.x * 0.01) * 0.5 + 0.5;
+      ctx.save();
+      drawVaultHazardAsset(hazard.x, y, hazard.w, hazard.h, {
+        type: hazard.beam ? "beam" : "floor",
+        active,
+        warning: !active,
+        alpha: active ? 0.94 : 0.7,
+        pulse
+      });
       if (active && !hazard.beam) {
         const g = ctx.createLinearGradient(0, hazard.y - 220, 0, hazard.y);
         g.addColorStop(0, "rgba(255,79,154,0)");
-        g.addColorStop(1, "rgba(255,79,154,.44)");
+        g.addColorStop(0.74, "rgba(165,34,255,.05)");
+        g.addColorStop(1, "rgba(255,79,154,.2)");
+        ctx.globalCompositeOperation = "screen";
         ctx.fillStyle = g;
         ctx.fillRect(hazard.x, hazard.y - 220, hazard.w, 220);
       }
-      const frame = active ? Math.floor(state.time * 12) % 8 : Math.min(3, Math.floor(state.time * 8) % 4);
-      drawFxCell(FX_ROWS.bossBeam, frame, hazard.x + hazard.w * 0.5, y + hazard.h * 0.5, Math.max(130, hazard.w), Math.max(62, hazard.h * 2.1), active ? 0.82 : 0.46, 0);
+      ctx.restore();
     }
+  }
+
+  function drawVaultHazardAsset(x, y, w, h, options = {}) {
+    const type = options.type || "floor";
+    const active = !!options.active;
+    const warning = !!options.warning;
+    const pulse = options.pulse || 0;
+    const alpha = options.alpha == null ? 1 : options.alpha;
+    const trim = active ? colors.pink : colors.gold;
+    const core = active ? colors.pink : colors.gold;
+    const shell = "rgba(7,6,12,.9)";
+    const rail = "rgba(255,214,109,.72)";
+    ctx.save();
+    ctx.globalAlpha = Math.max(0, Math.min(1, alpha));
+    if (type === "beam" || type === "floor") {
+      const image = images[active ? "floorLaserActive" : warning ? "floorLaserCharge" : "floorLaserDormant"];
+      if (image?.complete && image.naturalWidth) {
+        const visualH = clamp(w / 3.7, 44, 130);
+        const drawY = y + h - visualH;
+        if (active) {
+          ctx.globalCompositeOperation = "screen";
+          const bloom = ctx.createLinearGradient(x, 0, x + w, 0);
+          bloom.addColorStop(0, "rgba(165,34,255,0)");
+          bloom.addColorStop(0.5, `rgba(255,79,154,${0.18 + pulse * 0.12})`);
+          bloom.addColorStop(1, "rgba(165,34,255,0)");
+          ctx.fillStyle = bloom;
+          ctx.fillRect(x - 12, drawY + visualH * 0.42, w + 24, visualH * 0.42);
+          ctx.globalCompositeOperation = "source-over";
+        }
+        ctx.imageSmoothingEnabled = true;
+        ctx.shadowColor = active ? "rgba(255,79,154,.68)" : warning ? "rgba(255,214,109,.46)" : "rgba(165,34,255,.28)";
+        ctx.shadowBlur = active ? 22 : warning ? 14 : 8;
+        ctx.drawImage(image, 0, 270, 384, 114, x, drawY, w, visualH);
+        ctx.restore();
+        return;
+      }
+    }
+    if (type === "laser") {
+      const cx = x + w * 0.5;
+      ctx.globalCompositeOperation = "screen";
+      const glow = ctx.createLinearGradient(cx - w * 2.8, 0, cx + w * 2.8, 0);
+      glow.addColorStop(0, "rgba(165,34,255,0)");
+      glow.addColorStop(0.5, active ? "rgba(255,79,154,.42)" : "rgba(255,214,109,.18)");
+      glow.addColorStop(1, "rgba(165,34,255,0)");
+      ctx.fillStyle = glow;
+      ctx.fillRect(cx - w * 2.8, y - 6, w * 5.6, h + 12);
+      ctx.globalCompositeOperation = "source-over";
+      ctx.fillStyle = shell;
+      roundedRect(cx - w * 0.55, y, w * 1.1, h, Math.min(10, w * 0.35), true, false);
+      ctx.strokeStyle = rail;
+      ctx.lineWidth = 2;
+      roundedRect(cx - w * 0.55, y, w * 1.1, h, Math.min(10, w * 0.35), false, true);
+      const beam = ctx.createLinearGradient(cx - 4, 0, cx + 4, 0);
+      beam.addColorStop(0, "rgba(255,255,255,.14)");
+      beam.addColorStop(0.45, active ? "rgba(255,79,154,.96)" : "rgba(255,214,109,.58)");
+      beam.addColorStop(1, "rgba(165,34,255,.34)");
+      ctx.fillStyle = beam;
+      roundedRect(cx - Math.max(4, w * 0.16), y + 8, Math.max(8, w * 0.32), h - 16, 5, true, false);
+      return ctx.restore();
+    }
+
+    const radius = Math.min(12, Math.max(5, h * 0.25));
+    ctx.fillStyle = shell;
+    roundedRect(x, y, w, h, radius, true, false);
+    ctx.strokeStyle = trim;
+    ctx.lineWidth = active ? 3 : 2;
+    roundedRect(x + 1.5, y + 1.5, w - 3, h - 3, radius, false, true);
+    ctx.strokeStyle = "rgba(255,214,109,.34)";
+    ctx.lineWidth = 1;
+    roundedRect(x + 7, y + 7, Math.max(0, w - 14), Math.max(0, h - 14), Math.max(3, radius - 3), false, true);
+
+    ctx.globalCompositeOperation = "screen";
+    const centerGlow = ctx.createLinearGradient(x + 12, y, x + w - 12, y);
+    centerGlow.addColorStop(0, "rgba(165,34,255,0)");
+    centerGlow.addColorStop(0.22, warning ? "rgba(255,214,109,.28)" : "rgba(165,34,255,.2)");
+    centerGlow.addColorStop(0.52, active ? "rgba(255,79,154,.72)" : "rgba(255,214,109,.36)");
+    centerGlow.addColorStop(0.78, warning ? "rgba(255,214,109,.28)" : "rgba(165,34,255,.2)");
+    centerGlow.addColorStop(1, "rgba(165,34,255,0)");
+    ctx.fillStyle = centerGlow;
+    roundedRect(x + 12, y + h * 0.34, Math.max(0, w - 24), Math.max(5, h * 0.22), 5, true, false);
+
+    if (active) {
+      ctx.fillStyle = `rgba(255,79,154,${0.14 + pulse * 0.14})`;
+      roundedRect(x - 12, y - 9, w + 24, h + 18, radius + 5, true, false);
+    }
+    ctx.globalCompositeOperation = "source-over";
+
+    ctx.strokeStyle = active ? "rgba(255,255,255,.72)" : "rgba(255,214,109,.56)";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(x + 16, y + h * 0.5);
+    ctx.lineTo(x + w * 0.28, y + h * 0.5);
+    ctx.moveTo(x + w * 0.72, y + h * 0.5);
+    ctx.lineTo(x + w - 16, y + h * 0.5);
+    ctx.stroke();
+
+    const nodes = [0.24, 0.5, 0.76];
+    for (const node of nodes) {
+      const nx = x + w * node;
+      ctx.fillStyle = active ? core : colors.gold;
+      ctx.beginPath();
+      ctx.arc(nx, y + h * 0.5, active ? 3.4 + pulse * 1.8 : 3, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    const capW = Math.min(22, Math.max(10, w * 0.08));
+    ctx.fillStyle = "rgba(255,214,109,.2)";
+    roundedRect(x + 5, y + 5, capW, h - 10, 4, true, false);
+    roundedRect(x + w - capW - 5, y + 5, capW, h - 10, 4, true, false);
+    ctx.restore();
   }
 
   function drawEntityShadows(state) {
@@ -5859,10 +6429,12 @@
   }
 
   function droneMotionFrame(enemy, time) {
+    if (enemy.dead) return 7;
     if (enemy.hurt > 0) return 7;
     if ((enemy.fireFlash || 0) > 0.16) return 4;
     if ((enemy.fireFlash || 0) > 0) return 5;
     if (enemy.telegraph > 0) return enemy.telegraph > 0.2 ? 2 : 3;
+    if (enemy.cd > 1.1 && enemy.cd < 1.55) return 6;
     return Math.floor(time * 7 + enemy.phase) % 2;
   }
 
@@ -5987,6 +6559,7 @@
   }
 
   function shieldRobotFrame(enemy, time) {
+    if (enemy.dead) return 7;
     if (enemy.hurt > 0) return 6;
     if ((enemy.fireFlash || 0) > 0.14) return 4;
     if ((enemy.fireFlash || 0) > 0) return 5;
@@ -6007,7 +6580,8 @@
     const dw = cellW * ratio;
     const dh = cellH * ratio;
     const x = enemy.x + enemy.w * 0.5 + (options.offsetX || 0);
-    const y = enemy.y + enemy.h + (options.offsetY || 0);
+    const bottomPad = SHIELD_ROBOT_BOTTOM_PAD[frame % SHIELD_ROBOT_FRAMES] || 0;
+    const y = enemy.y + enemy.h + bottomPad * ratio + (options.offsetY || 0);
 
     ctx.save();
     ctx.imageSmoothingEnabled = true;
@@ -6023,6 +6597,7 @@
   }
 
   function crawlerWalkFrame(enemy, time) {
+    if (enemy.dead) return 5;
     if (enemy.hurt > 0) return 5;
     const speed = Math.abs(enemy.vx || 0);
     if (speed < 18) return 0;
@@ -6043,7 +6618,7 @@
     const dw = cellW * ratio;
     const dh = cellH * ratio;
     const x = enemy.x + enemy.w * 0.5 + (options.offsetX || 0);
-    const y = enemy.y + enemy.h + (options.offsetY || 0);
+    const y = enemy.y + enemy.h + CRAWLER_WALK_BOTTOM_PAD * ratio + (options.offsetY || 0);
 
     ctx.save();
     ctx.imageSmoothingEnabled = true;
@@ -6059,15 +6634,14 @@
   }
 
   function drawCrawler(enemy, time) {
-    const bob = Math.sin(time * 12 + enemy.phase) * 3;
     const walkFrame = crawlerWalkFrame(enemy, time);
-    if (drawCrawlerWalkSprite(enemy, walkFrame, { offsetY: bob + 2 })) return;
+    if (drawCrawlerWalkSprite(enemy, walkFrame)) return;
     const frame = enemy.hurt > 0 ? 3 : Math.floor(time * 9 + enemy.phase) % 2;
-    if (drawEnemyMotionSprite(enemy, 1, frame, { scaleX: CRAWLER_DOG.fallbackMotionScaleX, scaleY: CRAWLER_DOG.fallbackMotionScaleY, offsetY: bob + 4 })) return;
-    if (drawEnemySprite(enemy, "enemyCrawler", { scaleX: CRAWLER_DOG.fallbackStaticScaleX, scaleY: CRAWLER_DOG.fallbackStaticScaleY, offsetY: bob + 4 })) return;
+    if (drawEnemyMotionSprite(enemy, 1, frame, { scaleX: CRAWLER_DOG.fallbackMotionScaleX, scaleY: CRAWLER_DOG.fallbackMotionScaleY })) return;
+    if (drawEnemySprite(enemy, "enemyCrawler", { scaleX: CRAWLER_DOG.fallbackStaticScaleX, scaleY: CRAWLER_DOG.fallbackStaticScaleY })) return;
 
     ctx.save();
-    ctx.translate(enemy.x + enemy.w * 0.5, enemy.y + enemy.h * 0.5 + bob);
+    ctx.translate(enemy.x + enemy.w * 0.5, enemy.y + enemy.h * 0.5);
     ctx.fillStyle = enemy.hurt > 0 ? "#ffffff" : "#121016";
     ctx.strokeStyle = colors.purple;
     ctx.lineWidth = 3;
@@ -6133,7 +6707,7 @@
 
   function drawShield(enemy, time) {
     const frame = shieldRobotFrame(enemy, time);
-    if (drawShieldRobotSprite(enemy, frame, { offsetY: 7 })) return;
+    if (drawShieldRobotSprite(enemy, frame)) return;
     const fallbackFrame = enemy.hurt > 0 ? 1 : Math.floor(time * 4.5 + enemy.phase) % 2;
     if (drawEnemyMotionSprite(enemy, 2, fallbackFrame, { scaleX: 2.0, scaleY: 1.72, offsetY: 6 })) return;
     if (drawEnemySprite(enemy, "enemyShieldGuard", { scaleX: 1.22, scaleY: 1.12, offsetY: 6 })) return;
@@ -6261,7 +6835,8 @@
     const dw = sw * ratio;
     const dh = sh * ratio;
     const x = enemy.x + enemy.w * 0.5;
-    const y = enemy.y + enemy.h + 6;
+    const bottomPad = CANNON_TURRET_BOTTOM_PAD[frame % CANNON_TURRET_FRAMES] || 0;
+    const y = enemy.y + enemy.h + bottomPad * ratio;
 
     ctx.save();
     ctx.imageSmoothingEnabled = true;
@@ -6345,12 +6920,20 @@
       sourceInset: 8
     });
     if (boss.telegraph > 0) {
-      drawGameplayFxCell(GAMEPLAY_FX.warning.bossPhase, boss.w * 0.22, -boss.h * 0.4, 86, 86, 0.52 + boss.telegraph * 0.3, {
-        composite: "screen",
-        shadowColor: colors.pink,
-        shadowBlur: 22,
-        sourceInset: 8
-      });
+      const markerX = boss.w * 0.28;
+      const markerY = -boss.h * 0.43;
+      const markerSize = 18 + boss.telegraph * 5;
+      ctx.save();
+      ctx.translate(markerX, markerY);
+      ctx.rotate(Math.PI * 0.25 + state.time * 0.7);
+      ctx.strokeStyle = `rgba(255,214,109,${0.62 + boss.telegraph * 0.28})`;
+      ctx.fillStyle = `rgba(255,79,154,${0.12 + boss.telegraph * 0.18})`;
+      ctx.lineWidth = 3;
+      ctx.shadowColor = colors.pink;
+      ctx.shadowBlur = 12;
+      ctx.fillRect(-markerSize * 0.5, -markerSize * 0.5, markerSize, markerSize);
+      ctx.strokeRect(-markerSize * 0.5, -markerSize * 0.5, markerSize, markerSize);
+      ctx.restore();
     }
     if (boss.shieldTime > 0) {
       ctx.strokeStyle = `rgba(56,219,255,${0.55 + Math.sin(state.time * 12) * 0.25})`;
@@ -6374,10 +6957,13 @@
     const sheet = images[`${boss.imageKey}Motion`];
     const drawW = boss.w * 1.18;
     const drawH = boss.h * 1.18;
-    const attackBoost = boss.telegraph > 0 || boss.shieldTime > 0 ? 1.8 : 1;
-    const frameRate = (2.8 + boss.phase * 0.7) * attackBoost;
-    const phaseOffset = boss.kind === "jackpotForgeTitan" ? 2 : boss.kind === "midasHeartcoreOverlord" ? 4 : 0;
-    const frame = hurt ? BOSS_MOTION_FRAMES - 1 : Math.floor(boss.time * frameRate + phaseOffset) % BOSS_MOTION_FRAMES;
+    const actionDuration = 0.46;
+    const actionProgress = 1 - clamp((boss.attackAnim || 0) / actionDuration, 0, 1);
+    let frame = Math.floor(boss.time * (2.4 + boss.phase * 0.25)) % 2;
+    if (boss.attackAnim > 0) frame = 2 + Math.min(2, Math.floor(actionProgress * 3));
+    if (boss.telegraph > 0) frame = boss.telegraph > 0.55 ? 2 : boss.telegraph > 0.22 ? 3 : 4;
+    if (boss.shieldTime > 0) frame = 4;
+    if (hurt) frame = BOSS_MOTION_FRAMES - 1;
     const jitterX = hurt ? Math.sin(state.time * 54) * 4 : 0;
     const jitterY = boss.telegraph > 0 ? Math.sin(state.time * 18) * 3 : 0;
 

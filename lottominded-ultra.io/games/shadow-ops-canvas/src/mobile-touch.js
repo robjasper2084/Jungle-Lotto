@@ -1,6 +1,8 @@
 (() => {
   const SETTINGS_KEY = "lottomind-vault-run-settings-v1";
+  const forceTouch = new URLSearchParams(window.location.search).has("touch");
   const isTouchDevice =
+    forceTouch ||
     "ontouchstart" in window ||
     navigator.maxTouchPoints > 0 ||
     navigator.msMaxTouchPoints > 0 ||
@@ -73,6 +75,12 @@
         gap: clamp(8px, 2vw, 16px);
         align-items: end;
         justify-content: space-between;
+      }
+      body.touch-forced:not(.is-playing-mode) .touchbar {
+        display: none !important;
+      }
+      body.touch-forced.is-playing-mode .touchbar {
+        display: flex;
       }
       body.touch-forced .touchbar.has-joysticks {
         pointer-events: none;
