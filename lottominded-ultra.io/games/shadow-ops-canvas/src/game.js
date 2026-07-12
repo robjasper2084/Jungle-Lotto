@@ -78,9 +78,13 @@
     missionGateV2: "./assets/mission/robot_rahbe_vault_gate_v2.png",
     powerupPack: "./assets/mission/robot_rahbe_powerups_v1.png",
     arenaGateV1: "./assets/mission/robot_rahbe_arena_gate_v1.png",
+    undergroundGateLocked: "./assets/mission/robot_rahbe_underground_gate_v1_frames/01.png",
+    undergroundGatePowered: "./assets/mission/robot_rahbe_underground_gate_v1_frames/02.png",
+    undergroundGateOpen: "./assets/mission/robot_rahbe_underground_gate_v1_frames/03.png",
     floorLaserDormant: "./assets/mission/robot_rahbe_floor_laser_v1_frames/01.png",
     floorLaserCharge: "./assets/mission/robot_rahbe_floor_laser_v1_frames/02.png",
     floorLaserActive: "./assets/mission/robot_rahbe_floor_laser_v1_frames/03.png",
+    verticalLaser: "./assets/mission/robot_rahbe_vertical_laser_v1.png",
     missionBrandProps: "./assets/mission/branded_background_props_sheet.png",
     enemyMotion: "./assets/characters/higgsfield_enemy_motion_sheet_runtime.png",
     missionProps: "./assets/mission/higgsfield_missing_world_props_runtime_v3.png",
@@ -437,15 +441,12 @@
   };
 
   const dom = {
-    loadingScreen: document.getElementById("loadingScreen"),
     titleScreen: document.getElementById("titleScreen"),
     purchaseScreen: document.getElementById("purchaseScreen"),
     pauseScreen: document.getElementById("pauseScreen"),
     settingsScreen: document.getElementById("settingsScreen"),
     resultsScreen: document.getElementById("resultsScreen"),
     lotteryTerminalScreen: document.getElementById("lotteryTerminalScreen"),
-    loadBar: document.getElementById("loadBar"),
-    loadText: document.getElementById("loadText"),
     hud: document.getElementById("hud"),
     bossHud: document.getElementById("bossHud"),
     objectiveChip: document.getElementById("objectiveChip"),
@@ -510,9 +511,8 @@
 
   const images = {};
   const assetKeys = Object.keys(ASSETS);
-  let loadedAssets = 0;
 
-  let mode = "loading";
+  let mode = "title";
   let modeBeforeSettings = "title";
   let run = null;
   let pendingRunMode = "solo";
@@ -958,13 +958,6 @@
 
   for (const key of assetKeys) {
     const image = new Image();
-    image.onload = image.onerror = () => {
-      loadedAssets += 1;
-      updateLoading();
-      if (loadedAssets >= assetKeys.length && mode === "loading") {
-        setMode("title");
-      }
-    };
     image.src = ASSETS[key];
     images[key] = image;
   }
@@ -976,7 +969,7 @@
   bindInputs();
   installAccountBridge();
   if (DEBUG) installDebugPanel();
-  updateLoading();
+  setMode("title");
   requestAnimationFrame(loop);
 
   function readJSON(key, fallback) {
@@ -1588,25 +1581,10 @@
     }
   }
 
-  function updateLoading() {
-    const percent = assetKeys.length ? Math.round((loadedAssets / assetKeys.length) * 100) : 100;
-    const stages = [
-      "Syncing cyber-vault terrain",
-      "Charging heart-shot FX",
-      "Calibrating drone routes",
-      "Priming lottery drop terminal",
-    ];
-    const stageIndex = Math.min(stages.length - 1, Math.floor((percent / 100) * stages.length));
-    dom.loadBar.style.width = `${percent}%`;
-    dom.loadText.textContent =
-      loadedAssets >= assetKeys.length ? "Heart-core online. Enter the run." : `${stages[stageIndex]} ${percent}%`;
-  }
-
   function setMode(next) {
     mode = next;
     document.body.classList.toggle("is-title-mode", next === "title");
     document.body.classList.toggle("is-playing-mode", next === "playing");
-    dom.loadingScreen.classList.toggle("is-hidden", next !== "loading");
     dom.titleScreen.classList.toggle("is-hidden", next !== "title");
     dom.purchaseScreen.classList.toggle("is-hidden", next !== "purchase");
     dom.pauseScreen.classList.toggle("is-hidden", next !== "paused");
@@ -1900,6 +1878,10 @@
 
   function undergroundComplete(state) {
     return Boolean(state?.undergroundComplete?.[undergroundKey(state)]);
+  }
+
+  function undergroundExitReady(state) {
+    return undergroundComplete(state) || undergroundCellCount(state) >= 3;
   }
 
   function gateReady(state) {
@@ -4385,10 +4367,6 @@
 
   function render() {
     ctx.clearRect(0, 0, W, H);
-    if (mode === "loading") {
-      drawLoadingCanvas();
-      return;
-    }
     if (mode === "title") {
       return;
     }
@@ -4396,36 +4374,6 @@
       return;
     }
     drawGame(run);
-  }
-
-  function drawLoadingCanvas() {
-    ctx.fillStyle = "#030302";
-    ctx.fillRect(0, 0, W, H);
-    drawTitleBackdropWash();
-    const wash = ctx.createLinearGradient(0, 0, W, H);
-    wash.addColorStop(0, "rgba(3,7,13,.92)");
-    wash.addColorStop(0.48, "rgba(13,5,28,.72)");
-    wash.addColorStop(1, "rgba(0,0,0,.9)");
-    ctx.fillStyle = wash;
-    ctx.fillRect(0, 0, W, H);
-
-    ctx.save();
-    ctx.translate(W * 0.5, H * 0.5);
-    ctx.strokeStyle = "rgba(255,214,109,.42)";
-    ctx.lineWidth = 2;
-    ctx.strokeRect(-250, -58, 500, 116);
-    ctx.strokeStyle = "rgba(56,219,255,.22)";
-    ctx.strokeRect(-238, -46, 476, 92);
-    ctx.fillStyle = "rgba(255,79,154,.18)";
-    ctx.fillRect(-230, 30, 460, 8);
-    ctx.fillStyle = colors.gold;
-    ctx.font = "900 30px system-ui";
-    ctx.textAlign = "center";
-    ctx.fillText("ROBOT RAHBE", 0, -10);
-    ctx.fillStyle = colors.cyan;
-    ctx.font = "800 14px system-ui";
-    ctx.fillText("VAULT CORE SYNC", 0, 24);
-    ctx.restore();
   }
 
   function drawTitleCanvas() {
@@ -5029,7 +4977,7 @@
       { type: "console", x: Math.max(680, area.width * 0.5), y: 548, w: 150, h: 84, variant: 2 },
       { type: "wall", x: Math.max(1120, area.width - 560), y: 334, w: 230, h: 270, variant: 0 },
       { type: "crate", x: Math.max(820, area.width * 0.64), y: 560, w: 170, h: 78, variant: 1 },
-      { type: "portal", kind: undergroundComplete(state) ? "exit" : "cell-lock", x: area.exitX, y: area.exitY || 620, w: 150, h: 220 }
+      { type: "portal", kind: undergroundExitReady(state) ? "exit" : "cell-lock", x: area.exitX, y: area.exitY || 620, w: 150, h: 220 }
     ];
     return modules;
   }
@@ -5333,8 +5281,38 @@
     const portalImage = images.missionPortalV2;
     const arenaGate = images.arenaGateV1;
     const x = portal.x;
-    const groundY = portal.y;
+    const supportY = supportYAt(state, x, portal.y) ?? portal.y;
+    const groundY = supportY + (isUnderground(state) ? 9 : 7);
     const y = groundY - 82;
+
+    if (isUnderground(state) && (portal.type === "cell-lock" || portal.type === "exit")) {
+      const cells = state.undergroundCells?.[undergroundKey(state)] || 0;
+      const imageKey = portal.type === "exit"
+        ? "undergroundGateOpen"
+        : cells > 0
+          ? "undergroundGatePowered"
+          : "undergroundGateLocked";
+      const gateImage = images[imageKey];
+      if (gateImage?.complete && gateImage.naturalWidth) {
+        const gateW = portal.type === "exit" ? 184 : 176;
+        const gateH = 326;
+        ctx.save();
+        ctx.globalAlpha = 0.99;
+        ctx.shadowColor = portal.type === "exit" ? "rgba(56,219,255,.48)" : "rgba(165,34,255,.48)";
+        ctx.shadowBlur = 14 + pulse * 12;
+        ctx.imageSmoothingEnabled = true;
+        ctx.drawImage(gateImage, 58, 0, 396, 512, x - gateW * 0.5, groundY - gateH, gateW, gateH);
+        ctx.shadowBlur = 0;
+        ctx.font = "900 10px 'Arial Black', sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillStyle = "#ffe88a";
+        ctx.shadowColor = "rgba(0,0,0,0.9)";
+        ctx.shadowBlur = 4;
+        ctx.fillText(portal.label, x, groundY - 10);
+        ctx.restore();
+        return;
+      }
+    }
 
     if (portal.type === "cell-lock") {
       ctx.save();
@@ -5420,12 +5398,13 @@
     const area = activeArea(state);
     const underground = state.level.underground;
     if (!underground) return;
+    const exitReady = undergroundExitReady(state);
     const portals = isUnderground(state)
       ? [{
-          type: undergroundComplete(state) ? "exit" : "cell-lock",
+          type: exitReady ? "exit" : "cell-lock",
           x: area.exitX,
           y: area.exitY || 620,
-          label: undergroundComplete(state) ? "RETURN" : "3 CELLS"
+          label: exitReady ? "RETURN" : "3 CELLS"
         }]
       : [{ type: "entrance", x: underground.entrance.x, y: underground.entrance.y || 620, label: "UNDER" }];
     for (const portal of portals) {
@@ -6100,6 +6079,20 @@
     }
     if (type === "laser") {
       const cx = x + w * 0.5;
+      const image = images.verticalLaser;
+      if (image?.complete && image.naturalWidth) {
+        const frame = active ? 2 : warning ? 1 : 0;
+        const cellW = image.naturalWidth / 3;
+        const cellH = image.naturalHeight;
+        const drawH = h + 24;
+        const drawW = drawH * (cellW / cellH);
+        ctx.imageSmoothingEnabled = true;
+        ctx.shadowColor = active ? "rgba(255,79,154,.7)" : warning ? "rgba(255,214,109,.5)" : "rgba(165,34,255,.28)";
+        ctx.shadowBlur = active ? 24 : warning ? 16 : 9;
+        ctx.drawImage(image, frame * cellW, 0, cellW, cellH, cx - drawW * 0.5, y - 12, drawW, drawH);
+        ctx.restore();
+        return;
+      }
       ctx.globalCompositeOperation = "screen";
       const glow = ctx.createLinearGradient(cx - w * 2.8, 0, cx + w * 2.8, 0);
       glow.addColorStop(0, "rgba(165,34,255,0)");
