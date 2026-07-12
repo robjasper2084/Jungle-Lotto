@@ -1398,7 +1398,7 @@
       if (isUnderground(run)) returnToSurface(run);
       const entrance = run.level.underground?.entrance;
       if (entrance) {
-        placePlayersAt(run, entrance.x - 48, (entrance.y || 620) - 86);
+        placePlayersAt(run, entrance.x - 48, entrance.y || 620);
         run.cameraX = clamp(entrance.x - 420, 0, worldWidth(run) - W);
         setObjective(run, "Debug: underground entrance", 1.8);
       }
@@ -1413,7 +1413,7 @@
       const area = activeArea(run);
       run.undergroundCells[key] = 0;
       run.undergroundComplete[key] = false;
-      placePlayersAt(run, area.exitX - 250, (area.exitY || 620) - 86);
+      placePlayersAt(run, area.exitX - 250, area.exitY || 620);
       run.cameraX = clamp(area.exitX - W * 0.66, 0, worldWidth(run) - W);
       setObjective(run, "Debug: underground gate locked", 1.8);
     }
@@ -5283,7 +5283,9 @@
     const x = portal.x;
     const supportY = supportYAt(state, x, portal.y) ?? portal.y;
     const groundY = supportY + (isUnderground(state) ? 9 : 7);
-    const y = groundY - 82;
+    // The portal sheet has 42 px of content below its local origin. Keep that
+    // edge on the resolved support instead of leaving the whole prop floating.
+    const y = groundY - 42;
 
     if (isUnderground(state) && (portal.type === "cell-lock" || portal.type === "exit")) {
       const cells = state.undergroundCells?.[undergroundKey(state)] || 0;
@@ -5417,6 +5419,7 @@
     const openLift = state.gateOpen ? 265 : 0;
     const pulse = 0.55 + Math.sin(state.gatePulse * 6) * 0.18;
     const gx = gateX(state);
+    const gateGroundY = supportYAt(state, gx + 45, 620) ?? 620;
     const gateV2 = images.missionGateV2;
     if (gateV2?.complete && gateV2.naturalWidth) {
       const ready = gateReady(state);
@@ -5426,7 +5429,7 @@
       ctx.globalAlpha = state.gateOpen ? 0.46 : 0.98;
       ctx.shadowColor = state.gateOpen ? colors.cyan : ready ? colors.cyan : colors.purple;
       ctx.shadowBlur = 8 + pulse * 12;
-      ctx.drawImage(gateV2, gx - 38, 360 - openLift, targetW, targetH);
+      ctx.drawImage(gateV2, gx - 38, gateGroundY - targetH - openLift, targetW, targetH);
       ctx.restore();
       if (!state.gateOpen) {
         ctx.save();
@@ -5434,8 +5437,8 @@
         ctx.strokeStyle = ready ? `rgba(56,219,255,${pulse * 0.88})` : `rgba(255,79,154,${pulse * 0.68})`;
         ctx.lineWidth = ready ? 4 : 2;
         ctx.beginPath();
-        ctx.moveTo(gx + 45, 402);
-        ctx.lineTo(gx + 45, 570);
+        ctx.moveTo(gx + 45, gateGroundY - targetH + 42);
+        ctx.lineTo(gx + 45, gateGroundY - 42);
         ctx.stroke();
         ctx.restore();
       }
@@ -5447,15 +5450,15 @@
       const frame = state.gateOpen ? 1 : ready ? 0 : 5;
       const targetW = 168;
       const targetH = 252;
-      drawSheetCell(cyberGateImage, 6, 1, frame, 0, gx - 40, 360 - openLift, targetW, targetH, 0.98);
+      drawSheetCell(cyberGateImage, 6, 1, frame, 0, gx - 40, gateGroundY - targetH - openLift, targetW, targetH, 0.98);
       if (!state.gateOpen) {
         ctx.save();
         ctx.globalCompositeOperation = "screen";
         ctx.strokeStyle = ready ? `rgba(56,219,255,${pulse * 0.9})` : `rgba(255,79,154,${pulse})`;
         ctx.lineWidth = 4;
         ctx.beginPath();
-        ctx.moveTo(gx + 43, 390);
-        ctx.lineTo(gx + 43, 590);
+        ctx.moveTo(gx + 43, gateGroundY - targetH + 30);
+        ctx.lineTo(gx + 43, gateGroundY - 22);
         ctx.stroke();
         ctx.restore();
       }
@@ -5465,15 +5468,15 @@
     if (gateImage?.complete && gateImage.naturalWidth) {
       const ready = gateReady(state);
       const frame = state.gateOpen ? Math.floor(state.time * 10) % 4 : ready ? Math.floor(state.time * 7) % 4 : Math.floor(state.time * 2) % 2;
-      drawSheetCell(gateImage, 4, 1, frame, 0, gx - 26, 312 - openLift, 144, 320, 0.98);
+      drawSheetCell(gateImage, 4, 1, frame, 0, gx - 26, gateGroundY - 320 - openLift, 144, 320, 0.98);
       if (!state.gateOpen) {
         ctx.save();
         ctx.globalCompositeOperation = "screen";
         ctx.strokeStyle = ready ? `rgba(56,219,255,${pulse})` : `rgba(255,79,154,${pulse})`;
         ctx.lineWidth = 5;
         ctx.beginPath();
-        ctx.moveTo(gx + 46, 350);
-        ctx.lineTo(gx + 46, 610);
+        ctx.moveTo(gx + 46, gateGroundY - 282);
+        ctx.lineTo(gx + 46, gateGroundY - 10);
         ctx.stroke();
         ctx.restore();
       }
@@ -5481,7 +5484,7 @@
     }
 
     ctx.save();
-    ctx.translate(gx, 330 - openLift);
+    ctx.translate(gx, gateGroundY - 292 - openLift);
     ctx.fillStyle = "rgba(6,5,8,.92)";
     ctx.fillRect(0, 0, 92, 292);
     ctx.strokeStyle = state.gateOpen ? colors.cyan : colors.gold;
@@ -5504,7 +5507,8 @@
     if (!state.extractionOpen) return;
     const t = state.time;
     const x = extractionX(state);
-    const y = 468;
+    const groundY = supportYAt(state, x, 620) ?? 620;
+    const y = groundY - 138;
     const portalImage = images.missionPortalV2;
     ctx.save();
     ctx.shadowColor = "rgba(255,79,154,0.72)";
@@ -5553,19 +5557,20 @@
     const lock = state.arenaLock;
     const pulse = 0.45 + Math.sin(state.time * 6) * 0.18;
     for (const x of [lock.left, lock.right]) {
+      const groundY = supportYAt(state, x, 620) ?? 620;
       const arenaGate = images.arenaGateV1;
       if (arenaGate?.complete && arenaGate.naturalWidth) {
         ctx.save();
         ctx.shadowColor = colors.purple;
         ctx.shadowBlur = 10 + pulse * 14;
-        drawSheetCellFit(arenaGate, 1, 1, 0, 0, x, 640, 116, 390, 0.96, {
+        drawSheetCellFit(arenaGate, 1, 1, 0, 0, x, groundY, 116, 390, 0.96, {
           anchor: "bottom",
           sourceInset: 2
         });
         ctx.globalCompositeOperation = "screen";
         ctx.fillStyle = "rgba(255,79,154," + (0.08 + pulse * 0.1) + ")";
         ctx.beginPath();
-        ctx.ellipse(x, 446, 34, 104, 0, 0, Math.PI * 2);
+        ctx.ellipse(x, groundY - 194, 34, 104, 0, 0, Math.PI * 2);
         ctx.fill();
         ctx.restore();
         continue;
