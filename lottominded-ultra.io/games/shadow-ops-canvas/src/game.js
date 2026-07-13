@@ -824,12 +824,12 @@
   ];
 
   const PICKUP_DRAW_SCALE = {
-    shard: 0.66,
-    key: 0.58,
-    health: 0.62,
-    overdrive: 0.62,
-    shield: 0.56,
-    weapon: 0.62
+    shard: 0.54,
+    key: 0.5,
+    health: 0.56,
+    overdrive: 0.56,
+    shield: 0.5,
+    weapon: 0.56
   };
 
   const POWERUP_PACK = {
@@ -3311,20 +3311,26 @@
     const gx = gateX(state);
     const opener = activePlayers(state).find((player) => player.x + player.w > gx - 90);
     if (!state.gateOpen && gateReady(state) && opener) {
-      state.gateOpen = true;
-      for (const player of allPlayers(state)) {
-        player.checkpointX = gx + 210;
-        player.checkpointY = 620 - player.standingH;
-      }
-      setObjective(state, "Vault gate open: push to the chamber", 3);
-      addBurst(state, gx + 44, 430, colors.gold, 60, 520);
-      playTone(320, 0.12, "triangle", 0.06);
-      playTone(640, 0.18, "sine", 0.04);
-      emitRewardEvent("shadow.gate_opened", {
-        levelId: rewardLevelId(state),
-        uniqueKeysCollected: state.keys
-      });
+      openVaultGate(state, gx);
     }
+  }
+
+  function openVaultGate(state, gx = gateX(state)) {
+    if (!state || state.gateOpen || !gateReady(state)) return false;
+    state.gateOpen = true;
+    for (const player of allPlayers(state)) {
+      player.checkpointX = gx + 210;
+      player.checkpointY = 620 - player.standingH;
+    }
+    setObjective(state, "Vault gate open: push to the chamber", 3);
+    addBurst(state, gx + 44, (supportYAt(state, gx + 44, 620) ?? 620) - 190, colors.gold, 60, 520);
+    playTone(320, 0.12, "triangle", 0.06);
+    playTone(640, 0.18, "sine", 0.04);
+    emitRewardEvent("shadow.gate_opened", {
+      levelId: rewardLevelId(state),
+      uniqueKeysCollected: state.keys
+    });
+    return true;
   }
 
   function updatePickups(state, dt) {
@@ -3358,6 +3364,7 @@
       addBurst(state, pickup.x, pickup.y, colors.gold, 28, 340);
       playTone(520, 0.08, "triangle", 0.045);
       playTone(960, 0.12, "sine", 0.035);
+      if (!isUnderground(state) && state.keys >= 3) openVaultGate(state);
       emitRewardEvent("shadow.key_collected", {
         levelId: rewardLevelId(state),
         keyId: `level-${rewardLevelId(state)}-key-${state.keys}`
@@ -5886,7 +5893,8 @@
   }
 
   function drawPickupSprite(type, x, y, r, time, bob) {
-    if (type !== "key") return false;
+    // Keys and common pickups use procedural art so every frame stays crisp and readable.
+    if (type !== "legacyKeySprite") return false;
     const row = PICKUP_SPRITE_ROWS[type];
     const image = images.missionCollectibles;
     if (row === undefined || !image?.complete || !image.naturalWidth) return false;
@@ -5952,26 +5960,51 @@
   }
 
   function drawKey(x, y, r) {
+    const t = run?.time || 0;
+    const pulse = 0.82 + Math.sin(t * 5.5 + x * 0.018) * 0.12;
     ctx.save();
     ctx.translate(x, y);
-    ctx.rotate(-0.12);
-    ctx.fillStyle = "rgba(255,214,109,.18)";
+    ctx.rotate(-0.18 + Math.sin(t * 2.4 + x * 0.01) * 0.05);
+    ctx.globalCompositeOperation = "screen";
+    const glow = ctx.createRadialGradient(0, 0, 2, 0, 0, r * 2.9);
+    glow.addColorStop(0, withAlpha(colors.gold, 0.42 * pulse));
+    glow.addColorStop(0.45, withAlpha(colors.cyan, 0.16 * pulse));
+    glow.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = glow;
     ctx.beginPath();
-    ctx.arc(0, 0, r * 2.5, 0, Math.PI * 2);
+    ctx.arc(0, 0, r * 2.35, 0, Math.PI * 2);
     ctx.fill();
+    ctx.globalCompositeOperation = "source-over";
+    ctx.fillStyle = "rgba(7,6,10,.94)";
+    ctx.strokeStyle = "rgba(255,214,109,.92)";
+    ctx.lineWidth = Math.max(2, r * 0.16);
+    roundedRect(-r * 1.42, -r * 0.82, r * 2.84, r * 1.64, r * 0.22, true, true);
     ctx.shadowColor = colors.gold;
     ctx.shadowBlur = 12;
     ctx.strokeStyle = colors.gold;
-    ctx.lineWidth = Math.max(3, r * 0.28);
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    ctx.lineWidth = Math.max(3, r * 0.2);
     ctx.beginPath();
-    ctx.arc(-r * 0.62, -r * 0.18, r * 0.48, 0, Math.PI * 2);
+    ctx.arc(-r * 0.54, -r * 0.08, r * 0.48, 0, Math.PI * 2);
     ctx.stroke();
+    ctx.shadowBlur = 8;
     ctx.beginPath();
-    ctx.moveTo(-r * 0.16, -r * 0.05);
-    ctx.lineTo(r * 0.88, r * 0.28);
-    ctx.lineTo(r * 0.72, r * 0.7);
-    ctx.moveTo(r * 0.48, r * 0.16);
-    ctx.lineTo(r * 0.34, r * 0.54);
+    ctx.moveTo(-r * 0.08, -r * 0.05);
+    ctx.lineTo(r * 1.04, r * 0.1);
+    ctx.moveTo(r * 0.62, r * 0.04);
+    ctx.lineTo(r * 0.62, r * 0.48);
+    ctx.moveTo(r * 0.86, r * 0.08);
+    ctx.lineTo(r * 0.86, r * 0.36);
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+    ctx.strokeStyle = "rgba(56,219,255,.72)";
+    ctx.lineWidth = Math.max(1.2, r * 0.08);
+    ctx.beginPath();
+    ctx.moveTo(-r * 1.03, -r * 0.56);
+    ctx.lineTo(-r * 0.64, -r * 0.56);
+    ctx.moveTo(r * 0.24, -r * 0.5);
+    ctx.lineTo(r * 0.84, -r * 0.5);
     ctx.stroke();
     ctx.restore();
   }
@@ -6026,7 +6059,7 @@
     if (!cell || !image?.complete || !image.naturalWidth) return false;
     const t = run?.time || 0;
     const pulse = 0.82 + Math.sin(t * 5 + x * 0.013) * 0.12;
-    const size = r * (type === "spread" ? 5.35 : type === "beam" ? 5.25 : 5.05);
+    const size = r * (type === "spread" ? 4.5 : type === "beam" ? 4.42 : 4.28);
     ctx.save();
     ctx.translate(x, y);
     if (!settings.reducedMotion) ctx.rotate(Math.sin(t * 3.2 + x * 0.009) * 0.035);
@@ -6040,6 +6073,13 @@
     ctx.arc(0, 0, r * 2.9, 0, Math.PI * 2);
     ctx.fill();
     ctx.globalCompositeOperation = "source-over";
+    ctx.fillStyle = "rgba(6,5,10,.92)";
+    ctx.strokeStyle = withAlpha(colors.gold, 0.86);
+    ctx.lineWidth = Math.max(2, r * 0.13);
+    roundedRect(-r * 1.52, -r * 1.08, r * 3.04, r * 2.16, r * 0.3, true, true);
+    ctx.strokeStyle = withAlpha(cell.color, 0.78);
+    ctx.lineWidth = Math.max(1.5, r * 0.09);
+    roundedRect(-r * 1.2, -r * 0.78, r * 2.4, r * 1.56, r * 0.22, false, true);
     ctx.shadowColor = cell.color;
     ctx.shadowBlur = 10 + pulse * 8;
     const drawn = drawSheetCellFit(image, 3, 2, cell.frame, cell.row, 0, 0, size, size, 0.98, { sourceInset: 3 });
@@ -6302,7 +6342,7 @@
       const angle = Math.atan2(shot.vy, shot.vx);
       if (shot.kind === "droneLaser") {
         const frame = Math.floor(((shot.age || 0) * 22) % DRONE_LASER_FRAMES);
-        const laserDrawn = drawDroneLaserAsset(shot.x, shot.y, Math.max(112, shot.w * 4.2), Math.max(38, shot.h * 2.25), angle, 0.74, frame, { center: true });
+        const laserDrawn = drawDroneLaserAsset(shot.x, shot.y, Math.max(72, Math.min(132, shot.w * 2.35)), Math.max(28, shot.h * 1.45), angle, 0.74, frame, { center: true });
         drawDroneFxCell(7, shot.x, shot.y, 58, 58, 0.34 + Math.sin((shot.age || 0) * 18) * 0.08, {
           rotation: angle,
           shadowBlur: 14
@@ -6364,12 +6404,39 @@
 
   function drawEnemyTelegraph(enemy, state) {
     if (!(enemy.telegraph > 0)) return false;
-    if (enemy.type === "crawler") return false;
-    const baseDuration = enemy.type === "turret" ? 0.55 : 0.38;
+    const baseDuration = enemy.type === "turret" ? 0.55 : enemy.type === "crawler" ? 0.38 : 0.38;
     const charge = clamp(enemy.telegraph / baseDuration, 0, 1);
     const alpha = 0.34 + charge * 0.48;
     const cx = enemy.x + enemy.w * 0.5;
     const cy = enemy.y + enemy.h * 0.55;
+    if (enemy.type === "crawler") {
+      const dir = enemy.facing || -1;
+      const groundY = enemy.y + enemy.h - 4;
+      const warnW = 82 + (1 - charge) * 44;
+      ctx.save();
+      ctx.globalCompositeOperation = "screen";
+      ctx.strokeStyle = `rgba(255,214,109,${0.38 + alpha * 0.35})`;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(cx + dir * 14, groundY);
+      ctx.lineTo(cx + dir * warnW, groundY);
+      ctx.stroke();
+      ctx.fillStyle = `rgba(255,79,154,${0.1 + alpha * 0.16})`;
+      ctx.beginPath();
+      ctx.moveTo(cx + dir * 18, groundY - 5);
+      ctx.lineTo(cx + dir * warnW, groundY - 18);
+      ctx.lineTo(cx + dir * warnW, groundY + 8);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+      drawGameplayFxCell(GAMEPLAY_FX.warning.lockNode, cx + dir * 46, groundY - 22, 54, 54, alpha * 0.82, {
+        composite: "screen",
+        shadowColor: colors.gold,
+        shadowBlur: 12,
+        sourceInset: 10
+      });
+      return true;
+    }
     if (enemy.type === "drone") {
       drawGameplayFxCell(GAMEPLAY_FX.warning.reticle, cx, enemy.y + enemy.h + 56, 82, 82, alpha, {
         composite: "screen",
@@ -6570,8 +6637,8 @@
     const muzzle = droneMuzzle(enemy);
     const angle = droneAimAngle(enemy, state);
     const progress = charging ? 1 - clamp(enemy.telegraph / 0.38, 0, 1) : 1;
-    const length = flash ? 270 : 78 + progress * 132;
-    const height = flash ? 58 : 28 + progress * 16;
+    const length = flash ? 172 : 70 + progress * 104;
+    const height = flash ? 44 : 24 + progress * 12;
     const alpha = flash ? clamp(flash / 0.24, 0.28, 0.92) : 0.18 + progress * 0.36;
     const frame = Math.floor((state.time * 22 + (flash ? 4 : 0)) % DRONE_LASER_FRAMES);
     let drawn = false;
@@ -7004,6 +7071,9 @@
     if (boss.attackAnim > 0) frame = 2 + Math.min(2, Math.floor(actionProgress * 3));
     if (boss.telegraph > 0) frame = boss.telegraph > 0.55 ? 2 : boss.telegraph > 0.22 ? 3 : 4;
     if (boss.shieldTime > 0) frame = 4;
+    if (boss.phase >= 2 && boss.attackAnim <= 0 && boss.telegraph <= 0 && boss.shieldTime <= 0) {
+      frame = Math.floor(boss.time * (3.1 + boss.phase * 0.35)) % 3;
+    }
     if (hurt) frame = BOSS_MOTION_FRAMES - 1;
     const jitterX = hurt ? Math.sin(state.time * 54) * 4 : 0;
     const jitterY = boss.telegraph > 0 ? Math.sin(state.time * 18) * 3 : 0;
@@ -7011,6 +7081,14 @@
     if (sheet?.complete && sheet.naturalWidth) {
       const cellW = sheet.naturalWidth / BOSS_MOTION_FRAMES;
       const cellH = sheet.naturalHeight;
+      if (boss.telegraph > 0 || boss.attackAnim > 0) {
+        ctx.save();
+        ctx.globalAlpha = boss.telegraph > 0 ? 0.28 : 0.18;
+        ctx.globalCompositeOperation = "screen";
+        ctx.drawImage(sheet, frame * cellW, 0, cellW, cellH, -drawW * 0.5 + jitterX - 8, -drawH * 0.5 + jitterY, drawW, drawH);
+        ctx.drawImage(sheet, frame * cellW, 0, cellW, cellH, -drawW * 0.5 + jitterX + 8, -drawH * 0.5 + jitterY, drawW, drawH);
+        ctx.restore();
+      }
       ctx.drawImage(sheet, frame * cellW, 0, cellW, cellH, -drawW * 0.5 + jitterX, -drawH * 0.5 + jitterY, drawW, drawH);
       return;
     }
