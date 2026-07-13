@@ -253,11 +253,9 @@
         place-items: start center !important;
       }
       body.touch-forced.touch-portrait #game {
-        width: min(190vw, 1520px) !important;
-        max-width: none !important;
-        height: min(106.875vw, calc(100dvh - 300px)) !important;
-        max-height: calc(100dvh - 300px) !important;
-        margin-top: clamp(116px, 14dvh, 154px) !important;
+        width: 100vw !important;
+        height: min(56.25vw, calc(100dvh - 214px)) !important;
+        margin-top: clamp(118px, 15dvh, 168px) !important;
       }
       body.touch-forced.touch-portrait .touchbar {
         --touch-size: clamp(48px, 13vw, 62px);
