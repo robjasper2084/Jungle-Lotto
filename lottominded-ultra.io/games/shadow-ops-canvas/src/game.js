@@ -85,6 +85,8 @@
     floorLaserCharge: "./assets/mission/robot_rahbe_floor_laser_v1_frames/02.png",
     floorLaserActive: "./assets/mission/robot_rahbe_floor_laser_v1_frames/03.png",
     verticalLaser: "./assets/mission/robot_rahbe_vertical_laser_v1.png",
+    lotteryKiosk: "./assets/mission/robot_rahbe_lottery_kiosk_v1.png",
+    solidVaultPanel: "./assets/mission/robot_rahbe_solid_panel_v1.png",
     missionBrandProps: "./assets/mission/branded_background_props_sheet.png",
     enemyMotion: "./assets/characters/higgsfield_enemy_motion_sheet_runtime.png",
     missionProps: "./assets/mission/higgsfield_missing_world_props_runtime_v3.png",
@@ -1885,7 +1887,7 @@
   }
 
   function gateReady(state) {
-    return Boolean(state && state.keys >= 3 && undergroundComplete(state));
+    return Boolean(state && state.keys >= 3);
   }
 
   function currentObjectiveText(state) {
@@ -1894,7 +1896,6 @@
     if (state.bossDefeated) return "Reach extraction and claim the terminal drop";
     if (state.gateOpen) return "Enter the boss chamber";
     if (state.keys < 3) return state.level?.objective || "Collect 3 vault keys";
-    if (!undergroundComplete(state)) return "Enter the underground sector";
     return "Open the boss gate";
   }
 
@@ -2211,7 +2212,6 @@
 
   function gateLockedMessage(state) {
     if (state.keys < 3) return "Gate locked: collect 3 vault keys";
-    if (!undergroundComplete(state)) return "Gate locked: clear the underground sector";
     return "Gate ready: move in close to unlock";
   }
 
@@ -3310,9 +3310,6 @@
     state.gatePulse += dt;
     const gx = gateX(state);
     const opener = activePlayers(state).find((player) => player.x + player.w > gx - 90);
-    if (!state.gateOpen && state.keys >= 3 && !undergroundComplete(state) && opener) {
-      setObjective(state, "Gate locked: enter the underground sector", 1.4);
-    }
     if (!state.gateOpen && gateReady(state) && opener) {
       state.gateOpen = true;
       for (const player of allPlayers(state)) {
@@ -3357,7 +3354,7 @@
       state.keys += 1;
       addScore(state, 500);
       p.overdrive = clamp(p.overdrive + 18, 0, 100);
-      setObjective(state, state.keys >= 3 ? (undergroundComplete(state) ? "All keys and cells secured: open the vault gate" : "Keys secured: enter the underground sector") : `Vault key secured ${state.keys}/3`, 2.4);
+      setObjective(state, state.keys >= 3 ? "All keys secured: open the vault gate" : `Vault key secured ${state.keys}/3`, 2.4);
       addBurst(state, pickup.x, pickup.y, colors.gold, 28, 340);
       playTone(520, 0.08, "triangle", 0.045);
       playTone(960, 0.12, "sine", 0.035);
@@ -4921,7 +4918,7 @@
     for (const module of modules) {
       // Functional gates and portals render later in a single authoritative pass.
       // Drawing their decorative housings here caused doubled, translucent panels.
-      if (module.type === "wall" || module.type === "portal" || module.type === "gate") continue;
+      if (module.type === "portal" || module.type === "gate") continue;
       const pad = module.type === "wall" ? module.w * 0.45 : module.w * 0.8;
       if (module.x + module.w < state.cameraX - pad || module.x - module.w > state.cameraX + W + pad) continue;
       if (module.type === "portal") {
@@ -4983,10 +4980,21 @@
   }
 
   function drawCircuitWallAsset(x, y, w, h, palette, variant = 0) {
+    const solidPanel = images.solidVaultPanel;
+    if (solidPanel?.complete && solidPanel.naturalWidth) {
+      ctx.save();
+      ctx.globalAlpha = 1;
+      ctx.imageSmoothingEnabled = true;
+      ctx.shadowColor = withAlpha(palette.glow || colors.purple, 0.28);
+      ctx.shadowBlur = 10;
+      ctx.drawImage(solidPanel, x, y, w, h);
+      ctx.restore();
+      return;
+    }
     const trim = palette.trim || colors.gold;
     const glow = palette.glow || colors.purple;
     ctx.save();
-    ctx.globalAlpha = 0.92;
+    ctx.globalAlpha = 1;
     ctx.shadowColor = withAlpha(glow, 0.24);
     ctx.shadowBlur = 14;
     const panel = ctx.createLinearGradient(x, y, x + w, y + h);
@@ -5630,6 +5638,41 @@
     const pulse = settings.reducedMotion ? 0 : Math.sin(state.time * 4) * 0.5 + 0.5;
     const x = cfg.x;
     const y = cfg.y;
+    const groundY = supportYAt(state, x, y) ?? y + 72;
+    const kiosk = images.lotteryKiosk;
+
+    if (kiosk?.complete && kiosk.naturalWidth) {
+      const kioskW = 146;
+      const kioskH = 206;
+      ctx.save();
+      ctx.globalAlpha = 1;
+      ctx.imageSmoothingEnabled = true;
+      ctx.shadowColor = claimed ? colors.green : inRange ? colors.cyan : colors.purple;
+      ctx.shadowBlur = inRange ? 24 : 14;
+      ctx.drawImage(kiosk, x - kioskW * 0.5, groundY - kioskH, kioskW, kioskH);
+      if (claimed) {
+        ctx.globalCompositeOperation = "screen";
+        ctx.strokeStyle = colors.green;
+        ctx.lineWidth = 5;
+        ctx.beginPath();
+        ctx.moveTo(x - 16, groundY - 126);
+        ctx.lineTo(x - 4, groundY - 114);
+        ctx.lineTo(x + 22, groundY - 144);
+        ctx.stroke();
+      }
+      ctx.restore();
+      if (inRange && !claimed) {
+        ctx.save();
+        ctx.textAlign = "center";
+        ctx.font = "900 11px 'Arial Black', sans-serif";
+        ctx.fillStyle = colors.cream;
+        ctx.shadowColor = colors.cyan;
+        ctx.shadowBlur = 10;
+        ctx.fillText("USE", x, groundY - kioskH - 12);
+        ctx.restore();
+      }
+      return;
+    }
 
     ctx.save();
     ctx.translate(x, y);
