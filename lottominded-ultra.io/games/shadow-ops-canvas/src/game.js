@@ -50,11 +50,11 @@
     level2Tiles: "./assets/levels/platform_tiles_level2_clean.png",
     level3Tiles: "./assets/levels/platform_tiles_level3_clean.png",
     bossCanopy: "./assets/bosses/canopy_drone_queen_cutout.png",
-    bossCanopyMotion: "./assets/bosses/canopy_drone_queen_motion_sheet_runtime_384.png",
+    bossCanopyMotion: "./assets/bosses/canopy_drone_queen_motion_v2_runtime_384.png",
     bossForge: "./assets/bosses/jackpot_forge_titan_cutout.png",
-    bossForgeMotion: "./assets/bosses/jackpot_forge_titan_motion_sheet_runtime_384.png",
+    bossForgeMotion: "./assets/bosses/jackpot_forge_titan_motion_v2_runtime_384.png",
     bossMidas: "./assets/bosses/midas_heartcore_overlord_cutout.png",
-    bossMidasMotion: "./assets/bosses/midas_heartcore_overlord_motion_sheet_runtime_384.png",
+    bossMidasMotion: "./assets/bosses/midas_heartcore_overlord_motion_v2_runtime_384.png",
     levelFrame: "./assets/ui/level_card_frame.png",
     bossFrame: "./assets/ui/boss_health_frame.png",
     victoryBadge: "./assets/ui/final_victory_badge.png",
@@ -739,7 +739,7 @@
       comboGem: { row: 3, frame: 4 }
     }
   };
-  const BOSS_MOTION_FRAMES = 6;
+  const BOSS_MOTION_FRAMES = 8;
 
   const MOVEMENT = {
     maxGroundSpeed: 430,
@@ -5353,6 +5353,33 @@
     // edge on the resolved support instead of leaving the whole prop floating.
     const y = groundY - 42;
 
+    if (!isUnderground(state)) {
+      const gateImage = images[portal.type === "exit" ? "undergroundGateOpen" : "undergroundGatePowered"];
+      if (gateImage?.complete && gateImage.naturalWidth) {
+        const gateW = portal.type === "exit" ? 188 : 176;
+        const gateH = 326;
+        drawAnchoredTechBase(x, groundY, gateW * 0.86, {
+          glow: portal.type === "exit" ? colors.cyan : colors.purple,
+          trim: colors.gold,
+          height: 24,
+          depth: 14
+        });
+        ctx.save();
+        ctx.globalAlpha = 1;
+        ctx.shadowColor = portal.type === "exit" ? "rgba(56,219,255,.52)" : "rgba(165,34,255,.48)";
+        ctx.shadowBlur = 14 + pulse * 10;
+        ctx.imageSmoothingEnabled = true;
+        ctx.drawImage(gateImage, 58, 0, 396, 512, x - gateW * 0.5, groundY - gateH, gateW, gateH);
+        ctx.shadowBlur = 0;
+        ctx.font = "900 10px 'Arial Black', sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillStyle = "#ffe88a";
+        ctx.fillText(portal.label, x, groundY - 10);
+        ctx.restore();
+        return;
+      }
+    }
+
     if (isUnderground(state) && (portal.type === "cell-lock" || portal.type === "exit")) {
       const cells = state.undergroundCells?.[undergroundKey(state)] || 0;
       const imageKey = portal.type === "exit"
@@ -5500,13 +5527,32 @@
 
   function drawGate(state) {
     if (isUnderground(state)) return;
-    const openLift = state.gateOpen ? 265 : 0;
+    const openLift = 0;
     const pulse = 0.55 + Math.sin(state.gatePulse * 6) * 0.18;
     const gx = gateX(state);
     const gateGroundY = supportYAt(state, gx + 45, 620) ?? 620;
+    const ready = gateReady(state);
+    const stateGate = images[state.gateOpen ? "undergroundGateOpen" : ready ? "undergroundGatePowered" : "undergroundGateLocked"];
+    if (stateGate?.complete && stateGate.naturalWidth) {
+      const targetW = 184;
+      const targetH = 326;
+      drawAnchoredTechBase(gx + 45, gateGroundY, targetW * 0.86, {
+        glow: ready || state.gateOpen ? colors.cyan : colors.purple,
+        trim: colors.gold,
+        height: 26,
+        depth: 16
+      });
+      ctx.save();
+      ctx.globalAlpha = 1;
+      ctx.shadowColor = state.gateOpen ? colors.cyan : ready ? colors.cyan : colors.purple;
+      ctx.shadowBlur = 10 + pulse * 12;
+      ctx.imageSmoothingEnabled = true;
+      ctx.drawImage(stateGate, 58, 0, 396, 512, gx + 45 - targetW * 0.5, gateGroundY - targetH, targetW, targetH);
+      ctx.restore();
+      return;
+    }
     const gateV2 = images.missionGateV2;
     if (gateV2?.complete && gateV2.naturalWidth) {
-      const ready = gateReady(state);
       const targetW = 166;
       const targetH = 252;
       drawAnchoredTechBase(gx + 45, gateGroundY, targetW * 0.82, {
@@ -5617,13 +5663,25 @@
     const x = extractionX(state);
     const groundY = supportYAt(state, x, 620) ?? 620;
     const y = groundY - 138;
-    const portalImage = images.missionPortalV2;
+    const portalImage = images.undergroundGateOpen;
     drawAnchoredTechBase(x, groundY, 178, {
       glow: colors.pink,
       trim: colors.gold,
       height: 26,
       depth: 15
     });
+    if (portalImage?.complete && portalImage.naturalWidth) {
+      const portalW = 196;
+      const portalH = 344;
+      ctx.save();
+      ctx.globalAlpha = 1;
+      ctx.shadowColor = "rgba(255,79,154,0.72)";
+      ctx.shadowBlur = 26;
+      ctx.imageSmoothingEnabled = true;
+      ctx.drawImage(portalImage, 58, 0, 396, 512, x - portalW * 0.5, groundY - portalH, portalW, portalH);
+      ctx.restore();
+      return;
+    }
     ctx.save();
     ctx.shadowColor = "rgba(255,79,154,0.72)";
     ctx.shadowBlur = 26;
@@ -5643,12 +5701,6 @@
     ctx.lineWidth = 4;
     roundedRect(x - 82, y - 138, 164, 276, 34, true, true);
     ctx.globalCompositeOperation = "screen";
-    if (portalImage?.complete && portalImage.naturalWidth) {
-      ctx.drawImage(portalImage, x - 96, y - 142, 192, 276);
-      ctx.restore();
-      return;
-    }
-
     const g = ctx.createRadialGradient(x, y, 12, x, y, 118 + Math.sin(t * 4) * 8);
     g.addColorStop(0, "rgba(255,243,209,.95)");
     g.addColorStop(0.25, "rgba(255,79,154,.78)");
@@ -7201,13 +7253,14 @@
     const actionDuration = 0.46;
     const actionProgress = 1 - clamp((boss.attackAnim || 0) / actionDuration, 0, 1);
     let frame = Math.floor(boss.time * (2.4 + boss.phase * 0.25)) % 2;
-    if (boss.attackAnim > 0) frame = 2 + Math.min(2, Math.floor(actionProgress * 3));
+    if (boss.attackAnim > 0) frame = 3 + Math.min(2, Math.floor(actionProgress * 3));
     if (boss.telegraph > 0) frame = boss.telegraph > 0.55 ? 2 : boss.telegraph > 0.22 ? 3 : 4;
-    if (boss.shieldTime > 0) frame = 4;
+    if (boss.shieldTime > 0) frame = 2;
     if (boss.phase >= 2 && boss.attackAnim <= 0 && boss.telegraph <= 0 && boss.shieldTime <= 0) {
-      frame = Math.floor(boss.time * (3.1 + boss.phase * 0.35)) % 3;
+      frame = Math.floor(boss.time * (3.1 + boss.phase * 0.35)) % 2;
     }
-    if (hurt) frame = BOSS_MOTION_FRAMES - 1;
+    if (boss.hp / boss.maxHp < 0.18 && boss.telegraph <= 0 && boss.attackAnim <= 0) frame = 7;
+    if (hurt) frame = 6;
     const jitterX = hurt ? Math.sin(state.time * 54) * 4 : 0;
     const jitterY = boss.telegraph > 0 ? Math.sin(state.time * 18) * 3 : 0;
 
