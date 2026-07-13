@@ -1,0 +1,54 @@
+version: 2.1
+
+jobs:
+  verify-game:
+    docker:
+      - image: cimg/node:22.14-browsers
+    resource_class: medium
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - v1-node22-npm-{{ checksum "package-lock.json" }}
+      - run:
+          name: Install dependencies
+          command: npm ci
+      - save_cache:
+          key: v1-node22-npm-{{ checksum "package-lock.json" }}
+          paths:
+            - ~/.npm
+      - restore_cache:
+          keys:
+            - v1-playwright-{{ checksum "package-lock.json" }}
+      - run:
+          name: Install Chromium
+          command: npx playwright install chromium
+      - save_cache:
+          key: v1-playwright-{{ checksum "package-lock.json" }}
+          paths:
+            - ~/.cache/ms-playwright
+      - run:
+          name: Prepare test results
+          command: mkdir -p output/test-results
+      - run:
+          name: Validate syntax and assets
+          command: npm run check
+      - run:
+          name: Unit tests
+          command: npm run test:unit:ci
+      - run:
+          name: Browser playtests
+          command: npm run test:browser
+      - store_test_results:
+          path: output/test-results
+      - store_artifacts:
+          path: output/test-results
+          destination: test-results
+      - store_artifacts:
+          path: output/playwright
+          destination: playwright
+
+workflows:
+  verify:
+    jobs:
+      - verify-game

@@ -9,6 +9,7 @@ import { applyHit, resolveMelee } from "../gameplay/combat.js?v=fighter-prop1";
 import { SpriteEffect } from "../gameplay/effects.js";
 import { Fighter } from "../gameplay/fighter.js?v=fighter-prop1";
 import { AssistStrike, Projectile } from "../gameplay/projectiles.js?v=fighter-prop1";
+import { resolveRoundOutcome } from "../gameplay/rounds.js";
 import {
   drawCharacterSelect,
   drawDiagnostics,
@@ -58,6 +59,8 @@ export class GothTechnologyGame {
     this.roundTimer = ROUND_SECONDS;
     this.roundMessageTimer = 0;
     this.matchWinner = null;
+    this.roundResultText = "";
+    this.roundResultSubtext = "";
     this.playerEngaged = false;
     this.fighters = [];
     this.projectiles = [];
@@ -85,6 +88,12 @@ export class GothTechnologyGame {
     this.rewardRoundTicks = 0;
     this.rewardTotalTicks = 0;
     this.rewardMeaningfulActions = 0;
+    this.rewardStatus = "";
+    this.rewardStatusTimer = 0;
+    this.lastAccessibleState = "";
+    this.handleInterruption = () => this.pauseForInterruption();
+    window.addEventListener("blur", this.handleInterruption);
+    document.addEventListener("visibilitychange", this.handleInterruption);
     this.audio.preloadMusic();
     this.audio.startMusic("menu");
     this.bindPointer();
@@ -106,7 +115,39 @@ export class GothTechnologyGame {
   stop() {
     this.stopped = true;
     this.rewards?.close?.();
+    window.removeEventListener("blur", this.handleInterruption);
+    document.removeEventListener("visibilitychange", this.handleInterruption);
+    this.input.destroy?.();
+    this.audio.stopMusic();
     if (this.raf) cancelAnimationFrame(this.raf);
+  }
+
+  pauseForInterruption() {
+    if (document.hidden || document.hasFocus?.() === false) {
+      this.input.clear();
+      if (this.phase === PHASE.FIGHT) {
+        this.phase = PHASE.PAUSE;
+        this.announce("Game paused because focus changed");
+      }
+    }
+  }
+
+  announce(message) {
+    window.dispatchEvent(new CustomEvent("gothtechnology:announce", { detail: String(message || "") }));
+    this.lastAccessibleState = "";
+  }
+
+  openSettings() {
+    if (this.phase === PHASE.FIGHT) this.phase = PHASE.PAUSE;
+    window.dispatchEvent(new CustomEvent("gothtechnology:settings"));
+    this.announce("Control settings opened");
+  }
+
+  returnToTitle() {
+    this.phase = PHASE.TITLE;
+    this.matchWinner = null;
+    this.syncMusicForPhase();
+    this.announce("Title menu");
   }
 
   startRewardSession() {
@@ -121,7 +162,17 @@ export class GothTechnologyGame {
       buildId: "fighter-2026-06-25",
       mode: this.training ? "training" : this.cpuEnabled ? "versus_cpu" : "local_pvp",
       onStatus: (event) => {
-        if (event.status === "error") console.warn("[GOTHTECHNOLOGY rewards]", event.detail);
+        if (event.status === "ready") {
+          this.rewardStatus = "REWARDS CONNECTED";
+          this.rewardStatusTimer = 2.5;
+        }
+        if (event.status === "error") {
+          const message = event.detail?.message || String(event.detail || "Rewards unavailable");
+          const authRequired = message.includes("AUTH_REQUIRED");
+          this.rewardStatus = authRequired ? "SIGN IN TO EARN REWARDS" : "REWARDS TEMPORARILY UNAVAILABLE";
+          this.rewardStatusTimer = 5;
+          if (authRequired) this.rewards?.close?.();
+        }
       }
     }) || null;
   }
@@ -138,7 +189,8 @@ export class GothTechnologyGame {
         });
       }
     }).catch((error) => {
-      console.warn("[GOTHTECHNOLOGY rewards]", error);
+      const message = error?.message || String(error);
+      if (!message.includes("AUTH_REQUIRED")) console.warn("[GOTHTECHNOLOGY rewards]", error);
     });
   }
 
@@ -153,14 +205,13 @@ export class GothTechnologyGame {
         return;
       }
       if (this.phase === PHASE.MATCH_END) {
-        this.phase = PHASE.TITLE;
-        this.syncMusicForPhase();
+        this.returnToTitle();
         return;
       }
       const hit = this.menuHitAreas.find((area) => x >= area.x && x <= area.x + area.w && y >= area.y && y <= area.y + area.h);
       if (hit) hit.action();
       else if (this.phase === PHASE.TITLE) this.openCharacterSelect(false);
-      else if (this.phase === PHASE.SELECT) this.startMatch(this.training);
+      else if (this.phase === PHASE.SELECT) this.startVersus();
     });
   }
 
@@ -218,6 +269,7 @@ export class GothTechnologyGame {
     this.phase = PHASE.VERSUS;
     this.roundMessageTimer = 1.35;
     this.audio.beep("select");
+    this.announce(`${this.fighters[0]?.config.name ?? "Player 1"} versus ${this.fighters[1]?.config.name ?? "Player 2"}`);
   }
 
   startMatch(training = this.training) {
@@ -244,6 +296,8 @@ export class GothTechnologyGame {
 
   startRound() {
     this.roundTimer = ROUND_SECONDS;
+    this.roundResultText = "";
+    this.roundResultSubtext = "";
     this.rewardRoundTicks = 0;
     this.rewardMeaningfulActions = 0;
     this.projectiles = [];
@@ -269,6 +323,7 @@ export class GothTechnologyGame {
       playerHealth: Math.round(this.fighters[0].config.maxHealth),
       opponentHealth: Math.round(this.fighters[1].config.maxHealth)
     });
+    this.announce(`Round ${this.roundNumber}`);
   }
 
   loop(time) {
@@ -290,11 +345,13 @@ export class GothTechnologyGame {
   }
 
   update(dt) {
+    this.input.pollGamepads?.();
     this.handleGlobalInput();
     this.parallax += dt;
     this.shake = Math.max(0, this.shake - dt * 44);
     this.slowMo = Math.max(0, this.slowMo - dt);
     this.flash = Math.max(0, this.flash - dt);
+    this.rewardStatusTimer = Math.max(0, this.rewardStatusTimer - dt);
     if (this.phase === PHASE.VERSUS) {
       this.roundMessageTimer -= dt;
       if (this.roundMessageTimer <= 0) this.startMatch(this.training);
@@ -353,10 +410,11 @@ export class GothTechnologyGame {
 
     if (this.phase === PHASE.TITLE) {
       this.menuHitAreas = [
-        { x: 494, y: 338, w: 292, h: 54, action: () => this.openCharacterSelect(false) },
-        { x: 494, y: 406, w: 292, h: 54, action: () => this.openCharacterSelect(true) },
-        { x: 494, y: 474, w: 292, h: 54, action: () => this.openGameSelect() },
-        { x: 494, y: 542, w: 292, h: 54, action: () => { this.cpuEnabled = !this.cpuEnabled; } }
+        { x: 494, y: 318, w: 292, h: 48, action: () => this.openCharacterSelect(false) },
+        { x: 494, y: 376, w: 292, h: 48, action: () => this.openCharacterSelect(true) },
+        { x: 494, y: 434, w: 292, h: 48, action: () => this.openGameSelect() },
+        { x: 494, y: 492, w: 292, h: 48, action: () => { this.cpuEnabled = !this.cpuEnabled; this.lastAccessibleState = ""; } },
+        { x: 494, y: 550, w: 292, h: 48, action: () => this.openSettings() }
       ];
       this.audio.startMusic("menu");
       if (this.input.consume("ui.confirm")) this.openCharacterSelect(false);
@@ -383,7 +441,7 @@ export class GothTechnologyGame {
       this.menuHitAreas = [
         { x: 90, y: 128, w: 500, h: 420, action: () => this.selectPlayer1("KALYX") },
         { x: 690, y: 128, w: 500, h: 420, action: () => this.selectPlayer1("MASTER_EZRA") },
-        { x: 494, y: 594, w: 292, h: 54, action: () => this.startMatch(this.training) }
+        { x: 494, y: 570, w: 292, h: 52, action: () => this.startVersus() }
       ];
       if (
         this.input.consume("p1.left") ||
@@ -393,7 +451,7 @@ export class GothTechnologyGame {
       ) {
         this.selectPlayer1(this.player1Id === "KALYX" ? "MASTER_EZRA" : "KALYX");
       }
-      if (this.input.consume("ui.confirm")) this.startMatch(this.training);
+      if (this.input.consume("ui.confirm")) this.startVersus();
       if (this.input.consume("ui.back")) {
         this.phase = PHASE.TITLE;
         this.syncMusicForPhase();
@@ -402,14 +460,22 @@ export class GothTechnologyGame {
     }
 
     this.menuHitAreas = [];
+    if (this.phase === PHASE.PAUSE) {
+      this.menuHitAreas = [
+        { x: 454, y: 484, w: 172, h: 48, action: () => { this.phase = PHASE.FIGHT; this.announce("Fight resumed"); } },
+        { x: 654, y: 484, w: 172, h: 48, action: () => this.openSettings() },
+        { x: 454, y: 540, w: 172, h: 48, action: () => this.startMatch(this.training) },
+        { x: 654, y: 540, w: 172, h: 48, action: () => this.returnToTitle() }
+      ];
+    }
     if (this.input.consume("ui.pause")) {
       this.phase = this.phase === PHASE.PAUSE ? PHASE.FIGHT : PHASE.PAUSE;
       this.audio.beep("select");
+      this.announce(this.phase === PHASE.PAUSE ? "Game paused" : "Fight resumed");
     }
     if ((this.phase === PHASE.ROUND_END || this.phase === PHASE.MATCH_END) && this.input.consume("ui.confirm")) {
       if (this.phase === PHASE.MATCH_END) {
-        this.phase = PHASE.TITLE;
-        this.syncMusicForPhase();
+        this.returnToTitle();
       }
       else this.startRound();
     }
@@ -566,21 +632,16 @@ export class GothTechnologyGame {
   checkRoundEnd() {
     const [p1, p2] = this.fighters;
     if (this.training) return;
-    let winner = null;
-    if (p1.health <= 0 && p2.health <= 0) winner = p1.health >= p2.health ? p1 : p2;
-    else if (p1.health <= 0) winner = p2;
-    else if (p2.health <= 0) winner = p1;
-    else if (this.roundTimer <= 0) winner = p1.health >= p2.health ? p1 : p2;
-    if (!winner) return;
+    const outcome = resolveRoundOutcome(p1.health, p2.health, this.roundTimer);
+    if (!outcome) return;
     this.audio.beep("ko");
-    winner.roundWins += 1;
-    const loser = winner === p1 ? p2 : p1;
-    const reason = p1.health <= 0 && p2.health <= 0 ? "double_KO" : this.roundTimer <= 0 ? "timeout" : "KO";
-    const winnerSide = winner === p1 ? "player" : "opponent";
+    const winner = outcome.draw ? null : this.fighters[outcome.winnerIndex];
+    const loser = winner ? (winner === p1 ? p2 : p1) : null;
+    const winnerSide = outcome.draw ? "draw" : winner === p1 ? "player" : "opponent";
     this.emitRewardEvent("fighter.round_completed", {
       roundNumber: this.roundNumber,
       winnerSide,
-      reason,
+      reason: outcome.reason,
       durationTicks: Math.round(this.rewardRoundTicks),
       playerHealthRemaining: Math.max(0, Math.round(p1.health)),
       opponentHealthRemaining: Math.max(0, Math.round(p2.health)),
@@ -588,8 +649,23 @@ export class GothTechnologyGame {
       playerDamageReceived: Math.max(0, Math.round(p1.config.maxHealth - Math.max(0, p1.health))),
       meaningfulActionCount: this.rewardMeaningfulActions
     }, { flush: true });
+
+    if (outcome.draw) {
+      p1.setMotion(p1.health <= 0 ? "DEFEAT" : "READY_STANCE", true);
+      p2.setMotion(p2.health <= 0 ? "DEFEAT" : "READY_STANCE", true);
+      this.roundResultText = outcome.reason === "double_KO" ? "DOUBLE KO" : "DRAW";
+      this.roundResultSubtext = "ROUND REPLAY";
+      this.roundNumber += 1;
+      this.phase = PHASE.ROUND_END;
+      this.announce(`${this.roundResultText}. Replay round`);
+      return;
+    }
+
+    winner.roundWins += 1;
     winner.setMotion("VICTORY", true);
     loser.setMotion("DEFEAT", true);
+    this.roundResultText = outcome.reason === "timeout" ? "TIME UP" : "KO";
+    this.roundResultSubtext = "NEXT ROUND";
     if (winner.roundWins >= 2) {
       this.matchWinner = winner;
       this.phase = PHASE.MATCH_END;
@@ -609,6 +685,7 @@ export class GothTechnologyGame {
     } else {
       this.roundNumber += 1;
       this.phase = PHASE.ROUND_END;
+      this.announce(`${winner.config.name} wins round ${this.roundNumber - 1}`);
     }
   }
 
@@ -687,6 +764,7 @@ export class GothTechnologyGame {
   }
 
   render() {
+    this.syncAccessibleState();
     const ctx = this.ctx;
     ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
     if (this.phase === PHASE.LOADING) {
@@ -722,7 +800,7 @@ export class GothTechnologyGame {
       drawRoundMessage(ctx, this.roundMessageTimer > 0.34 ? `ROUND ${this.roundNumber}` : "FIGHT", this.roundMessageTimer > 0.34 ? "READY" : "ENGAGE");
     }
     if (this.phase === PHASE.ROUND_END) {
-      drawRoundMessage(ctx, "KO", "NEXT ROUND");
+      drawRoundMessage(ctx, this.roundResultText || "ROUND COMPLETE", this.roundResultSubtext || "NEXT ROUND");
     }
     if (this.phase === PHASE.MATCH_END) {
       drawRoundMessage(ctx, `${this.matchWinner?.config.name ?? "FIGHTER"} WINS`, "MATCH COMPLETE");
@@ -736,6 +814,35 @@ export class GothTechnologyGame {
       ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
       ctx.restore();
     }
+  }
+
+  syncAccessibleState() {
+    const state = [
+      this.phase,
+      this.player1Id,
+      this.player2Id,
+      this.cpuEnabled,
+      this.training,
+      this.audio.muted,
+      this.roundNumber,
+      this.roundResultText
+    ].join("|");
+    if (state === this.lastAccessibleState) return;
+    this.lastAccessibleState = state;
+    window.dispatchEvent(new CustomEvent("gothtechnology:state", {
+      detail: {
+        phase: this.phase,
+        player1Id: this.player1Id,
+        player2Id: this.player2Id,
+        player1Name: this.fighters[0]?.config.name || "Player 1",
+        player2Name: this.fighters[1]?.config.name || "Player 2",
+        cpuEnabled: this.cpuEnabled,
+        training: this.training,
+        muted: this.audio.muted,
+        roundNumber: this.roundNumber,
+        roundResultText: this.roundResultText
+      }
+    }));
   }
 
   drawBackground(ctx, menuMode) {

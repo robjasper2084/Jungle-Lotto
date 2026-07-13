@@ -2,6 +2,7 @@ import { GRAVITY, GROUND_Y, WORLD } from "../config/constants.js";
 import { ATTACKS } from "../config/moves.js?v=fighter-prop1";
 import { drawSpriteFrame } from "../engine/assets.js?v=fighter-prop1";
 import { approach, clamp, makeRect } from "../engine/math.js";
+import { attackIntentFromActions, resolveCancelAttack } from "./commands.js";
 import { SpriteEffect } from "./effects.js";
 
 const MOTION_LOCKS = new Set([
@@ -50,7 +51,7 @@ const CANCEL_CHAINS = {
   heavyPunch: new Set(["special", "super"]),
   heavyKick: new Set(["special", "super"]),
   crouchAttack: new Set(["special", "super"]),
-  combo1: new Set(["combo2", "special", "super"]),
+  combo1: new Set(["heavyKick", "combo2", "special", "super"]),
   combo2: new Set(["special", "super"])
 };
 
@@ -183,7 +184,8 @@ export class Fighter {
       data,
       elapsed: 0,
       duration,
-      hitTargets: new Set(),
+      hitCounts: new Map(),
+      lastHitAt: new Map(),
       spawned: false
     };
     this.setMotion(data.motion, true);
@@ -202,10 +204,11 @@ export class Fighter {
 
   cancelInto(name, game) {
     if (!this.canCancelInto(name)) return false;
+    const resolvedName = resolveCancelAttack(this.currentAttack.name, name);
     this.currentAttack = null;
     this.attackBuffer = null;
     this.meter = Math.min(100, this.meter + 2);
-    return this.beginAttack(name, game);
+    return this.beginAttack(resolvedName, game);
   }
 
   useAssist(slot, game) {
@@ -214,17 +217,7 @@ export class Fighter {
   }
 
   readAttackIntent(actions) {
-    if (actions.throw) return "throw";
-    if (actions.super) return "super";
-    if (actions.special) return "special";
-    if (actions.heavyPunch) return "heavyPunch";
-    if (actions.heavyKick) return "heavyKick";
-    if (actions.lightPunch && actions.down) return "crouchAttack";
-    if (actions.lightKick && !this.grounded) return "airAttack";
-    if (actions.lightPunch && actions.lightKick) return "combo2";
-    if (actions.lightPunch) return "lightPunch";
-    if (actions.lightKick) return "lightKick";
-    return null;
+    return attackIntentFromActions({ ...actions, grounded: this.grounded });
   }
 
   getAttackBox() {
@@ -324,7 +317,14 @@ export class Fighter {
       if (actions.assist1) this.useAssist("assist1", game);
       if (actions.assist2) this.useAssist("assist2", game);
       if (actions.taunt) {
-        this.currentAttack = { name: "taunt", data: { motion: "TAUNT" }, elapsed: 0, duration: 0.82, hitTargets: new Set() };
+        this.currentAttack = {
+          name: "taunt",
+          data: { motion: "TAUNT" },
+          elapsed: 0,
+          duration: 0.82,
+          hitCounts: new Map(),
+          lastHitAt: new Map()
+        };
         this.meter = Math.min(100, this.meter + 4);
         this.setMotion("TAUNT", true);
       } else if (!this.currentAttack) {

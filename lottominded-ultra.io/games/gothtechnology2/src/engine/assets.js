@@ -50,10 +50,7 @@ export class AssetLoader {
       assistRaven: ASSET_URLS.assists.raven,
       assistNocturna: ASSET_URLS.assists.nocturna,
       dossierVespera: ASSET_URLS.dossiers.vespera,
-      dossierNocturna: ASSET_URLS.dossiers.nocturna,
       dossierMalach: ASSET_URLS.dossiers.malach,
-      dossierMorvane: ASSET_URLS.dossiers.morvane,
-      dossierEffects: ASSET_URLS.dossiers.effects,
       ...Object.fromEntries(
         Object.entries(SPRITE_OVERRIDES).map(([characterId, override]) => [
           `${characterId}_override`,
@@ -65,7 +62,9 @@ export class AssetLoader {
     const characterEntries = [];
     for (const [characterId, character] of Object.entries(this.manifest.characters)) {
       this.animations[characterId] = {};
+      const overrideMotions = SPRITE_OVERRIDES[characterId]?.motions ?? {};
       for (const [motion, data] of Object.entries(character.motions)) {
+        if (Object.prototype.hasOwnProperty.call(overrideMotions, motion)) continue;
         const key = `${characterId}_${motion}`;
         characterEntries.push([key, `${PACK_ROOT}/${data.sheet}`, characterId, motion, data]);
       }
@@ -76,13 +75,19 @@ export class AssetLoader {
       ...characterEntries.map(([key, url]) => ({ key, url }))
     ];
 
+    const loadGroups = new Map();
+    for (const item of all) {
+      if (!loadGroups.has(item.url)) loadGroups.set(item.url, []);
+      loadGroups.get(item.url).push(item);
+    }
+
     let done = 0;
     await Promise.all(
-      all.map(async ({ key, url }) => {
-        const image = await loadImage(key, url);
-        this.images[key] = image;
+      [...loadGroups.entries()].map(async ([url, items]) => {
+        const image = await loadImage(items[0].key, url);
+        for (const { key } of items) this.images[key] = image;
         done += 1;
-        this.onProgress(done / all.length);
+        this.onProgress(done / loadGroups.size);
       })
     );
 
