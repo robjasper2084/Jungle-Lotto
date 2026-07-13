@@ -1892,7 +1892,7 @@
   }
 
   function gateReady(state) {
-    return Boolean(state && state.keys >= 3);
+    return Boolean(state && state.keys >= 3 && undergroundComplete(state));
   }
 
   function currentObjectiveText(state) {
@@ -1901,6 +1901,7 @@
     if (state.bossDefeated) return "Reach extraction and claim the terminal drop";
     if (state.gateOpen) return "Enter the boss chamber";
     if (state.keys < 3) return state.level?.objective || "Collect 3 vault keys";
+    if (!undergroundComplete(state)) return "Enter the underground sector and recover 3 power cells";
     return "Open the boss gate";
   }
 

@@ -2049,6 +2049,73 @@ body.compact-play #game {
   .title-copy h1 {
     font-size: clamp(2.15rem, 10vh, 4rem);
   }
+
+  .hud {
+    grid-template-columns: minmax(166px, 0.72fr) minmax(430px, 1.9fr) minmax(132px, 0.58fr);
+    gap: 5px;
+    padding-inline: max(5px, env(safe-area-inset-left));
+  }
+
+  .hud-left,
+  .hud-mid,
+  .hud-right {
+    min-height: 48px;
+    padding: 4px 6px;
+  }
+
+  .hud-left {
+    grid-template-columns: 34px minmax(0, 1fr);
+  }
+
+  .portrait {
+    width: 32px;
+    height: 32px;
+  }
+
+  .hud-title,
+  .lives,
+  .hud-mid,
+  .meter-label {
+    font-size: 0.54rem;
+  }
+
+  .hud-mid {
+    grid-template-columns: minmax(140px, 1.35fr) repeat(4, minmax(44px, 0.5fr)) minmax(68px, 0.7fr);
+    gap: 4px;
+    overflow: hidden;
+  }
+
+  .hud-mid span {
+    min-width: 0;
+    white-space: nowrap;
+  }
+
+  .hud-mid strong {
+    overflow: hidden;
+    font-size: 0.74rem;
+    line-height: 1.05;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .hud-mid .drop-status {
+    display: none;
+  }
+
+  .hud-right {
+    grid-template-columns: minmax(82px, 1fr) 32px;
+  }
+
+  .hud-right .icon-button {
+    width: 32px;
+    height: 32px;
+  }
+
+  .objective-chip {
+    top: 58px;
+    padding: 6px 10px;
+    font-size: 0.68rem;
+  }
 }
 @keyframes startup-depth-far {
   from {
