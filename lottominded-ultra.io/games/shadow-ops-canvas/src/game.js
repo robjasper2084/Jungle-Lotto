@@ -5039,6 +5039,57 @@
     ctx.restore();
   }
 
+  function drawAnchoredTechBase(x, groundY, width, options = {}) {
+    const glow = options.glow || colors.purple;
+    const trim = options.trim || colors.gold;
+    const height = options.height || 28;
+    const depth = options.depth || 18;
+    const topY = groundY - height;
+    const left = x - width * 0.5;
+    ctx.save();
+    ctx.globalAlpha = options.alpha == null ? 1 : options.alpha;
+    ctx.shadowColor = withAlpha(glow, 0.34);
+    ctx.shadowBlur = 12;
+    const shadow = ctx.createRadialGradient(x, groundY - 3, 8, x, groundY - 3, width * 0.62);
+    shadow.addColorStop(0, withAlpha(glow, 0.22));
+    shadow.addColorStop(0.56, "rgba(0,0,0,.42)");
+    shadow.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = shadow;
+    ctx.beginPath();
+    ctx.ellipse(x, groundY + 4, width * 0.58, 16, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    const body = ctx.createLinearGradient(0, topY, 0, groundY + depth);
+    body.addColorStop(0, "#17121a");
+    body.addColorStop(0.46, "#08070c");
+    body.addColorStop(1, "#030205");
+    ctx.fillStyle = body;
+    roundedRect(left, topY, width, height + depth, 8, true, false);
+    ctx.shadowBlur = 0;
+    ctx.strokeStyle = withAlpha(trim, 0.74);
+    ctx.lineWidth = 2.4;
+    roundedRect(left + 4, topY + 4, width - 8, height + depth - 8, 6, false, true);
+    ctx.globalCompositeOperation = "screen";
+    const underglow = ctx.createLinearGradient(left + 8, groundY - 9, left + width - 8, groundY - 9);
+    underglow.addColorStop(0, "rgba(0,0,0,0)");
+    underglow.addColorStop(0.5, withAlpha(glow, 0.58));
+    underglow.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = underglow;
+    roundedRect(left + 12, groundY - 13, width - 24, 8, 4, true, false);
+    ctx.globalCompositeOperation = "source-over";
+    ctx.strokeStyle = withAlpha(glow, 0.45);
+    ctx.lineWidth = 1.4;
+    for (let i = 0; i < 3; i += 1) {
+      const sx = left + width * (0.18 + i * 0.26);
+      ctx.beginPath();
+      ctx.moveTo(sx, topY + 10);
+      ctx.lineTo(sx + width * 0.1, topY + 10);
+      ctx.lineTo(sx + width * 0.15, topY + 19);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
   function drawVaultCrateAsset(x, y, w, h, palette, variant = 0) {
     const trim = palette.trim || colors.gold;
     const glow = palette.glow || colors.purple;
@@ -5313,6 +5364,12 @@
       if (gateImage?.complete && gateImage.naturalWidth) {
         const gateW = portal.type === "exit" ? 184 : 176;
         const gateH = 326;
+        drawAnchoredTechBase(x, groundY, gateW * 0.86, {
+          glow: portal.type === "exit" ? colors.cyan : colors.purple,
+          trim: colors.gold,
+          height: 24,
+          depth: 14
+        });
         ctx.save();
         ctx.globalAlpha = 0.99;
         ctx.shadowColor = portal.type === "exit" ? "rgba(56,219,255,.48)" : "rgba(165,34,255,.48)";
@@ -5335,6 +5392,12 @@
       ctx.save();
       const gateW = 104;
       const gateH = 326;
+      drawAnchoredTechBase(x, groundY, gateW * 0.92, {
+        glow: colors.purple,
+        trim: colors.gold,
+        height: 24,
+        depth: 14
+      });
       ctx.shadowColor = colors.purple;
       ctx.shadowBlur = 10 + pulse * 12;
       if (arenaGate?.complete && arenaGate.naturalWidth) {
@@ -5366,6 +5429,12 @@
       return;
     }
 
+    drawAnchoredTechBase(x, groundY, 128, {
+      glow: color,
+      trim: colors.gold,
+      height: 24,
+      depth: 15
+    });
     ctx.save();
     ctx.translate(x, y);
     ctx.shadowColor = color;
@@ -5440,8 +5509,14 @@
       const ready = gateReady(state);
       const targetW = 166;
       const targetH = 252;
+      drawAnchoredTechBase(gx + 45, gateGroundY, targetW * 0.82, {
+        glow: ready || state.gateOpen ? colors.cyan : colors.purple,
+        trim: colors.gold,
+        height: 26,
+        depth: 16
+      });
       ctx.save();
-      ctx.globalAlpha = state.gateOpen ? 0.46 : 0.98;
+      ctx.globalAlpha = state.gateOpen ? 0.72 : 0.98;
       ctx.shadowColor = state.gateOpen ? colors.cyan : ready ? colors.cyan : colors.purple;
       ctx.shadowBlur = 8 + pulse * 12;
       ctx.drawImage(gateV2, gx - 38, gateGroundY - targetH - openLift, targetW, targetH);
@@ -5465,6 +5540,12 @@
       const frame = state.gateOpen ? 1 : ready ? 0 : 5;
       const targetW = 168;
       const targetH = 252;
+      drawAnchoredTechBase(gx + 43, gateGroundY, targetW * 0.82, {
+        glow: ready || state.gateOpen ? colors.cyan : colors.purple,
+        trim: colors.gold,
+        height: 26,
+        depth: 16
+      });
       drawSheetCell(cyberGateImage, 6, 1, frame, 0, gx - 40, gateGroundY - targetH - openLift, targetW, targetH, 0.98);
       if (!state.gateOpen) {
         ctx.save();
@@ -5483,6 +5564,12 @@
     if (gateImage?.complete && gateImage.naturalWidth) {
       const ready = gateReady(state);
       const frame = state.gateOpen ? Math.floor(state.time * 10) % 4 : ready ? Math.floor(state.time * 7) % 4 : Math.floor(state.time * 2) % 2;
+      drawAnchoredTechBase(gx + 46, gateGroundY, 126, {
+        glow: ready || state.gateOpen ? colors.cyan : colors.purple,
+        trim: colors.gold,
+        height: 26,
+        depth: 16
+      });
       drawSheetCell(gateImage, 4, 1, frame, 0, gx - 26, gateGroundY - 320 - openLift, 144, 320, 0.98);
       if (!state.gateOpen) {
         ctx.save();
@@ -5498,6 +5585,12 @@
       return;
     }
 
+    drawAnchoredTechBase(gx + 46, gateGroundY, 118, {
+      glow: gateReady(state) || state.gateOpen ? colors.cyan : colors.purple,
+      trim: colors.gold,
+      height: 26,
+      depth: 16
+    });
     ctx.save();
     ctx.translate(gx, gateGroundY - 292 - openLift);
     ctx.fillStyle = "rgba(6,5,8,.92)";
@@ -5525,6 +5618,12 @@
     const groundY = supportYAt(state, x, 620) ?? 620;
     const y = groundY - 138;
     const portalImage = images.missionPortalV2;
+    drawAnchoredTechBase(x, groundY, 178, {
+      glow: colors.pink,
+      trim: colors.gold,
+      height: 26,
+      depth: 15
+    });
     ctx.save();
     ctx.shadowColor = "rgba(255,79,154,0.72)";
     ctx.shadowBlur = 26;
@@ -5575,6 +5674,12 @@
       const groundY = supportYAt(state, x, 620) ?? 620;
       const arenaGate = images.arenaGateV1;
       if (arenaGate?.complete && arenaGate.naturalWidth) {
+        drawAnchoredTechBase(x, groundY, 106, {
+          glow: colors.purple,
+          trim: colors.gold,
+          height: 22,
+          depth: 12
+        });
         ctx.save();
         ctx.shadowColor = colors.purple;
         ctx.shadowBlur = 10 + pulse * 14;
@@ -5651,6 +5756,12 @@
     if (kiosk?.complete && kiosk.naturalWidth) {
       const kioskW = 146;
       const kioskH = 206;
+      drawAnchoredTechBase(x, groundY, kioskW * 0.82, {
+        glow: claimed ? colors.green : inRange ? colors.cyan : colors.purple,
+        trim: colors.gold,
+        height: 22,
+        depth: 13
+      });
       ctx.save();
       ctx.globalAlpha = 1;
       ctx.imageSmoothingEnabled = true;
@@ -6147,6 +6258,13 @@
       if (image?.complete && image.naturalWidth) {
         const visualH = clamp(w / 3.7, 44, 130);
         const drawY = y + h - visualH;
+        drawAnchoredTechBase(x + w * 0.5, y + h, Math.min(w, 280), {
+          glow: active ? colors.pink : warning ? colors.gold : colors.purple,
+          trim: colors.gold,
+          height: 16,
+          depth: 8,
+          alpha: 0.92
+        });
         if (active) {
           ctx.globalCompositeOperation = "screen";
           const bloom = ctx.createLinearGradient(x, 0, x + w, 0);
@@ -6172,15 +6290,30 @@
         const frame = active ? 2 : warning ? 1 : 0;
         const cellW = image.naturalWidth / 3;
         const cellH = image.naturalHeight;
-        const drawH = h + 24;
+        const groundY = y + h;
+        const drawH = h;
         const drawW = drawH * (cellW / cellH);
+        drawAnchoredTechBase(cx, groundY, Math.max(72, drawW * 0.82), {
+          glow: active ? colors.pink : warning ? colors.gold : colors.purple,
+          trim: colors.gold,
+          height: 18,
+          depth: 10,
+          alpha: 0.95
+        });
         ctx.imageSmoothingEnabled = true;
         ctx.shadowColor = active ? "rgba(255,79,154,.7)" : warning ? "rgba(255,214,109,.5)" : "rgba(165,34,255,.28)";
         ctx.shadowBlur = active ? 24 : warning ? 16 : 9;
-        ctx.drawImage(image, frame * cellW, 0, cellW, cellH, cx - drawW * 0.5, y - 12, drawW, drawH);
+        ctx.drawImage(image, frame * cellW, 0, cellW, cellH, cx - drawW * 0.5, groundY - drawH, drawW, drawH);
         ctx.restore();
         return;
       }
+      drawAnchoredTechBase(cx, y + h, Math.max(70, w * 1.55), {
+        glow: active ? colors.pink : warning ? colors.gold : colors.purple,
+        trim: colors.gold,
+        height: 18,
+        depth: 10,
+        alpha: 0.9
+      });
       ctx.globalCompositeOperation = "screen";
       const glow = ctx.createLinearGradient(cx - w * 2.8, 0, cx + w * 2.8, 0);
       glow.addColorStop(0, "rgba(165,34,255,0)");
