@@ -13,6 +13,11 @@
   const GATE_X = 4280;
   const BOSS_START_X = 5000;
   const EXTRACTION_X = 6180;
+  const BOSS_NATIVE_FACING = {
+    canopyDroneQueen: 1,
+    jackpotForgeTitan: 1,
+    midasHeartcoreOverlord: 1
+  };
   const GATE_BLOCK_X_OFFSET = -48;
   const GATE_BLOCK_W = 184;
   const GATE_BLOCK_TOP = -120;
@@ -3674,6 +3679,11 @@
     const boss = state.boss;
     if (boss.hp <= 0) return;
     boss.targetPlayer = nearestPlayer(state, boss.x + boss.w * 0.5, boss.y + boss.h * 0.5);
+    if (boss.targetPlayer) {
+      const targetCenter = boss.targetPlayer.x + boss.targetPlayer.w * 0.5;
+      const bossCenter = boss.x + boss.w * 0.5;
+      if (Math.abs(targetCenter - bossCenter) > 12) boss.facing = targetCenter < bossCenter ? -1 : 1;
+    }
 
     boss.time += dt;
     boss.hurt = Math.max(0, boss.hurt - dt);
@@ -3732,6 +3742,10 @@
     bossAttackCanopy(state, boss);
   }
 
+  function bossMuzzleX(boss, inset) {
+    return boss.facing < 0 ? boss.x + inset : boss.x + boss.w - inset;
+  }
+
   function rewardBossPhaseBreak(state, boss) {
     const weapon = boss.phase >= 3 ? "beam" : boss.phase === 2 ? "rapid" : "spread";
     for (const p of activePlayers(state)) {
@@ -3751,7 +3765,7 @@
     if (boss.phase === 1) {
       boss.attackName = "Aimed Violet Bolts";
       for (let i = -1; i <= 1; i += 1) {
-        fireEnemyShot(state, boss.x + 42, boss.y + 88 + i * 24, p.x + p.w * 0.5, p.y + 58 + i * 18, speed, colors.purple, 1);
+        fireEnemyShot(state, bossMuzzleX(boss, 42), boss.y + 88 + i * 24, p.x + p.w * 0.5, p.y + 58 + i * 18, speed, colors.purple, 1);
       }
       boss.attackCd = 1.45;
     } else if (boss.phase === 2) {
@@ -3759,15 +3773,15 @@
       summonMinion(state, boss);
       summonMinion(state, boss);
       floorHazard(state, p.x + p.w * 0.5 - 80, 160);
-      fireEnemyShot(state, boss.x + 34, boss.y + 122, p.x + p.w * 0.5, p.y + 42, speed, colors.orange, 1);
+      fireEnemyShot(state, bossMuzzleX(boss, 34), boss.y + 122, p.x + p.w * 0.5, p.y + 42, speed, colors.orange, 1);
       boss.attackCd = 1.25;
     } else {
       boss.attackName = "Heart Core Sweep";
       for (let i = -2; i <= 2; i += 1) {
         state.enemyShots.push({
-          x: boss.x + 44,
+          x: bossMuzzleX(boss, 44),
           y: boss.y + 116,
-          vx: -520,
+          vx: boss.facing * 520,
           vy: i * 72,
           w: 30,
           h: 20,
@@ -3787,8 +3801,8 @@
     if (boss.phase === 1) {
       boss.attackName = "Jackpot Ground Slam";
       boss.telegraph = 0.35;
-      state.enemyShots.push(makeShockwave(boss.x + 28, 594, -520));
-      state.enemyShots.push(makeShockwave(boss.x + 72, 594, -390));
+      state.enemyShots.push(makeShockwave(bossMuzzleX(boss, 28), 594, boss.facing * 520));
+      state.enemyShots.push(makeShockwave(bossMuzzleX(boss, 72), 594, boss.facing * 390));
       floorHazard(state, p.x - 65, 130);
       boss.attackCd = 1.55;
       return;
@@ -3798,9 +3812,9 @@
       boss.shieldTime = 0.85;
       for (let i = 0; i < 3; i += 1) {
         state.enemyShots.push({
-          x: boss.x + 44,
+          x: bossMuzzleX(boss, 44),
           y: boss.y + 120 - i * 28,
-          vx: -360 - i * 60,
+          vx: boss.facing * (360 + i * 60),
           vy: -120 + i * 95,
           w: 32,
           h: 32,
@@ -3815,7 +3829,7 @@
     boss.attackName = "Core Triple Spread";
     boss.shieldTime = 0.35;
     for (let i = -1; i <= 1; i += 1) {
-      fireEnemyShot(state, boss.x + 64, boss.y + 142, p.x + p.w * 0.5, p.y + 48 + i * 72, 500, i === 0 ? colors.pink : colors.orange, 1);
+      fireEnemyShot(state, bossMuzzleX(boss, 64), boss.y + 142, p.x + p.w * 0.5, p.y + 48 + i * 72, 500, i === 0 ? colors.pink : colors.orange, 1);
     }
     state.levelHazards.forEach((hazard) => {
       if (hazard.type === "laser") hazard.phase = (hazard.phase + 0.55) % hazard.cycle;
@@ -3828,7 +3842,7 @@
     if (boss.phase === 1) {
       boss.attackName = "Guardian Core";
       for (let i = -1; i <= 1; i += 1) {
-        fireEnemyShot(state, boss.x + 90, boss.y + 112 + i * 34, p.x + p.w * 0.5, p.y + 50, 400, colors.pink, 1);
+        fireEnemyShot(state, bossMuzzleX(boss, 90), boss.y + 112 + i * 34, p.x + p.w * 0.5, p.y + 50, 400, colors.pink, 1);
       }
       floorHazard(state, p.x - 100, 200);
       boss.attackCd = 1.45;
@@ -3859,7 +3873,7 @@
     }
     boss.attackName = "Overdrive Beam";
     for (let i = -2; i <= 2; i += 1) {
-      fireEnemyShot(state, boss.x + 100, boss.y + 150 + i * 24, p.x + p.w * 0.5, p.y + 50 + i * 26, 560, i === 0 ? colors.pink : colors.cyan, 1);
+      fireEnemyShot(state, bossMuzzleX(boss, 100), boss.y + 150 + i * 24, p.x + p.w * 0.5, p.y + 50 + i * 26, 560, i === 0 ? colors.pink : colors.cyan, 1);
     }
     floorHazard(state, p.x - 140, 280);
     state.hazards.push({ x: p.x - 60, y: 430, w: 420, h: 38, charge: 0.75, life: 1.55, hit: false, beam: true });
@@ -4053,6 +4067,7 @@
       shieldCycle: forgeBoss ? 3.2 : 4.8,
       attackCd: 1.2,
       attackAnim: 0,
+      facing: -1,
       attackName: finalBoss ? "Guardian Core" : forgeBoss ? "Ground Slam" : "Aimed Violet Bolts",
       phaseTitle: bossPhaseTitle(level.boss, 1),
       floatAmp: forgeBoss ? 0 : 18,
@@ -7263,7 +7278,11 @@
     if (hurt) frame = 6;
     const jitterX = hurt ? Math.sin(state.time * 54) * 4 : 0;
     const jitterY = boss.telegraph > 0 ? Math.sin(state.time * 18) * 3 : 0;
+    const nativeFacing = BOSS_NATIVE_FACING[boss.kind] || 1;
+    const flip = (boss.facing || -1) !== nativeFacing;
 
+    ctx.save();
+    if (flip) ctx.scale(-1, 1);
     if (sheet?.complete && sheet.naturalWidth) {
       const cellW = sheet.naturalWidth / BOSS_MOTION_FRAMES;
       const cellH = sheet.naturalHeight;
@@ -7276,10 +7295,12 @@
         ctx.restore();
       }
       ctx.drawImage(sheet, frame * cellW, 0, cellW, cellH, -drawW * 0.5 + jitterX, -drawH * 0.5 + jitterY, drawW, drawH);
+      ctx.restore();
       return;
     }
 
     ctx.drawImage(fallbackImage, -drawW * 0.5 + jitterX, -drawH * 0.5 + jitterY, drawW, drawH);
+    ctx.restore();
   }
 
   function drawParticles(state) {
