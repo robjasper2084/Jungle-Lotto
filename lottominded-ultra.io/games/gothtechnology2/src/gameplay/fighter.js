@@ -1,8 +1,8 @@
 import { GRAVITY, GROUND_Y, WORLD } from "../config/constants.js";
-import { ATTACKS } from "../config/moves.js?v=motion-atlas5-gameplay";
-import { drawSpriteFrame } from "../engine/assets.js?v=motion-atlas5-gameplay";
+import { ATTACKS } from "../config/moves.js?v=motion-atlas6-live";
+import { drawSpriteFrame } from "../engine/assets.js?v=motion-atlas6-live";
 import { approach, clamp, makeRect } from "../engine/math.js";
-import { attackIntentFromActions, resolveCancelAttack } from "./commands.js";
+import { attackIntentFromActions, resolveCancelAttack } from "./commands.js?v=motion-atlas6-live";
 import { SpriteEffect } from "./effects.js";
 
 const MOTION_LOCKS = new Set([

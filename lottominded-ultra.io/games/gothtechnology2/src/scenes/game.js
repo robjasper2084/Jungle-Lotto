@@ -1,14 +1,14 @@
-import { ASSET_URLS, FIGHTERS } from "../config/assets.js?v=motion-atlas5-gameplay";
-import { ASSISTS, ATTACKS } from "../config/moves.js?v=motion-atlas5-gameplay";
+import { ASSET_URLS, FIGHTERS } from "../config/assets.js?v=motion-atlas6-live";
+import { ASSISTS, ATTACKS } from "../config/moves.js?v=motion-atlas6-live";
 import { CANVAS_HEIGHT, CANVAS_WIDTH, COLORS, GROUND_Y, PHASE, ROUND_SECONDS, WORLD } from "../config/constants.js";
-import { AssetLoader } from "../engine/assets.js?v=motion-atlas5-gameplay";
-import { WebAudioBus } from "../engine/audio.js?v=motion-atlas5-gameplay";
-import { InputManager } from "../engine/input.js?v=motion-atlas5-gameplay";
+import { AssetLoader } from "../engine/assets.js?v=motion-atlas6-live";
+import { WebAudioBus } from "../engine/audio.js?v=motion-atlas6-live";
+import { InputManager } from "../engine/input.js?v=motion-atlas6-live";
 import { clamp, rectsOverlap } from "../engine/math.js";
-import { applyHit, resolveMelee } from "../gameplay/combat.js?v=motion-atlas5-gameplay";
-import { Fighter } from "../gameplay/fighter.js?v=motion-atlas5-gameplay";
-import { AssistStrike, Projectile } from "../gameplay/projectiles.js?v=motion-atlas5-gameplay";
-import { applyRoundOutcomeMotions, resolveRoundOutcome } from "../gameplay/rounds.js";
+import { applyHit, resolveMelee } from "../gameplay/combat.js?v=motion-atlas6-live";
+import { Fighter } from "../gameplay/fighter.js?v=motion-atlas6-live";
+import { AssistStrike, Projectile } from "../gameplay/projectiles.js?v=motion-atlas6-live";
+import { applyRoundOutcomeMotions, resolveRoundOutcome } from "../gameplay/rounds.js?v=motion-atlas6-live";
 import {
   drawCharacterSelect,
   drawDiagnostics,
@@ -19,7 +19,7 @@ import {
   drawRoundMessage,
   drawTitle,
   drawVersus
-} from "../ui/hud.js?v=motion-atlas5-gameplay";
+} from "../ui/hud.js?v=motion-atlas6-live";
 
 const GAME_SELECT_ITEMS = [
   {
