@@ -126,6 +126,40 @@ test("runtime locomotion loops avoid generated start and stop poses", () => {
   assert.deepEqual(MOTION_PLAYBACK.KALYX.KNOCKDOWN, [0, 1, 3, 4, 2, 5]);
 });
 
+test("Master Ezra jump keeps takeoff, advances once through each air phase, and lands cleanly", () => {
+  const ezraAnimations = new Proxy({}, {
+    get: (_target, motion) => ({
+      ...animation(78),
+      playbackOrder: MOTION_PLAYBACK.MASTER_EZRA[motion] ?? null
+    })
+  });
+  const fighter = makeFighter("MASTER_EZRA", 360, 1, { MASTER_EZRA: ezraAnimations });
+  const opponent = makeFighter("KALYX", 900, -1);
+  const game = makeGame();
+  const airMotions = ["JUMP_START", "JUMP_RISE", "JUMP_PEAK", "JUMP_FALL"];
+  const seen = new Set();
+  const lastPlaybackPosition = new Map();
+
+  fighter.update(1 / 60, { up: true }, opponent, game);
+  assert.equal(fighter.motion, "JUMP_START");
+
+  for (let frame = 0; frame < 120; frame += 1) {
+    if (airMotions.includes(fighter.motion)) {
+      seen.add(fighter.motion);
+      const order = MOTION_PLAYBACK.MASTER_EZRA[fighter.motion];
+      const position = order.indexOf(fighter.getMotionFrameIndex());
+      assert.ok(position >= (lastPlaybackPosition.get(fighter.motion) ?? 0), `${fighter.motion} looped backward`);
+      lastPlaybackPosition.set(fighter.motion, position);
+    }
+    if (fighter.motion === "LANDING") seen.add("LANDING");
+    fighter.update(1 / 60, {}, opponent, game);
+    if (fighter.grounded && fighter.motion === "IDLE") break;
+  }
+
+  assert.deepEqual([...seen], ["JUMP_START", "JUMP_RISE", "JUMP_PEAK", "JUMP_FALL", "LANDING"]);
+  assert.deepEqual(MOTION_PLAYBACK.MASTER_EZRA.LANDING, [1, 0, 4, 5]);
+});
+
 test("melee boxes are authored by animation frame and disappear in recovery", () => {
   const fighter = makeFighter("KALYX", 420, 1, completeAnimations);
   fighter.beginAttack("heavyKick", makeGame());

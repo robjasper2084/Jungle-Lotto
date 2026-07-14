@@ -1,8 +1,8 @@
 import { GRAVITY, GROUND_Y, WORLD } from "../config/constants.js";
-import { ATTACKS } from "../config/moves.js?v=motion-atlas7-stable";
-import { drawSpriteFrame } from "../engine/assets.js?v=motion-atlas7-stable";
+import { ATTACKS } from "../config/moves.js?v=motion-atlas8-ezra-jump";
+import { drawSpriteFrame } from "../engine/assets.js?v=motion-atlas8-ezra-jump";
 import { approach, clamp, makeRect } from "../engine/math.js";
-import { attackIntentFromActions, resolveCancelAttack } from "./commands.js?v=motion-atlas7-stable";
+import { attackIntentFromActions, resolveCancelAttack } from "./commands.js?v=motion-atlas8-ezra-jump";
 import { SpriteEffect } from "./effects.js";
 
 const MOTION_LOCKS = new Set([
@@ -29,6 +29,14 @@ const MOTION_LOCKS = new Set([
   "TAUNT",
   "VICTORY",
   "DEFEAT"
+]);
+
+const MOTION_PLAYBACK_ONCE = new Set([
+  ...MOTION_LOCKS,
+  "JUMP_START",
+  "JUMP_RISE",
+  "JUMP_PEAK",
+  "JUMP_FALL"
 ]);
 
 const tuneAttackTiming = (data, feel = {}) => {
@@ -97,6 +105,7 @@ export class Fighter {
     this.dashForward = true;
     this.dashDir = facing;
     this.landingLag = 0;
+    this.jumpStartTimer = 0;
     this.attackBuffer = null;
     this.throwState = null;
     this.isKO = false;
@@ -131,6 +140,7 @@ export class Fighter {
     this.dashForward = true;
     this.dashDir = facing;
     this.landingLag = 0;
+    this.jumpStartTimer = 0;
     this.attackBuffer = null;
     this.throwState = null;
     this.setMotion("READY_STANCE", true);
@@ -195,7 +205,7 @@ export class Fighter {
       : animation.frames.map((_, index) => index);
     const sourceDuration = order.reduce((sum, frameIndex) => sum + (animation.frames[frameIndex]?.duration_ms ?? 85), 0) / 1000;
     const playbackDuration = Math.max(0.001, this.getMotionPlaybackDuration(motion));
-    const loops = !MOTION_LOCKS.has(motion) || motion === "VICTORY";
+    const loops = !MOTION_PLAYBACK_ONCE.has(motion) || motion === "VICTORY";
     const playbackTime = loops ? elapsed % playbackDuration : Math.min(elapsed, playbackDuration - 0.001);
     const sourceTime = (playbackTime / playbackDuration) * sourceDuration;
     let accumulated = 0;
@@ -380,6 +390,7 @@ export class Fighter {
     this.dashTimer = Math.max(0, this.dashTimer - dt);
     this.dashCooldown = Math.max(0, this.dashCooldown - dt);
     this.landingLag = Math.max(0, this.landingLag - dt);
+    this.jumpStartTimer = Math.max(0, this.jumpStartTimer - dt);
     this.invulnerable = Math.max(0, this.invulnerable - dt);
     this.hitstun = Math.max(0, this.hitstun - dt);
     this.blockstun = Math.max(0, this.blockstun - dt);
@@ -492,6 +503,7 @@ export class Fighter {
         this.vx += desired * this.config.speed * 0.36;
         this.y -= 1;
         this.setMotion("JUMP_START", true);
+        this.jumpStartTimer = this.config.motionDurations?.JUMP_START ?? 0.12;
         game.audio.beep("jump");
       }
       if (actions.dash && desired !== 0 && this.grounded && this.dashCooldown <= 0) {
@@ -581,7 +593,7 @@ export class Fighter {
       }
       this.y = GROUND_Y;
       this.vy = 0;
-    } else if (!stateLocked && !this.currentAttack && this.dashTimer <= 0) {
+    } else if (this.jumpStartTimer <= 0 && !stateLocked && !this.currentAttack && this.dashTimer <= 0) {
       if (this.vy < -90) this.setMotion("JUMP_RISE");
       else if (this.vy > 90) this.setMotion("JUMP_FALL");
       else this.setMotion("JUMP_PEAK");

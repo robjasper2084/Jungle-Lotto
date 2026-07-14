@@ -88,6 +88,14 @@ for (const [characterId, character] of Object.entries(manifest.characters ?? {})
   const runRatio = visualHeight("RUN_FORWARD") / idleHeight;
   if (Math.abs(crouchRatio - 0.72) > 0.02) failures.push(`${characterId}: crouch scale ratio is ${crouchRatio.toFixed(3)}`);
   if (Math.abs(runRatio - 0.90) > 0.02) failures.push(`${characterId}: run scale ratio is ${runRatio.toFixed(3)}`);
+  if (characterId === "MASTER_EZRA") {
+    for (const motionName of ["JUMP_START", "JUMP_RISE", "JUMP_PEAK", "JUMP_FALL", "LANDING", "AIR_ATTACK"]) {
+      const peakHeight = Math.max(...runtimeMotions[motionName].frames.map((frame) => frame.content.visibleH * frame.content.scale));
+      if (Math.abs(peakHeight / idleHeight - 1) > 0.02) {
+        failures.push(`${characterId}/${motionName}: full-body scale does not match idle (${(peakHeight / idleHeight).toFixed(3)})`);
+      }
+    }
+  }
 
   const signature = (motionName) => JSON.stringify({
     sheet: runtimeMotions[motionName]?.sheet,

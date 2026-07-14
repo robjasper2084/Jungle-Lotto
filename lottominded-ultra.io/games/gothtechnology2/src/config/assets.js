@@ -1,6 +1,6 @@
 export const PACK_ROOT = "assets/GOTHTECHNOLOGY_EXPANDED_SPRITE_PACK_V2";
 export const LOCAL_ROOT = "assets";
-export const MOTION_ASSET_VERSION = "motion-atlas7-stable";
+export const MOTION_ASSET_VERSION = "motion-atlas8-ezra-jump";
 
 export const ASSET_URLS = {
   manifest: `${LOCAL_ROOT}/motion-atlases/motion-atlas-manifest.json?v=${MOTION_ASSET_VERSION}`,
@@ -38,7 +38,12 @@ export const MOTION_PLAYBACK = {
   },
   MASTER_EZRA: {
     RUN_FORWARD: [1, 2, 3, 4, 3, 2],
-    RUN_BACK: [1, 2, 3, 4, 3, 2]
+    RUN_BACK: [1, 2, 3, 4, 3, 2],
+    JUMP_START: [0, 1],
+    JUMP_RISE: [0, 1, 2],
+    JUMP_PEAK: [0, 1],
+    JUMP_FALL: [0, 1, 2, 3],
+    LANDING: [1, 0, 4, 5]
   }
 };
 
@@ -60,6 +65,7 @@ export const FIGHTERS = {
     jumpVelocity: -1005,
     motionTimeScale: 1.48,
     motionDurations: {
+      JUMP_START: 0.14,
       LANDING: 0.18
     },
     feel: {
@@ -194,6 +200,10 @@ export const FIGHTERS = {
     jumpVelocity: -995,
     motionTimeScale: 1.46,
     motionDurations: {
+      JUMP_START: 0.14,
+      JUMP_RISE: 0.28,
+      JUMP_PEAK: 0.1,
+      JUMP_FALL: 0.42,
       LANDING: 0.19
     },
     feel: {

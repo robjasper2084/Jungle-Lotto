@@ -129,7 +129,7 @@ test("boots, reaches versus, fights, and pauses without page errors", async ({ p
   expect(spriteIntegrity.insufficientUnique).toEqual([]);
   expect(spriteIntegrity.splitFrames).toEqual([]);
   const unstableRenderedMotions = await page.evaluate(async () => {
-    const { drawSpriteFrame } = await import("./src/engine/assets.js?v=motion-atlas7-stable-test");
+    const { drawSpriteFrame } = await import("./src/engine/assets.js?v=motion-atlas8-ezra-jump-test");
     const animations = window.__gothTechnologyGame.assets.animations;
     const checkedMotions = [
       "IDLE", "READY_STANCE", "WALK_FORWARD", "RUN_FORWARD", "DASH_FORWARD",
@@ -193,6 +193,24 @@ test("boots, reaches versus, fights, and pauses without page errors", async ({ p
   expect(touchLabels).toContain("TAUNT");
   if (!process.env.NO_TEST_ARTIFACTS) await page.screenshot({ path: testInfo.outputPath(`${testInfo.project.name}-pause.png`) });
   expect(pageErrors).toEqual([]);
+});
+
+test("Master Ezra plays a complete takeoff, apex, fall, and clean landing", async ({ page }, testInfo) => {
+  await page.goto(gameUrl);
+  await expect.poll(() => phase(page)).toBe("title");
+  await enterTrainingFight(page);
+  await expect.poll(() => page.evaluate(() => window.__gothTechnologyGame?.fighters?.[0]?.id)).toBe("MASTER_EZRA");
+
+  const fighterMotion = () => page.evaluate(() => window.__gothTechnologyGame?.fighters?.[0]?.motion);
+  await page.keyboard.down("KeyW");
+  await expect.poll(fighterMotion, { timeout: 300, intervals: [10] }).toBe("JUMP_START");
+  await page.keyboard.up("KeyW");
+  await expect.poll(fighterMotion, { timeout: 600, intervals: [10] }).toBe("JUMP_RISE");
+  await expect.poll(fighterMotion, { timeout: 600, intervals: [10] }).toBe("JUMP_PEAK");
+  if (!process.env.NO_TEST_ARTIFACTS) await page.screenshot({ path: testInfo.outputPath("ezra-jump-peak.png") });
+  await expect.poll(fighterMotion, { timeout: 600, intervals: [10] }).toBe("JUMP_FALL");
+  await expect.poll(fighterMotion, { timeout: 800, intervals: [10] }).toBe("LANDING");
+  await expect.poll(fighterMotion, { timeout: 500, intervals: [10] }).toBe("IDLE");
 });
 
 test("mobile portrait keeps controls adjacent to a useful playfield", async ({ page }, testInfo) => {
