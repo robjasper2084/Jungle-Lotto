@@ -1,11 +1,11 @@
 export const PACK_ROOT = "assets/GOTHTECHNOLOGY_EXPANDED_SPRITE_PACK_V2";
 export const LOCAL_ROOT = "assets";
-export const MOTION_ASSET_VERSION = "motion-atlas4-repaired";
+export const MOTION_ASSET_VERSION = "motion-atlas5-gameplay";
 
 export const ASSET_URLS = {
   manifest: `${LOCAL_ROOT}/motion-atlases/motion-atlas-manifest.json?v=${MOTION_ASSET_VERSION}`,
-  logo: `${LOCAL_ROOT}/user-title/lottomind-live-logo.png`,
-  titleBackdrop: `${LOCAL_ROOT}/user-title/gothtechnology-cover-start-bg.webp?v=${MOTION_ASSET_VERSION}`,
+  logo: `${LOCAL_ROOT}/user-title/lottomind-live-logo.webp?v=${MOTION_ASSET_VERSION}`,
+  titleBackdrop: `${LOCAL_ROOT}/user-stage/forest-fight-background.jpg`,
   background: `${LOCAL_ROOT}/user-stage/forest-fight-background.jpg`,
   farTrees: `${PACK_ROOT}/backgrounds/GOTHTECHNOLOGY_PARALLAX_FAR_TREES.png`,
   fog: `${PACK_ROOT}/backgrounds/GOTHTECHNOLOGY_FOG_OVERLAY_TRANSPARENT.png`,
@@ -27,10 +27,18 @@ export const ASSET_URLS = {
     owl: `${LOCAL_ROOT}/user-assists/ezra-owl-dive-clean.png`,
     raven: `${LOCAL_ROOT}/user-assists/kalyx-shadow-raven-clean.png`,
     nocturna: `${LOCAL_ROOT}/user-assists/nocturna-wraith-clean.png`
+  }
+};
+
+export const MOTION_PLAYBACK = {
+  KALYX: {
+    RUN_FORWARD: [1, 2, 3, 4, 3, 2],
+    RUN_BACK: [1, 2, 3, 4, 3, 2],
+    KNOCKDOWN: [0, 1, 3, 4, 2, 5]
   },
-  dossiers: {
-    vespera: `${LOCAL_ROOT}/user-sheets/vespera-sheet.png`,
-    malach: `${LOCAL_ROOT}/user-sheets/malach-sheet.png`
+  MASTER_EZRA: {
+    RUN_FORWARD: [1, 2, 3, 4, 3, 2],
+    RUN_BACK: [1, 2, 3, 4, 3, 2]
   }
 };
 
@@ -45,13 +53,15 @@ export const FIGHTERS = {
     accent: "#ffcf67",
     scale: 1.34,
     stableScale: 1.34,
-    spriteFilter: "brightness(1.14) contrast(1.06) saturate(1.04)",
     stageMargin: 196,
     speed: 430,
     runSpeed: 720,
     dashSpeed: 1200,
     jumpVelocity: -1005,
     motionTimeScale: 1.48,
+    motionDurations: {
+      LANDING: 0.18
+    },
     feel: {
       attackStartupScale: 0.58,
       attackRecoveryScale: 0.48,
@@ -178,12 +188,14 @@ export const FIGHTERS = {
     accent: "#d8aa45",
     scale: 1.3,
     stableScale: 1.3,
-    spriteFilter: "brightness(1.04) contrast(1.05) saturate(1)",
     speed: 410,
     runSpeed: 670,
     dashSpeed: 1150,
     jumpVelocity: -995,
     motionTimeScale: 1.46,
+    motionDurations: {
+      LANDING: 0.19
+    },
     feel: {
       attackStartupScale: 0.6,
       attackRecoveryScale: 0.5,

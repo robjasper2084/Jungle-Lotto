@@ -1,4 +1,4 @@
-import { ASSET_URLS, MOTION_ASSET_VERSION } from "../config/assets.js?v=motion-atlas4-repaired";
+import { ASSET_URLS, MOTION_ASSET_VERSION, MOTION_PLAYBACK } from "../config/assets.js?v=motion-atlas5-gameplay";
 
 const imageCache = new Map();
 
@@ -28,13 +28,31 @@ export class AssetLoader {
     this.animations = {};
     this.loadedCharacterMotions = new Set();
     this.characterMotionLoads = new Map();
+    this.groupLoads = new Map();
+    this.loadedGroups = new Set();
   }
 
   async load() {
     this.manifest = await fetch(ASSET_URLS.manifest).then((r) => r.json());
-    const baseImages = {
-      logo: ASSET_URLS.logo,
-      titleBackdrop: ASSET_URLS.titleBackdrop,
+    await this.loadGroup("boot", {
+      titleBackdrop: ASSET_URLS.titleBackdrop
+    }, this.onProgress);
+
+    for (const characterId of Object.keys(this.manifest.characters)) {
+      this.animations[characterId] = {};
+    }
+
+    return this;
+  }
+
+  loadMenuAssets(onProgress = () => {}) {
+    return this.loadGroup("menu", {
+      logo: ASSET_URLS.logo
+    }, onProgress, { strict: false });
+  }
+
+  loadFightAssets(onProgress = () => {}) {
+    return this.loadGroup("fight", {
       background: ASSET_URLS.background,
       farTrees: ASSET_URLS.farTrees,
       fog: ASSET_URLS.fog,
@@ -50,16 +68,30 @@ export class AssetLoader {
       smoke: ASSET_URLS.effects.smoke,
       assistOwl: ASSET_URLS.assists.owl,
       assistRaven: ASSET_URLS.assists.raven,
-      assistNocturna: ASSET_URLS.assists.nocturna,
-      dossierVespera: ASSET_URLS.dossiers.vespera,
-      dossierMalach: ASSET_URLS.dossiers.malach
-    };
+      assistNocturna: ASSET_URLS.assists.nocturna
+    }, onProgress);
+  }
 
-    for (const characterId of Object.keys(this.manifest.characters)) {
-      this.animations[characterId] = {};
+  loadGroup(name, imageMap, onProgress = () => {}, options = {}) {
+    if (this.loadedGroups.has(name)) {
+      onProgress(1);
+      return Promise.resolve(this);
     }
+    if (this.groupLoads.has(name)) return this.groupLoads.get(name);
 
-    const all = Object.entries(baseImages).map(([key, url]) => ({ key, url }));
+    const loadPromise = this.loadImages(imageMap, onProgress).then((failed) => {
+      if ((options.strict ?? true) && failed.length) throw new Error(`Unable to load ${name} assets: ${failed.join(", ")}`);
+      this.loadedGroups.add(name);
+      return this;
+    }).finally(() => {
+      this.groupLoads.delete(name);
+    });
+    this.groupLoads.set(name, loadPromise);
+    return loadPromise;
+  }
+
+  async loadImages(imageMap, onProgress = () => {}) {
+    const all = Object.entries(imageMap).map(([key, url]) => ({ key, url }));
 
     const loadGroups = new Map();
     for (const item of all) {
@@ -68,30 +100,38 @@ export class AssetLoader {
     }
 
     let done = 0;
+    const failed = [];
     await Promise.all(
       [...loadGroups.entries()].map(async ([url, items]) => {
         const image = await loadImage(items[0].key, url);
+        if (!image) failed.push(items.map(({ key }) => key).join("/"));
         for (const { key } of items) this.images[key] = image;
         done += 1;
-        this.onProgress(done / loadGroups.size);
+        onProgress(done / loadGroups.size);
       })
     );
-
-    return this;
+    return failed;
   }
 
   async loadCharacterMotions(characterIds, onProgress = () => {}) {
     const uniqueIds = [...new Set(characterIds)].filter((characterId) => this.manifest.characters[characterId]);
+    const totalSheets = uniqueIds.reduce((sum, characterId) => {
+      if (this.loadedCharacterMotions.has(characterId)) return sum;
+      const motions = Object.values(this.manifest.characters[characterId].motions);
+      return sum + new Set(motions.map((motion) => motion.sheet)).size;
+    }, 0);
     let done = 0;
     await Promise.all(uniqueIds.map(async (characterId) => {
-      await this.loadCharacterMotion(characterId);
-      done += 1;
-      onProgress(done / uniqueIds.length, characterId);
+      await this.loadCharacterMotion(characterId, (sheet) => {
+        done += 1;
+        onProgress(totalSheets ? done / totalSheets : 1, `${characterId}:${sheet}`);
+      });
     }));
+    if (!totalSheets) onProgress(1, "cached");
     return this;
   }
 
-  async loadCharacterMotion(characterId) {
+  async loadCharacterMotion(characterId, onSheetLoaded = () => {}) {
     if (this.loadedCharacterMotions.has(characterId)) return;
     if (this.characterMotionLoads.has(characterId)) return this.characterMotionLoads.get(characterId);
 
@@ -105,10 +145,15 @@ export class AssetLoader {
         if (!image) throw new Error(`Unable to load character motion atlas: ${characterId} ${sheet}`);
         this.images[key] = image;
         sheetImages.set(sheet, image);
+        onSheetLoaded(sheet);
       }));
       this.animations[characterId] ??= {};
       for (const [motion, data] of Object.entries(character.motions)) {
-        this.animations[characterId][motion] = { ...data, image: sheetImages.get(data.sheet) };
+        this.animations[characterId][motion] = {
+          ...data,
+          image: sheetImages.get(data.sheet),
+          playbackOrder: MOTION_PLAYBACK[characterId]?.[motion] ?? null
+        };
       }
       this.loadedCharacterMotions.add(characterId);
     })();

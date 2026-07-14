@@ -11,11 +11,21 @@ const clickGame = async (page, gameX, gameY) => {
   await canvas.click({ position: { x: gameX / 1280 * box.width, y: gameY / 720 * box.height } });
 };
 
+const enterTrainingFight = async (page) => {
+  await clickGame(page, 640, 400);
+  await expect.poll(() => phase(page)).toBe("select");
+  await expect.poll(() => page.evaluate(() => window.__gothTechnologyGame?.matchAssetsReady), { timeout: 10_000 }).toBe(true);
+  await clickGame(page, 640, 594);
+  await expect.poll(() => phase(page)).toBe("versus");
+  await expect.poll(() => phase(page), { timeout: 4_000 }).toBe("fight");
+};
+
 test("boots, reaches versus, fights, and pauses without page errors", async ({ page }, testInfo) => {
   const pageErrors = [];
   page.on("pageerror", (error) => pageErrors.push(error.message));
   await page.goto(gameUrl);
   await expect.poll(() => phase(page)).toBe("title");
+  if (!process.env.NO_TEST_ARTIFACTS) await page.screenshot({ path: testInfo.outputPath(`${testInfo.project.name}-title.png`) });
 
   const loadedResources = await page.evaluate(() => performance.getEntriesByType("resource").map((entry) => entry.name));
   expect(loadedResources.some((url) => url.includes("runtime_atlas_user"))).toBe(false);
@@ -23,6 +33,9 @@ test("boots, reaches versus, fights, and pauses without page errors", async ({ p
   expect(loadedResources.some((url) => url.includes("approved-poses/"))).toBe(false);
   expect(loadedResources.some((url) => url.includes("lottomind-live-startup.mp4"))).toBe(false);
   expect(loadedResources.some((url) => url.includes("gothtechnology-startup-bg.png"))).toBe(false);
+  expect(loadedResources.some((url) => url.includes("user-sheets/"))).toBe(false);
+  expect(loadedResources.some((url) => url.endsWith(".mp3"))).toBe(false);
+  expect(loadedResources.some((url) => url.includes("effects/sheets/"))).toBe(false);
 
   const nonBlankSamples = await page.locator("#game").evaluate((canvas) => {
     const data = canvas.getContext("2d").getImageData(0, 0, canvas.width, canvas.height).data;
@@ -41,6 +54,7 @@ test("boots, reaches versus, fights, and pauses without page errors", async ({ p
   expect(selectedResources.filter((url) => url.includes("motion-atlases/") && new URL(url).pathname.endsWith(".webp"))).toHaveLength(6);
   expect(selectedResources.some((url) => url.includes("approved-poses/"))).toBe(false);
   expect(selectedResources.some((url) => url.includes("runtime_atlas_user"))).toBe(false);
+  expect(selectedResources.some((url) => url.includes("user-sheets/"))).toBe(false);
   const spriteIntegrity = await page.evaluate(() => {
     const animations = window.__gothTechnologyGame.assets.animations;
     const splitFrames = [];
@@ -114,9 +128,11 @@ test("boots, reaches versus, fights, and pauses without page errors", async ({ p
   expect(spriteIntegrity.frameCount).toBe(468);
   expect(spriteIntegrity.insufficientUnique).toEqual([]);
   expect(spriteIntegrity.splitFrames).toEqual([]);
+  if (!process.env.NO_TEST_ARTIFACTS) await page.screenshot({ path: testInfo.outputPath(`${testInfo.project.name}-character-select.png`) });
   await clickGame(page, 640, 594);
   await expect.poll(() => phase(page)).toBe("versus");
   await expect.poll(() => phase(page), { timeout: 4_000 }).toBe("fight");
+  if (!process.env.NO_TEST_ARTIFACTS) await page.screenshot({ path: testInfo.outputPath(`${testInfo.project.name}-fight.png`) });
 
   await page.keyboard.press("KeyL");
   await page.waitForTimeout(140);
@@ -141,6 +157,8 @@ test("mobile portrait keeps controls adjacent to a useful playfield", async ({ p
   test.skip(!testInfo.project.name.includes("mobile"), "Mobile layout check");
   await page.goto(gameUrl);
   await expect.poll(() => phase(page)).toBe("title");
+  await expect(page.locator("#mobileControls")).toBeHidden();
+  await enterTrainingFight(page);
   const layout = await page.evaluate(() => {
     const canvas = document.getElementById("game").getBoundingClientRect();
     const controls = document.getElementById("mobileControls").getBoundingClientRect();
@@ -163,19 +181,30 @@ test("mobile landscape reserves the combat controls below the playfield", async 
   await page.setViewportSize({ width: 915, height: 412 });
   await page.goto(gameUrl);
   await expect.poll(() => phase(page)).toBe("title");
+  await expect(page.locator("#mobileControls")).toBeHidden();
+  await enterTrainingFight(page);
   const layout = await page.evaluate(() => {
     const canvas = document.getElementById("game").getBoundingClientRect();
     const controls = document.getElementById("mobileControls").getBoundingClientRect();
+    const pad = document.querySelector("#mobileControls .pad").getBoundingClientRect();
+    const actions = document.querySelector("#mobileControls .buttons").getBoundingClientRect();
     const buttons = [...document.querySelectorAll("#mobileControls .touch:not(.blank)")].map((button) => button.getBoundingClientRect());
     return {
       gap: controls.top - canvas.bottom,
       minButtonWidth: Math.min(...buttons.map((button) => button.width)),
       minButtonHeight: Math.min(...buttons.map((button) => button.height)),
       controlsBottom: controls.bottom,
-      viewportHeight: innerHeight
+      viewportHeight: innerHeight,
+      canvasWidth: canvas.width,
+      canvasHeight: canvas.height,
+      leftGap: canvas.left - pad.right,
+      rightGap: actions.left - canvas.right
     };
   });
-  expect(layout.gap).toBeGreaterThanOrEqual(0);
+  expect(layout.canvasWidth).toBeGreaterThan(580);
+  expect(layout.canvasHeight).toBeGreaterThan(320);
+  expect(layout.leftGap).toBeGreaterThanOrEqual(0);
+  expect(layout.rightGap).toBeGreaterThanOrEqual(0);
   expect(layout.minButtonWidth).toBeGreaterThanOrEqual(44);
   expect(layout.minButtonHeight).toBeGreaterThanOrEqual(44);
   expect(layout.controlsBottom).toBeLessThanOrEqual(layout.viewportHeight);

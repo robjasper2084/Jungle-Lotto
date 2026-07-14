@@ -1,4 +1,4 @@
-import { drawSheetFrame } from "../engine/assets.js?v=fighter-prop2";
+import { drawSheetFrame } from "../engine/assets.js?v=motion-atlas5-gameplay";
 import { rectsOverlap } from "../engine/math.js";
 import { SpriteEffect } from "./effects.js";
 import { sliceAttackForHit } from "./hits.js";

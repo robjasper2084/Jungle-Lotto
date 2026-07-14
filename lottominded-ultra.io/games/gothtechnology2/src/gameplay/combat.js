@@ -1,5 +1,5 @@
 import { rectsOverlap } from "../engine/math.js";
-import { ATTACKS } from "../config/moves.js?v=fighter-prop1";
+import { ATTACKS } from "../config/moves.js?v=motion-atlas5-gameplay";
 import { FloatingText, SpriteEffect } from "./effects.js";
 import { registerAttackHit, sliceAttackForHit } from "./hits.js";
 
@@ -10,6 +10,7 @@ export function resolveMelee(attacker, defender, game) {
   if (!attack.active) return;
   const elapsed = attackState.elapsed;
   if (elapsed < attack.active[0] || elapsed > attack.active[1]) return;
+  if (attack.activeFrames?.length && !attack.activeFrames.includes(attacker.getMotionFrameIndex())) return;
   const box = attacker.getAttackBox();
   if (!box || !rectsOverlap(box, defender.hurtbox)) return;
   if (attackState.name === "throw" && Math.abs(attacker.x - defender.x) > 76) return;
@@ -51,15 +52,19 @@ export function applyHit(attacker, defender, attack, game, meta = {}) {
   const direction = attacker.x < defender.x ? 1 : -1;
   const knockback = direction * (isBlocked ? (attack.knockback ?? 160) * (perfectBlock ? 0.18 : 0.32) : (attack.knockback ?? 180) * (counterHit ? 1.12 : 1));
 
-  defender.takeHit({
-    damage,
-    stun,
-    knockback,
-    attackName: meta.sourceName,
-    blocked: isBlocked,
-    chipOnly: isBlocked,
-    perfectBlock
-  });
+  if (meta.sourceName === "throw" && !isBlocked) {
+    defender.beginThrown(attacker, { damage, knockback });
+  } else {
+    defender.takeHit({
+      damage,
+      stun,
+      knockback,
+      attackName: meta.sourceName,
+      blocked: isBlocked,
+      chipOnly: isBlocked,
+      perfectBlock
+    });
+  }
 
   attacker.meter = Math.min(100, attacker.meter + (attack.meter ?? 8));
   if (isBlocked) defender.meter = Math.min(100, defender.meter + (perfectBlock ? 11 : 5));

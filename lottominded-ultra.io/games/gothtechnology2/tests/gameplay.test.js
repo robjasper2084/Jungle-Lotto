@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { attackIntentFromActions, resolveCancelAttack } from "../src/gameplay/commands.js";
-import { FIGHTERS } from "../src/config/assets.js";
+import { FIGHTERS, MOTION_PLAYBACK } from "../src/config/assets.js";
 import { GROUND_Y } from "../src/config/constants.js";
 import { Fighter } from "../src/gameplay/fighter.js";
 import { registerAttackHit, sliceAttackForHit } from "../src/gameplay/hits.js";
@@ -89,6 +89,39 @@ test("locomotion states reach walk, run, crouch-walk, and distinct dashes", () =
   assert.equal(fighter.motion, "DASH_BACK");
 });
 
+test("runtime locomotion loops avoid generated start and stop poses", () => {
+  for (const characterId of Object.keys(FIGHTERS)) {
+    for (const motion of ["RUN_FORWARD", "RUN_BACK"]) {
+      const order = MOTION_PLAYBACK[characterId][motion];
+      assert.ok(new Set(order).size >= 4);
+      assert.equal(order.includes(0), false);
+      assert.equal(order.includes(5), false);
+      assert.notEqual(order[0], order[order.length - 1]);
+    }
+  }
+  assert.deepEqual(MOTION_PLAYBACK.KALYX.KNOCKDOWN, [0, 1, 3, 4, 2, 5]);
+});
+
+test("melee boxes are authored by animation frame and disappear in recovery", () => {
+  const fighter = makeFighter("KALYX", 420, 1, completeAnimations);
+  fighter.beginAttack("heavyKick", makeGame());
+  const frameDuration = fighter.getMotionPlaybackDuration("HEAVY_KICK") / 6;
+
+  fighter.motionElapsed = frameDuration * 1.5;
+  assert.equal(fighter.getAttackBox(), null);
+
+  fighter.motionElapsed = frameDuration * 2.5;
+  const firstActive = fighter.getAttackBox();
+  assert.ok(firstActive);
+
+  fighter.motionElapsed = frameDuration * 3.5;
+  const secondActive = fighter.getAttackBox();
+  assert.ok(secondActive.w > firstActive.w);
+
+  fighter.motionElapsed = frameDuration * 4.5;
+  assert.equal(fighter.getAttackBox(), null);
+});
+
 test("attack and throw state machines reach start, release, and finish motions", () => {
   const opponent = makeFighter("MASTER_EZRA", 900, -1);
   const game = makeGame();
@@ -157,6 +190,30 @@ test("attacks preserve all six start, release, throw, and recovery frames", () =
   throwing.update(0.02, {}, opponent, game);
   assert.equal(throwing.motion, "THROW_FINISH");
   assert.ok(throwing.currentAttack.duration >= grabDuration + throwing.getMotionPlaybackDuration("THROW_FINISH"));
+});
+
+test("throw victims stay attached through grab and launch after finish", () => {
+  const game = makeGame();
+  const attacker = makeFighter("KALYX", 420, 1, completeAnimations);
+  const victim = makeFighter("MASTER_EZRA", 470, -1, completeAnimations);
+  attacker.beginAttack("throw", game);
+  victim.beginThrown(attacker, { damage: 118, knockback: 360 });
+
+  victim.update(1 / 60, {}, attacker, game);
+  assert.equal(victim.x, attacker.x + 52);
+  assert.equal(victim.motion, "HURT_HEAVY");
+
+  attacker.update(attacker.getMotionPlaybackDuration("THROW_GRAB") + 0.01, {}, victim, game);
+  victim.update(1 / 60, {}, attacker, game);
+  assert.equal(attacker.motion, "THROW_FINISH");
+  assert.equal(victim.motion, "KNOCKDOWN");
+  assert.ok(victim.throwState);
+
+  attacker.update(attacker.currentAttack.duration - attacker.currentAttack.elapsed + 0.01, {}, victim, game);
+  victim.update(1 / 60, {}, attacker, game);
+  assert.equal(victim.throwState, null);
+  assert.ok(victim.knockdown > 0);
+  assert.ok(victim.vx > 0);
 });
 
 test("backward locomotion remains reachable and shows guard only under threat", () => {

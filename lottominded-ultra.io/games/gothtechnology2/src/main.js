@@ -1,4 +1,4 @@
-import { GothTechnologyGame } from "./scenes/game.js?v=motion-atlas4-repaired";
+import { GothTechnologyGame } from "./scenes/game.js?v=motion-atlas5-gameplay";
 import { PHASE } from "./config/constants.js";
 
 const syncViewportHeight = () => {
@@ -99,13 +99,26 @@ const actionRows = [
   ["DASH", "dash"]
 ];
 
-const formatKey = (code) => String(code || "Unbound")
+const KEY_LABELS = {
+  Slash: "/",
+  Period: ".",
+  Semicolon: ";",
+  Quote: "'",
+  BracketRight: "]",
+  BracketLeft: "[",
+  Backslash: "\\",
+  Comma: ",",
+  Minus: "-",
+  Equal: "="
+};
+const formatKey = (code) => KEY_LABELS[code] ?? String(code || "Unbound")
   .replace(/^Key/, "")
   .replace(/^Digit/, "")
   .replace(/^Numpad/, "NUM ")
   .replace("Arrow", "");
 
 let listeningButton = null;
+let settingsOpener = null;
 const renderBindings = () => {
   if (!keyBindings) return;
   keyBindings.replaceChildren(...actionRows.map(([label, suffix]) => {
@@ -165,6 +178,7 @@ const updateControllerStatus = () => {
 
 const openSettingsPanel = () => {
   if (!settingsPanel) return;
+  settingsOpener = document.activeElement;
   renderBindings();
   updateControllerStatus();
   settingsPanel.hidden = false;
@@ -175,7 +189,9 @@ const closeSettingsPanel = () => {
   cancelBinding();
   window.removeEventListener("keydown", captureBinding, true);
   if (settingsPanel) settingsPanel.hidden = true;
-  canvas.focus();
+  const restoreTarget = settingsOpener instanceof HTMLElement && settingsOpener.isConnected ? settingsOpener : canvas;
+  restoreTarget.focus();
+  settingsOpener = null;
   game.announce("Control settings closed");
 };
 
@@ -195,15 +211,20 @@ const actionButton = (label, handler) => {
 
 const renderAccessibleActions = (state) => {
   if (!accessibleActions) return;
+  document.body.dataset.phase = state.phase;
+  document.body.dataset.training = String(Boolean(state.training));
+  if (gameStatus) {
+    const combat = state.phase === PHASE.FIGHT
+      ? ` Player one health ${state.player1Health} percent, meter ${state.player1Meter}. Player two health ${state.player2Health} percent.`
+      : "";
+    gameStatus.textContent = `${state.phase}. ${state.player1Name} versus ${state.player2Name}.${combat}`;
+  }
   const actions = [];
   if (state.phase === PHASE.TITLE) {
     actions.push(actionButton("Pick fighter", () => game.openCharacterSelect(false)));
     actions.push(actionButton("Training", () => game.openCharacterSelect(true)));
     actions.push(actionButton("Game select", () => game.openGameSelect()));
-    actions.push(actionButton(state.cpuEnabled ? "Use local two-player" : "Use CPU opponent", () => {
-      game.cpuEnabled = !game.cpuEnabled;
-      game.lastAccessibleState = "";
-    }));
+    actions.push(actionButton(state.cpuEnabled ? `CPU ${state.cpuDifficulty}. Change opponent mode` : "Local two-player. Change opponent mode", () => game.cycleCpuMode()));
     actions.push(actionButton("Control settings", () => game.openSettings()));
   } else if (state.phase === PHASE.GAME_SELECT) {
     actions.push(actionButton("Play GOTHTECHNOLOGY", () => { game.selectGame(0); game.launchSelectedGame(); }));
@@ -216,6 +237,13 @@ const renderAccessibleActions = (state) => {
     actions.push(actionButton("Back", () => game.returnToTitle()));
   } else if (state.phase === PHASE.FIGHT) {
     actions.push(actionButton("Pause", () => { game.phase = PHASE.PAUSE; game.announce("Game paused"); }));
+    if (state.training) {
+      actions.push(actionButton(`Dummy ${state.trainingDummyMode}`, () => game.cycleTrainingDummy()));
+      actions.push(actionButton("Record dummy", () => game.startTrainingRecording()));
+      actions.push(actionButton("Play recording", () => game.startTrainingPlayback()));
+      actions.push(actionButton("Reset positions", () => game.resetTrainingPosition()));
+      actions.push(actionButton("Toggle frame data", () => { game.showFrameData = !game.showFrameData; }));
+    }
     actions.push(actionButton(state.muted ? "Unmute" : "Mute", toggleMute));
   } else if (state.phase === PHASE.PAUSE) {
     actions.push(actionButton("Resume", () => { game.phase = PHASE.FIGHT; game.announce("Fight resumed"); }));
@@ -257,6 +285,21 @@ settingsPanel?.addEventListener("keydown", (event) => {
   if (event.key === "Escape" && !listeningButton) {
     event.preventDefault();
     closeSettingsPanel();
+    return;
+  }
+  if (event.key === "Tab") {
+    const focusable = [...settingsPanel.querySelectorAll("button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex='-1'])")]
+      .filter((element) => element instanceof HTMLElement && element.offsetParent !== null);
+    if (!focusable.length) return;
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
   }
 });
 const unlockAudio = () => game.audio.ensure();

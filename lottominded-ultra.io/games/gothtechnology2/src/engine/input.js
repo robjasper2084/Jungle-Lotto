@@ -1,4 +1,4 @@
-const STORAGE_KEY = "gothtechnology.keymap.v1";
+const STORAGE_KEY = "gothtechnology.keymap.v2";
 
 const DEFAULT_KEYMAP = Object.freeze({
   KeyA: "p1.left",
@@ -20,16 +20,16 @@ const DEFAULT_KEYMAP = Object.freeze({
   ArrowRight: "p2.right",
   ArrowUp: "p2.up",
   ArrowDown: "p2.down",
-  Numpad1: "p2.lightPunch",
-  Numpad4: "p2.heavyPunch",
-  Numpad2: "p2.lightKick",
-  Numpad5: "p2.heavyKick",
-  Numpad3: "p2.special",
-  Numpad6: "p2.super",
-  Numpad0: "p2.throw",
-  Numpad7: "p2.assist1",
-  Numpad8: "p2.assist2",
-  Numpad9: "p2.taunt",
+  Slash: "p2.lightPunch",
+  Period: "p2.heavyPunch",
+  Semicolon: "p2.lightKick",
+  Quote: "p2.heavyKick",
+  BracketRight: "p2.special",
+  Backslash: "p2.super",
+  Comma: "p2.throw",
+  Minus: "p2.assist1",
+  Equal: "p2.assist2",
+  BracketLeft: "p2.taunt",
   ShiftRight: "p2.dash",
   Enter: "ui.confirm",
   Space: "ui.confirm",
@@ -39,7 +39,11 @@ const DEFAULT_KEYMAP = Object.freeze({
   KeyT: "ui.training",
   KeyB: "ui.debug",
   KeyG: "ui.mute",
-  KeyR: "ui.reset"
+  KeyR: "ui.reset",
+  KeyV: "ui.dummy",
+  KeyF: "ui.record",
+  KeyE: "ui.playback",
+  KeyX: "ui.frameData"
 });
 
 const isEditableTarget = (target) => {

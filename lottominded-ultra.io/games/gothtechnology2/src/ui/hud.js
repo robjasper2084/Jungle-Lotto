@@ -1,5 +1,5 @@
 import { CANVAS_HEIGHT, CANVAS_WIDTH, COLORS, ROUND_SECONDS } from "../config/constants.js";
-import { drawSpriteFrame } from "../engine/assets.js?v=fighter-prop2";
+import { drawSpriteFrame } from "../engine/assets.js?v=motion-atlas5-gameplay";
 
 const panel = (ctx, x, y, w, h, stroke = COLORS.gold) => {
   ctx.save();
@@ -111,16 +111,30 @@ export const drawFightHud = (ctx, game) => {
   ctx.fillStyle = "rgba(255, 246, 211, 0.72)";
   ctx.font = "700 12px system-ui";
   ctx.textAlign = "center";
-  const mode = `${game.training ? "TRAINING" : "ARCADE"} ${game.cpuEnabled ? `CPU ${p2.config.name}` : "LOCAL 2P"} ${game.debug ? "DEBUG BOXES" : ""}`;
+  const opponentMode = game.training
+    ? `DUMMY ${game.trainingDummyMode.toUpperCase()}`
+    : (game.cpuEnabled ? `CPU ${game.cpuDifficulty.toUpperCase()} ${p2.config.name}` : "LOCAL 2P");
+  const mode = `${game.training ? "TRAINING" : "ARCADE"} ${opponentMode} ${game.debug ? "DEBUG BOXES" : ""}`;
   ctx.fillText(mode, 640, 139);
   if (game.training) {
-    panel(ctx, 468, 612, 344, 72, COLORS.blue);
+    panel(ctx, 430, game.showFrameData ? 574 : 612, 420, game.showFrameData ? 116 : 72, COLORS.blue);
     ctx.fillStyle = COLORS.white;
     ctx.font = "800 12px system-ui";
-    ctx.fillText("TRAINING: T MODE  B HITBOXES  R RESET  C CPU", 640, 632);
+    const seconds = (game.trainingRecording.length / 60).toFixed(1);
+    ctx.fillText(`DUMMY ${game.trainingDummyMode.toUpperCase()}   RECORDING ${seconds}s`, 640, game.showFrameData ? 594 : 632);
     ctx.fillStyle = COLORS.goldBright;
     ctx.font = "900 15px system-ui";
-    ctx.fillText(`INPUT ${game.inputLog?.slice(0, 5).join("  /  ") ?? "READY"}`, 640, 660);
+    ctx.fillText(`INPUT ${game.inputLog?.slice(0, 5).join("  /  ") ?? "READY"}`, 640, game.showFrameData ? 620 : 660);
+    if (game.showFrameData) {
+      const attack = p1.currentAttack?.data;
+      const frame = p1.getMotionFrameIndex();
+      const active = attack?.activeFrames?.includes(frame);
+      ctx.fillStyle = active ? "#8ff0a4" : COLORS.white;
+      ctx.font = "800 12px ui-monospace, Consolas, monospace";
+      ctx.fillText(`${p1.motion}  FRAME ${frame + 1}  ${active ? "ACTIVE" : "INACTIVE"}`, 640, 646);
+      ctx.fillStyle = COLORS.blue;
+      ctx.fillText(attack ? `START ${attack.startup?.toFixed(2) ?? "-"}  ACTIVE ${attack.active?.map((value) => value.toFixed(2)).join("-") ?? "-"}  REC ${attack.recovery?.toFixed(2) ?? "-"}` : "READY STATE", 640, 670);
+    }
   }
   ctx.restore();
 };
@@ -134,6 +148,7 @@ export const drawTitle = (ctx, game) => {
     ctx.save();
     ctx.shadowColor = "rgba(255, 214, 109, 0.42)";
     ctx.shadowBlur = 28;
+    ctx.globalCompositeOperation = "screen";
     ctx.drawImage(logo, 530, 18, 220, 220);
     ctx.restore();
   } else {
@@ -156,7 +171,7 @@ export const drawTitle = (ctx, game) => {
   drawMenuButton(ctx, 494, 318, 292, 48, "PICK FIGHTER");
   drawMenuButton(ctx, 494, 376, 292, 48, "TRAINING SELECT");
   drawMenuButton(ctx, 494, 434, 292, 48, "GAME SELECT");
-  drawMenuButton(ctx, 494, 492, 292, 48, game.cpuEnabled ? `CPU ${cpuName}: ON` : "LOCAL 2P: GAMEPADS");
+  drawMenuButton(ctx, 494, 492, 292, 48, game.cpuEnabled ? `CPU ${cpuName}: ${game.cpuDifficulty.toUpperCase()}` : "LOCAL 2P: GAMEPADS");
   drawMenuButton(ctx, 494, 550, 292, 48, "CONTROLS");
   ctx.fillStyle = "rgba(255, 246, 211, 0.55)";
   ctx.font = "700 13px system-ui";
@@ -320,15 +335,26 @@ export const drawCharacterSelect = (ctx, game) => {
   ctx.fillStyle = COLORS.white;
   ctx.font = "900 42px Georgia";
   ctx.fillText("CHARACTER SELECT", 640, 86);
-  drawDossierCard(ctx, 90, 128, 500, 420, "KALYX", game.player1Id === "KALYX" ? "PLAYER 1 / shadow rushdown" : "PLAYER 2 / shadow rushdown", game.assets.images.dossierVespera, game.player1Id === "KALYX" ? COLORS.goldBright : COLORS.gold);
-  drawDossierCard(ctx, 690, 128, 500, 420, "MASTER EZRA", game.player1Id === "MASTER_EZRA" ? "PLAYER 1 / blue control" : "PLAYER 2 / blue control", game.assets.images.dossierMalach, game.player1Id === "MASTER_EZRA" ? COLORS.goldBright : COLORS.blue);
-  drawSelectBadge(ctx, game.player1Id === "KALYX" ? 340 : 940, 146, "P1");
-  drawSelectBadge(ctx, game.player2Id === "KALYX" ? 340 : 940, 512, "P2");
+  const kalyx = game.fighters.find((fighter) => fighter.id === "KALYX");
+  const ezra = game.fighters.find((fighter) => fighter.id === "MASTER_EZRA");
+  drawCharacterCard(ctx, 90, 128, 500, 420, kalyx, "KALYX", "SHADOW RUSHDOWN", game.player1Id === "KALYX", COLORS.goldBright);
+  drawCharacterCard(ctx, 690, 128, 500, 420, ezra, "MASTER EZRA", "BLUE CONTROL", game.player1Id === "MASTER_EZRA", COLORS.blue);
+  drawSelectBadge(ctx, game.player1Id === "KALYX" ? 140 : 740, 164, "P1");
+  drawSelectBadge(ctx, game.player2Id === "KALYX" ? 540 : 1140, 164, game.training ? "DUMMY" : (game.cpuEnabled ? "CPU" : "P2"));
   drawMenuButton(ctx, 494, 570, 292, 52, "VERSUS");
   ctx.fillStyle = "rgba(255, 246, 211, 0.58)";
   ctx.font = "700 13px system-ui";
   ctx.fillText("CLICK A CARD OR PRESS LEFT / RIGHT, THEN ENTER", 640, 650);
-  ctx.fillText(game.cpuEnabled ? `${game.player2Id === "KALYX" ? "KALYX" : "MASTER EZRA"} CPU ENABLED` : "LOCAL 2P: KEYBOARD OR TWO GAMEPADS", 640, 676);
+  if (game.motionLoadError || game.fightLoadError) {
+    ctx.fillStyle = "#ff8e78";
+    ctx.fillText("ASSET LOAD FAILED / SELECT VERSUS TO RETRY", 640, 676);
+  } else if (!game.matchAssetsReady) {
+    const progress = Math.round(((game.motionLoadingProgress + game.fightLoadingProgress) / 2) * 100);
+    ctx.fillStyle = COLORS.blue;
+    ctx.fillText(`PREPARING FIGHTERS AND ARENA ${progress}%`, 640, 676);
+  } else {
+    ctx.fillText(game.training ? "TRAINING DUMMY STAND" : (game.cpuEnabled ? `${game.player2Id === "KALYX" ? "KALYX" : "MASTER EZRA"} CPU ${game.cpuDifficulty.toUpperCase()}` : "LOCAL 2P: KEYBOARD OR TWO GAMEPADS"), 640, 676);
+  }
   ctx.restore();
 };
 
@@ -348,8 +374,8 @@ export const drawVersus = (ctx, game) => {
   ctx.fillText(p2.config.name, 920, 210);
   ctx.fillStyle = COLORS.blue;
   ctx.font = "700 18px system-ui";
-  if (!game.motionAssetsReady) {
-    const percent = Math.round((game.motionLoadingProgress ?? 0) * 100);
+  if (!game.matchAssetsReady) {
+    const percent = Math.round(((game.motionLoadingProgress + game.fightLoadingProgress) / 2) * 100);
     ctx.fillText(`PREPARING FIGHTERS ${percent}%`, 640, 628);
   } else {
     ctx.fillText("BEST OF THREE / 99 SECONDS", 640, 628);
@@ -359,11 +385,12 @@ export const drawVersus = (ctx, game) => {
 
 const drawSelectBadge = (ctx, x, y, label) => {
   ctx.save();
+  const width = label.length > 3 ? 94 : 64;
   ctx.fillStyle = "rgba(255, 214, 109, 0.96)";
   ctx.strokeStyle = "rgba(5, 4, 3, 0.92)";
   ctx.lineWidth = 3;
   ctx.beginPath();
-  ctx.roundRect(x - 32, y - 22, 64, 34, 8);
+  ctx.roundRect(x - width / 2, y - 22, width, 34, 8);
   ctx.fill();
   ctx.stroke();
   ctx.fillStyle = "#050403";
@@ -386,7 +413,7 @@ export const drawPause = (ctx, game) => {
   ctx.fillStyle = COLORS.white;
   ctx.font = "700 16px system-ui";
   ctx.fillText(game.training ? "TRAINING MODE" : "ARCADE MATCH", 640, 222);
-  ctx.fillText(game.cpuEnabled ? `CPU ${game.fighters[1]?.config.name ?? "FIGHTER"}` : "LOCAL TWO-PLAYER / GAMEPADS READY", 640, 250);
+  ctx.fillText(game.training ? `DUMMY ${game.trainingDummyMode.toUpperCase()}` : (game.cpuEnabled ? `CPU ${game.cpuDifficulty.toUpperCase()} ${game.fighters[1]?.config.name ?? "FIGHTER"}` : "LOCAL TWO-PLAYER / GAMEPADS READY"), 640, 250);
   ctx.fillText(game.audio.muted ? "AUDIO MUTED" : "AUDIO ACTIVE", 640, 278);
   ctx.textAlign = "left";
   ctx.fillStyle = "rgba(255, 246, 211, 0.9)";
@@ -395,7 +422,7 @@ export const drawPause = (ctx, game) => {
     "P1 MOVE: A/D    JUMP: W    CROUCH: S",
     "STRIKES: J / U / K / I    SPECIAL: L    SUPER: O",
     "THROW: H    ASSISTS: N / M    DASH: SHIFT    TAUNT: Y",
-    game.cpuEnabled ? "GAMEPAD 1 READY    CONTROLS OPENS KEY REMAPPING" : "P2: ARROWS + NUMPAD OR GAMEPAD 2",
+    game.cpuEnabled ? "GAMEPAD 1 READY    CONTROLS OPENS KEY REMAPPING" : "P2: ARROWS + RIGHT-SIDE KEYS OR GAMEPAD 2",
     "P OR ESC RESUMES    LIGHT > HEAVY > SPECIAL > SUPER"
   ];
   moves.forEach((line, index) => ctx.fillText(line, 414, 326 + index * 27));
@@ -434,14 +461,24 @@ export const drawMenuButton = (ctx, x, y, w, h, label) => {
   ctx.restore();
 };
 
-const drawDossierCard = (ctx, x, y, w, h, name, subtitle, img, color) => {
+const drawCharacterCard = (ctx, x, y, w, h, fighter, name, subtitle, selected, color) => {
   panel(ctx, x, y, w, h, color);
   ctx.save();
   ctx.beginPath();
   ctx.roundRect(x + 14, y + 14, w - 28, h - 96, 6);
   ctx.clip();
-  ctx.globalAlpha = 0.86;
-  if (img) ctx.drawImage(img, x + 14, y - 20, w - 28, h + 70);
+  const grade = ctx.createLinearGradient(x, y, x + w, y + h);
+  grade.addColorStop(0, "#090807");
+  grade.addColorStop(0.58, selected ? "#211b10" : "#11100e");
+  grade.addColorStop(1, "#030303");
+  ctx.fillStyle = grade;
+  ctx.fillRect(x + 14, y + 14, w - 28, h - 96);
+  if (fighter) drawFighterPortrait(ctx, fighter, x + w / 2, y + h - 76, 1.42);
+  if (selected) {
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 4;
+    ctx.strokeRect(x + 20, y + 20, w - 40, h - 114);
+  }
   ctx.restore();
   ctx.save();
   ctx.fillStyle = "rgba(0,0,0,0.72)";
