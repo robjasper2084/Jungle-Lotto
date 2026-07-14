@@ -1,4 +1,4 @@
-import { ASSET_URLS, MOTION_ASSET_VERSION, MOTION_PLAYBACK } from "../config/assets.js?v=motion-atlas6-live";
+import { ASSET_URLS, MOTION_ASSET_VERSION, MOTION_PLAYBACK } from "../config/assets.js?v=motion-atlas7-stable";
 
 const imageCache = new Map();
 
@@ -172,9 +172,14 @@ export const drawSpriteFrame = (ctx, animation, frameIndex, x, y, options = {}) 
   if (!animation?.image) return false;
   const frame = animation.frames[frameIndex % animation.frames.length];
   if (!frame || frame.w <= 0 || frame.h <= 0) return false;
-  const scale = (options.scale ?? 1) * (animation.renderScale ?? 1);
-  const w = frame.w * scale;
-  const h = frame.h * scale;
+  const content = frame.content;
+  const sourceX = frame.x + (content?.x ?? 0);
+  const sourceY = frame.y + (content?.y ?? 0);
+  const sourceW = content?.w ?? frame.w;
+  const sourceH = content?.h ?? frame.h;
+  const scale = (options.scale ?? 1) * (animation.renderScale ?? 1) * (content?.scale ?? 1);
+  const w = sourceW * scale;
+  const h = sourceH * scale;
   ctx.save();
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = "high";
@@ -188,10 +193,10 @@ export const drawSpriteFrame = (ctx, animation, frameIndex, x, y, options = {}) 
     ctx.filter = options.underpaintFilter ?? "brightness(0) saturate(1)";
     ctx.drawImage(
       animation.image,
-      frame.x,
-      frame.y,
-      frame.w,
-      frame.h,
+      sourceX,
+      sourceY,
+      sourceW,
+      sourceH,
       (-w * underScale) / 2,
       -h * underScale,
       w * underScale,
@@ -201,7 +206,7 @@ export const drawSpriteFrame = (ctx, animation, frameIndex, x, y, options = {}) 
   }
   ctx.filter = options.filter ?? "none";
   ctx.globalAlpha = options.alpha ?? 1;
-  ctx.drawImage(animation.image, frame.x, frame.y, frame.w, frame.h, -w / 2, -h, w, h);
+  ctx.drawImage(animation.image, sourceX, sourceY, sourceW, sourceH, -w / 2, -h, w, h);
   ctx.restore();
   return true;
 };

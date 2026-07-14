@@ -7,6 +7,8 @@ from pathlib import Path
 import numpy as np
 from PIL import Image, ImageDraw
 
+from stabilize_motion_atlases import stabilize_manifest
+
 
 ROOT = Path(__file__).resolve().parents[1]
 PRODUCTION_ROOT = ROOT / "assets" / "sprite-production" / "higgsfield-v2"
@@ -537,6 +539,7 @@ def main() -> None:
         manifest["characters"][character_id] = packed
 
     OUTPUT_MANIFEST.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+    stabilize_manifest(ROOT, OUTPUT_MANIFEST)
     total = sum(path.stat().st_size for path in OUTPUT_ROOT.glob("*.webp"))
     print(f"Packed {sum(len(value['motions']) for value in manifest['characters'].values())} motions")
     print(f"Runtime atlas payload: {total / 1024 / 1024:.2f} MiB")

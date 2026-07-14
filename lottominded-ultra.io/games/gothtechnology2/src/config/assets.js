@@ -1,6 +1,6 @@
 export const PACK_ROOT = "assets/GOTHTECHNOLOGY_EXPANDED_SPRITE_PACK_V2";
 export const LOCAL_ROOT = "assets";
-export const MOTION_ASSET_VERSION = "motion-atlas6-live";
+export const MOTION_ASSET_VERSION = "motion-atlas7-stable";
 
 export const ASSET_URLS = {
   manifest: `${LOCAL_ROOT}/motion-atlases/motion-atlas-manifest.json?v=${MOTION_ASSET_VERSION}`,

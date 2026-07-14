@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import test from "node:test";
 import { attackIntentFromActions, resolveCancelAttack } from "../src/gameplay/commands.js";
 import { FIGHTERS, MOTION_PLAYBACK } from "../src/config/assets.js";
@@ -6,6 +7,8 @@ import { GROUND_Y } from "../src/config/constants.js";
 import { Fighter } from "../src/gameplay/fighter.js";
 import { registerAttackHit, sliceAttackForHit } from "../src/gameplay/hits.js";
 import { applyRoundOutcomeMotions, resolveRoundOutcome } from "../src/gameplay/rounds.js";
+
+const motionManifest = JSON.parse(readFileSync(new URL("../assets/motion-atlases/motion-atlas-manifest.json", import.meta.url), "utf8"));
 
 const makeGame = () => ({
   assets: { images: { dust: null } },
@@ -28,6 +31,27 @@ const makeFighter = (id = "KALYX", x = 360, facing = 1, animations = {}) => {
   const config = FIGHTERS[id];
   return new Fighter({ id, slot: 1, config: { ...config }, assets: { animations }, x, facing });
 };
+
+test("stable motion frames keep fixed visual height and grounded pose ratios", () => {
+  assert.equal(motionManifest.stabilizationVersion, 1);
+  for (const character of Object.values(motionManifest.characters)) {
+    const stableMotions = new Set(character.stabilization.stableHeightMotions);
+    for (const [motionName, motion] of Object.entries(character.motions)) {
+      const heights = motion.frames.map((frame) => frame.content.visibleH * frame.content.scale);
+      assert.ok(heights.every((height) => height > 0), `${motionName} has invalid stabilized height`);
+      if (stableMotions.has(motionName)) {
+        assert.ok(Math.max(...heights) - Math.min(...heights) < 0.05, `${motionName} still pulses`);
+      }
+    }
+    const averageHeight = (motionName) => {
+      const heights = character.motions[motionName].frames.map((frame) => frame.content.visibleH * frame.content.scale);
+      return heights.reduce((sum, height) => sum + height, 0) / heights.length;
+    };
+    const idleHeight = averageHeight("IDLE");
+    assert.ok(Math.abs(averageHeight("CROUCH_IDLE") / idleHeight - 0.72) < 0.02);
+    assert.ok(Math.abs(averageHeight("RUN_FORWARD") / idleHeight - 0.90) < 0.02);
+  }
+});
 
 test("double KO and tied timeout are neutral draws", () => {
   assert.deepEqual(resolveRoundOutcome(0, 0, 32), { draw: true, winnerIndex: null, reason: "double_KO" });

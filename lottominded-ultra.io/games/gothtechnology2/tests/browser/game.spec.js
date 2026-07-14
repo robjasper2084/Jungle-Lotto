@@ -128,6 +128,48 @@ test("boots, reaches versus, fights, and pauses without page errors", async ({ p
   expect(spriteIntegrity.frameCount).toBe(468);
   expect(spriteIntegrity.insufficientUnique).toEqual([]);
   expect(spriteIntegrity.splitFrames).toEqual([]);
+  const unstableRenderedMotions = await page.evaluate(async () => {
+    const { drawSpriteFrame } = await import("./src/engine/assets.js?v=motion-atlas7-stable-test");
+    const animations = window.__gothTechnologyGame.assets.animations;
+    const checkedMotions = [
+      "IDLE", "READY_STANCE", "WALK_FORWARD", "RUN_FORWARD", "DASH_FORWARD",
+      "CROUCH_IDLE", "CROUCH_WALK", "LIGHT_PUNCH", "HEAVY_KICK"
+    ];
+    const failures = [];
+    for (const [characterId, motions] of Object.entries(animations)) {
+      for (const motionName of checkedMotions) {
+        const motion = motions[motionName];
+        const heights = [];
+        const bottoms = [];
+        for (let frameIndex = 0; frameIndex < motion.frames.length; frameIndex += 1) {
+          const canvas = document.createElement("canvas");
+          canvas.width = 320;
+          canvas.height = 340;
+          const context = canvas.getContext("2d", { willReadFrequently: true });
+          drawSpriteFrame(context, motion, frameIndex, 160, 330);
+          const rgba = context.getImageData(0, 0, canvas.width, canvas.height).data;
+          let minY = canvas.height;
+          let maxY = -1;
+          for (let y = 0; y < canvas.height; y += 1) {
+            for (let x = 0; x < canvas.width; x += 1) {
+              if (rgba[(y * canvas.width + x) * 4 + 3] <= 8) continue;
+              minY = Math.min(minY, y);
+              maxY = Math.max(maxY, y);
+            }
+          }
+          heights.push(maxY - minY + 1);
+          bottoms.push(maxY);
+        }
+        const heightSpread = Math.max(...heights) - Math.min(...heights);
+        const bottomSpread = Math.max(...bottoms) - Math.min(...bottoms);
+        if (heightSpread > 2 || bottomSpread > 2) {
+          failures.push(`${characterId}/${motionName}:height=${heightSpread},bottom=${bottomSpread}`);
+        }
+      }
+    }
+    return failures;
+  });
+  expect(unstableRenderedMotions).toEqual([]);
   if (!process.env.NO_TEST_ARTIFACTS) await page.screenshot({ path: testInfo.outputPath(`${testInfo.project.name}-character-select.png`) });
   await clickGame(page, 640, 594);
   await expect.poll(() => phase(page)).toBe("versus");

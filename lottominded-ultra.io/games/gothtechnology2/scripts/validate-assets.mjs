@@ -8,6 +8,12 @@ const failures = [];
 const REQUIRED_FRAME_COUNT = 6;
 const REQUIRED_PROVIDER = "Higgsfield Nano Banana Pro";
 const REQUIRED_SOURCE = "higgsfield-v2";
+const STABLE_HEIGHT_MOTIONS = new Set([
+  "IDLE", "READY_STANCE", "WALK_FORWARD", "WALK_BACK", "RUN_FORWARD", "RUN_BACK",
+  "DASH_FORWARD", "DASH_BACK", "CROUCH_IDLE", "CROUCH_WALK", "BLOCK_HIGH", "BLOCK_LOW",
+  "LIGHT_PUNCH", "HEAVY_PUNCH", "LIGHT_KICK", "HEAVY_KICK", "COMBO_1", "COMBO_2",
+  "THROW_GRAB", "THROW_FINISH", "HURT_LIGHT", "TAUNT", "VICTORY"
+]);
 
 const collectUrls = (value, urls = new Set()) => {
   if (typeof value === "string") urls.add(value);
@@ -22,6 +28,7 @@ const urls = collectUrls(ASSET_URLS);
 const motionSheets = new Set();
 
 if (manifest.provider !== REQUIRED_PROVIDER) failures.push(`Unexpected sprite provider: ${manifest.provider}`);
+if (manifest.stabilizationVersion !== 1) failures.push("Motion manifest is missing stabilization metadata");
 if (manifest.framesPerMotion !== REQUIRED_FRAME_COUNT) {
   failures.push(`Manifest declares ${manifest.framesPerMotion} frames per motion; requires ${REQUIRED_FRAME_COUNT}`);
 }
@@ -55,7 +62,32 @@ for (const [characterId, character] of Object.entries(manifest.characters ?? {})
     if (motion.frames?.some((frame) => frame.w <= 0 || frame.h <= 0 || frame.x < 0 || frame.y < 0)) {
       failures.push(`${characterId}/${motionName}: invalid packed frame rectangle`);
     }
+    const visualHeights = [];
+    for (const frame of motion.frames ?? []) {
+      const content = frame.content;
+      if (!content || content.w <= 0 || content.h <= 0 || content.visibleW <= 0 || content.visibleH <= 0 || content.scale <= 0) {
+        failures.push(`${characterId}/${motionName}: missing or invalid stabilized content bounds`);
+        continue;
+      }
+      if (content.x < 0 || content.y < 0 || content.x + content.w > frame.w || content.y + content.h > frame.h) {
+        failures.push(`${characterId}/${motionName}: stabilized content bounds exceed the packed frame`);
+      }
+      visualHeights.push(content.visibleH * content.scale);
+    }
+    if (STABLE_HEIGHT_MOTIONS.has(motionName) && visualHeights.length) {
+      const spread = Math.max(...visualHeights) - Math.min(...visualHeights);
+      if (spread > 0.05) failures.push(`${characterId}/${motionName}: visible height still pulses by ${spread.toFixed(3)} pixels`);
+    }
   }
+
+  const visualHeight = (motionName) => runtimeMotions[motionName].frames
+    .map((frame) => frame.content.visibleH * frame.content.scale)
+    .reduce((sum, value) => sum + value, 0) / runtimeMotions[motionName].frames.length;
+  const idleHeight = visualHeight("IDLE");
+  const crouchRatio = visualHeight("CROUCH_IDLE") / idleHeight;
+  const runRatio = visualHeight("RUN_FORWARD") / idleHeight;
+  if (Math.abs(crouchRatio - 0.72) > 0.02) failures.push(`${characterId}: crouch scale ratio is ${crouchRatio.toFixed(3)}`);
+  if (Math.abs(runRatio - 0.90) > 0.02) failures.push(`${characterId}: run scale ratio is ${runRatio.toFixed(3)}`);
 
   const signature = (motionName) => JSON.stringify({
     sheet: runtimeMotions[motionName]?.sheet,
