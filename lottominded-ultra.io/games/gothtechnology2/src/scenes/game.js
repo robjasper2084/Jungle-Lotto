@@ -1,13 +1,13 @@
-import { ASSET_URLS, FIGHTERS } from "../config/assets.js?v=motion-atlas2";
+import { ASSET_URLS, FIGHTERS } from "../config/assets.js?v=motion-atlas3-higgsfield";
 import { ASSISTS, ATTACKS } from "../config/moves.js?v=fighter-prop1";
 import { CANVAS_HEIGHT, CANVAS_WIDTH, COLORS, GROUND_Y, PHASE, ROUND_SECONDS, WORLD } from "../config/constants.js";
-import { AssetLoader, drawSheetFrame } from "../engine/assets.js?v=motion-atlas2";
+import { AssetLoader, drawSheetFrame } from "../engine/assets.js?v=motion-atlas3-higgsfield";
 import { WebAudioBus } from "../engine/audio.js?v=fighter-prop1";
 import { InputManager } from "../engine/input.js";
 import { clamp, rectsOverlap } from "../engine/math.js";
 import { applyHit, resolveMelee } from "../gameplay/combat.js?v=fighter-prop1";
 import { SpriteEffect } from "../gameplay/effects.js";
-import { Fighter } from "../gameplay/fighter.js?v=motion-atlas2";
+import { Fighter } from "../gameplay/fighter.js?v=motion-atlas3-higgsfield";
 import { AssistStrike, Projectile } from "../gameplay/projectiles.js?v=fighter-prop1";
 import { applyRoundOutcomeMotions, resolveRoundOutcome } from "../gameplay/rounds.js";
 import {
@@ -20,7 +20,7 @@ import {
   drawRoundMessage,
   drawTitle,
   drawVersus
-} from "../ui/hud.js?v=motion-atlas2";
+} from "../ui/hud.js?v=motion-atlas3-higgsfield";
 
 const GAME_SELECT_ITEMS = [
   {

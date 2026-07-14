@@ -1,6 +1,6 @@
 export const PACK_ROOT = "assets/GOTHTECHNOLOGY_EXPANDED_SPRITE_PACK_V2";
 export const LOCAL_ROOT = "assets";
-export const MOTION_ASSET_VERSION = "motion-atlas2";
+export const MOTION_ASSET_VERSION = "motion-atlas3-higgsfield";
 
 export const ASSET_URLS = {
   manifest: `${LOCAL_ROOT}/motion-atlases/motion-atlas-manifest.json?v=${MOTION_ASSET_VERSION}`,
@@ -35,31 +35,6 @@ export const ASSET_URLS = {
   }
 };
 
-export const SPRITE_OVERRIDES = {
-  KALYX: {
-    image: `${LOCAL_ROOT}/approved-poses/kalyx-idle-ready.webp?v=${MOTION_ASSET_VERSION}`,
-    frameWidth: 384,
-    frameHeight: 384,
-    frameDuration: 54,
-    sourceFacing: 1,
-    motions: {
-      IDLE: [0],
-      READY_STANCE: [1, 0]
-    }
-  },
-  MASTER_EZRA: {
-    image: `${LOCAL_ROOT}/approved-poses/ezra-idle-ready.webp?v=${MOTION_ASSET_VERSION}`,
-    frameWidth: 384,
-    frameHeight: 384,
-    frameDuration: 38,
-    sourceFacing: 1,
-    motions: {
-      IDLE: [0],
-      READY_STANCE: [1, 0]
-    }
-  }
-};
-
 export const FIGHTERS = {
   KALYX: {
     id: "KALYX",
@@ -69,9 +44,9 @@ export const FIGHTERS = {
     spriteFacing: 1,
     palette: "#f0a23b",
     accent: "#ffcf67",
-    scale: 1.56,
-    stableScale: 1.56,
-    spriteFilter: "blur(0.16px) contrast(1.08) saturate(0.9)",
+    scale: 1.34,
+    stableScale: 1.34,
+    spriteFilter: "brightness(1.14) contrast(1.06) saturate(1.04)",
     stageMargin: 196,
     speed: 430,
     runSpeed: 720,
@@ -202,9 +177,9 @@ export const FIGHTERS = {
     spriteFacing: 1,
     palette: "#8bd4ff",
     accent: "#d8aa45",
-    scale: 1.24,
-    stableScale: 1.24,
-    spriteFilter: "contrast(1.08) saturate(0.94)",
+    scale: 1.3,
+    stableScale: 1.3,
+    spriteFilter: "brightness(1.04) contrast(1.05) saturate(1)",
     speed: 410,
     runSpeed: 670,
     dashSpeed: 1150,

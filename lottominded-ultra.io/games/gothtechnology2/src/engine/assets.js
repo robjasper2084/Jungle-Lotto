@@ -1,4 +1,4 @@
-import { ASSET_URLS, MOTION_ASSET_VERSION, SPRITE_OVERRIDES } from "../config/assets.js?v=motion-atlas2";
+import { ASSET_URLS, MOTION_ASSET_VERSION } from "../config/assets.js?v=motion-atlas3-higgsfield";
 
 const imageCache = new Map();
 
@@ -52,13 +52,7 @@ export class AssetLoader {
       assistRaven: ASSET_URLS.assists.raven,
       assistNocturna: ASSET_URLS.assists.nocturna,
       dossierVespera: ASSET_URLS.dossiers.vespera,
-      dossierMalach: ASSET_URLS.dossiers.malach,
-      ...Object.fromEntries(
-        Object.entries(SPRITE_OVERRIDES).map(([characterId, override]) => [
-          `${characterId}_override`,
-          override.image
-        ])
-      )
+      dossierMalach: ASSET_URLS.dossiers.malach
     };
 
     for (const characterId of Object.keys(this.manifest.characters)) {
@@ -83,7 +77,6 @@ export class AssetLoader {
       })
     );
 
-    this.applySpriteOverrides();
     return this;
   }
 
@@ -128,33 +121,6 @@ export class AssetLoader {
     }
   }
 
-  applySpriteOverrides() {
-    for (const [characterId, override] of Object.entries(SPRITE_OVERRIDES)) {
-      const image = this.images[`${characterId}_override`];
-      if (!image) continue;
-      this.animations[characterId] ??= {};
-      const frameWidth = override.frameWidth ?? override.frameSize ?? 256;
-      const frameHeight = override.frameHeight ?? override.frameSize ?? 256;
-      const frameDuration = override.frameDuration ?? 58;
-      for (const [motion, frameIndexes] of Object.entries(override.motions ?? {})) {
-        this.animations[characterId][motion] = {
-          image,
-          frameCount: frameIndexes.length,
-          cellWidth: frameWidth,
-          cellHeight: frameHeight,
-          sourceFacing: override.sourceFacing ?? 1,
-          override: true,
-          frames: frameIndexes.map((frameIndex) => ({
-            x: frameIndex * frameWidth,
-            y: 0,
-            w: frameWidth,
-            h: frameHeight,
-            duration_ms: frameDuration
-          }))
-        };
-      }
-    }
-  }
 }
 
 export const drawSpriteFrame = (ctx, animation, frameIndex, x, y, options = {}) => {

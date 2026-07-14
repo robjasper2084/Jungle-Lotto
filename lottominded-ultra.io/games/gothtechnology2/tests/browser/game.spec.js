@@ -20,6 +20,7 @@ test("boots, reaches versus, fights, and pauses without page errors", async ({ p
   const loadedResources = await page.evaluate(() => performance.getEntriesByType("resource").map((entry) => entry.name));
   expect(loadedResources.some((url) => url.includes("runtime_atlas_user"))).toBe(false);
   expect(loadedResources.some((url) => url.includes("motion-atlases/") && new URL(url).pathname.endsWith(".webp"))).toBe(false);
+  expect(loadedResources.some((url) => url.includes("approved-poses/"))).toBe(false);
   expect(loadedResources.some((url) => url.includes("lottomind-live-startup.mp4"))).toBe(false);
   expect(loadedResources.some((url) => url.includes("gothtechnology-startup-bg.png"))).toBe(false);
 
@@ -38,6 +39,7 @@ test("boots, reaches versus, fights, and pauses without page errors", async ({ p
   await expect.poll(() => page.evaluate(() => window.__gothTechnologyGame?.assets?.loadedCharacterMotions?.size), { timeout: 10_000 }).toBe(2);
   const selectedResources = await page.evaluate(() => performance.getEntriesByType("resource").map((entry) => entry.name));
   expect(selectedResources.filter((url) => url.includes("motion-atlases/") && new URL(url).pathname.endsWith(".webp"))).toHaveLength(6);
+  expect(selectedResources.some((url) => url.includes("approved-poses/"))).toBe(false);
   expect(selectedResources.some((url) => url.includes("runtime_atlas_user"))).toBe(false);
   await clickGame(page, 640, 594);
   await expect.poll(() => phase(page)).toBe("versus");
