@@ -1,7 +1,8 @@
 import { GRAVITY, GROUND_Y, WORLD } from "../config/constants.js";
-import { ATTACKS } from "../config/moves.js?v=fighter-prop1";
-import { drawSpriteFrame } from "../engine/assets.js?v=fighter-prop1";
+import { ATTACKS } from "../config/moves.js?v=motion-atlas5-gameplay";
+import { drawSpriteFrame } from "../engine/assets.js?v=motion-atlas5-gameplay";
 import { approach, clamp, makeRect } from "../engine/math.js";
+import { attackIntentFromActions, resolveCancelAttack } from "./commands.js";
 import { SpriteEffect } from "./effects.js";
 
 const MOTION_LOCKS = new Set([
@@ -24,6 +25,7 @@ const MOTION_LOCKS = new Set([
   "HURT_HEAVY",
   "KNOCKDOWN",
   "GET_UP",
+  "LANDING",
   "TAUNT",
   "VICTORY",
   "DEFEAT"
@@ -50,7 +52,7 @@ const CANCEL_CHAINS = {
   heavyPunch: new Set(["special", "super"]),
   heavyKick: new Set(["special", "super"]),
   crouchAttack: new Set(["special", "super"]),
-  combo1: new Set(["combo2", "special", "super"]),
+  combo1: new Set(["heavyKick", "combo2", "special", "super"]),
   combo2: new Set(["special", "super"])
 };
 
@@ -96,6 +98,7 @@ export class Fighter {
     this.dashDir = facing;
     this.landingLag = 0;
     this.attackBuffer = null;
+    this.throwState = null;
     this.isKO = false;
   }
 
@@ -129,6 +132,7 @@ export class Fighter {
     this.dashDir = facing;
     this.landingLag = 0;
     this.attackBuffer = null;
+    this.throwState = null;
     this.setMotion("READY_STANCE", true);
   }
 
@@ -141,8 +145,20 @@ export class Fighter {
   }
 
   get hurtbox() {
-    const h = this.crouching || this.motion === "BLOCK_LOW" ? 118 : 178;
-    return makeRect(this.x, this.y, 76, h);
+    const frameIndex = this.getMotionFrameIndex();
+    const authored = this.currentAttack?.data?.hurtboxesByFrame?.[frameIndex];
+    let profile = authored;
+    if (!profile && ["KNOCKDOWN", "DEFEAT"].includes(this.motion)) profile = { w: 158, h: 54, offsetY: 2 };
+    if (!profile && ["CROUCH_IDLE", "CROUCH_WALK", "CROUCH_ATTACK", "BLOCK_LOW"].includes(this.motion)) profile = { w: 88, h: 116 };
+    if (!profile && ["JUMP_START", "JUMP_RISE", "JUMP_PEAK", "JUMP_FALL", "AIR_ATTACK"].includes(this.motion)) profile = { w: 78, h: 158 };
+    if (!profile && ["HURT_LIGHT", "HURT_HEAVY"].includes(this.motion)) profile = { w: 86, h: 162 };
+    profile ??= { w: 76, h: 178 };
+    return makeRect(
+      this.x + this.facing * (profile.offsetX ?? 0),
+      this.y + (profile.offsetY ?? 0),
+      profile.w,
+      profile.h
+    );
   }
 
   get activeAnimation() {
@@ -157,6 +173,41 @@ export class Fighter {
     if (!force && this.motion === motion) return;
     this.motion = motion;
     this.motionElapsed = 0;
+  }
+
+  getMotionPlaybackDuration(motion = this.motion) {
+    const displayMotion = this.config.motionRemap?.[motion] ?? motion;
+    const animation = this.assets.animations[this.config.manifestKey]?.[displayMotion];
+    if (!animation?.frames?.length) return 0.18;
+    const order = animation.playbackOrder?.length
+      ? animation.playbackOrder
+      : animation.frames.map((_, index) => index);
+    const duration = order.reduce((sum, frameIndex) => sum + (animation.frames[frameIndex]?.duration_ms ?? 85), 0) / 1000;
+    return this.config.motionDurations?.[motion] ?? duration / (this.config.motionTimeScale ?? 1);
+  }
+
+  getMotionFrameIndex(motion = this.motion, elapsed = this.motionElapsed) {
+    const displayMotion = this.config.motionRemap?.[motion] ?? motion;
+    const animation = this.assets.animations[this.config.manifestKey]?.[displayMotion];
+    if (!animation?.frames?.length) return 0;
+    const order = animation.playbackOrder?.length
+      ? animation.playbackOrder
+      : animation.frames.map((_, index) => index);
+    const sourceDuration = order.reduce((sum, frameIndex) => sum + (animation.frames[frameIndex]?.duration_ms ?? 85), 0) / 1000;
+    const playbackDuration = Math.max(0.001, this.getMotionPlaybackDuration(motion));
+    const loops = !MOTION_LOCKS.has(motion) || motion === "VICTORY";
+    const playbackTime = loops ? elapsed % playbackDuration : Math.min(elapsed, playbackDuration - 0.001);
+    const sourceTime = (playbackTime / playbackDuration) * sourceDuration;
+    let accumulated = 0;
+    for (const frameIndex of order) {
+      accumulated += (animation.frames[frameIndex]?.duration_ms ?? 85) / 1000;
+      if (sourceTime <= accumulated) return frameIndex;
+    }
+    return order[order.length - 1] ?? 0;
+  }
+
+  isMotionPlaybackLocked() {
+    return !this.currentAttack && MOTION_LOCKS.has(this.motion) && this.motionElapsed < this.getMotionPlaybackDuration();
   }
 
   getAttackData(name) {
@@ -177,14 +228,28 @@ export class Fighter {
     }
     if (name === "special") this.specialCooldown = data.cooldown;
     if (name === "super") this.superCooldown = data.cooldown;
-    const duration = (data.active?.[1] ?? data.startup + 0.18) + (data.recovery ?? 0.25);
+    const activeEnd = data.active?.[1] ?? data.startup + 0.18;
+    const baseDuration = activeEnd + (data.recovery ?? 0.25);
+    const motionDuration = this.getMotionPlaybackDuration(data.motion);
+    const spawnAt = data.startMotion
+      ? Math.max(data.startup ?? 0, this.getMotionPlaybackDuration(data.startMotion))
+      : (data.startup ?? 0);
+    const finishAt = data.finishMotion
+      ? Math.max(activeEnd, motionDuration)
+      : activeEnd;
+    let duration = Math.max(baseDuration, data.startMotion ? spawnAt + motionDuration : motionDuration);
+    if (data.finishMotion) duration = Math.max(duration, finishAt + this.getMotionPlaybackDuration(data.finishMotion));
     this.currentAttack = {
       name,
       data,
       elapsed: 0,
       duration,
-      hitTargets: new Set(),
-      spawned: false
+      spawnAt,
+      finishAt,
+      hitCounts: new Map(),
+      lastHitAt: new Map(),
+      spawned: false,
+      finishStarted: false
     };
     this.setMotion(data.motion, true);
     if (data.startMotion) this.setMotion(data.startMotion, true);
@@ -202,10 +267,11 @@ export class Fighter {
 
   cancelInto(name, game) {
     if (!this.canCancelInto(name)) return false;
+    const resolvedName = resolveCancelAttack(this.currentAttack.name, name);
     this.currentAttack = null;
     this.attackBuffer = null;
     this.meter = Math.min(100, this.meter + 2);
-    return this.beginAttack(name, game);
+    return this.beginAttack(resolvedName, game);
   }
 
   useAssist(slot, game) {
@@ -214,32 +280,76 @@ export class Fighter {
   }
 
   readAttackIntent(actions) {
-    if (actions.throw) return "throw";
-    if (actions.super) return "super";
-    if (actions.special) return "special";
-    if (actions.heavyPunch) return "heavyPunch";
-    if (actions.heavyKick) return "heavyKick";
-    if (actions.lightPunch && actions.down) return "crouchAttack";
-    if (actions.lightKick && !this.grounded) return "airAttack";
-    if (actions.lightPunch && actions.lightKick) return "combo2";
-    if (actions.lightPunch) return "lightPunch";
-    if (actions.lightKick) return "lightKick";
-    return null;
+    return attackIntentFromActions({ ...actions, grounded: this.grounded });
   }
 
   getAttackBox() {
     const attack = this.currentAttack?.data;
     if (!attack) return null;
-    const x = this.x + this.facing * (attack.reach ?? 90);
+    const frameIndex = this.getMotionFrameIndex();
+    if (attack.activeFrames?.length && !attack.activeFrames.includes(frameIndex)) return null;
+    const profile = attack.frameBoxes?.[frameIndex] ?? {};
+    const width = profile.w ?? attack.width ?? 90;
+    const height = profile.h ?? attack.height ?? 70;
+    const x = this.x + this.facing * (profile.forward ?? attack.reach ?? 90);
     return {
-      x: x - (attack.width ?? 90) / 2,
-      y: this.y + (attack.y ?? -120) - (attack.height ?? 70) / 2,
-      w: attack.width ?? 90,
-      h: attack.height ?? 70
+      x: x - width / 2,
+      y: this.y + (profile.y ?? attack.y ?? -120) - height / 2,
+      w: width,
+      h: height
     };
   }
 
+  beginThrown(attacker, { damage, knockback }) {
+    this.health = Math.max(0, this.health - damage);
+    this.currentAttack = null;
+    this.attackBuffer = null;
+    this.hitstun = 0;
+    this.blockstun = 0;
+    this.knockdown = 0;
+    this.vx = 0;
+    this.vy = 0;
+    this.throwState = { attacker, knockback: Math.abs(knockback), finishing: false };
+    this.invulnerable = Math.max(this.invulnerable, 1.2);
+    this.setMotion("HURT_HEAVY", true);
+  }
+
+  updateThrownState() {
+    const state = this.throwState;
+    if (!state) return false;
+    const attackState = state.attacker.currentAttack;
+    if (!attackState || attackState.name !== "throw") {
+      const direction = state.attacker.facing;
+      this.throwState = null;
+      this.x = state.attacker.x + direction * 82;
+      this.y = GROUND_Y - 2;
+      this.vx = direction * state.knockback;
+      this.vy = -180;
+      if (this.health <= 0) {
+        this.isKO = true;
+        this.knockdown = 10;
+        this.setMotion("DEFEAT", true);
+      } else {
+        this.knockdown = 0.92;
+        this.setMotion("KNOCKDOWN", true);
+      }
+      return false;
+    }
+
+    this.facing = -state.attacker.facing;
+    this.x = state.attacker.x + state.attacker.facing * 52;
+    this.y = GROUND_Y;
+    this.vx = 0;
+    this.vy = 0;
+    if (attackState.finishStarted && !state.finishing) {
+      state.finishing = true;
+      this.setMotion("KNOCKDOWN", true);
+    }
+    return true;
+  }
+
   takeHit({ damage, stun, knockback, attackName, blocked, chipOnly, perfectBlock }) {
+    this.throwState = null;
     this.comboTimer = 0;
     if (blocked) {
       this.blockstun = stun;
@@ -290,11 +400,13 @@ export class Fighter {
       if (this.attackBuffer.time <= 0) this.attackBuffer = null;
     }
 
-    if (!this.isKO && this.health <= 0) {
+    if (!this.isKO && this.health <= 0 && !this.throwState) {
       this.isKO = true;
       this.currentAttack = null;
       this.setMotion("DEFEAT", true);
     }
+
+    if (this.updateThrownState()) return;
 
     const faceDelta = opponent.x - this.x;
     if (Math.abs(faceDelta) > 12) this.facing = faceDelta > 0 ? 1 : -1;
@@ -312,9 +424,11 @@ export class Fighter {
       }
     }
 
-    const locked = this.isKO || this.hitstun > 0 || this.blockstun > 0 || this.knockdown > 0;
-    const attackIntent = !locked ? this.readAttackIntent(actions) : null;
-    if (attackIntent && (this.currentAttack || this.landingLag > 0)) {
+    const hardLocked = this.isKO || this.hitstun > 0 || this.blockstun > 0 || this.knockdown > 0;
+    const motionLocked = this.isMotionPlaybackLocked();
+    const locked = hardLocked || motionLocked;
+    const attackIntent = !hardLocked ? this.readAttackIntent(actions) : null;
+    if (attackIntent && (this.currentAttack || this.landingLag > 0 || motionLocked)) {
       this.attackBuffer = { name: attackIntent, time: this.config.feel?.inputBuffer ?? 0.12 };
     }
     if (!locked && attackIntent && this.currentAttack && this.cancelInto(attackIntent, game)) {
@@ -324,7 +438,14 @@ export class Fighter {
       if (actions.assist1) this.useAssist("assist1", game);
       if (actions.assist2) this.useAssist("assist2", game);
       if (actions.taunt) {
-        this.currentAttack = { name: "taunt", data: { motion: "TAUNT" }, elapsed: 0, duration: 0.82, hitTargets: new Set() };
+        this.currentAttack = {
+          name: "taunt",
+          data: { motion: "TAUNT" },
+          elapsed: 0,
+          duration: this.getMotionPlaybackDuration("TAUNT"),
+          hitCounts: new Map(),
+          lastHitAt: new Map()
+        };
         this.meter = Math.min(100, this.meter + 4);
         this.setMotion("TAUNT", true);
       } else if (!this.currentAttack) {
@@ -337,10 +458,14 @@ export class Fighter {
     if (this.currentAttack) {
       this.currentAttack.elapsed += dt;
       const { name, data } = this.currentAttack;
-      if ((name === "special" || name === "super") && !this.currentAttack.spawned && this.currentAttack.elapsed >= data.startup) {
+      if ((name === "special" || name === "super") && !this.currentAttack.spawned && this.currentAttack.elapsed >= this.currentAttack.spawnAt) {
         this.currentAttack.spawned = true;
         this.setMotion(data.motion, true);
         game.spawnProjectile(this, name);
+      }
+      if (data.finishMotion && !this.currentAttack.finishStarted && this.currentAttack.elapsed >= this.currentAttack.finishAt) {
+        this.currentAttack.finishStarted = true;
+        this.setMotion(data.finishMotion, true);
       }
       if (this.currentAttack.elapsed >= this.currentAttack.duration) {
         if (data.recoverMotion) this.setMotion(data.recoverMotion, true);
@@ -349,7 +474,8 @@ export class Fighter {
     }
 
     const dashing = this.dashTimer > 0;
-    const canMove = !locked && !this.currentAttack && this.landingLag <= 0 && !dashing;
+    const stateLocked = hardLocked || this.isMotionPlaybackLocked();
+    const canMove = !stateLocked && !this.currentAttack && this.landingLag <= 0 && !dashing;
     let desired = 0;
     const left = actions.left ? -1 : 0;
     const right = actions.right ? 1 : 0;
@@ -395,8 +521,18 @@ export class Fighter {
         this.vx = approach(this.vx, desired * this.config.speed * 0.86, dt * (this.config.feel?.airAccel ?? 760));
       } else if (desired !== 0) {
         const movingForward = desired === this.facing;
-        this.vx = approach(this.vx, desired * this.config.speed, dt * (this.config.feel?.groundAccel ?? 2300));
-        this.setMotion(movingForward ? "WALK_FORWARD" : "WALK_BACK");
+        if (actions.down && this.grounded) {
+          const crouchSpeed = this.config.speed * (this.config.feel?.crouchWalkScale ?? 0.4);
+          this.vx = approach(this.vx, desired * crouchSpeed, dt * (this.config.feel?.groundAccel ?? 2300));
+          this.setMotion("CROUCH_WALK");
+        } else {
+          const running = this.moveHold >= (this.config.feel?.runThreshold ?? 0.28);
+          const targetSpeed = running ? this.config.runSpeed : this.config.speed;
+          this.vx = approach(this.vx, desired * targetSpeed, dt * (this.config.feel?.groundAccel ?? 2300));
+          this.setMotion(movingForward
+            ? (running ? "RUN_FORWARD" : "WALK_FORWARD")
+            : (running ? "RUN_BACK" : "WALK_BACK"));
+        }
       } else {
         this.moveHold = 0;
         this.lastMoveDir = 0;
@@ -404,14 +540,15 @@ export class Fighter {
       }
 
       const away = opponent.x > this.x ? actions.left : actions.right;
-      if (away && desired === 0) {
+      const guardThreat = away && opponent.currentAttack && Math.abs(opponent.x - this.x) <= (opponent.currentAttack.data.reach ?? 90) + 140;
+      if (guardThreat) {
         this.setMotion(actions.down ? "BLOCK_LOW" : "BLOCK_HIGH");
-      } else if (actions.down && this.grounded) {
+      } else if (actions.down && this.grounded && desired === 0) {
         this.setMotion("CROUCH_IDLE");
       } else if (
         Math.abs(this.vx) < 10 &&
         this.grounded &&
-        (!MOTION_LOCKS.has(this.motion) || (!this.currentAttack && this.motionElapsed > 0.18))
+        (!MOTION_LOCKS.has(this.motion) || (!this.currentAttack && this.motionElapsed >= this.getMotionPlaybackDuration()))
       ) {
         this.setMotion("IDLE");
       }
@@ -428,7 +565,7 @@ export class Fighter {
     this.x = clamp(this.x, minX, maxX);
     if ((this.x <= minX && this.vx < 0) || (this.x >= maxX && this.vx > 0)) this.vx = 0;
     if (this.y >= GROUND_Y) {
-      if (!wasGrounded && !this.currentAttack && !locked) {
+      if (!wasGrounded && !this.currentAttack && !stateLocked) {
         this.setMotion("LANDING", true);
         this.landingLag = this.config.feel?.landingLag ?? 0.04;
         game.effects.push(new SpriteEffect({
@@ -444,7 +581,7 @@ export class Fighter {
       }
       this.y = GROUND_Y;
       this.vy = 0;
-    } else if (!locked && !this.currentAttack) {
+    } else if (!stateLocked && !this.currentAttack && this.dashTimer <= 0) {
       if (this.vy < -90) this.setMotion("JUMP_RISE");
       else if (this.vy > 90) this.setMotion("JUMP_FALL");
       else this.setMotion("JUMP_PEAK");
@@ -464,23 +601,7 @@ export class Fighter {
 
   render(ctx, debug = false) {
     const anim = this.activeAnimation;
-    let frameIndex = 0;
-    const steadyMotions = new Set(["IDLE", "READY_STANCE", "BLOCK_HIGH", "BLOCK_LOW", "CROUCH_IDLE"]);
-    if (anim?.frames?.length && !steadyMotions.has(this.motion)) {
-      const animTimeScale = this.config.motionTimeScale ?? 1;
-      const duration = anim.frames.reduce((sum, frame) => sum + (frame.duration_ms ?? 85), 0) / 1000;
-      const loop = !MOTION_LOCKS.has(this.motion) || this.motion === "DEFEAT" || this.motion === "VICTORY";
-      const scaledMotionTime = this.motionElapsed * animTimeScale;
-      const time = loop ? scaledMotionTime % duration : Math.min(scaledMotionTime, duration - 0.001);
-      let acc = 0;
-      for (let i = 0; i < anim.frames.length; i += 1) {
-        acc += (anim.frames[i].duration_ms ?? 85) / 1000;
-        if (time <= acc) {
-          frameIndex = i;
-          break;
-        }
-      }
-    }
+    const frameIndex = this.getMotionFrameIndex();
     const bodyAlpha = 1;
     const sourceFacing = anim?.sourceFacing ?? this.config.spriteFacing ?? 1;
     const flipSprite = this.facing !== sourceFacing;
@@ -489,15 +610,6 @@ export class Fighter {
     ctx.globalAlpha = 1;
     ctx.globalCompositeOperation = "source-over";
     ctx.filter = "none";
-    const depthColor = this.id === "MASTER_EZRA" ? "rgba(118, 170, 255, 0.22)" : "rgba(216, 170, 69, 0.22)";
-    const warmRim = this.id === "MASTER_EZRA" ? "rgba(255, 220, 142, 0.12)" : "rgba(255, 198, 92, 0.12)";
-    ctx.save();
-    ctx.globalAlpha = 0.34;
-    ctx.fillStyle = "#000";
-    ctx.beginPath();
-    ctx.ellipse(this.x + this.facing * -10, GROUND_Y + 10, 74 * drawScale / this.config.scale, 15, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.restore();
     if (this.dashTimer > 0) {
       drawSpriteFrame(ctx, anim, frameIndex, this.x - this.dashDir * 32, this.y + 14, {
         scale: drawScale,
@@ -506,55 +618,20 @@ export class Fighter {
         composite: "source-over"
       });
     }
-    const extraDepthPasses = this.config.extraDepthPasses ?? false;
-    if (extraDepthPasses) {
-      drawSpriteFrame(ctx, anim, frameIndex, this.x - this.facing * 10, this.y + 20, {
-        scale: drawScale * 1.018,
-        flip: flipSprite,
-        alpha: 0.28,
-        composite: "source-over",
-        filter: "brightness(0) blur(2px)"
-      });
-      drawSpriteFrame(ctx, anim, frameIndex, this.x + this.facing * 5, this.y + 10, {
-        scale: drawScale * 1.01,
-        flip: flipSprite,
-        alpha: 0.16,
-        composite: "screen",
-        filter: "brightness(1.7) saturate(1.18)"
-      });
-    }
     const drewPrimary = drawSpriteFrame(ctx, anim, frameIndex, this.x, this.y + 14, {
       scale: drawScale,
       flip: flipSprite,
       alpha: bodyAlpha,
-      composite: "source-over",
-      underpaint: true,
-      underpaintScale: 1,
-      underpaintAlpha: this.id === "MASTER_EZRA" ? 0.56 : 0.6,
-      filter: this.config.spriteFilter ?? (extraDepthPasses ? "contrast(1.08) saturate(0.96) drop-shadow(0 9px 7px rgba(0, 0, 0, 0.46))" : "contrast(1.06) saturate(0.96)")
+      composite: "source-over"
     });
     if (!drewPrimary && this.assets.animations[this.config.manifestKey]?.READY_STANCE) {
       drawSpriteFrame(ctx, this.assets.animations[this.config.manifestKey].READY_STANCE, 0, this.x, this.y + 14, {
         scale: this.config.scale,
         flip: flipSprite,
         alpha: 1,
-        composite: "source-over",
-        underpaint: true,
-        underpaintAlpha: 0.55
+        composite: "source-over"
       });
     }
-    ctx.save();
-    ctx.globalCompositeOperation = "screen";
-    const bodyGlow = ctx.createLinearGradient(this.x - 58, this.y - 188, this.x + 66, this.y - 42);
-    bodyGlow.addColorStop(0, depthColor);
-    bodyGlow.addColorStop(0.56, "rgba(255,255,255,0)");
-    bodyGlow.addColorStop(1, warmRim);
-    ctx.fillStyle = bodyGlow;
-    ctx.globalAlpha = 0.14;
-    ctx.beginPath();
-    ctx.ellipse(this.x + this.facing * -12, this.y - 102, 58, 92, -0.12 * this.facing, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.restore();
     ctx.restore();
 
     if (this.invulnerable > 0 && !this.isKO) {

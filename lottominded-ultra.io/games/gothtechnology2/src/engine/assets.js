@@ -1,4 +1,4 @@
-import { ASSET_URLS, PACK_ROOT, SPRITE_OVERRIDES } from "../config/assets.js?v=fighter-prop1";
+import { ASSET_URLS, MOTION_ASSET_VERSION, MOTION_PLAYBACK } from "../config/assets.js?v=motion-atlas5-gameplay";
 
 const imageCache = new Map();
 
@@ -26,13 +26,33 @@ export class AssetLoader {
     this.images = {};
     this.manifest = null;
     this.animations = {};
+    this.loadedCharacterMotions = new Set();
+    this.characterMotionLoads = new Map();
+    this.groupLoads = new Map();
+    this.loadedGroups = new Set();
   }
 
   async load() {
     this.manifest = await fetch(ASSET_URLS.manifest).then((r) => r.json());
-    const baseImages = {
-      logo: ASSET_URLS.logo,
-      titleBackdrop: ASSET_URLS.titleBackdrop,
+    await this.loadGroup("boot", {
+      titleBackdrop: ASSET_URLS.titleBackdrop
+    }, this.onProgress);
+
+    for (const characterId of Object.keys(this.manifest.characters)) {
+      this.animations[characterId] = {};
+    }
+
+    return this;
+  }
+
+  loadMenuAssets(onProgress = () => {}) {
+    return this.loadGroup("menu", {
+      logo: ASSET_URLS.logo
+    }, onProgress, { strict: false });
+  }
+
+  loadFightAssets(onProgress = () => {}) {
+    return this.loadGroup("fight", {
       background: ASSET_URLS.background,
       farTrees: ASSET_URLS.farTrees,
       fog: ASSET_URLS.fog,
@@ -48,92 +68,111 @@ export class AssetLoader {
       smoke: ASSET_URLS.effects.smoke,
       assistOwl: ASSET_URLS.assists.owl,
       assistRaven: ASSET_URLS.assists.raven,
-      assistNocturna: ASSET_URLS.assists.nocturna,
-      dossierVespera: ASSET_URLS.dossiers.vespera,
-      dossierNocturna: ASSET_URLS.dossiers.nocturna,
-      dossierMalach: ASSET_URLS.dossiers.malach,
-      dossierMorvane: ASSET_URLS.dossiers.morvane,
-      dossierEffects: ASSET_URLS.dossiers.effects,
-      ...Object.fromEntries(
-        Object.entries(SPRITE_OVERRIDES).map(([characterId, override]) => [
-          `${characterId}_override`,
-          override.image
-        ])
-      )
-    };
+      assistNocturna: ASSET_URLS.assists.nocturna
+    }, onProgress);
+  }
 
-    const characterEntries = [];
-    for (const [characterId, character] of Object.entries(this.manifest.characters)) {
-      this.animations[characterId] = {};
-      for (const [motion, data] of Object.entries(character.motions)) {
-        const key = `${characterId}_${motion}`;
-        characterEntries.push([key, `${PACK_ROOT}/${data.sheet}`, characterId, motion, data]);
-      }
+  loadGroup(name, imageMap, onProgress = () => {}, options = {}) {
+    if (this.loadedGroups.has(name)) {
+      onProgress(1);
+      return Promise.resolve(this);
     }
+    if (this.groupLoads.has(name)) return this.groupLoads.get(name);
 
-    const all = [
-      ...Object.entries(baseImages).map(([key, url]) => ({ key, url })),
-      ...characterEntries.map(([key, url]) => ({ key, url }))
-    ];
+    const loadPromise = this.loadImages(imageMap, onProgress).then((failed) => {
+      if ((options.strict ?? true) && failed.length) throw new Error(`Unable to load ${name} assets: ${failed.join(", ")}`);
+      this.loadedGroups.add(name);
+      return this;
+    }).finally(() => {
+      this.groupLoads.delete(name);
+    });
+    this.groupLoads.set(name, loadPromise);
+    return loadPromise;
+  }
+
+  async loadImages(imageMap, onProgress = () => {}) {
+    const all = Object.entries(imageMap).map(([key, url]) => ({ key, url }));
+
+    const loadGroups = new Map();
+    for (const item of all) {
+      if (!loadGroups.has(item.url)) loadGroups.set(item.url, []);
+      loadGroups.get(item.url).push(item);
+    }
 
     let done = 0;
+    const failed = [];
     await Promise.all(
-      all.map(async ({ key, url }) => {
-        const image = await loadImage(key, url);
-        this.images[key] = image;
+      [...loadGroups.entries()].map(async ([url, items]) => {
+        const image = await loadImage(items[0].key, url);
+        if (!image) failed.push(items.map(({ key }) => key).join("/"));
+        for (const { key } of items) this.images[key] = image;
         done += 1;
-        this.onProgress(done / all.length);
+        onProgress(done / loadGroups.size);
       })
     );
+    return failed;
+  }
 
-    for (const [key, , characterId, motion, data] of characterEntries) {
-      this.animations[characterId][motion] = {
-        ...data,
-        image: this.images[key],
-        frameCount: data.frame_count,
-        cellWidth: data.cell_width,
-        cellHeight: data.cell_height
-      };
-    }
-
-    this.applySpriteOverrides();
+  async loadCharacterMotions(characterIds, onProgress = () => {}) {
+    const uniqueIds = [...new Set(characterIds)].filter((characterId) => this.manifest.characters[characterId]);
+    const totalSheets = uniqueIds.reduce((sum, characterId) => {
+      if (this.loadedCharacterMotions.has(characterId)) return sum;
+      const motions = Object.values(this.manifest.characters[characterId].motions);
+      return sum + new Set(motions.map((motion) => motion.sheet)).size;
+    }, 0);
+    let done = 0;
+    await Promise.all(uniqueIds.map(async (characterId) => {
+      await this.loadCharacterMotion(characterId, (sheet) => {
+        done += 1;
+        onProgress(totalSheets ? done / totalSheets : 1, `${characterId}:${sheet}`);
+      });
+    }));
+    if (!totalSheets) onProgress(1, "cached");
     return this;
   }
 
-  applySpriteOverrides() {
-    for (const [characterId, override] of Object.entries(SPRITE_OVERRIDES)) {
-      const image = this.images[`${characterId}_override`];
-      if (!image) continue;
+  async loadCharacterMotion(characterId, onSheetLoaded = () => {}) {
+    if (this.loadedCharacterMotions.has(characterId)) return;
+    if (this.characterMotionLoads.has(characterId)) return this.characterMotionLoads.get(characterId);
+
+    const loadPromise = (async () => {
+      const character = this.manifest.characters[characterId];
+      if (!character) throw new Error(`Unknown character motion atlas: ${characterId}`);
+      const sheetImages = new Map();
+      await Promise.all([...new Set(Object.values(character.motions).map((motion) => motion.sheet))].map(async (sheet, index) => {
+        const key = `${characterId}_motions_${index}`;
+        const image = await loadImage(key, `${sheet}?v=${MOTION_ASSET_VERSION}`);
+        if (!image) throw new Error(`Unable to load character motion atlas: ${characterId} ${sheet}`);
+        this.images[key] = image;
+        sheetImages.set(sheet, image);
+        onSheetLoaded(sheet);
+      }));
       this.animations[characterId] ??= {};
-      const frameWidth = override.frameWidth ?? override.frameSize ?? 256;
-      const frameHeight = override.frameHeight ?? override.frameSize ?? 256;
-      const frameDuration = override.frameDuration ?? 58;
-      for (const [motion, frameIndexes] of Object.entries(override.motions ?? {})) {
+      for (const [motion, data] of Object.entries(character.motions)) {
         this.animations[characterId][motion] = {
-          image,
-          frameCount: frameIndexes.length,
-          cellWidth: frameWidth,
-          cellHeight: frameHeight,
-          sourceFacing: override.sourceFacing ?? 1,
-          override: true,
-          frames: frameIndexes.map((frameIndex) => ({
-            x: frameIndex * frameWidth,
-            y: 0,
-            w: frameWidth,
-            h: frameHeight,
-            duration_ms: frameDuration
-          }))
+          ...data,
+          image: sheetImages.get(data.sheet),
+          playbackOrder: MOTION_PLAYBACK[characterId]?.[motion] ?? null
         };
       }
+      this.loadedCharacterMotions.add(characterId);
+    })();
+
+    this.characterMotionLoads.set(characterId, loadPromise);
+    try {
+      await loadPromise;
+    } finally {
+      this.characterMotionLoads.delete(characterId);
     }
   }
+
 }
 
 export const drawSpriteFrame = (ctx, animation, frameIndex, x, y, options = {}) => {
   if (!animation?.image) return false;
   const frame = animation.frames[frameIndex % animation.frames.length];
   if (!frame || frame.w <= 0 || frame.h <= 0) return false;
-  const scale = options.scale ?? 1;
+  const scale = (options.scale ?? 1) * (animation.renderScale ?? 1);
   const w = frame.w * scale;
   const h = frame.h * scale;
   ctx.save();

@@ -9,6 +9,12 @@ export const ATTACKS = {
     startup: 0.08,
     active: [0.08, 0.2],
     recovery: 0.18,
+    activeFrames: [1, 2, 3],
+    frameBoxes: {
+      1: { forward: 66, y: -130, w: 60, h: 56 },
+      2: { forward: 92, y: -130, w: 78, h: 58 },
+      3: { forward: 108, y: -130, w: 86, h: 58 }
+    },
     reach: 82,
     width: 72,
     height: 58,
@@ -26,6 +32,11 @@ export const ATTACKS = {
     startup: 0.16,
     active: [0.16, 0.32],
     recovery: 0.3,
+    activeFrames: [2, 3],
+    frameBoxes: {
+      2: { forward: 92, y: -136, w: 82, h: 68 },
+      3: { forward: 126, y: -136, w: 108, h: 72 }
+    },
     reach: 112,
     width: 90,
     height: 70,
@@ -43,6 +54,11 @@ export const ATTACKS = {
     startup: 0.1,
     active: [0.1, 0.23],
     recovery: 0.2,
+    activeFrames: [2, 3],
+    frameBoxes: {
+      2: { forward: 78, y: -92, w: 76, h: 50 },
+      3: { forward: 106, y: -88, w: 98, h: 54 }
+    },
     reach: 96,
     width: 88,
     height: 52,
@@ -60,6 +76,15 @@ export const ATTACKS = {
     startup: 0.18,
     active: [0.18, 0.36],
     recovery: 0.34,
+    activeFrames: [2, 3],
+    frameBoxes: {
+      2: { forward: 102, y: -112, w: 102, h: 66 },
+      3: { forward: 142, y: -106, w: 142, h: 72 }
+    },
+    hurtboxesByFrame: {
+      2: { offsetX: -10, w: 82, h: 166 },
+      3: { offsetX: -16, w: 88, h: 164 }
+    },
     reach: 132,
     width: 106,
     height: 58,
@@ -77,6 +102,15 @@ export const ATTACKS = {
     startup: 0.12,
     active: [0.12, 0.28],
     recovery: 0.24,
+    activeFrames: [2, 3],
+    frameBoxes: {
+      2: { forward: 82, y: -62, w: 82, h: 44 },
+      3: { forward: 116, y: -60, w: 108, h: 48 }
+    },
+    hurtboxesByFrame: {
+      2: { offsetX: -8, w: 92, h: 112 },
+      3: { offsetX: -8, w: 96, h: 108 }
+    },
     reach: 110,
     width: 96,
     height: 48,
@@ -94,6 +128,12 @@ export const ATTACKS = {
     startup: 0.1,
     active: [0.1, 0.34],
     recovery: 0.18,
+    activeFrames: [2, 3, 4],
+    frameBoxes: {
+      2: { forward: 72, y: -148, w: 78, h: 72 },
+      3: { forward: 100, y: -142, w: 100, h: 86 },
+      4: { forward: 112, y: -134, w: 108, h: 92 }
+    },
     reach: 92,
     width: 94,
     height: 80,
@@ -111,13 +151,15 @@ export const ATTACKS = {
     startup: 0.12,
     active: [0.12, 0.45],
     recovery: 0.34,
+    activeFrames: [1, 2, 3, 4],
     reach: 128,
     width: 116,
     height: 84,
     y: -122,
     knockback: 230,
     level: "mid",
-    multiHit: 2
+    multiHit: 2,
+    hitInterval: 0.09
   },
   combo2: {
     motion: "COMBO_2",
@@ -129,13 +171,15 @@ export const ATTACKS = {
     startup: 0.14,
     active: [0.14, 0.5],
     recovery: 0.36,
+    activeFrames: [1, 2, 3, 4],
     reach: 136,
     width: 124,
     height: 90,
     y: -126,
     knockback: 280,
     level: "mid",
-    multiHit: 2
+    multiHit: 2,
+    hitInterval: 0.1
   },
   throw: {
     motion: "THROW_GRAB",
@@ -145,6 +189,11 @@ export const ATTACKS = {
     startup: 0.08,
     active: [0.08, 0.22],
     recovery: 0.34,
+    activeFrames: [1, 2],
+    frameBoxes: {
+      1: { forward: 38, y: -126, w: 54, h: 136 },
+      2: { forward: 48, y: -126, w: 60, h: 140 }
+    },
     reach: 54,
     width: 58,
     height: 142,
@@ -184,7 +233,8 @@ export const ATTACKS = {
     blockstun: 0.5,
     knockback: 520,
     level: "mid",
-    multiHit: 3
+    multiHit: 3,
+    hitInterval: 0.075
   }
 };
 

@@ -1,18 +1,21 @@
 import { rectsOverlap } from "../engine/math.js";
-import { ATTACKS } from "../config/moves.js?v=fighter-prop1";
+import { ATTACKS } from "../config/moves.js?v=motion-atlas5-gameplay";
 import { FloatingText, SpriteEffect } from "./effects.js";
+import { registerAttackHit, sliceAttackForHit } from "./hits.js";
 
 export function resolveMelee(attacker, defender, game) {
   const attackState = attacker.currentAttack;
-  if (!attackState || attackState.hitTargets.has(defender.id) || defender.invulnerable > 0 || defender.isKO) return;
+  if (!attackState || defender.invulnerable > 0 || defender.isKO) return;
   const attack = attackState.data;
   if (!attack.active) return;
   const elapsed = attackState.elapsed;
   if (elapsed < attack.active[0] || elapsed > attack.active[1]) return;
+  if (attack.activeFrames?.length && !attack.activeFrames.includes(attacker.getMotionFrameIndex())) return;
   const box = attacker.getAttackBox();
   if (!box || !rectsOverlap(box, defender.hurtbox)) return;
   if (attackState.name === "throw" && Math.abs(attacker.x - defender.x) > 76) return;
-  attackState.hitTargets.add(defender.id);
+  const hit = registerAttackHit(attackState, defender.id, attack, elapsed);
+  if (!hit) return;
   if (attackState.name === "throw" && defender.throwTechTimer > 0) {
     attacker.currentAttack = null;
     defender.currentAttack = null;
@@ -24,11 +27,13 @@ export function resolveMelee(attacker, defender, game) {
     game.audio.beep("block");
     return;
   }
-  game.resolveIncomingHit(attacker, defender, attack, {
+  game.resolveIncomingHit(attacker, defender, sliceAttackForHit(attack, hit.hitIndex), {
     box,
     projectile: false,
     level: attack.level,
-    sourceName: attackState.name
+    sourceName: attackState.name,
+    hitIndex: hit.hitIndex,
+    maxHits: hit.maxHits
   });
 }
 
@@ -47,15 +52,19 @@ export function applyHit(attacker, defender, attack, game, meta = {}) {
   const direction = attacker.x < defender.x ? 1 : -1;
   const knockback = direction * (isBlocked ? (attack.knockback ?? 160) * (perfectBlock ? 0.18 : 0.32) : (attack.knockback ?? 180) * (counterHit ? 1.12 : 1));
 
-  defender.takeHit({
-    damage,
-    stun,
-    knockback,
-    attackName: meta.sourceName,
-    blocked: isBlocked,
-    chipOnly: isBlocked,
-    perfectBlock
-  });
+  if (meta.sourceName === "throw" && !isBlocked) {
+    defender.beginThrown(attacker, { damage, knockback });
+  } else {
+    defender.takeHit({
+      damage,
+      stun,
+      knockback,
+      attackName: meta.sourceName,
+      blocked: isBlocked,
+      chipOnly: isBlocked,
+      perfectBlock
+    });
+  }
 
   attacker.meter = Math.min(100, attacker.meter + (attack.meter ?? 8));
   if (isBlocked) defender.meter = Math.min(100, defender.meter + (perfectBlock ? 11 : 5));
