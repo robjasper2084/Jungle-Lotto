@@ -188,6 +188,7 @@ export class InputManager {
       add(buttonPressed(pad, 8), `${prefix}.super`);
       add(buttonPressed(pad, 9), "ui.pause");
       add(buttonPressed(pad, 10), `${prefix}.dash`);
+      add(buttonPressed(pad, 11), `${prefix}.taunt`);
     });
 
     for (const action of nextHeld) {

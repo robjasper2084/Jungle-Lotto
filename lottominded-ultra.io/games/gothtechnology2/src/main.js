@@ -1,4 +1,4 @@
-import { GothTechnologyGame } from "./scenes/game.js?v=motion-atlas3-higgsfield";
+import { GothTechnologyGame } from "./scenes/game.js?v=motion-atlas4-repaired";
 import { PHASE } from "./config/constants.js";
 
 const syncViewportHeight = () => {
@@ -95,6 +95,7 @@ const actionRows = [
   ["THROW", "throw"],
   ["ASSIST 1", "assist1"],
   ["ASSIST 2", "assist2"],
+  ["TAUNT", "taunt"],
   ["DASH", "dash"]
 ];
 

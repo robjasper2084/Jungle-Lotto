@@ -1,5 +1,5 @@
 import { CANVAS_HEIGHT, CANVAS_WIDTH, COLORS, ROUND_SECONDS } from "../config/constants.js";
-import { drawSpriteFrame } from "../engine/assets.js?v=fighter-prop1";
+import { drawSpriteFrame } from "../engine/assets.js?v=fighter-prop2";
 
 const panel = (ctx, x, y, w, h, stroke = COLORS.gold) => {
   ctx.save();
@@ -394,7 +394,7 @@ export const drawPause = (ctx, game) => {
   const moves = [
     "P1 MOVE: A/D    JUMP: W    CROUCH: S",
     "STRIKES: J / U / K / I    SPECIAL: L    SUPER: O",
-    "THROW: H    ASSISTS: N / M    DASH: SHIFT",
+    "THROW: H    ASSISTS: N / M    DASH: SHIFT    TAUNT: Y",
     game.cpuEnabled ? "GAMEPAD 1 READY    CONTROLS OPENS KEY REMAPPING" : "P2: ARROWS + NUMPAD OR GAMEPAD 2",
     "P OR ESC RESUMES    LIGHT > HEAVY > SPECIAL > SUPER"
   ];

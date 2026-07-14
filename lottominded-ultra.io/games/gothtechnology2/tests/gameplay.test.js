@@ -15,9 +15,18 @@ const makeGame = () => ({
   spawnProjectile() {}
 });
 
-const makeFighter = (id = "KALYX", x = 360, facing = 1) => {
+const animation = (durationMs = 90) => ({
+  frames: Array.from({ length: 6 }, () => ({ duration_ms: durationMs }))
+});
+
+const completeAnimations = Object.fromEntries(Object.keys(FIGHTERS).map((characterId) => [
+  characterId,
+  new Proxy({}, { get: () => animation() })
+]));
+
+const makeFighter = (id = "KALYX", x = 360, facing = 1, animations = {}) => {
   const config = FIGHTERS[id];
-  return new Fighter({ id, slot: 1, config: { ...config }, assets: { animations: {} }, x, facing });
+  return new Fighter({ id, slot: 1, config: { ...config }, assets: { animations }, x, facing });
 };
 
 test("double KO and tied timeout are neutral draws", () => {
@@ -110,6 +119,67 @@ test("attack and throw state machines reach start, release, and finish motions",
   assert.equal(throwing.motion, "THROW_GRAB");
   throwing.update(0.2, {}, opponent, game);
   assert.equal(throwing.motion, "THROW_FINISH");
+});
+
+test("attacks preserve all six start, release, throw, and recovery frames", () => {
+  const opponent = makeFighter("MASTER_EZRA", 650, -1, completeAnimations);
+  let projectileCount = 0;
+  const game = { ...makeGame(), spawnProjectile() { projectileCount += 1; } };
+
+  const punch = makeFighter("KALYX", 420, 1, completeAnimations);
+  punch.beginAttack("lightPunch", game);
+  const punchDuration = punch.getMotionPlaybackDuration("LIGHT_PUNCH");
+  assert.ok(punch.currentAttack.duration >= punchDuration);
+  punch.update(punchDuration - 0.01, {}, opponent, game);
+  assert.equal(punch.motion, "LIGHT_PUNCH");
+  assert.ok(punch.currentAttack);
+
+  const special = makeFighter("KALYX", 420, 1, completeAnimations);
+  special.beginAttack("special", game);
+  const startDuration = special.getMotionPlaybackDuration("SPECIAL_START");
+  special.update(startDuration - 0.01, {}, opponent, game);
+  assert.equal(special.motion, "SPECIAL_START");
+  special.update(0.02, {}, opponent, game);
+  assert.equal(special.motion, "SPECIAL_PROJECTILE");
+  assert.equal(projectileCount, 1);
+  const releaseRemaining = special.currentAttack.duration - special.currentAttack.elapsed;
+  special.update(releaseRemaining + 0.001, {}, opponent, game);
+  assert.equal(special.motion, "SPECIAL_RECOVER");
+  special.update(special.getMotionPlaybackDuration("SPECIAL_RECOVER") - 0.01, { lightPunch: true }, opponent, game);
+  assert.equal(special.motion, "SPECIAL_RECOVER");
+  assert.equal(special.currentAttack, null);
+
+  const throwing = makeFighter("KALYX", 420, 1, completeAnimations);
+  throwing.beginAttack("throw", game);
+  const grabDuration = throwing.getMotionPlaybackDuration("THROW_GRAB");
+  throwing.update(grabDuration - 0.01, {}, opponent, game);
+  assert.equal(throwing.motion, "THROW_GRAB");
+  throwing.update(0.02, {}, opponent, game);
+  assert.equal(throwing.motion, "THROW_FINISH");
+  assert.ok(throwing.currentAttack.duration >= grabDuration + throwing.getMotionPlaybackDuration("THROW_FINISH"));
+});
+
+test("backward locomotion remains reachable and shows guard only under threat", () => {
+  const defender = makeFighter("KALYX", 420, 1);
+  const attacker = makeFighter("MASTER_EZRA", 560, -1);
+  const game = makeGame();
+
+  defender.update(1 / 60, { left: true }, attacker, game);
+  assert.equal(defender.motion, "WALK_BACK");
+
+  attacker.beginAttack("heavyPunch", game);
+  defender.update(1 / 60, { left: true }, attacker, game);
+  assert.equal(defender.motion, "BLOCK_HIGH");
+  defender.update(1 / 60, { left: true, down: true }, attacker, game);
+  assert.equal(defender.motion, "BLOCK_LOW");
+});
+
+test("taunt is reachable and uses its complete animation duration", () => {
+  const fighter = makeFighter("KALYX", 420, 1, completeAnimations);
+  const opponent = makeFighter("MASTER_EZRA", 650, -1, completeAnimations);
+  fighter.update(1 / 60, { taunt: true }, opponent, makeGame());
+  assert.equal(fighter.motion, "TAUNT");
+  assert.equal(fighter.currentAttack.duration, fighter.getMotionPlaybackDuration("TAUNT"));
 });
 
 test("hurt, knockdown, get-up, landing, victory, and defeat are reachable", () => {

@@ -243,45 +243,39 @@ def connected_components(mask: np.ndarray) -> list[dict]:
     return components
 
 
-def remove_grid_seams(image: Image.Image) -> Image.Image:
+def remove_edge_grid_seams(image: Image.Image) -> Image.Image:
     rgba = np.asarray(image, dtype=np.uint8).copy()
     alpha = rgba[:, :, 3]
-    luminance = rgba[:, :, :3].mean(axis=2)
-    opaque = alpha > 24
-
-    vertical = []
-    for x in range(image.width):
-        values = luminance[:, x][opaque[:, x]]
-        vertical.append(
-            len(values) > image.height * 0.82
-            and float(values.mean()) < 70
-            and float(values.std()) < 35
-        )
-    horizontal = []
-    for y in range(image.height):
-        values = luminance[y, :][opaque[y, :]]
-        horizontal.append(
-            len(values) > image.width * 0.82
-            and float(values.mean()) < 70
-            and float(values.std()) < 35
-        )
-
-    if any(vertical):
-        alpha[:, np.asarray(vertical, dtype=bool)] = 0
-    if any(horizontal):
-        alpha[np.asarray(horizontal, dtype=bool), :] = 0
 
     reduced = Image.fromarray(alpha, "L").resize(
         (max(1, image.width // COMPONENT_SCALE), max(1, image.height // COMPONENT_SCALE)),
         Image.Resampling.NEAREST,
     )
     reduced_mask = np.asarray(reduced) > 24
+    vertical_edge_band = max(4, round(reduced_mask.shape[1] * 0.25))
+    horizontal_edge_band = max(4, round(reduced_mask.shape[0] * 0.25))
     for component in connected_components(reduced_mask):
-        if component["width"] <= 5 and component["height"] > reduced_mask.shape[0] * 0.62:
+        touches_vertical_edge = (
+            component["min_x"] <= vertical_edge_band
+            or component["max_x"] >= reduced_mask.shape[1] - vertical_edge_band - 1
+        )
+        touches_horizontal_edge = (
+            component["min_y"] <= horizontal_edge_band
+            or component["max_y"] >= reduced_mask.shape[0] - horizontal_edge_band - 1
+        )
+        if (
+            touches_vertical_edge
+            and component["width"] <= 5
+            and component["height"] > reduced_mask.shape[0] * 0.62
+        ):
             left = max(0, component["min_x"] * COMPONENT_SCALE - 2)
             right = min(image.width, (component["max_x"] + 1) * COMPONENT_SCALE + 2)
             alpha[:, left:right] = 0
-        if component["height"] <= 5 and component["width"] > reduced_mask.shape[1] * 0.62:
+        if (
+            touches_horizontal_edge
+            and component["height"] <= 5
+            and component["width"] > reduced_mask.shape[1] * 0.62
+        ):
             top = max(0, component["min_y"] * COMPONENT_SCALE - 2)
             bottom = min(image.height, (component["max_y"] + 1) * COMPONENT_SCALE + 2)
             alpha[top:bottom, :] = 0
@@ -337,14 +331,26 @@ def split_row_into_figures(row: Image.Image) -> list[Image.Image]:
                 panel.height - SOURCE_PANEL_GUTTER,
             )
         )
-        frames.append(remove_grid_seams(panel))
+        frames.append(remove_edge_grid_seams(panel))
     return frames
+
+
+def detect_row_boundary(source: Image.Image) -> int:
+    rgb = np.asarray(source, dtype=np.float32)
+    low = round(source.height * 0.36)
+    high = round(source.height * 0.64)
+    scores = []
+    for y in range(low, high):
+        strip = rgb[max(0, y - 2):min(source.height, y + 3), :, :].reshape(-1, 3)
+        scores.append((float(np.std(strip, axis=0).mean()), y))
+    return min(scores)[1]
 
 
 def split_sheet(path: Path) -> list[Image.Image]:
     with Image.open(path) as source:
         source = source.convert("RGB")
-        y_edges = [round(source.height * index / SOURCE_ROWS) for index in range(SOURCE_ROWS + 1)]
+        row_boundary = detect_row_boundary(source)
+        y_edges = [0, row_boundary, source.height]
         frames = []
         for row in range(SOURCE_ROWS):
             row_image = source.crop(
@@ -365,6 +371,32 @@ def alpha_bbox(image: Image.Image) -> tuple[int, int, int, int]:
     if not len(xs):
         raise ValueError("Frame contains no foreground after chroma removal")
     return int(xs.min()), int(ys.min()), int(xs.max() + 1), int(ys.max() + 1)
+
+
+def validate_internal_splits(image: Image.Image, label: str) -> None:
+    alpha = np.asarray(image.getchannel("A")) > 24
+    ys, xs = np.where(alpha)
+    if not len(xs):
+        raise ValueError(f"{label} contains no foreground")
+    cropped = alpha[ys.min():ys.max() + 1, xs.min():xs.max() + 1]
+    total = int(cropped.sum())
+
+    for axis_name, projection in (
+        ("vertical", cropped.sum(axis=0)),
+        ("horizontal", cropped.sum(axis=1)),
+    ):
+        start = None
+        for index, empty in enumerate(projection == 0):
+            if empty and start is None:
+                start = index
+            if (not empty or index == len(projection) - 1) and start is not None:
+                end = index if empty and index == len(projection) - 1 else index - 1
+                gap = end - start + 1
+                before = int(projection[:start].sum())
+                after = int(projection[end + 1:].sum())
+                if 2 <= gap <= 16 and min(before, after) > total * 0.2:
+                    raise ValueError(f"{label} contains an internal {axis_name} cut of {gap} pixels")
+                start = None
 
 
 def normalize_frames(frames: list[Image.Image]) -> list[Image.Image]:
@@ -469,6 +501,8 @@ def process_character(character_id: str, character_data: dict) -> tuple[str, dic
         for index, frame in enumerate(keyed_frames, start=1):
             validate_transparency(frame, f"{character_id}/{motion}/frame-{index}")
         frames = normalize_frames(keyed_frames)
+        for index, frame in enumerate(frames, start=1):
+            validate_internal_splits(frame, f"{character_id}/{motion}/frame-{index}")
         if len({frame_hash(frame) for frame in frames}) < 5:
             raise ValueError(f"{character_id}/{motion} has fewer than five unique normalized frames")
         motion_frames[motion] = frames

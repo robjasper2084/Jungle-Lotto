@@ -1,4 +1,4 @@
-import { ASSET_URLS, MOTION_ASSET_VERSION } from "../config/assets.js?v=motion-atlas3-higgsfield";
+import { ASSET_URLS, MOTION_ASSET_VERSION } from "../config/assets.js?v=motion-atlas4-repaired";
 
 const imageCache = new Map();
 

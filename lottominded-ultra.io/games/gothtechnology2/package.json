@@ -10,7 +10,7 @@
     "test": "npm run test:unit",
     "test:unit": "node --test tests/gameplay.test.js",
     "test:unit:ci": "node --test --test-reporter=junit --test-reporter-destination=output/test-results/unit.xml tests/gameplay.test.js",
-    "test:browser": "playwright test",
+    "test:browser": "node node_modules/playwright/cli.js test",
     "ci": "npm run check && npm run test:unit && npm run test:browser"
   },
   "devDependencies": {
