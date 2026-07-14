@@ -1,7 +1,7 @@
-import { drawSheetFrame } from "../engine/assets.js?v=motion-atlas6-live";
+import { drawSheetFrame } from "../engine/assets.js?v=motion-atlas7-stable";
 import { rectsOverlap } from "../engine/math.js";
 import { SpriteEffect } from "./effects.js";
-import { sliceAttackForHit } from "./hits.js?v=motion-atlas6-live";
+import { sliceAttackForHit } from "./hits.js?v=motion-atlas7-stable";
 
 const hexAlpha = (color, alpha) => {
   if (!color?.startsWith("#") || color.length !== 7) return color;

@@ -1,7 +1,7 @@
 import { rectsOverlap } from "../engine/math.js";
-import { ATTACKS } from "../config/moves.js?v=motion-atlas6-live";
+import { ATTACKS } from "../config/moves.js?v=motion-atlas7-stable";
 import { FloatingText, SpriteEffect } from "./effects.js";
-import { registerAttackHit, sliceAttackForHit } from "./hits.js?v=motion-atlas6-live";
+import { registerAttackHit, sliceAttackForHit } from "./hits.js?v=motion-atlas7-stable";
 
 export function resolveMelee(attacker, defender, game) {
   const attackState = attacker.currentAttack;
