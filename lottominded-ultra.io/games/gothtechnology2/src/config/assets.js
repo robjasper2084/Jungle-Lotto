@@ -1,10 +1,11 @@
 export const PACK_ROOT = "assets/GOTHTECHNOLOGY_EXPANDED_SPRITE_PACK_V2";
 export const LOCAL_ROOT = "assets";
+export const MOTION_ASSET_VERSION = "motion-atlas2";
 
 export const ASSET_URLS = {
-  manifest: `${LOCAL_ROOT}/motion-atlases/motion-atlas-manifest.json`,
+  manifest: `${LOCAL_ROOT}/motion-atlases/motion-atlas-manifest.json?v=${MOTION_ASSET_VERSION}`,
   logo: `${LOCAL_ROOT}/user-title/lottomind-live-logo.png`,
-  titleBackdrop: `${LOCAL_ROOT}/user-title/gothtechnology-cover-start-bg.webp`,
+  titleBackdrop: `${LOCAL_ROOT}/user-title/gothtechnology-cover-start-bg.webp?v=${MOTION_ASSET_VERSION}`,
   background: `${LOCAL_ROOT}/user-stage/forest-fight-background.jpg`,
   farTrees: `${PACK_ROOT}/backgrounds/GOTHTECHNOLOGY_PARALLAX_FAR_TREES.png`,
   fog: `${PACK_ROOT}/backgrounds/GOTHTECHNOLOGY_FOG_OVERLAY_TRANSPARENT.png`,
@@ -36,7 +37,7 @@ export const ASSET_URLS = {
 
 export const SPRITE_OVERRIDES = {
   KALYX: {
-    image: `${LOCAL_ROOT}/approved-poses/kalyx-idle-ready.webp`,
+    image: `${LOCAL_ROOT}/approved-poses/kalyx-idle-ready.webp?v=${MOTION_ASSET_VERSION}`,
     frameWidth: 384,
     frameHeight: 384,
     frameDuration: 54,
@@ -47,7 +48,7 @@ export const SPRITE_OVERRIDES = {
     }
   },
   MASTER_EZRA: {
-    image: `${LOCAL_ROOT}/approved-poses/ezra-idle-ready.webp`,
+    image: `${LOCAL_ROOT}/approved-poses/ezra-idle-ready.webp?v=${MOTION_ASSET_VERSION}`,
     frameWidth: 384,
     frameHeight: 384,
     frameDuration: 38,

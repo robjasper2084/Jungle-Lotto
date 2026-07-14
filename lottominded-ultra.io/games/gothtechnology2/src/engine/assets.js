@@ -1,4 +1,4 @@
-import { ASSET_URLS, SPRITE_OVERRIDES } from "../config/assets.js?v=motion-atlas1";
+import { ASSET_URLS, MOTION_ASSET_VERSION, SPRITE_OVERRIDES } from "../config/assets.js?v=motion-atlas2";
 
 const imageCache = new Map();
 
@@ -108,7 +108,7 @@ export class AssetLoader {
       const sheetImages = new Map();
       await Promise.all([...new Set(Object.values(character.motions).map((motion) => motion.sheet))].map(async (sheet, index) => {
         const key = `${characterId}_motions_${index}`;
-        const image = await loadImage(key, sheet);
+        const image = await loadImage(key, `${sheet}?v=${MOTION_ASSET_VERSION}`);
         if (!image) throw new Error(`Unable to load character motion atlas: ${characterId} ${sheet}`);
         this.images[key] = image;
         sheetImages.set(sheet, image);

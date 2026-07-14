@@ -26,7 +26,8 @@ const collectUrls = (value, urls = new Set()) => {
   return urls;
 };
 
-const manifestPath = resolve(root, ASSET_URLS.manifest);
+const localAssetPath = (url) => url.split(/[?#]/, 1)[0];
+const manifestPath = resolve(root, localAssetPath(ASSET_URLS.manifest));
 const manifest = JSON.parse(await readFile(manifestPath, "utf8"));
 const urls = collectUrls(ASSET_URLS);
 const motionSheets = new Set();
@@ -79,7 +80,7 @@ for (const [characterId, character] of Object.entries(manifest.characters ?? {})
 urls.add("../../assets/js/lm-game-rewards-sdk.js");
 for (const url of urls) {
   try {
-    await access(resolve(root, url));
+    await access(resolve(root, localAssetPath(url)));
   } catch {
     failures.push(`Missing asset: ${url}`);
   }
