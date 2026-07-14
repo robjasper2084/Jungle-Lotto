@@ -202,6 +202,7 @@ test("Master Ezra plays a complete takeoff, apex, fall, and clean landing", asyn
   await expect.poll(() => page.evaluate(() => window.__gothTechnologyGame?.fighters?.[0]?.id)).toBe("MASTER_EZRA");
 
   const fighterMotion = () => page.evaluate(() => window.__gothTechnologyGame?.fighters?.[0]?.motion);
+  await expect.poll(fighterMotion, { timeout: 1_500, intervals: [20] }).toBe("IDLE");
   await page.keyboard.down("KeyW");
   await expect.poll(fighterMotion, { timeout: 300, intervals: [10] }).toBe("JUMP_START");
   await page.keyboard.up("KeyW");
