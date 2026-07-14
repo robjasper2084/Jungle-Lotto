@@ -14,3 +14,15 @@ export const resolveRoundOutcome = (p1Health, p2Health, roundTimer) => {
   }
   return { draw: false, winnerIndex: p1Health > p2Health ? 0 : 1, reason: "timeout" };
 };
+
+export const applyRoundOutcomeMotions = (fighters, outcome) => {
+  if (outcome.draw) {
+    fighters.forEach((fighter) => fighter.setMotion(fighter.health <= 0 ? "DEFEAT" : "READY_STANCE", true));
+    return { winner: null, loser: null };
+  }
+  const winner = fighters[outcome.winnerIndex];
+  const loser = fighters[outcome.winnerIndex === 0 ? 1 : 0];
+  winner.setMotion("VICTORY", true);
+  loser.setMotion("DEFEAT", true);
+  return { winner, loser };
+};

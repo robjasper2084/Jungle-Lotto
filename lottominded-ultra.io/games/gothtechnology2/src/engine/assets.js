@@ -1,4 +1,4 @@
-import { ASSET_URLS, PACK_ROOT, SPRITE_OVERRIDES } from "../config/assets.js?v=fighter-prop1";
+import { ASSET_URLS, SPRITE_OVERRIDES } from "../config/assets.js?v=motion-atlas1";
 
 const imageCache = new Map();
 
@@ -26,6 +26,8 @@ export class AssetLoader {
     this.images = {};
     this.manifest = null;
     this.animations = {};
+    this.loadedCharacterMotions = new Set();
+    this.characterMotionLoads = new Map();
   }
 
   async load() {
@@ -59,21 +61,11 @@ export class AssetLoader {
       )
     };
 
-    const characterEntries = [];
-    for (const [characterId, character] of Object.entries(this.manifest.characters)) {
+    for (const characterId of Object.keys(this.manifest.characters)) {
       this.animations[characterId] = {};
-      const overrideMotions = SPRITE_OVERRIDES[characterId]?.motions ?? {};
-      for (const [motion, data] of Object.entries(character.motions)) {
-        if (Object.prototype.hasOwnProperty.call(overrideMotions, motion)) continue;
-        const key = `${characterId}_${motion}`;
-        characterEntries.push([key, `${PACK_ROOT}/${data.sheet}`, characterId, motion, data]);
-      }
     }
 
-    const all = [
-      ...Object.entries(baseImages).map(([key, url]) => ({ key, url })),
-      ...characterEntries.map(([key, url]) => ({ key, url }))
-    ];
+    const all = Object.entries(baseImages).map(([key, url]) => ({ key, url }));
 
     const loadGroups = new Map();
     for (const item of all) {
@@ -91,18 +83,49 @@ export class AssetLoader {
       })
     );
 
-    for (const [key, , characterId, motion, data] of characterEntries) {
-      this.animations[characterId][motion] = {
-        ...data,
-        image: this.images[key],
-        frameCount: data.frame_count,
-        cellWidth: data.cell_width,
-        cellHeight: data.cell_height
-      };
-    }
-
     this.applySpriteOverrides();
     return this;
+  }
+
+  async loadCharacterMotions(characterIds, onProgress = () => {}) {
+    const uniqueIds = [...new Set(characterIds)].filter((characterId) => this.manifest.characters[characterId]);
+    let done = 0;
+    await Promise.all(uniqueIds.map(async (characterId) => {
+      await this.loadCharacterMotion(characterId);
+      done += 1;
+      onProgress(done / uniqueIds.length, characterId);
+    }));
+    return this;
+  }
+
+  async loadCharacterMotion(characterId) {
+    if (this.loadedCharacterMotions.has(characterId)) return;
+    if (this.characterMotionLoads.has(characterId)) return this.characterMotionLoads.get(characterId);
+
+    const loadPromise = (async () => {
+      const character = this.manifest.characters[characterId];
+      if (!character) throw new Error(`Unknown character motion atlas: ${characterId}`);
+      const sheetImages = new Map();
+      await Promise.all([...new Set(Object.values(character.motions).map((motion) => motion.sheet))].map(async (sheet, index) => {
+        const key = `${characterId}_motions_${index}`;
+        const image = await loadImage(key, sheet);
+        if (!image) throw new Error(`Unable to load character motion atlas: ${characterId} ${sheet}`);
+        this.images[key] = image;
+        sheetImages.set(sheet, image);
+      }));
+      this.animations[characterId] ??= {};
+      for (const [motion, data] of Object.entries(character.motions)) {
+        this.animations[characterId][motion] = { ...data, image: sheetImages.get(data.sheet) };
+      }
+      this.loadedCharacterMotions.add(characterId);
+    })();
+
+    this.characterMotionLoads.set(characterId, loadPromise);
+    try {
+      await loadPromise;
+    } finally {
+      this.characterMotionLoads.delete(characterId);
+    }
   }
 
   applySpriteOverrides() {
@@ -138,7 +161,7 @@ export const drawSpriteFrame = (ctx, animation, frameIndex, x, y, options = {}) 
   if (!animation?.image) return false;
   const frame = animation.frames[frameIndex % animation.frames.length];
   if (!frame || frame.w <= 0 || frame.h <= 0) return false;
-  const scale = options.scale ?? 1;
+  const scale = (options.scale ?? 1) * (animation.renderScale ?? 1);
   const w = frame.w * scale;
   const h = frame.h * scale;
   ctx.save();

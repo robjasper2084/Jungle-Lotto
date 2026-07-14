@@ -1,15 +1,15 @@
-import { ASSET_URLS, FIGHTERS } from "../config/assets.js?v=fighter-prop1";
+import { ASSET_URLS, FIGHTERS } from "../config/assets.js?v=motion-atlas1";
 import { ASSISTS, ATTACKS } from "../config/moves.js?v=fighter-prop1";
 import { CANVAS_HEIGHT, CANVAS_WIDTH, COLORS, GROUND_Y, PHASE, ROUND_SECONDS, WORLD } from "../config/constants.js";
-import { AssetLoader, drawSheetFrame } from "../engine/assets.js?v=fighter-prop1";
+import { AssetLoader, drawSheetFrame } from "../engine/assets.js?v=motion-atlas1";
 import { WebAudioBus } from "../engine/audio.js?v=fighter-prop1";
 import { InputManager } from "../engine/input.js";
 import { clamp, rectsOverlap } from "../engine/math.js";
 import { applyHit, resolveMelee } from "../gameplay/combat.js?v=fighter-prop1";
 import { SpriteEffect } from "../gameplay/effects.js";
-import { Fighter } from "../gameplay/fighter.js?v=fighter-prop1";
+import { Fighter } from "../gameplay/fighter.js?v=motion-atlas1";
 import { AssistStrike, Projectile } from "../gameplay/projectiles.js?v=fighter-prop1";
-import { resolveRoundOutcome } from "../gameplay/rounds.js";
+import { applyRoundOutcomeMotions, resolveRoundOutcome } from "../gameplay/rounds.js";
 import {
   drawCharacterSelect,
   drawDiagnostics,
@@ -20,7 +20,7 @@ import {
   drawRoundMessage,
   drawTitle,
   drawVersus
-} from "../ui/hud.js?v=fighter-prop1";
+} from "../ui/hud.js?v=motion-atlas1";
 
 const GAME_SELECT_ITEMS = [
   {
@@ -50,6 +50,10 @@ export class GothTechnologyGame {
     this.assets = null;
     this.phase = PHASE.LOADING;
     this.loadingProgress = 0;
+    this.motionLoadingProgress = 0;
+    this.motionAssetsReady = false;
+    this.motionLoadPromise = null;
+    this.motionLoadError = "";
     this.cpuEnabled = true;
     this.training = false;
     this.player1Id = "MASTER_EZRA";
@@ -230,6 +234,7 @@ export class GothTechnologyGame {
     this.player1Id = id;
     this.player2Id = id === "KALYX" ? "MASTER_EZRA" : "KALYX";
     this.createFighters();
+    this.prepareCharacterMotions();
     this.audio.beep("select");
   }
 
@@ -237,6 +242,7 @@ export class GothTechnologyGame {
     this.training = training;
     this.phase = PHASE.SELECT;
     this.createFighters();
+    this.prepareCharacterMotions();
     this.syncMusicForPhase();
     this.audio.beep("select");
   }
@@ -268,6 +274,7 @@ export class GothTechnologyGame {
   startVersus() {
     this.phase = PHASE.VERSUS;
     this.roundMessageTimer = 1.35;
+    this.prepareCharacterMotions();
     this.audio.beep("select");
     this.announce(`${this.fighters[0]?.config.name ?? "Player 1"} versus ${this.fighters[1]?.config.name ?? "Player 2"}`);
   }
@@ -292,6 +299,34 @@ export class GothTechnologyGame {
       buildId: "fighter-2026-06-25"
     });
     this.startRound();
+  }
+
+  prepareCharacterMotions() {
+    if (this.motionAssetsReady) return Promise.resolve(this.assets);
+    if (this.motionLoadPromise) return this.motionLoadPromise;
+    this.motionLoadError = "";
+    this.motionLoadPromise = this.assets.loadCharacterMotions(
+      [this.player1Id, this.player2Id],
+      (progress) => {
+        this.motionLoadingProgress = progress;
+        this.render();
+      }
+    ).then((assets) => {
+      this.motionAssetsReady = true;
+      this.motionLoadingProgress = 1;
+      this.createFighters();
+      this.render();
+      return assets;
+    }).catch((error) => {
+      this.motionLoadError = error?.message || String(error);
+      this.phase = PHASE.SELECT;
+      this.announce("Fighter motion load failed. Select versus to retry");
+      console.warn("[GOTHTECHNOLOGY] Character motion load failed", error);
+      return null;
+    }).finally(() => {
+      this.motionLoadPromise = null;
+    });
+    return this.motionLoadPromise;
   }
 
   startRound() {
@@ -353,6 +388,7 @@ export class GothTechnologyGame {
     this.flash = Math.max(0, this.flash - dt);
     this.rewardStatusTimer = Math.max(0, this.rewardStatusTimer - dt);
     if (this.phase === PHASE.VERSUS) {
+      if (!this.motionAssetsReady) return;
       this.roundMessageTimer -= dt;
       if (this.roundMessageTimer <= 0) this.startMatch(this.training);
       return;
@@ -635,8 +671,7 @@ export class GothTechnologyGame {
     const outcome = resolveRoundOutcome(p1.health, p2.health, this.roundTimer);
     if (!outcome) return;
     this.audio.beep("ko");
-    const winner = outcome.draw ? null : this.fighters[outcome.winnerIndex];
-    const loser = winner ? (winner === p1 ? p2 : p1) : null;
+    const { winner, loser } = applyRoundOutcomeMotions(this.fighters, outcome);
     const winnerSide = outcome.draw ? "draw" : winner === p1 ? "player" : "opponent";
     this.emitRewardEvent("fighter.round_completed", {
       roundNumber: this.roundNumber,
@@ -651,8 +686,6 @@ export class GothTechnologyGame {
     }, { flush: true });
 
     if (outcome.draw) {
-      p1.setMotion(p1.health <= 0 ? "DEFEAT" : "READY_STANCE", true);
-      p2.setMotion(p2.health <= 0 ? "DEFEAT" : "READY_STANCE", true);
       this.roundResultText = outcome.reason === "double_KO" ? "DOUBLE KO" : "DRAW";
       this.roundResultSubtext = "ROUND REPLAY";
       this.roundNumber += 1;
@@ -662,8 +695,6 @@ export class GothTechnologyGame {
     }
 
     winner.roundWins += 1;
-    winner.setMotion("VICTORY", true);
-    loser.setMotion("DEFEAT", true);
     this.roundResultText = outcome.reason === "timeout" ? "TIME UP" : "KO";
     this.roundResultSubtext = "NEXT ROUND";
     if (winner.roundWins >= 2) {

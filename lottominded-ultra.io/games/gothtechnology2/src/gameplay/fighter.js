@@ -186,7 +186,8 @@ export class Fighter {
       duration,
       hitCounts: new Map(),
       lastHitAt: new Map(),
-      spawned: false
+      spawned: false,
+      finishStarted: false
     };
     this.setMotion(data.motion, true);
     if (data.startMotion) this.setMotion(data.startMotion, true);
@@ -342,6 +343,10 @@ export class Fighter {
         this.setMotion(data.motion, true);
         game.spawnProjectile(this, name);
       }
+      if (data.finishMotion && !this.currentAttack.finishStarted && this.currentAttack.elapsed >= (data.active?.[1] ?? data.startup)) {
+        this.currentAttack.finishStarted = true;
+        this.setMotion(data.finishMotion, true);
+      }
       if (this.currentAttack.elapsed >= this.currentAttack.duration) {
         if (data.recoverMotion) this.setMotion(data.recoverMotion, true);
         this.currentAttack = null;
@@ -395,8 +400,18 @@ export class Fighter {
         this.vx = approach(this.vx, desired * this.config.speed * 0.86, dt * (this.config.feel?.airAccel ?? 760));
       } else if (desired !== 0) {
         const movingForward = desired === this.facing;
-        this.vx = approach(this.vx, desired * this.config.speed, dt * (this.config.feel?.groundAccel ?? 2300));
-        this.setMotion(movingForward ? "WALK_FORWARD" : "WALK_BACK");
+        if (actions.down && this.grounded) {
+          const crouchSpeed = this.config.speed * (this.config.feel?.crouchWalkScale ?? 0.4);
+          this.vx = approach(this.vx, desired * crouchSpeed, dt * (this.config.feel?.groundAccel ?? 2300));
+          this.setMotion("CROUCH_WALK");
+        } else {
+          const running = this.moveHold >= (this.config.feel?.runThreshold ?? 0.28);
+          const targetSpeed = running ? this.config.runSpeed : this.config.speed;
+          this.vx = approach(this.vx, desired * targetSpeed, dt * (this.config.feel?.groundAccel ?? 2300));
+          this.setMotion(movingForward
+            ? (running ? "RUN_FORWARD" : "WALK_FORWARD")
+            : (running ? "RUN_BACK" : "WALK_BACK"));
+        }
       } else {
         this.moveHold = 0;
         this.lastMoveDir = 0;
@@ -406,7 +421,7 @@ export class Fighter {
       const away = opponent.x > this.x ? actions.left : actions.right;
       if (away && desired === 0) {
         this.setMotion(actions.down ? "BLOCK_LOW" : "BLOCK_HIGH");
-      } else if (actions.down && this.grounded) {
+      } else if (actions.down && this.grounded && desired === 0) {
         this.setMotion("CROUCH_IDLE");
       } else if (
         Math.abs(this.vx) < 10 &&
@@ -444,7 +459,7 @@ export class Fighter {
       }
       this.y = GROUND_Y;
       this.vy = 0;
-    } else if (!locked && !this.currentAttack) {
+    } else if (!locked && !this.currentAttack && this.dashTimer <= 0) {
       if (this.vy < -90) this.setMotion("JUMP_RISE");
       else if (this.vy > 90) this.setMotion("JUMP_FALL");
       else this.setMotion("JUMP_PEAK");
@@ -465,11 +480,11 @@ export class Fighter {
   render(ctx, debug = false) {
     const anim = this.activeAnimation;
     let frameIndex = 0;
-    const steadyMotions = new Set(["IDLE", "READY_STANCE", "BLOCK_HIGH", "BLOCK_LOW", "CROUCH_IDLE"]);
+    const steadyMotions = new Set(["IDLE"]);
     if (anim?.frames?.length && !steadyMotions.has(this.motion)) {
       const animTimeScale = this.config.motionTimeScale ?? 1;
       const duration = anim.frames.reduce((sum, frame) => sum + (frame.duration_ms ?? 85), 0) / 1000;
-      const loop = !MOTION_LOCKS.has(this.motion) || this.motion === "DEFEAT" || this.motion === "VICTORY";
+      const loop = !MOTION_LOCKS.has(this.motion) || this.motion === "VICTORY";
       const scaledMotionTime = this.motionElapsed * animTimeScale;
       const time = loop ? scaledMotionTime % duration : Math.min(scaledMotionTime, duration - 0.001);
       let acc = 0;

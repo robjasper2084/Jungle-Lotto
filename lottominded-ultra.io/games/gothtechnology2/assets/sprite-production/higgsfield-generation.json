@@ -1,0 +1,48 @@
+{
+  "provider": "Higgsfield",
+  "approvedSeedSource": "assets/approved-poses",
+  "autoSprite": {
+    "status": "failed",
+    "jobIds": [
+      "e8c24c4c-4a59-473c-8593-1fd738e8b9a2",
+      "710f53ec-3182-48ed-a202-098c0dd064bc",
+      "eba51c6f-c4d5-40fc-8bed-90f7d1dce388",
+      "eaeacf1f-902f-42e6-b443-ff94e693c0c8",
+      "9824fa4e-1046-4c8e-a92a-c3560849933d",
+      "2baecab1-ef00-461a-9322-3a547207b2e0",
+      "0208cef6-dc17-427d-880d-202ccf518f8f",
+      "5fa18292-4b9c-4a4d-9579-61fb3ca96f9c"
+    ]
+  },
+  "nanoBananaCandidates": [
+    {
+      "character": "KALYX",
+      "motion": "RUN_FORWARD",
+      "jobId": "45871b89-8246-445d-a7d9-b9de87073c18",
+      "resultUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260714_024437_45871b89-8246-445d-a7d9-b9de87073c18.png",
+      "promoted": false
+    },
+    {
+      "character": "MASTER_EZRA",
+      "motion": "RUN_FORWARD",
+      "jobId": "8fee4ca9-28d2-4396-bcbf-0b8b033c981f",
+      "resultUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260714_024449_8fee4ca9-28d2-4396-bcbf-0b8b033c981f.png",
+      "promoted": false
+    },
+    {
+      "character": "KALYX",
+      "motion": "COMBO_1",
+      "jobId": "a1b5aa25-22cd-4b9b-9005-1dcb8940ef36",
+      "resultUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260714_024510_a1b5aa25-22cd-4b9b-9005-1dcb8940ef36.png",
+      "promoted": false
+    },
+    {
+      "character": "MASTER_EZRA",
+      "motion": "COMBO_1",
+      "jobId": "a23ac318-4754-4a99-accd-3ce28ce3dfac",
+      "resultUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260714_024523_a23ac318-4754-4a99-accd-3ce28ce3dfac.png",
+      "promoted": false
+    }
+  ],
+  "promotionPolicy": "Promote only after full-sheet identity, transparency, framing, and unique-frame QA. The verified runtime pack remains active until a candidate passes."
+}

@@ -11,7 +11,11 @@ const collect = async (relativePath) => {
   const entries = await readdir(absolutePath, { withFileTypes: true });
   const nested = await Promise.all(entries
     .filter((entry) => !["node_modules", "output"].includes(entry.name))
-    .map((entry) => collect(join(relativePath, entry.name))));
+    .map((entry) => {
+      const childPath = join(relativePath, entry.name);
+      if (entry.isDirectory()) return collect(childPath);
+      return [".js", ".mjs"].includes(extname(entry.name)) ? [join(root, childPath)] : [];
+    }));
   return nested.flat();
 };
 

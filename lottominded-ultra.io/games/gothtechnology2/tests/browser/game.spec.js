@@ -19,6 +19,7 @@ test("boots, reaches versus, fights, and pauses without page errors", async ({ p
 
   const loadedResources = await page.evaluate(() => performance.getEntriesByType("resource").map((entry) => entry.name));
   expect(loadedResources.some((url) => url.includes("runtime_atlas_user"))).toBe(false);
+  expect(loadedResources.some((url) => url.includes("motion-atlases/") && url.endsWith(".webp"))).toBe(false);
   expect(loadedResources.some((url) => url.includes("lottomind-live-startup.mp4"))).toBe(false);
   expect(loadedResources.some((url) => url.includes("gothtechnology-startup-bg.png"))).toBe(false);
 
@@ -34,6 +35,10 @@ test("boots, reaches versus, fights, and pauses without page errors", async ({ p
 
   await clickGame(page, 640, 342);
   await expect.poll(() => phase(page)).toBe("select");
+  await expect.poll(() => page.evaluate(() => window.__gothTechnologyGame?.assets?.loadedCharacterMotions?.size), { timeout: 10_000 }).toBe(2);
+  const selectedResources = await page.evaluate(() => performance.getEntriesByType("resource").map((entry) => entry.name));
+  expect(selectedResources.filter((url) => url.includes("motion-atlases/") && url.endsWith(".webp"))).toHaveLength(6);
+  expect(selectedResources.some((url) => url.includes("runtime_atlas_user"))).toBe(false);
   await clickGame(page, 640, 594);
   await expect.poll(() => phase(page)).toBe("versus");
   await expect.poll(() => phase(page), { timeout: 4_000 }).toBe("fight");
@@ -51,7 +56,7 @@ test("boots, reaches versus, fights, and pauses without page errors", async ({ p
   await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
   const touchLabels = await page.locator("#mobileControls .touch:not(.blank)").allTextContents();
   expect(touchLabels.every((label) => label.trim().length > 0)).toBe(true);
-  await page.screenshot({ path: testInfo.outputPath(`${testInfo.project.name}-pause.png`) });
+  if (!process.env.NO_TEST_ARTIFACTS) await page.screenshot({ path: testInfo.outputPath(`${testInfo.project.name}-pause.png`) });
   expect(pageErrors).toEqual([]);
 });
 
@@ -73,5 +78,5 @@ test("mobile portrait keeps controls adjacent to a useful playfield", async ({ p
   expect(layout.canvasWidth).toBeGreaterThan(360);
   expect(layout.canvasHeight).toBeGreaterThan(190);
   expect(layout.gap).toBeLessThan(32);
-  await page.screenshot({ path: testInfo.outputPath("mobile-title.png") });
+  if (!process.env.NO_TEST_ARTIFACTS) await page.screenshot({ path: testInfo.outputPath("mobile-title.png") });
 });

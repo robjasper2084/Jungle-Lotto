@@ -348,7 +348,12 @@ export const drawVersus = (ctx, game) => {
   ctx.fillText(p2.config.name, 920, 210);
   ctx.fillStyle = COLORS.blue;
   ctx.font = "700 18px system-ui";
-  ctx.fillText("BEST OF THREE / 99 SECONDS", 640, 628);
+  if (!game.motionAssetsReady) {
+    const percent = Math.round((game.motionLoadingProgress ?? 0) * 100);
+    ctx.fillText(`PREPARING FIGHTERS ${percent}%`, 640, 628);
+  } else {
+    ctx.fillText("BEST OF THREE / 99 SECONDS", 640, 628);
+  }
   ctx.restore();
 };
 

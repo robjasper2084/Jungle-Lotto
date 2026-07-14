@@ -1,8 +1,24 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { attackIntentFromActions, resolveCancelAttack } from "../src/gameplay/commands.js";
+import { FIGHTERS } from "../src/config/assets.js";
+import { GROUND_Y } from "../src/config/constants.js";
+import { Fighter } from "../src/gameplay/fighter.js";
 import { registerAttackHit, sliceAttackForHit } from "../src/gameplay/hits.js";
-import { resolveRoundOutcome } from "../src/gameplay/rounds.js";
+import { applyRoundOutcomeMotions, resolveRoundOutcome } from "../src/gameplay/rounds.js";
+
+const makeGame = () => ({
+  assets: { images: { dust: null } },
+  audio: { beep() {} },
+  effects: [],
+  spawnAssist() {},
+  spawnProjectile() {}
+});
+
+const makeFighter = (id = "KALYX", x = 360, facing = 1) => {
+  const config = FIGHTERS[id];
+  return new Fighter({ id, slot: 1, config: { ...config }, assets: { animations: {} }, x, facing });
+};
 
 test("double KO and tied timeout are neutral draws", () => {
   assert.deepEqual(resolveRoundOutcome(0, 0, 32), { draw: true, winnerIndex: null, reason: "double_KO" });
@@ -39,4 +55,90 @@ test("multi-hit slices preserve configured total damage", () => {
   assert.equal(slices.reduce((sum, slice) => sum + slice.chip, 0), 42);
   assert.equal(slices.reduce((sum, slice) => sum + slice.meter, 0), 18);
   assert.equal(slices.reduce((sum, slice) => sum + slice.knockback, 0), 510);
+});
+
+test("locomotion states reach walk, run, crouch-walk, and distinct dashes", () => {
+  const fighter = makeFighter();
+  const opponent = makeFighter("MASTER_EZRA", 900, -1);
+  const game = makeGame();
+
+  fighter.update(1 / 60, { right: true }, opponent, game);
+  assert.equal(fighter.motion, "WALK_FORWARD");
+  for (let frame = 0; frame < 24; frame += 1) fighter.update(1 / 60, { right: true }, opponent, game);
+  assert.equal(fighter.motion, "RUN_FORWARD");
+
+  fighter.resetRound(360, 1);
+  fighter.update(1 / 60, { right: true, down: true }, opponent, game);
+  assert.equal(fighter.motion, "CROUCH_WALK");
+
+  fighter.resetRound(360, 1);
+  fighter.update(1 / 60, { right: true, dash: true }, opponent, game);
+  assert.equal(fighter.motion, "DASH_FORWARD");
+
+  fighter.resetRound(360, 1);
+  fighter.update(1 / 60, { left: true, dash: true }, opponent, game);
+  assert.equal(fighter.motion, "DASH_BACK");
+});
+
+test("attack and throw state machines reach start, release, and finish motions", () => {
+  const opponent = makeFighter("MASTER_EZRA", 900, -1);
+  const game = makeGame();
+  const attackMotions = {
+    lightPunch: "LIGHT_PUNCH",
+    heavyPunch: "HEAVY_PUNCH",
+    lightKick: "LIGHT_KICK",
+    heavyKick: "HEAVY_KICK",
+    crouchAttack: "CROUCH_ATTACK",
+    airAttack: "AIR_ATTACK",
+    combo1: "COMBO_1",
+    combo2: "COMBO_2"
+  };
+  for (const [attack, motion] of Object.entries(attackMotions)) {
+    const fighter = makeFighter();
+    assert.equal(fighter.beginAttack(attack, game), true);
+    assert.equal(fighter.motion, motion);
+  }
+
+  const special = makeFighter();
+  special.beginAttack("special", game);
+  assert.equal(special.motion, "SPECIAL_START");
+  special.update(0.2, {}, opponent, game);
+  assert.equal(special.motion, "SPECIAL_PROJECTILE");
+
+  const throwing = makeFighter();
+  throwing.beginAttack("throw", game);
+  assert.equal(throwing.motion, "THROW_GRAB");
+  throwing.update(0.2, {}, opponent, game);
+  assert.equal(throwing.motion, "THROW_FINISH");
+});
+
+test("hurt, knockdown, get-up, landing, victory, and defeat are reachable", () => {
+  const opponent = makeFighter("MASTER_EZRA", 900, -1);
+  const game = makeGame();
+  const lightHurt = makeFighter();
+  lightHurt.takeHit({ damage: 40, stun: 0.2, knockback: 0, attackName: "lightPunch" });
+  assert.equal(lightHurt.motion, "HURT_LIGHT");
+
+  const heavyHurt = makeFighter();
+  heavyHurt.takeHit({ damage: 90, stun: 0.3, knockback: 0, attackName: "heavyPunch" });
+  assert.equal(heavyHurt.motion, "HURT_HEAVY");
+
+  const knockedDown = makeFighter();
+  knockedDown.takeHit({ damage: 120, stun: 0.3, knockback: 0, attackName: "heavyKick" });
+  assert.equal(knockedDown.motion, "KNOCKDOWN");
+  knockedDown.update(1, {}, opponent, game);
+  assert.equal(knockedDown.motion, "GET_UP");
+
+  const landing = makeFighter();
+  landing.y = GROUND_Y - 10;
+  landing.vy = 600;
+  landing.update(0.05, {}, opponent, game);
+  assert.equal(landing.motion, "LANDING");
+  assert.ok(landing.landingLag >= 0.1);
+
+  const winner = { health: 400, motion: "", setMotion(motion) { this.motion = motion; } };
+  const loser = { health: 0, motion: "", setMotion(motion) { this.motion = motion; } };
+  applyRoundOutcomeMotions([winner, loser], { draw: false, winnerIndex: 0, reason: "KO" });
+  assert.equal(winner.motion, "VICTORY");
+  assert.equal(loser.motion, "DEFEAT");
 });

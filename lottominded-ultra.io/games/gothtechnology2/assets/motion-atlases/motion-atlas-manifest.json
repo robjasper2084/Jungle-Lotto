@@ -1,0 +1,4855 @@
+{
+  "version": 1,
+  "cellSize": 192,
+  "columns": 8,
+  "bootMotions": [
+    "IDLE",
+    "READY_STANCE"
+  ],
+  "characters": {
+    "KALYX": {
+      "motions": {
+        "CROUCH_IDLE": {
+          "sheet": "assets/motion-atlases/kalyx-locomotion.webp",
+          "frameCount": 8,
+          "uniqueFrames": 2,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "rebuiltFromRuntime": false,
+          "frames": [
+            {
+              "x": 0,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 192,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 384,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 576,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 768,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 960,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 1152,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 1344,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            }
+          ]
+        },
+        "CROUCH_WALK": {
+          "sheet": "assets/motion-atlases/kalyx-locomotion.webp",
+          "frameCount": 8,
+          "uniqueFrames": 3,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "rebuiltFromRuntime": false,
+          "frames": [
+            {
+              "x": 0,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 192,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 384,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 576,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 768,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 960,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 1152,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 1344,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            }
+          ]
+        },
+        "DASH_BACK": {
+          "sheet": "assets/motion-atlases/kalyx-locomotion.webp",
+          "frameCount": 8,
+          "uniqueFrames": 8,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "rebuiltFromRuntime": false,
+          "frames": [
+            {
+              "x": 0,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            },
+            {
+              "x": 192,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            },
+            {
+              "x": 384,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            },
+            {
+              "x": 576,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            },
+            {
+              "x": 768,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            },
+            {
+              "x": 960,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            },
+            {
+              "x": 1152,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            },
+            {
+              "x": 1344,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            }
+          ]
+        },
+        "DASH_FORWARD": {
+          "sheet": "assets/motion-atlases/kalyx-locomotion.webp",
+          "frameCount": 8,
+          "uniqueFrames": 8,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "rebuiltFromRuntime": false,
+          "frames": [
+            {
+              "x": 0,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            },
+            {
+              "x": 192,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            },
+            {
+              "x": 384,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            },
+            {
+              "x": 576,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            },
+            {
+              "x": 768,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            },
+            {
+              "x": 960,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            },
+            {
+              "x": 1152,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            },
+            {
+              "x": 1344,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            }
+          ]
+        },
+        "JUMP_FALL": {
+          "sheet": "assets/motion-atlases/kalyx-locomotion.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "rebuiltFromRuntime": false,
+          "frames": [
+            {
+              "x": 0,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 72
+            },
+            {
+              "x": 192,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 72
+            },
+            {
+              "x": 384,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 72
+            },
+            {
+              "x": 576,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 72
+            },
+            {
+              "x": 768,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 72
+            },
+            {
+              "x": 960,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 72
+            }
+          ]
+        },
+        "JUMP_PEAK": {
+          "sheet": "assets/motion-atlases/kalyx-locomotion.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "rebuiltFromRuntime": false,
+          "frames": [
+            {
+              "x": 1152,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 72
+            },
+            {
+              "x": 1344,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 72
+            },
+            {
+              "x": 0,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 72
+            },
+            {
+              "x": 192,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 72
+            },
+            {
+              "x": 384,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 72
+            },
+            {
+              "x": 576,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 72
+            }
+          ]
+        },
+        "JUMP_RISE": {
+          "sheet": "assets/motion-atlases/kalyx-locomotion.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "rebuiltFromRuntime": false,
+          "frames": [
+            {
+              "x": 768,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 72
+            },
+            {
+              "x": 960,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 72
+            },
+            {
+              "x": 1152,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 72
+            },
+            {
+              "x": 1344,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 72
+            },
+            {
+              "x": 0,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 72
+            },
+            {
+              "x": 192,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 72
+            }
+          ]
+        },
+        "JUMP_START": {
+          "sheet": "assets/motion-atlases/kalyx-locomotion.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "rebuiltFromRuntime": false,
+          "frames": [
+            {
+              "x": 384,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 72
+            },
+            {
+              "x": 576,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 72
+            },
+            {
+              "x": 768,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 72
+            },
+            {
+              "x": 960,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 72
+            },
+            {
+              "x": 1152,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 72
+            },
+            {
+              "x": 1344,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 72
+            }
+          ]
+        },
+        "LANDING": {
+          "sheet": "assets/motion-atlases/kalyx-locomotion.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "rebuiltFromRuntime": false,
+          "frames": [
+            {
+              "x": 0,
+              "y": 1344,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 192,
+              "y": 1344,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 384,
+              "y": 1344,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 576,
+              "y": 1344,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 768,
+              "y": 1344,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 960,
+              "y": 1344,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            }
+          ]
+        },
+        "RUN_BACK": {
+          "sheet": "assets/motion-atlases/kalyx-locomotion.webp",
+          "frameCount": 8,
+          "uniqueFrames": 8,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "rebuiltFromRuntime": false,
+          "frames": [
+            {
+              "x": 1152,
+              "y": 1344,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            },
+            {
+              "x": 1344,
+              "y": 1344,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            },
+            {
+              "x": 0,
+              "y": 1536,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            },
+            {
+              "x": 192,
+              "y": 1536,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            },
+            {
+              "x": 384,
+              "y": 1536,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            },
+            {
+              "x": 576,
+              "y": 1536,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            },
+            {
+              "x": 768,
+              "y": 1536,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            },
+            {
+              "x": 960,
+              "y": 1536,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            }
+          ]
+        },
+        "RUN_FORWARD": {
+          "sheet": "assets/motion-atlases/kalyx-locomotion.webp",
+          "frameCount": 8,
+          "uniqueFrames": 8,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "rebuiltFromRuntime": false,
+          "frames": [
+            {
+              "x": 1152,
+              "y": 1536,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            },
+            {
+              "x": 1344,
+              "y": 1536,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            },
+            {
+              "x": 0,
+              "y": 1728,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            },
+            {
+              "x": 192,
+              "y": 1728,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            },
+            {
+              "x": 384,
+              "y": 1728,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            },
+            {
+              "x": 576,
+              "y": 1728,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            },
+            {
+              "x": 768,
+              "y": 1728,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            },
+            {
+              "x": 960,
+              "y": 1728,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            }
+          ]
+        },
+        "WALK_BACK": {
+          "sheet": "assets/motion-atlases/kalyx-locomotion.webp",
+          "frameCount": 8,
+          "uniqueFrames": 8,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "rebuiltFromRuntime": false,
+          "frames": [
+            {
+              "x": 1152,
+              "y": 1728,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 72
+            },
+            {
+              "x": 1344,
+              "y": 1728,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 72
+            },
+            {
+              "x": 0,
+              "y": 1920,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 72
+            },
+            {
+              "x": 192,
+              "y": 1920,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 72
+            },
+            {
+              "x": 384,
+              "y": 1920,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 72
+            },
+            {
+              "x": 576,
+              "y": 1920,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 72
+            },
+            {
+              "x": 768,
+              "y": 1920,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 72
+            },
+            {
+              "x": 960,
+              "y": 1920,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 72
+            }
+          ]
+        },
+        "WALK_FORWARD": {
+          "sheet": "assets/motion-atlases/kalyx-locomotion.webp",
+          "frameCount": 8,
+          "uniqueFrames": 8,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "rebuiltFromRuntime": false,
+          "frames": [
+            {
+              "x": 1152,
+              "y": 1920,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 72
+            },
+            {
+              "x": 1344,
+              "y": 1920,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 72
+            },
+            {
+              "x": 0,
+              "y": 2112,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 72
+            },
+            {
+              "x": 192,
+              "y": 2112,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 72
+            },
+            {
+              "x": 384,
+              "y": 2112,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 72
+            },
+            {
+              "x": 576,
+              "y": 2112,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 72
+            },
+            {
+              "x": 768,
+              "y": 2112,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 72
+            },
+            {
+              "x": 960,
+              "y": 2112,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 72
+            }
+          ]
+        },
+        "AIR_ATTACK": {
+          "sheet": "assets/motion-atlases/kalyx-combat.webp",
+          "frameCount": 8,
+          "uniqueFrames": 8,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "rebuiltFromRuntime": false,
+          "frames": [
+            {
+              "x": 0,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 192,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 384,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 576,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 768,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 960,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 1152,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 1344,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            }
+          ]
+        },
+        "COMBO_1": {
+          "sheet": "assets/motion-atlases/kalyx-combat.webp",
+          "frameCount": 8,
+          "uniqueFrames": 8,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "rebuiltFromRuntime": false,
+          "frames": [
+            {
+              "x": 0,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            },
+            {
+              "x": 192,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            },
+            {
+              "x": 384,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            },
+            {
+              "x": 576,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            },
+            {
+              "x": 768,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            },
+            {
+              "x": 960,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            },
+            {
+              "x": 1152,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            },
+            {
+              "x": 1344,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            }
+          ]
+        },
+        "COMBO_2": {
+          "sheet": "assets/motion-atlases/kalyx-combat.webp",
+          "frameCount": 8,
+          "uniqueFrames": 7,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "rebuiltFromRuntime": false,
+          "frames": [
+            {
+              "x": 0,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            },
+            {
+              "x": 192,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            },
+            {
+              "x": 384,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            },
+            {
+              "x": 576,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            },
+            {
+              "x": 768,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            },
+            {
+              "x": 960,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            },
+            {
+              "x": 1152,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            },
+            {
+              "x": 1344,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            }
+          ]
+        },
+        "CROUCH_ATTACK": {
+          "sheet": "assets/motion-atlases/kalyx-combat.webp",
+          "frameCount": 8,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "rebuiltFromRuntime": false,
+          "frames": [
+            {
+              "x": 0,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 192,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 384,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 576,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 768,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 960,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 1152,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 1344,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            }
+          ]
+        },
+        "HEAVY_KICK": {
+          "sheet": "assets/motion-atlases/kalyx-combat.webp",
+          "frameCount": 8,
+          "uniqueFrames": 8,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "rebuiltFromRuntime": false,
+          "frames": [
+            {
+              "x": 0,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 192,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 384,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 576,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 768,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 960,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 1152,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 1344,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            }
+          ]
+        },
+        "HEAVY_PUNCH": {
+          "sheet": "assets/motion-atlases/kalyx-combat.webp",
+          "frameCount": 8,
+          "uniqueFrames": 8,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "rebuiltFromRuntime": false,
+          "frames": [
+            {
+              "x": 0,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 192,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 384,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 576,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 768,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 960,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 1152,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 1344,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            }
+          ]
+        },
+        "LIGHT_KICK": {
+          "sheet": "assets/motion-atlases/kalyx-combat.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "rebuiltFromRuntime": false,
+          "frames": [
+            {
+              "x": 0,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 192,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 384,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 576,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 768,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 960,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            }
+          ]
+        },
+        "LIGHT_PUNCH": {
+          "sheet": "assets/motion-atlases/kalyx-combat.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "rebuiltFromRuntime": false,
+          "frames": [
+            {
+              "x": 1152,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 1344,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 0,
+              "y": 1344,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 192,
+              "y": 1344,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 384,
+              "y": 1344,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 576,
+              "y": 1344,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            }
+          ]
+        },
+        "SPECIAL_PROJECTILE": {
+          "sheet": "assets/motion-atlases/kalyx-combat.webp",
+          "frameCount": 8,
+          "uniqueFrames": 8,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "rebuiltFromRuntime": false,
+          "frames": [
+            {
+              "x": 768,
+              "y": 1344,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            },
+            {
+              "x": 960,
+              "y": 1344,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            },
+            {
+              "x": 1152,
+              "y": 1344,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            },
+            {
+              "x": 1344,
+              "y": 1344,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            },
+            {
+              "x": 0,
+              "y": 1536,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            },
+            {
+              "x": 192,
+              "y": 1536,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            },
+            {
+              "x": 384,
+              "y": 1536,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            },
+            {
+              "x": 576,
+              "y": 1536,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            }
+          ]
+        },
+        "SPECIAL_RECOVER": {
+          "sheet": "assets/motion-atlases/kalyx-combat.webp",
+          "frameCount": 6,
+          "uniqueFrames": 5,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "rebuiltFromRuntime": false,
+          "frames": [
+            {
+              "x": 768,
+              "y": 1536,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            },
+            {
+              "x": 960,
+              "y": 1536,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            },
+            {
+              "x": 1152,
+              "y": 1536,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            },
+            {
+              "x": 1344,
+              "y": 1536,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            },
+            {
+              "x": 0,
+              "y": 1728,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            },
+            {
+              "x": 192,
+              "y": 1728,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            }
+          ]
+        },
+        "SPECIAL_START": {
+          "sheet": "assets/motion-atlases/kalyx-combat.webp",
+          "frameCount": 8,
+          "uniqueFrames": 8,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "rebuiltFromRuntime": false,
+          "frames": [
+            {
+              "x": 384,
+              "y": 1728,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            },
+            {
+              "x": 576,
+              "y": 1728,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            },
+            {
+              "x": 768,
+              "y": 1728,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            },
+            {
+              "x": 960,
+              "y": 1728,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            },
+            {
+              "x": 1152,
+              "y": 1728,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            },
+            {
+              "x": 1344,
+              "y": 1728,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            },
+            {
+              "x": 0,
+              "y": 1920,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            },
+            {
+              "x": 192,
+              "y": 1920,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            }
+          ]
+        },
+        "SUPER_CHARGE": {
+          "sheet": "assets/motion-atlases/kalyx-combat.webp",
+          "frameCount": 8,
+          "uniqueFrames": 7,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "rebuiltFromRuntime": false,
+          "frames": [
+            {
+              "x": 384,
+              "y": 1920,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            },
+            {
+              "x": 576,
+              "y": 1920,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            },
+            {
+              "x": 768,
+              "y": 1920,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            },
+            {
+              "x": 960,
+              "y": 1920,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            },
+            {
+              "x": 1152,
+              "y": 1920,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            },
+            {
+              "x": 1344,
+              "y": 1920,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            },
+            {
+              "x": 0,
+              "y": 2112,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            },
+            {
+              "x": 192,
+              "y": 2112,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            }
+          ]
+        },
+        "SUPER_RELEASE": {
+          "sheet": "assets/motion-atlases/kalyx-combat.webp",
+          "frameCount": 8,
+          "uniqueFrames": 8,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "rebuiltFromRuntime": false,
+          "frames": [
+            {
+              "x": 384,
+              "y": 2112,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            },
+            {
+              "x": 576,
+              "y": 2112,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            },
+            {
+              "x": 768,
+              "y": 2112,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            },
+            {
+              "x": 960,
+              "y": 2112,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            },
+            {
+              "x": 1152,
+              "y": 2112,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            },
+            {
+              "x": 1344,
+              "y": 2112,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            },
+            {
+              "x": 0,
+              "y": 2304,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            },
+            {
+              "x": 192,
+              "y": 2304,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 54
+            }
+          ]
+        },
+        "THROW_FINISH": {
+          "sheet": "assets/motion-atlases/kalyx-combat.webp",
+          "frameCount": 8,
+          "uniqueFrames": 8,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "rebuiltFromRuntime": false,
+          "frames": [
+            {
+              "x": 384,
+              "y": 2304,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 576,
+              "y": 2304,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 768,
+              "y": 2304,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 960,
+              "y": 2304,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 1152,
+              "y": 2304,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 1344,
+              "y": 2304,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 0,
+              "y": 2496,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 192,
+              "y": 2496,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            }
+          ]
+        },
+        "THROW_GRAB": {
+          "sheet": "assets/motion-atlases/kalyx-combat.webp",
+          "frameCount": 8,
+          "uniqueFrames": 8,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "rebuiltFromRuntime": false,
+          "frames": [
+            {
+              "x": 384,
+              "y": 2496,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 576,
+              "y": 2496,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 768,
+              "y": 2496,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 960,
+              "y": 2496,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 1152,
+              "y": 2496,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 1344,
+              "y": 2496,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 0,
+              "y": 2688,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 192,
+              "y": 2688,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            }
+          ]
+        },
+        "BLOCK_HIGH": {
+          "sheet": "assets/motion-atlases/kalyx-reaction.webp",
+          "frameCount": 8,
+          "uniqueFrames": 4,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "rebuiltFromRuntime": false,
+          "frames": [
+            {
+              "x": 0,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 192,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 384,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 576,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 768,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 960,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 1152,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 1344,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            }
+          ]
+        },
+        "BLOCK_LOW": {
+          "sheet": "assets/motion-atlases/kalyx-reaction.webp",
+          "frameCount": 8,
+          "uniqueFrames": 4,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "rebuiltFromRuntime": false,
+          "frames": [
+            {
+              "x": 0,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 192,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 384,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 576,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 768,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 960,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 1152,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 1344,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            }
+          ]
+        },
+        "DEFEAT": {
+          "sheet": "assets/motion-atlases/kalyx-reaction.webp",
+          "frameCount": 14,
+          "uniqueFrames": 14,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "rebuiltFromRuntime": true,
+          "frames": [
+            {
+              "x": 0,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 192,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 384,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 576,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 768,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 960,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 1152,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 1344,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 0,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 192,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 384,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 576,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 768,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 960,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            }
+          ]
+        },
+        "GET_UP": {
+          "sheet": "assets/motion-atlases/kalyx-reaction.webp",
+          "frameCount": 8,
+          "uniqueFrames": 8,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "rebuiltFromRuntime": false,
+          "frames": [
+            {
+              "x": 1152,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 1344,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 0,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 192,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 384,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 576,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 768,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 960,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            }
+          ]
+        },
+        "HURT_HEAVY": {
+          "sheet": "assets/motion-atlases/kalyx-reaction.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "rebuiltFromRuntime": false,
+          "frames": [
+            {
+              "x": 1152,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 1344,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 0,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 192,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 384,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 576,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            }
+          ]
+        },
+        "HURT_LIGHT": {
+          "sheet": "assets/motion-atlases/kalyx-reaction.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "rebuiltFromRuntime": false,
+          "frames": [
+            {
+              "x": 768,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 960,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 1152,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 1344,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 0,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 192,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            }
+          ]
+        },
+        "KNOCKDOWN": {
+          "sheet": "assets/motion-atlases/kalyx-reaction.webp",
+          "frameCount": 8,
+          "uniqueFrames": 8,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "rebuiltFromRuntime": true,
+          "frames": [
+            {
+              "x": 384,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 576,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 768,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 960,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 1152,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 1344,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 0,
+              "y": 1344,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 192,
+              "y": 1344,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            }
+          ]
+        },
+        "TAUNT": {
+          "sheet": "assets/motion-atlases/kalyx-reaction.webp",
+          "frameCount": 8,
+          "uniqueFrames": 8,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "rebuiltFromRuntime": false,
+          "frames": [
+            {
+              "x": 384,
+              "y": 1344,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 576,
+              "y": 1344,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 768,
+              "y": 1344,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 960,
+              "y": 1344,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 1152,
+              "y": 1344,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 1344,
+              "y": 1344,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 0,
+              "y": 1536,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 192,
+              "y": 1536,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            }
+          ]
+        },
+        "VICTORY": {
+          "sheet": "assets/motion-atlases/kalyx-reaction.webp",
+          "frameCount": 8,
+          "uniqueFrames": 8,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "rebuiltFromRuntime": false,
+          "frames": [
+            {
+              "x": 384,
+              "y": 1536,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 576,
+              "y": 1536,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 768,
+              "y": 1536,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 960,
+              "y": 1536,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 1152,
+              "y": 1536,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 1344,
+              "y": 1536,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 0,
+              "y": 1728,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            },
+            {
+              "x": 192,
+              "y": 1728,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 84
+            }
+          ]
+        }
+      }
+    },
+    "MASTER_EZRA": {
+      "motions": {
+        "CROUCH_IDLE": {
+          "sheet": "assets/motion-atlases/master-ezra-locomotion.webp",
+          "frameCount": 8,
+          "uniqueFrames": 2,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "rebuiltFromRuntime": false,
+          "frames": [
+            {
+              "x": 0,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 192,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 384,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 576,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 768,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 960,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 1152,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 1344,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            }
+          ]
+        },
+        "CROUCH_WALK": {
+          "sheet": "assets/motion-atlases/master-ezra-locomotion.webp",
+          "frameCount": 8,
+          "uniqueFrames": 2,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "rebuiltFromRuntime": false,
+          "frames": [
+            {
+              "x": 0,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 192,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 384,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 576,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 768,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 960,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 1152,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 1344,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            }
+          ]
+        },
+        "DASH_BACK": {
+          "sheet": "assets/motion-atlases/master-ezra-locomotion.webp",
+          "frameCount": 8,
+          "uniqueFrames": 8,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "rebuiltFromRuntime": false,
+          "frames": [
+            {
+              "x": 0,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            },
+            {
+              "x": 192,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            },
+            {
+              "x": 384,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            },
+            {
+              "x": 576,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            },
+            {
+              "x": 768,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            },
+            {
+              "x": 960,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            },
+            {
+              "x": 1152,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            },
+            {
+              "x": 1344,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            }
+          ]
+        },
+        "DASH_FORWARD": {
+          "sheet": "assets/motion-atlases/master-ezra-locomotion.webp",
+          "frameCount": 8,
+          "uniqueFrames": 8,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "rebuiltFromRuntime": false,
+          "frames": [
+            {
+              "x": 0,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            },
+            {
+              "x": 192,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            },
+            {
+              "x": 384,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            },
+            {
+              "x": 576,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            },
+            {
+              "x": 768,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            },
+            {
+              "x": 960,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            },
+            {
+              "x": 1152,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            },
+            {
+              "x": 1344,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            }
+          ]
+        },
+        "JUMP_FALL": {
+          "sheet": "assets/motion-atlases/master-ezra-locomotion.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "rebuiltFromRuntime": false,
+          "frames": [
+            {
+              "x": 0,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 74
+            },
+            {
+              "x": 192,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 74
+            },
+            {
+              "x": 384,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 74
+            },
+            {
+              "x": 576,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 74
+            },
+            {
+              "x": 768,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 74
+            },
+            {
+              "x": 960,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 74
+            }
+          ]
+        },
+        "JUMP_PEAK": {
+          "sheet": "assets/motion-atlases/master-ezra-locomotion.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "rebuiltFromRuntime": false,
+          "frames": [
+            {
+              "x": 1152,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 74
+            },
+            {
+              "x": 1344,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 74
+            },
+            {
+              "x": 0,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 74
+            },
+            {
+              "x": 192,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 74
+            },
+            {
+              "x": 384,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 74
+            },
+            {
+              "x": 576,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 74
+            }
+          ]
+        },
+        "JUMP_RISE": {
+          "sheet": "assets/motion-atlases/master-ezra-locomotion.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "rebuiltFromRuntime": false,
+          "frames": [
+            {
+              "x": 768,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 74
+            },
+            {
+              "x": 960,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 74
+            },
+            {
+              "x": 1152,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 74
+            },
+            {
+              "x": 1344,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 74
+            },
+            {
+              "x": 0,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 74
+            },
+            {
+              "x": 192,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 74
+            }
+          ]
+        },
+        "JUMP_START": {
+          "sheet": "assets/motion-atlases/master-ezra-locomotion.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "rebuiltFromRuntime": false,
+          "frames": [
+            {
+              "x": 384,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 74
+            },
+            {
+              "x": 576,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 74
+            },
+            {
+              "x": 768,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 74
+            },
+            {
+              "x": 960,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 74
+            },
+            {
+              "x": 1152,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 74
+            },
+            {
+              "x": 1344,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 74
+            }
+          ]
+        },
+        "LANDING": {
+          "sheet": "assets/motion-atlases/master-ezra-locomotion.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "rebuiltFromRuntime": false,
+          "frames": [
+            {
+              "x": 0,
+              "y": 1344,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 192,
+              "y": 1344,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 384,
+              "y": 1344,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 576,
+              "y": 1344,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 768,
+              "y": 1344,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 960,
+              "y": 1344,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            }
+          ]
+        },
+        "RUN_BACK": {
+          "sheet": "assets/motion-atlases/master-ezra-locomotion.webp",
+          "frameCount": 8,
+          "uniqueFrames": 8,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "rebuiltFromRuntime": false,
+          "frames": [
+            {
+              "x": 1152,
+              "y": 1344,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            },
+            {
+              "x": 1344,
+              "y": 1344,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            },
+            {
+              "x": 0,
+              "y": 1536,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            },
+            {
+              "x": 192,
+              "y": 1536,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            },
+            {
+              "x": 384,
+              "y": 1536,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            },
+            {
+              "x": 576,
+              "y": 1536,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            },
+            {
+              "x": 768,
+              "y": 1536,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            },
+            {
+              "x": 960,
+              "y": 1536,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            }
+          ]
+        },
+        "RUN_FORWARD": {
+          "sheet": "assets/motion-atlases/master-ezra-locomotion.webp",
+          "frameCount": 8,
+          "uniqueFrames": 8,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "rebuiltFromRuntime": false,
+          "frames": [
+            {
+              "x": 1152,
+              "y": 1536,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            },
+            {
+              "x": 1344,
+              "y": 1536,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            },
+            {
+              "x": 0,
+              "y": 1728,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            },
+            {
+              "x": 192,
+              "y": 1728,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            },
+            {
+              "x": 384,
+              "y": 1728,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            },
+            {
+              "x": 576,
+              "y": 1728,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            },
+            {
+              "x": 768,
+              "y": 1728,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            },
+            {
+              "x": 960,
+              "y": 1728,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            }
+          ]
+        },
+        "WALK_BACK": {
+          "sheet": "assets/motion-atlases/master-ezra-locomotion.webp",
+          "frameCount": 8,
+          "uniqueFrames": 8,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "rebuiltFromRuntime": false,
+          "frames": [
+            {
+              "x": 1152,
+              "y": 1728,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 74
+            },
+            {
+              "x": 1344,
+              "y": 1728,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 74
+            },
+            {
+              "x": 0,
+              "y": 1920,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 74
+            },
+            {
+              "x": 192,
+              "y": 1920,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 74
+            },
+            {
+              "x": 384,
+              "y": 1920,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 74
+            },
+            {
+              "x": 576,
+              "y": 1920,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 74
+            },
+            {
+              "x": 768,
+              "y": 1920,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 74
+            },
+            {
+              "x": 960,
+              "y": 1920,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 74
+            }
+          ]
+        },
+        "WALK_FORWARD": {
+          "sheet": "assets/motion-atlases/master-ezra-locomotion.webp",
+          "frameCount": 8,
+          "uniqueFrames": 8,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "rebuiltFromRuntime": false,
+          "frames": [
+            {
+              "x": 1152,
+              "y": 1920,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 74
+            },
+            {
+              "x": 1344,
+              "y": 1920,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 74
+            },
+            {
+              "x": 0,
+              "y": 2112,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 74
+            },
+            {
+              "x": 192,
+              "y": 2112,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 74
+            },
+            {
+              "x": 384,
+              "y": 2112,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 74
+            },
+            {
+              "x": 576,
+              "y": 2112,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 74
+            },
+            {
+              "x": 768,
+              "y": 2112,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 74
+            },
+            {
+              "x": 960,
+              "y": 2112,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 74
+            }
+          ]
+        },
+        "AIR_ATTACK": {
+          "sheet": "assets/motion-atlases/master-ezra-combat.webp",
+          "frameCount": 8,
+          "uniqueFrames": 8,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "rebuiltFromRuntime": false,
+          "frames": [
+            {
+              "x": 0,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 192,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 384,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 576,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 768,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 960,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 1152,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 1344,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            }
+          ]
+        },
+        "COMBO_1": {
+          "sheet": "assets/motion-atlases/master-ezra-combat.webp",
+          "frameCount": 8,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "rebuiltFromRuntime": false,
+          "frames": [
+            {
+              "x": 0,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            },
+            {
+              "x": 192,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            },
+            {
+              "x": 384,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            },
+            {
+              "x": 576,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            },
+            {
+              "x": 768,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            },
+            {
+              "x": 960,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            },
+            {
+              "x": 1152,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            },
+            {
+              "x": 1344,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            }
+          ]
+        },
+        "COMBO_2": {
+          "sheet": "assets/motion-atlases/master-ezra-combat.webp",
+          "frameCount": 8,
+          "uniqueFrames": 7,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "rebuiltFromRuntime": false,
+          "frames": [
+            {
+              "x": 0,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            },
+            {
+              "x": 192,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            },
+            {
+              "x": 384,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            },
+            {
+              "x": 576,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            },
+            {
+              "x": 768,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            },
+            {
+              "x": 960,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            },
+            {
+              "x": 1152,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            },
+            {
+              "x": 1344,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            }
+          ]
+        },
+        "CROUCH_ATTACK": {
+          "sheet": "assets/motion-atlases/master-ezra-combat.webp",
+          "frameCount": 8,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "rebuiltFromRuntime": false,
+          "frames": [
+            {
+              "x": 0,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 192,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 384,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 576,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 768,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 960,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 1152,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 1344,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            }
+          ]
+        },
+        "HEAVY_KICK": {
+          "sheet": "assets/motion-atlases/master-ezra-combat.webp",
+          "frameCount": 8,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "rebuiltFromRuntime": false,
+          "frames": [
+            {
+              "x": 0,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 192,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 384,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 576,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 768,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 960,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 1152,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 1344,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            }
+          ]
+        },
+        "HEAVY_PUNCH": {
+          "sheet": "assets/motion-atlases/master-ezra-combat.webp",
+          "frameCount": 8,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "rebuiltFromRuntime": false,
+          "frames": [
+            {
+              "x": 0,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 192,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 384,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 576,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 768,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 960,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 1152,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 1344,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            }
+          ]
+        },
+        "LIGHT_KICK": {
+          "sheet": "assets/motion-atlases/master-ezra-combat.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "rebuiltFromRuntime": false,
+          "frames": [
+            {
+              "x": 0,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 192,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 384,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 576,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 768,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 960,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            }
+          ]
+        },
+        "LIGHT_PUNCH": {
+          "sheet": "assets/motion-atlases/master-ezra-combat.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "rebuiltFromRuntime": false,
+          "frames": [
+            {
+              "x": 1152,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 1344,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 0,
+              "y": 1344,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 192,
+              "y": 1344,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 384,
+              "y": 1344,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 576,
+              "y": 1344,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            }
+          ]
+        },
+        "SPECIAL_PROJECTILE": {
+          "sheet": "assets/motion-atlases/master-ezra-combat.webp",
+          "frameCount": 8,
+          "uniqueFrames": 8,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "rebuiltFromRuntime": false,
+          "frames": [
+            {
+              "x": 768,
+              "y": 1344,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            },
+            {
+              "x": 960,
+              "y": 1344,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            },
+            {
+              "x": 1152,
+              "y": 1344,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            },
+            {
+              "x": 1344,
+              "y": 1344,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            },
+            {
+              "x": 0,
+              "y": 1536,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            },
+            {
+              "x": 192,
+              "y": 1536,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            },
+            {
+              "x": 384,
+              "y": 1536,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            },
+            {
+              "x": 576,
+              "y": 1536,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            }
+          ]
+        },
+        "SPECIAL_RECOVER": {
+          "sheet": "assets/motion-atlases/master-ezra-combat.webp",
+          "frameCount": 6,
+          "uniqueFrames": 5,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "rebuiltFromRuntime": false,
+          "frames": [
+            {
+              "x": 768,
+              "y": 1536,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            },
+            {
+              "x": 960,
+              "y": 1536,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            },
+            {
+              "x": 1152,
+              "y": 1536,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            },
+            {
+              "x": 1344,
+              "y": 1536,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            },
+            {
+              "x": 0,
+              "y": 1728,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            },
+            {
+              "x": 192,
+              "y": 1728,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            }
+          ]
+        },
+        "SPECIAL_START": {
+          "sheet": "assets/motion-atlases/master-ezra-combat.webp",
+          "frameCount": 8,
+          "uniqueFrames": 8,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "rebuiltFromRuntime": false,
+          "frames": [
+            {
+              "x": 384,
+              "y": 1728,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            },
+            {
+              "x": 576,
+              "y": 1728,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            },
+            {
+              "x": 768,
+              "y": 1728,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            },
+            {
+              "x": 960,
+              "y": 1728,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            },
+            {
+              "x": 1152,
+              "y": 1728,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            },
+            {
+              "x": 1344,
+              "y": 1728,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            },
+            {
+              "x": 0,
+              "y": 1920,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            },
+            {
+              "x": 192,
+              "y": 1920,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            }
+          ]
+        },
+        "SUPER_CHARGE": {
+          "sheet": "assets/motion-atlases/master-ezra-combat.webp",
+          "frameCount": 8,
+          "uniqueFrames": 8,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "rebuiltFromRuntime": false,
+          "frames": [
+            {
+              "x": 384,
+              "y": 1920,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            },
+            {
+              "x": 576,
+              "y": 1920,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            },
+            {
+              "x": 768,
+              "y": 1920,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            },
+            {
+              "x": 960,
+              "y": 1920,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            },
+            {
+              "x": 1152,
+              "y": 1920,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            },
+            {
+              "x": 1344,
+              "y": 1920,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            },
+            {
+              "x": 0,
+              "y": 2112,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            },
+            {
+              "x": 192,
+              "y": 2112,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            }
+          ]
+        },
+        "SUPER_RELEASE": {
+          "sheet": "assets/motion-atlases/master-ezra-combat.webp",
+          "frameCount": 8,
+          "uniqueFrames": 8,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "rebuiltFromRuntime": false,
+          "frames": [
+            {
+              "x": 384,
+              "y": 2112,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            },
+            {
+              "x": 576,
+              "y": 2112,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            },
+            {
+              "x": 768,
+              "y": 2112,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            },
+            {
+              "x": 960,
+              "y": 2112,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            },
+            {
+              "x": 1152,
+              "y": 2112,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            },
+            {
+              "x": 1344,
+              "y": 2112,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            },
+            {
+              "x": 0,
+              "y": 2304,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            },
+            {
+              "x": 192,
+              "y": 2304,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 58
+            }
+          ]
+        },
+        "THROW_FINISH": {
+          "sheet": "assets/motion-atlases/master-ezra-combat.webp",
+          "frameCount": 8,
+          "uniqueFrames": 8,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "rebuiltFromRuntime": false,
+          "frames": [
+            {
+              "x": 384,
+              "y": 2304,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 576,
+              "y": 2304,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 768,
+              "y": 2304,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 960,
+              "y": 2304,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 1152,
+              "y": 2304,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 1344,
+              "y": 2304,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 0,
+              "y": 2496,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 192,
+              "y": 2496,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            }
+          ]
+        },
+        "THROW_GRAB": {
+          "sheet": "assets/motion-atlases/master-ezra-combat.webp",
+          "frameCount": 8,
+          "uniqueFrames": 8,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "rebuiltFromRuntime": false,
+          "frames": [
+            {
+              "x": 384,
+              "y": 2496,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 576,
+              "y": 2496,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 768,
+              "y": 2496,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 960,
+              "y": 2496,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 1152,
+              "y": 2496,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 1344,
+              "y": 2496,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 0,
+              "y": 2688,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 192,
+              "y": 2688,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            }
+          ]
+        },
+        "BLOCK_HIGH": {
+          "sheet": "assets/motion-atlases/master-ezra-reaction.webp",
+          "frameCount": 8,
+          "uniqueFrames": 4,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "rebuiltFromRuntime": false,
+          "frames": [
+            {
+              "x": 0,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 192,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 384,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 576,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 768,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 960,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 1152,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 1344,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            }
+          ]
+        },
+        "BLOCK_LOW": {
+          "sheet": "assets/motion-atlases/master-ezra-reaction.webp",
+          "frameCount": 8,
+          "uniqueFrames": 4,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "rebuiltFromRuntime": false,
+          "frames": [
+            {
+              "x": 0,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 192,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 384,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 576,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 768,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 960,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 1152,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 1344,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            }
+          ]
+        },
+        "DEFEAT": {
+          "sheet": "assets/motion-atlases/master-ezra-reaction.webp",
+          "frameCount": 14,
+          "uniqueFrames": 13,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "rebuiltFromRuntime": true,
+          "frames": [
+            {
+              "x": 0,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 192,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 384,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 576,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 768,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 960,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 1152,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 1344,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 0,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 192,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 384,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 576,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 768,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 960,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            }
+          ]
+        },
+        "GET_UP": {
+          "sheet": "assets/motion-atlases/master-ezra-reaction.webp",
+          "frameCount": 8,
+          "uniqueFrames": 8,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "rebuiltFromRuntime": false,
+          "frames": [
+            {
+              "x": 1152,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 1344,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 0,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 192,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 384,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 576,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 768,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 960,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            }
+          ]
+        },
+        "HURT_HEAVY": {
+          "sheet": "assets/motion-atlases/master-ezra-reaction.webp",
+          "frameCount": 6,
+          "uniqueFrames": 5,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "rebuiltFromRuntime": false,
+          "frames": [
+            {
+              "x": 1152,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 1344,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 0,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 192,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 384,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 576,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            }
+          ]
+        },
+        "HURT_LIGHT": {
+          "sheet": "assets/motion-atlases/master-ezra-reaction.webp",
+          "frameCount": 6,
+          "uniqueFrames": 5,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "rebuiltFromRuntime": false,
+          "frames": [
+            {
+              "x": 768,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 960,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 1152,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 1344,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 0,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 192,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            }
+          ]
+        },
+        "KNOCKDOWN": {
+          "sheet": "assets/motion-atlases/master-ezra-reaction.webp",
+          "frameCount": 8,
+          "uniqueFrames": 8,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "rebuiltFromRuntime": true,
+          "frames": [
+            {
+              "x": 384,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 576,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 768,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 960,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 1152,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 1344,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 0,
+              "y": 1344,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 192,
+              "y": 1344,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            }
+          ]
+        },
+        "TAUNT": {
+          "sheet": "assets/motion-atlases/master-ezra-reaction.webp",
+          "frameCount": 8,
+          "uniqueFrames": 8,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "rebuiltFromRuntime": false,
+          "frames": [
+            {
+              "x": 384,
+              "y": 1344,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 576,
+              "y": 1344,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 768,
+              "y": 1344,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 960,
+              "y": 1344,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 1152,
+              "y": 1344,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 1344,
+              "y": 1344,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 0,
+              "y": 1536,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 192,
+              "y": 1536,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            }
+          ]
+        },
+        "VICTORY": {
+          "sheet": "assets/motion-atlases/master-ezra-reaction.webp",
+          "frameCount": 8,
+          "uniqueFrames": 8,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "rebuiltFromRuntime": false,
+          "frames": [
+            {
+              "x": 384,
+              "y": 1536,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 576,
+              "y": 1536,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 768,
+              "y": 1536,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 960,
+              "y": 1536,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 1152,
+              "y": 1536,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 1344,
+              "y": 1536,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 0,
+              "y": 1728,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            },
+            {
+              "x": 192,
+              "y": 1728,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 86
+            }
+          ]
+        }
+      }
+    }
+  }
+}

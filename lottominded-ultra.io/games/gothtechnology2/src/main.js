@@ -1,4 +1,4 @@
-import { GothTechnologyGame } from "./scenes/game.js?v=rewards-sdk-1";
+import { GothTechnologyGame } from "./scenes/game.js?v=motion-atlas1";
 import { PHASE } from "./config/constants.js";
 
 const syncViewportHeight = () => {
