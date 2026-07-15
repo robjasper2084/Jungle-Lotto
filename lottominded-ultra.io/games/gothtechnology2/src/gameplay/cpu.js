@@ -69,6 +69,9 @@ export class CpuController {
       if (archetype === "control" && tune.parry && canAct && cpu.meter >= (cpu.config.skillCost ?? 15)) {
         return { down: true, special: true };
       }
+      if (archetype === "precision" && canAct && cpu.meter >= (cpu.config.skillCost ?? 20) && abs < 320) {
+        return { down: true, special: true };
+      }
       return { [away]: true, down: incoming.y > cpu.y - 150 };
     }
 
@@ -83,12 +86,17 @@ export class CpuController {
         if (archetype === "control" && tune.parry && canAct && cpu.meter >= (cpu.config.skillCost ?? 15) && this.cadence % 3 === 0) {
           return { down: true, special: true };
         }
+        if (archetype === "precision" && canAct && cpu.meter >= (cpu.config.skillCost ?? 20) && abs < 300) {
+          return { down: true, special: true };
+        }
         return { [away]: true, down: attack.level === "low" };
       }
       if (canAct) {
         const chain = archetype === "rushdown"
           ? [tap({ lightPunch: true }), wait(0.06), tap({ heavyPunch: true }), wait(0.08), tap({ heavyKick: true })]
-          : [tap({ lightKick: true }), wait(0.09), tap({ heavyPunch: true })];
+          : archetype === "precision"
+            ? [tap({ lightPunch: true }), wait(0.07), tap({ heavyPunch: true }), wait(0.1), tap({ special: true })]
+            : [tap({ lightKick: true }), wait(0.09), tap({ heavyPunch: true })];
         this.queue(chain.slice(0, tune.comboSteps * 2 - 1));
         return abs > 118 ? { [toward]: true, dash: archetype === "rushdown" } : this.runPlan(dt) ?? {};
       }
@@ -105,6 +113,14 @@ export class CpuController {
         this.queue([tap({ lightPunch: true }), wait(0.055), tap({ heavyPunch: true }), wait(0.075), tap({ heavyKick: true })].slice(0, tune.comboSteps * 2 - 1));
         return this.runPlan(dt) ?? {};
       }
+    } else if (archetype === "precision") {
+      if (abs < 132) return { [away]: true, down: this.cadence % 2 === 0 };
+      if (canAct && cpu.meter >= 100 && abs > 210 && this.cadence % 4 === 0) return { super: true };
+      if (canAct && abs >= 220 && abs <= 520 && this.cadence % 2 === 0) return { special: true };
+      if (abs > 480) return { [toward]: true };
+      if (abs < 210) return { [away]: true };
+      if (canAct && this.cadence % 5 === 0) return { assist1: true };
+      return hold({ [away]: true }, 0.07).actions;
     } else {
       if (abs < 150) return { [away]: true, down: this.cadence % 2 === 0 };
       if (canAct && cpu.meter >= 100 && abs > 175 && this.cadence % 4 === 0) return { super: true };

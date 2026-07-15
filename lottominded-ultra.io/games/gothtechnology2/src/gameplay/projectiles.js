@@ -1,11 +1,17 @@
-import { drawSheetFrame } from "../engine/assets.js?v=motion-atlas9-complete-fighter";
+import { drawSheetFrame } from "../engine/assets.js?v=motion-atlas10-detroit-lens";
 import { rectsOverlap } from "../engine/math.js";
 import { SpriteEffect } from "./effects.js";
-import { sliceAttackForHit } from "./hits.js?v=motion-atlas9-complete-fighter";
+import { sliceAttackForHit } from "./hits.js?v=motion-atlas10-detroit-lens";
 
 const hexAlpha = (color, alpha) => {
   if (!color?.startsWith("#") || color.length !== 7) return color;
   return `${color}${Math.round(Math.max(0, Math.min(1, alpha)) * 255).toString(16).padStart(2, "0")}`;
+};
+
+const fighterEffectColor = (owner, alpha = 1) => {
+  const key = owner.config?.manifestKey;
+  const color = key === "KALYX" ? "#9f62ff" : key === "DETROIT_LENS" ? "#e7c36a" : "#8bd4ff";
+  return alpha >= 1 ? color : hexAlpha(color, alpha);
 };
 
 export class Projectile {
@@ -61,7 +67,11 @@ export class Projectile {
         box: this.rect,
         projectile: true,
         level: this.attack.level ?? "mid",
-        sourceName: this.kind,
+        sourceName: this.kind === "eye-laser"
+          ? "super"
+          : this.kind === "camera-flash"
+            ? "special"
+            : this.kind,
         hitIndex: this.hitCount,
         maxHits
       });
@@ -86,9 +96,12 @@ export class Projectile {
   spawnBurst(game, x, y, impact = false) {
     if (this.burstDone || !game?.effects) return;
     this.burstDone = true;
-    const image = this.owner.id === "KALYX"
+    const manifestKey = this.owner.config?.manifestKey;
+    const image = manifestKey === "KALYX"
       ? game.assets.images.kalyxShadowClaw
-      : game.assets.images.ezraBlueBurst;
+      : manifestKey === "DETROIT_LENS"
+        ? game.assets.images.hitSpark
+        : game.assets.images.ezraBlueBurst;
     game.effects.push(new SpriteEffect({
       x,
       y: y + this.radius * 0.75,
@@ -132,10 +145,78 @@ export class Projectile {
     ctx.restore();
   }
 
+  renderCameraFlash(ctx, visualY) {
+    const pulse = 0.88 + Math.sin(this.age * 34) * 0.12;
+    ctx.save();
+    ctx.globalCompositeOperation = "lighter";
+    ctx.translate(this.x, visualY);
+    ctx.fillStyle = "rgba(255, 250, 225, 0.96)";
+    ctx.shadowColor = "#e7c36a";
+    ctx.shadowBlur = 34;
+    ctx.beginPath();
+    ctx.arc(0, 0, this.radius * 0.44 * pulse, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = "rgba(231, 195, 106, 0.8)";
+    ctx.lineWidth = Math.max(2, this.radius * 0.08);
+    for (let ring = 1; ring <= 2; ring += 1) {
+      ctx.globalAlpha = 0.78 / ring;
+      ctx.beginPath();
+      ctx.arc(0, 0, this.radius * (0.66 + ring * 0.42), 0, Math.PI * 2);
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 0.72;
+    for (let spoke = 0; spoke < 6; spoke += 1) {
+      const angle = (Math.PI * 2 * spoke) / 6 + this.age * 2.4;
+      ctx.beginPath();
+      ctx.moveTo(Math.cos(angle) * this.radius * 0.34, Math.sin(angle) * this.radius * 0.34);
+      ctx.lineTo(Math.cos(angle) * this.radius * 1.5, Math.sin(angle) * this.radius * 1.5);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  renderEyeLaser(ctx, visualY) {
+    const length = this.radius * 7.4;
+    const startX = this.x - this.direction * length;
+    const endX = this.x + this.direction * this.radius * 0.9;
+    ctx.save();
+    ctx.globalCompositeOperation = "lighter";
+    const beam = ctx.createLinearGradient(startX, visualY, endX, visualY);
+    beam.addColorStop(0, "rgba(90, 0, 0, 0)");
+    beam.addColorStop(0.38, "rgba(210, 24, 32, 0.4)");
+    beam.addColorStop(0.82, "rgba(255, 48, 54, 0.96)");
+    beam.addColorStop(1, "rgba(255, 245, 220, 1)");
+    ctx.strokeStyle = beam;
+    ctx.lineCap = "round";
+    ctx.lineWidth = this.radius * (0.32 + Math.sin(this.age * 46) * 0.05);
+    ctx.shadowColor = "#ff2838";
+    ctx.shadowBlur = 30;
+    ctx.beginPath();
+    ctx.moveTo(startX, visualY);
+    ctx.lineTo(endX, visualY);
+    ctx.stroke();
+    ctx.strokeStyle = "rgba(255, 246, 226, 0.95)";
+    ctx.lineWidth = Math.max(2, this.radius * 0.09);
+    ctx.beginPath();
+    ctx.moveTo(startX + this.direction * length * 0.34, visualY);
+    ctx.lineTo(endX, visualY);
+    ctx.stroke();
+    ctx.restore();
+  }
+
   render(ctx) {
     const frame = Math.floor(this.age * 18) % 8;
     const flip = this.direction < 0;
     const visualY = this.y + Math.sin(this.age * 14 + this.seed) * Math.min(18, this.radius * 0.26);
+    if (this.kind === "camera-flash") {
+      this.renderTrail(ctx, visualY);
+      this.renderCameraFlash(ctx, visualY);
+      return;
+    }
+    if (this.kind === "eye-laser") {
+      this.renderEyeLaser(ctx, visualY);
+      return;
+    }
     this.renderTrail(ctx, visualY);
 
     ctx.save();
@@ -201,7 +282,7 @@ export class AssistStrike extends Projectile {
       direction,
       image,
       kind: spec.name,
-      color: owner.id === "KALYX" ? "#c08cff" : "#9ed8ff",
+      color: fighterEffectColor(owner),
       attack: {
         damage: spec.damage,
         chip: 6,
@@ -319,7 +400,7 @@ export class AssistStrike extends Projectile {
       const sy = (layout.sourceY ?? 0) + (layout.row ?? 0) * layout.cellHeight;
       const scale = layout.visualScale ?? this.radius / 96;
       const flip = this.direction < 0;
-      const color = this.owner.id === "KALYX" ? "#9f62ff" : "#8bd4ff";
+      const color = fighterEffectColor(this.owner);
       const visualY = this.y + Math.sin(this.age * 12 + this.seed) * 18;
       ctx.save();
       ctx.globalCompositeOperation = "lighter";
@@ -327,7 +408,7 @@ export class AssistStrike extends Projectile {
         const p = this.trail[i];
         const t = 1 - i / Math.max(1, this.trail.length);
         ctx.globalAlpha = 0.06 + t * 0.22;
-        ctx.fillStyle = this.owner.id === "KALYX" ? "rgba(110, 66, 210, 0.5)" : "rgba(139, 212, 255, 0.44)";
+        ctx.fillStyle = fighterEffectColor(this.owner, 0.44);
         ctx.shadowColor = color;
         ctx.shadowBlur = 10 + t * 18;
         ctx.beginPath();
@@ -337,13 +418,13 @@ export class AssistStrike extends Projectile {
       ctx.restore();
       ctx.save();
       ctx.globalCompositeOperation = "lighter";
-      ctx.fillStyle = this.owner.id === "KALYX" ? "rgba(150, 88, 255, 0.22)" : "rgba(139, 212, 255, 0.2)";
+      ctx.fillStyle = fighterEffectColor(this.owner, 0.22);
       ctx.shadowColor = color;
       ctx.shadowBlur = 28;
       ctx.beginPath();
       ctx.ellipse(this.x - this.direction * 46, visualY + this.radius - 72, 138, 42, 0, 0, Math.PI * 2);
       ctx.fill();
-      ctx.strokeStyle = this.owner.id === "KALYX" ? "rgba(202, 172, 255, 0.46)" : "rgba(255, 226, 146, 0.38)";
+      ctx.strokeStyle = fighterEffectColor(this.owner, 0.46);
       ctx.lineWidth = 3;
       ctx.beginPath();
       ctx.moveTo(this.x - this.direction * 156, visualY + this.radius - 96);
@@ -355,7 +436,7 @@ export class AssistStrike extends Projectile {
       ctx.translate(this.x, visualY + this.radius);
       if (flip) ctx.scale(-1, 1);
       ctx.globalAlpha = 0.96;
-      ctx.shadowColor = this.owner.id === "KALYX" ? "rgba(156, 95, 255, 0.55)" : "rgba(139, 212, 255, 0.5)";
+      ctx.shadowColor = fighterEffectColor(this.owner, 0.55);
       ctx.shadowBlur = 22;
       ctx.drawImage(
         this.image,

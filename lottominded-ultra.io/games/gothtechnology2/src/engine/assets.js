@@ -1,4 +1,4 @@
-import { ASSET_URLS, MOTION_ASSET_VERSION, MOTION_PLAYBACK } from "../config/assets.js?v=motion-atlas9-complete-fighter";
+import { ASSET_URLS, MOTION_ASSET_VERSION, MOTION_PLAYBACK } from "../config/assets.js?v=motion-atlas10-detroit-lens";
 
 const imageCache = new Map();
 
@@ -54,6 +54,8 @@ export class AssetLoader {
   loadFightAssets(onProgress = () => {}) {
     return this.loadGroup("fight", {
       background: ASSET_URLS.background,
+      detroitMidnightMile: ASSET_URLS.stages.detroitMidnightMile,
+      motorCityAssembly: ASSET_URLS.stages.motorCityAssembly,
       farTrees: ASSET_URLS.farTrees,
       fog: ASSET_URLS.fog,
       embers: ASSET_URLS.embers,
@@ -66,6 +68,7 @@ export class AssetLoader {
       ezraBlueBurst: ASSET_URLS.effects.ezraBlueBurst,
       ezraOwlArc: ASSET_URLS.effects.ezraOwlArc,
       smoke: ASSET_URLS.effects.smoke,
+      detroitLensTablet: ASSET_URLS.props.detroitLensTablet,
       assistOwl: ASSET_URLS.assists.owl,
       assistRaven: ASSET_URLS.assists.raven,
       assistNocturna: ASSET_URLS.assists.nocturna

@@ -130,7 +130,7 @@ test("boots, reaches versus, fights, and pauses without page errors", async ({ p
   expect(spriteIntegrity.insufficientUnique).toEqual([]);
   expect(spriteIntegrity.splitFrames).toEqual([]);
   const unstableRenderedMotions = await page.evaluate(async () => {
-    const { drawSpriteFrame } = await import("./src/engine/assets.js?v=motion-atlas9-complete-fighter-test");
+    const { drawSpriteFrame } = await import("./src/engine/assets.js?v=motion-atlas10-detroit-lens-test");
     const animations = window.__gothTechnologyGame.assets.animations;
     const checkedMotions = [
       "IDLE", "READY_STANCE", "WALK_FORWARD", "RUN_FORWARD", "DASH_FORWARD",
@@ -140,6 +140,7 @@ test("boots, reaches versus, fights, and pauses without page errors", async ({ p
     for (const [characterId, motions] of Object.entries(animations)) {
       for (const motionName of checkedMotions) {
         const motion = motions[motionName];
+        if (!motion) continue;
         const heights = [];
         const bottoms = [];
         for (let frameIndex = 0; frameIndex < motion.frames.length; frameIndex += 1) {
@@ -194,6 +195,75 @@ test("boots, reaches versus, fights, and pauses without page errors", async ({ p
   expect(touchLabels).toContain("MOD");
   expect(touchLabels).not.toContain("TAUNT");
   if (!process.env.NO_TEST_ARTIFACTS) await page.screenshot({ path: testInfo.outputPath(`${testInfo.project.name}-pause.png`) });
+  expect(pageErrors).toEqual([]);
+});
+
+test("Detroit Lens loads complete motion, tablet camera attacks, and both Motor City stages", async ({ page }, testInfo) => {
+  test.setTimeout(60_000);
+  const pageErrors = [];
+  page.on("pageerror", (error) => pageErrors.push(error.message));
+  await page.goto(gameUrl);
+  await expect.poll(() => phase(page)).toBe("title");
+  await clickGame(page, 470, 458);
+  await expect.poll(() => phase(page)).toBe("select");
+  await expect.poll(() => page.evaluate(() => window.__gothTechnologyGame?.matchAssetsReady), { timeout: 10_000 }).toBe(true);
+
+  await clickGame(page, 1052, 200);
+  await expect.poll(() => page.evaluate(() => window.__gothTechnologyGame?.player1Id)).toBe("DETROIT_LENS");
+  await expect.poll(() => page.evaluate(() => window.__gothTechnologyGame?.assets?.loadedCharacterMotions?.has("DETROIT_LENS")), { timeout: 10_000 }).toBe(true);
+
+  const motionIntegrity = await page.evaluate(() => {
+    const motions = window.__gothTechnologyGame.assets.animations.DETROIT_LENS;
+    return {
+      count: Object.keys(motions).length,
+      complete: Object.values(motions).every((motion) => motion.frames.length === 6 && motion.uniqueFrames >= 6)
+    };
+  });
+  expect(motionIntegrity).toEqual({ count: 39, complete: true });
+
+  while (await page.evaluate(() => window.__gothTechnologyGame.stageIndex) !== 3) {
+    await clickGame(page, 476, 596);
+  }
+  await clickGame(page, 804, 594);
+  await expect.poll(() => phase(page)).toBe("versus");
+  await expect.poll(() => phase(page), { timeout: 4_000 }).toBe("fight");
+  await expect.poll(() => page.evaluate(() => window.__gothTechnologyGame?.roundMessageTimer), { timeout: 4_000 }).toBe(0);
+
+  const expansionState = await page.evaluate(() => {
+    const game = window.__gothTechnologyGame;
+    const fighter = game.fighters[0];
+    game.projectiles.length = 0;
+    game.effects.length = 0;
+    game.spawnProjectile(fighter, "special");
+    game.spawnProjectile(fighter, "super");
+    game.spawnFighterVfx(fighter, "special", "charge");
+    return {
+      projectileKinds: game.projectiles.map((projectile) => projectile.kind),
+      hasTabletEffect: game.effects.some((effect) => effect.constructor.name === "AttachedImageEffect"),
+      tabletReady: game.assets.images.detroitLensTablet?.naturalWidth > 0,
+      stage: game.stageIndex,
+      stageReady: game.assets.images.detroitMidnightMile?.naturalWidth > 0
+    };
+  });
+  expect(expansionState).toEqual({
+    projectileKinds: ["camera-flash", "eye-laser"],
+    hasTabletEffect: true,
+    tabletReady: true,
+    stage: 3,
+    stageReady: true
+  });
+  if (!process.env.NO_TEST_ARTIFACTS) await page.screenshot({ path: testInfo.outputPath(`${testInfo.project.name}-detroit-midnight-mile.png`) });
+
+  const secondStageReady = await page.evaluate(() => {
+    const game = window.__gothTechnologyGame;
+    game.stageIndex = 4;
+    game.stageCache = null;
+    game.buildStageCache();
+    game.render();
+    return game.assets.images.motorCityAssembly?.naturalWidth > 0;
+  });
+  expect(secondStageReady).toBe(true);
+  if (!process.env.NO_TEST_ARTIFACTS) await page.screenshot({ path: testInfo.outputPath(`${testInfo.project.name}-motor-city-assembly.png`) });
   expect(pageErrors).toEqual([]);
 });
 

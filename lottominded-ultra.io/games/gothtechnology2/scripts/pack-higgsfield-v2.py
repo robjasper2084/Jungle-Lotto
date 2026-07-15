@@ -1,3 +1,4 @@
+import argparse
 import hashlib
 import json
 import math
@@ -24,6 +25,7 @@ SOURCE_ROWS = 2
 SOURCE_PANEL_GUTTER = 6
 FRAME_COUNT = SOURCE_COLUMNS * SOURCE_ROWS
 COMPONENT_SCALE = 4
+SOURCE_MAX_WIDTH = 1536
 
 CATEGORIES = {
     "locomotion": [
@@ -348,9 +350,48 @@ def detect_row_boundary(source: Image.Image) -> int:
     return min(scores)[1]
 
 
+def resize_source_for_runtime(source: Image.Image) -> Image.Image:
+    if source.width <= SOURCE_MAX_WIDTH:
+        return source
+    scale = SOURCE_MAX_WIDTH / source.width
+    return source.resize(
+        (SOURCE_MAX_WIDTH, max(1, round(source.height * scale))),
+        Image.Resampling.LANCZOS,
+    )
+
+
+def source_figure_counts(path: Path) -> list[int]:
+    with Image.open(path) as source:
+        source = resize_source_for_runtime(source.convert("RGB"))
+        row_boundary = detect_row_boundary(source)
+        y_edges = [0, row_boundary, source.height]
+        counts = []
+        for row in range(SOURCE_ROWS):
+            row_image = source.crop(
+                (0, y_edges[row] + SOURCE_PANEL_GUTTER, source.width, y_edges[row + 1] - SOURCE_PANEL_GUTTER)
+            )
+            reduced_row = row_image.resize(
+                (max(1, row_image.width // COMPONENT_SCALE), max(1, row_image.height // COMPONENT_SCALE)),
+                Image.Resampling.LANCZOS,
+            )
+            keyed = chroma_key(reduced_row)
+            mask = np.asarray(keyed.getchannel("A")) > 24
+            mask_width = mask.shape[1]
+            candidates = [
+                component
+                for component in connected_components(mask)
+                if component["area"] > 500
+                and component["width"] > 12
+                and component["height"] > 28
+                and component["width"] < mask_width * 0.55
+            ]
+            counts.append(len(candidates))
+        return counts
+
+
 def split_sheet(path: Path) -> list[Image.Image]:
     with Image.open(path) as source:
-        source = source.convert("RGB")
+        source = resize_source_for_runtime(source.convert("RGB"))
         row_boundary = detect_row_boundary(source)
         y_edges = [0, row_boundary, source.height]
         frames = []
@@ -497,6 +538,19 @@ def process_character(character_id: str, character_data: dict) -> tuple[str, dic
     if missing:
         raise ValueError(f"{character_id} is missing jobs: {sorted(missing)}")
 
+    if character_id == "DETROIT_LENS":
+        invalid_counts = []
+        for motion in sorted(expected):
+            raw_path = raw_root / f"{motion.lower()}.png"
+            counts = source_figure_counts(raw_path)
+            if counts != [SOURCE_COLUMNS, SOURCE_COLUMNS]:
+                invalid_counts.append(f"{motion}={counts}")
+        if invalid_counts:
+            raise ValueError(
+                "DETROIT_LENS source sheets must contain exactly 3 poses per row: "
+                + ", ".join(invalid_counts)
+            )
+
     for motion in expected:
         raw_path = raw_root / f"{motion.lower()}.png"
         keyed_frames = split_sheet(raw_path)
@@ -508,6 +562,7 @@ def process_character(character_id: str, character_data: dict) -> tuple[str, dic
         if len({frame_hash(frame) for frame in frames}) < 5:
             raise ValueError(f"{character_id}/{motion} has fewer than five unique normalized frames")
         motion_frames[motion] = frames
+        print(f"Normalized {character_id} {len(motion_frames)}/{len(expected)} {motion}", flush=True)
 
     save_preview(slug, motion_frames)
     packed = {}
@@ -523,18 +578,32 @@ def process_character(character_id: str, character_data: dict) -> tuple[str, dic
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--character", action="append")
+    args = parser.parse_args()
+
     OUTPUT_ROOT.mkdir(parents=True, exist_ok=True)
     jobs = json.loads(JOBS_PATH.read_text(encoding="utf-8"))
-    manifest = {
-        "version": 2,
-        "provider": "Higgsfield Nano Banana Pro",
-        "cellSize": CELL_SIZE,
-        "columns": ATLAS_COLUMNS,
-        "framesPerMotion": FRAME_COUNT,
-        "characters": {},
-    }
+    if args.character and OUTPUT_MANIFEST.exists():
+        manifest = json.loads(OUTPUT_MANIFEST.read_text(encoding="utf-8"))
+    else:
+        manifest = {
+            "version": 3,
+            "provider": "Higgsfield Nano Banana Pro",
+            "cellSize": CELL_SIZE,
+            "columns": ATLAS_COLUMNS,
+            "framesPerMotion": FRAME_COUNT,
+            "characters": {},
+        }
 
-    for character_id, character_data in jobs["characters"].items():
+    manifest["version"] = 3
+    requested = list(dict.fromkeys(args.character or jobs["characters"].keys()))
+    unknown = set(requested) - set(jobs["characters"])
+    if unknown:
+        raise SystemExit(f"Unknown characters: {sorted(unknown)}")
+
+    for character_id in requested:
+        character_data = jobs["characters"][character_id]
         _, packed = process_character(character_id, character_data)
         manifest["characters"][character_id] = packed
 

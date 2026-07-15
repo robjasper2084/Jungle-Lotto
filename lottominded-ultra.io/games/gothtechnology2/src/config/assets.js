@@ -1,12 +1,16 @@
 export const PACK_ROOT = "assets/GOTHTECHNOLOGY_EXPANDED_SPRITE_PACK_V2";
 export const LOCAL_ROOT = "assets";
-export const MOTION_ASSET_VERSION = "motion-atlas9-complete-fighter";
+export const MOTION_ASSET_VERSION = "motion-atlas10-detroit-lens";
 
 export const ASSET_URLS = {
   manifest: `${LOCAL_ROOT}/motion-atlases/motion-atlas-manifest.json?v=${MOTION_ASSET_VERSION}`,
   logo: `${LOCAL_ROOT}/user-title/lottomind-live-logo.webp?v=${MOTION_ASSET_VERSION}`,
   titleBackdrop: `${LOCAL_ROOT}/user-stage/forest-fight-background.jpg`,
   background: `${LOCAL_ROOT}/user-stage/forest-fight-background.jpg`,
+  stages: {
+    detroitMidnightMile: `${LOCAL_ROOT}/user-stage/detroit-midnight-mile.webp`,
+    motorCityAssembly: `${LOCAL_ROOT}/user-stage/motor-city-assembly.webp`
+  },
   farTrees: `${PACK_ROOT}/backgrounds/GOTHTECHNOLOGY_PARALLAX_FAR_TREES.webp`,
   fog: `${PACK_ROOT}/backgrounds/GOTHTECHNOLOGY_FOG_OVERLAY_TRANSPARENT.webp`,
   embers: `${PACK_ROOT}/backgrounds/GOTHTECHNOLOGY_EMBERS_OVERLAY_TRANSPARENT.webp`,
@@ -22,6 +26,9 @@ export const ASSET_URLS = {
     ezraBlueBurst: `${PACK_ROOT}/effects/sheets/EZRA_BLUE_MAGIC_BURST_sheet.webp`,
     ezraOwlArc: `${PACK_ROOT}/effects/sheets/EZRA_OWL_ARC_PROJECTILE_sheet.webp`,
     smoke: `${PACK_ROOT}/effects/sheets/SMOKE_PUFF_sheet.webp`
+  },
+  props: {
+    detroitLensTablet: `${LOCAL_ROOT}/user-effects/detroit-lens-tablet.webp?v=${MOTION_ASSET_VERSION}`
   },
   assists: {
     owl: `${LOCAL_ROOT}/user-assists/ezra-owl-dive-clean.webp`,
@@ -57,6 +64,19 @@ export const MOTION_PLAYBACK = {
     JUMP_PEAK: [0, 1],
     JUMP_FALL: [0, 1, 2, 3],
     LANDING: [1, 0, 4, 5]
+  },
+  DETROIT_LENS: {
+    WALK_FORWARD: [0, 1, 2, 3, 4, 5],
+    WALK_BACK: [0, 1, 2, 3, 4, 5],
+    RUN_FORWARD: [0, 1, 2, 3, 4, 5],
+    RUN_BACK: [0, 1, 2, 3, 4, 5],
+    DASH_FORWARD: [0, 1, 2, 3, 4, 5],
+    DASH_BACK: [0, 1, 2, 3, 4, 5],
+    JUMP_START: [0, 1, 2, 3],
+    JUMP_RISE: [0, 1, 2, 3, 4],
+    JUMP_PEAK: [0, 1, 2, 3],
+    JUMP_FALL: [0, 1, 2, 3, 4],
+    LANDING: [0, 1, 2, 3, 4, 5]
   }
 };
 
@@ -346,6 +366,91 @@ export const FIGHTERS = {
     superName: "Sky Judgment",
     specialName: "Blue Magic"
   }
+};
+
+FIGHTERS.DETROIT_LENS = {
+  id: "DETROIT_LENS",
+  name: "DETROIT LENS",
+  title: "Camera Tactician",
+  manifestKey: "DETROIT_LENS",
+  spriteFacing: 1,
+  palette: "#e7c36a",
+  accent: "#df4d4d",
+  scale: 1.31,
+  stableScale: 1.31,
+  archetype: "precision",
+  skillCost: 20,
+  skillCooldown: 1.05,
+  precisionRangeMeterBonus: 4,
+  guardTapWindow: 0.14,
+  perfectBlockMeterBonus: 12,
+  stageMargin: 120,
+  speed: 420,
+  runSpeed: 690,
+  dashSpeed: 1160,
+  jumpVelocity: -1000,
+  motionTimeScale: 1.46,
+  motionDurations: {
+    JUMP_START: 0.15,
+    JUMP_RISE: 0.31,
+    JUMP_PEAK: 0.11,
+    JUMP_FALL: 0.4,
+    LANDING: 0.2,
+    DASH_FORWARD: 0.29,
+    DASH_BACK: 0.33
+  },
+  motionTimeScales: {
+    WALK_FORWARD: 2.08,
+    WALK_BACK: 2.08,
+    RUN_FORWARD: 1.68,
+    RUN_BACK: 1.68
+  },
+  feel: {
+    attackStartupScale: 0.59,
+    attackRecoveryScale: 0.5,
+    attackActiveScale: 0.92,
+    inputBuffer: 0.19,
+    groundAccel: 4650,
+    groundDecel: 4100,
+    airAccel: 1460,
+    dashBrake: 2050,
+    runThreshold: 0.27,
+    crouchWalkScale: 0.41,
+    landingLag: 0.12
+  },
+  maxHealth: 1010,
+  attackOverrides: {
+    lightPunch: { damage: 46, reach: 98, knockback: 160 },
+    heavyPunch: { damage: 92, reach: 142, width: 126, knockback: 285 },
+    lightKick: { damage: 54, reach: 112, knockback: 185 },
+    heavyKick: { damage: 100, reach: 154, width: 142, knockback: 320 },
+    crouchAttack: { damage: 64, reach: 132, width: 122, knockback: 205 },
+    airAttack: { damage: 78, reach: 126, width: 130, knockback: 235 },
+    special: {
+      speed: 900,
+      radius: 42,
+      damage: 84,
+      chip: 18,
+      stun: 0.42,
+      blockstun: 0.32,
+      cooldown: 0.82,
+      knockback: 260
+    },
+    super: {
+      speed: 1540,
+      radius: 38,
+      damage: 276,
+      chip: 48,
+      stun: 0.72,
+      blockstun: 0.54,
+      knockback: 500,
+      multiHit: 3,
+      hitInterval: 0.07
+    }
+  },
+  assistNames: ["FLASH DRONE", "FRAME GUARD"],
+  superName: "Red-Eye Exposure",
+  specialName: "Shutter Burst"
 };
 
 FIGHTERS.KALYX_ECLIPSE = {

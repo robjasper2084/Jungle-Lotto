@@ -1,4 +1,12 @@
-export const ROSTER_IDS = ["KALYX", "MASTER_EZRA", "KALYX_ECLIPSE", "EZRA_ASCENDANT"];
+export const ROSTER_IDS = ["KALYX", "MASTER_EZRA", "DETROIT_LENS", "KALYX_ECLIPSE", "EZRA_ASCENDANT"];
+
+export const ROSTER_CARD_LAYOUT = [
+  { x: 44, y: 108, w: 368, h: 184 },
+  { x: 456, y: 108, w: 368, h: 184 },
+  { x: 868, y: 108, w: 368, h: 184 },
+  { x: 250, y: 310, w: 368, h: 184 },
+  { x: 662, y: 310, w: 368, h: 184 }
+];
 
 export const GAME_MODES = {
   versus: { label: "VERSUS", roundsToWin: 2 },
@@ -13,6 +21,8 @@ export const STAGES = [
   {
     id: "forest-ruin",
     name: "FOREST RUIN",
+    backgroundKey: "background",
+    legacyLayers: true,
     grade: ["rgba(0,0,0,0.72)", "rgba(0,0,0,0.16)", "rgba(0,0,0,0.78)"],
     fogAlpha: 0.2,
     emberAlpha: 0.18
@@ -20,6 +30,8 @@ export const STAGES = [
   {
     id: "ember-gate",
     name: "EMBER GATE",
+    backgroundKey: "background",
+    legacyLayers: true,
     grade: ["rgba(34,8,2,0.62)", "rgba(84,26,5,0.12)", "rgba(18,3,0,0.8)"],
     fogAlpha: 0.1,
     emberAlpha: 0.38
@@ -27,13 +39,33 @@ export const STAGES = [
   {
     id: "moon-shrine",
     name: "MOON SHRINE",
+    backgroundKey: "background",
+    legacyLayers: true,
     grade: ["rgba(2,12,30,0.58)", "rgba(18,52,76,0.12)", "rgba(1,5,18,0.82)"],
     fogAlpha: 0.34,
     emberAlpha: 0.08
+  },
+  {
+    id: "detroit-midnight-mile",
+    name: "DETROIT MIDNIGHT MILE",
+    backgroundKey: "detroitMidnightMile",
+    legacyLayers: false,
+    grade: ["rgba(2,9,22,0.2)", "rgba(30,72,96,0.04)", "rgba(0,2,8,0.58)"],
+    fogAlpha: 0.08,
+    emberAlpha: 0.03
+  },
+  {
+    id: "motor-city-assembly",
+    name: "MOTOR CITY ASSEMBLY",
+    backgroundKey: "motorCityAssembly",
+    legacyLayers: false,
+    grade: ["rgba(3,12,16,0.18)", "rgba(80,16,12,0.035)", "rgba(0,3,5,0.62)"],
+    fogAlpha: 0.06,
+    emberAlpha: 0.14
   }
 ];
 
-export const ARCADE_LADDER = ["MASTER_EZRA", "KALYX_ECLIPSE", "EZRA_ASCENDANT", "KALYX"];
+export const ARCADE_LADDER = ["MASTER_EZRA", "KALYX_ECLIPSE", "DETROIT_LENS", "EZRA_ASCENDANT", "KALYX"];
 
 export const CHALLENGES = [
   { id: "chain", name: "CHAIN REACTION", description: "LAND A 3-HIT COMBO", target: 3, event: "combo" },
@@ -71,6 +103,16 @@ export const COMMAND_LISTS = {
       { input: "DOWN + SP", name: "ARCANE PARRY", detail: "Spend meter to repel the next strike or projectile." },
       { input: "SP", name: "BLUE MAGIC", detail: "Slow, large control projectile." },
       { input: "MAX / MOD+HP", name: "SKY JUDGMENT", detail: "Heavy space-control super." }
+    ]
+  },
+  DETROIT_LENS: {
+    title: "CAMERA TACTICIAN",
+    passive: "Precision attacks build extra meter at range. Focus Flash interrupts close pressure.",
+    commands: [
+      ...commonCommands,
+      { input: "DOWN + SP", name: "FOCUS FLASH", detail: "Spend meter on a close camera flash that interrupts pressure." },
+      { input: "SP", name: "SHUTTER BURST", detail: "Fire a fast tablet-camera flash projectile." },
+      { input: "MAX / MOD+HP", name: "RED-EYE EXPOSURE", detail: "Fire a three-hit ruby laser through the glasses." }
     ]
   },
   KALYX_ECLIPSE: {

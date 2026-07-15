@@ -1,17 +1,17 @@
-import { ASSET_URLS, FIGHTERS } from "../config/assets.js?v=motion-atlas9-complete-fighter";
-import { ARCADE_LADDER, CHALLENGES, GAME_MODES, ROSTER_IDS, STAGES, opponentFor } from "../config/content.js?v=motion-atlas9-complete-fighter";
-import { ASSISTS, ATTACKS } from "../config/moves.js?v=motion-atlas9-complete-fighter";
+import { ASSET_URLS, FIGHTERS } from "../config/assets.js?v=motion-atlas10-detroit-lens";
+import { ARCADE_LADDER, CHALLENGES, GAME_MODES, ROSTER_CARD_LAYOUT, ROSTER_IDS, STAGES, opponentFor } from "../config/content.js?v=motion-atlas10-detroit-lens";
+import { ASSISTS, ATTACKS } from "../config/moves.js?v=motion-atlas10-detroit-lens";
 import { CANVAS_HEIGHT, CANVAS_WIDTH, COLORS, GROUND_Y, PHASE, ROUND_SECONDS, WORLD } from "../config/constants.js";
-import { AssetLoader } from "../engine/assets.js?v=motion-atlas9-complete-fighter";
-import { WebAudioBus } from "../engine/audio.js?v=motion-atlas9-complete-fighter";
-import { InputManager } from "../engine/input.js?v=motion-atlas9-complete-fighter";
+import { AssetLoader } from "../engine/assets.js?v=motion-atlas10-detroit-lens";
+import { WebAudioBus } from "../engine/audio.js?v=motion-atlas10-detroit-lens";
+import { InputManager } from "../engine/input.js?v=motion-atlas10-detroit-lens";
 import { clamp, rectsOverlap } from "../engine/math.js";
-import { applyHit, resolveMelee } from "../gameplay/combat.js?v=motion-atlas9-complete-fighter";
-import { CpuController } from "../gameplay/cpu.js?v=motion-atlas9-complete-fighter";
-import { AttachedSpriteEffect, SpriteEffect } from "../gameplay/effects.js?v=motion-atlas9-complete-fighter";
-import { Fighter } from "../gameplay/fighter.js?v=motion-atlas9-complete-fighter";
-import { AssistStrike, Projectile } from "../gameplay/projectiles.js?v=motion-atlas9-complete-fighter";
-import { applyRoundOutcomeMotions, resolveRoundOutcome } from "../gameplay/rounds.js?v=motion-atlas9-complete-fighter";
+import { applyHit, resolveMelee } from "../gameplay/combat.js?v=motion-atlas10-detroit-lens";
+import { CpuController } from "../gameplay/cpu.js?v=motion-atlas10-detroit-lens";
+import { AttachedImageEffect, AttachedSpriteEffect, SpriteEffect } from "../gameplay/effects.js?v=motion-atlas10-detroit-lens";
+import { Fighter } from "../gameplay/fighter.js?v=motion-atlas10-detroit-lens";
+import { AssistStrike, Projectile } from "../gameplay/projectiles.js?v=motion-atlas10-detroit-lens";
+import { applyRoundOutcomeMotions, resolveRoundOutcome } from "../gameplay/rounds.js?v=motion-atlas10-detroit-lens";
 import {
   drawCharacterSelect,
   drawDiagnostics,
@@ -22,7 +22,7 @@ import {
   drawRoundMessage,
   drawTitle,
   drawVersus
-} from "../ui/hud.js?v=motion-atlas9-complete-fighter";
+} from "../ui/hud.js?v=motion-atlas10-detroit-lens";
 
 const GAME_SELECT_ITEMS = [
   {
@@ -484,11 +484,17 @@ export class GothTechnologyGame {
   }
 
   prepareCharacterMotions() {
-    if (this.motionAssetsReady) return Promise.resolve(this.assets);
-    if (this.motionLoadPromise) return this.motionLoadPromise;
-    this.motionLoadError = "";
     const manifests = [this.player1Id, this.player2Id]
       .map((id) => FIGHTERS[id]?.manifestKey ?? id);
+    if (manifests.every((id) => this.assets.loadedCharacterMotions.has(id))) {
+      this.motionAssetsReady = true;
+      this.motionLoadingProgress = 1;
+      this.createFighters();
+      return Promise.resolve(this.assets);
+    }
+    if (this.motionLoadPromise) return this.motionLoadPromise;
+    this.motionAssetsReady = false;
+    this.motionLoadError = "";
     this.motionLoadPromise = this.assets.loadCharacterMotions(
       manifests,
       (progress) => {
@@ -723,10 +729,10 @@ export class GothTechnologyGame {
 
     if (this.phase === PHASE.SELECT) {
       this.menuHitAreas = [
-        { x: 70, y: 112, w: 555, h: 205, action: () => this.selectPlayer1(ROSTER_IDS[0]) },
-        { x: 655, y: 112, w: 555, h: 205, action: () => this.selectPlayer1(ROSTER_IDS[1]) },
-        { x: 70, y: 330, w: 555, h: 205, action: () => this.selectPlayer1(ROSTER_IDS[2]) },
-        { x: 655, y: 330, w: 555, h: 205, action: () => this.selectPlayer1(ROSTER_IDS[3]) },
+        ...ROSTER_CARD_LAYOUT.map((layout, index) => ({
+          ...layout,
+          action: () => this.selectPlayer1(ROSTER_IDS[index])
+        })),
         { x: 330, y: 570, w: 292, h: 52, action: () => this.cycleStage() },
         { x: 658, y: 570, w: 292, h: 52, action: () => this.startVersus() }
       ];
@@ -1156,7 +1162,11 @@ export class GothTechnologyGame {
 
   spawnProjectile(owner, name) {
     const attack = owner.getAttackData(name) ?? ATTACKS[name];
-    const kind = name === "super" ? "super" : "special";
+    const manifestKey = owner.config.manifestKey;
+    const isDetroitLens = manifestKey === "DETROIT_LENS";
+    const kind = isDetroitLens
+      ? (name === "super" ? "eye-laser" : "camera-flash")
+      : (name === "super" ? "super" : "special");
     const handSockets = {
       KALYX: {
         special: { x: 132, y: -136 },
@@ -1165,14 +1175,20 @@ export class GothTechnologyGame {
       MASTER_EZRA: {
         special: { x: 126, y: -154 },
         super: { x: 138, y: -160 }
+      },
+      DETROIT_LENS: {
+        special: { x: 146, y: -148 },
+        super: { x: 114, y: -176 }
       }
     };
-    const socket = handSockets[owner.id]?.[kind] ?? { x: 120, y: -140 };
+    const socket = handSockets[manifestKey]?.[name] ?? { x: 120, y: -140 };
     const spawnX = owner.x + owner.facing * socket.x;
     const spawnY = owner.y + socket.y;
-    const image = owner.id === "KALYX"
+    const image = manifestKey === "KALYX"
       ? this.assets.images[name === "super" ? "kalyxFireSlash" : "kalyxShadowClaw"]
-      : this.assets.images[name === "super" ? "ezraOwlArc" : "ezraBlueBurst"];
+      : isDetroitLens
+        ? this.assets.images.hitSpark
+        : this.assets.images[name === "super" ? "ezraOwlArc" : "ezraBlueBurst"];
     this.projectiles.push(new Projectile({
       owner,
       x: spawnX,
@@ -1180,16 +1196,41 @@ export class GothTechnologyGame {
       direction: owner.facing,
       attack,
       image,
-      kind: name,
-      color: owner.id === "KALYX" ? "#f2a13d" : "#9ed8ff"
+      kind,
+      color: manifestKey === "KALYX" ? "#f2a13d" : isDetroitLens ? (name === "super" ? "#ff2838" : "#e7c36a") : "#9ed8ff"
     }));
     this.audio.beep(name === "super" ? "super" : "projectile");
   }
 
   spawnFighterVfx(owner, name, phase = "charge") {
-    const isKalyx = owner.config.manifestKey === "KALYX";
+    const manifestKey = owner.config.manifestKey;
+    const isKalyx = manifestKey === "KALYX";
+    const isDetroitLens = manifestKey === "DETROIT_LENS";
     const superMove = name === "super";
     const skill = name === "skill";
+    if (isDetroitLens) {
+      if (!superMove && this.assets.images.detroitLensTablet) {
+        this.effects.push(new AttachedImageEffect({
+          owner,
+          image: this.assets.images.detroitLensTablet,
+          offsetX: skill ? 64 : 76,
+          offsetY: skill ? -142 : -154,
+          duration: skill ? 0.42 : (phase === "charge" ? 0.62 : 0.3),
+          scale: skill ? 0.2 : 0.23,
+          rotation: -0.08
+        }));
+      }
+      this.effects.push(new SpriteEffect({
+        x: owner.x + owner.facing * (superMove ? 42 : 104),
+        y: owner.y + (superMove ? -116 : -58),
+        image: this.assets.images.hitSpark,
+        duration: superMove ? 0.38 : 0.26,
+        scale: superMove ? 0.42 : 0.5,
+        flip: owner.facing < 0,
+        alpha: superMove ? 0.9 : 0.82
+      }));
+      return;
+    }
     const image = skill
       ? (isKalyx ? this.assets.images.smoke : this.assets.images.blockShield)
       : (isKalyx
@@ -1349,12 +1390,13 @@ export class GothTechnologyGame {
     layer.width = CANVAS_WIDTH;
     layer.height = CANVAS_HEIGHT;
     const ctx = layer.getContext("2d", { alpha: false });
-    const { background, farTrees, ground } = this.assets.images;
     const stage = STAGES[this.stageIndex] ?? STAGES[0];
+    const background = this.assets.images[stage.backgroundKey] ?? this.assets.images.background;
+    const { farTrees, ground } = this.assets.images;
     ctx.fillStyle = "#050403";
     ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
     if (background) ctx.drawImage(background, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-    if (farTrees) {
+    if (farTrees && stage.legacyLayers) {
       ctx.globalAlpha = 0.14;
       ctx.drawImage(farTrees, 0, 72, CANVAS_WIDTH, 380);
       ctx.globalAlpha = 1;
@@ -1374,7 +1416,7 @@ export class GothTechnologyGame {
     groundShadow.addColorStop(1, "rgba(0,0,0,0.9)");
     ctx.fillStyle = groundShadow;
     ctx.fillRect(0, GROUND_Y - 92, CANVAS_WIDTH, 128);
-    if (ground) {
+    if (ground && stage.legacyLayers) {
       for (let x = 0; x < CANVAS_WIDTH; x += 640) ctx.drawImage(ground, x, GROUND_Y - 54, 640, 214);
       ctx.save();
       ctx.globalCompositeOperation = "multiply";

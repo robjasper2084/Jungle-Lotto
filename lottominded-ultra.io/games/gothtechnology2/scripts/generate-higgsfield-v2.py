@@ -27,6 +27,16 @@ CHARACTERS = {
         ),
         "magic": "restrained cool-blue spirit energy",
     },
+    "DETROIT_LENS": {
+        "master_job": "8c3e4e29-296b-4ffa-b1d9-9104f945075c",
+        "profile": (
+            "Detroit Lens: tall athletic dark-skinned middle-aged man, full salt-and-pepper beard, "
+            "black fedora, gold rectangular sunglasses, hoop earrings, fitted black three-piece suit, "
+            "black dress shirt and tie, black tactical gloves, black combat dress boots, and a small "
+            "gold camera-shutter lapel brooch"
+        ),
+        "magic": "restrained gold-white camera flash and ruby eye-laser energy",
+    },
 }
 
 MOTIONS = {
@@ -79,6 +89,17 @@ BODY_ONLY_MOTIONS = {
     "SUPER_RELEASE": "explosive empty-hand two-palm thrust with full-body drive, extension, follow-through, and guarded recovery",
 }
 
+DETROIT_LENS_MOTIONS = {
+    "SPECIAL_START": "plant the feet and cradle an invisible tablet at chest height while the right index finger prepares to tap its camera shutter",
+    "SPECIAL_PROJECTILE": "six full-body beats with both boots always visible: plant stance, raise empty hands around an invisible tablet, tap an invisible shutter, brace against imagined flash recoil, lower the empty hands, recover",
+    "SPECIAL_RECOVER": "six full-body empty-hand beats only: lower empty hands from camera height, reset shoulders, settle both feet, and restore guard; never draw the tablet or any prop",
+    "SUPER_CHARGE": "six restrained beats only: guarded stance, lower hands, square shoulders, lift chin, focus the stare through the glasses, lock the final braced stance",
+    "SUPER_RELEASE": "lock the head toward screen-right as if firing eye beams through the glasses, recoil through the torso, then recover to guard",
+    "KNOCKDOWN": "six beats only: standing impact, backward stagger, knees buckle, controlled fall, floor impact, fully down final pose",
+    "THROW_GRAB": "one-person empty-hand reach drill in six beats: guard, step forward, extend both open hands toward empty air, close both empty hands, retract them, return to guard; exactly one person in each panel and never any partner or duplicate",
+    "TAUNT": "form a camera-frame rectangle with both gloved hands, hold the composed challenge, then return to guard",
+}
+
 PILOTS = {
     "KALYX": {"IDLE": "3ecb1159-8c5e-4778-99d1-8f031c4d4582"},
     "MASTER_EZRA": {"IDLE": "1083e12e-6c79-4801-ab58-2c5b7d481383"},
@@ -87,20 +108,24 @@ PILOTS = {
 
 def load_jobs() -> dict:
     if JOBS_PATH.exists():
-        return json.loads(JOBS_PATH.read_text(encoding="utf-8"))
-    jobs = {
-        "provider": "Higgsfield Nano Banana Pro",
-        "layout": {"columns": 3, "rows": 2, "frames": 6},
-        "characters": {},
-    }
-    for character, config in CHARACTERS.items():
-        jobs["characters"][character] = {
-            "masterJobId": config["master_job"],
-            "motions": {
-                motion: {"jobId": job_id, "status": "submitted"}
-                for motion, job_id in PILOTS[character].items()
-            },
+        jobs = json.loads(JOBS_PATH.read_text(encoding="utf-8"))
+    else:
+        jobs = {
+            "provider": "Higgsfield Nano Banana Pro",
+            "layout": {"columns": 3, "rows": 2, "frames": 6},
+            "characters": {},
         }
+    for character, config in CHARACTERS.items():
+        character_jobs = jobs["characters"].setdefault(
+            character,
+            {"masterJobId": config["master_job"], "motions": {}},
+        )
+        character_jobs["masterJobId"] = config["master_job"]
+        for motion, job_id in PILOTS.get(character, {}).items():
+            character_jobs["motions"].setdefault(
+                motion,
+                {"jobId": job_id, "status": "submitted"},
+            )
     return jobs
 
 
@@ -112,7 +137,11 @@ def save_jobs(jobs: dict) -> None:
 def build_prompt(character: str, motion: str) -> str:
     config = CHARACTERS[character]
     body_only = motion.startswith("SPECIAL") or motion.startswith("SUPER")
-    motion_description = BODY_ONLY_MOTIONS.get(motion, MOTIONS[motion])
+    motion_description = (
+        DETROIT_LENS_MOTIONS.get(motion, MOTIONS[motion])
+        if character == "DETROIT_LENS"
+        else BODY_ONLY_MOTIONS.get(motion, MOTIONS[motion])
+    )
     energy = (
         "body-only performance with absolutely no visible energy, aura, fire, smoke, glow, projectile, "
         "lightning, magic trail, or detached effect; the game engine renders every visual effect separately"
@@ -124,14 +153,21 @@ def build_prompt(character: str, motion: str) -> str:
         f"Character lock: {config['profile']}. Create a production 3-column by 2-row sprite sheet with "
         f"exactly SIX clearly distinct sequential full-body frames of this fighting-game motion: "
         f"{motion_description}. Chronological row-major order: frames 1, 2, 3 across the top row, then "
-        f"frames 4, 5, 6 across the bottom row. Show anticipation, buildup, peak action, follow-through, "
+        f"frames 4, 5, 6 across the bottom row. The figure count must be exactly 3 + 3 = 6; a sheet "
+        f"with five, seven, eight, or any other count is invalid. Never add a bonus pose. Show anticipation, "
+        f"buildup, peak action, follow-through, "
         f"recoil, and recovery as appropriate. Side-view 3/4 profile facing screen-right in every frame. "
         f"Preserve the identical face, age, hair, facial hair, clothing construction, colors, accessories, "
         f"body proportions, outline weight, camera distance, game-scale detail, and lighting in all six "
-        f"frames. Energy rule: {energy}. Each equal cell contains exactly one complete uncropped character "
-        f"with generous margins. Flat pure chroma green #00FF00 fills every cell. No scenery, floor, cast "
-        f"shadow, text, labels, separators, panel borders, duplicate pose, extra body parts, opponent, owl, "
-        f"or extra character. This is a production animation sheet, not concept art or a poster."
+        f"frames. Energy rule: {energy}. The camera is pulled far back in every cell: each equal cell contains "
+        f"exactly one complete uncropped hat-to-boot figure occupying no more than 82 percent of the cell "
+        f"height. The fedora crown, both knees, full trouser legs, ankles, both complete boots, and empty green "
+        f"margin below the boot soles must be visible in all six frames. Use exactly three equal columns and "
+        f"exactly two equal rows with thin black grid separators. Flat pure chroma green #00FF00 fills "
+        f"every cell. No waist crop, thigh crop, missing feet, close-up, scenery, floor, cast "
+        f"shadow, text, labels, decorative panel borders, duplicate pose, extra body parts, opponent, owl, "
+        f"or extra character. Keep any tablet or camera invisible; the game renders that prop separately. "
+        f"This is a production animation sheet, not concept art or a poster."
     )
 
 

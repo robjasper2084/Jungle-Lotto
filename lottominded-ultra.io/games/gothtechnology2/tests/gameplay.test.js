@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 import { attackIntentFromActions, resolveCancelAttack } from "../src/gameplay/commands.js";
 import { FIGHTERS, MOTION_PLAYBACK } from "../src/config/assets.js";
+import { ARCADE_LADDER, COMMAND_LISTS, ROSTER_CARD_LAYOUT, ROSTER_IDS, STAGES } from "../src/config/content.js";
 import { GROUND_Y } from "../src/config/constants.js";
 import { Fighter } from "../src/gameplay/fighter.js";
 import { applyHit, resolveMelee } from "../src/gameplay/combat.js";
@@ -124,9 +125,24 @@ test("runtime animations meet minimum unique-frame requirements", () => {
   for (const [characterId, character] of Object.entries(motionManifest.characters)) {
     for (const [motion, data] of Object.entries(character.motions)) {
       assert.equal(data.frameCount, 6, `${characterId} ${motion} is incomplete`);
-      assert.ok(data.uniqueFrames >= 4, `${characterId} ${motion} lacks distinct motion frames`);
+      assert.ok(data.uniqueFrames >= 6, `${characterId} ${motion} lacks distinct motion frames`);
     }
   }
+});
+
+test("Detroit Lens ships a complete precision kit, tablet command list, and Motor City levels", () => {
+  const fighter = FIGHTERS.DETROIT_LENS;
+  assert.equal(fighter.manifestKey, "DETROIT_LENS");
+  assert.equal(fighter.archetype, "precision");
+  assert.equal(fighter.specialName, "Shutter Burst");
+  assert.equal(fighter.superName, "Red-Eye Exposure");
+  assert.equal(Object.keys(motionManifest.characters.DETROIT_LENS.motions).length, 39);
+  assert.equal(ROSTER_IDS.length, 5);
+  assert.equal(ROSTER_CARD_LAYOUT.length, ROSTER_IDS.length);
+  assert.ok(ARCADE_LADDER.includes("DETROIT_LENS"));
+  assert.ok(COMMAND_LISTS.DETROIT_LENS.commands.some((command) => command.detail.includes("tablet-camera")));
+  assert.ok(STAGES.some((stage) => stage.id === "detroit-midnight-mile"));
+  assert.ok(STAGES.some((stage) => stage.id === "motor-city-assembly"));
 });
 
 test("runtime locomotion playback retains at least four distinct poses", () => {
@@ -215,6 +231,38 @@ test("fighter identity skills reach Kalyx shadow step and Ezra parry", () => {
   applyHit(kalyx, ezra, { damage: 90, stun: 0.25, knockback: 180, meter: 6, level: "mid" }, game, { sourceName: "heavyPunch" });
   assert.equal(ezra.parryTimer, 0);
   assert.ok(kalyx.hitstun >= 0.3);
+});
+
+test("Detroit Lens Focus Flash uses the tablet camera and interrupts nearby pressure", () => {
+  const hits = [];
+  const vfx = [];
+  const game = {
+    ...makeGame(),
+    resolveIncomingHit(attacker, defender, attack, meta) { hits.push({ attacker, defender, attack, meta }); },
+    spawnFighterVfx(_fighter, name, phase) { vfx.push({ name, phase }); }
+  };
+  const detroit = makeFighter("DETROIT_LENS", 420, 1, completeAnimations);
+  const opponent = makeFighter("KALYX", 660, -1, completeAnimations);
+  detroit.meter = 100;
+  assert.equal(detroit.useCharacterSkill(opponent, game), true);
+  assert.equal(detroit.motion, "SPECIAL_START");
+  assert.equal(hits.length, 1);
+  assert.equal(hits[0].meta.sourceName, "focusFlash");
+  assert.deepEqual(vfx, [{ name: "skill", phase: "charge" }]);
+  assert.ok(game.flash >= 0.24);
+});
+
+test("Detroit Lens precision projectiles gain bonus meter at long range", () => {
+  const game = makeGame();
+  const detroit = makeFighter("DETROIT_LENS", 300, 1, completeAnimations);
+  const opponent = makeFighter("KALYX", 720, -1, completeAnimations);
+  const baseMeter = detroit.meter;
+  applyHit(detroit, opponent, { damage: 30, meter: 5, stun: 0.2, knockback: 80 }, game, {
+    projectile: true,
+    level: "mid",
+    sourceName: "special"
+  });
+  assert.equal(detroit.meter - baseMeter, 9);
 });
 
 test("perfect blocks negate chip and throw tech breaks the grab", () => {

@@ -1,7 +1,7 @@
 import { CANVAS_HEIGHT, CANVAS_WIDTH, COLORS, ROUND_SECONDS } from "../config/constants.js";
-import { FIGHTERS } from "../config/assets.js?v=motion-atlas9-complete-fighter";
-import { CHALLENGES, GAME_MODES, ROSTER_IDS, STAGES } from "../config/content.js?v=motion-atlas9-complete-fighter";
-import { drawSpriteFrame } from "../engine/assets.js?v=motion-atlas9-complete-fighter";
+import { FIGHTERS } from "../config/assets.js?v=motion-atlas10-detroit-lens";
+import { CHALLENGES, GAME_MODES, ROSTER_CARD_LAYOUT, ROSTER_IDS, STAGES } from "../config/content.js?v=motion-atlas10-detroit-lens";
+import { drawSpriteFrame } from "../engine/assets.js?v=motion-atlas10-detroit-lens";
 
 const panel = (ctx, x, y, w, h, stroke = COLORS.gold) => {
   ctx.save();
@@ -364,18 +364,15 @@ export const drawCharacterSelect = (ctx, game) => {
   ctx.fillStyle = COLORS.white;
   ctx.font = "900 42px Georgia";
   ctx.fillText(`${GAME_MODES[game.gameMode]?.label || "VERSUS"} SELECT`, 640, 74);
-  const cards = [
-    [70, 112, ROSTER_IDS[0], COLORS.goldBright],
-    [655, 112, ROSTER_IDS[1], COLORS.blue],
-    [70, 330, ROSTER_IDS[2], "#c28cff"],
-    [655, 330, ROSTER_IDS[3], "#82f0d2"]
-  ];
-  for (const [x, y, characterId, color] of cards) {
+  for (const [index, layout] of ROSTER_CARD_LAYOUT.entries()) {
+    const characterId = ROSTER_IDS[index];
     const config = FIGHTERS[characterId];
+    const { x, y, w, h } = layout;
+    const color = config.palette;
     const preview = { assets: game.assets, config };
-    drawCharacterCard(ctx, x, y, 555, 205, preview, config.name, config.title, game.player1Id === characterId, color);
-    if (game.player1Id === characterId) drawSelectBadge(ctx, x + 52, y + 42, "P1");
-    if (game.player2Id === characterId) drawSelectBadge(ctx, x + 498, y + 42, game.training ? "DUMMY" : (game.cpuEnabled ? "CPU" : "P2"));
+    drawCharacterCard(ctx, x, y, w, h, preview, config.name, config.title, game.player1Id === characterId, color);
+    if (game.player1Id === characterId) drawSelectBadge(ctx, x + 48, y + 38, "P1");
+    if (game.player2Id === characterId) drawSelectBadge(ctx, x + w - 50, y + 38, game.training ? "DUMMY" : (game.cpuEnabled ? "CPU" : "P2"));
   }
   drawMenuButton(ctx, 330, 570, 292, 52, STAGES[game.stageIndex].name);
   drawMenuButton(ctx, 658, 570, 292, 52, "FIGHT");

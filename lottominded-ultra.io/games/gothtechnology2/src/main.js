@@ -1,6 +1,6 @@
-import { FIGHTERS } from "./config/assets.js?v=motion-atlas9-complete-fighter";
-import { COMMAND_LISTS, GAME_MODES, ROSTER_IDS } from "./config/content.js?v=motion-atlas9-complete-fighter";
-import { GothTechnologyGame } from "./scenes/game.js?v=motion-atlas9-complete-fighter";
+import { FIGHTERS } from "./config/assets.js?v=motion-atlas10-detroit-lens";
+import { COMMAND_LISTS, GAME_MODES, ROSTER_IDS } from "./config/content.js?v=motion-atlas10-detroit-lens";
+import { GothTechnologyGame } from "./scenes/game.js?v=motion-atlas10-detroit-lens";
 import { PHASE } from "./config/constants.js";
 
 const syncViewportHeight = () => {

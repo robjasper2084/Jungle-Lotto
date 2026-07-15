@@ -45,11 +45,13 @@ def download(url: str, target: Path) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--character", choices=("KALYX", "MASTER_EZRA"), required=True)
+    parser.add_argument("--character", required=True)
     parser.add_argument("--motion", action="append")
     args = parser.parse_args()
 
     jobs = json.loads(JOBS_PATH.read_text(encoding="utf-8"))
+    if args.character not in jobs["characters"]:
+        raise SystemExit(f"Unknown character: {args.character}")
     motions = jobs["characters"][args.character]["motions"]
     if args.motion:
         unknown = set(args.motion) - set(motions)

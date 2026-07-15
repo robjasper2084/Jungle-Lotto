@@ -1,7 +1,7 @@
 import { rectsOverlap } from "../engine/math.js";
-import { ATTACKS } from "../config/moves.js?v=motion-atlas9-complete-fighter";
+import { ATTACKS } from "../config/moves.js?v=motion-atlas10-detroit-lens";
 import { FloatingText, SpriteEffect } from "./effects.js";
-import { registerAttackHit, sliceAttackForHit } from "./hits.js?v=motion-atlas9-complete-fighter";
+import { registerAttackHit, sliceAttackForHit } from "./hits.js?v=motion-atlas10-detroit-lens";
 
 export function resolveMelee(attacker, defender, game) {
   const attackState = attacker.currentAttack;
@@ -83,7 +83,10 @@ export function applyHit(attacker, defender, attack, game, meta = {}) {
     });
   }
 
-  attacker.meter = Math.min(100, attacker.meter + (attack.meter ?? 8));
+  const precisionRangeBonus = attacker.config.archetype === "precision" && meta.projectile && Math.abs(attacker.x - defender.x) >= 260
+    ? (attacker.config.precisionRangeMeterBonus ?? 4)
+    : 0;
+  attacker.meter = Math.min(100, attacker.meter + (attack.meter ?? 8) + precisionRangeBonus);
   if (isBlocked) defender.meter = Math.min(100, defender.meter + (perfectBlock ? (defender.config.perfectBlockMeterBonus ?? 11) : 5));
 
   const advantageFrames = Math.round((stun - (attack.recovery ?? 0)) * 60);

@@ -1,0 +1,25 @@
+{
+  "provider": "Higgsfield Nano Banana Pro",
+  "character": {
+    "id": "DETROIT_LENS",
+    "masterJobId": "8c3e4e29-296b-4ffa-b1d9-9104f945075c",
+    "references": [
+      "hf_20260416_221840_95b4a297-4169-4aef-b120-1911c7418878.png",
+      "hf_20260410_164700_5c4c6d6b-a7c0-4293-b6b2-ecbeccef6d8e.png"
+    ]
+  },
+  "assets": {
+    "tablet": {
+      "jobId": "792cde8b-15a8-4835-8a19-1ccc0b45dc6c",
+      "runtime": "assets/user-effects/detroit-lens-tablet.webp"
+    },
+    "detroitMidnightMile": {
+      "jobId": "e2de0756-734b-454c-b98b-e78b8e5be394",
+      "runtime": "assets/user-stage/detroit-midnight-mile.webp"
+    },
+    "motorCityAssembly": {
+      "jobId": "d2f8b67c-0f1b-46d7-8888-232f7c580366",
+      "runtime": "assets/user-stage/motor-city-assembly.webp"
+    }
+  }
+}

@@ -54,9 +54,28 @@ def save_preview(character: str, patches: dict[str, list[Image.Image]]) -> None:
     preview.save(PREVIEW_ROOT / f"{character.lower().replace('_', '-')}.webp", "WEBP", quality=92, method=6)
 
 
+def update_full_preview(packer, character: str, patches: dict[str, list[Image.Image]]) -> None:
+    slug = character.lower().replace("_", "-")
+    preview_path = PRODUCTION_ROOT / "previews" / f"{slug}-all-motions.webp"
+    if not preview_path.exists():
+        return
+    preview = Image.open(preview_path).convert("RGBA")
+    motions = [motion for group in packer.CATEGORIES.values() for motion in group]
+    columns = 9
+    for motion, frames in patches.items():
+        base = motions.index(motion) * 3
+        for offset, frame_index in enumerate((0, 2, 5)):
+            cursor = base + offset
+            x = (cursor % columns) * packer.CELL_SIZE
+            y = (cursor // columns) * packer.CELL_SIZE
+            preview.paste((22, 22, 24, 255), (x, y, x + packer.CELL_SIZE, y + packer.CELL_SIZE))
+            preview.alpha_composite(frames[frame_index], (x, y))
+    preview.save(preview_path, "WEBP", quality=88, method=6)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--character", choices=("KALYX", "MASTER_EZRA"), required=True)
+    parser.add_argument("--character", choices=("KALYX", "MASTER_EZRA", "DETROIT_LENS"), required=True)
     parser.add_argument("--motion", action="append", required=True)
     args = parser.parse_args()
 
@@ -73,6 +92,10 @@ def main() -> None:
         if motion not in job_motions or motion not in manifest_motions:
             raise SystemExit(f"Unknown motion for {args.character}: {motion}")
         raw_path = raw_root / f"{motion.lower()}.png"
+        if args.character == "DETROIT_LENS":
+            counts = packer.source_figure_counts(raw_path)
+            if counts != [packer.SOURCE_COLUMNS, packer.SOURCE_COLUMNS]:
+                raise ValueError(f"{args.character}/{motion} must contain exactly 3 poses per row; found {counts}")
         patches[motion] = motion_frames(packer, raw_path, f"{args.character}/{motion}")
 
     atlases = {}
@@ -91,6 +114,7 @@ def main() -> None:
     MANIFEST_PATH.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
     stabilize_manifest(ROOT, MANIFEST_PATH)
     save_preview(args.character, patches)
+    update_full_preview(packer, args.character, patches)
     print(f"Patched {len(patches)} motions for {args.character}")
 
 
