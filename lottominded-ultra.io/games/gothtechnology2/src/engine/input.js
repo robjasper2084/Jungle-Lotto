@@ -265,21 +265,27 @@ export class InputManager {
 
   actions(player) {
     const p = `p${player}`;
+    const modifier = this.isDown(`${p}.modifier`);
+    const lightPunch = this.consume(`${p}.lightPunch`);
+    const heavyPunch = this.consume(`${p}.heavyPunch`);
+    const lightKick = this.consume(`${p}.lightKick`);
+    const heavyKick = this.consume(`${p}.heavyKick`);
+    const special = this.consume(`${p}.special`);
     return {
       left: this.isDown(`${p}.left`),
       right: this.isDown(`${p}.right`),
       up: this.isDown(`${p}.up`),
       down: this.isDown(`${p}.down`),
-      lightPunch: this.consume(`${p}.lightPunch`),
-      heavyPunch: this.consume(`${p}.heavyPunch`),
-      lightKick: this.consume(`${p}.lightKick`),
-      heavyKick: this.consume(`${p}.heavyKick`),
-      special: this.consume(`${p}.special`),
-      super: this.consume(`${p}.super`),
-      throw: this.consume(`${p}.throw`),
-      assist1: this.consume(`${p}.assist1`),
-      assist2: this.consume(`${p}.assist2`),
-      taunt: this.consume(`${p}.taunt`),
+      lightPunch: !modifier && lightPunch,
+      heavyPunch: !modifier && heavyPunch,
+      lightKick: !modifier && lightKick,
+      heavyKick: !modifier && heavyKick,
+      special: !modifier && special,
+      super: this.consume(`${p}.super`) || (modifier && heavyPunch),
+      throw: this.consume(`${p}.throw`) || (modifier && lightPunch),
+      assist1: this.consume(`${p}.assist1`) || (modifier && lightKick),
+      assist2: this.consume(`${p}.assist2`) || (modifier && heavyKick),
+      taunt: this.consume(`${p}.taunt`) || (modifier && special),
       dash: this.consume(`${p}.dash`) || this.consume(`${p}.dashTap`)
     };
   }

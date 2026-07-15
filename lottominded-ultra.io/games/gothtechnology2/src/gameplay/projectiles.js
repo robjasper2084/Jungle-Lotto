@@ -1,7 +1,7 @@
-import { drawSheetFrame } from "../engine/assets.js?v=motion-atlas8-ezra-jump";
+import { drawSheetFrame } from "../engine/assets.js?v=motion-atlas9-complete-fighter";
 import { rectsOverlap } from "../engine/math.js";
 import { SpriteEffect } from "./effects.js";
-import { sliceAttackForHit } from "./hits.js?v=motion-atlas8-ezra-jump";
+import { sliceAttackForHit } from "./hits.js?v=motion-atlas9-complete-fighter";
 
 const hexAlpha = (color, alpha) => {
   if (!color?.startsWith("#") || color.length !== 7) return color;

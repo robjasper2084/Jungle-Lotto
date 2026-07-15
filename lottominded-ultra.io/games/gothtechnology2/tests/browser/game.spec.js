@@ -12,12 +12,13 @@ const clickGame = async (page, gameX, gameY) => {
 };
 
 const enterTrainingFight = async (page) => {
-  await clickGame(page, 640, 400);
+  await clickGame(page, 470, 458);
   await expect.poll(() => phase(page)).toBe("select");
   await expect.poll(() => page.evaluate(() => window.__gothTechnologyGame?.matchAssetsReady), { timeout: 10_000 }).toBe(true);
-  await clickGame(page, 640, 594);
+  await clickGame(page, 804, 594);
   await expect.poll(() => phase(page)).toBe("versus");
   await expect.poll(() => phase(page), { timeout: 4_000 }).toBe("fight");
+  await expect.poll(() => page.evaluate(() => window.__gothTechnologyGame?.roundMessageTimer), { timeout: 4_000 }).toBe(0);
 };
 
 test("boots, reaches versus, fights, and pauses without page errors", async ({ page }, testInfo) => {
@@ -47,7 +48,7 @@ test("boots, reaches versus, fights, and pauses without page errors", async ({ p
   });
   expect(nonBlankSamples).toBeGreaterThan(100);
 
-  await clickGame(page, 640, 342);
+  await clickGame(page, 470, 342);
   await expect.poll(() => phase(page)).toBe("select");
   await expect.poll(() => page.evaluate(() => window.__gothTechnologyGame?.assets?.loadedCharacterMotions?.size), { timeout: 10_000 }).toBe(2);
   const selectedResources = await page.evaluate(() => performance.getEntriesByType("resource").map((entry) => entry.name));
@@ -129,7 +130,7 @@ test("boots, reaches versus, fights, and pauses without page errors", async ({ p
   expect(spriteIntegrity.insufficientUnique).toEqual([]);
   expect(spriteIntegrity.splitFrames).toEqual([]);
   const unstableRenderedMotions = await page.evaluate(async () => {
-    const { drawSpriteFrame } = await import("./src/engine/assets.js?v=motion-atlas8-ezra-jump-test");
+    const { drawSpriteFrame } = await import("./src/engine/assets.js?v=motion-atlas9-complete-fighter-test");
     const animations = window.__gothTechnologyGame.assets.animations;
     const checkedMotions = [
       "IDLE", "READY_STANCE", "WALK_FORWARD", "RUN_FORWARD", "DASH_FORWARD",
@@ -171,7 +172,7 @@ test("boots, reaches versus, fights, and pauses without page errors", async ({ p
   });
   expect(unstableRenderedMotions).toEqual([]);
   if (!process.env.NO_TEST_ARTIFACTS) await page.screenshot({ path: testInfo.outputPath(`${testInfo.project.name}-character-select.png`) });
-  await clickGame(page, 640, 594);
+  await clickGame(page, 804, 594);
   await expect.poll(() => phase(page)).toBe("versus");
   await expect.poll(() => phase(page), { timeout: 4_000 }).toBe("fight");
   if (!process.env.NO_TEST_ARTIFACTS) await page.screenshot({ path: testInfo.outputPath(`${testInfo.project.name}-fight.png`) });
@@ -190,7 +191,8 @@ test("boots, reaches versus, fights, and pauses without page errors", async ({ p
   await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
   const touchLabels = await page.locator("#mobileControls .touch:not(.blank)").allTextContents();
   expect(touchLabels.every((label) => label.trim().length > 0)).toBe(true);
-  expect(touchLabels).toContain("TAUNT");
+  expect(touchLabels).toContain("MOD");
+  expect(touchLabels).not.toContain("TAUNT");
   if (!process.env.NO_TEST_ARTIFACTS) await page.screenshot({ path: testInfo.outputPath(`${testInfo.project.name}-pause.png`) });
   expect(pageErrors).toEqual([]);
 });
@@ -212,6 +214,50 @@ test("Master Ezra plays a complete takeoff, apex, fall, and clean landing", asyn
   await expect.poll(fighterMotion, { timeout: 600, intervals: [10] }).toBe("JUMP_FALL");
   await expect.poll(fighterMotion, { timeout: 800, intervals: [10] }).toBe("LANDING");
   await expect.poll(fighterMotion, { timeout: 500, intervals: [10] }).toBe("IDLE");
+});
+
+test("Kalyx reaches every aerial phase and a distinct air attack", async ({ page }, testInfo) => {
+  await page.goto(gameUrl);
+  await expect.poll(() => phase(page)).toBe("title");
+  await clickGame(page, 470, 458);
+  await expect.poll(() => phase(page)).toBe("select");
+  await expect.poll(() => page.evaluate(() => window.__gothTechnologyGame?.matchAssetsReady), { timeout: 10_000 }).toBe(true);
+  await clickGame(page, 300, 210);
+  await clickGame(page, 804, 594);
+  await expect.poll(() => phase(page), { timeout: 4_000 }).toBe("fight");
+  await expect.poll(() => page.evaluate(() => window.__gothTechnologyGame?.roundMessageTimer), { timeout: 4_000 }).toBe(0);
+  await expect.poll(() => page.evaluate(() => window.__gothTechnologyGame?.fighters?.[0]?.id)).toBe("KALYX");
+
+  const motion = () => page.evaluate(() => window.__gothTechnologyGame?.fighters?.[0]?.motion);
+  await page.keyboard.press("KeyW");
+  await expect.poll(motion, { timeout: 500, intervals: [10] }).toBe("JUMP_START");
+  await expect.poll(motion, { timeout: 700, intervals: [10] }).toBe("JUMP_RISE");
+  await expect.poll(motion, { timeout: 700, intervals: [10] }).toBe("JUMP_PEAK");
+  await expect.poll(motion, { timeout: 700, intervals: [10] }).toBe("JUMP_FALL");
+  await page.keyboard.press("KeyK");
+  await expect.poll(motion, { timeout: 250, intervals: [10] }).toBe("AIR_ATTACK");
+  if (!process.env.NO_TEST_ARTIFACTS) await page.screenshot({ path: testInfo.outputPath("kalyx-air-attack.png") });
+  await expect.poll(motion, { timeout: 1_000, intervals: [10] }).toBe("LANDING");
+  await expect.poll(motion, { timeout: 500, intervals: [10] }).toBe("IDLE");
+});
+
+test("real attacks connect and training exposes expanded frame data", async ({ page }) => {
+  await page.goto(gameUrl);
+  await enterTrainingFight(page);
+  await page.evaluate(() => {
+    const game = window.__gothTechnologyGame;
+    game.fighters[0].x = 560;
+    game.fighters[1].x = 630;
+    game.showFrameData = true;
+    game.trainingHitboxes = true;
+  });
+  const healthBefore = await page.evaluate(() => window.__gothTechnologyGame.fighters[1].health);
+  await page.keyboard.press("KeyI");
+  await expect.poll(() => page.evaluate(() => window.__gothTechnologyGame.fighters[1].health), { timeout: 1_000 }).toBeLessThan(healthBefore);
+  const readout = await page.evaluate(() => window.__gothTechnologyGame.trainingReadout);
+  expect(readout).toMatchObject({ outcome: "HIT" });
+  expect(readout).toHaveProperty("advantageFrames");
+  expect(readout).toHaveProperty("comboScale");
 });
 
 test("mobile portrait keeps controls adjacent to a useful playfield", async ({ page }, testInfo) => {
@@ -237,7 +283,7 @@ test("mobile portrait keeps controls adjacent to a useful playfield", async ({ p
   if (!process.env.NO_TEST_ARTIFACTS) await page.screenshot({ path: testInfo.outputPath("mobile-title.png") });
 });
 
-test("mobile landscape reserves the combat controls below the playfield", async ({ page }, testInfo) => {
+test("mobile landscape keeps primary controls in side rails", async ({ page }, testInfo) => {
   test.skip(!testInfo.project.name.includes("mobile"), "Mobile layout check");
   await page.setViewportSize({ width: 915, height: 412 });
   await page.goto(gameUrl);
@@ -249,7 +295,7 @@ test("mobile landscape reserves the combat controls below the playfield", async 
     const controls = document.getElementById("mobileControls").getBoundingClientRect();
     const pad = document.querySelector("#mobileControls .pad").getBoundingClientRect();
     const actions = document.querySelector("#mobileControls .buttons").getBoundingClientRect();
-    const buttons = [...document.querySelectorAll("#mobileControls .touch:not(.blank)")].map((button) => button.getBoundingClientRect());
+    const buttons = [...document.querySelectorAll("#mobileControls .pad .touch:not(.blank), #mobileControls .buttons .touch")].map((button) => button.getBoundingClientRect());
     return {
       gap: controls.top - canvas.bottom,
       minButtonWidth: Math.min(...buttons.map((button) => button.width)),
@@ -270,4 +316,62 @@ test("mobile landscape reserves the combat controls below the playfield", async 
   expect(layout.minButtonHeight).toBeGreaterThanOrEqual(44);
   expect(layout.controlsBottom).toBeLessThanOrEqual(layout.viewportHeight);
   if (!process.env.NO_TEST_ARTIFACTS) await page.screenshot({ path: testInfo.outputPath("mobile-landscape-title.png") });
+});
+
+test("mobile modifier supports simultaneous super input and movable controls", async ({ page }, testInfo) => {
+  test.skip(!testInfo.project.name.includes("mobile"), "Mobile multi-touch check");
+  await page.goto(gameUrl);
+  await enterTrainingFight(page);
+  await page.evaluate(() => {
+    const modifier = document.querySelector('[data-touch="p1.modifier"]');
+    const heavyPunch = document.querySelector('[data-touch="p1.heavyPunch"]');
+    modifier.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, pointerId: 41, pointerType: "touch" }));
+    heavyPunch.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, pointerId: 42, pointerType: "touch" }));
+  });
+  await expect.poll(() => page.evaluate(() => window.__gothTechnologyGame.fighters[0].currentAttack?.name)).toBe("super");
+  await page.evaluate(() => {
+    for (const [selector, pointerId] of [['[data-touch="p1.modifier"]', 41], ['[data-touch="p1.heavyPunch"]', 42]]) {
+      document.querySelector(selector).dispatchEvent(new PointerEvent("pointerup", { bubbles: true, pointerId, pointerType: "touch" }));
+    }
+  });
+
+  const before = await page.locator("#padZone").evaluate((zone) => getComputedStyle(zone).transform);
+  const handle = page.locator("#movePad");
+  const box = await handle.boundingBox();
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(box.x + box.width / 2 + 32, box.y + box.height / 2 + 12);
+  await page.mouse.up();
+  const after = await page.locator("#padZone").evaluate((zone) => getComputedStyle(zone).transform);
+  expect(after).not.toBe(before);
+  expect(await page.evaluate(() => localStorage.getItem("gothtechnology.touch.positions.v1"))).toContain("padZone");
+});
+
+test("selected match stays within resource, frame-time, and heap budgets", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name.includes("mobile"), "Desktop performance budget");
+  await page.goto(gameUrl);
+  await enterTrainingFight(page);
+  const metrics = await page.evaluate(async () => {
+    const deltas = [];
+    let last = performance.now();
+    await new Promise((resolve) => {
+      const sample = (time) => {
+        deltas.push(time - last);
+        last = time;
+        if (deltas.length >= 120) resolve();
+        else requestAnimationFrame(sample);
+      };
+      requestAnimationFrame(sample);
+    });
+    const resources = performance.getEntriesByType("resource");
+    deltas.sort((a, b) => a - b);
+    return {
+      resourceBytes: resources.reduce((sum, entry) => sum + (entry.encodedBodySize || 0), 0),
+      p95FrameMs: deltas[Math.floor(deltas.length * 0.95)],
+      heapBytes: performance.memory?.usedJSHeapSize ?? 0
+    };
+  });
+  expect(metrics.resourceBytes).toBeLessThan(11 * 1024 * 1024);
+  expect(metrics.p95FrameMs).toBeLessThan(34);
+  if (metrics.heapBytes) expect(metrics.heapBytes).toBeLessThan(128 * 1024 * 1024);
 });

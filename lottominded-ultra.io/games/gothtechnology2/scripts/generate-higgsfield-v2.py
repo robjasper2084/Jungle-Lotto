@@ -71,6 +71,14 @@ MOTIONS = {
     "VICTORY": "character-specific victorious celebration rising into a strong final victory pose",
 }
 
+BODY_ONLY_MOTIONS = {
+    "SPECIAL_PROJECTILE": "empty-hand martial-arts palm thrust: chamber both empty hands, drive them forward, fully extend, then retract",
+    "SPECIAL_RECOVER": "recover balance after a committed empty-hand palm thrust, settle the feet, and restore guard",
+    "SPECIAL_START": "plant into a rooted stance, chamber both empty hands near the torso, and prepare a powerful technique",
+    "SUPER_CHARGE": "dramatic rooted power stance using only posture, breath, and empty-hand preparation, then brace",
+    "SUPER_RELEASE": "explosive empty-hand two-palm thrust with full-body drive, extension, follow-through, and guarded recovery",
+}
+
 PILOTS = {
     "KALYX": {"IDLE": "3ecb1159-8c5e-4778-99d1-8f031c4d4582"},
     "MASTER_EZRA": {"IDLE": "1083e12e-6c79-4801-ab58-2c5b7d481383"},
@@ -103,12 +111,19 @@ def save_jobs(jobs: dict) -> None:
 
 def build_prompt(character: str, motion: str) -> str:
     config = CHARACTERS[character]
-    energy = config["magic"] if motion.startswith("SPECIAL") or motion.startswith("SUPER") else "no aura"
+    body_only = motion.startswith("SPECIAL") or motion.startswith("SUPER")
+    motion_description = BODY_ONLY_MOTIONS.get(motion, MOTIONS[motion])
+    energy = (
+        "body-only performance with absolutely no visible energy, aura, fire, smoke, glow, projectile, "
+        "lightning, magic trail, or detached effect; the game engine renders every visual effect separately"
+        if body_only
+        else "no aura"
+    )
     return (
         f"Use the exact character in the reference as an immutable identity, costume, and rendering-style lock. "
         f"Character lock: {config['profile']}. Create a production 3-column by 2-row sprite sheet with "
         f"exactly SIX clearly distinct sequential full-body frames of this fighting-game motion: "
-        f"{MOTIONS[motion]}. Chronological row-major order: frames 1, 2, 3 across the top row, then "
+        f"{motion_description}. Chronological row-major order: frames 1, 2, 3 across the top row, then "
         f"frames 4, 5, 6 across the bottom row. Show anticipation, buildup, peak action, follow-through, "
         f"recoil, and recovery as appropriate. Side-view 3/4 profile facing screen-right in every frame. "
         f"Preserve the identical face, age, hair, facial hair, clothing construction, colors, accessories, "
@@ -152,17 +167,25 @@ def submit(character: str, motion: str) -> str:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--character", choices=CHARACTERS, required=True)
+    parser.add_argument("--motion", action="append", choices=MOTIONS)
+    parser.add_argument("--force", action="store_true")
     parser.add_argument("--limit", type=int, default=0)
     args = parser.parse_args()
 
     jobs = load_jobs()
-    character_jobs = jobs["characters"][args.character]["motions"]
-    pending = [motion for motion in MOTIONS if motion not in character_jobs]
+    character_data = jobs["characters"][args.character]
+    character_jobs = character_data["motions"]
+    requested = list(dict.fromkeys(args.motion or MOTIONS))
+    pending = requested if args.force else [motion for motion in requested if motion not in character_jobs]
     if args.limit > 0:
         pending = pending[: args.limit]
 
     for index, motion in enumerate(pending, start=1):
         job_id = submit(args.character, motion)
+        previous = character_jobs.get(motion)
+        if previous:
+            history = character_data.setdefault("replacementHistory", {}).setdefault(motion, [])
+            history.append({key: previous[key] for key in ("jobId", "status", "resultUrl") if key in previous})
         character_jobs[motion] = {"jobId": job_id, "status": "submitted"}
         save_jobs(jobs)
         print(f"{args.character} {index}/{len(pending)} {motion} {job_id}", flush=True)

@@ -1,14 +1,17 @@
-import { ASSET_URLS, FIGHTERS } from "../config/assets.js?v=motion-atlas8-ezra-jump";
-import { ASSISTS, ATTACKS } from "../config/moves.js?v=motion-atlas8-ezra-jump";
+import { ASSET_URLS, FIGHTERS } from "../config/assets.js?v=motion-atlas9-complete-fighter";
+import { ARCADE_LADDER, CHALLENGES, GAME_MODES, ROSTER_IDS, STAGES, opponentFor } from "../config/content.js?v=motion-atlas9-complete-fighter";
+import { ASSISTS, ATTACKS } from "../config/moves.js?v=motion-atlas9-complete-fighter";
 import { CANVAS_HEIGHT, CANVAS_WIDTH, COLORS, GROUND_Y, PHASE, ROUND_SECONDS, WORLD } from "../config/constants.js";
-import { AssetLoader } from "../engine/assets.js?v=motion-atlas8-ezra-jump";
-import { WebAudioBus } from "../engine/audio.js?v=motion-atlas8-ezra-jump";
-import { InputManager } from "../engine/input.js?v=motion-atlas8-ezra-jump";
+import { AssetLoader } from "../engine/assets.js?v=motion-atlas9-complete-fighter";
+import { WebAudioBus } from "../engine/audio.js?v=motion-atlas9-complete-fighter";
+import { InputManager } from "../engine/input.js?v=motion-atlas9-complete-fighter";
 import { clamp, rectsOverlap } from "../engine/math.js";
-import { applyHit, resolveMelee } from "../gameplay/combat.js?v=motion-atlas8-ezra-jump";
-import { Fighter } from "../gameplay/fighter.js?v=motion-atlas8-ezra-jump";
-import { AssistStrike, Projectile } from "../gameplay/projectiles.js?v=motion-atlas8-ezra-jump";
-import { applyRoundOutcomeMotions, resolveRoundOutcome } from "../gameplay/rounds.js?v=motion-atlas8-ezra-jump";
+import { applyHit, resolveMelee } from "../gameplay/combat.js?v=motion-atlas9-complete-fighter";
+import { CpuController } from "../gameplay/cpu.js?v=motion-atlas9-complete-fighter";
+import { AttachedSpriteEffect, SpriteEffect } from "../gameplay/effects.js?v=motion-atlas9-complete-fighter";
+import { Fighter } from "../gameplay/fighter.js?v=motion-atlas9-complete-fighter";
+import { AssistStrike, Projectile } from "../gameplay/projectiles.js?v=motion-atlas9-complete-fighter";
+import { applyRoundOutcomeMotions, resolveRoundOutcome } from "../gameplay/rounds.js?v=motion-atlas9-complete-fighter";
 import {
   drawCharacterSelect,
   drawDiagnostics,
@@ -19,7 +22,7 @@ import {
   drawRoundMessage,
   drawTitle,
   drawVersus
-} from "../ui/hud.js?v=motion-atlas8-ezra-jump";
+} from "../ui/hud.js?v=motion-atlas9-complete-fighter";
 
 const GAME_SELECT_ITEMS = [
   {
@@ -37,6 +40,29 @@ const GAME_SELECT_ITEMS = [
   }
 ];
 
+const SETTINGS_KEY = "gothtechnology.settings.v3";
+const STATS_KEY = "gothtechnology.stats.v2";
+const REPLAY_KEY = "gothtechnology.replay.v1";
+const TRAINING_RECORDING_KEY = "gothtechnology.training.recording.v1";
+
+const readStorage = (key, fallback) => {
+  try {
+    return { ...fallback, ...JSON.parse(window.localStorage?.getItem(key) || "{}") };
+  } catch {
+    return { ...fallback };
+  }
+};
+
+const writeStorage = (key, value) => {
+  try {
+    window.localStorage?.setItem(key, JSON.stringify(value));
+  } catch {
+    // Persistence is optional when browser storage is blocked.
+  }
+};
+
+const activeActions = (actions = {}) => Object.fromEntries(Object.entries(actions).filter(([, active]) => Boolean(active)));
+
 export class GothTechnologyGame {
   constructor(canvas) {
     this.canvas = canvas;
@@ -47,6 +73,18 @@ export class GothTechnologyGame {
     this.ctx = canvas.getContext("2d", { alpha: false });
     this.input = new InputManager(window);
     this.audio = new WebAudioBus(ASSET_URLS.music, ASSET_URLS.fightMusic);
+    this.settings = readStorage(SETTINGS_KEY, {
+      musicVolume: 0.72,
+      sfxVolume: 0.9,
+      vibration: true,
+      shake: 1,
+      highContrast: false,
+      hudScale: 1,
+      touchLayout: "classic"
+    });
+    this.audio.setMusicVolume?.(this.settings.musicVolume);
+    this.audio.setSfxVolume?.(this.settings.sfxVolume);
+    this.audio.setVibrationEnabled?.(this.settings.vibration);
     this.loadingBackdrop = new Image();
     this.loadingBackdrop.decoding = "async";
     this.loadingBackdrop.src = ASSET_URLS.titleBackdrop;
@@ -64,15 +102,52 @@ export class GothTechnologyGame {
     this.stageCache = null;
     this.cpuEnabled = true;
     this.cpuDifficulty = "normal";
+    this.cpuController = new CpuController();
     this.cpuModeBeforeTraining = null;
     this.training = false;
     this.trainingDummyMode = "stand";
+    this.trainingGuardMode = "off";
+    this.trainingCounterHit = false;
+    this.trainingWakeupAction = "none";
+    this.trainingThrowTech = false;
+    this.trainingInputDelayFrames = 0;
+    this.trainingInputQueue = [];
+    this.trainingHitboxes = false;
+    this.trainingReadout = null;
+    this.trainingPatternTimer = 0;
     this.trainingRecording = [];
     this.trainingPlaybackIndex = 0;
     this.trainingJumpTimer = 0;
     this.showFrameData = false;
     this.player1Id = "MASTER_EZRA";
     this.player2Id = "KALYX";
+    this.rosterIndex = ROSTER_IDS.indexOf(this.player1Id);
+    this.gameMode = "versus";
+    this.stageIndex = 0;
+    this.arcadeStage = 0;
+    this.survivalStreak = 0;
+    this.survivalHealth = null;
+    this.challengeIndex = 0;
+    this.challengeProgress = 0;
+    this.challengeComplete = false;
+    this.modeComplete = false;
+    this.modeCanContinue = false;
+    this.matchEndPrompt = "RETURN TO TITLE";
+    this.replayFrames = [];
+    this.replayPlayback = [];
+    this.replayIndex = 0;
+    this.isReplay = false;
+    this.stats = readStorage(STATS_KEY, {
+      matches: 0,
+      wins: 0,
+      losses: 0,
+      arcadeClears: 0,
+      survivalBest: 0,
+      challenges: 0,
+      damage: 0,
+      perfectBlocks: 0,
+      throwTechs: 0
+    });
     this.debug = false;
     this.roundNumber = 1;
     this.roundTimer = ROUND_SECONDS;
@@ -160,6 +235,48 @@ export class GothTechnologyGame {
     this.announce("Control settings opened");
   }
 
+  updateSettings(patch = {}) {
+    this.settings = { ...this.settings, ...patch };
+    this.audio.setMusicVolume?.(this.settings.musicVolume);
+    this.audio.setSfxVolume?.(this.settings.sfxVolume);
+    this.audio.setVibrationEnabled?.(this.settings.vibration);
+    document.body.dataset.highContrast = String(Boolean(this.settings.highContrast));
+    document.body.dataset.touchLayout = this.settings.touchLayout || "classic";
+    writeStorage(SETTINGS_KEY, this.settings);
+    this.lastAccessibleState = "";
+    this.render();
+  }
+
+  openCommands() {
+    if (this.phase === PHASE.FIGHT) this.phase = PHASE.PAUSE;
+    window.dispatchEvent(new CustomEvent("gothtechnology:commands", { detail: { characterId: this.player1Id } }));
+    this.announce(`${this.fighters[0]?.config.name ?? "Fighter"} command list opened`);
+  }
+
+  openTrainingTools() {
+    if (!this.training) return;
+    if (this.phase === PHASE.FIGHT) this.phase = PHASE.PAUSE;
+    window.dispatchEvent(new CustomEvent("gothtechnology:training-tools"));
+    this.announce("Training tools opened");
+  }
+
+  openMode(mode) {
+    if (mode === "replay") {
+      this.startReplay();
+      return;
+    }
+    this.gameMode = mode;
+    this.arcadeStage = 0;
+    this.survivalStreak = 0;
+    this.survivalHealth = null;
+    this.challengeProgress = 0;
+    this.challengeComplete = false;
+    this.modeComplete = false;
+    if (["arcade", "survival", "challenge"].includes(mode)) this.cpuEnabled = true;
+    if (mode === "challenge") this.cpuDifficulty = "normal";
+    this.openCharacterSelect(mode === "training", mode);
+  }
+
   returnToTitle() {
     if (this.cpuModeBeforeTraining) {
       this.cpuEnabled = this.cpuModeBeforeTraining.enabled;
@@ -167,6 +284,8 @@ export class GothTechnologyGame {
       this.cpuModeBeforeTraining = null;
     }
     this.training = false;
+    this.isReplay = false;
+    this.replayPlayback = [];
     this.phase = PHASE.TITLE;
     this.matchWinner = null;
     this.syncMusicForPhase();
@@ -181,6 +300,14 @@ export class GothTechnologyGame {
     if (this.cpuEnabled) this.cpuDifficulty = next;
     this.lastAccessibleState = "";
     this.audio.beep("select");
+  }
+
+  cycleStage() {
+    this.stageIndex = (this.stageIndex + 1) % STAGES.length;
+    this.stageCache = null;
+    if (this.fightAssetsReady) this.buildStageCache();
+    this.audio.beep("select");
+    this.announce(`Stage ${STAGES[this.stageIndex].name}`);
   }
 
   startRewardSession() {
@@ -238,7 +365,7 @@ export class GothTechnologyGame {
         return;
       }
       if (this.phase === PHASE.MATCH_END) {
-        this.returnToTitle();
+        this.advanceAfterMatch();
         return;
       }
       const hit = this.menuHitAreas.find((area) => x >= area.x && x <= area.x + area.w && y >= area.y && y <= area.y + area.h);
@@ -260,20 +387,34 @@ export class GothTechnologyGame {
   }
 
   selectPlayer1(id) {
+    if (!FIGHTERS[id]) return;
     this.player1Id = id;
-    this.player2Id = id === "KALYX" ? "MASTER_EZRA" : "KALYX";
+    this.rosterIndex = ROSTER_IDS.indexOf(id);
+    this.player2Id = this.opponentForMode();
     this.createFighters();
     this.prepareCharacterMotions();
     this.audio.beep("select");
   }
 
-  openCharacterSelect(training = false) {
+  opponentForMode() {
+    if (this.gameMode === "arcade") {
+      const ladder = ARCADE_LADDER.filter((id) => id !== this.player1Id);
+      return ladder[this.arcadeStage % ladder.length] ?? opponentFor(this.player1Id);
+    }
+    if (this.gameMode === "survival") return opponentFor(this.player1Id, this.survivalStreak);
+    if (this.gameMode === "challenge") return opponentFor(this.player1Id, this.challengeIndex);
+    return opponentFor(this.player1Id);
+  }
+
+  openCharacterSelect(training = false, mode = training ? "training" : this.gameMode) {
+    this.gameMode = mode;
     this.training = training;
     if (training) {
       this.cpuModeBeforeTraining ??= { enabled: this.cpuEnabled, difficulty: this.cpuDifficulty };
       this.cpuEnabled = false;
       this.trainingDummyMode = "stand";
     }
+    this.player2Id = this.opponentForMode();
     this.phase = PHASE.SELECT;
     this.createFighters();
     this.prepareCharacterMotions();
@@ -317,6 +458,11 @@ export class GothTechnologyGame {
 
   startMatch(training = this.training) {
     this.training = training;
+    this.roundsToWin = GAME_MODES[this.gameMode]?.roundsToWin || 2;
+    if (!this.isReplay) this.replayFrames = [];
+    this.replayIndex = 0;
+    this.modeComplete = false;
+    this.matchEndPrompt = "RETURN TO TITLE";
     this.startRewardSession();
     this.roundNumber = 1;
     this.roundTimer = ROUND_SECONDS;
@@ -341,8 +487,10 @@ export class GothTechnologyGame {
     if (this.motionAssetsReady) return Promise.resolve(this.assets);
     if (this.motionLoadPromise) return this.motionLoadPromise;
     this.motionLoadError = "";
+    const manifests = [this.player1Id, this.player2Id]
+      .map((id) => FIGHTERS[id]?.manifestKey ?? id);
     this.motionLoadPromise = this.assets.loadCharacterMotions(
-      [this.player1Id, this.player2Id],
+      manifests,
       (progress) => {
         this.motionLoadingProgress = progress;
         this.render();
@@ -409,8 +557,14 @@ export class GothTechnologyGame {
     this.flash = 0;
     this.cpuDecisionTimer = 0;
     this.cpuDecision = {};
+    this.cpuController.reset();
+    this.trainingInputQueue = [];
+    this.trainingReadout = null;
     this.fighters[0].resetRound(360, 1);
     this.fighters[1].resetRound(920, -1);
+    if (this.gameMode === "survival" && this.survivalHealth != null) {
+      this.fighters[0].health = Math.min(this.fighters[0].config.maxHealth, this.survivalHealth);
+    }
     if (this.training) {
       this.fighters[0].meter = 100;
       this.fighters[1].meter = 100;
@@ -476,12 +630,28 @@ export class GothTechnologyGame {
     }
 
     this.faceFighters();
-    const p1Actions = this.input.actions(1);
+    const replayFrame = this.isReplay
+      ? (this.replayPlayback[this.replayIndex] ?? { p1: {}, p2: {} })
+      : null;
+    let p1Actions = replayFrame ? { ...replayFrame.p1 } : this.input.actions(1);
+    if (this.training && this.trainingInputDelayFrames > 0) {
+      this.trainingInputQueue.push(p1Actions);
+      p1Actions = this.trainingInputQueue.length > this.trainingInputDelayFrames
+        ? this.trainingInputQueue.shift()
+        : {};
+    }
     this.captureInputLog(p1Actions);
     if (Object.values(p1Actions).some(Boolean)) this.playerEngaged = true;
-    const p2Actions = this.training
-      ? this.trainingDummyActions(dt, p1Actions)
-      : (this.cpuEnabled ? this.cpuActions(dt) : this.input.actions(2));
+    const p2Actions = replayFrame
+      ? { ...replayFrame.p2 }
+      : (this.training
+        ? this.trainingDummyActions(dt, p1Actions)
+        : (this.cpuEnabled ? this.cpuActions(dt) : this.input.actions(2)));
+    if (this.isReplay) {
+      this.replayIndex = Math.min(this.replayIndex + 1, this.replayPlayback.length);
+    } else if (!this.training) {
+      this.replayFrames.push({ p1: activeActions(p1Actions), p2: activeActions(p2Actions) });
+    }
 
     this.fighters[0].update(dt, p1Actions, this.fighters[1], this);
     this.fighters[1].update(dt, p2Actions, this.fighters[0], this);
@@ -501,6 +671,7 @@ export class GothTechnologyGame {
     this.faceFighters();
     this.rewardRoundTicks += 1;
     this.rewardTotalTicks += 1;
+    this.checkChallengeProgress();
     this.checkRoundEnd();
   }
 
@@ -520,14 +691,17 @@ export class GothTechnologyGame {
 
     if (this.phase === PHASE.TITLE) {
       this.menuHitAreas = [
-        { x: 494, y: 318, w: 292, h: 48, action: () => this.openCharacterSelect(false) },
-        { x: 494, y: 376, w: 292, h: 48, action: () => this.openCharacterSelect(true) },
-        { x: 494, y: 434, w: 292, h: 48, action: () => this.openGameSelect() },
-        { x: 494, y: 492, w: 292, h: 48, action: () => this.cycleCpuMode() },
-        { x: 494, y: 550, w: 292, h: 48, action: () => this.openSettings() }
+        { x: 330, y: 318, w: 292, h: 48, action: () => this.openMode("versus") },
+        { x: 658, y: 318, w: 292, h: 48, action: () => this.openMode("arcade") },
+        { x: 330, y: 376, w: 292, h: 48, action: () => this.openMode("survival") },
+        { x: 658, y: 376, w: 292, h: 48, action: () => this.openMode("challenge") },
+        { x: 330, y: 434, w: 292, h: 48, action: () => this.openMode("training") },
+        { x: 658, y: 434, w: 292, h: 48, action: () => this.openMode("replay") },
+        { x: 330, y: 492, w: 292, h: 48, action: () => this.openGameSelect() },
+        { x: 658, y: 492, w: 292, h: 48, action: () => this.openSettings() }
       ];
       this.audio.startMusic("menu");
-      if (this.input.consume("ui.confirm")) this.openCharacterSelect(false);
+      if (this.input.consume("ui.confirm")) this.openMode("versus");
       return;
     }
 
@@ -549,9 +723,12 @@ export class GothTechnologyGame {
 
     if (this.phase === PHASE.SELECT) {
       this.menuHitAreas = [
-        { x: 90, y: 128, w: 500, h: 420, action: () => this.selectPlayer1("KALYX") },
-        { x: 690, y: 128, w: 500, h: 420, action: () => this.selectPlayer1("MASTER_EZRA") },
-        { x: 494, y: 570, w: 292, h: 52, action: () => this.startVersus() }
+        { x: 70, y: 112, w: 555, h: 205, action: () => this.selectPlayer1(ROSTER_IDS[0]) },
+        { x: 655, y: 112, w: 555, h: 205, action: () => this.selectPlayer1(ROSTER_IDS[1]) },
+        { x: 70, y: 330, w: 555, h: 205, action: () => this.selectPlayer1(ROSTER_IDS[2]) },
+        { x: 655, y: 330, w: 555, h: 205, action: () => this.selectPlayer1(ROSTER_IDS[3]) },
+        { x: 330, y: 570, w: 292, h: 52, action: () => this.cycleStage() },
+        { x: 658, y: 570, w: 292, h: 52, action: () => this.startVersus() }
       ];
       if (
         this.input.consume("p1.left") ||
@@ -559,7 +736,9 @@ export class GothTechnologyGame {
         this.input.consume("p2.left") ||
         this.input.consume("p2.right")
       ) {
-        this.selectPlayer1(this.player1Id === "KALYX" ? "MASTER_EZRA" : "KALYX");
+        const delta = this.input.isDown("p1.left") || this.input.isDown("p2.left") ? -1 : 1;
+        this.rosterIndex = (this.rosterIndex + delta + ROSTER_IDS.length) % ROSTER_IDS.length;
+        this.selectPlayer1(ROSTER_IDS[this.rosterIndex]);
       }
       if (this.input.consume("ui.confirm")) this.startVersus();
       if (this.input.consume("ui.back")) {
@@ -585,7 +764,7 @@ export class GothTechnologyGame {
     }
     if ((this.phase === PHASE.ROUND_END || this.phase === PHASE.MATCH_END) && this.input.consume("ui.confirm")) {
       if (this.phase === PHASE.MATCH_END) {
-        this.returnToTitle();
+        this.advanceAfterMatch();
       }
       else this.startRound();
     }
@@ -593,7 +772,7 @@ export class GothTechnologyGame {
   }
 
   cycleTrainingDummy() {
-    const modes = ["stand", "guard", "crouch", "jump"];
+    const modes = ["stand", "guard", "crouch", "jump", "guardAfterHit", "randomGuard", "throwTech", "wakeUp"];
     const index = modes.indexOf(this.trainingDummyMode);
     this.trainingDummyMode = modes[(index + 1) % modes.length];
     this.trainingPlaybackIndex = 0;
@@ -617,7 +796,33 @@ export class GothTechnologyGame {
     this.announce("Training playback started");
   }
 
+  saveTrainingRecording() {
+    if (!this.trainingRecording.length) {
+      this.announce("No training recording to save");
+      return;
+    }
+    writeStorage(TRAINING_RECORDING_KEY, { frames: this.trainingRecording });
+    this.announce("Training recording saved");
+  }
+
+  loadTrainingRecording() {
+    const saved = readStorage(TRAINING_RECORDING_KEY, { frames: [] });
+    this.trainingRecording = Array.isArray(saved.frames) ? saved.frames.slice(0, 600) : [];
+    this.trainingPlaybackIndex = 0;
+    this.announce(this.trainingRecording.length ? "Training recording loaded" : "No saved training recording");
+  }
+
+  updateTrainingSettings(patch = {}) {
+    Object.assign(this, patch);
+    if ("trainingHitboxes" in patch) this.debug = Boolean(this.trainingHitboxes);
+    this.trainingInputQueue = [];
+    this.trainingPlaybackIndex = 0;
+    this.lastAccessibleState = "";
+    this.render();
+  }
+
   trainingDummyActions(dt, playerActions) {
+    this.trainingPatternTimer += dt;
     if (this.trainingDummyMode === "record") {
       if (this.trainingRecording.length < 600) this.trainingRecording.push({ ...playerActions });
       else this.trainingDummyMode = "stand";
@@ -627,6 +832,26 @@ export class GothTechnologyGame {
       const actions = this.trainingRecording[this.trainingPlaybackIndex] ?? {};
       this.trainingPlaybackIndex = (this.trainingPlaybackIndex + 1) % this.trainingRecording.length;
       return { ...actions };
+    }
+    const dummy = this.fighters[1];
+    const player = this.fighters[0];
+    const away = player.x < dummy.x ? "right" : "left";
+    const guardMode = this.trainingDummyMode === "guard" ? "always" : this.trainingGuardMode;
+    const shouldGuard = guardMode === "always" ||
+      (guardMode === "afterHit" && dummy.lastHitTimer > 0) ||
+      (guardMode === "random" && Math.floor(this.trainingPatternTimer * 1.6) % 2 === 0) ||
+      this.trainingDummyMode === "guardAfterHit" && dummy.lastHitTimer > 0 ||
+      this.trainingDummyMode === "randomGuard" && Math.floor(this.trainingPatternTimer * 1.6) % 2 === 0;
+    if (shouldGuard) {
+      return { [away]: true, down: player.currentAttack?.data?.level === "low" };
+    }
+    if ((this.trainingThrowTech || this.trainingDummyMode === "throwTech") && player.currentAttack?.name === "throw") {
+      return { throw: true };
+    }
+    if ((this.trainingWakeupAction !== "none" || this.trainingDummyMode === "wakeUp") && dummy.knockdown > 0 && dummy.knockdown < 0.18) {
+      const action = this.trainingWakeupAction === "none" ? "lightPunch" : this.trainingWakeupAction;
+      if (action === "block") return { [away]: true };
+      return { [action]: true };
     }
     if (this.trainingDummyMode === "guard") {
       return this.fighters[0].x < this.fighters[1].x ? { right: true } : { left: true };
@@ -655,84 +880,20 @@ export class GothTechnologyGame {
       fighter.meter = 100;
     });
     this.inputLog = ["READY"];
+    this.trainingReadout = null;
+    this.trainingInputQueue = [];
     this.announce("Training position reset");
   }
 
   cpuActions(dt = 1 / 60) {
-    const cpu = this.fighters[1];
-    const player = this.fighters[0];
-    const dist = player.x - cpu.x;
-    const abs = Math.abs(dist);
-    const actions = {};
-    const aggression = this.cpuDifficulty === "easy" ? 0.58 : this.cpuDifficulty === "hard" ? 1.42 : 1;
-    const reactionScale = this.cpuDifficulty === "easy" ? 1.35 : this.cpuDifficulty === "hard" ? 0.72 : 1;
-    if (cpu.isKO || (!this.playerEngaged && this.roundTimer > ROUND_SECONDS - 12)) return actions;
-
-    this.cpuDecisionTimer = Math.max(0, this.cpuDecisionTimer - dt);
-    if (this.cpuDecisionTimer > 0) {
-      return { ...this.cpuDecision };
-    }
-
-    const toward = dist > 0 ? "right" : "left";
-    const away = dist > 0 ? "left" : "right";
-    const margin = cpu.config.stageMargin ?? 0;
-    const minX = WORLD.left + margin;
-    const maxX = WORLD.right - margin;
-    const nearLeftEdge = cpu.x <= minX + 18;
-    const nearRightEdge = cpu.x >= maxX - 18;
-    const holdMin = 188;
-    const holdMax = 342;
-    const playerAttacking = Boolean(player.currentAttack);
-    const cpuCanAct = !cpu.currentAttack && !cpu.hitstun && !cpu.blockstun && !cpu.knockdown;
-    const incomingProjectile = this.projectiles.find((projectile) => (
-      projectile.owner.id !== cpu.id &&
-      !projectile.dead &&
-      Math.sign(cpu.x - projectile.x) === projectile.direction &&
-      Math.abs(cpu.x - projectile.x) < 390 &&
-      Math.abs(projectile.y - (cpu.y - 122)) < 118
-    ));
-
-    if (nearLeftEdge) actions.right = true;
-    else if (nearRightEdge) actions.left = true;
-    else if (abs > holdMax) actions[toward] = true;
-    else if (abs < holdMin) actions[away] = true;
-
-    if (incomingProjectile) {
-      actions[away] = true;
-      if (Math.random() < 0.68) actions.down = true;
-      if (cpuCanAct && Math.abs(cpu.x - incomingProjectile.x) > 240 && Math.random() < 0.28 * aggression) actions.up = true;
-      if (cpuCanAct && abs > 280 && Math.random() < 0.18 * aggression) actions.special = true;
-      this.cpuDecision = { ...actions };
-      this.cpuDecisionTimer = (0.08 + Math.random() * 0.06) * reactionScale;
-      return actions;
-    }
-
-    const playerWhiffing = player.currentAttack && player.currentAttack.elapsed > (player.currentAttack.data?.active?.[1] ?? 0.14);
-    if (cpuCanAct && playerWhiffing && abs < 190 && Math.random() < 0.42 * aggression) {
-      if (abs > 118) actions[toward] = true;
-      actions.heavyPunch = Math.random() < 0.56;
-      actions.lightKick = !actions.heavyPunch;
-    }
-
-    if (playerAttacking && abs < 210) {
-      if (Math.random() < 0.58) {
-        if (away === "left" && !nearLeftEdge) actions.left = true;
-        if (away === "right" && !nearRightEdge) actions.right = true;
-        if (player.currentAttack?.data?.level === "low") actions.down = true;
-      }
-      if (cpuCanAct && abs < 120 && Math.random() < 0.14) actions.lightKick = true;
-    }
-    if (player.lastActions?.down && Math.random() < 0.16) actions.down = true;
-    if (cpuCanAct && abs > 260 && Math.random() < 0.1 * aggression) actions.special = true;
-    if (cpuCanAct && cpu.meter >= 100 && abs > 175 && Math.random() < 0.06 * aggression) actions.super = true;
-    if (cpuCanAct && abs < 115 && Math.random() < 0.2 * aggression) actions.lightKick = true;
-    if (cpuCanAct && abs < 175 && Math.random() < 0.16 * aggression) actions.heavyPunch = true;
-    if (cpuCanAct && abs < 82 && Math.random() < 0.12 * aggression) actions.throw = true;
-    if (cpuCanAct && abs > 180 && abs < 440 && cpu.assistCooldowns.assist1 <= 0 && Math.random() < 0.04) actions.assist1 = true;
-    if (cpuCanAct && abs < 230 && cpu.assistCooldowns.assist2 <= 0 && Math.random() < 0.035) actions.assist2 = true;
-    this.cpuDecision = { ...actions };
-    this.cpuDecisionTimer = (0.16 + Math.random() * 0.08) * reactionScale;
-    return actions;
+    if (!this.playerEngaged && this.roundTimer > ROUND_SECONDS - 3) return {};
+    return this.cpuController.next(dt, {
+      cpu: this.fighters[1],
+      player: this.fighters[0],
+      projectiles: this.projectiles,
+      difficulty: this.cpuDifficulty,
+      world: WORLD
+    });
   }
 
   captureInputLog(actions) {
@@ -755,6 +916,122 @@ export class GothTechnologyGame {
     this.rewardMeaningfulActions += 1;
     this.inputLog.unshift(labels.join("+"));
     this.inputLog = this.inputLog.slice(0, 6);
+  }
+
+  recordCombatEvent(event = {}) {
+    const player = this.fighters[0];
+    if (event.attacker === player && event.damage) this.stats.damage += Math.max(0, Math.round(event.damage));
+    if (event.type === "perfectBlock" && event.defender === player) this.stats.perfectBlocks += 1;
+    if (event.type === "throwTech" && event.defender === player) this.stats.throwTechs += 1;
+    writeStorage(STATS_KEY, this.stats);
+
+    if (this.gameMode !== "challenge" || event.attacker?.slot !== 1 && event.defender?.slot !== 1) return;
+    const challenge = CHALLENGES[this.challengeIndex];
+    if (!challenge || this.challengeComplete) return;
+    if (challenge.event === "combo" && event.attacker?.slot === 1) {
+      this.challengeProgress = Math.max(this.challengeProgress, event.comboHits ?? 0);
+    } else if (challenge.event === event.type) {
+      this.challengeProgress += 1;
+    }
+  }
+
+  checkChallengeProgress() {
+    if (this.gameMode !== "challenge" || this.challengeComplete || this.phase !== PHASE.FIGHT) return;
+    const challenge = CHALLENGES[this.challengeIndex];
+    if (!challenge || this.challengeProgress < challenge.target) return;
+    this.challengeComplete = true;
+    this.fighters[0].setMotion("VICTORY", true);
+    this.fighters[1].setMotion("DEFEAT", true);
+    this.phase = PHASE.MATCH_END;
+    this.stats.challenges = Math.max(this.stats.challenges, this.challengeIndex + 1);
+    this.modeCanContinue = this.challengeIndex < CHALLENGES.length - 1;
+    this.modeComplete = !this.modeCanContinue;
+    this.matchWinner = this.fighters[0];
+    this.matchEndPrompt = this.modeCanContinue ? "NEXT CHALLENGE" : "CHALLENGES COMPLETE";
+    writeStorage(STATS_KEY, this.stats);
+    this.audio.beep("super");
+    this.announce(`${challenge.name} complete`);
+  }
+
+  saveReplay() {
+    if (!this.replayFrames.length || this.training || this.isReplay) return;
+    writeStorage(REPLAY_KEY, {
+      version: 1,
+      player1Id: this.player1Id,
+      player2Id: this.player2Id,
+      stageIndex: this.stageIndex,
+      frames: this.replayFrames
+    });
+  }
+
+  startReplay() {
+    const saved = readStorage(REPLAY_KEY, { frames: [] });
+    if (!Array.isArray(saved.frames) || !saved.frames.length) {
+      this.announce("No completed match replay is saved");
+      return;
+    }
+    this.gameMode = "replay";
+    this.training = false;
+    this.cpuEnabled = false;
+    this.player1Id = FIGHTERS[saved.player1Id] ? saved.player1Id : "MASTER_EZRA";
+    this.player2Id = FIGHTERS[saved.player2Id] ? saved.player2Id : "KALYX";
+    this.stageIndex = Math.max(0, Math.min(STAGES.length - 1, Number(saved.stageIndex) || 0));
+    this.replayPlayback = saved.frames;
+    this.isReplay = true;
+    this.createFighters();
+    this.phase = PHASE.VERSUS;
+    this.roundMessageTimer = 0.7;
+    this.prepareCharacterMotions();
+    this.prepareFightAssets();
+    this.announce("Playing last match replay");
+  }
+
+  completeModeMatch(playerWon) {
+    if (this.isReplay || this.gameMode === "replay" || this.training) return;
+    this.stats.matches += 1;
+    this.stats[playerWon ? "wins" : "losses"] += 1;
+    this.modeCanContinue = false;
+    this.modeComplete = false;
+    if (this.gameMode === "arcade" && playerWon) {
+      this.arcadeStage += 1;
+      const ladderLength = ARCADE_LADDER.filter((id) => id !== this.player1Id).length;
+      if (this.arcadeStage >= ladderLength) {
+        this.stats.arcadeClears += 1;
+        this.modeComplete = true;
+        this.matchEndPrompt = "ARCADE CLEARED";
+      } else {
+        this.modeCanContinue = true;
+        this.matchEndPrompt = "NEXT OPPONENT";
+      }
+    } else if (this.gameMode === "survival" && playerWon) {
+      this.survivalStreak += 1;
+      this.stats.survivalBest = Math.max(this.stats.survivalBest, this.survivalStreak);
+      this.survivalHealth = Math.min(this.fighters[0].config.maxHealth, this.fighters[0].health + 180);
+      this.modeCanContinue = true;
+      this.matchEndPrompt = `STREAK ${this.survivalStreak} / NEXT FIGHT`;
+    } else if (this.gameMode === "survival") {
+      this.matchEndPrompt = `SURVIVAL STREAK ${this.survivalStreak}`;
+    }
+    writeStorage(STATS_KEY, this.stats);
+    this.saveReplay();
+  }
+
+  advanceAfterMatch() {
+    if (!this.modeCanContinue) {
+      this.returnToTitle();
+      return;
+    }
+    if (this.gameMode === "challenge") {
+      this.challengeIndex += 1;
+      this.challengeProgress = 0;
+      this.challengeComplete = false;
+    }
+    this.modeCanContinue = false;
+    this.player2Id = this.opponentForMode();
+    this.stageIndex = (this.stageIndex + 1) % STAGES.length;
+    this.createFighters();
+    this.buildStageCache();
+    this.startMatch(false);
   }
 
   keepFightersSeparated() {
@@ -809,6 +1086,7 @@ export class GothTechnologyGame {
   }
 
   checkRoundEnd() {
+    if (this.phase !== PHASE.FIGHT) return;
     const [p1, p2] = this.fighters;
     if (this.training) return;
     if (p1.throwState || p2.throwState) return;
@@ -841,10 +1119,12 @@ export class GothTechnologyGame {
     winner.roundWins += 1;
     this.roundResultText = outcome.reason === "timeout" ? "TIME UP" : "KO";
     this.roundResultSubtext = "NEXT ROUND";
-    if (winner.roundWins >= 2) {
+    if (winner.roundWins >= this.roundsToWin) {
       this.matchWinner = winner;
       this.phase = PHASE.MATCH_END;
       this.audio.startMusic("menu");
+      this.matchEndPrompt = "RETURN TO TITLE";
+      this.completeModeMatch(winner === p1);
       this.emitRewardEvent("fighter.match_completed", {
         winningSide: winnerSide,
         playerRoundWins: p1.roundWins,
@@ -875,7 +1155,7 @@ export class GothTechnologyGame {
   }
 
   spawnProjectile(owner, name) {
-    const attack = ATTACKS[name];
+    const attack = owner.getAttackData(name) ?? ATTACKS[name];
     const kind = name === "super" ? "super" : "special";
     const handSockets = {
       KALYX: {
@@ -904,6 +1184,39 @@ export class GothTechnologyGame {
       color: owner.id === "KALYX" ? "#f2a13d" : "#9ed8ff"
     }));
     this.audio.beep(name === "super" ? "super" : "projectile");
+  }
+
+  spawnFighterVfx(owner, name, phase = "charge") {
+    const isKalyx = owner.config.manifestKey === "KALYX";
+    const superMove = name === "super";
+    const skill = name === "skill";
+    const image = skill
+      ? (isKalyx ? this.assets.images.smoke : this.assets.images.blockShield)
+      : (isKalyx
+        ? this.assets.images[superMove ? "kalyxFireSlash" : "kalyxShadowClaw"]
+        : this.assets.images[superMove ? "ezraOwlArc" : "ezraBlueBurst"]);
+    if (!image) return;
+    if (phase === "charge") {
+      this.effects.push(new AttachedSpriteEffect({
+        owner,
+        offsetX: skill ? -18 : (superMove ? 22 : 56),
+        offsetY: skill ? -42 : (superMove ? -54 : -92),
+        image,
+        duration: skill ? 0.34 : (superMove ? 0.48 : 0.3),
+        scale: skill ? 0.56 : (superMove ? 0.62 : 0.42),
+        alpha: skill ? 0.62 : 0.76
+      }));
+      return;
+    }
+    this.effects.push(new SpriteEffect({
+      x: owner.x + owner.facing * (skill ? -28 : 92),
+      y: owner.y + (skill ? 4 : -48),
+      image,
+      duration: skill ? 0.3 : (superMove ? 0.42 : 0.24),
+      scale: skill ? 0.7 : (superMove ? 0.72 : 0.46),
+      flip: owner.facing < 0,
+      alpha: skill ? 0.66 : 0.84
+    }));
   }
 
   spawnAssist(owner, slot) {
@@ -950,16 +1263,17 @@ export class GothTechnologyGame {
 
     ctx.save();
     if (this.shake > 0 && !this.reducedMotion) {
-      const shakeX = (Math.random() - 0.5) * this.shake;
-      const shakeY = (Math.random() - 0.5) * this.shake * 0.65;
+      const shakeAmount = this.shake * (this.settings.shake ?? 1);
+      const shakeX = (Math.random() - 0.5) * shakeAmount;
+      const shakeY = (Math.random() - 0.5) * shakeAmount * 0.65;
       ctx.translate(shakeX, shakeY);
     }
     this.drawBackground(ctx, false);
     this.faceFighters();
     for (const assist of this.assists) assist.render(ctx);
     for (const projectile of this.projectiles) projectile.render(ctx);
-    this.fighters[0].render(ctx, this.debug);
-    this.fighters[1].render(ctx, this.debug);
+    this.fighters[0].render(ctx, this.debug || this.trainingHitboxes);
+    this.fighters[1].render(ctx, this.debug || this.trainingHitboxes);
     for (const effect of this.effects) effect.render(ctx);
     ctx.restore();
     drawFightHud(ctx, this);
@@ -970,7 +1284,10 @@ export class GothTechnologyGame {
       drawRoundMessage(ctx, this.roundResultText || "ROUND COMPLETE", this.roundResultSubtext || "NEXT ROUND");
     }
     if (this.phase === PHASE.MATCH_END) {
-      drawRoundMessage(ctx, `${this.matchWinner?.config.name ?? "FIGHTER"} WINS`, "MATCH COMPLETE");
+      const headline = this.gameMode === "challenge" && this.challengeComplete
+        ? `${CHALLENGES[this.challengeIndex]?.name ?? "CHALLENGE"} COMPLETE`
+        : `${this.matchWinner?.config.name ?? "FIGHTER"} WINS`;
+      drawRoundMessage(ctx, headline, this.matchEndPrompt || "MATCH COMPLETE");
     }
     if (this.phase === PHASE.PAUSE) drawPause(ctx, this);
     if (this.debug) drawDiagnostics(ctx, this);
@@ -1033,6 +1350,7 @@ export class GothTechnologyGame {
     layer.height = CANVAS_HEIGHT;
     const ctx = layer.getContext("2d", { alpha: false });
     const { background, farTrees, ground } = this.assets.images;
+    const stage = STAGES[this.stageIndex] ?? STAGES[0];
     ctx.fillStyle = "#050403";
     ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
     if (background) ctx.drawImage(background, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
@@ -1042,10 +1360,10 @@ export class GothTechnologyGame {
       ctx.globalAlpha = 1;
     }
     const grade = ctx.createLinearGradient(0, 0, 0, CANVAS_HEIGHT);
-    grade.addColorStop(0, "rgba(0,0,0,0.72)");
-    grade.addColorStop(0.35, "rgba(0,0,0,0.16)");
+    grade.addColorStop(0, stage.grade[0]);
+    grade.addColorStop(0.42, stage.grade[1]);
     grade.addColorStop(0.76, "rgba(0,0,0,0.28)");
-    grade.addColorStop(1, "rgba(0,0,0,0.78)");
+    grade.addColorStop(1, stage.grade[2]);
     ctx.fillStyle = grade;
     ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
     ctx.fillStyle = "rgba(5, 4, 3, 0.22)";
@@ -1090,12 +1408,13 @@ export class GothTechnologyGame {
 
     if (this.stageCache) ctx.drawImage(this.stageCache, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
     const fog = this.assets?.images.fog;
+    const stage = STAGES[this.stageIndex] ?? STAGES[0];
     if (fog) {
       const width = CANVAS_WIDTH * 1.14;
       const drift = this.reducedMotion ? 0 : (this.parallax * 18) % width;
       ctx.save();
       ctx.globalCompositeOperation = "screen";
-      ctx.globalAlpha = 0.2;
+      ctx.globalAlpha = stage.fogAlpha;
       ctx.drawImage(fog, -drift, 150, width, 244);
       ctx.drawImage(fog, width - drift, 150, width, 244);
       ctx.restore();
@@ -1112,7 +1431,7 @@ export class GothTechnologyGame {
     if (embers) {
       const drift = this.reducedMotion ? 0 : (this.parallax * 24) % CANVAS_WIDTH;
       ctx.save();
-      ctx.globalAlpha = 0.18;
+      ctx.globalAlpha = stage.emberAlpha;
       ctx.drawImage(embers, -drift, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
       ctx.drawImage(embers, CANVAS_WIDTH - drift, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
       ctx.restore();

@@ -1,5 +1,7 @@
 import { CANVAS_HEIGHT, CANVAS_WIDTH, COLORS, ROUND_SECONDS } from "../config/constants.js";
-import { drawSpriteFrame } from "../engine/assets.js?v=motion-atlas8-ezra-jump";
+import { FIGHTERS } from "../config/assets.js?v=motion-atlas9-complete-fighter";
+import { CHALLENGES, GAME_MODES, ROSTER_IDS, STAGES } from "../config/content.js?v=motion-atlas9-complete-fighter";
+import { drawSpriteFrame } from "../engine/assets.js?v=motion-atlas9-complete-fighter";
 
 const panel = (ctx, x, y, w, h, stroke = COLORS.gold) => {
   ctx.save();
@@ -33,6 +35,17 @@ export const drawBar = (ctx, x, y, w, h, pct, color, back = "rgba(255,255,255,0.
 
 export const drawFightHud = (ctx, game) => {
   const [p1, p2] = game.fighters;
+  const hudScale = Math.max(0.8, Math.min(1, Number(game.settings?.hudScale) || 1));
+  ctx.save();
+  if (hudScale !== 1) {
+    ctx.translate(CANVAS_WIDTH / 2, 0);
+    ctx.scale(hudScale, hudScale);
+    ctx.translate(-CANVAS_WIDTH / 2, 0);
+  }
+  if (game.settings?.highContrast) {
+    ctx.fillStyle = "rgba(0,0,0,0.88)";
+    ctx.fillRect(18, 12, CANVAS_WIDTH - 36, 144);
+  }
   panel(ctx, 28, 24, 502, 112);
   panel(ctx, 750, 24, 502, 112, COLORS.blue);
   drawBar(ctx, 52, 54, 450, 22, p1.health / p1.config.maxHealth, "#d84332");
@@ -114,10 +127,16 @@ export const drawFightHud = (ctx, game) => {
   const opponentMode = game.training
     ? `DUMMY ${game.trainingDummyMode.toUpperCase()}`
     : (game.cpuEnabled ? `CPU ${game.cpuDifficulty.toUpperCase()} ${p2.config.name}` : "LOCAL 2P");
-  const mode = `${game.training ? "TRAINING" : "ARCADE"} ${opponentMode} ${game.debug ? "DEBUG BOXES" : ""}`;
+  const mode = `${GAME_MODES[game.gameMode]?.label || "VERSUS"} ${opponentMode} ${game.debug ? "DEBUG BOXES" : ""}`;
   ctx.fillText(mode, 640, 139);
+  if (game.gameMode === "challenge") {
+    const challenge = CHALLENGES[game.challengeIndex];
+    ctx.fillStyle = COLORS.goldBright;
+    ctx.font = "900 14px system-ui";
+    ctx.fillText(`${challenge.name}: ${challenge.description}  ${Math.min(game.challengeProgress, challenge.target)}/${challenge.target}`, 640, 182);
+  }
   if (game.training) {
-    panel(ctx, 430, game.showFrameData ? 574 : 612, 420, game.showFrameData ? 116 : 72, COLORS.blue);
+    panel(ctx, 386, game.showFrameData ? 548 : 612, 508, game.showFrameData ? 148 : 72, COLORS.blue);
     ctx.fillStyle = COLORS.white;
     ctx.font = "800 12px system-ui";
     const seconds = (game.trainingRecording.length / 60).toFixed(1);
@@ -134,8 +153,14 @@ export const drawFightHud = (ctx, game) => {
       ctx.fillText(`${p1.motion}  FRAME ${frame + 1}  ${active ? "ACTIVE" : "INACTIVE"}`, 640, 646);
       ctx.fillStyle = COLORS.blue;
       ctx.fillText(attack ? `START ${attack.startup?.toFixed(2) ?? "-"}  ACTIVE ${attack.active?.map((value) => value.toFixed(2)).join("-") ?? "-"}  REC ${attack.recovery?.toFixed(2) ?? "-"}` : "READY STATE", 640, 670);
+      const readout = game.trainingReadout;
+      if (readout) {
+        ctx.fillStyle = readout.outcome === "hit" ? "#8ff0a4" : COLORS.goldBright;
+        ctx.fillText(`${readout.outcome.toUpperCase()}  ADV ${readout.advantageFrames >= 0 ? "+" : ""}${readout.advantageFrames}F  DAMAGE ${Math.round(readout.damage)}  SCALE ${Math.round(readout.comboScale * 100)}%`, 640, 694);
+      }
     }
   }
+  ctx.restore();
   ctx.restore();
 };
 
@@ -164,18 +189,22 @@ export const drawTitle = (ctx, game) => {
   ctx.fillText("GOTHTECHNOLOGY", CANVAS_WIDTH / 2, 260);
   ctx.fillStyle = COLORS.blue;
   ctx.font = "700 18px system-ui";
-  const leftName = game.player1Id === "MASTER_EZRA" ? "MASTER EZRA" : "KALYX";
-  const rightName = game.player2Id === "MASTER_EZRA" ? "MASTER EZRA" : "KALYX";
-  const cpuName = game.player2Id === "MASTER_EZRA" ? "EZRA" : "KALYX";
+  const leftName = FIGHTERS[game.player1Id]?.name || "KALYX";
+  const rightName = FIGHTERS[game.player2Id]?.name || "MASTER EZRA";
   ctx.fillText(`${leftName} VS ${rightName}`, CANVAS_WIDTH / 2, 292);
-  drawMenuButton(ctx, 494, 318, 292, 48, "PICK FIGHTER");
-  drawMenuButton(ctx, 494, 376, 292, 48, "TRAINING SELECT");
-  drawMenuButton(ctx, 494, 434, 292, 48, "GAME SELECT");
-  drawMenuButton(ctx, 494, 492, 292, 48, game.cpuEnabled ? `CPU ${cpuName}: ${game.cpuDifficulty.toUpperCase()}` : "LOCAL 2P: GAMEPADS");
-  drawMenuButton(ctx, 494, 550, 292, 48, "CONTROLS");
+  drawMenuButton(ctx, 330, 318, 292, 48, "VERSUS");
+  drawMenuButton(ctx, 658, 318, 292, 48, "ARCADE");
+  drawMenuButton(ctx, 330, 376, 292, 48, "SURVIVAL");
+  drawMenuButton(ctx, 658, 376, 292, 48, "CHALLENGE");
+  drawMenuButton(ctx, 330, 434, 292, 48, "TRAINING");
+  drawMenuButton(ctx, 658, 434, 292, 48, "REPLAY");
+  drawMenuButton(ctx, 330, 492, 292, 48, "GAME SELECT");
+  drawMenuButton(ctx, 658, 492, 292, 48, "SETTINGS");
   ctx.fillStyle = "rgba(255, 246, 211, 0.55)";
   ctx.font = "700 13px system-ui";
-  ctx.fillText("ENTER STARTS  /  P PAUSES  /  TWO GAMEPADS SUPPORTED", CANVAS_WIDTH / 2, 632);
+  const cpuLabel = game.cpuEnabled ? `CPU ${game.cpuDifficulty.toUpperCase()}` : "LOCAL 2P";
+  ctx.fillText(`${cpuLabel}  /  ${game.stats.matches} MATCHES  /  ${game.stats.wins} WINS  /  SURVIVAL ${game.stats.survivalBest}`, CANVAS_WIDTH / 2, 578);
+  ctx.fillText("ENTER: VERSUS  /  C: CHANGE CPU  /  TWO GAMEPADS SUPPORTED", CANVAS_WIDTH / 2, 612);
   ctx.restore();
 };
 
@@ -334,14 +363,22 @@ export const drawCharacterSelect = (ctx, game) => {
   ctx.textAlign = "center";
   ctx.fillStyle = COLORS.white;
   ctx.font = "900 42px Georgia";
-  ctx.fillText("CHARACTER SELECT", 640, 86);
-  const kalyx = game.fighters.find((fighter) => fighter.id === "KALYX");
-  const ezra = game.fighters.find((fighter) => fighter.id === "MASTER_EZRA");
-  drawCharacterCard(ctx, 90, 128, 500, 420, kalyx, "KALYX", "SHADOW RUSHDOWN", game.player1Id === "KALYX", COLORS.goldBright);
-  drawCharacterCard(ctx, 690, 128, 500, 420, ezra, "MASTER EZRA", "BLUE CONTROL", game.player1Id === "MASTER_EZRA", COLORS.blue);
-  drawSelectBadge(ctx, game.player1Id === "KALYX" ? 140 : 740, 164, "P1");
-  drawSelectBadge(ctx, game.player2Id === "KALYX" ? 540 : 1140, 164, game.training ? "DUMMY" : (game.cpuEnabled ? "CPU" : "P2"));
-  drawMenuButton(ctx, 494, 570, 292, 52, "VERSUS");
+  ctx.fillText(`${GAME_MODES[game.gameMode]?.label || "VERSUS"} SELECT`, 640, 74);
+  const cards = [
+    [70, 112, ROSTER_IDS[0], COLORS.goldBright],
+    [655, 112, ROSTER_IDS[1], COLORS.blue],
+    [70, 330, ROSTER_IDS[2], "#c28cff"],
+    [655, 330, ROSTER_IDS[3], "#82f0d2"]
+  ];
+  for (const [x, y, characterId, color] of cards) {
+    const config = FIGHTERS[characterId];
+    const preview = { assets: game.assets, config };
+    drawCharacterCard(ctx, x, y, 555, 205, preview, config.name, config.title, game.player1Id === characterId, color);
+    if (game.player1Id === characterId) drawSelectBadge(ctx, x + 52, y + 42, "P1");
+    if (game.player2Id === characterId) drawSelectBadge(ctx, x + 498, y + 42, game.training ? "DUMMY" : (game.cpuEnabled ? "CPU" : "P2"));
+  }
+  drawMenuButton(ctx, 330, 570, 292, 52, STAGES[game.stageIndex].name);
+  drawMenuButton(ctx, 658, 570, 292, 52, "FIGHT");
   ctx.fillStyle = "rgba(255, 246, 211, 0.58)";
   ctx.font = "700 13px system-ui";
   ctx.fillText("CLICK A CARD OR PRESS LEFT / RIGHT, THEN ENTER", 640, 650);
@@ -353,7 +390,7 @@ export const drawCharacterSelect = (ctx, game) => {
     ctx.fillStyle = COLORS.blue;
     ctx.fillText(`PREPARING FIGHTERS AND ARENA ${progress}%`, 640, 676);
   } else {
-    ctx.fillText(game.training ? "TRAINING DUMMY STAND" : (game.cpuEnabled ? `${game.player2Id === "KALYX" ? "KALYX" : "MASTER EZRA"} CPU ${game.cpuDifficulty.toUpperCase()}` : "LOCAL 2P: KEYBOARD OR TWO GAMEPADS"), 640, 676);
+    ctx.fillText(game.training ? "TRAINING DUMMY STAND" : (game.cpuEnabled ? `${FIGHTERS[game.player2Id].name} CPU ${game.cpuDifficulty.toUpperCase()}` : "LOCAL 2P: KEYBOARD OR TWO GAMEPADS"), 640, 676);
   }
   ctx.restore();
 };
@@ -465,7 +502,7 @@ const drawCharacterCard = (ctx, x, y, w, h, fighter, name, subtitle, selected, c
   panel(ctx, x, y, w, h, color);
   ctx.save();
   ctx.beginPath();
-  ctx.roundRect(x + 14, y + 14, w - 28, h - 96, 6);
+  ctx.roundRect(x + 14, y + 14, w - 28, h - 82, 6);
   ctx.clip();
   const grade = ctx.createLinearGradient(x, y, x + w, y + h);
   grade.addColorStop(0, "#090807");
@@ -473,7 +510,7 @@ const drawCharacterCard = (ctx, x, y, w, h, fighter, name, subtitle, selected, c
   grade.addColorStop(1, "#030303");
   ctx.fillStyle = grade;
   ctx.fillRect(x + 14, y + 14, w - 28, h - 96);
-  if (fighter) drawFighterPortrait(ctx, fighter, x + w / 2, y + h - 76, 1.42);
+  if (fighter) drawFighterPortrait(ctx, fighter, x + w / 2 + 92, y + h - 74, 0.5);
   if (selected) {
     ctx.strokeStyle = color;
     ctx.lineWidth = 4;
@@ -482,14 +519,14 @@ const drawCharacterCard = (ctx, x, y, w, h, fighter, name, subtitle, selected, c
   ctx.restore();
   ctx.save();
   ctx.fillStyle = "rgba(0,0,0,0.72)";
-  ctx.fillRect(x + 14, y + h - 82, w - 28, 64);
+  ctx.fillRect(x + 14, y + h - 70, w - 28, 52);
   ctx.fillStyle = COLORS.white;
   ctx.textAlign = "left";
-  ctx.font = "900 28px Georgia";
-  ctx.fillText(name, x + 32, y + h - 50);
+  ctx.font = "900 22px Georgia";
+  ctx.fillText(name, x + 32, y + h - 43);
   ctx.fillStyle = color;
   ctx.font = "700 14px system-ui";
-  ctx.fillText(subtitle.toUpperCase(), x + 32, y + h - 25);
+  ctx.fillText(subtitle.toUpperCase(), x + 32, y + h - 23);
   ctx.restore();
 };
 
@@ -499,8 +536,9 @@ const drawFighterPortrait = (ctx, fighter, x, y, scale) => {
     const frame = Math.floor(performance.now() / 140) % anim.frames.length;
     drawSpriteFrame(ctx, anim, frame, x, y, {
       scale,
-      flip: fighter.config.id === "MASTER_EZRA",
-      alpha: 0.96
+      flip: fighter.config.manifestKey === "MASTER_EZRA",
+      alpha: 0.96,
+      filter: fighter.config.renderFilter ?? "none"
     });
     return frame;
   }

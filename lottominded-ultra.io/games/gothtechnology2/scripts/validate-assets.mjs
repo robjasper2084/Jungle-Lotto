@@ -7,7 +7,7 @@ const root = resolve(import.meta.dirname, "..");
 const failures = [];
 const REQUIRED_FRAME_COUNT = 6;
 const REQUIRED_PROVIDER = "Higgsfield Nano Banana Pro";
-const REQUIRED_SOURCE = "higgsfield-v2";
+const REQUIRED_SOURCES = new Set(["higgsfield-v2", "higgsfield-v3-body-vfx"]);
 const STABLE_HEIGHT_MOTIONS = new Set([
   "IDLE", "READY_STANCE", "WALK_FORWARD", "WALK_BACK", "RUN_FORWARD", "RUN_BACK",
   "DASH_FORWARD", "DASH_BACK", "CROUCH_IDLE", "CROUCH_WALK", "BLOCK_HIGH", "BLOCK_LOW",
@@ -53,7 +53,7 @@ for (const [characterId, character] of Object.entries(manifest.characters ?? {})
     if ((motion.uniqueFrames ?? 0) < REQUIRED_FRAME_COUNT) {
       failures.push(`${characterId}/${motionName}: ${motion.uniqueFrames ?? 0} unique frames, requires ${REQUIRED_FRAME_COUNT}`);
     }
-    if (motion.source !== REQUIRED_SOURCE) {
+    if (!REQUIRED_SOURCES.has(motion.source)) {
       failures.push(`${characterId}/${motionName}: unexpected source ${motion.source}`);
     }
     if (!motion.higgsfieldJobId) {

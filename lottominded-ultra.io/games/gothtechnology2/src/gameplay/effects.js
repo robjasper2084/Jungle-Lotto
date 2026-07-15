@@ -40,6 +40,22 @@ export class SpriteEffect {
   }
 }
 
+export class AttachedSpriteEffect extends SpriteEffect {
+  constructor({ owner, offsetX = 0, offsetY = -120, ...options }) {
+    super({ x: owner.x, y: owner.y, ...options });
+    this.owner = owner;
+    this.offsetX = offsetX;
+    this.offsetY = offsetY;
+  }
+
+  update(dt) {
+    this.x = this.owner.x + this.owner.facing * this.offsetX;
+    this.y = this.owner.y + this.offsetY;
+    this.flip = this.owner.facing < 0;
+    super.update(dt);
+  }
+}
+
 export class FloatingText {
   constructor(text, x, y, color = "#ffd66d") {
     this.text = text;

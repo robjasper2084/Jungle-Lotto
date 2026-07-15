@@ -1,8 +1,8 @@
 import { GRAVITY, GROUND_Y, WORLD } from "../config/constants.js";
-import { ATTACKS } from "../config/moves.js?v=motion-atlas8-ezra-jump";
-import { drawSpriteFrame } from "../engine/assets.js?v=motion-atlas8-ezra-jump";
+import { ATTACKS } from "../config/moves.js?v=motion-atlas9-complete-fighter";
+import { drawSpriteFrame } from "../engine/assets.js?v=motion-atlas9-complete-fighter";
 import { approach, clamp, makeRect } from "../engine/math.js";
-import { attackIntentFromActions, resolveCancelAttack } from "./commands.js?v=motion-atlas8-ezra-jump";
+import { attackIntentFromActions, resolveCancelAttack } from "./commands.js?v=motion-atlas9-complete-fighter";
 import { SpriteEffect } from "./effects.js";
 
 const MOTION_LOCKS = new Set([
@@ -102,8 +102,13 @@ export class Fighter {
     this.lastMoveDir = 0;
     this.dashTimer = 0;
     this.dashCooldown = 0;
+    this.dashRecoveryTimer = 0;
     this.dashForward = true;
     this.dashDir = facing;
+    this.characterSkillCooldown = 0;
+    this.parryTimer = 0;
+    this.airDashAvailable = true;
+    this.lastHitTimer = 0;
     this.landingLag = 0;
     this.jumpStartTimer = 0;
     this.attackBuffer = null;
@@ -137,8 +142,13 @@ export class Fighter {
     this.lastMoveDir = 0;
     this.dashTimer = 0;
     this.dashCooldown = 0;
+    this.dashRecoveryTimer = 0;
     this.dashForward = true;
     this.dashDir = facing;
+    this.characterSkillCooldown = 0;
+    this.parryTimer = 0;
+    this.airDashAvailable = true;
+    this.lastHitTimer = 0;
     this.landingLag = 0;
     this.jumpStartTimer = 0;
     this.attackBuffer = null;
@@ -193,7 +203,8 @@ export class Fighter {
       ? animation.playbackOrder
       : animation.frames.map((_, index) => index);
     const duration = order.reduce((sum, frameIndex) => sum + (animation.frames[frameIndex]?.duration_ms ?? 85), 0) / 1000;
-    return this.config.motionDurations?.[motion] ?? duration / (this.config.motionTimeScale ?? 1);
+    const timeScale = this.config.motionTimeScales?.[motion] ?? this.config.motionTimeScale ?? 1;
+    return this.config.motionDurations?.[motion] ?? duration / timeScale;
   }
 
   getMotionFrameIndex(motion = this.motion, elapsed = this.motionElapsed) {
@@ -263,6 +274,7 @@ export class Fighter {
     };
     this.setMotion(data.motion, true);
     if (data.startMotion) this.setMotion(data.startMotion, true);
+    if (name === "special" || name === "super") game.spawnFighterVfx?.(this, name, "charge");
     return true;
   }
 
@@ -287,6 +299,43 @@ export class Fighter {
   useAssist(slot, game) {
     if (this.assistCooldowns[slot] > 0 || this.isKO || this.knockdown) return;
     game.spawnAssist(this, slot);
+  }
+
+  useCharacterSkill(opponent, game) {
+    const cost = this.config.skillCost ?? 20;
+    if (
+      this.characterSkillCooldown > 0 ||
+      this.meter < cost ||
+      !this.grounded ||
+      this.currentAttack ||
+      this.hitstun ||
+      this.blockstun ||
+      this.knockdown ||
+      this.isKO
+    ) return false;
+
+    this.meter -= cost;
+    this.characterSkillCooldown = this.config.skillCooldown ?? 1;
+    if (this.config.archetype === "rushdown") {
+      const direction = opponent.x >= this.x ? 1 : -1;
+      const margin = this.config.stageMargin ?? 0;
+      this.x = clamp(opponent.x + direction * 92, WORLD.left + margin, WORLD.right - margin);
+      this.vx = direction * this.config.speed * 0.42;
+      this.invulnerable = Math.max(this.invulnerable, this.id === "KALYX_ECLIPSE" ? 0.3 : 0.22);
+      this.dashDir = direction;
+      this.dashForward = true;
+      this.dashRecoveryTimer = 0.1;
+      this.setMotion("DASH_FORWARD", true);
+      game.spawnFighterVfx?.(this, "skill", "release");
+      game.audio.beep("dash");
+    } else {
+      this.parryTimer = this.id === "EZRA_ASCENDANT" ? 0.48 : 0.36;
+      this.shieldTimer = Math.max(this.shieldTimer, this.parryTimer);
+      this.setMotion("BLOCK_HIGH", true);
+      game.spawnFighterVfx?.(this, "skill", "charge");
+      game.audio.beep("block");
+    }
+    return true;
   }
 
   readAttackIntent(actions) {
@@ -370,6 +419,7 @@ export class Fighter {
       return;
     }
     this.health = Math.max(0, this.health - damage);
+    this.lastHitTimer = 0.7;
     this.hitstun = stun;
     this.invulnerable = Math.max(this.invulnerable, 0.04);
     this.vx += knockback;
@@ -383,12 +433,17 @@ export class Fighter {
 
   update(dt, actions, opponent, game) {
     const wasGrounded = this.grounded;
+    const wasDashing = this.dashTimer > 0;
     this.lastActions = actions;
     this.motionElapsed += dt;
     this.specialCooldown = Math.max(0, this.specialCooldown - dt);
     this.superCooldown = Math.max(0, this.superCooldown - dt);
     this.dashTimer = Math.max(0, this.dashTimer - dt);
     this.dashCooldown = Math.max(0, this.dashCooldown - dt);
+    this.dashRecoveryTimer = Math.max(0, this.dashRecoveryTimer - dt);
+    this.characterSkillCooldown = Math.max(0, this.characterSkillCooldown - dt);
+    this.parryTimer = Math.max(0, this.parryTimer - dt);
+    this.lastHitTimer = Math.max(0, this.lastHitTimer - dt);
     this.landingLag = Math.max(0, this.landingLag - dt);
     this.jumpStartTimer = Math.max(0, this.jumpStartTimer - dt);
     this.invulnerable = Math.max(0, this.invulnerable - dt);
@@ -398,6 +453,10 @@ export class Fighter {
     this.guardTapTimer = Math.max(0, this.guardTapTimer - dt);
     this.guardFlash = Math.max(0, this.guardFlash - dt);
     this.throwTechTimer = Math.max(0, this.throwTechTimer - dt);
+    if (wasDashing && this.dashTimer === 0) {
+      this.dashRecoveryTimer = Math.max(this.dashRecoveryTimer, this.config.feel?.dashRecovery ?? 0.1);
+      if (this.grounded) this.setMotion("READY_STANCE", true);
+    }
     this.comboTimer = Math.max(0, this.comboTimer - dt);
     if (this.comboTimer === 0) {
       this.comboHits = 0;
@@ -423,7 +482,7 @@ export class Fighter {
     if (Math.abs(faceDelta) > 12) this.facing = faceDelta > 0 ? 1 : -1;
     const holdingBack = opponent.x > this.x ? actions.left : actions.right;
     const guarding = Boolean(holdingBack || (actions.down && this.grounded) || this.shieldTimer > 0);
-    if (guarding && !this.wasGuarding) this.guardTapTimer = 0.13;
+    if (guarding && !this.wasGuarding) this.guardTapTimer = this.config.guardTapWindow ?? 0.13;
     this.wasGuarding = guarding;
     if (actions.throw) this.throwTechTimer = 0.18;
 
@@ -435,10 +494,12 @@ export class Fighter {
       }
     }
 
-    const hardLocked = this.isKO || this.hitstun > 0 || this.blockstun > 0 || this.knockdown > 0;
+    const hardLocked = this.isKO || this.hitstun > 0 || this.blockstun > 0 || this.knockdown > 0 || this.parryTimer > 0;
     const motionLocked = this.isMotionPlaybackLocked();
     const locked = hardLocked || motionLocked;
-    const attackIntent = !hardLocked ? this.readAttackIntent(actions) : null;
+    const usedSkill = !hardLocked && actions.down && actions.special && this.useCharacterSkill(opponent, game);
+    const combatActions = usedSkill ? { ...actions, special: false } : actions;
+    const attackIntent = !hardLocked ? this.readAttackIntent(combatActions) : null;
     if (attackIntent && (this.currentAttack || this.landingLag > 0 || motionLocked)) {
       this.attackBuffer = { name: attackIntent, time: this.config.feel?.inputBuffer ?? 0.12 };
     }
@@ -473,6 +534,7 @@ export class Fighter {
         this.currentAttack.spawned = true;
         this.setMotion(data.motion, true);
         game.spawnProjectile(this, name);
+        game.spawnFighterVfx?.(this, name, "release");
       }
       if (data.finishMotion && !this.currentAttack.finishStarted && this.currentAttack.elapsed >= this.currentAttack.finishAt) {
         this.currentAttack.finishStarted = true;
@@ -486,7 +548,7 @@ export class Fighter {
 
     const dashing = this.dashTimer > 0;
     const stateLocked = hardLocked || this.isMotionPlaybackLocked();
-    const canMove = !stateLocked && !this.currentAttack && this.landingLag <= 0 && !dashing;
+    const canMove = !stateLocked && !this.currentAttack && this.landingLag <= 0 && this.dashRecoveryTimer <= 0 && !dashing;
     let desired = 0;
     const left = actions.left ? -1 : 0;
     const right = actions.right ? 1 : 0;
@@ -504,14 +566,27 @@ export class Fighter {
         this.y -= 1;
         this.setMotion("JUMP_START", true);
         this.jumpStartTimer = this.config.motionDurations?.JUMP_START ?? 0.12;
+        this.airDashAvailable = true;
         game.audio.beep("jump");
       }
-      if (actions.dash && desired !== 0 && this.grounded && this.dashCooldown <= 0) {
+      if (actions.dash && !this.grounded && this.config.airDash && this.airDashAvailable && this.dashCooldown <= 0) {
+        const airDirection = desired || this.facing;
+        this.airDashAvailable = false;
+        this.dashForward = airDirection === this.facing;
+        this.dashDir = airDirection;
+        this.dashTimer = 0.18;
+        this.dashCooldown = 0.38;
+        this.vx = airDirection * this.config.dashSpeed * 0.72;
+        this.vy = 0;
+        this.setMotion(this.dashForward ? "DASH_FORWARD" : "DASH_BACK", true);
+        game.spawnFighterVfx?.(this, "skill", "release");
+        game.audio.beep("dash");
+      } else if (actions.dash && desired !== 0 && this.grounded && this.dashCooldown <= 0) {
         const movingForward = desired === this.facing;
         this.dashForward = movingForward;
         this.dashDir = desired;
-        this.dashTimer = movingForward ? 0.16 : 0.22;
-        this.dashCooldown = movingForward ? 0.34 : 0.44;
+        this.dashTimer = this.config.motionDurations?.[movingForward ? "DASH_FORWARD" : "DASH_BACK"] ?? (movingForward ? 0.28 : 0.32);
+        this.dashCooldown = movingForward ? 0.42 : 0.5;
         this.vx = desired * this.config.dashSpeed * (movingForward ? 1 : 0.78);
         if (!movingForward) {
           this.vy = Math.min(this.vy, -165);
@@ -580,6 +655,7 @@ export class Fighter {
       if (!wasGrounded && !this.currentAttack && !stateLocked) {
         this.setMotion("LANDING", true);
         this.landingLag = this.config.feel?.landingLag ?? 0.04;
+        this.airDashAvailable = true;
         game.effects.push(new SpriteEffect({
           x: this.x,
           y: GROUND_Y + 18,
@@ -627,21 +703,24 @@ export class Fighter {
         scale: drawScale,
         flip: flipSprite,
         alpha: 0.24,
-        composite: "source-over"
+        composite: "source-over",
+        filter: this.config.renderFilter ?? "none"
       });
     }
     const drewPrimary = drawSpriteFrame(ctx, anim, frameIndex, this.x, this.y + 14, {
       scale: drawScale,
       flip: flipSprite,
       alpha: bodyAlpha,
-      composite: "source-over"
+      composite: "source-over",
+      filter: this.config.renderFilter ?? "none"
     });
     if (!drewPrimary && this.assets.animations[this.config.manifestKey]?.READY_STANCE) {
       drawSpriteFrame(ctx, this.assets.animations[this.config.manifestKey].READY_STANCE, 0, this.x, this.y + 14, {
         scale: this.config.scale,
         flip: flipSprite,
         alpha: 1,
-        composite: "source-over"
+        composite: "source-over",
+        filter: this.config.renderFilter ?? "none"
       });
     }
     ctx.restore();

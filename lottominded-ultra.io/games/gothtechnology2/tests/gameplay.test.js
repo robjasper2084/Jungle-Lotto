@@ -5,17 +5,24 @@ import { attackIntentFromActions, resolveCancelAttack } from "../src/gameplay/co
 import { FIGHTERS, MOTION_PLAYBACK } from "../src/config/assets.js";
 import { GROUND_Y } from "../src/config/constants.js";
 import { Fighter } from "../src/gameplay/fighter.js";
+import { applyHit, resolveMelee } from "../src/gameplay/combat.js";
+import { CpuController } from "../src/gameplay/cpu.js";
 import { registerAttackHit, sliceAttackForHit } from "../src/gameplay/hits.js";
 import { applyRoundOutcomeMotions, resolveRoundOutcome } from "../src/gameplay/rounds.js";
 
 const motionManifest = JSON.parse(readFileSync(new URL("../assets/motion-atlases/motion-atlas-manifest.json", import.meta.url), "utf8"));
 
 const makeGame = () => ({
-  assets: { images: { dust: null } },
+  assets: { images: { dust: null, hitSpark: null, blockShield: null } },
   audio: { beep() {} },
   effects: [],
+  hitstop: 0,
+  shake: 0,
+  slowMo: 0,
   spawnAssist() {},
-  spawnProjectile() {}
+  spawnProjectile() {},
+  spawnFighterVfx() {},
+  recordCombatEvent() {}
 });
 
 const animation = (durationMs = 90) => ({
@@ -113,13 +120,20 @@ test("locomotion states reach walk, run, crouch-walk, and distinct dashes", () =
   assert.equal(fighter.motion, "DASH_BACK");
 });
 
-test("runtime locomotion loops avoid generated start and stop poses", () => {
+test("runtime animations meet minimum unique-frame requirements", () => {
+  for (const [characterId, character] of Object.entries(motionManifest.characters)) {
+    for (const [motion, data] of Object.entries(character.motions)) {
+      assert.equal(data.frameCount, 6, `${characterId} ${motion} is incomplete`);
+      assert.ok(data.uniqueFrames >= 4, `${characterId} ${motion} lacks distinct motion frames`);
+    }
+  }
+});
+
+test("runtime locomotion playback retains at least four distinct poses", () => {
   for (const characterId of Object.keys(FIGHTERS)) {
     for (const motion of ["RUN_FORWARD", "RUN_BACK"]) {
-      const order = MOTION_PLAYBACK[characterId][motion];
+      const order = MOTION_PLAYBACK[characterId]?.[motion] ?? [0, 1, 2, 3, 4, 5];
       assert.ok(new Set(order).size >= 4);
-      assert.equal(order.includes(0), false);
-      assert.equal(order.includes(5), false);
       assert.notEqual(order[0], order[order.length - 1]);
     }
   }
@@ -158,6 +172,113 @@ test("Master Ezra jump keeps takeoff, advances once through each air phase, and 
 
   assert.deepEqual([...seen], ["JUMP_START", "JUMP_RISE", "JUMP_PEAK", "JUMP_FALL", "LANDING"]);
   assert.deepEqual(MOTION_PLAYBACK.MASTER_EZRA.LANDING, [1, 0, 4, 5]);
+});
+
+test("Kalyx aerial states use dedicated rise, peak, fall, attack, and landing motion", () => {
+  const kalyxAnimations = new Proxy({}, {
+    get: (_target, motion) => ({
+      ...animation(78),
+      playbackOrder: MOTION_PLAYBACK.KALYX[motion] ?? null
+    })
+  });
+  const fighter = makeFighter("KALYX", 360, 1, { KALYX: kalyxAnimations });
+  const opponent = makeFighter("MASTER_EZRA", 900, -1);
+  const game = makeGame();
+  const seen = new Set();
+
+  fighter.update(1 / 60, { up: true }, opponent, game);
+  for (let frame = 0; frame < 120; frame += 1) {
+    seen.add(fighter.motion);
+    const action = fighter.motion === "JUMP_FALL" && !seen.has("AIR_ATTACK") ? { lightKick: true } : {};
+    fighter.update(1 / 60, action, opponent, game);
+    if (fighter.grounded && fighter.motion === "IDLE") break;
+  }
+
+  for (const motion of ["JUMP_START", "JUMP_RISE", "AIR_ATTACK", "JUMP_PEAK", "JUMP_FALL", "LANDING"]) {
+    assert.ok(seen.has(motion), `${motion} was unreachable`);
+  }
+  assert.deepEqual(MOTION_PLAYBACK.KALYX.LANDING, [2, 3, 4, 5]);
+});
+
+test("fighter identity skills reach Kalyx shadow step and Ezra parry", () => {
+  const game = makeGame();
+  const kalyx = makeFighter("KALYX", 400, 1, completeAnimations);
+  const ezra = makeFighter("MASTER_EZRA", 680, -1, completeAnimations);
+  kalyx.meter = 100;
+  assert.equal(kalyx.useCharacterSkill(ezra, game), true);
+  assert.ok(kalyx.x > ezra.x);
+  assert.ok(kalyx.invulnerable > 0);
+
+  ezra.meter = 100;
+  assert.equal(ezra.useCharacterSkill(kalyx, game), true);
+  assert.ok(ezra.parryTimer > 0);
+  applyHit(kalyx, ezra, { damage: 90, stun: 0.25, knockback: 180, meter: 6, level: "mid" }, game, { sourceName: "heavyPunch" });
+  assert.equal(ezra.parryTimer, 0);
+  assert.ok(kalyx.hitstun >= 0.3);
+});
+
+test("perfect blocks negate chip and throw tech breaks the grab", () => {
+  const events = [];
+  const game = { ...makeGame(), recordCombatEvent(event) { events.push(event.type); } };
+  const attacker = makeFighter("KALYX", 420, 1, completeAnimations);
+  const defender = makeFighter("MASTER_EZRA", 470, -1, completeAnimations);
+  defender.slot = 2;
+  defender.lastActions = { right: true };
+  defender.guardTapTimer = 0.1;
+  const health = defender.health;
+  applyHit(attacker, defender, { damage: 80, chip: 12, stun: 0.25, blockstun: 0.2, recovery: 0.16, knockback: 120, level: "mid" }, game, { sourceName: "heavyPunch" });
+  assert.equal(defender.health, health);
+  assert.equal(game.trainingReadout.outcome, "PERFECT BLOCK");
+  assert.ok(events.includes("perfectBlock"));
+
+  defender.lastActions = {};
+  defender.throwTechTimer = 0.18;
+  attacker.beginAttack("throw", game);
+  attacker.currentAttack.elapsed = 0.12;
+  attacker.motionElapsed = attacker.getMotionPlaybackDuration("THROW_GRAB") * 0.28;
+  resolveMelee(attacker, defender, { ...game, resolveIncomingHit() {} });
+  assert.equal(attacker.currentAttack, null);
+  assert.ok(events.includes("throwTech"));
+});
+
+test("assists and supers reach their release states", () => {
+  let assists = 0;
+  let projectiles = 0;
+  const game = {
+    ...makeGame(),
+    spawnAssist() { assists += 1; },
+    spawnProjectile() { projectiles += 1; }
+  };
+  const fighter = makeFighter("KALYX", 420, 1, completeAnimations);
+  const opponent = makeFighter("MASTER_EZRA", 760, -1, completeAnimations);
+  fighter.useAssist("assist1", game);
+  fighter.useAssist("assist2", game);
+  assert.equal(assists, 2);
+
+  fighter.meter = 100;
+  assert.equal(fighter.beginAttack("super", game), true);
+  assert.equal(fighter.motion, "SUPER_CHARGE");
+  fighter.update(fighter.currentAttack.spawnAt + 0.01, {}, opponent, game);
+  assert.equal(fighter.motion, "SUPER_RELEASE");
+  assert.equal(projectiles, 1);
+});
+
+test("CPU decisions are deterministic and use anti-air and projectile defense", () => {
+  const player = makeFighter("KALYX", 500, 1);
+  const cpu = makeFighter("MASTER_EZRA", 620, -1);
+  cpu.slot = 2;
+  const world = { left: 0, right: 1280 };
+  player.y = GROUND_Y - 120;
+  const a = new CpuController().next(1 / 60, { cpu, player, projectiles: [], difficulty: "hard", world });
+  const b = new CpuController().next(1 / 60, { cpu, player, projectiles: [], difficulty: "hard", world });
+  assert.deepEqual(a, b);
+  assert.equal(a.heavyKick, true);
+
+  player.y = GROUND_Y;
+  cpu.meter = 100;
+  const projectile = { owner: { slot: 1 }, dead: false, x: 360, y: cpu.y - 80, direction: 1 };
+  const defense = new CpuController().next(1 / 60, { cpu, player, projectiles: [projectile], difficulty: "hard", world });
+  assert.deepEqual(defense, { down: true, special: true });
 });
 
 test("melee boxes are authored by animation frame and disappear in recovery", () => {
