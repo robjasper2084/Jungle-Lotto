@@ -37,6 +37,7 @@ const enterTrainingFight = async (page) => {
 };
 
 test("boots, reaches versus, fights, and pauses without page errors", async ({ page }, testInfo) => {
+  test.setTimeout(120_000);
   const pageErrors = [];
   page.on("pageerror", (error) => pageErrors.push(error.message));
   await page.goto(gameUrl);
@@ -52,6 +53,20 @@ test("boots, reaches versus, fights, and pauses without page errors", async ({ p
   expect(loadedResources.some((url) => url.includes("user-sheets/"))).toBe(false);
   expect(loadedResources.some((url) => url.endsWith(".mp3"))).toBe(false);
   expect(loadedResources.some((url) => url.includes("effects/sheets/"))).toBe(false);
+
+  await clickGame(page, 470, 516);
+  await expect.poll(() => phase(page)).toBe("gameSelect");
+  await expect.poll(() => page.evaluate(() => {
+    const images = window.__gothTechnologyGame?.assets?.images;
+    return images?.gameTitleGothtechnology?.naturalWidth > 0
+      && images?.gameTitleRobotRahbe?.naturalWidth > 0;
+  })).toBe(true);
+  const gameSelectResources = await page.evaluate(() => performance.getEntriesByType("resource").map((entry) => entry.name));
+  expect(gameSelectResources.some((url) => url.includes("gothtechnology-cover-start-bg.webp"))).toBe(true);
+  expect(gameSelectResources.some((url) => url.includes("robot-rahbe-title-card.webp"))).toBe(true);
+  if (!process.env.NO_TEST_ARTIFACTS) await page.screenshot({ path: testInfo.outputPath(`${testInfo.project.name}-game-select.png`) });
+  await clickGame(page, 640, 623);
+  await expect.poll(() => phase(page)).toBe("title");
 
   const nonBlankSamples = await page.locator("#game").evaluate((canvas) => {
     const data = canvas.getContext("2d").getImageData(0, 0, canvas.width, canvas.height).data;
@@ -145,7 +160,7 @@ test("boots, reaches versus, fights, and pauses without page errors", async ({ p
   expect(spriteIntegrity.insufficientUnique).toEqual([]);
   expect(spriteIntegrity.splitFrames).toEqual([]);
   const unstableRenderedMotions = await page.evaluate(async () => {
-    const { drawSpriteFrame } = await import("./src/engine/assets.js?v=motion-atlas11-boerboel-detroit-stages-test");
+    const { drawSpriteFrame } = await import("./src/engine/assets.js?v=game-select-title12-boerboel-detroit-test");
     const animations = window.__gothTechnologyGame.assets.animations;
     const checkedMotions = [
       "IDLE", "READY_STANCE", "WALK_FORWARD", "RUN_FORWARD", "DASH_FORWARD",

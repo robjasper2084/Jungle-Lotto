@@ -1,8 +1,8 @@
 import { GRAVITY, GROUND_Y, WORLD } from "../config/constants.js";
-import { ATTACKS } from "../config/moves.js?v=motion-atlas11-boerboel-detroit-stages";
-import { drawSpriteFrame } from "../engine/assets.js?v=motion-atlas11-boerboel-detroit-stages";
+import { ATTACKS } from "../config/moves.js?v=game-select-title12-boerboel-detroit";
+import { drawSpriteFrame } from "../engine/assets.js?v=game-select-title12-boerboel-detroit";
 import { approach, clamp, makeRect } from "../engine/math.js";
-import { attackIntentFromActions, resolveCancelAttack } from "./commands.js?v=motion-atlas11-boerboel-detroit-stages";
+import { attackIntentFromActions, resolveCancelAttack } from "./commands.js?v=game-select-title12-boerboel-detroit";
 import { SpriteEffect } from "./effects.js";
 
 const MOTION_LOCKS = new Set([

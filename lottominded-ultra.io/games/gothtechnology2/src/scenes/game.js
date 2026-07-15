@@ -1,17 +1,17 @@
-import { ASSET_URLS, FIGHTERS } from "../config/assets.js?v=motion-atlas11-boerboel-detroit-stages";
-import { ARCADE_LADDER, CHALLENGES, GAME_MODES, ROSTER_CARD_LAYOUT, ROSTER_IDS, STAGES, opponentFor } from "../config/content.js?v=motion-atlas11-boerboel-detroit-stages";
-import { ASSISTS, ATTACKS } from "../config/moves.js?v=motion-atlas11-boerboel-detroit-stages";
+import { ASSET_URLS, FIGHTERS } from "../config/assets.js?v=game-select-title12-boerboel-detroit";
+import { ARCADE_LADDER, CHALLENGES, GAME_MODES, ROSTER_CARD_LAYOUT, ROSTER_IDS, STAGES, opponentFor } from "../config/content.js?v=game-select-title12-boerboel-detroit";
+import { ASSISTS, ATTACKS } from "../config/moves.js?v=game-select-title12-boerboel-detroit";
 import { CANVAS_HEIGHT, CANVAS_WIDTH, COLORS, GROUND_Y, PHASE, ROUND_SECONDS, WORLD } from "../config/constants.js";
-import { AssetLoader } from "../engine/assets.js?v=motion-atlas11-boerboel-detroit-stages";
-import { WebAudioBus } from "../engine/audio.js?v=motion-atlas11-boerboel-detroit-stages";
-import { InputManager } from "../engine/input.js?v=motion-atlas11-boerboel-detroit-stages";
+import { AssetLoader } from "../engine/assets.js?v=game-select-title12-boerboel-detroit";
+import { WebAudioBus } from "../engine/audio.js?v=game-select-title12-boerboel-detroit";
+import { InputManager } from "../engine/input.js?v=game-select-title12-boerboel-detroit";
 import { clamp, rectsOverlap } from "../engine/math.js";
-import { applyHit, resolveMelee } from "../gameplay/combat.js?v=motion-atlas11-boerboel-detroit-stages";
-import { CpuController } from "../gameplay/cpu.js?v=motion-atlas11-boerboel-detroit-stages";
-import { AttachedSpriteEffect, SpriteEffect } from "../gameplay/effects.js?v=motion-atlas11-boerboel-detroit-stages";
-import { Fighter } from "../gameplay/fighter.js?v=motion-atlas11-boerboel-detroit-stages";
-import { AssistStrike, BoerboelStrike, Projectile } from "../gameplay/projectiles.js?v=motion-atlas11-boerboel-detroit-stages";
-import { applyRoundOutcomeMotions, resolveRoundOutcome } from "../gameplay/rounds.js?v=motion-atlas11-boerboel-detroit-stages";
+import { applyHit, resolveMelee } from "../gameplay/combat.js?v=game-select-title12-boerboel-detroit";
+import { CpuController } from "../gameplay/cpu.js?v=game-select-title12-boerboel-detroit";
+import { AttachedSpriteEffect, SpriteEffect } from "../gameplay/effects.js?v=game-select-title12-boerboel-detroit";
+import { Fighter } from "../gameplay/fighter.js?v=game-select-title12-boerboel-detroit";
+import { AssistStrike, BoerboelStrike, Projectile } from "../gameplay/projectiles.js?v=game-select-title12-boerboel-detroit";
+import { applyRoundOutcomeMotions, resolveRoundOutcome } from "../gameplay/rounds.js?v=game-select-title12-boerboel-detroit";
 import {
   drawCharacterSelect,
   drawDiagnostics,
@@ -22,20 +22,22 @@ import {
   drawRoundMessage,
   drawTitle,
   drawVersus
-} from "../ui/hud.js?v=motion-atlas11-boerboel-detroit-stages";
+} from "../ui/hud.js?v=game-select-title12-boerboel-detroit";
 
 const GAME_SELECT_ITEMS = [
   {
     id: "gothtechnology",
     title: "GOTHTECHNOLOGY",
     subtitle: "KALYX vs MASTER EZRA 1v1 arcade fighter",
-    badge: "FIGHTER"
+    badge: "FIGHTER",
+    imageKey: "gameTitleGothtechnology"
   },
   {
     id: "shadow-ops",
-    title: "SHADOW OPS",
-    subtitle: "Original run-and-gun side scroller prototype",
+    title: "ROBOT RAHBE",
+    subtitle: "Number-vault run-and-gun adventure",
     badge: "RUN + GUN",
+    imageKey: "gameTitleRobotRahbe",
     href: "../shadow-ops-canvas/index.html"
   }
 ];

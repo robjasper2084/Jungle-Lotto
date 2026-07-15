@@ -1,7 +1,7 @@
 import { CANVAS_HEIGHT, CANVAS_WIDTH, COLORS, ROUND_SECONDS } from "../config/constants.js";
-import { FIGHTERS } from "../config/assets.js?v=motion-atlas11-boerboel-detroit-stages";
-import { CHALLENGES, GAME_MODES, ROSTER_CARD_LAYOUT, ROSTER_IDS, STAGES } from "../config/content.js?v=motion-atlas11-boerboel-detroit-stages";
-import { drawSpriteFrame } from "../engine/assets.js?v=motion-atlas11-boerboel-detroit-stages";
+import { FIGHTERS } from "../config/assets.js?v=game-select-title12-boerboel-detroit";
+import { CHALLENGES, GAME_MODES, ROSTER_CARD_LAYOUT, ROSTER_IDS, STAGES } from "../config/content.js?v=game-select-title12-boerboel-detroit";
+import { drawSpriteFrame } from "../engine/assets.js?v=game-select-title12-boerboel-detroit";
 
 const panel = (ctx, x, y, w, h, stroke = COLORS.gold) => {
   ctx.save();
@@ -219,27 +219,50 @@ export const drawGameSelect = (ctx, game, games) => {
   ctx.font = "700 15px system-ui";
   ctx.fillText("CLICK A GAME OR PRESS LEFT / RIGHT, THEN ENTER", 640, 122);
 
-  drawGameCard(ctx, 88, 154, 512, 396, games[0], game.gameSelectIndex === 0, "fighter");
-  drawGameCard(ctx, 680, 154, 512, 396, games[1], game.gameSelectIndex === 1, "runGun");
+  drawGameCard(ctx, 88, 154, 512, 396, games[0], game.gameSelectIndex === 0, "fighter", game.assets?.images?.[games[0].imageKey]);
+  drawGameCard(ctx, 680, 154, 512, 396, games[1], game.gameSelectIndex === 1, "runGun", game.assets?.images?.[games[1].imageKey]);
   drawMenuButton(ctx, 494, 596, 292, 54, "BACK");
   ctx.restore();
 };
 
-const drawGameCard = (ctx, x, y, w, h, item, selected, variant) => {
+const drawGameCard = (ctx, x, y, w, h, item, selected, variant, titleArt) => {
   const stroke = selected ? COLORS.goldBright : variant === "runGun" ? COLORS.blue : COLORS.gold;
   panel(ctx, x, y, w, h, stroke);
+  const artX = x + 14;
+  const artY = y + 14;
+  const artW = w - 28;
+  const artH = h - 112;
   ctx.save();
   ctx.beginPath();
-  ctx.roundRect(x + 14, y + 14, w - 28, h - 112, 6);
+  ctx.roundRect(artX, artY, artW, artH, 6);
   ctx.clip();
   const grad = ctx.createLinearGradient(x, y, x + w, y + h);
   grad.addColorStop(0, variant === "runGun" ? "#080b12" : "#0b0808");
   grad.addColorStop(0.56, variant === "runGun" ? "#101922" : "#15110c");
   grad.addColorStop(1, "#020202");
   ctx.fillStyle = grad;
-  ctx.fillRect(x + 14, y + 14, w - 28, h - 112);
-  if (variant === "fighter") drawFighterGameArt(ctx, x, y, w, h);
-  else drawRunGunGameArt(ctx, x, y, w, h);
+  ctx.fillRect(artX, artY, artW, artH);
+  if (titleArt?.complete && titleArt.naturalWidth > 0) {
+    drawCoverImage(ctx, titleArt, artX, artY, artW, artH);
+    const imageGrade = ctx.createLinearGradient(artX, artY, artX, artY + artH);
+    imageGrade.addColorStop(0, "rgba(0,0,0,0.04)");
+    imageGrade.addColorStop(0.72, "rgba(0,0,0,0.02)");
+    imageGrade.addColorStop(1, "rgba(0,0,0,0.48)");
+    ctx.fillStyle = imageGrade;
+    ctx.fillRect(artX, artY, artW, artH);
+  } else if (variant === "fighter") {
+    drawFighterGameArt(ctx, x, y, w, h);
+  } else {
+    drawRunGunGameArt(ctx, x, y, w, h);
+  }
+  if (selected) {
+    ctx.fillStyle = "rgba(0,0,0,0.68)";
+    ctx.fillRect(artX + 14, artY + 14, 96, 28);
+    ctx.fillStyle = COLORS.goldBright;
+    ctx.font = "900 12px system-ui";
+    ctx.textAlign = "center";
+    ctx.fillText("SELECTED", artX + 62, artY + 33);
+  }
   ctx.restore();
 
   ctx.save();
@@ -555,11 +578,11 @@ export const drawBackdropGrade = (ctx) => {
   ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 };
 
-const drawCoverImage = (ctx, image) => {
-  const scale = Math.max(CANVAS_WIDTH / image.width, CANVAS_HEIGHT / image.height);
+const drawCoverImage = (ctx, image, x = 0, y = 0, width = CANVAS_WIDTH, height = CANVAS_HEIGHT) => {
+  const scale = Math.max(width / image.width, height / image.height);
   const w = image.width * scale;
   const h = image.height * scale;
-  ctx.drawImage(image, (CANVAS_WIDTH - w) / 2, (CANVAS_HEIGHT - h) / 2, w, h);
+  ctx.drawImage(image, x + (width - w) / 2, y + (height - h) / 2, w, h);
 };
 
 const drawMenuCoverWash = (ctx) => {

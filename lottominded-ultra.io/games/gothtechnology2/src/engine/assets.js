@@ -1,4 +1,4 @@
-import { ASSET_URLS, MOTION_ASSET_VERSION, MOTION_PLAYBACK } from "../config/assets.js?v=motion-atlas11-boerboel-detroit-stages";
+import { ASSET_URLS, MOTION_ASSET_VERSION, MOTION_PLAYBACK } from "../config/assets.js?v=game-select-title12-boerboel-detroit";
 
 const imageCache = new Map();
 
@@ -47,7 +47,9 @@ export class AssetLoader {
 
   loadMenuAssets(onProgress = () => {}) {
     return this.loadGroup("menu", {
-      logo: ASSET_URLS.logo
+      logo: ASSET_URLS.logo,
+      gameTitleGothtechnology: ASSET_URLS.gameTitles.gothtechnology,
+      gameTitleRobotRahbe: ASSET_URLS.gameTitles.robotRahbe
     }, onProgress, { strict: false });
   }
 

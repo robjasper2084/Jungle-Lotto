@@ -1,6 +1,6 @@
-import { FIGHTERS } from "./config/assets.js?v=motion-atlas11-boerboel-detroit-stages";
-import { COMMAND_LISTS, GAME_MODES, ROSTER_IDS } from "./config/content.js?v=motion-atlas11-boerboel-detroit-stages";
-import { GothTechnologyGame } from "./scenes/game.js?v=motion-atlas11-boerboel-detroit-stages";
+import { FIGHTERS } from "./config/assets.js?v=game-select-title12-boerboel-detroit";
+import { COMMAND_LISTS, GAME_MODES, ROSTER_IDS } from "./config/content.js?v=game-select-title12-boerboel-detroit";
+import { GothTechnologyGame } from "./scenes/game.js?v=game-select-title12-boerboel-detroit";
 import { PHASE } from "./config/constants.js";
 
 const syncViewportHeight = () => {

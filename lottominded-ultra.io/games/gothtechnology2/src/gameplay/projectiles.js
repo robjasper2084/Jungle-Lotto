@@ -1,7 +1,7 @@
-import { drawSheetFrame } from "../engine/assets.js?v=motion-atlas11-boerboel-detroit-stages";
+import { drawSheetFrame } from "../engine/assets.js?v=game-select-title12-boerboel-detroit";
 import { rectsOverlap } from "../engine/math.js";
 import { SpriteEffect } from "./effects.js";
-import { sliceAttackForHit } from "./hits.js?v=motion-atlas11-boerboel-detroit-stages";
+import { sliceAttackForHit } from "./hits.js?v=game-select-title12-boerboel-detroit";
 
 const hexAlpha = (color, alpha) => {
   if (!color?.startsWith("#") || color.length !== 7) return color;
