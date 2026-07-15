@@ -1,6 +1,6 @@
 export const PACK_ROOT = "assets/GOTHTECHNOLOGY_EXPANDED_SPRITE_PACK_V2";
 export const LOCAL_ROOT = "assets";
-export const MOTION_ASSET_VERSION = "motion-atlas10-detroit-lens";
+export const MOTION_ASSET_VERSION = "motion-atlas11-boerboel-detroit-stages";
 
 export const ASSET_URLS = {
   manifest: `${LOCAL_ROOT}/motion-atlases/motion-atlas-manifest.json?v=${MOTION_ASSET_VERSION}`,
@@ -9,7 +9,10 @@ export const ASSET_URLS = {
   background: `${LOCAL_ROOT}/user-stage/forest-fight-background.jpg`,
   stages: {
     detroitMidnightMile: `${LOCAL_ROOT}/user-stage/detroit-midnight-mile.webp`,
-    motorCityAssembly: `${LOCAL_ROOT}/user-stage/motor-city-assembly.webp`
+    motorCityAssembly: `${LOCAL_ROOT}/user-stage/motor-city-assembly.webp`,
+    detroitRiverfront: `${LOCAL_ROOT}/user-stage/detroit-riverfront.webp`,
+    easternMarketAfterDark: `${LOCAL_ROOT}/user-stage/eastern-market-after-dark.webp`,
+    michiganCentralConcourse: `${LOCAL_ROOT}/user-stage/michigan-central-concourse.webp`
   },
   farTrees: `${PACK_ROOT}/backgrounds/GOTHTECHNOLOGY_PARALLAX_FAR_TREES.webp`,
   fog: `${PACK_ROOT}/backgrounds/GOTHTECHNOLOGY_FOG_OVERLAY_TRANSPARENT.webp`,
@@ -27,13 +30,11 @@ export const ASSET_URLS = {
     ezraOwlArc: `${PACK_ROOT}/effects/sheets/EZRA_OWL_ARC_PROJECTILE_sheet.webp`,
     smoke: `${PACK_ROOT}/effects/sheets/SMOKE_PUFF_sheet.webp`
   },
-  props: {
-    detroitLensTablet: `${LOCAL_ROOT}/user-effects/detroit-lens-tablet.webp?v=${MOTION_ASSET_VERSION}`
-  },
   assists: {
     owl: `${LOCAL_ROOT}/user-assists/ezra-owl-dive-clean.webp`,
     raven: `${LOCAL_ROOT}/user-assists/kalyx-shadow-raven-clean.webp`,
-    nocturna: `${LOCAL_ROOT}/user-assists/nocturna-wraith-clean.webp`
+    nocturna: `${LOCAL_ROOT}/user-assists/nocturna-wraith-clean.webp`,
+    boerboel: `${LOCAL_ROOT}/user-effects/detroit-boerboel-atlas.webp?v=${MOTION_ASSET_VERSION}`
   }
 };
 
@@ -371,7 +372,7 @@ export const FIGHTERS = {
 FIGHTERS.DETROIT_LENS = {
   id: "DETROIT_LENS",
   name: "DETROIT LENS",
-  title: "Camera Tactician",
+  title: "Motor City Guardian",
   manifestKey: "DETROIT_LENS",
   spriteFacing: 1,
   palette: "#e7c36a",
@@ -427,14 +428,15 @@ FIGHTERS.DETROIT_LENS = {
     crouchAttack: { damage: 64, reach: 132, width: 122, knockback: 205 },
     airAttack: { damage: 78, reach: 126, width: 130, knockback: 235 },
     special: {
-      speed: 900,
-      radius: 42,
-      damage: 84,
-      chip: 18,
-      stun: 0.42,
-      blockstun: 0.32,
-      cooldown: 0.82,
-      knockback: 260
+      speed: 760,
+      radius: 66,
+      damage: 104,
+      chip: 12,
+      stun: 0.46,
+      blockstun: 0.3,
+      cooldown: 1.08,
+      knockback: 310,
+      level: "mid"
     },
     super: {
       speed: 1540,
@@ -450,7 +452,7 @@ FIGHTERS.DETROIT_LENS = {
   },
   assistNames: ["FLASH DRONE", "FRAME GUARD"],
   superName: "Red-Eye Exposure",
-  specialName: "Shutter Burst"
+  specialName: "Boerboel Rush"
 };
 
 FIGHTERS.KALYX_ECLIPSE = {

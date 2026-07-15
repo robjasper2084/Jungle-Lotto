@@ -1,4 +1,4 @@
-import { ASSET_URLS, MOTION_ASSET_VERSION, MOTION_PLAYBACK } from "../config/assets.js?v=motion-atlas10-detroit-lens";
+import { ASSET_URLS, MOTION_ASSET_VERSION, MOTION_PLAYBACK } from "../config/assets.js?v=motion-atlas11-boerboel-detroit-stages";
 
 const imageCache = new Map();
 
@@ -56,6 +56,9 @@ export class AssetLoader {
       background: ASSET_URLS.background,
       detroitMidnightMile: ASSET_URLS.stages.detroitMidnightMile,
       motorCityAssembly: ASSET_URLS.stages.motorCityAssembly,
+      detroitRiverfront: ASSET_URLS.stages.detroitRiverfront,
+      easternMarketAfterDark: ASSET_URLS.stages.easternMarketAfterDark,
+      michiganCentralConcourse: ASSET_URLS.stages.michiganCentralConcourse,
       farTrees: ASSET_URLS.farTrees,
       fog: ASSET_URLS.fog,
       embers: ASSET_URLS.embers,
@@ -68,7 +71,7 @@ export class AssetLoader {
       ezraBlueBurst: ASSET_URLS.effects.ezraBlueBurst,
       ezraOwlArc: ASSET_URLS.effects.ezraOwlArc,
       smoke: ASSET_URLS.effects.smoke,
-      detroitLensTablet: ASSET_URLS.props.detroitLensTablet,
+      detroitBoerboel: ASSET_URLS.assists.boerboel,
       assistOwl: ASSET_URLS.assists.owl,
       assistRaven: ASSET_URLS.assists.raven,
       assistNocturna: ASSET_URLS.assists.nocturna

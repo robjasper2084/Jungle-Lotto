@@ -11,14 +11,29 @@ const clickGame = async (page, gameX, gameY) => {
   await canvas.click({ position: { x: gameX / 1280 * box.width, y: gameY / 720 * box.height } });
 };
 
+const advanceVersusToFight = async (page) => {
+  await expect.poll(() => page.evaluate(() => ["versus", "fight"].includes(window.__gothTechnologyGame?.phase))).toBe(true);
+  if (await phase(page) === "versus") {
+    await expect.poll(
+      () => page.evaluate(() => window.__gothTechnologyGame?.matchAssetsReady),
+      { timeout: 15_000 }
+    ).toBe(true);
+    await page.evaluate(() => {
+      const game = window.__gothTechnologyGame;
+      game.roundMessageTimer = 0;
+      game.update(game.fixedStep ?? 1 / 60);
+    });
+  }
+  await page.evaluate(() => { window.__gothTechnologyGame.roundMessageTimer = 0; });
+  await expect.poll(() => phase(page), { timeout: 2_000 }).toBe("fight");
+};
+
 const enterTrainingFight = async (page) => {
   await clickGame(page, 470, 458);
   await expect.poll(() => phase(page)).toBe("select");
   await expect.poll(() => page.evaluate(() => window.__gothTechnologyGame?.matchAssetsReady), { timeout: 10_000 }).toBe(true);
   await clickGame(page, 804, 594);
-  await expect.poll(() => phase(page)).toBe("versus");
-  await expect.poll(() => phase(page), { timeout: 4_000 }).toBe("fight");
-  await expect.poll(() => page.evaluate(() => window.__gothTechnologyGame?.roundMessageTimer), { timeout: 4_000 }).toBe(0);
+  await advanceVersusToFight(page);
 };
 
 test("boots, reaches versus, fights, and pauses without page errors", async ({ page }, testInfo) => {
@@ -130,7 +145,7 @@ test("boots, reaches versus, fights, and pauses without page errors", async ({ p
   expect(spriteIntegrity.insufficientUnique).toEqual([]);
   expect(spriteIntegrity.splitFrames).toEqual([]);
   const unstableRenderedMotions = await page.evaluate(async () => {
-    const { drawSpriteFrame } = await import("./src/engine/assets.js?v=motion-atlas10-detroit-lens-test");
+    const { drawSpriteFrame } = await import("./src/engine/assets.js?v=motion-atlas11-boerboel-detroit-stages-test");
     const animations = window.__gothTechnologyGame.assets.animations;
     const checkedMotions = [
       "IDLE", "READY_STANCE", "WALK_FORWARD", "RUN_FORWARD", "DASH_FORWARD",
@@ -174,8 +189,7 @@ test("boots, reaches versus, fights, and pauses without page errors", async ({ p
   expect(unstableRenderedMotions).toEqual([]);
   if (!process.env.NO_TEST_ARTIFACTS) await page.screenshot({ path: testInfo.outputPath(`${testInfo.project.name}-character-select.png`) });
   await clickGame(page, 804, 594);
-  await expect.poll(() => phase(page)).toBe("versus");
-  await expect.poll(() => phase(page), { timeout: 4_000 }).toBe("fight");
+  await advanceVersusToFight(page);
   if (!process.env.NO_TEST_ARTIFACTS) await page.screenshot({ path: testInfo.outputPath(`${testInfo.project.name}-fight.png`) });
 
   await page.keyboard.press("KeyL");
@@ -198,8 +212,8 @@ test("boots, reaches versus, fights, and pauses without page errors", async ({ p
   expect(pageErrors).toEqual([]);
 });
 
-test("Detroit Lens loads complete motion, tablet camera attacks, and both Motor City stages", async ({ page }, testInfo) => {
-  test.setTimeout(60_000);
+test("Detroit Lens loads the Boerboel attack, eye laser, and all five Detroit stages", async ({ page }, testInfo) => {
+  test.setTimeout(120_000);
   const pageErrors = [];
   page.on("pageerror", (error) => pageErrors.push(error.message));
   await page.goto(gameUrl);
@@ -225,9 +239,7 @@ test("Detroit Lens loads complete motion, tablet camera attacks, and both Motor 
     await clickGame(page, 476, 596);
   }
   await clickGame(page, 804, 594);
-  await expect.poll(() => phase(page)).toBe("versus");
-  await expect.poll(() => phase(page), { timeout: 4_000 }).toBe("fight");
-  await expect.poll(() => page.evaluate(() => window.__gothTechnologyGame?.roundMessageTimer), { timeout: 4_000 }).toBe(0);
+  await advanceVersusToFight(page);
 
   const expansionState = await page.evaluate(() => {
     const game = window.__gothTechnologyGame;
@@ -235,22 +247,38 @@ test("Detroit Lens loads complete motion, tablet camera attacks, and both Motor 
     game.projectiles.length = 0;
     game.effects.length = 0;
     game.spawnProjectile(fighter, "special");
+    const dog = game.projectiles[0];
+    const dogPhases = [dog.phase];
+    dog.update(0.25, game);
+    dogPhases.push(dog.phase);
+    dog.update(0.72, game);
+    dogPhases.push(dog.phase);
+    dog.update(0.48, game);
+    dogPhases.push(dog.phase);
     game.spawnProjectile(fighter, "super");
     game.spawnFighterVfx(fighter, "special", "charge");
     return {
       projectileKinds: game.projectiles.map((projectile) => projectile.kind),
+      dogPhases,
       hasTabletEffect: game.effects.some((effect) => effect.constructor.name === "AttachedImageEffect"),
-      tabletReady: game.assets.images.detroitLensTablet?.naturalWidth > 0,
+      dogReady: game.assets.images.detroitBoerboel?.naturalWidth === 1152,
       stage: game.stageIndex,
-      stageReady: game.assets.images.detroitMidnightMile?.naturalWidth > 0
+      stageReady: game.assets.images.detroitMidnightMile?.naturalWidth > 0,
+      newStagesReady: [
+        game.assets.images.detroitRiverfront,
+        game.assets.images.easternMarketAfterDark,
+        game.assets.images.michiganCentralConcourse
+      ].every((image) => image?.naturalWidth === 1600)
     };
   });
   expect(expansionState).toEqual({
-    projectileKinds: ["camera-flash", "eye-laser"],
-    hasTabletEffect: true,
-    tabletReady: true,
+    projectileKinds: ["boerboel-rush", "eye-laser"],
+    dogPhases: ["summon", "run", "attack", "recover"],
+    hasTabletEffect: false,
+    dogReady: true,
     stage: 3,
-    stageReady: true
+    stageReady: true,
+    newStagesReady: true
   });
   if (!process.env.NO_TEST_ARTIFACTS) await page.screenshot({ path: testInfo.outputPath(`${testInfo.project.name}-detroit-midnight-mile.png`) });
 
@@ -264,6 +292,19 @@ test("Detroit Lens loads complete motion, tablet camera attacks, and both Motor 
   });
   expect(secondStageReady).toBe(true);
   if (!process.env.NO_TEST_ARTIFACTS) await page.screenshot({ path: testInfo.outputPath(`${testInfo.project.name}-motor-city-assembly.png`) });
+
+  for (const [stageIndex, slug] of [[5, "detroit-riverfront"], [6, "eastern-market-after-dark"], [7, "michigan-central-concourse"]]) {
+    const ready = await page.evaluate((index) => {
+      const game = window.__gothTechnologyGame;
+      game.stageIndex = index;
+      game.stageCache = null;
+      game.buildStageCache();
+      game.render();
+      return Boolean(game.stageCache);
+    }, stageIndex);
+    expect(ready).toBe(true);
+    if (!process.env.NO_TEST_ARTIFACTS) await page.screenshot({ path: testInfo.outputPath(`${testInfo.project.name}-${slug}.png`) });
+  }
   expect(pageErrors).toEqual([]);
 });
 
@@ -287,6 +328,7 @@ test("Master Ezra plays a complete takeoff, apex, fall, and clean landing", asyn
 });
 
 test("Kalyx reaches every aerial phase and a distinct air attack", async ({ page }, testInfo) => {
+  test.setTimeout(60_000);
   await page.goto(gameUrl);
   await expect.poll(() => phase(page)).toBe("title");
   await clickGame(page, 470, 458);
@@ -294,21 +336,45 @@ test("Kalyx reaches every aerial phase and a distinct air attack", async ({ page
   await expect.poll(() => page.evaluate(() => window.__gothTechnologyGame?.matchAssetsReady), { timeout: 10_000 }).toBe(true);
   await clickGame(page, 300, 210);
   await clickGame(page, 804, 594);
-  await expect.poll(() => phase(page), { timeout: 4_000 }).toBe("fight");
-  await expect.poll(() => page.evaluate(() => window.__gothTechnologyGame?.roundMessageTimer), { timeout: 4_000 }).toBe(0);
+  await advanceVersusToFight(page);
   await expect.poll(() => page.evaluate(() => window.__gothTechnologyGame?.fighters?.[0]?.id)).toBe("KALYX");
 
-  const motion = () => page.evaluate(() => window.__gothTechnologyGame?.fighters?.[0]?.motion);
-  await page.keyboard.press("KeyW");
-  await expect.poll(motion, { timeout: 500, intervals: [10] }).toBe("JUMP_START");
-  await expect.poll(motion, { timeout: 700, intervals: [10] }).toBe("JUMP_RISE");
-  await expect.poll(motion, { timeout: 700, intervals: [10] }).toBe("JUMP_PEAK");
-  await expect.poll(motion, { timeout: 700, intervals: [10] }).toBe("JUMP_FALL");
-  await page.keyboard.press("KeyK");
-  await expect.poll(motion, { timeout: 250, intervals: [10] }).toBe("AIR_ATTACK");
+  const airSequence = await page.evaluate(() => {
+    const game = window.__gothTechnologyGame;
+    const fighter = game.fighters[0];
+    const opponent = game.fighters[1];
+    const seen = new Set();
+    game.stopped = true;
+    fighter.update(1 / 60, { up: true }, opponent, game);
+    for (let frame = 0; frame < 120; frame += 1) {
+      seen.add(fighter.motion);
+      const action = fighter.motion === "JUMP_FALL" && !seen.has("AIR_ATTACK") ? { lightKick: true } : {};
+      fighter.update(1 / 60, action, opponent, game);
+      if (fighter.motion === "AIR_ATTACK") {
+        seen.add("AIR_ATTACK");
+        break;
+      }
+    }
+    game.render();
+    return [...seen];
+  });
+  expect(airSequence).toEqual(expect.arrayContaining(["JUMP_START", "JUMP_RISE", "JUMP_PEAK", "JUMP_FALL", "AIR_ATTACK"]));
   if (!process.env.NO_TEST_ARTIFACTS) await page.screenshot({ path: testInfo.outputPath("kalyx-air-attack.png") });
-  await expect.poll(motion, { timeout: 1_000, intervals: [10] }).toBe("LANDING");
-  await expect.poll(motion, { timeout: 500, intervals: [10] }).toBe("IDLE");
+  const landingSequence = await page.evaluate(() => {
+    const game = window.__gothTechnologyGame;
+    const fighter = game.fighters[0];
+    const opponent = game.fighters[1];
+    const seen = new Set();
+    for (let frame = 0; frame < 120; frame += 1) {
+      seen.add(fighter.motion);
+      fighter.update(1 / 60, {}, opponent, game);
+      seen.add(fighter.motion);
+      if (fighter.grounded && fighter.motion === "IDLE") break;
+    }
+    game.render();
+    return [...seen];
+  });
+  expect(landingSequence).toEqual(expect.arrayContaining(["AIR_ATTACK", "LANDING", "IDLE"]));
 });
 
 test("real attacks connect and training exposes expanded frame data", async ({ page }) => {

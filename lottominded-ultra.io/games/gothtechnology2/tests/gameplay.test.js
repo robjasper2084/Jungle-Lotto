@@ -9,9 +9,11 @@ import { Fighter } from "../src/gameplay/fighter.js";
 import { applyHit, resolveMelee } from "../src/gameplay/combat.js";
 import { CpuController } from "../src/gameplay/cpu.js";
 import { registerAttackHit, sliceAttackForHit } from "../src/gameplay/hits.js";
+import { BoerboelStrike } from "../src/gameplay/projectiles.js";
 import { applyRoundOutcomeMotions, resolveRoundOutcome } from "../src/gameplay/rounds.js";
 
 const motionManifest = JSON.parse(readFileSync(new URL("../assets/motion-atlases/motion-atlas-manifest.json", import.meta.url), "utf8"));
+const boerboelManifest = JSON.parse(readFileSync(new URL("../assets/user-effects/detroit-boerboel-atlas.json", import.meta.url), "utf8"));
 
 const makeGame = () => ({
   assets: { images: { dust: null, hitSpark: null, blockShield: null } },
@@ -130,19 +132,43 @@ test("runtime animations meet minimum unique-frame requirements", () => {
   }
 });
 
-test("Detroit Lens ships a complete precision kit, tablet command list, and Motor City levels", () => {
+test("Detroit Lens ships a complete guardian kit, Boerboel command list, and eight stages", () => {
   const fighter = FIGHTERS.DETROIT_LENS;
   assert.equal(fighter.manifestKey, "DETROIT_LENS");
   assert.equal(fighter.archetype, "precision");
-  assert.equal(fighter.specialName, "Shutter Burst");
+  assert.equal(fighter.specialName, "Boerboel Rush");
   assert.equal(fighter.superName, "Red-Eye Exposure");
   assert.equal(Object.keys(motionManifest.characters.DETROIT_LENS.motions).length, 39);
   assert.equal(ROSTER_IDS.length, 5);
   assert.equal(ROSTER_CARD_LAYOUT.length, ROSTER_IDS.length);
   assert.ok(ARCADE_LADDER.includes("DETROIT_LENS"));
-  assert.ok(COMMAND_LISTS.DETROIT_LENS.commands.some((command) => command.detail.includes("tablet-camera")));
+  assert.ok(COMMAND_LISTS.DETROIT_LENS.commands.some((command) => command.name === "BOERBOEL RUSH"));
   assert.ok(STAGES.some((stage) => stage.id === "detroit-midnight-mile"));
   assert.ok(STAGES.some((stage) => stage.id === "motor-city-assembly"));
+  assert.ok(STAGES.some((stage) => stage.id === "detroit-riverfront"));
+  assert.ok(STAGES.some((stage) => stage.id === "eastern-market-after-dark"));
+  assert.ok(STAGES.some((stage) => stage.id === "michigan-central-concourse"));
+  assert.equal(STAGES.length, 8);
+  assert.equal(boerboelManifest.frameCount, 24);
+  assert.deepEqual(Object.keys(boerboelManifest.motions), ["SUMMON", "RUN", "ATTACK", "RECOVER"]);
+  for (const motion of Object.values(boerboelManifest.motions)) {
+    assert.equal(motion.frames, 6);
+    assert.ok(motion.uniqueFrames >= 5);
+    assert.deepEqual(motion.sourceFigureCounts, [3, 3]);
+  }
+});
+
+test("Kalyx aerial atlas keeps one bounded unique figure in every frame", () => {
+  for (const motionName of ["JUMP_START", "JUMP_RISE", "JUMP_PEAK", "JUMP_FALL", "LANDING", "AIR_ATTACK"]) {
+    const motion = motionManifest.characters.KALYX.motions[motionName];
+    assert.equal(motion.frames.length, 6);
+    assert.ok(motion.uniqueFrames >= 5);
+    assert.equal(motion.source, "higgsfield-v3-body-vfx");
+    for (const frame of motion.frames) {
+      assert.ok(frame.content.w < 190, `${motionName} retained a full-cell divider or duplicate silhouette`);
+      assert.ok(frame.content.h <= 184);
+    }
+  }
 });
 
 test("runtime locomotion playback retains at least four distinct poses", () => {
@@ -233,7 +259,7 @@ test("fighter identity skills reach Kalyx shadow step and Ezra parry", () => {
   assert.ok(kalyx.hitstun >= 0.3);
 });
 
-test("Detroit Lens Focus Flash uses the tablet camera and interrupts nearby pressure", () => {
+test("Detroit Lens Guardian Intercept calls the Boerboel and interrupts nearby pressure", () => {
   const hits = [];
   const vfx = [];
   const game = {
@@ -247,9 +273,40 @@ test("Detroit Lens Focus Flash uses the tablet camera and interrupts nearby pres
   assert.equal(detroit.useCharacterSkill(opponent, game), true);
   assert.equal(detroit.motion, "SPECIAL_START");
   assert.equal(hits.length, 1);
-  assert.equal(hits[0].meta.sourceName, "focusFlash");
+  assert.equal(hits[0].meta.sourceName, "guardianIntercept");
+  assert.equal(hits[0].meta.projectile, false);
   assert.deepEqual(vfx, [{ name: "skill", phase: "charge" }]);
-  assert.ok(game.flash >= 0.24);
+});
+
+test("Boerboel Rush advances through summon, run, bite hit, and recovery", () => {
+  const hits = [];
+  const owner = makeFighter("DETROIT_LENS", 300, 1, completeAnimations);
+  const target = makeFighter("KALYX", 600, -1, completeAnimations);
+  const game = {
+    ...makeGame(),
+    fighters: [owner, target],
+    resolveIncomingHit(attacker, defender, attack, meta) { hits.push({ attacker, defender, attack, meta }); }
+  };
+  const dog = new BoerboelStrike({
+    owner,
+    x: owner.x - 72,
+    y: owner.y,
+    direction: 1,
+    attack: owner.getAttackData("special"),
+    image: null
+  });
+
+  dog.update(0.25, game);
+  assert.equal(dog.phase, "run");
+  dog.update(0.36, game);
+  assert.equal(dog.phase, "attack");
+  dog.update(0.16, game);
+  assert.equal(hits.length, 1);
+  assert.equal(hits[0].meta.sourceName, "boerboelRush");
+  dog.update(0.32, game);
+  assert.equal(dog.phase, "recover");
+  dog.update(0.45, game);
+  assert.equal(dog.dead, true);
 });
 
 test("Detroit Lens precision projectiles gain bonus meter at long range", () => {

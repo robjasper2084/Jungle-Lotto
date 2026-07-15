@@ -728,11 +728,11 @@
               "duration_ms": 78,
               "content": {
                 "x": 22,
-                "y": 27,
+                "y": 8,
                 "w": 147,
-                "h": 163,
+                "h": 182,
                 "visibleW": 143,
-                "visibleH": 159,
+                "visibleH": 178,
                 "scale": 0.977528
               }
             },
@@ -744,11 +744,11 @@
               "duration_ms": 78,
               "content": {
                 "x": 21,
-                "y": 39,
+                "y": 11,
                 "w": 149,
-                "h": 151,
+                "h": 179,
                 "visibleW": 145,
-                "visibleH": 147,
+                "visibleH": 175,
                 "scale": 0.977528
               }
             },
@@ -760,11 +760,11 @@
               "duration_ms": 78,
               "content": {
                 "x": 27,
-                "y": 26,
+                "y": 8,
                 "w": 138,
-                "h": 164,
+                "h": 182,
                 "visibleW": 134,
-                "visibleH": 160,
+                "visibleH": 178,
                 "scale": 0.977528
               }
             },
@@ -775,17 +775,17 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 44,
+                "x": 36,
                 "y": 14,
-                "w": 104,
+                "w": 120,
                 "h": 176,
-                "visibleW": 100,
+                "visibleW": 116,
                 "visibleH": 172,
                 "scale": 0.977528
               }
             }
           ],
-          "higgsfieldJobId": "dc9a9158-8f57-46a4-af7f-c062167ee3da",
+          "higgsfieldJobId": "5394b85d-d360-47d8-b8a7-dd6d39562ac1",
           "stableHeight": false,
           "targetVisibleHeight": 174.0
         },
@@ -822,12 +822,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 36,
-                "y": 45,
-                "w": 120,
-                "h": 145,
-                "visibleW": 116,
-                "visibleH": 141,
+                "x": 26,
+                "y": 16,
+                "w": 139,
+                "h": 174,
+                "visibleW": 135,
+                "visibleH": 170,
                 "scale": 0.977528
               }
             },
@@ -838,12 +838,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 50,
-                "y": 48,
-                "w": 92,
-                "h": 142,
-                "visibleW": 88,
-                "visibleH": 138,
+                "x": 26,
+                "y": 20,
+                "w": 139,
+                "h": 170,
+                "visibleW": 135,
+                "visibleH": 166,
                 "scale": 0.977528
               }
             },
@@ -871,11 +871,11 @@
               "duration_ms": 78,
               "content": {
                 "x": 8,
-                "y": 21,
+                "y": 8,
                 "w": 176,
-                "h": 169,
+                "h": 182,
                 "visibleW": 172,
-                "visibleH": 165,
+                "visibleH": 178,
                 "scale": 0.977528
               }
             },
@@ -886,17 +886,17 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 32,
-                "y": 23,
-                "w": 128,
-                "h": 167,
-                "visibleW": 124,
-                "visibleH": 163,
+                "x": 31,
+                "y": 8,
+                "w": 130,
+                "h": 182,
+                "visibleW": 126,
+                "visibleH": 178,
                 "scale": 0.977528
               }
             }
           ],
-          "higgsfieldJobId": "3239b311-6206-4d3d-bf08-1938586904ae",
+          "higgsfieldJobId": "735572f2-5d69-495a-bc11-55e7e117dffd",
           "stableHeight": false,
           "targetVisibleHeight": 174.0
         },
@@ -917,12 +917,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 31,
-                "y": 45,
-                "w": 129,
-                "h": 145,
-                "visibleW": 125,
-                "visibleH": 141,
+                "x": 21,
+                "y": 20,
+                "w": 150,
+                "h": 170,
+                "visibleW": 146,
+                "visibleH": 166,
                 "scale": 0.977528
               }
             },
@@ -934,11 +934,11 @@
               "duration_ms": 78,
               "content": {
                 "x": 21,
-                "y": 12,
+                "y": 8,
                 "w": 150,
-                "h": 178,
+                "h": 182,
                 "visibleW": 146,
-                "visibleH": 174,
+                "visibleH": 178,
                 "scale": 0.977528
               }
             },
@@ -949,11 +949,11 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 20,
+                "x": 6,
                 "y": 8,
-                "w": 152,
+                "w": 179,
                 "h": 182,
-                "visibleW": 148,
+                "visibleW": 175,
                 "visibleH": 178,
                 "scale": 0.977528
               }
@@ -966,11 +966,11 @@
               "duration_ms": 78,
               "content": {
                 "x": 31,
-                "y": 14,
+                "y": 8,
                 "w": 130,
-                "h": 176,
+                "h": 182,
                 "visibleW": 126,
-                "visibleH": 172,
+                "visibleH": 178,
                 "scale": 0.977528
               }
             },
@@ -982,11 +982,11 @@
               "duration_ms": 78,
               "content": {
                 "x": 31,
-                "y": 13,
+                "y": 8,
                 "w": 130,
-                "h": 177,
+                "h": 182,
                 "visibleW": 126,
-                "visibleH": 173,
+                "visibleH": 178,
                 "scale": 0.977528
               }
             },
@@ -997,17 +997,17 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 37,
-                "y": 19,
-                "w": 118,
-                "h": 171,
-                "visibleW": 114,
-                "visibleH": 167,
+                "x": 36,
+                "y": 14,
+                "w": 119,
+                "h": 176,
+                "visibleW": 115,
+                "visibleH": 172,
                 "scale": 0.977528
               }
             }
           ],
-          "higgsfieldJobId": "4fe3a2bc-ad94-4625-a1d9-b4fb7acc2fb0",
+          "higgsfieldJobId": "29b36cf3-6b8f-4f8e-9273-53f656fbdcff",
           "stableHeight": false,
           "targetVisibleHeight": 174.0
         },
@@ -1029,11 +1029,11 @@
               "duration_ms": 78,
               "content": {
                 "x": 27,
-                "y": 33,
+                "y": 15,
                 "w": 137,
-                "h": 157,
+                "h": 175,
                 "visibleW": 133,
-                "visibleH": 153,
+                "visibleH": 171,
                 "scale": 0.977528
               }
             },
@@ -1060,12 +1060,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 20,
-                "y": 16,
-                "w": 151,
-                "h": 174,
-                "visibleW": 147,
-                "visibleH": 170,
+                "x": 17,
+                "y": 8,
+                "w": 157,
+                "h": 182,
+                "visibleW": 153,
+                "visibleH": 178,
                 "scale": 0.977528
               }
             },
@@ -1076,11 +1076,11 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 40,
+                "x": 39,
                 "y": 8,
-                "w": 112,
+                "w": 114,
                 "h": 182,
-                "visibleW": 108,
+                "visibleW": 110,
                 "visibleH": 178,
                 "scale": 0.977528
               }
@@ -1108,17 +1108,17 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 40,
-                "y": 17,
-                "w": 112,
-                "h": 173,
-                "visibleW": 108,
-                "visibleH": 169,
+                "x": 35,
+                "y": 8,
+                "w": 122,
+                "h": 182,
+                "visibleW": 118,
+                "visibleH": 178,
                 "scale": 0.977528
               }
             }
           ],
-          "higgsfieldJobId": "a5a13ca5-41a5-4323-b019-86169c3ec1bf",
+          "higgsfieldJobId": "fbe5f7b8-4cb0-47f2-b110-1730b94c7626",
           "stableHeight": false,
           "targetVisibleHeight": 174.0
         },
@@ -1155,11 +1155,11 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 17,
+                "x": 9,
                 "y": 11,
-                "w": 157,
+                "w": 174,
                 "h": 179,
-                "visibleW": 153,
+                "visibleW": 170,
                 "visibleH": 175,
                 "scale": 0.977528
               }
@@ -1172,11 +1172,11 @@
               "duration_ms": 78,
               "content": {
                 "x": 4,
-                "y": 31,
+                "y": 13,
                 "w": 184,
-                "h": 159,
+                "h": 177,
                 "visibleW": 180,
-                "visibleH": 155,
+                "visibleH": 173,
                 "scale": 0.977528
               }
             },
@@ -1188,11 +1188,11 @@
               "duration_ms": 78,
               "content": {
                 "x": 6,
-                "y": 13,
+                "y": 12,
                 "w": 180,
-                "h": 177,
+                "h": 178,
                 "visibleW": 176,
-                "visibleH": 173,
+                "visibleH": 174,
                 "scale": 0.977528
               }
             },
@@ -1204,11 +1204,11 @@
               "duration_ms": 78,
               "content": {
                 "x": 15,
-                "y": 13,
+                "y": 12,
                 "w": 161,
-                "h": 177,
+                "h": 178,
                 "visibleW": 157,
-                "visibleH": 173,
+                "visibleH": 174,
                 "scale": 0.977528
               }
             },
@@ -1229,7 +1229,7 @@
               }
             }
           ],
-          "higgsfieldJobId": "eb91996a-80a7-455c-b63a-14beda42b27d",
+          "higgsfieldJobId": "3a092f94-ce9c-4374-a89d-b163add3a5ed",
           "stableHeight": false,
           "targetVisibleHeight": 174.0
         },
@@ -1695,11 +1695,11 @@
               "duration_ms": 78,
               "content": {
                 "x": 25,
-                "y": 25,
+                "y": 24,
                 "w": 141,
-                "h": 165,
+                "h": 166,
                 "visibleW": 137,
-                "visibleH": 161,
+                "visibleH": 162,
                 "scale": 0.977528
               }
             },
@@ -1710,11 +1710,11 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 18,
+                "x": 5,
                 "y": 11,
-                "w": 155,
+                "w": 181,
                 "h": 179,
-                "visibleW": 151,
+                "visibleW": 177,
                 "visibleH": 175,
                 "scale": 0.977528
               }
@@ -1759,11 +1759,11 @@
               "duration_ms": 78,
               "content": {
                 "x": 23,
-                "y": 19,
+                "y": 8,
                 "w": 146,
-                "h": 171,
+                "h": 182,
                 "visibleW": 142,
-                "visibleH": 167,
+                "visibleH": 178,
                 "scale": 0.977528
               }
             },
@@ -1774,17 +1774,17 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 31,
+                "x": 23,
                 "y": 8,
-                "w": 129,
+                "w": 146,
                 "h": 182,
-                "visibleW": 125,
+                "visibleW": 142,
                 "visibleH": 178,
                 "scale": 0.977528
               }
             }
           ],
-          "higgsfieldJobId": "c623f950-56e1-4e2a-bcc8-0e301d26763d",
+          "higgsfieldJobId": "d8c86cae-9c5d-4c13-a4d1-778305a7584d",
           "stableHeight": false,
           "targetVisibleHeight": 174.0
         },
@@ -11362,12 +11362,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 33,
-                "y": 15,
-                "w": 126,
-                "h": 175,
-                "visibleW": 122,
-                "visibleH": 171,
+                "x": 4,
+                "y": 12,
+                "w": 184,
+                "h": 178,
+                "visibleW": 180,
+                "visibleH": 174,
                 "scale": 0.968989
               }
             },
@@ -11378,12 +11378,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 18,
-                "y": 14,
-                "w": 155,
-                "h": 176,
-                "visibleW": 151,
-                "visibleH": 172,
+                "x": 5,
+                "y": 8,
+                "w": 181,
+                "h": 182,
+                "visibleW": 177,
+                "visibleH": 178,
                 "scale": 0.968989
               }
             },
@@ -11394,17 +11394,17 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 17,
-                "y": 14,
-                "w": 157,
-                "h": 176,
-                "visibleW": 153,
-                "visibleH": 172,
+                "x": 10,
+                "y": 11,
+                "w": 172,
+                "h": 179,
+                "visibleW": 168,
+                "visibleH": 175,
                 "scale": 0.968989
               }
             }
           ],
-          "higgsfieldJobId": "51c85312-bdd9-4ce1-9665-2520c8fa6f51",
+          "higgsfieldJobId": "1d63a4a7-b5b9-4c9d-9d1f-99455df0caf7",
           "stableHeight": false,
           "targetVisibleHeight": 172.48
         },
@@ -11425,12 +11425,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 47,
-                "y": 13,
-                "w": 97,
-                "h": 177,
-                "visibleW": 93,
-                "visibleH": 173,
+                "x": 41,
+                "y": 11,
+                "w": 109,
+                "h": 179,
+                "visibleW": 105,
+                "visibleH": 175,
                 "scale": 0.968989
               }
             },
@@ -11441,11 +11441,11 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 27,
+                "x": 21,
                 "y": 8,
-                "w": 138,
+                "w": 149,
                 "h": 182,
-                "visibleW": 134,
+                "visibleW": 145,
                 "visibleH": 178,
                 "scale": 0.968989
               }
@@ -11458,11 +11458,11 @@
               "duration_ms": 78,
               "content": {
                 "x": 47,
-                "y": 13,
+                "y": 11,
                 "w": 97,
-                "h": 177,
+                "h": 179,
                 "visibleW": 93,
-                "visibleH": 173,
+                "visibleH": 175,
                 "scale": 0.968989
               }
             },
@@ -11473,11 +11473,11 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 46,
+                "x": 44,
                 "y": 10,
-                "w": 99,
+                "w": 104,
                 "h": 180,
-                "visibleW": 95,
+                "visibleW": 100,
                 "visibleH": 176,
                 "scale": 0.968989
               }
@@ -11515,7 +11515,7 @@
               }
             }
           ],
-          "higgsfieldJobId": "255b8ea8-8e66-4384-9b6c-62ef14fb3d3b",
+          "higgsfieldJobId": "56d68023-f59a-48a1-a07a-aa85075495e5",
           "stableHeight": false,
           "targetVisibleHeight": 172.48
         },
@@ -11527,7 +11527,7 @@
           "cellHeight": 192,
           "renderScale": 1.3333333333333333,
           "sourceFacing": 1,
-          "source": "higgsfield-v2",
+          "source": "higgsfield-v3-body-vfx",
           "frames": [
             {
               "x": 768,
@@ -11537,11 +11537,11 @@
               "duration_ms": 78,
               "content": {
                 "x": 45,
-                "y": 13,
+                "y": 9,
                 "w": 101,
-                "h": 177,
+                "h": 181,
                 "visibleW": 97,
-                "visibleH": 173,
+                "visibleH": 177,
                 "scale": 0.968989
               }
             },
@@ -11552,12 +11552,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 49,
-                "y": 12,
-                "w": 94,
-                "h": 178,
-                "visibleW": 90,
-                "visibleH": 174,
+                "x": 28,
+                "y": 8,
+                "w": 136,
+                "h": 182,
+                "visibleW": 132,
+                "visibleH": 178,
                 "scale": 0.968989
               }
             },
@@ -11568,12 +11568,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 49,
-                "y": 12,
-                "w": 94,
-                "h": 178,
-                "visibleW": 90,
-                "visibleH": 174,
+                "x": 41,
+                "y": 9,
+                "w": 109,
+                "h": 181,
+                "visibleW": 105,
+                "visibleH": 177,
                 "scale": 0.968989
               }
             },
@@ -11584,12 +11584,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 48,
-                "y": 10,
-                "w": 95,
-                "h": 180,
-                "visibleW": 91,
-                "visibleH": 176,
+                "x": 31,
+                "y": 9,
+                "w": 130,
+                "h": 181,
+                "visibleW": 126,
+                "visibleH": 177,
                 "scale": 0.968989
               }
             },
@@ -11600,12 +11600,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 48,
-                "y": 10,
-                "w": 95,
-                "h": 180,
-                "visibleW": 91,
-                "visibleH": 176,
+                "x": 20,
+                "y": 8,
+                "w": 151,
+                "h": 182,
+                "visibleW": 147,
+                "visibleH": 178,
                 "scale": 0.968989
               }
             },
@@ -11616,17 +11616,17 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 55,
+                "x": 47,
                 "y": 8,
-                "w": 81,
+                "w": 98,
                 "h": 182,
-                "visibleW": 77,
+                "visibleW": 94,
                 "visibleH": 178,
                 "scale": 0.968989
               }
             }
           ],
-          "higgsfieldJobId": "a58c8d56-f997-439e-ba46-2eb0b2c94811",
+          "higgsfieldJobId": "13a8f06f-7f25-40e0-9872-ecfc6f69df01",
           "stableHeight": false,
           "targetVisibleHeight": 172.48
         },

@@ -62,6 +62,33 @@ export const STAGES = [
     grade: ["rgba(3,12,16,0.18)", "rgba(80,16,12,0.035)", "rgba(0,3,5,0.62)"],
     fogAlpha: 0.06,
     emberAlpha: 0.14
+  },
+  {
+    id: "detroit-riverfront",
+    name: "DETROIT RIVERFRONT",
+    backgroundKey: "detroitRiverfront",
+    legacyLayers: false,
+    grade: ["rgba(3,10,24,0.12)", "rgba(28,60,86,0.025)", "rgba(0,3,10,0.42)"],
+    fogAlpha: 0.04,
+    emberAlpha: 0.01
+  },
+  {
+    id: "eastern-market-after-dark",
+    name: "EASTERN MARKET AFTER DARK",
+    backgroundKey: "easternMarketAfterDark",
+    legacyLayers: false,
+    grade: ["rgba(4,7,18,0.18)", "rgba(82,22,18,0.035)", "rgba(0,2,8,0.52)"],
+    fogAlpha: 0.07,
+    emberAlpha: 0.04
+  },
+  {
+    id: "michigan-central-concourse",
+    name: "MICHIGAN CENTRAL CONCOURSE",
+    backgroundKey: "michiganCentralConcourse",
+    legacyLayers: false,
+    grade: ["rgba(20,9,3,0.08)", "rgba(80,48,28,0.02)", "rgba(4,2,1,0.38)"],
+    fogAlpha: 0.025,
+    emberAlpha: 0.01
   }
 ];
 
@@ -106,12 +133,12 @@ export const COMMAND_LISTS = {
     ]
   },
   DETROIT_LENS: {
-    title: "CAMERA TACTICIAN",
-    passive: "Precision attacks build extra meter at range. Focus Flash interrupts close pressure.",
+    title: "DETROIT HERO",
+    passive: "The Boerboel controls the ground while Guardian Intercept stops close pressure.",
     commands: [
       ...commonCommands,
-      { input: "DOWN + SP", name: "FOCUS FLASH", detail: "Spend meter on a close camera flash that interrupts pressure." },
-      { input: "SP", name: "SHUTTER BURST", detail: "Fire a fast tablet-camera flash projectile." },
+      { input: "DOWN + SP", name: "GUARDIAN INTERCEPT", detail: "Spend meter to call a close Boerboel counter." },
+      { input: "SP", name: "BOERBOEL RUSH", detail: "Send the Boerboel sprinting into a leap-and-bite attack." },
       { input: "MAX / MOD+HP", name: "RED-EYE EXPOSURE", detail: "Fire a three-hit ruby laser through the glasses." }
     ]
   },

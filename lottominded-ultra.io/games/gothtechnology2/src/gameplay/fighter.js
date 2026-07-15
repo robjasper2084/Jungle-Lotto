@@ -1,8 +1,8 @@
 import { GRAVITY, GROUND_Y, WORLD } from "../config/constants.js";
-import { ATTACKS } from "../config/moves.js?v=motion-atlas10-detroit-lens";
-import { drawSpriteFrame } from "../engine/assets.js?v=motion-atlas10-detroit-lens";
+import { ATTACKS } from "../config/moves.js?v=motion-atlas11-boerboel-detroit-stages";
+import { drawSpriteFrame } from "../engine/assets.js?v=motion-atlas11-boerboel-detroit-stages";
 import { approach, clamp, makeRect } from "../engine/math.js";
-import { attackIntentFromActions, resolveCancelAttack } from "./commands.js?v=motion-atlas10-detroit-lens";
+import { attackIntentFromActions, resolveCancelAttack } from "./commands.js?v=motion-atlas11-boerboel-detroit-stages";
 import { SpriteEffect } from "./effects.js";
 
 const MOTION_LOCKS = new Set([
@@ -332,7 +332,6 @@ export class Fighter {
       this.invulnerable = Math.max(this.invulnerable, 0.16);
       this.setMotion("SPECIAL_START", true);
       game.spawnFighterVfx?.(this, "skill", "charge");
-      game.flash = Math.max(game.flash ?? 0, 0.24);
       const direction = opponent.x >= this.x ? 1 : -1;
       const inFront = direction === this.facing;
       if (inFront && Math.abs(opponent.x - this.x) <= 340) {
@@ -347,14 +346,14 @@ export class Fighter {
           level: "mid"
         }, {
           box: { x: this.x + this.facing * 120 - 110, y: this.y - 220, w: 220, h: 190 },
-          projectile: true,
+          projectile: false,
           level: "mid",
-          sourceName: "focusFlash",
+          sourceName: "guardianIntercept",
           hitIndex: 1,
           maxHits: 1
         });
       }
-      game.audio.beep("projectile");
+      game.audio.beep("special");
     } else {
       this.parryTimer = this.id === "EZRA_ASCENDANT" ? 0.48 : 0.36;
       this.shieldTimer = Math.max(this.shieldTimer, this.parryTimer);

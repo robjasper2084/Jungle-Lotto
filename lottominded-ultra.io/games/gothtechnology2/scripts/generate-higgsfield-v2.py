@@ -90,14 +90,23 @@ BODY_ONLY_MOTIONS = {
 }
 
 DETROIT_LENS_MOTIONS = {
-    "SPECIAL_START": "plant the feet and cradle an invisible tablet at chest height while the right index finger prepares to tap its camera shutter",
-    "SPECIAL_PROJECTILE": "six full-body beats with both boots always visible: plant stance, raise empty hands around an invisible tablet, tap an invisible shutter, brace against imagined flash recoil, lower the empty hands, recover",
-    "SPECIAL_RECOVER": "six full-body empty-hand beats only: lower empty hands from camera height, reset shoulders, settle both feet, and restore guard; never draw the tablet or any prop",
+    "SPECIAL_START": "six body-only beats: plant both feet, glance briefly behind, lower one open hand as a companion signal, then point decisively toward screen-right",
+    "SPECIAL_PROJECTILE": "six body-only command beats with both boots visible: grounded guard, sharp whistle gesture near the mouth, open hand drops behind the hip, arm drives forward, index finger points screen-right, guarded follow-through",
+    "SPECIAL_RECOVER": "six body-only beats after issuing a companion command: retract the pointing arm, check screen-right, settle shoulders, reset both feet, and restore guard",
     "SUPER_CHARGE": "six restrained beats only: guarded stance, lower hands, square shoulders, lift chin, focus the stare through the glasses, lock the final braced stance",
     "SUPER_RELEASE": "lock the head toward screen-right as if firing eye beams through the glasses, recoil through the torso, then recover to guard",
     "KNOCKDOWN": "six beats only: standing impact, backward stagger, knees buckle, controlled fall, floor impact, fully down final pose",
     "THROW_GRAB": "one-person empty-hand reach drill in six beats: guard, step forward, extend both open hands toward empty air, close both empty hands, retract them, return to guard; exactly one person in each panel and never any partner or duplicate",
     "TAUNT": "form a camera-frame rectangle with both gloved hands, hold the composed challenge, then return to guard",
+}
+
+KALYX_AERIAL_MOTIONS = {
+    "JUMP_START": "six connected launch beats: upright guard, deep compression, leg drive, toe-off, both boots leaving the floor, and a clean airborne extension",
+    "JUMP_RISE": "six airborne rising beats from launch extension into a compact ascent; both boots stay above the floor after the first beat and no grounded pose returns",
+    "JUMP_PEAK": "six airborne apex beats: ascent slows, knees tuck, coat follows the same body, weight floats briefly, then the body begins to descend",
+    "JUMP_FALL": "six airborne descending beats with one compact silhouette, controlled arm balance, boots lowering toward the floor, and a clear landing preparation",
+    "LANDING": "six connected landing beats: both boots contact, knees absorb impact, coat settles around the same body, torso rises, guard reforms, and stance stabilizes",
+    "AIR_ATTACK": "six airborne attack beats: compact anticipation, diagonal claw strike, full extension, clean follow-through, limb retraction, and airborne recovery before descent",
 }
 
 PILOTS = {
@@ -137,10 +146,25 @@ def save_jobs(jobs: dict) -> None:
 def build_prompt(character: str, motion: str) -> str:
     config = CHARACTERS[character]
     body_only = motion.startswith("SPECIAL") or motion.startswith("SUPER")
-    motion_description = (
-        DETROIT_LENS_MOTIONS.get(motion, MOTIONS[motion])
-        if character == "DETROIT_LENS"
-        else BODY_ONLY_MOTIONS.get(motion, MOTIONS[motion])
+    if character == "DETROIT_LENS":
+        motion_description = DETROIT_LENS_MOTIONS.get(motion, MOTIONS[motion])
+    elif character == "KALYX" and motion in KALYX_AERIAL_MOTIONS:
+        motion_description = KALYX_AERIAL_MOTIONS[motion]
+    else:
+        motion_description = BODY_ONLY_MOTIONS.get(motion, MOTIONS[motion])
+    head_rule = (
+        "Preserve Kalyx's tied-back dreadlocks and bare head; never add a hat or head covering."
+        if character == "KALYX"
+        else "Preserve the exact character headwear from the reference."
+    )
+    single_body_rule = (
+        "Each cell must contain one and only one connected Kalyx body: exactly one head, one face, one "
+        "torso, two arms, and two legs. Never clone, overlap, echo, trail, mirror, or repeat any body, "
+        "face, head, torso, limb, silhouette, or pose inside a cell. No afterimage, motion duplicate, "
+        "shadow-double, ghost body, detached coat figure, or second fighter. Every feather and coat panel "
+        "must remain visibly attached to that one body. "
+        if character == "KALYX" and motion in KALYX_AERIAL_MOTIONS
+        else ""
     )
     energy = (
         "body-only performance with absolutely no visible energy, aura, fire, smoke, glow, projectile, "
@@ -149,24 +173,28 @@ def build_prompt(character: str, motion: str) -> str:
         else "no aura"
     )
     return (
+        f"RIGID CONTACT SHEET: two rows, exactly three equal cells per row, exactly one fighter centered "
+        f"inside each cell. Count the top row ONE, TWO, THREE and stop. Count the bottom row FOUR, FIVE, "
+        f"SIX and stop. Never create a fourth column, a seventh pose, or two poses in one cell. "
         f"Use the exact character in the reference as an immutable identity, costume, and rendering-style lock. "
         f"Character lock: {config['profile']}. Create a production 3-column by 2-row sprite sheet with "
         f"exactly SIX clearly distinct sequential full-body frames of this fighting-game motion: "
         f"{motion_description}. Chronological row-major order: frames 1, 2, 3 across the top row, then "
         f"frames 4, 5, 6 across the bottom row. The figure count must be exactly 3 + 3 = 6; a sheet "
-        f"with five, seven, eight, or any other count is invalid. Never add a bonus pose. Show anticipation, "
+        f"with five, seven, eight, or any other count is invalid. Never add a bonus pose, inset, overlap, or "
+        f"partial figure near a separator. Show anticipation, "
         f"buildup, peak action, follow-through, "
         f"recoil, and recovery as appropriate. Side-view 3/4 profile facing screen-right in every frame. "
         f"Preserve the identical face, age, hair, facial hair, clothing construction, colors, accessories, "
         f"body proportions, outline weight, camera distance, game-scale detail, and lighting in all six "
-        f"frames. Energy rule: {energy}. The camera is pulled far back in every cell: each equal cell contains "
+        f"frames. {head_rule} {single_body_rule}Energy rule: {energy}. The camera is pulled far back in every cell: each equal cell contains "
         f"exactly one complete uncropped hat-to-boot figure occupying no more than 82 percent of the cell "
-        f"height. The fedora crown, both knees, full trouser legs, ankles, both complete boots, and empty green "
+        f"height. The full top of the head or headwear, both knees, full trouser legs, ankles, both complete boots, and empty green "
         f"margin below the boot soles must be visible in all six frames. Use exactly three equal columns and "
         f"exactly two equal rows with thin black grid separators. Flat pure chroma green #00FF00 fills "
         f"every cell. No waist crop, thigh crop, missing feet, close-up, scenery, floor, cast "
         f"shadow, text, labels, decorative panel borders, duplicate pose, extra body parts, opponent, owl, "
-        f"or extra character. Keep any tablet or camera invisible; the game renders that prop separately. "
+        f"or extra character. Do not draw any handheld prop; companion animals and effects are rendered separately. "
         f"This is a production animation sheet, not concept art or a poster."
     )
 

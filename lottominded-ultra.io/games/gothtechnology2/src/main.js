@@ -1,6 +1,6 @@
-import { FIGHTERS } from "./config/assets.js?v=motion-atlas10-detroit-lens";
-import { COMMAND_LISTS, GAME_MODES, ROSTER_IDS } from "./config/content.js?v=motion-atlas10-detroit-lens";
-import { GothTechnologyGame } from "./scenes/game.js?v=motion-atlas10-detroit-lens";
+import { FIGHTERS } from "./config/assets.js?v=motion-atlas11-boerboel-detroit-stages";
+import { COMMAND_LISTS, GAME_MODES, ROSTER_IDS } from "./config/content.js?v=motion-atlas11-boerboel-detroit-stages";
+import { GothTechnologyGame } from "./scenes/game.js?v=motion-atlas11-boerboel-detroit-stages";
 import { PHASE } from "./config/constants.js";
 
 const syncViewportHeight = () => {

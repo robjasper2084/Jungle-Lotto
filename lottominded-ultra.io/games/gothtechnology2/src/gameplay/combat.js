@@ -1,7 +1,7 @@
 import { rectsOverlap } from "../engine/math.js";
-import { ATTACKS } from "../config/moves.js?v=motion-atlas10-detroit-lens";
+import { ATTACKS } from "../config/moves.js?v=motion-atlas11-boerboel-detroit-stages";
 import { FloatingText, SpriteEffect } from "./effects.js";
-import { registerAttackHit, sliceAttackForHit } from "./hits.js?v=motion-atlas10-detroit-lens";
+import { registerAttackHit, sliceAttackForHit } from "./hits.js?v=motion-atlas11-boerboel-detroit-stages";
 
 export function resolveMelee(attacker, defender, game) {
   const attackState = attacker.currentAttack;

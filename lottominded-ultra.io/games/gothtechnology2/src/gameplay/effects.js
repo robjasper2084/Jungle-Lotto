@@ -56,47 +56,6 @@ export class AttachedSpriteEffect extends SpriteEffect {
   }
 }
 
-export class AttachedImageEffect {
-  constructor({ owner, image, offsetX = 70, offsetY = -150, duration = 0.56, scale = 0.24, alpha = 1, rotation = -0.08 }) {
-    this.owner = owner;
-    this.image = image;
-    this.offsetX = offsetX;
-    this.offsetY = offsetY;
-    this.duration = duration;
-    this.scale = scale;
-    this.alpha = alpha;
-    this.rotation = rotation;
-    this.age = 0;
-    this.dead = false;
-  }
-
-  update(dt) {
-    this.age += dt;
-    this.dead = this.age >= this.duration || !this.owner;
-  }
-
-  render(ctx) {
-    if (!this.image || !this.owner) return;
-    const t = Math.min(1, this.age / this.duration);
-    const fade = 1 - Math.max(0, t - 0.72) / 0.28;
-    const pulse = 1 + Math.sin(t * Math.PI) * 0.045;
-    const width = this.image.width * this.scale * pulse;
-    const height = this.image.height * this.scale * pulse;
-    ctx.save();
-    ctx.translate(
-      this.owner.x + this.owner.facing * this.offsetX,
-      this.owner.y + this.offsetY
-    );
-    if (this.owner.facing < 0) ctx.scale(-1, 1);
-    ctx.rotate(this.rotation);
-    ctx.globalAlpha = this.alpha * fade;
-    ctx.shadowColor = "rgba(231, 195, 106, 0.72)";
-    ctx.shadowBlur = 18;
-    ctx.drawImage(this.image, -width / 2, -height / 2, width, height);
-    ctx.restore();
-  }
-}
-
 export class FloatingText {
   constructor(text, x, y, color = "#ffd66d") {
     this.text = text;

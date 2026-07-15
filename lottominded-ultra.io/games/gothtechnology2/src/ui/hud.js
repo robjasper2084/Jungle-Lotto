@@ -1,7 +1,7 @@
 import { CANVAS_HEIGHT, CANVAS_WIDTH, COLORS, ROUND_SECONDS } from "../config/constants.js";
-import { FIGHTERS } from "../config/assets.js?v=motion-atlas10-detroit-lens";
-import { CHALLENGES, GAME_MODES, ROSTER_CARD_LAYOUT, ROSTER_IDS, STAGES } from "../config/content.js?v=motion-atlas10-detroit-lens";
-import { drawSpriteFrame } from "../engine/assets.js?v=motion-atlas10-detroit-lens";
+import { FIGHTERS } from "../config/assets.js?v=motion-atlas11-boerboel-detroit-stages";
+import { CHALLENGES, GAME_MODES, ROSTER_CARD_LAYOUT, ROSTER_IDS, STAGES } from "../config/content.js?v=motion-atlas11-boerboel-detroit-stages";
+import { drawSpriteFrame } from "../engine/assets.js?v=motion-atlas11-boerboel-detroit-stages";
 
 const panel = (ctx, x, y, w, h, stroke = COLORS.gold) => {
   ctx.save();
@@ -490,7 +490,12 @@ export const drawMenuButton = (ctx, x, y, w, h, label) => {
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   ctx.fillStyle = COLORS.goldBright;
-  ctx.font = "900 22px Georgia";
+  let fontSize = 22;
+  ctx.font = `900 ${fontSize}px Georgia`;
+  while (fontSize > 13 && ctx.measureText(label).width > w - 24) {
+    fontSize -= 1;
+    ctx.font = `900 ${fontSize}px Georgia`;
+  }
   ctx.fillText(label, x + w / 2, y + h / 2);
   ctx.restore();
 };

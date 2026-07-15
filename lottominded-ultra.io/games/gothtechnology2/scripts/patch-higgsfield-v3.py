@@ -15,6 +15,14 @@ JOBS_PATH = PRODUCTION_ROOT / "jobs.json"
 ATLAS_ROOT = ROOT / "assets" / "motion-atlases"
 MANIFEST_PATH = ATLAS_ROOT / "motion-atlas-manifest.json"
 PREVIEW_ROOT = ROOT / "output" / "motion-v3-previews"
+KALYX_AERIAL_MOTIONS = {
+    "JUMP_START",
+    "JUMP_RISE",
+    "JUMP_PEAK",
+    "JUMP_FALL",
+    "LANDING",
+    "AIR_ATTACK",
+}
 
 
 def load_packer():
@@ -92,7 +100,9 @@ def main() -> None:
         if motion not in job_motions or motion not in manifest_motions:
             raise SystemExit(f"Unknown motion for {args.character}: {motion}")
         raw_path = raw_root / f"{motion.lower()}.png"
-        if args.character == "DETROIT_LENS":
+        if args.character == "DETROIT_LENS" or (
+            args.character == "KALYX" and motion in KALYX_AERIAL_MOTIONS
+        ):
             counts = packer.source_figure_counts(raw_path)
             if counts != [packer.SOURCE_COLUMNS, packer.SOURCE_COLUMNS]:
                 raise ValueError(f"{args.character}/{motion} must contain exactly 3 poses per row; found {counts}")

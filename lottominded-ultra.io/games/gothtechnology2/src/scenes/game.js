@@ -1,17 +1,17 @@
-import { ASSET_URLS, FIGHTERS } from "../config/assets.js?v=motion-atlas10-detroit-lens";
-import { ARCADE_LADDER, CHALLENGES, GAME_MODES, ROSTER_CARD_LAYOUT, ROSTER_IDS, STAGES, opponentFor } from "../config/content.js?v=motion-atlas10-detroit-lens";
-import { ASSISTS, ATTACKS } from "../config/moves.js?v=motion-atlas10-detroit-lens";
+import { ASSET_URLS, FIGHTERS } from "../config/assets.js?v=motion-atlas11-boerboel-detroit-stages";
+import { ARCADE_LADDER, CHALLENGES, GAME_MODES, ROSTER_CARD_LAYOUT, ROSTER_IDS, STAGES, opponentFor } from "../config/content.js?v=motion-atlas11-boerboel-detroit-stages";
+import { ASSISTS, ATTACKS } from "../config/moves.js?v=motion-atlas11-boerboel-detroit-stages";
 import { CANVAS_HEIGHT, CANVAS_WIDTH, COLORS, GROUND_Y, PHASE, ROUND_SECONDS, WORLD } from "../config/constants.js";
-import { AssetLoader } from "../engine/assets.js?v=motion-atlas10-detroit-lens";
-import { WebAudioBus } from "../engine/audio.js?v=motion-atlas10-detroit-lens";
-import { InputManager } from "../engine/input.js?v=motion-atlas10-detroit-lens";
+import { AssetLoader } from "../engine/assets.js?v=motion-atlas11-boerboel-detroit-stages";
+import { WebAudioBus } from "../engine/audio.js?v=motion-atlas11-boerboel-detroit-stages";
+import { InputManager } from "../engine/input.js?v=motion-atlas11-boerboel-detroit-stages";
 import { clamp, rectsOverlap } from "../engine/math.js";
-import { applyHit, resolveMelee } from "../gameplay/combat.js?v=motion-atlas10-detroit-lens";
-import { CpuController } from "../gameplay/cpu.js?v=motion-atlas10-detroit-lens";
-import { AttachedImageEffect, AttachedSpriteEffect, SpriteEffect } from "../gameplay/effects.js?v=motion-atlas10-detroit-lens";
-import { Fighter } from "../gameplay/fighter.js?v=motion-atlas10-detroit-lens";
-import { AssistStrike, Projectile } from "../gameplay/projectiles.js?v=motion-atlas10-detroit-lens";
-import { applyRoundOutcomeMotions, resolveRoundOutcome } from "../gameplay/rounds.js?v=motion-atlas10-detroit-lens";
+import { applyHit, resolveMelee } from "../gameplay/combat.js?v=motion-atlas11-boerboel-detroit-stages";
+import { CpuController } from "../gameplay/cpu.js?v=motion-atlas11-boerboel-detroit-stages";
+import { AttachedSpriteEffect, SpriteEffect } from "../gameplay/effects.js?v=motion-atlas11-boerboel-detroit-stages";
+import { Fighter } from "../gameplay/fighter.js?v=motion-atlas11-boerboel-detroit-stages";
+import { AssistStrike, BoerboelStrike, Projectile } from "../gameplay/projectiles.js?v=motion-atlas11-boerboel-detroit-stages";
+import { applyRoundOutcomeMotions, resolveRoundOutcome } from "../gameplay/rounds.js?v=motion-atlas11-boerboel-detroit-stages";
 import {
   drawCharacterSelect,
   drawDiagnostics,
@@ -22,7 +22,7 @@ import {
   drawRoundMessage,
   drawTitle,
   drawVersus
-} from "../ui/hud.js?v=motion-atlas10-detroit-lens";
+} from "../ui/hud.js?v=motion-atlas11-boerboel-detroit-stages";
 
 const GAME_SELECT_ITEMS = [
   {
@@ -1164,9 +1164,19 @@ export class GothTechnologyGame {
     const attack = owner.getAttackData(name) ?? ATTACKS[name];
     const manifestKey = owner.config.manifestKey;
     const isDetroitLens = manifestKey === "DETROIT_LENS";
-    const kind = isDetroitLens
-      ? (name === "super" ? "eye-laser" : "camera-flash")
-      : (name === "super" ? "super" : "special");
+    if (isDetroitLens && name === "special") {
+      this.projectiles.push(new BoerboelStrike({
+        owner,
+        x: owner.x - owner.facing * 72,
+        y: owner.y,
+        direction: owner.facing,
+        attack,
+        image: this.assets.images.detroitBoerboel
+      }));
+      this.audio.beep("special");
+      return;
+    }
+    const kind = isDetroitLens && name === "super" ? "eye-laser" : (name === "super" ? "super" : "special");
     const handSockets = {
       KALYX: {
         special: { x: 132, y: -136 },
@@ -1177,7 +1187,6 @@ export class GothTechnologyGame {
         super: { x: 138, y: -160 }
       },
       DETROIT_LENS: {
-        special: { x: 146, y: -148 },
         super: { x: 114, y: -176 }
       }
     };
@@ -1209,25 +1218,31 @@ export class GothTechnologyGame {
     const superMove = name === "super";
     const skill = name === "skill";
     if (isDetroitLens) {
-      if (!superMove && this.assets.images.detroitLensTablet) {
-        this.effects.push(new AttachedImageEffect({
+      if (skill && this.assets.images.detroitBoerboel) {
+        this.effects.push(new AttachedSpriteEffect({
           owner,
-          image: this.assets.images.detroitLensTablet,
-          offsetX: skill ? 64 : 76,
-          offsetY: skill ? -142 : -154,
-          duration: skill ? 0.42 : (phase === "charge" ? 0.62 : 0.3),
-          scale: skill ? 0.2 : 0.23,
-          rotation: -0.08
+          image: this.assets.images.detroitBoerboel,
+          offsetX: -66,
+          offsetY: 2,
+          cellW: 192,
+          cellH: 192,
+          frames: 6,
+          duration: 0.42,
+          scale: 0.8,
+          alpha: 0.95
         }));
+        return;
       }
+      const image = superMove ? this.assets.images.hitSpark : this.assets.images.smoke;
+      if (!image) return;
       this.effects.push(new SpriteEffect({
-        x: owner.x + owner.facing * (superMove ? 42 : 104),
-        y: owner.y + (superMove ? -116 : -58),
-        image: this.assets.images.hitSpark,
-        duration: superMove ? 0.38 : 0.26,
-        scale: superMove ? 0.42 : 0.5,
+        x: owner.x + owner.facing * (superMove ? 42 : -54),
+        y: owner.y + (superMove ? -116 : 4),
+        image,
+        duration: superMove ? 0.38 : 0.24,
+        scale: superMove ? 0.42 : 0.52,
         flip: owner.facing < 0,
-        alpha: superMove ? 0.9 : 0.82
+        alpha: superMove ? 0.9 : (phase === "charge" ? 0.56 : 0.42)
       }));
       return;
     }

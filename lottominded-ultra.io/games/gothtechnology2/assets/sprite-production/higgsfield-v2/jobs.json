@@ -52,39 +52,39 @@
           "rawBytes": 4529602
         },
         "JUMP_FALL": {
-          "jobId": "dc9a9158-8f57-46a4-af7f-c062167ee3da",
+          "jobId": "5394b85d-d360-47d8-b8a7-dd6d39562ac1",
           "status": "completed",
-          "resultUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260715_004114_dc9a9158-8f57-46a4-af7f-c062167ee3da.png",
+          "resultUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260715_202254_5394b85d-d360-47d8-b8a7-dd6d39562ac1.png",
           "rawPath": "assets/sprite-production/higgsfield-v2/raw/kalyx/jump_fall.png",
-          "rawBytes": 4442249
+          "rawBytes": 4353019
         },
         "JUMP_PEAK": {
-          "jobId": "3239b311-6206-4d3d-bf08-1938586904ae",
+          "jobId": "735572f2-5d69-495a-bc11-55e7e117dffd",
           "status": "completed",
-          "resultUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260715_004116_3239b311-6206-4d3d-bf08-1938586904ae.png",
+          "resultUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260715_202249_735572f2-5d69-495a-bc11-55e7e117dffd.png",
           "rawPath": "assets/sprite-production/higgsfield-v2/raw/kalyx/jump_peak.png",
-          "rawBytes": 4107102
+          "rawBytes": 4330745
         },
         "JUMP_RISE": {
-          "jobId": "4fe3a2bc-ad94-4625-a1d9-b4fb7acc2fb0",
+          "jobId": "29b36cf3-6b8f-4f8e-9273-53f656fbdcff",
           "status": "completed",
-          "resultUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260715_004118_4fe3a2bc-ad94-4625-a1d9-b4fb7acc2fb0.png",
+          "resultUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260715_201446_29b36cf3-6b8f-4f8e-9273-53f656fbdcff.png",
           "rawPath": "assets/sprite-production/higgsfield-v2/raw/kalyx/jump_rise.png",
-          "rawBytes": 4080850
+          "rawBytes": 4459643
         },
         "JUMP_START": {
-          "jobId": "a5a13ca5-41a5-4323-b019-86169c3ec1bf",
+          "jobId": "fbe5f7b8-4cb0-47f2-b110-1730b94c7626",
           "status": "completed",
-          "resultUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260715_004120_a5a13ca5-41a5-4323-b019-86169c3ec1bf.png",
+          "resultUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260715_202243_fbe5f7b8-4cb0-47f2-b110-1730b94c7626.png",
           "rawPath": "assets/sprite-production/higgsfield-v2/raw/kalyx/jump_start.png",
-          "rawBytes": 4193476
+          "rawBytes": 4454646
         },
         "LANDING": {
-          "jobId": "eb91996a-80a7-455c-b63a-14beda42b27d",
+          "jobId": "3a092f94-ce9c-4374-a89d-b163add3a5ed",
           "status": "completed",
-          "resultUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260715_004122_eb91996a-80a7-455c-b63a-14beda42b27d.png",
+          "resultUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260715_201509_3a092f94-ce9c-4374-a89d-b163add3a5ed.png",
           "rawPath": "assets/sprite-production/higgsfield-v2/raw/kalyx/landing.png",
-          "rawBytes": 4475747
+          "rawBytes": 4719145
         },
         "RUN_BACK": {
           "jobId": "f8b4d205-0ef3-4555-8556-f5115e85ad17",
@@ -115,11 +115,11 @@
           "rawBytes": 4399949
         },
         "AIR_ATTACK": {
-          "jobId": "c623f950-56e1-4e2a-bcc8-0e301d26763d",
+          "jobId": "d8c86cae-9c5d-4c13-a4d1-778305a7584d",
           "status": "completed",
-          "resultUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260715_004124_c623f950-56e1-4e2a-bcc8-0e301d26763d.png",
+          "resultUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260715_202259_d8c86cae-9c5d-4c13-a4d1-778305a7584d.png",
           "rawPath": "assets/sprite-production/higgsfield-v2/raw/kalyx/air_attack.png",
-          "rawBytes": 4939751
+          "rawBytes": 4389865
         },
         "COMBO_1": {
           "jobId": "8e8f20d7-ff1e-48a2-ba85-40c819153917",
@@ -317,6 +317,16 @@
             "jobId": "7a0eb1c5-434f-4cae-b15f-baf3d8ba458f",
             "status": "completed",
             "resultUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260714_130931_7a0eb1c5-434f-4cae-b15f-baf3d8ba458f.png"
+          },
+          {
+            "jobId": "dc9a9158-8f57-46a4-af7f-c062167ee3da",
+            "status": "completed",
+            "resultUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260715_004114_dc9a9158-8f57-46a4-af7f-c062167ee3da.png"
+          },
+          {
+            "jobId": "e8ccb185-28ec-4aa9-909d-a455f0c3dba6",
+            "status": "completed",
+            "resultUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260715_201500_e8ccb185-28ec-4aa9-909d-a455f0c3dba6.png"
           }
         ],
         "JUMP_PEAK": [
@@ -324,6 +334,16 @@
             "jobId": "e7b6480c-65f4-4f8a-b242-4ce539b8ea68",
             "status": "completed",
             "resultUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260714_130933_e7b6480c-65f4-4f8a-b242-4ce539b8ea68.png"
+          },
+          {
+            "jobId": "3239b311-6206-4d3d-bf08-1938586904ae",
+            "status": "completed",
+            "resultUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260715_004116_3239b311-6206-4d3d-bf08-1938586904ae.png"
+          },
+          {
+            "jobId": "bb983e4e-c8b2-4612-939d-660cc688307e",
+            "status": "completed",
+            "resultUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260715_201454_bb983e4e-c8b2-4612-939d-660cc688307e.png"
           }
         ],
         "JUMP_RISE": [
@@ -331,6 +351,11 @@
             "jobId": "331a725b-2e30-483c-84b5-a478a4006091",
             "status": "completed",
             "resultUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260714_130936_331a725b-2e30-483c-84b5-a478a4006091.png"
+          },
+          {
+            "jobId": "4fe3a2bc-ad94-4625-a1d9-b4fb7acc2fb0",
+            "status": "completed",
+            "resultUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260715_004118_4fe3a2bc-ad94-4625-a1d9-b4fb7acc2fb0.png"
           }
         ],
         "JUMP_START": [
@@ -338,6 +363,16 @@
             "jobId": "e29e46f2-d48a-4a44-a7dc-4e7056bfab78",
             "status": "completed",
             "resultUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260714_130939_e29e46f2-d48a-4a44-a7dc-4e7056bfab78.png"
+          },
+          {
+            "jobId": "a5a13ca5-41a5-4323-b019-86169c3ec1bf",
+            "status": "completed",
+            "resultUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260715_004120_a5a13ca5-41a5-4323-b019-86169c3ec1bf.png"
+          },
+          {
+            "jobId": "55128021-547a-4402-9d6c-02b621c26c68",
+            "status": "completed",
+            "resultUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260715_201441_55128021-547a-4402-9d6c-02b621c26c68.png"
           }
         ],
         "LANDING": [
@@ -345,6 +380,11 @@
             "jobId": "6c0e9c48-d451-4dc8-add1-86360d859968",
             "status": "completed",
             "resultUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260714_130941_6c0e9c48-d451-4dc8-add1-86360d859968.png"
+          },
+          {
+            "jobId": "eb91996a-80a7-455c-b63a-14beda42b27d",
+            "status": "completed",
+            "resultUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260715_004122_eb91996a-80a7-455c-b63a-14beda42b27d.png"
           }
         ],
         "AIR_ATTACK": [
@@ -352,6 +392,16 @@
             "jobId": "bc1b839f-2849-44ff-9563-3ddcb095b476",
             "status": "completed",
             "resultUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260714_131010_bc1b839f-2849-44ff-9563-3ddcb095b476.png"
+          },
+          {
+            "jobId": "c623f950-56e1-4e2a-bcc8-0e301d26763d",
+            "status": "completed",
+            "resultUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260715_004124_c623f950-56e1-4e2a-bcc8-0e301d26763d.png"
+          },
+          {
+            "jobId": "bda32ba7-cebf-4637-95c2-afda21778aef",
+            "status": "completed",
+            "resultUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260715_201516_bda32ba7-cebf-4637-95c2-afda21778aef.png"
           }
         ],
         "SPECIAL_PROJECTILE": [
@@ -871,25 +921,25 @@
           "rawBytes": 3882344
         },
         "SPECIAL_PROJECTILE": {
-          "jobId": "51c85312-bdd9-4ce1-9665-2520c8fa6f51",
+          "jobId": "1d63a4a7-b5b9-4c9d-9d1f-99455df0caf7",
           "status": "completed",
-          "resultUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260715_181855_51c85312-bdd9-4ce1-9665-2520c8fa6f51.png",
+          "resultUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260715_211648_1d63a4a7-b5b9-4c9d-9d1f-99455df0caf7.png",
           "rawPath": "assets/sprite-production/higgsfield-v2/raw/detroit-lens/special_projectile.png",
-          "rawBytes": 4002762
+          "rawBytes": 3845029
         },
         "SPECIAL_RECOVER": {
-          "jobId": "255b8ea8-8e66-4384-9b6c-62ef14fb3d3b",
+          "jobId": "56d68023-f59a-48a1-a07a-aa85075495e5",
           "status": "completed",
-          "resultUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260715_181859_255b8ea8-8e66-4384-9b6c-62ef14fb3d3b.png",
+          "resultUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260715_211653_56d68023-f59a-48a1-a07a-aa85075495e5.png",
           "rawPath": "assets/sprite-production/higgsfield-v2/raw/detroit-lens/special_recover.png",
-          "rawBytes": 3937225
+          "rawBytes": 3944320
         },
         "SPECIAL_START": {
-          "jobId": "a58c8d56-f997-439e-ba46-2eb0b2c94811",
+          "jobId": "13a8f06f-7f25-40e0-9872-ecfc6f69df01",
           "status": "completed",
-          "resultUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260715_173611_a58c8d56-f997-439e-ba46-2eb0b2c94811.png",
+          "resultUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260715_212119_13a8f06f-7f25-40e0-9872-ecfc6f69df01.png",
           "rawPath": "assets/sprite-production/higgsfield-v2/raw/detroit-lens/special_start.png",
-          "rawBytes": 3922946
+          "rawBytes": 3873667
         },
         "SUPER_CHARGE": {
           "jobId": "b8e293cd-7f97-470b-9751-f5cf15894c02",
@@ -1029,6 +1079,16 @@
             "jobId": "abc5e825-597b-432f-9b11-0cdcc1bfb2c1",
             "status": "completed",
             "resultUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260715_171056_abc5e825-597b-432f-9b11-0cdcc1bfb2c1.png"
+          },
+          {
+            "jobId": "a58c8d56-f997-439e-ba46-2eb0b2c94811",
+            "status": "completed",
+            "resultUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260715_173611_a58c8d56-f997-439e-ba46-2eb0b2c94811.png"
+          },
+          {
+            "jobId": "ba40842f-25a3-4cf6-bed0-6214e61241d3",
+            "status": "completed",
+            "resultUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260715_211643_ba40842f-25a3-4cf6-bed0-6214e61241d3.png"
           }
         ],
         "SUPER_CHARGE": [
@@ -1055,6 +1115,11 @@
             "jobId": "4432d202-a474-460c-9ae7-c1207774686c",
             "status": "completed",
             "resultUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260715_171041_4432d202-a474-460c-9ae7-c1207774686c.png"
+          },
+          {
+            "jobId": "51c85312-bdd9-4ce1-9665-2520c8fa6f51",
+            "status": "completed",
+            "resultUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260715_181855_51c85312-bdd9-4ce1-9665-2520c8fa6f51.png"
           }
         ],
         "SPECIAL_RECOVER": [
@@ -1062,6 +1127,11 @@
             "jobId": "e192e7c6-69d2-4ba5-accc-be69fc9dbb28",
             "status": "completed",
             "resultUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260715_171050_e192e7c6-69d2-4ba5-accc-be69fc9dbb28.png"
+          },
+          {
+            "jobId": "255b8ea8-8e66-4384-9b6c-62ef14fb3d3b",
+            "status": "completed",
+            "resultUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260715_181859_255b8ea8-8e66-4384-9b6c-62ef14fb3d3b.png"
           }
         ],
         "THROW_GRAB": [

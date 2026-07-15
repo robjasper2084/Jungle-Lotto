@@ -250,6 +250,30 @@ def connected_components(mask: np.ndarray) -> list[dict]:
 def remove_edge_grid_seams(image: Image.Image) -> Image.Image:
     rgba = np.asarray(image, dtype=np.uint8).copy()
     alpha = rgba[:, :, 3]
+    dark_foreground = (alpha > 24) & (rgba[:, :, :3].max(axis=2) < 24)
+
+    def clear_long_dark_runs(projection: np.ndarray, axis: str, span: int) -> None:
+        indices = np.where(projection > span * 0.52)[0]
+        if not len(indices):
+            return
+        run_start = previous = int(indices[0])
+        for raw_index in (*indices[1:], None):
+            index = None if raw_index is None else int(raw_index)
+            if index is not None and index == previous + 1:
+                previous = index
+                continue
+            if previous - run_start + 1 <= 18:
+                start = max(0, run_start - 3)
+                end = previous + 4
+                if axis == "vertical":
+                    alpha[:, start:end] = 0
+                else:
+                    alpha[start:end, :] = 0
+            if index is not None:
+                run_start = previous = index
+
+    clear_long_dark_runs(dark_foreground.sum(axis=0), "vertical", image.height)
+    clear_long_dark_runs(dark_foreground.sum(axis=1), "horizontal", image.width)
 
     reduced = Image.fromarray(alpha, "L").resize(
         (max(1, image.width // COMPONENT_SCALE), max(1, image.height // COMPONENT_SCALE)),

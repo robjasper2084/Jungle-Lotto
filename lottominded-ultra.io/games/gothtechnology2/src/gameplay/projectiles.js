@@ -1,7 +1,7 @@
-import { drawSheetFrame } from "../engine/assets.js?v=motion-atlas10-detroit-lens";
+import { drawSheetFrame } from "../engine/assets.js?v=motion-atlas11-boerboel-detroit-stages";
 import { rectsOverlap } from "../engine/math.js";
 import { SpriteEffect } from "./effects.js";
-import { sliceAttackForHit } from "./hits.js?v=motion-atlas10-detroit-lens";
+import { sliceAttackForHit } from "./hits.js?v=motion-atlas11-boerboel-detroit-stages";
 
 const hexAlpha = (color, alpha) => {
   if (!color?.startsWith("#") || color.length !== 7) return color;
@@ -69,9 +69,7 @@ export class Projectile {
         level: this.attack.level ?? "mid",
         sourceName: this.kind === "eye-laser"
           ? "super"
-          : this.kind === "camera-flash"
-            ? "special"
-            : this.kind,
+          : this.kind,
         hitIndex: this.hitCount,
         maxHits
       });
@@ -145,36 +143,6 @@ export class Projectile {
     ctx.restore();
   }
 
-  renderCameraFlash(ctx, visualY) {
-    const pulse = 0.88 + Math.sin(this.age * 34) * 0.12;
-    ctx.save();
-    ctx.globalCompositeOperation = "lighter";
-    ctx.translate(this.x, visualY);
-    ctx.fillStyle = "rgba(255, 250, 225, 0.96)";
-    ctx.shadowColor = "#e7c36a";
-    ctx.shadowBlur = 34;
-    ctx.beginPath();
-    ctx.arc(0, 0, this.radius * 0.44 * pulse, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.strokeStyle = "rgba(231, 195, 106, 0.8)";
-    ctx.lineWidth = Math.max(2, this.radius * 0.08);
-    for (let ring = 1; ring <= 2; ring += 1) {
-      ctx.globalAlpha = 0.78 / ring;
-      ctx.beginPath();
-      ctx.arc(0, 0, this.radius * (0.66 + ring * 0.42), 0, Math.PI * 2);
-      ctx.stroke();
-    }
-    ctx.globalAlpha = 0.72;
-    for (let spoke = 0; spoke < 6; spoke += 1) {
-      const angle = (Math.PI * 2 * spoke) / 6 + this.age * 2.4;
-      ctx.beginPath();
-      ctx.moveTo(Math.cos(angle) * this.radius * 0.34, Math.sin(angle) * this.radius * 0.34);
-      ctx.lineTo(Math.cos(angle) * this.radius * 1.5, Math.sin(angle) * this.radius * 1.5);
-      ctx.stroke();
-    }
-    ctx.restore();
-  }
-
   renderEyeLaser(ctx, visualY) {
     const length = this.radius * 7.4;
     const startX = this.x - this.direction * length;
@@ -208,11 +176,6 @@ export class Projectile {
     const frame = Math.floor(this.age * 18) % 8;
     const flip = this.direction < 0;
     const visualY = this.y + Math.sin(this.age * 14 + this.seed) * Math.min(18, this.radius * 0.26);
-    if (this.kind === "camera-flash") {
-      this.renderTrail(ctx, visualY);
-      this.renderCameraFlash(ctx, visualY);
-      return;
-    }
     if (this.kind === "eye-laser") {
       this.renderEyeLaser(ctx, visualY);
       return;
@@ -269,6 +232,142 @@ export class Projectile {
     ctx.lineTo(this.x + this.direction * this.radius * 0.78, visualY);
     ctx.lineTo(this.x - this.direction * this.radius * 0.16, visualY + this.radius * 0.42);
     ctx.stroke();
+    ctx.restore();
+  }
+}
+
+const BOERBOEL_PHASES = {
+  summon: { row: 0, duration: 0.24, frameRate: 12 },
+  run: { row: 1, duration: Infinity, frameRate: 14 },
+  attack: { row: 2, duration: 0.46, frameRate: 13 },
+  recover: { row: 3, duration: 0.44, frameRate: 12 }
+};
+
+export class BoerboelStrike extends Projectile {
+  constructor({ owner, x, y, direction, attack, image }) {
+    super({ owner, x, y, direction, attack, image, kind: "boerboel-rush", color: "#c88946" });
+    this.phase = "summon";
+    this.phaseAge = 0;
+    this.hitApplied = false;
+    this.speed = attack.speed ?? 760;
+    this.radius = attack.radius ?? 66;
+    this.trail = [];
+  }
+
+  get rect() {
+    return {
+      x: this.x - 82,
+      y: this.y - 112,
+      w: 164,
+      h: 108
+    };
+  }
+
+  setPhase(phase) {
+    this.phase = phase;
+    this.phaseAge = 0;
+  }
+
+  update(dt, game) {
+    this.age += dt;
+    this.phaseAge += dt;
+    const target = game.fighters.find((fighter) => fighter.id !== this.owner.id);
+
+    if (this.phase === "summon") {
+      if (this.phaseAge >= BOERBOEL_PHASES.summon.duration) this.setPhase("run");
+      return;
+    }
+
+    if (this.phase === "run") {
+      this.x += this.direction * this.speed * dt;
+      this.trail.unshift({ x: this.x - this.direction * 42, y: this.y + 2 });
+      this.trail.length = Math.min(7, this.trail.length);
+      const distance = target ? this.direction * (target.x - this.x) : Infinity;
+      if (target && distance <= 126 && distance >= -76) {
+        this.x = target.x - this.direction * 94;
+        this.setPhase("attack");
+        return;
+      }
+      if (this.x < -160 || this.x > 1440 || this.age > 2.4) this.setPhase("recover");
+      return;
+    }
+
+    if (this.phase === "attack") {
+      if (!this.hitApplied && this.phaseAge >= 0.15) {
+        this.hitApplied = true;
+        if (target && !target.isKO && rectsOverlap(this.rect, target.hurtbox)) {
+          game.resolveIncomingHit(this.owner, target, this.attack, {
+            box: this.rect,
+            projectile: false,
+            level: this.attack.level ?? "mid",
+            sourceName: "boerboelRush",
+            hitIndex: 1,
+            maxHits: 1
+          });
+          game.effects.push(new SpriteEffect({
+            x: target.x - this.direction * 24,
+            y: target.y - 78,
+            image: game.assets.images.hitSpark,
+            duration: 0.26,
+            scale: 0.46,
+            flip: this.direction < 0,
+            alpha: 0.86
+          }));
+        }
+      }
+      if (this.phaseAge >= BOERBOEL_PHASES.attack.duration) this.setPhase("recover");
+      return;
+    }
+
+    this.x += this.direction * this.speed * 0.42 * dt;
+    if (this.phaseAge >= BOERBOEL_PHASES.recover.duration) this.dead = true;
+  }
+
+  render(ctx) {
+    if (!this.image) return;
+    const layout = BOERBOEL_PHASES[this.phase];
+    const frame = this.phase === "run"
+      ? Math.floor(this.phaseAge * layout.frameRate) % 6
+      : Math.min(5, Math.floor((this.phaseAge / layout.duration) * 6));
+    const alpha = this.phase === "recover"
+      ? Math.max(0, 1 - this.phaseAge / layout.duration)
+      : 1;
+    const scale = 0.86;
+
+    ctx.save();
+    ctx.globalAlpha = 0.34 * alpha;
+    ctx.fillStyle = "#050403";
+    ctx.beginPath();
+    ctx.ellipse(this.x, this.y + 5, 74, 12, 0, 0, Math.PI * 2);
+    ctx.fill();
+    for (let index = this.trail.length - 1; index >= 0; index -= 1) {
+      const point = this.trail[index];
+      const strength = 1 - index / Math.max(1, this.trail.length);
+      ctx.globalAlpha = strength * 0.12 * alpha;
+      ctx.fillStyle = "#d7b07a";
+      ctx.beginPath();
+      ctx.ellipse(point.x, point.y, 22 * strength, 7 * strength, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
+
+    ctx.save();
+    ctx.translate(this.x, this.y + 3);
+    if (this.direction < 0) ctx.scale(-1, 1);
+    ctx.globalAlpha = alpha;
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
+    ctx.drawImage(
+      this.image,
+      frame * 192,
+      layout.row * 192,
+      192,
+      192,
+      -96 * scale,
+      -192 * scale,
+      192 * scale,
+      192 * scale
+    );
     ctx.restore();
   }
 }
