@@ -1,7 +1,7 @@
-import { drawSheetFrame } from "../engine/assets.js?v=future-hud19-gameplay-title";
+import { drawSheetFrame } from "../engine/assets.js?v=future-hud20-cpu-select";
 import { rectsOverlap } from "../engine/math.js";
 import { SpriteEffect } from "./effects.js";
-import { sliceAttackForHit } from "./hits.js?v=future-hud19-gameplay-title";
+import { sliceAttackForHit } from "./hits.js?v=future-hud20-cpu-select";
 
 const hexAlpha = (color, alpha) => {
   if (!color?.startsWith("#") || color.length !== 7) return color;

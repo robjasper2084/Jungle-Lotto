@@ -1,6 +1,6 @@
-import { FIGHTERS } from "./config/assets.js?v=future-hud19-gameplay-title";
-import { COMMAND_LISTS, GAME_MODES, ROSTER_IDS } from "./config/content.js?v=future-hud19-gameplay-title";
-import { GothTechnologyGame } from "./scenes/game.js?v=future-hud19-gameplay-title";
+import { FIGHTERS } from "./config/assets.js?v=future-hud20-cpu-select";
+import { COMMAND_LISTS, GAME_MODES, ROSTER_IDS } from "./config/content.js?v=future-hud20-cpu-select";
+import { GothTechnologyGame } from "./scenes/game.js?v=future-hud20-cpu-select";
 import { PHASE } from "./config/constants.js";
 
 const syncViewportHeight = () => {
@@ -364,8 +364,12 @@ const renderAccessibleActions = (state) => {
     actions.push(actionButton("Play Shadow Ops", () => { game.selectGame(1); game.launchSelectedGame(); }));
     actions.push(actionButton("Back", () => game.returnToTitle()));
   } else if (state.phase === PHASE.SELECT) {
+    const opponentRole = state.training ? "training dummy" : (state.cpuEnabled ? "CPU opponent" : "Player 2");
+    actions.push(actionButton("Select Player 1", () => game.setSelectionTarget("p1")));
+    actions.push(actionButton(`Select ${opponentRole}`, () => game.setSelectionTarget("p2")));
+    const activeRole = state.selectTarget === "p2" ? opponentRole : "Player 1";
     for (const characterId of ROSTER_IDS) {
-      actions.push(actionButton(`Choose ${FIGHTERS[characterId].name}`, () => game.selectPlayer1(characterId)));
+      actions.push(actionButton(`Choose ${FIGHTERS[characterId].name} for ${activeRole}`, () => game.selectCharacter(characterId)));
     }
     actions.push(actionButton("Change stage", () => game.cycleStage()));
     actions.push(actionButton(`Start ${GAME_MODES[game.gameMode]?.label || "fight"}`, () => game.startVersus()));

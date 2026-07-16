@@ -1,7 +1,7 @@
 import { CANVAS_HEIGHT, CANVAS_WIDTH, COLORS, ROUND_SECONDS } from "../config/constants.js";
-import { FIGHTERS } from "../config/assets.js?v=future-hud19-gameplay-title";
-import { GAME_MODES, ROSTER_CARD_LAYOUT, ROSTER_IDS, STAGES } from "../config/content.js?v=future-hud19-gameplay-title";
-import { drawSpriteFrame } from "../engine/assets.js?v=future-hud19-gameplay-title";
+import { FIGHTERS } from "../config/assets.js?v=future-hud20-cpu-select";
+import { GAME_MODES, ROSTER_CARD_LAYOUT, ROSTER_IDS, STAGES } from "../config/content.js?v=future-hud20-cpu-select";
+import { drawSpriteFrame } from "../engine/assets.js?v=future-hud20-cpu-select";
 
 const panel = (ctx, x, y, w, h, stroke = COLORS.gold) => {
   ctx.save();
@@ -112,6 +112,37 @@ const drawFutureButton = (ctx, x, y, w, h, kicker, label, tone) => {
   ctx.lineTo(x + w - 28, y + h / 2 + 8);
   ctx.closePath();
   ctx.fill();
+  ctx.restore();
+};
+
+const drawSelectionTarget = (ctx, x, y, w, h, role, fighterName, active, tone) => {
+  drawAngularPanel(
+    ctx,
+    x,
+    y,
+    w,
+    h,
+    active ? "rgba(7, 25, 32, 0.98)" : "rgba(2, 8, 12, 0.88)",
+    active ? tone : "rgba(126, 160, 174, 0.42)",
+    active ? 2 : 1,
+    8
+  );
+  ctx.save();
+  ctx.textBaseline = "middle";
+  ctx.textAlign = "left";
+  ctx.fillStyle = active ? tone : FUTURE.muted;
+  ctx.font = `900 11px ${HUD_MONO}`;
+  ctx.fillText(role, x + 16, y + h / 2);
+  ctx.fillStyle = active ? FUTURE.white : "rgba(238, 250, 255, 0.66)";
+  let fontSize = 12;
+  ctx.font = `900 ${fontSize}px ${HUD_FONT}`;
+  while (fontSize > 9 && ctx.measureText(fighterName).width > w - 92) {
+    fontSize -= 1;
+    ctx.font = `900 ${fontSize}px ${HUD_FONT}`;
+  }
+  ctx.fillText(fighterName, x + 76, y + h / 2);
+  ctx.fillStyle = active ? tone : FUTURE.muted;
+  ctx.fillRect(x + w - 28, y + h / 2 - 1, 12, 2);
   ctx.restore();
 };
 
@@ -518,8 +549,9 @@ export const drawCharacterSelect = (ctx, game) => {
   ctx.fillStyle = FUTURE.cyan;
   ctx.font = `800 13px ${HUD_MONO}`;
   ctx.fillText(`${GAME_MODES[game.gameMode]?.label || "VERSUS"} PROTOCOL // SELECT COMBATANT`, 640, 88);
-  ctx.fillStyle = "rgba(103, 232, 255, 0.55)";
-  ctx.fillRect(512, 105, 256, 2);
+  const opponentRole = game.training ? "DUMMY" : (game.cpuEnabled ? "CPU" : "P2");
+  drawSelectionTarget(ctx, 352, 98, 272, 32, "P1", FIGHTERS[game.player1Id].name, game.selectTarget !== "p2", FUTURE.cyan);
+  drawSelectionTarget(ctx, 656, 98, 272, 32, opponentRole, FIGHTERS[game.player2Id].name, game.selectTarget === "p2", FUTURE.red);
   for (const [index, layout] of ROSTER_CARD_LAYOUT.entries()) {
     const characterId = ROSTER_IDS[index];
     const config = FIGHTERS[characterId];
@@ -537,7 +569,7 @@ export const drawCharacterSelect = (ctx, game) => {
   ctx.fillStyle = FUTURE.muted;
   ctx.font = `700 11px ${HUD_MONO}`;
   ctx.textAlign = "center";
-  ctx.fillText("CLICK FIGHTER // LEFT-RIGHT TO CYCLE // ENTER TO DEPLOY", 640, 658);
+  ctx.fillText(`${game.selectTarget === "p2" ? opponentRole : "P1"} TARGET // CLICK FIGHTER // UP-DOWN SWITCH TARGET // ENTER TO DEPLOY`, 640, 658);
   if (game.motionLoadError || game.fightLoadError) {
     ctx.fillStyle = FUTURE.red;
     ctx.fillText("LINK FAILURE // SELECT VERSUS TO RETRY", 640, 687);

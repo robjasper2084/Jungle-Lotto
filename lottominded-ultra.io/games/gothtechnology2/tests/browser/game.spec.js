@@ -169,7 +169,7 @@ test("boots, reaches versus, fights, and pauses without page errors", async ({ p
   expect(spriteIntegrity.insufficientUnique).toEqual([]);
   expect(spriteIntegrity.splitFrames).toEqual([]);
   const unstableRenderedMotions = await page.evaluate(async () => {
-    const { drawSpriteFrame } = await import("./src/engine/assets.js?v=future-hud19-gameplay-title-test");
+    const { drawSpriteFrame } = await import("./src/engine/assets.js?v=future-hud20-cpu-select-test");
     const animations = window.__gothTechnologyGame.assets.animations;
     const checkedMotions = [
       "IDLE", "READY_STANCE", "WALK_FORWARD", "RUN_FORWARD", "DASH_FORWARD",
@@ -248,13 +248,13 @@ test("Detroit Lens Noir loads the Boerboel, eye laser, and five Detroit stages",
   await expect.poll(() => page.evaluate(() => window.__gothTechnologyGame?.matchAssetsReady), { timeout: 60_000 }).toBe(true);
   const rosterActions = await page.locator("#accessibleActions button").allTextContents();
   expect(rosterActions).toEqual(expect.arrayContaining([
-    "Choose KALYX",
-    "Choose MASTER EZRA",
-    "Choose DETROIT LENS NOIR"
+    "Choose KALYX for Player 1",
+    "Choose MASTER EZRA for Player 1",
+    "Choose DETROIT LENS NOIR for Player 1"
   ]));
-  expect(rosterActions).not.toContain("Choose DETROIT LENS");
-  expect(rosterActions).not.toContain("Choose KALYX ECLIPSE");
-  expect(rosterActions).not.toContain("Choose EZRA ASCENDANT");
+  expect(rosterActions.some((label) => label.includes("Choose DETROIT LENS for"))).toBe(false);
+  expect(rosterActions.some((label) => label.includes("KALYX ECLIPSE"))).toBe(false);
+  expect(rosterActions.some((label) => label.includes("EZRA ASCENDANT"))).toBe(false);
 
   await clickGame(page, 1024, 330);
   await expect.poll(() => page.evaluate(() => window.__gothTechnologyGame?.player1Id)).toBe("DETROIT_LENS_NOIR");
@@ -353,6 +353,31 @@ test("Detroit Lens Noir loads the Boerboel, eye laser, and five Detroit stages",
     if (!process.env.NO_TEST_ARTIFACTS) await page.screenshot({ path: testInfo.outputPath(`${testInfo.project.name}-${slug}.png`) });
   }
   expect(pageErrors).toEqual([]);
+});
+
+test("versus lets the player choose the CPU fighter independently", async ({ page }, testInfo) => {
+  test.setTimeout(120_000);
+  await page.goto(gameUrl);
+  await expect.poll(() => phase(page)).toBe("title");
+  await page.evaluate(() => window.__gothTechnologyGame.openMode("versus"));
+  await expect.poll(() => phase(page)).toBe("select");
+
+  await clickGame(page, 792, 114);
+  await expect.poll(() => page.evaluate(() => window.__gothTechnologyGame.selectTarget)).toBe("p2");
+  await clickGame(page, 1024, 330);
+  await expect.poll(() => page.evaluate(() => ({
+    player1Id: window.__gothTechnologyGame.player1Id,
+    player2Id: window.__gothTechnologyGame.player2Id
+  }))).toEqual({ player1Id: "MASTER_EZRA", player2Id: "DETROIT_LENS_NOIR" });
+
+  await clickGame(page, 488, 114);
+  await clickGame(page, 256, 330);
+  await expect.poll(() => page.evaluate(() => ({
+    player1Id: window.__gothTechnologyGame.player1Id,
+    player2Id: window.__gothTechnologyGame.player2Id
+  }))).toEqual({ player1Id: "KALYX", player2Id: "DETROIT_LENS_NOIR" });
+  await expect(page.locator("#accessibleActions")).toContainText("Select CPU opponent");
+  if (!process.env.NO_TEST_ARTIFACTS) await page.screenshot({ path: testInfo.outputPath("independent-cpu-selection.png") });
 });
 
 test("Master Ezra plays a complete takeoff, apex, fall, and clean landing", async ({ page }, testInfo) => {

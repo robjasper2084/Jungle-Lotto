@@ -1,7 +1,7 @@
 import { rectsOverlap } from "../engine/math.js";
-import { ATTACKS } from "../config/moves.js?v=future-hud19-gameplay-title";
+import { ATTACKS } from "../config/moves.js?v=future-hud20-cpu-select";
 import { FloatingText, SpriteEffect } from "./effects.js";
-import { registerAttackHit, sliceAttackForHit } from "./hits.js?v=future-hud19-gameplay-title";
+import { registerAttackHit, sliceAttackForHit } from "./hits.js?v=future-hud20-cpu-select";
 
 export function resolveMelee(attacker, defender, game) {
   const attackState = attacker.currentAttack;

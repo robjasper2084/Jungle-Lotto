@@ -1,17 +1,17 @@
-import { ASSET_URLS, FIGHTERS } from "../config/assets.js?v=future-hud19-gameplay-title";
-import { ARCADE_LADDER, GAME_MODES, ROSTER_CARD_LAYOUT, ROSTER_IDS, STAGES, opponentFor } from "../config/content.js?v=future-hud19-gameplay-title";
-import { ASSISTS, ATTACKS } from "../config/moves.js?v=future-hud19-gameplay-title";
+import { ASSET_URLS, FIGHTERS } from "../config/assets.js?v=future-hud20-cpu-select";
+import { ARCADE_LADDER, GAME_MODES, ROSTER_CARD_LAYOUT, ROSTER_IDS, STAGES, opponentFor } from "../config/content.js?v=future-hud20-cpu-select";
+import { ASSISTS, ATTACKS } from "../config/moves.js?v=future-hud20-cpu-select";
 import { CANVAS_HEIGHT, CANVAS_WIDTH, COLORS, GROUND_Y, PHASE, ROUND_SECONDS, WORLD } from "../config/constants.js";
-import { AssetLoader } from "../engine/assets.js?v=future-hud19-gameplay-title";
-import { WebAudioBus } from "../engine/audio.js?v=future-hud19-gameplay-title";
-import { InputManager } from "../engine/input.js?v=future-hud19-gameplay-title";
+import { AssetLoader } from "../engine/assets.js?v=future-hud20-cpu-select";
+import { WebAudioBus } from "../engine/audio.js?v=future-hud20-cpu-select";
+import { InputManager } from "../engine/input.js?v=future-hud20-cpu-select";
 import { clamp, rectsOverlap } from "../engine/math.js";
-import { applyHit, resolveMelee } from "../gameplay/combat.js?v=future-hud19-gameplay-title";
-import { CpuController } from "../gameplay/cpu.js?v=future-hud19-gameplay-title";
-import { AttachedSpriteEffect, SpriteEffect } from "../gameplay/effects.js?v=future-hud19-gameplay-title";
-import { Fighter } from "../gameplay/fighter.js?v=future-hud19-gameplay-title";
-import { AssistStrike, BoerboelStrike, Projectile } from "../gameplay/projectiles.js?v=future-hud19-gameplay-title";
-import { applyRoundOutcomeMotions, resolveRoundOutcome } from "../gameplay/rounds.js?v=future-hud19-gameplay-title";
+import { applyHit, resolveMelee } from "../gameplay/combat.js?v=future-hud20-cpu-select";
+import { CpuController } from "../gameplay/cpu.js?v=future-hud20-cpu-select";
+import { AttachedSpriteEffect, SpriteEffect } from "../gameplay/effects.js?v=future-hud20-cpu-select";
+import { Fighter } from "../gameplay/fighter.js?v=future-hud20-cpu-select";
+import { AssistStrike, BoerboelStrike, Projectile } from "../gameplay/projectiles.js?v=future-hud20-cpu-select";
+import { applyRoundOutcomeMotions, resolveRoundOutcome } from "../gameplay/rounds.js?v=future-hud20-cpu-select";
 import {
   drawCharacterSelect,
   drawDiagnostics,
@@ -22,7 +22,7 @@ import {
   drawRoundMessage,
   drawTitle,
   drawVersus
-} from "../ui/hud.js?v=future-hud19-gameplay-title";
+} from "../ui/hud.js?v=future-hud20-cpu-select";
 
 const GAME_SELECT_ITEMS = [
   {
@@ -123,6 +123,7 @@ export class GothTechnologyGame {
     this.showFrameData = false;
     this.player1Id = "MASTER_EZRA";
     this.player2Id = "KALYX";
+    this.selectTarget = "p1";
     this.rosterIndex = ROSTER_IDS.indexOf(this.player1Id);
     this.gameMode = "versus";
     this.stageIndex = 0;
@@ -365,7 +366,6 @@ export class GothTechnologyGame {
       const hit = this.menuHitAreas.find((area) => x >= area.x && x <= area.x + area.w && y >= area.y && y <= area.y + area.h);
       if (hit) hit.action();
       else if (this.phase === PHASE.TITLE) this.openCharacterSelect(false);
-      else if (this.phase === PHASE.SELECT) this.startVersus();
     });
   }
 
@@ -381,13 +381,33 @@ export class GothTechnologyGame {
   }
 
   selectPlayer1(id) {
+    this.selectCharacter(id, "p1");
+  }
+
+  selectPlayer2(id) {
+    this.selectCharacter(id, "p2");
+  }
+
+  selectCharacter(id, target = this.selectTarget) {
     if (!FIGHTERS[id]) return;
-    this.player1Id = id;
+    if (target === "p2") this.player2Id = id;
+    else this.player1Id = id;
     this.rosterIndex = ROSTER_IDS.indexOf(id);
-    this.player2Id = this.opponentForMode();
     this.createFighters();
     this.prepareCharacterMotions();
     this.audio.beep("select");
+    this.lastAccessibleState = "";
+    this.render();
+  }
+
+  setSelectionTarget(target) {
+    if (target !== "p1" && target !== "p2") return;
+    this.selectTarget = target;
+    const activeId = target === "p2" ? this.player2Id : this.player1Id;
+    this.rosterIndex = Math.max(0, ROSTER_IDS.indexOf(activeId));
+    this.lastAccessibleState = "";
+    this.audio.beep("select");
+    this.render();
   }
 
   opponentForMode() {
@@ -407,6 +427,8 @@ export class GothTechnologyGame {
       this.trainingDummyMode = "stand";
     }
     this.player2Id = this.opponentForMode();
+    this.selectTarget = "p1";
+    this.rosterIndex = Math.max(0, ROSTER_IDS.indexOf(this.player1Id));
     this.phase = PHASE.SELECT;
     this.createFighters();
     this.prepareCharacterMotions();
@@ -716,13 +738,17 @@ export class GothTechnologyGame {
 
     if (this.phase === PHASE.SELECT) {
       this.menuHitAreas = [
+        { x: 352, y: 98, w: 272, h: 32, action: () => this.setSelectionTarget("p1") },
+        { x: 656, y: 98, w: 272, h: 32, action: () => this.setSelectionTarget("p2") },
         ...ROSTER_CARD_LAYOUT.map((layout, index) => ({
           ...layout,
-          action: () => this.selectPlayer1(ROSTER_IDS[index])
+          action: () => this.selectCharacter(ROSTER_IDS[index])
         })),
         { x: 330, y: 570, w: 292, h: 52, action: () => this.cycleStage() },
         { x: 658, y: 570, w: 292, h: 52, action: () => this.startVersus() }
       ];
+      if (this.input.consume("p1.up") || this.input.consume("p2.up")) this.setSelectionTarget("p1");
+      if (this.input.consume("p1.down") || this.input.consume("p2.down")) this.setSelectionTarget("p2");
       if (
         this.input.consume("p1.left") ||
         this.input.consume("p1.right") ||
@@ -731,7 +757,7 @@ export class GothTechnologyGame {
       ) {
         const delta = this.input.isDown("p1.left") || this.input.isDown("p2.left") ? -1 : 1;
         this.rosterIndex = (this.rosterIndex + delta + ROSTER_IDS.length) % ROSTER_IDS.length;
-        this.selectPlayer1(ROSTER_IDS[this.rosterIndex]);
+        this.selectCharacter(ROSTER_IDS[this.rosterIndex]);
       }
       if (this.input.consume("ui.confirm")) this.startVersus();
       if (this.input.consume("ui.back")) {
@@ -1314,6 +1340,7 @@ export class GothTechnologyGame {
       this.phase,
       this.player1Id,
       this.player2Id,
+      this.selectTarget,
       this.cpuEnabled,
       this.cpuDifficulty,
       this.training,
@@ -1332,6 +1359,7 @@ export class GothTechnologyGame {
         phase: this.phase,
         player1Id: this.player1Id,
         player2Id: this.player2Id,
+        selectTarget: this.selectTarget,
         player1Name: this.fighters[0]?.config.name || "Player 1",
         player2Name: this.fighters[1]?.config.name || "Player 2",
         cpuEnabled: this.cpuEnabled,
