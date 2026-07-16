@@ -8,6 +8,8 @@ export default async function globalSetup() {
   });
 
   return async () => {
+    server.closeIdleConnections?.();
+    server.closeAllConnections?.();
     await new Promise((resolve, reject) => {
       server.close((error) => error ? reject(error) : resolve());
     });

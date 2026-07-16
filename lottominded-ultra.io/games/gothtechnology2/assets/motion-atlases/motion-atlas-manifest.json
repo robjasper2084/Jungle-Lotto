@@ -121,7 +121,7 @@
           ],
           "higgsfieldJobId": "3ecb1159-8c5e-4778-99d1-8f031c4d4582",
           "stableHeight": true,
-          "targetVisibleHeight": 174.0
+          "targetVisibleHeight": 174
         },
         "READY_STANCE": {
           "sheet": "assets/motion-atlases/kalyx-locomotion.webp",
@@ -232,7 +232,7 @@
           ],
           "higgsfieldJobId": "7b7c172e-0fde-4ca7-a323-0a830904fc4d",
           "stableHeight": true,
-          "targetVisibleHeight": 174.0
+          "targetVisibleHeight": 174
         },
         "CROUCH_IDLE": {
           "sheet": "assets/motion-atlases/kalyx-locomotion.webp",
@@ -787,7 +787,7 @@
           ],
           "higgsfieldJobId": "5394b85d-d360-47d8-b8a7-dd6d39562ac1",
           "stableHeight": false,
-          "targetVisibleHeight": 174.0
+          "targetVisibleHeight": 174
         },
         "JUMP_PEAK": {
           "sheet": "assets/motion-atlases/kalyx-locomotion.webp",
@@ -898,7 +898,7 @@
           ],
           "higgsfieldJobId": "735572f2-5d69-495a-bc11-55e7e117dffd",
           "stableHeight": false,
-          "targetVisibleHeight": 174.0
+          "targetVisibleHeight": 174
         },
         "JUMP_RISE": {
           "sheet": "assets/motion-atlases/kalyx-locomotion.webp",
@@ -1009,7 +1009,7 @@
           ],
           "higgsfieldJobId": "29b36cf3-6b8f-4f8e-9273-53f656fbdcff",
           "stableHeight": false,
-          "targetVisibleHeight": 174.0
+          "targetVisibleHeight": 174
         },
         "JUMP_START": {
           "sheet": "assets/motion-atlases/kalyx-locomotion.webp",
@@ -1120,7 +1120,7 @@
           ],
           "higgsfieldJobId": "fbe5f7b8-4cb0-47f2-b110-1730b94c7626",
           "stableHeight": false,
-          "targetVisibleHeight": 174.0
+          "targetVisibleHeight": 174
         },
         "LANDING": {
           "sheet": "assets/motion-atlases/kalyx-locomotion.webp",
@@ -1231,7 +1231,7 @@
           ],
           "higgsfieldJobId": "3a092f94-ce9c-4374-a89d-b163add3a5ed",
           "stableHeight": false,
-          "targetVisibleHeight": 174.0
+          "targetVisibleHeight": 174
         },
         "RUN_BACK": {
           "sheet": "assets/motion-atlases/kalyx-locomotion.webp",
@@ -1786,7 +1786,7 @@
           ],
           "higgsfieldJobId": "d8c86cae-9c5d-4c13-a4d1-778305a7584d",
           "stableHeight": false,
-          "targetVisibleHeight": 174.0
+          "targetVisibleHeight": 174
         },
         "COMBO_1": {
           "sheet": "assets/motion-atlases/kalyx-combat.webp",
@@ -3587,7 +3587,7 @@
                 "h": 178,
                 "visibleW": 107,
                 "visibleH": 174,
-                "scale": 1.0
+                "scale": 1
               }
             },
             {
@@ -3603,7 +3603,7 @@
                 "h": 164,
                 "visibleW": 128,
                 "visibleH": 160,
-                "scale": 1.0
+                "scale": 1
               }
             },
             {
@@ -3619,7 +3619,7 @@
                 "h": 115,
                 "visibleW": 175,
                 "visibleH": 111,
-                "scale": 1.0
+                "scale": 1
               }
             },
             {
@@ -3635,7 +3635,7 @@
                 "h": 78,
                 "visibleW": 178,
                 "visibleH": 74,
-                "scale": 1.0
+                "scale": 1
               }
             },
             {
@@ -3651,7 +3651,7 @@
                 "h": 102,
                 "visibleW": 180,
                 "visibleH": 98,
-                "scale": 1.0
+                "scale": 1
               }
             },
             {
@@ -3667,13 +3667,13 @@
                 "h": 62,
                 "visibleW": 178,
                 "visibleH": 58,
-                "scale": 1.0
+                "scale": 1
               }
             }
           ],
           "higgsfieldJobId": "33a0eb4e-9665-4026-9b9b-c5e4543fc2e1",
           "stableHeight": false,
-          "targetVisibleHeight": 174.0
+          "targetVisibleHeight": 174
         },
         "GET_UP": {
           "sheet": "assets/motion-atlases/kalyx-reaction.webp",
@@ -3784,7 +3784,7 @@
           ],
           "higgsfieldJobId": "fee3c972-2d71-453c-900e-c4d486b2d3db",
           "stableHeight": false,
-          "targetVisibleHeight": 174.0
+          "targetVisibleHeight": 174
         },
         "HURT_HEAVY": {
           "sheet": "assets/motion-atlases/kalyx-reaction.webp",
@@ -4117,7 +4117,7 @@
           ],
           "higgsfieldJobId": "dd5532f6-eb48-4c16-b9f2-1f54ddf3c470",
           "stableHeight": false,
-          "targetVisibleHeight": 174.0
+          "targetVisibleHeight": 174
         },
         "TAUNT": {
           "sheet": "assets/motion-atlases/kalyx-reaction.webp",
@@ -4343,7 +4343,7 @@
         }
       },
       "stabilization": {
-        "canonicalHeight": 174.0,
+        "canonicalHeight": 174,
         "stableHeightMotions": [
           "BLOCK_HIGH",
           "BLOCK_LOW",
@@ -8853,7 +8853,7 @@
           ],
           "higgsfieldJobId": "bd0bc6bb-db90-42c3-9bcb-62a94fba29d5",
           "stableHeight": true,
-          "targetVisibleHeight": 176.0
+          "targetVisibleHeight": 176
         },
         "READY_STANCE": {
           "sheet": "assets/motion-atlases/detroit-lens-locomotion.webp",
@@ -8964,7 +8964,7 @@
           ],
           "higgsfieldJobId": "f3920b16-0aa2-4f74-86b8-4aa897e43850",
           "stableHeight": true,
-          "targetVisibleHeight": 176.0
+          "targetVisibleHeight": 176
         },
         "CROUCH_IDLE": {
           "sheet": "assets/motion-atlases/detroit-lens-locomotion.webp",
@@ -9519,7 +9519,7 @@
           ],
           "higgsfieldJobId": "1090612e-ed58-4bf1-906f-5a13834fef7d",
           "stableHeight": false,
-          "targetVisibleHeight": 176.0
+          "targetVisibleHeight": 176
         },
         "JUMP_PEAK": {
           "sheet": "assets/motion-atlases/detroit-lens-locomotion.webp",
@@ -9630,7 +9630,7 @@
           ],
           "higgsfieldJobId": "5e98b88d-1cae-45f8-bfee-d3e19dff88cb",
           "stableHeight": false,
-          "targetVisibleHeight": 176.0
+          "targetVisibleHeight": 176
         },
         "JUMP_RISE": {
           "sheet": "assets/motion-atlases/detroit-lens-locomotion.webp",
@@ -9741,7 +9741,7 @@
           ],
           "higgsfieldJobId": "a5cf4d66-90f8-4b92-90fa-71e0e1a87123",
           "stableHeight": false,
-          "targetVisibleHeight": 176.0
+          "targetVisibleHeight": 176
         },
         "JUMP_START": {
           "sheet": "assets/motion-atlases/detroit-lens-locomotion.webp",
@@ -9852,7 +9852,7 @@
           ],
           "higgsfieldJobId": "3b03e7ee-a4fd-4b9e-a9f9-5e3811acbc16",
           "stableHeight": false,
-          "targetVisibleHeight": 176.0
+          "targetVisibleHeight": 176
         },
         "LANDING": {
           "sheet": "assets/motion-atlases/detroit-lens-locomotion.webp",
@@ -9963,7 +9963,7 @@
           ],
           "higgsfieldJobId": "6831fe15-6b6f-4ce6-a449-946cd72da297",
           "stableHeight": false,
-          "targetVisibleHeight": 176.0
+          "targetVisibleHeight": 176
         },
         "RUN_BACK": {
           "sheet": "assets/motion-atlases/detroit-lens-locomotion.webp",
@@ -10518,7 +10518,7 @@
           ],
           "higgsfieldJobId": "01a385eb-6ba9-4582-8140-1f99e2bfd93e",
           "stableHeight": false,
-          "targetVisibleHeight": 176.0
+          "targetVisibleHeight": 176
         },
         "COMBO_1": {
           "sheet": "assets/motion-atlases/detroit-lens-combat.webp",
@@ -12405,7 +12405,7 @@
           ],
           "higgsfieldJobId": "89bb1a7c-4b62-40cf-9793-f68e546d2c17",
           "stableHeight": false,
-          "targetVisibleHeight": 176.0
+          "targetVisibleHeight": 176
         },
         "GET_UP": {
           "sheet": "assets/motion-atlases/detroit-lens-reaction.webp",
@@ -12516,7 +12516,7 @@
           ],
           "higgsfieldJobId": "a3523c68-be29-4396-83b8-03c2934238e8",
           "stableHeight": false,
-          "targetVisibleHeight": 176.0
+          "targetVisibleHeight": 176
         },
         "HURT_HEAVY": {
           "sheet": "assets/motion-atlases/detroit-lens-reaction.webp",
@@ -12849,7 +12849,7 @@
           ],
           "higgsfieldJobId": "cef0a3e9-5aee-495a-8da1-286326044917",
           "stableHeight": false,
-          "targetVisibleHeight": 176.0
+          "targetVisibleHeight": 176
         },
         "TAUNT": {
           "sheet": "assets/motion-atlases/detroit-lens-reaction.webp",
@@ -13075,7 +13075,4373 @@
         }
       },
       "stabilization": {
-        "canonicalHeight": 176.0,
+        "canonicalHeight": 176,
+        "stableHeightMotions": [
+          "BLOCK_HIGH",
+          "BLOCK_LOW",
+          "COMBO_1",
+          "COMBO_2",
+          "CROUCH_IDLE",
+          "CROUCH_WALK",
+          "DASH_BACK",
+          "DASH_FORWARD",
+          "HEAVY_KICK",
+          "HEAVY_PUNCH",
+          "HURT_LIGHT",
+          "IDLE",
+          "LIGHT_KICK",
+          "LIGHT_PUNCH",
+          "READY_STANCE",
+          "RUN_BACK",
+          "RUN_FORWARD",
+          "TAUNT",
+          "THROW_FINISH",
+          "THROW_GRAB",
+          "VICTORY",
+          "WALK_BACK",
+          "WALK_FORWARD"
+        ]
+      }
+    },
+    "DETROIT_LENS_NOIR": {
+      "atlasFiles": [
+        "detroit-lens-noir-locomotion.webp",
+        "detroit-lens-noir-combat.webp",
+        "detroit-lens-noir-reaction.webp"
+      ],
+      "motions": {
+        "IDLE": {
+          "sheet": "assets/motion-atlases/detroit-lens-noir-locomotion.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "source": "higgsfield-v2",
+          "frames": [
+            {
+              "x": 0,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 118,
+              "content": {
+                "x": 49,
+                "y": 12,
+                "w": 93,
+                "h": 178,
+                "visibleW": 89,
+                "visibleH": 174,
+                "scale": 1.011494
+              }
+            },
+            {
+              "x": 192,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 118,
+              "content": {
+                "x": 49,
+                "y": 12,
+                "w": 94,
+                "h": 178,
+                "visibleW": 90,
+                "visibleH": 174,
+                "scale": 1.011494
+              }
+            },
+            {
+              "x": 384,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 118,
+              "content": {
+                "x": 49,
+                "y": 12,
+                "w": 94,
+                "h": 178,
+                "visibleW": 90,
+                "visibleH": 174,
+                "scale": 1.011494
+              }
+            },
+            {
+              "x": 576,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 118,
+              "content": {
+                "x": 48,
+                "y": 8,
+                "w": 95,
+                "h": 182,
+                "visibleW": 91,
+                "visibleH": 178,
+                "scale": 0.988764
+              }
+            },
+            {
+              "x": 768,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 118,
+              "content": {
+                "x": 48,
+                "y": 8,
+                "w": 95,
+                "h": 182,
+                "visibleW": 91,
+                "visibleH": 178,
+                "scale": 0.988764
+              }
+            },
+            {
+              "x": 960,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 118,
+              "content": {
+                "x": 48,
+                "y": 8,
+                "w": 95,
+                "h": 182,
+                "visibleW": 91,
+                "visibleH": 178,
+                "scale": 0.988764
+              }
+            }
+          ],
+          "higgsfieldJobId": "bd0bc6bb-db90-42c3-9bcb-62a94fba29d5",
+          "stableHeight": true,
+          "targetVisibleHeight": 176
+        },
+        "READY_STANCE": {
+          "sheet": "assets/motion-atlases/detroit-lens-noir-locomotion.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "source": "higgsfield-v2",
+          "frames": [
+            {
+              "x": 1152,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 92,
+              "content": {
+                "x": 45,
+                "y": 12,
+                "w": 101,
+                "h": 178,
+                "visibleW": 97,
+                "visibleH": 174,
+                "scale": 1.011494
+              }
+            },
+            {
+              "x": 1344,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 92,
+              "content": {
+                "x": 41,
+                "y": 17,
+                "w": 109,
+                "h": 173,
+                "visibleW": 105,
+                "visibleH": 169,
+                "scale": 1.04142
+              }
+            },
+            {
+              "x": 0,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 92,
+              "content": {
+                "x": 34,
+                "y": 19,
+                "w": 124,
+                "h": 171,
+                "visibleW": 120,
+                "visibleH": 167,
+                "scale": 1.053892
+              }
+            },
+            {
+              "x": 192,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 92,
+              "content": {
+                "x": 45,
+                "y": 11,
+                "w": 101,
+                "h": 179,
+                "visibleW": 97,
+                "visibleH": 175,
+                "scale": 1.005714
+              }
+            },
+            {
+              "x": 384,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 92,
+              "content": {
+                "x": 51,
+                "y": 8,
+                "w": 89,
+                "h": 182,
+                "visibleW": 85,
+                "visibleH": 178,
+                "scale": 0.988764
+              }
+            },
+            {
+              "x": 576,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 92,
+              "content": {
+                "x": 34,
+                "y": 20,
+                "w": 124,
+                "h": 170,
+                "visibleW": 120,
+                "visibleH": 166,
+                "scale": 1.060241
+              }
+            }
+          ],
+          "higgsfieldJobId": "f3920b16-0aa2-4f74-86b8-4aa897e43850",
+          "stableHeight": true,
+          "targetVisibleHeight": 176
+        },
+        "CROUCH_IDLE": {
+          "sheet": "assets/motion-atlases/detroit-lens-noir-locomotion.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "source": "higgsfield-v2",
+          "frames": [
+            {
+              "x": 768,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 112,
+              "content": {
+                "x": 36,
+                "y": 21,
+                "w": 119,
+                "h": 169,
+                "visibleW": 115,
+                "visibleH": 165,
+                "scale": 0.768
+              }
+            },
+            {
+              "x": 960,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 112,
+              "content": {
+                "x": 36,
+                "y": 21,
+                "w": 119,
+                "h": 169,
+                "visibleW": 115,
+                "visibleH": 165,
+                "scale": 0.768
+              }
+            },
+            {
+              "x": 1152,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 112,
+              "content": {
+                "x": 36,
+                "y": 14,
+                "w": 119,
+                "h": 176,
+                "visibleW": 115,
+                "visibleH": 172,
+                "scale": 0.736744
+              }
+            },
+            {
+              "x": 1344,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 112,
+              "content": {
+                "x": 38,
+                "y": 17,
+                "w": 115,
+                "h": 173,
+                "visibleW": 111,
+                "visibleH": 169,
+                "scale": 0.749822
+              }
+            },
+            {
+              "x": 0,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 112,
+              "content": {
+                "x": 38,
+                "y": 12,
+                "w": 116,
+                "h": 178,
+                "visibleW": 112,
+                "visibleH": 174,
+                "scale": 0.728276
+              }
+            },
+            {
+              "x": 192,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 112,
+              "content": {
+                "x": 38,
+                "y": 8,
+                "w": 115,
+                "h": 182,
+                "visibleW": 111,
+                "visibleH": 178,
+                "scale": 0.71191
+              }
+            }
+          ],
+          "higgsfieldJobId": "e69f0b65-a9d9-436d-a43d-30a6dcf0d5a3",
+          "stableHeight": true,
+          "targetVisibleHeight": 126.72
+        },
+        "CROUCH_WALK": {
+          "sheet": "assets/motion-atlases/detroit-lens-noir-locomotion.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "source": "higgsfield-v2",
+          "frames": [
+            {
+              "x": 384,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 92,
+              "content": {
+                "x": 27,
+                "y": 10,
+                "w": 137,
+                "h": 180,
+                "visibleW": 133,
+                "visibleH": 176,
+                "scale": 0.72
+              }
+            },
+            {
+              "x": 576,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 92,
+              "content": {
+                "x": 27,
+                "y": 11,
+                "w": 138,
+                "h": 179,
+                "visibleW": 134,
+                "visibleH": 175,
+                "scale": 0.724114
+              }
+            },
+            {
+              "x": 768,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 92,
+              "content": {
+                "x": 22,
+                "y": 37,
+                "w": 147,
+                "h": 153,
+                "visibleW": 143,
+                "visibleH": 149,
+                "scale": 0.85047
+              }
+            },
+            {
+              "x": 960,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 92,
+              "content": {
+                "x": 27,
+                "y": 8,
+                "w": 138,
+                "h": 182,
+                "visibleW": 134,
+                "visibleH": 178,
+                "scale": 0.71191
+              }
+            },
+            {
+              "x": 1152,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 92,
+              "content": {
+                "x": 25,
+                "y": 11,
+                "w": 141,
+                "h": 179,
+                "visibleW": 137,
+                "visibleH": 175,
+                "scale": 0.724114
+              }
+            },
+            {
+              "x": 1344,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 92,
+              "content": {
+                "x": 21,
+                "y": 24,
+                "w": 150,
+                "h": 166,
+                "visibleW": 146,
+                "visibleH": 162,
+                "scale": 0.782222
+              }
+            }
+          ],
+          "higgsfieldJobId": "c07c4bc9-bd1c-42ec-8a1a-896a5eb9ff55",
+          "stableHeight": true,
+          "targetVisibleHeight": 126.72
+        },
+        "DASH_BACK": {
+          "sheet": "assets/motion-atlases/detroit-lens-noir-locomotion.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "source": "higgsfield-v2",
+          "frames": [
+            {
+              "x": 0,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 46,
+                "y": 29,
+                "w": 99,
+                "h": 161,
+                "visibleW": 95,
+                "visibleH": 157,
+                "scale": 0.986497
+              }
+            },
+            {
+              "x": 192,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 32,
+                "y": 19,
+                "w": 127,
+                "h": 171,
+                "visibleW": 123,
+                "visibleH": 167,
+                "scale": 0.927425
+              }
+            },
+            {
+              "x": 384,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 27,
+                "y": 16,
+                "w": 137,
+                "h": 174,
+                "visibleW": 133,
+                "visibleH": 170,
+                "scale": 0.911059
+              }
+            },
+            {
+              "x": 576,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 38,
+                "y": 12,
+                "w": 115,
+                "h": 178,
+                "visibleW": 111,
+                "visibleH": 174,
+                "scale": 0.890115
+              }
+            },
+            {
+              "x": 768,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 46,
+                "y": 12,
+                "w": 100,
+                "h": 178,
+                "visibleW": 96,
+                "visibleH": 174,
+                "scale": 0.890115
+              }
+            },
+            {
+              "x": 960,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 45,
+                "y": 8,
+                "w": 101,
+                "h": 182,
+                "visibleW": 97,
+                "visibleH": 178,
+                "scale": 0.870112
+              }
+            }
+          ],
+          "higgsfieldJobId": "8ac50cb6-8d83-4579-9e3f-eded2ae0cc45",
+          "stableHeight": true,
+          "targetVisibleHeight": 154.88
+        },
+        "DASH_FORWARD": {
+          "sheet": "assets/motion-atlases/detroit-lens-noir-locomotion.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "source": "higgsfield-v2",
+          "frames": [
+            {
+              "x": 1152,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 42,
+                "y": 24,
+                "w": 108,
+                "h": 166,
+                "visibleW": 104,
+                "visibleH": 162,
+                "scale": 0.956049
+              }
+            },
+            {
+              "x": 1344,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 28,
+                "y": 34,
+                "w": 136,
+                "h": 156,
+                "visibleW": 132,
+                "visibleH": 152,
+                "scale": 1.018947
+              }
+            },
+            {
+              "x": 0,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 26,
+                "y": 22,
+                "w": 139,
+                "h": 168,
+                "visibleW": 135,
+                "visibleH": 164,
+                "scale": 0.94439
+              }
+            },
+            {
+              "x": 192,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 28,
+                "y": 24,
+                "w": 135,
+                "h": 166,
+                "visibleW": 131,
+                "visibleH": 162,
+                "scale": 0.956049
+              }
+            },
+            {
+              "x": 384,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 43,
+                "y": 15,
+                "w": 106,
+                "h": 175,
+                "visibleW": 102,
+                "visibleH": 171,
+                "scale": 0.905731
+              }
+            },
+            {
+              "x": 576,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 45,
+                "y": 8,
+                "w": 101,
+                "h": 182,
+                "visibleW": 97,
+                "visibleH": 178,
+                "scale": 0.870112
+              }
+            }
+          ],
+          "higgsfieldJobId": "47f87394-0475-497e-9157-f7d2938bdb7d",
+          "stableHeight": true,
+          "targetVisibleHeight": 154.88
+        },
+        "JUMP_FALL": {
+          "sheet": "assets/motion-atlases/detroit-lens-noir-locomotion.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "source": "higgsfield-v2",
+          "frames": [
+            {
+              "x": 768,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 46,
+                "y": 45,
+                "w": 100,
+                "h": 145,
+                "visibleW": 96,
+                "visibleH": 141,
+                "scale": 0.988764
+              }
+            },
+            {
+              "x": 960,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 35,
+                "y": 13,
+                "w": 121,
+                "h": 177,
+                "visibleW": 117,
+                "visibleH": 173,
+                "scale": 0.988764
+              }
+            },
+            {
+              "x": 1152,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 29,
+                "y": 18,
+                "w": 133,
+                "h": 172,
+                "visibleW": 129,
+                "visibleH": 168,
+                "scale": 0.988764
+              }
+            },
+            {
+              "x": 1344,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 39,
+                "y": 21,
+                "w": 113,
+                "h": 169,
+                "visibleW": 109,
+                "visibleH": 165,
+                "scale": 0.988764
+              }
+            },
+            {
+              "x": 0,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 35,
+                "y": 38,
+                "w": 122,
+                "h": 152,
+                "visibleW": 118,
+                "visibleH": 148,
+                "scale": 0.988764
+              }
+            },
+            {
+              "x": 192,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 48,
+                "y": 8,
+                "w": 96,
+                "h": 182,
+                "visibleW": 92,
+                "visibleH": 178,
+                "scale": 0.988764
+              }
+            }
+          ],
+          "higgsfieldJobId": "1090612e-ed58-4bf1-906f-5a13834fef7d",
+          "stableHeight": false,
+          "targetVisibleHeight": 176
+        },
+        "JUMP_PEAK": {
+          "sheet": "assets/motion-atlases/detroit-lens-noir-locomotion.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "source": "higgsfield-v2",
+          "frames": [
+            {
+              "x": 384,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 50,
+                "y": 12,
+                "w": 91,
+                "h": 178,
+                "visibleW": 87,
+                "visibleH": 174,
+                "scale": 0.988764
+              }
+            },
+            {
+              "x": 576,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 55,
+                "y": 63,
+                "w": 81,
+                "h": 127,
+                "visibleW": 77,
+                "visibleH": 123,
+                "scale": 0.988764
+              }
+            },
+            {
+              "x": 768,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 55,
+                "y": 73,
+                "w": 82,
+                "h": 117,
+                "visibleW": 78,
+                "visibleH": 113,
+                "scale": 0.988764
+              }
+            },
+            {
+              "x": 960,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 55,
+                "y": 8,
+                "w": 81,
+                "h": 182,
+                "visibleW": 77,
+                "visibleH": 178,
+                "scale": 0.988764
+              }
+            },
+            {
+              "x": 1152,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 43,
+                "y": 16,
+                "w": 106,
+                "h": 174,
+                "visibleW": 102,
+                "visibleH": 170,
+                "scale": 0.988764
+              }
+            },
+            {
+              "x": 1344,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 47,
+                "y": 19,
+                "w": 97,
+                "h": 171,
+                "visibleW": 93,
+                "visibleH": 167,
+                "scale": 0.988764
+              }
+            }
+          ],
+          "higgsfieldJobId": "5e98b88d-1cae-45f8-bfee-d3e19dff88cb",
+          "stableHeight": false,
+          "targetVisibleHeight": 176
+        },
+        "JUMP_RISE": {
+          "sheet": "assets/motion-atlases/detroit-lens-noir-locomotion.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "source": "higgsfield-v2",
+          "frames": [
+            {
+              "x": 0,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 10,
+                "y": 47,
+                "w": 178,
+                "h": 143,
+                "visibleW": 174,
+                "visibleH": 139,
+                "scale": 1.005714
+              }
+            },
+            {
+              "x": 192,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 6,
+                "y": 29,
+                "w": 179,
+                "h": 161,
+                "visibleW": 175,
+                "visibleH": 157,
+                "scale": 1.005714
+              }
+            },
+            {
+              "x": 384,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 16,
+                "y": 11,
+                "w": 160,
+                "h": 179,
+                "visibleW": 156,
+                "visibleH": 175,
+                "scale": 1.005714
+              }
+            },
+            {
+              "x": 576,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 59,
+                "y": 25,
+                "w": 74,
+                "h": 165,
+                "visibleW": 70,
+                "visibleH": 161,
+                "scale": 1.005714
+              }
+            },
+            {
+              "x": 768,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 57,
+                "y": 37,
+                "w": 78,
+                "h": 153,
+                "visibleW": 74,
+                "visibleH": 149,
+                "scale": 1.005714
+              }
+            },
+            {
+              "x": 960,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 52,
+                "y": 22,
+                "w": 87,
+                "h": 168,
+                "visibleW": 83,
+                "visibleH": 164,
+                "scale": 1.005714
+              }
+            }
+          ],
+          "higgsfieldJobId": "a5cf4d66-90f8-4b92-90fa-71e0e1a87123",
+          "stableHeight": false,
+          "targetVisibleHeight": 176
+        },
+        "JUMP_START": {
+          "sheet": "assets/motion-atlases/detroit-lens-noir-locomotion.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "source": "higgsfield-v2",
+          "frames": [
+            {
+              "x": 1152,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 30,
+                "y": 8,
+                "w": 132,
+                "h": 182,
+                "visibleW": 128,
+                "visibleH": 178,
+                "scale": 0.988764
+              }
+            },
+            {
+              "x": 1344,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 36,
+                "y": 34,
+                "w": 120,
+                "h": 156,
+                "visibleW": 116,
+                "visibleH": 152,
+                "scale": 0.988764
+              }
+            },
+            {
+              "x": 0,
+              "y": 1344,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 40,
+                "y": 12,
+                "w": 111,
+                "h": 178,
+                "visibleW": 107,
+                "visibleH": 174,
+                "scale": 0.988764
+              }
+            },
+            {
+              "x": 192,
+              "y": 1344,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 39,
+                "y": 18,
+                "w": 114,
+                "h": 172,
+                "visibleW": 110,
+                "visibleH": 168,
+                "scale": 0.988764
+              }
+            },
+            {
+              "x": 384,
+              "y": 1344,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 44,
+                "y": 26,
+                "w": 104,
+                "h": 164,
+                "visibleW": 100,
+                "visibleH": 160,
+                "scale": 0.988764
+              }
+            },
+            {
+              "x": 576,
+              "y": 1344,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 56,
+                "y": 14,
+                "w": 80,
+                "h": 176,
+                "visibleW": 76,
+                "visibleH": 172,
+                "scale": 0.988764
+              }
+            }
+          ],
+          "higgsfieldJobId": "3b03e7ee-a4fd-4b9e-a9f9-5e3811acbc16",
+          "stableHeight": false,
+          "targetVisibleHeight": 176
+        },
+        "LANDING": {
+          "sheet": "assets/motion-atlases/detroit-lens-noir-locomotion.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "source": "higgsfield-v2",
+          "frames": [
+            {
+              "x": 768,
+              "y": 1344,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 46,
+                "y": 27,
+                "w": 99,
+                "h": 163,
+                "visibleW": 95,
+                "visibleH": 159,
+                "scale": 0.988764
+              }
+            },
+            {
+              "x": 960,
+              "y": 1344,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 54,
+                "y": 35,
+                "w": 84,
+                "h": 155,
+                "visibleW": 80,
+                "visibleH": 151,
+                "scale": 0.988764
+              }
+            },
+            {
+              "x": 1152,
+              "y": 1344,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 22,
+                "y": 8,
+                "w": 147,
+                "h": 182,
+                "visibleW": 143,
+                "visibleH": 178,
+                "scale": 0.988764
+              }
+            },
+            {
+              "x": 1344,
+              "y": 1344,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 44,
+                "y": 30,
+                "w": 103,
+                "h": 160,
+                "visibleW": 99,
+                "visibleH": 156,
+                "scale": 0.988764
+              }
+            },
+            {
+              "x": 0,
+              "y": 1536,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 46,
+                "y": 24,
+                "w": 99,
+                "h": 166,
+                "visibleW": 95,
+                "visibleH": 162,
+                "scale": 0.988764
+              }
+            },
+            {
+              "x": 192,
+              "y": 1536,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 51,
+                "y": 23,
+                "w": 90,
+                "h": 167,
+                "visibleW": 86,
+                "visibleH": 163,
+                "scale": 0.988764
+              }
+            }
+          ],
+          "higgsfieldJobId": "6831fe15-6b6f-4ce6-a449-946cd72da297",
+          "stableHeight": false,
+          "targetVisibleHeight": 176
+        },
+        "RUN_BACK": {
+          "sheet": "assets/motion-atlases/detroit-lens-noir-locomotion.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "source": "higgsfield-v2",
+          "frames": [
+            {
+              "x": 384,
+              "y": 1536,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 72,
+              "content": {
+                "x": 37,
+                "y": 25,
+                "w": 117,
+                "h": 165,
+                "visibleW": 113,
+                "visibleH": 161,
+                "scale": 0.983851
+              }
+            },
+            {
+              "x": 576,
+              "y": 1536,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 72,
+              "content": {
+                "x": 24,
+                "y": 14,
+                "w": 143,
+                "h": 176,
+                "visibleW": 139,
+                "visibleH": 172,
+                "scale": 0.92093
+              }
+            },
+            {
+              "x": 768,
+              "y": 1536,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 72,
+              "content": {
+                "x": 16,
+                "y": 13,
+                "w": 159,
+                "h": 177,
+                "visibleW": 155,
+                "visibleH": 173,
+                "scale": 0.915607
+              }
+            },
+            {
+              "x": 960,
+              "y": 1536,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 72,
+              "content": {
+                "x": 21,
+                "y": 9,
+                "w": 149,
+                "h": 181,
+                "visibleW": 145,
+                "visibleH": 177,
+                "scale": 0.894915
+              }
+            },
+            {
+              "x": 1152,
+              "y": 1536,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 72,
+              "content": {
+                "x": 34,
+                "y": 8,
+                "w": 124,
+                "h": 182,
+                "visibleW": 120,
+                "visibleH": 178,
+                "scale": 0.889888
+              }
+            },
+            {
+              "x": 1344,
+              "y": 1536,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 72,
+              "content": {
+                "x": 43,
+                "y": 16,
+                "w": 105,
+                "h": 174,
+                "visibleW": 101,
+                "visibleH": 170,
+                "scale": 0.931765
+              }
+            }
+          ],
+          "higgsfieldJobId": "cf53b7a6-a8db-43c8-9d5e-b4e788ff0506",
+          "stableHeight": true,
+          "targetVisibleHeight": 158.4
+        },
+        "RUN_FORWARD": {
+          "sheet": "assets/motion-atlases/detroit-lens-noir-locomotion.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "source": "higgsfield-v2",
+          "frames": [
+            {
+              "x": 0,
+              "y": 1728,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 72,
+              "content": {
+                "x": 31,
+                "y": 26,
+                "w": 130,
+                "h": 164,
+                "visibleW": 126,
+                "visibleH": 160,
+                "scale": 0.99
+              }
+            },
+            {
+              "x": 192,
+              "y": 1728,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 72,
+              "content": {
+                "x": 25,
+                "y": 20,
+                "w": 142,
+                "h": 170,
+                "visibleW": 138,
+                "visibleH": 166,
+                "scale": 0.954217
+              }
+            },
+            {
+              "x": 384,
+              "y": 1728,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 72,
+              "content": {
+                "x": 21,
+                "y": 17,
+                "w": 150,
+                "h": 173,
+                "visibleW": 146,
+                "visibleH": 169,
+                "scale": 0.937278
+              }
+            },
+            {
+              "x": 576,
+              "y": 1728,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 72,
+              "content": {
+                "x": 27,
+                "y": 8,
+                "w": 137,
+                "h": 182,
+                "visibleW": 133,
+                "visibleH": 178,
+                "scale": 0.889888
+              }
+            },
+            {
+              "x": 768,
+              "y": 1728,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 72,
+              "content": {
+                "x": 27,
+                "y": 10,
+                "w": 138,
+                "h": 180,
+                "visibleW": 134,
+                "visibleH": 176,
+                "scale": 0.9
+              }
+            },
+            {
+              "x": 960,
+              "y": 1728,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 72,
+              "content": {
+                "x": 36,
+                "y": 14,
+                "w": 119,
+                "h": 176,
+                "visibleW": 115,
+                "visibleH": 172,
+                "scale": 0.92093
+              }
+            }
+          ],
+          "higgsfieldJobId": "bcb21edc-376d-4495-a1b2-16492f87c419",
+          "stableHeight": true,
+          "targetVisibleHeight": 158.4
+        },
+        "WALK_BACK": {
+          "sheet": "assets/motion-atlases/detroit-lens-noir-locomotion.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "source": "higgsfield-v2",
+          "frames": [
+            {
+              "x": 1152,
+              "y": 1728,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 98,
+              "content": {
+                "x": 51,
+                "y": 15,
+                "w": 90,
+                "h": 175,
+                "visibleW": 86,
+                "visibleH": 171,
+                "scale": 1.008655
+              }
+            },
+            {
+              "x": 1344,
+              "y": 1728,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 98,
+              "content": {
+                "x": 45,
+                "y": 13,
+                "w": 102,
+                "h": 177,
+                "visibleW": 98,
+                "visibleH": 173,
+                "scale": 0.996994
+              }
+            },
+            {
+              "x": 0,
+              "y": 1920,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 98,
+              "content": {
+                "x": 46,
+                "y": 13,
+                "w": 100,
+                "h": 177,
+                "visibleW": 96,
+                "visibleH": 173,
+                "scale": 0.996994
+              }
+            },
+            {
+              "x": 192,
+              "y": 1920,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 98,
+              "content": {
+                "x": 48,
+                "y": 11,
+                "w": 96,
+                "h": 179,
+                "visibleW": 92,
+                "visibleH": 175,
+                "scale": 0.9856
+              }
+            },
+            {
+              "x": 384,
+              "y": 1920,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 98,
+              "content": {
+                "x": 55,
+                "y": 9,
+                "w": 82,
+                "h": 181,
+                "visibleW": 78,
+                "visibleH": 177,
+                "scale": 0.974463
+              }
+            },
+            {
+              "x": 576,
+              "y": 1920,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 98,
+              "content": {
+                "x": 48,
+                "y": 8,
+                "w": 95,
+                "h": 182,
+                "visibleW": 91,
+                "visibleH": 178,
+                "scale": 0.968989
+              }
+            }
+          ],
+          "higgsfieldJobId": "5fe61e16-b86e-4c39-bd28-1f44a83413c5",
+          "stableHeight": true,
+          "targetVisibleHeight": 172.48
+        },
+        "WALK_FORWARD": {
+          "sheet": "assets/motion-atlases/detroit-lens-noir-locomotion.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "source": "higgsfield-v2",
+          "frames": [
+            {
+              "x": 768,
+              "y": 1920,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 98,
+              "content": {
+                "x": 48,
+                "y": 11,
+                "w": 95,
+                "h": 179,
+                "visibleW": 91,
+                "visibleH": 175,
+                "scale": 0.9856
+              }
+            },
+            {
+              "x": 960,
+              "y": 1920,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 98,
+              "content": {
+                "x": 30,
+                "y": 13,
+                "w": 132,
+                "h": 177,
+                "visibleW": 128,
+                "visibleH": 173,
+                "scale": 0.996994
+              }
+            },
+            {
+              "x": 1152,
+              "y": 1920,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 98,
+              "content": {
+                "x": 50,
+                "y": 9,
+                "w": 92,
+                "h": 181,
+                "visibleW": 88,
+                "visibleH": 177,
+                "scale": 0.974463
+              }
+            },
+            {
+              "x": 1344,
+              "y": 1920,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 98,
+              "content": {
+                "x": 46,
+                "y": 8,
+                "w": 99,
+                "h": 182,
+                "visibleW": 95,
+                "visibleH": 178,
+                "scale": 0.968989
+              }
+            },
+            {
+              "x": 0,
+              "y": 2112,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 98,
+              "content": {
+                "x": 34,
+                "y": 8,
+                "w": 124,
+                "h": 182,
+                "visibleW": 120,
+                "visibleH": 178,
+                "scale": 0.968989
+              }
+            },
+            {
+              "x": 192,
+              "y": 2112,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 98,
+              "content": {
+                "x": 46,
+                "y": 8,
+                "w": 99,
+                "h": 182,
+                "visibleW": 95,
+                "visibleH": 178,
+                "scale": 0.968989
+              }
+            }
+          ],
+          "higgsfieldJobId": "81c6c83d-73c8-4324-869b-b0df0d5ae185",
+          "stableHeight": true,
+          "targetVisibleHeight": 172.48
+        },
+        "AIR_ATTACK": {
+          "sheet": "assets/motion-atlases/detroit-lens-noir-combat.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "source": "higgsfield-v2",
+          "frames": [
+            {
+              "x": 0,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 42,
+                "y": 25,
+                "w": 108,
+                "h": 165,
+                "visibleW": 104,
+                "visibleH": 161,
+                "scale": 0.988764
+              }
+            },
+            {
+              "x": 192,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 43,
+                "y": 8,
+                "w": 106,
+                "h": 182,
+                "visibleW": 102,
+                "visibleH": 178,
+                "scale": 0.988764
+              }
+            },
+            {
+              "x": 384,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 14,
+                "y": 62,
+                "w": 164,
+                "h": 128,
+                "visibleW": 160,
+                "visibleH": 124,
+                "scale": 0.988764
+              }
+            },
+            {
+              "x": 576,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 32,
+                "y": 35,
+                "w": 128,
+                "h": 155,
+                "visibleW": 124,
+                "visibleH": 151,
+                "scale": 0.988764
+              }
+            },
+            {
+              "x": 768,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 38,
+                "y": 22,
+                "w": 116,
+                "h": 168,
+                "visibleW": 112,
+                "visibleH": 164,
+                "scale": 0.988764
+              }
+            },
+            {
+              "x": 960,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 49,
+                "y": 8,
+                "w": 94,
+                "h": 182,
+                "visibleW": 90,
+                "visibleH": 178,
+                "scale": 0.988764
+              }
+            }
+          ],
+          "higgsfieldJobId": "01a385eb-6ba9-4582-8140-1f99e2bfd93e",
+          "stableHeight": false,
+          "targetVisibleHeight": 176
+        },
+        "COMBO_1": {
+          "sheet": "assets/motion-atlases/detroit-lens-noir-combat.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "source": "higgsfield-v2",
+          "frames": [
+            {
+              "x": 1152,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 47,
+                "y": 10,
+                "w": 97,
+                "h": 180,
+                "visibleW": 93,
+                "visibleH": 176,
+                "scale": 0.98
+              }
+            },
+            {
+              "x": 1344,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 36,
+                "y": 10,
+                "w": 120,
+                "h": 180,
+                "visibleW": 116,
+                "visibleH": 176,
+                "scale": 0.98
+              }
+            },
+            {
+              "x": 0,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 44,
+                "y": 10,
+                "w": 103,
+                "h": 180,
+                "visibleW": 99,
+                "visibleH": 176,
+                "scale": 0.98
+              }
+            },
+            {
+              "x": 192,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 30,
+                "y": 8,
+                "w": 132,
+                "h": 182,
+                "visibleW": 128,
+                "visibleH": 178,
+                "scale": 0.968989
+              }
+            },
+            {
+              "x": 384,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 44,
+                "y": 12,
+                "w": 103,
+                "h": 178,
+                "visibleW": 99,
+                "visibleH": 174,
+                "scale": 0.991264
+              }
+            },
+            {
+              "x": 576,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 48,
+                "y": 8,
+                "w": 96,
+                "h": 182,
+                "visibleW": 92,
+                "visibleH": 178,
+                "scale": 0.968989
+              }
+            }
+          ],
+          "higgsfieldJobId": "ff2598b2-58c9-4048-ac5f-69edcc183c2b",
+          "stableHeight": true,
+          "targetVisibleHeight": 172.48
+        },
+        "COMBO_2": {
+          "sheet": "assets/motion-atlases/detroit-lens-noir-combat.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "source": "higgsfield-v2",
+          "frames": [
+            {
+              "x": 768,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 42,
+                "y": 11,
+                "w": 107,
+                "h": 179,
+                "visibleW": 103,
+                "visibleH": 175,
+                "scale": 0.9856
+              }
+            },
+            {
+              "x": 960,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 21,
+                "y": 11,
+                "w": 149,
+                "h": 179,
+                "visibleW": 145,
+                "visibleH": 175,
+                "scale": 0.9856
+              }
+            },
+            {
+              "x": 1152,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 24,
+                "y": 11,
+                "w": 144,
+                "h": 179,
+                "visibleW": 140,
+                "visibleH": 175,
+                "scale": 0.9856
+              }
+            },
+            {
+              "x": 1344,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 32,
+                "y": 11,
+                "w": 127,
+                "h": 179,
+                "visibleW": 123,
+                "visibleH": 175,
+                "scale": 0.9856
+              }
+            },
+            {
+              "x": 0,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 34,
+                "y": 11,
+                "w": 124,
+                "h": 179,
+                "visibleW": 120,
+                "visibleH": 175,
+                "scale": 0.9856
+              }
+            },
+            {
+              "x": 192,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 48,
+                "y": 8,
+                "w": 96,
+                "h": 182,
+                "visibleW": 92,
+                "visibleH": 178,
+                "scale": 0.968989
+              }
+            }
+          ],
+          "higgsfieldJobId": "8ca2dc05-405a-4c9f-947e-cc10f50c45ca",
+          "stableHeight": true,
+          "targetVisibleHeight": 172.48
+        },
+        "CROUCH_ATTACK": {
+          "sheet": "assets/motion-atlases/detroit-lens-noir-combat.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "source": "higgsfield-v2",
+          "frames": [
+            {
+              "x": 384,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 43,
+                "y": 29,
+                "w": 105,
+                "h": 161,
+                "visibleW": 101,
+                "visibleH": 157,
+                "scale": 0.71191
+              }
+            },
+            {
+              "x": 576,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 26,
+                "y": 26,
+                "w": 140,
+                "h": 164,
+                "visibleW": 136,
+                "visibleH": 160,
+                "scale": 0.71191
+              }
+            },
+            {
+              "x": 768,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 13,
+                "y": 42,
+                "w": 166,
+                "h": 148,
+                "visibleW": 162,
+                "visibleH": 144,
+                "scale": 0.71191
+              }
+            },
+            {
+              "x": 960,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 23,
+                "y": 29,
+                "w": 146,
+                "h": 161,
+                "visibleW": 142,
+                "visibleH": 157,
+                "scale": 0.71191
+              }
+            },
+            {
+              "x": 1152,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 43,
+                "y": 17,
+                "w": 105,
+                "h": 173,
+                "visibleW": 101,
+                "visibleH": 169,
+                "scale": 0.71191
+              }
+            },
+            {
+              "x": 1344,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 48,
+                "y": 8,
+                "w": 96,
+                "h": 182,
+                "visibleW": 92,
+                "visibleH": 178,
+                "scale": 0.71191
+              }
+            }
+          ],
+          "higgsfieldJobId": "ee2db38e-049d-4202-95fc-1a8559e6c348",
+          "stableHeight": false,
+          "targetVisibleHeight": 126.72
+        },
+        "HEAVY_KICK": {
+          "sheet": "assets/motion-atlases/detroit-lens-noir-combat.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "source": "higgsfield-v2",
+          "frames": [
+            {
+              "x": 0,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 45,
+                "y": 14,
+                "w": 102,
+                "h": 176,
+                "visibleW": 98,
+                "visibleH": 172,
+                "scale": 1.002791
+              }
+            },
+            {
+              "x": 192,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 44,
+                "y": 13,
+                "w": 103,
+                "h": 177,
+                "visibleW": 99,
+                "visibleH": 173,
+                "scale": 0.996994
+              }
+            },
+            {
+              "x": 384,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 22,
+                "y": 15,
+                "w": 148,
+                "h": 175,
+                "visibleW": 144,
+                "visibleH": 171,
+                "scale": 1.008655
+              }
+            },
+            {
+              "x": 576,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 12,
+                "y": 10,
+                "w": 167,
+                "h": 180,
+                "visibleW": 163,
+                "visibleH": 176,
+                "scale": 0.98
+              }
+            },
+            {
+              "x": 768,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 38,
+                "y": 8,
+                "w": 116,
+                "h": 182,
+                "visibleW": 112,
+                "visibleH": 178,
+                "scale": 0.968989
+              }
+            },
+            {
+              "x": 960,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 48,
+                "y": 8,
+                "w": 95,
+                "h": 182,
+                "visibleW": 91,
+                "visibleH": 178,
+                "scale": 0.968989
+              }
+            }
+          ],
+          "higgsfieldJobId": "9a3cb11d-049a-41e7-8c7d-afb8292f474e",
+          "stableHeight": true,
+          "targetVisibleHeight": 172.48
+        },
+        "HEAVY_PUNCH": {
+          "sheet": "assets/motion-atlases/detroit-lens-noir-combat.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "source": "higgsfield-v2",
+          "frames": [
+            {
+              "x": 1152,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 37,
+                "y": 13,
+                "w": 117,
+                "h": 177,
+                "visibleW": 113,
+                "visibleH": 173,
+                "scale": 0.996994
+              }
+            },
+            {
+              "x": 1344,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 27,
+                "y": 19,
+                "w": 138,
+                "h": 171,
+                "visibleW": 134,
+                "visibleH": 167,
+                "scale": 1.032814
+              }
+            },
+            {
+              "x": 0,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 13,
+                "y": 14,
+                "w": 166,
+                "h": 176,
+                "visibleW": 162,
+                "visibleH": 172,
+                "scale": 1.002791
+              }
+            },
+            {
+              "x": 192,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 17,
+                "y": 9,
+                "w": 157,
+                "h": 181,
+                "visibleW": 153,
+                "visibleH": 177,
+                "scale": 0.974463
+              }
+            },
+            {
+              "x": 384,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 26,
+                "y": 10,
+                "w": 140,
+                "h": 180,
+                "visibleW": 136,
+                "visibleH": 176,
+                "scale": 0.98
+              }
+            },
+            {
+              "x": 576,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 46,
+                "y": 8,
+                "w": 99,
+                "h": 182,
+                "visibleW": 95,
+                "visibleH": 178,
+                "scale": 0.968989
+              }
+            }
+          ],
+          "higgsfieldJobId": "a75c65f0-3d66-47dd-9e3f-661dc0493edc",
+          "stableHeight": true,
+          "targetVisibleHeight": 172.48
+        },
+        "LIGHT_KICK": {
+          "sheet": "assets/motion-atlases/detroit-lens-noir-combat.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "source": "higgsfield-v2",
+          "frames": [
+            {
+              "x": 768,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 49,
+                "y": 11,
+                "w": 93,
+                "h": 179,
+                "visibleW": 89,
+                "visibleH": 175,
+                "scale": 0.9856
+              }
+            },
+            {
+              "x": 960,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 55,
+                "y": 10,
+                "w": 82,
+                "h": 180,
+                "visibleW": 78,
+                "visibleH": 176,
+                "scale": 0.98
+              }
+            },
+            {
+              "x": 1152,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 23,
+                "y": 11,
+                "w": 146,
+                "h": 179,
+                "visibleW": 142,
+                "visibleH": 175,
+                "scale": 0.9856
+              }
+            },
+            {
+              "x": 1344,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 53,
+                "y": 8,
+                "w": 85,
+                "h": 182,
+                "visibleW": 81,
+                "visibleH": 178,
+                "scale": 0.968989
+              }
+            },
+            {
+              "x": 0,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 49,
+                "y": 10,
+                "w": 94,
+                "h": 180,
+                "visibleW": 90,
+                "visibleH": 176,
+                "scale": 0.98
+              }
+            },
+            {
+              "x": 192,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 49,
+                "y": 10,
+                "w": 94,
+                "h": 180,
+                "visibleW": 90,
+                "visibleH": 176,
+                "scale": 0.98
+              }
+            }
+          ],
+          "higgsfieldJobId": "e7a38bbe-ec00-433a-9226-4007fa7af444",
+          "stableHeight": true,
+          "targetVisibleHeight": 172.48
+        },
+        "LIGHT_PUNCH": {
+          "sheet": "assets/motion-atlases/detroit-lens-noir-combat.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "source": "higgsfield-v2",
+          "frames": [
+            {
+              "x": 384,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 50,
+                "y": 16,
+                "w": 92,
+                "h": 174,
+                "visibleW": 88,
+                "visibleH": 170,
+                "scale": 1.014588
+              }
+            },
+            {
+              "x": 576,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 14,
+                "y": 8,
+                "w": 164,
+                "h": 182,
+                "visibleW": 160,
+                "visibleH": 178,
+                "scale": 0.968989
+              }
+            },
+            {
+              "x": 768,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 26,
+                "y": 18,
+                "w": 139,
+                "h": 172,
+                "visibleW": 135,
+                "visibleH": 168,
+                "scale": 1.026667
+              }
+            },
+            {
+              "x": 960,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 29,
+                "y": 15,
+                "w": 134,
+                "h": 175,
+                "visibleW": 130,
+                "visibleH": 171,
+                "scale": 1.008655
+              }
+            },
+            {
+              "x": 1152,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 42,
+                "y": 14,
+                "w": 107,
+                "h": 176,
+                "visibleW": 103,
+                "visibleH": 172,
+                "scale": 1.002791
+              }
+            },
+            {
+              "x": 1344,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 49,
+                "y": 11,
+                "w": 93,
+                "h": 179,
+                "visibleW": 89,
+                "visibleH": 175,
+                "scale": 0.9856
+              }
+            }
+          ],
+          "higgsfieldJobId": "ab7e9f0d-67b6-43d6-9b6b-2459989029db",
+          "stableHeight": true,
+          "targetVisibleHeight": 172.48
+        },
+        "SPECIAL_PROJECTILE": {
+          "sheet": "assets/motion-atlases/detroit-lens-noir-combat.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "source": "higgsfield-v3-body-vfx",
+          "frames": [
+            {
+              "x": 0,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 34,
+                "y": 8,
+                "w": 124,
+                "h": 182,
+                "visibleW": 120,
+                "visibleH": 178,
+                "scale": 0.968989
+              }
+            },
+            {
+              "x": 192,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 4,
+                "y": 9,
+                "w": 184,
+                "h": 181,
+                "visibleW": 180,
+                "visibleH": 177,
+                "scale": 0.968989
+              }
+            },
+            {
+              "x": 384,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 17,
+                "y": 9,
+                "w": 157,
+                "h": 181,
+                "visibleW": 153,
+                "visibleH": 177,
+                "scale": 0.968989
+              }
+            },
+            {
+              "x": 576,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 4,
+                "y": 12,
+                "w": 184,
+                "h": 178,
+                "visibleW": 180,
+                "visibleH": 174,
+                "scale": 0.968989
+              }
+            },
+            {
+              "x": 768,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 5,
+                "y": 8,
+                "w": 181,
+                "h": 182,
+                "visibleW": 177,
+                "visibleH": 178,
+                "scale": 0.968989
+              }
+            },
+            {
+              "x": 960,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 10,
+                "y": 11,
+                "w": 172,
+                "h": 179,
+                "visibleW": 168,
+                "visibleH": 175,
+                "scale": 0.968989
+              }
+            }
+          ],
+          "higgsfieldJobId": "1d63a4a7-b5b9-4c9d-9d1f-99455df0caf7",
+          "stableHeight": false,
+          "targetVisibleHeight": 172.48
+        },
+        "SPECIAL_RECOVER": {
+          "sheet": "assets/motion-atlases/detroit-lens-noir-combat.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "source": "higgsfield-v3-body-vfx",
+          "frames": [
+            {
+              "x": 1152,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 41,
+                "y": 11,
+                "w": 109,
+                "h": 179,
+                "visibleW": 105,
+                "visibleH": 175,
+                "scale": 0.968989
+              }
+            },
+            {
+              "x": 1344,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 21,
+                "y": 8,
+                "w": 149,
+                "h": 182,
+                "visibleW": 145,
+                "visibleH": 178,
+                "scale": 0.968989
+              }
+            },
+            {
+              "x": 0,
+              "y": 1344,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 47,
+                "y": 11,
+                "w": 97,
+                "h": 179,
+                "visibleW": 93,
+                "visibleH": 175,
+                "scale": 0.968989
+              }
+            },
+            {
+              "x": 192,
+              "y": 1344,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 44,
+                "y": 10,
+                "w": 104,
+                "h": 180,
+                "visibleW": 100,
+                "visibleH": 176,
+                "scale": 0.968989
+              }
+            },
+            {
+              "x": 384,
+              "y": 1344,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 27,
+                "y": 8,
+                "w": 138,
+                "h": 182,
+                "visibleW": 134,
+                "visibleH": 178,
+                "scale": 0.968989
+              }
+            },
+            {
+              "x": 576,
+              "y": 1344,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 47,
+                "y": 8,
+                "w": 97,
+                "h": 182,
+                "visibleW": 93,
+                "visibleH": 178,
+                "scale": 0.968989
+              }
+            }
+          ],
+          "higgsfieldJobId": "56d68023-f59a-48a1-a07a-aa85075495e5",
+          "stableHeight": false,
+          "targetVisibleHeight": 172.48
+        },
+        "SPECIAL_START": {
+          "sheet": "assets/motion-atlases/detroit-lens-noir-combat.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "source": "higgsfield-v3-body-vfx",
+          "frames": [
+            {
+              "x": 768,
+              "y": 1344,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 45,
+                "y": 9,
+                "w": 101,
+                "h": 181,
+                "visibleW": 97,
+                "visibleH": 177,
+                "scale": 0.968989
+              }
+            },
+            {
+              "x": 960,
+              "y": 1344,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 28,
+                "y": 8,
+                "w": 136,
+                "h": 182,
+                "visibleW": 132,
+                "visibleH": 178,
+                "scale": 0.968989
+              }
+            },
+            {
+              "x": 1152,
+              "y": 1344,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 41,
+                "y": 9,
+                "w": 109,
+                "h": 181,
+                "visibleW": 105,
+                "visibleH": 177,
+                "scale": 0.968989
+              }
+            },
+            {
+              "x": 1344,
+              "y": 1344,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 31,
+                "y": 9,
+                "w": 130,
+                "h": 181,
+                "visibleW": 126,
+                "visibleH": 177,
+                "scale": 0.968989
+              }
+            },
+            {
+              "x": 0,
+              "y": 1536,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 20,
+                "y": 8,
+                "w": 151,
+                "h": 182,
+                "visibleW": 147,
+                "visibleH": 178,
+                "scale": 0.968989
+              }
+            },
+            {
+              "x": 192,
+              "y": 1536,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 47,
+                "y": 8,
+                "w": 98,
+                "h": 182,
+                "visibleW": 94,
+                "visibleH": 178,
+                "scale": 0.968989
+              }
+            }
+          ],
+          "higgsfieldJobId": "13a8f06f-7f25-40e0-9872-ecfc6f69df01",
+          "stableHeight": false,
+          "targetVisibleHeight": 172.48
+        },
+        "SUPER_CHARGE": {
+          "sheet": "assets/motion-atlases/detroit-lens-noir-combat.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "source": "higgsfield-v2",
+          "frames": [
+            {
+              "x": 384,
+              "y": 1536,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 50,
+                "y": 15,
+                "w": 92,
+                "h": 175,
+                "visibleW": 88,
+                "visibleH": 171,
+                "scale": 0.968989
+              }
+            },
+            {
+              "x": 576,
+              "y": 1536,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 49,
+                "y": 15,
+                "w": 93,
+                "h": 175,
+                "visibleW": 89,
+                "visibleH": 171,
+                "scale": 0.968989
+              }
+            },
+            {
+              "x": 768,
+              "y": 1536,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 55,
+                "y": 10,
+                "w": 82,
+                "h": 180,
+                "visibleW": 78,
+                "visibleH": 176,
+                "scale": 0.968989
+              }
+            },
+            {
+              "x": 960,
+              "y": 1536,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 53,
+                "y": 9,
+                "w": 85,
+                "h": 181,
+                "visibleW": 81,
+                "visibleH": 177,
+                "scale": 0.968989
+              }
+            },
+            {
+              "x": 1152,
+              "y": 1536,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 26,
+                "y": 8,
+                "w": 139,
+                "h": 182,
+                "visibleW": 135,
+                "visibleH": 178,
+                "scale": 0.968989
+              }
+            },
+            {
+              "x": 1344,
+              "y": 1536,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 49,
+                "y": 12,
+                "w": 94,
+                "h": 178,
+                "visibleW": 90,
+                "visibleH": 174,
+                "scale": 0.968989
+              }
+            }
+          ],
+          "higgsfieldJobId": "b8e293cd-7f97-470b-9751-f5cf15894c02",
+          "stableHeight": false,
+          "targetVisibleHeight": 172.48
+        },
+        "SUPER_RELEASE": {
+          "sheet": "assets/motion-atlases/detroit-lens-noir-combat.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "source": "higgsfield-v2",
+          "frames": [
+            {
+              "x": 0,
+              "y": 1728,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 45,
+                "y": 10,
+                "w": 101,
+                "h": 180,
+                "visibleW": 97,
+                "visibleH": 176,
+                "scale": 0.968989
+              }
+            },
+            {
+              "x": 192,
+              "y": 1728,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 36,
+                "y": 14,
+                "w": 119,
+                "h": 176,
+                "visibleW": 115,
+                "visibleH": 172,
+                "scale": 0.968989
+              }
+            },
+            {
+              "x": 384,
+              "y": 1728,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 37,
+                "y": 10,
+                "w": 118,
+                "h": 180,
+                "visibleW": 114,
+                "visibleH": 176,
+                "scale": 0.968989
+              }
+            },
+            {
+              "x": 576,
+              "y": 1728,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 41,
+                "y": 10,
+                "w": 110,
+                "h": 180,
+                "visibleW": 106,
+                "visibleH": 176,
+                "scale": 0.968989
+              }
+            },
+            {
+              "x": 768,
+              "y": 1728,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 42,
+                "y": 8,
+                "w": 108,
+                "h": 182,
+                "visibleW": 104,
+                "visibleH": 178,
+                "scale": 0.968989
+              }
+            },
+            {
+              "x": 960,
+              "y": 1728,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 48,
+                "y": 8,
+                "w": 96,
+                "h": 182,
+                "visibleW": 92,
+                "visibleH": 178,
+                "scale": 0.968989
+              }
+            }
+          ],
+          "higgsfieldJobId": "6c443fe1-a258-431a-826f-fdae2ca7badf",
+          "stableHeight": false,
+          "targetVisibleHeight": 172.48
+        },
+        "THROW_FINISH": {
+          "sheet": "assets/motion-atlases/detroit-lens-noir-combat.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "source": "higgsfield-v2",
+          "frames": [
+            {
+              "x": 1152,
+              "y": 1728,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 47,
+                "y": 23,
+                "w": 98,
+                "h": 167,
+                "visibleW": 94,
+                "visibleH": 163,
+                "scale": 1.05816
+              }
+            },
+            {
+              "x": 1344,
+              "y": 1728,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 18,
+                "y": 17,
+                "w": 156,
+                "h": 173,
+                "visibleW": 152,
+                "visibleH": 169,
+                "scale": 1.020592
+              }
+            },
+            {
+              "x": 0,
+              "y": 1920,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 24,
+                "y": 14,
+                "w": 144,
+                "h": 176,
+                "visibleW": 140,
+                "visibleH": 172,
+                "scale": 1.002791
+              }
+            },
+            {
+              "x": 192,
+              "y": 1920,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 31,
+                "y": 15,
+                "w": 129,
+                "h": 175,
+                "visibleW": 125,
+                "visibleH": 171,
+                "scale": 1.008655
+              }
+            },
+            {
+              "x": 384,
+              "y": 1920,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 53,
+                "y": 8,
+                "w": 85,
+                "h": 182,
+                "visibleW": 81,
+                "visibleH": 178,
+                "scale": 0.968989
+              }
+            },
+            {
+              "x": 576,
+              "y": 1920,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 48,
+                "y": 9,
+                "w": 95,
+                "h": 181,
+                "visibleW": 91,
+                "visibleH": 177,
+                "scale": 0.974463
+              }
+            }
+          ],
+          "higgsfieldJobId": "7bf2b22f-f687-4890-bbc5-4d6096d8af63",
+          "stableHeight": true,
+          "targetVisibleHeight": 172.48
+        },
+        "THROW_GRAB": {
+          "sheet": "assets/motion-atlases/detroit-lens-noir-combat.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "source": "higgsfield-v3-body-vfx",
+          "frames": [
+            {
+              "x": 768,
+              "y": 1920,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 48,
+                "y": 9,
+                "w": 95,
+                "h": 181,
+                "visibleW": 91,
+                "visibleH": 177,
+                "scale": 0.974463
+              }
+            },
+            {
+              "x": 960,
+              "y": 1920,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 18,
+                "y": 12,
+                "w": 156,
+                "h": 178,
+                "visibleW": 152,
+                "visibleH": 174,
+                "scale": 0.991264
+              }
+            },
+            {
+              "x": 1152,
+              "y": 1920,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 4,
+                "y": 9,
+                "w": 184,
+                "h": 181,
+                "visibleW": 180,
+                "visibleH": 177,
+                "scale": 0.974463
+              }
+            },
+            {
+              "x": 1344,
+              "y": 1920,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 27,
+                "y": 9,
+                "w": 138,
+                "h": 181,
+                "visibleW": 134,
+                "visibleH": 177,
+                "scale": 0.974463
+              }
+            },
+            {
+              "x": 0,
+              "y": 2112,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 29,
+                "y": 8,
+                "w": 133,
+                "h": 182,
+                "visibleW": 129,
+                "visibleH": 178,
+                "scale": 0.968989
+              }
+            },
+            {
+              "x": 192,
+              "y": 2112,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 42,
+                "y": 8,
+                "w": 108,
+                "h": 182,
+                "visibleW": 104,
+                "visibleH": 178,
+                "scale": 0.968989
+              }
+            }
+          ],
+          "higgsfieldJobId": "28595516-1908-42ca-820a-aeb932576856",
+          "stableHeight": true,
+          "targetVisibleHeight": 172.48
+        },
+        "BLOCK_HIGH": {
+          "sheet": "assets/motion-atlases/detroit-lens-noir-reaction.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "source": "higgsfield-v2",
+          "frames": [
+            {
+              "x": 0,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 88,
+              "content": {
+                "x": 50,
+                "y": 15,
+                "w": 92,
+                "h": 175,
+                "visibleW": 88,
+                "visibleH": 171,
+                "scale": 1.008655
+              }
+            },
+            {
+              "x": 192,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 88,
+              "content": {
+                "x": 44,
+                "y": 23,
+                "w": 104,
+                "h": 167,
+                "visibleW": 100,
+                "visibleH": 163,
+                "scale": 1.05816
+              }
+            },
+            {
+              "x": 384,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 88,
+              "content": {
+                "x": 43,
+                "y": 21,
+                "w": 105,
+                "h": 169,
+                "visibleW": 101,
+                "visibleH": 165,
+                "scale": 1.045333
+              }
+            },
+            {
+              "x": 576,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 88,
+              "content": {
+                "x": 45,
+                "y": 18,
+                "w": 101,
+                "h": 172,
+                "visibleW": 97,
+                "visibleH": 168,
+                "scale": 1.026667
+              }
+            },
+            {
+              "x": 768,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 88,
+              "content": {
+                "x": 40,
+                "y": 16,
+                "w": 111,
+                "h": 174,
+                "visibleW": 107,
+                "visibleH": 170,
+                "scale": 1.014588
+              }
+            },
+            {
+              "x": 960,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 88,
+              "content": {
+                "x": 48,
+                "y": 8,
+                "w": 95,
+                "h": 182,
+                "visibleW": 91,
+                "visibleH": 178,
+                "scale": 0.968989
+              }
+            }
+          ],
+          "higgsfieldJobId": "911efb15-f842-467d-98b9-2cbfd544998f",
+          "stableHeight": true,
+          "targetVisibleHeight": 172.48
+        },
+        "BLOCK_LOW": {
+          "sheet": "assets/motion-atlases/detroit-lens-noir-reaction.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "source": "higgsfield-v2",
+          "frames": [
+            {
+              "x": 1152,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 88,
+              "content": {
+                "x": 49,
+                "y": 11,
+                "w": 94,
+                "h": 179,
+                "visibleW": 90,
+                "visibleH": 175,
+                "scale": 0.724114
+              }
+            },
+            {
+              "x": 1344,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 88,
+              "content": {
+                "x": 42,
+                "y": 25,
+                "w": 107,
+                "h": 165,
+                "visibleW": 103,
+                "visibleH": 161,
+                "scale": 0.787081
+              }
+            },
+            {
+              "x": 0,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 88,
+              "content": {
+                "x": 39,
+                "y": 20,
+                "w": 114,
+                "h": 170,
+                "visibleW": 110,
+                "visibleH": 166,
+                "scale": 0.763373
+              }
+            },
+            {
+              "x": 192,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 88,
+              "content": {
+                "x": 39,
+                "y": 17,
+                "w": 114,
+                "h": 173,
+                "visibleW": 110,
+                "visibleH": 169,
+                "scale": 0.749822
+              }
+            },
+            {
+              "x": 384,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 88,
+              "content": {
+                "x": 43,
+                "y": 8,
+                "w": 106,
+                "h": 182,
+                "visibleW": 102,
+                "visibleH": 178,
+                "scale": 0.71191
+              }
+            },
+            {
+              "x": 576,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 88,
+              "content": {
+                "x": 48,
+                "y": 8,
+                "w": 96,
+                "h": 182,
+                "visibleW": 92,
+                "visibleH": 178,
+                "scale": 0.71191
+              }
+            }
+          ],
+          "higgsfieldJobId": "1e7b0198-f625-44c0-bba1-95ed57f6202e",
+          "stableHeight": true,
+          "targetVisibleHeight": 126.72
+        },
+        "DEFEAT": {
+          "sheet": "assets/motion-atlases/detroit-lens-noir-reaction.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "source": "higgsfield-v2",
+          "frames": [
+            {
+              "x": 768,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 112,
+              "content": {
+                "x": 63,
+                "y": 56,
+                "w": 65,
+                "h": 134,
+                "visibleW": 61,
+                "visibleH": 130,
+                "scale": 0.988764
+              }
+            },
+            {
+              "x": 960,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 112,
+              "content": {
+                "x": 22,
+                "y": 8,
+                "w": 148,
+                "h": 182,
+                "visibleW": 144,
+                "visibleH": 178,
+                "scale": 0.988764
+              }
+            },
+            {
+              "x": 1152,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 112,
+              "content": {
+                "x": 45,
+                "y": 81,
+                "w": 102,
+                "h": 109,
+                "visibleW": 98,
+                "visibleH": 105,
+                "scale": 0.988764
+              }
+            },
+            {
+              "x": 1344,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 112,
+              "content": {
+                "x": 32,
+                "y": 88,
+                "w": 127,
+                "h": 102,
+                "visibleW": 123,
+                "visibleH": 98,
+                "scale": 0.988764
+              }
+            },
+            {
+              "x": 0,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 112,
+              "content": {
+                "x": 27,
+                "y": 131,
+                "w": 137,
+                "h": 59,
+                "visibleW": 133,
+                "visibleH": 55,
+                "scale": 0.988764
+              }
+            },
+            {
+              "x": 192,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 112,
+              "content": {
+                "x": 27,
+                "y": 153,
+                "w": 137,
+                "h": 37,
+                "visibleW": 133,
+                "visibleH": 33,
+                "scale": 0.988764
+              }
+            }
+          ],
+          "higgsfieldJobId": "89bb1a7c-4b62-40cf-9793-f68e546d2c17",
+          "stableHeight": false,
+          "targetVisibleHeight": 176
+        },
+        "GET_UP": {
+          "sheet": "assets/motion-atlases/detroit-lens-noir-reaction.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "source": "higgsfield-v2",
+          "frames": [
+            {
+              "x": 384,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 18,
+                "y": 148,
+                "w": 155,
+                "h": 42,
+                "visibleW": 151,
+                "visibleH": 38,
+                "scale": 0.988764
+              }
+            },
+            {
+              "x": 576,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 31,
+                "y": 103,
+                "w": 129,
+                "h": 87,
+                "visibleW": 125,
+                "visibleH": 83,
+                "scale": 0.988764
+              }
+            },
+            {
+              "x": 768,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 41,
+                "y": 91,
+                "w": 109,
+                "h": 99,
+                "visibleW": 105,
+                "visibleH": 95,
+                "scale": 0.988764
+              }
+            },
+            {
+              "x": 960,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 38,
+                "y": 32,
+                "w": 115,
+                "h": 158,
+                "visibleW": 111,
+                "visibleH": 154,
+                "scale": 0.988764
+              }
+            },
+            {
+              "x": 1152,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 44,
+                "y": 16,
+                "w": 103,
+                "h": 174,
+                "visibleW": 99,
+                "visibleH": 170,
+                "scale": 0.988764
+              }
+            },
+            {
+              "x": 1344,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 48,
+                "y": 8,
+                "w": 96,
+                "h": 182,
+                "visibleW": 92,
+                "visibleH": 178,
+                "scale": 0.988764
+              }
+            }
+          ],
+          "higgsfieldJobId": "a3523c68-be29-4396-83b8-03c2934238e8",
+          "stableHeight": false,
+          "targetVisibleHeight": 176
+        },
+        "HURT_HEAVY": {
+          "sheet": "assets/motion-atlases/detroit-lens-noir-reaction.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "source": "higgsfield-v2",
+          "frames": [
+            {
+              "x": 0,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 29,
+                "y": 12,
+                "w": 134,
+                "h": 178,
+                "visibleW": 130,
+                "visibleH": 174,
+                "scale": 0.968989
+              }
+            },
+            {
+              "x": 192,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 40,
+                "y": 25,
+                "w": 111,
+                "h": 165,
+                "visibleW": 107,
+                "visibleH": 161,
+                "scale": 0.968989
+              }
+            },
+            {
+              "x": 384,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 51,
+                "y": 12,
+                "w": 89,
+                "h": 178,
+                "visibleW": 85,
+                "visibleH": 174,
+                "scale": 0.968989
+              }
+            },
+            {
+              "x": 576,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 42,
+                "y": 12,
+                "w": 107,
+                "h": 178,
+                "visibleW": 103,
+                "visibleH": 174,
+                "scale": 0.968989
+              }
+            },
+            {
+              "x": 768,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 47,
+                "y": 9,
+                "w": 97,
+                "h": 181,
+                "visibleW": 93,
+                "visibleH": 177,
+                "scale": 0.968989
+              }
+            },
+            {
+              "x": 960,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 48,
+                "y": 8,
+                "w": 96,
+                "h": 182,
+                "visibleW": 92,
+                "visibleH": 178,
+                "scale": 0.968989
+              }
+            }
+          ],
+          "higgsfieldJobId": "91d7b2ac-8fef-4caf-b6d1-310608096cee",
+          "stableHeight": false,
+          "targetVisibleHeight": 172.48
+        },
+        "HURT_LIGHT": {
+          "sheet": "assets/motion-atlases/detroit-lens-noir-reaction.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "source": "higgsfield-v2",
+          "frames": [
+            {
+              "x": 1152,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 48,
+                "y": 11,
+                "w": 96,
+                "h": 179,
+                "visibleW": 92,
+                "visibleH": 175,
+                "scale": 0.9856
+              }
+            },
+            {
+              "x": 1344,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 41,
+                "y": 11,
+                "w": 110,
+                "h": 179,
+                "visibleW": 106,
+                "visibleH": 175,
+                "scale": 0.9856
+              }
+            },
+            {
+              "x": 0,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 45,
+                "y": 20,
+                "w": 102,
+                "h": 170,
+                "visibleW": 98,
+                "visibleH": 166,
+                "scale": 1.039036
+              }
+            },
+            {
+              "x": 192,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 48,
+                "y": 13,
+                "w": 95,
+                "h": 177,
+                "visibleW": 91,
+                "visibleH": 173,
+                "scale": 0.996994
+              }
+            },
+            {
+              "x": 384,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 43,
+                "y": 9,
+                "w": 106,
+                "h": 181,
+                "visibleW": 102,
+                "visibleH": 177,
+                "scale": 0.974463
+              }
+            },
+            {
+              "x": 576,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 45,
+                "y": 8,
+                "w": 101,
+                "h": 182,
+                "visibleW": 97,
+                "visibleH": 178,
+                "scale": 0.968989
+              }
+            }
+          ],
+          "higgsfieldJobId": "4ace5906-60ed-4bcf-b0a3-bb2f65041b04",
+          "stableHeight": true,
+          "targetVisibleHeight": 172.48
+        },
+        "KNOCKDOWN": {
+          "sheet": "assets/motion-atlases/detroit-lens-noir-reaction.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "source": "higgsfield-v2",
+          "frames": [
+            {
+              "x": 768,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 26,
+                "y": 8,
+                "w": 140,
+                "h": 182,
+                "visibleW": 136,
+                "visibleH": 178,
+                "scale": 0.988764
+              }
+            },
+            {
+              "x": 960,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 48,
+                "y": 23,
+                "w": 96,
+                "h": 167,
+                "visibleW": 92,
+                "visibleH": 163,
+                "scale": 0.988764
+              }
+            },
+            {
+              "x": 1152,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 52,
+                "y": 41,
+                "w": 87,
+                "h": 149,
+                "visibleW": 83,
+                "visibleH": 145,
+                "scale": 0.988764
+              }
+            },
+            {
+              "x": 1344,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 32,
+                "y": 51,
+                "w": 128,
+                "h": 139,
+                "visibleW": 124,
+                "visibleH": 135,
+                "scale": 0.988764
+              }
+            },
+            {
+              "x": 0,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 24,
+                "y": 105,
+                "w": 144,
+                "h": 85,
+                "visibleW": 140,
+                "visibleH": 81,
+                "scale": 0.988764
+              }
+            },
+            {
+              "x": 192,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 11,
+                "y": 134,
+                "w": 169,
+                "h": 56,
+                "visibleW": 165,
+                "visibleH": 52,
+                "scale": 0.988764
+              }
+            }
+          ],
+          "higgsfieldJobId": "cef0a3e9-5aee-495a-8da1-286326044917",
+          "stableHeight": false,
+          "targetVisibleHeight": 176
+        },
+        "TAUNT": {
+          "sheet": "assets/motion-atlases/detroit-lens-noir-reaction.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "source": "higgsfield-v2",
+          "frames": [
+            {
+              "x": 384,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 25,
+                "y": 15,
+                "w": 142,
+                "h": 175,
+                "visibleW": 138,
+                "visibleH": 171,
+                "scale": 1.008655
+              }
+            },
+            {
+              "x": 576,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 24,
+                "y": 11,
+                "w": 144,
+                "h": 179,
+                "visibleW": 140,
+                "visibleH": 175,
+                "scale": 0.9856
+              }
+            },
+            {
+              "x": 768,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 22,
+                "y": 11,
+                "w": 147,
+                "h": 179,
+                "visibleW": 143,
+                "visibleH": 175,
+                "scale": 0.9856
+              }
+            },
+            {
+              "x": 960,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 25,
+                "y": 8,
+                "w": 142,
+                "h": 182,
+                "visibleW": 138,
+                "visibleH": 178,
+                "scale": 0.968989
+              }
+            },
+            {
+              "x": 1152,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 25,
+                "y": 8,
+                "w": 142,
+                "h": 182,
+                "visibleW": 138,
+                "visibleH": 178,
+                "scale": 0.968989
+              }
+            },
+            {
+              "x": 1344,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 26,
+                "y": 8,
+                "w": 140,
+                "h": 182,
+                "visibleW": 136,
+                "visibleH": 178,
+                "scale": 0.968989
+              }
+            }
+          ],
+          "higgsfieldJobId": "23a3e951-ebab-4cfb-8127-e4983fa008e1",
+          "stableHeight": true,
+          "targetVisibleHeight": 172.48
+        },
+        "VICTORY": {
+          "sheet": "assets/motion-atlases/detroit-lens-noir-reaction.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "source": "higgsfield-v2",
+          "frames": [
+            {
+              "x": 0,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 108,
+              "content": {
+                "x": 56,
+                "y": 15,
+                "w": 80,
+                "h": 175,
+                "visibleW": 76,
+                "visibleH": 171,
+                "scale": 1.008655
+              }
+            },
+            {
+              "x": 192,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 108,
+              "content": {
+                "x": 47,
+                "y": 15,
+                "w": 97,
+                "h": 175,
+                "visibleW": 93,
+                "visibleH": 171,
+                "scale": 1.008655
+              }
+            },
+            {
+              "x": 384,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 108,
+              "content": {
+                "x": 44,
+                "y": 8,
+                "w": 103,
+                "h": 182,
+                "visibleW": 99,
+                "visibleH": 178,
+                "scale": 0.968989
+              }
+            },
+            {
+              "x": 576,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 108,
+              "content": {
+                "x": 48,
+                "y": 16,
+                "w": 95,
+                "h": 174,
+                "visibleW": 91,
+                "visibleH": 170,
+                "scale": 1.014588
+              }
+            },
+            {
+              "x": 768,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 108,
+              "content": {
+                "x": 52,
+                "y": 14,
+                "w": 88,
+                "h": 176,
+                "visibleW": 84,
+                "visibleH": 172,
+                "scale": 1.002791
+              }
+            },
+            {
+              "x": 960,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 108,
+              "content": {
+                "x": 51,
+                "y": 12,
+                "w": 89,
+                "h": 178,
+                "visibleW": 85,
+                "visibleH": 174,
+                "scale": 0.991264
+              }
+            }
+          ],
+          "higgsfieldJobId": "74ee1828-3764-43c5-89fa-b525d0200176",
+          "stableHeight": true,
+          "targetVisibleHeight": 172.48
+        }
+      },
+      "stabilization": {
+        "canonicalHeight": 176,
         "stableHeightMotions": [
           "BLOCK_HIGH",
           "BLOCK_LOW",

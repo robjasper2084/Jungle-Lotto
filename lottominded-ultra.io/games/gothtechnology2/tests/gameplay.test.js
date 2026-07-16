@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 import { attackIntentFromActions, resolveCancelAttack } from "../src/gameplay/commands.js";
 import { FIGHTERS, MOTION_PLAYBACK } from "../src/config/assets.js";
-import { ARCADE_LADDER, COMMAND_LISTS, ROSTER_CARD_LAYOUT, ROSTER_IDS, STAGES } from "../src/config/content.js";
+import { ARCADE_LADDER, COMMAND_LISTS, GAME_MODES, ROSTER_CARD_LAYOUT, ROSTER_IDS, STAGES } from "../src/config/content.js";
 import { GROUND_Y } from "../src/config/constants.js";
 import { Fighter } from "../src/gameplay/fighter.js";
 import { applyHit, resolveMelee } from "../src/gameplay/combat.js";
@@ -132,29 +132,56 @@ test("runtime animations meet minimum unique-frame requirements", () => {
   }
 });
 
-test("Detroit Lens ships a complete guardian kit, Boerboel command list, and eight stages", () => {
+test("Detroit Lens ships a complete guardian kit, Boerboel command list, and six approved stages", () => {
   const fighter = FIGHTERS.DETROIT_LENS;
   assert.equal(fighter.manifestKey, "DETROIT_LENS");
   assert.equal(fighter.archetype, "precision");
   assert.equal(fighter.specialName, "Boerboel Rush");
   assert.equal(fighter.superName, "Red-Eye Exposure");
+  assert.equal(fighter.costumePalette, "white-black");
+  assert.equal(fighter.palette, "#f4f2e9");
   assert.equal(Object.keys(motionManifest.characters.DETROIT_LENS.motions).length, 39);
-  assert.equal(ROSTER_IDS.length, 5);
+  assert.equal(ROSTER_IDS.length, 6);
   assert.equal(ROSTER_CARD_LAYOUT.length, ROSTER_IDS.length);
   assert.ok(ARCADE_LADDER.includes("DETROIT_LENS"));
   assert.ok(COMMAND_LISTS.DETROIT_LENS.commands.some((command) => command.name === "BOERBOEL RUSH"));
+  assert.ok(COMMAND_LISTS.DETROIT_LENS_NOIR.commands.some((command) => command.name === "BOERBOEL RUSH"));
   assert.ok(STAGES.some((stage) => stage.id === "detroit-midnight-mile"));
   assert.ok(STAGES.some((stage) => stage.id === "motor-city-assembly"));
   assert.ok(STAGES.some((stage) => stage.id === "detroit-riverfront"));
   assert.ok(STAGES.some((stage) => stage.id === "eastern-market-after-dark"));
   assert.ok(STAGES.some((stage) => stage.id === "michigan-central-concourse"));
-  assert.equal(STAGES.length, 8);
+  assert.equal(STAGES.length, 6);
+  assert.ok(!STAGES.some((stage) => stage.id === "ember-gate"));
+  assert.ok(!STAGES.some((stage) => stage.id === "moon-shrine"));
   assert.equal(boerboelManifest.frameCount, 24);
   assert.deepEqual(Object.keys(boerboelManifest.motions), ["SUMMON", "RUN", "ATTACK", "RECOVER"]);
   for (const motion of Object.values(boerboelManifest.motions)) {
     assert.equal(motion.frames, 6);
     assert.ok(motion.uniqueFrames >= 5);
     assert.deepEqual(motion.sourceFigureCounts, [3, 3]);
+  }
+});
+
+test("title menu exposes only the four approved modes", () => {
+  assert.deepEqual(Object.keys(GAME_MODES), ["versus", "arcade", "training", "replay"]);
+});
+
+test("Kalyx uses the approved black and crimson costume identity", () => {
+  assert.equal(FIGHTERS.KALYX.costumePalette, "black-crimson");
+  assert.equal(FIGHTERS.KALYX.palette, "#c51f35");
+  assert.equal(FIGHTERS.KALYX.accent, "#ff5b68");
+});
+
+test("Detroit Lens keeps independent white and original black costume atlases", () => {
+  const white = FIGHTERS.DETROIT_LENS;
+  const noir = FIGHTERS.DETROIT_LENS_NOIR;
+  assert.equal(white.costumePalette, "white-black");
+  assert.equal(noir.costumePalette, "black-black");
+  assert.equal(noir.manifestKey, "DETROIT_LENS_NOIR");
+  assert.equal(Object.keys(motionManifest.characters.DETROIT_LENS_NOIR.motions).length, 39);
+  for (const motion of Object.values(motionManifest.characters.DETROIT_LENS_NOIR.motions)) {
+    assert.match(motion.sheet, /detroit-lens-noir-/);
   }
 });
 

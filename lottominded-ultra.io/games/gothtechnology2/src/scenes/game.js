@@ -1,17 +1,17 @@
-import { ASSET_URLS, FIGHTERS } from "../config/assets.js?v=game-select-title12-boerboel-detroit";
-import { ARCADE_LADDER, CHALLENGES, GAME_MODES, ROSTER_CARD_LAYOUT, ROSTER_IDS, STAGES, opponentFor } from "../config/content.js?v=game-select-title12-boerboel-detroit";
-import { ASSISTS, ATTACKS } from "../config/moves.js?v=game-select-title12-boerboel-detroit";
+import { ASSET_URLS, FIGHTERS } from "../config/assets.js?v=roster-cleanup15-detroit-costume-duo";
+import { ARCADE_LADDER, GAME_MODES, ROSTER_CARD_LAYOUT, ROSTER_IDS, STAGES, opponentFor } from "../config/content.js?v=roster-cleanup15-detroit-costume-duo";
+import { ASSISTS, ATTACKS } from "../config/moves.js?v=roster-cleanup15-detroit-costume-duo";
 import { CANVAS_HEIGHT, CANVAS_WIDTH, COLORS, GROUND_Y, PHASE, ROUND_SECONDS, WORLD } from "../config/constants.js";
-import { AssetLoader } from "../engine/assets.js?v=game-select-title12-boerboel-detroit";
-import { WebAudioBus } from "../engine/audio.js?v=game-select-title12-boerboel-detroit";
-import { InputManager } from "../engine/input.js?v=game-select-title12-boerboel-detroit";
+import { AssetLoader } from "../engine/assets.js?v=roster-cleanup15-detroit-costume-duo";
+import { WebAudioBus } from "../engine/audio.js?v=roster-cleanup15-detroit-costume-duo";
+import { InputManager } from "../engine/input.js?v=roster-cleanup15-detroit-costume-duo";
 import { clamp, rectsOverlap } from "../engine/math.js";
-import { applyHit, resolveMelee } from "../gameplay/combat.js?v=game-select-title12-boerboel-detroit";
-import { CpuController } from "../gameplay/cpu.js?v=game-select-title12-boerboel-detroit";
-import { AttachedSpriteEffect, SpriteEffect } from "../gameplay/effects.js?v=game-select-title12-boerboel-detroit";
-import { Fighter } from "../gameplay/fighter.js?v=game-select-title12-boerboel-detroit";
-import { AssistStrike, BoerboelStrike, Projectile } from "../gameplay/projectiles.js?v=game-select-title12-boerboel-detroit";
-import { applyRoundOutcomeMotions, resolveRoundOutcome } from "../gameplay/rounds.js?v=game-select-title12-boerboel-detroit";
+import { applyHit, resolveMelee } from "../gameplay/combat.js?v=roster-cleanup15-detroit-costume-duo";
+import { CpuController } from "../gameplay/cpu.js?v=roster-cleanup15-detroit-costume-duo";
+import { AttachedSpriteEffect, SpriteEffect } from "../gameplay/effects.js?v=roster-cleanup15-detroit-costume-duo";
+import { Fighter } from "../gameplay/fighter.js?v=roster-cleanup15-detroit-costume-duo";
+import { AssistStrike, BoerboelStrike, Projectile } from "../gameplay/projectiles.js?v=roster-cleanup15-detroit-costume-duo";
+import { applyRoundOutcomeMotions, resolveRoundOutcome } from "../gameplay/rounds.js?v=roster-cleanup15-detroit-costume-duo";
 import {
   drawCharacterSelect,
   drawDiagnostics,
@@ -22,7 +22,7 @@ import {
   drawRoundMessage,
   drawTitle,
   drawVersus
-} from "../ui/hud.js?v=game-select-title12-boerboel-detroit";
+} from "../ui/hud.js?v=roster-cleanup15-detroit-costume-duo";
 
 const GAME_SELECT_ITEMS = [
   {
@@ -127,11 +127,6 @@ export class GothTechnologyGame {
     this.gameMode = "versus";
     this.stageIndex = 0;
     this.arcadeStage = 0;
-    this.survivalStreak = 0;
-    this.survivalHealth = null;
-    this.challengeIndex = 0;
-    this.challengeProgress = 0;
-    this.challengeComplete = false;
     this.modeComplete = false;
     this.modeCanContinue = false;
     this.matchEndPrompt = "RETURN TO TITLE";
@@ -144,8 +139,6 @@ export class GothTechnologyGame {
       wins: 0,
       losses: 0,
       arcadeClears: 0,
-      survivalBest: 0,
-      challenges: 0,
       damage: 0,
       perfectBlocks: 0,
       throwTechs: 0
@@ -263,19 +256,18 @@ export class GothTechnologyGame {
   }
 
   openMode(mode) {
+    if (!GAME_MODES[mode]) {
+      this.announce("Mode unavailable");
+      return;
+    }
     if (mode === "replay") {
       this.startReplay();
       return;
     }
     this.gameMode = mode;
     this.arcadeStage = 0;
-    this.survivalStreak = 0;
-    this.survivalHealth = null;
-    this.challengeProgress = 0;
-    this.challengeComplete = false;
     this.modeComplete = false;
-    if (["arcade", "survival", "challenge"].includes(mode)) this.cpuEnabled = true;
-    if (mode === "challenge") this.cpuDifficulty = "normal";
+    if (mode === "arcade") this.cpuEnabled = true;
     this.openCharacterSelect(mode === "training", mode);
   }
 
@@ -403,8 +395,6 @@ export class GothTechnologyGame {
       const ladder = ARCADE_LADDER.filter((id) => id !== this.player1Id);
       return ladder[this.arcadeStage % ladder.length] ?? opponentFor(this.player1Id);
     }
-    if (this.gameMode === "survival") return opponentFor(this.player1Id, this.survivalStreak);
-    if (this.gameMode === "challenge") return opponentFor(this.player1Id, this.challengeIndex);
     return opponentFor(this.player1Id);
   }
 
@@ -427,6 +417,7 @@ export class GothTechnologyGame {
 
   openGameSelect() {
     this.phase = PHASE.GAME_SELECT;
+    this.assets.loadGameSelectAssets().then(() => this.render());
     this.syncMusicForPhase();
     this.audio.beep("select");
   }
@@ -570,9 +561,6 @@ export class GothTechnologyGame {
     this.trainingReadout = null;
     this.fighters[0].resetRound(360, 1);
     this.fighters[1].resetRound(920, -1);
-    if (this.gameMode === "survival" && this.survivalHealth != null) {
-      this.fighters[0].health = Math.min(this.fighters[0].config.maxHealth, this.survivalHealth);
-    }
     if (this.training) {
       this.fighters[0].meter = 100;
       this.fighters[1].meter = 100;
@@ -679,7 +667,6 @@ export class GothTechnologyGame {
     this.faceFighters();
     this.rewardRoundTicks += 1;
     this.rewardTotalTicks += 1;
-    this.checkChallengeProgress();
     this.checkRoundEnd();
   }
 
@@ -701,12 +688,10 @@ export class GothTechnologyGame {
       this.menuHitAreas = [
         { x: 330, y: 318, w: 292, h: 48, action: () => this.openMode("versus") },
         { x: 658, y: 318, w: 292, h: 48, action: () => this.openMode("arcade") },
-        { x: 330, y: 376, w: 292, h: 48, action: () => this.openMode("survival") },
-        { x: 658, y: 376, w: 292, h: 48, action: () => this.openMode("challenge") },
-        { x: 330, y: 434, w: 292, h: 48, action: () => this.openMode("training") },
-        { x: 658, y: 434, w: 292, h: 48, action: () => this.openMode("replay") },
-        { x: 330, y: 492, w: 292, h: 48, action: () => this.openGameSelect() },
-        { x: 658, y: 492, w: 292, h: 48, action: () => this.openSettings() }
+        { x: 330, y: 376, w: 292, h: 48, action: () => this.openMode("training") },
+        { x: 658, y: 376, w: 292, h: 48, action: () => this.openMode("replay") },
+        { x: 330, y: 434, w: 292, h: 48, action: () => this.openGameSelect() },
+        { x: 658, y: 434, w: 292, h: 48, action: () => this.openSettings() }
       ];
       this.audio.startMusic("menu");
       if (this.input.consume("ui.confirm")) this.openMode("versus");
@@ -932,33 +917,6 @@ export class GothTechnologyGame {
     if (event.type === "perfectBlock" && event.defender === player) this.stats.perfectBlocks += 1;
     if (event.type === "throwTech" && event.defender === player) this.stats.throwTechs += 1;
     writeStorage(STATS_KEY, this.stats);
-
-    if (this.gameMode !== "challenge" || event.attacker?.slot !== 1 && event.defender?.slot !== 1) return;
-    const challenge = CHALLENGES[this.challengeIndex];
-    if (!challenge || this.challengeComplete) return;
-    if (challenge.event === "combo" && event.attacker?.slot === 1) {
-      this.challengeProgress = Math.max(this.challengeProgress, event.comboHits ?? 0);
-    } else if (challenge.event === event.type) {
-      this.challengeProgress += 1;
-    }
-  }
-
-  checkChallengeProgress() {
-    if (this.gameMode !== "challenge" || this.challengeComplete || this.phase !== PHASE.FIGHT) return;
-    const challenge = CHALLENGES[this.challengeIndex];
-    if (!challenge || this.challengeProgress < challenge.target) return;
-    this.challengeComplete = true;
-    this.fighters[0].setMotion("VICTORY", true);
-    this.fighters[1].setMotion("DEFEAT", true);
-    this.phase = PHASE.MATCH_END;
-    this.stats.challenges = Math.max(this.stats.challenges, this.challengeIndex + 1);
-    this.modeCanContinue = this.challengeIndex < CHALLENGES.length - 1;
-    this.modeComplete = !this.modeCanContinue;
-    this.matchWinner = this.fighters[0];
-    this.matchEndPrompt = this.modeCanContinue ? "NEXT CHALLENGE" : "CHALLENGES COMPLETE";
-    writeStorage(STATS_KEY, this.stats);
-    this.audio.beep("super");
-    this.announce(`${challenge.name} complete`);
   }
 
   saveReplay() {
@@ -1011,14 +969,6 @@ export class GothTechnologyGame {
         this.modeCanContinue = true;
         this.matchEndPrompt = "NEXT OPPONENT";
       }
-    } else if (this.gameMode === "survival" && playerWon) {
-      this.survivalStreak += 1;
-      this.stats.survivalBest = Math.max(this.stats.survivalBest, this.survivalStreak);
-      this.survivalHealth = Math.min(this.fighters[0].config.maxHealth, this.fighters[0].health + 180);
-      this.modeCanContinue = true;
-      this.matchEndPrompt = `STREAK ${this.survivalStreak} / NEXT FIGHT`;
-    } else if (this.gameMode === "survival") {
-      this.matchEndPrompt = `SURVIVAL STREAK ${this.survivalStreak}`;
     }
     writeStorage(STATS_KEY, this.stats);
     this.saveReplay();
@@ -1028,11 +978,6 @@ export class GothTechnologyGame {
     if (!this.modeCanContinue) {
       this.returnToTitle();
       return;
-    }
-    if (this.gameMode === "challenge") {
-      this.challengeIndex += 1;
-      this.challengeProgress = 0;
-      this.challengeComplete = false;
     }
     this.modeCanContinue = false;
     this.player2Id = this.opponentForMode();
@@ -1165,7 +1110,7 @@ export class GothTechnologyGame {
   spawnProjectile(owner, name) {
     const attack = owner.getAttackData(name) ?? ATTACKS[name];
     const manifestKey = owner.config.manifestKey;
-    const isDetroitLens = manifestKey === "DETROIT_LENS";
+    const isDetroitLens = manifestKey.startsWith("DETROIT_LENS");
     if (isDetroitLens && name === "special") {
       this.projectiles.push(new BoerboelStrike({
         owner,
@@ -1192,7 +1137,8 @@ export class GothTechnologyGame {
         super: { x: 114, y: -176 }
       }
     };
-    const socket = handSockets[manifestKey]?.[name] ?? { x: 120, y: -140 };
+    const socketKey = isDetroitLens ? "DETROIT_LENS" : manifestKey;
+    const socket = handSockets[socketKey]?.[name] ?? { x: 120, y: -140 };
     const spawnX = owner.x + owner.facing * socket.x;
     const spawnY = owner.y + socket.y;
     const image = manifestKey === "KALYX"
@@ -1216,7 +1162,7 @@ export class GothTechnologyGame {
   spawnFighterVfx(owner, name, phase = "charge") {
     const manifestKey = owner.config.manifestKey;
     const isKalyx = manifestKey === "KALYX";
-    const isDetroitLens = manifestKey === "DETROIT_LENS";
+    const isDetroitLens = manifestKey.startsWith("DETROIT_LENS");
     const superMove = name === "super";
     const skill = name === "skill";
     if (isDetroitLens) {
@@ -1342,9 +1288,7 @@ export class GothTechnologyGame {
       drawRoundMessage(ctx, this.roundResultText || "ROUND COMPLETE", this.roundResultSubtext || "NEXT ROUND");
     }
     if (this.phase === PHASE.MATCH_END) {
-      const headline = this.gameMode === "challenge" && this.challengeComplete
-        ? `${CHALLENGES[this.challengeIndex]?.name ?? "CHALLENGE"} COMPLETE`
-        : `${this.matchWinner?.config.name ?? "FIGHTER"} WINS`;
+      const headline = `${this.matchWinner?.config.name ?? "FIGHTER"} WINS`;
       drawRoundMessage(ctx, headline, this.matchEndPrompt || "MATCH COMPLETE");
     }
     if (this.phase === PHASE.PAUSE) drawPause(ctx, this);

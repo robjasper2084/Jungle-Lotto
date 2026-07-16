@@ -1,7 +1,7 @@
-import { drawSheetFrame } from "../engine/assets.js?v=game-select-title12-boerboel-detroit";
+import { drawSheetFrame } from "../engine/assets.js?v=roster-cleanup15-detroit-costume-duo";
 import { rectsOverlap } from "../engine/math.js";
 import { SpriteEffect } from "./effects.js";
-import { sliceAttackForHit } from "./hits.js?v=game-select-title12-boerboel-detroit";
+import { sliceAttackForHit } from "./hits.js?v=roster-cleanup15-detroit-costume-duo";
 
 const hexAlpha = (color, alpha) => {
   if (!color?.startsWith("#") || color.length !== 7) return color;
@@ -10,7 +10,7 @@ const hexAlpha = (color, alpha) => {
 
 const fighterEffectColor = (owner, alpha = 1) => {
   const key = owner.config?.manifestKey;
-  const color = key === "KALYX" ? "#9f62ff" : key === "DETROIT_LENS" ? "#e7c36a" : "#8bd4ff";
+  const color = key === "KALYX" ? "#9f62ff" : key?.startsWith("DETROIT_LENS") ? "#e7c36a" : "#8bd4ff";
   return alpha >= 1 ? color : hexAlpha(color, alpha);
 };
 
@@ -97,7 +97,7 @@ export class Projectile {
     const manifestKey = this.owner.config?.manifestKey;
     const image = manifestKey === "KALYX"
       ? game.assets.images.kalyxShadowClaw
-      : manifestKey === "DETROIT_LENS"
+      : manifestKey?.startsWith("DETROIT_LENS")
         ? game.assets.images.hitSpark
         : game.assets.images.ezraBlueBurst;
     game.effects.push(new SpriteEffect({

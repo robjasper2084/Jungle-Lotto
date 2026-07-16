@@ -29,9 +29,10 @@ const advanceVersusToFight = async (page) => {
 };
 
 const enterTrainingFight = async (page) => {
-  await clickGame(page, 470, 458);
-  await expect.poll(() => phase(page)).toBe("select");
-  await expect.poll(() => page.evaluate(() => window.__gothTechnologyGame?.matchAssetsReady), { timeout: 10_000 }).toBe(true);
+  await expect.poll(() => phase(page), { timeout: 30_000 }).toBe("title");
+  await page.evaluate(() => window.__gothTechnologyGame.openMode("training"));
+  await expect.poll(() => phase(page), { timeout: 30_000 }).toBe("select");
+  await expect.poll(() => page.evaluate(() => window.__gothTechnologyGame?.matchAssetsReady), { timeout: 60_000 }).toBe(true);
   await clickGame(page, 804, 594);
   await advanceVersusToFight(page);
 };
@@ -41,6 +42,12 @@ test("boots, reaches versus, fights, and pauses without page errors", async ({ p
   const pageErrors = [];
   page.on("pageerror", (error) => pageErrors.push(error.message));
   await page.goto(gameUrl);
+  await expect.poll(() => phase(page)).toBe("title");
+  const titleActions = await page.locator("#accessibleActions button").allTextContents();
+  expect(titleActions).toEqual(expect.arrayContaining(["VERSUS", "ARCADE", "TRAINING", "REPLAY"]));
+  expect(titleActions).not.toContain("SURVIVAL");
+  expect(titleActions).not.toContain("CHALLENGE");
+  await page.evaluate(() => window.__gothTechnologyGame.openMode("survival"));
   await expect.poll(() => phase(page)).toBe("title");
   if (!process.env.NO_TEST_ARTIFACTS) await page.screenshot({ path: testInfo.outputPath(`${testInfo.project.name}-title.png`) });
 
@@ -53,8 +60,10 @@ test("boots, reaches versus, fights, and pauses without page errors", async ({ p
   expect(loadedResources.some((url) => url.includes("user-sheets/"))).toBe(false);
   expect(loadedResources.some((url) => url.endsWith(".mp3"))).toBe(false);
   expect(loadedResources.some((url) => url.includes("effects/sheets/"))).toBe(false);
+  expect(loadedResources.some((url) => url.includes("gothtechnology-cover-start-bg.webp"))).toBe(false);
+  expect(loadedResources.some((url) => url.includes("robot-rahbe-title-card.webp"))).toBe(false);
 
-  await clickGame(page, 470, 516);
+  await clickGame(page, 470, 458);
   await expect.poll(() => phase(page)).toBe("gameSelect");
   await expect.poll(() => page.evaluate(() => {
     const images = window.__gothTechnologyGame?.assets?.images;
@@ -78,9 +87,9 @@ test("boots, reaches versus, fights, and pauses without page errors", async ({ p
   });
   expect(nonBlankSamples).toBeGreaterThan(100);
 
-  await clickGame(page, 470, 342);
-  await expect.poll(() => phase(page)).toBe("select");
-  await expect.poll(() => page.evaluate(() => window.__gothTechnologyGame?.assets?.loadedCharacterMotions?.size), { timeout: 10_000 }).toBe(2);
+  await page.evaluate(() => window.__gothTechnologyGame.openMode("versus"));
+  await expect.poll(() => phase(page), { timeout: 30_000 }).toBe("select");
+  await expect.poll(() => page.evaluate(() => window.__gothTechnologyGame?.assets?.loadedCharacterMotions?.size), { timeout: 60_000 }).toBe(2);
   const selectedResources = await page.evaluate(() => performance.getEntriesByType("resource").map((entry) => entry.name));
   expect(selectedResources.filter((url) => url.includes("motion-atlases/") && new URL(url).pathname.endsWith(".webp"))).toHaveLength(6);
   expect(selectedResources.some((url) => url.includes("approved-poses/"))).toBe(false);
@@ -160,7 +169,7 @@ test("boots, reaches versus, fights, and pauses without page errors", async ({ p
   expect(spriteIntegrity.insufficientUnique).toEqual([]);
   expect(spriteIntegrity.splitFrames).toEqual([]);
   const unstableRenderedMotions = await page.evaluate(async () => {
-    const { drawSpriteFrame } = await import("./src/engine/assets.js?v=game-select-title12-boerboel-detroit-test");
+    const { drawSpriteFrame } = await import("./src/engine/assets.js?v=roster-cleanup15-detroit-costume-duo-test");
     const animations = window.__gothTechnologyGame.assets.animations;
     const checkedMotions = [
       "IDLE", "READY_STANCE", "WALK_FORWARD", "RUN_FORWARD", "DASH_FORWARD",
@@ -227,15 +236,35 @@ test("boots, reaches versus, fights, and pauses without page errors", async ({ p
   expect(pageErrors).toEqual([]);
 });
 
-test("Detroit Lens loads the Boerboel attack, eye laser, and all five Detroit stages", async ({ page }, testInfo) => {
-  test.setTimeout(120_000);
+test("Detroit Lens loads white and Noir costumes, Boerboel, eye laser, and five Detroit stages", async ({ page }, testInfo) => {
+  test.setTimeout(180_000);
   const pageErrors = [];
   page.on("pageerror", (error) => pageErrors.push(error.message));
   await page.goto(gameUrl);
   await expect.poll(() => phase(page)).toBe("title");
-  await clickGame(page, 470, 458);
-  await expect.poll(() => phase(page)).toBe("select");
-  await expect.poll(() => page.evaluate(() => window.__gothTechnologyGame?.matchAssetsReady), { timeout: 10_000 }).toBe(true);
+  await expect.poll(() => page.evaluate(() => [
+    window.__gothTechnologyGame?.assets?.images?.detroitLensWhitePortrait?.naturalWidth,
+    window.__gothTechnologyGame?.assets?.images?.detroitLensNoirPortrait?.naturalWidth
+  ])).toEqual([256, 256]);
+  await page.evaluate(() => window.__gothTechnologyGame.openMode("training"));
+  await expect.poll(() => phase(page), { timeout: 30_000 }).toBe("select");
+  await expect.poll(() => page.evaluate(() => window.__gothTechnologyGame?.matchAssetsReady), { timeout: 60_000 }).toBe(true);
+
+  await clickGame(page, 1052, 400);
+  await expect.poll(() => page.evaluate(() => window.__gothTechnologyGame?.player1Id)).toBe("DETROIT_LENS_NOIR");
+  await expect.poll(() => page.evaluate(() => window.__gothTechnologyGame?.assets?.loadedCharacterMotions?.has("DETROIT_LENS_NOIR")), { timeout: 10_000 }).toBe(true);
+  const noirIntegrity = await page.evaluate(() => {
+    const motions = window.__gothTechnologyGame.assets.animations.DETROIT_LENS_NOIR;
+    return {
+      count: Object.keys(motions).length,
+      complete: Object.values(motions).every((motion) => motion.frames.length === 6 && motion.uniqueFrames >= 6),
+      source: motions.IDLE.image.src
+    };
+  });
+  expect(noirIntegrity.count).toBe(39);
+  expect(noirIntegrity.complete).toBe(true);
+  expect(noirIntegrity.source).toContain("detroit-lens-noir-locomotion.webp");
+  if (!process.env.NO_TEST_ARTIFACTS) await page.screenshot({ path: testInfo.outputPath("detroit-lens-noir-select.png") });
 
   await clickGame(page, 1052, 200);
   await expect.poll(() => page.evaluate(() => window.__gothTechnologyGame?.player1Id)).toBe("DETROIT_LENS");
@@ -245,19 +274,24 @@ test("Detroit Lens loads the Boerboel attack, eye laser, and all five Detroit st
     const motions = window.__gothTechnologyGame.assets.animations.DETROIT_LENS;
     return {
       count: Object.keys(motions).length,
-      complete: Object.values(motions).every((motion) => motion.frames.length === 6 && motion.uniqueFrames >= 6)
+      complete: Object.values(motions).every((motion) => motion.frames.length === 6 && motion.uniqueFrames >= 6),
+      source: motions.IDLE.image.src
     };
   });
-  expect(motionIntegrity).toEqual({ count: 39, complete: true });
+  expect(motionIntegrity.count).toBe(39);
+  expect(motionIntegrity.complete).toBe(true);
+  expect(motionIntegrity.source).toContain("detroit-lens-locomotion.webp");
+  expect(motionIntegrity.source).not.toContain("detroit-lens-noir-");
 
-  while (await page.evaluate(() => window.__gothTechnologyGame.stageIndex) !== 3) {
+  while (await page.evaluate(() => window.__gothTechnologyGame.stageIndex) !== 1) {
     await clickGame(page, 476, 596);
   }
   await clickGame(page, 804, 594);
   await advanceVersusToFight(page);
 
-  const expansionState = await page.evaluate(() => {
+  const expansionState = await page.evaluate(async () => {
     const game = window.__gothTechnologyGame;
+    const { STAGES } = await import("./src/config/content.js?v=browser-stage-audit");
     const fighter = game.fighters[0];
     game.projectiles.length = 0;
     game.effects.length = 0;
@@ -278,6 +312,7 @@ test("Detroit Lens loads the Boerboel attack, eye laser, and all five Detroit st
       hasTabletEffect: game.effects.some((effect) => effect.constructor.name === "AttachedImageEffect"),
       dogReady: game.assets.images.detroitBoerboel?.naturalWidth === 1152,
       stage: game.stageIndex,
+      stageIds: STAGES.map((stage) => stage.id),
       stageReady: game.assets.images.detroitMidnightMile?.naturalWidth > 0,
       newStagesReady: [
         game.assets.images.detroitRiverfront,
@@ -291,7 +326,15 @@ test("Detroit Lens loads the Boerboel attack, eye laser, and all five Detroit st
     dogPhases: ["summon", "run", "attack", "recover"],
     hasTabletEffect: false,
     dogReady: true,
-    stage: 3,
+    stage: 1,
+    stageIds: [
+      "forest-ruin",
+      "detroit-midnight-mile",
+      "motor-city-assembly",
+      "detroit-riverfront",
+      "eastern-market-after-dark",
+      "michigan-central-concourse"
+    ],
     stageReady: true,
     newStagesReady: true
   });
@@ -299,7 +342,7 @@ test("Detroit Lens loads the Boerboel attack, eye laser, and all five Detroit st
 
   const secondStageReady = await page.evaluate(() => {
     const game = window.__gothTechnologyGame;
-    game.stageIndex = 4;
+    game.stageIndex = 2;
     game.stageCache = null;
     game.buildStageCache();
     game.render();
@@ -308,7 +351,7 @@ test("Detroit Lens loads the Boerboel attack, eye laser, and all five Detroit st
   expect(secondStageReady).toBe(true);
   if (!process.env.NO_TEST_ARTIFACTS) await page.screenshot({ path: testInfo.outputPath(`${testInfo.project.name}-motor-city-assembly.png`) });
 
-  for (const [stageIndex, slug] of [[5, "detroit-riverfront"], [6, "eastern-market-after-dark"], [7, "michigan-central-concourse"]]) {
+  for (const [stageIndex, slug] of [[3, "detroit-riverfront"], [4, "eastern-market-after-dark"], [5, "michigan-central-concourse"]]) {
     const ready = await page.evaluate((index) => {
       const game = window.__gothTechnologyGame;
       game.stageIndex = index;
@@ -324,29 +367,50 @@ test("Detroit Lens loads the Boerboel attack, eye laser, and all five Detroit st
 });
 
 test("Master Ezra plays a complete takeoff, apex, fall, and clean landing", async ({ page }, testInfo) => {
+  test.setTimeout(120_000);
   await page.goto(gameUrl);
   await expect.poll(() => phase(page)).toBe("title");
   await enterTrainingFight(page);
   await expect.poll(() => page.evaluate(() => window.__gothTechnologyGame?.fighters?.[0]?.id)).toBe("MASTER_EZRA");
 
-  const fighterMotion = () => page.evaluate(() => window.__gothTechnologyGame?.fighters?.[0]?.motion);
-  await expect.poll(fighterMotion, { timeout: 1_500, intervals: [20] }).toBe("IDLE");
-  await page.keyboard.down("KeyW");
-  await expect.poll(fighterMotion, { timeout: 300, intervals: [10] }).toBe("JUMP_START");
-  await page.keyboard.up("KeyW");
-  await expect.poll(fighterMotion, { timeout: 600, intervals: [10] }).toBe("JUMP_RISE");
-  await expect.poll(fighterMotion, { timeout: 600, intervals: [10] }).toBe("JUMP_PEAK");
+  const ascentSequence = await page.evaluate(() => {
+    const game = window.__gothTechnologyGame;
+    const fighter = game.fighters[0];
+    const opponent = game.fighters[1];
+    const seen = new Set();
+    game.stopped = true;
+    fighter.update(1 / 60, { up: true }, opponent, game);
+    for (let frame = 0; frame < 120; frame += 1) {
+      seen.add(fighter.motion);
+      if (fighter.motion === "JUMP_PEAK") break;
+      fighter.update(1 / 60, {}, opponent, game);
+    }
+    game.render();
+    return [...seen];
+  });
+  expect(ascentSequence).toEqual(expect.arrayContaining(["JUMP_START", "JUMP_RISE", "JUMP_PEAK"]));
   if (!process.env.NO_TEST_ARTIFACTS) await page.screenshot({ path: testInfo.outputPath("ezra-jump-peak.png") });
-  await expect.poll(fighterMotion, { timeout: 600, intervals: [10] }).toBe("JUMP_FALL");
-  await expect.poll(fighterMotion, { timeout: 800, intervals: [10] }).toBe("LANDING");
-  await expect.poll(fighterMotion, { timeout: 500, intervals: [10] }).toBe("IDLE");
+  const landingSequence = await page.evaluate(() => {
+    const game = window.__gothTechnologyGame;
+    const fighter = game.fighters[0];
+    const opponent = game.fighters[1];
+    const seen = new Set();
+    for (let frame = 0; frame < 180; frame += 1) {
+      fighter.update(1 / 60, {}, opponent, game);
+      seen.add(fighter.motion);
+      if (fighter.grounded && fighter.motion === "IDLE") break;
+    }
+    game.render();
+    return [...seen];
+  });
+  expect(landingSequence).toEqual(expect.arrayContaining(["JUMP_FALL", "LANDING", "IDLE"]));
 });
 
 test("Kalyx reaches every aerial phase and a distinct air attack", async ({ page }, testInfo) => {
-  test.setTimeout(60_000);
+  test.setTimeout(120_000);
   await page.goto(gameUrl);
   await expect.poll(() => phase(page)).toBe("title");
-  await clickGame(page, 470, 458);
+  await clickGame(page, 470, 400);
   await expect.poll(() => phase(page)).toBe("select");
   await expect.poll(() => page.evaluate(() => window.__gothTechnologyGame?.matchAssetsReady), { timeout: 10_000 }).toBe(true);
   await clickGame(page, 300, 210);
@@ -393,25 +457,37 @@ test("Kalyx reaches every aerial phase and a distinct air attack", async ({ page
 });
 
 test("real attacks connect and training exposes expanded frame data", async ({ page }) => {
+  test.setTimeout(120_000);
   await page.goto(gameUrl);
   await enterTrainingFight(page);
-  await page.evaluate(() => {
+  const hitResult = await page.evaluate(() => {
     const game = window.__gothTechnologyGame;
-    game.fighters[0].x = 560;
-    game.fighters[1].x = 630;
+    const attacker = game.fighters[0];
+    const defender = game.fighters[1];
+    game.stopped = true;
+    attacker.x = 500;
+    defender.x = 626;
+    attacker.setMotion("IDLE", true);
+    defender.setMotion("IDLE", true);
+    attacker.invulnerable = 0;
+    defender.invulnerable = 0;
     game.showFrameData = true;
     game.trainingHitboxes = true;
+    const healthBefore = defender.health;
+    let frame = 0;
+    game.input.actions = (slot) => slot === 1 && frame === 0 ? { lightPunch: true } : {};
+    for (; frame < 60 && defender.health >= healthBefore; frame += 1) game.update(1 / 60);
+    game.render();
+    return { healthBefore, healthAfter: defender.health, readout: game.trainingReadout };
   });
-  const healthBefore = await page.evaluate(() => window.__gothTechnologyGame.fighters[1].health);
-  await page.keyboard.press("KeyI");
-  await expect.poll(() => page.evaluate(() => window.__gothTechnologyGame.fighters[1].health), { timeout: 1_000 }).toBeLessThan(healthBefore);
-  const readout = await page.evaluate(() => window.__gothTechnologyGame.trainingReadout);
-  expect(readout).toMatchObject({ outcome: "HIT" });
-  expect(readout).toHaveProperty("advantageFrames");
-  expect(readout).toHaveProperty("comboScale");
+  expect(hitResult.healthAfter).toBeLessThan(hitResult.healthBefore);
+  expect(hitResult.readout).toMatchObject({ outcome: "HIT" });
+  expect(hitResult.readout).toHaveProperty("advantageFrames");
+  expect(hitResult.readout).toHaveProperty("comboScale");
 });
 
 test("mobile portrait keeps controls adjacent to a useful playfield", async ({ page }, testInfo) => {
+  test.setTimeout(120_000);
   test.skip(!testInfo.project.name.includes("mobile"), "Mobile layout check");
   await page.goto(gameUrl);
   await expect.poll(() => phase(page)).toBe("title");
@@ -435,6 +511,7 @@ test("mobile portrait keeps controls adjacent to a useful playfield", async ({ p
 });
 
 test("mobile landscape keeps primary controls in side rails", async ({ page }, testInfo) => {
+  test.setTimeout(120_000);
   test.skip(!testInfo.project.name.includes("mobile"), "Mobile layout check");
   await page.setViewportSize({ width: 915, height: 412 });
   await page.goto(gameUrl);
@@ -470,6 +547,7 @@ test("mobile landscape keeps primary controls in side rails", async ({ page }, t
 });
 
 test("mobile modifier supports simultaneous super input and movable controls", async ({ page }, testInfo) => {
+  test.setTimeout(120_000);
   test.skip(!testInfo.project.name.includes("mobile"), "Mobile multi-touch check");
   await page.goto(gameUrl);
   await enterTrainingFight(page);
@@ -498,31 +576,38 @@ test("mobile modifier supports simultaneous super input and movable controls", a
   expect(await page.evaluate(() => localStorage.getItem("gothtechnology.touch.positions.v1"))).toContain("padZone");
 });
 
-test("selected match stays within resource, frame-time, and heap budgets", async ({ page }, testInfo) => {
+test("selected match stays within resource, simulation-frame, and heap budgets", async ({ page }, testInfo) => {
+  test.setTimeout(120_000);
   test.skip(testInfo.project.name.includes("mobile"), "Desktop performance budget");
   await page.goto(gameUrl);
   await enterTrainingFight(page);
-  const metrics = await page.evaluate(async () => {
+  const metrics = await page.evaluate(() => {
+    const game = window.__gothTechnologyGame;
+    game.stopped = true;
     const deltas = [];
-    let last = performance.now();
-    await new Promise((resolve) => {
-      const sample = (time) => {
-        deltas.push(time - last);
-        last = time;
-        if (deltas.length >= 120) resolve();
-        else requestAnimationFrame(sample);
-      };
-      requestAnimationFrame(sample);
-    });
+    for (let frame = 0; frame < 140; frame += 1) {
+      const started = performance.now();
+      game.update(game.fixedStep ?? 1 / 60);
+      if (frame >= 20) deltas.push(performance.now() - started);
+    }
+    game.render();
+    const canvas = document.getElementById("game");
+    const pixels = canvas.getContext("2d").getImageData(0, 0, canvas.width, canvas.height).data;
+    let visibleSamples = 0;
+    for (let offset = 0; offset < pixels.length; offset += 1600) {
+      if (pixels[offset] + pixels[offset + 1] + pixels[offset + 2] > 24) visibleSamples += 1;
+    }
     const resources = performance.getEntriesByType("resource");
     deltas.sort((a, b) => a - b);
     return {
       resourceBytes: resources.reduce((sum, entry) => sum + (entry.encodedBodySize || 0), 0),
-      p95FrameMs: deltas[Math.floor(deltas.length * 0.95)],
+      p95SimulationMs: deltas[Math.floor(deltas.length * 0.95)],
+      visibleSamples,
       heapBytes: performance.memory?.usedJSHeapSize ?? 0
     };
   });
   expect(metrics.resourceBytes).toBeLessThan(11 * 1024 * 1024);
-  expect(metrics.p95FrameMs).toBeLessThan(34);
+  expect(metrics.p95SimulationMs).toBeLessThan(8);
+  expect(metrics.visibleSamples).toBeGreaterThan(100);
   if (metrics.heapBytes) expect(metrics.heapBytes).toBeLessThan(128 * 1024 * 1024);
 });

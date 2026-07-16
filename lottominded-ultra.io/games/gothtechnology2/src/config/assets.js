@@ -1,6 +1,6 @@
 export const PACK_ROOT = "assets/GOTHTECHNOLOGY_EXPANDED_SPRITE_PACK_V2";
 export const LOCAL_ROOT = "assets";
-export const MOTION_ASSET_VERSION = "game-select-title12-boerboel-detroit";
+export const MOTION_ASSET_VERSION = "roster-cleanup15-detroit-costume-duo";
 
 export const ASSET_URLS = {
   manifest: `${LOCAL_ROOT}/motion-atlases/motion-atlas-manifest.json?v=${MOTION_ASSET_VERSION}`,
@@ -9,6 +9,10 @@ export const ASSET_URLS = {
   gameTitles: {
     gothtechnology: `${LOCAL_ROOT}/user-title/gothtechnology-cover-start-bg.webp?v=${MOTION_ASSET_VERSION}`,
     robotRahbe: `${LOCAL_ROOT}/user-title/robot-rahbe-title-card.webp?v=${MOTION_ASSET_VERSION}`
+  },
+  rosterPortraits: {
+    detroitLensWhite: `${LOCAL_ROOT}/user-roster/detroit-lens-white-idle.webp?v=${MOTION_ASSET_VERSION}`,
+    detroitLensNoir: `${LOCAL_ROOT}/user-roster/detroit-lens-noir-idle.webp?v=${MOTION_ASSET_VERSION}`
   },
   background: `${LOCAL_ROOT}/user-stage/forest-fight-background.jpg`,
   stages: {
@@ -85,6 +89,8 @@ export const MOTION_PLAYBACK = {
   }
 };
 
+MOTION_PLAYBACK.DETROIT_LENS_NOIR = MOTION_PLAYBACK.DETROIT_LENS;
+
 export const FIGHTERS = {
   KALYX: {
     id: "KALYX",
@@ -92,8 +98,9 @@ export const FIGHTERS = {
     title: "Shadow Rushdown",
     manifestKey: "KALYX",
     spriteFacing: 1,
-    palette: "#f0a23b",
-    accent: "#ffcf67",
+    palette: "#c51f35",
+    accent: "#ff5b68",
+    costumePalette: "black-crimson",
     scale: 1.34,
     stableScale: 1.34,
     archetype: "rushdown",
@@ -379,8 +386,10 @@ FIGHTERS.DETROIT_LENS = {
   title: "Motor City Guardian",
   manifestKey: "DETROIT_LENS",
   spriteFacing: 1,
-  palette: "#e7c36a",
+  palette: "#f4f2e9",
   accent: "#df4d4d",
+  costumePalette: "white-black",
+  rosterPortraitKey: "detroitLensWhitePortrait",
   scale: 1.31,
   stableScale: 1.31,
   archetype: "precision",
@@ -457,6 +466,18 @@ FIGHTERS.DETROIT_LENS = {
   assistNames: ["FLASH DRONE", "FRAME GUARD"],
   superName: "Red-Eye Exposure",
   specialName: "Boerboel Rush"
+};
+
+FIGHTERS.DETROIT_LENS_NOIR = {
+  ...FIGHTERS.DETROIT_LENS,
+  id: "DETROIT_LENS_NOIR",
+  name: "DETROIT LENS NOIR",
+  title: "Midnight Guardian",
+  manifestKey: "DETROIT_LENS_NOIR",
+  palette: "#9ca3ad",
+  accent: "#df4d4d",
+  costumePalette: "black-black",
+  rosterPortraitKey: "detroitLensNoirPortrait"
 };
 
 FIGHTERS.KALYX_ECLIPSE = {

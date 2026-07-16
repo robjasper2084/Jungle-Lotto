@@ -1,7 +1,7 @@
 import { CANVAS_HEIGHT, CANVAS_WIDTH, COLORS, ROUND_SECONDS } from "../config/constants.js";
-import { FIGHTERS } from "../config/assets.js?v=game-select-title12-boerboel-detroit";
-import { CHALLENGES, GAME_MODES, ROSTER_CARD_LAYOUT, ROSTER_IDS, STAGES } from "../config/content.js?v=game-select-title12-boerboel-detroit";
-import { drawSpriteFrame } from "../engine/assets.js?v=game-select-title12-boerboel-detroit";
+import { FIGHTERS } from "../config/assets.js?v=roster-cleanup15-detroit-costume-duo";
+import { GAME_MODES, ROSTER_CARD_LAYOUT, ROSTER_IDS, STAGES } from "../config/content.js?v=roster-cleanup15-detroit-costume-duo";
+import { drawSpriteFrame } from "../engine/assets.js?v=roster-cleanup15-detroit-costume-duo";
 
 const panel = (ctx, x, y, w, h, stroke = COLORS.gold) => {
   ctx.save();
@@ -129,12 +129,6 @@ export const drawFightHud = (ctx, game) => {
     : (game.cpuEnabled ? `CPU ${game.cpuDifficulty.toUpperCase()} ${p2.config.name}` : "LOCAL 2P");
   const mode = `${GAME_MODES[game.gameMode]?.label || "VERSUS"} ${opponentMode} ${game.debug ? "DEBUG BOXES" : ""}`;
   ctx.fillText(mode, 640, 139);
-  if (game.gameMode === "challenge") {
-    const challenge = CHALLENGES[game.challengeIndex];
-    ctx.fillStyle = COLORS.goldBright;
-    ctx.font = "900 14px system-ui";
-    ctx.fillText(`${challenge.name}: ${challenge.description}  ${Math.min(game.challengeProgress, challenge.target)}/${challenge.target}`, 640, 182);
-  }
   if (game.training) {
     panel(ctx, 386, game.showFrameData ? 548 : 612, 508, game.showFrameData ? 148 : 72, COLORS.blue);
     ctx.fillStyle = COLORS.white;
@@ -194,17 +188,15 @@ export const drawTitle = (ctx, game) => {
   ctx.fillText(`${leftName} VS ${rightName}`, CANVAS_WIDTH / 2, 292);
   drawMenuButton(ctx, 330, 318, 292, 48, "VERSUS");
   drawMenuButton(ctx, 658, 318, 292, 48, "ARCADE");
-  drawMenuButton(ctx, 330, 376, 292, 48, "SURVIVAL");
-  drawMenuButton(ctx, 658, 376, 292, 48, "CHALLENGE");
-  drawMenuButton(ctx, 330, 434, 292, 48, "TRAINING");
-  drawMenuButton(ctx, 658, 434, 292, 48, "REPLAY");
-  drawMenuButton(ctx, 330, 492, 292, 48, "GAME SELECT");
-  drawMenuButton(ctx, 658, 492, 292, 48, "SETTINGS");
+  drawMenuButton(ctx, 330, 376, 292, 48, "TRAINING");
+  drawMenuButton(ctx, 658, 376, 292, 48, "REPLAY");
+  drawMenuButton(ctx, 330, 434, 292, 48, "GAME SELECT");
+  drawMenuButton(ctx, 658, 434, 292, 48, "SETTINGS");
   ctx.fillStyle = "rgba(255, 246, 211, 0.55)";
   ctx.font = "700 13px system-ui";
   const cpuLabel = game.cpuEnabled ? `CPU ${game.cpuDifficulty.toUpperCase()}` : "LOCAL 2P";
-  ctx.fillText(`${cpuLabel}  /  ${game.stats.matches} MATCHES  /  ${game.stats.wins} WINS  /  SURVIVAL ${game.stats.survivalBest}`, CANVAS_WIDTH / 2, 578);
-  ctx.fillText("ENTER: VERSUS  /  C: CHANGE CPU  /  TWO GAMEPADS SUPPORTED", CANVAS_WIDTH / 2, 612);
+  ctx.fillText(`${cpuLabel}  /  ${game.stats.matches} MATCHES  /  ${game.stats.wins} WINS  /  ARCADE CLEARS ${game.stats.arcadeClears}`, CANVAS_WIDTH / 2, 536);
+  ctx.fillText("ENTER: VERSUS  /  C: CHANGE CPU  /  TWO GAMEPADS SUPPORTED", CANVAS_WIDTH / 2, 570);
   ctx.restore();
 };
 
@@ -566,6 +558,12 @@ const drawFighterPortrait = (ctx, fighter, x, y, scale) => {
       filter: fighter.config.renderFilter ?? "none"
     });
     return frame;
+  }
+  const portrait = fighter.assets.images[fighter.config.rosterPortraitKey];
+  if (portrait?.naturalWidth > 0) {
+    const width = portrait.naturalWidth * scale;
+    const height = portrait.naturalHeight * scale;
+    ctx.drawImage(portrait, x - width / 2, y - height, width, height);
   }
 };
 

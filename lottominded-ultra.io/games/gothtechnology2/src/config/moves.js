@@ -314,3 +314,5 @@ export const ASSISTS = {
     }
   }
 };
+
+ASSISTS.DETROIT_LENS_NOIR = ASSISTS.DETROIT_LENS;

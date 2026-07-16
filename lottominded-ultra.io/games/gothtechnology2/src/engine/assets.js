@@ -1,4 +1,4 @@
-import { ASSET_URLS, MOTION_ASSET_VERSION, MOTION_PLAYBACK } from "../config/assets.js?v=game-select-title12-boerboel-detroit";
+import { ASSET_URLS, MOTION_ASSET_VERSION, MOTION_PLAYBACK } from "../config/assets.js?v=roster-cleanup15-detroit-costume-duo";
 
 const imageCache = new Map();
 
@@ -48,6 +48,13 @@ export class AssetLoader {
   loadMenuAssets(onProgress = () => {}) {
     return this.loadGroup("menu", {
       logo: ASSET_URLS.logo,
+      detroitLensWhitePortrait: ASSET_URLS.rosterPortraits.detroitLensWhite,
+      detroitLensNoirPortrait: ASSET_URLS.rosterPortraits.detroitLensNoir
+    }, onProgress, { strict: false });
+  }
+
+  loadGameSelectAssets(onProgress = () => {}) {
+    return this.loadGroup("gameSelect", {
       gameTitleGothtechnology: ASSET_URLS.gameTitles.gothtechnology,
       gameTitleRobotRahbe: ASSET_URLS.gameTitles.robotRahbe
     }, onProgress, { strict: false });

@@ -1,18 +1,17 @@
-export const ROSTER_IDS = ["KALYX", "MASTER_EZRA", "DETROIT_LENS", "KALYX_ECLIPSE", "EZRA_ASCENDANT"];
+export const ROSTER_IDS = ["KALYX", "MASTER_EZRA", "DETROIT_LENS", "KALYX_ECLIPSE", "EZRA_ASCENDANT", "DETROIT_LENS_NOIR"];
 
 export const ROSTER_CARD_LAYOUT = [
   { x: 44, y: 108, w: 368, h: 184 },
   { x: 456, y: 108, w: 368, h: 184 },
   { x: 868, y: 108, w: 368, h: 184 },
-  { x: 250, y: 310, w: 368, h: 184 },
-  { x: 662, y: 310, w: 368, h: 184 }
+  { x: 44, y: 310, w: 368, h: 184 },
+  { x: 456, y: 310, w: 368, h: 184 },
+  { x: 868, y: 310, w: 368, h: 184 }
 ];
 
 export const GAME_MODES = {
   versus: { label: "VERSUS", roundsToWin: 2 },
   arcade: { label: "ARCADE", roundsToWin: 2 },
-  survival: { label: "SURVIVAL", roundsToWin: 1 },
-  challenge: { label: "CHALLENGE", roundsToWin: 1 },
   training: { label: "TRAINING", roundsToWin: 0 },
   replay: { label: "REPLAY", roundsToWin: 2 }
 };
@@ -26,24 +25,6 @@ export const STAGES = [
     grade: ["rgba(0,0,0,0.72)", "rgba(0,0,0,0.16)", "rgba(0,0,0,0.78)"],
     fogAlpha: 0.2,
     emberAlpha: 0.18
-  },
-  {
-    id: "ember-gate",
-    name: "EMBER GATE",
-    backgroundKey: "background",
-    legacyLayers: true,
-    grade: ["rgba(34,8,2,0.62)", "rgba(84,26,5,0.12)", "rgba(18,3,0,0.8)"],
-    fogAlpha: 0.1,
-    emberAlpha: 0.38
-  },
-  {
-    id: "moon-shrine",
-    name: "MOON SHRINE",
-    backgroundKey: "background",
-    legacyLayers: true,
-    grade: ["rgba(2,12,30,0.58)", "rgba(18,52,76,0.12)", "rgba(1,5,18,0.82)"],
-    fogAlpha: 0.34,
-    emberAlpha: 0.08
   },
   {
     id: "detroit-midnight-mile",
@@ -92,14 +73,7 @@ export const STAGES = [
   }
 ];
 
-export const ARCADE_LADDER = ["MASTER_EZRA", "KALYX_ECLIPSE", "DETROIT_LENS", "EZRA_ASCENDANT", "KALYX"];
-
-export const CHALLENGES = [
-  { id: "chain", name: "CHAIN REACTION", description: "LAND A 3-HIT COMBO", target: 3, event: "combo" },
-  { id: "guard", name: "PERFECT DISCIPLINE", description: "PERFECT BLOCK TWICE", target: 2, event: "perfectBlock" },
-  { id: "tech", name: "BREAK THE GRIP", description: "TECH A THROW", target: 1, event: "throwTech" },
-  { id: "super", name: "FINAL JUDGMENT", description: "LAND A SUPER", target: 1, event: "superHit" }
-];
+export const ARCADE_LADDER = ["MASTER_EZRA", "KALYX_ECLIPSE", "DETROIT_LENS", "DETROIT_LENS_NOIR", "EZRA_ASCENDANT", "KALYX"];
 
 const commonCommands = [
   { input: "BACK", name: "GUARD", detail: "Hold away. Add DOWN for low guard." },
@@ -163,6 +137,8 @@ export const COMMAND_LISTS = {
     ]
   }
 };
+
+COMMAND_LISTS.DETROIT_LENS_NOIR = COMMAND_LISTS.DETROIT_LENS;
 
 export const opponentFor = (playerId, offset = 0) => {
   const options = ROSTER_IDS.filter((id) => id !== playerId);
