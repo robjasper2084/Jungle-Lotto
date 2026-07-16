@@ -1,7 +1,7 @@
 import { CANVAS_HEIGHT, CANVAS_WIDTH, COLORS, ROUND_SECONDS } from "../config/constants.js";
-import { FIGHTERS } from "../config/assets.js?v=roster-cleanup16-four-fighters";
-import { GAME_MODES, ROSTER_CARD_LAYOUT, ROSTER_IDS, STAGES } from "../config/content.js?v=roster-cleanup16-four-fighters";
-import { drawSpriteFrame } from "../engine/assets.js?v=roster-cleanup16-four-fighters";
+import { FIGHTERS } from "../config/assets.js?v=future-hud17-four-fighters";
+import { GAME_MODES, ROSTER_CARD_LAYOUT, ROSTER_IDS, STAGES } from "../config/content.js?v=future-hud17-four-fighters";
+import { drawSpriteFrame } from "../engine/assets.js?v=future-hud17-four-fighters";
 
 const panel = (ctx, x, y, w, h, stroke = COLORS.gold) => {
   ctx.save();
@@ -14,6 +14,104 @@ const panel = (ctx, x, y, w, h, stroke = COLORS.gold) => {
   ctx.roundRect(x, y, w, h, 8);
   ctx.fill();
   ctx.stroke();
+  ctx.restore();
+};
+
+const FUTURE = {
+  cyan: "#67e8ff",
+  red: "#ff405d",
+  amber: "#ffc857",
+  white: "#eefaff",
+  muted: "#78909c",
+  line: "rgba(103, 232, 255, 0.18)",
+  panel: "rgba(4, 10, 15, 0.94)"
+};
+
+const HUD_FONT = '"Arial Narrow", "Segoe UI", system-ui, sans-serif';
+const HUD_MONO = 'Consolas, "Courier New", monospace';
+
+const angularPath = (ctx, x, y, w, h, cut = 14) => {
+  ctx.beginPath();
+  ctx.moveTo(x + cut, y);
+  ctx.lineTo(x + w - cut, y);
+  ctx.lineTo(x + w, y + cut);
+  ctx.lineTo(x + w, y + h - cut);
+  ctx.lineTo(x + w - cut, y + h);
+  ctx.lineTo(x + cut, y + h);
+  ctx.lineTo(x, y + h - cut);
+  ctx.lineTo(x, y + cut);
+  ctx.closePath();
+};
+
+const drawAngularPanel = (ctx, x, y, w, h, fill, stroke, lineWidth = 1.5, cut = 14) => {
+  ctx.save();
+  angularPath(ctx, x, y, w, h, cut);
+  ctx.fillStyle = fill;
+  ctx.fill();
+  ctx.strokeStyle = stroke;
+  ctx.lineWidth = lineWidth;
+  ctx.stroke();
+  ctx.restore();
+};
+
+const drawFutureBackdrop = (ctx) => {
+  ctx.save();
+  ctx.fillStyle = "#020509";
+  ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+  const field = ctx.createLinearGradient(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+  field.addColorStop(0, "rgba(255, 64, 93, 0.1)");
+  field.addColorStop(0.36, "rgba(5, 12, 18, 0.18)");
+  field.addColorStop(0.68, "rgba(5, 12, 18, 0.18)");
+  field.addColorStop(1, "rgba(103, 232, 255, 0.1)");
+  ctx.fillStyle = field;
+  ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+  ctx.strokeStyle = FUTURE.line;
+  ctx.lineWidth = 1;
+  for (let x = 0; x <= CANVAS_WIDTH; x += 40) {
+    ctx.beginPath();
+    ctx.moveTo(x, 0);
+    ctx.lineTo(x, CANVAS_HEIGHT);
+    ctx.stroke();
+  }
+  for (let y = 0; y <= CANVAS_HEIGHT; y += 36) {
+    ctx.beginPath();
+    ctx.moveTo(0, y);
+    ctx.lineTo(CANVAS_WIDTH, y);
+    ctx.stroke();
+  }
+  ctx.fillStyle = "rgba(255,255,255,0.018)";
+  for (let y = 1; y < CANVAS_HEIGHT; y += 4) ctx.fillRect(0, y, CANVAS_WIDTH, 1);
+  ctx.fillStyle = FUTURE.red;
+  ctx.fillRect(0, 0, 4, CANVAS_HEIGHT);
+  ctx.fillStyle = FUTURE.cyan;
+  ctx.fillRect(CANVAS_WIDTH - 4, 0, 4, CANVAS_HEIGHT);
+  ctx.restore();
+};
+
+const drawFutureButton = (ctx, x, y, w, h, kicker, label, tone) => {
+  drawAngularPanel(ctx, x, y, w, h, "rgba(3, 9, 13, 0.96)", tone, 2, 12);
+  ctx.save();
+  ctx.fillStyle = tone;
+  ctx.fillRect(x + 16, y + 13, 4, h - 26);
+  ctx.textAlign = "left";
+  ctx.fillStyle = FUTURE.muted;
+  ctx.font = `800 10px ${HUD_MONO}`;
+  ctx.fillText(kicker, x + 34, y + 21);
+  ctx.fillStyle = FUTURE.white;
+  let fontSize = 20;
+  ctx.font = `900 ${fontSize}px ${HUD_FONT}`;
+  while (fontSize > 13 && ctx.measureText(label).width > w - 58) {
+    fontSize -= 1;
+    ctx.font = `900 ${fontSize}px ${HUD_FONT}`;
+  }
+  ctx.fillText(label, x + 34, y + 46);
+  ctx.fillStyle = tone;
+  ctx.beginPath();
+  ctx.moveTo(x + w - 28, y + h / 2 - 8);
+  ctx.lineTo(x + w - 18, y + h / 2);
+  ctx.lineTo(x + w - 28, y + h / 2 + 8);
+  ctx.closePath();
+  ctx.fill();
   ctx.restore();
 };
 
@@ -373,36 +471,58 @@ export const drawLoading = (ctx, progress, backdrop = null) => {
 };
 
 export const drawCharacterSelect = (ctx, game) => {
-  drawBackdropGrade(ctx);
+  drawFutureBackdrop(ctx);
   ctx.save();
   ctx.textAlign = "center";
-  ctx.fillStyle = COLORS.white;
-  ctx.font = "900 42px Georgia";
-  ctx.fillText(`${GAME_MODES[game.gameMode]?.label || "VERSUS"} SELECT`, 640, 74);
+  ctx.fillStyle = "rgba(3, 8, 12, 0.92)";
+  ctx.fillRect(0, 0, CANVAS_WIDTH, 122);
+  ctx.fillStyle = FUTURE.red;
+  ctx.fillRect(32, 40, 292, 2);
+  ctx.fillStyle = FUTURE.cyan;
+  ctx.fillRect(956, 40, 292, 2);
+  ctx.fillStyle = FUTURE.muted;
+  ctx.font = `800 11px ${HUD_MONO}`;
+  ctx.textAlign = "left";
+  ctx.fillText("LM-84 // COMBAT NETWORK", 32, 28);
+  ctx.textAlign = "right";
+  ctx.fillText(`ARENA ${String(game.stageIndex + 1).padStart(2, "0")} // DETROIT GRID`, 1248, 28);
+  ctx.textAlign = "center";
+  ctx.fillStyle = FUTURE.white;
+  ctx.font = `900 38px ${HUD_FONT}`;
+  ctx.fillText("FIGHTER LINK", 640, 58);
+  ctx.fillStyle = FUTURE.cyan;
+  ctx.font = `800 13px ${HUD_MONO}`;
+  ctx.fillText(`${GAME_MODES[game.gameMode]?.label || "VERSUS"} PROTOCOL // SELECT COMBATANT`, 640, 88);
+  ctx.fillStyle = "rgba(103, 232, 255, 0.55)";
+  ctx.fillRect(512, 105, 256, 2);
   for (const [index, layout] of ROSTER_CARD_LAYOUT.entries()) {
     const characterId = ROSTER_IDS[index];
     const config = FIGHTERS[characterId];
     const { x, y, w, h } = layout;
     const color = config.palette;
     const preview = { assets: game.assets, config };
-    drawCharacterCard(ctx, x, y, w, h, preview, config.name, config.title, game.player1Id === characterId, color);
-    if (game.player1Id === characterId) drawSelectBadge(ctx, x + 48, y + 38, "P1");
-    if (game.player2Id === characterId) drawSelectBadge(ctx, x + w - 50, y + 38, game.training ? "DUMMY" : (game.cpuEnabled ? "CPU" : "P2"));
+    const selected = game.player1Id === characterId;
+    const opponent = game.player2Id === characterId;
+    drawCharacterCard(ctx, x, y, w, h, preview, config.name, config.title, selected, opponent, color, index);
+    if (selected) drawSelectBadge(ctx, x + 48, y + 36, "P1", FUTURE.cyan);
+    if (opponent) drawSelectBadge(ctx, x + w - 52, y + 36, game.training ? "DUMMY" : (game.cpuEnabled ? "CPU" : "P2"), FUTURE.red);
   }
-  drawMenuButton(ctx, 330, 570, 292, 52, STAGES[game.stageIndex].name);
-  drawMenuButton(ctx, 658, 570, 292, 52, "FIGHT");
-  ctx.fillStyle = "rgba(255, 246, 211, 0.58)";
-  ctx.font = "700 13px system-ui";
-  ctx.fillText("CLICK A CARD OR PRESS LEFT / RIGHT, THEN ENTER", 640, 650);
+  drawFutureButton(ctx, 330, 568, 292, 64, "ARENA SELECT", STAGES[game.stageIndex].name, FUTURE.amber);
+  drawFutureButton(ctx, 658, 568, 292, 64, "MATCH COMMAND", "ENGAGE", FUTURE.red);
+  ctx.fillStyle = FUTURE.muted;
+  ctx.font = `700 11px ${HUD_MONO}`;
+  ctx.textAlign = "center";
+  ctx.fillText("CLICK FIGHTER // LEFT-RIGHT TO CYCLE // ENTER TO DEPLOY", 640, 658);
   if (game.motionLoadError || game.fightLoadError) {
-    ctx.fillStyle = "#ff8e78";
-    ctx.fillText("ASSET LOAD FAILED / SELECT VERSUS TO RETRY", 640, 676);
+    ctx.fillStyle = FUTURE.red;
+    ctx.fillText("LINK FAILURE // SELECT VERSUS TO RETRY", 640, 687);
   } else if (!game.matchAssetsReady) {
     const progress = Math.round(((game.motionLoadingProgress + game.fightLoadingProgress) / 2) * 100);
-    ctx.fillStyle = COLORS.blue;
-    ctx.fillText(`PREPARING FIGHTERS AND ARENA ${progress}%`, 640, 676);
+    ctx.fillStyle = FUTURE.cyan;
+    ctx.fillText(`SYNCING COMBAT ASSETS // ${progress}%`, 640, 687);
   } else {
-    ctx.fillText(game.training ? "TRAINING DUMMY STAND" : (game.cpuEnabled ? `${FIGHTERS[game.player2Id].name} CPU ${game.cpuDifficulty.toUpperCase()}` : "LOCAL 2P: KEYBOARD OR TWO GAMEPADS"), 640, 676);
+    ctx.fillStyle = FUTURE.white;
+    ctx.fillText(game.training ? "TRAINING TARGET ONLINE" : (game.cpuEnabled ? `HOSTILE LINK // ${FIGHTERS[game.player2Id].name} // ${game.cpuDifficulty.toUpperCase()}` : "LOCAL DUEL LINK // TWO CONTROLLERS READY"), 640, 687);
   }
   ctx.restore();
 };
@@ -432,20 +552,14 @@ export const drawVersus = (ctx, game) => {
   ctx.restore();
 };
 
-const drawSelectBadge = (ctx, x, y, label) => {
+const drawSelectBadge = (ctx, x, y, label, tone = FUTURE.cyan) => {
   ctx.save();
-  const width = label.length > 3 ? 94 : 64;
-  ctx.fillStyle = "rgba(255, 214, 109, 0.96)";
-  ctx.strokeStyle = "rgba(5, 4, 3, 0.92)";
-  ctx.lineWidth = 3;
-  ctx.beginPath();
-  ctx.roundRect(x - width / 2, y - 22, width, 34, 8);
-  ctx.fill();
-  ctx.stroke();
-  ctx.fillStyle = "#050403";
+  const width = label.length > 3 ? 88 : 58;
+  drawAngularPanel(ctx, x - width / 2, y - 20, width, 30, "rgba(2, 7, 11, 0.98)", tone, 2, 7);
+  ctx.fillStyle = tone;
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  ctx.font = "900 18px system-ui";
+  ctx.font = `900 13px ${HUD_MONO}`;
   ctx.fillText(label, x, y - 5);
   ctx.restore();
 };
@@ -515,35 +629,54 @@ export const drawMenuButton = (ctx, x, y, w, h, label) => {
   ctx.restore();
 };
 
-const drawCharacterCard = (ctx, x, y, w, h, fighter, name, subtitle, selected, color) => {
-  panel(ctx, x, y, w, h, color);
+const drawCharacterCard = (ctx, x, y, w, h, fighter, name, subtitle, selected, opponent, color, index) => {
+  const tone = selected ? FUTURE.cyan : (opponent ? FUTURE.red : "rgba(126, 160, 174, 0.58)");
+  drawAngularPanel(ctx, x, y, w, h, FUTURE.panel, tone, selected || opponent ? 2.5 : 1.25, 16);
   ctx.save();
-  ctx.beginPath();
-  ctx.roundRect(x + 14, y + 14, w - 28, h - 82, 6);
+  angularPath(ctx, x + 8, y + 8, w - 16, h - 100, 11);
   ctx.clip();
-  const grade = ctx.createLinearGradient(x, y, x + w, y + h);
-  grade.addColorStop(0, "#090807");
-  grade.addColorStop(0.58, selected ? "#211b10" : "#11100e");
-  grade.addColorStop(1, "#030303");
+  const grade = ctx.createLinearGradient(x, y, x, y + h);
+  grade.addColorStop(0, selected ? "#0b2029" : (opponent ? "#210b12" : "#081017"));
+  grade.addColorStop(0.56, "#060b10");
+  grade.addColorStop(1, "#020407");
   ctx.fillStyle = grade;
-  ctx.fillRect(x + 14, y + 14, w - 28, h - 96);
-  if (fighter) drawFighterPortrait(ctx, fighter, x + w / 2 + 92, y + h - 74, 0.5);
-  if (selected) {
-    ctx.strokeStyle = color;
-    ctx.lineWidth = 4;
-    ctx.strokeRect(x + 20, y + 20, w - 40, h - 114);
+  ctx.fillRect(x + 8, y + 8, w - 16, h - 100);
+  ctx.strokeStyle = "rgba(103, 232, 255, 0.1)";
+  ctx.lineWidth = 1;
+  for (let gx = x + 24; gx < x + w - 12; gx += 32) {
+    ctx.beginPath();
+    ctx.moveTo(gx, y + 8);
+    ctx.lineTo(gx, y + h - 92);
+    ctx.stroke();
   }
+  ctx.fillStyle = "rgba(255,255,255,0.025)";
+  for (let sy = y + 12; sy < y + h - 94; sy += 6) ctx.fillRect(x + 8, sy, w - 16, 1);
+  ctx.fillStyle = selected ? "rgba(103, 232, 255, 0.12)" : (opponent ? "rgba(255, 64, 93, 0.1)" : "rgba(255,255,255,0.035)");
+  ctx.fillRect(x + 8, y + h - 110, w - 16, 18);
+  if (fighter) drawFighterPortrait(ctx, fighter, x + w / 2, y + h - 92, 0.82);
   ctx.restore();
   ctx.save();
-  ctx.fillStyle = "rgba(0,0,0,0.72)";
-  ctx.fillRect(x + 14, y + h - 70, w - 28, 52);
-  ctx.fillStyle = COLORS.white;
+  ctx.fillStyle = "rgba(2, 6, 10, 0.98)";
+  ctx.fillRect(x + 1, y + h - 94, w - 2, 93);
+  ctx.fillStyle = tone;
+  ctx.fillRect(x + 18, y + h - 83, 4, 62);
   ctx.textAlign = "left";
-  ctx.font = "900 22px Georgia";
-  ctx.fillText(name, x + 32, y + h - 43);
+  ctx.fillStyle = FUTURE.muted;
+  ctx.font = `800 10px ${HUD_MONO}`;
+  ctx.fillText(`FTR-${String(index + 1).padStart(2, "0")} // ${selected ? "LINKED" : (opponent ? "HOSTILE" : "STANDBY")}`, x + 34, y + h - 70);
+  ctx.fillStyle = FUTURE.white;
+  let nameSize = 22;
+  ctx.font = `900 ${nameSize}px ${HUD_FONT}`;
+  while (nameSize > 15 && ctx.measureText(name).width > w - 54) {
+    nameSize -= 1;
+    ctx.font = `900 ${nameSize}px ${HUD_FONT}`;
+  }
+  ctx.fillText(name, x + 34, y + h - 43);
   ctx.fillStyle = color;
-  ctx.font = "700 14px system-ui";
-  ctx.fillText(subtitle.toUpperCase(), x + 32, y + h - 23);
+  ctx.font = `800 11px ${HUD_MONO}`;
+  ctx.fillText(subtitle.toUpperCase(), x + 34, y + h - 22);
+  ctx.fillStyle = tone;
+  ctx.fillRect(x + w - 48, y + h - 34, 26, 3);
   ctx.restore();
 };
 

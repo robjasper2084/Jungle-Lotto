@@ -1,17 +1,17 @@
-import { ASSET_URLS, FIGHTERS } from "../config/assets.js?v=roster-cleanup16-four-fighters";
-import { ARCADE_LADDER, GAME_MODES, ROSTER_CARD_LAYOUT, ROSTER_IDS, STAGES, opponentFor } from "../config/content.js?v=roster-cleanup16-four-fighters";
-import { ASSISTS, ATTACKS } from "../config/moves.js?v=roster-cleanup16-four-fighters";
+import { ASSET_URLS, FIGHTERS } from "../config/assets.js?v=future-hud17-four-fighters";
+import { ARCADE_LADDER, GAME_MODES, ROSTER_CARD_LAYOUT, ROSTER_IDS, STAGES, opponentFor } from "../config/content.js?v=future-hud17-four-fighters";
+import { ASSISTS, ATTACKS } from "../config/moves.js?v=future-hud17-four-fighters";
 import { CANVAS_HEIGHT, CANVAS_WIDTH, COLORS, GROUND_Y, PHASE, ROUND_SECONDS, WORLD } from "../config/constants.js";
-import { AssetLoader } from "../engine/assets.js?v=roster-cleanup16-four-fighters";
-import { WebAudioBus } from "../engine/audio.js?v=roster-cleanup16-four-fighters";
-import { InputManager } from "../engine/input.js?v=roster-cleanup16-four-fighters";
+import { AssetLoader } from "../engine/assets.js?v=future-hud17-four-fighters";
+import { WebAudioBus } from "../engine/audio.js?v=future-hud17-four-fighters";
+import { InputManager } from "../engine/input.js?v=future-hud17-four-fighters";
 import { clamp, rectsOverlap } from "../engine/math.js";
-import { applyHit, resolveMelee } from "../gameplay/combat.js?v=roster-cleanup16-four-fighters";
-import { CpuController } from "../gameplay/cpu.js?v=roster-cleanup16-four-fighters";
-import { AttachedSpriteEffect, SpriteEffect } from "../gameplay/effects.js?v=roster-cleanup16-four-fighters";
-import { Fighter } from "../gameplay/fighter.js?v=roster-cleanup16-four-fighters";
-import { AssistStrike, BoerboelStrike, Projectile } from "../gameplay/projectiles.js?v=roster-cleanup16-four-fighters";
-import { applyRoundOutcomeMotions, resolveRoundOutcome } from "../gameplay/rounds.js?v=roster-cleanup16-four-fighters";
+import { applyHit, resolveMelee } from "../gameplay/combat.js?v=future-hud17-four-fighters";
+import { CpuController } from "../gameplay/cpu.js?v=future-hud17-four-fighters";
+import { AttachedSpriteEffect, SpriteEffect } from "../gameplay/effects.js?v=future-hud17-four-fighters";
+import { Fighter } from "../gameplay/fighter.js?v=future-hud17-four-fighters";
+import { AssistStrike, BoerboelStrike, Projectile } from "../gameplay/projectiles.js?v=future-hud17-four-fighters";
+import { applyRoundOutcomeMotions, resolveRoundOutcome } from "../gameplay/rounds.js?v=future-hud17-four-fighters";
 import {
   drawCharacterSelect,
   drawDiagnostics,
@@ -22,7 +22,7 @@ import {
   drawRoundMessage,
   drawTitle,
   drawVersus
-} from "../ui/hud.js?v=roster-cleanup16-four-fighters";
+} from "../ui/hud.js?v=future-hud17-four-fighters";
 
 const GAME_SELECT_ITEMS = [
   {

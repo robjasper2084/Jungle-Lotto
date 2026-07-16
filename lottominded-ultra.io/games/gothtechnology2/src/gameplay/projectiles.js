@@ -1,7 +1,7 @@
-import { drawSheetFrame } from "../engine/assets.js?v=roster-cleanup16-four-fighters";
+import { drawSheetFrame } from "../engine/assets.js?v=future-hud17-four-fighters";
 import { rectsOverlap } from "../engine/math.js";
 import { SpriteEffect } from "./effects.js";
-import { sliceAttackForHit } from "./hits.js?v=roster-cleanup16-four-fighters";
+import { sliceAttackForHit } from "./hits.js?v=future-hud17-four-fighters";
 
 const hexAlpha = (color, alpha) => {
   if (!color?.startsWith("#") || color.length !== 7) return color;

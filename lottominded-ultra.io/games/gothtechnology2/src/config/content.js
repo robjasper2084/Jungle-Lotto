@@ -1,10 +1,10 @@
 export const ROSTER_IDS = ["KALYX", "MASTER_EZRA", "DETROIT_LENS", "DETROIT_LENS_NOIR"];
 
 export const ROSTER_CARD_LAYOUT = [
-  { x: 236, y: 108, w: 368, h: 184 },
-  { x: 676, y: 108, w: 368, h: 184 },
-  { x: 236, y: 310, w: 368, h: 184 },
-  { x: 676, y: 310, w: 368, h: 184 }
+  { x: 32, y: 142, w: 288, h: 382 },
+  { x: 336, y: 142, w: 288, h: 382 },
+  { x: 640, y: 142, w: 288, h: 382 },
+  { x: 944, y: 142, w: 288, h: 382 }
 ];
 
 export const GAME_MODES = {

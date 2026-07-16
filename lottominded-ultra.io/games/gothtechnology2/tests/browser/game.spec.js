@@ -169,7 +169,7 @@ test("boots, reaches versus, fights, and pauses without page errors", async ({ p
   expect(spriteIntegrity.insufficientUnique).toEqual([]);
   expect(spriteIntegrity.splitFrames).toEqual([]);
   const unstableRenderedMotions = await page.evaluate(async () => {
-    const { drawSpriteFrame } = await import("./src/engine/assets.js?v=roster-cleanup16-four-fighters-test");
+    const { drawSpriteFrame } = await import("./src/engine/assets.js?v=future-hud17-four-fighters-test");
     const animations = window.__gothTechnologyGame.assets.animations;
     const checkedMotions = [
       "IDLE", "READY_STANCE", "WALK_FORWARD", "RUN_FORWARD", "DASH_FORWARD",
@@ -259,7 +259,7 @@ test("Detroit Lens loads white and Noir costumes, Boerboel, eye laser, and five 
   expect(rosterActions).not.toContain("Choose KALYX ECLIPSE");
   expect(rosterActions).not.toContain("Choose EZRA ASCENDANT");
 
-  await clickGame(page, 860, 400);
+  await clickGame(page, 1088, 330);
   await expect.poll(() => page.evaluate(() => window.__gothTechnologyGame?.player1Id)).toBe("DETROIT_LENS_NOIR");
   await expect.poll(() => page.evaluate(() => window.__gothTechnologyGame?.assets?.loadedCharacterMotions?.has("DETROIT_LENS_NOIR")), { timeout: 10_000 }).toBe(true);
   const noirIntegrity = await page.evaluate(() => {
@@ -275,7 +275,7 @@ test("Detroit Lens loads white and Noir costumes, Boerboel, eye laser, and five 
   expect(noirIntegrity.source).toContain("detroit-lens-noir-locomotion.webp");
   if (!process.env.NO_TEST_ARTIFACTS) await page.screenshot({ path: testInfo.outputPath("detroit-lens-noir-select.png") });
 
-  await clickGame(page, 420, 400);
+  await clickGame(page, 784, 330);
   await expect.poll(() => page.evaluate(() => window.__gothTechnologyGame?.player1Id)).toBe("DETROIT_LENS");
   await expect.poll(() => page.evaluate(() => window.__gothTechnologyGame?.assets?.loadedCharacterMotions?.has("DETROIT_LENS")), { timeout: 10_000 }).toBe(true);
 
