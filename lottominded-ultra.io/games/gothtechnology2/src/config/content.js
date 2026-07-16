@@ -1,12 +1,10 @@
-export const ROSTER_IDS = ["KALYX", "MASTER_EZRA", "DETROIT_LENS", "KALYX_ECLIPSE", "EZRA_ASCENDANT", "DETROIT_LENS_NOIR"];
+export const ROSTER_IDS = ["KALYX", "MASTER_EZRA", "DETROIT_LENS", "DETROIT_LENS_NOIR"];
 
 export const ROSTER_CARD_LAYOUT = [
-  { x: 44, y: 108, w: 368, h: 184 },
-  { x: 456, y: 108, w: 368, h: 184 },
-  { x: 868, y: 108, w: 368, h: 184 },
-  { x: 44, y: 310, w: 368, h: 184 },
-  { x: 456, y: 310, w: 368, h: 184 },
-  { x: 868, y: 310, w: 368, h: 184 }
+  { x: 236, y: 108, w: 368, h: 184 },
+  { x: 676, y: 108, w: 368, h: 184 },
+  { x: 236, y: 310, w: 368, h: 184 },
+  { x: 676, y: 310, w: 368, h: 184 }
 ];
 
 export const GAME_MODES = {
@@ -73,7 +71,7 @@ export const STAGES = [
   }
 ];
 
-export const ARCADE_LADDER = ["MASTER_EZRA", "KALYX_ECLIPSE", "DETROIT_LENS", "DETROIT_LENS_NOIR", "EZRA_ASCENDANT", "KALYX"];
+export const ARCADE_LADDER = ["MASTER_EZRA", "DETROIT_LENS", "DETROIT_LENS_NOIR", "KALYX"];
 
 const commonCommands = [
   { input: "BACK", name: "GUARD", detail: "Hold away. Add DOWN for low guard." },
@@ -114,26 +112,6 @@ export const COMMAND_LISTS = {
       { input: "DOWN + SP", name: "GUARDIAN INTERCEPT", detail: "Spend meter to call a close Boerboel counter." },
       { input: "SP", name: "BOERBOEL RUSH", detail: "Send the Boerboel sprinting into a leap-and-bite attack." },
       { input: "MAX / MOD+HP", name: "RED-EYE EXPOSURE", detail: "Fire a three-hit ruby laser through the glasses." }
-    ]
-  },
-  KALYX_ECLIPSE: {
-    title: "ECLIPSE ASSASSIN",
-    passive: "Faster air dash and extended rushdown cancels at lower health.",
-    commands: [
-      ...commonCommands,
-      { input: "DOWN + SP", name: "ECLIPSE STEP", detail: "Cross through with longer invulnerability." },
-      { input: "SP", name: "NIGHT CLAW", detail: "Very fast compact projectile." },
-      { input: "MAX / MOD+HP", name: "TOTAL ECLIPSE", detail: "High-speed three-hit super." }
-    ]
-  },
-  EZRA_ASCENDANT: {
-    title: "ARCANE AEGIS",
-    passive: "Parries cost less and successful defense restores more meter.",
-    commands: [
-      ...commonCommands,
-      { input: "DOWN + SP", name: "AEGIS PARRY", detail: "Long defensive counter window." },
-      { input: "SP", name: "OWL ORB", detail: "Large slow projectile with strong block pressure." },
-      { input: "MAX / MOD+HP", name: "ASCENSION", detail: "Wide three-hit control super." }
     ]
   }
 };

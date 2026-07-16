@@ -1,7 +1,7 @@
 import { rectsOverlap } from "../engine/math.js";
-import { ATTACKS } from "../config/moves.js?v=roster-cleanup15-detroit-costume-duo";
+import { ATTACKS } from "../config/moves.js?v=roster-cleanup16-four-fighters";
 import { FloatingText, SpriteEffect } from "./effects.js";
-import { registerAttackHit, sliceAttackForHit } from "./hits.js?v=roster-cleanup15-detroit-costume-duo";
+import { registerAttackHit, sliceAttackForHit } from "./hits.js?v=roster-cleanup16-four-fighters";
 
 export function resolveMelee(attacker, defender, game) {
   const attackState = attacker.currentAttack;

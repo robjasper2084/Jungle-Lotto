@@ -1,6 +1,6 @@
-import { FIGHTERS } from "./config/assets.js?v=roster-cleanup15-detroit-costume-duo";
-import { COMMAND_LISTS, GAME_MODES, ROSTER_IDS } from "./config/content.js?v=roster-cleanup15-detroit-costume-duo";
-import { GothTechnologyGame } from "./scenes/game.js?v=roster-cleanup15-detroit-costume-duo";
+import { FIGHTERS } from "./config/assets.js?v=roster-cleanup16-four-fighters";
+import { COMMAND_LISTS, GAME_MODES, ROSTER_IDS } from "./config/content.js?v=roster-cleanup16-four-fighters";
+import { GothTechnologyGame } from "./scenes/game.js?v=roster-cleanup16-four-fighters";
 import { PHASE } from "./config/constants.js";
 
 const syncViewportHeight = () => {

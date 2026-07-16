@@ -1,8 +1,8 @@
 import { GRAVITY, GROUND_Y, WORLD } from "../config/constants.js";
-import { ATTACKS } from "../config/moves.js?v=roster-cleanup15-detroit-costume-duo";
-import { drawSpriteFrame } from "../engine/assets.js?v=roster-cleanup15-detroit-costume-duo";
+import { ATTACKS } from "../config/moves.js?v=roster-cleanup16-four-fighters";
+import { drawSpriteFrame } from "../engine/assets.js?v=roster-cleanup16-four-fighters";
 import { approach, clamp, makeRect } from "../engine/math.js";
-import { attackIntentFromActions, resolveCancelAttack } from "./commands.js?v=roster-cleanup15-detroit-costume-duo";
+import { attackIntentFromActions, resolveCancelAttack } from "./commands.js?v=roster-cleanup16-four-fighters";
 import { SpriteEffect } from "./effects.js";
 
 const MOTION_LOCKS = new Set([
@@ -321,7 +321,7 @@ export class Fighter {
       const margin = this.config.stageMargin ?? 0;
       this.x = clamp(opponent.x + direction * 92, WORLD.left + margin, WORLD.right - margin);
       this.vx = direction * this.config.speed * 0.42;
-      this.invulnerable = Math.max(this.invulnerable, this.id === "KALYX_ECLIPSE" ? 0.3 : 0.22);
+      this.invulnerable = Math.max(this.invulnerable, 0.22);
       this.dashDir = direction;
       this.dashForward = true;
       this.dashRecoveryTimer = 0.1;
@@ -355,7 +355,7 @@ export class Fighter {
       }
       game.audio.beep("special");
     } else {
-      this.parryTimer = this.id === "EZRA_ASCENDANT" ? 0.48 : 0.36;
+      this.parryTimer = 0.36;
       this.shieldTimer = Math.max(this.shieldTimer, this.parryTimer);
       this.setMotion("BLOCK_HIGH", true);
       game.spawnFighterVfx?.(this, "skill", "charge");

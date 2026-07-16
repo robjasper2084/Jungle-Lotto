@@ -1,7 +1,7 @@
-import { drawSheetFrame } from "../engine/assets.js?v=roster-cleanup15-detroit-costume-duo";
+import { drawSheetFrame } from "../engine/assets.js?v=roster-cleanup16-four-fighters";
 import { rectsOverlap } from "../engine/math.js";
 import { SpriteEffect } from "./effects.js";
-import { sliceAttackForHit } from "./hits.js?v=roster-cleanup15-detroit-costume-duo";
+import { sliceAttackForHit } from "./hits.js?v=roster-cleanup16-four-fighters";
 
 const hexAlpha = (color, alpha) => {
   if (!color?.startsWith("#") || color.length !== 7) return color;

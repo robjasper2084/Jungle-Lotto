@@ -1,6 +1,6 @@
 export const PACK_ROOT = "assets/GOTHTECHNOLOGY_EXPANDED_SPRITE_PACK_V2";
 export const LOCAL_ROOT = "assets";
-export const MOTION_ASSET_VERSION = "roster-cleanup15-detroit-costume-duo";
+export const MOTION_ASSET_VERSION = "roster-cleanup16-four-fighters";
 
 export const ASSET_URLS = {
   manifest: `${LOCAL_ROOT}/motion-atlases/motion-atlas-manifest.json?v=${MOTION_ASSET_VERSION}`,
@@ -478,44 +478,4 @@ FIGHTERS.DETROIT_LENS_NOIR = {
   accent: "#df4d4d",
   costumePalette: "black-black",
   rosterPortraitKey: "detroitLensNoirPortrait"
-};
-
-FIGHTERS.KALYX_ECLIPSE = {
-  ...FIGHTERS.KALYX,
-  id: "KALYX_ECLIPSE",
-  name: "KALYX ECLIPSE",
-  title: "Eclipse Assassin",
-  manifestKey: "KALYX",
-  palette: "#c28cff",
-  accent: "#f0d3ff",
-  renderFilter: "hue-rotate(255deg) saturate(1.28) brightness(1.06)",
-  speed: 455,
-  runSpeed: 770,
-  dashSpeed: 1290,
-  maxHealth: 930,
-  skillCost: 20,
-  skillCooldown: 0.86,
-  specialName: "Night Claw",
-  superName: "Total Eclipse"
-};
-
-FIGHTERS.EZRA_ASCENDANT = {
-  ...FIGHTERS.MASTER_EZRA,
-  id: "EZRA_ASCENDANT",
-  name: "EZRA ASCENDANT",
-  title: "Arcane Aegis",
-  manifestKey: "MASTER_EZRA",
-  palette: "#82f0d2",
-  accent: "#ffe7a6",
-  renderFilter: "sepia(0.22) hue-rotate(122deg) saturate(1.18) brightness(1.08)",
-  speed: 392,
-  runSpeed: 640,
-  dashSpeed: 1080,
-  maxHealth: 1140,
-  skillCost: 10,
-  skillCooldown: 0.72,
-  guardTapWindow: 0.22,
-  perfectBlockMeterBonus: 22,
-  specialName: "Owl Orb",
-  superName: "Ascension"
 };

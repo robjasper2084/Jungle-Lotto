@@ -141,8 +141,12 @@ test("Detroit Lens ships a complete guardian kit, Boerboel command list, and six
   assert.equal(fighter.costumePalette, "white-black");
   assert.equal(fighter.palette, "#f4f2e9");
   assert.equal(Object.keys(motionManifest.characters.DETROIT_LENS.motions).length, 39);
-  assert.equal(ROSTER_IDS.length, 6);
+  assert.deepEqual(ROSTER_IDS, ["KALYX", "MASTER_EZRA", "DETROIT_LENS", "DETROIT_LENS_NOIR"]);
   assert.equal(ROSTER_CARD_LAYOUT.length, ROSTER_IDS.length);
+  assert.ok(!Object.hasOwn(FIGHTERS, "KALYX_ECLIPSE"));
+  assert.ok(!Object.hasOwn(FIGHTERS, "EZRA_ASCENDANT"));
+  assert.ok(!Object.hasOwn(COMMAND_LISTS, "KALYX_ECLIPSE"));
+  assert.ok(!Object.hasOwn(COMMAND_LISTS, "EZRA_ASCENDANT"));
   assert.ok(ARCADE_LADDER.includes("DETROIT_LENS"));
   assert.ok(COMMAND_LISTS.DETROIT_LENS.commands.some((command) => command.name === "BOERBOEL RUSH"));
   assert.ok(COMMAND_LISTS.DETROIT_LENS_NOIR.commands.some((command) => command.name === "BOERBOEL RUSH"));

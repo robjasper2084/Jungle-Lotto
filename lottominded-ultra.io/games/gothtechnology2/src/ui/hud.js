@@ -1,7 +1,7 @@
 import { CANVAS_HEIGHT, CANVAS_WIDTH, COLORS, ROUND_SECONDS } from "../config/constants.js";
-import { FIGHTERS } from "../config/assets.js?v=roster-cleanup15-detroit-costume-duo";
-import { GAME_MODES, ROSTER_CARD_LAYOUT, ROSTER_IDS, STAGES } from "../config/content.js?v=roster-cleanup15-detroit-costume-duo";
-import { drawSpriteFrame } from "../engine/assets.js?v=roster-cleanup15-detroit-costume-duo";
+import { FIGHTERS } from "../config/assets.js?v=roster-cleanup16-four-fighters";
+import { GAME_MODES, ROSTER_CARD_LAYOUT, ROSTER_IDS, STAGES } from "../config/content.js?v=roster-cleanup16-four-fighters";
+import { drawSpriteFrame } from "../engine/assets.js?v=roster-cleanup16-four-fighters";
 
 const panel = (ctx, x, y, w, h, stroke = COLORS.gold) => {
   ctx.save();
