@@ -1,7 +1,7 @@
 import { CANVAS_HEIGHT, CANVAS_WIDTH, COLORS, ROUND_SECONDS } from "../config/constants.js";
-import { FIGHTERS } from "../config/assets.js?v=future-hud17-four-fighters";
-import { GAME_MODES, ROSTER_CARD_LAYOUT, ROSTER_IDS, STAGES } from "../config/content.js?v=future-hud17-four-fighters";
-import { drawSpriteFrame } from "../engine/assets.js?v=future-hud17-four-fighters";
+import { FIGHTERS } from "../config/assets.js?v=future-hud18-noir-only";
+import { GAME_MODES, ROSTER_CARD_LAYOUT, ROSTER_IDS, STAGES } from "../config/content.js?v=future-hud18-noir-only";
+import { drawSpriteFrame } from "../engine/assets.js?v=future-hud18-noir-only";
 
 const panel = (ctx, x, y, w, h, stroke = COLORS.gold) => {
   ctx.save();

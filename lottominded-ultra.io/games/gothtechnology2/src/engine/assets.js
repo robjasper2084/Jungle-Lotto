@@ -1,4 +1,4 @@
-import { ASSET_URLS, MOTION_ASSET_VERSION, MOTION_PLAYBACK } from "../config/assets.js?v=future-hud17-four-fighters";
+import { ASSET_URLS, MOTION_ASSET_VERSION, MOTION_PLAYBACK } from "../config/assets.js?v=future-hud18-noir-only";
 
 const imageCache = new Map();
 
@@ -48,7 +48,6 @@ export class AssetLoader {
   loadMenuAssets(onProgress = () => {}) {
     return this.loadGroup("menu", {
       logo: ASSET_URLS.logo,
-      detroitLensWhitePortrait: ASSET_URLS.rosterPortraits.detroitLensWhite,
       detroitLensNoirPortrait: ASSET_URLS.rosterPortraits.detroitLensNoir
     }, onProgress, { strict: false });
   }

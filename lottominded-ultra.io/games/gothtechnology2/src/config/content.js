@@ -1,10 +1,9 @@
-export const ROSTER_IDS = ["KALYX", "MASTER_EZRA", "DETROIT_LENS", "DETROIT_LENS_NOIR"];
+export const ROSTER_IDS = ["KALYX", "MASTER_EZRA", "DETROIT_LENS_NOIR"];
 
 export const ROSTER_CARD_LAYOUT = [
-  { x: 32, y: 142, w: 288, h: 382 },
-  { x: 336, y: 142, w: 288, h: 382 },
-  { x: 640, y: 142, w: 288, h: 382 },
-  { x: 944, y: 142, w: 288, h: 382 }
+  { x: 80, y: 142, w: 352, h: 382 },
+  { x: 464, y: 142, w: 352, h: 382 },
+  { x: 848, y: 142, w: 352, h: 382 }
 ];
 
 export const GAME_MODES = {
@@ -71,7 +70,7 @@ export const STAGES = [
   }
 ];
 
-export const ARCADE_LADDER = ["MASTER_EZRA", "DETROIT_LENS", "DETROIT_LENS_NOIR", "KALYX"];
+export const ARCADE_LADDER = ["MASTER_EZRA", "DETROIT_LENS_NOIR", "KALYX"];
 
 const commonCommands = [
   { input: "BACK", name: "GUARD", detail: "Hold away. Add DOWN for low guard." },
@@ -104,8 +103,8 @@ export const COMMAND_LISTS = {
       { input: "MAX / MOD+HP", name: "SKY JUDGMENT", detail: "Heavy space-control super." }
     ]
   },
-  DETROIT_LENS: {
-    title: "DETROIT HERO",
+  DETROIT_LENS_NOIR: {
+    title: "MIDNIGHT GUARDIAN",
     passive: "The Boerboel controls the ground while Guardian Intercept stops close pressure.",
     commands: [
       ...commonCommands,
@@ -115,8 +114,6 @@ export const COMMAND_LISTS = {
     ]
   }
 };
-
-COMMAND_LISTS.DETROIT_LENS_NOIR = COMMAND_LISTS.DETROIT_LENS;
 
 export const opponentFor = (playerId, offset = 0) => {
   const options = ROSTER_IDS.filter((id) => id !== playerId);

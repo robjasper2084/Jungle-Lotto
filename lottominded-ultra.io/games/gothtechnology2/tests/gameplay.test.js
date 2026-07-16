@@ -132,23 +132,23 @@ test("runtime animations meet minimum unique-frame requirements", () => {
   }
 });
 
-test("Detroit Lens ships a complete guardian kit, Boerboel command list, and six approved stages", () => {
-  const fighter = FIGHTERS.DETROIT_LENS;
-  assert.equal(fighter.manifestKey, "DETROIT_LENS");
+test("Detroit Lens Noir ships a complete guardian kit, Boerboel command list, and six approved stages", () => {
+  const fighter = FIGHTERS.DETROIT_LENS_NOIR;
+  assert.equal(fighter.manifestKey, "DETROIT_LENS_NOIR");
   assert.equal(fighter.archetype, "precision");
   assert.equal(fighter.specialName, "Boerboel Rush");
   assert.equal(fighter.superName, "Red-Eye Exposure");
-  assert.equal(fighter.costumePalette, "white-black");
-  assert.equal(fighter.palette, "#f4f2e9");
-  assert.equal(Object.keys(motionManifest.characters.DETROIT_LENS.motions).length, 39);
-  assert.deepEqual(ROSTER_IDS, ["KALYX", "MASTER_EZRA", "DETROIT_LENS", "DETROIT_LENS_NOIR"]);
+  assert.equal(fighter.costumePalette, "black-black");
+  assert.equal(fighter.palette, "#9ca3ad");
+  assert.equal(Object.keys(motionManifest.characters.DETROIT_LENS_NOIR.motions).length, 39);
+  assert.deepEqual(ROSTER_IDS, ["KALYX", "MASTER_EZRA", "DETROIT_LENS_NOIR"]);
   assert.equal(ROSTER_CARD_LAYOUT.length, ROSTER_IDS.length);
   assert.ok(!Object.hasOwn(FIGHTERS, "KALYX_ECLIPSE"));
   assert.ok(!Object.hasOwn(FIGHTERS, "EZRA_ASCENDANT"));
   assert.ok(!Object.hasOwn(COMMAND_LISTS, "KALYX_ECLIPSE"));
   assert.ok(!Object.hasOwn(COMMAND_LISTS, "EZRA_ASCENDANT"));
-  assert.ok(ARCADE_LADDER.includes("DETROIT_LENS"));
-  assert.ok(COMMAND_LISTS.DETROIT_LENS.commands.some((command) => command.name === "BOERBOEL RUSH"));
+  assert.ok(!ARCADE_LADDER.includes("DETROIT_LENS"));
+  assert.ok(ARCADE_LADDER.includes("DETROIT_LENS_NOIR"));
   assert.ok(COMMAND_LISTS.DETROIT_LENS_NOIR.commands.some((command) => command.name === "BOERBOEL RUSH"));
   assert.ok(STAGES.some((stage) => stage.id === "detroit-midnight-mile"));
   assert.ok(STAGES.some((stage) => stage.id === "motor-city-assembly"));
@@ -177,10 +177,10 @@ test("Kalyx uses the approved black and crimson costume identity", () => {
   assert.equal(FIGHTERS.KALYX.accent, "#ff5b68");
 });
 
-test("Detroit Lens keeps independent white and original black costume atlases", () => {
-  const white = FIGHTERS.DETROIT_LENS;
+test("Detroit Lens keeps only the original black costume atlas", () => {
   const noir = FIGHTERS.DETROIT_LENS_NOIR;
-  assert.equal(white.costumePalette, "white-black");
+  assert.ok(!Object.hasOwn(FIGHTERS, "DETROIT_LENS"));
+  assert.ok(!Object.hasOwn(motionManifest.characters, "DETROIT_LENS"));
   assert.equal(noir.costumePalette, "black-black");
   assert.equal(noir.manifestKey, "DETROIT_LENS_NOIR");
   assert.equal(Object.keys(motionManifest.characters.DETROIT_LENS_NOIR.motions).length, 39);
@@ -298,7 +298,7 @@ test("Detroit Lens Guardian Intercept calls the Boerboel and interrupts nearby p
     resolveIncomingHit(attacker, defender, attack, meta) { hits.push({ attacker, defender, attack, meta }); },
     spawnFighterVfx(_fighter, name, phase) { vfx.push({ name, phase }); }
   };
-  const detroit = makeFighter("DETROIT_LENS", 420, 1, completeAnimations);
+  const detroit = makeFighter("DETROIT_LENS_NOIR", 420, 1, completeAnimations);
   const opponent = makeFighter("KALYX", 660, -1, completeAnimations);
   detroit.meter = 100;
   assert.equal(detroit.useCharacterSkill(opponent, game), true);
@@ -311,7 +311,7 @@ test("Detroit Lens Guardian Intercept calls the Boerboel and interrupts nearby p
 
 test("Boerboel Rush advances through summon, run, bite hit, and recovery", () => {
   const hits = [];
-  const owner = makeFighter("DETROIT_LENS", 300, 1, completeAnimations);
+  const owner = makeFighter("DETROIT_LENS_NOIR", 300, 1, completeAnimations);
   const target = makeFighter("KALYX", 600, -1, completeAnimations);
   const game = {
     ...makeGame(),
@@ -342,7 +342,7 @@ test("Boerboel Rush advances through summon, run, bite hit, and recovery", () =>
 
 test("Detroit Lens precision projectiles gain bonus meter at long range", () => {
   const game = makeGame();
-  const detroit = makeFighter("DETROIT_LENS", 300, 1, completeAnimations);
+  const detroit = makeFighter("DETROIT_LENS_NOIR", 300, 1, completeAnimations);
   const opponent = makeFighter("KALYX", 720, -1, completeAnimations);
   const baseMeter = detroit.meter;
   applyHit(detroit, opponent, { damage: 30, meter: 5, stun: 0.2, knockback: 80 }, game, {

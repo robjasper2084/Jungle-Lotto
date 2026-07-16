@@ -169,7 +169,7 @@ test("boots, reaches versus, fights, and pauses without page errors", async ({ p
   expect(spriteIntegrity.insufficientUnique).toEqual([]);
   expect(spriteIntegrity.splitFrames).toEqual([]);
   const unstableRenderedMotions = await page.evaluate(async () => {
-    const { drawSpriteFrame } = await import("./src/engine/assets.js?v=future-hud17-four-fighters-test");
+    const { drawSpriteFrame } = await import("./src/engine/assets.js?v=future-hud18-noir-only-test");
     const animations = window.__gothTechnologyGame.assets.animations;
     const checkedMotions = [
       "IDLE", "READY_STANCE", "WALK_FORWARD", "RUN_FORWARD", "DASH_FORWARD",
@@ -236,16 +236,13 @@ test("boots, reaches versus, fights, and pauses without page errors", async ({ p
   expect(pageErrors).toEqual([]);
 });
 
-test("Detroit Lens loads white and Noir costumes, Boerboel, eye laser, and five Detroit stages", async ({ page }, testInfo) => {
+test("Detroit Lens Noir loads the Boerboel, eye laser, and five Detroit stages", async ({ page }, testInfo) => {
   test.setTimeout(180_000);
   const pageErrors = [];
   page.on("pageerror", (error) => pageErrors.push(error.message));
   await page.goto(gameUrl);
   await expect.poll(() => phase(page)).toBe("title");
-  await expect.poll(() => page.evaluate(() => [
-    window.__gothTechnologyGame?.assets?.images?.detroitLensWhitePortrait?.naturalWidth,
-    window.__gothTechnologyGame?.assets?.images?.detroitLensNoirPortrait?.naturalWidth
-  ])).toEqual([256, 256]);
+  await expect.poll(() => page.evaluate(() => window.__gothTechnologyGame?.assets?.images?.detroitLensNoirPortrait?.naturalWidth)).toBe(256);
   await page.evaluate(() => window.__gothTechnologyGame.openMode("training"));
   await expect.poll(() => phase(page), { timeout: 30_000 }).toBe("select");
   await expect.poll(() => page.evaluate(() => window.__gothTechnologyGame?.matchAssetsReady), { timeout: 60_000 }).toBe(true);
@@ -253,13 +250,13 @@ test("Detroit Lens loads white and Noir costumes, Boerboel, eye laser, and five 
   expect(rosterActions).toEqual(expect.arrayContaining([
     "Choose KALYX",
     "Choose MASTER EZRA",
-    "Choose DETROIT LENS",
     "Choose DETROIT LENS NOIR"
   ]));
+  expect(rosterActions).not.toContain("Choose DETROIT LENS");
   expect(rosterActions).not.toContain("Choose KALYX ECLIPSE");
   expect(rosterActions).not.toContain("Choose EZRA ASCENDANT");
 
-  await clickGame(page, 1088, 330);
+  await clickGame(page, 1024, 330);
   await expect.poll(() => page.evaluate(() => window.__gothTechnologyGame?.player1Id)).toBe("DETROIT_LENS_NOIR");
   await expect.poll(() => page.evaluate(() => window.__gothTechnologyGame?.assets?.loadedCharacterMotions?.has("DETROIT_LENS_NOIR")), { timeout: 10_000 }).toBe(true);
   const noirIntegrity = await page.evaluate(() => {
@@ -274,23 +271,6 @@ test("Detroit Lens loads white and Noir costumes, Boerboel, eye laser, and five 
   expect(noirIntegrity.complete).toBe(true);
   expect(noirIntegrity.source).toContain("detroit-lens-noir-locomotion.webp");
   if (!process.env.NO_TEST_ARTIFACTS) await page.screenshot({ path: testInfo.outputPath("detroit-lens-noir-select.png") });
-
-  await clickGame(page, 784, 330);
-  await expect.poll(() => page.evaluate(() => window.__gothTechnologyGame?.player1Id)).toBe("DETROIT_LENS");
-  await expect.poll(() => page.evaluate(() => window.__gothTechnologyGame?.assets?.loadedCharacterMotions?.has("DETROIT_LENS")), { timeout: 10_000 }).toBe(true);
-
-  const motionIntegrity = await page.evaluate(() => {
-    const motions = window.__gothTechnologyGame.assets.animations.DETROIT_LENS;
-    return {
-      count: Object.keys(motions).length,
-      complete: Object.values(motions).every((motion) => motion.frames.length === 6 && motion.uniqueFrames >= 6),
-      source: motions.IDLE.image.src
-    };
-  });
-  expect(motionIntegrity.count).toBe(39);
-  expect(motionIntegrity.complete).toBe(true);
-  expect(motionIntegrity.source).toContain("detroit-lens-locomotion.webp");
-  expect(motionIntegrity.source).not.toContain("detroit-lens-noir-");
 
   while (await page.evaluate(() => window.__gothTechnologyGame.stageIndex) !== 1) {
     await clickGame(page, 476, 596);

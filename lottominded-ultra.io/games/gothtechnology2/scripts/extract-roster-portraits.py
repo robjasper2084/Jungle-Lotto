@@ -11,7 +11,6 @@ ATLAS_ROOT = ROOT / "assets" / "motion-atlases"
 OUTPUT_ROOT = ROOT / "assets" / "user-roster"
 MANIFEST_PATH = ATLAS_ROOT / "motion-atlas-manifest.json"
 CHARACTERS = {
-    "DETROIT_LENS": "detroit-lens-white-idle.webp",
     "DETROIT_LENS_NOIR": "detroit-lens-noir-idle.webp",
 }
 

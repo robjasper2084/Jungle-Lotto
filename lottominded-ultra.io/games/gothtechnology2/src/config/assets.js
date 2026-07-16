@@ -1,6 +1,6 @@
 export const PACK_ROOT = "assets/GOTHTECHNOLOGY_EXPANDED_SPRITE_PACK_V2";
 export const LOCAL_ROOT = "assets";
-export const MOTION_ASSET_VERSION = "future-hud17-four-fighters";
+export const MOTION_ASSET_VERSION = "future-hud18-noir-only";
 
 export const ASSET_URLS = {
   manifest: `${LOCAL_ROOT}/motion-atlases/motion-atlas-manifest.json?v=${MOTION_ASSET_VERSION}`,
@@ -11,7 +11,6 @@ export const ASSET_URLS = {
     robotRahbe: `${LOCAL_ROOT}/user-title/robot-rahbe-title-card.webp?v=${MOTION_ASSET_VERSION}`
   },
   rosterPortraits: {
-    detroitLensWhite: `${LOCAL_ROOT}/user-roster/detroit-lens-white-idle.webp?v=${MOTION_ASSET_VERSION}`,
     detroitLensNoir: `${LOCAL_ROOT}/user-roster/detroit-lens-noir-idle.webp?v=${MOTION_ASSET_VERSION}`
   },
   background: `${LOCAL_ROOT}/user-stage/forest-fight-background.jpg`,
@@ -74,7 +73,7 @@ export const MOTION_PLAYBACK = {
     JUMP_FALL: [0, 1, 2, 3],
     LANDING: [1, 0, 4, 5]
   },
-  DETROIT_LENS: {
+  DETROIT_LENS_NOIR: {
     WALK_FORWARD: [0, 1, 2, 3, 4, 5],
     WALK_BACK: [0, 1, 2, 3, 4, 5],
     RUN_FORWARD: [0, 1, 2, 3, 4, 5],
@@ -88,8 +87,6 @@ export const MOTION_PLAYBACK = {
     LANDING: [0, 1, 2, 3, 4, 5]
   }
 };
-
-MOTION_PLAYBACK.DETROIT_LENS_NOIR = MOTION_PLAYBACK.DETROIT_LENS;
 
 export const FIGHTERS = {
   KALYX: {
@@ -380,16 +377,16 @@ export const FIGHTERS = {
   }
 };
 
-FIGHTERS.DETROIT_LENS = {
-  id: "DETROIT_LENS",
-  name: "DETROIT LENS",
-  title: "Motor City Guardian",
-  manifestKey: "DETROIT_LENS",
+FIGHTERS.DETROIT_LENS_NOIR = {
+  id: "DETROIT_LENS_NOIR",
+  name: "DETROIT LENS NOIR",
+  title: "Midnight Guardian",
+  manifestKey: "DETROIT_LENS_NOIR",
   spriteFacing: 1,
-  palette: "#f4f2e9",
+  palette: "#9ca3ad",
   accent: "#df4d4d",
-  costumePalette: "white-black",
-  rosterPortraitKey: "detroitLensWhitePortrait",
+  costumePalette: "black-black",
+  rosterPortraitKey: "detroitLensNoirPortrait",
   scale: 1.31,
   stableScale: 1.31,
   archetype: "precision",
@@ -466,16 +463,4 @@ FIGHTERS.DETROIT_LENS = {
   assistNames: ["FLASH DRONE", "FRAME GUARD"],
   superName: "Red-Eye Exposure",
   specialName: "Boerboel Rush"
-};
-
-FIGHTERS.DETROIT_LENS_NOIR = {
-  ...FIGHTERS.DETROIT_LENS,
-  id: "DETROIT_LENS_NOIR",
-  name: "DETROIT LENS NOIR",
-  title: "Midnight Guardian",
-  manifestKey: "DETROIT_LENS_NOIR",
-  palette: "#9ca3ad",
-  accent: "#df4d4d",
-  costumePalette: "black-black",
-  rosterPortraitKey: "detroitLensNoirPortrait"
 };

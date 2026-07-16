@@ -1,17 +1,17 @@
-import { ASSET_URLS, FIGHTERS } from "../config/assets.js?v=future-hud17-four-fighters";
-import { ARCADE_LADDER, GAME_MODES, ROSTER_CARD_LAYOUT, ROSTER_IDS, STAGES, opponentFor } from "../config/content.js?v=future-hud17-four-fighters";
-import { ASSISTS, ATTACKS } from "../config/moves.js?v=future-hud17-four-fighters";
+import { ASSET_URLS, FIGHTERS } from "../config/assets.js?v=future-hud18-noir-only";
+import { ARCADE_LADDER, GAME_MODES, ROSTER_CARD_LAYOUT, ROSTER_IDS, STAGES, opponentFor } from "../config/content.js?v=future-hud18-noir-only";
+import { ASSISTS, ATTACKS } from "../config/moves.js?v=future-hud18-noir-only";
 import { CANVAS_HEIGHT, CANVAS_WIDTH, COLORS, GROUND_Y, PHASE, ROUND_SECONDS, WORLD } from "../config/constants.js";
-import { AssetLoader } from "../engine/assets.js?v=future-hud17-four-fighters";
-import { WebAudioBus } from "../engine/audio.js?v=future-hud17-four-fighters";
-import { InputManager } from "../engine/input.js?v=future-hud17-four-fighters";
+import { AssetLoader } from "../engine/assets.js?v=future-hud18-noir-only";
+import { WebAudioBus } from "../engine/audio.js?v=future-hud18-noir-only";
+import { InputManager } from "../engine/input.js?v=future-hud18-noir-only";
 import { clamp, rectsOverlap } from "../engine/math.js";
-import { applyHit, resolveMelee } from "../gameplay/combat.js?v=future-hud17-four-fighters";
-import { CpuController } from "../gameplay/cpu.js?v=future-hud17-four-fighters";
-import { AttachedSpriteEffect, SpriteEffect } from "../gameplay/effects.js?v=future-hud17-four-fighters";
-import { Fighter } from "../gameplay/fighter.js?v=future-hud17-four-fighters";
-import { AssistStrike, BoerboelStrike, Projectile } from "../gameplay/projectiles.js?v=future-hud17-four-fighters";
-import { applyRoundOutcomeMotions, resolveRoundOutcome } from "../gameplay/rounds.js?v=future-hud17-four-fighters";
+import { applyHit, resolveMelee } from "../gameplay/combat.js?v=future-hud18-noir-only";
+import { CpuController } from "../gameplay/cpu.js?v=future-hud18-noir-only";
+import { AttachedSpriteEffect, SpriteEffect } from "../gameplay/effects.js?v=future-hud18-noir-only";
+import { Fighter } from "../gameplay/fighter.js?v=future-hud18-noir-only";
+import { AssistStrike, BoerboelStrike, Projectile } from "../gameplay/projectiles.js?v=future-hud18-noir-only";
+import { applyRoundOutcomeMotions, resolveRoundOutcome } from "../gameplay/rounds.js?v=future-hud18-noir-only";
 import {
   drawCharacterSelect,
   drawDiagnostics,
@@ -22,7 +22,7 @@ import {
   drawRoundMessage,
   drawTitle,
   drawVersus
-} from "../ui/hud.js?v=future-hud17-four-fighters";
+} from "../ui/hud.js?v=future-hud18-noir-only";
 
 const GAME_SELECT_ITEMS = [
   {
@@ -939,8 +939,10 @@ export class GothTechnologyGame {
     this.gameMode = "replay";
     this.training = false;
     this.cpuEnabled = false;
-    this.player1Id = FIGHTERS[saved.player1Id] ? saved.player1Id : "MASTER_EZRA";
-    this.player2Id = FIGHTERS[saved.player2Id] ? saved.player2Id : "KALYX";
+    const savedPlayer1Id = saved.player1Id === "DETROIT_LENS" ? "DETROIT_LENS_NOIR" : saved.player1Id;
+    const savedPlayer2Id = saved.player2Id === "DETROIT_LENS" ? "DETROIT_LENS_NOIR" : saved.player2Id;
+    this.player1Id = FIGHTERS[savedPlayer1Id] ? savedPlayer1Id : "MASTER_EZRA";
+    this.player2Id = FIGHTERS[savedPlayer2Id] ? savedPlayer2Id : "KALYX";
     this.stageIndex = Math.max(0, Math.min(STAGES.length - 1, Number(saved.stageIndex) || 0));
     this.replayPlayback = saved.frames;
     this.isReplay = true;

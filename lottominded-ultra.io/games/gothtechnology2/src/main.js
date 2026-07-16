@@ -1,6 +1,6 @@
-import { FIGHTERS } from "./config/assets.js?v=future-hud17-four-fighters";
-import { COMMAND_LISTS, GAME_MODES, ROSTER_IDS } from "./config/content.js?v=future-hud17-four-fighters";
-import { GothTechnologyGame } from "./scenes/game.js?v=future-hud17-four-fighters";
+import { FIGHTERS } from "./config/assets.js?v=future-hud18-noir-only";
+import { COMMAND_LISTS, GAME_MODES, ROSTER_IDS } from "./config/content.js?v=future-hud18-noir-only";
+import { GothTechnologyGame } from "./scenes/game.js?v=future-hud18-noir-only";
 import { PHASE } from "./config/constants.js";
 
 const syncViewportHeight = () => {

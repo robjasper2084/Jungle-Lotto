@@ -1,7 +1,7 @@
-import { drawSheetFrame } from "../engine/assets.js?v=future-hud17-four-fighters";
+import { drawSheetFrame } from "../engine/assets.js?v=future-hud18-noir-only";
 import { rectsOverlap } from "../engine/math.js";
 import { SpriteEffect } from "./effects.js";
-import { sliceAttackForHit } from "./hits.js?v=future-hud17-four-fighters";
+import { sliceAttackForHit } from "./hits.js?v=future-hud18-noir-only";
 
 const hexAlpha = (color, alpha) => {
   if (!color?.startsWith("#") || color.length !== 7) return color;
