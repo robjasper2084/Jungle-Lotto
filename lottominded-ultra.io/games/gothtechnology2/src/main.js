@@ -1,6 +1,6 @@
-import { FIGHTERS } from "./config/assets.js?v=future-hud21-commercial-arcade";
-import { COMMAND_LISTS, GAME_MODES, ROSTER_IDS } from "./config/content.js?v=future-hud21-commercial-arcade";
-import { GothTechnologyGame } from "./scenes/game.js?v=future-hud21-commercial-arcade";
+import { FIGHTERS } from "./config/assets.js?v=future-hud22-roster-scale";
+import { COMMAND_LISTS, GAME_MODES, ROSTER_IDS } from "./config/content.js?v=future-hud22-roster-scale";
+import { GothTechnologyGame } from "./scenes/game.js?v=future-hud22-roster-scale";
 import { PHASE } from "./config/constants.js";
 
 const syncViewportHeight = () => {

@@ -1,7 +1,7 @@
-import { drawSheetFrame } from "../engine/assets.js?v=future-hud21-commercial-arcade";
+import { drawSheetFrame } from "../engine/assets.js?v=future-hud22-roster-scale";
 import { rectsOverlap } from "../engine/math.js";
 import { SpriteEffect } from "./effects.js";
-import { sliceAttackForHit } from "./hits.js?v=future-hud21-commercial-arcade";
+import { sliceAttackForHit } from "./hits.js?v=future-hud22-roster-scale";
 
 const hexAlpha = (color, alpha) => {
   if (!color?.startsWith("#") || color.length !== 7) return color;

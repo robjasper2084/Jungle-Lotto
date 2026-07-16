@@ -1,4 +1,4 @@
-import { ASSET_URLS, MOTION_ASSET_VERSION, MOTION_PLAYBACK } from "../config/assets.js?v=future-hud21-commercial-arcade";
+import { ASSET_URLS, MOTION_ASSET_VERSION, MOTION_PLAYBACK } from "../config/assets.js?v=future-hud22-roster-scale";
 
 const imageCache = new Map();
 
@@ -49,6 +49,8 @@ export class AssetLoader {
   loadMenuAssets(onProgress = () => {}) {
     return this.loadGroup("menu", {
       logo: ASSET_URLS.logo,
+      kalyxPortrait: ASSET_URLS.rosterPortraits.kalyx,
+      masterEzraPortrait: ASSET_URLS.rosterPortraits.masterEzra,
       detroitLensNoirPortrait: ASSET_URLS.rosterPortraits.detroitLensNoir
     }, onProgress, { strict: false });
   }

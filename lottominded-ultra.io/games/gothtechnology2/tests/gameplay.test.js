@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 import { attackIntentFromActions, resolveCancelAttack } from "../src/gameplay/commands.js";
-import { COMMERCIAL_URLS, FIGHTERS, MOTION_PLAYBACK } from "../src/config/assets.js";
+import { ASSET_URLS, COMMERCIAL_URLS, FIGHTERS, MOTION_PLAYBACK } from "../src/config/assets.js";
 import { ARCADE_LADDER, COMMAND_LISTS, GAME_MODES, ROSTER_CARD_LAYOUT, ROSTER_IDS, STAGES, arcadeRouteFor } from "../src/config/content.js";
 import { GROUND_Y } from "../src/config/constants.js";
 import { Fighter } from "../src/gameplay/fighter.js";
@@ -143,6 +143,8 @@ test("Detroit Lens Noir ships a complete guardian kit, Boerboel command list, an
   assert.equal(Object.keys(motionManifest.characters.DETROIT_LENS_NOIR.motions).length, 39);
   assert.deepEqual(ROSTER_IDS, ["KALYX", "MASTER_EZRA", "DETROIT_LENS_NOIR"]);
   assert.equal(ROSTER_CARD_LAYOUT.length, ROSTER_IDS.length);
+  assert.deepEqual(Object.keys(ASSET_URLS.rosterPortraits), ["kalyx", "masterEzra", "detroitLensNoir"]);
+  assert.equal(new Set(ROSTER_IDS.map((id) => FIGHTERS[id].rosterPortraitKey)).size, ROSTER_IDS.length);
   assert.ok(!Object.hasOwn(FIGHTERS, "KALYX_ECLIPSE"));
   assert.ok(!Object.hasOwn(FIGHTERS, "EZRA_ASCENDANT"));
   assert.ok(!Object.hasOwn(COMMAND_LISTS, "KALYX_ECLIPSE"));

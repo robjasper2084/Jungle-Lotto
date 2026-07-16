@@ -1,7 +1,7 @@
 import { CANVAS_HEIGHT, CANVAS_WIDTH, COLORS, ROUND_SECONDS } from "../config/constants.js";
-import { FIGHTERS } from "../config/assets.js?v=future-hud21-commercial-arcade";
-import { GAME_MODES, ROSTER_CARD_LAYOUT, ROSTER_IDS, STAGES } from "../config/content.js?v=future-hud21-commercial-arcade";
-import { drawSpriteFrame } from "../engine/assets.js?v=future-hud21-commercial-arcade";
+import { FIGHTERS } from "../config/assets.js?v=future-hud22-roster-scale";
+import { GAME_MODES, ROSTER_CARD_LAYOUT, ROSTER_IDS, STAGES } from "../config/content.js?v=future-hud22-roster-scale";
+import { drawSpriteFrame } from "../engine/assets.js?v=future-hud22-roster-scale";
 
 const FUTURE = {
   cyan: "#67e8ff",
@@ -211,12 +211,12 @@ export const drawFightHud = (ctx, game) => {
     ctx.fillRect(16, 8, CANVAS_WIDTH - 32, 154);
   }
 
-  drawAngularPanel(ctx, 24, 16, 500, 116, "rgba(2, 8, 12, 0.9)", FUTURE.red, 2, 12);
-  drawAngularPanel(ctx, 756, 16, 500, 116, "rgba(2, 8, 12, 0.9)", FUTURE.cyan, 2, 12);
+  drawAngularPanel(ctx, 24, 16, 500, 116, "rgba(2, 8, 12, 0.9)", FUTURE.cyan, 2, 12);
+  drawAngularPanel(ctx, 756, 16, 500, 116, "rgba(2, 8, 12, 0.9)", FUTURE.red, 2, 12);
   drawFutureCombatBar(ctx, 48, 50, 448, 20, p1.health / p1.config.maxHealth, "#ff5b57");
   drawFutureCombatBar(ctx, 784, 50, 448, 20, p2.health / p2.config.maxHealth, "#ff5b57", true);
   drawFutureCombatBar(ctx, 48, 92, 304, 10, p1.meter / 100, FUTURE.cyan);
-  drawFutureCombatBar(ctx, 928, 92, 304, 10, p2.meter / 100, FUTURE.cyan, true);
+  drawFutureCombatBar(ctx, 928, 92, 304, 10, p2.meter / 100, FUTURE.red, true);
 
   ctx.textBaseline = "middle";
   ctx.fillStyle = FUTURE.white;
@@ -234,7 +234,7 @@ export const drawFightHud = (ctx, game) => {
   ctx.textAlign = "right";
   ctx.fillStyle = FUTURE.muted;
   ctx.fillText(`${Math.ceil(p2.health)} HP`, 1232, 80);
-  ctx.fillStyle = FUTURE.cyan;
+  ctx.fillStyle = FUTURE.red;
   ctx.fillText(`DRIVE ${Math.round(p2.meter)}%`, 1232, 116);
 
   drawAngularPanel(ctx, 548, 12, 184, 112, "rgba(2, 8, 12, 0.96)", FUTURE.amber, 2, 12);
@@ -250,9 +250,9 @@ export const drawFightHud = (ctx, game) => {
   ctx.fillText(game.isReplay ? `REPLAY ${game.replaySpeed}X` : STAGES[game.stageIndex].name, 640, 103);
 
   for (let index = 0; index < 2; index += 1) {
-    ctx.fillStyle = index < p1.roundWins ? FUTURE.red : "rgba(238,250,255,0.18)";
+    ctx.fillStyle = index < p1.roundWins ? FUTURE.cyan : "rgba(238,250,255,0.18)";
     ctx.fillRect(374 + index * 18, 94, 12, 8);
-    ctx.fillStyle = index < p2.roundWins ? FUTURE.cyan : "rgba(238,250,255,0.18)";
+    ctx.fillStyle = index < p2.roundWins ? FUTURE.red : "rgba(238,250,255,0.18)";
     ctx.fillRect(894 - index * 18, 94, 12, 8);
   }
 
@@ -796,7 +796,7 @@ const drawCharacterCard = (ctx, x, y, w, h, fighter, name, subtitle, selected, o
   for (let sy = y + 12; sy < y + h - 94; sy += 6) ctx.fillRect(x + 8, sy, w - 16, 1);
   ctx.fillStyle = selected ? "rgba(103, 232, 255, 0.12)" : (opponent ? "rgba(255, 64, 93, 0.1)" : "rgba(255,255,255,0.035)");
   ctx.fillRect(x + 8, y + h - 110, w - 16, 18);
-  if (fighter) drawFighterPortrait(ctx, fighter, x + w / 2, y + h - 92, 0.82);
+  if (fighter) drawRosterPortrait(ctx, fighter, x + w / 2, y + h - 92, 0.82);
   ctx.restore();
   ctx.save();
   ctx.fillStyle = "rgba(2, 6, 10, 0.98)";
@@ -841,6 +841,17 @@ const drawFighterPortrait = (ctx, fighter, x, y, scale) => {
     const height = portrait.naturalHeight * scale;
     ctx.drawImage(portrait, x - width / 2, y - height, width, height);
   }
+};
+
+const drawRosterPortrait = (ctx, fighter, x, y, scale) => {
+  const portrait = fighter.assets.images[fighter.config.rosterPortraitKey];
+  if (portrait?.naturalWidth > 0) {
+    const width = portrait.naturalWidth * scale;
+    const height = portrait.naturalHeight * scale;
+    ctx.drawImage(portrait, x - width / 2, y - height, width, height);
+    return;
+  }
+  drawFighterPortrait(ctx, fighter, x, y, scale);
 };
 
 const drawCoverImage = (ctx, image, x = 0, y = 0, width = CANVAS_WIDTH, height = CANVAS_HEIGHT) => {

@@ -1,17 +1,17 @@
-import { ASSET_URLS, COMMERCIAL_URLS, FIGHTERS } from "../config/assets.js?v=future-hud21-commercial-arcade";
-import { arcadeRouteFor, GAME_MODES, ROSTER_CARD_LAYOUT, ROSTER_IDS, STAGES, opponentFor } from "../config/content.js?v=future-hud21-commercial-arcade";
-import { ASSISTS, ATTACKS } from "../config/moves.js?v=future-hud21-commercial-arcade";
+import { ASSET_URLS, COMMERCIAL_URLS, FIGHTERS } from "../config/assets.js?v=future-hud22-roster-scale";
+import { arcadeRouteFor, GAME_MODES, ROSTER_CARD_LAYOUT, ROSTER_IDS, STAGES, opponentFor } from "../config/content.js?v=future-hud22-roster-scale";
+import { ASSISTS, ATTACKS } from "../config/moves.js?v=future-hud22-roster-scale";
 import { CANVAS_HEIGHT, CANVAS_WIDTH, COLORS, GROUND_Y, PHASE, ROUND_SECONDS, WORLD } from "../config/constants.js";
-import { AssetLoader } from "../engine/assets.js?v=future-hud21-commercial-arcade";
-import { WebAudioBus } from "../engine/audio.js?v=future-hud21-commercial-arcade";
-import { InputManager } from "../engine/input.js?v=future-hud21-commercial-arcade";
+import { AssetLoader } from "../engine/assets.js?v=future-hud22-roster-scale";
+import { WebAudioBus } from "../engine/audio.js?v=future-hud22-roster-scale";
+import { InputManager } from "../engine/input.js?v=future-hud22-roster-scale";
 import { clamp, rectsOverlap } from "../engine/math.js";
-import { applyHit, resolveMelee } from "../gameplay/combat.js?v=future-hud21-commercial-arcade";
-import { CpuController } from "../gameplay/cpu.js?v=future-hud21-commercial-arcade";
-import { AttachedSpriteEffect, SpriteEffect } from "../gameplay/effects.js?v=future-hud21-commercial-arcade";
-import { Fighter } from "../gameplay/fighter.js?v=future-hud21-commercial-arcade";
-import { AssistStrike, BoerboelStrike, Projectile } from "../gameplay/projectiles.js?v=future-hud21-commercial-arcade";
-import { applyRoundOutcomeMotions, resolveRoundOutcome } from "../gameplay/rounds.js?v=future-hud21-commercial-arcade";
+import { applyHit, resolveMelee } from "../gameplay/combat.js?v=future-hud22-roster-scale";
+import { CpuController } from "../gameplay/cpu.js?v=future-hud22-roster-scale";
+import { AttachedSpriteEffect, SpriteEffect } from "../gameplay/effects.js?v=future-hud22-roster-scale";
+import { Fighter } from "../gameplay/fighter.js?v=future-hud22-roster-scale";
+import { AssistStrike, BoerboelStrike, Projectile } from "../gameplay/projectiles.js?v=future-hud22-roster-scale";
+import { applyRoundOutcomeMotions, resolveRoundOutcome } from "../gameplay/rounds.js?v=future-hud22-roster-scale";
 import {
   drawCharacterSelect,
   drawDiagnostics,
@@ -23,7 +23,7 @@ import {
   drawRoundMessage,
   drawTitle,
   drawVersus
-} from "../ui/hud.js?v=future-hud21-commercial-arcade";
+} from "../ui/hud.js?v=future-hud22-roster-scale";
 
 const GAME_SELECT_ITEMS = [
   {

@@ -169,7 +169,7 @@ test("boots, reaches versus, fights, and pauses without page errors", async ({ p
   expect(spriteIntegrity.insufficientUnique).toEqual([]);
   expect(spriteIntegrity.splitFrames).toEqual([]);
   const unstableRenderedMotions = await page.evaluate(async () => {
-    const { drawSpriteFrame } = await import("./src/engine/assets.js?v=future-hud21-commercial-arcade-test");
+    const { drawSpriteFrame } = await import("./src/engine/assets.js?v=future-hud22-roster-scale-test");
     const animations = window.__gothTechnologyGame.assets.animations;
     const checkedMotions = [
       "IDLE", "READY_STANCE", "WALK_FORWARD", "RUN_FORWARD", "DASH_FORWARD",
@@ -214,6 +214,22 @@ test("boots, reaches versus, fights, and pauses without page errors", async ({ p
   if (!process.env.NO_TEST_ARTIFACTS) await page.screenshot({ path: testInfo.outputPath(`${testInfo.project.name}-character-select.png`) });
   await clickGame(page, 804, 594);
   await advanceVersusToFight(page);
+  const hudIdentity = await page.evaluate(() => {
+    const context = document.getElementById("game").getContext("2d", { willReadFrequently: true });
+    const score = (x, width) => {
+      const rgba = context.getImageData(x, 14, width, 6).data;
+      let cyan = 0;
+      let red = 0;
+      for (let offset = 0; offset < rgba.length; offset += 4) {
+        cyan = Math.max(cyan, rgba[offset + 1] + rgba[offset + 2] - rgba[offset]);
+        red = Math.max(red, rgba[offset] * 2 - rgba[offset + 1] - rgba[offset + 2]);
+      }
+      return { cyan, red };
+    };
+    return { playerOne: score(40, 470), opponent: score(770, 470) };
+  });
+  expect(hudIdentity.playerOne.cyan).toBeGreaterThan(hudIdentity.playerOne.red);
+  expect(hudIdentity.opponent.red).toBeGreaterThan(hudIdentity.opponent.cyan);
   if (!process.env.NO_TEST_ARTIFACTS) await page.screenshot({ path: testInfo.outputPath(`${testInfo.project.name}-fight.png`) });
 
   await page.keyboard.press("KeyL");
@@ -242,7 +258,35 @@ test("Detroit Lens Noir loads the Boerboel, eye laser, and five Detroit stages",
   page.on("pageerror", (error) => pageErrors.push(error.message));
   await page.goto(gameUrl);
   await expect.poll(() => phase(page)).toBe("title");
-  await expect.poll(() => page.evaluate(() => window.__gothTechnologyGame?.assets?.images?.detroitLensNoirPortrait?.naturalWidth)).toBe(256);
+  await expect.poll(() => page.evaluate(() => {
+    const images = window.__gothTechnologyGame?.assets?.images;
+    return [images?.kalyxPortrait, images?.masterEzraPortrait, images?.detroitLensNoirPortrait]
+      .map((image) => image?.naturalWidth ?? 0);
+  })).toEqual([256, 256, 256]);
+  const portraitMetrics = await page.evaluate(() => {
+    const images = window.__gothTechnologyGame.assets.images;
+    return [images.kalyxPortrait, images.masterEzraPortrait, images.detroitLensNoirPortrait].map((image) => {
+      const canvas = document.createElement("canvas");
+      canvas.width = image.naturalWidth;
+      canvas.height = image.naturalHeight;
+      const context = canvas.getContext("2d", { willReadFrequently: true });
+      context.drawImage(image, 0, 0);
+      const rgba = context.getImageData(0, 0, canvas.width, canvas.height).data;
+      let minY = canvas.height;
+      let maxY = -1;
+      for (let y = 0; y < canvas.height; y += 1) {
+        for (let x = 0; x < canvas.width; x += 1) {
+          if (rgba[(y * canvas.width + x) * 4 + 3] <= 8) continue;
+          minY = Math.min(minY, y);
+          maxY = Math.max(maxY, y);
+        }
+      }
+      return { height: maxY - minY + 1, bottom: maxY };
+    });
+  });
+  expect(Math.max(...portraitMetrics.map(({ height }) => height)) - Math.min(...portraitMetrics.map(({ height }) => height))).toBeLessThanOrEqual(2);
+  expect(Math.min(...portraitMetrics.map(({ height }) => height))).toBeGreaterThanOrEqual(232);
+  expect(Math.max(...portraitMetrics.map(({ bottom }) => bottom)) - Math.min(...portraitMetrics.map(({ bottom }) => bottom))).toBeLessThanOrEqual(2);
   await page.evaluate(() => window.__gothTechnologyGame.openMode("training"));
   await expect.poll(() => phase(page), { timeout: 30_000 }).toBe("select");
   await expect.poll(() => page.evaluate(() => window.__gothTechnologyGame?.matchAssetsReady), { timeout: 60_000 }).toBe(true);

@@ -1,6 +1,6 @@
 export const PACK_ROOT = "assets/GOTHTECHNOLOGY_EXPANDED_SPRITE_PACK_V2";
 export const LOCAL_ROOT = "assets";
-export const MOTION_ASSET_VERSION = "future-hud21-commercial-arcade";
+export const MOTION_ASSET_VERSION = "future-hud22-roster-scale";
 
 export const COMMERCIAL_URLS = [
   `${LOCAL_ROOT}/commercials/detroit-commercial-01.mp4`,
@@ -17,6 +17,8 @@ export const ASSET_URLS = {
     robotRahbe: `${LOCAL_ROOT}/user-title/robot-rahbe-title-card.webp?v=${MOTION_ASSET_VERSION}`
   },
   rosterPortraits: {
+    kalyx: `${LOCAL_ROOT}/user-roster/kalyx-idle.webp?v=${MOTION_ASSET_VERSION}`,
+    masterEzra: `${LOCAL_ROOT}/user-roster/master-ezra-idle.webp?v=${MOTION_ASSET_VERSION}`,
     detroitLensNoir: `${LOCAL_ROOT}/user-roster/detroit-lens-noir-idle.webp?v=${MOTION_ASSET_VERSION}`
   },
   background: `${LOCAL_ROOT}/user-stage/forest-fight-background.jpg`,
@@ -104,6 +106,7 @@ export const FIGHTERS = {
     palette: "#c51f35",
     accent: "#ff5b68",
     costumePalette: "black-crimson",
+    rosterPortraitKey: "kalyxPortrait",
     scale: 1.34,
     stableScale: 1.34,
     airScale: 1.14,
@@ -272,6 +275,7 @@ export const FIGHTERS = {
     spriteFacing: 1,
     palette: "#8bd4ff",
     accent: "#d8aa45",
+    rosterPortraitKey: "masterEzraPortrait",
     scale: 1.3,
     stableScale: 1.3,
     airScale: 1.12,

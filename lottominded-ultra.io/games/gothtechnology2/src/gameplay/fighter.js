@@ -1,8 +1,8 @@
 import { GRAVITY, GROUND_Y, WORLD } from "../config/constants.js";
-import { ATTACKS } from "../config/moves.js?v=future-hud21-commercial-arcade";
-import { drawSpriteFrame } from "../engine/assets.js?v=future-hud21-commercial-arcade";
+import { ATTACKS } from "../config/moves.js?v=future-hud22-roster-scale";
+import { drawSpriteFrame } from "../engine/assets.js?v=future-hud22-roster-scale";
 import { approach, clamp, makeRect } from "../engine/math.js";
-import { attackIntentFromActions, resolveCancelAttack } from "./commands.js?v=future-hud21-commercial-arcade";
+import { attackIntentFromActions, resolveCancelAttack } from "./commands.js?v=future-hud22-roster-scale";
 import { SpriteEffect } from "./effects.js";
 
 const MOTION_LOCKS = new Set([
