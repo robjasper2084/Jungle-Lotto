@@ -1,17 +1,17 @@
-import { ASSET_URLS, FIGHTERS } from "../config/assets.js?v=future-hud18-noir-only";
-import { ARCADE_LADDER, GAME_MODES, ROSTER_CARD_LAYOUT, ROSTER_IDS, STAGES, opponentFor } from "../config/content.js?v=future-hud18-noir-only";
-import { ASSISTS, ATTACKS } from "../config/moves.js?v=future-hud18-noir-only";
+import { ASSET_URLS, FIGHTERS } from "../config/assets.js?v=future-hud19-gameplay-title";
+import { ARCADE_LADDER, GAME_MODES, ROSTER_CARD_LAYOUT, ROSTER_IDS, STAGES, opponentFor } from "../config/content.js?v=future-hud19-gameplay-title";
+import { ASSISTS, ATTACKS } from "../config/moves.js?v=future-hud19-gameplay-title";
 import { CANVAS_HEIGHT, CANVAS_WIDTH, COLORS, GROUND_Y, PHASE, ROUND_SECONDS, WORLD } from "../config/constants.js";
-import { AssetLoader } from "../engine/assets.js?v=future-hud18-noir-only";
-import { WebAudioBus } from "../engine/audio.js?v=future-hud18-noir-only";
-import { InputManager } from "../engine/input.js?v=future-hud18-noir-only";
+import { AssetLoader } from "../engine/assets.js?v=future-hud19-gameplay-title";
+import { WebAudioBus } from "../engine/audio.js?v=future-hud19-gameplay-title";
+import { InputManager } from "../engine/input.js?v=future-hud19-gameplay-title";
 import { clamp, rectsOverlap } from "../engine/math.js";
-import { applyHit, resolveMelee } from "../gameplay/combat.js?v=future-hud18-noir-only";
-import { CpuController } from "../gameplay/cpu.js?v=future-hud18-noir-only";
-import { AttachedSpriteEffect, SpriteEffect } from "../gameplay/effects.js?v=future-hud18-noir-only";
-import { Fighter } from "../gameplay/fighter.js?v=future-hud18-noir-only";
-import { AssistStrike, BoerboelStrike, Projectile } from "../gameplay/projectiles.js?v=future-hud18-noir-only";
-import { applyRoundOutcomeMotions, resolveRoundOutcome } from "../gameplay/rounds.js?v=future-hud18-noir-only";
+import { applyHit, resolveMelee } from "../gameplay/combat.js?v=future-hud19-gameplay-title";
+import { CpuController } from "../gameplay/cpu.js?v=future-hud19-gameplay-title";
+import { AttachedSpriteEffect, SpriteEffect } from "../gameplay/effects.js?v=future-hud19-gameplay-title";
+import { Fighter } from "../gameplay/fighter.js?v=future-hud19-gameplay-title";
+import { AssistStrike, BoerboelStrike, Projectile } from "../gameplay/projectiles.js?v=future-hud19-gameplay-title";
+import { applyRoundOutcomeMotions, resolveRoundOutcome } from "../gameplay/rounds.js?v=future-hud19-gameplay-title";
 import {
   drawCharacterSelect,
   drawDiagnostics,
@@ -22,7 +22,7 @@ import {
   drawRoundMessage,
   drawTitle,
   drawVersus
-} from "../ui/hud.js?v=future-hud18-noir-only";
+} from "../ui/hud.js?v=future-hud19-gameplay-title";
 
 const GAME_SELECT_ITEMS = [
   {
@@ -686,12 +686,12 @@ export class GothTechnologyGame {
 
     if (this.phase === PHASE.TITLE) {
       this.menuHitAreas = [
-        { x: 330, y: 318, w: 292, h: 48, action: () => this.openMode("versus") },
-        { x: 658, y: 318, w: 292, h: 48, action: () => this.openMode("arcade") },
-        { x: 330, y: 376, w: 292, h: 48, action: () => this.openMode("training") },
-        { x: 658, y: 376, w: 292, h: 48, action: () => this.openMode("replay") },
-        { x: 330, y: 434, w: 292, h: 48, action: () => this.openGameSelect() },
-        { x: 658, y: 434, w: 292, h: 48, action: () => this.openSettings() }
+        { x: 124, y: 552, w: 312, h: 46, action: () => this.openMode("versus") },
+        { x: 484, y: 552, w: 312, h: 46, action: () => this.openMode("arcade") },
+        { x: 844, y: 552, w: 312, h: 46, action: () => this.openMode("training") },
+        { x: 124, y: 610, w: 312, h: 46, action: () => this.openMode("replay") },
+        { x: 484, y: 610, w: 312, h: 46, action: () => this.openGameSelect() },
+        { x: 844, y: 610, w: 312, h: 46, action: () => this.openSettings() }
       ];
       this.audio.startMusic("menu");
       if (this.input.consume("ui.confirm")) this.openMode("versus");
@@ -1400,8 +1400,10 @@ export class GothTechnologyGame {
     ctx.fillStyle = "#050403";
     ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
     if (menuMode) {
-      const titleBackdrop = this.assets?.images.titleBackdrop;
-      if (titleBackdrop) ctx.drawImage(titleBackdrop, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+      const menuBackdrop = this.phase === PHASE.TITLE
+        ? this.assets?.images.titleBackdrop
+        : this.assets?.images.menuBackdrop;
+      if (menuBackdrop) ctx.drawImage(menuBackdrop, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
       const wash = ctx.createLinearGradient(0, 0, 0, CANVAS_HEIGHT);
       wash.addColorStop(0, "rgba(0,0,0,0.7)");
       wash.addColorStop(0.48, "rgba(0,0,0,0.26)");

@@ -1,4 +1,4 @@
-import { ASSET_URLS, MOTION_ASSET_VERSION, MOTION_PLAYBACK } from "../config/assets.js?v=future-hud18-noir-only";
+import { ASSET_URLS, MOTION_ASSET_VERSION, MOTION_PLAYBACK } from "../config/assets.js?v=future-hud19-gameplay-title";
 
 const imageCache = new Map();
 
@@ -35,7 +35,8 @@ export class AssetLoader {
   async load() {
     this.manifest = await fetch(ASSET_URLS.manifest).then((r) => r.json());
     await this.loadGroup("boot", {
-      titleBackdrop: ASSET_URLS.titleBackdrop
+      titleBackdrop: ASSET_URLS.titleBackdrop,
+      menuBackdrop: ASSET_URLS.menuBackdrop
     }, this.onProgress);
 
     for (const characterId of Object.keys(this.manifest.characters)) {

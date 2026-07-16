@@ -63,7 +63,7 @@ test("boots, reaches versus, fights, and pauses without page errors", async ({ p
   expect(loadedResources.some((url) => url.includes("gothtechnology-cover-start-bg.webp"))).toBe(false);
   expect(loadedResources.some((url) => url.includes("robot-rahbe-title-card.webp"))).toBe(false);
 
-  await clickGame(page, 470, 458);
+  await clickGame(page, 640, 633);
   await expect.poll(() => phase(page)).toBe("gameSelect");
   await expect.poll(() => page.evaluate(() => {
     const images = window.__gothTechnologyGame?.assets?.images;
@@ -169,7 +169,7 @@ test("boots, reaches versus, fights, and pauses without page errors", async ({ p
   expect(spriteIntegrity.insufficientUnique).toEqual([]);
   expect(spriteIntegrity.splitFrames).toEqual([]);
   const unstableRenderedMotions = await page.evaluate(async () => {
-    const { drawSpriteFrame } = await import("./src/engine/assets.js?v=future-hud18-noir-only-test");
+    const { drawSpriteFrame } = await import("./src/engine/assets.js?v=future-hud19-gameplay-title-test");
     const animations = window.__gothTechnologyGame.assets.animations;
     const checkedMotions = [
       "IDLE", "READY_STANCE", "WALK_FORWARD", "RUN_FORWARD", "DASH_FORWARD",

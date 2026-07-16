@@ -1,7 +1,7 @@
 import { CANVAS_HEIGHT, CANVAS_WIDTH, COLORS, ROUND_SECONDS } from "../config/constants.js";
-import { FIGHTERS } from "../config/assets.js?v=future-hud18-noir-only";
-import { GAME_MODES, ROSTER_CARD_LAYOUT, ROSTER_IDS, STAGES } from "../config/content.js?v=future-hud18-noir-only";
-import { drawSpriteFrame } from "../engine/assets.js?v=future-hud18-noir-only";
+import { FIGHTERS } from "../config/assets.js?v=future-hud19-gameplay-title";
+import { GAME_MODES, ROSTER_CARD_LAYOUT, ROSTER_IDS, STAGES } from "../config/content.js?v=future-hud19-gameplay-title";
+import { drawSpriteFrame } from "../engine/assets.js?v=future-hud19-gameplay-title";
 
 const panel = (ctx, x, y, w, h, stroke = COLORS.gold) => {
   ctx.save();
@@ -110,6 +110,29 @@ const drawFutureButton = (ctx, x, y, w, h, kicker, label, tone) => {
   ctx.moveTo(x + w - 28, y + h / 2 - 8);
   ctx.lineTo(x + w - 18, y + h / 2);
   ctx.lineTo(x + w - 28, y + h / 2 + 8);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+};
+
+const drawTitleAction = (ctx, x, y, w, h, index, label, tone) => {
+  drawAngularPanel(ctx, x, y, w, h, "rgba(2, 8, 12, 0.84)", tone, 1.5, 10);
+  ctx.save();
+  ctx.fillStyle = tone;
+  ctx.fillRect(x + 14, y + 10, 3, h - 20);
+  ctx.textBaseline = "middle";
+  ctx.textAlign = "left";
+  ctx.fillStyle = FUTURE.muted;
+  ctx.font = `800 10px ${HUD_MONO}`;
+  ctx.fillText(index, x + 28, y + h / 2);
+  ctx.fillStyle = FUTURE.white;
+  ctx.font = `900 18px ${HUD_FONT}`;
+  ctx.fillText(label, x + 68, y + h / 2);
+  ctx.fillStyle = tone;
+  ctx.beginPath();
+  ctx.moveTo(x + w - 28, y + h / 2 - 6);
+  ctx.lineTo(x + w - 18, y + h / 2);
+  ctx.lineTo(x + w - 28, y + h / 2 + 6);
   ctx.closePath();
   ctx.fill();
   ctx.restore();
@@ -257,44 +280,46 @@ export const drawFightHud = (ctx, game) => {
 };
 
 export const drawTitle = (ctx, game) => {
-  drawMenuCoverWash(ctx);
   ctx.save();
+  ctx.fillStyle = "rgba(2, 7, 11, 0.82)";
+  ctx.fillRect(0, 0, CANVAS_WIDTH, 126);
+  ctx.fillStyle = FUTURE.red;
+  ctx.fillRect(28, 30, 280, 2);
+  ctx.fillStyle = FUTURE.cyan;
+  ctx.fillRect(972, 30, 280, 2);
+  ctx.fillStyle = FUTURE.muted;
+  ctx.font = `800 10px ${HUD_MONO}`;
+  ctx.textAlign = "left";
+  ctx.fillText("LM-84 // DETROIT COMBAT NETWORK", 28, 22);
+  ctx.textAlign = "right";
+  ctx.fillText("3 FIGHTERS // 6 ARENAS // LINK READY", 1252, 22);
   ctx.textAlign = "center";
-  const logo = game.assets?.images.logo;
-  if (logo) {
-    ctx.save();
-    ctx.shadowColor = "rgba(255, 214, 109, 0.42)";
-    ctx.shadowBlur = 28;
-    ctx.globalCompositeOperation = "screen";
-    ctx.drawImage(logo, 530, 18, 220, 220);
-    ctx.restore();
-  } else {
-    ctx.fillStyle = COLORS.goldBright;
-    ctx.shadowColor = COLORS.goldBright;
-    ctx.shadowBlur = 18;
-    ctx.font = "900 60px Georgia";
-    ctx.fillText("GOTHTECHNOLOGY", CANVAS_WIDTH / 2, 164);
-    ctx.shadowBlur = 0;
-  }
-  ctx.fillStyle = COLORS.goldBright;
-  ctx.font = "900 38px Georgia";
-  ctx.fillText("GOTHTECHNOLOGY", CANVAS_WIDTH / 2, 260);
-  ctx.fillStyle = COLORS.blue;
-  ctx.font = "700 18px system-ui";
-  const leftName = FIGHTERS[game.player1Id]?.name || "KALYX";
-  const rightName = FIGHTERS[game.player2Id]?.name || "MASTER EZRA";
-  ctx.fillText(`${leftName} VS ${rightName}`, CANVAS_WIDTH / 2, 292);
-  drawMenuButton(ctx, 330, 318, 292, 48, "VERSUS");
-  drawMenuButton(ctx, 658, 318, 292, 48, "ARCADE");
-  drawMenuButton(ctx, 330, 376, 292, 48, "TRAINING");
-  drawMenuButton(ctx, 658, 376, 292, 48, "REPLAY");
-  drawMenuButton(ctx, 330, 434, 292, 48, "GAME SELECT");
-  drawMenuButton(ctx, 658, 434, 292, 48, "SETTINGS");
-  ctx.fillStyle = "rgba(255, 246, 211, 0.55)";
-  ctx.font = "700 13px system-ui";
+  ctx.fillStyle = FUTURE.white;
+  ctx.shadowColor = "rgba(103, 232, 255, 0.42)";
+  ctx.shadowBlur = 18;
+  ctx.font = `900 54px ${HUD_FONT}`;
+  ctx.fillText("GOTHTECHNOLOGY", CANVAS_WIDTH / 2, 78);
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = FUTURE.cyan;
+  ctx.font = `800 12px ${HUD_MONO}`;
+  ctx.fillText("MOTOR CITY COMBAT PROTOCOL", CANVAS_WIDTH / 2, 106);
+
+  const footer = ctx.createLinearGradient(0, 504, 0, CANVAS_HEIGHT);
+  footer.addColorStop(0, "rgba(2, 7, 11, 0)");
+  footer.addColorStop(0.2, "rgba(2, 7, 11, 0.82)");
+  footer.addColorStop(1, "rgba(2, 7, 11, 0.96)");
+  ctx.fillStyle = footer;
+  ctx.fillRect(0, 504, CANVAS_WIDTH, 216);
+  drawTitleAction(ctx, 124, 552, 312, 46, "01", "VERSUS", FUTURE.red);
+  drawTitleAction(ctx, 484, 552, 312, 46, "02", "ARCADE", FUTURE.amber);
+  drawTitleAction(ctx, 844, 552, 312, 46, "03", "TRAINING", FUTURE.cyan);
+  drawTitleAction(ctx, 124, 610, 312, 46, "04", "REPLAY", FUTURE.cyan);
+  drawTitleAction(ctx, 484, 610, 312, 46, "05", "GAME SELECT", FUTURE.amber);
+  drawTitleAction(ctx, 844, 610, 312, 46, "06", "SETTINGS", FUTURE.red);
+  ctx.fillStyle = FUTURE.muted;
+  ctx.font = `700 10px ${HUD_MONO}`;
   const cpuLabel = game.cpuEnabled ? `CPU ${game.cpuDifficulty.toUpperCase()}` : "LOCAL 2P";
-  ctx.fillText(`${cpuLabel}  /  ${game.stats.matches} MATCHES  /  ${game.stats.wins} WINS  /  ARCADE CLEARS ${game.stats.arcadeClears}`, CANVAS_WIDTH / 2, 536);
-  ctx.fillText("ENTER: VERSUS  /  C: CHANGE CPU  /  TWO GAMEPADS SUPPORTED", CANVAS_WIDTH / 2, 570);
+  ctx.fillText(`${cpuLabel} // ${game.stats.matches} MATCHES // ${game.stats.wins} WINS // ${game.stats.arcadeClears} ARCADE CLEARS // ENTER TO DEPLOY`, CANVAS_WIDTH / 2, 692);
   ctx.restore();
 };
 

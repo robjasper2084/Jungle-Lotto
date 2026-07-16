@@ -1,11 +1,12 @@
 export const PACK_ROOT = "assets/GOTHTECHNOLOGY_EXPANDED_SPRITE_PACK_V2";
 export const LOCAL_ROOT = "assets";
-export const MOTION_ASSET_VERSION = "future-hud18-noir-only";
+export const MOTION_ASSET_VERSION = "future-hud19-gameplay-title";
 
 export const ASSET_URLS = {
   manifest: `${LOCAL_ROOT}/motion-atlases/motion-atlas-manifest.json?v=${MOTION_ASSET_VERSION}`,
   logo: `${LOCAL_ROOT}/user-title/lottomind-live-logo.webp?v=${MOTION_ASSET_VERSION}`,
-  titleBackdrop: `${LOCAL_ROOT}/user-stage/forest-fight-background.jpg`,
+  titleBackdrop: `${LOCAL_ROOT}/user-title/gothtechnology-gameplay-title.webp?v=${MOTION_ASSET_VERSION}`,
+  menuBackdrop: `${LOCAL_ROOT}/user-stage/forest-fight-background.jpg`,
   gameTitles: {
     gothtechnology: `${LOCAL_ROOT}/user-title/gothtechnology-cover-start-bg.webp?v=${MOTION_ASSET_VERSION}`,
     robotRahbe: `${LOCAL_ROOT}/user-title/robot-rahbe-title-card.webp?v=${MOTION_ASSET_VERSION}`
