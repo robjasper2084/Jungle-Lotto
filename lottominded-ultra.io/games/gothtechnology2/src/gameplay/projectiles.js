@@ -1,11 +1,17 @@
-import { drawSheetFrame } from "../engine/assets.js?v=motion-atlas7-stable";
+import { drawSheetFrame } from "../engine/assets.js?v=future-hud21-commercial-arcade";
 import { rectsOverlap } from "../engine/math.js";
 import { SpriteEffect } from "./effects.js";
-import { sliceAttackForHit } from "./hits.js?v=motion-atlas7-stable";
+import { sliceAttackForHit } from "./hits.js?v=future-hud21-commercial-arcade";
 
 const hexAlpha = (color, alpha) => {
   if (!color?.startsWith("#") || color.length !== 7) return color;
   return `${color}${Math.round(Math.max(0, Math.min(1, alpha)) * 255).toString(16).padStart(2, "0")}`;
+};
+
+const fighterEffectColor = (owner, alpha = 1) => {
+  const key = owner.config?.manifestKey;
+  const color = key === "KALYX" ? "#9f62ff" : key?.startsWith("DETROIT_LENS") ? "#e7c36a" : "#8bd4ff";
+  return alpha >= 1 ? color : hexAlpha(color, alpha);
 };
 
 export class Projectile {
@@ -61,7 +67,9 @@ export class Projectile {
         box: this.rect,
         projectile: true,
         level: this.attack.level ?? "mid",
-        sourceName: this.kind,
+        sourceName: this.kind === "eye-laser"
+          ? "super"
+          : this.kind,
         hitIndex: this.hitCount,
         maxHits
       });
@@ -86,9 +94,12 @@ export class Projectile {
   spawnBurst(game, x, y, impact = false) {
     if (this.burstDone || !game?.effects) return;
     this.burstDone = true;
-    const image = this.owner.id === "KALYX"
+    const manifestKey = this.owner.config?.manifestKey;
+    const image = manifestKey === "KALYX"
       ? game.assets.images.kalyxShadowClaw
-      : game.assets.images.ezraBlueBurst;
+      : manifestKey?.startsWith("DETROIT_LENS")
+        ? game.assets.images.hitSpark
+        : game.assets.images.ezraBlueBurst;
     game.effects.push(new SpriteEffect({
       x,
       y: y + this.radius * 0.75,
@@ -132,10 +143,43 @@ export class Projectile {
     ctx.restore();
   }
 
+  renderEyeLaser(ctx, visualY) {
+    const length = this.radius * 7.4;
+    const startX = this.x - this.direction * length;
+    const endX = this.x + this.direction * this.radius * 0.9;
+    ctx.save();
+    ctx.globalCompositeOperation = "lighter";
+    const beam = ctx.createLinearGradient(startX, visualY, endX, visualY);
+    beam.addColorStop(0, "rgba(90, 0, 0, 0)");
+    beam.addColorStop(0.38, "rgba(210, 24, 32, 0.4)");
+    beam.addColorStop(0.82, "rgba(255, 48, 54, 0.96)");
+    beam.addColorStop(1, "rgba(255, 245, 220, 1)");
+    ctx.strokeStyle = beam;
+    ctx.lineCap = "round";
+    ctx.lineWidth = this.radius * (0.32 + Math.sin(this.age * 46) * 0.05);
+    ctx.shadowColor = "#ff2838";
+    ctx.shadowBlur = 30;
+    ctx.beginPath();
+    ctx.moveTo(startX, visualY);
+    ctx.lineTo(endX, visualY);
+    ctx.stroke();
+    ctx.strokeStyle = "rgba(255, 246, 226, 0.95)";
+    ctx.lineWidth = Math.max(2, this.radius * 0.09);
+    ctx.beginPath();
+    ctx.moveTo(startX + this.direction * length * 0.34, visualY);
+    ctx.lineTo(endX, visualY);
+    ctx.stroke();
+    ctx.restore();
+  }
+
   render(ctx) {
     const frame = Math.floor(this.age * 18) % 8;
     const flip = this.direction < 0;
     const visualY = this.y + Math.sin(this.age * 14 + this.seed) * Math.min(18, this.radius * 0.26);
+    if (this.kind === "eye-laser") {
+      this.renderEyeLaser(ctx, visualY);
+      return;
+    }
     this.renderTrail(ctx, visualY);
 
     ctx.save();
@@ -192,6 +236,142 @@ export class Projectile {
   }
 }
 
+const BOERBOEL_PHASES = {
+  summon: { row: 0, duration: 0.24, frameRate: 12 },
+  run: { row: 1, duration: Infinity, frameRate: 14 },
+  attack: { row: 2, duration: 0.46, frameRate: 13 },
+  recover: { row: 3, duration: 0.44, frameRate: 12 }
+};
+
+export class BoerboelStrike extends Projectile {
+  constructor({ owner, x, y, direction, attack, image }) {
+    super({ owner, x, y, direction, attack, image, kind: "boerboel-rush", color: "#c88946" });
+    this.phase = "summon";
+    this.phaseAge = 0;
+    this.hitApplied = false;
+    this.speed = attack.speed ?? 760;
+    this.radius = attack.radius ?? 66;
+    this.trail = [];
+  }
+
+  get rect() {
+    return {
+      x: this.x - 82,
+      y: this.y - 112,
+      w: 164,
+      h: 108
+    };
+  }
+
+  setPhase(phase) {
+    this.phase = phase;
+    this.phaseAge = 0;
+  }
+
+  update(dt, game) {
+    this.age += dt;
+    this.phaseAge += dt;
+    const target = game.fighters.find((fighter) => fighter.id !== this.owner.id);
+
+    if (this.phase === "summon") {
+      if (this.phaseAge >= BOERBOEL_PHASES.summon.duration) this.setPhase("run");
+      return;
+    }
+
+    if (this.phase === "run") {
+      this.x += this.direction * this.speed * dt;
+      this.trail.unshift({ x: this.x - this.direction * 42, y: this.y + 2 });
+      this.trail.length = Math.min(7, this.trail.length);
+      const distance = target ? this.direction * (target.x - this.x) : Infinity;
+      if (target && distance <= 126 && distance >= -76) {
+        this.x = target.x - this.direction * 94;
+        this.setPhase("attack");
+        return;
+      }
+      if (this.x < -160 || this.x > 1440 || this.age > 2.4) this.setPhase("recover");
+      return;
+    }
+
+    if (this.phase === "attack") {
+      if (!this.hitApplied && this.phaseAge >= 0.15) {
+        this.hitApplied = true;
+        if (target && !target.isKO && rectsOverlap(this.rect, target.hurtbox)) {
+          game.resolveIncomingHit(this.owner, target, this.attack, {
+            box: this.rect,
+            projectile: false,
+            level: this.attack.level ?? "mid",
+            sourceName: "boerboelRush",
+            hitIndex: 1,
+            maxHits: 1
+          });
+          game.effects.push(new SpriteEffect({
+            x: target.x - this.direction * 24,
+            y: target.y - 78,
+            image: game.assets.images.hitSpark,
+            duration: 0.26,
+            scale: 0.46,
+            flip: this.direction < 0,
+            alpha: 0.86
+          }));
+        }
+      }
+      if (this.phaseAge >= BOERBOEL_PHASES.attack.duration) this.setPhase("recover");
+      return;
+    }
+
+    this.x += this.direction * this.speed * 0.42 * dt;
+    if (this.phaseAge >= BOERBOEL_PHASES.recover.duration) this.dead = true;
+  }
+
+  render(ctx) {
+    if (!this.image) return;
+    const layout = BOERBOEL_PHASES[this.phase];
+    const frame = this.phase === "run"
+      ? Math.floor(this.phaseAge * layout.frameRate) % 6
+      : Math.min(5, Math.floor((this.phaseAge / layout.duration) * 6));
+    const alpha = this.phase === "recover"
+      ? Math.max(0, 1 - this.phaseAge / layout.duration)
+      : 1;
+    const scale = 0.86;
+
+    ctx.save();
+    ctx.globalAlpha = 0.34 * alpha;
+    ctx.fillStyle = "#050403";
+    ctx.beginPath();
+    ctx.ellipse(this.x, this.y + 5, 74, 12, 0, 0, Math.PI * 2);
+    ctx.fill();
+    for (let index = this.trail.length - 1; index >= 0; index -= 1) {
+      const point = this.trail[index];
+      const strength = 1 - index / Math.max(1, this.trail.length);
+      ctx.globalAlpha = strength * 0.12 * alpha;
+      ctx.fillStyle = "#d7b07a";
+      ctx.beginPath();
+      ctx.ellipse(point.x, point.y, 22 * strength, 7 * strength, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
+
+    ctx.save();
+    ctx.translate(this.x, this.y + 3);
+    if (this.direction < 0) ctx.scale(-1, 1);
+    ctx.globalAlpha = alpha;
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
+    ctx.drawImage(
+      this.image,
+      frame * 192,
+      layout.row * 192,
+      192,
+      192,
+      -96 * scale,
+      -192 * scale,
+      192 * scale,
+      192 * scale
+    );
+    ctx.restore();
+  }
+}
+
 export class AssistStrike extends Projectile {
   constructor({ owner, x, y, direction, spec, image }) {
     super({
@@ -201,7 +381,7 @@ export class AssistStrike extends Projectile {
       direction,
       image,
       kind: spec.name,
-      color: owner.id === "KALYX" ? "#c08cff" : "#9ed8ff",
+      color: fighterEffectColor(owner),
       attack: {
         damage: spec.damage,
         chip: 6,
@@ -319,7 +499,7 @@ export class AssistStrike extends Projectile {
       const sy = (layout.sourceY ?? 0) + (layout.row ?? 0) * layout.cellHeight;
       const scale = layout.visualScale ?? this.radius / 96;
       const flip = this.direction < 0;
-      const color = this.owner.id === "KALYX" ? "#9f62ff" : "#8bd4ff";
+      const color = fighterEffectColor(this.owner);
       const visualY = this.y + Math.sin(this.age * 12 + this.seed) * 18;
       ctx.save();
       ctx.globalCompositeOperation = "lighter";
@@ -327,7 +507,7 @@ export class AssistStrike extends Projectile {
         const p = this.trail[i];
         const t = 1 - i / Math.max(1, this.trail.length);
         ctx.globalAlpha = 0.06 + t * 0.22;
-        ctx.fillStyle = this.owner.id === "KALYX" ? "rgba(110, 66, 210, 0.5)" : "rgba(139, 212, 255, 0.44)";
+        ctx.fillStyle = fighterEffectColor(this.owner, 0.44);
         ctx.shadowColor = color;
         ctx.shadowBlur = 10 + t * 18;
         ctx.beginPath();
@@ -337,13 +517,13 @@ export class AssistStrike extends Projectile {
       ctx.restore();
       ctx.save();
       ctx.globalCompositeOperation = "lighter";
-      ctx.fillStyle = this.owner.id === "KALYX" ? "rgba(150, 88, 255, 0.22)" : "rgba(139, 212, 255, 0.2)";
+      ctx.fillStyle = fighterEffectColor(this.owner, 0.22);
       ctx.shadowColor = color;
       ctx.shadowBlur = 28;
       ctx.beginPath();
       ctx.ellipse(this.x - this.direction * 46, visualY + this.radius - 72, 138, 42, 0, 0, Math.PI * 2);
       ctx.fill();
-      ctx.strokeStyle = this.owner.id === "KALYX" ? "rgba(202, 172, 255, 0.46)" : "rgba(255, 226, 146, 0.38)";
+      ctx.strokeStyle = fighterEffectColor(this.owner, 0.46);
       ctx.lineWidth = 3;
       ctx.beginPath();
       ctx.moveTo(this.x - this.direction * 156, visualY + this.radius - 96);
@@ -355,7 +535,7 @@ export class AssistStrike extends Projectile {
       ctx.translate(this.x, visualY + this.radius);
       if (flip) ctx.scale(-1, 1);
       ctx.globalAlpha = 0.96;
-      ctx.shadowColor = this.owner.id === "KALYX" ? "rgba(156, 95, 255, 0.55)" : "rgba(139, 212, 255, 0.5)";
+      ctx.shadowColor = fighterEffectColor(this.owner, 0.55);
       ctx.shadowBlur = 22;
       ctx.drawImage(
         this.image,

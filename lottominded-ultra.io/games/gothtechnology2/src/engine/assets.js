@@ -1,4 +1,4 @@
-import { ASSET_URLS, MOTION_ASSET_VERSION, MOTION_PLAYBACK } from "../config/assets.js?v=motion-atlas7-stable";
+import { ASSET_URLS, MOTION_ASSET_VERSION, MOTION_PLAYBACK } from "../config/assets.js?v=future-hud21-commercial-arcade";
 
 const imageCache = new Map();
 
@@ -35,7 +35,8 @@ export class AssetLoader {
   async load() {
     this.manifest = await fetch(ASSET_URLS.manifest).then((r) => r.json());
     await this.loadGroup("boot", {
-      titleBackdrop: ASSET_URLS.titleBackdrop
+      titleBackdrop: ASSET_URLS.titleBackdrop,
+      menuBackdrop: ASSET_URLS.menuBackdrop
     }, this.onProgress);
 
     for (const characterId of Object.keys(this.manifest.characters)) {
@@ -47,13 +48,26 @@ export class AssetLoader {
 
   loadMenuAssets(onProgress = () => {}) {
     return this.loadGroup("menu", {
-      logo: ASSET_URLS.logo
+      logo: ASSET_URLS.logo,
+      detroitLensNoirPortrait: ASSET_URLS.rosterPortraits.detroitLensNoir
+    }, onProgress, { strict: false });
+  }
+
+  loadGameSelectAssets(onProgress = () => {}) {
+    return this.loadGroup("gameSelect", {
+      gameTitleGothtechnology: ASSET_URLS.gameTitles.gothtechnology,
+      gameTitleRobotRahbe: ASSET_URLS.gameTitles.robotRahbe
     }, onProgress, { strict: false });
   }
 
   loadFightAssets(onProgress = () => {}) {
     return this.loadGroup("fight", {
       background: ASSET_URLS.background,
+      detroitMidnightMile: ASSET_URLS.stages.detroitMidnightMile,
+      motorCityAssembly: ASSET_URLS.stages.motorCityAssembly,
+      detroitRiverfront: ASSET_URLS.stages.detroitRiverfront,
+      easternMarketAfterDark: ASSET_URLS.stages.easternMarketAfterDark,
+      michiganCentralConcourse: ASSET_URLS.stages.michiganCentralConcourse,
       farTrees: ASSET_URLS.farTrees,
       fog: ASSET_URLS.fog,
       embers: ASSET_URLS.embers,
@@ -66,6 +80,7 @@ export class AssetLoader {
       ezraBlueBurst: ASSET_URLS.effects.ezraBlueBurst,
       ezraOwlArc: ASSET_URLS.effects.ezraOwlArc,
       smoke: ASSET_URLS.effects.smoke,
+      detroitBoerboel: ASSET_URLS.assists.boerboel,
       assistOwl: ASSET_URLS.assists.owl,
       assistRaven: ASSET_URLS.assists.raven,
       assistNocturna: ASSET_URLS.assists.nocturna

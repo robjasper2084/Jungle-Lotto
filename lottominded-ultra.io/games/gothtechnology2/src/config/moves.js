@@ -288,5 +288,31 @@ export const ASSISTS = {
       motion: "HEAVY_PUNCH",
       render: "handFireball"
     }
+  },
+  DETROIT_LENS: {
+    assist1: {
+      name: "Flash Drone",
+      imageKey: "hitSpark",
+      damage: 74,
+      cooldown: 7.4,
+      speed: 860,
+      yOffset: -184,
+      hitbox: { w: 94, h: 82 },
+      motion: "SPECIAL_START",
+      sheet: { sourceX: 0, sourceY: 0, cellWidth: 256, cellHeight: 256, row: 0, frames: 8, frameRate: 16, visualScale: 0.58 }
+    },
+    assist2: {
+      name: "Frame Guard",
+      imageKey: "blockShield",
+      damage: 0,
+      cooldown: 8.6,
+      speed: 0,
+      yOffset: -132,
+      hitbox: { w: 120, h: 160 },
+      motion: "BLOCK_HIGH",
+      shield: true
+    }
   }
 };
+
+ASSISTS.DETROIT_LENS_NOIR = ASSISTS.DETROIT_LENS;

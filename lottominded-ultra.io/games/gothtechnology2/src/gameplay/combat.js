@@ -1,7 +1,7 @@
 import { rectsOverlap } from "../engine/math.js";
-import { ATTACKS } from "../config/moves.js?v=motion-atlas7-stable";
+import { ATTACKS } from "../config/moves.js?v=future-hud21-commercial-arcade";
 import { FloatingText, SpriteEffect } from "./effects.js";
-import { registerAttackHit, sliceAttackForHit } from "./hits.js?v=motion-atlas7-stable";
+import { registerAttackHit, sliceAttackForHit } from "./hits.js?v=future-hud21-commercial-arcade";
 
 export function resolveMelee(attacker, defender, game) {
   const attackState = attacker.currentAttack;
@@ -25,6 +25,7 @@ export function resolveMelee(attacker, defender, game) {
     game.shake = Math.max(game.shake ?? 0, 4);
     game.effects.push(new FloatingText("TECH", (attacker.x + defender.x) / 2, defender.y - 168, "#9ed8ff"));
     game.audio.beep("block");
+    game.recordCombatEvent?.({ type: "throwTech", attacker, defender });
     return;
   }
   game.resolveIncomingHit(attacker, defender, sliceAttackForHit(attack, hit.hitIndex), {
@@ -38,9 +39,25 @@ export function resolveMelee(attacker, defender, game) {
 }
 
 export function applyHit(attacker, defender, attack, game, meta = {}) {
+  if (defender.parryTimer > 0 && meta.sourceName !== "throw") {
+    defender.parryTimer = 0;
+    defender.shieldTimer = 0;
+    defender.guardFlash = 0.3;
+    defender.meter = Math.min(100, defender.meter + (defender.config.perfectBlockMeterBonus ?? 16));
+    attacker.currentAttack = null;
+    attacker.hitstun = Math.max(attacker.hitstun, 0.3);
+    attacker.vx -= attacker.facing * 260;
+    game.hitstop = Math.max(game.hitstop, 0.055);
+    game.shake = Math.max(game.shake ?? 0, 7);
+    game.effects.push(new FloatingText("PARRY", defender.x, defender.y - 190, "#9ed8ff"));
+    game.audio.beep("block");
+    game.recordCombatEvent?.({ type: "parry", attacker, defender });
+    return;
+  }
   const isBlocked = defender.isBlocking(meta.level ?? attack.level, attacker);
   const activeStart = defender.currentAttack?.data?.active?.[0] ?? defender.currentAttack?.data?.startup ?? 0;
-  const counterHit = !isBlocked && meta.sourceName !== "throw" && defender.currentAttack && defender.currentAttack.elapsed < Math.max(0.12, activeStart + 0.03);
+  const forcedCounter = game.training && game.trainingCounterHit && defender.slot === 2;
+  const counterHit = !isBlocked && meta.sourceName !== "throw" && (forcedCounter || (defender.currentAttack && defender.currentAttack.elapsed < Math.max(0.12, activeStart + 0.03)));
   const perfectBlock = isBlocked && defender.guardTapTimer > 0 && meta.sourceName !== "super";
   const comboScale = Math.max(0.52, 1 - Math.max(0, attacker.comboHits) * 0.1);
   const rawDamage = Math.round((attack.damage ?? 50) * (counterHit ? 1.18 : 1));
@@ -66,8 +83,29 @@ export function applyHit(attacker, defender, attack, game, meta = {}) {
     });
   }
 
-  attacker.meter = Math.min(100, attacker.meter + (attack.meter ?? 8));
-  if (isBlocked) defender.meter = Math.min(100, defender.meter + (perfectBlock ? 11 : 5));
+  const precisionRangeBonus = attacker.config.archetype === "precision" && meta.projectile && Math.abs(attacker.x - defender.x) >= 260
+    ? (attacker.config.precisionRangeMeterBonus ?? 4)
+    : 0;
+  attacker.meter = Math.min(100, attacker.meter + (attack.meter ?? 8) + precisionRangeBonus);
+  if (isBlocked) defender.meter = Math.min(100, defender.meter + (perfectBlock ? (defender.config.perfectBlockMeterBonus ?? 11) : 5));
+
+  const advantageFrames = Math.round((stun - (attack.recovery ?? 0)) * 60);
+  game.trainingReadout = {
+    outcome: perfectBlock ? "PERFECT BLOCK" : isBlocked ? "BLOCK" : counterHit ? "COUNTER HIT" : "HIT",
+    damage,
+    comboScale,
+    advantageFrames,
+    level: meta.level ?? attack.level ?? "mid"
+  };
+  game.recordCombatEvent?.({
+    type: perfectBlock ? "perfectBlock" : meta.sourceName === "super" && !isBlocked ? "superHit" : "hit",
+    attacker,
+    defender,
+    damage,
+    comboHits: attacker.comboHits + (isBlocked ? 0 : 1),
+    blocked: isBlocked,
+    counterHit
+  });
 
   if (!isBlocked) {
     attacker.comboHits += 1;
