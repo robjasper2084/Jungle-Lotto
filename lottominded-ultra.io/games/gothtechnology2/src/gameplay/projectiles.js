@@ -1,7 +1,7 @@
-import { drawSheetFrame } from "../engine/assets.js?v=heartline34-full-cast-title";
-import { rectsOverlap } from "../engine/math.js?v=heartline34-full-cast-title";
-import { LovePulseEffect, SpriteEffect } from "./effects.js?v=heartline34-full-cast-title";
-import { sliceAttackForHit } from "./hits.js?v=heartline34-full-cast-title";
+import { drawSheetFrame } from "../engine/assets.js?v=heartline35-detroit-title";
+import { rectsOverlap } from "../engine/math.js?v=heartline35-detroit-title";
+import { LovePulseEffect, SpriteEffect } from "./effects.js?v=heartline35-detroit-title";
+import { sliceAttackForHit } from "./hits.js?v=heartline35-detroit-title";
 
 const hexAlpha = (color, alpha) => {
   if (!color?.startsWith("#") || color.length !== 7) return color;

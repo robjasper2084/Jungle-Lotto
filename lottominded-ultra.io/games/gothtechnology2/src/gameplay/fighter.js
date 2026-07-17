@@ -1,9 +1,9 @@
-import { GRAVITY, GROUND_Y, WORLD } from "../config/constants.js?v=heartline34-full-cast-title";
-import { ATTACKS } from "../config/moves.js?v=heartline34-full-cast-title";
-import { drawSpriteFrame } from "../engine/assets.js?v=heartline34-full-cast-title";
-import { approach, clamp, makeRect } from "../engine/math.js?v=heartline34-full-cast-title";
-import { attackIntentFromActions, resolveCancelAttack } from "./commands.js?v=heartline34-full-cast-title";
-import { SpriteEffect } from "./effects.js?v=heartline34-full-cast-title";
+import { GRAVITY, GROUND_Y, WORLD } from "../config/constants.js?v=heartline35-detroit-title";
+import { ATTACKS } from "../config/moves.js?v=heartline35-detroit-title";
+import { drawSpriteFrame } from "../engine/assets.js?v=heartline35-detroit-title";
+import { approach, clamp, makeRect } from "../engine/math.js?v=heartline35-detroit-title";
+import { attackIntentFromActions, resolveCancelAttack } from "./commands.js?v=heartline35-detroit-title";
+import { SpriteEffect } from "./effects.js?v=heartline35-detroit-title";
 
 const MOTION_LOCKS = new Set([
   "LIGHT_PUNCH",

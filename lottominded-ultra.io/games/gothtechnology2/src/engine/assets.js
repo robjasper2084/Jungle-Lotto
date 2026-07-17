@@ -1,4 +1,4 @@
-import { ASSET_URLS, MOTION_ASSET_VERSION, MOTION_PLAYBACK } from "../config/assets.js?v=heartline34-full-cast-title";
+import { ASSET_URLS, MOTION_ASSET_VERSION, MOTION_PLAYBACK } from "../config/assets.js?v=heartline35-detroit-title";
 
 const imageCache = new Map();
 

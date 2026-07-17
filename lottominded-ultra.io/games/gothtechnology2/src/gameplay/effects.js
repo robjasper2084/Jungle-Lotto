@@ -1,4 +1,4 @@
-import { drawSheetFrame } from "../engine/assets.js?v=heartline34-full-cast-title";
+import { drawSheetFrame } from "../engine/assets.js?v=heartline35-detroit-title";
 
 export class SpriteEffect {
   constructor({ x, y, image, cellW = 256, cellH = 256, frames = 8, duration = 0.42, scale = 1, flip = false, alpha = 1 }) {
