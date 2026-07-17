@@ -1,7 +1,7 @@
-import { FIGHTERS } from "./config/assets.js?v=heartline35-detroit-title";
-import { COMMAND_LISTS, GAME_MODES, ROSTER_IDS } from "./config/content.js?v=heartline35-detroit-title";
-import { GothTechnologyGame } from "./scenes/game.js?v=heartline35-detroit-title";
-import { PHASE } from "./config/constants.js?v=heartline35-detroit-title";
+import { FIGHTERS } from "./config/assets.js?v=heartline36-leash-wrist";
+import { COMMAND_LISTS, GAME_MODES, ROSTER_IDS } from "./config/content.js?v=heartline36-leash-wrist";
+import { GothTechnologyGame } from "./scenes/game.js?v=heartline36-leash-wrist";
+import { PHASE } from "./config/constants.js?v=heartline36-leash-wrist";
 
 const syncViewportHeight = () => {
   document.documentElement.style.setProperty("--app-height", `${window.innerHeight}px`);

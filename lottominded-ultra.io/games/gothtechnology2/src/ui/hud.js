@@ -1,7 +1,7 @@
-import { CANVAS_HEIGHT, CANVAS_WIDTH, COLORS, ROUND_SECONDS } from "../config/constants.js?v=heartline35-detroit-title";
-import { FIGHTERS } from "../config/assets.js?v=heartline35-detroit-title";
-import { GAME_MODES, ROSTER_CARD_LAYOUT, ROSTER_IDS, STAGES } from "../config/content.js?v=heartline35-detroit-title";
-import { drawSpriteFrame } from "../engine/assets.js?v=heartline35-detroit-title";
+import { CANVAS_HEIGHT, CANVAS_WIDTH, COLORS, ROUND_SECONDS } from "../config/constants.js?v=heartline36-leash-wrist";
+import { FIGHTERS } from "../config/assets.js?v=heartline36-leash-wrist";
+import { GAME_MODES, ROSTER_CARD_LAYOUT, ROSTER_IDS, STAGES } from "../config/content.js?v=heartline36-leash-wrist";
+import { drawSpriteFrame } from "../engine/assets.js?v=heartline36-leash-wrist";
 
 const FUTURE = {
   cyan: "#67e8ff",
