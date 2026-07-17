@@ -128,11 +128,11 @@ export const COMMAND_LISTS = {
   },
   AMARA_VALENTINE: {
     title: "HEARTLINE VANGUARD",
-    passive: "Love-powered pressure. Heartline Pulse attracts; Heartbreak Nova repels.",
+    passive: "Charm slows movement. Amara's next clean strike consumes it for a Heartlink damage bonus.",
     commands: [
       ...commonCommands,
-      { input: "DOWN + SP", name: "CHARM COUNTER", detail: "Spend meter to charm and stagger an incoming attacker." },
-      { input: "SP", name: "HEARTLINE PULSE", detail: "Launch a rose pulse that pulls its target closer." },
+      { input: "DOWN + SP", name: "CHARM COUNTER", detail: "Arm a brief counter. A successful parry pulls and charms the attacker." },
+      { input: "SP", name: "HEARTLINE PULSE", detail: "Launch a rose pulse that pulls and charms its target." },
       { input: "MAX / MOD+HP", name: "HEARTBREAK NOVA", detail: "Release a multi-hit love nova that launches the target away." }
     ]
   }

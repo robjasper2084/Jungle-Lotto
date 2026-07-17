@@ -133,6 +133,13 @@ for (const [characterId, character] of Object.entries(manifest.characters ?? {})
       failures.push(`${characterId}/${motionName}: full-body scale does not match idle (${(peakHeight / idleHeight).toFixed(3)})`);
     }
   }
+  if (characterId === "AMARA_VALENTINE") {
+    for (const motionName of ["JUMP_PEAK", "AIR_ATTACK"]) {
+      if (runtimeMotions[motionName].repair !== "amara-aerial-v1") {
+        failures.push(`${characterId}/${motionName}: missing approved aerial repair provenance`);
+      }
+    }
+  }
 
   const signature = (motionName) => JSON.stringify({
     sheet: runtimeMotions[motionName]?.sheet,

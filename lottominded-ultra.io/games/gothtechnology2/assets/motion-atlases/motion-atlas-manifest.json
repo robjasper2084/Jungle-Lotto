@@ -13904,13 +13904,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 67,
-                "y": 67,
-                "w": 58,
-                "h": 123,
-                "visibleW": 54,
-                "visibleH": 119,
-                "scale": 1.078788
+                "x": 61,
+                "y": 42,
+                "w": 69,
+                "h": 148,
+                "visibleW": 65,
+                "visibleH": 144,
+                "scale": 1.0
               }
             },
             {
@@ -13920,13 +13920,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 66,
-                "y": 78,
-                "w": 60,
-                "h": 112,
-                "visibleW": 56,
-                "visibleH": 108,
-                "scale": 1.078788
+                "x": 60,
+                "y": 56,
+                "w": 72,
+                "h": 134,
+                "visibleW": 68,
+                "visibleH": 130,
+                "scale": 1.0
               }
             },
             {
@@ -13936,13 +13936,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 68,
-                "y": 88,
-                "w": 55,
-                "h": 102,
-                "visibleW": 51,
-                "visibleH": 98,
-                "scale": 1.078788
+                "x": 63,
+                "y": 68,
+                "w": 66,
+                "h": 122,
+                "visibleW": 62,
+                "visibleH": 118,
+                "scale": 1.0
               }
             },
             {
@@ -13952,13 +13952,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 65,
+                "x": 58,
                 "y": 8,
-                "w": 61,
-                "h": 169,
-                "visibleW": 57,
-                "visibleH": 165,
-                "scale": 1.078788
+                "w": 75,
+                "h": 182,
+                "visibleW": 71,
+                "visibleH": 178,
+                "scale": 1.0
               }
             },
             {
@@ -13968,13 +13968,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 68,
-                "y": 64,
-                "w": 56,
-                "h": 126,
-                "visibleW": 52,
-                "visibleH": 122,
-                "scale": 1.078788
+                "x": 63,
+                "y": 39,
+                "w": 66,
+                "h": 151,
+                "visibleW": 62,
+                "visibleH": 147,
+                "scale": 1.0
               }
             },
             {
@@ -13984,17 +13984,18 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 64,
-                "y": 66,
-                "w": 64,
-                "h": 124,
-                "visibleW": 60,
-                "visibleH": 120,
-                "scale": 1.078788
+                "x": 57,
+                "y": 41,
+                "w": 77,
+                "h": 149,
+                "visibleW": 73,
+                "visibleH": 145,
+                "scale": 1.0
               }
             }
           ],
           "higgsfieldJobId": "99981662-07a3-4459-b3dc-37743f3b4012",
+          "repair": "amara-aerial-v1",
           "stableHeight": false,
           "targetVisibleHeight": 178.0
         },
@@ -14792,12 +14793,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 58,
-                "y": 50,
-                "w": 75,
-                "h": 140,
-                "visibleW": 71,
-                "visibleH": 136,
+                "x": 54,
+                "y": 36,
+                "w": 83,
+                "h": 154,
+                "visibleW": 79,
+                "visibleH": 150,
                 "scale": 1.0
               }
             },
@@ -14808,12 +14809,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 59,
-                "y": 48,
-                "w": 74,
-                "h": 142,
-                "visibleW": 70,
-                "visibleH": 138,
+                "x": 55,
+                "y": 34,
+                "w": 81,
+                "h": 156,
+                "visibleW": 77,
+                "visibleH": 152,
                 "scale": 1.0
               }
             },
@@ -14824,11 +14825,11 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 58,
+                "x": 52,
                 "y": 8,
-                "w": 75,
+                "w": 87,
                 "h": 182,
-                "visibleW": 71,
+                "visibleW": 83,
                 "visibleH": 178,
                 "scale": 1.0
               }
@@ -14840,12 +14841,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 57,
-                "y": 42,
-                "w": 78,
-                "h": 148,
-                "visibleW": 74,
-                "visibleH": 144,
+                "x": 53,
+                "y": 27,
+                "w": 85,
+                "h": 163,
+                "visibleW": 81,
+                "visibleH": 159,
                 "scale": 1.0
               }
             },
@@ -14856,12 +14857,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 58,
-                "y": 45,
-                "w": 76,
-                "h": 145,
-                "visibleW": 72,
-                "visibleH": 141,
+                "x": 60,
+                "y": 27,
+                "w": 72,
+                "h": 163,
+                "visibleW": 68,
+                "visibleH": 159,
                 "scale": 1.0
               }
             },
@@ -14872,17 +14873,18 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 58,
-                "y": 49,
-                "w": 75,
-                "h": 141,
-                "visibleW": 71,
-                "visibleH": 137,
+                "x": 54,
+                "y": 20,
+                "w": 83,
+                "h": 170,
+                "visibleW": 79,
+                "visibleH": 166,
                 "scale": 1.0
               }
             }
           ],
           "higgsfieldJobId": "c17e8780-f7b4-4286-b3bc-f04ef6252441",
+          "repair": "amara-aerial-v1",
           "stableHeight": false,
           "targetVisibleHeight": 178.0
         },

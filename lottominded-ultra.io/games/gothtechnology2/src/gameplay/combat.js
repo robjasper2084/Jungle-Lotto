@@ -1,7 +1,7 @@
-import { rectsOverlap } from "../engine/math.js?v=heartline30-cachefix";
-import { ATTACKS } from "../config/moves.js?v=heartline30-cachefix";
-import { FloatingText, LovePulseEffect, SpriteEffect } from "./effects.js?v=heartline30-cachefix";
-import { registerAttackHit, sliceAttackForHit } from "./hits.js?v=heartline30-cachefix";
+import { rectsOverlap } from "../engine/math.js?v=heartline32-four-fighters-hitfix";
+import { ATTACKS } from "../config/moves.js?v=heartline32-four-fighters-hitfix";
+import { FloatingText, LovePulseEffect, SpriteEffect } from "./effects.js?v=heartline32-four-fighters-hitfix";
+import { registerAttackHit, sliceAttackForHit } from "./hits.js?v=heartline32-four-fighters-hitfix";
 
 export function resolveMelee(attacker, defender, game) {
   const attackState = attacker.currentAttack;
@@ -50,6 +50,7 @@ export function applyHit(attacker, defender, attack, game, meta = {}) {
     attacker.vx = charmCounter
       ? Math.sign(defender.x - attacker.x) * 340
       : attacker.vx - attacker.facing * 260;
+    if (charmCounter) attacker.charmedTimer = Math.max(attacker.charmedTimer ?? 0, 0.95);
     game.hitstop = Math.max(game.hitstop, 0.055);
     game.shake = Math.max(game.shake ?? 0, 7);
     game.effects.push(new FloatingText(charmCounter ? "CHARMED" : "PARRY", defender.x, defender.y - 190, charmCounter ? "#ff72c8" : "#9ed8ff"));
@@ -72,8 +73,14 @@ export function applyHit(attacker, defender, attack, game, meta = {}) {
   const forcedCounter = game.training && game.trainingCounterHit && defender.slot === 2;
   const counterHit = !isBlocked && meta.sourceName !== "throw" && (forcedCounter || (defender.currentAttack && defender.currentAttack.elapsed < Math.max(0.12, activeStart + 0.03)));
   const perfectBlock = isBlocked && defender.guardTapTimer > 0 && meta.sourceName !== "super";
+  const heartlinkConfirm = !isBlocked
+    && !meta.projectile
+    && meta.sourceName !== "throw"
+    && attacker.config.archetype === "heartline"
+    && (defender.charmedTimer ?? 0) > 0;
   const comboScale = Math.max(0.52, 1 - Math.max(0, attacker.comboHits) * 0.1);
-  const rawDamage = Math.round((attack.damage ?? 50) * (counterHit ? 1.18 : 1));
+  const heartlinkScale = heartlinkConfirm ? 1 + (attacker.config.heartlinkDamageBonus ?? 0.16) : 1;
+  const rawDamage = Math.round((attack.damage ?? 50) * (counterHit ? 1.18 : 1) * heartlinkScale);
   const baseDamage = isBlocked ? (perfectBlock ? 0 : attack.chip ?? 0) : Math.round(rawDamage * comboScale);
   const damage = isBlocked ? (perfectBlock ? 0 : Math.max(1, baseDamage)) : Math.max(8, baseDamage);
   const stun = isBlocked
@@ -96,6 +103,14 @@ export function applyHit(attacker, defender, attack, game, meta = {}) {
     });
   }
 
+  if (!isBlocked && heartlinkConfirm) {
+    defender.charmedTimer = 0;
+    attacker.meter = Math.min(100, attacker.meter + 4);
+  }
+  if (!isBlocked && attack.charmDuration) {
+    defender.charmedTimer = Math.max(defender.charmedTimer ?? 0, attack.charmDuration);
+  }
+
   const precisionRangeBonus = attacker.config.archetype === "precision" && meta.projectile && Math.abs(attacker.x - defender.x) >= 260
     ? (attacker.config.precisionRangeMeterBonus ?? 4)
     : 0;
@@ -104,7 +119,7 @@ export function applyHit(attacker, defender, attack, game, meta = {}) {
 
   const advantageFrames = Math.round((stun - (attack.recovery ?? 0)) * 60);
   game.trainingReadout = {
-    outcome: perfectBlock ? "PERFECT BLOCK" : isBlocked ? "BLOCK" : counterHit ? "COUNTER HIT" : "HIT",
+    outcome: perfectBlock ? "PERFECT BLOCK" : isBlocked ? "BLOCK" : heartlinkConfirm ? "HEARTLINK" : counterHit ? "COUNTER HIT" : "HIT",
     damage,
     comboScale,
     advantageFrames,
@@ -117,7 +132,8 @@ export function applyHit(attacker, defender, attack, game, meta = {}) {
     damage,
     comboHits: attacker.comboHits + (isBlocked ? 0 : 1),
     blocked: isBlocked,
-    counterHit
+    counterHit,
+    heartlinkConfirm
   });
 
   if (!isBlocked) {
@@ -129,6 +145,7 @@ export function applyHit(attacker, defender, attack, game, meta = {}) {
     game.shake = Math.max(game.shake ?? 0, meta.sourceName === "super" ? 18 : (damage > 80 ? 10 : 5));
     game.slowMo = Math.max(game.slowMo ?? 0, meta.sourceName === "super" ? 0.18 : 0);
     if (counterHit) game.effects.push(new FloatingText("COUNTER", defender.x, defender.y - 204, "#ffcf67"));
+    if (heartlinkConfirm) game.effects.push(new FloatingText("HEARTLINK", defender.x, defender.y - 204, "#ff72c8"));
     game.effects.push(new FloatingText(`${damage}`, defender.x, defender.y - 178, "#ffd66d"));
     const hitX = meta.box?.x + (meta.box?.w ?? 0) / 2 || defender.x;
     const hitY = meta.box?.y + 96 || defender.y - 120;

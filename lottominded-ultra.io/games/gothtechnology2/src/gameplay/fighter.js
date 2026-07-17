@@ -1,9 +1,9 @@
-import { GRAVITY, GROUND_Y, WORLD } from "../config/constants.js?v=heartline30-cachefix";
-import { ATTACKS } from "../config/moves.js?v=heartline30-cachefix";
-import { drawSpriteFrame } from "../engine/assets.js?v=heartline30-cachefix";
-import { approach, clamp, makeRect } from "../engine/math.js?v=heartline30-cachefix";
-import { attackIntentFromActions, resolveCancelAttack } from "./commands.js?v=heartline30-cachefix";
-import { SpriteEffect } from "./effects.js?v=heartline30-cachefix";
+import { GRAVITY, GROUND_Y, WORLD } from "../config/constants.js?v=heartline32-four-fighters-hitfix";
+import { ATTACKS } from "../config/moves.js?v=heartline32-four-fighters-hitfix";
+import { drawSpriteFrame } from "../engine/assets.js?v=heartline32-four-fighters-hitfix";
+import { approach, clamp, makeRect } from "../engine/math.js?v=heartline32-four-fighters-hitfix";
+import { attackIntentFromActions, resolveCancelAttack } from "./commands.js?v=heartline32-four-fighters-hitfix";
+import { SpriteEffect } from "./effects.js?v=heartline32-four-fighters-hitfix";
 
 const MOTION_LOCKS = new Set([
   "LIGHT_PUNCH",
@@ -107,6 +107,7 @@ export class Fighter {
     this.dashDir = facing;
     this.characterSkillCooldown = 0;
     this.parryTimer = 0;
+    this.charmedTimer = 0;
     this.airDashAvailable = true;
     this.lastHitTimer = 0;
     this.landingLag = 0;
@@ -147,6 +148,7 @@ export class Fighter {
     this.dashDir = facing;
     this.characterSkillCooldown = 0;
     this.parryTimer = 0;
+    this.charmedTimer = 0;
     this.airDashAvailable = true;
     this.lastHitTimer = 0;
     this.landingLag = 0;
@@ -331,12 +333,7 @@ export class Fighter {
     } else if (this.config.archetype === "heartline") {
       this.parryTimer = 0.32;
       this.shieldTimer = Math.max(this.shieldTimer, this.parryTimer);
-      this.setMotion("BLOCK_HIGH", true);
-      const distance = Math.abs(opponent.x - this.x);
-      const inFront = Math.sign(opponent.x - this.x) === this.facing;
-      if (inFront && distance > 118 && distance <= 380) {
-        opponent.vx += Math.sign(this.x - opponent.x) * 260;
-      }
+      this.setMotion("SPECIAL_START", true);
       game.spawnFighterVfx?.(this, "skill", "charge");
       game.audio.beep("block");
     } else if (this.config.archetype === "precision") {
@@ -480,6 +477,7 @@ export class Fighter {
     this.dashRecoveryTimer = Math.max(0, this.dashRecoveryTimer - dt);
     this.characterSkillCooldown = Math.max(0, this.characterSkillCooldown - dt);
     this.parryTimer = Math.max(0, this.parryTimer - dt);
+    this.charmedTimer = Math.max(0, this.charmedTimer - dt);
     this.lastHitTimer = Math.max(0, this.lastHitTimer - dt);
     this.landingLag = Math.max(0, this.landingLag - dt);
     this.jumpStartTimer = Math.max(0, this.jumpStartTimer - dt);
@@ -586,6 +584,7 @@ export class Fighter {
     const dashing = this.dashTimer > 0;
     const stateLocked = hardLocked || this.isMotionPlaybackLocked();
     const canMove = !stateLocked && !this.currentAttack && this.landingLag <= 0 && this.dashRecoveryTimer <= 0 && !dashing;
+    const charmMoveScale = this.charmedTimer > 0 ? (this.config.charmMoveScale ?? 0.82) : 1;
     let desired = 0;
     const left = actions.left ? -1 : 0;
     const right = actions.right ? 1 : 0;
@@ -599,7 +598,7 @@ export class Fighter {
       this.lastMoveDir = desired;
       if (actions.up && this.grounded) {
         this.vy = this.config.jumpVelocity;
-        this.vx += desired * this.config.speed * 0.36;
+        this.vx += desired * this.config.speed * 0.36 * charmMoveScale;
         this.y -= 1;
         this.setMotion("JUMP_START", true);
         this.jumpStartTimer = this.config.motionDurations?.JUMP_START ?? 0.12;
@@ -613,7 +612,7 @@ export class Fighter {
         this.dashDir = airDirection;
         this.dashTimer = 0.18;
         this.dashCooldown = 0.38;
-        this.vx = airDirection * this.config.dashSpeed * 0.72;
+        this.vx = airDirection * this.config.dashSpeed * 0.72 * charmMoveScale;
         this.vy = 0;
         this.setMotion(this.dashForward ? "DASH_FORWARD" : "DASH_BACK", true);
         game.spawnFighterVfx?.(this, "skill", "release");
@@ -624,7 +623,7 @@ export class Fighter {
         this.dashDir = desired;
         this.dashTimer = this.config.motionDurations?.[movingForward ? "DASH_FORWARD" : "DASH_BACK"] ?? (movingForward ? 0.28 : 0.32);
         this.dashCooldown = movingForward ? 0.42 : 0.5;
-        this.vx = desired * this.config.dashSpeed * (movingForward ? 1 : 0.78);
+        this.vx = desired * this.config.dashSpeed * (movingForward ? 1 : 0.78) * charmMoveScale;
         if (!movingForward) {
           this.vy = Math.min(this.vy, -165);
           this.y -= 1;
@@ -642,16 +641,16 @@ export class Fighter {
           alpha: 0.58
         }));
       } else if (!this.grounded && desired !== 0) {
-        this.vx = approach(this.vx, desired * this.config.speed * 0.86, dt * (this.config.feel?.airAccel ?? 760));
+        this.vx = approach(this.vx, desired * this.config.speed * 0.86 * charmMoveScale, dt * (this.config.feel?.airAccel ?? 760));
       } else if (desired !== 0) {
         const movingForward = desired === this.facing;
         if (actions.down && this.grounded) {
-          const crouchSpeed = this.config.speed * (this.config.feel?.crouchWalkScale ?? 0.4);
+          const crouchSpeed = this.config.speed * (this.config.feel?.crouchWalkScale ?? 0.4) * charmMoveScale;
           this.vx = approach(this.vx, desired * crouchSpeed, dt * (this.config.feel?.groundAccel ?? 2300));
           this.setMotion("CROUCH_WALK");
         } else {
           const running = this.moveHold >= (this.config.feel?.runThreshold ?? 0.28);
-          const targetSpeed = running ? this.config.runSpeed : this.config.speed;
+          const targetSpeed = (running ? this.config.runSpeed : this.config.speed) * charmMoveScale;
           this.vx = approach(this.vx, desired * targetSpeed, dt * (this.config.feel?.groundAccel ?? 2300));
           this.setMotion(movingForward
             ? (running ? "RUN_FORWARD" : "WALK_FORWARD")
@@ -773,11 +772,33 @@ export class Fighter {
     }
     ctx.restore();
 
-    if (this.shieldTimer > 0) {
+    if (this.charmedTimer > 0 && !this.isKO) {
+      const pulse = 1 + Math.sin(this.charmedTimer * 18) * 0.08;
       ctx.save();
-      ctx.strokeStyle = "rgba(158, 216, 255, 0.72)";
+      ctx.globalCompositeOperation = "lighter";
+      ctx.fillStyle = "rgba(255, 96, 190, 0.82)";
+      ctx.shadowColor = "#ff58bd";
+      ctx.shadowBlur = 12;
+      for (let index = 0; index < 3; index += 1) {
+        const angle = this.charmedTimer * 5 + index * Math.PI * 2 / 3;
+        const x = this.x + Math.cos(angle) * 34;
+        const y = this.y - 176 + Math.sin(angle) * 9;
+        const size = (6 + index) * pulse;
+        ctx.beginPath();
+        ctx.moveTo(x, y + size * 0.38);
+        ctx.bezierCurveTo(x - size, y - size * 0.2, x - size * 0.5, y - size, x, y - size * 0.5);
+        ctx.bezierCurveTo(x + size * 0.5, y - size, x + size, y - size * 0.2, x, y + size * 0.38);
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+
+    if (this.shieldTimer > 0) {
+      const heartlineShield = this.config.archetype === "heartline";
+      ctx.save();
+      ctx.strokeStyle = heartlineShield ? "rgba(255, 104, 194, 0.82)" : "rgba(158, 216, 255, 0.72)";
       ctx.lineWidth = 3;
-      ctx.shadowColor = "#9ed8ff";
+      ctx.shadowColor = heartlineShield ? "#ff58bd" : "#9ed8ff";
       ctx.shadowBlur = 18;
       ctx.beginPath();
       ctx.ellipse(this.x, this.y - 105, 58, 92, 0, 0, Math.PI * 2);

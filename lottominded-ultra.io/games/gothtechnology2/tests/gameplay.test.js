@@ -8,8 +8,9 @@ import { GROUND_Y } from "../src/config/constants.js";
 import { Fighter } from "../src/gameplay/fighter.js";
 import { applyHit, resolveMelee } from "../src/gameplay/combat.js";
 import { CpuController } from "../src/gameplay/cpu.js";
+import { LovePulseEffect } from "../src/gameplay/effects.js";
 import { registerAttackHit, sliceAttackForHit } from "../src/gameplay/hits.js";
-import { BoerboelStrike } from "../src/gameplay/projectiles.js";
+import { BoerboelStrike, Projectile } from "../src/gameplay/projectiles.js";
 import { applyRoundOutcomeMotions, resolveRoundOutcome } from "../src/gameplay/rounds.js";
 
 const motionManifest = JSON.parse(readFileSync(new URL("../assets/motion-atlases/motion-atlas-manifest.json", import.meta.url), "utf8"));
@@ -177,9 +178,9 @@ test("Detroit Lens Noir ships a complete guardian kit, Boerboel command list, an
   assert.equal(fighter.costumePalette, "black-black");
   assert.equal(fighter.palette, "#9ca3ad");
   assert.equal(Object.keys(motionManifest.characters.DETROIT_LENS_NOIR.motions).length, 39);
-  assert.deepEqual(ROSTER_IDS, ["KALYX", "MASTER_EZRA", "DETROIT_LENS_NOIR"]);
+  assert.deepEqual(ROSTER_IDS, ["KALYX", "MASTER_EZRA", "DETROIT_LENS_NOIR", "AMARA_VALENTINE"]);
   assert.equal(ROSTER_CARD_LAYOUT.length, ROSTER_IDS.length);
-  assert.deepEqual(Object.keys(ASSET_URLS.rosterPortraits), ["kalyx", "masterEzra", "detroitLensNoir"]);
+  assert.deepEqual(Object.keys(ASSET_URLS.rosterPortraits), ["kalyx", "masterEzra", "detroitLensNoir", "amaraValentine"]);
   assert.equal(new Set(ROSTER_IDS.map((id) => FIGHTERS[id].rosterPortraitKey)).size, ROSTER_IDS.length);
   assert.ok(!Object.hasOwn(FIGHTERS, "KALYX_ECLIPSE"));
   assert.ok(!Object.hasOwn(FIGHTERS, "EZRA_ASCENDANT"));
@@ -203,6 +204,122 @@ test("Detroit Lens Noir ships a complete guardian kit, Boerboel command list, an
     assert.ok(motion.uniqueFrames >= 5);
     assert.deepEqual(motion.sourceFigureCounts, [3, 3]);
   }
+});
+
+test("Amara Valentine ships 39 complete motions and a distinct love-power combat identity", () => {
+  const fighter = FIGHTERS.AMARA_VALENTINE;
+  assert.equal(fighter.manifestKey, "AMARA_VALENTINE");
+  assert.equal(fighter.archetype, "heartline");
+  assert.equal(fighter.costumePalette, "cobalt-rose");
+  assert.equal(fighter.specialName, "Heartline Pulse");
+  assert.equal(fighter.superName, "Heartbreak Nova");
+  assert.ok(fighter.attackOverrides.special.knockback < 0, "Heartline Pulse should attract on hit");
+  assert.ok(fighter.attackOverrides.special.charmDuration > 0, "Heartline Pulse should apply charm");
+  assert.ok(fighter.attackOverrides.super.knockback > 0, "Heartbreak Nova should repel on hit");
+  assert.equal(fighter.attackOverrides.super.multiHit, 4);
+  assert.equal(Object.keys(motionManifest.characters.AMARA_VALENTINE.motions).length, 39);
+  assert.equal(motionManifest.characters.AMARA_VALENTINE.motions.JUMP_PEAK.repair, "amara-aerial-v1");
+  assert.equal(motionManifest.characters.AMARA_VALENTINE.motions.AIR_ATTACK.repair, "amara-aerial-v1");
+  assert.match(ASSET_URLS.rosterPortraits.amaraValentine, /amara-valentine-idle\.webp/);
+  assert.ok(COMMAND_LISTS.AMARA_VALENTINE.commands.some((command) => command.name === "CHARM COUNTER"));
+  assert.ok(COMMAND_LISTS.AMARA_VALENTINE.commands.some((command) => command.name === "HEARTLINE PULSE"));
+  assert.ok(COMMAND_LISTS.AMARA_VALENTINE.commands.some((command) => command.name === "HEARTBREAK NOVA"));
+
+  const game = makeGame();
+  const amara = makeFighter("AMARA_VALENTINE", 400, 1, completeAnimations);
+  const attacker = makeFighter("KALYX", 650, -1, completeAnimations);
+  amara.meter = 100;
+  assert.equal(amara.useCharacterSkill(attacker, game), true);
+  assert.ok(amara.parryTimer > 0);
+  assert.equal(amara.motion, "SPECIAL_START");
+  assert.equal(attacker.vx, 0, "Charm Counter must not pull before an attack is parried");
+  applyHit(attacker, amara, { damage: 90, stun: 0.25, knockback: 180, meter: 6, level: "mid" }, game, { sourceName: "heavyPunch" });
+  assert.equal(amara.parryTimer, 0);
+  assert.ok(attacker.hitstun >= 0.3);
+  assert.ok(attacker.vx < 0, "a charmed attacker should be pulled toward Amara");
+  assert.ok(attacker.charmedTimer > 0, "a countered attacker should be visibly charmed");
+
+  const pulseTarget = makeFighter("MASTER_EZRA", 650, -1, completeAnimations);
+  applyHit(amara, pulseTarget, fighter.attackOverrides.special, game, { sourceName: "special", projectile: true });
+  assert.equal(pulseTarget.charmedTimer, fighter.attackOverrides.special.charmDuration);
+
+  const linkTarget = makeFighter("MASTER_EZRA", 520, -1, completeAnimations);
+  linkTarget.charmedTimer = 1;
+  amara.comboHits = 0;
+  const healthBefore = linkTarget.health;
+  applyHit(amara, linkTarget, { damage: 100, stun: 0.2, recovery: 0.1, knockback: 120, meter: 0, level: "mid" }, game, { sourceName: "heavyPunch", projectile: false });
+  assert.equal(healthBefore - linkTarget.health, 116);
+  assert.equal(linkTarget.charmedTimer, 0, "a clean Heartlink strike should consume charm");
+  assert.equal(game.trainingReadout.outcome, "HEARTLINK");
+});
+
+test("Amara love charge effects retain their authored skill and super offsets", () => {
+  const owner = { x: 400, y: 650, facing: -1 };
+  const superCharge = new LovePulseEffect({ owner, offsetX: 48, offsetY: -132 });
+  superCharge.update(1 / 60);
+  assert.equal(superCharge.x, 352);
+  assert.equal(superCharge.y, 518);
+
+  const skillCharge = new LovePulseEffect({ owner, offsetX: 36, offsetY: -112 });
+  skillCharge.update(1 / 60);
+  assert.equal(skillCharge.x, 364);
+  assert.equal(skillCharge.y, 538);
+});
+
+test("Amara normals and love projectile register through live collision paths", () => {
+  const animations = {
+    AMARA_VALENTINE: motionManifest.characters.AMARA_VALENTINE.motions,
+    MASTER_EZRA: motionManifest.characters.MASTER_EZRA.motions
+  };
+  const meleeMoves = ["lightPunch", "heavyPunch", "lightKick", "heavyKick", "crouchAttack", "airAttack", "combo1", "combo2"];
+
+  for (const move of meleeMoves) {
+    const amara = makeFighter("AMARA_VALENTINE", 400, 1, animations);
+    const defender = makeFighter("MASTER_EZRA", 620, -1, animations);
+    const game = {
+      ...makeGame(),
+      resolveIncomingHit(attacker, target, attack, meta) {
+        applyHit(attacker, target, attack, this, meta);
+      }
+    };
+    amara.invulnerable = 0;
+    defender.invulnerable = 0;
+    if (move === "airAttack") amara.y = GROUND_Y - 96;
+    const healthBefore = defender.health;
+    assert.equal(amara.beginAttack(move, game), true, `${move} should start`);
+    for (let frame = 0; frame < 48 && defender.health === healthBefore; frame += 1) {
+      amara.update(1 / 60, {}, defender, game);
+      resolveMelee(amara, defender, game);
+    }
+    assert.ok(defender.health < healthBefore, `${move} should connect at visible contact range`);
+  }
+
+  const amara = makeFighter("AMARA_VALENTINE", 400, 1, animations);
+  const defender = makeFighter("MASTER_EZRA", 620, -1, animations);
+  const game = {
+    ...makeGame(),
+    fighters: [amara, defender],
+    resolveIncomingHit(attacker, target, attack, meta) {
+      applyHit(attacker, target, attack, this, meta);
+    }
+  };
+  amara.invulnerable = 0;
+  defender.invulnerable = 0;
+  const special = amara.getAttackData("special");
+  const pulse = new Projectile({
+    owner: amara,
+    x: amara.x + 124,
+    y: amara.y - 142,
+    direction: 1,
+    attack: special,
+    image: null,
+    kind: "heartline-pulse",
+    color: "#ff58bd"
+  });
+  const healthBefore = defender.health;
+  pulse.update(1 / 60, game);
+  assert.ok(defender.health < healthBefore, "Heartline Pulse should damage through projectile collision");
+  assert.ok(defender.charmedTimer > 0, "Heartline Pulse should charm on collision");
 });
 
 test("title menu exposes only the four approved modes", () => {
@@ -479,6 +596,29 @@ test("CPU decisions are deterministic and use anti-air and projectile defense", 
   const projectile = { owner: { slot: 1 }, dead: false, x: 360, y: cpu.y - 80, direction: 1 };
   const defense = new CpuController().next(1 / 60, { cpu, player, projectiles: [projectile], difficulty: "hard", world });
   assert.deepEqual(defense, { down: true, special: true });
+});
+
+test("Amara CPU uses Heartlink confirms and both devotion assists", () => {
+  const world = { left: 0, right: 1280 };
+  const player = makeFighter("KALYX", 500, 1);
+  const cpu = makeFighter("AMARA_VALENTINE", 620, -1);
+  cpu.slot = 2;
+  player.charmedTimer = 1;
+  const confirm = new CpuController().next(1 / 60, { cpu, player, projectiles: [], difficulty: "hard", world });
+  assert.deepEqual(confirm, { lightPunch: true, heavyPunch: true });
+
+  player.charmedTimer = 0;
+  player.x = 320;
+  const pulseController = new CpuController();
+  pulseController.cadence = 4;
+  const pulseAssist = pulseController.next(1 / 60, { cpu, player, projectiles: [], difficulty: "hard", world });
+  assert.deepEqual(pulseAssist, { assist1: true });
+
+  const guardController = new CpuController();
+  guardController.cadence = 2;
+  const projectile = { owner: { slot: 1 }, dead: false, x: 430, y: cpu.y - 80, direction: 1 };
+  const guardAssist = guardController.next(1 / 60, { cpu, player, projectiles: [projectile], difficulty: "hard", world });
+  assert.deepEqual(guardAssist, { assist2: true });
 });
 
 test("melee boxes are authored by animation frame and disappear in recovery", () => {

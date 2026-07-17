@@ -1,4 +1,4 @@
-import { drawSheetFrame } from "../engine/assets.js?v=heartline30-cachefix";
+import { drawSheetFrame } from "../engine/assets.js?v=heartline32-four-fighters-hitfix";
 
 export class SpriteEffect {
   constructor({ x, y, image, cellW = 256, cellH = 256, frames = 8, duration = 0.42, scale = 1, flip = false, alpha = 1 }) {
@@ -65,10 +65,12 @@ const heartPath = (ctx, size) => {
 };
 
 export class LovePulseEffect {
-  constructor({ x = 0, y = 0, owner = null, duration = 0.48, scale = 1, direction = 1, burst = false }) {
+  constructor({ x = 0, y = 0, owner = null, offsetX = 42, offsetY = -126, duration = 0.48, scale = 1, direction = 1, burst = false }) {
     this.x = x;
     this.y = y;
     this.owner = owner;
+    this.offsetX = offsetX;
+    this.offsetY = offsetY;
     this.duration = duration;
     this.scale = scale;
     this.direction = direction;
@@ -80,8 +82,8 @@ export class LovePulseEffect {
   update(dt) {
     this.age += dt;
     if (this.owner) {
-      this.x = this.owner.x + this.owner.facing * 42;
-      this.y = this.owner.y - 126;
+      this.x = this.owner.x + this.owner.facing * this.offsetX;
+      this.y = this.owner.y + this.offsetY;
       this.direction = this.owner.facing;
     }
     this.dead = this.age >= this.duration;

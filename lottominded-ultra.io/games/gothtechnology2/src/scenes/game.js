@@ -1,17 +1,17 @@
-import { ASSET_URLS, COMMERCIAL_URLS, FIGHTERS } from "../config/assets.js?v=heartline30-cachefix";
-import { arcadeRouteFor, GAME_MODES, ROSTER_CARD_LAYOUT, ROSTER_IDS, STAGES, opponentFor } from "../config/content.js?v=heartline30-cachefix";
-import { ASSISTS, ATTACKS } from "../config/moves.js?v=heartline30-cachefix";
-import { CANVAS_HEIGHT, CANVAS_WIDTH, COLORS, GROUND_Y, PHASE, ROUND_SECONDS, WORLD } from "../config/constants.js?v=heartline30-cachefix";
-import { AssetLoader } from "../engine/assets.js?v=heartline30-cachefix";
-import { WebAudioBus } from "../engine/audio.js?v=heartline30-cachefix";
-import { InputManager } from "../engine/input.js?v=heartline30-cachefix";
-import { clamp, rectsOverlap } from "../engine/math.js?v=heartline30-cachefix";
-import { applyHit, resolveMelee } from "../gameplay/combat.js?v=heartline30-cachefix";
-import { CpuController } from "../gameplay/cpu.js?v=heartline30-cachefix";
-import { AttachedSpriteEffect, LovePulseEffect, SpriteEffect } from "../gameplay/effects.js?v=heartline30-cachefix";
-import { Fighter } from "../gameplay/fighter.js?v=heartline30-cachefix";
-import { AssistStrike, BoerboelStrike, Projectile } from "../gameplay/projectiles.js?v=heartline30-cachefix";
-import { applyRoundOutcomeMotions, resolveRoundOutcome } from "../gameplay/rounds.js?v=heartline30-cachefix";
+import { ASSET_URLS, COMMERCIAL_URLS, FIGHTERS } from "../config/assets.js?v=heartline32-four-fighters-hitfix";
+import { arcadeRouteFor, GAME_MODES, ROSTER_CARD_LAYOUT, ROSTER_IDS, STAGES, opponentFor } from "../config/content.js?v=heartline32-four-fighters-hitfix";
+import { ASSISTS, ATTACKS } from "../config/moves.js?v=heartline32-four-fighters-hitfix";
+import { CANVAS_HEIGHT, CANVAS_WIDTH, COLORS, GROUND_Y, PHASE, ROUND_SECONDS, WORLD } from "../config/constants.js?v=heartline32-four-fighters-hitfix";
+import { AssetLoader } from "../engine/assets.js?v=heartline32-four-fighters-hitfix";
+import { WebAudioBus } from "../engine/audio.js?v=heartline32-four-fighters-hitfix";
+import { InputManager } from "../engine/input.js?v=heartline32-four-fighters-hitfix";
+import { clamp, rectsOverlap } from "../engine/math.js?v=heartline32-four-fighters-hitfix";
+import { applyHit, resolveMelee } from "../gameplay/combat.js?v=heartline32-four-fighters-hitfix";
+import { CpuController } from "../gameplay/cpu.js?v=heartline32-four-fighters-hitfix";
+import { AttachedSpriteEffect, LovePulseEffect, SpriteEffect } from "../gameplay/effects.js?v=heartline32-four-fighters-hitfix";
+import { Fighter } from "../gameplay/fighter.js?v=heartline32-four-fighters-hitfix";
+import { AssistStrike, BoerboelStrike, Projectile } from "../gameplay/projectiles.js?v=heartline32-four-fighters-hitfix";
+import { applyRoundOutcomeMotions, resolveRoundOutcome } from "../gameplay/rounds.js?v=heartline32-four-fighters-hitfix";
 import {
   drawCharacterSelect,
   drawArcadeEnding,
@@ -24,7 +24,7 @@ import {
   drawRoundMessage,
   drawTitle,
   drawVersus
-} from "../ui/hud.js?v=heartline30-cachefix";
+} from "../ui/hud.js?v=heartline32-four-fighters-hitfix";
 
 const GAME_SELECT_ITEMS = [
   {
@@ -1534,6 +1534,8 @@ export class GothTechnologyGame {
         owner: phase === "charge" ? owner : null,
         x: owner.x + owner.facing * (superMove ? 48 : 36),
         y: owner.y - (superMove ? 132 : 112),
+        offsetX: superMove ? 48 : 36,
+        offsetY: -(superMove ? 132 : 112),
         direction: owner.facing,
         duration: superMove ? 0.58 : (skill ? 0.4 : 0.34),
         scale: superMove ? 1.3 : (skill ? 0.9 : 0.72),

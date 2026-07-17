@@ -87,7 +87,10 @@ test("boots, reaches versus, fights, and pauses without page errors", async ({ p
   });
   expect(nonBlankSamples).toBeGreaterThan(100);
 
-  await page.evaluate(() => window.__gothTechnologyGame.openMode("versus"));
+  await page.evaluate(() => { window.__gothTechnologyGame.titleMenuIndex = 0; });
+  await page.keyboard.down("Enter");
+  await page.waitForTimeout(80);
+  await page.keyboard.up("Enter");
   await expect.poll(() => phase(page), { timeout: 30_000 }).toBe("select");
   await expect.poll(() => page.evaluate(() => window.__gothTechnologyGame?.assets?.loadedCharacterMotions?.size), { timeout: 60_000 }).toBe(2);
   const selectedResources = await page.evaluate(() => performance.getEntriesByType("resource").map((entry) => entry.name));
@@ -169,7 +172,7 @@ test("boots, reaches versus, fights, and pauses without page errors", async ({ p
   expect(spriteIntegrity.insufficientUnique).toEqual([]);
   expect(spriteIntegrity.splitFrames).toEqual([]);
   const unstableRenderedMotions = await page.evaluate(async () => {
-    const { drawSpriteFrame } = await import("./src/engine/assets.js?v=future-hud26-ezra-scale-test");
+    const { drawSpriteFrame } = await import("./src/engine/assets.js?v=heartline29-amara-test");
     const animations = window.__gothTechnologyGame.assets.animations;
     const checkedMotions = [
       "IDLE", "READY_STANCE", "WALK_FORWARD", "RUN_FORWARD", "DASH_FORWARD",
@@ -290,7 +293,7 @@ test("boots, reaches versus, fights, and pauses without page errors", async ({ p
   expect(pageErrors).toEqual([]);
 });
 
-test("Detroit Lens Noir loads the Boerboel, eye laser, and five Detroit stages", async ({ page }, testInfo) => {
+test("Detroit Lens Noir loads the Boerboel, eye laser, and six arenas", async ({ page }, testInfo) => {
   test.setTimeout(180_000);
   const pageErrors = [];
   page.on("pageerror", (error) => pageErrors.push(error.message));
@@ -298,12 +301,12 @@ test("Detroit Lens Noir loads the Boerboel, eye laser, and five Detroit stages",
   await expect.poll(() => phase(page)).toBe("title");
   await expect.poll(() => page.evaluate(() => {
     const images = window.__gothTechnologyGame?.assets?.images;
-    return [images?.kalyxPortrait, images?.masterEzraPortrait, images?.detroitLensNoirPortrait]
+    return [images?.kalyxPortrait, images?.masterEzraPortrait, images?.detroitLensNoirPortrait, images?.amaraValentinePortrait]
       .map((image) => image?.naturalWidth ?? 0);
-  })).toEqual([256, 256, 256]);
+  })).toEqual([256, 256, 256, 256]);
   const portraitMetrics = await page.evaluate(() => {
     const images = window.__gothTechnologyGame.assets.images;
-    return [images.kalyxPortrait, images.masterEzraPortrait, images.detroitLensNoirPortrait].map((image) => {
+    return [images.kalyxPortrait, images.masterEzraPortrait, images.detroitLensNoirPortrait, images.amaraValentinePortrait].map((image) => {
       const canvas = document.createElement("canvas");
       canvas.width = image.naturalWidth;
       canvas.height = image.naturalHeight;
@@ -332,13 +335,14 @@ test("Detroit Lens Noir loads the Boerboel, eye laser, and five Detroit stages",
   expect(rosterActions).toEqual(expect.arrayContaining([
     "Choose KALYX for Player 1",
     "Choose MASTER EZRA for Player 1",
-    "Choose DETROIT LENS NOIR for Player 1"
+    "Choose DETROIT LENS NOIR for Player 1",
+    "Choose AMARA VALENTINE for Player 1"
   ]));
   expect(rosterActions.some((label) => label.includes("Choose DETROIT LENS for"))).toBe(false);
   expect(rosterActions.some((label) => label.includes("KALYX ECLIPSE"))).toBe(false);
   expect(rosterActions.some((label) => label.includes("EZRA ASCENDANT"))).toBe(false);
 
-  await clickGame(page, 1024, 330);
+  await clickGame(page, 793, 330);
   await expect.poll(() => page.evaluate(() => window.__gothTechnologyGame?.player1Id)).toBe("DETROIT_LENS_NOIR");
   await expect.poll(() => page.evaluate(() => window.__gothTechnologyGame?.assets?.loadedCharacterMotions?.has("DETROIT_LENS_NOIR")), { timeout: 10_000 }).toBe(true);
   const noirIntegrity = await page.evaluate(() => {
@@ -516,14 +520,14 @@ test("versus lets the player choose the CPU fighter independently", async ({ pag
 
   await clickGame(page, 792, 114);
   await expect.poll(() => page.evaluate(() => window.__gothTechnologyGame.selectTarget)).toBe("p2");
-  await clickGame(page, 1024, 330);
+  await clickGame(page, 793, 330);
   await expect.poll(() => page.evaluate(() => ({
     player1Id: window.__gothTechnologyGame.player1Id,
     player2Id: window.__gothTechnologyGame.player2Id
   }))).toEqual({ player1Id: "MASTER_EZRA", player2Id: "DETROIT_LENS_NOIR" });
 
   await clickGame(page, 488, 114);
-  await clickGame(page, 256, 330);
+  await clickGame(page, 179, 330);
   await expect.poll(() => page.evaluate(() => ({
     player1Id: window.__gothTechnologyGame.player1Id,
     player2Id: window.__gothTechnologyGame.player2Id
@@ -761,6 +765,161 @@ test("Master Ezra plays a complete takeoff, apex, fall, and clean landing", asyn
     return [...seen];
   });
   expect(landingSequence).toEqual(expect.arrayContaining(["JUMP_FALL", "LANDING", "IDLE"]));
+});
+
+test("Amara aerial frames and Heartlink counter play cleanly in a real match", async ({ page }, testInfo) => {
+  test.setTimeout(120_000);
+  await page.goto(gameUrl);
+  await expect.poll(() => phase(page)).toBe("title");
+  await page.evaluate(() => window.__gothTechnologyGame.openMode("training"));
+  await expect.poll(() => phase(page)).toBe("select");
+  await page.evaluate(() => window.__gothTechnologyGame.selectPlayer1("AMARA_VALENTINE"));
+  await expect.poll(() => page.evaluate(() => window.__gothTechnologyGame?.matchAssetsReady), { timeout: 60_000 }).toBe(true);
+  await clickGame(page, 804, 594);
+  await advanceVersusToFight(page);
+
+  const audit = await page.evaluate(async () => {
+    const game = window.__gothTechnologyGame;
+    const amara = game.fighters[0];
+    const opponent = game.fighters[1];
+    const { applyHit, resolveMelee } = await import("./src/gameplay/combat.js?v=amara-heartlink-browser-test");
+    const { drawSpriteFrame } = await import("./src/engine/assets.js?v=amara-aerial-browser-test");
+    game.stopped = true;
+
+    const detachedRatio = (motion, frameIndex) => {
+      const canvas = document.createElement("canvas");
+      canvas.width = 420;
+      canvas.height = 420;
+      const context = canvas.getContext("2d", { willReadFrequently: true });
+      drawSpriteFrame(context, amara.assets.animations.AMARA_VALENTINE[motion], frameIndex, 210, 350, {
+        scale: amara.config.stableScale
+      });
+      const rgba = context.getImageData(0, 0, canvas.width, canvas.height).data;
+      const mask = new Uint8Array(canvas.width * canvas.height);
+      let total = 0;
+      for (let index = 0; index < mask.length; index += 1) {
+        if (rgba[index * 4 + 3] > 24) {
+          mask[index] = 1;
+          total += 1;
+        }
+      }
+      const seen = new Uint8Array(mask.length);
+      const areas = [];
+      for (let start = 0; start < mask.length; start += 1) {
+        if (!mask[start] || seen[start]) continue;
+        const queue = [start];
+        seen[start] = 1;
+        let area = 0;
+        while (queue.length) {
+          const current = queue.pop();
+          area += 1;
+          const x = current % canvas.width;
+          const neighbors = [current - canvas.width, current + canvas.width];
+          if (x > 0) neighbors.push(current - 1);
+          if (x < canvas.width - 1) neighbors.push(current + 1);
+          for (const neighbor of neighbors) {
+            if (neighbor >= 0 && neighbor < mask.length && mask[neighbor] && !seen[neighbor]) {
+              seen[neighbor] = 1;
+              queue.push(neighbor);
+            }
+          }
+        }
+        areas.push(area);
+      }
+      areas.sort((left, right) => right - left);
+      return (areas[1] ?? 0) / Math.max(1, total);
+    };
+
+    const airAnimation = amara.assets.animations.AMARA_VALENTINE.AIR_ATTACK;
+    const peakAnimation = amara.assets.animations.AMARA_VALENTINE.JUMP_PEAK;
+    const fragmentRatios = airAnimation.frames.map((_, index) => detachedRatio("AIR_ATTACK", index));
+
+    amara.resetRound(360, 1);
+    opponent.resetRound(650, -1);
+    amara.invulnerable = 0;
+    opponent.invulnerable = 0;
+    amara.meter = 100;
+    opponent.vx = 0;
+    amara.useCharacterSkill(opponent, game);
+    const preCounter = { motion: amara.motion, opponentVx: opponent.vx };
+    applyHit(opponent, amara, { damage: 80, stun: 0.24, knockback: 160, meter: 4, level: "mid" }, game, { sourceName: "heavyPunch" });
+    const postCounter = { opponentVx: opponent.vx, charmedTimer: opponent.charmedTimer };
+
+    game.effects.length = 0;
+    game.spawnFighterVfx(amara, "super", "charge");
+    const superCharge = game.effects.at(-1);
+    superCharge.update(1 / 60);
+    const superOffset = { x: superCharge.x - amara.x, y: superCharge.y - amara.y };
+    game.effects.length = 0;
+
+    const registeredMelee = {};
+    for (const move of ["lightPunch", "heavyPunch", "lightKick", "heavyKick", "crouchAttack", "airAttack", "combo1", "combo2"]) {
+      amara.resetRound(400, 1);
+      opponent.resetRound(620, -1);
+      amara.invulnerable = 0;
+      opponent.invulnerable = 0;
+      if (move === "airAttack") amara.y -= 96;
+      const healthBefore = opponent.health;
+      amara.beginAttack(move, game);
+      for (let frame = 0; frame < 48 && opponent.health === healthBefore; frame += 1) {
+        amara.update(1 / 60, {}, opponent, game);
+        resolveMelee(amara, opponent, game);
+      }
+      registeredMelee[move] = opponent.health < healthBefore;
+    }
+
+    amara.resetRound(400, 1);
+    opponent.resetRound(620, -1);
+    amara.invulnerable = 0;
+    opponent.invulnerable = 0;
+    game.projectiles.length = 0;
+    const pulseHealthBefore = opponent.health;
+    amara.beginAttack("special", game);
+    for (let frame = 0; frame < 80 && opponent.health === pulseHealthBefore; frame += 1) {
+      amara.update(1 / 60, {}, opponent, game);
+      game.projectiles.forEach((projectile) => projectile.update(1 / 60, game));
+      game.projectiles = game.projectiles.filter((projectile) => !projectile.dead);
+    }
+    const pulseRegistered = opponent.health < pulseHealthBefore && opponent.charmedTimer > 0;
+
+    amara.resetRound(360, 1);
+    const seen = new Set();
+    amara.update(1 / 60, { up: true }, opponent, game);
+    for (let frame = 0; frame < 120; frame += 1) {
+      seen.add(amara.motion);
+      if (amara.motion === "JUMP_PEAK") break;
+      amara.update(1 / 60, {}, opponent, game);
+    }
+    amara.beginAttack("airAttack", game);
+    seen.add(amara.motion);
+    game.render();
+
+    return {
+      fighterId: amara.id,
+      peakRepair: peakAnimation.repair,
+      airRepair: airAnimation.repair,
+      fragmentRatios,
+      preCounter,
+      postCounter,
+      superOffset,
+      registeredMelee,
+      pulseRegistered,
+      motions: [...seen]
+    };
+  });
+
+  expect(audit.fighterId).toBe("AMARA_VALENTINE");
+  expect(audit.peakRepair).toBe("amara-aerial-v1");
+  expect(audit.airRepair).toBe("amara-aerial-v1");
+  expect(Math.max(...audit.fragmentRatios)).toBeLessThan(0.035);
+  expect(audit.preCounter).toEqual({ motion: "SPECIAL_START", opponentVx: 0 });
+  expect(audit.postCounter.opponentVx).toBeLessThan(0);
+  expect(audit.postCounter.charmedTimer).toBeGreaterThan(0);
+  expect(audit.superOffset).toEqual({ x: 48, y: -132 });
+  expect(Object.values(audit.registeredMelee)).not.toContain(false);
+  expect(audit.pulseRegistered).toBe(true);
+  expect(audit.motions).toEqual(expect.arrayContaining(["JUMP_START", "JUMP_RISE", "JUMP_PEAK", "AIR_ATTACK"]));
+  if (!process.env.NO_TEST_ARTIFACTS) await page.screenshot({ path: testInfo.outputPath("amara-air-attack.png") });
 });
 
 test("Kalyx reaches every aerial phase and a distinct air attack", async ({ page }, testInfo) => {

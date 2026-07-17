@@ -75,6 +75,7 @@ export class CpuController {
       if (archetype === "heartline" && tune.parry && canAct && cpu.meter >= (cpu.config.skillCost ?? 20)) {
         return { down: true, special: true };
       }
+      if (archetype === "heartline" && canAct && this.cadence % 3 === 0) return { assist2: true };
       return { [away]: true, down: incoming.y > cpu.y - 150 };
     }
 
@@ -95,6 +96,7 @@ export class CpuController {
         if (archetype === "heartline" && tune.parry && canAct && cpu.meter >= (cpu.config.skillCost ?? 20) && this.cadence % 2 === 0) {
           return { down: true, special: true };
         }
+        if (archetype === "heartline" && canAct && this.cadence % 3 === 0) return { assist2: true };
         return { [away]: true, down: attack.level === "low" };
       }
       if (canAct) {
@@ -130,8 +132,20 @@ export class CpuController {
       if (canAct && this.cadence % 5 === 0) return { assist1: true };
       return hold({ [away]: true }, 0.07).actions;
     } else if (archetype === "heartline") {
+      if (canAct && (player.charmedTimer ?? 0) > 0) {
+        if (abs > 154) return { [toward]: true, dash: abs > 250 };
+        this.queue([
+          tap({ lightPunch: true, heavyPunch: true }),
+          wait(0.07),
+          tap({ heavyKick: true }),
+          wait(0.08),
+          tap({ special: true })
+        ].slice(0, tune.comboSteps * 2 - 1));
+        return this.runPlan(dt) ?? {};
+      }
       if (abs < 92) return { [away]: true, down: this.cadence % 2 === 0 };
       if (canAct && cpu.meter >= 100 && abs >= 140 && abs <= 360 && this.cadence % 4 === 0) return { super: true };
+      if (canAct && abs >= 220 && abs <= 520 && this.cadence % 5 === 0) return { assist1: true };
       if (canAct && abs >= 210 && abs <= 480 && this.cadence % 2 === 0) return { special: true };
       if (abs > 360) return { [toward]: true, dash: canAct && this.cadence % 4 === 0 };
       if (canAct && cpu.meter >= (cpu.config.skillCost ?? 20) && player.currentAttack && this.cadence % 2 === 0) {

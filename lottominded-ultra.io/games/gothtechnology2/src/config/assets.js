@@ -1,6 +1,6 @@
 export const PACK_ROOT = "assets/GOTHTECHNOLOGY_EXPANDED_SPRITE_PACK_V2";
 export const LOCAL_ROOT = "assets";
-export const MOTION_ASSET_VERSION = "heartline30-cachefix";
+export const MOTION_ASSET_VERSION = "heartline32-four-fighters-hitfix";
 
 export const COMMERCIAL_URLS = [
   `${LOCAL_ROOT}/commercials/detroit-commercial-01.mp4`,
@@ -516,6 +516,8 @@ FIGHTERS.AMARA_VALENTINE = {
   skillCooldown: 0.95,
   guardTapWindow: 0.16,
   perfectBlockMeterBonus: 14,
+  heartlinkDamageBonus: 0.16,
+  charmMoveScale: 0.82,
   speed: 425,
   runSpeed: 700,
   dashSpeed: 1170,
@@ -551,12 +553,70 @@ FIGHTERS.AMARA_VALENTINE = {
   },
   maxHealth: 1040,
   attackOverrides: {
-    lightPunch: { damage: 46, reach: 104, knockback: 160 },
-    heavyPunch: { damage: 90, reach: 140, width: 128, knockback: 280 },
-    lightKick: { damage: 58, reach: 120, knockback: 195 },
-    heavyKick: { damage: 102, reach: 156, width: 144, knockback: 325 },
-    crouchAttack: { damage: 62, reach: 130, width: 120, knockback: 205 },
-    airAttack: { damage: 82, reach: 132, width: 136, knockback: 245 },
+    lightPunch: {
+      damage: 46,
+      reach: 132,
+      width: 112,
+      knockback: 160,
+      frameBoxes: {
+        1: { forward: 84, y: -130, w: 78, h: 60 },
+        2: { forward: 132, y: -130, w: 120, h: 64 },
+        3: { forward: 144, y: -128, w: 116, h: 64 }
+      }
+    },
+    heavyPunch: {
+      damage: 90,
+      reach: 158,
+      width: 142,
+      knockback: 280,
+      frameBoxes: {
+        2: { forward: 124, y: -136, w: 116, h: 74 },
+        3: { forward: 162, y: -134, w: 146, h: 78 }
+      }
+    },
+    lightKick: {
+      damage: 58,
+      reach: 142,
+      width: 130,
+      knockback: 195,
+      frameBoxes: {
+        2: { forward: 106, y: -92, w: 106, h: 58 },
+        3: { forward: 144, y: -88, w: 134, h: 62 }
+      }
+    },
+    heavyKick: {
+      damage: 102,
+      reach: 178,
+      width: 168,
+      knockback: 325,
+      frameBoxes: {
+        2: { forward: 134, y: -112, w: 136, h: 76 },
+        3: { forward: 180, y: -106, w: 172, h: 82 }
+      }
+    },
+    crouchAttack: {
+      damage: 62,
+      reach: 152,
+      width: 142,
+      knockback: 205,
+      frameBoxes: {
+        2: { forward: 114, y: -62, w: 114, h: 50 },
+        3: { forward: 154, y: -58, w: 146, h: 54 }
+      }
+    },
+    airAttack: {
+      damage: 82,
+      reach: 164,
+      width: 156,
+      height: 118,
+      y: -48,
+      knockback: 245,
+      frameBoxes: {
+        2: { forward: 112, y: -58, w: 112, h: 102 },
+        3: { forward: 150, y: -50, w: 146, h: 112 },
+        4: { forward: 166, y: -42, w: 160, h: 120 }
+      }
+    },
     special: {
       speed: 620,
       radius: 52,
@@ -566,6 +626,7 @@ FIGHTERS.AMARA_VALENTINE = {
       blockstun: 0.3,
       cooldown: 0.82,
       knockback: -180,
+      charmDuration: 1.15,
       level: "mid"
     },
     super: {
