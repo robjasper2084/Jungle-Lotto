@@ -1,4 +1,4 @@
-import { drawSheetFrame } from "../engine/assets.js?v=heartline38-balanced-detroit";
+import { drawSheetFrame } from "../engine/assets.js?v=heartline40-original-plus-amara";
 
 export class SpriteEffect {
   constructor({ x, y, image, cellW = 256, cellH = 256, frames = 8, duration = 0.42, scale = 1, flip = false, alpha = 1 }) {

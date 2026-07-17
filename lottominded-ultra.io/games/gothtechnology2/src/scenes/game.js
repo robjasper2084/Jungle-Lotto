@@ -1,17 +1,17 @@
-import { ASSET_URLS, COMMERCIAL_URLS, FIGHTERS } from "../config/assets.js?v=heartline38-balanced-detroit";
-import { arcadeRouteFor, GAME_MODES, ROSTER_CARD_LAYOUT, ROSTER_IDS, STAGES, opponentFor } from "../config/content.js?v=heartline38-balanced-detroit";
-import { ASSISTS, ATTACKS } from "../config/moves.js?v=heartline38-balanced-detroit";
-import { CANVAS_HEIGHT, CANVAS_WIDTH, COLORS, GROUND_Y, PHASE, ROUND_SECONDS, WORLD } from "../config/constants.js?v=heartline38-balanced-detroit";
-import { AssetLoader } from "../engine/assets.js?v=heartline38-balanced-detroit";
-import { WebAudioBus } from "../engine/audio.js?v=heartline38-balanced-detroit";
-import { InputManager } from "../engine/input.js?v=heartline38-balanced-detroit";
-import { clamp, rectsOverlap } from "../engine/math.js?v=heartline38-balanced-detroit";
-import { applyHit, resolveMelee } from "../gameplay/combat.js?v=heartline38-balanced-detroit";
-import { CpuController } from "../gameplay/cpu.js?v=heartline38-balanced-detroit";
-import { AttachedSpriteEffect, LovePulseEffect, SpriteEffect } from "../gameplay/effects.js?v=heartline38-balanced-detroit";
-import { Fighter } from "../gameplay/fighter.js?v=heartline38-balanced-detroit";
-import { AssistStrike, BoerboelStrike, Projectile } from "../gameplay/projectiles.js?v=heartline38-balanced-detroit";
-import { applyRoundOutcomeMotions, resolveRoundOutcome } from "../gameplay/rounds.js?v=heartline38-balanced-detroit";
+import { ASSET_URLS, COMMERCIAL_URLS, FIGHTERS } from "../config/assets.js?v=heartline40-original-plus-amara";
+import { arcadeRouteFor, GAME_MODES, ROSTER_CARD_LAYOUT, ROSTER_IDS, STAGES, opponentFor } from "../config/content.js?v=heartline40-original-plus-amara";
+import { ASSISTS, ATTACKS } from "../config/moves.js?v=heartline40-original-plus-amara";
+import { CANVAS_HEIGHT, CANVAS_WIDTH, COLORS, GROUND_Y, PHASE, ROUND_SECONDS, WORLD } from "../config/constants.js?v=heartline40-original-plus-amara";
+import { AssetLoader } from "../engine/assets.js?v=heartline40-original-plus-amara";
+import { WebAudioBus } from "../engine/audio.js?v=heartline40-original-plus-amara";
+import { InputManager } from "../engine/input.js?v=heartline40-original-plus-amara";
+import { clamp, rectsOverlap } from "../engine/math.js?v=heartline40-original-plus-amara";
+import { applyHit, resolveMelee } from "../gameplay/combat.js?v=heartline40-original-plus-amara";
+import { CpuController } from "../gameplay/cpu.js?v=heartline40-original-plus-amara";
+import { AttachedSpriteEffect, LovePulseEffect, SpriteEffect } from "../gameplay/effects.js?v=heartline40-original-plus-amara";
+import { Fighter } from "../gameplay/fighter.js?v=heartline40-original-plus-amara";
+import { AssistStrike, BoerboelStrike, Projectile } from "../gameplay/projectiles.js?v=heartline40-original-plus-amara";
+import { applyRoundOutcomeMotions, resolveRoundOutcome } from "../gameplay/rounds.js?v=heartline40-original-plus-amara";
 import {
   drawCharacterSelect,
   drawArcadeEnding,
@@ -24,7 +24,7 @@ import {
   drawRoundMessage,
   drawTitle,
   drawVersus
-} from "../ui/hud.js?v=heartline38-balanced-detroit";
+} from "../ui/hud.js?v=heartline40-original-plus-amara";
 
 const GAME_SELECT_ITEMS = [
   {
