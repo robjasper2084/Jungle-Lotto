@@ -1,7 +1,7 @@
 import { rectsOverlap } from "../engine/math.js";
-import { ATTACKS } from "../config/moves.js?v=future-hud26-ezra-scale";
-import { FloatingText, SpriteEffect } from "./effects.js";
-import { registerAttackHit, sliceAttackForHit } from "./hits.js?v=future-hud26-ezra-scale";
+import { ATTACKS } from "../config/moves.js?v=heartline29-amara";
+import { FloatingText, LovePulseEffect, SpriteEffect } from "./effects.js";
+import { registerAttackHit, sliceAttackForHit } from "./hits.js?v=heartline29-amara";
 
 export function resolveMelee(attacker, defender, game) {
   const attackState = attacker.currentAttack;
@@ -40,16 +40,29 @@ export function resolveMelee(attacker, defender, game) {
 
 export function applyHit(attacker, defender, attack, game, meta = {}) {
   if (defender.parryTimer > 0 && meta.sourceName !== "throw") {
+    const charmCounter = defender.config.archetype === "heartline";
     defender.parryTimer = 0;
     defender.shieldTimer = 0;
     defender.guardFlash = 0.3;
     defender.meter = Math.min(100, defender.meter + (defender.config.perfectBlockMeterBonus ?? 16));
     attacker.currentAttack = null;
     attacker.hitstun = Math.max(attacker.hitstun, 0.3);
-    attacker.vx -= attacker.facing * 260;
+    attacker.vx = charmCounter
+      ? Math.sign(defender.x - attacker.x) * 340
+      : attacker.vx - attacker.facing * 260;
     game.hitstop = Math.max(game.hitstop, 0.055);
     game.shake = Math.max(game.shake ?? 0, 7);
-    game.effects.push(new FloatingText("PARRY", defender.x, defender.y - 190, "#9ed8ff"));
+    game.effects.push(new FloatingText(charmCounter ? "CHARMED" : "PARRY", defender.x, defender.y - 190, charmCounter ? "#ff72c8" : "#9ed8ff"));
+    if (charmCounter) {
+      game.effects.push(new LovePulseEffect({
+        x: defender.x,
+        y: defender.y - 118,
+        duration: 0.42,
+        scale: 1,
+        direction: defender.facing,
+        burst: true
+      }));
+    }
     game.audio.beep("block");
     game.recordCombatEvent?.({ type: "parry", attacker, defender });
     return;
@@ -117,14 +130,27 @@ export function applyHit(attacker, defender, attack, game, meta = {}) {
     game.slowMo = Math.max(game.slowMo ?? 0, meta.sourceName === "super" ? 0.18 : 0);
     if (counterHit) game.effects.push(new FloatingText("COUNTER", defender.x, defender.y - 204, "#ffcf67"));
     game.effects.push(new FloatingText(`${damage}`, defender.x, defender.y - 178, "#ffd66d"));
-    game.effects.push(new SpriteEffect({
-      x: meta.box?.x + (meta.box?.w ?? 0) / 2 || defender.x,
-      y: meta.box?.y + 96 || defender.y - 120,
-      image: game.assets.images.hitSpark,
-      duration: 0.28,
-      scale: meta.sourceName === "super" ? 0.68 : 0.42,
-      flip: direction < 0
-    }));
+    const hitX = meta.box?.x + (meta.box?.w ?? 0) / 2 || defender.x;
+    const hitY = meta.box?.y + 96 || defender.y - 120;
+    if (attacker.config.archetype === "heartline") {
+      game.effects.push(new LovePulseEffect({
+        x: hitX,
+        y: hitY,
+        duration: meta.sourceName === "super" ? 0.46 : 0.28,
+        scale: meta.sourceName === "super" ? 1.18 : 0.62,
+        direction,
+        burst: meta.sourceName === "super"
+      }));
+    } else {
+      game.effects.push(new SpriteEffect({
+        x: hitX,
+        y: hitY,
+        image: game.assets.images.hitSpark,
+        duration: 0.28,
+        scale: meta.sourceName === "super" ? 0.68 : 0.42,
+        flip: direction < 0
+      }));
+    }
     game.audio.beep(meta.sourceName === "super" ? "super" : "hit");
   } else {
     game.shake = Math.max(game.shake ?? 0, perfectBlock ? 4 : 2.5);

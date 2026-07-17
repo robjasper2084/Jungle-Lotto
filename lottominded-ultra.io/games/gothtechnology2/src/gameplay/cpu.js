@@ -72,11 +72,14 @@ export class CpuController {
       if (archetype === "precision" && canAct && cpu.meter >= (cpu.config.skillCost ?? 20) && abs < 320) {
         return { down: true, special: true };
       }
+      if (archetype === "heartline" && tune.parry && canAct && cpu.meter >= (cpu.config.skillCost ?? 20)) {
+        return { down: true, special: true };
+      }
       return { [away]: true, down: incoming.y > cpu.y - 150 };
     }
 
     if (!player.grounded && canAct && abs < 190) {
-      return archetype === "control" ? { heavyKick: true } : { heavyPunch: true };
+      return archetype === "control" || archetype === "heartline" ? { heavyKick: true } : { heavyPunch: true };
     }
 
     if (player.currentAttack && abs < (player.currentAttack.data?.reach ?? 100) + 120) {
@@ -89,6 +92,9 @@ export class CpuController {
         if (archetype === "precision" && canAct && cpu.meter >= (cpu.config.skillCost ?? 20) && abs < 300) {
           return { down: true, special: true };
         }
+        if (archetype === "heartline" && tune.parry && canAct && cpu.meter >= (cpu.config.skillCost ?? 20) && this.cadence % 2 === 0) {
+          return { down: true, special: true };
+        }
         return { [away]: true, down: attack.level === "low" };
       }
       if (canAct) {
@@ -96,7 +102,9 @@ export class CpuController {
           ? [tap({ lightPunch: true }), wait(0.06), tap({ heavyPunch: true }), wait(0.08), tap({ heavyKick: true })]
           : archetype === "precision"
             ? [tap({ lightPunch: true }), wait(0.07), tap({ heavyPunch: true }), wait(0.1), tap({ special: true })]
-            : [tap({ lightKick: true }), wait(0.09), tap({ heavyPunch: true })];
+            : archetype === "heartline"
+              ? [tap({ lightPunch: true }), wait(0.06), tap({ lightKick: true }), wait(0.08), tap({ heavyKick: true })]
+              : [tap({ lightKick: true }), wait(0.09), tap({ heavyPunch: true })];
         this.queue(chain.slice(0, tune.comboSteps * 2 - 1));
         return abs > 118 ? { [toward]: true, dash: archetype === "rushdown" } : this.runPlan(dt) ?? {};
       }
@@ -121,6 +129,18 @@ export class CpuController {
       if (abs < 210) return { [away]: true };
       if (canAct && this.cadence % 5 === 0) return { assist1: true };
       return hold({ [away]: true }, 0.07).actions;
+    } else if (archetype === "heartline") {
+      if (abs < 92) return { [away]: true, down: this.cadence % 2 === 0 };
+      if (canAct && cpu.meter >= 100 && abs >= 140 && abs <= 360 && this.cadence % 4 === 0) return { super: true };
+      if (canAct && abs >= 210 && abs <= 480 && this.cadence % 2 === 0) return { special: true };
+      if (abs > 360) return { [toward]: true, dash: canAct && this.cadence % 4 === 0 };
+      if (canAct && cpu.meter >= (cpu.config.skillCost ?? 20) && player.currentAttack && this.cadence % 2 === 0) {
+        return { down: true, special: true };
+      }
+      if (canAct) {
+        this.queue([tap({ lightPunch: true }), wait(0.06), tap({ lightKick: true }), wait(0.08), tap({ heavyKick: true })].slice(0, tune.comboSteps * 2 - 1));
+        return this.runPlan(dt) ?? {};
+      }
     } else {
       if (abs < 150) return { [away]: true, down: this.cadence % 2 === 0 };
       if (canAct && cpu.meter >= 100 && abs > 175 && this.cadence % 4 === 0) return { super: true };

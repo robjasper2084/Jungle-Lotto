@@ -312,6 +312,32 @@ export const ASSISTS = {
       motion: "BLOCK_HIGH",
       shield: true
     }
+  },
+  AMARA_VALENTINE: {
+    assist1: {
+      name: "Heartline Pulse",
+      imageKey: "ezraBlueBurst",
+      damage: 78,
+      cooldown: 7.5,
+      speed: 720,
+      xOffset: 88,
+      yOffset: -156,
+      hitbox: { w: 108, h: 96 },
+      spawn: "hand",
+      motion: "SPECIAL_START",
+      render: "lovePulse"
+    },
+    assist2: {
+      name: "Devotion Guard",
+      imageKey: "blockShield",
+      damage: 0,
+      cooldown: 8.3,
+      speed: 0,
+      yOffset: -132,
+      hitbox: { w: 126, h: 166 },
+      motion: "BLOCK_HIGH",
+      shield: true
+    }
   }
 };
 

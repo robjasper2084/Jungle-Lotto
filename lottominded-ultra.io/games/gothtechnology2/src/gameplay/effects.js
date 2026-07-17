@@ -56,6 +56,69 @@ export class AttachedSpriteEffect extends SpriteEffect {
   }
 }
 
+const heartPath = (ctx, size) => {
+  ctx.beginPath();
+  ctx.moveTo(0, size * 0.34);
+  ctx.bezierCurveTo(-size * 0.82, -size * 0.18, -size * 0.48, -size, 0, -size * 0.52);
+  ctx.bezierCurveTo(size * 0.48, -size, size * 0.82, -size * 0.18, 0, size * 0.34);
+  ctx.closePath();
+};
+
+export class LovePulseEffect {
+  constructor({ x = 0, y = 0, owner = null, duration = 0.48, scale = 1, direction = 1, burst = false }) {
+    this.x = x;
+    this.y = y;
+    this.owner = owner;
+    this.duration = duration;
+    this.scale = scale;
+    this.direction = direction;
+    this.burst = burst;
+    this.age = 0;
+    this.dead = false;
+  }
+
+  update(dt) {
+    this.age += dt;
+    if (this.owner) {
+      this.x = this.owner.x + this.owner.facing * 42;
+      this.y = this.owner.y - 126;
+      this.direction = this.owner.facing;
+    }
+    this.dead = this.age >= this.duration;
+  }
+
+  render(ctx) {
+    const t = Math.min(1, this.age / this.duration);
+    const ease = 1 - (1 - t) ** 3;
+    const alpha = Math.max(0, 1 - t);
+    const radius = (30 + ease * (this.burst ? 118 : 72)) * this.scale;
+    ctx.save();
+    ctx.translate(this.x, this.y);
+    ctx.globalCompositeOperation = "lighter";
+    ctx.globalAlpha = alpha * 0.9;
+    ctx.strokeStyle = "#ff69c8";
+    ctx.lineWidth = Math.max(2, 6 * (1 - t));
+    ctx.shadowColor = "#ff3cad";
+    ctx.shadowBlur = 26;
+    ctx.beginPath();
+    ctx.arc(0, 0, radius, 0, Math.PI * 2);
+    ctx.stroke();
+    for (let index = 0; index < 3; index += 1) {
+      const phase = t * 2.4 + index * 0.72;
+      const x = this.direction * (18 + phase * 36) * this.scale;
+      const y = Math.sin(phase * 3.2) * 18 * this.scale - index * 10;
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(this.direction * (0.12 - t * 0.18));
+      ctx.fillStyle = index === 1 ? "#ffd2e7" : "#ff4fb8";
+      heartPath(ctx, (13 + index * 3) * this.scale * (0.75 + alpha * 0.35));
+      ctx.fill();
+      ctx.restore();
+    }
+    ctx.restore();
+  }
+}
+
 export class FloatingText {
   constructor(text, x, y, color = "#ffd66d") {
     this.text = text;

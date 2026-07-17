@@ -471,6 +471,14 @@
         box-shadow: 0 0 0 3px #fff, 0 24px 80px #000;
       }
 
+      body[data-color-filter="deuteranopia"] #game {
+        filter: saturate(0.82) hue-rotate(16deg) contrast(1.08);
+      }
+
+      body[data-color-filter="tritanopia"] #game {
+        filter: saturate(0.88) hue-rotate(-18deg) contrast(1.08);
+      }
+
       body[data-touch-layout="left"] #mobileControls {
         flex-direction: row-reverse;
       }
@@ -768,11 +776,15 @@
           <label class="setting-row"><span>SCREEN SHAKE</span><input id="shakeAmount" type="range" min="0" max="1" step="0.1" /></label>
           <label class="setting-row"><span>VIBRATION</span><input id="vibrationToggle" type="checkbox" /></label>
           <label class="setting-row"><span>HIGH CONTRAST</span><input id="contrastToggle" type="checkbox" /></label>
+          <label class="setting-row"><span>REDUCE FLASH</span><input id="reduceFlash" type="checkbox" /></label>
+          <label class="setting-row"><span>COLOR VISION</span><select id="colorFilter"><option value="normal">STANDARD</option><option value="deuteranopia">RED-GREEN</option><option value="tritanopia">BLUE-YELLOW</option></select></label>
           <label class="setting-row"><span>HUD SCALE</span><input id="hudScale" type="range" min="0.8" max="1.3" step="0.05" /></label>
           <label class="setting-row"><span>TOUCH PRESET</span><select id="touchLayout"><option value="classic">CLASSIC</option><option value="left">LEFT HANDED</option><option value="compact">COMPACT</option></select></label>
         </div>
         <div class="settings-actions">
           <button id="fullscreenToggle" class="settings-button" type="button">FULLSCREEN</button>
+          <button id="replayImport" class="settings-button" type="button">IMPORT REPLAY</button>
+          <input id="replayImportFile" type="file" accept="application/json,.json" hidden />
           <button id="resetBindings" class="settings-button" type="button">RESET KEYS</button>
         </div>
         <div class="binding-heading" aria-hidden="true"><span>ACTION</span><span>PLAYER 1</span><span>PLAYER 2</span></div>
@@ -814,6 +826,6 @@
       </section>
     </div>
     <script src="../../assets/js/lm-game-rewards-sdk.js?v=rewards-sdk-1"></script>
-    <script type="module" src="./src/main.js?v=future-hud26-ezra-scale"></script>
+    <script type="module" src="./src/main.js?v=heartline29-amara"></script>
   </body>
 </html>

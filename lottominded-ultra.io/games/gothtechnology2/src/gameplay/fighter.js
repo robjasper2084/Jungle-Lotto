@@ -1,8 +1,8 @@
 import { GRAVITY, GROUND_Y, WORLD } from "../config/constants.js";
-import { ATTACKS } from "../config/moves.js?v=future-hud26-ezra-scale";
-import { drawSpriteFrame } from "../engine/assets.js?v=future-hud26-ezra-scale";
+import { ATTACKS } from "../config/moves.js?v=heartline29-amara";
+import { drawSpriteFrame } from "../engine/assets.js?v=heartline29-amara";
 import { approach, clamp, makeRect } from "../engine/math.js";
-import { attackIntentFromActions, resolveCancelAttack } from "./commands.js?v=future-hud26-ezra-scale";
+import { attackIntentFromActions, resolveCancelAttack } from "./commands.js?v=heartline29-amara";
 import { SpriteEffect } from "./effects.js";
 
 const MOTION_LOCKS = new Set([
@@ -328,6 +328,17 @@ export class Fighter {
       this.setMotion("DASH_FORWARD", true);
       game.spawnFighterVfx?.(this, "skill", "release");
       game.audio.beep("dash");
+    } else if (this.config.archetype === "heartline") {
+      this.parryTimer = 0.32;
+      this.shieldTimer = Math.max(this.shieldTimer, this.parryTimer);
+      this.setMotion("BLOCK_HIGH", true);
+      const distance = Math.abs(opponent.x - this.x);
+      const inFront = Math.sign(opponent.x - this.x) === this.facing;
+      if (inFront && distance > 118 && distance <= 380) {
+        opponent.vx += Math.sign(this.x - opponent.x) * 260;
+      }
+      game.spawnFighterVfx?.(this, "skill", "charge");
+      game.audio.beep("block");
     } else if (this.config.archetype === "precision") {
       this.invulnerable = Math.max(this.invulnerable, 0.16);
       this.setMotion("SPECIAL_START", true);

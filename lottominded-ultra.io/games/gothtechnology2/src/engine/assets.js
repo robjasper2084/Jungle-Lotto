@@ -1,4 +1,4 @@
-import { ASSET_URLS, MOTION_ASSET_VERSION, MOTION_PLAYBACK } from "../config/assets.js?v=future-hud26-ezra-scale";
+import { ASSET_URLS, MOTION_ASSET_VERSION, MOTION_PLAYBACK } from "../config/assets.js?v=heartline29-amara";
 
 const imageCache = new Map();
 
@@ -51,7 +51,8 @@ export class AssetLoader {
       logo: ASSET_URLS.logo,
       kalyxPortrait: ASSET_URLS.rosterPortraits.kalyx,
       masterEzraPortrait: ASSET_URLS.rosterPortraits.masterEzra,
-      detroitLensNoirPortrait: ASSET_URLS.rosterPortraits.detroitLensNoir
+      detroitLensNoirPortrait: ASSET_URLS.rosterPortraits.detroitLensNoir,
+      amaraValentinePortrait: ASSET_URLS.rosterPortraits.amaraValentine
     }, onProgress, { strict: false });
   }
 

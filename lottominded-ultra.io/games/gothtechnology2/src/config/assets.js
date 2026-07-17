@@ -1,6 +1,6 @@
 export const PACK_ROOT = "assets/GOTHTECHNOLOGY_EXPANDED_SPRITE_PACK_V2";
 export const LOCAL_ROOT = "assets";
-export const MOTION_ASSET_VERSION = "future-hud26-ezra-scale";
+export const MOTION_ASSET_VERSION = "heartline29-amara";
 
 export const COMMERCIAL_URLS = [
   `${LOCAL_ROOT}/commercials/detroit-commercial-01.mp4`,
@@ -19,7 +19,8 @@ export const ASSET_URLS = {
   rosterPortraits: {
     kalyx: `${LOCAL_ROOT}/user-roster/kalyx-idle.webp?v=${MOTION_ASSET_VERSION}`,
     masterEzra: `${LOCAL_ROOT}/user-roster/master-ezra-idle.webp?v=${MOTION_ASSET_VERSION}`,
-    detroitLensNoir: `${LOCAL_ROOT}/user-roster/detroit-lens-noir-idle.webp?v=${MOTION_ASSET_VERSION}`
+    detroitLensNoir: `${LOCAL_ROOT}/user-roster/detroit-lens-noir-idle.webp?v=${MOTION_ASSET_VERSION}`,
+    amaraValentine: `${LOCAL_ROOT}/user-roster/amara-valentine-idle.webp?v=${MOTION_ASSET_VERSION}`
   },
   background: `${LOCAL_ROOT}/user-stage/forest-fight-background.jpg`,
   stages: {
@@ -82,6 +83,19 @@ export const MOTION_PLAYBACK = {
     LANDING: [1, 0, 4, 5]
   },
   DETROIT_LENS_NOIR: {
+    WALK_FORWARD: [0, 1, 2, 3, 4, 5],
+    WALK_BACK: [0, 1, 2, 3, 4, 5],
+    RUN_FORWARD: [0, 1, 2, 3, 4, 5],
+    RUN_BACK: [0, 1, 2, 3, 4, 5],
+    DASH_FORWARD: [0, 1, 2, 3, 4, 5],
+    DASH_BACK: [0, 1, 2, 3, 4, 5],
+    JUMP_START: [0, 1, 2, 3],
+    JUMP_RISE: [0, 1, 2, 3, 4],
+    JUMP_PEAK: [0, 1, 2, 3],
+    JUMP_FALL: [0, 1, 2, 3, 4],
+    LANDING: [0, 1, 2, 3, 4, 5]
+  },
+  AMARA_VALENTINE: {
     WALK_FORWARD: [0, 1, 2, 3, 4, 5],
     WALK_BACK: [0, 1, 2, 3, 4, 5],
     RUN_FORWARD: [0, 1, 2, 3, 4, 5],
@@ -483,4 +497,90 @@ FIGHTERS.DETROIT_LENS_NOIR = {
   assistNames: ["FLASH DRONE", "FRAME GUARD"],
   superName: "Red-Eye Exposure",
   specialName: "Boerboel Rush"
+};
+
+FIGHTERS.AMARA_VALENTINE = {
+  id: "AMARA_VALENTINE",
+  name: "AMARA VALENTINE",
+  title: "Heartline Vanguard",
+  manifestKey: "AMARA_VALENTINE",
+  spriteFacing: 1,
+  palette: "#e45ac8",
+  accent: "#ffd2dc",
+  costumePalette: "cobalt-rose",
+  rosterPortraitKey: "amaraValentinePortrait",
+  scale: 1.31,
+  stableScale: 1.31,
+  archetype: "heartline",
+  skillCost: 20,
+  skillCooldown: 0.95,
+  guardTapWindow: 0.16,
+  perfectBlockMeterBonus: 14,
+  speed: 425,
+  runSpeed: 700,
+  dashSpeed: 1170,
+  jumpVelocity: -760,
+  motionTimeScale: 1.48,
+  motionDurations: {
+    JUMP_START: 0.15,
+    JUMP_RISE: 0.3,
+    JUMP_PEAK: 0.11,
+    JUMP_FALL: 0.4,
+    LANDING: 0.2,
+    DASH_FORWARD: 0.29,
+    DASH_BACK: 0.33
+  },
+  motionTimeScales: {
+    WALK_FORWARD: 2.12,
+    WALK_BACK: 2.12,
+    RUN_FORWARD: 1.7,
+    RUN_BACK: 1.7
+  },
+  feel: {
+    attackStartupScale: 0.59,
+    attackRecoveryScale: 0.49,
+    attackActiveScale: 0.92,
+    inputBuffer: 0.19,
+    groundAccel: 4700,
+    groundDecel: 4100,
+    airAccel: 1480,
+    dashBrake: 2060,
+    runThreshold: 0.26,
+    crouchWalkScale: 0.41,
+    landingLag: 0.12
+  },
+  maxHealth: 1040,
+  attackOverrides: {
+    lightPunch: { damage: 46, reach: 104, knockback: 160 },
+    heavyPunch: { damage: 90, reach: 140, width: 128, knockback: 280 },
+    lightKick: { damage: 58, reach: 120, knockback: 195 },
+    heavyKick: { damage: 102, reach: 156, width: 144, knockback: 325 },
+    crouchAttack: { damage: 62, reach: 130, width: 120, knockback: 205 },
+    airAttack: { damage: 82, reach: 132, width: 136, knockback: 245 },
+    special: {
+      speed: 620,
+      radius: 52,
+      damage: 82,
+      chip: 14,
+      stun: 0.4,
+      blockstun: 0.3,
+      cooldown: 0.82,
+      knockback: -180,
+      level: "mid"
+    },
+    super: {
+      speed: 560,
+      radius: 96,
+      damage: 264,
+      chip: 46,
+      stun: 0.74,
+      blockstun: 0.56,
+      knockback: 520,
+      multiHit: 4,
+      hitInterval: 0.085
+    }
+  },
+  assistNames: ["HEARTLINE PULSE", "DEVOTION GUARD"],
+  superName: "Heartbreak Nova",
+  specialName: "Heartline Pulse"
 };

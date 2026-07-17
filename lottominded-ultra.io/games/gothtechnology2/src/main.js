@@ -1,6 +1,6 @@
-import { FIGHTERS } from "./config/assets.js?v=future-hud26-ezra-scale";
-import { COMMAND_LISTS, GAME_MODES, ROSTER_IDS } from "./config/content.js?v=future-hud26-ezra-scale";
-import { GothTechnologyGame } from "./scenes/game.js?v=future-hud26-ezra-scale";
+import { FIGHTERS } from "./config/assets.js?v=heartline29-amara";
+import { COMMAND_LISTS, GAME_MODES, ROSTER_IDS } from "./config/content.js?v=heartline29-amara";
+import { GothTechnologyGame } from "./scenes/game.js?v=heartline29-amara";
 import { PHASE } from "./config/constants.js";
 
 const syncViewportHeight = () => {
@@ -94,6 +94,8 @@ const trainingPanel = document.getElementById("trainingPanel");
 const closeTraining = document.getElementById("closeTraining");
 const mobileCommands = document.getElementById("mobileCommands");
 const mobileTrainingTools = document.getElementById("mobileTrainingTools");
+const replayImport = document.getElementById("replayImport");
+const replayImportFile = document.getElementById("replayImportFile");
 const TOUCH_POSITIONS_KEY = "gothtechnology.touch.positions.v1";
 
 const settingFields = {
@@ -102,6 +104,8 @@ const settingFields = {
   shake: document.getElementById("shakeAmount"),
   vibration: document.getElementById("vibrationToggle"),
   highContrast: document.getElementById("contrastToggle"),
+  reduceFlash: document.getElementById("reduceFlash"),
+  colorFilter: document.getElementById("colorFilter"),
   hudScale: document.getElementById("hudScale"),
   touchLayout: document.getElementById("touchLayout")
 };
@@ -349,6 +353,7 @@ const renderAccessibleActions = (state) => {
   document.body.dataset.training = String(Boolean(state.training));
   document.body.dataset.highContrast = String(Boolean(game.settings.highContrast));
   document.body.dataset.touchLayout = game.settings.touchLayout || "classic";
+  document.body.dataset.colorFilter = game.settings.colorFilter || "normal";
   if (gameStatus) {
     const combat = state.phase === PHASE.FIGHT
       ? ` Player one health ${state.player1Health} percent, meter ${state.player1Meter}. Player two health ${state.player2Health} percent.`
@@ -378,6 +383,7 @@ const renderAccessibleActions = (state) => {
       actions.push(actionButton("Export selected replay", () => game.exportReplay(game.replaySlotIndex)));
       actions.push(actionButton("Delete selected replay", () => game.deleteReplay(game.replaySlotIndex)));
     }
+    actions.push(actionButton("Import replay JSON", () => replayImportFile?.click()));
     actions.push(actionButton("Back", () => game.returnToTitle()));
   } else if (state.phase === PHASE.SELECT) {
     const opponentRole = state.training ? "training dummy" : (state.cpuEnabled ? "CPU opponent" : "Player 2");
@@ -468,6 +474,19 @@ commercialBreak?.addEventListener("keydown", (event) => {
   if (["Escape", "Enter", " "].includes(event.key)) {
     event.preventDefault();
     game.finishCommercialBreak();
+  }
+});
+
+replayImport?.addEventListener("click", () => replayImportFile?.click());
+replayImportFile?.addEventListener("change", async () => {
+  const file = replayImportFile.files?.[0];
+  replayImportFile.value = "";
+  if (!file) return;
+  try {
+    const payload = JSON.parse(await file.text());
+    game.importReplay(payload);
+  } catch {
+    game.announce("Replay import rejected: invalid JSON");
   }
 });
 

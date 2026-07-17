@@ -1,9 +1,10 @@
-export const ROSTER_IDS = ["KALYX", "MASTER_EZRA", "DETROIT_LENS_NOIR"];
+export const ROSTER_IDS = ["KALYX", "MASTER_EZRA", "DETROIT_LENS_NOIR", "AMARA_VALENTINE"];
 
 export const ROSTER_CARD_LAYOUT = [
-  { x: 80, y: 142, w: 352, h: 382 },
-  { x: 464, y: 142, w: 352, h: 382 },
-  { x: 848, y: 142, w: 352, h: 382 }
+  { x: 36, y: 142, w: 286, h: 382 },
+  { x: 343, y: 142, w: 286, h: 382 },
+  { x: 650, y: 142, w: 286, h: 382 },
+  { x: 957, y: 142, w: 286, h: 382 }
 ];
 
 export const GAME_MODES = {
@@ -70,16 +71,17 @@ export const STAGES = [
   }
 ];
 
-export const ARCADE_LADDER = ["MASTER_EZRA", "DETROIT_LENS_NOIR", "KALYX"];
+export const ARCADE_LADDER = ["MASTER_EZRA", "DETROIT_LENS_NOIR", "AMARA_VALENTINE", "KALYX"];
 
 export const arcadeRouteFor = (playerId) => {
   const rivals = ROSTER_IDS.filter((id) => id !== playerId);
+  const finalBossId = playerId === "KALYX" ? "AMARA_VALENTINE" : "KALYX";
   return [
     { opponentId: rivals[0], stageIndex: 1, label: "MIDNIGHT QUALIFIER", difficulty: "easy" },
     { opponentId: rivals[1], stageIndex: 2, label: "ASSEMBLY INTERCEPT", difficulty: "normal" },
-    { opponentId: playerId, stageIndex: 3, label: "MIRROR PROTOCOL", difficulty: "normal" },
-    { opponentId: rivals[0], stageIndex: 4, label: "MARKET REMATCH", difficulty: "hard" },
-    { opponentId: rivals[1], stageIndex: 5, label: "CENTRAL TERMINUS", difficulty: "hard" }
+    { opponentId: rivals[2], stageIndex: 3, label: "RIVERFRONT RIVAL", difficulty: "normal" },
+    { opponentId: playerId, stageIndex: 4, label: "MIRROR PROTOCOL", difficulty: "hard" },
+    { opponentId: finalBossId, stageIndex: 5, label: "CENTRAL TERMINUS BOSS", difficulty: "hard", boss: true }
   ];
 };
 
@@ -122,6 +124,16 @@ export const COMMAND_LISTS = {
       { input: "DOWN + SP", name: "GUARDIAN INTERCEPT", detail: "Spend meter to call a close Boerboel counter." },
       { input: "SP", name: "BOERBOEL RUSH", detail: "Send the Boerboel sprinting into a leap-and-bite attack." },
       { input: "MAX / MOD+HP", name: "RED-EYE EXPOSURE", detail: "Fire a three-hit ruby laser through the glasses." }
+    ]
+  },
+  AMARA_VALENTINE: {
+    title: "HEARTLINE VANGUARD",
+    passive: "Love-powered pressure. Heartline Pulse attracts; Heartbreak Nova repels.",
+    commands: [
+      ...commonCommands,
+      { input: "DOWN + SP", name: "CHARM COUNTER", detail: "Spend meter to charm and stagger an incoming attacker." },
+      { input: "SP", name: "HEARTLINE PULSE", detail: "Launch a rose pulse that pulls its target closer." },
+      { input: "MAX / MOD+HP", name: "HEARTBREAK NOVA", detail: "Release a multi-hit love nova that launches the target away." }
     ]
   }
 };

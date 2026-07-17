@@ -1,19 +1,20 @@
-import { ASSET_URLS, COMMERCIAL_URLS, FIGHTERS } from "../config/assets.js?v=future-hud26-ezra-scale";
-import { arcadeRouteFor, GAME_MODES, ROSTER_CARD_LAYOUT, ROSTER_IDS, STAGES, opponentFor } from "../config/content.js?v=future-hud26-ezra-scale";
-import { ASSISTS, ATTACKS } from "../config/moves.js?v=future-hud26-ezra-scale";
+import { ASSET_URLS, COMMERCIAL_URLS, FIGHTERS } from "../config/assets.js?v=heartline29-amara";
+import { arcadeRouteFor, GAME_MODES, ROSTER_CARD_LAYOUT, ROSTER_IDS, STAGES, opponentFor } from "../config/content.js?v=heartline29-amara";
+import { ASSISTS, ATTACKS } from "../config/moves.js?v=heartline29-amara";
 import { CANVAS_HEIGHT, CANVAS_WIDTH, COLORS, GROUND_Y, PHASE, ROUND_SECONDS, WORLD } from "../config/constants.js";
-import { AssetLoader } from "../engine/assets.js?v=future-hud26-ezra-scale";
-import { WebAudioBus } from "../engine/audio.js?v=future-hud26-ezra-scale";
-import { InputManager } from "../engine/input.js?v=future-hud26-ezra-scale";
+import { AssetLoader } from "../engine/assets.js?v=heartline29-amara";
+import { WebAudioBus } from "../engine/audio.js?v=heartline29-amara";
+import { InputManager } from "../engine/input.js?v=heartline29-amara";
 import { clamp, rectsOverlap } from "../engine/math.js";
-import { applyHit, resolveMelee } from "../gameplay/combat.js?v=future-hud26-ezra-scale";
-import { CpuController } from "../gameplay/cpu.js?v=future-hud26-ezra-scale";
-import { AttachedSpriteEffect, SpriteEffect } from "../gameplay/effects.js?v=future-hud26-ezra-scale";
-import { Fighter } from "../gameplay/fighter.js?v=future-hud26-ezra-scale";
-import { AssistStrike, BoerboelStrike, Projectile } from "../gameplay/projectiles.js?v=future-hud26-ezra-scale";
-import { applyRoundOutcomeMotions, resolveRoundOutcome } from "../gameplay/rounds.js?v=future-hud26-ezra-scale";
+import { applyHit, resolveMelee } from "../gameplay/combat.js?v=heartline29-amara";
+import { CpuController } from "../gameplay/cpu.js?v=heartline29-amara";
+import { AttachedSpriteEffect, LovePulseEffect, SpriteEffect } from "../gameplay/effects.js?v=heartline29-amara";
+import { Fighter } from "../gameplay/fighter.js?v=heartline29-amara";
+import { AssistStrike, BoerboelStrike, Projectile } from "../gameplay/projectiles.js?v=heartline29-amara";
+import { applyRoundOutcomeMotions, resolveRoundOutcome } from "../gameplay/rounds.js?v=heartline29-amara";
 import {
   drawCharacterSelect,
+  drawArcadeEnding,
   drawDiagnostics,
   drawFightHud,
   drawGameSelect,
@@ -23,14 +24,14 @@ import {
   drawRoundMessage,
   drawTitle,
   drawVersus
-} from "../ui/hud.js?v=future-hud26-ezra-scale";
+} from "../ui/hud.js?v=heartline29-amara";
 
 const GAME_SELECT_ITEMS = [
   {
     id: "gothtechnology",
     title: "GOTHTECHNOLOGY",
-    subtitle: "KALYX vs MASTER EZRA 1v1 arcade fighter",
-    badge: "FIGHTER",
+    subtitle: "Four-fighter Detroit supernatural combat",
+    badge: "4-FIGHTER",
     imageKey: "gameTitleGothtechnology"
   },
   {
@@ -96,6 +97,8 @@ export class GothTechnologyGame {
       vibration: true,
       shake: 1,
       highContrast: false,
+      reduceFlash: false,
+      colorFilter: "normal",
       hudScale: 1,
       touchLayout: "classic"
     });
@@ -141,6 +144,7 @@ export class GothTechnologyGame {
     this.selectTarget = "p1";
     this.rosterIndex = ROSTER_IDS.indexOf(this.player1Id);
     this.gameMode = "versus";
+    this.menuTransitionCooldown = 0;
     this.stageIndex = 0;
     this.arcadeStage = 0;
     this.modeComplete = false;
@@ -261,6 +265,7 @@ export class GothTechnologyGame {
     this.audio.setVibrationEnabled?.(this.settings.vibration);
     document.body.dataset.highContrast = String(Boolean(this.settings.highContrast));
     document.body.dataset.touchLayout = this.settings.touchLayout || "classic";
+    document.body.dataset.colorFilter = this.settings.colorFilter || "normal";
     writeStorage(SETTINGS_KEY, this.settings);
     this.lastAccessibleState = "";
     this.render();
@@ -466,6 +471,7 @@ export class GothTechnologyGame {
     this.selectTarget = "p1";
     this.rosterIndex = Math.max(0, ROSTER_IDS.indexOf(this.player1Id));
     this.phase = PHASE.SELECT;
+    this.menuTransitionCooldown = 0.12;
     this.createFighters();
     this.prepareCharacterMotions();
     this.prepareFightAssets();
@@ -674,6 +680,7 @@ export class GothTechnologyGame {
 
   update(dt) {
     this.input.pollGamepads?.();
+    this.menuTransitionCooldown = Math.max(0, this.menuTransitionCooldown - dt);
     this.handleGlobalInput();
     this.parallax += dt;
     this.shake = Math.max(0, this.shake - dt * 44);
@@ -877,7 +884,8 @@ export class GothTechnologyGame {
         this.rosterIndex = (this.rosterIndex + delta + ROSTER_IDS.length) % ROSTER_IDS.length;
         this.selectCharacter(ROSTER_IDS[this.rosterIndex]);
       }
-      if (consumeMenuConfirm(this.input)) this.startVersus();
+      const confirm = consumeMenuConfirm(this.input);
+      if (confirm && this.menuTransitionCooldown <= 0) this.startVersus();
       if (consumeMenuBack(this.input)) {
         this.phase = PHASE.TITLE;
         this.syncMusicForPhase();
@@ -1197,6 +1205,41 @@ export class GothTechnologyGame {
     this.announce("Replay exported");
   }
 
+  importReplay(payload) {
+    const source = payload?.replay ?? payload;
+    if (!source || !Array.isArray(source.frames) || !source.frames.length || source.frames.length > 72000) {
+      this.announce("Replay import rejected: invalid or oversized match data");
+      return false;
+    }
+    const normalizeFighterId = (id) => id === "DETROIT_LENS" ? "DETROIT_LENS_NOIR" : id;
+    const player1Id = normalizeFighterId(source.player1Id);
+    const player2Id = normalizeFighterId(source.player2Id);
+    if (!FIGHTERS[player1Id] || !FIGHTERS[player2Id]) {
+      this.announce("Replay import rejected: unknown fighter");
+      return false;
+    }
+    const frames = source.frames.map((frame) => ({
+      p1: activeActions(frame?.p1),
+      p2: activeActions(frame?.p2)
+    }));
+    const entry = {
+      id: `import-${Date.now().toString(36)}`,
+      savedAt: new Date().toISOString(),
+      player1Id,
+      player2Id,
+      winnerId: FIGHTERS[normalizeFighterId(source.winnerId)] ? normalizeFighterId(source.winnerId) : null,
+      stageIndex: Math.max(0, Math.min(STAGES.length - 1, Number(source.stageIndex) || 0)),
+      mode: "replay",
+      frames,
+      stats: source.stats && typeof source.stats === "object" ? source.stats : {}
+    };
+    this.writeReplayLibrary([entry, ...this.getReplayLibrary().filter((saved) => saved.id !== "legacy")]);
+    this.replaySlotIndex = 0;
+    this.announce("Replay imported into slot one");
+    this.render();
+    return true;
+  }
+
   cycleReplaySpeed() {
     if (!this.isReplay) return;
     const speeds = [0.5, 1, 2];
@@ -1410,6 +1453,7 @@ export class GothTechnologyGame {
     const attack = owner.getAttackData(name) ?? ATTACKS[name];
     const manifestKey = owner.config.manifestKey;
     const isDetroitLens = manifestKey.startsWith("DETROIT_LENS");
+    const isAmara = manifestKey === "AMARA_VALENTINE";
     if (isDetroitLens && name === "special") {
       this.projectiles.push(new BoerboelStrike({
         owner,
@@ -1424,6 +1468,8 @@ export class GothTechnologyGame {
     }
     const kind = isDetroitLens && name === "super"
       ? "eye-laser"
+      : isAmara
+        ? (name === "super" ? "heartbreak-nova" : "heartline-pulse")
       : name === "super"
         ? "super"
         : manifestKey === "KALYX"
@@ -1438,6 +1484,10 @@ export class GothTechnologyGame {
         special: { x: 126, y: -154 },
         super: { x: 138, y: -160 }
       },
+      AMARA_VALENTINE: {
+        special: { x: 124, y: -142 },
+        super: { x: 108, y: -132 }
+      },
       DETROIT_LENS: {
         super: { x: 114, y: -176 }
       }
@@ -1450,7 +1500,9 @@ export class GothTechnologyGame {
       ? this.assets.images[name === "super" ? "kalyxFireSlash" : "assistRaven"]
       : isDetroitLens
         ? this.assets.images.hitSpark
-        : this.assets.images[name === "super" ? "ezraOwlArc" : "assistOwl"];
+        : isAmara
+          ? this.assets.images.ezraBlueBurst
+          : this.assets.images[name === "super" ? "ezraOwlArc" : "assistOwl"];
     this.projectiles.push(new Projectile({
       owner,
       x: spawnX,
@@ -1459,7 +1511,13 @@ export class GothTechnologyGame {
       attack,
       image,
       kind,
-      color: manifestKey === "KALYX" ? "#f2a13d" : isDetroitLens ? (name === "super" ? "#ff2838" : "#e7c36a") : "#9ed8ff"
+      color: manifestKey === "KALYX"
+        ? "#f2a13d"
+        : isDetroitLens
+          ? (name === "super" ? "#ff2838" : "#e7c36a")
+          : isAmara
+            ? "#ff58bd"
+            : "#9ed8ff"
     }));
     this.audio.beep(name === "super" ? "super" : "projectile");
   }
@@ -1468,8 +1526,21 @@ export class GothTechnologyGame {
     const manifestKey = owner.config.manifestKey;
     const isKalyx = manifestKey === "KALYX";
     const isDetroitLens = manifestKey.startsWith("DETROIT_LENS");
+    const isAmara = manifestKey === "AMARA_VALENTINE";
     const superMove = name === "super";
     const skill = name === "skill";
+    if (isAmara) {
+      this.effects.push(new LovePulseEffect({
+        owner: phase === "charge" ? owner : null,
+        x: owner.x + owner.facing * (superMove ? 48 : 36),
+        y: owner.y - (superMove ? 132 : 112),
+        direction: owner.facing,
+        duration: superMove ? 0.58 : (skill ? 0.4 : 0.34),
+        scale: superMove ? 1.3 : (skill ? 0.9 : 0.72),
+        burst: superMove || phase === "release"
+      }));
+      return;
+    }
     if (isDetroitLens) {
       if (name === "special") return;
       if (skill && this.assets.images.detroitBoerboel) {
@@ -1596,12 +1667,16 @@ export class GothTechnologyGame {
       drawRoundMessage(ctx, this.roundResultText || "ROUND COMPLETE", this.roundResultSubtext || "NEXT ROUND");
     }
     if (this.phase === PHASE.MATCH_END) {
-      const headline = `${this.matchWinner?.config.name ?? "FIGHTER"} WINS`;
-      drawRoundMessage(ctx, headline, this.matchEndPrompt || "MATCH COMPLETE");
+      if (this.modeComplete && this.gameMode === "arcade") {
+        drawArcadeEnding(ctx, this);
+      } else {
+        const headline = `${this.matchWinner?.config.name ?? "FIGHTER"} WINS`;
+        drawRoundMessage(ctx, headline, this.matchEndPrompt || "MATCH COMPLETE");
+      }
     }
     if (this.phase === PHASE.PAUSE) drawPause(ctx, this);
     if (this.debug) drawDiagnostics(ctx, this);
-    if (this.flash > 0) {
+    if (this.flash > 0 && !this.settings.reduceFlash) {
       ctx.save();
       ctx.globalAlpha = this.flash * 0.35;
       ctx.fillStyle = "#f8f1d4";
@@ -1759,6 +1834,22 @@ export class GothTechnologyGame {
       ctx.globalAlpha = stage.emberAlpha;
       ctx.drawImage(embers, -drift, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
       ctx.drawImage(embers, CANVAS_WIDTH - drift, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+      ctx.restore();
+    }
+    if (!stage.legacyLayers) {
+      const motion = this.reducedMotion ? 0 : this.parallax * 52;
+      ctx.save();
+      ctx.globalCompositeOperation = "screen";
+      for (let index = 0; index < 4; index += 1) {
+        const x = ((index * 360 + motion) % (CANVAS_WIDTH + 240)) - 120;
+        const y = 430 + (index % 2) * 28;
+        ctx.globalAlpha = 0.22;
+        ctx.fillStyle = index % 2 ? "#ff5368" : "#6be7ff";
+        ctx.shadowColor = ctx.fillStyle;
+        ctx.shadowBlur = 12;
+        ctx.fillRect(x, y, 18, 3);
+        ctx.fillRect(x + 30, y, 18, 3);
+      }
       ctx.restore();
     }
   }

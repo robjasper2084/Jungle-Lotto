@@ -1,7 +1,7 @@
 import { CANVAS_HEIGHT, CANVAS_WIDTH, COLORS, ROUND_SECONDS } from "../config/constants.js";
-import { FIGHTERS } from "../config/assets.js?v=future-hud26-ezra-scale";
-import { GAME_MODES, ROSTER_CARD_LAYOUT, ROSTER_IDS, STAGES } from "../config/content.js?v=future-hud26-ezra-scale";
-import { drawSpriteFrame } from "../engine/assets.js?v=future-hud26-ezra-scale";
+import { FIGHTERS } from "../config/assets.js?v=heartline29-amara";
+import { GAME_MODES, ROSTER_CARD_LAYOUT, ROSTER_IDS, STAGES } from "../config/content.js?v=heartline29-amara";
+import { drawSpriteFrame } from "../engine/assets.js?v=heartline29-amara";
 
 const FUTURE = {
   cyan: "#67e8ff",
@@ -305,7 +305,7 @@ export const drawTitle = (ctx, game) => {
   ctx.textAlign = "left";
   ctx.fillText("LM-84 // DETROIT COMBAT NETWORK", 28, 22);
   ctx.textAlign = "right";
-  ctx.fillText("3 FIGHTERS // 6 ARENAS // LINK READY", 1252, 22);
+  ctx.fillText("4 FIGHTERS // 6 ARENAS // LINK READY", 1252, 22);
   ctx.textAlign = "center";
   ctx.fillStyle = FUTURE.white;
   ctx.shadowColor = "rgba(103, 232, 255, 0.42)";
@@ -769,6 +769,55 @@ export const drawRoundMessage = (ctx, text, subtext = "") => {
     ctx.font = `800 16px ${HUD_MONO}`;
     ctx.fillText(subtext, 640, 370);
   }
+  ctx.restore();
+};
+
+const ARCADE_ENDINGS = {
+  KALYX: ["THE SHADOW BREAKS", "Kalyx leaves the Central grid free of its last hunter."],
+  MASTER_EZRA: ["THE BLUE HOUR", "Ezra seals the breach and returns Detroit's sky to silence."],
+  DETROIT_LENS_NOIR: ["MIDNIGHT DEVELOPED", "Detroit Lens Noir captures the truth and guards the city beyond the frame."],
+  AMARA_VALENTINE: ["LOVE HOLDS THE LINE", "Amara turns the Heartline outward, binding the city together instead of breaking it."]
+};
+
+export const drawArcadeEnding = (ctx, game) => {
+  const config = FIGHTERS[game.player1Id] ?? FIGHTERS.KALYX;
+  const [headline, detail] = ARCADE_ENDINGS[game.player1Id] ?? ["DETROIT SECURED", "The combat grid is silent."];
+  ctx.save();
+  ctx.fillStyle = "rgba(1, 4, 8, 0.88)";
+  ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+  drawAngularPanel(ctx, 78, 82, 1124, 552, "rgba(3, 9, 14, 0.96)", config.palette, 2.5, 20);
+  ctx.fillStyle = config.palette;
+  ctx.fillRect(104, 112, 6, 470);
+  drawRosterPortrait(ctx, { assets: game.assets, config }, 322, 574, 1.55);
+  ctx.textAlign = "left";
+  ctx.fillStyle = FUTURE.muted;
+  ctx.font = `800 12px ${HUD_MONO}`;
+  ctx.fillText("ARCADE FINALE // CENTRAL TERMINUS SECURED", 500, 156);
+  ctx.fillStyle = FUTURE.white;
+  ctx.font = `900 48px ${HUD_FONT}`;
+  ctx.fillText(headline, 500, 238);
+  ctx.fillStyle = config.palette;
+  ctx.font = `900 22px ${HUD_FONT}`;
+  ctx.fillText(config.name, 500, 286);
+  ctx.fillStyle = FUTURE.white;
+  ctx.font = `700 18px ${HUD_MONO}`;
+  const words = detail.split(" ");
+  let line = "";
+  let y = 346;
+  for (const word of words) {
+    const next = `${line}${line ? " " : ""}${word}`;
+    if (ctx.measureText(next).width > 620 && line) {
+      ctx.fillText(line, 500, y);
+      line = word;
+      y += 32;
+    } else {
+      line = next;
+    }
+  }
+  if (line) ctx.fillText(line, 500, y);
+  ctx.fillStyle = FUTURE.muted;
+  ctx.font = `800 11px ${HUD_MONO}`;
+  ctx.fillText("PRESS ENTER OR A TO RETURN TO THE COMBAT NETWORK", 500, 552);
   ctx.restore();
 };
 
