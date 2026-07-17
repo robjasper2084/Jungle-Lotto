@@ -1,17 +1,17 @@
-import { ASSET_URLS, COMMERCIAL_URLS, FIGHTERS } from "../config/assets.js?v=heartline32-four-fighters-hitfix";
-import { arcadeRouteFor, GAME_MODES, ROSTER_CARD_LAYOUT, ROSTER_IDS, STAGES, opponentFor } from "../config/content.js?v=heartline32-four-fighters-hitfix";
-import { ASSISTS, ATTACKS } from "../config/moves.js?v=heartline32-four-fighters-hitfix";
-import { CANVAS_HEIGHT, CANVAS_WIDTH, COLORS, GROUND_Y, PHASE, ROUND_SECONDS, WORLD } from "../config/constants.js?v=heartline32-four-fighters-hitfix";
-import { AssetLoader } from "../engine/assets.js?v=heartline32-four-fighters-hitfix";
-import { WebAudioBus } from "../engine/audio.js?v=heartline32-four-fighters-hitfix";
-import { InputManager } from "../engine/input.js?v=heartline32-four-fighters-hitfix";
-import { clamp, rectsOverlap } from "../engine/math.js?v=heartline32-four-fighters-hitfix";
-import { applyHit, resolveMelee } from "../gameplay/combat.js?v=heartline32-four-fighters-hitfix";
-import { CpuController } from "../gameplay/cpu.js?v=heartline32-four-fighters-hitfix";
-import { AttachedSpriteEffect, LovePulseEffect, SpriteEffect } from "../gameplay/effects.js?v=heartline32-four-fighters-hitfix";
-import { Fighter } from "../gameplay/fighter.js?v=heartline32-four-fighters-hitfix";
-import { AssistStrike, BoerboelStrike, Projectile } from "../gameplay/projectiles.js?v=heartline32-four-fighters-hitfix";
-import { applyRoundOutcomeMotions, resolveRoundOutcome } from "../gameplay/rounds.js?v=heartline32-four-fighters-hitfix";
+import { ASSET_URLS, COMMERCIAL_URLS, FIGHTERS } from "../config/assets.js?v=heartline34-full-cast-title";
+import { arcadeRouteFor, GAME_MODES, ROSTER_CARD_LAYOUT, ROSTER_IDS, STAGES, opponentFor } from "../config/content.js?v=heartline34-full-cast-title";
+import { ASSISTS, ATTACKS } from "../config/moves.js?v=heartline34-full-cast-title";
+import { CANVAS_HEIGHT, CANVAS_WIDTH, COLORS, GROUND_Y, PHASE, ROUND_SECONDS, WORLD } from "../config/constants.js?v=heartline34-full-cast-title";
+import { AssetLoader } from "../engine/assets.js?v=heartline34-full-cast-title";
+import { WebAudioBus } from "../engine/audio.js?v=heartline34-full-cast-title";
+import { InputManager } from "../engine/input.js?v=heartline34-full-cast-title";
+import { clamp, rectsOverlap } from "../engine/math.js?v=heartline34-full-cast-title";
+import { applyHit, resolveMelee } from "../gameplay/combat.js?v=heartline34-full-cast-title";
+import { CpuController } from "../gameplay/cpu.js?v=heartline34-full-cast-title";
+import { AttachedSpriteEffect, LovePulseEffect, SpriteEffect } from "../gameplay/effects.js?v=heartline34-full-cast-title";
+import { Fighter } from "../gameplay/fighter.js?v=heartline34-full-cast-title";
+import { AssistStrike, BoerboelStrike, Projectile } from "../gameplay/projectiles.js?v=heartline34-full-cast-title";
+import { applyRoundOutcomeMotions, resolveRoundOutcome } from "../gameplay/rounds.js?v=heartline34-full-cast-title";
 import {
   drawCharacterSelect,
   drawArcadeEnding,
@@ -24,7 +24,7 @@ import {
   drawRoundMessage,
   drawTitle,
   drawVersus
-} from "../ui/hud.js?v=heartline32-four-fighters-hitfix";
+} from "../ui/hud.js?v=heartline34-full-cast-title";
 
 const GAME_SELECT_ITEMS = [
   {

@@ -1,7 +1,7 @@
-import { CANVAS_HEIGHT, CANVAS_WIDTH, COLORS, ROUND_SECONDS } from "../config/constants.js?v=heartline32-four-fighters-hitfix";
-import { FIGHTERS } from "../config/assets.js?v=heartline32-four-fighters-hitfix";
-import { GAME_MODES, ROSTER_CARD_LAYOUT, ROSTER_IDS, STAGES } from "../config/content.js?v=heartline32-four-fighters-hitfix";
-import { drawSpriteFrame } from "../engine/assets.js?v=heartline32-four-fighters-hitfix";
+import { CANVAS_HEIGHT, CANVAS_WIDTH, COLORS, ROUND_SECONDS } from "../config/constants.js?v=heartline34-full-cast-title";
+import { FIGHTERS } from "../config/assets.js?v=heartline34-full-cast-title";
+import { GAME_MODES, ROSTER_CARD_LAYOUT, ROSTER_IDS, STAGES } from "../config/content.js?v=heartline34-full-cast-title";
+import { drawSpriteFrame } from "../engine/assets.js?v=heartline34-full-cast-title";
 
 const FUTURE = {
   cyan: "#67e8ff",

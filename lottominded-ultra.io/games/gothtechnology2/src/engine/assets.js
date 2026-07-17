@@ -1,4 +1,4 @@
-import { ASSET_URLS, MOTION_ASSET_VERSION, MOTION_PLAYBACK } from "../config/assets.js?v=heartline32-four-fighters-hitfix";
+import { ASSET_URLS, MOTION_ASSET_VERSION, MOTION_PLAYBACK } from "../config/assets.js?v=heartline34-full-cast-title";
 
 const imageCache = new Map();
 

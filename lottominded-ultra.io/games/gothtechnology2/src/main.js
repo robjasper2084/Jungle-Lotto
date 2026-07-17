@@ -1,7 +1,7 @@
-import { FIGHTERS } from "./config/assets.js?v=heartline32-four-fighters-hitfix";
-import { COMMAND_LISTS, GAME_MODES, ROSTER_IDS } from "./config/content.js?v=heartline32-four-fighters-hitfix";
-import { GothTechnologyGame } from "./scenes/game.js?v=heartline32-four-fighters-hitfix";
-import { PHASE } from "./config/constants.js?v=heartline32-four-fighters-hitfix";
+import { FIGHTERS } from "./config/assets.js?v=heartline34-full-cast-title";
+import { COMMAND_LISTS, GAME_MODES, ROSTER_IDS } from "./config/content.js?v=heartline34-full-cast-title";
+import { GothTechnologyGame } from "./scenes/game.js?v=heartline34-full-cast-title";
+import { PHASE } from "./config/constants.js?v=heartline34-full-cast-title";
 
 const syncViewportHeight = () => {
   document.documentElement.style.setProperty("--app-height", `${window.innerHeight}px`);
