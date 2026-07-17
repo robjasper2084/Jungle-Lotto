@@ -169,7 +169,7 @@ test("boots, reaches versus, fights, and pauses without page errors", async ({ p
   expect(spriteIntegrity.insufficientUnique).toEqual([]);
   expect(spriteIntegrity.splitFrames).toEqual([]);
   const unstableRenderedMotions = await page.evaluate(async () => {
-    const { drawSpriteFrame } = await import("./src/engine/assets.js?v=future-hud22-roster-scale-test");
+    const { drawSpriteFrame } = await import("./src/engine/assets.js?v=future-hud25-companion-strikes-test");
     const animations = window.__gothTechnologyGame.assets.animations;
     const checkedMotions = [
       "IDLE", "READY_STANCE", "WALK_FORWARD", "RUN_FORWARD", "DASH_FORWARD",
@@ -231,6 +231,44 @@ test("boots, reaches versus, fights, and pauses without page errors", async ({ p
   expect(hudIdentity.playerOne.cyan).toBeGreaterThan(hudIdentity.playerOne.red);
   expect(hudIdentity.opponent.red).toBeGreaterThan(hudIdentity.opponent.cyan);
   if (!process.env.NO_TEST_ARTIFACTS) await page.screenshot({ path: testInfo.outputPath(`${testInfo.project.name}-fight.png`) });
+
+  const companionWeapons = await page.evaluate(() => {
+    const game = window.__gothTechnologyGame;
+    game.hitstop = 10;
+    game.effects.length = 0;
+    game.projectiles.length = 0;
+    const kalyx = game.fighters.find((fighter) => fighter.config.manifestKey === "KALYX");
+    const ezra = game.fighters.find((fighter) => fighter.config.manifestKey === "MASTER_EZRA");
+    game.spawnProjectile(kalyx, "special");
+    game.spawnProjectile(ezra, "special");
+    const raven = game.projectiles.find((projectile) => projectile.kind === "shadow-raven");
+    const owl = game.projectiles.find((projectile) => projectile.kind === "arcane-owl");
+    raven.x = 760;
+    raven.y = 430;
+    raven.age = 0.16;
+    owl.x = 520;
+    owl.y = 430;
+    owl.age = 0.16;
+    game.render();
+    return {
+      kinds: game.projectiles.map((projectile) => projectile.kind).sort(),
+      ravenSize: [raven.image.naturalWidth, raven.image.naturalHeight],
+      owlSize: [owl.image.naturalWidth, owl.image.naturalHeight],
+      effects: game.effects.length
+    };
+  });
+  expect(companionWeapons).toEqual({
+    kinds: ["arcane-owl", "shadow-raven"],
+    ravenSize: [1536, 256],
+    owlSize: [1536, 256],
+    effects: 0
+  });
+  if (!process.env.NO_TEST_ARTIFACTS) await page.screenshot({ path: testInfo.outputPath(`${testInfo.project.name}-companion-weapons.png`) });
+  await page.evaluate(() => {
+    const game = window.__gothTechnologyGame;
+    game.projectiles.length = 0;
+    game.hitstop = 0;
+  });
 
   await page.keyboard.press("KeyL");
   await page.waitForTimeout(140);
@@ -338,11 +376,14 @@ test("Detroit Lens Noir loads the Boerboel, eye laser, and five Detroit stages",
     dog.update(0.48, game);
     dogPhases.push(dog.phase);
     game.spawnProjectile(fighter, "super");
+    game.effects.length = 0;
     game.spawnFighterVfx(fighter, "special", "charge");
     return {
       projectileKinds: game.projectiles.map((projectile) => projectile.kind),
       dogPhases,
       hasTabletEffect: game.effects.some((effect) => effect.constructor.name === "AttachedImageEffect"),
+      duplicateSpecialEffects: game.effects.length,
+      specialDisplayMotion: fighter.config.motionRemap?.SPECIAL_START,
       dogReady: game.assets.images.detroitBoerboel?.naturalWidth === 1152,
       stage: game.stageIndex,
       stageIds: STAGES.map((stage) => stage.id),
@@ -358,6 +399,8 @@ test("Detroit Lens Noir loads the Boerboel, eye laser, and five Detroit stages",
     projectileKinds: ["boerboel-rush", "eye-laser"],
     dogPhases: ["summon", "run", "attack", "recover"],
     hasTabletEffect: false,
+    duplicateSpecialEffects: 0,
+    specialDisplayMotion: "SPECIAL_PROJECTILE",
     dogReady: true,
     stage: 1,
     stageIds: [
@@ -371,6 +414,21 @@ test("Detroit Lens Noir loads the Boerboel, eye laser, and five Detroit stages",
     stageReady: true,
     newStagesReady: true
   });
+  await page.evaluate(() => {
+    const game = window.__gothTechnologyGame;
+    const fighter = game.fighters[0];
+    game.stopped = true;
+    game.effects.length = 0;
+    game.projectiles.length = 0;
+    fighter.setMotion("SPECIAL_START", true);
+    game.spawnProjectile(fighter, "special");
+    const dog = game.projectiles[0];
+    dog.setPhase("run");
+    dog.x = fighter.x + fighter.facing * 150;
+    dog.phaseAge = 0.14;
+    game.render();
+  });
+  if (!process.env.NO_TEST_ARTIFACTS) await page.screenshot({ path: testInfo.outputPath(`${testInfo.project.name}-detroit-boerboel-clean.png`) });
   if (!process.env.NO_TEST_ARTIFACTS) await page.screenshot({ path: testInfo.outputPath(`${testInfo.project.name}-detroit-midnight-mile.png`) });
 
   const secondStageReady = await page.evaluate(() => {
@@ -535,6 +593,77 @@ test("Master Ezra plays a complete takeoff, apex, fall, and clean landing", asyn
   await enterTrainingFight(page);
   await expect.poll(() => page.evaluate(() => window.__gothTechnologyGame?.fighters?.[0]?.id)).toBe("MASTER_EZRA");
 
+  const renderedScaleProfile = await page.evaluate(async () => {
+    const { GROUND_Y } = await import("./src/config/constants.js?v=ezra-render-scale-test");
+    const fighter = window.__gothTechnologyGame.fighters[0];
+    const canvas = document.createElement("canvas");
+    canvas.width = 1280;
+    canvas.height = 720;
+    const context = canvas.getContext("2d", { willReadFrequently: true });
+    const original = {
+      x: fighter.x,
+      y: fighter.y,
+      motion: fighter.motion,
+      motionElapsed: fighter.motionElapsed,
+      getMotionFrameIndex: fighter.getMotionFrameIndex,
+      invulnerable: fighter.invulnerable,
+      shieldTimer: fighter.shieldTimer,
+      guardFlash: fighter.guardFlash,
+      dashTimer: fighter.dashTimer
+    };
+    fighter.x = 320;
+    fighter.invulnerable = 0;
+    fighter.shieldTimer = 0;
+    fighter.guardFlash = 0;
+    fighter.dashTimer = 0;
+    const heightForFrame = (motion, frameIndex) => {
+      context.clearRect(0, 0, canvas.width, canvas.height);
+      fighter.motion = motion;
+      fighter.motionElapsed = 0;
+      fighter.y = motion === "IDLE" || motion === "LANDING" ? GROUND_Y : GROUND_Y - 100;
+      fighter.getMotionFrameIndex = () => frameIndex;
+      fighter.render(context, false);
+      const rgba = context.getImageData(0, 0, canvas.width, canvas.height).data;
+      let minY = canvas.height;
+      let maxY = -1;
+      for (let y = 0; y < canvas.height; y += 1) {
+        for (let x = 0; x < canvas.width; x += 1) {
+          if (rgba[(y * canvas.width + x) * 4 + 3] <= 8) continue;
+          minY = Math.min(minY, y);
+          maxY = Math.max(maxY, y);
+        }
+      }
+      return maxY - minY + 1;
+    };
+    const motions = ["IDLE", "CROUCH_IDLE", "CROUCH_WALK", "JUMP_START", "JUMP_RISE", "JUMP_PEAK", "JUMP_FALL", "LANDING", "AIR_ATTACK"];
+    const heights = Object.fromEntries(motions.map((motion) => [
+      motion,
+      Math.max(...fighter.assets.animations.MASTER_EZRA[motion].frames.map((_, frameIndex) => heightForFrame(motion, frameIndex)))
+    ]));
+    Object.assign(fighter, original);
+    fighter.getMotionFrameIndex = original.getMotionFrameIndex;
+    return heights;
+  });
+  for (const motion of ["JUMP_START", "JUMP_RISE", "JUMP_PEAK", "JUMP_FALL", "LANDING", "AIR_ATTACK"]) {
+    expect(renderedScaleProfile[motion] / renderedScaleProfile.IDLE).toBeGreaterThanOrEqual(0.98);
+    expect(renderedScaleProfile[motion] / renderedScaleProfile.IDLE).toBeLessThanOrEqual(1.02);
+  }
+  for (const motion of ["CROUCH_IDLE", "CROUCH_WALK"]) {
+    expect(renderedScaleProfile[motion] / renderedScaleProfile.IDLE).toBeGreaterThanOrEqual(0.7);
+    expect(renderedScaleProfile[motion] / renderedScaleProfile.IDLE).toBeLessThanOrEqual(0.74);
+  }
+
+  const crouchMotion = await page.evaluate(() => {
+    const game = window.__gothTechnologyGame;
+    const fighter = game.fighters[0];
+    game.stopped = true;
+    fighter.update(1 / 60, { down: true }, game.fighters[1], game);
+    game.render();
+    return fighter.motion;
+  });
+  expect(crouchMotion).toBe("CROUCH_IDLE");
+  if (!process.env.NO_TEST_ARTIFACTS) await page.screenshot({ path: testInfo.outputPath("ezra-crouch.png") });
+
   const ascentSequence = await page.evaluate(() => {
     const game = window.__gothTechnologyGame;
     const fighter = game.fighters[0];
@@ -547,10 +676,26 @@ test("Master Ezra plays a complete takeoff, apex, fall, and clean landing", asyn
       if (fighter.motion === "JUMP_PEAK") break;
       fighter.update(1 / 60, {}, opponent, game);
     }
+    const canvas = document.createElement("canvas");
+    canvas.width = 1280;
+    canvas.height = 720;
+    const context = canvas.getContext("2d", { willReadFrequently: true });
+    const invulnerable = fighter.invulnerable;
+    fighter.invulnerable = 0;
+    fighter.render(context, false);
+    fighter.invulnerable = invulnerable;
+    const rgba = context.getImageData(0, 0, canvas.width, canvas.height).data;
+    let top = canvas.height;
+    for (let y = 0; y < canvas.height; y += 1) {
+      for (let x = 0; x < canvas.width; x += 1) {
+        if (rgba[(y * canvas.width + x) * 4 + 3] > 8) top = Math.min(top, y);
+      }
+    }
     game.render();
-    return [...seen];
+    return { motions: [...seen], top };
   });
-  expect(ascentSequence).toEqual(expect.arrayContaining(["JUMP_START", "JUMP_RISE", "JUMP_PEAK"]));
+  expect(ascentSequence.motions).toEqual(expect.arrayContaining(["JUMP_START", "JUMP_RISE", "JUMP_PEAK"]));
+  expect(ascentSequence.top).toBeGreaterThanOrEqual(148);
   if (!process.env.NO_TEST_ARTIFACTS) await page.screenshot({ path: testInfo.outputPath("ezra-jump-peak.png") });
   const landingSequence = await page.evaluate(() => {
     const game = window.__gothTechnologyGame;

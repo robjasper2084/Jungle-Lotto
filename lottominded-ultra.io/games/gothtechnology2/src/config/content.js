@@ -100,7 +100,7 @@ export const COMMAND_LISTS = {
     commands: [
       ...commonCommands,
       { input: "DOWN + SP", name: "SHADOW STEP", detail: "Spend meter to cross through the opponent." },
-      { input: "SP", name: "FIRE SLASH", detail: "Fast shadow-claw projectile." },
+      { input: "SP", name: "SHADOW RAVEN STRIKE", detail: "Launch a six-frame raven dive across the arena." },
       { input: "MAX / MOD+HP", name: "SHADOW ROAR", detail: "Three-hit rushing super." }
     ]
   },
@@ -110,7 +110,7 @@ export const COMMAND_LISTS = {
     commands: [
       ...commonCommands,
       { input: "DOWN + SP", name: "ARCANE PARRY", detail: "Spend meter to repel the next strike or projectile." },
-      { input: "SP", name: "BLUE MAGIC", detail: "Slow, large control projectile." },
+      { input: "SP", name: "ARCANE OWL DIVE", detail: "Launch a six-frame owl that controls the mid-range." },
       { input: "MAX / MOD+HP", name: "SKY JUDGMENT", detail: "Heavy space-control super." }
     ]
   },

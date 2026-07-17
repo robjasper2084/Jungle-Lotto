@@ -24,6 +24,7 @@ const collectUrls = (value, urls = new Set()) => {
 const localAssetPath = (url) => url.split(/[?#]/, 1)[0];
 const manifestPath = resolve(root, localAssetPath(ASSET_URLS.manifest));
 const manifest = JSON.parse(await readFile(manifestPath, "utf8"));
+const companionManifest = JSON.parse(await readFile(resolve(root, "assets/user-assists/companion-projectiles.json"), "utf8"));
 const urls = collectUrls(ASSET_URLS);
 COMMERCIAL_URLS.forEach((url) => urls.add(url));
 const motionSheets = new Set();
@@ -32,6 +33,17 @@ if (manifest.provider !== REQUIRED_PROVIDER) failures.push(`Unexpected sprite pr
 if (manifest.stabilizationVersion !== 1) failures.push("Motion manifest is missing stabilization metadata");
 if (manifest.framesPerMotion !== REQUIRED_FRAME_COUNT) {
   failures.push(`Manifest declares ${manifest.framesPerMotion} frames per motion; requires ${REQUIRED_FRAME_COUNT}`);
+}
+if (companionManifest.provider !== REQUIRED_PROVIDER) failures.push(`Unexpected companion provider: ${companionManifest.provider}`);
+for (const [companionName, companion] of Object.entries(companionManifest.companions ?? {})) {
+  urls.add(companion.sheet);
+  if (companion.frames !== REQUIRED_FRAME_COUNT || companion.uniqueFrames !== REQUIRED_FRAME_COUNT) {
+    failures.push(`${companionName}: companion attack requires six unique frames`);
+  }
+  if (!companion.jobId) failures.push(`${companionName}: missing Higgsfield job provenance`);
+  if (JSON.stringify(companion.sourceFigureCounts) !== "[3,3]") {
+    failures.push(`${companionName}: source sheet must contain exactly three poses per row`);
+  }
 }
 
 for (const [characterId, character] of Object.entries(manifest.characters ?? {})) {
@@ -85,16 +97,16 @@ for (const [characterId, character] of Object.entries(manifest.characters ?? {})
     .map((frame) => frame.content.visibleH * frame.content.scale)
     .reduce((sum, value) => sum + value, 0) / runtimeMotions[motionName].frames.length;
   const idleHeight = visualHeight("IDLE");
-  const crouchRatio = visualHeight("CROUCH_IDLE") / idleHeight;
   const runRatio = visualHeight("RUN_FORWARD") / idleHeight;
-  if (Math.abs(crouchRatio - 0.72) > 0.02) failures.push(`${characterId}: crouch scale ratio is ${crouchRatio.toFixed(3)}`);
+  for (const motionName of ["CROUCH_IDLE", "CROUCH_WALK"]) {
+    const crouchRatio = visualHeight(motionName) / idleHeight;
+    if (Math.abs(crouchRatio - 0.72) > 0.02) failures.push(`${characterId}/${motionName}: crouch pose ratio is ${crouchRatio.toFixed(3)}`);
+  }
   if (Math.abs(runRatio - 0.90) > 0.02) failures.push(`${characterId}: run scale ratio is ${runRatio.toFixed(3)}`);
-  if (characterId === "MASTER_EZRA") {
-    for (const motionName of ["JUMP_START", "JUMP_RISE", "JUMP_PEAK", "JUMP_FALL", "LANDING", "AIR_ATTACK"]) {
-      const peakHeight = Math.max(...runtimeMotions[motionName].frames.map((frame) => frame.content.visibleH * frame.content.scale));
-      if (Math.abs(peakHeight / idleHeight - 1) > 0.02) {
-        failures.push(`${characterId}/${motionName}: full-body scale does not match idle (${(peakHeight / idleHeight).toFixed(3)})`);
-      }
+  for (const motionName of ["JUMP_START", "JUMP_RISE", "JUMP_PEAK", "JUMP_FALL", "LANDING", "AIR_ATTACK"]) {
+    const peakHeight = Math.max(...runtimeMotions[motionName].frames.map((frame) => frame.content.visibleH * frame.content.scale));
+    if (Math.abs(peakHeight / idleHeight - 1) > 0.02) {
+      failures.push(`${characterId}/${motionName}: full-body scale does not match idle (${(peakHeight / idleHeight).toFixed(3)})`);
     }
   }
 

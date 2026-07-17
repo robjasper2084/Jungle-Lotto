@@ -14,6 +14,16 @@ import { applyRoundOutcomeMotions, resolveRoundOutcome } from "../src/gameplay/r
 
 const motionManifest = JSON.parse(readFileSync(new URL("../assets/motion-atlases/motion-atlas-manifest.json", import.meta.url), "utf8"));
 const boerboelManifest = JSON.parse(readFileSync(new URL("../assets/user-effects/detroit-boerboel-atlas.json", import.meta.url), "utf8"));
+const companionManifest = JSON.parse(readFileSync(new URL("../assets/user-assists/companion-projectiles.json", import.meta.url), "utf8"));
+const EXPECTED_MOTIONS = [
+  "IDLE", "READY_STANCE", "CROUCH_IDLE", "CROUCH_WALK", "DASH_BACK", "DASH_FORWARD",
+  "JUMP_FALL", "JUMP_PEAK", "JUMP_RISE", "JUMP_START", "LANDING", "RUN_BACK", "RUN_FORWARD",
+  "WALK_BACK", "WALK_FORWARD", "AIR_ATTACK", "COMBO_1", "COMBO_2", "CROUCH_ATTACK",
+  "HEAVY_KICK", "HEAVY_PUNCH", "LIGHT_KICK", "LIGHT_PUNCH", "SPECIAL_PROJECTILE",
+  "SPECIAL_RECOVER", "SPECIAL_START", "SUPER_CHARGE", "SUPER_RELEASE", "THROW_FINISH",
+  "THROW_GRAB", "BLOCK_HIGH", "BLOCK_LOW", "DEFEAT", "GET_UP", "HURT_HEAVY",
+  "HURT_LIGHT", "KNOCKDOWN", "TAUNT", "VICTORY"
+];
 
 const makeGame = () => ({
   assets: { images: { dust: null, hitSpark: null, blockShield: null } },
@@ -125,10 +135,27 @@ test("locomotion states reach walk, run, crouch-walk, and distinct dashes", () =
 
 test("runtime animations meet minimum unique-frame requirements", () => {
   for (const [characterId, character] of Object.entries(motionManifest.characters)) {
+    assert.equal(FIGHTERS[characterId].airScale, undefined, `${characterId} must not change scale in the air`);
+    assert.deepEqual(Object.keys(character.motions).sort(), [...EXPECTED_MOTIONS].sort(), `${characterId} is missing a runtime motion`);
     for (const [motion, data] of Object.entries(character.motions)) {
       assert.equal(data.frameCount, 6, `${characterId} ${motion} is incomplete`);
       assert.ok(data.uniqueFrames >= 6, `${characterId} ${motion} lacks distinct motion frames`);
     }
+  }
+});
+
+test("Kalyx and Ezra launch complete Higgsfield companion weapons", () => {
+  assert.equal(companionManifest.provider, "Higgsfield Nano Banana Pro");
+  assert.equal(FIGHTERS.KALYX.specialName, "Shadow Raven Strike");
+  assert.equal(FIGHTERS.MASTER_EZRA.specialName, "Arcane Owl Dive");
+  assert.match(ASSET_URLS.assists.raven, /kalyx-shadow-raven-strike\.webp/);
+  assert.match(ASSET_URLS.assists.owl, /ezra-arcane-owl-strike\.webp/);
+  assert.equal(COMMAND_LISTS.KALYX.commands.some((command) => command.name === "SHADOW RAVEN STRIKE"), true);
+  assert.equal(COMMAND_LISTS.MASTER_EZRA.commands.some((command) => command.name === "ARCANE OWL DIVE"), true);
+  for (const companion of Object.values(companionManifest.companions)) {
+    assert.equal(companion.frames, 6);
+    assert.equal(companion.uniqueFrames, 6);
+    assert.deepEqual(companion.sourceFigureCounts, [3, 3]);
   }
 });
 
@@ -196,6 +223,8 @@ test("Detroit Lens keeps only the original black costume atlas", () => {
   assert.ok(!Object.hasOwn(motionManifest.characters, "DETROIT_LENS"));
   assert.equal(noir.costumePalette, "black-black");
   assert.equal(noir.manifestKey, "DETROIT_LENS_NOIR");
+  assert.equal(noir.motionRemap.SPECIAL_START, "SPECIAL_PROJECTILE");
+  assert.equal(motionManifest.characters.DETROIT_LENS_NOIR.motions.SPECIAL_PROJECTILE.source, "higgsfield-v4-body-only");
   assert.equal(Object.keys(motionManifest.characters.DETROIT_LENS_NOIR.motions).length, 39);
   for (const motion of Object.values(motionManifest.characters.DETROIT_LENS_NOIR.motions)) {
     assert.match(motion.sheet, /detroit-lens-noir-/);
@@ -295,6 +324,7 @@ test("Kalyx aerial states use dedicated rise, peak, fall, attack, and landing mo
   for (const motion of ["JUMP_START", "JUMP_RISE", "AIR_ATTACK", "JUMP_PEAK", "JUMP_FALL", "LANDING"]) {
     assert.ok(seen.has(motion), `${motion} was unreachable`);
   }
+  assert.equal(fighter.currentAttack, null, "air attack should end when the fighter touches down");
   assert.deepEqual(MOTION_PLAYBACK.KALYX.LANDING, [2, 3, 4, 5]);
 });
 

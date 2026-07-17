@@ -249,7 +249,7 @@ export const ASSISTS = {
       yOffset: -230,
       hitbox: { w: 100, h: 70 },
       motion: "SPECIAL_START",
-      sheet: { sourceX: 0, sourceY: 0, cellWidth: 256, cellHeight: 256, row: 0, frames: 4, frameRate: 14, visualScale: 0.66 }
+      sheet: { sourceX: 0, sourceY: 0, cellWidth: 256, cellHeight: 256, row: 0, frames: 6, frameRate: 14, visualScale: 0.66 }
     },
     assist2: {
       name: "Nocturna Wraith",
@@ -273,7 +273,7 @@ export const ASSISTS = {
       yOffset: -220,
       hitbox: { w: 96, h: 70 },
       motion: "SPECIAL_START",
-      sheet: { sourceX: 0, sourceY: 0, cellWidth: 256, cellHeight: 256, row: 0, frames: 4, frameRate: 14, visualScale: 0.7 }
+      sheet: { sourceX: 0, sourceY: 0, cellWidth: 256, cellHeight: 256, row: 0, frames: 6, frameRate: 14, visualScale: 0.7 }
     },
     assist2: {
       name: "Blue Fireball",

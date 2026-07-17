@@ -1,17 +1,17 @@
-import { ASSET_URLS, COMMERCIAL_URLS, FIGHTERS } from "../config/assets.js?v=future-hud22-roster-scale";
-import { arcadeRouteFor, GAME_MODES, ROSTER_CARD_LAYOUT, ROSTER_IDS, STAGES, opponentFor } from "../config/content.js?v=future-hud22-roster-scale";
-import { ASSISTS, ATTACKS } from "../config/moves.js?v=future-hud22-roster-scale";
+import { ASSET_URLS, COMMERCIAL_URLS, FIGHTERS } from "../config/assets.js?v=future-hud25-companion-strikes";
+import { arcadeRouteFor, GAME_MODES, ROSTER_CARD_LAYOUT, ROSTER_IDS, STAGES, opponentFor } from "../config/content.js?v=future-hud25-companion-strikes";
+import { ASSISTS, ATTACKS } from "../config/moves.js?v=future-hud25-companion-strikes";
 import { CANVAS_HEIGHT, CANVAS_WIDTH, COLORS, GROUND_Y, PHASE, ROUND_SECONDS, WORLD } from "../config/constants.js";
-import { AssetLoader } from "../engine/assets.js?v=future-hud22-roster-scale";
-import { WebAudioBus } from "../engine/audio.js?v=future-hud22-roster-scale";
-import { InputManager } from "../engine/input.js?v=future-hud22-roster-scale";
+import { AssetLoader } from "../engine/assets.js?v=future-hud25-companion-strikes";
+import { WebAudioBus } from "../engine/audio.js?v=future-hud25-companion-strikes";
+import { InputManager } from "../engine/input.js?v=future-hud25-companion-strikes";
 import { clamp, rectsOverlap } from "../engine/math.js";
-import { applyHit, resolveMelee } from "../gameplay/combat.js?v=future-hud22-roster-scale";
-import { CpuController } from "../gameplay/cpu.js?v=future-hud22-roster-scale";
-import { AttachedSpriteEffect, SpriteEffect } from "../gameplay/effects.js?v=future-hud22-roster-scale";
-import { Fighter } from "../gameplay/fighter.js?v=future-hud22-roster-scale";
-import { AssistStrike, BoerboelStrike, Projectile } from "../gameplay/projectiles.js?v=future-hud22-roster-scale";
-import { applyRoundOutcomeMotions, resolveRoundOutcome } from "../gameplay/rounds.js?v=future-hud22-roster-scale";
+import { applyHit, resolveMelee } from "../gameplay/combat.js?v=future-hud25-companion-strikes";
+import { CpuController } from "../gameplay/cpu.js?v=future-hud25-companion-strikes";
+import { AttachedSpriteEffect, SpriteEffect } from "../gameplay/effects.js?v=future-hud25-companion-strikes";
+import { Fighter } from "../gameplay/fighter.js?v=future-hud25-companion-strikes";
+import { AssistStrike, BoerboelStrike, Projectile } from "../gameplay/projectiles.js?v=future-hud25-companion-strikes";
+import { applyRoundOutcomeMotions, resolveRoundOutcome } from "../gameplay/rounds.js?v=future-hud25-companion-strikes";
 import {
   drawCharacterSelect,
   drawDiagnostics,
@@ -23,7 +23,7 @@ import {
   drawRoundMessage,
   drawTitle,
   drawVersus
-} from "../ui/hud.js?v=future-hud22-roster-scale";
+} from "../ui/hud.js?v=future-hud25-companion-strikes";
 
 const GAME_SELECT_ITEMS = [
   {
@@ -1422,7 +1422,13 @@ export class GothTechnologyGame {
       this.audio.beep("special");
       return;
     }
-    const kind = isDetroitLens && name === "super" ? "eye-laser" : (name === "super" ? "super" : "special");
+    const kind = isDetroitLens && name === "super"
+      ? "eye-laser"
+      : name === "super"
+        ? "super"
+        : manifestKey === "KALYX"
+          ? "shadow-raven"
+          : "arcane-owl";
     const handSockets = {
       KALYX: {
         special: { x: 132, y: -136 },
@@ -1441,10 +1447,10 @@ export class GothTechnologyGame {
     const spawnX = owner.x + owner.facing * socket.x;
     const spawnY = owner.y + socket.y;
     const image = manifestKey === "KALYX"
-      ? this.assets.images[name === "super" ? "kalyxFireSlash" : "kalyxShadowClaw"]
+      ? this.assets.images[name === "super" ? "kalyxFireSlash" : "assistRaven"]
       : isDetroitLens
         ? this.assets.images.hitSpark
-        : this.assets.images[name === "super" ? "ezraOwlArc" : "ezraBlueBurst"];
+        : this.assets.images[name === "super" ? "ezraOwlArc" : "assistOwl"];
     this.projectiles.push(new Projectile({
       owner,
       x: spawnX,
@@ -1465,6 +1471,7 @@ export class GothTechnologyGame {
     const superMove = name === "super";
     const skill = name === "skill";
     if (isDetroitLens) {
+      if (name === "special") return;
       if (skill && this.assets.images.detroitBoerboel) {
         this.effects.push(new AttachedSpriteEffect({
           owner,
@@ -1493,6 +1500,7 @@ export class GothTechnologyGame {
       }));
       return;
     }
+    if (name === "special") return;
     const image = skill
       ? (isKalyx ? this.assets.images.smoke : this.assets.images.blockShield)
       : (isKalyx

@@ -1,8 +1,8 @@
 import { GRAVITY, GROUND_Y, WORLD } from "../config/constants.js";
-import { ATTACKS } from "../config/moves.js?v=future-hud22-roster-scale";
-import { drawSpriteFrame } from "../engine/assets.js?v=future-hud22-roster-scale";
+import { ATTACKS } from "../config/moves.js?v=future-hud25-companion-strikes";
+import { drawSpriteFrame } from "../engine/assets.js?v=future-hud25-companion-strikes";
 import { approach, clamp, makeRect } from "../engine/math.js";
-import { attackIntentFromActions, resolveCancelAttack } from "./commands.js?v=future-hud22-roster-scale";
+import { attackIntentFromActions, resolveCancelAttack } from "./commands.js?v=future-hud25-companion-strikes";
 import { SpriteEffect } from "./effects.js";
 
 const MOTION_LOCKS = new Set([
@@ -678,20 +678,28 @@ export class Fighter {
     this.x = clamp(this.x, minX, maxX);
     if ((this.x <= minX && this.vx < 0) || (this.x >= maxX && this.vx > 0)) this.vx = 0;
     if (this.y >= GROUND_Y) {
-      if (!wasGrounded && !this.currentAttack && !stateLocked) {
-        this.setMotion("LANDING", true);
-        this.landingLag = this.config.feel?.landingLag ?? 0.04;
-        this.airDashAvailable = true;
-        game.effects.push(new SpriteEffect({
-          x: this.x,
-          y: GROUND_Y + 18,
-          image: game.assets.images.dust,
-          frames: 8,
-          duration: 0.34,
-          scale: 0.78,
-          flip: this.vx < 0,
-          alpha: 0.52
-        }));
+      if (!wasGrounded) {
+        const landedDuringAirAttack = this.motion === "AIR_ATTACK"
+          || this.currentAttack?.data?.motion === "AIR_ATTACK";
+        if (landedDuringAirAttack) {
+          this.currentAttack = null;
+          this.attackBuffer = null;
+        }
+        if (!hardLocked) {
+          this.setMotion("LANDING", true);
+          this.landingLag = this.config.feel?.landingLag ?? 0.04;
+          this.airDashAvailable = true;
+          game.effects.push(new SpriteEffect({
+            x: this.x,
+            y: GROUND_Y + 18,
+            image: game.assets.images.dust,
+            frames: 8,
+            duration: 0.34,
+            scale: 0.78,
+            flip: this.vx < 0,
+            alpha: 0.52
+          }));
+        }
       }
       this.y = GROUND_Y;
       this.vy = 0;
@@ -719,9 +727,7 @@ export class Fighter {
     const bodyAlpha = 1;
     const sourceFacing = anim?.sourceFacing ?? this.config.spriteFacing ?? 1;
     const flipSprite = this.facing !== sourceFacing;
-    const drawScale = !this.grounded && this.config.airScale
-      ? this.config.airScale
-      : (this.config.stableScale ?? this.config.scale);
+    const drawScale = this.config.stableScale ?? this.config.scale;
     ctx.save();
     ctx.globalAlpha = 1;
     ctx.globalCompositeOperation = "source-over";

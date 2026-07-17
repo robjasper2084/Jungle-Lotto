@@ -1,7 +1,7 @@
 import { CANVAS_HEIGHT, CANVAS_WIDTH, COLORS, ROUND_SECONDS } from "../config/constants.js";
-import { FIGHTERS } from "../config/assets.js?v=future-hud22-roster-scale";
-import { GAME_MODES, ROSTER_CARD_LAYOUT, ROSTER_IDS, STAGES } from "../config/content.js?v=future-hud22-roster-scale";
-import { drawSpriteFrame } from "../engine/assets.js?v=future-hud22-roster-scale";
+import { FIGHTERS } from "../config/assets.js?v=future-hud25-companion-strikes";
+import { GAME_MODES, ROSTER_CARD_LAYOUT, ROSTER_IDS, STAGES } from "../config/content.js?v=future-hud25-companion-strikes";
+import { drawSpriteFrame } from "../engine/assets.js?v=future-hud25-companion-strikes";
 
 const FUTURE = {
   cyan: "#67e8ff",

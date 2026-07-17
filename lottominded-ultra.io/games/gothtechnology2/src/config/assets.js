@@ -1,6 +1,6 @@
 export const PACK_ROOT = "assets/GOTHTECHNOLOGY_EXPANDED_SPRITE_PACK_V2";
 export const LOCAL_ROOT = "assets";
-export const MOTION_ASSET_VERSION = "future-hud22-roster-scale";
+export const MOTION_ASSET_VERSION = "future-hud25-companion-strikes";
 
 export const COMMERCIAL_URLS = [
   `${LOCAL_ROOT}/commercials/detroit-commercial-01.mp4`,
@@ -46,8 +46,8 @@ export const ASSET_URLS = {
     smoke: `${PACK_ROOT}/effects/sheets/SMOKE_PUFF_sheet.webp`
   },
   assists: {
-    owl: `${LOCAL_ROOT}/user-assists/ezra-owl-dive-clean.webp`,
-    raven: `${LOCAL_ROOT}/user-assists/kalyx-shadow-raven-clean.webp`,
+    owl: `${LOCAL_ROOT}/user-assists/ezra-arcane-owl-strike.webp?v=${MOTION_ASSET_VERSION}`,
+    raven: `${LOCAL_ROOT}/user-assists/kalyx-shadow-raven-strike.webp?v=${MOTION_ASSET_VERSION}`,
     nocturna: `${LOCAL_ROOT}/user-assists/nocturna-wraith-clean.webp`,
     boerboel: `${LOCAL_ROOT}/user-effects/detroit-boerboel-atlas.webp?v=${MOTION_ASSET_VERSION}`
   }
@@ -109,7 +109,6 @@ export const FIGHTERS = {
     rosterPortraitKey: "kalyxPortrait",
     scale: 1.34,
     stableScale: 1.34,
-    airScale: 1.14,
     archetype: "rushdown",
     skillCost: 25,
     skillCooldown: 1.15,
@@ -120,7 +119,7 @@ export const FIGHTERS = {
     speed: 430,
     runSpeed: 720,
     dashSpeed: 1200,
-    jumpVelocity: -1005,
+    jumpVelocity: -730,
     motionTimeScale: 1.48,
     motionDurations: {
       JUMP_START: 0.16,
@@ -265,7 +264,7 @@ export const FIGHTERS = {
     },
     assistNames: ["SHADOW RAVEN", "NOCTURNA WRAITH"],
     superName: "Shadow Roar",
-    specialName: "Fire Slash"
+    specialName: "Shadow Raven Strike"
   },
   MASTER_EZRA: {
     id: "MASTER_EZRA",
@@ -278,7 +277,6 @@ export const FIGHTERS = {
     rosterPortraitKey: "masterEzraPortrait",
     scale: 1.3,
     stableScale: 1.3,
-    airScale: 1.12,
     archetype: "control",
     skillCost: 15,
     skillCooldown: 0.9,
@@ -287,7 +285,7 @@ export const FIGHTERS = {
     speed: 410,
     runSpeed: 670,
     dashSpeed: 1150,
-    jumpVelocity: -995,
+    jumpVelocity: -780,
     motionTimeScale: 1.46,
     motionDurations: {
       JUMP_START: 0.14,
@@ -385,7 +383,7 @@ export const FIGHTERS = {
     },
     assistNames: ["OWL COMPANION", "ARCANE GUARD"],
     superName: "Sky Judgment",
-    specialName: "Blue Magic"
+    specialName: "Arcane Owl Dive"
   }
 };
 
@@ -401,7 +399,9 @@ FIGHTERS.DETROIT_LENS_NOIR = {
   rosterPortraitKey: "detroitLensNoirPortrait",
   scale: 1.31,
   stableScale: 1.31,
-  airScale: 1.14,
+  motionRemap: {
+    SPECIAL_START: "SPECIAL_PROJECTILE"
+  },
   archetype: "precision",
   skillCost: 20,
   skillCooldown: 1.05,
@@ -412,7 +412,7 @@ FIGHTERS.DETROIT_LENS_NOIR = {
   speed: 420,
   runSpeed: 690,
   dashSpeed: 1160,
-  jumpVelocity: -1000,
+  jumpVelocity: -740,
   motionTimeScale: 1.46,
   motionDurations: {
     JUMP_START: 0.15,

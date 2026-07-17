@@ -1,7 +1,7 @@
-import { drawSheetFrame } from "../engine/assets.js?v=future-hud22-roster-scale";
+import { drawSheetFrame } from "../engine/assets.js?v=future-hud25-companion-strikes";
 import { rectsOverlap } from "../engine/math.js";
 import { SpriteEffect } from "./effects.js";
-import { sliceAttackForHit } from "./hits.js?v=future-hud22-roster-scale";
+import { sliceAttackForHit } from "./hits.js?v=future-hud25-companion-strikes";
 
 const hexAlpha = (color, alpha) => {
   if (!color?.startsWith("#") || color.length !== 7) return color;
@@ -13,6 +13,8 @@ const fighterEffectColor = (owner, alpha = 1) => {
   const color = key === "KALYX" ? "#9f62ff" : key?.startsWith("DETROIT_LENS") ? "#e7c36a" : "#8bd4ff";
   return alpha >= 1 ? color : hexAlpha(color, alpha);
 };
+
+const COMPANION_PROJECTILES = new Set(["shadow-raven", "arcane-owl"]);
 
 export class Projectile {
   constructor({ owner, x, y, direction, attack, image, kind = "projectile", color = "#9ed8ff" }) {
@@ -47,12 +49,14 @@ export class Projectile {
   update(dt, game) {
     this.age += dt;
     this.hitCooldown = Math.max(0, this.hitCooldown - dt);
-    this.trail.unshift({
-      x: this.x,
-      y: this.y + Math.sin(this.age * 14 + this.seed) * Math.min(18, this.radius * 0.32),
-      age: this.age
-    });
-    this.trail.length = Math.min(this.trail.length, this.kind === "super" ? 12 : 8);
+    if (!COMPANION_PROJECTILES.has(this.kind)) {
+      this.trail.unshift({
+        x: this.x,
+        y: this.y + Math.sin(this.age * 14 + this.seed) * Math.min(18, this.radius * 0.32),
+        age: this.age
+      });
+      this.trail.length = Math.min(this.trail.length, this.kind === "super" ? 12 : 8);
+    }
     this.x += this.direction * this.speed * dt;
     if (this.x < -140 || this.x > 1420 || this.age > 3.2) {
       this.spawnBurst(game, this.x, this.y, false);
@@ -173,6 +177,20 @@ export class Projectile {
   }
 
   render(ctx) {
+    if (COMPANION_PROJECTILES.has(this.kind)) {
+      const frame = Math.floor(this.age * 14) % 6;
+      const visualY = this.y + Math.sin(this.age * 13 + this.seed) * 8;
+      ctx.save();
+      ctx.shadowColor = this.color;
+      ctx.shadowBlur = 18;
+      drawSheetFrame(ctx, this.image, frame, 256, 256, this.x, visualY + this.radius * 1.45, {
+        scale: this.kind === "shadow-raven" ? 0.68 : 0.72,
+        flip: this.direction < 0,
+        alpha: 1
+      });
+      ctx.restore();
+      return;
+    }
     const frame = Math.floor(this.age * 18) % 8;
     const flip = this.direction < 0;
     const visualY = this.y + Math.sin(this.age * 14 + this.seed) * Math.min(18, this.radius * 0.26);
@@ -251,7 +269,6 @@ export class BoerboelStrike extends Projectile {
     this.hitApplied = false;
     this.speed = attack.speed ?? 760;
     this.radius = attack.radius ?? 66;
-    this.trail = [];
   }
 
   get rect() {
@@ -280,8 +297,6 @@ export class BoerboelStrike extends Projectile {
 
     if (this.phase === "run") {
       this.x += this.direction * this.speed * dt;
-      this.trail.unshift({ x: this.x - this.direction * 42, y: this.y + 2 });
-      this.trail.length = Math.min(7, this.trail.length);
       const distance = target ? this.direction * (target.x - this.x) : Infinity;
       if (target && distance <= 126 && distance >= -76) {
         this.x = target.x - this.direction * 94;
@@ -340,15 +355,6 @@ export class BoerboelStrike extends Projectile {
     ctx.beginPath();
     ctx.ellipse(this.x, this.y + 5, 74, 12, 0, 0, Math.PI * 2);
     ctx.fill();
-    for (let index = this.trail.length - 1; index >= 0; index -= 1) {
-      const point = this.trail[index];
-      const strength = 1 - index / Math.max(1, this.trail.length);
-      ctx.globalAlpha = strength * 0.12 * alpha;
-      ctx.fillStyle = "#d7b07a";
-      ctx.beginPath();
-      ctx.ellipse(point.x, point.y, 22 * strength, 7 * strength, 0, 0, Math.PI * 2);
-      ctx.fill();
-    }
     ctx.restore();
 
     ctx.save();
