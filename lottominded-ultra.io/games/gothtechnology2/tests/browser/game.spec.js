@@ -169,7 +169,7 @@ test("boots, reaches versus, fights, and pauses without page errors", async ({ p
   expect(spriteIntegrity.insufficientUnique).toEqual([]);
   expect(spriteIntegrity.splitFrames).toEqual([]);
   const unstableRenderedMotions = await page.evaluate(async () => {
-    const { drawSpriteFrame } = await import("./src/engine/assets.js?v=future-hud25-companion-strikes-test");
+    const { drawSpriteFrame } = await import("./src/engine/assets.js?v=future-hud26-ezra-scale-test");
     const animations = window.__gothTechnologyGame.assets.animations;
     const checkedMotions = [
       "IDLE", "READY_STANCE", "WALK_FORWARD", "RUN_FORWARD", "DASH_FORWARD",
@@ -414,6 +414,56 @@ test("Detroit Lens Noir loads the Boerboel, eye laser, and five Detroit stages",
     stageReady: true,
     newStagesReady: true
   });
+  const laserScaleProfile = await page.evaluate(() => {
+    const fighter = window.__gothTechnologyGame.fighters[0];
+    const canvas = document.createElement("canvas");
+    canvas.width = 1280;
+    canvas.height = 720;
+    const context = canvas.getContext("2d", { willReadFrequently: true });
+    const originalMotion = fighter.motion;
+    const originalElapsed = fighter.motionElapsed;
+    const originalFrameResolver = fighter.getMotionFrameIndex;
+    const originalInvulnerable = fighter.invulnerable;
+    fighter.invulnerable = 0;
+    const maxHeight = (motion) => Math.max(...fighter.assets.animations.DETROIT_LENS_NOIR[motion].frames.map((_, frameIndex) => {
+      context.clearRect(0, 0, canvas.width, canvas.height);
+      fighter.motion = motion;
+      fighter.motionElapsed = 0;
+      fighter.getMotionFrameIndex = () => frameIndex;
+      fighter.render(context, false);
+      const rgba = context.getImageData(0, 0, canvas.width, canvas.height).data;
+      let minY = canvas.height;
+      let maxY = -1;
+      for (let y = 0; y < canvas.height; y += 1) {
+        for (let x = 0; x < canvas.width; x += 1) {
+          if (rgba[(y * canvas.width + x) * 4 + 3] <= 8) continue;
+          minY = Math.min(minY, y);
+          maxY = Math.max(maxY, y);
+        }
+      }
+      return maxY - minY + 1;
+    }));
+    const heights = { idle: maxHeight("IDLE"), laser: maxHeight("SUPER_RELEASE") };
+    fighter.motion = originalMotion;
+    fighter.motionElapsed = originalElapsed;
+    fighter.getMotionFrameIndex = originalFrameResolver;
+    fighter.invulnerable = originalInvulnerable;
+    return heights;
+  });
+  expect(laserScaleProfile.laser / laserScaleProfile.idle).toBeGreaterThanOrEqual(0.98);
+  expect(laserScaleProfile.laser / laserScaleProfile.idle).toBeLessThanOrEqual(1.02);
+  await page.evaluate(() => {
+    const game = window.__gothTechnologyGame;
+    const fighter = game.fighters[0];
+    game.stopped = true;
+    game.effects.length = 0;
+    game.projectiles.length = 0;
+    fighter.invulnerable = 0;
+    fighter.setMotion("SUPER_RELEASE", true);
+    game.spawnProjectile(fighter, "super");
+    game.render();
+  });
+  if (!process.env.NO_TEST_ARTIFACTS) await page.screenshot({ path: testInfo.outputPath(`${testInfo.project.name}-detroit-eye-laser.png`) });
   await page.evaluate(() => {
     const game = window.__gothTechnologyGame;
     const fighter = game.fighters[0];
@@ -649,8 +699,8 @@ test("Master Ezra plays a complete takeoff, apex, fall, and clean landing", asyn
     expect(renderedScaleProfile[motion] / renderedScaleProfile.IDLE).toBeLessThanOrEqual(1.02);
   }
   for (const motion of ["CROUCH_IDLE", "CROUCH_WALK"]) {
-    expect(renderedScaleProfile[motion] / renderedScaleProfile.IDLE).toBeGreaterThanOrEqual(0.7);
-    expect(renderedScaleProfile[motion] / renderedScaleProfile.IDLE).toBeLessThanOrEqual(0.74);
+    expect(renderedScaleProfile[motion] / renderedScaleProfile.IDLE).toBeGreaterThanOrEqual(0.84);
+    expect(renderedScaleProfile[motion] / renderedScaleProfile.IDLE).toBeLessThanOrEqual(0.86);
   }
 
   const crouchMotion = await page.evaluate(() => {

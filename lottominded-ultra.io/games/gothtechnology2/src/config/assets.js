@@ -1,6 +1,6 @@
 export const PACK_ROOT = "assets/GOTHTECHNOLOGY_EXPANDED_SPRITE_PACK_V2";
 export const LOCAL_ROOT = "assets";
-export const MOTION_ASSET_VERSION = "future-hud25-companion-strikes";
+export const MOTION_ASSET_VERSION = "future-hud26-ezra-scale";
 
 export const COMMERCIAL_URLS = [
   `${LOCAL_ROOT}/commercials/detroit-commercial-01.mp4`,
@@ -277,6 +277,10 @@ export const FIGHTERS = {
     rosterPortraitKey: "masterEzraPortrait",
     scale: 1.3,
     stableScale: 1.3,
+    motionScaleOverrides: {
+      CROUCH_IDLE: 1.18,
+      CROUCH_WALK: 1.18
+    },
     archetype: "control",
     skillCost: 15,
     skillCooldown: 0.9,
@@ -399,6 +403,9 @@ FIGHTERS.DETROIT_LENS_NOIR = {
   rosterPortraitKey: "detroitLensNoirPortrait",
   scale: 1.31,
   stableScale: 1.31,
+  motionScaleOverrides: {
+    SUPER_RELEASE: 1.38
+  },
   motionRemap: {
     SPECIAL_START: "SPECIAL_PROJECTILE"
   },

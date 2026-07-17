@@ -73,6 +73,15 @@ test("stable motion frames keep fixed visual height and grounded pose ratios", (
   }
 });
 
+test("Ezra crouches without shrinking his entire body", () => {
+  assert.equal(FIGHTERS.MASTER_EZRA.motionScaleOverrides.CROUCH_IDLE, 1.18);
+  assert.equal(FIGHTERS.MASTER_EZRA.motionScaleOverrides.CROUCH_WALK, 1.18);
+});
+
+test("Detroit Lens keeps full body scale while firing the eye laser", () => {
+  assert.equal(FIGHTERS.DETROIT_LENS_NOIR.motionScaleOverrides.SUPER_RELEASE, 1.38);
+});
+
 test("double KO and tied timeout are neutral draws", () => {
   assert.deepEqual(resolveRoundOutcome(0, 0, 32), { draw: true, winnerIndex: null, reason: "double_KO" });
   assert.deepEqual(resolveRoundOutcome(500, 500, 0), { draw: true, winnerIndex: null, reason: "timeout" });

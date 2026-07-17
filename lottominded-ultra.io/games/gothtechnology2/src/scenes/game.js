@@ -1,17 +1,17 @@
-import { ASSET_URLS, COMMERCIAL_URLS, FIGHTERS } from "../config/assets.js?v=future-hud25-companion-strikes";
-import { arcadeRouteFor, GAME_MODES, ROSTER_CARD_LAYOUT, ROSTER_IDS, STAGES, opponentFor } from "../config/content.js?v=future-hud25-companion-strikes";
-import { ASSISTS, ATTACKS } from "../config/moves.js?v=future-hud25-companion-strikes";
+import { ASSET_URLS, COMMERCIAL_URLS, FIGHTERS } from "../config/assets.js?v=future-hud26-ezra-scale";
+import { arcadeRouteFor, GAME_MODES, ROSTER_CARD_LAYOUT, ROSTER_IDS, STAGES, opponentFor } from "../config/content.js?v=future-hud26-ezra-scale";
+import { ASSISTS, ATTACKS } from "../config/moves.js?v=future-hud26-ezra-scale";
 import { CANVAS_HEIGHT, CANVAS_WIDTH, COLORS, GROUND_Y, PHASE, ROUND_SECONDS, WORLD } from "../config/constants.js";
-import { AssetLoader } from "../engine/assets.js?v=future-hud25-companion-strikes";
-import { WebAudioBus } from "../engine/audio.js?v=future-hud25-companion-strikes";
-import { InputManager } from "../engine/input.js?v=future-hud25-companion-strikes";
+import { AssetLoader } from "../engine/assets.js?v=future-hud26-ezra-scale";
+import { WebAudioBus } from "../engine/audio.js?v=future-hud26-ezra-scale";
+import { InputManager } from "../engine/input.js?v=future-hud26-ezra-scale";
 import { clamp, rectsOverlap } from "../engine/math.js";
-import { applyHit, resolveMelee } from "../gameplay/combat.js?v=future-hud25-companion-strikes";
-import { CpuController } from "../gameplay/cpu.js?v=future-hud25-companion-strikes";
-import { AttachedSpriteEffect, SpriteEffect } from "../gameplay/effects.js?v=future-hud25-companion-strikes";
-import { Fighter } from "../gameplay/fighter.js?v=future-hud25-companion-strikes";
-import { AssistStrike, BoerboelStrike, Projectile } from "../gameplay/projectiles.js?v=future-hud25-companion-strikes";
-import { applyRoundOutcomeMotions, resolveRoundOutcome } from "../gameplay/rounds.js?v=future-hud25-companion-strikes";
+import { applyHit, resolveMelee } from "../gameplay/combat.js?v=future-hud26-ezra-scale";
+import { CpuController } from "../gameplay/cpu.js?v=future-hud26-ezra-scale";
+import { AttachedSpriteEffect, SpriteEffect } from "../gameplay/effects.js?v=future-hud26-ezra-scale";
+import { Fighter } from "../gameplay/fighter.js?v=future-hud26-ezra-scale";
+import { AssistStrike, BoerboelStrike, Projectile } from "../gameplay/projectiles.js?v=future-hud26-ezra-scale";
+import { applyRoundOutcomeMotions, resolveRoundOutcome } from "../gameplay/rounds.js?v=future-hud26-ezra-scale";
 import {
   drawCharacterSelect,
   drawDiagnostics,
@@ -23,7 +23,7 @@ import {
   drawRoundMessage,
   drawTitle,
   drawVersus
-} from "../ui/hud.js?v=future-hud25-companion-strikes";
+} from "../ui/hud.js?v=future-hud26-ezra-scale";
 
 const GAME_SELECT_ITEMS = [
   {

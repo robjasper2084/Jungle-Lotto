@@ -1,7 +1,7 @@
-import { drawSheetFrame } from "../engine/assets.js?v=future-hud25-companion-strikes";
+import { drawSheetFrame } from "../engine/assets.js?v=future-hud26-ezra-scale";
 import { rectsOverlap } from "../engine/math.js";
 import { SpriteEffect } from "./effects.js";
-import { sliceAttackForHit } from "./hits.js?v=future-hud25-companion-strikes";
+import { sliceAttackForHit } from "./hits.js?v=future-hud26-ezra-scale";
 
 const hexAlpha = (color, alpha) => {
   if (!color?.startsWith("#") || color.length !== 7) return color;

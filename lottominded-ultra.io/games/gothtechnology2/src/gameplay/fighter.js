@@ -1,8 +1,8 @@
 import { GRAVITY, GROUND_Y, WORLD } from "../config/constants.js";
-import { ATTACKS } from "../config/moves.js?v=future-hud25-companion-strikes";
-import { drawSpriteFrame } from "../engine/assets.js?v=future-hud25-companion-strikes";
+import { ATTACKS } from "../config/moves.js?v=future-hud26-ezra-scale";
+import { drawSpriteFrame } from "../engine/assets.js?v=future-hud26-ezra-scale";
 import { approach, clamp, makeRect } from "../engine/math.js";
-import { attackIntentFromActions, resolveCancelAttack } from "./commands.js?v=future-hud25-companion-strikes";
+import { attackIntentFromActions, resolveCancelAttack } from "./commands.js?v=future-hud26-ezra-scale";
 import { SpriteEffect } from "./effects.js";
 
 const MOTION_LOCKS = new Set([
@@ -724,10 +724,13 @@ export class Fighter {
   render(ctx, debug = false) {
     const anim = this.activeAnimation;
     const frameIndex = this.getMotionFrameIndex();
-    const bodyAlpha = 1;
+    const bodyAlpha = this.invulnerable > 0 && !this.isKO
+      ? 0.9 + 0.1 * Math.abs(Math.sin(this.invulnerable * 20))
+      : 1;
     const sourceFacing = anim?.sourceFacing ?? this.config.spriteFacing ?? 1;
     const flipSprite = this.facing !== sourceFacing;
-    const drawScale = this.config.stableScale ?? this.config.scale;
+    const motionScale = this.config.motionScaleOverrides?.[this.motion] ?? 1;
+    const drawScale = (this.config.stableScale ?? this.config.scale) * motionScale;
     ctx.save();
     ctx.globalAlpha = 1;
     ctx.globalCompositeOperation = "source-over";
@@ -750,7 +753,7 @@ export class Fighter {
     });
     if (!drewPrimary && this.assets.animations[this.config.manifestKey]?.READY_STANCE) {
       drawSpriteFrame(ctx, this.assets.animations[this.config.manifestKey].READY_STANCE, 0, this.x, this.y + 14, {
-        scale: this.config.scale,
+        scale: drawScale,
         flip: flipSprite,
         alpha: 1,
         composite: "source-over",
@@ -758,19 +761,6 @@ export class Fighter {
       });
     }
     ctx.restore();
-
-    if (this.invulnerable > 0 && !this.isKO) {
-      ctx.save();
-      ctx.globalAlpha = 0.18 + 0.08 * Math.sin(this.invulnerable * 24);
-      ctx.strokeStyle = this.id === "MASTER_EZRA" ? "rgba(139, 212, 255, 0.72)" : "rgba(216, 170, 69, 0.64)";
-      ctx.lineWidth = 2;
-      ctx.shadowColor = this.id === "MASTER_EZRA" ? "#8bd4ff" : "#d8aa45";
-      ctx.shadowBlur = 12;
-      ctx.beginPath();
-      ctx.ellipse(this.x, this.y - 98, 58, 88, 0, 0, Math.PI * 2);
-      ctx.stroke();
-      ctx.restore();
-    }
 
     if (this.shieldTimer > 0) {
       ctx.save();

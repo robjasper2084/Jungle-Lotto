@@ -1,6 +1,6 @@
-import { FIGHTERS } from "./config/assets.js?v=future-hud25-companion-strikes";
-import { COMMAND_LISTS, GAME_MODES, ROSTER_IDS } from "./config/content.js?v=future-hud25-companion-strikes";
-import { GothTechnologyGame } from "./scenes/game.js?v=future-hud25-companion-strikes";
+import { FIGHTERS } from "./config/assets.js?v=future-hud26-ezra-scale";
+import { COMMAND_LISTS, GAME_MODES, ROSTER_IDS } from "./config/content.js?v=future-hud26-ezra-scale";
+import { GothTechnologyGame } from "./scenes/game.js?v=future-hud26-ezra-scale";
 import { PHASE } from "./config/constants.js";
 
 const syncViewportHeight = () => {
