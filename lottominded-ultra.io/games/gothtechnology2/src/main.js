@@ -1,7 +1,7 @@
-import { FIGHTERS } from "./config/assets.js?v=heartline37-epic-detroit";
-import { COMMAND_LISTS, GAME_MODES, ROSTER_IDS } from "./config/content.js?v=heartline37-epic-detroit";
-import { GothTechnologyGame } from "./scenes/game.js?v=heartline37-epic-detroit";
-import { PHASE } from "./config/constants.js?v=heartline37-epic-detroit";
+import { FIGHTERS } from "./config/assets.js?v=heartline38-balanced-detroit";
+import { COMMAND_LISTS, GAME_MODES, ROSTER_IDS } from "./config/content.js?v=heartline38-balanced-detroit";
+import { GothTechnologyGame } from "./scenes/game.js?v=heartline38-balanced-detroit";
+import { PHASE } from "./config/constants.js?v=heartline38-balanced-detroit";
 
 const syncViewportHeight = () => {
   document.documentElement.style.setProperty("--app-height", `${window.innerHeight}px`);

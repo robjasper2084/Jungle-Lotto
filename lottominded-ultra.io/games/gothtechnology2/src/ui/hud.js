@@ -1,7 +1,7 @@
-import { CANVAS_HEIGHT, CANVAS_WIDTH, COLORS, ROUND_SECONDS } from "../config/constants.js?v=heartline37-epic-detroit";
-import { FIGHTERS } from "../config/assets.js?v=heartline37-epic-detroit";
-import { GAME_MODES, ROSTER_CARD_LAYOUT, ROSTER_IDS, STAGES } from "../config/content.js?v=heartline37-epic-detroit";
-import { drawSpriteFrame } from "../engine/assets.js?v=heartline37-epic-detroit";
+import { CANVAS_HEIGHT, CANVAS_WIDTH, COLORS, ROUND_SECONDS } from "../config/constants.js?v=heartline38-balanced-detroit";
+import { FIGHTERS } from "../config/assets.js?v=heartline38-balanced-detroit";
+import { GAME_MODES, ROSTER_CARD_LAYOUT, ROSTER_IDS, STAGES } from "../config/content.js?v=heartline38-balanced-detroit";
+import { drawSpriteFrame } from "../engine/assets.js?v=heartline38-balanced-detroit";
 
 const FUTURE = {
   cyan: "#67e8ff",

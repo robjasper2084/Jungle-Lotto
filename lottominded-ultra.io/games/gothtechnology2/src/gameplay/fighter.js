@@ -1,9 +1,9 @@
-import { GRAVITY, GROUND_Y, WORLD } from "../config/constants.js?v=heartline37-epic-detroit";
-import { ATTACKS } from "../config/moves.js?v=heartline37-epic-detroit";
-import { drawSpriteFrame } from "../engine/assets.js?v=heartline37-epic-detroit";
-import { approach, clamp, makeRect } from "../engine/math.js?v=heartline37-epic-detroit";
-import { attackIntentFromActions, resolveCancelAttack } from "./commands.js?v=heartline37-epic-detroit";
-import { SpriteEffect } from "./effects.js?v=heartline37-epic-detroit";
+import { GRAVITY, GROUND_Y, WORLD } from "../config/constants.js?v=heartline38-balanced-detroit";
+import { ATTACKS } from "../config/moves.js?v=heartline38-balanced-detroit";
+import { drawSpriteFrame } from "../engine/assets.js?v=heartline38-balanced-detroit";
+import { approach, clamp, makeRect } from "../engine/math.js?v=heartline38-balanced-detroit";
+import { attackIntentFromActions, resolveCancelAttack } from "./commands.js?v=heartline38-balanced-detroit";
+import { SpriteEffect } from "./effects.js?v=heartline38-balanced-detroit";
 
 const MOTION_LOCKS = new Set([
   "LIGHT_PUNCH",
