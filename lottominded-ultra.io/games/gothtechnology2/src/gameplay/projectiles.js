@@ -1,7 +1,7 @@
-import { drawSheetFrame } from "../engine/assets.js?v=heartline36-leash-wrist";
-import { rectsOverlap } from "../engine/math.js?v=heartline36-leash-wrist";
-import { LovePulseEffect, SpriteEffect } from "./effects.js?v=heartline36-leash-wrist";
-import { sliceAttackForHit } from "./hits.js?v=heartline36-leash-wrist";
+import { drawSheetFrame } from "../engine/assets.js?v=heartline37-epic-detroit";
+import { rectsOverlap } from "../engine/math.js?v=heartline37-epic-detroit";
+import { LovePulseEffect, SpriteEffect } from "./effects.js?v=heartline37-epic-detroit";
+import { sliceAttackForHit } from "./hits.js?v=heartline37-epic-detroit";
 
 const hexAlpha = (color, alpha) => {
   if (!color?.startsWith("#") || color.length !== 7) return color;

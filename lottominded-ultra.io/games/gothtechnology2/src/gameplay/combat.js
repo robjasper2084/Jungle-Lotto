@@ -1,7 +1,7 @@
-import { rectsOverlap } from "../engine/math.js?v=heartline36-leash-wrist";
-import { ATTACKS } from "../config/moves.js?v=heartline36-leash-wrist";
-import { FloatingText, LovePulseEffect, SpriteEffect } from "./effects.js?v=heartline36-leash-wrist";
-import { registerAttackHit, sliceAttackForHit } from "./hits.js?v=heartline36-leash-wrist";
+import { rectsOverlap } from "../engine/math.js?v=heartline37-epic-detroit";
+import { ATTACKS } from "../config/moves.js?v=heartline37-epic-detroit";
+import { FloatingText, LovePulseEffect, SpriteEffect } from "./effects.js?v=heartline37-epic-detroit";
+import { registerAttackHit, sliceAttackForHit } from "./hits.js?v=heartline37-epic-detroit";
 
 export function resolveMelee(attacker, defender, game) {
   const attackState = attacker.currentAttack;

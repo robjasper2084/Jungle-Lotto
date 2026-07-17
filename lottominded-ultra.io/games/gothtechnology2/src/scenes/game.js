@@ -1,17 +1,17 @@
-import { ASSET_URLS, COMMERCIAL_URLS, FIGHTERS } from "../config/assets.js?v=heartline36-leash-wrist";
-import { arcadeRouteFor, GAME_MODES, ROSTER_CARD_LAYOUT, ROSTER_IDS, STAGES, opponentFor } from "../config/content.js?v=heartline36-leash-wrist";
-import { ASSISTS, ATTACKS } from "../config/moves.js?v=heartline36-leash-wrist";
-import { CANVAS_HEIGHT, CANVAS_WIDTH, COLORS, GROUND_Y, PHASE, ROUND_SECONDS, WORLD } from "../config/constants.js?v=heartline36-leash-wrist";
-import { AssetLoader } from "../engine/assets.js?v=heartline36-leash-wrist";
-import { WebAudioBus } from "../engine/audio.js?v=heartline36-leash-wrist";
-import { InputManager } from "../engine/input.js?v=heartline36-leash-wrist";
-import { clamp, rectsOverlap } from "../engine/math.js?v=heartline36-leash-wrist";
-import { applyHit, resolveMelee } from "../gameplay/combat.js?v=heartline36-leash-wrist";
-import { CpuController } from "../gameplay/cpu.js?v=heartline36-leash-wrist";
-import { AttachedSpriteEffect, LovePulseEffect, SpriteEffect } from "../gameplay/effects.js?v=heartline36-leash-wrist";
-import { Fighter } from "../gameplay/fighter.js?v=heartline36-leash-wrist";
-import { AssistStrike, BoerboelStrike, Projectile } from "../gameplay/projectiles.js?v=heartline36-leash-wrist";
-import { applyRoundOutcomeMotions, resolveRoundOutcome } from "../gameplay/rounds.js?v=heartline36-leash-wrist";
+import { ASSET_URLS, COMMERCIAL_URLS, FIGHTERS } from "../config/assets.js?v=heartline37-epic-detroit";
+import { arcadeRouteFor, GAME_MODES, ROSTER_CARD_LAYOUT, ROSTER_IDS, STAGES, opponentFor } from "../config/content.js?v=heartline37-epic-detroit";
+import { ASSISTS, ATTACKS } from "../config/moves.js?v=heartline37-epic-detroit";
+import { CANVAS_HEIGHT, CANVAS_WIDTH, COLORS, GROUND_Y, PHASE, ROUND_SECONDS, WORLD } from "../config/constants.js?v=heartline37-epic-detroit";
+import { AssetLoader } from "../engine/assets.js?v=heartline37-epic-detroit";
+import { WebAudioBus } from "../engine/audio.js?v=heartline37-epic-detroit";
+import { InputManager } from "../engine/input.js?v=heartline37-epic-detroit";
+import { clamp, rectsOverlap } from "../engine/math.js?v=heartline37-epic-detroit";
+import { applyHit, resolveMelee } from "../gameplay/combat.js?v=heartline37-epic-detroit";
+import { CpuController } from "../gameplay/cpu.js?v=heartline37-epic-detroit";
+import { AttachedSpriteEffect, LovePulseEffect, SpriteEffect } from "../gameplay/effects.js?v=heartline37-epic-detroit";
+import { Fighter } from "../gameplay/fighter.js?v=heartline37-epic-detroit";
+import { AssistStrike, BoerboelStrike, Projectile } from "../gameplay/projectiles.js?v=heartline37-epic-detroit";
+import { applyRoundOutcomeMotions, resolveRoundOutcome } from "../gameplay/rounds.js?v=heartline37-epic-detroit";
 import {
   drawCharacterSelect,
   drawArcadeEnding,
@@ -24,7 +24,7 @@ import {
   drawRoundMessage,
   drawTitle,
   drawVersus
-} from "../ui/hud.js?v=heartline36-leash-wrist";
+} from "../ui/hud.js?v=heartline37-epic-detroit";
 
 const GAME_SELECT_ITEMS = [
   {
