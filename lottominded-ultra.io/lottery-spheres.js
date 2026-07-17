@@ -11,6 +11,11 @@
   const pick6Outputs = document.querySelectorAll("[data-sphere-pick6]");
   const pick3Outputs = document.querySelectorAll("[data-sphere-pick3]");
   const pick4Outputs = document.querySelectorAll("[data-sphere-pick4]");
+  const eightBallForm = document.querySelector("[data-eightball-form]");
+  const eightBallQuestion = document.querySelector("[data-eightball-question]");
+  const eightBallSubmit = document.querySelector("[data-eightball-submit]");
+  const eightBallReadings = document.querySelectorAll("[data-eightball-reading]");
+  const eightBallStatus = document.querySelector("[data-eightball-status]");
   const audioGate = document.querySelector("[data-sphere-audio-gate]");
   const audioStartButton = document.querySelector("[data-sphere-audio-start]");
   const audioSkipButton = document.querySelector("[data-sphere-audio-skip]");
@@ -72,6 +77,18 @@
   let lastMoveTriggerAt = 0;
   let shadowResumeSphereSoundtrack = false;
   let shadowResumeLiveMix = false;
+  let eightBallRequest = null;
+  let eightBallHoldUntil = 0;
+  let eightBallEnergy = 62;
+  let eightBallOrbitLabel = "Unclear";
+
+  const eightBallFallbacks = [
+    { reading: "The signal points to yes.", score: 0.72 },
+    { reading: "Creative conditions look favorable.", score: 0.44 },
+    { reading: "The orbit is unclear. Ask again after the next reroll.", score: 0 },
+    { reading: "The field advises patience.", score: -0.28 },
+    { reading: "The signal says not yet.", score: -0.68 }
+  ];
 
   function hasAutoShownShadowPopup() {
     try {
@@ -247,6 +264,77 @@
     orbitOutputs.forEach((output) => {
       output.textContent = orbitText;
     });
+  }
+
+  function setEightBallStatus(message, state = "ready") {
+    if (!eightBallStatus) return;
+    eightBallStatus.textContent = message;
+    eightBallStatus.dataset.state = state;
+  }
+
+  function applyEightBallReading(reading, rawScore, source) {
+    const score = Number.isFinite(rawScore) ? rawScore : 0;
+    const tone = score > 0.15 ? "positive" : score < -0.15 ? "negative" : "neutral";
+    const orbitLabel = tone === "positive" ? "Aligned" : tone === "negative" ? "Guarded" : "Unclear";
+    const nextEnergy = tone === "positive" ? 88 : tone === "negative" ? 38 : 62;
+
+    eightBallReadings.forEach((output) => {
+      output.textContent = reading;
+    });
+
+    rerollSpheres();
+    eightBallEnergy = nextEnergy;
+    eightBallOrbitLabel = orbitLabel;
+    eightBallHoldUntil = performance.now() + 6000;
+    setEnergy(nextEnergy);
+    orbitOutputs.forEach((output) => {
+      output.textContent = orbitLabel;
+    });
+
+    stage.dataset.eightBallTone = tone;
+    stage.classList.remove("is-eightball-pulse");
+    window.requestAnimationFrame(() => stage.classList.add("is-eightball-pulse"));
+    window.setTimeout(() => stage.classList.remove("is-eightball-pulse"), 900);
+    setEightBallStatus(
+      source === "api" ? "Eight Ball API signal received." : "Local oracle fallback active.",
+      source === "api" ? "success" : "fallback"
+    );
+  }
+
+  async function askEightBall(question) {
+    eightBallRequest?.abort();
+    const controller = new AbortController();
+    eightBallRequest = controller;
+    const timeout = window.setTimeout(() => controller.abort(), 8000);
+
+    if (eightBallSubmit) eightBallSubmit.disabled = true;
+    setEightBallStatus("Reading the Eight Ball signal...", "loading");
+
+    try {
+      const endpoint = new URL("/api/eightball", window.location.origin);
+      endpoint.searchParams.set("question", question);
+      const response = await fetch(endpoint, {
+        headers: { Accept: "application/json" },
+        signal: controller.signal
+      });
+      if (!response.ok) throw new Error(`Eight Ball API returned ${response.status}`);
+
+      const data = await response.json();
+      const reading = typeof data?.reading === "string" ? data.reading.trim() : "";
+      if (!reading) throw new Error("Eight Ball API returned no reading");
+      applyEightBallReading(reading, Number(data?.sentiment?.score), "api");
+    } catch (error) {
+      if (eightBallRequest !== controller) return;
+      const seed = Array.from(question).reduce((total, character) => total + character.charCodeAt(0), 0);
+      const fallback = eightBallFallbacks[seed % eightBallFallbacks.length];
+      applyEightBallReading(fallback.reading, fallback.score, "fallback");
+    } finally {
+      window.clearTimeout(timeout);
+      if (eightBallRequest === controller) {
+        if (eightBallSubmit) eightBallSubmit.disabled = false;
+        eightBallRequest = null;
+      }
+    }
   }
 
   function seedBalls() {
@@ -514,8 +602,14 @@
     drawBackdrop(time, pulse);
     if (!reduceMotion.matches) {
       const idleEnergy = 42 + Math.sin(time * 0.0018) * 8;
-      const targetEnergy = Math.max(pointer.active ? 82 + Math.sin(time * 0.006) * 10 : idleEnergy, 44 + pulse * 56);
+      const ambientEnergy = Math.max(pointer.active ? 82 + Math.sin(time * 0.006) * 10 : idleEnergy, 44 + pulse * 56);
+      const targetEnergy = time < eightBallHoldUntil ? eightBallEnergy : ambientEnergy;
       setEnergy(energy + (targetEnergy - energy) * 0.04);
+      if (time < eightBallHoldUntil) {
+        orbitOutputs.forEach((output) => {
+          output.textContent = eightBallOrbitLabel;
+        });
+      }
     }
     balls.forEach((ball) => {
       updateBall(ball, time, pulse);
@@ -672,7 +766,20 @@
     const button = event.target.closest?.("[data-reroll-spheres]");
     if (!button) return;
     event.preventDefault();
+    eightBallHoldUntil = 0;
+    delete stage.dataset.eightBallTone;
     rerollSpheres();
+  });
+
+  eightBallForm?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const question = eightBallQuestion?.value.trim() || "";
+    if (!question) {
+      setEightBallStatus("Enter a yes-or-no question first.", "error");
+      eightBallQuestion?.focus();
+      return;
+    }
+    askEightBall(question);
   });
 
   reduceMotion.addEventListener?.("change", () => {
@@ -685,10 +792,80 @@
 })();
 
 (() => {
+  const popup = document.querySelector("[data-jackpot-maze-popup]");
+  if (!popup) return;
+
+  const closeButtons = popup.querySelectorAll("[data-jackpot-maze-close]");
+  const closeButton = popup.querySelector(".spheres-jackpot-popup__close");
+  const frame = popup.querySelector(".spheres-jackpot-popup__frame");
+  const autoOpenDelay = 60_000;
+  let isOpen = popup.classList.contains("is-open");
+  let autoOpenTimer = 0;
+  let returnFocus = null;
+
+  function cancelAutoOpen() {
+    if (!autoOpenTimer) return;
+    window.clearTimeout(autoOpenTimer);
+    autoOpenTimer = 0;
+  }
+
+  function loadGame() {
+    if (!frame || (frame.getAttribute("src") && frame.getAttribute("src") !== "about:blank")) return;
+    frame.setAttribute("src", frame.dataset.src || "./games/lottomind-jackpot-maze/");
+  }
+
+  function openPopup(trigger = null) {
+    cancelAutoOpen();
+    returnFocus = trigger instanceof HTMLElement ? trigger : document.activeElement;
+    isOpen = true;
+    popup.classList.add("is-open");
+    popup.setAttribute("aria-hidden", "false");
+    document.body.classList.add("has-jackpot-maze-popup");
+    loadGame();
+    window.requestAnimationFrame(() => closeButton?.focus());
+  }
+
+  function closePopup() {
+    if (!isOpen) return;
+    isOpen = false;
+    popup.classList.remove("is-open");
+    popup.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("has-jackpot-maze-popup");
+    if (frame) frame.src = "about:blank";
+    if (returnFocus instanceof HTMLElement) returnFocus.focus({ preventScroll: true });
+  }
+
+  closeButtons.forEach((button) => button.addEventListener("click", closePopup));
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") closePopup();
+  });
+
+  document.querySelectorAll("[data-jackpot-maze-open]").forEach((button) => {
+    button.addEventListener("click", () => openPopup(button));
+  });
+
+  function scheduleAutoOpen() {
+    cancelAutoOpen();
+    autoOpenTimer = window.setTimeout(() => {
+      autoOpenTimer = 0;
+      openPopup();
+    }, autoOpenDelay);
+  }
+
+  if (document.readyState === "complete") {
+    scheduleAutoOpen();
+  } else {
+    window.addEventListener("load", scheduleAutoOpen, { once: true });
+  }
+
+  window.addEventListener("pagehide", cancelAutoOpen, { once: true });
+})();
+
+(() => {
   const player = document.querySelector(".spheres-live-player[data-live-player]");
   if (!player || player.dataset.spheresFloatReady === "true") return;
 
-  const storageKey = "lottominded.ultra.spheresPlayerPosition.v1";
+  const storageKey = "lottominded.ultra.spheresPlayerPosition.v2";
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
   const interactiveSelector = "button, a, input, textarea, select, audio, video, [role='button']";
   const ripples = document.createElement("div");
@@ -730,8 +907,9 @@
   }
 
   function defaultPosition() {
-    const { height } = getPlayerSize();
-    return clampPosition(window.innerWidth / 2, window.innerHeight - height / 2 - 18);
+    const { width, height } = getPlayerSize();
+    const headerBottom = document.querySelector("[data-site-header]")?.getBoundingClientRect().bottom || 0;
+    return clampPosition(width / 2 + 18, headerBottom + height / 2 + 18);
   }
 
   function savePosition() {
