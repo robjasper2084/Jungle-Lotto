@@ -1,6 +1,6 @@
 export const PACK_ROOT = "assets/GOTHTECHNOLOGY_EXPANDED_SPRITE_PACK_V2";
 export const LOCAL_ROOT = "assets";
-export const MOTION_ASSET_VERSION = "heartline29-amara";
+export const MOTION_ASSET_VERSION = "heartline30-cachefix";
 
 export const COMMERCIAL_URLS = [
   `${LOCAL_ROOT}/commercials/detroit-commercial-01.mp4`,

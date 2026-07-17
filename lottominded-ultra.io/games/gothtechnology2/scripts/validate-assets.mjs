@@ -1,6 +1,6 @@
-import { access, readFile, stat } from "node:fs/promises";
+import { access, readFile, readdir, stat } from "node:fs/promises";
 import { resolve } from "node:path";
-import { ASSET_URLS, COMMERCIAL_URLS } from "../src/config/assets.js";
+import { ASSET_URLS, COMMERCIAL_URLS, MOTION_ASSET_VERSION } from "../src/config/assets.js";
 import { MOTIONS } from "../src/config/constants.js";
 
 const root = resolve(import.meta.dirname, "..");
@@ -28,6 +28,30 @@ const companionManifest = JSON.parse(await readFile(resolve(root, "assets/user-a
 const urls = collectUrls(ASSET_URLS);
 COMMERCIAL_URLS.forEach((url) => urls.add(url));
 const motionSheets = new Set();
+
+const sourceFiles = [];
+const collectSourceFiles = async (directory) => {
+  for (const entry of await readdir(directory, { withFileTypes: true })) {
+    const path = resolve(directory, entry.name);
+    if (entry.isDirectory()) await collectSourceFiles(path);
+    else if (entry.isFile() && entry.name.endsWith(".js")) sourceFiles.push(path);
+  }
+};
+
+await collectSourceFiles(resolve(root, "src"));
+for (const sourceFile of sourceFiles) {
+  const source = await readFile(sourceFile, "utf8");
+  for (const match of source.matchAll(/from\s+["']([^"']+\.js(?:\?[^"']*)?)["']/g)) {
+    if (!match[1].endsWith(`?v=${MOTION_ASSET_VERSION}`)) {
+      failures.push(`${sourceFile.slice(root.length + 1)}: unversioned module import ${match[1]}`);
+    }
+  }
+}
+
+const indexSource = await readFile(resolve(root, "index.html"), "utf8");
+if (!indexSource.includes(`./src/main.js?v=${MOTION_ASSET_VERSION}`)) {
+  failures.push("index.html: main module version does not match MOTION_ASSET_VERSION");
+}
 
 if (manifest.provider !== REQUIRED_PROVIDER) failures.push(`Unexpected sprite provider: ${manifest.provider}`);
 if (manifest.stabilizationVersion !== 1) failures.push("Motion manifest is missing stabilization metadata");

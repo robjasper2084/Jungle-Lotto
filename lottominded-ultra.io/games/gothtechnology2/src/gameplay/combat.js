@@ -1,7 +1,7 @@
-import { rectsOverlap } from "../engine/math.js";
-import { ATTACKS } from "../config/moves.js?v=heartline29-amara";
-import { FloatingText, LovePulseEffect, SpriteEffect } from "./effects.js";
-import { registerAttackHit, sliceAttackForHit } from "./hits.js?v=heartline29-amara";
+import { rectsOverlap } from "../engine/math.js?v=heartline30-cachefix";
+import { ATTACKS } from "../config/moves.js?v=heartline30-cachefix";
+import { FloatingText, LovePulseEffect, SpriteEffect } from "./effects.js?v=heartline30-cachefix";
+import { registerAttackHit, sliceAttackForHit } from "./hits.js?v=heartline30-cachefix";
 
 export function resolveMelee(attacker, defender, game) {
   const attackState = attacker.currentAttack;
