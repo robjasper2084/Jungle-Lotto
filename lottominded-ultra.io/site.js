@@ -1,26 +1,76 @@
+const SITE_SCRIPT_URL = document.currentScript?.src || new URL("./site.js", document.baseURI).href;
+const SITE_ROOT_URL = new URL("./", SITE_SCRIPT_URL);
+const siteUrl = (relativePath) => new URL(relativePath.replace(/^\.\//, ""), SITE_ROOT_URL).toString();
+
 (() => {
+  const main = document.querySelector("main");
+  if (main && !main.id) main.id = "main-content";
+  if (main && !document.querySelector(".skip-link")) {
+    const skip = document.createElement("a");
+    skip.className = "skip-link";
+    skip.href = `#${main.id}`;
+    skip.textContent = "Skip to main content";
+    document.body.prepend(skip);
+  }
+
+  const isLocalPreview = /^(?:localhost|127\.0\.0\.1)$/i.test(window.location.hostname);
+  const canonicalPath = isLocalPreview
+    ? `/lottominded-ultra.io/${window.location.pathname.replace(/^\//, "").replace(/index\.html$/i, "")}`
+    : window.location.pathname.replace(/index\.html$/i, "");
+  const canonicalUrl = new URL(canonicalPath, "https://robjasper2084.github.io");
+  if (!document.querySelector('link[rel="canonical"]')) {
+    const canonical = document.createElement("link");
+    canonical.rel = "canonical";
+    canonical.href = canonicalUrl.toString();
+    document.head.append(canonical);
+  }
+  const socialMeta = [
+    ["og:title", document.title],
+    ["og:description", document.querySelector('meta[name="description"]')?.content || "LOTTOMINDED ULTRA creative entertainment tools."],
+    ["og:type", "website"],
+    ["og:url", canonicalUrl.toString()],
+    ["twitter:card", "summary_large_image"],
+  ];
+  socialMeta.forEach(([property, content]) => {
+    const attribute = property.startsWith("twitter:") ? "name" : "property";
+    if (document.querySelector(`meta[${attribute}="${property}"]`)) return;
+    const meta = document.createElement("meta");
+    meta.setAttribute(attribute, property);
+    meta.content = content;
+    document.head.append(meta);
+  });
+  if (!document.querySelector('link[rel="manifest"]')) {
+    const manifest = document.createElement("link");
+    manifest.rel = "manifest";
+    manifest.href = siteUrl("./manifest.webmanifest");
+    document.head.append(manifest);
+  }
+
   const header = document.querySelector("[data-site-header], .feature-topbar, .lm-live-topbar, [data-guide-header]");
   if (!header) return;
 
   const navItems = [
-    { label: "Home", href: "./index.html#top", icon: "HM" },
-    { label: "Memberships", href: "./memberships.html", icon: "MB" },
-    { label: "Features", href: "./features-app.html", icon: "FX" },
+    { label: "Memberships", href: siteUrl("./memberships.html"), icon: "MB" },
+    { label: "Home", href: siteUrl("./index.html#top"), icon: "HM" },
+    { label: "Features", href: siteUrl("./features-app.html"), icon: "FX" },
+    { label: "News", href: siteUrl("./news/"), icon: "NW" },
+    { label: "Events", href: siteUrl("./live-events.html"), icon: "EV" },
+    { label: "Spheres", href: siteUrl("./lottery-spheres.html#spheres"), icon: "SP" },
+    { label: "Beat2Lotto+", href: siteUrl("./beat2lotto-plus.html#beat2lotto"), icon: "B2" },
+    { label: "Merch", href: siteUrl("./merch-store.html"), icon: "DR" },
+    { label: "Guide", href: siteUrl("./how-to-use.html"), icon: "GD" },
     {
       label: "LottoMind App",
-      href: "http://127.0.0.1:8170/lotto%20mind%20refined/",
+      href: "https://robjasper2084.github.io/Jungle-Lotto/lotto%20mind%20refined/",
       icon: "LM",
-      attrs: ' data-member-app-link="true" data-members-only="true" aria-label="LottoMind App membership required"',
+      attrs: ' data-member-app-public="true" aria-label="Open LottoMind Refined App"',
     },
-    { label: "Events", href: "./live-events.html", icon: "EV" },
-    { label: "Spheres", href: "./lottery-spheres.html#spheres", icon: "SP" },
-    { label: "Beat2Lotto+", href: "./beat2lotto-plus.html#beat2lotto", icon: "B2" },
-    { label: "Merch", href: "./merch-store.html", icon: "DR" },
-    { label: "Guide", href: "./how-to-use.html", icon: "GO" },
   ];
 
-  const currentPage = (window.location.pathname.split("/").pop() || "index.html").toLowerCase();
+  const currentPath = window.location.pathname.toLowerCase();
+  const currentPage = (currentPath.split("/").pop() || "index.html").toLowerCase();
   const isCurrent = (item) => {
+    if (item.label === "News") return /\/news\/?$/.test(currentPath);
     const hrefPage = item.href.split("#")[0].split("?")[0].split("/").pop().toLowerCase();
     if (item.label === "Home") return currentPage === "index.html";
     return hrefPage && currentPage === hrefPage;
@@ -38,8 +88,8 @@
   header.outerHTML = `
     <header class="site-header home-like-header home-sphere-header global-sphere-header" data-site-header>
       <div class="site-header-main">
-        <a class="brand" href="./index.html#top" aria-label="LOTTOMINDED ULTRA home">
-          <img src="./assets/brand/lm-orb-mark.webp" alt="" />
+        <a class="brand" href="${siteUrl("./index.html#top")}" aria-label="LOTTOMINDED ULTRA home">
+          <img src="${siteUrl("./assets/brand/lm-orb-mark.webp")}" alt="" />
           <span>LOTTOMINDED ULTRA</span>
         </a>
       </div>
@@ -47,13 +97,26 @@
         ${navMarkup}
       </nav>
       <div class="direct-launch" aria-label="Direct studio launch">
-        <a class="direct-action direct-primary" href="./lottomind-stem-studio/index.html">Launch Studio</a>
+        <a class="direct-action direct-primary" href="${siteUrl("./lottomind-stem-studio/index.html")}">Launch Studio</a>
       </div>
     </header>
   `;
 })();
 
-const SITE_SCRIPT_URL = document.currentScript?.src || new URL("./site.js", document.baseURI).href;
+(() => {
+  const pageFooter = [...document.querySelectorAll("body > footer")].find((footer) => footer.id !== "player" && !footer.matches("[data-feature-live-player]"));
+  if (pageFooter && !pageFooter.querySelector(".site-legal-links")) {
+    const links = document.createElement("nav");
+    links.className = "site-legal-links";
+    links.setAttribute("aria-label", "Legal and support");
+    links.innerHTML = `<a href="${siteUrl("./privacy.html")}">Privacy</a><a href="${siteUrl("./terms.html")}">Terms</a><a href="${siteUrl("./accessibility.html")}">Accessibility</a><a href="${siteUrl("./contact.html")}">Contact</a>`;
+    pageFooter.append(links);
+  }
+  if ("serviceWorker" in navigator && location.protocol === "https:") {
+    window.addEventListener("load", () => navigator.serviceWorker.register(siteUrl("./service-worker.js")).catch(() => {}), { once: true });
+  }
+})();
+
 const SITE_ASSET_BASE_URL = new URL("./assets/", SITE_SCRIPT_URL);
 
 const year = document.querySelector("#site-year");
@@ -104,6 +167,13 @@ function setupStaticPerformanceDefaults() {
     if (isTransitionVideo) {
       video.preload = "none";
       video.setAttribute("preload", "none");
+      return;
+    }
+
+    if (video.dataset.lmVideoUnmanaged === "true") {
+      const preloadMode = video.getAttribute("preload") || "metadata";
+      video.preload = preloadMode;
+      video.setAttribute("preload", preloadMode);
       return;
     }
 
@@ -204,8 +274,7 @@ const startupVideoModal = document.querySelector("[data-startup-video]");
 const startupVideoCloseButtons = document.querySelectorAll("[data-startup-video-close]");
 const startupMusicStart = document.querySelector("[data-startup-music-start]");
 const startupVideoPlayer = startupVideoModal?.querySelector("video");
-let startupReturnTimer = 0;
-let startupReturnAutoCloseTimer = 0;
+let startupOpenTimer = 0;
 const domainStrip = document.querySelector(".domain-strip");
 const gamePip = document.querySelector("[data-game-pip]");
 const gamePipClose = document.querySelector("[data-game-pip-close]");
@@ -224,8 +293,7 @@ const compactHeaderLabels =
   document.body.classList.contains("manual-page");
 const conciseSoundtrackLabels = document.body.classList.contains("home-page");
 const HEADER_COLLAPSED_KEY = "lottominded.ultra.siteHeaderCollapsed.v1";
-const STARTUP_MODAL_RETURN_DELAY = 40000;
-const STARTUP_MODAL_RETURN_VISIBLE_MS = 60000;
+const STARTUP_MODAL_OPEN_DELAY = 10_000;
 const GAME_PIP_AUTO_DELAY = 90000;
 const GAME_PIP_AUTO_KEY = "lottominded.ultra.homeGamePipAutoShown.v1";
 const MEMBER_SIGNUP_KEY = "lottominded.ultra.memberSignup.v1";
@@ -241,6 +309,57 @@ let gamePipResumeFromPage = false;
 let gamePipResumeFromHover = false;
 let gamePipDragState = null;
 let activePasswordGatePanel = null;
+
+function getSharedSignalHref() {
+  const isNestedPage = /\/(?:news|news-hub)(?:\/|$)/i.test(window.location.pathname);
+  return `${isNestedPage ? "../" : "./"}prompt-lab.html#beat2lotto`;
+}
+
+function createSharedSignalTrack(href, duplicate = false) {
+  const track = document.createElement("a");
+  track.className = "home-signal-marquee-track";
+  track.href = href;
+  if (duplicate) {
+    track.setAttribute("aria-hidden", "true");
+    track.tabIndex = -1;
+  }
+
+  [
+    "LottoMind signal online.",
+    "Creative tools ready.",
+    "Arcade routes live.",
+    "Open Beat2Lotto+\u2122",
+  ].forEach((label) => {
+    const item = document.createElement("span");
+    item.textContent = label;
+    track.append(item);
+  });
+
+  return track;
+}
+
+function setupSharedSignalMarquee() {
+  if (document.querySelector(".home-signal-marquee")) return true;
+  const header = document.querySelector("[data-site-header], .news-site-header");
+  if (!header) return false;
+
+  const banner = document.createElement("section");
+  banner.className = "home-signal-marquee site-signal-marquee--shared";
+  banner.setAttribute("aria-label", "LottoMind scrolling signal notice");
+  const href = getSharedSignalHref();
+  banner.append(createSharedSignalTrack(href), createSharedSignalTrack(href, true));
+  header.insertAdjacentElement("afterend", banner);
+  return true;
+}
+
+if (!setupSharedSignalMarquee()) {
+  const sharedSignalObserver = new MutationObserver(() => {
+    if (!setupSharedSignalMarquee()) return;
+    sharedSignalObserver.disconnect();
+  });
+  sharedSignalObserver.observe(document.body, { childList: true, subtree: true });
+  window.setTimeout(() => sharedSignalObserver.disconnect(), 5000);
+}
 
 function setupNavKineticLabels() {
   document.querySelectorAll(".site-header nav a").forEach((link) => {
@@ -598,82 +717,42 @@ setupAccessGateTargets();
 setupPasswordGates();
 
 function initPageTransitions() {
-  if (reducedMotionQuery.matches) return;
   if (document.querySelector("[data-lm-page-transition]")) return;
 
-  const wipe = document.createElement("div");
-  wipe.className = "page-wipe";
-  wipe.setAttribute("aria-hidden", "true");
-  const transitionVideoUrl = new URL("video/lm-transition-open-3s.mp4", SITE_ASSET_BASE_URL).href;
-  const transitionPosterUrl = new URL("video/lm-portal-a-poster.jpg", SITE_ASSET_BASE_URL).href;
-  wipe.innerHTML = `
-    <video class="page-wipe-video" muted playsinline preload="none" poster="${transitionPosterUrl}">
-      <source data-src="${transitionVideoUrl}" type="video/mp4">
-    </video>
-    <div class="page-wipe-signal" aria-hidden="true"></div>
+  try {
+    if (sessionStorage.getItem("lmTransitionArriving") === "yes") {
+      document.documentElement.classList.add("lm-transition-arriving");
+    }
+  } catch {
+    /* A blocked storage API should not disable navigation. */
+  }
+
+  if (!document.querySelector('link[href*="lm-page-transition.css"]')) {
+    const stylesheet = document.createElement("link");
+    stylesheet.rel = "stylesheet";
+    stylesheet.href = siteUrl("./assets/css/lm-page-transition.css?v=transition-unified-1");
+    document.head.appendChild(stylesheet);
+  }
+
+  const overlay = document.createElement("div");
+  overlay.className = "lm-page-transition";
+  overlay.setAttribute("data-lm-page-transition", "");
+  overlay.setAttribute("aria-hidden", "true");
+  overlay.innerHTML = `
+    <div class="lm-page-transition__flash"></div>
+    <video class="lm-page-transition__video" data-lm-transition-video muted playsinline preload="metadata"></video>
+    <div class="lm-page-transition__vignette"></div>
+    <div class="lm-page-transition__scanlines"></div>
+    <p class="lm-page-transition__label" data-lm-transition-label>Opening signal</p>
   `;
-  document.body.appendChild(wipe);
-  const wipeVideo = wipe.querySelector(".page-wipe-video");
+  document.body.prepend(overlay);
 
-  let transitionPending = false;
-
-  document.addEventListener("click", (event) => {
-    if (transitionPending) return;
-    if (event.defaultPrevented || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-    const link = event.target.closest?.("a[href]");
-    if (!link || link.getAttribute("aria-disabled") === "true" || link.hasAttribute("disabled")) return;
-    if (link.target && link.target !== "_self") return;
-    if (link.hasAttribute("download") || link.dataset.noTransition === "true") return;
-
-    const rawHref = link.getAttribute("href") || "";
-    if (!rawHref || /^(mailto|tel|javascript|data):/i.test(rawHref)) return;
-
-    const destination = new URL(link.href, window.location.href);
-    if (destination.origin !== window.location.origin) return;
-
-    const samePage =
-      destination.pathname === window.location.pathname &&
-      destination.search === window.location.search;
-    if (samePage && destination.hash) return;
-    if (destination.href === window.location.href) return;
-
-    event.preventDefault();
-    transitionPending = true;
-    window.LMPageTransitionAudio?.play?.("open");
-    const audioNavigationDelay = window.LMPageTransitionAudio?.playCloseBeforeNavigate?.() || 0;
-    document.body.classList.add("is-page-leaving");
-    wipe.classList.add("is-active");
-    if (wipeVideo) {
-      try {
-        wipeVideo.querySelectorAll("source[data-src]").forEach((source) => {
-          if (!source.hasAttribute("src")) source.setAttribute("src", source.dataset.src);
-        });
-        wipeVideo.load();
-        wipeVideo.currentTime = 0;
-        wipeVideo.play()?.catch?.(() => {});
-      } catch {
-        /* Transition video is decorative; navigation should never depend on it. */
-      }
-    }
-    window.setTimeout(() => {
-      window.location.href = destination.href;
-    }, Math.max(220, Math.min(audioNavigationDelay, 320)));
-  });
-
-  window.addEventListener("pageshow", () => {
-    transitionPending = false;
-    document.body.classList.remove("is-page-leaving");
-    wipe.classList.remove("is-active");
-    if (wipeVideo) {
-      wipeVideo.pause();
-      try {
-        wipeVideo.currentTime = 0;
-      } catch {
-        /* Some browsers disallow resetting an unloaded decorative video. */
-      }
-    }
-    window.LMPageTransitionAudio?.playCloseOnArrival?.();
-  });
+  if (!document.querySelector('script[src*="lm-page-transition.js"]')) {
+    const controller = document.createElement("script");
+    controller.src = siteUrl("./assets/js/lm-page-transition.js?v=transition-unified-1");
+    controller.async = false;
+    document.body.appendChild(controller);
+  }
 }
 
 initPageTransitions();
@@ -1033,16 +1112,16 @@ function setupUniversalFloatingMenu() {
   if (document.getElementById("universalPageMenu")) return;
 
   const links = [
-    ["Memberships", "./memberships.html"],
-    ["LottoMind App", "http://127.0.0.1:8170/lotto%20mind%20refined/"],
-    ["Home", "./how-to-use.html"],
-    ["Features", "./features-app.html"],
-    ["Events", "./live-events.html"],
-    ["Spheres", "./lottery-spheres.html#spheres"],
-    ["Beat2Lotto+", "./beat2lotto-plus.html#beat2lotto"],
-    ["Merch", "./merch-store.html"],
-    ["Guide", "./how-to-use.html"],
-    ["Studio", "./lottomind-stem-studio/index.html"]
+    ["Memberships", siteUrl("./memberships.html")],
+    ["LottoMind App", "https://robjasper2084.github.io/Jungle-Lotto/lotto%20mind%20refined/"],
+    ["Home", siteUrl("./index.html#top")],
+    ["Features", siteUrl("./features-app.html")],
+    ["Events", siteUrl("./live-events.html")],
+    ["Spheres", siteUrl("./lottery-spheres.html#spheres")],
+    ["Beat2Lotto+", siteUrl("./beat2lotto-plus.html#beat2lotto")],
+    ["Merch", siteUrl("./merch-store.html")],
+    ["Guide", siteUrl("./how-to-use.html")],
+    ["Studio", siteUrl("./lottomind-stem-studio/index.html")]
   ];
 
   const existingToggle = document.querySelector("[data-universal-menu-toggle], .motion-menu-toggle, .pl-floating");
@@ -1085,6 +1164,11 @@ function setupUniversalFloatingMenu() {
 
   const panel = menu.querySelector("[data-hud-panel]");
   const menuLinks = Array.from(menu.querySelectorAll("a[href]"));
+  const refinedAppMenuLink = menuLinks.find((link) => link.textContent.trim() === "LottoMind App");
+  if (refinedAppMenuLink) {
+    refinedAppMenuLink.dataset.memberAppPublic = "true";
+    refinedAppMenuLink.setAttribute("aria-label", "Open LottoMind Refined App");
+  }
   const hudClock = menu.querySelector("[data-hud-clock]");
   const hudReadout = menu.querySelector("[data-hud-readout]");
 
@@ -1500,8 +1584,8 @@ function setupSphereOrbLivePlayers() {
 setupSphereOrbLivePlayers();
 
 
-const REFINED_APP_URL = "http://127.0.0.1:8170/lotto%20mind%20refined/";
-const LOCAL_REFINED_APP_URL = "http://127.0.0.1:8170/lotto%20mind%20refined/";
+const PRODUCTION_REFINED_APP_URL = "https://robjasper2084.github.io/Jungle-Lotto/lotto%20mind%20refined/";
+const REFINED_APP_URL = PRODUCTION_REFINED_APP_URL;
 const MEMBER_APP_UNLOCK_URL = "./memberships.html?unlock=lottomind-app#membership-plans";
 const VAULT_KEYS = {
   plan: "lottomind_plan",
@@ -1568,9 +1652,21 @@ function getMemberAppUnlockUrl() {
   return new URL(MEMBER_APP_UNLOCK_URL, window.location.href).toString();
 }
 
+function updatePublicMemberAppLinks() {
+  document.querySelectorAll("a[data-member-app-public='true']").forEach((link) => {
+    const original = link.dataset.memberAppHref || link.getAttribute("href") || "";
+    if (!link.dataset.memberAppHref && original) link.dataset.memberAppHref = original;
+    const originalUrl = new URL(original || REFINED_APP_URL, window.location.href);
+    const target = new URL(REFINED_APP_URL, window.location.href);
+    originalUrl.searchParams.forEach((value, key) => target.searchParams.set(key, value));
+    link.setAttribute("href", target.toString());
+  });
+}
+
 function updateMemberOnlyAppLinks() {
   const hasAccess = hasLottoMindAppAccess();
   document.querySelectorAll("a[href], [data-member-app-link]").forEach((link) => {
+    if (link.dataset.memberAppPublic === "true") return;
     const href = link.getAttribute("href") || link.dataset.href || "";
     if (!link.dataset.memberAppLink && !isLottoMindAppUrl(href)) return;
     if (!link.dataset.memberAppHref && isLottoMindAppUrl(href)) {
@@ -1595,6 +1691,7 @@ function setupMemberOnlyAppLinks() {
     (event) => {
       const link = event.target.closest?.("a[href], [data-member-app-link]");
       if (!link) return;
+      if (link.dataset.memberAppPublic === "true") return;
       const href = link.getAttribute("href") || link.dataset.href || "";
       if (!link.dataset.memberAppLink && !isLottoMindAppUrl(href)) return;
       if (hasLottoMindAppAccess()) return;
@@ -1843,6 +1940,7 @@ function setupLottoMindVaultGateway() {
   }
 }
 
+updatePublicMemberAppLinks();
 setupLottoMindVaultGateway();
 setupMemberOnlyAppLinks();
 function getReactivePoint(event) {
@@ -2940,25 +3038,55 @@ function rememberAutoShownGamePip() {
   }
 }
 
-function clearStartupReturnAutoClose() {
-  if (!startupReturnAutoCloseTimer) return;
-  window.clearTimeout(startupReturnAutoCloseTimer);
-  startupReturnAutoCloseTimer = 0;
+function clearStartupOpenTimer() {
+  if (!startupOpenTimer) return;
+  window.clearTimeout(startupOpenTimer);
+  startupOpenTimer = 0;
+}
+
+function prepareStartupVideoAudio(options = {}) {
+  if (!startupVideoPlayer) return;
+  startupVideoPlayer.preload = "metadata";
+  startupVideoPlayer.setAttribute("preload", "metadata");
+  restoreDeferredVideoSources(startupVideoPlayer);
+  startupVideoPlayer.muted = false;
+  startupVideoPlayer.defaultMuted = false;
+  startupVideoPlayer.removeAttribute("muted");
+  startupVideoPlayer.volume = Number(startupVideoPlayer.dataset.startupVideoVolume || 0.82);
+  startupVideoPlayer.autoplay = false;
+  startupVideoPlayer.removeAttribute("autoplay");
+  if (options.reset) {
+    try {
+      startupVideoPlayer.currentTime = 0;
+    } catch {}
+  }
+}
+
+function stopStartupSoundtrack(options = {}) {
+  if (!siteSoundtrack) return;
+  siteSoundtrack.pause();
+  if (options.reset) {
+    try {
+      siteSoundtrack.currentTime = 0;
+    } catch {}
+  }
+  setSoundtrackButtonState(false);
 }
 
 async function closeStartupVideo(options = {}) {
-  clearStartupReturnAutoClose();
+  clearStartupOpenTimer();
   if (options.remember !== false) rememberStartupVideoSeen();
   startupVideoModal?.classList.add("is-hidden");
   startupVideoModal?.setAttribute("aria-hidden", "true");
   document.body.classList.remove("has-startup-modal");
   startupVideoPlayer?.pause();
   syncHeroMotionPreference();
-  if (options.playMusic === false) return;
+  if (options.playMusic !== true) return;
   await playSiteSoundtrack({ fromPage: true, restart: true, volume: 0.5 });
 }
 
 function showStartupVideo() {
+  clearStartupOpenTimer();
   if (!startupVideoModal) {
     startupVideoModal?.classList.add("is-hidden");
     startupVideoModal?.setAttribute("aria-hidden", "true");
@@ -2969,46 +3097,18 @@ function showStartupVideo() {
   document.body.classList.add("has-startup-modal");
   startupVideoModal.classList.remove("is-hidden");
   startupVideoModal.setAttribute("aria-hidden", "false");
+  stopStartupSoundtrack({ reset: true });
   syncHeroMotionPreference();
   rememberStartupVideoSeen();
-  if (startupVideoPlayer) {
-    startupVideoPlayer.muted = true;
-    startupVideoPlayer.defaultMuted = true;
-    startupVideoPlayer.setAttribute("muted", "");
-    startupVideoPlayer.volume = 0;
-    startupVideoPlayer.autoplay = false;
-    startupVideoPlayer.removeAttribute("autoplay");
-  }
+  prepareStartupVideoAudio();
 }
 
-function showStartupVideoReturn() {
-  if (!startupVideoModal) return;
-  if (hasSeenStartupVideo()) return;
-  document.body.classList.add("has-startup-modal");
-  startupVideoModal.classList.remove("is-hidden");
-  startupVideoModal.setAttribute("aria-hidden", "false");
-  syncHeroMotionPreference();
-  if (startupVideoPlayer) {
-    startupVideoPlayer.muted = true;
-    startupVideoPlayer.defaultMuted = true;
-    startupVideoPlayer.setAttribute("muted", "");
-    startupVideoPlayer.volume = 0;
-    startupVideoPlayer.currentTime = 0;
-    startupVideoPlayer.autoplay = false;
-    startupVideoPlayer.removeAttribute("autoplay");
-  }
-  clearStartupReturnAutoClose();
-  startupReturnAutoCloseTimer = window.setTimeout(() => {
-    closeStartupVideo({ remember: false, playMusic: false });
-  }, STARTUP_MODAL_RETURN_VISIBLE_MS);
-}
-
-function scheduleStartupVideoReturn() {
-  if (!startupVideoModal || startupReturnTimer) return;
-  startupReturnTimer = window.setTimeout(() => {
-    startupReturnTimer = 0;
-    showStartupVideoReturn();
-  }, STARTUP_MODAL_RETURN_DELAY);
+function scheduleStartupVideoOpen() {
+  if (!startupVideoModal || startupOpenTimer || hasSeenStartupVideo()) return;
+  startupOpenTimer = window.setTimeout(() => {
+    startupOpenTimer = 0;
+    showStartupVideo();
+  }, STARTUP_MODAL_OPEN_DELAY);
 }
 
 function getGamePipOffset() {
@@ -3379,7 +3479,7 @@ function setupPromptBallpassGame() {
   if (!context) return;
 
   const puck = new Image();
-  puck.src = "./assets/brand/lottomind-branded-puck.png";
+  puck.src = "./assets/brand/lottomind-branded-puck.webp";
 
   const pointer = { x: 0.72, y: 0.48, active: false, burst: 0 };
   let ballpassInView = true;
@@ -3613,24 +3713,26 @@ function endGamePipDrag(event) {
   gamePipHead?.releasePointerCapture?.(event.pointerId);
 }
 
-showStartupVideo();
-scheduleStartupVideoReturn();
+if (document.readyState === "complete") {
+  scheduleStartupVideoOpen();
+} else {
+  window.addEventListener("load", scheduleStartupVideoOpen, { once: true });
+}
+window.addEventListener("pagehide", clearStartupOpenTimer, { once: true });
 scheduleAutoGamePip();
 
 startupVideoCloseButtons.forEach((button) => {
-  button.addEventListener("click", () => closeStartupVideo());
+  button.addEventListener("click", () => closeStartupVideo({ playMusic: true }));
 });
-startupMusicStart?.addEventListener("click", () => closeStartupVideo());
+startupMusicStart?.addEventListener("click", () => closeStartupVideo({ playMusic: true }));
 startupVideoPlayer?.addEventListener("pointerdown", () => {
   restoreDeferredVideoSources(startupVideoPlayer);
-  startupVideoPlayer.muted = true;
-  startupVideoPlayer.defaultMuted = true;
-  startupVideoPlayer.setAttribute("muted", "");
-  startupVideoPlayer.volume = 0;
+  stopStartupSoundtrack({ reset: true });
+  prepareStartupVideoAudio();
   startupVideoPlayer.play?.().catch(() => {});
 }, { passive: true });
 startupVideoModal?.addEventListener("click", (event) => {
-  if (event.target === startupVideoModal) closeStartupVideo();
+  if (event.target === startupVideoModal) closeStartupVideo({ playMusic: true });
 });
 
 function isEditableTarget(target) {
@@ -3640,13 +3742,13 @@ function isEditableTarget(target) {
 document.addEventListener("keydown", (event) => {
   if (event.code === "Space" && !isEditableTarget(event.target)) {
     const soundtrackToggle = event.target?.closest?.("[data-soundtrack-toggle]");
-    if (soundtrackToggle || document.body.classList.contains("home-page")) {
+    if (soundtrackToggle) {
       event.preventDefault();
-      if (soundtrackToggle) event.stopPropagation();
+      event.stopPropagation();
     }
   }
   if (event.key === "Escape" && !startupVideoModal?.classList.contains("is-hidden")) {
-    closeStartupVideo({ playMusic: false });
+    closeStartupVideo({ playMusic: true });
   }
   if (event.key === "Escape" && gamePip?.classList.contains("is-open")) {
     hideGamePip({ resumeSoundtrack: true });
