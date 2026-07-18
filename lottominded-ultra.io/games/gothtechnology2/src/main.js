@@ -1,7 +1,7 @@
-import { FIGHTERS } from "./config/assets.js?v=heartline40-original-plus-amara";
-import { COMMAND_LISTS, GAME_MODES, ROSTER_IDS } from "./config/content.js?v=heartline40-original-plus-amara";
-import { GothTechnologyGame } from "./scenes/game.js?v=heartline40-original-plus-amara";
-import { PHASE } from "./config/constants.js?v=heartline40-original-plus-amara";
+import { FIGHTERS } from "./config/assets.js?v=heartline41-epic-amara-ezra";
+import { COMMAND_LISTS, GAME_MODES, ROSTER_IDS } from "./config/content.js?v=heartline41-epic-amara-ezra";
+import { GothTechnologyGame } from "./scenes/game.js?v=heartline41-epic-amara-ezra";
+import { PHASE } from "./config/constants.js?v=heartline41-epic-amara-ezra";
 
 const syncViewportHeight = () => {
   document.documentElement.style.setProperty("--app-height", `${window.innerHeight}px`);

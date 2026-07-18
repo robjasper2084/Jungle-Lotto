@@ -1,7 +1,7 @@
-import { drawSheetFrame } from "../engine/assets.js?v=heartline40-original-plus-amara";
-import { rectsOverlap } from "../engine/math.js?v=heartline40-original-plus-amara";
-import { LovePulseEffect, SpriteEffect } from "./effects.js?v=heartline40-original-plus-amara";
-import { sliceAttackForHit } from "./hits.js?v=heartline40-original-plus-amara";
+import { drawSheetFrame } from "../engine/assets.js?v=heartline41-epic-amara-ezra";
+import { rectsOverlap } from "../engine/math.js?v=heartline41-epic-amara-ezra";
+import { LovePulseEffect, SpriteEffect } from "./effects.js?v=heartline41-epic-amara-ezra";
+import { sliceAttackForHit } from "./hits.js?v=heartline41-epic-amara-ezra";
 
 const hexAlpha = (color, alpha) => {
   if (!color?.startsWith("#") || color.length !== 7) return color;

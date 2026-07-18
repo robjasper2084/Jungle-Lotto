@@ -1,7 +1,7 @@
-import { CANVAS_HEIGHT, CANVAS_WIDTH, COLORS, ROUND_SECONDS } from "../config/constants.js?v=heartline40-original-plus-amara";
-import { FIGHTERS } from "../config/assets.js?v=heartline40-original-plus-amara";
-import { GAME_MODES, ROSTER_CARD_LAYOUT, ROSTER_IDS, STAGES } from "../config/content.js?v=heartline40-original-plus-amara";
-import { drawSpriteFrame } from "../engine/assets.js?v=heartline40-original-plus-amara";
+import { CANVAS_HEIGHT, CANVAS_WIDTH, COLORS, ROUND_SECONDS } from "../config/constants.js?v=heartline41-epic-amara-ezra";
+import { FIGHTERS } from "../config/assets.js?v=heartline41-epic-amara-ezra";
+import { GAME_MODES, ROSTER_CARD_LAYOUT, ROSTER_IDS, STAGES } from "../config/content.js?v=heartline41-epic-amara-ezra";
+import { drawSpriteFrame } from "../engine/assets.js?v=heartline41-epic-amara-ezra";
 
 const FUTURE = {
   cyan: "#67e8ff",
