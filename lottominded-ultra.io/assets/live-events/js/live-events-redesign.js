@@ -158,7 +158,8 @@
       if (!heroSingerAudio) return;
       stopBackgroundAudio();
       heroSingerSoundEnabled = true;
-      heroSingerAudio.volume = 0.68;
+      heroSingerAudio.volume = 0.52;
+      window.LMAudioMix?.claim?.(heroSingerAudio);
       if (heroSingerAudio.ended) heroSingerAudio.currentTime = 0;
       try {
         await Promise.all([
@@ -217,10 +218,10 @@
     const gain = ctx.createGain();
     const freq = [261.63, 293.66, 329.63, 392, 440, 523.25][seed % 6];
 
-    osc.type = "triangle";
+    osc.type = "sine";
     osc.frequency.setValueAtTime(freq, ctx.currentTime);
     gain.gain.setValueAtTime(0.0001, ctx.currentTime);
-    gain.gain.linearRampToValueAtTime(0.08, ctx.currentTime + 0.012);
+    gain.gain.linearRampToValueAtTime(window.LMAudioMix?.levels.ui ?? 0.022, ctx.currentTime + 0.012);
     gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.22);
 
     osc.connect(gain);
@@ -372,7 +373,8 @@
         heroSingerSound?.setAttribute("aria-pressed", "false");
         if (heroSingerSound) heroSingerSound.textContent = "Sound on";
       }
-      livePlayerAudio.volume = options.volume ?? 0.72;
+      livePlayerAudio.volume = options.volume ?? window.LMAudioMix?.levels.live ?? 0.56;
+      window.LMAudioMix?.claim?.(livePlayerAudio);
       if (options.restart) livePlayerAudio.currentTime = 0;
       const playPromise = livePlayerAudio.play();
       const playStarted = await Promise.race([
@@ -403,7 +405,7 @@
   async function toggleLivePlayer() {
     if (!livePlayerAudio) return;
     if (livePlayerAudio.paused || livePlayerAudio.ended) {
-      await startLivePlayer({ restart: livePlayerAudio.ended, volume: 0.72 });
+      await startLivePlayer({ restart: livePlayerAudio.ended, volume: window.LMAudioMix?.levels.live ?? 0.56 });
     } else {
       livePlayerAudio.pause();
       resetLiveWave();
