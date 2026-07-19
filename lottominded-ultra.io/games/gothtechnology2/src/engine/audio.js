@@ -13,6 +13,24 @@ export class WebAudioBus {
     this.pendingMode = "menu";
     this.unlocked = false;
     this.noiseBuffer = null;
+    this.musicVolume = 0.72;
+    this.sfxVolume = 0.9;
+    this.vibrationEnabled = true;
+  }
+
+  setMusicVolume(value) {
+    this.musicVolume = Math.max(0, Math.min(1, Number(value) || 0));
+    for (const [mode, track] of Object.entries(this.musicTracks)) {
+      track.volume = (mode === "fight" ? 0.74 : 0.5) * this.musicVolume;
+    }
+  }
+
+  setSfxVolume(value) {
+    this.sfxVolume = Math.max(0, Math.min(1, Number(value) || 0));
+  }
+
+  setVibrationEnabled(enabled) {
+    this.vibrationEnabled = Boolean(enabled);
   }
 
   ensure() {
@@ -44,7 +62,7 @@ export class WebAudioBus {
       const track = new Audio(url);
       track.loop = true;
       track.preload = "metadata";
-      track.volume = normalized === "fight" ? 0.74 : 0.5;
+      track.volume = (normalized === "fight" ? 0.74 : 0.5) * this.musicVolume;
       track.muted = this.muted;
       track.addEventListener("ended", () => {
         if (this.music === track) this.musicStarted = false;
@@ -84,7 +102,7 @@ export class WebAudioBus {
         // Some browsers reject currentTime changes before metadata arrives.
       }
     }
-    this.music.volume = normalized === "fight" ? 0.74 : 0.5;
+    this.music.volume = (normalized === "fight" ? 0.74 : 0.5) * this.musicVolume;
     if (this.musicStarted && !this.music.paused && this.musicMode === normalized && !restart) return;
     this.musicMode = normalized;
     this.musicStarted = true;
@@ -110,13 +128,13 @@ export class WebAudioBus {
   }
 
   beep(type = "hit") {
-    if (this.muted) return;
+    if (this.muted || this.sfxVolume <= 0) return;
     this.ensure();
     if (!this.ctx) return;
     const now = this.ctx.currentTime;
     const master = this.ctx.createGain();
     const compressor = this.ctx.createDynamicsCompressor();
-    master.gain.setValueAtTime(0.9, now);
+    master.gain.setValueAtTime(0.9 * this.sfxVolume, now);
     master.connect(compressor);
     compressor.connect(this.ctx.destination);
     const settings = {
@@ -169,6 +187,6 @@ export class WebAudioBus {
     }
 
     const vibration = { hit: 18, block: 10, special: 24, super: 45, ko: 55 }[type];
-    if (vibration) navigator.vibrate?.(vibration);
+    if (vibration && this.vibrationEnabled) navigator.vibrate?.(vibration);
   }
 }

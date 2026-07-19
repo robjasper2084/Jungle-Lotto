@@ -613,7 +613,7 @@ nav {
   display: inline-flex;
   align-items: center;
   min-height: 44px;
-  padding-inline: clamp(18px, 3.2vw, 54px);
+  padding-inline: clamp(22px, 3.84vw, 65px);
   font-family: var(--display-font);
   font-size: clamp(1rem, 2.4vw, 1.85rem);
   font-weight: 900;
@@ -637,6 +637,10 @@ nav {
   border-radius: 50%;
   background: radial-gradient(circle, var(--cyan), rgba(41, 247, 255, 0.18));
   box-shadow: 0 0 18px rgba(41, 247, 255, 0.72);
+}
+
+.site-signal-marquee--shared {
+  z-index: 34;
 }
 
 .prompt-lab-page.has-manual-instrument-header .home-signal-marquee {
@@ -2228,7 +2232,6 @@ button {
     scroll-behavior: auto;
   }
 
-  html.lm-mobile-performance .lm-page-transition__video,
   html.lm-mobile-performance .feature-video-backdrop,
   html.lm-mobile-performance .feature-raytrace-game,
   html.lm-mobile-performance .guide-pong-background,
@@ -2272,7 +2275,6 @@ button {
     .merch-strip-track,
     .live-eq-meter i,
     .now-wave,
-    .lm-page-transition,
     .is-interaction-reactive,
     .feature-tool-card,
     .product-card,
@@ -2284,7 +2286,6 @@ button {
     .merch-strip-track,
     .live-eq-meter i,
     .now-wave,
-    .lm-page-transition,
     .is-interaction-reactive,
     .feature-tool-card,
     .product-card,
@@ -2296,7 +2297,6 @@ button {
     .merch-strip-track,
     .live-eq-meter i,
     .now-wave,
-    .lm-page-transition,
     .is-interaction-reactive,
     .feature-tool-card,
     .product-card,
@@ -4780,7 +4780,7 @@ p {
     linear-gradient(180deg, rgba(3, 5, 10, 0.2), rgba(3, 5, 10, 0.78)),
     radial-gradient(circle at 20% 8%, rgba(41, 247, 255, 0.18), transparent 22rem),
     radial-gradient(circle at 78% 18%, rgba(255, 79, 216, 0.14), transparent 24rem),
-    url("./assets/guide/piano-header/futuristic_music_studio_interface_design.png") center / cover,
+    url("./assets/guide/piano-header/futuristic_music_studio_interface_design.webp") center / cover,
     rgba(3, 5, 10, 0.94);
   box-shadow:
     0 36px 120px rgba(0, 0, 0, 0.5),
@@ -7512,6 +7512,20 @@ body.motion-page-ready .home-page .hero h1 > span {
     drop-shadow(0 0 42px rgba(41, 247, 255, 0.36));
 }
 
+.home-page .hero h1 > span:first-child {
+  text-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.92),
+    0 0 22px rgba(245, 251, 255, 0.66),
+    0 0 46px rgba(41, 247, 255, 0.44);
+}
+
+.home-page .hero h1 > span:first-child::before,
+.home-page .hero h1 > span:first-child::after {
+  display: none;
+  content: none;
+  animation: none;
+}
+
 .home-page .studio-boot-sequence,
 .home-page .hero p {
   color: #f8fcff;
@@ -8330,7 +8344,7 @@ body.merch-store-page.has-manual-instrument-header .merch-piano-header .ultra-ke
     radial-gradient(circle at 82% 8%, rgba(255, 191, 62, 0.2), transparent 17rem),
     radial-gradient(circle at 52% 105%, rgba(41, 247, 255, 0.15), transparent 22rem),
     linear-gradient(180deg, rgba(36, 22, 2, 0.3), rgba(3, 5, 10, 0.84)),
-    url("./assets/guide/piano-header/futuristic_music_studio_interface_design.png") center / cover,
+    url("./assets/guide/piano-header/futuristic_music_studio_interface_design.webp") center / cover,
     rgba(7, 5, 3, 0.96);
   box-shadow:
     0 1.4rem 4rem rgba(0, 0, 0, 0.46),
@@ -8843,7 +8857,7 @@ body.merch-store-page.has-manual-instrument-header .merch-piano-header .ultra-ke
   --sphere-nav-note: "07";
   --sphere-nav-accent: #29f7ff;
   --sphere-nav-core: rgba(245, 251, 255, 0.86);
-  --sphere-nav-image: url("./assets/brand/jazz-network-gold-coin.jpeg");
+  --sphere-nav-image: url("./assets/brand/jazz-network-gold-coin.webp");
   position: relative;
   z-index: 1;
   display: inline-grid;
@@ -8960,14 +8974,69 @@ body.merch-store-page.has-manual-instrument-header .merch-piano-header .ultra-ke
   opacity: 0.96;
 }
 
-.home-page.has-sphere-header .home-sphere-header nav a:nth-child(1) { --sphere-nav-note: "07"; --sphere-nav-accent: #29f7ff; --sphere-nav-core: rgba(157, 255, 247, 0.82); --sphere-nav-image: url("./assets/brand/guide-puck-cyan-city.png"); }
-.home-page.has-sphere-header .home-sphere-header nav a:nth-child(2) { --sphere-nav-note: "55"; --sphere-nav-accent: #ffe071; --sphere-nav-core: rgba(255, 244, 178, 0.9); --sphere-nav-image: url("./assets/brand/guide-puck-gold-mascot-close.png"); }
-.home-page.has-sphere-header .home-sphere-header nav a:nth-child(3) { --sphere-nav-note: "51"; --sphere-nav-accent: #5eff9d; --sphere-nav-core: rgba(198, 255, 167, 0.86); --sphere-nav-image: url("./assets/brand/lottomind-branded-puck.png"); }
-.home-page.has-sphere-header .home-sphere-header nav a:nth-child(4) { --sphere-nav-note: "62"; --sphere-nav-accent: #5eff9d; --sphere-nav-core: rgba(198, 255, 167, 0.86); --sphere-nav-image: url("./assets/brand/guide-puck-gold-mascot-wide.png"); }
-.home-page.has-sphere-header .home-sphere-header nav a:nth-child(5) { --sphere-nav-note: "68"; --sphere-nav-accent: #ff4fd8; --sphere-nav-core: rgba(255, 164, 235, 0.82); --sphere-nav-image: url("./assets/brand/guide-jazz-network-puck.jpeg"); }
-.home-page.has-sphere-header .home-sphere-header nav a:nth-child(6) { --sphere-nav-note: "54"; --sphere-nav-accent: #29f7ff; --sphere-nav-core: rgba(174, 244, 255, 0.86); --sphere-nav-image: url("./assets/brand/guide-puck-cyan-city.png"); }
-.home-page.has-sphere-header .home-sphere-header nav a:nth-child(7) { --sphere-nav-note: "03"; --sphere-nav-accent: #ffe071; --sphere-nav-core: rgba(255, 244, 178, 0.9); --sphere-nav-image: url("./assets/brand/jazz-network-gold-coin.jpeg"); }
-.home-page.has-sphere-header .home-sphere-header nav a:nth-child(8) { --sphere-nav-note: "11"; --sphere-nav-accent: #5eff9d; --sphere-nav-core: rgba(198, 255, 167, 0.86); --sphere-nav-image: url("./assets/brand/lottomind-branded-puck.png"); }
+.home-page.has-sphere-header .home-sphere-header nav a:nth-child(1) { --sphere-nav-note: "07"; --sphere-nav-accent: #29f7ff; --sphere-nav-core: rgba(157, 255, 247, 0.82); --sphere-nav-image: url("./assets/brand/guide-puck-cyan-city.webp"); }
+.home-page.has-sphere-header .home-sphere-header nav a:nth-child(2) { --sphere-nav-note: "55"; --sphere-nav-accent: #ffe071; --sphere-nav-core: rgba(255, 244, 178, 0.9); --sphere-nav-image: url("./assets/brand/guide-puck-gold-mascot-close.webp"); }
+.home-page.has-sphere-header .home-sphere-header nav a:nth-child(3) { --sphere-nav-note: "51"; --sphere-nav-accent: #5eff9d; --sphere-nav-core: rgba(198, 255, 167, 0.86); --sphere-nav-image: url("./assets/brand/lottomind-branded-puck.webp"); }
+.home-page.has-sphere-header .home-sphere-header nav a:nth-child(4) { --sphere-nav-note: "62"; --sphere-nav-accent: #5eff9d; --sphere-nav-core: rgba(198, 255, 167, 0.86); --sphere-nav-image: url("./assets/brand/guide-puck-gold-mascot-wide.webp"); }
+.home-page.has-sphere-header .home-sphere-header nav a:nth-child(5) { --sphere-nav-note: "68"; --sphere-nav-accent: #ff4fd8; --sphere-nav-core: rgba(255, 164, 235, 0.82); --sphere-nav-image: url("./assets/brand/guide-jazz-network-puck.webp"); }
+.home-page.has-sphere-header .home-sphere-header nav a:nth-child(6) { --sphere-nav-note: "54"; --sphere-nav-accent: #29f7ff; --sphere-nav-core: rgba(174, 244, 255, 0.86); --sphere-nav-image: url("./assets/brand/guide-puck-cyan-city.webp"); }
+.home-page.has-sphere-header .home-sphere-header nav a:nth-child(7) { --sphere-nav-note: "03"; --sphere-nav-accent: #ffe071; --sphere-nav-core: rgba(255, 244, 178, 0.9); --sphere-nav-image: url("./assets/brand/jazz-network-gold-coin.webp"); }
+.home-page.has-sphere-header .home-sphere-header nav a:nth-child(8) { --sphere-nav-note: "11"; --sphere-nav-accent: #5eff9d; --sphere-nav-core: rgba(198, 255, 167, 0.86); --sphere-nav-image: url("./assets/brand/lottomind-branded-puck.webp"); }
+.home-page.has-sphere-header .home-sphere-header nav a:nth-child(9) { --sphere-nav-note: "25"; --sphere-nav-accent: #ff4fd8; --sphere-nav-core: rgba(255, 164, 235, 0.82); --sphere-nav-image: url("./assets/brand/guide-puck-gold-mascot-close.webp"); }
+.home-page.has-sphere-header .home-sphere-header nav a:nth-child(10) { --sphere-nav-note: "40"; --sphere-nav-accent: #29f7ff; --sphere-nav-core: rgba(174, 244, 255, 0.86); --sphere-nav-image: url("./assets/brand/guide-puck-cyan-city.webp"); }
+
+.home-jackpot-maze-band {
+  width: min(100%, 96rem);
+  margin: clamp(2rem, 5vw, 4rem) auto;
+  padding: 0 clamp(1rem, 3vw, 2rem);
+}
+
+.home-jackpot-maze-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.home-jackpot-maze-heading h2,
+.home-jackpot-maze-heading p {
+  margin: 0;
+}
+
+.home-jackpot-maze-heading h2 {
+  max-width: 18ch;
+  color: #eafaff;
+  font-family: var(--display-font);
+  font-size: clamp(2rem, 5vw, 4.5rem);
+  line-height: 0.95;
+  text-transform: uppercase;
+}
+
+.home-jackpot-maze-frame {
+  display: block;
+  width: 100%;
+  min-height: clamp(32rem, 72vh, 54rem);
+  border: 1px solid rgba(41, 247, 255, 0.58);
+  border-radius: 4px;
+  background: #050309;
+  box-shadow: 0 0 2.5rem rgba(41, 247, 255, 0.14);
+}
+
+@media (max-width: 720px) {
+  .home-jackpot-maze-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .home-jackpot-maze-heading .secondary-action {
+    align-self: start;
+  }
+
+  .home-jackpot-maze-frame {
+    min-height: 34rem;
+  }
+}
 
 .home-page.has-sphere-header .home-sphere-header nav a.is-mood-ring {
   --sphere-nav-accent: hsl(var(--mood-hue) 96% 63%);
@@ -9083,7 +9152,7 @@ body.merch-store-page.has-manual-instrument-header .merch-piano-header .ultra-ke
 }
 
 .home-page.has-sphere-header .home-sphere-header .direct-action {
-  --sphere-action-image: url("./assets/brand/guide-puck-cyan-city.png");
+  --sphere-action-image: url("./assets/brand/guide-puck-cyan-city.webp");
   --sphere-action-accent: #5eff9d;
   position: relative;
   display: inline-grid;
@@ -9135,7 +9204,7 @@ body.merch-store-page.has-manual-instrument-header .merch-piano-header .ultra-ke
 }
 
 .home-page.has-sphere-header .home-sphere-header .direct-action.direct-primary {
-  --sphere-action-image: url("./assets/brand/guide-puck-gold-mascot-close.png");
+  --sphere-action-image: url("./assets/brand/guide-puck-gold-mascot-close.webp");
   --sphere-action-accent: #ffe071;
   border-color: rgba(255, 224, 113, 0.62);
   color: #fff7c4;
@@ -9226,6 +9295,157 @@ body.merch-store-page.has-manual-instrument-header .merch-piano-header .ultra-ke
 
   .home-page.has-sphere-header main {
     padding-top: 216px;
+  }
+}
+
+.skip-link {
+  position: fixed;
+  top: 0.5rem;
+  left: 0.5rem;
+  z-index: 10000;
+  padding: 0.75rem 1rem;
+  color: #07131b;
+  background: #fff1a9;
+  transform: translateY(-150%);
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+.site-legal-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1rem;
+  justify-content: center;
+}
+
+.site-legal-links a {
+  color: #bfefff;
+}
+
+.legal-main {
+  width: min(900px, calc(100% - 2rem));
+  margin: 0 auto;
+  padding: clamp(8rem, 15vw, 11rem) 0 7rem;
+}
+
+.legal-main article {
+  padding: clamp(1.25rem, 4vw, 3rem);
+  border: 1px solid rgba(41, 247, 255, 0.34);
+  border-radius: 8px;
+  color: #e9f6ff;
+  background: rgba(4, 13, 24, 0.9);
+}
+
+.legal-main h1 {
+  margin-top: 0;
+  color: #effcff;
+  font-size: clamp(2.5rem, 8vw, 5.5rem);
+  line-height: 0.95;
+  letter-spacing: 0;
+}
+
+.legal-main h2 {
+  margin-top: 2rem;
+  color: #fff1a9;
+  letter-spacing: 0;
+}
+
+.legal-main p,
+.legal-main li {
+  line-height: 1.7;
+}
+
+@supports (content-visibility: auto) {
+  main > section:not(:first-child),
+  main > aside:not(:first-child) {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 720px;
+  }
+}
+
+/* Tablet/mobile keeps the same current orb tabs instead of switching to text boxes. */
+@media (max-width: 980px) {
+  .site-header:is(.home-like-header, .home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) {
+    grid-template-columns: 1fr !important;
+    grid-template-areas: "brand" "nav" !important;
+    justify-items: stretch !important;
+    gap: 0.55rem !important;
+    min-height: 148px !important;
+    padding: 0.55rem max(0.6rem, env(safe-area-inset-left)) 0.65rem max(0.6rem, env(safe-area-inset-right)) !important;
+  }
+
+  .site-header:is(.home-like-header, .home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) .site-header-main {
+    justify-self: stretch !important;
+    justify-content: center !important;
+    width: 100% !important;
+  }
+
+  .site-header:is(.home-like-header, .home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) .site-header-toggle,
+  .site-header:is(.home-like-header, .home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) .direct-launch {
+    display: none !important;
+  }
+
+  .site-header:is(.home-like-header, .home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) nav {
+    display: flex !important;
+    grid-template-columns: none !important;
+    flex-wrap: nowrap !important;
+    justify-content: flex-start !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: 5.25rem !important;
+    gap: 0.42rem !important;
+    padding: 0.45rem 0.6rem !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    border: 2px solid rgba(41, 247, 255, 0.86) !important;
+    border-radius: 999px !important;
+    background: linear-gradient(90deg, rgba(7, 24, 34, 0.95), rgba(10, 85, 116, 0.72), rgba(6, 23, 34, 0.95)) !important;
+    scrollbar-width: thin;
+  }
+
+  .site-header:is(.home-like-header, .home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) nav a,
+  .site-header:is(.home-like-header, .home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) nav a:is(:hover, :focus-visible, .is-pressed, .is-touch-active, .is-sphere-pressed, :active) {
+    display: grid !important;
+    flex: 0 0 4.3rem !important;
+    width: 4.3rem !important;
+    height: 4.3rem !important;
+    min-width: 4.3rem !important;
+    min-height: 4.3rem !important;
+    max-width: 4.3rem !important;
+    max-height: 4.3rem !important;
+    aspect-ratio: 1 !important;
+    place-items: center !important;
+    padding: 1.2rem 0.36rem 0.9rem !important;
+    overflow: hidden !important;
+    border: 1px solid rgba(221, 255, 255, 0.48) !important;
+    border-radius: 50% !important;
+    color: #fff !important;
+    background:
+      radial-gradient(circle at 28% 20%, rgba(255, 255, 255, 0.62), transparent 0 14%, transparent 30%),
+      radial-gradient(circle at 50% 50%, var(--sphere-nav-core, rgba(157, 255, 247, 0.82)) 0 16%, transparent 52%),
+      linear-gradient(150deg, rgba(255, 255, 255, 0.28), transparent 42%),
+      var(--sphere-nav-image, none) center / cover no-repeat,
+      radial-gradient(circle at 50% 50%, rgba(2, 36, 56, 0.92), rgba(3, 10, 17, 0.98) 72%) !important;
+    box-shadow: inset -0.5rem -0.6rem 0.85rem rgba(0, 0, 0, 0.65), 0 0 1rem var(--sphere-nav-accent, #29f7ff) !important;
+    font-size: 0.57rem !important;
+    line-height: 1 !important;
+    text-shadow: 0 1px 2px #000, 0 0 0.48rem #000 !important;
+    white-space: normal !important;
+  }
+
+  .site-header:is(.home-like-header, .home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) nav a::before,
+  .site-header:is(.home-like-header, .home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) nav a::after {
+    display: grid !important;
+  }
+
+  .site-header:is(.home-like-header, .home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) nav a::before {
+    content: attr(data-icon) !important;
+  }
+
+  .site-header:is(.home-like-header, .home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) nav a::after {
+    content: var(--sphere-nav-note, "07") !important;
   }
 }
 
@@ -10401,6 +10621,7 @@ body.merch-store-page.has-manual-instrument-header .merch-piano-header .ultra-ke
   letter-spacing: 0;
   text-transform: uppercase;
   text-shadow: 0 0 18px rgba(41, 247, 255, 0.24);
+  pointer-events: none;
 }
 
 .universal-page-menu-panel strong::before {
@@ -10421,6 +10642,7 @@ body.merch-store-page.has-manual-instrument-header .merch-piano-header .ultra-ke
 
 .universal-page-menu-close {
   position: absolute;
+  z-index: 4;
   top: 1rem;
   right: 1rem;
   min-width: 44px;
@@ -10746,7 +10968,7 @@ body.universal-menu-open {
   --sphere-nav-note: "25";
   --sphere-nav-accent: #ff4fd8;
   --sphere-nav-core: rgba(255, 164, 235, 0.84);
-  --sphere-nav-image: url("./assets/brand/guide-puck-gold-mascot-close.png");
+  --sphere-nav-image: url("./assets/brand/guide-puck-gold-mascot-close.webp");
 }
 
 .home-page .prompt-band-top {
@@ -10869,6 +11091,56 @@ body.universal-menu-open {
   pointer-events: none;
 }
 
+.refined-app-film {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  border: 1px solid rgba(41, 247, 255, 0.48);
+  border-radius: 14px;
+  background: #02060c;
+  box-shadow:
+    0 20px 54px rgba(0, 0, 0, 0.38),
+    0 0 30px rgba(41, 247, 255, 0.1),
+    inset 0 0 0 1px rgba(255, 224, 113, 0.08);
+  aspect-ratio: 16 / 9;
+}
+
+.refined-app-film::after {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 58%, rgba(2, 6, 12, 0.82));
+  content: "";
+  pointer-events: none;
+}
+
+.refined-app-film video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: #02060c;
+}
+
+.refined-app-film__label {
+  position: absolute;
+  z-index: 3;
+  right: 16px;
+  bottom: 13px;
+  left: 16px;
+  color: rgba(248, 251, 255, 0.82);
+  font-family: var(--mono-font, ui-monospace, monospace);
+  font-size: 0.64rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  pointer-events: none;
+}
+
+.refined-app-film .inline-sound-button {
+  top: 12px;
+  right: 12px;
+}
+
 .refined-app-copy::before {
   position: absolute;
   inset: 0;
@@ -10921,7 +11193,7 @@ body.universal-menu-open {
   position: relative;
   isolation: isolate;
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
   gap: clamp(17px, 2.5vw, 25px);
   overflow: hidden;
   padding: clamp(12px, 2.1vw, 20px);
@@ -11638,6 +11910,7 @@ body.vault-gateway-open {
 
 .refined-bridge-grid {
   min-width: 0 !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   gap: clamp(0.85rem, 1.45vw, 1.15rem) !important;
   padding: clamp(0.75rem, 1.3vw, 1rem) !important;
 }
@@ -11657,7 +11930,9 @@ body.vault-gateway-open {
 .refined-bridge-grid h3 {
   font-size: clamp(1.65rem, 2.35vw, 2.55rem) !important;
   line-height: 0.98 !important;
-  overflow-wrap: break-word;
+  overflow-wrap: normal !important;
+  word-break: normal !important;
+  hyphens: none;
 }
 
 .refined-bridge-grid article p {
@@ -11954,44 +12229,44 @@ body.vault-gateway-open {
 }
 
 .home-page.has-sphere-header .home-sphere-header nav a:nth-child(1) {
-  --sphere-nav-image: url("./assets/brand/guide-puck-cyan-city.png") !important;
+  --sphere-nav-image: url("./assets/brand/guide-puck-cyan-city.webp") !important;
 }
 
 .home-page.has-sphere-header .home-sphere-header nav a:nth-child(2) {
-  --sphere-nav-image: url("./assets/brand/guide-puck-gold-mascot-close.png") !important;
+  --sphere-nav-image: url("./assets/brand/guide-puck-gold-mascot-close.webp") !important;
 }
 
 .home-page.has-sphere-header .home-sphere-header nav a:nth-child(3) {
-  --sphere-nav-image: url("./assets/brand/lottomind-branded-puck.png") !important;
+  --sphere-nav-image: url("./assets/brand/lottomind-branded-puck.webp") !important;
 }
 
 .home-page.has-sphere-header .home-sphere-header nav a:nth-child(4) {
-  --sphere-nav-image: url("./assets/brand/guide-puck-gold-mascot-wide.png") !important;
+  --sphere-nav-image: url("./assets/brand/guide-puck-gold-mascot-wide.webp") !important;
 }
 
 .home-page.has-sphere-header .home-sphere-header nav a:nth-child(5) {
-  --sphere-nav-image: url("./assets/brand/guide-jazz-network-puck.jpeg") !important;
+  --sphere-nav-image: url("./assets/brand/guide-jazz-network-puck.webp") !important;
 }
 
 .home-page.has-sphere-header .home-sphere-header nav a:nth-child(6) {
-  --sphere-nav-image: url("./assets/brand/guide-puck-cyan-city.png") !important;
+  --sphere-nav-image: url("./assets/brand/guide-puck-cyan-city.webp") !important;
 }
 
 .home-page.has-sphere-header .home-sphere-header nav a:nth-child(7) {
-  --sphere-nav-image: url("./assets/brand/jazz-network-gold-coin.jpeg") !important;
+  --sphere-nav-image: url("./assets/brand/jazz-network-gold-coin.webp") !important;
 }
 
 .home-page.has-sphere-header .home-sphere-header nav a:nth-child(8) {
-  --sphere-nav-image: url("./assets/brand/lottomind-branded-puck.png") !important;
+  --sphere-nav-image: url("./assets/brand/lottomind-branded-puck.webp") !important;
 }
 
 .home-page.has-sphere-header .home-sphere-header nav a:nth-child(9) {
-  --sphere-nav-image: url("./assets/brand/guide-puck-gold-mascot-close.png") !important;
+  --sphere-nav-image: url("./assets/brand/guide-puck-gold-mascot-close.webp") !important;
 }
 
 .home-page.has-sphere-header .home-sphere-header .direct-action,
 .home-page.has-sphere-header .home-sphere-header .direct-action:is(:hover, :focus-visible, .is-mood-ring, .is-touch-active) {
-  --sphere-action-image: url("./assets/brand/guide-puck-gold-mascot-close.png") !important;
+  --sphere-action-image: url("./assets/brand/guide-puck-gold-mascot-close.webp") !important;
   background:
     radial-gradient(circle at 31% 22%, rgba(255, 255, 255, 0.76) 0 9%, rgba(255, 255, 255, 0.2) 10% 19%, transparent 29%),
     linear-gradient(180deg, rgba(255, 255, 255, 0.2), rgba(0, 0, 0, 0.18)),
@@ -12005,7 +12280,7 @@ body.vault-gateway-open {
 }
 
 /* Keep every sphere-style page header on the richer lotto-ball treatment. */
-.site-header:is(.home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) nav {
+.site-header:is(.home-like-header, .home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) nav {
   position: relative !important;
   display: flex !important;
   flex-wrap: nowrap !important;
@@ -12029,7 +12304,7 @@ body.vault-gateway-open {
     0 0 2.8rem rgba(41, 247, 255, 0.14) !important;
 }
 
-.site-header:is(.home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) nav::after {
+.site-header:is(.home-like-header, .home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) nav::after {
   display: block !important;
   position: absolute !important;
   inset: 0.42rem 11% !important;
@@ -12043,8 +12318,8 @@ body.vault-gateway-open {
   pointer-events: none !important;
 }
 
-.site-header:is(.home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) nav a,
-.site-header:is(.home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) nav a:is(:hover, :focus-visible, .is-pressed, .is-touch-active, .is-sphere-pressed, :active) {
+.site-header:is(.home-like-header, .home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) nav a,
+.site-header:is(.home-like-header, .home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) nav a:is(:hover, :focus-visible, .is-pressed, .is-touch-active, .is-sphere-pressed, :active) {
   position: relative !important;
   z-index: 1 !important;
   display: grid !important;
@@ -12087,7 +12362,7 @@ body.vault-gateway-open {
   white-space: normal !important;
 }
 
-.site-header:is(.home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) nav a::before {
+.site-header:is(.home-like-header, .home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) nav a::before {
   display: grid !important;
   place-items: center !important;
   position: absolute !important;
@@ -12115,7 +12390,7 @@ body.vault-gateway-open {
   transform: translateX(-50%) !important;
 }
 
-.site-header:is(.home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) nav a::after {
+.site-header:is(.home-like-header, .home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) nav a::after {
   display: grid !important;
   place-items: center !important;
   position: absolute !important;
@@ -12142,67 +12417,67 @@ body.vault-gateway-open {
   text-shadow: none !important;
 }
 
-.site-header:is(.home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) nav a[data-icon="HM"] {
+.site-header:is(.home-like-header, .home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) nav a[data-icon="HM"] {
   --sphere-nav-note: "07";
   --sphere-nav-accent: #29f7ff;
   --sphere-nav-core: rgba(157, 255, 247, 0.82);
-  --sphere-nav-image: url("./assets/brand/guide-puck-cyan-city.png") !important;
+  --sphere-nav-image: url("./assets/brand/guide-puck-cyan-city.webp") !important;
 }
 
-.site-header:is(.home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) nav a[data-icon="FX"] {
+.site-header:is(.home-like-header, .home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) nav a[data-icon="FX"] {
   --sphere-nav-note: "55";
   --sphere-nav-accent: #ffe071;
   --sphere-nav-core: rgba(255, 244, 178, 0.9);
-  --sphere-nav-image: url("./assets/brand/guide-puck-gold-mascot-close.png") !important;
+  --sphere-nav-image: url("./assets/brand/guide-puck-gold-mascot-close.webp") !important;
 }
 
-.site-header:is(.home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) nav a[data-icon="EV"] {
+.site-header:is(.home-like-header, .home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) nav a[data-icon="EV"] {
   --sphere-nav-note: "62";
   --sphere-nav-accent: #5eff9d;
   --sphere-nav-core: rgba(198, 255, 167, 0.86);
-  --sphere-nav-image: url("./assets/brand/guide-puck-gold-mascot-wide.png") !important;
+  --sphere-nav-image: url("./assets/brand/guide-puck-gold-mascot-wide.webp") !important;
 }
 
-.site-header:is(.home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) nav a[data-icon="SP"] {
+.site-header:is(.home-like-header, .home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) nav a[data-icon="SP"] {
   --sphere-nav-note: "68";
   --sphere-nav-accent: #ff4fd8;
   --sphere-nav-core: rgba(255, 164, 235, 0.82);
-  --sphere-nav-image: url("./assets/brand/guide-jazz-network-puck.jpeg") !important;
+  --sphere-nav-image: url("./assets/brand/guide-jazz-network-puck.webp") !important;
 }
 
-.site-header:is(.home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) nav a[data-icon="B2"] {
+.site-header:is(.home-like-header, .home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) nav a[data-icon="B2"] {
   --sphere-nav-note: "54";
   --sphere-nav-accent: #29f7ff;
   --sphere-nav-core: rgba(174, 244, 255, 0.86);
-  --sphere-nav-image: url("./assets/brand/guide-puck-cyan-city.png") !important;
+  --sphere-nav-image: url("./assets/brand/guide-puck-cyan-city.webp") !important;
 }
 
-.site-header:is(.home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) nav a[data-icon="MC"] {
+.site-header:is(.home-like-header, .home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) nav a[data-icon="MC"] {
   --sphere-nav-note: "03";
   --sphere-nav-accent: #ffe071;
   --sphere-nav-core: rgba(255, 244, 178, 0.9);
-  --sphere-nav-image: url("./assets/brand/jazz-network-gold-coin.jpeg") !important;
+  --sphere-nav-image: url("./assets/brand/jazz-network-gold-coin.webp") !important;
 }
 
-.site-header:is(.home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) nav a[data-icon="GD"] {
+.site-header:is(.home-like-header, .home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) nav a[data-icon="GD"] {
   --sphere-nav-note: "11";
   --sphere-nav-accent: #5eff9d;
   --sphere-nav-core: rgba(198, 255, 167, 0.86);
-  --sphere-nav-image: url("./assets/brand/lottomind-branded-puck.png") !important;
+  --sphere-nav-image: url("./assets/brand/lottomind-branded-puck.webp") !important;
 }
 
-.site-header:is(.home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) nav a[data-icon="ST"] {
+.site-header:is(.home-like-header, .home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) nav a[data-icon="ST"] {
   --sphere-nav-note: "25";
   --sphere-nav-accent: #ff4fd8;
   --sphere-nav-core: rgba(255, 164, 235, 0.84);
-  --sphere-nav-image: url("./assets/brand/guide-puck-gold-mascot-close.png") !important;
+  --sphere-nav-image: url("./assets/brand/guide-puck-gold-mascot-close.webp") !important;
 }
 
-.site-header:is(.home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) nav a[data-icon="LM"] {
+.site-header:is(.home-like-header, .home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) nav a[data-icon="LM"] {
   --sphere-nav-note: "51";
   --sphere-nav-accent: #5eff9d;
   --sphere-nav-core: rgba(198, 255, 167, 0.86);
-  --sphere-nav-image: url("./assets/brand/lottomind-branded-puck.png") !important;
+  --sphere-nav-image: url("./assets/brand/lottomind-branded-puck.webp") !important;
   order: 20 !important;
 }
 
@@ -12373,19 +12648,19 @@ body.vault-gateway-open {
 }
 
 @media (max-width: 980px) {
-  .site-header:is(.home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) nav {
+  .site-header:is(.home-like-header, .home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) nav {
     justify-content: flex-start !important;
     overflow-x: auto !important;
     scrollbar-width: none !important;
   }
 
-  .site-header:is(.home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) nav::-webkit-scrollbar {
+  .site-header:is(.home-like-header, .home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) nav::-webkit-scrollbar {
     display: none !important;
   }
 }
 
 @media (max-width: 980px) {
-  .site-header:is(.home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) nav,
+  .site-header:is(.home-like-header, .home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) nav,
   .lottery-spheres-page .site-header:is(.lottery-spheres-header, .home-sphere-header.global-sphere-header) nav {
     display: grid !important;
     grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
@@ -12396,7 +12671,7 @@ body.vault-gateway-open {
     padding-bottom: 0 !important;
   }
 
-  .site-header:is(.home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) nav a,
+  .site-header:is(.home-like-header, .home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) nav a,
   .lottery-spheres-page .site-header:is(.lottery-spheres-header, .home-sphere-header.global-sphere-header) nav a,
   .lottery-spheres-page .site-header:is(.lottery-spheres-header, .home-sphere-header.global-sphere-header) nav a:is(:hover, :focus-visible, .is-pressed, .is-touch-active, .is-sphere-pressed, :active) {
     display: inline-flex !important;
@@ -12411,12 +12686,12 @@ body.vault-gateway-open {
 }
 
 @media (max-width: 430px) {
-  .site-header:is(.home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) nav,
+  .site-header:is(.home-like-header, .home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) nav,
   .lottery-spheres-page .site-header:is(.lottery-spheres-header, .home-sphere-header.global-sphere-header) nav {
     gap: 0.38rem !important;
   }
 
-  .site-header:is(.home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) nav a,
+  .site-header:is(.home-like-header, .home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) nav a,
   .lottery-spheres-page .site-header:is(.lottery-spheres-header, .home-sphere-header.global-sphere-header) nav a {
     min-height: 2.55rem !important;
     padding: 0.52rem 0.32rem !important;
@@ -14214,7 +14489,7 @@ body.beat2lotto-current-page .lotto-output-head h2 {
   color: #f5fbff;
   background:
     linear-gradient(90deg, rgba(3, 14, 24, 0.34), rgba(3, 22, 33, 0.16)),
-    url("./assets/generated/beat-seeded-entertainment-picks.webp") center / cover no-repeat;
+    url("./assets/arcade/beat2lotto-prompt-lab-title.webp") center / cover no-repeat;
   box-shadow:
     0 0 0 1px rgba(255, 226, 121, 0.18),
     0 0 28px rgba(41, 247, 255, 0.22),
@@ -14290,7 +14565,7 @@ body.beat2lotto-current-page .lotto-output-head h2::after {
 }
 
 @media (max-width: 980px) {
-  .site-header:is(.home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) {
+  .site-header:is(.home-like-header, .home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) {
     grid-template-columns: 1fr !important;
     justify-items: center !important;
     align-items: stretch !important;
@@ -14299,26 +14574,26 @@ body.beat2lotto-current-page .lotto-output-head h2::after {
     padding: 0.72rem max(0.62rem, env(safe-area-inset-left)) 0.82rem max(0.62rem, env(safe-area-inset-right)) !important;
   }
 
-  .site-header:is(.home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) .site-header-main {
+  .site-header:is(.home-like-header, .home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) .site-header-main {
     justify-self: stretch !important;
     width: 100% !important;
     justify-content: center !important;
   }
 
-  .site-header:is(.home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) .brand {
+  .site-header:is(.home-like-header, .home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) .brand {
     min-width: 0 !important;
     max-width: 100% !important;
     justify-content: center !important;
   }
 
-  .site-header:is(.home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) .direct-launch {
+  .site-header:is(.home-like-header, .home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) .direct-launch {
     justify-self: stretch !important;
     width: 100% !important;
   }
 
   .lottery-spheres-page .site-header:is(.lottery-spheres-header, .home-sphere-header.global-sphere-header) nav,
   body.beat2lotto-current-page .site-header.home-sphere-header.global-sphere-header nav,
-  .site-header:is(.home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) nav {
+  .site-header:is(.home-like-header, .home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) nav {
     display: grid !important;
     grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
     flex-wrap: wrap !important;
@@ -14336,7 +14611,7 @@ body.beat2lotto-current-page .lotto-output-head h2::after {
   .lottery-spheres-page .site-header:is(.lottery-spheres-header, .home-sphere-header.global-sphere-header) nav a:is([aria-current], .nav-signal-active),
   .lottery-spheres-page .site-header:is(.lottery-spheres-header, .home-sphere-header.global-sphere-header) nav a:is(:hover, :focus-visible, .is-pressed, .is-touch-active, .is-sphere-pressed, :active),
   body.beat2lotto-current-page .site-header.home-sphere-header.global-sphere-header nav a,
-  .site-header:is(.home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) nav a {
+  .site-header:is(.home-like-header, .home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) nav a {
     --sphere-nav-ball-size: auto;
     display: inline-flex !important;
     width: 100% !important;
@@ -14366,8 +14641,8 @@ body.beat2lotto-current-page .lotto-output-head h2::after {
   .lottery-spheres-page .site-header:is(.lottery-spheres-header, .home-sphere-header.global-sphere-header) nav a::after,
   body.beat2lotto-current-page .site-header.home-sphere-header.global-sphere-header nav a::before,
   body.beat2lotto-current-page .site-header.home-sphere-header.global-sphere-header nav a::after,
-  .site-header:is(.home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) nav a::before,
-  .site-header:is(.home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) nav a::after {
+  .site-header:is(.home-like-header, .home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) nav a::before,
+  .site-header:is(.home-like-header, .home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) nav a::after {
     display: none !important;
     content: none !important;
   }
@@ -14376,14 +14651,14 @@ body.beat2lotto-current-page .lotto-output-head h2::after {
 @media (max-width: 430px) {
   .lottery-spheres-page .site-header:is(.lottery-spheres-header, .home-sphere-header.global-sphere-header) nav,
   body.beat2lotto-current-page .site-header.home-sphere-header.global-sphere-header nav,
-  .site-header:is(.home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) nav {
+  .site-header:is(.home-like-header, .home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) nav {
     gap: 0.38rem !important;
     padding: 0.42rem !important;
   }
 
   .lottery-spheres-page .site-header:is(.lottery-spheres-header, .home-sphere-header.global-sphere-header) nav a,
   body.beat2lotto-current-page .site-header.home-sphere-header.global-sphere-header nav a,
-  .site-header:is(.home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) nav a {
+  .site-header:is(.home-like-header, .home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) nav a {
     min-height: 2.5rem !important;
     padding: 0.52rem 0.28rem !important;
     font-size: 0.68rem !important;
@@ -14824,8 +15099,7 @@ body.beat2lotto-current-page .lotto-output-head h2::after {
   }
 }
 
-/* Home cleanup: remove extra strip and visible floating lotto-ball background. */
-body.home-page.has-sphere-header .home-signal-marquee,
+/* Home cleanup: keep the scrolling signal strip, but hide floating lotto-ball layers. */
 body.home-page.has-sphere-header .home-sphere-canvas,
 body.home-page.has-sphere-header .home-sphere-grid,
 body.home-page.has-sphere-header .home-sphere-scanline,
@@ -14870,9 +15144,16 @@ footer a.footer-link:focus-visible {
   width: 100vw;
   height: 100vh;
   border: 0;
-  opacity: 0.62;
+  visibility: hidden;
+  opacity: 0;
   filter: saturate(1.12) contrast(1.04) brightness(0.74);
-  pointer-events: auto;
+  pointer-events: none;
+  transition: opacity 260ms ease, filter 260ms ease;
+}
+
+.memberships-page.is-membership-pong-loaded .membership-pong-bg {
+  visibility: visible;
+  opacity: 0.38;
 }
 
 .memberships-page .site-header,
@@ -14894,15 +15175,16 @@ footer a.footer-link:focus-visible {
 }
 
 .memberships-page.is-membership-pong-focused .membership-pong-bg {
-  opacity: 0.74;
+  opacity: 0.68;
   filter: saturate(1.22) contrast(1.08) brightness(0.82);
+  pointer-events: auto;
 }
 
 .memberships-page .home-sphere-header nav a:first-child {
   --sphere-nav-note: "25";
   --sphere-nav-accent: #ff4fd8;
   --sphere-nav-core: rgba(255, 164, 235, 0.84);
-  --sphere-nav-image: url("./assets/brand/guide-puck-gold-mascot-close.png");
+  --sphere-nav-image: url("./assets/brand/guide-puck-gold-mascot-close.webp");
 }
 
 .membership-main {
@@ -15071,6 +15353,8 @@ footer a.footer-link:focus-visible {
 .membership-section {
   display: grid;
   gap: clamp(18px, 3vw, 28px);
+  content-visibility: auto;
+  contain-intrinsic-size: 520px;
 }
 
 .membership-section-heading {
@@ -15343,6 +15627,134 @@ footer a.footer-link:focus-visible {
 .stripe-placeholder-panel stripe-pricing-table {
   display: block;
   min-height: 220px;
+}
+
+.membership-plan-card button.primary-action,
+.membership-plan-card button.secondary-action,
+.credit-pack-grid button.secondary-action,
+.stripe-placeholder-panel button.secondary-action {
+  width: fit-content;
+  min-height: 44px;
+  cursor: pointer;
+}
+
+.membership-plan-card button:disabled,
+.credit-pack-grid button:disabled,
+.stripe-placeholder-panel button:disabled {
+  cursor: wait;
+  opacity: 0.68;
+}
+
+[data-stripe-membership-status][data-state="ready"],
+[data-stripe-membership-status][data-state="success"] {
+  color: #73e6a2;
+}
+
+[data-stripe-membership-status][data-state="error"],
+[data-stripe-membership-status][data-state="auth-required"] {
+  color: #ffb0b0;
+}
+
+/* Preserve the current sphere-tab header at tablet and mobile widths. */
+.home-page.has-sphere-header .home-sphere-header nav {
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: clamp(0.42rem, 0.82vw, 0.68rem) !important;
+  min-height: 5.4rem !important;
+  padding: 0.62rem 0.78rem !important;
+  overflow: visible !important;
+  border: 1px solid rgba(255, 224, 113, 0.34) !important;
+  border-radius: 999px !important;
+  background:
+    radial-gradient(circle at 48% 48%, rgba(41, 247, 255, 0.12) 0 3.6rem, transparent 3.85rem),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.055), transparent 52%),
+    rgba(2, 5, 12, 0.92) !important;
+}
+
+.home-page.has-sphere-header .home-sphere-header nav a,
+.home-page.has-sphere-header .home-sphere-header nav a:is(:hover, :focus-visible, .is-pressed, .is-touch-active, .is-sphere-pressed, :active) {
+  position: relative !important;
+  display: inline-grid !important;
+  flex: 0 0 clamp(4rem, 5.7vw, 5.12rem) !important;
+  width: clamp(4rem, 5.7vw, 5.12rem) !important;
+  min-width: clamp(4rem, 5.7vw, 5.12rem) !important;
+  max-width: clamp(4rem, 5.7vw, 5.12rem) !important;
+  min-height: 0 !important;
+  aspect-ratio: 1 !important;
+  place-items: center !important;
+  padding: 1.34rem 0.52rem 0.78rem !important;
+  border: 1px solid color-mix(in srgb, var(--sphere-nav-accent) 48%, rgba(255, 224, 113, 0.58)) !important;
+  border-radius: 50% !important;
+  color: #fffbe6 !important;
+  background:
+    radial-gradient(circle at 31% 23%, rgba(255, 255, 255, 0.78) 0 9%, rgba(255, 255, 255, 0.18) 10% 18%, transparent 28%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(0, 0, 0, 0.08)),
+    var(--sphere-nav-image),
+    radial-gradient(circle at 50% 52%, color-mix(in srgb, var(--sphere-nav-accent) 38%, rgba(255, 224, 113, 0.28)) 0 44%, rgba(4, 12, 20, 0.66) 58%, rgba(0, 0, 0, 0.88) 79%) !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  background-size: 100% 100%, 100% 100%, 158% 158%, 100% 100% !important;
+  font-size: clamp(0.52rem, 0.66vw, 0.66rem) !important;
+  line-height: 0.9 !important;
+  white-space: normal !important;
+  transform: none !important;
+}
+
+.home-page.has-sphere-header .home-sphere-header nav a::before {
+  display: inline-grid !important;
+  content: attr(data-icon) !important;
+}
+
+.home-page.has-sphere-header .home-sphere-header nav a::after {
+  display: inline-grid !important;
+  content: var(--sphere-nav-note) !important;
+}
+
+@media (max-width: 1100px) {
+  .home-page.has-sphere-header .home-sphere-header {
+    grid-template-columns: 1fr !important;
+    grid-template-areas: "brand" "nav" !important;
+    min-height: 154px !important;
+  }
+
+  .home-page.has-sphere-header .home-sphere-header .site-header-toggle,
+  .home-page.has-sphere-header .home-sphere-header .direct-launch {
+    display: none !important;
+  }
+
+  .home-page.has-sphere-header .home-sphere-header nav {
+    width: 100% !important;
+    max-width: 100% !important;
+    justify-content: flex-start !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    scrollbar-width: thin;
+  }
+}
+
+@media (max-width: 640px) {
+  .home-page.has-sphere-header .home-sphere-header {
+    min-height: 148px !important;
+  }
+
+  .home-page.has-sphere-header .home-sphere-header nav a,
+  .home-page.has-sphere-header .home-sphere-header nav a:is(:hover, :focus-visible, .is-pressed, .is-touch-active, .is-sphere-pressed, :active) {
+    flex-basis: 4.25rem !important;
+    width: 4.25rem !important;
+    min-width: 4.25rem !important;
+    max-width: 4.25rem !important;
+    padding: 1.24rem 0.42rem 0.7rem !important;
+  }
+
+  .home-page.has-sphere-header main {
+    padding-top: 148px;
+  }
+
+  .home-page.has-sphere-header .home-signal-marquee {
+    top: 148px;
+  }
 }
 
 .memberships-page a:focus-visible,
@@ -15994,5 +16406,391 @@ body.home-page .home-status-bar .studio-launch:is(:hover, :focus-visible) {
     --player-orb-size: min(92vw, 343px) !important;
     left: var(--spheres-player-left, 50vw) !important;
     top: var(--spheres-player-top, calc(100vh - min(46vw, 171.5px) - 86px)) !important;
+  }
+}
+
+/* Final shared-header override: retain the current orb tabs at tablet and phone widths. */
+@media (max-width: 980px) {
+  .site-header:is(.home-like-header, .home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) {
+    grid-template-columns: minmax(148px, auto) minmax(0, 1fr) !important;
+    grid-template-areas: "brand nav" !important;
+    align-items: center !important;
+    justify-items: stretch !important;
+    gap: 0.55rem !important;
+    width: 100% !important;
+    min-height: 98px !important;
+    padding: 0.45rem max(0.55rem, env(safe-area-inset-left)) !important;
+  }
+
+  .site-header:is(.home-like-header, .home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) .site-header-main {
+    grid-area: brand !important;
+    justify-self: start !important;
+    width: auto !important;
+  }
+
+  .site-header:is(.home-like-header, .home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) .site-header-toggle,
+  .site-header:is(.home-like-header, .home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) .direct-launch {
+    display: none !important;
+  }
+
+  .site-header:is(.home-like-header, .home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) nav {
+    grid-area: nav !important;
+    justify-self: stretch !important;
+    display: flex !important;
+    grid-template-columns: none !important;
+    flex-flow: row nowrap !important;
+    justify-content: flex-start !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    min-height: 5.2rem !important;
+    gap: 0.42rem !important;
+    padding: 0.42rem 0.55rem !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    border: 2px solid rgba(41, 247, 255, 0.86) !important;
+    border-radius: 999px !important;
+    background: linear-gradient(90deg, rgba(7, 24, 34, 0.96), rgba(10, 85, 116, 0.76), rgba(6, 23, 34, 0.96)) !important;
+    scrollbar-width: thin;
+  }
+
+  .site-header:is(.home-like-header, .home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) nav a,
+  .site-header:is(.home-like-header, .home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) nav a:is(:hover, :focus-visible, .is-pressed, .is-touch-active, .is-sphere-pressed, :active) {
+    display: grid !important;
+    flex: 0 0 4.3rem !important;
+    width: 4.3rem !important;
+    height: 4.3rem !important;
+    min-width: 4.3rem !important;
+    min-height: 4.3rem !important;
+    max-width: 4.3rem !important;
+    max-height: 4.3rem !important;
+    aspect-ratio: 1 !important;
+    place-items: center !important;
+    padding: 1.2rem 0.36rem 0.9rem !important;
+    overflow: hidden !important;
+    border: 1px solid rgba(221, 255, 255, 0.48) !important;
+    border-radius: 50% !important;
+    color: #fff !important;
+    background:
+      radial-gradient(circle at 28% 20%, rgba(255, 255, 255, 0.62), transparent 0 14%, transparent 30%),
+      radial-gradient(circle at 50% 50%, var(--sphere-nav-core, rgba(157, 255, 247, 0.82)) 0 16%, transparent 52%),
+      linear-gradient(150deg, rgba(255, 255, 255, 0.28), transparent 42%),
+      var(--sphere-nav-image, none) center / cover no-repeat,
+      radial-gradient(circle at 50% 50%, rgba(2, 36, 56, 0.92), rgba(3, 10, 17, 0.98) 72%) !important;
+    box-shadow: inset -0.5rem -0.6rem 0.85rem rgba(0, 0, 0, 0.65), 0 0 1rem var(--sphere-nav-accent, #29f7ff) !important;
+    font-size: 0.57rem !important;
+    line-height: 1 !important;
+    text-shadow: 0 1px 2px #000, 0 0 0.48rem #000 !important;
+    white-space: normal !important;
+  }
+
+  .site-header:is(.home-like-header, .home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) nav a::before,
+  .site-header:is(.home-like-header, .home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) nav a::after {
+    display: grid !important;
+  }
+}
+
+@media (max-width: 620px) {
+  .site-header:is(.home-like-header, .home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) {
+    grid-template-columns: minmax(0, 1fr) !important;
+    grid-template-areas: "brand" "nav" !important;
+    min-height: 145px !important;
+  }
+
+  .site-header:is(.home-like-header, .home-sphere-header, .global-sphere-header, .sphere-tabs-header, .lottery-spheres-header) .site-header-main {
+    justify-self: center !important;
+  }
+}
+
+/* Specificity guard for page-level mobile rules loaded by the legacy shells. */
+@media (max-width: 980px) {
+  html body .site-header.site-header.site-header.site-header.home-like-header.home-like-header.home-like-header.home-like-header {
+    grid-template-columns: minmax(148px, auto) minmax(0, 1fr) !important;
+    grid-template-areas: "brand nav" !important;
+    width: 100% !important;
+    min-height: 98px !important;
+  }
+
+  html body .site-header.site-header.site-header.site-header.home-like-header.home-like-header.home-like-header.home-like-header nav {
+    grid-area: nav !important;
+    justify-self: stretch !important;
+    display: flex !important;
+    grid-template-columns: none !important;
+    flex-flow: row nowrap !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: 5.2rem !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    gap: 0.42rem !important;
+    padding: 0.42rem 0.55rem !important;
+    border-radius: 999px !important;
+  }
+
+  html body .site-header.site-header.site-header.site-header.home-like-header.home-like-header.home-like-header.home-like-header nav a {
+    flex: 0 0 4.3rem !important;
+    width: 4.3rem !important;
+    height: 4.3rem !important;
+    min-width: 4.3rem !important;
+    min-height: 4.3rem !important;
+    max-width: 4.3rem !important;
+    max-height: 4.3rem !important;
+    border-radius: 50% !important;
+    background:
+      radial-gradient(circle at 28% 20%, rgba(255, 255, 255, 0.62), transparent 0 14%, transparent 30%),
+      radial-gradient(circle at 50% 50%, var(--sphere-nav-core, rgba(157, 255, 247, 0.82)) 0 16%, transparent 52%),
+      linear-gradient(150deg, rgba(255, 255, 255, 0.28), transparent 42%),
+      var(--sphere-nav-image, none) center / cover no-repeat,
+      radial-gradient(circle at 50% 50%, rgba(2, 36, 56, 0.92), rgba(3, 10, 17, 0.98) 72%) !important;
+  }
+}
+
+/* Homepage audit fixes: keep fixed controls clear and trim continuous mobile-only work. */
+body.home-page #top,
+body.home-page #lottomind-refined {
+  scroll-margin-top: 10rem;
+}
+
+@media (max-width: 640px) {
+  body.home-page #top {
+    scroll-margin-top: 24rem;
+  }
+
+  body.home-page #lottomind-refined {
+    scroll-margin-top: 15rem;
+  }
+
+  body.home-page .vault-credit-badge {
+    right: 4.75rem !important;
+    bottom: max(0.75rem, env(safe-area-inset-bottom)) !important;
+    left: auto !important;
+    width: 3.5rem;
+    min-width: 3.5rem;
+    min-height: 3.5rem;
+    justify-content: center;
+    gap: 0;
+    padding: 0.35rem;
+  }
+
+  body.home-page .vault-credit-badge span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  body.home-page .vault-credit-badge strong {
+    min-width: 2.5rem;
+    min-height: 2.5rem;
+  }
+}
+
+html.lm-mobile-performance .home-signal-marquee {
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+}
+
+html.lm-mobile-performance .home-signal-marquee::before,
+html.lm-mobile-performance .home-signal-marquee::after,
+html.lm-mobile-performance body.home-page .motion-orb-layer,
+html.lm-mobile-performance body.home-page .signal-particle-layer {
+  display: none !important;
+}
+
+html.lm-mobile-performance .home-signal-marquee-track {
+  min-width: 100%;
+  animation: none !important;
+  will-change: auto;
+}
+
+html.lm-mobile-performance .home-signal-marquee-track[aria-hidden="true"] {
+  display: none !important;
+}
+
+html.lm-mobile-performance body.home-page .motion-text-split.is-visible h1 > span,
+html.lm-mobile-performance body.home-page .hero-copy.is-visible h1 > span,
+html.lm-mobile-performance body.home-page .motion-text-split.is-visible h1 > span::before,
+html.lm-mobile-performance body.home-page .motion-text-split.is-visible h1 > span::after,
+html.lm-mobile-performance body.home-page .hero-copy.is-visible h1 > span::before,
+html.lm-mobile-performance body.home-page .hero-copy.is-visible h1 > span::after,
+html.lm-mobile-performance body.home-page .site-header nav::before,
+html.lm-mobile-performance body.home-page .domain-eq i,
+html.lm-mobile-performance body.home-page .kinetic-word,
+html.lm-mobile-performance body.home-page .kinetic-word::before,
+html.lm-mobile-performance body.home-page .kinetic-word::after,
+html.lm-mobile-performance body.home-page .hero-copy::after {
+  animation: none !important;
+  will-change: auto !important;
+}
+
+html.lm-mobile-performance body.home-page .motion-text-split.is-visible h1 > span,
+html.lm-mobile-performance body.home-page .hero-copy.is-visible h1 > span {
+  opacity: 1;
+  filter: none;
+  transform: none;
+}
+
+html.lm-mobile-performance body.home-page .kinetic-word::before,
+html.lm-mobile-performance body.home-page .kinetic-word::after {
+  content: none;
+}
+
+@media (max-width: 620px) {
+  html body .site-header.site-header.site-header.site-header.home-like-header.home-like-header.home-like-header.home-like-header {
+    grid-template-columns: minmax(0, 1fr) !important;
+    grid-template-areas: "brand" "nav" !important;
+    min-height: 145px !important;
+  }
+}
+/* Home Collector Access — moved from memberships and scoped to the home flow. */
+.home-page .home-collector-access-section {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  width: min(calc(100% - 32px), 1500px);
+  max-width: 1500px;
+  align-items: center;
+  gap: clamp(24px, 4vw, 64px);
+  margin: clamp(24px, 4vw, 54px) auto;
+  padding: clamp(24px, 3.5vw, 48px);
+  overflow: visible;
+  border: 1px solid rgba(53, 231, 255, 0.4);
+  border-radius: 14px;
+  background:
+    radial-gradient(circle at 85% 20%, rgba(242, 200, 91, 0.13), transparent 30%),
+    linear-gradient(115deg, rgba(53, 231, 255, 0.1), transparent 48%),
+    rgba(5, 18, 35, 0.93);
+  box-shadow: inset 0 0 50px rgba(53, 231, 255, 0.04), 0 24px 80px rgba(0, 0, 0, 0.36);
+  isolation: isolate;
+  scroll-margin-top: clamp(9rem, 18vw, 12rem);
+}
+
+.home-page .home-collector-access-section::after {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: linear-gradient(105deg, transparent 25%, rgba(255, 255, 255, 0.07) 48%, transparent 70%);
+  content: "";
+  pointer-events: none;
+  transform: translateX(-76%);
+  animation: home-collector-scan 9s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+}
+
+@keyframes home-collector-scan {
+  0%, 64% { transform: translateX(-76%); opacity: 0; }
+  72% { opacity: 1; }
+  100% { transform: translateX(78%); opacity: 0; }
+}
+
+.home-page .home-collector-access-section__heading > span {
+  display: block;
+  color: #f2c85b;
+  font: 800 0.68rem/1.2 "IBM Plex Mono", Consolas, monospace;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.home-page .home-collector-access-section__heading h2 {
+  max-width: 13ch;
+  margin: 0.65rem 0 0;
+  color: #eefbff;
+  font-family: "Space Grotesk", "Segoe UI", Arial, sans-serif;
+  font-size: clamp(2.4rem, 5vw, 5.25rem);
+  font-weight: 850;
+  letter-spacing: -0.055em;
+  line-height: 0.92;
+  text-wrap: balance;
+}
+
+.home-page .home-collector-access-section__heading p {
+  max-width: 70ch;
+  margin: 1rem 0 0;
+  color: rgba(238, 251, 255, 0.7);
+  font-size: clamp(0.95rem, 1.25vw, 1.1rem);
+  line-height: 1.65;
+}
+
+.home-page .home-collector-access-section .collector-access {
+  position: relative;
+  z-index: 2;
+  display: block;
+}
+
+.home-page .home-collector-access-section .collector-access__trigger {
+  min-width: 210px;
+  min-height: 48px;
+  border-color: rgba(242, 200, 91, 0.64);
+  background: linear-gradient(135deg, rgba(242, 200, 91, 0.17), rgba(53, 231, 255, 0.09));
+  box-shadow: 0 0 28px rgba(242, 200, 91, 0.12);
+}
+
+@media (max-width: 760px) {
+  .home-page .home-collector-access-section {
+    grid-template-columns: 1fr;
+    gap: 22px;
+    width: min(calc(100% - 24px), 1500px);
+    margin-block: 18px 28px;
+    padding: 22px 18px;
+    scroll-margin-top: 13.5rem;
+  }
+
+  .home-page .home-collector-access-section .collector-access,
+  .home-page .home-collector-access-section .collector-access__trigger {
+    width: 100%;
+  }
+
+  .home-page .home-collector-access-section .collector-access__trigger span {
+    font-size: 0.68rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-page .home-collector-access-section::after {
+    animation: none;
+  }
+}
+
+/* Home signal banner: 30% larger while preserving its original scroll speed. */
+body.home-page.has-sphere-header .home-signal-marquee {
+  top: calc(clamp(4rem, 5.7vw, 5.12rem) + 2.125rem);
+  min-height: 57.2px;
+}
+
+body.home-page.has-sphere-header .home-signal-marquee::before,
+body.home-page.has-sphere-header .home-signal-marquee::after {
+  width: clamp(57.2px, 13vw, 169px);
+}
+
+body.home-page.has-sphere-header .home-signal-marquee-track {
+  animation-duration: 24.7s;
+}
+
+body.home-page.has-sphere-header .home-signal-marquee-track span {
+  min-height: 57.2px;
+  padding-inline: clamp(28.6px, 4.992vw, 84.5px);
+  font-size: clamp(1.3rem, 3.12vw, 2.405rem);
+}
+
+body.home-page.has-sphere-header .home-signal-marquee-track span::after {
+  right: -10.4px;
+  width: 13px;
+  height: 13px;
+}
+
+@media (max-width: 1100px) {
+  body.home-page.has-sphere-header .home-signal-marquee {
+    top: 154px;
+  }
+}
+
+@media (max-width: 640px) {
+  body.home-page.has-sphere-header .home-signal-marquee {
+    top: 148px;
   }
 }

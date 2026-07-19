@@ -64,6 +64,18 @@ Enable on the startup/title screen with `?envpack=cyber-vault-v1`. Gameplay leve
 
 ## Generated Supporting Assets
 
+### Complete Boss Motion Pass
+
+| Path | Status |
+| --- | --- |
+| `assets/bosses/canopy_drone_queen_motion_v2_source.png` | ChatGPT Image source for the eight-pose Canopy Drone Queen strip. |
+| `assets/bosses/canopy_drone_queen_motion_v2_runtime_384.png` | Active normalized eight-frame hover, charge, fire, hit, and defeat strip. |
+| `assets/bosses/jackpot_forge_titan_motion_v2_source.png` | ChatGPT Image source for the eight-pose Jackpot Forge Titan strip. |
+| `assets/bosses/jackpot_forge_titan_motion_v2_runtime_384.png` | Active normalized eight-frame idle, step, slam, hit, and defeat strip. |
+| `assets/bosses/midas_heartcore_overlord_motion_v2_source.png` | ChatGPT Image source for the eight-pose Midas Heartcore Overlord strip. |
+| `assets/bosses/midas_heartcore_overlord_motion_v2_runtime_384.png` | Active normalized eight-frame core, shield, fire, damage, and overload strip. |
+| `tools/repack_generated_boss_strip.py` | Reusable silhouette-aware fixed-cell repacker with shared scale and bottom-center anchors. |
+
 | Path | Status |
 | --- | --- |
 | `assets/levels/platform_tiles_level1.png` | Higgsfield source art; retained as original download. |

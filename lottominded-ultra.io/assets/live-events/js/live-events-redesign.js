@@ -31,6 +31,9 @@
   const twitchLiveCard = document.querySelector("#twitch-live");
   const liveBallpassCanvas = document.querySelector("[data-live-ballpass-bg]");
   const previewIframes = Array.from(document.querySelectorAll(".event-card .video-thumb iframe"));
+  const heroSingerFilm = document.querySelector("[data-live-hero-film-video]");
+  const heroSingerAudio = document.querySelector("[data-live-hero-film-audio]");
+  const heroSingerSound = document.querySelector("[data-live-hero-film-sound]");
   const decorativeVideos = Array.from(document.querySelectorAll("video")).filter((video) => (
     !video.closest("#twitch-live") &&
     !video.closest("[data-lm-page-transition]") &&
@@ -41,6 +44,7 @@
   let liveAudioData = null;
   let liveAudioSource = null;
   let liveWaveFrame = null;
+  let heroSingerSoundEnabled = false;
   let shadowOpsShouldResumeLiveAudio = false;
   let shadowOpsLiveAudioVolume = 0.56;
   const chatBots = [
@@ -100,6 +104,96 @@
       hype: "Signal recorded. That one is a clean creative seed."
     }
   ];
+
+  function setupHeroSingerFilm() {
+    if (!heroSingerFilm) return;
+
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    let isVisible = true;
+
+    const setSoundState = (active) => {
+      if (!heroSingerSound) return;
+      heroSingerSound.classList.toggle("is-active", active);
+      heroSingerSound.setAttribute("aria-pressed", String(active));
+      heroSingerSound.textContent = active ? "Sound off" : "Sound on";
+    };
+
+    const syncPlayback = () => {
+      if (document.hidden || reducedMotion.matches || !isVisible) {
+        heroSingerFilm.pause();
+        heroSingerAudio?.pause();
+        return;
+      }
+      heroSingerFilm.play().catch(() => {
+        heroSingerFilm.controls = true;
+      });
+      if (heroSingerSoundEnabled && heroSingerAudio?.paused) {
+        heroSingerAudio.play().catch(() => setSoundState(false));
+      }
+    };
+
+    const stopBackgroundAudio = () => {
+      document.querySelectorAll("audio").forEach((audio) => {
+        if (audio !== heroSingerAudio) audio.pause();
+      });
+      resetLiveWave();
+      updateLivePlayer();
+      livePlayer?.setAttribute("data-hero-audio", "active");
+    };
+
+    const stopHeroAudio = () => {
+      heroSingerSoundEnabled = false;
+      heroSingerAudio?.pause();
+      livePlayer?.removeAttribute("data-hero-audio");
+      setSoundState(false);
+    };
+
+    heroSingerSound?.addEventListener("click", async () => {
+      if (heroSingerSoundEnabled) {
+        stopHeroAudio();
+        syncPlayback();
+        return;
+      }
+
+      if (!heroSingerAudio) return;
+      stopBackgroundAudio();
+      heroSingerSoundEnabled = true;
+      heroSingerAudio.volume = 0.68;
+      if (heroSingerAudio.ended) heroSingerAudio.currentTime = 0;
+      try {
+        await Promise.all([
+          heroSingerFilm.play(),
+          heroSingerAudio.play()
+        ]);
+        setSoundState(true);
+      } catch {
+        stopHeroAudio();
+      }
+    });
+
+    heroSingerAudio?.addEventListener("play", () => {
+      heroSingerSoundEnabled = true;
+      setSoundState(true);
+    });
+    heroSingerAudio?.addEventListener("pause", () => {
+      if (!document.hidden && isVisible && heroSingerSoundEnabled) return;
+      setSoundState(false);
+    });
+    heroSingerAudio?.addEventListener("ended", stopHeroAudio);
+
+    if ("IntersectionObserver" in window) {
+      const observer = new IntersectionObserver((entries) => {
+        isVisible = entries.some((entry) => entry.isIntersecting && entry.intersectionRatio > 0.08);
+        syncPlayback();
+      }, { threshold: [0, 0.08, 0.3] });
+      observer.observe(heroSingerFilm);
+    }
+
+    document.addEventListener("visibilitychange", syncPlayback);
+    reducedMotion.addEventListener?.("change", syncPlayback);
+    setSoundState(false);
+    syncPlayback();
+  }
   let botCursor = 0;
 
   function two(value) {
@@ -270,6 +364,14 @@
   async function startLivePlayer(options = {}) {
     if (!livePlayerAudio) return false;
     try {
+      if (heroSingerAudio && !heroSingerAudio.paused) {
+        heroSingerSoundEnabled = false;
+        heroSingerAudio.pause();
+        livePlayer?.removeAttribute("data-hero-audio");
+        heroSingerSound?.classList.remove("is-active");
+        heroSingerSound?.setAttribute("aria-pressed", "false");
+        if (heroSingerSound) heroSingerSound.textContent = "Sound on";
+      }
       livePlayerAudio.volume = options.volume ?? 0.72;
       if (options.restart) livePlayerAudio.currentTime = 0;
       const playPromise = livePlayerAudio.play();
@@ -366,14 +468,8 @@
 
   function scheduleStreamOpenAudio() {
     if (!livePlayerAudio?.hasAttribute("data-stream-open-audio")) return;
-    if (livePlayerAudio.dataset.streamOpenReady === "true") return;
-    livePlayerAudio.dataset.streamOpenReady = "true";
-    const run = () => window.setTimeout(() => startStreamOpenAudio({ volume: 0.56 }), 420);
-    if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", run, { once: true });
-    } else {
-      run();
-    }
+    livePlayerAudio.dataset.streamOpenReady = "manual";
+    livePlayer?.setAttribute("data-stream-open-state", "ready");
   }
 
   function openShadowOpsModal() {
@@ -920,6 +1016,7 @@
     });
   }
 
+  setupHeroSingerFilm();
   tickLiveTimer();
   window.setInterval(tickLiveTimer, 1000);
 })();

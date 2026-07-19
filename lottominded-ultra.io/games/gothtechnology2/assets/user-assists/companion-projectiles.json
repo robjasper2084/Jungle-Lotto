@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "provider": "Higgsfield Nano Banana Pro",
+  "cellWidth": 256,
+  "cellHeight": 256,
+  "frameRate": 14,
+  "companions": {
+    "KALYX_SHADOW_RAVEN": {
+      "sheet": "assets/user-assists/kalyx-shadow-raven-strike.webp",
+      "frames": 6,
+      "uniqueFrames": 6,
+      "sourceFigureCounts": [
+        3,
+        3
+      ],
+      "jobId": "ffc65c52-d86d-430c-8672-81971d98b75e"
+    },
+    "EZRA_ARCANE_OWL": {
+      "sheet": "assets/user-assists/ezra-arcane-owl-strike.webp",
+      "frames": 6,
+      "uniqueFrames": 6,
+      "sourceFigureCounts": [
+        3,
+        3
+      ],
+      "jobId": "5e4cc919-1233-4998-9b0f-7a263125c485"
+    }
+  }
+}

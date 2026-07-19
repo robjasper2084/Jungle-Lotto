@@ -4,19 +4,23 @@
   const ARRIVAL_KEY = "lmTransitionArriving";
   const THEME_KEY = "lmTransitionTheme";
   const LABEL_KEY = "lmTransitionLabel";
-  const DURATION = 520;
-  const NAVIGATE_AT = 280;
+  // Every branded transition clip is 0.875 seconds. Keep the CSS animation,
+  // route handoff, and cleanup on that same clock so no clip is cut short.
+  const DURATION = 875;
+  const NAVIGATE_AT = 780;
 
   const THEMES = {
-    home:       { rgb: "41 247 255",  color: "#29f7ff" },
-    features:   { rgb: "0 255 200",   color: "#00ffc8" },
-    events:     { rgb: "255 79 216",  color: "#ff4fd8" },
-    merch:      { rgb: "255 224 113", color: "#ffe071" },
-    prompts:    { rgb: "138 92 255",  color: "#8a5cff" },
-    guide:      { rgb: "94 255 157",  color: "#5eff9d" },
-    studio:     { rgb: "61 123 255",  color: "#3d7bff" },
-    beat2lotto: { rgb: "255 105 45",  color: "#ff692d" },
-    spheres:    { rgb: "255 200 74",  color: "#ffc84a" }
+    memberships: { rgb: "91 233 255",  color: "#5be9ff", clip: "studio" },
+    home:        { rgb: "41 247 255",  color: "#29f7ff" },
+    features:    { rgb: "0 255 200",   color: "#00ffc8" },
+    news:        { rgb: "94 255 157",  color: "#5eff9d", clip: "guide" },
+    events:      { rgb: "255 79 216",  color: "#ff4fd8" },
+    merch:       { rgb: "255 224 113", color: "#ffe071" },
+    prompts:     { rgb: "138 92 255",  color: "#8a5cff" },
+    guide:       { rgb: "94 255 157",  color: "#5eff9d" },
+    studio:      { rgb: "61 123 255",  color: "#3d7bff" },
+    beat2lotto:  { rgb: "255 105 45",  color: "#ff692d" },
+    spheres:     { rgb: "255 200 74",  color: "#ffc84a" }
   };
 
   const overlay = document.querySelector("[data-lm-page-transition]");
@@ -39,6 +43,7 @@
   let transitioning = false;
   let navigationTimer = 0;
   let cleanupTimer = 0;
+  let activeTransition = null;
 
   function normalizeTheme(value) {
     return Object.prototype.hasOwnProperty.call(THEMES, value) ? value : "home";
@@ -48,6 +53,8 @@
     const path = decodeURIComponent(pathname || "").toLowerCase();
     const filename = path.split("/").filter(Boolean).pop() || "";
 
+    if (/memberships/.test(path)) return "memberships";
+    if (/\/news(?:-hub)?(?:\/|$)/.test(path)) return "news";
     if (/beat2lotto/.test(path)) return "beat2lotto";
     if (/lottery-spheres|selcirm|spheres/.test(path)) return "spheres";
     if (/lottomind-stem-studio|stem-studio|studio/.test(path)) return "studio";
@@ -66,22 +73,32 @@
     const filename = path.split("/").filter(Boolean).pop() || "";
 
     return (
+      path === "/news" ||
+      path.endsWith("/news") ||
+      path === "/news-hub" ||
+      path.endsWith("/news-hub") ||
       !filename ||
       filename === "index.html" ||
       filename === "features-app.html" ||
       filename === "live-events.html" ||
       filename === "lottery-spheres.html" ||
       filename === "beat2lotto-plus.html" ||
+      filename === "memberships.html" ||
       filename === "merch-store.html" ||
       filename === "prompt-lab.html" ||
-      filename === "how-to-use.html"
+      filename === "how-to-use.html" ||
+      filename === "accessibility.html" ||
+      filename === "contact.html" ||
+      filename === "privacy.html" ||
+      filename === "terms.html"
     );
   }
 
   function clipUrl(theme, phase) {
     const safeTheme = normalizeTheme(theme);
     const safePhase = phase === "close" ? "close" : "open";
-    return new URL(`lm-${safeTheme}-${safePhase}.mp4`, videoBase).href;
+    const clipTheme = THEMES[safeTheme].clip || safeTheme;
+    return new URL(`lm-${clipTheme}-${safePhase}.mp4`, videoBase).href;
   }
 
   function applyTheme(theme) {
@@ -175,7 +192,7 @@
     });
   }
 
-  function activate(theme, phase, text) {
+  function activate(theme, phase, text, source = "page") {
     window.clearTimeout(cleanupTimer);
 
     const safeTheme = applyTheme(theme);
@@ -186,15 +203,17 @@
     void overlay.offsetWidth;
     overlay.classList.add("is-active", phase === "close" ? "is-closing" : "is-opening");
     document.body.classList.add("lm-page-is-transitioning");
+    activeTransition = { phase, theme: safeTheme, label: text || "", source };
 
     if (!reduceMotion.matches) playVideo(safeTheme, phase);
 
     window.dispatchEvent(new CustomEvent("lottomind:page-transition", {
-      detail: { phase, theme: safeTheme, label: text || "" }
+      detail: { phase, theme: safeTheme, label: text || "", source }
     }));
   }
 
   function resetTransition() {
+    const completedTransition = activeTransition;
     window.clearTimeout(navigationTimer);
     window.clearTimeout(cleanupTimer);
 
@@ -208,6 +227,13 @@
     document.documentElement.classList.remove("lm-transition-arriving");
     document.body.classList.remove("lm-page-is-transitioning");
     transitioning = false;
+    activeTransition = null;
+
+    if (completedTransition) {
+      window.dispatchEvent(new CustomEvent("lottomind:transition-complete", {
+        detail: completedTransition
+      }));
+    }
   }
 
   function shouldTransition(event, link) {
@@ -264,7 +290,7 @@
       }
     } catch (_) {}
 
-    activate(theme, "open", destinationLabel);
+    activate(theme, "open", destinationLabel, "navigation");
 
     const startNavigationTimer = () => {
       navigationTimer = window.setTimeout(() => {
@@ -297,11 +323,26 @@
     }
 
     transitioning = true;
-    activate(theme, "close", destinationLabel);
+    activate(theme, "close", destinationLabel, "arrival");
 
     cleanupTimer = window.setTimeout(
       resetTransition,
-      reduceMotion.matches ? 150 : DURATION + 70
+      reduceMotion.matches ? 150 : DURATION + 24
+    );
+  }
+
+  function playCommercialHandoff(event) {
+    if (transitioning || document.body.classList.contains("lm-page-is-transitioning")) return;
+
+    const detail = event?.detail || {};
+    const theme = normalizeTheme(detail.theme || themeForPath(window.location.pathname));
+    const destinationLabel = detail.label || document.title || theme;
+
+    transitioning = true;
+    activate(theme, "close", destinationLabel, detail.source || "commercial");
+    cleanupTimer = window.setTimeout(
+      resetTransition,
+      reduceMotion.matches ? 150 : DURATION + 24
     );
   }
 
@@ -324,6 +365,8 @@
   window.addEventListener("pageshow", (event) => {
     if (event.persisted) resetTransition();
   });
+
+  window.addEventListener("lottomind:commercial-dismissed", playCommercialHandoff);
 
   window.addEventListener("pagehide", () => {
     window.clearTimeout(navigationTimer);

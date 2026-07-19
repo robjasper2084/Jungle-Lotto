@@ -16,12 +16,13 @@
     } catch {
       parentApiBaseUrl = "";
     }
+    const sameOriginLocalApi = /^(127\.0\.0\.1|localhost)$/i.test(window.location.hostname) ? window.location.origin : "";
     return (
       options.apiBaseUrl ||
       params.get("rewardsApi") ||
       window.LOTTOMIND_REWARDS_API_BASE_URL ||
       parentApiBaseUrl ||
-      ""
+      sameOriginLocalApi
     ).replace(/\/+$/, "");
   }
 
@@ -146,6 +147,15 @@
         method: "POST",
         body: JSON.stringify(input),
       });
+      if (response?.status === "rewarded") {
+        try {
+          const account = window.LottoMindAccountService || (window.parent !== window ? window.parent.LottoMindAccountService : null);
+          account?.refresh?.();
+        } catch {}
+        try {
+          window.parent?.postMessage?.({ type: "lottomind:game-reward", reward: response.reward, wallet: response.wallet }, window.location.origin);
+        } catch {}
+      }
       closed = response?.status === "rewarded";
       status(closed ? "closed" : "ready", response);
       return response;
