@@ -92,7 +92,7 @@ export class GothTechnologyGame {
     this.input = new InputManager(window);
     this.audio = new WebAudioBus(ASSET_URLS.music, ASSET_URLS.fightMusic);
     this.settings = readStorage(SETTINGS_KEY, {
-      musicVolume: 0.72,
+      musicVolume: 0.58,
       sfxVolume: 0.9,
       vibration: true,
       shake: 1,

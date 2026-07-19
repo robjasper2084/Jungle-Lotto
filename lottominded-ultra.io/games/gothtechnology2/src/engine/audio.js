@@ -13,15 +13,19 @@ export class WebAudioBus {
     this.pendingMode = "menu";
     this.unlocked = false;
     this.noiseBuffer = null;
-    this.musicVolume = 0.72;
+    this.musicVolume = 0.58;
     this.sfxVolume = 0.9;
     this.vibrationEnabled = true;
+  }
+
+  musicGainForMode(mode) {
+    return mode === "fight" ? 0.58 : 0.42;
   }
 
   setMusicVolume(value) {
     this.musicVolume = Math.max(0, Math.min(1, Number(value) || 0));
     for (const [mode, track] of Object.entries(this.musicTracks)) {
-      track.volume = (mode === "fight" ? 0.74 : 0.5) * this.musicVolume;
+      track.volume = this.musicGainForMode(mode) * this.musicVolume;
     }
   }
 
@@ -62,7 +66,7 @@ export class WebAudioBus {
       const track = new Audio(url);
       track.loop = true;
       track.preload = "metadata";
-      track.volume = (normalized === "fight" ? 0.74 : 0.5) * this.musicVolume;
+      track.volume = this.musicGainForMode(normalized) * this.musicVolume;
       track.muted = this.muted;
       track.addEventListener("ended", () => {
         if (this.music === track) this.musicStarted = false;
@@ -102,7 +106,7 @@ export class WebAudioBus {
         // Some browsers reject currentTime changes before metadata arrives.
       }
     }
-    this.music.volume = (normalized === "fight" ? 0.74 : 0.5) * this.musicVolume;
+    this.music.volume = this.musicGainForMode(normalized) * this.musicVolume;
     if (this.musicStarted && !this.music.paused && this.musicMode === normalized && !restart) return;
     this.musicMode = normalized;
     this.musicStarted = true;
