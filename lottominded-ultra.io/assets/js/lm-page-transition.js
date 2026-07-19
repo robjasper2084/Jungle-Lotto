@@ -4,8 +4,10 @@
   const ARRIVAL_KEY = "lmTransitionArriving";
   const THEME_KEY = "lmTransitionTheme";
   const LABEL_KEY = "lmTransitionLabel";
-  const DURATION = 680;
-  const NAVIGATE_AT = 560;
+  // Every branded transition clip is 0.875 seconds. Keep the CSS animation,
+  // route handoff, and cleanup on that same clock so no clip is cut short.
+  const DURATION = 875;
+  const NAVIGATE_AT = 780;
 
   const THEMES = {
     memberships: { rgb: "91 233 255",  color: "#5be9ff", clip: "studio" },
@@ -41,6 +43,7 @@
   let transitioning = false;
   let navigationTimer = 0;
   let cleanupTimer = 0;
+  let activeTransition = null;
 
   function normalizeTheme(value) {
     return Object.prototype.hasOwnProperty.call(THEMES, value) ? value : "home";
@@ -189,7 +192,7 @@
     });
   }
 
-  function activate(theme, phase, text) {
+  function activate(theme, phase, text, source = "page") {
     window.clearTimeout(cleanupTimer);
 
     const safeTheme = applyTheme(theme);
@@ -200,15 +203,17 @@
     void overlay.offsetWidth;
     overlay.classList.add("is-active", phase === "close" ? "is-closing" : "is-opening");
     document.body.classList.add("lm-page-is-transitioning");
+    activeTransition = { phase, theme: safeTheme, label: text || "", source };
 
     if (!reduceMotion.matches) playVideo(safeTheme, phase);
 
     window.dispatchEvent(new CustomEvent("lottomind:page-transition", {
-      detail: { phase, theme: safeTheme, label: text || "" }
+      detail: { phase, theme: safeTheme, label: text || "", source }
     }));
   }
 
   function resetTransition() {
+    const completedTransition = activeTransition;
     window.clearTimeout(navigationTimer);
     window.clearTimeout(cleanupTimer);
 
@@ -222,6 +227,13 @@
     document.documentElement.classList.remove("lm-transition-arriving");
     document.body.classList.remove("lm-page-is-transitioning");
     transitioning = false;
+    activeTransition = null;
+
+    if (completedTransition) {
+      window.dispatchEvent(new CustomEvent("lottomind:transition-complete", {
+        detail: completedTransition
+      }));
+    }
   }
 
   function shouldTransition(event, link) {
@@ -278,7 +290,7 @@
       }
     } catch (_) {}
 
-    activate(theme, "open", destinationLabel);
+    activate(theme, "open", destinationLabel, "navigation");
 
     const startNavigationTimer = () => {
       navigationTimer = window.setTimeout(() => {
@@ -311,11 +323,26 @@
     }
 
     transitioning = true;
-    activate(theme, "close", destinationLabel);
+    activate(theme, "close", destinationLabel, "arrival");
 
     cleanupTimer = window.setTimeout(
       resetTransition,
-      reduceMotion.matches ? 150 : DURATION + 70
+      reduceMotion.matches ? 150 : DURATION + 24
+    );
+  }
+
+  function playCommercialHandoff(event) {
+    if (transitioning || document.body.classList.contains("lm-page-is-transitioning")) return;
+
+    const detail = event?.detail || {};
+    const theme = normalizeTheme(detail.theme || themeForPath(window.location.pathname));
+    const destinationLabel = detail.label || document.title || theme;
+
+    transitioning = true;
+    activate(theme, "close", destinationLabel, detail.source || "commercial");
+    cleanupTimer = window.setTimeout(
+      resetTransition,
+      reduceMotion.matches ? 150 : DURATION + 24
     );
   }
 
@@ -338,6 +365,8 @@
   window.addEventListener("pageshow", (event) => {
     if (event.persisted) resetTransition();
   });
+
+  window.addEventListener("lottomind:commercial-dismissed", playCommercialHandoff);
 
   window.addEventListener("pagehide", () => {
     window.clearTimeout(navigationTimer);

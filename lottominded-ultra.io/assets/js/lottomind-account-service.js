@@ -4,6 +4,7 @@
   if (global.LottoMindAccountService) return;
 
   var CACHE_KEY = "lottomind.account.snapshot.v1";
+  var SESSION_KEY = "lottomind.account.session.v1";
   var API_BASE_KEY = "lottomind.api.base";
   var CACHE_TTL = 30000;
   var snapshotCache = null;
@@ -22,7 +23,14 @@
   }
 
   function apiUrl(path) {
-    return defaultApiBase() + "/api" + path;
+    var base = defaultApiBase();
+    if (base) return base + (base.indexOf("/functions/v1/") >= 0 ? path : "/api" + path);
+    if (global.LOTTOMIND_API_SAME_ORIGIN === true) return "/api" + path;
+    return "";
+  }
+
+  function isConfigured() {
+    return Boolean(defaultApiBase()) || global.LOTTOMIND_API_SAME_ORIGIN === true;
   }
 
   function cachedOfflineSnapshot() {
@@ -46,13 +54,60 @@
     return snapshotCache;
   }
 
-  async function request(path, options) {
-    var response;
+  function readSession() {
+    try { return JSON.parse(localStorage.getItem(SESSION_KEY) || "null"); } catch (_error) { return null; }
+  }
+
+  function saveSession(session) {
+    if (!session || !session.access_token) return;
+    try { localStorage.setItem(SESSION_KEY, JSON.stringify(session)); } catch (_error) {}
+  }
+
+  function clearSession() {
+    try { localStorage.removeItem(SESSION_KEY); } catch (_error) {}
+  }
+
+  async function getAccessToken() {
+    var session = readSession();
+    if (!session || !session.access_token) return "";
+    var expiresAt = Number(session.expires_at || 0) * 1000;
+    if (!expiresAt || expiresAt - Date.now() > 60000 || !session.refresh_token) return session.access_token;
+    var supabaseUrl = global.LOTTOMIND_SUPABASE_URL;
+    var publishableKey = global.LOTTOMIND_SUPABASE_PUBLISHABLE_KEY;
+    if (!supabaseUrl || !publishableKey) return session.access_token;
     try {
-      response = await fetch(apiUrl(path), Object.assign({
+      var response = await fetch(supabaseUrl + "/auth/v1/token?grant_type=refresh_token", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "apikey": publishableKey },
+        body: JSON.stringify({ refresh_token: session.refresh_token }),
+      });
+      if (!response.ok) throw new Error("Session refresh failed");
+      var refreshed = await response.json();
+      saveSession(refreshed);
+      return refreshed.access_token || "";
+    } catch (_error) {
+      clearSession();
+      return "";
+    }
+  }
+
+  async function request(path, options) {
+    var url = apiUrl(path);
+    if (!url) {
+      var configurationError = new Error("Account services are not configured for this static site.");
+      configurationError.code = "ACCOUNT_NOT_CONFIGURED";
+      throw configurationError;
+    }
+    var response;
+    var requestOptions = options || {};
+    var headers = Object.assign({ "Content-Type": "application/json", "X-Requested-With": "LottoMind-Web" }, requestOptions.headers || {});
+    var accessToken = await getAccessToken();
+    if (accessToken) headers.Authorization = "Bearer " + accessToken;
+    try {
+      response = await fetch(url, Object.assign({}, requestOptions, {
         credentials: "include",
-        headers: { "Content-Type": "application/json", "X-Requested-With": "LottoMind-Web" },
-      }, options || {}));
+        headers: headers,
+      }));
     } catch (error) {
       var networkError = new Error("The account service is offline. Your verified balance cannot be changed right now.");
       networkError.code = "ACCOUNT_OFFLINE";
@@ -93,6 +148,7 @@
 
   async function mutation(path, body) {
     var payload = await request(path, { method: "POST", body: JSON.stringify(body || {}) });
+    if (payload && payload.session) saveSession(payload.session);
     var snapshot = payload && payload.snapshot ? payload.snapshot : payload;
     if (snapshot && typeof snapshot.authenticated === "boolean") saveSnapshot(snapshot);
     else await getSnapshot({ force: true });
@@ -116,6 +172,7 @@
 
   global.LottoMindAccountService = Object.freeze({
     getApiBase: defaultApiBase,
+    isConfigured: isConfigured,
     getSnapshot: getSnapshot,
     getSession: async function getSession() {
       var snapshot = await getSnapshot();
@@ -127,7 +184,8 @@
     register: function register(input) { return mutation("/auth/register", input); },
     signIn: function signIn(input) { return mutation("/auth/login", input); },
     signOut: async function signOut() {
-      await request("/auth/logout", { method: "POST", body: "{}" });
+      try { await request("/auth/logout", { method: "POST", body: "{}" }); } catch (_error) {}
+      clearSession();
       try { localStorage.removeItem(CACHE_KEY); } catch (_error) {}
       snapshotCache = null;
       snapshotTime = 0;
@@ -160,6 +218,7 @@
       var random = global.crypto && global.crypto.randomUUID ? global.crypto.randomUUID() : Math.random().toString(36).slice(2) + Date.now().toString(36);
       return String(prefix || "action").replace(/[^a-zA-Z0-9:_-]/g, "-").slice(0, 40) + ":" + random;
     },
+    getAccessToken: getAccessToken,
     refresh: function refresh() { snapshotTime = 0; return getSnapshot({ force: true }); },
   });
 })(window);

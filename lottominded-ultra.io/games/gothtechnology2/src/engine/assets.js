@@ -1,4 +1,4 @@
-import { ASSET_URLS, MOTION_ASSET_VERSION, MOTION_PLAYBACK } from "../config/assets.js?v=future-hud20-cpu-select";
+import { ASSET_URLS, MOTION_ASSET_VERSION, MOTION_PLAYBACK } from "../config/assets.js?v=heartline41-epic-amara-ezra";
 
 const imageCache = new Map();
 
@@ -49,7 +49,10 @@ export class AssetLoader {
   loadMenuAssets(onProgress = () => {}) {
     return this.loadGroup("menu", {
       logo: ASSET_URLS.logo,
-      detroitLensNoirPortrait: ASSET_URLS.rosterPortraits.detroitLensNoir
+      kalyxPortrait: ASSET_URLS.rosterPortraits.kalyx,
+      masterEzraPortrait: ASSET_URLS.rosterPortraits.masterEzra,
+      detroitLensNoirPortrait: ASSET_URLS.rosterPortraits.detroitLensNoir,
+      amaraValentinePortrait: ASSET_URLS.rosterPortraits.amaraValentine
     }, onProgress, { strict: false });
   }
 

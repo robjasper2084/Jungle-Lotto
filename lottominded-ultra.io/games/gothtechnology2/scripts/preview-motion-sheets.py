@@ -32,11 +32,21 @@ def main() -> None:
     cell = packer.CELL_SIZE
     preview = Image.new("RGBA", (label_width + cell * 6, cell * len(args.motion)), (16, 16, 18, 255))
     draw = ImageDraw.Draw(preview)
+    amara_sources = {}
+    if args.character == "AMARA_VALENTINE":
+        expected = {motion for motions in packer.CATEGORIES.values() for motion in motions}
+        amara_sources = {
+            motion: packer.split_horizontal_strip(raw_root / f"{motion.lower()}.png")
+            for motion in expected
+        }
 
     for row, motion in enumerate(dict.fromkeys(args.motion)):
         raw_path = raw_root / f"{motion.lower()}.png"
         counts = packer.source_figure_counts(raw_path)
-        frames = packer.normalize_frames(packer.split_sheet(raw_path))
+        source_frames = amara_sources.get(motion) or packer.split_sheet(raw_path)
+        if args.character == "AMARA_VALENTINE":
+            source_frames = packer.repair_amara_aerial_frames(motion, source_frames, amara_sources)
+        frames = packer.normalize_frames(source_frames)
         draw.text((10, row * cell + 12), motion, fill=(255, 214, 109, 255))
         draw.text((10, row * cell + 34), f"figures {counts}", fill=(210, 210, 214, 255))
         for column, frame in enumerate(frames):

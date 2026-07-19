@@ -31,7 +31,7 @@
     document.querySelector(".game-shell")?.setAttribute("aria-label", `${BRAND} browser game`);
     document.getElementById("game")?.setAttribute("aria-label", `${BRAND} playfield`);
 
-    document.querySelectorAll("#titleScreen h1, #loadingScreen .small-label, #hudTitle").forEach((node) => {
+    document.querySelectorAll("#titleScreen h1, #hudTitle").forEach((node) => {
       const next = rewriteText(node.textContent);
       if (next !== node.textContent) node.textContent = next;
     });
@@ -50,17 +50,20 @@
   const boot = () => {
     applyBrand();
     const observer = new MutationObserver(scheduleBrand);
-    document.querySelectorAll("#titleScreen h1, #loadingScreen .small-label, #hudTitle").forEach((node) => {
+    document.querySelectorAll("#titleScreen h1, #hudTitle").forEach((node) => {
       observer.observe(node, {
         childList: true,
         characterData: true,
         subtree: true
       });
     });
-    new MutationObserver(scheduleBrand).observe(document.body, {
-      childList: true,
-      subtree: false
-    });
+    const body = document.body;
+    if (body) {
+      new MutationObserver(scheduleBrand).observe(body, {
+        childList: true,
+        subtree: false
+      });
+    }
   };
 
   if (document.readyState === "loading") {

@@ -275,6 +275,9 @@ const startupVideoCloseButtons = document.querySelectorAll("[data-startup-video-
 const startupMusicStart = document.querySelector("[data-startup-music-start]");
 const startupVideoPlayer = startupVideoModal?.querySelector("video");
 let startupOpenTimer = 0;
+let startupTransitionFallback = 0;
+let startupVideoClosing = false;
+let startupShouldPlayMusic = false;
 const domainStrip = document.querySelector(".domain-strip");
 const gamePip = document.querySelector("[data-game-pip]");
 const gamePipClose = document.querySelector("[data-game-pip-close]");
@@ -309,6 +312,14 @@ let gamePipResumeFromPage = false;
 let gamePipResumeFromHover = false;
 let gamePipDragState = null;
 let activePasswordGatePanel = null;
+
+function isStartupVideoOpen() {
+  return Boolean(
+    startupVideoModal
+    && !startupVideoModal.classList.contains("is-hidden")
+    && startupVideoModal.getAttribute("aria-hidden") !== "true"
+  );
+}
 
 function getSharedSignalHref() {
   const isNestedPage = /\/(?:news|news-hub)(?:\/|$)/i.test(window.location.pathname);
@@ -357,7 +368,7 @@ if (!setupSharedSignalMarquee()) {
     if (!setupSharedSignalMarquee()) return;
     sharedSignalObserver.disconnect();
   });
-  sharedSignalObserver.observe(document.body, { childList: true, subtree: true });
+  sharedSignalObserver.observe(document.body || document.documentElement, { childList: true, subtree: true });
   window.setTimeout(() => sharedSignalObserver.disconnect(), 5000);
 }
 
@@ -3073,16 +3084,62 @@ function stopStartupSoundtrack(options = {}) {
   setSoundtrackButtonState(false);
 }
 
-async function closeStartupVideo(options = {}) {
+async function playStartupVideoWithSound(options = {}) {
+  if (!startupVideoPlayer || !isStartupVideoOpen()) return false;
+  stopStartupSoundtrack({ reset: true });
+  prepareStartupVideoAudio(options);
+  try {
+    await startupVideoPlayer.play();
+    startupVideoModal?.classList.remove("is-awaiting-video-play");
+    return true;
+  } catch {
+    // Browsers block unmuted autoplay without a gesture. Keep the film moving
+    // muted so `ended` can still release the page, then let the first pointer
+    // gesture restore its commercial audio channel.
+    startupVideoPlayer.muted = true;
+    startupVideoPlayer.defaultMuted = true;
+    startupVideoPlayer.setAttribute("muted", "");
+    startupVideoModal?.classList.add("is-awaiting-video-play");
+    await startupVideoPlayer.play().catch(() => {});
+    return false;
+  }
+}
+
+async function finishStartupVideoHandoff() {
+  window.clearTimeout(startupTransitionFallback);
+  window.removeEventListener("lottomind:transition-complete", handleStartupTransitionComplete);
+  document.body.classList.remove("has-startup-modal");
+  syncHeroMotionPreference();
+  startupVideoClosing = false;
+  if (startupShouldPlayMusic) {
+    await playSiteSoundtrack({ fromPage: true, restart: true, volume: 0.5 });
+  }
+}
+
+function handleStartupTransitionComplete(event) {
+  if (event?.detail?.source !== "home-commercial") return;
+  finishStartupVideoHandoff();
+}
+
+function closeStartupVideo(options = {}) {
+  if (startupVideoClosing) return;
+  startupVideoClosing = true;
+  startupShouldPlayMusic = options.playMusic === true;
   clearStartupOpenTimer();
   if (options.remember !== false) rememberStartupVideoSeen();
   startupVideoModal?.classList.add("is-hidden");
+  startupVideoModal?.classList.remove("is-awaiting-video-play");
   startupVideoModal?.setAttribute("aria-hidden", "true");
-  document.body.classList.remove("has-startup-modal");
   startupVideoPlayer?.pause();
-  syncHeroMotionPreference();
-  if (options.playMusic !== true) return;
-  await playSiteSoundtrack({ fromPage: true, restart: true, volume: 0.5 });
+  window.addEventListener("lottomind:transition-complete", handleStartupTransitionComplete);
+  window.dispatchEvent(new CustomEvent("lottomind:commercial-dismissed", {
+    detail: {
+      label: "Home",
+      source: "home-commercial",
+      theme: "home"
+    }
+  }));
+  startupTransitionFallback = window.setTimeout(finishStartupVideoHandoff, 1500);
 }
 
 function showStartupVideo() {
@@ -3100,7 +3157,7 @@ function showStartupVideo() {
   stopStartupSoundtrack({ reset: true });
   syncHeroMotionPreference();
   rememberStartupVideoSeen();
-  prepareStartupVideoAudio();
+  playStartupVideoWithSound({ reset: true });
 }
 
 function scheduleStartupVideoOpen() {
@@ -3726,11 +3783,15 @@ startupVideoCloseButtons.forEach((button) => {
 });
 startupMusicStart?.addEventListener("click", () => closeStartupVideo({ playMusic: true }));
 startupVideoPlayer?.addEventListener("pointerdown", () => {
-  restoreDeferredVideoSources(startupVideoPlayer);
-  stopStartupSoundtrack({ reset: true });
-  prepareStartupVideoAudio();
-  startupVideoPlayer.play?.().catch(() => {});
+  playStartupVideoWithSound();
 }, { passive: true });
+startupVideoPlayer?.addEventListener("play", () => {
+  // The commercial owns the home-page audio channel for its entire run.
+  if (isStartupVideoOpen()) stopStartupSoundtrack({ reset: true });
+});
+startupVideoPlayer?.addEventListener("ended", () => {
+  closeStartupVideo({ playMusic: true });
+});
 startupVideoModal?.addEventListener("click", (event) => {
   if (event.target === startupVideoModal) closeStartupVideo({ playMusic: true });
 });
@@ -3768,6 +3829,10 @@ function setSoundtrackButtonState(isPlaying, blocked = false) {
 
 async function playSiteSoundtrack(options = {}) {
   if (!siteSoundtrack) return;
+  if (isStartupVideoOpen()) {
+    stopStartupSoundtrack({ reset: true });
+    return;
+  }
   try {
     siteSoundtrack.volume = options.volume ?? 0.42;
     if (options.restart) siteSoundtrack.currentTime = 0;
@@ -3779,6 +3844,11 @@ async function playSiteSoundtrack(options = {}) {
     setSoundtrackButtonState(false, true);
   }
 }
+
+siteSoundtrack?.addEventListener("play", () => {
+  // Protect against any direct audio.play() call outside playSiteSoundtrack().
+  if (isStartupVideoOpen()) stopStartupSoundtrack({ reset: true });
+});
 
 soundtrackButtons.forEach((button) => {
   button.addEventListener("keydown", (event) => {

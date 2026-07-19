@@ -51,6 +51,7 @@
   const commercialSignal = commercialModal?.querySelector("[data-membership-commercial-signal]");
   const commercialCopy = commercialModal?.querySelector("[data-membership-commercial-copy]");
   const commercialTelemetry = commercialModal?.querySelector("[data-membership-commercial-telemetry]");
+  const commercialSound = commercialModal?.querySelector("[data-membership-commercial-sound]");
   const commercialFilms = [
     {
       src: "./assets/merch/lottomind-merch-commercial-20260716.mp4",
@@ -66,7 +67,32 @@
     : [];
   let commercialReturnFocus = null;
   let commercialFilmIndex = 0;
+  let commercialIsClosing = false;
+  let commercialTransitionFallback = 0;
   let waterCommercialSoundEnabled = false;
+
+  const playCommercialWithFallback = async ({ restart = false } = {}) => {
+    if (!commercialVideo) return false;
+    if (restart) {
+      try { commercialVideo.currentTime = 0; } catch (_) {}
+    }
+    commercialVideo.muted = false;
+    commercialVideo.defaultMuted = false;
+    commercialVideo.removeAttribute("muted");
+    commercialVideo.volume = 0.72;
+    try {
+      await commercialVideo.play();
+      if (commercialSound) commercialSound.hidden = true;
+      return true;
+    } catch (_) {
+      commercialVideo.muted = true;
+      commercialVideo.defaultMuted = true;
+      commercialVideo.setAttribute("muted", "");
+      if (commercialSound) commercialSound.hidden = false;
+      await commercialVideo.play().catch(() => {});
+      return false;
+    }
+  };
 
   const setCommercialFilm = (index, { restart = true, play = false, muted = false } = {}) => {
     if (!commercialVideo) return;
@@ -91,11 +117,7 @@
       button.classList.toggle("is-active", active);
       button.setAttribute("aria-current", active ? "true" : "false");
     });
-    if (play) {
-      commercialVideo.muted = muted;
-      commercialVideo.volume = 0.72;
-      commercialVideo.play().catch(() => {});
-    }
+    if (play) playCommercialWithFallback({ restart: false });
   };
 
   let heroCommercialInView = false;
@@ -149,13 +171,13 @@
     if (waterCommercialSoundEnabled) waterCommercialVideo.play().catch(() => {});
   });
 
-  const closeCommercial = ({ restoreFocus = true } = {}) => {
-    if (!commercialModal || commercialModal.hidden) return;
-    commercialVideo?.pause();
-    commercialModal.classList.remove("is-open");
-    commercialModal.setAttribute("aria-hidden", "true");
-    commercialModal.hidden = true;
-    commercialModal.classList.remove("is-entry");
+  let commercialShouldRestoreFocus = true;
+  const finishCommercialHandoff = () => {
+    window.clearTimeout(commercialTransitionFallback);
+    window.removeEventListener("lottomind:transition-complete", handleCommercialTransitionComplete);
+    commercialModal?.setAttribute("aria-hidden", "true");
+    if (commercialModal) commercialModal.hidden = true;
+    commercialModal?.classList.remove("is-entry");
     body.classList.remove("has-membership-commercial");
     delete body.dataset.membershipCommercialEntry;
     root.inert = false;
@@ -164,11 +186,44 @@
     syncHeroCommercialPlayback();
     syncWaterCommercialPlayback();
     if (commercialClose) commercialClose.textContent = "Close";
-    if (restoreFocus) commercialReturnFocus?.focus?.({ preventScroll: true });
+    if (commercialShouldRestoreFocus) commercialReturnFocus?.focus?.({ preventScroll: true });
+    commercialIsClosing = false;
+  };
+
+  const handleCommercialTransitionComplete = (event) => {
+    if (event?.detail?.source !== "membership-commercial") return;
+    finishCommercialHandoff();
+  };
+
+  const closeCommercial = ({ restoreFocus = true } = {}) => {
+    if (!commercialModal || commercialModal.hidden || commercialIsClosing) return;
+    commercialIsClosing = true;
+    commercialShouldRestoreFocus = restoreFocus;
+    commercialVideo?.pause();
+    window.addEventListener("lottomind:transition-complete", handleCommercialTransitionComplete);
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        commercialModal.classList.remove("is-open");
+        window.setTimeout(() => {
+          commercialModal.setAttribute("aria-hidden", "true");
+          commercialModal.hidden = true;
+          window.dispatchEvent(new CustomEvent("lottomind:commercial-dismissed", {
+            detail: {
+              label: "Memberships",
+              source: "membership-commercial",
+              theme: "memberships"
+            }
+          }));
+          commercialTransitionFallback = window.setTimeout(finishCommercialHandoff, 1500);
+        }, 140);
+      });
+    });
   };
 
   const openCommercial = (trigger, options = {}) => {
     if (!commercialModal || !commercialVideo) return;
+    commercialIsClosing = false;
     const entry = options.entry === true;
     const requestedIndex = options.index ?? trigger?.dataset.commercialIndex;
     commercialReturnFocus = trigger || document.activeElement;
@@ -186,7 +241,7 @@
     state.lenis?.stop();
     requestAnimationFrame(() => commercialModal.classList.add("is-open"));
     if (commercialClose) commercialClose.textContent = entry ? "Skip & Enter" : "Close";
-    setCommercialFilm(commercialFilmIndex, { restart: true, play: true, muted: entry });
+    setCommercialFilm(commercialFilmIndex, { restart: true, play: true });
     commercialClose?.focus({ preventScroll: true });
   };
 
@@ -194,17 +249,15 @@
   commercialClose?.addEventListener("click", () => closeCommercial());
   commercialEnter?.addEventListener("click", () => closeCommercial());
   commercialReplay?.addEventListener("click", () => {
-    if (!commercialVideo) return;
-    commercialVideo.currentTime = 0;
-    commercialVideo.play().catch(() => {});
+    playCommercialWithFallback({ restart: true });
   });
+  commercialSound?.addEventListener("click", () => playCommercialWithFallback({ restart: false }));
   commercialChapters.forEach((button) => button.addEventListener("click", () => {
     setCommercialFilm(button.dataset.commercialIndex, { restart: true, play: true });
   }));
   commercialVideo?.addEventListener("ended", () => {
     closeCommercial();
   });
-  openCommercial(null, { entry: true, index: 0 });
   commercialModal?.addEventListener("click", (event) => {
     if (event.target === commercialModal) closeCommercial();
   });
@@ -828,9 +881,11 @@
   body.classList.add("lm-motion-ready");
   ScrollTrigger?.refresh();
   await runPreloader();
+  const commercialStartsPage = Boolean(commercialModal && commercialVideo);
+  if (commercialStartsPage) openCommercial(null, { entry: true });
   heroIntroRequested = true;
   state.visual?.startHeroIntro?.();
-  state.lenis?.start();
+  if (!commercialStartsPage) state.lenis?.start();
   revealHero();
   ScrollTrigger?.refresh();
   };

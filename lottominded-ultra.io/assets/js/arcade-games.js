@@ -51,7 +51,7 @@
       description: "Enter the Shadow Ops arena, survive the mission grid, and hold the tactical signal.",
       category: "Action",
       tags: ["shadow ops", "combat", "arena", "canvas"],
-      image: "./games/shadow-ops-canvas/assets/backgrounds/robot-rahbe-gameplay-keyart-flipped.png",
+      image: "./games/shadow-ops-canvas/assets/backgrounds/robot-rahbe-gameplay-keyart.png",
       status: "Live",
       featured: false,
       controls: "Keyboard + touch",

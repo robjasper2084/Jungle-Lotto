@@ -1,7 +1,7 @@
-import { FIGHTERS } from "./config/assets.js?v=future-hud20-cpu-select";
-import { COMMAND_LISTS, GAME_MODES, ROSTER_IDS } from "./config/content.js?v=future-hud20-cpu-select";
-import { GothTechnologyGame } from "./scenes/game.js?v=future-hud20-cpu-select";
-import { PHASE } from "./config/constants.js";
+import { FIGHTERS } from "./config/assets.js?v=heartline41-epic-amara-ezra";
+import { COMMAND_LISTS, GAME_MODES, ROSTER_IDS } from "./config/content.js?v=heartline41-epic-amara-ezra";
+import { GothTechnologyGame } from "./scenes/game.js?v=heartline41-epic-amara-ezra";
+import { PHASE } from "./config/constants.js?v=heartline41-epic-amara-ezra";
 
 const syncViewportHeight = () => {
   document.documentElement.style.setProperty("--app-height", `${window.innerHeight}px`);
@@ -76,6 +76,10 @@ const game = new GothTechnologyGame(canvas);
 window.__gothTechnologyGame = game;
 const gameStatus = document.getElementById("gameStatus");
 const accessibleActions = document.getElementById("accessibleActions");
+const commercialBreak = document.getElementById("commercialBreak");
+const commercialVideo = document.getElementById("commercialVideo");
+const commercialLabel = document.getElementById("commercialLabel");
+const commercialSkip = document.getElementById("commercialSkip");
 const settingsPanel = document.getElementById("settingsPanel");
 const closeSettings = document.getElementById("closeSettings");
 const resetBindings = document.getElementById("resetBindings");
@@ -90,6 +94,8 @@ const trainingPanel = document.getElementById("trainingPanel");
 const closeTraining = document.getElementById("closeTraining");
 const mobileCommands = document.getElementById("mobileCommands");
 const mobileTrainingTools = document.getElementById("mobileTrainingTools");
+const replayImport = document.getElementById("replayImport");
+const replayImportFile = document.getElementById("replayImportFile");
 const TOUCH_POSITIONS_KEY = "gothtechnology.touch.positions.v1";
 
 const settingFields = {
@@ -98,6 +104,8 @@ const settingFields = {
   shake: document.getElementById("shakeAmount"),
   vibration: document.getElementById("vibrationToggle"),
   highContrast: document.getElementById("contrastToggle"),
+  reduceFlash: document.getElementById("reduceFlash"),
+  colorFilter: document.getElementById("colorFilter"),
   hudScale: document.getElementById("hudScale"),
   touchLayout: document.getElementById("touchLayout")
 };
@@ -345,6 +353,7 @@ const renderAccessibleActions = (state) => {
   document.body.dataset.training = String(Boolean(state.training));
   document.body.dataset.highContrast = String(Boolean(game.settings.highContrast));
   document.body.dataset.touchLayout = game.settings.touchLayout || "classic";
+  document.body.dataset.colorFilter = game.settings.colorFilter || "normal";
   if (gameStatus) {
     const combat = state.phase === PHASE.FIGHT
       ? ` Player one health ${state.player1Health} percent, meter ${state.player1Meter}. Player two health ${state.player2Health} percent.`
@@ -361,7 +370,20 @@ const renderAccessibleActions = (state) => {
     actions.push(actionButton("Control settings", () => game.openSettings()));
   } else if (state.phase === PHASE.GAME_SELECT) {
     actions.push(actionButton("Play GOTHTECHNOLOGY", () => { game.selectGame(0); game.launchSelectedGame(); }));
-    actions.push(actionButton("Play Shadow Ops", () => { game.selectGame(1); game.launchSelectedGame(); }));
+    actions.push(actionButton("Play Robot Rahbe", () => { game.selectGame(1); game.launchSelectedGame(); }));
+    actions.push(actionButton("Back", () => game.returnToTitle()));
+  } else if (state.phase === PHASE.REPLAY_SELECT) {
+    const replays = game.getReplayLibrary();
+    replays.forEach((replay, index) => {
+      const p1 = FIGHTERS[replay.player1Id]?.name || replay.player1Id || "Fighter";
+      const p2 = FIGHTERS[replay.player2Id]?.name || replay.player2Id || "Fighter";
+      actions.push(actionButton(`Play replay ${index + 1}: ${p1} versus ${p2}`, () => game.startReplay(index)));
+    });
+    if (replays.length) {
+      actions.push(actionButton("Export selected replay", () => game.exportReplay(game.replaySlotIndex)));
+      actions.push(actionButton("Delete selected replay", () => game.deleteReplay(game.replaySlotIndex)));
+    }
+    actions.push(actionButton("Import replay JSON", () => replayImportFile?.click()));
     actions.push(actionButton("Back", () => game.returnToTitle()));
   } else if (state.phase === PHASE.SELECT) {
     const opponentRole = state.training ? "training dummy" : (state.cpuEnabled ? "CPU opponent" : "Player 2");
@@ -380,12 +402,18 @@ const renderAccessibleActions = (state) => {
     if (state.training) {
       actions.push(actionButton("Training tools", () => game.openTrainingTools()));
     }
+    if (state.isReplay) actions.push(actionButton(`Replay speed ${state.replaySpeed} times`, () => game.cycleReplaySpeed()));
     actions.push(actionButton(state.muted ? "Unmute" : "Mute", toggleMute));
   } else if (state.phase === PHASE.PAUSE) {
     actions.push(actionButton("Resume", () => { game.phase = PHASE.FIGHT; game.announce("Fight resumed"); }));
     actions.push(actionButton("Control settings", () => game.openSettings()));
     actions.push(actionButton("Command list", () => game.openCommands()));
     if (state.training) actions.push(actionButton("Training tools", () => game.openTrainingTools()));
+    if (state.isReplay) {
+      actions.push(actionButton(`Replay speed ${state.replaySpeed} times`, () => game.cycleReplaySpeed()));
+      actions.push(actionButton("Step one replay frame", () => game.stepReplayFrame()));
+      actions.push(actionButton("Export this replay", () => game.exportReplay(game.replaySlotIndex)));
+    }
     actions.push(actionButton("Restart match", () => game.startMatch(game.training)));
     actions.push(actionButton("Return to title", () => game.returnToTitle()));
     actions.push(actionButton(state.muted ? "Unmute" : "Mute", toggleMute));
@@ -404,6 +432,33 @@ window.addEventListener("gothtechnology:announce", (event) => {
 window.addEventListener("gothtechnology:settings", openSettingsPanel);
 window.addEventListener("gothtechnology:commands", openCommandPanel);
 window.addEventListener("gothtechnology:training-tools", openTrainingPanel);
+window.addEventListener("gothtechnology:commercial", async (event) => {
+  if (!(commercialVideo instanceof HTMLVideoElement) || !commercialBreak) {
+    game.finishCommercialBreak();
+    return;
+  }
+  commercialLabel.textContent = `ARCADE TRANSMISSION // LEVEL ${event.detail.nextLevel}`;
+  commercialVideo.src = event.detail.url;
+  commercialVideo.volume = game.settings.sfxVolume;
+  commercialVideo.currentTime = 0;
+  commercialBreak.hidden = false;
+  commercialSkip?.focus();
+  try {
+    await commercialVideo.play();
+  } catch (error) {
+    console.warn("[GOTHTECHNOLOGY] Commercial could not play", error);
+    game.finishCommercialBreak();
+  }
+});
+window.addEventListener("gothtechnology:commercial-end", () => {
+  if (commercialVideo instanceof HTMLVideoElement) {
+    commercialVideo.pause();
+    commercialVideo.removeAttribute("src");
+    commercialVideo.load();
+  }
+  if (commercialBreak) commercialBreak.hidden = true;
+  canvas.focus();
+});
 window.addEventListener("gothtechnology:keymap-changed", renderBindings);
 window.addEventListener("gamepadconnected", updateControllerStatus);
 window.addEventListener("gamepaddisconnected", updateControllerStatus);
@@ -412,6 +467,28 @@ closeCommands?.addEventListener("click", () => closeDialog(commandPanel, "Comman
 closeTraining?.addEventListener("click", () => closeDialog(trainingPanel, "Training tools closed"));
 mobileCommands?.addEventListener("click", () => game.openCommands());
 mobileTrainingTools?.addEventListener("click", () => game.openTrainingTools());
+commercialSkip?.addEventListener("click", () => game.finishCommercialBreak());
+commercialVideo?.addEventListener("ended", () => game.finishCommercialBreak());
+commercialVideo?.addEventListener("error", () => game.finishCommercialBreak());
+commercialBreak?.addEventListener("keydown", (event) => {
+  if (["Escape", "Enter", " "].includes(event.key)) {
+    event.preventDefault();
+    game.finishCommercialBreak();
+  }
+});
+
+replayImport?.addEventListener("click", () => replayImportFile?.click());
+replayImportFile?.addEventListener("change", async () => {
+  const file = replayImportFile.files?.[0];
+  replayImportFile.value = "";
+  if (!file) return;
+  try {
+    const payload = JSON.parse(await file.text());
+    game.importReplay(payload);
+  } catch {
+    game.announce("Replay import rejected: invalid JSON");
+  }
+});
 
 for (const [key, field] of Object.entries(settingFields)) {
   field?.addEventListener("input", () => {

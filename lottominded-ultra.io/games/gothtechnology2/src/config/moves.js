@@ -249,7 +249,7 @@ export const ASSISTS = {
       yOffset: -230,
       hitbox: { w: 100, h: 70 },
       motion: "SPECIAL_START",
-      sheet: { sourceX: 0, sourceY: 0, cellWidth: 256, cellHeight: 256, row: 0, frames: 4, frameRate: 14, visualScale: 0.66 }
+      sheet: { sourceX: 0, sourceY: 0, cellWidth: 256, cellHeight: 256, row: 0, frames: 6, frameRate: 14, visualScale: 0.66 }
     },
     assist2: {
       name: "Nocturna Wraith",
@@ -273,7 +273,7 @@ export const ASSISTS = {
       yOffset: -220,
       hitbox: { w: 96, h: 70 },
       motion: "SPECIAL_START",
-      sheet: { sourceX: 0, sourceY: 0, cellWidth: 256, cellHeight: 256, row: 0, frames: 4, frameRate: 14, visualScale: 0.7 }
+      sheet: { sourceX: 0, sourceY: 0, cellWidth: 256, cellHeight: 256, row: 0, frames: 6, frameRate: 14, visualScale: 0.7 }
     },
     assist2: {
       name: "Blue Fireball",
@@ -309,6 +309,32 @@ export const ASSISTS = {
       speed: 0,
       yOffset: -132,
       hitbox: { w: 120, h: 160 },
+      motion: "BLOCK_HIGH",
+      shield: true
+    }
+  },
+  AMARA_VALENTINE: {
+    assist1: {
+      name: "Heartline Pulse",
+      imageKey: "ezraBlueBurst",
+      damage: 78,
+      cooldown: 7.5,
+      speed: 720,
+      xOffset: 88,
+      yOffset: -156,
+      hitbox: { w: 108, h: 96 },
+      spawn: "hand",
+      motion: "SPECIAL_START",
+      render: "lovePulse"
+    },
+    assist2: {
+      name: "Devotion Guard",
+      imageKey: "blockShield",
+      damage: 0,
+      cooldown: 8.3,
+      speed: 0,
+      yOffset: -132,
+      hitbox: { w: 126, h: 166 },
       motion: "BLOCK_HIGH",
       shield: true
     }

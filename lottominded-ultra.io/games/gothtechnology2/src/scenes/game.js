@@ -1,35 +1,37 @@
-import { ASSET_URLS, FIGHTERS } from "../config/assets.js?v=future-hud20-cpu-select";
-import { ARCADE_LADDER, GAME_MODES, ROSTER_CARD_LAYOUT, ROSTER_IDS, STAGES, opponentFor } from "../config/content.js?v=future-hud20-cpu-select";
-import { ASSISTS, ATTACKS } from "../config/moves.js?v=future-hud20-cpu-select";
-import { CANVAS_HEIGHT, CANVAS_WIDTH, COLORS, GROUND_Y, PHASE, ROUND_SECONDS, WORLD } from "../config/constants.js";
-import { AssetLoader } from "../engine/assets.js?v=future-hud20-cpu-select";
-import { WebAudioBus } from "../engine/audio.js?v=future-hud20-cpu-select";
-import { InputManager } from "../engine/input.js?v=future-hud20-cpu-select";
-import { clamp, rectsOverlap } from "../engine/math.js";
-import { applyHit, resolveMelee } from "../gameplay/combat.js?v=future-hud20-cpu-select";
-import { CpuController } from "../gameplay/cpu.js?v=future-hud20-cpu-select";
-import { AttachedSpriteEffect, SpriteEffect } from "../gameplay/effects.js?v=future-hud20-cpu-select";
-import { Fighter } from "../gameplay/fighter.js?v=future-hud20-cpu-select";
-import { AssistStrike, BoerboelStrike, Projectile } from "../gameplay/projectiles.js?v=future-hud20-cpu-select";
-import { applyRoundOutcomeMotions, resolveRoundOutcome } from "../gameplay/rounds.js?v=future-hud20-cpu-select";
+import { ASSET_URLS, COMMERCIAL_URLS, FIGHTERS } from "../config/assets.js?v=heartline41-epic-amara-ezra";
+import { arcadeRouteFor, GAME_MODES, ROSTER_CARD_LAYOUT, ROSTER_IDS, STAGES, opponentFor } from "../config/content.js?v=heartline41-epic-amara-ezra";
+import { ASSISTS, ATTACKS } from "../config/moves.js?v=heartline41-epic-amara-ezra";
+import { CANVAS_HEIGHT, CANVAS_WIDTH, COLORS, GROUND_Y, PHASE, ROUND_SECONDS, WORLD } from "../config/constants.js?v=heartline41-epic-amara-ezra";
+import { AssetLoader } from "../engine/assets.js?v=heartline41-epic-amara-ezra";
+import { WebAudioBus } from "../engine/audio.js?v=heartline41-epic-amara-ezra";
+import { InputManager } from "../engine/input.js?v=heartline41-epic-amara-ezra";
+import { clamp, rectsOverlap } from "../engine/math.js?v=heartline41-epic-amara-ezra";
+import { applyHit, resolveMelee } from "../gameplay/combat.js?v=heartline41-epic-amara-ezra";
+import { CpuController } from "../gameplay/cpu.js?v=heartline41-epic-amara-ezra";
+import { AttachedSpriteEffect, LovePulseEffect, SpriteEffect } from "../gameplay/effects.js?v=heartline41-epic-amara-ezra";
+import { Fighter } from "../gameplay/fighter.js?v=heartline41-epic-amara-ezra";
+import { AssistStrike, BoerboelStrike, Projectile } from "../gameplay/projectiles.js?v=heartline41-epic-amara-ezra";
+import { applyRoundOutcomeMotions, resolveRoundOutcome } from "../gameplay/rounds.js?v=heartline41-epic-amara-ezra";
 import {
   drawCharacterSelect,
+  drawArcadeEnding,
   drawDiagnostics,
   drawFightHud,
   drawGameSelect,
   drawLoading,
   drawPause,
+  drawReplaySelect,
   drawRoundMessage,
   drawTitle,
   drawVersus
-} from "../ui/hud.js?v=future-hud20-cpu-select";
+} from "../ui/hud.js?v=heartline41-epic-amara-ezra";
 
 const GAME_SELECT_ITEMS = [
   {
     id: "gothtechnology",
     title: "GOTHTECHNOLOGY",
-    subtitle: "KALYX vs MASTER EZRA 1v1 arcade fighter",
-    badge: "FIGHTER",
+    subtitle: "Four-fighter Detroit supernatural combat",
+    badge: "4-FIGHTER",
     imageKey: "gameTitleGothtechnology"
   },
   {
@@ -44,7 +46,8 @@ const GAME_SELECT_ITEMS = [
 
 const SETTINGS_KEY = "gothtechnology.settings.v3";
 const STATS_KEY = "gothtechnology.stats.v2";
-const REPLAY_KEY = "gothtechnology.replay.v1";
+const REPLAY_KEY = "gothtechnology.replays.v2";
+const LEGACY_REPLAY_KEY = "gothtechnology.replay.v1";
 const TRAINING_RECORDING_KEY = "gothtechnology.training.recording.v1";
 
 const readStorage = (key, fallback) => {
@@ -65,6 +68,19 @@ const writeStorage = (key, value) => {
 
 const activeActions = (actions = {}) => Object.fromEntries(Object.entries(actions).filter(([, active]) => Boolean(active)));
 
+const consumeAny = (input, actions) => actions.some((action) => input.consume(action));
+const consumeMenuConfirm = (input) => consumeAny(input, ["ui.confirm", "p1.lightPunch", "p2.lightPunch"]);
+const consumeMenuBack = (input) => consumeAny(input, ["ui.back", "p1.lightKick", "p2.lightKick"]);
+
+const moveGridIndex = (index, columns, length, dx, dy) => {
+  const row = Math.floor(index / columns);
+  const column = index % columns;
+  const rows = Math.ceil(length / columns);
+  const nextRow = (row + dy + rows) % rows;
+  const nextColumn = (column + dx + columns) % columns;
+  return Math.min(nextRow * columns + nextColumn, length - 1);
+};
+
 export class GothTechnologyGame {
   constructor(canvas) {
     this.canvas = canvas;
@@ -81,6 +97,8 @@ export class GothTechnologyGame {
       vibration: true,
       shake: 1,
       highContrast: false,
+      reduceFlash: false,
+      colorFilter: "normal",
       hudScale: 1,
       touchLayout: "classic"
     });
@@ -126,6 +144,7 @@ export class GothTechnologyGame {
     this.selectTarget = "p1";
     this.rosterIndex = ROSTER_IDS.indexOf(this.player1Id);
     this.gameMode = "versus";
+    this.menuTransitionCooldown = 0;
     this.stageIndex = 0;
     this.arcadeStage = 0;
     this.modeComplete = false;
@@ -166,7 +185,14 @@ export class GothTechnologyGame {
     this.accumulator = 0;
     this.fixedStep = 1 / 60;
     this.menuHitAreas = [];
+    this.titleMenuIndex = 0;
+    this.pauseMenuIndex = 0;
     this.gameSelectIndex = 0;
+    this.replaySlotIndex = 0;
+    this.replaySpeed = 1;
+    this.replayLibrary = null;
+    this.matchStatsStart = null;
+    this.commercialIndex = 0;
     this.cpuDecisionTimer = 0;
     this.cpuDecision = {};
     this.inputLog = ["READY"];
@@ -215,6 +241,7 @@ export class GothTechnologyGame {
       this.input.clear();
       if (this.phase === PHASE.FIGHT) {
         this.phase = PHASE.PAUSE;
+        this.pauseMenuIndex = 0;
         this.announce("Game paused because focus changed");
       }
     }
@@ -238,6 +265,7 @@ export class GothTechnologyGame {
     this.audio.setVibrationEnabled?.(this.settings.vibration);
     document.body.dataset.highContrast = String(Boolean(this.settings.highContrast));
     document.body.dataset.touchLayout = this.settings.touchLayout || "classic";
+    document.body.dataset.colorFilter = this.settings.colorFilter || "normal";
     writeStorage(SETTINGS_KEY, this.settings);
     this.lastAccessibleState = "";
     this.render();
@@ -262,7 +290,7 @@ export class GothTechnologyGame {
       return;
     }
     if (mode === "replay") {
-      this.startReplay();
+      this.openReplaySelect();
       return;
     }
     this.gameMode = mode;
@@ -391,7 +419,16 @@ export class GothTechnologyGame {
   selectCharacter(id, target = this.selectTarget) {
     if (!FIGHTERS[id]) return;
     if (target === "p2") this.player2Id = id;
-    else this.player1Id = id;
+    else {
+      this.player1Id = id;
+      if (this.gameMode === "arcade") {
+        const route = arcadeRouteFor(this.player1Id);
+        const node = route[this.arcadeStage] ?? route[0];
+        this.player2Id = node.opponentId;
+        this.stageIndex = node.stageIndex;
+        this.cpuDifficulty = node.difficulty;
+      }
+    }
     this.rosterIndex = ROSTER_IDS.indexOf(id);
     this.createFighters();
     this.prepareCharacterMotions();
@@ -412,8 +449,7 @@ export class GothTechnologyGame {
 
   opponentForMode() {
     if (this.gameMode === "arcade") {
-      const ladder = ARCADE_LADDER.filter((id) => id !== this.player1Id);
-      return ladder[this.arcadeStage % ladder.length] ?? opponentFor(this.player1Id);
+      return arcadeRouteFor(this.player1Id)[this.arcadeStage]?.opponentId ?? opponentFor(this.player1Id);
     }
     return opponentFor(this.player1Id);
   }
@@ -427,9 +463,15 @@ export class GothTechnologyGame {
       this.trainingDummyMode = "stand";
     }
     this.player2Id = this.opponentForMode();
+    if (mode === "arcade") {
+      const node = arcadeRouteFor(this.player1Id)[0];
+      this.stageIndex = node.stageIndex;
+      this.cpuDifficulty = node.difficulty;
+    }
     this.selectTarget = "p1";
     this.rosterIndex = Math.max(0, ROSTER_IDS.indexOf(this.player1Id));
     this.phase = PHASE.SELECT;
+    this.menuTransitionCooldown = 0.12;
     this.createFighters();
     this.prepareCharacterMotions();
     this.prepareFightAssets();
@@ -479,6 +521,11 @@ export class GothTechnologyGame {
     this.modeComplete = false;
     this.matchEndPrompt = "RETURN TO TITLE";
     this.startRewardSession();
+    this.matchStatsStart = {
+      damage: this.stats.damage,
+      perfectBlocks: this.stats.perfectBlocks,
+      throwTechs: this.stats.throwTechs
+    };
     this.roundNumber = 1;
     this.roundTimer = ROUND_SECONDS;
     this.matchWinner = null;
@@ -507,19 +554,25 @@ export class GothTechnologyGame {
       this.createFighters();
       return Promise.resolve(this.assets);
     }
-    if (this.motionLoadPromise) return this.motionLoadPromise;
+    if (this.motionLoadPromise) {
+      return this.motionLoadPromise.then(() => this.prepareCharacterMotions());
+    }
     this.motionAssetsReady = false;
     this.motionLoadError = "";
-    this.motionLoadPromise = this.assets.loadCharacterMotions(
+    const loadPromise = this.assets.loadCharacterMotions(
       manifests,
       (progress) => {
         this.motionLoadingProgress = progress;
         this.render();
       }
     ).then((assets) => {
-      this.motionAssetsReady = true;
-      this.motionLoadingProgress = 1;
-      this.createFighters();
+      const selectedManifests = [this.player1Id, this.player2Id]
+        .map((id) => FIGHTERS[id]?.manifestKey ?? id);
+      this.motionAssetsReady = selectedManifests.every((id) => this.assets.loadedCharacterMotions.has(id));
+      if (this.motionAssetsReady) {
+        this.motionLoadingProgress = 1;
+        this.createFighters();
+      }
       this.render();
       return assets;
     }).catch((error) => {
@@ -531,7 +584,15 @@ export class GothTechnologyGame {
     }).finally(() => {
       this.motionLoadPromise = null;
     });
-    return this.motionLoadPromise;
+    this.motionLoadPromise = loadPromise;
+    return loadPromise.then(() => {
+      const selectedManifests = [this.player1Id, this.player2Id]
+        .map((id) => FIGHTERS[id]?.manifestKey ?? id);
+      if (!selectedManifests.every((id) => this.assets.loadedCharacterMotions.has(id))) {
+        return this.prepareCharacterMotions();
+      }
+      return this.assets;
+    });
   }
 
   prepareFightAssets() {
@@ -602,7 +663,8 @@ export class GothTechnologyGame {
     if (this.stopped) return;
     const rawDt = Math.min(0.05, (time - this.lastTime) / 1000 || 0);
     this.lastTime = time;
-    this.accumulator += rawDt;
+    const playbackRate = this.isReplay && this.phase === PHASE.FIGHT ? this.replaySpeed : 1;
+    this.accumulator += rawDt * playbackRate;
     let steps = 0;
     while (this.accumulator >= this.fixedStep && steps < 5) {
       const dt = this.slowMo > 0 ? this.fixedStep * 0.55 : this.fixedStep;
@@ -618,6 +680,7 @@ export class GothTechnologyGame {
 
   update(dt) {
     this.input.pollGamepads?.();
+    this.menuTransitionCooldown = Math.max(0, this.menuTransitionCooldown - dt);
     this.handleGlobalInput();
     this.parallax += dt;
     this.shake = Math.max(0, this.shake - dt * 44);
@@ -695,6 +758,14 @@ export class GothTechnologyGame {
   handleGlobalInput() {
     if (this.input.consume("ui.mute")) this.audio.toggleMute();
     if (this.input.consume("ui.debug")) this.debug = !this.debug;
+    if (this.phase === PHASE.COMMERCIAL) {
+      if (
+        consumeMenuConfirm(this.input) ||
+        consumeMenuBack(this.input) ||
+        this.input.consume("ui.pause")
+      ) this.finishCommercialBreak();
+      return;
+    }
     if (this.input.consume("ui.cpu")) this.cycleCpuMode();
     if (this.input.consume("ui.training")) this.training = !this.training;
     if (this.input.consume("ui.reset")) {
@@ -707,16 +778,39 @@ export class GothTechnologyGame {
     if (this.training && this.input.consume("ui.frameData")) this.showFrameData = !this.showFrameData;
 
     if (this.phase === PHASE.TITLE) {
-      this.menuHitAreas = [
-        { x: 124, y: 552, w: 312, h: 46, action: () => this.openMode("versus") },
-        { x: 484, y: 552, w: 312, h: 46, action: () => this.openMode("arcade") },
-        { x: 844, y: 552, w: 312, h: 46, action: () => this.openMode("training") },
-        { x: 124, y: 610, w: 312, h: 46, action: () => this.openMode("replay") },
-        { x: 484, y: 610, w: 312, h: 46, action: () => this.openGameSelect() },
-        { x: 844, y: 610, w: 312, h: 46, action: () => this.openSettings() }
+      const titleActions = [
+        () => this.openMode("versus"),
+        () => this.openMode("arcade"),
+        () => this.openMode("training"),
+        () => this.openMode("replay"),
+        () => this.openGameSelect(),
+        () => this.openSettings()
       ];
+      const layouts = [
+        { x: 124, y: 552, w: 312, h: 46 },
+        { x: 484, y: 552, w: 312, h: 46 },
+        { x: 844, y: 552, w: 312, h: 46 },
+        { x: 124, y: 610, w: 312, h: 46 },
+        { x: 484, y: 610, w: 312, h: 46 },
+        { x: 844, y: 610, w: 312, h: 46 }
+      ];
+      this.menuHitAreas = layouts.map((layout, index) => ({
+        ...layout,
+        action: () => {
+          this.titleMenuIndex = index;
+          titleActions[index]();
+        }
+      }));
       this.audio.startMusic("menu");
-      if (this.input.consume("ui.confirm")) this.openMode("versus");
+      const left = consumeAny(this.input, ["p1.left", "p2.left"]);
+      const right = consumeAny(this.input, ["p1.right", "p2.right"]);
+      const up = consumeAny(this.input, ["p1.up", "p2.up"]);
+      const down = consumeAny(this.input, ["p1.down", "p2.down"]);
+      if (left || right || up || down) {
+        this.titleMenuIndex = moveGridIndex(this.titleMenuIndex, 3, titleActions.length, right ? 1 : left ? -1 : 0, down ? 1 : up ? -1 : 0);
+        this.audio.beep("select");
+      }
+      if (consumeMenuConfirm(this.input)) titleActions[this.titleMenuIndex]();
       return;
     }
 
@@ -728,11 +822,42 @@ export class GothTechnologyGame {
       ];
       if (this.input.consume("p1.left") || this.input.consume("p2.left")) this.selectGame(0);
       if (this.input.consume("p1.right") || this.input.consume("p2.right")) this.selectGame(1);
-      if (this.input.consume("ui.confirm")) this.launchSelectedGame();
-      if (this.input.consume("ui.back")) {
+      if (consumeMenuConfirm(this.input)) this.launchSelectedGame();
+      if (consumeMenuBack(this.input)) {
         this.phase = PHASE.TITLE;
         this.syncMusicForPhase();
       }
+      return;
+    }
+
+    if (this.phase === PHASE.REPLAY_SELECT) {
+      const replays = this.getReplayLibrary();
+      this.replaySlotIndex = Math.min(this.replaySlotIndex, Math.max(0, replays.length - 1));
+      this.menuHitAreas = [
+        ...replays.map((entry, index) => ({
+          x: 188,
+          y: 142 + index * 74,
+          w: 904,
+          h: 58,
+          action: () => { this.replaySlotIndex = index; this.render(); }
+        })),
+        { x: 246, y: 590, w: 182, h: 54, action: () => this.startReplay(this.replaySlotIndex) },
+        { x: 450, y: 590, w: 182, h: 54, action: () => this.exportReplay(this.replaySlotIndex) },
+        { x: 654, y: 590, w: 182, h: 54, action: () => this.deleteReplay(this.replaySlotIndex) },
+        { x: 858, y: 590, w: 182, h: 54, action: () => this.returnToTitle() }
+      ];
+      if (replays.length) {
+        const up = consumeAny(this.input, ["p1.up", "p2.up"]);
+        const down = consumeAny(this.input, ["p1.down", "p2.down"]);
+        if (up || down) {
+          this.replaySlotIndex = (this.replaySlotIndex + (down ? 1 : -1) + replays.length) % replays.length;
+          this.audio.beep("select");
+        }
+        if (consumeMenuConfirm(this.input)) this.startReplay(this.replaySlotIndex);
+        if (consumeAny(this.input, ["p1.heavyPunch", "p2.heavyPunch"])) this.exportReplay(this.replaySlotIndex);
+        if (consumeAny(this.input, ["p1.heavyKick", "p2.heavyKick"])) this.deleteReplay(this.replaySlotIndex);
+      }
+      if (consumeMenuBack(this.input)) this.returnToTitle();
       return;
     }
 
@@ -759,8 +884,9 @@ export class GothTechnologyGame {
         this.rosterIndex = (this.rosterIndex + delta + ROSTER_IDS.length) % ROSTER_IDS.length;
         this.selectCharacter(ROSTER_IDS[this.rosterIndex]);
       }
-      if (this.input.consume("ui.confirm")) this.startVersus();
-      if (this.input.consume("ui.back")) {
+      const confirm = consumeMenuConfirm(this.input);
+      if (confirm && this.menuTransitionCooldown <= 0) this.startVersus();
+      if (consumeMenuBack(this.input)) {
         this.phase = PHASE.TITLE;
         this.syncMusicForPhase();
       }
@@ -769,25 +895,48 @@ export class GothTechnologyGame {
 
     this.menuHitAreas = [];
     if (this.phase === PHASE.PAUSE) {
-      this.menuHitAreas = [
-        { x: 454, y: 484, w: 172, h: 48, action: () => { this.phase = PHASE.FIGHT; this.announce("Fight resumed"); } },
-        { x: 654, y: 484, w: 172, h: 48, action: () => this.openSettings() },
-        { x: 454, y: 540, w: 172, h: 48, action: () => this.startMatch(this.training) },
-        { x: 654, y: 540, w: 172, h: 48, action: () => this.returnToTitle() }
+      const pauseActions = [
+        () => { this.phase = PHASE.FIGHT; this.input.clear(); this.announce("Fight resumed"); },
+        () => this.openSettings(),
+        () => this.startMatch(this.training),
+        () => this.returnToTitle()
       ];
+      const layouts = [
+        { x: 454, y: 484, w: 172, h: 48 },
+        { x: 654, y: 484, w: 172, h: 48 },
+        { x: 454, y: 540, w: 172, h: 48 },
+        { x: 654, y: 540, w: 172, h: 48 }
+      ];
+      this.menuHitAreas = layouts.map((layout, index) => ({
+        ...layout,
+        action: () => {
+          this.pauseMenuIndex = index;
+          pauseActions[index]();
+        }
+      }));
+      const left = consumeAny(this.input, ["p1.left", "p2.left"]);
+      const right = consumeAny(this.input, ["p1.right", "p2.right"]);
+      const up = consumeAny(this.input, ["p1.up", "p2.up"]);
+      const down = consumeAny(this.input, ["p1.down", "p2.down"]);
+      if (left || right || up || down) {
+        this.pauseMenuIndex = moveGridIndex(this.pauseMenuIndex, 2, pauseActions.length, right ? 1 : left ? -1 : 0, down ? 1 : up ? -1 : 0);
+        this.audio.beep("select");
+      }
+      if (consumeMenuConfirm(this.input)) pauseActions[this.pauseMenuIndex]();
+      if (this.phase === PHASE.PAUSE && consumeMenuBack(this.input)) pauseActions[0]();
     }
     if (this.input.consume("ui.pause")) {
       this.phase = this.phase === PHASE.PAUSE ? PHASE.FIGHT : PHASE.PAUSE;
+      if (this.phase === PHASE.PAUSE) this.pauseMenuIndex = 0;
       this.audio.beep("select");
       this.announce(this.phase === PHASE.PAUSE ? "Game paused" : "Fight resumed");
     }
-    if ((this.phase === PHASE.ROUND_END || this.phase === PHASE.MATCH_END) && this.input.consume("ui.confirm")) {
+    if ((this.phase === PHASE.ROUND_END || this.phase === PHASE.MATCH_END) && consumeMenuConfirm(this.input)) {
       if (this.phase === PHASE.MATCH_END) {
         this.advanceAfterMatch();
       }
       else this.startRound();
     }
-    if (this.phase === PHASE.PAUSE && this.input.consume("ui.back")) this.phase = PHASE.FIGHT;
   }
 
   cycleTrainingDummy() {
@@ -945,26 +1094,79 @@ export class GothTechnologyGame {
     writeStorage(STATS_KEY, this.stats);
   }
 
-  saveReplay() {
-    if (!this.replayFrames.length || this.training || this.isReplay) return;
-    writeStorage(REPLAY_KEY, {
-      version: 1,
-      player1Id: this.player1Id,
-      player2Id: this.player2Id,
-      stageIndex: this.stageIndex,
-      frames: this.replayFrames
-    });
+  getReplayLibrary() {
+    if (Array.isArray(this.replayLibrary)) return this.replayLibrary;
+    try {
+      const saved = JSON.parse(window.localStorage?.getItem(REPLAY_KEY) || "null");
+      if (Array.isArray(saved?.entries)) {
+        this.replayLibrary = saved.entries.filter((entry) => Array.isArray(entry.frames) && entry.frames.length);
+        return this.replayLibrary;
+      }
+      const legacy = JSON.parse(window.localStorage?.getItem(LEGACY_REPLAY_KEY) || "null");
+      if (Array.isArray(legacy?.frames) && legacy.frames.length) {
+        this.replayLibrary = [{ ...legacy, id: "legacy", savedAt: null, winnerId: null, stats: {} }];
+        return this.replayLibrary;
+      }
+    } catch {
+      // A corrupt replay library behaves like an empty one.
+    }
+    this.replayLibrary = [];
+    return this.replayLibrary;
   }
 
-  startReplay() {
-    const saved = readStorage(REPLAY_KEY, { frames: [] });
-    if (!Array.isArray(saved.frames) || !saved.frames.length) {
+  writeReplayLibrary(entries) {
+    const library = entries.slice(0, 5);
+    while (library.length) {
+      try {
+        window.localStorage?.setItem(REPLAY_KEY, JSON.stringify({ version: 2, entries: library }));
+        this.replayLibrary = library;
+        return library;
+      } catch {
+        library.pop();
+      }
+    }
+    this.replayLibrary = [];
+    return this.replayLibrary;
+  }
+
+  openReplaySelect() {
+    this.phase = PHASE.REPLAY_SELECT;
+    this.replaySlotIndex = 0;
+    this.syncMusicForPhase();
+    this.announce(this.getReplayLibrary().length ? "Replay vault opened" : "Replay vault is empty");
+  }
+
+  saveReplay() {
+    if (!this.replayFrames.length || this.training || this.isReplay) return;
+    const baseline = this.matchStatsStart ?? { damage: 0, perfectBlocks: 0, throwTechs: 0 };
+    const entry = {
+      id: `replay-${Date.now().toString(36)}`,
+      savedAt: new Date().toISOString(),
+      player1Id: this.player1Id,
+      player2Id: this.player2Id,
+      winnerId: this.matchWinner?.id ?? null,
+      stageIndex: this.stageIndex,
+      mode: this.gameMode,
+      frames: this.replayFrames,
+      stats: {
+        damage: Math.max(0, this.stats.damage - baseline.damage),
+        perfectBlocks: Math.max(0, this.stats.perfectBlocks - baseline.perfectBlocks),
+        throwTechs: Math.max(0, this.stats.throwTechs - baseline.throwTechs)
+      }
+    };
+    this.writeReplayLibrary([entry, ...this.getReplayLibrary().filter((saved) => saved.id !== "legacy")]);
+  }
+
+  startReplay(index = this.replaySlotIndex) {
+    const saved = this.getReplayLibrary()[index];
+    if (!Array.isArray(saved?.frames) || !saved.frames.length) {
       this.announce("No completed match replay is saved");
       return;
     }
     this.gameMode = "replay";
     this.training = false;
     this.cpuEnabled = false;
+    this.replaySpeed = 1;
     const savedPlayer1Id = saved.player1Id === "DETROIT_LENS" ? "DETROIT_LENS_NOIR" : saved.player1Id;
     const savedPlayer2Id = saved.player2Id === "DETROIT_LENS" ? "DETROIT_LENS_NOIR" : saved.player2Id;
     this.player1Id = FIGHTERS[savedPlayer1Id] ? savedPlayer1Id : "MASTER_EZRA";
@@ -977,7 +1179,82 @@ export class GothTechnologyGame {
     this.roundMessageTimer = 0.7;
     this.prepareCharacterMotions();
     this.prepareFightAssets();
-    this.announce("Playing last match replay");
+    this.announce("Playing saved match replay");
+  }
+
+  deleteReplay(index = this.replaySlotIndex) {
+    const replays = this.getReplayLibrary();
+    if (!replays[index]) return;
+    replays.splice(index, 1);
+    this.writeReplayLibrary(replays.filter((entry) => entry.id !== "legacy"));
+    this.replaySlotIndex = Math.min(index, Math.max(0, replays.length - 1));
+    this.announce("Replay deleted");
+    this.render();
+  }
+
+  exportReplay(index = this.replaySlotIndex) {
+    const replay = this.getReplayLibrary()[index];
+    if (!replay) return;
+    const blob = new Blob([JSON.stringify({ version: 2, replay }, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = `gothtechnology-replay-${replay.id || Date.now().toString(36)}.json`;
+    anchor.click();
+    setTimeout(() => URL.revokeObjectURL(url), 0);
+    this.announce("Replay exported");
+  }
+
+  importReplay(payload) {
+    const source = payload?.replay ?? payload;
+    if (!source || !Array.isArray(source.frames) || !source.frames.length || source.frames.length > 72000) {
+      this.announce("Replay import rejected: invalid or oversized match data");
+      return false;
+    }
+    const normalizeFighterId = (id) => id === "DETROIT_LENS" ? "DETROIT_LENS_NOIR" : id;
+    const player1Id = normalizeFighterId(source.player1Id);
+    const player2Id = normalizeFighterId(source.player2Id);
+    if (!FIGHTERS[player1Id] || !FIGHTERS[player2Id]) {
+      this.announce("Replay import rejected: unknown fighter");
+      return false;
+    }
+    const frames = source.frames.map((frame) => ({
+      p1: activeActions(frame?.p1),
+      p2: activeActions(frame?.p2)
+    }));
+    const entry = {
+      id: `import-${Date.now().toString(36)}`,
+      savedAt: new Date().toISOString(),
+      player1Id,
+      player2Id,
+      winnerId: FIGHTERS[normalizeFighterId(source.winnerId)] ? normalizeFighterId(source.winnerId) : null,
+      stageIndex: Math.max(0, Math.min(STAGES.length - 1, Number(source.stageIndex) || 0)),
+      mode: "replay",
+      frames,
+      stats: source.stats && typeof source.stats === "object" ? source.stats : {}
+    };
+    this.writeReplayLibrary([entry, ...this.getReplayLibrary().filter((saved) => saved.id !== "legacy")]);
+    this.replaySlotIndex = 0;
+    this.announce("Replay imported into slot one");
+    this.render();
+    return true;
+  }
+
+  cycleReplaySpeed() {
+    if (!this.isReplay) return;
+    const speeds = [0.5, 1, 2];
+    const index = speeds.indexOf(this.replaySpeed);
+    this.replaySpeed = speeds[(index + 1) % speeds.length];
+    this.announce(`Replay speed ${this.replaySpeed} times`);
+  }
+
+  stepReplayFrame() {
+    if (!this.isReplay || this.phase !== PHASE.PAUSE) return;
+    this.phase = PHASE.FIGHT;
+    this.update(this.fixedStep);
+    this.phase = PHASE.PAUSE;
+    this.render();
+    this.announce(`Replay frame ${this.replayIndex}`);
   }
 
   completeModeMatch(playerWon) {
@@ -988,8 +1265,8 @@ export class GothTechnologyGame {
     this.modeComplete = false;
     if (this.gameMode === "arcade" && playerWon) {
       this.arcadeStage += 1;
-      const ladderLength = ARCADE_LADDER.filter((id) => id !== this.player1Id).length;
-      if (this.arcadeStage >= ladderLength) {
+      const routeLength = arcadeRouteFor(this.player1Id).length;
+      if (this.arcadeStage >= routeLength) {
         this.stats.arcadeClears += 1;
         this.modeComplete = true;
         this.matchEndPrompt = "ARCADE CLEARED";
@@ -1007,12 +1284,49 @@ export class GothTechnologyGame {
       this.returnToTitle();
       return;
     }
+    if (this.gameMode === "arcade") {
+      this.startCommercialBreak();
+      return;
+    }
+    this.prepareNextArcadeMatch();
+  }
+
+  startCommercialBreak() {
+    if (this.phase === PHASE.COMMERCIAL || !this.modeCanContinue) return;
+    this.commercialIndex = Math.max(0, this.arcadeStage - 1) % COMMERCIAL_URLS.length;
+    this.phase = PHASE.COMMERCIAL;
+    this.input.clear();
+    this.audio.stopMusic();
+    window.dispatchEvent(new CustomEvent("gothtechnology:commercial", {
+      detail: {
+        index: this.commercialIndex,
+        url: COMMERCIAL_URLS[this.commercialIndex],
+        nextLevel: this.arcadeStage + 1
+      }
+    }));
+    this.announce(`Commercial break before Arcade level ${this.arcadeStage + 1}. Press A, B, Enter, or Escape to skip.`);
+  }
+
+  finishCommercialBreak() {
+    if (this.phase !== PHASE.COMMERCIAL) return;
+    window.dispatchEvent(new CustomEvent("gothtechnology:commercial-end"));
+    this.prepareNextArcadeMatch();
+  }
+
+  prepareNextArcadeMatch() {
     this.modeCanContinue = false;
-    this.player2Id = this.opponentForMode();
-    this.stageIndex = (this.stageIndex + 1) % STAGES.length;
+    const node = arcadeRouteFor(this.player1Id)[this.arcadeStage];
+    this.player2Id = node?.opponentId ?? this.opponentForMode();
+    this.stageIndex = node?.stageIndex ?? ((this.stageIndex + 1) % STAGES.length);
+    this.cpuDifficulty = node?.difficulty ?? this.cpuDifficulty;
     this.createFighters();
     this.buildStageCache();
-    this.startMatch(false);
+    this.phase = PHASE.VERSUS;
+    this.roundMessageTimer = 0.85;
+    this.prepareCharacterMotions();
+    this.prepareFightAssets();
+    this.syncMusicForPhase();
+    this.announce(`${node?.label ?? "Next opponent"}: ${this.fighters[1]?.config.name ?? "fighter"}`);
   }
 
   keepFightersSeparated() {
@@ -1126,7 +1440,7 @@ export class GothTechnologyGame {
   }
 
   syncMusicForPhase() {
-    if ([PHASE.LOADING, PHASE.TITLE, PHASE.GAME_SELECT, PHASE.SELECT, PHASE.MATCH_END].includes(this.phase)) {
+    if ([PHASE.LOADING, PHASE.TITLE, PHASE.GAME_SELECT, PHASE.REPLAY_SELECT, PHASE.SELECT, PHASE.MATCH_END].includes(this.phase)) {
       this.audio.startMusic("menu");
       return;
     }
@@ -1139,6 +1453,7 @@ export class GothTechnologyGame {
     const attack = owner.getAttackData(name) ?? ATTACKS[name];
     const manifestKey = owner.config.manifestKey;
     const isDetroitLens = manifestKey.startsWith("DETROIT_LENS");
+    const isAmara = manifestKey === "AMARA_VALENTINE";
     if (isDetroitLens && name === "special") {
       this.projectiles.push(new BoerboelStrike({
         owner,
@@ -1151,7 +1466,15 @@ export class GothTechnologyGame {
       this.audio.beep("special");
       return;
     }
-    const kind = isDetroitLens && name === "super" ? "eye-laser" : (name === "super" ? "super" : "special");
+    const kind = isDetroitLens && name === "super"
+      ? "eye-laser"
+      : isAmara
+        ? (name === "super" ? "heartbreak-nova" : "heartline-pulse")
+      : name === "super"
+        ? "super"
+        : manifestKey === "KALYX"
+          ? "shadow-raven"
+          : "arcane-owl";
     const handSockets = {
       KALYX: {
         special: { x: 132, y: -136 },
@@ -1160,6 +1483,10 @@ export class GothTechnologyGame {
       MASTER_EZRA: {
         special: { x: 126, y: -154 },
         super: { x: 138, y: -160 }
+      },
+      AMARA_VALENTINE: {
+        special: { x: 124, y: -142 },
+        super: { x: 108, y: -132 }
       },
       DETROIT_LENS: {
         super: { x: 114, y: -176 }
@@ -1170,10 +1497,12 @@ export class GothTechnologyGame {
     const spawnX = owner.x + owner.facing * socket.x;
     const spawnY = owner.y + socket.y;
     const image = manifestKey === "KALYX"
-      ? this.assets.images[name === "super" ? "kalyxFireSlash" : "kalyxShadowClaw"]
+      ? this.assets.images[name === "super" ? "kalyxFireSlash" : "assistRaven"]
       : isDetroitLens
         ? this.assets.images.hitSpark
-        : this.assets.images[name === "super" ? "ezraOwlArc" : "ezraBlueBurst"];
+        : isAmara
+          ? this.assets.images.ezraBlueBurst
+          : this.assets.images[name === "super" ? "ezraOwlArc" : "assistOwl"];
     this.projectiles.push(new Projectile({
       owner,
       x: spawnX,
@@ -1182,7 +1511,13 @@ export class GothTechnologyGame {
       attack,
       image,
       kind,
-      color: manifestKey === "KALYX" ? "#f2a13d" : isDetroitLens ? (name === "super" ? "#ff2838" : "#e7c36a") : "#9ed8ff"
+      color: manifestKey === "KALYX"
+        ? "#f2a13d"
+        : isDetroitLens
+          ? (name === "super" ? "#ff2838" : "#e7c36a")
+          : isAmara
+            ? "#ff58bd"
+            : "#9ed8ff"
     }));
     this.audio.beep(name === "super" ? "super" : "projectile");
   }
@@ -1191,9 +1526,25 @@ export class GothTechnologyGame {
     const manifestKey = owner.config.manifestKey;
     const isKalyx = manifestKey === "KALYX";
     const isDetroitLens = manifestKey.startsWith("DETROIT_LENS");
+    const isAmara = manifestKey === "AMARA_VALENTINE";
     const superMove = name === "super";
     const skill = name === "skill";
+    if (isAmara) {
+      this.effects.push(new LovePulseEffect({
+        owner: phase === "charge" ? owner : null,
+        x: owner.x + owner.facing * (superMove ? 48 : 36),
+        y: owner.y - (superMove ? 132 : 112),
+        offsetX: superMove ? 48 : 36,
+        offsetY: -(superMove ? 132 : 112),
+        direction: owner.facing,
+        duration: superMove ? 0.58 : (skill ? 0.4 : 0.34),
+        scale: superMove ? 1.3 : (skill ? 0.9 : 0.72),
+        burst: superMove || phase === "release"
+      }));
+      return;
+    }
     if (isDetroitLens) {
+      if (name === "special") return;
       if (skill && this.assets.images.detroitBoerboel) {
         this.effects.push(new AttachedSpriteEffect({
           owner,
@@ -1222,6 +1573,7 @@ export class GothTechnologyGame {
       }));
       return;
     }
+    if (name === "special") return;
     const image = skill
       ? (isKalyx ? this.assets.images.smoke : this.assets.images.blockShield)
       : (isKalyx
@@ -1284,10 +1636,11 @@ export class GothTechnologyGame {
       return;
     }
 
-    if ([PHASE.TITLE, PHASE.GAME_SELECT, PHASE.SELECT, PHASE.VERSUS].includes(this.phase)) {
+    if ([PHASE.TITLE, PHASE.GAME_SELECT, PHASE.REPLAY_SELECT, PHASE.SELECT, PHASE.VERSUS].includes(this.phase)) {
       this.drawBackground(ctx, true);
       if (this.phase === PHASE.TITLE) drawTitle(ctx, this);
       if (this.phase === PHASE.GAME_SELECT) drawGameSelect(ctx, this, GAME_SELECT_ITEMS);
+      if (this.phase === PHASE.REPLAY_SELECT) drawReplaySelect(ctx, this);
       if (this.phase === PHASE.SELECT) drawCharacterSelect(ctx, this);
       if (this.phase === PHASE.VERSUS) drawVersus(ctx, this);
       return;
@@ -1316,12 +1669,16 @@ export class GothTechnologyGame {
       drawRoundMessage(ctx, this.roundResultText || "ROUND COMPLETE", this.roundResultSubtext || "NEXT ROUND");
     }
     if (this.phase === PHASE.MATCH_END) {
-      const headline = `${this.matchWinner?.config.name ?? "FIGHTER"} WINS`;
-      drawRoundMessage(ctx, headline, this.matchEndPrompt || "MATCH COMPLETE");
+      if (this.modeComplete && this.gameMode === "arcade") {
+        drawArcadeEnding(ctx, this);
+      } else {
+        const headline = `${this.matchWinner?.config.name ?? "FIGHTER"} WINS`;
+        drawRoundMessage(ctx, headline, this.matchEndPrompt || "MATCH COMPLETE");
+      }
     }
     if (this.phase === PHASE.PAUSE) drawPause(ctx, this);
     if (this.debug) drawDiagnostics(ctx, this);
-    if (this.flash > 0) {
+    if (this.flash > 0 && !this.settings.reduceFlash) {
       ctx.save();
       ctx.globalAlpha = this.flash * 0.35;
       ctx.fillStyle = "#f8f1d4";
@@ -1341,6 +1698,10 @@ export class GothTechnologyGame {
       this.player1Id,
       this.player2Id,
       this.selectTarget,
+      this.titleMenuIndex,
+      this.pauseMenuIndex,
+      this.replaySlotIndex,
+      this.getReplayLibrary().length,
       this.cpuEnabled,
       this.cpuDifficulty,
       this.training,
@@ -1360,6 +1721,12 @@ export class GothTechnologyGame {
         player1Id: this.player1Id,
         player2Id: this.player2Id,
         selectTarget: this.selectTarget,
+        titleMenuIndex: this.titleMenuIndex,
+        pauseMenuIndex: this.pauseMenuIndex,
+        replaySlotIndex: this.replaySlotIndex,
+        replayCount: this.getReplayLibrary().length,
+        replaySpeed: this.replaySpeed,
+        isReplay: this.isReplay,
         player1Name: this.fighters[0]?.config.name || "Player 1",
         player2Name: this.fighters[1]?.config.name || "Player 2",
         cpuEnabled: this.cpuEnabled,
@@ -1469,6 +1836,22 @@ export class GothTechnologyGame {
       ctx.globalAlpha = stage.emberAlpha;
       ctx.drawImage(embers, -drift, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
       ctx.drawImage(embers, CANVAS_WIDTH - drift, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+      ctx.restore();
+    }
+    if (!stage.legacyLayers) {
+      const motion = this.reducedMotion ? 0 : this.parallax * 52;
+      ctx.save();
+      ctx.globalCompositeOperation = "screen";
+      for (let index = 0; index < 4; index += 1) {
+        const x = ((index * 360 + motion) % (CANVAS_WIDTH + 240)) - 120;
+        const y = 430 + (index % 2) * 28;
+        ctx.globalAlpha = 0.22;
+        ctx.fillStyle = index % 2 ? "#ff5368" : "#6be7ff";
+        ctx.shadowColor = ctx.fillStyle;
+        ctx.shadowBlur = 12;
+        ctx.fillRect(x, y, 18, 3);
+        ctx.fillRect(x + 30, y, 18, 3);
+      }
       ctx.restore();
     }
   }

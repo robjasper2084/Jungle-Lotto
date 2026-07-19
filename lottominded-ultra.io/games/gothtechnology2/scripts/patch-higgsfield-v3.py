@@ -91,7 +91,8 @@ def main() -> None:
     jobs = json.loads(JOBS_PATH.read_text(encoding="utf-8"))
     manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
     job_motions = jobs["characters"][args.character]["motions"]
-    manifest_motions = manifest["characters"][args.character]["motions"]
+    manifest_character = "DETROIT_LENS_NOIR" if args.character == "DETROIT_LENS" else args.character
+    manifest_motions = manifest["characters"][manifest_character]["motions"]
     slug = args.character.lower().replace("_", "-")
     raw_root = PRODUCTION_ROOT / "raw" / slug
     patches = {}
@@ -100,12 +101,11 @@ def main() -> None:
         if motion not in job_motions or motion not in manifest_motions:
             raise SystemExit(f"Unknown motion for {args.character}: {motion}")
         raw_path = raw_root / f"{motion.lower()}.png"
-        if args.character == "DETROIT_LENS" or (
-            args.character == "KALYX" and motion in KALYX_AERIAL_MOTIONS
-        ):
+        if args.character == "DETROIT_LENS" or (args.character == "KALYX" and motion in KALYX_AERIAL_MOTIONS):
             counts = packer.source_figure_counts(raw_path)
-            if counts != [packer.SOURCE_COLUMNS, packer.SOURCE_COLUMNS]:
-                raise ValueError(f"{args.character}/{motion} must contain exactly 3 poses per row; found {counts}")
+            valid_grid = all(3 <= count <= 6 for count in counts) if args.character == "DETROIT_LENS" else counts == [3, 3]
+            if not valid_grid:
+                raise ValueError(f"{args.character}/{motion} has an invalid pose grid: {counts}")
         patches[motion] = motion_frames(packer, raw_path, f"{args.character}/{motion}")
 
     atlases = {}
@@ -114,9 +114,10 @@ def main() -> None:
         sheet_path = ROOT / motion_data["sheet"]
         atlas = atlases.setdefault(sheet_path, Image.open(sheet_path).convert("RGBA"))
         for frame, target in zip(frames, motion_data["frames"], strict=True):
+            atlas.paste((0, 0, 0, 0), (target["x"], target["y"], target["x"] + target["w"], target["y"] + target["h"]))
             atlas.alpha_composite(frame, (target["x"], target["y"]))
         motion_data["uniqueFrames"] = len({alpha_hash(frame) for frame in frames})
-        motion_data["source"] = "higgsfield-v3-body-vfx"
+        motion_data["source"] = "higgsfield-v4-body-only"
         motion_data["higgsfieldJobId"] = job_motions[motion]["jobId"]
 
     for sheet_path, atlas in atlases.items():

@@ -55,6 +55,8 @@ export const PHASE = {
   TITLE: "title",
   LOADING: "loading",
   GAME_SELECT: "gameSelect",
+  REPLAY_SELECT: "replaySelect",
+  COMMERCIAL: "commercial",
   SELECT: "select",
   VERSUS: "versus",
   FIGHT: "fight",

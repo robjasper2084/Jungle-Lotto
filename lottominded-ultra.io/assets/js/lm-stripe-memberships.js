@@ -2,6 +2,7 @@
   const status = document.querySelector("[data-stripe-membership-status]");
   const checkoutButtons = [...document.querySelectorAll("[data-stripe-lookup-key]")];
   const portalButton = document.querySelector("[data-stripe-portal]");
+  const accountService = window.LottoMindAccountService;
   let configuration = null;
 
   const setStatus = (message, state = "") => {
@@ -10,10 +11,20 @@
     status.dataset.state = state;
   };
 
+  const billingUrl = (path) => {
+    const base = accountService?.getApiBase?.() || "";
+    if (base) return `${base}${base.includes("/functions/v1/") ? path : `/api${path}`}`;
+    if (window.LOTTOMIND_API_SAME_ORIGIN === true) return `/api${path}`;
+    return "";
+  };
+
   const request = async (path, options = {}) => {
-    const response = await fetch(path, {
+    const url = billingUrl(path);
+    if (!url) throw Object.assign(new Error("Secure membership checkout is not configured for this static site."), { code: "BILLING_NOT_CONFIGURED" });
+    const accessToken = await accountService?.getAccessToken?.();
+    const response = await fetch(url, {
       credentials: "include",
-      headers: { "Content-Type": "application/json", ...(options.headers || {}) },
+      headers: { "Content-Type": "application/json", ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}), ...(options.headers || {}) },
       ...options,
     });
     const payload = await response.json().catch(() => ({}));
@@ -22,18 +33,16 @@
   };
 
   const signedIn = async () => {
-    if (window.LottoMindAccount?.getSnapshot) {
-      const snapshot = await window.LottoMindAccount.getSnapshot();
+    if (accountService?.getSnapshot) {
+      const snapshot = await accountService.getSnapshot();
       return Boolean(snapshot?.authenticated);
     }
-    const response = await fetch("/api/account/session", { credentials: "include" });
-    const payload = await response.json().catch(() => ({}));
-    return Boolean(payload.authenticated);
+    return false;
   };
 
   const requireAccount = async () => {
     if (await signedIn()) return true;
-    setStatus("Sign in through Collector Access before starting Stripe test checkout.", "auth-required");
+    setStatus("Sign in through Collector Access before starting secure checkout.", "auth-required");
     const collector = document.querySelector(".membership-collector-section");
     collector?.scrollIntoView({ behavior: "smooth", block: "start" });
     window.setTimeout(() => collector?.querySelector("[data-collector-trigger]")?.click(), 450);
@@ -42,22 +51,22 @@
 
   const beginCheckout = async (button) => {
     if (!configuration?.enabled) {
-      setStatus(configuration?.message || "Stripe test mode is not configured on the server.", "disabled");
+      setStatus(configuration?.message || "Secure membership checkout is not configured.", "disabled");
       return;
     }
     if (!(await requireAccount())) return;
     const lookupKey = button.dataset.stripeLookupKey || "";
     const configured = configuration.plans?.find((plan) => plan.lookupKey === lookupKey)?.available;
     if (!configured) {
-      setStatus(`The ${lookupKey} test Price ID still needs to be added to news-hub/.env.local.`, "disabled");
+      setStatus("That membership option is not available yet.", "disabled");
       return;
     }
     const original = button.textContent;
     button.disabled = true;
     button.textContent = "Opening Stripe...";
-    setStatus("Creating a secure Stripe test checkout...", "updating");
+    setStatus("Creating a secure Stripe checkout...", "updating");
     try {
-      const payload = await request("/api/billing/checkout", { method: "POST", body: JSON.stringify({ lookupKey }) });
+      const payload = await request("/billing/checkout", { method: "POST", body: JSON.stringify({ lookupKey }) });
       window.location.assign(payload.url);
     } catch (error) {
       setStatus(error.message, "error");
@@ -71,9 +80,9 @@
   portalButton?.addEventListener("click", async () => {
     if (!(await requireAccount())) return;
     portalButton.disabled = true;
-    setStatus("Opening Stripe test billing...", "updating");
+    setStatus("Opening secure billing...", "updating");
     try {
-      const payload = await request("/api/billing/portal", { method: "POST", body: "{}" });
+      const payload = await request("/billing/portal", { method: "POST", body: "{}" });
       window.location.assign(payload.url);
     } catch (error) {
       setStatus(error.message, "error");
@@ -82,13 +91,40 @@
   });
 
   const checkoutState = new URLSearchParams(window.location.search).get("checkout");
-  if (checkoutState === "success") setStatus("Stripe test checkout completed. Your account will update after the signed webhook is received.", "success");
-  if (checkoutState === "cancelled") setStatus("Stripe test checkout was cancelled. No charge was made.", "cancelled");
+  if (checkoutState === "success") setStatus("Checkout completed. Your account will update after payment confirmation.", "success");
+  if (checkoutState === "cancelled") setStatus("Checkout was cancelled. No charge was made.", "cancelled");
 
-  request("/api/billing/config", { method: "GET", headers: {} })
+  const disableBilling = (message) => {
+    configuration = { enabled: false, plans: [], message };
+    checkoutButtons.forEach((button) => {
+      button.disabled = true;
+      button.setAttribute("aria-disabled", "true");
+    });
+    if (portalButton) {
+      portalButton.disabled = true;
+      portalButton.setAttribute("aria-disabled", "true");
+    }
+    if (!checkoutState) setStatus(message, "disabled");
+  };
+
+  if (!billingUrl("/billing/config")) {
+    disableBilling("Membership plans are visible, but secure checkout is not connected on this static site.");
+    return;
+  }
+
+  request("/billing/config", { method: "GET", headers: {} })
     .then((payload) => {
       configuration = payload;
+      checkoutButtons.forEach((button) => {
+        const available = Boolean(payload.enabled && payload.plans?.find((plan) => plan.lookupKey === button.dataset.stripeLookupKey)?.available);
+        button.disabled = !available;
+        button.setAttribute("aria-disabled", String(!available));
+      });
+      if (portalButton) {
+        portalButton.disabled = !payload.enabled;
+        portalButton.setAttribute("aria-disabled", String(!payload.enabled));
+      }
       if (!checkoutState) setStatus(payload.message, payload.enabled ? "ready" : "disabled");
     })
-    .catch(() => setStatus("The billing service is unavailable. Membership details remain visible.", "error"));
+    .catch(() => disableBilling("The billing service is unavailable. Membership details remain visible."));
 })();

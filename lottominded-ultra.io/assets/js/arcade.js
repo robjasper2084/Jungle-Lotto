@@ -29,7 +29,6 @@
     favorites: new Set(readArray(FAVORITES_KEY)),
     recent: readArray(RECENT_KEY).filter((id) => byId.has(id)).slice(0, MAX_RECENT)
   };
-
   function readArray(key) {
     try {
       const parsed = JSON.parse(localStorage.getItem(key) || "[]");
@@ -114,6 +113,7 @@
   function makeGameCard(game, compact = false) {
     const card = createElement("article", `arcade-card${compact ? " arcade-card--compact" : ""}`);
     card.dataset.gameId = game.id;
+    card.setAttribute("role", "listitem");
     card.append(makeArtwork(game));
 
     const body = createElement("div", "arcade-card__body");

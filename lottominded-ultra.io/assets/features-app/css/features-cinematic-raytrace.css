@@ -930,12 +930,12 @@ body.features-cinematic-page #player.feature-live-player.sphere-orb-live-player 
   z-index: 90 !important;
   display: grid !important;
   grid-template-areas: none !important;
-  grid-template-columns: 74px minmax(170px, 1.05fr) minmax(140px, 0.75fr) 44px 58px 44px minmax(92px, auto) minmax(132px, 0.44fr) !important;
+  grid-template-columns: 64px minmax(168px, 1fr) minmax(150px, 0.72fr) 44px 58px 44px minmax(92px, auto) minmax(160px, 0.7fr) minmax(132px, 0.42fr) !important;
   grid-template-rows: auto !important;
   align-content: normal !important;
   align-items: center !important;
   gap: 12px !important;
-  width: min(calc(100% - 24px), 1180px) !important;
+  width: min(calc(100% - 24px), 1320px) !important;
   height: auto !important;
   min-width: 0 !important;
   min-height: 82px !important;
@@ -1033,6 +1033,78 @@ body.features-cinematic-page #player.feature-live-player.sphere-orb-live-player 
     rgba(3, 12, 26, 0.7) !important;
 }
 
+body.features-cinematic-page #player.feature-live-player.sphere-orb-live-player .player-control-label {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  clip: rect(0 0 0 0) !important;
+  white-space: nowrap !important;
+}
+
+body.features-cinematic-page #player.feature-live-player.sphere-orb-live-player .player-seek::before,
+body.features-cinematic-page #player.feature-live-player.sphere-orb-live-player .player-seek i {
+  pointer-events: none !important;
+}
+
+body.features-cinematic-page #player.feature-live-player.sphere-orb-live-player .player-seek input,
+body.features-cinematic-page #player.feature-live-player.sphere-orb-live-player .player-volume input {
+  width: 100% !important;
+  margin: 0 !important;
+  accent-color: #5be9ff;
+  cursor: pointer;
+}
+
+body.features-cinematic-page #player.feature-live-player.sphere-orb-live-player .player-seek input {
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 4 !important;
+  height: 100% !important;
+  opacity: 0.72;
+}
+
+body.features-cinematic-page #player.feature-live-player.sphere-orb-live-player .player-seek input:focus-visible,
+body.features-cinematic-page #player.feature-live-player.sphere-orb-live-player .player-volume input:focus-visible {
+  outline: 2px solid #ffe071;
+  outline-offset: 3px;
+}
+
+body.features-cinematic-page #player.feature-live-player.sphere-orb-live-player .player-volume {
+  display: grid !important;
+  grid-template-columns: 44px minmax(94px, 1fr) !important;
+  gap: 8px !important;
+  align-items: center !important;
+  min-width: 0 !important;
+}
+
+body.features-cinematic-page #player.feature-live-player.sphere-orb-live-player .player-volume label {
+  display: grid !important;
+  gap: 5px !important;
+  min-width: 0 !important;
+  color: rgba(226, 244, 255, 0.78) !important;
+  font-family: "IBM Plex Mono", "Courier New", monospace !important;
+  font-size: 0.62rem !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+}
+
+body.features-cinematic-page #player.feature-live-player.sphere-orb-live-player .player-mute {
+  width: 44px !important;
+  min-width: 44px !important;
+  border-color: rgba(91, 233, 255, 0.58) !important;
+  border-radius: 9px !important;
+  font-size: 0.61rem !important;
+  letter-spacing: 0.07em !important;
+}
+
+body.features-cinematic-page #player.feature-live-player.sphere-orb-live-player .player-mute[aria-pressed="true"] {
+  border-color: rgba(255, 61, 138, 0.82) !important;
+  color: #ff9cc3 !important;
+  background: rgba(62, 8, 34, 0.92) !important;
+}
+
 body.features-cinematic-page #player.feature-live-player.sphere-orb-live-player button {
   width: 44px !important;
   min-width: 44px !important;
@@ -1094,6 +1166,10 @@ body.features-cinematic-page #player.feature-live-player.sphere-orb-live-player 
     display: none !important;
   }
 
+  body.features-cinematic-page #player.feature-live-player.sphere-orb-live-player .player-volume {
+    grid-column: 4 / -1 !important;
+  }
+
   body.features-cinematic-page #player.feature-live-player.sphere-orb-live-player button {
     width: 42px !important;
     min-width: 42px !important;
@@ -1104,6 +1180,19 @@ body.features-cinematic-page #player.feature-live-player.sphere-orb-live-player 
     width: 52px !important;
     min-width: 52px !important;
     min-height: 52px !important;
+  }
+
+  body.features-cinematic-page #player.feature-live-player.sphere-orb-live-player .player-volume {
+    grid-template-columns: 38px minmax(84px, 1fr) !important;
+  }
+
+  body.features-cinematic-page #player.feature-live-player.sphere-orb-live-player .player-volume label {
+    font-size: 0.56rem !important;
+  }
+
+  body.features-cinematic-page #player.feature-live-player.sphere-orb-live-player .player-mute {
+    width: 38px !important;
+    min-width: 38px !important;
   }
 }
 

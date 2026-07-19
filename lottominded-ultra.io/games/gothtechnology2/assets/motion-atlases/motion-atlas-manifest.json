@@ -787,7 +787,7 @@
           ],
           "higgsfieldJobId": "5394b85d-d360-47d8-b8a7-dd6d39562ac1",
           "stableHeight": false,
-          "targetVisibleHeight": 174
+          "targetVisibleHeight": 174.0
         },
         "JUMP_PEAK": {
           "sheet": "assets/motion-atlases/kalyx-locomotion.webp",
@@ -898,7 +898,7 @@
           ],
           "higgsfieldJobId": "735572f2-5d69-495a-bc11-55e7e117dffd",
           "stableHeight": false,
-          "targetVisibleHeight": 174
+          "targetVisibleHeight": 174.0
         },
         "JUMP_RISE": {
           "sheet": "assets/motion-atlases/kalyx-locomotion.webp",
@@ -1009,7 +1009,7 @@
           ],
           "higgsfieldJobId": "29b36cf3-6b8f-4f8e-9273-53f656fbdcff",
           "stableHeight": false,
-          "targetVisibleHeight": 174
+          "targetVisibleHeight": 174.0
         },
         "JUMP_START": {
           "sheet": "assets/motion-atlases/kalyx-locomotion.webp",
@@ -1120,7 +1120,7 @@
           ],
           "higgsfieldJobId": "fbe5f7b8-4cb0-47f2-b110-1730b94c7626",
           "stableHeight": false,
-          "targetVisibleHeight": 174
+          "targetVisibleHeight": 174.0
         },
         "LANDING": {
           "sheet": "assets/motion-atlases/kalyx-locomotion.webp",
@@ -1231,7 +1231,7 @@
           ],
           "higgsfieldJobId": "3a092f94-ce9c-4374-a89d-b163add3a5ed",
           "stableHeight": false,
-          "targetVisibleHeight": 174
+          "targetVisibleHeight": 174.0
         },
         "RUN_BACK": {
           "sheet": "assets/motion-atlases/kalyx-locomotion.webp",
@@ -1685,7 +1685,7 @@
           "cellHeight": 192,
           "renderScale": 1.3333333333333333,
           "sourceFacing": 1,
-          "source": "higgsfield-v3-body-vfx",
+          "source": "higgsfield-v4-body-only",
           "frames": [
             {
               "x": 0,
@@ -1694,13 +1694,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 25,
-                "y": 24,
-                "w": 141,
-                "h": 166,
-                "visibleW": 137,
-                "visibleH": 162,
-                "scale": 0.977528
+                "x": 29,
+                "y": 39,
+                "w": 133,
+                "h": 151,
+                "visibleW": 129,
+                "visibleH": 147,
+                "scale": 0.994286
               }
             },
             {
@@ -1710,13 +1710,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 5,
+                "x": 4,
                 "y": 11,
-                "w": 181,
+                "w": 184,
                 "h": 179,
-                "visibleW": 177,
+                "visibleW": 180,
                 "visibleH": 175,
-                "scale": 0.977528
+                "scale": 0.994286
               }
             },
             {
@@ -1726,13 +1726,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 9,
-                "y": 20,
-                "w": 174,
-                "h": 170,
-                "visibleW": 170,
-                "visibleH": 166,
-                "scale": 0.977528
+                "x": 13,
+                "y": 58,
+                "w": 165,
+                "h": 132,
+                "visibleW": 161,
+                "visibleH": 128,
+                "scale": 0.994286
               }
             },
             {
@@ -1742,13 +1742,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 4,
-                "y": 18,
-                "w": 184,
-                "h": 172,
-                "visibleW": 180,
-                "visibleH": 168,
-                "scale": 0.977528
+                "x": 24,
+                "y": 15,
+                "w": 144,
+                "h": 175,
+                "visibleW": 140,
+                "visibleH": 171,
+                "scale": 0.994286
               }
             },
             {
@@ -1758,13 +1758,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 23,
-                "y": 8,
-                "w": 146,
-                "h": 182,
-                "visibleW": 142,
-                "visibleH": 178,
-                "scale": 0.977528
+                "x": 24,
+                "y": 21,
+                "w": 144,
+                "h": 169,
+                "visibleW": 140,
+                "visibleH": 165,
+                "scale": 0.994286
               }
             },
             {
@@ -1774,19 +1774,19 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 23,
-                "y": 8,
-                "w": 146,
-                "h": 182,
-                "visibleW": 142,
-                "visibleH": 178,
-                "scale": 0.977528
+                "x": 49,
+                "y": 18,
+                "w": 94,
+                "h": 172,
+                "visibleW": 90,
+                "visibleH": 168,
+                "scale": 0.994286
               }
             }
           ],
-          "higgsfieldJobId": "d8c86cae-9c5d-4c13-a4d1-778305a7584d",
+          "higgsfieldJobId": "1c4719cf-b8d6-4eb8-aead-7442a26c3a34",
           "stableHeight": false,
-          "targetVisibleHeight": 174
+          "targetVisibleHeight": 174.0
         },
         "COMBO_1": {
           "sheet": "assets/motion-atlases/kalyx-combat.webp",
@@ -2573,7 +2573,7 @@
           "cellHeight": 192,
           "renderScale": 1.3333333333333333,
           "sourceFacing": 1,
-          "source": "higgsfield-v3-body-vfx",
+          "source": "higgsfield-v4-body-only",
           "frames": [
             {
               "x": 0,
@@ -2583,11 +2583,11 @@
               "duration_ms": 78,
               "content": {
                 "x": 34,
-                "y": 18,
+                "y": 11,
                 "w": 123,
-                "h": 172,
+                "h": 179,
                 "visibleW": 119,
-                "visibleH": 168,
+                "visibleH": 175,
                 "scale": 0.957978
               }
             },
@@ -2598,12 +2598,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 21,
-                "y": 17,
-                "w": 150,
-                "h": 173,
-                "visibleW": 146,
-                "visibleH": 169,
+                "x": 17,
+                "y": 13,
+                "w": 157,
+                "h": 177,
+                "visibleW": 153,
+                "visibleH": 173,
                 "scale": 0.957978
               }
             },
@@ -2614,12 +2614,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 4,
-                "y": 17,
-                "w": 184,
-                "h": 173,
-                "visibleW": 180,
-                "visibleH": 169,
+                "x": 20,
+                "y": 12,
+                "w": 151,
+                "h": 178,
+                "visibleW": 147,
+                "visibleH": 174,
                 "scale": 0.957978
               }
             },
@@ -2630,12 +2630,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 14,
-                "y": 16,
-                "w": 164,
-                "h": 174,
-                "visibleW": 160,
-                "visibleH": 170,
+                "x": 22,
+                "y": 10,
+                "w": 147,
+                "h": 180,
+                "visibleW": 143,
+                "visibleH": 176,
                 "scale": 0.957978
               }
             },
@@ -2646,12 +2646,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 18,
-                "y": 13,
-                "w": 156,
-                "h": 177,
-                "visibleW": 152,
-                "visibleH": 173,
+                "x": 22,
+                "y": 11,
+                "w": 147,
+                "h": 179,
+                "visibleW": 143,
+                "visibleH": 175,
                 "scale": 0.957978
               }
             },
@@ -2672,7 +2672,7 @@
               }
             }
           ],
-          "higgsfieldJobId": "242d0ac7-0879-478c-a06f-bc5a6e09fd5d",
+          "higgsfieldJobId": "28dff82c-8520-4690-842f-887b69758a50",
           "stableHeight": false,
           "targetVisibleHeight": 170.52
         },
@@ -2684,7 +2684,7 @@
           "cellHeight": 192,
           "renderScale": 1.3333333333333333,
           "sourceFacing": 1,
-          "source": "higgsfield-v3-body-vfx",
+          "source": "higgsfield-v4-body-only",
           "frames": [
             {
               "x": 1152,
@@ -2693,12 +2693,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 38,
-                "y": 18,
-                "w": 116,
-                "h": 172,
-                "visibleW": 112,
-                "visibleH": 168,
+                "x": 13,
+                "y": 19,
+                "w": 166,
+                "h": 171,
+                "visibleW": 162,
+                "visibleH": 167,
                 "scale": 0.957978
               }
             },
@@ -2709,12 +2709,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 37,
-                "y": 20,
-                "w": 117,
-                "h": 170,
-                "visibleW": 113,
-                "visibleH": 166,
+                "x": 29,
+                "y": 10,
+                "w": 133,
+                "h": 180,
+                "visibleW": 129,
+                "visibleH": 176,
                 "scale": 0.957978
               }
             },
@@ -2726,11 +2726,11 @@
               "duration_ms": 78,
               "content": {
                 "x": 38,
-                "y": 15,
+                "y": 8,
                 "w": 116,
-                "h": 175,
+                "h": 182,
                 "visibleW": 112,
-                "visibleH": 171,
+                "visibleH": 178,
                 "scale": 0.957978
               }
             },
@@ -2741,12 +2741,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 37,
-                "y": 8,
-                "w": 118,
-                "h": 182,
-                "visibleW": 114,
-                "visibleH": 178,
+                "x": 31,
+                "y": 10,
+                "w": 130,
+                "h": 180,
+                "visibleW": 126,
+                "visibleH": 176,
                 "scale": 0.957978
               }
             },
@@ -2757,12 +2757,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 5,
-                "y": 8,
-                "w": 182,
-                "h": 182,
-                "visibleW": 178,
-                "visibleH": 178,
+                "x": 34,
+                "y": 9,
+                "w": 123,
+                "h": 181,
+                "visibleW": 119,
+                "visibleH": 177,
                 "scale": 0.957978
               }
             },
@@ -2773,17 +2773,17 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 5,
-                "y": 8,
-                "w": 181,
-                "h": 182,
-                "visibleW": 177,
-                "visibleH": 178,
+                "x": 36,
+                "y": 9,
+                "w": 119,
+                "h": 181,
+                "visibleW": 115,
+                "visibleH": 177,
                 "scale": 0.957978
               }
             }
           ],
-          "higgsfieldJobId": "22df9952-5c3c-4801-8faa-2c366841ea1c",
+          "higgsfieldJobId": "9904e3eb-08d9-46f3-813d-1419f9c53206",
           "stableHeight": false,
           "targetVisibleHeight": 170.52
         },
@@ -2795,7 +2795,7 @@
           "cellHeight": 192,
           "renderScale": 1.3333333333333333,
           "sourceFacing": 1,
-          "source": "higgsfield-v3-body-vfx",
+          "source": "higgsfield-v4-body-only",
           "frames": [
             {
               "x": 768,
@@ -2804,12 +2804,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 31,
-                "y": 14,
-                "w": 130,
-                "h": 176,
-                "visibleW": 126,
-                "visibleH": 172,
+                "x": 40,
+                "y": 8,
+                "w": 112,
+                "h": 182,
+                "visibleW": 108,
+                "visibleH": 178,
                 "scale": 0.957978
               }
             },
@@ -2820,12 +2820,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 29,
-                "y": 13,
-                "w": 134,
-                "h": 177,
-                "visibleW": 130,
-                "visibleH": 173,
+                "x": 34,
+                "y": 17,
+                "w": 123,
+                "h": 173,
+                "visibleW": 119,
+                "visibleH": 169,
                 "scale": 0.957978
               }
             },
@@ -2836,12 +2836,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 29,
-                "y": 11,
-                "w": 134,
-                "h": 179,
-                "visibleW": 130,
-                "visibleH": 175,
+                "x": 31,
+                "y": 17,
+                "w": 129,
+                "h": 173,
+                "visibleW": 125,
+                "visibleH": 169,
                 "scale": 0.957978
               }
             },
@@ -2852,12 +2852,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 32,
-                "y": 10,
-                "w": 128,
-                "h": 180,
-                "visibleW": 124,
-                "visibleH": 176,
+                "x": 34,
+                "y": 20,
+                "w": 124,
+                "h": 170,
+                "visibleW": 120,
+                "visibleH": 166,
                 "scale": 0.957978
               }
             },
@@ -2868,12 +2868,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 39,
-                "y": 8,
-                "w": 113,
-                "h": 182,
-                "visibleW": 109,
-                "visibleH": 178,
+                "x": 34,
+                "y": 20,
+                "w": 123,
+                "h": 170,
+                "visibleW": 119,
+                "visibleH": 166,
                 "scale": 0.957978
               }
             },
@@ -2884,17 +2884,17 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 45,
-                "y": 8,
-                "w": 101,
-                "h": 182,
-                "visibleW": 97,
-                "visibleH": 178,
+                "x": 33,
+                "y": 19,
+                "w": 126,
+                "h": 171,
+                "visibleW": 122,
+                "visibleH": 167,
                 "scale": 0.957978
               }
             }
           ],
-          "higgsfieldJobId": "f24d94c9-45e1-4171-a9ab-66885ab06fac",
+          "higgsfieldJobId": "b0de0acb-11f1-4a8f-9d54-741caa999198",
           "stableHeight": false,
           "targetVisibleHeight": 170.52
         },
@@ -2906,7 +2906,7 @@
           "cellHeight": 192,
           "renderScale": 1.3333333333333333,
           "sourceFacing": 1,
-          "source": "higgsfield-v3-body-vfx",
+          "source": "higgsfield-v4-body-only",
           "frames": [
             {
               "x": 384,
@@ -2915,12 +2915,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 15,
-                "y": 29,
-                "w": 162,
-                "h": 161,
-                "visibleW": 158,
-                "visibleH": 157,
+                "x": 43,
+                "y": 8,
+                "w": 105,
+                "h": 182,
+                "visibleW": 101,
+                "visibleH": 178,
                 "scale": 0.957978
               }
             },
@@ -2931,12 +2931,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 24,
-                "y": 25,
-                "w": 143,
-                "h": 165,
-                "visibleW": 139,
-                "visibleH": 161,
+                "x": 32,
+                "y": 21,
+                "w": 128,
+                "h": 169,
+                "visibleW": 124,
+                "visibleH": 165,
                 "scale": 0.957978
               }
             },
@@ -2947,12 +2947,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 9,
-                "y": 12,
-                "w": 176,
-                "h": 178,
-                "visibleW": 172,
-                "visibleH": 174,
+                "x": 29,
+                "y": 21,
+                "w": 133,
+                "h": 169,
+                "visibleW": 129,
+                "visibleH": 165,
                 "scale": 0.957978
               }
             },
@@ -2963,12 +2963,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 15,
-                "y": 8,
-                "w": 162,
-                "h": 182,
-                "visibleW": 158,
-                "visibleH": 178,
+                "x": 25,
+                "y": 13,
+                "w": 141,
+                "h": 177,
+                "visibleW": 137,
+                "visibleH": 173,
                 "scale": 0.957978
               }
             },
@@ -2980,11 +2980,11 @@
               "duration_ms": 78,
               "content": {
                 "x": 29,
-                "y": 10,
+                "y": 12,
                 "w": 134,
-                "h": 180,
+                "h": 178,
                 "visibleW": 130,
-                "visibleH": 176,
+                "visibleH": 174,
                 "scale": 0.957978
               }
             },
@@ -2995,17 +2995,17 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 45,
-                "y": 8,
-                "w": 101,
-                "h": 182,
-                "visibleW": 97,
-                "visibleH": 178,
+                "x": 46,
+                "y": 9,
+                "w": 99,
+                "h": 181,
+                "visibleW": 95,
+                "visibleH": 177,
                 "scale": 0.957978
               }
             }
           ],
-          "higgsfieldJobId": "e6a00fe1-654a-479f-85ff-7b37fa2b853c",
+          "higgsfieldJobId": "b393a14d-62d2-4933-845a-9c82a60cbaf1",
           "stableHeight": false,
           "targetVisibleHeight": 170.52
         },
@@ -3017,7 +3017,7 @@
           "cellHeight": 192,
           "renderScale": 1.3333333333333333,
           "sourceFacing": 1,
-          "source": "higgsfield-v3-body-vfx",
+          "source": "higgsfield-v4-body-only",
           "frames": [
             {
               "x": 0,
@@ -3026,13 +3026,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 28,
-                "y": 32,
-                "w": 136,
-                "h": 158,
-                "visibleW": 132,
-                "visibleH": 154,
-                "scale": 0.957978
+                "x": 33,
+                "y": 16,
+                "w": 125,
+                "h": 174,
+                "visibleW": 121,
+                "visibleH": 170,
+                "scale": 0.96339
               }
             },
             {
@@ -3042,13 +3042,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 17,
-                "y": 23,
-                "w": 157,
-                "h": 167,
-                "visibleW": 153,
-                "visibleH": 163,
-                "scale": 0.957978
+                "x": 9,
+                "y": 21,
+                "w": 174,
+                "h": 169,
+                "visibleW": 170,
+                "visibleH": 165,
+                "scale": 0.96339
               }
             },
             {
@@ -3064,7 +3064,7 @@
                 "h": 174,
                 "visibleW": 180,
                 "visibleH": 170,
-                "scale": 0.957978
+                "scale": 0.96339
               }
             },
             {
@@ -3075,12 +3075,12 @@
               "duration_ms": 78,
               "content": {
                 "x": 7,
-                "y": 23,
+                "y": 16,
                 "w": 178,
-                "h": 167,
+                "h": 174,
                 "visibleW": 174,
-                "visibleH": 163,
-                "scale": 0.957978
+                "visibleH": 170,
+                "scale": 0.96339
               }
             },
             {
@@ -3090,13 +3090,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 25,
-                "y": 16,
-                "w": 142,
-                "h": 174,
-                "visibleW": 138,
-                "visibleH": 170,
-                "scale": 0.957978
+                "x": 32,
+                "y": 10,
+                "w": 127,
+                "h": 180,
+                "visibleW": 123,
+                "visibleH": 176,
+                "scale": 0.96339
               }
             },
             {
@@ -3106,17 +3106,17 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 45,
-                "y": 8,
-                "w": 101,
-                "h": 182,
-                "visibleW": 97,
-                "visibleH": 178,
-                "scale": 0.957978
+                "x": 31,
+                "y": 9,
+                "w": 129,
+                "h": 181,
+                "visibleW": 125,
+                "visibleH": 177,
+                "scale": 0.96339
               }
             }
           ],
-          "higgsfieldJobId": "f7a4a7e9-435d-4a47-8221-e864262d9c03",
+          "higgsfieldJobId": "e3a40a2e-997c-487f-b92d-7a4818c3dbbc",
           "stableHeight": false,
           "targetVisibleHeight": 170.52
         },
@@ -6939,7 +6939,7 @@
           "cellHeight": 192,
           "renderScale": 1.3333333333333333,
           "sourceFacing": 1,
-          "source": "higgsfield-v3-body-vfx",
+          "source": "higgsfield-v4-body-only",
           "frames": [
             {
               "x": 0,
@@ -6948,12 +6948,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 28,
-                "y": 19,
-                "w": 135,
-                "h": 171,
-                "visibleW": 131,
-                "visibleH": 167,
+                "x": 29,
+                "y": 23,
+                "w": 134,
+                "h": 167,
+                "visibleW": 130,
+                "visibleH": 163,
                 "scale": 0.933202
               }
             },
@@ -6964,12 +6964,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 19,
-                "y": 15,
-                "w": 153,
-                "h": 175,
-                "visibleW": 149,
-                "visibleH": 171,
+                "x": 25,
+                "y": 20,
+                "w": 142,
+                "h": 170,
+                "visibleW": 138,
+                "visibleH": 166,
                 "scale": 0.933202
               }
             },
@@ -6980,12 +6980,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 4,
-                "y": 12,
-                "w": 184,
-                "h": 178,
-                "visibleW": 180,
-                "visibleH": 174,
+                "x": 18,
+                "y": 8,
+                "w": 156,
+                "h": 182,
+                "visibleW": 152,
+                "visibleH": 165,
                 "scale": 0.933202
               }
             },
@@ -6996,12 +6996,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 16,
-                "y": 9,
-                "w": 159,
-                "h": 181,
-                "visibleW": 155,
-                "visibleH": 177,
+                "x": 26,
+                "y": 8,
+                "w": 140,
+                "h": 182,
+                "visibleW": 136,
+                "visibleH": 178,
                 "scale": 0.933202
               }
             },
@@ -7012,11 +7012,11 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 18,
+                "x": 26,
                 "y": 8,
-                "w": 156,
+                "w": 139,
                 "h": 182,
-                "visibleW": 152,
+                "visibleW": 135,
                 "visibleH": 178,
                 "scale": 0.933202
               }
@@ -7028,17 +7028,17 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 27,
+                "x": 26,
                 "y": 8,
-                "w": 137,
+                "w": 140,
                 "h": 182,
-                "visibleW": 133,
+                "visibleW": 136,
                 "visibleH": 178,
                 "scale": 0.933202
               }
             }
           ],
-          "higgsfieldJobId": "de4b6764-8e46-4e7a-bb74-a68b245d5715",
+          "higgsfieldJobId": "29e67b56-9f0c-44a8-bdfb-167f539381c7",
           "stableHeight": false,
           "targetVisibleHeight": 166.11
         },
@@ -7050,7 +7050,7 @@
           "cellHeight": 192,
           "renderScale": 1.3333333333333333,
           "sourceFacing": 1,
-          "source": "higgsfield-v3-body-vfx",
+          "source": "higgsfield-v4-body-only",
           "frames": [
             {
               "x": 1152,
@@ -7059,12 +7059,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 16,
-                "y": 8,
-                "w": 160,
-                "h": 182,
-                "visibleW": 156,
-                "visibleH": 178,
+                "x": 20,
+                "y": 20,
+                "w": 151,
+                "h": 170,
+                "visibleW": 147,
+                "visibleH": 166,
                 "scale": 0.933202
               }
             },
@@ -7075,12 +7075,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 22,
-                "y": 8,
-                "w": 148,
-                "h": 182,
-                "visibleW": 144,
-                "visibleH": 178,
+                "x": 31,
+                "y": 20,
+                "w": 130,
+                "h": 170,
+                "visibleW": 126,
+                "visibleH": 166,
                 "scale": 0.933202
               }
             },
@@ -7091,12 +7091,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 23,
-                "y": 9,
-                "w": 146,
-                "h": 181,
-                "visibleW": 142,
-                "visibleH": 177,
+                "x": 34,
+                "y": 20,
+                "w": 124,
+                "h": 170,
+                "visibleW": 120,
+                "visibleH": 166,
                 "scale": 0.933202
               }
             },
@@ -7107,11 +7107,11 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 26,
+                "x": 31,
                 "y": 8,
-                "w": 139,
+                "w": 130,
                 "h": 182,
-                "visibleW": 135,
+                "visibleW": 126,
                 "visibleH": 178,
                 "scale": 0.933202
               }
@@ -7123,11 +7123,11 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 26,
+                "x": 33,
                 "y": 8,
-                "w": 140,
+                "w": 125,
                 "h": 182,
-                "visibleW": 136,
+                "visibleW": 121,
                 "visibleH": 178,
                 "scale": 0.933202
               }
@@ -7139,17 +7139,17 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 26,
+                "x": 28,
                 "y": 8,
-                "w": 139,
+                "w": 136,
                 "h": 182,
-                "visibleW": 135,
+                "visibleW": 132,
                 "visibleH": 178,
                 "scale": 0.933202
               }
             }
           ],
-          "higgsfieldJobId": "cee91846-6248-46f4-bf1f-cdc2c9b4d1d4",
+          "higgsfieldJobId": "b5b06cbd-f39b-4b7a-a0eb-28c15602e620",
           "stableHeight": false,
           "targetVisibleHeight": 166.11
         },
@@ -7161,7 +7161,7 @@
           "cellHeight": 192,
           "renderScale": 1.3333333333333333,
           "sourceFacing": 1,
-          "source": "higgsfield-v3-body-vfx",
+          "source": "higgsfield-v4-body-only",
           "frames": [
             {
               "x": 768,
@@ -7170,12 +7170,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 22,
-                "y": 15,
-                "w": 148,
-                "h": 175,
-                "visibleW": 144,
-                "visibleH": 171,
+                "x": 34,
+                "y": 8,
+                "w": 123,
+                "h": 182,
+                "visibleW": 119,
+                "visibleH": 178,
                 "scale": 0.933202
               }
             },
@@ -7186,12 +7186,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 21,
-                "y": 23,
-                "w": 150,
-                "h": 167,
-                "visibleW": 146,
-                "visibleH": 163,
+                "x": 31,
+                "y": 12,
+                "w": 129,
+                "h": 178,
+                "visibleW": 125,
+                "visibleH": 174,
                 "scale": 0.933202
               }
             },
@@ -7202,12 +7202,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 22,
-                "y": 13,
-                "w": 148,
-                "h": 177,
-                "visibleW": 144,
-                "visibleH": 173,
+                "x": 33,
+                "y": 11,
+                "w": 125,
+                "h": 179,
+                "visibleW": 121,
+                "visibleH": 175,
                 "scale": 0.933202
               }
             },
@@ -7218,12 +7218,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 13,
-                "y": 12,
-                "w": 166,
-                "h": 178,
-                "visibleW": 162,
-                "visibleH": 174,
+                "x": 27,
+                "y": 10,
+                "w": 137,
+                "h": 180,
+                "visibleW": 133,
+                "visibleH": 176,
                 "scale": 0.933202
               }
             },
@@ -7234,12 +7234,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 20,
-                "y": 11,
-                "w": 152,
-                "h": 179,
-                "visibleW": 148,
-                "visibleH": 175,
+                "x": 27,
+                "y": 10,
+                "w": 138,
+                "h": 180,
+                "visibleW": 134,
+                "visibleH": 176,
                 "scale": 0.933202
               }
             },
@@ -7250,17 +7250,17 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 25,
-                "y": 8,
-                "w": 141,
-                "h": 182,
-                "visibleW": 137,
-                "visibleH": 178,
+                "x": 27,
+                "y": 10,
+                "w": 137,
+                "h": 180,
+                "visibleW": 133,
+                "visibleH": 176,
                 "scale": 0.933202
               }
             }
           ],
-          "higgsfieldJobId": "b44ab655-72a7-441e-a63e-87a5290ba3b0",
+          "higgsfieldJobId": "778f90f4-6e23-4ed8-a6e5-2cb1fb5c305d",
           "stableHeight": false,
           "targetVisibleHeight": 166.11
         },
@@ -7272,7 +7272,7 @@
           "cellHeight": 192,
           "renderScale": 1.3333333333333333,
           "sourceFacing": 1,
-          "source": "higgsfield-v3-body-vfx",
+          "source": "higgsfield-v4-body-only",
           "frames": [
             {
               "x": 384,
@@ -7281,13 +7281,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 26,
-                "y": 12,
-                "w": 140,
-                "h": 178,
-                "visibleW": 136,
-                "visibleH": 174,
-                "scale": 0.933202
+                "x": 9,
+                "y": 68,
+                "w": 173,
+                "h": 122,
+                "visibleW": 169,
+                "visibleH": 118,
+                "scale": 1.022222
               }
             },
             {
@@ -7297,13 +7297,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 24,
-                "y": 10,
-                "w": 143,
-                "h": 180,
-                "visibleW": 139,
-                "visibleH": 176,
-                "scale": 0.933202
+                "x": 53,
+                "y": 83,
+                "w": 85,
+                "h": 107,
+                "visibleW": 81,
+                "visibleH": 103,
+                "scale": 1.022222
               }
             },
             {
@@ -7313,13 +7313,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 14,
-                "y": 11,
-                "w": 163,
-                "h": 179,
-                "visibleW": 159,
-                "visibleH": 175,
-                "scale": 0.933202
+                "x": 53,
+                "y": 76,
+                "w": 86,
+                "h": 114,
+                "visibleW": 82,
+                "visibleH": 110,
+                "scale": 1.022222
               }
             },
             {
@@ -7329,13 +7329,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 4,
-                "y": 11,
-                "w": 184,
-                "h": 179,
-                "visibleW": 180,
-                "visibleH": 175,
-                "scale": 0.933202
+                "x": 50,
+                "y": 72,
+                "w": 92,
+                "h": 118,
+                "visibleW": 88,
+                "visibleH": 114,
+                "scale": 1.022222
               }
             },
             {
@@ -7345,13 +7345,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 26,
-                "y": 8,
-                "w": 140,
-                "h": 182,
-                "visibleW": 136,
-                "visibleH": 178,
-                "scale": 0.933202
+                "x": 51,
+                "y": 72,
+                "w": 89,
+                "h": 118,
+                "visibleW": 85,
+                "visibleH": 114,
+                "scale": 1.022222
               }
             },
             {
@@ -7361,17 +7361,17 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 29,
-                "y": 10,
-                "w": 133,
-                "h": 180,
-                "visibleW": 129,
-                "visibleH": 176,
-                "scale": 0.933202
+                "x": 4,
+                "y": 71,
+                "w": 184,
+                "h": 119,
+                "visibleW": 180,
+                "visibleH": 115,
+                "scale": 1.022222
               }
             }
           ],
-          "higgsfieldJobId": "2fd794b7-5f94-4ad0-b9ca-b7bd6a19c81e",
+          "higgsfieldJobId": "b8a75a08-22ef-46d8-a9f6-c791c9d53ddf",
           "stableHeight": false,
           "targetVisibleHeight": 166.11
         },
@@ -7383,7 +7383,7 @@
           "cellHeight": 192,
           "renderScale": 1.3333333333333333,
           "sourceFacing": 1,
-          "source": "higgsfield-v3-body-vfx",
+          "source": "higgsfield-v4-body-only",
           "frames": [
             {
               "x": 0,
@@ -7392,12 +7392,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 27,
-                "y": 30,
-                "w": 137,
-                "h": 160,
-                "visibleW": 133,
-                "visibleH": 156,
+                "x": 33,
+                "y": 13,
+                "w": 125,
+                "h": 177,
+                "visibleW": 121,
+                "visibleH": 173,
                 "scale": 0.933202
               }
             },
@@ -7408,12 +7408,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 19,
-                "y": 24,
-                "w": 154,
-                "h": 166,
-                "visibleW": 150,
-                "visibleH": 162,
+                "x": 15,
+                "y": 18,
+                "w": 161,
+                "h": 172,
+                "visibleW": 157,
+                "visibleH": 168,
                 "scale": 0.933202
               }
             },
@@ -7424,12 +7424,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 4,
-                "y": 21,
-                "w": 184,
-                "h": 169,
-                "visibleW": 180,
-                "visibleH": 165,
+                "x": 8,
+                "y": 23,
+                "w": 175,
+                "h": 167,
+                "visibleW": 171,
+                "visibleH": 163,
                 "scale": 0.933202
               }
             },
@@ -7440,12 +7440,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 12,
-                "y": 20,
-                "w": 168,
-                "h": 170,
-                "visibleW": 164,
-                "visibleH": 166,
+                "x": 9,
+                "y": 15,
+                "w": 173,
+                "h": 175,
+                "visibleW": 169,
+                "visibleH": 171,
                 "scale": 0.933202
               }
             },
@@ -7456,12 +7456,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 17,
-                "y": 12,
-                "w": 158,
-                "h": 178,
-                "visibleW": 154,
-                "visibleH": 174,
+                "x": 21,
+                "y": 15,
+                "w": 149,
+                "h": 175,
+                "visibleW": 145,
+                "visibleH": 171,
                 "scale": 0.933202
               }
             },
@@ -7472,17 +7472,17 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 28,
+                "x": 26,
                 "y": 8,
-                "w": 135,
+                "w": 139,
                 "h": 182,
-                "visibleW": 131,
+                "visibleW": 135,
                 "visibleH": 178,
                 "scale": 0.933202
               }
             }
           ],
-          "higgsfieldJobId": "2d775662-e46c-466e-a79c-f22e50bd57b8",
+          "higgsfieldJobId": "cc78cafb-6741-4411-b3c8-1c0535254f97",
           "stableHeight": false,
           "targetVisibleHeight": 166.11
         },
@@ -8853,7 +8853,7 @@
           ],
           "higgsfieldJobId": "bd0bc6bb-db90-42c3-9bcb-62a94fba29d5",
           "stableHeight": true,
-          "targetVisibleHeight": 176
+          "targetVisibleHeight": 176.0
         },
         "READY_STANCE": {
           "sheet": "assets/motion-atlases/detroit-lens-noir-locomotion.webp",
@@ -8964,7 +8964,7 @@
           ],
           "higgsfieldJobId": "f3920b16-0aa2-4f74-86b8-4aa897e43850",
           "stableHeight": true,
-          "targetVisibleHeight": 176
+          "targetVisibleHeight": 176.0
         },
         "CROUCH_IDLE": {
           "sheet": "assets/motion-atlases/detroit-lens-noir-locomotion.webp",
@@ -9519,7 +9519,7 @@
           ],
           "higgsfieldJobId": "1090612e-ed58-4bf1-906f-5a13834fef7d",
           "stableHeight": false,
-          "targetVisibleHeight": 176
+          "targetVisibleHeight": 176.0
         },
         "JUMP_PEAK": {
           "sheet": "assets/motion-atlases/detroit-lens-noir-locomotion.webp",
@@ -9630,7 +9630,7 @@
           ],
           "higgsfieldJobId": "5e98b88d-1cae-45f8-bfee-d3e19dff88cb",
           "stableHeight": false,
-          "targetVisibleHeight": 176
+          "targetVisibleHeight": 176.0
         },
         "JUMP_RISE": {
           "sheet": "assets/motion-atlases/detroit-lens-noir-locomotion.webp",
@@ -9741,7 +9741,7 @@
           ],
           "higgsfieldJobId": "a5cf4d66-90f8-4b92-90fa-71e0e1a87123",
           "stableHeight": false,
-          "targetVisibleHeight": 176
+          "targetVisibleHeight": 176.0
         },
         "JUMP_START": {
           "sheet": "assets/motion-atlases/detroit-lens-noir-locomotion.webp",
@@ -9852,7 +9852,7 @@
           ],
           "higgsfieldJobId": "3b03e7ee-a4fd-4b9e-a9f9-5e3811acbc16",
           "stableHeight": false,
-          "targetVisibleHeight": 176
+          "targetVisibleHeight": 176.0
         },
         "LANDING": {
           "sheet": "assets/motion-atlases/detroit-lens-noir-locomotion.webp",
@@ -9963,7 +9963,7 @@
           ],
           "higgsfieldJobId": "6831fe15-6b6f-4ce6-a449-946cd72da297",
           "stableHeight": false,
-          "targetVisibleHeight": 176
+          "targetVisibleHeight": 176.0
         },
         "RUN_BACK": {
           "sheet": "assets/motion-atlases/detroit-lens-noir-locomotion.webp",
@@ -10518,7 +10518,7 @@
           ],
           "higgsfieldJobId": "01a385eb-6ba9-4582-8140-1f99e2bfd93e",
           "stableHeight": false,
-          "targetVisibleHeight": 176
+          "targetVisibleHeight": 176.0
         },
         "COMBO_1": {
           "sheet": "assets/motion-atlases/detroit-lens-noir-combat.webp",
@@ -11305,7 +11305,7 @@
           "cellHeight": 192,
           "renderScale": 1.3333333333333333,
           "sourceFacing": 1,
-          "source": "higgsfield-v3-body-vfx",
+          "source": "higgsfield-v4-body-only",
           "frames": [
             {
               "x": 0,
@@ -11314,12 +11314,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 34,
-                "y": 8,
-                "w": 124,
-                "h": 182,
-                "visibleW": 120,
-                "visibleH": 178,
+                "x": 48,
+                "y": 11,
+                "w": 96,
+                "h": 179,
+                "visibleW": 92,
+                "visibleH": 175,
                 "scale": 0.968989
               }
             },
@@ -11330,12 +11330,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 4,
-                "y": 9,
-                "w": 184,
-                "h": 181,
-                "visibleW": 180,
-                "visibleH": 177,
+                "x": 47,
+                "y": 11,
+                "w": 97,
+                "h": 179,
+                "visibleW": 93,
+                "visibleH": 175,
                 "scale": 0.968989
               }
             },
@@ -11346,12 +11346,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 17,
-                "y": 9,
-                "w": 157,
-                "h": 181,
-                "visibleW": 153,
-                "visibleH": 177,
+                "x": 44,
+                "y": 13,
+                "w": 103,
+                "h": 177,
+                "visibleW": 99,
+                "visibleH": 173,
                 "scale": 0.968989
               }
             },
@@ -11362,12 +11362,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 4,
-                "y": 12,
-                "w": 184,
-                "h": 178,
-                "visibleW": 180,
-                "visibleH": 174,
+                "x": 34,
+                "y": 11,
+                "w": 123,
+                "h": 179,
+                "visibleW": 119,
+                "visibleH": 175,
                 "scale": 0.968989
               }
             },
@@ -11378,11 +11378,11 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 5,
+                "x": 32,
                 "y": 8,
-                "w": 181,
+                "w": 127,
                 "h": 182,
-                "visibleW": 177,
+                "visibleW": 123,
                 "visibleH": 178,
                 "scale": 0.968989
               }
@@ -11394,17 +11394,17 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 10,
-                "y": 11,
-                "w": 172,
-                "h": 179,
-                "visibleW": 168,
-                "visibleH": 175,
+                "x": 47,
+                "y": 9,
+                "w": 97,
+                "h": 181,
+                "visibleW": 93,
+                "visibleH": 177,
                 "scale": 0.968989
               }
             }
           ],
-          "higgsfieldJobId": "1d63a4a7-b5b9-4c9d-9d1f-99455df0caf7",
+          "higgsfieldJobId": "f70a69ed-0a08-4702-a4c4-dd7334b3afdc",
           "stableHeight": false,
           "targetVisibleHeight": 172.48
         },
@@ -11416,7 +11416,7 @@
           "cellHeight": 192,
           "renderScale": 1.3333333333333333,
           "sourceFacing": 1,
-          "source": "higgsfield-v3-body-vfx",
+          "source": "higgsfield-v4-body-only",
           "frames": [
             {
               "x": 1152,
@@ -11425,12 +11425,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 41,
-                "y": 11,
-                "w": 109,
-                "h": 179,
-                "visibleW": 105,
-                "visibleH": 175,
+                "x": 38,
+                "y": 10,
+                "w": 116,
+                "h": 180,
+                "visibleW": 112,
+                "visibleH": 176,
                 "scale": 0.968989
               }
             },
@@ -11441,11 +11441,11 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 21,
+                "x": 47,
                 "y": 8,
-                "w": 149,
+                "w": 97,
                 "h": 182,
-                "visibleW": 145,
+                "visibleW": 93,
                 "visibleH": 178,
                 "scale": 0.968989
               }
@@ -11457,12 +11457,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 47,
-                "y": 11,
-                "w": 97,
-                "h": 179,
-                "visibleW": 93,
-                "visibleH": 175,
+                "x": 48,
+                "y": 10,
+                "w": 96,
+                "h": 180,
+                "visibleW": 92,
+                "visibleH": 176,
                 "scale": 0.968989
               }
             },
@@ -11473,12 +11473,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 44,
-                "y": 10,
-                "w": 104,
-                "h": 180,
-                "visibleW": 100,
-                "visibleH": 176,
+                "x": 49,
+                "y": 8,
+                "w": 94,
+                "h": 182,
+                "visibleW": 90,
+                "visibleH": 178,
                 "scale": 0.968989
               }
             },
@@ -11489,11 +11489,11 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 27,
+                "x": 48,
                 "y": 8,
-                "w": 138,
+                "w": 95,
                 "h": 182,
-                "visibleW": 134,
+                "visibleW": 91,
                 "visibleH": 178,
                 "scale": 0.968989
               }
@@ -11505,17 +11505,17 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 47,
+                "x": 48,
                 "y": 8,
-                "w": 97,
+                "w": 95,
                 "h": 182,
-                "visibleW": 93,
+                "visibleW": 91,
                 "visibleH": 178,
                 "scale": 0.968989
               }
             }
           ],
-          "higgsfieldJobId": "56d68023-f59a-48a1-a07a-aa85075495e5",
+          "higgsfieldJobId": "d51bacb4-ac34-47d4-89a6-ec426a01fca8",
           "stableHeight": false,
           "targetVisibleHeight": 172.48
         },
@@ -11638,7 +11638,7 @@
           "cellHeight": 192,
           "renderScale": 1.3333333333333333,
           "sourceFacing": 1,
-          "source": "higgsfield-v2",
+          "source": "higgsfield-v4-body-only",
           "frames": [
             {
               "x": 384,
@@ -11647,193 +11647,50 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 50,
-                "y": 15,
-                "w": 92,
-                "h": 175,
-                "visibleW": 88,
-                "visibleH": 171,
-                "scale": 0.968989
-              }
-            },
-            {
-              "x": 576,
-              "y": 1536,
-              "w": 192,
-              "h": 192,
-              "duration_ms": 78,
-              "content": {
                 "x": 49,
-                "y": 15,
-                "w": 93,
-                "h": 175,
-                "visibleW": 89,
-                "visibleH": 171,
-                "scale": 0.968989
-              }
-            },
-            {
-              "x": 768,
-              "y": 1536,
-              "w": 192,
-              "h": 192,
-              "duration_ms": 78,
-              "content": {
-                "x": 55,
-                "y": 10,
-                "w": 82,
-                "h": 180,
-                "visibleW": 78,
-                "visibleH": 176,
-                "scale": 0.968989
-              }
-            },
-            {
-              "x": 960,
-              "y": 1536,
-              "w": 192,
-              "h": 192,
-              "duration_ms": 78,
-              "content": {
-                "x": 53,
-                "y": 9,
-                "w": 85,
-                "h": 181,
-                "visibleW": 81,
-                "visibleH": 177,
-                "scale": 0.968989
-              }
-            },
-            {
-              "x": 1152,
-              "y": 1536,
-              "w": 192,
-              "h": 192,
-              "duration_ms": 78,
-              "content": {
-                "x": 26,
-                "y": 8,
-                "w": 139,
-                "h": 182,
-                "visibleW": 135,
-                "visibleH": 178,
-                "scale": 0.968989
-              }
-            },
-            {
-              "x": 1344,
-              "y": 1536,
-              "w": 192,
-              "h": 192,
-              "duration_ms": 78,
-              "content": {
-                "x": 49,
-                "y": 12,
+                "y": 11,
                 "w": 94,
-                "h": 178,
+                "h": 179,
                 "visibleW": 90,
-                "visibleH": 174,
-                "scale": 0.968989
-              }
-            }
-          ],
-          "higgsfieldJobId": "b8e293cd-7f97-470b-9751-f5cf15894c02",
-          "stableHeight": false,
-          "targetVisibleHeight": 172.48
-        },
-        "SUPER_RELEASE": {
-          "sheet": "assets/motion-atlases/detroit-lens-noir-combat.webp",
-          "frameCount": 6,
-          "uniqueFrames": 6,
-          "cellWidth": 192,
-          "cellHeight": 192,
-          "renderScale": 1.3333333333333333,
-          "sourceFacing": 1,
-          "source": "higgsfield-v2",
-          "frames": [
-            {
-              "x": 0,
-              "y": 1728,
-              "w": 192,
-              "h": 192,
-              "duration_ms": 78,
-              "content": {
-                "x": 45,
-                "y": 10,
-                "w": 101,
-                "h": 180,
-                "visibleW": 97,
-                "visibleH": 176,
-                "scale": 0.968989
-              }
-            },
-            {
-              "x": 192,
-              "y": 1728,
-              "w": 192,
-              "h": 192,
-              "duration_ms": 78,
-              "content": {
-                "x": 36,
-                "y": 14,
-                "w": 119,
-                "h": 176,
-                "visibleW": 115,
-                "visibleH": 172,
-                "scale": 0.968989
-              }
-            },
-            {
-              "x": 384,
-              "y": 1728,
-              "w": 192,
-              "h": 192,
-              "duration_ms": 78,
-              "content": {
-                "x": 37,
-                "y": 10,
-                "w": 118,
-                "h": 180,
-                "visibleW": 114,
-                "visibleH": 176,
+                "visibleH": 175,
                 "scale": 0.968989
               }
             },
             {
               "x": 576,
-              "y": 1728,
+              "y": 1536,
               "w": 192,
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 41,
-                "y": 10,
-                "w": 110,
-                "h": 180,
-                "visibleW": 106,
-                "visibleH": 176,
+                "x": 51,
+                "y": 11,
+                "w": 90,
+                "h": 179,
+                "visibleW": 86,
+                "visibleH": 175,
                 "scale": 0.968989
               }
             },
             {
               "x": 768,
-              "y": 1728,
+              "y": 1536,
               "w": 192,
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 42,
-                "y": 8,
-                "w": 108,
-                "h": 182,
-                "visibleW": 104,
-                "visibleH": 178,
+                "x": 51,
+                "y": 11,
+                "w": 90,
+                "h": 179,
+                "visibleW": 86,
+                "visibleH": 175,
                 "scale": 0.968989
               }
             },
             {
               "x": 960,
-              "y": 1728,
+              "y": 1536,
               "w": 192,
               "h": 192,
               "duration_ms": 78,
@@ -11846,9 +11703,152 @@
                 "visibleH": 178,
                 "scale": 0.968989
               }
+            },
+            {
+              "x": 1152,
+              "y": 1536,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 47,
+                "y": 8,
+                "w": 97,
+                "h": 182,
+                "visibleW": 93,
+                "visibleH": 178,
+                "scale": 0.968989
+              }
+            },
+            {
+              "x": 1344,
+              "y": 1536,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 44,
+                "y": 8,
+                "w": 103,
+                "h": 182,
+                "visibleW": 99,
+                "visibleH": 178,
+                "scale": 0.968989
+              }
             }
           ],
-          "higgsfieldJobId": "6c443fe1-a258-431a-826f-fdae2ca7badf",
+          "higgsfieldJobId": "a0d5cd40-6606-4c65-a4c8-72097a80d64b",
+          "stableHeight": false,
+          "targetVisibleHeight": 172.48
+        },
+        "SUPER_RELEASE": {
+          "sheet": "assets/motion-atlases/detroit-lens-noir-combat.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "source": "higgsfield-v4-body-only",
+          "frames": [
+            {
+              "x": 0,
+              "y": 1728,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 61,
+                "y": 62,
+                "w": 70,
+                "h": 128,
+                "visibleW": 66,
+                "visibleH": 124,
+                "scale": 1.022222
+              }
+            },
+            {
+              "x": 192,
+              "y": 1728,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 56,
+                "y": 63,
+                "w": 80,
+                "h": 127,
+                "visibleW": 76,
+                "visibleH": 123,
+                "scale": 1.022222
+              }
+            },
+            {
+              "x": 384,
+              "y": 1728,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 4,
+                "y": 61,
+                "w": 184,
+                "h": 129,
+                "visibleW": 180,
+                "visibleH": 125,
+                "scale": 1.022222
+              }
+            },
+            {
+              "x": 576,
+              "y": 1728,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 10,
+                "y": 60,
+                "w": 172,
+                "h": 130,
+                "visibleW": 168,
+                "visibleH": 126,
+                "scale": 1.022222
+              }
+            },
+            {
+              "x": 768,
+              "y": 1728,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 61,
+                "y": 61,
+                "w": 70,
+                "h": 129,
+                "visibleW": 66,
+                "visibleH": 125,
+                "scale": 1.022222
+              }
+            },
+            {
+              "x": 960,
+              "y": 1728,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 61,
+                "y": 61,
+                "w": 70,
+                "h": 129,
+                "visibleW": 66,
+                "visibleH": 125,
+                "scale": 1.022222
+              }
+            }
+          ],
+          "higgsfieldJobId": "5e486385-e18d-4afc-9b44-78baa4dc5d00",
           "stableHeight": false,
           "targetVisibleHeight": 172.48
         },
@@ -12405,7 +12405,7 @@
           ],
           "higgsfieldJobId": "89bb1a7c-4b62-40cf-9793-f68e546d2c17",
           "stableHeight": false,
-          "targetVisibleHeight": 176
+          "targetVisibleHeight": 176.0
         },
         "GET_UP": {
           "sheet": "assets/motion-atlases/detroit-lens-noir-reaction.webp",
@@ -12516,7 +12516,7 @@
           ],
           "higgsfieldJobId": "a3523c68-be29-4396-83b8-03c2934238e8",
           "stableHeight": false,
-          "targetVisibleHeight": 176
+          "targetVisibleHeight": 176.0
         },
         "HURT_HEAVY": {
           "sheet": "assets/motion-atlases/detroit-lens-noir-reaction.webp",
@@ -12849,7 +12849,7 @@
           ],
           "higgsfieldJobId": "cef0a3e9-5aee-495a-8da1-286326044917",
           "stableHeight": false,
-          "targetVisibleHeight": 176
+          "targetVisibleHeight": 176.0
         },
         "TAUNT": {
           "sheet": "assets/motion-atlases/detroit-lens-noir-reaction.webp",
@@ -13075,7 +13075,4375 @@
         }
       },
       "stabilization": {
-        "canonicalHeight": 176,
+        "canonicalHeight": 176.0,
+        "stableHeightMotions": [
+          "BLOCK_HIGH",
+          "BLOCK_LOW",
+          "COMBO_1",
+          "COMBO_2",
+          "CROUCH_IDLE",
+          "CROUCH_WALK",
+          "DASH_BACK",
+          "DASH_FORWARD",
+          "HEAVY_KICK",
+          "HEAVY_PUNCH",
+          "HURT_LIGHT",
+          "IDLE",
+          "LIGHT_KICK",
+          "LIGHT_PUNCH",
+          "READY_STANCE",
+          "RUN_BACK",
+          "RUN_FORWARD",
+          "TAUNT",
+          "THROW_FINISH",
+          "THROW_GRAB",
+          "VICTORY",
+          "WALK_BACK",
+          "WALK_FORWARD"
+        ]
+      }
+    },
+    "AMARA_VALENTINE": {
+      "atlasFiles": [
+        "amara-valentine-locomotion.webp",
+        "amara-valentine-combat.webp",
+        "amara-valentine-reaction.webp"
+      ],
+      "motions": {
+        "IDLE": {
+          "sheet": "assets/motion-atlases/amara-valentine-locomotion.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "source": "higgsfield-v2",
+          "frames": [
+            {
+              "x": 0,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 118,
+              "content": {
+                "x": 61,
+                "y": 8,
+                "w": 69,
+                "h": 182,
+                "visibleW": 65,
+                "visibleH": 178,
+                "scale": 1.0
+              }
+            },
+            {
+              "x": 192,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 118,
+              "content": {
+                "x": 61,
+                "y": 8,
+                "w": 69,
+                "h": 182,
+                "visibleW": 65,
+                "visibleH": 178,
+                "scale": 1.0
+              }
+            },
+            {
+              "x": 384,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 118,
+              "content": {
+                "x": 61,
+                "y": 8,
+                "w": 69,
+                "h": 182,
+                "visibleW": 65,
+                "visibleH": 178,
+                "scale": 1.0
+              }
+            },
+            {
+              "x": 576,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 118,
+              "content": {
+                "x": 61,
+                "y": 8,
+                "w": 69,
+                "h": 182,
+                "visibleW": 65,
+                "visibleH": 178,
+                "scale": 1.0
+              }
+            },
+            {
+              "x": 768,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 118,
+              "content": {
+                "x": 61,
+                "y": 8,
+                "w": 69,
+                "h": 182,
+                "visibleW": 65,
+                "visibleH": 178,
+                "scale": 1.0
+              }
+            },
+            {
+              "x": 960,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 118,
+              "content": {
+                "x": 61,
+                "y": 8,
+                "w": 69,
+                "h": 182,
+                "visibleW": 65,
+                "visibleH": 178,
+                "scale": 1.0
+              }
+            }
+          ],
+          "higgsfieldJobId": "7da03576-86ed-461f-a9c6-555e888a13dd",
+          "stableHeight": true,
+          "targetVisibleHeight": 178.0
+        },
+        "READY_STANCE": {
+          "sheet": "assets/motion-atlases/amara-valentine-locomotion.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "source": "higgsfield-v2",
+          "frames": [
+            {
+              "x": 1152,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 92,
+              "content": {
+                "x": 64,
+                "y": 8,
+                "w": 63,
+                "h": 182,
+                "visibleW": 59,
+                "visibleH": 178,
+                "scale": 1.0
+              }
+            },
+            {
+              "x": 1344,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 92,
+              "content": {
+                "x": 69,
+                "y": 13,
+                "w": 53,
+                "h": 177,
+                "visibleW": 49,
+                "visibleH": 173,
+                "scale": 1.028902
+              }
+            },
+            {
+              "x": 0,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 92,
+              "content": {
+                "x": 67,
+                "y": 19,
+                "w": 58,
+                "h": 171,
+                "visibleW": 54,
+                "visibleH": 167,
+                "scale": 1.065868
+              }
+            },
+            {
+              "x": 192,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 92,
+              "content": {
+                "x": 66,
+                "y": 19,
+                "w": 59,
+                "h": 171,
+                "visibleW": 55,
+                "visibleH": 167,
+                "scale": 1.065868
+              }
+            },
+            {
+              "x": 384,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 92,
+              "content": {
+                "x": 66,
+                "y": 19,
+                "w": 59,
+                "h": 171,
+                "visibleW": 55,
+                "visibleH": 167,
+                "scale": 1.065868
+              }
+            },
+            {
+              "x": 576,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 92,
+              "content": {
+                "x": 66,
+                "y": 18,
+                "w": 60,
+                "h": 172,
+                "visibleW": 56,
+                "visibleH": 168,
+                "scale": 1.059524
+              }
+            }
+          ],
+          "higgsfieldJobId": "868911cd-318a-434d-be40-df1536db7394",
+          "stableHeight": true,
+          "targetVisibleHeight": 178.0
+        },
+        "CROUCH_IDLE": {
+          "sheet": "assets/motion-atlases/amara-valentine-locomotion.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "source": "higgsfield-v2",
+          "frames": [
+            {
+              "x": 768,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 112,
+              "content": {
+                "x": 29,
+                "y": 8,
+                "w": 134,
+                "h": 182,
+                "visibleW": 130,
+                "visibleH": 178,
+                "scale": 0.72
+              }
+            },
+            {
+              "x": 960,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 112,
+              "content": {
+                "x": 29,
+                "y": 10,
+                "w": 133,
+                "h": 180,
+                "visibleW": 129,
+                "visibleH": 176,
+                "scale": 0.728182
+              }
+            },
+            {
+              "x": 1152,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 112,
+              "content": {
+                "x": 25,
+                "y": 11,
+                "w": 141,
+                "h": 179,
+                "visibleW": 137,
+                "visibleH": 175,
+                "scale": 0.732343
+              }
+            },
+            {
+              "x": 1344,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 112,
+              "content": {
+                "x": 29,
+                "y": 8,
+                "w": 134,
+                "h": 182,
+                "visibleW": 130,
+                "visibleH": 178,
+                "scale": 0.72
+              }
+            },
+            {
+              "x": 0,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 112,
+              "content": {
+                "x": 29,
+                "y": 9,
+                "w": 134,
+                "h": 181,
+                "visibleW": 130,
+                "visibleH": 177,
+                "scale": 0.724068
+              }
+            },
+            {
+              "x": 192,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 112,
+              "content": {
+                "x": 29,
+                "y": 9,
+                "w": 134,
+                "h": 181,
+                "visibleW": 130,
+                "visibleH": 177,
+                "scale": 0.724068
+              }
+            }
+          ],
+          "higgsfieldJobId": "23a8b3f9-32e0-48e3-9ac6-a9a1c1d1457e",
+          "stableHeight": true,
+          "targetVisibleHeight": 128.16
+        },
+        "CROUCH_WALK": {
+          "sheet": "assets/motion-atlases/amara-valentine-locomotion.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "source": "higgsfield-v2",
+          "frames": [
+            {
+              "x": 384,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 92,
+              "content": {
+                "x": 41,
+                "y": 13,
+                "w": 109,
+                "h": 177,
+                "visibleW": 105,
+                "visibleH": 173,
+                "scale": 0.740809
+              }
+            },
+            {
+              "x": 576,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 92,
+              "content": {
+                "x": 35,
+                "y": 37,
+                "w": 121,
+                "h": 153,
+                "visibleW": 117,
+                "visibleH": 149,
+                "scale": 0.860134
+              }
+            },
+            {
+              "x": 768,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 92,
+              "content": {
+                "x": 40,
+                "y": 14,
+                "w": 111,
+                "h": 176,
+                "visibleW": 107,
+                "visibleH": 172,
+                "scale": 0.745116
+              }
+            },
+            {
+              "x": 960,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 92,
+              "content": {
+                "x": 41,
+                "y": 8,
+                "w": 109,
+                "h": 182,
+                "visibleW": 105,
+                "visibleH": 178,
+                "scale": 0.72
+              }
+            },
+            {
+              "x": 1152,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 92,
+              "content": {
+                "x": 36,
+                "y": 30,
+                "w": 120,
+                "h": 160,
+                "visibleW": 116,
+                "visibleH": 156,
+                "scale": 0.821538
+              }
+            },
+            {
+              "x": 1344,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 92,
+              "content": {
+                "x": 41,
+                "y": 8,
+                "w": 109,
+                "h": 182,
+                "visibleW": 105,
+                "visibleH": 178,
+                "scale": 0.72
+              }
+            }
+          ],
+          "higgsfieldJobId": "7bdc65c9-03db-4cb0-ace6-68c95981caa5",
+          "stableHeight": true,
+          "targetVisibleHeight": 128.16
+        },
+        "DASH_BACK": {
+          "sheet": "assets/motion-atlases/amara-valentine-locomotion.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "source": "higgsfield-v2",
+          "frames": [
+            {
+              "x": 0,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 61,
+                "y": 20,
+                "w": 69,
+                "h": 170,
+                "visibleW": 65,
+                "visibleH": 166,
+                "scale": 0.943614
+              }
+            },
+            {
+              "x": 192,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 60,
+                "y": 20,
+                "w": 72,
+                "h": 170,
+                "visibleW": 68,
+                "visibleH": 166,
+                "scale": 0.943614
+              }
+            },
+            {
+              "x": 384,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 60,
+                "y": 52,
+                "w": 71,
+                "h": 138,
+                "visibleW": 67,
+                "visibleH": 134,
+                "scale": 1.168955
+              }
+            },
+            {
+              "x": 576,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 60,
+                "y": 28,
+                "w": 72,
+                "h": 162,
+                "visibleW": 68,
+                "visibleH": 158,
+                "scale": 0.991392
+              }
+            },
+            {
+              "x": 768,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 60,
+                "y": 23,
+                "w": 72,
+                "h": 167,
+                "visibleW": 68,
+                "visibleH": 163,
+                "scale": 0.960982
+              }
+            },
+            {
+              "x": 960,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 63,
+                "y": 8,
+                "w": 65,
+                "h": 182,
+                "visibleW": 61,
+                "visibleH": 178,
+                "scale": 0.88
+              }
+            }
+          ],
+          "higgsfieldJobId": "c8e85fd9-b5de-4416-9cb4-741b0e84df08",
+          "stableHeight": true,
+          "targetVisibleHeight": 156.64
+        },
+        "DASH_FORWARD": {
+          "sheet": "assets/motion-atlases/amara-valentine-locomotion.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "source": "higgsfield-v2",
+          "frames": [
+            {
+              "x": 1152,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 57,
+                "y": 21,
+                "w": 78,
+                "h": 169,
+                "visibleW": 74,
+                "visibleH": 165,
+                "scale": 0.949333
+              }
+            },
+            {
+              "x": 1344,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 55,
+                "y": 32,
+                "w": 81,
+                "h": 158,
+                "visibleW": 77,
+                "visibleH": 154,
+                "scale": 1.017143
+              }
+            },
+            {
+              "x": 0,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 55,
+                "y": 42,
+                "w": 81,
+                "h": 148,
+                "visibleW": 77,
+                "visibleH": 144,
+                "scale": 1.087778
+              }
+            },
+            {
+              "x": 192,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 55,
+                "y": 46,
+                "w": 81,
+                "h": 144,
+                "visibleW": 77,
+                "visibleH": 140,
+                "scale": 1.118857
+              }
+            },
+            {
+              "x": 384,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 55,
+                "y": 17,
+                "w": 81,
+                "h": 173,
+                "visibleW": 77,
+                "visibleH": 169,
+                "scale": 0.926864
+              }
+            },
+            {
+              "x": 576,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 55,
+                "y": 8,
+                "w": 81,
+                "h": 182,
+                "visibleW": 77,
+                "visibleH": 178,
+                "scale": 0.88
+              }
+            }
+          ],
+          "higgsfieldJobId": "05b0e04b-1d89-45ac-be86-4e761fd17a2b",
+          "stableHeight": true,
+          "targetVisibleHeight": 156.64
+        },
+        "JUMP_FALL": {
+          "sheet": "assets/motion-atlases/amara-valentine-locomotion.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "source": "higgsfield-v2",
+          "frames": [
+            {
+              "x": 768,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 51,
+                "y": 8,
+                "w": 89,
+                "h": 182,
+                "visibleW": 85,
+                "visibleH": 178,
+                "scale": 1.0
+              }
+            },
+            {
+              "x": 960,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 55,
+                "y": 9,
+                "w": 81,
+                "h": 181,
+                "visibleW": 77,
+                "visibleH": 177,
+                "scale": 1.0
+              }
+            },
+            {
+              "x": 1152,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 57,
+                "y": 11,
+                "w": 78,
+                "h": 179,
+                "visibleW": 74,
+                "visibleH": 175,
+                "scale": 1.0
+              }
+            },
+            {
+              "x": 1344,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 57,
+                "y": 18,
+                "w": 77,
+                "h": 172,
+                "visibleW": 73,
+                "visibleH": 168,
+                "scale": 1.0
+              }
+            },
+            {
+              "x": 0,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 51,
+                "y": 29,
+                "w": 89,
+                "h": 161,
+                "visibleW": 85,
+                "visibleH": 157,
+                "scale": 1.0
+              }
+            },
+            {
+              "x": 192,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 61,
+                "y": 8,
+                "w": 70,
+                "h": 182,
+                "visibleW": 66,
+                "visibleH": 178,
+                "scale": 1.0
+              }
+            }
+          ],
+          "higgsfieldJobId": "c70e5f1d-7abc-4329-bdc3-b1dc060272ac",
+          "stableHeight": false,
+          "targetVisibleHeight": 178.0
+        },
+        "JUMP_PEAK": {
+          "sheet": "assets/motion-atlases/amara-valentine-locomotion.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "source": "higgsfield-v2",
+          "frames": [
+            {
+              "x": 384,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 61,
+                "y": 42,
+                "w": 69,
+                "h": 148,
+                "visibleW": 65,
+                "visibleH": 144,
+                "scale": 1.0
+              }
+            },
+            {
+              "x": 576,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 60,
+                "y": 56,
+                "w": 72,
+                "h": 134,
+                "visibleW": 68,
+                "visibleH": 130,
+                "scale": 1.0
+              }
+            },
+            {
+              "x": 768,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 63,
+                "y": 68,
+                "w": 66,
+                "h": 122,
+                "visibleW": 62,
+                "visibleH": 118,
+                "scale": 1.0
+              }
+            },
+            {
+              "x": 960,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 58,
+                "y": 8,
+                "w": 75,
+                "h": 182,
+                "visibleW": 71,
+                "visibleH": 178,
+                "scale": 1.0
+              }
+            },
+            {
+              "x": 1152,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 63,
+                "y": 39,
+                "w": 66,
+                "h": 151,
+                "visibleW": 62,
+                "visibleH": 147,
+                "scale": 1.0
+              }
+            },
+            {
+              "x": 1344,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 57,
+                "y": 41,
+                "w": 77,
+                "h": 149,
+                "visibleW": 73,
+                "visibleH": 145,
+                "scale": 1.0
+              }
+            }
+          ],
+          "higgsfieldJobId": "99981662-07a3-4459-b3dc-37743f3b4012",
+          "repair": "amara-aerial-v1",
+          "stableHeight": false,
+          "targetVisibleHeight": 178.0
+        },
+        "JUMP_RISE": {
+          "sheet": "assets/motion-atlases/amara-valentine-locomotion.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "source": "higgsfield-v2",
+          "frames": [
+            {
+              "x": 0,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 63,
+                "y": 16,
+                "w": 66,
+                "h": 174,
+                "visibleW": 62,
+                "visibleH": 170,
+                "scale": 1.0
+              }
+            },
+            {
+              "x": 192,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 61,
+                "y": 8,
+                "w": 70,
+                "h": 182,
+                "visibleW": 66,
+                "visibleH": 178,
+                "scale": 1.0
+              }
+            },
+            {
+              "x": 384,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 63,
+                "y": 31,
+                "w": 66,
+                "h": 159,
+                "visibleW": 62,
+                "visibleH": 155,
+                "scale": 1.0
+              }
+            },
+            {
+              "x": 576,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 62,
+                "y": 10,
+                "w": 68,
+                "h": 180,
+                "visibleW": 64,
+                "visibleH": 176,
+                "scale": 1.0
+              }
+            },
+            {
+              "x": 768,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 63,
+                "y": 17,
+                "w": 66,
+                "h": 173,
+                "visibleW": 62,
+                "visibleH": 169,
+                "scale": 1.0
+              }
+            },
+            {
+              "x": 960,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 64,
+                "y": 19,
+                "w": 63,
+                "h": 171,
+                "visibleW": 59,
+                "visibleH": 167,
+                "scale": 1.0
+              }
+            }
+          ],
+          "higgsfieldJobId": "17f2b0cd-4f02-4585-9a9c-5bf83d9a97d3",
+          "stableHeight": false,
+          "targetVisibleHeight": 178.0
+        },
+        "JUMP_START": {
+          "sheet": "assets/motion-atlases/amara-valentine-locomotion.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "source": "higgsfield-v2",
+          "frames": [
+            {
+              "x": 1152,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 64,
+                "y": 11,
+                "w": 64,
+                "h": 179,
+                "visibleW": 60,
+                "visibleH": 175,
+                "scale": 1.0
+              }
+            },
+            {
+              "x": 1344,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 61,
+                "y": 48,
+                "w": 70,
+                "h": 142,
+                "visibleW": 66,
+                "visibleH": 138,
+                "scale": 1.0
+              }
+            },
+            {
+              "x": 0,
+              "y": 1344,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 61,
+                "y": 14,
+                "w": 69,
+                "h": 176,
+                "visibleW": 65,
+                "visibleH": 172,
+                "scale": 1.0
+              }
+            },
+            {
+              "x": 192,
+              "y": 1344,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 61,
+                "y": 8,
+                "w": 70,
+                "h": 182,
+                "visibleW": 66,
+                "visibleH": 178,
+                "scale": 1.0
+              }
+            },
+            {
+              "x": 384,
+              "y": 1344,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 61,
+                "y": 10,
+                "w": 70,
+                "h": 180,
+                "visibleW": 66,
+                "visibleH": 176,
+                "scale": 1.0
+              }
+            },
+            {
+              "x": 576,
+              "y": 1344,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 58,
+                "y": 33,
+                "w": 75,
+                "h": 157,
+                "visibleW": 71,
+                "visibleH": 153,
+                "scale": 1.0
+              }
+            }
+          ],
+          "higgsfieldJobId": "82001d7a-f43a-4d60-b9f1-d10f4adf3633",
+          "stableHeight": false,
+          "targetVisibleHeight": 178.0
+        },
+        "LANDING": {
+          "sheet": "assets/motion-atlases/amara-valentine-locomotion.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "source": "higgsfield-v2",
+          "frames": [
+            {
+              "x": 768,
+              "y": 1344,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 66,
+                "y": 24,
+                "w": 60,
+                "h": 166,
+                "visibleW": 56,
+                "visibleH": 162,
+                "scale": 1.092025
+              }
+            },
+            {
+              "x": 960,
+              "y": 1344,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 67,
+                "y": 30,
+                "w": 57,
+                "h": 160,
+                "visibleW": 53,
+                "visibleH": 156,
+                "scale": 1.092025
+              }
+            },
+            {
+              "x": 1152,
+              "y": 1344,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 68,
+                "y": 8,
+                "w": 58,
+                "h": 160,
+                "visibleW": 54,
+                "visibleH": 156,
+                "scale": 1.092025
+              }
+            },
+            {
+              "x": 1344,
+              "y": 1344,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 65,
+                "y": 27,
+                "w": 61,
+                "h": 163,
+                "visibleW": 57,
+                "visibleH": 159,
+                "scale": 1.092025
+              }
+            },
+            {
+              "x": 0,
+              "y": 1536,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 66,
+                "y": 24,
+                "w": 60,
+                "h": 166,
+                "visibleW": 56,
+                "visibleH": 162,
+                "scale": 1.092025
+              }
+            },
+            {
+              "x": 192,
+              "y": 1536,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 65,
+                "y": 23,
+                "w": 61,
+                "h": 167,
+                "visibleW": 57,
+                "visibleH": 163,
+                "scale": 1.092025
+              }
+            }
+          ],
+          "higgsfieldJobId": "14195c7b-7a48-41ef-8589-fee6ddfc49b1",
+          "stableHeight": false,
+          "targetVisibleHeight": 178.0
+        },
+        "RUN_BACK": {
+          "sheet": "assets/motion-atlases/amara-valentine-locomotion.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "source": "higgsfield-v2",
+          "frames": [
+            {
+              "x": 384,
+              "y": 1536,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 72,
+              "content": {
+                "x": 66,
+                "y": 60,
+                "w": 59,
+                "h": 130,
+                "visibleW": 55,
+                "visibleH": 126,
+                "scale": 1.271429
+              }
+            },
+            {
+              "x": 576,
+              "y": 1536,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 72,
+              "content": {
+                "x": 69,
+                "y": 60,
+                "w": 54,
+                "h": 130,
+                "visibleW": 50,
+                "visibleH": 126,
+                "scale": 1.271429
+              }
+            },
+            {
+              "x": 768,
+              "y": 1536,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 72,
+              "content": {
+                "x": 65,
+                "y": 61,
+                "w": 61,
+                "h": 129,
+                "visibleW": 57,
+                "visibleH": 125,
+                "scale": 1.2816
+              }
+            },
+            {
+              "x": 960,
+              "y": 1536,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 72,
+              "content": {
+                "x": 68,
+                "y": 8,
+                "w": 56,
+                "h": 182,
+                "visibleW": 52,
+                "visibleH": 178,
+                "scale": 0.9
+              }
+            },
+            {
+              "x": 1152,
+              "y": 1536,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 72,
+              "content": {
+                "x": 70,
+                "y": 63,
+                "w": 51,
+                "h": 127,
+                "visibleW": 47,
+                "visibleH": 123,
+                "scale": 1.302439
+              }
+            },
+            {
+              "x": 1344,
+              "y": 1536,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 72,
+              "content": {
+                "x": 66,
+                "y": 60,
+                "w": 59,
+                "h": 130,
+                "visibleW": 55,
+                "visibleH": 126,
+                "scale": 1.271429
+              }
+            }
+          ],
+          "higgsfieldJobId": "bbe549a4-6f08-462d-96d2-293d474e5624",
+          "stableHeight": true,
+          "targetVisibleHeight": 160.2
+        },
+        "RUN_FORWARD": {
+          "sheet": "assets/motion-atlases/amara-valentine-locomotion.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "source": "higgsfield-v2",
+          "frames": [
+            {
+              "x": 0,
+              "y": 1728,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 72,
+              "content": {
+                "x": 66,
+                "y": 12,
+                "w": 59,
+                "h": 178,
+                "visibleW": 55,
+                "visibleH": 174,
+                "scale": 0.92069
+              }
+            },
+            {
+              "x": 192,
+              "y": 1728,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 72,
+              "content": {
+                "x": 65,
+                "y": 24,
+                "w": 62,
+                "h": 166,
+                "visibleW": 58,
+                "visibleH": 162,
+                "scale": 0.988889
+              }
+            },
+            {
+              "x": 384,
+              "y": 1728,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 72,
+              "content": {
+                "x": 65,
+                "y": 15,
+                "w": 62,
+                "h": 175,
+                "visibleW": 58,
+                "visibleH": 171,
+                "scale": 0.936842
+              }
+            },
+            {
+              "x": 576,
+              "y": 1728,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 72,
+              "content": {
+                "x": 64,
+                "y": 16,
+                "w": 63,
+                "h": 173,
+                "visibleW": 59,
+                "visibleH": 169,
+                "scale": 0.947929
+              }
+            },
+            {
+              "x": 768,
+              "y": 1728,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 72,
+              "content": {
+                "x": 65,
+                "y": 15,
+                "w": 62,
+                "h": 175,
+                "visibleW": 58,
+                "visibleH": 171,
+                "scale": 0.936842
+              }
+            },
+            {
+              "x": 960,
+              "y": 1728,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 72,
+              "content": {
+                "x": 65,
+                "y": 8,
+                "w": 62,
+                "h": 182,
+                "visibleW": 58,
+                "visibleH": 178,
+                "scale": 0.9
+              }
+            }
+          ],
+          "higgsfieldJobId": "c6325a2d-880b-449d-a244-c13eac279b9e",
+          "stableHeight": true,
+          "targetVisibleHeight": 160.2
+        },
+        "WALK_BACK": {
+          "sheet": "assets/motion-atlases/amara-valentine-locomotion.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "source": "higgsfield-v2",
+          "frames": [
+            {
+              "x": 1152,
+              "y": 1728,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 98,
+              "content": {
+                "x": 67,
+                "y": 12,
+                "w": 57,
+                "h": 178,
+                "visibleW": 53,
+                "visibleH": 174,
+                "scale": 1.002529
+              }
+            },
+            {
+              "x": 1344,
+              "y": 1728,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 98,
+              "content": {
+                "x": 67,
+                "y": 12,
+                "w": 58,
+                "h": 178,
+                "visibleW": 54,
+                "visibleH": 174,
+                "scale": 1.002529
+              }
+            },
+            {
+              "x": 0,
+              "y": 1920,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 98,
+              "content": {
+                "x": 68,
+                "y": 11,
+                "w": 56,
+                "h": 179,
+                "visibleW": 52,
+                "visibleH": 175,
+                "scale": 0.9968
+              }
+            },
+            {
+              "x": 192,
+              "y": 1920,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 98,
+              "content": {
+                "x": 68,
+                "y": 11,
+                "w": 56,
+                "h": 179,
+                "visibleW": 52,
+                "visibleH": 175,
+                "scale": 0.9968
+              }
+            },
+            {
+              "x": 384,
+              "y": 1920,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 98,
+              "content": {
+                "x": 67,
+                "y": 12,
+                "w": 58,
+                "h": 178,
+                "visibleW": 54,
+                "visibleH": 174,
+                "scale": 1.002529
+              }
+            },
+            {
+              "x": 576,
+              "y": 1920,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 98,
+              "content": {
+                "x": 66,
+                "y": 8,
+                "w": 59,
+                "h": 182,
+                "visibleW": 55,
+                "visibleH": 178,
+                "scale": 0.98
+              }
+            }
+          ],
+          "higgsfieldJobId": "ff981688-9561-49d1-a7a8-ca59e905d441",
+          "stableHeight": true,
+          "targetVisibleHeight": 174.44
+        },
+        "WALK_FORWARD": {
+          "sheet": "assets/motion-atlases/amara-valentine-locomotion.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "source": "higgsfield-v2",
+          "frames": [
+            {
+              "x": 768,
+              "y": 1920,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 98,
+              "content": {
+                "x": 65,
+                "y": 8,
+                "w": 62,
+                "h": 182,
+                "visibleW": 58,
+                "visibleH": 178,
+                "scale": 0.98
+              }
+            },
+            {
+              "x": 960,
+              "y": 1920,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 98,
+              "content": {
+                "x": 61,
+                "y": 8,
+                "w": 69,
+                "h": 182,
+                "visibleW": 65,
+                "visibleH": 178,
+                "scale": 0.98
+              }
+            },
+            {
+              "x": 1152,
+              "y": 1920,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 98,
+              "content": {
+                "x": 62,
+                "y": 8,
+                "w": 67,
+                "h": 182,
+                "visibleW": 63,
+                "visibleH": 178,
+                "scale": 0.98
+              }
+            },
+            {
+              "x": 1344,
+              "y": 1920,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 98,
+              "content": {
+                "x": 61,
+                "y": 8,
+                "w": 69,
+                "h": 182,
+                "visibleW": 65,
+                "visibleH": 178,
+                "scale": 0.98
+              }
+            },
+            {
+              "x": 0,
+              "y": 2112,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 98,
+              "content": {
+                "x": 61,
+                "y": 10,
+                "w": 69,
+                "h": 180,
+                "visibleW": 65,
+                "visibleH": 176,
+                "scale": 0.991136
+              }
+            },
+            {
+              "x": 192,
+              "y": 2112,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 98,
+              "content": {
+                "x": 63,
+                "y": 8,
+                "w": 65,
+                "h": 182,
+                "visibleW": 61,
+                "visibleH": 178,
+                "scale": 0.98
+              }
+            }
+          ],
+          "higgsfieldJobId": "3f393000-8660-4f23-bb06-97696f7f8089",
+          "stableHeight": true,
+          "targetVisibleHeight": 174.44
+        },
+        "AIR_ATTACK": {
+          "sheet": "assets/motion-atlases/amara-valentine-combat.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "source": "higgsfield-v2",
+          "frames": [
+            {
+              "x": 0,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 54,
+                "y": 36,
+                "w": 83,
+                "h": 154,
+                "visibleW": 79,
+                "visibleH": 150,
+                "scale": 1.0
+              }
+            },
+            {
+              "x": 192,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 55,
+                "y": 34,
+                "w": 81,
+                "h": 156,
+                "visibleW": 77,
+                "visibleH": 152,
+                "scale": 1.0
+              }
+            },
+            {
+              "x": 384,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 52,
+                "y": 8,
+                "w": 87,
+                "h": 182,
+                "visibleW": 83,
+                "visibleH": 178,
+                "scale": 1.0
+              }
+            },
+            {
+              "x": 576,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 53,
+                "y": 27,
+                "w": 85,
+                "h": 163,
+                "visibleW": 81,
+                "visibleH": 159,
+                "scale": 1.0
+              }
+            },
+            {
+              "x": 768,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 60,
+                "y": 27,
+                "w": 72,
+                "h": 163,
+                "visibleW": 68,
+                "visibleH": 159,
+                "scale": 1.0
+              }
+            },
+            {
+              "x": 960,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 54,
+                "y": 20,
+                "w": 83,
+                "h": 170,
+                "visibleW": 79,
+                "visibleH": 166,
+                "scale": 1.0
+              }
+            }
+          ],
+          "higgsfieldJobId": "c17e8780-f7b4-4286-b3bc-f04ef6252441",
+          "repair": "amara-aerial-v1",
+          "stableHeight": false,
+          "targetVisibleHeight": 178.0
+        },
+        "COMBO_1": {
+          "sheet": "assets/motion-atlases/amara-valentine-combat.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "source": "higgsfield-v2",
+          "frames": [
+            {
+              "x": 1152,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 58,
+                "y": 8,
+                "w": 76,
+                "h": 182,
+                "visibleW": 72,
+                "visibleH": 178,
+                "scale": 0.98
+              }
+            },
+            {
+              "x": 1344,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 58,
+                "y": 8,
+                "w": 76,
+                "h": 182,
+                "visibleW": 72,
+                "visibleH": 178,
+                "scale": 0.98
+              }
+            },
+            {
+              "x": 0,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 58,
+                "y": 8,
+                "w": 76,
+                "h": 182,
+                "visibleW": 72,
+                "visibleH": 178,
+                "scale": 0.98
+              }
+            },
+            {
+              "x": 192,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 58,
+                "y": 9,
+                "w": 76,
+                "h": 181,
+                "visibleW": 72,
+                "visibleH": 177,
+                "scale": 0.985537
+              }
+            },
+            {
+              "x": 384,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 58,
+                "y": 14,
+                "w": 76,
+                "h": 176,
+                "visibleW": 72,
+                "visibleH": 172,
+                "scale": 1.014186
+              }
+            },
+            {
+              "x": 576,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 58,
+                "y": 8,
+                "w": 76,
+                "h": 182,
+                "visibleW": 72,
+                "visibleH": 178,
+                "scale": 0.98
+              }
+            }
+          ],
+          "higgsfieldJobId": "9fbc60fc-9561-445a-9d4f-2b4bd6a089e5",
+          "stableHeight": true,
+          "targetVisibleHeight": 174.44
+        },
+        "COMBO_2": {
+          "sheet": "assets/motion-atlases/amara-valentine-combat.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "source": "higgsfield-v2",
+          "frames": [
+            {
+              "x": 768,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 66,
+                "y": 26,
+                "w": 60,
+                "h": 164,
+                "visibleW": 56,
+                "visibleH": 160,
+                "scale": 1.09025
+              }
+            },
+            {
+              "x": 960,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 66,
+                "y": 26,
+                "w": 59,
+                "h": 164,
+                "visibleW": 55,
+                "visibleH": 160,
+                "scale": 1.09025
+              }
+            },
+            {
+              "x": 1152,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 66,
+                "y": 8,
+                "w": 60,
+                "h": 182,
+                "visibleW": 56,
+                "visibleH": 178,
+                "scale": 0.98
+              }
+            },
+            {
+              "x": 1344,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 66,
+                "y": 29,
+                "w": 60,
+                "h": 161,
+                "visibleW": 56,
+                "visibleH": 157,
+                "scale": 1.111083
+              }
+            },
+            {
+              "x": 0,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 66,
+                "y": 28,
+                "w": 59,
+                "h": 162,
+                "visibleW": 55,
+                "visibleH": 158,
+                "scale": 1.104051
+              }
+            },
+            {
+              "x": 192,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 66,
+                "y": 26,
+                "w": 59,
+                "h": 164,
+                "visibleW": 55,
+                "visibleH": 160,
+                "scale": 1.09025
+              }
+            }
+          ],
+          "higgsfieldJobId": "13c33f4c-c5c3-4e03-8099-0019fabd252a",
+          "stableHeight": true,
+          "targetVisibleHeight": 174.44
+        },
+        "CROUCH_ATTACK": {
+          "sheet": "assets/motion-atlases/amara-valentine-combat.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "source": "higgsfield-v2",
+          "frames": [
+            {
+              "x": 384,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 57,
+                "y": 29,
+                "w": 78,
+                "h": 161,
+                "visibleW": 74,
+                "visibleH": 157,
+                "scale": 0.72
+              }
+            },
+            {
+              "x": 576,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 56,
+                "y": 46,
+                "w": 79,
+                "h": 144,
+                "visibleW": 75,
+                "visibleH": 140,
+                "scale": 0.72
+              }
+            },
+            {
+              "x": 768,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 56,
+                "y": 17,
+                "w": 80,
+                "h": 173,
+                "visibleW": 76,
+                "visibleH": 169,
+                "scale": 0.72
+              }
+            },
+            {
+              "x": 960,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 56,
+                "y": 22,
+                "w": 80,
+                "h": 168,
+                "visibleW": 76,
+                "visibleH": 164,
+                "scale": 0.72
+              }
+            },
+            {
+              "x": 1152,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 56,
+                "y": 23,
+                "w": 80,
+                "h": 167,
+                "visibleW": 76,
+                "visibleH": 163,
+                "scale": 0.72
+              }
+            },
+            {
+              "x": 1344,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 58,
+                "y": 8,
+                "w": 76,
+                "h": 182,
+                "visibleW": 72,
+                "visibleH": 178,
+                "scale": 0.72
+              }
+            }
+          ],
+          "higgsfieldJobId": "d951caa8-0d96-4156-a509-9d366abdc46b",
+          "stableHeight": false,
+          "targetVisibleHeight": 128.16
+        },
+        "HEAVY_KICK": {
+          "sheet": "assets/motion-atlases/amara-valentine-combat.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "source": "higgsfield-v2",
+          "frames": [
+            {
+              "x": 0,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 55,
+                "y": 8,
+                "w": 82,
+                "h": 182,
+                "visibleW": 78,
+                "visibleH": 178,
+                "scale": 0.98
+              }
+            },
+            {
+              "x": 192,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 47,
+                "y": 10,
+                "w": 97,
+                "h": 180,
+                "visibleW": 93,
+                "visibleH": 176,
+                "scale": 0.991136
+              }
+            },
+            {
+              "x": 384,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 46,
+                "y": 16,
+                "w": 99,
+                "h": 174,
+                "visibleW": 95,
+                "visibleH": 170,
+                "scale": 1.026118
+              }
+            },
+            {
+              "x": 576,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 48,
+                "y": 12,
+                "w": 95,
+                "h": 178,
+                "visibleW": 91,
+                "visibleH": 174,
+                "scale": 1.002529
+              }
+            },
+            {
+              "x": 768,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 58,
+                "y": 10,
+                "w": 76,
+                "h": 180,
+                "visibleW": 72,
+                "visibleH": 176,
+                "scale": 0.991136
+              }
+            },
+            {
+              "x": 960,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 52,
+                "y": 9,
+                "w": 87,
+                "h": 181,
+                "visibleW": 83,
+                "visibleH": 177,
+                "scale": 0.985537
+              }
+            }
+          ],
+          "higgsfieldJobId": "2f914d4c-ada7-4dcf-a1d2-4f5ba3a122b0",
+          "stableHeight": true,
+          "targetVisibleHeight": 174.44
+        },
+        "HEAVY_PUNCH": {
+          "sheet": "assets/motion-atlases/amara-valentine-combat.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "source": "higgsfield-v2",
+          "frames": [
+            {
+              "x": 1152,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 55,
+                "y": 8,
+                "w": 81,
+                "h": 182,
+                "visibleW": 77,
+                "visibleH": 178,
+                "scale": 0.98
+              }
+            },
+            {
+              "x": 1344,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 54,
+                "y": 8,
+                "w": 83,
+                "h": 182,
+                "visibleW": 79,
+                "visibleH": 178,
+                "scale": 0.98
+              }
+            },
+            {
+              "x": 0,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 54,
+                "y": 8,
+                "w": 83,
+                "h": 182,
+                "visibleW": 79,
+                "visibleH": 178,
+                "scale": 0.98
+              }
+            },
+            {
+              "x": 192,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 54,
+                "y": 10,
+                "w": 83,
+                "h": 180,
+                "visibleW": 79,
+                "visibleH": 176,
+                "scale": 0.991136
+              }
+            },
+            {
+              "x": 384,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 54,
+                "y": 10,
+                "w": 83,
+                "h": 180,
+                "visibleW": 79,
+                "visibleH": 176,
+                "scale": 0.991136
+              }
+            },
+            {
+              "x": 576,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 56,
+                "y": 9,
+                "w": 80,
+                "h": 181,
+                "visibleW": 76,
+                "visibleH": 177,
+                "scale": 0.985537
+              }
+            }
+          ],
+          "higgsfieldJobId": "4ff7299b-3428-4daa-8025-59b95ce9f90d",
+          "stableHeight": true,
+          "targetVisibleHeight": 174.44
+        },
+        "LIGHT_KICK": {
+          "sheet": "assets/motion-atlases/amara-valentine-combat.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "source": "higgsfield-v2",
+          "frames": [
+            {
+              "x": 768,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 67,
+                "y": 25,
+                "w": 58,
+                "h": 165,
+                "visibleW": 54,
+                "visibleH": 161,
+                "scale": 1.083478
+              }
+            },
+            {
+              "x": 960,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 67,
+                "y": 9,
+                "w": 58,
+                "h": 181,
+                "visibleW": 54,
+                "visibleH": 177,
+                "scale": 0.985537
+              }
+            },
+            {
+              "x": 1152,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 67,
+                "y": 21,
+                "w": 57,
+                "h": 169,
+                "visibleW": 53,
+                "visibleH": 165,
+                "scale": 1.057212
+              }
+            },
+            {
+              "x": 1344,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 67,
+                "y": 8,
+                "w": 58,
+                "h": 182,
+                "visibleW": 54,
+                "visibleH": 178,
+                "scale": 0.98
+              }
+            },
+            {
+              "x": 0,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 67,
+                "y": 8,
+                "w": 58,
+                "h": 180,
+                "visibleW": 54,
+                "visibleH": 176,
+                "scale": 0.991136
+              }
+            },
+            {
+              "x": 192,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 66,
+                "y": 16,
+                "w": 59,
+                "h": 174,
+                "visibleW": 55,
+                "visibleH": 170,
+                "scale": 1.026118
+              }
+            }
+          ],
+          "higgsfieldJobId": "7fa26f0f-9659-4dbc-9541-9010adb9ee4d",
+          "stableHeight": true,
+          "targetVisibleHeight": 174.44
+        },
+        "LIGHT_PUNCH": {
+          "sheet": "assets/motion-atlases/amara-valentine-combat.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "source": "higgsfield-v2",
+          "frames": [
+            {
+              "x": 384,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 24,
+                "y": 17,
+                "w": 91,
+                "h": 169,
+                "visibleW": 87,
+                "visibleH": 165,
+                "scale": 1.057212
+              }
+            },
+            {
+              "x": 576,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 40,
+                "y": 17,
+                "w": 118,
+                "h": 169,
+                "visibleW": 114,
+                "visibleH": 165,
+                "scale": 1.057212
+              }
+            },
+            {
+              "x": 768,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 67,
+                "y": 17,
+                "w": 96,
+                "h": 169,
+                "visibleW": 92,
+                "visibleH": 165,
+                "scale": 1.057212
+              }
+            },
+            {
+              "x": 960,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 52,
+                "y": 16,
+                "w": 88,
+                "h": 174,
+                "visibleW": 84,
+                "visibleH": 170,
+                "scale": 1.026118
+              }
+            },
+            {
+              "x": 1152,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 49,
+                "y": 16,
+                "w": 93,
+                "h": 174,
+                "visibleW": 89,
+                "visibleH": 170,
+                "scale": 1.026118
+              }
+            },
+            {
+              "x": 1344,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 52,
+                "y": 16,
+                "w": 88,
+                "h": 174,
+                "visibleW": 84,
+                "visibleH": 170,
+                "scale": 1.026118
+              }
+            }
+          ],
+          "higgsfieldJobId": "2160f81b-4144-4aee-a53c-47522c6b31d9",
+          "stableHeight": true,
+          "targetVisibleHeight": 174.44
+        },
+        "SPECIAL_PROJECTILE": {
+          "sheet": "assets/motion-atlases/amara-valentine-combat.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "source": "higgsfield-v2",
+          "frames": [
+            {
+              "x": 0,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 68,
+                "y": 8,
+                "w": 56,
+                "h": 182,
+                "visibleW": 52,
+                "visibleH": 178,
+                "scale": 0.98
+              }
+            },
+            {
+              "x": 192,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 66,
+                "y": 10,
+                "w": 59,
+                "h": 180,
+                "visibleW": 55,
+                "visibleH": 176,
+                "scale": 0.98
+              }
+            },
+            {
+              "x": 384,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 66,
+                "y": 15,
+                "w": 59,
+                "h": 175,
+                "visibleW": 55,
+                "visibleH": 171,
+                "scale": 0.98
+              }
+            },
+            {
+              "x": 576,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 66,
+                "y": 15,
+                "w": 59,
+                "h": 175,
+                "visibleW": 55,
+                "visibleH": 171,
+                "scale": 0.98
+              }
+            },
+            {
+              "x": 768,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 66,
+                "y": 8,
+                "w": 59,
+                "h": 182,
+                "visibleW": 55,
+                "visibleH": 178,
+                "scale": 0.98
+              }
+            },
+            {
+              "x": 960,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 66,
+                "y": 8,
+                "w": 60,
+                "h": 182,
+                "visibleW": 56,
+                "visibleH": 178,
+                "scale": 0.98
+              }
+            }
+          ],
+          "higgsfieldJobId": "fb1ba97b-c03c-42e7-85e5-5b508e5136f4",
+          "stableHeight": false,
+          "targetVisibleHeight": 174.44
+        },
+        "SPECIAL_RECOVER": {
+          "sheet": "assets/motion-atlases/amara-valentine-combat.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "source": "higgsfield-v2",
+          "frames": [
+            {
+              "x": 1152,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 55,
+                "y": 10,
+                "w": 81,
+                "h": 180,
+                "visibleW": 77,
+                "visibleH": 176,
+                "scale": 0.98
+              }
+            },
+            {
+              "x": 1344,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 68,
+                "y": 10,
+                "w": 56,
+                "h": 180,
+                "visibleW": 52,
+                "visibleH": 176,
+                "scale": 0.98
+              }
+            },
+            {
+              "x": 0,
+              "y": 1344,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 72,
+                "y": 8,
+                "w": 47,
+                "h": 182,
+                "visibleW": 43,
+                "visibleH": 178,
+                "scale": 0.98
+              }
+            },
+            {
+              "x": 192,
+              "y": 1344,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 66,
+                "y": 8,
+                "w": 60,
+                "h": 182,
+                "visibleW": 56,
+                "visibleH": 178,
+                "scale": 0.98
+              }
+            },
+            {
+              "x": 384,
+              "y": 1344,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 65,
+                "y": 8,
+                "w": 61,
+                "h": 182,
+                "visibleW": 57,
+                "visibleH": 178,
+                "scale": 0.98
+              }
+            },
+            {
+              "x": 576,
+              "y": 1344,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 66,
+                "y": 9,
+                "w": 59,
+                "h": 181,
+                "visibleW": 55,
+                "visibleH": 177,
+                "scale": 0.98
+              }
+            }
+          ],
+          "higgsfieldJobId": "6aeb77b0-cab4-4cfe-90a4-1bfd667d43c5",
+          "stableHeight": false,
+          "targetVisibleHeight": 174.44
+        },
+        "SPECIAL_START": {
+          "sheet": "assets/motion-atlases/amara-valentine-combat.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "source": "higgsfield-v2",
+          "frames": [
+            {
+              "x": 768,
+              "y": 1344,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 68,
+                "y": 11,
+                "w": 56,
+                "h": 179,
+                "visibleW": 52,
+                "visibleH": 175,
+                "scale": 0.98
+              }
+            },
+            {
+              "x": 960,
+              "y": 1344,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 68,
+                "y": 11,
+                "w": 56,
+                "h": 179,
+                "visibleW": 52,
+                "visibleH": 175,
+                "scale": 0.98
+              }
+            },
+            {
+              "x": 1152,
+              "y": 1344,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 68,
+                "y": 11,
+                "w": 56,
+                "h": 179,
+                "visibleW": 52,
+                "visibleH": 175,
+                "scale": 0.98
+              }
+            },
+            {
+              "x": 1344,
+              "y": 1344,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 67,
+                "y": 11,
+                "w": 57,
+                "h": 179,
+                "visibleW": 53,
+                "visibleH": 175,
+                "scale": 0.98
+              }
+            },
+            {
+              "x": 0,
+              "y": 1536,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 67,
+                "y": 8,
+                "w": 58,
+                "h": 182,
+                "visibleW": 54,
+                "visibleH": 178,
+                "scale": 0.98
+              }
+            },
+            {
+              "x": 192,
+              "y": 1536,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 67,
+                "y": 11,
+                "w": 58,
+                "h": 179,
+                "visibleW": 54,
+                "visibleH": 175,
+                "scale": 0.98
+              }
+            }
+          ],
+          "higgsfieldJobId": "04915d96-9ea8-4a0a-b3c0-af4dbbdcdde7",
+          "stableHeight": false,
+          "targetVisibleHeight": 174.44
+        },
+        "SUPER_CHARGE": {
+          "sheet": "assets/motion-atlases/amara-valentine-combat.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "source": "higgsfield-v2",
+          "frames": [
+            {
+              "x": 384,
+              "y": 1536,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 66,
+                "y": 8,
+                "w": 60,
+                "h": 171,
+                "visibleW": 56,
+                "visibleH": 167,
+                "scale": 1.044551
+              }
+            },
+            {
+              "x": 576,
+              "y": 1536,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 66,
+                "y": 20,
+                "w": 60,
+                "h": 170,
+                "visibleW": 56,
+                "visibleH": 166,
+                "scale": 1.044551
+              }
+            },
+            {
+              "x": 768,
+              "y": 1536,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 66,
+                "y": 19,
+                "w": 60,
+                "h": 171,
+                "visibleW": 56,
+                "visibleH": 167,
+                "scale": 1.044551
+              }
+            },
+            {
+              "x": 960,
+              "y": 1536,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 66,
+                "y": 20,
+                "w": 60,
+                "h": 170,
+                "visibleW": 56,
+                "visibleH": 166,
+                "scale": 1.044551
+              }
+            },
+            {
+              "x": 1152,
+              "y": 1536,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 66,
+                "y": 20,
+                "w": 60,
+                "h": 170,
+                "visibleW": 56,
+                "visibleH": 166,
+                "scale": 1.044551
+              }
+            },
+            {
+              "x": 1344,
+              "y": 1536,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 66,
+                "y": 20,
+                "w": 59,
+                "h": 170,
+                "visibleW": 55,
+                "visibleH": 166,
+                "scale": 1.044551
+              }
+            }
+          ],
+          "higgsfieldJobId": "e0bc2e8b-0b1f-4583-8418-cdf998ab163e",
+          "stableHeight": false,
+          "targetVisibleHeight": 174.44
+        },
+        "SUPER_RELEASE": {
+          "sheet": "assets/motion-atlases/amara-valentine-combat.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "source": "higgsfield-v2",
+          "frames": [
+            {
+              "x": 0,
+              "y": 1728,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 45,
+                "y": 19,
+                "w": 102,
+                "h": 171,
+                "visibleW": 98,
+                "visibleH": 167,
+                "scale": 0.98
+              }
+            },
+            {
+              "x": 192,
+              "y": 1728,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 29,
+                "y": 19,
+                "w": 134,
+                "h": 171,
+                "visibleW": 130,
+                "visibleH": 167,
+                "scale": 0.98
+              }
+            },
+            {
+              "x": 384,
+              "y": 1728,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 27,
+                "y": 19,
+                "w": 138,
+                "h": 171,
+                "visibleW": 134,
+                "visibleH": 167,
+                "scale": 0.98
+              }
+            },
+            {
+              "x": 576,
+              "y": 1728,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 33,
+                "y": 15,
+                "w": 126,
+                "h": 175,
+                "visibleW": 122,
+                "visibleH": 171,
+                "scale": 0.98
+              }
+            },
+            {
+              "x": 768,
+              "y": 1728,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 55,
+                "y": 8,
+                "w": 82,
+                "h": 182,
+                "visibleW": 78,
+                "visibleH": 178,
+                "scale": 0.98
+              }
+            },
+            {
+              "x": 960,
+              "y": 1728,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 63,
+                "y": 8,
+                "w": 65,
+                "h": 182,
+                "visibleW": 61,
+                "visibleH": 178,
+                "scale": 0.98
+              }
+            }
+          ],
+          "higgsfieldJobId": "42156d27-94e6-4245-99a8-9a4d4e9c73d6",
+          "stableHeight": false,
+          "targetVisibleHeight": 174.44
+        },
+        "THROW_FINISH": {
+          "sheet": "assets/motion-atlases/amara-valentine-combat.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "source": "higgsfield-v2",
+          "frames": [
+            {
+              "x": 1152,
+              "y": 1728,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 56,
+                "y": 39,
+                "w": 80,
+                "h": 151,
+                "visibleW": 76,
+                "visibleH": 147,
+                "scale": 1.186667
+              }
+            },
+            {
+              "x": 1344,
+              "y": 1728,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 55,
+                "y": 25,
+                "w": 81,
+                "h": 165,
+                "visibleW": 77,
+                "visibleH": 161,
+                "scale": 1.083478
+              }
+            },
+            {
+              "x": 0,
+              "y": 1920,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 55,
+                "y": 14,
+                "w": 81,
+                "h": 176,
+                "visibleW": 77,
+                "visibleH": 172,
+                "scale": 1.014186
+              }
+            },
+            {
+              "x": 192,
+              "y": 1920,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 55,
+                "y": 11,
+                "w": 81,
+                "h": 179,
+                "visibleW": 77,
+                "visibleH": 175,
+                "scale": 0.9968
+              }
+            },
+            {
+              "x": 384,
+              "y": 1920,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 55,
+                "y": 18,
+                "w": 81,
+                "h": 172,
+                "visibleW": 77,
+                "visibleH": 168,
+                "scale": 1.038333
+              }
+            },
+            {
+              "x": 576,
+              "y": 1920,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 59,
+                "y": 8,
+                "w": 73,
+                "h": 182,
+                "visibleW": 69,
+                "visibleH": 178,
+                "scale": 0.98
+              }
+            }
+          ],
+          "higgsfieldJobId": "e8fe74f9-0110-4f1a-9f67-ef0db30235f4",
+          "stableHeight": true,
+          "targetVisibleHeight": 174.44
+        },
+        "THROW_GRAB": {
+          "sheet": "assets/motion-atlases/amara-valentine-combat.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "source": "higgsfield-v2",
+          "frames": [
+            {
+              "x": 768,
+              "y": 1920,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 62,
+                "y": 14,
+                "w": 68,
+                "h": 176,
+                "visibleW": 64,
+                "visibleH": 172,
+                "scale": 1.014186
+              }
+            },
+            {
+              "x": 960,
+              "y": 1920,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 62,
+                "y": 19,
+                "w": 67,
+                "h": 171,
+                "visibleW": 63,
+                "visibleH": 167,
+                "scale": 1.044551
+              }
+            },
+            {
+              "x": 1152,
+              "y": 1920,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 62,
+                "y": 14,
+                "w": 68,
+                "h": 176,
+                "visibleW": 64,
+                "visibleH": 172,
+                "scale": 1.014186
+              }
+            },
+            {
+              "x": 1344,
+              "y": 1920,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 62,
+                "y": 14,
+                "w": 68,
+                "h": 176,
+                "visibleW": 64,
+                "visibleH": 172,
+                "scale": 1.014186
+              }
+            },
+            {
+              "x": 0,
+              "y": 2112,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 62,
+                "y": 14,
+                "w": 68,
+                "h": 176,
+                "visibleW": 64,
+                "visibleH": 172,
+                "scale": 1.014186
+              }
+            },
+            {
+              "x": 192,
+              "y": 2112,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 62,
+                "y": 8,
+                "w": 67,
+                "h": 182,
+                "visibleW": 63,
+                "visibleH": 178,
+                "scale": 0.98
+              }
+            }
+          ],
+          "higgsfieldJobId": "dc4645a3-eb1b-4ae3-b985-e097647ce19e",
+          "stableHeight": true,
+          "targetVisibleHeight": 174.44
+        },
+        "BLOCK_HIGH": {
+          "sheet": "assets/motion-atlases/amara-valentine-reaction.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "source": "higgsfield-v2",
+          "frames": [
+            {
+              "x": 0,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 88,
+              "content": {
+                "x": 64,
+                "y": 16,
+                "w": 63,
+                "h": 174,
+                "visibleW": 59,
+                "visibleH": 170,
+                "scale": 1.026118
+              }
+            },
+            {
+              "x": 192,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 88,
+              "content": {
+                "x": 65,
+                "y": 16,
+                "w": 62,
+                "h": 174,
+                "visibleW": 58,
+                "visibleH": 170,
+                "scale": 1.026118
+              }
+            },
+            {
+              "x": 384,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 88,
+              "content": {
+                "x": 65,
+                "y": 17,
+                "w": 62,
+                "h": 173,
+                "visibleW": 58,
+                "visibleH": 169,
+                "scale": 1.032189
+              }
+            },
+            {
+              "x": 576,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 88,
+              "content": {
+                "x": 65,
+                "y": 16,
+                "w": 62,
+                "h": 174,
+                "visibleW": 58,
+                "visibleH": 170,
+                "scale": 1.026118
+              }
+            },
+            {
+              "x": 768,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 88,
+              "content": {
+                "x": 65,
+                "y": 16,
+                "w": 62,
+                "h": 174,
+                "visibleW": 58,
+                "visibleH": 170,
+                "scale": 1.026118
+              }
+            },
+            {
+              "x": 960,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 88,
+              "content": {
+                "x": 65,
+                "y": 8,
+                "w": 62,
+                "h": 182,
+                "visibleW": 58,
+                "visibleH": 178,
+                "scale": 0.98
+              }
+            }
+          ],
+          "higgsfieldJobId": "515dcdaf-a5e6-4d79-8f25-b64716f307c7",
+          "stableHeight": true,
+          "targetVisibleHeight": 174.44
+        },
+        "BLOCK_LOW": {
+          "sheet": "assets/motion-atlases/amara-valentine-reaction.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "source": "higgsfield-v2",
+          "frames": [
+            {
+              "x": 1152,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 88,
+              "content": {
+                "x": 61,
+                "y": 11,
+                "w": 69,
+                "h": 179,
+                "visibleW": 65,
+                "visibleH": 175,
+                "scale": 0.732343
+              }
+            },
+            {
+              "x": 1344,
+              "y": 0,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 88,
+              "content": {
+                "x": 61,
+                "y": 20,
+                "w": 69,
+                "h": 170,
+                "visibleW": 65,
+                "visibleH": 166,
+                "scale": 0.772048
+              }
+            },
+            {
+              "x": 0,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 88,
+              "content": {
+                "x": 61,
+                "y": 41,
+                "w": 69,
+                "h": 149,
+                "visibleW": 65,
+                "visibleH": 145,
+                "scale": 0.883862
+              }
+            },
+            {
+              "x": 192,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 88,
+              "content": {
+                "x": 61,
+                "y": 31,
+                "w": 69,
+                "h": 159,
+                "visibleW": 65,
+                "visibleH": 155,
+                "scale": 0.826839
+              }
+            },
+            {
+              "x": 384,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 88,
+              "content": {
+                "x": 61,
+                "y": 19,
+                "w": 69,
+                "h": 171,
+                "visibleW": 65,
+                "visibleH": 167,
+                "scale": 0.767425
+              }
+            },
+            {
+              "x": 576,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 88,
+              "content": {
+                "x": 63,
+                "y": 8,
+                "w": 65,
+                "h": 182,
+                "visibleW": 61,
+                "visibleH": 178,
+                "scale": 0.72
+              }
+            }
+          ],
+          "higgsfieldJobId": "bed2a762-4847-472e-a87d-02f30ed96d49",
+          "stableHeight": true,
+          "targetVisibleHeight": 128.16
+        },
+        "DEFEAT": {
+          "sheet": "assets/motion-atlases/amara-valentine-reaction.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "source": "higgsfield-v2",
+          "frames": [
+            {
+              "x": 768,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 112,
+              "content": {
+                "x": 60,
+                "y": 8,
+                "w": 72,
+                "h": 182,
+                "visibleW": 68,
+                "visibleH": 178,
+                "scale": 1.0
+              }
+            },
+            {
+              "x": 960,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 112,
+              "content": {
+                "x": 59,
+                "y": 33,
+                "w": 74,
+                "h": 157,
+                "visibleW": 70,
+                "visibleH": 153,
+                "scale": 1.0
+              }
+            },
+            {
+              "x": 1152,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 112,
+              "content": {
+                "x": 59,
+                "y": 53,
+                "w": 74,
+                "h": 137,
+                "visibleW": 70,
+                "visibleH": 133,
+                "scale": 1.0
+              }
+            },
+            {
+              "x": 1344,
+              "y": 192,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 112,
+              "content": {
+                "x": 59,
+                "y": 46,
+                "w": 74,
+                "h": 144,
+                "visibleW": 70,
+                "visibleH": 140,
+                "scale": 1.0
+              }
+            },
+            {
+              "x": 0,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 112,
+              "content": {
+                "x": 59,
+                "y": 116,
+                "w": 74,
+                "h": 74,
+                "visibleW": 70,
+                "visibleH": 70,
+                "scale": 1.0
+              }
+            },
+            {
+              "x": 192,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 112,
+              "content": {
+                "x": 59,
+                "y": 130,
+                "w": 74,
+                "h": 60,
+                "visibleW": 70,
+                "visibleH": 56,
+                "scale": 1.0
+              }
+            }
+          ],
+          "higgsfieldJobId": "ad9f7f1a-b63d-4b3c-ae83-ec6a6a840dd9",
+          "stableHeight": false,
+          "targetVisibleHeight": 178.0
+        },
+        "GET_UP": {
+          "sheet": "assets/motion-atlases/amara-valentine-reaction.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "source": "higgsfield-v2",
+          "frames": [
+            {
+              "x": 384,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 62,
+                "y": 75,
+                "w": 67,
+                "h": 115,
+                "visibleW": 63,
+                "visibleH": 111,
+                "scale": 1.0
+              }
+            },
+            {
+              "x": 576,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 63,
+                "y": 55,
+                "w": 66,
+                "h": 135,
+                "visibleW": 62,
+                "visibleH": 131,
+                "scale": 1.0
+              }
+            },
+            {
+              "x": 768,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 63,
+                "y": 25,
+                "w": 66,
+                "h": 165,
+                "visibleW": 62,
+                "visibleH": 161,
+                "scale": 1.0
+              }
+            },
+            {
+              "x": 960,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 63,
+                "y": 19,
+                "w": 66,
+                "h": 171,
+                "visibleW": 62,
+                "visibleH": 167,
+                "scale": 1.0
+              }
+            },
+            {
+              "x": 1152,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 63,
+                "y": 12,
+                "w": 66,
+                "h": 178,
+                "visibleW": 62,
+                "visibleH": 174,
+                "scale": 1.0
+              }
+            },
+            {
+              "x": 1344,
+              "y": 384,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 63,
+                "y": 8,
+                "w": 65,
+                "h": 182,
+                "visibleW": 61,
+                "visibleH": 178,
+                "scale": 1.0
+              }
+            }
+          ],
+          "higgsfieldJobId": "8eb7f8eb-4932-4dc9-8ca5-b1bfbe491d26",
+          "stableHeight": false,
+          "targetVisibleHeight": 178.0
+        },
+        "HURT_HEAVY": {
+          "sheet": "assets/motion-atlases/amara-valentine-reaction.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "source": "higgsfield-v2",
+          "frames": [
+            {
+              "x": 0,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 53,
+                "y": 14,
+                "w": 86,
+                "h": 176,
+                "visibleW": 82,
+                "visibleH": 172,
+                "scale": 0.98
+              }
+            },
+            {
+              "x": 192,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 53,
+                "y": 9,
+                "w": 86,
+                "h": 181,
+                "visibleW": 82,
+                "visibleH": 177,
+                "scale": 0.98
+              }
+            },
+            {
+              "x": 384,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 52,
+                "y": 30,
+                "w": 87,
+                "h": 160,
+                "visibleW": 83,
+                "visibleH": 156,
+                "scale": 0.98
+              }
+            },
+            {
+              "x": 576,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 52,
+                "y": 67,
+                "w": 87,
+                "h": 123,
+                "visibleW": 83,
+                "visibleH": 119,
+                "scale": 0.98
+              }
+            },
+            {
+              "x": 768,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 54,
+                "y": 8,
+                "w": 84,
+                "h": 182,
+                "visibleW": 80,
+                "visibleH": 178,
+                "scale": 0.98
+              }
+            },
+            {
+              "x": 960,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 54,
+                "y": 8,
+                "w": 84,
+                "h": 182,
+                "visibleW": 80,
+                "visibleH": 178,
+                "scale": 0.98
+              }
+            }
+          ],
+          "higgsfieldJobId": "b18d5751-a10c-404f-91bc-7c24828ad576",
+          "stableHeight": false,
+          "targetVisibleHeight": 174.44
+        },
+        "HURT_LIGHT": {
+          "sheet": "assets/motion-atlases/amara-valentine-reaction.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "source": "higgsfield-v2",
+          "frames": [
+            {
+              "x": 1152,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 58,
+                "y": 8,
+                "w": 75,
+                "h": 182,
+                "visibleW": 71,
+                "visibleH": 178,
+                "scale": 0.98
+              }
+            },
+            {
+              "x": 1344,
+              "y": 576,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 58,
+                "y": 9,
+                "w": 76,
+                "h": 181,
+                "visibleW": 72,
+                "visibleH": 177,
+                "scale": 0.985537
+              }
+            },
+            {
+              "x": 0,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 58,
+                "y": 13,
+                "w": 76,
+                "h": 177,
+                "visibleW": 72,
+                "visibleH": 173,
+                "scale": 1.008324
+              }
+            },
+            {
+              "x": 192,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 58,
+                "y": 11,
+                "w": 76,
+                "h": 179,
+                "visibleW": 72,
+                "visibleH": 175,
+                "scale": 0.9968
+              }
+            },
+            {
+              "x": 384,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 58,
+                "y": 11,
+                "w": 76,
+                "h": 179,
+                "visibleW": 72,
+                "visibleH": 175,
+                "scale": 0.9968
+              }
+            },
+            {
+              "x": 576,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 58,
+                "y": 9,
+                "w": 76,
+                "h": 181,
+                "visibleW": 72,
+                "visibleH": 177,
+                "scale": 0.985537
+              }
+            }
+          ],
+          "higgsfieldJobId": "d2665c0c-ad86-44eb-b4eb-4f93e2f0a314",
+          "stableHeight": true,
+          "targetVisibleHeight": 174.44
+        },
+        "KNOCKDOWN": {
+          "sheet": "assets/motion-atlases/amara-valentine-reaction.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "source": "higgsfield-v2",
+          "frames": [
+            {
+              "x": 768,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 64,
+                "y": 8,
+                "w": 64,
+                "h": 182,
+                "visibleW": 60,
+                "visibleH": 178,
+                "scale": 1.0
+              }
+            },
+            {
+              "x": 960,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 60,
+                "y": 10,
+                "w": 72,
+                "h": 180,
+                "visibleW": 68,
+                "visibleH": 176,
+                "scale": 1.0
+              }
+            },
+            {
+              "x": 1152,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 60,
+                "y": 26,
+                "w": 72,
+                "h": 164,
+                "visibleW": 68,
+                "visibleH": 160,
+                "scale": 1.0
+              }
+            },
+            {
+              "x": 1344,
+              "y": 768,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 60,
+                "y": 43,
+                "w": 72,
+                "h": 147,
+                "visibleW": 68,
+                "visibleH": 143,
+                "scale": 1.0
+              }
+            },
+            {
+              "x": 0,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 60,
+                "y": 79,
+                "w": 72,
+                "h": 111,
+                "visibleW": 68,
+                "visibleH": 107,
+                "scale": 1.0
+              }
+            },
+            {
+              "x": 192,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 60,
+                "y": 129,
+                "w": 72,
+                "h": 61,
+                "visibleW": 68,
+                "visibleH": 57,
+                "scale": 1.0
+              }
+            }
+          ],
+          "higgsfieldJobId": "ad1fc01d-c40b-4ca3-b9ee-7a232a656f22",
+          "stableHeight": false,
+          "targetVisibleHeight": 178.0
+        },
+        "TAUNT": {
+          "sheet": "assets/motion-atlases/amara-valentine-reaction.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "source": "higgsfield-v2",
+          "frames": [
+            {
+              "x": 384,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 66,
+                "y": 8,
+                "w": 60,
+                "h": 182,
+                "visibleW": 56,
+                "visibleH": 178,
+                "scale": 0.98
+              }
+            },
+            {
+              "x": 576,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 66,
+                "y": 8,
+                "w": 59,
+                "h": 182,
+                "visibleW": 55,
+                "visibleH": 178,
+                "scale": 0.98
+              }
+            },
+            {
+              "x": 768,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 66,
+                "y": 8,
+                "w": 60,
+                "h": 182,
+                "visibleW": 56,
+                "visibleH": 178,
+                "scale": 0.98
+              }
+            },
+            {
+              "x": 960,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 66,
+                "y": 8,
+                "w": 60,
+                "h": 182,
+                "visibleW": 56,
+                "visibleH": 178,
+                "scale": 0.98
+              }
+            },
+            {
+              "x": 1152,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 66,
+                "y": 8,
+                "w": 60,
+                "h": 182,
+                "visibleW": 56,
+                "visibleH": 178,
+                "scale": 0.98
+              }
+            },
+            {
+              "x": 1344,
+              "y": 960,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 78,
+              "content": {
+                "x": 65,
+                "y": 8,
+                "w": 61,
+                "h": 182,
+                "visibleW": 57,
+                "visibleH": 178,
+                "scale": 0.98
+              }
+            }
+          ],
+          "higgsfieldJobId": "16658d9f-3ee5-4205-9f36-746641fc1b0b",
+          "stableHeight": true,
+          "targetVisibleHeight": 174.44
+        },
+        "VICTORY": {
+          "sheet": "assets/motion-atlases/amara-valentine-reaction.webp",
+          "frameCount": 6,
+          "uniqueFrames": 6,
+          "cellWidth": 192,
+          "cellHeight": 192,
+          "renderScale": 1.3333333333333333,
+          "sourceFacing": 1,
+          "source": "higgsfield-v2",
+          "frames": [
+            {
+              "x": 0,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 108,
+              "content": {
+                "x": 67,
+                "y": 18,
+                "w": 58,
+                "h": 172,
+                "visibleW": 54,
+                "visibleH": 168,
+                "scale": 1.038333
+              }
+            },
+            {
+              "x": 192,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 108,
+              "content": {
+                "x": 67,
+                "y": 18,
+                "w": 58,
+                "h": 172,
+                "visibleW": 54,
+                "visibleH": 168,
+                "scale": 1.038333
+              }
+            },
+            {
+              "x": 384,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 108,
+              "content": {
+                "x": 67,
+                "y": 8,
+                "w": 58,
+                "h": 182,
+                "visibleW": 54,
+                "visibleH": 178,
+                "scale": 0.98
+              }
+            },
+            {
+              "x": 576,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 108,
+              "content": {
+                "x": 67,
+                "y": 18,
+                "w": 57,
+                "h": 172,
+                "visibleW": 53,
+                "visibleH": 168,
+                "scale": 1.038333
+              }
+            },
+            {
+              "x": 768,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 108,
+              "content": {
+                "x": 67,
+                "y": 17,
+                "w": 58,
+                "h": 173,
+                "visibleW": 54,
+                "visibleH": 169,
+                "scale": 1.032189
+              }
+            },
+            {
+              "x": 960,
+              "y": 1152,
+              "w": 192,
+              "h": 192,
+              "duration_ms": 108,
+              "content": {
+                "x": 67,
+                "y": 16,
+                "w": 58,
+                "h": 174,
+                "visibleW": 54,
+                "visibleH": 170,
+                "scale": 1.026118
+              }
+            }
+          ],
+          "higgsfieldJobId": "80b96ed8-4928-43d1-bee3-b5fb12e24d8e",
+          "stableHeight": true,
+          "targetVisibleHeight": 174.44
+        }
+      },
+      "stabilization": {
+        "canonicalHeight": 178.0,
         "stableHeightMotions": [
           "BLOCK_HIGH",
           "BLOCK_LOW",

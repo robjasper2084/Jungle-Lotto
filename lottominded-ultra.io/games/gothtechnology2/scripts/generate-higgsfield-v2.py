@@ -37,7 +37,20 @@ CHARACTERS = {
         ),
         "magic": "restrained gold-white camera flash and ruby eye-laser energy",
     },
+    "AMARA_VALENTINE": {
+        "master_job": "7853d5f2-685c-49d2-90da-eeb63eee4589",
+        "profile": (
+            "Amara Valentine: powerful curvy dark-skinned Black woman, warm oval face, expressive "
+            "brown eyes, full lips, long voluminous side-parted dark curls with warm highlights, large "
+            "gold hoop earrings, layered gold necklaces, fitted deep-cobalt armored combat tunic and "
+            "bodysuit, rose-gold chest and shoulder armor, subtle magenta seam lines, cobalt forearm "
+            "gauntlets, articulated knee guards, and full dark-cobalt combat boots"
+        ),
+        "magic": "rose-magenta love energy, attraction fields, and heart-shaped light",
+    },
 }
+
+AMARA_GRID_MOTIONS = {"LIGHT_PUNCH", "SUPER_RELEASE"}
 
 MOTIONS = {
     "IDLE": "subtle combat-idle breathing loop with small weight and cloth shifts",
@@ -109,6 +122,45 @@ KALYX_AERIAL_MOTIONS = {
     "AIR_ATTACK": "six airborne attack beats: compact anticipation, diagonal claw strike, full extension, clean follow-through, limb retraction, and airborne recovery before descent",
 }
 
+AMARA_VALENTINE_MOTIONS = {
+    "READY_STANCE": "raise both guarded hands and settle into a poised boxing-and-grappling stance with grounded hips and confident eye contact",
+    "WALK_FORWARD": "powerful guarded forward walk toward screen-right with clear heel-to-toe weight transfer and controlled shoulder rhythm",
+    "WALK_BACK": "guarded backward walk toward screen-left while facing screen-right, with clear alternating foot plants and no sliding",
+    "RUN_FORWARD": "athletic forward sprint toward screen-right with strong arm drive, clear contact and flight beats, then a controlled stride",
+    "RUN_BACK": "fast tactical retreat toward screen-left while staying oriented screen-right, with alternating footfalls and stable guard",
+    "DASH_FORWARD": "low explosive shoulder-led burst toward screen-right, armor and curls following one connected body, then a planted brake",
+    "DASH_BACK": "sharp evasive burst toward screen-left, one connected body and hair silhouette, then a balanced planted recovery",
+    "JUMP_START": "six connected beats: upright guard, deep leg compression, forceful drive, toe-off, both boots leave the floor, clean airborne extension",
+    "JUMP_RISE": "six airborne rising beats with both boots off the ground, compact knees, controlled arms, and hair attached to one head",
+    "JUMP_PEAK": "six airborne apex beats with a compact floating silhouette, knees tucking, momentum pausing, then descent beginning",
+    "JUMP_FALL": "six airborne descending beats, limbs balancing, boots lowering, and body preparing for a stable landing",
+    "LANDING": "six connected landing beats: boots contact, knees absorb impact, torso compresses, hair settles, guard reforms, stance stabilizes",
+    "AIR_ATTACK": "airborne flying knee followed by a diagonal armored forearm strike, full extension, clean follow-through, and airborne recovery",
+    "LIGHT_PUNCH": "compact fast rose-guard jab using the lead fist, full extension, immediate retraction, and stable rear-hand guard",
+    "HEAVY_PUNCH": "powerful committed armored hook with hip rotation, full impact extension, recoil, and guarded recovery",
+    "LIGHT_KICK": "quick low front kick with a clear chamber, boot extension, retraction, and planted recovery",
+    "HEAVY_KICK": "strong spinning side kick with large anticipation, full boot extension, rotation follow-through, and balanced recovery",
+    "CROUCH_ATTACK": "low crouching leg sweep with guard, full boot extension, follow-through, and recovery without changing body scale",
+    "COMBO_1": "three-hit Heartline combination: lead jab, armored elbow, finishing palm strike, then guarded recovery",
+    "COMBO_2": "four-part Valentine combination: body hook, low kick, turning backfist, strong rising knee finish",
+    "THROW_GRAB": "one-person empty-hand clinch entry drill: guarded step, both open hands reach into empty air, close to a firm hold, brace, recover",
+    "THROW_FINISH": "one-person hip-throw finish drill with an imaginary opponent: planted lift effort, wide pivot, arm sweep, balanced recovery",
+    "SPECIAL_START": "body-only love technique preparation: plant both boots, place one fist over the heart, cross both forearms, then open the lead palm toward screen-right",
+    "SPECIAL_PROJECTILE": "body-only Heartline Pulse release: draw both empty hands to the chest, step forward, drive one open palm screen-right, fully extend, retract",
+    "SPECIAL_RECOVER": "body-only recovery after a committed open-palm release: retract the arm, settle shoulders, reset both feet, restore guard",
+    "SUPER_CHARGE": "body-only Heartbreak Nova charge: grounded stance, cross both hands over the chest, widen the elbows, lift the chin, brace with focused confidence",
+    "SUPER_RELEASE": "body-only Heartbreak Nova release: drive both empty palms toward screen-right with full-body force, hold peak extension, recoil, recover",
+    "BLOCK_HIGH": "standing crossed-forearm guard absorbs an imagined upper-body impact, armor recoils, then guard resets",
+    "BLOCK_LOW": "low crouched armored guard absorbs an imagined low impact while preserving consistent body proportions, then resets",
+    "HURT_LIGHT": "short readable upper-body recoil from an imagined hit, one stagger step, then guarded recovery",
+    "HURT_HEAVY": "severe full-body recoil and two-step stagger from an imagined hit, near fall, then recovery attempt",
+    "KNOCKDOWN": "standing impact, loss of balance, knees buckle, controlled fall, floor impact, fully down final pose",
+    "GET_UP": "begin fully down, push to one knee, plant one boot, rise through the hips, restore the Heartline guard",
+    "TAUNT": "confidently trace a small heart shape with both gloved hands near the chest, point toward the opponent, return to guard",
+    "VICTORY": "modest fully armored victory sequence: touch one closed gauntlet to the heart plate, raise one open gauntlet overhead, then settle into a dignified upright final pose",
+    "DEFEAT": "stagger from exhaustion, drop to one knee, brace with one hand, collapse fully, final defeated pose",
+}
+
 PILOTS = {
     "KALYX": {"IDLE": "3ecb1159-8c5e-4778-99d1-8f031c4d4582"},
     "MASTER_EZRA": {"IDLE": "1083e12e-6c79-4801-ab58-2c5b7d481383"},
@@ -148,6 +200,8 @@ def build_prompt(character: str, motion: str) -> str:
     body_only = motion.startswith("SPECIAL") or motion.startswith("SUPER")
     if character == "DETROIT_LENS":
         motion_description = DETROIT_LENS_MOTIONS.get(motion, MOTIONS[motion])
+    elif character == "AMARA_VALENTINE":
+        motion_description = AMARA_VALENTINE_MOTIONS.get(motion, MOTIONS[motion])
     elif character == "KALYX" and motion in KALYX_AERIAL_MOTIONS:
         motion_description = KALYX_AERIAL_MOTIONS[motion]
     else:
@@ -164,7 +218,15 @@ def build_prompt(character: str, motion: str) -> str:
         "shadow-double, ghost body, detached coat figure, or second fighter. Every feather and coat panel "
         "must remain visibly attached to that one body. "
         if character == "KALYX" and motion in KALYX_AERIAL_MOTIONS
-        else ""
+        else (
+            "Each cell must contain one and only one connected Amara body: exactly one head, one face, "
+            "one torso, two arms, and two legs. Never clone, overlap, echo, trail, mirror, or repeat her "
+            "body, face, hair mass, torso, limb, silhouette, or pose inside a cell. Every curl must remain "
+            "visibly attached to the same single head. No afterimage, ghost body, detached hair figure, or "
+            "second fighter. "
+            if character == "AMARA_VALENTINE"
+            else ""
+        )
     )
     energy = (
         "body-only performance with absolutely no visible energy, aura, fire, smoke, glow, projectile, "
@@ -172,13 +234,57 @@ def build_prompt(character: str, motion: str) -> str:
         if body_only
         else "no aura"
     )
+    if character == "AMARA_VALENTINE":
+        if motion in AMARA_GRID_MOTIONS:
+            return (
+                f"RIGID 3 BY 2 ANIMATION CONTACT SHEET: exactly TWO ROWS and exactly THREE EQUAL COLUMNS, "
+                f"with exactly one complete fighter in each of the six cells. Draw two thin vertical dividers "
+                f"and one thin horizontal divider. Never add a seventh pose, inset, portrait, duplicate body, "
+                f"or second character. Use the exact reference identity and rendering style. Character lock: "
+                f"{config['profile']}. Create six clearly distinct sequential full-body frames of this motion: "
+                f"{motion_description}. Chronological row-major order, anticipation through recovery. Side-view "
+                f"3/4 profile facing screen-right. Preserve the identical face, long side-parted curls, costume, "
+                f"jewelry, curvy strong body proportions, camera distance, and lighting in every frame. "
+                f"{single_body_rule}Energy rule: {energy}. Each figure occupies no more than 50 percent of its "
+                f"cell height and 70 percent of its cell width. Every one of the six cells must show the same "
+                f"small full-body camera scale; torso-only or waist-up cells invalidate the entire sheet. Keep "
+                f"uninterrupted green clearance around every "
+                f"body part, including a fully extended arm, plus green above the hair and below both complete "
+                f"boots. Flat pure chroma green #00FF00 background. No crop, close-up, floor, shadow, scenery, "
+                f"text, labels, frame numbers, effects, opponent, animal, prop, or partial figure. Production "
+                f"animation sheet, not concept art."
+            )
+        return (
+            f"RIGID HORIZONTAL ANIMATION STRIP: exactly ONE ROW and exactly SIX EQUAL COLUMNS. Draw "
+            f"exactly five thin black vertical divider lines and no horizontal divider. Place exactly one "
+            f"complete fighter in each column, for exactly six figures total. Never create a second row, "
+            f"seventh figure, inset, portrait, bonus pose, or duplicate body. Use the exact character in the "
+            f"reference as an immutable identity, costume, body-proportion, and rendering-style lock. "
+            f"Character lock: {config['profile']}. Create six clearly distinct sequential full-body frames "
+            f"of this fighting-game motion: {motion_description}. Chronological left-to-right order: frames "
+            f"ONE, TWO, THREE, FOUR, FIVE, SIX. Show anticipation, buildup, peak action, follow-through, "
+            f"recoil, and recovery as appropriate. Side-view 3/4 profile facing screen-right in every frame. "
+            f"Preserve the identical face, long side-parted curls, hair length, clothing construction, colors, "
+            f"armor, jewelry, curvy strong body proportions, outline weight, camera distance, and lighting in "
+            f"all six frames. {single_body_rule}Energy rule: {energy}. The camera is pulled far back in every "
+            f"column: show one complete uncropped hair-to-boot figure occupying no more than 58 percent of "
+            f"the column height and no more than 78 percent of the column width, even when a punch or kick is "
+            f"fully extended. Keep a broad band of uninterrupted green between every body part and every "
+            f"divider, plus empty green above the hair and below both complete boot soles. "
+            f"Flat pure chroma green #00FF00 fills every column. No crop, close-up, scenery, floor, cast shadow, "
+            f"text, labels, frame numbers, border, detached effect, opponent, animal, or handheld prop. This is "
+            f"a production animation strip, not concept art or a poster."
+        )
     return (
-        f"RIGID CONTACT SHEET: two rows, exactly three equal cells per row, exactly one fighter centered "
+        f"RIGID CONTACT SHEET: exactly TWO ROWS and exactly THREE COLUMNS, never four columns. Draw exactly "
+        f"two vertical divider lines and exactly one horizontal divider line, producing exactly six equal cells. "
+        f"Two rows, exactly three equal cells per row, exactly one fighter centered "
         f"inside each cell. Count the top row ONE, TWO, THREE and stop. Count the bottom row FOUR, FIVE, "
         f"SIX and stop. Never create a fourth column, a seventh pose, or two poses in one cell. "
         f"Use the exact character in the reference as an immutable identity, costume, and rendering-style lock. "
         f"Character lock: {config['profile']}. Create a production 3-column by 2-row sprite sheet with "
-        f"exactly SIX clearly distinct sequential full-body frames of this fighting-game motion: "
+        f"exactly SIX clearly distinct sequential full-body frames of this fighting-game motion and no "
+        f"seventh or eighth figure anywhere on the canvas: "
         f"{motion_description}. Chronological row-major order: frames 1, 2, 3 across the top row, then "
         f"frames 4, 5, 6 across the bottom row. The figure count must be exactly 3 + 3 = 6; a sheet "
         f"with five, seven, eight, or any other count is invalid. Never add a bonus pose, inset, overlap, or "
@@ -210,7 +316,7 @@ def submit(character: str, motion: str) -> str:
         "--image",
         CHARACTERS[character]["master_job"],
         "--aspect_ratio",
-        "3:2",
+        "3:2" if character != "AMARA_VALENTINE" or motion in AMARA_GRID_MOTIONS else "16:9",
         "--resolution",
         "2k",
         "--json",

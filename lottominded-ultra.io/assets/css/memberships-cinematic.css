@@ -1109,6 +1109,23 @@ body.memberships-page .membership-commercial-modal__stage video {
   background: #01040a;
 }
 
+body.memberships-page .membership-commercial-modal__sound {
+  position: absolute;
+  right: 18px;
+  bottom: 18px;
+  z-index: 4;
+  min-height: 40px;
+  padding: 0 16px;
+  border: 1px solid rgba(91, 233, 255, 0.55);
+  border-radius: 8px;
+  color: #04060a;
+  background: linear-gradient(110deg, #f4cf62, #5be9ff);
+  font: 700 10px/1 "IBM Plex Mono", monospace;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
 body.memberships-page .membership-commercial-modal__scan {
   position: absolute;
   inset: 0;

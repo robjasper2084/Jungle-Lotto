@@ -11,7 +11,10 @@ ATLAS_ROOT = ROOT / "assets" / "motion-atlases"
 OUTPUT_ROOT = ROOT / "assets" / "user-roster"
 MANIFEST_PATH = ATLAS_ROOT / "motion-atlas-manifest.json"
 CHARACTERS = {
+    "KALYX": "kalyx-idle.webp",
+    "MASTER_EZRA": "master-ezra-idle.webp",
     "DETROIT_LENS_NOIR": "detroit-lens-noir-idle.webp",
+    "AMARA_VALENTINE": "amara-valentine-idle.webp",
 }
 
 
@@ -25,7 +28,14 @@ def main() -> None:
         left = frame["x"] + content["x"]
         top = frame["y"] + content["y"]
         figure = atlas.crop((left, top, left + content["w"], top + content["h"]))
-        figure.thumbnail((220, 236), Image.Resampling.LANCZOS)
+        alpha_bounds = figure.getbbox()
+        if alpha_bounds:
+            figure = figure.crop(alpha_bounds)
+        scale = min(220 / figure.width, 236 / figure.height)
+        figure = figure.resize(
+            (max(1, round(figure.width * scale)), max(1, round(figure.height * scale))),
+            Image.Resampling.LANCZOS,
+        )
         portrait = Image.new("RGBA", (256, 256), (0, 0, 0, 0))
         portrait.alpha_composite(figure, ((256 - figure.width) // 2, 250 - figure.height))
         output = OUTPUT_ROOT / filename

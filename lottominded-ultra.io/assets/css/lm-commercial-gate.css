@@ -30,6 +30,12 @@ body.has-lm-commercial-gate {
   opacity: 1;
 }
 
+.lm-commercial-gate.is-handing-off {
+  opacity: 0;
+  transition-duration: 140ms;
+  transition-timing-function: ease-out;
+}
+
 .lm-commercial-gate__panel {
   width: min(1160px, 100%);
   max-height: calc(100dvh - clamp(24px, 6vw, 84px));
@@ -48,6 +54,12 @@ body.has-lm-commercial-gate {
   transform: none;
 }
 
+.lm-commercial-gate.is-handing-off .lm-commercial-gate__panel {
+  transform: translateY(-8px) scale(1.006);
+  transition-duration: 140ms;
+  transition-timing-function: ease-out;
+}
+
 .lm-commercial-gate__header,
 .lm-commercial-gate__footer {
   display: flex;
@@ -55,6 +67,19 @@ body.has-lm-commercial-gate {
   justify-content: space-between;
   gap: 22px;
   padding: clamp(14px, 2vw, 24px);
+}
+
+.lm-commercial-gate__header-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.lm-commercial-gate__sound {
+  color: #02070d !important;
+  border-color: rgba(255, 224, 113, 0.9) !important;
+  background: linear-gradient(110deg, var(--lm-commercial-gold), var(--lm-commercial-cyan)) !important;
 }
 
 .lm-commercial-gate__signal {
@@ -144,7 +169,7 @@ body.has-lm-commercial-gate {
 
 .lm-commercial-gate__chapters {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(var(--lm-commercial-chapter-count, 3), minmax(0, 1fr));
   gap: 1px;
   border-bottom: 1px solid rgba(91, 233, 255, 0.2);
   background: rgba(91, 233, 255, 0.14);

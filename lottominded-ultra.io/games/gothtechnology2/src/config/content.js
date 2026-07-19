@@ -1,9 +1,10 @@
-export const ROSTER_IDS = ["KALYX", "MASTER_EZRA", "DETROIT_LENS_NOIR"];
+export const ROSTER_IDS = ["KALYX", "MASTER_EZRA", "DETROIT_LENS_NOIR", "AMARA_VALENTINE"];
 
 export const ROSTER_CARD_LAYOUT = [
-  { x: 80, y: 142, w: 352, h: 382 },
-  { x: 464, y: 142, w: 352, h: 382 },
-  { x: 848, y: 142, w: 352, h: 382 }
+  { x: 36, y: 142, w: 286, h: 382 },
+  { x: 343, y: 142, w: 286, h: 382 },
+  { x: 650, y: 142, w: 286, h: 382 },
+  { x: 957, y: 142, w: 286, h: 382 }
 ];
 
 export const GAME_MODES = {
@@ -70,7 +71,19 @@ export const STAGES = [
   }
 ];
 
-export const ARCADE_LADDER = ["MASTER_EZRA", "DETROIT_LENS_NOIR", "KALYX"];
+export const ARCADE_LADDER = ["MASTER_EZRA", "DETROIT_LENS_NOIR", "AMARA_VALENTINE", "KALYX"];
+
+export const arcadeRouteFor = (playerId) => {
+  const rivals = ROSTER_IDS.filter((id) => id !== playerId);
+  const finalBossId = playerId === "KALYX" ? "AMARA_VALENTINE" : "KALYX";
+  return [
+    { opponentId: rivals[0], stageIndex: 1, label: "MIDNIGHT QUALIFIER", difficulty: "easy" },
+    { opponentId: rivals[1], stageIndex: 2, label: "ASSEMBLY INTERCEPT", difficulty: "normal" },
+    { opponentId: rivals[2], stageIndex: 3, label: "RIVERFRONT RIVAL", difficulty: "normal" },
+    { opponentId: playerId, stageIndex: 4, label: "MIRROR PROTOCOL", difficulty: "hard" },
+    { opponentId: finalBossId, stageIndex: 5, label: "CENTRAL TERMINUS BOSS", difficulty: "hard", boss: true }
+  ];
+};
 
 const commonCommands = [
   { input: "BACK", name: "GUARD", detail: "Hold away. Add DOWN for low guard." },
@@ -89,7 +102,7 @@ export const COMMAND_LISTS = {
     commands: [
       ...commonCommands,
       { input: "DOWN + SP", name: "SHADOW STEP", detail: "Spend meter to cross through the opponent." },
-      { input: "SP", name: "FIRE SLASH", detail: "Fast shadow-claw projectile." },
+      { input: "SP", name: "SHADOW RAVEN STRIKE", detail: "Launch a six-frame raven dive across the arena." },
       { input: "MAX / MOD+HP", name: "SHADOW ROAR", detail: "Three-hit rushing super." }
     ]
   },
@@ -99,7 +112,7 @@ export const COMMAND_LISTS = {
     commands: [
       ...commonCommands,
       { input: "DOWN + SP", name: "ARCANE PARRY", detail: "Spend meter to repel the next strike or projectile." },
-      { input: "SP", name: "BLUE MAGIC", detail: "Slow, large control projectile." },
+      { input: "SP", name: "ARCANE OWL DIVE", detail: "Launch a six-frame owl that controls the mid-range." },
       { input: "MAX / MOD+HP", name: "SKY JUDGMENT", detail: "Heavy space-control super." }
     ]
   },
@@ -111,6 +124,16 @@ export const COMMAND_LISTS = {
       { input: "DOWN + SP", name: "GUARDIAN INTERCEPT", detail: "Spend meter to call a close Boerboel counter." },
       { input: "SP", name: "BOERBOEL RUSH", detail: "Send the Boerboel sprinting into a leap-and-bite attack." },
       { input: "MAX / MOD+HP", name: "RED-EYE EXPOSURE", detail: "Fire a three-hit ruby laser through the glasses." }
+    ]
+  },
+  AMARA_VALENTINE: {
+    title: "HEARTLINE VANGUARD",
+    passive: "Charm slows movement. Amara's next clean strike consumes it for a Heartlink damage bonus.",
+    commands: [
+      ...commonCommands,
+      { input: "DOWN + SP", name: "CHARM COUNTER", detail: "Arm a brief counter. A successful parry pulls and charms the attacker." },
+      { input: "SP", name: "HEARTLINE PULSE", detail: "Launch a rose pulse that pulls and charms its target." },
+      { input: "MAX / MOD+HP", name: "HEARTBREAK NOVA", detail: "Release a multi-hit love nova that launches the target away." }
     ]
   }
 };
