@@ -1,6 +1,6 @@
 {
-  "active_asset_count": 42,
-  "issue_count": 4,
+  "active_asset_count": 55,
+  "issue_count": 7,
   "active_assets": [
     {
       "key": "backplate",
@@ -118,94 +118,98 @@
     },
     {
       "key": "bossCanopyMotion",
-      "path": "assets/bosses/canopy_drone_queen_motion_sheet_runtime_384.png",
+      "path": "assets/bosses/canopy_drone_queen_motion_v2_runtime_384.png",
       "exists": true,
-      "issues": [],
+      "issues": [
+        "possible green-key spill",
+        "possible clipped cell edges: [1, 2, 3, 4, 5, 6]",
+        "possible green spill in cells: [1, 2, 3, 4, 5, 6]"
+      ],
       "size": [
-        2304,
+        3072,
         384
       ],
       "mode": "RGBA",
-      "green_spill_pixels": 5,
+      "green_spill_pixels": 4117,
       "layout": [
         6,
         1
       ],
       "cell_size": [
-        384,
+        512,
         384
       ],
       "cells": [
         {
           "empty": false,
           "bbox": [
-            21,
-            25,
-            363,
-            359
+            40,
+            40,
+            512,
+            357
           ],
-          "touches_edge": false,
-          "green_spill_pixels": 0,
+          "touches_edge": true,
+          "green_spill_pixels": 805,
           "frame": 1
         },
         {
           "empty": false,
           "bbox": [
-            21,
-            23,
-            363,
-            360
+            0,
+            53,
+            512,
+            356
           ],
-          "touches_edge": false,
-          "green_spill_pixels": 0,
+          "touches_edge": true,
+          "green_spill_pixels": 736,
           "frame": 2
         },
         {
           "empty": false,
           "bbox": [
-            21,
-            24,
-            363,
-            360
+            0,
+            90,
+            461,
+            359
           ],
-          "touches_edge": false,
-          "green_spill_pixels": 1,
+          "touches_edge": true,
+          "green_spill_pixels": 711,
           "frame": 3
         },
         {
           "empty": false,
           "bbox": [
-            21,
-            24,
-            363,
-            359
+            75,
+            53,
+            512,
+            358
           ],
-          "touches_edge": false,
-          "green_spill_pixels": 0,
+          "touches_edge": true,
+          "green_spill_pixels": 687,
           "frame": 4
         },
         {
           "empty": false,
           "bbox": [
-            21,
-            23,
-            363,
-            361
+            0,
+            45,
+            512,
+            356
           ],
-          "touches_edge": false,
-          "green_spill_pixels": 2,
+          "touches_edge": true,
+          "green_spill_pixels": 751,
           "frame": 5
         },
         {
           "empty": false,
           "bbox": [
-            21,
-            24,
-            363,
-            359
+            0,
+            76,
+            462,
+            355
           ],
-          "touches_edge": false,
-          "green_spill_pixels": 2,
+          "touches_edge": true,
+          "green_spill_pixels": 427,
           "frame": 6
         }
       ]
@@ -224,94 +228,96 @@
     },
     {
       "key": "bossForgeMotion",
-      "path": "assets/bosses/jackpot_forge_titan_motion_sheet_runtime_384.png",
+      "path": "assets/bosses/jackpot_forge_titan_motion_v2_runtime_384.png",
       "exists": true,
-      "issues": [],
+      "issues": [
+        "possible clipped cell edges: [1, 2, 3, 4, 5, 6]"
+      ],
       "size": [
-        2304,
+        3072,
         384
       ],
       "mode": "RGBA",
-      "green_spill_pixels": 7,
+      "green_spill_pixels": 280,
       "layout": [
         6,
         1
       ],
       "cell_size": [
-        384,
+        512,
         384
       ],
       "cells": [
         {
           "empty": false,
           "bbox": [
-            21,
-            26,
-            363,
-            357
+            89,
+            103,
+            512,
+            362
           ],
-          "touches_edge": false,
-          "green_spill_pixels": 1,
+          "touches_edge": true,
+          "green_spill_pixels": 12,
           "frame": 1
         },
         {
           "empty": false,
           "bbox": [
-            21,
-            27,
-            363,
-            357
+            0,
+            98,
+            512,
+            362
           ],
-          "touches_edge": false,
-          "green_spill_pixels": 1,
+          "touches_edge": true,
+          "green_spill_pixels": 40,
           "frame": 2
         },
         {
           "empty": false,
           "bbox": [
-            21,
-            25,
-            363,
-            358
+            0,
+            31,
+            409,
+            359
           ],
-          "touches_edge": false,
-          "green_spill_pixels": 2,
+          "touches_edge": true,
+          "green_spill_pixels": 21,
           "frame": 3
         },
         {
           "empty": false,
           "bbox": [
-            21,
-            26,
-            363,
-            357
+            85,
+            115,
+            512,
+            361
           ],
-          "touches_edge": false,
-          "green_spill_pixels": 1,
+          "touches_edge": true,
+          "green_spill_pixels": 143,
           "frame": 4
         },
         {
           "empty": false,
           "bbox": [
-            21,
-            24,
-            363,
-            359
+            0,
+            106,
+            512,
+            362
           ],
-          "touches_edge": false,
-          "green_spill_pixels": 1,
+          "touches_edge": true,
+          "green_spill_pixels": 45,
           "frame": 5
         },
         {
           "empty": false,
           "bbox": [
-            21,
-            26,
-            363,
-            357
+            0,
+            124,
+            419,
+            362
           ],
-          "touches_edge": false,
-          "green_spill_pixels": 1,
+          "touches_edge": true,
+          "green_spill_pixels": 19,
           "frame": 6
         }
       ]
@@ -330,94 +336,98 @@
     },
     {
       "key": "bossMidasMotion",
-      "path": "assets/bosses/midas_heartcore_overlord_motion_sheet_runtime_384.png",
+      "path": "assets/bosses/midas_heartcore_overlord_motion_v2_runtime_384.png",
       "exists": true,
-      "issues": [],
+      "issues": [
+        "possible green-key spill",
+        "possible clipped cell edges: [1, 2, 3, 4, 5, 6]",
+        "possible green spill in cells: [1, 2, 3, 4, 5, 6]"
+      ],
       "size": [
-        2304,
+        3072,
         384
       ],
       "mode": "RGBA",
-      "green_spill_pixels": 8,
+      "green_spill_pixels": 4630,
       "layout": [
         6,
         1
       ],
       "cell_size": [
-        384,
+        512,
         384
       ],
       "cells": [
         {
           "empty": false,
           "bbox": [
-            23,
-            22,
-            361,
-            362
+            45,
+            38,
+            512,
+            356
           ],
-          "touches_edge": false,
-          "green_spill_pixels": 0,
+          "touches_edge": true,
+          "green_spill_pixels": 869,
           "frame": 1
         },
         {
           "empty": false,
           "bbox": [
-            24,
-            21,
-            360,
-            362
+            0,
+            40,
+            512,
+            356
           ],
-          "touches_edge": false,
-          "green_spill_pixels": 1,
+          "touches_edge": true,
+          "green_spill_pixels": 533,
           "frame": 2
         },
         {
           "empty": false,
           "bbox": [
-            25,
-            22,
-            361,
-            362
+            0,
+            42,
+            479,
+            355
           ],
-          "touches_edge": false,
-          "green_spill_pixels": 2,
+          "touches_edge": true,
+          "green_spill_pixels": 648,
           "frame": 3
         },
         {
           "empty": false,
           "bbox": [
-            21,
-            22,
-            361,
-            362
+            32,
+            42,
+            512,
+            356
           ],
-          "touches_edge": false,
-          "green_spill_pixels": 2,
+          "touches_edge": true,
+          "green_spill_pixels": 834,
           "frame": 4
         },
         {
           "empty": false,
           "bbox": [
-            25,
-            21,
-            362,
-            363
+            0,
+            40,
+            512,
+            355
           ],
-          "touches_edge": false,
-          "green_spill_pixels": 3,
+          "touches_edge": true,
+          "green_spill_pixels": 845,
           "frame": 5
         },
         {
           "empty": false,
           "bbox": [
-            21,
-            22,
-            361,
-            362
+            0,
+            46,
+            453,
+            354
           ],
-          "touches_edge": false,
-          "green_spill_pixels": 0,
+          "touches_edge": true,
+          "green_spill_pixels": 901,
           "frame": 6
         }
       ]
@@ -2434,6 +2444,162 @@
       "green_spill_pixels": 84
     },
     {
+      "key": "missionPortalV2",
+      "path": "assets/mission/robot_rahbe_portal_v2.png",
+      "exists": true,
+      "issues": [],
+      "size": [
+        512,
+        768
+      ],
+      "mode": "RGBA",
+      "green_spill_pixels": 127
+    },
+    {
+      "key": "missionGateV2",
+      "path": "assets/mission/robot_rahbe_vault_gate_v2.png",
+      "exists": true,
+      "issues": [],
+      "size": [
+        512,
+        768
+      ],
+      "mode": "RGBA",
+      "green_spill_pixels": 2
+    },
+    {
+      "key": "powerupPack",
+      "path": "assets/mission/robot_rahbe_powerups_v1.png",
+      "exists": true,
+      "issues": [],
+      "size": [
+        768,
+        512
+      ],
+      "mode": "RGBA",
+      "green_spill_pixels": 5
+    },
+    {
+      "key": "arenaGateV1",
+      "path": "assets/mission/robot_rahbe_arena_gate_v1.png",
+      "exists": true,
+      "issues": [],
+      "size": [
+        264,
+        896
+      ],
+      "mode": "RGBA",
+      "green_spill_pixels": 1
+    },
+    {
+      "key": "undergroundGateLocked",
+      "path": "assets/mission/robot_rahbe_underground_gate_v1_frames/01.png",
+      "exists": true,
+      "issues": [],
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "green_spill_pixels": 30
+    },
+    {
+      "key": "undergroundGatePowered",
+      "path": "assets/mission/robot_rahbe_underground_gate_v1_frames/02.png",
+      "exists": true,
+      "issues": [],
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "green_spill_pixels": 45
+    },
+    {
+      "key": "undergroundGateOpen",
+      "path": "assets/mission/robot_rahbe_underground_gate_v1_frames/03.png",
+      "exists": true,
+      "issues": [],
+      "size": [
+        512,
+        512
+      ],
+      "mode": "RGBA",
+      "green_spill_pixels": 37
+    },
+    {
+      "key": "floorLaserDormant",
+      "path": "assets/mission/robot_rahbe_floor_laser_v1_frames/01.png",
+      "exists": true,
+      "issues": [],
+      "size": [
+        384,
+        384
+      ],
+      "mode": "RGBA",
+      "green_spill_pixels": 5
+    },
+    {
+      "key": "floorLaserCharge",
+      "path": "assets/mission/robot_rahbe_floor_laser_v1_frames/02.png",
+      "exists": true,
+      "issues": [],
+      "size": [
+        384,
+        384
+      ],
+      "mode": "RGBA",
+      "green_spill_pixels": 4
+    },
+    {
+      "key": "floorLaserActive",
+      "path": "assets/mission/robot_rahbe_floor_laser_v1_frames/03.png",
+      "exists": true,
+      "issues": [],
+      "size": [
+        384,
+        384
+      ],
+      "mode": "RGBA",
+      "green_spill_pixels": 42
+    },
+    {
+      "key": "verticalLaser",
+      "path": "assets/mission/robot_rahbe_vertical_laser_v1.png",
+      "exists": true,
+      "issues": [],
+      "size": [
+        1774,
+        887
+      ],
+      "mode": "RGBA",
+      "green_spill_pixels": 475
+    },
+    {
+      "key": "lotteryKiosk",
+      "path": "assets/mission/robot_rahbe_lottery_kiosk_v1.png",
+      "exists": true,
+      "issues": [],
+      "size": [
+        1182,
+        1330
+      ],
+      "mode": "RGBA",
+      "green_spill_pixels": 132
+    },
+    {
+      "key": "solidVaultPanel",
+      "path": "assets/mission/robot_rahbe_solid_panel_v1.png",
+      "exists": true,
+      "issues": [],
+      "size": [
+        1086,
+        1448
+      ],
+      "mode": "RGBA",
+      "green_spill_pixels": 37
+    },
+    {
       "key": "missionBrandProps",
       "path": "assets/mission/branded_background_props_sheet.png",
       "exists": true,
@@ -4225,6 +4391,55 @@
     }
   ],
   "issue_summary": [
+    {
+      "key": "bossCanopyMotion",
+      "path": "assets/bosses/canopy_drone_queen_motion_v2_runtime_384.png",
+      "issues": [
+        "possible green-key spill",
+        "possible clipped cell edges: [1, 2, 3, 4, 5, 6]",
+        "possible green spill in cells: [1, 2, 3, 4, 5, 6]"
+      ],
+      "size": [
+        3072,
+        384
+      ],
+      "cell_size": [
+        512,
+        384
+      ]
+    },
+    {
+      "key": "bossForgeMotion",
+      "path": "assets/bosses/jackpot_forge_titan_motion_v2_runtime_384.png",
+      "issues": [
+        "possible clipped cell edges: [1, 2, 3, 4, 5, 6]"
+      ],
+      "size": [
+        3072,
+        384
+      ],
+      "cell_size": [
+        512,
+        384
+      ]
+    },
+    {
+      "key": "bossMidasMotion",
+      "path": "assets/bosses/midas_heartcore_overlord_motion_v2_runtime_384.png",
+      "issues": [
+        "possible green-key spill",
+        "possible clipped cell edges: [1, 2, 3, 4, 5, 6]",
+        "possible green spill in cells: [1, 2, 3, 4, 5, 6]"
+      ],
+      "size": [
+        3072,
+        384
+      ],
+      "cell_size": [
+        512,
+        384
+      ]
+    },
     {
       "key": "player",
       "path": "assets/mascot/lottomind-mascot-runner-atlas.png",

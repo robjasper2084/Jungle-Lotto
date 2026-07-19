@@ -121,7 +121,7 @@
           ],
           "higgsfieldJobId": "3ecb1159-8c5e-4778-99d1-8f031c4d4582",
           "stableHeight": true,
-          "targetVisibleHeight": 174.0
+          "targetVisibleHeight": 174
         },
         "READY_STANCE": {
           "sheet": "assets/motion-atlases/kalyx-locomotion.webp",
@@ -232,7 +232,7 @@
           ],
           "higgsfieldJobId": "7b7c172e-0fde-4ca7-a323-0a830904fc4d",
           "stableHeight": true,
-          "targetVisibleHeight": 174.0
+          "targetVisibleHeight": 174
         },
         "CROUCH_IDLE": {
           "sheet": "assets/motion-atlases/kalyx-locomotion.webp",
@@ -3587,7 +3587,7 @@
                 "h": 178,
                 "visibleW": 107,
                 "visibleH": 174,
-                "scale": 1.0
+                "scale": 1
               }
             },
             {
@@ -3603,7 +3603,7 @@
                 "h": 164,
                 "visibleW": 128,
                 "visibleH": 160,
-                "scale": 1.0
+                "scale": 1
               }
             },
             {
@@ -3619,7 +3619,7 @@
                 "h": 115,
                 "visibleW": 175,
                 "visibleH": 111,
-                "scale": 1.0
+                "scale": 1
               }
             },
             {
@@ -3635,7 +3635,7 @@
                 "h": 78,
                 "visibleW": 178,
                 "visibleH": 74,
-                "scale": 1.0
+                "scale": 1
               }
             },
             {
@@ -3651,7 +3651,7 @@
                 "h": 102,
                 "visibleW": 180,
                 "visibleH": 98,
-                "scale": 1.0
+                "scale": 1
               }
             },
             {
@@ -3667,13 +3667,13 @@
                 "h": 62,
                 "visibleW": 178,
                 "visibleH": 58,
-                "scale": 1.0
+                "scale": 1
               }
             }
           ],
           "higgsfieldJobId": "33a0eb4e-9665-4026-9b9b-c5e4543fc2e1",
           "stableHeight": false,
-          "targetVisibleHeight": 174.0
+          "targetVisibleHeight": 174
         },
         "GET_UP": {
           "sheet": "assets/motion-atlases/kalyx-reaction.webp",
@@ -3784,7 +3784,7 @@
           ],
           "higgsfieldJobId": "fee3c972-2d71-453c-900e-c4d486b2d3db",
           "stableHeight": false,
-          "targetVisibleHeight": 174.0
+          "targetVisibleHeight": 174
         },
         "HURT_HEAVY": {
           "sheet": "assets/motion-atlases/kalyx-reaction.webp",
@@ -4117,7 +4117,7 @@
           ],
           "higgsfieldJobId": "dd5532f6-eb48-4c16-b9f2-1f54ddf3c470",
           "stableHeight": false,
-          "targetVisibleHeight": 174.0
+          "targetVisibleHeight": 174
         },
         "TAUNT": {
           "sheet": "assets/motion-atlases/kalyx-reaction.webp",
@@ -4343,7 +4343,7 @@
         }
       },
       "stabilization": {
-        "canonicalHeight": 174.0,
+        "canonicalHeight": 174,
         "stableHeightMotions": [
           "BLOCK_HIGH",
           "BLOCK_LOW",
@@ -6981,9 +6981,9 @@
               "duration_ms": 78,
               "content": {
                 "x": 18,
-                "y": 21,
+                "y": 8,
                 "w": 156,
-                "h": 169,
+                "h": 182,
                 "visibleW": 152,
                 "visibleH": 165,
                 "scale": 0.933202
@@ -7012,11 +7012,11 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 27,
+                "x": 26,
                 "y": 8,
-                "w": 138,
+                "w": 139,
                 "h": 182,
-                "visibleW": 134,
+                "visibleW": 135,
                 "visibleH": 178,
                 "scale": 0.933202
               }

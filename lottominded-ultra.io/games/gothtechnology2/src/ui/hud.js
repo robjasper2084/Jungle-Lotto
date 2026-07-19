@@ -1,7 +1,7 @@
-import { CANVAS_HEIGHT, CANVAS_WIDTH, COLORS, ROUND_SECONDS } from "../config/constants.js?v=heartline34-full-cast-title";
-import { FIGHTERS } from "../config/assets.js?v=heartline34-full-cast-title";
-import { GAME_MODES, ROSTER_CARD_LAYOUT, ROSTER_IDS, STAGES } from "../config/content.js?v=heartline34-full-cast-title";
-import { drawSpriteFrame } from "../engine/assets.js?v=heartline34-full-cast-title";
+import { CANVAS_HEIGHT, CANVAS_WIDTH, COLORS, ROUND_SECONDS } from "../config/constants.js?v=heartline41-epic-amara-ezra";
+import { FIGHTERS } from "../config/assets.js?v=heartline41-epic-amara-ezra";
+import { GAME_MODES, ROSTER_CARD_LAYOUT, ROSTER_IDS, STAGES } from "../config/content.js?v=heartline41-epic-amara-ezra";
+import { drawSpriteFrame } from "../engine/assets.js?v=heartline41-epic-amara-ezra";
 
 const FUTURE = {
   cyan: "#67e8ff",
@@ -289,6 +289,7 @@ export const drawFightHud = (ctx, game) => {
       ctx.fillText(`${readout.outcome.toUpperCase()} // ADV ${readout.advantageFrames >= 0 ? "+" : ""}${readout.advantageFrames}F // DAMAGE ${Math.round(readout.damage)} // SCALE ${Math.round(readout.comboScale * 100)}%`, 640, 676);
     }
   }
+  ctx.restore();
   ctx.restore();
 };
 

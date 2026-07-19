@@ -1,7 +1,7 @@
-import { rectsOverlap } from "../engine/math.js?v=heartline34-full-cast-title";
-import { ATTACKS } from "../config/moves.js?v=heartline34-full-cast-title";
-import { FloatingText, LovePulseEffect, SpriteEffect } from "./effects.js?v=heartline34-full-cast-title";
-import { registerAttackHit, sliceAttackForHit } from "./hits.js?v=heartline34-full-cast-title";
+import { rectsOverlap } from "../engine/math.js?v=heartline41-epic-amara-ezra";
+import { ATTACKS } from "../config/moves.js?v=heartline41-epic-amara-ezra";
+import { FloatingText, LovePulseEffect, SpriteEffect } from "./effects.js?v=heartline41-epic-amara-ezra";
+import { registerAttackHit, sliceAttackForHit } from "./hits.js?v=heartline41-epic-amara-ezra";
 
 export function resolveMelee(attacker, defender, game) {
   const attackState = attacker.currentAttack;

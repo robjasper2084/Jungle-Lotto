@@ -14,6 +14,7 @@ CHARACTERS = {
     "KALYX": "kalyx-idle.webp",
     "MASTER_EZRA": "master-ezra-idle.webp",
     "DETROIT_LENS_NOIR": "detroit-lens-noir-idle.webp",
+    "AMARA_VALENTINE": "amara-valentine-idle.webp",
 }
 
 

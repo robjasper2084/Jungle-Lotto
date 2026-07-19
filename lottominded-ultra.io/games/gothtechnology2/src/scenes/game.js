@@ -1,17 +1,17 @@
-import { ASSET_URLS, COMMERCIAL_URLS, FIGHTERS } from "../config/assets.js?v=heartline34-full-cast-title";
-import { arcadeRouteFor, GAME_MODES, ROSTER_CARD_LAYOUT, ROSTER_IDS, STAGES, opponentFor } from "../config/content.js?v=heartline34-full-cast-title";
-import { ASSISTS, ATTACKS } from "../config/moves.js?v=heartline34-full-cast-title";
-import { CANVAS_HEIGHT, CANVAS_WIDTH, COLORS, GROUND_Y, PHASE, ROUND_SECONDS, WORLD } from "../config/constants.js?v=heartline34-full-cast-title";
-import { AssetLoader } from "../engine/assets.js?v=heartline34-full-cast-title";
-import { WebAudioBus } from "../engine/audio.js?v=heartline34-full-cast-title";
-import { InputManager } from "../engine/input.js?v=heartline34-full-cast-title";
-import { clamp, rectsOverlap } from "../engine/math.js?v=heartline34-full-cast-title";
-import { applyHit, resolveMelee } from "../gameplay/combat.js?v=heartline34-full-cast-title";
-import { CpuController } from "../gameplay/cpu.js?v=heartline34-full-cast-title";
-import { AttachedSpriteEffect, LovePulseEffect, SpriteEffect } from "../gameplay/effects.js?v=heartline34-full-cast-title";
-import { Fighter } from "../gameplay/fighter.js?v=heartline34-full-cast-title";
-import { AssistStrike, BoerboelStrike, Projectile } from "../gameplay/projectiles.js?v=heartline34-full-cast-title";
-import { applyRoundOutcomeMotions, resolveRoundOutcome } from "../gameplay/rounds.js?v=heartline34-full-cast-title";
+import { ASSET_URLS, COMMERCIAL_URLS, FIGHTERS } from "../config/assets.js?v=heartline41-epic-amara-ezra";
+import { arcadeRouteFor, GAME_MODES, ROSTER_CARD_LAYOUT, ROSTER_IDS, STAGES, opponentFor } from "../config/content.js?v=heartline41-epic-amara-ezra";
+import { ASSISTS, ATTACKS } from "../config/moves.js?v=heartline41-epic-amara-ezra";
+import { CANVAS_HEIGHT, CANVAS_WIDTH, COLORS, GROUND_Y, PHASE, ROUND_SECONDS, WORLD } from "../config/constants.js?v=heartline41-epic-amara-ezra";
+import { AssetLoader } from "../engine/assets.js?v=heartline41-epic-amara-ezra";
+import { WebAudioBus } from "../engine/audio.js?v=heartline41-epic-amara-ezra";
+import { InputManager } from "../engine/input.js?v=heartline41-epic-amara-ezra";
+import { clamp, rectsOverlap } from "../engine/math.js?v=heartline41-epic-amara-ezra";
+import { applyHit, resolveMelee } from "../gameplay/combat.js?v=heartline41-epic-amara-ezra";
+import { CpuController } from "../gameplay/cpu.js?v=heartline41-epic-amara-ezra";
+import { AttachedSpriteEffect, LovePulseEffect, SpriteEffect } from "../gameplay/effects.js?v=heartline41-epic-amara-ezra";
+import { Fighter } from "../gameplay/fighter.js?v=heartline41-epic-amara-ezra";
+import { AssistStrike, BoerboelStrike, Projectile } from "../gameplay/projectiles.js?v=heartline41-epic-amara-ezra";
+import { applyRoundOutcomeMotions, resolveRoundOutcome } from "../gameplay/rounds.js?v=heartline41-epic-amara-ezra";
 import {
   drawCharacterSelect,
   drawArcadeEnding,
@@ -24,7 +24,7 @@ import {
   drawRoundMessage,
   drawTitle,
   drawVersus
-} from "../ui/hud.js?v=heartline34-full-cast-title";
+} from "../ui/hud.js?v=heartline41-epic-amara-ezra";
 
 const GAME_SELECT_ITEMS = [
   {
