@@ -1576,5 +1576,5 @@ const connectRuntime = (runtime) => {
 };
 window.addEventListener("lm:membership-runtime-ready", (event) => connectRuntime(event.detail), { once: true });
 
-await import("./memberships-cinematic.js?v=popup-sound-autoclose-1");
+await import("./memberships-cinematic.js?v=membership-audio-mix-5");
 if (window.__lmMembershipRuntime) connectRuntime(window.__lmMembershipRuntime);

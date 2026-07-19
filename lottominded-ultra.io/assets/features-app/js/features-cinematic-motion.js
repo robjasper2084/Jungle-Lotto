@@ -381,6 +381,7 @@
       const targetVolume = entry ? Math.min(featureUserVolume, 0.16) : featureUserVolume;
       featureTrack.volume = targetVolume;
       document.body.dataset.featureTrackVolume = targetVolume.toFixed(2);
+      window.LMAudioMix?.claim?.(featureTrack);
       await featureTrack.play();
       setEqStatus(entry ? "Digital Static" : "Playing");
       startEqRender();
@@ -509,10 +510,10 @@
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
 
-    osc.type = "triangle";
+    osc.type = "sine";
     osc.frequency.setValueAtTime(notes[seed % notes.length], now);
     gain.gain.setValueAtTime(0.0001, now);
-    gain.gain.linearRampToValueAtTime(0.055, now + 0.012);
+    gain.gain.linearRampToValueAtTime(window.LMAudioMix?.levels.ui ?? 0.022, now + 0.012);
     gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.22);
     osc.connect(gain);
     gain.connect(output);
@@ -522,9 +523,11 @@
     startEqRender();
   }
 
-  document.querySelectorAll("button:not(.piano-key):not([data-feature-player-control]), .rail-cards a, .feature-cta").forEach((el, index) => {
-    el.addEventListener("pointerdown", () => playTone(index), { passive: true });
-  });
+  if (document.body.classList.contains("features-cinematic-page")) {
+    document.querySelectorAll("button:not(.piano-key):not([data-feature-player-control]), .rail-cards a, .feature-cta").forEach((el, index) => {
+      el.addEventListener("pointerdown", () => playTone(index), { passive: true });
+    });
+  }
 
   knobButtons.forEach((button) => {
     button.addEventListener("click", () => nudgeFxControl(button.dataset.fxControl));

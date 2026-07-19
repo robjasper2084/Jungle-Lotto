@@ -8,7 +8,8 @@
       telemetry: "LM-GUARDIAN / REVEAL",
       copy: "The $29.95 Little Man Luggage Charm and Backpack Guardian includes three complimentary months of LottoMind app membership.",
       src: "./assets/merch/lottomind-guardian-commercial-reveal-20260716.mp4",
-      poster: "./assets/merch/lottomind-guardian-commercial-reveal-poster-20260716.png"
+      poster: "./assets/merch/lottomind-guardian-commercial-reveal-poster-20260716.png",
+      volume: 0.76
     },
     {
       signal: "Film 02 / Field setup",
@@ -16,7 +17,8 @@
       telemetry: "LM-GUARDIAN / DEPLOY",
       copy: "Clip the Guardian onto a backpack or luggage route, then carry the LottoMind signal with you.",
       src: "./assets/merch/lottomind-guardian-commercial-clip-on-20260716.mp4",
-      poster: "./assets/merch/lottomind-guardian-commercial-clip-on-poster-20260716.png"
+      poster: "./assets/merch/lottomind-guardian-commercial-clip-on-poster-20260716.png",
+      volume: 0.76
     },
     {
       signal: "Film 03 / Mobile signal",
@@ -24,7 +26,8 @@
       telemetry: "LM-GUARDIAN / IN TRANSIT",
       copy: "The Guardian goes wherever the next idea begins, with three months of LottoMind membership included.",
       src: "./assets/merch/lottomind-merch-commercial-20260716.mp4",
-      poster: "./assets/merch/lottomind-merch-commercial-poster-20260716.png"
+      poster: "./assets/merch/lottomind-merch-commercial-poster-20260716.png",
+      volume: 0.64
     }
   ];
 
@@ -34,7 +37,8 @@
     telemetry: "LM-GUIDE / ROUTE ACTIVE",
     copy: "Enter the LottoMind Guide, explore the playable walkthrough, and carry the creative signal into every route.",
     src: "./assets/merch/lottomind-guide-commercial-20260717.mp4",
-    poster: "./assets/merch/lottomind-guide-commercial-poster-20260717.jpg"
+    poster: "./assets/merch/lottomind-guide-commercial-poster-20260717.jpg",
+    volume: 0.64
   };
 
   const merchStoreFilm = {
@@ -43,7 +47,8 @@
     telemetry: "LM-GUARDIAN / COMMUNITY UPLINK",
     copy: "Meet the Little Man Guardian, clip the signal onto your everyday carry, and unlock three complimentary months of LottoMind app membership.",
     src: "./assets/merch/lottomind-community-signal-commercial-20260717.mp4",
-    poster: "./assets/merch/lottomind-community-signal-poster-20260717.jpg"
+    poster: "./assets/merch/lottomind-community-signal-poster-20260717.jpg",
+    volume: 0.48
   };
 
   const body = document.body;
@@ -80,9 +85,13 @@
   if (!route) return;
 
   const { films, name: routeName, theme: routeTheme } = route;
-  // The commercial is an intentional route intro, so it must be available on
-  // every fresh page visit. Session suppression made the Guide and other
-  // routes appear to lose their commercial after the first preview.
+  // Keep the one-commercial-per-page behavior without letting a visit to one
+  // route suppress the commercial on every other route in the same tab.
+  const sessionKey = `lm-commercial-gate-seen:v4:${routeTheme}`;
+  try {
+    if (sessionStorage.getItem(sessionKey) === "yes") return;
+    sessionStorage.setItem(sessionKey, "yes");
+  } catch (error) {}
   const storageKey = `lm-commercial-gate-last:${location.pathname}`;
   let previous = -1;
   try {
@@ -152,7 +161,12 @@
   const pausePageMedia = () => {
     document.querySelectorAll("audio, video").forEach((media) => {
       if (media === video || media.matches("[data-lm-transition-video]")) return;
-      if (!media.paused) suspendedMedia.push(media);
+      if (!media.paused) {
+        suspendedMedia.push({
+          media,
+          audible: media.tagName === "AUDIO" || (!media.muted && media.volume > 0),
+        });
+      }
       media.pause?.();
     });
   };
@@ -164,8 +178,11 @@
   };
 
   const restorePageMedia = () => {
-    suspendedMedia.splice(0).forEach((media) => {
+    let audibleRestored = false;
+    suspendedMedia.splice(0).forEach(({ media, audible }) => {
       if (!media.isConnected) return;
+      if (audible && audibleRestored) return;
+      if (audible) audibleRestored = true;
       media.play?.().catch?.(() => {});
     });
   };
@@ -186,7 +203,8 @@
     video.muted = false;
     video.defaultMuted = false;
     video.removeAttribute("muted");
-    video.volume = 0.72;
+    video.volume = films[activeIndex]?.volume ?? window.LMAudioMix?.levels.commercial ?? 0.64;
+    window.LMAudioMix?.claim?.(video);
     try {
       await video.play();
       soundButton.hidden = true;
