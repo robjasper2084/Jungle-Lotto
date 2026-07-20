@@ -4,6 +4,9 @@
   "scripts": {
     "check:home": "node scripts/validate-home-page.mjs",
     "check:site": "node scripts/validate-site.mjs",
+    "staging:build": "node scripts/build-staging.mjs",
+    "staging:serve": "node scripts/serve-site.mjs dist-staging 8143",
+    "staging:test": "npm run staging:build && node scripts/test-staging-static.mjs && node scripts/run-staging-tests.mjs",
     "test": "playwright test"
   },
   "devDependencies": {

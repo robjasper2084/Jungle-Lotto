@@ -2,8 +2,9 @@ import { createReadStream, statSync } from "node:fs";
 import { createServer } from "node:http";
 import { extname, join, normalize, resolve, sep } from "node:path";
 
-const root = resolve(process.cwd());
-const port = Number(process.env.PORT || 8142);
+const requestedRoot = process.argv[2] || ".";
+const root = resolve(process.cwd(), requestedRoot);
+const port = Number(process.argv[3] || process.env.PORT || 8142);
 const mimeTypes = {
   ".css": "text/css; charset=utf-8",
   ".html": "text/html; charset=utf-8",
@@ -50,5 +51,5 @@ createServer((request, response) => {
     response.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" }).end("Not found");
   }
 }).listen(port, "127.0.0.1", () => {
-  console.log(`LottoMind test server listening on http://127.0.0.1:${port}`);
+  console.log(`LottoMind test server serving ${root} on http://127.0.0.1:${port}`);
 });
