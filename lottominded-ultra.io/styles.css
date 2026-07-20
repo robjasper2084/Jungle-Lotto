@@ -9357,6 +9357,113 @@ body.merch-store-page.has-manual-instrument-header .merch-piano-header .ultra-ke
   line-height: 1.7;
 }
 
+.support-main {
+  width: min(980px, calc(100% - 2rem));
+}
+
+.support-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid rgba(41, 247, 255, 0.24);
+}
+
+.support-field {
+  display: grid;
+  gap: 0.45rem;
+  min-width: 0;
+}
+
+.support-field--wide {
+  grid-column: 1 / -1;
+}
+
+.support-field label {
+  color: #bfefff;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.support-field :is(input, select, textarea) {
+  width: 100%;
+  border: 1px solid rgba(41, 247, 255, 0.32);
+  border-radius: 6px;
+  background: #050b13;
+  color: #effcff;
+  font: inherit;
+}
+
+.support-field :is(input, select) {
+  min-height: 48px;
+  padding: 0.75rem 0.85rem;
+}
+
+.support-field textarea {
+  min-height: 170px;
+  padding: 0.85rem;
+  resize: vertical;
+}
+
+.support-field :is(input, select, textarea):focus-visible {
+  outline: 2px solid #fff1a9;
+  outline-offset: 2px;
+  border-color: #fff1a9;
+}
+
+.support-privacy {
+  margin: 0;
+  color: #ffc9d0;
+  font-size: 0.86rem;
+}
+
+.support-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.support-actions :is(button, a) {
+  min-height: 46px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.support-result {
+  margin-top: 1.5rem;
+  padding: 1rem 0;
+  border-top: 1px solid rgba(69, 240, 174, 0.3);
+  border-bottom: 1px solid rgba(69, 240, 174, 0.3);
+}
+
+.support-result p {
+  margin-top: 0;
+  color: #b9ffdc;
+}
+
+@media (max-width: 640px) {
+  .support-form {
+    grid-template-columns: 1fr;
+  }
+
+  .support-field--wide {
+    grid-column: auto;
+  }
+
+  .support-actions :is(button, a) {
+    width: 100%;
+  }
+}
+
 @supports (content-visibility: auto) {
   main > section:not(:first-child),
   main > aside:not(:first-child) {

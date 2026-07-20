@@ -926,6 +926,8 @@ const STORAGE = {
 };
 
 const WEB_CREDIT_STORAGE_KEY = "lottomind_credits";
+let centralAccountSnapshot = null;
+let centralAccountUnsubscribe = null;
 
 const DEFAULT_SETTINGS = {
   music: true,
@@ -2031,6 +2033,9 @@ function readCreditValue(key) {
 }
 
 function getCredits() {
+  if (centralAccountSnapshot?.authenticated && centralAccountSnapshot.wallet) {
+    return normalizeCreditValue(centralAccountSnapshot.wallet.balance) ?? 0;
+  }
   const appCredits = readCreditValue(STORAGE.credits);
   if (appCredits !== null) return appCredits;
 
@@ -2044,22 +2049,37 @@ function getCredits() {
 }
 
 function setCredits(value) {
+  if (centralAccountSnapshot?.authenticated) {
+    return getCredits();
+  }
   const credits = normalizeCreditValue(value) ?? 0;
   localStorage.setItem(STORAGE.credits, String(credits));
   localStorage.setItem(WEB_CREDIT_STORAGE_KEY, String(credits));
+  return credits;
 }
 
 function syncCreditsFromLaunchParams() {
-  const params = new URLSearchParams(window.location.search);
-  const launchCredits = normalizeCreditValue(params.get("credits"));
-  if (launchCredits !== null) {
-    setCredits(launchCredits);
-    return;
-  }
-
   const webCredits = readCreditValue(WEB_CREDIT_STORAGE_KEY);
   const appCredits = readCreditValue(STORAGE.credits);
   if (webCredits !== null && appCredits === null) setCredits(webCredits);
+}
+
+function installCentralAccountSync() {
+  const service = window.LottoMindAccountService;
+  if (!service) return;
+  const applySnapshot = (snapshot) => {
+    if (!snapshot || typeof snapshot !== "object") return;
+    const previousBalance = centralAccountSnapshot?.wallet?.balance;
+    const previousStatus = centralAccountSnapshot?.authenticated;
+    centralAccountSnapshot = snapshot;
+    const changed = previousBalance !== snapshot.wallet?.balance || previousStatus !== snapshot.authenticated;
+    if (changed) render();
+  };
+  centralAccountUnsubscribe?.();
+  centralAccountUnsubscribe = service.subscribeToWallet(applySnapshot);
+  service.getSnapshot().then(applySnapshot).catch(() => {
+    centralAccountSnapshot = centralAccountSnapshot ? { ...centralAccountSnapshot, verified: false, offline: true } : null;
+  });
 }
 
 function routeFromLocation() {
@@ -8857,3 +8877,4 @@ window.addEventListener("popstate", () => {
 });
 
 render();
+installCentralAccountSync();

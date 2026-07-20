@@ -195,13 +195,21 @@
   };
 
   const fetchArticles = async () => {
-    const candidates = ["./articles.json", "./news-articles.json"];
+    const apiBase = window.LOTTOMIND_NEWS_API_BASE || "https://sqdasdbvlkgpbbiyeune.supabase.co/functions/v1/lottomind-news/";
+    const candidates = [
+      new URL("news?limit=60", apiBase).href,
+      "./articles.json",
+      "./news-articles.json"
+    ];
     let lastError;
     for (const url of candidates) {
       try {
         const response = await fetch(url, { cache: "no-cache" });
         if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
-        return await response.json();
+        const payload = await response.json();
+        const items = Array.isArray(payload) ? payload : payload?.items;
+        if (!Array.isArray(items) || !items.length) throw new Error("Article feed returned no items");
+        return items;
       } catch (error) {
         lastError = error;
       }
