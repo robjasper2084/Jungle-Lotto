@@ -54,15 +54,27 @@ test("guide commercial returns on every fresh page visit", async ({ page }) => {
   await expect(page.locator(".lm-commercial-gate")).toBeVisible();
 });
 
-test("features renders current article cards from the static feed", async ({ page }) => {
+test("features renders the focused manifest-driven Arcade pilot", async ({ page }) => {
   await blockHeavyMedia(page);
+  const localFailures = trackLocalFailures(page);
   await page.goto("/features-app.html", { waitUntil: "domcontentloaded" });
-  await page.locator(".lm-commercial-gate__skip").click();
+  await expect(page.locator(".arcade-pilot-label")).toHaveText("LottoMind Arcade Pilot — Experimental Preview");
+  await expect(page.locator("[data-arcade-grid] .arcade-game-card")).toHaveCount(8);
+  await expect(page.locator("[data-arcade-count]")).toHaveText("8");
+  await expect(page.locator("video, audio, iframe, #lottery-news")).toHaveCount(0);
 
-  const articles = page.locator("#lottery-news .sd-news-card");
-  await expect(articles.first()).toBeVisible();
-  await expect(articles).toHaveCount(3);
-  await expect(page.locator("[data-lottery-news-status]")).toContainText(/briefs available/i);
+  await page.getByRole("button", { name: "Action", exact: true }).click();
+  await expect(page.locator("[data-arcade-grid] .arcade-game-card")).toHaveCount(3);
+  await expect(page.locator("[data-arcade-visible-count]")).toHaveText("3");
+
+  await page.getByRole("button", { name: "All", exact: true }).click();
+  await page.locator("[data-arcade-search]").fill("Stem Studio");
+  await expect(page.locator("[data-arcade-grid] .arcade-game-card")).toHaveCount(1);
+  await expect(page.getByRole("heading", { name: "LottoMind Stem Studio" })).toBeVisible();
+
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1);
+  expect(overflow).toBe(false);
+  expect(localFailures).toEqual([]);
 });
 
 test("mobile memberships hero keeps its title inside the viewport", async ({ page }, testInfo) => {

@@ -16,7 +16,14 @@ import { fileURLToPath } from "node:url";
 const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const repositoryRoot = resolve(packageRoot, "..");
 const outputRoot = resolve(packageRoot, "dist-staging");
-const sourceTree = "HEAD:lottominded-ultra.io";
+const sourceCommitArgumentIndex = process.argv.indexOf("--source-commit");
+const requestedSourceCommit = sourceCommitArgumentIndex >= 0
+  ? String(process.argv[sourceCommitArgumentIndex + 1] || "").trim()
+  : "HEAD";
+if (!/^(?:HEAD|[0-9a-f]{40})$/i.test(requestedSourceCommit)) {
+  throw new Error("--source-commit must be HEAD or a full 40-character commit SHA.");
+}
+const sourceTree = `${requestedSourceCommit}:lottominded-ultra.io`;
 const environmentSource = join(packageRoot, "assets", "js", "lm-environment.js");
 const guardSource = join(packageRoot, "assets", "js", "lm-staging-guard.js");
 const manifestPath = join(outputRoot, "staging-manifest.json");
@@ -290,7 +297,7 @@ async function main() {
   await access(environmentSource, constants.R_OK);
   await access(guardSource, constants.R_OK);
   runGit(["cat-file", "-e", `${sourceTree}/index.html`]);
-  const sourceCommitSHA = runGit(["rev-parse", "HEAD"]);
+  const sourceCommitSHA = runGit(["rev-parse", requestedSourceCommit]);
 
   if (dirname(outputRoot) !== packageRoot || outputRoot === packageRoot) throw new Error("Unsafe staging output path.");
   await rm(outputRoot, { recursive: true, force: true });
