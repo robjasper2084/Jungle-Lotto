@@ -9,12 +9,17 @@
 - Upgrade branch: `upgrade-redesign`
 - Upgrade branch SHA at Step 0A branch creation: `1fc4c95ca4d0b22ee5188d06f8ea75573c63a00a`
 - Upgrade branch SHA before Step 0B commit: `220653bbc300d0e0b236c6e834043f39fdfcd76c`
+- Step 0B commit SHA: `6e58aafc4addabf5281262ec951a7d6df3dc66a0`
 - Deployment mechanism discovered: GitHub Pages Actions from repository-root `.github/workflows/pages.yml`; pushes to `main` upload the repository root with `actions/upload-pages-artifact` and deploy with `actions/deploy-pages`. The latest verified successful production run deployed `main` commit `975c637cea7003533cdc30aed9d96be51929bfc8`.
 - Staging provider: Local static server (Mode C); no remote preview provider is configured
 - Staging URL: Local only (`http://127.0.0.1:8143/` while `npm.cmd run staging:serve` is running)
 - Staging integrations: No isolated backend or Stripe test-mode configuration is currently configured; protected writes remain disabled
-- Last completed step: Step 0B - isolated LottoMind staging preview workflow created and verified locally
-- Last successful test run: `npm.cmd run staging:test` on 2026-07-20; 23 routes, 506 same-origin asset references, and 3 Playwright staging tests passed
+- Last completed step: Step 1 - repository guardrails, source/staging regression matrix, and production visual baseline completed
+- Step 1 commit SHA: This file is part of the Step 1 commit; use `git log -1 --format=%H -- docs/upgrade-redesign-status.md` to resolve its exact non-self-referential SHA. The completion report records it explicitly.
+- Last successful test run: 2026-07-20 - `npm.cmd run routes:test` passed 92 source/staging checks across 23 visual states at 1440x900 and 390x844 with reduced motion; `npm.cmd run staging:test` verified 23 injected pages, 506 same-origin references, and 3 staging browser safety tests; the legacy homepage validator passed against the complete source artifact
+- Visual baseline: Complete - 69 production route screenshots plus desktop, tablet, and mobile contact sheets under `docs/visual-baseline/v1/`
+- Step 1 visual comparison: Production and staging home routes compared at 1440x900 and 390x844; staging adds only the preview and safety banners, with no redesign changes
+- Known Step 1 baseline failures: Source Contact missing `assets/js/lm-support.js`; mobile Stem Studio horizontal overflow; Jackpot Maze blank production render plus missing heading and visible focus in source/staging. Details: `docs/regression-baseline.md`
 - Production approval status: Not approved
 - Rollback reference: `v1-final` at `975c637cea7003533cdc30aed9d96be51929bfc8`; after a controlled production merge, use `git revert` for rollback
 - Known pre-existing repository changes: The working tree was clean when Step 0A began. Local `main` already contained commit `1fc4c95ca4d0b22ee5188d06f8ea75573c63a00a` ahead of `origin/main`; that commit was preserved as the starting point of `upgrade-redesign` and was not pushed to production.
