@@ -16,10 +16,13 @@
 - Staging integrations: No isolated backend or Stripe test-mode configuration is currently configured; protected writes remain disabled
 - Last completed step: Step 1 - repository guardrails, source/staging regression matrix, and production visual baseline completed
 - Step 1 commit SHA: This file is part of the Step 1 commit; use `git log -1 --format=%H -- docs/upgrade-redesign-status.md` to resolve its exact non-self-referential SHA. The completion report records it explicitly.
-- Last successful test run: 2026-07-20 - `npm.cmd run routes:test` passed 92 source/staging checks across 23 visual states at 1440x900 and 390x844 with reduced motion; `npm.cmd run staging:test` verified 23 injected pages, 506 same-origin references, and 3 staging browser safety tests; the legacy homepage validator passed against the complete source artifact
+- Last staging review: Step 1 guardrails and baseline checkpoint - all 23 visual states compared at 1440x900, 768x1024, and 390x844; review: `docs/staging-reviews/step-1-guardrails-baseline.md`
+- Staging review commit SHA: This file is part of the staging-review commit; the completion report records its exact SHA.
+- Last successful test run: 2026-07-20 - `npm.cmd run routes:test` passed 92 source/staging checks across 23 visual states at 1440x900 and 390x844 with reduced motion; `npm.cmd run staging:test` verified 23 injected pages, 506 same-origin references, and 3 staging browser safety tests
 - Visual baseline: Complete - 69 production route screenshots plus desktop, tablet, and mobile contact sheets under `docs/visual-baseline/v1/`
 - Step 1 visual comparison: Production and staging home routes compared at 1440x900 and 390x844; staging adds only the preview and safety banners, with no redesign changes
 - Known Step 1 baseline failures: Source Contact missing `assets/js/lm-support.js`; mobile Stem Studio horizontal overflow; Jackpot Maze blank production render plus missing heading and visible focus in source/staging. Details: `docs/regression-baseline.md`
+- Staging review approval status: Ready for next phase
 - Production approval status: Not approved
 - Rollback reference: `v1-final` at `975c637cea7003533cdc30aed9d96be51929bfc8`; after a controlled production merge, use `git revert` for rollback
 - Known pre-existing repository changes: The working tree was clean when Step 0A began. Local `main` already contained commit `1fc4c95ca4d0b22ee5188d06f8ea75573c63a00a` ahead of `origin/main`; that commit was preserved as the starting point of `upgrade-redesign` and was not pushed to production.
