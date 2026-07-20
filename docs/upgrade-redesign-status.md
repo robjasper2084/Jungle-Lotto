@@ -26,3 +26,17 @@
 - Production approval status: Not approved
 - Rollback reference: `v1-final` at `975c637cea7003533cdc30aed9d96be51929bfc8`; after a controlled production merge, use `git revert` for rollback
 - Known pre-existing repository changes: The working tree was clean when Step 0A began. Local `main` already contained commit `1fc4c95ca4d0b22ee5188d06f8ea75573c63a00a` ahead of `origin/main`; that commit was preserved as the starting point of `upgrade-redesign` and was not pushed to production.
+
+## Optional Arcade Pilot
+
+- Step: Optional Arcade Pilot - isolated redesign experiment
+- Pilot branch: `upgrade-redesign-arcade-pilot`
+- Parent upgrade branch SHA: `b8e6c4a78b94dafae71cec538093adf40ce170f2`
+- Pilot commit SHA: This status file is part of the pilot commit; resolve it with `git log -1 --format=%H -- docs/upgrade-redesign-status.md`. The completion report records the exact SHA.
+- Pilot staging URL: Local only (`http://127.0.0.1:8143/features-app.html` while the staging server is running)
+- Pilot remote preview: Not configured or deployed
+- Pilot review: `docs/staging-reviews/arcade-pilot.md`
+- Pilot tests: 2 focused desktop/mobile Arcade checks; 23-page staging static verification with 484 same-origin references; 3 staging browser safety checks; 92 source/staging route smoke checks
+- Pilot recommendation: Accept into `upgrade-redesign` for controlled review; no automatic merge performed
+- Pilot approval status: Ready for parent-branch review
+- Production approval status: Not approved

@@ -1,0 +1,32 @@
+{
+  "baseUrl": "http://127.0.0.1:8143",
+  "capturedAt": "2026-07-20T22:38:47.837Z",
+  "results": [
+    {
+      "viewport": "1440x900",
+      "pageHeight": 3071,
+      "horizontalOverflow": false,
+      "images": {
+        "total": 8,
+        "loaded": 8
+      },
+      "responseCount": 24,
+      "transferredBytesFromContentLength": 9010571,
+      "consoleErrors": [],
+      "failedResponses": []
+    },
+    {
+      "viewport": "390x844",
+      "pageHeight": 5578,
+      "horizontalOverflow": false,
+      "images": {
+        "total": 8,
+        "loaded": 8
+      },
+      "responseCount": 24,
+      "transferredBytesFromContentLength": 9010571,
+      "consoleErrors": [],
+      "failedResponses": []
+    }
+  ]
+}
