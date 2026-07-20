@@ -14,11 +14,11 @@
 - Staging provider: Local static server (Mode C); no remote preview provider is configured
 - Staging URL: Local only (`http://127.0.0.1:8143/` while `npm.cmd run staging:serve` is running)
 - Staging integrations: No isolated backend or Stripe test-mode configuration is currently configured; protected writes remain disabled
-- Last completed step: Step 1 - repository guardrails, source/staging regression matrix, and production visual baseline completed
+- Last completed step: Approved Arcade pilot merged into `upgrade-redesign` and verified independently on staging
 - Step 1 commit SHA: This file is part of the Step 1 commit; use `git log -1 --format=%H -- docs/upgrade-redesign-status.md` to resolve its exact non-self-referential SHA. The completion report records it explicitly.
-- Last staging review: Step 1 guardrails and baseline checkpoint - all 23 visual states compared at 1440x900, 768x1024, and 390x844; review: `docs/staging-reviews/step-1-guardrails-baseline.md`
+- Last staging review: Arcade pilot accepted after production, parent staging, and pilot comparison; review: `docs/staging-reviews/arcade-pilot.md`
 - Staging review commit SHA: This file is part of the staging-review commit; the completion report records its exact SHA.
-- Last successful test run: 2026-07-20 - `npm.cmd run routes:test` passed 92 source/staging checks across 23 visual states at 1440x900 and 390x844 with reduced motion; `npm.cmd run staging:test` verified 23 injected pages, 506 same-origin references, and 3 staging browser safety tests
+- Last successful test run: 2026-07-20 - merge commit `dd6d2a7d987cc08526cb59f38d2aac7c23819a57`; 2 focused Arcade desktop/mobile checks passed; `npm.cmd run routes:test` passed 92 source/staging checks; `npm.cmd run staging:test` verified 23 injected pages, 484 same-origin references, and 3 staging browser safety tests
 - Visual baseline: Complete - 69 production route screenshots plus desktop, tablet, and mobile contact sheets under `docs/visual-baseline/v1/`
 - Step 1 visual comparison: Production and staging home routes compared at 1440x900 and 390x844; staging adds only the preview and safety banners, with no redesign changes
 - Known Step 1 baseline failures: Source Contact missing `assets/js/lm-support.js`; mobile Stem Studio horizontal overflow; Jackpot Maze blank production render plus missing heading and visible focus in source/staging. Details: `docs/regression-baseline.md`
@@ -32,11 +32,14 @@
 - Step: Optional Arcade Pilot - isolated redesign experiment
 - Pilot branch: `upgrade-redesign-arcade-pilot`
 - Parent upgrade branch SHA: `b8e6c4a78b94dafae71cec538093adf40ce170f2`
-- Pilot commit SHA: This status file is part of the pilot commit; resolve it with `git log -1 --format=%H -- docs/upgrade-redesign-status.md`. The completion report records the exact SHA.
+- Pilot commit SHA: `84cbde5e1940aa1b1fbe3ae996c9a4de67dcd103`
+- Accepted merge commit SHA: `dd6d2a7d987cc08526cb59f38d2aac7c23819a57`
 - Pilot staging URL: Local only (`http://127.0.0.1:8143/features-app.html` while the staging server is running)
 - Pilot remote preview: Not configured or deployed
 - Pilot review: `docs/staging-reviews/arcade-pilot.md`
 - Pilot tests: 2 focused desktop/mobile Arcade checks; 23-page staging static verification with 484 same-origin references; 3 staging browser safety checks; 92 source/staging route smoke checks
-- Pilot recommendation: Accept into `upgrade-redesign` for controlled review; no automatic merge performed
-- Pilot approval status: Ready for parent-branch review
+- Pilot merge status: Accepted into `upgrade-redesign` with an explicit `--no-ff` merge; historical pilot branch retained
+- Post-merge visual verification: Passed at 1440x900 and 390x844 with all eight card images loaded, no horizontal overflow, and no console errors
+- Remaining Arcade issues: None introduced by the merge; repository-wide baseline issues remain for source Contact, mobile Stem Studio overflow, and Jackpot Maze heading/focus behavior
+- Pilot approval status: Approved and merged into the upgrade branch
 - Production approval status: Not approved
