@@ -101,6 +101,25 @@ test("route commercial gate waits for an explicit play command", async ({ page }
   await expect.poll(() => filmRequests.length).toBeGreaterThan(0);
 });
 
+test("merch campaign film waits for a route-local play command", async ({ page }) => {
+  const filmRequests = [];
+  page.on("request", (request) => {
+    if (/lottomind-community-signal-commercial-20260717\.mp4/i.test(request.url())) {
+      filmRequests.push(request.url());
+    }
+  });
+
+  await page.goto("/merch-store.html", { waitUntil: "domcontentloaded" });
+  const gate = page.locator(".lm-commercial-gate");
+  await expect(gate).toBeVisible();
+  await gate.locator(".lm-commercial-gate__skip").click();
+  await expect(gate).toBeHidden();
+  expect(filmRequests).toEqual([]);
+
+  await page.locator("[data-merch-sound-toggle]").click();
+  await expect.poll(() => filmRequests.length).toBeGreaterThan(0);
+});
+
 test("production writes are rejected while local-only browser state remains available", async ({ page }) => {
   await blockHeavyMedia(page);
   const productionRequests = [];

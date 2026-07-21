@@ -452,6 +452,7 @@
       if (element.dataset.liveMediaReady === "true") return false;
       if (element.matches("iframe[data-src]")) return true;
       if (element.matches("video")) {
+        if (element.dataset.lmVideoUnmanaged === "true") return false;
         return Boolean(element.dataset.src || element.querySelector("source[data-src]"));
       }
       return false;

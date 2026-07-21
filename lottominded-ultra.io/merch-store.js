@@ -211,6 +211,23 @@ function pauseMerchIntroAudio(exceptMedia = merchSoundVideo) {
   });
 }
 
+function restoreMerchVideoSources(video) {
+  if (!video) return false;
+  let changed = false;
+  if (video.dataset.src && !video.hasAttribute("src")) {
+    video.setAttribute("src", video.dataset.src);
+    changed = true;
+  }
+  video.querySelectorAll("source").forEach((source) => {
+    if (source.dataset.src && !source.hasAttribute("src")) {
+      source.setAttribute("src", source.dataset.src);
+      changed = true;
+    }
+  });
+  if (changed) video.load();
+  return changed;
+}
+
 function resetMerchCapsuleVideo() {
   if (!merchSoundVideo) return;
   try {
@@ -224,6 +241,7 @@ async function playMerchCapsuleSound() {
   if (!merchSoundVideo || !merchSoundToggle) return;
   let played = false;
   pauseMerchIntroAudio();
+  restoreMerchVideoSources(merchSoundVideo);
   resetMerchCapsuleVideo();
   try {
     merchSoundVideo.muted = false;
@@ -251,23 +269,16 @@ async function playMerchCapsuleSound() {
 
 function startMerchCapsuleOnPageOpen() {
   if (!merchSoundVideo) return;
-  merchSoundVideo.autoplay = true;
+  merchSoundVideo.autoplay = false;
   merchSoundVideo.playsInline = true;
   merchSoundVideo.muted = true;
   merchSoundVideo.defaultMuted = true;
-  merchSoundVideo.setAttribute("autoplay", "");
+  merchSoundVideo.removeAttribute("autoplay");
   merchSoundVideo.setAttribute("playsinline", "");
   merchSoundVideo.setAttribute("muted", "");
-  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-    merchSoundVideo.pause();
-    resetMerchCapsuleVideo();
-  } else {
-    merchSoundVideo.play().catch(() => {
-      // The commercial poster remains visible if muted autoplay is unavailable.
-    });
-  }
+  merchSoundVideo.pause();
   if (merchSoundToggle) {
-    merchSoundToggle.textContent = "Play sound";
+    merchSoundToggle.textContent = "Play film";
     merchSoundToggle.classList.remove("is-playing");
   }
 }
@@ -287,6 +298,7 @@ async function openMerchCommercial() {
   merchCommercialModal.classList.remove("is-hidden");
   merchCommercialModal.setAttribute("aria-hidden", "false");
   document.body.classList.add("has-merch-commercial-modal");
+  restoreMerchVideoSources(merchCommercialModalVideo);
   if (merchCommercialModalVideo.readyState === 0) merchCommercialModalVideo.load();
   try {
     merchCommercialModalVideo.currentTime = 0;
@@ -319,6 +331,7 @@ function closeMerchCommercial({ restoreFocus = true } = {}) {
 
 async function replayMerchCommercial() {
   if (!merchCommercialModalVideo) return;
+  restoreMerchVideoSources(merchCommercialModalVideo);
   try {
     merchCommercialModalVideo.currentTime = 0;
   } catch {
