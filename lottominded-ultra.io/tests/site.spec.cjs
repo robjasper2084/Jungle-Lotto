@@ -1,4 +1,6 @@
 const { test, expect } = require("@playwright/test");
+const fs = require("node:fs");
+const path = require("node:path");
 
 async function blockHeavyMedia(page) {
   await page.route(/\.(?:mp3|mp4|wav|webm)(?:\?.*)?$/i, (route) => route.fulfill({ status: 204, body: "" }));
@@ -13,6 +15,54 @@ function trackLocalFailures(page) {
     if (response.status() >= 400) failures.push(`${response.status()} ${url.pathname}`);
   });
   return failures;
+}
+
+async function mockAuthenticatedBilling(page, checkoutResponse) {
+  await page.addInitScript(() => {
+    localStorage.setItem("lottomind.account.session.v1", JSON.stringify({
+      access_token: "test-access-token",
+      expires_at: Math.floor(Date.now() / 1000) + 3600,
+    }));
+  });
+  await page.route(/https:\/\/sqdasdbvlkgpbbiyeune\.supabase\.co\/functions\/v1\/lottomind-api.*/i, (route) => {
+    const request = route.request();
+    const pathname = new URL(request.url()).pathname;
+    const headers = {
+      "Access-Control-Allow-Origin": request.headers().origin || "http://127.0.0.1:8142",
+      "Access-Control-Allow-Credentials": "true",
+      "Access-Control-Allow-Headers": "authorization, content-type, x-client-info, x-requested-with",
+      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+    };
+    if (request.method() === "OPTIONS") return route.fulfill({ status: 204, headers });
+    if (pathname.endsWith("/billing/config")) {
+      return route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        headers,
+        body: JSON.stringify({
+          enabled: true,
+          mode: "test",
+          message: "Secure Stripe checkout is ready.",
+          plans: [{ lookupKey: "gold_monthly", available: true }],
+        }),
+      });
+    }
+    if (pathname.endsWith("/account/snapshot")) {
+      return route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        headers,
+        body: JSON.stringify({ authenticated: true, user: { id: "test-user" }, wallet: { balance: 0 }, memberships: [], collector: {} }),
+      });
+    }
+    if (pathname.endsWith("/entitlements/beat2lotto")) {
+      return route.fulfill({ status: 200, contentType: "application/json", headers, body: '{"entitled":false,"tier":"free"}' });
+    }
+    if (pathname.endsWith("/billing/checkout")) {
+      return route.fulfill({ contentType: "application/json", headers, ...checkoutResponse });
+    }
+    return route.fulfill({ status: 404, contentType: "application/json", headers, body: '{"error":{"message":"Unexpected test route"}}' });
+  });
 }
 
 test("memberships opens its commercial and hands off to the page without API checkout calls", async ({ page }) => {
@@ -36,9 +86,77 @@ test("memberships opens its commercial and hands off to the page without API che
   await page.locator("[data-membership-commercial-close]").click();
   await expect(commercial).toBeHidden();
   await expect(page.locator("[data-stripe-lookup-key]").first()).toBeDisabled();
-  await expect(page.locator("[data-stripe-membership-status]")).toContainText("billing service is unavailable");
+  await expect(page.locator("[data-stripe-membership-status]")).toContainText("Test billing endpoint offline");
   expect(apiRequests).toEqual([]);
   expect(localFailures).toEqual([]);
+});
+
+test("membership checkout explains an authenticated backend rejection", async ({ page }) => {
+  await blockHeavyMedia(page);
+  await mockAuthenticatedBilling(page, {
+    status: 401,
+    body: '{"error":{"code":"AUTH_REQUIRED","message":"Sign in is required."}}',
+  });
+
+  await page.goto("/memberships.html", { waitUntil: "domcontentloaded" });
+  await page.locator("[data-membership-commercial-close]").click();
+  await expect(page.locator("[data-stripe-membership-status]")).toHaveText("Secure Stripe checkout is ready.");
+  await page.locator('[data-stripe-lookup-key="gold_monthly"]').evaluate((button) => button.click());
+
+  await expect(page.locator("[data-stripe-membership-status]")).toHaveText("Sign in is required.");
+  await expect(page.locator('[data-stripe-lookup-key="gold_monthly"]')).toBeEnabled();
+  await expect(page).toHaveURL(/\/memberships\.html$/);
+});
+
+test("membership checkout rejects an unsafe redirect response", async ({ page }) => {
+  await blockHeavyMedia(page);
+  await mockAuthenticatedBilling(page, {
+    status: 200,
+    body: '{"url":"javascript:alert(1)"}',
+  });
+
+  await page.goto("/memberships.html", { waitUntil: "domcontentloaded" });
+  await page.locator("[data-membership-commercial-close]").click();
+  await expect(page.locator("[data-stripe-membership-status]")).toHaveText("Secure Stripe checkout is ready.");
+  await page.locator('[data-stripe-lookup-key="gold_monthly"]').evaluate((button) => button.click());
+
+  await expect(page.locator("[data-stripe-membership-status]")).toContainText("invalid checkout link");
+  await expect(page).toHaveURL(/\/memberships\.html$/);
+});
+
+test("membership checkout stays disabled for malformed plan configuration", async ({ page }) => {
+  await blockHeavyMedia(page);
+  await page.route(/https:\/\/sqdasdbvlkgpbbiyeune\.supabase\.co\/functions\/v1\/lottomind-api.*/i, (route) => {
+    const request = route.request();
+    const headers = {
+      "Access-Control-Allow-Origin": request.headers().origin || "http://127.0.0.1:8142",
+      "Access-Control-Allow-Credentials": "true",
+      "Access-Control-Allow-Headers": "authorization, content-type, x-client-info, x-requested-with",
+      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+    };
+    if (request.method() === "OPTIONS") return route.fulfill({ status: 204, headers });
+    return route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      headers,
+      body: '{"enabled":true,"plans":"not-an-array"}',
+    });
+  });
+
+  await page.goto("/memberships.html", { waitUntil: "domcontentloaded" });
+  await page.locator("[data-membership-commercial-close]").click();
+
+  await expect(page.locator("[data-stripe-membership-status]")).toContainText("invalid plan configuration");
+  await expect(page.locator("[data-stripe-lookup-key]").first()).toBeDisabled();
+});
+
+test("billing Edge Function returns expected auth failures through its CORS response helper", () => {
+  const source = fs.readFileSync(path.join(__dirname, "..", "supabase", "functions", "lottomind-api", "index.ts"), "utf8");
+  expect(source).toContain('return user || fail(req, 401, "AUTH_REQUIRED", "Sign in is required.")');
+  expect(source).not.toContain("throw Object.assign");
+  expect(source).toContain('"Access-Control-Allow-Origin"');
+  expect(source).toContain('"INVALID_JSON_BODY"');
+  expect(source).toContain('validStripeUrl(session.url, "checkout.stripe.com")');
 });
 
 test("guide commercial returns on every fresh page visit", async ({ page }) => {
@@ -108,6 +226,39 @@ test("Contact prepares a support request locally", async ({ page }) => {
   await expect(page.locator("[data-support-status]")).toHaveText("Support request prepared locally. Nothing has been sent.");
   await expect(page.locator("[data-support-draft]")).toHaveAttribute("href", /^mailto:support@lottomind\.one\?/);
   expect(localFailures).toEqual([]);
+});
+
+test("membership support modules follow the plan heading in the requested order", async ({ page }) => {
+  await blockHeavyMedia(page);
+  await page.route(/https:\/\/js\.stripe\.com\/.*/i, (route) => route.abort());
+  await page.goto("/memberships.html", { waitUntil: "domcontentloaded" });
+
+  const supportGrid = page.locator("#membership-plans > .membership-plan-support-grid");
+  const collector = supportGrid.locator(":scope > #lm-access-hero");
+  const guardian = supportGrid.locator(":scope > .membership-collectible-card");
+
+  await expect(supportGrid).toHaveCount(1);
+  await expect(collector).toHaveCount(1);
+  await expect(guardian).toHaveCount(1);
+  await expect(page.locator("#dust .membership-collectible-card")).toHaveCount(0);
+  await expect(page.locator("#water")).toHaveCount(0);
+  await expect(page.getByText(/Film 04/i)).toHaveCount(0);
+
+  const order = await supportGrid.locator(":scope > *").evaluateAll((nodes) =>
+    nodes.map((node) => node.id || (node.classList.contains("membership-collectible-card") ? "guardian" : ""))
+  );
+  expect(order).toEqual(["lm-access-hero", "guardian"]);
+
+  const collectorBox = await collector.boundingBox();
+  const guardianBox = await guardian.boundingBox();
+  expect(collectorBox).toBeTruthy();
+  expect(guardianBox).toBeTruthy();
+
+  if (page.viewportSize().width > 900) {
+    expect(collectorBox.x).toBeLessThan(guardianBox.x);
+  } else {
+    expect(collectorBox.y).toBeLessThan(guardianBox.y);
+  }
 });
 
 test("Stem Studio contains the workstation at compact mobile width", async ({ page }) => {

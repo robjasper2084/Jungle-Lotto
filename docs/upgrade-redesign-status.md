@@ -15,11 +15,11 @@
 - Staging provider: Local static server (Mode C); no remote preview provider is configured
 - Staging URL: Local only (`http://127.0.0.1:8143/` while `npm.cmd run staging:serve` is running)
 - Staging integrations: No isolated backend or Stripe test-mode configuration is currently configured; protected writes remain disabled
-- Last completed step: Step 34 prerequisite remediation completed, excluding live checkout verification
+- Last completed step: Membership and merch polish plus billing response validation completed on `upgrade-redesign`; production deployment remains excluded
 - Step 1 commit SHA: This file is part of the Step 1 commit; use `git log -1 --format=%H -- docs/upgrade-redesign-status.md` to resolve its exact non-self-referential SHA. The completion report records it explicitly.
 - Last staging review: Non-checkout blocker remediation passed; review: `docs/staging-reviews/blocker-remediation.md`
 - Staging review commit SHA: This file is part of the staging-review commit; the completion report records its exact SHA.
-- Last successful test run: 2026-07-21 - implementation commit `32b1bbfd535d01b5acb2dabf82627c52fcb26e7c`; `npm.cmd run routes:test` passed 92/92 source/staging desktop/mobile checks; `npm.cmd run staging:test` passed 9/9 browser checks and verified 23 injected pages plus 492 same-origin references
+- Last successful test run: 2026-07-21 - five focused desktop billing/CORS checks passed; `npm.cmd run staging:test` passed 9/9 browser checks and verified 23 injected pages plus 492 same-origin references; rendered staging inspection confirmed noindex, preview banner, six blocked checkout controls, and no console errors
 - Visual baseline: Complete - 69 production route screenshots plus desktop, tablet, and mobile contact sheets under `docs/visual-baseline/v1/`
 - Step 1 visual comparison: Production and staging home routes compared at 1440x900 and 390x844; staging adds only the preview and safety banners, with no redesign changes
 - Resolved Step 1 baseline failures: Contact support helper restored; Stem Studio tablet/mobile overflow corrected; Jackpot Maze runtime, heading, and entry focus restored; first-load outliers reduced; staging News production request removed
@@ -29,6 +29,16 @@
 - Production approval status: Not approved; safe live-checkout verification remains incomplete
 - Rollback reference: `v1-final` at `975c637cea7003533cdc30aed9d96be51929bfc8`; after a controlled production merge, use `git revert` for rollback
 - Known pre-existing repository changes: The working tree was clean when Step 0A began. Local `main` already contained commit `1fc4c95ca4d0b22ee5188d06f8ea75573c63a00a` ahead of `origin/main`; that commit was preserved as the starting point of `upgrade-redesign` and was not pushed to production.
+
+## Billing Response Validation
+
+- Frontend behavior: Billing requests now validate JSON, configuration shape, plan identifiers, and Stripe redirect hosts; stalled, malformed, rejected, and unreachable responses receive distinct accessible messages
+- Checkout return behavior: A Stripe return is no longer described as payment confirmation until an active membership is verified from the account service
+- Edge Function source: `supabase/functions/lottomind-api/index.ts` is now versioned in the repository with CORS-aware auth responses, JSON body validation, Stripe mode reporting, and checkout/portal URL validation
+- Connected backend check: Production function version 5 currently returns `401 AUTH_REQUIRED` with the expected CORS header for an unauthenticated checkout request; no unexplained `500` billing failures appeared in the inspected 24-hour Edge Function log window
+- Backend deployment: Not performed because the connected Supabase project exposes only its production `main` branch and production approval is not granted
+- Validation limitation: `npm.cmd run check:site` still reports 65 missing references because this sparse checkout intentionally omits large source assets; the independent staging build and same-origin reference check passed
+- Cleanup: Generated staging/test output and the Playwright browser cache were removed after validation; they are recreated by the documented build/test commands
 
 ## Step 34 Prerequisite Remediation
 
