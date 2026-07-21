@@ -133,10 +133,11 @@
         <button class="startup-video-close" type="button" data-startup-video-close aria-label="Enter site">X</button>
         <p class="eyebrow">Lottominded Ultra Signal</p>
         <h2 id="startupVideoTitle">Start the home frequency.</h2>
-        <video class="startup-video-player" playsinline controls preload="metadata" data-startup-video-volume="0.64">
-          <source src="./assets/video/lottomind-home-commercial-20260716.mp4" type="video/mp4" />
+        <video class="startup-video-player" playsinline controls preload="none" poster="./assets/video/lottomind-refined-commercial-poster-20260716.png" data-startup-video-volume="0.64" data-lm-video-unmanaged="true">
+          <source data-src="./assets/video/lottomind-home-commercial-20260716.mp4" type="video/mp4" />
         </video>
         <div class="startup-video-actions">
+          <button class="secondary-action" type="button" data-startup-video-play>Play Film</button>
           <button class="primary-action" type="button" data-startup-video-close>Enter Site</button>
         </div>
         <p class="startup-video-copy">
@@ -280,12 +281,12 @@
             <video
               muted
               playsinline
-              preload="metadata"
+              preload="none"
               poster="./assets/video/lottomind-refined-commercial-poster-20260716.png"
               data-inline-sound-video
               data-inline-sound-volume="0.62"
               aria-label="LottoMind Refined membership commercial">
-              <source src="./assets/video/lottomind-refined-commercial-20260716.mp4" type="video/mp4" />
+              <source data-src="./assets/video/lottomind-refined-commercial-20260716.mp4" type="video/mp4" />
             </video>
             <button class="inline-sound-button" type="button" data-inline-sound-button>Play with sound</button>
             <span class="refined-app-film__label">Refined App / Membership film</span>

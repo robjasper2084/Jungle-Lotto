@@ -77,6 +77,24 @@ test("features renders the focused manifest-driven Arcade pilot", async ({ page 
   expect(localFailures).toEqual([]);
 });
 
+test("home commercial media waits for an explicit play command", async ({ page }) => {
+  const commercialRequests = [];
+  page.on("request", (request) => {
+    if (/lottomind-(?:home|refined)-commercial-20260716\.mp4/i.test(request.url())) {
+      commercialRequests.push(request.url());
+    }
+  });
+
+  await page.goto("/", { waitUntil: "domcontentloaded" });
+  const startup = page.locator("[data-startup-video]");
+  await expect(startup).toBeVisible({ timeout: 15_000 });
+  await page.waitForTimeout(500);
+  expect(commercialRequests).toEqual([]);
+
+  await page.locator("[data-startup-video-play]").click();
+  await expect.poll(() => commercialRequests.length).toBeGreaterThan(0);
+});
+
 test("Contact prepares a support request locally", async ({ page }) => {
   const localFailures = trackLocalFailures(page);
   await page.goto("/contact.html", { waitUntil: "domcontentloaded" });

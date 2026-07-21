@@ -298,6 +298,7 @@ const siteSoundtrack = document.querySelector("#siteSoundtrack");
 const soundtrackButtons = document.querySelectorAll("[data-soundtrack-toggle]");
 const startupVideoModal = document.querySelector("[data-startup-video]");
 const startupVideoCloseButtons = document.querySelectorAll("[data-startup-video-close]");
+const startupVideoPlay = document.querySelector("[data-startup-video-play]");
 const startupMusicStart = document.querySelector("[data-startup-music-start]");
 const startupVideoPlayer = startupVideoModal?.querySelector("video");
 let startupOpenTimer = 0;
@@ -3011,6 +3012,7 @@ function setupInlineSoundVideos() {
 
     const playWithSound = async () => {
       window.LMAudioMix.claim(video);
+      restoreDeferredVideoSources(video);
 
       try {
         video.muted = false;
@@ -3183,7 +3185,8 @@ function showStartupVideo() {
   stopStartupSoundtrack({ reset: true });
   syncHeroMotionPreference();
   rememberStartupVideoSeen();
-  playStartupVideoWithSound({ reset: true });
+  startupVideoModal.classList.add("is-awaiting-video-play");
+  startupVideoPlay?.focus({ preventScroll: true });
 }
 
 function scheduleStartupVideoOpen() {
@@ -3807,6 +3810,7 @@ scheduleAutoGamePip();
 startupVideoCloseButtons.forEach((button) => {
   button.addEventListener("click", () => closeStartupVideo({ playMusic: true }));
 });
+startupVideoPlay?.addEventListener("click", () => playStartupVideoWithSound({ reset: true }));
 startupMusicStart?.addEventListener("click", () => closeStartupVideo({ playMusic: true }));
 startupVideoPlayer?.addEventListener("pointerdown", () => {
   playStartupVideoWithSound();

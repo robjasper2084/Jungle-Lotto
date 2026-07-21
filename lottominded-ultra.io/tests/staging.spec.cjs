@@ -54,6 +54,23 @@ test("preview shell is noindex, visibly marked, and free of broken same-origin r
   expect(consoleFailures).toEqual([]);
 });
 
+test("home commercial media waits for an explicit play command", async ({ page }) => {
+  const commercialRequests = [];
+  page.on("request", (request) => {
+    if (/lottomind-(?:home|refined)-commercial-20260716\.mp4/i.test(request.url())) {
+      commercialRequests.push(request.url());
+    }
+  });
+
+  await page.goto("/", { waitUntil: "domcontentloaded" });
+  await expect(page.locator("[data-startup-video]")).toBeVisible({ timeout: 15_000 });
+  await page.waitForTimeout(500);
+  expect(commercialRequests).toEqual([]);
+
+  await page.locator("[data-startup-video-play]").click();
+  await expect.poll(() => commercialRequests.length).toBeGreaterThan(0);
+});
+
 test("production writes are rejected while local-only browser state remains available", async ({ page }) => {
   await blockHeavyMedia(page);
   const productionRequests = [];
