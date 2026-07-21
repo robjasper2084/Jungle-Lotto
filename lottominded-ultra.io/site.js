@@ -3864,6 +3864,7 @@ async function playSiteSoundtrack(options = {}) {
     return;
   }
   try {
+    restoreDeferredVideoSources(siteSoundtrack);
     window.LMAudioMix.claim(siteSoundtrack);
     siteSoundtrack.volume = options.volume ?? SITE_AUDIO_LEVELS.background;
     if (options.restart) siteSoundtrack.currentTime = 0;

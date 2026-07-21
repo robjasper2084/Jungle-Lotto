@@ -84,6 +84,7 @@
 
   const playMembershipSoundtrack = async ({ remember = false, restart = false, volume = window.LMAudioMix?.levels.background ?? 0.42, silent = false } = {}) => {
     if (!membershipSoundtrack || state.soundOptOut) return false;
+    restoreDeferredVideoSources(membershipSoundtrack);
     membershipSoundtrack.loop = false;
     membershipSoundtrack.volume = volume;
     if (restart) {
