@@ -1,6 +1,1 @@
-{
-  "source|desktop|/games/lottomind-jackpot-maze/": ["missing-heading", "focus-not-visible"],
-  "source|mobile|/games/lottomind-jackpot-maze/": ["missing-heading", "focus-not-visible"],
-  "staging|desktop|/games/lottomind-jackpot-maze/": ["missing-heading", "focus-not-visible"],
-  "staging|mobile|/games/lottomind-jackpot-maze/": ["missing-heading", "focus-not-visible"]
-}
+{}

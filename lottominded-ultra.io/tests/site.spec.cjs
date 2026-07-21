@@ -162,9 +162,10 @@ test("GothTechnology canvas boots with a visible play surface", async ({ page })
 test("Jackpot Maze built route renders instead of a dev shell", async ({ page }) => {
   const localFailures = trackLocalFailures(page);
   await page.goto("/games/lottomind-jackpot-maze/", { waitUntil: "domcontentloaded" });
-  await page.waitForFunction(() => (document.querySelector("#root")?.textContent || document.querySelector("canvas")?.outerHTML || "").trim().length > 20);
+  await page.waitForFunction(() => (document.querySelector("#root")?.textContent || "").trim().length > 20);
 
-  await expect(page.locator("#root, canvas").first()).toBeVisible();
+  await expect(page.getByRole("heading", { name: "LottoMind Jackpot Maze" })).toHaveCount(1);
+  await expect(page.getByRole("button", { name: /Enter the Maze/i })).toBeVisible();
   expect(localFailures).toEqual([]);
 });
 
