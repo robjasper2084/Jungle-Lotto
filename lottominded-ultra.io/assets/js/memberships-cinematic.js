@@ -165,8 +165,26 @@
   let commercialTransitionFallback = 0;
   let waterCommercialSoundEnabled = false;
 
+  const restoreDeferredVideoSources = (video) => {
+    if (!video) return false;
+    let changed = false;
+    if (video.dataset.src && !video.hasAttribute("src")) {
+      video.setAttribute("src", video.dataset.src);
+      changed = true;
+    }
+    video.querySelectorAll("source").forEach((source) => {
+      if (source.dataset.src && !source.hasAttribute("src")) {
+        source.setAttribute("src", source.dataset.src);
+        changed = true;
+      }
+    });
+    if (changed) video.load();
+    return changed;
+  };
+
   const playCommercialWithFallback = async ({ restart = false } = {}) => {
     if (!commercialVideo) return false;
+    restoreDeferredVideoSources(commercialVideo);
     if (restart) {
       try { commercialVideo.currentTime = 0; } catch (_) {}
     }
@@ -193,11 +211,13 @@
     if (!commercialVideo) return;
     const normalizedIndex = Math.max(0, Math.min(commercialFilms.length - 1, Number(index) || 0));
     const film = commercialFilms[normalizedIndex];
-    const sourceChanged = commercialVideo.getAttribute("src") !== film.src;
+    const activeSource = commercialVideo.getAttribute("src") || commercialVideo.dataset.src;
+    const sourceChanged = activeSource !== film.src;
     commercialFilmIndex = normalizedIndex;
     if (sourceChanged) {
       commercialVideo.pause();
-      commercialVideo.setAttribute("src", film.src);
+      commercialVideo.removeAttribute("src");
+      commercialVideo.dataset.src = film.src;
       commercialVideo.poster = film.poster;
       commercialVideo.load();
     } else if (restart) {
@@ -224,6 +244,7 @@
       heroCommercialVideo.pause();
       return;
     }
+    if (!heroCommercialVideo.currentSrc) return;
     heroCommercialVideo.muted = true;
     heroCommercialVideo.play().catch(() => {});
   };
@@ -244,6 +265,7 @@
       waterCommercialVideo.pause();
       return;
     }
+    restoreDeferredVideoSources(waterCommercialVideo);
     waterCommercialVideo.muted = !waterCommercialSoundEnabled;
     waterCommercialVideo.play().catch(() => {});
   };
@@ -265,6 +287,7 @@
     waterCommercialSound.textContent = waterCommercialSoundEnabled ? "Sound on" : "Play with sound";
     if (waterCommercialSoundEnabled) {
       window.LMAudioMix?.claim?.(waterCommercialVideo);
+      restoreDeferredVideoSources(waterCommercialVideo);
       waterCommercialVideo.play().catch(() => {});
     }
   });
@@ -364,7 +387,10 @@
     state.lenis?.stop();
     requestAnimationFrame(() => commercialModal.classList.add("is-open"));
     if (commercialClose) commercialClose.textContent = entry ? "Skip & Enter" : "Close";
-    setCommercialFilm(commercialFilmIndex, { restart: true, play: true });
+    if (commercialSound) {
+      commercialSound.hidden = false;
+      commercialSound.textContent = "Play Film";
+    }
     commercialClose?.focus({ preventScroll: true });
   };
 
@@ -376,7 +402,7 @@
   });
   commercialSound?.addEventListener("click", () => playCommercialWithFallback({ restart: true }));
   commercialVideo?.addEventListener("pointerdown", () => {
-    if (commercialVideo.muted) playCommercialWithFallback({ restart: true });
+    if (!commercialVideo.currentSrc || commercialVideo.muted) playCommercialWithFallback({ restart: true });
   }, { passive: true });
   commercialChapters.forEach((button) => button.addEventListener("click", () => {
     setCommercialFilm(button.dataset.commercialIndex, { restart: true, play: true });

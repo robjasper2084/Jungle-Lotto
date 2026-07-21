@@ -71,6 +71,21 @@ test("home commercial media waits for an explicit play command", async ({ page }
   await expect.poll(() => commercialRequests.length).toBeGreaterThan(0);
 });
 
+test("membership films stay poster-only until requested", async ({ page }) => {
+  const filmRequests = [];
+  page.on("request", (request) => {
+    if (/assets\/merch\/.*commercial.*\.mp4/i.test(request.url())) filmRequests.push(request.url());
+  });
+
+  await page.goto("/memberships.html", { waitUntil: "domcontentloaded" });
+  const commercial = page.locator("[data-membership-commercial-modal]");
+  await expect(commercial).toBeVisible({ timeout: 15_000 });
+  expect(filmRequests).toEqual([]);
+
+  await page.locator("[data-membership-commercial-sound]").click();
+  await expect.poll(() => filmRequests.length).toBeGreaterThan(0);
+});
+
 test("production writes are rejected while local-only browser state remains available", async ({ page }) => {
   await blockHeavyMedia(page);
   const productionRequests = [];
