@@ -7,7 +7,7 @@
 - Snapshot annotated tag object SHA: `9ba25352efc17d5b514e5afd59c8afde5c9d2949`
 - Snapshot target commit SHA: `975c637cea7003533cdc30aed9d96be51929bfc8`
 - Upgrade branch: `upgrade-redesign`
-- Current upgrade branch implementation SHA: `cea02b9b00ee8e032f57fc8e0939b38224cf37b1`
+- Current upgrade branch implementation SHA: `13cc272574436448c222decc233be4327e569902`
 - Upgrade branch SHA at Step 0A branch creation: `1fc4c95ca4d0b22ee5188d06f8ea75573c63a00a`
 - Upgrade branch SHA before Step 0B commit: `220653bbc300d0e0b236c6e834043f39fdfcd76c`
 - Step 0B commit SHA: `6e58aafc4addabf5281262ec951a7d6df3dc66a0`
@@ -15,11 +15,11 @@
 - Staging provider: Local static server (Mode C); no remote preview provider is configured
 - Staging URL: Local only (`http://127.0.0.1:8143/` while `npm.cmd run staging:serve` is running)
 - Staging integrations: No isolated backend or Stripe test-mode configuration is currently configured; protected writes remain disabled
-- Last completed step: Membership and merch polish plus billing response validation completed on `upgrade-redesign`; production deployment remains excluded
+- Last completed step: Sparse-checkout-aware full-site validation completed on `upgrade-redesign`; production deployment remains excluded
 - Step 1 commit SHA: This file is part of the Step 1 commit; use `git log -1 --format=%H -- docs/upgrade-redesign-status.md` to resolve its exact non-self-referential SHA. The completion report records it explicitly.
 - Last staging review: Non-checkout blocker remediation passed; review: `docs/staging-reviews/blocker-remediation.md`
 - Staging review commit SHA: This file is part of the staging-review commit; the completion report records its exact SHA.
-- Last successful test run: 2026-07-21 - five focused desktop billing/CORS checks passed; `npm.cmd run staging:test` passed 9/9 browser checks and verified 23 injected pages plus 492 same-origin references; rendered staging inspection confirmed noindex, preview banner, six blocked checkout controls, and no console errors
+- Last successful test run: 2026-07-21 - `npm.cmd run check:site` passed 13 checked-out HTML files and resolved 41 unique referenced paths from the Git index; a temporary negative fixture correctly failed for an untracked missing asset; the rebuilt staging artifact passed 23-page and 491-reference static verification
 - Visual baseline: Complete - 69 production route screenshots plus desktop, tablet, and mobile contact sheets under `docs/visual-baseline/v1/`
 - Step 1 visual comparison: Production and staging home routes compared at 1440x900 and 390x844; staging adds only the preview and safety banners, with no redesign changes
 - Resolved Step 1 baseline failures: Contact support helper restored; Stem Studio tablet/mobile overflow corrected; Jackpot Maze runtime, heading, and entry focus restored; first-load outliers reduced; staging News production request removed
@@ -39,6 +39,13 @@
 - Backend deployment: Not performed because the connected Supabase project exposes only its production `main` branch and production approval is not granted
 - Validation limitation: `npm.cmd run check:site` still reports 65 missing references because this sparse checkout intentionally omits large source assets; the independent staging build and same-origin reference check passed
 - Cleanup: Generated staging/test output and the Playwright browser cache were removed after validation; they are recreated by the documented build/test commands
+
+## Sparse Checkout Validation
+
+- Validator behavior: Local references pass when the target exists in the working tree or is an exact tracked path in the Git index
+- Safety behavior: Untracked missing references still fail with the owning HTML or CSS file and missing path
+- Sparse result: The former 65 repeated errors represented 41 unique Git-tracked paths omitted by sparse checkout, not missing production assets
+- Staging result: Rebuilt 23 pages and verified 491 same-origin asset references after the validator repair
 
 ## Step 34 Prerequisite Remediation
 
