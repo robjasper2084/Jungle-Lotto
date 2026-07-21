@@ -140,6 +140,23 @@ test("Shadow Ops defers campaign assets until the run starts", async ({ page }) 
   expect(assetRequests.some((url) => /platform_tiles_level[23]_clean|bosses\/(?:jackpot|midas)/i.test(url))).toBe(false);
 });
 
+test("News uses its static feed without contacting production Supabase", async ({ page }) => {
+  const productionRequests = [];
+  const consoleErrors = [];
+  page.on("request", (request) => {
+    if (/\.supabase\.co\//i.test(request.url())) productionRequests.push(request.url());
+  });
+  page.on("console", (message) => {
+    if (message.type() === "error") consoleErrors.push(message.text());
+  });
+
+  await page.goto("/news/", { waitUntil: "domcontentloaded" });
+  await expect(page.locator("#root")).toContainText(/LottoMind News Intelligence/i);
+  await expect(page.locator(".article-grid .news-card").first()).toBeVisible();
+  expect(productionRequests).toEqual([]);
+  expect(consoleErrors).toEqual([]);
+});
+
 test("production writes are rejected while local-only browser state remains available", async ({ page }) => {
   await blockHeavyMedia(page);
   const productionRequests = [];

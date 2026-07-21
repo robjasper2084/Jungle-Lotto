@@ -24,7 +24,9 @@
       } catch (error) {}
     </script>
     <script>
-      window.LOTTOMIND_NEWS_API_BASE = "https://sqdasdbvlkgpbbiyeune.supabase.co/functions/v1/lottomind-news/";
+      if (!window.LottoMindEnvironment || window.LottoMindEnvironment.isProduction) {
+        window.LOTTOMIND_NEWS_API_BASE = "https://sqdasdbvlkgpbbiyeune.supabase.co/functions/v1/lottomind-news/";
+      }
     </script>
     <script type="module" crossorigin src="./assets/index-m4mh2lMr.js"></script>
     <link rel="stylesheet" crossorigin href="./assets/index-BnLhW5V8.css">
