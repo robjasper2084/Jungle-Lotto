@@ -86,6 +86,21 @@ test("membership films stay poster-only until requested", async ({ page }) => {
   await expect.poll(() => filmRequests.length).toBeGreaterThan(0);
 });
 
+test("route commercial gate waits for an explicit play command", async ({ page }) => {
+  const filmRequests = [];
+  page.on("request", (request) => {
+    if (/assets\/merch\/.*commercial.*\.mp4/i.test(request.url())) filmRequests.push(request.url());
+  });
+
+  await page.goto("/how-to-use.html", { waitUntil: "domcontentloaded" });
+  const gate = page.locator(".lm-commercial-gate");
+  await expect(gate).toBeVisible();
+  expect(filmRequests).toEqual([]);
+
+  await gate.locator(".lm-commercial-gate__sound").click();
+  await expect.poll(() => filmRequests.length).toBeGreaterThan(0);
+});
+
 test("production writes are rejected while local-only browser state remains available", async ({ page }) => {
   await blockHeavyMedia(page);
   const productionRequests = [];

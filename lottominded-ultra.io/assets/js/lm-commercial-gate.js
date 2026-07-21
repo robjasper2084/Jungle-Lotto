@@ -117,12 +117,12 @@
           <h2 id="lmCommercialGateTitle"></h2>
         </div>
         <div class="lm-commercial-gate__header-actions">
-          <button type="button" class="lm-commercial-gate__sound" hidden>Sound on</button>
+          <button type="button" class="lm-commercial-gate__sound">Play Film</button>
           <button type="button" class="lm-commercial-gate__skip" aria-label="Skip commercial and enter ${routeName}">Skip &amp; Enter</button>
         </div>
       </header>
       <div class="lm-commercial-gate__stage">
-        <video controls autoplay muted playsinline preload="metadata" data-lm-video-unmanaged="true"></video>
+        <video controls muted playsinline preload="none" data-lm-video-unmanaged="true"></video>
         <span class="lm-commercial-gate__scan" aria-hidden="true"></span>
         <span class="lm-commercial-gate__telemetry"><b></b><b>Transmission secure</b></span>
       </div>
@@ -196,6 +196,10 @@
   };
 
   const playCommercial = async ({ restart = false } = {}) => {
+    if (video.dataset.src && !video.hasAttribute("src")) {
+      video.setAttribute("src", video.dataset.src);
+      video.load();
+    }
     if (restart) {
       try { video.currentTime = 0; } catch (error) {}
     }
@@ -217,6 +221,7 @@
       video.defaultMuted = true;
       video.setAttribute("muted", "");
       soundButton.hidden = false;
+      soundButton.textContent = "Play with sound";
       await video.play().catch(() => {});
     }
   };
@@ -229,7 +234,12 @@
     telemetry.textContent = film.telemetry;
     copy.textContent = film.copy;
     video.poster = film.poster;
-    video.src = film.src;
+    video.pause();
+    video.removeAttribute("src");
+    video.dataset.src = film.src;
+    video.load();
+    soundButton.hidden = false;
+    soundButton.textContent = "Play Film";
     // Every route gate is a one-pass commercial. When the film completes,
     // the gate releases the page instead of looping or advancing a playlist.
     video.loop = false;
@@ -298,7 +308,7 @@
     detail: { active: true, route: routeTheme }
   }));
   beat2GameFrame?.addEventListener("load", () => setBeat2MusicGate(true), { once: true });
-  renderFilm(activeIndex);
+  renderFilm(activeIndex, false);
   requestAnimationFrame(() => {
     modal.classList.add("is-open");
     modal.querySelector(".lm-commercial-gate__skip")?.focus({ preventScroll: true });
@@ -311,6 +321,9 @@
     playCommercial({ restart: true });
   });
   soundButton.addEventListener("click", () => playCommercial({ restart: false }));
+  video.addEventListener("pointerdown", () => {
+    if (!video.currentSrc) playCommercial({ restart: true });
+  }, { passive: true });
   closeButtons.forEach((button) => button.addEventListener("click", closeGate));
   video.addEventListener("ended", closeGate);
   document.addEventListener("visibilitychange", () => {
