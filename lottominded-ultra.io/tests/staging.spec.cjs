@@ -120,6 +120,26 @@ test("merch campaign film waits for a route-local play command", async ({ page }
   await expect.poll(() => filmRequests.length).toBeGreaterThan(0);
 });
 
+test("Shadow Ops defers campaign assets until the run starts", async ({ page }) => {
+  const assetRequests = [];
+  page.on("request", (request) => {
+    if (/shadow-ops-canvas\/assets\//i.test(request.url())) assetRequests.push(request.url());
+  });
+
+  await page.goto("/games/shadow-ops-canvas/", { waitUntil: "domcontentloaded" });
+  await expect(page.getByRole("heading", { name: "ROBOT RAHBE" })).toBeVisible();
+  await page.waitForTimeout(1000);
+  expect(assetRequests.some((url) => /robot-rahbe-intro-cutscene\.mp4/i.test(url))).toBe(false);
+  expect(assetRequests.some((url) => /digital-static-10\.mp3/i.test(url))).toBe(false);
+  expect(assetRequests.some((url) => /platform_tiles_level[123]_clean|bosses\/(?:canopy|jackpot|midas)/i.test(url))).toBe(false);
+
+  await page.getByRole("button", { name: "Solo Run" }).click();
+  await expect.poll(() => assetRequests.some((url) => /robot-rahbe-intro-cutscene\.mp4/i.test(url))).toBe(true);
+  await expect.poll(() => assetRequests.some((url) => /digital-static-10\.mp3/i.test(url))).toBe(true);
+  await expect.poll(() => assetRequests.some((url) => /platform_tiles_level1_clean/i.test(url))).toBe(true);
+  expect(assetRequests.some((url) => /platform_tiles_level[23]_clean|bosses\/(?:jackpot|midas)/i.test(url))).toBe(false);
+});
+
 test("production writes are rejected while local-only browser state remains available", async ({ page }) => {
   await blockHeavyMedia(page);
   const productionRequests = [];

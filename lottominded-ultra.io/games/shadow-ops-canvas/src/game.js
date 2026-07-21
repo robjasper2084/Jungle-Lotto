@@ -522,6 +522,31 @@
 
   const images = {};
   const assetKeys = Object.keys(ASSETS);
+  const LEVEL_ASSET_KEYS = {
+    1: ["level1Bg", "level1Tiles", "bossCanopy", "bossCanopyMotion"],
+    2: ["level2Bg", "level2Tiles", "bossForge", "bossForgeMotion"],
+    3: ["level3Bg", "level3Tiles", "bossMidas", "bossMidasMotion", "victoryBadge"]
+  };
+  const deferredLevelAssetKeys = new Set(Object.values(LEVEL_ASSET_KEYS).flat());
+  const unusedLegacyAssetKeys = new Set(["hero", "bossFrame"]);
+  const sharedGameplayAssetKeys = assetKeys.filter((key) =>
+    !deferredLevelAssetKeys.has(key) && !unusedLegacyAssetKeys.has(key)
+  );
+  const loadedAssetKeys = new Set();
+
+  function loadAssetKeys(keys) {
+    keys.forEach((key) => {
+      if (loadedAssetKeys.has(key) || !images[key] || !ASSETS[key]) return;
+      loadedAssetKeys.add(key);
+      images[key].src = ASSETS[key];
+    });
+  }
+
+  function loadGameplayAssetsForLevel(index) {
+    const level = LEVELS[index] || LEVELS[0];
+    loadAssetKeys(sharedGameplayAssetKeys);
+    loadAssetKeys(LEVEL_ASSET_KEYS[level.id] || LEVEL_ASSET_KEYS[1]);
+  }
 
   let mode = "title";
   let modeBeforeSettings = "title";
@@ -534,6 +559,7 @@
   let accumulator = 0;
   let pulseTimer = 0;
   let audioCtx = null;
+  let audioUnlocked = false;
   let sfxMaster = null;
   let sfxLimiter = null;
   let gameMusic = null;
@@ -973,9 +999,7 @@
   };
 
   for (const key of assetKeys) {
-    const image = new Image();
-    image.src = ASSETS[key];
-    images[key] = image;
+    images[key] = new Image();
   }
 
   applySettings();
@@ -1636,6 +1660,18 @@
     dom.introCutscene.addEventListener("error", completeCutscene);
   }
 
+  function restoreCutsceneSource() {
+    const video = dom.introCutscene;
+    if (!video) return;
+    let changed = false;
+    video.querySelectorAll("source[data-src]").forEach((source) => {
+      if (source.hasAttribute("src")) return;
+      source.setAttribute("src", source.dataset.src);
+      changed = true;
+    });
+    if (changed) video.load();
+  }
+
   function normalizeRunMode(runMode) {
     if (runMode === "coop") return "coop";
     if (runMode === "two-player" || runMode === true) return "two-player";
@@ -1647,6 +1683,7 @@
     pendingCutsceneRunMode = modeKey;
     pendingRunMode = modeKey;
     cutsceneCompleting = false;
+    loadGameplayAssetsForLevel(0);
     const video = dom.introCutscene;
     if (!video) {
       startRun(modeKey);
@@ -1654,6 +1691,7 @@
     }
 
     const session = ++cutsceneSession;
+    restoreCutsceneSource();
     video.pause();
     video.currentTime = 0;
     video.muted = false;
@@ -1859,6 +1897,7 @@
 
   function loadLevel(state, index, fresh = false) {
     const level = LEVELS[index] || LEVELS[0];
+    loadGameplayAssetsForLevel(index);
     state.levelIndex = index;
     state.level = level;
     state.area = "surface";
@@ -7599,6 +7638,7 @@
   }
 
   function initAudio() {
+    audioUnlocked = true;
     if (!audioCtx) {
       try {
         const AudioContextCtor = window.AudioContext || window.webkitAudioContext;
@@ -7674,6 +7714,10 @@
   }
 
   function syncGameMusic() {
+    if (!audioUnlocked) {
+      document.documentElement.dataset.musicPlayback = "awaiting-input";
+      return;
+    }
     if (!gameMusic && !settings.music) return;
     const track = ensureGameMusic();
     track.volume = currentMusicVolume();

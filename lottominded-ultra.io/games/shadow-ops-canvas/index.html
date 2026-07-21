@@ -60,8 +60,8 @@
 
       <section id="cutsceneScreen" class="screen screen--cutscene is-hidden" aria-label="Robot Rahbe mission intro">
         <div class="cutscene-stage">
-          <video id="introCutscene" preload="metadata" playsinline aria-label="Robot Rahbe mission transmission">
-            <source src="./assets/video/robot-rahbe-intro-cutscene.mp4?v=intro-cutscene-1" type="video/mp4" />
+          <video id="introCutscene" preload="none" playsinline aria-label="Robot Rahbe mission transmission">
+            <source data-src="./assets/video/robot-rahbe-intro-cutscene.mp4?v=intro-cutscene-1" type="video/mp4" />
           </video>
           <div class="cutscene-shade" aria-hidden="true"></div>
           <header class="cutscene-header">
@@ -94,7 +94,7 @@
             </div>
           </div>
           <figure class="purchase-product-card" aria-label="LottoMind collectible keychain package">
-            <img src="../../assets/merch/lottomind-keychain-counter-display.webp" alt="" />
+            <img src="../../assets/merch/lottomind-keychain-counter-display.webp" alt="" loading="lazy" decoding="async" />
           </figure>
         </div>
       </section>
@@ -246,7 +246,7 @@
 
       <div id="hud" class="hud is-hidden" aria-live="polite">
         <div class="hud-left">
-          <img src="./assets/hero/lottomind-hero-main.png" alt="" class="portrait" />
+          <img src="./assets/hero/lottomind-hero-main.png" alt="" class="portrait" loading="lazy" decoding="async" />
           <div>
             <div id="hudTitle" class="hud-title">ROBOT RAHBE</div>
             <div id="hpHearts" class="hearts" aria-label="Health"></div>
