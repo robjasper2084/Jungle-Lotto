@@ -1,8 +1,6 @@
 {
   "source|desktop|/games/lottomind-jackpot-maze/": ["missing-heading", "focus-not-visible"],
-  "source|mobile|/lottomind-stem-studio/": ["horizontal-overflow"],
   "source|mobile|/games/lottomind-jackpot-maze/": ["missing-heading", "focus-not-visible"],
   "staging|desktop|/games/lottomind-jackpot-maze/": ["missing-heading", "focus-not-visible"],
-  "staging|mobile|/lottomind-stem-studio/": ["horizontal-overflow"],
   "staging|mobile|/games/lottomind-jackpot-maze/": ["missing-heading", "focus-not-visible"]
 }

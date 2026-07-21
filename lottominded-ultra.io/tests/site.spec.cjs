@@ -92,6 +92,18 @@ test("Contact prepares a support request locally", async ({ page }) => {
   expect(localFailures).toEqual([]);
 });
 
+test("Stem Studio contains the workstation at compact mobile width", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/lottomind-stem-studio/", { waitUntil: "domcontentloaded" });
+  await expect(page.getByRole("heading", { name: "LottoMind Stem Studio" })).toBeVisible();
+
+  const viewport = await page.evaluate(() => ({
+    clientWidth: document.documentElement.clientWidth,
+    scrollWidth: document.documentElement.scrollWidth,
+  }));
+  expect(viewport.scrollWidth).toBeLessThanOrEqual(viewport.clientWidth + 1);
+});
+
 test("mobile memberships hero keeps its title inside the viewport", async ({ page }, testInfo) => {
   test.skip(!testInfo.project.name.startsWith("mobile"), "Mobile layout assertion");
   await blockHeavyMedia(page);
