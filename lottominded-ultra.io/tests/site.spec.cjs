@@ -77,6 +77,21 @@ test("features renders the focused manifest-driven Arcade pilot", async ({ page 
   expect(localFailures).toEqual([]);
 });
 
+test("Contact prepares a support request locally", async ({ page }) => {
+  const localFailures = trackLocalFailures(page);
+  await page.goto("/contact.html", { waitUntil: "domcontentloaded" });
+
+  await page.locator("#supportTopic").selectOption("technical");
+  await page.locator("#supportEmail").fill("preview@example.com");
+  await page.locator("#supportPage").fill("https://example.test/affected-route");
+  await page.locator("#supportDetails").fill("The preview route did not behave as expected during local testing.");
+  await page.getByRole("button", { name: "Prepare Support Request" }).click();
+
+  await expect(page.locator("[data-support-status]")).toHaveText("Support request prepared locally. Nothing has been sent.");
+  await expect(page.locator("[data-support-draft]")).toHaveAttribute("href", /^mailto:support@lottomind\.one\?/);
+  expect(localFailures).toEqual([]);
+});
+
 test("mobile memberships hero keeps its title inside the viewport", async ({ page }, testInfo) => {
   test.skip(!testInfo.project.name.startsWith("mobile"), "Mobile layout assertion");
   await blockHeavyMedia(page);
