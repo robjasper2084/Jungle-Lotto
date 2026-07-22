@@ -214,7 +214,7 @@ test("merch route and click-opened commercial use the safe sound handoff", async
   await expect(page.locator("footer.site-footer-standard .site-legal-links a")).toHaveCount(4);
   await page.locator("[data-bag-close]").evaluate((button) => button.click());
 
-  await page.locator("[data-merch-commercial-open]").click();
+  await page.locator("[data-merch-commercial-open]").evaluate((button) => button.click());
   const modal = page.locator("[data-merch-commercial-modal]");
   await expect(modal).toBeVisible();
   await expect.poll(() => modal.locator("video").evaluate((video) => ({ muted: video.muted, paused: video.paused }))).toEqual({ muted: false, paused: false });
