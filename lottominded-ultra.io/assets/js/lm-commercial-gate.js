@@ -195,7 +195,7 @@
     }, location.origin);
   };
 
-  const playCommercial = async ({ restart = false } = {}) => {
+  const playCommercial = async ({ restart = false, allowSound = true } = {}) => {
     if (video.dataset.src && !video.hasAttribute("src")) {
       video.setAttribute("src", video.dataset.src);
       video.load();
@@ -204,11 +204,20 @@
       try { video.currentTime = 0; } catch (error) {}
     }
 
+    video.volume = films[activeIndex]?.volume ?? window.LMAudioMix?.levels.commercial ?? 0.64;
+    window.LMAudioMix?.claim?.(video);
+    if (!allowSound) {
+      video.muted = true;
+      video.defaultMuted = true;
+      video.setAttribute("muted", "");
+      soundButton.hidden = false;
+      soundButton.textContent = "Play with sound";
+      await video.play().catch(() => {});
+      return;
+    }
     video.muted = false;
     video.defaultMuted = false;
     video.removeAttribute("muted");
-    video.volume = films[activeIndex]?.volume ?? window.LMAudioMix?.levels.commercial ?? 0.64;
-    window.LMAudioMix?.claim?.(video);
     try {
       await video.play();
       soundButton.hidden = true;
@@ -226,7 +235,7 @@
     }
   };
 
-  const renderFilm = (index, autoplay = true) => {
+  const renderFilm = (index, autoplay = true, allowSound = true) => {
     activeIndex = ((index % films.length) + films.length) % films.length;
     const film = films[activeIndex];
     signal.textContent = film.signal;
@@ -249,7 +258,7 @@
       if (active) button.setAttribute("aria-current", "true");
       else button.removeAttribute("aria-current");
     });
-    if (autoplay) playCommercial({ restart: false });
+    if (autoplay) playCommercial({ restart: false, allowSound });
   };
 
   const finishGate = () => {
@@ -308,7 +317,7 @@
     detail: { active: true, route: routeTheme }
   }));
   beat2GameFrame?.addEventListener("load", () => setBeat2MusicGate(true), { once: true });
-  renderFilm(activeIndex, false);
+  renderFilm(activeIndex, true, false);
   requestAnimationFrame(() => {
     modal.classList.add("is-open");
     modal.querySelector(".lm-commercial-gate__skip")?.focus({ preventScroll: true });

@@ -15,6 +15,7 @@ const merchCommercialModalVideo = document.querySelector("[data-merch-commercial
 const merchCommercialOpen = document.querySelector("[data-merch-commercial-open]");
 const merchCommercialClose = document.querySelector("[data-merch-commercial-close]");
 const merchCommercialReplay = document.querySelector("[data-merch-commercial-replay]");
+const merchCommercialSound = document.querySelector("[data-merch-commercial-sound]");
 const merchShadowPopup = document.querySelector("[data-merch-shadow-popup]");
 const merchShadowFrame = document.querySelector("[data-merch-shadow-frame]");
 const merchShadowCloseButtons = document.querySelectorAll("[data-merch-shadow-close]");
@@ -440,11 +441,23 @@ async function openMerchCommercial() {
     // Seeking can be unavailable until the commercial metadata is ready.
   }
   merchCommercialModalVideo.muted = false;
+  merchCommercialModalVideo.defaultMuted = false;
+  merchCommercialModalVideo.removeAttribute("muted");
   merchCommercialModalVideo.volume = window.LMAudioMix?.levels.preview ?? 0.48;
   window.LMAudioMix?.claim?.(merchCommercialModalVideo);
-  await merchCommercialModalVideo.play().catch(() => {
-    // The native play control remains available if the browser blocks playback.
-  });
+  try {
+    await merchCommercialModalVideo.play();
+    if (merchCommercialSound) merchCommercialSound.hidden = true;
+  } catch {
+    merchCommercialModalVideo.muted = true;
+    merchCommercialModalVideo.defaultMuted = true;
+    merchCommercialModalVideo.setAttribute("muted", "");
+    if (merchCommercialSound) {
+      merchCommercialSound.hidden = false;
+      merchCommercialSound.textContent = "Play with sound";
+    }
+    await merchCommercialModalVideo.play().catch(() => {});
+  }
   merchCommercialClose?.focus();
 }
 
@@ -472,7 +485,30 @@ async function replayMerchCommercial() {
     // The native controls remain usable if seeking is not ready yet.
   }
   merchCommercialModalVideo.muted = false;
+  merchCommercialModalVideo.defaultMuted = false;
+  merchCommercialModalVideo.removeAttribute("muted");
+  merchCommercialModalVideo.volume = window.LMAudioMix?.levels.preview ?? 0.48;
+  window.LMAudioMix?.claim?.(merchCommercialModalVideo);
   await merchCommercialModalVideo.play().catch(() => {});
+}
+
+async function playMerchCommercialWithSound() {
+  if (!merchCommercialModalVideo) return;
+  restoreMerchVideoSources(merchCommercialModalVideo);
+  merchCommercialModalVideo.muted = false;
+  merchCommercialModalVideo.defaultMuted = false;
+  merchCommercialModalVideo.removeAttribute("muted");
+  merchCommercialModalVideo.volume = window.LMAudioMix?.levels.preview ?? 0.48;
+  window.LMAudioMix?.claim?.(merchCommercialModalVideo);
+  try {
+    await merchCommercialModalVideo.play();
+    if (merchCommercialSound) merchCommercialSound.hidden = true;
+  } catch {
+    merchCommercialModalVideo.muted = true;
+    merchCommercialModalVideo.defaultMuted = true;
+    merchCommercialModalVideo.setAttribute("muted", "");
+    if (merchCommercialSound) merchCommercialSound.textContent = "Play with sound";
+  }
 }
 
 function openMerchShadowPopup() {
@@ -580,6 +616,12 @@ document.addEventListener("click", (event) => {
   if (event.target.closest("[data-merch-commercial-replay]")) {
     event.preventDefault();
     replayMerchCommercial();
+    return;
+  }
+
+  if (event.target.closest("[data-merch-commercial-sound]")) {
+    event.preventDefault();
+    playMerchCommercialWithSound();
     return;
   }
 

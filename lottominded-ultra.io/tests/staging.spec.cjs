@@ -54,7 +54,7 @@ test("preview shell is noindex, visibly marked, and free of broken same-origin r
   expect(consoleFailures).toEqual([]);
 });
 
-test("home commercial media waits for an explicit play command", async ({ page }) => {
+test("home commercial starts muted video and waits for a sound gesture", async ({ page }) => {
   const commercialRequests = [];
   const soundtrackRequests = [];
   page.on("request", (request) => {
@@ -66,17 +66,18 @@ test("home commercial media waits for an explicit play command", async ({ page }
 
   await page.goto("/", { waitUntil: "domcontentloaded" });
   await expect(page.locator("[data-startup-video]")).toBeVisible({ timeout: 15_000 });
-  await page.waitForTimeout(500);
-  expect(commercialRequests).toEqual([]);
+  await expect.poll(() => commercialRequests.length).toBeGreaterThan(0);
   expect(soundtrackRequests).toEqual([]);
+  await expect(page.locator("[data-startup-video-play]")).toHaveText("Play with sound");
+  await expect.poll(() => page.locator("[data-startup-video] video").evaluate((video) => ({ muted: video.muted, paused: video.paused }))).toEqual({ muted: true, paused: false });
 
   await page.locator("[data-startup-video-play]").click();
-  await expect.poll(() => commercialRequests.length).toBeGreaterThan(0);
+  await expect.poll(() => page.locator("[data-startup-video] video").evaluate((video) => video.muted)).toBe(false);
   await page.locator("[data-startup-video-close]").last().click();
   await expect.poll(() => soundtrackRequests.length).toBeGreaterThan(0);
 });
 
-test("membership films stay poster-only until requested", async ({ page }) => {
+test("membership entry film starts muted and enables sound on request", async ({ page }) => {
   const filmRequests = [];
   const soundtrackRequests = [];
   page.on("request", (request) => {
@@ -87,16 +88,18 @@ test("membership films stay poster-only until requested", async ({ page }) => {
   await page.goto("/memberships.html", { waitUntil: "domcontentloaded" });
   const commercial = page.locator("[data-membership-commercial-modal]");
   await expect(commercial).toBeVisible({ timeout: 15_000 });
-  expect(filmRequests).toEqual([]);
+  await expect.poll(() => filmRequests.length).toBeGreaterThan(0);
   expect(soundtrackRequests).toEqual([]);
+  await expect(page.locator("[data-membership-commercial-sound]")).toHaveText("Play with sound");
+  await expect.poll(() => commercial.locator("video").evaluate((video) => ({ muted: video.muted, paused: video.paused }))).toEqual({ muted: true, paused: false });
 
   await page.locator("[data-membership-commercial-sound]").click();
-  await expect.poll(() => filmRequests.length).toBeGreaterThan(0);
+  await expect.poll(() => commercial.locator("video").evaluate((video) => video.muted)).toBe(false);
   await page.locator("[data-membership-commercial-close]").click();
   await expect.poll(() => soundtrackRequests.length).toBeGreaterThan(0);
 });
 
-test("route commercial gate waits for an explicit play command", async ({ page }) => {
+test("route commercial gate starts muted and enables sound on request", async ({ page }) => {
   const filmRequests = [];
   page.on("request", (request) => {
     if (/assets\/merch\/.*commercial.*\.mp4/i.test(request.url())) filmRequests.push(request.url());
@@ -105,13 +108,15 @@ test("route commercial gate waits for an explicit play command", async ({ page }
   await page.goto("/how-to-use.html", { waitUntil: "domcontentloaded" });
   const gate = page.locator(".lm-commercial-gate");
   await expect(gate).toBeVisible();
-  expect(filmRequests).toEqual([]);
+  await expect.poll(() => filmRequests.length).toBeGreaterThan(0);
+  await expect(gate.locator(".lm-commercial-gate__sound")).toHaveText("Play with sound");
+  await expect.poll(() => gate.locator("video").evaluate((video) => ({ muted: video.muted, paused: video.paused }))).toEqual({ muted: true, paused: false });
 
   await gate.locator(".lm-commercial-gate__sound").click();
-  await expect.poll(() => filmRequests.length).toBeGreaterThan(0);
+  await expect.poll(() => gate.locator("video").evaluate((video) => video.muted)).toBe(false);
 });
 
-test("merch campaign film waits for a route-local play command", async ({ page }) => {
+test("merch route and click-opened commercial use the safe sound handoff", async ({ page }) => {
   const filmRequests = [];
   page.on("request", (request) => {
     if (/lottomind-community-signal-commercial-20260717\.mp4/i.test(request.url())) {
@@ -122,12 +127,30 @@ test("merch campaign film waits for a route-local play command", async ({ page }
   await page.goto("/merch-store.html", { waitUntil: "domcontentloaded" });
   const gate = page.locator(".lm-commercial-gate");
   await expect(gate).toBeVisible();
+  await expect.poll(() => filmRequests.length).toBeGreaterThan(0);
+  await expect.poll(() => gate.locator("video").evaluate((video) => video.muted)).toBe(true);
   await gate.locator(".lm-commercial-gate__skip").click();
   await expect(gate).toBeHidden();
-  expect(filmRequests).toEqual([]);
 
-  await page.locator("[data-merch-sound-toggle]").click();
-  await expect.poll(() => filmRequests.length).toBeGreaterThan(0);
+  await page.locator("[data-merch-commercial-open]").click();
+  const modal = page.locator("[data-merch-commercial-modal]");
+  await expect(modal).toBeVisible();
+  await expect.poll(() => modal.locator("video").evaluate((video) => ({ muted: video.muted, paused: video.paused }))).toEqual({ muted: false, paused: false });
+});
+
+test("Live Events renders a complete channel hub without invented live or commerce data", async ({ page }) => {
+  await blockHeavyMedia(page);
+  await page.goto("/live-events.html", { waitUntil: "domcontentloaded" });
+
+  await expect(page.getByRole("heading", { name: "Featured Stream Events" })).toBeVisible();
+  await expect(page.getByText("Live status and schedules are supplied by Twitch")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Detroit Archive Highlights" })).toBeVisible();
+  await expect(page.getByText("No passes on sale")).toBeVisible();
+  await expect(page.getByText("Live Now", { exact: true })).toHaveCount(0);
+  await expect(page.locator(".watchers")).toHaveCount(0);
+  await expect(page.getByText(/\d[\d,.]*\s+online/i)).toHaveCount(0);
+  await expect(page.getByText(/\$\d/)).toHaveCount(0);
+  await expect(page.getByText("Ultra Points", { exact: true })).toHaveCount(0);
 });
 
 test("Shadow Ops defers campaign assets until the run starts", async ({ page }) => {
