@@ -15,14 +15,31 @@ const outputRoot = resolve(
   "signal-media-corrections-assets",
 );
 const baseUrl = String(process.env.LOTTOMIND_CAPTURE_BASE_URL || "http://127.0.0.1:8143").replace(/\/$/, "");
+const routeFilter = new Set(
+  String(process.env.LOTTOMIND_CAPTURE_ROUTES || "")
+    .split(",")
+    .map((name) => name.trim())
+    .filter(Boolean),
+);
 
-const routes = [
+const availableRoutes = [
   { name: "home", path: "/index.html#top" },
-  { name: "memberships", path: "/memberships.html", focus: "#membership-plans" },
+  { name: "memberships", path: "/memberships.html#dust", focus: "#dust" },
   {
     name: "membership-commercial",
     path: "/memberships.html",
     focus: ".membership-hero-commercial",
+  },
+  {
+    name: "membership-guardian",
+    path: "/memberships.html",
+    focus: ".membership-guardian-bottom",
+  },
+  {
+    name: "storefront",
+    path: "/merch-store.html",
+    focus: ".merch-hero",
+    dismiss: ".lm-commercial-gate__skip",
   },
   {
     name: "arcade",
@@ -32,6 +49,12 @@ const routes = [
   { name: "live-events", path: "/live-events.html" },
   { name: "news", path: "/news/", focus: ".article-grid .news-card" },
 ];
+const routes = routeFilter.size
+  ? availableRoutes.filter((route) => routeFilter.has(route.name))
+  : availableRoutes;
+if (!routes.length) {
+  throw new Error("LOTTOMIND_CAPTURE_ROUTES did not match any configured capture route.");
+}
 const viewports = [
   { name: "1440x900", width: 1440, height: 900 },
   { name: "768x1024", width: 768, height: 1024 },

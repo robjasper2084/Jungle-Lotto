@@ -152,13 +152,13 @@ function updateBag() {
             <button class="cart-remove" type="button" data-cart-remove="${escapeHtml(item.id)}">Remove</button>
           </li>
         `).join("")
-      : `<li class="cart-empty">Your cart is empty. Add a hoodie, cap, polo, or gallery piece.</li>`;
+      : `<li class="cart-empty">Your preorder preview is empty. Add a hoodie, cap, polo, or gallery piece.</li>`;
   }
 
   if (cartNote) {
     cartNote.textContent = bag.length
-      ? "Checkout preview is local only. Connect a live storefront when the drop is ready."
-      : "Shipping and taxes are not calculated in this local preview.";
+      ? "Preorder preview saved on this device only. No order or payment was submitted."
+      : "Preorder preview only. Shipping, taxes, and availability are not confirmed.";
   }
   saveCart();
 }
@@ -402,18 +402,23 @@ async function playMerchCapsuleSound() {
   }
 }
 
-function startMerchCapsuleOnPageOpen() {
+async function startMerchCapsuleOnPageOpen() {
   if (!merchSoundVideo) return;
-  merchSoundVideo.autoplay = false;
+  restoreMerchVideoSources(merchSoundVideo);
+  merchSoundVideo.autoplay = true;
   merchSoundVideo.playsInline = true;
   merchSoundVideo.muted = true;
   merchSoundVideo.defaultMuted = true;
-  merchSoundVideo.removeAttribute("autoplay");
+  merchSoundVideo.setAttribute("autoplay", "");
   merchSoundVideo.setAttribute("playsinline", "");
   merchSoundVideo.setAttribute("muted", "");
-  merchSoundVideo.pause();
+  try {
+    await merchSoundVideo.play();
+  } catch {
+    // The poster and explicit play control remain available if muted autoplay is blocked.
+  }
   if (merchSoundToggle) {
-    merchSoundToggle.textContent = "Play film";
+    merchSoundToggle.textContent = "Play sound";
     merchSoundToggle.classList.remove("is-playing");
   }
 }
@@ -745,6 +750,9 @@ window.addEventListener("load", () => {
   primeMerchHeroBackgroundVideo();
   window.setTimeout(startMerchCapsuleOnPageOpen, 180);
   scheduleAutoMerchShadowPopup();
+});
+window.addEventListener("lottomind:commercial-gate", (event) => {
+  if (event.detail?.active === false) startMerchCapsuleOnPageOpen();
 });
 
 if (document.readyState === "loading") {

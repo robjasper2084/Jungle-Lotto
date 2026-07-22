@@ -11,7 +11,12 @@
     <link rel="stylesheet" href="./styles.css?v=startup-music-banner-wide-21" />
     <link rel="stylesheet" href="./assets/css/lm-global-orb-header.css?v=site-audit-1" />
     <link rel="stylesheet" href="./assets/css/lm-commercial-gate.css?v=guardian-gate-features-1" />
-    <link rel="stylesheet" href="./features-app.css?v=arcade-hybrid-1" />
+    <link rel="stylesheet" href="./assets/features-app/css/feature-particle-organism.css?v=arcade-mascot-return-1" />
+    <link rel="stylesheet" href="./assets/css/lm-mascot-cinematic.css?v=arcade-mascot-return-1" />
+    <link rel="stylesheet" href="./features-app.css?v=arcade-mascot-return-1" />
+    <script type="importmap">
+      {"imports":{"three":"./assets/vendor/three/three.module.min.js?v=0.160.1"}}
+    </script>
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="LOTTOMINDED ULTRA" />
     <meta property="og:title" content="LottoMind Arcade | LOTTOMINDED ULTRA" />
@@ -27,6 +32,7 @@
   </head>
   <body class="features-cinematic-page home-page has-sphere-header has-global-sphere-header arcade-pilot-page arcade-hybrid-page">
     <a class="arcade-skip-link" href="#arcade-library">Skip to game directory</a>
+    <canvas id="featureEntity" class="feature-entity" aria-hidden="true"></canvas>
 
     <header class="site-header home-like-header home-sphere-header global-sphere-header" data-site-header>
       <div class="site-header-main">
@@ -53,7 +59,7 @@
     </header>
 
     <main id="main-content">
-      <section class="arcade-pilot-hero" aria-labelledby="arcade-title">
+      <section class="arcade-pilot-hero" aria-labelledby="arcade-title" data-shape="0" data-entity-label="Arcade signal">
         <img class="arcade-pilot-hero__art" src="./assets/brand/lottomind-little-man-membership-hero-v2.png" alt="LottoMind Little Man toy Guardian displayed in collectible packaging with cyan, gold, and violet signal trails" fetchpriority="high" decoding="async" />
         <div class="arcade-pilot-hero__shade" aria-hidden="true"></div>
         <div class="arcade-pilot-hero__copy">
@@ -88,23 +94,23 @@
           <p>Five direct routes into the wider LottoMind system.</p>
         </header>
         <div class="feature-channel-rail__grid">
-          <a class="feature-channel feature-channel--dream" href="../lotto%20mind%20refined/?route=dreams" data-member-app-public="true">
+          <a class="feature-channel feature-channel--dream" href="../lotto%20mind%20refined/?route=dreams" data-member-app-public="true" data-shape="1" data-entity-label="Dream signal">
             <span>01 / Dream</span>
             <strong>Interpret ideas and creative patterns</strong>
           </a>
-          <a class="feature-channel feature-channel--scan" href="../lotto%20mind%20refined/?route=ticket-scanner" data-member-app-public="true">
+          <a class="feature-channel feature-channel--scan" href="../lotto%20mind%20refined/?route=ticket-scanner" data-member-app-public="true" data-shape="2" data-entity-label="Scan signal">
             <span>02 / Scan</span>
             <strong>Review tickets and saved results</strong>
           </a>
-          <a class="feature-channel feature-channel--stream" href="../lotto%20mind%20refined/?route=live-results" data-member-app-public="true">
+          <a class="feature-channel feature-channel--stream" href="../lotto%20mind%20refined/?route=live-results" data-member-app-public="true" data-shape="3" data-entity-label="Results signal">
             <span>03 / Results</span>
             <strong>Open the current results workspace</strong>
           </a>
-          <a class="feature-channel feature-channel--create" href="../lotto%20mind%20refined/?route=studio" data-member-app-public="true">
+          <a class="feature-channel feature-channel--create" href="../lotto%20mind%20refined/?route=studio" data-member-app-public="true" data-shape="4" data-entity-label="Create signal">
             <span>04 / Create</span>
             <strong>Build beats, prompts, and studio ideas</strong>
           </a>
-          <a class="feature-channel feature-channel--unlock" href="../lotto%20mind%20refined/?route=vip" data-member-app-public="true">
+          <a class="feature-channel feature-channel--unlock" href="../lotto%20mind%20refined/?route=vip" data-member-app-public="true" data-shape="5" data-entity-label="Member signal">
             <span>05 / Membership</span>
             <strong>Review premium creative tools</strong>
           </a>
@@ -118,7 +124,7 @@
         </div>
       </nav>
 
-      <section class="arcade-directory" id="arcade-library" aria-labelledby="arcade-library-title">
+      <section class="arcade-directory" id="arcade-library" aria-labelledby="arcade-library-title" data-shape="6" data-entity-label="Game directory">
         <header class="arcade-directory__header">
           <div>
             <p class="arcade-pilot-kicker">Playable signal directory</p>
@@ -146,7 +152,7 @@
         <p class="arcade-empty" data-arcade-empty hidden>No games match this signal. Try another channel or search.</p>
       </section>
 
-      <aside class="arcade-responsible-note" aria-label="Responsible entertainment note">
+      <aside class="arcade-responsible-note" aria-label="Responsible entertainment note" data-shape="7" data-entity-label="Responsible play">
         <strong>Play for the signal, not a promise.</strong>
         <p>LottoMind games and number generators are for entertainment only. Generated numbers do not predict or guarantee lottery outcomes.</p>
       </aside>
@@ -161,6 +167,10 @@
 
     <script src="./assets/js/arcade-games.js?v=arcade-directory-1" defer></script>
     <script src="./assets/js/lm-commercial-gate.js?v=commercial-autoplay-1" defer></script>
+    <script src="./assets/vendor/gsap/gsap.min.js?v=3.13.0" defer></script>
+    <script src="./assets/vendor/gsap/ScrollTrigger.min.js?v=3.13.0" defer></script>
+    <script src="./assets/vendor/lenis/lenis.min.js?v=1.1.20" defer></script>
+    <script type="module" src="./assets/features-app/js/main.js?v=arcade-mascot-return-1"></script>
     <script src="./features-app.js?v=arcade-hybrid-1" defer></script>
   </body>
 </html>

@@ -47,6 +47,7 @@ test("preview shell is noindex, visibly marked, and free of broken same-origin r
     allowRedemptions: false,
     allowProductionAnalytics: false,
   });
+  await expect(page.locator("footer.site-footer-standard .site-legal-links a")).toHaveCount(4);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
   await page.waitForTimeout(1000);
   expect(failures).toEqual([]);
@@ -122,6 +123,25 @@ test("membership hero film autoplays muted without an entry popup and enables so
   await page.locator("[data-membership-featured-sound]").click();
   await expect.poll(() => featuredFilm.evaluate((video) => video.muted)).toBe(false);
   await expect.poll(() => page.locator("#lmMembership").getAttribute("data-audio-reactive-source")).toBe("featured-commercial");
+  await expect.poll(() => page.locator("#lmMembership").evaluate((node) =>
+    Number.parseFloat(node.style.getPropertyValue("--lm-membership-audio-energy")) || 0
+  )).toBeGreaterThan(0.05);
+});
+
+test("Guardian card uses the supplied gun-range commercial", async ({ page }) => {
+  await page.goto("/memberships.html", { waitUntil: "domcontentloaded" });
+  const video = page.locator(".membership-guardian-bottom [data-membership-hero-commercial]");
+  await video.scrollIntoViewIfNeeded();
+  await expect(video.locator("source")).toHaveAttribute(
+    "data-src",
+    /lottomind-guardian-commercial-clip-on-20260716\.mp4$/,
+  );
+  await expect(video).toHaveAttribute(
+    "poster",
+    /lottomind-guardian-commercial-clip-on-poster-20260716\.png$/,
+  );
+  await expect(video).toHaveAttribute("autoplay", "");
+  await expect(video).toHaveAttribute("preload", "metadata");
 });
 
 test("route commercial gate starts muted and enables sound on request", async ({ page }) => {
@@ -155,6 +175,10 @@ test("Features staging preserves the cinematic identity and playable Arcade dire
 
   await expect(page.locator(".arcade-pilot-label")).toHaveText("LottoMind Features / Arcade + Creative Systems");
   await expect(page.locator('.arcade-pilot-hero__art[src*="lottomind-little-man-membership-hero-v2.png"]')).toBeVisible();
+  await expect(page.locator("#featureEntity.feature-entity")).toHaveCount(1);
+  await expect(page.locator("[data-shape]")).toHaveCount(8);
+  await expect.poll(() => page.evaluate(() => document.body.classList.contains("feature-entity-ready"))).toBe(true);
+  expect(await page.locator("#arcade-title").evaluate((title) => getComputedStyle(title).fontFamily)).not.toMatch(/Impact/i);
   await expect(page.locator(".feature-channel")).toHaveCount(5);
   await expect(page.locator("[data-arcade-grid] .arcade-game-card")).toHaveCount(8);
   await expect(page.locator(".arcade-game-card__status")).toHaveText(Array(8).fill("Playable"));
@@ -180,6 +204,15 @@ test("merch route and click-opened commercial use the safe sound handoff", async
   await expect.poll(() => gate.locator("video").evaluate((video) => video.muted)).toBe(true);
   await gate.locator(".lm-commercial-gate__skip").click();
   await expect(gate).toBeHidden();
+  const capsuleFilm = page.locator("[data-merch-sound-video]");
+  await expect.poll(() => capsuleFilm.evaluate((video) => ({ muted: video.muted, paused: video.paused }))).toEqual({ muted: true, paused: false });
+  await expect(page.locator("[data-merch-sound-toggle]")).toHaveText("Play sound");
+  await expect(page.getByRole("button", { name: "Preorder", exact: true })).toHaveCount(10);
+  await page.getByRole("button", { name: "Preorder", exact: true }).first().evaluate((button) => button.click());
+  await expect(page.locator("[data-bag-drawer]")).toHaveClass(/is-open/);
+  await expect(page.locator("[data-cart-note]")).toContainText("No order or payment was submitted");
+  await expect(page.locator("footer.site-footer-standard .site-legal-links a")).toHaveCount(4);
+  await page.locator("[data-bag-close]").evaluate((button) => button.click());
 
   await page.locator("[data-merch-commercial-open]").click();
   const modal = page.locator("[data-merch-commercial-modal]");

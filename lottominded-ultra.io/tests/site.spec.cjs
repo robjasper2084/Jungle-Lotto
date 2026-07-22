@@ -185,6 +185,10 @@ test("features combines the cinematic shell with the manifest-driven Arcade dire
 
   await expect(page.locator(".arcade-pilot-label")).toHaveText("LottoMind Features / Arcade + Creative Systems");
   await expect(page.locator('.arcade-pilot-hero__art[src*="lottomind-little-man-membership-hero-v2.png"]')).toBeVisible();
+  await expect(page.locator("#featureEntity.feature-entity")).toHaveCount(1);
+  await expect(page.locator("[data-shape]")).toHaveCount(8);
+  await expect.poll(() => page.evaluate(() => document.body.classList.contains("feature-entity-ready"))).toBe(true);
+  expect(await page.locator("#arcade-title").evaluate((title) => getComputedStyle(title).fontFamily)).not.toMatch(/Impact/i);
   await expect(page.locator(".feature-channel")).toHaveCount(5);
   await expect(page.locator("[data-arcade-grid] .arcade-game-card")).toHaveCount(8);
   await expect(page.locator("[data-arcade-count]")).toHaveText("8");
@@ -257,16 +261,21 @@ test("Contact prepares a support request locally", async ({ page }) => {
   expect(localFailures).toEqual([]);
 });
 
-test("membership support modules follow the plan heading in the requested order", async ({ page }) => {
+test("membership hero leads, Collector follows Gaming Showcase, and the Guardian offer closes the page", async ({ page }) => {
   await blockHeavyMedia(page);
   await page.route(/https:\/\/js\.stripe\.com\/.*/i, (route) => route.abort());
   await page.goto("/memberships.html", { waitUntil: "domcontentloaded" });
 
   const supportGrid = page.locator("#membership-plans > .membership-plan-support-grid");
-  const collector = supportGrid.locator(":scope > #lm-access-hero");
-  const guardian = supportGrid.locator(":scope > .membership-collectible-card");
+  const hero = page.locator("#dust");
+  const plans = page.locator("#membership-plans");
+  const collector = page.locator("main > #lm-access-hero");
+  const showcase = page.locator("#worlds");
+  const guardianSection = page.locator("main > .membership-guardian-bottom");
+  const guardian = guardianSection.locator(":scope > .membership-collectible-card");
 
   await expect(supportGrid).toHaveCount(1);
+  await expect(supportGrid.locator(":scope > *")).toHaveCount(0);
   await expect(collector).toHaveCount(1);
   await expect(guardian).toHaveCount(1);
   await expect(collector.locator("#plansTitle")).toHaveText(/Choose your signal level/i);
@@ -274,22 +283,35 @@ test("membership support modules follow the plan heading in the requested order"
   await expect(page.locator("#dust .membership-collectible-card")).toHaveCount(0);
   await expect(page.locator("#water")).toHaveCount(0);
   await expect(page.getByText(/Film 04/i)).toHaveCount(0);
+  await expect(page.locator("footer.site-footer-standard .site-legal-links a")).toHaveCount(4);
+  await expect(page.locator("footer.site-footer-standard > a.footer-link")).toHaveCount(0);
 
-  const order = await supportGrid.locator(":scope > *").evaluateAll((nodes) =>
-    nodes.map((node) => node.id || (node.classList.contains("membership-collectible-card") ? "guardian" : ""))
-  );
-  expect(order).toEqual(["lm-access-hero", "guardian"]);
+  expect(await hero.evaluate((node) =>
+    Boolean(node.compareDocumentPosition(document.querySelector("#membership-plans")) & Node.DOCUMENT_POSITION_FOLLOWING)
+  )).toBe(true);
+
+  expect(await showcase.evaluate((node) =>
+    Boolean(node.compareDocumentPosition(document.querySelector("#lm-access-hero")) & Node.DOCUMENT_POSITION_FOLLOWING)
+  )).toBe(true);
+  expect(await guardianSection.evaluate((node) => {
+    const sections = [...node.parentElement.querySelectorAll(":scope > section")];
+    return sections.at(-1) === node;
+  })).toBe(true);
 
   const collectorBox = await collector.boundingBox();
+  const heroBox = await hero.boundingBox();
+  const plansBox = await plans.boundingBox();
+  const showcaseBox = await showcase.boundingBox();
   const guardianBox = await guardian.boundingBox();
   expect(collectorBox).toBeTruthy();
+  expect(heroBox).toBeTruthy();
+  expect(plansBox).toBeTruthy();
+  expect(showcaseBox).toBeTruthy();
   expect(guardianBox).toBeTruthy();
 
-  if (page.viewportSize().width > 900) {
-    expect(collectorBox.x).toBeLessThan(guardianBox.x);
-  } else {
-    expect(collectorBox.y).toBeLessThan(guardianBox.y);
-  }
+  expect(heroBox.y).toBeLessThan(plansBox.y);
+  expect(collectorBox.y).toBeGreaterThan(showcaseBox.y);
+  expect(collectorBox.y).toBeLessThan(guardianBox.y);
 });
 
 test("shared navigation uses the requested Games, Lilman, Storefront, and Static Wav labels", async ({ page }) => {
@@ -321,9 +343,14 @@ test("mobile memberships hero keeps its title inside the viewport", async ({ pag
   await page.goto("/memberships.html", { waitUntil: "domcontentloaded" });
 
   const titleBox = await page.locator("#membershipHeroTitle").boundingBox();
+  const membershipWordBox = await page.locator("#membershipHeroTitle em").boundingBox();
+  const viewportWidth = await page.evaluate(() => window.innerWidth);
   expect(titleBox).toBeTruthy();
+  expect(membershipWordBox).toBeTruthy();
   expect(titleBox.x).toBeGreaterThanOrEqual(0);
-  expect(titleBox.x + titleBox.width).toBeLessThanOrEqual(537);
+  expect(titleBox.x + titleBox.width).toBeLessThanOrEqual(viewportWidth);
+  expect(membershipWordBox.x).toBeGreaterThanOrEqual(0);
+  expect(membershipWordBox.x + membershipWordBox.width).toBeLessThanOrEqual(viewportWidth);
 });
 
 test("news route renders from the static feed without probing the missing API", async ({ page }) => {

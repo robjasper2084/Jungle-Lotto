@@ -24,7 +24,7 @@
     <link rel="stylesheet" href="./assets/vendor/lenis/lenis.css?v=1.1.20" />
   <link rel="stylesheet" href="./assets/css/memberships-cinematic.css?v=membership-commercial-audio-2" />
     <link rel="stylesheet" href="./assets/css/memberships-hud.css?v=membership-hud-9" />
-    <link rel="stylesheet" href="./assets/css/membership-layout-priority.css?v=3" />
+    <link rel="stylesheet" href="./assets/css/membership-layout-priority.css?v=4" />
     <script defer src="./assets/js/membership-layout-priority.js?v=1"></script>
     <script type="importmap">
       {"imports":{"three":"./assets/vendor/three/three.module.min.js?v=0.160.1"}}
@@ -224,39 +224,6 @@
             </div>
           </section>
 
-          <aside class="membership-signal-card membership-collectible-card membership-support-card membership-support-card--guardian" aria-label="Little Man Luggage Charm and Backpack Guardian with complimentary three-month LottoMind app membership">
-            <div class="membership-signal-orbit">
-              <video
-                class="membership-signal-orbit-video"
-                muted
-                loop
-                playsinline
-                preload="none"
-                poster="./assets/merch/lottomind-membership-hero-commercial-poster-20260716.png"
-                width="1280"
-                height="720"
-                data-membership-hero-commercial
-                data-lm-video-unmanaged="true"
-                aria-label="Little Man Guardian worn on a backpack in the LottoMind membership commercial"
-              >
-                <source data-src="./assets/merch/lottomind-membership-single-commercial-20260716.mp4" type="video/mp4" />
-              </video>
-            </div>
-            <div class="membership-signal-card-copy">
-              <span class="plan-featured-tag">3 months included</span>
-              <span>Luggage Charm &middot; Backpack Guardian</span>
-              <strong>Little Man Guardian + App Membership</strong>
-              <b>$29.95<span> one time</span></b>
-              <p>Buy the Little Man Luggage Charm and Backpack Guardian and receive three complimentary months of membership across the LottoMind apps.</p>
-              <div class="membership-collectible-actions">
-                <a class="membership-collectible-cta" href="./merch-store.html?product=guardian#keychains">View Guardian</a>
-                <button class="membership-commercial-trigger" type="button" data-membership-commercial-open data-commercial-index="0">
-                  <span class="membership-commercial-trigger__icon" aria-hidden="true"></span>
-                  <span><b>Membership Commercials</b><small>Three short films</small></span>
-                </button>
-              </div>
-            </div>
-          </aside>
         </div>
         <div class="membership-plan-grid">
           <article class="membership-plan-card" data-lm-tier="free">
@@ -402,6 +369,43 @@
         </aside>
       </section>
 
+      <section class="membership-guardian-bottom" aria-label="Little Man Guardian membership offer">
+        <aside class="membership-signal-card membership-collectible-card membership-support-card membership-support-card--guardian" aria-label="Little Man Luggage Charm and Backpack Guardian with complimentary three-month LottoMind app membership">
+          <div class="membership-signal-orbit">
+            <video
+              class="membership-signal-orbit-video"
+              muted
+              loop
+              autoplay
+              playsinline
+              preload="metadata"
+              poster="./assets/merch/lottomind-guardian-commercial-clip-on-poster-20260716.png"
+              width="1280"
+              height="720"
+              data-membership-hero-commercial
+              data-lm-video-unmanaged="true"
+              aria-label="Little Man Guardian worn on a backpack in the LottoMind membership commercial"
+            >
+              <source data-src="./assets/merch/lottomind-guardian-commercial-clip-on-20260716.mp4" type="video/mp4" />
+            </video>
+          </div>
+          <div class="membership-signal-card-copy">
+            <span class="plan-featured-tag">3 months included</span>
+            <span>Luggage Charm &middot; Backpack Guardian</span>
+            <strong>Little Man Guardian + App Membership</strong>
+            <b>$29.95<span> one time</span></b>
+            <p>Buy the Little Man Luggage Charm and Backpack Guardian and receive three complimentary months of membership across the LottoMind apps.</p>
+            <div class="membership-collectible-actions">
+              <a class="membership-collectible-cta" href="./merch-store.html?product=guardian#keychains">View Guardian</a>
+              <button class="membership-commercial-trigger" type="button" data-membership-commercial-open data-commercial-index="0">
+                <span class="membership-commercial-trigger__icon" aria-hidden="true"></span>
+                <span><b>Membership Commercials</b><small>Three short films</small></span>
+              </button>
+            </div>
+          </div>
+        </aside>
+      </section>
+
     </main>
 
     <audio id="siteSoundtrack" preload="none" aria-hidden="true">
@@ -449,12 +453,9 @@
       </div>
     </aside>
 
-    <footer>
+    <footer class="site-footer-standard">
       <span>LOTTOMINDED ULTRA</span>
-      <a class="footer-link" href="./memberships.html">Memberships</a>
-      <a class="footer-link" href="./contact.html">Support</a>
-      <a class="footer-link" href="./privacy.html">Privacy</a>
-      <a class="footer-link" href="./terms.html">Terms</a>
+      <span>All rights reserved.</span>
       <span id="site-year"></span>
     </footer>
 
@@ -469,8 +470,8 @@
     <script src="./assets/vendor/gsap/ScrollTrigger.min.js?v=3.13.0" defer></script>
     <script src="./assets/vendor/gsap/SplitText.min.js?v=3.13.0" defer></script>
     <script src="./assets/vendor/lenis/lenis.min.js?v=1.1.20" defer></script>
-    <script src="./assets/js/memberships-cinematic.js?v=membership-commercial-autoplay-2" defer></script>
-  <script type="module" src="./assets/js/memberships-main.js?v=membership-audio-mix-5"></script>
+    <script src="./assets/js/memberships-cinematic.js?v=membership-audio-reactive-3" defer></script>
+  <script type="module" src="./assets/js/memberships-main.js?v=membership-audio-reactive-6"></script>
     <script>
       (() => {
         const focusButton = document.querySelector("[data-membership-bg-focus]");

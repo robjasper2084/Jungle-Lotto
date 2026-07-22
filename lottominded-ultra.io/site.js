@@ -132,10 +132,27 @@ window.LMAudioMix = {
 (() => {
   const pageFooter = [...document.querySelectorAll("body > footer")].find((footer) => footer.id !== "player" && !footer.matches("[data-feature-live-player]"));
   if (pageFooter && !pageFooter.querySelector(".site-legal-links")) {
+    const existingDestinations = new Set(
+      [...pageFooter.querySelectorAll("a[href]")].map((link) => new URL(link.href, location.href).pathname.toLowerCase())
+    );
+    const legalDestinations = [
+      ["./privacy.html", "Privacy"],
+      ["./terms.html", "Terms"],
+      ["./accessibility.html", "Accessibility"],
+      ["./contact.html", "Contact"],
+    ].filter(([href]) => !existingDestinations.has(new URL(siteUrl(href), location.href).pathname.toLowerCase()));
+
+    if (!legalDestinations.length) return;
+
     const links = document.createElement("nav");
     links.className = "site-legal-links";
     links.setAttribute("aria-label", "Legal and support");
-    links.innerHTML = `<a href="${siteUrl("./privacy.html")}">Privacy</a><a href="${siteUrl("./terms.html")}">Terms</a><a href="${siteUrl("./accessibility.html")}">Accessibility</a><a href="${siteUrl("./contact.html")}">Contact</a>`;
+    legalDestinations.forEach(([href, label]) => {
+      const link = document.createElement("a");
+      link.href = siteUrl(href);
+      link.textContent = label;
+      links.append(link);
+    });
     pageFooter.append(links);
   }
   if ("serviceWorker" in navigator && location.protocol === "https:") {

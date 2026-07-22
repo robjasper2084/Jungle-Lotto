@@ -1,5 +1,5 @@
 {
-  "capturedAt": "2026-07-22T17:39:51.001Z",
+  "capturedAt": "2026-07-22T22:43:46.426Z",
   "results": [
     {
       "route": "/index.html#top",
@@ -15,7 +15,7 @@
       "assetFailures": []
     },
     {
-      "route": "/memberships.html",
+      "route": "/memberships.html#dust",
       "viewport": "1440x900",
       "status": 200,
       "output": "C:\\Users\\digit\\Documents\\phone\\_jungle_lotto_upgrade_isolated\\docs\\staging-reviews\\signal-media-corrections-assets\\memberships-1440x900.png",
@@ -31,7 +31,20 @@
       "route": "/memberships.html",
       "viewport": "1440x900",
       "status": 200,
-      "output": "C:\\Users\\digit\\Documents\\phone\\_jungle_lotto_upgrade_isolated\\docs\\staging-reviews\\signal-media-corrections-assets\\membership-commercial-1440x900.png",
+      "output": "C:\\Users\\digit\\Documents\\phone\\_jungle_lotto_upgrade_isolated\\docs\\staging-reviews\\signal-media-corrections-assets\\membership-guardian-1440x900.png",
+      "noindex": "noindex,nofollow,noarchive",
+      "stagingBannerVisible": true,
+      "horizontalOverflow": false,
+      "animationsRunning": 0,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "assetFailures": []
+    },
+    {
+      "route": "/merch-store.html",
+      "viewport": "1440x900",
+      "status": 200,
+      "output": "C:\\Users\\digit\\Documents\\phone\\_jungle_lotto_upgrade_isolated\\docs\\staging-reviews\\signal-media-corrections-assets\\storefront-1440x900.png",
       "noindex": "noindex,nofollow,noarchive",
       "stagingBannerVisible": true,
       "horizontalOverflow": false,
@@ -54,32 +67,6 @@
       "assetFailures": []
     },
     {
-      "route": "/live-events.html",
-      "viewport": "1440x900",
-      "status": 200,
-      "output": "C:\\Users\\digit\\Documents\\phone\\_jungle_lotto_upgrade_isolated\\docs\\staging-reviews\\signal-media-corrections-assets\\live-events-1440x900.png",
-      "noindex": "noindex,nofollow,noarchive",
-      "stagingBannerVisible": true,
-      "horizontalOverflow": false,
-      "animationsRunning": 0,
-      "consoleErrors": [],
-      "pageErrors": [],
-      "assetFailures": []
-    },
-    {
-      "route": "/news/",
-      "viewport": "1440x900",
-      "status": 200,
-      "output": "C:\\Users\\digit\\Documents\\phone\\_jungle_lotto_upgrade_isolated\\docs\\staging-reviews\\signal-media-corrections-assets\\news-1440x900.png",
-      "noindex": "noindex,nofollow,noarchive",
-      "stagingBannerVisible": true,
-      "horizontalOverflow": false,
-      "animationsRunning": 0,
-      "consoleErrors": [],
-      "pageErrors": [],
-      "assetFailures": []
-    },
-    {
       "route": "/index.html#top",
       "viewport": "768x1024",
       "status": 200,
@@ -93,7 +80,7 @@
       "assetFailures": []
     },
     {
-      "route": "/memberships.html",
+      "route": "/memberships.html#dust",
       "viewport": "768x1024",
       "status": 200,
       "output": "C:\\Users\\digit\\Documents\\phone\\_jungle_lotto_upgrade_isolated\\docs\\staging-reviews\\signal-media-corrections-assets\\memberships-768x1024.png",
@@ -109,7 +96,20 @@
       "route": "/memberships.html",
       "viewport": "768x1024",
       "status": 200,
-      "output": "C:\\Users\\digit\\Documents\\phone\\_jungle_lotto_upgrade_isolated\\docs\\staging-reviews\\signal-media-corrections-assets\\membership-commercial-768x1024.png",
+      "output": "C:\\Users\\digit\\Documents\\phone\\_jungle_lotto_upgrade_isolated\\docs\\staging-reviews\\signal-media-corrections-assets\\membership-guardian-768x1024.png",
+      "noindex": "noindex,nofollow,noarchive",
+      "stagingBannerVisible": true,
+      "horizontalOverflow": false,
+      "animationsRunning": 0,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "assetFailures": []
+    },
+    {
+      "route": "/merch-store.html",
+      "viewport": "768x1024",
+      "status": 200,
+      "output": "C:\\Users\\digit\\Documents\\phone\\_jungle_lotto_upgrade_isolated\\docs\\staging-reviews\\signal-media-corrections-assets\\storefront-768x1024.png",
       "noindex": "noindex,nofollow,noarchive",
       "stagingBannerVisible": true,
       "horizontalOverflow": false,
@@ -132,32 +132,6 @@
       "assetFailures": []
     },
     {
-      "route": "/live-events.html",
-      "viewport": "768x1024",
-      "status": 200,
-      "output": "C:\\Users\\digit\\Documents\\phone\\_jungle_lotto_upgrade_isolated\\docs\\staging-reviews\\signal-media-corrections-assets\\live-events-768x1024.png",
-      "noindex": "noindex,nofollow,noarchive",
-      "stagingBannerVisible": true,
-      "horizontalOverflow": false,
-      "animationsRunning": 0,
-      "consoleErrors": [],
-      "pageErrors": [],
-      "assetFailures": []
-    },
-    {
-      "route": "/news/",
-      "viewport": "768x1024",
-      "status": 200,
-      "output": "C:\\Users\\digit\\Documents\\phone\\_jungle_lotto_upgrade_isolated\\docs\\staging-reviews\\signal-media-corrections-assets\\news-768x1024.png",
-      "noindex": "noindex,nofollow,noarchive",
-      "stagingBannerVisible": true,
-      "horizontalOverflow": false,
-      "animationsRunning": 0,
-      "consoleErrors": [],
-      "pageErrors": [],
-      "assetFailures": []
-    },
-    {
       "route": "/index.html#top",
       "viewport": "390x844",
       "status": 200,
@@ -171,7 +145,7 @@
       "assetFailures": []
     },
     {
-      "route": "/memberships.html",
+      "route": "/memberships.html#dust",
       "viewport": "390x844",
       "status": 200,
       "output": "C:\\Users\\digit\\Documents\\phone\\_jungle_lotto_upgrade_isolated\\docs\\staging-reviews\\signal-media-corrections-assets\\memberships-390x844.png",
@@ -187,7 +161,20 @@
       "route": "/memberships.html",
       "viewport": "390x844",
       "status": 200,
-      "output": "C:\\Users\\digit\\Documents\\phone\\_jungle_lotto_upgrade_isolated\\docs\\staging-reviews\\signal-media-corrections-assets\\membership-commercial-390x844.png",
+      "output": "C:\\Users\\digit\\Documents\\phone\\_jungle_lotto_upgrade_isolated\\docs\\staging-reviews\\signal-media-corrections-assets\\membership-guardian-390x844.png",
+      "noindex": "noindex,nofollow,noarchive",
+      "stagingBannerVisible": true,
+      "horizontalOverflow": false,
+      "animationsRunning": 0,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "assetFailures": []
+    },
+    {
+      "route": "/merch-store.html",
+      "viewport": "390x844",
+      "status": 200,
+      "output": "C:\\Users\\digit\\Documents\\phone\\_jungle_lotto_upgrade_isolated\\docs\\staging-reviews\\signal-media-corrections-assets\\storefront-390x844.png",
       "noindex": "noindex,nofollow,noarchive",
       "stagingBannerVisible": true,
       "horizontalOverflow": false,
@@ -201,32 +188,6 @@
       "viewport": "390x844",
       "status": 200,
       "output": "C:\\Users\\digit\\Documents\\phone\\_jungle_lotto_upgrade_isolated\\docs\\staging-reviews\\signal-media-corrections-assets\\arcade-390x844.png",
-      "noindex": "noindex,nofollow,noarchive",
-      "stagingBannerVisible": true,
-      "horizontalOverflow": false,
-      "animationsRunning": 0,
-      "consoleErrors": [],
-      "pageErrors": [],
-      "assetFailures": []
-    },
-    {
-      "route": "/live-events.html",
-      "viewport": "390x844",
-      "status": 200,
-      "output": "C:\\Users\\digit\\Documents\\phone\\_jungle_lotto_upgrade_isolated\\docs\\staging-reviews\\signal-media-corrections-assets\\live-events-390x844.png",
-      "noindex": "noindex,nofollow,noarchive",
-      "stagingBannerVisible": true,
-      "horizontalOverflow": false,
-      "animationsRunning": 0,
-      "consoleErrors": [],
-      "pageErrors": [],
-      "assetFailures": []
-    },
-    {
-      "route": "/news/",
-      "viewport": "390x844",
-      "status": 200,
-      "output": "C:\\Users\\digit\\Documents\\phone\\_jungle_lotto_upgrade_isolated\\docs\\staging-reviews\\signal-media-corrections-assets\\news-390x844.png",
       "noindex": "noindex,nofollow,noarchive",
       "stagingBannerVisible": true,
       "horizontalOverflow": false,

@@ -39,6 +39,16 @@ body.arcade-pilot-page::before {
   background: linear-gradient(115deg, rgba(225, 74, 59, 0.08), transparent 24%, transparent 72%, rgba(167, 139, 250, 0.08));
 }
 
+body.arcade-pilot-page .feature-entity {
+  z-index: 2;
+  mix-blend-mode: screen;
+  filter: saturate(0.86) brightness(0.88);
+}
+
+body.arcade-pilot-page.feature-entity-ready .feature-entity {
+  opacity: 0.38;
+}
+
 .arcade-pilot-page *,
 .arcade-pilot-page *::before,
 .arcade-pilot-page *::after {
@@ -86,13 +96,12 @@ body.arcade-pilot-page::before {
   min-height: 700px;
   overflow: hidden;
   border-bottom: 1px solid rgba(241, 199, 91, 0.38);
-  isolation: isolate;
 }
 
 .arcade-pilot-hero__art,
 .arcade-pilot-hero__shade {
   position: absolute;
-  z-index: -2;
+  z-index: 0;
   inset: 0;
   width: 100%;
   height: 100%;
@@ -101,17 +110,19 @@ body.arcade-pilot-page::before {
 .arcade-pilot-hero__art {
   object-fit: cover;
   object-position: center;
-  filter: saturate(1.02) contrast(1.08);
+  filter: saturate(1.08) contrast(1.04) brightness(1.12);
 }
 
 .arcade-pilot-hero__shade {
-  z-index: -1;
+  z-index: 1;
   background:
-    linear-gradient(90deg, rgba(2, 4, 7, 0.98) 0%, rgba(2, 4, 7, 0.9) 35%, rgba(2, 4, 7, 0.3) 68%, rgba(2, 4, 7, 0.52) 100%),
-    linear-gradient(0deg, rgba(2, 4, 7, 0.96), transparent 52%);
+    linear-gradient(90deg, rgba(2, 4, 7, 0.9) 0%, rgba(2, 4, 7, 0.7) 35%, rgba(2, 4, 7, 0.12) 68%, rgba(2, 4, 7, 0.3) 100%),
+    linear-gradient(0deg, rgba(2, 4, 7, 0.74), transparent 56%);
 }
 
 .arcade-pilot-hero__copy {
+  position: relative;
+  z-index: 3;
   align-self: center;
   width: min(760px, calc(100% - 3rem));
   margin: 0 max(1.5rem, calc((100% - 1320px) / 2));
@@ -144,14 +155,17 @@ body.arcade-pilot-page::before {
 .arcade-pilot-hero h1 {
   max-width: 760px;
   margin: 0.65rem 0 1rem;
-  color: #ffffff;
-  font-family: Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
-  font-size: 6.2rem;
+  color: #f5fbff;
+  font-family: "Cinzel", "Copperplate Gothic Bold", "Copperplate", Georgia, serif;
+  font-size: clamp(4.5rem, 7.4vw, 7.2rem);
   font-weight: 900;
-  line-height: 0.86;
+  line-height: 0.88;
   letter-spacing: 0;
   text-transform: uppercase;
-  text-shadow: 4px 5px 0 rgba(225, 74, 59, 0.68), 8px 9px 0 rgba(81, 231, 238, 0.18);
+  text-shadow:
+    0 0 1.5rem rgba(81, 231, 238, 0.42),
+    3px 3px 0 rgba(167, 139, 250, 0.48),
+    6px 6px 0 rgba(2, 4, 7, 0.74);
 }
 
 .arcade-pilot-intro {
@@ -237,6 +251,7 @@ body.arcade-pilot-page::before {
 
 .arcade-pilot-hero__status {
   position: absolute;
+  z-index: 3;
   right: max(1.5rem, calc((100% - 1320px) / 2));
   bottom: 2rem;
   display: grid;
@@ -271,6 +286,15 @@ body.arcade-pilot-page::before {
   margin-right: 0.35rem;
   color: var(--arcade-gold);
   font-size: 1.35rem;
+}
+
+.feature-channel-rail,
+.arcade-pilot-nav,
+.arcade-directory,
+.arcade-responsible-note,
+.arcade-pilot-footer {
+  position: relative;
+  z-index: 3;
 }
 
 .feature-channel-rail {
@@ -757,7 +781,10 @@ body.arcade-pilot-page::before {
   .arcade-pilot-hero h1 {
     font-size: 3.7rem;
     line-height: 0.9;
-    text-shadow: 3px 3px 0 rgba(225, 74, 59, 0.65), 5px 5px 0 rgba(81, 231, 238, 0.16);
+    text-shadow:
+      0 0 1.2rem rgba(81, 231, 238, 0.38),
+      2px 2px 0 rgba(167, 139, 250, 0.44),
+      4px 4px 0 rgba(2, 4, 7, 0.78);
   }
 
   .arcade-pilot-intro {

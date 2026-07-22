@@ -1,4 +1,5 @@
 const { defineConfig } = require("@playwright/test");
+const stagingPort = Number(process.env.LOTTOMIND_STAGING_TEST_PORT || 8143);
 
 module.exports = defineConfig({
   testDir: "./tests",
@@ -8,7 +9,7 @@ module.exports = defineConfig({
   outputDir: "test-results/staging-artifacts",
   reporter: "list",
   use: {
-    baseURL: "http://127.0.0.1:8143",
+    baseURL: `http://127.0.0.1:${stagingPort}`,
     browserName: "chromium",
     viewport: { width: 1280, height: 720 },
     trace: "retain-on-failure",

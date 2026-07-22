@@ -1,44 +1,167 @@
 /* Requested Memberships page sequencing, support columns, and plan pairing. */
 body.memberships-page .membership-main > #membership-plans {
-  order: 1;
-}
-
-body.memberships-page .membership-main > #dust {
   order: 2;
 }
 
-body.memberships-page #dust .membership-hero-commercial {
-  position: relative;
-  align-self: stretch;
+body.memberships-page .membership-main > #dust {
+  order: 1;
+}
+
+body.memberships-page .membership-main > #lm-access-hero {
+  order: 8;
+  width: min(1160px, calc(100% - (2 * var(--lm-pad))));
+  margin-inline: auto;
+}
+
+body.memberships-page .membership-plan-support-grid:empty {
+  display: none;
+}
+
+body.memberships-page #dust.membership-hero {
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: minmax(0, 760px);
+  align-items: end;
+  min-height: clamp(700px, 82svh, 860px);
+  padding: clamp(42px, 7vw, 92px);
+  border: 1px solid rgba(85, 232, 255, 0.62);
+  border-radius: 0;
+  background: #02060c;
+  box-shadow:
+    0 34px 110px rgba(0, 0, 0, 0.56),
+    0 0 0 1px rgba(244, 207, 99, 0.16),
+    inset 0 0 90px rgba(85, 232, 255, 0.06);
+  clip-path: polygon(22px 0, 100% 0, 100% calc(100% - 22px), calc(100% - 22px) 100%, 0 100%, 0 22px);
+}
+
+body.memberships-page #dust.membership-hero::before {
+  z-index: 1;
+  background:
+    linear-gradient(90deg, rgba(1, 5, 10, 0.98) 0%, rgba(2, 8, 16, 0.93) 38%, rgba(2, 8, 16, 0.62) 66%, rgba(2, 8, 16, 0.12) 100%),
+    linear-gradient(rgba(85, 232, 255, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(85, 232, 255, 0.07) 1px, transparent 1px);
+  background-size: auto, 64px 64px, 64px 64px;
+  mask-image: none;
+}
+
+body.memberships-page #dust.membership-hero::after {
+  z-index: 4;
+  inset: 12px;
+  height: auto;
+  border: 1px solid rgba(85, 232, 255, 0.18);
+  background: none;
+  box-shadow:
+    inset 22px 0 0 -21px rgba(244, 207, 99, 0.86),
+    inset -22px 0 0 -21px rgba(157, 87, 255, 0.72);
+  clip-path: polygon(13px 0, 100% 0, 100% calc(100% - 13px), calc(100% - 13px) 100%, 0 100%, 0 13px);
+}
+
+body.memberships-page #dust .membership-hero-copy {
+  z-index: 3;
+  width: min(820px, 100%);
+  max-width: none;
+}
+
+body.memberships-page #dust .studio-boot-sequence {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  width: min(620px, 100%);
+  margin: 0 0 28px;
+  border: 1px solid rgba(85, 232, 255, 0.38);
+  background: rgba(1, 7, 13, 0.76);
+}
+
+body.memberships-page #dust .studio-boot-sequence span {
   min-width: 0;
-  min-height: 420px;
+  padding: 10px 12px;
+  border-right: 1px solid rgba(85, 232, 255, 0.18);
+  color: rgba(204, 250, 255, 0.86);
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-align: center;
+}
+
+body.memberships-page #dust .studio-boot-sequence span:last-child {
+  border-right: 0;
+}
+
+body.memberships-page #dust #membershipHeroTitle {
+  max-width: 9ch;
+  margin: 0;
+  color: #f4faff;
+  font-size: clamp(4rem, 7.4vw, 8.2rem);
+  letter-spacing: 0;
+  line-height: 0.84;
+  text-shadow:
+    0 0 18px rgba(85, 232, 255, 0.46),
+    0 0 54px rgba(157, 87, 255, 0.2),
+    0 10px 30px rgba(0, 0, 0, 0.82);
+}
+
+body.memberships-page #dust #membershipHeroTitle em {
+  color: #ffdc72;
+  font-weight: 300;
+}
+
+body.memberships-page #dust .membership-temporal-subtitle {
+  max-width: 54ch;
+  color: #e8f8ff;
+  font-size: clamp(1rem, 1.25vw, 1.2rem);
+  font-weight: 600;
+  line-height: 1.6;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.9);
+}
+
+body.memberships-page #dust .membership-collectible-offer {
+  width: min(520px, 100%);
+  background: linear-gradient(90deg, rgba(244, 207, 99, 0.15), rgba(2, 8, 15, 0.54));
+  font-size: 1rem;
+  line-height: 1.55;
+}
+
+body.memberships-page #dust .membership-hud-status {
+  width: min(680px, 100%);
+  backdrop-filter: blur(12px);
+}
+
+body.memberships-page #dust .membership-hero-commercial {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  min-width: 0;
+  min-height: 0;
   overflow: hidden;
-  border: 1px solid rgba(85, 232, 255, 0.52);
-  background: rgba(2, 8, 15, 0.9);
-  box-shadow: inset 0 0 48px rgba(85, 232, 255, 0.08), 0 22px 54px rgba(0, 0, 0, 0.38);
-  clip-path: polygon(14px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%, 0 14px);
+  border: 0;
+  background: #02060c;
+  box-shadow: none;
+  clip-path: none;
 }
 
 body.memberships-page #dust .membership-hero-commercial__video {
   width: 100%;
   height: 100%;
-  min-height: 420px;
+  min-height: 0;
   object-fit: cover;
+  object-position: center;
+  filter: saturate(1.08) contrast(1.06) brightness(0.72);
   background: #02060c;
 }
 
 body.memberships-page #dust .membership-hero-commercial__controls {
+  z-index: 3;
   position: absolute;
   right: 12px;
   bottom: 12px;
-  left: 12px;
+  left: auto;
+  width: min(460px, calc(100% - 24px));
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
   padding: 10px 12px;
   border: 1px solid rgba(85, 232, 255, 0.34);
-  background: rgba(2, 7, 14, 0.88);
+  background: rgba(2, 7, 14, 0.9);
+  backdrop-filter: blur(14px);
 }
 
 body.memberships-page #dust .membership-hero-commercial__controls span {
@@ -69,8 +192,8 @@ body.memberships-page #ignition .membership-statement__responsible {
 
 body.memberships-page .membership-plan-support-grid {
   display: grid;
-  grid-template-columns: minmax(0, 0.82fr) minmax(0, 1.18fr);
-  grid-template-areas: "collector guardian";
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas: "collector";
   align-items: stretch;
   gap: 18px;
   margin: 0 0 28px;
@@ -86,8 +209,7 @@ body.memberships-page .membership-support-card--collector {
 }
 
 body.memberships-page .membership-support-card--guardian {
-  grid-area: guardian;
-  order: 2;
+  width: 100%;
 }
 
 body.memberships-page #membership-plans #lm-access-hero {
@@ -128,11 +250,15 @@ body.memberships-page #membership-plans #lm-access-hero .collector-access {
   align-self: end;
 }
 
-body.memberships-page .membership-plan-support-grid .membership-collectible-card {
+body.memberships-page .membership-guardian-bottom {
+  width: min(980px, calc(100% - 2 * var(--lm-pad)));
+  margin: clamp(34px, 6vw, 88px) auto 0;
+  scroll-margin-top: calc(var(--lm-chrome-h) + 24px);
+}
+
+body.memberships-page .membership-guardian-bottom .membership-collectible-card {
   width: 100%;
-  height: 100%;
-  align-self: stretch;
-  justify-self: stretch;
+  margin: 0;
 }
 
 body.memberships-page .membership-plan-grid {
@@ -158,14 +284,31 @@ body.memberships-page .membership-plan-card[data-lm-tier="vault"] {
 
   body.memberships-page .membership-plan-support-grid {
     grid-template-columns: 1fr;
-    grid-template-areas:
-      "collector"
-      "guardian";
+    grid-template-areas: "collector";
   }
 
-  body.memberships-page #dust .membership-hero-commercial,
+  body.memberships-page #dust.membership-hero {
+    min-height: 780px;
+    padding: 42px 30px 126px;
+  }
+
+  body.memberships-page #dust.membership-hero::before {
+    background:
+      linear-gradient(180deg, rgba(1, 5, 10, 0.9), rgba(1, 5, 10, 0.8) 58%, rgba(1, 5, 10, 0.94)),
+      linear-gradient(rgba(85, 232, 255, 0.07) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(85, 232, 255, 0.07) 1px, transparent 1px);
+    background-size: auto, 48px 48px, 48px 48px;
+  }
+
   body.memberships-page #dust .membership-hero-commercial__video {
-    min-height: 320px;
+    object-position: 62% center;
+  }
+
+  body.memberships-page #dust .membership-hero-commercial__controls {
+    right: 24px;
+    bottom: 24px;
+    left: 24px;
+    width: auto;
   }
 
   body.memberships-page .membership-plan-grid {
@@ -180,5 +323,30 @@ body.memberships-page .membership-plan-card[data-lm-tier="vault"] {
 @media (max-width: 640px) {
   body.memberships-page.has-sphere-header .membership-main {
     padding-top: 32px;
+  }
+
+  body.memberships-page #dust.membership-hero {
+    min-height: 860px;
+    padding: 34px 22px 126px;
+    clip-path: polygon(14px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%, 0 14px);
+  }
+
+  body.memberships-page #dust .studio-boot-sequence {
+    grid-template-columns: 1fr;
+  }
+
+  body.memberships-page #dust .studio-boot-sequence span {
+    border-right: 0;
+    border-bottom: 1px solid rgba(85, 232, 255, 0.14);
+    text-align: left;
+  }
+
+  body.memberships-page #dust .studio-boot-sequence span:last-child {
+    border-bottom: 0;
+  }
+
+  body.memberships-page #dust #membershipHeroTitle {
+    max-width: 100%;
+    font-size: clamp(2.375rem, 12vw, 3.375rem);
   }
 }
