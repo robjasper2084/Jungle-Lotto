@@ -116,6 +116,29 @@ test("route commercial gate starts muted and enables sound on request", async ({
   await expect.poll(() => gate.locator("video").evaluate((video) => video.muted)).toBe(false);
 });
 
+test("Features staging preserves the cinematic identity and playable Arcade directory", async ({ page }) => {
+  await blockHeavyMedia(page);
+  await page.goto("/features-app.html", { waitUntil: "domcontentloaded" });
+
+  await expect(page.locator("[data-lm-staging-banner]")).toHaveText("LottoMind Upgrade Preview — Not Production");
+  await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", "noindex,nofollow,noarchive");
+  const gate = page.locator(".lm-commercial-gate");
+  await expect(gate).toBeVisible();
+  await expect.poll(() => gate.locator("video").evaluate((video) => video.muted)).toBe(true);
+  await gate.locator(".lm-commercial-gate__skip").click();
+
+  await expect(page.locator(".arcade-pilot-label")).toHaveText("LottoMind Features / Arcade + Creative Systems");
+  await expect(page.locator('.arcade-pilot-hero__art[src*="generated-cinematic-hero.png"]')).toBeVisible();
+  await expect(page.locator(".feature-channel")).toHaveCount(5);
+  await expect(page.locator("[data-arcade-grid] .arcade-game-card")).toHaveCount(8);
+  await expect(page.locator(".arcade-game-card__status")).toHaveText(Array(8).fill("Playable"));
+
+  await page.getByRole("button", { name: "Action", exact: true }).click();
+  await expect(page.locator("[data-arcade-grid] .arcade-game-card")).toHaveCount(3);
+  await expect(page.locator("[data-arcade-visible-count]")).toHaveText("3");
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1)).toBe(true);
+});
+
 test("merch route and click-opened commercial use the safe sound handoff", async ({ page }) => {
   const filmRequests = [];
   page.on("request", (request) => {

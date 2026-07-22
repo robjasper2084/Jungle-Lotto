@@ -159,7 +159,7 @@ test("billing Edge Function returns expected auth failures through its CORS resp
   expect(source).toContain('validStripeUrl(session.url, "checkout.stripe.com")');
 });
 
-test("guide commercial returns on every fresh page visit", async ({ page }) => {
+test("guide commercial runs once per route in the current tab", async ({ page }) => {
   await blockHeavyMedia(page);
   await page.goto("/how-to-use.html", { waitUntil: "domcontentloaded" });
 
@@ -169,17 +169,25 @@ test("guide commercial returns on every fresh page visit", async ({ page }) => {
   await expect(gate).toBeHidden();
 
   await page.reload({ waitUntil: "domcontentloaded" });
-  await expect(page.locator(".lm-commercial-gate")).toBeVisible();
+  await expect(page.locator(".lm-commercial-gate")).toHaveCount(0);
 });
 
-test("features renders the focused manifest-driven Arcade pilot", async ({ page }) => {
+test("features combines the cinematic shell with the manifest-driven Arcade directory", async ({ page }) => {
   await blockHeavyMedia(page);
   const localFailures = trackLocalFailures(page);
   await page.goto("/features-app.html", { waitUntil: "domcontentloaded" });
-  await expect(page.locator(".arcade-pilot-label")).toHaveText("LottoMind Arcade Pilot — Experimental Preview");
+  const commercial = page.locator(".lm-commercial-gate");
+  await expect(commercial).toBeVisible();
+  await commercial.locator(".lm-commercial-gate__skip").click();
+  await expect(commercial).toBeHidden();
+
+  await expect(page.locator(".arcade-pilot-label")).toHaveText("LottoMind Features / Arcade + Creative Systems");
+  await expect(page.locator('.arcade-pilot-hero__art[src*="generated-cinematic-hero.png"]')).toBeVisible();
+  await expect(page.locator(".feature-channel")).toHaveCount(5);
   await expect(page.locator("[data-arcade-grid] .arcade-game-card")).toHaveCount(8);
   await expect(page.locator("[data-arcade-count]")).toHaveText("8");
-  await expect(page.locator("video, audio, iframe, #lottery-news")).toHaveCount(0);
+  await expect(page.locator(".arcade-game-card__status")).toHaveText(Array(8).fill("Playable"));
+  await expect(page.locator("main video, main audio, iframe, #lottery-news, .instrument-console")).toHaveCount(0);
 
   await page.getByRole("button", { name: "Action", exact: true }).click();
   await expect(page.locator("[data-arcade-grid] .arcade-game-card")).toHaveCount(3);
@@ -195,7 +203,7 @@ test("features renders the focused manifest-driven Arcade pilot", async ({ page 
   expect(localFailures).toEqual([]);
 });
 
-test("home commercial media waits for an explicit play command", async ({ page }) => {
+test("home commercial starts muted and enables sound on request", async ({ page }) => {
   const commercialRequests = [];
   page.on("request", (request) => {
     if (/lottomind-(?:home|refined)-commercial-20260716\.mp4/i.test(request.url())) {
@@ -206,11 +214,15 @@ test("home commercial media waits for an explicit play command", async ({ page }
   await page.goto("/", { waitUntil: "domcontentloaded" });
   const startup = page.locator("[data-startup-video]");
   await expect(startup).toBeVisible({ timeout: 15_000 });
-  await page.waitForTimeout(500);
-  expect(commercialRequests).toEqual([]);
+  await expect.poll(() => commercialRequests.length).toBeGreaterThan(0);
+  await expect(page.locator("[data-startup-video-play]")).toHaveText("Play with sound");
+  await expect.poll(() => startup.locator("video").evaluate((video) => ({
+    muted: video.muted,
+    paused: video.paused,
+  }))).toEqual({ muted: true, paused: false });
 
   await page.locator("[data-startup-video-play]").click();
-  await expect.poll(() => commercialRequests.length).toBeGreaterThan(0);
+  await expect.poll(() => startup.locator("video").evaluate((video) => video.muted)).toBe(false);
 });
 
 test("Contact prepares a support request locally", async ({ page }) => {

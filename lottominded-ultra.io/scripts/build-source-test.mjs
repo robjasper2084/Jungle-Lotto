@@ -31,7 +31,7 @@ async function hardlinkArtifact() {
     await mkdir(dirname(target), { recursive: true });
     try { await link(source, target); }
     catch (error) {
-      if (!["EXDEV", "EPERM", "EACCES"].includes(error.code)) throw error;
+      if (!["EXDEV", "EPERM", "EACCES", "EISDIR"].includes(error.code)) throw error;
       await copyFile(source, target);
     }
   }

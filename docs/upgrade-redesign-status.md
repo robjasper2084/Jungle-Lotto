@@ -7,7 +7,7 @@
 - Snapshot annotated tag object SHA: `9ba25352efc17d5b514e5afd59c8afde5c9d2949`
 - Snapshot target commit SHA: `975c637cea7003533cdc30aed9d96be51929bfc8`
 - Upgrade branch: `upgrade-redesign`
-- Current upgrade branch implementation SHA: `13cc272574436448c222decc233be4327e569902`
+- Current upgrade branch implementation SHA: This status file is part of the current focused commit; use `git log -1 --format=%H -- docs/upgrade-redesign-status.md` to resolve its exact SHA. The completion report records it explicitly.
 - Upgrade branch SHA at Step 0A branch creation: `1fc4c95ca4d0b22ee5188d06f8ea75573c63a00a`
 - Upgrade branch SHA before Step 0B commit: `220653bbc300d0e0b236c6e834043f39fdfcd76c`
 - Step 0B commit SHA: `6e58aafc4addabf5281262ec951a7d6df3dc66a0`
@@ -15,15 +15,15 @@
 - Staging provider: Local static server (Mode C); no remote preview provider is configured
 - Staging URL: Local only (`http://127.0.0.1:8143/` while `npm.cmd run staging:serve` is running)
 - Staging integrations: No isolated backend or Stripe test-mode configuration is currently configured; protected writes remain disabled
-- Last completed step: Membership support-column restoration completed on `upgrade-redesign`; production deployment remains excluded
+- Last completed step: Features hybrid refinement completed on `upgrade-redesign`; production deployment remains excluded
 - Step 1 commit SHA: This file is part of the Step 1 commit; use `git log -1 --format=%H -- docs/upgrade-redesign-status.md` to resolve its exact non-self-referential SHA. The completion report records it explicitly.
 - Last staging review: Membership plan layout passed; review: `docs/staging-reviews/membership-plan-layout.md`
 - Staging review commit SHA: This file is part of the staging-review commit; the completion report records its exact SHA.
-- Last successful test run: 2026-07-21 - focused source and exact-staging Memberships support-column checks passed; `npm.cmd run check:site` passed 14 HTML files; the rebuilt staging artifact passed 9 browser safety checks, 2 affected-route smoke checks, and 23-page/493-reference static verification
+- Last successful test run: 2026-07-21 - 35 focused source browser checks passed with 1 intentional viewport skip; 11 staging browser safety checks passed; 92 source/staging route checks passed; the staging artifact verified 23 injected pages and 495 same-origin asset references
 - Visual baseline: Complete - 69 production route screenshots plus desktop, tablet, and mobile contact sheets under `docs/visual-baseline/v1/`
 - Step 1 visual comparison: Production and staging home routes compared at 1440x900 and 390x844; staging adds only the preview and safety banners, with no redesign changes
 - Resolved Step 1 baseline failures: Contact support helper restored; Stem Studio tablet/mobile overflow corrected; Jackpot Maze runtime, heading, and entry focus restored; first-load outliers reduced; staging News production request removed
-- Latest visual comparison: 24 affected-route staging captures plus desktop, tablet, and mobile v1/staging comparison sheets under `docs/staging-reviews/blocker-remediation-assets/`
+- Latest visual comparison: Features staging and v1 production compared at 1440x900, 768x1024, and 390x844; review and captures are under `docs/staging-reviews/features-hybrid.md` and `docs/staging-reviews/features-hybrid-assets/`
 - Latest performance comparison: Home 28.1 -> 5.80 MiB; Memberships 26.7 -> 2.87 MiB; Merch 23.1 -> 1.99 MiB; Shadow Ops 87.7 -> 3.70 MiB
 - Staging review approval status: Ready for next phase
 - Production approval status: Not approved; the live checkout handoff was verified safely in Stripe Sandbox and cancelled before any charge, but release-candidate review and production merge approval remain pending
@@ -94,4 +94,19 @@
 - Tests: focused source layout 1/1; focused exact-staging layout 1/1; affected staging route smoke 2/2; site validation 14/14 HTML files; staging browser safety 9/9; staging static verification 23 pages and 493 same-origin references
 - Visual review: `docs/staging-reviews/membership-plan-layout.md` with refreshed 1440x900 and 390x844 support-column captures
 - Staging URL: Local only (`http://127.0.0.1:8143/memberships.html`)
+- Approval status: Ready for next phase; production remains not approved
+
+## Features Hybrid Refinement
+
+- Step number: Browser review refinement - Features cinematic shell and Arcade directory
+- Commit SHA: This status file is part of the focused Features commit; use `git log -1 --format=%H -- docs/upgrade-redesign-status.md` to resolve the exact SHA
+- Affected route: `/features-app.html`
+- Changes: Restored a cinematic Features-first opening with Detroit studio art and five creative channels while retaining the searchable, manifest-driven eight-game Arcade directory; replaced invented `Live` labels with `Playable`
+- Commercial behavior: Route film starts muted automatically, exposes a user-gesture sound control, and runs once per route in the current tab
+- Tests: focused source browser suite 35 passed and 1 intentional viewport skip; staging browser safety 11/11; source/staging route smoke 92/92; staging static verification 23 pages and 495 same-origin asset references
+- Visual review: `docs/staging-reviews/features-hybrid.md` with 1440x900, 768x1024, and 390x844 captures; no horizontal overflow and all visual-identity invariants remained recognizable
+- Accessibility: Keyboard focus order passed after the commercial handoff; reduced-motion capture reported zero running animations; no inert containers remained
+- Performance: Initial mobile transfer was approximately 6.6 MiB and the fully loaded visual route approximately 9.1 MiB; image-weight optimization remains recommended
+- Staging URL: Local only (`http://127.0.0.1:8143/features-app.html`)
+- Live checkout: Not exercised by this Features refinement
 - Approval status: Ready for next phase; production remains not approved
