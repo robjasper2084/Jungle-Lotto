@@ -64,8 +64,29 @@ test("home commercial starts muted video and waits for a sound gesture", async (
     if (/home-screen-song\.mp3/i.test(request.url())) soundtrackRequests.push(request.url());
   });
 
+  await page.addInitScript(() => {
+    const originalPlay = HTMLMediaElement.prototype.play;
+    HTMLMediaElement.prototype.play = function (...args) {
+      this.dataset.lmPlayAttempts = String(Number(this.dataset.lmPlayAttempts || "0") + 1);
+      return originalPlay.apply(this, args);
+    };
+    const nativeSetTimeout = window.setTimeout.bind(window);
+    window.setTimeout = (callback, delay, ...args) => {
+      if (delay === 60_000) {
+        window.__lmStartupDelay = delay;
+        return nativeSetTimeout(callback, 1_200, ...args);
+      }
+      return nativeSetTimeout(callback, delay, ...args);
+    };
+  });
   await page.goto("/", { waitUntil: "domcontentloaded" });
-  await expect(page.locator("[data-startup-video]")).toBeVisible({ timeout: 15_000 });
+  const heroFilm = page.locator("[data-home-hero-audio]");
+  await expect(page.locator("[data-startup-video]")).toBeHidden();
+  await expect(heroFilm).toBeVisible();
+  await expect.poll(() => heroFilm.evaluate((video) => Number(video.dataset.lmPlayAttempts || "0"))).toBeGreaterThan(0);
+  await expect(page.locator("[data-home-hero-sound]")).toBeVisible();
+  expect(await page.evaluate(() => window.__lmStartupDelay)).toBe(60_000);
+  await expect(page.locator("[data-startup-video]")).toBeVisible({ timeout: 5_000 });
   await expect.poll(() => commercialRequests.length).toBeGreaterThan(0);
   expect(soundtrackRequests).toEqual([]);
   await expect(page.locator("[data-startup-video-play]")).toHaveText("Play with sound");
@@ -74,10 +95,11 @@ test("home commercial starts muted video and waits for a sound gesture", async (
   await page.locator("[data-startup-video-play]").click();
   await expect.poll(() => page.locator("[data-startup-video] video").evaluate((video) => video.muted)).toBe(false);
   await page.locator("[data-startup-video-close]").last().click();
-  await expect.poll(() => soundtrackRequests.length).toBeGreaterThan(0);
+  await expect.poll(() => heroFilm.evaluate((video) => ({ muted: video.muted, paused: video.paused }))).toEqual({ muted: false, paused: false });
+  expect(soundtrackRequests).toEqual([]);
 });
 
-test("membership entry film starts muted and enables sound on request", async ({ page }) => {
+test("membership hero film autoplays muted without an entry popup and enables sound on request", async ({ page }) => {
   const filmRequests = [];
   const soundtrackRequests = [];
   page.on("request", (request) => {
@@ -87,16 +109,19 @@ test("membership entry film starts muted and enables sound on request", async ({
 
   await page.goto("/memberships.html", { waitUntil: "domcontentloaded" });
   const commercial = page.locator("[data-membership-commercial-modal]");
-  await expect(commercial).toBeVisible({ timeout: 15_000 });
+  const featuredFilm = page.locator("[data-membership-featured-commercial]");
+  await expect(commercial).toBeHidden();
+  await expect(page.locator(".lm-temporal-loader")).toHaveCount(0);
+  await expect(featuredFilm).toBeVisible();
+  await featuredFilm.scrollIntoViewIfNeeded();
   await expect.poll(() => filmRequests.length).toBeGreaterThan(0);
   expect(soundtrackRequests).toEqual([]);
-  await expect(page.locator("[data-membership-commercial-sound]")).toHaveText("Play with sound");
-  await expect.poll(() => commercial.locator("video").evaluate((video) => ({ muted: video.muted, paused: video.paused }))).toEqual({ muted: true, paused: false });
+  await expect(page.locator("[data-membership-featured-sound]")).toHaveText("Play with sound");
+  await expect.poll(() => featuredFilm.evaluate((video) => ({ muted: video.muted, paused: video.paused }))).toEqual({ muted: true, paused: false });
 
-  await page.locator("[data-membership-commercial-sound]").click();
-  await expect.poll(() => commercial.locator("video").evaluate((video) => video.muted)).toBe(false);
-  await page.locator("[data-membership-commercial-close]").click();
-  await expect.poll(() => soundtrackRequests.length).toBeGreaterThan(0);
+  await page.locator("[data-membership-featured-sound]").click();
+  await expect.poll(() => featuredFilm.evaluate((video) => video.muted)).toBe(false);
+  await expect.poll(() => page.locator("#lmMembership").getAttribute("data-audio-reactive-source")).toBe("featured-commercial");
 });
 
 test("route commercial gate starts muted and enables sound on request", async ({ page }) => {
@@ -129,7 +154,7 @@ test("Features staging preserves the cinematic identity and playable Arcade dire
   await gate.locator(".lm-commercial-gate__skip").click();
 
   await expect(page.locator(".arcade-pilot-label")).toHaveText("LottoMind Features / Arcade + Creative Systems");
-  await expect(page.locator('.arcade-pilot-hero__art[src*="generated-cinematic-hero.png"]')).toBeVisible();
+  await expect(page.locator('.arcade-pilot-hero__art[src*="lottomind-little-man-membership-hero-v2.png"]')).toBeVisible();
   await expect(page.locator(".feature-channel")).toHaveCount(5);
   await expect(page.locator("[data-arcade-grid] .arcade-game-card")).toHaveCount(8);
   await expect(page.locator(".arcade-game-card__status")).toHaveText(Array(8).fill("Playable"));
@@ -183,6 +208,7 @@ test("Live Events renders a complete channel hub without invented live or commer
   await expect(page.getByText(/\$\d/)).toHaveCount(0);
   await expect(page.getByText("Ultra Points", { exact: true })).toHaveCount(0);
   await expect.poll(() => page.locator("[data-live-hero-film-audio]").evaluate((audio) => Number(audio.dataset.lmPlayAttempts || "0"))).toBeGreaterThan(0);
+  await expect(page.locator("[data-live-hero-film-video]")).toHaveAttribute("data-sound-state", /^(?:blocked|playing|ready)$/);
   await expect(page.locator("[data-live-hero-film-audio]")).toHaveAttribute("loop", "");
 });
 
@@ -219,7 +245,8 @@ test("News uses its static feed without contacting production Supabase", async (
   await page.goto("/news/", { waitUntil: "domcontentloaded" });
   await expect(page.locator("#root")).toContainText(/LottoMind News Intelligence/i);
   await expect(page.locator(".article-grid .news-card").first()).toBeVisible();
-  await expect.poll(() => page.locator(".article-grid .news-card__media").first().evaluate((node) => getComputedStyle(node).backgroundImage)).toContain("/assets/");
+  await expect(page.locator(".article-grid .news-card__media img").first()).toBeVisible();
+  await expect.poll(() => page.locator(".article-grid .news-card__media img").first().evaluate((image) => image.complete && image.naturalWidth > 0)).toBe(true);
   expect(productionRequests).toEqual([]);
   expect(consoleErrors).toEqual([]);
 });

@@ -54,7 +54,8 @@
       if (!heroSingerSound) return;
       heroSingerSound.classList.toggle("is-active", active);
       heroSingerSound.setAttribute("aria-pressed", String(active));
-      heroSingerSound.textContent = active ? "Sound off" : "Sound on";
+      heroSingerSound.textContent = active ? "Sound off" : "Play sound";
+      heroSingerFilm.dataset.soundState = active ? "playing" : "ready";
     };
 
     const alignHeroSoundtrack = () => {
@@ -79,7 +80,7 @@
         heroSingerFilm.controls = true;
       });
       if (heroSingerSoundEnabled && heroSingerAudio?.paused) {
-        heroSingerAudio.play().catch(() => setSoundState(false));
+        heroSingerAudio.play().catch(stopHeroAudio);
       }
     };
 
@@ -101,6 +102,7 @@
 
     const startHeroSoundtrack = async () => {
       if (!heroSingerAudio || document.hidden || reducedMotion.matches || !isVisible) return false;
+      heroSingerFilm.dataset.soundState = "attempting";
       stopBackgroundAudio();
       heroSingerAudio.volume = 0.52;
       window.LMAudioMix?.claim?.(heroSingerAudio);
@@ -112,7 +114,17 @@
         return true;
       } catch {
         stopHeroAudio();
+        heroSingerFilm.dataset.soundState = "blocked";
         return false;
+      }
+    };
+
+    const retryHeroSoundOnGesture = async (event) => {
+      if (event?.target?.closest?.("[data-live-hero-film-sound]")) return;
+      if (heroSingerSoundEnabled || reducedMotion.matches) return;
+      if (await startHeroSoundtrack()) {
+        document.removeEventListener("pointerdown", retryHeroSoundOnGesture, true);
+        document.removeEventListener("keydown", retryHeroSoundOnGesture, true);
       }
     };
 
@@ -147,12 +159,14 @@
     }
 
     document.addEventListener("visibilitychange", syncPlayback);
+    document.addEventListener("pointerdown", retryHeroSoundOnGesture, true);
+    document.addEventListener("keydown", retryHeroSoundOnGesture, true);
     reducedMotion.addEventListener?.("change", syncPlayback);
     setSoundState(false);
     syncPlayback();
     if (!heroSingerAutoplayAttempted && !reducedMotion.matches) {
       heroSingerAutoplayAttempted = true;
-      startHeroSoundtrack();
+      void startHeroSoundtrack();
     }
   }
   function two(value) {

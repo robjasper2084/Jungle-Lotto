@@ -78,12 +78,12 @@ window.LMAudioMix = {
   const navItems = [
     { label: "Memberships", href: siteUrl("./memberships.html"), icon: "MB" },
     { label: "Home", href: siteUrl("./index.html#top"), icon: "HM" },
-    { label: "Features", href: siteUrl("./features-app.html"), icon: "FX" },
+    { label: "Games", href: siteUrl("./features-app.html"), icon: "FX" },
     { label: "News", href: siteUrl("./news/"), icon: "NW" },
     { label: "Events", href: siteUrl("./live-events.html"), icon: "EV" },
     { label: "Spheres", href: siteUrl("./lottery-spheres.html#spheres"), icon: "SP" },
     { label: "Lilman", href: siteUrl("./beat2lotto-plus.html#beat2lotto"), icon: "B2" },
-    { label: "Merch", href: siteUrl("./merch-store.html"), icon: "DR" },
+    { label: "Storefront", href: siteUrl("./merch-store.html"), icon: "DR" },
     { label: "Static Wav", href: siteUrl("./how-to-use.html"), icon: "GD" },
     {
       label: "LottoMind App",
@@ -149,6 +149,9 @@ const year = document.querySelector("#site-year");
 if (year) year.textContent = String(new Date().getFullYear());
 
 const heroMotion = document.querySelector(".hero-motion");
+const heroSoundButton = document.querySelector("[data-home-hero-sound]");
+let heroSoundRequested = Boolean(heroMotion);
+let heroSoundBlocked = false;
 const kineticHero = document.querySelector("[data-kinetic-hero]");
 const revealSections = document.querySelectorAll("[data-reveal]");
 const reducedMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -323,7 +326,7 @@ const compactHeaderLabels =
   document.body.classList.contains("manual-page");
 const conciseSoundtrackLabels = document.body.classList.contains("home-page");
 const HEADER_COLLAPSED_KEY = "lottominded.ultra.siteHeaderCollapsed.v1";
-const STARTUP_MODAL_OPEN_DELAY = 10_000;
+const STARTUP_MODAL_OPEN_DELAY = 60_000;
 const GAME_PIP_AUTO_DELAY = 90000;
 const GAME_PIP_AUTO_KEY = "lottominded.ultra.homeGamePipAutoShown.v1";
 const MEMBER_SIGNUP_KEY = "lottominded.ultra.memberSignup.v1";
@@ -343,6 +346,7 @@ let activePasswordGatePanel = null;
 function isStartupVideoOpen() {
   return Boolean(
     startupVideoModal
+    && !startupVideoModal.hidden
     && !startupVideoModal.classList.contains("is-hidden")
     && startupVideoModal.getAttribute("aria-hidden") !== "true"
   );
@@ -1153,11 +1157,11 @@ function setupUniversalFloatingMenu() {
     ["Memberships", siteUrl("./memberships.html")],
     ["LottoMind App", "https://robjasper2084.github.io/Jungle-Lotto/lotto%20mind%20refined/"],
     ["Home", siteUrl("./index.html#top")],
-    ["Features", siteUrl("./features-app.html")],
+    ["Games", siteUrl("./features-app.html")],
     ["Events", siteUrl("./live-events.html")],
     ["Spheres", siteUrl("./lottery-spheres.html#spheres")],
     ["Lilman", siteUrl("./beat2lotto-plus.html#beat2lotto")],
-    ["Merch", siteUrl("./merch-store.html")],
+    ["Storefront", siteUrl("./merch-store.html")],
     ["Static Wav", siteUrl("./how-to-use.html")],
     ["Studio", siteUrl("./lottomind-stem-studio/index.html")]
   ];
@@ -1313,15 +1317,24 @@ setupUniversalFloatingMenu();
 
 function setupRequestedNavLabels() {
   const syncLabels = () => {
-    const lilmanLinks = document.querySelectorAll('nav a[data-icon="B2"]');
-    const staticWavLinks = document.querySelectorAll('nav a[data-icon="GD"]');
-    lilmanLinks.forEach((link) => {
-      link.textContent = "Lilman";
+    const requestedLabels = {
+      FX: "Games",
+      B2: "Lilman",
+      DR: "Storefront",
+      GD: "Static Wav",
+    };
+    let found = 0;
+
+    Object.entries(requestedLabels).forEach(([icon, label]) => {
+      const links = document.querySelectorAll(`nav a[data-icon="${icon}"]`);
+      if (links.length) found += 1;
+      links.forEach((link) => {
+        link.textContent = label;
+        link.dataset.navLabel = label;
+      });
     });
-    staticWavLinks.forEach((link) => {
-      link.textContent = "Static Wav";
-    });
-    return lilmanLinks.length > 0 && staticWavLinks.length > 0;
+
+    return found === Object.keys(requestedLabels).length;
   };
 
   if (syncLabels()) return;
@@ -2682,24 +2695,92 @@ function setHeaderCollapsed(collapsed) {
   localStorage.setItem(HEADER_COLLAPSED_KEY, collapsed ? "true" : "false");
 }
 
-function syncHeroMotionPreference() {
-  if (!heroMotion) return;
+function setHomeHeroSoundState(state) {
+  if (!heroSoundButton) return;
+  const isPlaying = state === "playing";
+  heroSoundButton.classList.toggle("is-active", isPlaying);
+  heroSoundButton.setAttribute("aria-pressed", String(isPlaying));
+  heroSoundButton.textContent = isPlaying ? "Sound off" : state === "blocked" ? "Play sound" : "Sound on";
+  heroSoundButton.setAttribute(
+    "aria-label",
+    isPlaying ? "Mute the home background film" : "Play the home background film with sound",
+  );
+}
+
+async function playHomeHeroMotion({ withSound = heroSoundRequested } = {}) {
+  if (!heroMotion) return false;
   const startupOpen = startupVideoModal && !startupVideoModal.classList.contains("is-hidden");
   if (startupOpen) {
     heroMotion.pause();
-    return;
+    return false;
   }
   if (reducedMotionQuery.matches) {
     heroMotion.pause();
-    return;
+    setHomeHeroSoundState("off");
+    return false;
   }
-  heroMotion.play().catch(() => {
-    // Some static-file previews block autoplay until the user interacts.
-  });
+
+  restoreDeferredVideoSources(heroMotion);
+  if (withSound) {
+    window.LMAudioMix.claim(heroMotion);
+    heroMotion.muted = false;
+    heroMotion.defaultMuted = false;
+    heroMotion.removeAttribute("muted");
+    heroMotion.volume = SITE_AUDIO_LEVELS.background;
+  } else {
+    heroMotion.muted = true;
+    heroMotion.defaultMuted = true;
+    heroMotion.setAttribute("muted", "");
+  }
+
+  try {
+    await heroMotion.play();
+    heroSoundBlocked = false;
+    setHomeHeroSoundState(withSound ? "playing" : "off");
+    return true;
+  } catch {
+    heroMotion.muted = true;
+    heroMotion.defaultMuted = true;
+    heroMotion.setAttribute("muted", "");
+    await heroMotion.play().catch(() => {});
+    heroSoundBlocked = Boolean(withSound);
+    setHomeHeroSoundState(withSound ? "blocked" : "off");
+    return false;
+  }
+}
+
+function syncHeroMotionPreference() {
+  void playHomeHeroMotion({ withSound: heroSoundRequested });
 }
 
 reducedMotionQuery.addEventListener?.("change", syncHeroMotionPreference);
 syncHeroMotionPreference();
+
+heroSoundButton?.addEventListener("click", async () => {
+  const isAudible = !heroMotion?.muted && !heroMotion?.paused;
+  if (isAudible) {
+    heroSoundRequested = false;
+    heroMotion.muted = true;
+    heroMotion.defaultMuted = true;
+    heroMotion.setAttribute("muted", "");
+    setHomeHeroSoundState("off");
+    return;
+  }
+  heroSoundRequested = true;
+  await playHomeHeroMotion({ withSound: true });
+});
+
+const retryHomeHeroSound = async (event) => {
+  if (event?.type === "keydown" && event.key !== "Enter" && event.key !== " ") return;
+  if (event?.target?.closest?.("[data-home-hero-sound]")) return;
+  if (!heroSoundBlocked || !heroSoundRequested) return;
+  if (await playHomeHeroMotion({ withSound: true })) {
+    document.removeEventListener("pointerdown", retryHomeHeroSound, true);
+    document.removeEventListener("keydown", retryHomeHeroSound, true);
+  }
+};
+document.addEventListener("pointerdown", retryHomeHeroSound, true);
+document.addEventListener("keydown", retryHomeHeroSound, true);
 
 if (kineticHero && !reducedMotionQuery.matches) {
   kineticHero.addEventListener("pointermove", (event) => {
@@ -3184,7 +3265,12 @@ async function finishStartupVideoHandoff() {
   syncHeroMotionPreference();
   startupVideoClosing = false;
   if (startupShouldPlayMusic) {
-    await playSiteSoundtrack({ fromPage: true, restart: true, volume: SITE_AUDIO_LEVELS.background });
+    if (heroMotion) {
+      heroSoundRequested = true;
+      await playHomeHeroMotion({ withSound: true });
+    } else {
+      await playSiteSoundtrack({ fromPage: true, restart: true, volume: SITE_AUDIO_LEVELS.background });
+    }
   }
 }
 
@@ -3202,6 +3288,7 @@ function closeStartupVideo(options = {}) {
   startupVideoModal?.classList.add("is-hidden");
   startupVideoModal?.classList.remove("is-awaiting-video-play");
   startupVideoModal?.setAttribute("aria-hidden", "true");
+  if (startupVideoModal) startupVideoModal.hidden = true;
   startupVideoPlayer?.pause();
   window.addEventListener("lottomind:transition-complete", handleStartupTransitionComplete);
   window.dispatchEvent(new CustomEvent("lottomind:commercial-dismissed", {
@@ -3223,6 +3310,7 @@ function showStartupVideo() {
     return;
   }
   if (hasSeenStartupVideo()) return;
+  startupVideoModal.hidden = false;
   document.body.classList.add("has-startup-modal");
   startupVideoModal.classList.remove("is-hidden");
   startupVideoModal.setAttribute("aria-hidden", "false");

@@ -597,6 +597,7 @@ function initializeEntity(runtime) {
       uScrollTurbulence: { value: 0 },
       uPulse: { value: 0 },
       uBurst: { value: 0 },
+      uAudio: { value: 0 },
       uMouse: { value: new THREE.Vector3(999, 999, 999) },
       uMouseForce: { value: 0 },
       uPixelRatio: { value: Math.min(window.devicePixelRatio || 1, mobile ? 1.25 : 1.75) },
@@ -636,6 +637,7 @@ function initializeEntity(runtime) {
         uniform float uScrollTurbulence;
         uniform float uPulse;
         uniform float uBurst;
+        uniform float uAudio;
         uniform vec3 uMouse;
         uniform float uMouseForce;
         uniform float uPixelRatio;
@@ -781,6 +783,10 @@ function initializeEntity(runtime) {
             + uScrollTurbulence;
           storm = mix(storm, 0.012, uMascot * (1.0 - transition));
           vec3 position = base + flow * storm;
+          float audioVoice = sin(aSeed * 41.0 + uTime * (5.5 + aSeed * 3.5));
+          vec3 audioDirection = normalize(base + vec3(0.0001));
+          position += audioDirection * audioVoice * uAudio * (0.16 + aSeed * 0.34);
+          position += flow * uAudio * (0.24 + aSeed * 0.42);
           float coronaMask = smoothstep(3.4, 4.2, length(base));
           float coronaNoise = snoise(base * 0.5 + vec3(uTime2 * 0.35)) * 0.5 + 0.5;
           position += normalize(base + vec3(0.0001))
@@ -803,7 +809,7 @@ function initializeEntity(runtime) {
           gl_Position = projectionMatrix * mvPosition;
           float mascotRest = uMascot * (1.0 - transition);
           float mascotEdgeScale = mix(1.0, mix(0.72, 0.92, aMascotEdge), mascotRest);
-          gl_PointSize = max(1.4, aScale * mascotEdgeScale * uPixelRatio * (58.0 / max(1.0, -mvPosition.z)));
+          gl_PointSize = max(1.4, aScale * mascotEdgeScale * uPixelRatio * (58.0 / max(1.0, -mvPosition.z)) * (1.0 + uAudio * (0.36 + aSeed * 0.4)));
           vSeed = aSeed;
           vTravel = tt;
           vRing = aRing;
@@ -1210,6 +1216,9 @@ function initializeEntity(runtime) {
       uniforms.uDrift.value = entityState.heroDrift;
       uniforms.uLiveliness.value = liveliness;
       uniforms.uScrollTurbulence.value = renderTurbulence;
+      uniforms.uAudio.value = reducedMotion.matches
+        ? 0
+        : THREE.MathUtils.clamp(Number(window.__lmMembershipAudioEnergy) || 0, 0, 1);
       if (entityState.pulseStarted) {
         const pulseAge = (now - entityState.pulseStarted) / 850;
         uniforms.uPulse.value = pulseAge < 1 ? Math.sin(pulseAge * Math.PI) : 0;
@@ -1336,6 +1345,7 @@ function initializeEntity(runtime) {
       get segment() { return entityState.segment; },
       get pointCount() { return pointCount; },
       get turbulence() { return uniforms.uScrollTurbulence.value; },
+      get audioEnergy() { return uniforms.uAudio.value; },
       get maxTurbulence() { return entityState.maxTurbulence; },
       get variableTime() { return entityState.variableTime; },
       get gimbalTime() { return entityState.gimbalTime; },

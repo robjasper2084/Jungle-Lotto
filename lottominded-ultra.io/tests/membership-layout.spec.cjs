@@ -6,11 +6,11 @@ async function prepareMembershipPage(page) {
     route.fulfill({ status: 503, contentType: "application/json", body: '{"error":{"message":"Layout test backend offline"}}' })
   );
   await page.goto("/memberships.html", { waitUntil: "domcontentloaded" });
-  await page.locator("[data-membership-commercial-close]").click();
 }
 
 test("membership deck keeps the plan heading with Collector and Guardian beside it", async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== "desktop-chromium", "Responsive layout is covered once from the desktop project.");
+  await page.emulateMedia({ reducedMotion: "reduce" });
   await page.setViewportSize({ width: 1440, height: 900 });
   await prepareMembershipPage(page);
 
@@ -18,6 +18,7 @@ test("membership deck keeps the plan heading with Collector and Guardian beside 
   const hero = page.locator("#dust");
   const collector = page.locator(".membership-support-card--collector");
   const guardian = page.locator(".membership-support-card--guardian");
+  const heroCommercial = page.locator("#dust .membership-hero-commercial");
   const ultra = page.locator('[data-lm-tier="ultra"]');
   const vault = page.locator('[data-lm-tier="vault"]');
   const [deckBox, heroBox, collectorBox, guardianBox, ultraBox, vaultBox] = await Promise.all([
@@ -33,6 +34,8 @@ test("membership deck keeps the plan heading with Collector and Guardian beside 
   expect(heroBox).not.toBeNull();
   expect(collectorBox).not.toBeNull();
   expect(guardianBox).not.toBeNull();
+  await expect(heroCommercial).toBeVisible();
+  await expect(heroCommercial.locator("video")).toHaveAttribute("poster", /membership-feature-commercial-poster/);
   expect(ultraBox).not.toBeNull();
   expect(vaultBox).not.toBeNull();
   const deckPrecedesHeroInDom = await deck.evaluate((node) =>

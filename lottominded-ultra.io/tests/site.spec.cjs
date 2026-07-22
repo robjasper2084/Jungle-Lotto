@@ -65,7 +65,7 @@ async function mockAuthenticatedBilling(page, checkoutResponse) {
   });
 }
 
-test("memberships opens its commercial and hands off to the page without API checkout calls", async ({ page }) => {
+test("memberships avoids an entry popup and opens its commercial only on request", async ({ page }) => {
   await blockHeavyMedia(page);
   await page.route(/https:\/\/js\.stripe\.com\/.*/i, (route) => route.abort());
   await page.route(/https:\/\/sqdasdbvlkgpbbiyeune\.supabase\.co\/functions\/v1\/lottomind-api.*/i, (route) =>
@@ -82,6 +82,11 @@ test("memberships opens its commercial and hands off to the page without API che
   await page.waitForLoadState("networkidle").catch(() => {});
 
   const commercial = page.locator("[data-membership-commercial-modal]");
+  await expect(commercial).toBeHidden();
+  await expect(page.locator(".lm-temporal-loader")).toHaveCount(0);
+  const commercialOpener = page.locator("[data-membership-commercial-open]:visible").first();
+  await commercialOpener.scrollIntoViewIfNeeded();
+  await commercialOpener.click();
   await expect(commercial).toBeVisible();
   await page.locator("[data-membership-commercial-close]").click();
   await expect(commercial).toBeHidden();
@@ -99,7 +104,6 @@ test("membership checkout explains an authenticated backend rejection", async ({
   });
 
   await page.goto("/memberships.html", { waitUntil: "domcontentloaded" });
-  await page.locator("[data-membership-commercial-close]").click();
   await expect(page.locator("[data-stripe-membership-status]")).toHaveText("Secure Stripe checkout is ready.");
   await page.locator('[data-stripe-lookup-key="gold_monthly"]').evaluate((button) => button.click());
 
@@ -116,7 +120,6 @@ test("membership checkout rejects an unsafe redirect response", async ({ page })
   });
 
   await page.goto("/memberships.html", { waitUntil: "domcontentloaded" });
-  await page.locator("[data-membership-commercial-close]").click();
   await expect(page.locator("[data-stripe-membership-status]")).toHaveText("Secure Stripe checkout is ready.");
   await page.locator('[data-stripe-lookup-key="gold_monthly"]').evaluate((button) => button.click());
 
@@ -144,7 +147,6 @@ test("membership checkout stays disabled for malformed plan configuration", asyn
   });
 
   await page.goto("/memberships.html", { waitUntil: "domcontentloaded" });
-  await page.locator("[data-membership-commercial-close]").click();
 
   await expect(page.locator("[data-stripe-membership-status]")).toContainText("invalid plan configuration");
   await expect(page.locator("[data-stripe-lookup-key]").first()).toBeDisabled();
@@ -182,7 +184,7 @@ test("features combines the cinematic shell with the manifest-driven Arcade dire
   await expect(commercial).toBeHidden();
 
   await expect(page.locator(".arcade-pilot-label")).toHaveText("LottoMind Features / Arcade + Creative Systems");
-  await expect(page.locator('.arcade-pilot-hero__art[src*="generated-cinematic-hero.png"]')).toBeVisible();
+  await expect(page.locator('.arcade-pilot-hero__art[src*="lottomind-little-man-membership-hero-v2.png"]')).toBeVisible();
   await expect(page.locator(".feature-channel")).toHaveCount(5);
   await expect(page.locator("[data-arcade-grid] .arcade-game-card")).toHaveCount(8);
   await expect(page.locator("[data-arcade-count]")).toHaveText("8");
@@ -211,9 +213,24 @@ test("home commercial starts muted and enables sound on request", async ({ page 
     }
   });
 
+  await page.addInitScript(() => {
+    const nativeSetTimeout = window.setTimeout.bind(window);
+    window.setTimeout = (callback, delay, ...args) => {
+      if (delay === 60_000) {
+        window.__lmStartupDelay = delay;
+        return nativeSetTimeout(callback, 1_200, ...args);
+      }
+      return nativeSetTimeout(callback, delay, ...args);
+    };
+  });
   await page.goto("/", { waitUntil: "domcontentloaded" });
   const startup = page.locator("[data-startup-video]");
-  await expect(startup).toBeVisible({ timeout: 15_000 });
+  const heroFilm = page.locator("[data-home-hero-audio]");
+  await expect(startup).toBeHidden();
+  await expect(heroFilm).toBeVisible();
+  await expect(page.locator("[data-home-hero-sound]")).toBeVisible();
+  expect(await page.evaluate(() => window.__lmStartupDelay)).toBe(60_000);
+  await expect(startup).toBeVisible({ timeout: 5_000 });
   await expect.poll(() => commercialRequests.length).toBeGreaterThan(0);
   await expect(page.locator("[data-startup-video-play]")).toHaveText("Play with sound");
   await expect.poll(() => startup.locator("video").evaluate((video) => ({
@@ -275,11 +292,13 @@ test("membership support modules follow the plan heading in the requested order"
   }
 });
 
-test("shared navigation uses the requested Lilman and Static Wav labels", async ({ page }) => {
+test("shared navigation uses the requested Games, Lilman, Storefront, and Static Wav labels", async ({ page }) => {
   await blockHeavyMedia(page);
   await page.goto("/lottery-spheres.html", { waitUntil: "domcontentloaded" });
   const navigation = page.locator(".site-header nav");
+  await expect(navigation.locator('a[data-icon="FX"]')).toContainText("Games");
   await expect(navigation.locator('a[data-icon="B2"]')).toContainText("Lilman");
+  await expect(navigation.locator('a[data-icon="DR"]')).toContainText("Storefront");
   await expect(navigation.locator('a[data-icon="GD"]')).toContainText("Static Wav");
 });
 
@@ -320,7 +339,10 @@ test("news route renders from the static feed without probing the missing API", 
   await page.waitForFunction(() => (document.querySelector("#root")?.textContent || "").trim().length > 80);
 
   await expect(page.locator("#root")).toContainText(/LottoMind|News|Lottery/i);
-  await expect.poll(() => page.locator(".article-grid .news-card__media").first().evaluate((node) => getComputedStyle(node).backgroundImage)).toContain("/assets/");
+  const firstArticleImage = page.locator(".article-grid .news-card__media img").first();
+  await firstArticleImage.scrollIntoViewIfNeeded();
+  await expect(firstArticleImage).toBeVisible();
+  await expect.poll(() => firstArticleImage.evaluate((image) => image.complete && image.naturalWidth > 0)).toBe(true);
   expect(apiRequests).toEqual([]);
   expect(localFailures).toEqual([]);
 });

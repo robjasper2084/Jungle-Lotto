@@ -15,15 +15,15 @@
 - Staging provider: Local static server (Mode C); no remote preview provider is configured
 - Staging URL: Local only (`http://127.0.0.1:8143/` while `npm.cmd run staging:serve` is running)
 - Staging integrations: No isolated backend or Stripe test-mode configuration is currently configured; protected writes remain disabled
-- Last completed step: Requested Memberships, navigation, Live Events, News, Static Wav, and Magic 8 corrections completed on `upgrade-redesign`; production deployment remains excluded
+- Last completed step: Signal, media, navigation, Membership commercial, Arcade art, and News image corrections completed on `upgrade-redesign`; production deployment remains excluded
 - Step 1 commit SHA: This file is part of the Step 1 commit; use `git log -1 --format=%H -- docs/upgrade-redesign-status.md` to resolve its exact non-self-referential SHA. The completion report records it explicitly.
-- Last staging review: Membership plan layout passed; review: `docs/staging-reviews/membership-plan-layout.md`
+- Last staging review: Signal and media corrections passed; review: `docs/staging-reviews/signal-media-corrections.md`
 - Staging review commit SHA: This file is part of the staging-review commit; the completion report records its exact SHA.
-- Last successful test run: 2026-07-22 - 3 focused source checks passed with 1 intentional mobile layout skip; 11 staging browser safety checks passed; 92 source/staging route checks passed; the staging artifact verified 23 injected pages and 488 same-origin asset references; 10 affected-route screenshots passed capture verification
+- Last successful test run: 2026-07-22 - 38/38 affected-route browser checks passed with 2 intentional cross-project skips; 11/11 staging safety checks passed; 92/92 source/staging route checks passed; the staging artifact verified 23 injected pages and 488 same-origin references; 18/18 desktop/tablet/mobile captures passed
 - Visual baseline: Complete - 69 production route screenshots plus desktop, tablet, and mobile contact sheets under `docs/visual-baseline/v1/`
 - Step 1 visual comparison: Production and staging home routes compared at 1440x900 and 390x844; staging adds only the preview and safety banners, with no redesign changes
 - Resolved Step 1 baseline failures: Contact support helper restored; Stem Studio tablet/mobile overflow corrected; Jackpot Maze runtime, heading, and entry focus restored; first-load outliers reduced; staging News production request removed
-- Latest visual comparison: Requested correction routes compared with v1 production at 1440x900 and 390x844; review: `docs/staging-reviews/requested-corrections.md`
+- Latest visual comparison: Home, Memberships, Arcade, Live Events, and News compared with v1 production at 1440x900, 768x1024, and 390x844; review: `docs/staging-reviews/signal-media-corrections.md`
 - Latest performance comparison: Home 28.1 -> 5.80 MiB; Memberships 26.7 -> 2.87 MiB; Merch 23.1 -> 1.99 MiB; Shadow Ops 87.7 -> 3.70 MiB
 - Staging review approval status: Ready for next phase
 - Production approval status: Not approved; the live checkout handoff was verified safely in Stripe Sandbox and cancelled before any charge, but release-candidate review and production merge approval remain pending
@@ -121,4 +121,17 @@
 - Visual review: `docs/staging-reviews/requested-corrections.md` with 1440x900 and 390x844 captures; no material identity regression found
 - Staging URL: Local only (`http://127.0.0.1:8143/`)
 - Test-mode integrations: No isolated staging backend or Stripe test-mode checkout was configured; all protected staging writes remain blocked
+- Approval status: Ready for next phase; production remains not approved
+
+## Signal and Media Correction Pass
+
+- Step number: Browser-requested signal, commercial, navigation, and media refinement
+- Commit SHA: This status file is part of the focused correction commit; use `git log -1 --format=%H -- docs/upgrade-redesign-status.md` to resolve the exact SHA
+- Affected routes: `/index.html#top`, `/memberships.html`, `/features-app.html`, `/live-events.html`, `/news/`, plus shared navigation surfaces
+- Changes: Home commercial delay set to 60 seconds; Home particle globe and title bleed removed; Home and Live Events films attempt audible playback with truthful browser-policy fallbacks; Membership commercial added; Membership particles connected to Web Audio energy; Arcade switched to Little Man toy art; News card imagery restored; shared tabs renamed to `Games`, `Lilman`, `Storefront`, and `Static Wav`; transition preflash hardened
+- Tests: JavaScript syntax checks passed; News unit suite 20/20; affected-route browser suite 38/38 with 2 intentional project skips; staging browser safety suite 11/11; source/staging route smoke 92/92; static artifact verification 23 pages and 488 same-origin references; screenshot verification 18/18
+- Visual review: `docs/staging-reviews/signal-media-corrections.md` with 18 captures across 1440x900, 768x1024, and 390x844; no horizontal overflow, console errors, page errors, or broken assets found
+- Staging URL: Local only (`http://127.0.0.1:8143/`)
+- Staging safety: Noindex and preview banners verified; live payments, production account writes, real redemptions, and production analytics remain blocked
+- Live checkout: Excluded from this task and unchanged
 - Approval status: Ready for next phase; production remains not approved

@@ -1749,6 +1749,10 @@ nav {
   pointer-events: none;
 }
 
+.startup-video-modal[hidden] {
+  display: none !important;
+}
+
 .startup-video-panel {
   position: relative;
   isolation: isolate;
@@ -2425,6 +2429,12 @@ button {
   object-position: center;
   opacity: 0.72;
   filter: saturate(1.32) contrast(1.12) brightness(0.82);
+}
+
+.home-hero-sound {
+  top: 18px;
+  right: 18px;
+  z-index: 4;
 }
 
 .hero-circuit-layer,
@@ -15213,6 +15223,14 @@ body.home-page.has-sphere-header .home-sphere-scanline,
 body.home-page.has-sphere-header .home-spheres-orbit-mark {
   display: none !important;
   visibility: hidden !important;
+}
+
+/* Keep the home wordmark crisp: duplicated glitch glyphs read as text bleed. */
+body.home-page .hero h1 > span::before,
+body.home-page .hero h1 > span::after {
+  display: none !important;
+  content: none !important;
+  animation: none !important;
 }
 /* Memberships page */
 footer a.footer-link {

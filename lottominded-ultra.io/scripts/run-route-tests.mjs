@@ -7,6 +7,8 @@ const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const require = createRequire(import.meta.url);
 const playwrightCli = require.resolve("@playwright/test/cli");
 const servers = [];
+const sourcePort = String(Number(process.env.LOTTOMIND_ROUTE_SOURCE_PORT || 8142));
+const stagingPort = String(Number(process.env.LOTTOMIND_ROUTE_STAGING_PORT || 8143));
 
 function waitForExit(child) {
   return new Promise((resolvePromise, rejectPromise) => {
@@ -37,7 +39,7 @@ async function stopServer(child) {
 }
 
 async function main() {
-  for (const [directory, port] of [["dist-source-test", "8142"], ["dist-staging", "8143"]]) {
+  for (const [directory, port] of [["dist-source-test", sourcePort], ["dist-staging", stagingPort]]) {
     const child = spawn(process.execPath, ["scripts/serve-site.mjs", directory, port], {
       cwd: packageRoot,
       stdio: ["ignore", "inherit", "inherit"],
@@ -47,8 +49,8 @@ async function main() {
 
   try {
     await Promise.all([
-      waitForServer("http://127.0.0.1:8142/index.html", servers[0]),
-      waitForServer("http://127.0.0.1:8143/index.html", servers[1]),
+      waitForServer(`http://127.0.0.1:${sourcePort}/index.html`, servers[0]),
+      waitForServer(`http://127.0.0.1:${stagingPort}/index.html`, servers[1]),
     ]);
     const tests = spawn(process.execPath, [playwrightCli, "test", "--config=playwright.routes.config.cjs"], {
       cwd: packageRoot,

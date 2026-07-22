@@ -62,20 +62,46 @@ function headlineArtTone(item: LottoMindNewsItem): "official" | "winner" | "jack
   return "signal";
 }
 
-const EDITORIAL_STORY_ART: Record<ReturnType<typeof headlineArtTone>, string> = {
-  official: "../assets/arcade/lottery-spheres-title.webp",
-  winner: "../assets/merch/lottomind-community-signal-poster-20260717.jpg",
-  jackpot: "../assets/arcade/beat2lotto-prompt-lab-title.webp",
-  mystery: "../assets/brand/generated-cinematic-hero.png",
-  signal: "../assets/brand/guide-puck-cyan-city.webp",
+const EDITORIAL_STORY_ART: Record<ReturnType<typeof headlineArtTone>, string[]> = {
+  official: [
+    "../assets/arcade/lottery-spheres-title.webp",
+    "../assets/brand/guide-puck-cyan-city.webp",
+    "../assets/merch/lottomind-community-signal-poster-20260717.jpg",
+  ],
+  winner: [
+    "../assets/merch/lottomind-community-signal-poster-20260717.jpg",
+    "../assets/arcade/lottery-spheres-title.webp",
+    "../assets/brand/guide-puck-gold-mascot-wide.webp",
+  ],
+  jackpot: [
+    "../assets/arcade/beat2lotto-prompt-lab-title.webp",
+    "../assets/arcade/lottery-spheres-title.webp",
+    "../assets/brand/generated-cinematic-hero.png",
+  ],
+  mystery: [
+    "../assets/brand/generated-cinematic-hero.png",
+    "../assets/brand/guide-puck-cyan-city.webp",
+    "../assets/brand/guide-puck-gold-mascot-wide.webp",
+  ],
+  signal: [
+    "../assets/brand/guide-puck-cyan-city.webp",
+    "../assets/brand/generated-cinematic-hero.png",
+    "../assets/arcade/beat2lotto-prompt-lab-title.webp",
+  ],
 };
+
+function editorialStoryArt(item: LottoMindNewsItem, tone: ReturnType<typeof headlineArtTone>): string {
+  const choices = EDITORIAL_STORY_ART[tone];
+  const seed = [...item.id].reduce((total, character) => total + character.charCodeAt(0), 0);
+  return choices[seed % choices.length];
+}
 
 function ArticleCard({ item, saved, onSave }: { item: LottoMindNewsItem; saved: boolean; onSave: (id: string) => void }) {
   const [copied, setCopied] = useState(false);
   const [imageFailed, setImageFailed] = useState(false);
   const hasPublisherImage = Boolean(item.imageUrl && !imageFailed);
   const artTone = headlineArtTone(item);
-  const storyImage = imageFailed ? "" : (item.imageUrl || EDITORIAL_STORY_ART[artTone]);
+  const storyImage = hasPublisherImage ? item.imageUrl : editorialStoryArt(item, artTone);
   const copyLink = async () => {
     try {
       await navigator.clipboard.writeText(item.articleUrl);
@@ -101,7 +127,9 @@ function ArticleCard({ item, saved, onSave }: { item: LottoMindNewsItem; saved: 
             alt=""
             loading="lazy"
             referrerPolicy="no-referrer"
-            onError={() => setImageFailed(true)}
+            onError={() => {
+              if (item.imageUrl && !imageFailed) setImageFailed(true);
+            }}
           />
         ) : null}
         <span className="news-card__art-grid" aria-hidden="true" />
@@ -237,12 +265,12 @@ export function LottoMindNewsPage() {
         <nav aria-label="Home sphere navigation">
           <a href="../index.html#top" data-icon="HM">Home</a>
           <a href="../memberships.html" data-icon="MB">Memberships</a>
-          <a href="../features-app.html" data-icon="FX">Features</a>
+          <a href="../features-app.html" data-icon="FX">Games</a>
           <a href="./" data-icon="NW" aria-current="page">News</a>
           <a href="../live-events.html" data-icon="EV">Events</a>
           <a href="../lottery-spheres.html#spheres" data-icon="SP">Spheres</a>
           <a href="../beat2lotto-plus.html#beat2lotto" data-icon="B2">Lilman</a>
-          <a href="../merch-store.html" data-icon="DR">Merch</a>
+          <a href="../merch-store.html" data-icon="DR">Storefront</a>
           <a href="../how-to-use.html" data-icon="GD">Static Wav</a>
           <a href="https://robjasper2084.github.io/Jungle-Lotto/lotto%20mind%20refined/" data-icon="LM" data-member-app-public="true" aria-label="Open LottoMind Refined App">LottoMind App</a>
         </nav>
