@@ -1,0 +1,34 @@
+/* Requested Memberships page sequencing and plan pairing. */
+body.memberships-page .membership-main > #membership-plans {
+  order: 1;
+}
+
+body.memberships-page .membership-main > #dust {
+  order: 2;
+}
+
+body.memberships-page .membership-plan-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+body.memberships-page .membership-plan-card[data-lm-tier="vault"] {
+  grid-column: auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto auto 1fr auto;
+  align-items: stretch;
+  gap: 20px;
+  min-height: 620px;
+  background: linear-gradient(160deg, rgba(5, 27, 45, 0.84), rgba(3, 7, 14, 0.97));
+  box-shadow: inset 0 0 50px rgba(85, 232, 255, 0.05), 0 18px 44px rgba(0, 0, 0, 0.3);
+}
+
+@media (max-width: 900px) {
+  body.memberships-page .membership-plan-grid {
+    grid-template-columns: 1fr;
+  }
+
+  body.memberships-page .membership-plan-card[data-lm-tier="vault"] {
+    min-height: 0;
+  }
+}

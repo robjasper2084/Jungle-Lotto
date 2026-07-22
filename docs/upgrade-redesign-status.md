@@ -15,18 +15,18 @@
 - Staging provider: Local static server (Mode C); no remote preview provider is configured
 - Staging URL: Local only (`http://127.0.0.1:8143/` while `npm.cmd run staging:serve` is running)
 - Staging integrations: No isolated backend or Stripe test-mode configuration is currently configured; protected writes remain disabled
-- Last completed step: Sparse-checkout-aware full-site validation completed on `upgrade-redesign`; production deployment remains excluded
+- Last completed step: Membership plan hierarchy refinement completed on `upgrade-redesign`; production deployment remains excluded
 - Step 1 commit SHA: This file is part of the Step 1 commit; use `git log -1 --format=%H -- docs/upgrade-redesign-status.md` to resolve its exact non-self-referential SHA. The completion report records it explicitly.
-- Last staging review: Non-checkout blocker remediation passed; review: `docs/staging-reviews/blocker-remediation.md`
+- Last staging review: Membership plan layout passed; review: `docs/staging-reviews/membership-plan-layout.md`
 - Staging review commit SHA: This file is part of the staging-review commit; the completion report records its exact SHA.
-- Last successful test run: 2026-07-21 - `npm.cmd run check:site` passed 13 checked-out HTML files and resolved 41 unique referenced paths from the Git index; a temporary negative fixture correctly failed for an untracked missing asset; the rebuilt staging artifact passed 23-page and 491-reference static verification
+- Last successful test run: 2026-07-21 - focused source and exact-staging Memberships layout checks passed; `npm.cmd run check:site` passed 14 HTML files; the rebuilt staging artifact passed 9 browser safety checks and 23-page/493-reference static verification
 - Visual baseline: Complete - 69 production route screenshots plus desktop, tablet, and mobile contact sheets under `docs/visual-baseline/v1/`
 - Step 1 visual comparison: Production and staging home routes compared at 1440x900 and 390x844; staging adds only the preview and safety banners, with no redesign changes
 - Resolved Step 1 baseline failures: Contact support helper restored; Stem Studio tablet/mobile overflow corrected; Jackpot Maze runtime, heading, and entry focus restored; first-load outliers reduced; staging News production request removed
 - Latest visual comparison: 24 affected-route staging captures plus desktop, tablet, and mobile v1/staging comparison sheets under `docs/staging-reviews/blocker-remediation-assets/`
 - Latest performance comparison: Home 28.1 -> 5.80 MiB; Memberships 26.7 -> 2.87 MiB; Merch 23.1 -> 1.99 MiB; Shadow Ops 87.7 -> 3.70 MiB
 - Staging review approval status: Ready for next phase
-- Production approval status: Not approved; safe live-checkout verification remains incomplete
+- Production approval status: Not approved; the live checkout handoff was verified safely in Stripe Sandbox and cancelled before any charge, but release-candidate review and production merge approval remain pending
 - Rollback reference: `v1-final` at `975c637cea7003533cdc30aed9d96be51929bfc8`; after a controlled production merge, use `git revert` for rollback
 - Known pre-existing repository changes: The working tree was clean when Step 0A began. Local `main` already contained commit `1fc4c95ca4d0b22ee5188d06f8ea75573c63a00a` ahead of `origin/main`; that commit was preserved as the starting point of `upgrade-redesign` and was not pushed to production.
 
@@ -72,3 +72,15 @@
 - Remaining Arcade issues: None introduced by the merge; repository-wide baseline issues remain for source Contact, mobile Stem Studio overflow, and Jackpot Maze heading/focus behavior
 - Pilot approval status: Approved and merged into the upgrade branch
 - Production approval status: Not approved
+
+## Membership Plan Layout Refinement
+
+- Step number: Browser review refinement - Memberships plan hierarchy
+- Commit SHA: This status file is part of the focused layout commit; use `git log -1 --format=%H -- docs/upgrade-redesign-status.md` to resolve the exact SHA
+- Affected route: `/memberships.html`
+- Changes: Membership Control Deck promoted to the top of main content; accessible document order synchronized; Vault Pass paired beside Ultra on desktop and stacked below it on mobile
+- Tests: focused source layout 1/1; focused exact-staging layout 1/1; site validation 14/14 HTML files; staging browser safety 9/9; staging static verification 23 pages and 493 same-origin references
+- Route smoke result: Memberships passed source and staging at desktop and mobile sizes; the complete matrix passed 80/92 overall and 46/46 staging checks, with 12 unrelated source sparse-asset failures recorded in the staging review
+- Visual review: `docs/staging-reviews/membership-plan-layout.md` with 1440x900 and 390x844 captures
+- Staging URL: Local only (`http://127.0.0.1:8143/memberships.html`)
+- Approval status: Ready for next phase; production remains not approved
