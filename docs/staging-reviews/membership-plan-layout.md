@@ -22,12 +22,16 @@ The v1 baseline captures the cinematic entry gate. The post-entry comparison als
 - [Mobile deck-first view](membership-plan-layout-assets/staging-mobile-top.png)
 - [Mobile Ultra card](membership-plan-layout-assets/staging-mobile-plans.png)
 - [Mobile Vault card](membership-plan-layout-assets/staging-mobile-vault.png)
+- [Desktop Collector and Guardian columns](membership-plan-layout-assets/staging-desktop-support-columns.png)
+- [Mobile Collector first](membership-plan-layout-assets/staging-mobile-support-columns.png)
+- [Mobile Guardian second](membership-plan-layout-assets/staging-mobile-support-guardian.png)
 
 ## Improvements
 
 - The Membership Control Deck now leads the main page content after the global navigation.
 - The document order matches the visual order for keyboard and assistive-technology users.
 - Ultra Membership and Vault Pass share the same desktop row with matched card height and clearer comparison.
+- Collector Access is explicitly assigned to the first support column and the Guardian bundle to its original second column.
 - At 390px, the plan grid becomes one full-width column with no horizontal overflow.
 - The staging banner and safety status remain visible, and no console errors appeared during capture.
 
@@ -54,3 +58,5 @@ The v1 baseline captures the cinematic entry gate. The post-entry comparison als
 ## Intentional Visual Departure
 
 The plan deck is intentionally promoted above the cinematic hero, and Vault is intentionally changed from a full-width lower rail into a peer card beside Ultra on desktop. Mobile keeps the safer stacked sequence.
+
+The follow-up browser review restores the Little Man Guardian bundle to its original companion column and fixes Collector Access as the first column. Mobile preserves that same Collector-then-Guardian reading order.

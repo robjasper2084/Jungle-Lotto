@@ -15,11 +15,11 @@
 - Staging provider: Local static server (Mode C); no remote preview provider is configured
 - Staging URL: Local only (`http://127.0.0.1:8143/` while `npm.cmd run staging:serve` is running)
 - Staging integrations: No isolated backend or Stripe test-mode configuration is currently configured; protected writes remain disabled
-- Last completed step: Membership plan hierarchy refinement completed on `upgrade-redesign`; production deployment remains excluded
+- Last completed step: Membership support-column restoration completed on `upgrade-redesign`; production deployment remains excluded
 - Step 1 commit SHA: This file is part of the Step 1 commit; use `git log -1 --format=%H -- docs/upgrade-redesign-status.md` to resolve its exact non-self-referential SHA. The completion report records it explicitly.
 - Last staging review: Membership plan layout passed; review: `docs/staging-reviews/membership-plan-layout.md`
 - Staging review commit SHA: This file is part of the staging-review commit; the completion report records its exact SHA.
-- Last successful test run: 2026-07-21 - focused source and exact-staging Memberships layout checks passed; `npm.cmd run check:site` passed 14 HTML files; the rebuilt staging artifact passed 9 browser safety checks and 23-page/493-reference static verification
+- Last successful test run: 2026-07-21 - focused source and exact-staging Memberships support-column checks passed; `npm.cmd run check:site` passed 14 HTML files; the rebuilt staging artifact passed 9 browser safety checks, 2 affected-route smoke checks, and 23-page/493-reference static verification
 - Visual baseline: Complete - 69 production route screenshots plus desktop, tablet, and mobile contact sheets under `docs/visual-baseline/v1/`
 - Step 1 visual comparison: Production and staging home routes compared at 1440x900 and 390x844; staging adds only the preview and safety banners, with no redesign changes
 - Resolved Step 1 baseline failures: Contact support helper restored; Stem Studio tablet/mobile overflow corrected; Jackpot Maze runtime, heading, and entry focus restored; first-load outliers reduced; staging News production request removed
@@ -82,5 +82,16 @@
 - Tests: focused source layout 1/1; focused exact-staging layout 1/1; site validation 14/14 HTML files; staging browser safety 9/9; staging static verification 23 pages and 493 same-origin references
 - Route smoke result: Memberships passed source and staging at desktop and mobile sizes; the complete matrix passed 80/92 overall and 46/46 staging checks, with 12 unrelated source sparse-asset failures recorded in the staging review
 - Visual review: `docs/staging-reviews/membership-plan-layout.md` with 1440x900 and 390x844 captures
+- Staging URL: Local only (`http://127.0.0.1:8143/memberships.html`)
+- Approval status: Ready for next phase; production remains not approved
+
+## Membership Support Column Restoration
+
+- Step number: Browser review refinement - Collector and Guardian support columns
+- Commit SHA: This status file is part of the focused support-column commit; use `git log -1 --format=%H -- docs/upgrade-redesign-status.md` to resolve the exact SHA
+- Affected route: `/memberships.html`
+- Changes: Collector Access fixed as the first support column; Little Man Guardian bundle restored to its original second column; mobile order fixed as Collector then Guardian
+- Tests: focused source layout 1/1; focused exact-staging layout 1/1; affected staging route smoke 2/2; site validation 14/14 HTML files; staging browser safety 9/9; staging static verification 23 pages and 493 same-origin references
+- Visual review: `docs/staging-reviews/membership-plan-layout.md` with refreshed 1440x900 and 390x844 support-column captures
 - Staging URL: Local only (`http://127.0.0.1:8143/memberships.html`)
 - Approval status: Ready for next phase; production remains not approved

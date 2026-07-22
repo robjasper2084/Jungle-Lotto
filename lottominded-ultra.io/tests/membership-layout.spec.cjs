@@ -16,31 +16,45 @@ test("membership deck leads the page and keeps Vault beside Ultra on desktop", a
 
   const deck = page.locator("#membership-plans");
   const hero = page.locator("#dust");
+  const collector = page.locator(".membership-support-card--collector");
+  const guardian = page.locator(".membership-support-card--guardian");
   const ultra = page.locator('[data-lm-tier="ultra"]');
   const vault = page.locator('[data-lm-tier="vault"]');
-  const [deckBox, heroBox, ultraBox, vaultBox] = await Promise.all([
+  const [deckBox, heroBox, collectorBox, guardianBox, ultraBox, vaultBox] = await Promise.all([
     deck.boundingBox(),
     hero.boundingBox(),
+    collector.boundingBox(),
+    guardian.boundingBox(),
     ultra.boundingBox(),
     vault.boundingBox(),
   ]);
 
   expect(deckBox).not.toBeNull();
   expect(heroBox).not.toBeNull();
+  expect(collectorBox).not.toBeNull();
+  expect(guardianBox).not.toBeNull();
   expect(ultraBox).not.toBeNull();
   expect(vaultBox).not.toBeNull();
   const deckPrecedesHeroInDom = await deck.evaluate((node) =>
     Boolean(node.compareDocumentPosition(document.querySelector("#dust")) & Node.DOCUMENT_POSITION_FOLLOWING)
   );
+  const collectorPrecedesGuardianInDom = await collector.evaluate((node) =>
+    Boolean(node.compareDocumentPosition(document.querySelector(".membership-support-card--guardian")) & Node.DOCUMENT_POSITION_FOLLOWING)
+  );
   expect(deckPrecedesHeroInDom).toBe(true);
+  expect(collectorPrecedesGuardianInDom).toBe(true);
   expect(deckBox.y).toBeLessThan(heroBox.y);
+  expect(Math.abs(collectorBox.y - guardianBox.y)).toBeLessThan(2);
+  expect(collectorBox.x).toBeLessThan(guardianBox.x);
   expect(Math.abs(ultraBox.y - vaultBox.y)).toBeLessThan(2);
   expect(vaultBox.x).toBeGreaterThan(ultraBox.x);
 
   await page.setViewportSize({ width: 390, height: 844 });
-  const [mobileDeckBox, mobileHeroBox, mobileUltraBox, mobileVaultBox] = await Promise.all([
+  const [mobileDeckBox, mobileHeroBox, mobileCollectorBox, mobileGuardianBox, mobileUltraBox, mobileVaultBox] = await Promise.all([
     deck.boundingBox(),
     hero.boundingBox(),
+    collector.boundingBox(),
+    guardian.boundingBox(),
     ultra.boundingBox(),
     vault.boundingBox(),
   ]);
@@ -50,6 +64,7 @@ test("membership deck leads the page and keeps Vault beside Ultra on desktop", a
   }));
 
   expect(mobileDeckBox.y).toBeLessThan(mobileHeroBox.y);
+  expect(mobileGuardianBox.y).toBeGreaterThan(mobileCollectorBox.y);
   expect(mobileVaultBox.y).toBeGreaterThan(mobileUltraBox.y);
   expect(mobileWidths.content).toBeLessThanOrEqual(mobileWidths.viewport);
 });
