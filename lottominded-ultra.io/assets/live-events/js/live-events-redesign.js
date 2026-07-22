@@ -40,6 +40,7 @@
   let liveAudioSource = null;
   let liveWaveFrame = null;
   let heroSingerSoundEnabled = false;
+  let heroSingerAutoplayAttempted = false;
   let shadowOpsShouldResumeLiveAudio = false;
   let shadowOpsLiveAudioVolume = 0.56;
 
@@ -54,6 +55,18 @@
       heroSingerSound.classList.toggle("is-active", active);
       heroSingerSound.setAttribute("aria-pressed", String(active));
       heroSingerSound.textContent = active ? "Sound off" : "Sound on";
+    };
+
+    const alignHeroSoundtrack = () => {
+      if (!heroSingerAudio || !Number.isFinite(heroSingerFilm.currentTime)) return;
+      const targetTime = Number.isFinite(heroSingerAudio.duration) && heroSingerAudio.duration > 0
+        ? heroSingerFilm.currentTime % heroSingerAudio.duration
+        : heroSingerFilm.currentTime;
+      try {
+        if (Math.abs(heroSingerAudio.currentTime - targetTime) > 0.35) {
+          heroSingerAudio.currentTime = targetTime;
+        }
+      } catch {}
     };
 
     const syncPlayback = () => {
@@ -86,6 +99,23 @@
       setSoundState(false);
     };
 
+    const startHeroSoundtrack = async () => {
+      if (!heroSingerAudio || document.hidden || reducedMotion.matches || !isVisible) return false;
+      stopBackgroundAudio();
+      heroSingerAudio.volume = 0.52;
+      window.LMAudioMix?.claim?.(heroSingerAudio);
+      alignHeroSoundtrack();
+      try {
+        await Promise.all([heroSingerFilm.play(), heroSingerAudio.play()]);
+        heroSingerSoundEnabled = true;
+        setSoundState(true);
+        return true;
+      } catch {
+        stopHeroAudio();
+        return false;
+      }
+    };
+
     heroSingerSound?.addEventListener("click", async () => {
       if (heroSingerSoundEnabled) {
         stopHeroAudio();
@@ -94,20 +124,8 @@
       }
 
       if (!heroSingerAudio) return;
-      stopBackgroundAudio();
-      heroSingerSoundEnabled = true;
-      heroSingerAudio.volume = 0.52;
-      window.LMAudioMix?.claim?.(heroSingerAudio);
       if (heroSingerAudio.ended) heroSingerAudio.currentTime = 0;
-      try {
-        await Promise.all([
-          heroSingerFilm.play(),
-          heroSingerAudio.play()
-        ]);
-        setSoundState(true);
-      } catch {
-        stopHeroAudio();
-      }
+      await startHeroSoundtrack();
     });
 
     heroSingerAudio?.addEventListener("play", () => {
@@ -132,6 +150,10 @@
     reducedMotion.addEventListener?.("change", syncPlayback);
     setSoundState(false);
     syncPlayback();
+    if (!heroSingerAutoplayAttempted && !reducedMotion.matches) {
+      heroSingerAutoplayAttempted = true;
+      startHeroSoundtrack();
+    }
   }
   function two(value) {
     return String(value).padStart(2, "0");

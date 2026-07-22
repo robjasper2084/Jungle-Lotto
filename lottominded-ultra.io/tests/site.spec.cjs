@@ -252,6 +252,8 @@ test("membership support modules follow the plan heading in the requested order"
   await expect(supportGrid).toHaveCount(1);
   await expect(collector).toHaveCount(1);
   await expect(guardian).toHaveCount(1);
+  await expect(collector.locator("#plansTitle")).toHaveText(/Choose your signal level/i);
+  await expect(page.locator(".membership-comparison, .membership-benefit-strip, #lm-credits, .membership-billing-tools")).toHaveCount(0);
   await expect(page.locator("#dust .membership-collectible-card")).toHaveCount(0);
   await expect(page.locator("#water")).toHaveCount(0);
   await expect(page.getByText(/Film 04/i)).toHaveCount(0);
@@ -271,6 +273,14 @@ test("membership support modules follow the plan heading in the requested order"
   } else {
     expect(collectorBox.y).toBeLessThan(guardianBox.y);
   }
+});
+
+test("shared navigation uses the requested Lilman and Static Wav labels", async ({ page }) => {
+  await blockHeavyMedia(page);
+  await page.goto("/lottery-spheres.html", { waitUntil: "domcontentloaded" });
+  const navigation = page.locator(".site-header nav");
+  await expect(navigation.locator('a[data-icon="B2"]')).toContainText("Lilman");
+  await expect(navigation.locator('a[data-icon="GD"]')).toContainText("Static Wav");
 });
 
 test("Stem Studio contains the workstation at compact mobile width", async ({ page }) => {
@@ -310,6 +320,7 @@ test("news route renders from the static feed without probing the missing API", 
   await page.waitForFunction(() => (document.querySelector("#root")?.textContent || "").trim().length > 80);
 
   await expect(page.locator("#root")).toContainText(/LottoMind|News|Lottery/i);
+  await expect.poll(() => page.locator(".article-grid .news-card__media").first().evaluate((node) => getComputedStyle(node).backgroundImage)).toContain("/assets/");
   expect(apiRequests).toEqual([]);
   expect(localFailures).toEqual([]);
 });

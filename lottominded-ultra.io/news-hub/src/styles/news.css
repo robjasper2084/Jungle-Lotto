@@ -762,6 +762,10 @@ main {
   background: linear-gradient(90deg, rgba(1, 5, 13, 0.94) 0%, rgba(2, 8, 18, 0.73) 58%, rgba(2, 8, 18, 0.12) 100%);
 }
 
+.news-card__media.has-editorial-image::after {
+  background: linear-gradient(90deg, rgba(1, 5, 13, 0.92) 0%, rgba(2, 8, 18, 0.68) 54%, rgba(2, 8, 18, 0.16) 100%);
+}
+
 .news-card__body {
   display: flex;
   flex-direction: column;

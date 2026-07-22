@@ -41,6 +41,22 @@ body.memberships-page #membership-plans #lm-access-hero {
   padding: 28px;
 }
 
+body.memberships-page #membership-plans .membership-plan-control-heading {
+  padding-bottom: 22px;
+  border-bottom: 1px solid rgba(41, 247, 255, 0.24);
+  text-align: left;
+}
+
+body.memberships-page #membership-plans .membership-plan-control-heading h2 {
+  max-width: 9ch;
+  margin-inline: 0;
+}
+
+body.memberships-page #membership-plans #lm-access-hero .membership-billing-status {
+  width: 100%;
+  margin: 0;
+}
+
 body.memberships-page #membership-plans #lm-access-hero .home-collector-access-section__heading {
   display: grid;
   grid-template-columns: 1fr;
@@ -76,6 +92,10 @@ body.memberships-page .membership-plan-card[data-lm-tier="vault"] {
 }
 
 @media (max-width: 900px) {
+  body.memberships-page.has-sphere-header .home-signal-marquee {
+    top: 0;
+  }
+
   body.memberships-page .membership-plan-support-grid {
     grid-template-columns: 1fr;
     grid-template-areas:
@@ -89,5 +109,11 @@ body.memberships-page .membership-plan-card[data-lm-tier="vault"] {
 
   body.memberships-page .membership-plan-card[data-lm-tier="vault"] {
     min-height: 0;
+  }
+}
+
+@media (max-width: 640px) {
+  body.memberships-page.has-sphere-header .membership-main {
+    padding-top: 32px;
   }
 }

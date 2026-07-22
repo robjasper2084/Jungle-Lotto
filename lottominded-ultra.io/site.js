@@ -82,9 +82,9 @@ window.LMAudioMix = {
     { label: "News", href: siteUrl("./news/"), icon: "NW" },
     { label: "Events", href: siteUrl("./live-events.html"), icon: "EV" },
     { label: "Spheres", href: siteUrl("./lottery-spheres.html#spheres"), icon: "SP" },
-    { label: "Beat2Lotto+", href: siteUrl("./beat2lotto-plus.html#beat2lotto"), icon: "B2" },
+    { label: "Lilman", href: siteUrl("./beat2lotto-plus.html#beat2lotto"), icon: "B2" },
     { label: "Merch", href: siteUrl("./merch-store.html"), icon: "DR" },
-    { label: "Guide", href: siteUrl("./how-to-use.html"), icon: "GD" },
+    { label: "Static Wav", href: siteUrl("./how-to-use.html"), icon: "GD" },
     {
       label: "LottoMind App",
       href: "https://robjasper2084.github.io/Jungle-Lotto/lotto%20mind%20refined/",
@@ -1156,9 +1156,9 @@ function setupUniversalFloatingMenu() {
     ["Features", siteUrl("./features-app.html")],
     ["Events", siteUrl("./live-events.html")],
     ["Spheres", siteUrl("./lottery-spheres.html#spheres")],
-    ["Beat2Lotto+", siteUrl("./beat2lotto-plus.html#beat2lotto")],
+    ["Lilman", siteUrl("./beat2lotto-plus.html#beat2lotto")],
     ["Merch", siteUrl("./merch-store.html")],
-    ["Guide", siteUrl("./how-to-use.html")],
+    ["Static Wav", siteUrl("./how-to-use.html")],
     ["Studio", siteUrl("./lottomind-stem-studio/index.html")]
   ];
 
@@ -1310,6 +1310,29 @@ function setupUniversalFloatingMenu() {
 }
 
 setupUniversalFloatingMenu();
+
+function setupRequestedNavLabels() {
+  const syncLabels = () => {
+    const lilmanLinks = document.querySelectorAll('nav a[data-icon="B2"]');
+    const staticWavLinks = document.querySelectorAll('nav a[data-icon="GD"]');
+    lilmanLinks.forEach((link) => {
+      link.textContent = "Lilman";
+    });
+    staticWavLinks.forEach((link) => {
+      link.textContent = "Static Wav";
+    });
+    return lilmanLinks.length > 0 && staticWavLinks.length > 0;
+  };
+
+  if (syncLabels()) return;
+  const observer = new MutationObserver(() => {
+    if (syncLabels()) observer.disconnect();
+  });
+  observer.observe(document.documentElement, { childList: true, subtree: true });
+  window.setTimeout(() => observer.disconnect(), 5000);
+}
+
+setupRequestedNavLabels();
 
 function setupSharedLivePlayers() {
   if (document.body.classList.contains("lm-live-page")) return;

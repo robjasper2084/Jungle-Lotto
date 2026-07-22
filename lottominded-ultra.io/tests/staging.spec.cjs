@@ -114,6 +114,7 @@ test("route commercial gate starts muted and enables sound on request", async ({
 
   await gate.locator(".lm-commercial-gate__sound").click();
   await expect.poll(() => gate.locator("video").evaluate((video) => video.muted)).toBe(false);
+
 });
 
 test("Features staging preserves the cinematic identity and playable Arcade directory", async ({ page }) => {
@@ -162,6 +163,13 @@ test("merch route and click-opened commercial use the safe sound handoff", async
 });
 
 test("Live Events renders a complete channel hub without invented live or commerce data", async ({ page }) => {
+  await page.addInitScript(() => {
+    const originalPlay = HTMLMediaElement.prototype.play;
+    HTMLMediaElement.prototype.play = function (...args) {
+      this.dataset.lmPlayAttempts = String(Number(this.dataset.lmPlayAttempts || "0") + 1);
+      return originalPlay.apply(this, args);
+    };
+  });
   await blockHeavyMedia(page);
   await page.goto("/live-events.html", { waitUntil: "domcontentloaded" });
 
@@ -174,6 +182,8 @@ test("Live Events renders a complete channel hub without invented live or commer
   await expect(page.getByText(/\d[\d,.]*\s+online/i)).toHaveCount(0);
   await expect(page.getByText(/\$\d/)).toHaveCount(0);
   await expect(page.getByText("Ultra Points", { exact: true })).toHaveCount(0);
+  await expect.poll(() => page.locator("[data-live-hero-film-audio]").evaluate((audio) => Number(audio.dataset.lmPlayAttempts || "0"))).toBeGreaterThan(0);
+  await expect(page.locator("[data-live-hero-film-audio]")).toHaveAttribute("loop", "");
 });
 
 test("Shadow Ops defers campaign assets until the run starts", async ({ page }) => {
@@ -209,6 +219,7 @@ test("News uses its static feed without contacting production Supabase", async (
   await page.goto("/news/", { waitUntil: "domcontentloaded" });
   await expect(page.locator("#root")).toContainText(/LottoMind News Intelligence/i);
   await expect(page.locator(".article-grid .news-card").first()).toBeVisible();
+  await expect.poll(() => page.locator(".article-grid .news-card__media").first().evaluate((node) => getComputedStyle(node).backgroundImage)).toContain("/assets/");
   expect(productionRequests).toEqual([]);
   expect(consoleErrors).toEqual([]);
 });

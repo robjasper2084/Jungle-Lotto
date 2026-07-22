@@ -9,7 +9,7 @@ async function prepareMembershipPage(page) {
   await page.locator("[data-membership-commercial-close]").click();
 }
 
-test("membership deck leads the page and keeps Vault beside Ultra on desktop", async ({ page }, testInfo) => {
+test("membership deck keeps the plan heading with Collector and Guardian beside it", async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== "desktop-chromium", "Responsive layout is covered once from the desktop project.");
   await page.setViewportSize({ width: 1440, height: 900 });
   await prepareMembershipPage(page);
@@ -43,6 +43,8 @@ test("membership deck leads the page and keeps Vault beside Ultra on desktop", a
   );
   expect(deckPrecedesHeroInDom).toBe(true);
   expect(collectorPrecedesGuardianInDom).toBe(true);
+  await expect(collector.locator("#plansTitle")).toHaveCount(1);
+  await expect(page.locator(".membership-comparison, .membership-benefit-strip, #lm-credits, .membership-billing-tools")).toHaveCount(0);
   expect(deckBox.y).toBeLessThan(heroBox.y);
   expect(Math.abs(collectorBox.y - guardianBox.y)).toBeLessThan(2);
   expect(collectorBox.x).toBeLessThan(guardianBox.x);

@@ -24,7 +24,7 @@
     <link rel="stylesheet" href="./assets/vendor/lenis/lenis.css?v=1.1.20" />
   <link rel="stylesheet" href="./assets/css/memberships-cinematic.css?v=membership-commercial-audio-2" />
     <link rel="stylesheet" href="./assets/css/memberships-hud.css?v=membership-hud-9" />
-    <link rel="stylesheet" href="./assets/css/membership-layout-priority.css?v=2" />
+    <link rel="stylesheet" href="./assets/css/membership-layout-priority.css?v=3" />
     <script defer src="./assets/js/membership-layout-priority.js?v=1"></script>
     <script type="importmap">
       {"imports":{"three":"./assets/vendor/three/three.module.min.js?v=0.160.1"}}
@@ -148,14 +148,14 @@
       </section>
 
       <section class="membership-section lm-plans" id="membership-plans" aria-labelledby="plansTitle">
-        <div class="membership-section-heading">
-          <span>Membership control deck</span>
-          <h2 id="plansTitle">Choose your <em>signal level.</em></h2>
-          <p>Start free, step into Gold, or choose Ultra for the full premium route. Vault remains a limited founder unlock.</p>
-        </div>
-        <p class="membership-billing-status" data-stripe-membership-status role="status" aria-live="polite">Connecting to secure Stripe checkout...</p>
         <div class="membership-plan-support-grid" aria-label="Collector and Guardian membership access">
           <section class="home-collector-access-section membership-support-card membership-support-card--collector" id="lm-access-hero" aria-labelledby="collectorSectionTitle">
+            <div class="membership-section-heading membership-plan-control-heading">
+              <span>Membership control deck</span>
+              <h2 id="plansTitle">Choose your <em>signal level.</em></h2>
+              <p>Start free, step into Gold, or choose Ultra for the full premium route. Vault remains a limited founder unlock.</p>
+            </div>
+            <p class="membership-billing-status" data-stripe-membership-status role="status" aria-live="polite">Connecting to secure Stripe checkout...</p>
             <div class="home-collector-access-section__heading">
               <span>Vault Guardian Series 01</span>
               <h2 id="collectorSectionTitle">Collector Access</h2>
@@ -308,57 +308,6 @@
             </ul>
             <button class="secondary-action" type="button" data-stripe-lookup-key="vault_founder_once">Unlock Vault</button>
           </article>
-        </div>
-        <div class="membership-comparison">
-          <button class="secondary-action membership-comparison-toggle" type="button" data-lm-compare aria-expanded="false" aria-controls="lmPlanComparison">Compare Plans</button>
-          <div class="membership-comparison-panel" id="lmPlanComparison" hidden>
-            <div class="membership-comparison-scroll" role="region" aria-label="Membership plan comparison" tabindex="0">
-              <table>
-                <thead><tr><th scope="col">Signal access</th><th scope="col">Free</th><th scope="col">Gold</th><th scope="col">Ultra</th><th scope="col">Vault</th></tr></thead>
-                <tbody>
-                  <tr><th scope="row">App route</th><td>Web app demo</td><td>Use LottoMind app tools</td><td>Use and download app beta builds</td><td>Founder app download route when supplied</td></tr>
-                  <tr><th scope="row">Creative tools</th><td>Creative number sets</td><td>Dream Oracle and Number Radar</td><td>Everything in Gold</td><td>Beta access</td></tr>
-                  <tr><th scope="row">Vault route</th><td>Preview</td><td>History Vault</td><td>Premium Vault tools</td><td>Private drops</td></tr>
-                  <tr><th scope="row">Billing</th><td>No charge</td><td>$4.99 monthly</td><td>$9.99 monthly</td><td>From $29 one-time</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-        <div class="membership-benefit-strip" aria-label="Membership benefits">
-          <article><img src="./assets/brand/lm-orb-mark.webp" alt="" /><span><strong>More creative tools</strong><small>Oracles, radars, journals, and studio routes</small></span></article>
-          <article><img src="./assets/brand/lm-brain-orb.webp" alt="" /><span><strong>Deeper Vault access</strong><small>Reports, history, downloads, and member drops</small></span></article>
-          <article><img src="./assets/brand/jazz-network-gold-coin.webp" alt="" /><span><strong>LottoCredits</strong><small>Shared entertainment-only creative tool balance</small></span></article>
-          <article><img src="./assets/cursor/lm-mascot-front.png" alt="" /><span><strong>Guardian membership</strong><small>Three months included with the $29.95 bundle</small></span></article>
-        </div>
-        <div class="membership-credits membership-credits--inline" id="lm-credits" aria-labelledby="creditsTitle">
-          <div class="membership-credits-inline__heading">
-            <div>
-              <span>Optional add-ons &middot; one-time purchase</span>
-              <h3 id="creditsTitle">Add <em>LottoCredits</em> to any signal level.</h3>
-              <p>Entertainment-only tool credits. They are not money, prizes, lottery tickets, or gambling credits.</p>
-            </div>
-            <a class="secondary-action" href="#lm-access-hero">Open Collector Wallet</a>
-          </div>
-          <div class="credit-pack-grid" aria-label="LottoCredits add-on packs">
-            <article><img src="./assets/brand/jazz-network-gold-coin.webp" alt="" loading="lazy" decoding="async" /><span>Starter Credits</span><strong>$4.99</strong><button class="secondary-action" type="button" data-stripe-lookup-key="credits_starter_once">Choose Starter</button></article>
-            <article><img src="./assets/brand/lm-orb-mark.webp" alt="" loading="lazy" decoding="async" /><span>Studio Credits</span><strong>$9.99</strong><button class="secondary-action" type="button" data-stripe-lookup-key="credits_studio_once">Choose Studio</button></article>
-            <article><img src="./assets/brand/lm-brain-orb.webp" alt="" loading="lazy" decoding="async" /><span>Vault Credits</span><strong>$19.99</strong><button class="secondary-action" type="button" data-stripe-lookup-key="credits_vault_once">Choose Vault</button></article>
-          </div>
-        </div>
-        <div class="membership-billing-tools" aria-labelledby="billingToolsTitle">
-          <div class="membership-billing-tools__copy">
-            <span>Member billing</span>
-            <h3 id="billingToolsTitle">Checkout and account changes stay on Stripe.</h3>
-            <p>Paid memberships renew monthly until cancelled. Use the secure Stripe portal to update a payment method, view invoices, or cancel before the next renewal.</p>
-          </div>
-          <button class="secondary-action" type="button" data-stripe-portal disabled>Manage Billing</button>
-          <dl class="membership-billing-facts">
-            <div><dt>Checkout</dt><dd>Stripe-hosted and encrypted</dd></div>
-            <div><dt>Cancellation</dt><dd>Timing is shown in Stripe before confirmation</dd></div>
-            <div><dt>Credits</dt><dd>One-time digital add-ons; no cash value</dd></div>
-            <div><dt>Help</dt><dd><a href="./contact.html?topic=billing">Contact billing support</a></dd></div>
-          </dl>
         </div>
       </section>
 
