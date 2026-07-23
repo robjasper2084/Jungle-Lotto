@@ -201,7 +201,7 @@ function setupStaticPerformanceDefaults() {
   if (shouldConserveMedia) document.documentElement.classList.add("lm-mobile-performance");
 
   document.querySelectorAll("video").forEach((video) => {
-    const isStartupVideo = video.closest("[data-startup-video], [data-guide-startup-audio], [data-stream-startup-audio]");
+    const isStartupVideo = video.closest("[data-guide-startup-audio], [data-stream-startup-audio]");
     const isTransitionVideo =
       video.matches("[data-lm-transition-video], .page-wipe-video") ||
       video.closest("[data-lm-page-transition], .page-wipe");
@@ -316,15 +316,6 @@ const headerToggle = document.querySelector("[data-header-toggle]");
 const siteBackButton = document.querySelector("[data-site-back]");
 const siteSoundtrack = document.querySelector("#siteSoundtrack");
 const soundtrackButtons = document.querySelectorAll("[data-soundtrack-toggle]");
-const startupVideoModal = document.querySelector("[data-startup-video]");
-const startupVideoCloseButtons = document.querySelectorAll("[data-startup-video-close]");
-const startupVideoPlay = document.querySelector("[data-startup-video-play]");
-const startupMusicStart = document.querySelector("[data-startup-music-start]");
-const startupVideoPlayer = startupVideoModal?.querySelector("video");
-let startupOpenTimer = 0;
-let startupTransitionFallback = 0;
-let startupVideoClosing = false;
-let startupShouldPlayMusic = false;
 const domainStrip = document.querySelector(".domain-strip");
 const gamePip = document.querySelector("[data-game-pip]");
 const gamePipClose = document.querySelector("[data-game-pip-close]");
@@ -343,7 +334,6 @@ const compactHeaderLabels =
   document.body.classList.contains("manual-page");
 const conciseSoundtrackLabels = document.body.classList.contains("home-page");
 const HEADER_COLLAPSED_KEY = "lottominded.ultra.siteHeaderCollapsed.v1";
-const STARTUP_MODAL_OPEN_DELAY = 60_000;
 const GAME_PIP_AUTO_DELAY = 90000;
 const GAME_PIP_AUTO_KEY = "lottominded.ultra.homeGamePipAutoShown.v1";
 const MEMBER_SIGNUP_KEY = "lottominded.ultra.memberSignup.v1";
@@ -359,15 +349,6 @@ let gamePipResumeFromPage = false;
 let gamePipResumeFromHover = false;
 let gamePipDragState = null;
 let activePasswordGatePanel = null;
-
-function isStartupVideoOpen() {
-  return Boolean(
-    startupVideoModal
-    && !startupVideoModal.hidden
-    && !startupVideoModal.classList.contains("is-hidden")
-    && startupVideoModal.getAttribute("aria-hidden") !== "true"
-  );
-}
 
 function getSharedSignalHref() {
   const isNestedPage = /\/(?:news|news-hub)(?:\/|$)/i.test(window.location.pathname);
@@ -2688,11 +2669,6 @@ function setHomeHeroSoundState(state) {
 
 async function playHomeHeroMotion({ withSound = heroSoundRequested } = {}) {
   if (!heroMotion) return false;
-  const startupOpen = startupVideoModal && !startupVideoModal.classList.contains("is-hidden");
-  if (startupOpen) {
-    heroMotion.pause();
-    return false;
-  }
   if (reducedMotionQuery.matches) {
     heroMotion.pause();
     setHomeHeroSoundState("off");
@@ -3134,14 +3110,6 @@ function setupInlineSoundVideos() {
 
 setupInlineSoundVideos();
 
-function hasSeenStartupVideo() {
-  return Boolean(window.__lottomindStartupVideoSeenThisLoad);
-}
-
-function rememberStartupVideoSeen() {
-  window.__lottomindStartupVideoSeenThisLoad = true;
-}
-
 function hasAutoShownGamePip() {
   try {
     return sessionStorage.getItem(GAME_PIP_AUTO_KEY) === "true";
@@ -3157,156 +3125,6 @@ function rememberAutoShownGamePip() {
   } catch {
     // Session storage can be unavailable in locked-down browsers.
   }
-}
-
-function clearStartupOpenTimer() {
-  if (!startupOpenTimer) return;
-  window.clearTimeout(startupOpenTimer);
-  startupOpenTimer = 0;
-}
-
-function prepareStartupVideoAudio(options = {}) {
-  if (!startupVideoPlayer) return;
-  startupVideoPlayer.preload = "metadata";
-  startupVideoPlayer.setAttribute("preload", "metadata");
-  restoreDeferredVideoSources(startupVideoPlayer);
-  startupVideoPlayer.muted = false;
-  startupVideoPlayer.defaultMuted = false;
-  startupVideoPlayer.removeAttribute("muted");
-  startupVideoPlayer.volume = Number(startupVideoPlayer.dataset.startupVideoVolume || SITE_AUDIO_LEVELS.commercial);
-  startupVideoPlayer.autoplay = false;
-  startupVideoPlayer.removeAttribute("autoplay");
-  if (options.reset) {
-    try {
-      startupVideoPlayer.currentTime = 0;
-    } catch {}
-  }
-}
-
-function stopStartupSoundtrack(options = {}) {
-  if (!siteSoundtrack) return;
-  siteSoundtrack.pause();
-  if (options.reset) {
-    try {
-      siteSoundtrack.currentTime = 0;
-    } catch {}
-  }
-  setSoundtrackButtonState(false);
-}
-
-async function playStartupVideoWithSound(options = {}) {
-  if (!startupVideoPlayer || !isStartupVideoOpen()) return false;
-  stopStartupSoundtrack({ reset: true });
-  window.LMAudioMix.claim(startupVideoPlayer);
-  prepareStartupVideoAudio(options);
-  try {
-    await startupVideoPlayer.play();
-    startupVideoModal?.classList.remove("is-awaiting-video-play");
-    if (startupVideoPlay) startupVideoPlay.textContent = "Playing with sound";
-    return true;
-  } catch {
-    // Browsers block unmuted autoplay without a gesture. Keep the film moving
-    // muted so `ended` can still release the page, then let the first pointer
-    // gesture restore its commercial audio channel.
-    startupVideoPlayer.muted = true;
-    startupVideoPlayer.defaultMuted = true;
-    startupVideoPlayer.setAttribute("muted", "");
-    startupVideoModal?.classList.add("is-awaiting-video-play");
-    if (startupVideoPlay) startupVideoPlay.textContent = "Play with sound";
-    await startupVideoPlayer.play().catch(() => {});
-    return false;
-  }
-}
-
-async function playStartupVideoMuted(options = {}) {
-  if (!startupVideoPlayer || !isStartupVideoOpen()) return false;
-  stopStartupSoundtrack({ reset: true });
-  restoreDeferredVideoSources(startupVideoPlayer);
-  if (options.reset) {
-    try {
-      startupVideoPlayer.currentTime = 0;
-    } catch {}
-  }
-  startupVideoPlayer.muted = true;
-  startupVideoPlayer.defaultMuted = true;
-  startupVideoPlayer.setAttribute("muted", "");
-  startupVideoPlayer.volume = Number(startupVideoPlayer.dataset.startupVideoVolume || SITE_AUDIO_LEVELS.commercial);
-  startupVideoModal?.classList.add("is-awaiting-video-play");
-  if (startupVideoPlay) startupVideoPlay.textContent = "Play with sound";
-  await startupVideoPlayer.play().catch(() => {});
-  return !startupVideoPlayer.paused;
-}
-
-async function finishStartupVideoHandoff() {
-  window.clearTimeout(startupTransitionFallback);
-  window.removeEventListener("lottomind:transition-complete", handleStartupTransitionComplete);
-  document.body.classList.remove("has-startup-modal");
-  syncHeroMotionPreference();
-  startupVideoClosing = false;
-  if (startupShouldPlayMusic) {
-    if (heroMotion) {
-      heroSoundRequested = true;
-      await playHomeHeroMotion({ withSound: true });
-    } else {
-      await playSiteSoundtrack({ fromPage: true, restart: true, volume: SITE_AUDIO_LEVELS.background });
-    }
-  }
-}
-
-function handleStartupTransitionComplete(event) {
-  if (event?.detail?.source !== "home-commercial") return;
-  finishStartupVideoHandoff();
-}
-
-function closeStartupVideo(options = {}) {
-  if (startupVideoClosing) return;
-  startupVideoClosing = true;
-  startupShouldPlayMusic = options.playMusic === true;
-  clearStartupOpenTimer();
-  if (options.remember !== false) rememberStartupVideoSeen();
-  startupVideoModal?.classList.add("is-hidden");
-  startupVideoModal?.classList.remove("is-awaiting-video-play");
-  startupVideoModal?.setAttribute("aria-hidden", "true");
-  if (startupVideoModal) startupVideoModal.hidden = true;
-  startupVideoPlayer?.pause();
-  window.addEventListener("lottomind:transition-complete", handleStartupTransitionComplete);
-  window.dispatchEvent(new CustomEvent("lottomind:commercial-dismissed", {
-    detail: {
-      label: "Home",
-      source: "home-commercial",
-      theme: "home"
-    }
-  }));
-  startupTransitionFallback = window.setTimeout(finishStartupVideoHandoff, 1500);
-}
-
-function showStartupVideo() {
-  clearStartupOpenTimer();
-  if (!startupVideoModal) {
-    startupVideoModal?.classList.add("is-hidden");
-    startupVideoModal?.setAttribute("aria-hidden", "true");
-    document.body.classList.remove("has-startup-modal");
-    return;
-  }
-  if (hasSeenStartupVideo()) return;
-  startupVideoModal.hidden = false;
-  document.body.classList.add("has-startup-modal");
-  startupVideoModal.classList.remove("is-hidden");
-  startupVideoModal.setAttribute("aria-hidden", "false");
-  stopStartupSoundtrack({ reset: true });
-  syncHeroMotionPreference();
-  rememberStartupVideoSeen();
-  startupVideoModal.classList.add("is-awaiting-video-play");
-  void playStartupVideoMuted({ reset: true });
-  startupVideoPlay?.focus({ preventScroll: true });
-}
-
-function scheduleStartupVideoOpen() {
-  if (!startupVideoModal || startupOpenTimer || hasSeenStartupVideo()) return;
-  startupOpenTimer = window.setTimeout(() => {
-    startupOpenTimer = 0;
-    showStartupVideo();
-  }, STARTUP_MODAL_OPEN_DELAY);
 }
 
 function getGamePipOffset() {
@@ -3911,32 +3729,7 @@ function endGamePipDrag(event) {
   gamePipHead?.releasePointerCapture?.(event.pointerId);
 }
 
-if (document.readyState === "complete") {
-  scheduleStartupVideoOpen();
-} else {
-  window.addEventListener("load", scheduleStartupVideoOpen, { once: true });
-}
-window.addEventListener("pagehide", clearStartupOpenTimer, { once: true });
 scheduleAutoGamePip();
-
-startupVideoCloseButtons.forEach((button) => {
-  button.addEventListener("click", () => closeStartupVideo({ playMusic: true }));
-});
-startupVideoPlay?.addEventListener("click", () => playStartupVideoWithSound({ reset: true }));
-startupMusicStart?.addEventListener("click", () => closeStartupVideo({ playMusic: true }));
-startupVideoPlayer?.addEventListener("pointerdown", () => {
-  playStartupVideoWithSound();
-}, { passive: true });
-startupVideoPlayer?.addEventListener("play", () => {
-  // The commercial owns the home-page audio channel for its entire run.
-  if (isStartupVideoOpen()) stopStartupSoundtrack({ reset: true });
-});
-startupVideoPlayer?.addEventListener("ended", () => {
-  closeStartupVideo({ playMusic: true });
-});
-startupVideoModal?.addEventListener("click", (event) => {
-  if (event.target === startupVideoModal) closeStartupVideo({ playMusic: true });
-});
 
 function isEditableTarget(target) {
   return Boolean(target?.closest?.("input, textarea, select, [contenteditable='true']"));
@@ -3949,9 +3742,6 @@ document.addEventListener("keydown", (event) => {
       event.preventDefault();
       event.stopPropagation();
     }
-  }
-  if (event.key === "Escape" && !startupVideoModal?.classList.contains("is-hidden")) {
-    closeStartupVideo({ playMusic: true });
   }
   if (event.key === "Escape" && gamePip?.classList.contains("is-open")) {
     hideGamePip({ resumeSoundtrack: true });

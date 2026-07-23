@@ -15215,13 +15215,79 @@ body.beat2lotto-current-page .lotto-output-head h2::after {
   }
 }
 
-/* Home cleanup: keep the scrolling signal strip, but hide floating lotto-ball layers. */
+/* Home cleanup: keep the signal scans, but hide floating lotto-ball layers. */
 body.home-page.has-sphere-header .home-sphere-canvas,
 body.home-page.has-sphere-header .home-sphere-grid,
-body.home-page.has-sphere-header .home-sphere-scanline,
 body.home-page.has-sphere-header .home-spheres-orbit-mark {
   display: none !important;
   visibility: hidden !important;
+}
+
+body.home-page.has-sphere-header .home-sphere-scanline {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 0.62;
+  background:
+    linear-gradient(90deg, transparent 0 18%, rgba(255, 224, 113, 0.22) 23%, transparent 29%),
+    linear-gradient(90deg, transparent 0 55%, rgba(41, 247, 255, 0.2) 61%, transparent 68%);
+}
+
+body.home-page .hero-copy::before {
+  top: -18%;
+  right: 0;
+  left: 0;
+  z-index: 4;
+  height: 76px;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(
+      180deg,
+      transparent 0 13px,
+      rgba(41, 247, 255, 0.72) 14px 15px,
+      transparent 16px 29px,
+      rgba(255, 224, 113, 0.48) 30px 31px,
+      transparent 32px 45px
+    );
+  mix-blend-mode: screen;
+  opacity: 0;
+  box-shadow: 0 0 18px rgba(41, 247, 255, 0.2);
+  animation: homeHeroScanBars 5.6s linear infinite 0.8s;
+}
+
+@keyframes homeHeroScanBars {
+  0% {
+    top: -18%;
+    opacity: 0;
+  }
+  12%, 78% {
+    opacity: 0.7;
+  }
+  100% {
+    top: 100%;
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.home-page.has-sphere-header .home-sphere-scanline,
+  body.home-page .hero-copy::before {
+    animation: none !important;
+  }
+
+  body.home-page .hero-copy::before {
+    top: 14px;
+    height: 2px;
+    opacity: 0.62;
+    background: linear-gradient(90deg, rgba(255, 224, 113, 0.74), rgba(41, 247, 255, 0.48), transparent);
+  }
+}
+
+html.lm-mobile-performance body.home-page .hero-copy::before {
+  top: 14px;
+  height: 2px;
+  opacity: 0.62;
+  animation: none !important;
+  background: linear-gradient(90deg, rgba(255, 224, 113, 0.74), rgba(41, 247, 255, 0.48), transparent);
 }
 
 /* Keep the home wordmark crisp: duplicated glitch glyphs read as text bleed. */

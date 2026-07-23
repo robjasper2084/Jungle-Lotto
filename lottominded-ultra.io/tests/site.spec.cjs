@@ -209,12 +209,10 @@ test("features combines the cinematic shell with the manifest-driven Arcade dire
   expect(localFailures).toEqual([]);
 });
 
-test("home commercial starts muted and enables sound on request", async ({ page }) => {
-  const commercialRequests = [];
+test("home opens directly with its muted hero film and sound control", async ({ page }) => {
+  const removedCommercialRequests = [];
   page.on("request", (request) => {
-    if (/lottomind-(?:home|refined)-commercial-20260716\.mp4/i.test(request.url())) {
-      commercialRequests.push(request.url());
-    }
+    if (/lottomind-home-commercial-20260716\.mp4/i.test(request.url())) removedCommercialRequests.push(request.url());
   });
 
   await page.addInitScript(() => {
@@ -230,20 +228,16 @@ test("home commercial starts muted and enables sound on request", async ({ page 
   await page.goto("/", { waitUntil: "domcontentloaded" });
   const startup = page.locator("[data-startup-video]");
   const heroFilm = page.locator("[data-home-hero-audio]");
-  await expect(startup).toBeHidden();
+  await expect(startup).toHaveCount(0);
   await expect(heroFilm).toBeVisible();
   await expect(page.locator("[data-home-hero-sound]")).toBeVisible();
-  expect(await page.evaluate(() => window.__lmStartupDelay)).toBe(60_000);
-  await expect(startup).toBeVisible({ timeout: 5_000 });
-  await expect.poll(() => commercialRequests.length).toBeGreaterThan(0);
-  await expect(page.locator("[data-startup-video-play]")).toHaveText("Play with sound");
-  await expect.poll(() => startup.locator("video").evaluate((video) => ({
-    muted: video.muted,
-    paused: video.paused,
-  }))).toEqual({ muted: true, paused: false });
+  expect(await page.evaluate(() => window.__lmStartupDelay)).toBeUndefined();
+  await page.waitForTimeout(1_500);
+  expect(removedCommercialRequests).toEqual([]);
+  await expect.poll(() => heroFilm.evaluate((video) => ({ muted: video.muted, paused: video.paused }))).toEqual({ muted: true, paused: false });
 
-  await page.locator("[data-startup-video-play]").click();
-  await expect.poll(() => startup.locator("video").evaluate((video) => video.muted)).toBe(false);
+  await page.locator("[data-home-hero-sound]").click();
+  await expect.poll(() => heroFilm.evaluate((video) => video.muted)).toBe(false);
 });
 
 test("Contact prepares a support request locally", async ({ page }) => {

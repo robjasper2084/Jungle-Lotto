@@ -160,13 +160,11 @@ test("Arcade arrival transition clears its handoff without leaking into the next
   await expect(page.locator("[data-lm-page-transition]")).not.toHaveClass(/is-active/);
 });
 
-test("home commercial starts muted video and waits for a sound gesture", async ({ page }) => {
-  const commercialRequests = [];
+test("home opens directly with muted hero video and no startup dialog", async ({ page }) => {
+  const removedCommercialRequests = [];
   const soundtrackRequests = [];
   page.on("request", (request) => {
-    if (/lottomind-(?:home|refined)-commercial-20260716\.mp4/i.test(request.url())) {
-      commercialRequests.push(request.url());
-    }
+    if (/lottomind-home-commercial-20260716\.mp4/i.test(request.url())) removedCommercialRequests.push(request.url());
     if (/home-screen-song\.mp3/i.test(request.url())) soundtrackRequests.push(request.url());
   });
 
@@ -189,18 +187,38 @@ test("home commercial starts muted video and waits for a sound gesture", async (
   const heroFilm = page.locator("[data-home-hero-audio]");
   await expect(page.locator("[data-startup-video]")).toBeHidden();
   await expect(heroFilm).toBeVisible();
+  const scanBars = await page.locator(".hero-copy").evaluate((hero) => {
+    const panelScan = getComputedStyle(hero, "::before");
+    const fieldScan = getComputedStyle(document.querySelector(".home-sphere-scanline"));
+    return {
+      panelAnimation: panelScan.animationName,
+      panelHeight: panelScan.height,
+      panelOpacity: Number(panelScan.opacity),
+      panelBackground: panelScan.backgroundImage,
+      performanceMode: document.documentElement.classList.contains("lm-mobile-performance"),
+      reducedMotion: matchMedia("(prefers-reduced-motion: reduce)").matches,
+      fieldDisplay: fieldScan.display,
+      fieldVisibility: fieldScan.visibility,
+    };
+  });
+  if (!scanBars.performanceMode && !scanBars.reducedMotion) {
+    expect(scanBars.panelAnimation).toContain("homeHeroScanBars");
+  }
+  expect(parseFloat(scanBars.panelHeight)).toBeGreaterThan(0);
+  expect(scanBars.panelBackground).not.toBe("none");
+  expect(scanBars.fieldDisplay).not.toBe("none");
+  expect(scanBars.fieldVisibility).toBe("visible");
+  await expect.poll(() => page.locator(".hero-copy").evaluate((hero) => Number(getComputedStyle(hero, "::before").opacity))).toBeGreaterThan(0.5);
   await expect.poll(() => heroFilm.evaluate((video) => Number(video.dataset.lmPlayAttempts || "0"))).toBeGreaterThan(0);
   await expect(page.locator("[data-home-hero-sound]")).toBeVisible();
-  expect(await page.evaluate(() => window.__lmStartupDelay)).toBe(60_000);
-  await expect(page.locator("[data-startup-video]")).toBeVisible({ timeout: 5_000 });
-  await expect.poll(() => commercialRequests.length).toBeGreaterThan(0);
+  expect(await page.evaluate(() => window.__lmStartupDelay)).toBeUndefined();
+  await page.waitForTimeout(1_500);
+  await expect(page.locator("[data-startup-video]")).toHaveCount(0);
+  expect(removedCommercialRequests).toEqual([]);
   expect(soundtrackRequests).toEqual([]);
-  await expect(page.locator("[data-startup-video-play]")).toHaveText("Play with sound");
-  await expect.poll(() => page.locator("[data-startup-video] video").evaluate((video) => ({ muted: video.muted, paused: video.paused }))).toEqual({ muted: true, paused: false });
+  await expect.poll(() => heroFilm.evaluate((video) => ({ muted: video.muted, paused: video.paused }))).toEqual({ muted: true, paused: false });
 
-  await page.locator("[data-startup-video-play]").click();
-  await expect.poll(() => page.locator("[data-startup-video] video").evaluate((video) => video.muted)).toBe(false);
-  await page.locator("[data-startup-video-close]").last().click();
+  await page.locator("[data-home-hero-sound]").click();
   await expect.poll(() => heroFilm.evaluate((video) => ({ muted: video.muted, paused: video.paused }))).toEqual({ muted: false, paused: false });
   expect(soundtrackRequests).toEqual([]);
 });
