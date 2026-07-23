@@ -15,11 +15,11 @@
 - Staging provider: Local static server (Mode C); no remote preview provider is configured
 - Staging URL: Local only (`http://127.0.0.1:8204/` while the current staging server is running)
 - Staging integrations: No isolated backend or Stripe test-mode configuration is currently configured; protected writes remain disabled
-- Last completed step: Shared header consistency, pinned navigation, RAHBE naming, Membership film visibility, Guardian gun-range media, and Vault Pass copy refinements completed on `upgrade-redesign`; production deployment remains excluded
+- Last completed step: Homepage scan bars restored and delayed startup dialog removed on `upgrade-redesign`; production deployment remains excluded
 - Step 1 commit SHA: This file is part of the Step 1 commit; use `git log -1 --format=%H -- docs/upgrade-redesign-status.md` to resolve its exact non-self-referential SHA. The completion report records it explicitly.
 - Last staging review: Signal and media corrections passed; review: `docs/staging-reviews/signal-media-corrections.md`
 - Staging review commit SHA: This file is part of the staging-review commit; the completion report records its exact SHA.
-- Last successful test run: 2026-07-22 - 12/12 focused route checks passed; 15/15 staging browser checks passed; 92/92 source/staging route checks passed; the staging artifact verified 23 injected pages and 529 same-origin references; 30/30 refreshed desktop/tablet/mobile captures passed
+- Last successful test run: 2026-07-22 - homepage static and focused browser checks passed; 15/15 staging browser checks passed; 92/92 source/staging route checks passed; the staging artifact verified 23 injected pages and 527 same-origin references; 2/2 affected-route captures passed
 - Visual baseline: Complete - 69 production route screenshots plus desktop, tablet, and mobile contact sheets under `docs/visual-baseline/v1/`
 - Step 1 visual comparison: Production and staging home routes compared at 1440x900 and 390x844; staging adds only the preview and safety banners, with no redesign changes
 - Resolved Step 1 baseline failures: Contact support helper restored; Stem Studio tablet/mobile overflow corrected; Jackpot Maze runtime, heading, and entry focus restored; first-load outliers reduced; staging News production request removed
@@ -145,5 +145,17 @@
 - Tests: JavaScript syntax checks passed; focused route regression 12/12; staging browser suite 15/15; source/staging route smoke 92/92; static artifact verification 23 pages and 529 same-origin references; screenshot verification 30/30
 - Visual review: `docs/staging-reviews/signal-media-corrections.md` with 1440x900, 768x1024, and 390x844 captures; no broken assets, console errors, page errors, or horizontal document overflow found
 - Staging URL: Local only (`http://127.0.0.1:8204/`)
+- Staging safety: Noindex and preview banners verified; live payments, production account writes, real redemptions, and production analytics remain blocked
+- Approval status: Ready for next phase; production remains not approved
+
+## Homepage Entry And Scan Bars Follow-up
+
+- Step number: Browser-requested homepage entry and scan-bar correction
+- Implementation commit SHA: `5a3c208c5eab86b4e23e67214520a8e06e364d91`
+- Affected route: `/index.html#top`
+- Changes: Restored cyan/gold hero scan bars; preserved a static scan accent for reduced-motion and mobile-performance modes; removed the delayed `Start the home frequency` dialog, scheduler, audio handoff, and focus takeover
+- Tests: Homepage static validation passed; focused source browser checks passed; staging browser suite 15/15; source/staging route smoke 92/92; static artifact verification 23 pages and 527 same-origin references; affected-route screenshots 2/2
+- Visual review: `docs/staging-reviews/home-entry-scan-bars.md` with 1440x900 and 390x844 comparisons against `docs/visual-baseline/v1/`
+- Staging URL: Local only (`http://127.0.0.1:8204/index.html#top` while the staging server is running)
 - Staging safety: Noindex and preview banners verified; live payments, production account writes, real redemptions, and production analytics remain blocked
 - Approval status: Ready for next phase; production remains not approved
