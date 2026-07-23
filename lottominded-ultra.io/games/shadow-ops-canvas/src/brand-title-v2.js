@@ -47,23 +47,31 @@
     });
   };
 
+  const observeTarget = (observer, target, options) => {
+    if (!observer || !target || typeof target.nodeType !== "number") return false;
+    try {
+      observer.observe(target, options);
+      return true;
+    } catch (_error) {
+      return false;
+    }
+  };
+
   const boot = () => {
     applyBrand();
     const observer = new MutationObserver(scheduleBrand);
     document.querySelectorAll("#titleScreen h1, #hudTitle").forEach((node) => {
-      observer.observe(node, {
+      observeTarget(observer, node, {
         childList: true,
         characterData: true,
         subtree: true
       });
     });
-    const body = document.body;
-    if (body) {
-      new MutationObserver(scheduleBrand).observe(body, {
+    const bodyObserver = new MutationObserver(scheduleBrand);
+    if (observeTarget(bodyObserver, document.body, {
         childList: true,
         subtree: false
-      });
-    }
+      }) === false) bodyObserver.disconnect();
   };
 
   if (document.readyState === "loading") {

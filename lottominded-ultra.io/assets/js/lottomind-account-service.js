@@ -173,6 +173,7 @@
   global.LottoMindAccountService = Object.freeze({
     getApiBase: defaultApiBase,
     isConfigured: isConfigured,
+    getAccessToken: getAccessToken,
     getSnapshot: getSnapshot,
     getSession: async function getSession() {
       var snapshot = await getSnapshot();

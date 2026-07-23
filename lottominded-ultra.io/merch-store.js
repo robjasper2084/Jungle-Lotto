@@ -167,7 +167,11 @@ function addToCart(button) {
   const name = button.dataset.addItem;
   const price = Number(button.dataset.itemPrice || 0);
   if (!name || !price) return;
-  const size = button.closest(".product-card")?.querySelector("[data-item-size]")?.value || "";
+  const card = button.closest(".product-card");
+  const size =
+    card?.querySelector("input[data-item-size]:checked")?.value ||
+    card?.querySelector("select[data-item-size]")?.value ||
+    "";
   const baseId = productId(name);
   const id = size ? `${baseId}-${size.toLowerCase()}` : baseId;
   const existing = bag.find((item) => item.id === id);
@@ -249,21 +253,29 @@ function initializeProductControls() {
     if (!card.id) card.id = `product-${id}`;
 
     if (addButton.dataset.itemSizes && !card.querySelector("[data-item-size]")) {
-      const sizeControl = document.createElement("label");
+      const sizeControl = document.createElement("fieldset");
       sizeControl.className = "product-size-control";
-      const sizeLabel = document.createElement("span");
+      const sizeLabel = document.createElement("legend");
       sizeLabel.textContent = "Size";
-      const sizeSelect = document.createElement("select");
-      sizeSelect.dataset.itemSize = "";
-      sizeSelect.setAttribute("aria-label", `Size for ${name}`);
-      const labels = { S: "Small", M: "Medium", XL: "XL", XXL: "XXL" };
-      addButton.dataset.itemSizes.split(",").forEach((size) => {
-        const option = document.createElement("option");
+      const sizeOptions = document.createElement("div");
+      sizeOptions.className = "product-size-options";
+      const labels = { S: "Small", M: "Medium", L: "Large", XL: "Extra large", XXL: "Double extra large" };
+      addButton.dataset.itemSizes.split(",").forEach((size, index) => {
+        const optionLabel = document.createElement("label");
+        optionLabel.className = "product-size-option";
+        const option = document.createElement("input");
+        option.type = "radio";
+        option.name = `${id}-size`;
         option.value = size;
-        option.textContent = labels[size] || size;
-        sizeSelect.append(option);
+        option.dataset.itemSize = "";
+        option.checked = index === 0;
+        option.setAttribute("aria-label", `${labels[size] || size} for ${name}`);
+        const optionText = document.createElement("span");
+        optionText.textContent = size;
+        optionLabel.append(option, optionText);
+        sizeOptions.append(optionLabel);
       });
-      sizeControl.append(sizeLabel, sizeSelect);
+      sizeControl.append(sizeLabel, sizeOptions);
       addButton.closest(".product-row")?.before(sizeControl);
     }
 

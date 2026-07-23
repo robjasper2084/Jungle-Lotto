@@ -113,6 +113,95 @@ test("membership checkout explains an authenticated backend rejection", async ({
   await expect(page).toHaveURL(/\/memberships\.html$/);
 });
 
+test("membership checkout sends the signed-in account token", async ({ page }) => {
+  await blockHeavyMedia(page);
+  let checkoutAuthorization = "";
+  await mockAuthenticatedBilling(page, {
+    status: 401,
+    body: '{"error":{"code":"AUTH_REQUIRED","message":"Authorization inspected."}}',
+  });
+  page.on("request", (request) => {
+    if (new URL(request.url()).pathname.endsWith("/billing/checkout")) {
+      checkoutAuthorization = request.headers().authorization || "";
+    }
+  });
+
+  await page.goto("/memberships.html", { waitUntil: "domcontentloaded" });
+  await page.locator("[data-membership-commercial-close]").click();
+  await expect(page.locator("[data-stripe-membership-status]")).toHaveText("Secure Stripe checkout is ready.");
+  await page.locator('[data-stripe-lookup-key="gold_monthly"]').evaluate((button) => button.click());
+
+  await expect(page.locator("[data-stripe-membership-status]")).toHaveText("Authorization inspected.");
+  expect(checkoutAuthorization).toBe("Bearer test-access-token");
+});
+
+test("membership checkout return resolves immediately when the visitor is signed out", async ({ page }) => {
+  await blockHeavyMedia(page);
+  await page.addInitScript(() => {
+    window.LottoMindAccountService = {
+      getApiBase: () => "https://sqdasdbvlkgpbbiyeune.supabase.co/functions/v1/lottomind-api",
+      getAccessToken: async () => "",
+      getSnapshot: async () => ({ authenticated: false, memberships: [] }),
+    };
+  });
+  await page.route(/https:\/\/sqdasdbvlkgpbbiyeune\.supabase\.co\/functions\/v1\/lottomind-api.*/i, (route) => {
+    const request = route.request();
+    const headers = {
+      "Access-Control-Allow-Origin": request.headers().origin || "http://127.0.0.1:8142",
+      "Access-Control-Allow-Credentials": "true",
+      "Access-Control-Allow-Headers": "authorization, content-type, x-client-info, x-requested-with",
+      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+    };
+    if (request.method() === "OPTIONS") return route.fulfill({ status: 204, headers });
+    return route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      headers,
+      body: '{"enabled":true,"mode":"test","message":"Secure Stripe checkout is ready.","plans":[{"lookupKey":"gold_monthly","available":true}]}',
+    });
+  });
+
+  await page.goto("/memberships.html?checkout=success", { waitUntil: "domcontentloaded" });
+  await expect(page.locator("[data-stripe-membership-status]")).toHaveText(
+    "Stripe returned to LottoMind. Sign in with the account used at checkout to verify membership access."
+  );
+  await expect(page.locator("[data-stripe-membership-status]")).toHaveAttribute("data-state", "auth-required");
+});
+
+test("membership checkout return confirms an active paid membership", async ({ page }) => {
+  await blockHeavyMedia(page);
+  await page.addInitScript(() => {
+    window.LottoMindAccountService = {
+      getApiBase: () => "https://sqdasdbvlkgpbbiyeune.supabase.co/functions/v1/lottomind-api",
+      getAccessToken: async () => "test-access-token",
+      getSnapshot: async () => ({
+        authenticated: true,
+        memberships: [{ plan_code: "gold", status: "active" }],
+      }),
+    };
+  });
+  await page.route(/https:\/\/sqdasdbvlkgpbbiyeune\.supabase\.co\/functions\/v1\/lottomind-api.*/i, (route) => {
+    const request = route.request();
+    const headers = {
+      "Access-Control-Allow-Origin": request.headers().origin || "http://127.0.0.1:8142",
+      "Access-Control-Allow-Credentials": "true",
+      "Access-Control-Allow-Headers": "authorization, content-type, x-client-info, x-requested-with",
+      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+    };
+    if (request.method() === "OPTIONS") return route.fulfill({ status: 204, headers });
+    return route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      headers,
+      body: '{"enabled":true,"mode":"test","message":"Secure Stripe checkout is ready.","plans":[{"lookupKey":"gold_monthly","available":true}]}',
+    });
+  });
+
+  await page.goto("/memberships.html?checkout=success", { waitUntil: "domcontentloaded" });
+  await expect(page.locator("[data-stripe-membership-status]")).toHaveText("Gold membership is active. Secure billing is connected.");
+  await expect(page.locator("body")).toHaveAttribute("data-membership-plan", "gold");
+});
+
 test("membership checkout rejects an unsafe redirect response", async ({ page }) => {
   await blockHeavyMedia(page);
   await mockAuthenticatedBilling(page, {

@@ -22798,6 +22798,56 @@ body .route-dreams .dream-record-label .hero-actions {
   gap: 10px;
 }
 
+.revenuecat-panel {
+  display: grid;
+  gap: 14px;
+  border-color: rgba(0, 236, 255, 0.68) !important;
+}
+
+.revenuecat-panel.active {
+  border-color: rgba(248, 223, 118, 0.9) !important;
+  box-shadow: 0 0 24px rgba(248, 223, 118, 0.18);
+}
+
+.revenuecat-status-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.revenuecat-status-strip span {
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid rgba(0, 236, 255, 0.28);
+  border-radius: 8px;
+  background: rgba(2, 14, 28, 0.66);
+}
+
+.revenuecat-status-strip strong,
+.revenuecat-status-strip small {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.revenuecat-status-strip small {
+  margin-top: 5px;
+  color: rgba(232, 248, 255, 0.76);
+}
+
+.revenuecat-checkout-frame:not(:empty) {
+  min-height: 420px;
+  overflow: hidden;
+  border: 1px solid rgba(248, 223, 118, 0.32);
+  border-radius: 8px;
+  background: rgba(2, 10, 20, 0.72);
+}
+
+@media (max-width: 680px) {
+  .revenuecat-status-strip {
+    grid-template-columns: 1fr;
+  }
+}
+
 body .route-dreams .dream-record-label .record-disc-btn {
   position: relative;
   min-height: 66px;
@@ -22874,9 +22924,9 @@ body .route-dreams .dream-record-label .record-disc-btn:active {
 body .route-powertools .arcade-deck h1.game-title {
   max-width: 9.5ch !important;
   margin-bottom: 12px !important;
-  font-family: "Segoe UI Black", var(--future-font), "Arial Black", system-ui, sans-serif !important;
+  font-family: var(--lm-font-display) !important;
   font-size: clamp(42px, 9.2vw, 62px) !important;
-  font-weight: 950 !important;
+  font-weight: 800 !important;
   line-height: 0.9 !important;
   letter-spacing: 0 !important;
   text-transform: uppercase !important;
@@ -23283,10 +23333,45 @@ body .route-ai .ai-coach-mascot {
 }
 
 /* LottoMind typography and artwork clarity pass */
+@font-face {
+  font-family: "LottoMind Oxanium";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 200 800;
+  src: url("./assets/fonts/oxanium-latin-variable.woff2") format("woff2-variations");
+}
+
+@font-face {
+  font-family: "LottoMind Sora";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 800;
+  src: url("./assets/fonts/sora-latin-variable.woff2") format("woff2-variations");
+}
+
+@font-face {
+  font-family: "LottoMind Rajdhani";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 600;
+  src: url("./assets/fonts/rajdhani-latin-600.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "LottoMind Rajdhani";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 700;
+  src: url("./assets/fonts/rajdhani-latin-700.woff2") format("woff2");
+}
+
 :root {
-  --title-font: "Oxanium", "Orbitron", "Rajdhani", "Arial Black", system-ui, sans-serif;
-  --future-font: "Sora", "Space Grotesk", "Inter Tight", "Trebuchet MS", system-ui, sans-serif;
-  --number-font: "Rajdhani", "IBM Plex Mono", "Consolas", monospace;
+  --lm-font-display: "Futura Now", "LottoMind Oxanium", "Oxanium", "Arial Black", system-ui, sans-serif;
+  --lm-font-body: "Axiforma", "LottoMind Sora", "Sora", "Segoe UI", system-ui, sans-serif;
+  --lm-font-data: "ITC Conduit", "LottoMind Rajdhani", "Rajdhani", "Arial Narrow", system-ui, sans-serif;
+  --title-font: var(--lm-font-display);
+  --future-font: var(--lm-font-body);
+  --number-font: var(--lm-font-data);
 }
 
 body {
@@ -23656,5 +23741,324 @@ select,
   .real-shell .decorative-video,
   .real-shell .animated-bg {
     display: none !important;
+  }
+}
+
+/* Shared rotary behavior for dashboard, Dream Oracle, and Power Tools knobs. */
+body [data-knob-control] {
+  cursor: ns-resize !important;
+  touch-action: none !important;
+}
+
+body .route-dashboard .oracle-hero .home-oracle-actions .home-oracle-tile[data-knob-control] i {
+  background:
+    radial-gradient(circle at 34% 24%, rgba(255, 255, 255, 0.24), transparent 18px),
+    linear-gradient(132deg, rgba(255, 246, 190, 0.16), transparent 38%, rgba(0, 0, 0, 0.24) 78%),
+    var(--home-knob-art) center / cover no-repeat !important;
+  transform: rotate(var(--knob-live-angle, 0deg)) !important;
+  transition: transform 100ms linear, filter 140ms ease, box-shadow 140ms ease !important;
+}
+
+body .route-dashboard .oracle-hero .home-oracle-actions .home-oracle-tile[data-knob-control]::after {
+  transform: translateX(-50%) rotate(var(--knob-live-angle, -18deg)) !important;
+  transform-origin: 50% 16px !important;
+  transition: transform 100ms linear, filter 140ms ease !important;
+}
+
+body .route-dashboard .oracle-hero .home-oracle-actions .home-oracle-tile[data-knob-control]:hover i,
+body .route-dashboard .oracle-hero .home-oracle-actions .home-oracle-tile[data-knob-control]:focus-visible i,
+body .route-dashboard .oracle-hero .home-oracle-actions .home-oracle-tile[data-knob-control].is-adjusting i {
+  filter: brightness(1.12) saturate(1.12) !important;
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.4),
+    inset 0 -7px 12px rgba(0, 0, 0, 0.38),
+    0 0 0 2px rgba(248, 223, 118, 0.5),
+    0 0 20px rgba(0, 236, 255, 0.4) !important;
+}
+
+body .route-dreams .dream-oracle-tools .dream-studio-bento .circle-tool[data-knob-control]::before,
+body .route-powertools .tool-bank .main-lab-bento .circle-tool[data-knob-control]::before {
+  transform: translateX(-50%) rotate(var(--knob-live-angle, 0deg)) !important;
+  transition: transform 100ms linear, filter 140ms ease, box-shadow 140ms ease !important;
+}
+
+body .route-dreams .dream-oracle-tools .dream-studio-bento .circle-tool[data-knob-control]:hover::before,
+body .route-dreams .dream-oracle-tools .dream-studio-bento .circle-tool[data-knob-control]:focus-visible::before,
+body .route-dreams .dream-oracle-tools .dream-studio-bento .circle-tool[data-knob-control].is-adjusting::before,
+body .route-powertools .tool-bank .main-lab-bento .circle-tool[data-knob-control]:hover::before,
+body .route-powertools .tool-bank .main-lab-bento .circle-tool[data-knob-control]:focus-visible::before,
+body .route-powertools .tool-bank .main-lab-bento .circle-tool[data-knob-control].is-adjusting::before {
+  transform: translateX(-50%) rotate(var(--knob-live-angle, 0deg)) scale(1.04) !important;
+  filter: brightness(1.1) saturate(1.12) !important;
+}
+
+body .route-dashboard .home-oracle-tile[data-knob-control]:active i,
+body .route-dreams .dream-oracle-tools .dream-studio-bento .circle-tool[data-knob-control]:active::before,
+body .route-powertools .tool-bank .main-lab-bento .circle-tool[data-knob-control]:active::before {
+  transform: translateX(0) rotate(var(--knob-live-angle, 0deg)) scale(0.95) !important;
+}
+
+body .route-dreams .dream-oracle-tools .dream-studio-bento .circle-tool[data-knob-control]:active::before,
+body .route-powertools .tool-bank .main-lab-bento .circle-tool[data-knob-control]:active::before {
+  transform: translateX(-50%) rotate(var(--knob-live-angle, 0deg)) scale(0.95) !important;
+}
+
+/* Store-ready brand type and reusable Oracle Studio controls. */
+body,
+body button,
+body input,
+body textarea,
+body select {
+  font-family: var(--lm-font-body) !important;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+body :is(h1, h2, .game-title, .brand-title, .record-label-panel h2, .section-head h2) {
+  font-family: var(--lm-font-display) !important;
+  font-synthesis: none;
+  letter-spacing: 0 !important;
+}
+
+body :is(.eyebrow, .ball, .metric-card span, .metric-card strong, .stat-row span, .stat-row strong, .nav-item b, .oracle-studio-control span, .oracle-studio-control small) {
+  font-family: var(--lm-font-data) !important;
+  letter-spacing: 0 !important;
+}
+
+body .oracle-studio-control,
+body .route-heatmap .radar-controls .control-chip.oracle-studio-control,
+body .route-heatmap .radar-controls .control-chip.oracle-studio-control:first-child,
+body .route-reset .sound-session-grid .sound-card.oracle-studio-control {
+  position: relative !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 64px !important;
+  height: 64px !important;
+  display: grid !important;
+  grid-template-columns: 44px minmax(0, 1fr) !important;
+  grid-template-rows: minmax(0, 1fr) minmax(0, 1fr) !important;
+  column-gap: 9px !important;
+  align-items: center !important;
+  align-content: center !important;
+  justify-items: start !important;
+  padding: 8px 10px 8px 8px !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(41, 255, 242, 0.72) !important;
+  border-radius: 12px !important;
+  color: #fff3ad !important;
+  text-align: left !important;
+  background:
+    linear-gradient(90deg, rgba(0, 8, 18, 0.32), rgba(0, 24, 40, 0.9)),
+    var(--oracle-control-art) center / cover no-repeat !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    inset 0 -22px 28px rgba(0, 0, 0, 0.52),
+    0 0 0 1px rgba(0, 236, 255, 0.08),
+    0 8px 18px rgba(0, 0, 0, 0.26) !important;
+  transform: none !important;
+  transition: border-color 140ms ease, box-shadow 140ms ease, transform 120ms ease !important;
+}
+
+body .oracle-studio-control::before {
+  content: "" !important;
+  position: absolute !important;
+  inset: 4px !important;
+  z-index: 0 !important;
+  border-radius: 9px !important;
+  pointer-events: none !important;
+  background:
+    radial-gradient(circle at 27px 50%, rgba(255, 242, 163, 0.22), transparent 38px),
+    linear-gradient(90deg, rgba(0, 236, 255, 0.12), transparent 58%) !important;
+}
+
+body .oracle-studio-control::after {
+  content: "" !important;
+  position: absolute !important;
+  top: 12px !important;
+  left: 29px !important;
+  z-index: 4 !important;
+  display: block !important;
+  width: 2px !important;
+  height: 19px !important;
+  border-radius: 2px !important;
+  pointer-events: none !important;
+  background: linear-gradient(180deg, #fff8b9, rgba(0, 236, 255, 0.34)) !important;
+  box-shadow: 0 0 8px rgba(255, 238, 141, 0.58) !important;
+  transform: translateX(-50%) rotate(var(--knob-live-angle, 0deg)) !important;
+  transform-origin: 50% 20px !important;
+  transition: transform 100ms linear, filter 140ms ease !important;
+}
+
+body .oracle-studio-control i,
+body .route-dashboard .oracle-hero .home-oracle-actions .oracle-studio-control i {
+  position: relative !important;
+  inset: auto !important;
+  z-index: 2 !important;
+  grid-column: 1 !important;
+  grid-row: 1 / span 2 !important;
+  width: 42px !important;
+  height: 42px !important;
+  display: block !important;
+  border: 1px solid rgba(248, 223, 118, 0.76) !important;
+  border-radius: 50% !important;
+  background:
+    radial-gradient(circle at 34% 24%, rgba(255, 255, 255, 0.34), transparent 18px),
+    linear-gradient(132deg, rgba(255, 246, 190, 0.14), transparent 38%, rgba(0, 0, 0, 0.28) 78%),
+    var(--oracle-knob-art) center / cover no-repeat !important;
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.3),
+    inset 0 -8px 13px rgba(0, 0, 0, 0.5),
+    0 0 0 2px rgba(0, 236, 255, 0.2),
+    0 0 15px rgba(248, 223, 118, 0.2) !important;
+  transform: rotate(var(--knob-live-angle, 0deg)) !important;
+  transition: transform 100ms linear, filter 140ms ease, box-shadow 140ms ease !important;
+}
+
+body .oracle-studio-control span,
+body .oracle-studio-control small {
+  position: relative !important;
+  z-index: 2 !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+  text-align: left !important;
+  text-transform: uppercase !important;
+  text-overflow: ellipsis !important;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.94) !important;
+}
+
+body .oracle-studio-control span {
+  grid-column: 2 !important;
+  grid-row: 1 !important;
+  align-self: end !important;
+  color: #fff3a4 !important;
+  font-size: 10.5px !important;
+  font-weight: 700 !important;
+  line-height: 1 !important;
+  white-space: normal !important;
+}
+
+body .oracle-studio-control small {
+  grid-column: 2 !important;
+  grid-row: 2 !important;
+  align-self: start !important;
+  color: #dff8ff !important;
+  font-size: 8px !important;
+  font-weight: 600 !important;
+  line-height: 1.05 !important;
+  white-space: nowrap !important;
+}
+
+body .oracle-studio-control:hover,
+body .oracle-studio-control:focus-visible,
+body .oracle-studio-control.is-adjusting,
+body .oracle-studio-control.active {
+  border-color: rgba(255, 231, 126, 0.9) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    inset 0 -22px 28px rgba(0, 0, 0, 0.5),
+    0 0 0 2px rgba(248, 223, 118, 0.2),
+    0 0 22px rgba(0, 236, 255, 0.3) !important;
+}
+
+body .oracle-studio-control:hover i,
+body .oracle-studio-control:focus-visible i,
+body .oracle-studio-control.is-adjusting i,
+body .oracle-studio-control.active i {
+  filter: brightness(1.12) saturate(1.12) !important;
+}
+
+body .oracle-studio-control:active,
+body .oracle-studio-control.is-pressing {
+  transform: translateY(2px) scale(0.985) !important;
+}
+
+body .route-heatmap .radar-controls {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  grid-auto-flow: row !important;
+  grid-auto-columns: auto !important;
+  gap: 9px !important;
+  padding: 10px !important;
+  overflow: visible !important;
+}
+
+body .route-heatmap .radar-quick-panel .oracle-control-carousel {
+  display: grid !important;
+  grid-auto-flow: column !important;
+  grid-template-rows: repeat(2, 64px) !important;
+  grid-auto-columns: minmax(146px, 158px) !important;
+  gap: 9px !important;
+  padding: 10px !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  scroll-snap-type: x proximity;
+}
+
+body .route-heatmap .radar-quick-panel .oracle-control-carousel .oracle-studio-control {
+  scroll-snap-align: start;
+}
+
+body .route-reset .sound-session-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 9px !important;
+}
+
+body .route-reset .sound-session-grid .oracle-studio-control {
+  aspect-ratio: auto !important;
+}
+
+@media (max-width: 380px) {
+  body .oracle-studio-control,
+  body .route-heatmap .radar-controls .control-chip.oracle-studio-control,
+  body .route-reset .sound-session-grid .sound-card.oracle-studio-control {
+    min-height: 60px !important;
+    height: 60px !important;
+    grid-template-columns: 40px minmax(0, 1fr) !important;
+    column-gap: 7px !important;
+    padding: 7px !important;
+  }
+
+  body .oracle-studio-control i,
+  body .route-dashboard .oracle-hero .home-oracle-actions .oracle-studio-control i {
+    width: 38px !important;
+    height: 38px !important;
+  }
+
+  body .oracle-studio-control::after {
+    top: 12px !important;
+    left: 26px !important;
+    height: 17px !important;
+    transform-origin: 50% 18px !important;
+  }
+
+  body .oracle-studio-control span {
+    font-size: 9.5px !important;
+  }
+
+  body .oracle-studio-control small {
+    font-size: 7.25px !important;
+  }
+}
+.jackpot-chase-stage {
+  min-height: 540px;
+  padding: 0;
+  overflow: hidden;
+  background: #000;
+}
+
+.jackpot-chase-stage iframe {
+  display: block;
+  width: 100%;
+  height: min(76vh, 760px);
+  min-height: 540px;
+  border: 0;
+  background: #000;
+}
+
+@media (max-width: 520px) {
+  .jackpot-chase-stage,
+  .jackpot-chase-stage iframe {
+    min-height: 620px;
   }
 }

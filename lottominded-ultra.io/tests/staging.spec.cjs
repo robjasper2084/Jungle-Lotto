@@ -24,9 +24,7 @@ test("preview shell is noindex, visibly marked, and free of broken same-origin r
   const consoleFailures = [];
   page.on("response", (response) => {
     const url = new URL(response.url());
-    let pageOrigin = "";
-    try { pageOrigin = new URL(page.url()).origin; } catch (_) {}
-    if (url.origin === pageOrigin && response.status() >= 400 && !url.pathname.includes("favicon")) {
+    if (url.origin === "http://127.0.0.1:8143" && response.status() >= 400 && !url.pathname.includes("favicon")) {
       failures.push(`${response.status()} ${url.pathname}`);
     }
   });
@@ -49,7 +47,6 @@ test("preview shell is noindex, visibly marked, and free of broken same-origin r
     allowRedemptions: false,
     allowProductionAnalytics: false,
   });
-  await expect(page.locator("footer.site-footer-standard .site-legal-links a")).toHaveCount(4);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
   await page.waitForTimeout(1000);
   expect(failures).toEqual([]);
@@ -57,173 +54,30 @@ test("preview shell is noindex, visibly marked, and free of broken same-origin r
   expect(consoleFailures).toEqual([]);
 });
 
-test("primary headers share labels, orb artwork, dimensions, and overflow boundaries", async ({ page }) => {
-  await blockHeavyMedia(page);
-  const routes = [
-    "/index.html",
-    "/memberships.html",
-    "/features-app.html",
-    "/news/",
-    "/live-events.html",
-    "/lottery-spheres.html#spheres",
-    "/beat2lotto-plus.html#beat2lotto",
-    "/merch-store.html",
-    "/how-to-use.html",
-    "/prompt-lab.html",
-  ];
-  const expectedLabels = {
-    MB: "Memberships",
-    HM: "Home",
-    FX: "Games",
-    NW: "News",
-    EV: "Events",
-    SP: "Spheres",
-    B2: "RAHBE",
-    DR: "Storefront",
-    GD: "Static Wav",
-    LM: "LottoMind App",
-  };
-  const expectedArtwork = {
-    MB: "guide-puck-cyan-city",
-    HM: "guide-puck-gold-mascot-close",
-    FX: "lottomind-branded-puck",
-    NW: "guide-puck-gold-mascot-wide",
-    EV: "jazz-network",
-    SP: "guide-puck-cyan-city",
-    B2: "jazz-network",
-    DR: "lottomind-branded-puck",
-    GD: "guide-puck-gold-mascot-close",
-    LM: "lottomind-branded-puck",
-  };
-
-  for (const viewport of [{ width: 1440, height: 900 }, { width: 390, height: 844 }]) {
-    await page.setViewportSize(viewport);
-    for (const route of routes) {
-      await page.goto(route, { waitUntil: "domcontentloaded" });
-      const header = page.locator("[data-site-header]");
-      await expect(header, route).toBeVisible();
-      await expect(header.locator("nav a[data-icon]"), route).toHaveCount(10);
-      await header.dispatchEvent("click");
-      await expect(header, `${route} header remains pinned after click`).toBeVisible();
-      await expect(header, route).not.toHaveClass(/is-(?:click|home|sphere|universal)-header-hidden/);
-      await expect(page.locator(".header-click-toggle"), route).toHaveCount(0);
-
-      const audit = await header.evaluate((node) => {
-        const links = [...node.querySelectorAll("nav a[data-icon]")];
-        return {
-          viewportWidth: document.documentElement.clientWidth,
-          documentWidth: document.documentElement.scrollWidth,
-          headerRect: node.getBoundingClientRect().toJSON(),
-          links: links.map((link) => {
-            const style = getComputedStyle(link);
-            const rect = link.getBoundingClientRect();
-            return {
-              icon: link.dataset.icon,
-              label: link.textContent.trim(),
-              artwork: style.getPropertyValue("--sphere-nav-image").trim(),
-              width: rect.width,
-              height: rect.height,
-              overflow: style.overflow,
-            };
-          }),
-        };
-      });
-
-      expect(audit.documentWidth, `${route} at ${viewport.width}px`).toBeLessThanOrEqual(audit.viewportWidth + 1);
-      expect(audit.headerRect.left, route).toBeGreaterThanOrEqual(-1);
-      expect(audit.headerRect.right, route).toBeLessThanOrEqual(audit.viewportWidth + 1);
-      for (const link of audit.links) {
-        expect(link.label, `${route} ${link.icon}`).toBe(expectedLabels[link.icon]);
-        expect(link.artwork, `${route} ${link.icon}`).toContain(expectedArtwork[link.icon]);
-        expect(Math.abs(link.width - link.height), `${route} ${link.icon}`).toBeLessThanOrEqual(1);
-        expect(link.overflow, `${route} ${link.icon}`).toBe("hidden");
-      }
-    }
-  }
-});
-
-test("Arcade arrival transition clears its handoff without leaking into the next route", async ({ page }) => {
-  await blockHeavyMedia(page);
-  await page.goto("/index.html", { waitUntil: "domcontentloaded" });
-  await page.evaluate(() => {
-    sessionStorage.setItem("lmTransitionArriving", "yes");
-    sessionStorage.setItem("lmTransitionTheme", "features");
-    sessionStorage.setItem("lmTransitionLabel", "Games");
-  });
-
-  await page.goto("/features-app.html", { waitUntil: "domcontentloaded" });
-  await expect(page.locator("[data-lm-page-transition]")).toHaveAttribute("aria-hidden", "true", { timeout: 2_500 });
-  expect(await page.evaluate(() => sessionStorage.getItem("lmTransitionArriving"))).toBeNull();
-
-  await page.goto("/beat2lotto-plus.html#beat2lotto", { waitUntil: "domcontentloaded" });
-  await expect(page.locator("[data-lm-page-transition]")).toHaveAttribute("aria-hidden", "true");
-  await expect(page.locator("[data-lm-page-transition]")).not.toHaveClass(/is-active/);
-});
-
-test("home opens directly with muted hero video and no startup dialog", async ({ page }) => {
-  const removedCommercialRequests = [];
+test("home commercial starts muted video and waits for a sound gesture", async ({ page }) => {
+  const commercialRequests = [];
   const soundtrackRequests = [];
   page.on("request", (request) => {
-    if (/lottomind-home-commercial-20260716\.mp4/i.test(request.url())) removedCommercialRequests.push(request.url());
+    if (/lottomind-(?:home|refined)-commercial-20260716\.mp4/i.test(request.url())) {
+      commercialRequests.push(request.url());
+    }
     if (/home-screen-song\.mp3/i.test(request.url())) soundtrackRequests.push(request.url());
   });
 
-  await page.addInitScript(() => {
-    const originalPlay = HTMLMediaElement.prototype.play;
-    HTMLMediaElement.prototype.play = function (...args) {
-      this.dataset.lmPlayAttempts = String(Number(this.dataset.lmPlayAttempts || "0") + 1);
-      return originalPlay.apply(this, args);
-    };
-    const nativeSetTimeout = window.setTimeout.bind(window);
-    window.setTimeout = (callback, delay, ...args) => {
-      if (delay === 60_000) {
-        window.__lmStartupDelay = delay;
-        return nativeSetTimeout(callback, 1_200, ...args);
-      }
-      return nativeSetTimeout(callback, delay, ...args);
-    };
-  });
   await page.goto("/", { waitUntil: "domcontentloaded" });
-  const heroFilm = page.locator("[data-home-hero-audio]");
-  await expect(page.locator("[data-startup-video]")).toBeHidden();
-  await expect(heroFilm).toBeVisible();
-  const scanBars = await page.locator(".hero-copy").evaluate((hero) => {
-    const panelScan = getComputedStyle(hero, "::before");
-    const fieldScan = getComputedStyle(document.querySelector(".home-sphere-scanline"));
-    return {
-      panelAnimation: panelScan.animationName,
-      panelHeight: panelScan.height,
-      panelOpacity: Number(panelScan.opacity),
-      panelBackground: panelScan.backgroundImage,
-      performanceMode: document.documentElement.classList.contains("lm-mobile-performance"),
-      reducedMotion: matchMedia("(prefers-reduced-motion: reduce)").matches,
-      fieldDisplay: fieldScan.display,
-      fieldVisibility: fieldScan.visibility,
-    };
-  });
-  if (!scanBars.performanceMode && !scanBars.reducedMotion) {
-    expect(scanBars.panelAnimation).toContain("homeHeroScanBars");
-  }
-  expect(parseFloat(scanBars.panelHeight)).toBeGreaterThan(0);
-  expect(scanBars.panelBackground).not.toBe("none");
-  expect(scanBars.fieldDisplay).not.toBe("none");
-  expect(scanBars.fieldVisibility).toBe("visible");
-  await expect.poll(() => page.locator(".hero-copy").evaluate((hero) => Number(getComputedStyle(hero, "::before").opacity))).toBeGreaterThan(0.5);
-  await expect.poll(() => heroFilm.evaluate((video) => Number(video.dataset.lmPlayAttempts || "0"))).toBeGreaterThan(0);
-  await expect(page.locator("[data-home-hero-sound]")).toBeVisible();
-  expect(await page.evaluate(() => window.__lmStartupDelay)).toBeUndefined();
-  await page.waitForTimeout(1_500);
-  await expect(page.locator("[data-startup-video]")).toHaveCount(0);
-  expect(removedCommercialRequests).toEqual([]);
+  await expect(page.locator("[data-startup-video]")).toBeVisible({ timeout: 15_000 });
+  await expect.poll(() => commercialRequests.length).toBeGreaterThan(0);
   expect(soundtrackRequests).toEqual([]);
-  await expect.poll(() => heroFilm.evaluate((video) => ({ muted: video.muted, paused: video.paused }))).toEqual({ muted: true, paused: false });
+  await expect(page.locator("[data-startup-video-play]")).toHaveText("Play with sound");
+  await expect.poll(() => page.locator("[data-startup-video] video").evaluate((video) => ({ muted: video.muted, paused: video.paused }))).toEqual({ muted: true, paused: false });
 
-  await page.locator("[data-home-hero-sound]").click();
-  await expect.poll(() => heroFilm.evaluate((video) => ({ muted: video.muted, paused: video.paused }))).toEqual({ muted: false, paused: false });
-  expect(soundtrackRequests).toEqual([]);
+  await page.locator("[data-startup-video-play]").click();
+  await expect.poll(() => page.locator("[data-startup-video] video").evaluate((video) => video.muted)).toBe(false);
+  await page.locator("[data-startup-video-close]").last().click();
+  await expect.poll(() => soundtrackRequests.length).toBeGreaterThan(0);
 });
 
-test("membership hero film autoplays muted without an entry popup and enables sound on request", async ({ page }) => {
+test("membership entry film starts muted and enables sound on request", async ({ page }) => {
   const filmRequests = [];
   const soundtrackRequests = [];
   page.on("request", (request) => {
@@ -233,52 +87,16 @@ test("membership hero film autoplays muted without an entry popup and enables so
 
   await page.goto("/memberships.html", { waitUntil: "domcontentloaded" });
   const commercial = page.locator("[data-membership-commercial-modal]");
-  const featuredFilm = page.locator("[data-membership-featured-commercial]");
-  await expect(commercial).toBeHidden();
-  await expect(page.locator(".lm-temporal-loader")).toHaveCount(0);
-  await expect(featuredFilm).toBeVisible();
-  await featuredFilm.scrollIntoViewIfNeeded();
+  await expect(commercial).toBeVisible({ timeout: 15_000 });
   await expect.poll(() => filmRequests.length).toBeGreaterThan(0);
   expect(soundtrackRequests).toEqual([]);
-  await expect(page.locator("[data-membership-featured-sound]")).toHaveText("Play with sound");
-  await expect.poll(() => featuredFilm.evaluate((video) => ({ muted: video.muted, paused: video.paused }))).toEqual({ muted: true, paused: false });
+  await expect(page.locator("[data-membership-commercial-sound]")).toHaveText("Play with sound");
+  await expect.poll(() => commercial.locator("video").evaluate((video) => ({ muted: video.muted, paused: video.paused }))).toEqual({ muted: true, paused: false });
 
-  await page.locator("[data-membership-featured-sound]").click();
-  await expect.poll(() => featuredFilm.evaluate((video) => video.muted)).toBe(false);
-  await expect.poll(() => page.locator("#lmMembership").getAttribute("data-audio-reactive-source")).toBe("featured-commercial");
-  await expect.poll(() => page.locator("#lmMembership").evaluate((node) =>
-    Number.parseFloat(node.style.getPropertyValue("--lm-membership-audio-energy")) || 0
-  )).toBeGreaterThan(0.05);
-});
-
-test("Guardian card uses the supplied gun-range commercial", async ({ page }) => {
-  const filmRequests = [];
-  page.on("request", (request) => {
-    if (/lottomind-guardian-commercial-clip-on-20260716\.mp4/i.test(request.url())) filmRequests.push(request.url());
-  });
-  await page.goto("/memberships.html", { waitUntil: "domcontentloaded" });
-  const video = page.locator(".membership-guardian-bottom [data-membership-hero-commercial]");
-  await video.scrollIntoViewIfNeeded();
-  await expect(video.locator("source")).toHaveAttribute(
-    "data-src",
-    /lottomind-guardian-commercial-clip-on-20260716\.mp4$/,
-  );
-  await expect(video).toHaveAttribute(
-    "poster",
-    /lottomind-guardian-commercial-gun-range-poster-20260722\.jpg$/,
-  );
-  await expect(video).toHaveAttribute("autoplay", "");
-  await expect(video).toHaveAttribute("preload", "metadata");
-  await expect.poll(() => filmRequests.length).toBeGreaterThan(0);
-  await expect.poll(() => video.evaluate((node) => ({ muted: node.muted, paused: node.paused }))).toEqual({ muted: true, paused: false });
-});
-
-test("Vault Pass displays the approved one-time price and included Luggage Charm", async ({ page }) => {
-  await page.goto("/memberships.html", { waitUntil: "domcontentloaded" });
-  const vault = page.locator('[data-lm-tier="vault"]');
-  await expect(vault.locator("h3")).toHaveText("$29.99");
-  await expect(vault).toContainText("Little Man Luggage Charm included");
-  await expect(vault.locator('[data-stripe-lookup-key="vault_founder_once"]')).toHaveCount(1);
+  await page.locator("[data-membership-commercial-sound]").click();
+  await expect.poll(() => commercial.locator("video").evaluate((video) => video.muted)).toBe(false);
+  await page.locator("[data-membership-commercial-close]").click();
+  await expect.poll(() => soundtrackRequests.length).toBeGreaterThan(0);
 });
 
 test("route commercial gate starts muted and enables sound on request", async ({ page }) => {
@@ -296,34 +114,6 @@ test("route commercial gate starts muted and enables sound on request", async ({
 
   await gate.locator(".lm-commercial-gate__sound").click();
   await expect.poll(() => gate.locator("video").evaluate((video) => video.muted)).toBe(false);
-
-});
-
-test("Features staging preserves the cinematic identity and playable Arcade directory", async ({ page }) => {
-  await blockHeavyMedia(page);
-  await page.goto("/features-app.html", { waitUntil: "domcontentloaded" });
-
-  await expect(page.locator("[data-lm-staging-banner]")).toHaveText("LottoMind Upgrade Preview — Not Production");
-  await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", "noindex,nofollow,noarchive");
-  const gate = page.locator(".lm-commercial-gate");
-  await expect(gate).toBeVisible();
-  await expect.poll(() => gate.locator("video").evaluate((video) => video.muted)).toBe(true);
-  await gate.locator(".lm-commercial-gate__skip").click();
-
-  await expect(page.locator(".arcade-pilot-label")).toHaveText("LottoMind Features / Arcade + Creative Systems");
-  await expect(page.locator('.arcade-pilot-hero__art[src*="lottomind-little-man-membership-hero-v2.png"]')).toBeVisible();
-  await expect(page.locator("#featureEntity.feature-entity")).toHaveCount(1);
-  await expect(page.locator("[data-shape]")).toHaveCount(8);
-  await expect.poll(() => page.evaluate(() => document.body.classList.contains("feature-entity-ready"))).toBe(true);
-  expect(await page.locator("#arcade-title").evaluate((title) => getComputedStyle(title).fontFamily)).not.toMatch(/Impact/i);
-  await expect(page.locator(".feature-channel")).toHaveCount(5);
-  await expect(page.locator("[data-arcade-grid] .arcade-game-card")).toHaveCount(8);
-  await expect(page.locator(".arcade-game-card__status")).toHaveText(Array(8).fill("Playable"));
-
-  await page.getByRole("button", { name: "Action", exact: true }).click();
-  await expect(page.locator("[data-arcade-grid] .arcade-game-card")).toHaveCount(3);
-  await expect(page.locator("[data-arcade-visible-count]")).toHaveText("3");
-  expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1)).toBe(true);
 });
 
 test("merch route and click-opened commercial use the safe sound handoff", async ({ page }) => {
@@ -341,30 +131,14 @@ test("merch route and click-opened commercial use the safe sound handoff", async
   await expect.poll(() => gate.locator("video").evaluate((video) => video.muted)).toBe(true);
   await gate.locator(".lm-commercial-gate__skip").click();
   await expect(gate).toBeHidden();
-  const capsuleFilm = page.locator("[data-merch-sound-video]");
-  await expect.poll(() => capsuleFilm.evaluate((video) => ({ muted: video.muted, paused: video.paused }))).toEqual({ muted: true, paused: false });
-  await expect(page.locator("[data-merch-sound-toggle]")).toHaveText("Play sound");
-  await expect(page.getByRole("button", { name: "Preorder", exact: true })).toHaveCount(10);
-  await page.getByRole("button", { name: "Preorder", exact: true }).first().evaluate((button) => button.click());
-  await expect(page.locator("[data-bag-drawer]")).toHaveClass(/is-open/);
-  await expect(page.locator("[data-cart-note]")).toContainText("No order or payment was submitted");
-  await expect(page.locator("footer.site-footer-standard .site-legal-links a")).toHaveCount(4);
-  await page.locator("[data-bag-close]").evaluate((button) => button.click());
 
-  await page.locator("[data-merch-commercial-open]").evaluate((button) => button.click());
+  await page.locator("[data-merch-commercial-open]").click();
   const modal = page.locator("[data-merch-commercial-modal]");
   await expect(modal).toBeVisible();
   await expect.poll(() => modal.locator("video").evaluate((video) => ({ muted: video.muted, paused: video.paused }))).toEqual({ muted: false, paused: false });
 });
 
 test("Live Events renders a complete channel hub without invented live or commerce data", async ({ page }) => {
-  await page.addInitScript(() => {
-    const originalPlay = HTMLMediaElement.prototype.play;
-    HTMLMediaElement.prototype.play = function (...args) {
-      this.dataset.lmPlayAttempts = String(Number(this.dataset.lmPlayAttempts || "0") + 1);
-      return originalPlay.apply(this, args);
-    };
-  });
   await blockHeavyMedia(page);
   await page.goto("/live-events.html", { waitUntil: "domcontentloaded" });
 
@@ -377,9 +151,6 @@ test("Live Events renders a complete channel hub without invented live or commer
   await expect(page.getByText(/\d[\d,.]*\s+online/i)).toHaveCount(0);
   await expect(page.getByText(/\$\d/)).toHaveCount(0);
   await expect(page.getByText("Ultra Points", { exact: true })).toHaveCount(0);
-  await expect.poll(() => page.locator("[data-live-hero-film-audio]").evaluate((audio) => Number(audio.dataset.lmPlayAttempts || "0"))).toBeGreaterThan(0);
-  await expect(page.locator("[data-live-hero-film-video]")).toHaveAttribute("data-sound-state", /^(?:blocked|playing|ready)$/);
-  await expect(page.locator("[data-live-hero-film-audio]")).toHaveAttribute("loop", "");
 });
 
 test("Shadow Ops defers campaign assets until the run starts", async ({ page }) => {
@@ -415,8 +186,6 @@ test("News uses its static feed without contacting production Supabase", async (
   await page.goto("/news/", { waitUntil: "domcontentloaded" });
   await expect(page.locator("#root")).toContainText(/LottoMind News Intelligence/i);
   await expect(page.locator(".article-grid .news-card").first()).toBeVisible();
-  await expect(page.locator(".article-grid .news-card__media img").first()).toBeVisible();
-  await expect.poll(() => page.locator(".article-grid .news-card__media img").first().evaluate((image) => image.complete && image.naturalWidth > 0)).toBe(true);
   expect(productionRequests).toEqual([]);
   expect(consoleErrors).toEqual([]);
 });

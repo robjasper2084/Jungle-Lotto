@@ -87,7 +87,7 @@
   const { films, name: routeName, theme: routeTheme } = route;
   // Keep the one-commercial-per-page behavior without letting a visit to one
   // route suppress the commercial on every other route in the same tab.
-  const sessionKey = `lm-commercial-gate-seen:v4:${routeTheme}`;
+  const sessionKey = `lm-commercial-gate-seen:v5:${routeTheme}`;
   try {
     if (sessionStorage.getItem(sessionKey) === "yes") return;
     sessionStorage.setItem(sessionKey, "yes");
@@ -317,7 +317,10 @@
     detail: { active: true, route: routeTheme }
   }));
   beat2GameFrame?.addEventListener("load", () => setBeat2MusicGate(true), { once: true });
-  renderFilm(activeIndex, true, false);
+  // Request the commercial's own soundtrack on the first playback attempt.
+  // Browsers may still require a gesture; playCommercial() handles that case
+  // by falling back to muted playback and exposing the sound control.
+  renderFilm(activeIndex, true, true);
   requestAnimationFrame(() => {
     modal.classList.add("is-open");
     modal.querySelector(".lm-commercial-gate__skip")?.focus({ preventScroll: true });

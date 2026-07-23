@@ -231,6 +231,13 @@
     for (let attempt = 0; attempt < 6; attempt += 1) {
       try {
         const snapshot = await accountService.getSnapshot({ force: true });
+        if (!snapshot?.authenticated) {
+          setStatus(
+            "Stripe returned to LottoMind. Sign in with the account used at checkout to verify membership access.",
+            "auth-required"
+          );
+          return;
+        }
         const memberships = Array.isArray(snapshot?.memberships) ? snapshot.memberships : [];
         const planCodeFor = (entry) => entry?.kind || entry?.planCode || entry?.plan_code || "";
         const isActive = (entry) => entry?.active === true || ["active", "trialing"].includes(entry?.status);
