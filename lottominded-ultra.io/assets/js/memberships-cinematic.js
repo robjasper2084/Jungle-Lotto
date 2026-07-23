@@ -183,17 +183,28 @@
     return changed;
   };
 
-  const playCommercialWithFallback = async ({ restart = false } = {}) => {
+  const playCommercialWithFallback = async ({ restart = false, allowSound = true } = {}) => {
     if (!commercialVideo) return false;
     restoreDeferredVideoSources(commercialVideo);
     if (restart) {
       try { commercialVideo.currentTime = 0; } catch (_) {}
     }
+    commercialVideo.volume = commercialFilms[commercialFilmIndex]?.volume ?? 0.64;
+    window.LMAudioMix?.claim?.(commercialVideo);
+    if (!allowSound) {
+      commercialVideo.muted = true;
+      commercialVideo.defaultMuted = true;
+      commercialVideo.setAttribute("muted", "");
+      if (commercialSound) {
+        commercialSound.hidden = false;
+        commercialSound.textContent = "Play with sound";
+      }
+      await commercialVideo.play().catch(() => {});
+      return false;
+    }
     commercialVideo.muted = false;
     commercialVideo.defaultMuted = false;
     commercialVideo.removeAttribute("muted");
-    commercialVideo.volume = commercialFilms[commercialFilmIndex]?.volume ?? 0.64;
-    window.LMAudioMix?.claim?.(commercialVideo);
     try {
       await commercialVideo.play();
       if (commercialSound) commercialSound.hidden = true;
@@ -202,7 +213,10 @@
       commercialVideo.muted = true;
       commercialVideo.defaultMuted = true;
       commercialVideo.setAttribute("muted", "");
-      if (commercialSound) commercialSound.hidden = false;
+      if (commercialSound) {
+        commercialSound.hidden = false;
+        commercialSound.textContent = "Play with sound";
+      }
       await commercialVideo.play().catch(() => {});
       return false;
     }
@@ -390,8 +404,12 @@
     if (commercialClose) commercialClose.textContent = entry ? "Skip & Enter" : "Close";
     if (commercialSound) {
       commercialSound.hidden = false;
-      commercialSound.textContent = "Play Film";
+      commercialSound.textContent = "Play with sound";
     }
+    // Always request the commercial soundtrack first. If the browser blocks
+    // unmuted autoplay, playCommercialWithFallback keeps the film moving
+    // muted and exposes the sound control for the next user gesture.
+    void playCommercialWithFallback({ restart: false, allowSound: true });
     commercialClose?.focus({ preventScroll: true });
   };
 

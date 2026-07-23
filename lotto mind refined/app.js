@@ -1,9 +1,21 @@
 const APP_SLUG = "/lotto%20mind%20refined";
+const NATIVE_APP = Boolean(
+  window.Capacitor?.isNativePlatform?.()
+  || window.location.protocol === "capacitor:"
+  || (window.location.hostname === "localhost" && !window.location.port),
+);
 const BASE = (() => {
+  if (window.__LOTTOMIND_BASE__) return window.__LOTTOMIND_BASE__;
+  if (NATIVE_APP) return ".";
   const path = window.location.pathname;
   const slugIndex = path.indexOf(APP_SLUG);
   return slugIndex >= 0 ? path.slice(0, slugIndex + APP_SLUG.length) : APP_SLUG;
 })();
+const ROOT = window.__LOTTOMIND_ROOT__ ?? BASE.replace(/\/lotto%20mind%20refined$/i, "");
+const WEBSITE_BASE = NATIVE_APP
+  ? "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io"
+  : `${ROOT}/lottominded-ultra.io`;
+const PRODUCTION_MODE = true;
 
 const ASSETS = {
   logo: `${BASE}/assets/images/lottomind-brain-logo.2f28d70bc952673d95508151e29f46b1.png`,
@@ -806,6 +818,7 @@ const FEATURE_UNLOCKS = [
   { id: "live-data-24", title: "Live Data 24-hour Unlock", cost: 1500, route: "liveData", window: "24 hours" },
   { id: "vip-insights", title: "VIP Lucky Insights", cost: 2000, route: "vip", window: "Permanent" },
 ];
+const REVENUECAT_PREMIUM_UNLOCK_IDS = new Set(FEATURE_UNLOCKS.map((item) => item.id));
 
 const RADAR_POSITIONS = [
   [50, 14], [63, 18], [37, 18], [75, 26], [25, 26], [50, 30], [64, 34],
@@ -1289,6 +1302,12 @@ const state = {
   aiPrompt: "Build me a balanced set from my dream, weather, and radar.",
   dreamListening: false,
   dreamInterimText: "",
+  knobPositions: loadJson("lottomind.oracle.real.knobs.v1", {
+    reset: 432,
+    dreams: 68,
+    powertools: 42,
+    studio: 82,
+  }),
   currentSet: null,
   currentDream: null,
   currentPsychic: null,
@@ -1314,6 +1333,7 @@ const state = {
   triviaStreak: 0,
   triviaAnswered: null,
   triviaComplete: false,
+  revenueCat: null,
   selectedMerchIndex: 0,
   merchCategory: "All",
   storeQuery: "",
@@ -1333,6 +1353,7 @@ const state = {
   studioMasterRecording: false,
   wordSearchMarks: loadJson("lottomind.oracle.real.wordSearch.v1", []),
   crosswordSolved: loadJson("lottomind.oracle.real.crossword.v1", { solved: false }).solved || false,
+  privacyDeleteArmed: false,
 };
 
 syncCreditsFromLaunchParams();
@@ -1802,6 +1823,7 @@ function saveUnlock(id, title, cost = 0, hours = null) {
 }
 
 function isUnlocked(id) {
+  if (isRevenueCatPremiumUnlock(id) && hasRevenueCatProAccess()) return true;
   const unlock = getUnlocks()[id];
   if (!unlock) return false;
   if (unlock.expiresAt && Date.now() > new Date(unlock.expiresAt).getTime()) return false;
@@ -1888,6 +1910,7 @@ function saveUnlock(id, title, cost = 0, hours = null) {
 }
 
 function isUnlocked(id) {
+  if (isRevenueCatPremiumUnlock(id) && hasRevenueCatProAccess()) return true;
   const unlock = getUnlocks()[id];
   if (!unlock) return false;
   if (unlock.expiresAt && Date.now() > new Date(unlock.expiresAt).getTime()) return false;
@@ -1941,10 +1964,9 @@ function communityLeaderboardRows() {
     challenge: "Trivia",
     streak: Math.max(Number(progress.dailyStreak) || 0, Number(progress.weeklyStreak) || 0),
     createdAt: progress.lastPlayedDate || new Date().toISOString(),
-    source: "Local preview",
+    source: "On-device",
   };
-  const demoRows = SOCIAL_PREVIEW_RIVALS.map((entry, index) => ({ ...entry, id: `demo-rival-${index}` }));
-  return [localRow, ...saved, ...localTriviaScoreRows(progress), ...demoRows]
+  return [localRow, ...saved, ...localTriviaScoreRows(progress)]
     .filter((entry, index, list) => list.findIndex((item) => item.id === entry.id) === index)
     .sort((a, b) => Number(b.score) - Number(a.score) || Number(b.streak) - Number(a.streak))
     .slice(0, 9)
@@ -2004,6 +2026,39 @@ function selectedStore(stores = filteredStores()) {
 
 function getSettings() {
   return { ...DEFAULT_SETTINGS, ...loadJson(STORAGE.settings, {}) };
+}
+
+function localProfileEntries() {
+  const entries = {};
+  for (let index = 0; index < localStorage.length; index += 1) {
+    const key = localStorage.key(index);
+    if (!key || (!key.startsWith("lottomind.") && !key.startsWith("lottomind_"))) continue;
+    entries[key] = localStorage.getItem(key);
+  }
+  return entries;
+}
+
+function exportLocalProfile() {
+  const payload = {
+    app: "LottoMind",
+    exportedAt: new Date().toISOString(),
+    storage: localProfileEntries(),
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = `lottomind-local-data-${new Date().toISOString().slice(0, 10)}.json`;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  URL.revokeObjectURL(url);
+}
+
+function deleteLocalProfile() {
+  Object.keys(localProfileEntries()).forEach((key) => localStorage.removeItem(key));
+  sessionStorage.clear();
+  window.location.replace(routeUrl("dashboard"));
 }
 
 function saveSet(set) {
@@ -2082,6 +2137,126 @@ function installCentralAccountSync() {
   });
 }
 
+const REVENUECAT_CLIENT_SRC = `${BASE}/revenuecat-client.js?v=revenuecat-web-20260722`;
+let revenueCatClientLoadPromise = null;
+let revenueCatUnsubscribe = null;
+
+function isRevenueCatPremiumUnlock(id) {
+  return REVENUECAT_PREMIUM_UNLOCK_IDS.has(id);
+}
+
+function revenueCatSnapshot() {
+  return window.LottoMindRevenueCat?.getSnapshot?.() || state.revenueCat || null;
+}
+
+function hasRevenueCatProAccess() {
+  return Boolean(revenueCatSnapshot()?.isEntitled);
+}
+
+function revenueCatStatusLabel() {
+  const rc = revenueCatSnapshot();
+  if (!rc) return "Loading";
+  if (rc.isEntitled) return "Active";
+  if (rc.status === "setup-required") return "Setup";
+  if (rc.status === "checkout") return "Checkout";
+  if (rc.status === "error") return "Error";
+  if (rc.isConfigured) return "Ready";
+  return "Offline";
+}
+
+function revenueCatCtaLabel() {
+  const rc = revenueCatSnapshot();
+  if (rc?.isEntitled) return "Pro Active";
+  if (rc?.status === "checkout") return "Opening...";
+  if (rc?.status === "setup-required") return "Unavailable";
+  return rc?.priceLabel ? `Subscribe ${rc.priceLabel}` : "Subscribe Pro";
+}
+
+function ensureRevenueCatClient() {
+  if (window.LottoMindRevenueCat) return Promise.resolve(window.LottoMindRevenueCat);
+  if (revenueCatClientLoadPromise) return revenueCatClientLoadPromise;
+  revenueCatClientLoadPromise = new Promise((resolve, reject) => {
+    const script = document.createElement("script");
+    script.src = REVENUECAT_CLIENT_SRC;
+    script.async = true;
+    script.onload = () => resolve(window.LottoMindRevenueCat);
+    script.onerror = () => reject(new Error("RevenueCat client failed to load"));
+    document.head.appendChild(script);
+  });
+  return revenueCatClientLoadPromise;
+}
+
+function installRevenueCatSync() {
+  ensureRevenueCatClient().then((service) => {
+    if (!service) return;
+    revenueCatUnsubscribe?.();
+    revenueCatUnsubscribe = service.subscribe((snapshot) => {
+      const previous = JSON.stringify(state.revenueCat || {});
+      state.revenueCat = snapshot;
+      if (JSON.stringify(snapshot || {}) !== previous) render();
+    });
+    return service.init();
+  }).catch((error) => {
+    state.revenueCat = {
+      status: "error",
+      message: "RevenueCat client did not load.",
+      error: error?.message || String(error),
+      isEntitled: false,
+      isConfigured: false,
+    };
+    render();
+  });
+}
+
+function startRevenueCatPurchase() {
+  ensureRevenueCatClient().then((service) => {
+    if (!service?.purchase) {
+      toast("RevenueCat is still loading");
+      return null;
+    }
+    const mount = document.querySelector("[data-revenuecat-paywall]");
+    toast("Opening RevenueCat checkout");
+    return service.purchase({ htmlTarget: mount }).then((snapshot) => {
+      state.revenueCat = snapshot;
+      toast(snapshot?.isEntitled ? "LottoMind Pro active" : "RevenueCat checkout finished");
+      render();
+    });
+  }).catch((error) => {
+    const message = error?.errorCode && String(error.errorCode).toLowerCase().includes("cancel")
+      ? "Checkout cancelled"
+      : error?.message || "RevenueCat checkout failed";
+    toast(message);
+  });
+}
+
+function refreshRevenueCatStatus() {
+  ensureRevenueCatClient().then((service) => service?.refresh?.()).then((snapshot) => {
+    if (snapshot) state.revenueCat = snapshot;
+    toast(snapshot?.isEntitled ? "RevenueCat Pro active" : "RevenueCat status refreshed");
+    render();
+  }).catch((error) => {
+    toast(error?.message || "RevenueCat refresh failed");
+  });
+}
+
+function restoreRevenueCatPurchases() {
+  ensureRevenueCatClient().then((service) => service?.restore?.()).then((snapshot) => {
+    if (snapshot) state.revenueCat = snapshot;
+    toast(snapshot?.isEntitled ? "Purchases restored" : "No active purchase was found");
+    render();
+  }).catch((error) => {
+    toast(error?.message || "Purchases could not be restored");
+  });
+}
+
+function manageRevenueCatSubscription() {
+  ensureRevenueCatClient().then((service) => service?.manage?.()).then((snapshot) => {
+    if (snapshot) state.revenueCat = snapshot;
+  }).catch((error) => {
+    toast(error?.message || "Subscription management is unavailable");
+  });
+}
+
 function routeFromLocation() {
   const routeParam = new URLSearchParams(window.location.search).get("route");
   if (routeParam) {
@@ -2096,6 +2271,10 @@ function routeFromLocation() {
 
 function routeUrl(routeKey) {
   const path = ROUTES[routeKey] || "";
+  if (NATIVE_APP) {
+    const route = path || "dashboard";
+    return `${BASE}/index.html?route=${encodeURIComponent(route)}`;
+  }
   return `${BASE}/${path}`.replace(/\/$/, "/");
 }
 
@@ -2441,6 +2620,77 @@ function renderFunctionSearchResults(value = state.searchQuery) {
   panel.innerHTML = searchResultsHtml(value);
 }
 
+const ORACLE_HARDWARE_CONTROLS = [
+  { key: "reset", route: "reset", label: "Reset Vault", hint: "Tone wheel", art: ASSETS.dreamKnobResetVault, min: 174, max: 963, step: 3, unit: "Hz" },
+  { key: "dreams", route: "dreams", label: "Dream Oracle", hint: "Voice meaning", art: ASSETS.dreamKnobDreamOracle, min: 0, max: 100, step: 2, unit: "%" },
+  { key: "powertools", route: "powertools", label: "Power Tools", hint: "Main lab", art: ASSETS.powerToolNumberAnalyzer, min: 0, max: 100, step: 2, unit: "%" },
+  { key: "studio", route: "studio", label: "Sonic Studio", hint: "Record booth", art: ASSETS.dreamKnobSonicStudio, min: 0, max: 100, step: 2, unit: "%" },
+];
+
+function oracleKnobReadout(value, unit) {
+  return `${value}${unit === "%" ? "%" : ` ${unit}`}`;
+}
+
+function oracleKnobAngle(value, min, max) {
+  const ratio = (value - min) / Math.max(1, max - min);
+  return -135 + (Math.max(0, Math.min(1, ratio)) * 270);
+}
+
+function storedKnobPosition(key, fallback, min = 0, max = 100) {
+  const stored = Number(state.knobPositions[key]);
+  return Math.max(min, Math.min(max, Number.isFinite(stored) ? stored : fallback));
+}
+
+function knobControlAttributes({ key, label, min = 0, max = 100, step = 2, unit = "%", fallback = 50, pressVerb = "open" }) {
+  const stored = storedKnobPosition(key, fallback, min, max);
+  const value = Math.max(min, Math.min(max, min + Math.round((stored - min) / step) * step));
+  const readout = oracleKnobReadout(value, unit);
+  return {
+    angle: oracleKnobAngle(value, min, max),
+    attributes: `data-knob-control data-knob-key="${key}" data-knob-label="${label}" data-knob-min="${min}" data-knob-max="${max}" data-knob-step="${step}" data-knob-unit="${unit}" data-knob-value="${value}" data-knob-press-verb="${pressVerb}" aria-label="${label}. Knob position ${readout}. Rotate to adjust, press to ${pressVerb}."`,
+  };
+}
+
+function oracleStudioControl({
+  key,
+  label,
+  hint,
+  art,
+  route = "",
+  action = "",
+  className = "",
+  extraAttributes = "",
+  min = 0,
+  max = 100,
+  step = 2,
+  unit = "%",
+  fallback = 50,
+  pressVerb = action ? "activate" : "open",
+  liveReadout = false,
+}) {
+  const knob = knobControlAttributes({ key, label, min, max, step, unit, fallback, pressVerb });
+  const command = action ? `data-action="${action}"` : `data-route="${route}"`;
+  return `<button class="oracle-studio-control ${className}" type="button" ${command} ${extraAttributes} ${knob.attributes} style="--oracle-control-art:url('${art}');--oracle-knob-art:url('${art}');--knob-live-angle:${knob.angle}deg">
+    <i aria-hidden="true"></i><span${liveReadout ? " data-knob-readout" : ""}>${label}</span><small>${hint}</small>
+  </button>`;
+}
+
+function oracleKnobControl({ key, route, label, hint, art, min, max, step, unit }) {
+  return oracleStudioControl({
+    key,
+    route,
+    label,
+    hint,
+    art,
+    min,
+    max,
+    step,
+    unit,
+    fallback: state.knobPositions[key],
+    className: "home-oracle-tile",
+  });
+}
+
 function dashboardView() {
   const current = state.currentSet || generateLottoSet(state.gameId, state.strategy, "dashboard");
   return `<section class="screen dashboard-screen">
@@ -2449,11 +2699,8 @@ function dashboardView() {
       <div>
         <h1>Oracle Studio</h1>
         <p>Reset, dream, read the map, then run Power Tools with every old feature wired inside one branded app.</p>
-        <div class="hero-actions">
-          <button class="ghost-btn" data-route="reset">Reset Vault</button>
-          <button class="primary-btn" data-route="dreams">Open Dream Oracle</button>
-          <button class="ghost-btn" data-route="powertools">Power Tools</button>
-          <button class="ghost-btn" data-route="studio">Sonic Studio</button>
+        <div class="home-oracle-actions" role="group" aria-label="Oracle Studio rotary controls">
+          ${ORACLE_HARDWARE_CONTROLS.map(oracleKnobControl).join("")}
         </div>
       </div>
       <a class="hero-emblem-link" href="${LOTTO_ULTRA_SPHERES_URL}" aria-label="Open LottoMind lottery spheres page">
@@ -2580,7 +2827,10 @@ function circleTool(title, sub, route, index, options = {}) {
       ? `<video class="circle-tool-video singer-video" data-src="${BASE}/videos/power-tools-button-green-screen.mp4" poster="${ASSETS.music}" muted loop playsinline preload="none" data-autoplay-on-visible="true"></video>`
       : "";
   const art = options.art || categoryArtForTool(title, route, index);
-  return `<button class="circle-tool" data-route="${route}" data-art-kind="${artKind}" style="--circle-art:url('${art}')">
+  const knob = options.knob
+    ? knobControlAttributes({ key: `tool:${route}`, label: title, fallback: 30 + ((index * 13) % 58) })
+    : null;
+  return `<button class="circle-tool" data-route="${route}" data-art-kind="${artKind}" ${knob?.attributes || ""} style="--circle-art:url('${art}');${knob ? `--knob-live-angle:${knob.angle}deg` : ""}">
     ${video}
     <span>${title}</span>
     <small>${sub}</small>
@@ -2626,6 +2876,7 @@ function powerToolsView() {
           ${group.tools.map(([title, sub, route], index) => circleTool(title, sub, route, groupIndex * 4 + index, {
             art: group.title === "Main Lab" ? POWER_TOOL_ART[title] : undefined,
             preferStaticArt: group.title === "Main Lab",
+            knob: group.title === "Main Lab",
           })).join("")}
         </div>
       </div>
@@ -2702,7 +2953,22 @@ function resetView() {
     <div class="panel sound-session-panel">
       <div class="section-head"><div><h2>Sound Sessions</h2><p>Tap a circle to load a tone, then play.</p></div></div>
       <div class="sound-session-grid">
-        ${tones.map(([hz, label], index) => `<button class="sound-card tone-pill ${state.tone === hz ? "active" : ""}" data-action="load-reset-session" data-tone="${hz}" data-autoplay="true" style="--tone-art:url('${index % 2 ? ASSETS.logo : ASSETS.music}')"><span>${hz} Hz</span><strong>${label}</strong><small>${label === "Heart Field" ? "528 Hz box" : hz === "528" ? "Love frequency" : hz === "741" ? "Clear signal" : "Focus support"}</small></button>`).join("")}
+        ${tones.map(([hz, label], index) => oracleStudioControl({
+          key: `reset-tone:${index}`,
+          action: "load-reset-session",
+          label: `${hz} Hz`,
+          hint: `${label} - ${label === "Heart Field" ? "528 Hz box" : hz === "528" ? "Love frequency" : hz === "741" ? "Clear signal" : "Focus support"}`,
+          art: index % 2 ? ASSETS.logo : ASSETS.music,
+          className: `sound-card tone-pill ${state.tone === hz ? "active" : ""}`,
+          extraAttributes: `data-tone="${hz}" data-autoplay="true" data-knob-bind="tone"`,
+          min: 174,
+          max: 963,
+          step: 1,
+          unit: "Hz",
+          fallback: Number(hz),
+          pressVerb: "load tone",
+          liveReadout: true,
+        })).join("")}
       </div>
     </div>
     ${importedMusicDeckPanel("reset-imported-music")}
@@ -2835,7 +3101,7 @@ function storeLocatorView() {
       <div>
         <span class="eyebrow">Store Finder</span>
         <h1>Local Play Map</h1>
-        <p>Find saved demo retailers, local weather cues, and a quick radar path for ${state.selectedState}.</p>
+        <p>Review saved location references, local weather context, and a quick radar path for ${state.selectedState}. Always confirm retailers with the official state lottery.</p>
         <div class="hero-actions">
           <button class="primary-btn" data-action="cycle-state">Change State Pin</button>
           <button class="ghost-btn" data-route="luckyWeather">Weather Radar</button>
@@ -3033,7 +3299,7 @@ function dreamsView() {
         <span>${ORACLE_STUDIO_GROUP.tools.length} tools</span>
       </div>
       <div class="circle-carousel tool-bento dream-studio-bento">
-        ${ORACLE_STUDIO_GROUP.tools.map(([title, sub, route], index) => circleTool(title, sub, route, index + 3, { art: DREAM_TOOL_ART[title], preferStaticArt: true })).join("")}
+        ${ORACLE_STUDIO_GROUP.tools.map(([title, sub, route], index) => circleTool(title, sub, route, index + 3, { art: DREAM_TOOL_ART[title], preferStaticArt: true, knob: true })).join("")}
       </div>
     </div>
 
@@ -3215,7 +3481,7 @@ function heatmapView() {
       <div>
         <span class="eyebrow">Mission 03</span>
         <h1>Signal Radar Map</h1>
-        <p>${stats.game.name} - ${stats.drawCount} local demo draws - ${stats.trustScore}% signal confidence.</p>
+        <p>${stats.game.name} - ${stats.drawCount} reference draws - pattern view only, not predictive.</p>
       </div>
       <div class="radar-summary">
         <strong>${state.selectedState}</strong>
@@ -3224,22 +3490,38 @@ function heatmapView() {
       </div>
       ${gamePills()}
     </div>
-    <div class="panel radar-controls">
+    <div class="panel radar-controls" role="group" aria-label="Radar rotary controls">
       ${[
-        ["Target Lock", "hot"],
-        ["Cold Sweep", "cold"],
-        ["Balance Lane", "balanced"],
-        ["Save Set", "history"],
-        ["Run Power Tools", "powertools"],
-        ["Store Locator", "storeLocator"],
-      ].map(([label, route]) => `<button class="control-chip" data-route="${route === "hot" || route === "cold" || route === "balanced" ? "heatmap" : route}"><span>${label}</span><small>${route === "hot" ? topSignal.number : route === "cold" ? lowSignal.number : route === "balanced" ? "mix" : "open"}</small></button>`).join("")}
+        ["Target Lock", "hot", String(topSignal.number), STRATEGY_ART.hot || ASSETS.hot],
+        ["Cold Sweep", "cold", String(lowSignal.number), STRATEGY_ART.cold || ASSETS.cold],
+        ["Balance Lane", "balanced", "Mix", STRATEGY_ART.balanced || ASSETS.balanced],
+        ["Save Set", "history", "Open vault", ASSETS.live],
+        ["Run Power Tools", "powertools", "Open lab", ASSETS.powerTools],
+        ["Store Locator", "storeLocator", "Find stores", ASSETS.heatmap],
+      ].map(([label, mode, hint, art], index) => oracleStudioControl({
+        key: `radar-action:${mode}:${index}`,
+        label,
+        hint,
+        art,
+        action: ["hot", "cold", "balanced"].includes(mode) ? "set-strategy" : "",
+        route: ["hot", "cold", "balanced"].includes(mode) ? "" : mode,
+        className: `control-chip ${state.strategy === mode ? "active" : ""}`,
+        extraAttributes: ["hot", "cold", "balanced"].includes(mode) ? `data-strategy="${mode}" aria-pressed="${state.strategy === mode ? "true" : "false"}"` : "",
+        fallback: 28 + (index * 12),
+        pressVerb: ["hot", "cold", "balanced"].includes(mode) ? "select" : "open",
+      })).join("")}
     </div>
     <div class="panel quick-panel radar-quick-panel">
       <div class="section-head"><div><h2>Radar Tool Deck</h2><p>Old functions grouped under the Radar tab as swipeable Oracle buttons.</p></div><span>${QUICK_TOOLS.length} tools</span></div>
-      <div class="circle-carousel">
-        ${QUICK_TOOLS.map(([title, sub, route], index) => circleTool(title, sub, route, index, {
-          art: HEATMAP_TOOL_ART[title],
-          preferStaticArt: Boolean(HEATMAP_TOOL_ART[title]),
+      <div class="circle-carousel oracle-control-carousel" role="group" aria-label="Radar tool controls">
+        ${QUICK_TOOLS.map(([title, sub, route], index) => oracleStudioControl({
+          key: `radar-tool:${route}:${index}`,
+          route,
+          label: title,
+          hint: sub,
+          art: HEATMAP_TOOL_ART[title] || categoryArtForTool(title, route, index),
+          className: "radar-tool-control",
+          fallback: 30 + ((index * 13) % 58),
         })).join("")}
       </div>
     </div>
@@ -3432,7 +3714,7 @@ function liveView() {
   return `<section class="screen">
     <div class="panel art-panel" style="--panel-art:url('${ASSETS.live}')">
       <h1>Live Results</h1>
-      <p>State and national demo draw center. Pin ${state.selectedState} controls the local rows.</p>
+      <p>Saved reference results for state and national games. Verify every result with the official lottery operator. Pin ${state.selectedState} controls the local rows.</p>
       <button class="pin-button" data-action="cycle-state"><span>STATE</span><strong>${state.selectedState}</strong></button>
     </div>
     <div class="result-list">${rows.map((record) => `<div class="panel result-card live-row"><span>${record.stateName} - ${record.session}</span><h2>${record.gameName}</h2>${ballsHtml(record.numbers, record.special)}<p>${record.drawDate}${record.jackpotMillions ? ` - $${record.jackpotMillions}M` : ""}</p></div>`).join("")}</div>
@@ -3444,7 +3726,7 @@ function scannerView() {
   return `<section class="screen">
     <div class="panel art-panel scanner-hero" style="--panel-art:url('${ASSETS.powerTools}')">
       <h1>Ticket Scanner</h1>
-      <p>Camera capture, barcode entry, and scan simulation are wired into LottoMind Records.</p>
+      <p>Capture a ticket image or enter its barcode. Always verify tickets with the official lottery operator or retailer.</p>
       <div class="scanner-frame">
         <video class="scanner-video" data-src="${ASSETS.ticketScannerVideo}" muted loop playsinline preload="none" data-autoplay-on-visible="true"></video>
         <span></span><span></span><span></span><span></span>
@@ -3457,11 +3739,10 @@ function scannerView() {
       <label class="field-label">Barcode / QR number <input data-bind="barcodeInput" value="${escapeHtml(state.barcodeInput)}" placeholder="Scan or type barcode..." /></label>
       <div class="hero-actions">
         <button class="primary-btn" data-action="scan-barcode">Scan Barcode</button>
-        <button class="ghost-btn" data-action="simulate-scan">Run Scan Demo</button>
         <button class="ghost-btn" data-route="history">Records</button>
       </div>
     </div>
-    <div class="panel result-card scanner-result">${result ? `<span>Scanner output</span><h2>${result.title}</h2>${ballsHtml(result.numbers, result.special)}<p>${result.note}</p><div class="tool-grid padded">${metricCard("Barcode", result.barcode || "image")}${metricCard("Status", result.status || "Needs verification")}${metricCard("Matched", result.matchedGame || getGame().name)}${metricCard("Confidence", `${result.confidence || 78}%`)}</div><div class="hero-actions"><button class="primary-btn" data-action="save-current-set">Save Scan</button><button class="ghost-btn" data-route="live">Check Results</button></div>` : `<p>No scan yet. Upload a ticket image, run the demo, or enter a barcode.</p>`}</div>
+    <div class="panel result-card scanner-result">${result ? `<span>Scanner output</span><h2>${result.title}</h2><p>${result.note}</p><div class="tool-grid padded">${metricCard("Barcode", result.barcode || "Image only")}${metricCard("Status", result.status || "Needs official verification")}${metricCard("Game", result.matchedGame || getGame().name)}</div><div class="hero-actions"><button class="primary-btn" data-route="live">Open Reference Results</button></div>` : `<p>No scan yet. Upload a ticket image or enter a barcode. Images stay on this device unless you choose to share them.</p>`}</div>
   </section>`;
 }
 
@@ -3470,12 +3751,12 @@ function walletView() {
   const unlocks = getUnlocks();
   return `<section class="screen">
     <div class="panel art-panel" style="--panel-art:url('${ASSETS.credit}')">
-      <h1>Credit Vault</h1>
-      <p>Credits power readings, reports, and premium experiments.</p>
+      <h1>Activity Points</h1>
+      <p>Free points earned inside LottoMind unlock local activities. They cannot be purchased, transferred, redeemed for cash, or used to buy lottery tickets.</p>
       <div class="credit-balance">${credits}</div>
     </div>
-    <div class="tool-grid">${FEATURE_UNLOCKS.map((item) => `<button class="store-card ${isUnlocked(item.id) ? "unlocked" : ""}" data-action="unlock-feature" data-unlock="${item.id}"><strong>${item.title}</strong><span>${item.window}</span><small>${isUnlocked(item.id) ? "Unlocked" : `${item.cost} credits`}</small></button>`).join("")}</div>
-    <div class="panel result-card"><span>Unlocked Features</span><h2>${Object.values(unlocks).filter((item) => isUnlocked(item.id)).length} active</h2><p>Credits now unlock features instead of only subtracting from the wallet.</p></div>
+    <div class="tool-grid">${FEATURE_UNLOCKS.map((item) => `<button class="store-card ${isUnlocked(item.id) ? "unlocked" : ""}" data-action="unlock-feature" data-unlock="${item.id}"><strong>${item.title}</strong><span>${item.window}</span><small>${isUnlocked(item.id) ? "Unlocked" : `${item.cost} points`}</small></button>`).join("")}</div>
+    <div class="panel result-card"><span>Unlocked Activities</span><h2>${Object.values(unlocks).filter((item) => isUnlocked(item.id)).length} active</h2><p>Activity points have no monetary value and remain on this device.</p></div>
   </section>`;
 }
 
@@ -5358,11 +5639,11 @@ function marketplaceView() {
   return `<section class="screen marketplace-screen">
     <div class="panel art-panel media-hero" style="--panel-art:url('${ASSETS.credit}')">
       <div>
-        <span class="eyebrow">Marketplace</span>
-        <h1>Credit Marketplace</h1>
-        <p>Credits, VIP unlocks, dream video tools, learning guides, and premium arcade rewards. Merch now has its own professional store.</p>
+        <span class="eyebrow">Rewards Vault</span>
+        <h1>Activity Rewards</h1>
+        <p>Use free points earned through LottoMind activities. Points are not sold and have no cash or lottery-ticket value.</p>
         <div class="hero-actions">
-          <button class="primary-btn" data-route="wallet">Credit Vault</button>
+          <button class="primary-btn" data-route="wallet">Activity Points</button>
           <button class="ghost-btn" data-route="vip">VIP</button>
           <button class="ghost-btn" data-route="store">Merch Store</button>
         </div>
@@ -5370,13 +5651,13 @@ function marketplaceView() {
       <img class="deck-coin" src="${ASSETS.credit}" alt="LottoMind credit coin" />
     </div>
     <div class="tool-grid">
-      ${MARKETPLACE_ITEMS.map(([title, copy, cost, unlock]) => `<button class="store-card ${unlocked[unlock] ? "unlocked" : ""}" data-action="buy-item" data-cost="${cost}" data-unlock="${unlock}" data-title="${escapeHtml(title)}"><strong>${title}</strong><span>${copy}</span><small>${unlocked[unlock] ? "Unlocked" : `${cost} credits`}</small></button>`).join("")}
-      ${FEATURE_UNLOCKS.map((item) => `<button class="store-card ${isUnlocked(item.id) ? "unlocked" : ""}" data-action="unlock-feature" data-unlock="${item.id}"><strong>${item.title}</strong><span>${item.window} - ${routeMeta(item.route)[0]}</span><small>${isUnlocked(item.id) ? "Unlocked" : `${item.cost} credits`}</small></button>`).join("")}
+      ${MARKETPLACE_ITEMS.map(([title, copy, cost, unlock]) => `<button class="store-card ${unlocked[unlock] ? "unlocked" : ""}" data-action="buy-item" data-cost="${cost}" data-unlock="${unlock}" data-title="${escapeHtml(title)}"><strong>${title}</strong><span>${copy}</span><small>${unlocked[unlock] ? "Unlocked" : `${cost} points`}</small></button>`).join("")}
+      ${FEATURE_UNLOCKS.map((item) => `<button class="store-card ${isUnlocked(item.id) ? "unlocked" : ""}" data-action="unlock-feature" data-unlock="${item.id}"><strong>${item.title}</strong><span>${item.window} - ${routeMeta(item.route)[0]}</span><small>${isUnlocked(item.id) ? "Unlocked" : `${item.cost} points`}</small></button>`).join("")}
     </div>
     <div class="panel related-panel">
       <div class="section-head"><div><h2>Store Routes</h2><p>More old app functions connected here.</p></div></div>
       <div class="circle-carousel">
-        ${[["Official Merch", "Shop", "store"], ["Credit Store", "Packs", "creditStore"], ["VIP", "Premium", "vip"], ["Achievements", "Rewards", "achievements"], ["Arcade", "Play", "arcade"]].map(([title, sub, route], index) => circleTool(title, sub, route, index + 4)).join("")}
+        ${[["Official Merch", "Shop", "store"], ["Activity Points", "Free", "wallet"], ["VIP", "Premium", "vip"], ["Achievements", "Rewards", "achievements"], ["Arcade", "Play", "arcade"]].map(([title, sub, route], index) => circleTool(title, sub, route, index + 4)).join("")}
       </div>
     </div>
   </section>`;
@@ -5415,7 +5696,7 @@ function merchStoreView() {
         <span>${escapeHtml(selected.type)}</span>
         <h2>${escapeHtml(selected.title)}</h2>
         <p>${escapeHtml(selected.copy)}</p>
-        <div class="product-buy"><b>${escapeHtml(selected.price)}</b><button class="primary-btn" data-action="add-merch-demo" data-merch="${state.selectedMerchIndex}">Load Demo Checkout</button></div>
+        <div class="product-buy"><b>${escapeHtml(selected.price)}</b><span class="release-availability">Ordering is not included in this app release.</span></div>
       </div>
     </div>
     <div class="merch-grid">
@@ -5440,17 +5721,29 @@ function merchStoreView() {
 }
 
 function profileView() {
+  const localEntryCount = Object.keys(localProfileEntries()).length;
+  const membership = hasRevenueCatProAccess() ? "Pro active" : "Free access";
   return `<section class="screen">
     <div class="panel art-panel" style="--panel-art:url('${ASSETS.mascot}')">
-      <h1>LottoMaster Profile</h1>
-      <p>Your saved app state, credits, and streaks.</p>
+      <span class="eyebrow">On-device profile</span>
+      <h1>Local Profile</h1>
+      <p>This release does not create a LottoMind account. Your saved activity stays on this device unless you export or share it.</p>
       <div class="stat-row">
-        <div><strong>${getCredits()}</strong><span>Credits</span></div>
+        <div><strong>${getCredits()}</strong><span>Points</span></div>
         <div><strong>${loadJson(STORAGE.history, []).length}</strong><span>Saved</span></div>
-        <div><strong>12</strong><span>Level</span></div>
+        <div><strong>${localEntryCount}</strong><span>Local records</span></div>
       </div>
     </div>
-    <div class="panel">${["My Picks", "Transaction History", "Membership", "Notifications", "Settings", "Help"].map((label) => `<button class="list-button" data-route="${label === "Settings" ? "settings" : label === "Notifications" ? "notifications" : label === "My Picks" ? "history" : "wallet"}">${label}<span>Open</span></button>`).join("")}</div>
+    <div class="panel account-control-panel">
+      <div class="section-head"><div><h2>Profile Controls</h2><p>${membership}. Subscription purchases are tied to the Apple ID or Google account used by the store.</p></div></div>
+      <button class="list-button" data-route="history">Saved Picks and Readings<span>Open</span></button>
+      <button class="list-button" data-route="paywall">Membership<span>${membership}</span></button>
+      <button class="list-button" data-action="restore-revenuecat">Restore Purchases<span>Restore</span></button>
+      <button class="list-button" data-action="manage-revenuecat">Manage Subscription<span>Open</span></button>
+      <button class="list-button" data-route="settings">Privacy and App Settings<span>Open</span></button>
+      <button class="list-button" data-route="policies">Privacy Policy and Terms<span>Read</span></button>
+      <button class="list-button" data-external-url="https://github.com/robjasper2084/Jungle-Lotto/issues">Support<span>Open</span></button>
+    </div>
   </section>`;
 }
 
@@ -5459,23 +5752,74 @@ function settingsView() {
   return `<section class="screen">
     <div class="panel settings-panel">
       <h1>App Settings</h1>
-      <p>Feature switches are saved locally.</p>
+      <p>Feature switches and app activity are stored locally on this device.</p>
       ${Object.entries(settings).map(([key, value]) => `<button class="list-button settings-toggle" data-action="toggle-setting" data-setting="${key}" aria-pressed="${value ? "true" : "false"}">
         <span class="setting-copy"><strong>${key === "music" ? "Tab Intro Music" : titleCase(key)}</strong><small>${key === "music" ? "5-second tab intros" : key === "responsible" ? "Responsible play reminders" : `${titleCase(key)} controls`}</small></span>
         <span class="switch-control ${value ? "on" : ""}"><i></i><b>${value ? "On" : "Off"}</b></span>
       </button>`).join("")}
     </div>
+    <div class="panel privacy-control-panel">
+      <div class="section-head"><div><h2>Privacy Controls</h2><p>Camera, microphone, speech, and location are requested only when you start a feature that needs them.</p></div><span>On device</span></div>
+      <button class="list-button" data-action="export-local-data">Export My Local Data<span>JSON</span></button>
+      <button class="list-button" data-route="policies">Privacy Policy and Terms<span>Read</span></button>
+      <button class="list-button" data-action="restore-revenuecat">Restore Purchases<span>Restore</span></button>
+      <button class="list-button" data-action="manage-revenuecat">Manage Subscription<span>Open</span></button>
+      ${state.privacyDeleteArmed ? `<div class="delete-confirmation" role="alert"><strong>Delete all local LottoMind data?</strong><p>This removes saved numbers, readings, recordings metadata, settings, points, and local subscription identifiers from this device. Store subscriptions are not cancelled.</p><div class="hero-actions"><button class="danger-btn" data-action="confirm-delete-local-data">Delete Local Data</button><button class="ghost-btn" data-action="cancel-delete-local-data">Cancel</button></div></div>` : `<button class="list-button danger-list-button" data-action="request-delete-local-data">Delete Local Profile and Data<span>Delete</span></button>`}
+    </div>
+  </section>`;
+}
+
+function policiesView() {
+  return `<section class="screen policies-screen">
+    <div class="panel art-panel policy-hero" style="--panel-art:url('${ASSETS.live}')">
+      <span class="eyebrow">Effective July 22, 2026</span>
+      <h1>Privacy, Terms, and Responsible Play</h1>
+      <p>LottoMind is an entertainment, creativity, organization, and learning app. It does not sell lottery tickets, accept wagers, provide cash prizes, or guarantee lottery outcomes.</p>
+    </div>
+    <div class="panel policy-document">
+      <section><h2>Privacy Policy</h2><p>This release does not require or create a LottoMind account. Saved sets, dream text, activity scores, settings, points, and studio project metadata are stored in this app on your device.</p></section>
+      <section><h2>Device Permissions</h2><p>Camera or photo access is used only when you choose ticket scanning. Microphone and speech access are used only when you choose recording or voice input. Location is used only when you request nearby retailer context. Permission denial does not block unrelated parts of the app.</p></section>
+      <section><h2>Subscriptions</h2><p>On iOS and Android, subscription purchases are processed by Apple or Google and synchronized by RevenueCat. LottoMind receives subscription status, product, renewal, and technical purchase identifiers needed to provide access. LottoMind does not receive your full payment card number.</p></section>
+      <section><h2>Sharing and Tracking</h2><p>LottoMind does not sell personal information and does not include advertising trackers in this release. Content leaves the device only when you deliberately share, export, follow an external link, or complete a store purchase.</p></section>
+      <section><h2>Retention and Deletion</h2><p>Local data remains until you delete it in App Settings, clear the app storage, or uninstall the app. The export and deletion controls are available from Profile and Settings. Deleting local data does not cancel an Apple or Google subscription; use Manage Subscription for cancellation.</p></section>
+      <section><h2>Children</h2><p>The app is not directed to children under 13. Lottery participation is age-restricted by jurisdiction. Users must follow the minimum legal lottery age where they live, even though this app does not sell tickets.</p></section>
+      <section><h2>Terms of Use</h2><p>Use LottoMind only for lawful entertainment and personal organization. Number generators, heatmaps, dreams, psychic-themed tools, and historical views are creative or informational experiences, not predictions or financial advice. Official lottery sources control winning results and ticket validation.</p></section>
+      <section><h2>Activity Points</h2><p>Activity points are free, local, non-transferable, and have no cash value. They cannot be purchased, redeemed, cashed out, or used to buy lottery tickets.</p></section>
+      <section><h2>User Content</h2><p>Only record, import, or share audio, images, and text that you own or have permission to use. You are responsible for content you export or share through another service.</p></section>
+      <section><h2>Support</h2><p>Questions, privacy requests, and support reports can be submitted through the LottoMind project support page.</p><button class="ghost-btn" data-external-url="https://github.com/robjasper2084/Jungle-Lotto/issues">Open Support</button></section>
+    </div>
+    <div class="panel policy-actions"><button class="primary-btn" data-route="settings">Privacy Controls</button><button class="ghost-btn" data-route="profile">Local Profile</button><button class="ghost-btn" data-route="dashboard">Home</button></div>
+  </section>`;
+}
+
+function jackpotChaseView() {
+  const gameUrl = `${WEBSITE_BASE}/games/lottomind-jackpot-maze/`;
+  return `<section class="screen jackpot-chase-screen">
+    <div class="panel art-panel jackpot-chase-hero" style="--panel-art:url('${ASSETS.arcade}')">
+      <span class="eyebrow">LottoMind Arcade Original</span>
+      <h1>Jackpot Chase</h1>
+      <p>Collect number reveals, outsmart the villains, and open the neon vault in the full Jackpot Maze chase game.</p>
+      <div class="hero-actions"><button class="primary-btn" data-external-url="${gameUrl}">Open Full Screen</button><button class="ghost-btn" data-route="arcade">All Games</button></div>
+    </div>
+    <div class="panel jackpot-chase-stage">
+      <iframe src="${gameUrl}" title="Jackpot Chase game" loading="eager" allow="autoplay; fullscreen; gamepad" allowfullscreen></iframe>
+    </div>
+    <div class="panel disclaimer-card"><strong>Entertainment Only</strong><p>Game points and number reveals have no cash value and do not predict lottery results.</p></div>
   </section>`;
 }
 
 function arcadeView() {
   const games = [
-    ["GOTHTECHNOLOGY", "Featured live fighter-prop boss game.", "arcadeGame", "https://robjasper2084.github.io/Jungle-Lotto/gothtechnology-canvas/index.html?fighter-prop1-live", "featured-fighter"],
-    ["Jackpot Jungle Chase", "Swing, slide, and outrun the Probability Beast.", "arcadeGame", "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/games/shadow-ops-canvas/index.html?v=title3d-mascot-center-1"],
-    ["Trivia Rewards", "Answer and earn credits.", "triviaRewards"],
-    ["Bonus Room", "Open the 2084 Static WAV credit portal.", "arcadeGame", "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/live-events.html?staticwav=1#twitch-live"],
+    ["GOTHTECHNOLOGY", "Cross Blackwood forest, break the signal lock, and fight into the vault.", "arcadeGame", `${WEBSITE_BASE}/games/gothtechnology2/`, "featured-fighter", `${WEBSITE_BASE}/games/gothtechnology2/assets/user-title/gothtechnology-cover-start-bg.webp`],
+    ["LottoMind: Jackpot Maze", "Collect number reveals, outsmart five villains, and open the neon vault.", "arcadeGame", `${WEBSITE_BASE}/games/lottomind-jackpot-maze/`, "featured-maze", `${WEBSITE_BASE}/games/lottomind-jackpot-maze/public/assets/ui/lottomind-jackpot-maze-title-card-gpt2.webp`],
+    ["2084 Static Wave", "Pilot the static signal through a fast neon combat grid.", "arcadeGame", `${WEBSITE_BASE}/games/opengw-levels/`, "featured-static-wave", `${WEBSITE_BASE}/games/opengw-levels/assets/2084/branding/marquee-gameplay-keyart.png`],
+    ["Robot Rahbe", "Enter the Shadow Ops arena and hold the tactical signal.", "arcadeGame", `${WEBSITE_BASE}/games/shadow-ops-canvas/`, "featured-robot-rahbe", `${WEBSITE_BASE}/games/shadow-ops-canvas/assets/backgrounds/robot-rahbe-gameplay-keyart.png`],
+    ["Raytrace Pong", "Play a light-traced Pong simulation with live shadows.", "arcadeGame", `${WEBSITE_BASE}/games/raytrace-pong-background/`, "", `${WEBSITE_BASE}/assets/arcade/raytrace-pong-title.webp`],
+    ["Lottery Spheres in Motion", "Guide glowing spheres and bend the orbit path with touch or pointer.", "arcadeGame", `${WEBSITE_BASE}/lottery-spheres.html#spheres`, "", `${WEBSITE_BASE}/assets/arcade/lottery-spheres-title.webp`],
+    ["Beat2Lotto+ Prompt Lab", "Turn local beat energy into entertainment-only creative signals.", "arcadeGame", `${WEBSITE_BASE}/prompt-lab.html`, "", `${WEBSITE_BASE}/assets/arcade/beat2lotto-prompt-lab-title.webp`],
+    ["LottoMind Stem Studio", "Mix stems and build a playable music route.", "arcadeGame", `${WEBSITE_BASE}/lottomind-stem-studio/`, "", `${WEBSITE_BASE}/assets/arcade/stem-studio-title.webp`],
+    ["Trivia Rewards", "Answer responsible-play questions and earn free activity points.", "triviaRewards", "", "", ASSETS.arcadeTrivia],
   ];
-  const arcadeArt = [ASSETS.arcadeArcade, ASSETS.arcadeJackpotRun, ASSETS.arcadeTrivia, ASSETS.arcadePaywall];
   const activeArcadePanel = state.route === "crossword" ? crosswordGameView() : state.route === "wordSearch" ? wordSearchGameView() : state.route !== "arcade" ? miniGameView(routeMeta(state.route)[0]) : "";
   return `<section class="screen">
     <div class="panel art-panel" data-art-kind="arcade" style="--panel-art:url('${CATEGORY_ART.arcade}')">
@@ -5489,9 +5833,9 @@ function arcadeView() {
     </div>
     ${activeArcadePanel}
     <div class="panel arcade-game-panel">
-      <div class="section-head"><div><h2>Game Select</h2><p>Scrollable arcade cards with clearer mission actions.</p></div><span>${games.length} games</span></div>
-      <div class="arcade-game-grid">${games.map(([title, copy, route, externalUrl, featureClass], index) => `
-        <button class="arcade-game-card ${featureClass || ""}" ${externalUrl ? `data-external-url="${externalUrl}"` : `data-route="${route}"`} style="--game-art:url('${arcadeArt[index % arcadeArt.length]}')">
+      <div class="section-head"><div><h2>Game Select</h2><p>Live LottoMind games from the current website build.</p></div><span>${games.length} games</span></div>
+      <div class="arcade-game-grid">${games.map(([title, copy, route, externalUrl, featureClass, art], index) => `
+        <button class="arcade-game-card ${featureClass || ""}" ${externalUrl ? `data-external-url="${externalUrl}"` : `data-route="${route}"`} style="--game-art:url('${art || ASSETS.arcadeArcade}')">
           <span>Stage ${String(index + 1).padStart(2, "0")}</span>
           <strong>${title}</strong>
           <small>${copy}</small>
@@ -5653,7 +5997,7 @@ function triviaRewardsView() {
         <div><span>Weekly Track</span><strong>${progress.weeklyStreak}/7</strong></div>
         <div><span>History</span><strong>${progress.history.length}</strong></div>
       </div>
-      <div class="hero-actions padded"><button class="ghost-btn" data-action="watch-rewarded-ad">Reward Boost</button><button class="ghost-btn" data-action="use-streak-saver">Streak Saver</button><button class="ghost-btn" data-action="activate-credit-booster">Double Credits</button></div>
+      <p class="release-note">Activity points are earned only through completed on-device activities. Paid boosts and rewarded ads are not included in this release.</p>
       <button class="primary-btn full" data-action="restart-trivia">Start New Trivia Run</button>
     </div>
   </section>`;
@@ -5766,11 +6110,11 @@ function triviaRewardsView() {
         <div><span>Weekly Track</span><strong>${progress.weeklyStreak}/7</strong></div>
         <div><span>History</span><strong>${progress.history.length}</strong></div>
       </div>
-      <div class="hero-actions padded"><button class="ghost-btn" data-action="watch-rewarded-ad">Reward Boost</button><button class="ghost-btn" data-action="use-streak-saver">Streak Saver</button><button class="ghost-btn" data-action="activate-credit-booster">Double Credits</button></div>
+      <p class="release-note">Activity points are earned only through completed on-device activities. Paid boosts and rewarded ads are not included in this release.</p>
       <button class="primary-btn full" data-action="restart-trivia">Start New Trivia Run</button>
     </div>
     <div class="panel">
-      <div class="section-head"><div><h2>Redeem Credits</h2><p>Premium unlocks persist locally. 24-hour lanes expire automatically.</p></div><span>${FEATURE_UNLOCKS.length} unlocks</span></div>
+      <div class="section-head"><div><h2>Use Activity Points</h2><p>Free on-device unlocks persist locally. Activity points have no cash value.</p></div><span>${FEATURE_UNLOCKS.length} unlocks</span></div>
       <div class="unlock-shop-grid">
         ${FEATURE_UNLOCKS.map((item) => `<button class="store-card ${isUnlocked(item.id) ? "unlocked" : ""}" data-action="unlock-feature" data-unlock="${item.id}">
           <strong>${item.title}</strong><span>${item.window}</span><small>${isUnlocked(item.id) ? "Unlocked" : `${item.cost} credits`}</small>
@@ -5906,10 +6250,10 @@ const REAL_ROUTE_SCREENS = {
   paywall: {
     eyebrow: "Premium Gate",
     title: "Unlock LottoMind Pro",
-    copy: "Use Lotto Credits now, then connect Stripe, Apple IAP, Android Billing, or subscriptions later.",
+    copy: "RevenueCat Web Billing now powers subscriptions while Lotto Credits still unlock one-off premium tools.",
     art: ASSETS.credit,
-    stats: [["Credits", getCredits()], ["VIP", isUnlocked("vip-insights") ? "Open" : "Locked"], ["Payments", "Placeholder"]],
-    actions: [["Redeem Credits", "route", "triviaRewards"], ["VIP Unlock", "unlock-feature", "vip-insights"], ["Marketplace", "route", "marketplace"]],
+    stats: () => [["Credits", getCredits()], ["VIP", isUnlocked("vip-insights") ? "Open" : "Locked"], ["RevenueCat", revenueCatStatusLabel()]],
+    actions: () => [[revenueCatCtaLabel(), "subscribe-pro"], ["VIP Unlock", "unlock-feature", "vip-insights"], ["Redeem Credits", "route", "triviaRewards"]],
   },
 };
 
@@ -5927,7 +6271,7 @@ function lockedFeatureOverlay(config) {
   return `<div class="panel locked-feature-overlay">
     <span class="eyebrow">Premium feature locked</span>
     <h2>${unlock.title}</h2>
-    <p>${unlock.window}. Unlock with Lotto Credits or use the subscription placeholder later.</p>
+    <p>${unlock.window}. Unlock with Lotto Credits or activate LottoMind Pro through RevenueCat.</p>
     <div class="hero-actions padded">
       <button class="primary-btn" data-action="unlock-feature" data-unlock="${unlock.id}">Unlock for ${unlock.cost}</button>
       <button class="ghost-btn" data-action="subscribe-pro">Subscribe</button>
@@ -5936,8 +6280,34 @@ function lockedFeatureOverlay(config) {
   </div>`;
 }
 
+function revenueCatPanel() {
+  const rc = revenueCatSnapshot();
+  const status = revenueCatStatusLabel();
+  const message = rc?.error || rc?.message || "Checking subscription availability.";
+  const price = rc?.priceLabel || "Unavailable";
+  const packageLabel = rc?.packageLabel || "LottoMind Pro";
+  const subscribeDisabled = !rc?.isConfigured || rc?.isEntitled || rc?.status === "checkout";
+  return `<div class="panel revenuecat-panel ${rc?.isEntitled ? "active" : ""}">
+    <div class="section-head"><div><h2>LottoMind Pro</h2><p>${escapeHtml(message)}</p></div><span>${escapeHtml(status)}</span></div>
+    <div class="revenuecat-status-strip">
+      <span><strong>${escapeHtml(price)}</strong><small>Store price</small></span>
+      <span><strong>${escapeHtml(packageLabel)}</strong><small>Membership</small></span>
+      <span><strong>${rc?.isEntitled ? "Active" : "Free"}</strong><small>Current access</small></span>
+    </div>
+    <div class="revenuecat-checkout-frame" data-revenuecat-paywall></div>
+    <div class="hero-actions padded">
+      <button class="primary-btn" data-action="subscribe-pro" ${subscribeDisabled ? "disabled" : ""}>${escapeHtml(revenueCatCtaLabel())}</button>
+      <button class="ghost-btn" data-action="restore-revenuecat">Restore Purchases</button>
+      <button class="ghost-btn" data-action="manage-revenuecat">Manage Subscription</button>
+      <button class="ghost-btn" data-action="refresh-revenuecat">Refresh Status</button>
+    </div>
+  </div>`;
+}
+
 function realRouteView(routeKey) {
   const config = REAL_ROUTE_SCREENS[routeKey] || REAL_ROUTE_SCREENS.original;
+  const actions = typeof config.actions === "function" ? config.actions() : config.actions;
+  const stats = typeof config.stats === "function" ? config.stats() : config.stats;
   const routeUnlocked = !config.unlock || isUnlocked(config.unlock);
   return `<section class="screen feature-route-screen route-real-${routeKey}">
     <div class="panel art-panel feature-route-hero" style="--panel-art:url('${config.art}')">
@@ -5945,13 +6315,14 @@ function realRouteView(routeKey) {
         <span class="eyebrow">${config.eyebrow}</span>
         <h1>${config.title}</h1>
         <p>${config.copy}</p>
-        <div class="hero-actions">${config.actions.map(routeActionButton).join("")}</div>
+        <div class="hero-actions">${actions.map(routeActionButton).join("")}</div>
       </div>
       <div class="feature-status-orb"><strong>${routeUnlocked ? "ON" : "LOCK"}</strong><span>${routeUnlocked ? "Ready" : "Credits"}</span></div>
     </div>
     ${lockedFeatureOverlay(config)}
+    ${routeKey === "paywall" ? revenueCatPanel() : ""}
     <div class="feature-route-grid">
-      ${config.stats.map(([label, value]) => metricCard(label, value)).join("")}
+      ${stats.map(([label, value]) => metricCard(label, value)).join("")}
     </div>
     <div class="panel related-panel">
       <div class="section-head"><div><h2>Connected Lanes</h2><p>This screen now points to real LottoMind routes instead of the generic tool fallback.</p></div><span>${routeUnlocked ? "Ready" : "Preview"}</span></div>
@@ -5970,7 +6341,7 @@ function communityBoardView() {
   const manualScores = getSocialScores();
   const triviaRows = localTriviaScoreRows(progress);
   const leaders = communityLeaderboardRows();
-  const localLeader = leaders.find((row) => row.source !== "Demo rivals");
+  const localLeader = leaders[0];
   const localRank = localLeader ? `#${localLeader.rank}` : "Local";
   const bestScore = Math.max(bestLocalTriviaScore(progress), ...manualScores.map((score) => score.score), 0);
   const dailyPct = Math.min(100, Math.round(((Number(progress.dailyStreak) || 0) / 7) * 100));
@@ -5981,16 +6352,15 @@ function communityBoardView() {
       <div class="social-hero-copy">
         <span class="eyebrow">LottoMind Social</span>
         <h1>Community Board</h1>
-        <p>Leaderboard preview, local streaks, saved challenge scores, and future community prompts.</p>
+        <p>Your on-device streaks and saved challenge scores. This release does not publish a public leaderboard.</p>
         <div class="hero-actions social-hero-actions">
           <button class="primary-btn" data-route="triviaPlay">Play Trivia</button>
-          <button class="ghost-btn" data-route="contests">Open Contests</button>
           <button class="ghost-btn" data-route="triviaRewards">Rewards</button>
         </div>
         <div class="social-status-strip">
-          <span>Local preview</span>
-          <span>Cloud community sync can plug in later</span>
-          <span>Demo rivals</span>
+          <span>Stored on this device</span>
+          <span>No public posting</span>
+          <span>No simulated players</span>
         </div>
       </div>
       <div class="social-orb">
@@ -6003,7 +6373,7 @@ function communityBoardView() {
       ${metricCard("Local Rank", localRank)}
       ${metricCard("Daily Streak", Number(progress.dailyStreak) || 0)}
       ${metricCard("Weekly Track", `${Number(progress.weeklyStreak) || 0}/7`)}
-      ${metricCard("Credits", getCredits())}
+      ${metricCard("Activity Points", getCredits())}
       ${metricCard("Saved Scores", manualScores.length)}
     </div>
 
@@ -6011,17 +6381,17 @@ function communityBoardView() {
       <div class="panel social-leaderboard">
         <div class="section-head">
           <div>
-            <h2>Leaderboard Preview</h2>
-            <p>Local preview only. Demo rivals show how a cloud community sync can plug in later.</p>
+            <h2>Local Scoreboard</h2>
+            <p>Only activity saved on this device appears here.</p>
           </div>
           <span>${leaders.length} rows</span>
         </div>
         <div class="social-leader-list">
-          ${leaders.map((row) => `<article class="social-leader-row ${row.source === "Demo rivals" ? "is-demo" : "is-local"}">
+          ${leaders.map((row) => `<article class="social-leader-row is-local">
             <span class="social-rank">${String(row.rank).padStart(2, "0")}</span>
             <div class="social-player">
               <strong>${escapeHtml(row.name)}</strong>
-              <small>${escapeHtml(row.challenge || "Community")} / ${escapeHtml(row.source || "Local preview")}</small>
+              <small>${escapeHtml(row.challenge || "Activity")} / ${escapeHtml(row.source || "On-device")}</small>
             </div>
             <div class="social-score">
               <strong>${row.score}</strong>
@@ -6052,7 +6422,7 @@ function communityBoardView() {
         <div class="social-streak-metrics">
           <div><span>Recent Trivia Runs</span><strong>${triviaRows.length}</strong></div>
           <div><span>Best Local Score</span><strong>${bestScore}</strong></div>
-          <div><span>Credits</span><strong>${getCredits()}</strong></div>
+          <div><span>Activity Points</span><strong>${getCredits()}</strong></div>
         </div>
       </div>
     </div>
@@ -6517,7 +6887,8 @@ function renderView() {
   if (state.route === "settings") return settingsView();
   if (state.route === "triviaPlay") return triviaGameView();
   if (state.route === "triviaRewards" || state.route === "triviaRedeem") return triviaRewardsView();
-  if (["arcade", "arcadeGame", "game", "cardGame", "gamesHub", "crossword", "wordSearch", "ludo"].includes(state.route)) return arcadeView();
+  if (state.route === "arcadeGame") return jackpotChaseView();
+  if (["arcade", "game", "cardGame", "gamesHub", "crossword", "wordSearch", "ludo"].includes(state.route)) return arcadeView();
   if (state.route === "psychic") return psychicView();
   if (state.route === "community") return communityBoardView();
   if (["vip", "community", "contests", "achievements", "usLottery", "notifications", "onboarding", "splash", "thankYou", "original", "help", "policies", "paywall"].includes(state.route)) return realRouteView(state.route);
@@ -7002,19 +7373,15 @@ async function scanBarcodeFromFile(file) {
 }
 
 function applyScanReadout(action, source, upload = "", decoded = "") {
-  const result = generateLottoSet(state.gameId, "quick", decoded || source);
-  const digits = ((decoded || source).match(/\d/g) || result.numbers.map(String)).slice(0, 12).join("");
+  const barcode = String(decoded || (action === "scan-barcode" ? state.barcodeInput : "")).trim();
   state.scanResult = {
-    ...result,
-    title: action === "scan-ticket" ? "Ticket image scanned" : action === "scan-barcode" ? "Barcode scan decoded" : "Scan demo complete",
-    barcode: decoded || digits || "LM-DEMO-528",
+    title: barcode ? "Barcode detected" : "Ticket image received",
+    barcode,
     matchedGame: getGame().name,
-    status: decoded ? "Barcode detected" : "Demo check only",
-    confidence: decoded ? 96 : upload ? 84 : action === "scan-barcode" ? 91 : 76,
-    source: upload || (action === "scan-barcode" ? "Typed barcode" : "Demo camera lane"),
-    note: `${upload ? `Read ${upload}. ` : ""}${decoded ? `Detected barcode ${decoded}. ` : ""}${action === "scan-barcode" && state.barcodeInput ? `Barcode ${state.barcodeInput} decoded. ` : ""}${result.note}`,
+    status: "Needs official verification",
+    source: upload || (action === "scan-barcode" ? "Typed barcode" : "Ticket image"),
+    note: `${upload ? `${upload} was opened on this device. ` : ""}${barcode ? `Barcode ${barcode} was read. ` : "No supported barcode was detected. "}LottoMind does not determine whether a ticket is valid or winning. Verify it with the official lottery operator or an authorized retailer.`,
   };
-  state.currentSet = state.scanResult;
 }
 
 async function importStudioSampleFile(file, padIndex = state.studio.selectedPad) {
@@ -8372,13 +8739,22 @@ function handleAction(action, target) {
   }
   if (action === "favorite-tone") toast(`${state.tone} Hz saved as favorite`);
   if (action === "simulate-scan" || action === "scan-ticket" || action === "scan-barcode") {
+    if (action === "simulate-scan") {
+      toast("Simulated ticket scans are not included in this release");
+      return;
+    }
     const upload = target.files && target.files[0] ? target.files[0].name : "";
-    const source = action === "scan-barcode" ? state.barcodeInput || "barcode-demo-0427" : upload || "camera-demo-ticket";
+    const source = action === "scan-barcode" ? state.barcodeInput.trim() : upload;
+    if (action === "scan-barcode" && !source) {
+      toast("Enter or scan a barcode first");
+      return;
+    }
+    if (action === "scan-ticket" && !upload) return;
     if (action === "scan-ticket" && target.files && target.files[0]) {
       const file = target.files[0];
       scanBarcodeFromFile(file).then((decoded) => {
         applyScanReadout(action, file.name, file.name, decoded);
-        toast(decoded ? "Real barcode detected from ticket image" : "No barcode found. Demo readout loaded.");
+        toast(decoded ? "Barcode detected. Verify it with the official lottery." : "No supported barcode was detected");
       });
       toast("Reading ticket image...");
       return;
@@ -8395,8 +8771,8 @@ function handleAction(action, target) {
     const cost = Number(target.getAttribute("data-cost")) || 0;
     const unlockId = target.getAttribute("data-unlock");
     if (unlockId === "credits-pack") {
-      setCredits(getCredits() + 100);
-      toast("Demo credit pack added: +100 credits");
+      toast("Activity points are not sold");
+      return;
     } else if (unlockId && isUnlocked(unlockId)) {
       toast("Already unlocked");
     } else {
@@ -8438,19 +8814,42 @@ function handleAction(action, target) {
     }
   }
   if (action === "watch-rewarded-ad") {
-    setCredits(getCredits() + 25);
-    toast("Rewarded ad placeholder: +25 credits");
+    toast("Rewarded ads are not included in this release");
+    return;
   }
   if (action === "activate-credit-booster") {
-    saveUnlock("double-credit-booster", "Double Credits Booster", 0, 24);
-    toast("Double credits placeholder active for 24h");
+    toast("Point boosters are not included in this release");
+    return;
   }
   if (action === "use-streak-saver") {
-    saveUnlock("streak-saver", "Streak Saver", 0, 24);
-    toast("Streak saver placeholder armed");
+    toast("Streak savers are not included in this release");
+    return;
   }
   if (action === "subscribe-pro") {
-    toast("Subscription placeholder ready for Stripe/IAP");
+    startRevenueCatPurchase();
+  }
+  if (action === "refresh-revenuecat") {
+    refreshRevenueCatStatus();
+  }
+  if (action === "restore-revenuecat") {
+    restoreRevenueCatPurchases();
+  }
+  if (action === "manage-revenuecat") {
+    manageRevenueCatSubscription();
+  }
+  if (action === "export-local-data") {
+    exportLocalProfile();
+    toast("Local data exported");
+  }
+  if (action === "request-delete-local-data") {
+    state.privacyDeleteArmed = true;
+  }
+  if (action === "cancel-delete-local-data") {
+    state.privacyDeleteArmed = false;
+  }
+  if (action === "confirm-delete-local-data") {
+    deleteLocalProfile();
+    return;
   }
   if (action === "toggle-setting") {
     const settings = getSettings();
@@ -8553,8 +8952,8 @@ function handleAction(action, target) {
     toast(`${MERCH_ITEMS[state.selectedMerchIndex].title} loaded`);
   }
   if (action === "add-merch-demo") {
-    const item = MERCH_ITEMS[state.selectedMerchIndex] || MERCH_ITEMS[0];
-    toast(`${item.title} demo checkout ready`);
+    toast("Merch ordering is not included in this release");
+    return;
   }
   if (action === "play-mini-game") {
     setCredits(getCredits() + 10);
@@ -8568,8 +8967,33 @@ let touchStart = null;
 let lastTouchActivation = 0;
 let flowSwipe = null;
 let suppressFlowClickUntil = 0;
+let globalKnobDrag = null;
+let suppressGlobalKnobClickUntil = 0;
 const TAP_MOVE_THRESHOLD = 18;
 const ROUTE_SWIPE_THRESHOLD = 96;
+
+function setGlobalKnobValue(control, nextValue) {
+  const min = Number(control.dataset.knobMin);
+  const max = Number(control.dataset.knobMax);
+  const step = Number(control.dataset.knobStep) || 1;
+  const value = Math.max(min, Math.min(max, min + Math.round((nextValue - min) / step) * step));
+  const unit = control.dataset.knobUnit || "";
+  const readout = oracleKnobReadout(value, unit);
+  control.dataset.knobValue = String(value);
+  control.style.setProperty("--knob-live-angle", `${oracleKnobAngle(value, min, max)}deg`);
+  control.setAttribute("aria-label", `${control.dataset.knobLabel}. Knob position ${readout}. Rotate to adjust, press to ${control.dataset.knobPressVerb || "open"}.`);
+  const liveReadout = control.querySelector("[data-knob-readout]");
+  if (liveReadout) liveReadout.textContent = readout;
+  if (control.dataset.knobBind === "tone") {
+    control.dataset.tone = String(value);
+    state.tone = String(value);
+    if (resetToneOscillator && resetToneContext) {
+      resetToneOscillator.frequency.setTargetAtTime(value, resetToneContext.currentTime, 0.03);
+    }
+  }
+  state.knobPositions[control.dataset.knobKey] = value;
+  localStorage.setItem("lottomind.oracle.real.knobs.v1", JSON.stringify(state.knobPositions));
+}
 
 function interactiveGesturePoint(event) {
   const touch = event.changedTouches?.[0] || event.touches?.[0];
@@ -8658,6 +9082,21 @@ document.addEventListener("pointerdown", (event) => {
   const target = event.target instanceof Element ? event.target : event.target?.parentElement;
   const pressedControl = pressableControlFromEvent(event);
   if (pressedControl) pressedControl.classList.add("is-pressing");
+  const globalKnob = target?.closest?.("[data-knob-control]");
+  if (globalKnob) {
+    globalKnobDrag = {
+      control: globalKnob,
+      pointerId: event.pointerId,
+      startY: event.clientY,
+      startValue: Number(globalKnob.dataset.knobValue),
+      moved: false,
+    };
+    globalKnob.classList.add("is-adjusting");
+    globalKnob.focus({ preventScroll: true });
+    globalKnob.setPointerCapture?.(event.pointerId);
+    event.preventDefault();
+    return;
+  }
   const fxKnobInput = target?.closest?.(".fx-knob-input, .dj-knob-input");
   if (fxKnobInput) {
     studioFxKnobDrag = fxKnobInput;
@@ -8681,6 +9120,16 @@ document.addEventListener("pointerdown", (event) => {
 }, { passive: false });
 
 document.addEventListener("pointermove", (event) => {
+  if (globalKnobDrag) {
+    const dy = globalKnobDrag.startY - event.clientY;
+    if (Math.abs(dy) > 4) globalKnobDrag.moved = true;
+    setGlobalKnobValue(
+      globalKnobDrag.control,
+      globalKnobDrag.startValue + (dy * Number(globalKnobDrag.control.dataset.knobStep || 1)),
+    );
+    event.preventDefault();
+    return;
+  }
   if (studioFxKnobDrag) {
     updateStudioFxKnobFromPointer(studioFxKnobDrag, event);
     event.preventDefault();
@@ -8702,6 +9151,17 @@ function endFlowSwipe() {
 
 document.addEventListener("pointerup", (event) => {
   clearPressedControls();
+  if (globalKnobDrag) {
+    const completedDrag = globalKnobDrag;
+    completedDrag.control.releasePointerCapture?.(completedDrag.pointerId);
+    completedDrag.control.classList.remove("is-adjusting");
+    globalKnobDrag = null;
+    if (completedDrag.moved) {
+      suppressGlobalKnobClickUntil = Date.now() + 420;
+      event.preventDefault();
+      return;
+    }
+  }
   if (studioFxKnobDrag) {
     studioFxKnobDrag.releasePointerCapture?.(event.pointerId);
     studioFxKnobDrag = null;
@@ -8739,10 +9199,29 @@ document.addEventListener("pointerup", (event) => {
 
 document.addEventListener("pointercancel", () => {
   clearPressedControls();
+  globalKnobDrag?.control.classList.remove("is-adjusting");
+  globalKnobDrag = null;
   studioFxKnobDrag = null;
   pointerStart = null;
   endFlowSwipe();
 }, { passive: true });
+
+document.addEventListener("wheel", (event) => {
+  const target = event.target instanceof Element ? event.target : event.target?.parentElement;
+  const globalKnob = target?.closest?.("[data-knob-control]");
+  if (!globalKnob) return;
+  const direction = Math.sign(event.deltaY) * -1;
+  setGlobalKnobValue(globalKnob, Number(globalKnob.dataset.knobValue) + (direction * Number(globalKnob.dataset.knobStep || 1)));
+  event.preventDefault();
+}, { passive: false });
+
+document.addEventListener("keydown", (event) => {
+  const globalKnob = event.target?.closest?.("[data-knob-control]");
+  if (!globalKnob || !["ArrowUp", "ArrowRight", "ArrowDown", "ArrowLeft"].includes(event.key)) return;
+  const direction = event.key === "ArrowUp" || event.key === "ArrowRight" ? 1 : -1;
+  setGlobalKnobValue(globalKnob, Number(globalKnob.dataset.knobValue) + (direction * Number(globalKnob.dataset.knobStep || 1)));
+  event.preventDefault();
+});
 
 document.addEventListener("touchstart", (event) => {
   if (Date.now() - lastTouchActivation < 320) return;
@@ -8778,6 +9257,10 @@ document.addEventListener("touchcancel", () => {
 }, { passive: true });
 
 document.addEventListener("click", (event) => {
+  if (Date.now() < suppressGlobalKnobClickUntil && (event.target instanceof Element ? event.target : event.target?.parentElement)?.closest?.("[data-knob-control]")) {
+    event.preventDefault();
+    return;
+  }
   if (Date.now() < suppressFlowClickUntil && (event.target instanceof Element ? event.target : event.target?.parentElement)?.closest?.(".oracle-flow-steps")) {
     event.preventDefault();
     return;
@@ -8878,3 +9361,4 @@ window.addEventListener("popstate", () => {
 
 render();
 installCentralAccountSync();
+installRevenueCatSync();

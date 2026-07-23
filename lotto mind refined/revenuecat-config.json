@@ -1,0 +1,7 @@
+{
+  "apiKey": "",
+  "entitlementIds": ["pro", "premium", "vip"],
+  "offeringId": "",
+  "packageId": "",
+  "sdkUrl": "https://cdn.jsdelivr.net/npm/@revenuecat/purchases-js@1.47.3/dist/Purchases.es.js"
+}

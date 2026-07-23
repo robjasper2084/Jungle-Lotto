@@ -3119,6 +3119,7 @@ async function playStartupVideoWithSound(options = {}) {
   try {
     await startupVideoPlayer.play();
     startupVideoModal?.classList.remove("is-awaiting-video-play");
+    if (startupVideoPlay) startupVideoPlay.textContent = "Playing with sound";
     return true;
   } catch {
     // Browsers block unmuted autoplay without a gesture. Keep the film moving
@@ -3128,9 +3129,29 @@ async function playStartupVideoWithSound(options = {}) {
     startupVideoPlayer.defaultMuted = true;
     startupVideoPlayer.setAttribute("muted", "");
     startupVideoModal?.classList.add("is-awaiting-video-play");
+    if (startupVideoPlay) startupVideoPlay.textContent = "Play with sound";
     await startupVideoPlayer.play().catch(() => {});
     return false;
   }
+}
+
+async function playStartupVideoMuted(options = {}) {
+  if (!startupVideoPlayer || !isStartupVideoOpen()) return false;
+  stopStartupSoundtrack({ reset: true });
+  restoreDeferredVideoSources(startupVideoPlayer);
+  if (options.reset) {
+    try {
+      startupVideoPlayer.currentTime = 0;
+    } catch {}
+  }
+  startupVideoPlayer.muted = true;
+  startupVideoPlayer.defaultMuted = true;
+  startupVideoPlayer.setAttribute("muted", "");
+  startupVideoPlayer.volume = Number(startupVideoPlayer.dataset.startupVideoVolume || SITE_AUDIO_LEVELS.commercial);
+  startupVideoModal?.classList.add("is-awaiting-video-play");
+  if (startupVideoPlay) startupVideoPlay.textContent = "Play with sound";
+  await startupVideoPlayer.play().catch(() => {});
+  return !startupVideoPlayer.paused;
 }
 
 async function finishStartupVideoHandoff() {
@@ -3186,6 +3207,7 @@ function showStartupVideo() {
   syncHeroMotionPreference();
   rememberStartupVideoSeen();
   startupVideoModal.classList.add("is-awaiting-video-play");
+  void playStartupVideoWithSound({ reset: true });
   startupVideoPlay?.focus({ preventScroll: true });
 }
 

@@ -85,6 +85,20 @@ if (wrapper && canvas) {
     syncLoop();
   });
 
+  const mutationObservers = [];
+  const observeTarget = (target, options) => {
+    if (!target || typeof target.nodeType !== "number") return false;
+    const observer = new MutationObserver(syncLoop);
+    try {
+      observer.observe(target, options);
+      mutationObservers.push(observer);
+      return true;
+    } catch (_error) {
+      observer.disconnect();
+      return false;
+    }
+  };
+
   if ("ResizeObserver" in window) {
     const observer = new ResizeObserver(resize);
     observer.observe(canvas);
@@ -92,13 +106,8 @@ if (wrapper && canvas) {
     window.addEventListener("resize", resize);
   }
 
-  if (overlay) {
-    new MutationObserver(syncLoop).observe(overlay, { attributes: true, attributeFilter: ["hidden", "data-state"] });
-  }
-
-  if (shell) {
-    new MutationObserver(syncLoop).observe(shell, { attributes: true, attributeFilter: ["data-mode"] });
-  }
+  observeTarget(overlay, { attributes: true, attributeFilter: ["hidden", "data-state"] });
+  observeTarget(shell, { attributes: true, attributeFilter: ["data-mode"] });
 
   resize();
 

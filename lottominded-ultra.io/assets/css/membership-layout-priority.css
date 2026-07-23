@@ -20,6 +20,11 @@ body.memberships-page .membership-plan-support-grid > * {
   min-width: 0;
 }
 
+body.memberships-page .membership-plan-support-grid--guardian {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas: "guardian";
+}
+
 body.memberships-page .membership-support-card--collector {
   grid-area: collector;
   order: 1;
