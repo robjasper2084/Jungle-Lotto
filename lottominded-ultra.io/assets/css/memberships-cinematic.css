@@ -1004,7 +1004,11 @@ body.memberships-page .membership-commercial-trigger small {
 }
 
 body.memberships-page .membership-commercial-hero-launch {
-  display: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.46rem;
+  text-align: center;
 }
 
 body.memberships-page .membership-commercial-modal {
