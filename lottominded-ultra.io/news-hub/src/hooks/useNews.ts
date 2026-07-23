@@ -157,7 +157,7 @@ export function useNews(query: NewsQuery) {
   const requestIdRef = useRef(0);
   const hasDataRef = useRef(false);
 
-  const load = useCallback(async (force = false) => {
+  const load = useCallback(async (_force = false) => {
     const requestId = ++requestIdRef.current;
     controllerRef.current?.abort();
     const controller = new AbortController();
@@ -165,32 +165,16 @@ export function useNews(query: NewsQuery) {
     setError("");
     setIsRefreshing(hasDataRef.current);
 
-    const params = new URLSearchParams({ page: String(query.page), limit: String(query.limit) });
-    if (query.category) params.set("category", query.category);
-    if (query.search) params.set("search", query.search);
-    if (force) params.set("refresh", "1");
-
     try {
-      const response = await fetch(`../api/news?${params}`, { signal: controller.signal, headers: { accept: "application/json" } });
-      const payload = (await response.json()) as NewsApiResponse & { error?: string };
-      if (!response.ok) throw new Error(payload.error || `News request failed (${response.status})`);
+      const payload = await loadStaticNews(query, controller.signal);
       if (requestId === requestIdRef.current) {
         hasDataRef.current = payload.items.length > 0;
         setData(payload);
+        setError("");
       }
     } catch (reason) {
       if (controller.signal.aborted) return;
-      try {
-        const fallback = await loadStaticNews(query, controller.signal);
-        if (requestId === requestIdRef.current) {
-          hasDataRef.current = fallback.items.length > 0;
-          setData(fallback);
-          setError("");
-        }
-      } catch {
-        if (controller.signal.aborted) return;
-        if (requestId === requestIdRef.current) setError(reason instanceof Error ? reason.message : "News request failed");
-      }
+      if (requestId === requestIdRef.current) setError(reason instanceof Error ? reason.message : "News request failed");
     } finally {
       if (requestId === requestIdRef.current) {
         setIsLoading(false);

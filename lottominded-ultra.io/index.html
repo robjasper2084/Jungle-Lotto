@@ -9,11 +9,7 @@
     <link rel="icon" href="./assets/brand/lm-orb-mark.webp" type="image/webp" />
     <link rel="canonical" href="https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/" />
 <link rel="stylesheet" href="./styles.css?v=refined-commercial-2" />
-    <link rel="stylesheet" href="./assets/features-app/css/feature-particle-organism.css?v=earth-sound-polish-1" />
     <link rel="stylesheet" href="./assets/css/lm-mascot-cinematic.css?v=earth-sound-polish-1" />
-    <script type="importmap">
-      {"imports":{"three":"./assets/vendor/three/three.module.min.js?v=0.160.1"}}
-    </script>
     <script>
       try {
         if (sessionStorage.getItem("lmTransitionArriving") === "yes") {
@@ -22,7 +18,7 @@
       } catch (error) {}
     </script>
 <link rel="stylesheet" href="./assets/css/lm-page-transition.css?v=transition-exit-audit-4" />
-    <link rel="stylesheet" href="./assets/css/lm-global-orb-header.css?v=site-audit-1" />
+    <link rel="stylesheet" href="./assets/css/lm-global-orb-header.css?v=header-consistency-4" />
 <!-- social-meta:start -->
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="LOTTOMINDED ULTRA" />
@@ -47,7 +43,6 @@
       <div class="lm-page-transition__scanlines"></div>
       <p class="lm-page-transition__label" data-lm-transition-label>Opening signal</p>
     </div>
-    <canvas id="featureEntity" class="feature-entity" data-entity-mode="earth" aria-hidden="true"></canvas>
     <header class="site-header home-like-header home-sphere-header" data-site-header>
       <div class="site-header-main">
         <a class="brand" href="./" aria-label="LOTTOMINDED ULTRA home">
@@ -59,13 +54,13 @@
       <nav aria-label="Home sphere navigation">
         <a href="./memberships.html" data-icon="MB">Memberships</a>
         <a href="./index.html#top" data-icon="HM">Home</a>
-        <a href="./features-app.html" data-icon="FX">Features</a>
+        <a href="./features-app.html" data-icon="FX">Games</a>
         <a href="./news/" data-icon="NW">News</a>
         <a href="./live-events.html" data-icon="EV">Events</a>
         <a href="./lottery-spheres.html#spheres" data-icon="SP">Spheres</a>
-        <a href="./beat2lotto-plus.html#beat2lotto" data-icon="B2">Beat2Lotto+&trade;</a>
-        <a href="./merch-store.html" data-icon="DR">Merch</a>
-        <a href="./how-to-use.html" data-icon="GD">Guide</a>
+        <a href="./beat2lotto-plus.html#beat2lotto" data-icon="B2">RAHBE</a>
+        <a href="./merch-store.html" data-icon="DR">Storefront</a>
+        <a href="./how-to-use.html" data-icon="GD">Static Wav</a>
         <a href="../lotto%20mind%20refined/" data-icon="LM">LottoMind App</a>
       </nav>
       <div class="direct-launch" aria-label="Direct studio launch">
@@ -128,35 +123,16 @@
       </a>
     </section>
 
-    <aside class="startup-video-modal is-hidden" data-startup-video aria-label="Lottominded Ultra startup video" aria-hidden="true">
-      <div class="startup-video-panel" role="dialog" aria-modal="true" aria-labelledby="startupVideoTitle">
-        <button class="startup-video-close" type="button" data-startup-video-close aria-label="Enter site">X</button>
-        <p class="eyebrow">Lottominded Ultra Signal</p>
-        <h2 id="startupVideoTitle">Start the home frequency.</h2>
-        <video class="startup-video-player" playsinline controls preload="metadata" data-startup-video-volume="0.64">
-          <source src="./assets/video/lottomind-home-commercial-20260716.mp4" type="video/mp4" />
-        </video>
-        <div class="startup-video-actions">
-          <button class="primary-action" type="button" data-startup-video-close>Enter Site</button>
-        </div>
-        <p class="startup-video-copy">
-          Play the video for its audio, or enter the site to start the home music.
-        </p>
-        <p class="startup-video-credit">
-          Produced by LOTTOMINDED&trade;. Recording artist: Bloom Through Gloom.
-        </p>
-      </div>
-    </aside>
-
     <main class="home-sphere-main" data-spheres-stage data-spheres-theme="golden" data-spheres-accent-src="./assets/brand/jazz-network-gold-coin.webp">
       <canvas class="home-sphere-canvas" data-spheres-canvas aria-hidden="true"></canvas>
       <div class="home-sphere-grid" aria-hidden="true"></div>
       <div class="home-sphere-scanline" aria-hidden="true"></div>
       <section class="hero kinetic-hero" id="top" data-kinetic-hero>
-        <video class="hero-motion" autoplay muted loop playsinline preload="metadata" aria-hidden="true">
+        <video class="hero-motion" autoplay muted loop playsinline preload="metadata" aria-hidden="true" data-lm-video-unmanaged="true" data-home-hero-audio>
           <source src="./assets/video/bloom-through-gloom-hero.opt.mp4" type="video/mp4" />
           <source src="./assets/video/lottomind-logo-sting.mp4" type="video/mp4" />
         </video>
+        <button class="inline-sound-button home-hero-sound" type="button" data-home-hero-sound aria-pressed="false">Play sound</button>
         <div class="hero-circuit-layer" aria-hidden="true"></div>
         <div class="motion-orb-layer" aria-hidden="true"></div>
         <div class="signal-particle-layer" aria-hidden="true">
@@ -280,12 +256,12 @@
             <video
               muted
               playsinline
-              preload="metadata"
+              preload="none"
               poster="./assets/video/lottomind-refined-commercial-poster-20260716.png"
               data-inline-sound-video
               data-inline-sound-volume="0.62"
               aria-label="LottoMind Refined membership commercial">
-              <source src="./assets/video/lottomind-refined-commercial-20260716.mp4" type="video/mp4" />
+              <source data-src="./assets/video/lottomind-refined-commercial-20260716.mp4" type="video/mp4" />
             </video>
             <button class="inline-sound-button" type="button" data-inline-sound-button>Play with sound</button>
             <span class="refined-app-film__label">Refined App / Membership film</span>
@@ -335,21 +311,20 @@
 
     </main>
 
-    <footer>
+    <footer class="site-footer-standard">
       <span>LOTTOMINDED ULTRA</span>
       <span>All rights reserved.</span>
       <span id="site-year"></span>
     </footer>
 
-    <audio id="siteSoundtrack" preload="metadata">
-      <source src="./assets/audio/home-screen-song.mp3" type="audio/mpeg" />
+    <audio id="siteSoundtrack" preload="none">
+      <source data-src="./assets/audio/home-screen-song.mp3" type="audio/mpeg" />
     </audio>
 
 <script src="./assets/js/lm-page-transition-audio.js?v=transition-audio-soft-chord-6" defer></script>
 <script src="./assets/js/lm-page-transition.js?v=transition-exit-audit-4" defer></script>
-<script src="./site.js?v=audio-mix-cleanup-7" defer></script>
+<script src="./site.js?v=header-pinned-3" defer></script>
     <script src="./lottery-spheres.js?v=audio-mix-cleanup-2" defer></script>
     <script src="./assets/vendor/gsap/gsap.min.js?v=3.13.0" defer></script>
-    <script type="module" src="./assets/features-app/js/main.js?v=earth-sound-polish-1"></script>
   </body>
 </html>

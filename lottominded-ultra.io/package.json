@@ -4,6 +4,14 @@
   "scripts": {
     "check:home": "node scripts/validate-home-page.mjs",
     "check:site": "node scripts/validate-site.mjs",
+    "staging:build": "node scripts/build-staging.mjs",
+    "staging:serve": "node scripts/serve-site.mjs dist-staging 8143",
+    "staging:test": "npm run staging:build && node scripts/test-staging-static.mjs && node scripts/run-staging-tests.mjs",
+    "source-test:build": "node scripts/build-source-test.mjs",
+    "routes:test": "npm run staging:build && npm run source-test:build && node scripts/run-route-tests.mjs",
+    "arcade-pilot:test": "playwright test --config=playwright.arcade-pilot.config.cjs",
+    "arcade-pilot:capture": "node scripts/capture-arcade-pilot.mjs",
+    "baseline:capture": "node scripts/capture-visual-baseline.mjs",
     "test": "playwright test"
   },
   "devDependencies": {

@@ -1,0 +1,1417 @@
+{
+  "generatedAt": "2026-07-20T21:36:47.054Z",
+  "format": "PNG (Playwright capture; no repository WebP conversion tool was available)",
+  "productionReference": {
+    "branch": "main",
+    "commit": "975c637cea7003533cdc30aed9d96be51929bfc8",
+    "tag": "v1-final"
+  },
+  "routeCount": 23,
+  "screenshotCount": 69,
+  "entries": [
+    {
+      "route": "/",
+      "fullProductionUrl": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/",
+      "viewport": {
+        "name": "desktop",
+        "width": 1440,
+        "height": 900
+      },
+      "screenshotFilename": "home--desktop.png",
+      "captureTimestamp": "2026-07-20T21:32:44.847Z",
+      "productionReference": {
+        "branch": "main",
+        "commit": "975c637cea7003533cdc30aed9d96be51929bfc8",
+        "tag": "v1-final"
+      },
+      "loadedSuccessfully": true,
+      "responseStatus": 200,
+      "consoleFailures": [],
+      "visualNotes": "Title: LOTTOMINDED ULTRA | Browser Music Workstation; first heading: Start the home frequency.; horizontal overflow: no."
+    },
+    {
+      "route": "/features-app.html",
+      "fullProductionUrl": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/features-app.html",
+      "viewport": {
+        "name": "desktop",
+        "width": 1440,
+        "height": 900
+      },
+      "screenshotFilename": "features-app--desktop.png",
+      "captureTimestamp": "2026-07-20T21:32:47.129Z",
+      "productionReference": {
+        "branch": "main",
+        "commit": "975c637cea7003533cdc30aed9d96be51929bfc8",
+        "tag": "v1-final"
+      },
+      "loadedSuccessfully": true,
+      "responseStatus": 200,
+      "consoleFailures": [],
+      "visualNotes": "Title: LottoMind Arcade | LOTTOMINDED ULTRA; first heading: Interpret dreams. Extract notes. Reveal creative patterns.; horizontal overflow: no."
+    },
+    {
+      "route": "/memberships.html",
+      "fullProductionUrl": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/memberships.html",
+      "viewport": {
+        "name": "desktop",
+        "width": 1440,
+        "height": 900
+      },
+      "screenshotFilename": "memberships--desktop.png",
+      "captureTimestamp": "2026-07-20T21:32:49.329Z",
+      "productionReference": {
+        "branch": "main",
+        "commit": "975c637cea7003533cdc30aed9d96be51929bfc8",
+        "tag": "v1-final"
+      },
+      "loadedSuccessfully": true,
+      "responseStatus": 200,
+      "consoleFailures": [
+        "Failed to load resource: net::ERR_BLOCKED_BY_CLIENT.Inspector",
+        "Failed to load resource: net::ERR_BLOCKED_BY_CLIENT.Inspector"
+      ],
+      "visualNotes": "Title: Memberships | LOTTOMINDED ULTRA; first heading: Choose Your Membership; horizontal overflow: no."
+    },
+    {
+      "route": "/news/",
+      "fullProductionUrl": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/news/",
+      "viewport": {
+        "name": "desktop",
+        "width": 1440,
+        "height": 900
+      },
+      "screenshotFilename": "news-index--desktop.png",
+      "captureTimestamp": "2026-07-20T21:32:50.817Z",
+      "productionReference": {
+        "branch": "main",
+        "commit": "975c637cea7003533cdc30aed9d96be51929bfc8",
+        "tag": "v1-final"
+      },
+      "loadedSuccessfully": true,
+      "responseStatus": 200,
+      "consoleFailures": [
+        "Failed to load resource: net::ERR_BLOCKED_BY_CLIENT.Inspector"
+      ],
+      "visualNotes": "Title: LottoMind News Intelligence; first heading: Approved sources, one signal route; horizontal overflow: no."
+    },
+    {
+      "route": "/live-events.html",
+      "fullProductionUrl": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/live-events.html",
+      "viewport": {
+        "name": "desktop",
+        "width": 1440,
+        "height": 900
+      },
+      "screenshotFilename": "live-events--desktop.png",
+      "captureTimestamp": "2026-07-20T21:32:52.701Z",
+      "productionReference": {
+        "branch": "main",
+        "commit": "975c637cea7003533cdc30aed9d96be51929bfc8",
+        "tag": "v1-final"
+      },
+      "loadedSuccessfully": true,
+      "responseStatus": 200,
+      "consoleFailures": [],
+      "visualNotes": "Title: LOTTOMINDED ULTRA | Live Events; first heading: Featured Stream Events; horizontal overflow: no."
+    },
+    {
+      "route": "/lottery-spheres.html",
+      "fullProductionUrl": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/lottery-spheres.html",
+      "viewport": {
+        "name": "desktop",
+        "width": 1440,
+        "height": 900
+      },
+      "screenshotFilename": "lottery-spheres--desktop.png",
+      "captureTimestamp": "2026-07-20T21:32:54.366Z",
+      "productionReference": {
+        "branch": "main",
+        "commit": "975c637cea7003533cdc30aed9d96be51929bfc8",
+        "tag": "v1-final"
+      },
+      "loadedSuccessfully": true,
+      "responseStatus": 200,
+      "consoleFailures": [],
+      "visualNotes": "Title: LOTTOMINDED ULTRA | Lottery Spheres; first heading: LottoMind Vault 174 Hz; horizontal overflow: no."
+    },
+    {
+      "route": "/beat2lotto-plus.html",
+      "fullProductionUrl": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/beat2lotto-plus.html",
+      "viewport": {
+        "name": "desktop",
+        "width": 1440,
+        "height": 900
+      },
+      "screenshotFilename": "beat2lotto-plus--desktop.png",
+      "captureTimestamp": "2026-07-20T21:33:01.916Z",
+      "productionReference": {
+        "branch": "main",
+        "commit": "975c637cea7003533cdc30aed9d96be51929bfc8",
+        "tag": "v1-final"
+      },
+      "loadedSuccessfully": true,
+      "responseStatus": 200,
+      "consoleFailures": [],
+      "visualNotes": "Title: Shadow Ops Canvas | Beat2Lotto+; first heading: Beat2Lotto+ Shadow Ops Canvas; horizontal overflow: no."
+    },
+    {
+      "route": "/merch-store.html",
+      "fullProductionUrl": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/merch-store.html",
+      "viewport": {
+        "name": "desktop",
+        "width": 1440,
+        "height": 900
+      },
+      "screenshotFilename": "merch-store--desktop.png",
+      "captureTimestamp": "2026-07-20T21:33:04.260Z",
+      "productionReference": {
+        "branch": "main",
+        "commit": "975c637cea7003533cdc30aed9d96be51929bfc8",
+        "tag": "v1-final"
+      },
+      "loadedSuccessfully": true,
+      "responseStatus": 200,
+      "consoleFailures": [],
+      "visualNotes": "Title: LOTTOMINDED ULTRA | Merch + Gallery Store; first heading: Lottomind™ Merch + Art Gallery; horizontal overflow: no."
+    },
+    {
+      "route": "/how-to-use.html",
+      "fullProductionUrl": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/how-to-use.html",
+      "viewport": {
+        "name": "desktop",
+        "width": 1440,
+        "height": 900
+      },
+      "screenshotFilename": "how-to-use--desktop.png",
+      "captureTimestamp": "2026-07-20T21:33:06.901Z",
+      "productionReference": {
+        "branch": "main",
+        "commit": "975c637cea7003533cdc30aed9d96be51929bfc8",
+        "tag": "v1-final"
+      },
+      "loadedSuccessfully": true,
+      "responseStatus": 200,
+      "consoleFailures": [],
+      "visualNotes": "Title: OpenGW Levels | LottoMind Guide; first heading: LottoMind Guide: OpenGW Levels; horizontal overflow: no."
+    },
+    {
+      "route": "/privacy.html",
+      "fullProductionUrl": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/privacy.html",
+      "viewport": {
+        "name": "desktop",
+        "width": 1440,
+        "height": 900
+      },
+      "screenshotFilename": "privacy--desktop.png",
+      "captureTimestamp": "2026-07-20T21:33:08.132Z",
+      "productionReference": {
+        "branch": "main",
+        "commit": "975c637cea7003533cdc30aed9d96be51929bfc8",
+        "tag": "v1-final"
+      },
+      "loadedSuccessfully": true,
+      "responseStatus": 200,
+      "consoleFailures": [],
+      "visualNotes": "Title: Privacy | LOTTOMINDED ULTRA; first heading: Privacy; horizontal overflow: no."
+    },
+    {
+      "route": "/terms.html",
+      "fullProductionUrl": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/terms.html",
+      "viewport": {
+        "name": "desktop",
+        "width": 1440,
+        "height": 900
+      },
+      "screenshotFilename": "terms--desktop.png",
+      "captureTimestamp": "2026-07-20T21:33:09.359Z",
+      "productionReference": {
+        "branch": "main",
+        "commit": "975c637cea7003533cdc30aed9d96be51929bfc8",
+        "tag": "v1-final"
+      },
+      "loadedSuccessfully": true,
+      "responseStatus": 200,
+      "consoleFailures": [],
+      "visualNotes": "Title: Terms | LOTTOMINDED ULTRA; first heading: Terms; horizontal overflow: no."
+    },
+    {
+      "route": "/accessibility.html",
+      "fullProductionUrl": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/accessibility.html",
+      "viewport": {
+        "name": "desktop",
+        "width": 1440,
+        "height": 900
+      },
+      "screenshotFilename": "accessibility--desktop.png",
+      "captureTimestamp": "2026-07-20T21:33:10.572Z",
+      "productionReference": {
+        "branch": "main",
+        "commit": "975c637cea7003533cdc30aed9d96be51929bfc8",
+        "tag": "v1-final"
+      },
+      "loadedSuccessfully": true,
+      "responseStatus": 200,
+      "consoleFailures": [],
+      "visualNotes": "Title: Accessibility | LOTTOMINDED ULTRA; first heading: Accessibility; horizontal overflow: no."
+    },
+    {
+      "route": "/prompt-lab.html",
+      "fullProductionUrl": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/prompt-lab.html",
+      "viewport": {
+        "name": "desktop",
+        "width": 1440,
+        "height": 900
+      },
+      "screenshotFilename": "prompt-lab--desktop.png",
+      "captureTimestamp": "2026-07-20T21:33:12.159Z",
+      "productionReference": {
+        "branch": "main",
+        "commit": "975c637cea7003533cdc30aed9d96be51929bfc8",
+        "tag": "v1-final"
+      },
+      "loadedSuccessfully": true,
+      "responseStatus": 200,
+      "consoleFailures": [],
+      "visualNotes": "Title: LOTTOMINDED ULTRA | Prompt Lab; first heading: Beat2Lotto+; horizontal overflow: no."
+    },
+    {
+      "route": "/lottomind-stem-studio/",
+      "fullProductionUrl": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/lottomind-stem-studio/",
+      "viewport": {
+        "name": "desktop",
+        "width": 1440,
+        "height": 900
+      },
+      "screenshotFilename": "lottomind-stem-studio-index--desktop.png",
+      "captureTimestamp": "2026-07-20T21:33:13.910Z",
+      "productionReference": {
+        "branch": "main",
+        "commit": "975c637cea7003533cdc30aed9d96be51929bfc8",
+        "tag": "v1-final"
+      },
+      "loadedSuccessfully": true,
+      "responseStatus": 200,
+      "consoleFailures": [],
+      "visualNotes": "Title: LOTTOMINDED ULTRA | Stem Studio; first heading: Stem Studio; horizontal overflow: no."
+    },
+    {
+      "route": "/redeem.html",
+      "fullProductionUrl": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/redeem.html",
+      "viewport": {
+        "name": "desktop",
+        "width": 1440,
+        "height": 900
+      },
+      "screenshotFilename": "redeem--desktop.png",
+      "captureTimestamp": "2026-07-20T21:33:15.009Z",
+      "productionReference": {
+        "branch": "main",
+        "commit": "975c637cea7003533cdc30aed9d96be51929bfc8",
+        "tag": "v1-final"
+      },
+      "loadedSuccessfully": true,
+      "responseStatus": 200,
+      "consoleFailures": [],
+      "visualNotes": "Title: Collector Redemption | LOTTOMINDED ULTRA; first heading: Collector Redemption; horizontal overflow: no."
+    },
+    {
+      "route": "/contact.html",
+      "fullProductionUrl": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/contact.html",
+      "viewport": {
+        "name": "desktop",
+        "width": 1440,
+        "height": 900
+      },
+      "screenshotFilename": "contact--desktop.png",
+      "captureTimestamp": "2026-07-20T21:33:16.262Z",
+      "productionReference": {
+        "branch": "main",
+        "commit": "975c637cea7003533cdc30aed9d96be51929bfc8",
+        "tag": "v1-final"
+      },
+      "loadedSuccessfully": true,
+      "responseStatus": 200,
+      "consoleFailures": [
+        "Failed to load resource: the server responded with a status of 404 ()",
+        "404 /Jungle-Lotto/lottominded-ultra.io/assets/js/lm-support.js"
+      ],
+      "visualNotes": "Title: Contact | LOTTOMINDED ULTRA; first heading: Contact; horizontal overflow: no."
+    },
+    {
+      "route": "/404.html",
+      "fullProductionUrl": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/404.html",
+      "viewport": {
+        "name": "desktop",
+        "width": 1440,
+        "height": 900
+      },
+      "screenshotFilename": "404--desktop.png",
+      "captureTimestamp": "2026-07-20T21:33:17.421Z",
+      "productionReference": {
+        "branch": "main",
+        "commit": "975c637cea7003533cdc30aed9d96be51929bfc8",
+        "tag": "v1-final"
+      },
+      "loadedSuccessfully": true,
+      "responseStatus": 200,
+      "consoleFailures": [],
+      "visualNotes": "Title: Signal Not Found | LOTTOMINDED ULTRA; first heading: Signal not found.; horizontal overflow: no."
+    },
+    {
+      "route": "/games/gothtechnology2/",
+      "fullProductionUrl": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/games/gothtechnology2/",
+      "viewport": {
+        "name": "desktop",
+        "width": 1440,
+        "height": 900
+      },
+      "screenshotFilename": "games-gothtechnology2-index--desktop.png",
+      "captureTimestamp": "2026-07-20T21:33:19.171Z",
+      "productionReference": {
+        "branch": "main",
+        "commit": "975c637cea7003533cdc30aed9d96be51929bfc8",
+        "tag": "v1-final"
+      },
+      "loadedSuccessfully": true,
+      "responseStatus": 200,
+      "consoleFailures": [],
+      "visualNotes": "Title: GOTHTECHNOLOGY; first heading: CONTROLS; horizontal overflow: no."
+    },
+    {
+      "route": "/games/lottomind-jackpot-maze/",
+      "fullProductionUrl": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/games/lottomind-jackpot-maze/",
+      "viewport": {
+        "name": "desktop",
+        "width": 1440,
+        "height": 900
+      },
+      "screenshotFilename": "games-lottomind-jackpot-maze-index--desktop.png",
+      "captureTimestamp": "2026-07-20T21:33:50.186Z",
+      "productionReference": {
+        "branch": "main",
+        "commit": "975c637cea7003533cdc30aed9d96be51929bfc8",
+        "tag": "v1-final"
+      },
+      "loadedSuccessfully": true,
+      "responseStatus": 200,
+      "consoleFailures": [],
+      "visualNotes": "Title: LottoMind: Jackpot Maze; first heading: missing; horizontal overflow: no. Captured viewport appears blank white despite HTTP 200; review the runtime bundle."
+    },
+    {
+      "route": "/games/opengw-levels/",
+      "fullProductionUrl": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/games/opengw-levels/",
+      "viewport": {
+        "name": "desktop",
+        "width": 1440,
+        "height": 900
+      },
+      "screenshotFilename": "games-opengw-levels-index--desktop.png",
+      "captureTimestamp": "2026-07-20T21:33:52.672Z",
+      "productionReference": {
+        "branch": "main",
+        "commit": "975c637cea7003533cdc30aed9d96be51929bfc8",
+        "tag": "v1-final"
+      },
+      "loadedSuccessfully": true,
+      "responseStatus": 200,
+      "consoleFailures": [],
+      "visualNotes": "Title: 2084 Static Wave - LottoMind; first heading: 2084 Static Wave gameplay portal; horizontal overflow: no."
+    },
+    {
+      "route": "/games/shadow-ops-canvas/",
+      "fullProductionUrl": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/games/shadow-ops-canvas/",
+      "viewport": {
+        "name": "desktop",
+        "width": 1440,
+        "height": 900
+      },
+      "screenshotFilename": "games-shadow-ops-canvas-index--desktop.png",
+      "captureTimestamp": "2026-07-20T21:34:04.474Z",
+      "productionReference": {
+        "branch": "main",
+        "commit": "975c637cea7003533cdc30aed9d96be51929bfc8",
+        "tag": "v1-final"
+      },
+      "loadedSuccessfully": true,
+      "responseStatus": 200,
+      "consoleFailures": [],
+      "visualNotes": "Title: ROBOT RAHBE; first heading: ROBOT RAHBE; horizontal overflow: no."
+    },
+    {
+      "route": "/games/raytrace-pong-background/",
+      "fullProductionUrl": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/games/raytrace-pong-background/",
+      "viewport": {
+        "name": "desktop",
+        "width": 1440,
+        "height": 900
+      },
+      "screenshotFilename": "games-raytrace-pong-background-index--desktop.png",
+      "captureTimestamp": "2026-07-20T21:34:05.822Z",
+      "productionReference": {
+        "branch": "main",
+        "commit": "975c637cea7003533cdc30aed9d96be51929bfc8",
+        "tag": "v1-final"
+      },
+      "loadedSuccessfully": true,
+      "responseStatus": 200,
+      "consoleFailures": [],
+      "visualNotes": "Title: Raytrace Lotto Pong; first heading: Raytrace Lotto Pong; horizontal overflow: no."
+    },
+    {
+      "route": "/lottery-spheres.html#spheres",
+      "fullProductionUrl": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/lottery-spheres.html#spheres",
+      "viewport": {
+        "name": "desktop",
+        "width": 1440,
+        "height": 900
+      },
+      "screenshotFilename": "lottery-spheres-spheres--desktop.png",
+      "captureTimestamp": "2026-07-20T21:34:07.575Z",
+      "productionReference": {
+        "branch": "main",
+        "commit": "975c637cea7003533cdc30aed9d96be51929bfc8",
+        "tag": "v1-final"
+      },
+      "loadedSuccessfully": true,
+      "responseStatus": 200,
+      "consoleFailures": [],
+      "visualNotes": "Title: LOTTOMINDED ULTRA | Lottery Spheres; first heading: LottoMind Vault 174 Hz; horizontal overflow: no."
+    },
+    {
+      "route": "/",
+      "fullProductionUrl": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/",
+      "viewport": {
+        "name": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "screenshotFilename": "home--tablet.png",
+      "captureTimestamp": "2026-07-20T21:34:11.295Z",
+      "productionReference": {
+        "branch": "main",
+        "commit": "975c637cea7003533cdc30aed9d96be51929bfc8",
+        "tag": "v1-final"
+      },
+      "loadedSuccessfully": true,
+      "responseStatus": 200,
+      "consoleFailures": [],
+      "visualNotes": "Title: LOTTOMINDED ULTRA | Browser Music Workstation; first heading: Start the home frequency.; horizontal overflow: no."
+    },
+    {
+      "route": "/features-app.html",
+      "fullProductionUrl": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/features-app.html",
+      "viewport": {
+        "name": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "screenshotFilename": "features-app--tablet.png",
+      "captureTimestamp": "2026-07-20T21:34:13.420Z",
+      "productionReference": {
+        "branch": "main",
+        "commit": "975c637cea7003533cdc30aed9d96be51929bfc8",
+        "tag": "v1-final"
+      },
+      "loadedSuccessfully": true,
+      "responseStatus": 200,
+      "consoleFailures": [],
+      "visualNotes": "Title: LottoMind Arcade | LOTTOMINDED ULTRA; first heading: Interpret dreams. Extract notes. Reveal creative patterns.; horizontal overflow: no."
+    },
+    {
+      "route": "/memberships.html",
+      "fullProductionUrl": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/memberships.html",
+      "viewport": {
+        "name": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "screenshotFilename": "memberships--tablet.png",
+      "captureTimestamp": "2026-07-20T21:34:15.262Z",
+      "productionReference": {
+        "branch": "main",
+        "commit": "975c637cea7003533cdc30aed9d96be51929bfc8",
+        "tag": "v1-final"
+      },
+      "loadedSuccessfully": true,
+      "responseStatus": 200,
+      "consoleFailures": [
+        "Failed to load resource: net::ERR_BLOCKED_BY_CLIENT.Inspector",
+        "Failed to load resource: net::ERR_BLOCKED_BY_CLIENT.Inspector"
+      ],
+      "visualNotes": "Title: Memberships | LOTTOMINDED ULTRA; first heading: Choose Your Membership; horizontal overflow: no."
+    },
+    {
+      "route": "/news/",
+      "fullProductionUrl": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/news/",
+      "viewport": {
+        "name": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "screenshotFilename": "news-index--tablet.png",
+      "captureTimestamp": "2026-07-20T21:34:16.722Z",
+      "productionReference": {
+        "branch": "main",
+        "commit": "975c637cea7003533cdc30aed9d96be51929bfc8",
+        "tag": "v1-final"
+      },
+      "loadedSuccessfully": true,
+      "responseStatus": 200,
+      "consoleFailures": [
+        "Failed to load resource: net::ERR_BLOCKED_BY_CLIENT.Inspector"
+      ],
+      "visualNotes": "Title: LottoMind News Intelligence; first heading: Approved sources, one signal route; horizontal overflow: no."
+    },
+    {
+      "route": "/live-events.html",
+      "fullProductionUrl": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/live-events.html",
+      "viewport": {
+        "name": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "screenshotFilename": "live-events--tablet.png",
+      "captureTimestamp": "2026-07-20T21:34:18.450Z",
+      "productionReference": {
+        "branch": "main",
+        "commit": "975c637cea7003533cdc30aed9d96be51929bfc8",
+        "tag": "v1-final"
+      },
+      "loadedSuccessfully": true,
+      "responseStatus": 200,
+      "consoleFailures": [],
+      "visualNotes": "Title: LOTTOMINDED ULTRA | Live Events; first heading: Featured Stream Events; horizontal overflow: no."
+    },
+    {
+      "route": "/lottery-spheres.html",
+      "fullProductionUrl": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/lottery-spheres.html",
+      "viewport": {
+        "name": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "screenshotFilename": "lottery-spheres--tablet.png",
+      "captureTimestamp": "2026-07-20T21:34:19.804Z",
+      "productionReference": {
+        "branch": "main",
+        "commit": "975c637cea7003533cdc30aed9d96be51929bfc8",
+        "tag": "v1-final"
+      },
+      "loadedSuccessfully": true,
+      "responseStatus": 200,
+      "consoleFailures": [],
+      "visualNotes": "Title: LOTTOMINDED ULTRA | Lottery Spheres; first heading: LottoMind Vault 174 Hz; horizontal overflow: no."
+    },
+    {
+      "route": "/beat2lotto-plus.html",
+      "fullProductionUrl": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/beat2lotto-plus.html",
+      "viewport": {
+        "name": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "screenshotFilename": "beat2lotto-plus--tablet.png",
+      "captureTimestamp": "2026-07-20T21:34:30.005Z",
+      "productionReference": {
+        "branch": "main",
+        "commit": "975c637cea7003533cdc30aed9d96be51929bfc8",
+        "tag": "v1-final"
+      },
+      "loadedSuccessfully": true,
+      "responseStatus": 200,
+      "consoleFailures": [],
+      "visualNotes": "Title: Shadow Ops Canvas | Beat2Lotto+; first heading: Beat2Lotto+ Shadow Ops Canvas; horizontal overflow: no."
+    },
+    {
+      "route": "/merch-store.html",
+      "fullProductionUrl": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/merch-store.html",
+      "viewport": {
+        "name": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "screenshotFilename": "merch-store--tablet.png",
+      "captureTimestamp": "2026-07-20T21:34:32.013Z",
+      "productionReference": {
+        "branch": "main",
+        "commit": "975c637cea7003533cdc30aed9d96be51929bfc8",
+        "tag": "v1-final"
+      },
+      "loadedSuccessfully": true,
+      "responseStatus": 200,
+      "consoleFailures": [],
+      "visualNotes": "Title: LOTTOMINDED ULTRA | Merch + Gallery Store; first heading: Lottomind™ Merch + Art Gallery; horizontal overflow: no."
+    },
+    {
+      "route": "/how-to-use.html",
+      "fullProductionUrl": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/how-to-use.html",
+      "viewport": {
+        "name": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "screenshotFilename": "how-to-use--tablet.png",
+      "captureTimestamp": "2026-07-20T21:34:34.101Z",
+      "productionReference": {
+        "branch": "main",
+        "commit": "975c637cea7003533cdc30aed9d96be51929bfc8",
+        "tag": "v1-final"
+      },
+      "loadedSuccessfully": true,
+      "responseStatus": 200,
+      "consoleFailures": [],
+      "visualNotes": "Title: OpenGW Levels | LottoMind Guide; first heading: LottoMind Guide: OpenGW Levels; horizontal overflow: no."
+    },
+    {
+      "route": "/privacy.html",
+      "fullProductionUrl": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/privacy.html",
+      "viewport": {
+        "name": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "screenshotFilename": "privacy--tablet.png",
+      "captureTimestamp": "2026-07-20T21:34:35.223Z",
+      "productionReference": {
+        "branch": "main",
+        "commit": "975c637cea7003533cdc30aed9d96be51929bfc8",
+        "tag": "v1-final"
+      },
+      "loadedSuccessfully": true,
+      "responseStatus": 200,
+      "consoleFailures": [],
+      "visualNotes": "Title: Privacy | LOTTOMINDED ULTRA; first heading: Privacy; horizontal overflow: no."
+    },
+    {
+      "route": "/terms.html",
+      "fullProductionUrl": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/terms.html",
+      "viewport": {
+        "name": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "screenshotFilename": "terms--tablet.png",
+      "captureTimestamp": "2026-07-20T21:34:36.342Z",
+      "productionReference": {
+        "branch": "main",
+        "commit": "975c637cea7003533cdc30aed9d96be51929bfc8",
+        "tag": "v1-final"
+      },
+      "loadedSuccessfully": true,
+      "responseStatus": 200,
+      "consoleFailures": [],
+      "visualNotes": "Title: Terms | LOTTOMINDED ULTRA; first heading: Terms; horizontal overflow: no."
+    },
+    {
+      "route": "/accessibility.html",
+      "fullProductionUrl": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/accessibility.html",
+      "viewport": {
+        "name": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "screenshotFilename": "accessibility--tablet.png",
+      "captureTimestamp": "2026-07-20T21:34:37.457Z",
+      "productionReference": {
+        "branch": "main",
+        "commit": "975c637cea7003533cdc30aed9d96be51929bfc8",
+        "tag": "v1-final"
+      },
+      "loadedSuccessfully": true,
+      "responseStatus": 200,
+      "consoleFailures": [],
+      "visualNotes": "Title: Accessibility | LOTTOMINDED ULTRA; first heading: Accessibility; horizontal overflow: no."
+    },
+    {
+      "route": "/prompt-lab.html",
+      "fullProductionUrl": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/prompt-lab.html",
+      "viewport": {
+        "name": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "screenshotFilename": "prompt-lab--tablet.png",
+      "captureTimestamp": "2026-07-20T21:34:38.917Z",
+      "productionReference": {
+        "branch": "main",
+        "commit": "975c637cea7003533cdc30aed9d96be51929bfc8",
+        "tag": "v1-final"
+      },
+      "loadedSuccessfully": true,
+      "responseStatus": 200,
+      "consoleFailures": [],
+      "visualNotes": "Title: LOTTOMINDED ULTRA | Prompt Lab; first heading: Beat2Lotto+; horizontal overflow: no."
+    },
+    {
+      "route": "/lottomind-stem-studio/",
+      "fullProductionUrl": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/lottomind-stem-studio/",
+      "viewport": {
+        "name": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "screenshotFilename": "lottomind-stem-studio-index--tablet.png",
+      "captureTimestamp": "2026-07-20T21:34:40.466Z",
+      "productionReference": {
+        "branch": "main",
+        "commit": "975c637cea7003533cdc30aed9d96be51929bfc8",
+        "tag": "v1-final"
+      },
+      "loadedSuccessfully": true,
+      "responseStatus": 200,
+      "consoleFailures": [],
+      "visualNotes": "Title: LOTTOMINDED ULTRA | Stem Studio; first heading: Stem Studio; horizontal overflow: yes."
+    },
+    {
+      "route": "/redeem.html",
+      "fullProductionUrl": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/redeem.html",
+      "viewport": {
+        "name": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "screenshotFilename": "redeem--tablet.png",
+      "captureTimestamp": "2026-07-20T21:34:41.506Z",
+      "productionReference": {
+        "branch": "main",
+        "commit": "975c637cea7003533cdc30aed9d96be51929bfc8",
+        "tag": "v1-final"
+      },
+      "loadedSuccessfully": true,
+      "responseStatus": 200,
+      "consoleFailures": [],
+      "visualNotes": "Title: Collector Redemption | LOTTOMINDED ULTRA; first heading: Collector Redemption; horizontal overflow: no."
+    },
+    {
+      "route": "/contact.html",
+      "fullProductionUrl": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/contact.html",
+      "viewport": {
+        "name": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "screenshotFilename": "contact--tablet.png",
+      "captureTimestamp": "2026-07-20T21:34:42.619Z",
+      "productionReference": {
+        "branch": "main",
+        "commit": "975c637cea7003533cdc30aed9d96be51929bfc8",
+        "tag": "v1-final"
+      },
+      "loadedSuccessfully": true,
+      "responseStatus": 200,
+      "consoleFailures": [
+        "Failed to load resource: the server responded with a status of 404 ()",
+        "404 /Jungle-Lotto/lottominded-ultra.io/assets/js/lm-support.js"
+      ],
+      "visualNotes": "Title: Contact | LOTTOMINDED ULTRA; first heading: Contact; horizontal overflow: no."
+    },
+    {
+      "route": "/404.html",
+      "fullProductionUrl": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/404.html",
+      "viewport": {
+        "name": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "screenshotFilename": "404--tablet.png",
+      "captureTimestamp": "2026-07-20T21:34:43.712Z",
+      "productionReference": {
+        "branch": "main",
+        "commit": "975c637cea7003533cdc30aed9d96be51929bfc8",
+        "tag": "v1-final"
+      },
+      "loadedSuccessfully": true,
+      "responseStatus": 200,
+      "consoleFailures": [],
+      "visualNotes": "Title: Signal Not Found | LOTTOMINDED ULTRA; first heading: Signal not found.; horizontal overflow: no."
+    },
+    {
+      "route": "/games/gothtechnology2/",
+      "fullProductionUrl": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/games/gothtechnology2/",
+      "viewport": {
+        "name": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "screenshotFilename": "games-gothtechnology2-index--tablet.png",
+      "captureTimestamp": "2026-07-20T21:34:45.318Z",
+      "productionReference": {
+        "branch": "main",
+        "commit": "975c637cea7003533cdc30aed9d96be51929bfc8",
+        "tag": "v1-final"
+      },
+      "loadedSuccessfully": true,
+      "responseStatus": 200,
+      "consoleFailures": [],
+      "visualNotes": "Title: GOTHTECHNOLOGY; first heading: CONTROLS; horizontal overflow: no."
+    },
+    {
+      "route": "/games/lottomind-jackpot-maze/",
+      "fullProductionUrl": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/games/lottomind-jackpot-maze/",
+      "viewport": {
+        "name": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "screenshotFilename": "games-lottomind-jackpot-maze-index--tablet.png",
+      "captureTimestamp": "2026-07-20T21:35:16.328Z",
+      "productionReference": {
+        "branch": "main",
+        "commit": "975c637cea7003533cdc30aed9d96be51929bfc8",
+        "tag": "v1-final"
+      },
+      "loadedSuccessfully": true,
+      "responseStatus": 200,
+      "consoleFailures": [],
+      "visualNotes": "Title: LottoMind: Jackpot Maze; first heading: missing; horizontal overflow: no. Captured viewport appears blank white despite HTTP 200; review the runtime bundle."
+    },
+    {
+      "route": "/games/opengw-levels/",
+      "fullProductionUrl": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/games/opengw-levels/",
+      "viewport": {
+        "name": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "screenshotFilename": "games-opengw-levels-index--tablet.png",
+      "captureTimestamp": "2026-07-20T21:35:18.245Z",
+      "productionReference": {
+        "branch": "main",
+        "commit": "975c637cea7003533cdc30aed9d96be51929bfc8",
+        "tag": "v1-final"
+      },
+      "loadedSuccessfully": true,
+      "responseStatus": 200,
+      "consoleFailures": [],
+      "visualNotes": "Title: 2084 Static Wave - LottoMind; first heading: 2084 Static Wave gameplay portal; horizontal overflow: no."
+    },
+    {
+      "route": "/games/shadow-ops-canvas/",
+      "fullProductionUrl": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/games/shadow-ops-canvas/",
+      "viewport": {
+        "name": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "screenshotFilename": "games-shadow-ops-canvas-index--tablet.png",
+      "captureTimestamp": "2026-07-20T21:35:27.429Z",
+      "productionReference": {
+        "branch": "main",
+        "commit": "975c637cea7003533cdc30aed9d96be51929bfc8",
+        "tag": "v1-final"
+      },
+      "loadedSuccessfully": true,
+      "responseStatus": 200,
+      "consoleFailures": [],
+      "visualNotes": "Title: ROBOT RAHBE; first heading: ROBOT RAHBE; horizontal overflow: no."
+    },
+    {
+      "route": "/games/raytrace-pong-background/",
+      "fullProductionUrl": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/games/raytrace-pong-background/",
+      "viewport": {
+        "name": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "screenshotFilename": "games-raytrace-pong-background-index--tablet.png",
+      "captureTimestamp": "2026-07-20T21:35:28.618Z",
+      "productionReference": {
+        "branch": "main",
+        "commit": "975c637cea7003533cdc30aed9d96be51929bfc8",
+        "tag": "v1-final"
+      },
+      "loadedSuccessfully": true,
+      "responseStatus": 200,
+      "consoleFailures": [],
+      "visualNotes": "Title: Raytrace Lotto Pong; first heading: Raytrace Lotto Pong; horizontal overflow: no."
+    },
+    {
+      "route": "/lottery-spheres.html#spheres",
+      "fullProductionUrl": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/lottery-spheres.html#spheres",
+      "viewport": {
+        "name": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "screenshotFilename": "lottery-spheres-spheres--tablet.png",
+      "captureTimestamp": "2026-07-20T21:35:30.003Z",
+      "productionReference": {
+        "branch": "main",
+        "commit": "975c637cea7003533cdc30aed9d96be51929bfc8",
+        "tag": "v1-final"
+      },
+      "loadedSuccessfully": true,
+      "responseStatus": 200,
+      "consoleFailures": [],
+      "visualNotes": "Title: LOTTOMINDED ULTRA | Lottery Spheres; first heading: LottoMind Vault 174 Hz; horizontal overflow: no."
+    },
+    {
+      "route": "/",
+      "fullProductionUrl": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/",
+      "viewport": {
+        "name": "mobile",
+        "width": 390,
+        "height": 844
+      },
+      "screenshotFilename": "home--mobile.png",
+      "captureTimestamp": "2026-07-20T21:35:33.088Z",
+      "productionReference": {
+        "branch": "main",
+        "commit": "975c637cea7003533cdc30aed9d96be51929bfc8",
+        "tag": "v1-final"
+      },
+      "loadedSuccessfully": true,
+      "responseStatus": 200,
+      "consoleFailures": [],
+      "visualNotes": "Title: LOTTOMINDED ULTRA | Browser Music Workstation; first heading: Start the home frequency.; horizontal overflow: no."
+    },
+    {
+      "route": "/features-app.html",
+      "fullProductionUrl": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/features-app.html",
+      "viewport": {
+        "name": "mobile",
+        "width": 390,
+        "height": 844
+      },
+      "screenshotFilename": "features-app--mobile.png",
+      "captureTimestamp": "2026-07-20T21:35:34.693Z",
+      "productionReference": {
+        "branch": "main",
+        "commit": "975c637cea7003533cdc30aed9d96be51929bfc8",
+        "tag": "v1-final"
+      },
+      "loadedSuccessfully": true,
+      "responseStatus": 200,
+      "consoleFailures": [],
+      "visualNotes": "Title: LottoMind Arcade | LOTTOMINDED ULTRA; first heading: Interpret dreams. Extract notes. Reveal creative patterns.; horizontal overflow: no."
+    },
+    {
+      "route": "/memberships.html",
+      "fullProductionUrl": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/memberships.html",
+      "viewport": {
+        "name": "mobile",
+        "width": 390,
+        "height": 844
+      },
+      "screenshotFilename": "memberships--mobile.png",
+      "captureTimestamp": "2026-07-20T21:35:36.304Z",
+      "productionReference": {
+        "branch": "main",
+        "commit": "975c637cea7003533cdc30aed9d96be51929bfc8",
+        "tag": "v1-final"
+      },
+      "loadedSuccessfully": true,
+      "responseStatus": 200,
+      "consoleFailures": [
+        "Failed to load resource: net::ERR_BLOCKED_BY_CLIENT.Inspector",
+        "Failed to load resource: net::ERR_BLOCKED_BY_CLIENT.Inspector"
+      ],
+      "visualNotes": "Title: Memberships | LOTTOMINDED ULTRA; first heading: Choose Your Membership; horizontal overflow: no."
+    },
+    {
+      "route": "/news/",
+      "fullProductionUrl": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/news/",
+      "viewport": {
+        "name": "mobile",
+        "width": 390,
+        "height": 844
+      },
+      "screenshotFilename": "news-index--mobile.png",
+      "captureTimestamp": "2026-07-20T21:35:37.492Z",
+      "productionReference": {
+        "branch": "main",
+        "commit": "975c637cea7003533cdc30aed9d96be51929bfc8",
+        "tag": "v1-final"
+      },
+      "loadedSuccessfully": true,
+      "responseStatus": 200,
+      "consoleFailures": [
+        "Failed to load resource: net::ERR_BLOCKED_BY_CLIENT.Inspector"
+      ],
+      "visualNotes": "Title: LottoMind News Intelligence; first heading: Approved sources, one signal route; horizontal overflow: no."
+    },
+    {
+      "route": "/live-events.html",
+      "fullProductionUrl": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/live-events.html",
+      "viewport": {
+        "name": "mobile",
+        "width": 390,
+        "height": 844
+      },
+      "screenshotFilename": "live-events--mobile.png",
+      "captureTimestamp": "2026-07-20T21:35:39.367Z",
+      "productionReference": {
+        "branch": "main",
+        "commit": "975c637cea7003533cdc30aed9d96be51929bfc8",
+        "tag": "v1-final"
+      },
+      "loadedSuccessfully": true,
+      "responseStatus": 200,
+      "consoleFailures": [],
+      "visualNotes": "Title: LOTTOMINDED ULTRA | Live Events; first heading: Featured Stream Events; horizontal overflow: no."
+    },
+    {
+      "route": "/lottery-spheres.html",
+      "fullProductionUrl": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/lottery-spheres.html",
+      "viewport": {
+        "name": "mobile",
+        "width": 390,
+        "height": 844
+      },
+      "screenshotFilename": "lottery-spheres--mobile.png",
+      "captureTimestamp": "2026-07-20T21:35:40.596Z",
+      "productionReference": {
+        "branch": "main",
+        "commit": "975c637cea7003533cdc30aed9d96be51929bfc8",
+        "tag": "v1-final"
+      },
+      "loadedSuccessfully": true,
+      "responseStatus": 200,
+      "consoleFailures": [],
+      "visualNotes": "Title: LOTTOMINDED ULTRA | Lottery Spheres; first heading: LottoMind Vault 174 Hz; horizontal overflow: no."
+    },
+    {
+      "route": "/beat2lotto-plus.html",
+      "fullProductionUrl": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/beat2lotto-plus.html",
+      "viewport": {
+        "name": "mobile",
+        "width": 390,
+        "height": 844
+      },
+      "screenshotFilename": "beat2lotto-plus--mobile.png",
+      "captureTimestamp": "2026-07-20T21:35:49.200Z",
+      "productionReference": {
+        "branch": "main",
+        "commit": "975c637cea7003533cdc30aed9d96be51929bfc8",
+        "tag": "v1-final"
+      },
+      "loadedSuccessfully": true,
+      "responseStatus": 200,
+      "consoleFailures": [],
+      "visualNotes": "Title: Shadow Ops Canvas | Beat2Lotto+; first heading: Beat2Lotto+ Shadow Ops Canvas; horizontal overflow: no."
+    },
+    {
+      "route": "/merch-store.html",
+      "fullProductionUrl": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/merch-store.html",
+      "viewport": {
+        "name": "mobile",
+        "width": 390,
+        "height": 844
+      },
+      "screenshotFilename": "merch-store--mobile.png",
+      "captureTimestamp": "2026-07-20T21:35:51.108Z",
+      "productionReference": {
+        "branch": "main",
+        "commit": "975c637cea7003533cdc30aed9d96be51929bfc8",
+        "tag": "v1-final"
+      },
+      "loadedSuccessfully": true,
+      "responseStatus": 200,
+      "consoleFailures": [],
+      "visualNotes": "Title: LOTTOMINDED ULTRA | Merch + Gallery Store; first heading: Lottomind™ Merch + Art Gallery; horizontal overflow: no."
+    },
+    {
+      "route": "/how-to-use.html",
+      "fullProductionUrl": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/how-to-use.html",
+      "viewport": {
+        "name": "mobile",
+        "width": 390,
+        "height": 844
+      },
+      "screenshotFilename": "how-to-use--mobile.png",
+      "captureTimestamp": "2026-07-20T21:35:53.124Z",
+      "productionReference": {
+        "branch": "main",
+        "commit": "975c637cea7003533cdc30aed9d96be51929bfc8",
+        "tag": "v1-final"
+      },
+      "loadedSuccessfully": true,
+      "responseStatus": 200,
+      "consoleFailures": [],
+      "visualNotes": "Title: OpenGW Levels | LottoMind Guide; first heading: LottoMind Guide: OpenGW Levels; horizontal overflow: no."
+    },
+    {
+      "route": "/privacy.html",
+      "fullProductionUrl": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/privacy.html",
+      "viewport": {
+        "name": "mobile",
+        "width": 390,
+        "height": 844
+      },
+      "screenshotFilename": "privacy--mobile.png",
+      "captureTimestamp": "2026-07-20T21:35:54.145Z",
+      "productionReference": {
+        "branch": "main",
+        "commit": "975c637cea7003533cdc30aed9d96be51929bfc8",
+        "tag": "v1-final"
+      },
+      "loadedSuccessfully": true,
+      "responseStatus": 200,
+      "consoleFailures": [],
+      "visualNotes": "Title: Privacy | LOTTOMINDED ULTRA; first heading: Privacy; horizontal overflow: no."
+    },
+    {
+      "route": "/terms.html",
+      "fullProductionUrl": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/terms.html",
+      "viewport": {
+        "name": "mobile",
+        "width": 390,
+        "height": 844
+      },
+      "screenshotFilename": "terms--mobile.png",
+      "captureTimestamp": "2026-07-20T21:35:55.240Z",
+      "productionReference": {
+        "branch": "main",
+        "commit": "975c637cea7003533cdc30aed9d96be51929bfc8",
+        "tag": "v1-final"
+      },
+      "loadedSuccessfully": true,
+      "responseStatus": 200,
+      "consoleFailures": [],
+      "visualNotes": "Title: Terms | LOTTOMINDED ULTRA; first heading: Terms; horizontal overflow: no."
+    },
+    {
+      "route": "/accessibility.html",
+      "fullProductionUrl": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/accessibility.html",
+      "viewport": {
+        "name": "mobile",
+        "width": 390,
+        "height": 844
+      },
+      "screenshotFilename": "accessibility--mobile.png",
+      "captureTimestamp": "2026-07-20T21:35:56.309Z",
+      "productionReference": {
+        "branch": "main",
+        "commit": "975c637cea7003533cdc30aed9d96be51929bfc8",
+        "tag": "v1-final"
+      },
+      "loadedSuccessfully": true,
+      "responseStatus": 200,
+      "consoleFailures": [],
+      "visualNotes": "Title: Accessibility | LOTTOMINDED ULTRA; first heading: Accessibility; horizontal overflow: no."
+    },
+    {
+      "route": "/prompt-lab.html",
+      "fullProductionUrl": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/prompt-lab.html",
+      "viewport": {
+        "name": "mobile",
+        "width": 390,
+        "height": 844
+      },
+      "screenshotFilename": "prompt-lab--mobile.png",
+      "captureTimestamp": "2026-07-20T21:35:57.476Z",
+      "productionReference": {
+        "branch": "main",
+        "commit": "975c637cea7003533cdc30aed9d96be51929bfc8",
+        "tag": "v1-final"
+      },
+      "loadedSuccessfully": true,
+      "responseStatus": 200,
+      "consoleFailures": [],
+      "visualNotes": "Title: LOTTOMINDED ULTRA | Prompt Lab; first heading: Beat2Lotto+; horizontal overflow: no."
+    },
+    {
+      "route": "/lottomind-stem-studio/",
+      "fullProductionUrl": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/lottomind-stem-studio/",
+      "viewport": {
+        "name": "mobile",
+        "width": 390,
+        "height": 844
+      },
+      "screenshotFilename": "lottomind-stem-studio-index--mobile.png",
+      "captureTimestamp": "2026-07-20T21:35:58.872Z",
+      "productionReference": {
+        "branch": "main",
+        "commit": "975c637cea7003533cdc30aed9d96be51929bfc8",
+        "tag": "v1-final"
+      },
+      "loadedSuccessfully": true,
+      "responseStatus": 200,
+      "consoleFailures": [],
+      "visualNotes": "Title: LOTTOMINDED ULTRA | Stem Studio; first heading: Stem Studio; horizontal overflow: yes."
+    },
+    {
+      "route": "/redeem.html",
+      "fullProductionUrl": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/redeem.html",
+      "viewport": {
+        "name": "mobile",
+        "width": 390,
+        "height": 844
+      },
+      "screenshotFilename": "redeem--mobile.png",
+      "captureTimestamp": "2026-07-20T21:35:59.894Z",
+      "productionReference": {
+        "branch": "main",
+        "commit": "975c637cea7003533cdc30aed9d96be51929bfc8",
+        "tag": "v1-final"
+      },
+      "loadedSuccessfully": true,
+      "responseStatus": 200,
+      "consoleFailures": [],
+      "visualNotes": "Title: Collector Redemption | LOTTOMINDED ULTRA; first heading: Collector Redemption; horizontal overflow: no."
+    },
+    {
+      "route": "/contact.html",
+      "fullProductionUrl": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/contact.html",
+      "viewport": {
+        "name": "mobile",
+        "width": 390,
+        "height": 844
+      },
+      "screenshotFilename": "contact--mobile.png",
+      "captureTimestamp": "2026-07-20T21:36:00.936Z",
+      "productionReference": {
+        "branch": "main",
+        "commit": "975c637cea7003533cdc30aed9d96be51929bfc8",
+        "tag": "v1-final"
+      },
+      "loadedSuccessfully": true,
+      "responseStatus": 200,
+      "consoleFailures": [
+        "Failed to load resource: the server responded with a status of 404 ()",
+        "404 /Jungle-Lotto/lottominded-ultra.io/assets/js/lm-support.js"
+      ],
+      "visualNotes": "Title: Contact | LOTTOMINDED ULTRA; first heading: Contact; horizontal overflow: no."
+    },
+    {
+      "route": "/404.html",
+      "fullProductionUrl": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/404.html",
+      "viewport": {
+        "name": "mobile",
+        "width": 390,
+        "height": 844
+      },
+      "screenshotFilename": "404--mobile.png",
+      "captureTimestamp": "2026-07-20T21:36:01.970Z",
+      "productionReference": {
+        "branch": "main",
+        "commit": "975c637cea7003533cdc30aed9d96be51929bfc8",
+        "tag": "v1-final"
+      },
+      "loadedSuccessfully": true,
+      "responseStatus": 200,
+      "consoleFailures": [],
+      "visualNotes": "Title: Signal Not Found | LOTTOMINDED ULTRA; first heading: Signal not found.; horizontal overflow: no."
+    },
+    {
+      "route": "/games/gothtechnology2/",
+      "fullProductionUrl": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/games/gothtechnology2/",
+      "viewport": {
+        "name": "mobile",
+        "width": 390,
+        "height": 844
+      },
+      "screenshotFilename": "games-gothtechnology2-index--mobile.png",
+      "captureTimestamp": "2026-07-20T21:36:03.286Z",
+      "productionReference": {
+        "branch": "main",
+        "commit": "975c637cea7003533cdc30aed9d96be51929bfc8",
+        "tag": "v1-final"
+      },
+      "loadedSuccessfully": true,
+      "responseStatus": 200,
+      "consoleFailures": [],
+      "visualNotes": "Title: GOTHTECHNOLOGY; first heading: CONTROLS; horizontal overflow: no."
+    },
+    {
+      "route": "/games/lottomind-jackpot-maze/",
+      "fullProductionUrl": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/games/lottomind-jackpot-maze/",
+      "viewport": {
+        "name": "mobile",
+        "width": 390,
+        "height": 844
+      },
+      "screenshotFilename": "games-lottomind-jackpot-maze-index--mobile.png",
+      "captureTimestamp": "2026-07-20T21:36:34.207Z",
+      "productionReference": {
+        "branch": "main",
+        "commit": "975c637cea7003533cdc30aed9d96be51929bfc8",
+        "tag": "v1-final"
+      },
+      "loadedSuccessfully": true,
+      "responseStatus": 200,
+      "consoleFailures": [],
+      "visualNotes": "Title: LottoMind: Jackpot Maze; first heading: missing; horizontal overflow: no. Captured viewport appears blank white despite HTTP 200; review the runtime bundle."
+    },
+    {
+      "route": "/games/opengw-levels/",
+      "fullProductionUrl": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/games/opengw-levels/",
+      "viewport": {
+        "name": "mobile",
+        "width": 390,
+        "height": 844
+      },
+      "screenshotFilename": "games-opengw-levels-index--mobile.png",
+      "captureTimestamp": "2026-07-20T21:36:35.736Z",
+      "productionReference": {
+        "branch": "main",
+        "commit": "975c637cea7003533cdc30aed9d96be51929bfc8",
+        "tag": "v1-final"
+      },
+      "loadedSuccessfully": true,
+      "responseStatus": 200,
+      "consoleFailures": [],
+      "visualNotes": "Title: 2084 Static Wave - LottoMind; first heading: 2084 Static Wave gameplay portal; horizontal overflow: no."
+    },
+    {
+      "route": "/games/shadow-ops-canvas/",
+      "fullProductionUrl": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/games/shadow-ops-canvas/",
+      "viewport": {
+        "name": "mobile",
+        "width": 390,
+        "height": 844
+      },
+      "screenshotFilename": "games-shadow-ops-canvas-index--mobile.png",
+      "captureTimestamp": "2026-07-20T21:36:43.196Z",
+      "productionReference": {
+        "branch": "main",
+        "commit": "975c637cea7003533cdc30aed9d96be51929bfc8",
+        "tag": "v1-final"
+      },
+      "loadedSuccessfully": true,
+      "responseStatus": 200,
+      "consoleFailures": [],
+      "visualNotes": "Title: ROBOT RAHBE; first heading: ROBOT RAHBE; horizontal overflow: no."
+    },
+    {
+      "route": "/games/raytrace-pong-background/",
+      "fullProductionUrl": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/games/raytrace-pong-background/",
+      "viewport": {
+        "name": "mobile",
+        "width": 390,
+        "height": 844
+      },
+      "screenshotFilename": "games-raytrace-pong-background-index--mobile.png",
+      "captureTimestamp": "2026-07-20T21:36:44.238Z",
+      "productionReference": {
+        "branch": "main",
+        "commit": "975c637cea7003533cdc30aed9d96be51929bfc8",
+        "tag": "v1-final"
+      },
+      "loadedSuccessfully": true,
+      "responseStatus": 200,
+      "consoleFailures": [],
+      "visualNotes": "Title: Raytrace Lotto Pong; first heading: Raytrace Lotto Pong; horizontal overflow: no."
+    },
+    {
+      "route": "/lottery-spheres.html#spheres",
+      "fullProductionUrl": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/lottery-spheres.html#spheres",
+      "viewport": {
+        "name": "mobile",
+        "width": 390,
+        "height": 844
+      },
+      "screenshotFilename": "lottery-spheres-spheres--mobile.png",
+      "captureTimestamp": "2026-07-20T21:36:45.533Z",
+      "productionReference": {
+        "branch": "main",
+        "commit": "975c637cea7003533cdc30aed9d96be51929bfc8",
+        "tag": "v1-final"
+      },
+      "loadedSuccessfully": true,
+      "responseStatus": 200,
+      "consoleFailures": [],
+      "visualNotes": "Title: LOTTOMINDED ULTRA | Lottery Spheres; first heading: LottoMind Vault 174 Hz; horizontal overflow: no."
+    }
+  ]
+}

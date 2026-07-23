@@ -16,7 +16,7 @@
   const isNewsDock = normalizedPath === "/news";
   const stylesheet = document.createElement("link");
   stylesheet.rel = "stylesheet";
-  stylesheet.href = new URL("../css/lm-healing-frequency.css?v=oracle-original-blue-1", scriptUrl).toString();
+  stylesheet.href = new URL("../css/lm-healing-frequency.css?v=sphere-field-match-2", scriptUrl).toString();
   document.head.append(stylesheet);
 
   document.body.classList.add("has-lm-healing-generator");

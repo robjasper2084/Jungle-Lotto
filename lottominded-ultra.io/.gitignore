@@ -4,6 +4,8 @@ _site/
 .playwright-cli/
 playwright-report/
 test-results/
+dist-staging/
+dist-source-test/
 games/*/output/
 games/gothtechnology2/assets/sprite-production/higgsfield-v2/raw/
 games/gothtechnology2/assets/sprite-production/higgsfield-v2/masters/

@@ -1,0 +1,390 @@
+{
+  "generatedAt": "2026-07-21T18:52:15.578Z",
+  "sourceCommit": "32b1bbfd535d01b5acb2dabf82627c52fcb26e7c",
+  "entries": [
+    {
+      "route": "/",
+      "viewport": {
+        "name": "desktop",
+        "width": 1440,
+        "height": 900
+      },
+      "screenshotFilename": "home--desktop.png",
+      "responseStatus": 200,
+      "consoleFailures": [],
+      "title": "LOTTOMINDED ULTRA | Browser Music Workstation",
+      "heading": "Start the home frequency.",
+      "overflow": false,
+      "robots": "noindex,nofollow,noarchive",
+      "banner": "LottoMind Upgrade Preview — Not Production"
+    },
+    {
+      "route": "/memberships.html",
+      "viewport": {
+        "name": "desktop",
+        "width": 1440,
+        "height": 900
+      },
+      "screenshotFilename": "memberships--desktop.png",
+      "responseStatus": 200,
+      "consoleFailures": [],
+      "title": "Memberships | LOTTOMINDED ULTRA",
+      "heading": "Choose Your Membership",
+      "overflow": false,
+      "robots": "noindex,nofollow,noarchive",
+      "banner": "LottoMind Upgrade Preview — Not Production"
+    },
+    {
+      "route": "/merch-store.html",
+      "viewport": {
+        "name": "desktop",
+        "width": 1440,
+        "height": 900
+      },
+      "screenshotFilename": "merch-store--desktop.png",
+      "responseStatus": 200,
+      "consoleFailures": [],
+      "title": "LOTTOMINDED ULTRA | Merch + Gallery Store",
+      "heading": "Lottomind™ Merch + Art Gallery",
+      "overflow": false,
+      "robots": "noindex,nofollow,noarchive",
+      "banner": "LottoMind Upgrade Preview — Not Production"
+    },
+    {
+      "route": "/games/shadow-ops-canvas/",
+      "viewport": {
+        "name": "desktop",
+        "width": 1440,
+        "height": 900
+      },
+      "screenshotFilename": "games-shadow-ops-canvas-index--desktop.png",
+      "responseStatus": 200,
+      "consoleFailures": [],
+      "title": "ROBOT RAHBE",
+      "heading": "ROBOT RAHBE",
+      "overflow": false,
+      "robots": "noindex,nofollow,noarchive",
+      "banner": "LottoMind Upgrade Preview — Not Production"
+    },
+    {
+      "route": "/news/",
+      "viewport": {
+        "name": "desktop",
+        "width": 1440,
+        "height": 900
+      },
+      "screenshotFilename": "news-index--desktop.png",
+      "responseStatus": 200,
+      "consoleFailures": [],
+      "title": "LottoMind News Intelligence",
+      "heading": "Approved sources, one signal route",
+      "overflow": false,
+      "robots": "noindex,nofollow,noarchive",
+      "banner": "LottoMind Upgrade Preview — Not Production"
+    },
+    {
+      "route": "/contact.html",
+      "viewport": {
+        "name": "desktop",
+        "width": 1440,
+        "height": 900
+      },
+      "screenshotFilename": "contact--desktop.png",
+      "responseStatus": 200,
+      "consoleFailures": [],
+      "title": "Contact | LOTTOMINDED ULTRA",
+      "heading": "Contact",
+      "overflow": false,
+      "robots": "noindex,nofollow,noarchive",
+      "banner": "LottoMind Upgrade Preview — Not Production"
+    },
+    {
+      "route": "/lottomind-stem-studio/",
+      "viewport": {
+        "name": "desktop",
+        "width": 1440,
+        "height": 900
+      },
+      "screenshotFilename": "lottomind-stem-studio-index--desktop.png",
+      "responseStatus": 200,
+      "consoleFailures": [],
+      "title": "LOTTOMINDED ULTRA | Stem Studio",
+      "heading": "Stem Studio",
+      "overflow": false,
+      "robots": "noindex,nofollow,noarchive",
+      "banner": "LottoMind Upgrade Preview — Not Production"
+    },
+    {
+      "route": "/games/lottomind-jackpot-maze/",
+      "viewport": {
+        "name": "desktop",
+        "width": 1440,
+        "height": 900
+      },
+      "screenshotFilename": "games-lottomind-jackpot-maze-index--desktop.png",
+      "responseStatus": 200,
+      "consoleFailures": [],
+      "title": "LottoMind: Jackpot Maze",
+      "heading": "LottoMind Jackpot Maze",
+      "overflow": false,
+      "robots": "noindex,nofollow,noarchive",
+      "banner": "LottoMind Upgrade Preview — Not Production"
+    },
+    {
+      "route": "/",
+      "viewport": {
+        "name": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "screenshotFilename": "home--tablet.png",
+      "responseStatus": 200,
+      "consoleFailures": [],
+      "title": "LOTTOMINDED ULTRA | Browser Music Workstation",
+      "heading": "Start the home frequency.",
+      "overflow": false,
+      "robots": "noindex,nofollow,noarchive",
+      "banner": "LottoMind Upgrade Preview — Not Production"
+    },
+    {
+      "route": "/memberships.html",
+      "viewport": {
+        "name": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "screenshotFilename": "memberships--tablet.png",
+      "responseStatus": 200,
+      "consoleFailures": [],
+      "title": "Memberships | LOTTOMINDED ULTRA",
+      "heading": "Choose Your Membership",
+      "overflow": false,
+      "robots": "noindex,nofollow,noarchive",
+      "banner": "LottoMind Upgrade Preview — Not Production"
+    },
+    {
+      "route": "/merch-store.html",
+      "viewport": {
+        "name": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "screenshotFilename": "merch-store--tablet.png",
+      "responseStatus": 200,
+      "consoleFailures": [],
+      "title": "LOTTOMINDED ULTRA | Merch + Gallery Store",
+      "heading": "Lottomind™ Merch + Art Gallery",
+      "overflow": false,
+      "robots": "noindex,nofollow,noarchive",
+      "banner": "LottoMind Upgrade Preview — Not Production"
+    },
+    {
+      "route": "/games/shadow-ops-canvas/",
+      "viewport": {
+        "name": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "screenshotFilename": "games-shadow-ops-canvas-index--tablet.png",
+      "responseStatus": 200,
+      "consoleFailures": [],
+      "title": "ROBOT RAHBE",
+      "heading": "ROBOT RAHBE",
+      "overflow": false,
+      "robots": "noindex,nofollow,noarchive",
+      "banner": "LottoMind Upgrade Preview — Not Production"
+    },
+    {
+      "route": "/news/",
+      "viewport": {
+        "name": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "screenshotFilename": "news-index--tablet.png",
+      "responseStatus": 200,
+      "consoleFailures": [],
+      "title": "LottoMind News Intelligence",
+      "heading": "Approved sources, one signal route",
+      "overflow": false,
+      "robots": "noindex,nofollow,noarchive",
+      "banner": "LottoMind Upgrade Preview — Not Production"
+    },
+    {
+      "route": "/contact.html",
+      "viewport": {
+        "name": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "screenshotFilename": "contact--tablet.png",
+      "responseStatus": 200,
+      "consoleFailures": [],
+      "title": "Contact | LOTTOMINDED ULTRA",
+      "heading": "Contact",
+      "overflow": false,
+      "robots": "noindex,nofollow,noarchive",
+      "banner": "LottoMind Upgrade Preview — Not Production"
+    },
+    {
+      "route": "/lottomind-stem-studio/",
+      "viewport": {
+        "name": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "screenshotFilename": "lottomind-stem-studio-index--tablet.png",
+      "responseStatus": 200,
+      "consoleFailures": [],
+      "title": "LOTTOMINDED ULTRA | Stem Studio",
+      "heading": "Stem Studio",
+      "overflow": false,
+      "robots": "noindex,nofollow,noarchive",
+      "banner": "LottoMind Upgrade Preview — Not Production"
+    },
+    {
+      "route": "/games/lottomind-jackpot-maze/",
+      "viewport": {
+        "name": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "screenshotFilename": "games-lottomind-jackpot-maze-index--tablet.png",
+      "responseStatus": 200,
+      "consoleFailures": [],
+      "title": "LottoMind: Jackpot Maze",
+      "heading": "LottoMind Jackpot Maze",
+      "overflow": false,
+      "robots": "noindex,nofollow,noarchive",
+      "banner": "LottoMind Upgrade Preview — Not Production"
+    },
+    {
+      "route": "/",
+      "viewport": {
+        "name": "mobile",
+        "width": 390,
+        "height": 844
+      },
+      "screenshotFilename": "home--mobile.png",
+      "responseStatus": 200,
+      "consoleFailures": [],
+      "title": "LOTTOMINDED ULTRA | Browser Music Workstation",
+      "heading": "Start the home frequency.",
+      "overflow": false,
+      "robots": "noindex,nofollow,noarchive",
+      "banner": "LottoMind Upgrade Preview — Not Production"
+    },
+    {
+      "route": "/memberships.html",
+      "viewport": {
+        "name": "mobile",
+        "width": 390,
+        "height": 844
+      },
+      "screenshotFilename": "memberships--mobile.png",
+      "responseStatus": 200,
+      "consoleFailures": [],
+      "title": "Memberships | LOTTOMINDED ULTRA",
+      "heading": "Choose Your Membership",
+      "overflow": false,
+      "robots": "noindex,nofollow,noarchive",
+      "banner": "LottoMind Upgrade Preview — Not Production"
+    },
+    {
+      "route": "/merch-store.html",
+      "viewport": {
+        "name": "mobile",
+        "width": 390,
+        "height": 844
+      },
+      "screenshotFilename": "merch-store--mobile.png",
+      "responseStatus": 200,
+      "consoleFailures": [],
+      "title": "LOTTOMINDED ULTRA | Merch + Gallery Store",
+      "heading": "Lottomind™ Merch + Art Gallery",
+      "overflow": false,
+      "robots": "noindex,nofollow,noarchive",
+      "banner": "LottoMind Upgrade Preview — Not Production"
+    },
+    {
+      "route": "/games/shadow-ops-canvas/",
+      "viewport": {
+        "name": "mobile",
+        "width": 390,
+        "height": 844
+      },
+      "screenshotFilename": "games-shadow-ops-canvas-index--mobile.png",
+      "responseStatus": 200,
+      "consoleFailures": [],
+      "title": "ROBOT RAHBE",
+      "heading": "ROBOT RAHBE",
+      "overflow": false,
+      "robots": "noindex,nofollow,noarchive",
+      "banner": "LottoMind Upgrade Preview — Not Production"
+    },
+    {
+      "route": "/news/",
+      "viewport": {
+        "name": "mobile",
+        "width": 390,
+        "height": 844
+      },
+      "screenshotFilename": "news-index--mobile.png",
+      "responseStatus": 200,
+      "consoleFailures": [],
+      "title": "LottoMind News Intelligence",
+      "heading": "Approved sources, one signal route",
+      "overflow": false,
+      "robots": "noindex,nofollow,noarchive",
+      "banner": "LottoMind Upgrade Preview — Not Production"
+    },
+    {
+      "route": "/contact.html",
+      "viewport": {
+        "name": "mobile",
+        "width": 390,
+        "height": 844
+      },
+      "screenshotFilename": "contact--mobile.png",
+      "responseStatus": 200,
+      "consoleFailures": [],
+      "title": "Contact | LOTTOMINDED ULTRA",
+      "heading": "Contact",
+      "overflow": false,
+      "robots": "noindex,nofollow,noarchive",
+      "banner": "LottoMind Upgrade Preview — Not Production"
+    },
+    {
+      "route": "/lottomind-stem-studio/",
+      "viewport": {
+        "name": "mobile",
+        "width": 390,
+        "height": 844
+      },
+      "screenshotFilename": "lottomind-stem-studio-index--mobile.png",
+      "responseStatus": 200,
+      "consoleFailures": [],
+      "title": "LOTTOMINDED ULTRA | Stem Studio",
+      "heading": "Stem Studio",
+      "overflow": false,
+      "robots": "noindex,nofollow,noarchive",
+      "banner": "LottoMind Upgrade Preview — Not Production"
+    },
+    {
+      "route": "/games/lottomind-jackpot-maze/",
+      "viewport": {
+        "name": "mobile",
+        "width": 390,
+        "height": 844
+      },
+      "screenshotFilename": "games-lottomind-jackpot-maze-index--mobile.png",
+      "responseStatus": 200,
+      "consoleFailures": [],
+      "title": "LottoMind: Jackpot Maze",
+      "heading": "LottoMind Jackpot Maze",
+      "overflow": false,
+      "robots": "noindex,nofollow,noarchive",
+      "banner": "LottoMind Upgrade Preview — Not Production"
+    }
+  ]
+}

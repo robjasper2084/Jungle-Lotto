@@ -2920,3 +2920,132 @@ body.has-merch-shadow-popup {
   top: 1.35rem;
   right: 1.35rem;
 }
+
+/* Local wishlist and apparel sizing controls. */
+.merch-store-page .wishlist-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border-color: rgba(255, 209, 102, 0.42);
+  color: #fff5cf;
+}
+
+.wishlist-toggle__icon {
+  color: #ffd166;
+  font-size: 1.15rem;
+  line-height: 1;
+}
+
+.merch-store-page .wishlist-toggle [data-wishlist-count] {
+  display: inline-grid;
+  min-width: 1.45rem;
+  min-height: 1.45rem;
+  place-items: center;
+  border-radius: 50%;
+  color: #06120f;
+  background: #ffd166;
+  font-size: 0.7rem;
+  font-weight: 900;
+}
+
+.product-wishlist-toggle {
+  position: absolute;
+  top: 0.8rem;
+  right: 0.8rem;
+  z-index: 6;
+  display: grid;
+  width: 2.75rem;
+  height: 2.75rem;
+  place-items: center;
+  padding: 0;
+  border: 1px solid rgba(255, 209, 102, 0.58);
+  border-radius: 50%;
+  color: #fff5cf;
+  background: rgba(3, 7, 14, 0.9);
+  box-shadow: 0 0.6rem 1.8rem rgba(0, 0, 0, 0.42);
+  font-size: 1.55rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.product-wishlist-toggle:hover,
+.product-wishlist-toggle:focus-visible,
+.product-wishlist-toggle.is-saved {
+  color: #071018;
+  background: #ffd166;
+  box-shadow: 0 0 1.5rem rgba(255, 209, 102, 0.42);
+}
+
+.product-size-control {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 0.7rem;
+  margin: 1rem 0;
+  color: #ffd166;
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.product-size-control select {
+  width: 100%;
+  min-height: 2.65rem;
+  padding: 0.55rem 2rem 0.55rem 0.75rem;
+  border: 1px solid rgba(41, 247, 255, 0.36);
+  border-radius: 4px;
+  color: #effbff;
+  background: #071321;
+  font: inherit;
+  cursor: pointer;
+}
+
+.wishlist-drawer {
+  border-color: rgba(255, 209, 102, 0.48);
+}
+
+.wishlist-line {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.wishlist-line div {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.wishlist-line span {
+  color: #ffd166;
+}
+
+.wishlist-line a,
+.wishlist-line button {
+  min-height: 2.2rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid rgba(41, 247, 255, 0.3);
+  color: #effbff;
+  background: rgba(255, 255, 255, 0.055);
+  font: inherit;
+  font-size: 0.75rem;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.wishlist-line button {
+  grid-column: 1 / -1;
+  justify-self: start;
+  color: #fff2c4;
+  border-color: rgba(255, 209, 102, 0.28);
+}
+
+@media (max-width: 560px) {
+  .merch-store-page .direct-launch {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .merch-store-page .direct-action {
+    justify-content: center;
+  }
+}

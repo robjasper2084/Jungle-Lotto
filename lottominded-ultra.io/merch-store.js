@@ -4,6 +4,9 @@ const bagDrawer = document.querySelector("[data-bag-drawer]");
 const bagItems = document.querySelector("[data-bag-items]");
 const bagTotal = document.querySelector("[data-bag-total]");
 const cartNote = document.querySelector("[data-cart-note]");
+const wishlistDrawer = document.querySelector("[data-wishlist-drawer]");
+const wishlistItems = document.querySelector("[data-wishlist-items]");
+const wishlistNote = document.querySelector("[data-wishlist-note]");
 const merchSoundCard = document.querySelector("[data-merch-sound-card]");
 const merchSoundVideo = document.querySelector("[data-merch-sound-video]");
 const merchSoundToggle = document.querySelector("[data-merch-sound-toggle]");
@@ -12,11 +15,13 @@ const merchCommercialModalVideo = document.querySelector("[data-merch-commercial
 const merchCommercialOpen = document.querySelector("[data-merch-commercial-open]");
 const merchCommercialClose = document.querySelector("[data-merch-commercial-close]");
 const merchCommercialReplay = document.querySelector("[data-merch-commercial-replay]");
+const merchCommercialSound = document.querySelector("[data-merch-commercial-sound]");
 const merchShadowPopup = document.querySelector("[data-merch-shadow-popup]");
 const merchShadowFrame = document.querySelector("[data-merch-shadow-frame]");
 const merchShadowCloseButtons = document.querySelectorAll("[data-merch-shadow-close]");
 let merchHeroVideo = document.querySelector(".merch-hero-video");
 const CART_STORAGE_KEY = "lottomind.merch.cart.v1";
+const WISHLIST_STORAGE_KEY = "lottomind.merch.wishlist.v1";
 const MERCH_SHADOW_AUTO_DELAY = 90000;
 const MERCH_SHADOW_AUTO_CLOSE_DELAY = 15000;
 const MERCH_SHADOW_AUTO_KEY = "lottomind.merch.shadowAutoShown.v1";
@@ -32,6 +37,17 @@ function loadCart() {
 }
 
 const bag = loadCart();
+
+function loadWishlist() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(WISHLIST_STORAGE_KEY));
+    return Array.isArray(saved) ? saved : [];
+  } catch {
+    return [];
+  }
+}
+
+const wishlist = loadWishlist();
 
 function getMerchHeroVideo() {
   if (!merchHeroVideo || !document.contains(merchHeroVideo)) {
@@ -80,6 +96,10 @@ function saveCart() {
   localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(bag));
 }
 
+function saveWishlist() {
+  localStorage.setItem(WISHLIST_STORAGE_KEY, JSON.stringify(wishlist));
+}
+
 function escapeHtml(value) {
   return String(value).replace(/[&<>"']/g, (char) => ({
     "&": "&amp;",
@@ -121,7 +141,7 @@ function updateBag() {
           <li class="cart-line">
             <div>
               <strong>${escapeHtml(item.name)}</strong>
-              <span>${formatMoney(item.price)} each</span>
+              <span>${item.size ? `Size ${escapeHtml(item.size)} &middot; ` : ""}${formatMoney(item.price)} each</span>
             </div>
             <div class="cart-quantity" aria-label="${escapeHtml(item.name)} quantity">
               <button type="button" data-cart-decrease="${escapeHtml(item.id)}" aria-label="Decrease ${escapeHtml(item.name)}">-</button>
@@ -132,13 +152,13 @@ function updateBag() {
             <button class="cart-remove" type="button" data-cart-remove="${escapeHtml(item.id)}">Remove</button>
           </li>
         `).join("")
-      : `<li class="cart-empty">Your cart is empty. Add a hoodie, cap, polo, or gallery piece.</li>`;
+      : `<li class="cart-empty">Your preorder preview is empty. Add a hoodie, cap, polo, or gallery piece.</li>`;
   }
 
   if (cartNote) {
     cartNote.textContent = bag.length
-      ? "Checkout preview is local only. Connect a live storefront when the drop is ready."
-      : "Shipping and taxes are not calculated in this local preview.";
+      ? "Preorder preview saved on this device only. No order or payment was submitted."
+      : "Preorder preview only. Shipping, taxes, and availability are not confirmed.";
   }
   saveCart();
 }
@@ -147,14 +167,17 @@ function addToCart(button) {
   const name = button.dataset.addItem;
   const price = Number(button.dataset.itemPrice || 0);
   if (!name || !price) return;
-  const id = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+  const size = button.closest(".product-card")?.querySelector("[data-item-size]")?.value || "";
+  const baseId = productId(name);
+  const id = size ? `${baseId}-${size.toLowerCase()}` : baseId;
   const existing = bag.find((item) => item.id === id);
   if (existing) {
     existing.quantity += 1;
   } else {
-    bag.push({ id, name, price, quantity: 1 });
+    bag.push({ id, name, price, size, quantity: 1 });
   }
   updateBag();
+  closeWishlist();
   bagDrawer?.classList.add("is-open");
   bagDrawer?.classList.add("is-cart-popping");
   button.classList.add("is-add-popping");
@@ -211,6 +234,135 @@ function pauseMerchIntroAudio(exceptMedia = merchSoundVideo) {
   });
 }
 
+function productId(name) {
+  return String(name).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+}
+
+function initializeProductControls() {
+  document.querySelectorAll(".product-card [data-add-item]").forEach((addButton) => {
+    const card = addButton.closest(".product-card");
+    const name = addButton.dataset.addItem;
+    const id = productId(name);
+    if (!card || !name || !id) return;
+
+    card.dataset.productId = id;
+    if (!card.id) card.id = `product-${id}`;
+
+    if (addButton.dataset.itemSizes && !card.querySelector("[data-item-size]")) {
+      const sizeControl = document.createElement("label");
+      sizeControl.className = "product-size-control";
+      const sizeLabel = document.createElement("span");
+      sizeLabel.textContent = "Size";
+      const sizeSelect = document.createElement("select");
+      sizeSelect.dataset.itemSize = "";
+      sizeSelect.setAttribute("aria-label", `Size for ${name}`);
+      const labels = { S: "Small", M: "Medium", XL: "XL", XXL: "XXL" };
+      addButton.dataset.itemSizes.split(",").forEach((size) => {
+        const option = document.createElement("option");
+        option.value = size;
+        option.textContent = labels[size] || size;
+        sizeSelect.append(option);
+      });
+      sizeControl.append(sizeLabel, sizeSelect);
+      addButton.closest(".product-row")?.before(sizeControl);
+    }
+
+    if (!card.querySelector("[data-wishlist-toggle]")) {
+      const saveButton = document.createElement("button");
+      saveButton.type = "button";
+      saveButton.className = "product-wishlist-toggle";
+      saveButton.dataset.wishlistToggle = id;
+      saveButton.dataset.itemName = name;
+      saveButton.dataset.itemPrice = addButton.dataset.itemPrice || "0";
+      saveButton.dataset.itemTarget = card.id;
+      saveButton.title = "Save to wishlist";
+      saveButton.setAttribute("aria-pressed", "false");
+      saveButton.setAttribute("aria-label", `Save ${name} to wishlist`);
+      saveButton.textContent = "\u2661";
+      card.append(saveButton);
+    }
+  });
+}
+
+function updateWishlist() {
+  document.querySelectorAll("[data-wishlist-count]").forEach((target) => {
+    target.textContent = String(wishlist.length);
+  });
+
+  document.querySelectorAll("[data-wishlist-toggle]").forEach((button) => {
+    const saved = wishlist.some((item) => item.id === button.dataset.wishlistToggle);
+    const name = button.dataset.itemName || "item";
+    button.classList.toggle("is-saved", saved);
+    button.setAttribute("aria-pressed", String(saved));
+    button.setAttribute("aria-label", `${saved ? "Remove" : "Save"} ${name} ${saved ? "from" : "to"} wishlist`);
+    button.title = saved ? "Remove from wishlist" : "Save to wishlist";
+    button.textContent = saved ? "\u2665" : "\u2661";
+  });
+
+  if (wishlistItems) {
+    wishlistItems.innerHTML = wishlist.length
+      ? wishlist.map((item) => `
+          <li class="wishlist-line">
+            <div><strong>${escapeHtml(item.name)}</strong><span>${formatMoney(item.price)}</span></div>
+            <a href="#${escapeHtml(item.target)}" data-wishlist-view>View item</a>
+            <button type="button" data-wishlist-remove="${escapeHtml(item.id)}">Remove</button>
+          </li>
+        `).join("")
+      : `<li class="cart-empty">Your wishlist is empty. Use the heart on any product to save it.</li>`;
+  }
+
+  if (wishlistNote) {
+    wishlistNote.textContent = wishlist.length
+      ? `${wishlist.length} saved ${wishlist.length === 1 ? "item" : "items"} on this device.`
+      : "Your wishlist is empty.";
+  }
+  saveWishlist();
+}
+
+function toggleWishlistItem(button) {
+  const id = button.dataset.wishlistToggle;
+  const existingIndex = wishlist.findIndex((item) => item.id === id);
+  if (existingIndex >= 0) {
+    wishlist.splice(existingIndex, 1);
+  } else {
+    wishlist.push({
+      id,
+      name: button.dataset.itemName,
+      price: Number(button.dataset.itemPrice || 0),
+      target: button.dataset.itemTarget,
+    });
+  }
+  updateWishlist();
+}
+
+function openWishlist() {
+  bagDrawer?.classList.remove("is-open");
+  wishlistDrawer?.classList.add("is-open");
+  document.querySelector("[data-wishlist-toggle-drawer]")?.setAttribute("aria-expanded", "true");
+}
+
+function closeWishlist() {
+  wishlistDrawer?.classList.remove("is-open");
+  document.querySelector("[data-wishlist-toggle-drawer]")?.setAttribute("aria-expanded", "false");
+}
+
+function restoreMerchVideoSources(video) {
+  if (!video) return false;
+  let changed = false;
+  if (video.dataset.src && !video.hasAttribute("src")) {
+    video.setAttribute("src", video.dataset.src);
+    changed = true;
+  }
+  video.querySelectorAll("source").forEach((source) => {
+    if (source.dataset.src && !source.hasAttribute("src")) {
+      source.setAttribute("src", source.dataset.src);
+      changed = true;
+    }
+  });
+  if (changed) video.load();
+  return changed;
+}
+
 function resetMerchCapsuleVideo() {
   if (!merchSoundVideo) return;
   try {
@@ -224,6 +376,7 @@ async function playMerchCapsuleSound() {
   if (!merchSoundVideo || !merchSoundToggle) return;
   let played = false;
   pauseMerchIntroAudio();
+  restoreMerchVideoSources(merchSoundVideo);
   resetMerchCapsuleVideo();
   try {
     merchSoundVideo.muted = false;
@@ -249,8 +402,9 @@ async function playMerchCapsuleSound() {
   }
 }
 
-function startMerchCapsuleOnPageOpen() {
+async function startMerchCapsuleOnPageOpen() {
   if (!merchSoundVideo) return;
+  restoreMerchVideoSources(merchSoundVideo);
   merchSoundVideo.autoplay = true;
   merchSoundVideo.playsInline = true;
   merchSoundVideo.muted = true;
@@ -258,13 +412,10 @@ function startMerchCapsuleOnPageOpen() {
   merchSoundVideo.setAttribute("autoplay", "");
   merchSoundVideo.setAttribute("playsinline", "");
   merchSoundVideo.setAttribute("muted", "");
-  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-    merchSoundVideo.pause();
-    resetMerchCapsuleVideo();
-  } else {
-    merchSoundVideo.play().catch(() => {
-      // The commercial poster remains visible if muted autoplay is unavailable.
-    });
+  try {
+    await merchSoundVideo.play();
+  } catch {
+    // The poster and explicit play control remain available if muted autoplay is blocked.
   }
   if (merchSoundToggle) {
     merchSoundToggle.textContent = "Play sound";
@@ -287,6 +438,7 @@ async function openMerchCommercial() {
   merchCommercialModal.classList.remove("is-hidden");
   merchCommercialModal.setAttribute("aria-hidden", "false");
   document.body.classList.add("has-merch-commercial-modal");
+  restoreMerchVideoSources(merchCommercialModalVideo);
   if (merchCommercialModalVideo.readyState === 0) merchCommercialModalVideo.load();
   try {
     merchCommercialModalVideo.currentTime = 0;
@@ -294,11 +446,23 @@ async function openMerchCommercial() {
     // Seeking can be unavailable until the commercial metadata is ready.
   }
   merchCommercialModalVideo.muted = false;
+  merchCommercialModalVideo.defaultMuted = false;
+  merchCommercialModalVideo.removeAttribute("muted");
   merchCommercialModalVideo.volume = window.LMAudioMix?.levels.preview ?? 0.48;
   window.LMAudioMix?.claim?.(merchCommercialModalVideo);
-  await merchCommercialModalVideo.play().catch(() => {
-    // The native play control remains available if the browser blocks playback.
-  });
+  try {
+    await merchCommercialModalVideo.play();
+    if (merchCommercialSound) merchCommercialSound.hidden = true;
+  } catch {
+    merchCommercialModalVideo.muted = true;
+    merchCommercialModalVideo.defaultMuted = true;
+    merchCommercialModalVideo.setAttribute("muted", "");
+    if (merchCommercialSound) {
+      merchCommercialSound.hidden = false;
+      merchCommercialSound.textContent = "Play with sound";
+    }
+    await merchCommercialModalVideo.play().catch(() => {});
+  }
   merchCommercialClose?.focus();
 }
 
@@ -319,13 +483,37 @@ function closeMerchCommercial({ restoreFocus = true } = {}) {
 
 async function replayMerchCommercial() {
   if (!merchCommercialModalVideo) return;
+  restoreMerchVideoSources(merchCommercialModalVideo);
   try {
     merchCommercialModalVideo.currentTime = 0;
   } catch {
     // The native controls remain usable if seeking is not ready yet.
   }
   merchCommercialModalVideo.muted = false;
+  merchCommercialModalVideo.defaultMuted = false;
+  merchCommercialModalVideo.removeAttribute("muted");
+  merchCommercialModalVideo.volume = window.LMAudioMix?.levels.preview ?? 0.48;
+  window.LMAudioMix?.claim?.(merchCommercialModalVideo);
   await merchCommercialModalVideo.play().catch(() => {});
+}
+
+async function playMerchCommercialWithSound() {
+  if (!merchCommercialModalVideo) return;
+  restoreMerchVideoSources(merchCommercialModalVideo);
+  merchCommercialModalVideo.muted = false;
+  merchCommercialModalVideo.defaultMuted = false;
+  merchCommercialModalVideo.removeAttribute("muted");
+  merchCommercialModalVideo.volume = window.LMAudioMix?.levels.preview ?? 0.48;
+  window.LMAudioMix?.claim?.(merchCommercialModalVideo);
+  try {
+    await merchCommercialModalVideo.play();
+    if (merchCommercialSound) merchCommercialSound.hidden = true;
+  } catch {
+    merchCommercialModalVideo.muted = true;
+    merchCommercialModalVideo.defaultMuted = true;
+    merchCommercialModalVideo.setAttribute("muted", "");
+    if (merchCommercialSound) merchCommercialSound.textContent = "Play with sound";
+  }
 }
 
 function openMerchShadowPopup() {
@@ -436,8 +624,44 @@ document.addEventListener("click", (event) => {
     return;
   }
 
+  if (event.target.closest("[data-merch-commercial-sound]")) {
+    event.preventDefault();
+    playMerchCommercialWithSound();
+    return;
+  }
+
   if (event.target.closest("[data-merch-commercial-shop]")) {
     closeMerchCommercial({ restoreFocus: false });
+  }
+
+  const wishlistButton = event.target.closest("[data-wishlist-toggle]");
+  if (wishlistButton) {
+    toggleWishlistItem(wishlistButton);
+    return;
+  }
+
+  const wishlistRemove = event.target.closest("[data-wishlist-remove]");
+  if (wishlistRemove) {
+    const index = wishlist.findIndex((item) => item.id === wishlistRemove.dataset.wishlistRemove);
+    if (index >= 0) wishlist.splice(index, 1);
+    updateWishlist();
+    return;
+  }
+
+  if (event.target.closest("[data-wishlist-view]")) {
+    closeWishlist();
+    return;
+  }
+
+  if (event.target.closest("[data-wishlist-toggle-drawer]")) {
+    if (wishlistDrawer?.classList.contains("is-open")) closeWishlist();
+    else openWishlist();
+    return;
+  }
+
+  if (event.target.closest("[data-wishlist-close]")) {
+    closeWishlist();
+    return;
   }
 
   const stripLink = event.target.closest(".merch-strip a[href^='#']");
@@ -496,6 +720,7 @@ document.addEventListener("click", (event) => {
   }
 
   if (event.target.closest("[data-bag-toggle]")) {
+    closeWishlist();
     bagDrawer?.classList.toggle("is-open");
     return;
   }
@@ -525,6 +750,9 @@ window.addEventListener("load", () => {
   primeMerchHeroBackgroundVideo();
   window.setTimeout(startMerchCapsuleOnPageOpen, 180);
   scheduleAutoMerchShadowPopup();
+});
+window.addEventListener("lottomind:commercial-gate", (event) => {
+  if (event.detail?.active === false) startMerchCapsuleOnPageOpen();
 });
 
 if (document.readyState === "loading") {
@@ -568,6 +796,14 @@ document.addEventListener("keydown", (event) => {
   }
   if (event.key === "Escape" && !merchShadowPopup?.classList.contains("is-hidden")) {
     closeMerchShadowPopup();
+    return;
+  }
+  if (event.key === "Escape" && wishlistDrawer?.classList.contains("is-open")) {
+    closeWishlist();
+    return;
+  }
+  if (event.key === "Escape" && bagDrawer?.classList.contains("is-open")) {
+    bagDrawer.classList.remove("is-open");
   }
 });
 
@@ -588,4 +824,6 @@ const revealObserver = new IntersectionObserver(
 
 document.querySelectorAll(".merch-store-page [data-reveal]").forEach((section) => revealObserver.observe(section));
 
+initializeProductControls();
 updateBag();
+updateWishlist();

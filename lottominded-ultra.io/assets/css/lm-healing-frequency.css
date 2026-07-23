@@ -150,17 +150,35 @@ body.lottery-spheres-page .lm-healing-drag-ripple {
   width: var(--lm-healing-size);
   height: var(--lm-healing-size);
   padding: 38px 34px;
-  border-color: rgba(84, 211, 255, 0.92);
+  border-color: rgba(255, 240, 166, 0.9);
   background:
-    radial-gradient(circle at 29% 20%, rgba(255, 255, 255, 0.3), transparent 19%),
-    radial-gradient(circle at 49% 43%, #376fbd 0 34%, #1d4f98 52%, #0d2d65 72%, #041124 100%);
+    radial-gradient(circle at 29% 20%, #ffffff 0 3%, rgba(255, 255, 255, 0.72) 4%, transparent 18%),
+    radial-gradient(circle at 49% 43%, #effbff 0 22%, #29f7ff 39%, #ffe071 57%, #15364b 72%, #02050a 100%);
   box-shadow:
-    inset 0 0 0 8px rgba(151, 224, 255, 0.055),
-    inset 0 -30px 56px rgba(2, 9, 34, 0.54),
-    0 0 0 1px rgba(129, 228, 255, 0.42),
-    0 0 38px rgba(45, 190, 255, 0.42),
+    inset 0 0 0 8px rgba(255, 255, 255, 0.08),
+    inset 0 -30px 56px rgba(2, 9, 20, 0.7),
+    0 0 0 1px rgba(41, 247, 255, 0.68),
+    0 0 38px rgba(41, 247, 255, 0.5),
+    0 0 72px rgba(255, 224, 113, 0.24),
     0 18px 46px rgba(0, 0, 0, 0.58);
   animation-name: lm-oracle-float-original;
+}
+
+.lm-healing-generator--oracle-only::before {
+  inset: 8%;
+  border: 2px solid rgba(255, 255, 255, 0.52);
+  box-shadow: inset 0 0 24px rgba(41, 247, 255, 0.32);
+}
+
+.lm-healing-generator--oracle-only::after {
+  opacity: 0;
+}
+
+.lm-healing-generator--oracle-only .lm-healing-generator__orb-mark {
+  border-color: rgba(255, 224, 113, 0.94);
+  color: #ffe071;
+  background: radial-gradient(circle at 38% 30%, #26384c 0 12%, rgba(0, 5, 12, 0.94) 66%, #010204 100%);
+  box-shadow: inset 0 0 0 3px rgba(255, 255, 255, 0.08), 0 0 18px rgba(41, 247, 255, 0.46);
 }
 
 @keyframes lm-oracle-float-original {
@@ -183,6 +201,9 @@ body.lottery-spheres-page .lm-healing-drag-ripple {
 .lm-healing-generator--oracle-only .lm-healing-generator__oracle {
   margin-top: 12px;
   padding-block: 13px;
+  border-color: rgba(255, 224, 113, 0.66);
+  background: radial-gradient(circle at 50% 35%, rgba(24, 57, 82, 0.96), rgba(2, 8, 18, 0.98) 72%);
+  box-shadow: inset 0 0 28px rgba(41, 247, 255, 0.2), 0 0 18px rgba(255, 224, 113, 0.2);
 }
 
 .lm-healing-generator--oracle-only .lm-healing-generator__reading {

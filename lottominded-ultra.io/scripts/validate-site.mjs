@@ -1,12 +1,53 @@
 import fs from "node:fs";
 import path from "node:path";
+import { execFileSync } from "node:child_process";
 
 const root = process.cwd();
 const ignoredDirectories = new Set([".git", ".circleci", "node_modules", "playwright-report", "test-results", "previews"]);
 const expectedCanonicalPrefix = "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/";
 const errors = [];
+const sparseResolvedPaths = new Set();
+
+function loadTrackedPaths() {
+  try {
+    const gitPrefix = execFileSync("git", ["rev-parse", "--show-prefix"], {
+      cwd: root,
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"],
+    }).trim().replaceAll("\\", "/");
+    const output = execFileSync("git", ["ls-files", "--cached", "--full-name", "-z"], {
+      cwd: root,
+      encoding: "utf8",
+      maxBuffer: 16 * 1024 * 1024,
+      stdio: ["ignore", "pipe", "ignore"],
+    });
+    return {
+      gitPrefix,
+      paths: new Set(output.split("\0").filter(Boolean).map((file) => file.replaceAll("\\", "/"))),
+    };
+  } catch {
+    return { gitPrefix: "", paths: new Set() };
+  }
+}
+
+const tracked = loadTrackedPaths();
+
+function trackedPathFor(absolute) {
+  const relative = path.relative(root, absolute);
+  if (!relative || relative === ".." || relative.startsWith(`..${path.sep}`) || path.isAbsolute(relative)) return "";
+  return `${tracked.gitPrefix}${relative.replaceAll("\\", "/")}`;
+}
+
+function existsLocallyOrTracked(absolute) {
+  if (fs.existsSync(absolute)) return true;
+  const trackedPath = trackedPathFor(absolute);
+  if (!trackedPath || !tracked.paths.has(trackedPath)) return false;
+  sparseResolvedPaths.add(trackedPath);
+  return true;
+}
 
 function walk(directory, extension, results = []) {
+  if (!fs.existsSync(directory)) return results;
   for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
     if (entry.name.startsWith(".") && entry.name !== ".well-known") continue;
     const absolute = path.join(directory, entry.name);
@@ -40,8 +81,8 @@ function resolveReference(owner, reference) {
     ? path.join(root, normalized)
     : path.resolve(path.dirname(owner), normalized);
   if (path.relative(root, absolute).startsWith("..")) return true;
-  if (fs.existsSync(absolute)) return true;
-  if (!path.extname(absolute) && fs.existsSync(path.join(absolute, "index.html"))) return true;
+  if (existsLocallyOrTracked(absolute)) return true;
+  if (!path.extname(absolute) && existsLocallyOrTracked(path.join(absolute, "index.html"))) return true;
   return false;
 }
 
@@ -82,14 +123,14 @@ const requiredStaticRoutes = [
   "news/index.html",
 ];
 for (const route of requiredStaticRoutes) {
-  if (!fs.existsSync(path.join(root, route))) errors.push(`${route}: required built static route is missing`);
+  if (!existsLocallyOrTracked(path.join(root, route))) errors.push(`${route}: required built static route is missing`);
 }
 
 const jackpotRootIndex = path.join(root, "games", "lottomind-jackpot-maze", "index.html");
 const jackpotDistIndex = path.join(root, "games", "lottomind-jackpot-maze", "dist", "index.html");
 const jackpotRootHtml = fs.existsSync(jackpotRootIndex) ? fs.readFileSync(jackpotRootIndex, "utf8") : "";
 const jackpotRootIsBuilt = jackpotRootHtml && !/src\/main\.[jt]sx?/i.test(jackpotRootHtml);
-if (!jackpotRootIsBuilt && !fs.existsSync(jackpotDistIndex)) {
+if (!jackpotRootIsBuilt && !existsLocallyOrTracked(jackpotDistIndex)) {
   errors.push("games/lottomind-jackpot-maze: required built static route is missing");
 }
 
@@ -137,5 +178,8 @@ if (errors.length) {
   for (const error of errors) console.error(`- ${error}`);
   process.exitCode = 1;
 } else {
-  console.log(`Validated ${htmlFiles.length} HTML files: no duplicate IDs or missing local assets.`);
+  const sparseNote = sparseResolvedPaths.size
+    ? ` ${sparseResolvedPaths.size} referenced paths were verified from the Git index because this is a sparse checkout.`
+    : "";
+  console.log(`Validated ${htmlFiles.length} HTML files: no duplicate IDs or missing local assets.${sparseNote}`);
 }

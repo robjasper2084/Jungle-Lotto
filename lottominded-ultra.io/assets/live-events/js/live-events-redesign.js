@@ -7,12 +7,7 @@
   document.querySelectorAll("[data-stream-startup-audio], .stream-startup-audio").forEach((modal) => modal.remove());
   document.body.classList.remove("has-shadow-ops-modal", "has-shadow-ops-frame-expanded", "has-stream-startup-audio");
 
-  const liveStart = Date.now() - (12 * 60 + 45) * 1000;
-  const started = document.querySelector(".started");
   const padButtons = document.querySelectorAll(".lm-category-grid button, .lm-interactions button, .lm-synth-tabs button");
-  const chatFeed = document.querySelector("[data-live-chat-feed]");
-  const chatForm = document.querySelector("[data-live-chat-form]");
-  const chatInput = document.querySelector("[data-live-chat-input]");
   const livePlayer = document.querySelector("[data-live-player]");
   const livePlayerAudio = livePlayer?.querySelector("[data-live-player-audio]");
   const livePlayerToggle = livePlayer?.querySelector("[data-live-player-toggle]");
@@ -45,65 +40,9 @@
   let liveAudioSource = null;
   let liveWaveFrame = null;
   let heroSingerSoundEnabled = false;
+  let heroSingerAutoplayAttempted = false;
   let shadowOpsShouldResumeLiveAudio = false;
   let shadowOpsLiveAudioVolume = 0.56;
-  const chatBots = [
-    {
-      name: "DetroitPulse",
-      accent: "#29f7ff",
-      lines: [
-        "That section feels like late-night Woodward Avenue in neon.",
-        "I hear the pocket. The drummer is leaving space for the horns.",
-        "That clip belongs on the front rail. Clean Detroit energy."
-      ],
-      jazz: "Jazz-Off Detroit energy is all over this room. That archive feels alive.",
-      hype: "Signal boosted. The whole stage just lit up."
-    },
-    {
-      name: "HarmonyAI",
-      accent: "#ff4fd8",
-      lines: [
-        "The harmony is warm, but the visual deck keeps it futuristic.",
-        "I would tag this as live soul, archive glow, and midnight brass.",
-        "The chat is catching the right notes tonight."
-      ],
-      jazz: "For jazz, I am hearing story first, solo second, crowd memory third.",
-      hype: "That is a strong moment. Save it for the replay shelf."
-    },
-    {
-      name: "StageMod",
-      accent: "#ffe071",
-      lines: [
-        "Room check complete. Keep it respectful and enjoy the stream.",
-        "Featured videos are live in the event cards now.",
-        "Replay crew, remember to hit the Watch Live button when the stage opens."
-      ],
-      jazz: "Jazz-Off Detroit links are queued in the featured cards.",
-      hype: "Copy that. I am marking this as a highlight."
-    },
-    {
-      name: "BassAlchemy",
-      accent: "#5eff9d",
-      lines: [
-        "The low end is sitting right under the keys.",
-        "That groove has a clean bounce. Nothing crowded.",
-        "I am watching the waveform. The pocket is steady."
-      ],
-      jazz: "The bass walk on those Jazz-Off Detroit clips is doing real work.",
-      hype: "That hit had weight. Crowd felt it."
-    },
-    {
-      name: "LottoMindAI",
-      accent: "#8a5cff",
-      lines: [
-        "Creative signal logged. Entertainment-only, no predictions.",
-        "The stream note is saved as mood, tempo, and scene energy.",
-        "I can turn that moment into a prompt, recap, or replay tag."
-      ],
-      jazz: "Jazz archive signal detected: venue, player, phrase, and crowd feel.",
-      hype: "Signal recorded. That one is a clean creative seed."
-    }
-  ];
 
   function setupHeroSingerFilm() {
     if (!heroSingerFilm) return;
@@ -115,7 +54,20 @@
       if (!heroSingerSound) return;
       heroSingerSound.classList.toggle("is-active", active);
       heroSingerSound.setAttribute("aria-pressed", String(active));
-      heroSingerSound.textContent = active ? "Sound off" : "Sound on";
+      heroSingerSound.textContent = active ? "Sound off" : "Play sound";
+      heroSingerFilm.dataset.soundState = active ? "playing" : "ready";
+    };
+
+    const alignHeroSoundtrack = () => {
+      if (!heroSingerAudio || !Number.isFinite(heroSingerFilm.currentTime)) return;
+      const targetTime = Number.isFinite(heroSingerAudio.duration) && heroSingerAudio.duration > 0
+        ? heroSingerFilm.currentTime % heroSingerAudio.duration
+        : heroSingerFilm.currentTime;
+      try {
+        if (Math.abs(heroSingerAudio.currentTime - targetTime) > 0.35) {
+          heroSingerAudio.currentTime = targetTime;
+        }
+      } catch {}
     };
 
     const syncPlayback = () => {
@@ -128,7 +80,7 @@
         heroSingerFilm.controls = true;
       });
       if (heroSingerSoundEnabled && heroSingerAudio?.paused) {
-        heroSingerAudio.play().catch(() => setSoundState(false));
+        heroSingerAudio.play().catch(stopHeroAudio);
       }
     };
 
@@ -148,6 +100,34 @@
       setSoundState(false);
     };
 
+    const startHeroSoundtrack = async () => {
+      if (!heroSingerAudio || document.hidden || reducedMotion.matches || !isVisible) return false;
+      heroSingerFilm.dataset.soundState = "attempting";
+      stopBackgroundAudio();
+      heroSingerAudio.volume = 0.52;
+      window.LMAudioMix?.claim?.(heroSingerAudio);
+      alignHeroSoundtrack();
+      try {
+        await Promise.all([heroSingerFilm.play(), heroSingerAudio.play()]);
+        heroSingerSoundEnabled = true;
+        setSoundState(true);
+        return true;
+      } catch {
+        stopHeroAudio();
+        heroSingerFilm.dataset.soundState = "blocked";
+        return false;
+      }
+    };
+
+    const retryHeroSoundOnGesture = async (event) => {
+      if (event?.target?.closest?.("[data-live-hero-film-sound]")) return;
+      if (heroSingerSoundEnabled || reducedMotion.matches) return;
+      if (await startHeroSoundtrack()) {
+        document.removeEventListener("pointerdown", retryHeroSoundOnGesture, true);
+        document.removeEventListener("keydown", retryHeroSoundOnGesture, true);
+      }
+    };
+
     heroSingerSound?.addEventListener("click", async () => {
       if (heroSingerSoundEnabled) {
         stopHeroAudio();
@@ -156,20 +136,8 @@
       }
 
       if (!heroSingerAudio) return;
-      stopBackgroundAudio();
-      heroSingerSoundEnabled = true;
-      heroSingerAudio.volume = 0.52;
-      window.LMAudioMix?.claim?.(heroSingerAudio);
       if (heroSingerAudio.ended) heroSingerAudio.currentTime = 0;
-      try {
-        await Promise.all([
-          heroSingerFilm.play(),
-          heroSingerAudio.play()
-        ]);
-        setSoundState(true);
-      } catch {
-        stopHeroAudio();
-      }
+      await startHeroSoundtrack();
     });
 
     heroSingerAudio?.addEventListener("play", () => {
@@ -191,23 +159,18 @@
     }
 
     document.addEventListener("visibilitychange", syncPlayback);
+    document.addEventListener("pointerdown", retryHeroSoundOnGesture, true);
+    document.addEventListener("keydown", retryHeroSoundOnGesture, true);
     reducedMotion.addEventListener?.("change", syncPlayback);
     setSoundState(false);
     syncPlayback();
+    if (!heroSingerAutoplayAttempted && !reducedMotion.matches) {
+      heroSingerAutoplayAttempted = true;
+      void startHeroSoundtrack();
+    }
   }
-  let botCursor = 0;
-
   function two(value) {
     return String(value).padStart(2, "0");
-  }
-
-  function tickLiveTimer() {
-    if (!started) return;
-    const elapsed = Math.floor((Date.now() - liveStart) / 1000);
-    const hours = Math.floor(elapsed / 3600);
-    const minutes = Math.floor((elapsed % 3600) / 60);
-    const seconds = elapsed % 60;
-    started.innerHTML = `<span></span> Started ${two(hours)}:${two(minutes)}:${two(seconds)} ago`;
   }
 
   function playUiTone(seed = 0) {
@@ -956,69 +919,5 @@
     if (event.key === "Escape" && shadowOpsModal?.classList.contains("is-open")) closeShadowOpsModal();
   });
 
-  function escapeHtml(value) {
-    return String(value).replace(/[&<>"']/g, (character) => ({
-      "&": "&amp;",
-      "<": "&lt;",
-      ">": "&gt;",
-      '"': "&quot;",
-      "'": "&#39;"
-    })[character]);
-  }
-
-  function appendChatMessage(name, message, options = {}) {
-    if (!chatFeed) return null;
-    const entry = document.createElement("p");
-    if (options.className) entry.className = options.className;
-    if (options.accent) entry.style.setProperty("--bot-accent", options.accent);
-    entry.innerHTML = `<b>${escapeHtml(name)}</b> ${escapeHtml(message)}`;
-    chatFeed.appendChild(entry);
-    chatFeed.scrollTop = chatFeed.scrollHeight;
-    return entry;
-  }
-
-  function getBotReply(bot, message) {
-    const lowered = message.toLowerCase();
-    if (lowered.includes("jazz") || lowered.includes("detroit") || lowered.includes("band")) return bot.jazz;
-    if (lowered.includes("fire") || lowered.includes("wow") || lowered.includes("dope") || lowered.includes("love")) return bot.hype;
-    const line = bot.lines[(message.length + bot.name.length + botCursor) % bot.lines.length];
-    return line;
-  }
-
-  function showTypingThenReply(bot, message, delay) {
-    if (!chatFeed) return;
-    window.setTimeout(() => {
-      const typing = appendChatMessage(bot.name, "typing...", { className: "is-bot is-typing", accent: bot.accent });
-      window.setTimeout(() => {
-        typing?.remove();
-        appendChatMessage(bot.name, getBotReply(bot, message), { className: "is-bot", accent: bot.accent });
-        playUiTone(botCursor);
-      }, 520);
-    }, delay);
-  }
-
-  function respondWithBots(message) {
-    const replyCount = message.length > 42 ? 3 : 2;
-    for (let index = 0; index < replyCount; index += 1) {
-      const bot = chatBots[(botCursor + index) % chatBots.length];
-      showTypingThenReply(bot, message, 480 + index * 860);
-    }
-    botCursor = (botCursor + replyCount) % chatBots.length;
-  }
-
-  if (chatForm && chatFeed && chatInput) {
-    chatForm.addEventListener("submit", (event) => {
-      event.preventDefault();
-      const message = chatInput.value.trim();
-      if (!message) return;
-      appendChatMessage("SignalUser", message, { className: "is-user" });
-      chatInput.value = "";
-      playUiTone(message.length);
-      respondWithBots(message);
-    });
-  }
-
   setupHeroSingerFilm();
-  tickLiveTimer();
-  window.setInterval(tickLiveTimer, 1000);
 })();

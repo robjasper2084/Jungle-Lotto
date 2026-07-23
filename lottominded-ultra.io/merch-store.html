@@ -18,8 +18,8 @@
     </script>
 <link rel="stylesheet" href="./assets/css/lm-page-transition.css?v=transition-exit-audit-4" />
     <link rel="stylesheet" href="./assets/css/lm-commercial-gate.css?v=guardian-gate-merch-features-1" />
-    <link rel="stylesheet" href="./merch-store.css?v=guardian-commercial-2" />
-    <link rel="stylesheet" href="./assets/css/lm-global-orb-header.css?v=site-audit-1" />
+    <link rel="stylesheet" href="./merch-store.css?v=wishlist-sizes-1" />
+    <link rel="stylesheet" href="./assets/css/lm-global-orb-header.css?v=header-consistency-4" />
 <!-- social-meta:start -->
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="LOTTOMINDED ULTRA" />
@@ -55,18 +55,19 @@
       <nav aria-label="Merch sphere navigation">
         <a href="./memberships.html" data-icon="MB">Memberships</a>
         <a href="./index.html#top" data-icon="HM">Home</a>
-        <a href="./features-app.html" data-icon="FX">Features</a>
+        <a href="./features-app.html" data-icon="FX">Games</a>
         <a href="./news/" data-icon="NW">News</a>
         <a href="./live-events.html" data-icon="EV">Events</a>
         <a href="./lottery-spheres.html#spheres" data-icon="SP">Spheres</a>
-        <a href="./beat2lotto-plus.html#beat2lotto" data-icon="B2">Beat2Lotto+&trade;</a>
-        <a href="./merch-store.html" data-icon="DR">Merch</a>
-        <a href="./how-to-use.html" data-icon="GD">Guide</a>
+        <a href="./beat2lotto-plus.html#beat2lotto" data-icon="B2">RAHBE</a>
+        <a href="./merch-store.html" data-icon="DR">Storefront</a>
+        <a href="./how-to-use.html" data-icon="GD">Static Wav</a>
         <a href="https://robjasper2084.github.io/Jungle-Lotto/lotto%20mind%20refined/" data-icon="LM" data-member-app-public="true" aria-label="Open LottoMind Refined App">LottoMind App</a>
       </nav>
-      <div class="direct-launch" aria-label="Direct studio launch and cart">
+      <div class="direct-launch" aria-label="Direct studio launch and saved merch">
         <a class="direct-action direct-primary" href="./lottomind-stem-studio/index.html">Launch Studio</a>
-        <button class="direct-action cart-toggle" type="button" data-bag-toggle>Cart <span data-bag-count>0</span></button>
+        <button class="direct-action wishlist-toggle" type="button" data-wishlist-toggle-drawer aria-label="Open wishlist" aria-expanded="false" title="Wishlist"><span class="wishlist-toggle__icon" aria-hidden="true">&#9825;</span><span data-wishlist-count>0</span></button>
+        <button class="direct-action cart-toggle" type="button" data-bag-toggle aria-label="Open preorder preview">Preorder <span data-bag-count>0</span></button>
       </div>
     </header>
 
@@ -88,7 +89,7 @@
         </div>
         <div class="merch-hero-product merch-commercial-capsule" data-merch-sound-card>
           <video class="merch-product-video" muted loop autoplay playsinline preload="metadata" poster="./assets/merch/lottomind-community-signal-poster-20260717.jpg" data-merch-sound-video data-lm-video-unmanaged="true" aria-label="LottoMind community lifestyle commercial preview">
-            <source src="./assets/merch/lottomind-community-signal-commercial-20260717.mp4" type="video/mp4" />
+            <source data-src="./assets/merch/lottomind-community-signal-commercial-20260717.mp4" type="video/mp4" />
           </video>
           <div class="merch-commercial-actions" aria-label="Commercial controls">
             <button class="merch-sound-toggle" type="button" data-merch-sound-toggle>Play sound</button>
@@ -140,8 +141,7 @@
             </video>
           </div>
           <p>
-            Product cards are wired for a local drop list now, with clean routing for Shopify, Stripe Checkout,
-            or another storefront later.
+            Preview the upcoming drop and build a local preorder list. No order or payment is submitted from this staging storefront.
           </p>
         </div>
         <div class="product-grid merch-swipe-rail" aria-label="Merch products" data-swipe-rail tabindex="0">
@@ -151,7 +151,7 @@
             <div>
               <h3>Detroit Embroidery Hoodie</h3>
               <p>Close-detail fleece concept with textured skyline embroidery and launch-team color hits.</p>
-              <div class="product-row"><strong>$200</strong><button type="button" data-add-item="Detroit Embroidery Hoodie" data-item-price="200">Add to Cart</button></div>
+              <div class="product-row"><strong>$200</strong><button type="button" data-add-item="Detroit Embroidery Hoodie" data-item-price="200" data-item-sizes="S,M,L,XL,XXL">Preorder</button></div>
             </div>
           </article>
           <article class="product-card">
@@ -160,7 +160,7 @@
             <div>
               <h3>Innovation Floor Model Hoodie</h3>
               <p>Studio-ready navy hoodie with oversized Innovation Floor mark and clean editorial product fit.</p>
-              <div class="product-row"><strong>$49</strong><button type="button" data-add-item="Innovation Floor Model Hoodie" data-item-price="49">Add to Cart</button></div>
+              <div class="product-row"><strong>$49</strong><button type="button" data-add-item="Innovation Floor Model Hoodie" data-item-price="49" data-item-sizes="S,M,L,XL,XXL">Preorder</button></div>
             </div>
           </article>
           <article class="product-card featured" id="hoodies">
@@ -169,7 +169,7 @@
             <div>
               <h3>Innovation Floor Hoodie</h3>
               <p>Navy heavyweight fleece with a bold Innovation Floor skyline graphic and launch-team presence.</p>
-              <div class="product-row"><strong>$84</strong><button type="button" data-add-item="Innovation Floor Hoodie" data-item-price="84">Add to Cart</button></div>
+              <div class="product-row"><strong>$84</strong><button type="button" data-add-item="Innovation Floor Hoodie" data-item-price="84" data-item-sizes="S,M,L,XL,XXL">Preorder</button></div>
             </div>
           </article>
           <article class="product-card" id="caps">
@@ -178,7 +178,7 @@
             <div>
               <h3>1701 Signal Cap</h3>
               <p>Navy structured cap with embroidered skyline signal mark and everyday launch-team fit.</p>
-              <div class="product-row"><strong>$38</strong><button type="button" data-add-item="1701 Signal Cap" data-item-price="38">Add to Cart</button></div>
+              <div class="product-row"><strong>$38</strong><button type="button" data-add-item="1701 Signal Cap" data-item-price="38">Preorder</button></div>
             </div>
           </article>
           <article class="product-card" id="keychains">
@@ -187,7 +187,7 @@
             <div>
               <h3>LottoMind Luggage Charm + Backpack Guardian</h3>
               <p>Black-and-gold Little Man guardian for luggage or backpacks, with three complimentary months of LottoMind app membership included.</p>
-              <div class="product-row"><strong>$29.95</strong><button type="button" data-add-item="LottoMind Luggage Charm + Backpack Guardian" data-item-price="29.95">Add to Cart</button></div>
+              <div class="product-row"><strong>$29.95</strong><button type="button" data-add-item="LottoMind Luggage Charm + Backpack Guardian" data-item-price="29.95">Preorder</button></div>
             </div>
           </article>
           <article class="product-card" id="polos">
@@ -196,7 +196,7 @@
             <div>
               <h3>Metro Signal Polo</h3>
               <p>Clean collared piece for demos, pop-ups, listening sessions, and product meetings.</p>
-              <div class="product-row"><strong>$54</strong><button type="button" data-add-item="Metro Signal Polo" data-item-price="54">Add to Cart</button></div>
+              <div class="product-row"><strong>$54</strong><button type="button" data-add-item="Metro Signal Polo" data-item-price="54" data-item-sizes="S,M,L,XL,XXL">Preorder</button></div>
             </div>
           </article>
           <article class="product-card">
@@ -205,7 +205,7 @@
             <div>
               <h3>Boogie Man Knit Sweater</h3>
               <p>Collector knit with skyline, moon, waveform, and bold nocturne graphic language.</p>
-              <div class="product-row"><strong>$365</strong><button type="button" data-add-item="Boogie Man Knit Sweater" data-item-price="365">Add to Cart</button></div>
+              <div class="product-row"><strong>$365</strong><button type="button" data-add-item="Boogie Man Knit Sweater" data-item-price="365" data-item-sizes="S,M,L,XL,XXL">Preorder</button></div>
             </div>
           </article>
           <article class="product-card">
@@ -214,7 +214,7 @@
             <div>
               <h3>City of Detroit 1701 Hoodie</h3>
               <p>Navy fleece with the 1701 skyline badge, sun mark, and everyday streetwear silhouette.</p>
-              <div class="product-row"><strong>$72</strong><button type="button" data-add-item="City of Detroit 1701 Hoodie" data-item-price="72">Add to Cart</button></div>
+              <div class="product-row"><strong>$72</strong><button type="button" data-add-item="City of Detroit 1701 Hoodie" data-item-price="72" data-item-sizes="S,M,L,XL,XXL">Preorder</button></div>
             </div>
           </article>
           <article class="product-card">
@@ -223,7 +223,7 @@
             <div>
               <h3>Cyber Brain Glow Hoodie</h3>
               <p>Black tech-fleece visual with electric brain circuitry and blue stage-light energy.</p>
-              <div class="product-row"><strong>$150</strong><button type="button" data-add-item="Cyber Brain Glow Hoodie" data-item-price="150">Add to Cart</button></div>
+              <div class="product-row"><strong>$150</strong><button type="button" data-add-item="Cyber Brain Glow Hoodie" data-item-price="150" data-item-sizes="S,M,L,XL,XXL">Preorder</button></div>
             </div>
           </article>
           <article class="product-card">
@@ -232,7 +232,7 @@
             <div>
               <h3>LottoMind Coin Set</h3>
               <p>Black hoodie and cap drop with purple coin emblem, gold edgework, and matched set styling.</p>
-              <div class="product-row"><strong>$75</strong><button type="button" data-add-item="LottoMind Coin Set" data-item-price="75">Add to Cart</button></div>
+              <div class="product-row"><strong>$75</strong><button type="button" data-add-item="LottoMind Coin Set" data-item-price="75" data-item-sizes="S,M,L,XL,XXL">Preorder</button></div>
             </div>
           </article>
         </div>
@@ -278,21 +278,30 @@
         </div>
       </section>
 
-      <aside class="bag-drawer cart-drawer" data-bag-drawer aria-label="Shopping cart drawer">
-        <button class="cart-close" type="button" data-bag-close aria-label="Close shopping cart">X</button>
+      <aside class="bag-drawer cart-drawer" data-bag-drawer aria-label="Preorder preview drawer">
+        <button class="cart-close" type="button" data-bag-close aria-label="Close preorder preview">X</button>
         <p class="cart-eyebrow">Lottomind&trade; Merch</p>
-        <h2>Shopping Cart</h2>
-        <p>Local cart preview. Connect Shopify, Stripe Checkout, or another storefront when products are ready to sell.</p>
+        <h2>Preorder Preview</h2>
+        <p>This list stays on this device. No order, reservation, payment, or inventory claim is submitted.</p>
         <ul data-bag-items></ul>
         <div class="cart-total-row" aria-label="Cart subtotal">
           <span>Subtotal</span>
           <strong data-bag-total>$0</strong>
         </div>
         <div class="cart-actions">
-          <button type="button" data-cart-clear>Clear Cart</button>
-          <button type="button" data-cart-checkout>Checkout Preview</button>
+          <button type="button" data-cart-clear>Clear Preorder</button>
+          <button type="button" data-cart-checkout>Review Preorder</button>
         </div>
-        <p class="cart-note" data-cart-note>Shipping and taxes are not calculated in this local preview.</p>
+        <p class="cart-note" data-cart-note>Preorder preview only. Shipping, taxes, and availability are not confirmed.</p>
+      </aside>
+
+      <aside class="bag-drawer wishlist-drawer" data-wishlist-drawer aria-label="Wishlist drawer">
+        <button class="cart-close" type="button" data-wishlist-close aria-label="Close wishlist">X</button>
+        <p class="cart-eyebrow">Saved Signals</p>
+        <h2>Wishlist</h2>
+        <p>Save merch here on this device and return to choose a size when you are ready.</p>
+        <ul data-wishlist-items></ul>
+        <p class="cart-note" data-wishlist-note>Your wishlist is empty.</p>
       </aside>
 
       <aside class="merch-commercial-modal is-hidden" data-merch-commercial-modal aria-hidden="true" aria-labelledby="merchCommercialTitle">
@@ -305,14 +314,15 @@
             <button class="merch-commercial-modal__close" type="button" data-merch-commercial-close aria-label="Close commercial">X</button>
           </header>
           <div class="merch-commercial-modal__stage">
-            <video controls playsinline preload="metadata" poster="./assets/merch/lottomind-community-signal-poster-20260717.jpg" data-merch-commercial-modal-video data-lm-video-unmanaged="true">
-              <source src="./assets/merch/lottomind-community-signal-commercial-20260717.mp4" type="video/mp4" />
+            <video controls playsinline preload="none" poster="./assets/merch/lottomind-community-signal-poster-20260717.jpg" data-merch-commercial-modal-video data-lm-video-unmanaged="true">
+              <source data-src="./assets/merch/lottomind-community-signal-commercial-20260717.mp4" type="video/mp4" />
             </video>
             <div class="merch-commercial-modal__scan" aria-hidden="true"></div>
           </div>
           <footer class="merch-commercial-modal__footer">
             <p>Detroit-inspired LottoMind apparel for creators who carry the studio signal beyond the screen.</p>
             <div>
+              <button type="button" data-merch-commercial-sound>Play with sound</button>
               <button type="button" data-merch-commercial-replay>Replay</button>
               <a href="#keychains" data-merch-commercial-shop>Shop Guardian &middot; $29.95</a>
             </div>
@@ -395,7 +405,7 @@
       <div class="console-status"><small>Studio Status</small><strong>Online</strong><div class="status-wave" aria-hidden="true"></div></div>
     </section>
 
-    <footer>
+    <footer class="site-footer-standard">
       <span>LOTTOMINDED ULTRA</span>
       <span>All rights reserved.</span>
       <span id="site-year"></span>
@@ -403,10 +413,10 @@
 
 <script src="./assets/js/lm-page-transition-audio.js?v=transition-audio-soft-chord-6" defer></script>
 <script src="./assets/js/lm-page-transition.js?v=transition-exit-audit-4" defer></script>
-<script src="./site.js?v=audio-mix-cleanup-7" defer></script>
+<script src="./site.js?v=header-pinned-3" defer></script>
     <script src="./assets/features-app/js/features-cinematic-motion.js?v=audio-mix-cleanup-2" defer></script>
     <script src="./live-events.js?v=audio-artlines-2" defer></script>
-    <script src="./merch-store.js?v=audio-mix-cleanup-4" defer></script>
-    <script src="./assets/js/lm-commercial-gate.js?v=audio-mix-cleanup-5" defer></script>
+    <script src="./merch-store.js?v=merch-capsule-autoplay-2" defer></script>
+    <script src="./assets/js/lm-commercial-gate.js?v=commercial-autoplay-1" defer></script>
   </body>
 </html>

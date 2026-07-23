@@ -4409,6 +4409,7 @@ body {
 .studio-hardware-dashboard {
   display: grid;
   grid-template-columns: minmax(0, 1.5fr) minmax(220px, 0.55fr);
+  min-width: 0;
   gap: 14px;
   margin-bottom: 18px;
   padding: 14px;
@@ -4418,6 +4419,7 @@ body {
 .studio-hero-instrument {
   display: grid;
   grid-template-columns: minmax(280px, 0.85fr) minmax(320px, 1fr);
+  min-width: 0;
   gap: 14px;
   min-height: 360px;
 }
@@ -4724,6 +4726,15 @@ body {
     grid-template-columns: 1fr;
   }
 
+  .view > *,
+  .studio-hero-copy,
+  .studio-hero-screen,
+  .studio-session-panel,
+  .studio-song-editor {
+    min-width: 0;
+    max-width: 100%;
+  }
+
   .tabs.ultra-left-dock {
     position: fixed;
     grid-template-columns: 1fr;
@@ -4739,6 +4750,28 @@ body {
 @media (max-width: 760px) {
   .app {
     padding-inline: 10px;
+  }
+
+  .top-shell {
+    margin-inline: -10px;
+  }
+
+  .workflow-shortcuts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .workflow-shortcut > span {
+    min-width: 0;
+  }
+
+  .workflow-shortcut strong,
+  .workflow-shortcut small {
+    overflow-wrap: anywhere;
+  }
+
+  .sequencer-grid {
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
   }
 
   .tabs.ultra-left-dock {
@@ -4762,7 +4795,8 @@ body {
   }
 
   .studio-hero-copy h2 {
-    font-size: clamp(2.1rem, 14vw, 3.8rem);
+    font-size: 2.15rem;
+    overflow-wrap: anywhere;
   }
 
   .studio-session-readout,
