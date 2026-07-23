@@ -44,8 +44,8 @@
   const commercialModal = document.querySelector("[data-membership-commercial-modal]");
   const commercialVideo = commercialModal?.querySelector("[data-membership-commercial-video]");
   const heroCommercialVideo = document.querySelector("[data-membership-hero-commercial]");
-  const waterCommercialVideo = document.querySelector("[data-membership-water-commercial]");
-  const waterCommercialSound = document.querySelector("[data-membership-water-sound]");
+  const featuredCommercialVideo = document.querySelector("[data-membership-featured-commercial]");
+  const featuredCommercialSound = document.querySelector("[data-membership-featured-sound]");
   const commercialOpeners = [...document.querySelectorAll("[data-membership-commercial-open]")];
   const commercialClose = commercialModal?.querySelector("[data-membership-commercial-close]");
   const commercialEnter = commercialModal?.querySelector("[data-membership-commercial-enter]");
@@ -72,6 +72,82 @@
     membershipSoundtrack.volume = window.LMAudioMix?.levels.background ?? 0.42;
   }
 
+  const audioReactiveMedia = new Map();
+  let audioReactiveFrame = 0;
+  let audioReactiveEnergy = 0;
+
+  const updateAudioReactiveEnergy = () => {
+    let targetEnergy = 0;
+    let activeSource = "none";
+    audioReactiveMedia.forEach((entry, media) => {
+      if (media.paused || media.muted || media.volume <= 0) return;
+      entry.analyser.getByteFrequencyData(entry.data);
+      const upperBin = Math.max(8, Math.floor(entry.data.length * 0.58));
+      let total = 0;
+      let peak = 0;
+      for (let index = 2; index < upperBin; index += 1) {
+        total += entry.data[index];
+        peak = Math.max(peak, entry.data[index]);
+      }
+      const average = total / Math.max(1, upperBin - 2);
+      const normalizedAverage = Math.max(0, Math.min(1, (average - 14) / 112));
+      const normalizedPeak = Math.max(0, Math.min(1, (peak - 42) / 180));
+      const energy = normalizedAverage * 0.68 + normalizedPeak * 0.32;
+      if (energy > targetEnergy) {
+        targetEnergy = energy;
+        activeSource = media === featuredCommercialVideo
+          ? "featured-commercial"
+          : media === commercialVideo
+            ? "commercial-modal"
+            : "membership-soundtrack";
+      }
+    });
+    const smoothing = targetEnergy > audioReactiveEnergy ? 0.34 : 0.1;
+    audioReactiveEnergy += (targetEnergy - audioReactiveEnergy) * smoothing;
+    if (audioReactiveEnergy < 0.002) audioReactiveEnergy = 0;
+    window.__lmMembershipAudioEnergy = reducedMotion.matches ? 0 : audioReactiveEnergy;
+    root.style.setProperty("--lm-membership-audio-energy", window.__lmMembershipAudioEnergy.toFixed(3));
+    root.dataset.audioReactiveSource = activeSource;
+    audioReactiveFrame = requestAnimationFrame(updateAudioReactiveEnergy);
+  };
+
+  const enableAudioReactiveMedia = async (media) => {
+    if (!media) return false;
+    if (audioReactiveMedia.has(media)) return true;
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContext) return false;
+    state.audioContext ||= new AudioContext();
+    const context = state.audioContext;
+    if (context.state === "suspended") await context.resume().catch(() => {});
+    if (context.state !== "running") return false;
+    try {
+      const source = context.createMediaElementSource(media);
+      const analyser = context.createAnalyser();
+      analyser.fftSize = 256;
+      analyser.smoothingTimeConstant = 0.68;
+      source.connect(analyser);
+      analyser.connect(context.destination);
+      audioReactiveMedia.set(media, {
+        source,
+        analyser,
+        data: new Uint8Array(analyser.frequencyBinCount),
+      });
+      if (!audioReactiveFrame) audioReactiveFrame = requestAnimationFrame(updateAudioReactiveEnergy);
+      return true;
+    } catch (_) {
+      return false;
+    }
+  };
+
+  window.__lmMembershipAudioReactive = Object.freeze({
+    get energy() { return window.__lmMembershipAudioEnergy || 0; },
+    get source() { return root.dataset.audioReactiveSource || "none"; },
+  });
+  window.addEventListener("pagehide", () => {
+    cancelAnimationFrame(audioReactiveFrame);
+    audioReactiveFrame = 0;
+  }, { once: true });
+
   const syncMembershipSoundState = () => {
     if (!soundToggle) return;
     soundToggle.setAttribute("aria-pressed", String(state.soundEnabled));
@@ -91,6 +167,7 @@
       try { membershipSoundtrack.currentTime = 0; } catch (_) {}
     }
     try {
+      await enableAudioReactiveMedia(membershipSoundtrack);
       window.LMAudioMix?.claim?.(membershipSoundtrack);
       await membershipSoundtrack.play();
       state.soundEnabled = !silent;
@@ -164,7 +241,7 @@
   let commercialFilmIndex = 0;
   let commercialIsClosing = false;
   let commercialTransitionFallback = 0;
-  let waterCommercialSoundEnabled = false;
+  let featuredCommercialSoundEnabled = false;
 
   const restoreDeferredVideoSources = (video) => {
     if (!video) return false;
@@ -206,6 +283,7 @@
     commercialVideo.defaultMuted = false;
     commercialVideo.removeAttribute("muted");
     try {
+      await enableAudioReactiveMedia(commercialVideo);
       await commercialVideo.play();
       if (commercialSound) commercialSound.hidden = true;
       return true;
@@ -251,7 +329,7 @@
   };
 
   let heroCommercialInView = false;
-  let waterCommercialInView = false;
+  let featuredCommercialInView = false;
   const syncHeroCommercialPlayback = () => {
     if (!heroCommercialVideo) return;
     const modalIsOpen = commercialModal && !commercialModal.hidden;
@@ -259,6 +337,7 @@
       heroCommercialVideo.pause();
       return;
     }
+    restoreDeferredVideoSources(heroCommercialVideo);
     if (!heroCommercialVideo.currentSrc) return;
     heroCommercialVideo.muted = true;
     heroCommercialVideo.play().catch(() => {});
@@ -273,37 +352,38 @@
     reducedMotion.addEventListener?.("change", syncHeroCommercialPlayback);
   }
 
-  const syncWaterCommercialPlayback = () => {
-    if (!waterCommercialVideo) return;
+  const syncFeaturedCommercialPlayback = () => {
+    if (!featuredCommercialVideo) return;
     const modalIsOpen = commercialModal && !commercialModal.hidden;
-    if (reducedMotion.matches || document.hidden || !waterCommercialInView || modalIsOpen) {
-      waterCommercialVideo.pause();
+    if (reducedMotion.matches || document.hidden || !featuredCommercialInView || modalIsOpen) {
+      featuredCommercialVideo.pause();
       return;
     }
-    restoreDeferredVideoSources(waterCommercialVideo);
-    waterCommercialVideo.muted = !waterCommercialSoundEnabled;
-    waterCommercialVideo.play().catch(() => {});
+    restoreDeferredVideoSources(featuredCommercialVideo);
+    featuredCommercialVideo.muted = !featuredCommercialSoundEnabled;
+    featuredCommercialVideo.play().catch(() => {});
   };
-  if (waterCommercialVideo) {
-    const waterCommercialObserver = new IntersectionObserver((entries) => {
-      waterCommercialInView = Boolean(entries[0]?.isIntersecting && entries[0].intersectionRatio >= 0.28);
-      syncWaterCommercialPlayback();
+  if (featuredCommercialVideo) {
+    const featuredCommercialObserver = new IntersectionObserver((entries) => {
+      featuredCommercialInView = Boolean(entries[0]?.isIntersecting && entries[0].intersectionRatio >= 0.28);
+      syncFeaturedCommercialPlayback();
     }, { threshold: [0, 0.28, 0.65] });
-    waterCommercialObserver.observe(waterCommercialVideo);
-    document.addEventListener("visibilitychange", syncWaterCommercialPlayback);
-    reducedMotion.addEventListener?.("change", syncWaterCommercialPlayback);
+    featuredCommercialObserver.observe(featuredCommercialVideo);
+    document.addEventListener("visibilitychange", syncFeaturedCommercialPlayback);
+    reducedMotion.addEventListener?.("change", syncFeaturedCommercialPlayback);
   }
-  waterCommercialSound?.addEventListener("click", () => {
-    if (!waterCommercialVideo) return;
-    waterCommercialSoundEnabled = !waterCommercialSoundEnabled;
-    waterCommercialVideo.muted = !waterCommercialSoundEnabled;
-    waterCommercialVideo.volume = window.LMAudioMix?.levels.preview ?? 0.48;
-    waterCommercialSound.setAttribute("aria-pressed", String(waterCommercialSoundEnabled));
-    waterCommercialSound.textContent = waterCommercialSoundEnabled ? "Sound on" : "Play with sound";
-    if (waterCommercialSoundEnabled) {
-      window.LMAudioMix?.claim?.(waterCommercialVideo);
-      restoreDeferredVideoSources(waterCommercialVideo);
-      waterCommercialVideo.play().catch(() => {});
+  featuredCommercialSound?.addEventListener("click", async () => {
+    if (!featuredCommercialVideo) return;
+    featuredCommercialSoundEnabled = !featuredCommercialSoundEnabled;
+    featuredCommercialVideo.muted = !featuredCommercialSoundEnabled;
+    featuredCommercialVideo.volume = window.LMAudioMix?.levels.preview ?? 0.48;
+    featuredCommercialSound.setAttribute("aria-pressed", String(featuredCommercialSoundEnabled));
+    featuredCommercialSound.textContent = featuredCommercialSoundEnabled ? "Sound on" : "Play with sound";
+    if (featuredCommercialSoundEnabled) {
+      window.LMAudioMix?.claim?.(featuredCommercialVideo);
+      restoreDeferredVideoSources(featuredCommercialVideo);
+      await enableAudioReactiveMedia(featuredCommercialVideo);
+      featuredCommercialVideo.play().catch(() => {});
     }
   });
 
@@ -320,7 +400,7 @@
     document.querySelector("[data-site-header]")?.removeAttribute("inert");
     state.lenis?.start();
     syncHeroCommercialPlayback();
-    syncWaterCommercialPlayback();
+    syncFeaturedCommercialPlayback();
     if (soundtrackShouldStartAfterCommercial && membershipSoundtrack) {
       if (!membershipSoundtrack.paused) {
         try { membershipSoundtrack.currentTime = 0; } catch (_) {}
@@ -396,7 +476,7 @@
     soundtrackPausedForCommercial = Boolean(membershipSoundtrack && !membershipSoundtrack.paused);
     membershipSoundtrack?.pause();
     heroCommercialVideo?.pause();
-    waterCommercialVideo?.pause();
+    featuredCommercialVideo?.pause();
     root.inert = true;
     document.querySelector("[data-site-header]")?.setAttribute("inert", "");
     state.lenis?.stop();
@@ -406,10 +486,8 @@
       commercialSound.hidden = false;
       commercialSound.textContent = "Play with sound";
     }
-    // Always request the commercial soundtrack first. If the browser blocks
-    // unmuted autoplay, playCommercialWithFallback keeps the film moving
-    // muted and exposes the sound control for the next user gesture.
-    void playCommercialWithFallback({ restart: false, allowSound: true });
+    const allowSound = Boolean(trigger);
+    void playCommercialWithFallback({ restart: false, allowSound });
     commercialClose?.focus({ preventScroll: true });
   };
 
@@ -1027,40 +1105,7 @@
   // The persistent WebGL entity is isolated in memberships-main.js.
 
 
-  const runPreloader = () => new Promise((resolve) => {
-    let hasVisited = false;
-    try { hasVisited = sessionStorage.getItem("lmTemporalMembershipVisited") === "yes"; } catch (error) {}
-    if (reducedMotion.matches || hasVisited) {
-      resolve();
-      return;
-    }
-
-    const loader = document.createElement("div");
-    loader.className = "lm-temporal-loader is-active";
-    loader.setAttribute("role", "status");
-    loader.setAttribute("aria-live", "polite");
-    loader.innerHTML = '<div class="lm-temporal-loader__number"><span>00.0</span><small>×10⁹ yr</small></div><p class="lm-temporal-loader__label">Calibrating membership temporal array</p><span class="lm-temporal-loader__bar" aria-hidden="true"></span>';
-    body.append(loader);
-    const number = loader.querySelector(".lm-temporal-loader__number span");
-    const bar = loader.querySelector(".lm-temporal-loader__bar");
-    const finish = () => {
-      loader.remove();
-      try { sessionStorage.setItem("lmTemporalMembershipVisited", "yes"); } catch (error) {}
-      resolve();
-    };
-
-    if (gsap) {
-      const progress = { value: 0 };
-      gsap.timeline({ onComplete: finish })
-        .to(progress, { value: 13.8, duration: 1.25, ease: "expo.out", onUpdate: () => { number.textContent = progress.value.toFixed(1).padStart(4, "0"); } }, 0)
-        .to(bar, { scaleX: 1, duration: 1.1, ease: "expo.out" }, 0)
-        .to(loader, { autoAlpha: 0, duration: 0.55, ease: "expo.out" }, 1.05);
-    } else {
-      number.textContent = "13.8";
-      bar.style.transform = "scaleX(1)";
-      window.setTimeout(finish, 500);
-    }
-  });
+  const runPreloader = () => Promise.resolve();
 
   let heroIntroRequested = false;
   state.visual = window.__lmMembershipVisual || null;
@@ -1081,7 +1126,7 @@
   state.lenis?.start();
   revealHero();
   ScrollTrigger?.refresh();
-  requestAnimationFrame(() => openCommercial(null, { entry: true, index: 0 }));
+  // Commercials open from explicit buttons so the page never flashes two overlays on entry.
   };
 
   const windowReady = document.readyState === "complete"

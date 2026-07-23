@@ -78,13 +78,13 @@ window.LMAudioMix = {
   const navItems = [
     { label: "Memberships", href: siteUrl("./memberships.html"), icon: "MB" },
     { label: "Home", href: siteUrl("./index.html#top"), icon: "HM" },
-    { label: "Features", href: siteUrl("./features-app.html"), icon: "FX" },
+    { label: "Games", href: siteUrl("./features-app.html"), icon: "FX" },
     { label: "News", href: siteUrl("./news/"), icon: "NW" },
     { label: "Events", href: siteUrl("./live-events.html"), icon: "EV" },
     { label: "Spheres", href: siteUrl("./lottery-spheres.html#spheres"), icon: "SP" },
-    { label: "Beat2Lotto+", href: siteUrl("./beat2lotto-plus.html#beat2lotto"), icon: "B2" },
-    { label: "Merch", href: siteUrl("./merch-store.html"), icon: "DR" },
-    { label: "Guide", href: siteUrl("./how-to-use.html"), icon: "GD" },
+    { label: "RAHBE", href: siteUrl("./beat2lotto-plus.html#beat2lotto"), icon: "B2" },
+    { label: "Storefront", href: siteUrl("./merch-store.html"), icon: "DR" },
+    { label: "Static Wav", href: siteUrl("./how-to-use.html"), icon: "GD" },
     {
       label: "LottoMind App",
       href: "https://robjasper2084.github.io/Jungle-Lotto/lotto%20mind%20refined/",
