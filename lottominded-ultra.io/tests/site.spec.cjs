@@ -84,8 +84,9 @@ test("memberships avoids an entry popup and opens its commercial only on request
   const commercial = page.locator("[data-membership-commercial-modal]");
   await expect(commercial).toBeHidden();
   await expect(page.locator(".lm-temporal-loader")).toHaveCount(0);
-  const commercialOpener = page.locator("[data-membership-commercial-open]:visible").first();
+  const commercialOpener = page.locator("[data-membership-commercial-open]").last();
   await commercialOpener.scrollIntoViewIfNeeded();
+  await expect(commercialOpener).toBeVisible();
   await commercialOpener.click();
   await expect(commercial).toBeVisible();
   await page.locator("[data-membership-commercial-close]").click();

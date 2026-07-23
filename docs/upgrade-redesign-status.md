@@ -15,18 +15,18 @@
 - Staging provider: Local static server (Mode C); no remote preview provider is configured
 - Staging URL: Local only (`http://127.0.0.1:8204/` while the current staging server is running)
 - Staging integrations: No isolated backend or Stripe test-mode configuration is currently configured; protected writes remain disabled
-- Last completed step: Homepage scan bars restored and delayed startup dialog removed on `upgrade-redesign`; production deployment remains excluded
+- Last completed step: Step 34 production release candidate prepared on `upgrade-redesign`; production deployment remains excluded
 - Step 1 commit SHA: This file is part of the Step 1 commit; use `git log -1 --format=%H -- docs/upgrade-redesign-status.md` to resolve its exact non-self-referential SHA. The completion report records it explicitly.
 - Last staging review: Signal and media corrections passed; review: `docs/staging-reviews/signal-media-corrections.md`
 - Staging review commit SHA: This file is part of the staging-review commit; the completion report records its exact SHA.
-- Last successful test run: 2026-07-22 - homepage static and focused browser checks passed; 15/15 staging browser checks passed; 92/92 source/staging route checks passed; the staging artifact verified 23 injected pages and 527 same-origin references; 2/2 affected-route captures passed
+- Last successful test run: 2026-07-22 - site validation passed 15 HTML files; source browser suite passed 96 checks with 6 intentional viewport skips; staging browser suite passed 15/15; source/staging route matrix passed 92/92; staging artifact verified 23 injected pages and 527 same-origin references
 - Visual baseline: Complete - 69 production route screenshots plus desktop, tablet, and mobile contact sheets under `docs/visual-baseline/v1/`
 - Step 1 visual comparison: Production and staging home routes compared at 1440x900 and 390x844; staging adds only the preview and safety banners, with no redesign changes
 - Resolved Step 1 baseline failures: Contact support helper restored; Stem Studio tablet/mobile overflow corrected; Jackpot Maze runtime, heading, and entry focus restored; first-load outliers reduced; staging News production request removed
 - Latest visual comparison: Home, Memberships, Guardian, Arcade, RAHBE, Spheres, Storefront, Live Events, and News compared with v1 production at 1440x900, 768x1024, and 390x844; review: `docs/staging-reviews/signal-media-corrections.md`
 - Latest performance comparison: Home 28.1 -> 5.80 MiB; Memberships 26.7 -> 2.87 MiB; Merch 23.1 -> 1.99 MiB; Shadow Ops 87.7 -> 3.70 MiB
 - Staging review approval status: Ready for next phase
-- Production approval status: Not approved; the live checkout handoff was verified safely in Stripe Sandbox and cancelled before any charge, but release-candidate review and production merge approval remain pending
+- Production approval status: Step 34 release-candidate preparation approved; the live checkout handoff was verified safely in Stripe Sandbox and cancelled before any charge; pull-request approval and controlled production merge remain pending
 - Rollback reference: `v1-final` at `975c637cea7003533cdc30aed9d96be51929bfc8`; after a controlled production merge, use `git revert` for rollback
 - Known pre-existing repository changes: The working tree was clean when Step 0A began. Local `main` already contained commit `1fc4c95ca4d0b22ee5188d06f8ea75573c63a00a` ahead of `origin/main`; that commit was preserved as the starting point of `upgrade-redesign` and was not pushed to production.
 
@@ -159,3 +159,15 @@
 - Staging URL: Local only (`http://127.0.0.1:8204/index.html#top` while the staging server is running)
 - Staging safety: Noindex and preview banners verified; live payments, production account writes, real redemptions, and production analytics remain blocked
 - Approval status: Ready for next phase; production remains not approved
+
+## Step 34 Production Release Candidate
+
+- Step number: Step 34
+- Release report: `docs/site-rebuild-release-report.md`
+- Release-candidate record: `docs/production-release-candidate.md`
+- Release-candidate tag: `v2-rc1`
+- Audited upgrade baseline: `efc474291fd2f695902ea5d99b39efdca1aec221`
+- Tests: site validation passed; source browser suite 96 passed and 6 intentional viewport skips; staging browser suite 15/15; source/staging route matrix 92/92; staging static verification 23 pages and 527 same-origin references
+- Staging URL: Local only (`http://127.0.0.1:8204/` while the preview server is running)
+- Checkout safety: Stripe Sandbox handoff verified and cancelled before any charge; staging production writes remain blocked
+- Approval status: Ready for pull-request review; production merge and deployment not performed
