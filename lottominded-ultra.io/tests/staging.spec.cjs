@@ -24,7 +24,9 @@ test("preview shell is noindex, visibly marked, and free of broken same-origin r
   const consoleFailures = [];
   page.on("response", (response) => {
     const url = new URL(response.url());
-    if (url.origin === "http://127.0.0.1:8143" && response.status() >= 400 && !url.pathname.includes("favicon")) {
+    let pageOrigin = "";
+    try { pageOrigin = new URL(page.url()).origin; } catch (_) {}
+    if (url.origin === pageOrigin && response.status() >= 400 && !url.pathname.includes("favicon")) {
       failures.push(`${response.status()} ${url.pathname}`);
     }
   });
@@ -53,6 +55,109 @@ test("preview shell is noindex, visibly marked, and free of broken same-origin r
   expect(failures).toEqual([]);
   expect(pageErrors).toEqual([]);
   expect(consoleFailures).toEqual([]);
+});
+
+test("primary headers share labels, orb artwork, dimensions, and overflow boundaries", async ({ page }) => {
+  await blockHeavyMedia(page);
+  const routes = [
+    "/index.html",
+    "/memberships.html",
+    "/features-app.html",
+    "/news/",
+    "/live-events.html",
+    "/lottery-spheres.html#spheres",
+    "/beat2lotto-plus.html#beat2lotto",
+    "/merch-store.html",
+    "/how-to-use.html",
+    "/prompt-lab.html",
+  ];
+  const expectedLabels = {
+    MB: "Memberships",
+    HM: "Home",
+    FX: "Games",
+    NW: "News",
+    EV: "Events",
+    SP: "Spheres",
+    B2: "RAHBE",
+    DR: "Storefront",
+    GD: "Static Wav",
+    LM: "LottoMind App",
+  };
+  const expectedArtwork = {
+    MB: "guide-puck-cyan-city",
+    HM: "guide-puck-gold-mascot-close",
+    FX: "lottomind-branded-puck",
+    NW: "guide-puck-gold-mascot-wide",
+    EV: "jazz-network",
+    SP: "guide-puck-cyan-city",
+    B2: "jazz-network",
+    DR: "lottomind-branded-puck",
+    GD: "guide-puck-gold-mascot-close",
+    LM: "lottomind-branded-puck",
+  };
+
+  for (const viewport of [{ width: 1440, height: 900 }, { width: 390, height: 844 }]) {
+    await page.setViewportSize(viewport);
+    for (const route of routes) {
+      await page.goto(route, { waitUntil: "domcontentloaded" });
+      const header = page.locator("[data-site-header]");
+      await expect(header, route).toBeVisible();
+      await expect(header.locator("nav a[data-icon]"), route).toHaveCount(10);
+      await header.dispatchEvent("click");
+      await expect(header, `${route} header remains pinned after click`).toBeVisible();
+      await expect(header, route).not.toHaveClass(/is-(?:click|home|sphere|universal)-header-hidden/);
+      await expect(page.locator(".header-click-toggle"), route).toHaveCount(0);
+
+      const audit = await header.evaluate((node) => {
+        const links = [...node.querySelectorAll("nav a[data-icon]")];
+        return {
+          viewportWidth: document.documentElement.clientWidth,
+          documentWidth: document.documentElement.scrollWidth,
+          headerRect: node.getBoundingClientRect().toJSON(),
+          links: links.map((link) => {
+            const style = getComputedStyle(link);
+            const rect = link.getBoundingClientRect();
+            return {
+              icon: link.dataset.icon,
+              label: link.textContent.trim(),
+              artwork: style.getPropertyValue("--sphere-nav-image").trim(),
+              width: rect.width,
+              height: rect.height,
+              overflow: style.overflow,
+            };
+          }),
+        };
+      });
+
+      expect(audit.documentWidth, `${route} at ${viewport.width}px`).toBeLessThanOrEqual(audit.viewportWidth + 1);
+      expect(audit.headerRect.left, route).toBeGreaterThanOrEqual(-1);
+      expect(audit.headerRect.right, route).toBeLessThanOrEqual(audit.viewportWidth + 1);
+      for (const link of audit.links) {
+        expect(link.label, `${route} ${link.icon}`).toBe(expectedLabels[link.icon]);
+        expect(link.artwork, `${route} ${link.icon}`).toContain(expectedArtwork[link.icon]);
+        expect(Math.abs(link.width - link.height), `${route} ${link.icon}`).toBeLessThanOrEqual(1);
+        expect(link.overflow, `${route} ${link.icon}`).toBe("hidden");
+      }
+    }
+  }
+});
+
+test("Arcade arrival transition clears its handoff without leaking into the next route", async ({ page }) => {
+  await blockHeavyMedia(page);
+  await page.goto("/index.html", { waitUntil: "domcontentloaded" });
+  await page.evaluate(() => {
+    sessionStorage.setItem("lmTransitionArriving", "yes");
+    sessionStorage.setItem("lmTransitionTheme", "features");
+    sessionStorage.setItem("lmTransitionLabel", "Games");
+  });
+
+  await page.goto("/features-app.html", { waitUntil: "domcontentloaded" });
+  await expect(page.locator("[data-lm-page-transition]")).toHaveAttribute("aria-hidden", "true", { timeout: 2_500 });
+  expect(await page.evaluate(() => sessionStorage.getItem("lmTransitionArriving"))).toBeNull();
+
+  await page.goto("/beat2lotto-plus.html#beat2lotto", { waitUntil: "domcontentloaded" });
+  await expect(page.locator("[data-lm-page-transition]")).toHaveAttribute("aria-hidden", "true");
+  await expect(page.locator("[data-lm-page-transition]")).not.toHaveClass(/is-active/);
 });
 
 test("home commercial starts muted video and waits for a sound gesture", async ({ page }) => {
@@ -129,6 +234,10 @@ test("membership hero film autoplays muted without an entry popup and enables so
 });
 
 test("Guardian card uses the supplied gun-range commercial", async ({ page }) => {
+  const filmRequests = [];
+  page.on("request", (request) => {
+    if (/lottomind-guardian-commercial-clip-on-20260716\.mp4/i.test(request.url())) filmRequests.push(request.url());
+  });
   await page.goto("/memberships.html", { waitUntil: "domcontentloaded" });
   const video = page.locator(".membership-guardian-bottom [data-membership-hero-commercial]");
   await video.scrollIntoViewIfNeeded();
@@ -138,10 +247,20 @@ test("Guardian card uses the supplied gun-range commercial", async ({ page }) =>
   );
   await expect(video).toHaveAttribute(
     "poster",
-    /lottomind-guardian-commercial-clip-on-poster-20260716\.png$/,
+    /lottomind-guardian-commercial-gun-range-poster-20260722\.jpg$/,
   );
   await expect(video).toHaveAttribute("autoplay", "");
   await expect(video).toHaveAttribute("preload", "metadata");
+  await expect.poll(() => filmRequests.length).toBeGreaterThan(0);
+  await expect.poll(() => video.evaluate((node) => ({ muted: node.muted, paused: node.paused }))).toEqual({ muted: true, paused: false });
+});
+
+test("Vault Pass displays the approved one-time price and included Luggage Charm", async ({ page }) => {
+  await page.goto("/memberships.html", { waitUntil: "domcontentloaded" });
+  const vault = page.locator('[data-lm-tier="vault"]');
+  await expect(vault.locator("h3")).toHaveText("$29.99");
+  await expect(vault).toContainText("Little Man Luggage Charm included");
+  await expect(vault.locator('[data-stripe-lookup-key="vault_founder_once"]')).toHaveCount(1);
 });
 
 test("route commercial gate starts muted and enables sound on request", async ({ page }) => {

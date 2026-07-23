@@ -52,7 +52,12 @@ async function main() {
       waitForServer(`http://127.0.0.1:${sourcePort}/index.html`, servers[0]),
       waitForServer(`http://127.0.0.1:${stagingPort}/index.html`, servers[1]),
     ]);
-    const tests = spawn(process.execPath, [playwrightCli, "test", "--config=playwright.routes.config.cjs"], {
+    const tests = spawn(process.execPath, [
+      playwrightCli,
+      "test",
+      "--config=playwright.routes.config.cjs",
+      ...process.argv.slice(2),
+    ], {
       cwd: packageRoot,
       stdio: "inherit",
     });

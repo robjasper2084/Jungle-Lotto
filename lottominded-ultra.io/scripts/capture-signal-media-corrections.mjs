@@ -46,6 +46,12 @@ const availableRoutes = [
     path: "/features-app.html",
     dismiss: ".lm-commercial-gate__skip",
   },
+  {
+    name: "rahbe",
+    path: "/beat2lotto-plus.html#beat2lotto",
+    dismiss: ".lm-commercial-gate__skip",
+  },
+  { name: "spheres", path: "/lottery-spheres.html#spheres" },
   { name: "live-events", path: "/live-events.html" },
   { name: "news", path: "/news/", focus: ".article-grid .news-card" },
 ];

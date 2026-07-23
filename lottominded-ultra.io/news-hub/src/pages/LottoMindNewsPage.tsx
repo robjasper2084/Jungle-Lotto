@@ -269,7 +269,7 @@ export function LottoMindNewsPage() {
           <a href="./" data-icon="NW" aria-current="page">News</a>
           <a href="../live-events.html" data-icon="EV">Events</a>
           <a href="../lottery-spheres.html#spheres" data-icon="SP">Spheres</a>
-          <a href="../beat2lotto-plus.html#beat2lotto" data-icon="B2">Lilman</a>
+          <a href="../beat2lotto-plus.html#beat2lotto" data-icon="B2">RAHBE</a>
           <a href="../merch-store.html" data-icon="DR">Storefront</a>
           <a href="../how-to-use.html" data-icon="GD">Static Wav</a>
           <a href="https://robjasper2084.github.io/Jungle-Lotto/lotto%20mind%20refined/" data-icon="LM" data-member-app-public="true" aria-label="Open LottoMind Refined App">LottoMind App</a>

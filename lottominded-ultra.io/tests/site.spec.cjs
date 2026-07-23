@@ -314,12 +314,12 @@ test("membership hero leads, Collector follows Gaming Showcase, and the Guardian
   expect(collectorBox.y).toBeLessThan(guardianBox.y);
 });
 
-test("shared navigation uses the requested Games, Lilman, Storefront, and Static Wav labels", async ({ page }) => {
+test("shared navigation uses the requested Games, RAHBE, Storefront, and Static Wav labels", async ({ page }) => {
   await blockHeavyMedia(page);
   await page.goto("/lottery-spheres.html", { waitUntil: "domcontentloaded" });
   const navigation = page.locator(".site-header nav");
   await expect(navigation.locator('a[data-icon="FX"]')).toContainText("Games");
-  await expect(navigation.locator('a[data-icon="B2"]')).toContainText("Lilman");
+  await expect(navigation.locator('a[data-icon="B2"]')).toContainText("RAHBE");
   await expect(navigation.locator('a[data-icon="DR"]')).toContainText("Storefront");
   await expect(navigation.locator('a[data-icon="GD"]')).toContainText("Static Wav");
 });

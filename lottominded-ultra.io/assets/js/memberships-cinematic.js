@@ -337,6 +337,7 @@
       heroCommercialVideo.pause();
       return;
     }
+    restoreDeferredVideoSources(heroCommercialVideo);
     if (!heroCommercialVideo.currentSrc) return;
     heroCommercialVideo.muted = true;
     heroCommercialVideo.play().catch(() => {});

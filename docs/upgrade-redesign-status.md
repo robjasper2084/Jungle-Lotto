@@ -15,15 +15,15 @@
 - Staging provider: Local static server (Mode C); no remote preview provider is configured
 - Staging URL: Local only (`http://127.0.0.1:8204/` while the current staging server is running)
 - Staging integrations: No isolated backend or Stripe test-mode configuration is currently configured; protected writes remain disabled
-- Last completed step: Membership hierarchy/media, Arcade mascot/art, shared footer, and local-only Storefront preorder refinements completed on `upgrade-redesign`; production deployment remains excluded
+- Last completed step: Shared header consistency, pinned navigation, RAHBE naming, Membership film visibility, Guardian gun-range media, and Vault Pass copy refinements completed on `upgrade-redesign`; production deployment remains excluded
 - Step 1 commit SHA: This file is part of the Step 1 commit; use `git log -1 --format=%H -- docs/upgrade-redesign-status.md` to resolve its exact non-self-referential SHA. The completion report records it explicitly.
 - Last staging review: Signal and media corrections passed; review: `docs/staging-reviews/signal-media-corrections.md`
 - Staging review commit SHA: This file is part of the staging-review commit; the completion report records its exact SHA.
-- Last successful test run: 2026-07-22 - 6/6 focused source browser checks passed with 2 intentional cross-project skips; 6/6 affected staging safety/interaction checks passed; 92/92 source/staging route checks passed; the staging artifact verified 23 injected pages and 494 same-origin references; 15/15 refreshed desktop/tablet/mobile captures passed
+- Last successful test run: 2026-07-22 - 12/12 focused route checks passed; 15/15 staging browser checks passed; 92/92 source/staging route checks passed; the staging artifact verified 23 injected pages and 529 same-origin references; 30/30 refreshed desktop/tablet/mobile captures passed
 - Visual baseline: Complete - 69 production route screenshots plus desktop, tablet, and mobile contact sheets under `docs/visual-baseline/v1/`
 - Step 1 visual comparison: Production and staging home routes compared at 1440x900 and 390x844; staging adds only the preview and safety banners, with no redesign changes
 - Resolved Step 1 baseline failures: Contact support helper restored; Stem Studio tablet/mobile overflow corrected; Jackpot Maze runtime, heading, and entry focus restored; first-load outliers reduced; staging News production request removed
-- Latest visual comparison: Home, Memberships, Guardian, Arcade, and Storefront compared with v1 production at 1440x900, 768x1024, and 390x844; review: `docs/staging-reviews/signal-media-corrections.md`
+- Latest visual comparison: Home, Memberships, Guardian, Arcade, RAHBE, Spheres, Storefront, Live Events, and News compared with v1 production at 1440x900, 768x1024, and 390x844; review: `docs/staging-reviews/signal-media-corrections.md`
 - Latest performance comparison: Home 28.1 -> 5.80 MiB; Memberships 26.7 -> 2.87 MiB; Merch 23.1 -> 1.99 MiB; Shadow Ops 87.7 -> 3.70 MiB
 - Staging review approval status: Ready for next phase
 - Production approval status: Not approved; the live checkout handoff was verified safely in Stripe Sandbox and cancelled before any charge, but release-candidate review and production merge approval remain pending
@@ -128,10 +128,22 @@
 - Step number: Browser-requested signal, commercial, navigation, and media refinement
 - Commit SHA: This status file is part of the focused correction commit; use `git log -1 --format=%H -- docs/upgrade-redesign-status.md` to resolve the exact SHA
 - Affected routes: `/index.html#top`, `/memberships.html`, `/features-app.html`, `/live-events.html`, `/news/`, plus shared navigation surfaces
-- Changes: Home commercial delay set to 60 seconds; Home particle globe and title bleed removed; Home and Live Events films use truthful browser-policy fallbacks; Membership hero, plan, Collector, Gaming Showcase, and Guardian order refined; Membership particles connected to Web Audio energy; Guardian uses the supplied gun-range commercial; Arcade restores the existing particle mascot behind brighter Little Man artwork and a cinematic serif title; News card imagery restored; shared tabs renamed to `Games`, `Lilman`, `Storefront`, and `Static Wav`; Home, Memberships, and Storefront use one legal-footer treatment; Storefront exposes a device-only preorder preview with no transaction claim
-- Tests: JavaScript syntax checks passed; focused source browser suite 6/6 with 2 intentional project skips; affected staging safety/interaction suite 6/6; source/staging route smoke 92/92; static artifact verification 23 pages and 494 same-origin references; refreshed screenshot verification 15/15
+- Changes: Home commercial delay set to 60 seconds; Home particle globe and title bleed removed; Home and Live Events films use truthful browser-policy fallbacks; Membership hero, plan, Collector, Gaming Showcase, and Guardian order refined; Membership particles connected to Web Audio energy; Guardian uses the supplied gun-range commercial; Arcade restores the existing particle mascot behind brighter Little Man artwork and a cinematic serif title; News card imagery restored; shared tabs renamed to `Games`, `RAHBE`, `Storefront`, and `Static Wav`; Home, Memberships, and Storefront use one legal-footer treatment; Storefront exposes a device-only preorder preview with no transaction claim
+- Tests: JavaScript syntax checks passed; focused route suite 12/12; staging browser suite 15/15; source/staging route smoke 92/92; static artifact verification 23 pages and 529 same-origin references; refreshed screenshot verification 30/30
 - Visual review: `docs/staging-reviews/signal-media-corrections.md` with refreshed captures across 1440x900, 768x1024, and 390x844; no horizontal overflow, console errors, page errors, or broken assets found
 - Staging URL: Local only (`http://127.0.0.1:8204/`)
 - Staging safety: Noindex and preview banners verified; live payments, production account writes, real redemptions, and production analytics remain blocked
 - Live checkout: Excluded from this task and unchanged
+- Approval status: Ready for next phase; production remains not approved
+
+## Header And Membership Follow-up
+
+- Step number: Browser-requested shared header and Membership media follow-up
+- Commit SHA: This status file is part of the focused follow-up commit; use `git log -1 --format=%H -- docs/upgrade-redesign-status.md` to resolve the exact SHA
+- Affected routes: Shared site header routes, `/memberships.html`, `/features-app.html`, `/news/`, `/beat2lotto-plus.html#beat2lotto`, and `/lottery-spheres.html#spheres`
+- Changes: Ten shared tabs use a stable artwork map and fixed circular geometry; navigation no longer hides when clicked; the Beat2Lotto tab reads `RAHBE`; the Membership hero film is brighter with lower contrast; the Guardian card restores deferred gun-range video playback with a matching poster; the Vault Pass reads `$29.99` and includes the Little Man Luggage Charm
+- Tests: JavaScript syntax checks passed; focused route regression 12/12; staging browser suite 15/15; source/staging route smoke 92/92; static artifact verification 23 pages and 529 same-origin references; screenshot verification 30/30
+- Visual review: `docs/staging-reviews/signal-media-corrections.md` with 1440x900, 768x1024, and 390x844 captures; no broken assets, console errors, page errors, or horizontal document overflow found
+- Staging URL: Local only (`http://127.0.0.1:8204/`)
+- Staging safety: Noindex and preview banners verified; live payments, production account writes, real redemptions, and production analytics remain blocked
 - Approval status: Ready for next phase; production remains not approved

@@ -12863,54 +12863,6 @@ body.vault-gateway-open {
   }
 }
 
-/* Click-to-hide headers and compact HUD/page-player cleanup. */
-.site-header.is-click-header-hidden {
-  opacity: 0 !important;
-  visibility: hidden !important;
-  pointer-events: none !important;
-  transform: translate3d(0, -115%, 0) !important;
-}
-
-.header-click-toggle {
-  position: fixed;
-  top: max(0.72rem, env(safe-area-inset-top));
-  right: max(0.72rem, env(safe-area-inset-right));
-  z-index: 2147483001;
-  display: grid;
-  place-items: center;
-  min-width: 3.25rem;
-  min-height: 2.2rem;
-  padding: 0.35rem 0.7rem;
-  border: 1px solid rgba(255, 224, 113, 0.68);
-  border-radius: 999px;
-  color: #fff7c7;
-  background:
-    radial-gradient(circle at 30% 18%, rgba(255, 255, 255, 0.52), transparent 30%),
-    radial-gradient(circle at 50% 56%, rgba(41, 247, 255, 0.22), transparent 58%),
-    rgba(4, 12, 20, 0.9);
-  box-shadow:
-    inset 0 0 0 1px rgba(255, 255, 255, 0.08),
-    0 0 1.25rem rgba(41, 247, 255, 0.24),
-    0 0 2.1rem rgba(255, 224, 113, 0.12);
-  font-family: var(--font-heading);
-  font-size: 0.7rem;
-  font-weight: 950;
-  line-height: 1;
-  text-transform: uppercase;
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-  transform: translateY(-0.4rem) scale(0.96);
-  transition: opacity 180ms ease, visibility 180ms ease, transform 180ms ease;
-}
-
-body.is-click-header-hidden .header-click-toggle {
-  opacity: 1;
-  visibility: visible;
-  pointer-events: auto;
-  transform: translateY(0) scale(1);
-}
-
 .universal-page-menu-panel {
   width: min(100%, 484px) !important;
   max-height: min(86vh, 560px) !important;

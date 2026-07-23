@@ -14,6 +14,8 @@
 | Home | [Desktop](../visual-baseline/v1/home--desktop.png) / [Mobile](../visual-baseline/v1/home--mobile.png) | [Desktop](./signal-media-corrections-assets/home-1440x900.png) / [Tablet](./signal-media-corrections-assets/home-768x1024.png) / [Mobile](./signal-media-corrections-assets/home-390x844.png) |
 | Memberships | [Desktop](../visual-baseline/v1/memberships--desktop.png) / [Mobile](../visual-baseline/v1/memberships--mobile.png) | [Desktop](./signal-media-corrections-assets/memberships-1440x900.png) / [Tablet](./signal-media-corrections-assets/memberships-768x1024.png) / [Mobile](./signal-media-corrections-assets/memberships-390x844.png) / [Guardian](./signal-media-corrections-assets/membership-guardian-1440x900.png) |
 | Arcade | [Desktop](../visual-baseline/v1/features-app--desktop.png) / [Mobile](../visual-baseline/v1/features-app--mobile.png) | [Desktop](./signal-media-corrections-assets/arcade-1440x900.png) / [Tablet](./signal-media-corrections-assets/arcade-768x1024.png) / [Mobile](./signal-media-corrections-assets/arcade-390x844.png) |
+| RAHBE | [Desktop](../visual-baseline/v1/beat2lotto-plus--desktop.png) / [Mobile](../visual-baseline/v1/beat2lotto-plus--mobile.png) | [Desktop](./signal-media-corrections-assets/rahbe-1440x900.png) / [Tablet](./signal-media-corrections-assets/rahbe-768x1024.png) / [Mobile](./signal-media-corrections-assets/rahbe-390x844.png) |
+| Spheres | [Desktop](../visual-baseline/v1/lottery-spheres-spheres--desktop.png) / [Mobile](../visual-baseline/v1/lottery-spheres-spheres--mobile.png) | [Desktop](./signal-media-corrections-assets/spheres-1440x900.png) / [Tablet](./signal-media-corrections-assets/spheres-768x1024.png) / [Mobile](./signal-media-corrections-assets/spheres-390x844.png) |
 | Storefront | [Desktop](../visual-baseline/v1/merch-store--desktop.png) / [Mobile](../visual-baseline/v1/merch-store--mobile.png) | [Desktop](./signal-media-corrections-assets/storefront-1440x900.png) / [Tablet](./signal-media-corrections-assets/storefront-768x1024.png) / [Mobile](./signal-media-corrections-assets/storefront-390x844.png) |
 | Live Events | [Desktop](../visual-baseline/v1/live-events--desktop.png) / [Mobile](../visual-baseline/v1/live-events--mobile.png) | [Desktop](./signal-media-corrections-assets/live-events-1440x900.png) / [Tablet](./signal-media-corrections-assets/live-events-768x1024.png) / [Mobile](./signal-media-corrections-assets/live-events-390x844.png) |
 | News | [Desktop](../visual-baseline/v1/news-index--desktop.png) / [Mobile](../visual-baseline/v1/news-index--mobile.png) | [Desktop](./signal-media-corrections-assets/news-1440x900.png) / [Tablet](./signal-media-corrections-assets/news-768x1024.png) / [Mobile](./signal-media-corrections-assets/news-390x844.png) |
@@ -22,14 +24,15 @@
 
 - Home removes the dense globe particle layer and title bleed while retaining the cinematic signal-room film, Detroit color language, and responsible-entertainment copy.
 - The home startup commercial is delayed to 60 seconds. The background film attempts audible playback on entry and provides a visible sound control plus first-gesture retry when browser policy blocks it.
-- Memberships opens with the cinematic Choose Your Membership film, keeps the original title scale, places the plan cards immediately after the hero, moves Collector Access below Gaming Showcase, and closes with the Guardian offer and supplied gun-range commercial.
+- Memberships opens with the cinematic Choose Your Membership film using a brighter, lower-contrast treatment, keeps the original title scale, places the plan cards immediately after the hero, moves Collector Access below Gaming Showcase, and closes with the Guardian offer and supplied gun-range commercial.
+- The Vault Pass now reads `$29.99` and explicitly includes the Little Man Luggage Charm; its checkout lookup key and integrations were not changed.
 - Membership particles now use real Web Audio frequency energy when membership audio is active; reduced-motion mode suppresses the response.
 - Arcade uses a clearer cinematic serif title, restores the existing particle mascot as a restrained screen-blended background, and brightens the Little Man toy/Guardian artwork while preserving the playable eight-game directory.
 - Home, Memberships, and Storefront now share the same full-width legal footer treatment without duplicate legal destinations.
 - Storefront product actions are labeled `Preorder` and build a local device-only preview that explicitly states no order, reservation, payment, or inventory claim was submitted.
 - Live Events attempts synchronized hero sound immediately and exposes an accurate `Play sound` fallback instead of claiming sound is active when autoplay is blocked.
 - News cards now use story or deterministic editorial imagery instead of repeated placeholder discs.
-- Shared navigation reads `Games`, `Lilman`, `Storefront`, and `Static Wav` without changing route destinations.
+- Shared navigation reads `Games`, `RAHBE`, `Storefront`, and `Static Wav` without changing route destinations. All ten tab positions now use one stable artwork map and fixed circular geometry across desktop and mobile.
 
 ## Intentional Departures
 
@@ -41,7 +44,7 @@
 
 ## Regressions
 
-- No new broken assets, console errors, page errors, or horizontal overflow were found in the 15 refreshed staging captures.
+- No new broken assets, console errors, page errors, or horizontal overflow were found in the 30 refreshed staging captures.
 - Audible autoplay cannot be guaranteed by application code because browser policy can require a user gesture. The fallback control is visible, keyboard operable, and reports the actual state.
 - The persistent News oracle can still occupy significant mobile space when expanded; this is inherited behavior and was not expanded in this correction pass.
 

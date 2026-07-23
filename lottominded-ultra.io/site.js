@@ -82,7 +82,7 @@ window.LMAudioMix = {
     { label: "News", href: siteUrl("./news/"), icon: "NW" },
     { label: "Events", href: siteUrl("./live-events.html"), icon: "EV" },
     { label: "Spheres", href: siteUrl("./lottery-spheres.html#spheres"), icon: "SP" },
-    { label: "Lilman", href: siteUrl("./beat2lotto-plus.html#beat2lotto"), icon: "B2" },
+    { label: "RAHBE", href: siteUrl("./beat2lotto-plus.html#beat2lotto"), icon: "B2" },
     { label: "Storefront", href: siteUrl("./merch-store.html"), icon: "DR" },
     { label: "Static Wav", href: siteUrl("./how-to-use.html"), icon: "GD" },
     {
@@ -1177,7 +1177,7 @@ function setupUniversalFloatingMenu() {
     ["Games", siteUrl("./features-app.html")],
     ["Events", siteUrl("./live-events.html")],
     ["Spheres", siteUrl("./lottery-spheres.html#spheres")],
-    ["Lilman", siteUrl("./beat2lotto-plus.html#beat2lotto")],
+    ["RAHBE", siteUrl("./beat2lotto-plus.html#beat2lotto")],
     ["Storefront", siteUrl("./merch-store.html")],
     ["Static Wav", siteUrl("./how-to-use.html")],
     ["Studio", siteUrl("./lottomind-stem-studio/index.html")]
@@ -1336,7 +1336,7 @@ function setupRequestedNavLabels() {
   const syncLabels = () => {
     const requestedLabels = {
       FX: "Games",
-      B2: "Lilman",
+      B2: "RAHBE",
       DR: "Storefront",
       GD: "Static Wav",
     };
@@ -2392,58 +2392,20 @@ function setupHomePianoHoverToggle(pianoHeader) {
 
 function setupSiteHeaderClickToggle() {
   if (!siteHeader) return;
-  if (siteHeader.dataset.clickHeaderToggleReady === "true") return;
-  siteHeader.dataset.clickHeaderToggleReady = "true";
-
-  siteHeader.classList.remove("is-home-header-hidden", "is-sphere-hover-hidden", "is-universal-header-hidden");
-  document.body.classList.remove("is-home-header-hidden", "is-sphere-header-hidden", "is-universal-header-hidden");
-
-  const toggle = document.createElement("button");
-  toggle.className = "header-click-toggle";
-  toggle.type = "button";
-  toggle.textContent = "NAV";
-  toggle.setAttribute("aria-label", "Show site header");
-  toggle.setAttribute("aria-expanded", "true");
-  document.body.append(toggle);
-
-  const interactiveSelector = [
-    "a",
-    "button",
-    "input",
-    "textarea",
-    "select",
-    "label",
-    "[role='button']",
-    "[data-no-header-toggle]",
-    ".universal-menu-toggle",
-    ".universal-floating-trigger",
-    ".direct-action",
-    ".direct-launch"
-  ].join(",");
-
-  const setHidden = (hidden) => {
-    siteHeader.classList.toggle("is-click-header-hidden", hidden);
-    document.body.classList.toggle("is-click-header-hidden", hidden);
-    toggle.setAttribute("aria-expanded", String(!hidden));
-    toggle.setAttribute("aria-label", hidden ? "Show site header" : "Hide site header");
-  };
-
-  siteHeader.addEventListener("click", (event) => {
-    if (event.defaultPrevented || event.target.closest(interactiveSelector)) return;
-    setHidden(true);
-  });
-
-  toggle.addEventListener("click", () => {
-    setHidden(siteHeader.classList.contains("is-click-header-hidden") ? false : true);
-  });
-
-  document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape" && siteHeader.classList.contains("is-click-header-hidden")) {
-      setHidden(false);
-    }
-  });
-
-  setHidden(false);
+  siteHeader.classList.remove(
+    "is-click-header-hidden",
+    "is-home-header-hidden",
+    "is-sphere-hover-hidden",
+    "is-universal-header-hidden",
+    "is-piano-hover-hidden",
+  );
+  document.body.classList.remove(
+    "is-click-header-hidden",
+    "is-home-header-hidden",
+    "is-sphere-header-hidden",
+    "is-universal-header-hidden",
+  );
+  document.querySelectorAll(".header-click-toggle").forEach((toggle) => toggle.remove());
 }
 
 function setupHomeHeaderHoverReveal() {
