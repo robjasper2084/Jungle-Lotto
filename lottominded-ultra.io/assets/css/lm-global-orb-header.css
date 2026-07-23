@@ -37,6 +37,8 @@ body .site-header.home-like-header {
   background: rgba(1, 9, 17, 0.96) !important;
   box-shadow: 0 10px 28px rgba(0, 0, 0, 0.36) !important;
   backdrop-filter: blur(16px) saturate(1.15) !important;
+  isolation: isolate !important;
+  overflow: clip !important;
   transform: none !important;
 }
 
@@ -124,13 +126,20 @@ body .site-header.home-like-header > nav > a {
   max-width: none !important;
   height: clamp(62px, 5.1vw, 72px) !important;
   min-height: clamp(62px, 5.1vw, 72px) !important;
+  box-sizing: border-box !important;
+  aspect-ratio: 1 !important;
   margin: 0 !important;
   padding: 24px 5px 7px !important;
   overflow: hidden !important;
+  contain: layout paint !important;
   border: 1px solid rgba(222, 240, 247, 0.38) !important;
   border-radius: 50% !important;
   color: #f4fbff !important;
-  background-color: rgba(2, 13, 24, 0.82) !important;
+  background:
+    radial-gradient(circle at 28% 20%, rgba(255, 255, 255, 0.64), transparent 0 14%, transparent 30%),
+    radial-gradient(circle at 50% 50%, var(--sphere-nav-core, rgba(157, 255, 247, 0.82)) 0 16%, transparent 52%),
+    linear-gradient(150deg, rgba(255, 255, 255, 0.26), transparent 42%),
+    radial-gradient(circle at 50% 50%, rgba(2, 36, 56, 0.92), rgba(3, 10, 17, 0.98) 72%) !important;
   font-family: var(--body-font, Arial, sans-serif) !important;
   font-size: clamp(0.48rem, 0.58vw, 0.64rem) !important;
   font-weight: 900 !important;
@@ -141,27 +150,161 @@ body .site-header.home-like-header > nav > a {
   text-transform: uppercase !important;
   white-space: normal !important;
   text-wrap: balance !important;
+  overflow-wrap: anywhere !important;
   scroll-snap-align: start !important;
   box-shadow: inset 0 0 18px rgba(56, 217, 238, 0.12), 0 0 13px rgba(22, 210, 231, 0.12) !important;
   transform: none !important;
   transition: border-color 160ms ease, box-shadow 160ms ease, filter 160ms ease !important;
 }
 
+body .site-header.home-like-header > nav > a::before,
 body .site-header.home-like-header > nav > a::after {
-  content: attr(data-icon) !important;
   position: absolute !important;
-  top: 5px !important;
-  left: 50% !important;
   display: grid !important;
   place-items: center !important;
+  border-radius: 999px !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+  text-shadow: none !important;
+}
+
+body .site-header.home-like-header > nav > a::before {
+  content: attr(data-icon) !important;
+  top: 5px !important;
+  left: 50% !important;
   width: 24px !important;
   height: 17px !important;
-  border-radius: 999px !important;
+  border: 1px solid rgba(221, 255, 255, 0.62) !important;
   color: #041019 !important;
-  background: rgba(239, 252, 255, 0.82) !important;
+  background:
+    radial-gradient(circle at 30% 18%, #fff 0 10%, rgba(255, 255, 255, 0.28) 11% 28%, transparent 38%),
+    radial-gradient(circle at 50% 52%, #dfffff 0 26%, var(--sphere-nav-accent, #29f7ff) 66%, #073445 100%) !important;
   font-size: 0.47rem !important;
-  font-weight: 900 !important;
   transform: translateX(-50%) !important;
+}
+
+body .site-header.home-like-header > nav > a::after {
+  content: var(--sphere-nav-note, "07") !important;
+  right: 5px !important;
+  bottom: 5px !important;
+  width: 17px !important;
+  height: 17px !important;
+  border: 1px solid rgba(255, 255, 255, 0.56) !important;
+  color: #17222b !important;
+  background:
+    radial-gradient(circle at 30% 22%, #fff 0 10%, rgba(255, 255, 255, 0.22) 11% 28%, transparent 40%),
+    radial-gradient(circle at 50% 56%, #fff8b0 0 28%, #cab453 58%, #31260b 100%) !important;
+  font-size: 0.43rem !important;
+}
+
+body.home-page.has-sphere-header .site-header.home-like-header > nav > a[data-icon="MB"] {
+  --sphere-nav-note: "07" !important;
+  --sphere-nav-accent: #29f7ff !important;
+  --sphere-nav-core: rgba(157, 255, 247, 0.82) !important;
+  --sphere-nav-image: "guide-puck-cyan-city.webp" !important;
+  background-image: url("../brand/guide-puck-cyan-city.webp") !important;
+  background-position: center !important;
+  background-size: cover !important;
+  background-repeat: no-repeat !important;
+}
+
+body.home-page.has-sphere-header .site-header.home-like-header > nav > a[data-icon="HM"] {
+  --sphere-nav-note: "55" !important;
+  --sphere-nav-accent: #ffe071 !important;
+  --sphere-nav-core: rgba(255, 244, 178, 0.9) !important;
+  --sphere-nav-image: "guide-puck-gold-mascot-close.webp" !important;
+  background-image: url("../brand/guide-puck-gold-mascot-close.webp") !important;
+  background-position: center !important;
+  background-size: cover !important;
+  background-repeat: no-repeat !important;
+}
+
+body.home-page.has-sphere-header .site-header.home-like-header > nav > a[data-icon="FX"] {
+  --sphere-nav-note: "51" !important;
+  --sphere-nav-accent: #5eff9d !important;
+  --sphere-nav-core: rgba(198, 255, 167, 0.86) !important;
+  --sphere-nav-image: "lottomind-branded-puck.webp" !important;
+  background-image: url("../brand/lottomind-branded-puck.webp") !important;
+  background-position: center !important;
+  background-size: cover !important;
+  background-repeat: no-repeat !important;
+}
+
+body.home-page.has-sphere-header .site-header.home-like-header > nav > a[data-icon="NW"] {
+  --sphere-nav-note: "62" !important;
+  --sphere-nav-accent: #5eff9d !important;
+  --sphere-nav-core: rgba(198, 255, 167, 0.86) !important;
+  --sphere-nav-image: "guide-puck-gold-mascot-wide.webp" !important;
+  background-image: url("../brand/guide-puck-gold-mascot-wide.webp") !important;
+  background-position: center !important;
+  background-size: cover !important;
+  background-repeat: no-repeat !important;
+}
+
+body.home-page.has-sphere-header .site-header.home-like-header > nav > a[data-icon="EV"] {
+  --sphere-nav-note: "68" !important;
+  --sphere-nav-accent: #ff4fd8 !important;
+  --sphere-nav-core: rgba(255, 164, 235, 0.84) !important;
+  --sphere-nav-image: "guide-jazz-network-puck.webp" !important;
+  background-image: url("../brand/guide-jazz-network-puck.webp") !important;
+  background-position: center !important;
+  background-size: cover !important;
+  background-repeat: no-repeat !important;
+}
+
+body.home-page.has-sphere-header .site-header.home-like-header > nav > a[data-icon="SP"] {
+  --sphere-nav-note: "54" !important;
+  --sphere-nav-accent: #29f7ff !important;
+  --sphere-nav-core: rgba(174, 244, 255, 0.86) !important;
+  --sphere-nav-image: "guide-puck-cyan-city.webp" !important;
+  background-image: url("../brand/guide-puck-cyan-city.webp") !important;
+  background-position: center !important;
+  background-size: cover !important;
+  background-repeat: no-repeat !important;
+}
+
+body.home-page.has-sphere-header .site-header.home-like-header > nav > a[data-icon="B2"] {
+  --sphere-nav-note: "03" !important;
+  --sphere-nav-accent: #ffe071 !important;
+  --sphere-nav-core: rgba(255, 244, 178, 0.9) !important;
+  --sphere-nav-image: "jazz-network-gold-coin.webp" !important;
+  background-image: url("../brand/jazz-network-gold-coin.webp") !important;
+  background-position: center !important;
+  background-size: cover !important;
+  background-repeat: no-repeat !important;
+}
+
+body.home-page.has-sphere-header .site-header.home-like-header > nav > a[data-icon="DR"] {
+  --sphere-nav-note: "11" !important;
+  --sphere-nav-accent: #5eff9d !important;
+  --sphere-nav-core: rgba(198, 255, 167, 0.86) !important;
+  --sphere-nav-image: "lottomind-branded-puck.webp" !important;
+  background-image: url("../brand/lottomind-branded-puck.webp") !important;
+  background-position: center !important;
+  background-size: cover !important;
+  background-repeat: no-repeat !important;
+}
+
+body.home-page.has-sphere-header .site-header.home-like-header > nav > a[data-icon="GD"] {
+  --sphere-nav-note: "25" !important;
+  --sphere-nav-accent: #ff4fd8 !important;
+  --sphere-nav-core: rgba(255, 164, 235, 0.84) !important;
+  --sphere-nav-image: "guide-puck-gold-mascot-close.webp" !important;
+  background-image: url("../brand/guide-puck-gold-mascot-close.webp") !important;
+  background-position: center !important;
+  background-size: cover !important;
+  background-repeat: no-repeat !important;
+}
+
+body.home-page.has-sphere-header .site-header.home-like-header > nav > a[data-icon="LM"] {
+  --sphere-nav-note: "40" !important;
+  --sphere-nav-accent: #29f7ff !important;
+  --sphere-nav-core: rgba(174, 244, 255, 0.86) !important;
+  --sphere-nav-image: "lottomind-branded-puck.webp" !important;
+  background-image: url("../brand/lottomind-branded-puck.webp") !important;
+  background-position: center !important;
+  background-size: cover !important;
+  background-repeat: no-repeat !important;
 }
 
 body .site-header.home-like-header > nav > a:hover,
@@ -267,10 +410,81 @@ body.lottery-spheres-page {
   }
 
   body .site-header.home-like-header > nav > a::after {
+    right: 4px !important;
+    bottom: 4px !important;
+    width: 15px !important;
+    height: 15px !important;
+    font-size: 0.41rem !important;
+  }
+
+  body .site-header.home-like-header > nav > a::before {
     top: 4px !important;
     width: 21px !important;
     height: 15px !important;
     font-size: 0.41rem !important;
+  }
+}
+
+/* Beat the older page-specific !important geometry without changing page art. */
+body.home-page.has-sphere-header .site-header.home-like-header > nav > a,
+body.home-page.has-sphere-header .site-header.home-like-header > nav > a:is(:hover, :focus-visible, :active) {
+  flex: 0 0 clamp(62px, 5.1vw, 72px) !important;
+  width: clamp(62px, 5.1vw, 72px) !important;
+  min-width: clamp(62px, 5.1vw, 72px) !important;
+  max-width: clamp(62px, 5.1vw, 72px) !important;
+  height: clamp(62px, 5.1vw, 72px) !important;
+  min-height: clamp(62px, 5.1vw, 72px) !important;
+  max-height: clamp(62px, 5.1vw, 72px) !important;
+  padding: 24px 5px 7px !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+  contain: layout paint !important;
+}
+
+body.lottery-spheres-page.home-page.has-sphere-header .site-header.home-like-header.home-sphere-header.global-sphere-header > nav > a,
+body.lottery-spheres-page.home-page.has-sphere-header .site-header.home-like-header.home-sphere-header.global-sphere-header > nav > a:is(:hover, :focus-visible, :active, [aria-current], .nav-signal-active) {
+  overflow: hidden !important;
+}
+
+body.home-page.has-sphere-header .site-header.home-like-header > nav > a::before {
+  top: 5px !important;
+  left: 50% !important;
+  right: auto !important;
+  bottom: auto !important;
+}
+
+body.home-page.has-sphere-header .site-header.home-like-header > nav > a::after {
+  top: auto !important;
+  left: auto !important;
+  right: 5px !important;
+  bottom: 5px !important;
+  transform: none !important;
+}
+
+@media (max-width: 1120px) {
+  body.home-page.has-sphere-header .site-header.home-like-header > nav > a,
+  body.home-page.has-sphere-header .site-header.home-like-header > nav > a:is(:hover, :focus-visible, :active) {
+    flex-basis: 66px !important;
+    width: 66px !important;
+    min-width: 66px !important;
+    max-width: 66px !important;
+    height: 66px !important;
+    min-height: 66px !important;
+    max-height: 66px !important;
+  }
+}
+
+@media (max-width: 760px) {
+  body.home-page.has-sphere-header .site-header.home-like-header > nav > a,
+  body.home-page.has-sphere-header .site-header.home-like-header > nav > a:is(:hover, :focus-visible, :active) {
+    flex-basis: 56px !important;
+    width: 56px !important;
+    min-width: 56px !important;
+    max-width: 56px !important;
+    height: 56px !important;
+    min-height: 56px !important;
+    max-height: 56px !important;
+    padding: 21px 3px 5px !important;
   }
 }
 

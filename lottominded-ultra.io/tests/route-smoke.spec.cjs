@@ -56,7 +56,7 @@ async function visibleKeyboardFocus(page) {
 for (const route of routes) {
   test(`${route} meets the route smoke contract`, async ({ page }, testInfo) => {
     const environment = testInfo.project.metadata.environment;
-    const origin = environment === "staging" ? "http://127.0.0.1:8143" : "http://127.0.0.1:8142";
+    const origin = new URL(String(testInfo.project.use.baseURL)).origin;
     const consoleErrors = [];
     const pageErrors = [];
     const assetFailures = [];
@@ -64,7 +64,10 @@ for (const route of routes) {
     await page.route(/\.(?:mp3|wav|ogg)(?:\?.*)?$/i, (requestRoute) => requestRoute.fulfill({ status: 204, body: "" }));
     await page.route(/(?:stripe\.com|supabase\.co|google-analytics\.com|googletagmanager\.com)/i, (requestRoute) => requestRoute.abort("blockedbyclient"));
     page.on("console", (message) => {
-      if (message.type() === "error" && !/ERR_BLOCKED_BY_CLIENT/i.test(message.text())) consoleErrors.push(message.text());
+      if (message.type() === "error" && !/ERR_BLOCKED_BY_CLIENT/i.test(message.text())) {
+        const location = message.location();
+        consoleErrors.push(location.url ? `${message.text()} (${location.url})` : message.text());
+      }
     });
     page.on("pageerror", (error) => pageErrors.push(error.message));
     page.on("response", (response) => {

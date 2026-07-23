@@ -25,6 +25,12 @@
     linear-gradient(145deg, rgba(2, 4, 9, 0.97), rgba(3, 7, 16, 0.98));
 }
 
+.lm-page-transition[aria-hidden="true"]:not(.is-active) {
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
 html.lm-transition-arriving .lm-page-transition,
 .lm-page-transition.is-active {
   visibility: visible;

@@ -65,7 +65,7 @@ async function mockAuthenticatedBilling(page, checkoutResponse) {
   });
 }
 
-test("memberships opens its commercial and hands off to the page without API checkout calls", async ({ page }) => {
+test("memberships avoids an entry popup and opens its commercial only on request", async ({ page }) => {
   await blockHeavyMedia(page);
   await page.route(/https:\/\/js\.stripe\.com\/.*/i, (route) => route.abort());
   await page.route(/https:\/\/sqdasdbvlkgpbbiyeune\.supabase\.co\/functions\/v1\/lottomind-api.*/i, (route) =>
@@ -82,6 +82,12 @@ test("memberships opens its commercial and hands off to the page without API che
   await page.waitForLoadState("networkidle").catch(() => {});
 
   const commercial = page.locator("[data-membership-commercial-modal]");
+  await expect(commercial).toBeHidden();
+  await expect(page.locator(".lm-temporal-loader")).toHaveCount(0);
+  const commercialOpener = page.locator("[data-membership-commercial-open]").last();
+  await commercialOpener.scrollIntoViewIfNeeded();
+  await expect(commercialOpener).toBeVisible();
+  await commercialOpener.click();
   await expect(commercial).toBeVisible();
   await page.locator("[data-membership-commercial-close]").click();
   await expect(commercial).toBeHidden();
@@ -99,7 +105,6 @@ test("membership checkout explains an authenticated backend rejection", async ({
   });
 
   await page.goto("/memberships.html", { waitUntil: "domcontentloaded" });
-  await page.locator("[data-membership-commercial-close]").click();
   await expect(page.locator("[data-stripe-membership-status]")).toHaveText("Secure Stripe checkout is ready.");
   await page.locator('[data-stripe-lookup-key="gold_monthly"]').evaluate((button) => button.click());
 
@@ -205,7 +210,6 @@ test("membership checkout rejects an unsafe redirect response", async ({ page })
   });
 
   await page.goto("/memberships.html", { waitUntil: "domcontentloaded" });
-  await page.locator("[data-membership-commercial-close]").click();
   await expect(page.locator("[data-stripe-membership-status]")).toHaveText("Secure Stripe checkout is ready.");
   await page.locator('[data-stripe-lookup-key="gold_monthly"]').evaluate((button) => button.click());
 
@@ -233,7 +237,6 @@ test("membership checkout stays disabled for malformed plan configuration", asyn
   });
 
   await page.goto("/memberships.html", { waitUntil: "domcontentloaded" });
-  await page.locator("[data-membership-commercial-close]").click();
 
   await expect(page.locator("[data-stripe-membership-status]")).toContainText("invalid plan configuration");
   await expect(page.locator("[data-stripe-lookup-key]").first()).toBeDisabled();
@@ -248,7 +251,7 @@ test("billing Edge Function returns expected auth failures through its CORS resp
   expect(source).toContain('validStripeUrl(session.url, "checkout.stripe.com")');
 });
 
-test("guide commercial returns on every fresh page visit", async ({ page }) => {
+test("guide commercial runs once per route in the current tab", async ({ page }) => {
   await blockHeavyMedia(page);
   await page.goto("/how-to-use.html", { waitUntil: "domcontentloaded" });
 
@@ -258,17 +261,29 @@ test("guide commercial returns on every fresh page visit", async ({ page }) => {
   await expect(gate).toBeHidden();
 
   await page.reload({ waitUntil: "domcontentloaded" });
-  await expect(page.locator(".lm-commercial-gate")).toBeVisible();
+  await expect(page.locator(".lm-commercial-gate")).toHaveCount(0);
 });
 
-test("features renders the focused manifest-driven Arcade pilot", async ({ page }) => {
+test("features combines the cinematic shell with the manifest-driven Arcade directory", async ({ page }) => {
   await blockHeavyMedia(page);
   const localFailures = trackLocalFailures(page);
   await page.goto("/features-app.html", { waitUntil: "domcontentloaded" });
-  await expect(page.locator(".arcade-pilot-label")).toHaveText("LottoMind Arcade Pilot — Experimental Preview");
+  const commercial = page.locator(".lm-commercial-gate");
+  await expect(commercial).toBeVisible();
+  await commercial.locator(".lm-commercial-gate__skip").click();
+  await expect(commercial).toBeHidden();
+
+  await expect(page.locator(".arcade-pilot-label")).toHaveText("LottoMind Features / Arcade + Creative Systems");
+  await expect(page.locator('.arcade-pilot-hero__art[src*="lottomind-little-man-membership-hero-v2.png"]')).toBeVisible();
+  await expect(page.locator("#featureEntity.feature-entity")).toHaveCount(1);
+  await expect(page.locator("[data-shape]")).toHaveCount(8);
+  await expect.poll(() => page.evaluate(() => document.body.classList.contains("feature-entity-ready"))).toBe(true);
+  expect(await page.locator("#arcade-title").evaluate((title) => getComputedStyle(title).fontFamily)).not.toMatch(/Impact/i);
+  await expect(page.locator(".feature-channel")).toHaveCount(5);
   await expect(page.locator("[data-arcade-grid] .arcade-game-card")).toHaveCount(8);
   await expect(page.locator("[data-arcade-count]")).toHaveText("8");
-  await expect(page.locator("video, audio, iframe, #lottery-news")).toHaveCount(0);
+  await expect(page.locator(".arcade-game-card__status")).toHaveText(Array(8).fill("Playable"));
+  await expect(page.locator("main video, main audio, iframe, #lottery-news, .instrument-console")).toHaveCount(0);
 
   await page.getByRole("button", { name: "Action", exact: true }).click();
   await expect(page.locator("[data-arcade-grid] .arcade-game-card")).toHaveCount(3);
@@ -284,22 +299,35 @@ test("features renders the focused manifest-driven Arcade pilot", async ({ page 
   expect(localFailures).toEqual([]);
 });
 
-test("home commercial media waits for an explicit play command", async ({ page }) => {
-  const commercialRequests = [];
+test("home opens directly with its muted hero film and sound control", async ({ page }) => {
+  const removedCommercialRequests = [];
   page.on("request", (request) => {
-    if (/lottomind-(?:home|refined)-commercial-20260716\.mp4/i.test(request.url())) {
-      commercialRequests.push(request.url());
-    }
+    if (/lottomind-home-commercial-20260716\.mp4/i.test(request.url())) removedCommercialRequests.push(request.url());
   });
 
+  await page.addInitScript(() => {
+    const nativeSetTimeout = window.setTimeout.bind(window);
+    window.setTimeout = (callback, delay, ...args) => {
+      if (delay === 60_000) {
+        window.__lmStartupDelay = delay;
+        return nativeSetTimeout(callback, 1_200, ...args);
+      }
+      return nativeSetTimeout(callback, delay, ...args);
+    };
+  });
   await page.goto("/", { waitUntil: "domcontentloaded" });
   const startup = page.locator("[data-startup-video]");
-  await expect(startup).toBeVisible({ timeout: 15_000 });
-  await page.waitForTimeout(500);
-  expect(commercialRequests).toEqual([]);
+  const heroFilm = page.locator("[data-home-hero-audio]");
+  await expect(startup).toHaveCount(0);
+  await expect(heroFilm).toBeVisible();
+  await expect(page.locator("[data-home-hero-sound]")).toBeVisible();
+  expect(await page.evaluate(() => window.__lmStartupDelay)).toBeUndefined();
+  await page.waitForTimeout(1_500);
+  expect(removedCommercialRequests).toEqual([]);
+  await expect.poll(() => heroFilm.evaluate((video) => ({ muted: video.muted, paused: video.paused }))).toEqual({ muted: true, paused: false });
 
-  await page.locator("[data-startup-video-play]").click();
-  await expect.poll(() => commercialRequests.length).toBeGreaterThan(0);
+  await page.locator("[data-home-hero-sound]").click();
+  await expect.poll(() => heroFilm.evaluate((video) => video.muted)).toBe(false);
 });
 
 test("Contact prepares a support request locally", async ({ page }) => {
@@ -317,37 +345,67 @@ test("Contact prepares a support request locally", async ({ page }) => {
   expect(localFailures).toEqual([]);
 });
 
-test("membership support modules follow the plan heading in the requested order", async ({ page }) => {
+test("membership hero leads, Collector follows Gaming Showcase, and the Guardian offer closes the page", async ({ page }) => {
   await blockHeavyMedia(page);
   await page.route(/https:\/\/js\.stripe\.com\/.*/i, (route) => route.abort());
   await page.goto("/memberships.html", { waitUntil: "domcontentloaded" });
 
   const supportGrid = page.locator("#membership-plans > .membership-plan-support-grid");
-  const collector = supportGrid.locator(":scope > #lm-access-hero");
-  const guardian = supportGrid.locator(":scope > .membership-collectible-card");
+  const hero = page.locator("#dust");
+  const plans = page.locator("#membership-plans");
+  const collector = page.locator("main > #lm-access-hero");
+  const showcase = page.locator("#worlds");
+  const guardianSection = page.locator("main > .membership-guardian-bottom");
+  const guardian = guardianSection.locator(":scope > .membership-collectible-card");
 
   await expect(supportGrid).toHaveCount(1);
+  await expect(supportGrid.locator(":scope > *")).toHaveCount(0);
   await expect(collector).toHaveCount(1);
   await expect(guardian).toHaveCount(1);
+  await expect(collector.locator("#plansTitle")).toHaveText(/Choose your signal level/i);
+  await expect(page.locator(".membership-comparison, .membership-benefit-strip, #lm-credits, .membership-billing-tools")).toHaveCount(0);
   await expect(page.locator("#dust .membership-collectible-card")).toHaveCount(0);
   await expect(page.locator("#water")).toHaveCount(0);
   await expect(page.getByText(/Film 04/i)).toHaveCount(0);
+  await expect(page.locator("footer.site-footer-standard .site-legal-links a")).toHaveCount(4);
+  await expect(page.locator("footer.site-footer-standard > a.footer-link")).toHaveCount(0);
 
-  const order = await supportGrid.locator(":scope > *").evaluateAll((nodes) =>
-    nodes.map((node) => node.id || (node.classList.contains("membership-collectible-card") ? "guardian" : ""))
-  );
-  expect(order).toEqual(["lm-access-hero", "guardian"]);
+  expect(await hero.evaluate((node) =>
+    Boolean(node.compareDocumentPosition(document.querySelector("#membership-plans")) & Node.DOCUMENT_POSITION_FOLLOWING)
+  )).toBe(true);
+
+  expect(await showcase.evaluate((node) =>
+    Boolean(node.compareDocumentPosition(document.querySelector("#lm-access-hero")) & Node.DOCUMENT_POSITION_FOLLOWING)
+  )).toBe(true);
+  expect(await guardianSection.evaluate((node) => {
+    const sections = [...node.parentElement.querySelectorAll(":scope > section")];
+    return sections.at(-1) === node;
+  })).toBe(true);
 
   const collectorBox = await collector.boundingBox();
+  const heroBox = await hero.boundingBox();
+  const plansBox = await plans.boundingBox();
+  const showcaseBox = await showcase.boundingBox();
   const guardianBox = await guardian.boundingBox();
   expect(collectorBox).toBeTruthy();
+  expect(heroBox).toBeTruthy();
+  expect(plansBox).toBeTruthy();
+  expect(showcaseBox).toBeTruthy();
   expect(guardianBox).toBeTruthy();
 
-  if (page.viewportSize().width > 900) {
-    expect(collectorBox.x).toBeLessThan(guardianBox.x);
-  } else {
-    expect(collectorBox.y).toBeLessThan(guardianBox.y);
-  }
+  expect(heroBox.y).toBeLessThan(plansBox.y);
+  expect(collectorBox.y).toBeGreaterThan(showcaseBox.y);
+  expect(collectorBox.y).toBeLessThan(guardianBox.y);
+});
+
+test("shared navigation uses the requested Games, RAHBE, Storefront, and Static Wav labels", async ({ page }) => {
+  await blockHeavyMedia(page);
+  await page.goto("/lottery-spheres.html", { waitUntil: "domcontentloaded" });
+  const navigation = page.locator(".site-header nav");
+  await expect(navigation.locator('a[data-icon="FX"]')).toContainText("Games");
+  await expect(navigation.locator('a[data-icon="B2"]')).toContainText("RAHBE");
+  await expect(navigation.locator('a[data-icon="DR"]')).toContainText("Storefront");
+  await expect(navigation.locator('a[data-icon="GD"]')).toContainText("Static Wav");
 });
 
 test("Stem Studio contains the workstation at compact mobile width", async ({ page }) => {
@@ -369,9 +427,14 @@ test("mobile memberships hero keeps its title inside the viewport", async ({ pag
   await page.goto("/memberships.html", { waitUntil: "domcontentloaded" });
 
   const titleBox = await page.locator("#membershipHeroTitle").boundingBox();
+  const membershipWordBox = await page.locator("#membershipHeroTitle em").boundingBox();
+  const viewportWidth = await page.evaluate(() => window.innerWidth);
   expect(titleBox).toBeTruthy();
+  expect(membershipWordBox).toBeTruthy();
   expect(titleBox.x).toBeGreaterThanOrEqual(0);
-  expect(titleBox.x + titleBox.width).toBeLessThanOrEqual(537);
+  expect(titleBox.x + titleBox.width).toBeLessThanOrEqual(viewportWidth);
+  expect(membershipWordBox.x).toBeGreaterThanOrEqual(0);
+  expect(membershipWordBox.x + membershipWordBox.width).toBeLessThanOrEqual(viewportWidth);
 });
 
 test("news route renders from the static feed without probing the missing API", async ({ page }) => {
@@ -387,6 +450,10 @@ test("news route renders from the static feed without probing the missing API", 
   await page.waitForFunction(() => (document.querySelector("#root")?.textContent || "").trim().length > 80);
 
   await expect(page.locator("#root")).toContainText(/LottoMind|News|Lottery/i);
+  const firstArticleImage = page.locator(".article-grid .news-card__media img").first();
+  await firstArticleImage.scrollIntoViewIfNeeded();
+  await expect(firstArticleImage).toBeVisible();
+  await expect.poll(() => firstArticleImage.evaluate((image) => image.complete && image.naturalWidth > 0)).toBe(true);
   expect(apiRequests).toEqual([]);
   expect(localFailures).toEqual([]);
 });

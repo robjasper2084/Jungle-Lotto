@@ -7,26 +7,26 @@
 - Snapshot annotated tag object SHA: `9ba25352efc17d5b514e5afd59c8afde5c9d2949`
 - Snapshot target commit SHA: `975c637cea7003533cdc30aed9d96be51929bfc8`
 - Upgrade branch: `upgrade-redesign`
-- Current upgrade branch implementation SHA: `13cc272574436448c222decc233be4327e569902`
+- Current upgrade branch implementation SHA: This status file is part of the current focused commit; use `git log -1 --format=%H -- docs/upgrade-redesign-status.md` to resolve its exact SHA. The completion report records it explicitly.
 - Upgrade branch SHA at Step 0A branch creation: `1fc4c95ca4d0b22ee5188d06f8ea75573c63a00a`
 - Upgrade branch SHA before Step 0B commit: `220653bbc300d0e0b236c6e834043f39fdfcd76c`
 - Step 0B commit SHA: `6e58aafc4addabf5281262ec951a7d6df3dc66a0`
 - Deployment mechanism discovered: GitHub Pages Actions from repository-root `.github/workflows/pages.yml`; pushes to `main` upload the repository root with `actions/upload-pages-artifact` and deploy with `actions/deploy-pages`. The latest verified successful production run deployed `main` commit `975c637cea7003533cdc30aed9d96be51929bfc8`.
 - Staging provider: Local static server (Mode C); no remote preview provider is configured
-- Staging URL: Local only (`http://127.0.0.1:8143/` while `npm.cmd run staging:serve` is running)
+- Staging URL: Local only (`http://127.0.0.1:8204/` while the current staging server is running)
 - Staging integrations: No isolated backend or Stripe test-mode configuration is currently configured; protected writes remain disabled
-- Last completed step: Membership support-column restoration completed on `upgrade-redesign`; production deployment remains excluded
+- Last completed step: Step 34 production release candidate prepared on `upgrade-redesign`; production deployment remains excluded
 - Step 1 commit SHA: This file is part of the Step 1 commit; use `git log -1 --format=%H -- docs/upgrade-redesign-status.md` to resolve its exact non-self-referential SHA. The completion report records it explicitly.
-- Last staging review: Membership plan layout passed; review: `docs/staging-reviews/membership-plan-layout.md`
+- Last staging review: Signal and media corrections passed; review: `docs/staging-reviews/signal-media-corrections.md`
 - Staging review commit SHA: This file is part of the staging-review commit; the completion report records its exact SHA.
-- Last successful test run: 2026-07-21 - focused source and exact-staging Memberships support-column checks passed; `npm.cmd run check:site` passed 14 HTML files; the rebuilt staging artifact passed 9 browser safety checks, 2 affected-route smoke checks, and 23-page/493-reference static verification
+- Last successful test run: 2026-07-22 - site validation passed 15 HTML files; source browser suite passed 96 checks with 6 intentional viewport skips; staging browser suite passed 15/15; source/staging route matrix passed 92/92; staging artifact verified 23 injected pages and 527 same-origin references
 - Visual baseline: Complete - 69 production route screenshots plus desktop, tablet, and mobile contact sheets under `docs/visual-baseline/v1/`
 - Step 1 visual comparison: Production and staging home routes compared at 1440x900 and 390x844; staging adds only the preview and safety banners, with no redesign changes
 - Resolved Step 1 baseline failures: Contact support helper restored; Stem Studio tablet/mobile overflow corrected; Jackpot Maze runtime, heading, and entry focus restored; first-load outliers reduced; staging News production request removed
-- Latest visual comparison: 24 affected-route staging captures plus desktop, tablet, and mobile v1/staging comparison sheets under `docs/staging-reviews/blocker-remediation-assets/`
+- Latest visual comparison: Home, Memberships, Guardian, Arcade, RAHBE, Spheres, Storefront, Live Events, and News compared with v1 production at 1440x900, 768x1024, and 390x844; review: `docs/staging-reviews/signal-media-corrections.md`
 - Latest performance comparison: Home 28.1 -> 5.80 MiB; Memberships 26.7 -> 2.87 MiB; Merch 23.1 -> 1.99 MiB; Shadow Ops 87.7 -> 3.70 MiB
 - Staging review approval status: Ready for next phase
-- Production approval status: Not approved; the live checkout handoff was verified safely in Stripe Sandbox and cancelled before any charge, but release-candidate review and production merge approval remain pending
+- Production approval status: Step 34 release-candidate preparation approved; the live checkout handoff was verified safely in Stripe Sandbox and cancelled before any charge; pull-request approval and controlled production merge remain pending
 - Rollback reference: `v1-final` at `975c637cea7003533cdc30aed9d96be51929bfc8`; after a controlled production merge, use `git revert` for rollback
 - Known pre-existing repository changes: The working tree was clean when Step 0A began. Local `main` already contained commit `1fc4c95ca4d0b22ee5188d06f8ea75573c63a00a` ahead of `origin/main`; that commit was preserved as the starting point of `upgrade-redesign` and was not pushed to production.
 
@@ -95,3 +95,79 @@
 - Visual review: `docs/staging-reviews/membership-plan-layout.md` with refreshed 1440x900 and 390x844 support-column captures
 - Staging URL: Local only (`http://127.0.0.1:8143/memberships.html`)
 - Approval status: Ready for next phase; production remains not approved
+
+## Features Hybrid Refinement
+
+- Step number: Browser review refinement - Features cinematic shell and Arcade directory
+- Commit SHA: This status file is part of the focused Features commit; use `git log -1 --format=%H -- docs/upgrade-redesign-status.md` to resolve the exact SHA
+- Affected route: `/features-app.html`
+- Changes: Restored a cinematic Features-first opening with Detroit studio art and five creative channels while retaining the searchable, manifest-driven eight-game Arcade directory; replaced invented `Live` labels with `Playable`
+- Commercial behavior: Route film starts muted automatically, exposes a user-gesture sound control, and runs once per route in the current tab
+- Tests: focused source browser suite 35 passed and 1 intentional viewport skip; staging browser safety 11/11; source/staging route smoke 92/92; staging static verification 23 pages and 495 same-origin asset references
+- Visual review: `docs/staging-reviews/features-hybrid.md` with 1440x900, 768x1024, and 390x844 captures; no horizontal overflow and all visual-identity invariants remained recognizable
+- Accessibility: Keyboard focus order passed after the commercial handoff; reduced-motion capture reported zero running animations; no inert containers remained
+- Performance: Initial mobile transfer was approximately 6.6 MiB and the fully loaded visual route approximately 9.1 MiB; image-weight optimization remains recommended
+- Staging URL: Local only (`http://127.0.0.1:8143/features-app.html`)
+- Live checkout: Not exercised by this Features refinement
+- Approval status: Ready for next phase; production remains not approved
+
+## Requested Corrections Pass
+
+- Step number: Browser-requested correction pass after Features hybrid refinement
+- Commit SHA: This status file is part of the focused corrections commit; use `git log -1 --format=%H -- docs/upgrade-redesign-status.md` to resolve the exact SHA
+- Affected routes: `/memberships.html`, `/how-to-use.html`, `/live-events.html`, `/news/`, `/lottery-spheres.html#spheres`, plus shared navigation labels
+- Changes: Membership decision deck and support columns reordered; marked lower membership region removed; `Lilman` and `Static Wav` labels applied; existing Guide commercial preserved; Live Events soundtrack synchronization restored with a browser-policy fallback; News story images restored; Magic 8 restyled to match the sphere field; mobile marquee collisions corrected
+- Tests: focused source checks 3 passed and 1 intentional mobile skip; staging browser safety 11/11; source/staging route smoke 92/92; staging static verification 23 pages and 488 same-origin references; screenshot verification 10/10
+- Visual review: `docs/staging-reviews/requested-corrections.md` with 1440x900 and 390x844 captures; no material identity regression found
+- Staging URL: Local only (`http://127.0.0.1:8143/`)
+- Test-mode integrations: No isolated staging backend or Stripe test-mode checkout was configured; all protected staging writes remain blocked
+- Approval status: Ready for next phase; production remains not approved
+
+## Signal and Media Correction Pass
+
+- Step number: Browser-requested signal, commercial, navigation, and media refinement
+- Commit SHA: This status file is part of the focused correction commit; use `git log -1 --format=%H -- docs/upgrade-redesign-status.md` to resolve the exact SHA
+- Affected routes: `/index.html#top`, `/memberships.html`, `/features-app.html`, `/live-events.html`, `/news/`, plus shared navigation surfaces
+- Changes: Home commercial delay set to 60 seconds; Home particle globe and title bleed removed; Home and Live Events films use truthful browser-policy fallbacks; Membership hero, plan, Collector, Gaming Showcase, and Guardian order refined; Membership particles connected to Web Audio energy; Guardian uses the supplied gun-range commercial; Arcade restores the existing particle mascot behind brighter Little Man artwork and a cinematic serif title; News card imagery restored; shared tabs renamed to `Games`, `RAHBE`, `Storefront`, and `Static Wav`; Home, Memberships, and Storefront use one legal-footer treatment; Storefront exposes a device-only preorder preview with no transaction claim
+- Tests: JavaScript syntax checks passed; focused route suite 12/12; staging browser suite 15/15; source/staging route smoke 92/92; static artifact verification 23 pages and 529 same-origin references; refreshed screenshot verification 30/30
+- Visual review: `docs/staging-reviews/signal-media-corrections.md` with refreshed captures across 1440x900, 768x1024, and 390x844; no horizontal overflow, console errors, page errors, or broken assets found
+- Staging URL: Local only (`http://127.0.0.1:8204/`)
+- Staging safety: Noindex and preview banners verified; live payments, production account writes, real redemptions, and production analytics remain blocked
+- Live checkout: Excluded from this task and unchanged
+- Approval status: Ready for next phase; production remains not approved
+
+## Header And Membership Follow-up
+
+- Step number: Browser-requested shared header and Membership media follow-up
+- Commit SHA: This status file is part of the focused follow-up commit; use `git log -1 --format=%H -- docs/upgrade-redesign-status.md` to resolve the exact SHA
+- Affected routes: Shared site header routes, `/memberships.html`, `/features-app.html`, `/news/`, `/beat2lotto-plus.html#beat2lotto`, and `/lottery-spheres.html#spheres`
+- Changes: Ten shared tabs use a stable artwork map and fixed circular geometry; navigation no longer hides when clicked; the Beat2Lotto tab reads `RAHBE`; the Membership hero film is brighter with lower contrast; the Guardian card restores deferred gun-range video playback with a matching poster; the Vault Pass reads `$29.99` and includes the Little Man Luggage Charm
+- Tests: JavaScript syntax checks passed; focused route regression 12/12; staging browser suite 15/15; source/staging route smoke 92/92; static artifact verification 23 pages and 529 same-origin references; screenshot verification 30/30
+- Visual review: `docs/staging-reviews/signal-media-corrections.md` with 1440x900, 768x1024, and 390x844 captures; no broken assets, console errors, page errors, or horizontal document overflow found
+- Staging URL: Local only (`http://127.0.0.1:8204/`)
+- Staging safety: Noindex and preview banners verified; live payments, production account writes, real redemptions, and production analytics remain blocked
+- Approval status: Ready for next phase; production remains not approved
+
+## Homepage Entry And Scan Bars Follow-up
+
+- Step number: Browser-requested homepage entry and scan-bar correction
+- Implementation commit SHA: `5a3c208c5eab86b4e23e67214520a8e06e364d91`
+- Affected route: `/index.html#top`
+- Changes: Restored cyan/gold hero scan bars; preserved a static scan accent for reduced-motion and mobile-performance modes; removed the delayed `Start the home frequency` dialog, scheduler, audio handoff, and focus takeover
+- Tests: Homepage static validation passed; focused source browser checks passed; staging browser suite 15/15; source/staging route smoke 92/92; static artifact verification 23 pages and 527 same-origin references; affected-route screenshots 2/2
+- Visual review: `docs/staging-reviews/home-entry-scan-bars.md` with 1440x900 and 390x844 comparisons against `docs/visual-baseline/v1/`
+- Staging URL: Local only (`http://127.0.0.1:8204/index.html#top` while the staging server is running)
+- Staging safety: Noindex and preview banners verified; live payments, production account writes, real redemptions, and production analytics remain blocked
+- Approval status: Ready for next phase; production remains not approved
+
+## Step 34 Production Release Candidate
+
+- Step number: Step 34
+- Release report: `docs/site-rebuild-release-report.md`
+- Release-candidate record: `docs/production-release-candidate.md`
+- Release-candidate tag: `v2-rc1`
+- Audited upgrade baseline: `efc474291fd2f695902ea5d99b39efdca1aec221`
+- Tests: site validation passed; source browser suite 96 passed and 6 intentional viewport skips; staging browser suite 15/15; source/staging route matrix 92/92; staging static verification 23 pages and 527 same-origin references
+- Staging URL: Local only (`http://127.0.0.1:8204/` while the preview server is running)
+- Checkout safety: Stripe Sandbox handoff verified and cancelled before any charge; staging production writes remain blocked
+- Approval status: Ready for pull-request review; production merge and deployment not performed

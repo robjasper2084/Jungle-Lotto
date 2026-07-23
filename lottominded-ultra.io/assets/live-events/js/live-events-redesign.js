@@ -40,6 +40,7 @@
   let liveAudioSource = null;
   let liveWaveFrame = null;
   let heroSingerSoundEnabled = false;
+  let heroSingerAutoplayAttempted = false;
   let shadowOpsShouldResumeLiveAudio = false;
   let shadowOpsLiveAudioVolume = 0.56;
 
@@ -53,7 +54,20 @@
       if (!heroSingerSound) return;
       heroSingerSound.classList.toggle("is-active", active);
       heroSingerSound.setAttribute("aria-pressed", String(active));
-      heroSingerSound.textContent = active ? "Sound off" : "Sound on";
+      heroSingerSound.textContent = active ? "Sound off" : "Play sound";
+      heroSingerFilm.dataset.soundState = active ? "playing" : "ready";
+    };
+
+    const alignHeroSoundtrack = () => {
+      if (!heroSingerAudio || !Number.isFinite(heroSingerFilm.currentTime)) return;
+      const targetTime = Number.isFinite(heroSingerAudio.duration) && heroSingerAudio.duration > 0
+        ? heroSingerFilm.currentTime % heroSingerAudio.duration
+        : heroSingerFilm.currentTime;
+      try {
+        if (Math.abs(heroSingerAudio.currentTime - targetTime) > 0.35) {
+          heroSingerAudio.currentTime = targetTime;
+        }
+      } catch {}
     };
 
     const syncPlayback = () => {
@@ -66,7 +80,7 @@
         heroSingerFilm.controls = true;
       });
       if (heroSingerSoundEnabled && heroSingerAudio?.paused) {
-        heroSingerAudio.play().catch(() => setSoundState(false));
+        heroSingerAudio.play().catch(stopHeroAudio);
       }
     };
 
@@ -86,6 +100,34 @@
       setSoundState(false);
     };
 
+    const startHeroSoundtrack = async () => {
+      if (!heroSingerAudio || document.hidden || reducedMotion.matches || !isVisible) return false;
+      heroSingerFilm.dataset.soundState = "attempting";
+      stopBackgroundAudio();
+      heroSingerAudio.volume = 0.52;
+      window.LMAudioMix?.claim?.(heroSingerAudio);
+      alignHeroSoundtrack();
+      try {
+        await Promise.all([heroSingerFilm.play(), heroSingerAudio.play()]);
+        heroSingerSoundEnabled = true;
+        setSoundState(true);
+        return true;
+      } catch {
+        stopHeroAudio();
+        heroSingerFilm.dataset.soundState = "blocked";
+        return false;
+      }
+    };
+
+    const retryHeroSoundOnGesture = async (event) => {
+      if (event?.target?.closest?.("[data-live-hero-film-sound]")) return;
+      if (heroSingerSoundEnabled || reducedMotion.matches) return;
+      if (await startHeroSoundtrack()) {
+        document.removeEventListener("pointerdown", retryHeroSoundOnGesture, true);
+        document.removeEventListener("keydown", retryHeroSoundOnGesture, true);
+      }
+    };
+
     heroSingerSound?.addEventListener("click", async () => {
       if (heroSingerSoundEnabled) {
         stopHeroAudio();
@@ -94,20 +136,8 @@
       }
 
       if (!heroSingerAudio) return;
-      stopBackgroundAudio();
-      heroSingerSoundEnabled = true;
-      heroSingerAudio.volume = 0.52;
-      window.LMAudioMix?.claim?.(heroSingerAudio);
       if (heroSingerAudio.ended) heroSingerAudio.currentTime = 0;
-      try {
-        await Promise.all([
-          heroSingerFilm.play(),
-          heroSingerAudio.play()
-        ]);
-        setSoundState(true);
-      } catch {
-        stopHeroAudio();
-      }
+      await startHeroSoundtrack();
     });
 
     heroSingerAudio?.addEventListener("play", () => {
@@ -129,9 +159,15 @@
     }
 
     document.addEventListener("visibilitychange", syncPlayback);
+    document.addEventListener("pointerdown", retryHeroSoundOnGesture, true);
+    document.addEventListener("keydown", retryHeroSoundOnGesture, true);
     reducedMotion.addEventListener?.("change", syncPlayback);
     setSoundState(false);
     syncPlayback();
+    if (!heroSingerAutoplayAttempted && !reducedMotion.matches) {
+      heroSingerAutoplayAttempted = true;
+      void startHeroSoundtrack();
+    }
   }
   function two(value) {
     return String(value).padStart(2, "0");

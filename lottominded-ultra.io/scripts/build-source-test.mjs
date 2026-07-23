@@ -31,14 +31,14 @@ async function hardlinkArtifact() {
     await mkdir(dirname(target), { recursive: true });
     try { await link(source, target); }
     catch (error) {
-      if (!["EXDEV", "EPERM", "EACCES"].includes(error.code)) throw error;
+      if (!["EXDEV", "EPERM", "EACCES", "EISDIR"].includes(error.code)) throw error;
       await copyFile(source, target);
     }
   }
 }
 
-async function restoreCommittedHtml() {
-  const tracked = String(runGit(["ls-tree", "-r", "--name-only", "HEAD:lottominded-ultra.io"]))
+async function restoreCommittedHtml(sourceCommitSHA) {
+  const tracked = String(runGit(["ls-tree", "-r", "--name-only", `${sourceCommitSHA}:lottominded-ultra.io`]))
     .split(/\r?\n/)
     .filter(Boolean);
   const htmlFiles = tracked.filter((file) => file.toLowerCase().endsWith(".html"));
@@ -47,7 +47,7 @@ async function restoreCommittedHtml() {
     if (target !== outputRoot && !target.startsWith(`${outputRoot}${sep}`)) throw new Error(`Unsafe source-test path: ${relativePath}`);
     await mkdir(dirname(target), { recursive: true });
     await unlink(target).catch((error) => { if (error.code !== "ENOENT") throw error; });
-    const content = runGit(["show", `HEAD:lottominded-ultra.io/${relativePath}`], null);
+    const content = runGit(["show", `${sourceCommitSHA}:lottominded-ultra.io/${relativePath}`], null);
     await writeFile(target, content);
   }
   return { tracked, htmlFiles };
@@ -57,16 +57,20 @@ async function main() {
   await rm(outputRoot, { recursive: true, force: true });
   await mkdir(outputRoot, { recursive: true });
   await hardlinkArtifact();
-  const { tracked, htmlFiles } = await restoreCommittedHtml();
+  const stagingManifest = JSON.parse(await readFile(resolve(stagingRoot, "staging-manifest.json"), "utf8"));
+  const sourceCommitSHA = String(stagingManifest.sourceCommitSHA || "");
+  if (!/^[0-9a-f]{40}$/i.test(sourceCommitSHA)) {
+    throw new Error("Staging manifest is missing a valid source commit SHA.");
+  }
+  const { tracked, htmlFiles } = await restoreCommittedHtml(sourceCommitSHA);
 
   for (const generated of ["staging-manifest.json", "assets/js/lm-support.js"]) {
     if (tracked.includes(generated)) continue;
     await rm(resolve(outputRoot, generated), { force: true });
   }
 
-  const stagingManifest = JSON.parse(await readFile(resolve(stagingRoot, "staging-manifest.json"), "utf8"));
   await writeFile(resolve(outputRoot, "source-test-manifest.json"), `${JSON.stringify({
-    sourceCommitSHA: stagingManifest.sourceCommitSHA,
+    sourceCommitSHA,
     copiedRoutes: stagingManifest.copiedRoutes,
     restoredHtmlFiles: htmlFiles,
   }, null, 2)}\n`);

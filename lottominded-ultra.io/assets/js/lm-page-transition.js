@@ -202,6 +202,7 @@
     // Force animation restart when navigating quickly or restoring from bfcache.
     void overlay.offsetWidth;
     overlay.classList.add("is-active", phase === "close" ? "is-closing" : "is-opening");
+    overlay.setAttribute("aria-hidden", "false");
     document.body.classList.add("lm-page-is-transitioning");
     activeTransition = { phase, theme: safeTheme, label: text || "", source };
 
@@ -224,6 +225,7 @@
     }
 
     overlay.classList.remove("is-active", "is-opening", "is-closing");
+    overlay.setAttribute("aria-hidden", "true");
     document.documentElement.classList.remove("lm-transition-arriving");
     document.body.classList.remove("lm-page-is-transitioning");
     transitioning = false;

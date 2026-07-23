@@ -2285,6 +2285,10 @@ body.live-events-page .vault-credit-badge {
 }
 
 @media (max-width: 820px) {
+  body.live-events-page.has-sphere-header .home-signal-marquee {
+    top: 0;
+  }
+
   .lm-live-topbar {
     position: static;
     grid-template-columns: 1fr;
