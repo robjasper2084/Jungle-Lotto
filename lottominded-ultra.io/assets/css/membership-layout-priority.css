@@ -38,9 +38,9 @@ body.memberships-page #dust.membership-hero {
 body.memberships-page #dust.membership-hero::before {
   z-index: 1;
   background:
-    linear-gradient(90deg, rgba(1, 5, 10, 0.88) 0%, rgba(2, 8, 16, 0.76) 38%, rgba(2, 8, 16, 0.42) 66%, rgba(2, 8, 16, 0.06) 100%),
-    linear-gradient(rgba(85, 232, 255, 0.07) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(85, 232, 255, 0.07) 1px, transparent 1px);
+    linear-gradient(90deg, rgba(1, 5, 10, 0.74) 0%, rgba(2, 8, 16, 0.56) 38%, rgba(2, 8, 16, 0.24) 66%, rgba(2, 8, 16, 0.02) 100%),
+    linear-gradient(rgba(85, 232, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(85, 232, 255, 0.04) 1px, transparent 1px);
   background-size: auto, 64px 64px, 64px 64px;
   mask-image: none;
 }
@@ -144,7 +144,7 @@ body.memberships-page #dust .membership-hero-commercial__video {
   min-height: 0;
   object-fit: cover;
   object-position: center;
-  filter: saturate(1.02) contrast(0.98) brightness(0.92);
+  filter: saturate(0.96) contrast(0.88) brightness(1.08);
   background: #02060c;
 }
 
@@ -231,8 +231,92 @@ body.memberships-page #membership-plans .membership-plan-control-heading {
 }
 
 body.memberships-page #membership-plans .membership-plan-control-heading h2 {
-  max-width: 9ch;
+  max-width: 12ch;
   margin-inline: 0;
+  font-size: 3.5rem;
+  line-height: 1;
+}
+
+body.memberships-page #membership-plans .membership-plan-control-heading > span,
+body.memberships-page #membership-plans #lm-access-hero .home-collector-access-section__heading > span {
+  font-size: 0.8rem;
+}
+
+body.memberships-page #membership-plans .membership-plan-control-heading > p,
+body.memberships-page #membership-plans #lm-access-hero .home-collector-access-section__heading > p {
+  max-width: 60ch;
+  color: rgba(238, 246, 255, 0.9);
+  font-size: 1.25rem;
+  line-height: 1.65;
+}
+
+body.memberships-page #membership-plans #lm-access-hero .home-collector-access-section__heading h2 {
+  font-size: 3rem;
+  line-height: 1;
+}
+
+body.memberships-page #membership-plans #lm-access-hero .membership-billing-status,
+body.memberships-page #membership-plans #lm-access-hero .collector-access__trigger {
+  font-size: 1rem;
+}
+
+body.memberships-page #dust .membership-hud-status div {
+  min-height: 78px;
+  padding: 16px 14px 14px;
+}
+
+body.memberships-page #dust .membership-hud-status span {
+  font-size: 0.65rem;
+}
+
+body.memberships-page #dust .membership-hud-status strong {
+  font-size: 0.88rem;
+}
+
+body.memberships-page #dust .membership-hero-actions > * {
+  min-height: 50px;
+  padding-inline: 18px;
+  font-size: 0.78rem;
+}
+
+body.memberships-page #dust .membership-feature-ribbon span {
+  min-height: 34px;
+  padding: 8px 11px;
+  color: rgba(238, 246, 255, 0.84);
+  font-size: 0.65rem;
+}
+
+body.memberships-page #life .visit-lead__kicker {
+  color: rgba(197, 255, 242, 0.94);
+  font-size: 0.8rem;
+}
+
+body.memberships-page #life .visit-lead h2 {
+  color: rgba(244, 249, 255, 0.96);
+  font-size: 4.75rem;
+  letter-spacing: 0;
+  line-height: 1;
+  white-space: normal;
+}
+
+body.memberships-page #life .visit-lead h2 em {
+  color: rgba(107, 255, 225, 0.9);
+}
+
+body.memberships-page #life .visit-lead > p {
+  color: rgba(238, 246, 255, 0.9);
+  font-size: 1.25rem;
+  line-height: 1.7;
+}
+
+body.memberships-page #life .membership-ticket-card header span,
+body.memberships-page #life .membership-ticket-card dt {
+  font-size: 0.78rem;
+}
+
+body.memberships-page #life .membership-ticket-card dd {
+  color: rgba(238, 246, 255, 0.9);
+  font-size: 1.05rem;
 }
 
 body.memberships-page #membership-plans #lm-access-hero .membership-billing-status {
@@ -319,9 +403,31 @@ body.memberships-page .membership-plan-card[data-lm-tier="vault"] {
   body.memberships-page .membership-plan-card[data-lm-tier="vault"] {
     min-height: 0;
   }
+
+  body.memberships-page #life .visit-lead h2 {
+    font-size: 3.5rem;
+  }
 }
 
 @media (max-width: 640px) {
+  body.memberships-page #membership-plans .membership-plan-control-heading h2,
+  body.memberships-page #membership-plans #lm-access-hero .home-collector-access-section__heading h2 {
+    font-size: 2.35rem;
+  }
+
+  body.memberships-page #membership-plans .membership-plan-control-heading > p,
+  body.memberships-page #membership-plans #lm-access-hero .home-collector-access-section__heading > p {
+    font-size: 1.125rem;
+  }
+
+  body.memberships-page #life .visit-lead h2 {
+    font-size: 2.6rem;
+  }
+
+  body.memberships-page #life .visit-lead > p {
+    font-size: 1.125rem;
+  }
+
   body.memberships-page.has-sphere-header .membership-main {
     padding-top: 32px;
   }

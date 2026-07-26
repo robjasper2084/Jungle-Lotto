@@ -51,6 +51,16 @@
     volume: 0.48
   };
 
+  const homeCommercialFilm = {
+    signal: "Home transmission / Boot sequence",
+    title: "Lottominded Ultra home signal.",
+    telemetry: "HOME / BOOT SEQUENCE",
+    copy: "Start the home frequency and step into Detroit-inspired LottoMind studio flow.",
+    src: "./assets/video/lottomind-home-commercial-20260716.mp4",
+    poster: "./assets/video/lottomind-refined-commercial-poster-20260716.png",
+    volume: 0.6
+  };
+
   const body = document.body;
   if (!body || body.matches(".memberships-page")) return;
 
@@ -79,6 +89,12 @@
       name: "Guide",
       theme: "guide",
       films: [guideFilm]
+    },
+    {
+      matches: body.matches(".home-page") || path.endsWith("/index.html") || path === "/",
+      name: "Home",
+      theme: "home",
+      films: [homeCommercialFilm]
     }
   ].find((candidate) => candidate.matches);
 

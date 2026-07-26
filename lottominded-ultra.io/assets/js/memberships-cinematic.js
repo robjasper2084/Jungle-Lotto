@@ -207,31 +207,13 @@
   });
   const commercialFilms = [
     {
-      src: "./assets/merch/lottomind-membership-hero-commercial-20260716.mp4",
-      poster: "./assets/merch/lottomind-membership-hero-commercial-poster-20260716.png",
-      signal: "Film 01 / Membership signal",
-      title: "Enter the Signal.",
-      telemetry: "LM-MEMBERSHIP / ACCESS READY",
-      copy: "Step into the LottoMind app network with premium tools, arcade routes, member drops, and protected Vault access.",
+      src: "./assets/merch/lottomind-membership-hoodie-commercial-20260716.mp4",
+      poster: "./assets/merch/lottomind-membership-hoodie-commercial-poster-20260716.jpg",
+      signal: "Membership commercial / Wear the signal",
+      title: "Detroit Signal, Worn Forward.",
+      telemetry: "LM-MEMBERSHIP / SIGNAL ONLINE",
+      copy: "Wear the city-built LottoMind identity, then move into a connected network of creative tools, arcade routes, and member access.",
       volume: 0.78,
-    },
-    {
-      src: "./assets/merch/lottomind-membership-single-commercial-20260716.mp4",
-      poster: "./assets/merch/lottomind-membership-hero-commercial-poster-20260716.png",
-      signal: "Film 02 / Guardian bundle",
-      title: "Membership Travels With You.",
-      telemetry: "LM-GUARDIAN / MEMBER LINKED",
-      copy: "The Little Man Guardian bundle includes three complimentary months across the growing LottoMind app network.",
-      volume: 0.62,
-    },
-    {
-      src: "./assets/merch/lottomind-merch-commercial-20260716.mp4",
-      poster: "./assets/merch/lottomind-merch-commercial-poster-20260716.png",
-      signal: "Film 03 / Mobile signal",
-      title: "Carry the Signal.",
-      telemetry: "LM-GUARDIAN / IN TRANSIT",
-      copy: "The Guardian goes wherever the next idea begins, with three months of LottoMind membership included.",
-      volume: 0.64,
     },
   ];
   const commercialFocusables = () => commercialModal
@@ -481,7 +463,7 @@
     document.querySelector("[data-site-header]")?.setAttribute("inert", "");
     state.lenis?.stop();
     requestAnimationFrame(() => commercialModal.classList.add("is-open"));
-    if (commercialClose) commercialClose.textContent = entry ? "Skip & Enter" : "Close";
+    if (commercialClose) commercialClose.textContent = "X";
     if (commercialSound) {
       commercialSound.hidden = false;
       commercialSound.textContent = "Play with sound";
@@ -1126,7 +1108,10 @@
   state.lenis?.start();
   revealHero();
   ScrollTrigger?.refresh();
-  // Commercials open from explicit buttons so the page never flashes two overlays on entry.
+  window.setTimeout(() => {
+    if (!commercialModal || !commercialModal.hidden || document.hidden) return;
+    openCommercial(null, { entry: true, index: 0 });
+  }, 900);
   };
 
   const windowReady = document.readyState === "complete"

@@ -171,3 +171,16 @@
 - Staging URL: Local only (`http://127.0.0.1:8204/` while the preview server is running)
 - Checkout safety: Stripe Sandbox handoff verified and cancelled before any charge; staging production writes remain blocked
 - Approval status: Ready for pull-request review; production merge and deployment not performed
+
+## Popup, Header, And Readability Follow-up
+
+- Step number: Browser-requested popup, header-label, and readability correction
+- Commit SHA: This status file is part of the focused popup, navigation, and readability commit; use `git log -1 --format=%H -- docs/upgrade-redesign-status.md` to resolve the exact SHA
+- Affected routes: `/index.html#top`, `/memberships.html`, `/lottery-spheres.html#spheres`, `/merch-store.html`, `/how-to-use.html`, `/live-events.html`, and `/beat2lotto-plus.html`
+- Changes: Removed the selected Home entry dialog and Spheres Jackpot Maze popup; standardized the shared Beat2Lotto tab label as `RAHBE`; enlarged the Magic 8 oracle and Membership control-deck text; brightened the Membership hero film; corrected commercial route priority; retained one Membership commercial and one Storefront unboxing commercial; kept the Static Wav Guide commercial; made the Storefront commercial close control accessible above the persistent header
+- Tests: Homepage and site static validation passed; staging static verification passed for 23 pages and 531 same-origin asset references; staging browser suite 10/10; source/staging desktop/mobile route matrix 92/92
+- Visual review: Refreshed 1440x900 and 390x844 captures under `lottominded-ultra.io/docs/staging-reviews/requested-corrections/screenshots/` and refreshed Home, Storefront, and RAHBE captures under `docs/staging-reviews/signal-media-corrections-assets/`; compared with `docs/visual-baseline/v1/`
+- Intentional visual departures: The selected Home and Spheres popups are absent; Membership copy is larger; the Membership film is brighter and lower contrast; Storefront presents one unobstructed unboxing-film modal
+- Staging URL: Local only (`http://127.0.0.1:8143/`)
+- Staging safety: Noindex, preview banner, blocked live payments, blocked production account writes, blocked real redemptions, and blocked production analytics verified
+- Approval status: Not approved for production; production remains unchanged

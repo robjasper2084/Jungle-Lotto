@@ -302,6 +302,7 @@ const startupVideoPlay = document.querySelector("[data-startup-video-play]");
 const startupMusicStart = document.querySelector("[data-startup-music-start]");
 const startupVideoPlayer = startupVideoModal?.querySelector("video");
 let startupOpenTimer = 0;
+let startupFallbackTimer = 0;
 let startupTransitionFallback = 0;
 let startupVideoClosing = false;
 let startupShouldPlayMusic = false;
@@ -324,6 +325,7 @@ const compactHeaderLabels =
 const conciseSoundtrackLabels = document.body.classList.contains("home-page");
 const HEADER_COLLAPSED_KEY = "lottominded.ultra.siteHeaderCollapsed.v1";
 const STARTUP_MODAL_OPEN_DELAY = 10_000;
+const STARTUP_MODAL_FALLBACK_DELAY = 1_200;
 const GAME_PIP_AUTO_DELAY = 90000;
 const GAME_PIP_AUTO_KEY = "lottominded.ultra.homeGamePipAutoShown.v1";
 const MEMBER_SIGNUP_KEY = "lottominded.ultra.memberSignup.v1";
@@ -3082,6 +3084,12 @@ function clearStartupOpenTimer() {
   startupOpenTimer = 0;
 }
 
+function clearStartupFallbackTimer() {
+  if (!startupFallbackTimer) return;
+  window.clearTimeout(startupFallbackTimer);
+  startupFallbackTimer = 0;
+}
+
 function prepareStartupVideoAudio(options = {}) {
   if (!startupVideoPlayer) return;
   startupVideoPlayer.preload = "metadata";
@@ -3207,7 +3215,7 @@ function showStartupVideo() {
   syncHeroMotionPreference();
   rememberStartupVideoSeen();
   startupVideoModal.classList.add("is-awaiting-video-play");
-  void playStartupVideoWithSound({ reset: true });
+  void playStartupVideoMuted({ reset: true });
   startupVideoPlay?.focus({ preventScroll: true });
 }
 
@@ -3217,6 +3225,15 @@ function scheduleStartupVideoOpen() {
     startupOpenTimer = 0;
     showStartupVideo();
   }, STARTUP_MODAL_OPEN_DELAY);
+}
+
+function scheduleStartupVideoFallback() {
+  if (!startupVideoModal || startupFallbackTimer || hasSeenStartupVideo()) return;
+  startupFallbackTimer = window.setTimeout(() => {
+    startupFallbackTimer = 0;
+    if (!startupVideoModal || isStartupVideoOpen()) return;
+    showStartupVideo();
+  }, STARTUP_MODAL_FALLBACK_DELAY);
 }
 
 function getGamePipOffset() {
@@ -3823,10 +3840,17 @@ function endGamePipDrag(event) {
 
 if (document.readyState === "complete") {
   scheduleStartupVideoOpen();
+  scheduleStartupVideoFallback();
 } else {
-  window.addEventListener("load", scheduleStartupVideoOpen, { once: true });
+  window.addEventListener("load", () => {
+    scheduleStartupVideoOpen();
+    scheduleStartupVideoFallback();
+  }, { once: true });
 }
-window.addEventListener("pagehide", clearStartupOpenTimer, { once: true });
+window.addEventListener("pagehide", () => {
+  clearStartupOpenTimer();
+  clearStartupFallbackTimer();
+}, { once: true });
 scheduleAutoGamePip();
 
 startupVideoCloseButtons.forEach((button) => {

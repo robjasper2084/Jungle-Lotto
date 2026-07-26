@@ -5,6 +5,8 @@ const testRoot = process.env.LOTTOMIND_TEST_ROOT || ".";
 
 module.exports = defineConfig({
   testDir: "./tests",
+  testIgnore: "staging.spec.cjs",
+  workers: 4,
   timeout: 30_000,
   expect: { timeout: 8_000 },
   outputDir: "test-results/artifacts",

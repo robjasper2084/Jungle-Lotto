@@ -143,7 +143,7 @@ body.lottery-spheres-page .lm-healing-drag-ripple {
 
 .lm-healing-generator--oracle-only,
 .lm-healing-generator--oracle-only.is-positioned {
-  --lm-healing-size: min(326px, calc(100vw - 24px), calc(100dvh - 130px));
+  --lm-healing-size: min(370px, calc(100vw - 24px), calc(100dvh - 130px));
   top: max(118px, env(safe-area-inset-top));
   right: max(18px, env(safe-area-inset-right));
   bottom: auto;
@@ -207,8 +207,37 @@ body.lottery-spheres-page .lm-healing-drag-ripple {
 }
 
 .lm-healing-generator--oracle-only .lm-healing-generator__reading {
-  min-height: 38px;
-  font-size: 0.78rem;
+  min-height: 46px;
+  font-size: 1rem;
+  line-height: 1.35;
+}
+
+.lm-healing-generator--oracle-only .lm-healing-generator__copy small {
+  font-size: 0.75rem;
+}
+
+.lm-healing-generator--oracle-only .lm-healing-generator__copy strong {
+  font-size: 1.05rem;
+  line-height: 1.2;
+}
+
+.lm-healing-generator--oracle-only .lm-healing-generator__oracle-kicker {
+  font-size: 0.7rem;
+}
+
+.lm-healing-generator--oracle-only .lm-healing-generator__oracle-form input {
+  height: 34px;
+  font-size: 0.8rem;
+}
+
+.lm-healing-generator--oracle-only .lm-healing-generator__ask {
+  height: 34px;
+  font-size: 0.72rem;
+}
+
+.lm-healing-generator--oracle-only .lm-healing-generator__oracle-status {
+  font-size: 0.66rem;
+  line-height: 1.3;
 }
 
 .lm-healing-generator--oracle-only.is-minimized {

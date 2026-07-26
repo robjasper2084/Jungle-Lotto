@@ -152,7 +152,7 @@
         <a href="./news/" data-icon="NW">News</a>
         <a href="./live-events.html" data-icon="EV">Events</a>
         <a href="./lottery-spheres.html#spheres" data-icon="SP">Spheres</a>
-        <a href="./beat2lotto-plus.html#beat2lotto" data-icon="B2" aria-current="page">Beat2Lotto+</a>
+        <a href="./beat2lotto-plus.html#beat2lotto" data-icon="B2" aria-current="page">RAHBE</a>
         <a href="./merch-store.html" data-icon="DR">Merch</a>
         <a href="./how-to-use.html" data-icon="GD">Guide</a>
         <a href="https://robjasper2084.github.io/Jungle-Lotto/lotto%20mind%20refined/" data-icon="LM" data-member-app-public="true" aria-label="Open LottoMind Refined App">LottoMind App</a>
@@ -183,7 +183,7 @@
         <iframe
           class="beat2-gameframe"
           title="Shadow Ops Canvas game"
-          src="./games/shadow-ops-canvas/index.html?v=embedded-observer-guard-4"
+          src="./games/shadow-ops-canvas/index.html?v=embedded-observer-guard-4&amp;commercialGate=1"
           allow="fullscreen; autoplay; gamepad; keyboard-map *"
           allowfullscreen
           data-beat2-game-frame
@@ -193,13 +193,8 @@
 
     <script>
       (() => {
-        const targetGame = new URL("./games/shadow-ops-canvas/index.html?v=embedded-observer-guard-4&commercialGate=1", window.location.href).href;
-
         const header = document.querySelector("[data-site-header]");
         const shell = document.querySelector("[data-beat2-game-shell]");
-        const frame = document.querySelector("[data-beat2-game-frame]");
-
-        if (frame) frame.src = targetGame;
 
         const syncHeaderHeight = () => {
           if (!header) return;

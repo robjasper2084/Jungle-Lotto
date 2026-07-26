@@ -761,7 +761,11 @@ merchSoundVideo?.addEventListener("volumechange", () => {
 window.addEventListener("load", () => {
   primeMerchHeroBackgroundVideo();
   window.setTimeout(startMerchCapsuleOnPageOpen, 180);
-  scheduleAutoMerchShadowPopup();
+  window.setTimeout(() => {
+    if (document.visibilityState === "visible" && merchCommercialModal?.classList.contains("is-hidden")) {
+      openMerchCommercial();
+    }
+  }, 900);
 });
 window.addEventListener("lottomind:commercial-gate", (event) => {
   if (event.detail?.active === false) startMerchCapsuleOnPageOpen();

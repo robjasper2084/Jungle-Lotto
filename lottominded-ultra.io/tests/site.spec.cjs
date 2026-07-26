@@ -65,7 +65,7 @@ async function mockAuthenticatedBilling(page, checkoutResponse) {
   });
 }
 
-test("memberships avoids an entry popup and opens its commercial only on request", async ({ page }) => {
+test("memberships opens its entry commercial and keeps manual replay available", async ({ page }) => {
   await blockHeavyMedia(page);
   await page.route(/https:\/\/js\.stripe\.com\/.*/i, (route) => route.abort());
   await page.route(/https:\/\/sqdasdbvlkgpbbiyeune\.supabase\.co\/functions\/v1\/lottomind-api.*/i, (route) =>
@@ -82,6 +82,9 @@ test("memberships avoids an entry popup and opens its commercial only on request
   await page.waitForLoadState("networkidle").catch(() => {});
 
   const commercial = page.locator("[data-membership-commercial-modal]");
+  await expect(commercial).toBeVisible({ timeout: 15_000 });
+  await expect(commercial.locator("video")).toHaveAttribute("data-src", /membership-hoodie-commercial/);
+  await page.locator("[data-membership-commercial-close]").click();
   await expect(commercial).toBeHidden();
   await expect(page.locator(".lm-temporal-loader")).toHaveCount(0);
   const commercialOpener = page.locator("[data-membership-commercial-open]").last();
@@ -127,7 +130,6 @@ test("membership checkout sends the signed-in account token", async ({ page }) =
   });
 
   await page.goto("/memberships.html", { waitUntil: "domcontentloaded" });
-  await page.locator("[data-membership-commercial-close]").click();
   await expect(page.locator("[data-stripe-membership-status]")).toHaveText("Secure Stripe checkout is ready.");
   await page.locator('[data-stripe-lookup-key="gold_monthly"]').evaluate((button) => button.click());
 
@@ -299,35 +301,23 @@ test("features combines the cinematic shell with the manifest-driven Arcade dire
   expect(localFailures).toEqual([]);
 });
 
-test("home opens directly with its muted hero film and sound control", async ({ page }) => {
-  const removedCommercialRequests = [];
+test("home opens directly to the muted hero without a startup popup", async ({ page }) => {
+  const commercialRequests = [];
   page.on("request", (request) => {
-    if (/lottomind-home-commercial-20260716\.mp4/i.test(request.url())) removedCommercialRequests.push(request.url());
-  });
-
-  await page.addInitScript(() => {
-    const nativeSetTimeout = window.setTimeout.bind(window);
-    window.setTimeout = (callback, delay, ...args) => {
-      if (delay === 60_000) {
-        window.__lmStartupDelay = delay;
-        return nativeSetTimeout(callback, 1_200, ...args);
-      }
-      return nativeSetTimeout(callback, delay, ...args);
-    };
+    if (/lottomind-home-commercial-20260716\.mp4/i.test(request.url())) commercialRequests.push(request.url());
   });
   await page.goto("/", { waitUntil: "domcontentloaded" });
   const startup = page.locator("[data-startup-video]");
-  const heroFilm = page.locator("[data-home-hero-audio]");
+  const heroFilm = page.locator(".hero-motion");
   await expect(startup).toHaveCount(0);
   await expect(heroFilm).toBeVisible();
-  await expect(page.locator("[data-home-hero-sound]")).toBeVisible();
-  expect(await page.evaluate(() => window.__lmStartupDelay)).toBeUndefined();
-  await page.waitForTimeout(1_500);
-  expect(removedCommercialRequests).toEqual([]);
   await expect.poll(() => heroFilm.evaluate((video) => ({ muted: video.muted, paused: video.paused }))).toEqual({ muted: true, paused: false });
+  expect(commercialRequests).toEqual([]);
+});
 
-  await page.locator("[data-home-hero-sound]").click();
-  await expect.poll(() => heroFilm.evaluate((video) => video.muted)).toBe(false);
+test("Spheres has no automatic Jackpot Maze popup", async ({ page }) => {
+  await page.goto("/lottery-spheres.html#spheres", { waitUntil: "domcontentloaded" });
+  await expect(page.locator("[data-jackpot-maze-popup]")).toHaveCount(0);
 });
 
 test("Contact prepares a support request locally", async ({ page }) => {

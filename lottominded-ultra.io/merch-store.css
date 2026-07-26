@@ -322,7 +322,7 @@
 .merch-commercial-modal {
   position: fixed;
   inset: 0;
-  z-index: 220;
+  z-index: 2200;
   display: grid;
   place-items: center;
   padding: clamp(0.8rem, 3vw, 2.5rem);
@@ -341,6 +341,9 @@
 
 .merch-commercial-modal__panel {
   width: min(76rem, 96vw);
+  max-height: calc(100dvh - 1.6rem);
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
   overflow: hidden;
   border: 1px solid rgba(41, 247, 255, 0.5);
   border-radius: 1.2rem;
@@ -392,7 +395,7 @@
 
 .merch-commercial-modal__stage {
   position: relative;
-  aspect-ratio: 16 / 9;
+  height: min(63dvh, 42rem);
   overflow: hidden;
   background: #000;
 }
@@ -485,8 +488,13 @@ body.has-merch-commercial-modal {
   .merch-commercial-modal__panel {
     width: 100%;
     min-height: 100dvh;
+    max-height: none;
     border: 0;
     border-radius: 0;
+  }
+
+  .merch-commercial-modal__stage {
+    height: 44dvh;
   }
 
   .merch-commercial-modal__header,
