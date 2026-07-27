@@ -1,0 +1,34 @@
+{
+  "baseUrl": "http://127.0.0.1:8143",
+  "capturedAt": "2026-07-27T20:32:41.686Z",
+  "captures": [
+    {
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "fileName": "arcade-hero-film-1440x900.png",
+      "videoReady": true,
+      "aspectRatio": 1.7778375953342307,
+      "overlapsCopy": false,
+      "horizontalOverflow": false,
+      "noindex": "noindex,nofollow,noarchive",
+      "stagingBanner": true,
+      "errors": []
+    },
+    {
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "fileName": "arcade-hero-film-390x844.png",
+      "videoReady": true,
+      "aspectRatio": 1.7777777777777777,
+      "overlapsCopy": false,
+      "horizontalOverflow": false,
+      "noindex": "noindex,nofollow,noarchive",
+      "stagingBanner": true,
+      "errors": []
+    }
+  ]
+}

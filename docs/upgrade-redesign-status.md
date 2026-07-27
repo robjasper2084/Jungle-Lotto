@@ -241,3 +241,17 @@
 - Performance note: Two lazy-loaded supplied PNG assets total approximately 4.15 MiB; optimized WebP or AVIF delivery remains recommended
 - Staging URL: Local only (`http://127.0.0.1:8143/merch-store.html#drop`)
 - Approval status: Ready for next phase; production remains unchanged and not approved
+
+## Arcade Hero Guardian Film
+
+- Step number: Browser-requested Arcade hero media update
+- Implementation commit: `9f83a7f7b4c7b59943df1428c04983c18899ac1b`
+- Affected route: `/features-app.html`
+- Changes: Added the supplied Detroit Guardian film to the marked right side of the Arcade hero; preserved the original entry commercial and background artwork; added responsive 16:9 framing, a poster, muted autoplay, a pause/play control, visibility handling, and reduced-motion behavior
+- Tests: JavaScript syntax passed; site validation passed for 15 HTML files; focused Arcade film checks passed 2/2; affected source/staging route smoke passed 4/4; staging safety passed 10/10; full source/staging desktop/mobile route matrix passed 92/92; staging static verification passed 23 pages and 546 same-origin asset references
+- Visual review: `docs/staging-reviews/arcade-hero-film.md`; staging captures passed at 1440x900 and 390x844 with a 16:9 film frame, no copy overlap, no horizontal overflow, no console or page errors, noindex present, and the staging banner visible
+- Intentional visual departure: A post-entry Guardian film now occupies the Arcade hero media position while the v1 entry commercial, Guardian artwork, particles, and black/gold/cyan/violet identity remain recognizable
+- Performance note: The supplied H.264 film is approximately 5.25 MiB and uses metadata-only preload; a smaller production encode remains recommended
+- Staging URL: Local only (`http://127.0.0.1:8143/features-app.html`)
+- Staging safety: Live payments, production account writes, real redemptions, and production analytics remain blocked
+- Approval status: Ready for next phase; production remains unchanged and not approved
