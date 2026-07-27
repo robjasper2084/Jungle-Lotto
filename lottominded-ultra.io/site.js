@@ -2350,8 +2350,8 @@ function setupSiteHeaderClickToggle() {
   const toggle = document.createElement("button");
   toggle.className = "header-click-toggle";
   toggle.type = "button";
-  toggle.textContent = "NAV";
-  toggle.setAttribute("aria-label", "Show site header");
+  toggle.textContent = "HIDE NAV";
+  toggle.setAttribute("aria-label", "Hide site header");
   toggle.setAttribute("aria-expanded", "true");
   document.body.append(toggle);
 
@@ -2375,6 +2375,7 @@ function setupSiteHeaderClickToggle() {
     document.body.classList.toggle("is-click-header-hidden", hidden);
     toggle.setAttribute("aria-expanded", String(!hidden));
     toggle.setAttribute("aria-label", hidden ? "Show site header" : "Hide site header");
+    toggle.textContent = hidden ? "SHOW NAV" : "HIDE NAV";
   };
 
   siteHeader.addEventListener("click", (event) => {

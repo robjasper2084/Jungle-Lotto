@@ -468,8 +468,7 @@
       commercialSound.hidden = false;
       commercialSound.textContent = "Play with sound";
     }
-    const allowSound = Boolean(trigger);
-    void playCommercialWithFallback({ restart: false, allowSound });
+    void playCommercialWithFallback({ restart: false, allowSound: true });
     commercialClose?.focus({ preventScroll: true });
   };
 

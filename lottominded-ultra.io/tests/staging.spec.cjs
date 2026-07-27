@@ -68,7 +68,7 @@ test("home staging opens directly without the startup commercial popup", async (
   expect(commercialRequests).toEqual([]);
 });
 
-test("membership entry film starts muted and enables sound on request", async ({ page }) => {
+test("membership entry film requests sound and keeps an accessible fallback", async ({ page }) => {
   const filmRequests = [];
   const soundtrackRequests = [];
   page.on("request", (request) => {
@@ -81,11 +81,17 @@ test("membership entry film starts muted and enables sound on request", async ({
   await expect(commercial).toBeVisible({ timeout: 15_000 });
   await expect.poll(() => filmRequests.length).toBeGreaterThan(0);
   expect(soundtrackRequests).toEqual([]);
-  await expect(page.locator("[data-membership-commercial-sound]")).toHaveText("Play with sound");
-  await expect.poll(() => commercial.locator("video").evaluate((video) => ({ muted: video.muted, paused: video.paused }))).toEqual({ muted: true, paused: false });
-
-  await page.locator("[data-membership-commercial-sound]").click();
-  await expect.poll(() => commercial.locator("video").evaluate((video) => video.muted)).toBe(false);
+  await expect.poll(() =>
+    commercial.locator("video").evaluate((video) => ({ muted: video.muted, paused: video.paused }))
+  ).toMatchObject({ paused: false });
+  const playbackState = await commercial.locator("video").evaluate((video) => ({ muted: video.muted, paused: video.paused }));
+  if (playbackState?.muted) {
+    await expect(page.locator("[data-membership-commercial-sound]")).toHaveText("Play with sound");
+    await page.locator("[data-membership-commercial-sound]").click();
+    await expect.poll(() => commercial.locator("video").evaluate((video) => video.muted)).toBe(false);
+  } else {
+    await expect(page.locator("[data-membership-commercial-sound]")).toBeHidden();
+  }
   await page.locator("[data-membership-commercial-close]").click();
   await expect.poll(() => soundtrackRequests.length).toBeGreaterThan(0);
 });

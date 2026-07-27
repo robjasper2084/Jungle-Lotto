@@ -100,6 +100,76 @@ test("memberships opens its entry commercial and keeps manual replay available",
   expect(localFailures).toEqual([]);
 });
 
+test("Static Wav and RAHBE keep an explicit header hide and restore control", async ({ page }) => {
+  await blockHeavyMedia(page);
+
+  for (const route of ["/how-to-use.html", "/beat2lotto-plus.html#beat2lotto"]) {
+    await page.goto(route, { waitUntil: "domcontentloaded" });
+    const commercialGate = page.locator(".lm-commercial-gate");
+    if (await commercialGate.isVisible().catch(() => false)) {
+      await commercialGate.locator(".lm-commercial-gate__skip").click();
+      await expect(commercialGate).toBeHidden();
+    }
+    const toggle = page.locator(".header-click-toggle");
+    await expect(toggle).toBeVisible();
+    await expect(toggle).toHaveText("HIDE NAV");
+
+    await toggle.click();
+    await expect(page.locator("body")).toHaveClass(/is-click-header-hidden/);
+    await expect(toggle).toHaveText("SHOW NAV");
+
+    await toggle.click();
+    await expect(page.locator("body")).not.toHaveClass(/is-click-header-hidden/);
+    await expect(toggle).toHaveText("HIDE NAV");
+  }
+});
+
+test("internal route navigation plays an outbound and arrival transition", async ({ page }) => {
+  await blockHeavyMedia(page);
+  await page.goto("/contact.html", { waitUntil: "domcontentloaded" });
+
+  const destination = page.locator("header nav a").filter({ hasText: "Memberships" }).first();
+  await destination.evaluate((link) => link.click());
+  await expect(page.locator("[data-lm-page-transition]")).toHaveClass(/is-opening/);
+
+  await page.waitForURL(/\/memberships\.html$/, { timeout: 10_000 });
+  await expect(page.locator("html")).toHaveAttribute("data-lm-last-transition-phase", "close");
+});
+
+test("membership commercial requests sound first and closes when playback ends", async ({ page }) => {
+  await page.addInitScript(() => {
+    window.__membershipCommercialPlayAttempts = [];
+    const originalPlay = HTMLMediaElement.prototype.play;
+    HTMLMediaElement.prototype.play = function patchedPlay() {
+      if (this.matches?.("[data-membership-commercial-video]")) {
+        window.__membershipCommercialPlayAttempts.push({ muted: this.muted, volume: this.volume });
+        return Promise.resolve();
+      }
+      return originalPlay.call(this);
+    };
+  });
+
+  await page.goto("/memberships.html", { waitUntil: "domcontentloaded" });
+  const commercial = page.locator("[data-membership-commercial-modal]");
+  const video = commercial.locator("[data-membership-commercial-video]");
+  await expect(commercial).toBeVisible({ timeout: 15_000 });
+  await expect.poll(() => page.evaluate(() => window.__membershipCommercialPlayAttempts)).toContainEqual(
+    expect.objectContaining({ muted: false }),
+  );
+  await video.evaluate((element) => element.dispatchEvent(new Event("ended")));
+  await expect(commercial).toBeHidden({ timeout: 3_000 });
+});
+
+test("Storefront commercial closes itself when playback ends", async ({ page }) => {
+  await blockHeavyMedia(page);
+  await page.goto("/merch-store.html", { waitUntil: "domcontentloaded" });
+  const commercial = page.locator("[data-merch-commercial-modal]");
+  const video = commercial.locator("[data-merch-commercial-modal-video]");
+  await expect(commercial).toBeVisible({ timeout: 5_000 });
+  await video.evaluate((element) => element.dispatchEvent(new Event("ended")));
+  await expect(commercial).toBeHidden();
+});
+
 test("membership checkout explains an authenticated backend rejection", async ({ page }) => {
   await blockHeavyMedia(page);
   await mockAuthenticatedBilling(page, {
@@ -253,7 +323,7 @@ test("billing Edge Function returns expected auth failures through its CORS resp
   expect(source).toContain('validStripeUrl(session.url, "checkout.stripe.com")');
 });
 
-test("guide commercial runs once per route in the current tab", async ({ page }) => {
+test("Static Wav keeps one commercial on each page entry", async ({ page }) => {
   await blockHeavyMedia(page);
   await page.goto("/how-to-use.html", { waitUntil: "domcontentloaded" });
 
@@ -263,7 +333,8 @@ test("guide commercial runs once per route in the current tab", async ({ page })
   await expect(gate).toBeHidden();
 
   await page.reload({ waitUntil: "domcontentloaded" });
-  await expect(page.locator(".lm-commercial-gate")).toHaveCount(0);
+  await expect(page.locator(".lm-commercial-gate")).toHaveCount(1);
+  await expect(page.locator(".lm-commercial-gate")).toBeVisible();
 });
 
 test("features combines the cinematic shell with the manifest-driven Arcade directory", async ({ page }) => {

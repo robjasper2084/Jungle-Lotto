@@ -826,6 +826,9 @@ document.addEventListener("keydown", (event) => {
 merchCommercialModal?.addEventListener("click", (event) => {
   if (event.target === merchCommercialModal) closeMerchCommercial();
 });
+merchCommercialModalVideo?.addEventListener("ended", () => {
+  closeMerchCommercial({ restoreFocus: false });
+});
 
 const revealObserver = new IntersectionObserver(
   (entries) => {
