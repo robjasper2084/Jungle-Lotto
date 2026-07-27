@@ -184,3 +184,18 @@
 - Staging URL: Local only (`http://127.0.0.1:8143/`)
 - Staging safety: Noindex, preview banner, blocked live payments, blocked production account writes, blocked real redemptions, and blocked production analytics verified
 - Approval status: Not approved for production; production remains unchanged
+
+## Storefront, Guide, And Games Navigation Follow-up
+
+- Step number: Browser-requested Storefront dialog and shared navigation correction
+- Implementation commit SHA: `1196c3c019f83010dd0b2c7832ec4c4c68176fe8`
+- Affected routes: `/merch-store.html`, `/features-app.html`, `/news/`, and shared header/menu surfaces
+- Changes: Refitted the single Storefront commercial for clear desktop and mobile portrait playback; standardized the Guide tab label across static, generated News, and runtime navigation; restored the accessible Games-page `NAV` control for explicitly hiding and restoring the artwork header
+- Tests: JavaScript syntax passed; site validation passed for 15 HTML files; News/account tests 20/20; staging browser safety 10/10; source/staging desktop/mobile route matrix 92/92; Games header interaction 1/1; staging screenshot verification 6/6
+- Visual review: Refreshed Storefront and Arcade captures at 1440x900, 768x1024, and 390x844 under `docs/staging-reviews/signal-media-corrections-assets/`; compared with `docs/visual-baseline/v1/`
+- Intentional visual departures: Storefront uses a narrower cinematic desktop dialog and a full-height mobile film treatment; Games adds a persistent circular `NAV` control while retaining the Guardian artwork, particles, black/gold/cyan/violet color language, and arcade identity
+- Verification: No horizontal overflow, console errors, page errors, or broken assets in the six affected-route captures
+- Staging URL: Local only (`http://127.0.0.1:8143/`)
+- Staging safety: Noindex and preview banners verified; live payments, production account writes, real redemptions, and production analytics remain blocked
+- Live checkout: Not exercised or changed by this correction
+- Approval status: Not approved for production; production remains unchanged

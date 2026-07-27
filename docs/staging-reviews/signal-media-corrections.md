@@ -32,7 +32,9 @@
 - Storefront product actions are labeled `Preorder` and build a local device-only preview that explicitly states no order, reservation, payment, or inventory claim was submitted.
 - Live Events attempts synchronized hero sound immediately and exposes an accurate `Play sound` fallback instead of claiming sound is active when autoplay is blocked.
 - News cards now use story or deterministic editorial imagery instead of repeated placeholder discs.
-- Shared navigation reads `Games`, `RAHBE`, `Storefront`, and `Static Wav` without changing route destinations. All ten tab positions now use one stable artwork map and fixed circular geometry across desktop and mobile.
+- Shared navigation reads `Games`, `RAHBE`, `Storefront`, and `Guide` without changing route destinations. All ten tab positions now use one stable artwork map and fixed circular geometry across desktop and mobile.
+- The Games route restores a persistent, keyboard-focusable `NAV` control that hides and restores the artwork header without removing page navigation from the document.
+- The Storefront commercial now uses a compact cinematic frame on desktop and a full-height portrait treatment on mobile, keeping the film, copy, close control, sound control, replay control, and Guardian action visible without overflow.
 
 ## Intentional Departures
 
@@ -41,6 +43,7 @@
 - Arcade restores the earlier LottoMan particle organism behind the redesigned key art instead of replacing the current Arcade directory.
 - Storefront preorder controls remain non-transactional until a separately approved commerce integration is available.
 - News uses branded fallback art when a publisher does not provide a usable image. No live result, ranking, community, or social-proof data was invented.
+- The Storefront commercial is intentionally narrower than the previous staging dialog so the portrait film reads clearly and the action row remains visible at 1440x900, 768x1024, and 390x844.
 
 ## Regressions
 
