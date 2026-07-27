@@ -32,10 +32,10 @@
   ];
 
   const guideFilm = {
-    signal: "Guide / Street signal",
+    signal: "Static Wav / Street signal",
     title: "Follow the signal.",
-    telemetry: "LM-GUIDE / ROUTE ACTIVE",
-    copy: "Enter the LottoMind Guide, explore the playable walkthrough, and carry the creative signal into every route.",
+    telemetry: "STATIC WAV / ROUTE ACTIVE",
+    copy: "Enter Static Wav, explore the playable OpenGW walkthrough, and carry the creative signal into every route.",
     src: "./assets/merch/lottomind-guide-commercial-20260717.mp4",
     poster: "./assets/merch/lottomind-guide-commercial-poster-20260717.jpg",
     volume: 0.64
@@ -86,7 +86,7 @@
     },
     {
       matches: path.endsWith("/how-to-use.html"),
-      name: "Guide",
+      name: "Static Wav",
       theme: "guide",
       films: [guideFilm]
     },
@@ -104,10 +104,12 @@
   // Keep the one-commercial-per-page behavior without letting a visit to one
   // route suppress the commercial on every other route in the same tab.
   const sessionKey = `lm-commercial-gate-seen:v5:${routeTheme}`;
-  try {
-    if (sessionStorage.getItem(sessionKey) === "yes") return;
-    sessionStorage.setItem(sessionKey, "yes");
-  } catch (error) {}
+  if (routeTheme !== "guide") {
+    try {
+      if (sessionStorage.getItem(sessionKey) === "yes") return;
+      sessionStorage.setItem(sessionKey, "yes");
+    } catch (error) {}
+  }
   const storageKey = `lm-commercial-gate-last:${location.pathname}`;
   let previous = -1;
   try {

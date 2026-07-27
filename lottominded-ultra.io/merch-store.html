@@ -18,7 +18,7 @@
     </script>
 <link rel="stylesheet" href="./assets/css/lm-page-transition.css?v=transition-exit-audit-4" />
     <link rel="stylesheet" href="./assets/css/lm-commercial-gate.css?v=guardian-gate-merch-features-1" />
-    <link rel="stylesheet" href="./merch-store.css?v=commercial-fit-3" />
+    <link rel="stylesheet" href="./merch-store.css?v=commercial-hud-4" />
     <link rel="stylesheet" href="./assets/css/lm-global-orb-header.css?v=site-audit-1" />
 <!-- social-meta:start -->
 <meta property="og:type" content="website" />
@@ -61,7 +61,7 @@
         <a href="./lottery-spheres.html#spheres" data-icon="SP">Spheres</a>
         <a href="./beat2lotto-plus.html#beat2lotto" data-icon="B2">RAHBE</a>
         <a href="./merch-store.html" data-icon="DR">Storefront</a>
-        <a href="./how-to-use.html" data-icon="GD">Guide</a>
+        <a href="./how-to-use.html" data-icon="GD">Static Wav</a>
         <a href="https://robjasper2084.github.io/Jungle-Lotto/lotto%20mind%20refined/" data-icon="LM" data-member-app-public="true" aria-label="Open LottoMind Refined App">LottoMind App</a>
       </nav>
       <div class="direct-launch" aria-label="Direct studio launch and saved merch">
@@ -307,21 +307,44 @@
 
       <aside class="merch-commercial-modal is-hidden" data-merch-commercial-modal aria-hidden="true" aria-labelledby="merchCommercialTitle">
         <div class="merch-commercial-modal__panel" role="dialog" aria-modal="true">
+          <span class="merch-commercial-modal__corner merch-commercial-modal__corner--tl" aria-hidden="true"></span>
+          <span class="merch-commercial-modal__corner merch-commercial-modal__corner--tr" aria-hidden="true"></span>
+          <span class="merch-commercial-modal__corner merch-commercial-modal__corner--bl" aria-hidden="true"></span>
+          <span class="merch-commercial-modal__corner merch-commercial-modal__corner--br" aria-hidden="true"></span>
           <header class="merch-commercial-modal__header">
             <div>
               <small>LottoMind community transmission</small>
               <h2 id="merchCommercialTitle">Wear the Signal.</h2>
             </div>
+            <div class="merch-commercial-modal__header-status" aria-label="Transmission status">
+              <span><b aria-hidden="true"></b> Signal locked</span>
+              <span>Detroit sector 313</span>
+            </div>
             <button class="merch-commercial-modal__close" type="button" data-merch-commercial-close aria-label="Close commercial">X</button>
           </header>
-          <div class="merch-commercial-modal__stage">
-            <video controls playsinline preload="none" poster="./assets/merch/lottomind-membership-unboxing-commercial-poster-20260716.jpg" data-merch-commercial-modal-video data-lm-video-unmanaged="true">
-              <source data-src="./assets/merch/lottomind-membership-unboxing-commercial-20260716.mp4" type="video/mp4" />
-            </video>
-            <div class="merch-commercial-modal__scan" aria-hidden="true"></div>
+          <div class="merch-commercial-modal__body">
+            <div class="merch-commercial-modal__stage">
+              <video controls playsinline preload="none" poster="./assets/merch/lottomind-membership-unboxing-commercial-poster-20260716.jpg" data-merch-commercial-modal-video data-lm-video-unmanaged="true">
+                <source data-src="./assets/merch/lottomind-membership-unboxing-commercial-20260716.mp4" type="video/mp4" />
+              </video>
+              <div class="merch-commercial-modal__scan" aria-hidden="true"></div>
+              <div class="merch-commercial-modal__reticle" aria-hidden="true"><span></span></div>
+            </div>
+            <aside class="merch-commercial-modal__telemetry" aria-label="Commercial transmission details">
+              <p class="merch-commercial-modal__telemetry-kicker">LM / Community Uplink</p>
+              <h3>Guardian signal online.</h3>
+              <p>Detroit-inspired LottoMind apparel for creators who carry the studio signal beyond the screen.</p>
+              <dl>
+                <div><dt>Broadcast</dt><dd>Community 015</dd></div>
+                <div><dt>Format</dt><dd>Portrait film</dd></div>
+                <div><dt>Access</dt><dd>Local preview</dd></div>
+                <div><dt>Commerce</dt><dd>Protected</dd></div>
+              </dl>
+              <div class="merch-commercial-modal__meter" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span></div>
+            </aside>
           </div>
           <div class="merch-commercial-modal__footer">
-            <p>Detroit-inspired LottoMind apparel for creators who carry the studio signal beyond the screen.</p>
+            <p><span aria-hidden="true"></span> Transmission controls ready</p>
             <div>
               <button type="button" data-merch-commercial-sound>Play with sound</button>
               <button type="button" data-merch-commercial-replay>Replay</button>

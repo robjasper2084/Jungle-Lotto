@@ -84,7 +84,7 @@ window.LMAudioMix = {
     { label: "Spheres", href: siteUrl("./lottery-spheres.html#spheres"), icon: "SP" },
     { label: "RAHBE", href: siteUrl("./beat2lotto-plus.html#beat2lotto"), icon: "B2" },
     { label: "Storefront", href: siteUrl("./merch-store.html"), icon: "DR" },
-    { label: "Guide", href: siteUrl("./how-to-use.html"), icon: "GD" },
+    { label: "Static Wav", href: siteUrl("./how-to-use.html"), icon: "GD" },
     {
       label: "LottoMind App",
       href: "https://robjasper2084.github.io/Jungle-Lotto/lotto%20mind%20refined/",
@@ -1160,7 +1160,7 @@ function setupUniversalFloatingMenu() {
     ["Spheres", siteUrl("./lottery-spheres.html#spheres")],
     ["RAHBE", siteUrl("./beat2lotto-plus.html#beat2lotto")],
     ["Storefront", siteUrl("./merch-store.html")],
-    ["Guide", siteUrl("./how-to-use.html")],
+    ["Static Wav", siteUrl("./how-to-use.html")],
     ["Studio", siteUrl("./lottomind-stem-studio/index.html")]
   ];
 
