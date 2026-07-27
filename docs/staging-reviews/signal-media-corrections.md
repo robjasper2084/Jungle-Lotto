@@ -4,7 +4,7 @@
 - Upgrade branch: `upgrade-redesign`
 - Production reference: `v1-final` at `975c637cea7003533cdc30aed9d96be51929bfc8`
 - Production URL: https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/
-- Staging URL: Local only (`http://127.0.0.1:8204/`)
+- Staging URL: Local only (`http://127.0.0.1:8143/`)
 - Viewports: 1440x900, 768x1024, and 390x844
 
 ## Visual Comparisons
@@ -12,7 +12,7 @@
 | Route | Production baseline | Staging correction |
 | --- | --- | --- |
 | Home | [Desktop](../visual-baseline/v1/home--desktop.png) / [Mobile](../visual-baseline/v1/home--mobile.png) | [Desktop](./signal-media-corrections-assets/home-1440x900.png) / [Tablet](./signal-media-corrections-assets/home-768x1024.png) / [Mobile](./signal-media-corrections-assets/home-390x844.png) |
-| Memberships | [Desktop](../visual-baseline/v1/memberships--desktop.png) / [Mobile](../visual-baseline/v1/memberships--mobile.png) | [Desktop](./signal-media-corrections-assets/memberships-1440x900.png) / [Tablet](./signal-media-corrections-assets/memberships-768x1024.png) / [Mobile](./signal-media-corrections-assets/memberships-390x844.png) / [Guardian](./signal-media-corrections-assets/membership-guardian-1440x900.png) |
+| Memberships | [Desktop](../visual-baseline/v1/memberships--desktop.png) / [Mobile](../visual-baseline/v1/memberships--mobile.png) | [Desktop](./signal-media-corrections-assets/memberships-1440x900.png) / [Tablet](./signal-media-corrections-assets/memberships-768x1024.png) / [Mobile](./signal-media-corrections-assets/memberships-390x844.png) / [Commercial desktop](./signal-media-corrections-assets/membership-commercial-1440x900.png) / [Commercial tablet](./signal-media-corrections-assets/membership-commercial-768x1024.png) / [Commercial mobile](./signal-media-corrections-assets/membership-commercial-390x844.png) |
 | Arcade | [Desktop](../visual-baseline/v1/features-app--desktop.png) / [Mobile](../visual-baseline/v1/features-app--mobile.png) | [Desktop](./signal-media-corrections-assets/arcade-1440x900.png) / [Tablet](./signal-media-corrections-assets/arcade-768x1024.png) / [Mobile](./signal-media-corrections-assets/arcade-390x844.png) |
 | RAHBE | [Desktop](../visual-baseline/v1/beat2lotto-plus--desktop.png) / [Mobile](../visual-baseline/v1/beat2lotto-plus--mobile.png) | [Desktop](./signal-media-corrections-assets/rahbe-1440x900.png) / [Tablet](./signal-media-corrections-assets/rahbe-768x1024.png) / [Mobile](./signal-media-corrections-assets/rahbe-390x844.png) |
 | Spheres | [Desktop](../visual-baseline/v1/lottery-spheres-spheres--desktop.png) / [Mobile](../visual-baseline/v1/lottery-spheres-spheres--mobile.png) | [Desktop](./signal-media-corrections-assets/spheres-1440x900.png) / [Tablet](./signal-media-corrections-assets/spheres-768x1024.png) / [Mobile](./signal-media-corrections-assets/spheres-390x844.png) |
@@ -37,6 +37,10 @@
 - The Games route restores a persistent, keyboard-focusable `NAV` control that hides and restores the artwork header without removing page navigation from the document.
 - Static Wav restores its existing `Follow the Signal` commercial on every page entry, including repeat navigation in the same tab, while retaining the user-gesture sound fallback.
 - The Storefront commercial now uses a complete futuristic HUD with a framed portrait viewport, Detroit-sector telemetry rail, signal meter, and always-visible controls on desktop and mobile.
+- Static Wav and RAHBE expose a persistent `HIDE NAV` / `SHOW NAV` control after their commercial gate closes, so the artwork header can be removed and restored without losing navigation state.
+- Internal navigation now plays a themed outbound clip followed by the destination arrival clip; support and legal routes participate in the same system.
+- The Membership commercial keeps its existing film while adopting the Storefront HUD language: clipped signal corners, member-uplink telemetry, cyan/gold framing, and a clearer footer action row.
+- Membership and Storefront commercials request audible playback immediately, expose `Play with sound` only when browser policy blocks it, and close automatically when playback ends.
 
 ## Intentional Departures
 
@@ -46,10 +50,11 @@
 - Storefront preorder controls remain non-transactional until a separately approved commerce integration is available.
 - News uses branded fallback art when a publisher does not provide a usable image. No live result, ranking, community, or social-proof data was invented.
 - The Storefront commercial intentionally replaces the plain cinematic frame with a wider HUD composition on desktop and a stacked full-height HUD on mobile. The portrait film and action row remain visible at 1440x900, 768x1024, and 390x844.
+- The Membership commercial intentionally replaces its simpler v1 frame with a black/cyan/gold/violet HUD. The film source itself is unchanged, and the navigation toggle stays hidden only while the modal is active so it cannot cover the close control.
 
 ## Regressions
 
-- No new broken assets, console errors, page errors, or horizontal overflow were found in the 30 refreshed staging captures.
+- No new broken assets, console errors, page errors, or horizontal overflow were found in the 12 refreshed transition/commercial captures or the previously reviewed route captures.
 - Audible autoplay cannot be guaranteed by application code because browser policy can require a user gesture. The fallback control is visible, keyboard operable, and reports the actual state.
 - The persistent News oracle can still occupy significant mobile space when expanded; this is inherited behavior and was not expanded in this correction pass.
 

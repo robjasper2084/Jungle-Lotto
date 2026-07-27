@@ -214,3 +214,17 @@
 - Staging safety: Noindex and preview banners verified; live payments, production account writes, real redemptions, and production analytics remain blocked
 - Live checkout: Not exercised or changed by this correction
 - Approval status: Not approved for production; production remains unchanged
+
+## Page Transitions, Header Controls, And Commercial Lifecycle Follow-up
+
+- Step number: Browser-requested transition, navigation-control, and commercial-lifecycle correction
+- Implementation commits: `e0ff6c6d7081bfce75d94c41d86041aec4828841`, `fbc82fc9a2fc39b4302eced4a9934f137ec336d1`, and `2b04cb1e09de64592b245bb70e10befabb3e73c0`
+- Affected routes: Shared internal navigation, `/memberships.html`, `/merch-store.html`, `/how-to-use.html`, `/beat2lotto-plus.html`, `/accessibility.html`, `/contact.html`, `/privacy.html`, and `/terms.html`
+- Changes: Added explicit `HIDE NAV` and `SHOW NAV` controls; restored the control runtime on Static Wav and RAHBE; added outbound and arrival transitions to support/legal routes; added distinct transition entry and exit cues; preserved the existing Membership commercial media while presenting it in a Storefront-inspired cyan/gold/violet HUD; requested audible commercial playback immediately with an accurate muted fallback; closed Membership and Storefront commercials automatically at playback end; kept navigation controls out of the way while a modal is active
+- Tests: JavaScript syntax and 15-page site validation passed; focused interaction suite 8/8; full source browser suite 112 passed with 6 intentional viewport skips; staging browser safety 10/10; clean source/staging route matrix 92/92; staging static verification 23 pages and 542 same-origin asset references
+- Visual review: Refreshed Membership commercial, Storefront, Static Wav, and RAHBE captures at 1440x900, 768x1024, and 390x844 under `docs/staging-reviews/signal-media-corrections-assets/`; all 12 captures passed noindex, staging-banner, overflow, console, page-error, and asset checks
+- Intentional visual departures: The Membership commercial now uses clipped HUD corners, member-uplink status, stronger film framing, and a clearer footer action row; its commercial video source remains unchanged
+- Staging URL: Local only (`http://127.0.0.1:8143/`)
+- Staging safety: Noindex and preview banners verified; live payments, production account writes, real redemptions, and production analytics remain blocked
+- Live checkout: Not exercised or changed by this correction
+- Production approval status: Not approved; production remains unchanged
