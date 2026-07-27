@@ -1645,6 +1645,167 @@ body.has-merch-shadow-popup {
   perspective: 1100px;
 }
 
+.bundle-showcase {
+  grid-column: 2;
+  display: grid;
+  gap: 1rem;
+  min-width: 0;
+  padding: clamp(1rem, 2vw, 1.4rem);
+  border: 1px solid rgba(41, 247, 255, 0.34);
+  border-radius: 6px;
+  background:
+    linear-gradient(135deg, rgba(3, 11, 24, 0.96), rgba(12, 7, 28, 0.94)),
+    repeating-linear-gradient(90deg, rgba(41, 247, 255, 0.05) 0 1px, transparent 1px 4rem);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 209, 102, 0.08),
+    0 1.4rem 3.6rem rgba(0, 0, 0, 0.34);
+}
+
+.bundle-showcase__head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(15rem, 0.7fr);
+  gap: 1rem;
+  align-items: end;
+  padding-bottom: 0.9rem;
+  border-bottom: 1px solid rgba(41, 247, 255, 0.18);
+}
+
+.bundle-showcase__head span,
+.bundle-card__signal {
+  color: #58f7ff;
+  font-family: var(--display-font);
+  font-size: 0.74rem;
+  font-weight: 900;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.bundle-showcase__head h2 {
+  margin: 0.35rem 0 0;
+  color: #f8fbff;
+  font-size: clamp(1.55rem, 2.6vw, 2.35rem);
+  line-height: 1;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.bundle-showcase__head p {
+  margin: 0;
+  color: #bcd4e8;
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+
+.bundle-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.bundle-card {
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  min-width: 0;
+  border: 1px solid rgba(255, 209, 102, 0.34);
+  border-radius: 4px;
+  background:
+    linear-gradient(160deg, rgba(7, 20, 37, 0.98), rgba(5, 8, 18, 0.98)),
+    radial-gradient(circle at 80% 0%, rgba(139, 92, 246, 0.16), transparent 52%);
+  box-shadow: inset 0 0 2.5rem rgba(41, 247, 255, 0.04);
+}
+
+.bundle-card::after {
+  position: absolute;
+  inset: 0;
+  content: "";
+  pointer-events: none;
+  border: 8px solid transparent;
+  border-top-color: rgba(41, 247, 255, 0.2);
+  border-left-color: rgba(41, 247, 255, 0.2);
+  clip-path: polygon(0 0, 4rem 0, 0 4rem);
+}
+
+.bundle-card > img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-bottom: 1px solid rgba(41, 247, 255, 0.22);
+}
+
+.bundle-card__body {
+  display: grid;
+  align-content: start;
+  gap: 0.65rem;
+  padding: 1rem;
+}
+
+.bundle-card__body h3 {
+  margin: 0;
+  color: #f8fbff;
+  font-size: 1.15rem;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.bundle-card__body p {
+  margin: 0;
+  color: #bcd4e8;
+  line-height: 1.55;
+}
+
+.bundle-card__body ul {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0;
+  color: #d9e9f5;
+  list-style: none;
+}
+
+.bundle-card__body li {
+  position: relative;
+  padding-left: 1.1rem;
+}
+
+.bundle-card__body li::before {
+  position: absolute;
+  left: 0;
+  color: #ffd166;
+  content: "+";
+}
+
+.bundle-card__status {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem 0.9rem;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 0.2rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(41, 247, 255, 0.16);
+}
+
+.bundle-card__status strong {
+  color: #ffd166;
+  font-size: 1.05rem;
+}
+
+.bundle-card__status span {
+  color: #58f7ff;
+  font-family: var(--display-font);
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.bundle-card .bundle-wishlist-toggle {
+  top: 0.75rem;
+  right: 0.75rem;
+}
+
 .merch-swipe-rail {
   scroll-snap-type: x mandatory;
   scroll-padding-inline: 0.35rem;
@@ -2680,6 +2841,7 @@ body.has-merch-shadow-popup {
   .gallery-section,
   .merch-section-copy,
   .motion-gallery,
+  .bundle-showcase,
   .product-grid,
   .gallery-motion-rail,
   .gallery-grid {
@@ -2699,6 +2861,7 @@ body.has-merch-shadow-popup {
   .gallery-section .merch-section-copy,
   .gallery-motion-rail,
   .gallery-grid,
+  .bundle-showcase,
   .product-grid {
     grid-column: auto;
     grid-row: auto;
@@ -3162,6 +3325,11 @@ body.has-merch-shadow-popup {
 @media (max-width: 560px) {
   .merch-store-page .direct-launch {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .bundle-showcase__head,
+  .bundle-grid {
+    grid-template-columns: 1fr;
   }
 
   .merch-store-page .direct-action {

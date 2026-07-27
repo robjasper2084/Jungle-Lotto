@@ -174,6 +174,24 @@ test("Storefront commercial closes itself when playback ends", async ({ page }) 
   await expect(page.locator(".header-click-toggle")).toBeVisible();
 });
 
+test("Storefront presents supplied Guardian bundles without inventing checkout claims", async ({ page }) => {
+  await blockHeavyMedia(page);
+  await page.goto("/merch-store.html", { waitUntil: "domcontentloaded" });
+  await page.locator("[data-merch-commercial-close]").click();
+
+  const bundles = page.locator(".bundle-card");
+  await expect(bundles).toHaveCount(2);
+  await expect(page.locator("#guardian-hoodie-bundle")).toContainText("Guardian Hoodie Package");
+  await expect(page.locator("#detroit-carry-bundle")).toContainText("Detroit Carry Package");
+  await expect(bundles).toContainText(["Pricing TBA", "Pricing TBA"]);
+  await expect(bundles.locator("[data-add-item]")).toHaveCount(0);
+  await expect.poll(() => bundles.locator("img").evaluateAll((images) => images.every((image) => image.naturalWidth > 0))).toBe(true);
+
+  const saveBundle = page.locator('#guardian-hoodie-bundle [data-wishlist-toggle="guardian-hoodie-bundle"]');
+  await saveBundle.click();
+  await expect(saveBundle).toHaveAttribute("aria-pressed", "true");
+});
+
 test("membership checkout explains an authenticated backend rejection", async ({ page }) => {
   await blockHeavyMedia(page);
   await mockAuthenticatedBilling(page, {
