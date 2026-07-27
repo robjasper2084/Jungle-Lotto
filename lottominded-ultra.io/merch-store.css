@@ -340,8 +340,9 @@
 }
 
 .merch-commercial-modal__panel {
-  width: min(76rem, 96vw);
-  max-height: calc(100dvh - 1.6rem);
+  width: min(62rem, calc(100vw - 2rem));
+  height: min(46rem, calc(100dvh - 2rem));
+  max-height: calc(100dvh - 2rem);
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto;
   overflow: hidden;
@@ -395,16 +396,41 @@
 
 .merch-commercial-modal__stage {
   position: relative;
-  height: min(63dvh, 42rem);
+  display: grid;
+  place-items: center;
+  height: 100%;
+  min-height: 0;
   overflow: hidden;
-  background: #000;
+  isolation: isolate;
+  background: #010714;
+}
+
+.merch-commercial-modal__stage::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: -2rem;
+  background:
+    linear-gradient(90deg, rgba(1, 7, 20, 0.88), rgba(1, 7, 20, 0.25) 32% 68%, rgba(1, 7, 20, 0.88)),
+    url("./assets/merch/lottomind-membership-unboxing-commercial-poster-20260716.jpg") center / cover no-repeat;
+  filter: blur(18px) brightness(0.58) saturate(1.18);
+  transform: scale(1.08);
+  opacity: 0.78;
 }
 
 .merch-commercial-modal__stage video {
+  position: relative;
+  z-index: 1;
   display: block;
-  width: 100%;
+  width: auto;
+  max-width: 100%;
   height: 100%;
   object-fit: contain;
+  background: #000;
+  box-shadow:
+    0 0 0 1px rgba(127, 245, 255, 0.32),
+    0 0 3rem rgba(41, 247, 255, 0.2),
+    0 1.5rem 4rem rgba(0, 0, 0, 0.58);
 }
 
 .merch-commercial-modal__scan {
@@ -419,6 +445,8 @@
 }
 
 .merch-commercial-modal__footer {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   border-top: 1px solid rgba(41, 247, 255, 0.18);
 }
 
@@ -432,6 +460,8 @@
 .merch-commercial-modal__footer > div {
   display: flex;
   flex: 0 0 auto;
+  flex-wrap: wrap;
+  justify-content: flex-end;
   gap: 0.65rem;
 }
 
@@ -487,14 +517,17 @@ body.has-merch-commercial-modal {
 
   .merch-commercial-modal__panel {
     width: 100%;
-    min-height: 100dvh;
-    max-height: none;
+    height: 100dvh;
+    min-height: 0;
+    max-height: 100dvh;
+    grid-template-rows: auto minmax(0, 1fr) auto;
     border: 0;
     border-radius: 0;
   }
 
   .merch-commercial-modal__stage {
-    height: 44dvh;
+    height: auto;
+    min-height: 0;
   }
 
   .merch-commercial-modal__header,
@@ -504,11 +537,38 @@ body.has-merch-commercial-modal {
 
   .merch-commercial-modal__footer {
     flex-direction: column;
+    grid-template-columns: 1fr;
+    gap: 0.8rem;
   }
 
   .merch-commercial-modal__footer > div {
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    justify-content: stretch;
+  }
+
+  .merch-commercial-modal__footer a {
+    grid-column: 1 / -1;
+  }
+
+  .merch-commercial-modal__header h2 {
+    font-size: clamp(1.7rem, 9vw, 2.5rem);
+  }
+
+  .merch-commercial-modal__header,
+  .merch-commercial-modal__footer {
+    padding: 0.9rem 1rem;
+  }
+
+  .merch-commercial-modal__footer p {
+    font-size: 0.86rem;
+  }
+
+  .merch-commercial-modal__footer button,
+  .merch-commercial-modal__footer a {
+    min-height: 2.9rem;
+    padding-inline: 0.7rem;
+    font-size: 0.64rem;
   }
 }
 

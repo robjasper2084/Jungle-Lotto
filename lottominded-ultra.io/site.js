@@ -84,7 +84,7 @@ window.LMAudioMix = {
     { label: "Spheres", href: siteUrl("./lottery-spheres.html#spheres"), icon: "SP" },
     { label: "RAHBE", href: siteUrl("./beat2lotto-plus.html#beat2lotto"), icon: "B2" },
     { label: "Storefront", href: siteUrl("./merch-store.html"), icon: "DR" },
-    { label: "Static Wav", href: siteUrl("./how-to-use.html"), icon: "GD" },
+    { label: "Guide", href: siteUrl("./how-to-use.html"), icon: "GD" },
     {
       label: "LottoMind App",
       href: "https://robjasper2084.github.io/Jungle-Lotto/lotto%20mind%20refined/",
@@ -1155,11 +1155,11 @@ function setupUniversalFloatingMenu() {
     ["Memberships", siteUrl("./memberships.html")],
     ["LottoMind App", "https://robjasper2084.github.io/Jungle-Lotto/lotto%20mind%20refined/"],
     ["Home", siteUrl("./index.html#top")],
-    ["Features", siteUrl("./features-app.html")],
+    ["Games", siteUrl("./features-app.html")],
     ["Events", siteUrl("./live-events.html")],
     ["Spheres", siteUrl("./lottery-spheres.html#spheres")],
-    ["Beat2Lotto+", siteUrl("./beat2lotto-plus.html#beat2lotto")],
-    ["Merch", siteUrl("./merch-store.html")],
+    ["RAHBE", siteUrl("./beat2lotto-plus.html#beat2lotto")],
+    ["Storefront", siteUrl("./merch-store.html")],
     ["Guide", siteUrl("./how-to-use.html")],
     ["Studio", siteUrl("./lottomind-stem-studio/index.html")]
   ];
