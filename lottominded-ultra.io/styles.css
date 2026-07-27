@@ -17027,6 +17027,10 @@ body.is-click-header-hidden .header-click-toggle {
   background: linear-gradient(110deg, #f4cf63, #5be9ff);
 }
 
+body:is(.has-membership-commercial, .has-merch-commercial-modal, .has-lm-commercial-gate) .header-click-toggle {
+  display: none;
+}
+
 @media (max-width: 720px) {
   .header-click-toggle {
     min-width: 4.7rem;

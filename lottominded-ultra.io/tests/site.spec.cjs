@@ -153,11 +153,13 @@ test("membership commercial requests sound first and closes when playback ends",
   const commercial = page.locator("[data-membership-commercial-modal]");
   const video = commercial.locator("[data-membership-commercial-video]");
   await expect(commercial).toBeVisible({ timeout: 15_000 });
+  await expect(page.locator(".header-click-toggle")).toBeHidden();
   await expect.poll(() => page.evaluate(() => window.__membershipCommercialPlayAttempts)).toContainEqual(
     expect.objectContaining({ muted: false }),
   );
   await video.evaluate((element) => element.dispatchEvent(new Event("ended")));
   await expect(commercial).toBeHidden({ timeout: 3_000 });
+  await expect(page.locator(".header-click-toggle")).toBeVisible();
 });
 
 test("Storefront commercial closes itself when playback ends", async ({ page }) => {
@@ -166,8 +168,10 @@ test("Storefront commercial closes itself when playback ends", async ({ page }) 
   const commercial = page.locator("[data-merch-commercial-modal]");
   const video = commercial.locator("[data-merch-commercial-modal-video]");
   await expect(commercial).toBeVisible({ timeout: 5_000 });
+  await expect(page.locator(".header-click-toggle")).toBeHidden();
   await video.evaluate((element) => element.dispatchEvent(new Event("ended")));
   await expect(commercial).toBeHidden();
+  await expect(page.locator(".header-click-toggle")).toBeVisible();
 });
 
 test("membership checkout explains an authenticated backend rejection", async ({ page }) => {
