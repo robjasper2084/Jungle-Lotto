@@ -228,3 +228,16 @@
 - Staging safety: Noindex and preview banners verified; live payments, production account writes, real redemptions, and production analytics remain blocked
 - Live checkout: Not exercised or changed by this correction
 - Production approval status: Not approved; production remains unchanged
+
+## Storefront Guardian Bundle Packages
+
+- Step number: Browser-requested Storefront bundle package addition
+- Implementation commit: `c1d259828011af1176e606bbe1f79ed3eadb3cc9`
+- Affected route: `/merch-store.html#drop`
+- Changes: Added Guardian Hoodie Package and Detroit Carry Package previews using the supplied artwork; packages expose local wishlist saving but no checkout action, invented price, inventory, or availability claim
+- Commerce status: Existing individual-product preorder preview remains device-only; bundle pricing, sizing, availability, and final contents are marked unconfirmed
+- Tests: Site validation passed 15 HTML files; focused Storefront browser checks passed 2/2; affected source/staging route smoke passed 4/4; full route matrix passed 92/92 before the focused commit; staging safety passed 10/10; staging static verification passed 23 pages and 544 same-origin references
+- Visual verification: `docs/staging-reviews/storefront-bundles.md`; staging captures passed at 1440x900 and 390x844 with both images loaded, no horizontal overflow, no console errors, staging banner present, and noindex active
+- Performance note: Two lazy-loaded supplied PNG assets total approximately 4.15 MiB; optimized WebP or AVIF delivery remains recommended
+- Staging URL: Local only (`http://127.0.0.1:8143/merch-store.html#drop`)
+- Approval status: Ready for next phase; production remains unchanged and not approved

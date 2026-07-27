@@ -1,0 +1,32 @@
+{
+  "baseUrl": "http://127.0.0.1:8143",
+  "capturedAt": "2026-07-27T20:18:11.252Z",
+  "captures": [
+    {
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "fileName": "storefront-bundles-1440x900.png",
+      "bundleCount": 2,
+      "imagesLoaded": true,
+      "horizontalOverflow": false,
+      "stagingNoindex": "noindex,nofollow,noarchive",
+      "stagingBanner": true,
+      "errors": []
+    },
+    {
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "fileName": "storefront-bundles-390x844.png",
+      "bundleCount": 2,
+      "imagesLoaded": true,
+      "horizontalOverflow": false,
+      "stagingNoindex": "noindex,nofollow,noarchive",
+      "stagingBanner": true,
+      "errors": []
+    }
+  ]
+}
