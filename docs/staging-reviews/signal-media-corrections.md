@@ -17,6 +17,7 @@
 | RAHBE | [Desktop](../visual-baseline/v1/beat2lotto-plus--desktop.png) / [Mobile](../visual-baseline/v1/beat2lotto-plus--mobile.png) | [Desktop](./signal-media-corrections-assets/rahbe-1440x900.png) / [Tablet](./signal-media-corrections-assets/rahbe-768x1024.png) / [Mobile](./signal-media-corrections-assets/rahbe-390x844.png) |
 | Spheres | [Desktop](../visual-baseline/v1/lottery-spheres-spheres--desktop.png) / [Mobile](../visual-baseline/v1/lottery-spheres-spheres--mobile.png) | [Desktop](./signal-media-corrections-assets/spheres-1440x900.png) / [Tablet](./signal-media-corrections-assets/spheres-768x1024.png) / [Mobile](./signal-media-corrections-assets/spheres-390x844.png) |
 | Storefront | [Desktop](../visual-baseline/v1/merch-store--desktop.png) / [Mobile](../visual-baseline/v1/merch-store--mobile.png) | [Desktop](./signal-media-corrections-assets/storefront-1440x900.png) / [Tablet](./signal-media-corrections-assets/storefront-768x1024.png) / [Mobile](./signal-media-corrections-assets/storefront-390x844.png) |
+| Static Wav | [Desktop](../visual-baseline/v1/how-to-use--desktop.png) / [Mobile](../visual-baseline/v1/how-to-use--mobile.png) | [Desktop](./signal-media-corrections-assets/static-wav-1440x900.png) / [Tablet](./signal-media-corrections-assets/static-wav-768x1024.png) / [Mobile](./signal-media-corrections-assets/static-wav-390x844.png) |
 | Live Events | [Desktop](../visual-baseline/v1/live-events--desktop.png) / [Mobile](../visual-baseline/v1/live-events--mobile.png) | [Desktop](./signal-media-corrections-assets/live-events-1440x900.png) / [Tablet](./signal-media-corrections-assets/live-events-768x1024.png) / [Mobile](./signal-media-corrections-assets/live-events-390x844.png) |
 | News | [Desktop](../visual-baseline/v1/news-index--desktop.png) / [Mobile](../visual-baseline/v1/news-index--mobile.png) | [Desktop](./signal-media-corrections-assets/news-1440x900.png) / [Tablet](./signal-media-corrections-assets/news-768x1024.png) / [Mobile](./signal-media-corrections-assets/news-390x844.png) |
 
@@ -32,9 +33,10 @@
 - Storefront product actions are labeled `Preorder` and build a local device-only preview that explicitly states no order, reservation, payment, or inventory claim was submitted.
 - Live Events attempts synchronized hero sound immediately and exposes an accurate `Play sound` fallback instead of claiming sound is active when autoplay is blocked.
 - News cards now use story or deterministic editorial imagery instead of repeated placeholder discs.
-- Shared navigation reads `Games`, `RAHBE`, `Storefront`, and `Guide` without changing route destinations. All ten tab positions now use one stable artwork map and fixed circular geometry across desktop and mobile.
+- Shared navigation reads `Games`, `RAHBE`, `Storefront`, and `Static Wav` without changing route destinations. All ten tab positions now use one stable artwork map and fixed circular geometry across desktop and mobile.
 - The Games route restores a persistent, keyboard-focusable `NAV` control that hides and restores the artwork header without removing page navigation from the document.
-- The Storefront commercial now uses a compact cinematic frame on desktop and a full-height portrait treatment on mobile, keeping the film, copy, close control, sound control, replay control, and Guardian action visible without overflow.
+- Static Wav restores its existing `Follow the Signal` commercial on every page entry, including repeat navigation in the same tab, while retaining the user-gesture sound fallback.
+- The Storefront commercial now uses a complete futuristic HUD with a framed portrait viewport, Detroit-sector telemetry rail, signal meter, and always-visible controls on desktop and mobile.
 
 ## Intentional Departures
 
@@ -43,7 +45,7 @@
 - Arcade restores the earlier LottoMan particle organism behind the redesigned key art instead of replacing the current Arcade directory.
 - Storefront preorder controls remain non-transactional until a separately approved commerce integration is available.
 - News uses branded fallback art when a publisher does not provide a usable image. No live result, ranking, community, or social-proof data was invented.
-- The Storefront commercial is intentionally narrower than the previous staging dialog so the portrait film reads clearly and the action row remains visible at 1440x900, 768x1024, and 390x844.
+- The Storefront commercial intentionally replaces the plain cinematic frame with a wider HUD composition on desktop and a stacked full-height HUD on mobile. The portrait film and action row remain visible at 1440x900, 768x1024, and 390x844.
 
 ## Regressions
 

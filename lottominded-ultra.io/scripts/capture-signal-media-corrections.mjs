@@ -42,6 +42,11 @@ const availableRoutes = [
     dismiss: ".lm-commercial-gate__skip",
   },
   {
+    name: "static-wav",
+    path: "/how-to-use.html",
+    focus: ".lm-commercial-gate__panel",
+  },
+  {
     name: "arcade",
     path: "/features-app.html",
     dismiss: ".lm-commercial-gate__skip",

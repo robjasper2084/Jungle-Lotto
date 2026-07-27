@@ -1,5 +1,5 @@
 {
-  "capturedAt": "2026-07-27T18:42:11.079Z",
+  "capturedAt": "2026-07-27T19:09:04.322Z",
   "results": [
     {
       "route": "/merch-store.html",
@@ -15,10 +15,10 @@
       "assetFailures": []
     },
     {
-      "route": "/features-app.html",
+      "route": "/how-to-use.html",
       "viewport": "1440x900",
       "status": 200,
-      "output": "C:\\Users\\digit\\Documents\\phone\\_jungle_lotto_refined\\docs\\staging-reviews\\signal-media-corrections-assets\\arcade-1440x900.png",
+      "output": "C:\\Users\\digit\\Documents\\phone\\_jungle_lotto_refined\\docs\\staging-reviews\\signal-media-corrections-assets\\static-wav-1440x900.png",
       "noindex": "noindex,nofollow,noarchive",
       "stagingBannerVisible": true,
       "horizontalOverflow": false,
@@ -41,10 +41,10 @@
       "assetFailures": []
     },
     {
-      "route": "/features-app.html",
+      "route": "/how-to-use.html",
       "viewport": "768x1024",
       "status": 200,
-      "output": "C:\\Users\\digit\\Documents\\phone\\_jungle_lotto_refined\\docs\\staging-reviews\\signal-media-corrections-assets\\arcade-768x1024.png",
+      "output": "C:\\Users\\digit\\Documents\\phone\\_jungle_lotto_refined\\docs\\staging-reviews\\signal-media-corrections-assets\\static-wav-768x1024.png",
       "noindex": "noindex,nofollow,noarchive",
       "stagingBannerVisible": true,
       "horizontalOverflow": false,
@@ -67,10 +67,10 @@
       "assetFailures": []
     },
     {
-      "route": "/features-app.html",
+      "route": "/how-to-use.html",
       "viewport": "390x844",
       "status": 200,
-      "output": "C:\\Users\\digit\\Documents\\phone\\_jungle_lotto_refined\\docs\\staging-reviews\\signal-media-corrections-assets\\arcade-390x844.png",
+      "output": "C:\\Users\\digit\\Documents\\phone\\_jungle_lotto_refined\\docs\\staging-reviews\\signal-media-corrections-assets\\static-wav-390x844.png",
       "noindex": "noindex,nofollow,noarchive",
       "stagingBannerVisible": true,
       "horizontalOverflow": false,

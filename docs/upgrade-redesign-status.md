@@ -199,3 +199,18 @@
 - Staging safety: Noindex and preview banners verified; live payments, production account writes, real redemptions, and production analytics remain blocked
 - Live checkout: Not exercised or changed by this correction
 - Approval status: Not approved for production; production remains unchanged
+
+## Static Wav Commercial And Storefront HUD Follow-up
+
+- Step number: Browser-requested Static Wav naming, commercial restoration, and Storefront HUD correction
+- Implementation commit SHA: `24b7baa4fef620da5bfe1acee9f91f11c9f52cd2`
+- Affected routes: `/how-to-use.html`, `/merch-store.html`, `/news/`, and shared header/menu surfaces
+- Changes: Restored `Static Wav` as the page, tab, metadata, generated News, and runtime-menu label; restored the existing `Follow the Signal` commercial on every Static Wav page entry; redesigned the single Storefront commercial as a complete futuristic HUD with film viewport, transmission telemetry, signal meter, and visible controls
+- Tests: JavaScript syntax passed; site validation passed for 15 HTML files; News/account tests 20/20; staging browser safety 10/10; source/staging desktop/mobile route matrix 92/92; focused Static Wav repeat-entry and Storefront layout checks passed
+- Visual review: Refreshed Storefront and Static Wav captures at 1440x900, 768x1024, and 390x844 under `docs/staging-reviews/signal-media-corrections-assets/`; compared with `docs/visual-baseline/v1/`
+- Intentional visual departures: Storefront replaces the plain film frame with a cyan/gold/violet/pink HUD; Static Wav retains its original commercial artwork while restoring the requested route name and entry behavior
+- Verification: No horizontal overflow, console errors, page errors, or broken assets in the six affected-route captures; the Storefront footer and all actions remain within the viewport
+- Staging URL: Local only (`http://127.0.0.1:8143/`)
+- Staging safety: Noindex and preview banners verified; live payments, production account writes, real redemptions, and production analytics remain blocked
+- Live checkout: Not exercised or changed by this correction
+- Approval status: Not approved for production; production remains unchanged
