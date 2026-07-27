@@ -192,6 +192,32 @@ test("Storefront presents supplied Guardian bundles without inventing checkout c
   await expect(saveBundle).toHaveAttribute("aria-pressed", "true");
 });
 
+test("Arcade hero fits the supplied Guardian film with accessible motion control", async ({ page }) => {
+  await blockHeavyMedia(page);
+  await page.goto("/features-app.html", { waitUntil: "domcontentloaded" });
+  const commercialGate = page.locator(".lm-commercial-gate");
+  if (await commercialGate.isVisible().catch(() => false)) {
+    await commercialGate.locator(".lm-commercial-gate__skip").click();
+  }
+
+  const media = page.locator(".arcade-pilot-hero__media");
+  const video = page.locator("[data-arcade-hero-video]");
+  const toggle = page.locator("[data-arcade-hero-video-toggle]");
+  await expect(media).toBeVisible();
+  await expect(video).toHaveAttribute("muted", "");
+  await expect(video).toHaveAttribute("loop", "");
+  await expect(video).toHaveAttribute("playsinline", "");
+  await expect(video.locator("source")).toHaveAttribute("src", /lottomind-arcade-hero-film-20260723\.mp4$/);
+  await expect(toggle).toBeVisible();
+
+  const box = await media.boundingBox();
+  expect(box.width).toBeGreaterThan(280);
+  expect(box.height).toBeGreaterThan(150);
+  expect(box.width / box.height).toBeGreaterThan(1.7);
+  expect(box.width / box.height).toBeLessThan(1.85);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
+});
+
 test("membership checkout explains an authenticated backend rejection", async ({ page }) => {
   await blockHeavyMedia(page);
   await mockAuthenticatedBilling(page, {

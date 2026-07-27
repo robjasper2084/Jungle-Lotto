@@ -13,8 +13,49 @@
   const count = document.querySelector("[data-arcade-count]");
   const visibleCount = document.querySelector("[data-arcade-visible-count]");
   const featuredLink = document.querySelector("[data-arcade-featured-link]");
+  const heroVideo = document.querySelector("[data-arcade-hero-video]");
+  const heroVideoToggle = document.querySelector("[data-arcade-hero-video-toggle]");
+  const reducedMotion = global.matchMedia("(prefers-reduced-motion: reduce)");
   const difficultyOrder = { Casual: 0, Intermediate: 1, Advanced: 2 };
   const state = { category: "All", query: "", sort: "featured" };
+
+  function updateHeroVideoControl() {
+    if (!heroVideo || !heroVideoToggle) return;
+    const paused = heroVideo.paused;
+    heroVideoToggle.setAttribute("aria-pressed", String(paused));
+    heroVideoToggle.setAttribute("aria-label", `${paused ? "Play" : "Pause"} Arcade signal film`);
+    heroVideoToggle.title = `${paused ? "Play" : "Pause"} film`;
+    const icon = heroVideoToggle.querySelector("span");
+    if (icon) icon.textContent = paused ? "▶" : "Ⅱ";
+  }
+
+  function applyHeroVideoMotionPreference() {
+    if (!heroVideo) return;
+    if (reducedMotion.matches) {
+      heroVideo.pause();
+      heroVideo.currentTime = 0;
+      updateHeroVideoControl();
+      return;
+    }
+    heroVideo.play().catch(updateHeroVideoControl);
+  }
+
+  if (heroVideo && heroVideoToggle) {
+    heroVideo.muted = true;
+    heroVideo.addEventListener("play", updateHeroVideoControl);
+    heroVideo.addEventListener("pause", updateHeroVideoControl);
+    heroVideoToggle.addEventListener("click", () => {
+      if (heroVideo.paused) heroVideo.play().catch(updateHeroVideoControl);
+      else heroVideo.pause();
+    });
+    reducedMotion.addEventListener?.("change", applyHeroVideoMotionPreference);
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) heroVideo.pause();
+      else applyHeroVideoMotionPreference();
+    });
+    applyHeroVideoMotionPreference();
+    updateHeroVideoControl();
+  }
 
   if (!grid || !filters || !search || !sort || !empty || !live || !count || !visibleCount) return;
 

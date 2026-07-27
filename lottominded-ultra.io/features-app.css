@@ -124,9 +124,95 @@ body.arcade-pilot-page.feature-entity-ready .feature-entity {
   position: relative;
   z-index: 3;
   align-self: center;
-  width: min(760px, calc(100% - 3rem));
+  width: min(48vw, 680px);
   margin: 0 max(1.5rem, calc((100% - 1320px) / 2));
   padding: 5.5rem 0 5rem;
+}
+
+.arcade-pilot-hero__media {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  right: max(1.5rem, calc((100% - 1440px) / 2));
+  overflow: hidden;
+  width: min(43vw, 620px);
+  margin: 0;
+  aspect-ratio: 16 / 9;
+  border: 1px solid rgba(81, 231, 238, 0.72);
+  border-radius: 4px;
+  background: #020407;
+  box-shadow:
+    12px 12px 0 rgba(167, 139, 250, 0.16),
+    0 0 2.5rem rgba(81, 231, 238, 0.18);
+  transform: translateY(-50%);
+}
+
+.arcade-pilot-hero__media::before,
+.arcade-pilot-hero__media::after {
+  position: absolute;
+  z-index: 2;
+  content: "";
+  pointer-events: none;
+}
+
+.arcade-pilot-hero__media::before {
+  inset: 0;
+  border: 10px solid transparent;
+  border-top-color: rgba(241, 199, 91, 0.52);
+  border-left-color: rgba(241, 199, 91, 0.52);
+  clip-path: polygon(0 0, 5rem 0, 0 5rem);
+}
+
+.arcade-pilot-hero__media::after {
+  inset: 0;
+  background:
+    linear-gradient(180deg, transparent 66%, rgba(2, 4, 7, 0.78)),
+    repeating-linear-gradient(0deg, transparent 0 4px, rgba(81, 231, 238, 0.04) 4px 5px);
+}
+
+.arcade-pilot-hero__video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  filter: saturate(1.06) contrast(1.03) brightness(0.96);
+}
+
+.arcade-pilot-hero__media figcaption {
+  position: absolute;
+  z-index: 3;
+  bottom: 0.75rem;
+  left: 0.85rem;
+  color: #f8fbff;
+  font-family: var(--arcade-display);
+  font-size: 0.68rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.arcade-pilot-hero__video-toggle {
+  position: absolute;
+  z-index: 4;
+  right: 0.7rem;
+  bottom: 0.6rem;
+  display: grid;
+  width: 2.45rem;
+  height: 2.45rem;
+  padding: 0;
+  place-items: center;
+  border: 1px solid rgba(81, 231, 238, 0.72);
+  border-radius: 50%;
+  color: #020407;
+  background: linear-gradient(135deg, var(--arcade-gold), var(--arcade-cyan));
+  box-shadow: 0 0 1.4rem rgba(81, 231, 238, 0.24);
+  cursor: pointer;
+}
+
+.arcade-pilot-hero__video-toggle:hover,
+.arcade-pilot-hero__video-toggle:focus-visible {
+  outline: 2px solid #f8fbff;
+  outline-offset: 2px;
 }
 
 .arcade-pilot-label,
@@ -251,7 +337,7 @@ body.arcade-pilot-page.feature-entity-ready .feature-entity {
 
 .arcade-pilot-hero__status {
   position: absolute;
-  z-index: 3;
+  z-index: 4;
   right: max(1.5rem, calc((100% - 1320px) / 2));
   bottom: 2rem;
   display: grid;
@@ -728,7 +814,12 @@ body.arcade-pilot-page.feature-entity-ready .feature-entity {
   }
 
   .arcade-pilot-hero__copy {
+    width: min(50%, 520px);
     padding-bottom: 8rem;
+  }
+
+  .arcade-pilot-hero__media {
+    width: min(42vw, 520px);
   }
 
   .arcade-pilot-hero__status {
@@ -770,6 +861,15 @@ body.arcade-pilot-page.feature-entity-ready .feature-entity {
     width: calc(100% - 2rem);
     margin: 0 1rem;
     padding: 3rem 0 1.5rem;
+  }
+
+  .arcade-pilot-hero__media {
+    position: relative;
+    top: auto;
+    right: auto;
+    width: calc(100% - 2rem);
+    margin: 0 1rem 1rem;
+    transform: none;
   }
 
   .arcade-pilot-label {
