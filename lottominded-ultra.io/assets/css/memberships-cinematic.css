@@ -1142,6 +1142,10 @@ body.memberships-page .membership-commercial-modal__sound {
   cursor: pointer;
 }
 
+body.memberships-page .membership-commercial-modal__sound[hidden] {
+  display: none !important;
+}
+
 body.memberships-page .membership-commercial-modal__scan {
   position: absolute;
   inset: 0;
