@@ -90,3 +90,20 @@
 ## Approval Status
 
 **Ready for next phase.** This is not production approval. Live checkout was not exercised or changed in this pass.
+
+## 2026-07-27 Storefront, Popup, Arcade, And News Addendum
+
+- Implementation commit: `4804b2a25e4d96d54d97f24f23daef3867f37ff7`
+- Refreshed routes: Memberships, Membership commercial, Storefront, Static Wav, Arcade, RAHBE, and News
+- Refreshed viewports: 1440x900, 768x1024, and 390x844
+- Verification: 21/21 captures passed noindex, staging-banner, horizontal-overflow, console-error, page-error, and same-origin asset checks
+- Improvement: Commercial popups now share a clear `Buy Now` action that navigates to the protected Storefront instead of initiating checkout.
+- Improvement: Storefront's enlarged inline film and HUD remain contained on mobile; the selected products and gallery entry are removed, and the Detroit Embroidery Hoodie preview reads `$89.99`.
+- Improvement: Membership appears only after the arrival transition completes, then closes directly to the page when its existing film ends.
+- Improvement: Static Wav keeps its existing film inside a matching signal-HUD frame, while RAHBE restores the embedded game and both routes retain the explicit header hide/restore control.
+- Improvement: Arcade uses a contained two-column Guardian film layout on desktop and a stacked layout on mobile without obscuring the particle artwork.
+- Improvement: Current News cards use local JPG cover-story art whenever the publisher feed does not provide a usable image.
+- Intentional departure: The header hide control is absent from routes other than Static Wav and RAHBE.
+- Accessibility: Popup close, sound, replay, enter, and Buy Now controls remain keyboard reachable; reduced-motion captures passed at all three sizes.
+- Safety: Buy Now is navigation only. Staging continues to block live payments, account writes, real redemptions, and production analytics.
+- Approval status: **Ready for next phase.** Production remains unchanged and not approved.

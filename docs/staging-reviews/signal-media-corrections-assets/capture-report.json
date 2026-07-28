@@ -1,6 +1,19 @@
 {
-  "capturedAt": "2026-07-27T19:53:13.944Z",
+  "capturedAt": "2026-07-28T00:37:56.743Z",
   "results": [
+    {
+      "route": "/memberships.html#dust",
+      "viewport": "1440x900",
+      "status": 200,
+      "output": "C:\\Users\\digit\\Documents\\phone\\_jungle_lotto_refined\\docs\\staging-reviews\\signal-media-corrections-assets\\memberships-1440x900.png",
+      "noindex": "noindex,nofollow,noarchive",
+      "stagingBannerVisible": true,
+      "horizontalOverflow": false,
+      "animationsRunning": 0,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "assetFailures": []
+    },
     {
       "route": "/memberships.html",
       "viewport": "1440x900",
@@ -41,10 +54,49 @@
       "assetFailures": []
     },
     {
+      "route": "/features-app.html",
+      "viewport": "1440x900",
+      "status": 200,
+      "output": "C:\\Users\\digit\\Documents\\phone\\_jungle_lotto_refined\\docs\\staging-reviews\\signal-media-corrections-assets\\arcade-1440x900.png",
+      "noindex": "noindex,nofollow,noarchive",
+      "stagingBannerVisible": true,
+      "horizontalOverflow": false,
+      "animationsRunning": 0,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "assetFailures": []
+    },
+    {
       "route": "/beat2lotto-plus.html#beat2lotto",
       "viewport": "1440x900",
       "status": 200,
       "output": "C:\\Users\\digit\\Documents\\phone\\_jungle_lotto_refined\\docs\\staging-reviews\\signal-media-corrections-assets\\rahbe-1440x900.png",
+      "noindex": "noindex,nofollow,noarchive",
+      "stagingBannerVisible": true,
+      "horizontalOverflow": false,
+      "animationsRunning": 0,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "assetFailures": []
+    },
+    {
+      "route": "/news/",
+      "viewport": "1440x900",
+      "status": 200,
+      "output": "C:\\Users\\digit\\Documents\\phone\\_jungle_lotto_refined\\docs\\staging-reviews\\signal-media-corrections-assets\\news-1440x900.png",
+      "noindex": "noindex,nofollow,noarchive",
+      "stagingBannerVisible": true,
+      "horizontalOverflow": false,
+      "animationsRunning": 0,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "assetFailures": []
+    },
+    {
+      "route": "/memberships.html#dust",
+      "viewport": "768x1024",
+      "status": 200,
+      "output": "C:\\Users\\digit\\Documents\\phone\\_jungle_lotto_refined\\docs\\staging-reviews\\signal-media-corrections-assets\\memberships-768x1024.png",
       "noindex": "noindex,nofollow,noarchive",
       "stagingBannerVisible": true,
       "horizontalOverflow": false,
@@ -93,10 +145,49 @@
       "assetFailures": []
     },
     {
+      "route": "/features-app.html",
+      "viewport": "768x1024",
+      "status": 200,
+      "output": "C:\\Users\\digit\\Documents\\phone\\_jungle_lotto_refined\\docs\\staging-reviews\\signal-media-corrections-assets\\arcade-768x1024.png",
+      "noindex": "noindex,nofollow,noarchive",
+      "stagingBannerVisible": true,
+      "horizontalOverflow": false,
+      "animationsRunning": 0,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "assetFailures": []
+    },
+    {
       "route": "/beat2lotto-plus.html#beat2lotto",
       "viewport": "768x1024",
       "status": 200,
       "output": "C:\\Users\\digit\\Documents\\phone\\_jungle_lotto_refined\\docs\\staging-reviews\\signal-media-corrections-assets\\rahbe-768x1024.png",
+      "noindex": "noindex,nofollow,noarchive",
+      "stagingBannerVisible": true,
+      "horizontalOverflow": false,
+      "animationsRunning": 0,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "assetFailures": []
+    },
+    {
+      "route": "/news/",
+      "viewport": "768x1024",
+      "status": 200,
+      "output": "C:\\Users\\digit\\Documents\\phone\\_jungle_lotto_refined\\docs\\staging-reviews\\signal-media-corrections-assets\\news-768x1024.png",
+      "noindex": "noindex,nofollow,noarchive",
+      "stagingBannerVisible": true,
+      "horizontalOverflow": false,
+      "animationsRunning": 0,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "assetFailures": []
+    },
+    {
+      "route": "/memberships.html#dust",
+      "viewport": "390x844",
+      "status": 200,
+      "output": "C:\\Users\\digit\\Documents\\phone\\_jungle_lotto_refined\\docs\\staging-reviews\\signal-media-corrections-assets\\memberships-390x844.png",
       "noindex": "noindex,nofollow,noarchive",
       "stagingBannerVisible": true,
       "horizontalOverflow": false,
@@ -145,10 +236,36 @@
       "assetFailures": []
     },
     {
+      "route": "/features-app.html",
+      "viewport": "390x844",
+      "status": 200,
+      "output": "C:\\Users\\digit\\Documents\\phone\\_jungle_lotto_refined\\docs\\staging-reviews\\signal-media-corrections-assets\\arcade-390x844.png",
+      "noindex": "noindex,nofollow,noarchive",
+      "stagingBannerVisible": true,
+      "horizontalOverflow": false,
+      "animationsRunning": 0,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "assetFailures": []
+    },
+    {
       "route": "/beat2lotto-plus.html#beat2lotto",
       "viewport": "390x844",
       "status": 200,
       "output": "C:\\Users\\digit\\Documents\\phone\\_jungle_lotto_refined\\docs\\staging-reviews\\signal-media-corrections-assets\\rahbe-390x844.png",
+      "noindex": "noindex,nofollow,noarchive",
+      "stagingBannerVisible": true,
+      "horizontalOverflow": false,
+      "animationsRunning": 0,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "assetFailures": []
+    },
+    {
+      "route": "/news/",
+      "viewport": "390x844",
+      "status": 200,
+      "output": "C:\\Users\\digit\\Documents\\phone\\_jungle_lotto_refined\\docs\\staging-reviews\\signal-media-corrections-assets\\news-390x844.png",
       "noindex": "noindex,nofollow,noarchive",
       "stagingBannerVisible": true,
       "horizontalOverflow": false,

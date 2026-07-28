@@ -255,3 +255,19 @@
 - Staging URL: Local only (`http://127.0.0.1:8143/features-app.html`)
 - Staging safety: Live payments, production account writes, real redemptions, and production analytics remain blocked
 - Approval status: Ready for next phase; production remains unchanged and not approved
+
+## Storefront, Popup, Arcade, And News Refinement
+
+- Step number: Browser-requested Storefront, commercial, Arcade, and News correction
+- Implementation commit: `4804b2a25e4d96d54d97f24f23daef3867f37ff7`
+- Affected routes: `/merch-store.html`, `/memberships.html`, `/how-to-use.html`, `/features-app.html`, `/beat2lotto-plus.html`, `/news/`, and shared header surfaces
+- Changes: Set the Detroit Embroidery Hoodie preorder preview to `$89.99`; removed the selected Cyber Brain Glow Hoodie, LottoMind Coin Set, and Boogie Knit gallery entry; enlarged the inline Storefront commercial without mobile overflow; added safe Storefront-linked `Buy Now` actions to all commercial popup systems; limited the header hide control to Static Wav and RAHBE; delayed the Membership popup until the arrival transition completes and removed its duplicate close transition; restored the visible RAHBE game; fitted the Arcade Guardian film beside the hero copy; and changed current News fallback art to local JPG cover-story images
+- Commerce safety: `Buy Now` links navigate to the Storefront or Guardian section only. They do not call Stripe, complete checkout, create an order, or bypass staging guards.
+- Tests: JavaScript syntax and diff checks passed; site validation passed for 15 HTML files; News/account tests passed 20/20; focused source browser checks passed 22/22 across desktop and mobile; staging safety passed 10/10; source/staging route matrix passed 92/92; staging static verification passed for 23 pages and 543 same-origin asset references
+- Visual review: Refreshed 21 staging captures at 1440x900, 768x1024, and 390x844 under `docs/staging-reviews/signal-media-corrections-assets/`; compared with `docs/visual-baseline/v1/`
+- Intentional visual departures: Storefront uses a larger commercial capsule and a responsive HUD popup; Membership and Static Wav use matching signal-HUD popup language while retaining their existing films; Arcade uses a true two-column desktop film layout; News uses photographic JPG fallback covers where publisher artwork is absent
+- Verification: No horizontal overflow, console errors, page errors, or broken assets were found in the 21 affected-route captures. Black/navy, gold, cyan, violet, Guardian, orb, Detroit, music-technology, and arcade identity remain recognizable.
+- Staging URL: Local only (`http://127.0.0.1:8143/`)
+- Staging safety: Noindex and preview banners verified; live payments, production account writes, real redemptions, and production analytics remain blocked
+- Live checkout: Not exercised or changed by this correction
+- Approval status: Ready for next phase; production remains unchanged and not approved
