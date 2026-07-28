@@ -271,3 +271,18 @@
 - Staging safety: Noindex and preview banners verified; live payments, production account writes, real redemptions, and production analytics remain blocked
 - Live checkout: Not exercised or changed by this correction
 - Approval status: Ready for next phase; production remains unchanged and not approved
+
+## Static Wav Storefront HUD Alignment
+
+- Step number: Browser-requested Static Wav commercial visual alignment
+- Implementation commits: `710d3a477d0b0eb8e7aba65e9d3f5933b68e4c41` and `19a41a5c3ed07c9e996f849d2318882008917366`
+- Affected route: `/how-to-use.html`
+- Changes: Restyled the existing Static Wav commercial to match the Storefront HUD language with a clipped cyan/gold frame, larger film bay, desktop signal rail, contained action deck, and stacked mobile layout; kept the original Static Wav commercial video and playback lifecycle unchanged
+- Tests: JavaScript syntax and diff checks passed; site validation passed for 15 HTML files; focused Static Wav desktop/mobile checks passed 2/2; staging safety passed 10/10; full source/staging desktop/mobile route matrix passed 92/92; staging static verification passed for 23 pages and 543 same-origin asset references
+- Visual review: Refreshed Static Wav captures at 1440x900, 768x1024, and 390x844 under `docs/staging-reviews/signal-media-corrections-assets/`; compared with `docs/visual-baseline/v1/how-to-use--desktop.png` and `docs/visual-baseline/v1/how-to-use--mobile.png`
+- Intentional visual departure: The v1 single-column commercial becomes a Storefront-style split HUD on wider viewports while retaining a complete one-column control flow on mobile
+- Verification: No horizontal overflow, console errors, page errors, broken assets, or staging-banner overlap in the three affected-route captures
+- Staging URL: Local only (`http://127.0.0.1:8143/how-to-use.html`)
+- Staging safety: Noindex and preview banners verified; live payments, production account writes, real redemptions, and production analytics remain blocked
+- Live checkout: Not exercised or changed
+- Approval status: Ready for next phase; production remains unchanged and not approved

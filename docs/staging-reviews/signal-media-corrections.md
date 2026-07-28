@@ -107,3 +107,17 @@
 - Accessibility: Popup close, sound, replay, enter, and Buy Now controls remain keyboard reachable; reduced-motion captures passed at all three sizes.
 - Safety: Buy Now is navigation only. Staging continues to block live payments, account writes, real redemptions, and production analytics.
 - Approval status: **Ready for next phase.** Production remains unchanged and not approved.
+
+## 2026-07-28 Static Wav Storefront HUD Addendum
+
+- Implementation commits: `710d3a477d0b0eb8e7aba65e9d3f5933b68e4c41` and `19a41a5c3ed07c9e996f849d2318882008917366`
+- Refreshed route: Static Wav (`/how-to-use.html`)
+- Refreshed viewports: 1440x900, 768x1024, and 390x844
+- Verification: 3/3 captures passed noindex, staging-banner, horizontal-overflow, console-error, page-error, and same-origin asset checks
+- Improvement: The existing Static Wav film now sits in the same futuristic HUD language as the Storefront commercial, with a larger film bay and a dedicated signal/action rail at wider viewports.
+- Improvement: The mobile popup stacks the full title, film, chapter, copy, Enter, Replay, and Buy Now controls below the preview safety bars without cropping or overflow.
+- Preserved behavior: The original `lottomind-guide-commercial-20260717.mp4` media, one-pass playback, sound fallback, automatic end-of-film dismissal, route transition, and Storefront-only Buy Now navigation are unchanged.
+- Intentional departure: The v1 single-column frame is replaced by a more structured Storefront-style split panel on desktop and tablet.
+- Accessibility: The close control has an accessible name, all actions remain keyboard reachable, and reduced-motion capture leaves no running animation.
+- Safety: Staging remains noindex and continues to block live payments, account writes, real redemptions, and production analytics.
+- Approval status: **Ready for next phase.** Production remains unchanged and not approved.
