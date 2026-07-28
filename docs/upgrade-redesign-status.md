@@ -328,3 +328,18 @@
 - Staging URL: Local only (`http://127.0.0.1:8143/memberships.html`)
 - Staging safety: Noindex and preview banners verified; live payments, production account writes, real redemptions, and production analytics remain blocked
 - Production approval status: Not approved; production remains unchanged
+
+## Static Wav Future HUD
+
+- Step number: Browser-requested Static Wav commercial visual refinement
+- Commit SHA: This status entry is part of the current focused commit; the completion report records its exact SHA
+- Affected route: `/how-to-use.html`
+- Changes: Refined the existing guide commercial into a beveled Static Wav transmission chassis with layered glass framing, stronger telemetry, a contained film bay, chapter node, responsive action deck, and delayed staging-safety offset measurement
+- Preserved behavior: Existing commercial media, one-pass playback, sound fallback, automatic dismissal, transition handoff, and Storefront Buy Now navigation are unchanged
+- Tests: JavaScript syntax and 15-page site validation passed; focused Static Wav browser tests passed 2/2; candidate source/staging route matrix passed 92/92; staging safety passed 10/10; static staging verification passed for 23 pages and 543 same-origin references
+- Visual review: Refreshed Static Wav captures passed at 1440x900, 768x1024, and 390x844; compared with `docs/visual-baseline/v1/` and documented in `docs/staging-reviews/signal-media-corrections.md`
+- Intentional visual departure: The prior clean split panel becomes a more cinematic signal chassis while retaining the Detroit footage and black/gold/cyan/violet visual identity
+- Commerce and backend impact: None. Buy Now remains route navigation only, and no checkout, account, redemption, or backend behavior changed
+- Staging URL: Local only (`http://127.0.0.1:8143/how-to-use.html`)
+- Staging safety: Noindex and preview banners verified; live payments, production account writes, real redemptions, and production analytics remain blocked
+- Production approval status: Not approved; production remains unchanged

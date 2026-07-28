@@ -186,3 +186,24 @@
 | --- | --- | --- |
 | Hero depth | [Desktop](../visual-baseline/v1/memberships--desktop.png) / [Tablet](../visual-baseline/v1/memberships--tablet.png) / [Mobile](../visual-baseline/v1/memberships--mobile.png) | [Desktop](./signal-media-corrections-assets/membership-depth-hero-1440x900.png) / [Tablet](./signal-media-corrections-assets/membership-depth-hero-768x1024.png) / [Mobile](./signal-media-corrections-assets/membership-depth-hero-390x844.png) |
 | Plan depth | [Desktop](../visual-baseline/v1/memberships--desktop.png) / [Tablet](../visual-baseline/v1/memberships--tablet.png) / [Mobile](../visual-baseline/v1/memberships--mobile.png) | [Desktop](./signal-media-corrections-assets/membership-depth-plans-1440x900.png) / [Tablet](./signal-media-corrections-assets/membership-depth-plans-768x1024.png) / [Mobile](./signal-media-corrections-assets/membership-depth-plans-390x844.png) |
+
+## 2026-07-28 Static Wav Future HUD Addendum
+
+- Affected route: Static Wav (`/how-to-use.html`)
+- Improvement: The existing guide commercial now uses a deeper transmission chassis with beveled corners, layered cyan/gold framing, glass telemetry surfaces, a contained film bay, a stronger chapter node, and a clearer action deck.
+- Mobile correction: The popup remeasures the staging safety bars after they are inserted, keeping the HUD crown, title, film, and controls fully visible at 390x844.
+- Preserved behavior: The original `lottomind-guide-commercial-20260717.mp4` film, one-commercial-per-entry rule, sound fallback, automatic dismissal, transition handoff, and Storefront-only Buy Now navigation are unchanged.
+- Intentional departure: The previous clean Storefront-style split panel becomes a more cinematic Static Wav signal chassis. The Detroit footage and black, gold, cyan, and violet identity remain recognizable.
+- Verification: The focused Static Wav browser test passed 2/2 across desktop and mobile. The candidate source/staging route matrix passed 92/92. Staging safety passed 10/10, and static verification covered 23 pages and 543 same-origin references.
+- Visual verification: 3/3 staging captures passed at 1440x900, 768x1024, and 390x844 with no horizontal overflow, running reduced-motion animation, console errors, page errors, or broken assets.
+- Safety: Staging remains noindex and visibly labeled. The Buy Now action remains route navigation only; live payments, production account writes, real redemptions, and production analytics remain blocked.
+- Approval status: **Ready for next phase.** Production remains unchanged and not approved.
+
+### Static Wav Future HUD Captures
+
+- [Desktop staging](./signal-media-corrections-assets/static-wav-1440x900.png)
+- [Tablet staging](./signal-media-corrections-assets/static-wav-768x1024.png)
+- [Mobile staging](./signal-media-corrections-assets/static-wav-390x844.png)
+- [v1 desktop baseline](../visual-baseline/v1/how-to-use--desktop.png)
+- [v1 tablet baseline](../visual-baseline/v1/how-to-use--tablet.png)
+- [v1 mobile baseline](../visual-baseline/v1/how-to-use--mobile.png)

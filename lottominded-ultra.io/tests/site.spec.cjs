@@ -525,6 +525,8 @@ test("Static Wav keeps one commercial on each page entry", async ({ page }) => {
   const gate = page.locator(".lm-commercial-gate");
   await expect(gate).toBeVisible();
   await expect(gate).toHaveClass(/lm-commercial-gate--guide/);
+  await expect(gate).toHaveAttribute("data-lm-guide-hud", "static-wav-2084");
+  await expect(gate.locator(".lm-commercial-gate__guide-chassis")).toContainText("STREET SIGNAL LOCKED");
   await expect(gate.locator("video")).toHaveAttribute("data-src", /lottomind-guide-commercial-20260717\.mp4/);
   await expect(gate.getByRole("link", { name: "Buy Now" })).toHaveAttribute("href", /merch-store\.html\?product=guardian#keychains/);
 

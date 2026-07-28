@@ -127,8 +127,14 @@
   modal.setAttribute("aria-modal", "true");
   modal.setAttribute("aria-labelledby", "lmCommercialGateTitle");
   modal.style.setProperty("--lm-commercial-chapter-count", String(films.length));
+  if (routeTheme === "guide") modal.dataset.lmGuideHud = "static-wav-2084";
   modal.innerHTML = `
     <div class="lm-commercial-gate__panel">
+      ${routeTheme === "guide" ? `
+        <div class="lm-commercial-gate__guide-chassis" aria-hidden="true">
+          <span>LM // STATIC WAV // 2084</span>
+          <span>STREET SIGNAL LOCKED</span>
+        </div>` : ""}
       <header class="lm-commercial-gate__header">
         <div>
           <span class="lm-commercial-gate__signal"></span>
@@ -175,6 +181,7 @@
   const suspendedMedia = [];
   let closing = false;
   let transitionFallbackTimer = 0;
+  let previewOffsetTimer = 0;
 
   const pausePageMedia = () => {
     document.querySelectorAll("audio, video").forEach((media) => {
@@ -281,6 +288,7 @@
 
   const finishGate = () => {
     window.clearTimeout(transitionFallbackTimer);
+    window.clearTimeout(previewOffsetTimer);
     body.classList.remove("has-lm-commercial-gate");
     siblings.forEach((node) => node.removeAttribute("inert"));
     document.removeEventListener("play", blockCompetingMedia, true);
@@ -340,6 +348,8 @@
 
   body.append(modal);
   syncPreviewOffset();
+  requestAnimationFrame(syncPreviewOffset);
+  previewOffsetTimer = window.setTimeout(syncPreviewOffset, 120);
   window.addEventListener("resize", syncPreviewOffset);
   body.classList.add("has-lm-commercial-gate");
   siblings.forEach((node) => node.setAttribute("inert", ""));
