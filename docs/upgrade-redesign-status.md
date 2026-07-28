@@ -314,3 +314,17 @@
 - Staging safety: Noindex and preview banners verified; live payments, production account writes, real redemptions, and production analytics remain blocked
 - Live checkout: Not exercised or changed
 - Production approval status: Not approved; production remains unchanged
+
+## Membership 3D Depth Interaction
+
+- Step number: Browser-requested Membership 3D interaction enhancement
+- Commit SHA: This status entry is part of the current focused commit; the completion report records its exact SHA
+- Affected route: `/memberships.html`
+- Changes: Added restrained fine-pointer parallax to the Membership hero and HUD; added perspective tilt, layered emblems, signal sheen, and keyboard-focus lift to the four plan cards and bottom Guardian card; added static coarse-pointer and reduced-motion fallbacks
+- Tests: JavaScript syntax and 15-page site validation passed; focused Membership interaction and route tests passed 6/6; full source/staging desktop/mobile route matrix passed 92/92; staging safety passed 10/10; staging static verification passed for 23 pages and 541 same-origin references
+- Visual review: Six Membership captures passed at 1440x900, 768x1024, and 390x844; compared with `docs/visual-baseline/v1/` and documented in `docs/staging-reviews/signal-media-corrections.md`
+- Intentional visual departure: Membership hero and plan surfaces now have interactive depth on fine-pointer devices; the existing composition remains static on mobile, coarse pointers, and reduced-motion environments
+- Commerce and backend impact: None. Pricing, Membership commercial media, account behavior, checkout hooks, and staging guards are unchanged
+- Staging URL: Local only (`http://127.0.0.1:8143/memberships.html`)
+- Staging safety: Noindex and preview banners verified; live payments, production account writes, real redemptions, and production analytics remain blocked
+- Production approval status: Not approved; production remains unchanged

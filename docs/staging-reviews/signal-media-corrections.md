@@ -167,3 +167,22 @@
 - [v1 desktop baseline](../visual-baseline/v1/memberships--desktop.png)
 - [v1 tablet baseline](../visual-baseline/v1/memberships--tablet.png)
 - [v1 mobile baseline](../visual-baseline/v1/memberships--mobile.png)
+
+## 2026-07-28 Membership 3D Depth Addendum
+
+- Affected route: Memberships (`/memberships.html`)
+- Improvement: The Membership hero now responds to fine-pointer movement with restrained copy, HUD, and control parallax. Plan cards and the bottom Guardian card use true perspective tilt, layered emblems, and a pointer-following signal sheen.
+- Interaction safety: Keyboard focus raises the active card without obscuring its controls. Coarse-pointer, mobile, and reduced-motion environments use a stable non-tilting presentation.
+- Preserved identity: The existing Detroit footage, Guardian and orb artwork, black/gold/cyan/violet color system, cinematic HUD language, membership wording, and responsible-entertainment context remain recognizable.
+- Intentional departure: The post-commercial Membership page is more dimensional than the flat v1 baseline. Layout, plan order, pricing, commercial media, and protected actions are unchanged.
+- Verification: The focused depth and Membership route tests passed 6/6 across desktop and mobile. The full source/staging route matrix passed 92/92. Staging safety passed 10/10, and static staging verification covered 23 pages and 541 same-origin references.
+- Visual verification: 6/6 interaction captures passed at 1440x900, 768x1024, and 390x844 with no horizontal overflow, console errors, page errors, or broken assets.
+- Safety: Staging remains noindex and visibly labeled. Live payments, production account writes, real redemptions, and production analytics remain blocked.
+- Approval status: **Ready for next phase.** Production remains unchanged and not approved.
+
+### Membership Depth Captures
+
+| Surface | v1 baseline | Staging |
+| --- | --- | --- |
+| Hero depth | [Desktop](../visual-baseline/v1/memberships--desktop.png) / [Tablet](../visual-baseline/v1/memberships--tablet.png) / [Mobile](../visual-baseline/v1/memberships--mobile.png) | [Desktop](./signal-media-corrections-assets/membership-depth-hero-1440x900.png) / [Tablet](./signal-media-corrections-assets/membership-depth-hero-768x1024.png) / [Mobile](./signal-media-corrections-assets/membership-depth-hero-390x844.png) |
+| Plan depth | [Desktop](../visual-baseline/v1/memberships--desktop.png) / [Tablet](../visual-baseline/v1/memberships--tablet.png) / [Mobile](../visual-baseline/v1/memberships--mobile.png) | [Desktop](./signal-media-corrections-assets/membership-depth-plans-1440x900.png) / [Tablet](./signal-media-corrections-assets/membership-depth-plans-768x1024.png) / [Mobile](./signal-media-corrections-assets/membership-depth-plans-390x844.png) |

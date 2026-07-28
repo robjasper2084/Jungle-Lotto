@@ -1,0 +1,83 @@
+{
+  "capturedAt": "2026-07-28T16:16:41.106Z",
+  "results": [
+    {
+      "route": "/memberships.html",
+      "viewport": "1440x900",
+      "status": 200,
+      "output": "C:\\Users\\digit\\Documents\\phone\\_jungle_lotto_refined\\docs\\staging-reviews\\signal-media-corrections-assets\\membership-depth-hero-1440x900.png",
+      "noindex": "noindex,nofollow,noarchive",
+      "stagingBannerVisible": true,
+      "horizontalOverflow": false,
+      "animationsRunning": 0,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "assetFailures": []
+    },
+    {
+      "route": "/memberships.html#membership-plans",
+      "viewport": "1440x900",
+      "status": 200,
+      "output": "C:\\Users\\digit\\Documents\\phone\\_jungle_lotto_refined\\docs\\staging-reviews\\signal-media-corrections-assets\\membership-depth-plans-1440x900.png",
+      "noindex": "noindex,nofollow,noarchive",
+      "stagingBannerVisible": true,
+      "horizontalOverflow": false,
+      "animationsRunning": 0,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "assetFailures": []
+    },
+    {
+      "route": "/memberships.html",
+      "viewport": "768x1024",
+      "status": 200,
+      "output": "C:\\Users\\digit\\Documents\\phone\\_jungle_lotto_refined\\docs\\staging-reviews\\signal-media-corrections-assets\\membership-depth-hero-768x1024.png",
+      "noindex": "noindex,nofollow,noarchive",
+      "stagingBannerVisible": true,
+      "horizontalOverflow": false,
+      "animationsRunning": 0,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "assetFailures": []
+    },
+    {
+      "route": "/memberships.html#membership-plans",
+      "viewport": "768x1024",
+      "status": 200,
+      "output": "C:\\Users\\digit\\Documents\\phone\\_jungle_lotto_refined\\docs\\staging-reviews\\signal-media-corrections-assets\\membership-depth-plans-768x1024.png",
+      "noindex": "noindex,nofollow,noarchive",
+      "stagingBannerVisible": true,
+      "horizontalOverflow": false,
+      "animationsRunning": 0,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "assetFailures": []
+    },
+    {
+      "route": "/memberships.html",
+      "viewport": "390x844",
+      "status": 200,
+      "output": "C:\\Users\\digit\\Documents\\phone\\_jungle_lotto_refined\\docs\\staging-reviews\\signal-media-corrections-assets\\membership-depth-hero-390x844.png",
+      "noindex": "noindex,nofollow,noarchive",
+      "stagingBannerVisible": true,
+      "horizontalOverflow": false,
+      "animationsRunning": 0,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "assetFailures": []
+    },
+    {
+      "route": "/memberships.html#membership-plans",
+      "viewport": "390x844",
+      "status": 200,
+      "output": "C:\\Users\\digit\\Documents\\phone\\_jungle_lotto_refined\\docs\\staging-reviews\\signal-media-corrections-assets\\membership-depth-plans-390x844.png",
+      "noindex": "noindex,nofollow,noarchive",
+      "stagingBannerVisible": true,
+      "horizontalOverflow": false,
+      "animationsRunning": 0,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "assetFailures": []
+    }
+  ]
+}

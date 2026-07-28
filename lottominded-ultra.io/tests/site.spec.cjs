@@ -239,6 +239,41 @@ test("membership commercial requests sound first and closes when playback ends",
   await expect(page.locator("[data-lm-page-transition]")).not.toHaveClass(/is-closing/);
 });
 
+test("Membership depth responds to pointer and keyboard while respecting reduced motion", async ({ page }) => {
+  await blockHeavyMedia(page);
+  await page.goto("/memberships.html", { waitUntil: "domcontentloaded" });
+  const commercial = page.locator("[data-membership-commercial-modal]");
+  await expect(commercial).toBeVisible({ timeout: 15_000 });
+  await page.locator("[data-membership-commercial-close]").click();
+  await expect(commercial).toBeHidden({ timeout: 5_000 });
+  await expect(page.locator("#lmMembership")).not.toHaveAttribute("inert", "", { timeout: 5_000 });
+
+  await expect(page.locator("body")).toHaveClass(/lm-membership-depth-ready/);
+  const cards = page.locator(".membership-plan-card.lm-membership-depth-card");
+  await expect(cards).toHaveCount(4);
+  const firstCard = cards.first();
+  const button = firstCard.locator("a, button").first();
+  await firstCard.evaluate((element) => element.scrollIntoView({ block: "center", behavior: "instant" }));
+  await expect(firstCard).toBeVisible();
+  await button.evaluate((element) => element.focus());
+  await expect(button).toBeFocused();
+  await expect(firstCard).toHaveClass(/is-depth-focused/);
+
+  const interactive = await page.locator("body").getAttribute("data-lm-membership-depth");
+  if (interactive === "interactive") {
+    const box = await firstCard.boundingBox();
+    if (!box) throw new Error("Membership plan card is not measurable.");
+    await page.mouse.move(box.x + box.width * 0.82, box.y + box.height * 0.24);
+    await expect.poll(() => firstCard.evaluate((card) => (
+      card.style.getPropertyValue("--lm-depth-rotate-y")
+    ))).not.toBe("0deg");
+  }
+
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await expect(page.locator("body")).toHaveAttribute("data-lm-membership-depth", "static");
+  await expect(firstCard).toHaveCSS("transform", "none");
+});
+
 test("Storefront commercial closes itself when playback ends", async ({ page }) => {
   await blockHeavyMedia(page);
   await page.goto("/merch-store.html", { waitUntil: "domcontentloaded" });
