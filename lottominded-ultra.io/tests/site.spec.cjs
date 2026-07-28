@@ -444,6 +444,35 @@ test("Static Wav keeps one commercial on each page entry", async ({ page }) => {
   await expect(gate).toHaveClass(/lm-commercial-gate--guide/);
   await expect(gate.locator("video")).toHaveAttribute("data-src", /lottomind-guide-commercial-20260717\.mp4/);
   await expect(gate.getByRole("link", { name: "Buy Now" })).toHaveAttribute("href", /merch-store\.html\?product=guardian#keychains/);
+
+  const layout = await gate.evaluate((element) => {
+    const panel = element.querySelector(".lm-commercial-gate__panel").getBoundingClientRect();
+    const stage = element.querySelector(".lm-commercial-gate__stage").getBoundingClientRect();
+    const chapters = element.querySelector(".lm-commercial-gate__chapters").getBoundingClientRect();
+    const footer = element.querySelector(".lm-commercial-gate__footer").getBoundingClientRect();
+    return {
+      viewportWidth: window.innerWidth,
+      viewportHeight: window.innerHeight,
+      panel: { left: panel.left, top: panel.top, right: panel.right, bottom: panel.bottom },
+      stage: { left: stage.left, top: stage.top, right: stage.right, bottom: stage.bottom },
+      chapters: { left: chapters.left, top: chapters.top, right: chapters.right, bottom: chapters.bottom },
+      footer: { left: footer.left, top: footer.top, right: footer.right, bottom: footer.bottom },
+    };
+  });
+
+  expect(layout.panel.left).toBeGreaterThanOrEqual(-1);
+  expect(layout.panel.top).toBeGreaterThanOrEqual(-1);
+  expect(layout.panel.right).toBeLessThanOrEqual(layout.viewportWidth + 1);
+  expect(layout.panel.bottom).toBeLessThanOrEqual(layout.viewportHeight + 1);
+  if (layout.viewportWidth > 720) {
+    expect(layout.stage.right).toBeLessThanOrEqual(layout.chapters.left + 1);
+    expect(layout.stage.right).toBeLessThanOrEqual(layout.footer.left + 1);
+  } else {
+    expect(layout.stage.bottom).toBeLessThanOrEqual(layout.chapters.top + 1);
+    expect(layout.chapters.bottom).toBeLessThanOrEqual(layout.footer.top + 1);
+  }
+  expect(await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1)).toBe(false);
+
   await gate.locator(".lm-commercial-gate__skip").click();
   await expect(gate).toBeHidden();
 
