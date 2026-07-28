@@ -95,6 +95,14 @@ test("memberships opens its entry commercial and keeps manual replay available",
   await expect(commercial).toBeVisible();
   await page.locator("[data-membership-commercial-close]").click();
   await expect(commercial).toBeHidden();
+  const heroFilm = page.locator(".membership-hero-commercial");
+  await expect(heroFilm).toBeVisible();
+  await expect(heroFilm.locator(".membership-hero-commercial__hud")).toBeVisible();
+  await expect(heroFilm.locator(".membership-hero-commercial__corner")).toHaveCount(4);
+  await expect(heroFilm.locator(".membership-hero-commercial__meter i")).toHaveCount(6);
+  await expect(heroFilm.locator("[data-membership-featured-sound]")).toBeVisible();
+  await expect(heroFilm.locator("video")).toHaveAttribute("src", /lottomind-membership-feature-commercial-20260716\.mp4/);
+  expect(await heroFilm.locator(".membership-hero-commercial__hud").evaluate((element) => getComputedStyle(element).clipPath)).not.toBe("none");
   await expect(page.locator("[data-stripe-lookup-key]").first()).toBeDisabled();
   await expect(page.locator("[data-stripe-membership-status]")).toContainText("Test billing endpoint offline");
   expect(apiRequests).toEqual([]);
@@ -516,6 +524,19 @@ test("features combines the cinematic shell with the manifest-driven Arcade dire
   await expect(page.locator("[data-arcade-grid] .arcade-game-card")).toHaveCount(8);
   await expect(page.locator("[data-arcade-count]")).toHaveText("8");
   await expect(page.locator(".arcade-game-card__status")).toHaveText(Array(8).fill("Playable"));
+  await expect(page.getByRole("heading", { name: "RAYCHASE PONG" })).toBeVisible();
+  const arcadeRail = page.locator("[data-arcade-grid]");
+  const railMetrics = await arcadeRail.evaluate((element) => ({
+    scrollWidth: element.scrollWidth,
+    clientWidth: element.clientWidth,
+    scrollSnapType: getComputedStyle(element).scrollSnapType,
+  }));
+  expect(railMetrics.scrollWidth).toBeGreaterThan(railMetrics.clientWidth);
+  expect(railMetrics.scrollSnapType).toContain("mandatory");
+  const nextGames = page.getByRole("button", { name: "Next games" });
+  await expect(nextGames).toBeEnabled();
+  await nextGames.click();
+  await expect.poll(() => arcadeRail.evaluate((element) => element.scrollLeft)).toBeGreaterThan(0);
   await expect(page.locator("main video:not([data-arcade-hero-video]), main audio, iframe, #lottery-news, .instrument-console")).toHaveCount(0);
 
   await page.getByRole("button", { name: "Action", exact: true }).click();
@@ -718,7 +739,7 @@ test("Jackpot Maze built route renders instead of a dev shell", async ({ page })
 
 for (const game of [
   { name: "OpenGW Levels", route: "/games/opengw-levels/", canvas: "#game" },
-  { name: "Raytrace Pong", route: "/games/raytrace-pong-background/", canvas: "#rayPong" },
+  { name: "RAYCHASE PONG", route: "/games/raytrace-pong-background/", canvas: "#rayPong" },
   { name: "Shadow Ops", route: "/games/shadow-ops-canvas/", canvas: "#game" },
 ]) {
   test(`${game.name} boots its visible canvas without local asset failures`, async ({ page }) => {

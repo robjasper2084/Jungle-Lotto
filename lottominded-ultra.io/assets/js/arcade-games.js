@@ -60,7 +60,7 @@
     },
     {
       id: "raytrace-pong",
-      title: "Raytrace Pong",
+      title: "RAYCHASE PONG",
       path: "./games/raytrace-pong-background/",
       description: "Play a light-traced Pong simulation where the ball illuminates the arena and casts live shadows.",
       category: "Simulation",

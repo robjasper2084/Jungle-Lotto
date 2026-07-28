@@ -12,12 +12,31 @@
   const live = document.querySelector("[data-arcade-live]");
   const count = document.querySelector("[data-arcade-count]");
   const visibleCount = document.querySelector("[data-arcade-visible-count]");
+  const railButtons = [...document.querySelectorAll("[data-arcade-scroll]")];
   const featuredLink = document.querySelector("[data-arcade-featured-link]");
   const heroVideo = document.querySelector("[data-arcade-hero-video]");
   const heroVideoToggle = document.querySelector("[data-arcade-hero-video-toggle]");
   const reducedMotion = global.matchMedia("(prefers-reduced-motion: reduce)");
   const difficultyOrder = { Casual: 0, Intermediate: 1, Advanced: 2 };
   const state = { category: "All", query: "", sort: "featured" };
+
+  function updateRailControls() {
+    const maxScroll = Math.max(0, grid.scrollWidth - grid.clientWidth);
+    railButtons.forEach((button) => {
+      const direction = Number(button.dataset.arcadeScroll);
+      button.disabled = direction < 0 ? grid.scrollLeft <= 2 : grid.scrollLeft >= maxScroll - 2;
+    });
+  }
+
+  function scrollRail(direction) {
+    const card = grid.querySelector(".arcade-game-card");
+    const gap = Number.parseFloat(global.getComputedStyle(grid).columnGap) || 16;
+    const distance = card ? card.getBoundingClientRect().width + gap : grid.clientWidth * 0.85;
+    grid.scrollBy({
+      left: direction * distance,
+      behavior: reducedMotion.matches ? "auto" : "smooth"
+    });
+  }
 
   function updateHeroVideoControl() {
     if (!heroVideo || !heroVideoToggle) return;
@@ -161,12 +180,14 @@
   function render() {
     const visible = filteredGames();
     grid.replaceChildren(...visible.map(createCard));
+    grid.scrollLeft = 0;
     visibleCount.textContent = String(visible.length);
     empty.hidden = visible.length > 0;
     filters.querySelectorAll("button").forEach((button) => {
       button.setAttribute("aria-pressed", String(button.dataset.category === state.category));
     });
     announce(`${visible.length} arcade route${visible.length === 1 ? "" : "s"} visible.`);
+    global.requestAnimationFrame(updateRailControls);
   }
 
   const categories = ["All", ...new Set(games.map((game) => game.category))];
@@ -189,6 +210,11 @@
     state.sort = sort.value;
     render();
   });
+  railButtons.forEach((button) => {
+    button.addEventListener("click", () => scrollRail(Number(button.dataset.arcadeScroll)));
+  });
+  grid.addEventListener("scroll", updateRailControls, { passive: true });
+  global.addEventListener("resize", updateRailControls);
 
   render();
 })(window, document);
