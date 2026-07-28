@@ -142,6 +142,17 @@ test("header hide control stays off every route except Static Wav and RAHBE", as
   }
 });
 
+test("Home and Storefront omit the removed particle and music-reactive visual layers", async ({ page }) => {
+  await blockHeavyMedia(page);
+
+  await page.goto("/", { waitUntil: "domcontentloaded" });
+  await expect(page.locator("#featureEntity, .signal-particle-layer")).toHaveCount(0);
+
+  await page.goto("/merch-store.html", { waitUntil: "domcontentloaded" });
+  await expect(page.locator("[data-live-eq], .live-eq-meter")).toHaveCount(0);
+  await expect(page.locator(".merch-commercial-capsule video")).toHaveCount(1);
+});
+
 test("internal route navigation plays an outbound and arrival transition", async ({ page }) => {
   await blockHeavyMedia(page);
   await page.addInitScript(() => {
