@@ -286,3 +286,17 @@
 - Staging safety: Noindex and preview banners verified; live payments, production account writes, real redemptions, and production analytics remain blocked
 - Live checkout: Not exercised or changed
 - Approval status: Ready for next phase; production remains unchanged and not approved
+
+## Membership HUD, Arcade Rail, And Particle Cleanup
+
+- Step number: Browser-requested Membership HUD, Arcade directory, Home particle, and Storefront visualizer correction
+- Implementation commits: `63d9025a36bcb9d27348590d13af42f4a107e67e` and `34ef2bdaa282d55339c35b8ccbf54d4c02b8c089`
+- Affected routes: `/memberships.html`, `/features-app.html`, `/index.html`, and `/merch-store.html`
+- Changes: Added a responsive futuristic HUD to the existing inline Membership film; converted the eight-game Arcade directory to a swipeable snap rail; renamed the Raytrace Pong display title to `RAYCHASE PONG`; removed the Home WebGL and floating particle layers; removed the Storefront music-reactive equalizer while retaining its commercial and instrument controls
+- Tests: JavaScript checks passed; site validation passed for 15 HTML files; focused Membership/Arcade checks passed 4/4; focused Home/Storefront checks passed 6/6; full source/staging desktop/mobile route matrix passed 92/92; staging safety passed 10/10; staging static verification passed for 23 pages and 541 same-origin references
+- Visual review: 12 staging captures passed at 1440x900, 768x1024, and 390x844 with no horizontal overflow, console errors, page errors, or broken assets; compared with `docs/visual-baseline/v1/`
+- Intentional visual departures: Home particle effects and the Storefront audio analyzer are removed; the Detroit-inspired cinematic film, scan language, Guardian, orb navigation, black/gold/cyan/violet palette, music tools, and arcade identity remain recognizable
+- Staging URL: Local only (`http://127.0.0.1:8143/`)
+- Staging safety: Noindex and preview banners verified; live payments, production account writes, real redemptions, and production analytics remain blocked
+- Live checkout: Not exercised or changed
+- Production approval status: Not approved; production remains unchanged

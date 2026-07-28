@@ -31,6 +31,15 @@ const availableRoutes = [
     focus: ".membership-hero-commercial",
   },
   {
+    name: "membership-inline-hud",
+    path: "/memberships.html",
+    focus: ".membership-hero-commercial",
+    dismiss: "[data-membership-commercial-close]",
+    dismissDelay: 1_800,
+    dismissAttempts: 3,
+    captureHide: "[data-membership-commercial-modal]",
+  },
+  {
     name: "membership-guardian",
     path: "/memberships.html",
     focus: ".membership-guardian-bottom",
@@ -42,6 +51,13 @@ const availableRoutes = [
     dismiss: ".lm-commercial-gate__skip",
   },
   {
+    name: "storefront-console",
+    path: "/merch-store.html",
+    focus: ".instrument-console",
+    dismiss: "[data-merch-commercial-close]",
+    captureHide: "[data-merch-commercial-modal]",
+  },
+  {
     name: "static-wav",
     path: "/how-to-use.html",
     focus: ".lm-commercial-gate__panel",
@@ -49,6 +65,12 @@ const availableRoutes = [
   {
     name: "arcade",
     path: "/features-app.html",
+    dismiss: ".lm-commercial-gate__skip",
+  },
+  {
+    name: "arcade-directory",
+    path: "/features-app.html",
+    focus: "#arcade-library",
     dismiss: ".lm-commercial-gate__skip",
   },
   {
@@ -108,11 +130,30 @@ try {
       await page.waitForTimeout(1200);
 
       if (route.dismiss) {
+        if (route.dismissDelay) await page.waitForTimeout(route.dismissDelay);
         const dismiss = page.locator(route.dismiss).first();
-        if (await dismiss.count() && await dismiss.isVisible()) {
-          await dismiss.click();
+        await dismiss.waitFor({ state: "visible", timeout: 5_000 }).catch(() => {});
+        for (let attempt = 0; attempt < (route.dismissAttempts || 1); attempt += 1) {
+          if (await dismiss.count() && await dismiss.isVisible()) {
+            await dismiss.click({ force: true });
+          }
           await page.waitForTimeout(800);
         }
+      }
+
+      if (route.captureHide) {
+        await page.locator(route.captureHide).evaluateAll((elements) => {
+          elements.forEach((element) => {
+            element.hidden = true;
+            element.setAttribute("aria-hidden", "true");
+            element.classList.remove("is-open");
+          });
+          document.body.classList.remove("has-membership-commercial", "has-merch-commercial");
+          document.querySelectorAll("[inert]").forEach((element) => {
+            element.inert = false;
+            element.removeAttribute("inert");
+          });
+        });
       }
 
       if (route.focus) {

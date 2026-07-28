@@ -121,3 +121,27 @@
 - Accessibility: The close control has an accessible name, all actions remain keyboard reachable, and reduced-motion capture leaves no running animation.
 - Safety: Staging remains noindex and continues to block live payments, account writes, real redemptions, and production analytics.
 - Approval status: **Ready for next phase.** Production remains unchanged and not approved.
+
+## 2026-07-28 Membership HUD, Arcade Rail, And Particle Cleanup Addendum
+
+- Implementation commits: `63d9025a36bcb9d27348590d13af42f4a107e67e` and `34ef2bdaa282d55339c35b8ccbf54d4c02b8c089`
+- Refreshed routes: Home, Memberships, Arcade, and Storefront
+- Refreshed viewports: 1440x900, 768x1024, and 390x844
+- Verification: 12/12 captures passed HTTP, noindex, staging-banner, horizontal-overflow, console-error, page-error, and same-origin asset checks
+- Membership improvement: The existing inline membership film now uses a cyan, gold, and violet signal HUD with clipped corners, telemetry, and a responsive readout. The film source and commercial lifecycle are unchanged.
+- Arcade improvement: The eight-route game directory is now a keyboard-accessible horizontal snap rail with labeled previous and next controls. The Raytrace Pong display title is now `RAYCHASE PONG`; its playable route is unchanged.
+- Home intentional departure: The WebGL particle entity and floating signal-particle layer were removed at the user's direction. The cinematic film, scan treatment, Guardian cursor, black/gold/cyan/violet palette, and responsible-entertainment language remain recognizable.
+- Storefront intentional departure: The music-reactive equalizer strip was removed. The commercial, playback controls, piano keyboard, FX controls, products, and local-only preorder behavior remain available.
+- Accessibility: The Arcade rail is keyboard focusable, its controls have accessible labels, and reduced-motion mode disables smooth rail scrolling and HUD animation.
+- Performance: Removing the Home WebGL entity eliminates its particle render workload; removing the Storefront analyzer eliminates its per-frame visualizer updates.
+- Safety: Staging remains noindex and visibly labeled. Live payments, production account writes, real redemptions, and production analytics remain blocked.
+- Approval status: **Ready for next phase.** Production remains unchanged and not approved.
+
+### Refreshed Visual Evidence
+
+| Surface | v1 baseline | Staging |
+| --- | --- | --- |
+| Home | [Desktop](../visual-baseline/v1/home--desktop.png) / [Tablet](../visual-baseline/v1/home--tablet.png) / [Mobile](../visual-baseline/v1/home--mobile.png) | [Desktop](./signal-media-corrections-assets/home-1440x900.png) / [Tablet](./signal-media-corrections-assets/home-768x1024.png) / [Mobile](./signal-media-corrections-assets/home-390x844.png) |
+| Membership inline HUD | [Desktop](../visual-baseline/v1/memberships--desktop.png) / [Tablet](../visual-baseline/v1/memberships--tablet.png) / [Mobile](../visual-baseline/v1/memberships--mobile.png) | [Desktop](./signal-media-corrections-assets/membership-inline-hud-1440x900.png) / [Tablet](./signal-media-corrections-assets/membership-inline-hud-768x1024.png) / [Mobile](./signal-media-corrections-assets/membership-inline-hud-390x844.png) |
+| Arcade directory | [Desktop](../visual-baseline/v1/features-app--desktop.png) / [Tablet](../visual-baseline/v1/features-app--tablet.png) / [Mobile](../visual-baseline/v1/features-app--mobile.png) | [Desktop](./signal-media-corrections-assets/arcade-directory-1440x900.png) / [Tablet](./signal-media-corrections-assets/arcade-directory-768x1024.png) / [Mobile](./signal-media-corrections-assets/arcade-directory-390x844.png) |
+| Storefront console | [Desktop](../visual-baseline/v1/merch-store--desktop.png) / [Tablet](../visual-baseline/v1/merch-store--tablet.png) / [Mobile](../visual-baseline/v1/merch-store--mobile.png) | [Desktop](./signal-media-corrections-assets/storefront-console-1440x900.png) / [Tablet](./signal-media-corrections-assets/storefront-console-768x1024.png) / [Mobile](./signal-media-corrections-assets/storefront-console-390x844.png) |
