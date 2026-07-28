@@ -300,3 +300,17 @@
 - Staging safety: Noindex and preview banners verified; live payments, production account writes, real redemptions, and production analytics remain blocked
 - Live checkout: Not exercised or changed
 - Production approval status: Not approved; production remains unchanged
+
+## Membership Transition Sequence Correction
+
+- Step number: Browser-requested Membership entry and commercial timing correction
+- Commit SHA: This status entry is part of the current focused commit; the completion report records its exact SHA
+- Affected route: `/memberships.html`
+- Sequence: Arrival transition completes, Membership commercial opens, commercial dismissal starts an outbound transition, and the Membership page is released only after the outbound transition completes
+- Tests: JavaScript syntax and site validation passed; focused desktop/mobile sequence tests passed 4/4; full source/staging route matrix passed 92/92; staging safety passed 10/10; staging static verification passed for 23 pages and 541 same-origin references
+- Visual review: Membership commercial captures passed at 1440x900, 768x1024, and 390x844; compared with `docs/visual-baseline/v1/`
+- Intentional visual departure: None. The existing Membership HUD and commercial media are preserved; only the transition timing and page-release order changed
+- Staging URL: Local only (`http://127.0.0.1:8143/memberships.html`)
+- Staging safety: Noindex and preview banners verified; live payments, production account writes, real redemptions, and production analytics remain blocked
+- Live checkout: Not exercised or changed
+- Production approval status: Not approved; production remains unchanged

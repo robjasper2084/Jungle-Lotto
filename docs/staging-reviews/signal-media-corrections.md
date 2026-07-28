@@ -145,3 +145,25 @@
 | Membership inline HUD | [Desktop](../visual-baseline/v1/memberships--desktop.png) / [Tablet](../visual-baseline/v1/memberships--tablet.png) / [Mobile](../visual-baseline/v1/memberships--mobile.png) | [Desktop](./signal-media-corrections-assets/membership-inline-hud-1440x900.png) / [Tablet](./signal-media-corrections-assets/membership-inline-hud-768x1024.png) / [Mobile](./signal-media-corrections-assets/membership-inline-hud-390x844.png) |
 | Arcade directory | [Desktop](../visual-baseline/v1/features-app--desktop.png) / [Tablet](../visual-baseline/v1/features-app--tablet.png) / [Mobile](../visual-baseline/v1/features-app--mobile.png) | [Desktop](./signal-media-corrections-assets/arcade-directory-1440x900.png) / [Tablet](./signal-media-corrections-assets/arcade-directory-768x1024.png) / [Mobile](./signal-media-corrections-assets/arcade-directory-390x844.png) |
 | Storefront console | [Desktop](../visual-baseline/v1/merch-store--desktop.png) / [Tablet](../visual-baseline/v1/merch-store--tablet.png) / [Mobile](../visual-baseline/v1/merch-store--mobile.png) | [Desktop](./signal-media-corrections-assets/storefront-console-1440x900.png) / [Tablet](./signal-media-corrections-assets/storefront-console-768x1024.png) / [Mobile](./signal-media-corrections-assets/storefront-console-390x844.png) |
+
+## 2026-07-28 Membership Transition Sequence Addendum
+
+- Affected route: Memberships (`/memberships.html`)
+- Required sequence: arrival transition, Membership commercial, outbound transition, Membership page
+- Verification: The entry commercial cannot open until the arrival transition emits its completion event. When the film ends or the entry commercial is dismissed, the Membership page remains inert while a dedicated outbound transition plays and becomes interactive only after that transition completes.
+- Focused browser tests: 4/4 passed across desktop and mobile, including event-order and page-inert assertions.
+- Route verification: 92/92 source/staging desktop/mobile route checks passed.
+- Staging verification: 10/10 safety checks passed; 23 staging pages and 541 same-origin references verified.
+- Visual verification: 3/3 captures passed at 1440x900, 768x1024, and 390x844 with no horizontal overflow, console errors, page errors, or broken assets.
+- Before/after: The v1 and current Membership HUD, film, actions, Guardian language, and black/gold/cyan/violet identity are visually unchanged. The intentional departure is the deterministic four-stage handoff and the removal of page exposure between the commercial and final transition.
+- Staging safety: Noindex and preview banners remain active. Live payments, production account writes, real redemptions, and production analytics remain blocked.
+- Approval status: **Ready for next phase.** Production remains unchanged and not approved.
+
+### Membership Sequence Captures
+
+- [Desktop staging](./signal-media-corrections-assets/membership-transition-sequence-1440x900.png)
+- [Tablet staging](./signal-media-corrections-assets/membership-transition-sequence-768x1024.png)
+- [Mobile staging](./signal-media-corrections-assets/membership-transition-sequence-390x844.png)
+- [v1 desktop baseline](../visual-baseline/v1/memberships--desktop.png)
+- [v1 tablet baseline](../visual-baseline/v1/memberships--tablet.png)
+- [v1 mobile baseline](../visual-baseline/v1/memberships--mobile.png)

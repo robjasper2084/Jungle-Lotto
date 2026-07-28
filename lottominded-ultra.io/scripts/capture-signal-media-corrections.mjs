@@ -15,6 +15,7 @@ const outputRoot = resolve(
   "signal-media-corrections-assets",
 );
 const baseUrl = String(process.env.LOTTOMIND_CAPTURE_BASE_URL || "http://127.0.0.1:8143").replace(/\/$/, "");
+const reportName = String(process.env.LOTTOMIND_CAPTURE_REPORT || "capture-report.json");
 const routeFilter = new Set(
   String(process.env.LOTTOMIND_CAPTURE_ROUTES || "")
     .split(",")
@@ -29,6 +30,11 @@ const availableRoutes = [
     name: "membership-commercial",
     path: "/memberships.html",
     focus: ".membership-hero-commercial",
+  },
+  {
+    name: "membership-transition-sequence",
+    path: "/memberships.html",
+    focus: ".membership-commercial-modal__panel",
   },
   {
     name: "membership-inline-hud",
@@ -197,7 +203,7 @@ try {
 }
 
 await writeFile(
-  resolve(outputRoot, "capture-report.json"),
+  resolve(outputRoot, reportName),
   `${JSON.stringify({ capturedAt: new Date().toISOString(), results }, null, 2)}\n`,
   "utf8",
 );

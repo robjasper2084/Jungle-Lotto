@@ -186,6 +186,13 @@ test("internal route navigation plays an outbound and arrival transition", async
 test("membership commercial requests sound first and closes when playback ends", async ({ page }) => {
   await page.addInitScript(() => {
     window.__membershipCommercialPlayAttempts = [];
+    window.__membershipEntrySequence = [];
+    window.addEventListener("lottomind:page-transition", (event) => {
+      window.__membershipEntrySequence.push(`transition:${event.detail.source}`);
+    });
+    window.addEventListener("lottomind:transition-complete", (event) => {
+      window.__membershipEntrySequence.push(`complete:${event.detail.source}`);
+    });
     const originalPlay = HTMLMediaElement.prototype.play;
     HTMLMediaElement.prototype.play = function patchedPlay() {
       if (this.matches?.("[data-membership-commercial-video]")) {
@@ -194,6 +201,17 @@ test("membership commercial requests sound first and closes when playback ends",
       }
       return originalPlay.call(this);
     };
+    document.addEventListener("DOMContentLoaded", () => {
+      const commercial = document.querySelector("[data-membership-commercial-modal]");
+      if (!commercial) return;
+      new MutationObserver(() => {
+        if (commercial.classList.contains("is-open") && commercial.getAttribute("aria-hidden") === "false") {
+          if (!window.__membershipEntrySequence.includes("commercial:open")) {
+            window.__membershipEntrySequence.push("commercial:open");
+          }
+        }
+      }).observe(commercial, { attributes: true, attributeFilter: ["class", "aria-hidden"] });
+    }, { once: true });
   });
 
   await page.goto("/memberships.html", { waitUntil: "domcontentloaded" });
@@ -204,8 +222,19 @@ test("membership commercial requests sound first and closes when playback ends",
   await expect.poll(() => page.evaluate(() => window.__membershipCommercialPlayAttempts)).toContainEqual(
     expect.objectContaining({ muted: false }),
   );
+  await expect.poll(() => page.evaluate(() => window.__membershipEntrySequence)).toEqual(
+    expect.arrayContaining(["transition:arrival", "complete:arrival", "commercial:open"]),
+  );
+  expect(await page.evaluate(() => {
+    const sequence = window.__membershipEntrySequence;
+    return sequence.indexOf("complete:arrival") < sequence.indexOf("commercial:open");
+  })).toBe(true);
   await video.evaluate((element) => element.dispatchEvent(new Event("ended")));
+  await expect(page.locator("[data-lm-page-transition]")).toHaveClass(/is-closing/);
+  await expect(page.locator("#lmMembership")).toHaveAttribute("inert", "");
+  await expect.poll(() => page.evaluate(() => window.__membershipEntrySequence)).toContain("complete:membership-commercial");
   await expect(commercial).toBeHidden({ timeout: 3_000 });
+  await expect(page.locator("#lmMembership")).not.toHaveAttribute("inert", "");
   await expect(page.locator(".header-click-toggle")).toHaveCount(0);
   await expect(page.locator("[data-lm-page-transition]")).not.toHaveClass(/is-closing/);
 });
