@@ -2,7 +2,7 @@
   "use strict";
 
   const BASE = window.__LOTTOMIND_BASE__ || "/lotto%20mind%20refined";
-  const CONFIG_URL = `${BASE}/revenuecat-config.json?v=revenuecat-web-20260722`;
+  const CONFIG_URL = `${BASE}/revenuecat-config.json?v=revenuecat-web-20260726`;
   const API_KEY_STORAGE = "lottomind.revenuecat.apiKey";
   const USER_ID_STORAGE = "lottomind.revenuecat.appUserId";
   const MOCK_ACCESS_STORAGE = "lottomind.revenuecat.mockAccess";
@@ -11,6 +11,7 @@
     entitlementIds: ["pro", "premium", "vip"],
     offeringId: "",
     packageId: "",
+    managementUrl: "",
     sdkUrl: "https://cdn.jsdelivr.net/npm/@revenuecat/purchases-js@1.47.3/dist/Purchases.es.js",
   };
 
@@ -18,6 +19,7 @@
   let purchasesPromise = null;
   let offeringsPromise = null;
   const listeners = new Set();
+  const LOCAL_QA_HOSTS = new Set(["localhost", "127.0.0.1", "::1"]);
   const snapshot = {
     status: "idle",
     message: "RevenueCat is waiting for setup.",
@@ -53,6 +55,7 @@
     merged.apiKey = String(merged.apiKey || "").trim();
     merged.offeringId = String(merged.offeringId || "").trim();
     merged.packageId = String(merged.packageId || "").trim();
+    merged.managementUrl = String(merged.managementUrl || "").trim();
     merged.sdkUrl = String(merged.sdkUrl || CONFIG_DEFAULTS.sdkUrl).trim();
     return merged;
   }
@@ -71,9 +74,10 @@
     if (!configPromise) {
       configPromise = (async () => {
         const params = new URLSearchParams(window.location.search);
-        const queryKey = params.get("rc_api_key");
+        const allowLocalOverrides = LOCAL_QA_HOSTS.has(window.location.hostname);
+        const queryKey = allowLocalOverrides ? params.get("rc_api_key") : "";
         if (queryKey) localStorage.setItem(API_KEY_STORAGE, queryKey.trim());
-        const storedKey = localStorage.getItem(API_KEY_STORAGE) || "";
+        const storedKey = allowLocalOverrides ? localStorage.getItem(API_KEY_STORAGE) || "" : "";
         const jsonConfig = await loadJsonConfig();
         const windowConfig = window.LOTTOMIND_REVENUECAT_CONFIG || {};
         return normalizeConfig({
@@ -81,7 +85,8 @@
           ...windowConfig,
           ...(storedKey ? { apiKey: storedKey } : {}),
           ...(queryKey ? { apiKey: queryKey } : {}),
-          mockMode: params.has("rc_mock") || windowConfig.mockMode === true || jsonConfig.mockMode === true,
+          mockMode: allowLocalOverrides
+            && (params.has("rc_mock") || windowConfig.mockMode === true || jsonConfig.mockMode === true),
         });
       })();
     }
@@ -99,6 +104,13 @@
   function activeEntitlement(customerInfo, entitlementIds) {
     const active = customerInfo?.entitlements?.active || {};
     return entitlementIds.find((id) => Boolean(active[id])) || "";
+  }
+
+  function asCustomerInfo(candidate) {
+    if (!candidate) return null;
+    if (candidate.customerInfo) return candidate.customerInfo;
+    if (candidate?.customer_info) return candidate.customer_info;
+    return candidate;
   }
 
   function getProductFromPackage(rcPackage) {
@@ -223,6 +235,53 @@
     });
   }
 
+  async function restore(existingPurchases) {
+    const config = await getConfig();
+    if (isMockConfigured(config)) {
+      return emit({
+        isConfigured: true,
+        isEntitled: localStorage.getItem(MOCK_ACCESS_STORAGE) === "true",
+        message: "Restore is unavailable in mock QA mode. Mock mode keeps current entitlement state.",
+        status: localStorage.getItem(MOCK_ACCESS_STORAGE) === "true" ? "active" : (snapshot.status === "error" ? "error" : "ready"),
+      });
+    }
+    if (!hasValidApiKey(config)) {
+      throw new Error("Add a RevenueCat Web Billing public API key in revenuecat-config.json first.");
+    }
+    const purchases = existingPurchases || await configurePurchases();
+    const customerInfo = asCustomerInfo(await purchases.getCustomerInfo?.());
+    const entitlementId = activeEntitlement(customerInfo, config.entitlementIds);
+    return emit({
+      status: entitlementId ? "active" : "ready",
+      message: entitlementId
+        ? `RevenueCat entitlement refreshed: ${entitlementId}.`
+        : "No active entitlement was found for this LottoMind browser profile.",
+      isEntitled: Boolean(entitlementId),
+      activeEntitlementId: entitlementId,
+      customerInfo: customerInfo || snapshot.customerInfo || null,
+      error: "",
+    });
+  }
+
+  async function manage() {
+    const config = await getConfig();
+    if (isMockConfigured(config)) {
+      return emit({
+        isConfigured: true,
+        status: "ready",
+        message: "Mock mode cannot open a managed subscription portal.",
+      });
+    }
+    if (!hasValidApiKey(config)) {
+      throw new Error("Add a RevenueCat Web Billing public API key in revenuecat-config.json first.");
+    }
+    if (!/^https:\/\//i.test(config.managementUrl)) {
+      throw new Error("Use the customer portal link in your RevenueCat billing email to manage this subscription.");
+    }
+    window.open(config.managementUrl, "_blank", "noopener,noreferrer");
+    return emit({ message: "RevenueCat subscription management opened in a new tab." });
+  }
+
   async function purchase(options = {}) {
     const config = await getConfig();
     if (isMockConfigured(config)) {
@@ -280,6 +339,11 @@
     init,
     purchase,
     refresh: () => configurePurchases().then(() => refreshCustomerInfo()),
+    restore,
+    manage,
+    restorePurchases: restore,
+    manageSubscription: manage,
+    showCustomerCenter: manage,
     getSnapshot: () => ({ ...snapshot }),
     hasActiveEntitlement: () => Boolean(snapshot.isEntitled),
     subscribe(listener) {

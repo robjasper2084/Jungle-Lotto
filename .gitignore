@@ -6,6 +6,7 @@ expo-env.d.ts
 # @end expo-cli
 
 node_modules/
+lottomind-native/www/
 .expo/
 dist/
 screenshots/
@@ -20,6 +21,8 @@ preview/
 .archive-*
 .goth-preview-server.cjs
 npx
+$base/
+server-*.err
 
 # Local source/reference media that should not be published by accident
 IMG_*.WEBP

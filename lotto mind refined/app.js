@@ -22,8 +22,8 @@ const ASSETS = {
   reset: `${BASE}/assets/images/frequency-vault-lottomind-bg.ed65bffe05847e5e6d732d8354acb5b1.png`,
   dream: `${BASE}/assets/images/dream-oracle-jungle-bg.a4c667c7a8153842972fe7cf8b06aa02.png`,
   heatmap: `${BASE}/assets/images/lottomind-live-logo-brain.7f7239556a4a3e4035517b0bac125303.png`,
-  power: `${BASE}/assets/images/powertools-hero-bg.26c2f5fbc03f6f2f06a78067f283be94.png`,
-  powerTools: `${BASE}/assets/images/powertools-ai-fixed-games.13c13b9fed4bd95d952df4aacd3078ba.png`,
+  power: `${BASE}/assets/custom/higgsfield-fresh/lm-power-tools-panel.png`,
+  powerTools: `${BASE}/assets/custom/higgsfield-fresh/lm-power-tools-panel.png`,
   live: `${BASE}/assets/images/live-data-records-panel.404f88fa9201c5e14861577dc5bc8b97.png`,
   credit: `${BASE}/assets/images/lottomind-credit-coin-circle.c6ba4693cc71d242dd0f2ff47a19ee98.png`,
   mascot: `${BASE}/assets/images/lottomind-brain-logo.2f28d70bc952673d95508151e29f46b1.png`,
@@ -37,7 +37,7 @@ const ASSETS = {
   psychic: `${BASE}/assets/custom/studio/studio-oracle-coin.png`,
   commandDeck: `${BASE}/assets/custom/generated-command-deck.webp`,
   studioBooth: `${BASE}/assets/images/dashboard-music-hub-bg.fd20530e40e09f38ef442fddd2f4a17c.png`,
-  musicMotion: `${BASE}/assets/custom/studio/media/lottomind-music-hub-motion.mov`,
+  musicMotion: `${BASE}/assets/custom/studio/studio-motion.mp4`,
   turntable: `${BASE}/assets/custom/music/lottomind-turntable.svg`,
   youtubeOrb: `${BASE}/assets/custom/music/lottomind-video-orb.svg`,
   aiCoach: `${BASE}/assets/custom/ai-coach-console.svg`,
@@ -425,7 +425,6 @@ const ROUTES = {
   horoscope: "horoscope",
   luckyWeather: "lucky-weather",
   storeLocator: "store-locator",
-  creditStore: "credit-store",
   savedWallet: "saved-wallet",
   dailyFortune: "daily-fortune",
   luckProfile: "luck-profile",
@@ -441,7 +440,6 @@ const ROUTES = {
   achievements: "achievements",
   vip: "vip",
   community: "community",
-  contests: "contests",
   cardGame: "card-game",
   ludo: "ludo",
   crossword: "crossword",
@@ -454,7 +452,6 @@ const ROUTES = {
   onboarding: "onboarding",
   splash: "splash",
   paywall: "paywall",
-  thankYou: "thank-you",
   original: "original",
   notifications: "notifications",
   help: "help",
@@ -476,7 +473,6 @@ const ROUTE_ALIASES = {
   "viral-studio": "viralStudio",
   "credits-wallet": "wallet",
   "saved-wallet": "savedWallet",
-  "credit-store": "creditStore",
   shop: "store",
   "music-hub": "music",
   "radio-station": "radioStation",
@@ -512,7 +508,6 @@ const ROUTE_ALIASES = {
   achievements: "achievements",
   vip: "vip",
   community: "community",
-  contests: "contests",
   "card-game": "cardGame",
   ludo: "ludo",
   crossword: "crossword",
@@ -525,7 +520,6 @@ const ROUTE_ALIASES = {
   onboarding: "onboarding",
   splash: "splash",
   paywall: "paywall",
-  "thank-you": "thankYou",
   original: "original",
   notifications: "notifications",
   help: "help",
@@ -827,10 +821,29 @@ const RADAR_POSITIONS = [
   [60, 88], [40, 88], [88, 72], [12, 72], [88, 28], [12, 28], [50, 50],
 ];
 
+const RELEASE_BLOCKED_ROUTES = new Set(["contests", "thankYou", "creditStore"]);
+
+function isReleaseBlockedRoute(routeKey = "") {
+  return RELEASE_BLOCKED_ROUTES.has(routeKey);
+}
+
+function sanitizeRoute(routeKey, { silent = false } = {}) {
+  const candidate = ROUTES[routeKey] !== undefined ? routeKey : "dashboard";
+  if (isReleaseBlockedRoute(candidate)) {
+    if (!silent) toast(`"${routeMeta(candidate)[0]}" is not available in this store build.`);
+    return "dashboard";
+  }
+  return candidate;
+}
+
+function filteredTools(tools = []) {
+  return tools.filter((tool) => !isReleaseBlockedRoute(tool[2]));
+}
+
 const ORACLE_STUDIO_GROUP = {
   title: "Oracle Studio",
   copy: "Reset, speak, interpret, radio, and save.",
-  tools: [
+  tools: filteredTools([
     ["Reset Vault", "Tone wheel", "reset"],
     ["Dream Oracle", "Voice meaning", "dreams"],
     ["Abundance Radio", "Live audio", "radioStation"],
@@ -843,14 +856,14 @@ const ORACLE_STUDIO_GROUP = {
     ["Daily Fortune", "Morning signal", "dailyFortune"],
     ["Name Numbers", "Name code", "nameNumbers"],
     ["Future Read", "Symbol forecast", "futureRead"],
-  ],
+  ]),
 };
 
 const TOOL_GROUPS = [
   {
     title: "Main Lab",
     copy: "Analysis, live results, credits, records, stores, and saved picks.",
-    tools: [
+    tools: filteredTools([
       ["Number Analyzer", "Trend lab", "numberGenerator"],
       ["Ticket Scanner", "Scan tickets", "scanner"],
       ["Live Vault Heatmap", "Radar map", "heatmap"],
@@ -873,12 +886,12 @@ const TOOL_GROUPS = [
       ["Store Locator", "Nearby play", "storeLocator"],
       ["US Lottery", "State index", "usLottery"],
       ["History", "Saved runs", "history"],
-    ],
+    ]),
   },
   {
     title: "Play + Learn",
     copy: "Arcade, challenges, and learning loops.",
-    tools: [
+    tools: filteredTools([
       ["Arcade", "Reward games", "arcade"],
       ["Jackpot Run", "Play now", "arcadeGame"],
       ["Academy", "Lessons", "academy"],
@@ -891,7 +904,7 @@ const TOOL_GROUPS = [
       ["Community", "Share runs", "community"],
       ["Notifications", "Alerts", "notifications"],
       ["Help", "Support", "help"],
-    ],
+    ]),
   },
 ];
 
@@ -908,8 +921,7 @@ const HOME_CAROUSEL = [
   ["LottoMind Records", "Open saved reports, draw cards, and reading history.", "records", ASSETS.live],
   ["Marketplace Vault", "Credits, VIP tools, and branded unlocks.", "marketplace", ASSETS.credit],
   ["Video Studio", "Preview branded motion loops from the old app.", "dreamVideo", ASSETS.power],
-  ["Contests", "Challenge board, rewards, and future entries.", "contests", ASSETS.arcade],
-];
+].filter((item) => !isReleaseBlockedRoute(item[2]));
 
 const HOME_CAROUSEL_VIDEOS = {
   studio: `${BASE}/videos/oracle-flow-music-new.mp4`,
@@ -2137,7 +2149,9 @@ function installCentralAccountSync() {
   });
 }
 
-const REVENUECAT_CLIENT_SRC = `${BASE}/revenuecat-client.js?v=revenuecat-web-20260722`;
+const REVENUECAT_CLIENT_SRC = NATIVE_APP
+  ? `${BASE}/revenuecat-native.js?v=revenuecat-native-20260726`
+  : `${BASE}/revenuecat-client.js?v=revenuecat-web-20260726`;
 let revenueCatClientLoadPromise = null;
 let revenueCatUnsubscribe = null;
 
@@ -2240,7 +2254,7 @@ function refreshRevenueCatStatus() {
 }
 
 function restoreRevenueCatPurchases() {
-  ensureRevenueCatClient().then((service) => service?.restore?.()).then((snapshot) => {
+  ensureRevenueCatClient().then((service) => service?.restore?.() || service?.restorePurchases?.()).then((snapshot) => {
     if (snapshot) state.revenueCat = snapshot;
     toast(snapshot?.isEntitled ? "Purchases restored" : "No active purchase was found");
     render();
@@ -2250,8 +2264,15 @@ function restoreRevenueCatPurchases() {
 }
 
 function manageRevenueCatSubscription() {
-  ensureRevenueCatClient().then((service) => service?.manage?.()).then((snapshot) => {
-    if (snapshot) state.revenueCat = snapshot;
+  ensureRevenueCatClient().then((service) => service?.manage?.()
+    || service?.manageSubscription?.()
+    || service?.presentCustomerCenter?.()
+    || service?.showManageSubscriptions?.()
+  ).then((snapshot) => {
+    if (snapshot) {
+      state.revenueCat = snapshot;
+      if (snapshot.message) toast(snapshot.message);
+    }
   }).catch((error) => {
     toast(error?.message || "Subscription management is unavailable");
   });
@@ -2260,17 +2281,20 @@ function manageRevenueCatSubscription() {
 function routeFromLocation() {
   const routeParam = new URLSearchParams(window.location.search).get("route");
   if (routeParam) {
-    return ROUTE_ALIASES[routeParam] || Object.keys(ROUTES).find((key) => ROUTES[key] === routeParam) || "dashboard";
+    const resolved = ROUTE_ALIASES[routeParam] || Object.keys(ROUTES).find((key) => ROUTES[key] === routeParam) || "dashboard";
+    return sanitizeRoute(resolved, { silent: true });
   }
   let path = window.location.pathname;
   if (path.startsWith(BASE)) path = path.slice(BASE.length);
   path = path.replace(/\/index\.html$/i, "").replace(/^index\.html$/i, "");
   path = path.replace(/^\/+|\/+$/g, "");
-  return ROUTE_ALIASES[path] || Object.keys(ROUTES).find((key) => ROUTES[key] === path) || "dashboard";
+  const resolved = ROUTE_ALIASES[path] || Object.keys(ROUTES).find((key) => ROUTES[key] === path) || "dashboard";
+  return sanitizeRoute(resolved, { silent: true });
 }
 
 function routeUrl(routeKey) {
-  const path = ROUTES[routeKey] || "";
+  const safeRoute = sanitizeRoute(routeKey, { silent: true });
+  const path = ROUTES[safeRoute] || "";
   if (NATIVE_APP) {
     const route = path || "dashboard";
     return `${BASE}/index.html?route=${encodeURIComponent(route)}`;
@@ -2283,7 +2307,7 @@ function isResetRoute(routeKey = state.route) {
 }
 
 function go(routeKey, replace = false) {
-  const next = ROUTES[routeKey] !== undefined ? routeKey : "dashboard";
+  const next = sanitizeRoute(routeKey);
   stopRouteAudio();
   state.route = next;
   state.searchQuery = "";
@@ -2299,7 +2323,7 @@ function routeIntroSrc(routeKey = state.route) {
   if (ROUTE_AUDIO_POOLS[routeKey] === null) return null;
   const pool = ROUTE_AUDIO_POOLS[routeKey]
     || (["numberGenerator", "dailyTools", "pickGames", "wheelBuilder", "predictions", "newsRadar", "lottoIntel", "ai", "intelligence", "energyMeter"].includes(routeKey) ? [AUDIO.lucky, AUDIO.digitalStatic, AUDIO.userFrequency] : null)
-    || (["store", "marketplace", "wallet", "creditStore", "savedWallet", "vip"].includes(routeKey) ? [AUDIO.goldReset, AUDIO.userFrequency, AUDIO.startup] : null)
+    || (["store", "marketplace", "wallet", "savedWallet", "vip"].includes(routeKey) ? [AUDIO.goldReset, AUDIO.userFrequency, AUDIO.startup] : null)
     || (["scanner", "ticketScanner", "viralStudio", "dreamVideo"].includes(routeKey) ? [AUDIO.digitalStatic, AUDIO.userRainfield, AUDIO.rain] : null)
     || TAB_INTROS;
   return pool[Math.floor(Math.random() * pool.length)] || null;
@@ -2549,7 +2573,7 @@ function missionHud() {
 function searchCatalog() {
   const entries = [];
   const add = (title, sub, route, tags = "") => {
-    if (!route || ROUTES[route] === undefined) return;
+    if (!route || ROUTES[route] === undefined || isReleaseBlockedRoute(route)) return;
     entries.push({ title, sub, route, tags });
   };
   [ORACLE_STUDIO_GROUP, ...TOOL_GROUPS].forEach((group) => group.tools.forEach(([title, sub, route]) => add(title, sub, route, `${group.title} ${group.copy}`)));
@@ -6165,15 +6189,7 @@ const REAL_ROUTE_SCREENS = {
     copy: "Leaderboard preview, local streaks, saved challenge scores, and future community prompts.",
     art: ASSETS.arcade,
     stats: [["Leaderboard", "Local"], ["Streaks", getTriviaProgress().dailyStreak], ["Credits", getCredits()]],
-    actions: [["Play Trivia", "route", "triviaPlay"], ["Open Contests", "route", "contests"], ["View Rewards", "route", "triviaRewards"]],
-  },
-  contests: {
-    eyebrow: "Reward Events",
-    title: "Contest Control",
-    copy: "Daily challenge slots, jackpot reality drills, and future opt-in sweepstakes live here.",
-    art: ASSETS.arcade,
-    stats: [["Daily Run", "Ready"], ["Entries", loadJson(STORAGE.triviaHistory, { history: [] }).history.length], ["Rules", "Demo"]],
-    actions: [["Start Daily", "route", "triviaPlay"], ["Leaderboard", "route", "community"], ["Rewards", "route", "triviaRewards"]],
+    actions: [["Play Trivia", "route", "triviaPlay"], ["View Rewards", "route", "triviaRewards"]],
   },
   achievements: {
     eyebrow: "Player Progress",
@@ -6214,14 +6230,6 @@ const REAL_ROUTE_SCREENS = {
     art: ASSETS.logo,
     stats: [["Build", "Web"], ["Mode", state.viewMode.toUpperCase()], ["Credits", getCredits()]],
     actions: [["Enter App", "route", "dashboard"], ["Store Locator", "route", "storeLocator"], ["Arcade", "route", "arcade"]],
-  },
-  thankYou: {
-    eyebrow: "Checkout Complete",
-    title: "Thank You",
-    copy: "Demo checkout is confirmed locally. Real payments can be connected later without changing the flow.",
-    art: ASSETS.credit,
-    stats: [["Order", "Demo"], ["Credits", getCredits()], ["Vault", "Saved"]],
-    actions: [["Open Merch", "route", "store"], ["Wallet", "route", "wallet"], ["Home", "route", "dashboard"]],
   },
   original: {
     eyebrow: "Legacy Mode",
@@ -6539,7 +6547,6 @@ function genericToolView(routeKey) {
     onboarding: ["Onboarding", "First-run path for setup, state pin, and feature tour."],
     splash: ["Splash", "Branded app launch surface."],
     paywall: ["Premium Gate", "VIP unlocks, credit packs, and premium routes."],
-    thankYou: ["Thank You", "Purchase and signup confirmation surface."],
     original: ["Original App", "Legacy reference route kept connected."],
   };
   const [title, copy] = labels[routeKey] || ["LottoMind Tool", "This function is wired to the new Oracle app action system."];
@@ -6578,10 +6585,10 @@ function toolArt(routeKey) {
   if (["music", "studio", "energyMeter", "reset"].includes(routeKey)) return ASSETS.music;
   if (["dreamVideo", "viralStudio", "psychic", "dailyFortune", "futureRead", "nameNumbers"].includes(routeKey)) return ASSETS.dream;
   if (["records", "historical", "liveData", "live", "newsRadar", "heatmapAnalytics", "lottoIntel", "intelligence"].includes(routeKey)) return ASSETS.live;
-  if (["marketplace", "creditStore", "savedWallet", "store", "storeLocator", "paywall", "vip", "thankYou"].includes(routeKey)) return ASSETS.credit;
+  if (["marketplace", "savedWallet", "store", "storeLocator", "paywall", "vip"].includes(routeKey)) return ASSETS.credit;
   if (["arcadeGame", "game", "gamesHub", "cardGame", "ludo", "crossword", "wordSearch", "triviaPlay", "triviaRewards", "triviaRedeem"].includes(routeKey)) return ASSETS.arcade;
   if (["sequence", "pickGames", "dailyTools", "numberGenerator", "predictions", "wheelBuilder"].includes(routeKey)) return ASSETS.sequence;
-  if (["onboarding", "splash", "profile", "settings", "notifications", "help", "policies", "community", "contests", "usLottery", "original"].includes(routeKey)) return ASSETS.mascot;
+  if (["onboarding", "splash", "profile", "settings", "notifications", "help", "policies", "community", "usLottery", "original"].includes(routeKey)) return ASSETS.mascot;
   return ASSETS.powerTools;
 }
 
@@ -6859,6 +6866,7 @@ function proPlaybookView() {
 }
 
 function renderView() {
+  if (isReleaseBlockedRoute(state.route)) return dashboardView();
   if (state.route === "dashboard") return dashboardView();
   if (state.route === "powertools") return powerToolsView();
   if (state.route === "reset") return resetView();
@@ -6870,7 +6878,7 @@ function renderView() {
   if (state.route === "history") return historyView();
   if (state.route === "live") return liveView();
   if (state.route === "scanner" || state.route === "ticketScanner") return scannerView();
-  if (state.route === "wallet" || state.route === "creditStore" || state.route === "savedWallet") return walletView();
+  if (state.route === "wallet" || state.route === "savedWallet") return walletView();
   if (state.route === "storeLocator") return storeLocatorView();
   if (state.route === "luckyWeather" || state.route === "horoscope") return luckyWeatherView();
   if (state.route === "ai" || state.route === "lottoIntel" || state.route === "intelligence" || state.route === "intelligenceLocker") return aiCoachView();
@@ -6891,7 +6899,7 @@ function renderView() {
   if (["arcade", "game", "cardGame", "gamesHub", "crossword", "wordSearch", "ludo"].includes(state.route)) return arcadeView();
   if (state.route === "psychic") return psychicView();
   if (state.route === "community") return communityBoardView();
-  if (["vip", "community", "contests", "achievements", "usLottery", "notifications", "onboarding", "splash", "thankYou", "original", "help", "policies", "paywall"].includes(state.route)) return realRouteView(state.route);
+  if (["vip", "community", "achievements", "usLottery", "notifications", "onboarding", "splash", "original", "help", "policies", "paywall"].includes(state.route)) return realRouteView(state.route);
   return genericToolView(state.route);
 }
 
@@ -7333,7 +7341,7 @@ function speakText(message) {
 
 function routeFromSearch(value) {
   const [bestMatch] = functionSearchResults(value, 1);
-  if (bestMatch) return bestMatch.route;
+  if (bestMatch) return sanitizeRoute(bestMatch.route, { silent: true });
   const query = String(value || "").toLowerCase();
   const matches = [
     [["dream", "oracle", "meaning", "journal"], "dreams"],
@@ -7356,7 +7364,7 @@ function routeFromSearch(value) {
     [["help", "settings", "policy", "policies"], "help"],
   ];
   const found = matches.find(([terms]) => terms.some((term) => query.includes(term)));
-  return found ? found[1] : "powertools";
+  return found ? sanitizeRoute(found[1], { silent: true }) : "powertools";
 }
 
 async function scanBarcodeFromFile(file) {
@@ -9017,6 +9025,16 @@ function clearPressedControls() {
   document.querySelectorAll(".is-pressing").forEach((control) => control.classList.remove("is-pressing"));
 }
 
+function openExternalUrl(url) {
+  if (!url) return;
+  const nativeBrowser = window.Capacitor?.Plugins?.Browser;
+  if (NATIVE_APP && nativeBrowser?.open) {
+    nativeBrowser.open({ url }).catch(() => window.open(url, "_blank", "noopener,noreferrer"));
+    return;
+  }
+  window.location.href = url;
+}
+
 function activateInteractiveTarget(event) {
   const eventTarget = event.target instanceof Element ? event.target : event.target?.parentElement;
   if (!eventTarget) return;
@@ -9024,7 +9042,7 @@ function activateInteractiveTarget(event) {
   const externalTarget = eventTarget.closest("[data-external-url]");
   if (externalTarget) {
     event.preventDefault();
-    window.location.href = externalTarget.getAttribute("data-external-url");
+    openExternalUrl(externalTarget.getAttribute("data-external-url"));
     return true;
   }
   if (routeTarget) {

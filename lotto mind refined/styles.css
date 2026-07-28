@@ -8929,9 +8929,96 @@ body .route-dreamVideo .video-studio-hero .hero-actions .primary-btn::before {
   text-shadow: 0 0 18px rgba(248, 223, 118, 0.28);
 }
 
+.account-control-panel,
+.privacy-control-panel {
+  display: grid;
+  gap: 10px;
+  padding: 18px;
+}
+
+.account-control-panel .section-head,
+.privacy-control-panel .section-head {
+  margin-bottom: 2px;
+}
+
+.policy-hero {
+  min-height: 240px;
+}
+
+.policy-document {
+  display: grid;
+  gap: 14px;
+}
+
+.policy-document section {
+  padding: 12px;
+  border: 1px solid rgba(248, 223, 118, 0.18);
+  border-radius: 14px;
+  background: rgba(0, 0, 0, 0.38);
+}
+
+.policy-document h2 {
+  margin: 0 0 6px;
+  font-size: 18px;
+}
+
+.policy-document p {
+  margin: 0;
+}
+
+.policy-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.policy-actions button {
+  flex: 1 1 auto;
+}
+
 .settings-panel .list-button {
   gap: 14px;
   border-radius: 18px;
+}
+
+.delete-confirmation {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  margin-top: 8px;
+  border: 1px solid rgba(255, 79, 120, 0.35);
+  border-radius: 16px;
+  background: rgba(255, 79, 120, 0.06);
+}
+
+.delete-confirmation p {
+  margin: 0;
+}
+
+.delete-confirmation .hero-actions {
+  margin-top: 2px;
+}
+
+.danger-btn,
+.danger-list-button {
+  border-color: rgba(255, 79, 120, 0.45) !important;
+  color: #ffdce8 !important;
+}
+
+.danger-list-button {
+  display: flex;
+  justify-content: space-between;
+}
+
+.release-note {
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(0, 0, 0, 0.32);
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.4;
 }
 
 .settings-toggle {
@@ -9810,7 +9897,7 @@ body .route-dreamVideo .video-studio-hero .hero-actions .primary-btn::before {
   background:
     radial-gradient(circle at 82% 16%, rgba(0, 236, 255, 0.22), transparent 30%),
     linear-gradient(135deg, rgba(2, 7, 17, 0.82), rgba(3, 22, 38, 0.86)),
-    url("assets/images/powertools-hero-bg.26c2f5fbc03f6f2f06a78067f283be94.png") center / cover fixed,
+    url("assets/custom/higgsfield-fresh/lm-power-tools-panel.png") center / cover fixed,
     #020711;
 }
 

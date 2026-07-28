@@ -1,25 +1,18 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="robots" content="noindex, nofollow" />
     <title>LottoMind Refined</title>
     <script>
       (function () {
         var slug = "/lotto%20mind%20refined";
         var index = window.location.pathname.indexOf(slug);
         var base = index >= 0 ? window.location.pathname.slice(0, index + slug.length) : slug;
-        window.__LOTTOMIND_BASE__ = base.replace(/\/$/, "");
-        window.__LOTTOMIND_ROOT__ = window.__LOTTOMIND_BASE__.replace(/\/lotto%20mind%20refined$/i, "");
-        document.write('<link rel="stylesheet" href="' + window.__LOTTOMIND_BASE__ + '/styles.css?v=reset-record-art-20260626" />');
-        document.write('<script src="' + window.__LOTTOMIND_ROOT__ + '/assets/js/lottomind-merch-prices.js?v=merch-catalog-20260626c"><\/script>');
+        window.location.replace(base.replace(/\/$/, "") + "/");
       })();
     </script>
   </head>
-  <body>
-    <div id="app"></div>
-    <script>
-      document.write('<script src="' + window.__LOTTOMIND_BASE__ + '/app.js?v=reset-record-art-20260626"><\/script>');
-    </script>
-  </body>
+  <body></body>
 </html>

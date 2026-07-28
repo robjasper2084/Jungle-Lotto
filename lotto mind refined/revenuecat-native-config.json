@@ -1,0 +1,9 @@
+{
+  "useTestStore": true,
+  "testApiKey": "test_WzlyHWxvSLclseplhcMXRtntFiK",
+  "iosApiKey": "",
+  "androidApiKey": "goog_JhClgeaYVPGyJReksqQhAziPCzp",
+  "entitlementIds": ["pro"],
+  "offeringId": "default",
+  "packageId": "$rc_monthly"
+}
