@@ -2,7 +2,7 @@
 
 - Production URL: https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/
 - Production branch: `main`
-- Production commit SHA: `975c637cea7003533cdc30aed9d96be51929bfc8`
+- Production commit SHA: `f6e46b49eb0fe7e02e537ed48a127226e7b3f72a`
 - Snapshot tag: `v1-final`
 - Snapshot annotated tag object SHA: `9ba25352efc17d5b514e5afd59c8afde5c9d2949`
 - Snapshot target commit SHA: `975c637cea7003533cdc30aed9d96be51929bfc8`
@@ -11,22 +11,22 @@
 - Upgrade branch SHA at Step 0A branch creation: `1fc4c95ca4d0b22ee5188d06f8ea75573c63a00a`
 - Upgrade branch SHA before Step 0B commit: `220653bbc300d0e0b236c6e834043f39fdfcd76c`
 - Step 0B commit SHA: `6e58aafc4addabf5281262ec951a7d6df3dc66a0`
-- Deployment mechanism discovered: GitHub Pages Actions from repository-root `.github/workflows/pages.yml`; pushes to `main` upload the repository root with `actions/upload-pages-artifact` and deploy with `actions/deploy-pages`. The latest verified successful production run deployed `main` commit `975c637cea7003533cdc30aed9d96be51929bfc8`.
+- Deployment mechanism discovered: GitHub Pages Actions from repository-root `.github/workflows/pages.yml`; pushes to `main` upload the repository root with `actions/upload-pages-artifact` and deploy with `actions/deploy-pages`. Current remote production head is `f6e46b49eb0fe7e02e537ed48a127226e7b3f72a`.
 - Staging provider: Local static server (Mode C); no remote preview provider is configured
-- Staging URL: Local only (`http://127.0.0.1:8204/` while the current staging server is running)
+- Staging URL: Local only (`http://127.0.0.1:8143/` while the current staging server is running)
 - Staging integrations: No isolated backend or Stripe test-mode configuration is currently configured; protected writes remain disabled
-- Last completed step: Step 34 production release candidate prepared on `upgrade-redesign`; production deployment remains excluded
+- Last completed step: Step 34 RC2 production release candidate prepared on `upgrade-redesign`; production deployment remains excluded
 - Step 1 commit SHA: This file is part of the Step 1 commit; use `git log -1 --format=%H -- docs/upgrade-redesign-status.md` to resolve its exact non-self-referential SHA. The completion report records it explicitly.
-- Last staging review: Signal and media corrections passed; review: `docs/staging-reviews/signal-media-corrections.md`
+- Last staging review: RC2 passed and is ready for production review; review: `docs/staging-reviews/release-candidate-v2-rc2.md`
 - Staging review commit SHA: This file is part of the staging-review commit; the completion report records its exact SHA.
-- Last successful test run: 2026-07-22 - site validation passed 15 HTML files; source browser suite passed 96 checks with 6 intentional viewport skips; staging browser suite passed 15/15; source/staging route matrix passed 92/92; staging artifact verified 23 injected pages and 527 same-origin references
+- Last successful test run: 2026-07-28 - release audit passed 7 groups; site validation passed 15 HTML files; source browser suite passed 126 checks with 6 intentional viewport skips; staging browser suite passed 10/10; source/staging route matrix passed 92/92; staging artifact verified 23 injected pages and 543 same-origin references; News tests passed 20/20 with 0 production dependency vulnerabilities
 - Visual baseline: Complete - 69 production route screenshots plus desktop, tablet, and mobile contact sheets under `docs/visual-baseline/v1/`
 - Step 1 visual comparison: Production and staging home routes compared at 1440x900 and 390x844; staging adds only the preview and safety banners, with no redesign changes
 - Resolved Step 1 baseline failures: Contact support helper restored; Stem Studio tablet/mobile overflow corrected; Jackpot Maze runtime, heading, and entry focus restored; first-load outliers reduced; staging News production request removed
 - Latest visual comparison: Home, Memberships, Guardian, Arcade, RAHBE, Spheres, Storefront, Live Events, and News compared with v1 production at 1440x900, 768x1024, and 390x844; review: `docs/staging-reviews/signal-media-corrections.md`
 - Latest performance comparison: Home 28.1 -> 5.80 MiB; Memberships 26.7 -> 2.87 MiB; Merch 23.1 -> 1.99 MiB; Shadow Ops 87.7 -> 3.70 MiB
-- Staging review approval status: Ready for next phase
-- Production approval status: Step 34 release-candidate preparation approved; the live checkout handoff was verified safely in Stripe Sandbox and cancelled before any charge; pull-request approval and controlled production merge remain pending
+- Staging review approval status: Ready for production review
+- Production approval status: RC2 preparation approved; the checkout handoff was verified safely in Stripe Sandbox and cancelled before any charge; pull-request approval and a fresh exact `APPROVE PRODUCTION MERGE` authorization remain pending
 - Rollback reference: `v1-final` at `975c637cea7003533cdc30aed9d96be51929bfc8`; after a controlled production merge, use `git revert` for rollback
 - Known pre-existing repository changes: The working tree was clean when Step 0A began. Local `main` already contained commit `1fc4c95ca4d0b22ee5188d06f8ea75573c63a00a` ahead of `origin/main`; that commit was preserved as the starting point of `upgrade-redesign` and was not pushed to production.
 
@@ -343,3 +343,16 @@
 - Staging URL: Local only (`http://127.0.0.1:8143/how-to-use.html`)
 - Staging safety: Noindex and preview banners verified; live payments, production account writes, real redemptions, and production analytics remain blocked
 - Production approval status: Not approved; production remains unchanged
+
+## Release Candidate v2-rc2
+
+- Step number: Step 34 RC2 release-candidate preparation
+- Preserved unrelated work: Pushed branch `wip/pre-release-user-work-20260728` at `e2e24535294380a0dc076f07c1d3ef1d61826a2d`; generated local artifacts were moved to `C:\Users\digit\Documents\phone\_jungle_lotto_refined-preserved-20260728`
+- Audited implementation commit: `ae37b5a60b70a531bc4b96e616a7dd71c29a312c`
+- Release-candidate tag: `v2-rc2`
+- Production synchronization: Current `origin/main` at `f6e46b49eb0fe7e02e537ed48a127226e7b3f72a` is already an ancestor of `upgrade-redesign`; no rebase, reset, or merge was needed
+- Tests: Release gates 7/7; site validation 15/15; source browser 126 passed with 6 intentional skips; staging safety 10/10; route matrix 92/92; News 20/20 with 0 production dependency vulnerabilities; GothTechnology 39 unit and 25 browser checks passed with 5 intentional skips; Shadow Ops typecheck passed
+- Visual review: `docs/staging-reviews/release-candidate-v2-rc2.md`; 51 captures passed at `1440x900`, `768x1024`, and `390x844`
+- Staging URL: Local only (`http://127.0.0.1:8143/`)
+- Production verification: Live Home and Memberships returned HTTP 200 without staging noindex or preview-banner markers
+- Approval status: Ready for production review; pull-request approval and fresh exact `APPROVE PRODUCTION MERGE` authorization remain required
