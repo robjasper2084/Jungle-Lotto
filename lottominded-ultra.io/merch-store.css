@@ -184,7 +184,7 @@
   position: relative;
   min-height: 78vh;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(24rem, min(45.1rem, 56vw));
+  grid-template-columns: minmax(0, 1fr) minmax(24rem, min(55rem, 60vw));
   align-items: end;
   gap: clamp(1.2rem, 3vw, 3rem);
   padding: clamp(7rem, 12vw, 10rem) clamp(1rem, 5vw, 5rem) clamp(2rem, 5vw, 4rem);
@@ -216,7 +216,7 @@
 
 /* Guardian commercial premiere */
 .merch-commercial-capsule {
-  width: min(100%, 46rem);
+  width: min(100%, 55.2rem);
   border-color: rgba(255, 209, 102, 0.46);
   background: #02060d;
   box-shadow:
@@ -3116,7 +3116,9 @@ body.has-merch-shadow-popup {
 
 /* Final commercial overrides: intentionally follow all legacy product-card rules. */
 .merch-hero-product.merch-commercial-capsule {
-  width: min(100%, 46rem);
+  box-sizing: border-box;
+  width: min(100%, 55.2rem);
+  min-width: 0;
   border-color: rgba(255, 209, 102, 0.46);
   background: #02060d;
   box-shadow:
@@ -3144,6 +3146,21 @@ body.has-merch-shadow-popup {
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   font-size: 0.7rem;
   letter-spacing: 0.13em;
+}
+
+@media (max-width: 980px) {
+  .merch-hero {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .merch-hero-product.merch-commercial-capsule,
+  .merch-hero-product.merch-commercial-capsule:hover,
+  .merch-hero-product.merch-commercial-capsule:focus-within,
+  .merch-hero-product.merch-commercial-capsule.is-hover-grown {
+    width: auto;
+    max-width: 100%;
+    transform: none;
+  }
 }
 
 /* Keep ambient hero audio separate from the commercial's own controls. */

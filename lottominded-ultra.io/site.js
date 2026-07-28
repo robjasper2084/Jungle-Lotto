@@ -2341,6 +2341,15 @@ function setupHomePianoHoverToggle(pianoHeader) {
 
 function setupSiteHeaderClickToggle() {
   if (!siteHeader) return;
+  const routeSupportsHeaderToggle = document.body.matches(
+    ".beat2lotto-game-page, .static-wave-guide-page",
+  );
+  if (!routeSupportsHeaderToggle) {
+    document.querySelector(".header-click-toggle")?.remove();
+    siteHeader.classList.remove("is-click-header-hidden");
+    document.body.classList.remove("is-click-header-hidden");
+    return;
+  }
   if (siteHeader.dataset.clickHeaderToggleReady === "true") return;
   siteHeader.dataset.clickHeaderToggleReady = "true";
 

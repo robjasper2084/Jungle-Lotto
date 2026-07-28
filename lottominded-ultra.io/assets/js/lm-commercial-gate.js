@@ -122,7 +122,7 @@
   } catch (error) {}
 
   const modal = document.createElement("aside");
-  modal.className = "lm-commercial-gate";
+  modal.className = `lm-commercial-gate lm-commercial-gate--${routeTheme}`;
   modal.setAttribute("role", "dialog");
   modal.setAttribute("aria-modal", "true");
   modal.setAttribute("aria-labelledby", "lmCommercialGateTitle");
@@ -156,7 +156,7 @@
         <div class="lm-commercial-gate__actions">
           <button type="button" class="lm-commercial-gate__replay">Replay</button>
           <button type="button" class="lm-commercial-gate__enter">Enter ${routeName}</button>
-          <a class="lm-commercial-gate__shop" href="./merch-store.html?product=guardian#keychains">Shop Guardian &middot; $29.95</a>
+          <a class="lm-commercial-gate__shop" href="./merch-store.html?product=guardian#keychains">Buy Now</a>
         </div>
       </footer>
     </div>`;

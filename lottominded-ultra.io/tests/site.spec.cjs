@@ -84,6 +84,7 @@ test("memberships opens its entry commercial and keeps manual replay available",
   const commercial = page.locator("[data-membership-commercial-modal]");
   await expect(commercial).toBeVisible({ timeout: 15_000 });
   await expect(commercial.locator("video")).toHaveAttribute("data-src", /membership-hoodie-commercial/);
+  await expect(commercial.getByRole("link", { name: "Buy Now" })).toHaveAttribute("href", /merch-store\.html\?product=guardian#keychains/);
   await page.locator("[data-membership-commercial-close]").click();
   await expect(commercial).toBeHidden();
   await expect(page.locator(".lm-temporal-loader")).toHaveCount(0);
@@ -124,8 +125,31 @@ test("Static Wav and RAHBE keep an explicit header hide and restore control", as
   }
 });
 
+test("header hide control stays off every route except Static Wav and RAHBE", async ({ page }) => {
+  await blockHeavyMedia(page);
+
+  for (const route of ["/", "/memberships.html", "/features-app.html", "/merch-store.html", "/lottery-spheres.html"]) {
+    await page.goto(route, { waitUntil: "domcontentloaded" });
+    await expect(page.locator(".header-click-toggle")).toHaveCount(0);
+  }
+});
+
 test("internal route navigation plays an outbound and arrival transition", async ({ page }) => {
   await blockHeavyMedia(page);
+  await page.addInitScript(() => {
+    window.__membershipCommercialOpenedDuringTransition = false;
+    document.addEventListener("DOMContentLoaded", () => {
+      const commercial = document.querySelector("[data-membership-commercial-modal]");
+      if (!commercial) return;
+      const observer = new MutationObserver(() => {
+        const isOpen = commercial.classList.contains("is-open") && commercial.getAttribute("aria-hidden") === "false";
+        if (isOpen && document.body.classList.contains("lm-page-is-transitioning")) {
+          window.__membershipCommercialOpenedDuringTransition = true;
+        }
+      });
+      observer.observe(commercial, { attributes: true, attributeFilter: ["class", "aria-hidden"] });
+    }, { once: true });
+  });
   await page.goto("/contact.html", { waitUntil: "domcontentloaded" });
 
   const destination = page.locator("header nav a").filter({ hasText: "Memberships" }).first();
@@ -134,6 +158,10 @@ test("internal route navigation plays an outbound and arrival transition", async
 
   await page.waitForURL(/\/memberships\.html$/, { timeout: 10_000 });
   await expect(page.locator("html")).toHaveAttribute("data-lm-last-transition-phase", "close");
+  const membershipCommercial = page.locator("[data-membership-commercial-modal]");
+  await expect(page.locator("body")).not.toHaveClass(/lm-page-is-transitioning/, { timeout: 5_000 });
+  await expect(membershipCommercial).toBeVisible({ timeout: 15_000 });
+  expect(await page.evaluate(() => window.__membershipCommercialOpenedDuringTransition)).toBe(false);
 });
 
 test("membership commercial requests sound first and closes when playback ends", async ({ page }) => {
@@ -153,13 +181,14 @@ test("membership commercial requests sound first and closes when playback ends",
   const commercial = page.locator("[data-membership-commercial-modal]");
   const video = commercial.locator("[data-membership-commercial-video]");
   await expect(commercial).toBeVisible({ timeout: 15_000 });
-  await expect(page.locator(".header-click-toggle")).toBeHidden();
+  await expect(page.locator(".header-click-toggle")).toHaveCount(0);
   await expect.poll(() => page.evaluate(() => window.__membershipCommercialPlayAttempts)).toContainEqual(
     expect.objectContaining({ muted: false }),
   );
   await video.evaluate((element) => element.dispatchEvent(new Event("ended")));
   await expect(commercial).toBeHidden({ timeout: 3_000 });
-  await expect(page.locator(".header-click-toggle")).toBeVisible();
+  await expect(page.locator(".header-click-toggle")).toHaveCount(0);
+  await expect(page.locator("[data-lm-page-transition]")).not.toHaveClass(/is-closing/);
 });
 
 test("Storefront commercial closes itself when playback ends", async ({ page }) => {
@@ -168,10 +197,37 @@ test("Storefront commercial closes itself when playback ends", async ({ page }) 
   const commercial = page.locator("[data-merch-commercial-modal]");
   const video = commercial.locator("[data-merch-commercial-modal-video]");
   await expect(commercial).toBeVisible({ timeout: 5_000 });
-  await expect(page.locator(".header-click-toggle")).toBeHidden();
+  await expect(commercial.getByRole("link", { name: "Buy Now" })).toHaveAttribute("href", "#keychains");
+  await expect(page.locator(".header-click-toggle")).toHaveCount(0);
   await video.evaluate((element) => element.dispatchEvent(new Event("ended")));
   await expect(commercial).toBeHidden();
-  await expect(page.locator(".header-click-toggle")).toBeVisible();
+  await expect(page.locator(".header-click-toggle")).toHaveCount(0);
+});
+
+test("Storefront applies the requested price, removals, and larger commercial", async ({ page }) => {
+  await blockHeavyMedia(page);
+  await page.goto("/merch-store.html", { waitUntil: "domcontentloaded" });
+  await page.locator("[data-merch-commercial-close]").click();
+
+  const hoodie = page.locator("#product-detroit-embroidery-hoodie");
+  await expect(hoodie.locator(".product-hover-price")).toHaveText("$89.99");
+  await expect(hoodie.locator(".product-row strong")).toHaveText("$89.99");
+  await expect(hoodie.locator("[data-add-item]")).toHaveAttribute("data-item-price", "89.99");
+  await expect(page.getByRole("heading", { name: "Cyber Brain Glow Hoodie" })).toHaveCount(0);
+  await expect(page.getByRole("heading", { name: "LottoMind Coin Set" })).toHaveCount(0);
+  await expect(page.locator("#gallery article", { hasText: "Boogie Knit" })).toHaveCount(0);
+
+  const capsule = page.locator(".merch-commercial-capsule");
+  const capsuleBox = await capsule.boundingBox();
+  const heroBox = await page.locator(".merch-hero").boundingBox();
+  expect(capsuleBox).toBeTruthy();
+  expect(heroBox).toBeTruthy();
+  if (page.viewportSize().width > 980) {
+    expect(capsuleBox.width).toBeGreaterThan(700);
+  } else {
+    expect(capsuleBox.width).toBeGreaterThan(280);
+  }
+  expect(capsuleBox.x + capsuleBox.width).toBeLessThanOrEqual(heroBox.x + heroBox.width + 1);
 });
 
 test("Storefront presents supplied Guardian bundles without inventing checkout claims", async ({ page }) => {
@@ -211,10 +267,18 @@ test("Arcade hero fits the supplied Guardian film with accessible motion control
   await expect(toggle).toBeVisible();
 
   const box = await media.boundingBox();
+  const copyBox = await page.locator(".arcade-pilot-hero__copy").boundingBox();
+  const heroBox = await page.locator(".arcade-pilot-hero").boundingBox();
   expect(box.width).toBeGreaterThan(280);
   expect(box.height).toBeGreaterThan(150);
   expect(box.width / box.height).toBeGreaterThan(1.7);
   expect(box.width / box.height).toBeLessThan(1.85);
+  expect(copyBox).toBeTruthy();
+  expect(heroBox).toBeTruthy();
+  if ((await page.viewportSize()).width > 1050) {
+    expect(copyBox.x + copyBox.width).toBeLessThanOrEqual(box.x);
+  }
+  expect(box.x + box.width).toBeLessThanOrEqual(heroBox.x + heroBox.width + 1);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
 });
 
@@ -377,12 +441,31 @@ test("Static Wav keeps one commercial on each page entry", async ({ page }) => {
 
   const gate = page.locator(".lm-commercial-gate");
   await expect(gate).toBeVisible();
+  await expect(gate).toHaveClass(/lm-commercial-gate--guide/);
+  await expect(gate.locator("video")).toHaveAttribute("data-src", /lottomind-guide-commercial-20260717\.mp4/);
+  await expect(gate.getByRole("link", { name: "Buy Now" })).toHaveAttribute("href", /merch-store\.html\?product=guardian#keychains/);
   await gate.locator(".lm-commercial-gate__skip").click();
   await expect(gate).toBeHidden();
 
   await page.reload({ waitUntil: "domcontentloaded" });
   await expect(page.locator(".lm-commercial-gate")).toHaveCount(1);
   await expect(page.locator(".lm-commercial-gate")).toBeVisible();
+});
+
+test("RAHBE route restores the embedded game after its commercial", async ({ page }) => {
+  await blockHeavyMedia(page);
+  const localFailures = trackLocalFailures(page);
+  await page.goto("/beat2lotto-plus.html#beat2lotto", { waitUntil: "domcontentloaded" });
+
+  const gate = page.locator(".lm-commercial-gate");
+  await expect(gate).toBeVisible();
+  await gate.locator(".lm-commercial-gate__skip").click();
+  await expect(gate).toBeHidden();
+
+  const frame = page.frameLocator("[data-beat2-game-frame]");
+  await expect(frame.locator("#game")).toBeVisible({ timeout: 15_000 });
+  await expect(frame.getByRole("heading", { name: "ROBOT RAHBE" })).toBeVisible();
+  expect(localFailures).toEqual([]);
 });
 
 test("features combines the cinematic shell with the manifest-driven Arcade directory", async ({ page }) => {
@@ -404,7 +487,7 @@ test("features combines the cinematic shell with the manifest-driven Arcade dire
   await expect(page.locator("[data-arcade-grid] .arcade-game-card")).toHaveCount(8);
   await expect(page.locator("[data-arcade-count]")).toHaveText("8");
   await expect(page.locator(".arcade-game-card__status")).toHaveText(Array(8).fill("Playable"));
-  await expect(page.locator("main video, main audio, iframe, #lottery-news, .instrument-console")).toHaveCount(0);
+  await expect(page.locator("main video:not([data-arcade-hero-video]), main audio, iframe, #lottery-news, .instrument-console")).toHaveCount(0);
 
   await page.getByRole("button", { name: "Action", exact: true }).click();
   await expect(page.locator("[data-arcade-grid] .arcade-game-card")).toHaveCount(3);
@@ -562,6 +645,7 @@ test("news route renders from the static feed without probing the missing API", 
   const firstArticleImage = page.locator(".article-grid .news-card__media img").first();
   await firstArticleImage.scrollIntoViewIfNeeded();
   await expect(firstArticleImage).toBeVisible();
+  await expect(firstArticleImage).toHaveAttribute("src", /\.jpg$/);
   await expect.poll(() => firstArticleImage.evaluate((image) => image.complete && image.naturalWidth > 0)).toBe(true);
   expect(apiRequests).toEqual([]);
   expect(localFailures).toEqual([]);
