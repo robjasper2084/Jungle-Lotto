@@ -104,6 +104,12 @@ test("guide keeps its single commercial gate and safe sound handoff", async ({ p
   await expect.poll(() => gate.locator("video").evaluate((video) => video.currentSrc)).toContain("lottomind-guide-commercial-20260717.mp4");
   await expect(gate.locator(".lm-commercial-gate__sound")).toHaveText("Play with sound");
   await expect.poll(() => gate.locator("video").evaluate((video) => ({ muted: video.muted, paused: video.paused }))).toEqual({ muted: true, paused: false });
+  const safetyLayout = await page.evaluate(() => {
+    const status = document.querySelector("#lm-staging-guard-status").getBoundingClientRect();
+    const panel = document.querySelector(".lm-commercial-gate__panel").getBoundingClientRect();
+    return { statusBottom: status.bottom, panelTop: panel.top };
+  });
+  expect(safetyLayout.panelTop).toBeGreaterThanOrEqual(safetyLayout.statusBottom - 1);
 
   await gate.locator(".lm-commercial-gate__sound").click();
   await expect.poll(() => gate.locator("video").evaluate((video) => video.muted)).toBe(false);

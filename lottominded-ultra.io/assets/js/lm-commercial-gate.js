@@ -285,6 +285,7 @@
     siblings.forEach((node) => node.removeAttribute("inert"));
     document.removeEventListener("play", blockCompetingMedia, true);
     window.removeEventListener("lottomind:transition-complete", handleTransitionComplete);
+    window.removeEventListener("resize", syncPreviewOffset);
     setBeat2MusicGate(false);
     restorePageMedia();
     window.dispatchEvent(new CustomEvent("lottomind:commercial-gate", {
@@ -325,7 +326,21 @@
     });
   };
 
+  const syncPreviewOffset = () => {
+    const safetyBars = [
+      document.querySelector("[data-lm-staging-banner]"),
+      document.querySelector("#lm-staging-guard-status"),
+    ].filter(Boolean);
+    const offset = safetyBars.reduce((bottom, element) => (
+      Math.max(bottom, element.getBoundingClientRect().bottom)
+    ), 0);
+    if (offset > 0) modal.style.top = `${Math.ceil(offset)}px`;
+    else modal.style.removeProperty("top");
+  };
+
   body.append(modal);
+  syncPreviewOffset();
+  window.addEventListener("resize", syncPreviewOffset);
   body.classList.add("has-lm-commercial-gate");
   siblings.forEach((node) => node.setAttribute("inert", ""));
   pausePageMedia();
