@@ -385,3 +385,16 @@
 - Staging safety: Preview banner and noindex verified; live payments, production account writes, real redemptions, and production analytics remain blocked
 - Commerce and backend impact: None; no checkout, account mutation, redemption, or production-data action was attempted
 - Production approval status: Not approved; production remains unchanged
+
+## Saved Studio Draft Preservation
+
+- Step number: Browser-requested Studio content preservation
+- Implementation commit: `f915f8bcc57f01ee46c17b260c8aeae7ada44703`
+- Preserved content: Full Studio workflow and the selected "Browser and device expectations" section
+- Discovery status: `studio.html` is direct-access and `noindex`; it remains absent from navigation, command search, sitemap, Arcade listings, Membership listings, and the current tab order
+- Underlying implementation: `lottomind-stem-studio/` and all related assets remain saved
+- Tests: Site validation passed for 21 HTML files; focused Studio checks passed 2/2; affected source suite passed 84 checks with 2 intentional viewport skips; staging safety passed 10/10; source/staging desktop/mobile route matrix passed 96/96; staging static verification passed for 29 pages and 628 same-origin references
+- Visual review: Studio draft passed at `1440x900`, `768x1024`, and `390x844`, plus a focused desktop capture of the preserved expectations section
+- Staging URL: Local only (`http://127.0.0.1:8295/studio.html` while the verified server is running)
+- Staging safety: Source and staging both carry `noindex,nofollow,noarchive`; production integrations remain blocked by the staging guard
+- Production approval status: Not approved; production remains unchanged

@@ -38,10 +38,12 @@ Restoration captures and the machine-readable capture report are stored in
 
 ### Intentional Departures
 
-- The public Studio overview and its navigation, search, sitemap, Arcade, and
-  membership discovery entries are removed.
-- The complete removed overview is recoverable from the Git reference documented
-  in `docs/archived-pages/studio-phase1.md`.
+- The Studio overview is retained as a direct-access `noindex` draft, while its
+  navigation, search, sitemap, Arcade, and membership discovery entries remain
+  removed.
+- The saved draft preserves the full workflow and "Browser and device
+  expectations" section. Its original source reference is documented in
+  `docs/archived-pages/studio-phase1.md`.
 - The underlying `lottomind-stem-studio/` implementation and assets remain saved
   in the repository for later work.
 - The retained platform utilities and App, Help Center, and Account pages are
@@ -69,6 +71,8 @@ Restoration captures and the machine-readable capture report are stored in
 - Release gate groups: 7 passed.
 - Static staging verification: 28 pages and 616 same-origin asset references.
 - Visual captures: 21 passed.
+- Studio draft verification: 4 captures passed, including desktop, tablet,
+  mobile, and a focused expectations-section view.
 
 ## Approval Status
 
