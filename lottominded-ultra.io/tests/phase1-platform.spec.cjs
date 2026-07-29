@@ -29,11 +29,11 @@ test("route manifest defines the Phase 1 platform contract", () => {
     "Home",
     "App",
     "Arcade",
-    "Studio",
     "News + Events",
     "Store",
     "Membership",
   ]);
+  expect(manifest.routes.some((route) => route.id === "studio")).toBe(false);
   expect(manifest.routes.find((route) => route.id === "account").indexable).toBe(false);
   expect(manifest.routes.find((route) => route.id === "arcade").aliases).toContain("./features-app.html");
 });
@@ -67,7 +67,7 @@ test("mobile shell exposes five stable primary destinations without overflow", a
   await blockHeavyMedia(page);
   await page.goto("/features.html", { waitUntil: "domcontentloaded" });
   const nav = page.locator(".lm-mobile-bottom-nav");
-  await expect(nav.locator(":scope > a, :scope > button")).toHaveText(["Home", "App", "Play", "Create", "Account"]);
+  await expect(nav.locator(":scope > a")).toHaveText(["Home", "App", "Play", "Help", "Account"]);
   await expect(nav).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1)).toBe(true);
 });

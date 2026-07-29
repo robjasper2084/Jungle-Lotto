@@ -1,10 +1,9 @@
 {
-  "generatedAt": "2026-07-29T02:47:57.637Z",
+  "generatedAt": "2026-07-29T11:02:47.440Z",
   "canonicalRoutes": [
     "index.html",
     "features.html",
     "arcade.html",
-    "studio.html",
     "news/",
     "live-events.html",
     "merch-store.html",
@@ -54,13 +53,6 @@
       "file": "arcade.html",
       "href": "./arcade.html",
       "canonical": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/arcade.html",
-      "indexable": true
-    },
-    {
-      "id": "studio",
-      "file": "studio.html",
-      "href": "./studio.html",
-      "canonical": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/studio.html",
       "indexable": true
     },
     {

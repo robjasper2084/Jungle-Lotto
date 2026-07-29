@@ -134,7 +134,7 @@ window.LMAudioMix = {
   commandDialog.innerHTML = `
     <form method="dialog" class="lm-command-palette__panel">
       <header><div><span>Route uplink</span><h2 id="lmCommandTitle">Search LottoMind</h2></div><button value="cancel" aria-label="Close search">Close</button></header>
-      <label><span class="visually-hidden">Search routes and help</span><input type="search" data-command-search-input autocomplete="off" placeholder="Search App, Arcade, Studio, Help..." /></label>
+      <label><span class="visually-hidden">Search routes and help</span><input type="search" data-command-search-input autocomplete="off" placeholder="Search App, Arcade, News, Help..." /></label>
       <div class="lm-command-palette__results" data-command-search-results role="listbox" aria-label="LottoMind routes"></div>
       <p data-command-search-status role="status" aria-live="polite"></p>
     </form>
@@ -229,19 +229,17 @@ window.LMAudioMix = {
     }
   });
 
-  const mobileRoutes = ["home", "app-features", "arcade", "studio", "account"]
+  const mobileRoutes = ["home", "app-features", "arcade", "help", "account"]
     .map((id) => routeManifest.find((route) => route.id === id))
     .filter(Boolean);
   const mobileNav = document.createElement("nav");
   mobileNav.className = "lm-mobile-bottom-nav";
   mobileNav.setAttribute("aria-label", "Mobile LottoMind navigation");
-  mobileNav.innerHTML = mobileRoutes.map((route) => route.id === "studio"
-    ? `<button type="button" data-mobile-create data-icon="${route.icon}">${route.shortLabel}</button>`
-    : `<a href="${siteUrl(route.href)}" data-icon="${route.icon}"${isCurrent({ id: route.id, href: siteUrl(route.href) }) ? ' aria-current="page"' : ""}>${route.shortLabel}</a>`
+  mobileNav.innerHTML = mobileRoutes.map((route) =>
+    `<a href="${siteUrl(route.href)}" data-icon="${route.icon}"${isCurrent({ id: route.id, href: siteUrl(route.href) }) ? ' aria-current="page"' : ""}>${route.shortLabel}</a>`
   ).join("");
   document.body.append(mobileNav);
   document.body.classList.add("has-mobile-bottom-nav");
-  mobileNav.querySelector("[data-mobile-create]")?.addEventListener("click", () => openCommandPalette("create"));
 })();
 
 (() => {
@@ -251,7 +249,7 @@ window.LMAudioMix = {
     links.className = "lm-site-footer-map";
     links.setAttribute("aria-label", "LottoMind platform directory");
     links.innerHTML = `
-      <div><strong>Platform</strong><a href="${siteUrl("./features.html")}">App</a><a href="${siteUrl("./arcade.html")}">Arcade</a><a href="${siteUrl("./studio.html")}">Studio</a><a href="${siteUrl("./news/")}">News</a><a href="${siteUrl("./live-events.html")}">Events</a></div>
+      <div><strong>Platform</strong><a href="${siteUrl("./features.html")}">App</a><a href="${siteUrl("./arcade.html")}">Arcade</a><a href="${siteUrl("./news/")}">News</a><a href="${siteUrl("./live-events.html")}">Events</a></div>
       <div><strong>Create</strong><a href="${siteUrl("./beat2lotto-plus.html")}">Beat2Lotto+</a><a href="${siteUrl("./prompt-lab.html")}">Prompt Lab</a><a href="${siteUrl("./lottery-spheres.html#spheres")}">Lottery Spheres</a></div>
       <div><strong>Shop</strong><a href="${siteUrl("./merch-store.html")}">Store</a><a href="${siteUrl("./memberships.html")}">Membership</a><a href="${siteUrl("./merch-store.html?product=guardian#keychains")}">Guardian</a></div>
       <div><strong>Support</strong><a href="${siteUrl("./how-to-use.html")}">Help Center</a><a href="${siteUrl("./contact.html")}">Contact</a><a href="${siteUrl("./accessibility.html")}">Accessibility</a><a href="${siteUrl("./account.html")}">Account</a></div>
@@ -1281,8 +1279,7 @@ function setupUniversalFloatingMenu() {
     ["Spheres", siteUrl("./lottery-spheres.html#spheres")],
     ["Robot RAHBE", siteUrl("./robot-rahbe.html")],
     ["Store", siteUrl("./merch-store.html")],
-    ["Help Center", siteUrl("./how-to-use.html")],
-    ["Studio", siteUrl("./lottomind-stem-studio/index.html")]
+    ["Help Center", siteUrl("./how-to-use.html")]
   ];
 
   const existingToggle = document.querySelector("[data-universal-menu-toggle], .motion-menu-toggle, .pl-floating");

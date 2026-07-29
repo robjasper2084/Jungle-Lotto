@@ -598,9 +598,9 @@ test("Arcade combines the cinematic shell with the manifest-driven directory", a
   await expect.poll(() => page.evaluate(() => document.body.classList.contains("feature-entity-ready"))).toBe(true);
   expect(await page.locator("#arcade-title").evaluate((title) => getComputedStyle(title).fontFamily)).not.toMatch(/Impact/i);
   await expect(page.locator(".feature-channel")).toHaveCount(5);
-  await expect(page.locator("[data-arcade-grid] .arcade-game-card")).toHaveCount(8);
-  await expect(page.locator("[data-arcade-count]")).toHaveText("8");
-  await expect(page.locator(".arcade-game-card__status")).toHaveText(Array(8).fill("Playable"));
+  await expect(page.locator("[data-arcade-grid] .arcade-game-card")).toHaveCount(7);
+  await expect(page.locator("[data-arcade-count]")).toHaveText("7");
+  await expect(page.locator(".arcade-game-card__status")).toHaveText(Array(7).fill("Playable"));
   await expect(page.getByRole("heading", { name: "RAYCHASE PONG" })).toBeVisible();
   const arcadeRail = page.locator("[data-arcade-grid]");
   const railMetrics = await arcadeRail.evaluate((element) => ({
@@ -619,11 +619,6 @@ test("Arcade combines the cinematic shell with the manifest-driven directory", a
   await page.getByRole("button", { name: "Action", exact: true }).click();
   await expect(page.locator("[data-arcade-grid] .arcade-game-card")).toHaveCount(3);
   await expect(page.locator("[data-arcade-visible-count]")).toHaveText("3");
-
-  await page.getByRole("button", { name: "All", exact: true }).click();
-  await page.locator("[data-arcade-search]").fill("Stem Studio");
-  await expect(page.locator("[data-arcade-grid] .arcade-game-card")).toHaveCount(1);
-  await expect(page.getByRole("heading", { name: "LottoMind Stem Studio" })).toBeVisible();
 
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1);
   expect(overflow).toBe(false);
@@ -686,7 +681,7 @@ test("membership hero leads, Collector follows Gaming Showcase, and the Guardian
   await expect(page.locator("#dust .membership-collectible-card")).toHaveCount(0);
   await expect(page.locator("#water")).toHaveCount(0);
   await expect(page.getByText(/Film 04/i)).toHaveCount(0);
-  await expect(page.locator("footer.site-footer-standard .lm-site-footer-map a")).toHaveCount(17);
+  await expect(page.locator("footer.site-footer-standard .lm-site-footer-map a")).toHaveCount(16);
   await expect(page.locator("footer.site-footer-standard > a.footer-link")).toHaveCount(0);
 
   expect(await hero.evaluate((node) =>
@@ -717,7 +712,7 @@ test("membership hero leads, Collector follows Gaming Showcase, and the Guardian
   expect(collectorBox.y).toBeLessThan(guardianBox.y);
 });
 
-test("shared navigation uses the Phase 1 platform labels", async ({ page }) => {
+test("shared navigation keeps the requested platform order and utilities", async ({ page }) => {
   await blockHeavyMedia(page);
   await page.goto("/lottery-spheres.html", { waitUntil: "domcontentloaded" });
   const navigation = page.locator(".site-header nav");
@@ -725,7 +720,6 @@ test("shared navigation uses the Phase 1 platform labels", async ({ page }) => {
     /Home/,
     /App/,
     /Arcade/,
-    /Studio/,
     /News \+ Events/,
     /Store/,
     /Membership/,
@@ -735,6 +729,23 @@ test("shared navigation uses the Phase 1 platform labels", async ({ page }) => {
   await expect(page.getByRole("dialog", { name: "News + Events" }).getByRole("link", { name: "Open Live Events" })).toBeVisible();
   await expect(page.locator("[data-command-search-open]")).toContainText("Search");
   await expect(page.locator(".lm-header-utilities").locator('a[href$="account.html"]')).toContainText("Account");
+});
+
+test("Studio overview is removed from public discovery while its implementation stays preserved", async ({ page }) => {
+  await blockHeavyMedia(page);
+  await page.goto("/features.html", { waitUntil: "domcontentloaded" });
+  await page.keyboard.press("Control+K");
+  await page.locator("[data-command-search-input]").fill("Stem Studio");
+  await expect(page.locator('[data-command-result][href$="studio.html"]')).toHaveCount(0);
+  await page.keyboard.press("Escape");
+
+  await page.goto("/arcade.html", { waitUntil: "domcontentloaded" });
+  const commercial = page.locator(".lm-commercial-gate");
+  await expect(commercial).toBeVisible();
+  await commercial.locator(".lm-commercial-gate__skip").click();
+  await expect(commercial).toBeHidden();
+  await expect(page.locator('[data-game-id="stem-studio"]')).toHaveCount(0);
+  await expect(page.getByText("7 routes visible", { exact: false })).toBeVisible();
 });
 
 test("Stem Studio contains the workstation at compact mobile width", async ({ page }) => {

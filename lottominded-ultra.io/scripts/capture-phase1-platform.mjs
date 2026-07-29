@@ -12,7 +12,7 @@ const outputRoot = resolve(
   repositoryRoot,
   "docs",
   "staging-reviews",
-  "phase-1-platform-assets",
+  process.env.LOTTOMIND_CAPTURE_OUTPUT || "phase-1-platform-assets",
 );
 const baseUrl = String(
   process.env.LOTTOMIND_CAPTURE_BASE_URL || "http://127.0.0.1:8294",
@@ -25,7 +25,7 @@ const routes = [
     path: "/arcade.html",
     dismiss: ".lm-commercial-gate__skip",
   },
-  { name: "studio", path: "/studio.html" },
+  { name: "news", path: "/news/" },
   {
     name: "help",
     path: "/how-to-use.html",

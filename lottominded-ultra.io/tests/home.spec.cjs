@@ -113,6 +113,13 @@ test("mobile App navigation opens the canonical App Features route", async ({ pa
   await expect(page.getByRole("heading", { name: "Ideas, numbers, and signals in one app." })).toBeVisible();
 });
 
+test("homepage uses the previous composition without the Phase 1 platform bands", async ({ page }) => {
+  await openHome(page);
+  await expect(page.locator(".home-platform-onramp, .home-product-families")).toHaveCount(0);
+  await expect(page.locator(".hero-actions .secondary-action")).toHaveCount(3);
+  await expect(page.locator(".hero-actions")).toContainText("LottoMind App");
+});
+
 test("mobile performance mode stops audited infinite animation families", async ({ page }, testInfo) => {
   test.skip(!testInfo.project.name.startsWith("mobile"), "Mobile performance assertion");
   await openHome(page);

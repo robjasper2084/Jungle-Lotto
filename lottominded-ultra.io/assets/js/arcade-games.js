@@ -127,24 +127,6 @@
       progressSupport: "Local session",
       difficulty: "Casual",
       accent: "violet"
-    },
-    {
-      id: "stem-studio",
-      title: "LottoMind Stem Studio",
-      path: "./studio.html",
-      type: "music",
-      description: "Mix stems, shape the live signal, and build a playable music route in the browser studio.",
-      category: "Music & Rhythm",
-      tags: ["music", "mixer", "stems", "studio"],
-      image: "./assets/arcade/stem-studio-title.webp",
-      status: "Playable",
-      featured: false,
-      controls: "Pointer + keyboard",
-      touchSupport: true,
-      gamepadSupport: false,
-      progressSupport: "Local project",
-      difficulty: "Intermediate",
-      accent: "cyan"
     }
   ]);
 })(window);
