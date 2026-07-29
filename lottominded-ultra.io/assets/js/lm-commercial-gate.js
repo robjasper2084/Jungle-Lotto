@@ -79,14 +79,20 @@
       films: [{ ...merchStoreFilm, signal: "Merch vault / Guardian broadcast" }]
     },
     {
-      matches: body.matches(".features-cinematic-page") || path.endsWith("/features-app.html"),
-      name: "Features",
+      matches: body.matches(".features-cinematic-page") || path.endsWith("/arcade.html"),
+      name: "Ultra Arcade",
       theme: "features",
-      films: [{ ...merchStoreFilm, signal: "Features / Guardian broadcast" }]
+      films: [{ ...merchStoreFilm, signal: "Ultra Arcade / Guardian broadcast" }]
     },
     {
       matches: path.endsWith("/how-to-use.html"),
       name: "Static Wav",
+      theme: "guide",
+      films: [guideFilm]
+    },
+    {
+      matches: path.endsWith("/static-wave.html"),
+      name: "2084 Static Wave",
       theme: "guide",
       films: [guideFilm]
     },

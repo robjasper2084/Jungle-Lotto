@@ -2,6 +2,7 @@
   "name": "lottominded-ultra-site",
   "private": true,
   "scripts": {
+    "routes:generate": "node scripts/generate-site-routes.mjs && node scripts/inject-route-runtime.mjs",
     "check:home": "node scripts/validate-home-page.mjs",
     "check:site": "node scripts/validate-site.mjs",
     "release:audit": "node scripts/validate-release-gates.mjs",

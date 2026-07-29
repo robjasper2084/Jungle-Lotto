@@ -1,0 +1,171 @@
+{
+  "generatedAt": "2026-07-29T11:02:47.440Z",
+  "canonicalRoutes": [
+    "index.html",
+    "features.html",
+    "arcade.html",
+    "news/",
+    "live-events.html",
+    "merch-store.html",
+    "memberships.html",
+    "beat2lotto-plus.html",
+    "prompt-lab.html",
+    "lottery-spheres.html",
+    "robot-rahbe.html",
+    "static-wave.html",
+    "how-to-use.html",
+    "contact.html",
+    "privacy.html",
+    "terms.html",
+    "accessibility.html"
+  ],
+  "aliases": [
+    {
+      "alias": "./",
+      "routeId": "home"
+    },
+    {
+      "alias": "./features-app.html",
+      "routeId": "arcade"
+    },
+    {
+      "alias": "./prompt-lab.html",
+      "routeId": "beat2lotto"
+    }
+  ],
+  "routes": [
+    {
+      "id": "home",
+      "file": "index.html",
+      "href": "./index.html#top",
+      "canonical": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/",
+      "indexable": true
+    },
+    {
+      "id": "app-features",
+      "file": "features.html",
+      "href": "./features.html",
+      "canonical": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/features.html",
+      "indexable": true
+    },
+    {
+      "id": "arcade",
+      "file": "arcade.html",
+      "href": "./arcade.html",
+      "canonical": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/arcade.html",
+      "indexable": true
+    },
+    {
+      "id": "news",
+      "file": "news/index.html",
+      "href": "./news/",
+      "canonical": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/news/",
+      "indexable": true
+    },
+    {
+      "id": "events",
+      "file": "live-events.html",
+      "href": "./live-events.html",
+      "canonical": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/live-events.html",
+      "indexable": true
+    },
+    {
+      "id": "store",
+      "file": "merch-store.html",
+      "href": "./merch-store.html",
+      "canonical": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/merch-store.html",
+      "indexable": true
+    },
+    {
+      "id": "memberships",
+      "file": "memberships.html",
+      "href": "./memberships.html",
+      "canonical": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/memberships.html",
+      "indexable": true
+    },
+    {
+      "id": "account",
+      "file": "account.html",
+      "href": "./account.html",
+      "canonical": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/account.html",
+      "indexable": false
+    },
+    {
+      "id": "beat2lotto",
+      "file": "beat2lotto-plus.html",
+      "href": "./beat2lotto-plus.html",
+      "canonical": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/beat2lotto-plus.html",
+      "indexable": true
+    },
+    {
+      "id": "prompt-lab",
+      "file": "prompt-lab.html",
+      "href": "./prompt-lab.html",
+      "canonical": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/prompt-lab.html",
+      "indexable": true
+    },
+    {
+      "id": "spheres",
+      "file": "lottery-spheres.html",
+      "href": "./lottery-spheres.html#spheres",
+      "canonical": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/lottery-spheres.html",
+      "indexable": true
+    },
+    {
+      "id": "robot-rahbe",
+      "file": "robot-rahbe.html",
+      "href": "./robot-rahbe.html",
+      "canonical": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/robot-rahbe.html",
+      "indexable": true
+    },
+    {
+      "id": "static-wave",
+      "file": "static-wave.html",
+      "href": "./static-wave.html",
+      "canonical": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/static-wave.html",
+      "indexable": true
+    },
+    {
+      "id": "help",
+      "file": "how-to-use.html",
+      "href": "./how-to-use.html",
+      "canonical": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/how-to-use.html",
+      "indexable": true
+    },
+    {
+      "id": "contact",
+      "file": "contact.html",
+      "href": "./contact.html",
+      "canonical": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/contact.html",
+      "indexable": true
+    },
+    {
+      "id": "redeem",
+      "file": "redeem.html",
+      "href": "./redeem.html",
+      "canonical": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/redeem.html",
+      "indexable": false
+    },
+    {
+      "id": "privacy",
+      "file": "privacy.html",
+      "href": "./privacy.html",
+      "canonical": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/privacy.html",
+      "indexable": true
+    },
+    {
+      "id": "terms",
+      "file": "terms.html",
+      "href": "./terms.html",
+      "canonical": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/terms.html",
+      "indexable": true
+    },
+    {
+      "id": "accessibility",
+      "file": "accessibility.html",
+      "href": "./accessibility.html",
+      "canonical": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/accessibility.html",
+      "indexable": true
+    }
+  ]
+}

@@ -50,7 +50,7 @@ test("kinetic headings expose one clean accessible name", async ({ page }) => {
   const names = [
     "Lottery Spheres in Motion",
     "Turn ideas into your LottoMind app flow.",
-    "Enter the LottoMind Refined App"
+    "Enter the LottoMind App"
   ];
   for (const name of names) {
     await expect(page.getByRole("heading", { name, exact: true })).toHaveAccessibleName(name);
@@ -105,23 +105,19 @@ test("mobile Home anchor keeps the hero title below sticky chrome", async ({ pag
   expect(positions.headingTop).toBeGreaterThanOrEqual(positions.marqueeBottom);
 });
 
-test("mobile app anchor lands below sticky page chrome", async ({ page }, testInfo) => {
+test("mobile App navigation opens the canonical App Features route", async ({ page }, testInfo) => {
   test.skip(!testInfo.project.name.startsWith("mobile"), "Mobile layout assertion");
   await openHome(page);
-  await page.locator('a[href="#lottomind-refined"]').click();
-  await page.waitForTimeout(350);
+  await page.locator(".lm-mobile-bottom-nav").getByRole("link", { name: "App", exact: true }).click();
+  await page.waitForURL(/\/features\.html$/);
+  await expect(page.getByRole("heading", { name: "Ideas, numbers, and signals in one app." })).toBeVisible();
+});
 
-  const positions = await page.evaluate(() => {
-    const target = document.querySelector("#lottomind-refined")?.getBoundingClientRect();
-    const chrome = [document.querySelector(".site-header"), document.querySelector(".home-signal-marquee")]
-      .map((element) => element?.getBoundingClientRect())
-      .filter(Boolean);
-    return {
-      targetTop: target?.top ?? -1,
-      chromeBottom: Math.max(0, ...chrome.map((rect) => rect.bottom))
-    };
-  });
-  expect(positions.targetTop).toBeGreaterThanOrEqual(positions.chromeBottom - 2);
+test("homepage uses the previous composition without the Phase 1 platform bands", async ({ page }) => {
+  await openHome(page);
+  await expect(page.locator(".home-platform-onramp, .home-product-families")).toHaveCount(0);
+  await expect(page.locator(".hero-actions .secondary-action")).toHaveCount(3);
+  await expect(page.locator(".hero-actions")).toContainText("LottoMind App");
 });
 
 test("mobile performance mode stops audited infinite animation families", async ({ page }, testInfo) => {

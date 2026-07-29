@@ -357,13 +357,31 @@
 - Production verification: Live Home and Memberships returned HTTP 200 without staging noindex or preview-banner markers
 - Approval status: Ready for production review; pull-request approval and fresh exact `APPROVE PRODUCTION MERGE` authorization remain required
 
-## Phase 1 Rollback
+## Phase 1 Platform Architecture Integration
 
-- Step number: Owner-requested Phase 1 rollback
-- Rollback commit: `1ddb460038223293ca00a02f0b8a8a2e5ca26710`
-- Restored checkpoint: `320bf16dd66e6446e12434fb87f9320a717dee74`
-- Method: Normal revert commit covering the contiguous Phase 1 implementation, review, restoration, and saved-Studio follow-up range; no reset, rebase, force-push, or history rewrite
-- Tests: Site validation passed for 15 HTML files; source browser suite passed 126 checks with 6 intentional viewport skips; staging safety passed 10/10; source/staging route matrix passed 92/92; release gates passed 7/7; staging static verification passed for 23 pages and 543 same-origin references
-- Visual review: 12 captures passed at `1440x900`, `768x1024`, and `390x844`; review: `docs/staging-reviews/phase-1-rollback.md`
+- Step number: Phase 1 CodeX pack integration
+- Implementation commit: `ef73f36c6aea559d4713ccb599811ca380ef4a6c`
+- Upgrade branch: `upgrade-redesign`
+- Scope: Central route manifest and generated sitemap/inventory; canonical App, Arcade, Studio, Help, Account, Beat2Lotto+, RAHBE, and Static Wav routes; manifest-driven desktop/mobile navigation and command search; clearer Home and Membership hierarchy
+- Tests: Source browser suite passed 145 checks with 7 intentional viewport skips; source/staging route matrix passed 100/100; staging safety passed 10/10; release gates passed 7/7; site validation passed 21 source pages
+- Staging build: 29 noindex pages and 630 same-origin references verified from commit `ef73f36c6aea559d4713ccb599811ca380ef4a6c`
+- Visual review: 21 captures passed at `1440x900`, `768x1024`, and `390x844`; review: `docs/staging-reviews/phase-1-platform.md`
+- Staging URL: Local only (`http://127.0.0.1:8294/` while the verified server is running)
+- Staging safety: Preview banner and noindex verified; live payments, production account writes, real redemptions, and production analytics remain blocked
+- Commerce and backend impact: Existing membership prices, checkout hooks, account services, and redemption protections are preserved; no live charge or production-data mutation was attempted
+- Production approval status: Not approved for this new Phase 1 branch work; production remains unchanged
+
+## Previous Layout Restoration With Retained Platform Tools
+
+- Step number: Browser-requested previous-layout restoration
+- Implementation commit: `afa774c3e178d24700cef57fc98f6b887e1baf19`
+- Upgrade branch: `upgrade-redesign`
+- Navigation order: Home, App, Arcade, News + Events, Store, Membership
+- Preserved updates: Search, Credits, Account, LottoMind App, grouped News + Events navigation, How-to-Use / Help Center, recent public route names, and the Account and Collector Vault footer directory
+- Studio preservation: The public `studio.html` overview and discovery links were removed; its exact source reference is documented in `docs/archived-pages/studio-phase1.md`, while the underlying `lottomind-stem-studio/` implementation and assets remain saved
+- Tests: Source browser suite passed 147 checks with 7 intentional viewport skips; staging safety passed 10/10; source/staging desktop/mobile route matrix passed 96/96; release gates passed 7/7; staging static verification passed for 28 pages and 616 same-origin references
+- Visual review: 21 route captures passed at `1440x900`, `768x1024`, and `390x844`; review: `docs/staging-reviews/layout-restoration.md`
 - Staging URL: Local only (`http://127.0.0.1:8295/` while the verified server is running)
-- Production approval status: Not approved; `main`, production, and `v1-final` remain unchanged
+- Staging safety: Preview banner and noindex verified; live payments, production account writes, real redemptions, and production analytics remain blocked
+- Commerce and backend impact: None; no checkout, account mutation, redemption, or production-data action was attempted
+- Production approval status: Not approved; production remains unchanged

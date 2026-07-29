@@ -9,7 +9,9 @@
     <link rel="icon" href="./assets/brand/lm-orb-mark.webp" type="image/webp" />
     <script>
       if (window.location.hash.toLowerCase() === "#beat2lotto") {
-        window.location.replace(`./beat2lotto-plus.html${window.location.search}#beat2lotto`);
+        window.addEventListener("DOMContentLoaded", () => {
+          document.querySelector("#beat2lotto")?.scrollIntoView({ block: "start" });
+        }, { once: true });
       }
     </script>
 <link rel="stylesheet" href="./styles.css?v=startup-music-banner-wide-21" />
@@ -130,93 +132,18 @@
     </section>
 
     <main id="top">
-      <div class="beat2lotto-shell prompt-lab-beat2lotto-top" id="beat2lotto" aria-label="Beat2Lotto+ copied console" data-spheres-stage data-spheres-theme="golden" data-spheres-accent-src="./assets/brand/jazz-network-gold-coin.webp">
-        <canvas class="prompt-lab-sphere-canvas" data-spheres-canvas aria-hidden="true"></canvas>
-        <div class="prompt-lab-sphere-scanline" aria-hidden="true"></div>
-        <div class="prompt-lab-sphere-grid" aria-hidden="true"></div>
-        <section class="beat2lotto-hero">
+      <section class="beat2lotto-shell prompt-lab-beat2lotto-top" id="beat2lotto" aria-labelledby="beat2lottoBridgeTitle">
+        <div class="beat2lotto-hero">
           <div>
-            <h1>Beat2Lotto+<span class="tm" aria-hidden="true"></span></h1>
-            <p>
-              A standalone creative number signal console powered by beat-style inputs. Import a beat or
-              music file, enter a BPM, groove, mood, or session phrase, then generate beat-seeded
-              entertainment picks for journaling, creative play, and studio rituals.
-            </p>
-            <p class="lotto-safety">
-              Beat2Lotto+&trade; is not a prediction. Lottery outcomes are random. Verify game rules, matrices,
-              draw times, prizes, and eligibility with official lottery sources before playing.
-            </p>
-        </div>
-        <div class="beat2lotto-orb beat2lotto-coin-orb" aria-hidden="true">
-          <img src="./assets/brand/jazz-network-gold-coin.webp" alt="" />
+            <p class="lm-platform-kicker">Connected creative route</p>
+            <h1 id="beat2lottoBridgeTitle">Beat2Lotto+</h1>
+            <p>The full local-first Beat2Lotto+ console now has one canonical route. Import audio, enter Beat DNA, generate entertainment-only number signals, and copy the supported output there.</p>
+            <p class="lotto-safety">Beat2Lotto+ is not a prediction. Lottery outcomes are random.</p>
+            <a class="primary-action" href="./beat2lotto-plus.html">Open Beat2Lotto+ Console</a>
+          </div>
+          <div class="beat2lotto-orb beat2lotto-coin-orb" aria-hidden="true"><img src="./assets/brand/jazz-network-gold-coin.webp" alt="" /></div>
         </div>
       </section>
-
-        <section class="beat2lotto-console" aria-label="Beat2Lotto+ generator">
-          <div class="lotto-controls">
-            <label class="file-drop">
-              <span>Import beat or music</span>
-              <input id="lottoAudioFile" type="file" accept="audio/*" />
-              <small>Local analysis only. Audio never uploads.</small>
-            </label>
-            <div class="beat-playback-card" id="beatPlayback" hidden>
-              <audio id="lottoAudioPlayer" preload="metadata" controls></audio>
-              <button type="button" id="playBeatAudio" disabled>Play uploaded beat</button>
-              <div class="beat-playback-meter" aria-hidden="true">
-                <span id="beatPlaybackEnergy"></span>
-              </div>
-              <small id="beatPlaybackStatus">Upload music to unlock playback.</small>
-            </div>
-            <div id="beatAnalysis" class="beat-analysis-card" aria-live="polite">
-              <strong>No beat imported yet</strong>
-              <span>Generate from typed Beat DNA, or load audio to seed the digits.</span>
-            </div>
-            <label>
-              <span>Session seed</span>
-              <input id="lottoSeed" type="text" value="neon drums, 120 BPM, late-night bounce" />
-            </label>
-            <label>
-              <span>BPM</span>
-              <input id="lottoBpm" type="number" min="40" max="220" value="120" />
-            </label>
-            <label>
-              <span>Game format</span>
-              <select id="lottoGame">
-                <option value="pick3">Pick 3</option>
-                <option value="pick4">Pick 4</option>
-                <option value="cash5">Cash 5 / Fantasy 5</option>
-                <option value="lotto6">Lotto 6</option>
-                <option value="powerball">Powerball Style</option>
-                <option value="mega">Mega Millions Style</option>
-              </select>
-            </label>
-            <label>
-              <span>Sets</span>
-              <input id="lottoCount" type="number" min="1" max="12" value="5" />
-            </label>
-            <label>
-              <span>Method</span>
-              <select id="lottoMethod">
-                <option>Beat DNA</option>
-                <option>Rhythm Signature</option>
-                <option>Drum Pattern</option>
-                <option>Stem Mix</option>
-                <option>Random + Beat DNA</option>
-              </select>
-            </label>
-            <button class="primary-action" type="button" id="generateLotto">Generate Number Signals</button>
-            <button class="secondary-action" type="button" id="copyLotto">Copy All</button>
-          </div>
-
-          <div class="lotto-output-panel">
-            <div class="lotto-output-head">
-              <h2>Beat-seeded entertainment picks</h2>
-              <span>Creative number generation - Not a prediction</span>
-            </div>
-            <div id="lottoOutput" class="lotto-output-grid" aria-live="polite"></div>
-          </div>
-        </section>
-      </div>
 
       <section class="pl-shell pl-section" id="generators">
         <div class="pl-section-head" data-reveal>
@@ -359,7 +286,7 @@
       <span>All rights reserved.</span>
     </footer>
 
-    <script src="./beat2lotto-plus.js?v=uploaded-audio-player-1" defer></script>
+    <script src="./assets/js/lm-route-manifest.generated.js"></script>
 <script src="./assets/js/lm-page-transition-audio.js?v=transition-audio-in-out-7" defer></script>
 <script src="./assets/js/lm-page-transition.js?v=transition-every-route-5" defer></script>
 <script src="./site.js?v=header-toggle-routes-5" defer></script>
