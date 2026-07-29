@@ -385,3 +385,15 @@
 - Staging safety: Preview banner and noindex verified; live payments, production account writes, real redemptions, and production analytics remain blocked
 - Commerce and backend impact: None; no checkout, account mutation, redemption, or production-data action was attempted
 - Production approval status: Not approved; production remains unchanged
+
+## Selective Phase 1 Platform Restore
+
+- Step number: Owner-requested selective Phase 1 recovery
+- Implementation commit: `403f2e5c9e8dc1af752060d409d874747fbf378b`
+- Restored surfaces: Search, Account, generated navigation, App overview, Arcade overview, Help Center, and grouped News + Events navigation
+- Preserved layout: Previous cinematic Home composition and current navigation order
+- Studio status: Public `studio.html` remains removed; source recovery is documented in `docs/archived-pages/studio-phase1.md`, and `lottomind-stem-studio/` remains preserved
+- Tests: Site validation passed for 20 HTML files; source browser suite passed 147 checks with 7 intentional viewport skips; staging safety passed 10/10; source/staging route matrix passed 96/96; release gates passed 7/7; staging static verification passed for 28 pages and 616 same-origin references
+- Visual review: 21 captures passed at `1440x900`, `768x1024`, and `390x844`; review: `docs/staging-reviews/selective-phase1-restore.md`
+- Staging URL: Local only (`http://127.0.0.1:8295/` while the verified server is running)
+- Production approval status: Not approved; `main`, production, and `v1-final` remain unchanged
