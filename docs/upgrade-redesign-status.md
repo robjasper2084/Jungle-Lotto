@@ -370,3 +370,18 @@
 - Staging safety: Preview banner and noindex verified; live payments, production account writes, real redemptions, and production analytics remain blocked
 - Commerce and backend impact: Existing membership prices, checkout hooks, account services, and redemption protections are preserved; no live charge or production-data mutation was attempted
 - Production approval status: Not approved for this new Phase 1 branch work; production remains unchanged
+
+## Previous Layout Restoration With Retained Platform Tools
+
+- Step number: Browser-requested previous-layout restoration
+- Implementation commit: `afa774c3e178d24700cef57fc98f6b887e1baf19`
+- Upgrade branch: `upgrade-redesign`
+- Navigation order: Home, App, Arcade, News + Events, Store, Membership
+- Preserved updates: Search, Credits, Account, LottoMind App, grouped News + Events navigation, How-to-Use / Help Center, recent public route names, and the Account and Collector Vault footer directory
+- Studio preservation: The public `studio.html` overview and discovery links were removed; its exact source reference is documented in `docs/archived-pages/studio-phase1.md`, while the underlying `lottomind-stem-studio/` implementation and assets remain saved
+- Tests: Source browser suite passed 147 checks with 7 intentional viewport skips; staging safety passed 10/10; source/staging desktop/mobile route matrix passed 96/96; release gates passed 7/7; staging static verification passed for 28 pages and 616 same-origin references
+- Visual review: 21 route captures passed at `1440x900`, `768x1024`, and `390x844`; review: `docs/staging-reviews/layout-restoration.md`
+- Staging URL: Local only (`http://127.0.0.1:8295/` while the verified server is running)
+- Staging safety: Preview banner and noindex verified; live payments, production account writes, real redemptions, and production analytics remain blocked
+- Commerce and backend impact: None; no checkout, account mutation, redemption, or production-data action was attempted
+- Production approval status: Not approved; production remains unchanged
