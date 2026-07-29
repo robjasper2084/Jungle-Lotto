@@ -356,3 +356,17 @@
 - Staging URL: Local only (`http://127.0.0.1:8143/`)
 - Production verification: Live Home and Memberships returned HTTP 200 without staging noindex or preview-banner markers
 - Approval status: Ready for production review; pull-request approval and fresh exact `APPROVE PRODUCTION MERGE` authorization remain required
+
+## Phase 1 Platform Architecture Integration
+
+- Step number: Phase 1 CodeX pack integration
+- Implementation commit: `ef73f36c6aea559d4713ccb599811ca380ef4a6c`
+- Upgrade branch: `upgrade-redesign`
+- Scope: Central route manifest and generated sitemap/inventory; canonical App, Arcade, Studio, Help, Account, Beat2Lotto+, RAHBE, and Static Wav routes; manifest-driven desktop/mobile navigation and command search; clearer Home and Membership hierarchy
+- Tests: Source browser suite passed 145 checks with 7 intentional viewport skips; source/staging route matrix passed 100/100; staging safety passed 10/10; release gates passed 7/7; site validation passed 21 source pages
+- Staging build: 29 noindex pages and 630 same-origin references verified from commit `ef73f36c6aea559d4713ccb599811ca380ef4a6c`
+- Visual review: 21 captures passed at `1440x900`, `768x1024`, and `390x844`; review: `docs/staging-reviews/phase-1-platform.md`
+- Staging URL: Local only (`http://127.0.0.1:8294/` while the verified server is running)
+- Staging safety: Preview banner and noindex verified; live payments, production account writes, real redemptions, and production analytics remain blocked
+- Commerce and backend impact: Existing membership prices, checkout hooks, account services, and redemption protections are preserved; no live charge or production-data mutation was attempted
+- Production approval status: Not approved for this new Phase 1 branch work; production remains unchanged
