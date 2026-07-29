@@ -774,6 +774,10 @@ body .site-header.home-like-header .lm-header-utilities > *:is(:hover, :focus-vi
     padding: 54px 24px 28px;
   }
 
+  .lm-news-events-dialog > div::after {
+    inset: 48px auto 20px 16px;
+  }
+
   .lm-news-events-dialog header {
     grid-template-columns: 1fr;
     gap: 12px;
