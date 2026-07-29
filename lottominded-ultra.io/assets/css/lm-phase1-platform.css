@@ -7,6 +7,8 @@
 }
 
 .lm-platform-page {
+  position: relative;
+  isolation: isolate;
   margin: 0;
   min-height: 100svh;
   color: #edf8ff;
@@ -17,6 +19,117 @@
     radial-gradient(circle at 86% 28%, rgba(184, 140, 255, 0.12), transparent 30rem),
     #02050a;
   background-size: 48px 48px, 48px 48px, auto, auto, auto;
+}
+
+.lm-platform-page::before,
+.lm-platform-page::after {
+  position: fixed;
+  z-index: -2;
+  pointer-events: none;
+  content: "";
+}
+
+.lm-platform-page::before {
+  inset: 0;
+  background:
+    linear-gradient(rgba(91, 233, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(91, 233, 255, 0.04) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+.lm-help-page {
+  background-color: #02050a;
+  background-image:
+    linear-gradient(90deg, transparent 0 8%, rgba(91, 233, 255, 0.08) 8% 8.12%, transparent 8.12% 91.88%, rgba(240, 211, 106, 0.08) 91.88% 92%, transparent 92%),
+    url("../merch/lottomind-guide-commercial-poster-20260717.jpg");
+  background-position: center, center top;
+  background-repeat: no-repeat;
+  background-size: 100% 100%, max(1440px, 100%) auto;
+  background-attachment: fixed;
+}
+
+.lm-help-page::after {
+  inset: 0;
+  z-index: -1;
+  background: rgba(1, 5, 10, 0.84);
+}
+
+.lm-help-page .lm-platform-main {
+  position: relative;
+}
+
+.lm-help-page .lm-platform-hero {
+  border: 1px solid rgba(91, 233, 255, 0.46);
+  background: rgba(1, 8, 15, 0.9);
+  box-shadow:
+    inset 0 0 0 8px rgba(4, 20, 34, 0.68),
+    0 26px 80px rgba(0, 0, 0, 0.56);
+  clip-path: polygon(0 26px, 26px 0, calc(100% - 54px) 0, calc(100% - 38px) 16px, 100% 16px, 100% calc(100% - 26px), calc(100% - 26px) 100%, 38px 100%, 22px calc(100% - 16px), 0 calc(100% - 16px));
+}
+
+.lm-help-page .lm-platform-section {
+  position: relative;
+  margin-top: 24px;
+}
+
+.lm-help-page .lm-help-tools {
+  border-color: rgba(91, 233, 255, 0.58);
+  box-shadow: 0 18px 54px rgba(0, 0, 0, 0.48);
+}
+
+.lm-account-page {
+  background-color: #01050a;
+  background-image: none;
+  perspective: 900px;
+}
+
+.lm-account-page::before {
+  inset: 38vh -18vw -38vh;
+  z-index: -2;
+  background:
+    linear-gradient(rgba(91, 233, 255, 0.12) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(91, 233, 255, 0.12) 1px, transparent 1px);
+  background-size: 72px 72px;
+  transform: rotateX(66deg) translateZ(-80px);
+  transform-origin: 50% 0;
+  mask-image: linear-gradient(to bottom, transparent, #000 16%, #000 78%, transparent);
+}
+
+.lm-account-page::after {
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(90deg, rgba(91, 233, 255, 0.11), transparent 1px) 14% 0 / 1px 100% no-repeat,
+    linear-gradient(90deg, rgba(184, 140, 255, 0.13), transparent 1px) 86% 0 / 1px 100% no-repeat,
+    linear-gradient(rgba(240, 211, 106, 0.13), transparent 1px) 0 34% / 100% 1px no-repeat;
+}
+
+.lm-account-page .lm-platform-main,
+.lm-account-page > footer {
+  position: relative;
+  z-index: 1;
+}
+
+.lm-account-page .lm-platform-hero,
+.lm-account-page .lm-account-panel {
+  background-color: rgba(2, 10, 20, 0.9);
+  box-shadow:
+    inset 0 1px rgba(255, 255, 255, 0.05),
+    0 24px 60px rgba(0, 0, 0, 0.44);
+}
+
+.lm-account-page .lm-account-shell {
+  perspective: 1200px;
+}
+
+.lm-account-page .lm-account-panel:first-child {
+  transform: rotateY(1.5deg);
+  transform-origin: right center;
+}
+
+.lm-account-page .lm-account-panel:last-child {
+  transform: rotateY(-2.5deg) translateZ(10px);
+  transform-origin: left center;
 }
 
 .lm-platform-main {
@@ -397,6 +510,21 @@
     align-items: flex-start;
     flex-direction: column;
   }
+
+  .lm-help-page {
+    background-attachment: scroll;
+    background-size: 100% 100%, auto 640px;
+  }
+
+  .lm-account-page::before {
+    inset: 46vh -55vw -28vh;
+    background-size: 54px 54px;
+  }
+
+  .lm-account-page .lm-account-panel:first-child,
+  .lm-account-page .lm-account-panel:last-child {
+    transform: none;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -407,5 +535,9 @@
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+
+  .lm-account-page .lm-account-panel {
+    transform: none !important;
   }
 }

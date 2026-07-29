@@ -113,6 +113,46 @@ test("Help Center search, categories, and deep links remain usable", async ({ pa
   await expect(page.locator("#accessibility")).toBeVisible();
 });
 
+test("platform Help, Account, utilities, and footer retain their HUD depth contract", async ({ page }, testInfo) => {
+  await blockHeavyMedia(page);
+  await page.goto("/how-to-use.html", { waitUntil: "domcontentloaded" });
+  await dismissCommercial(page);
+  await expect(page.locator("body")).toHaveClass(/lm-help-page/);
+  await expect(page.locator("[data-help-search]")).toBeVisible();
+
+  if (!testInfo.project.name.startsWith("mobile")) {
+    const utilities = page.locator(".lm-header-utilities");
+    await expect(utilities).toBeVisible();
+    await expect(utilities.locator(":scope > *")).toHaveCount(3);
+    const utilityClip = await utilities.evaluate((node) => getComputedStyle(node).clipPath);
+    expect(utilityClip).not.toBe("none");
+  }
+
+  const helpFooter = page.locator(".lm-site-footer-map");
+  await expect(helpFooter.locator("a")).toHaveCount(16);
+  expect(await helpFooter.evaluate((node) => getComputedStyle(node).clipPath)).not.toBe("none");
+
+  await page.goto("/account.html", { waitUntil: "domcontentloaded" });
+  await expect(page.locator("body")).toHaveClass(/lm-account-page/);
+  const accountDepth = await page.locator("body").evaluate((node) => {
+    const floor = getComputedStyle(node, "::before");
+    return {
+      transform: floor.transform,
+      backgroundImage: floor.backgroundImage,
+    };
+  });
+  expect(accountDepth.transform).not.toBe("none");
+  expect(accountDepth.backgroundImage).not.toBe("none");
+  await expect(page.locator("[data-account-signed-out]")).toBeVisible();
+
+  await page.goto("/arcade.html", { waitUntil: "domcontentloaded" });
+  await dismissCommercial(page);
+  const arcadeFooter = page.locator(".lm-site-footer-map");
+  await expect(arcadeFooter.locator("a")).toHaveCount(16);
+  await arcadeFooter.scrollIntoViewIfNeeded();
+  await expect(arcadeFooter).toBeVisible();
+});
+
 test("canonical game launchers preserve games, controls, and commercial behavior", async ({ page }) => {
   await blockHeavyMedia(page);
 
