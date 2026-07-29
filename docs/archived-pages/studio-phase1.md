@@ -1,8 +1,11 @@
 # Archived Phase 1 Studio Overview
 
-The public `lottominded-ultra.io/studio.html` overview was removed from the
-active route map at the owner's request. Its complete source remains preserved
-in Git at:
+The `lottominded-ultra.io/studio.html` overview is preserved as a direct-access,
+noindex draft while remaining outside the active route map, navigation, search,
+and sitemap. This keeps the Studio workflow and the complete "Browser and
+device expectations" section available for future work.
+
+Its original Phase 1 source also remains preserved in Git at:
 
 ```text
 ef73f36c6aea559d4713ccb599811ca380ef4a6c:lottominded-ultra.io/studio.html
@@ -15,5 +18,4 @@ git show ef73f36c6aea559d4713ccb599811ca380ef4a6c:lottominded-ultra.io/studio.ht
 ```
 
 The underlying `lottomind-stem-studio/` implementation and its assets remain in
-the repository. This archive removes only the Phase 1 public overview route and
-its navigation/search exposure.
+the repository. The saved draft is not an active public section.

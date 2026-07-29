@@ -746,6 +746,10 @@ test("Studio overview is removed from public discovery while its implementation 
   await expect(commercial).toBeHidden();
   await expect(page.locator('[data-game-id="stem-studio"]')).toHaveCount(0);
   await expect(page.getByText("7 routes visible", { exact: false })).toBeVisible();
+
+  await page.goto("/studio.html", { waitUntil: "domcontentloaded" });
+  await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", "noindex,nofollow,noarchive");
+  await expect(page.getByRole("heading", { name: "Browser and device expectations." })).toBeVisible();
 });
 
 test("Stem Studio contains the workstation at compact mobile width", async ({ page }) => {
