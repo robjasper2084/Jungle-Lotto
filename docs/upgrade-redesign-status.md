@@ -397,3 +397,18 @@
 - Visual review: 21 captures passed at `1440x900`, `768x1024`, and `390x844`; review: `docs/staging-reviews/selective-phase1-restore.md`
 - Staging URL: Local only (`http://127.0.0.1:8295/` while the verified server is running)
 - Production approval status: Not approved; `main`, production, and `v1-final` remain unchanged
+
+## Games Page Return And News + Events HUD
+
+- Step number: Browser-requested Games page restoration and News + Events HUD expansion
+- Implementation commits: `f9eaf51b6326d2c467ff95aa4af2d09e9273d6a0`, `9ab9d2057477205812e9a2ba299a0ebc15c50b6d`, and `6a044e145d54fd4fe2a85460686690a17005a7e9`
+- Restored surface: `/features-app.html` is again a complete Games destination with the Guardian hero film, particle figure, searchable and swipeable seven-game directory, filters, sorting, game controls, and responsible-entertainment language
+- Navigation: App, Arcade, and Games remain separate generated routes; the existing navigation order is preserved with Games inserted after Arcade
+- News + Events: The grouped route dialog is now a large responsive HUD with descriptive News and Live Events channels and an accessible close control
+- Tests: Site validation passed for 20 HTML files; focused desktop/mobile checks passed 6/6, followed by HUD 2/2 and Games 2/2 corrections; full source suite passed 151 checks with 7 intentional viewport skips; staging safety passed 10/10 on fresh port `8296`; source/staging route matrix passed 100/100; release gates passed 7/7
+- Staging build: 28 noindex pages built from `6a044e145d54fd4fe2a85460686690a17005a7e9`; preview banner and blocked production writes verified
+- Visual review: Nine captures passed at `1440x900`, `768x1024`, and `390x844`; review: `docs/staging-reviews/features-return-hud.md`
+- Intentional visual departure: The v1 entry commercial remains, while the post-entry Games page is now a richer cinematic directory; the small News + Events picker becomes a full cyan/gold control-deck HUD
+- Commerce and backend impact: None; live payments, production account writes, real redemptions, and production analytics remain blocked on staging
+- Staging URL: Local only (`http://127.0.0.1:8295/` while the verified server is running)
+- Production approval status: Not approved; `main`, production, and `v1-final` remain unchanged
