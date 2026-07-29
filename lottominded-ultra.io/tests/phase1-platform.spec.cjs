@@ -29,19 +29,43 @@ test("route manifest defines the Phase 1 platform contract", () => {
     "Home",
     "App",
     "Arcade",
+    "Games",
     "News + Events",
     "Store",
     "Membership",
   ]);
   expect(manifest.routes.some((route) => route.id === "studio")).toBe(false);
   expect(manifest.routes.find((route) => route.id === "account").indexable).toBe(false);
-  expect(manifest.routes.find((route) => route.id === "arcade").aliases).toContain("./features-app.html");
+  expect(manifest.routes.find((route) => route.id === "games").href).toBe("./features-app.html");
 });
 
-test("legacy Features URL preserves query and hash while redirecting to Arcade", async ({ page }) => {
-  await page.goto("/features-app.html?source=legacy#arcade-library", { waitUntil: "domcontentloaded" });
-  await page.waitForURL(/\/arcade\.html\?source=legacy#arcade-library$/);
-  await expect(page.locator("h1")).toContainText("Ultra Arcade");
+test("Features page remains a complete Games destination", async ({ page }) => {
+  await blockHeavyMedia(page);
+  await page.goto("/features-app.html#arcade-library", { waitUntil: "domcontentloaded" });
+  await dismissCommercial(page);
+  await expect(page).toHaveURL(/\/features-app\.html#arcade-library$/);
+  await expect(page.locator("#arcade-library")).toBeVisible();
+  await expect(page.locator(".arcade-game-card")).toHaveCount(7);
+});
+
+test("News and Events opens as a responsive HUD", async ({ page }, testInfo) => {
+  await blockHeavyMedia(page);
+  await page.goto("/arcade.html", { waitUntil: "domcontentloaded" });
+  await dismissCommercial(page);
+  await page.getByRole("link", { name: /News \+ Events/i }).click();
+
+  const dialog = page.locator(".lm-news-events-dialog");
+  await expect(dialog).toBeVisible();
+  await expect(dialog.getByRole("link", { name: /Open News/i })).toBeVisible();
+  await expect(dialog.getByRole("link", { name: /Open Live Events/i })).toBeVisible();
+
+  const box = await dialog.boundingBox();
+  expect(box).not.toBeNull();
+  if (testInfo.project.name === "desktop-chromium") {
+    expect(box.width).toBeGreaterThan(700);
+  } else {
+    expect(box.width).toBeLessThanOrEqual(page.viewportSize().width);
+  }
 });
 
 test("command palette supports keyboard route search and focus return", async ({ page }, testInfo) => {

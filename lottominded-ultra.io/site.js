@@ -147,10 +147,13 @@ window.LMAudioMix = {
   newsMenu.setAttribute("aria-labelledby", "lmNewsEventsTitle");
   newsMenu.innerHTML = `
     <div>
-      <header><span>News signal routes</span><h2 id="lmNewsEventsTitle">News + Events</h2></header>
-      <a href="${siteUrl("./news/")}">Open News</a>
-      <a href="${siteUrl("./live-events.html")}">Open Live Events</a>
-      <button type="button" data-news-menu-close>Close</button>
+      <header>
+        <div><span>News signal routes</span><h2 id="lmNewsEventsTitle">News + Events</h2></div>
+        <p>Choose the reporting feed or enter the live-event archive.</p>
+      </header>
+      <a href="${siteUrl("./news/")}"><small>01 / Reporting channel</small><strong>Open News</strong><span>Verified sources, current articles, and saved signals.</span></a>
+      <a href="${siteUrl("./live-events.html")}"><small>02 / Event channel</small><strong>Open Live Events</strong><span>Performance films, archive media, and event transmissions.</span></a>
+      <button type="button" data-news-menu-close aria-label="Close News and Events"><span aria-hidden="true">&times;</span><span class="visually-hidden">Close</span></button>
     </div>`;
   document.body.append(newsMenu);
   newsMenuToggle?.addEventListener("click", (event) => {

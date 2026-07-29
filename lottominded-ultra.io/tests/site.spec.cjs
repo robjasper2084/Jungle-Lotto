@@ -720,6 +720,7 @@ test("shared navigation keeps the requested platform order and utilities", async
     /Home/,
     /App/,
     /Arcade/,
+    /Games/,
     /News \+ Events/,
     /Store/,
     /Membership/,
