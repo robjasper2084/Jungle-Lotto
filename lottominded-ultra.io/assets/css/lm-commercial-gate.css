@@ -479,6 +479,11 @@ body.has-lm-commercial-gate {
     max-height: none;
     align-content: center;
     border-radius: 0;
+    transform: scale(0.985);
+  }
+
+  .lm-commercial-gate.is-handing-off .lm-commercial-gate__panel {
+    transform: scale(0.99);
   }
 
   .lm-commercial-gate__header,
