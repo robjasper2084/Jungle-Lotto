@@ -1,0 +1,138 @@
+{
+  "sourceCommit": "1ddb460038223293ca00a02f0b8a8a2e5ca26710",
+  "capturedAt": "2026-07-29T16:55:41.326Z",
+  "results": [
+    {
+      "name": "home",
+      "url": "/index.html#top",
+      "viewport": "1440x900",
+      "status": 200,
+      "robots": "noindex,nofollow,noarchive",
+      "banner": true,
+      "overflow": false,
+      "errors": [],
+      "assets": []
+    },
+    {
+      "name": "arcade",
+      "url": "/features-app.html",
+      "viewport": "1440x900",
+      "status": 200,
+      "robots": "noindex,nofollow,noarchive",
+      "banner": true,
+      "overflow": false,
+      "errors": [],
+      "assets": []
+    },
+    {
+      "name": "memberships",
+      "url": "/memberships.html",
+      "viewport": "1440x900",
+      "status": 200,
+      "robots": "noindex,nofollow,noarchive",
+      "banner": true,
+      "overflow": false,
+      "errors": [],
+      "assets": []
+    },
+    {
+      "name": "help",
+      "url": "/how-to-use.html",
+      "viewport": "1440x900",
+      "status": 200,
+      "robots": "noindex,nofollow,noarchive",
+      "banner": true,
+      "overflow": false,
+      "errors": [],
+      "assets": []
+    },
+    {
+      "name": "home",
+      "url": "/index.html#top",
+      "viewport": "768x1024",
+      "status": 200,
+      "robots": "noindex,nofollow,noarchive",
+      "banner": true,
+      "overflow": false,
+      "errors": [],
+      "assets": []
+    },
+    {
+      "name": "arcade",
+      "url": "/features-app.html",
+      "viewport": "768x1024",
+      "status": 200,
+      "robots": "noindex,nofollow,noarchive",
+      "banner": true,
+      "overflow": false,
+      "errors": [],
+      "assets": []
+    },
+    {
+      "name": "memberships",
+      "url": "/memberships.html",
+      "viewport": "768x1024",
+      "status": 200,
+      "robots": "noindex,nofollow,noarchive",
+      "banner": true,
+      "overflow": false,
+      "errors": [],
+      "assets": []
+    },
+    {
+      "name": "help",
+      "url": "/how-to-use.html",
+      "viewport": "768x1024",
+      "status": 200,
+      "robots": "noindex,nofollow,noarchive",
+      "banner": true,
+      "overflow": false,
+      "errors": [],
+      "assets": []
+    },
+    {
+      "name": "home",
+      "url": "/index.html#top",
+      "viewport": "390x844",
+      "status": 200,
+      "robots": "noindex,nofollow,noarchive",
+      "banner": true,
+      "overflow": false,
+      "errors": [],
+      "assets": []
+    },
+    {
+      "name": "arcade",
+      "url": "/features-app.html",
+      "viewport": "390x844",
+      "status": 200,
+      "robots": "noindex,nofollow,noarchive",
+      "banner": true,
+      "overflow": false,
+      "errors": [],
+      "assets": []
+    },
+    {
+      "name": "memberships",
+      "url": "/memberships.html",
+      "viewport": "390x844",
+      "status": 200,
+      "robots": "noindex,nofollow,noarchive",
+      "banner": true,
+      "overflow": false,
+      "errors": [],
+      "assets": []
+    },
+    {
+      "name": "help",
+      "url": "/how-to-use.html",
+      "viewport": "390x844",
+      "status": 200,
+      "robots": "noindex,nofollow,noarchive",
+      "banner": true,
+      "overflow": false,
+      "errors": [],
+      "assets": []
+    }
+  ]
+}

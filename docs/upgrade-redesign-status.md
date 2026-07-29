@@ -356,3 +356,14 @@
 - Staging URL: Local only (`http://127.0.0.1:8143/`)
 - Production verification: Live Home and Memberships returned HTTP 200 without staging noindex or preview-banner markers
 - Approval status: Ready for production review; pull-request approval and fresh exact `APPROVE PRODUCTION MERGE` authorization remain required
+
+## Phase 1 Rollback
+
+- Step number: Owner-requested Phase 1 rollback
+- Rollback commit: `1ddb460038223293ca00a02f0b8a8a2e5ca26710`
+- Restored checkpoint: `320bf16dd66e6446e12434fb87f9320a717dee74`
+- Method: Normal revert commit covering the contiguous Phase 1 implementation, review, restoration, and saved-Studio follow-up range; no reset, rebase, force-push, or history rewrite
+- Tests: Site validation passed for 15 HTML files; source browser suite passed 126 checks with 6 intentional viewport skips; staging safety passed 10/10; source/staging route matrix passed 92/92; release gates passed 7/7; staging static verification passed for 23 pages and 543 same-origin references
+- Visual review: 12 captures passed at `1440x900`, `768x1024`, and `390x844`; review: `docs/staging-reviews/phase-1-rollback.md`
+- Staging URL: Local only (`http://127.0.0.1:8295/` while the verified server is running)
+- Production approval status: Not approved; `main`, production, and `v1-final` remain unchanged
