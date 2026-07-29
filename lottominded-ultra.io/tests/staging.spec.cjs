@@ -54,30 +54,21 @@ test("preview shell is noindex, visibly marked, and free of broken same-origin r
   expect(consoleFailures).toEqual([]);
 });
 
-test("home commercial starts muted video and waits for a sound gesture", async ({ page }) => {
+test("home staging opens directly without the startup commercial popup", async ({ page }) => {
   const commercialRequests = [];
-  const soundtrackRequests = [];
   page.on("request", (request) => {
     if (/lottomind-(?:home|refined)-commercial-20260716\.mp4/i.test(request.url())) {
       commercialRequests.push(request.url());
     }
-    if (/home-screen-song\.mp3/i.test(request.url())) soundtrackRequests.push(request.url());
   });
 
   await page.goto("/", { waitUntil: "domcontentloaded" });
-  await expect(page.locator("[data-startup-video]")).toBeVisible({ timeout: 15_000 });
-  await expect.poll(() => commercialRequests.length).toBeGreaterThan(0);
-  expect(soundtrackRequests).toEqual([]);
-  await expect(page.locator("[data-startup-video-play]")).toHaveText("Play with sound");
-  await expect.poll(() => page.locator("[data-startup-video] video").evaluate((video) => ({ muted: video.muted, paused: video.paused }))).toEqual({ muted: true, paused: false });
-
-  await page.locator("[data-startup-video-play]").click();
-  await expect.poll(() => page.locator("[data-startup-video] video").evaluate((video) => video.muted)).toBe(false);
-  await page.locator("[data-startup-video-close]").last().click();
-  await expect.poll(() => soundtrackRequests.length).toBeGreaterThan(0);
+  await expect(page.locator("[data-startup-video]")).toHaveCount(0);
+  await expect(page.locator(".hero-motion")).toBeVisible();
+  expect(commercialRequests).toEqual([]);
 });
 
-test("membership entry film starts muted and enables sound on request", async ({ page }) => {
+test("membership entry film requests sound and keeps an accessible fallback", async ({ page }) => {
   const filmRequests = [];
   const soundtrackRequests = [];
   page.on("request", (request) => {
@@ -90,52 +81,57 @@ test("membership entry film starts muted and enables sound on request", async ({
   await expect(commercial).toBeVisible({ timeout: 15_000 });
   await expect.poll(() => filmRequests.length).toBeGreaterThan(0);
   expect(soundtrackRequests).toEqual([]);
-  await expect(page.locator("[data-membership-commercial-sound]")).toHaveText("Play with sound");
-  await expect.poll(() => commercial.locator("video").evaluate((video) => ({ muted: video.muted, paused: video.paused }))).toEqual({ muted: true, paused: false });
-
-  await page.locator("[data-membership-commercial-sound]").click();
-  await expect.poll(() => commercial.locator("video").evaluate((video) => video.muted)).toBe(false);
+  await expect.poll(() =>
+    commercial.locator("video").evaluate((video) => ({ muted: video.muted, paused: video.paused }))
+  ).toMatchObject({ paused: false });
+  const playbackState = await commercial.locator("video").evaluate((video) => ({ muted: video.muted, paused: video.paused }));
+  if (playbackState?.muted) {
+    await expect(page.locator("[data-membership-commercial-sound]")).toHaveText("Play with sound");
+    await page.locator("[data-membership-commercial-sound]").click();
+    await expect.poll(() => commercial.locator("video").evaluate((video) => video.muted)).toBe(false);
+  } else {
+    await expect(page.locator("[data-membership-commercial-sound]")).toBeHidden();
+  }
   await page.locator("[data-membership-commercial-close]").click();
   await expect.poll(() => soundtrackRequests.length).toBeGreaterThan(0);
 });
 
-test("route commercial gate starts muted and enables sound on request", async ({ page }) => {
-  const filmRequests = [];
-  page.on("request", (request) => {
-    if (/assets\/merch\/.*commercial.*\.mp4/i.test(request.url())) filmRequests.push(request.url());
-  });
-
+test("guide keeps its single commercial gate and safe sound handoff", async ({ page }) => {
   await page.goto("/how-to-use.html", { waitUntil: "domcontentloaded" });
   const gate = page.locator(".lm-commercial-gate");
   await expect(gate).toBeVisible();
-  await expect.poll(() => filmRequests.length).toBeGreaterThan(0);
+  await expect(gate).toHaveCount(1);
+  await expect.poll(() => gate.locator("video").evaluate((video) => video.currentSrc)).toContain("lottomind-guide-commercial-20260717.mp4");
   await expect(gate.locator(".lm-commercial-gate__sound")).toHaveText("Play with sound");
   await expect.poll(() => gate.locator("video").evaluate((video) => ({ muted: video.muted, paused: video.paused }))).toEqual({ muted: true, paused: false });
+  const safetyLayout = await page.evaluate(() => {
+    const status = document.querySelector("#lm-staging-guard-status").getBoundingClientRect();
+    const panel = document.querySelector(".lm-commercial-gate__panel").getBoundingClientRect();
+    return { statusBottom: status.bottom, panelTop: panel.top };
+  });
+  expect(safetyLayout.panelTop).toBeGreaterThanOrEqual(safetyLayout.statusBottom - 1);
 
   await gate.locator(".lm-commercial-gate__sound").click();
   await expect.poll(() => gate.locator("video").evaluate((video) => video.muted)).toBe(false);
 });
 
-test("merch route and click-opened commercial use the safe sound handoff", async ({ page }) => {
+test("merch route uses one automatic unboxing commercial with no extra gate", async ({ page }) => {
   const filmRequests = [];
   page.on("request", (request) => {
-    if (/lottomind-community-signal-commercial-20260717\.mp4/i.test(request.url())) {
+    if (/lottomind-membership-unboxing-commercial-20260716\.mp4/i.test(request.url())) {
       filmRequests.push(request.url());
     }
   });
 
   await page.goto("/merch-store.html", { waitUntil: "domcontentloaded" });
-  const gate = page.locator(".lm-commercial-gate");
-  await expect(gate).toBeVisible();
-  await expect.poll(() => filmRequests.length).toBeGreaterThan(0);
-  await expect.poll(() => gate.locator("video").evaluate((video) => video.muted)).toBe(true);
-  await gate.locator(".lm-commercial-gate__skip").click();
-  await expect(gate).toBeHidden();
-
-  await page.locator("[data-merch-commercial-open]").click();
+  await expect(page.locator(".lm-commercial-gate")).toHaveCount(0);
   const modal = page.locator("[data-merch-commercial-modal]");
+  await expect(modal).toHaveCount(1);
   await expect(modal).toBeVisible();
-  await expect.poll(() => modal.locator("video").evaluate((video) => ({ muted: video.muted, paused: video.paused }))).toEqual({ muted: false, paused: false });
+  await expect.poll(() => filmRequests.length).toBeGreaterThan(0);
+  await expect.poll(() => modal.locator("video").evaluate((video) => video.paused)).toBe(false);
+  await page.locator("[data-merch-commercial-close]").click();
+  await expect(modal).toBeHidden();
 });
 
 test("Live Events renders a complete channel hub without invented live or commerce data", async ({ page }) => {

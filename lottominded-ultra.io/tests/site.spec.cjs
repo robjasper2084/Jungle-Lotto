@@ -65,7 +65,7 @@ async function mockAuthenticatedBilling(page, checkoutResponse) {
   });
 }
 
-test("memberships avoids an entry popup and opens its commercial only on request", async ({ page }) => {
+test("memberships opens its entry commercial and keeps manual replay available", async ({ page }) => {
   await blockHeavyMedia(page);
   await page.route(/https:\/\/js\.stripe\.com\/.*/i, (route) => route.abort());
   await page.route(/https:\/\/sqdasdbvlkgpbbiyeune\.supabase\.co\/functions\/v1\/lottomind-api.*/i, (route) =>
@@ -82,6 +82,10 @@ test("memberships avoids an entry popup and opens its commercial only on request
   await page.waitForLoadState("networkidle").catch(() => {});
 
   const commercial = page.locator("[data-membership-commercial-modal]");
+  await expect(commercial).toBeVisible({ timeout: 15_000 });
+  await expect(commercial.locator("video")).toHaveAttribute("data-src", /membership-hoodie-commercial/);
+  await expect(commercial.getByRole("link", { name: "Buy Now" })).toHaveAttribute("href", /merch-store\.html\?product=guardian#keychains/);
+  await page.locator("[data-membership-commercial-close]").click();
   await expect(commercial).toBeHidden();
   await expect(page.locator(".lm-temporal-loader")).toHaveCount(0);
   const commercialOpener = page.locator("[data-membership-commercial-open]").last();
@@ -91,10 +95,274 @@ test("memberships avoids an entry popup and opens its commercial only on request
   await expect(commercial).toBeVisible();
   await page.locator("[data-membership-commercial-close]").click();
   await expect(commercial).toBeHidden();
+  const heroFilm = page.locator(".membership-hero-commercial");
+  await expect(heroFilm).toBeVisible();
+  await expect(heroFilm.locator(".membership-hero-commercial__hud")).toBeVisible();
+  await expect(heroFilm.locator(".membership-hero-commercial__corner")).toHaveCount(4);
+  await expect(heroFilm.locator(".membership-hero-commercial__meter i")).toHaveCount(6);
+  await expect(heroFilm.locator("[data-membership-featured-sound]")).toBeVisible();
+  await expect(heroFilm.locator("video")).toHaveAttribute("src", /lottomind-membership-feature-commercial-20260716\.mp4/);
+  expect(await heroFilm.locator(".membership-hero-commercial__hud").evaluate((element) => getComputedStyle(element).clipPath)).not.toBe("none");
   await expect(page.locator("[data-stripe-lookup-key]").first()).toBeDisabled();
   await expect(page.locator("[data-stripe-membership-status]")).toContainText("Test billing endpoint offline");
   expect(apiRequests).toEqual([]);
   expect(localFailures).toEqual([]);
+});
+
+test("Static Wav and RAHBE keep an explicit header hide and restore control", async ({ page }) => {
+  await blockHeavyMedia(page);
+
+  for (const route of ["/how-to-use.html", "/beat2lotto-plus.html#beat2lotto"]) {
+    await page.goto(route, { waitUntil: "domcontentloaded" });
+    const commercialGate = page.locator(".lm-commercial-gate");
+    if (await commercialGate.isVisible().catch(() => false)) {
+      await commercialGate.locator(".lm-commercial-gate__skip").click();
+      await expect(commercialGate).toBeHidden();
+    }
+    const toggle = page.locator(".header-click-toggle");
+    await expect(toggle).toBeVisible();
+    await expect(toggle).toHaveText("HIDE NAV");
+
+    await toggle.click();
+    await expect(page.locator("body")).toHaveClass(/is-click-header-hidden/);
+    await expect(toggle).toHaveText("SHOW NAV");
+
+    await toggle.click();
+    await expect(page.locator("body")).not.toHaveClass(/is-click-header-hidden/);
+    await expect(toggle).toHaveText("HIDE NAV");
+  }
+});
+
+test("header hide control stays off every route except Static Wav and RAHBE", async ({ page }) => {
+  await blockHeavyMedia(page);
+
+  for (const route of ["/", "/memberships.html", "/features-app.html", "/merch-store.html", "/lottery-spheres.html"]) {
+    await page.goto(route, { waitUntil: "domcontentloaded" });
+    await expect(page.locator(".header-click-toggle")).toHaveCount(0);
+  }
+});
+
+test("Home and Storefront omit the removed particle and music-reactive visual layers", async ({ page }) => {
+  await blockHeavyMedia(page);
+
+  await page.goto("/", { waitUntil: "domcontentloaded" });
+  await expect(page.locator("#featureEntity, .signal-particle-layer")).toHaveCount(0);
+
+  await page.goto("/merch-store.html", { waitUntil: "domcontentloaded" });
+  await expect(page.locator("[data-live-eq], .live-eq-meter")).toHaveCount(0);
+  await expect(page.locator(".merch-commercial-capsule video")).toHaveCount(1);
+});
+
+test("internal route navigation plays an outbound and arrival transition", async ({ page }) => {
+  await blockHeavyMedia(page);
+  await page.addInitScript(() => {
+    window.__membershipCommercialOpenedDuringTransition = false;
+    document.addEventListener("DOMContentLoaded", () => {
+      const commercial = document.querySelector("[data-membership-commercial-modal]");
+      if (!commercial) return;
+      const observer = new MutationObserver(() => {
+        const isOpen = commercial.classList.contains("is-open") && commercial.getAttribute("aria-hidden") === "false";
+        if (isOpen && document.body.classList.contains("lm-page-is-transitioning")) {
+          window.__membershipCommercialOpenedDuringTransition = true;
+        }
+      });
+      observer.observe(commercial, { attributes: true, attributeFilter: ["class", "aria-hidden"] });
+    }, { once: true });
+  });
+  await page.goto("/contact.html", { waitUntil: "domcontentloaded" });
+
+  const destination = page.locator("header nav a").filter({ hasText: "Memberships" }).first();
+  await destination.evaluate((link) => link.click());
+  await expect(page.locator("[data-lm-page-transition]")).toHaveClass(/is-opening/);
+
+  await page.waitForURL(/\/memberships\.html$/, { timeout: 10_000 });
+  await expect(page.locator("html")).toHaveAttribute("data-lm-last-transition-phase", "close");
+  const membershipCommercial = page.locator("[data-membership-commercial-modal]");
+  await expect(page.locator("body")).not.toHaveClass(/lm-page-is-transitioning/, { timeout: 5_000 });
+  await expect(membershipCommercial).toBeVisible({ timeout: 15_000 });
+  expect(await page.evaluate(() => window.__membershipCommercialOpenedDuringTransition)).toBe(false);
+});
+
+test("membership commercial requests sound first and closes when playback ends", async ({ page }) => {
+  await page.addInitScript(() => {
+    window.__membershipCommercialPlayAttempts = [];
+    window.__membershipEntrySequence = [];
+    window.addEventListener("lottomind:page-transition", (event) => {
+      window.__membershipEntrySequence.push(`transition:${event.detail.source}`);
+    });
+    window.addEventListener("lottomind:transition-complete", (event) => {
+      window.__membershipEntrySequence.push(`complete:${event.detail.source}`);
+    });
+    const originalPlay = HTMLMediaElement.prototype.play;
+    HTMLMediaElement.prototype.play = function patchedPlay() {
+      if (this.matches?.("[data-membership-commercial-video]")) {
+        window.__membershipCommercialPlayAttempts.push({ muted: this.muted, volume: this.volume });
+        return Promise.resolve();
+      }
+      return originalPlay.call(this);
+    };
+    document.addEventListener("DOMContentLoaded", () => {
+      const commercial = document.querySelector("[data-membership-commercial-modal]");
+      if (!commercial) return;
+      new MutationObserver(() => {
+        if (commercial.classList.contains("is-open") && commercial.getAttribute("aria-hidden") === "false") {
+          if (!window.__membershipEntrySequence.includes("commercial:open")) {
+            window.__membershipEntrySequence.push("commercial:open");
+          }
+        }
+      }).observe(commercial, { attributes: true, attributeFilter: ["class", "aria-hidden"] });
+    }, { once: true });
+  });
+
+  await page.goto("/memberships.html", { waitUntil: "domcontentloaded" });
+  const commercial = page.locator("[data-membership-commercial-modal]");
+  const video = commercial.locator("[data-membership-commercial-video]");
+  await expect(commercial).toBeVisible({ timeout: 15_000 });
+  await expect(page.locator(".header-click-toggle")).toHaveCount(0);
+  await expect.poll(() => page.evaluate(() => window.__membershipCommercialPlayAttempts)).toContainEqual(
+    expect.objectContaining({ muted: false }),
+  );
+  await expect.poll(() => page.evaluate(() => window.__membershipEntrySequence)).toEqual(
+    expect.arrayContaining(["transition:arrival", "complete:arrival", "commercial:open"]),
+  );
+  expect(await page.evaluate(() => {
+    const sequence = window.__membershipEntrySequence;
+    return sequence.indexOf("complete:arrival") < sequence.indexOf("commercial:open");
+  })).toBe(true);
+  await video.evaluate((element) => element.dispatchEvent(new Event("ended")));
+  await expect(page.locator("[data-lm-page-transition]")).toHaveClass(/is-closing/);
+  await expect(page.locator("#lmMembership")).toHaveAttribute("inert", "");
+  await expect.poll(() => page.evaluate(() => window.__membershipEntrySequence)).toContain("complete:membership-commercial");
+  await expect(commercial).toBeHidden({ timeout: 3_000 });
+  await expect(page.locator("#lmMembership")).not.toHaveAttribute("inert", "");
+  await expect(page.locator(".header-click-toggle")).toHaveCount(0);
+  await expect(page.locator("[data-lm-page-transition]")).not.toHaveClass(/is-closing/);
+});
+
+test("Membership depth responds to pointer and keyboard while respecting reduced motion", async ({ page }) => {
+  await blockHeavyMedia(page);
+  await page.goto("/memberships.html", { waitUntil: "domcontentloaded" });
+  const commercial = page.locator("[data-membership-commercial-modal]");
+  await expect(commercial).toBeVisible({ timeout: 15_000 });
+  await page.locator("[data-membership-commercial-close]").click();
+  await expect(commercial).toBeHidden({ timeout: 5_000 });
+  await expect(page.locator("#lmMembership")).not.toHaveAttribute("inert", "", { timeout: 5_000 });
+
+  await expect(page.locator("body")).toHaveClass(/lm-membership-depth-ready/);
+  const cards = page.locator(".membership-plan-card.lm-membership-depth-card");
+  await expect(cards).toHaveCount(4);
+  const firstCard = cards.first();
+  const button = firstCard.locator("a, button").first();
+  await firstCard.evaluate((element) => element.scrollIntoView({ block: "center", behavior: "instant" }));
+  await expect(firstCard).toBeVisible();
+  await button.evaluate((element) => element.focus());
+  await expect(button).toBeFocused();
+  await expect(firstCard).toHaveClass(/is-depth-focused/);
+
+  const interactive = await page.locator("body").getAttribute("data-lm-membership-depth");
+  if (interactive === "interactive") {
+    const box = await firstCard.boundingBox();
+    if (!box) throw new Error("Membership plan card is not measurable.");
+    await page.mouse.move(box.x + box.width * 0.82, box.y + box.height * 0.24);
+    await expect.poll(() => firstCard.evaluate((card) => (
+      card.style.getPropertyValue("--lm-depth-rotate-y")
+    ))).not.toBe("0deg");
+  }
+
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await expect(page.locator("body")).toHaveAttribute("data-lm-membership-depth", "static");
+  await expect(firstCard).toHaveCSS("transform", "none");
+});
+
+test("Storefront commercial closes itself when playback ends", async ({ page }) => {
+  await blockHeavyMedia(page);
+  await page.goto("/merch-store.html", { waitUntil: "domcontentloaded" });
+  const commercial = page.locator("[data-merch-commercial-modal]");
+  const video = commercial.locator("[data-merch-commercial-modal-video]");
+  await expect(commercial).toBeVisible({ timeout: 5_000 });
+  await expect(commercial.getByRole("link", { name: "Buy Now" })).toHaveAttribute("href", "#keychains");
+  await expect(page.locator(".header-click-toggle")).toHaveCount(0);
+  await video.evaluate((element) => element.dispatchEvent(new Event("ended")));
+  await expect(commercial).toBeHidden();
+  await expect(page.locator(".header-click-toggle")).toHaveCount(0);
+});
+
+test("Storefront applies the requested price, removals, and larger commercial", async ({ page }) => {
+  await blockHeavyMedia(page);
+  await page.goto("/merch-store.html", { waitUntil: "domcontentloaded" });
+  await page.locator("[data-merch-commercial-close]").click();
+
+  const hoodie = page.locator("#product-detroit-embroidery-hoodie");
+  await expect(hoodie.locator(".product-hover-price")).toHaveText("$89.99");
+  await expect(hoodie.locator(".product-row strong")).toHaveText("$89.99");
+  await expect(hoodie.locator("[data-add-item]")).toHaveAttribute("data-item-price", "89.99");
+  await expect(page.getByRole("heading", { name: "Cyber Brain Glow Hoodie" })).toHaveCount(0);
+  await expect(page.getByRole("heading", { name: "LottoMind Coin Set" })).toHaveCount(0);
+  await expect(page.locator("#gallery article", { hasText: "Boogie Knit" })).toHaveCount(0);
+
+  const capsule = page.locator(".merch-commercial-capsule");
+  const capsuleBox = await capsule.boundingBox();
+  const heroBox = await page.locator(".merch-hero").boundingBox();
+  expect(capsuleBox).toBeTruthy();
+  expect(heroBox).toBeTruthy();
+  if (page.viewportSize().width > 980) {
+    expect(capsuleBox.width).toBeGreaterThan(700);
+  } else {
+    expect(capsuleBox.width).toBeGreaterThan(280);
+  }
+  expect(capsuleBox.x + capsuleBox.width).toBeLessThanOrEqual(heroBox.x + heroBox.width + 1);
+});
+
+test("Storefront presents supplied Guardian bundles without inventing checkout claims", async ({ page }) => {
+  await blockHeavyMedia(page);
+  await page.goto("/merch-store.html", { waitUntil: "domcontentloaded" });
+  await page.locator("[data-merch-commercial-close]").click();
+
+  const bundles = page.locator(".bundle-card");
+  await expect(bundles).toHaveCount(2);
+  await expect(page.locator("#guardian-hoodie-bundle")).toContainText("Guardian Hoodie Package");
+  await expect(page.locator("#detroit-carry-bundle")).toContainText("Detroit Carry Package");
+  await expect(bundles).toContainText(["Pricing TBA", "Pricing TBA"]);
+  await expect(bundles.locator("[data-add-item]")).toHaveCount(0);
+  await expect.poll(() => bundles.locator("img").evaluateAll((images) => images.every((image) => image.naturalWidth > 0))).toBe(true);
+
+  const saveBundle = page.locator('#guardian-hoodie-bundle [data-wishlist-toggle="guardian-hoodie-bundle"]');
+  await saveBundle.click();
+  await expect(saveBundle).toHaveAttribute("aria-pressed", "true");
+});
+
+test("Arcade hero fits the supplied Guardian film with accessible motion control", async ({ page }) => {
+  await blockHeavyMedia(page);
+  await page.goto("/features-app.html", { waitUntil: "domcontentloaded" });
+  const commercialGate = page.locator(".lm-commercial-gate");
+  if (await commercialGate.isVisible().catch(() => false)) {
+    await commercialGate.locator(".lm-commercial-gate__skip").click();
+  }
+
+  const media = page.locator(".arcade-pilot-hero__media");
+  const video = page.locator("[data-arcade-hero-video]");
+  const toggle = page.locator("[data-arcade-hero-video-toggle]");
+  await expect(media).toBeVisible();
+  await expect(video).toHaveAttribute("muted", "");
+  await expect(video).toHaveAttribute("loop", "");
+  await expect(video).toHaveAttribute("playsinline", "");
+  await expect(video.locator("source")).toHaveAttribute("src", /lottomind-arcade-hero-film-20260723\.mp4$/);
+  await expect(toggle).toBeVisible();
+
+  const box = await media.boundingBox();
+  const copyBox = await page.locator(".arcade-pilot-hero__copy").boundingBox();
+  const heroBox = await page.locator(".arcade-pilot-hero").boundingBox();
+  expect(box.width).toBeGreaterThan(280);
+  expect(box.height).toBeGreaterThan(150);
+  expect(box.width / box.height).toBeGreaterThan(1.7);
+  expect(box.width / box.height).toBeLessThan(1.85);
+  expect(copyBox).toBeTruthy();
+  expect(heroBox).toBeTruthy();
+  if ((await page.viewportSize()).width > 1050) {
+    expect(copyBox.x + copyBox.width).toBeLessThanOrEqual(box.x);
+  }
+  expect(box.x + box.width).toBeLessThanOrEqual(heroBox.x + heroBox.width + 1);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
 });
 
 test("membership checkout explains an authenticated backend rejection", async ({ page }) => {
@@ -127,7 +395,6 @@ test("membership checkout sends the signed-in account token", async ({ page }) =
   });
 
   await page.goto("/memberships.html", { waitUntil: "domcontentloaded" });
-  await page.locator("[data-membership-commercial-close]").click();
   await expect(page.locator("[data-stripe-membership-status]")).toHaveText("Secure Stripe checkout is ready.");
   await page.locator('[data-stripe-lookup-key="gold_monthly"]').evaluate((button) => button.click());
 
@@ -251,17 +518,68 @@ test("billing Edge Function returns expected auth failures through its CORS resp
   expect(source).toContain('validStripeUrl(session.url, "checkout.stripe.com")');
 });
 
-test("guide commercial runs once per route in the current tab", async ({ page }) => {
+test("Static Wav keeps one commercial on each page entry", async ({ page }) => {
   await blockHeavyMedia(page);
   await page.goto("/how-to-use.html", { waitUntil: "domcontentloaded" });
+
+  const gate = page.locator(".lm-commercial-gate");
+  await expect(gate).toBeVisible();
+  await expect(gate).toHaveClass(/lm-commercial-gate--guide/);
+  await expect(gate).toHaveAttribute("data-lm-guide-hud", "static-wav-2084");
+  await expect(gate.locator(".lm-commercial-gate__guide-chassis")).toContainText("STREET SIGNAL LOCKED");
+  await expect(gate.locator("video")).toHaveAttribute("data-src", /lottomind-guide-commercial-20260717\.mp4/);
+  await expect(gate.getByRole("link", { name: "Buy Now" })).toHaveAttribute("href", /merch-store\.html\?product=guardian#keychains/);
+
+  const layout = await gate.evaluate((element) => {
+    const panel = element.querySelector(".lm-commercial-gate__panel").getBoundingClientRect();
+    const stage = element.querySelector(".lm-commercial-gate__stage").getBoundingClientRect();
+    const chapters = element.querySelector(".lm-commercial-gate__chapters").getBoundingClientRect();
+    const footer = element.querySelector(".lm-commercial-gate__footer").getBoundingClientRect();
+    return {
+      viewportWidth: window.innerWidth,
+      viewportHeight: window.innerHeight,
+      panel: { left: panel.left, top: panel.top, right: panel.right, bottom: panel.bottom },
+      stage: { left: stage.left, top: stage.top, right: stage.right, bottom: stage.bottom },
+      chapters: { left: chapters.left, top: chapters.top, right: chapters.right, bottom: chapters.bottom },
+      footer: { left: footer.left, top: footer.top, right: footer.right, bottom: footer.bottom },
+    };
+  });
+
+  expect(layout.panel.left).toBeGreaterThanOrEqual(-1);
+  expect(layout.panel.top).toBeGreaterThanOrEqual(-1);
+  expect(layout.panel.right).toBeLessThanOrEqual(layout.viewportWidth + 1);
+  expect(layout.panel.bottom).toBeLessThanOrEqual(layout.viewportHeight + 1);
+  if (layout.viewportWidth > 720) {
+    expect(layout.stage.right).toBeLessThanOrEqual(layout.chapters.left + 1);
+    expect(layout.stage.right).toBeLessThanOrEqual(layout.footer.left + 1);
+  } else {
+    expect(layout.stage.bottom).toBeLessThanOrEqual(layout.chapters.top + 1);
+    expect(layout.chapters.bottom).toBeLessThanOrEqual(layout.footer.top + 1);
+  }
+  expect(await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1)).toBe(false);
+
+  await gate.locator(".lm-commercial-gate__skip").click();
+  await expect(gate).toBeHidden();
+
+  await page.reload({ waitUntil: "domcontentloaded" });
+  await expect(page.locator(".lm-commercial-gate")).toHaveCount(1);
+  await expect(page.locator(".lm-commercial-gate")).toBeVisible();
+});
+
+test("RAHBE route restores the embedded game after its commercial", async ({ page }) => {
+  await blockHeavyMedia(page);
+  const localFailures = trackLocalFailures(page);
+  await page.goto("/beat2lotto-plus.html#beat2lotto", { waitUntil: "domcontentloaded" });
 
   const gate = page.locator(".lm-commercial-gate");
   await expect(gate).toBeVisible();
   await gate.locator(".lm-commercial-gate__skip").click();
   await expect(gate).toBeHidden();
 
-  await page.reload({ waitUntil: "domcontentloaded" });
-  await expect(page.locator(".lm-commercial-gate")).toHaveCount(0);
+  const frame = page.frameLocator("[data-beat2-game-frame]");
+  await expect(frame.locator("#game")).toBeVisible({ timeout: 15_000 });
+  await expect(frame.getByRole("heading", { name: "ROBOT RAHBE" })).toBeVisible();
+  expect(localFailures).toEqual([]);
 });
 
 test("features combines the cinematic shell with the manifest-driven Arcade directory", async ({ page }) => {
@@ -283,7 +601,20 @@ test("features combines the cinematic shell with the manifest-driven Arcade dire
   await expect(page.locator("[data-arcade-grid] .arcade-game-card")).toHaveCount(8);
   await expect(page.locator("[data-arcade-count]")).toHaveText("8");
   await expect(page.locator(".arcade-game-card__status")).toHaveText(Array(8).fill("Playable"));
-  await expect(page.locator("main video, main audio, iframe, #lottery-news, .instrument-console")).toHaveCount(0);
+  await expect(page.getByRole("heading", { name: "RAYCHASE PONG" })).toBeVisible();
+  const arcadeRail = page.locator("[data-arcade-grid]");
+  const railMetrics = await arcadeRail.evaluate((element) => ({
+    scrollWidth: element.scrollWidth,
+    clientWidth: element.clientWidth,
+    scrollSnapType: getComputedStyle(element).scrollSnapType,
+  }));
+  expect(railMetrics.scrollWidth).toBeGreaterThan(railMetrics.clientWidth);
+  expect(railMetrics.scrollSnapType).toContain("mandatory");
+  const nextGames = page.getByRole("button", { name: "Next games" });
+  await expect(nextGames).toBeEnabled();
+  await nextGames.click();
+  await expect.poll(() => arcadeRail.evaluate((element) => element.scrollLeft)).toBeGreaterThan(0);
+  await expect(page.locator("main video:not([data-arcade-hero-video]), main audio, iframe, #lottery-news, .instrument-console")).toHaveCount(0);
 
   await page.getByRole("button", { name: "Action", exact: true }).click();
   await expect(page.locator("[data-arcade-grid] .arcade-game-card")).toHaveCount(3);
@@ -299,35 +630,23 @@ test("features combines the cinematic shell with the manifest-driven Arcade dire
   expect(localFailures).toEqual([]);
 });
 
-test("home opens directly with its muted hero film and sound control", async ({ page }) => {
-  const removedCommercialRequests = [];
+test("home opens directly to the muted hero without a startup popup", async ({ page }) => {
+  const commercialRequests = [];
   page.on("request", (request) => {
-    if (/lottomind-home-commercial-20260716\.mp4/i.test(request.url())) removedCommercialRequests.push(request.url());
-  });
-
-  await page.addInitScript(() => {
-    const nativeSetTimeout = window.setTimeout.bind(window);
-    window.setTimeout = (callback, delay, ...args) => {
-      if (delay === 60_000) {
-        window.__lmStartupDelay = delay;
-        return nativeSetTimeout(callback, 1_200, ...args);
-      }
-      return nativeSetTimeout(callback, delay, ...args);
-    };
+    if (/lottomind-home-commercial-20260716\.mp4/i.test(request.url())) commercialRequests.push(request.url());
   });
   await page.goto("/", { waitUntil: "domcontentloaded" });
   const startup = page.locator("[data-startup-video]");
-  const heroFilm = page.locator("[data-home-hero-audio]");
+  const heroFilm = page.locator(".hero-motion");
   await expect(startup).toHaveCount(0);
   await expect(heroFilm).toBeVisible();
-  await expect(page.locator("[data-home-hero-sound]")).toBeVisible();
-  expect(await page.evaluate(() => window.__lmStartupDelay)).toBeUndefined();
-  await page.waitForTimeout(1_500);
-  expect(removedCommercialRequests).toEqual([]);
   await expect.poll(() => heroFilm.evaluate((video) => ({ muted: video.muted, paused: video.paused }))).toEqual({ muted: true, paused: false });
+  expect(commercialRequests).toEqual([]);
+});
 
-  await page.locator("[data-home-hero-sound]").click();
-  await expect.poll(() => heroFilm.evaluate((video) => video.muted)).toBe(false);
+test("Spheres has no automatic Jackpot Maze popup", async ({ page }) => {
+  await page.goto("/lottery-spheres.html#spheres", { waitUntil: "domcontentloaded" });
+  await expect(page.locator("[data-jackpot-maze-popup]")).toHaveCount(0);
 });
 
 test("Contact prepares a support request locally", async ({ page }) => {
@@ -453,6 +772,7 @@ test("news route renders from the static feed without probing the missing API", 
   const firstArticleImage = page.locator(".article-grid .news-card__media img").first();
   await firstArticleImage.scrollIntoViewIfNeeded();
   await expect(firstArticleImage).toBeVisible();
+  await expect(firstArticleImage).toHaveAttribute("src", /\.jpg$/);
   await expect.poll(() => firstArticleImage.evaluate((image) => image.complete && image.naturalWidth > 0)).toBe(true);
   expect(apiRequests).toEqual([]);
   expect(localFailures).toEqual([]);
@@ -496,7 +816,7 @@ test("Jackpot Maze built route renders instead of a dev shell", async ({ page })
 
 for (const game of [
   { name: "OpenGW Levels", route: "/games/opengw-levels/", canvas: "#game" },
-  { name: "Raytrace Pong", route: "/games/raytrace-pong-background/", canvas: "#rayPong" },
+  { name: "RAYCHASE PONG", route: "/games/raytrace-pong-background/", canvas: "#rayPong" },
   { name: "Shadow Ops", route: "/games/shadow-ops-canvas/", canvas: "#game" },
 ]) {
   test(`${game.name} boots its visible canvas without local asset failures`, async ({ page }) => {

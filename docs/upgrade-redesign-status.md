@@ -2,7 +2,7 @@
 
 - Production URL: https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/
 - Production branch: `main`
-- Production commit SHA: `975c637cea7003533cdc30aed9d96be51929bfc8`
+- Production commit SHA: `f6e46b49eb0fe7e02e537ed48a127226e7b3f72a`
 - Snapshot tag: `v1-final`
 - Snapshot annotated tag object SHA: `9ba25352efc17d5b514e5afd59c8afde5c9d2949`
 - Snapshot target commit SHA: `975c637cea7003533cdc30aed9d96be51929bfc8`
@@ -11,22 +11,22 @@
 - Upgrade branch SHA at Step 0A branch creation: `1fc4c95ca4d0b22ee5188d06f8ea75573c63a00a`
 - Upgrade branch SHA before Step 0B commit: `220653bbc300d0e0b236c6e834043f39fdfcd76c`
 - Step 0B commit SHA: `6e58aafc4addabf5281262ec951a7d6df3dc66a0`
-- Deployment mechanism discovered: GitHub Pages Actions from repository-root `.github/workflows/pages.yml`; pushes to `main` upload the repository root with `actions/upload-pages-artifact` and deploy with `actions/deploy-pages`. The latest verified successful production run deployed `main` commit `975c637cea7003533cdc30aed9d96be51929bfc8`.
+- Deployment mechanism discovered: GitHub Pages Actions from repository-root `.github/workflows/pages.yml`; pushes to `main` upload the repository root with `actions/upload-pages-artifact` and deploy with `actions/deploy-pages`. Current remote production head is `f6e46b49eb0fe7e02e537ed48a127226e7b3f72a`.
 - Staging provider: Local static server (Mode C); no remote preview provider is configured
-- Staging URL: Local only (`http://127.0.0.1:8204/` while the current staging server is running)
+- Staging URL: Local only (`http://127.0.0.1:8143/` while the current staging server is running)
 - Staging integrations: No isolated backend or Stripe test-mode configuration is currently configured; protected writes remain disabled
-- Last completed step: Step 34 production release candidate prepared on `upgrade-redesign`; production deployment remains excluded
+- Last completed step: Step 35 pre-merge audit completed for RC3 on `upgrade-redesign`; production merge is authorized but not yet executed
 - Step 1 commit SHA: This file is part of the Step 1 commit; use `git log -1 --format=%H -- docs/upgrade-redesign-status.md` to resolve its exact non-self-referential SHA. The completion report records it explicitly.
-- Last staging review: Signal and media corrections passed; review: `docs/staging-reviews/signal-media-corrections.md`
+- Last staging review: RC3 passed and is ready for production merge; review: `docs/staging-reviews/release-candidate-v2-rc3.md`
 - Staging review commit SHA: This file is part of the staging-review commit; the completion report records its exact SHA.
-- Last successful test run: 2026-07-22 - site validation passed 15 HTML files; source browser suite passed 96 checks with 6 intentional viewport skips; staging browser suite passed 15/15; source/staging route matrix passed 92/92; staging artifact verified 23 injected pages and 527 same-origin references
+- Last successful test run: 2026-07-28 - release audit passed 7 groups; site validation passed 15 HTML files; source browser suite passed 126 checks with 6 intentional viewport skips; staging browser suite passed 10/10; source/staging route matrix passed 92/92; staging artifact verified 23 injected pages and 543 same-origin references; News tests passed 20/20 with 0 production dependency vulnerabilities
 - Visual baseline: Complete - 69 production route screenshots plus desktop, tablet, and mobile contact sheets under `docs/visual-baseline/v1/`
 - Step 1 visual comparison: Production and staging home routes compared at 1440x900 and 390x844; staging adds only the preview and safety banners, with no redesign changes
 - Resolved Step 1 baseline failures: Contact support helper restored; Stem Studio tablet/mobile overflow corrected; Jackpot Maze runtime, heading, and entry focus restored; first-load outliers reduced; staging News production request removed
 - Latest visual comparison: Home, Memberships, Guardian, Arcade, RAHBE, Spheres, Storefront, Live Events, and News compared with v1 production at 1440x900, 768x1024, and 390x844; review: `docs/staging-reviews/signal-media-corrections.md`
 - Latest performance comparison: Home 28.1 -> 5.80 MiB; Memberships 26.7 -> 2.87 MiB; Merch 23.1 -> 1.99 MiB; Shadow Ops 87.7 -> 3.70 MiB
-- Staging review approval status: Ready for next phase
-- Production approval status: Step 34 release-candidate preparation approved; the live checkout handoff was verified safely in Stripe Sandbox and cancelled before any charge; pull-request approval and controlled production merge remain pending
+- Staging review approval status: Ready for production review
+- Production approval status: Approved with the exact `APPROVE PRODUCTION MERGE` authorization; checkout was verified safely in Stripe Sandbox and cancelled before charge; the owner explicitly waived an outside-collaborator review
 - Rollback reference: `v1-final` at `975c637cea7003533cdc30aed9d96be51929bfc8`; after a controlled production merge, use `git revert` for rollback
 - Known pre-existing repository changes: The working tree was clean when Step 0A began. Local `main` already contained commit `1fc4c95ca4d0b22ee5188d06f8ea75573c63a00a` ahead of `origin/main`; that commit was preserved as the starting point of `upgrade-redesign` and was not pushed to production.
 
@@ -171,3 +171,188 @@
 - Staging URL: Local only (`http://127.0.0.1:8204/` while the preview server is running)
 - Checkout safety: Stripe Sandbox handoff verified and cancelled before any charge; staging production writes remain blocked
 - Approval status: Ready for pull-request review; production merge and deployment not performed
+
+## Popup, Header, And Readability Follow-up
+
+- Step number: Browser-requested popup, header-label, and readability correction
+- Commit SHA: This status file is part of the focused popup, navigation, and readability commit; use `git log -1 --format=%H -- docs/upgrade-redesign-status.md` to resolve the exact SHA
+- Affected routes: `/index.html#top`, `/memberships.html`, `/lottery-spheres.html#spheres`, `/merch-store.html`, `/how-to-use.html`, `/live-events.html`, and `/beat2lotto-plus.html`
+- Changes: Removed the selected Home entry dialog and Spheres Jackpot Maze popup; standardized the shared Beat2Lotto tab label as `RAHBE`; enlarged the Magic 8 oracle and Membership control-deck text; brightened the Membership hero film; corrected commercial route priority; retained one Membership commercial and one Storefront unboxing commercial; kept the Static Wav Guide commercial; made the Storefront commercial close control accessible above the persistent header
+- Tests: Homepage and site static validation passed; staging static verification passed for 23 pages and 531 same-origin asset references; staging browser suite 10/10; source/staging desktop/mobile route matrix 92/92
+- Visual review: Refreshed 1440x900 and 390x844 captures under `lottominded-ultra.io/docs/staging-reviews/requested-corrections/screenshots/` and refreshed Home, Storefront, and RAHBE captures under `docs/staging-reviews/signal-media-corrections-assets/`; compared with `docs/visual-baseline/v1/`
+- Intentional visual departures: The selected Home and Spheres popups are absent; Membership copy is larger; the Membership film is brighter and lower contrast; Storefront presents one unobstructed unboxing-film modal
+- Staging URL: Local only (`http://127.0.0.1:8143/`)
+- Staging safety: Noindex, preview banner, blocked live payments, blocked production account writes, blocked real redemptions, and blocked production analytics verified
+- Approval status: Not approved for production; production remains unchanged
+
+## Storefront, Guide, And Games Navigation Follow-up
+
+- Step number: Browser-requested Storefront dialog and shared navigation correction
+- Implementation commit SHA: `1196c3c019f83010dd0b2c7832ec4c4c68176fe8`
+- Affected routes: `/merch-store.html`, `/features-app.html`, `/news/`, and shared header/menu surfaces
+- Changes: Refitted the single Storefront commercial for clear desktop and mobile portrait playback; standardized the Guide tab label across static, generated News, and runtime navigation; restored the accessible Games-page `NAV` control for explicitly hiding and restoring the artwork header
+- Tests: JavaScript syntax passed; site validation passed for 15 HTML files; News/account tests 20/20; staging browser safety 10/10; source/staging desktop/mobile route matrix 92/92; Games header interaction 1/1; staging screenshot verification 6/6
+- Visual review: Refreshed Storefront and Arcade captures at 1440x900, 768x1024, and 390x844 under `docs/staging-reviews/signal-media-corrections-assets/`; compared with `docs/visual-baseline/v1/`
+- Intentional visual departures: Storefront uses a narrower cinematic desktop dialog and a full-height mobile film treatment; Games adds a persistent circular `NAV` control while retaining the Guardian artwork, particles, black/gold/cyan/violet color language, and arcade identity
+- Verification: No horizontal overflow, console errors, page errors, or broken assets in the six affected-route captures
+- Staging URL: Local only (`http://127.0.0.1:8143/`)
+- Staging safety: Noindex and preview banners verified; live payments, production account writes, real redemptions, and production analytics remain blocked
+- Live checkout: Not exercised or changed by this correction
+- Approval status: Not approved for production; production remains unchanged
+
+## Static Wav Commercial And Storefront HUD Follow-up
+
+- Step number: Browser-requested Static Wav naming, commercial restoration, and Storefront HUD correction
+- Implementation commit SHA: `24b7baa4fef620da5bfe1acee9f91f11c9f52cd2`
+- Affected routes: `/how-to-use.html`, `/merch-store.html`, `/news/`, and shared header/menu surfaces
+- Changes: Restored `Static Wav` as the page, tab, metadata, generated News, and runtime-menu label; restored the existing `Follow the Signal` commercial on every Static Wav page entry; redesigned the single Storefront commercial as a complete futuristic HUD with film viewport, transmission telemetry, signal meter, and visible controls
+- Tests: JavaScript syntax passed; site validation passed for 15 HTML files; News/account tests 20/20; staging browser safety 10/10; source/staging desktop/mobile route matrix 92/92; focused Static Wav repeat-entry and Storefront layout checks passed
+- Visual review: Refreshed Storefront and Static Wav captures at 1440x900, 768x1024, and 390x844 under `docs/staging-reviews/signal-media-corrections-assets/`; compared with `docs/visual-baseline/v1/`
+- Intentional visual departures: Storefront replaces the plain film frame with a cyan/gold/violet/pink HUD; Static Wav retains its original commercial artwork while restoring the requested route name and entry behavior
+- Verification: No horizontal overflow, console errors, page errors, or broken assets in the six affected-route captures; the Storefront footer and all actions remain within the viewport
+- Staging URL: Local only (`http://127.0.0.1:8143/`)
+- Staging safety: Noindex and preview banners verified; live payments, production account writes, real redemptions, and production analytics remain blocked
+- Live checkout: Not exercised or changed by this correction
+- Approval status: Not approved for production; production remains unchanged
+
+## Page Transitions, Header Controls, And Commercial Lifecycle Follow-up
+
+- Step number: Browser-requested transition, navigation-control, and commercial-lifecycle correction
+- Implementation commits: `e0ff6c6d7081bfce75d94c41d86041aec4828841`, `fbc82fc9a2fc39b4302eced4a9934f137ec336d1`, and `2b04cb1e09de64592b245bb70e10befabb3e73c0`
+- Affected routes: Shared internal navigation, `/memberships.html`, `/merch-store.html`, `/how-to-use.html`, `/beat2lotto-plus.html`, `/accessibility.html`, `/contact.html`, `/privacy.html`, and `/terms.html`
+- Changes: Added explicit `HIDE NAV` and `SHOW NAV` controls; restored the control runtime on Static Wav and RAHBE; added outbound and arrival transitions to support/legal routes; added distinct transition entry and exit cues; preserved the existing Membership commercial media while presenting it in a Storefront-inspired cyan/gold/violet HUD; requested audible commercial playback immediately with an accurate muted fallback; closed Membership and Storefront commercials automatically at playback end; kept navigation controls out of the way while a modal is active
+- Tests: JavaScript syntax and 15-page site validation passed; focused interaction suite 8/8; full source browser suite 112 passed with 6 intentional viewport skips; staging browser safety 10/10; clean source/staging route matrix 92/92; staging static verification 23 pages and 542 same-origin asset references
+- Visual review: Refreshed Membership commercial, Storefront, Static Wav, and RAHBE captures at 1440x900, 768x1024, and 390x844 under `docs/staging-reviews/signal-media-corrections-assets/`; all 12 captures passed noindex, staging-banner, overflow, console, page-error, and asset checks
+- Intentional visual departures: The Membership commercial now uses clipped HUD corners, member-uplink status, stronger film framing, and a clearer footer action row; its commercial video source remains unchanged
+- Staging URL: Local only (`http://127.0.0.1:8143/`)
+- Staging safety: Noindex and preview banners verified; live payments, production account writes, real redemptions, and production analytics remain blocked
+- Live checkout: Not exercised or changed by this correction
+- Production approval status: Not approved; production remains unchanged
+
+## Storefront Guardian Bundle Packages
+
+- Step number: Browser-requested Storefront bundle package addition
+- Implementation commit: `c1d259828011af1176e606bbe1f79ed3eadb3cc9`
+- Affected route: `/merch-store.html#drop`
+- Changes: Added Guardian Hoodie Package and Detroit Carry Package previews using the supplied artwork; packages expose local wishlist saving but no checkout action, invented price, inventory, or availability claim
+- Commerce status: Existing individual-product preorder preview remains device-only; bundle pricing, sizing, availability, and final contents are marked unconfirmed
+- Tests: Site validation passed 15 HTML files; focused Storefront browser checks passed 2/2; affected source/staging route smoke passed 4/4; full route matrix passed 92/92 before the focused commit; staging safety passed 10/10; staging static verification passed 23 pages and 544 same-origin references
+- Visual verification: `docs/staging-reviews/storefront-bundles.md`; staging captures passed at 1440x900 and 390x844 with both images loaded, no horizontal overflow, no console errors, staging banner present, and noindex active
+- Performance note: Two lazy-loaded supplied PNG assets total approximately 4.15 MiB; optimized WebP or AVIF delivery remains recommended
+- Staging URL: Local only (`http://127.0.0.1:8143/merch-store.html#drop`)
+- Approval status: Ready for next phase; production remains unchanged and not approved
+
+## Arcade Hero Guardian Film
+
+- Step number: Browser-requested Arcade hero media update
+- Implementation commit: `9f83a7f7b4c7b59943df1428c04983c18899ac1b`
+- Affected route: `/features-app.html`
+- Changes: Added the supplied Detroit Guardian film to the marked right side of the Arcade hero; preserved the original entry commercial and background artwork; added responsive 16:9 framing, a poster, muted autoplay, a pause/play control, visibility handling, and reduced-motion behavior
+- Tests: JavaScript syntax passed; site validation passed for 15 HTML files; focused Arcade film checks passed 2/2; affected source/staging route smoke passed 4/4; staging safety passed 10/10; full source/staging desktop/mobile route matrix passed 92/92; staging static verification passed 23 pages and 546 same-origin asset references
+- Visual review: `docs/staging-reviews/arcade-hero-film.md`; staging captures passed at 1440x900 and 390x844 with a 16:9 film frame, no copy overlap, no horizontal overflow, no console or page errors, noindex present, and the staging banner visible
+- Intentional visual departure: A post-entry Guardian film now occupies the Arcade hero media position while the v1 entry commercial, Guardian artwork, particles, and black/gold/cyan/violet identity remain recognizable
+- Performance note: The supplied H.264 film is approximately 5.25 MiB and uses metadata-only preload; a smaller production encode remains recommended
+- Staging URL: Local only (`http://127.0.0.1:8143/features-app.html`)
+- Staging safety: Live payments, production account writes, real redemptions, and production analytics remain blocked
+- Approval status: Ready for next phase; production remains unchanged and not approved
+
+## Storefront, Popup, Arcade, And News Refinement
+
+- Step number: Browser-requested Storefront, commercial, Arcade, and News correction
+- Implementation commit: `4804b2a25e4d96d54d97f24f23daef3867f37ff7`
+- Affected routes: `/merch-store.html`, `/memberships.html`, `/how-to-use.html`, `/features-app.html`, `/beat2lotto-plus.html`, `/news/`, and shared header surfaces
+- Changes: Set the Detroit Embroidery Hoodie preorder preview to `$89.99`; removed the selected Cyber Brain Glow Hoodie, LottoMind Coin Set, and Boogie Knit gallery entry; enlarged the inline Storefront commercial without mobile overflow; added safe Storefront-linked `Buy Now` actions to all commercial popup systems; limited the header hide control to Static Wav and RAHBE; delayed the Membership popup until the arrival transition completes and removed its duplicate close transition; restored the visible RAHBE game; fitted the Arcade Guardian film beside the hero copy; and changed current News fallback art to local JPG cover-story images
+- Commerce safety: `Buy Now` links navigate to the Storefront or Guardian section only. They do not call Stripe, complete checkout, create an order, or bypass staging guards.
+- Tests: JavaScript syntax and diff checks passed; site validation passed for 15 HTML files; News/account tests passed 20/20; focused source browser checks passed 22/22 across desktop and mobile; staging safety passed 10/10; source/staging route matrix passed 92/92; staging static verification passed for 23 pages and 543 same-origin asset references
+- Visual review: Refreshed 21 staging captures at 1440x900, 768x1024, and 390x844 under `docs/staging-reviews/signal-media-corrections-assets/`; compared with `docs/visual-baseline/v1/`
+- Intentional visual departures: Storefront uses a larger commercial capsule and a responsive HUD popup; Membership and Static Wav use matching signal-HUD popup language while retaining their existing films; Arcade uses a true two-column desktop film layout; News uses photographic JPG fallback covers where publisher artwork is absent
+- Verification: No horizontal overflow, console errors, page errors, or broken assets were found in the 21 affected-route captures. Black/navy, gold, cyan, violet, Guardian, orb, Detroit, music-technology, and arcade identity remain recognizable.
+- Staging URL: Local only (`http://127.0.0.1:8143/`)
+- Staging safety: Noindex and preview banners verified; live payments, production account writes, real redemptions, and production analytics remain blocked
+- Live checkout: Not exercised or changed by this correction
+- Approval status: Ready for next phase; production remains unchanged and not approved
+
+## Static Wav Storefront HUD Alignment
+
+- Step number: Browser-requested Static Wav commercial visual alignment
+- Implementation commits: `710d3a477d0b0eb8e7aba65e9d3f5933b68e4c41` and `19a41a5c3ed07c9e996f849d2318882008917366`
+- Affected route: `/how-to-use.html`
+- Changes: Restyled the existing Static Wav commercial to match the Storefront HUD language with a clipped cyan/gold frame, larger film bay, desktop signal rail, contained action deck, and stacked mobile layout; kept the original Static Wav commercial video and playback lifecycle unchanged
+- Tests: JavaScript syntax and diff checks passed; site validation passed for 15 HTML files; focused Static Wav desktop/mobile checks passed 2/2; staging safety passed 10/10; full source/staging desktop/mobile route matrix passed 92/92; staging static verification passed for 23 pages and 543 same-origin asset references
+- Visual review: Refreshed Static Wav captures at 1440x900, 768x1024, and 390x844 under `docs/staging-reviews/signal-media-corrections-assets/`; compared with `docs/visual-baseline/v1/how-to-use--desktop.png` and `docs/visual-baseline/v1/how-to-use--mobile.png`
+- Intentional visual departure: The v1 single-column commercial becomes a Storefront-style split HUD on wider viewports while retaining a complete one-column control flow on mobile
+- Verification: No horizontal overflow, console errors, page errors, broken assets, or staging-banner overlap in the three affected-route captures
+- Staging URL: Local only (`http://127.0.0.1:8143/how-to-use.html`)
+- Staging safety: Noindex and preview banners verified; live payments, production account writes, real redemptions, and production analytics remain blocked
+- Live checkout: Not exercised or changed
+- Approval status: Ready for next phase; production remains unchanged and not approved
+
+## Membership HUD, Arcade Rail, And Particle Cleanup
+
+- Step number: Browser-requested Membership HUD, Arcade directory, Home particle, and Storefront visualizer correction
+- Implementation commits: `63d9025a36bcb9d27348590d13af42f4a107e67e` and `34ef2bdaa282d55339c35b8ccbf54d4c02b8c089`
+- Affected routes: `/memberships.html`, `/features-app.html`, `/index.html`, and `/merch-store.html`
+- Changes: Added a responsive futuristic HUD to the existing inline Membership film; converted the eight-game Arcade directory to a swipeable snap rail; renamed the Raytrace Pong display title to `RAYCHASE PONG`; removed the Home WebGL and floating particle layers; removed the Storefront music-reactive equalizer while retaining its commercial and instrument controls
+- Tests: JavaScript checks passed; site validation passed for 15 HTML files; focused Membership/Arcade checks passed 4/4; focused Home/Storefront checks passed 6/6; full source/staging desktop/mobile route matrix passed 92/92; staging safety passed 10/10; staging static verification passed for 23 pages and 541 same-origin references
+- Visual review: 12 staging captures passed at 1440x900, 768x1024, and 390x844 with no horizontal overflow, console errors, page errors, or broken assets; compared with `docs/visual-baseline/v1/`
+- Intentional visual departures: Home particle effects and the Storefront audio analyzer are removed; the Detroit-inspired cinematic film, scan language, Guardian, orb navigation, black/gold/cyan/violet palette, music tools, and arcade identity remain recognizable
+- Staging URL: Local only (`http://127.0.0.1:8143/`)
+- Staging safety: Noindex and preview banners verified; live payments, production account writes, real redemptions, and production analytics remain blocked
+- Live checkout: Not exercised or changed
+- Production approval status: Not approved; production remains unchanged
+
+## Membership Transition Sequence Correction
+
+- Step number: Browser-requested Membership entry and commercial timing correction
+- Commit SHA: This status entry is part of the current focused commit; the completion report records its exact SHA
+- Affected route: `/memberships.html`
+- Sequence: Arrival transition completes, Membership commercial opens, commercial dismissal starts an outbound transition, and the Membership page is released only after the outbound transition completes
+- Tests: JavaScript syntax and site validation passed; focused desktop/mobile sequence tests passed 4/4; full source/staging route matrix passed 92/92; staging safety passed 10/10; staging static verification passed for 23 pages and 541 same-origin references
+- Visual review: Membership commercial captures passed at 1440x900, 768x1024, and 390x844; compared with `docs/visual-baseline/v1/`
+- Intentional visual departure: None. The existing Membership HUD and commercial media are preserved; only the transition timing and page-release order changed
+- Staging URL: Local only (`http://127.0.0.1:8143/memberships.html`)
+- Staging safety: Noindex and preview banners verified; live payments, production account writes, real redemptions, and production analytics remain blocked
+- Live checkout: Not exercised or changed
+- Production approval status: Not approved; production remains unchanged
+
+## Membership 3D Depth Interaction
+
+- Step number: Browser-requested Membership 3D interaction enhancement
+- Commit SHA: This status entry is part of the current focused commit; the completion report records its exact SHA
+- Affected route: `/memberships.html`
+- Changes: Added restrained fine-pointer parallax to the Membership hero and HUD; added perspective tilt, layered emblems, signal sheen, and keyboard-focus lift to the four plan cards and bottom Guardian card; added static coarse-pointer and reduced-motion fallbacks
+- Tests: JavaScript syntax and 15-page site validation passed; focused Membership interaction and route tests passed 6/6; full source/staging desktop/mobile route matrix passed 92/92; staging safety passed 10/10; staging static verification passed for 23 pages and 541 same-origin references
+- Visual review: Six Membership captures passed at 1440x900, 768x1024, and 390x844; compared with `docs/visual-baseline/v1/` and documented in `docs/staging-reviews/signal-media-corrections.md`
+- Intentional visual departure: Membership hero and plan surfaces now have interactive depth on fine-pointer devices; the existing composition remains static on mobile, coarse pointers, and reduced-motion environments
+- Commerce and backend impact: None. Pricing, Membership commercial media, account behavior, checkout hooks, and staging guards are unchanged
+- Staging URL: Local only (`http://127.0.0.1:8143/memberships.html`)
+- Staging safety: Noindex and preview banners verified; live payments, production account writes, real redemptions, and production analytics remain blocked
+- Production approval status: Not approved; production remains unchanged
+
+## Static Wav Future HUD
+
+- Step number: Browser-requested Static Wav commercial visual refinement
+- Commit SHA: This status entry is part of the current focused commit; the completion report records its exact SHA
+- Affected route: `/how-to-use.html`
+- Changes: Refined the existing guide commercial into a beveled Static Wav transmission chassis with layered glass framing, stronger telemetry, a contained film bay, chapter node, responsive action deck, and delayed staging-safety offset measurement
+- Preserved behavior: Existing commercial media, one-pass playback, sound fallback, automatic dismissal, transition handoff, and Storefront Buy Now navigation are unchanged
+- Tests: JavaScript syntax and 15-page site validation passed; focused Static Wav browser tests passed 2/2; candidate source/staging route matrix passed 92/92; staging safety passed 10/10; static staging verification passed for 23 pages and 543 same-origin references
+- Visual review: Refreshed Static Wav captures passed at 1440x900, 768x1024, and 390x844; compared with `docs/visual-baseline/v1/` and documented in `docs/staging-reviews/signal-media-corrections.md`
+- Intentional visual departure: The prior clean split panel becomes a more cinematic signal chassis while retaining the Detroit footage and black/gold/cyan/violet visual identity
+- Commerce and backend impact: None. Buy Now remains route navigation only, and no checkout, account, redemption, or backend behavior changed
+- Staging URL: Local only (`http://127.0.0.1:8143/how-to-use.html`)
+- Staging safety: Noindex and preview banners verified; live payments, production account writes, real redemptions, and production analytics remain blocked
+- Production approval status: Not approved; production remains unchanged
+
+## Release Candidate v2-rc2
+
+- Step number: Step 34 RC2 release-candidate preparation
+- Preserved unrelated work: Pushed branch `wip/pre-release-user-work-20260728` at `e2e24535294380a0dc076f07c1d3ef1d61826a2d`; generated local artifacts were moved to `C:\Users\digit\Documents\phone\_jungle_lotto_refined-preserved-20260728`
+- Audited implementation commit: `ae37b5a60b70a531bc4b96e616a7dd71c29a312c`
+- Release-candidate tag: `v2-rc2`
+- Production synchronization: Current `origin/main` at `f6e46b49eb0fe7e02e537ed48a127226e7b3f72a` is already an ancestor of `upgrade-redesign`; no rebase, reset, or merge was needed
+- Tests: Release gates 7/7; site validation 15/15; source browser 126 passed with 6 intentional skips; staging safety 10/10; route matrix 92/92; News 20/20 with 0 production dependency vulnerabilities; GothTechnology 39 unit and 25 browser checks passed with 5 intentional skips; Shadow Ops typecheck passed
+- Visual review: `docs/staging-reviews/release-candidate-v2-rc2.md`; 51 captures passed at `1440x900`, `768x1024`, and `390x844`
+- Staging URL: Local only (`http://127.0.0.1:8143/`)
+- Production verification: Live Home and Memberships returned HTTP 200 without staging noindex or preview-banner markers
+- Approval status: Ready for production review; pull-request approval and fresh exact `APPROVE PRODUCTION MERGE` authorization remain required

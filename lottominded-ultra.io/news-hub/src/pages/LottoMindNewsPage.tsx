@@ -64,29 +64,29 @@ function headlineArtTone(item: LottoMindNewsItem): "official" | "winner" | "jack
 
 const EDITORIAL_STORY_ART: Record<ReturnType<typeof headlineArtTone>, string[]> = {
   official: [
-    "../assets/arcade/lottery-spheres-title.webp",
-    "../assets/brand/guide-puck-cyan-city.webp",
     "../assets/merch/lottomind-community-signal-poster-20260717.jpg",
+    "../assets/merch/lottomind-membership-feature-commercial-poster-20260716.jpg",
+    "../assets/merch/lottomind-membership-hoodie-commercial-poster-20260716.jpg",
   ],
   winner: [
+    "../assets/merch/lottomind-membership-unboxing-commercial-poster-20260716.jpg",
     "../assets/merch/lottomind-community-signal-poster-20260717.jpg",
-    "../assets/arcade/lottery-spheres-title.webp",
-    "../assets/brand/guide-puck-gold-mascot-wide.webp",
+    "../assets/merch/lottomind-guardian-commercial-gun-range-poster-20260722.jpg",
   ],
   jackpot: [
-    "../assets/arcade/beat2lotto-prompt-lab-title.webp",
-    "../assets/arcade/lottery-spheres-title.webp",
-    "../assets/brand/generated-cinematic-hero.png",
+    "../assets/features-app/lottomind-arcade-hero-film-poster-20260723.jpg",
+    "../assets/video/lm-feature-signal-poster.jpg",
+    "../assets/video/lm-feature-portal-poster.jpg",
   ],
   mystery: [
-    "../assets/brand/generated-cinematic-hero.png",
-    "../assets/brand/guide-puck-cyan-city.webp",
-    "../assets/brand/guide-puck-gold-mascot-wide.webp",
+    "../assets/video/lm-portal-a-poster.jpg",
+    "../assets/video/lm-portal-b-poster.jpg",
+    "../assets/merch/lottomind-guide-commercial-poster-20260717.jpg",
   ],
   signal: [
-    "../assets/brand/guide-puck-cyan-city.webp",
-    "../assets/brand/generated-cinematic-hero.png",
-    "../assets/arcade/beat2lotto-prompt-lab-title.webp",
+    "../assets/merch/lottomind-guide-commercial-poster-20260717.jpg",
+    "../assets/video/lm-feature-signal-poster.jpg",
+    "../assets/merch/lottomind-community-signal-poster-20260717.jpg",
   ],
 };
 

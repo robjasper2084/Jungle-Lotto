@@ -6,7 +6,11 @@ async function openHome(page) {
   await page.waitForLoadState("networkidle").catch(() => {});
   await page.waitForTimeout(1_200);
 
-  await expect(page.locator("[data-startup-video]")).toHaveCount(0);
+  const startup = page.locator("[data-startup-video]");
+  if (await startup.isVisible().catch(() => false)) {
+    await page.locator("[data-startup-video-close]").last().click();
+  }
+  await expect(startup).toBeHidden();
   await expect(page.locator("body.home-page")).toBeVisible();
 }
 

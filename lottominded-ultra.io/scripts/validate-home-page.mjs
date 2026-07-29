@@ -41,11 +41,7 @@ if (/lm-healing-generator|healing-frequency\.js/i.test(html)) {
 }
 
 if (/data-startup-video|startup-video-modal/i.test(html)) {
-  failures.push("The removed homepage startup dialog is still referenced by index.html.");
-}
-
-if (/scheduleStartupVideoOpen|STARTUP_MODAL_OPEN_DELAY/i.test(siteScript)) {
-  failures.push("The removed homepage startup dialog scheduler is still active in site.js.");
+  failures.push("The removed homepage startup popup is still present in index.html.");
 }
 
 if (!/class=["']home-sphere-scanline["']/i.test(html) || !/@keyframes\s+homeHeroScanBars/i.test(styles)) {

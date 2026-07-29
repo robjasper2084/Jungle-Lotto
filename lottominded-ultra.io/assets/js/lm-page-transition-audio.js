@@ -11,10 +11,10 @@
   */
   const AUDIO_CONFIG = {
     enabled: true,
-    volume: 0.1,
+    volume: 0.12,
     playCloseBeforeNavigate: false,
     closeDelay: 150,
-    playCloseOnArrival: false,
+    playCloseOnArrival: true,
     files: {
       open: "",
       close: "",
@@ -98,21 +98,22 @@
 
     const now = context.currentTime + 0.01;
     const isClose = kind === "close";
-    const duration = isClose ? 0.52 : 0.68;
+    const duration = isClose ? 0.58 : 0.72;
     const pitches = isClose
-      ? [329.63, 277.18, 220]
-      : [220, 277.18, 329.63];
-    const levels = [0.58, 0.34, 0.2];
-    const detunes = [-2, 1, 3];
+      ? [392, 329.63, 246.94]
+      : [196, 293.66, 392];
+    const levels = [0.52, 0.32, 0.18];
+    const detunes = [-3, 0, 4];
     const filter = context.createBiquadFilter();
     const master = context.createGain();
     const delay = context.createDelay(0.4);
     const echo = context.createGain();
     filter.type = "lowpass";
-    filter.frequency.setValueAtTime(2400, now);
-    filter.Q.setValueAtTime(0.55, now);
-    delay.delayTime.setValueAtTime(0.13, now);
-    echo.gain.setValueAtTime(0.11, now);
+    filter.frequency.setValueAtTime(isClose ? 1900 : 2800, now);
+    filter.frequency.exponentialRampToValueAtTime(isClose ? 900 : 4100, now + duration * 0.72);
+    filter.Q.setValueAtTime(0.7, now);
+    delay.delayTime.setValueAtTime(0.115, now);
+    echo.gain.setValueAtTime(0.09, now);
     master.gain.setValueAtTime(0.0001, now);
     master.gain.exponentialRampToValueAtTime(AUDIO_CONFIG.volume * 0.18, now + 0.05);
     master.gain.exponentialRampToValueAtTime(AUDIO_CONFIG.volume * 0.06, now + duration * 0.58);
@@ -127,13 +128,13 @@
     const oscillators = pitches.map((pitch, index) => {
       const oscillator = context.createOscillator();
       const voice = context.createGain();
-      oscillator.type = "sine";
+      oscillator.type = index === 0 ? "triangle" : "sine";
       oscillator.frequency.setValueAtTime(pitch, now);
       oscillator.detune.setValueAtTime(detunes[index], now);
       voice.gain.setValueAtTime(levels[index], now);
       oscillator.connect(voice);
       voice.connect(filter);
-      oscillator.start(now + index * 0.055);
+      oscillator.start(now + index * 0.06);
       oscillator.stop(now + duration + 0.12);
       return { oscillator, voice };
     });

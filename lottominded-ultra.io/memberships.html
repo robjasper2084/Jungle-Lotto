@@ -16,14 +16,16 @@
           document.documentElement.classList.add("lm-transition-arriving");
         }
       } catch (error) {}
+      document.documentElement.classList.add("lm-transition-arriving");
     </script>
     <link rel="stylesheet" href="./assets/css/lm-page-transition.css?v=transition-exit-audit-4" />
 <link rel="stylesheet" href="./styles.css?v=startup-music-banner-wide-21" />
     <link rel="stylesheet" href="./assets/css/beat2lotto-collector-access.css?v=collector-memberships-3" />
     <link rel="stylesheet" href="./assets/vendor/lenis/lenis.css?v=1.1.20" />
-  <link rel="stylesheet" href="./assets/css/memberships-cinematic.css?v=membership-commercial-audio-2" />
+  <link rel="stylesheet" href="./assets/css/memberships-cinematic.css?v=membership-commercial-hud-4" />
     <link rel="stylesheet" href="./assets/css/memberships-hud.css?v=membership-hud-9" />
-    <link rel="stylesheet" href="./assets/css/membership-layout-priority.css?v=5" />
+    <link rel="stylesheet" href="./assets/css/membership-layout-priority.css?v=membership-hero-hud-7" />
+    <link rel="stylesheet" href="./assets/css/membership-depth.css?v=membership-depth-1" />
     <link rel="stylesheet" href="./assets/css/lm-global-orb-header.css?v=header-consistency-4" />
     <script defer src="./assets/js/membership-layout-priority.js?v=1"></script>
     <script type="importmap">
@@ -82,8 +84,8 @@
       class="membership-pong-bg"
       data-membership-src="./games/raytrace-pong-background/index.html?embed=membership-bg"
       data-no-defer="true"
-      title="Playable raytrace Pong membership background"
-      aria-label="Playable raytrace Pong background"
+      title="Playable Raychase Pong membership background"
+      aria-label="Playable Raychase Pong background"
       aria-hidden="true"
       loading="lazy"
       tabindex="-1"></iframe>
@@ -145,6 +147,23 @@
           >
             <source src="./assets/merch/lottomind-membership-feature-commercial-20260716.mp4" data-src="./assets/merch/lottomind-membership-feature-commercial-20260716.mp4" type="video/mp4" />
           </video>
+          <div class="membership-hero-commercial__hud" aria-hidden="true">
+            <span class="membership-hero-commercial__corner membership-hero-commercial__corner--tl"></span>
+            <span class="membership-hero-commercial__corner membership-hero-commercial__corner--tr"></span>
+            <span class="membership-hero-commercial__corner membership-hero-commercial__corner--bl"></span>
+            <span class="membership-hero-commercial__corner membership-hero-commercial__corner--br"></span>
+            <span class="membership-hero-commercial__scan"></span>
+            <div class="membership-hero-commercial__readout">
+              <span>LM / MEMBER UPLINK</span>
+              <strong>SECTOR 313</strong>
+            </div>
+            <div class="membership-hero-commercial__telemetry">
+              <span><b>01</b> Signal online</span>
+              <span><b>02</b> Guardian linked</span>
+              <span><b>03</b> Access ready</span>
+            </div>
+            <div class="membership-hero-commercial__meter"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+          </div>
           <div class="membership-hero-commercial__controls">
             <span>Membership signal film</span>
             <button type="button" data-membership-featured-sound aria-pressed="false">Play with sound</button>
@@ -328,9 +347,9 @@
                 <div class="lm-epoch-card__media"><img src="./games/shadow-ops-canvas/assets/backgrounds/robot-rahbe-gameplay-keyart.png" alt="" loading="lazy" decoding="async" /></div>
                 <div class="lm-epoch-card__body"><div class="lm-epoch-card__meta"><span class="lm-epoch-card__number">04 · Live</span><span class="lm-epoch-card__era">Action · Intermediate</span></div><h3>Robot Rahbe</h3><p>Enter the Shadow Ops arena, survive the mission grid, and hold the tactical signal.</p><span class="lm-world-game-card__launch">Play now <span aria-hidden="true">&rarr;</span></span></div>
               </a>
-              <a class="lm-epoch-card lm-world-game-card" href="./games/raytrace-pong-background/" aria-label="Play Raytrace Pong">
+              <a class="lm-epoch-card lm-world-game-card" href="./games/raytrace-pong-background/" aria-label="Play Raychase Pong">
                 <div class="lm-epoch-card__media"><img src="./assets/arcade/raytrace-pong-title.webp" alt="" loading="lazy" decoding="async" /></div>
-                <div class="lm-epoch-card__body"><div class="lm-epoch-card__meta"><span class="lm-epoch-card__number">05 · Live</span><span class="lm-epoch-card__era">Simulation · Casual</span></div><h3>Raytrace Pong</h3><p>Play a light-traced Pong simulation where the ball illuminates the arena and casts live shadows.</p><span class="lm-world-game-card__launch">Play now <span aria-hidden="true">&rarr;</span></span></div>
+                <div class="lm-epoch-card__body"><div class="lm-epoch-card__meta"><span class="lm-epoch-card__number">05 · Live</span><span class="lm-epoch-card__era">Simulation · Casual</span></div><h3>Raychase Pong</h3><p>Play a light-traced Pong simulation where the ball illuminates the arena and casts live shadows.</p><span class="lm-world-game-card__launch">Play now <span aria-hidden="true">&rarr;</span></span></div>
               </a>
               <a class="lm-epoch-card lm-world-game-card" href="./lottery-spheres.html#spheres" aria-label="Play Lottery Spheres in Motion">
                 <div class="lm-epoch-card__media"><img src="./assets/arcade/lottery-spheres-title.webp" alt="" loading="lazy" decoding="async" /></div>
@@ -418,20 +437,28 @@
 
     <aside class="membership-commercial-modal" data-membership-commercial-modal hidden aria-hidden="true" aria-labelledby="membershipCommercialTitle">
       <div class="membership-commercial-modal__panel" role="dialog" aria-modal="true">
+        <span class="membership-commercial-modal__corner membership-commercial-modal__corner--tl" aria-hidden="true"></span>
+        <span class="membership-commercial-modal__corner membership-commercial-modal__corner--tr" aria-hidden="true"></span>
+        <span class="membership-commercial-modal__corner membership-commercial-modal__corner--bl" aria-hidden="true"></span>
+        <span class="membership-commercial-modal__corner membership-commercial-modal__corner--br" aria-hidden="true"></span>
         <header class="membership-commercial-modal__header">
           <div>
             <span data-membership-commercial-signal>Film 01 / Membership signal</span>
             <h2 id="membershipCommercialTitle" data-membership-commercial-title>Enter the Signal.</h2>
           </div>
-          <button type="button" data-membership-commercial-close aria-label="Skip commercial and enter membership page">Skip &amp; Enter</button>
+          <div class="membership-commercial-modal__header-status" aria-label="Transmission status">
+            <span>LM / Member Uplink</span>
+            <b><i aria-hidden="true"></i>Signal live</b>
+          </div>
+          <button type="button" data-membership-commercial-close aria-label="Close membership commercial">X</button>
         </header>
         <div class="membership-commercial-modal__stage">
           <video
             controls
             playsinline
             preload="none"
-            poster="./assets/merch/lottomind-membership-hero-commercial-poster-20260716.png"
-            data-src="./assets/merch/lottomind-membership-hero-commercial-20260716.mp4"
+            poster="./assets/merch/lottomind-membership-hoodie-commercial-poster-20260716.jpg"
+            data-src="./assets/merch/lottomind-membership-hoodie-commercial-20260716.mp4"
             data-membership-commercial-video
             data-lm-video-unmanaged="true"></video>
           <button class="membership-commercial-modal__sound" type="button" data-membership-commercial-sound>Play Film</button>
@@ -441,17 +468,12 @@
             <span>TRANSMISSION SECURE</span>
           </div>
         </div>
-        <nav class="membership-commercial-modal__chapters" aria-label="Membership commercial films">
-          <button type="button" class="is-active" data-membership-commercial-chapter data-commercial-index="0" aria-current="true"><b>01</b><span>Membership</span></button>
-          <button type="button" data-membership-commercial-chapter data-commercial-index="1" aria-current="false"><b>02</b><span>Guardian Bundle</span></button>
-          <button type="button" data-membership-commercial-chapter data-commercial-index="2" aria-current="false"><b>03</b><span>Carry the Signal</span></button>
-        </nav>
         <footer class="membership-commercial-modal__footer">
           <p data-membership-commercial-copy>Step into the LottoMind app network with premium tools, arcade routes, member drops, and protected Vault access.</p>
           <div>
             <button type="button" data-membership-commercial-replay>Replay</button>
             <button class="membership-commercial-enter" type="button" data-membership-commercial-enter>Enter Membership Page</button>
-            <a href="./merch-store.html?product=guardian#keychains">Shop Guardian &middot; $29.95</a>
+            <a href="./merch-store.html?product=guardian#keychains">Buy Now</a>
           </div>
         </footer>
       </div>
@@ -463,9 +485,9 @@
       <span id="site-year"></span>
     </footer>
 
-    <script src="./assets/js/lm-page-transition-audio.js?v=transition-audio-soft-chord-6" defer></script>
-    <script src="./assets/js/lm-page-transition.js?v=transition-exit-audit-4" defer></script>
-    <script src="./site.js?v=header-pinned-3" defer></script>
+    <script src="./assets/js/lm-page-transition-audio.js?v=transition-audio-in-out-7" defer></script>
+    <script src="./assets/js/lm-page-transition.js?v=transition-every-route-5" defer></script>
+    <script src="./site.js?v=header-toggle-routes-5" defer></script>
     <script src="./assets/js/lottomind-runtime-config.js?v=supabase-live-1"></script>
     <script src="./assets/js/lottomind-account-service.js?v=supabase-auth-1"></script>
     <script src="./assets/js/beat2lotto-collector-access.js?v=collector-memberships-1" defer></script>
@@ -474,7 +496,8 @@
     <script src="./assets/vendor/gsap/ScrollTrigger.min.js?v=3.13.0" defer></script>
     <script src="./assets/vendor/gsap/SplitText.min.js?v=3.13.0" defer></script>
     <script src="./assets/vendor/lenis/lenis.min.js?v=1.1.20" defer></script>
-    <script src="./assets/js/memberships-cinematic.js?v=guardian-playback-4" defer></script>
+    <script src="./assets/js/memberships-cinematic.js?v=membership-transition-sequence-7" defer></script>
+    <script src="./assets/js/membership-depth.js?v=membership-depth-1" defer></script>
   <script type="module" src="./assets/js/memberships-main.js?v=membership-audio-reactive-6"></script>
     <script>
       (() => {

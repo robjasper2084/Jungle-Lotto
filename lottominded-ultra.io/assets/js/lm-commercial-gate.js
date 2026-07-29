@@ -32,10 +32,10 @@
   ];
 
   const guideFilm = {
-    signal: "Guide / Street signal",
+    signal: "Static Wav / Street signal",
     title: "Follow the signal.",
-    telemetry: "LM-GUIDE / ROUTE ACTIVE",
-    copy: "Enter the LottoMind Guide, explore the playable walkthrough, and carry the creative signal into every route.",
+    telemetry: "STATIC WAV / ROUTE ACTIVE",
+    copy: "Enter Static Wav, explore the playable OpenGW walkthrough, and carry the creative signal into every route.",
     src: "./assets/merch/lottomind-guide-commercial-20260717.mp4",
     poster: "./assets/merch/lottomind-guide-commercial-poster-20260717.jpg",
     volume: 0.64
@@ -49,6 +49,16 @@
     src: "./assets/merch/lottomind-community-signal-commercial-20260717.mp4",
     poster: "./assets/merch/lottomind-community-signal-poster-20260717.jpg",
     volume: 0.48
+  };
+
+  const homeCommercialFilm = {
+    signal: "Home transmission / Boot sequence",
+    title: "Lottominded Ultra home signal.",
+    telemetry: "HOME / BOOT SEQUENCE",
+    copy: "Start the home frequency and step into Detroit-inspired LottoMind studio flow.",
+    src: "./assets/video/lottomind-home-commercial-20260716.mp4",
+    poster: "./assets/video/lottomind-refined-commercial-poster-20260716.png",
+    volume: 0.6
   };
 
   const body = document.body;
@@ -76,9 +86,15 @@
     },
     {
       matches: path.endsWith("/how-to-use.html"),
-      name: "Guide",
+      name: "Static Wav",
       theme: "guide",
       films: [guideFilm]
+    },
+    {
+      matches: body.matches(".home-page") || path.endsWith("/index.html") || path === "/",
+      name: "Home",
+      theme: "home",
+      films: [homeCommercialFilm]
     }
   ].find((candidate) => candidate.matches);
 
@@ -88,10 +104,12 @@
   // Keep the one-commercial-per-page behavior without letting a visit to one
   // route suppress the commercial on every other route in the same tab.
   const sessionKey = `lm-commercial-gate-seen:v5:${routeTheme}`;
-  try {
-    if (sessionStorage.getItem(sessionKey) === "yes") return;
-    sessionStorage.setItem(sessionKey, "yes");
-  } catch (error) {}
+  if (routeTheme !== "guide") {
+    try {
+      if (sessionStorage.getItem(sessionKey) === "yes") return;
+      sessionStorage.setItem(sessionKey, "yes");
+    } catch (error) {}
+  }
   const storageKey = `lm-commercial-gate-last:${location.pathname}`;
   let previous = -1;
   try {
@@ -104,13 +122,19 @@
   } catch (error) {}
 
   const modal = document.createElement("aside");
-  modal.className = "lm-commercial-gate";
+  modal.className = `lm-commercial-gate lm-commercial-gate--${routeTheme}`;
   modal.setAttribute("role", "dialog");
   modal.setAttribute("aria-modal", "true");
   modal.setAttribute("aria-labelledby", "lmCommercialGateTitle");
   modal.style.setProperty("--lm-commercial-chapter-count", String(films.length));
+  if (routeTheme === "guide") modal.dataset.lmGuideHud = "static-wav-2084";
   modal.innerHTML = `
     <div class="lm-commercial-gate__panel">
+      ${routeTheme === "guide" ? `
+        <div class="lm-commercial-gate__guide-chassis" aria-hidden="true">
+          <span>LM // STATIC WAV // 2084</span>
+          <span>STREET SIGNAL LOCKED</span>
+        </div>` : ""}
       <header class="lm-commercial-gate__header">
         <div>
           <span class="lm-commercial-gate__signal"></span>
@@ -138,7 +162,7 @@
         <div class="lm-commercial-gate__actions">
           <button type="button" class="lm-commercial-gate__replay">Replay</button>
           <button type="button" class="lm-commercial-gate__enter">Enter ${routeName}</button>
-          <a class="lm-commercial-gate__shop" href="./merch-store.html?product=guardian#keychains">Shop Guardian &middot; $29.95</a>
+          <a class="lm-commercial-gate__shop" href="./merch-store.html?product=guardian#keychains">Buy Now</a>
         </div>
       </footer>
     </div>`;
@@ -157,6 +181,7 @@
   const suspendedMedia = [];
   let closing = false;
   let transitionFallbackTimer = 0;
+  let previewOffsetTimer = 0;
 
   const pausePageMedia = () => {
     document.querySelectorAll("audio, video").forEach((media) => {
@@ -263,10 +288,12 @@
 
   const finishGate = () => {
     window.clearTimeout(transitionFallbackTimer);
+    window.clearTimeout(previewOffsetTimer);
     body.classList.remove("has-lm-commercial-gate");
     siblings.forEach((node) => node.removeAttribute("inert"));
     document.removeEventListener("play", blockCompetingMedia, true);
     window.removeEventListener("lottomind:transition-complete", handleTransitionComplete);
+    window.removeEventListener("resize", syncPreviewOffset);
     setBeat2MusicGate(false);
     restorePageMedia();
     window.dispatchEvent(new CustomEvent("lottomind:commercial-gate", {
@@ -307,7 +334,23 @@
     });
   };
 
+  const syncPreviewOffset = () => {
+    const safetyBars = [
+      document.querySelector("[data-lm-staging-banner]"),
+      document.querySelector("#lm-staging-guard-status"),
+    ].filter(Boolean);
+    const offset = safetyBars.reduce((bottom, element) => (
+      Math.max(bottom, element.getBoundingClientRect().bottom)
+    ), 0);
+    if (offset > 0) modal.style.top = `${Math.ceil(offset)}px`;
+    else modal.style.removeProperty("top");
+  };
+
   body.append(modal);
+  syncPreviewOffset();
+  requestAnimationFrame(syncPreviewOffset);
+  previewOffsetTimer = window.setTimeout(syncPreviewOffset, 120);
+  window.addEventListener("resize", syncPreviewOffset);
   body.classList.add("has-lm-commercial-gate");
   siblings.forEach((node) => node.setAttribute("inert", ""));
   pausePageMedia();

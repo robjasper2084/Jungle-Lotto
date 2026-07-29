@@ -6,7 +6,8 @@ import { fileURLToPath } from "node:url";
 const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const require = createRequire(import.meta.url);
 const playwrightCli = require.resolve("@playwright/test/cli");
-const serverUrl = "http://127.0.0.1:8143/index.html";
+const stagingPort = Number(process.env.LOTTOMIND_STAGING_TEST_PORT || 8143);
+const serverUrl = `http://127.0.0.1:${stagingPort}/index.html`;
 let server;
 
 function waitForExit(child) {
@@ -41,7 +42,7 @@ async function stopServer() {
 }
 
 async function main() {
-  server = spawn(process.execPath, ["scripts/serve-site.mjs", "dist-staging", "8143"], {
+  server = spawn(process.execPath, ["scripts/serve-site.mjs", "dist-staging", String(stagingPort)], {
     cwd: packageRoot,
     stdio: ["ignore", "inherit", "inherit"],
   });

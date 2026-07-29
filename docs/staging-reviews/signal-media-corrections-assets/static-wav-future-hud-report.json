@@ -1,0 +1,44 @@
+{
+  "capturedAt": "2026-07-28T16:37:28.967Z",
+  "results": [
+    {
+      "route": "/how-to-use.html",
+      "viewport": "1440x900",
+      "status": 200,
+      "output": "C:\\Users\\digit\\Documents\\phone\\_jungle_lotto_refined\\docs\\staging-reviews\\signal-media-corrections-assets\\static-wav-1440x900.png",
+      "noindex": "noindex,nofollow,noarchive",
+      "stagingBannerVisible": true,
+      "horizontalOverflow": false,
+      "animationsRunning": 0,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "assetFailures": []
+    },
+    {
+      "route": "/how-to-use.html",
+      "viewport": "768x1024",
+      "status": 200,
+      "output": "C:\\Users\\digit\\Documents\\phone\\_jungle_lotto_refined\\docs\\staging-reviews\\signal-media-corrections-assets\\static-wav-768x1024.png",
+      "noindex": "noindex,nofollow,noarchive",
+      "stagingBannerVisible": true,
+      "horizontalOverflow": false,
+      "animationsRunning": 0,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "assetFailures": []
+    },
+    {
+      "route": "/how-to-use.html",
+      "viewport": "390x844",
+      "status": 200,
+      "output": "C:\\Users\\digit\\Documents\\phone\\_jungle_lotto_refined\\docs\\staging-reviews\\signal-media-corrections-assets\\static-wav-390x844.png",
+      "noindex": "noindex,nofollow,noarchive",
+      "stagingBannerVisible": true,
+      "horizontalOverflow": false,
+      "animationsRunning": 0,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "assetFailures": []
+    }
+  ]
+}

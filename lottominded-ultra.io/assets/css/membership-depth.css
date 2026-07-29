@@ -1,0 +1,166 @@
+body.memberships-page.lm-membership-depth-ready #dust {
+  --lm-hero-depth-x: 0deg;
+  --lm-hero-depth-y: 0deg;
+  --lm-hero-shift-x: 0px;
+  --lm-hero-shift-y: 0px;
+  --lm-hero-hud-depth-x: 0deg;
+  --lm-hero-hud-depth-y: 0deg;
+  --lm-hero-hud-shift-x: 0px;
+  --lm-hero-hud-shift-y: 0px;
+  --lm-hero-control-shift-x: 0px;
+  --lm-hero-control-shift-y: 0px;
+  perspective: 1800px;
+}
+
+body.memberships-page.lm-membership-depth-ready #dust .membership-hero-copy {
+  z-index: 2;
+  transform:
+    perspective(1600px)
+    translate3d(var(--lm-hero-shift-x), var(--lm-hero-shift-y), 52px)
+    rotateX(var(--lm-hero-depth-x))
+    rotateY(var(--lm-hero-depth-y));
+  transform-origin: 34% 50%;
+  transform-style: preserve-3d;
+  transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+}
+
+body.memberships-page.lm-membership-depth-ready #dust .membership-hero-copy > * {
+  position: relative;
+  transform: translateZ(18px);
+}
+
+body.memberships-page.lm-membership-depth-ready #dust .membership-hero-copy > :is(.membership-hud-status, .membership-hero-actions) {
+  transform: translateZ(34px);
+}
+
+body.memberships-page.lm-membership-depth-ready #dust .membership-hero-commercial__hud {
+  transform:
+    translate3d(var(--lm-hero-hud-shift-x), var(--lm-hero-hud-shift-y), 42px)
+    rotateX(var(--lm-hero-hud-depth-x))
+    rotateY(var(--lm-hero-hud-depth-y));
+  transform-origin: center;
+  transform-style: preserve-3d;
+  transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+}
+
+body.memberships-page.lm-membership-depth-ready #dust .membership-hero-commercial__controls {
+  transform:
+    translate3d(var(--lm-hero-control-shift-x), var(--lm-hero-control-shift-y), 58px);
+  transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+}
+
+body.memberships-page .lm-membership-depth-card {
+  --lm-depth-base-y: 0px;
+  --lm-depth-lift: 0px;
+  --lm-depth-rotate-x: 0deg;
+  --lm-depth-rotate-y: 0deg;
+  --lm-depth-scale: 1;
+  --lm-depth-glare-x: 50%;
+  --lm-depth-glare-y: 20%;
+  isolation: isolate;
+  transform:
+    perspective(1100px)
+    translate3d(0, calc(var(--lm-depth-base-y) + var(--lm-depth-lift)), 0)
+    rotateX(var(--lm-depth-rotate-x))
+    rotateY(var(--lm-depth-rotate-y))
+    scale(var(--lm-depth-scale));
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+  transition:
+    transform 180ms cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 240ms ease,
+    box-shadow 240ms ease;
+  will-change: transform;
+}
+
+body.memberships-page .membership-plan-card.lm-membership-depth-card.is-featured {
+  --lm-depth-base-y: -14px;
+}
+
+body.memberships-page .lm-membership-depth-card:is(:hover, :focus-within, .is-depth-focused) {
+  --lm-depth-lift: -8px;
+  --lm-depth-scale: 1.012;
+}
+
+body.memberships-page .membership-plan-card.lm-membership-depth-card.is-featured:is(:hover, :focus-within, .is-depth-focused) {
+  --lm-depth-lift: -8px;
+}
+
+body.memberships-page .lm-membership-depth-card::after {
+  position: absolute;
+  z-index: 4;
+  inset: 0;
+  content: "";
+  pointer-events: none;
+  opacity: 0;
+  border-radius: inherit;
+  background:
+    radial-gradient(
+      circle at var(--lm-depth-glare-x) var(--lm-depth-glare-y),
+      rgba(255, 255, 255, 0.24),
+      rgba(91, 233, 255, 0.09) 17%,
+      transparent 42%
+    );
+  mix-blend-mode: screen;
+  transition: opacity 180ms ease;
+}
+
+body.memberships-page .lm-membership-depth-card:is(:hover, :focus-within, .is-depth-focused)::after {
+  opacity: 0.72;
+}
+
+body.memberships-page .lm-membership-depth-card > * {
+  position: relative;
+  z-index: 2;
+  transform: translateZ(22px);
+  transform-style: preserve-3d;
+}
+
+body.memberships-page .lm-membership-depth-card .membership-plan-emblem {
+  transform: translateZ(48px);
+  filter: drop-shadow(0 16px 14px rgba(0, 0, 0, 0.42));
+}
+
+body.memberships-page .membership-support-card--guardian.lm-membership-depth-card {
+  --lm-depth-base-y: 0px;
+  overflow: hidden;
+}
+
+body.memberships-page .membership-support-card--guardian.lm-membership-depth-card .membership-collectible-media {
+  transform: translateZ(34px);
+}
+
+@media (max-width: 900px), (hover: none), (pointer: coarse) {
+  body.memberships-page.lm-membership-depth-ready #dust .membership-hero-copy,
+  body.memberships-page.lm-membership-depth-ready #dust .membership-hero-commercial__hud,
+  body.memberships-page.lm-membership-depth-ready #dust .membership-hero-commercial__controls,
+  body.memberships-page .lm-membership-depth-card,
+  body.memberships-page .membership-plan-card.lm-membership-depth-card.is-featured {
+    transform: none;
+    will-change: auto;
+  }
+
+  body.memberships-page .lm-membership-depth-card:is(:focus-within, .is-depth-focused) {
+    transform: translateY(-4px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.memberships-page.lm-membership-depth-ready #dust .membership-hero-copy,
+  body.memberships-page.lm-membership-depth-ready #dust .membership-hero-commercial__hud,
+  body.memberships-page.lm-membership-depth-ready #dust .membership-hero-commercial__controls,
+  body.memberships-page .lm-membership-depth-card,
+  body.memberships-page .membership-plan-card.lm-membership-depth-card.is-featured,
+  body.memberships-page .lm-membership-depth-card:is(:hover, :focus-within, .is-depth-focused) {
+    transform: none;
+    transition: none;
+    will-change: auto;
+  }
+
+  body.memberships-page .lm-membership-depth-card::after {
+    display: none;
+  }
+}

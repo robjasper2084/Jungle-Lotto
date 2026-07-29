@@ -1004,7 +1004,11 @@ body.memberships-page .membership-commercial-trigger small {
 }
 
 body.memberships-page .membership-commercial-hero-launch {
-  display: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.46rem;
+  text-align: center;
 }
 
 body.memberships-page .membership-commercial-modal {
@@ -1093,12 +1097,24 @@ body.memberships-page .membership-commercial-modal__footer a {
   cursor: pointer;
 }
 
+body.memberships-page .membership-commercial-modal__header button {
+  width: 46px;
+  min-width: 46px;
+  height: 46px;
+  min-height: 46px;
+  padding: 0;
+  border-color: rgba(244, 207, 99, 0.62);
+  border-radius: 50%;
+  font-size: 0.88rem;
+}
+
 body.memberships-page .membership-commercial-modal__stage {
   position: relative;
   overflow: hidden;
   border-block: 1px solid rgba(91, 233, 255, 0.2);
   background: #01040a;
-  aspect-ratio: 16 / 9;
+  height: min(58dvh, 720px);
+  min-height: 420px;
 }
 
 body.memberships-page .membership-commercial-modal__stage video {
@@ -1124,6 +1140,10 @@ body.memberships-page .membership-commercial-modal__sound {
   letter-spacing: 0.12em;
   text-transform: uppercase;
   cursor: pointer;
+}
+
+body.memberships-page .membership-commercial-modal__sound[hidden] {
+  display: none !important;
 }
 
 body.memberships-page .membership-commercial-modal__scan {
@@ -1197,6 +1217,7 @@ body.memberships-page .membership-commercial-modal__footer p {
   max-width: 68ch;
   margin: 0;
   color: var(--lm-muted);
+  font-size: 1rem;
   line-height: 1.55;
 }
 
@@ -1314,6 +1335,11 @@ body.memberships-page.has-membership-commercial .lm-signal-entity {
     border-radius: 0;
   }
 
+  body.memberships-page .membership-commercial-modal__stage {
+    height: min(58dvh, 620px);
+    min-height: 360px;
+  }
+
   body.memberships-page .membership-commercial-modal__header,
   body.memberships-page .membership-commercial-modal__footer {
     align-items: flex-start;
@@ -1367,6 +1393,186 @@ body.memberships-page .membership-disclaimer p {
   color: var(--lm-ice);
   font-size: 0.95rem;
   line-height: 1.65;
+}
+
+/* Membership commercial HUD: same control language as Storefront, original film unchanged. */
+body.memberships-page .membership-commercial-modal {
+  padding: clamp(10px, 2vw, 28px);
+  background:
+    linear-gradient(rgba(91, 233, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(91, 233, 255, 0.025) 1px, transparent 1px),
+    rgba(1, 5, 12, 0.96);
+  background-size: 2rem 2rem;
+  backdrop-filter: blur(12px);
+}
+
+body.memberships-page .membership-commercial-modal__panel {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto auto;
+  width: min(1180px, 100%);
+  max-height: calc(100dvh - clamp(20px, 4vw, 56px));
+  overflow: hidden;
+  border-color: rgba(91, 233, 255, 0.78);
+  border-radius: 4px;
+  clip-path: polygon(18px 0, 100% 0, 100% calc(100% - 18px), calc(100% - 18px) 100%, 0 100%, 0 18px);
+  background:
+    linear-gradient(145deg, rgba(91, 233, 255, 0.07), transparent 28%),
+    linear-gradient(325deg, rgba(157, 87, 255, 0.08), transparent 32%),
+    #020a17;
+  box-shadow:
+    inset 0 0 0 1px rgba(244, 207, 99, 0.12),
+    inset 0 0 54px rgba(91, 233, 255, 0.04),
+    0 0 70px rgba(91, 233, 255, 0.16);
+}
+
+body.memberships-page .membership-commercial-modal__corner {
+  position: absolute;
+  z-index: 8;
+  width: 28px;
+  height: 28px;
+  pointer-events: none;
+  border-color: var(--lm-gold-hot);
+}
+
+body.memberships-page .membership-commercial-modal__corner--tl {
+  top: 8px;
+  left: 8px;
+  border-top: 2px solid;
+  border-left: 2px solid;
+}
+
+body.memberships-page .membership-commercial-modal__corner--tr {
+  top: 8px;
+  right: 8px;
+  border-top: 2px solid;
+  border-right: 2px solid;
+}
+
+body.memberships-page .membership-commercial-modal__corner--bl {
+  bottom: 8px;
+  left: 8px;
+  border-bottom: 2px solid;
+  border-left: 2px solid;
+}
+
+body.memberships-page .membership-commercial-modal__corner--br {
+  right: 8px;
+  bottom: 8px;
+  border-right: 2px solid;
+  border-bottom: 2px solid;
+}
+
+body.memberships-page .membership-commercial-modal__header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  min-height: 82px;
+  padding: 14px clamp(18px, 2.4vw, 30px);
+  border-bottom: 1px solid rgba(91, 233, 255, 0.28);
+  background:
+    linear-gradient(90deg, rgba(91, 233, 255, 0.09), transparent 48%),
+    rgba(2, 10, 23, 0.98);
+}
+
+body.memberships-page .membership-commercial-modal__header-status {
+  display: grid;
+  justify-items: end;
+  gap: 7px;
+  color: rgba(238, 242, 247, 0.62);
+  font: 800 0.58rem/1 "IBM Plex Mono", Consolas, monospace;
+  text-transform: uppercase;
+}
+
+body.memberships-page .membership-commercial-modal__header-status b {
+  color: var(--lm-cyan);
+  font: inherit;
+}
+
+body.memberships-page .membership-commercial-modal__header-status i {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: var(--lm-cyan);
+  box-shadow: 0 0 12px var(--lm-cyan);
+  animation: lm-membership-hud-pulse 1.4s ease-in-out infinite;
+}
+
+body.memberships-page .membership-commercial-modal__stage {
+  height: min(54dvh, 660px);
+  min-height: 300px;
+  border-block: 0;
+  background:
+    linear-gradient(rgba(91, 233, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(91, 233, 255, 0.035) 1px, transparent 1px),
+    #010714;
+  background-size: 2rem 2rem;
+}
+
+body.memberships-page .membership-commercial-modal__stage::after {
+  position: absolute;
+  z-index: 2;
+  inset: 14px;
+  border: 1px solid rgba(91, 233, 255, 0.16);
+  content: "";
+  pointer-events: none;
+}
+
+body.memberships-page .membership-commercial-modal__chapters {
+  border-block: 1px solid rgba(91, 233, 255, 0.22);
+}
+
+body.memberships-page .membership-commercial-modal__footer {
+  min-height: 74px;
+  padding: 12px clamp(18px, 2.4vw, 30px);
+  background: rgba(2, 9, 20, 0.98);
+}
+
+body.memberships-page .membership-commercial-modal__footer :is(button, a),
+body.memberships-page .membership-commercial-modal__sound {
+  border-radius: 4px;
+  clip-path: polygon(7px 0, 100% 0, 100% calc(100% - 7px), calc(100% - 7px) 100%, 0 100%, 0 7px);
+}
+
+@keyframes lm-membership-hud-pulse {
+  50% { opacity: 0.45; transform: scale(0.72); }
+}
+
+@media (max-width: 760px) {
+  body.memberships-page .membership-commercial-modal__panel {
+    height: 100dvh;
+    max-height: 100dvh;
+    clip-path: none;
+    border: 0;
+  }
+
+  body.memberships-page .membership-commercial-modal__corner,
+  body.memberships-page .membership-commercial-modal__header-status {
+    display: none;
+  }
+
+  body.memberships-page .membership-commercial-modal__header {
+    grid-template-columns: minmax(0, 1fr) auto;
+    min-height: 76px;
+    padding: 12px 14px;
+  }
+
+  body.memberships-page .membership-commercial-modal__stage {
+    height: min(47dvh, 480px);
+    min-height: 240px;
+  }
+
+  body.memberships-page .membership-commercial-modal__footer {
+    max-height: 30dvh;
+    overflow: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.memberships-page .membership-commercial-modal__header-status i {
+    animation: none;
+  }
 }
 
 body.memberships-page .membership-plan-grid {

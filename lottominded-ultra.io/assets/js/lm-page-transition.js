@@ -23,11 +23,23 @@
     spheres:     { rgb: "255 200 74",  color: "#ffc84a" }
   };
 
-  const overlay = document.querySelector("[data-lm-page-transition]");
-  const video = overlay?.querySelector("[data-lm-transition-video]");
-  const label = overlay?.querySelector("[data-lm-transition-label]");
-
-  if (!overlay) return;
+  let overlay = document.querySelector("[data-lm-page-transition]");
+  if (!overlay) {
+    overlay = document.createElement("div");
+    overlay.className = "lm-page-transition";
+    overlay.dataset.lmPageTransition = "";
+    overlay.setAttribute("aria-hidden", "true");
+    overlay.innerHTML = `
+      <div class="lm-page-transition__flash"></div>
+      <video class="lm-page-transition__video" data-lm-transition-video muted playsinline preload="metadata"></video>
+      <div class="lm-page-transition__vignette"></div>
+      <div class="lm-page-transition__scanlines"></div>
+      <p class="lm-page-transition__label" data-lm-transition-label>Opening signal</p>
+    `;
+    document.body.prepend(overlay);
+  }
+  const video = overlay.querySelector("[data-lm-transition-video]");
+  const label = overlay.querySelector("[data-lm-transition-label]");
 
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
   const scriptElement =
@@ -87,6 +99,7 @@
       filename === "merch-store.html" ||
       filename === "prompt-lab.html" ||
       filename === "how-to-use.html" ||
+      filename === "redeem.html" ||
       filename === "accessibility.html" ||
       filename === "contact.html" ||
       filename === "privacy.html" ||
@@ -204,6 +217,7 @@
     overlay.classList.add("is-active", phase === "close" ? "is-closing" : "is-opening");
     overlay.setAttribute("aria-hidden", "false");
     document.body.classList.add("lm-page-is-transitioning");
+    document.documentElement.dataset.lmLastTransitionPhase = phase;
     activeTransition = { phase, theme: safeTheme, label: text || "", source };
 
     if (!reduceMotion.matches) playVideo(safeTheme, phase);

@@ -761,7 +761,11 @@ merchSoundVideo?.addEventListener("volumechange", () => {
 window.addEventListener("load", () => {
   primeMerchHeroBackgroundVideo();
   window.setTimeout(startMerchCapsuleOnPageOpen, 180);
-  scheduleAutoMerchShadowPopup();
+  window.setTimeout(() => {
+    if (document.visibilityState === "visible" && merchCommercialModal?.classList.contains("is-hidden")) {
+      openMerchCommercial();
+    }
+  }, 900);
 });
 window.addEventListener("lottomind:commercial-gate", (event) => {
   if (event.detail?.active === false) startMerchCapsuleOnPageOpen();
@@ -821,6 +825,9 @@ document.addEventListener("keydown", (event) => {
 
 merchCommercialModal?.addEventListener("click", (event) => {
   if (event.target === merchCommercialModal) closeMerchCommercial();
+});
+merchCommercialModalVideo?.addEventListener("ended", () => {
+  closeMerchCommercial({ restoreFocus: false });
 });
 
 const revealObserver = new IntersectionObserver(

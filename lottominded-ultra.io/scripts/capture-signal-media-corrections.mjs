@@ -15,6 +15,7 @@ const outputRoot = resolve(
   "signal-media-corrections-assets",
 );
 const baseUrl = String(process.env.LOTTOMIND_CAPTURE_BASE_URL || "http://127.0.0.1:8143").replace(/\/$/, "");
+const reportName = String(process.env.LOTTOMIND_CAPTURE_REPORT || "capture-report.json");
 const routeFilter = new Set(
   String(process.env.LOTTOMIND_CAPTURE_ROUTES || "")
     .split(",")
@@ -31,6 +32,42 @@ const availableRoutes = [
     focus: ".membership-hero-commercial",
   },
   {
+    name: "membership-transition-sequence",
+    path: "/memberships.html",
+    focus: ".membership-commercial-modal__panel",
+  },
+  {
+    name: "membership-depth-hero",
+    path: "/memberships.html",
+    focus: "#dust",
+    dismiss: "[data-membership-commercial-close]",
+    dismissDelay: 1_800,
+    captureHide: "[data-membership-commercial-modal]",
+    pointerTarget: "#dust",
+    pointerX: 0.78,
+    pointerY: 0.3,
+  },
+  {
+    name: "membership-depth-plans",
+    path: "/memberships.html#membership-plans",
+    focus: ".membership-plan-grid",
+    dismiss: "[data-membership-commercial-close]",
+    dismissDelay: 1_800,
+    captureHide: "[data-membership-commercial-modal]",
+    pointerTarget: ".membership-plan-card[data-lm-tier='gold']",
+    pointerX: 0.82,
+    pointerY: 0.28,
+  },
+  {
+    name: "membership-inline-hud",
+    path: "/memberships.html",
+    focus: ".membership-hero-commercial",
+    dismiss: "[data-membership-commercial-close]",
+    dismissDelay: 1_800,
+    dismissAttempts: 3,
+    captureHide: "[data-membership-commercial-modal]",
+  },
+  {
     name: "membership-guardian",
     path: "/memberships.html",
     focus: ".membership-guardian-bottom",
@@ -42,8 +79,26 @@ const availableRoutes = [
     dismiss: ".lm-commercial-gate__skip",
   },
   {
+    name: "storefront-console",
+    path: "/merch-store.html",
+    focus: ".instrument-console",
+    dismiss: "[data-merch-commercial-close]",
+    captureHide: "[data-merch-commercial-modal]",
+  },
+  {
+    name: "static-wav",
+    path: "/how-to-use.html",
+    focus: ".lm-commercial-gate__panel",
+  },
+  {
     name: "arcade",
     path: "/features-app.html",
+    dismiss: ".lm-commercial-gate__skip",
+  },
+  {
+    name: "arcade-directory",
+    path: "/features-app.html",
+    focus: "#arcade-library",
     dismiss: ".lm-commercial-gate__skip",
   },
   {
@@ -103,11 +158,30 @@ try {
       await page.waitForTimeout(1200);
 
       if (route.dismiss) {
+        if (route.dismissDelay) await page.waitForTimeout(route.dismissDelay);
         const dismiss = page.locator(route.dismiss).first();
-        if (await dismiss.count() && await dismiss.isVisible()) {
-          await dismiss.click();
+        await dismiss.waitFor({ state: "visible", timeout: 5_000 }).catch(() => {});
+        for (let attempt = 0; attempt < (route.dismissAttempts || 1); attempt += 1) {
+          if (await dismiss.count() && await dismiss.isVisible()) {
+            await dismiss.click({ force: true });
+          }
           await page.waitForTimeout(800);
         }
+      }
+
+      if (route.captureHide) {
+        await page.locator(route.captureHide).evaluateAll((elements) => {
+          elements.forEach((element) => {
+            element.hidden = true;
+            element.setAttribute("aria-hidden", "true");
+            element.classList.remove("is-open");
+          });
+          document.body.classList.remove("has-membership-commercial", "has-merch-commercial");
+          document.querySelectorAll("[inert]").forEach((element) => {
+            element.inert = false;
+            element.removeAttribute("inert");
+          });
+        });
       }
 
       if (route.focus) {
@@ -117,6 +191,18 @@ try {
         await page.waitForTimeout(350);
       } else {
         await page.evaluate(() => window.scrollTo(0, 0));
+      }
+
+      if (route.pointerTarget) {
+        const pointerTarget = page.locator(route.pointerTarget).first();
+        const pointerBox = await pointerTarget.boundingBox();
+        if (pointerBox) {
+          await page.mouse.move(
+            pointerBox.x + pointerBox.width * (route.pointerX ?? 0.5),
+            pointerBox.y + pointerBox.height * (route.pointerY ?? 0.5),
+          );
+          await page.waitForTimeout(220);
+        }
       }
 
       const output = resolve(outputRoot, `${route.name}-${viewport.name}.png`);
@@ -151,7 +237,7 @@ try {
 }
 
 await writeFile(
-  resolve(outputRoot, "capture-report.json"),
+  resolve(outputRoot, reportName),
   `${JSON.stringify({ capturedAt: new Date().toISOString(), results }, null, 2)}\n`,
   "utf8",
 );

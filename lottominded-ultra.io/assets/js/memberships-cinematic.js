@@ -207,31 +207,13 @@
   });
   const commercialFilms = [
     {
-      src: "./assets/merch/lottomind-membership-hero-commercial-20260716.mp4",
-      poster: "./assets/merch/lottomind-membership-hero-commercial-poster-20260716.png",
-      signal: "Film 01 / Membership signal",
-      title: "Enter the Signal.",
-      telemetry: "LM-MEMBERSHIP / ACCESS READY",
-      copy: "Step into the LottoMind app network with premium tools, arcade routes, member drops, and protected Vault access.",
+      src: "./assets/merch/lottomind-membership-hoodie-commercial-20260716.mp4",
+      poster: "./assets/merch/lottomind-membership-hoodie-commercial-poster-20260716.jpg",
+      signal: "Membership commercial / Wear the signal",
+      title: "Detroit Signal, Worn Forward.",
+      telemetry: "LM-MEMBERSHIP / SIGNAL ONLINE",
+      copy: "Wear the city-built LottoMind identity, then move into a connected network of creative tools, arcade routes, and member access.",
       volume: 0.78,
-    },
-    {
-      src: "./assets/merch/lottomind-membership-single-commercial-20260716.mp4",
-      poster: "./assets/merch/lottomind-membership-hero-commercial-poster-20260716.png",
-      signal: "Film 02 / Guardian bundle",
-      title: "Membership Travels With You.",
-      telemetry: "LM-GUARDIAN / MEMBER LINKED",
-      copy: "The Little Man Guardian bundle includes three complimentary months across the growing LottoMind app network.",
-      volume: 0.62,
-    },
-    {
-      src: "./assets/merch/lottomind-merch-commercial-20260716.mp4",
-      poster: "./assets/merch/lottomind-merch-commercial-poster-20260716.png",
-      signal: "Film 03 / Mobile signal",
-      title: "Carry the Signal.",
-      telemetry: "LM-GUARDIAN / IN TRANSIT",
-      copy: "The Guardian goes wherever the next idea begins, with three months of LottoMind membership included.",
-      volume: 0.64,
     },
   ];
   const commercialFocusables = () => commercialModal
@@ -240,7 +222,8 @@
   let commercialReturnFocus = null;
   let commercialFilmIndex = 0;
   let commercialIsClosing = false;
-  let commercialTransitionFallback = 0;
+  let entryCommercialOpened = false;
+  let entryCommercialFallback = 0;
   let featuredCommercialSoundEnabled = false;
 
   const restoreDeferredVideoSources = (video) => {
@@ -388,9 +371,15 @@
   });
 
   let commercialShouldRestoreFocus = true;
+  let commercialHandoffFallback = 0;
+  const handleCommercialHandoffComplete = (event) => {
+    if (event?.detail?.source !== "membership-commercial") return;
+    finishCommercialHandoff();
+  };
+
   const finishCommercialHandoff = () => {
-    window.clearTimeout(commercialTransitionFallback);
-    window.removeEventListener("lottomind:transition-complete", handleCommercialTransitionComplete);
+    window.clearTimeout(commercialHandoffFallback);
+    window.removeEventListener("lottomind:transition-complete", handleCommercialHandoffComplete);
     commercialModal?.setAttribute("aria-hidden", "true");
     if (commercialModal) commercialModal.hidden = true;
     commercialModal?.classList.remove("is-entry");
@@ -417,14 +406,10 @@
     commercialIsClosing = false;
   };
 
-  const handleCommercialTransitionComplete = (event) => {
-    if (event?.detail?.source !== "membership-commercial") return;
-    finishCommercialHandoff();
-  };
-
   const closeCommercial = ({ restoreFocus = true, startMusic = false } = {}) => {
     if (!commercialModal || commercialModal.hidden || commercialIsClosing) return;
     commercialIsClosing = true;
+    const isEntryCommercial = commercialModal.classList.contains("is-entry");
     commercialShouldRestoreFocus = restoreFocus;
     commercialVideo?.pause();
     soundtrackShouldStartAfterCommercial = Boolean(
@@ -439,22 +424,27 @@
       playMembershipSoundtrack({ remember: startMusic, restart: true, volume: 0, silent: true });
     }
     soundtrackPausedForCommercial = false;
-    window.addEventListener("lottomind:transition-complete", handleCommercialTransitionComplete);
-
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         commercialModal.classList.remove("is-open");
         window.setTimeout(() => {
+          if (isEntryCommercial) {
+            window.addEventListener("lottomind:transition-complete", handleCommercialHandoffComplete);
+            window.dispatchEvent(new CustomEvent("lottomind:commercial-dismissed", {
+              detail: {
+                label: "Membership signal online",
+                source: "membership-commercial",
+                theme: "memberships",
+              },
+            }));
+          }
           commercialModal.setAttribute("aria-hidden", "true");
           commercialModal.hidden = true;
-          window.dispatchEvent(new CustomEvent("lottomind:commercial-dismissed", {
-            detail: {
-              label: "Memberships",
-              source: "membership-commercial",
-              theme: "memberships"
-            }
-          }));
-          commercialTransitionFallback = window.setTimeout(finishCommercialHandoff, 1500);
+          if (isEntryCommercial) {
+            commercialHandoffFallback = window.setTimeout(finishCommercialHandoff, 1500);
+          } else {
+            finishCommercialHandoff();
+          }
         }, 140);
       });
     });
@@ -481,14 +471,35 @@
     document.querySelector("[data-site-header]")?.setAttribute("inert", "");
     state.lenis?.stop();
     requestAnimationFrame(() => commercialModal.classList.add("is-open"));
-    if (commercialClose) commercialClose.textContent = entry ? "Skip & Enter" : "Close";
+    if (commercialClose) commercialClose.textContent = "X";
     if (commercialSound) {
       commercialSound.hidden = false;
       commercialSound.textContent = "Play with sound";
     }
-    const allowSound = Boolean(trigger);
-    void playCommercialWithFallback({ restart: false, allowSound });
+    void playCommercialWithFallback({ restart: false, allowSound: true });
     commercialClose?.focus({ preventScroll: true });
+  };
+
+  const openEntryCommercial = () => {
+    if (entryCommercialOpened || !commercialModal?.hidden || document.hidden) return;
+    if (
+      document.documentElement.classList.contains("lm-transition-arriving") ||
+      body.classList.contains("lm-page-is-transitioning")
+    ) return;
+    entryCommercialOpened = true;
+    window.clearTimeout(entryCommercialFallback);
+    window.removeEventListener("lottomind:transition-complete", handleEntryTransitionComplete);
+    openCommercial(null, { entry: true, index: 0 });
+  };
+
+  function handleEntryTransitionComplete(event) {
+    if (event?.detail?.source !== "arrival") return;
+    openEntryCommercial();
+  }
+
+  const scheduleEntryCommercial = () => {
+    window.addEventListener("lottomind:transition-complete", handleEntryTransitionComplete);
+    entryCommercialFallback = window.setTimeout(openEntryCommercial, 1800);
   };
 
   commercialOpeners.forEach((button) => button.addEventListener("click", () => openCommercial(button)));
@@ -1126,7 +1137,7 @@
   state.lenis?.start();
   revealHero();
   ScrollTrigger?.refresh();
-  // Commercials open from explicit buttons so the page never flashes two overlays on entry.
+  scheduleEntryCommercial();
   };
 
   const windowReady = document.readyState === "complete"
