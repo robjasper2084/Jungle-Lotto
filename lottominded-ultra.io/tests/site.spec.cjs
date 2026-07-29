@@ -112,7 +112,7 @@ test("memberships opens its entry commercial and keeps manual replay available",
 test("Static Wav and RAHBE keep an explicit header hide and restore control", async ({ page }) => {
   await blockHeavyMedia(page);
 
-  for (const route of ["/how-to-use.html", "/beat2lotto-plus.html#beat2lotto"]) {
+  for (const route of ["/static-wave.html", "/robot-rahbe.html"]) {
     await page.goto(route, { waitUntil: "domcontentloaded" });
     const commercialGate = page.locator(".lm-commercial-gate");
     if (await commercialGate.isVisible().catch(() => false)) {
@@ -136,7 +136,7 @@ test("Static Wav and RAHBE keep an explicit header hide and restore control", as
 test("header hide control stays off every route except Static Wav and RAHBE", async ({ page }) => {
   await blockHeavyMedia(page);
 
-  for (const route of ["/", "/memberships.html", "/features-app.html", "/merch-store.html", "/lottery-spheres.html"]) {
+  for (const route of ["/", "/memberships.html", "/arcade.html", "/merch-store.html", "/lottery-spheres.html", "/how-to-use.html"]) {
     await page.goto(route, { waitUntil: "domcontentloaded" });
     await expect(page.locator(".header-click-toggle")).toHaveCount(0);
   }
@@ -171,7 +171,7 @@ test("internal route navigation plays an outbound and arrival transition", async
   });
   await page.goto("/contact.html", { waitUntil: "domcontentloaded" });
 
-  const destination = page.locator("header nav a").filter({ hasText: "Memberships" }).first();
+  const destination = page.locator("header nav a").filter({ hasText: "Membership" }).first();
   await destination.evaluate((link) => link.click());
   await expect(page.locator("[data-lm-page-transition]")).toHaveClass(/is-opening/);
 
@@ -518,7 +518,7 @@ test("billing Edge Function returns expected auth failures through its CORS resp
   expect(source).toContain('validStripeUrl(session.url, "checkout.stripe.com")');
 });
 
-test("Static Wav keeps one commercial on each page entry", async ({ page }) => {
+test("Help Center preserves one Static Wav commercial on each page entry", async ({ page }) => {
   await blockHeavyMedia(page);
   await page.goto("/how-to-use.html", { waitUntil: "domcontentloaded" });
 
@@ -569,7 +569,7 @@ test("Static Wav keeps one commercial on each page entry", async ({ page }) => {
 test("RAHBE route restores the embedded game after its commercial", async ({ page }) => {
   await blockHeavyMedia(page);
   const localFailures = trackLocalFailures(page);
-  await page.goto("/beat2lotto-plus.html#beat2lotto", { waitUntil: "domcontentloaded" });
+  await page.goto("/robot-rahbe.html", { waitUntil: "domcontentloaded" });
 
   const gate = page.locator(".lm-commercial-gate");
   await expect(gate).toBeVisible();
@@ -582,16 +582,16 @@ test("RAHBE route restores the embedded game after its commercial", async ({ pag
   expect(localFailures).toEqual([]);
 });
 
-test("features combines the cinematic shell with the manifest-driven Arcade directory", async ({ page }) => {
+test("Arcade combines the cinematic shell with the manifest-driven directory", async ({ page }) => {
   await blockHeavyMedia(page);
   const localFailures = trackLocalFailures(page);
-  await page.goto("/features-app.html", { waitUntil: "domcontentloaded" });
+  await page.goto("/arcade.html", { waitUntil: "domcontentloaded" });
   const commercial = page.locator(".lm-commercial-gate");
   await expect(commercial).toBeVisible();
   await commercial.locator(".lm-commercial-gate__skip").click();
   await expect(commercial).toBeHidden();
 
-  await expect(page.locator(".arcade-pilot-label")).toHaveText("LottoMind Features / Arcade + Creative Systems");
+  await expect(page.locator(".arcade-pilot-label")).toHaveText("Ultra Arcade / Games + Interactive Systems");
   await expect(page.locator('.arcade-pilot-hero__art[src*="lottomind-little-man-membership-hero-v2.png"]')).toBeVisible();
   await expect(page.locator("#featureEntity.feature-entity")).toHaveCount(1);
   await expect(page.locator("[data-shape]")).toHaveCount(8);
@@ -686,7 +686,7 @@ test("membership hero leads, Collector follows Gaming Showcase, and the Guardian
   await expect(page.locator("#dust .membership-collectible-card")).toHaveCount(0);
   await expect(page.locator("#water")).toHaveCount(0);
   await expect(page.getByText(/Film 04/i)).toHaveCount(0);
-  await expect(page.locator("footer.site-footer-standard .site-legal-links a")).toHaveCount(4);
+  await expect(page.locator("footer.site-footer-standard .lm-site-footer-map a")).toHaveCount(17);
   await expect(page.locator("footer.site-footer-standard > a.footer-link")).toHaveCount(0);
 
   expect(await hero.evaluate((node) =>
@@ -717,14 +717,24 @@ test("membership hero leads, Collector follows Gaming Showcase, and the Guardian
   expect(collectorBox.y).toBeLessThan(guardianBox.y);
 });
 
-test("shared navigation uses the requested Games, RAHBE, Storefront, and Static Wav labels", async ({ page }) => {
+test("shared navigation uses the Phase 1 platform labels", async ({ page }) => {
   await blockHeavyMedia(page);
   await page.goto("/lottery-spheres.html", { waitUntil: "domcontentloaded" });
   const navigation = page.locator(".site-header nav");
-  await expect(navigation.locator('a[data-icon="FX"]')).toContainText("Games");
-  await expect(navigation.locator('a[data-icon="B2"]')).toContainText("RAHBE");
-  await expect(navigation.locator('a[data-icon="DR"]')).toContainText("Storefront");
-  await expect(navigation.locator('a[data-icon="GD"]')).toContainText("Static Wav");
+  await expect(navigation.locator(":scope > a")).toHaveText([
+    /Home/,
+    /App/,
+    /Arcade/,
+    /Studio/,
+    /News \+ Events/,
+    /Store/,
+    /Membership/,
+  ]);
+  await navigation.locator("[data-news-menu-toggle]").focus();
+  await page.keyboard.press("Enter");
+  await expect(page.getByRole("dialog", { name: "News + Events" }).getByRole("link", { name: "Open Live Events" })).toBeVisible();
+  await expect(page.locator("[data-command-search-open]")).toContainText("Search");
+  await expect(page.locator(".lm-header-utilities").locator('a[href$="account.html"]')).toContainText("Account");
 });
 
 test("Stem Studio contains the workstation at compact mobile width", async ({ page }) => {

@@ -75,37 +75,34 @@ window.LMAudioMix = {
   const header = document.querySelector("[data-site-header], .feature-topbar, .lm-live-topbar, [data-guide-header]");
   if (!header) return;
 
-  const navItems = [
-    { label: "Memberships", href: siteUrl("./memberships.html"), icon: "MB" },
-    { label: "Home", href: siteUrl("./index.html#top"), icon: "HM" },
-    { label: "Games", href: siteUrl("./features-app.html"), icon: "FX" },
-    { label: "News", href: siteUrl("./news/"), icon: "NW" },
-    { label: "Events", href: siteUrl("./live-events.html"), icon: "EV" },
-    { label: "Spheres", href: siteUrl("./lottery-spheres.html#spheres"), icon: "SP" },
-    { label: "RAHBE", href: siteUrl("./beat2lotto-plus.html#beat2lotto"), icon: "B2" },
-    { label: "Storefront", href: siteUrl("./merch-store.html"), icon: "DR" },
-    { label: "Static Wav", href: siteUrl("./how-to-use.html"), icon: "GD" },
-    {
-      label: "LottoMind App",
-      href: "https://robjasper2084.github.io/Jungle-Lotto/lotto%20mind%20refined/",
-      icon: "LM",
-      attrs: ' data-member-app-public="true" aria-label="Open LottoMind Refined App"',
-    },
-  ];
+  const routeManifest = window.LottoMindRouteManifest?.routes || [];
+  const navItems = routeManifest
+    .filter((route) => route.desktopNav)
+    .sort((left, right) => left.navOrder - right.navOrder)
+    .map((route) => ({
+      id: route.id,
+      label: route.label,
+      href: siteUrl(route.href),
+      icon: route.icon,
+      aliases: route.aliases || [],
+    }));
 
   const currentPath = window.location.pathname.toLowerCase();
   const currentPage = (currentPath.split("/").pop() || "index.html").toLowerCase();
   const isCurrent = (item) => {
-    if (item.label === "News") return /\/news\/?$/.test(currentPath);
+    if (item.id === "news") return /\/news\/?$/.test(currentPath) || currentPage === "live-events.html";
     const hrefPage = item.href.split("#")[0].split("?")[0].split("/").pop().toLowerCase();
-    if (item.label === "Home") return currentPage === "index.html";
+    if (item.id === "home") return currentPage === "index.html";
     return hrefPage && currentPage === hrefPage;
   };
 
   const navMarkup = navItems
     .map((item) => {
       const current = isCurrent(item) ? ' aria-current="page"' : "";
-      return `<a href="${item.href}" data-icon="${item.icon}"${item.attrs || ""}${current}>${item.label}</a>`;
+      if (item.id === "news") {
+        return `<a href="${item.href}" data-icon="${item.icon}" data-route-id="${item.id}" data-news-menu-toggle aria-haspopup="dialog"${current}>${item.label}</a>`;
+      }
+      return `<a href="${item.href}" data-icon="${item.icon}" data-route-id="${item.id}"${current}>${item.label}</a>`;
     })
     .join("");
 
@@ -119,23 +116,147 @@ window.LMAudioMix = {
           <span>LOTTOMINDED ULTRA</span>
         </a>
       </div>
-      <nav aria-label="LOTTOMINDED ULTRA sphere navigation">
+      <nav aria-label="LOTTOMINDED ULTRA primary navigation">
         ${navMarkup}
       </nav>
-      <div class="direct-launch" aria-label="Direct studio launch">
-        <a class="direct-action direct-primary" href="${siteUrl("./lottomind-stem-studio/index.html")}">Launch Studio</a>
+      <div class="lm-header-utilities" aria-label="Account and search utilities">
+        <button type="button" data-command-search-open aria-label="Search LottoMind routes">Search</button>
+        <a href="${siteUrl("./account.html#credits")}">Credits</a>
+        <a href="${siteUrl("./account.html")}">Account</a>
       </div>
     </header>
   `;
+
+  const searchableRoutes = routeManifest.filter((route) => route.status !== "hidden");
+  const commandDialog = document.createElement("dialog");
+  commandDialog.className = "lm-command-palette";
+  commandDialog.setAttribute("aria-labelledby", "lmCommandTitle");
+  commandDialog.innerHTML = `
+    <form method="dialog" class="lm-command-palette__panel">
+      <header><div><span>Route uplink</span><h2 id="lmCommandTitle">Search LottoMind</h2></div><button value="cancel" aria-label="Close search">Close</button></header>
+      <label><span class="visually-hidden">Search routes and help</span><input type="search" data-command-search-input autocomplete="off" placeholder="Search App, Arcade, Studio, Help..." /></label>
+      <div class="lm-command-palette__results" data-command-search-results role="listbox" aria-label="LottoMind routes"></div>
+      <p data-command-search-status role="status" aria-live="polite"></p>
+    </form>
+  `;
+  document.body.append(commandDialog);
+
+  const newsMenuToggle = document.querySelector("[data-news-menu-toggle]");
+  const newsMenu = document.createElement("dialog");
+  newsMenu.className = "lm-news-events-dialog";
+  newsMenu.setAttribute("aria-labelledby", "lmNewsEventsTitle");
+  newsMenu.innerHTML = `
+    <div>
+      <header><span>News signal routes</span><h2 id="lmNewsEventsTitle">News + Events</h2></header>
+      <a href="${siteUrl("./news/")}">Open News</a>
+      <a href="${siteUrl("./live-events.html")}">Open Live Events</a>
+      <button type="button" data-news-menu-close>Close</button>
+    </div>`;
+  document.body.append(newsMenu);
+  newsMenuToggle?.addEventListener("click", (event) => {
+    event.preventDefault();
+    newsMenu.showModal();
+    requestAnimationFrame(() => newsMenu.querySelector("a")?.focus());
+  });
+  newsMenu.querySelector("[data-news-menu-close]")?.addEventListener("click", () => newsMenu.close());
+  newsMenu.addEventListener("close", () => newsMenuToggle?.focus());
+
+  const input = commandDialog.querySelector("[data-command-search-input]");
+  const results = commandDialog.querySelector("[data-command-search-results]");
+  const status = commandDialog.querySelector("[data-command-search-status]");
+  let commandSection = "";
+  let commandOpener = null;
+
+  const renderCommandResults = () => {
+    const query = input.value.trim().toLowerCase();
+    const matches = searchableRoutes.filter((route) => {
+      if (commandSection && route.section !== commandSection) return false;
+      const haystack = [route.label, route.shortLabel, route.description, route.section, ...(route.tags || []), ...(route.aliases || [])].join(" ").toLowerCase();
+      return !query || haystack.includes(query);
+    }).slice(0, 12);
+    results.innerHTML = matches.map((route, index) => `
+      <a href="${siteUrl(route.href)}" role="option" data-command-result data-result-index="${index}">
+        <span>${route.section}</span><strong>${route.label}</strong><small>${route.description}</small>
+      </a>
+    `).join("");
+    status.textContent = `${matches.length} ${matches.length === 1 ? "route" : "routes"} available.`;
+  };
+
+  const openCommandPalette = (section = "") => {
+    commandOpener = document.activeElement;
+    commandSection = section;
+    input.value = "";
+    renderCommandResults();
+    commandDialog.showModal();
+    requestAnimationFrame(() => input.focus());
+  };
+
+  document.querySelector("[data-command-search-open]")?.addEventListener("click", () => openCommandPalette());
+  commandDialog.addEventListener("close", () => {
+    commandSection = "";
+    commandOpener?.focus?.();
+  });
+  input.addEventListener("input", renderCommandResults);
+  input.addEventListener("keydown", (event) => {
+    const links = [...results.querySelectorAll("[data-command-result]")];
+    if (event.key === "ArrowDown" && links.length) {
+      event.preventDefault();
+      links[0].focus();
+    }
+  });
+  results.addEventListener("keydown", (event) => {
+    const links = [...results.querySelectorAll("[data-command-result]")];
+    const index = links.indexOf(document.activeElement);
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      (links[index + 1] || links[0])?.focus();
+    } else if (event.key === "ArrowUp") {
+      event.preventDefault();
+      if (index <= 0) input.focus();
+      else links[index - 1]?.focus();
+    }
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && commandDialog.open) {
+      event.preventDefault();
+      commandDialog.close();
+      return;
+    }
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
+      event.preventDefault();
+      if (commandDialog.open) commandDialog.close();
+      else openCommandPalette();
+    }
+  });
+
+  const mobileRoutes = ["home", "app-features", "arcade", "studio", "account"]
+    .map((id) => routeManifest.find((route) => route.id === id))
+    .filter(Boolean);
+  const mobileNav = document.createElement("nav");
+  mobileNav.className = "lm-mobile-bottom-nav";
+  mobileNav.setAttribute("aria-label", "Mobile LottoMind navigation");
+  mobileNav.innerHTML = mobileRoutes.map((route) => route.id === "studio"
+    ? `<button type="button" data-mobile-create data-icon="${route.icon}">${route.shortLabel}</button>`
+    : `<a href="${siteUrl(route.href)}" data-icon="${route.icon}"${isCurrent({ id: route.id, href: siteUrl(route.href) }) ? ' aria-current="page"' : ""}>${route.shortLabel}</a>`
+  ).join("");
+  document.body.append(mobileNav);
+  document.body.classList.add("has-mobile-bottom-nav");
+  mobileNav.querySelector("[data-mobile-create]")?.addEventListener("click", () => openCommandPalette("create"));
 })();
 
 (() => {
   const pageFooter = [...document.querySelectorAll("body > footer")].find((footer) => footer.id !== "player" && !footer.matches("[data-feature-live-player]"));
-  if (pageFooter && !pageFooter.querySelector(".site-legal-links")) {
+  if (pageFooter && !pageFooter.querySelector(".lm-site-footer-map")) {
     const links = document.createElement("nav");
-    links.className = "site-legal-links";
-    links.setAttribute("aria-label", "Legal and support");
-    links.innerHTML = `<a href="${siteUrl("./privacy.html")}">Privacy</a><a href="${siteUrl("./terms.html")}">Terms</a><a href="${siteUrl("./accessibility.html")}">Accessibility</a><a href="${siteUrl("./contact.html")}">Contact</a>`;
+    links.className = "lm-site-footer-map";
+    links.setAttribute("aria-label", "LottoMind platform directory");
+    links.innerHTML = `
+      <div><strong>Platform</strong><a href="${siteUrl("./features.html")}">App</a><a href="${siteUrl("./arcade.html")}">Arcade</a><a href="${siteUrl("./studio.html")}">Studio</a><a href="${siteUrl("./news/")}">News</a><a href="${siteUrl("./live-events.html")}">Events</a></div>
+      <div><strong>Create</strong><a href="${siteUrl("./beat2lotto-plus.html")}">Beat2Lotto+</a><a href="${siteUrl("./prompt-lab.html")}">Prompt Lab</a><a href="${siteUrl("./lottery-spheres.html#spheres")}">Lottery Spheres</a></div>
+      <div><strong>Shop</strong><a href="${siteUrl("./merch-store.html")}">Store</a><a href="${siteUrl("./memberships.html")}">Membership</a><a href="${siteUrl("./merch-store.html?product=guardian#keychains")}">Guardian</a></div>
+      <div><strong>Support</strong><a href="${siteUrl("./how-to-use.html")}">Help Center</a><a href="${siteUrl("./contact.html")}">Contact</a><a href="${siteUrl("./accessibility.html")}">Accessibility</a><a href="${siteUrl("./account.html")}">Account</a></div>
+      <div><strong>Legal</strong><a href="${siteUrl("./privacy.html")}">Privacy</a><a href="${siteUrl("./terms.html")}">Terms</a></div>
+    `;
     pageFooter.append(links);
   }
   if ("serviceWorker" in navigator && location.protocol === "https:") {
@@ -1155,12 +1276,12 @@ function setupUniversalFloatingMenu() {
     ["Memberships", siteUrl("./memberships.html")],
     ["LottoMind App", "https://robjasper2084.github.io/Jungle-Lotto/lotto%20mind%20refined/"],
     ["Home", siteUrl("./index.html#top")],
-    ["Games", siteUrl("./features-app.html")],
+    ["Arcade", siteUrl("./arcade.html")],
     ["Events", siteUrl("./live-events.html")],
     ["Spheres", siteUrl("./lottery-spheres.html#spheres")],
-    ["RAHBE", siteUrl("./beat2lotto-plus.html#beat2lotto")],
-    ["Storefront", siteUrl("./merch-store.html")],
-    ["Static Wav", siteUrl("./how-to-use.html")],
+    ["Robot RAHBE", siteUrl("./robot-rahbe.html")],
+    ["Store", siteUrl("./merch-store.html")],
+    ["Help Center", siteUrl("./how-to-use.html")],
     ["Studio", siteUrl("./lottomind-stem-studio/index.html")]
   ];
 
@@ -1207,7 +1328,7 @@ function setupUniversalFloatingMenu() {
   const refinedAppMenuLink = menuLinks.find((link) => link.textContent.trim() === "LottoMind App");
   if (refinedAppMenuLink) {
     refinedAppMenuLink.dataset.memberAppPublic = "true";
-    refinedAppMenuLink.setAttribute("aria-label", "Open LottoMind Refined App");
+    refinedAppMenuLink.setAttribute("aria-label", "Open LottoMind App");
   }
   const hudClock = menu.querySelector("[data-hud-clock]");
   const hudReadout = menu.querySelector("[data-hud-readout]");
@@ -1854,7 +1975,7 @@ function setupLottoMindVaultGateway() {
       <button class="vault-gateway-close" type="button" aria-label="Close LottoMind Vault Gateway">X</button>
       <p class="eyebrow">LottoMind Vault Gateway</p>
       <h2>LottoMind Vault Gateway</h2>
-      <p class="vault-gateway-copy">Choose an access lane before entering LottoMind Refined. Premium tools stay locked unless credits, Ultra access, or a 10-minute demo pass is active.</p>
+      <p class="vault-gateway-copy">Choose an access lane before entering LottoMind App. Premium tools stay locked unless credits, Ultra access, or a 10-minute demo pass is active.</p>
       <div class="vault-gateway-status" data-vault-gateway-status aria-live="polite"></div>
       <div class="vault-gateway-actions">
         <button type="button" data-vault-choice="pass">Use 10-Min Demo</button>
@@ -1871,8 +1992,8 @@ function setupLottoMindVaultGateway() {
     const state = getVaultState();
     const planLabel = state.plan === "ultra" ? "Ultra" : state.plan === "gold" ? "Gold" : state.passActive ? "10-min demo" : "Free";
     const activeText = state.vaultActive
-      ? "Vault Access Active. Premium LottoMind Refined tools unlocked."
-      : "Standard access active. Premium tools stay locked inside LottoMind Refined.";
+      ? "Vault Access Active. Premium LottoMind App tools unlocked."
+      : "Standard access active. Premium tools stay locked inside LottoMind App.";
     const text = message || `${activeText} ${state.credits} LottoCredits available.`;
     badge.innerHTML = `<strong>${state.credits}</strong><span>${planLabel} credits</span>`;
     statusTargets.forEach((target) => {
@@ -1953,11 +2074,11 @@ function setupLottoMindVaultGateway() {
       if (choice === "gold") {
         const credits = Math.max(getVaultState().credits, 500);
         setVaultState({ plan: "gold", credits });
-        update("Vault Access Active. Premium LottoMind Refined tools unlocked.");
+        update("Vault Access Active. Premium LottoMind App tools unlocked.");
       }
       if (choice === "pass") {
         setVaultState({ plan: "free", unlockedUntil: Date.now() + VAULT_DEMO_PASS_MS });
-        update("10-minute demo pass active. Premium LottoMind Refined tools unlocked for this demo window.");
+        update("10-minute demo pass active. Premium LottoMind App tools unlocked for this demo window.");
       }
       if (choice === "credits") {
         addVaultCredits(250, "Demo credit pack");
