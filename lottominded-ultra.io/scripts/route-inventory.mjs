@@ -4,8 +4,7 @@ import { fileURLToPath } from "node:url";
 import { runInNewContext } from "node:vm";
 
 const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const siteManifest = JSON.parse(await readFile(resolve(packageRoot, "data", "site-routes.json"), "utf8"));
-export const productionBaseUrl = siteManifest.productionBaseUrl;
+export const productionBaseUrl = "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/";
 
 function normalizeRoute(value) {
   const route = String(value || "").trim().replace(/^\.\//, "/");
@@ -23,9 +22,13 @@ function uniqueRoutes(routes) {
 }
 
 export async function getRouteInventory() {
-  const sitemapRoutes = siteManifest.routes
-    .filter((route) => route.indexable && route.includeInSitemap)
-    .map((route) => ({ route: normalizeRoute(route.href.split(/[?#]/)[0]), source: "manifest", id: route.id }));
+  const sitemap = await readFile(resolve(packageRoot, "sitemap.xml"), "utf8");
+  const sitemapRoutes = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/gi)].map((match) => {
+    const url = new URL(match[1]);
+    const base = new URL(productionBaseUrl);
+    const relativePath = url.pathname.slice(base.pathname.length);
+    return { route: normalizeRoute(relativePath), source: "sitemap" };
+  });
 
   const arcadeSource = await readFile(resolve(packageRoot, "assets", "js", "arcade-games.js"), "utf8");
   const sandbox = {};
@@ -39,10 +42,10 @@ export async function getRouteInventory() {
   }));
 
   const requiredRoutes = [
-    ...siteManifest.routes
-      .filter((route) => !route.includeInSitemap)
-      .map((route) => ({ route: normalizeRoute(route.href.split(/[?#]/)[0]), source: "manifest-required", id: route.id })),
+    { route: "/prompt-lab.html", source: "required" },
     { route: "/lottomind-stem-studio/", source: "required" },
+    { route: "/redeem.html", source: "required" },
+    { route: "/contact.html", source: "required" },
     { route: "/404.html", source: "required" },
   ];
 

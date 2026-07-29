@@ -67,14 +67,14 @@
 
     if (/memberships/.test(path)) return "memberships";
     if (/\/news(?:-hub)?(?:\/|$)/.test(path)) return "news";
-    if (/beat2lotto|robot-rahbe/.test(path)) return "beat2lotto";
+    if (/beat2lotto/.test(path)) return "beat2lotto";
     if (/lottery-spheres|selcirm|spheres/.test(path)) return "spheres";
     if (/lottomind-stem-studio|stem-studio|studio/.test(path)) return "studio";
     if (/live-events|events/.test(path)) return "events";
     if (/merch/.test(path)) return "merch";
     if (/prompt/.test(path)) return "prompts";
-    if (/how-to-use|static-wave|guide/.test(path)) return "guide";
-    if (/features-app|features|arcade/.test(path)) return "features";
+    if (/how-to-use|guide/.test(path)) return "guide";
+    if (/features-app|features/.test(path)) return "features";
     if (!filename || filename === "index.html") return "home";
 
     return "home";
@@ -92,12 +92,6 @@
       !filename ||
       filename === "index.html" ||
       filename === "features-app.html" ||
-      filename === "features.html" ||
-      filename === "arcade.html" ||
-      filename === "studio.html" ||
-      filename === "account.html" ||
-      filename === "robot-rahbe.html" ||
-      filename === "static-wave.html" ||
       filename === "live-events.html" ||
       filename === "lottery-spheres.html" ||
       filename === "beat2lotto-plus.html" ||

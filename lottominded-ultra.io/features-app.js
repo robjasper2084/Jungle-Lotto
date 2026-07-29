@@ -16,12 +16,9 @@
   const featuredLink = document.querySelector("[data-arcade-featured-link]");
   const heroVideo = document.querySelector("[data-arcade-hero-video]");
   const heroVideoToggle = document.querySelector("[data-arcade-hero-video-toggle]");
-  const recentPanel = document.querySelector("[data-arcade-recent]");
-  const recentList = document.querySelector("[data-arcade-recent-list]");
   const reducedMotion = global.matchMedia("(prefers-reduced-motion: reduce)");
   const difficultyOrder = { Casual: 0, Intermediate: 1, Advanced: 2 };
   const state = { category: "All", query: "", sort: "featured" };
-  const recentKey = "lottomind.arcade.recent.v1";
 
   function updateRailControls() {
     const maxScroll = Math.max(0, grid.scrollWidth - grid.clientWidth);
@@ -107,12 +104,11 @@
     const media = document.createElement("a");
     media.className = "arcade-game-card__media";
     media.href = game.path;
-    media.setAttribute("aria-label", `${game.type === "game" ? "Play" : "Open"} ${game.title}`);
-    media.addEventListener("click", () => remember(game));
+    media.setAttribute("aria-label", `Play ${game.title}`);
 
     const image = document.createElement("img");
     image.src = game.image;
-    image.alt = `${game.title} key art`;
+    image.alt = `${game.title} game key art`;
     image.loading = index < 2 ? "eager" : "lazy";
     image.decoding = "async";
     image.width = 720;
@@ -129,8 +125,7 @@
 
     const channel = document.createElement("p");
     channel.className = "arcade-game-card__channel";
-    const typeLabel = game.type === "interactive-tool" ? "Interactive Tool" : game.type === "music" ? "Music & Rhythm" : "Game";
-    channel.textContent = `${typeLabel} / ${game.difficulty}`;
+    channel.textContent = `${game.category} / ${game.difficulty}`;
 
     const title = document.createElement("h3");
     const titleLink = document.createElement("a");
@@ -148,24 +143,13 @@
     controlsLabel.textContent = "Controls";
     const controls = document.createElement("dd");
     controls.textContent = game.controls;
-    const supportLabel = document.createElement("dt");
-    supportLabel.textContent = "Support";
-    const support = document.createElement("dd");
-    support.textContent = [
-      game.touchSupport ? "Touch" : "",
-      game.gamepadSupport ? "Gamepad" : "",
-      game.progressSupport || "",
-    ].filter(Boolean).join(" / ") || "Browser";
-    meta.append(controlsLabel, controls, supportLabel, support);
+    meta.append(controlsLabel, controls);
 
     const action = document.createElement("a");
     action.className = "arcade-game-card__launch";
     action.href = game.path;
-    action.textContent = game.type === "game" ? "Play" : "Open Tool";
-    action.addEventListener("click", () => {
-      remember(game);
-      announce(`Opening ${game.title}.`);
-    });
+    action.textContent = "Launch game";
+    action.addEventListener("click", () => announce(`Opening ${game.title}.`));
 
     body.append(channel, title, description, meta, action);
     article.append(media, body);
@@ -206,35 +190,6 @@
     global.requestAnimationFrame(updateRailControls);
   }
 
-  function recentIds() {
-    try {
-      const value = JSON.parse(global.localStorage.getItem(recentKey) || "[]");
-      return Array.isArray(value) ? value.filter((id) => games.some((game) => game.id === id)).slice(0, 4) : [];
-    } catch (_error) {
-      return [];
-    }
-  }
-
-  function renderRecent() {
-    if (!recentPanel || !recentList) return;
-    const recentGames = recentIds().map((id) => games.find((game) => game.id === id)).filter(Boolean);
-    recentPanel.hidden = recentGames.length === 0;
-    recentList.replaceChildren(...recentGames.map((game) => {
-      const link = document.createElement("a");
-      link.href = game.path;
-      link.textContent = game.title;
-      return link;
-    }));
-  }
-
-  function remember(game) {
-    try {
-      const ids = [game.id, ...recentIds().filter((id) => id !== game.id)].slice(0, 4);
-      global.localStorage.setItem(recentKey, JSON.stringify(ids));
-      renderRecent();
-    } catch (_error) {}
-  }
-
   const categories = ["All", ...new Set(games.map((game) => game.category))];
   filters.replaceChildren(...categories.map(filterButton));
   count.textContent = String(games.length);
@@ -262,5 +217,4 @@
   global.addEventListener("resize", updateRailControls);
 
   render();
-  renderRecent();
 })(window, document);
