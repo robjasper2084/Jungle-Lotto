@@ -549,6 +549,7 @@ body.lm-platform-page .site-header.home-like-header .lm-header-utilities > * {
 }
 
 body.lm-platform-page .site-header.home-like-header .lm-header-utilities > *::before {
+  flex: 0 0 5px;
   width: 5px;
   height: 5px;
   margin-right: 6px;
@@ -859,6 +860,10 @@ body.lm-platform-page .site-header.home-like-header .lm-header-utilities > *:is(
     inset 0 0 0 7px rgba(1, 7, 14, 0.8),
     0 22px 58px rgba(0, 0, 0, 0.46);
   clip-path: polygon(0 20px, 20px 0, calc(100% - 54px) 0, calc(100% - 38px) 16px, 100% 16px, 100% calc(100% - 20px), calc(100% - 20px) 100%, 34px 100%, 18px calc(100% - 16px), 0 calc(100% - 16px));
+}
+
+body > footer .lm-site-footer-map {
+  grid-column: 1 / -1;
 }
 
 .lm-site-footer-map::before {
