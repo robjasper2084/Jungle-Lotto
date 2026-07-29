@@ -4,10 +4,10 @@
 - Current production branch head: `main` at `f6e46b49eb0fe7e02e537ed48a127226e7b3f72a`
 - Permanent pre-upgrade snapshot: `v1-final` at `975c637cea7003533cdc30aed9d96be51929bfc8`
 - Upgrade branch: `upgrade-redesign`
-- Audited implementation baseline: `ae37b5a60b70a531bc4b96e616a7dd71c29a312c`
-- Release-candidate tag: `v2-rc2` (the tag target is the final candidate documentation commit)
+- Audited implementation baseline: `fd4cc64a85e6d0e1ae5bbd926646abe99cd90094`
+- Release-candidate tag: `v2-rc3` (the tag target is the final candidate documentation commit)
 - Staging URL: Local only (`http://127.0.0.1:8143/`)
-- Production approval: Not approved; a fresh `APPROVE PRODUCTION MERGE` authorization is required after pull-request approval
+- Production approval: Approved by the repository owner with the exact `APPROVE PRODUCTION MERGE` authorization; the owner explicitly waived an outside-collaborator review
 
 ## Full Route Test Summary
 
@@ -45,25 +45,26 @@ No isolated staging backend, remote preview provider, or dedicated Stripe test p
 
 - Staging is local-only and is available while the local server is running.
 - Arcade/Features image and video weight remains an optimization opportunity.
-- Local and remote `v2-rc1` annotation objects differ but resolve to the same historical commit. Neither tag was moved or deleted; `v2-rc2` is used for this candidate.
+- Local and remote `v2-rc1` annotation objects differ but resolve to the same historical commit. Neither tag was moved or deleted. `v2-rc2` remains immutable, and the mobile transition correction uses `v2-rc3`.
 - Audible autoplay remains subject to browser policy; commercial controls expose an accurate muted fallback and never claim sound started when blocked.
-- Pull-request approval and fresh production-merge authorization remain mandatory.
+- PR #2 is mergeable; the repository owner explicitly waived an outside-collaborator review and supplied the required production-merge authorization.
 
 ## Exact Change Areas
 
 Relative to the current production branch, this candidate changes shared navigation and transitions; Home, Memberships, Games/Arcade, News, Events, Spheres, RAHBE, Storefront, Static Wav, app/tool, account, legal, and support surfaces; staging guards and build tooling; game runtimes and media; checkout validation; and release/test documentation. The authoritative list is:
 
 ```bash
-git diff --name-status origin/main...v2-rc2
+git diff --name-status origin/main...v2-rc3
 ```
 
 ## Visual Comparisons
 
 - Production baseline: [`docs/visual-baseline/v1/`](visual-baseline/v1/)
-- RC2 review: [`docs/staging-reviews/release-candidate-v2-rc2.md`](staging-reviews/release-candidate-v2-rc2.md)
-- RC2 captures and machine report: [`docs/staging-reviews/signal-media-corrections-assets/`](staging-reviews/signal-media-corrections-assets/)
+- RC3 review: [`docs/staging-reviews/release-candidate-v2-rc3.md`](staging-reviews/release-candidate-v2-rc3.md)
+- RC3 Static Wav captures: [`docs/staging-reviews/release-candidate-v2-rc3-assets/`](staging-reviews/release-candidate-v2-rc3-assets/)
+- RC2 full-phase captures and machine report: [`docs/staging-reviews/signal-media-corrections-assets/`](staging-reviews/signal-media-corrections-assets/)
 
-The refreshed pass captured 17 affected surfaces at `1440x900`, `768x1024`, and `390x844`. All 51 captures passed noindex, staging-banner, overflow, console, page-error, and same-origin asset checks.
+The full RC2 pass captured 17 affected surfaces at `1440x900`, `768x1024`, and `390x844`; all 51 captures passed. RC3 additionally recaptured the affected Static Wav gate at `1440x900` and `390x844` after the mobile transition correction.
 
 ## Rollback Procedure
 
@@ -81,4 +82,4 @@ Do not reset, rebase, delete tags, or force-push.
 
 ## Recommended Production Merge
 
-Use the pull request from `upgrade-redesign` to `main` and choose **Create a merge commit**. Do not squash or rebase. `main` remains unchanged until the pull request is approved and the user provides a fresh exact `APPROVE PRODUCTION MERGE` authorization.
+Use PR #2 from `upgrade-redesign` to `main` and choose **Create a merge commit**. Do not squash or rebase. The repository owner supplied the exact production authorization and explicitly waived an outside-collaborator review.

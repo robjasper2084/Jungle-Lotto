@@ -6,10 +6,10 @@
 - Current production: `main` at `f6e46b49eb0fe7e02e537ed48a127226e7b3f72a`
 - Permanent rollback snapshot: `v1-final` at `975c637cea7003533cdc30aed9d96be51929bfc8`
 - Upgrade branch: `upgrade-redesign`
-- Audited implementation baseline: `ae37b5a60b70a531bc4b96e616a7dd71c29a312c`
-- Candidate: `v2-rc2`
+- Audited implementation baseline: `fd4cc64a85e6d0e1ae5bbd926646abe99cd90094`
+- Candidate: `v2-rc3`
 - Staging URL: Local only (`http://127.0.0.1:8143/`)
-- Production state: unchanged by RC2 preparation
+- Production state: unchanged by RC3 preparation
 
 ## Verification Summary
 
@@ -60,17 +60,18 @@ No remote preview provider, isolated staging backend, or dedicated Stripe test p
 - Arcade/Features is the largest visual route.
 - Local and remote `v2-rc1` annotated tag objects differ but resolve to the same commit; both remain untouched.
 - Browser autoplay policy may require the visible sound control even though audible playback is requested first.
-- Pull-request approval and fresh production merge authorization are still pending.
+- PR #2 is mergeable. The repository owner explicitly waived an outside-collaborator review and supplied the exact production merge authorization.
 
 ## Visual Evidence
 
 - Baseline: [`docs/visual-baseline/v1/`](visual-baseline/v1/)
-- RC2 review: [`docs/staging-reviews/release-candidate-v2-rc2.md`](staging-reviews/release-candidate-v2-rc2.md)
-- RC2 captures: [`docs/staging-reviews/signal-media-corrections-assets/`](staging-reviews/signal-media-corrections-assets/)
+- RC3 review: [`docs/staging-reviews/release-candidate-v2-rc3.md`](staging-reviews/release-candidate-v2-rc3.md)
+- RC3 affected-route captures: [`docs/staging-reviews/release-candidate-v2-rc3-assets/`](staging-reviews/release-candidate-v2-rc3-assets/)
+- RC2 full-phase captures: [`docs/staging-reviews/signal-media-corrections-assets/`](staging-reviews/signal-media-corrections-assets/)
 
 ## Release Recommendation
 
-The candidate is ready for pull-request review. Merge only through a reviewed `upgrade-redesign` to `main` pull request using **Create a merge commit**. Do not squash, rebase, or deploy before fresh exact production authorization.
+The candidate is ready for the authorized controlled merge. Merge only through PR #2 from `upgrade-redesign` to `main` using **Create a merge commit**. Do not squash or rebase.
 
 Rollback after an approved production merge uses:
 

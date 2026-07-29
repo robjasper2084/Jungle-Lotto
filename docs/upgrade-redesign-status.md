@@ -15,9 +15,9 @@
 - Staging provider: Local static server (Mode C); no remote preview provider is configured
 - Staging URL: Local only (`http://127.0.0.1:8143/` while the current staging server is running)
 - Staging integrations: No isolated backend or Stripe test-mode configuration is currently configured; protected writes remain disabled
-- Last completed step: Step 34 RC2 production release candidate prepared on `upgrade-redesign`; production deployment remains excluded
+- Last completed step: Step 35 pre-merge audit completed for RC3 on `upgrade-redesign`; production merge is authorized but not yet executed
 - Step 1 commit SHA: This file is part of the Step 1 commit; use `git log -1 --format=%H -- docs/upgrade-redesign-status.md` to resolve its exact non-self-referential SHA. The completion report records it explicitly.
-- Last staging review: RC2 passed and is ready for production review; review: `docs/staging-reviews/release-candidate-v2-rc2.md`
+- Last staging review: RC3 passed and is ready for production merge; review: `docs/staging-reviews/release-candidate-v2-rc3.md`
 - Staging review commit SHA: This file is part of the staging-review commit; the completion report records its exact SHA.
 - Last successful test run: 2026-07-28 - release audit passed 7 groups; site validation passed 15 HTML files; source browser suite passed 126 checks with 6 intentional viewport skips; staging browser suite passed 10/10; source/staging route matrix passed 92/92; staging artifact verified 23 injected pages and 543 same-origin references; News tests passed 20/20 with 0 production dependency vulnerabilities
 - Visual baseline: Complete - 69 production route screenshots plus desktop, tablet, and mobile contact sheets under `docs/visual-baseline/v1/`
@@ -26,7 +26,7 @@
 - Latest visual comparison: Home, Memberships, Guardian, Arcade, RAHBE, Spheres, Storefront, Live Events, and News compared with v1 production at 1440x900, 768x1024, and 390x844; review: `docs/staging-reviews/signal-media-corrections.md`
 - Latest performance comparison: Home 28.1 -> 5.80 MiB; Memberships 26.7 -> 2.87 MiB; Merch 23.1 -> 1.99 MiB; Shadow Ops 87.7 -> 3.70 MiB
 - Staging review approval status: Ready for production review
-- Production approval status: RC2 preparation approved; the checkout handoff was verified safely in Stripe Sandbox and cancelled before any charge; pull-request approval and a fresh exact `APPROVE PRODUCTION MERGE` authorization remain pending
+- Production approval status: Approved with the exact `APPROVE PRODUCTION MERGE` authorization; checkout was verified safely in Stripe Sandbox and cancelled before charge; the owner explicitly waived an outside-collaborator review
 - Rollback reference: `v1-final` at `975c637cea7003533cdc30aed9d96be51929bfc8`; after a controlled production merge, use `git revert` for rollback
 - Known pre-existing repository changes: The working tree was clean when Step 0A began. Local `main` already contained commit `1fc4c95ca4d0b22ee5188d06f8ea75573c63a00a` ahead of `origin/main`; that commit was preserved as the starting point of `upgrade-redesign` and was not pushed to production.
 
