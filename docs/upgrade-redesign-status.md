@@ -7,26 +7,26 @@
 - Snapshot annotated tag object SHA: `9ba25352efc17d5b514e5afd59c8afde5c9d2949`
 - Snapshot target commit SHA: `975c637cea7003533cdc30aed9d96be51929bfc8`
 - Upgrade branch: `upgrade-redesign`
-- Current upgrade branch implementation SHA: This status file is part of the current focused commit; use `git log -1 --format=%H -- docs/upgrade-redesign-status.md` to resolve its exact SHA. The completion report records it explicitly.
+- Current upgrade branch implementation SHA: `885c4f7644e28fb82077acae77112c3ad01e35a2`
 - Upgrade branch SHA at Step 0A branch creation: `1fc4c95ca4d0b22ee5188d06f8ea75573c63a00a`
 - Upgrade branch SHA before Step 0B commit: `220653bbc300d0e0b236c6e834043f39fdfcd76c`
 - Step 0B commit SHA: `6e58aafc4addabf5281262ec951a7d6df3dc66a0`
 - Deployment mechanism discovered: GitHub Pages Actions from repository-root `.github/workflows/pages.yml`; pushes to `main` upload the repository root with `actions/upload-pages-artifact` and deploy with `actions/deploy-pages`. Current remote production head is `09f8e5d2c8bc10d0cf1af240216404c6af74c3c0`.
 - Staging provider: Local static server (Mode C); no remote preview provider is configured
-- Staging URL: Local only (`http://127.0.0.1:8143/` while the current staging server is running)
+- Staging URL: Local only (`http://127.0.0.1:8296/` while the current staging server is running)
 - Staging integrations: No isolated backend or Stripe test-mode configuration is currently configured; protected writes remain disabled
-- Last completed step: Browser-requested Platform HUD and depth refinement completed on `upgrade-redesign`; the new commits are staging-only and have not been merged to `main`
+- Last completed step: Full Phase 1 rollback completed on `upgrade-redesign`; the site tree now matches current production `origin/main`
 - Step 1 commit SHA: This file is part of the Step 1 commit; use `git log -1 --format=%H -- docs/upgrade-redesign-status.md` to resolve its exact non-self-referential SHA. The completion report records it explicitly.
-- Last staging review: Platform HUD and depth review passed and is ready for the next phase; review: `docs/staging-reviews/platform-hud-depth.md`
+- Last staging review: Full Phase 1 rollback passed and is ready for the next phase; review: `docs/staging-reviews/phase1-full-rollback.md`
 - Staging review commit SHA: This file is part of the staging-review commit; the completion report records its exact SHA.
-- Last successful test run: 2026-07-29 - site validation passed 20 HTML files; source browser suite passed 153 checks with 7 intentional viewport skips; clean-port staging browser suite passed 10/10; source/staging route matrix passed 100/100; staging static verification passed 28 pages and 640 same-origin references; release audit passed 7/7 groups
+- Last successful test run: 2026-07-29 - site validation passed 15 HTML files; source browser suite passed 126 checks with 6 intentional viewport skips; staging browser suite passed 10/10; source/staging route matrix passed 92/92; staging static verification passed 23 pages and 543 same-origin references; release audit passed 7/7 groups
 - Visual baseline: Complete - 69 production route screenshots plus desktop, tablet, and mobile contact sheets under `docs/visual-baseline/v1/`
 - Step 1 visual comparison: Production and staging home routes compared at 1440x900 and 390x844; staging adds only the preview and safety banners, with no redesign changes
 - Resolved Step 1 baseline failures: Contact support helper restored; Stem Studio tablet/mobile overflow corrected; Jackpot Maze runtime, heading, and entry focus restored; first-load outliers reduced; staging News production request removed
-- Latest visual comparison: Help, Account, and Arcade footer compared at 1440x900, 768x1024, and 390x844 against the v1 baseline and selective Phase 1 restore captures; review: `docs/staging-reviews/platform-hud-depth.md`
+- Latest visual comparison: Staging and live Beat2Lotto+ compared at 1440x900, 768x1024, and 390x844; review: `docs/staging-reviews/phase1-full-rollback.md`
 - Latest performance comparison: Home 28.1 -> 5.80 MiB; Memberships 26.7 -> 2.87 MiB; Merch 23.1 -> 1.99 MiB; Shadow Ops 87.7 -> 3.70 MiB
 - Staging review approval status: Ready for next phase
-- Production approval status: The earlier Step 35 launch was approved and completed through PR #2 using merge commit `09f8e5d2c8bc10d0cf1af240216404c6af74c3c0`; current Platform HUD commits `7a4bb40` and `6afbf18` are not approved or merged to `main`
+- Production approval status: The earlier Step 35 launch was approved and completed through PR #2 using merge commit `09f8e5d2c8bc10d0cf1af240216404c6af74c3c0`; the new Phase 1 rollback commit is not approved or merged to `main`
 - Rollback reference: `git revert -m 1 09f8e5d2c8bc10d0cf1af240216404c6af74c3c0`; permanent snapshot `v1-final` remains at `975c637cea7003533cdc30aed9d96be51929bfc8`
 - Known pre-existing repository changes: The working tree was clean when Step 0A began. Local `main` already contained commit `1fc4c95ca4d0b22ee5188d06f8ea75573c63a00a` ahead of `origin/main`; that commit was preserved as the starting point of `upgrade-redesign` and was not pushed to production.
 
@@ -438,6 +438,23 @@
 - Staging build: 28 noindex pages and 640 same-origin asset references verified from `18b829b01905b4edaa1ff58e2ba53097101cebd3`
 - Visual review: Three Membership commercial captures passed at 1440x900, 768x1024, and 390x844; review: `docs/staging-reviews/transition-restore.md`
 - Intentional visual departure: None; this is a timing and handoff restoration only
+- Commerce and backend impact: None; live payments, production account writes, real redemptions, and production analytics remain blocked on staging
+- Staging URL: Local only (`http://127.0.0.1:8296/`)
+- Production approval status: Not approved; `main`, production, and `v1-final` remain unchanged
+
+## Full Phase 1 Rollback
+
+- Step number: Browser-requested full Phase 1 rollback
+- Implementation commit: `885c4f7644e28fb82077acae77112c3ad01e35a2`
+- Upgrade branch: `upgrade-redesign`
+- Target: Current production site tree from `origin/main` at `09f8e5d2c8bc10d0cf1af240216404c6af74c3c0`
+- Primary reference: `https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/beat2lotto-plus.html#beat2lotto`
+- Result: The complete `lottominded-ultra.io` tree matches `origin/main`; the Shadow Ops Canvas / Robot RAHBE Beat2Lotto+ route and pre-Phase-1 cinematic site structure are restored
+- Removed: Phase 1 platform routes, generated navigation/search infrastructure, Account and Arcade overview routes, platform Help Center rewrite, standalone RAHBE/Static Wave routes, grouped News + Events HUD, and later Phase 1 visual refinements
+- Preservation: All removed work remains recoverable from existing Git commits and historical staging reviews; no branch, tag, or history was deleted or rewritten
+- Tests: Focused checks passed 20/20; full browser suite passed 126 checks with 6 expected viewport skips; staging safety passed 10/10; source/staging route matrix passed 92/92; release gates passed 7/7; site validation passed for 15 HTML files; homepage static validation passed
+- Staging build: 23 noindex pages and 543 same-origin asset references verified from `885c4f7644e28fb82077acae77112c3ad01e35a2`
+- Visual review: Six staging/live Beat2Lotto+ captures passed at 1440x900, 768x1024, and 390x844; review: `docs/staging-reviews/phase1-full-rollback.md`
 - Commerce and backend impact: None; live payments, production account writes, real redemptions, and production analytics remain blocked on staging
 - Staging URL: Local only (`http://127.0.0.1:8296/`)
 - Production approval status: Not approved; `main`, production, and `v1-final` remain unchanged
