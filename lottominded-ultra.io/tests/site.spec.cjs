@@ -717,26 +717,14 @@ test("membership hero leads, Collector follows Gaming Showcase, and the Guardian
   expect(collectorBox.y).toBeLessThan(guardianBox.y);
 });
 
-test("shared navigation restores the platform routes with Memberships last", async ({ page }) => {
+test("shared navigation uses the requested Games, RAHBE, Storefront, and Static Wav labels", async ({ page }) => {
   await blockHeavyMedia(page);
   await page.goto("/lottery-spheres.html", { waitUntil: "domcontentloaded" });
-  const links = page.locator(".site-header nav a");
-
-  await expect(links).toHaveText([
-    "Home",
-    "App",
-    "Arcade",
-    "Games",
-    "News + Events",
-    "Storefront",
-    "Memberships",
-  ]);
-  await expect(links.nth(1)).toHaveAttribute("href", /features\.html$/);
-  await expect(links.nth(2)).toHaveAttribute("href", /arcade\.html$/);
-  await expect(links.nth(3)).toHaveAttribute("href", /features-app\.html$/);
-  await expect(links.nth(4)).toHaveAttribute("href", /news\/$/);
-  await expect(links.nth(5)).toHaveAttribute("href", /merch-store\.html$/);
-  await expect(links.nth(6)).toHaveAttribute("href", /memberships\.html$/);
+  const navigation = page.locator(".site-header nav");
+  await expect(navigation.locator('a[data-icon="FX"]')).toContainText("Games");
+  await expect(navigation.locator('a[data-icon="B2"]')).toContainText("RAHBE");
+  await expect(navigation.locator('a[data-icon="DR"]')).toContainText("Storefront");
+  await expect(navigation.locator('a[data-icon="GD"]')).toContainText("Static Wav");
 });
 
 test("Stem Studio contains the workstation at compact mobile width", async ({ page }) => {
