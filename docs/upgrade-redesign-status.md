@@ -458,3 +458,20 @@
 - Commerce and backend impact: None; live payments, production account writes, real redemptions, and production analytics remain blocked on staging
 - Staging URL: Local only (`http://127.0.0.1:8296/`)
 - Production approval status: Not approved; `main`, production, and `v1-final` remain unchanged
+
+## Platform Route Restore With News Depth
+
+- Step number: Owner-requested selective platform restoration
+- Implementation commit: `d5cd5b5ef390059ab0a9a3c19b7b365e027bc56a`
+- Upgrade branch: `upgrade-redesign`
+- Restored routes: LottoMind App overview, Arcade overview, Account and Collector Vault
+- Restored functions: Search, Credits, Account, Help Center, Contact, Accessibility, account recovery, grouped News + Events chooser, mobile navigation, and HUD footer directory
+- Navigation order: Home, App, Arcade, Games, News + Events, Storefront, Memberships
+- News visual: Robot RAHBE gameplay artwork reused as a distinct cyan/violet depth background with reduced-motion support
+- Studio status: Shared Studio launchers are hidden; the underlying `/lottomind-stem-studio/` implementation remains preserved for later work
+- Tests: Focused platform checks passed 12/12; full source browser suite passed 142 checks with 6 expected viewport skips; staging safety passed 10/10; source/staging route matrix passed 100/100; release gates passed 7/7; site and homepage static validators passed
+- Staging build: 26 noindex pages and 600 same-origin references verified from `d5cd5b5ef390059ab0a9a3c19b7b365e027bc56a`
+- Visual review: 15 captures passed at `1440x900`, `768x1024`, and `390x844`; review: `docs/staging-reviews/platform-route-restore.md`
+- Staging URL: Local only (`http://127.0.0.1:8143/`)
+- Commerce and backend impact: None; preview account access is read-only and staging production integrations remain blocked
+- Production approval status: Not approved; `main`, production, and `v1-final` remain unchanged
