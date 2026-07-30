@@ -425,3 +425,19 @@
 - Commerce and backend impact: None; live payments, production account writes, real redemptions, and production analytics remain blocked on staging
 - Staging URL: Local only (`http://127.0.0.1:8295/` while the verified server is running)
 - Production approval status: Not approved; `main`, production, and `v1-final` remain unchanged
+
+## Previous Transition Flow Restoration
+
+- Step number: Browser-requested transition rollback to the earlier July 28 behavior
+- Implementation commit: `18b829b01905b4edaa1ff58e2ba53097101cebd3`
+- Upgrade branch: `upgrade-redesign`
+- Affected route: `/memberships.html`
+- Restored behavior: Internal routes retain their existing outbound and arrival clips; a direct Membership visit no longer forces a false arrival state; the Membership commercial closes directly into the page without a second outbound wipe
+- Preserved behavior: Shared transition visuals and audio, current route coverage, commercial media, sound fallback, navigation, Account, Help, Games, News + Events, checkout hooks, and staging guards are unchanged
+- Tests: Focused transition checks passed 4/4; full browser suite passed 153 checks with 7 expected viewport skips; staging safety passed 10/10; source/staging route matrix passed 100/100; release gates passed 7/7; site validation passed for 20 HTML files; homepage static validation passed
+- Staging build: 28 noindex pages and 640 same-origin asset references verified from `18b829b01905b4edaa1ff58e2ba53097101cebd3`
+- Visual review: Three Membership commercial captures passed at 1440x900, 768x1024, and 390x844; review: `docs/staging-reviews/transition-restore.md`
+- Intentional visual departure: None; this is a timing and handoff restoration only
+- Commerce and backend impact: None; live payments, production account writes, real redemptions, and production analytics remain blocked on staging
+- Staging URL: Local only (`http://127.0.0.1:8296/`)
+- Production approval status: Not approved; `main`, production, and `v1-final` remain unchanged
