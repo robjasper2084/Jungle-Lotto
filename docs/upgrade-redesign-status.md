@@ -458,3 +458,16 @@
 - Commerce and backend impact: None; live payments, production account writes, real redemptions, and production analytics remain blocked on staging
 - Staging URL: Local only (`http://127.0.0.1:8296/`)
 - Production approval status: Not approved; `main`, production, and `v1-final` remain unchanged
+
+## Latest Platform Route Update Rollback
+
+- Step number: Owner-requested rollback of the latest updates
+- Implementation commit: `c770c124dedceb32cb80a68680c1b88aa443a306`
+- Reverted updates: `d5cd5b5` and `a05f162`
+- Result: Removed the latest selective platform-route restoration and its review artifacts, returning `upgrade-redesign` to the reviewed Full Phase 1 Rollback site state
+- Tests: Full browser suite passed 126 checks with 6 expected viewport skips; staging safety passed 10/10; source/staging route matrix passed 92/92; release gates passed 7/7; site validation passed for 15 HTML files; homepage static validation passed
+- Staging build: 23 noindex pages and 543 same-origin asset references verified from `c770c124dedceb32cb80a68680c1b88aa443a306`
+- Visual review: No material visual departure from the existing Full Phase 1 Rollback comparison in `docs/staging-reviews/phase1-full-rollback.md`
+- Commerce and backend impact: None; live payments, production account writes, real redemptions, and production analytics remain blocked on staging
+- Staging URL: Local only (`http://127.0.0.1:8143/`)
+- Production approval status: Not approved; `main`, production, and `v1-final` remain unchanged
