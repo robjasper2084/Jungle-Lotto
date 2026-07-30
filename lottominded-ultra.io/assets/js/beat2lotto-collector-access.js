@@ -135,7 +135,7 @@
       statusNode.textContent = "The account service is offline. The last known wallet is view-only until verification returns.";
       membershipNode.textContent = "Redemption and spending are paused offline";
     } else if (state === "signed-out") {
-      statusNode.textContent = "Sign in or create an account to redeem a collectible code and share one wallet with LottoMind App.";
+      statusNode.textContent = "Sign in or create an account to redeem a collectible code and share one wallet with LottoMind Refined.";
       membershipNode.textContent = "One account · One wallet · No URL-based credit grants";
     } else {
       statusNode.textContent = "Free access is active. Redeem a verified physical collectible code to unlock Collector Starter.";

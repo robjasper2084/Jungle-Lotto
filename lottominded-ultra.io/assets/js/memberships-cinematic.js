@@ -371,7 +371,15 @@
   });
 
   let commercialShouldRestoreFocus = true;
+  let commercialHandoffFallback = 0;
+  const handleCommercialHandoffComplete = (event) => {
+    if (event?.detail?.source !== "membership-commercial") return;
+    finishCommercialHandoff();
+  };
+
   const finishCommercialHandoff = () => {
+    window.clearTimeout(commercialHandoffFallback);
+    window.removeEventListener("lottomind:transition-complete", handleCommercialHandoffComplete);
     commercialModal?.setAttribute("aria-hidden", "true");
     if (commercialModal) commercialModal.hidden = true;
     commercialModal?.classList.remove("is-entry");
@@ -401,6 +409,7 @@
   const closeCommercial = ({ restoreFocus = true, startMusic = false } = {}) => {
     if (!commercialModal || commercialModal.hidden || commercialIsClosing) return;
     commercialIsClosing = true;
+    const isEntryCommercial = commercialModal.classList.contains("is-entry");
     commercialShouldRestoreFocus = restoreFocus;
     commercialVideo?.pause();
     soundtrackShouldStartAfterCommercial = Boolean(
@@ -419,9 +428,23 @@
       requestAnimationFrame(() => {
         commercialModal.classList.remove("is-open");
         window.setTimeout(() => {
+          if (isEntryCommercial) {
+            window.addEventListener("lottomind:transition-complete", handleCommercialHandoffComplete);
+            window.dispatchEvent(new CustomEvent("lottomind:commercial-dismissed", {
+              detail: {
+                label: "Membership signal online",
+                source: "membership-commercial",
+                theme: "memberships",
+              },
+            }));
+          }
           commercialModal.setAttribute("aria-hidden", "true");
           commercialModal.hidden = true;
-          finishCommercialHandoff();
+          if (isEntryCommercial) {
+            commercialHandoffFallback = window.setTimeout(finishCommercialHandoff, 1500);
+          } else {
+            finishCommercialHandoff();
+          }
         }, 140);
       });
     });
@@ -471,13 +494,12 @@
 
   function handleEntryTransitionComplete(event) {
     if (event?.detail?.source !== "arrival") return;
-    window.setTimeout(openEntryCommercial, 0);
+    openEntryCommercial();
   }
 
   const scheduleEntryCommercial = () => {
     window.addEventListener("lottomind:transition-complete", handleEntryTransitionComplete);
-    window.setTimeout(openEntryCommercial, 0);
-    entryCommercialFallback = window.setTimeout(openEntryCommercial, 1400);
+    entryCommercialFallback = window.setTimeout(openEntryCommercial, 1800);
   };
 
   commercialOpeners.forEach((button) => button.addEventListener("click", () => openCommercial(button)));

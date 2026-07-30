@@ -3,64 +3,226 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="Import local audio or enter Beat DNA to generate entertainment-only creative number signals with Beat2Lotto+." />
-    <title>Beat2Lotto+ | LOTTOMINDED ULTRA</title>
-    <meta name="theme-color" content="#02050a" />
+    <meta name="description" content="Launch the Shadow Ops Canvas gameplay portal inside the LOTTOMINDED ULTRA Beat2Lotto+ route." />
+    <title>Shadow Ops Canvas | Beat2Lotto+</title>
+    <meta name="theme-color" content="#03050a" />
     <link rel="icon" href="./assets/brand/lm-orb-mark.webp" type="image/webp" />
     <link rel="canonical" href="https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/beat2lotto-plus.html" />
-    <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="LOTTOMINDED ULTRA" />
-    <meta property="og:title" content="Beat2Lotto+ | LOTTOMINDED ULTRA" />
-    <meta property="og:description" content="Turn local beat energy and Beat DNA into entertainment-only creative number signals." />
-    <meta property="og:url" content="https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/beat2lotto-plus.html" />
-    <meta property="og:image" content="https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/assets/arcade/beat2lotto-prompt-lab-title.png" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Beat2Lotto+ | LOTTOMINDED ULTRA" />
-    <meta name="twitter:description" content="Local-first beat analysis and entertainment-only creative number signals." />
-    <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Beat2Lotto+","applicationCategory":"EntertainmentApplication","operatingSystem":"Web browser","url":"https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/beat2lotto-plus.html","description":"A local-first creative console that turns beat inputs into entertainment-only number signals."}</script>
-    <link rel="stylesheet" href="./styles.css?v=phase1-shell-1" />
-    <link rel="stylesheet" href="./beat2lotto-plus.css?v=uploaded-audio-player-1" />
+<link rel="stylesheet" href="./styles.css?v=startup-music-banner-wide-21" />
+    <link rel="stylesheet" href="./lottomind-button-assets.css?v=beat2-game-shell-1" />
+    <script>
+      try {
+        if (sessionStorage.getItem("lmTransitionArriving") === "yes") {
+          document.documentElement.classList.add("lm-transition-arriving");
+        }
+      } catch (error) {}
+    </script>
     <link rel="stylesheet" href="./assets/css/lm-page-transition.css?v=transition-exit-audit-4" />
-    <link rel="stylesheet" href="./assets/css/lm-global-orb-header.css?v=header-consistency-4" />
-    <link rel="stylesheet" href="./assets/css/lm-phase1-platform.css?v=1" />
-  </head>
-  <body class="lm-platform-page home-page has-sphere-header">
-    <div class="lm-page-transition" data-lm-page-transition aria-hidden="true"><div class="lm-page-transition__flash"></div><video data-lm-transition-video muted playsinline preload="none"></video><div class="lm-page-transition__vignette"></div><div class="lm-page-transition__scanlines"></div><p data-lm-transition-label>Opening Beat2Lotto+</p></div>
-    <header class="site-header" data-site-header></header>
-    <main id="main-content" class="lm-platform-main">
-      <div class="beat2lotto-shell" id="beat2lotto" aria-label="Beat2Lotto+ creative console">
-        <section class="beat2lotto-hero">
-          <div>
-            <p class="lm-platform-kicker">Local-first creative number console</p>
-            <h1>Beat2Lotto+<span class="tm" aria-hidden="true"></span></h1>
-            <p>Import a beat or music file, enter a BPM, groove, mood, or session phrase, then generate beat-seeded entertainment signals for journaling and creative play.</p>
-            <p class="lotto-safety">Beat2Lotto+ is not a prediction. Lottery outcomes are random. Verify rules and results with official lottery sources.</p>
-          </div>
-          <div class="beat2lotto-orb beat2lotto-coin-orb" aria-hidden="true"><img src="./assets/brand/jazz-network-gold-coin.webp" alt="" /></div>
-        </section>
-        <section class="beat2lotto-console" aria-label="Beat2Lotto+ generator">
-          <div class="lotto-controls">
-            <label class="file-drop"><span>Import beat or music</span><input id="lottoAudioFile" type="file" accept="audio/*" /><small>Local analysis only. Audio never uploads.</small></label>
-            <div class="beat-playback-card" id="beatPlayback" hidden><audio id="lottoAudioPlayer" preload="metadata" controls></audio><button type="button" id="playBeatAudio" disabled>Play uploaded beat</button><div class="beat-playback-meter" aria-hidden="true"><span id="beatPlaybackEnergy"></span></div><small id="beatPlaybackStatus">Upload music to unlock playback.</small></div>
-            <div id="beatAnalysis" class="beat-analysis-card" aria-live="polite"><strong>No beat imported yet</strong><span>Generate from typed Beat DNA, or load audio to seed the digits.</span></div>
-            <label><span>Session seed</span><input id="lottoSeed" type="text" value="neon drums, 120 BPM, late-night bounce" /></label>
-            <label><span>BPM</span><input id="lottoBpm" type="number" min="40" max="220" value="120" /></label>
-            <label><span>Game format</span><select id="lottoGame"><option value="pick3">Pick 3</option><option value="pick4">Pick 4</option><option value="cash5">Cash 5 / Fantasy 5</option><option value="lotto6">Lotto 6</option><option value="powerball">Powerball Style</option><option value="mega">Mega Millions Style</option></select></label>
-            <label><span>Sets</span><input id="lottoCount" type="number" min="1" max="12" value="5" /></label>
-            <label><span>Method</span><select id="lottoMethod"><option>Beat DNA</option><option>Rhythm Signature</option><option>Drum Pattern</option><option>Stem Mix</option><option>Random + Beat DNA</option></select></label>
-            <button class="primary-action" type="button" id="generateLotto">Generate Number Signals</button>
-            <button class="secondary-action" type="button" id="copyLotto">Copy All</button>
-          </div>
-          <div class="lotto-output-panel"><div class="lotto-output-head"><h2>Beat-seeded entertainment picks</h2><span>Creative number generation - Not a prediction</span></div><div id="lottoOutput" class="lotto-output-grid" aria-live="polite"></div></div>
-        </section>
-        <div class="lm-platform-actions"><a class="lm-platform-action" href="./prompt-lab.html">Open Prompt Lab</a><a class="lm-platform-action" href="./lottery-spheres.html#spheres">Open Lottery Spheres</a><a class="lm-platform-action" href="./how-to-use.html#beat2lotto">Read Instructions</a></div>
+    <link rel="stylesheet" href="./assets/css/lm-global-orb-header.css?v=site-audit-1" />
+    <link rel="stylesheet" href="./assets/css/lm-commercial-gate.css?v=mobile-fit-1" />
+    <style>
+      :root {
+        color-scheme: dark;
+        --guide-header-height: 9rem;
+        --guide-frame-scale: 1.04;
+      }
+
+      html,
+      body {
+        min-height: 100%;
+      }
+
+      body.beat2lotto-game-page {
+        margin: 0;
+        min-height: 100svh;
+        color: #f5fbff;
+        background:
+          radial-gradient(circle at 18% 6%, rgba(255, 224, 113, 0.16), transparent 19rem),
+          radial-gradient(circle at 88% 14%, rgba(41, 247, 255, 0.16), transparent 24rem),
+          radial-gradient(circle at 50% 106%, rgba(126, 70, 255, 0.16), transparent 32rem),
+          linear-gradient(135deg, #010309 0%, #051528 48%, #010208 100%);
+        overflow: hidden;
+      }
+
+      body.beat2lotto-game-page::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        pointer-events: none;
+        background:
+          linear-gradient(rgba(41, 247, 255, 0.045) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(41, 247, 255, 0.038) 1px, transparent 1px);
+        background-size: 72px 72px;
+        mask-image: radial-gradient(circle at 50% 38%, rgba(0, 0, 0, 0.96), transparent 78%);
+      }
+
+      .beat2lotto-game-page .site-header {
+        position: relative;
+        z-index: 20;
+      }
+
+      body.beat2lotto-game-page .beat2-game-shell {
+        position: fixed;
+        inset: var(--guide-header-height) 0 0;
+        z-index: 2;
+        display: block;
+        height: auto;
+        min-height: 0;
+        padding: 0;
+        overflow: hidden;
+        background: #02040a;
+      }
+
+      .beat2-gamebox {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        min-height: 0;
+        border: 0;
+        border-radius: 0;
+        background: #02040a;
+        box-shadow: none;
+        overflow: hidden;
+      }
+
+      .beat2-gameframe {
+        display: block;
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+        width: 100%;
+        height: 100%;
+        border: 0;
+        background: #02040a;
+      }
+
+      @media (max-width: 900px) {
+        body.beat2lotto-game-page {
+          overflow: hidden;
+        }
+
+        body.beat2lotto-game-page .beat2-game-shell {
+          height: auto;
+          min-height: 0;
+        }
+      }
+
+      @media (max-width: 520px) {
+        body.beat2lotto-game-page .beat2-game-shell {
+          height: auto;
+        }
+      }
+    </style>
+<!-- social-meta:start -->
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="LOTTOMINDED ULTRA" />
+<meta property="og:title" content="Shadow Ops Canvas | Beat2Lotto+" />
+<meta property="og:description" content="Launch the Shadow Ops Canvas gameplay portal inside the LOTTOMINDED ULTRA Beat2Lotto+ route." />
+<meta property="og:url" content="https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/beat2lotto-plus.html" />
+<meta property="og:image" content="https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/games/shadow-ops-canvas/assets/backgrounds/robot-rahbe-gameplay-keyart.png" />
+<meta property="og:image:alt" content="Shadow Ops Canvas gameplay key art" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Shadow Ops Canvas | Beat2Lotto+" />
+<meta name="twitter:description" content="Launch the Shadow Ops Canvas gameplay portal inside the LOTTOMINDED ULTRA Beat2Lotto+ route." />
+<meta name="twitter:image" content="https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/games/shadow-ops-canvas/assets/backgrounds/robot-rahbe-gameplay-keyart.png" />
+<meta name="twitter:image:alt" content="Shadow Ops Canvas gameplay key art" />
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebPage","name":"Shadow Ops Canvas | Beat2Lotto+","url":"https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/beat2lotto-plus.html","description":"Launch the Shadow Ops Canvas gameplay portal inside the LOTTOMINDED ULTRA Beat2Lotto+ route.","isPartOf":{"@type":"WebSite","name":"LOTTOMINDED ULTRA","url":"https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/"}}</script>
+<!-- social-meta:end -->
+</head>
+  <body class="home-page has-sphere-header has-global-sphere-header beat2lotto-game-page">
+    <div class="lm-page-transition" data-lm-page-transition aria-hidden="true">
+      <div class="lm-page-transition__flash"></div>
+      <video class="lm-page-transition__video" data-lm-transition-video muted playsinline preload="metadata"></video>
+      <div class="lm-page-transition__vignette"></div>
+      <div class="lm-page-transition__scanlines"></div>
+      <p class="lm-page-transition__label" data-lm-transition-label>Opening signal</p>
+    </div>
+    <header class="site-header home-like-header home-sphere-header global-sphere-header" data-site-header>
+      <div class="site-header-main">
+        <a class="brand" href="./index.html#top" aria-label="LOTTOMINDED ULTRA home">
+          <img src="./assets/brand/lm-orb-mark.webp" alt="" />
+          <span>LOTTOMINDED ULTRA</span>
+        </a>
       </div>
+      <nav aria-label="LOTTOMINDED ULTRA sphere navigation">
+        <a href="./memberships.html" data-icon="MB">Memberships</a>
+        <a href="./index.html#top" data-icon="HM">Home</a>
+        <a href="./features-app.html" data-icon="FX">Features</a>
+        <a href="./news/" data-icon="NW">News</a>
+        <a href="./live-events.html" data-icon="EV">Events</a>
+        <a href="./lottery-spheres.html#spheres" data-icon="SP">Spheres</a>
+        <a href="./beat2lotto-plus.html#beat2lotto" data-icon="B2" aria-current="page">RAHBE</a>
+        <a href="./merch-store.html" data-icon="DR">Merch</a>
+        <a href="./how-to-use.html" data-icon="GD">Static Wav</a>
+        <a href="https://robjasper2084.github.io/Jungle-Lotto/lotto%20mind%20refined/" data-icon="LM" data-member-app-public="true" aria-label="Open LottoMind Refined App">LottoMind App</a>
+      </nav>
+      <div class="direct-launch" aria-label="Direct studio launch">
+        <a class="direct-action direct-primary" href="./lottomind-stem-studio/index.html">Launch Studio</a>
+      </div>
+    </header>
+
+    <section class="home-signal-marquee site-signal-marquee--shared" aria-label="LottoMind scrolling signal notice">
+      <a class="home-signal-marquee-track" href="./prompt-lab.html#beat2lotto">
+        <span>LottoMind signal online.</span>
+        <span>Creative tools ready.</span>
+        <span>Arcade routes live.</span>
+        <span>Open Beat2Lotto+&trade;</span>
+      </a>
+      <a class="home-signal-marquee-track" href="./prompt-lab.html#beat2lotto" aria-hidden="true" tabindex="-1">
+        <span>LottoMind signal online.</span>
+        <span>Creative tools ready.</span>
+        <span>Arcade routes live.</span>
+        <span>Open Beat2Lotto+&trade;</span>
+      </a>
+    </section>
+
+    <main id="beat2lotto" class="beat2-game-shell" aria-label="Shadow Ops Canvas game">
+      <h1 class="visually-hidden">Beat2Lotto+ Shadow Ops Canvas</h1>
+      <section class="beat2-gamebox" data-beat2-game-shell aria-label="Shadow Ops Canvas game viewport">
+        <iframe
+          class="beat2-gameframe"
+          title="Shadow Ops Canvas game"
+          src="./games/shadow-ops-canvas/index.html?v=rahbe-game-restore-5&amp;commercialGate=1"
+          loading="eager"
+          allow="fullscreen; autoplay; gamepad; keyboard-map *"
+          allowfullscreen
+          data-beat2-game-frame
+        ></iframe>
+      </section>
     </main>
-    <footer><p><strong>LOTTOMINDED ULTRA</strong> / Beat2Lotto+ is entertainment only.</p></footer>
-    <script src="./assets/js/lm-route-manifest.generated.js"></script>
-    <script src="./assets/js/lm-page-transition-audio.js?v=transition-audio-in-out-7" defer></script>
-    <script src="./assets/js/lm-page-transition.js?v=phase1-routes-1" defer></script>
-    <script src="./site.js?v=phase1-shell-1" defer></script>
-    <script src="./beat2lotto-plus.js?v=uploaded-audio-player-1" defer></script>
+
+    <script>
+      (() => {
+        const header = document.querySelector("[data-site-header]");
+        const shell = document.querySelector("[data-beat2-game-shell]");
+
+        const syncHeaderHeight = () => {
+          if (!header) return;
+          const height = Math.ceil(header.getBoundingClientRect().height);
+          document.documentElement.style.setProperty("--guide-header-height", `${height}px`);
+        };
+
+        syncHeaderHeight();
+        window.addEventListener("resize", syncHeaderHeight, { passive: true });
+        if ("ResizeObserver" in window && header) {
+          new ResizeObserver(syncHeaderHeight).observe(header);
+        }
+
+        shell?.addEventListener("dblclick", async () => {
+          try {
+            if (document.fullscreenElement) {
+              await document.exitFullscreen();
+            } else {
+              await shell.requestFullscreen();
+            }
+          } catch (error) {}
+        });
+      })();
+    </script>
+<script src="./assets/js/lm-page-transition-audio.js?v=transition-audio-in-out-7" defer></script>
+<script src="./assets/js/lm-page-transition.js?v=transition-every-route-5" defer></script>
+<script src="./site.js?v=header-toggle-routes-5" defer></script>
+<script src="./assets/js/lm-commercial-gate.js?v=commercial-autoplay-sound-3" defer></script>
   </body>
 </html>
