@@ -471,3 +471,18 @@
 - Commerce and backend impact: None; live payments, production account writes, real redemptions, and production analytics remain blocked on staging
 - Staging URL: Local only (`http://127.0.0.1:8143/`)
 - Production approval status: Not approved; `main`, production, and `v1-final` remain unchanged
+
+## Restored Support Utilities
+
+- Step number: Owner-requested Search, Credits, Account, Help, Contact, and Accessibility restoration
+- Implementation commits: `0c52eb4`, `c132b4d`, `836c60e`, `ccc1c24`, and `8be909f`
+- Upgrade branch: `upgrade-redesign`
+- Restored surfaces: Shared Search, Credits, and Account header controls; Help, Contact, Accessibility, Credits, and Account support routes; read-only Account and Collector Vault page
+- Preserved behavior: Existing cinematic navigation order, sphere artwork, site transitions, public content, and commerce hooks remain unchanged
+- Tests: Full browser suite passed 130 checks with 6 expected viewport skips; focused support utilities passed 4/4; compatibility checks passed 6/6; staging safety passed 10/10; source/staging desktop/mobile route matrix passed 92/92; release gates passed 7/7; site validation passed for 16 HTML files; homepage validation passed
+- Staging build: 24 noindex pages and 559 same-origin asset references verified from `8be909f10b246c9e2a6fdd7ef827498243d660bc`
+- Visual review: Four Search and Account captures passed at `1440x900` and `390x844` without horizontal overflow or console errors; review: `lottominded-ultra.io/docs/staging-reviews/support-utilities.md`
+- Intentional visual departure: A compact cyan-and-gold support row is added around the existing sphere navigation; the LottoMind black, gold, cyan, violet, Guardian, arcade, and cinematic identity remains recognizable
+- Commerce and backend impact: None; staging live payments, production account writes, real redemptions, and production analytics remain blocked
+- Staging URL: Local only (`http://127.0.0.1:8143/`)
+- Production approval status: Not approved; `main`, production, and `v1-final` remain unchanged
