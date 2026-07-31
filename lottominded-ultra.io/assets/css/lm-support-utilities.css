@@ -207,21 +207,21 @@
     grid-template-areas: none !important;
   }
 
-  body .site-header.home-like-header > nav {
-    z-index: 1 !important;
-    grid-area: auto !important;
-    grid-column: 1 / -1 !important;
-    grid-row: 3 !important;
+  html body.home-page .site-header.home-like-header .site-header-main {
+    grid-area: 1 / 1 / 2 / -1 !important;
   }
 
-  body .site-header.home-like-header .lm-header-utilities {
+  html body.home-page .site-header.home-like-header > nav {
+    z-index: 1 !important;
+    grid-area: 3 / 1 / 4 / -1 !important;
+  }
+
+  html body.home-page .site-header.home-like-header .lm-header-utilities {
     position: relative;
     z-index: 3;
     display: grid !important;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    grid-area: auto !important;
-    grid-column: 1 / -1 !important;
-    grid-row: 2 !important;
+    grid-area: 2 / 1 / 3 / -1 !important;
     width: 100% !important;
   }
 
