@@ -2,6 +2,9 @@ const { test, expect } = require("@playwright/test");
 
 test("shared support utilities expose Search, Credits, Account, Help, Contact, and Accessibility", async ({ page }) => {
   await page.goto("/index.html#top");
+  await page.waitForFunction(() =>
+    [...document.styleSheets].some((sheet) => sheet.href?.includes("lm-support-utilities.css"))
+  );
 
   const utilities = page.getByLabel("Account and support utilities");
   await expect(utilities.getByRole("button", { name: "Search LottoMind routes" })).toBeVisible();

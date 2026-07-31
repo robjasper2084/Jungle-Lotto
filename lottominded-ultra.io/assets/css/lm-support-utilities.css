@@ -203,8 +203,22 @@
 }
 
 @media (max-width: 470px) {
-  .lm-header-utilities a {
-    display: none;
+  body .site-header.home-like-header > nav {
+    grid-row: 3;
+  }
+
+  .lm-header-utilities {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-column: 1 / -1;
+    grid-row: 2;
+    width: 100%;
+  }
+
+  .lm-header-utilities a,
+  .lm-header-utilities button {
+    display: grid;
+    width: 100%;
   }
 }
 
