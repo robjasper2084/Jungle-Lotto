@@ -1,6 +1,13 @@
 const SITE_SCRIPT_URL = document.currentScript?.src || new URL("./site.js", document.baseURI).href;
 const SITE_ROOT_URL = new URL("./", SITE_SCRIPT_URL);
 const siteUrl = (relativePath) => new URL(relativePath.replace(/^\.\//, ""), SITE_ROOT_URL).toString();
+if (!document.querySelector('link[data-lm-support-utilities]')) {
+  const supportUtilitiesStyles = document.createElement("link");
+  supportUtilitiesStyles.rel = "stylesheet";
+  supportUtilitiesStyles.href = siteUrl("./assets/css/lm-support-utilities.css");
+  supportUtilitiesStyles.dataset.lmSupportUtilities = "true";
+  document.head.append(supportUtilitiesStyles);
+}
 const SITE_AUDIO_LEVELS = Object.freeze({
   background: 0.42,
   live: 0.56,
@@ -122,15 +129,84 @@ window.LMAudioMix = {
       <nav aria-label="LOTTOMINDED ULTRA sphere navigation">
         ${navMarkup}
       </nav>
-      <div class="direct-launch" aria-label="Direct studio launch">
-        <a class="direct-action direct-primary" href="${siteUrl("./lottomind-stem-studio/index.html")}">Launch Studio</a>
+      <div class="lm-header-utilities" aria-label="Account and support utilities">
+        <button type="button" data-command-search-open aria-label="Search LottoMind routes">Search</button>
+        <a href="${siteUrl("./account.html#credits")}">Credits</a>
+        <a href="${siteUrl("./account.html")}">Account</a>
       </div>
     </header>
   `;
+
+  const searchableRoutes = [
+    ...navItems.map((item) => ({
+      label: item.label,
+      href: item.href,
+      section: "Explore",
+      description: `Open ${item.label}.`,
+    })),
+    { label: "Credits", href: siteUrl("./account.html#credits"), section: "Account", description: "View verified LottoCredits and membership status." },
+    { label: "Account", href: siteUrl("./account.html"), section: "Account", description: "Open Collector Access and the account vault." },
+    { label: "Help", href: siteUrl("./how-to-use.html"), section: "Support", description: "Find setup, controls, and account guidance." },
+    { label: "Contact", href: siteUrl("./contact.html"), section: "Support", description: "Contact LottoMind support." },
+    { label: "Accessibility", href: siteUrl("./accessibility.html"), section: "Support", description: "Review keyboard, motion, contrast, and access guidance." },
+  ];
+
+  const commandDialog = document.createElement("dialog");
+  commandDialog.className = "lm-command-palette";
+  commandDialog.setAttribute("aria-labelledby", "lmCommandTitle");
+  commandDialog.innerHTML = `
+    <form method="dialog" class="lm-command-palette__panel">
+      <header>
+        <div><span>Route uplink</span><h2 id="lmCommandTitle">Search LottoMind</h2></div>
+        <button value="cancel" aria-label="Close search">Close</button>
+      </header>
+      <label>
+        <span class="visually-hidden">Search routes</span>
+        <input type="search" data-command-search-input autocomplete="off" placeholder="Search games, account, help..." />
+      </label>
+      <div class="lm-command-palette__results" data-command-search-results role="listbox" aria-label="LottoMind routes"></div>
+      <p data-command-search-status role="status" aria-live="polite"></p>
+    </form>`;
+  document.body.append(commandDialog);
+
+  const commandInput = commandDialog.querySelector("[data-command-search-input]");
+  const commandResults = commandDialog.querySelector("[data-command-search-results]");
+  const commandStatus = commandDialog.querySelector("[data-command-search-status]");
+  let commandOpener = null;
+  const renderCommandResults = () => {
+    const query = commandInput.value.trim().toLowerCase();
+    const matches = searchableRoutes.filter((route) =>
+      !query || [route.label, route.section, route.description].join(" ").toLowerCase().includes(query)
+    ).slice(0, 12);
+    commandResults.innerHTML = matches.map((route) => `
+      <a href="${route.href}" role="option" data-command-result>
+        <span>${route.section}</span>
+        <strong>${route.label}</strong>
+        <small>${route.description}</small>
+      </a>`).join("");
+    commandStatus.textContent = `${matches.length} ${matches.length === 1 ? "route" : "routes"} available.`;
+  };
+  const openCommandPalette = () => {
+    commandOpener = document.activeElement;
+    commandInput.value = "";
+    renderCommandResults();
+    commandDialog.showModal();
+    requestAnimationFrame(() => commandInput.focus());
+  };
+  document.querySelector("[data-command-search-open]")?.addEventListener("click", openCommandPalette);
+  commandInput.addEventListener("input", renderCommandResults);
+  commandDialog.addEventListener("close", () => commandOpener?.focus?.());
 })();
 
 (() => {
   const pageFooter = [...document.querySelectorAll("body > footer")].find((footer) => footer.id !== "player" && !footer.matches("[data-feature-live-player]"));
+  if (pageFooter && !pageFooter.querySelector(".lm-footer-support-links")) {
+    const supportLinks = document.createElement("nav");
+    supportLinks.className = "lm-footer-support-links";
+    supportLinks.setAttribute("aria-label", "Support and account");
+    supportLinks.innerHTML = `<a href="${siteUrl("./how-to-use.html")}">Help</a><a href="${siteUrl("./contact.html")}">Contact</a><a href="${siteUrl("./accessibility.html")}">Accessibility</a><a href="${siteUrl("./account.html#credits")}">Credits</a><a href="${siteUrl("./account.html")}">Account</a>`;
+    pageFooter.append(supportLinks);
+  }
   if (pageFooter && !pageFooter.querySelector(".site-legal-links")) {
     const links = document.createElement("nav");
     links.className = "site-legal-links";
