@@ -10,6 +10,11 @@ test("shared support utilities expose Search, Credits, Account, Help, Contact, a
   await expect(utilities.getByRole("button", { name: "Search LottoMind routes" })).toBeVisible();
   await expect(utilities.getByRole("link", { name: "Credits" })).toHaveAttribute("href", /account\.html#credits$/);
   await expect(utilities.getByRole("link", { name: "Account", exact: true })).toHaveAttribute("href", /account\.html$/);
+  if (page.viewportSize()?.width <= 470) {
+    const utilityBox = await utilities.boundingBox();
+    const navBox = await page.getByRole("navigation", { name: "LOTTOMINDED ULTRA sphere navigation" }).boundingBox();
+    expect(utilityBox.y + utilityBox.height).toBeLessThanOrEqual(navBox.y + 1);
+  }
 
   await utilities.getByRole("button", { name: "Search LottoMind routes" }).click();
   const dialog = page.getByRole("dialog", { name: "Search LottoMind" });

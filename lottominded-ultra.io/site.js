@@ -196,6 +196,29 @@ window.LMAudioMix = {
   document.querySelector("[data-command-search-open]")?.addEventListener("click", openCommandPalette);
   commandInput.addEventListener("input", renderCommandResults);
   commandDialog.addEventListener("close", () => commandOpener?.focus?.());
+
+  const compactHeaderQuery = window.matchMedia("(max-width: 470px)");
+  const updateCompactUtilityLayout = () => {
+    const currentHeader = document.querySelector("[data-site-header]");
+    const headerMain = currentHeader?.querySelector(".site-header-main");
+    const primaryNav = currentHeader?.querySelector(":scope > nav");
+    const utilities = currentHeader?.querySelector(".lm-header-utilities");
+    const method = compactHeaderQuery.matches ? "setProperty" : "removeProperty";
+    const setGridArea = (element, value) => {
+      if (!element) return;
+      if (method === "setProperty") element.style.setProperty("grid-area", value, "important");
+      else element.style.removeProperty("grid-area");
+    };
+    if (currentHeader) {
+      if (compactHeaderQuery.matches) currentHeader.style.setProperty("grid-template-areas", "none", "important");
+      else currentHeader.style.removeProperty("grid-template-areas");
+    }
+    setGridArea(headerMain, "1 / 1 / 2 / -1");
+    setGridArea(utilities, "2 / 1 / 3 / -1");
+    setGridArea(primaryNav, "3 / 1 / 4 / -1");
+  };
+  updateCompactUtilityLayout();
+  compactHeaderQuery.addEventListener?.("change", updateCompactUtilityLayout);
 })();
 
 (() => {
