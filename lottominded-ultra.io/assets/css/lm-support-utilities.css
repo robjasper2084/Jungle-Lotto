@@ -203,16 +203,26 @@
 }
 
 @media (max-width: 470px) {
-  body .site-header.home-like-header > nav {
-    grid-row: 3;
+  body .site-header.home-like-header {
+    grid-template-areas: none !important;
   }
 
-  .lm-header-utilities {
-    display: grid;
+  body .site-header.home-like-header > nav {
+    z-index: 1 !important;
+    grid-area: auto !important;
+    grid-column: 1 / -1 !important;
+    grid-row: 3 !important;
+  }
+
+  body .site-header.home-like-header .lm-header-utilities {
+    position: relative;
+    z-index: 3;
+    display: grid !important;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    grid-column: 1 / -1;
-    grid-row: 2;
-    width: 100%;
+    grid-area: auto !important;
+    grid-column: 1 / -1 !important;
+    grid-row: 2 !important;
+    width: 100% !important;
   }
 
   .lm-header-utilities a,
