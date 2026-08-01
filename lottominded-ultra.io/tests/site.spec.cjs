@@ -109,7 +109,7 @@ test("memberships opens its entry commercial and keeps manual replay available",
   expect(localFailures).toEqual([]);
 });
 
-test("Static Wav and RAHBE keep an explicit header hide and restore control", async ({ page }) => {
+test("Static Wav and Robot RAHBEE keep an explicit header hide and restore control", async ({ page }) => {
   await blockHeavyMedia(page);
 
   for (const route of ["/how-to-use.html", "/beat2lotto-plus.html#beat2lotto"]) {
@@ -133,7 +133,7 @@ test("Static Wav and RAHBE keep an explicit header hide and restore control", as
   }
 });
 
-test("header hide control stays off every route except Static Wav and RAHBE", async ({ page }) => {
+test("header hide control stays off every route except Static Wav and Robot RAHBEE", async ({ page }) => {
   await blockHeavyMedia(page);
 
   for (const route of ["/", "/memberships.html", "/features-app.html", "/merch-store.html", "/lottery-spheres.html"]) {
@@ -566,7 +566,7 @@ test("Static Wav keeps one commercial on each page entry", async ({ page }) => {
   await expect(page.locator(".lm-commercial-gate")).toBeVisible();
 });
 
-test("RAHBE route restores the embedded game after its commercial", async ({ page }) => {
+test("Robot RAHBEE route restores the embedded game after its commercial", async ({ page }) => {
   await blockHeavyMedia(page);
   const localFailures = trackLocalFailures(page);
   await page.goto("/beat2lotto-plus.html#beat2lotto", { waitUntil: "domcontentloaded" });
@@ -578,7 +578,7 @@ test("RAHBE route restores the embedded game after its commercial", async ({ pag
 
   const frame = page.frameLocator("[data-beat2-game-frame]");
   await expect(frame.locator("#game")).toBeVisible({ timeout: 15_000 });
-  await expect(frame.getByRole("heading", { name: "ROBOT RAHBE" })).toBeVisible();
+  await expect(frame.getByRole("heading", { name: "ROBOT RAHBEE" })).toBeVisible();
   expect(localFailures).toEqual([]);
 });
 
@@ -717,12 +717,12 @@ test("membership hero leads, Collector follows Gaming Showcase, and the Guardian
   expect(collectorBox.y).toBeLessThan(guardianBox.y);
 });
 
-test("shared navigation uses the requested Games, RAHBE, Storefront, and Static Wav labels", async ({ page }) => {
+test("shared navigation uses the requested Games, Robot RAHBEE, Storefront, and Static Wav labels", async ({ page }) => {
   await blockHeavyMedia(page);
   await page.goto("/lottery-spheres.html", { waitUntil: "domcontentloaded" });
   const navigation = page.locator(".site-header nav");
   await expect(navigation.locator('a[data-icon="FX"]')).toContainText("Games");
-  await expect(navigation.locator('a[data-icon="B2"]')).toContainText("RAHBE");
+  await expect(navigation.locator('a[data-icon="B2"]')).toContainText("Robot RAHBEE");
   await expect(navigation.locator('a[data-icon="DR"]')).toContainText("Storefront");
   await expect(navigation.locator('a[data-icon="GD"]')).toContainText("Static Wav");
 });

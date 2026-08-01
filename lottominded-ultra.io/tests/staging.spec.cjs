@@ -156,7 +156,7 @@ test("Shadow Ops defers campaign assets until the run starts", async ({ page }) 
   });
 
   await page.goto("/games/shadow-ops-canvas/", { waitUntil: "domcontentloaded" });
-  await expect(page.getByRole("heading", { name: "ROBOT RAHBE" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "ROBOT RAHBEE" })).toBeVisible();
   await page.waitForTimeout(1000);
   expect(assetRequests.some((url) => /robot-rahbe-intro-cutscene\.mp4/i.test(url))).toBe(false);
   expect(assetRequests.some((url) => /digital-static-10\.mp3/i.test(url))).toBe(false);

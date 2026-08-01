@@ -46,7 +46,7 @@
     },
     {
       id: "robot-rahbe",
-      title: "Robot Rahbe",
+      title: "Robot RAHBEE",
       path: "./games/shadow-ops-canvas/",
       description: "Enter the Shadow Ops arena, survive the mission grid, and hold the tactical signal.",
       category: "Action",

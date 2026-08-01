@@ -79,20 +79,27 @@
 
 .lm-account-page {
   background-color: #01050a;
-  background-image: none;
+  background-image:
+    linear-gradient(180deg, rgba(1, 4, 10, 0.34), rgba(1, 4, 10, 0.86)),
+    radial-gradient(circle at 52% 20%, rgba(165, 34, 255, 0.18), transparent 44%),
+    url("../../games/shadow-ops-canvas/assets/startup-3d/startup-3d-mid.webp"),
+    url("../../games/shadow-ops-canvas/assets/startup-3d/startup-3d-far.webp");
+  background-position: center, center, center top, center top;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-attachment: fixed;
   perspective: 900px;
 }
 
 .lm-account-page::before {
-  inset: 38vh -18vw -38vh;
+  inset: 0;
   z-index: -2;
   background:
-    linear-gradient(rgba(91, 233, 255, 0.12) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(91, 233, 255, 0.12) 1px, transparent 1px);
-  background-size: 72px 72px;
-  transform: rotateX(66deg) translateZ(-80px);
-  transform-origin: 50% 0;
-  mask-image: linear-gradient(to bottom, transparent, #000 16%, #000 78%, transparent);
+    linear-gradient(180deg, transparent 26%, rgba(2, 5, 12, 0.24) 66%, rgba(2, 5, 12, 0.84)),
+    url("../../games/shadow-ops-canvas/assets/startup-3d/startup-3d-emissive.webp") center top / cover no-repeat,
+    url("../../games/shadow-ops-canvas/assets/startup-3d/startup-3d-near-rails.webp") center bottom / cover no-repeat;
+  opacity: 0.52;
+  mask-image: linear-gradient(to bottom, transparent, #000 12%, #000 92%, transparent);
 }
 
 .lm-account-page::after {
@@ -116,6 +123,40 @@
   box-shadow:
     inset 0 1px rgba(255, 255, 255, 0.05),
     0 24px 60px rgba(0, 0, 0, 0.44);
+}
+
+.lm-account-page .lm-platform-hero {
+  isolation: isolate;
+  background-color: #020a14;
+}
+
+.lm-account-page .lm-platform-hero::after {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  content: "";
+  background:
+    linear-gradient(90deg, rgba(1, 8, 18, 0.94) 0 42%, rgba(1, 8, 18, 0.52) 68%, rgba(1, 8, 18, 0.2)),
+    linear-gradient(180deg, rgba(2, 10, 20, 0.08), rgba(2, 10, 20, 0.62));
+}
+
+.lm-account-page .lm-platform-hero__video {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+  opacity: 0.42;
+  filter: saturate(0.76) contrast(1.08) brightness(0.72);
+}
+
+.lm-account-page .lm-platform-hero__copy,
+.lm-account-page .lm-platform-hero__art {
+  position: relative;
+  z-index: 2;
 }
 
 .lm-account-page .lm-account-shell {
@@ -517,8 +558,7 @@
   }
 
   .lm-account-page::before {
-    inset: 46vh -55vw -28vh;
-    background-size: 54px 54px;
+    opacity: 0.38;
   }
 
   .lm-account-page .lm-account-panel:first-child,
@@ -528,6 +568,10 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .lm-account-page .lm-platform-hero__video {
+    display: none;
+  }
+
   .lm-platform-page *,
   .lm-platform-page *::before,
   .lm-platform-page *::after {

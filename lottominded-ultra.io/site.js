@@ -83,13 +83,12 @@ window.LMAudioMix = {
   if (!header) return;
 
   const navItems = [
-    { label: "Memberships", href: siteUrl("./memberships.html"), icon: "MB" },
     { label: "Home", href: siteUrl("./index.html#top"), icon: "HM" },
     { label: "Games", href: siteUrl("./features-app.html"), icon: "FX" },
     { label: "News", href: siteUrl("./news/"), icon: "NW" },
     { label: "Events", href: siteUrl("./live-events.html"), icon: "EV" },
     { label: "Spheres", href: siteUrl("./lottery-spheres.html#spheres"), icon: "SP" },
-    { label: "RAHBE", href: siteUrl("./beat2lotto-plus.html#beat2lotto"), icon: "B2" },
+    { label: "Robot RAHBEE", href: siteUrl("./beat2lotto-plus.html#beat2lotto"), icon: "B2" },
     { label: "Storefront", href: siteUrl("./merch-store.html"), icon: "DR" },
     { label: "Static Wav", href: siteUrl("./how-to-use.html"), icon: "GD" },
     {
@@ -98,6 +97,7 @@ window.LMAudioMix = {
       icon: "LM",
       attrs: ' data-member-app-public="true" aria-label="Open LottoMind Refined App"',
     },
+    { label: "Memberships", href: siteUrl("./memberships.html"), icon: "MB" },
   ];
 
   const currentPath = window.location.pathname.toLowerCase();
@@ -1257,7 +1257,7 @@ function setupUniversalFloatingMenu() {
     ["Games", siteUrl("./features-app.html")],
     ["Events", siteUrl("./live-events.html")],
     ["Spheres", siteUrl("./lottery-spheres.html#spheres")],
-    ["RAHBE", siteUrl("./beat2lotto-plus.html#beat2lotto")],
+    ["Robot RAHBEE", siteUrl("./beat2lotto-plus.html#beat2lotto")],
     ["Storefront", siteUrl("./merch-store.html")],
     ["Static Wav", siteUrl("./how-to-use.html")],
     ["Studio", siteUrl("./lottomind-stem-studio/index.html")]
