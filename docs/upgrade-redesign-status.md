@@ -486,3 +486,17 @@
 - Commerce and backend impact: None; staging live payments, production account writes, real redemptions, and production analytics remain blocked
 - Staging URL: Local only (`http://127.0.0.1:8143/`)
 - Production approval status: Not approved; `main`, production, and `v1-final` remain unchanged
+
+## Spheres Audit Remediation
+
+- Step number: Owner-requested audit corrections
+- Implementation commit: This focused commit on `upgrade-redesign`
+- Affected route: `/lottery-spheres.html#spheres`
+- Corrections: Removed the duplicate inline Oracle, docked the mobile floating Oracle away from the title and primary controls, standardized visible handoffs as Robot RAHBEE, and corrected duplicated kinetic-heading accessible names
+- Preserved behavior: Sphere rerolling, pointer interaction, the floating Magic 8 Ball, entertainment-only guidance, linked game and studio routes, cinematic artwork, and the black, gold, cyan, and violet identity remain intact
+- Tests: Site validation passed for 16 HTML files; release audit passed 7/7 groups; full source browser suite passed 134 checks with 6 intentional viewport skips, including focused Spheres coverage on desktop and mobile; committed route and staging verification follows this commit
+- Visual review: Desktop and mobile comparisons are recorded in `docs/staging-reviews/spheres-audit-corrections.md`
+- Intentional visual departure: Mobile opens with a compact floating 8-ball instead of an expanded Oracle covering the page title; desktop retains the established full Oracle treatment
+- Commerce and backend impact: None; no payment, account-write, redemption, analytics, or production-data behavior changed
+- Staging URL: Local only (`http://127.0.0.1:8304/` after the committed staging build)
+- Production approval status: Not approved; `main`, production, and `v1-final` remain unchanged

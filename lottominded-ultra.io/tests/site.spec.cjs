@@ -649,6 +649,30 @@ test("Spheres has no automatic Jackpot Maze popup", async ({ page }) => {
   await expect(page.locator("[data-jackpot-maze-popup]")).toHaveCount(0);
 });
 
+test("Spheres exposes one Oracle and consistent Robot RAHBEE handoffs", async ({ page }) => {
+  await page.goto("/lottery-spheres.html#spheres", { waitUntil: "domcontentloaded" });
+
+  await expect(page.locator(".sphere-eightball")).toHaveCount(0);
+  await expect(page.locator("[data-lm-healing-generator]")).toHaveCount(1);
+  await expect(page.getByRole("heading", { name: "Lottery Spheres in Motion", exact: true })).toHaveAccessibleName("Lottery Spheres in Motion");
+  await expect(page.getByRole("heading", { name: "Orbit", exact: true })).toHaveAccessibleName("Orbit");
+  await expect(page.getByRole("heading", { name: "Signal", exact: true })).toHaveAccessibleName("Signal");
+  await expect(page.getByRole("heading", { name: "Studio", exact: true })).toHaveAccessibleName("Studio");
+  await expect(page.getByRole("link", { name: "Open Robot RAHBEE", exact: true })).toHaveAttribute("href", "./beat2lotto-plus.html#beat2lotto");
+  await expect(page.locator(".sphere-copy")).not.toContainText("Beat2Lotto+");
+
+  if (page.viewportSize()?.width <= 680) {
+    await expect(page.locator("[data-lm-healing-generator]")).toHaveClass(/is-minimized/);
+    const overlapsPrimaryActions = await page.evaluate(() => {
+      const oracle = document.querySelector("[data-lm-healing-generator]")?.getBoundingClientRect();
+      const actions = document.querySelector(".sphere-actions")?.getBoundingClientRect();
+      if (!oracle || !actions) return true;
+      return !(oracle.right <= actions.left || oracle.left >= actions.right || oracle.bottom <= actions.top || oracle.top >= actions.bottom);
+    });
+    expect(overlapsPrimaryActions).toBe(false);
+  }
+});
+
 test("Contact prepares a support request locally", async ({ page }) => {
   const localFailures = trackLocalFailures(page);
   await page.goto("/contact.html", { waitUntil: "domcontentloaded" });

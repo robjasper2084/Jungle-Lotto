@@ -539,13 +539,16 @@ body.has-open-modal .lm-healing-generator {
   }
 
   .lm-healing-generator--oracle-only.is-minimized {
-    width: 78px;
-    height: 78px;
-    padding: 14px;
+    top: calc(218px + env(safe-area-inset-top));
+    right: 8px;
+    bottom: auto;
+    width: 58px;
+    height: 58px;
+    padding: 10px;
   }
 
   .lm-healing-generator--oracle-only.is-minimized .lm-healing-generator__orb-mark {
-    width: 48px;
+    width: 38px;
   }
 }
 
