@@ -7,7 +7,7 @@
 - Snapshot annotated tag object SHA: `9ba25352efc17d5b514e5afd59c8afde5c9d2949`
 - Snapshot target commit SHA: `975c637cea7003533cdc30aed9d96be51929bfc8`
 - Upgrade branch: `upgrade-redesign`
-- Current upgrade branch implementation SHA: `37297acd4ddc910e5abe980f2741978e64e67194`
+- Current upgrade branch implementation SHA: `03129291ff064bebee08642d5e43b57d6b0bbee9`
 - Upgrade branch SHA at Step 0A branch creation: `1fc4c95ca4d0b22ee5188d06f8ea75573c63a00a`
 - Upgrade branch SHA before Step 0B commit: `220653bbc300d0e0b236c6e834043f39fdfcd76c`
 - Step 0B commit SHA: `6e58aafc4addabf5281262ec951a7d6df3dc66a0`
@@ -15,15 +15,15 @@
 - Staging provider: Local static server (Mode C); no remote preview provider is configured
 - Staging URL: Local only (`http://127.0.0.1:8321/` while the current staging server is running)
 - Staging integrations: No isolated backend or Stripe test-mode configuration is currently configured; protected writes remain disabled
-- Last completed step: Shared navigation order and Search, Credits, and Account utility pills verified on `upgrade-redesign`
+- Last completed step: Restored the original Home commercial, replaced the selected Storefront products with the Detroit 1701 patch at `$10`, and expanded the Spheres frequency generator on `upgrade-redesign`
 - Step 1 commit SHA: This file is part of the Step 1 commit; use `git log -1 --format=%H -- docs/upgrade-redesign-status.md` to resolve its exact non-self-referential SHA. The completion report records it explicitly.
-- Last staging review: Robot RAHBEE, Account, and navigation review passed and is ready for the next phase; review: `docs/staging-reviews/robot-rahbee-account-nav.md`
+- Last staging review: Home, Storefront, and Spheres corrections passed and are ready for the next phase; review: `docs/staging-reviews/home-storefront-spheres-corrections.md`
 - Staging review commit SHA: This file is part of the staging-review commit; the completion report records its exact SHA.
-- Last successful test run: 2026-08-02 - site validation passed 16 HTML files; focused desktop/mobile header checks passed 4/4; clean-port source/staging route matrix passed 144/144; staging browser safety passed 10/10; staging static verification passed 24 pages and 560 same-origin references; header visual captures passed 2/2
+- Last successful test run: 2026-08-02 - Home validation passed; site validation passed 16 HTML files; focused Home, Storefront, and Spheres browser checks passed 6/6; Home regression passed 12/12 with 4 intentional skips; clean-port source/staging route matrix passed 150/150; staging browser safety passed 10/10; staging static verification passed 25 pages and 569 same-origin references; nine visual captures passed at desktop, tablet, and mobile
 - Visual baseline: Complete - 69 production route screenshots plus desktop, tablet, and mobile contact sheets under `docs/visual-baseline/v1/`
 - Step 1 visual comparison: Production and staging home routes compared at 1440x900 and 390x844; staging adds only the preview and safety banners, with no redesign changes
 - Resolved Step 1 baseline failures: Contact support helper restored; Stem Studio tablet/mobile overflow corrected; Jackpot Maze runtime, heading, and entry focus restored; first-load outliers reduced; staging News production request removed
-- Latest visual comparison: Shared Home header compared with `v1-final` at 1440x900 and 390x844; review: `docs/staging-reviews/shared-header-order.md`
+- Latest visual comparison: Home, Storefront, and Spheres compared with `v1-final` at 1440x900, 768x1024, and 390x844; review: `docs/staging-reviews/home-storefront-spheres-corrections.md`
 - Latest performance comparison: Mobile 4G wall load improved for Memberships 9687 -> 6690 ms, Arcade 7291 -> 5929 ms, Robot RAHBEE 2208 -> 1990 ms, Static Wav 2167 -> 2030 ms, and Live Events 9804 -> 9437 ms; Storefront bundle art reduced from approximately 4.16 MiB to 0.16 MiB
 - Staging review approval status: Ready for next phase
 - Production approval status: The earlier Step 35 launch was approved and completed through PR #2 using merge commit `09f8e5d2c8bc10d0cf1af240216404c6af74c3c0`; the new Phase 1 rollback commit is not approved or merged to `main`
@@ -42,6 +42,21 @@
 - Commerce and backend impact: None; staging write protections remain active
 - Staging URL: Local only (`http://127.0.0.1:8321/`)
 - Production approval status: Not approved; production remains unchanged
+
+## Home Commercial, Storefront Patch, And Spheres Console
+
+- Step number: Owner-requested Home, Storefront, and Spheres corrections
+- Implementation commit: `03129291ff064bebee08642d5e43b57d6b0bbee9`
+- Affected routes: `/index.html#top`, `/merch-store.html`, and `/lottery-spheres.html#spheres`
+- Home: Restored the original commercial overlay and existing video with explicit Play with sound and Enter Site controls; playback remains muted until a visitor requests audio
+- Storefront: Replaced the two selected Innovation Floor hoodie cards and the selected Model Drop gallery tile with the supplied Detroit 1701 embroidered patch artwork at `$10`; converted the source PNG to a 126 KiB WebP
+- Spheres: Expanded the fixed console and frequency-generator column so all six presets, level control, play control, and status copy remain available without clipping
+- Tests: Home validation passed; site validation passed 16 HTML files; focused browser checks passed 6/6; Home regression passed 12/12 with 4 intentional skips; source/staging route matrix passed 150/150; staging safety passed 10/10 for 25 noindex pages and 569 same-origin references
+- Visual review: Nine captures passed at `1440x900`, `768x1024`, and `390x844`; review: `docs/staging-reviews/home-storefront-spheres-corrections.md`
+- Intentional visual departures: Home again opens with the original commercial; the selected Storefront products now show the Detroit patch; the Spheres console is slightly taller with a wider frequency deck
+- Commerce and backend impact: None; no checkout, account-write, redemption, analytics, or production-data behavior changed
+- Staging URL: Local only (`http://127.0.0.1:8321/`)
+- Production approval status: Not approved; `main`, production, and `v1-final` remain unchanged
 
 ## Billing Response Validation
 
