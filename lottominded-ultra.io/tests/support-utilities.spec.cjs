@@ -47,7 +47,31 @@ test("shared support utilities expose Search, Credits, Account, Help, Contact, a
   const supportLinks = page.getByRole("navigation", { name: "Support and account" });
   await expect(supportLinks.getByRole("link", { name: "Help" })).toBeVisible();
   await expect(supportLinks.getByRole("link", { name: "Contact" })).toBeVisible();
-  await expect(supportLinks.getByRole("link", { name: "Accessibility" })).toBeVisible();
+  await expect(supportLinks.getByRole("link", { name: "Credits" })).toBeVisible();
+  await expect(supportLinks.getByRole("link", { name: "Account" })).toBeVisible();
+  const legalLinks = page.getByRole("navigation", { name: "Legal and support" });
+  await expect(legalLinks.getByRole("link", { name: "Accessibility" })).toBeVisible();
+});
+
+test("footer links are unique and use the canonical support destinations globally", async ({ page }) => {
+  const expectedLinks = [
+    ["Help", "/how-to-use.html"],
+    ["Contact", "/contact.html"],
+    ["Credits", "/account.html#credits"],
+    ["Account", "/account.html"],
+    ["Privacy", "/privacy.html"],
+    ["Terms", "/terms.html"],
+    ["Accessibility", "/accessibility.html"],
+  ];
+
+  for (const route of ["/index.html#top", "/accessibility.html", "/memberships.html", "/merch-store.html"]) {
+    await page.goto(route, { waitUntil: "domcontentloaded" });
+    const links = await page.locator("body > footer :is(.lm-footer-support-links, .site-legal-links) a").evaluateAll((items) =>
+      items.map((item) => [item.textContent.trim(), `${new URL(item.href).pathname}${new URL(item.href).hash}`])
+    );
+    expect(links).toEqual(expectedLinks);
+    expect(new Set(links.map(([, href]) => href)).size).toBe(links.length);
+  }
 });
 
 test("account route stays read-only in local preview and exposes support links", async ({ page }) => {

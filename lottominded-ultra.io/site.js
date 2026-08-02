@@ -227,14 +227,14 @@ window.LMAudioMix = {
     const supportLinks = document.createElement("nav");
     supportLinks.className = "lm-footer-support-links";
     supportLinks.setAttribute("aria-label", "Support and account");
-    supportLinks.innerHTML = `<a href="${siteUrl("./how-to-use.html")}">Help</a><a href="${siteUrl("./contact.html")}">Contact</a><a href="${siteUrl("./accessibility.html")}">Accessibility</a><a href="${siteUrl("./account.html#credits")}">Credits</a><a href="${siteUrl("./account.html")}">Account</a>`;
+    supportLinks.innerHTML = `<a href="${siteUrl("./how-to-use.html")}">Help</a><a href="${siteUrl("./contact.html")}">Contact</a><a href="${siteUrl("./account.html#credits")}">Credits</a><a href="${siteUrl("./account.html")}">Account</a>`;
     pageFooter.append(supportLinks);
   }
   if (pageFooter && !pageFooter.querySelector(".site-legal-links")) {
     const links = document.createElement("nav");
     links.className = "site-legal-links";
     links.setAttribute("aria-label", "Legal and support");
-    links.innerHTML = `<a href="${siteUrl("./privacy.html")}">Privacy</a><a href="${siteUrl("./terms.html")}">Terms</a><a href="${siteUrl("./accessibility.html")}">Accessibility</a><a href="${siteUrl("./contact.html")}">Contact</a>`;
+    links.innerHTML = `<a href="${siteUrl("./privacy.html")}">Privacy</a><a href="${siteUrl("./terms.html")}">Terms</a><a href="${siteUrl("./accessibility.html")}">Accessibility</a>`;
     pageFooter.append(links);
   }
   if ("serviceWorker" in navigator && location.protocol === "https:") {

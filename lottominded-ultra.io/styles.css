@@ -17038,3 +17038,41 @@ body:is(.has-membership-commercial, .has-merch-commercial-modal, .has-lm-commerc
     font-size: 0.58rem;
   }
 }
+
+/* Popup layers sit above the mascot pointer, so keep the native pointer visible inside them. */
+:is(
+  .startup-video-modal:not(.is-hidden),
+  .membership-commercial-modal:not([hidden]),
+  .merch-commercial-modal:not(.is-hidden),
+  .lm-commercial-gate,
+  dialog[open]
+),
+:is(
+  .startup-video-modal:not(.is-hidden),
+  .membership-commercial-modal:not([hidden]),
+  .merch-commercial-modal:not(.is-hidden),
+  .lm-commercial-gate,
+  dialog[open]
+) * {
+  cursor: auto !important;
+}
+
+:is(
+  .startup-video-modal:not(.is-hidden),
+  .membership-commercial-modal:not([hidden]),
+  .merch-commercial-modal:not(.is-hidden),
+  .lm-commercial-gate,
+  dialog[open]
+) :is(a, button, [role="button"], input[type="button"], input[type="submit"]) {
+  cursor: pointer !important;
+}
+
+:is(
+  .startup-video-modal:not(.is-hidden),
+  .membership-commercial-modal:not([hidden]),
+  .merch-commercial-modal:not(.is-hidden),
+  .lm-commercial-gate,
+  dialog[open]
+) :is(input:not([type="button"]):not([type="submit"]), textarea, [contenteditable="true"]) {
+  cursor: text !important;
+}

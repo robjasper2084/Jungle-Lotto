@@ -691,6 +691,22 @@ test("home restores the original muted-first startup commercial", async ({ page 
   await expect(heroFilm).toBeVisible();
 });
 
+test("commercial popups retain a visible native pointer above mascot cursor layers", async ({ page }) => {
+  await blockHeavyMedia(page);
+
+  await page.goto("/index.html#top", { waitUntil: "domcontentloaded" });
+  const startup = page.locator("[data-startup-video]");
+  await expect(startup).toBeVisible({ timeout: 5_000 });
+  await expect.poll(() => startup.evaluate((element) => getComputedStyle(element).cursor)).toBe("auto");
+  await expect.poll(() => startup.getByRole("button", { name: "Enter Site", exact: true }).evaluate((element) => getComputedStyle(element).cursor)).toBe("pointer");
+
+  await page.goto("/memberships.html", { waitUntil: "domcontentloaded" });
+  const membershipCommercial = page.locator("[data-membership-commercial-modal]");
+  await expect(membershipCommercial).toBeVisible({ timeout: 15_000 });
+  await expect.poll(() => membershipCommercial.locator("[role=dialog]").evaluate((element) => getComputedStyle(element).cursor)).toBe("auto");
+  await expect.poll(() => page.locator("[data-membership-commercial-close]").evaluate((element) => getComputedStyle(element).cursor)).toBe("pointer");
+});
+
 test("Spheres frequency deck keeps every control readable", async ({ page }) => {
   await blockHeavyMedia(page);
   await page.goto("/lottery-spheres.html#spheres", { waitUntil: "domcontentloaded" });
@@ -779,7 +795,7 @@ test("membership hero leads, Collector follows Gaming Showcase, and the Guardian
   await expect(page.locator("#dust .membership-collectible-card")).toHaveCount(0);
   await expect(page.locator("#water")).toHaveCount(0);
   await expect(page.getByText(/Film 04/i)).toHaveCount(0);
-  await expect(page.locator("footer.site-footer-standard .site-legal-links a")).toHaveCount(4);
+  await expect(page.locator("footer.site-footer-standard .site-legal-links a")).toHaveCount(3);
   await expect(page.locator("footer.site-footer-standard > a.footer-link")).toHaveCount(0);
 
   expect(await hero.evaluate((node) =>
