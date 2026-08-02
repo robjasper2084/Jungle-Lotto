@@ -2360,17 +2360,57 @@ body.live-events-page .vault-credit-badge {
   }
   .lm-live-player {
     position: fixed !important;
-    left: 8px !important;
-    right: 5.7rem !important;
-    bottom: max(8px, env(safe-area-inset-bottom)) !important;
+    left: 10px !important;
+    right: 5rem !important;
+    bottom: max(10px, env(safe-area-inset-bottom)) !important;
     top: auto !important;
-    grid-template-columns: 60px 1fr 48px 56px 48px;
+    width: auto !important;
+    max-width: none !important;
+    grid-template-columns: minmax(0, 1fr) 48px;
+    gap: 8px;
     margin: 0;
-    min-height: 76px;
-    padding: 8px 10px;
+    min-height: 64px;
+    max-height: 72px;
+    padding: 8px;
+    border-radius: 10px;
   }
-  .now-wave {
-    display: none;
+  .lm-live-player .now-art,
+  .lm-live-player .now-wave,
+  .lm-live-player [data-live-player-prev],
+  .lm-live-player [data-live-player-next],
+  .lm-live-player .time,
+  .lm-live-player .points {
+    display: none !important;
+  }
+  .lm-live-player .now-copy {
+    min-width: 0;
+    overflow: hidden;
+  }
+  .lm-live-player .now-copy small,
+  .lm-live-player .now-copy strong,
+  .lm-live-player .now-copy span {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .lm-live-player .now-copy small {
+    font-size: 0.58rem;
+  }
+  .lm-live-player .now-copy strong {
+    font-size: 0.86rem;
+  }
+  .lm-live-player .now-copy span {
+    font-size: 0.66rem;
+  }
+  .lm-live-player .big {
+    width: 48px;
+    min-width: 48px;
+    height: 48px;
+    min-height: 48px;
+  }
+  body.live-events-page .vault-credit-badge {
+    bottom: calc(max(10px, env(safe-area-inset-bottom)) + 76px) !important;
   }
   .shadow-ops-panel {
     grid-template-columns: 1fr;

@@ -809,6 +809,32 @@ test("mobile memberships hero keeps its title inside the viewport", async ({ pag
   expect(membershipWordBox.x + membershipWordBox.width).toBeLessThanOrEqual(viewportWidth);
 });
 
+test("mobile Live Events player stays compact and clear of the floating menu", async ({ page }, testInfo) => {
+  test.skip(!testInfo.project.name.startsWith("mobile"), "Mobile layout assertion");
+  await blockHeavyMedia(page);
+  await page.goto("/live-events.html", { waitUntil: "domcontentloaded" });
+
+  const player = page.locator("[data-live-player]");
+  const playButton = player.locator("[data-live-player-toggle]");
+  const menuButton = page.locator(".universal-menu-toggle");
+  await expect(player).toBeVisible();
+  await expect(playButton).toBeVisible();
+  await expect(menuButton).toBeVisible();
+  await expect(player.locator("[data-live-player-prev]")).toBeHidden();
+  await expect(player.locator("[data-live-player-next]")).toBeHidden();
+
+  const [playerBox, menuBox, viewport] = await Promise.all([
+    player.boundingBox(),
+    menuButton.boundingBox(),
+    page.evaluate(() => ({ width: innerWidth, scrollWidth: document.documentElement.scrollWidth })),
+  ]);
+  expect(playerBox).toBeTruthy();
+  expect(menuBox).toBeTruthy();
+  expect(playerBox.height).toBeLessThanOrEqual(72);
+  expect(playerBox.x + playerBox.width).toBeLessThanOrEqual(menuBox.x + 1);
+  expect(viewport.scrollWidth).toBeLessThanOrEqual(viewport.width);
+});
+
 test("news route renders from the static feed without probing the missing API", async ({ page }) => {
   await blockHeavyMedia(page);
   const localFailures = trackLocalFailures(page);

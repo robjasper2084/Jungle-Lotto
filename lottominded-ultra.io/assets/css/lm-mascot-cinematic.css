@@ -239,6 +239,27 @@ body.live-events-page footer.lm-live-player .big {
   min-height: 46px !important;
 }
 
+@media (max-width: 820px) {
+  body.live-events-page footer.lm-live-player {
+    left: 10px !important;
+    right: 5rem !important;
+    bottom: max(10px, env(safe-area-inset-bottom)) !important;
+    width: auto !important;
+    max-width: none !important;
+    min-height: 64px !important;
+    max-height: 72px !important;
+    padding: 8px !important;
+    transform: none !important;
+    grid-template-columns: minmax(0, 1fr) 48px !important;
+  }
+
+  body.live-events-page footer.lm-live-player .now-art,
+  body.live-events-page footer.lm-live-player [data-live-player-prev],
+  body.live-events-page footer.lm-live-player [data-live-player-next] {
+    display: none !important;
+  }
+}
+
 body.live-events-page .lm-section,
 body.live-events-page .lm-category-grid,
 body.live-events-page .lm-spotlight,
