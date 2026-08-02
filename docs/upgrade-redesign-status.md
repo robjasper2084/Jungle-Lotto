@@ -542,3 +542,18 @@
 - Phase 2 package: Inspected for scope only; Phase 2 implementation, branch creation, database migrations, and Stripe changes were not started by this documentation task
 - Staging URL: Local only (`http://127.0.0.1:8304/` while the verified server is running)
 - Production approval status: Not approved; `main`, production, and `v1-final` remain unchanged
+
+## Footer And Popup Pointer Repair
+
+- Step number: Browser-requested footer deduplication and popup pointer correction
+- Implementation commits: `57751a4068b2c53baa648646c5686efcab020d89` and `e030d104570e9c20e53c8cac20c45f20120261ba`
+- Upgrade branch: `upgrade-redesign`
+- Affected surfaces: Shared footers on all generated routes, Home commercial, Membership commercial, Storefront commercial, Static Wav commercial, and open dialogs
+- Corrections: Removed duplicate footer destinations, standardized seven canonical support/legal links, restored a visible native pointer over popup layers, and reserved mobile footer clearance for fixed controls
+- Tests: Focused footer and pointer checks passed 4/4; shared support and Home checks passed 20 with 4 intentional desktop skips; mobile footer regression passed 2/2; source/staging route matrix passed 150/150 across desktop, mobile, and tablet; staging safety passed 10/10
+- Staging build: 25 noindex pages and 571 same-origin references verified from `e030d104570e9c20e53c8cac20c45f20120261ba`
+- Visual review: Six final captures passed at `1440x900` and `390x844`; review: `docs/staging-reviews/footer-pointer-fix.md`
+- Intentional visual departure: Duplicate footer buttons are removed, and mobile footers include safe clearance below their final link; LottoMind artwork and black, gold, cyan, and violet identity are unchanged
+- Commerce and backend impact: None; staging live payments, production account writes, real redemptions, and production analytics remain blocked
+- Staging URL: Local only (`http://127.0.0.1:8143/`)
+- Production approval status: Not approved; `main`, production, and `v1-final` remain unchanged

@@ -56,8 +56,15 @@ try {
       } else {
         const close = page.locator("[data-startup-video-close]").last();
         if (await close.isVisible().catch(() => false)) await close.click();
-        await page.locator("body > footer .site-legal-links a").last().scrollIntoViewIfNeeded();
-        await page.mouse.wheel(0, 4_000);
+        await page.evaluate(() => {
+          document.documentElement.style.scrollBehavior = "auto";
+          document.body.style.scrollBehavior = "auto";
+          document.querySelector("body > footer")?.scrollIntoView({ block: "end", behavior: "instant" });
+          const scroller = document.scrollingElement;
+          if (scroller) scroller.scrollTop = scroller.scrollHeight;
+        });
+        await page.waitForTimeout(300);
+        await page.locator("body > footer").evaluate((element) => element.scrollIntoView({ block: "end", behavior: "instant" }));
         await page.waitForTimeout(750);
       }
 

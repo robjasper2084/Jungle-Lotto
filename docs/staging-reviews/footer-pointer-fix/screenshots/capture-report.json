@@ -1,0 +1,269 @@
+{
+  "capturedAt": "2026-08-02T17:49:25.950Z",
+  "results": [
+    {
+      "route": "/index.html#top",
+      "capture": "home-popup",
+      "viewport": "1440x900",
+      "status": 200,
+      "output": "C:\\Users\\digit\\Documents\\phone\\_jungle_lotto_refined\\docs\\staging-reviews\\footer-pointer-fix\\screenshots\\home-popup-1440x900.png",
+      "noindex": "noindex,nofollow,noarchive",
+      "stagingBannerVisible": true,
+      "footerLinks": [
+        {
+          "label": "Help",
+          "href": "/how-to-use.html"
+        },
+        {
+          "label": "Contact",
+          "href": "/contact.html"
+        },
+        {
+          "label": "Credits",
+          "href": "/account.html#credits"
+        },
+        {
+          "label": "Account",
+          "href": "/account.html"
+        },
+        {
+          "label": "Privacy",
+          "href": "/privacy.html"
+        },
+        {
+          "label": "Terms",
+          "href": "/terms.html"
+        },
+        {
+          "label": "Accessibility",
+          "href": "/accessibility.html"
+        }
+      ],
+      "pointer": {
+        "panel": "auto",
+        "action": "pointer"
+      },
+      "consoleErrors": [],
+      "pageErrors": [],
+      "assetFailures": []
+    },
+    {
+      "route": "/index.html#top",
+      "capture": "home-footer",
+      "viewport": "1440x900",
+      "status": 200,
+      "output": "C:\\Users\\digit\\Documents\\phone\\_jungle_lotto_refined\\docs\\staging-reviews\\footer-pointer-fix\\screenshots\\home-footer-1440x900.png",
+      "noindex": "noindex,nofollow,noarchive",
+      "stagingBannerVisible": true,
+      "footerLinks": [
+        {
+          "label": "Help",
+          "href": "/how-to-use.html"
+        },
+        {
+          "label": "Contact",
+          "href": "/contact.html"
+        },
+        {
+          "label": "Credits",
+          "href": "/account.html#credits"
+        },
+        {
+          "label": "Account",
+          "href": "/account.html"
+        },
+        {
+          "label": "Privacy",
+          "href": "/privacy.html"
+        },
+        {
+          "label": "Terms",
+          "href": "/terms.html"
+        },
+        {
+          "label": "Accessibility",
+          "href": "/accessibility.html"
+        }
+      ],
+      "pointer": null,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "assetFailures": []
+    },
+    {
+      "route": "/accessibility.html",
+      "capture": "accessibility-footer",
+      "viewport": "1440x900",
+      "status": 200,
+      "output": "C:\\Users\\digit\\Documents\\phone\\_jungle_lotto_refined\\docs\\staging-reviews\\footer-pointer-fix\\screenshots\\accessibility-footer-1440x900.png",
+      "noindex": "noindex,nofollow,noarchive",
+      "stagingBannerVisible": true,
+      "footerLinks": [
+        {
+          "label": "Help",
+          "href": "/how-to-use.html"
+        },
+        {
+          "label": "Contact",
+          "href": "/contact.html"
+        },
+        {
+          "label": "Credits",
+          "href": "/account.html#credits"
+        },
+        {
+          "label": "Account",
+          "href": "/account.html"
+        },
+        {
+          "label": "Privacy",
+          "href": "/privacy.html"
+        },
+        {
+          "label": "Terms",
+          "href": "/terms.html"
+        },
+        {
+          "label": "Accessibility",
+          "href": "/accessibility.html"
+        }
+      ],
+      "pointer": null,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "assetFailures": []
+    },
+    {
+      "route": "/index.html#top",
+      "capture": "home-popup",
+      "viewport": "390x844",
+      "status": 200,
+      "output": "C:\\Users\\digit\\Documents\\phone\\_jungle_lotto_refined\\docs\\staging-reviews\\footer-pointer-fix\\screenshots\\home-popup-390x844.png",
+      "noindex": "noindex,nofollow,noarchive",
+      "stagingBannerVisible": true,
+      "footerLinks": [
+        {
+          "label": "Help",
+          "href": "/how-to-use.html"
+        },
+        {
+          "label": "Contact",
+          "href": "/contact.html"
+        },
+        {
+          "label": "Credits",
+          "href": "/account.html#credits"
+        },
+        {
+          "label": "Account",
+          "href": "/account.html"
+        },
+        {
+          "label": "Privacy",
+          "href": "/privacy.html"
+        },
+        {
+          "label": "Terms",
+          "href": "/terms.html"
+        },
+        {
+          "label": "Accessibility",
+          "href": "/accessibility.html"
+        }
+      ],
+      "pointer": {
+        "panel": "auto",
+        "action": "pointer"
+      },
+      "consoleErrors": [],
+      "pageErrors": [],
+      "assetFailures": []
+    },
+    {
+      "route": "/index.html#top",
+      "capture": "home-footer",
+      "viewport": "390x844",
+      "status": 200,
+      "output": "C:\\Users\\digit\\Documents\\phone\\_jungle_lotto_refined\\docs\\staging-reviews\\footer-pointer-fix\\screenshots\\home-footer-390x844.png",
+      "noindex": "noindex,nofollow,noarchive",
+      "stagingBannerVisible": true,
+      "footerLinks": [
+        {
+          "label": "Help",
+          "href": "/how-to-use.html"
+        },
+        {
+          "label": "Contact",
+          "href": "/contact.html"
+        },
+        {
+          "label": "Credits",
+          "href": "/account.html#credits"
+        },
+        {
+          "label": "Account",
+          "href": "/account.html"
+        },
+        {
+          "label": "Privacy",
+          "href": "/privacy.html"
+        },
+        {
+          "label": "Terms",
+          "href": "/terms.html"
+        },
+        {
+          "label": "Accessibility",
+          "href": "/accessibility.html"
+        }
+      ],
+      "pointer": null,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "assetFailures": []
+    },
+    {
+      "route": "/accessibility.html",
+      "capture": "accessibility-footer",
+      "viewport": "390x844",
+      "status": 200,
+      "output": "C:\\Users\\digit\\Documents\\phone\\_jungle_lotto_refined\\docs\\staging-reviews\\footer-pointer-fix\\screenshots\\accessibility-footer-390x844.png",
+      "noindex": "noindex,nofollow,noarchive",
+      "stagingBannerVisible": true,
+      "footerLinks": [
+        {
+          "label": "Help",
+          "href": "/how-to-use.html"
+        },
+        {
+          "label": "Contact",
+          "href": "/contact.html"
+        },
+        {
+          "label": "Credits",
+          "href": "/account.html#credits"
+        },
+        {
+          "label": "Account",
+          "href": "/account.html"
+        },
+        {
+          "label": "Privacy",
+          "href": "/privacy.html"
+        },
+        {
+          "label": "Terms",
+          "href": "/terms.html"
+        },
+        {
+          "label": "Accessibility",
+          "href": "/accessibility.html"
+        }
+      ],
+      "pointer": null,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "assetFailures": []
+    }
+  ]
+}
