@@ -1,0 +1,440 @@
+﻿{
+    "generatedAt":  "2026-08-02T03:25:29.696Z",
+    "baseUrl":  "http://127.0.0.1:8321",
+    "captureCount":  18,
+    "failureCount":  0,
+    "results":  [
+                    {
+                        "route":  "/memberships.html",
+                        "viewport":  "desktop",
+                        "status":  200,
+                        "errors":  [
+
+                                   ],
+                        "file":  "memberships--desktop.jpg",
+                        "overflow":  false,
+                        "noindex":  "noindex,nofollow,noarchive",
+                        "banner":  true,
+                        "environment":  {
+                                            "name":  "staging",
+                                            "isProduction":  false,
+                                            "allowLivePayments":  false,
+                                            "allowAccountWrites":  false,
+                                            "allowRedemptions":  false,
+                                            "allowProductionAnalytics":  false,
+                                            "allowTestPayments":  false,
+                                            "hasIsolatedStagingBackend":  false,
+                                            "stagingBackendOrigin":  ""
+                                        },
+                        "brokenImages":  0
+                    },
+                    {
+                        "route":  "/features-app.html",
+                        "viewport":  "desktop",
+                        "status":  200,
+                        "errors":  [
+
+                                   ],
+                        "file":  "arcade--desktop.jpg",
+                        "overflow":  false,
+                        "noindex":  "noindex,nofollow,noarchive",
+                        "banner":  true,
+                        "environment":  {
+                                            "name":  "staging",
+                                            "isProduction":  false,
+                                            "allowLivePayments":  false,
+                                            "allowAccountWrites":  false,
+                                            "allowRedemptions":  false,
+                                            "allowProductionAnalytics":  false,
+                                            "allowTestPayments":  false,
+                                            "hasIsolatedStagingBackend":  false,
+                                            "stagingBackendOrigin":  ""
+                                        },
+                        "brokenImages":  0
+                    },
+                    {
+                        "route":  "/how-to-use.html",
+                        "viewport":  "desktop",
+                        "status":  200,
+                        "errors":  [
+
+                                   ],
+                        "file":  "static-wav--desktop.jpg",
+                        "overflow":  false,
+                        "noindex":  "noindex,nofollow,noarchive",
+                        "banner":  true,
+                        "environment":  {
+                                            "name":  "staging",
+                                            "isProduction":  false,
+                                            "allowLivePayments":  false,
+                                            "allowAccountWrites":  false,
+                                            "allowRedemptions":  false,
+                                            "allowProductionAnalytics":  false,
+                                            "allowTestPayments":  false,
+                                            "hasIsolatedStagingBackend":  false,
+                                            "stagingBackendOrigin":  ""
+                                        },
+                        "brokenImages":  0
+                    },
+                    {
+                        "route":  "/beat2lotto-plus.html#beat2lotto",
+                        "viewport":  "desktop",
+                        "status":  200,
+                        "errors":  [
+
+                                   ],
+                        "file":  "robot-rahbee--desktop.jpg",
+                        "overflow":  false,
+                        "noindex":  "noindex,nofollow,noarchive",
+                        "banner":  true,
+                        "environment":  {
+                                            "name":  "staging",
+                                            "isProduction":  false,
+                                            "allowLivePayments":  false,
+                                            "allowAccountWrites":  false,
+                                            "allowRedemptions":  false,
+                                            "allowProductionAnalytics":  false,
+                                            "allowTestPayments":  false,
+                                            "hasIsolatedStagingBackend":  false,
+                                            "stagingBackendOrigin":  ""
+                                        },
+                        "brokenImages":  0
+                    },
+                    {
+                        "route":  "/merch-store.html",
+                        "viewport":  "desktop",
+                        "status":  200,
+                        "errors":  [
+
+                                   ],
+                        "file":  "storefront--desktop.jpg",
+                        "overflow":  false,
+                        "noindex":  "noindex,nofollow,noarchive",
+                        "banner":  true,
+                        "environment":  {
+                                            "name":  "staging",
+                                            "isProduction":  false,
+                                            "allowLivePayments":  false,
+                                            "allowAccountWrites":  false,
+                                            "allowRedemptions":  false,
+                                            "allowProductionAnalytics":  false,
+                                            "allowTestPayments":  false,
+                                            "hasIsolatedStagingBackend":  false,
+                                            "stagingBackendOrigin":  ""
+                                        },
+                        "brokenImages":  0
+                    },
+                    {
+                        "route":  "/live-events.html",
+                        "viewport":  "desktop",
+                        "status":  200,
+                        "errors":  [
+
+                                   ],
+                        "file":  "live-events--desktop.jpg",
+                        "overflow":  false,
+                        "noindex":  "noindex,nofollow,noarchive",
+                        "banner":  true,
+                        "environment":  {
+                                            "name":  "staging",
+                                            "isProduction":  false,
+                                            "allowLivePayments":  false,
+                                            "allowAccountWrites":  false,
+                                            "allowRedemptions":  false,
+                                            "allowProductionAnalytics":  false,
+                                            "allowTestPayments":  false,
+                                            "hasIsolatedStagingBackend":  false,
+                                            "stagingBackendOrigin":  ""
+                                        },
+                        "brokenImages":  0
+                    },
+                    {
+                        "route":  "/memberships.html",
+                        "viewport":  "tablet",
+                        "status":  200,
+                        "errors":  [
+
+                                   ],
+                        "file":  "memberships--tablet.jpg",
+                        "overflow":  false,
+                        "noindex":  "noindex,nofollow,noarchive",
+                        "banner":  true,
+                        "environment":  {
+                                            "name":  "staging",
+                                            "isProduction":  false,
+                                            "allowLivePayments":  false,
+                                            "allowAccountWrites":  false,
+                                            "allowRedemptions":  false,
+                                            "allowProductionAnalytics":  false,
+                                            "allowTestPayments":  false,
+                                            "hasIsolatedStagingBackend":  false,
+                                            "stagingBackendOrigin":  ""
+                                        },
+                        "brokenImages":  0
+                    },
+                    {
+                        "route":  "/features-app.html",
+                        "viewport":  "tablet",
+                        "status":  200,
+                        "errors":  [
+
+                                   ],
+                        "file":  "arcade--tablet.jpg",
+                        "overflow":  false,
+                        "noindex":  "noindex,nofollow,noarchive",
+                        "banner":  true,
+                        "environment":  {
+                                            "name":  "staging",
+                                            "isProduction":  false,
+                                            "allowLivePayments":  false,
+                                            "allowAccountWrites":  false,
+                                            "allowRedemptions":  false,
+                                            "allowProductionAnalytics":  false,
+                                            "allowTestPayments":  false,
+                                            "hasIsolatedStagingBackend":  false,
+                                            "stagingBackendOrigin":  ""
+                                        },
+                        "brokenImages":  0
+                    },
+                    {
+                        "route":  "/how-to-use.html",
+                        "viewport":  "tablet",
+                        "status":  200,
+                        "errors":  [
+
+                                   ],
+                        "file":  "static-wav--tablet.jpg",
+                        "overflow":  false,
+                        "noindex":  "noindex,nofollow,noarchive",
+                        "banner":  true,
+                        "environment":  {
+                                            "name":  "staging",
+                                            "isProduction":  false,
+                                            "allowLivePayments":  false,
+                                            "allowAccountWrites":  false,
+                                            "allowRedemptions":  false,
+                                            "allowProductionAnalytics":  false,
+                                            "allowTestPayments":  false,
+                                            "hasIsolatedStagingBackend":  false,
+                                            "stagingBackendOrigin":  ""
+                                        },
+                        "brokenImages":  0
+                    },
+                    {
+                        "route":  "/beat2lotto-plus.html#beat2lotto",
+                        "viewport":  "tablet",
+                        "status":  200,
+                        "errors":  [
+
+                                   ],
+                        "file":  "robot-rahbee--tablet.jpg",
+                        "overflow":  false,
+                        "noindex":  "noindex,nofollow,noarchive",
+                        "banner":  true,
+                        "environment":  {
+                                            "name":  "staging",
+                                            "isProduction":  false,
+                                            "allowLivePayments":  false,
+                                            "allowAccountWrites":  false,
+                                            "allowRedemptions":  false,
+                                            "allowProductionAnalytics":  false,
+                                            "allowTestPayments":  false,
+                                            "hasIsolatedStagingBackend":  false,
+                                            "stagingBackendOrigin":  ""
+                                        },
+                        "brokenImages":  0
+                    },
+                    {
+                        "route":  "/merch-store.html",
+                        "viewport":  "tablet",
+                        "status":  200,
+                        "errors":  [
+
+                                   ],
+                        "file":  "storefront--tablet.jpg",
+                        "overflow":  false,
+                        "noindex":  "noindex,nofollow,noarchive",
+                        "banner":  true,
+                        "environment":  {
+                                            "name":  "staging",
+                                            "isProduction":  false,
+                                            "allowLivePayments":  false,
+                                            "allowAccountWrites":  false,
+                                            "allowRedemptions":  false,
+                                            "allowProductionAnalytics":  false,
+                                            "allowTestPayments":  false,
+                                            "hasIsolatedStagingBackend":  false,
+                                            "stagingBackendOrigin":  ""
+                                        },
+                        "brokenImages":  0
+                    },
+                    {
+                        "route":  "/live-events.html",
+                        "viewport":  "tablet",
+                        "status":  200,
+                        "errors":  [
+
+                                   ],
+                        "file":  "live-events--tablet.jpg",
+                        "overflow":  false,
+                        "noindex":  "noindex,nofollow,noarchive",
+                        "banner":  true,
+                        "environment":  {
+                                            "name":  "staging",
+                                            "isProduction":  false,
+                                            "allowLivePayments":  false,
+                                            "allowAccountWrites":  false,
+                                            "allowRedemptions":  false,
+                                            "allowProductionAnalytics":  false,
+                                            "allowTestPayments":  false,
+                                            "hasIsolatedStagingBackend":  false,
+                                            "stagingBackendOrigin":  ""
+                                        },
+                        "brokenImages":  0
+                    },
+                    {
+                        "route":  "/memberships.html",
+                        "viewport":  "mobile",
+                        "status":  200,
+                        "errors":  [
+
+                                   ],
+                        "file":  "memberships--mobile.jpg",
+                        "overflow":  false,
+                        "noindex":  "noindex,nofollow,noarchive",
+                        "banner":  true,
+                        "environment":  {
+                                            "name":  "staging",
+                                            "isProduction":  false,
+                                            "allowLivePayments":  false,
+                                            "allowAccountWrites":  false,
+                                            "allowRedemptions":  false,
+                                            "allowProductionAnalytics":  false,
+                                            "allowTestPayments":  false,
+                                            "hasIsolatedStagingBackend":  false,
+                                            "stagingBackendOrigin":  ""
+                                        },
+                        "brokenImages":  0
+                    },
+                    {
+                        "route":  "/features-app.html",
+                        "viewport":  "mobile",
+                        "status":  200,
+                        "errors":  [
+
+                                   ],
+                        "file":  "arcade--mobile.jpg",
+                        "overflow":  false,
+                        "noindex":  "noindex,nofollow,noarchive",
+                        "banner":  true,
+                        "environment":  {
+                                            "name":  "staging",
+                                            "isProduction":  false,
+                                            "allowLivePayments":  false,
+                                            "allowAccountWrites":  false,
+                                            "allowRedemptions":  false,
+                                            "allowProductionAnalytics":  false,
+                                            "allowTestPayments":  false,
+                                            "hasIsolatedStagingBackend":  false,
+                                            "stagingBackendOrigin":  ""
+                                        },
+                        "brokenImages":  0
+                    },
+                    {
+                        "route":  "/how-to-use.html",
+                        "viewport":  "mobile",
+                        "status":  200,
+                        "errors":  [
+
+                                   ],
+                        "file":  "static-wav--mobile.jpg",
+                        "overflow":  false,
+                        "noindex":  "noindex,nofollow,noarchive",
+                        "banner":  true,
+                        "environment":  {
+                                            "name":  "staging",
+                                            "isProduction":  false,
+                                            "allowLivePayments":  false,
+                                            "allowAccountWrites":  false,
+                                            "allowRedemptions":  false,
+                                            "allowProductionAnalytics":  false,
+                                            "allowTestPayments":  false,
+                                            "hasIsolatedStagingBackend":  false,
+                                            "stagingBackendOrigin":  ""
+                                        },
+                        "brokenImages":  0
+                    },
+                    {
+                        "route":  "/beat2lotto-plus.html#beat2lotto",
+                        "viewport":  "mobile",
+                        "status":  200,
+                        "errors":  [
+
+                                   ],
+                        "file":  "robot-rahbee--mobile.jpg",
+                        "overflow":  false,
+                        "noindex":  "noindex,nofollow,noarchive",
+                        "banner":  true,
+                        "environment":  {
+                                            "name":  "staging",
+                                            "isProduction":  false,
+                                            "allowLivePayments":  false,
+                                            "allowAccountWrites":  false,
+                                            "allowRedemptions":  false,
+                                            "allowProductionAnalytics":  false,
+                                            "allowTestPayments":  false,
+                                            "hasIsolatedStagingBackend":  false,
+                                            "stagingBackendOrigin":  ""
+                                        },
+                        "brokenImages":  0
+                    },
+                    {
+                        "route":  "/merch-store.html",
+                        "viewport":  "mobile",
+                        "status":  200,
+                        "errors":  [
+
+                                   ],
+                        "file":  "storefront--mobile.jpg",
+                        "overflow":  false,
+                        "noindex":  "noindex,nofollow,noarchive",
+                        "banner":  true,
+                        "environment":  {
+                                            "name":  "staging",
+                                            "isProduction":  false,
+                                            "allowLivePayments":  false,
+                                            "allowAccountWrites":  false,
+                                            "allowRedemptions":  false,
+                                            "allowProductionAnalytics":  false,
+                                            "allowTestPayments":  false,
+                                            "hasIsolatedStagingBackend":  false,
+                                            "stagingBackendOrigin":  ""
+                                        },
+                        "brokenImages":  0
+                    },
+                    {
+                        "route":  "/live-events.html",
+                        "viewport":  "mobile",
+                        "status":  200,
+                        "errors":  [
+
+                                   ],
+                        "file":  "live-events--mobile.jpg",
+                        "overflow":  false,
+                        "noindex":  "noindex,nofollow,noarchive",
+                        "banner":  true,
+                        "environment":  {
+                                            "name":  "staging",
+                                            "isProduction":  false,
+                                            "allowLivePayments":  false,
+                                            "allowAccountWrites":  false,
+                                            "allowRedemptions":  false,
+                                            "allowProductionAnalytics":  false,
+                                            "allowTestPayments":  false,
+                                            "hasIsolatedStagingBackend":  false,
+                                            "stagingBackendOrigin":  ""
+                                        },
+                        "brokenImages":  0
+                    }
+                ]
+}
