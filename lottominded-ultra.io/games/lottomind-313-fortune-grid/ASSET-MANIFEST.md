@@ -5,15 +5,17 @@ Stable keys keep art replaceable without gameplay edits.
 | Key | Current asset | Intended replacement |
 |---|---|---|
 | `brand.icon` | `assets/icons/icon.svg` | 512px Guardian number-sphere icon |
-| `arcade.keyArt` | `assets/key-art.svg` | 16:9 premium 2.5D board artwork |
-| `board.vault` | Phaser vector placeholder | Guardian Vault sprite sequence |
-| `board.skyline` | Phaser vector placeholder | Layered transparent skyline |
-| `board.river` | Phaser vector placeholder | Three parallax river layers |
-| `district.*.gateway` | Node symbol + label | Eight patterned gateway sprites |
-| `token.*` | Colored numbered sphere | Six original token sprite sheets |
-| `venture.level.*` | Node ring + DOM label | Four modular building levels |
-| `card.pulse.*` | Generated gradient panel | 24 original 4:5 card illustrations |
-| `card.oracle.*` | Generated gradient panel | 24 original 4:5 card illustrations |
+| `arcade.keyArt` | `assets/art/fortune-grid-arcade-key-art.png` | Generated 16:9 Detroit board artwork |
+| `board.detroit` | `assets/art/detroit-fortune-grid-board.png` | Official-GIS-referenced Detroit silhouette, riverfront, sports district, Belle Isle, both international bridges, and landmark cues |
+| `board.vault` | `assets/art/guardian-vault.png` | Generated transparent Guardian Vault sprite |
+| `district.*.gateway` | `assets/art/gateways/gateway-01.png` through `gateway-08.png` | Eight generated transparent gateway sprites |
+| `token.mascot` | `assets/art/mascot/01.png` through `06.png` | Six-frame strip derived from the user-supplied LottoMind mascot turnaround |
+| `token.*` | `assets/art/tokens/token-01.png` through `token-06.png` | Six generated transparent token concepts |
+| `venture.level.*` | `assets/art/ventures/venture-level-1.png` through `venture-level-4.png` | Four generated development levels |
+| `card.pulse.*` | `assets/art/city-pulse-card-atlas.png` | 24 generated Detroit City Pulse illustrations |
+| `card.oracle.*` | `assets/art/dream-oracle-card-atlas.png` | 24 generated Dream Oracle illustrations |
 | `audio.*` | None shipped | Original loops/SFX after rights review |
 
-Only original SVG/vector placeholders are shipped. No photographs, logos, city seals, manufacturer badges, team marks, casino trade dress, or copyrighted recordings are included.
+Runtime artwork was generated with ChatGPT's image-generation tool. The board composition was guided by City of Detroit GIS outlines and named public landmarks; generated architecture is stylized and is not a survey map. Street and landmark names are rendered separately by Phaser for clarity. No city seals, team marks, casino trade dress, or copyrighted recordings are included.
+
+`scripts/process-art.py` reproducibly crops the generated transparent board-pieces atlas. The mascot chroma source is normalized into six shared-scale, bottom-centered frames under `assets/art/mascot/`.

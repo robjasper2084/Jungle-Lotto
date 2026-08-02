@@ -4,6 +4,7 @@ import { resolve } from "node:path";
 test("creates a game and completes the first turn without console errors", async ({ page }, testInfo) => {
   const errors: string[] = [];
   page.on("console", (message) => { if (message.type() === "error") errors.push(message.text()); });
+  page.on("response", (response) => { if (response.status() >= 400) errors.push(`${response.status()} ${response.url()}`); });
   await page.goto("/");
   await expect(page).toHaveTitle(/Fortune Grid/);
   await page.getByRole("button", { name: "Launch Fortune Grid" }).click();
@@ -29,6 +30,17 @@ test("supports reduced motion and keyboard-only setup", async ({ page }) => {
   await page.getByLabel(/Reduced motion/).check();
   await page.getByRole("button", { name: "Apply" }).click();
   await expect(page.getByRole("button", { name: /Roll Movement Cube/ })).toBeEnabled();
+});
+
+test("supports four local pass-and-play players", async ({ page }) => {
+  await page.goto("/");
+  await page.getByLabel("Total players").selectOption("4");
+  await page.getByLabel("Local players").selectOption("4");
+  await page.getByRole("button", { name: "Launch Fortune Grid" }).click();
+  await expect(page.getByText("Player 1", { exact: true })).toBeVisible();
+  await expect(page.getByText("Player 2", { exact: true })).toBeVisible();
+  await expect(page.getByText("Player 3", { exact: true })).toBeVisible();
+  await expect(page.getByText("Player 4", { exact: true })).toBeVisible();
 });
 
 test("save reload, touch layout, and arcade return link are available", async ({ page, isMobile }) => {

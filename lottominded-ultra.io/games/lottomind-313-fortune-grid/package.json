@@ -9,7 +9,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:sim": "vitest run tests/simulation.test.ts",
-    "test:e2e": "playwright test",
+    "test:e2e": "npm run build && playwright test",
     "check": "npm run typecheck && npm run test && npm run build"
   },
   "dependencies": {

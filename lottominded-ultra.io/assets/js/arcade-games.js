@@ -37,7 +37,7 @@
       description: "Build Detroit ventures, collect number signals, and become the city's next Fortune Visionary.",
       category: "Strategy",
       tags: ["board game", "Detroit", "numbers", "strategy", "local multiplayer", "accessible"],
-      image: "./games/lottomind-313-fortune-grid/assets/key-art.svg",
+      image: "./games/lottomind-313-fortune-grid/assets/art/fortune-grid-arcade-key-art.png",
       status: "Beta",
       featured: true,
       controls: "Keyboard + pointer + touch",

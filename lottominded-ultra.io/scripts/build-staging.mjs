@@ -48,6 +48,7 @@ const skipRoots = [
   "games/lottomind-313-fortune-grid/app",
   "games/lottomind-313-fortune-grid/tests",
   "games/lottomind-313-fortune-grid/scripts",
+  "games/lottomind-313-fortune-grid/assets/art/source",
 ];
 const skipFiles = new Set([
   "assets/video/video_background_snippet.html",

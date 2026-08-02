@@ -1,5 +1,13 @@
 # Staging Test Report
 
+## Detroit artwork update
+
+- The built static game loads the generated Detroit board, transparent mascot/token art, gateway sprites, venture-level sprites, Guardian Vault, and both 24-card atlases without console errors.
+- Desktop 1440 first-turn gameplay passed after the artwork integration.
+- Mobile 390 and tablet 768 first-turn plus four-local-player flows passed 4/4.
+- The complete 13-round Standard test remained green during the artwork pass.
+- In-app browser inspection confirmed a clean console and visible labels for the Downtown sports district, Michigan Central, Renaissance Center, Eastern Market, Belle Isle, the Ambassador Bridge, the Gordie Howe International Bridge, and major streets.
+
 Verified locally on 2026-08-02 from protected branch `upgrade-redesign`. No production deployment occurred.
 
 ## Results
