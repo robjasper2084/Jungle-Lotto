@@ -54,3 +54,34 @@ async function queueCpu(){if(!state||busy||!state.players[state.currentPlayer].c
 app.querySelector("[data-action=help]")?.addEventListener("click",showHelp);app.querySelector("[data-action=settings]")?.addEventListener("click",showSettings);app.querySelector("[data-camera=follow]")?.addEventListener("click",()=>scene().followPlayer());app.querySelector("[data-camera=overview]")?.addEventListener("click",()=>scene().fitOverview());window.addEventListener("keydown",e=>{if(e.key===" "&&state?.phase==="roll"&&!e.repeat){e.preventDefault();roll()}});window.addEventListener("beforeunload",()=>state&&saveGame(state));
 if("serviceWorker" in navigator&&location.protocol.startsWith("http"))window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js",{scope:"./"}).catch(()=>toast("Offline support will activate after a successful hosted load.")));
 showSetup();
+
+function decorateHudControls(){
+  if(!state||!hud.isConnected)return;
+  if(!hud.querySelector("[data-game-utilities]")){
+    const utilities=document.createElement("section");
+    utilities.className="panel utility-actions";
+    utilities.dataset.gameUtilities="true";
+    utilities.innerHTML='<button data-utility="save">Save match</button><button data-utility="lab">Number Lab</button><button data-utility="restart">New match</button>';
+    hud.prepend(utilities);
+  }
+  const player=state.players[state.currentPlayer];
+  hud.querySelectorAll<HTMLButtonElement>("[data-digit]").forEach((button)=>{
+    const index=Number(button.dataset.digit);const locked=player.lockedSignals?.includes(index);const digit=player.signals[index];
+    button.classList.toggle("locked",Boolean(locked));button.setAttribute("aria-pressed",String(Boolean(locked)));button.setAttribute("aria-label",`Signal digit ${index+1}: ${digit}. ${locked?"Locked":"Unlocked"}`);const nextText=`${locked?"🔒 ":""}${digit}`;if(button.textContent!==nextText)button.textContent=nextText;
+  });
+  const portfolioRow=hud.querySelector<HTMLElement>("[data-portfolio=sponsor]")?.parentElement;
+  if(portfolioRow&&!portfolioRow.querySelector("[data-portfolio=trade]")){const trade=document.createElement("button");trade.dataset.portfolio="trade";trade.textContent="Trade";portfolioRow.append(trade)}
+}
+
+function showNumberLab(){
+  if(!state)return;const player=state.players[state.currentPlayer];if(!player.signals.length){toast("Collect a Signal digit before opening Number Lab.");return;}
+  modal.innerHTML=`<div class="modal-backdrop"><form class="modal" data-number-lab><h2>Number Lab</h2><p>Lock digits to protect them from new rolls. Reorder unlocked positions or replace one unlocked digit using a Focus Token. Sorting is pattern visualization only, never a prediction.</p><div class="signal-strip">${player.signals.map((digit:number,index:number)=>`<span class="digit">${player.lockedSignals.includes(index)?"🔒 ":""}${digit}</span>`).join("")}</div><div class="setup-grid"><label>Position<select name="index">${player.signals.map((_digit:number,index:number)=>`<option value="${index}">${index+1}${player.lockedSignals.includes(index)?" · locked":""}</option>`).join("")}</select></label><label>Replacement digit<select name="digit">${Array.from({length:10},(_,digit)=>`<option>${digit}</option>`).join("")}</select></label><label>Move position to<select name="to">${player.signals.map((_digit:number,index:number)=>`<option value="${index}">${index+1}</option>`).join("")}</select></label></div><div class="dialog-actions"><button type="button" data-lab="lock">Lock / unlock</button><button type="button" data-lab="replace">Replace · 1 Focus</button><button type="button" data-lab="reorder">Reorder</button><button class="primary" type="button" data-lab="close">Done</button></div></form></div>`;
+  const form=modal.querySelector<HTMLFormElement>("[data-number-lab]")!;const value=(name:string)=>Number((form.elements.namedItem(name) as HTMLSelectElement).value);
+  form.querySelector("[data-lab=lock]")?.addEventListener("click",()=>{dispatch({type:"SIGNAL_LOCK",index:value("index")});showNumberLab()});
+  form.querySelector("[data-lab=replace]")?.addEventListener("click",()=>{dispatch({type:"SIGNAL_REPLACE",index:value("index"),digit:value("digit")});showNumberLab()});
+  form.querySelector("[data-lab=reorder]")?.addEventListener("click",()=>{dispatch({type:"SIGNAL_REORDER",from:value("index"),to:value("to")});showNumberLab()});
+  form.querySelector("[data-lab=close]")?.addEventListener("click",()=>modal.replaceChildren());
+}
+
+new MutationObserver(decorateHudControls).observe(hud,{childList:true,subtree:true});
+hud.addEventListener("click",(event)=>{const target=(event.target as HTMLElement).closest<HTMLElement>("button");if(!target||!state)return;if(target.dataset.digit!==undefined)dispatch({type:"SIGNAL_LOCK",index:Number(target.dataset.digit)});if(target.dataset.utility==="save"){dispatch({type:"MANUAL_SAVE"});toast("Match saved on this device.")}if(target.dataset.utility==="lab")showNumberLab();if(target.dataset.utility==="restart"){clearSave();state=null;hud.replaceChildren();showSetup()}if(target.dataset.portfolio==="trade"){const player=state.players[state.currentPlayer];const ventureId=Number(Object.keys(player.ventures)[0]);const targetPlayer=(state.currentPlayer+1)%state.players.length;if(Number.isFinite(ventureId))dispatch({type:"TRADE_VENTURE",ventureId,targetPlayer})}});

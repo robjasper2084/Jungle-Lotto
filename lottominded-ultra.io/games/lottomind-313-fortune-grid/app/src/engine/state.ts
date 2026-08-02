@@ -16,6 +16,7 @@ export interface Player {
   legacy: number;
   focus: number;
   signals: number[];
+  lockedSignals: number[];
   ventures: Record<number, number>;
   rebuild: boolean;
   savedSequences: number[][];
@@ -56,7 +57,7 @@ export function createInitialState(input: SetupInput): GameState {
     cpu: index >= input.localPlayers,
     personality: index >= input.localPlayers ? personalities[index % personalities.length] : undefined,
     color: colors[index], nodeId: 0, previousNodeId: null, dollars: 1313, legacy: 0, focus: 3,
-    signals: [], ventures: {}, rebuild: false, savedSequences: []
+    signals: [], lockedSignals: [], ventures: {}, rebuild: false, savedSequences: []
   }));
   return {
     rulesetVersion: RULESET_VERSION,
