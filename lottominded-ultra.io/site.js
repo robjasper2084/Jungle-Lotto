@@ -84,20 +84,19 @@ window.LMAudioMix = {
 
   const navItems = [
     { label: "Home", href: siteUrl("./index.html#top"), icon: "HM" },
-    { label: "Games", href: siteUrl("./features-app.html"), icon: "FX" },
-    { label: "News", href: siteUrl("./news/"), icon: "NW" },
     { label: "Events", href: siteUrl("./live-events.html"), icon: "EV" },
-    { label: "Spheres", href: siteUrl("./lottery-spheres.html#spheres"), icon: "SP" },
+    { label: "News", href: siteUrl("./news/"), icon: "NW" },
+    { label: "Games", href: siteUrl("./features-app.html"), icon: "FX" },
+    { label: "Static Wav", href: siteUrl("./how-to-use.html"), icon: "GD" },
     { label: "Robot RAHBEE", href: siteUrl("./beat2lotto-plus.html#beat2lotto"), icon: "B2" },
     { label: "Storefront", href: siteUrl("./merch-store.html"), icon: "DR" },
-    { label: "Static Wav", href: siteUrl("./how-to-use.html"), icon: "GD" },
+    { label: "Memberships", href: siteUrl("./memberships.html"), icon: "MB" },
     {
       label: "LottoMind App",
       href: "https://robjasper2084.github.io/Jungle-Lotto/lotto%20mind%20refined/",
       icon: "LM",
       attrs: ' data-member-app-public="true" aria-label="Open LottoMind Refined App"',
     },
-    { label: "Memberships", href: siteUrl("./memberships.html"), icon: "MB" },
   ];
 
   const currentPath = window.location.pathname.toLowerCase();
@@ -144,6 +143,7 @@ window.LMAudioMix = {
       section: "Explore",
       description: `Open ${item.label}.`,
     })),
+    { label: "Lottery Spheres", href: siteUrl("./lottery-spheres.html#spheres"), section: "Explore", description: "Open the entertainment-only number sphere experience." },
     { label: "Credits", href: siteUrl("./account.html#credits"), section: "Account", description: "View verified LottoCredits and membership status." },
     { label: "Account", href: siteUrl("./account.html"), section: "Account", description: "Open Collector Access and the account vault." },
     { label: "Help", href: siteUrl("./how-to-use.html"), section: "Support", description: "Find setup, controls, and account guidance." },

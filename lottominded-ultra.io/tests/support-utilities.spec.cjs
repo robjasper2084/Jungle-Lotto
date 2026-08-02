@@ -11,9 +11,24 @@ test("shared support utilities expose Search, Credits, Account, Help, Contact, a
   await expect(utilities.getByRole("link", { name: "Credits" })).toHaveAttribute("href", /account\.html#credits$/);
   await expect(utilities.getByRole("link", { name: "Account", exact: true })).toHaveAttribute("href", /account\.html$/);
   const sphereTabs = page.getByRole("navigation", { name: "LOTTOMINDED ULTRA sphere navigation" }).getByRole("link");
-  await expect(sphereTabs.last()).toHaveText("Memberships");
+  await expect(sphereTabs).toHaveText([
+    "Home",
+    "Events",
+    "News",
+    "Games",
+    "Static Wav",
+    "Robot RAHBEE",
+    "Storefront",
+    "Memberships",
+    "LottoMind App",
+  ]);
   await expect(sphereTabs.filter({ hasText: "Robot RAHBEE" })).toHaveCount(1);
   await expect(sphereTabs.filter({ hasText: "Static Wav" })).toHaveCount(1);
+  const utilityShapes = await utilities.locator("a, button").evaluateAll((items) => items.map((item) => {
+    const styles = getComputedStyle(item);
+    return { radius: Number.parseFloat(styles.borderRadius), height: item.getBoundingClientRect().height };
+  }));
+  utilityShapes.forEach(({ radius, height }) => expect(radius).toBeGreaterThanOrEqual(height / 2));
   if (page.viewportSize()?.width <= 470) {
     const utilityBox = await utilities.boundingBox();
     const navBox = await page.getByRole("navigation", { name: "LOTTOMINDED ULTRA sphere navigation" }).boundingBox();

@@ -770,7 +770,7 @@ test("membership hero leads, Collector follows Gaming Showcase, and the Guardian
   expect(collectorBox.y).toBeLessThan(guardianBox.y);
 });
 
-test("shared navigation uses the requested Games, Robot RAHBEE, Storefront, and Static Wav labels", async ({ page }) => {
+test("shared navigation uses the requested route labels and order", async ({ page }) => {
   await blockHeavyMedia(page);
   await page.goto("/lottery-spheres.html", { waitUntil: "domcontentloaded" });
   const navigation = page.locator(".site-header nav");
@@ -778,6 +778,17 @@ test("shared navigation uses the requested Games, Robot RAHBEE, Storefront, and 
   await expect(navigation.locator('a[data-icon="B2"]')).toContainText("Robot RAHBEE");
   await expect(navigation.locator('a[data-icon="DR"]')).toContainText("Storefront");
   await expect(navigation.locator('a[data-icon="GD"]')).toContainText("Static Wav");
+  await expect(navigation.locator("a")).toHaveText([
+    "Home",
+    "Events",
+    "News",
+    "Games",
+    "Static Wav",
+    "Robot RAHBEE",
+    "Storefront",
+    "Memberships",
+    "LottoMind App",
+  ]);
 });
 
 test("Stem Studio contains the workstation at compact mobile width", async ({ page }) => {
