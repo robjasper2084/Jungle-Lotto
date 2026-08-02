@@ -39,3 +39,27 @@ test("save reload, touch layout, and arcade return link are available", async ({
   await expect(page.getByRole("link", { name: /Return to LottoMind Arcade/ })).toBeVisible();
   if (isMobile) await expect(page.locator(".hud")).toBeVisible();
 });
+
+test("a player can complete a standard thirteen-round solo match", async ({ page }, testInfo) => {
+  test.setTimeout(120000);
+  test.skip(testInfo.project.name !== "desktop-1440", "Long-form completion proof runs once.");
+  await page.goto("/");
+  await page.getByLabel("Mode").selectOption("standard");
+  await page.getByRole("button", { name: "Launch Fortune Grid" }).click();
+  for (let round = 1; round <= 13; round += 1) {
+    await expect.poll(() => page.evaluate(() => { const state = (window as any).__fortuneGridState?.(); return state ? `${state.currentPlayer}:${state.phase}` : "missing"; }), { timeout: 15000 }).toBe("0:roll");
+    const roll = page.getByRole("button", { name: /Roll Movement Cube/ });
+    await expect(roll).toBeEnabled({ timeout: 15000 });
+    await roll.click();
+    await page.waitForTimeout(800);
+    const routes = page.locator("[data-route]");
+    if (await routes.count()) await routes.first().click();
+    const endTurn = page.getByRole("button", { name: "End turn" });
+    await expect(endTurn).toBeVisible({ timeout: 10000 });
+    const closeCard = page.locator("[data-close-card]");
+    if (await closeCard.isVisible().catch(() => false)) await closeCard.click();
+    await endTurn.click();
+  }
+  await expect(page.getByText(/Fortune Visionary/)).toBeVisible({ timeout: 15000 });
+  await expect(page.getByRole("table")).toBeVisible();
+});
