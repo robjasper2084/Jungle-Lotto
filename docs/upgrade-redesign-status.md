@@ -30,6 +30,18 @@
 - Rollback reference: `git revert -m 1 09f8e5d2c8bc10d0cf1af240216404c6af74c3c0`; permanent snapshot `v1-final` remains at `975c637cea7003533cdc30aed9d96be51929bfc8`
 - Known pre-existing repository changes: The working tree was clean when Step 0A began. Local `main` already contained commit `1fc4c95ca4d0b22ee5188d06f8ea75573c63a00a` ahead of `origin/main`; that commit was preserved as the starting point of `upgrade-redesign` and was not pushed to production.
 
+## Help Center And RAHBEE Depth
+
+- Step number: Owner-requested Help restoration and RAHBEE depth treatment
+- Implementation commit: This status file is part of the focused commit; use `git log -1 --format=%H -- docs/upgrade-redesign-status.md` to resolve its exact SHA
+- Affected routes: `/help.html`, `/account.html`, `/terms.html`, and `/privacy.html`
+- Changes: Added a searchable eleven-topic Help Center; routed shared Help links and Account credits guidance to it; applied existing Robot RAHBEE far, mid, emissive, and rail artwork to Account, Terms, and Privacy while preserving their content and behavior
+- Tests: Site validation and focused desktop/mobile Help, Account, Terms, and Privacy checks passed before commit; full route, staging safety, static artifact, and visual-capture results are recorded in the completion report
+- Visual review: `docs/staging-reviews/help-rahbee-depth.md` with 1440x900 and 390x844 captures; Help is a new route with no direct v1 screenshot, and the other three routes intentionally change only their depth background and panel treatment
+- Commerce and backend impact: None; staging payments, account writes, real redemptions, and production analytics remain blocked
+- Staging URL: Local only (`http://127.0.0.1:8143/`)
+- Production approval status: Not approved; `main`, production, and `v1-final` remain unchanged
+
 ## Shared Header Order And Utility Pills
 
 - Step number: Owner-requested shared header refinement

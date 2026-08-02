@@ -146,7 +146,7 @@ window.LMAudioMix = {
     { label: "Lottery Spheres", href: siteUrl("./lottery-spheres.html#spheres"), section: "Explore", description: "Open the entertainment-only number sphere experience." },
     { label: "Credits", href: siteUrl("./account.html#credits"), section: "Account", description: "View verified LottoCredits and membership status." },
     { label: "Account", href: siteUrl("./account.html"), section: "Account", description: "Open Collector Access and the account vault." },
-    { label: "Help", href: siteUrl("./how-to-use.html"), section: "Support", description: "Find setup, controls, and account guidance." },
+    { label: "Help", href: siteUrl("./help.html"), section: "Support", description: "Find setup, controls, and account guidance." },
     { label: "Contact", href: siteUrl("./contact.html"), section: "Support", description: "Contact LottoMind support." },
     { label: "Accessibility", href: siteUrl("./accessibility.html"), section: "Support", description: "Review keyboard, motion, contrast, and access guidance." },
   ];
@@ -227,7 +227,7 @@ window.LMAudioMix = {
     const supportLinks = document.createElement("nav");
     supportLinks.className = "lm-footer-support-links";
     supportLinks.setAttribute("aria-label", "Support and account");
-    supportLinks.innerHTML = `<a href="${siteUrl("./how-to-use.html")}">Help</a><a href="${siteUrl("./contact.html")}">Contact</a><a href="${siteUrl("./account.html#credits")}">Credits</a><a href="${siteUrl("./account.html")}">Account</a>`;
+    supportLinks.innerHTML = `<a href="${siteUrl("./help.html")}">Help</a><a href="${siteUrl("./contact.html")}">Contact</a><a href="${siteUrl("./account.html#credits")}">Credits</a><a href="${siteUrl("./account.html")}">Account</a>`;
     pageFooter.append(supportLinks);
   }
   if (pageFooter && !pageFooter.querySelector(".site-legal-links")) {

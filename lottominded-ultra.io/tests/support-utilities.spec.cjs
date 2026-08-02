@@ -55,7 +55,7 @@ test("shared support utilities expose Search, Credits, Account, Help, Contact, a
 
 test("footer links are unique and use the canonical support destinations globally", async ({ page }) => {
   const expectedLinks = [
-    ["Help", "/how-to-use.html"],
+    ["Help", "/help.html"],
     ["Contact", "/contact.html"],
     ["Credits", "/account.html#credits"],
     ["Account", "/account.html"],
@@ -90,7 +90,30 @@ test("account route stays read-only in local preview and exposes support links",
   expect(heroVideoSource).toMatch(/lm-feature-portal-loop\.mp4$/);
   await expect(page.getByRole("status")).toContainText("read-only");
   await expect(page.getByRole("link", { name: "Need account or password support?" })).toHaveAttribute("href", /contact\.html/);
-  await expect(page.getByRole("link", { name: "Read Account and Credits Help" })).toHaveAttribute("href", /how-to-use\.html#lottocredits$/);
+  await expect(page.getByRole("link", { name: "Read Account and Credits Help" })).toHaveAttribute("href", /help\.html#lottocredits$/);
+});
+
+test("Help Center is searchable and Account, Terms, and Privacy share RAHBEE depth", async ({ page }) => {
+  await page.goto("/help.html");
+  await expect(page).toHaveTitle("Help Center | LOTTOMINDED ULTRA");
+  await expect(page.getByRole("heading", { name: "Find the right route fast." })).toBeVisible();
+  await page.getByRole("searchbox", { name: "Search Help Center" }).fill("credits");
+  await expect(page.getByRole("status")).toContainText("help topic");
+  await expect(page.getByText("How accounts and LottoCredits work")).toBeVisible();
+  await expect(page.getByText("How to play Robot RAHBEE")).toBeHidden();
+
+  for (const route of ["/account.html", "/terms.html", "/privacy.html"]) {
+    await page.goto(route, { waitUntil: "domcontentloaded" });
+    await expect(page.locator("body")).toHaveClass(/lm-rahbee-depth-page/);
+    const depth = await page.locator("body").evaluate((element) => ({
+      background: getComputedStyle(element).backgroundImage,
+      before: getComputedStyle(element, "::before").backgroundImage,
+      overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    }));
+    expect(depth.background).toContain("startup-3d-mid.webp");
+    expect(depth.before).toContain("startup-3d-emissive.webp");
+    expect(depth.overflow).toBeLessThanOrEqual(1);
+  }
 });
 
 test("Robot RAHBEE and Static Wav expose the requested page identity", async ({ page }) => {
