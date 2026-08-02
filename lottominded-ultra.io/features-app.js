@@ -165,13 +165,27 @@
     controls.textContent = game.controls;
     meta.append(controlsLabel, controls);
 
-    const action = document.createElement("a");
-    action.className = "arcade-game-card__launch";
-    action.href = game.path;
-    action.textContent = "Launch game";
-    action.addEventListener("click", () => announce(`Opening ${game.title}.`));
-
-    body.append(channel, title, description, meta, action);
+    const actions = document.createElement("div");
+    actions.className = "arcade-game-card__actions";
+    const actionItems = Array.isArray(game.actions) && game.actions.length
+      ? game.actions
+      : [{ label: "Launch game", path: game.path }];
+    actionItems.forEach((item) => {
+      const action = document.createElement("a");
+      action.className = "arcade-game-card__launch";
+      action.href = item.path;
+      action.textContent = item.label;
+      action.addEventListener("click", () => announce(`Opening ${game.title}: ${item.label}.`));
+      actions.append(action);
+    });
+    if (game.notice) {
+      const notice = document.createElement("p");
+      notice.className = "arcade-game-card__notice";
+      notice.textContent = game.notice;
+      body.append(channel, title, description, meta, notice, actions);
+    } else {
+      body.append(channel, title, description, meta, actions);
+    }
     article.append(media, body);
     return article;
   }

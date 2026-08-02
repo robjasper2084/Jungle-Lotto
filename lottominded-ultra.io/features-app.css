@@ -1127,6 +1127,19 @@ body.arcade-pilot-page.feature-entity-ready .feature-entity {
   }
 }
 
+.arcade-game-card__actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
+  gap: 0.45rem;
+}
+
+.arcade-game-card__notice {
+  margin: 0;
+  color: #f4d987;
+  font-size: 0.7rem;
+  line-height: 1.45;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .arcade-grid {
     scroll-behavior: auto;

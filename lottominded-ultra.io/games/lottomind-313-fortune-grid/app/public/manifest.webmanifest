@@ -1,0 +1,11 @@
+{
+  "name": "LottoMind 313: Fortune Grid",
+  "short_name": "Fortune Grid",
+  "description": "An original Detroit-inspired strategic number game for entertainment only.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#05040a",
+  "theme_color": "#090611",
+  "icons": [{ "src": "./assets/icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }]
+}

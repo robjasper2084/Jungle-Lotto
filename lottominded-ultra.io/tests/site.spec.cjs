@@ -627,9 +627,15 @@ test("features combines the cinematic shell with the manifest-driven Arcade dire
   await expect.poll(() => page.evaluate(() => document.body.classList.contains("feature-entity-ready"))).toBe(true);
   expect(await page.locator("#arcade-title").evaluate((title) => getComputedStyle(title).fontFamily)).not.toMatch(/Impact/i);
   await expect(page.locator(".feature-channel")).toHaveCount(5);
-  await expect(page.locator("[data-arcade-grid] .arcade-game-card")).toHaveCount(8);
-  await expect(page.locator("[data-arcade-count]")).toHaveText("8");
-  await expect(page.locator(".arcade-game-card__status")).toHaveText(Array(8).fill("Playable"));
+  await expect(page.locator("[data-arcade-grid] .arcade-game-card")).toHaveCount(9);
+  await expect(page.locator("[data-arcade-count]")).toHaveText("9");
+  await expect(page.locator(".arcade-game-card__status")).toHaveText(["Playable", "Playable", "Beta", "Playable", "Playable", "Playable", "Playable", "Playable", "Playable"]);
+  const fortuneGridCard = page.locator('[data-game-id="fortune-grid-313"]');
+  await expect(fortuneGridCard.getByRole("heading", { name: "LottoMind 313: Fortune Grid" })).toBeVisible();
+  await expect(fortuneGridCard.getByRole("link", { name: "Play Beta" })).toHaveAttribute("href", "./games/lottomind-313-fortune-grid/");
+  await expect(fortuneGridCard.getByRole("link", { name: "How to Play" })).toBeVisible();
+  await expect(fortuneGridCard.getByRole("link", { name: "Accessibility" })).toBeVisible();
+  await expect(fortuneGridCard).toContainText("Entertainment-only simulated sequences");
   await expect(page.getByRole("heading", { name: "RAYCHASE PONG" })).toBeVisible();
   const arcadeRail = page.locator("[data-arcade-grid]");
   const railMetrics = await arcadeRail.evaluate((element) => ({

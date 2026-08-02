@@ -31,6 +31,26 @@
       accent: "gold"
     },
     {
+      id: "fortune-grid-313",
+      title: "LottoMind 313: Fortune Grid",
+      path: "./games/lottomind-313-fortune-grid/",
+      description: "Build Detroit ventures, collect number signals, and become the city's next Fortune Visionary.",
+      category: "Strategy",
+      tags: ["board game", "Detroit", "numbers", "strategy", "local multiplayer", "accessible"],
+      image: "./games/lottomind-313-fortune-grid/assets/key-art.svg",
+      status: "Beta",
+      featured: true,
+      controls: "Keyboard + pointer + touch",
+      difficulty: "Intermediate",
+      accent: "violet",
+      notice: "Entertainment-only simulated sequences. No prediction, wagering, or cash value.",
+      actions: [
+        { label: "Play Beta", path: "./games/lottomind-313-fortune-grid/" },
+        { label: "How to Play", path: "./games/lottomind-313-fortune-grid/GAME-RULES.md" },
+        { label: "Accessibility", path: "./games/lottomind-313-fortune-grid/ACCESSIBILITY.md" }
+      ]
+    },
+    {
       id: "static-wave-2084",
       title: "2084 Static Wave",
       path: "./games/opengw-levels/",

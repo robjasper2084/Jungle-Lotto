@@ -1,0 +1,8 @@
+import { expect, it } from "vitest";
+import { chooseCpuAction, chooseRoute } from "../app/src/engine/ai";
+import { reducer } from "../app/src/engine/reducer";
+import { createInitialState } from "../app/src/engine/state";
+import { completedNetworks } from "../app/src/engine/economy";
+import { districts } from "../app/src/content/districts";
+
+it("simulates 1,000 complete matches without deadlocks or district dominance",()=>{const networkWins=Object.fromEntries(districts.map(d=>[d.id,0]));for(let seed=1;seed<=1000;seed++){let state=createInitialState({mode:"quick313",playerCount:4,localPlayers:0,seed:seed*313});let guard=0;while(state.phase!=="ended"&&guard++<300){if(state.phase==="roll")state=reducer(state,{type:"ROLL"});else if(state.phase==="moving")state=reducer(state,{type:"COMPLETE_MOVEMENT",route:chooseRoute(state)});else if(state.phase==="action"){const action=chooseCpuAction(state);state=reducer(state,action);if(action.type!=="END_TURN")state=reducer(state,{type:"END_TURN"});}else throw new Error(`Impossible phase ${state.phase}`);}expect(state.phase,`seed ${seed}`).toBe("ended");expect(guard).toBeLessThan(300);state.players.forEach(player=>{expect(Number.isFinite(player.dollars)).toBe(true);expect(player.dollars).toBeGreaterThanOrEqual(0);expect(completedNetworks(player)).toBeGreaterThanOrEqual(0);districts.forEach(d=>{const ids=[0,1,2].map(offset=>districts.indexOf(d)*3+offset);if(ids.every(id=>player.ventures[id]))networkWins[d.id]++;});});}const counts=Object.values(networkWins) as number[];expect(Math.max(...counts)-Math.min(...counts)).toBeLessThan(60);});
