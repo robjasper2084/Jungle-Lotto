@@ -303,6 +303,10 @@ test("Storefront applies the requested price, removals, and larger commercial", 
   await expect(page.locator("#gallery article", { hasText: "Boogie Knit" })).toHaveCount(0);
 
   const capsule = page.locator(".merch-commercial-capsule");
+  const heroVideo = page.locator(".merch-hero-video");
+  await expect(heroVideo).not.toHaveAttribute("autoplay", "");
+  await expect(heroVideo).toHaveAttribute("preload", "none");
+  await expect(heroVideo.locator("source")).toHaveAttribute("data-src", /merch-motion-01\.opt\.mp4$/);
   const capsuleBox = await capsule.boundingBox();
   const heroBox = await page.locator(".merch-hero").boundingBox();
   expect(capsuleBox).toBeTruthy();
@@ -326,6 +330,7 @@ test("Storefront presents supplied Guardian bundles without inventing checkout c
   await expect(page.locator("#detroit-carry-bundle")).toContainText("Detroit Carry Package");
   await expect(bundles).toContainText(["Pricing TBA", "Pricing TBA"]);
   await expect(bundles.locator("[data-add-item]")).toHaveCount(0);
+  expect(await bundles.locator("img").evaluateAll((images) => images.every((image) => /bundle-20260725\.webp$/.test(image.getAttribute("src") || "")))).toBe(true);
   await expect.poll(() => bundles.locator("img").evaluateAll((images) => images.every((image) => image.naturalWidth > 0))).toBe(true);
 
   const saveBundle = page.locator('#guardian-hoodie-bundle [data-wishlist-toggle="guardian-hoodie-bundle"]');

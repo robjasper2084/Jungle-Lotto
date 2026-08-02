@@ -3767,3 +3767,30 @@ body.has-merch-shadow-popup {
     animation: none;
   }
 }
+
+@media (max-width: 900px), (pointer: coarse), (prefers-reduced-motion: reduce) {
+  .merch-store-page .merch-site-header::before,
+  .merch-store-page .merch-site-header::after,
+  .merch-title,
+  .motion-gallery-copy h2,
+  .merch-hero-product::before,
+  .merch-hero-product img,
+  .merch-hero-product video,
+  .merch-strip::before,
+  .merch-strip::after,
+  .merch-strip-track,
+  .merch-strip-track a,
+  .merch-akari-field span,
+  .merch-drop-section::after,
+  .merch-drop-section .merch-section-copy::before,
+  .merch-drop-section .merch-section-copy::after,
+  .merch-drop-section .merch-section-copy h2::after {
+    animation: none !important;
+    will-change: auto !important;
+  }
+
+  .merch-commercial-actions,
+  .merch-shadow-popup {
+    backdrop-filter: none;
+  }
+}
