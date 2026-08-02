@@ -101,7 +101,9 @@ test("memberships opens its entry commercial and keeps manual replay available",
   await expect(heroFilm.locator(".membership-hero-commercial__corner")).toHaveCount(4);
   await expect(heroFilm.locator(".membership-hero-commercial__meter i")).toHaveCount(6);
   await expect(heroFilm.locator("[data-membership-featured-sound]")).toBeVisible();
-  await expect(heroFilm.locator("video")).toHaveAttribute("src", /lottomind-membership-feature-commercial-20260716\.mp4/);
+  await expect(heroFilm.locator("video")).not.toHaveAttribute("autoplay", "");
+  await expect(heroFilm.locator("video")).toHaveAttribute("preload", "none");
+  await expect(heroFilm.locator("source")).toHaveAttribute("data-src", /lottomind-membership-feature-commercial-20260716\.mp4/);
   expect(await heroFilm.locator(".membership-hero-commercial__hud").evaluate((element) => getComputedStyle(element).clipPath)).not.toBe("none");
   await expect(page.locator("[data-stripe-lookup-key]").first()).toBeDisabled();
   await expect(page.locator("[data-stripe-membership-status]")).toContainText("Test billing endpoint offline");
@@ -346,7 +348,9 @@ test("Arcade hero fits the supplied Guardian film with accessible motion control
   await expect(video).toHaveAttribute("muted", "");
   await expect(video).toHaveAttribute("loop", "");
   await expect(video).toHaveAttribute("playsinline", "");
-  await expect(video.locator("source")).toHaveAttribute("src", /lottomind-arcade-hero-film-20260723\.mp4$/);
+  await expect(video).not.toHaveAttribute("autoplay", "");
+  await expect(video).toHaveAttribute("preload", "none");
+  await expect(video.locator("source")).toHaveAttribute("data-src", /lottomind-arcade-hero-film-20260723\.mp4$/);
   await expect(toggle).toBeVisible();
 
   const box = await media.boundingBox();

@@ -313,10 +313,30 @@
 
   let heroCommercialInView = false;
   let featuredCommercialInView = false;
+  let deferredMembershipMediaReady = false;
+
+  const enableDeferredMembershipMedia = () => {
+    deferredMembershipMediaReady = true;
+    syncHeroCommercialPlayback();
+    syncFeaturedCommercialPlayback();
+  };
+
+  const scheduleDeferredMembershipMedia = () => {
+    const begin = () => {
+      if ("requestIdleCallback" in window) {
+        window.requestIdleCallback(enableDeferredMembershipMedia, { timeout: 2600 });
+      } else {
+        window.setTimeout(enableDeferredMembershipMedia, 900);
+      }
+    };
+    if (document.readyState === "complete") begin();
+    else window.addEventListener("load", begin, { once: true });
+  };
+
   const syncHeroCommercialPlayback = () => {
     if (!heroCommercialVideo) return;
     const modalIsOpen = commercialModal && !commercialModal.hidden;
-    if (reducedMotion.matches || document.hidden || !heroCommercialInView || modalIsOpen) {
+    if (!deferredMembershipMediaReady || reducedMotion.matches || document.hidden || !heroCommercialInView || modalIsOpen) {
       heroCommercialVideo.pause();
       return;
     }
@@ -338,7 +358,7 @@
   const syncFeaturedCommercialPlayback = () => {
     if (!featuredCommercialVideo) return;
     const modalIsOpen = commercialModal && !commercialModal.hidden;
-    if (reducedMotion.matches || document.hidden || !featuredCommercialInView || modalIsOpen) {
+    if (!deferredMembershipMediaReady || reducedMotion.matches || document.hidden || !featuredCommercialInView || modalIsOpen) {
       featuredCommercialVideo.pause();
       return;
     }
@@ -369,6 +389,7 @@
       featuredCommercialVideo.play().catch(() => {});
     }
   });
+  scheduleDeferredMembershipMedia();
 
   let commercialShouldRestoreFocus = true;
   let commercialHandoffFallback = 0;

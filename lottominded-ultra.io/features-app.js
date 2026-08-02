@@ -48,6 +48,14 @@
     if (icon) icon.textContent = paused ? "▶" : "Ⅱ";
   }
 
+  function restoreHeroVideoSource() {
+    if (!heroVideo || heroVideo.currentSrc) return;
+    const source = heroVideo.querySelector("source[data-src]");
+    if (!source) return;
+    source.src = source.dataset.src;
+    heroVideo.load();
+  }
+
   function applyHeroVideoMotionPreference() {
     if (!heroVideo) return;
     if (reducedMotion.matches) {
@@ -56,6 +64,7 @@
       updateHeroVideoControl();
       return;
     }
+    restoreHeroVideoSource();
     heroVideo.play().catch(updateHeroVideoControl);
   }
 
@@ -64,7 +73,10 @@
     heroVideo.addEventListener("play", updateHeroVideoControl);
     heroVideo.addEventListener("pause", updateHeroVideoControl);
     heroVideoToggle.addEventListener("click", () => {
-      if (heroVideo.paused) heroVideo.play().catch(updateHeroVideoControl);
+      if (heroVideo.paused) {
+        restoreHeroVideoSource();
+        heroVideo.play().catch(updateHeroVideoControl);
+      }
       else heroVideo.pause();
     });
     reducedMotion.addEventListener?.("change", applyHeroVideoMotionPreference);
@@ -72,7 +84,15 @@
       if (document.hidden) heroVideo.pause();
       else applyHeroVideoMotionPreference();
     });
-    applyHeroVideoMotionPreference();
+    const scheduleHeroFilm = () => {
+      if ("requestIdleCallback" in global) {
+        global.requestIdleCallback(applyHeroVideoMotionPreference, { timeout: 2600 });
+      } else {
+        global.setTimeout(applyHeroVideoMotionPreference, 900);
+      }
+    };
+    if (document.readyState === "complete") scheduleHeroFilm();
+    else global.addEventListener("load", scheduleHeroFilm, { once: true });
     updateHeroVideoControl();
   }
 
