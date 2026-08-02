@@ -347,7 +347,7 @@ function restoreDeferredVideoSources(video) {
 
 function setupDeferredEmbeds() {
   const heavyEmbeds = Array.from(document.querySelectorAll("iframe[src], iframe[data-src]")).filter((frame) => {
-    if (frame.dataset.noDefer === "true" || frame.dataset.criticalEmbed === "true") return false;
+    if (frame.dataset.noDefer === "true" || frame.dataset.criticalEmbed === "true" || frame.dataset.manualEmbed === "true") return false;
     const source = frame.getAttribute("src") || frame.dataset.src || "";
     return /(youtube|youtu\.be|twitch\.tv|games\/|opengw-levels|shadow-ops|gothtechnology)/i.test(source);
   });

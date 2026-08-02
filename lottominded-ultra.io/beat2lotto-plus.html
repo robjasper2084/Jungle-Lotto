@@ -97,6 +97,47 @@
         background: #02040a;
       }
 
+      .beat2-game-launch {
+        position: absolute;
+        inset: 0;
+        z-index: 2;
+        display: grid;
+        place-items: center;
+        padding: clamp(18px, 4vw, 48px);
+        background:
+          linear-gradient(90deg, rgba(2, 4, 10, 0.88), rgba(8, 3, 20, 0.18)),
+          url("./games/shadow-ops-canvas/assets/backgrounds/robot-rahbe-gameplay-keyart.png") center / cover no-repeat;
+      }
+
+      .beat2-game-launch[hidden] { display: none; }
+
+      .beat2-game-launch__panel {
+        width: min(520px, 100%);
+        padding: clamp(24px, 4vw, 42px);
+        border: 1px solid #f6cf63;
+        background: rgba(7, 5, 18, 0.92);
+        box-shadow: 0 0 48px rgba(138, 92, 255, 0.3);
+        color: #fff8ec;
+      }
+
+      .beat2-game-launch__panel span,
+      .beat2-game-launch__panel strong { display: block; }
+      .beat2-game-launch__panel span { color: #52f5ff; text-transform: uppercase; }
+      .beat2-game-launch__panel strong { margin: 10px 0; font-size: clamp(2rem, 7vw, 4.5rem); line-height: 0.9; }
+      .beat2-game-launch__panel p { max-width: 42ch; line-height: 1.55; }
+      .beat2-game-launch__panel button {
+        min-height: 48px;
+        margin-top: 12px;
+        padding: 0 24px;
+        border: 1px solid #f6cf63;
+        background: linear-gradient(90deg, #f6cf63, #ef4ca6);
+        color: #02040a;
+        font: inherit;
+        font-weight: 800;
+        text-transform: uppercase;
+        cursor: pointer;
+      }
+
       @media (max-width: 900px) {
         body.beat2lotto-game-page {
           overflow: hidden;
@@ -180,14 +221,23 @@
     <main id="beat2lotto" class="beat2-game-shell" aria-label="Shadow Ops Canvas game">
       <h1 class="visually-hidden">Robot RAHBEE: Shadow Ops Canvas</h1>
       <section class="beat2-gamebox" data-beat2-game-shell aria-label="Shadow Ops Canvas game viewport">
+        <div class="beat2-game-launch" data-beat2-game-launch>
+          <div class="beat2-game-launch__panel">
+            <span>Detroit sector 313</span>
+            <strong>Robot RAHBEE</strong>
+            <p>Launch Shadow Ops Canvas when you are ready. The full game loads only after this command.</p>
+            <button type="button" data-beat2-game-launch-button>Launch game</button>
+          </div>
+        </div>
         <iframe
           class="beat2-gameframe"
           title="Shadow Ops Canvas game"
-          src="./games/shadow-ops-canvas/index.html?v=rahbe-game-restore-5&amp;commercialGate=1"
-          loading="eager"
+          data-src="./games/shadow-ops-canvas/index.html?v=rahbe-game-restore-5&amp;commercialGate=1"
+          loading="lazy"
           allow="fullscreen; autoplay; gamepad; keyboard-map *"
           allowfullscreen
           data-beat2-game-frame
+          data-manual-embed="true"
         ></iframe>
       </section>
     </main>
@@ -196,6 +246,9 @@
       (() => {
         const header = document.querySelector("[data-site-header]");
         const shell = document.querySelector("[data-beat2-game-shell]");
+        const frame = document.querySelector("[data-beat2-game-frame]");
+        const launch = document.querySelector("[data-beat2-game-launch]");
+        const launchButton = document.querySelector("[data-beat2-game-launch-button]");
 
         const syncHeaderHeight = () => {
           if (!header) return;
@@ -208,6 +261,17 @@
         if ("ResizeObserver" in window && header) {
           new ResizeObserver(syncHeaderHeight).observe(header);
         }
+
+        launchButton?.addEventListener("click", () => {
+          if (!frame?.dataset.src || frame.hasAttribute("src")) return;
+          launchButton.disabled = true;
+          launchButton.textContent = "Loading mission...";
+          frame.addEventListener("load", () => {
+            launch.hidden = true;
+            frame.focus();
+          }, { once: true });
+          frame.src = frame.dataset.src;
+        });
 
         shell?.addEventListener("dblclick", async () => {
           try {

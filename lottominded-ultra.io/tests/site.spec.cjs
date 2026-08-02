@@ -580,9 +580,29 @@ test("Robot RAHBEE route restores the embedded game after its commercial", async
   await gate.locator(".lm-commercial-gate__skip").click();
   await expect(gate).toBeHidden();
 
+  const frameElement = page.locator("[data-beat2-game-frame]");
+  await expect(frameElement).not.toHaveAttribute("src", /shadow-ops-canvas/);
+  await page.getByRole("button", { name: "Launch game" }).click();
+  await expect(frameElement).toHaveAttribute("src", /shadow-ops-canvas/);
   const frame = page.frameLocator("[data-beat2-game-frame]");
   await expect(frame.locator("#game")).toBeVisible({ timeout: 15_000 });
   await expect(frame.getByRole("heading", { name: "ROBOT RAHBEE" })).toBeVisible();
+  expect(localFailures).toEqual([]);
+});
+
+test("Static Wav defers its game until the player launches it", async ({ page }) => {
+  await blockHeavyMedia(page);
+  const localFailures = trackLocalFailures(page);
+  await page.goto("/how-to-use.html", { waitUntil: "domcontentloaded" });
+
+  const gate = page.locator(".lm-commercial-gate");
+  if (await gate.isVisible().catch(() => false)) await gate.locator(".lm-commercial-gate__skip").click();
+
+  const frameElement = page.locator("[data-static-wave-frame]");
+  await expect(frameElement).not.toHaveAttribute("src", /opengw-levels/);
+  await page.getByRole("button", { name: "Launch game" }).click();
+  await expect(frameElement).toHaveAttribute("src", /opengw-levels/);
+  await expect(page.frameLocator("[data-static-wave-frame]").locator("canvas").first()).toBeVisible({ timeout: 15_000 });
   expect(localFailures).toEqual([]);
 });
 
