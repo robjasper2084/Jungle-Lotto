@@ -500,3 +500,17 @@
 - Commerce and backend impact: None; no payment, account-write, redemption, analytics, or production-data behavior changed
 - Staging URL: Local only (`http://127.0.0.1:8304/` after the committed staging build)
 - Production approval status: Not approved; `main`, production, and `v1-final` remain unchanged
+
+## Release Documentation Sign-Off
+
+- Step number: Owner-requested release documentation completion
+- Audited site commit: `aa2c125d360a76631e8797595cdcbd23357cb47d`
+- Upgrade branch: `upgrade-redesign`
+- Route matrix: `docs/site-rebuild-checklist.md` now records current evidence for all 24 present routes without blanket pending states
+- Tests: Site validation passed for 16 HTML files; release audit passed 7/7 groups; full browser suite passed 136 checks with 6 intentional viewport skips; expanded source/staging route suite passed 144/144 checks across `1440x900`, `768x1024`, and `390x844`; staging safety passed 10/10 for 24 noindex pages and 564 same-origin references
+- Visual review: 72/72 current staging captures passed; contact sheets and the machine manifest are under `docs/staging-reviews/release-signoff-assets/`
+- Review: `docs/staging-reviews/release-documentation-signoff.md`
+- Performance: Transfer sizes are measured and documented; no unapproved performance threshold was invented
+- Phase 2 package: Inspected for scope only; Phase 2 implementation, branch creation, database migrations, and Stripe changes were not started by this documentation task
+- Staging URL: Local only (`http://127.0.0.1:8304/` while the verified server is running)
+- Production approval status: Not approved; `main`, production, and `v1-final` remain unchanged

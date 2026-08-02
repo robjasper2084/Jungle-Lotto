@@ -26,6 +26,7 @@ const routes = [...new Set([
   "/lottomind-stem-studio/",
   "/redeem.html",
   "/contact.html",
+  "/account.html",
   "/404.html",
   ...(sandbox.LottoMindArcadeGames || []).map((game) => normalizeRoute(game.path)),
 ])];
