@@ -86,6 +86,13 @@ const availableRoutes = [
     captureHide: "[data-merch-commercial-modal]",
   },
   {
+    name: "storefront-patches",
+    path: "/merch-store.html",
+    focus: "#product-innovation-floor-model-hoodie",
+    dismiss: "[data-merch-commercial-close]",
+    captureHide: "[data-merch-commercial-modal]",
+  },
+  {
     name: "static-wav",
     path: "/how-to-use.html",
     focus: ".lm-commercial-gate__panel",

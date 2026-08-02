@@ -54,7 +54,7 @@ test("preview shell is noindex, visibly marked, and free of broken same-origin r
   expect(consoleFailures).toEqual([]);
 });
 
-test("home staging opens directly without the startup commercial popup", async ({ page }) => {
+test("home staging restores the muted-first startup commercial", async ({ page }) => {
   const commercialRequests = [];
   page.on("request", (request) => {
     if (/lottomind-(?:home|refined)-commercial-20260716\.mp4/i.test(request.url())) {
@@ -63,9 +63,14 @@ test("home staging opens directly without the startup commercial popup", async (
   });
 
   await page.goto("/", { waitUntil: "domcontentloaded" });
-  await expect(page.locator("[data-startup-video]")).toHaveCount(0);
+  const startup = page.locator("[data-startup-video]");
+  await expect(startup).toBeVisible({ timeout: 5_000 });
+  await expect(startup.getByRole("button", { name: "Play with sound" })).toBeVisible();
+  await expect.poll(() => startup.locator("video").evaluate((video) => ({ muted: video.muted, paused: video.paused }))).toMatchObject({ muted: true });
+  await expect.poll(() => commercialRequests.length).toBeGreaterThan(0);
+  await startup.getByRole("button", { name: "Enter Site", exact: true }).click();
+  await expect(startup).toBeHidden();
   await expect(page.locator(".hero-motion")).toBeVisible();
-  expect(commercialRequests).toEqual([]);
 });
 
 test("membership entry film requests sound and keeps an accessible fallback", async ({ page }) => {

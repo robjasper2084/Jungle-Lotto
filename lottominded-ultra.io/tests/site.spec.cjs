@@ -302,6 +302,15 @@ test("Storefront applies the requested price, removals, and larger commercial", 
   await expect(page.getByRole("heading", { name: "LottoMind Coin Set" })).toHaveCount(0);
   await expect(page.locator("#gallery article", { hasText: "Boogie Knit" })).toHaveCount(0);
 
+  const patchCards = page.locator("#product-innovation-floor-model-hoodie, #hoodies");
+  await expect(patchCards).toHaveCount(2);
+  await expect(patchCards.locator(".product-hover-price")).toHaveText(["$10", "$10"]);
+  await expect(patchCards.locator(".product-row strong")).toHaveText(["$10", "$10"]);
+  expect(await patchCards.locator("[data-add-item]").evaluateAll((buttons) => buttons.map((button) => button.dataset.itemPrice))).toEqual(["10", "10"]);
+  await expect(patchCards.locator("[data-item-sizes]")).toHaveCount(0);
+  expect(await patchCards.locator("img").evaluateAll((images) => images.every((image) => /detroit-1701-embroidered-patch-20260730\.webp$/.test(image.getAttribute("src") || "")))).toBe(true);
+  await expect(page.locator("#gallery article", { hasText: "Detroit Patch" }).locator(".gallery-price")).toHaveText("$10");
+
   const capsule = page.locator(".merch-commercial-capsule");
   const heroVideo = page.locator(".merch-hero-video");
   await expect(heroVideo).not.toHaveAttribute("autoplay", "");
@@ -665,7 +674,7 @@ test("features combines the cinematic shell with the manifest-driven Arcade dire
   expect(localFailures).toEqual([]);
 });
 
-test("home opens directly to the muted hero without a startup popup", async ({ page }) => {
+test("home restores the original muted-first startup commercial", async ({ page }) => {
   const commercialRequests = [];
   page.on("request", (request) => {
     if (/lottomind-home-commercial-20260716\.mp4/i.test(request.url())) commercialRequests.push(request.url());
@@ -673,10 +682,35 @@ test("home opens directly to the muted hero without a startup popup", async ({ p
   await page.goto("/", { waitUntil: "domcontentloaded" });
   const startup = page.locator("[data-startup-video]");
   const heroFilm = page.locator(".hero-motion");
-  await expect(startup).toHaveCount(0);
+  await expect(startup).toBeVisible({ timeout: 5_000 });
+  await expect(startup.getByRole("button", { name: "Play with sound" })).toBeVisible();
+  await expect.poll(() => startup.locator("video").evaluate((video) => ({ muted: video.muted, paused: video.paused }))).toMatchObject({ muted: true });
+  await expect.poll(() => commercialRequests.length).toBeGreaterThan(0);
+  await startup.getByRole("button", { name: "Enter Site", exact: true }).click();
+  await expect(startup).toBeHidden();
   await expect(heroFilm).toBeVisible();
-  await expect.poll(() => heroFilm.evaluate((video) => ({ muted: video.muted, paused: video.paused }))).toEqual({ muted: true, paused: false });
-  expect(commercialRequests).toEqual([]);
+});
+
+test("Spheres frequency deck keeps every control readable", async ({ page }) => {
+  await blockHeavyMedia(page);
+  await page.goto("/lottery-spheres.html#spheres", { waitUntil: "domcontentloaded" });
+
+  const console = page.locator(".ultra-page-instrument-console");
+  const generator = console.locator("[data-console-frequency-generator]");
+  await expect(generator).toBeVisible();
+  await expect(generator.locator("[data-healing-preset]")).toHaveCount(6);
+  await expect(generator.locator("[data-healing-volume]")).toBeVisible();
+  await expect(generator.locator("[data-healing-toggle]")).toBeVisible();
+  await expect(generator.locator("[data-healing-status]")).toBeVisible();
+
+  const clipping = await generator.evaluate((element) => {
+    const bounds = element.getBoundingClientRect();
+    return Array.from(element.querySelectorAll("button, input, p")).filter((child) => {
+      const rect = child.getBoundingClientRect();
+      return rect.left < bounds.left - 1 || rect.right > bounds.right + 1 || rect.top < bounds.top - 1 || rect.bottom > bounds.bottom + 1;
+    }).map((child) => child.outerHTML.slice(0, 80));
+  });
+  expect(clipping).toEqual([]);
 });
 
 test("Spheres has no automatic Jackpot Maze popup", async ({ page }) => {
