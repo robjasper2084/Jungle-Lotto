@@ -71,6 +71,11 @@ test("footer links are unique and use the canonical support destinations globall
     );
     expect(links).toEqual(expectedLinks);
     expect(new Set(links.map(([, href]) => href)).size).toBe(links.length);
+
+    if (page.viewportSize()?.width <= 760) {
+      const footerPadding = await page.locator("body > footer").evaluate((element) => Number.parseFloat(getComputedStyle(element).paddingBottom));
+      expect(footerPadding, `${route} should reserve space below footer links`).toBeGreaterThanOrEqual(112);
+    }
   }
 });
 

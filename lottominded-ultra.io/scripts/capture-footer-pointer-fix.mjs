@@ -56,8 +56,9 @@ try {
       } else {
         const close = page.locator("[data-startup-video-close]").last();
         if (await close.isVisible().catch(() => false)) await close.click();
-        await page.locator("body > footer").scrollIntoViewIfNeeded();
-        await page.waitForTimeout(250);
+        await page.locator("body > footer .site-legal-links a").last().scrollIntoViewIfNeeded();
+        await page.mouse.wheel(0, 4_000);
+        await page.waitForTimeout(750);
       }
 
       const footerLinks = await page.locator("body > footer :is(.lm-footer-support-links, .site-legal-links) a").evaluateAll((items) =>

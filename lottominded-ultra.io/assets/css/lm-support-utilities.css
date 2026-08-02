@@ -233,6 +233,12 @@
   }
 }
 
+@media (max-width: 760px) {
+  body > footer {
+    padding-bottom: max(7rem, calc(5rem + env(safe-area-inset-bottom))) !important;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .lm-command-palette::backdrop {
     backdrop-filter: none;
