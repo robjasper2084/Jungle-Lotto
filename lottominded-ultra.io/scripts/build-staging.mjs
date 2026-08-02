@@ -45,6 +45,9 @@ const skipRoots = [
   "news-hub/server",
   "news-hub/src",
   "news-hub/scripts",
+  "games/lottomind-313-fortune-grid/app",
+  "games/lottomind-313-fortune-grid/tests",
+  "games/lottomind-313-fortune-grid/scripts",
 ];
 const skipFiles = new Set([
   "assets/video/video_background_snippet.html",
@@ -53,6 +56,12 @@ const skipFiles = new Set([
   "package-lock.json",
   "playwright.config.cjs",
   "STRIPE_TEST_SETUP.md",
+  "games/lottomind-313-fortune-grid/package.json",
+  "games/lottomind-313-fortune-grid/package-lock.json",
+  "games/lottomind-313-fortune-grid/playwright.config.ts",
+  "games/lottomind-313-fortune-grid/tsconfig.json",
+  "games/lottomind-313-fortune-grid/vite.config.ts",
+  "games/lottomind-313-fortune-grid/vitest.config.ts",
 ]);
 const textExtensions = new Set([
   ".css", ".html", ".js", ".json", ".map", ".mjs", ".svg", ".txt", ".webmanifest", ".xml",
