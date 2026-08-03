@@ -40,7 +40,7 @@ if (/lm-healing-generator|healing-frequency\.js/i.test(html)) {
   failures.push("The removed healing-frequency generator is still referenced by index.html.");
 }
 
-if (!/data-startup-video/i.test(html) || !/lottomind-home-commercial-20260716\.mp4/i.test(html)) {
+if (!/data-startup-video/i.test(html) || !/lottomind-membership-unboxing-commercial-20260716\.opt\.mp4/i.test(html)) {
   failures.push("The restored homepage startup commercial is missing.");
 }
 

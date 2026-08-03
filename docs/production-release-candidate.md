@@ -1,85 +1,61 @@
-# LottoMind Production Release Candidate
+# LottoMind Production Release Candidate Status
+
+## Current State
 
 - Production URL: https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/
-- Current production branch head: `main` at `f6e46b49eb0fe7e02e537ed48a127226e7b3f72a`
+- Production branch: `main` at `09f8e5d2c8bc10d0cf1af240216404c6af74c3c0`
 - Permanent pre-upgrade snapshot: `v1-final` at `975c637cea7003533cdc30aed9d96be51929bfc8`
 - Upgrade branch: `upgrade-redesign`
-- Audited implementation baseline: `fd4cc64a85e6d0e1ae5bbd926646abe99cd90094`
-- Release-candidate tag: `v2-rc3` (the tag target is the final candidate documentation commit)
-- Staging URL: Local only (`http://127.0.0.1:8143/`)
-- Production approval: Approved by the repository owner with the exact `APPROVE PRODUCTION MERGE` authorization; the owner explicitly waived an outside-collaborator review
+- Current audited upgrade tree: the focused Help and presentation-media commit containing this report
+- Staging URL: Local only (`http://127.0.0.1:8342/`)
+- Active release-candidate tag for the current tree: None
+- Historical immutable tags: `v2-rc1`, `v2-rc2`, and `v2-rc3`
+- Production approval for the current tree: Not approved
 
-## Full Route Test Summary
+The historical release candidate was merged previously. The current upgrade work is a later, unreleased checkpoint and must not reuse or move an existing RC tag. A future Step 34 run must create the next available annotated tag only after fresh approval and checkout verification.
 
-- Site validation: 15 HTML files passed duplicate-ID and local-asset checks.
-- Source browser suite: 126 passed, 6 intentional viewport skips, 0 failed.
-- Source/staging route matrix: 92 passed across 23 routes, desktop and mobile.
-- Staging browser safety suite: 10 passed, 0 failed.
-- Staging static artifact: 23 noindexed pages and 543 same-origin references passed.
-- News account/feed suite: 20 passed; production dependency audit reports 0 vulnerabilities.
-- GothTechnology: 39 unit tests and 25 browser tests passed, with 5 intentional skips.
-- Shadow Ops typecheck passed.
-- Release gate audit: 7 groups passed, including 12 metadata routes and 12 structured-data blocks.
+## Current Verification
+
+- Source browser suite: 154 passed, 8 intentional viewport skips, 0 failed.
+- Release audit: 7/7 groups passed for metadata, structured data, PWA, checkout hooks, offline account behavior, challenges, and share cards.
+- Source/staging route matrix: 156/156 passed.
+- Staging browser safety: 11/11 passed, including mobile Help fixed-control clearance.
+- Staging static artifact: 26 noindexed pages and 590 same-origin references passed.
+- Visual sign-off: 75/75 states passed across 25 routes at `1440x900`, `768x1024`, and `390x844`.
 
 ## Accessibility Summary
 
-No release-blocking automated accessibility issue remains. The audited browser coverage includes keyboard navigation, accessible commercial controls and status messages, reduced-motion behavior, mobile viewport containment, clean accessible names, and fixed-control clearance.
+The current automated evidence covers visible keyboard focus, reduced motion, responsive containment, console/page errors, broken same-origin assets, and the mobile Help action clearance. No automated blocker remains in the scoped changes. Manual assistive-technology review remains appropriate before a future production candidate.
 
 ## Performance Summary
 
-Recorded first-load comparisons remain Home 5.80 MiB, Memberships 2.87 MiB, Storefront 1.99 MiB, and Shadow Ops 3.70 MiB. Arcade/Features remains the heaviest visual route at approximately 6.6 MiB initially and 9.1 MiB fully loaded; its metadata-only video preload and lazy media loading keep this a warning rather than a blocker.
+- Membership unboxing commercial: 9,451,885 -> 2,510,553 bytes (73.4% smaller).
+- Community signal commercial: 7,013,235 -> 1,864,180 bytes (73.4% smaller).
+- Arcade hero film: 5,504,511 -> 1,456,846 bytes (73.5% smaller).
+- Account hero artwork: 1,997,867 -> 159,488 bytes (92.0% smaller).
+- Arcade marquee artwork: 3,038,065 -> 192,458 bytes (93.7% smaller).
 
-## SEO And PWA Summary
+The original source assets remain in the repository. Current route-level transfer measurements are recorded in the visual manifest and review report; no unapproved performance budget is asserted.
 
-The release audit verified production-safe metadata on 12 sitemap routes, parsed 12 JSON-LD blocks, checked the manifest and icon, and confirmed bounded service-worker caching. Source production pages contain neither staging noindex metadata nor the preview banner. The staging build injects `noindex,nofollow,noarchive` and its visible preview banner on all 23 generated pages.
+## SEO And Staging Safety
 
-## Checkout Safety Summary
+Source production HTML remains free of staging banners and staging noindex metadata. The isolated artifact injects `noindex,nofollow,noarchive`, displays the preview banner, and keeps live payments, production account writes, real redemptions, and production analytics disabled.
 
-The prior authenticated Stripe Sandbox handoff was reached and cancelled before completing a charge. This audit reverified signed-in token forwarding, rejected unsafe redirects, disabled malformed plans, accurate cancelled-return wording, and staging write protections. Staging blocks live payments, production account mutations, real collectible redemptions, and production analytics.
+## Checkout And Backend Limitations
 
-## Backend Limitations
+This task did not perform or complete a charge. No isolated staging backend, dedicated Stripe test project, or remote preview provider is configured, so protected staging writes remain disabled. Fresh safe checkout verification is still required before a future release candidate.
 
-No isolated staging backend, remote preview provider, or dedicated Stripe test project is configured. Protected staging writes therefore remain disabled. Versioned Supabase function source was not deployed to the production-only backend.
-
-## Known Issues And Warnings
-
-- Staging is local-only and is available while the local server is running.
-- Arcade/Features image and video weight remains an optimization opportunity.
-- Local and remote `v2-rc1` annotation objects differ but resolve to the same historical commit. Neither tag was moved or deleted. `v2-rc2` remains immutable, and the mobile transition correction uses `v2-rc3`.
-- Audible autoplay remains subject to browser policy; commercial controls expose an accurate muted fallback and never claim sound started when blocked.
-- PR #2 is mergeable; the repository owner explicitly waived an outside-collaborator review and supplied the required production-merge authorization.
-
-## Exact Change Areas
-
-Relative to the current production branch, this candidate changes shared navigation and transitions; Home, Memberships, Games/Arcade, News, Events, Spheres, RAHBE, Storefront, Static Wav, app/tool, account, legal, and support surfaces; staging guards and build tooling; game runtimes and media; checkout validation; and release/test documentation. The authoritative list is:
-
-```bash
-git diff --name-status origin/main...v2-rc3
-```
-
-## Visual Comparisons
+## Visual Evidence
 
 - Production baseline: [`docs/visual-baseline/v1/`](visual-baseline/v1/)
-- RC3 review: [`docs/staging-reviews/release-candidate-v2-rc3.md`](staging-reviews/release-candidate-v2-rc3.md)
-- RC3 Static Wav captures: [`docs/staging-reviews/release-candidate-v2-rc3-assets/`](staging-reviews/release-candidate-v2-rc3-assets/)
-- RC2 full-phase captures and machine report: [`docs/staging-reviews/signal-media-corrections-assets/`](staging-reviews/signal-media-corrections-assets/)
+- Current review: [`docs/staging-reviews/help-media-release.md`](staging-reviews/help-media-release.md)
+- Current contact sheets and machine manifest: [`docs/staging-reviews/release-signoff-assets/`](staging-reviews/release-signoff-assets/)
 
-The full RC2 pass captured 17 affected surfaces at `1440x900`, `768x1024`, and `390x844`; all 51 captures passed. RC3 additionally recaptured the affected Static Wav gate at `1440x900` and `390x844` after the mobile transition correction.
+## Rollback And Merge Boundary
 
-## Rollback Procedure
-
-Keep `v1-final`, `upgrade-redesign`, and all release tags. If an eventual production merge must be rolled back, identify its merge commit and create a normal revert:
+Do not merge, deploy, move tags, rebase, reset, or force-push from this report. A future approved production merge must use a merge commit through the controlled workflow. Rollback uses a normal revert:
 
 ```bash
-git fetch origin --tags --prune
-git switch main
-git pull --ff-only origin main
 git revert -m 1 <PRODUCTION_MERGE_COMMIT_SHA>
 git push origin main
 ```
-
-Do not reset, rebase, delete tags, or force-push.
-
-## Recommended Production Merge
-
-Use PR #2 from `upgrade-redesign` to `main` and choose **Create a merge commit**. Do not squash or rebase. The repository owner supplied the exact production authorization and explicitly waived an outside-collaborator review.

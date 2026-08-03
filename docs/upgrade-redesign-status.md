@@ -7,28 +7,41 @@
 - Snapshot annotated tag object SHA: `9ba25352efc17d5b514e5afd59c8afde5c9d2949`
 - Snapshot target commit SHA: `975c637cea7003533cdc30aed9d96be51929bfc8`
 - Upgrade branch: `upgrade-redesign`
-- Current upgrade branch implementation SHA: `03129291ff064bebee08642d5e43b57d6b0bbee9`
+- Current upgrade branch implementation SHA: this status file is part of the focused Help and presentation-media commit; resolve it with `git log -1 --format=%H -- docs/upgrade-redesign-status.md`
 - Upgrade branch SHA at Step 0A branch creation: `1fc4c95ca4d0b22ee5188d06f8ea75573c63a00a`
 - Upgrade branch SHA before Step 0B commit: `220653bbc300d0e0b236c6e834043f39fdfcd76c`
 - Step 0B commit SHA: `6e58aafc4addabf5281262ec951a7d6df3dc66a0`
 - Deployment mechanism discovered: GitHub Pages Actions from repository-root `.github/workflows/pages.yml`; pushes to `main` upload the repository root with `actions/upload-pages-artifact` and deploy with `actions/deploy-pages`. Current remote production head is `09f8e5d2c8bc10d0cf1af240216404c6af74c3c0`.
 - Staging provider: Local static server (Mode C); no remote preview provider is configured
-- Staging URL: Local only (`http://127.0.0.1:8321/` while the current staging server is running)
+- Staging URL: Local only (`http://127.0.0.1:8342/` while the verified staging server is running)
 - Staging integrations: No isolated backend or Stripe test-mode configuration is currently configured; protected writes remain disabled
-- Last completed step: Restored the original Home commercial, replaced the selected Storefront products with the Detroit 1701 patch at `$10`, and expanded the Spheres frequency generator on `upgrade-redesign`
+- Last completed step: Cleared the mobile Help actions from fixed controls, refreshed 25-route release sign-off, switched the Home popup to the Storefront commercial, and reduced initial presentation-media payloads on `upgrade-redesign`
 - Step 1 commit SHA: This file is part of the Step 1 commit; use `git log -1 --format=%H -- docs/upgrade-redesign-status.md` to resolve its exact non-self-referential SHA. The completion report records it explicitly.
-- Last staging review: Home, Storefront, and Spheres corrections passed and are ready for the next phase; review: `docs/staging-reviews/home-storefront-spheres-corrections.md`
+- Last staging review: Help and presentation-media release pass; review: `docs/staging-reviews/help-media-release.md`
 - Staging review commit SHA: This file is part of the staging-review commit; the completion report records its exact SHA.
-- Last successful test run: 2026-08-02 - Home validation passed; site validation passed 16 HTML files; focused Home, Storefront, and Spheres browser checks passed 6/6; Home regression passed 12/12 with 4 intentional skips; clean-port source/staging route matrix passed 150/150; staging browser safety passed 10/10; staging static verification passed 25 pages and 569 same-origin references; nine visual captures passed at desktop, tablet, and mobile
+- Last successful test run: 2026-08-03 - source browser suite passed 154 checks with 8 intentional skips; release audit passed 7/7 groups; source/staging route matrix passed 156/156; staging browser safety passed 11/11; staging static verification passed 26 pages and 590 same-origin references; 75/75 visual sign-off states passed across 25 routes and three viewports
 - Visual baseline: Complete - 69 production route screenshots plus desktop, tablet, and mobile contact sheets under `docs/visual-baseline/v1/`
 - Step 1 visual comparison: Production and staging home routes compared at 1440x900 and 390x844; staging adds only the preview and safety banners, with no redesign changes
 - Resolved Step 1 baseline failures: Contact support helper restored; Stem Studio tablet/mobile overflow corrected; Jackpot Maze runtime, heading, and entry focus restored; first-load outliers reduced; staging News production request removed
-- Latest visual comparison: Home, Storefront, and Spheres compared with `v1-final` at 1440x900, 768x1024, and 390x844; review: `docs/staging-reviews/home-storefront-spheres-corrections.md`
-- Latest performance comparison: Mobile 4G wall load improved for Memberships 9687 -> 6690 ms, Arcade 7291 -> 5929 ms, Robot RAHBEE 2208 -> 1990 ms, Static Wav 2167 -> 2030 ms, and Live Events 9804 -> 9437 ms; Storefront bundle art reduced from approximately 4.16 MiB to 0.16 MiB
+- Latest visual comparison: Home, Help, Arcade, Storefront, and the complete route inventory compared with `v1-final` contact sheets at 1440x900, 768x1024, and 390x844; review: `docs/staging-reviews/help-media-release.md`
+- Latest performance comparison: three presentation videos are 73.4-73.5% smaller; the Account hero is 92.0% smaller; the Arcade marquee is 93.7% smaller. Current staging transfer measurements are recorded in `docs/staging-reviews/help-media-release.md`
 - Staging review approval status: Ready for next phase
 - Production approval status: The earlier Step 35 launch was approved and completed through PR #2 using merge commit `09f8e5d2c8bc10d0cf1af240216404c6af74c3c0`; the new Phase 1 rollback commit is not approved or merged to `main`
 - Rollback reference: `git revert -m 1 09f8e5d2c8bc10d0cf1af240216404c6af74c3c0`; permanent snapshot `v1-final` remains at `975c637cea7003533cdc30aed9d96be51929bfc8`
 - Known pre-existing repository changes: The working tree was clean when Step 0A began. Local `main` already contained commit `1fc4c95ca4d0b22ee5188d06f8ea75573c63a00a` ahead of `origin/main`; that commit was preserved as the starting point of `upgrade-redesign` and was not pushed to production.
+
+## Mobile Help And Presentation Media
+
+- Step number: Owner-requested mobile Help, release documentation, and initial media-transfer pass
+- Implementation commit: This status file is part of the focused commit; use `git log -1 --format=%H -- docs/upgrade-redesign-status.md`
+- Affected routes: `/help.html`, `/index.html#top`, `/features-app.html`, `/merch-store.html`, and `/account.html`
+- Help correction: At `390x844`, the hero and actions use a compact reading layout so `Contact Support` remains above the fixed Credits and Menu controls and receives pointer input
+- Home popup: Uses the existing Storefront unboxing commercial and poster while retaining explicit muted-first playback, Play with sound, Enter Site, and close controls
+- Media reduction: Optimized MP4 variants are 73.4-73.5% smaller; the Account hero WebP is 92.0% smaller; the Arcade marquee WebP is 93.7% smaller. Original source media remains preserved
+- Tests: 154 source browser checks passed with 8 intentional skips; release audit 7/7; route matrix 156/156; staging safety 11/11; static staging 26 pages and 590 references; visual sign-off 75/75
+- Visual review: `docs/staging-reviews/help-media-release.md`; contact sheets and manifest are under `docs/staging-reviews/release-signoff-assets/`
+- Staging URL: Local only (`http://127.0.0.1:8342/`)
+- Production approval status: Not approved; `main`, production deployment, `v1-final`, and all existing RC tags remain unchanged
 
 ## Help Center And RAHBEE Depth
 

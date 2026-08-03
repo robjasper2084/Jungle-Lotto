@@ -31,6 +31,7 @@ const routes = [
   "/prompt-lab.html",
   "/redeem.html",
   "/contact.html",
+  "/help.html",
   "/account.html",
   "/404.html",
   "/games/gothtechnology2/",

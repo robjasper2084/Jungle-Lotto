@@ -57,7 +57,7 @@ test("preview shell is noindex, visibly marked, and free of broken same-origin r
 test("home staging restores the muted-first startup commercial", async ({ page }) => {
   const commercialRequests = [];
   page.on("request", (request) => {
-    if (/lottomind-(?:home|refined)-commercial-20260716\.mp4/i.test(request.url())) {
+    if (/lottomind-membership-unboxing-commercial-20260716\.opt\.mp4/i.test(request.url())) {
       commercialRequests.push(request.url());
     }
   });
@@ -123,7 +123,7 @@ test("guide keeps its single commercial gate and safe sound handoff", async ({ p
 test("merch route uses one automatic unboxing commercial with no extra gate", async ({ page }) => {
   const filmRequests = [];
   page.on("request", (request) => {
-    if (/lottomind-membership-unboxing-commercial-20260716\.mp4/i.test(request.url())) {
+    if (/lottomind-membership-unboxing-commercial-20260716\.opt\.mp4/i.test(request.url())) {
       filmRequests.push(request.url());
     }
   });
@@ -137,6 +137,34 @@ test("merch route uses one automatic unboxing commercial with no extra gate", as
   await expect.poll(() => modal.locator("video").evaluate((video) => video.paused)).toBe(false);
   await page.locator("[data-merch-commercial-close]").click();
   await expect(modal).toBeHidden();
+});
+
+test("mobile Help actions remain clear of preview safety and fixed controls", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/help.html", { waitUntil: "domcontentloaded" });
+
+  const layout = await page.evaluate(() => {
+    const actions = [...document.querySelectorAll(".lm-platform-actions a")];
+    const controls = [...document.querySelectorAll(".vault-credit-badge, .universal-menu-toggle")];
+    const overlaps = actions.flatMap((action) => {
+      const actionBox = action.getBoundingClientRect();
+      return controls.map((control) => {
+        const controlBox = control.getBoundingClientRect();
+        const width = Math.max(0, Math.min(actionBox.right, controlBox.right) - Math.max(actionBox.left, controlBox.left));
+        const height = Math.max(0, Math.min(actionBox.bottom, controlBox.bottom) - Math.max(actionBox.top, controlBox.top));
+        return width * height;
+      });
+    });
+    return {
+      overlaps,
+      noindex: document.querySelector('meta[name="robots"]')?.content,
+      previewVisible: Boolean(document.querySelector("[data-lm-staging-banner]")),
+    };
+  });
+
+  expect(layout.overlaps.every((area) => area === 0), JSON.stringify(layout.overlaps)).toBe(true);
+  expect(layout.noindex).toBe("noindex,nofollow,noarchive");
+  expect(layout.previewVisible).toBe(true);
 });
 
 test("Live Events renders a complete channel hub without invented live or commerce data", async ({ page }) => {

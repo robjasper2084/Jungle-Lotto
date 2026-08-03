@@ -6,6 +6,21 @@ async function blockHeavyMedia(page) {
   await page.route(/\.(?:mp3|mp4|wav|webm)(?:\?.*)?$/i, (route) => route.fulfill({ status: 204, body: "" }));
 }
 
+test("initial presentation media uses bounded web delivery assets", () => {
+  const budgets = new Map([
+    ["assets/merch/lottomind-membership-unboxing-commercial-20260716.opt.mp4", 3 * 1024 * 1024],
+    ["assets/merch/lottomind-community-signal-commercial-20260717.opt.mp4", 2.5 * 1024 * 1024],
+    ["assets/features-app/lottomind-arcade-hero-film-20260723.opt.mp4", 2 * 1024 * 1024],
+    ["assets/brand/lottomind-little-man-membership-hero-v2.webp", 250 * 1024],
+    ["games/opengw-levels/assets/2084/branding/marquee-gameplay-keyart.webp", 300 * 1024],
+  ]);
+
+  for (const [asset, maximumBytes] of budgets) {
+    const size = fs.statSync(path.join(__dirname, "..", asset)).size;
+    expect(size, `${asset} exceeds its delivery budget`).toBeLessThanOrEqual(maximumBytes);
+  }
+});
+
 function trackLocalFailures(page) {
   const failures = [];
   page.on("response", (response) => {
@@ -364,7 +379,7 @@ test("Arcade hero fits the supplied Guardian film with accessible motion control
   await expect(video).toHaveAttribute("playsinline", "");
   await expect(video).not.toHaveAttribute("autoplay", "");
   await expect(video).toHaveAttribute("preload", "none");
-  await expect(video.locator("source")).toHaveAttribute("data-src", /lottomind-arcade-hero-film-20260723\.mp4$/);
+  await expect(video.locator("source")).toHaveAttribute("data-src", /lottomind-arcade-hero-film-20260723\.opt\.mp4$/);
   await expect(toggle).toBeVisible();
 
   const box = await media.boundingBox();
@@ -630,7 +645,7 @@ test("features combines the cinematic shell with the manifest-driven Arcade dire
   await expect(commercial).toBeHidden();
 
   await expect(page.locator(".arcade-pilot-label")).toHaveText("LottoMind Features / Arcade + Creative Systems");
-  await expect(page.locator('.arcade-pilot-hero__art[src*="lottomind-little-man-membership-hero-v2.png"]')).toBeVisible();
+  await expect(page.locator('.arcade-pilot-hero__art[src*="lottomind-little-man-membership-hero-v2.webp"]')).toBeVisible();
   await expect(page.locator("#featureEntity.feature-entity")).toHaveCount(1);
   await expect(page.locator("[data-shape]")).toHaveCount(8);
   await expect.poll(() => page.evaluate(() => document.body.classList.contains("feature-entity-ready"))).toBe(true);
@@ -677,7 +692,7 @@ test("features combines the cinematic shell with the manifest-driven Arcade dire
 test("home restores the original muted-first startup commercial", async ({ page }) => {
   const commercialRequests = [];
   page.on("request", (request) => {
-    if (/lottomind-home-commercial-20260716\.mp4/i.test(request.url())) commercialRequests.push(request.url());
+    if (/lottomind-membership-unboxing-commercial-20260716\.opt\.mp4/i.test(request.url())) commercialRequests.push(request.url());
   });
   await page.goto("/", { waitUntil: "domcontentloaded" });
   const startup = page.locator("[data-startup-video]");

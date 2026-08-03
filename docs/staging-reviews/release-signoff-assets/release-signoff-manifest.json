@@ -1,15 +1,15 @@
 {
-  "generatedAt": "2026-08-02T00:52:00.076Z",
-  "sourceCommit": "aa2c125d360a76631e8797595cdcbd23357cb47d",
-  "stagingUrl": "http://127.0.0.1:8304",
+  "generatedAt": "2026-08-03T07:17:42.693Z",
+  "sourceCommit": "66a777f1edafd29eca58a83e31a89bb61d79fe40",
+  "stagingUrl": "http://127.0.0.1:8342",
   "productionReference": {
     "branch": "main",
     "commit": "975c637cea7003533cdc30aed9d96be51929bfc8",
     "tag": "v1-final"
   },
-  "routeCount": 24,
+  "routeCount": 25,
   "viewportCount": 3,
-  "captureCount": 72,
+  "captureCount": 75,
   "failureCount": 0,
   "contactSheets": [
     "desktop-contact-sheet.png",
@@ -23,7 +23,7 @@
       "dimensions": "1440x900",
       "status": 200,
       "title": "LOTTOMINDED ULTRA | Browser Music Workstation",
-      "firstHeading": "LOTTOMINDEDULTRA",
+      "firstHeading": "Start the home frequency.",
       "horizontalOverflow": false,
       "visibleKeyboardFocus": true,
       "reducedMotion": true,
@@ -36,7 +36,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 5530078,
+      "sameOriginBytes": 5575167,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -60,7 +60,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 20657429,
+      "sameOriginBytes": 7999856,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -84,7 +84,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 21537865,
+      "sameOriginBytes": 4939303,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -108,7 +108,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1800944,
+      "sameOriginBytes": 1801116,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -132,7 +132,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 8742702,
+      "sameOriginBytes": 8745724,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -156,7 +156,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1372052,
+      "sameOriginBytes": 1373314,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -180,7 +180,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 14686463,
+      "sameOriginBytes": 10792236,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -204,7 +204,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 13556835,
+      "sameOriginBytes": 4222897,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -228,7 +228,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 20359322,
+      "sameOriginBytes": 14570738,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -252,7 +252,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1109491,
+      "sameOriginBytes": 2241961,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -276,7 +276,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1109681,
+      "sameOriginBytes": 2242151,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -300,7 +300,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1109006,
+      "sameOriginBytes": 1110276,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -324,7 +324,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1346118,
+      "sameOriginBytes": 1347388,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -348,7 +348,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 565595,
+      "sameOriginBytes": 566693,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -372,7 +372,31 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1113632,
+      "sameOriginBytes": 1114902,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "assetFailures": []
+    },
+    {
+      "route": "/help.html",
+      "viewport": "desktop",
+      "dimensions": "1440x900",
+      "status": 200,
+      "title": "Help Center | LOTTOMINDED ULTRA",
+      "firstHeading": "Find the right route fast.",
+      "horizontalOverflow": false,
+      "visibleKeyboardFocus": true,
+      "reducedMotion": true,
+      "noindex": "noindex,nofollow,noarchive",
+      "stagingBannerVisible": true,
+      "environment": {
+        "name": "staging",
+        "allowLivePayments": false,
+        "allowAccountWrites": false,
+        "allowRedemptions": false,
+        "allowProductionAnalytics": false
+      },
+      "sameOriginBytes": 1218682,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -396,7 +420,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 4568812,
+      "sameOriginBytes": 2735608,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -420,7 +444,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 528684,
+      "sameOriginBytes": 529782,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -492,7 +516,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 5514679,
+      "sameOriginBytes": 5473871,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -564,7 +588,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1372052,
+      "sameOriginBytes": 1373314,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -599,7 +623,7 @@
       "dimensions": "768x1024",
       "status": 200,
       "title": "LOTTOMINDED ULTRA | Browser Music Workstation",
-      "firstHeading": "LOTTOMINDEDULTRA",
+      "firstHeading": "Start the home frequency.",
       "horizontalOverflow": false,
       "visibleKeyboardFocus": true,
       "reducedMotion": true,
@@ -612,7 +636,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 5368310,
+      "sameOriginBytes": 5413399,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -636,7 +660,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 20145681,
+      "sameOriginBytes": 7277204,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -660,7 +684,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 21376097,
+      "sameOriginBytes": 16405723,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -684,7 +708,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1639176,
+      "sameOriginBytes": 1493420,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -708,7 +732,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 8731424,
+      "sameOriginBytes": 8734446,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -732,7 +756,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1199006,
+      "sameOriginBytes": 1200268,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -756,7 +780,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 14686336,
+      "sameOriginBytes": 10619190,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -780,7 +804,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 13545557,
+      "sameOriginBytes": 4211619,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -804,7 +828,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 19155899,
+      "sameOriginBytes": 14397692,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -828,7 +852,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 936445,
+      "sameOriginBytes": 2068915,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -852,7 +876,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 936635,
+      "sameOriginBytes": 2069105,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -876,7 +900,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 935960,
+      "sameOriginBytes": 937230,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -900,7 +924,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1089788,
+      "sameOriginBytes": 1091058,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -924,7 +948,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 565595,
+      "sameOriginBytes": 566693,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -948,7 +972,31 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 940586,
+      "sameOriginBytes": 941856,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "assetFailures": []
+    },
+    {
+      "route": "/help.html",
+      "viewport": "tablet",
+      "dimensions": "768x1024",
+      "status": 200,
+      "title": "Help Center | LOTTOMINDED ULTRA",
+      "firstHeading": "Find the right route fast.",
+      "horizontalOverflow": false,
+      "visibleKeyboardFocus": true,
+      "reducedMotion": true,
+      "noindex": "noindex,nofollow,noarchive",
+      "stagingBannerVisible": true,
+      "environment": {
+        "name": "staging",
+        "allowLivePayments": false,
+        "allowAccountWrites": false,
+        "allowRedemptions": false,
+        "allowProductionAnalytics": false
+      },
+      "sameOriginBytes": 1045636,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -972,7 +1020,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 4395766,
+      "sameOriginBytes": 2562562,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -996,7 +1044,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 528684,
+      "sameOriginBytes": 529782,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -1140,7 +1188,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1199006,
+      "sameOriginBytes": 1200268,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -1175,7 +1223,7 @@
       "dimensions": "390x844",
       "status": 200,
       "title": "LOTTOMINDED ULTRA | Browser Music Workstation",
-      "firstHeading": "LOTTOMINDEDULTRA",
+      "firstHeading": "Start the home frequency.",
       "horizontalOverflow": false,
       "visibleKeyboardFocus": true,
       "reducedMotion": true,
@@ -1188,7 +1236,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 4630889,
+      "sameOriginBytes": 4675978,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -1212,7 +1260,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 19788173,
+      "sameOriginBytes": 4455238,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -1236,7 +1284,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 21375723,
+      "sameOriginBytes": 16405349,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -1260,7 +1308,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1474355,
+      "sameOriginBytes": 1474527,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -1284,7 +1332,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 8731424,
+      "sameOriginBytes": 8734446,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -1308,7 +1356,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1199006,
+      "sameOriginBytes": 1200268,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -1332,7 +1380,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 14686336,
+      "sameOriginBytes": 10619190,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -1356,7 +1404,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 13545557,
+      "sameOriginBytes": 4211619,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -1380,7 +1428,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 19333889,
+      "sameOriginBytes": 14397692,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -1404,7 +1452,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 936445,
+      "sameOriginBytes": 2068915,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -1428,7 +1476,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 936635,
+      "sameOriginBytes": 2069105,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -1452,7 +1500,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 935960,
+      "sameOriginBytes": 937230,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -1476,7 +1524,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1314514,
+      "sameOriginBytes": 1091058,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -1500,7 +1548,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 565595,
+      "sameOriginBytes": 566693,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -1524,7 +1572,31 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 940586,
+      "sameOriginBytes": 941856,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "assetFailures": []
+    },
+    {
+      "route": "/help.html",
+      "viewport": "mobile",
+      "dimensions": "390x844",
+      "status": 200,
+      "title": "Help Center | LOTTOMINDED ULTRA",
+      "firstHeading": "Find the right route fast.",
+      "horizontalOverflow": false,
+      "visibleKeyboardFocus": true,
+      "reducedMotion": true,
+      "noindex": "noindex,nofollow,noarchive",
+      "stagingBannerVisible": true,
+      "environment": {
+        "name": "staging",
+        "allowLivePayments": false,
+        "allowAccountWrites": false,
+        "allowRedemptions": false,
+        "allowProductionAnalytics": false
+      },
+      "sameOriginBytes": 1045636,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -1548,7 +1620,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 4395766,
+      "sameOriginBytes": 2562562,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -1572,7 +1644,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 528684,
+      "sameOriginBytes": 529782,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -1716,7 +1788,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1199006,
+      "sameOriginBytes": 1345524,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []

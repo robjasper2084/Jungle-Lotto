@@ -57,7 +57,7 @@
       description: "Pilot the static signal through a fast neon combat grid with solo and multiplayer routes.",
       category: "Action",
       tags: ["arcade", "combat", "multiplayer", "neon"],
-      image: "./games/opengw-levels/assets/2084/branding/marquee-gameplay-keyart.png",
+      image: "./games/opengw-levels/assets/2084/branding/marquee-gameplay-keyart.webp",
       status: "Playable",
       featured: true,
       controls: "Keyboard + gamepad",

@@ -116,6 +116,28 @@ test("Help Center is searchable and Account, Terms, and Privacy share RAHBEE dep
   }
 });
 
+test("mobile Help actions stay clear of fixed Credits and Menu controls", async ({ page }, testInfo) => {
+  test.skip(!testInfo.project.name.startsWith("mobile"), "Mobile layout assertion");
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/help.html", { waitUntil: "domcontentloaded" });
+
+  const overlaps = await page.evaluate(() => {
+    const actions = [...document.querySelectorAll(".lm-platform-actions a")];
+    const controls = [...document.querySelectorAll(".vault-credit-badge, .universal-menu-toggle")];
+    return actions.flatMap((action) => {
+      const actionBox = action.getBoundingClientRect();
+      return controls.map((control) => {
+        const controlBox = control.getBoundingClientRect();
+        const width = Math.max(0, Math.min(actionBox.right, controlBox.right) - Math.max(actionBox.left, controlBox.left));
+        const height = Math.max(0, Math.min(actionBox.bottom, controlBox.bottom) - Math.max(actionBox.top, controlBox.top));
+        return { action: action.textContent.trim(), control: control.textContent.trim(), area: width * height };
+      });
+    });
+  });
+
+  expect(overlaps.every(({ area }) => area === 0), JSON.stringify(overlaps)).toBe(true);
+});
+
 test("Robot RAHBEE and Static Wav expose the requested page identity", async ({ page }) => {
   await page.goto("/beat2lotto-plus.html#beat2lotto");
   await expect(page).toHaveTitle("Robot RAHBEE | LOTTOMINDED ULTRA");
