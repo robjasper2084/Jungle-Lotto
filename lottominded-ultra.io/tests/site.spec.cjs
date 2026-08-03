@@ -8,6 +8,10 @@ async function blockHeavyMedia(page) {
 
 test("initial presentation media uses bounded web delivery assets", () => {
   const budgets = new Map([
+    ["assets/merch/lottomind-future-membership-commercial-20260626.opt.mp4", 4 * 1024 * 1024],
+    ["assets/merch/lottomind-future-membership-commercial-poster-20260626.webp", 150 * 1024],
+    ["assets/video/lottomind-help-signal-commercial-20260417.opt.mp4", 3.25 * 1024 * 1024],
+    ["assets/video/lottomind-help-signal-commercial-poster-20260417.webp", 150 * 1024],
     ["assets/merch/lottomind-membership-unboxing-commercial-20260716.opt.mp4", 3 * 1024 * 1024],
     ["assets/merch/lottomind-community-signal-commercial-20260717.opt.mp4", 2.5 * 1024 * 1024],
     ["assets/features-app/lottomind-arcade-hero-film-20260723.opt.mp4", 2 * 1024 * 1024],
@@ -19,6 +23,12 @@ test("initial presentation media uses bounded web delivery assets", () => {
     const size = fs.statSync(path.join(__dirname, "..", asset)).size;
     expect(size, `${asset} exceeds its delivery budget`).toBeLessThanOrEqual(maximumBytes);
   }
+});
+
+test("static News feed carries attributed publisher imagery", () => {
+  const articles = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "articles.json"), "utf8"));
+  const withImages = articles.filter((article) => /^https:\/\//i.test(article.imageUrl || ""));
+  expect(withImages.length).toBeGreaterThanOrEqual(20);
 });
 
 function trackLocalFailures(page) {
@@ -98,7 +108,7 @@ test("memberships opens its entry commercial and keeps manual replay available",
 
   const commercial = page.locator("[data-membership-commercial-modal]");
   await expect(commercial).toBeVisible({ timeout: 15_000 });
-  await expect(commercial.locator("video")).toHaveAttribute("data-src", /membership-hoodie-commercial/);
+  await expect(commercial.locator("video")).toHaveAttribute("data-src", /future-membership-commercial-20260626\.opt\.mp4/);
   await expect(commercial.getByRole("link", { name: "Buy Now" })).toHaveAttribute("href", /merch-store\.html\?product=guardian#keychains/);
   await page.locator("[data-membership-commercial-close]").click();
   await expect(commercial).toBeHidden();
@@ -619,6 +629,34 @@ test("Robot RAHBEE route restores the embedded game after its commercial", async
   expect(localFailures).toEqual([]);
 });
 
+test("Help presents its supplied signal film without loading or playing it automatically", async ({ page }) => {
+  const mediaRequests = [];
+  page.on("request", (request) => {
+    if (/lottomind-help-signal-commercial-20260417\.opt\.mp4/i.test(request.url())) mediaRequests.push(request.url());
+  });
+  await page.goto("/help.html", { waitUntil: "domcontentloaded" });
+
+  const film = page.locator(".lm-help-signal-film video");
+  await expect(film).toBeVisible();
+  await expect(film).toHaveAttribute("controls", "");
+  await expect(film).toHaveAttribute("playsinline", "");
+  await expect(film).toHaveAttribute("preload", "none");
+  await expect(film).not.toHaveAttribute("autoplay", "");
+  await expect(film.locator("source")).toHaveAttribute("src", /lottomind-help-signal-commercial-20260417\.opt\.mp4/);
+  await expect(page.locator(".lm-help-signal-film figcaption")).toContainText("Sound starts only when you press play.");
+  expect(mediaRequests).toEqual([]);
+});
+
+test("LottoMind App loads the shared future membership commercial", () => {
+  const appIndex = fs.readFileSync(path.join(__dirname, "..", "..", "lotto mind refined", "index.html"), "utf8");
+  expect(appIndex).toContain("lm-future-commercial.css?v=future-membership-1");
+  expect(appIndex).toContain("lm-future-commercial.js?v=future-membership-1");
+
+  const loader = fs.readFileSync(path.join(__dirname, "..", "assets", "js", "lm-future-commercial.js"), "utf8");
+  expect(loader).toContain("lottomind-future-membership-commercial-20260626.opt.mp4");
+  expect(loader).toContain('video.addEventListener("ended", close)');
+});
+
 test("Static Wav defers its game until the player launches it", async ({ page }) => {
   await blockHeavyMedia(page);
   const localFailures = trackLocalFailures(page);
@@ -933,7 +971,8 @@ test("news route renders from the static feed without probing the missing API", 
   const firstArticleImage = page.locator(".article-grid .news-card__media img").first();
   await firstArticleImage.scrollIntoViewIfNeeded();
   await expect(firstArticleImage).toBeVisible();
-  await expect(firstArticleImage).toHaveAttribute("src", /\.jpg$/);
+  await expect(firstArticleImage).toHaveAttribute("src", /^https:\/\//);
+  await expect(firstArticleImage.locator("xpath=..")).toHaveClass(/has-publisher-image/);
   await expect.poll(() => firstArticleImage.evaluate((image) => image.complete && image.naturalWidth > 0)).toBe(true);
   expect(apiRequests).toEqual([]);
   expect(localFailures).toEqual([]);

@@ -1540,9 +1540,13 @@ body.memberships-page .membership-commercial-modal__sound {
 }
 
 @media (max-width: 760px) {
+  body.memberships-page:has(> [data-lm-staging-banner]) .membership-commercial-modal {
+    inset-block-start: 58px;
+  }
+
   body.memberships-page .membership-commercial-modal__panel {
-    height: 100dvh;
-    max-height: 100dvh;
+    height: 100%;
+    max-height: 100%;
     clip-path: none;
     border: 0;
   }

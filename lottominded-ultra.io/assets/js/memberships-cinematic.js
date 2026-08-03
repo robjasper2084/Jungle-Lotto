@@ -207,12 +207,12 @@
   });
   const commercialFilms = [
     {
-      src: "./assets/merch/lottomind-membership-hoodie-commercial-20260716.mp4",
-      poster: "./assets/merch/lottomind-membership-hoodie-commercial-poster-20260716.jpg",
-      signal: "Membership commercial / Wear the signal",
-      title: "Detroit Signal, Worn Forward.",
-      telemetry: "LM-MEMBERSHIP / SIGNAL ONLINE",
-      copy: "Wear the city-built LottoMind identity, then move into a connected network of creative tools, arcade routes, and member access.",
+      src: "./assets/merch/lottomind-future-membership-commercial-20260626.opt.mp4",
+      poster: "./assets/merch/lottomind-future-membership-commercial-poster-20260626.webp",
+      signal: "Future membership commercial / Signal preview",
+      title: "Future Signal Online.",
+      telemetry: "LM-MEMBERSHIP / FUTURE UPLINK",
+      copy: "Enter a cinematic preview of the LottoMind membership signal, then continue to the creative tools, arcade routes, and protected member access.",
       volume: 0.78,
     },
   ];

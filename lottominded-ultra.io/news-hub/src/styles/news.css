@@ -762,8 +762,14 @@ main {
   background: linear-gradient(90deg, rgba(1, 5, 13, 0.84) 0%, rgba(2, 8, 18, 0.46) 54%, rgba(2, 8, 18, 0.04) 100%);
 }
 
-.news-card__media.has-editorial-image::after {
-  background: linear-gradient(90deg, rgba(1, 5, 13, 0.86) 0%, rgba(2, 8, 18, 0.48) 52%, rgba(2, 8, 18, 0.05) 100%);
+.news-card__media.has-no-publisher-image {
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--headline-art-primary) 15%, #020914), #020711 62%),
+    #020711;
+}
+
+.news-card__media.has-no-publisher-image::after {
+  background: linear-gradient(90deg, rgba(1, 5, 13, 0.46), rgba(2, 8, 18, 0.08));
 }
 
 .news-card__body {

@@ -62,46 +62,11 @@ function headlineArtTone(item: LottoMindNewsItem): "official" | "winner" | "jack
   return "signal";
 }
 
-const EDITORIAL_STORY_ART: Record<ReturnType<typeof headlineArtTone>, string[]> = {
-  official: [
-    "../assets/merch/lottomind-community-signal-poster-20260717.jpg",
-    "../assets/merch/lottomind-membership-feature-commercial-poster-20260716.jpg",
-    "../assets/merch/lottomind-membership-hoodie-commercial-poster-20260716.jpg",
-  ],
-  winner: [
-    "../assets/merch/lottomind-membership-unboxing-commercial-poster-20260716.jpg",
-    "../assets/merch/lottomind-community-signal-poster-20260717.jpg",
-    "../assets/merch/lottomind-guardian-commercial-gun-range-poster-20260722.jpg",
-  ],
-  jackpot: [
-    "../assets/features-app/lottomind-arcade-hero-film-poster-20260723.jpg",
-    "../assets/video/lm-feature-signal-poster.jpg",
-    "../assets/video/lm-feature-portal-poster.jpg",
-  ],
-  mystery: [
-    "../assets/video/lm-portal-a-poster.jpg",
-    "../assets/video/lm-portal-b-poster.jpg",
-    "../assets/merch/lottomind-guide-commercial-poster-20260717.jpg",
-  ],
-  signal: [
-    "../assets/merch/lottomind-guide-commercial-poster-20260717.jpg",
-    "../assets/video/lm-feature-signal-poster.jpg",
-    "../assets/merch/lottomind-community-signal-poster-20260717.jpg",
-  ],
-};
-
-function editorialStoryArt(item: LottoMindNewsItem, tone: ReturnType<typeof headlineArtTone>): string {
-  const choices = EDITORIAL_STORY_ART[tone];
-  const seed = [...item.id].reduce((total, character) => total + character.charCodeAt(0), 0);
-  return choices[seed % choices.length];
-}
-
 function ArticleCard({ item, saved, onSave }: { item: LottoMindNewsItem; saved: boolean; onSave: (id: string) => void }) {
   const [copied, setCopied] = useState(false);
   const [imageFailed, setImageFailed] = useState(false);
   const hasPublisherImage = Boolean(item.imageUrl && !imageFailed);
   const artTone = headlineArtTone(item);
-  const storyImage = hasPublisherImage ? item.imageUrl : editorialStoryArt(item, artTone);
   const copyLink = async () => {
     try {
       await navigator.clipboard.writeText(item.articleUrl);
@@ -115,15 +80,15 @@ function ArticleCard({ item, saved, onSave }: { item: LottoMindNewsItem; saved: 
   return (
     <article className={`news-card ${isSpeculative(item) ? "news-card--speculative" : ""}`}>
       <a
-        className={`news-card__media news-card__media--${artTone} ${hasPublisherImage ? "has-publisher-image" : "has-editorial-image"}`}
+        className={`news-card__media news-card__media--${artTone} ${hasPublisherImage ? "has-publisher-image" : "has-no-publisher-image"}`}
         href={item.articleUrl}
         target="_blank"
         rel="noopener noreferrer"
         aria-label={`Open ${item.title} at ${item.source}`}
       >
-        {storyImage ? (
+        {hasPublisherImage ? (
           <img
-            src={storyImage}
+            src={item.imageUrl}
             alt=""
             loading="lazy"
             referrerPolicy="no-referrer"

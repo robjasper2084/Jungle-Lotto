@@ -67,6 +67,11 @@ for (const route of routes) {
     page.on("console", (message) => {
       if (message.type() === "error" && !/ERR_BLOCKED_BY_CLIENT/i.test(message.text())) {
         const location = message.location();
+        if (location.url) {
+          try {
+            if (new URL(location.url).origin !== origin) return;
+          } catch {}
+        }
         consoleErrors.push(location.url ? `${message.text()} (${location.url})` : message.text());
       }
     });
