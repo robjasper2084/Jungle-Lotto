@@ -9,6 +9,7 @@
     "start": "node --env-file-if-exists=.env.local --import tsx server/index.ts",
     "test": "tsx --test src/lib/news/*.test.ts server/account/*.test.ts",
     "news:hydrate-images": "tsx scripts/hydrate-static-article-images.ts",
+    "news:refresh-results": "tsx scripts/refresh-lottery-results.ts",
     "provision:collectible": "tsx scripts/provision-collectible.ts"
   },
   "dependencies": {

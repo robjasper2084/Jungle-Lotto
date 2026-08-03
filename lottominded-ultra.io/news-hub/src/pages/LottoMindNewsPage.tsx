@@ -13,6 +13,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { useNews } from "../hooks/useNews";
+import latestLotteryResults from "../data/latestLotteryResults.json";
 import type { CredibilityLabel, LottoMindNewsItem } from "../types/news";
 
 const CATEGORY_FILTERS = [
@@ -193,6 +194,8 @@ export function LottoMindNewsPage() {
   }, [data.sourceStatuses]);
 
   const liveSources = data.sourceStatuses.filter((source) => source.ok).length;
+  const drawDate = (value: string) => new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" }).format(new Date(`${value}T12:00:00Z`));
+  const verifiedDrawSummary = latestLotteryResults.results.map((result) => `${result.game}, ${drawDate(result.drawDate)}: ${result.numbers.join(", ")}, ${result.specialLabel} ${result.specialNumber}`).join(". ");
   const toggleCredibility = (values: CredibilityLabel[]) => {
     setCredibility((current) => {
       const next = new Set(current);
@@ -245,6 +248,40 @@ export function LottoMindNewsPage() {
       </header>
 
       <main>
+      <section className="lottery-results-ticker" aria-labelledby="lottery-results-title">
+        <div className="lottery-results-ticker__label">
+          <span>Latest verified</span>
+          <strong id="lottery-results-title">Draw results</strong>
+        </div>
+        <p className="sr-only">{verifiedDrawSummary}. Verify every result with the linked official source.</p>
+        <div className="lottery-results-ticker__viewport" aria-hidden="true">
+          <div className="lottery-results-ticker__track">
+            {[0, 1].map((copy) => (
+              <div className="lottery-results-ticker__group" key={copy}>
+                {latestLotteryResults.results.map((result) => (
+                  <div className={`lottery-results-ticker__result lottery-results-ticker__result--${result.game === "Powerball" ? "powerball" : "mega"}`} key={`${copy}-${result.game}`}>
+                    <strong>{result.game}</strong>
+                    <time dateTime={result.drawDate}>{drawDate(result.drawDate)}</time>
+                    <span className="lottery-results-ticker__numbers">
+                      {result.numbers.map((number) => <b key={number}>{number}</b>)}
+                      <b className="is-special">{result.specialNumber}</b>
+                    </span>
+                    <small>{result.specialLabel}{result.multiplier ? ` · Power Play ${result.multiplier}` : ""}</small>
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
+        </div>
+        <nav className="lottery-results-ticker__sources" aria-label="Verify latest draw results">
+          {latestLotteryResults.results.map((result) => (
+            <a href={result.sourceUrl} target="_blank" rel="noopener noreferrer" key={result.game}>
+              Verify {result.game}<ExternalLink size={12} aria-hidden="true" />
+            </a>
+          ))}
+        </nav>
+      </section>
+
         <section className="news-motion-rail" aria-labelledby="news-rail-title">
           <div className="news-motion-rail__label">
             <span>Current News Rail</span>

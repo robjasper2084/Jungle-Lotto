@@ -15,20 +15,32 @@
 - Staging provider: Local static server (Mode C); no remote preview provider is configured
 - Staging URL: Local only (`http://127.0.0.1:8342/` while the verified staging server is running)
 - Staging integrations: No isolated backend or Stripe test-mode configuration is currently configured; protected writes remain disabled
-- Last completed step: Added the supplied future membership commercial to Memberships and the LottoMind App, added the supplied Help signal film, and replaced custom News card art with attributed publisher imagery on `upgrade-redesign`
+- Last completed step: Added a dated, official-source Powerball and Mega Millions results ticker to the News route on `upgrade-redesign`
 - Step 1 commit SHA: This file is part of the Step 1 commit; use `git log -1 --format=%H -- docs/upgrade-redesign-status.md` to resolve its exact non-self-referential SHA. The completion report records it explicitly.
-- Last staging review: Future commercial and publisher-media pass; review: `docs/staging-reviews/future-commercial-media.md`
+- Last staging review: News lottery-results ticker; review: `docs/staging-reviews/lottery-results-ticker.md`
 - Staging review commit SHA: This file is part of the staging-review commit; the completion report records its exact SHA.
-- Last successful test run: 2026-08-03 - News unit suite passed 20/20; focused media and News browser checks passed 10/10; affected source/staging route matrix passed 18/18 across desktop, tablet, and mobile; staging browser safety passed 11/11; staging static verification passed 26 pages and 591 same-origin references; release audit passed 7/7 groups
+- Last successful test run: 2026-08-03 - News unit suite passed 23/23; News build and site validation passed; release audit passed 7/7 groups; staging browser safety passed 11/11; focused desktop/mobile ticker checks passed with zero overlap, overflow, console errors, or warnings
 - Visual baseline: Complete - 69 production route screenshots plus desktop, tablet, and mobile contact sheets under `docs/visual-baseline/v1/`
 - Step 1 visual comparison: Production and staging home routes compared at 1440x900 and 390x844; staging adds only the preview and safety banners, with no redesign changes
 - Resolved Step 1 baseline failures: Contact support helper restored; Stem Studio tablet/mobile overflow corrected; Jackpot Maze runtime, heading, and entry focus restored; first-load outliers reduced; staging News production request removed
-- Latest visual comparison: Memberships, Help, News, and the LottoMind App compared with the available v1 references at 1440x900 and 390x844; review: `docs/staging-reviews/future-commercial-media.md`
+- Latest visual comparison: News compared with its v1 references at 1440x900 and 390x844; review: `docs/staging-reviews/lottery-results-ticker.md`
 - Latest performance comparison: three presentation videos are 73.4-73.5% smaller; the Account hero is 92.0% smaller; the Arcade marquee is 93.7% smaller. Current staging transfer measurements are recorded in `docs/staging-reviews/help-media-release.md`
 - Staging review approval status: Ready for next phase
 - Production approval status: The earlier Step 35 launch was approved and completed through PR #2 using merge commit `09f8e5d2c8bc10d0cf1af240216404c6af74c3c0`; the new Phase 1 rollback commit is not approved or merged to `main`
 - Rollback reference: `git revert -m 1 09f8e5d2c8bc10d0cf1af240216404c6af74c3c0`; permanent snapshot `v1-final` remains at `975c637cea7003533cdc30aed9d96be51929bfc8`
 - Known pre-existing repository changes: The working tree was clean when Step 0A began. Local `main` already contained commit `1fc4c95ca4d0b22ee5188d06f8ea75573c63a00a` ahead of `origin/main`; that commit was preserved as the starting point of `upgrade-redesign` and was not pushed to production.
+
+## News Lottery Results Ticker
+
+- Step number: Owner-requested current Powerball and Mega Millions News ticker
+- Implementation commit: This status file is part of the focused commit; use `git log -1 --format=%H -- docs/upgrade-redesign-status.md`
+- Affected route: `/news/`
+- Results: Powerball draw dated 2026-08-01 and Mega Millions draw dated 2026-07-31, each linked to an official result source
+- Refresh workflow: `npm.cmd run news:refresh-results` fetches, validates, and records both official result sets; malformed or unavailable result pages fail the command without inventing data
+- Tests: News unit suite 23/23; News production build; site validation; release audit 7/7; staging browser safety 11/11; focused desktop/mobile and reduced-motion checks
+- Visual review: `docs/staging-reviews/lottery-results-ticker.md` with `1440x900` and `390x844` captures
+- Staging URL: Local only (`http://127.0.0.1:8365/news/` during focused source validation)
+- Production approval status: Not approved; `main`, production deployment, `v1-final`, and existing release tags remain unchanged
 
 ## Future Commercial And Publisher Media
 

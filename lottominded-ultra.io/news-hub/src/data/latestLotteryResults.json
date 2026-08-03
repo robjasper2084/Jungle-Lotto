@@ -1,0 +1,36 @@
+{
+  "verifiedAt": "2026-08-03T19:14:58.082Z",
+  "results": [
+    {
+      "game": "Powerball",
+      "drawDate": "2026-08-01",
+      "numbers": [
+        6,
+        17,
+        27,
+        48,
+        50
+      ],
+      "specialNumber": 5,
+      "specialLabel": "Powerball",
+      "multiplier": "3x",
+      "sourceName": "Powerball",
+      "sourceUrl": "https://www.powerball.com/previous-results"
+    },
+    {
+      "game": "Mega Millions",
+      "drawDate": "2026-07-31",
+      "numbers": [
+        4,
+        18,
+        26,
+        43,
+        51
+      ],
+      "specialNumber": 4,
+      "specialLabel": "Mega Ball",
+      "sourceName": "Texas Lottery",
+      "sourceUrl": "https://www.texaslottery.com/export/sites/lottery/Games/Mega_Millions/Winning_Numbers/"
+    }
+  ]
+}
