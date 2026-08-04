@@ -9,6 +9,10 @@
   body.dataset.lmMembershipReady = "true";
 
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const entryCommercialSuppressed = (() => {
+    const parameters = new URLSearchParams(window.location.search);
+    return parameters.get("collector") === "access" || parameters.get("account") === "recovery";
+  })();
   const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)");
   const gsap = window.gsap || null;
   const ScrollTrigger = window.ScrollTrigger || null;
@@ -519,6 +523,7 @@
   }
 
   const scheduleEntryCommercial = () => {
+    if (entryCommercialSuppressed) return;
     window.addEventListener("lottomind:transition-complete", handleEntryTransitionComplete);
     entryCommercialFallback = window.setTimeout(openEntryCommercial, 1800);
   };

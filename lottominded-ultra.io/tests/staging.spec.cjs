@@ -242,21 +242,40 @@ test("production writes are rejected while local-only browser state remains avai
     };
     const payment = await capture(() => fetch("/api/billing/checkout", { method: "POST", body: "{}" }));
     const account = await capture(() => window.LottoMindAccountService.register({ email: "preview@example.invalid", password: "not-a-real-password" }));
+    const passwordReset = await capture(() => window.LottoMindAccountService.requestPasswordReset("preview@example.invalid"));
+    const passwordUpdate = await capture(() => window.LottoMindAccountService.completePasswordRecovery("not-a-real-password"));
     const redemption = await capture(() => window.LottoMindAccountService.redeemCollectible("PREVIEW-NOT-A-REAL-CODE"));
     const analytics = await capture(() => fetch("https://www.google-analytics.com/g/collect", { method: "POST", body: "preview" }));
     const beacon = navigator.sendBeacon("https://www.google-analytics.com/g/collect", "preview");
     localStorage.setItem("lm-staging-local-test", "available");
     const localStorageValue = localStorage.getItem("lm-staging-local-test");
     localStorage.removeItem("lm-staging-local-test");
-    return { payment, account, redemption, analytics, beacon, localStorageValue };
+    return { payment, account, passwordReset, passwordUpdate, redemption, analytics, beacon, localStorageValue };
   });
 
   expect(result.payment).toMatchObject({ blocked: true, code: "LM_STAGING_PAYMENT_BLOCKED" });
   expect(result.account).toMatchObject({ blocked: true, code: "LM_STAGING_ACCOUNT_WRITE_BLOCKED" });
+  expect(result.passwordReset).toMatchObject({ blocked: true, code: "LM_STAGING_ACCOUNT_WRITE_BLOCKED" });
+  expect(result.passwordUpdate).toMatchObject({ blocked: true, code: "LM_STAGING_ACCOUNT_WRITE_BLOCKED" });
   expect(result.redemption).toMatchObject({ blocked: true, code: "LM_STAGING_REDEMPTION_BLOCKED" });
   expect(result.analytics).toMatchObject({ blocked: true, code: "LM_STAGING_ANALYTICS_BLOCKED" });
   expect(result.beacon).toBe(false);
   expect(result.localStorageValue).toBe("available");
   await expect(page.locator("#lm-staging-guard-status")).toContainText("Production analytics are disabled");
   expect(productionRequests).toEqual([]);
+});
+
+test("Collector Access deep link remains reviewable while staging account writes stay blocked", async ({ page }) => {
+  await blockHeavyMedia(page);
+  await page.goto("/memberships.html?collector=access#lm-access-hero", { waitUntil: "domcontentloaded" });
+
+  const panel = page.locator("[data-collector-panel]");
+  await expect(panel).toBeVisible();
+  await expect(page.locator("[data-membership-commercial-modal]")).toBeHidden();
+  await page.locator("#collectorEmail").fill("preview@example.invalid");
+  await page.locator('[data-password-toggle][aria-controls="collectorPassword"]').click();
+  await expect(page.locator("#collectorPassword")).toHaveAttribute("type", "text");
+  await page.locator("[data-collector-forgot-password]").click();
+  await expect(page.locator("[data-collector-message]")).toContainText("Account services are not configured");
+  await expect(page.locator("#lm-staging-guard-status")).toContainText("Production account changes are disabled");
 });

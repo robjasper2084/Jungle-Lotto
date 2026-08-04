@@ -15,6 +15,9 @@
   var gameResultsList = root.querySelector("[data-game-results-list]");
   var membershipNode = root.querySelector("[data-collector-membership]");
   var authForm = root.querySelector("[data-collector-auth-form]");
+  var forgotPasswordButton = root.querySelector("[data-collector-forgot-password]");
+  var recoveryForm = root.querySelector("[data-collector-recovery-form]");
+  var recoveryCancelButton = root.querySelector("[data-collector-recovery-cancel]");
   var redeemForm = root.querySelector("[data-collector-redeem-form]");
   var logoutButton = root.querySelector("[data-collector-logout]");
   var messageNode = root.querySelector("[data-collector-message]");
@@ -22,6 +25,10 @@
   var panelHome = panel.parentNode;
   var mobilePanelMedia = window.matchMedia("(max-width: 900px)");
   var snapshot = null;
+  var recoveryMode = Boolean(account.capturePasswordRecovery && account.capturePasswordRecovery());
+  var requestParameters = new URLSearchParams(window.location.search);
+  var requestedCollectorAccess = requestParameters.get("collector") === "access";
+  var requestedRecovery = requestParameters.get("account") === "recovery";
   var entitlementConfig = null;
   var pendingTransactions = new Map();
   var collectorPackReported = false;
@@ -90,8 +97,9 @@
     trigger.setAttribute("aria-label", triggerLabel + (data.authenticated ? ", " + balance + " Lotto Credits" : "") + ". View benefits");
     walletNode.hidden = !data.authenticated;
     if (gameResultsNode) gameResultsNode.hidden = !data.authenticated;
-    authForm.hidden = data.authenticated;
-    redeemForm.hidden = !data.authenticated;
+    authForm.hidden = data.authenticated || recoveryMode;
+    recoveryForm.hidden = !recoveryMode;
+    redeemForm.hidden = !data.authenticated || recoveryMode;
     logoutButton.hidden = !data.authenticated;
 
     if (data.authenticated) {
@@ -161,6 +169,27 @@
     }
   }
 
+  function revealRequestedPanel(unavailableMessage) {
+    if (recoveryMode) {
+      togglePanel(true);
+      setMessage("Recovery link verified. Choose a new password.");
+      setTimeout(function focusRecovery() { recoveryForm.elements.password.focus(); }, 0);
+      return true;
+    }
+    if (requestedRecovery) {
+      togglePanel(true);
+      setMessage("This recovery link is invalid or expired. Request a new password recovery email.", true);
+      return true;
+    }
+    if (requestedCollectorAccess) {
+      togglePanel(true);
+      setMessage(unavailableMessage || "Sign in to open Collector Access.", Boolean(unavailableMessage));
+      setTimeout(function focusCollectorEmail() { authForm.elements.email.focus(); }, 0);
+      return true;
+    }
+    return false;
+  }
+
   function syncPanelPortal() {
     var shouldUseBody = analyticsSurface === "memberships" || analyticsSurface === "home" || mobilePanelMedia.matches;
     if (shouldUseBody && panel.parentNode !== document.body) document.body.appendChild(panel);
@@ -201,14 +230,71 @@
     var data = new FormData(authForm);
     setMessage(mode === "register" ? "Creating account..." : "Signing in...");
     try {
-      var input = { email: String(data.get("email") || ""), password: String(data.get("password") || "") };
+      var input = { email: String(data.get("email") || ""), password: String(data.get("password") || ""), remember: data.get("remember") === "yes" };
       var result = mode === "register" ? await account.register(input) : await account.signIn(input);
-      render(result);
+      render(result && result.snapshot ? result.snapshot : result);
       authForm.reset();
       setMessage("Account verified. Your shared wallet is ready.");
     } catch (error) {
       setMessage(error.message, true);
     }
+  });
+
+  panel.querySelectorAll("[data-password-toggle]").forEach(function installPasswordToggle(button) {
+    button.addEventListener("click", function togglePasswordVisibility() {
+      var input = document.getElementById(button.getAttribute("aria-controls"));
+      if (!input) return;
+      var willShow = input.type === "password";
+      input.type = willShow ? "text" : "password";
+      button.setAttribute("aria-pressed", String(willShow));
+      var label = willShow ? "Hide password" : "Show password";
+      button.setAttribute("aria-label", label);
+      button.title = label;
+      input.focus();
+    });
+  });
+
+  forgotPasswordButton.addEventListener("click", async function onForgotPassword() {
+    var emailInput = authForm.elements.email;
+    if (!emailInput.reportValidity()) return;
+    setMessage("Requesting a secure password recovery email...");
+    try {
+      await account.requestPasswordReset(String(emailInput.value || "").trim());
+      setMessage("If an account matches that email, a password recovery link has been sent. Check your inbox and spam folder.");
+    } catch (error) {
+      setMessage(error.message, true);
+    }
+  });
+
+  recoveryForm.addEventListener("submit", async function onPasswordRecovery(event) {
+    event.preventDefault();
+    var data = new FormData(recoveryForm);
+    var password = String(data.get("password") || "");
+    var confirmation = String(data.get("confirmPassword") || "");
+    if (password !== confirmation) return setMessage("The new passwords do not match.", true);
+    setMessage("Updating your password...");
+    try {
+      await account.completePasswordRecovery(password);
+      recoveryMode = false;
+      recoveryForm.reset();
+      var url = new URL(window.location.href);
+      url.searchParams.delete("account");
+      window.history.replaceState(null, "", url.pathname + (url.searchParams.size ? "?" + url.searchParams.toString() : "") + url.hash);
+      render(await account.refresh());
+      setMessage("Password updated. Your Collector Access account is ready.");
+    } catch (error) {
+      setMessage(error.message, true);
+    }
+  });
+
+  recoveryCancelButton.addEventListener("click", function cancelPasswordRecovery() {
+    recoveryMode = false;
+    recoveryForm.reset();
+    var url = new URL(window.location.href);
+    url.searchParams.delete("account");
+    window.history.replaceState(null, "", url.pathname + (url.searchParams.size ? "?" + url.searchParams.toString() : "") + url.hash);
+    if (snapshot) render(snapshot);
+    setMessage("Password recovery cancelled.");
   });
 
   redeemForm.addEventListener("submit", async function onRedeem(event) {
@@ -300,9 +386,10 @@
   Promise.all([account.getSnapshot(), entitlementRequest]).then(function ready(results) {
     entitlementConfig = results[1];
     render(results[0]);
+    revealRequestedPanel();
   }).catch(function unavailable(error) {
-    setMessage(error.message, true);
     root.hidden = false;
     trigger.dataset.state = "offline";
+    if (!revealRequestedPanel(error.message)) setMessage(error.message, true);
   });
 })();

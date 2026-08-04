@@ -11,7 +11,7 @@
   var analyticsPathPattern = /\/(?:analytics|collect|g\/collect)(?:\/|$)/i;
   var billingPathPattern = /\/(?:billing\/(?:checkout|portal)|checkout\/sessions?)(?:\/|$)/i;
   var redemptionPathPattern = /\/(?:redemption|redeem|collectibles?\/claim)(?:\/|$)/i;
-  var accountMutationPathPattern = /\/(?:auth\/(?:register|login|logout)|credits\/(?:spend|refund)|account\/|game-sessions?)(?:\/|$)/i;
+  var accountMutationPathPattern = /\/(?:auth\/(?:register|login|logout|password-(?:reset|update))|credits\/(?:spend|refund)|account\/|game-sessions?)(?:\/|$)/i;
   var protectedRuntimeValues = {
     LOTTOMIND_API_BASE_URL: marker.stagingBackendUrl || "",
     LOTTOMIND_SUPABASE_URL: marker.stagingSupabaseUrl || "",
@@ -216,7 +216,7 @@
     };
 
     if (!environment.allowAccountWrites) {
-      ["register", "signIn", "signOut", "spendCredits", "refundCredits"].forEach(function blockMethod(name) {
+      ["register", "signIn", "signOut", "requestPasswordReset", "completePasswordRecovery", "spendCredits", "refundCredits"].forEach(function blockMethod(name) {
         if (typeof wrapped[name] === "function") wrapped[name] = blockAccountWrite;
       });
     }
@@ -250,11 +250,12 @@
   function installFormAndLinkGuards() {
     var checkoutSelector = "[data-stripe-lookup-key], [data-stripe-portal], a[href*='checkout.stripe.com']";
     var redemptionSelector = "[data-code-form], [data-collector-redeem-form], [data-redeem], form[action*='redeem']";
-    var accountSelector = "[data-auth-form], [data-collector-auth-form], [data-sign-out], [data-collector-logout]";
+    var accountSelector = "[data-auth-form], [data-collector-auth-form], [data-collector-recovery-form], [data-collector-forgot-password], [data-sign-out], [data-collector-logout]";
 
     document.addEventListener("click", function blockProtectedClick(event) {
       var target = event.target && event.target.closest ? event.target.closest("a, button") : null;
       if (!target) return;
+      if (target.matches("[data-password-toggle], [data-collector-recovery-cancel]")) return;
       if (target.matches(checkoutSelector) && !environment.allowTestPayments) {
         event.preventDefault();
         event.stopImmediatePropagation();

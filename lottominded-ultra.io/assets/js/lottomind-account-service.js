@@ -9,6 +9,7 @@
   var CACHE_TTL = 30000;
   var snapshotCache = null;
   var snapshotTime = 0;
+  var sessionPersistence = "local";
   var subscribers = new Set();
   var channel = "BroadcastChannel" in global ? new BroadcastChannel("lottomind-account-v1") : null;
 
@@ -55,16 +56,45 @@
   }
 
   function readSession() {
-    try { return JSON.parse(localStorage.getItem(SESSION_KEY) || "null"); } catch (_error) { return null; }
+    try {
+      var transientSession = JSON.parse(sessionStorage.getItem(SESSION_KEY) || "null");
+      if (transientSession) {
+        sessionPersistence = "session";
+        return transientSession;
+      }
+      sessionPersistence = "local";
+      return JSON.parse(localStorage.getItem(SESSION_KEY) || "null");
+    } catch (_error) { return null; }
   }
 
-  function saveSession(session) {
+  function saveSession(session, remember) {
     if (!session || !session.access_token) return;
-    try { localStorage.setItem(SESSION_KEY, JSON.stringify(session)); } catch (_error) {}
+    if (typeof remember === "boolean") sessionPersistence = remember ? "local" : "session";
+    try {
+      var selectedStorage = sessionPersistence === "local" ? localStorage : sessionStorage;
+      var otherStorage = sessionPersistence === "local" ? sessionStorage : localStorage;
+      selectedStorage.setItem(SESSION_KEY, JSON.stringify(session));
+      otherStorage.removeItem(SESSION_KEY);
+    } catch (_error) {}
   }
 
   function clearSession() {
     try { localStorage.removeItem(SESSION_KEY); } catch (_error) {}
+    try { sessionStorage.removeItem(SESSION_KEY); } catch (_error) {}
+  }
+
+  function capturePasswordRecovery() {
+    var parameters = new URLSearchParams(String(global.location.hash || "").replace(/^#/, ""));
+    if (parameters.get("type") !== "recovery" || !parameters.get("access_token")) return false;
+    saveSession({
+      access_token: parameters.get("access_token"),
+      refresh_token: parameters.get("refresh_token") || "",
+      expires_at: Number(parameters.get("expires_at") || 0),
+      expires_in: Number(parameters.get("expires_in") || 0),
+      token_type: parameters.get("token_type") || "bearer",
+    }, false);
+    global.history.replaceState(null, "", global.location.pathname + global.location.search);
+    return true;
   }
 
   async function getAccessToken() {
@@ -146,9 +176,9 @@
     if (channel) channel.postMessage({ type: "refresh", reason: reason || "account-change", at: Date.now() });
   }
 
-  async function mutation(path, body) {
+  async function mutation(path, body, options) {
     var payload = await request(path, { method: "POST", body: JSON.stringify(body || {}) });
-    if (payload && payload.session) saveSession(payload.session);
+    if (payload && payload.session) saveSession(payload.session, options && options.remember);
     var snapshot = payload && payload.snapshot ? payload.snapshot : payload;
     if (snapshot && typeof snapshot.authenticated === "boolean") saveSnapshot(snapshot);
     else await getSnapshot({ force: true });
@@ -183,7 +213,17 @@
     getMemberships: async function getMemberships() { return (await getSnapshot()).memberships || []; },
     getCollectorStatus: async function getCollectorStatus() { return (await getSnapshot()).collector; },
     register: function register(input) { return mutation("/auth/register", input); },
-    signIn: function signIn(input) { return mutation("/auth/login", input); },
+    signIn: function signIn(input) {
+      var credentials = { email: input && input.email, password: input && input.password };
+      return mutation("/auth/login", credentials, { remember: Boolean(input && input.remember) });
+    },
+    requestPasswordReset: function requestPasswordReset(email) {
+      return request("/auth/password-reset", { method: "POST", body: JSON.stringify({ email: String(email || "").trim() }) });
+    },
+    capturePasswordRecovery: capturePasswordRecovery,
+    completePasswordRecovery: function completePasswordRecovery(password) {
+      return request("/auth/password-update", { method: "POST", body: JSON.stringify({ password: String(password || "") }) });
+    },
     signOut: async function signOut() {
       try { await request("/auth/logout", { method: "POST", body: "{}" }); } catch (_error) {}
       clearSession();

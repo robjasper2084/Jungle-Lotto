@@ -228,8 +228,27 @@
                   <label for="collectorEmail">Account email</label>
                   <input id="collectorEmail" name="email" type="email" autocomplete="email" required />
                   <label for="collectorPassword">Password</label>
-                  <input id="collectorPassword" name="password" type="password" autocomplete="current-password" minlength="10" required />
-                  <div class="collector-access__actions"><button class="is-primary" type="submit" name="mode" value="login">Sign In</button><button type="submit" name="mode" value="register">Create Account</button></div>
+                  <div class="collector-access__password-field">
+                    <input id="collectorPassword" name="password" type="password" autocomplete="current-password" minlength="10" required />
+                    <button class="collector-access__password-toggle" type="button" data-password-toggle aria-controls="collectorPassword" aria-label="Show password" aria-pressed="false" title="Show password"><span aria-hidden="true">&#128065;</span></button>
+                  </div>
+                  <label class="collector-access__remember"><input name="remember" type="checkbox" value="yes" /> <span>Remember me on this device</span></label>
+                  <div class="collector-access__actions"><button class="is-primary" type="submit" name="mode" value="login">Sign In</button><button type="submit" name="mode" value="register">Create Account</button><button type="button" data-collector-forgot-password>Forgot Password?</button></div>
+                </form>
+                <form class="collector-access__form" data-collector-recovery-form hidden>
+                  <h3>Set a new password</h3>
+                  <p>Enter a new password for the account connected to this recovery link.</p>
+                  <label for="collectorNewPassword">New password</label>
+                  <div class="collector-access__password-field">
+                    <input id="collectorNewPassword" name="password" type="password" autocomplete="new-password" minlength="10" required />
+                    <button class="collector-access__password-toggle" type="button" data-password-toggle aria-controls="collectorNewPassword" aria-label="Show new password" aria-pressed="false" title="Show new password"><span aria-hidden="true">&#128065;</span></button>
+                  </div>
+                  <label for="collectorConfirmPassword">Confirm new password</label>
+                  <div class="collector-access__password-field">
+                    <input id="collectorConfirmPassword" name="confirmPassword" type="password" autocomplete="new-password" minlength="10" required />
+                    <button class="collector-access__password-toggle" type="button" data-password-toggle aria-controls="collectorConfirmPassword" aria-label="Show confirmed password" aria-pressed="false" title="Show confirmed password"><span aria-hidden="true">&#128065;</span></button>
+                  </div>
+                  <div class="collector-access__actions"><button class="is-primary" type="submit">Update Password</button><button type="button" data-collector-recovery-cancel>Cancel</button></div>
                 </form>
                 <form class="collector-access__form" data-collector-redeem-form hidden>
                   <label for="collectorCode">Collectible code</label>
@@ -485,14 +504,14 @@
     <script src="./assets/js/lm-page-transition.js?v=transition-every-route-5" defer></script>
     <script src="./site.js?v=header-toggle-routes-5" defer></script>
     <script src="./assets/js/lottomind-runtime-config.js?v=supabase-live-1"></script>
-    <script src="./assets/js/lottomind-account-service.js?v=supabase-auth-1"></script>
-    <script src="./assets/js/beat2lotto-collector-access.js?v=collector-memberships-1" defer></script>
+    <script src="./assets/js/lottomind-account-service.js?v=password-recovery-1"></script>
+    <script src="./assets/js/beat2lotto-collector-access.js?v=password-recovery-1" defer></script>
     <script src="./assets/js/lm-stripe-memberships.js?v=stripe-validation-3" defer></script>
     <script src="./assets/vendor/gsap/gsap.min.js?v=3.13.0" defer></script>
     <script src="./assets/vendor/gsap/ScrollTrigger.min.js?v=3.13.0" defer></script>
     <script src="./assets/vendor/gsap/SplitText.min.js?v=3.13.0" defer></script>
     <script src="./assets/vendor/lenis/lenis.min.js?v=1.1.20" defer></script>
-    <script src="./assets/js/memberships-cinematic.js?v=membership-future-commercial-8" defer></script>
+    <script src="./assets/js/memberships-cinematic.js?v=collector-entry-route-1" defer></script>
     <script src="./assets/js/membership-depth.js?v=membership-depth-1" defer></script>
   <script type="module" src="./assets/js/memberships-main.js?v=membership-audio-reactive-6"></script>
     <script>
