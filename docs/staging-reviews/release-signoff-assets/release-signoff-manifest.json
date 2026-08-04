@@ -1,15 +1,15 @@
 {
-  "generatedAt": "2026-08-03T07:17:42.693Z",
-  "sourceCommit": "66a777f1edafd29eca58a83e31a89bb61d79fe40",
-  "stagingUrl": "http://127.0.0.1:8342",
+  "generatedAt": "2026-08-04T04:42:56.906Z",
+  "sourceCommit": "0dc245f2c7eee8ddcaf19599613900bb07f010d4",
+  "stagingUrl": "http://127.0.0.1:8405",
   "productionReference": {
     "branch": "main",
     "commit": "975c637cea7003533cdc30aed9d96be51929bfc8",
     "tag": "v1-final"
   },
-  "routeCount": 25,
+  "routeCount": 26,
   "viewportCount": 3,
-  "captureCount": 75,
+  "captureCount": 78,
   "failureCount": 0,
   "contactSheets": [
     "desktop-contact-sheet.png",
@@ -36,7 +36,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 5575167,
+      "sameOriginBytes": 5577087,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -60,7 +60,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 7999856,
+      "sameOriginBytes": 8001629,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -84,7 +84,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 4939303,
+      "sameOriginBytes": 4971642,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -108,7 +108,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1801116,
+      "sameOriginBytes": 1348871,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -132,7 +132,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 8745724,
+      "sameOriginBytes": 8747497,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -156,7 +156,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1373314,
+      "sameOriginBytes": 1375087,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -180,7 +180,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 10792236,
+      "sameOriginBytes": 10794009,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -204,7 +204,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 4222897,
+      "sameOriginBytes": 4224670,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -228,7 +228,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 14570738,
+      "sameOriginBytes": 14572511,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -252,7 +252,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 2241961,
+      "sameOriginBytes": 2243734,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -276,7 +276,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 2242151,
+      "sameOriginBytes": 2243924,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -300,7 +300,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1110276,
+      "sameOriginBytes": 1112049,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -324,7 +324,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1347388,
+      "sameOriginBytes": 1254599,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -348,7 +348,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 566693,
+      "sameOriginBytes": 570528,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -372,7 +372,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1114902,
+      "sameOriginBytes": 1116675,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -396,7 +396,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1218682,
+      "sameOriginBytes": 1287943,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -420,7 +420,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 2735608,
+      "sameOriginBytes": 2739486,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -444,7 +444,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 529782,
+      "sameOriginBytes": 531555,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -468,7 +468,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1581624,
+      "sameOriginBytes": 1582242,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -492,7 +492,31 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 970567,
+      "sameOriginBytes": 971185,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "assetFailures": []
+    },
+    {
+      "route": "/games/lottomind-313-fortune-grid/",
+      "viewport": "desktop",
+      "dimensions": "1440x900",
+      "status": 200,
+      "title": "LottoMind 313: Fortune Grid — Beta",
+      "firstHeading": "LottoMind 313: Fortune Grid",
+      "horizontalOverflow": false,
+      "visibleKeyboardFocus": true,
+      "reducedMotion": true,
+      "noindex": "noindex,nofollow,noarchive",
+      "stagingBannerVisible": true,
+      "environment": {
+        "name": "staging",
+        "allowLivePayments": false,
+        "allowAccountWrites": false,
+        "allowRedemptions": false,
+        "allowProductionAnalytics": false
+      },
+      "sameOriginBytes": 5763936,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -516,7 +540,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 5473871,
+      "sameOriginBytes": 5474489,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -540,7 +564,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 3879696,
+      "sameOriginBytes": 3880314,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -564,7 +588,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 63433,
+      "sameOriginBytes": 64051,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -588,7 +612,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1373314,
+      "sameOriginBytes": 1375087,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -612,7 +636,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 3025253,
+      "sameOriginBytes": 3025871,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -636,7 +660,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 5413399,
+      "sameOriginBytes": 5415319,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -660,7 +684,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 7277204,
+      "sameOriginBytes": 7278977,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -684,7 +708,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 16405723,
+      "sameOriginBytes": 4809874,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -708,7 +732,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1493420,
+      "sameOriginBytes": 1339408,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -732,7 +756,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 8734446,
+      "sameOriginBytes": 8736219,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -756,7 +780,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1200268,
+      "sameOriginBytes": 1202041,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -780,7 +804,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 10619190,
+      "sameOriginBytes": 10620963,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -804,7 +828,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 4211619,
+      "sameOriginBytes": 4213392,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -828,7 +852,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 14397692,
+      "sameOriginBytes": 14399465,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -852,7 +876,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 2068915,
+      "sameOriginBytes": 2070688,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -876,7 +900,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 2069105,
+      "sameOriginBytes": 2070878,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -900,7 +924,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 937230,
+      "sameOriginBytes": 939003,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -924,7 +948,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1091058,
+      "sameOriginBytes": 1317557,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -948,7 +972,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 566693,
+      "sameOriginBytes": 570528,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -972,7 +996,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 941856,
+      "sameOriginBytes": 943629,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -996,7 +1020,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1045636,
+      "sameOriginBytes": 1114897,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -1020,7 +1044,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 2562562,
+      "sameOriginBytes": 2566440,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -1044,7 +1068,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 529782,
+      "sameOriginBytes": 531555,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -1068,7 +1092,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1581624,
+      "sameOriginBytes": 1582242,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -1092,7 +1116,31 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 970567,
+      "sameOriginBytes": 971185,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "assetFailures": []
+    },
+    {
+      "route": "/games/lottomind-313-fortune-grid/",
+      "viewport": "tablet",
+      "dimensions": "768x1024",
+      "status": 200,
+      "title": "LottoMind 313: Fortune Grid — Beta",
+      "firstHeading": "LottoMind 313: Fortune Grid",
+      "horizontalOverflow": false,
+      "visibleKeyboardFocus": true,
+      "reducedMotion": true,
+      "noindex": "noindex,nofollow,noarchive",
+      "stagingBannerVisible": true,
+      "environment": {
+        "name": "staging",
+        "allowLivePayments": false,
+        "allowAccountWrites": false,
+        "allowRedemptions": false,
+        "allowProductionAnalytics": false
+      },
+      "sameOriginBytes": 5763936,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -1116,7 +1164,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 4291189,
+      "sameOriginBytes": 4291807,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -1140,7 +1188,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 3879696,
+      "sameOriginBytes": 3880314,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -1164,7 +1212,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 63433,
+      "sameOriginBytes": 64051,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -1188,7 +1236,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1200268,
+      "sameOriginBytes": 1202041,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -1212,7 +1260,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 3025253,
+      "sameOriginBytes": 3025871,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -1236,7 +1284,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 4675978,
+      "sameOriginBytes": 4677898,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -1260,7 +1308,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 4455238,
+      "sameOriginBytes": 4457011,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -1284,7 +1332,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 16405349,
+      "sameOriginBytes": 4809500,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -1308,7 +1356,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1474527,
+      "sameOriginBytes": 1485336,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -1332,7 +1380,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 8734446,
+      "sameOriginBytes": 8736219,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -1356,7 +1404,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1200268,
+      "sameOriginBytes": 1202041,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -1380,7 +1428,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 10619190,
+      "sameOriginBytes": 10620963,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -1404,7 +1452,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 4211619,
+      "sameOriginBytes": 4213392,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -1428,7 +1476,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 14397692,
+      "sameOriginBytes": 14399465,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -1452,7 +1500,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 2068915,
+      "sameOriginBytes": 2070688,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -1476,7 +1524,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 2069105,
+      "sameOriginBytes": 2070878,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -1500,7 +1548,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 937230,
+      "sameOriginBytes": 939003,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -1524,7 +1572,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1091058,
+      "sameOriginBytes": 1092831,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -1548,7 +1596,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 566693,
+      "sameOriginBytes": 570528,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -1572,7 +1620,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 941856,
+      "sameOriginBytes": 943629,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -1596,7 +1644,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1045636,
+      "sameOriginBytes": 1114897,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -1620,7 +1668,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 2562562,
+      "sameOriginBytes": 2566440,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -1644,7 +1692,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 529782,
+      "sameOriginBytes": 531555,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -1668,7 +1716,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1581624,
+      "sameOriginBytes": 1582242,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -1692,7 +1740,31 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 970567,
+      "sameOriginBytes": 971185,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "assetFailures": []
+    },
+    {
+      "route": "/games/lottomind-313-fortune-grid/",
+      "viewport": "mobile",
+      "dimensions": "390x844",
+      "status": 200,
+      "title": "LottoMind 313: Fortune Grid — Beta",
+      "firstHeading": "LottoMind 313: Fortune Grid",
+      "horizontalOverflow": false,
+      "visibleKeyboardFocus": true,
+      "reducedMotion": true,
+      "noindex": "noindex,nofollow,noarchive",
+      "stagingBannerVisible": true,
+      "environment": {
+        "name": "staging",
+        "allowLivePayments": false,
+        "allowAccountWrites": false,
+        "allowRedemptions": false,
+        "allowProductionAnalytics": false
+      },
+      "sameOriginBytes": 5763936,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -1716,7 +1788,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 4291189,
+      "sameOriginBytes": 4291807,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -1740,7 +1812,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 3879696,
+      "sameOriginBytes": 3880314,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -1764,7 +1836,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 63433,
+      "sameOriginBytes": 64051,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -1788,7 +1860,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1345524,
+      "sameOriginBytes": 1202041,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []
@@ -1812,7 +1884,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 3025253,
+      "sameOriginBytes": 3025871,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": []

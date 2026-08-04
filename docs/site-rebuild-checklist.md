@@ -6,11 +6,11 @@ This matrix records the current release-signoff evidence for the upgrade branch.
 
 - Production baseline: `v1-final` at `975c637cea7003533cdc30aed9d96be51929bfc8`, with 69 route captures in [`visual-baseline/v1/`](visual-baseline/v1/)
 - Audited site content: the focused Help and presentation-media task tree on `upgrade-redesign`; the final commit is resolved with `git log -1 --format=%H -- docs/site-rebuild-checklist.md`
-- Current staging captures: 75/75 passed across 25 routes at `1440x900`, `768x1024`, and `390x844`
+- Current staging captures: 78/78 passed across 26 routes at `1440x900`, `768x1024`, and `390x844`
 - Contact sheets: [desktop](staging-reviews/release-signoff-assets/desktop-contact-sheet.png), [tablet](staging-reviews/release-signoff-assets/tablet-contact-sheet.png), and [mobile](staging-reviews/release-signoff-assets/mobile-contact-sheet.png)
 - Machine-readable results: [`release-signoff-manifest.json`](staging-reviews/release-signoff-assets/release-signoff-manifest.json)
 - Route gate: 156/156 passed across source and staging, including Help, Account, visible keyboard focus, reduced motion, console/page errors, same-origin assets, overflow, noindex, preview banner, and environment write protections
-- Review report: [`help-media-release.md`](staging-reviews/help-media-release.md)
+- Review reports: [`help-media-release.md`](staging-reviews/help-media-release.md) and [`release-blocker-remediation.md`](staging-reviews/release-blocker-remediation.md)
 
 ## Sign-Off Matrix
 
@@ -38,6 +38,7 @@ This matrix records the current release-signoff evidence for the upgrade branch.
 | `/404.html` | Required route | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Measured | Current staging sign-off complete |
 | `/games/gothtechnology2/` | Arcade manifest | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Measured | Current staging sign-off complete |
 | `/games/lottomind-jackpot-maze/` | Arcade manifest | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Measured | Current staging sign-off complete |
+| `/games/lottomind-313-fortune-grid/` | Arcade manifest | Not applicable | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Measured | New route; 3/3 current staging states passed with visible setup controls and no v1 route |
 | `/games/opengw-levels/` | Arcade manifest | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Measured | Current staging sign-off complete |
 | `/games/shadow-ops-canvas/` | Arcade manifest | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Measured | Current staging sign-off complete |
 | `/games/raytrace-pong-background/` | Arcade manifest | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Measured | Current staging sign-off complete |
