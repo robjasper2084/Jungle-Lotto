@@ -128,6 +128,15 @@ test("Collector recovery link completes a password update with its temporary ses
   await expect(page).not.toHaveURL(/account=recovery/);
 });
 
+test("Collector Redemption boots with the configured static account service", async ({ page }) => {
+  await blockMedia(page);
+  await mockAccountApi(page);
+  await page.goto("/redeem.html", { waitUntil: "domcontentloaded" });
+
+  expect(await page.evaluate(() => window.LottoMindAccountService?.isConfigured())).toBe(true);
+  await expect(page.locator("[data-account-state]")).toContainText("Sign in or create an account");
+});
+
 test("password recovery API keeps reset responses generic and validates updates", () => {
   const fs = require("node:fs");
   const path = require("node:path");
@@ -137,4 +146,29 @@ test("password recovery API keeps reset responses generic and validates updates"
   expect(source).toContain('path === "/auth/password-update"');
   expect(source).toContain("password.length < 10");
   expect(source).not.toContain("No account exists");
+});
+
+test("every static account client loads the production runtime configuration first", () => {
+  const fs = require("node:fs");
+  const path = require("node:path");
+  const siteRoot = path.join(__dirname, "..");
+  const pages = fs.readdirSync(siteRoot).filter((name) => name.endsWith(".html"));
+  const accountPages = pages.filter((name) => {
+    const source = fs.readFileSync(path.join(siteRoot, name), "utf8");
+    return source.includes("lottomind-account-service.js");
+  });
+
+  expect(accountPages.sort()).toEqual(["account.html", "memberships.html", "redeem.html"]);
+  for (const name of accountPages) {
+    const source = fs.readFileSync(path.join(siteRoot, name), "utf8");
+    const runtimeIndex = source.indexOf("lottomind-runtime-config.js");
+    const serviceIndex = source.indexOf("lottomind-account-service.js");
+    expect(runtimeIndex, `${name} must load the runtime config`).toBeGreaterThan(-1);
+    expect(runtimeIndex, `${name} must configure Supabase before the account client`).toBeLessThan(serviceIndex);
+  }
+
+  const runtimeConfig = fs.readFileSync(path.join(siteRoot, "assets", "js", "lottomind-runtime-config.js"), "utf8");
+  expect(runtimeConfig).toContain("https://sqdasdbvlkgpbbiyeune.supabase.co");
+  expect(runtimeConfig).toContain("sb_publishable_");
+  expect(runtimeConfig).not.toMatch(/service[_-]?role|sb_secret_|sk_(?:live|test)_/i);
 });

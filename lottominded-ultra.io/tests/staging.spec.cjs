@@ -276,6 +276,6 @@ test("Collector Access deep link remains reviewable while staging account writes
   await page.locator('[data-password-toggle][aria-controls="collectorPassword"]').click();
   await expect(page.locator("#collectorPassword")).toHaveAttribute("type", "text");
   await page.locator("[data-collector-forgot-password]").click();
-  await expect(page.locator("[data-collector-message]")).toContainText("Account services are not configured");
+  await expect(page.locator("[data-collector-message]")).toContainText("Production account services are configured but disabled in this preview");
   await expect(page.locator("#lm-staging-guard-status")).toContainText("Production account changes are disabled");
 });

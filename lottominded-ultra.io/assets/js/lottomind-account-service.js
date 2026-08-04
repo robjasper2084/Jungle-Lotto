@@ -124,8 +124,11 @@
   async function request(path, options) {
     var url = apiUrl(path);
     if (!url) {
-      var configurationError = new Error("Account services are not configured for this static site.");
-      configurationError.code = "ACCOUNT_NOT_CONFIGURED";
+      var previewDisabled = global.LottoMindEnvironment && global.LottoMindEnvironment.isProduction === false;
+      var configurationError = new Error(previewDisabled
+        ? "Production account services are configured but disabled in this preview."
+        : "Account services are not configured for this static site.");
+      configurationError.code = previewDisabled ? "ACCOUNT_PREVIEW_DISABLED" : "ACCOUNT_NOT_CONFIGURED";
       throw configurationError;
     }
     var response;

@@ -633,3 +633,18 @@
 - Commerce and backend impact: None; staging live payments, production account writes, real redemptions, and production analytics remain blocked
 - Staging URL: Local only (`http://127.0.0.1:8143/`)
 - Production approval status: Not approved; `main`, production, and `v1-final` remain unchanged
+
+## Static Account Service Configuration
+
+- Step number: Owner-requested static account service configuration
+- Implementation commit: This focused commit on `upgrade-redesign`
+- Affected routes: `/account.html`, `/memberships.html`, and `/redeem.html`
+- Configuration: All static account clients load the public Supabase runtime configuration before the shared account service; the Redemption route no longer boots without configuration
+- Preview safety: Staging labels production account services as configured but disabled and continues to block production account writes and real redemptions
+- Backend verification: Supabase project health, public-key compatibility, production-origin CORS, and a signed-out account snapshot were verified without a data mutation
+- Tests: Collector Access and recovery passed 7/7; site validation passed 17 HTML files; release audit passed 7/7 groups; staging safety passed 12/12; source/staging route matrix passed 156/156 on fresh ports across desktop, mobile, and tablet
+- Staging build: 26 noindex pages and 592 same-origin references verified
+- Visual review: Redemption desktop and mobile remain aligned with the v1 layout; the intentional staging-only message is recorded in `docs/staging-reviews/account-static-configuration.md`
+- Commerce impact: None; no payment or checkout behavior changed
+- Staging URL: Local only (`http://127.0.0.1:8321/`)
+- Production approval status: Not approved; `main`, production, and `v1-final` remain unchanged
