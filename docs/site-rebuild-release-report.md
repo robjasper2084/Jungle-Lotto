@@ -6,17 +6,17 @@
 - Production: `main` at `09f8e5d2c8bc10d0cf1af240216404c6af74c3c0`
 - Permanent rollback snapshot: `v1-final` at `975c637cea7003533cdc30aed9d96be51929bfc8`
 - Upgrade branch: `upgrade-redesign`
-- Current audited tree: the focused Help and presentation-media commit containing this report
-- Staging URL: Local only (`http://127.0.0.1:8342/`)
+- Current audited tree: `050ecb279ea4deafe6d75714874c34be486f304d` before the focused preflight documentation update
+- Staging URL: Local only (`http://127.0.0.1:8369/`)
 - Current release candidate: None; `v2-rc1`, `v2-rc2`, and `v2-rc3` are historical and remain immutable
 - Production state: unchanged by this work
 
 ## Verification Summary
 
-- 154 source browser checks passed with 8 intentional viewport skips.
+- 160 source browser checks passed with 8 intentional viewport skips.
 - 156 source/staging route checks passed across desktop, tablet, and mobile.
 - 11 staging browser safety checks passed.
-- 26 generated staging pages and 590 same-origin references passed static verification.
+- 26 generated staging pages and 591 same-origin references passed static verification.
 - Seven release-audit groups passed for metadata, structured data, PWA, checkout hooks, offline account behavior, challenges, and share cards.
 - 75 visual states passed across 25 routes at `1440x900`, `768x1024`, and `390x844`.
 
@@ -36,9 +36,11 @@ Current staging transfer measurements are machine-recorded in `docs/staging-revi
 
 Metadata, JSON-LD, manifest/icon, service-worker, checkout-hook, account-offline, challenge, and share-card audits passed. The staging artifact is visibly labeled, noindexed, and fail-closed for live payments, production account writes, real redemptions, and production analytics.
 
-## Backend Limitations
+## Checkout And Backend Limitations
 
-No remote preview provider, isolated staging backend, or dedicated Stripe test project is configured. Fresh safe checkout verification remains required before a future release-candidate tag or production review.
+The production billing configuration reports enabled plans, and the live Memberships UI reports that secure Stripe checkout is ready. A signed-out Gold selection correctly stops at Collector Access, and an unauthenticated checkout request returns `401`; no Stripe redirect, payment details, payment submission, or charge occurred.
+
+The current browser session is not authenticated, and the live configuration does not expose whether Stripe is in `test` or `live` mode. The authenticated Stripe handoff and cancellation therefore remain required before a future release-candidate tag or production review. No remote preview provider, isolated staging backend, or dedicated Stripe test project is configured.
 
 ## Visual Evidence
 
@@ -48,7 +50,7 @@ No remote preview provider, isolated staging backend, or dedicated Stripe test p
 
 ## Release Recommendation
 
-Ready for the next upgrade phase, not for production merge. Run a fresh Step 34 review only after safe checkout verification and explicit approval. Do not reuse or move an existing RC tag.
+The source, route, release, and staging audits pass, and `origin/main` is synchronized into `upgrade-redesign`. The release remains blocked on an authenticated Stripe handoff and cancellation without charge. Do not create a release-candidate tag, open a production PR, or reuse or move an existing RC tag until that check is complete.
 
 Rollback after any future approved merge uses a normal merge revert:
 

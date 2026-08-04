@@ -7,28 +7,41 @@
 - Snapshot annotated tag object SHA: `9ba25352efc17d5b514e5afd59c8afde5c9d2949`
 - Snapshot target commit SHA: `975c637cea7003533cdc30aed9d96be51929bfc8`
 - Upgrade branch: `upgrade-redesign`
-- Current upgrade branch implementation SHA: this status file is part of the focused Help and presentation-media commit; resolve it with `git log -1 --format=%H -- docs/upgrade-redesign-status.md`
+- Current upgrade branch implementation SHA: `050ecb279ea4deafe6d75714874c34be486f304d` before this focused preflight documentation update
 - Upgrade branch SHA at Step 0A branch creation: `1fc4c95ca4d0b22ee5188d06f8ea75573c63a00a`
 - Upgrade branch SHA before Step 0B commit: `220653bbc300d0e0b236c6e834043f39fdfcd76c`
 - Step 0B commit SHA: `6e58aafc4addabf5281262ec951a7d6df3dc66a0`
 - Deployment mechanism discovered: GitHub Pages Actions from repository-root `.github/workflows/pages.yml`; pushes to `main` upload the repository root with `actions/upload-pages-artifact` and deploy with `actions/deploy-pages`. Current remote production head is `09f8e5d2c8bc10d0cf1af240216404c6af74c3c0`.
 - Staging provider: Local static server (Mode C); no remote preview provider is configured
-- Staging URL: Local only (`http://127.0.0.1:8342/` while the verified staging server is running)
+- Staging URL: Local only (`http://127.0.0.1:8369/` for the current clean-worktree artifact)
 - Staging integrations: No isolated backend or Stripe test-mode configuration is currently configured; protected writes remain disabled
-- Last completed step: Added a dated, official-source Powerball and Mega Millions results ticker to the News route on `upgrade-redesign`
+- Last completed step: Preserved unrelated dirty work, merged current `origin/main` into `upgrade-redesign`, and completed the post-merge release preflight
 - Step 1 commit SHA: This file is part of the Step 1 commit; use `git log -1 --format=%H -- docs/upgrade-redesign-status.md` to resolve its exact non-self-referential SHA. The completion report records it explicitly.
 - Last staging review: News lottery-results ticker; review: `docs/staging-reviews/lottery-results-ticker.md`
 - Staging review commit SHA: This file is part of the staging-review commit; the completion report records its exact SHA.
-- Last successful test run: 2026-08-03 - News unit suite passed 23/23; News build and site validation passed; release audit passed 7/7 groups; staging browser safety passed 11/11; focused desktop/mobile ticker checks passed with zero overlap, overflow, console errors, or warnings
+- Last successful test run: 2026-08-03 - site validation passed 17 HTML files; source browser suite passed 160 with 8 intentional skips; release audit passed 7/7 groups; source/staging route matrix passed 156/156; staging browser safety passed 11/11; static staging verification passed 26 pages and 591 same-origin references
 - Visual baseline: Complete - 69 production route screenshots plus desktop, tablet, and mobile contact sheets under `docs/visual-baseline/v1/`
 - Step 1 visual comparison: Production and staging home routes compared at 1440x900 and 390x844; staging adds only the preview and safety banners, with no redesign changes
 - Resolved Step 1 baseline failures: Contact support helper restored; Stem Studio tablet/mobile overflow corrected; Jackpot Maze runtime, heading, and entry focus restored; first-load outliers reduced; staging News production request removed
 - Latest visual comparison: News compared with its v1 references at 1440x900 and 390x844; review: `docs/staging-reviews/lottery-results-ticker.md`
 - Latest performance comparison: three presentation videos are 73.4-73.5% smaller; the Account hero is 92.0% smaller; the Arcade marquee is 93.7% smaller. Current staging transfer measurements are recorded in `docs/staging-reviews/help-media-release.md`
-- Staging review approval status: Ready for next phase
+- Staging review approval status: Needs authenticated checkout handoff before Step 34
 - Production approval status: The earlier Step 35 launch was approved and completed through PR #2 using merge commit `09f8e5d2c8bc10d0cf1af240216404c6af74c3c0`; the new Phase 1 rollback commit is not approved or merged to `main`
 - Rollback reference: `git revert -m 1 09f8e5d2c8bc10d0cf1af240216404c6af74c3c0`; permanent snapshot `v1-final` remains at `975c637cea7003533cdc30aed9d96be51929bfc8`
 - Known pre-existing repository changes: The working tree was clean when Step 0A began. Local `main` already contained commit `1fc4c95ca4d0b22ee5188d06f8ea75573c63a00a` ahead of `origin/main`; that commit was preserved as the starting point of `upgrade-redesign` and was not pushed to production.
+
+## Step 34 Preflight Refresh
+
+- Preservation branch: `preserve/pre-step34-20260803-1730` retains all 103 pre-existing uncommitted entries in the original checkout without stashing, resetting, cleaning, deleting, or committing them
+- Clean release worktree: `C:\Users\digit\Documents\phone\_jungle_lotto_release_candidate`
+- Production synchronization: `origin/main` at `09f8e5d2c8bc10d0cf1af240216404c6af74c3c0` was merged normally into `upgrade-redesign`; merge commit `050ecb279ea4deafe6d75714874c34be486f304d` is pushed
+- Branch tracking: the partial clone now fetches `upgrade-redesign`, the local branch tracks `origin/upgrade-redesign`, and the verified divergence is `0 ahead / 0 behind`
+- Verification: site validation 17/17 HTML files; source browser suite 160 passed with 8 intentional skips; release audit 7/7; source/staging route matrix 156/156; staging safety 11/11; static staging artifact 26 pages and 591 same-origin references
+- Live checkout safety: production billing configuration reports enabled plans and the live Memberships UI reports `Secure Stripe checkout is ready.` A signed-out Gold selection stops at Collector Access with `auth-required`; a direct unauthenticated `/billing/checkout` request returns `401`. No Stripe redirect, payment details, payment submission, or charge occurred
+- Remaining checkout gate: the live configuration does not expose a `test` or `live` mode value, and the browser has no authenticated Collector session. The authenticated Stripe handoff and cancellation remain incomplete
+- Tag safety: local and remote `v2-rc1` annotated tag objects differ, but both peel to `971dd17accd03be8bd1ff20664ad98734c792867`; no tag was moved, replaced, or deleted
+- Review: `docs/staging-reviews/step34-preflight-refresh.md`
+- Approval status: Not ready for Step 34; production remains not approved
 
 ## News Lottery Results Ticker
 

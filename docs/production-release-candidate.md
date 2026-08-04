@@ -6,8 +6,8 @@
 - Production branch: `main` at `09f8e5d2c8bc10d0cf1af240216404c6af74c3c0`
 - Permanent pre-upgrade snapshot: `v1-final` at `975c637cea7003533cdc30aed9d96be51929bfc8`
 - Upgrade branch: `upgrade-redesign`
-- Current audited upgrade tree: the focused Help and presentation-media commit containing this report
-- Staging URL: Local only (`http://127.0.0.1:8342/`)
+- Current audited upgrade tree: `050ecb279ea4deafe6d75714874c34be486f304d` before the focused preflight documentation update
+- Staging URL: Local only (`http://127.0.0.1:8369/`)
 - Active release-candidate tag for the current tree: None
 - Historical immutable tags: `v2-rc1`, `v2-rc2`, and `v2-rc3`
 - Production approval for the current tree: Not approved
@@ -16,11 +16,11 @@ The historical release candidate was merged previously. The current upgrade work
 
 ## Current Verification
 
-- Source browser suite: 154 passed, 8 intentional viewport skips, 0 failed.
+- Source browser suite: 160 passed, 8 intentional viewport skips, 0 failed.
 - Release audit: 7/7 groups passed for metadata, structured data, PWA, checkout hooks, offline account behavior, challenges, and share cards.
 - Source/staging route matrix: 156/156 passed.
 - Staging browser safety: 11/11 passed, including mobile Help fixed-control clearance.
-- Staging static artifact: 26 noindexed pages and 590 same-origin references passed.
+- Staging static artifact: 26 noindexed pages and 591 same-origin references passed.
 - Visual sign-off: 75/75 states passed across 25 routes at `1440x900`, `768x1024`, and `390x844`.
 
 ## Accessibility Summary
@@ -43,7 +43,7 @@ Source production HTML remains free of staging banners and staging noindex metad
 
 ## Checkout And Backend Limitations
 
-This task did not perform or complete a charge. No isolated staging backend, dedicated Stripe test project, or remote preview provider is configured, so protected staging writes remain disabled. Fresh safe checkout verification is still required before a future release candidate.
+This task did not perform or complete a charge. Production configuration reports enabled plans, the live UI reports secure checkout ready, a signed-out Gold selection stops at Collector Access, and an unauthenticated checkout request returns `401` without a Stripe redirect. The authenticated Stripe handoff and cancellation remain incomplete because the browser is not signed in and the configuration does not expose its Stripe mode. No isolated staging backend, dedicated Stripe test project, or remote preview provider is configured, so protected staging writes remain disabled.
 
 ## Visual Evidence
 
