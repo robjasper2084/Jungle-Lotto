@@ -19,6 +19,17 @@
   touch-action: none;
 }
 
+.map-location {
+  display: grid;
+  gap: 0.2rem;
+  margin: 0.35rem 0 0.15rem;
+  color: #fff1b5;
+}
+
+.map-location small {
+  color: #8beeff;
+}
+
 .venture-deed {
   display: grid;
   gap: 0.4rem;

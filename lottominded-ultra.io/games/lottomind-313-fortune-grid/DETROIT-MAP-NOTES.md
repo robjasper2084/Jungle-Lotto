@@ -1,6 +1,6 @@
 # Detroit map placement notes
 
-The selected illustrated overhead map uses a readable clockwise venture circuit over a stylized Detroit composition. Latitude/longitude anchors remain as stop metadata, while the visible route is composed to match the approved board view. It is not intended for navigation or parcel-level representation.
+The 3D map projects latitude/longitude anchors into a stylized game board. It is not intended for navigation or parcel-level representation.
 
 Key placement references:
 

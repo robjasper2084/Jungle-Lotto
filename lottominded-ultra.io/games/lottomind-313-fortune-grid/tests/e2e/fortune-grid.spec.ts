@@ -10,7 +10,7 @@ test("creates a game and completes the first turn without console errors", async
   await page.getByRole("button", { name: "Launch Fortune Grid" }).click();
   await expect(page.getByText(/Round 1 \/ 3/)).toBeVisible();
   await expect(page.locator("#game canvas")).toBeVisible();
-  await expect.poll(() => page.locator("#game canvas").evaluate((canvas) => canvas.getAttribute("aria-label"))).toBe("Illustrated Detroit Fortune Grid map");
+  await expect.poll(() => page.locator("#game canvas").evaluate((canvas) => canvas.getAttribute("aria-label"))).toBe("3D Detroit Fortune Grid map");
   await page.getByRole("button", { name: /Roll 2 Movement Cubes/ }).click();
   const route = page.getByRole("button", { name: /Route 1:/ });
   if (await route.isVisible().catch(() => false)) await route.click();
