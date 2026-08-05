@@ -1,9 +1,9 @@
-import { GRAVITY, GROUND_Y, WORLD } from "../config/constants.js?v=heartline41-epic-amara-ezra";
-import { ATTACKS } from "../config/moves.js?v=heartline41-epic-amara-ezra";
-import { drawSpriteFrame } from "../engine/assets.js?v=heartline41-epic-amara-ezra";
-import { approach, clamp, makeRect } from "../engine/math.js?v=heartline41-epic-amara-ezra";
-import { attackIntentFromActions, resolveCancelAttack } from "./commands.js?v=heartline41-epic-amara-ezra";
-import { SpriteEffect } from "./effects.js?v=heartline41-epic-amara-ezra";
+import { GRAVITY, GROUND_Y, WORLD } from "../config/constants.js?v=semantic-motion-v2";
+import { ATTACKS } from "../config/moves.js?v=semantic-motion-v2";
+import { drawSpriteFrame } from "../engine/assets.js?v=semantic-motion-v2";
+import { approach, clamp, makeRect } from "../engine/math.js?v=semantic-motion-v2";
+import { attackIntentFromActions, resolveCancelAttack } from "./commands.js?v=semantic-motion-v2";
+import { SpriteEffect } from "./effects.js?v=semantic-motion-v2";
 
 const MOTION_LOCKS = new Set([
   "LIGHT_PUNCH",
