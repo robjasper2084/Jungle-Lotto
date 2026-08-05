@@ -50,6 +50,49 @@ body.lm-live-page::before {
   animation: liveGrid 18s linear infinite;
 }
 
+body.live-events-page .feature-entity {
+  display: none !important;
+}
+
+.lm-live-puck-field {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.lm-live-puck {
+  --puck-size: clamp(76px, 9vw, 150px);
+  position: absolute;
+  width: var(--puck-size);
+  aspect-ratio: 1;
+  border: 1px solid rgba(255, 224, 113, 0.62);
+  border-radius: 50%;
+  opacity: 0.38;
+  background: url("../../brand/lottomind-floating-puck-20260417.webp") center / 181% auto no-repeat;
+  box-shadow:
+    0 0 0 2px rgba(41, 247, 255, 0.08),
+    0 0 34px rgba(41, 247, 255, 0.22),
+    0 18px 45px rgba(0, 0, 0, 0.56);
+  filter: saturate(0.92) brightness(0.86);
+  animation: livePuckDrift 17s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+.lm-live-puck--one { top: 16%; left: 3%; animation-delay: -2s; }
+.lm-live-puck--two { top: 27%; right: 5%; --puck-size: clamp(94px, 11vw, 176px); animation-delay: -8s; }
+.lm-live-puck--three { top: 58%; left: 8%; --puck-size: clamp(64px, 7vw, 112px); animation-delay: -12s; }
+.lm-live-puck--four { top: 72%; right: 12%; --puck-size: clamp(78px, 8vw, 132px); animation-delay: -5s; }
+.lm-live-puck--five { top: 42%; left: 48%; --puck-size: clamp(56px, 6vw, 96px); animation-delay: -15s; }
+.lm-live-puck--six { top: 86%; left: 31%; --puck-size: clamp(72px, 8vw, 128px); animation-delay: -10s; }
+
+@keyframes livePuckDrift {
+  0% { transform: translate3d(-10px, 16px, 0) rotate(-4deg) scale(0.96); }
+  50% { transform: translate3d(14px, -20px, 0) rotate(3deg) scale(1.04); }
+  100% { transform: translate3d(-5px, 12px, 0) rotate(-2deg) scale(1); }
+}
+
 .lm-live-topbar,
 .lm-synth-rail,
 .panel-glow,
@@ -1199,6 +1242,27 @@ body.has-shadow-ops-frame-expanded {
   backdrop-filter: blur(10px);
 }
 
+.lm-live-hero-film__sound:not(.is-active) {
+  top: 50%;
+  right: clamp(28px, 11%, 150px);
+  min-height: 52px;
+  padding: 0 22px;
+  transform: translateY(-50%);
+  border-color: rgba(255, 224, 113, 0.9);
+  color: #fff8bd;
+  background:
+    linear-gradient(135deg, rgba(255, 224, 113, 0.22), rgba(41, 247, 255, 0.16)),
+    rgba(2, 9, 19, 0.94);
+  box-shadow: 0 0 34px rgba(41, 247, 255, 0.28), 0 0 24px rgba(255, 224, 113, 0.2);
+  font-size: 0.72rem;
+}
+
+.lm-live-hero-film__sound.is-active {
+  top: 14px;
+  right: 14px;
+  transform: none;
+}
+
 .lm-live-hero-film__status {
   left: auto;
   right: 92px;
@@ -2334,6 +2398,15 @@ body.live-events-page .vault-credit-badge {
     left: 14px;
     right: auto;
   }
+  .lm-live-hero-film__sound:not(.is-active) {
+    top: 18px;
+    right: 18px;
+    transform: none;
+  }
+  .lm-live-puck--five,
+  .lm-live-puck--six {
+    display: none;
+  }
   .event-card-row,
   .lm-category-grid,
   .lm-passes,
@@ -2434,6 +2507,12 @@ body.live-events-page .vault-credit-badge {
   }
   .shadow-ops-frame-shell {
     min-height: min(56vw, 390px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lm-live-puck {
+    animation: none !important;
   }
 }
 

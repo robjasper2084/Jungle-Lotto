@@ -727,10 +727,10 @@ test("features combines the cinematic shell with the manifest-driven Arcade dire
   expect(localFailures).toEqual([]);
 });
 
-test("home restores the original muted-first startup commercial", async ({ page }) => {
+test("home loads the supplied muted-first startup commercial", async ({ page }) => {
   const commercialRequests = [];
   page.on("request", (request) => {
-    if (/lottomind-membership-unboxing-commercial-20260716\.opt\.mp4/i.test(request.url())) commercialRequests.push(request.url());
+    if (/lottomind-home-apparel-commercial-20260804\.opt\.mp4/i.test(request.url())) commercialRequests.push(request.url());
   });
   await page.goto("/", { waitUntil: "domcontentloaded" });
   const startup = page.locator("[data-startup-video]");

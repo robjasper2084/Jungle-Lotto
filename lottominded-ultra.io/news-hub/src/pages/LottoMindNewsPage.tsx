@@ -196,6 +196,9 @@ export function LottoMindNewsPage() {
   const liveSources = data.sourceStatuses.filter((source) => source.ok).length;
   const drawDate = (value: string) => new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" }).format(new Date(`${value}T12:00:00Z`));
   const verifiedDrawSummary = latestLotteryResults.results.map((result) => `${result.game}, ${drawDate(result.drawDate)}: ${result.numbers.join(", ")}, ${result.specialLabel} ${result.specialNumber}`).join(". ");
+  const drawMarqueeLabels = latestLotteryResults.results.map((result) => (
+    `${result.game} - ${drawDate(result.drawDate)} - ${result.numbers.join(" ")} - ${result.specialLabel} ${result.specialNumber}${result.multiplier ? ` - Power Play ${result.multiplier}` : ""}`
+  ));
   const toggleCredibility = (values: CredibilityLabel[]) => {
     setCredibility((current) => {
       const next = new Set(current);
@@ -242,10 +245,29 @@ export function LottoMindNewsPage() {
           <a href="../how-to-use.html" data-icon="GD">Static Wav</a>
           <a href="https://robjasper2084.github.io/Jungle-Lotto/lotto%20mind%20refined/" data-icon="LM" data-member-app-public="true" aria-label="Open LottoMind Refined App">LottoMind App</a>
         </nav>
-        <div className="direct-launch" aria-label="Direct studio launch">
-          <a className="direct-action direct-primary" href="../lottomind-stem-studio/index.html">Launch Studio</a>
+        <div className="lm-header-utilities" aria-label="Account and support utilities">
+          <button
+            type="button"
+            aria-label="Search LottoMind news"
+            onClick={() => {
+              const input = document.getElementById("news-search") as HTMLInputElement | null;
+              input?.scrollIntoView({ behavior: "smooth", block: "center" });
+              input?.focus({ preventScroll: true });
+            }}
+          >Search</button>
+          <a href="../account.html#credits">Credits</a>
+          <a href="../account.html">Account</a>
         </div>
       </header>
+
+      <section className="home-signal-marquee site-signal-marquee--shared news-results-marquee" aria-label="Latest verified Powerball and Mega Millions results">
+        <p className="sr-only">{verifiedDrawSummary}. Verify every result with the official source links below.</p>
+        {[false, true].map((duplicate) => (
+          <div className="home-signal-marquee-track" aria-hidden={duplicate || undefined} key={String(duplicate)}>
+            {drawMarqueeLabels.map((label) => <span key={`${duplicate}-${label}`}>{label}</span>)}
+          </div>
+        ))}
+      </section>
 
       <main>
       <section className="lottery-results-ticker" aria-labelledby="lottery-results-title">

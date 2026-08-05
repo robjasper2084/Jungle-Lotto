@@ -585,7 +585,7 @@ body.has-open-modal .lm-healing-generator {
 
 /* News keeps the complete tool visible as a floating bottom command bar. */
 body.has-lm-news-healing-dock {
-  padding-bottom: calc(178px + env(safe-area-inset-bottom)) !important;
+  padding-bottom: calc(230px + env(safe-area-inset-bottom)) !important;
 }
 
 .lm-healing-generator--news-dock,
@@ -594,7 +594,7 @@ body.has-lm-news-healing-dock {
   position: fixed;
   top: auto !important;
   right: auto !important;
-  bottom: max(14px, env(safe-area-inset-bottom)) !important;
+  bottom: max(76px, calc(env(safe-area-inset-bottom) + 64px)) !important;
   left: 50% !important;
   display: grid;
   grid-template-columns: minmax(190px, 0.82fr) minmax(300px, 1.25fr) minmax(270px, 1fr);
@@ -602,7 +602,7 @@ body.has-lm-news-healing-dock {
     "header oracle presets"
     "actions oracle volume";
   gap: 8px 14px;
-  width: min(1180px, calc(100vw - 220px));
+  width: calc(100vw - 24px);
   height: auto;
   min-height: 142px;
   max-width: none;
@@ -673,7 +673,7 @@ body.has-lm-news-healing-dock {
 .lm-healing-generator--news-dock.is-minimized {
   grid-template-columns: minmax(0, 1fr);
   grid-template-areas: "header";
-  width: min(430px, calc(100vw - 220px));
+  width: min(430px, calc(100vw - 24px));
   height: 64px;
   min-height: 64px;
   padding: 10px 14px;

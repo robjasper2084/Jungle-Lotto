@@ -57,7 +57,7 @@ test("preview shell is noindex, visibly marked, and free of broken same-origin r
 test("home staging restores the muted-first startup commercial", async ({ page }) => {
   const commercialRequests = [];
   page.on("request", (request) => {
-    if (/lottomind-membership-unboxing-commercial-20260716\.opt\.mp4/i.test(request.url())) {
+    if (/lottomind-home-apparel-commercial-20260804\.opt\.mp4/i.test(request.url())) {
       commercialRequests.push(request.url());
     }
   });

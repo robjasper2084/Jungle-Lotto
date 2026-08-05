@@ -26,6 +26,25 @@
   white-space: nowrap;
 }
 
+.lm-header-utilities > :nth-child(1) {
+  border-color: rgba(41, 247, 255, 0.72);
+  background: linear-gradient(145deg, rgba(41, 247, 255, 0.26), rgba(31, 78, 170, 0.68) 52%, rgba(4, 12, 23, 0.96));
+  box-shadow: inset 0 0 0 1px rgba(186, 252, 255, 0.12), 0 0 16px rgba(41, 247, 255, 0.18);
+}
+
+.lm-header-utilities > :nth-child(2) {
+  border-color: rgba(255, 224, 113, 0.78);
+  color: #fff7c7;
+  background: linear-gradient(145deg, rgba(255, 224, 113, 0.3), rgba(119, 74, 209, 0.64) 54%, rgba(13, 9, 29, 0.96));
+  box-shadow: inset 0 0 0 1px rgba(255, 246, 188, 0.12), 0 0 16px rgba(255, 224, 113, 0.16);
+}
+
+.lm-header-utilities > :nth-child(3) {
+  border-color: rgba(255, 79, 216, 0.72);
+  background: linear-gradient(145deg, rgba(255, 79, 216, 0.28), rgba(21, 176, 189, 0.62) 56%, rgba(4, 12, 23, 0.96));
+  box-shadow: inset 0 0 0 1px rgba(255, 210, 247, 0.1), 0 0 16px rgba(255, 79, 216, 0.16);
+}
+
 .lm-header-utilities a:hover,
 .lm-header-utilities a:focus-visible,
 .lm-header-utilities button:hover,
@@ -208,16 +227,24 @@
     grid-template-areas: none !important;
   }
 
-  html body.home-page .site-header.home-like-header .site-header-main {
+  #root .news-page .site-header.home-like-header {
+    grid-template: auto auto auto / minmax(0, 1fr) !important;
+    min-height: 0 !important;
+  }
+
+  html body.home-page .site-header.home-like-header .site-header-main,
+  #root .news-page .site-header.home-like-header .site-header-main {
     grid-area: 1 / 1 / 2 / -1 !important;
   }
 
-  html body.home-page .site-header.home-like-header > nav {
+  html body.home-page .site-header.home-like-header > nav,
+  #root .news-page .site-header.home-like-header > nav {
     z-index: 1 !important;
     grid-area: 3 / 1 / 4 / -1 !important;
   }
 
-  html body.home-page .site-header.home-like-header .lm-header-utilities {
+  html body.home-page .site-header.home-like-header .lm-header-utilities,
+  #root .news-page .site-header.home-like-header .lm-header-utilities {
     position: relative;
     z-index: 3;
     display: grid !important;

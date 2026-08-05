@@ -85,6 +85,28 @@ a {
   min-height: 100vh;
 }
 
+.news-results-marquee {
+  position: sticky;
+  top: clamp(64px, 6vw, 82px);
+  z-index: 44;
+}
+
+.news-results-marquee .home-signal-marquee-track {
+  width: max-content;
+  animation-duration: 32s;
+}
+
+.news-results-marquee .home-signal-marquee-track span {
+  min-height: 54px;
+  padding-inline: clamp(30px, 5vw, 78px);
+  color: #eef8ff;
+  font-size: clamp(1rem, 2vw, 1.55rem);
+}
+
+.news-results-marquee .home-signal-marquee-track span:nth-child(odd) {
+  color: var(--lm-gold-bright);
+}
+
 .sr-only {
   position: absolute;
   width: 1px;
@@ -1155,6 +1177,16 @@ main {
 }
 
 @media (max-width: 760px) {
+  .news-results-marquee {
+    top: 148px;
+  }
+
+  .news-results-marquee .home-signal-marquee-track span {
+    min-height: 46px;
+    padding-inline: 26px;
+    font-size: 0.95rem;
+  }
+
   .lottery-results-ticker {
     grid-template-columns: 116px minmax(0, 1fr);
   }
@@ -1315,6 +1347,18 @@ main {
   }
 
   .lottery-results-ticker__group:nth-child(2) {
+    display: none;
+  }
+
+  .news-results-marquee {
+    overflow-x: auto;
+  }
+
+  .news-results-marquee .home-signal-marquee-track {
+    animation: none !important;
+  }
+
+  .news-results-marquee .home-signal-marquee-track[aria-hidden="true"] {
     display: none;
   }
 }

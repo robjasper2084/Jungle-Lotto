@@ -1,19 +1,19 @@
 {
-  "verifiedAt": "2026-08-03T19:14:58.082Z",
+  "verifiedAt": "2026-08-04T23:33:37.528Z",
   "results": [
     {
       "game": "Powerball",
-      "drawDate": "2026-08-01",
+      "drawDate": "2026-08-03",
       "numbers": [
-        6,
-        17,
-        27,
+        8,
+        30,
+        41,
         48,
-        50
+        54
       ],
-      "specialNumber": 5,
+      "specialNumber": 4,
       "specialLabel": "Powerball",
-      "multiplier": "3x",
+      "multiplier": "2x",
       "sourceName": "Powerball",
       "sourceUrl": "https://www.powerball.com/previous-results"
     },

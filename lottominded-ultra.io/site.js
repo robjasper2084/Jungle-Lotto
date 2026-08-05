@@ -433,6 +433,8 @@ const PROMPT_ACCESS_PASSWORD = "lottomind";
 const SUPPORT_EMAIL = "robjasper2084@gmail.com";
 let soundtrackStartedFromPage = false;
 let soundtrackStartedFromHover = false;
+let soundtrackPrimingForHandoff = false;
+let soundtrackPrimedForHandoff = false;
 let gamePipHideTimer = 0;
 let gamePipOpenedAt = 0;
 let gamePipShouldResumeSoundtrack = false;
@@ -478,6 +480,7 @@ function createSharedSignalTrack(href, duplicate = false) {
 }
 
 function setupSharedSignalMarquee() {
+  if (/\/(?:news|news-hub)(?:\/|$)/i.test(window.location.pathname)) return true;
   if (document.querySelector(".home-signal-marquee")) return true;
   const header = document.querySelector("[data-site-header], .news-site-header");
   if (!header) return false;
@@ -3228,6 +3231,24 @@ function stopStartupSoundtrack(options = {}) {
   setSoundtrackButtonState(false);
 }
 
+async function primeSiteSoundtrackForHandoff() {
+  if (!siteSoundtrack || soundtrackPrimedForHandoff) return soundtrackPrimedForHandoff;
+  soundtrackPrimingForHandoff = true;
+  try {
+    restoreDeferredVideoSources(siteSoundtrack);
+    siteSoundtrack.volume = 0;
+    siteSoundtrack.currentTime = 0;
+    await siteSoundtrack.play();
+    soundtrackPrimedForHandoff = true;
+    return true;
+  } catch {
+    soundtrackPrimedForHandoff = false;
+    return false;
+  } finally {
+    soundtrackPrimingForHandoff = false;
+  }
+}
+
 async function playStartupVideoWithSound(options = {}) {
   if (!startupVideoPlayer || !isStartupVideoOpen()) return false;
   stopStartupSoundtrack({ reset: true });
@@ -3235,6 +3256,7 @@ async function playStartupVideoWithSound(options = {}) {
   prepareStartupVideoAudio(options);
   try {
     await startupVideoPlayer.play();
+    void primeSiteSoundtrackForHandoff();
     startupVideoModal?.classList.remove("is-awaiting-video-play");
     if (startupVideoPlay) startupVideoPlay.textContent = "Playing with sound";
     return true;
@@ -3280,6 +3302,7 @@ async function finishStartupVideoHandoff() {
   if (startupShouldPlayMusic) {
     await playSiteSoundtrack({ fromPage: true, restart: true, volume: SITE_AUDIO_LEVELS.background });
   }
+  soundtrackPrimedForHandoff = false;
 }
 
 function handleStartupTransitionComplete(event) {
@@ -3306,6 +3329,11 @@ function closeStartupVideo(options = {}) {
     }
   }));
   startupTransitionFallback = window.setTimeout(finishStartupVideoHandoff, 1500);
+}
+
+function closeStartupVideoWithMusic() {
+  void primeSiteSoundtrackForHandoff();
+  closeStartupVideo({ playMusic: true });
 }
 
 function showStartupVideo() {
@@ -3963,10 +3991,10 @@ window.addEventListener("pagehide", () => {
 scheduleAutoGamePip();
 
 startupVideoCloseButtons.forEach((button) => {
-  button.addEventListener("click", () => closeStartupVideo({ playMusic: true }));
+  button.addEventListener("click", closeStartupVideoWithMusic);
 });
 startupVideoPlay?.addEventListener("click", () => playStartupVideoWithSound({ reset: true }));
-startupMusicStart?.addEventListener("click", () => closeStartupVideo({ playMusic: true }));
+startupMusicStart?.addEventListener("click", closeStartupVideoWithMusic);
 startupVideoPlayer?.addEventListener("pointerdown", () => {
   playStartupVideoWithSound();
 }, { passive: true });
@@ -3978,7 +4006,7 @@ startupVideoPlayer?.addEventListener("ended", () => {
   closeStartupVideo({ playMusic: true });
 });
 startupVideoModal?.addEventListener("click", (event) => {
-  if (event.target === startupVideoModal) closeStartupVideo({ playMusic: true });
+  if (event.target === startupVideoModal) void closeStartupVideoWithMusic();
 });
 
 function isEditableTarget(target) {
@@ -3994,7 +4022,7 @@ document.addEventListener("keydown", (event) => {
     }
   }
   if (event.key === "Escape" && !startupVideoModal?.classList.contains("is-hidden")) {
-    closeStartupVideo({ playMusic: true });
+    void closeStartupVideoWithMusic();
   }
   if (event.key === "Escape" && gamePip?.classList.contains("is-open")) {
     hideGamePip({ resumeSoundtrack: true });
@@ -4034,7 +4062,7 @@ async function playSiteSoundtrack(options = {}) {
 
 siteSoundtrack?.addEventListener("play", () => {
   // Protect against any direct audio.play() call outside playSiteSoundtrack().
-  if (isStartupVideoOpen()) stopStartupSoundtrack({ reset: true });
+  if (isStartupVideoOpen() && !soundtrackPrimingForHandoff) stopStartupSoundtrack({ reset: true });
 });
 siteSoundtrack?.addEventListener("pause", () => setSoundtrackButtonState(false));
 
