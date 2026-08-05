@@ -27,7 +27,7 @@ Available ventures may be launched, then developed through Pop-Up, Local Favorit
 
 ## Detroit map
 
-The 3D board uses geospatial anchors for Detroit's major streets, riverfront, bridges, sports venues, and landmarks. The route is a stylized game circuit, not a navigation map. Fictional ventures are associated with nearby stops; players never buy or sell real streets, landmarks, neighborhoods, or property.
+The illustrated overhead board labels Detroit's major streets, riverfront, bridges, sports venues, and landmarks. Its clockwise route is composed for readable property-board play and is not a navigation map. Geographic metadata associates fictional ventures with nearby Detroit anchors; players never buy or sell real streets, landmarks, neighborhoods, or property.
 
 ## Recovery and victory
 

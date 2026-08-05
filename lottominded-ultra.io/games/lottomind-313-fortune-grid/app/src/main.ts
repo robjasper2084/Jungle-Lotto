@@ -1,7 +1,8 @@
+import Phaser from "phaser";
 import "./styles.css";
 import "./polish.css";
 import "./art.css";
-import { DetroitBoard3D } from "./render/app/DetroitBoard3D";
+import { BoardScene } from "./scene/BoardScene";
 import { createInitialState, type GameMode, type GameState } from "./engine/state";
 import { reducer } from "./engine/reducer";
 import type { GameAction } from "./engine/actions";
@@ -24,8 +25,8 @@ app.innerHTML=`<div class="shell"><header class="topbar"><a class="brand" href="
 
 const modal=app.querySelector<HTMLElement>("[data-modal]")!;const hud=app.querySelector<HTMLElement>("[data-hud]")!;const live=app.querySelector<HTMLElement>("[data-live]")!;const roundChip=app.querySelector<HTMLElement>("[data-round]")!;const toastHost=app.querySelector<HTMLElement>("[data-toast]")!;
 let state:any=null;let busy=false;let cpuRunning=false;let selectedRoute:number[]|null=null;
-const board3d=new DetroitBoard3D(app.querySelector<HTMLElement>("#game")!);
-const scene=()=>board3d;
+const game=new Phaser.Game({type:Phaser.CANVAS,parent:"game",backgroundColor:"#05040a",scene:[BoardScene],scale:{mode:Phaser.Scale.RESIZE,width:"100%",height:"100%"},render:{antialias:true,powerPreference:"high-performance"}});
+const scene=()=>game.scene.getScene("board") as BoardScene;
 
 function announce(message:string){live.textContent="";requestAnimationFrame(()=>live.textContent=message)}
 function toast(message:string){toastHost.innerHTML=`<p class="toast" role="status">${escapeHtml(message)}</p>`;setTimeout(()=>toastHost.replaceChildren(),3500)}
@@ -33,7 +34,7 @@ function escapeHtml(value:unknown){return String(value).replace(/[&<>"']/g,(c)=>
 function dispatch(action:GameAction){if(!state)return;const previous=state;state=reducer(state,action);if(state===previous)return;saveGame(state);scene().setState(state);render();const message=state.eventLog.at(-1)?.message;if(message)announce(message);queueCpu();}
 
 function showSetup(){modal.innerHTML=`<div class="modal-backdrop"><form class="modal" data-setup><p class="disclaimer">Original LottoMind Arcade strategy experience · Beta</p><h1>LottoMind 313: Fortune Grid</h1><p>Travel a real-Detroit-inspired map with recognizable landmarks and major streets while establishing fictional ventures. Play solo with CPU opponents or local pass-and-play with up to four people.</p><div class="setup-grid"><label>Mode<select name="mode"><option value="quick313">Quick 313 · 3 rounds</option><option value="standard">Standard · 13 rounds</option><option value="daily">Daily seeded · 3 rounds</option></select></label><label>Total players<select name="players"><option>2</option><option>3</option><option>4</option></select></label><label>Local players<select name="locals"><option>1</option><option>2</option><option>3</option><option>4</option></select></label></div><p class="disclaimer">Players establish original ventures and partnerships in represented districts; they do not buy neighborhoods. Detroit Dollars exist only within this match. LottoMind Credits are never granted by the browser.</p><div class="dialog-actions"><button class="primary" type="submit">Launch Fortune Grid</button>${loadGame()?'<button type="button" data-resume>Resume saved match</button>':""}<a class="button" href="../../features-app.html">Return to LottoMind Arcade</a></div></form></div>`;const form=modal.querySelector<HTMLFormElement>("[data-setup]")!;form.addEventListener("submit",(event)=>{event.preventDefault();const data=new FormData(form);const mode=data.get("mode") as GameMode;const players=Number(data.get("players"));const locals=Math.min(players,Number(data.get("locals")));const seed=mode==="daily"?dailySeed():Number(`${Date.now()}`.slice(-9));start(createInitialState({mode,playerCount:players,localPlayers:locals,seed}));});modal.querySelector("[data-resume]")?.addEventListener("click",()=>{const saved=loadGame();if(saved)start(saved)});}
-function start(next:GameState){state=next;modal.replaceChildren();document.documentElement.style.setProperty("--text-scale",String(state.settings.textScale));document.body.classList.toggle("high-contrast",state.settings.highContrast);const board=scene();board.setState(state);board.fitOverview();render();queueCpu()}
+function start(next:GameState){state=next;modal.replaceChildren();document.documentElement.style.setProperty("--text-scale",String(state.settings.textScale));document.body.classList.toggle("high-contrast",state.settings.highContrast);const hydrate=()=>{const board=scene();if(!board.sys.isActive()){setTimeout(hydrate,50);return;}board.setState(state);board.fitOverview();render();queueCpu()};hydrate()}
 
 async function roll(){if(!state||busy||state.phase!=="roll")return;busy=true;dispatch({type:"ROLL"});await new Promise(r=>setTimeout(r,state?.settings.reducedMotion?0:650));busy=false;const rolledState=state as GameState|null;if(!rolledState)return;if(rolledState.phase==="moving"){selectedRoute=rolledState.players[rolledState.currentPlayer].cpu?chooseRoute(rolledState):rolledState.pendingRoll!.routes[0];await moveSelected();}else render();}
 async function moveSelected(){if(!state||busy||!selectedRoute)return;busy=true;const player=state.players[state.currentPlayer];await scene().animateRoute(player.id,selectedRoute,state.settings.reducedMotion);const route=selectedRoute;selectedRoute=null;busy=false;dispatch({type:"COMPLETE_MOVEMENT",route});scene().followPlayer();}
@@ -91,13 +92,6 @@ function decorateHudControls(){
   }
   const currentNode=boardNodes[player.nodeId];
   const actionPanel=rollButton?.closest<HTMLElement>(".panel");
-  if(actionPanel&&!actionPanel.querySelector("[data-map-location]")){
-    const location=document.createElement("p");
-    location.className="map-location";
-    location.dataset.mapLocation="true";
-    location.innerHTML=`<strong>${escapeHtml(currentNode.spot)}</strong><small>${escapeHtml(currentNode.street)} · geographically anchored Detroit stop</small>`;
-    actionPanel.insertBefore(location,rollButton);
-  }
   if(actionPanel&&currentNode.kind==="venture"&&!actionPanel.querySelector("[data-venture-deed]")){
     const venture=ventures[currentNode.ventureId!];
     const district=districts.find((entry)=>entry.id===venture.district)!;
@@ -123,12 +117,12 @@ function decorateHudControls(){
 function decorateDialogCopy(){
   const setup=modal.querySelector<HTMLFormElement>("[data-setup]");
   const setupIntro=setup?.querySelectorAll("p")[1];
-  if(setupIntro&&!setupIntro.dataset.detroit3dCopy){setupIntro.dataset.detroit3dCopy="true";setupIntro.textContent="Travel a 3D Detroit map whose stops follow real street and landmark positions. Roll two Movement Cubes, pass the 313 Hub for a City Dividend, launch fictional ventures, develop district networks, trade, and collect collaboration fees. Play solo with CPU opponents or local pass-and-play with up to four people.";}
+  if(setupIntro&&!setupIntro.dataset.circuitCopy){setupIntro.dataset.circuitCopy="true";setupIntro.textContent="Circle the illustrated Detroit venture map shown in the selected classic board style. Roll two Movement Cubes, pass the 313 Hub for a City Dividend, launch fictional ventures, develop district networks, trade, and collect collaboration fees. Play solo with CPU opponents or local pass-and-play with up to four people.";}
   const help=modal.querySelector<HTMLElement>("article.modal");
   const helpList=help?.querySelector("ol");
-  if(help?.querySelector("h2")?.textContent==="How to Play"&&helpList&&!helpList.hasAttribute("data-detroit3d-help")){
-    helpList.setAttribute("data-detroit3d-help","true");
-    helpList.innerHTML="<li>Roll two Movement Cubes (1–6 each) and one Signal Orb (0–9), then move clockwise by the combined cube total.</li><li>Pass or land on the LottoMind 313 Hub to collect a 200 DD City Dividend. Matching cubes unlock one bonus turn.</li><li>Launch available fictional ventures, collect Collaboration Fees, trade, upgrade through four development levels, and complete three-venture district networks.</li><li>Stops follow real Detroit street and landmark positions; ventures remain fictional and no neighborhood is bought or sold.</li><li>Drag to orbit the 3D city, use the wheel or pinch to zoom, right-drag to pan, arrow keys or WASD to move the camera target, and 0 for overview.</li>";
+  if(help?.querySelector("h2")?.textContent==="How to Play"&&helpList&&!helpList.hasAttribute("data-circuit-help")){
+    helpList.setAttribute("data-circuit-help","true");
+    helpList.innerHTML="<li>Roll two Movement Cubes (1–6 each) and one Signal Orb (0–9), then move clockwise by the combined cube total.</li><li>Pass or land on the LottoMind 313 Hub to collect a 200 DD City Dividend. Matching cubes unlock one bonus turn.</li><li>Launch available fictional ventures, collect Collaboration Fees, trade, upgrade through four development levels, and complete three-venture district networks.</li><li>The illustrated board labels major Detroit streets and landmarks; ventures remain fictional and no neighborhood is bought or sold.</li><li>Drag the map to pan, use the wheel or trackpad to zoom, arrow keys or WASD to pan, and 0 for overview.</li>";
   }
 }
 

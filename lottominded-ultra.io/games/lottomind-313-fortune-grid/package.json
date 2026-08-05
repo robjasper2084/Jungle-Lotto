@@ -13,12 +13,11 @@
     "check": "npm run typecheck && npm run test && npm run build"
   },
   "dependencies": {
-    "three": "^0.185.1"
+    "phaser": "3.90.0"
   },
   "devDependencies": {
     "@playwright/test": "1.61.1",
     "@types/node": "24.10.1",
-    "@types/three": "^0.185.4",
     "typescript": "6.0.3",
     "vite": "7.3.6",
     "vitest": "3.2.7"

@@ -16,6 +16,6 @@ Stable keys keep art replaceable without gameplay edits.
 | `card.oracle.*` | `assets/art/dream-oracle-card-atlas.png` | 24 generated Dream Oracle illustrations |
 | `audio.*` | None shipped | Original loops/SFX after rights review |
 
-Runtime artwork was generated with ChatGPT's image-generation tool. The board composition was guided by City of Detroit GIS outlines and named public landmarks; generated architecture is stylized and is not a survey map. Street geometry, stop labels, and procedural landmark forms are rendered separately by Three.js and the semantic HUD for clarity. No city seals, team marks, casino trade dress, or copyrighted recordings are included.
+Runtime artwork was generated with ChatGPT's image-generation tool. The board composition was guided by City of Detroit GIS outlines and named public landmarks; generated architecture is stylized and is not a survey map. Street, landmark, route, space, and token layers are rendered separately by Phaser and the semantic HUD for clarity. No city seals, team marks, casino trade dress, or copyrighted recordings are included.
 
 `scripts/process-art.py` reproducibly crops the generated transparent board-pieces atlas. The mascot chroma source is normalized into six shared-scale, bottom-centered frames under `assets/art/mascot/`.

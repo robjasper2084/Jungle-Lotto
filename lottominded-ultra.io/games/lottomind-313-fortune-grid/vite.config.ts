@@ -12,6 +12,6 @@ export default defineConfig({
     outDir: resolve(packageRoot),
     emptyOutDir: false,
     assetsDir: "assets/build",
-    rollupOptions: { output: { manualChunks: { three: ["three"] } } }
+    rollupOptions: { output: { manualChunks: { phaser: ["phaser"] } } }
   }
 });

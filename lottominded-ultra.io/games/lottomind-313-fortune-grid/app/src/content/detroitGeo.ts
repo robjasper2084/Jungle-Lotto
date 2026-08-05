@@ -24,8 +24,8 @@ export function projectDetroit(point: GeoPoint): { x: number; y: number } {
   };
 }
 
-// The route is a geographic circuit through Detroit's radial avenues and
-// riverfront. Coordinates are map anchors, not parcel boundaries.
+// Geographic metadata for the illustrated Detroit circuit. The selected visual
+// renderer composes these stops into a readable clockwise property-board loop.
 export const detroitStops: DetroitStop[] = [
   { lat: 42.3317, lon: -83.0466, street: "Woodward Ave & Michigan Ave", spot: "Campus Martius" },
   { lat: 42.3356, lon: -83.0498, street: "Woodward Ave", spot: "Grand Circus Park" },
