@@ -54,10 +54,12 @@ The remediation changes service behavior and documentation only. No new page med
 - No payment form was completed, no card details were entered, and no charge or redemption occurred.
 - No isolated staging backend is available. The local staging artifact therefore remains fail-closed for payments, production account writes, redemptions, and production analytics.
 
-## Recommended Correction
+## Resolution
 
-Use Collector Access password recovery or a known valid account, sign in through the visible form, then repeat the Gold test-mode Checkout handoff and cancel back to Memberships without entering payment information. Do not create a release-candidate tag until that final checkpoint passes.
+Resolved on 2026-08-05. A valid Collector session opened the $4.99 Gold subscription in Stripe Checkout, where the visible Checkout surface was labeled `Sandbox`. No payment information was entered and no payment action was submitted. Stripe's Back link returned to `/memberships.html?checkout=cancelled#membership-plans`, where the accessible status read `Checkout was cancelled. No charge was made.`
+
+The current release implementation at `0a79345cb4df241a46611e4c1350937155af8d2c` subsequently passed the complete source browser suite, route matrix, staging safety checks, and static artifact verification. Its final gate correction stabilizes Home commercial dismissal and Collector Access focus; no checkout, account mutation, redemption, or production deployment behavior changed.
 
 ## Approval Status
 
-Needs revision.
+Resolved - ready for production review. This historical review does not authorize a production merge.

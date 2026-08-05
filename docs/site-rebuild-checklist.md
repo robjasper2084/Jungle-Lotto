@@ -5,20 +5,20 @@ This matrix records the current release-signoff evidence for the upgrade branch.
 ## Evidence
 
 - Production baseline: `v1-final` at `975c637cea7003533cdc30aed9d96be51929bfc8`, with 69 route captures in [`visual-baseline/v1/`](visual-baseline/v1/)
-- Audited site content: the focused Help and presentation-media task tree on `upgrade-redesign`; the final commit is resolved with `git log -1 --format=%H -- docs/site-rebuild-checklist.md`
+- Audited site content: `upgrade-redesign` implementation SHA `0a79345cb4df241a46611e4c1350937155af8d2c`
 - Current staging captures: 78/78 passed across 26 routes at `1440x900`, `768x1024`, and `390x844`
 - Contact sheets: [desktop](staging-reviews/release-signoff-assets/desktop-contact-sheet.png), [tablet](staging-reviews/release-signoff-assets/tablet-contact-sheet.png), and [mobile](staging-reviews/release-signoff-assets/mobile-contact-sheet.png)
 - Machine-readable results: [`release-signoff-manifest.json`](staging-reviews/release-signoff-assets/release-signoff-manifest.json)
 - Route gate: 156/156 passed across source and staging, including Help, Account, visible keyboard focus, reduced motion, console/page errors, same-origin assets, overflow, noindex, preview banner, and environment write protections
-- Review reports: [`help-media-release.md`](staging-reviews/help-media-release.md) and [`release-blocker-remediation.md`](staging-reviews/release-blocker-remediation.md)
+- Review reports: [`release-candidate-v2-rc4.md`](staging-reviews/release-candidate-v2-rc4.md), [`help-media-release.md`](staging-reviews/help-media-release.md), and [`release-blocker-remediation.md`](staging-reviews/release-blocker-remediation.md)
 
 ## Sign-Off Matrix
 
 | Route | Source | Production screenshot | Staging screenshot | Desktop | Tablet | Mobile | Keyboard | Reduced motion | Console/assets | Metadata/safety | Performance | Status |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `/` | Sitemap | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Measured | Revalidated with Home Collector Access entry |
+| `/` | Sitemap | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Measured | Startup commercial stays dismissed after its delayed fallback window |
 | `/features-app.html` | Sitemap | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Measured | Current staging sign-off complete |
-| `/memberships.html` | Sitemap | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Measured | Revalidated with guarded password recovery controls |
+| `/memberships.html` | Sitemap | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Measured | Collector deep link focuses email reliably; guarded recovery controls preserved |
 | `/news/` | Sitemap | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Measured | Current staging sign-off complete |
 | `/live-events.html` | Sitemap | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Measured | Current staging sign-off complete |
 | `/lottery-spheres.html` | Sitemap | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Measured | Current staging sign-off complete |
@@ -47,4 +47,4 @@ This matrix records the current release-signoff evidence for the upgrade branch.
 
 ## Release Boundary
 
-The matrix closes the current documentation gap; it does not authorize production. The staging artifact remains noindex and fail-closed for live payments, production account writes, real redemptions, and production analytics. The Home, Arcade, Storefront, and shared artwork payload reductions are verified without removing the original source media. Production approval remains `Not approved`.
+The matrix closes the current documentation gap; it does not authorize production. The staging artifact remains noindex and fail-closed for live payments, production account writes, real redemptions, and production analytics. The Home, Arcade, Storefront, and shared artwork payload reductions are verified without removing the original source media. Authenticated Stripe Sandbox handoff and cancellation passed without payment entry or charge. Production approval remains `Not approved`.
