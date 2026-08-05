@@ -30,6 +30,11 @@ module.exports = defineConfig({
       use: { baseURL: `http://127.0.0.1:${sourcePort}`, viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true },
     },
     {
+      name: "source-tablet",
+      metadata: { environment: "source", viewportName: "tablet" },
+      use: { baseURL: `http://127.0.0.1:${sourcePort}`, viewport: { width: 768, height: 1024 }, hasTouch: true },
+    },
+    {
       name: "staging-desktop",
       metadata: { environment: "staging", viewportName: "desktop" },
       use: { baseURL: `http://127.0.0.1:${stagingPort}`, viewport: { width: 1440, height: 900 } },
@@ -38,6 +43,11 @@ module.exports = defineConfig({
       name: "staging-mobile",
       metadata: { environment: "staging", viewportName: "mobile" },
       use: { baseURL: `http://127.0.0.1:${stagingPort}`, viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true },
+    },
+    {
+      name: "staging-tablet",
+      metadata: { environment: "staging", viewportName: "tablet" },
+      use: { baseURL: `http://127.0.0.1:${stagingPort}`, viewport: { width: 768, height: 1024 }, hasTouch: true },
     },
   ],
 });

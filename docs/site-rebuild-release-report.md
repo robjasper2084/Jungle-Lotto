@@ -3,77 +3,57 @@
 ## Release Scope
 
 - Production URL: https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/
-- Current production: `main` at `f6e46b49eb0fe7e02e537ed48a127226e7b3f72a`
+- Production: `main` at `09f8e5d2c8bc10d0cf1af240216404c6af74c3c0`
 - Permanent rollback snapshot: `v1-final` at `975c637cea7003533cdc30aed9d96be51929bfc8`
 - Upgrade branch: `upgrade-redesign`
-- Audited implementation baseline: `fd4cc64a85e6d0e1ae5bbd926646abe99cd90094`
-- Candidate: `v2-rc3`
-- Staging URL: Local only (`http://127.0.0.1:8143/`)
-- Production state: unchanged by RC3 preparation
+- Audited implementation tree: `0a79345cb4df241a46611e4c1350937155af8d2c`
+- Staging URL: Local only (`http://127.0.0.1:8381/` during verification)
+- Current release candidate: `v2-rc4`
+- Production state: unchanged by this work
 
 ## Verification Summary
 
-- 15 source HTML files passed duplicate-ID, local-asset, canonical, static-route, and bounded-cache validation.
-- 126 source browser checks passed with 6 intentional viewport skips.
-- 92 source/staging route checks passed across desktop and mobile.
-- 10 staging browser safety checks passed.
-- 23 generated staging pages and 543 same-origin references passed static verification.
-- 20 News account/feed tests passed; production dependency audit reports 0 vulnerabilities.
-- 39 GothTechnology unit tests and 25 browser tests passed, with 5 intentional skips.
-- Shadow Ops typecheck passed.
-- Seven explicit release-gate groups passed for metadata, JSON-LD, PWA, checkout, offline account, challenge, and share-card surfaces.
-- 51 visual captures passed at desktop, tablet, and mobile sizes.
+- 182 source browser checks passed with 8 intentional viewport skips and 0 failures.
+- 156/156 source/staging route checks passed.
+- 12/12 staging browser safety checks passed.
+- 26 generated staging pages and 593 same-origin references passed static verification.
+- Seven release-audit groups passed.
+- 78/78 visual states passed across 26 routes at desktop, tablet, and mobile sizes.
 
 ## Accessibility And UX
 
-Keyboard navigation, accessible names and live regions, reduced-motion behavior, mobile containment, fixed-control clearance, commercial fallbacks, and responsive reading order passed. No automated accessibility blocker remains.
+Keyboard focus, reduced motion, responsive overflow, console/page errors, same-origin assets, modal pointer behavior, and mobile Help action clearance passed. The site retains Detroit-inspired black, gold, cyan, and violet styling, Guardian and orb artwork, music-technology controls, original arcade character, cinematic media, and entertainment-only language.
 
-The upgraded experience retains the Detroit-inspired black, gold, cyan, and violet system, Guardian and orb artwork, music-technology controls, arcade personality, cinematic media, and entertainment-only language.
+The latest Home commercial HUD improves hierarchy without changing its commercial. The Home wordmark panel now prevents background lettering from bleeding through while preserving the scan-line treatment.
 
-## Performance
+The release-gate correction prevents the delayed Home fallback timer from reopening a dismissed commercial and stabilizes Collector Access email focus on both desktop and mobile. This correction changes behavior, not the reviewed visual composition.
 
-Recorded first-load results are Home 5.80 MiB, Memberships 2.87 MiB, Storefront 1.99 MiB, and Shadow Ops 3.70 MiB. Arcade/Features remains approximately 6.6 MiB initially and 9.1 MiB fully loaded. Further compression is recommended but not release-blocking.
+## Presentation Media And Performance
 
-## SEO, Metadata, And PWA
+Presentation videos were reduced by 73.4-73.5%, large Account and Arcade images by 92.0-93.7%, initial Membership and Arcade media were deferred, game iframes launch lazily, Storefront media/motion were optimized, and the mobile Live Events player was repaired. Original source media remains preserved.
 
-Twelve sitemap routes have production-safe titles and descriptions, and 12 JSON-LD blocks parse successfully. The web manifest, icon, service-worker registration, bounded cache rules, canonical URLs, and required static routes passed. No staging banner or staging noindex marker appears in source production HTML.
+## SEO, Metadata, PWA, And Safety
 
-## Commerce And Account Safety
+Metadata, JSON-LD, sitemap, canonical, manifest/icon, service-worker, checkout-hook, account-offline, challenge, and share-card audits pass. The staging artifact is visibly labeled, noindexed, and fail-closed for live payments, production account writes, real redemptions, and production analytics.
 
-The authenticated Stripe Sandbox launch was previously verified and cancelled before charge completion. The current automated audit confirms signed-in authorization forwarding, safe Stripe host validation, disabled malformed plans, accurate return messaging, offline account mutation blocking, and complete staging protection for payments, account writes, redemptions, and analytics.
+## Checkout And Backend Verification
 
-## Systems Changed
+The connected billing configuration reports Stripe `test` mode and seven configured plans. On 2026-08-05, an authenticated Collector session opened the $4.99 Gold monthly plan in a Stripe Checkout surface visibly marked `Sandbox`. No payment information was entered, no payment was submitted, and no charge was attempted. Stripe cancellation returned to the Memberships page, which reported `Checkout was cancelled. No charge was made.`
 
-- Shared orb navigation, transition audio/visuals, responsive shells, legal footer treatment, and identity styling.
-- Home, Memberships, Games/Arcade, News, Live Events, Spheres, RAHBE, Storefront, Static Wav, Prompt Lab, Stem Studio, Contact, redemption, account, and legal routes.
-- Arcade directory, game routes, runtime fixes, media loading, and visual assets.
-- Checkout client validation, account/support helpers, Supabase function source, and News dependency hardening.
-- Staging build, environment guard, route inventory, browser tests, visual captures, and release-gate validation.
-
-## Backend Limitations
-
-No remote preview provider, isolated staging backend, or dedicated Stripe test project is configured. Staging remains intentionally read-only for protected operations. Production Supabase functions were not deployed during candidate preparation.
-
-## Known Warnings
-
-- Staging is local-only.
-- Arcade/Features is the largest visual route.
-- Local and remote `v2-rc1` annotated tag objects differ but resolve to the same commit; both remain untouched.
-- Browser autoplay policy may require the visible sound control even though audible playback is requested first.
-- PR #2 is mergeable. The repository owner explicitly waived an outside-collaborator review and supplied the exact production merge authorization.
+No isolated staging backend or remote preview provider is configured. Protected writes therefore remain disabled in the local staging artifact.
 
 ## Visual Evidence
 
-- Baseline: [`docs/visual-baseline/v1/`](visual-baseline/v1/)
-- RC3 review: [`docs/staging-reviews/release-candidate-v2-rc3.md`](staging-reviews/release-candidate-v2-rc3.md)
-- RC3 affected-route captures: [`docs/staging-reviews/release-candidate-v2-rc3-assets/`](staging-reviews/release-candidate-v2-rc3-assets/)
-- RC2 full-phase captures: [`docs/staging-reviews/signal-media-corrections-assets/`](staging-reviews/signal-media-corrections-assets/)
+- Baseline: [`visual-baseline/v1/`](visual-baseline/v1/)
+- Full current sign-off: [`staging-reviews/release-signoff-assets/`](staging-reviews/release-signoff-assets/)
+- Latest preflight: [`staging-reviews/step34-preflight-refresh.md`](staging-reviews/step34-preflight-refresh.md)
+- Checkout review: [`staging-reviews/release-blocker-remediation.md`](staging-reviews/release-blocker-remediation.md)
 
 ## Release Recommendation
 
-The candidate is ready for the authorized controlled merge. Merge only through PR #2 from `upgrade-redesign` to `main` using **Create a merge commit**. Do not squash or rebase.
+The implementation, route, staging, visual, safety, and authenticated Stripe Sandbox cancellation gates pass. Create the immutable `v2-rc4` tag and an unmerged pull request from `upgrade-redesign` to `main`. Production must remain unchanged until the pull request is reviewed and a fresh exact `APPROVE PRODUCTION MERGE` authorization is supplied.
 
-Rollback after an approved production merge uses:
+Rollback after any future approved merge uses a normal merge revert:
 
 ```bash
 git revert -m 1 <PRODUCTION_MERGE_COMMIT_SHA>

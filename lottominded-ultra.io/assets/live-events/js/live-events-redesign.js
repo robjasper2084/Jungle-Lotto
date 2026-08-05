@@ -40,7 +40,7 @@
   let liveAudioSource = null;
   let liveWaveFrame = null;
   let heroSingerSoundEnabled = false;
-  let heroSingerAutoplayAttempted = false;
+  let heroSingerHandoffStarted = false;
   let shadowOpsShouldResumeLiveAudio = false;
   let shadowOpsLiveAudioVolume = 0.56;
 
@@ -54,7 +54,7 @@
       if (!heroSingerSound) return;
       heroSingerSound.classList.toggle("is-active", active);
       heroSingerSound.setAttribute("aria-pressed", String(active));
-      heroSingerSound.textContent = active ? "Sound off" : "Play sound";
+      heroSingerSound.textContent = active ? "Stop performance" : "Start with sound";
       heroSingerFilm.dataset.soundState = active ? "playing" : "ready";
     };
 
@@ -71,17 +71,13 @@
     };
 
     const syncPlayback = () => {
-      if (document.hidden || reducedMotion.matches || !isVisible) {
+      if (document.hidden || !isVisible) {
         heroSingerFilm.pause();
         heroSingerAudio?.pause();
         return;
       }
-      heroSingerFilm.play().catch(() => {
-        heroSingerFilm.controls = true;
-      });
-      if (heroSingerSoundEnabled && heroSingerAudio?.paused) {
-        heroSingerAudio.play().catch(stopHeroAudio);
-      }
+      if (!heroSingerSoundEnabled) return;
+      Promise.all([heroSingerFilm.play(), heroSingerAudio?.play()]).catch(() => stopHeroAudio());
     };
 
     const stopBackgroundAudio = () => {
@@ -93,20 +89,36 @@
       livePlayer?.setAttribute("data-hero-audio", "active");
     };
 
-    const stopHeroAudio = () => {
+    const stopHeroAudio = (options = {}) => {
       heroSingerSoundEnabled = false;
+      heroSingerFilm.pause();
       heroSingerAudio?.pause();
+      if (options.reset) {
+        try { heroSingerFilm.currentTime = 0; } catch {}
+        try { if (heroSingerAudio) heroSingerAudio.currentTime = 0; } catch {}
+      }
       livePlayer?.removeAttribute("data-hero-audio");
       setSoundState(false);
     };
 
-    const startHeroSoundtrack = async () => {
-      if (!heroSingerAudio || document.hidden || reducedMotion.matches || !isVisible) return false;
+    const startHeroSoundtrack = async (options = {}) => {
+      if (!heroSingerAudio || document.hidden || !isVisible) return false;
       heroSingerFilm.dataset.soundState = "attempting";
       stopBackgroundAudio();
+      heroSingerHandoffStarted = false;
+      heroSingerFilm.muted = false;
+      heroSingerFilm.defaultMuted = false;
+      heroSingerFilm.removeAttribute("muted");
+      heroSingerFilm.loop = false;
+      heroSingerAudio.loop = false;
       heroSingerAudio.volume = 0.52;
       window.LMAudioMix?.claim?.(heroSingerAudio);
-      alignHeroSoundtrack();
+      if (options.restart) {
+        try { heroSingerFilm.currentTime = 0; } catch {}
+        try { heroSingerAudio.currentTime = 0; } catch {}
+      } else {
+        alignHeroSoundtrack();
+      }
       try {
         await Promise.all([heroSingerFilm.play(), heroSingerAudio.play()]);
         heroSingerSoundEnabled = true;
@@ -119,25 +131,26 @@
       }
     };
 
-    const retryHeroSoundOnGesture = async (event) => {
-      if (event?.target?.closest?.("[data-live-hero-film-sound]")) return;
-      if (heroSingerSoundEnabled || reducedMotion.matches) return;
-      if (await startHeroSoundtrack()) {
-        document.removeEventListener("pointerdown", retryHeroSoundOnGesture, true);
-        document.removeEventListener("keydown", retryHeroSoundOnGesture, true);
-      }
+    const handoffToPageMix = async () => {
+      if (!heroSingerSoundEnabled || heroSingerHandoffStarted) return;
+      heroSingerHandoffStarted = true;
+      stopHeroAudio({ reset: true });
+      const started = await startLivePlayer({
+        restart: true,
+        volume: window.LMAudioMix?.levels.live ?? 0.56,
+        timeout: 1400
+      });
+      livePlayer?.setAttribute("data-stream-open-state", started ? "playing" : "blocked");
     };
 
     heroSingerSound?.addEventListener("click", async () => {
       if (heroSingerSoundEnabled) {
-        stopHeroAudio();
-        syncPlayback();
+        stopHeroAudio({ reset: true });
         return;
       }
 
       if (!heroSingerAudio) return;
-      if (heroSingerAudio.ended) heroSingerAudio.currentTime = 0;
-      await startHeroSoundtrack();
+      await startHeroSoundtrack({ restart: true });
     });
 
     heroSingerAudio?.addEventListener("play", () => {
@@ -148,7 +161,8 @@
       if (!document.hidden && isVisible && heroSingerSoundEnabled) return;
       setSoundState(false);
     });
-    heroSingerAudio?.addEventListener("ended", stopHeroAudio);
+    heroSingerAudio?.addEventListener("ended", handoffToPageMix);
+    heroSingerFilm.addEventListener("ended", handoffToPageMix);
 
     if ("IntersectionObserver" in window) {
       const observer = new IntersectionObserver((entries) => {
@@ -159,15 +173,14 @@
     }
 
     document.addEventListener("visibilitychange", syncPlayback);
-    document.addEventListener("pointerdown", retryHeroSoundOnGesture, true);
-    document.addEventListener("keydown", retryHeroSoundOnGesture, true);
     reducedMotion.addEventListener?.("change", syncPlayback);
+    heroSingerFilm.pause();
+    heroSingerFilm.muted = false;
+    heroSingerFilm.defaultMuted = false;
+    heroSingerFilm.removeAttribute("muted");
+    try { heroSingerFilm.currentTime = 0; } catch {}
+    try { if (heroSingerAudio) heroSingerAudio.currentTime = 0; } catch {}
     setSoundState(false);
-    syncPlayback();
-    if (!heroSingerAutoplayAttempted && !reducedMotion.matches) {
-      heroSingerAutoplayAttempted = true;
-      void startHeroSoundtrack();
-    }
   }
   function two(value) {
     return String(value).padStart(2, "0");
@@ -334,7 +347,7 @@
         livePlayer?.removeAttribute("data-hero-audio");
         heroSingerSound?.classList.remove("is-active");
         heroSingerSound?.setAttribute("aria-pressed", "false");
-        if (heroSingerSound) heroSingerSound.textContent = "Sound on";
+        if (heroSingerSound) heroSingerSound.textContent = "Start with sound";
       }
       livePlayerAudio.volume = options.volume ?? window.LMAudioMix?.levels.live ?? 0.56;
       window.LMAudioMix?.claim?.(livePlayerAudio);

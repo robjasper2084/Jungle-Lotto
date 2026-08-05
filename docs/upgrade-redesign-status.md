@@ -2,33 +2,137 @@
 
 - Production URL: https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/
 - Production branch: `main`
-- Production commit SHA: `f6e46b49eb0fe7e02e537ed48a127226e7b3f72a`
+- Production commit SHA: `09f8e5d2c8bc10d0cf1af240216404c6af74c3c0`
 - Snapshot tag: `v1-final`
 - Snapshot annotated tag object SHA: `9ba25352efc17d5b514e5afd59c8afde5c9d2949`
 - Snapshot target commit SHA: `975c637cea7003533cdc30aed9d96be51929bfc8`
 - Upgrade branch: `upgrade-redesign`
-- Current upgrade branch implementation SHA: This status file is part of the current focused commit; use `git log -1 --format=%H -- docs/upgrade-redesign-status.md` to resolve its exact SHA. The completion report records it explicitly.
+- Current audited implementation SHA: `0a79345cb4df241a46611e4c1350937155af8d2c`
 - Upgrade branch SHA at Step 0A branch creation: `1fc4c95ca4d0b22ee5188d06f8ea75573c63a00a`
 - Upgrade branch SHA before Step 0B commit: `220653bbc300d0e0b236c6e834043f39fdfcd76c`
 - Step 0B commit SHA: `6e58aafc4addabf5281262ec951a7d6df3dc66a0`
-- Deployment mechanism discovered: GitHub Pages Actions from repository-root `.github/workflows/pages.yml`; pushes to `main` upload the repository root with `actions/upload-pages-artifact` and deploy with `actions/deploy-pages`. Current remote production head is `f6e46b49eb0fe7e02e537ed48a127226e7b3f72a`.
+- Deployment mechanism discovered: GitHub Pages Actions from repository-root `.github/workflows/pages.yml`; pushes to `main` upload the repository root with `actions/upload-pages-artifact` and deploy with `actions/deploy-pages`. Current remote production head is `09f8e5d2c8bc10d0cf1af240216404c6af74c3c0`.
 - Staging provider: Local static server (Mode C); no remote preview provider is configured
-- Staging URL: Local only (`http://127.0.0.1:8143/` while the current staging server is running)
-- Staging integrations: No isolated backend or Stripe test-mode configuration is currently configured; protected writes remain disabled
-- Last completed step: Step 35 pre-merge audit completed for RC3 on `upgrade-redesign`; production merge is authorized but not yet executed
+- Staging URL: Local only (`http://127.0.0.1:8381/` during the latest verified staging run)
+- Staging integrations: No isolated staging backend is configured; the staging artifact keeps payments, account writes, redemptions, and production analytics disabled. The connected backend was verified separately with Stripe `test` mode.
+- Last completed step: Step 34 production release candidate preparation after authenticated Stripe Sandbox checkout cancellation
 - Step 1 commit SHA: This file is part of the Step 1 commit; use `git log -1 --format=%H -- docs/upgrade-redesign-status.md` to resolve its exact non-self-referential SHA. The completion report records it explicitly.
-- Last staging review: RC3 passed and is ready for production merge; review: `docs/staging-reviews/release-candidate-v2-rc3.md`
+- Last staging review: `docs/staging-reviews/release-candidate-v2-rc4.md`
 - Staging review commit SHA: This file is part of the staging-review commit; the completion report records its exact SHA.
-- Last successful test run: 2026-07-28 - release audit passed 7 groups; site validation passed 15 HTML files; source browser suite passed 126 checks with 6 intentional viewport skips; staging browser suite passed 10/10; source/staging route matrix passed 92/92; staging artifact verified 23 injected pages and 543 same-origin references; News tests passed 20/20 with 0 production dependency vulnerabilities
+- Last successful test run: 2026-08-05 - full source browser suite 182 passed with 8 intentional viewport skips and 0 failures; release audit 7/7; source/staging route matrix 156/156; staging safety 12/12; static staging artifact 26 pages and 593 same-origin references
 - Visual baseline: Complete - 69 production route screenshots plus desktop, tablet, and mobile contact sheets under `docs/visual-baseline/v1/`
 - Step 1 visual comparison: Production and staging home routes compared at 1440x900 and 390x844; staging adds only the preview and safety banners, with no redesign changes
 - Resolved Step 1 baseline failures: Contact support helper restored; Stem Studio tablet/mobile overflow corrected; Jackpot Maze runtime, heading, and entry focus restored; first-load outliers reduced; staging News production request removed
-- Latest visual comparison: Home, Memberships, Guardian, Arcade, RAHBE, Spheres, Storefront, Live Events, and News compared with v1 production at 1440x900, 768x1024, and 390x844; review: `docs/staging-reviews/signal-media-corrections.md`
-- Latest performance comparison: Home 28.1 -> 5.80 MiB; Memberships 26.7 -> 2.87 MiB; Merch 23.1 -> 1.99 MiB; Shadow Ops 87.7 -> 3.70 MiB
-- Staging review approval status: Ready for production review
-- Production approval status: Approved with the exact `APPROVE PRODUCTION MERGE` authorization; checkout was verified safely in Stripe Sandbox and cancelled before charge; the owner explicitly waived an outside-collaborator review
-- Rollback reference: `v1-final` at `975c637cea7003533cdc30aed9d96be51929bfc8`; after a controlled production merge, use `git revert` for rollback
+- Latest visual comparison: Home and Memberships were rechecked at 1440x900 and 390x844 with no console errors or horizontal overflow; the release-gate fix changes dismissal/focus behavior only. All 26 current routes retain completed desktop, tablet, and mobile sign-off.
+- Latest performance comparison: three presentation videos are 73.4-73.5% smaller; the Account hero is 92.0% smaller; the Arcade marquee is 93.7% smaller. Current staging transfer measurements are recorded in `docs/staging-reviews/help-media-release.md`
+- Staging review approval status: Ready for production review; authenticated Stripe Sandbox checkout and cancellation passed without payment entry or charge
+- Production approval status: Not approved for `v2-rc4`; a fresh exact `APPROVE PRODUCTION MERGE` authorization is required after pull-request review
+- Rollback reference: `git revert -m 1 09f8e5d2c8bc10d0cf1af240216404c6af74c3c0`; permanent snapshot `v1-final` remains at `975c637cea7003533cdc30aed9d96be51929bfc8`
 - Known pre-existing repository changes: The working tree was clean when Step 0A began. Local `main` already contained commit `1fc4c95ca4d0b22ee5188d06f8ea75573c63a00a` ahead of `origin/main`; that commit was preserved as the starting point of `upgrade-redesign` and was not pushed to production.
+
+## Step 34 Preflight Refresh
+
+- Preservation branch: `preserve/pre-step34-20260803-1730` retains all 103 pre-existing uncommitted entries in the original checkout without stashing, resetting, cleaning, deleting, or committing them
+- Clean release worktree: `C:\Users\digit\Documents\phone\_jungle_lotto_release_candidate`
+- Production synchronization: `origin/main` at `09f8e5d2c8bc10d0cf1af240216404c6af74c3c0` was merged normally into `upgrade-redesign`; merge commit `050ecb279ea4deafe6d75714874c34be486f304d` is pushed
+- Branch tracking: the partial clone now fetches `upgrade-redesign`, the local branch tracks `origin/upgrade-redesign`, and the verified divergence is `0 ahead / 0 behind`
+- Verification: site validation 17/17 HTML files; source browser suite 160 passed with 8 intentional skips; release audit 7/7; source/staging route matrix 156/156; staging safety 11/11; static staging artifact 26 pages and 591 same-origin references
+- Live checkout safety: production billing configuration reports enabled plans and the live Memberships UI reports `Secure Stripe checkout is ready.` A signed-out Gold selection stops at Collector Access with `auth-required`; a direct unauthenticated `/billing/checkout` request returns `401`. No Stripe redirect, payment details, payment submission, or charge occurred
+
+## Collector Access Password Recovery
+
+- Step number: Owner-requested Collector Access sign-in completion
+- Implementation commit: This focused commit on `upgrade-redesign`; resolve with `git log -1 --format=%H -- docs/upgrade-redesign-status.md`
+- Affected routes: `/index.html#lottomind-refined` and `/memberships.html?collector=access#lm-access-hero`
+- Changes: Added Collector Access beside Unlock Vault on Home; added password visibility, Remember me session persistence, Forgot Password, and password-update controls to Collector Access
+- Security: Raw passwords are never stored. Remember me chooses local versus tab-scoped session-token storage. Recovery tokens are cleared from the URL after capture.
+- Staging safety: Reset emails, password updates, production account writes, live payments, real redemptions, and production analytics remain blocked. No isolated staging account backend is configured.
+- Backend status: The committed `lottomind-api` handler is deployed as active Supabase Edge Function version 6. Password recovery responds generically, password update requires an authenticated recovery session, and billing configuration reports Stripe `test` mode.
+- Tests: Focused Collector recovery 10/10; full browser suite 170 passed with 8 intentional skips; route matrix 156/156; release audit 7/7; site validation 17 HTML files; staging safety 12/12; static staging 26 pages and 591 same-origin references
+- Visual review: `docs/staging-reviews/collector-access-recovery.md`; desktop and mobile captures show no horizontal overflow and preserve LottoMind's visual identity
+- Staging URL: Local only (`http://127.0.0.1:8385/`)
+- Production approval status: Not approved for this change; `main`, the production URL, and `v1-final` remain unchanged
+
+- Checkout gate resolution: on 2026-08-05, an authenticated Collector session opened the $4.99 Gold plan in Stripe Checkout with a visible `Sandbox` marker, then returned through Stripe's Back link. No payment details were entered, no payment was submitted, and no charge was attempted.
+- Tag safety: local and remote `v2-rc1` annotated tag objects differ, but both peel to `971dd17accd03be8bd1ff20664ad98734c792867`; no tag was moved, replaced, or deleted
+- Review: `docs/staging-reviews/step34-preflight-refresh.md`
+- Approval status: Ready for production review; production remains not approved
+
+## News Lottery Results Ticker
+
+- Step number: Owner-requested current Powerball and Mega Millions News ticker
+- Implementation commit: This status file is part of the focused commit; use `git log -1 --format=%H -- docs/upgrade-redesign-status.md`
+- Affected route: `/news/`
+- Results: Powerball draw dated 2026-08-01 and Mega Millions draw dated 2026-07-31, each linked to an official result source
+- Refresh workflow: `npm.cmd run news:refresh-results` fetches, validates, and records both official result sets; malformed or unavailable result pages fail the command without inventing data
+- Tests: News unit suite 23/23; News production build; site validation; release audit 7/7; staging browser safety 11/11; focused desktop/mobile and reduced-motion checks
+- Visual review: `docs/staging-reviews/lottery-results-ticker.md` with `1440x900` and `390x844` captures
+- Staging URL: Local only (`http://127.0.0.1:8365/news/` during focused source validation)
+- Production approval status: Not approved; `main`, production deployment, `v1-final`, and existing release tags remain unchanged
+
+## Future Commercial And Publisher Media
+
+- Step number: Owner-requested future commercial, Help film, and News publisher-image pass
+- Implementation commit: This status file is part of the focused commit; use `git log -1 --format=%H -- docs/upgrade-redesign-status.md`
+- Affected routes: `/memberships.html`, `/help.html`, `/news/`, and `/lotto%20mind%20refined/`
+- Changes: Memberships and the LottoMind App use the supplied future commercial; Help uses the supplied signal film with deferred loading; News uses attributed publisher images for 29 reports and no longer substitutes custom LottoMind artwork
+- Tests: News unit suite 20/20; focused browser checks 10/10; affected source/staging route matrix 18/18; staging safety 11/11; static staging 26 pages and 591 references; release audit 7/7
+- Visual review: `docs/staging-reviews/future-commercial-media.md` with 1440x900 and 390x844 captures
+- Staging URL: Local only (`http://127.0.0.1:8342/`)
+- Production approval status: Not approved; `main`, production deployment, `v1-final`, and existing release tags remain unchanged
+
+## Mobile Help And Presentation Media
+
+- Step number: Owner-requested mobile Help, release documentation, and initial media-transfer pass
+- Implementation commit: This status file is part of the focused commit; use `git log -1 --format=%H -- docs/upgrade-redesign-status.md`
+- Affected routes: `/help.html`, `/index.html#top`, `/features-app.html`, `/merch-store.html`, and `/account.html`
+- Help correction: At `390x844`, the hero and actions use a compact reading layout so `Contact Support` remains above the fixed Credits and Menu controls and receives pointer input
+- Home popup: Uses the existing Storefront unboxing commercial and poster while retaining explicit muted-first playback, Play with sound, Enter Site, and close controls
+- Media reduction: Optimized MP4 variants are 73.4-73.5% smaller; the Account hero WebP is 92.0% smaller; the Arcade marquee WebP is 93.7% smaller. Original source media remains preserved
+- Tests: 154 source browser checks passed with 8 intentional skips; release audit 7/7; route matrix 156/156; staging safety 11/11; static staging 26 pages and 590 references; visual sign-off 75/75
+- Visual review: `docs/staging-reviews/help-media-release.md`; contact sheets and manifest are under `docs/staging-reviews/release-signoff-assets/`
+- Staging URL: Local only (`http://127.0.0.1:8342/`)
+- Production approval status: Not approved; `main`, production deployment, `v1-final`, and all existing RC tags remain unchanged
+
+## Help Center And RAHBEE Depth
+
+- Step number: Owner-requested Help restoration and RAHBEE depth treatment
+- Implementation commit: This status file is part of the focused commit; use `git log -1 --format=%H -- docs/upgrade-redesign-status.md` to resolve its exact SHA
+- Affected routes: `/help.html`, `/account.html`, `/terms.html`, and `/privacy.html`
+- Changes: Added a searchable eleven-topic Help Center; routed shared Help links and Account credits guidance to it; applied existing Robot RAHBEE far, mid, emissive, and rail artwork to Account, Terms, and Privacy while preserving their content and behavior
+- Tests: Site validation and focused desktop/mobile Help, Account, Terms, and Privacy checks passed before commit; full route, staging safety, static artifact, and visual-capture results are recorded in the completion report
+- Visual review: `docs/staging-reviews/help-rahbee-depth.md` with 1440x900 and 390x844 captures; Help is a new route with no direct v1 screenshot, and the other three routes intentionally change only their depth background and panel treatment
+- Commerce and backend impact: None; staging payments, account writes, real redemptions, and production analytics remain blocked
+- Staging URL: Local only (`http://127.0.0.1:8143/`)
+- Production approval status: Not approved; `main`, production, and `v1-final` remain unchanged
+
+## Shared Header Order And Utility Pills
+
+- Step number: Owner-requested shared header refinement
+- Implementation commit: `37297acd4ddc910e5abe980f2741978e64e67194`
+- Navigation order: Home, Events, News, Games, Static Wav, Robot RAHBEE, Storefront, Memberships, LottoMind App
+- Utility treatment: Search, Credits, and Account use matching keyboard-accessible cyan HUD pills
+- Preserved route access: Lottery Spheres remains discoverable through page content and command search
+- Tests: Site validation passed 16 HTML files; focused desktop/mobile checks passed 4/4; source/staging route matrix passed 144/144; staging safety passed 10/10; staging static verification passed 24 pages and 560 same-origin references
+- Visual review: `docs/staging-reviews/shared-header-order.md` with 1440x900 and 390x844 captures; no overflow, console errors, page errors, or broken header assets
+- Commerce and backend impact: None; staging write protections remain active
+- Staging URL: Local only (`http://127.0.0.1:8321/`)
+- Production approval status: Not approved; production remains unchanged
+
+## Home Commercial, Storefront Patch, And Spheres Console
+
+- Step number: Owner-requested Home, Storefront, and Spheres corrections
+- Implementation commit: `03129291ff064bebee08642d5e43b57d6b0bbee9`
+- Affected routes: `/index.html#top`, `/merch-store.html`, and `/lottery-spheres.html#spheres`
+- Home: Restored the original commercial overlay and existing video with explicit Play with sound and Enter Site controls; playback remains muted until a visitor requests audio
+- Storefront: Replaced the two selected Innovation Floor hoodie cards and the selected Model Drop gallery tile with the supplied Detroit 1701 embroidered patch artwork at `$10`; converted the source PNG to a 126 KiB WebP
+- Spheres: Expanded the fixed console and frequency-generator column so all six presets, level control, play control, and status copy remain available without clipping
+- Tests: Home validation passed; site validation passed 16 HTML files; focused browser checks passed 6/6; Home regression passed 12/12 with 4 intentional skips; source/staging route matrix passed 150/150; staging safety passed 10/10 for 25 noindex pages and 569 same-origin references
+- Visual review: Nine captures passed at `1440x900`, `768x1024`, and `390x844`; review: `docs/staging-reviews/home-storefront-spheres-corrections.md`
+- Intentional visual departures: Home again opens with the original commercial; the selected Storefront products now show the Detroit patch; the Spheres console is slightly taller with a wider frequency deck
+- Commerce and backend impact: None; no checkout, account-write, redemption, analytics, or production-data behavior changed
+- Staging URL: Local only (`http://127.0.0.1:8321/`)
+- Production approval status: Not approved; `main`, production, and `v1-final` remain unchanged
 
 ## Billing Response Validation
 
@@ -39,6 +143,19 @@
 - Backend deployment: Not performed because the connected Supabase project exposes only its production `main` branch and production approval is not granted
 - Validation limitation: `npm.cmd run check:site` still reports 65 missing references because this sparse checkout intentionally omits large source assets; the independent staging build and same-origin reference check passed
 - Cleanup: Generated staging/test output and the Playwright browser cache were removed after validation; they are recreated by the documented build/test commands
+
+## Platform HUD And Depth Refinement
+
+- Step number: Browser-requested Platform HUD, Help, and Account visual refinement
+- Implementation commits: `7a4bb40`, `6afbf18`
+- Affected routes: `/how-to-use.html`, `/account.html`, and the generated footer on `/arcade.html`
+- Changes: Help now uses a Home-adjacent cinematic treatment without losing content; Search, Credits, and Account use a segmented utility rail; Account adds a CSS perspective-floor background; the 16-link platform directory is a responsive route-control HUD
+- Transition preservation: Transition and commercial assets were not edited; their Git object hashes are unchanged and the existing inbound/outbound regression passed on desktop and mobile
+- Tests: Site validation 20/20 HTML files; focused checks 8/8; source browser suite 153 passed with 7 intentional skips; clean-port staging browser safety 10/10; source/staging route matrix 100/100; staging static verification 28 pages and 640 same-origin references; release audit 7/7 groups
+- Visual review: `docs/staging-reviews/platform-hud-depth.md` with 1440x900, 768x1024, and 390x844 captures; no overflow, console errors, page errors, broken assets, or lost features found
+- Staging URL: Local only (`http://127.0.0.1:8296/`)
+- Staging safety: Noindex and preview banners verified; live payments, production account writes, real redemptions, and production analytics remain blocked
+- Approval status: Ready for next phase; these commits are not approved for production
 
 ## Sparse Checkout Validation
 
@@ -356,3 +473,178 @@
 - Staging URL: Local only (`http://127.0.0.1:8143/`)
 - Production verification: Live Home and Memberships returned HTTP 200 without staging noindex or preview-banner markers
 - Approval status: Ready for production review; pull-request approval and fresh exact `APPROVE PRODUCTION MERGE` authorization remain required
+
+## Phase 1 Platform Architecture Integration
+
+- Step number: Phase 1 CodeX pack integration
+- Implementation commit: `ef73f36c6aea559d4713ccb599811ca380ef4a6c`
+- Upgrade branch: `upgrade-redesign`
+- Scope: Central route manifest and generated sitemap/inventory; canonical App, Arcade, Studio, Help, Account, Beat2Lotto+, RAHBE, and Static Wav routes; manifest-driven desktop/mobile navigation and command search; clearer Home and Membership hierarchy
+- Tests: Source browser suite passed 145 checks with 7 intentional viewport skips; source/staging route matrix passed 100/100; staging safety passed 10/10; release gates passed 7/7; site validation passed 21 source pages
+- Staging build: 29 noindex pages and 630 same-origin references verified from commit `ef73f36c6aea559d4713ccb599811ca380ef4a6c`
+- Visual review: 21 captures passed at `1440x900`, `768x1024`, and `390x844`; review: `docs/staging-reviews/phase-1-platform.md`
+- Staging URL: Local only (`http://127.0.0.1:8294/` while the verified server is running)
+- Staging safety: Preview banner and noindex verified; live payments, production account writes, real redemptions, and production analytics remain blocked
+- Commerce and backend impact: Existing membership prices, checkout hooks, account services, and redemption protections are preserved; no live charge or production-data mutation was attempted
+- Production approval status: Not approved for this new Phase 1 branch work; production remains unchanged
+
+## Previous Layout Restoration With Retained Platform Tools
+
+- Step number: Browser-requested previous-layout restoration
+- Implementation commit: `afa774c3e178d24700cef57fc98f6b887e1baf19`
+- Upgrade branch: `upgrade-redesign`
+- Navigation order: Home, App, Arcade, News + Events, Store, Membership
+- Preserved updates: Search, Credits, Account, LottoMind App, grouped News + Events navigation, How-to-Use / Help Center, recent public route names, and the Account and Collector Vault footer directory
+- Studio preservation: The public `studio.html` overview and discovery links were removed; its exact source reference is documented in `docs/archived-pages/studio-phase1.md`, while the underlying `lottomind-stem-studio/` implementation and assets remain saved
+- Tests: Source browser suite passed 147 checks with 7 intentional viewport skips; staging safety passed 10/10; source/staging desktop/mobile route matrix passed 96/96; release gates passed 7/7; staging static verification passed for 28 pages and 616 same-origin references
+- Visual review: 21 route captures passed at `1440x900`, `768x1024`, and `390x844`; review: `docs/staging-reviews/layout-restoration.md`
+- Staging URL: Local only (`http://127.0.0.1:8295/` while the verified server is running)
+- Staging safety: Preview banner and noindex verified; live payments, production account writes, real redemptions, and production analytics remain blocked
+- Commerce and backend impact: None; no checkout, account mutation, redemption, or production-data action was attempted
+- Production approval status: Not approved; production remains unchanged
+
+## Selective Phase 1 Platform Restore
+
+- Step number: Owner-requested selective Phase 1 recovery
+- Implementation commit: `403f2e5c9e8dc1af752060d409d874747fbf378b`
+- Restored surfaces: Search, Account, generated navigation, App overview, Arcade overview, Help Center, and grouped News + Events navigation
+- Preserved layout: Previous cinematic Home composition and current navigation order
+- Studio status: Public `studio.html` remains removed; source recovery is documented in `docs/archived-pages/studio-phase1.md`, and `lottomind-stem-studio/` remains preserved
+- Tests: Site validation passed for 20 HTML files; source browser suite passed 147 checks with 7 intentional viewport skips; staging safety passed 10/10; source/staging route matrix passed 96/96; release gates passed 7/7; staging static verification passed for 28 pages and 616 same-origin references
+- Visual review: 21 captures passed at `1440x900`, `768x1024`, and `390x844`; review: `docs/staging-reviews/selective-phase1-restore.md`
+- Staging URL: Local only (`http://127.0.0.1:8295/` while the verified server is running)
+- Production approval status: Not approved; `main`, production, and `v1-final` remain unchanged
+
+## Games Page Return And News + Events HUD
+
+- Step number: Browser-requested Games page restoration and News + Events HUD expansion
+- Implementation commits: `f9eaf51b6326d2c467ff95aa4af2d09e9273d6a0`, `9ab9d2057477205812e9a2ba299a0ebc15c50b6d`, and `6a044e145d54fd4fe2a85460686690a17005a7e9`
+- Restored surface: `/features-app.html` is again a complete Games destination with the Guardian hero film, particle figure, searchable and swipeable seven-game directory, filters, sorting, game controls, and responsible-entertainment language
+- Navigation: App, Arcade, and Games remain separate generated routes; the existing navigation order is preserved with Games inserted after Arcade
+- News + Events: The grouped route dialog is now a large responsive HUD with descriptive News and Live Events channels and an accessible close control
+- Tests: Site validation passed for 20 HTML files; focused desktop/mobile checks passed 6/6, followed by HUD 2/2 and Games 2/2 corrections; full source suite passed 151 checks with 7 intentional viewport skips; staging safety passed 10/10 on fresh port `8296`; source/staging route matrix passed 100/100; release gates passed 7/7
+- Staging build: 28 noindex pages built from `6a044e145d54fd4fe2a85460686690a17005a7e9`; preview banner and blocked production writes verified
+- Visual review: Nine captures passed at `1440x900`, `768x1024`, and `390x844`; review: `docs/staging-reviews/features-return-hud.md`
+- Intentional visual departure: The v1 entry commercial remains, while the post-entry Games page is now a richer cinematic directory; the small News + Events picker becomes a full cyan/gold control-deck HUD
+- Commerce and backend impact: None; live payments, production account writes, real redemptions, and production analytics remain blocked on staging
+- Staging URL: Local only (`http://127.0.0.1:8295/` while the verified server is running)
+- Production approval status: Not approved; `main`, production, and `v1-final` remain unchanged
+
+## Previous Transition Flow Restoration
+
+- Step number: Browser-requested transition rollback to the earlier July 28 behavior
+- Implementation commit: `18b829b01905b4edaa1ff58e2ba53097101cebd3`
+- Upgrade branch: `upgrade-redesign`
+- Affected route: `/memberships.html`
+- Restored behavior: Internal routes retain their existing outbound and arrival clips; a direct Membership visit no longer forces a false arrival state; the Membership commercial closes directly into the page without a second outbound wipe
+- Preserved behavior: Shared transition visuals and audio, current route coverage, commercial media, sound fallback, navigation, Account, Help, Games, News + Events, checkout hooks, and staging guards are unchanged
+- Tests: Focused transition checks passed 4/4; full browser suite passed 153 checks with 7 expected viewport skips; staging safety passed 10/10; source/staging route matrix passed 100/100; release gates passed 7/7; site validation passed for 20 HTML files; homepage static validation passed
+- Staging build: 28 noindex pages and 640 same-origin asset references verified from `18b829b01905b4edaa1ff58e2ba53097101cebd3`
+- Visual review: Three Membership commercial captures passed at 1440x900, 768x1024, and 390x844; review: `docs/staging-reviews/transition-restore.md`
+- Intentional visual departure: None; this is a timing and handoff restoration only
+- Commerce and backend impact: None; live payments, production account writes, real redemptions, and production analytics remain blocked on staging
+- Staging URL: Local only (`http://127.0.0.1:8296/`)
+- Production approval status: Not approved; `main`, production, and `v1-final` remain unchanged
+
+## Full Phase 1 Rollback
+
+- Step number: Browser-requested full Phase 1 rollback
+- Implementation commit: `885c4f7644e28fb82077acae77112c3ad01e35a2`
+- Upgrade branch: `upgrade-redesign`
+- Target: Current production site tree from `origin/main` at `09f8e5d2c8bc10d0cf1af240216404c6af74c3c0`
+- Primary reference: `https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/beat2lotto-plus.html#beat2lotto`
+- Result: The complete `lottominded-ultra.io` tree matches `origin/main`; the Shadow Ops Canvas / Robot RAHBE Beat2Lotto+ route and pre-Phase-1 cinematic site structure are restored
+- Removed: Phase 1 platform routes, generated navigation/search infrastructure, Account and Arcade overview routes, platform Help Center rewrite, standalone RAHBE/Static Wave routes, grouped News + Events HUD, and later Phase 1 visual refinements
+- Preservation: All removed work remains recoverable from existing Git commits and historical staging reviews; no branch, tag, or history was deleted or rewritten
+- Tests: Focused checks passed 20/20; full browser suite passed 126 checks with 6 expected viewport skips; staging safety passed 10/10; source/staging route matrix passed 92/92; release gates passed 7/7; site validation passed for 15 HTML files; homepage static validation passed
+- Staging build: 23 noindex pages and 543 same-origin asset references verified from `885c4f7644e28fb82077acae77112c3ad01e35a2`
+- Visual review: Six staging/live Beat2Lotto+ captures passed at 1440x900, 768x1024, and 390x844; review: `docs/staging-reviews/phase1-full-rollback.md`
+- Commerce and backend impact: None; live payments, production account writes, real redemptions, and production analytics remain blocked on staging
+- Staging URL: Local only (`http://127.0.0.1:8296/`)
+- Production approval status: Not approved; `main`, production, and `v1-final` remain unchanged
+
+## Latest Platform Route Update Rollback
+
+- Step number: Owner-requested rollback of the latest updates
+- Implementation commit: `c770c124dedceb32cb80a68680c1b88aa443a306`
+- Reverted updates: `d5cd5b5` and `a05f162`
+- Result: Removed the latest selective platform-route restoration and its review artifacts, returning `upgrade-redesign` to the reviewed Full Phase 1 Rollback site state
+- Tests: Full browser suite passed 126 checks with 6 expected viewport skips; staging safety passed 10/10; source/staging route matrix passed 92/92; release gates passed 7/7; site validation passed for 15 HTML files; homepage static validation passed
+- Staging build: 23 noindex pages and 543 same-origin asset references verified from `c770c124dedceb32cb80a68680c1b88aa443a306`
+- Visual review: No material visual departure from the existing Full Phase 1 Rollback comparison in `docs/staging-reviews/phase1-full-rollback.md`
+- Commerce and backend impact: None; live payments, production account writes, real redemptions, and production analytics remain blocked on staging
+- Staging URL: Local only (`http://127.0.0.1:8143/`)
+- Production approval status: Not approved; `main`, production, and `v1-final` remain unchanged
+
+## Restored Support Utilities
+
+- Step number: Owner-requested Search, Credits, Account, Help, Contact, and Accessibility restoration
+- Implementation commits: `0c52eb4`, `c132b4d`, `836c60e`, `ccc1c24`, and `8be909f`
+- Upgrade branch: `upgrade-redesign`
+- Restored surfaces: Shared Search, Credits, and Account header controls; Help, Contact, Accessibility, Credits, and Account support routes; read-only Account and Collector Vault page
+- Preserved behavior: Existing cinematic navigation order, sphere artwork, site transitions, public content, and commerce hooks remain unchanged
+- Tests: Full browser suite passed 130 checks with 6 expected viewport skips; focused support utilities passed 4/4; compatibility checks passed 6/6; staging safety passed 10/10; source/staging desktop/mobile route matrix passed 92/92; release gates passed 7/7; site validation passed for 16 HTML files; homepage validation passed
+- Staging build: 24 noindex pages and 559 same-origin asset references verified from `8be909f10b246c9e2a6fdd7ef827498243d660bc`
+- Visual review: Four Search and Account captures passed at `1440x900` and `390x844` without horizontal overflow or console errors; review: `lottominded-ultra.io/docs/staging-reviews/support-utilities.md`
+- Intentional visual departure: A compact cyan-and-gold support row is added around the existing sphere navigation; the LottoMind black, gold, cyan, violet, Guardian, arcade, and cinematic identity remains recognizable
+- Commerce and backend impact: None; staging live payments, production account writes, real redemptions, and production analytics remain blocked
+- Staging URL: Local only (`http://127.0.0.1:8143/`)
+- Production approval status: Not approved; `main`, production, and `v1-final` remain unchanged
+
+## Spheres Audit Remediation
+
+- Step number: Owner-requested audit corrections
+- Implementation commit: This focused commit on `upgrade-redesign`
+- Affected route: `/lottery-spheres.html#spheres`
+- Corrections: Removed the duplicate inline Oracle, docked the mobile floating Oracle away from the title and primary controls, standardized visible handoffs as Robot RAHBEE, and corrected duplicated kinetic-heading accessible names
+- Preserved behavior: Sphere rerolling, pointer interaction, the floating Magic 8 Ball, entertainment-only guidance, linked game and studio routes, cinematic artwork, and the black, gold, cyan, and violet identity remain intact
+- Tests: Site validation passed for 16 HTML files; release audit passed 7/7 groups; full source browser suite passed 134 checks with 6 intentional viewport skips, including focused Spheres coverage on desktop and mobile; committed route and staging verification follows this commit
+- Visual review: Desktop and mobile comparisons are recorded in `docs/staging-reviews/spheres-audit-corrections.md`
+- Intentional visual departure: Mobile opens with a compact floating 8-ball instead of an expanded Oracle covering the page title; desktop retains the established full Oracle treatment
+- Commerce and backend impact: None; no payment, account-write, redemption, analytics, or production-data behavior changed
+- Staging URL: Local only (`http://127.0.0.1:8304/` after the committed staging build)
+- Production approval status: Not approved; `main`, production, and `v1-final` remain unchanged
+
+## Release Documentation Sign-Off
+
+- Step number: Owner-requested release documentation completion
+- Audited site commit: `aa2c125d360a76631e8797595cdcbd23357cb47d`
+- Upgrade branch: `upgrade-redesign`
+- Route matrix: `docs/site-rebuild-checklist.md` now records current evidence for all 24 present routes without blanket pending states
+- Tests: Site validation passed for 16 HTML files; release audit passed 7/7 groups; full browser suite passed 136 checks with 6 intentional viewport skips; expanded source/staging route suite passed 144/144 checks across `1440x900`, `768x1024`, and `390x844`; staging safety passed 10/10 for 24 noindex pages and 564 same-origin references
+- Visual review: 72/72 current staging captures passed; contact sheets and the machine manifest are under `docs/staging-reviews/release-signoff-assets/`
+- Review: `docs/staging-reviews/release-documentation-signoff.md`
+- Performance: Transfer sizes are measured and documented; no unapproved performance threshold was invented
+- Phase 2 package: Inspected for scope only; Phase 2 implementation, branch creation, database migrations, and Stripe changes were not started by this documentation task
+- Staging URL: Local only (`http://127.0.0.1:8304/` while the verified server is running)
+- Production approval status: Not approved; `main`, production, and `v1-final` remain unchanged
+
+## Footer And Popup Pointer Repair
+
+- Step number: Browser-requested footer deduplication and popup pointer correction
+- Implementation commits: `57751a4068b2c53baa648646c5686efcab020d89` and `e030d104570e9c20e53c8cac20c45f20120261ba`
+- Upgrade branch: `upgrade-redesign`
+- Affected surfaces: Shared footers on all generated routes, Home commercial, Membership commercial, Storefront commercial, Static Wav commercial, and open dialogs
+- Corrections: Removed duplicate footer destinations, standardized seven canonical support/legal links, restored a visible native pointer over popup layers, and reserved mobile footer clearance for fixed controls
+- Tests: Focused footer and pointer checks passed 4/4; shared support and Home checks passed 20 with 4 intentional desktop skips; mobile footer regression passed 2/2; source/staging route matrix passed 150/150 across desktop, mobile, and tablet; staging safety passed 10/10
+- Staging build: 25 noindex pages and 571 same-origin references verified from `e030d104570e9c20e53c8cac20c45f20120261ba`
+- Visual review: Six final captures passed at `1440x900` and `390x844`; review: `docs/staging-reviews/footer-pointer-fix.md`
+- Intentional visual departure: Duplicate footer buttons are removed, and mobile footers include safe clearance below their final link; LottoMind artwork and black, gold, cyan, and violet identity are unchanged
+- Commerce and backend impact: None; staging live payments, production account writes, real redemptions, and production analytics remain blocked
+- Staging URL: Local only (`http://127.0.0.1:8143/`)
+- Production approval status: Not approved; `main`, production, and `v1-final` remain unchanged
+
+## Static Account Service Configuration
+
+- Step number: Owner-requested static account service configuration
+- Implementation commit: This focused commit on `upgrade-redesign`
+- Affected routes: `/account.html`, `/memberships.html`, and `/redeem.html`
+- Configuration: All static account clients load the public Supabase runtime configuration before the shared account service; the Redemption route no longer boots without configuration
+- Preview safety: Staging labels production account services as configured but disabled and continues to block production account writes and real redemptions
+- Backend verification: Supabase project health, public-key compatibility, production-origin CORS, and a signed-out account snapshot were verified without a data mutation
+- Tests: Collector Access and recovery passed 7/7; site validation passed 17 HTML files; release audit passed 7/7 groups; staging safety passed 12/12; source/staging route matrix passed 156/156 on fresh ports across desktop, mobile, and tablet
+- Staging build: 26 noindex pages and 592 same-origin references verified
+- Visual review: Redemption desktop and mobile remain aligned with the v1 layout; the intentional staging-only message is recorded in `docs/staging-reviews/account-static-configuration.md`
+- Commerce impact: None; no payment or checkout behavior changed
+- Staging URL: Local only (`http://127.0.0.1:8321/`)
+- Production approval status: Not approved; `main`, production, and `v1-final` remain unchanged

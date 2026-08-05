@@ -1,6 +1,13 @@
 const SITE_SCRIPT_URL = document.currentScript?.src || new URL("./site.js", document.baseURI).href;
 const SITE_ROOT_URL = new URL("./", SITE_SCRIPT_URL);
 const siteUrl = (relativePath) => new URL(relativePath.replace(/^\.\//, ""), SITE_ROOT_URL).toString();
+if (!document.querySelector('link[data-lm-support-utilities]')) {
+  const supportUtilitiesStyles = document.createElement("link");
+  supportUtilitiesStyles.rel = "stylesheet";
+  supportUtilitiesStyles.href = siteUrl("./assets/css/lm-support-utilities.css");
+  supportUtilitiesStyles.dataset.lmSupportUtilities = "true";
+  document.head.append(supportUtilitiesStyles);
+}
 const SITE_AUDIO_LEVELS = Object.freeze({
   background: 0.42,
   live: 0.56,
@@ -76,15 +83,14 @@ window.LMAudioMix = {
   if (!header) return;
 
   const navItems = [
-    { label: "Memberships", href: siteUrl("./memberships.html"), icon: "MB" },
     { label: "Home", href: siteUrl("./index.html#top"), icon: "HM" },
-    { label: "Games", href: siteUrl("./features-app.html"), icon: "FX" },
-    { label: "News", href: siteUrl("./news/"), icon: "NW" },
     { label: "Events", href: siteUrl("./live-events.html"), icon: "EV" },
-    { label: "Spheres", href: siteUrl("./lottery-spheres.html#spheres"), icon: "SP" },
-    { label: "RAHBE", href: siteUrl("./beat2lotto-plus.html#beat2lotto"), icon: "B2" },
-    { label: "Storefront", href: siteUrl("./merch-store.html"), icon: "DR" },
+    { label: "News", href: siteUrl("./news/"), icon: "NW" },
+    { label: "Games", href: siteUrl("./features-app.html"), icon: "FX" },
     { label: "Static Wav", href: siteUrl("./how-to-use.html"), icon: "GD" },
+    { label: "Robot RAHBEE", href: siteUrl("./beat2lotto-plus.html#beat2lotto"), icon: "B2" },
+    { label: "Storefront", href: siteUrl("./merch-store.html"), icon: "DR" },
+    { label: "Memberships", href: siteUrl("./memberships.html"), icon: "MB" },
     {
       label: "LottoMind App",
       href: "https://robjasper2084.github.io/Jungle-Lotto/lotto%20mind%20refined/",
@@ -122,20 +128,113 @@ window.LMAudioMix = {
       <nav aria-label="LOTTOMINDED ULTRA sphere navigation">
         ${navMarkup}
       </nav>
-      <div class="direct-launch" aria-label="Direct studio launch">
-        <a class="direct-action direct-primary" href="${siteUrl("./lottomind-stem-studio/index.html")}">Launch Studio</a>
+      <div class="lm-header-utilities" aria-label="Account and support utilities">
+        <button type="button" data-command-search-open aria-label="Search LottoMind routes">Search</button>
+        <a href="${siteUrl("./account.html#credits")}">Credits</a>
+        <a href="${siteUrl("./account.html")}">Account</a>
       </div>
     </header>
   `;
+
+  const searchableRoutes = [
+    ...navItems.map((item) => ({
+      label: item.label,
+      href: item.href,
+      section: "Explore",
+      description: `Open ${item.label}.`,
+    })),
+    { label: "Lottery Spheres", href: siteUrl("./lottery-spheres.html#spheres"), section: "Explore", description: "Open the entertainment-only number sphere experience." },
+    { label: "Credits", href: siteUrl("./account.html#credits"), section: "Account", description: "View verified LottoCredits and membership status." },
+    { label: "Account", href: siteUrl("./account.html"), section: "Account", description: "Open Collector Access and the account vault." },
+    { label: "Help", href: siteUrl("./help.html"), section: "Support", description: "Find setup, controls, and account guidance." },
+    { label: "Contact", href: siteUrl("./contact.html"), section: "Support", description: "Contact LottoMind support." },
+    { label: "Accessibility", href: siteUrl("./accessibility.html"), section: "Support", description: "Review keyboard, motion, contrast, and access guidance." },
+  ];
+
+  const commandDialog = document.createElement("dialog");
+  commandDialog.className = "lm-command-palette";
+  commandDialog.setAttribute("aria-labelledby", "lmCommandTitle");
+  commandDialog.innerHTML = `
+    <form method="dialog" class="lm-command-palette__panel">
+      <header>
+        <div><span>Route uplink</span><h2 id="lmCommandTitle">Search LottoMind</h2></div>
+        <button value="cancel" aria-label="Close search">Close</button>
+      </header>
+      <label>
+        <span class="visually-hidden">Search routes</span>
+        <input type="search" data-command-search-input autocomplete="off" placeholder="Search games, account, help..." />
+      </label>
+      <div class="lm-command-palette__results" data-command-search-results role="listbox" aria-label="LottoMind routes"></div>
+      <p data-command-search-status role="status" aria-live="polite"></p>
+    </form>`;
+  document.body.append(commandDialog);
+
+  const commandInput = commandDialog.querySelector("[data-command-search-input]");
+  const commandResults = commandDialog.querySelector("[data-command-search-results]");
+  const commandStatus = commandDialog.querySelector("[data-command-search-status]");
+  let commandOpener = null;
+  const renderCommandResults = () => {
+    const query = commandInput.value.trim().toLowerCase();
+    const matches = searchableRoutes.filter((route) =>
+      !query || [route.label, route.section, route.description].join(" ").toLowerCase().includes(query)
+    ).slice(0, 12);
+    commandResults.innerHTML = matches.map((route) => `
+      <a href="${route.href}" role="option" data-command-result>
+        <span>${route.section}</span>
+        <strong>${route.label}</strong>
+        <small>${route.description}</small>
+      </a>`).join("");
+    commandStatus.textContent = `${matches.length} ${matches.length === 1 ? "route" : "routes"} available.`;
+  };
+  const openCommandPalette = () => {
+    commandOpener = document.activeElement;
+    commandInput.value = "";
+    renderCommandResults();
+    commandDialog.showModal();
+    requestAnimationFrame(() => commandInput.focus());
+  };
+  document.querySelector("[data-command-search-open]")?.addEventListener("click", openCommandPalette);
+  commandInput.addEventListener("input", renderCommandResults);
+  commandDialog.addEventListener("close", () => commandOpener?.focus?.());
+
+  const compactHeaderQuery = window.matchMedia("(max-width: 470px)");
+  const updateCompactUtilityLayout = () => {
+    const currentHeader = document.querySelector("[data-site-header]");
+    const headerMain = currentHeader?.querySelector(".site-header-main");
+    const primaryNav = currentHeader?.querySelector(":scope > nav");
+    const utilities = currentHeader?.querySelector(".lm-header-utilities");
+    const method = compactHeaderQuery.matches ? "setProperty" : "removeProperty";
+    const setGridArea = (element, value) => {
+      if (!element) return;
+      if (method === "setProperty") element.style.setProperty("grid-area", value, "important");
+      else element.style.removeProperty("grid-area");
+    };
+    if (currentHeader) {
+      if (compactHeaderQuery.matches) currentHeader.style.setProperty("grid-template-areas", "none", "important");
+      else currentHeader.style.removeProperty("grid-template-areas");
+    }
+    setGridArea(headerMain, "1 / 1 / 2 / -1");
+    setGridArea(utilities, "2 / 1 / 3 / -1");
+    setGridArea(primaryNav, "3 / 1 / 4 / -1");
+  };
+  updateCompactUtilityLayout();
+  compactHeaderQuery.addEventListener?.("change", updateCompactUtilityLayout);
 })();
 
 (() => {
   const pageFooter = [...document.querySelectorAll("body > footer")].find((footer) => footer.id !== "player" && !footer.matches("[data-feature-live-player]"));
+  if (pageFooter && !pageFooter.querySelector(".lm-footer-support-links")) {
+    const supportLinks = document.createElement("nav");
+    supportLinks.className = "lm-footer-support-links";
+    supportLinks.setAttribute("aria-label", "Support and account");
+    supportLinks.innerHTML = `<a href="${siteUrl("./help.html")}">Help</a><a href="${siteUrl("./contact.html")}">Contact</a><a href="${siteUrl("./account.html#credits")}">Credits</a><a href="${siteUrl("./account.html")}">Account</a>`;
+    pageFooter.append(supportLinks);
+  }
   if (pageFooter && !pageFooter.querySelector(".site-legal-links")) {
     const links = document.createElement("nav");
     links.className = "site-legal-links";
     links.setAttribute("aria-label", "Legal and support");
-    links.innerHTML = `<a href="${siteUrl("./privacy.html")}">Privacy</a><a href="${siteUrl("./terms.html")}">Terms</a><a href="${siteUrl("./accessibility.html")}">Accessibility</a><a href="${siteUrl("./contact.html")}">Contact</a>`;
+    links.innerHTML = `<a href="${siteUrl("./privacy.html")}">Privacy</a><a href="${siteUrl("./terms.html")}">Terms</a><a href="${siteUrl("./accessibility.html")}">Accessibility</a>`;
     pageFooter.append(links);
   }
   if ("serviceWorker" in navigator && location.protocol === "https:") {
@@ -248,7 +347,7 @@ function restoreDeferredVideoSources(video) {
 
 function setupDeferredEmbeds() {
   const heavyEmbeds = Array.from(document.querySelectorAll("iframe[src], iframe[data-src]")).filter((frame) => {
-    if (frame.dataset.noDefer === "true" || frame.dataset.criticalEmbed === "true") return false;
+    if (frame.dataset.noDefer === "true" || frame.dataset.criticalEmbed === "true" || frame.dataset.manualEmbed === "true") return false;
     const source = frame.getAttribute("src") || frame.dataset.src || "";
     return /(youtube|youtu\.be|twitch\.tv|games\/|opengw-levels|shadow-ops|gothtechnology)/i.test(source);
   });
@@ -305,6 +404,7 @@ let startupOpenTimer = 0;
 let startupFallbackTimer = 0;
 let startupTransitionFallback = 0;
 let startupVideoClosing = false;
+let startupVideoDismissed = false;
 let startupShouldPlayMusic = false;
 const domainStrip = document.querySelector(".domain-strip");
 const gamePip = document.querySelector("[data-game-pip]");
@@ -334,6 +434,8 @@ const PROMPT_ACCESS_PASSWORD = "lottomind";
 const SUPPORT_EMAIL = "robjasper2084@gmail.com";
 let soundtrackStartedFromPage = false;
 let soundtrackStartedFromHover = false;
+let soundtrackPrimingForHandoff = false;
+let soundtrackPrimedForHandoff = false;
 let gamePipHideTimer = 0;
 let gamePipOpenedAt = 0;
 let gamePipShouldResumeSoundtrack = false;
@@ -379,6 +481,7 @@ function createSharedSignalTrack(href, duplicate = false) {
 }
 
 function setupSharedSignalMarquee() {
+  if (/\/(?:news|news-hub)(?:\/|$)/i.test(window.location.pathname)) return true;
   if (document.querySelector(".home-signal-marquee")) return true;
   const header = document.querySelector("[data-site-header], .news-site-header");
   if (!header) return false;
@@ -1158,7 +1261,7 @@ function setupUniversalFloatingMenu() {
     ["Games", siteUrl("./features-app.html")],
     ["Events", siteUrl("./live-events.html")],
     ["Spheres", siteUrl("./lottery-spheres.html#spheres")],
-    ["RAHBE", siteUrl("./beat2lotto-plus.html#beat2lotto")],
+    ["Robot RAHBEE", siteUrl("./beat2lotto-plus.html#beat2lotto")],
     ["Storefront", siteUrl("./merch-store.html")],
     ["Static Wav", siteUrl("./how-to-use.html")],
     ["Studio", siteUrl("./lottomind-stem-studio/index.html")]
@@ -3129,6 +3232,24 @@ function stopStartupSoundtrack(options = {}) {
   setSoundtrackButtonState(false);
 }
 
+async function primeSiteSoundtrackForHandoff() {
+  if (!siteSoundtrack || soundtrackPrimedForHandoff) return soundtrackPrimedForHandoff;
+  soundtrackPrimingForHandoff = true;
+  try {
+    restoreDeferredVideoSources(siteSoundtrack);
+    siteSoundtrack.volume = 0;
+    siteSoundtrack.currentTime = 0;
+    await siteSoundtrack.play();
+    soundtrackPrimedForHandoff = true;
+    return true;
+  } catch {
+    soundtrackPrimedForHandoff = false;
+    return false;
+  } finally {
+    soundtrackPrimingForHandoff = false;
+  }
+}
+
 async function playStartupVideoWithSound(options = {}) {
   if (!startupVideoPlayer || !isStartupVideoOpen()) return false;
   stopStartupSoundtrack({ reset: true });
@@ -3136,6 +3257,7 @@ async function playStartupVideoWithSound(options = {}) {
   prepareStartupVideoAudio(options);
   try {
     await startupVideoPlayer.play();
+    void primeSiteSoundtrackForHandoff();
     startupVideoModal?.classList.remove("is-awaiting-video-play");
     if (startupVideoPlay) startupVideoPlay.textContent = "Playing with sound";
     return true;
@@ -3181,6 +3303,7 @@ async function finishStartupVideoHandoff() {
   if (startupShouldPlayMusic) {
     await playSiteSoundtrack({ fromPage: true, restart: true, volume: SITE_AUDIO_LEVELS.background });
   }
+  soundtrackPrimedForHandoff = false;
 }
 
 function handleStartupTransitionComplete(event) {
@@ -3189,15 +3312,18 @@ function handleStartupTransitionComplete(event) {
 }
 
 function closeStartupVideo(options = {}) {
-  if (startupVideoClosing) return;
+  const transitionAlreadyRunning = startupVideoClosing;
   startupVideoClosing = true;
+  startupVideoDismissed = true;
   startupShouldPlayMusic = options.playMusic === true;
   clearStartupOpenTimer();
+  clearStartupFallbackTimer();
   if (options.remember !== false) rememberStartupVideoSeen();
   startupVideoModal?.classList.add("is-hidden");
   startupVideoModal?.classList.remove("is-awaiting-video-play");
   startupVideoModal?.setAttribute("aria-hidden", "true");
   startupVideoPlayer?.pause();
+  if (transitionAlreadyRunning) return;
   window.addEventListener("lottomind:transition-complete", handleStartupTransitionComplete);
   window.dispatchEvent(new CustomEvent("lottomind:commercial-dismissed", {
     detail: {
@@ -3209,6 +3335,11 @@ function closeStartupVideo(options = {}) {
   startupTransitionFallback = window.setTimeout(finishStartupVideoHandoff, 1500);
 }
 
+function closeStartupVideoWithMusic() {
+  void primeSiteSoundtrackForHandoff();
+  closeStartupVideo({ playMusic: true });
+}
+
 function showStartupVideo() {
   clearStartupOpenTimer();
   if (!startupVideoModal) {
@@ -3217,7 +3348,7 @@ function showStartupVideo() {
     document.body.classList.remove("has-startup-modal");
     return;
   }
-  if (hasSeenStartupVideo()) return;
+  if (startupVideoDismissed || hasSeenStartupVideo()) return;
   document.body.classList.add("has-startup-modal");
   startupVideoModal.classList.remove("is-hidden");
   startupVideoModal.setAttribute("aria-hidden", "false");
@@ -3230,18 +3361,19 @@ function showStartupVideo() {
 }
 
 function scheduleStartupVideoOpen() {
-  if (!startupVideoModal || startupOpenTimer || hasSeenStartupVideo()) return;
+  if (!startupVideoModal || startupOpenTimer || startupVideoDismissed || hasSeenStartupVideo()) return;
   startupOpenTimer = window.setTimeout(() => {
     startupOpenTimer = 0;
+    if (startupVideoDismissed) return;
     showStartupVideo();
   }, STARTUP_MODAL_OPEN_DELAY);
 }
 
 function scheduleStartupVideoFallback() {
-  if (!startupVideoModal || startupFallbackTimer || hasSeenStartupVideo()) return;
+  if (!startupVideoModal || startupFallbackTimer || startupVideoDismissed || hasSeenStartupVideo()) return;
   startupFallbackTimer = window.setTimeout(() => {
     startupFallbackTimer = 0;
-    if (!startupVideoModal || isStartupVideoOpen()) return;
+    if (!startupVideoModal || startupVideoDismissed || isStartupVideoOpen()) return;
     showStartupVideo();
   }, STARTUP_MODAL_FALLBACK_DELAY);
 }
@@ -3864,10 +3996,10 @@ window.addEventListener("pagehide", () => {
 scheduleAutoGamePip();
 
 startupVideoCloseButtons.forEach((button) => {
-  button.addEventListener("click", () => closeStartupVideo({ playMusic: true }));
+  button.addEventListener("click", closeStartupVideoWithMusic);
 });
 startupVideoPlay?.addEventListener("click", () => playStartupVideoWithSound({ reset: true }));
-startupMusicStart?.addEventListener("click", () => closeStartupVideo({ playMusic: true }));
+startupMusicStart?.addEventListener("click", closeStartupVideoWithMusic);
 startupVideoPlayer?.addEventListener("pointerdown", () => {
   playStartupVideoWithSound();
 }, { passive: true });
@@ -3879,7 +4011,7 @@ startupVideoPlayer?.addEventListener("ended", () => {
   closeStartupVideo({ playMusic: true });
 });
 startupVideoModal?.addEventListener("click", (event) => {
-  if (event.target === startupVideoModal) closeStartupVideo({ playMusic: true });
+  if (event.target === startupVideoModal) void closeStartupVideoWithMusic();
 });
 
 function isEditableTarget(target) {
@@ -3895,7 +4027,7 @@ document.addEventListener("keydown", (event) => {
     }
   }
   if (event.key === "Escape" && !startupVideoModal?.classList.contains("is-hidden")) {
-    closeStartupVideo({ playMusic: true });
+    void closeStartupVideoWithMusic();
   }
   if (event.key === "Escape" && gamePip?.classList.contains("is-open")) {
     hideGamePip({ resumeSoundtrack: true });
@@ -3935,7 +4067,7 @@ async function playSiteSoundtrack(options = {}) {
 
 siteSoundtrack?.addEventListener("play", () => {
   // Protect against any direct audio.play() call outside playSiteSoundtrack().
-  if (isStartupVideoOpen()) stopStartupSoundtrack({ reset: true });
+  if (isStartupVideoOpen() && !soundtrackPrimingForHandoff) stopStartupSoundtrack({ reset: true });
 });
 siteSoundtrack?.addEventListener("pause", () => setSoundtrackButtonState(false));
 

@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="Open the LOTTOMINDED ULTRA guide portal for the 2084 Static Wave gameplay experience." />
+    <meta name="description" content="Open the LOTTOMINDED ULTRA Static Wav portal for the 2084 gameplay experience." />
     <title>Static Wav | LOTTOMINDED ULTRA</title>
     <meta name="theme-color" content="#03050a" />
     <link rel="icon" href="./assets/brand/lm-orb-mark.webp" type="image/webp" />
@@ -96,6 +96,47 @@
         background: #02040a;
       }
 
+      .static-wave-launch {
+        position: absolute;
+        inset: 0;
+        z-index: 2;
+        display: grid;
+        place-items: center;
+        padding: clamp(18px, 4vw, 48px);
+        background:
+          linear-gradient(90deg, rgba(2, 4, 10, 0.82), rgba(2, 4, 10, 0.2)),
+          url("./games/opengw-levels/assets/2084/branding/marquee-gameplay-keyart.png") center / cover no-repeat;
+      }
+
+      .static-wave-launch[hidden] { display: none; }
+
+      .static-wave-launch__panel {
+        width: min(520px, 100%);
+        padding: clamp(24px, 4vw, 42px);
+        border: 1px solid #2ff7ff;
+        background: rgba(1, 11, 24, 0.92);
+        box-shadow: 0 0 44px rgba(47, 247, 255, 0.24);
+        color: #eefcff;
+      }
+
+      .static-wave-launch__panel span,
+      .static-wave-launch__panel strong { display: block; }
+      .static-wave-launch__panel span { color: #2ff7ff; text-transform: uppercase; }
+      .static-wave-launch__panel strong { margin: 10px 0; font-size: clamp(2rem, 7vw, 4.5rem); line-height: 0.9; }
+      .static-wave-launch__panel p { max-width: 42ch; line-height: 1.55; }
+      .static-wave-launch__panel button {
+        min-height: 48px;
+        margin-top: 12px;
+        padding: 0 24px;
+        border: 1px solid #f6cf63;
+        background: #f6cf63;
+        color: #02040a;
+        font: inherit;
+        font-weight: 800;
+        text-transform: uppercase;
+        cursor: pointer;
+      }
+
       @media (max-width: 900px) {
         body.static-wave-guide-page {
           overflow: hidden;
@@ -117,16 +158,16 @@
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="LOTTOMINDED ULTRA" />
 <meta property="og:title" content="Static Wav | LOTTOMINDED ULTRA" />
-<meta property="og:description" content="Open the LOTTOMINDED ULTRA guide portal for the 2084 Static Wave gameplay experience." />
+<meta property="og:description" content="Open the LOTTOMINDED ULTRA Static Wav portal for the 2084 gameplay experience." />
 <meta property="og:url" content="https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/how-to-use.html" />
 <meta property="og:image" content="https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/assets/merch/lottomind-guide-commercial-poster-20260717.jpg" />
 <meta property="og:image:alt" content="LOTTOMINDED ULTRA guide signal" />
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content="Static Wav | LOTTOMINDED ULTRA" />
-<meta name="twitter:description" content="Open the LOTTOMINDED ULTRA guide portal for the 2084 Static Wave gameplay experience." />
+<meta name="twitter:description" content="Open the LOTTOMINDED ULTRA Static Wav portal for the 2084 gameplay experience." />
 <meta name="twitter:image" content="https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/assets/merch/lottomind-guide-commercial-poster-20260717.jpg" />
 <meta name="twitter:image:alt" content="LOTTOMINDED ULTRA guide signal" />
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebPage","name":"Static Wav | LOTTOMINDED ULTRA","url":"https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/how-to-use.html","description":"Open the LOTTOMINDED ULTRA guide portal for the 2084 Static Wave gameplay experience.","isPartOf":{"@type":"WebSite","name":"LOTTOMINDED ULTRA","url":"https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/"}}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebPage","name":"Static Wav | LOTTOMINDED ULTRA","url":"https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/how-to-use.html","description":"Open the LOTTOMINDED ULTRA Static Wav portal for the 2084 gameplay experience.","isPartOf":{"@type":"WebSite","name":"LOTTOMINDED ULTRA","url":"https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/"}}</script>
 <!-- social-meta:end -->
 </head>
   <body class="home-page has-sphere-header has-global-sphere-header static-wave-guide-page">
@@ -179,13 +220,23 @@
     <main class="static-wave-shell" aria-label="OpenGW Levels game">
       <h1 class="visually-hidden">LottoMind Static Wav: OpenGW Levels</h1>
       <section class="static-wave-gamebox" data-static-wave-shell aria-label="OpenGW Levels game viewport">
+        <div class="static-wave-launch" data-static-wave-launch>
+          <div class="static-wave-launch__panel">
+            <span>2084 signal ready</span>
+            <strong>Static Wav</strong>
+            <p>Launch the full browser game when you are ready. Keyboard, gamepad, touch, and fullscreen controls remain available.</p>
+            <button type="button" data-static-wave-launch-button>Launch game</button>
+          </div>
+        </div>
         <iframe
           class="static-wave-gameframe"
           title="OpenGW Levels gameplay"
-          src="./games/opengw-levels/index.html?local=observer-guard-3"
+          data-src="./games/opengw-levels/index.html?local=observer-guard-3"
+          loading="lazy"
           allow="fullscreen; autoplay; gamepad; keyboard-map *"
           allowfullscreen
           data-static-wave-frame
+          data-manual-embed="true"
         ></iframe>
       </section>
     </main>
@@ -194,6 +245,9 @@
       (() => {
         const header = document.querySelector("[data-site-header]");
         const shell = document.querySelector("[data-static-wave-shell]");
+        const frame = document.querySelector("[data-static-wave-frame]");
+        const launch = document.querySelector("[data-static-wave-launch]");
+        const launchButton = document.querySelector("[data-static-wave-launch-button]");
 
         const syncHeaderHeight = () => {
           if (!header) return;
@@ -206,6 +260,17 @@
         if ("ResizeObserver" in window && header) {
           new ResizeObserver(syncHeaderHeight).observe(header);
         }
+
+        launchButton?.addEventListener("click", () => {
+          if (!frame?.dataset.src || frame.hasAttribute("src")) return;
+          launchButton.disabled = true;
+          launchButton.textContent = "Loading signal...";
+          frame.addEventListener("load", () => {
+            launch.hidden = true;
+            frame.focus();
+          }, { once: true });
+          frame.src = frame.dataset.src;
+        });
 
         shell?.addEventListener("dblclick", async () => {
           try {

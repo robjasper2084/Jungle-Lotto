@@ -1,0 +1,126 @@
+{
+  "capturedAt": "2026-08-05T01:03:33.053Z",
+  "results": [
+    {
+      "route": "/index.html#top",
+      "viewport": "1440x900",
+      "status": 200,
+      "output": "C:\\Users\\digit\\Documents\\phone\\_jungle_lotto_release_candidate\\docs\\staging-reviews\\signal-media-corrections-assets\\home-1440x900.png",
+      "noindex": "noindex,nofollow,noarchive",
+      "stagingBannerVisible": true,
+      "horizontalOverflow": false,
+      "animationsRunning": 0,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "assetFailures": []
+    },
+    {
+      "route": "/live-events.html",
+      "viewport": "1440x900",
+      "status": 200,
+      "output": "C:\\Users\\digit\\Documents\\phone\\_jungle_lotto_release_candidate\\docs\\staging-reviews\\signal-media-corrections-assets\\live-events-1440x900.png",
+      "noindex": "noindex,nofollow,noarchive",
+      "stagingBannerVisible": true,
+      "horizontalOverflow": false,
+      "animationsRunning": 0,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "assetFailures": []
+    },
+    {
+      "route": "/news/",
+      "viewport": "1440x900",
+      "status": 200,
+      "output": "C:\\Users\\digit\\Documents\\phone\\_jungle_lotto_release_candidate\\docs\\staging-reviews\\signal-media-corrections-assets\\news-1440x900.png",
+      "noindex": "noindex,nofollow,noarchive",
+      "stagingBannerVisible": true,
+      "horizontalOverflow": false,
+      "animationsRunning": 0,
+      "consoleErrors": [
+        "Failed to load resource: net::ERR_CONNECTION_CLOSED"
+      ],
+      "pageErrors": [],
+      "assetFailures": []
+    },
+    {
+      "route": "/index.html#top",
+      "viewport": "768x1024",
+      "status": 200,
+      "output": "C:\\Users\\digit\\Documents\\phone\\_jungle_lotto_release_candidate\\docs\\staging-reviews\\signal-media-corrections-assets\\home-768x1024.png",
+      "noindex": "noindex,nofollow,noarchive",
+      "stagingBannerVisible": true,
+      "horizontalOverflow": false,
+      "animationsRunning": 0,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "assetFailures": []
+    },
+    {
+      "route": "/live-events.html",
+      "viewport": "768x1024",
+      "status": 200,
+      "output": "C:\\Users\\digit\\Documents\\phone\\_jungle_lotto_release_candidate\\docs\\staging-reviews\\signal-media-corrections-assets\\live-events-768x1024.png",
+      "noindex": "noindex,nofollow,noarchive",
+      "stagingBannerVisible": true,
+      "horizontalOverflow": false,
+      "animationsRunning": 0,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "assetFailures": []
+    },
+    {
+      "route": "/news/",
+      "viewport": "768x1024",
+      "status": 200,
+      "output": "C:\\Users\\digit\\Documents\\phone\\_jungle_lotto_release_candidate\\docs\\staging-reviews\\signal-media-corrections-assets\\news-768x1024.png",
+      "noindex": "noindex,nofollow,noarchive",
+      "stagingBannerVisible": true,
+      "horizontalOverflow": false,
+      "animationsRunning": 0,
+      "consoleErrors": [
+        "Failed to load resource: net::ERR_CONNECTION_CLOSED"
+      ],
+      "pageErrors": [],
+      "assetFailures": []
+    },
+    {
+      "route": "/index.html#top",
+      "viewport": "390x844",
+      "status": 200,
+      "output": "C:\\Users\\digit\\Documents\\phone\\_jungle_lotto_release_candidate\\docs\\staging-reviews\\signal-media-corrections-assets\\home-390x844.png",
+      "noindex": "noindex,nofollow,noarchive",
+      "stagingBannerVisible": true,
+      "horizontalOverflow": false,
+      "animationsRunning": 0,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "assetFailures": []
+    },
+    {
+      "route": "/live-events.html",
+      "viewport": "390x844",
+      "status": 200,
+      "output": "C:\\Users\\digit\\Documents\\phone\\_jungle_lotto_release_candidate\\docs\\staging-reviews\\signal-media-corrections-assets\\live-events-390x844.png",
+      "noindex": "noindex,nofollow,noarchive",
+      "stagingBannerVisible": true,
+      "horizontalOverflow": false,
+      "animationsRunning": 0,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "assetFailures": []
+    },
+    {
+      "route": "/news/",
+      "viewport": "390x844",
+      "status": 200,
+      "output": "C:\\Users\\digit\\Documents\\phone\\_jungle_lotto_release_candidate\\docs\\staging-reviews\\signal-media-corrections-assets\\news-390x844.png",
+      "noindex": "noindex,nofollow,noarchive",
+      "stagingBannerVisible": true,
+      "horizontalOverflow": false,
+      "animationsRunning": 0,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "assetFailures": []
+    }
+  ]
+}

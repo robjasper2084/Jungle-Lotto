@@ -1,0 +1,9 @@
+.skip-link {
+  top: 1rem;
+  visibility: hidden;
+}
+
+.skip-link:focus,
+.skip-link:focus-visible {
+  visibility: visible;
+}

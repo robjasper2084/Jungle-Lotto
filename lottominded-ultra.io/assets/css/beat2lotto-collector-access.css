@@ -309,6 +309,45 @@
   font: 600 0.78rem/1 Inter, Arial, sans-serif;
 }
 
+.collector-access__password-field {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 2.6rem;
+  align-items: stretch;
+}
+
+.collector-access__password-field input {
+  border-radius: 5px 0 0 5px;
+}
+
+.collector-access__form .collector-access__password-toggle {
+  min-width: 2.6rem;
+  min-height: 2.6rem;
+  padding: 0;
+  border-left: 0;
+  border-radius: 0 5px 5px 0;
+  font-size: 1rem;
+}
+
+.collector-access__form .collector-access__password-toggle[aria-pressed="true"] {
+  color: #06161d;
+  background: #8eeeff;
+}
+
+.collector-access__form .collector-access__remember {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: fit-content;
+  cursor: pointer;
+}
+
+.collector-access__form .collector-access__remember input {
+  width: 1rem;
+  min-height: 1rem;
+  margin: 0;
+  accent-color: #40e6ea;
+}
+
 .collector-access__actions {
   display: flex;
   flex-wrap: wrap;

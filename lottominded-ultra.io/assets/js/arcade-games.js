@@ -31,13 +31,33 @@
       accent: "gold"
     },
     {
+      id: "fortune-grid-313",
+      title: "LottoMind 313: Fortune Grid",
+      path: "./games/lottomind-313-fortune-grid/",
+      description: "Build Detroit ventures, collect number signals, and become the city's next Fortune Visionary.",
+      category: "Strategy",
+      tags: ["board game", "Detroit", "numbers", "strategy", "local multiplayer", "accessible"],
+      image: "./games/lottomind-313-fortune-grid/assets/art/fortune-grid-arcade-key-art.png",
+      status: "Beta",
+      featured: true,
+      controls: "Keyboard + pointer + touch",
+      difficulty: "Intermediate",
+      accent: "violet",
+      notice: "Entertainment-only simulated sequences. No prediction, wagering, or cash value.",
+      actions: [
+        { label: "Play Beta", path: "./games/lottomind-313-fortune-grid/" },
+        { label: "How to Play", path: "./games/lottomind-313-fortune-grid/GAME-RULES.md" },
+        { label: "Accessibility", path: "./games/lottomind-313-fortune-grid/ACCESSIBILITY.md" }
+      ]
+    },
+    {
       id: "static-wave-2084",
       title: "2084 Static Wave",
       path: "./games/opengw-levels/",
       description: "Pilot the static signal through a fast neon combat grid with solo and multiplayer routes.",
       category: "Action",
       tags: ["arcade", "combat", "multiplayer", "neon"],
-      image: "./games/opengw-levels/assets/2084/branding/marquee-gameplay-keyart.png",
+      image: "./games/opengw-levels/assets/2084/branding/marquee-gameplay-keyart.webp",
       status: "Playable",
       featured: true,
       controls: "Keyboard + gamepad",
@@ -46,7 +66,7 @@
     },
     {
       id: "robot-rahbe",
-      title: "Robot Rahbe",
+      title: "Robot RAHBEE",
       path: "./games/shadow-ops-canvas/",
       description: "Enter the Shadow Ops arena, survive the mission grid, and hold the tactical signal.",
       category: "Action",

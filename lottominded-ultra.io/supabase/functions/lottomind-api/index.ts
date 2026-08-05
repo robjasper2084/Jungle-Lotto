@@ -306,6 +306,29 @@ async function route(req: Request) {
     return json(req, { session: data.session, snapshot: await snapshot(data.user) });
   }
 
+  if (req.method === "POST" && path === "/auth/password-reset") {
+    const input = await readJson(req);
+    if (input instanceof Response) return input;
+    const email = String(input.email || "").trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return fail(req, 400, "INVALID_RECOVERY_REQUEST", "Enter a valid account email.");
+    const redirectTo = `${safeReturnUrl(req)}/memberships.html?account=recovery`;
+    const { error } = await anon().auth.resetPasswordForEmail(email, { redirectTo });
+    if (error) return fail(req, 503, "RECOVERY_UNAVAILABLE", "Password recovery is temporarily unavailable. Try again later.");
+    return json(req, { requested: true });
+  }
+
+  if (req.method === "POST" && path === "/auth/password-update") {
+    const token = bearer(req);
+    if (!token || !(await currentUser(req))) return fail(req, 401, "RECOVERY_SESSION_REQUIRED", "This recovery link is invalid or expired. Request a new one.");
+    const input = await readJson(req);
+    if (input instanceof Response) return input;
+    const password = String(input.password || "");
+    if (password.length < 10) return fail(req, 400, "INVALID_NEW_PASSWORD", "Use a new password of at least 10 characters.");
+    const { error } = await anon(token).auth.updateUser({ password });
+    if (error) return fail(req, 400, "PASSWORD_UPDATE_FAILED", "The password could not be updated. Request a new recovery link.");
+    return json(req, { updated: true });
+  }
+
   if (req.method === "POST" && path === "/auth/logout") {
     const token = bearer(req);
     if (token) await anon(token).auth.signOut({ scope: "local" });

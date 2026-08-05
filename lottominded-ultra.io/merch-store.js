@@ -20,6 +20,7 @@ const merchShadowPopup = document.querySelector("[data-merch-shadow-popup]");
 const merchShadowFrame = document.querySelector("[data-merch-shadow-frame]");
 const merchShadowCloseButtons = document.querySelectorAll("[data-merch-shadow-close]");
 let merchHeroVideo = document.querySelector(".merch-hero-video");
+let merchHeroVideoQueued = false;
 const CART_STORAGE_KEY = "lottomind.merch.cart.v1";
 const WISHLIST_STORAGE_KEY = "lottomind.merch.wishlist.v1";
 const MERCH_SHADOW_AUTO_DELAY = 90000;
@@ -76,8 +77,8 @@ function primeMerchHeroBackgroundVideo() {
   video.setAttribute("muted", "");
   video.setAttribute("loop", "");
   video.setAttribute("playsinline", "");
-  video.preload = "metadata";
-  video.setAttribute("preload", "metadata");
+  video.preload = "none";
+  video.setAttribute("preload", "none");
 
   if (source && heroSource && !source.getAttribute("src")) {
     source.setAttribute("src", heroSource);
@@ -90,6 +91,20 @@ function primeMerchHeroBackgroundVideo() {
   video.play?.().catch(() => {
     // Muted hero video is decorative; leave the loaded frame visible if autoplay is blocked.
   });
+}
+
+function scheduleMerchHeroBackgroundVideo() {
+  if (merchHeroVideoQueued) return;
+  merchHeroVideoQueued = true;
+  const begin = () => {
+    if ("requestIdleCallback" in window) {
+      window.requestIdleCallback(primeMerchHeroBackgroundVideo, { timeout: 2600 });
+    } else {
+      window.setTimeout(primeMerchHeroBackgroundVideo, 900);
+    }
+  };
+  if (document.readyState === "complete") begin();
+  else window.addEventListener("load", begin, { once: true });
 }
 
 function saveCart() {
@@ -584,7 +599,7 @@ function scheduleAutoMerchShadowPopup() {
   }, MERCH_SHADOW_AUTO_DELAY);
 }
 
-document.addEventListener("pointermove", (event) => {
+const updateMerchPointerEffects = (event) => {
   merchRoot.style.setProperty("--mx", `${event.clientX}px`);
   merchRoot.style.setProperty("--my", `${event.clientY}px`);
   if (merchSoundCard) {
@@ -604,7 +619,10 @@ document.addEventListener("pointermove", (event) => {
   merchHero.style.setProperty("--hero-copy-y", `${y * -0.018}px`);
   merchHero.style.setProperty("--hero-product-x", `${x * 0.018}px`);
   merchHero.style.setProperty("--hero-product-y", `${y * 0.018}px`);
-});
+};
+if (window.matchMedia("(pointer: fine)").matches) {
+  document.addEventListener("pointermove", updateMerchPointerEffects, { passive: true });
+}
 
 document.addEventListener("click", (event) => {
   if (event.target.closest("[data-merch-sound-toggle]")) {
@@ -742,10 +760,7 @@ document.addEventListener("click", (event) => {
   }
 });
 
-primeMerchHeroBackgroundVideo();
-document.addEventListener("DOMContentLoaded", () => {
-  primeMerchHeroBackgroundVideo();
-});
+scheduleMerchHeroBackgroundVideo();
 merchSoundVideo?.addEventListener("click", (event) => {
   event.preventDefault();
   playMerchCapsuleSound();
@@ -759,7 +774,6 @@ merchSoundVideo?.addEventListener("volumechange", () => {
 });
 
 window.addEventListener("load", () => {
-  primeMerchHeroBackgroundVideo();
   window.setTimeout(startMerchCapsuleOnPageOpen, 180);
   window.setTimeout(() => {
     if (document.visibilityState === "visible" && merchCommercialModal?.classList.contains("is-hidden")) {
@@ -778,7 +792,7 @@ if (document.readyState === "loading") {
 }
 
 window.addEventListener("pageshow", () => {
-  primeMerchHeroBackgroundVideo();
+  scheduleMerchHeroBackgroundVideo();
   startMerchCapsuleOnPageOpen();
 });
 

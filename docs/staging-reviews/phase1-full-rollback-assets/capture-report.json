@@ -1,0 +1,92 @@
+[
+  {
+    "target": "staging",
+    "viewport": {
+      "name": "desktop",
+      "width": 1440,
+      "height": 900
+    },
+    "url": "http://127.0.0.1:8296/beat2lotto-plus.html?rollback-review=desktop#beat2lotto",
+    "status": 200,
+    "title": "Shadow Ops Canvas | Beat2Lotto+",
+    "h1": "Beat2Lotto+ Shadow Ops Canvas",
+    "overflow": false,
+    "failures": [],
+    "output": "C:\\Users\\digit\\Documents\\phone\\_jungle_lotto_refined\\docs\\staging-reviews\\phase1-full-rollback-assets\\beat2lotto-staging-1440x900.png"
+  },
+  {
+    "target": "staging",
+    "viewport": {
+      "name": "tablet",
+      "width": 768,
+      "height": 1024
+    },
+    "url": "http://127.0.0.1:8296/beat2lotto-plus.html?rollback-review=tablet#beat2lotto",
+    "status": 200,
+    "title": "Shadow Ops Canvas | Beat2Lotto+",
+    "h1": "Beat2Lotto+ Shadow Ops Canvas",
+    "overflow": false,
+    "failures": [],
+    "output": "C:\\Users\\digit\\Documents\\phone\\_jungle_lotto_refined\\docs\\staging-reviews\\phase1-full-rollback-assets\\beat2lotto-staging-768x1024.png"
+  },
+  {
+    "target": "staging",
+    "viewport": {
+      "name": "mobile",
+      "width": 390,
+      "height": 844
+    },
+    "url": "http://127.0.0.1:8296/beat2lotto-plus.html?rollback-review=mobile#beat2lotto",
+    "status": 200,
+    "title": "Shadow Ops Canvas | Beat2Lotto+",
+    "h1": "Beat2Lotto+ Shadow Ops Canvas",
+    "overflow": false,
+    "failures": [],
+    "output": "C:\\Users\\digit\\Documents\\phone\\_jungle_lotto_refined\\docs\\staging-reviews\\phase1-full-rollback-assets\\beat2lotto-staging-390x844.png"
+  },
+  {
+    "target": "production",
+    "viewport": {
+      "name": "desktop",
+      "width": 1440,
+      "height": 900
+    },
+    "url": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/beat2lotto-plus.html?rollback-review=desktop#beat2lotto",
+    "status": 200,
+    "title": "Shadow Ops Canvas | Beat2Lotto+",
+    "h1": "Beat2Lotto+ Shadow Ops Canvas",
+    "overflow": false,
+    "failures": [],
+    "output": "C:\\Users\\digit\\Documents\\phone\\_jungle_lotto_refined\\docs\\staging-reviews\\phase1-full-rollback-assets\\beat2lotto-production-1440x900.png"
+  },
+  {
+    "target": "production",
+    "viewport": {
+      "name": "tablet",
+      "width": 768,
+      "height": 1024
+    },
+    "url": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/beat2lotto-plus.html?rollback-review=tablet#beat2lotto",
+    "status": 200,
+    "title": "Shadow Ops Canvas | Beat2Lotto+",
+    "h1": "Beat2Lotto+ Shadow Ops Canvas",
+    "overflow": false,
+    "failures": [],
+    "output": "C:\\Users\\digit\\Documents\\phone\\_jungle_lotto_refined\\docs\\staging-reviews\\phase1-full-rollback-assets\\beat2lotto-production-768x1024.png"
+  },
+  {
+    "target": "production",
+    "viewport": {
+      "name": "mobile",
+      "width": 390,
+      "height": 844
+    },
+    "url": "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/beat2lotto-plus.html?rollback-review=mobile#beat2lotto",
+    "status": 200,
+    "title": "Shadow Ops Canvas | Beat2Lotto+",
+    "h1": "Beat2Lotto+ Shadow Ops Canvas",
+    "overflow": false,
+    "failures": [],
+    "output": "C:\\Users\\digit\\Documents\\phone\\_jungle_lotto_refined\\docs\\staging-reviews\\phase1-full-rollback-assets\\beat2lotto-production-390x844.png"
+  }
+]

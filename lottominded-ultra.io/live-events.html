@@ -91,7 +91,15 @@
       <div class="lm-page-transition__scanlines"></div>
       <p class="lm-page-transition__label" data-lm-transition-label>Opening signal</p>
     </div>
-    <canvas id="featureEntity" class="feature-entity" aria-hidden="true"></canvas>
+    <canvas id="featureEntity" class="feature-entity" data-entity-mode="pucks" aria-hidden="true"></canvas>
+    <div class="lm-live-puck-field" aria-hidden="true">
+      <span class="lm-live-puck lm-live-puck--one"></span>
+      <span class="lm-live-puck lm-live-puck--two"></span>
+      <span class="lm-live-puck lm-live-puck--three"></span>
+      <span class="lm-live-puck lm-live-puck--four"></span>
+      <span class="lm-live-puck lm-live-puck--five"></span>
+      <span class="lm-live-puck lm-live-puck--six"></span>
+    </div>
     <header class="site-header home-like-header home-sphere-header global-sphere-header sphere-tabs-header" data-site-header>
       <div class="site-header-main">
         <a class="brand" href="./index.html#top" aria-label="LOTTOMINDED ULTRA home">
@@ -135,9 +143,6 @@
         <figure class="lm-live-hero-film">
           <div class="lm-live-hero-film__stage">
             <video
-              muted
-              autoplay
-              loop
               controls
               playsinline
               preload="metadata"
@@ -154,19 +159,19 @@
               aria-label="Bloom Through Gloom performance music"
             ></audio>
             <span class="lm-live-hero-film__status" data-scramble>Archive performance</span>
-            <button
-              class="lm-live-hero-film__sound"
-              type="button"
-              data-live-hero-film-sound
-              aria-pressed="false"
-            >Sound on</button>
           </div>
           <figcaption>
             <span data-scramble>Bloom Through Gloom</span>
             <strong>Limited Signal Capsule</strong>
-            <small>Original LottoMind merch-store performance</small>
+            <small>Start the film with sound. The page mix follows when it ends.</small>
           </figcaption>
         </figure>
+        <button
+          class="lm-live-hero-film__sound"
+          type="button"
+          data-live-hero-film-sound
+          aria-pressed="false"
+        >Start with sound</button>
       </section>
 
       <section class="lm-section panel-glow" id="upcoming" data-shape="1" data-entity-label="Upcoming" data-bg="#09070f" data-glow="#ffe66d">
@@ -346,11 +351,11 @@
 <script src="./assets/js/lm-page-transition-audio.js?v=transition-audio-in-out-7" defer></script>
 <script src="./assets/js/lm-page-transition.js?v=transition-every-route-5" defer></script>
 <script src="./site.js?v=header-toggle-routes-5" defer></script>
-    <script src="./assets/live-events/js/live-events-redesign.js?v=truthful-event-hub-5" defer></script>
+    <script src="./assets/live-events/js/live-events-redesign.js?v=audible-film-handoff-6" defer></script>
     <script src="./assets/live-events/js/live-events-console.js?v=live-console-1" defer></script>
     <script src="./assets/vendor/gsap/gsap.min.js?v=3.13.0" defer></script>
     <script src="./assets/vendor/gsap/ScrollTrigger.min.js?v=3.13.0" defer></script>
     <script src="./assets/vendor/lenis/lenis.min.js?v=1.1.20" defer></script>
-    <script type="module" src="./assets/features-app/js/main.js?v=earth-sound-polish-4"></script>
+    <script type="module" src="./assets/features-app/js/main.js?v=live-puck-field-5"></script>
   </body>
 </html>

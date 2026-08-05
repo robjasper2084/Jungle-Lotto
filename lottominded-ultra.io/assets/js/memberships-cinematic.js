@@ -9,6 +9,10 @@
   body.dataset.lmMembershipReady = "true";
 
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const entryCommercialSuppressed = (() => {
+    const parameters = new URLSearchParams(window.location.search);
+    return parameters.get("collector") === "access" || parameters.get("account") === "recovery";
+  })();
   const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)");
   const gsap = window.gsap || null;
   const ScrollTrigger = window.ScrollTrigger || null;
@@ -207,12 +211,12 @@
   });
   const commercialFilms = [
     {
-      src: "./assets/merch/lottomind-membership-hoodie-commercial-20260716.mp4",
-      poster: "./assets/merch/lottomind-membership-hoodie-commercial-poster-20260716.jpg",
-      signal: "Membership commercial / Wear the signal",
-      title: "Detroit Signal, Worn Forward.",
-      telemetry: "LM-MEMBERSHIP / SIGNAL ONLINE",
-      copy: "Wear the city-built LottoMind identity, then move into a connected network of creative tools, arcade routes, and member access.",
+      src: "./assets/merch/lottomind-future-membership-commercial-20260626.opt.mp4",
+      poster: "./assets/merch/lottomind-future-membership-commercial-poster-20260626.webp",
+      signal: "Future membership commercial / Signal preview",
+      title: "Future Signal Online.",
+      telemetry: "LM-MEMBERSHIP / FUTURE UPLINK",
+      copy: "Enter a cinematic preview of the LottoMind membership signal, then continue to the creative tools, arcade routes, and protected member access.",
       volume: 0.78,
     },
   ];
@@ -313,10 +317,30 @@
 
   let heroCommercialInView = false;
   let featuredCommercialInView = false;
+  let deferredMembershipMediaReady = false;
+
+  const enableDeferredMembershipMedia = () => {
+    deferredMembershipMediaReady = true;
+    syncHeroCommercialPlayback();
+    syncFeaturedCommercialPlayback();
+  };
+
+  const scheduleDeferredMembershipMedia = () => {
+    const begin = () => {
+      if ("requestIdleCallback" in window) {
+        window.requestIdleCallback(enableDeferredMembershipMedia, { timeout: 2600 });
+      } else {
+        window.setTimeout(enableDeferredMembershipMedia, 900);
+      }
+    };
+    if (document.readyState === "complete") begin();
+    else window.addEventListener("load", begin, { once: true });
+  };
+
   const syncHeroCommercialPlayback = () => {
     if (!heroCommercialVideo) return;
     const modalIsOpen = commercialModal && !commercialModal.hidden;
-    if (reducedMotion.matches || document.hidden || !heroCommercialInView || modalIsOpen) {
+    if (!deferredMembershipMediaReady || reducedMotion.matches || document.hidden || !heroCommercialInView || modalIsOpen) {
       heroCommercialVideo.pause();
       return;
     }
@@ -338,7 +362,7 @@
   const syncFeaturedCommercialPlayback = () => {
     if (!featuredCommercialVideo) return;
     const modalIsOpen = commercialModal && !commercialModal.hidden;
-    if (reducedMotion.matches || document.hidden || !featuredCommercialInView || modalIsOpen) {
+    if (!deferredMembershipMediaReady || reducedMotion.matches || document.hidden || !featuredCommercialInView || modalIsOpen) {
       featuredCommercialVideo.pause();
       return;
     }
@@ -369,6 +393,7 @@
       featuredCommercialVideo.play().catch(() => {});
     }
   });
+  scheduleDeferredMembershipMedia();
 
   let commercialShouldRestoreFocus = true;
   let commercialHandoffFallback = 0;
@@ -498,6 +523,7 @@
   }
 
   const scheduleEntryCommercial = () => {
+    if (entryCommercialSuppressed) return;
     window.addEventListener("lottomind:transition-complete", handleEntryTransitionComplete);
     entryCommercialFallback = window.setTimeout(openEntryCommercial, 1800);
   };

@@ -2375,7 +2375,7 @@
     return source.startsWith("DROP") ? source : `DROP ${source.slice(-4).toUpperCase().padStart(4, "0")}`;
   }
 
-  function formatTicketCopy(ticket, prefix = `ROBOT RAHBE - Level ${ticket.levelId} Vault Drop`) {
+  function formatTicketCopy(ticket, prefix = `ROBOT RAHBEE - Level ${ticket.levelId} Vault Drop`) {
     return [
       prefix,
       `Pick 3: ${ticket.pick3}`,
@@ -2751,7 +2751,7 @@
     const pick6Balls = Array.from(dom.resultLotto6?.querySelectorAll(".pick6-ball") || []).map((ball) => ball.textContent.trim());
     const pick6 = pick6Balls.length ? pick6Balls.join(" ") : dom.resultLotto6?.textContent?.trim().replace(/\s+/g, " ") || "------";
     return [
-      `ROBOT RAHBE - ${dom.resultTitle?.textContent || "Run Result"}`,
+      `ROBOT RAHBEE - ${dom.resultTitle?.textContent || "Run Result"}`,
       `Score ${dom.resultScore?.textContent || "0"} | Rank ${dom.resultRank?.textContent || "-"} | Time ${dom.resultTime?.textContent || "00:00"}`,
       `Pick 3 ${dom.resultPick3?.textContent || "---"} | Pick 4 ${dom.resultPick4?.textContent || "----"} | Pick 6 Mega ${pick6}`
     ].join("\n");
@@ -7609,7 +7609,7 @@
       dom.hpHearts.appendChild(row);
     }
     dom.livesText.textContent = players.map((p) => `${p.label} ${p.lives}`).join(" | ");
-    dom.hudTitle.textContent = run.runMode === "coop" ? "ROBOT RAHBE CO-OP" : run.coOp ? "ROBOT RAHBE 2P" : "ROBOT RAHBE";
+    dom.hudTitle.textContent = run.runMode === "coop" ? "ROBOT RAHBEE CO-OP" : run.coOp ? "ROBOT RAHBEE 2P" : "ROBOT RAHBEE";
     dom.levelText.textContent = `${run.level.id} ${run.level.shortName} ${isUnderground(run) ? "UNDERGROUND" : "SURFACE"}`;
     dom.scoreText.textContent = String(run.stats.score).padStart(6, "0");
     dom.comboText.textContent = `x${run.combo}`;

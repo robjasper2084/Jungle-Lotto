@@ -46,18 +46,18 @@
     title: "Carry the LottoMind signal.",
     telemetry: "LM-GUARDIAN / COMMUNITY UPLINK",
     copy: "Meet the Little Man Guardian, clip the signal onto your everyday carry, and unlock three complimentary months of LottoMind app membership.",
-    src: "./assets/merch/lottomind-community-signal-commercial-20260717.mp4",
+    src: "./assets/merch/lottomind-community-signal-commercial-20260717.opt.mp4",
     poster: "./assets/merch/lottomind-community-signal-poster-20260717.jpg",
     volume: 0.48
   };
 
   const homeCommercialFilm = {
-    signal: "Home transmission / Boot sequence",
-    title: "Lottominded Ultra home signal.",
-    telemetry: "HOME / BOOT SEQUENCE",
-    copy: "Start the home frequency and step into Detroit-inspired LottoMind studio flow.",
-    src: "./assets/video/lottomind-home-commercial-20260716.mp4",
-    poster: "./assets/video/lottomind-refined-commercial-poster-20260716.png",
+    signal: "LottoMind community transmission",
+    title: "Wear the signal.",
+    telemetry: "HOME / COMMUNITY UPLINK",
+    copy: "Open the LottoMind home frequency through the same Guardian community film featured in the Storefront.",
+    src: "./assets/merch/lottomind-membership-unboxing-commercial-20260716.opt.mp4",
+    poster: "./assets/merch/lottomind-membership-unboxing-commercial-poster-20260716.jpg",
     volume: 0.6
   };
 

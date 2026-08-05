@@ -123,6 +123,27 @@
       </a>
     </section>
 
+    <aside class="startup-video-modal is-hidden" data-startup-video aria-label="Lottominded Ultra startup video" aria-hidden="true">
+      <div class="startup-video-panel" role="dialog" aria-modal="true" aria-labelledby="startupVideoTitle">
+        <button class="startup-video-close" type="button" data-startup-video-close aria-label="Enter site">X</button>
+        <p class="eyebrow">Lottominded Ultra Signal</p>
+        <h2 id="startupVideoTitle">Start the home frequency.</h2>
+        <video class="startup-video-player" playsinline controls preload="none" poster="./assets/video/lottomind-home-apparel-commercial-poster-20260804.jpg" data-startup-video-volume="0.64" data-lm-video-unmanaged="true">
+          <source data-src="./assets/video/lottomind-home-apparel-commercial-20260804.opt.mp4" type="video/mp4" />
+        </video>
+        <div class="startup-video-actions">
+          <button class="secondary-action" type="button" data-startup-video-play>Play with sound</button>
+          <button class="primary-action" type="button" data-startup-video-close>Enter Site</button>
+        </div>
+        <p class="startup-video-copy">
+          Choose Play with sound for the commercial, or enter the site to start the Storefront theme.
+        </p>
+        <p class="startup-video-credit">
+          LottoMind apparel signal. Sound begins only after you choose it.
+        </p>
+      </div>
+    </aside>
+
     <main class="home-sphere-main" data-spheres-stage data-spheres-theme="golden" data-spheres-accent-src="./assets/brand/jazz-network-gold-coin.webp">
       <canvas class="home-sphere-canvas" data-spheres-canvas aria-hidden="true"></canvas>
       <div class="home-sphere-grid" aria-hidden="true"></div>
@@ -274,6 +295,7 @@
           <div class="refined-actions">
             <a class="primary-action" href="https://robjasper2084.github.io/Jungle-Lotto/lotto%20mind%20refined/" data-vault-launch data-plan="free">Launch LottoMind Refined</a>
             <button class="secondary-action" type="button" data-vault-open>Unlock Vault</button>
+            <a class="secondary-action" href="./memberships.html?collector=access#lm-access-hero" data-collector-access-link>Collector Access</a>
             <button class="secondary-action" type="button" data-beta-waitlist>Download Beta Coming Soon</button>
           </div>
         </div>
@@ -314,12 +336,12 @@
     </footer>
 
     <audio id="siteSoundtrack" preload="none">
-      <source data-src="./assets/audio/home-screen-song.mp3" type="audio/mpeg" />
+      <source data-src="./assets/audio/lottomind-storefront-theme-20260717.mp3" type="audio/mpeg" />
     </audio>
 
 <script src="./assets/js/lm-page-transition-audio.js?v=transition-audio-in-out-7" defer></script>
 <script src="./assets/js/lm-page-transition.js?v=transition-every-route-5" defer></script>
-<script src="./site.js?v=header-toggle-routes-5" defer></script>
+<script src="./site.js?v=home-commercial-soundtrack-6" defer></script>
     <script src="./lottery-spheres.js?v=audio-mix-cleanup-2" defer></script>
     <script src="./assets/vendor/gsap/gsap.min.js?v=3.13.0" defer></script>
   </body>

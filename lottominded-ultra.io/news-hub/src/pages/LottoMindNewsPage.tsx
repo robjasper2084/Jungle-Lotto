@@ -13,6 +13,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { useNews } from "../hooks/useNews";
+import latestLotteryResults from "../data/latestLotteryResults.json";
 import type { CredibilityLabel, LottoMindNewsItem } from "../types/news";
 
 const CATEGORY_FILTERS = [
@@ -62,46 +63,11 @@ function headlineArtTone(item: LottoMindNewsItem): "official" | "winner" | "jack
   return "signal";
 }
 
-const EDITORIAL_STORY_ART: Record<ReturnType<typeof headlineArtTone>, string[]> = {
-  official: [
-    "../assets/merch/lottomind-community-signal-poster-20260717.jpg",
-    "../assets/merch/lottomind-membership-feature-commercial-poster-20260716.jpg",
-    "../assets/merch/lottomind-membership-hoodie-commercial-poster-20260716.jpg",
-  ],
-  winner: [
-    "../assets/merch/lottomind-membership-unboxing-commercial-poster-20260716.jpg",
-    "../assets/merch/lottomind-community-signal-poster-20260717.jpg",
-    "../assets/merch/lottomind-guardian-commercial-gun-range-poster-20260722.jpg",
-  ],
-  jackpot: [
-    "../assets/features-app/lottomind-arcade-hero-film-poster-20260723.jpg",
-    "../assets/video/lm-feature-signal-poster.jpg",
-    "../assets/video/lm-feature-portal-poster.jpg",
-  ],
-  mystery: [
-    "../assets/video/lm-portal-a-poster.jpg",
-    "../assets/video/lm-portal-b-poster.jpg",
-    "../assets/merch/lottomind-guide-commercial-poster-20260717.jpg",
-  ],
-  signal: [
-    "../assets/merch/lottomind-guide-commercial-poster-20260717.jpg",
-    "../assets/video/lm-feature-signal-poster.jpg",
-    "../assets/merch/lottomind-community-signal-poster-20260717.jpg",
-  ],
-};
-
-function editorialStoryArt(item: LottoMindNewsItem, tone: ReturnType<typeof headlineArtTone>): string {
-  const choices = EDITORIAL_STORY_ART[tone];
-  const seed = [...item.id].reduce((total, character) => total + character.charCodeAt(0), 0);
-  return choices[seed % choices.length];
-}
-
 function ArticleCard({ item, saved, onSave }: { item: LottoMindNewsItem; saved: boolean; onSave: (id: string) => void }) {
   const [copied, setCopied] = useState(false);
   const [imageFailed, setImageFailed] = useState(false);
   const hasPublisherImage = Boolean(item.imageUrl && !imageFailed);
   const artTone = headlineArtTone(item);
-  const storyImage = hasPublisherImage ? item.imageUrl : editorialStoryArt(item, artTone);
   const copyLink = async () => {
     try {
       await navigator.clipboard.writeText(item.articleUrl);
@@ -115,15 +81,15 @@ function ArticleCard({ item, saved, onSave }: { item: LottoMindNewsItem; saved: 
   return (
     <article className={`news-card ${isSpeculative(item) ? "news-card--speculative" : ""}`}>
       <a
-        className={`news-card__media news-card__media--${artTone} ${hasPublisherImage ? "has-publisher-image" : "has-editorial-image"}`}
+        className={`news-card__media news-card__media--${artTone} ${hasPublisherImage ? "has-publisher-image" : "has-no-publisher-image"}`}
         href={item.articleUrl}
         target="_blank"
         rel="noopener noreferrer"
         aria-label={`Open ${item.title} at ${item.source}`}
       >
-        {storyImage ? (
+        {hasPublisherImage ? (
           <img
-            src={storyImage}
+            src={item.imageUrl}
             alt=""
             loading="lazy"
             referrerPolicy="no-referrer"
@@ -228,6 +194,11 @@ export function LottoMindNewsPage() {
   }, [data.sourceStatuses]);
 
   const liveSources = data.sourceStatuses.filter((source) => source.ok).length;
+  const drawDate = (value: string) => new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" }).format(new Date(`${value}T12:00:00Z`));
+  const verifiedDrawSummary = latestLotteryResults.results.map((result) => `${result.game}, ${drawDate(result.drawDate)}: ${result.numbers.join(", ")}, ${result.specialLabel} ${result.specialNumber}`).join(". ");
+  const drawMarqueeLabels = latestLotteryResults.results.map((result) => (
+    `${result.game} - ${drawDate(result.drawDate)} - ${result.numbers.join(" ")} - ${result.specialLabel} ${result.specialNumber}${result.multiplier ? ` - Power Play ${result.multiplier}` : ""}`
+  ));
   const toggleCredibility = (values: CredibilityLabel[]) => {
     setCredibility((current) => {
       const next = new Set(current);
@@ -274,12 +245,65 @@ export function LottoMindNewsPage() {
           <a href="../how-to-use.html" data-icon="GD">Static Wav</a>
           <a href="https://robjasper2084.github.io/Jungle-Lotto/lotto%20mind%20refined/" data-icon="LM" data-member-app-public="true" aria-label="Open LottoMind Refined App">LottoMind App</a>
         </nav>
-        <div className="direct-launch" aria-label="Direct studio launch">
-          <a className="direct-action direct-primary" href="../lottomind-stem-studio/index.html">Launch Studio</a>
+        <div className="lm-header-utilities" aria-label="Account and support utilities">
+          <button
+            type="button"
+            aria-label="Search LottoMind news"
+            onClick={() => {
+              const input = document.getElementById("news-search") as HTMLInputElement | null;
+              input?.scrollIntoView({ behavior: "smooth", block: "center" });
+              input?.focus({ preventScroll: true });
+            }}
+          >Search</button>
+          <a href="../account.html#credits">Credits</a>
+          <a href="../account.html">Account</a>
         </div>
       </header>
 
+      <section className="home-signal-marquee site-signal-marquee--shared news-results-marquee" aria-label="Latest verified Powerball and Mega Millions results">
+        <p className="sr-only">{verifiedDrawSummary}. Verify every result with the official source links below.</p>
+        {[false, true].map((duplicate) => (
+          <div className="home-signal-marquee-track" aria-hidden={duplicate || undefined} key={String(duplicate)}>
+            {drawMarqueeLabels.map((label) => <span key={`${duplicate}-${label}`}>{label}</span>)}
+          </div>
+        ))}
+      </section>
+
       <main>
+      <section className="lottery-results-ticker" aria-labelledby="lottery-results-title">
+        <div className="lottery-results-ticker__label">
+          <span>Latest verified</span>
+          <strong id="lottery-results-title">Draw results</strong>
+        </div>
+        <p className="sr-only">{verifiedDrawSummary}. Verify every result with the linked official source.</p>
+        <div className="lottery-results-ticker__viewport" aria-hidden="true">
+          <div className="lottery-results-ticker__track">
+            {[0, 1].map((copy) => (
+              <div className="lottery-results-ticker__group" key={copy}>
+                {latestLotteryResults.results.map((result) => (
+                  <div className={`lottery-results-ticker__result lottery-results-ticker__result--${result.game === "Powerball" ? "powerball" : "mega"}`} key={`${copy}-${result.game}`}>
+                    <strong>{result.game}</strong>
+                    <time dateTime={result.drawDate}>{drawDate(result.drawDate)}</time>
+                    <span className="lottery-results-ticker__numbers">
+                      {result.numbers.map((number) => <b key={number}>{number}</b>)}
+                      <b className="is-special">{result.specialNumber}</b>
+                    </span>
+                    <small>{result.specialLabel}{result.multiplier ? ` · Power Play ${result.multiplier}` : ""}</small>
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
+        </div>
+        <nav className="lottery-results-ticker__sources" aria-label="Verify latest draw results">
+          {latestLotteryResults.results.map((result) => (
+            <a href={result.sourceUrl} target="_blank" rel="noopener noreferrer" key={result.game}>
+              Verify {result.game}<ExternalLink size={12} aria-hidden="true" />
+            </a>
+          ))}
+        </nav>
+      </section>
+
         <section className="news-motion-rail" aria-labelledby="news-rail-title">
           <div className="news-motion-rail__label">
             <span>Current News Rail</span>

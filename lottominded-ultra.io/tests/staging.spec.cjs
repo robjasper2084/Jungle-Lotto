@@ -54,18 +54,23 @@ test("preview shell is noindex, visibly marked, and free of broken same-origin r
   expect(consoleFailures).toEqual([]);
 });
 
-test("home staging opens directly without the startup commercial popup", async ({ page }) => {
+test("home staging restores the muted-first startup commercial", async ({ page }) => {
   const commercialRequests = [];
   page.on("request", (request) => {
-    if (/lottomind-(?:home|refined)-commercial-20260716\.mp4/i.test(request.url())) {
+    if (/lottomind-home-apparel-commercial-20260804\.opt\.mp4/i.test(request.url())) {
       commercialRequests.push(request.url());
     }
   });
 
   await page.goto("/", { waitUntil: "domcontentloaded" });
-  await expect(page.locator("[data-startup-video]")).toHaveCount(0);
+  const startup = page.locator("[data-startup-video]");
+  await expect(startup).toBeVisible({ timeout: 5_000 });
+  await expect(startup.getByRole("button", { name: "Play with sound" })).toBeVisible();
+  await expect.poll(() => startup.locator("video").evaluate((video) => ({ muted: video.muted, paused: video.paused }))).toMatchObject({ muted: true });
+  await expect.poll(() => commercialRequests.length).toBeGreaterThan(0);
+  await startup.getByRole("button", { name: "Enter Site", exact: true }).click();
+  await expect(startup).toBeHidden();
   await expect(page.locator(".hero-motion")).toBeVisible();
-  expect(commercialRequests).toEqual([]);
 });
 
 test("membership entry film requests sound and keeps an accessible fallback", async ({ page }) => {
@@ -118,7 +123,7 @@ test("guide keeps its single commercial gate and safe sound handoff", async ({ p
 test("merch route uses one automatic unboxing commercial with no extra gate", async ({ page }) => {
   const filmRequests = [];
   page.on("request", (request) => {
-    if (/lottomind-membership-unboxing-commercial-20260716\.mp4/i.test(request.url())) {
+    if (/lottomind-membership-unboxing-commercial-20260716\.opt\.mp4/i.test(request.url())) {
       filmRequests.push(request.url());
     }
   });
@@ -132,6 +137,34 @@ test("merch route uses one automatic unboxing commercial with no extra gate", as
   await expect.poll(() => modal.locator("video").evaluate((video) => video.paused)).toBe(false);
   await page.locator("[data-merch-commercial-close]").click();
   await expect(modal).toBeHidden();
+});
+
+test("mobile Help actions remain clear of preview safety and fixed controls", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/help.html", { waitUntil: "domcontentloaded" });
+
+  const layout = await page.evaluate(() => {
+    const actions = [...document.querySelectorAll(".lm-platform-actions a")];
+    const controls = [...document.querySelectorAll(".vault-credit-badge, .universal-menu-toggle")];
+    const overlaps = actions.flatMap((action) => {
+      const actionBox = action.getBoundingClientRect();
+      return controls.map((control) => {
+        const controlBox = control.getBoundingClientRect();
+        const width = Math.max(0, Math.min(actionBox.right, controlBox.right) - Math.max(actionBox.left, controlBox.left));
+        const height = Math.max(0, Math.min(actionBox.bottom, controlBox.bottom) - Math.max(actionBox.top, controlBox.top));
+        return width * height;
+      });
+    });
+    return {
+      overlaps,
+      noindex: document.querySelector('meta[name="robots"]')?.content,
+      previewVisible: Boolean(document.querySelector("[data-lm-staging-banner]")),
+    };
+  });
+
+  expect(layout.overlaps.every((area) => area === 0), JSON.stringify(layout.overlaps)).toBe(true);
+  expect(layout.noindex).toBe("noindex,nofollow,noarchive");
+  expect(layout.previewVisible).toBe(true);
 });
 
 test("Live Events renders a complete channel hub without invented live or commerce data", async ({ page }) => {
@@ -156,7 +189,7 @@ test("Shadow Ops defers campaign assets until the run starts", async ({ page }) 
   });
 
   await page.goto("/games/shadow-ops-canvas/", { waitUntil: "domcontentloaded" });
-  await expect(page.getByRole("heading", { name: "ROBOT RAHBE" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "ROBOT RAHBEE" })).toBeVisible();
   await page.waitForTimeout(1000);
   expect(assetRequests.some((url) => /robot-rahbe-intro-cutscene\.mp4/i.test(url))).toBe(false);
   expect(assetRequests.some((url) => /digital-static-10\.mp3/i.test(url))).toBe(false);
@@ -209,21 +242,40 @@ test("production writes are rejected while local-only browser state remains avai
     };
     const payment = await capture(() => fetch("/api/billing/checkout", { method: "POST", body: "{}" }));
     const account = await capture(() => window.LottoMindAccountService.register({ email: "preview@example.invalid", password: "not-a-real-password" }));
+    const passwordReset = await capture(() => window.LottoMindAccountService.requestPasswordReset("preview@example.invalid"));
+    const passwordUpdate = await capture(() => window.LottoMindAccountService.completePasswordRecovery("not-a-real-password"));
     const redemption = await capture(() => window.LottoMindAccountService.redeemCollectible("PREVIEW-NOT-A-REAL-CODE"));
     const analytics = await capture(() => fetch("https://www.google-analytics.com/g/collect", { method: "POST", body: "preview" }));
     const beacon = navigator.sendBeacon("https://www.google-analytics.com/g/collect", "preview");
     localStorage.setItem("lm-staging-local-test", "available");
     const localStorageValue = localStorage.getItem("lm-staging-local-test");
     localStorage.removeItem("lm-staging-local-test");
-    return { payment, account, redemption, analytics, beacon, localStorageValue };
+    return { payment, account, passwordReset, passwordUpdate, redemption, analytics, beacon, localStorageValue };
   });
 
   expect(result.payment).toMatchObject({ blocked: true, code: "LM_STAGING_PAYMENT_BLOCKED" });
   expect(result.account).toMatchObject({ blocked: true, code: "LM_STAGING_ACCOUNT_WRITE_BLOCKED" });
+  expect(result.passwordReset).toMatchObject({ blocked: true, code: "LM_STAGING_ACCOUNT_WRITE_BLOCKED" });
+  expect(result.passwordUpdate).toMatchObject({ blocked: true, code: "LM_STAGING_ACCOUNT_WRITE_BLOCKED" });
   expect(result.redemption).toMatchObject({ blocked: true, code: "LM_STAGING_REDEMPTION_BLOCKED" });
   expect(result.analytics).toMatchObject({ blocked: true, code: "LM_STAGING_ANALYTICS_BLOCKED" });
   expect(result.beacon).toBe(false);
   expect(result.localStorageValue).toBe("available");
   await expect(page.locator("#lm-staging-guard-status")).toContainText("Production analytics are disabled");
   expect(productionRequests).toEqual([]);
+});
+
+test("Collector Access deep link remains reviewable while staging account writes stay blocked", async ({ page }) => {
+  await blockHeavyMedia(page);
+  await page.goto("/memberships.html?collector=access#lm-access-hero", { waitUntil: "domcontentloaded" });
+
+  const panel = page.locator("[data-collector-panel]");
+  await expect(panel).toBeVisible();
+  await expect(page.locator("[data-membership-commercial-modal]")).toBeHidden();
+  await page.locator("#collectorEmail").fill("preview@example.invalid");
+  await page.locator('[data-password-toggle][aria-controls="collectorPassword"]').click();
+  await expect(page.locator("#collectorPassword")).toHaveAttribute("type", "text");
+  await page.locator("[data-collector-forgot-password]").click();
+  await expect(page.locator("[data-collector-message]")).toContainText("Production account services are configured but disabled in this preview");
+  await expect(page.locator("#lm-staging-guard-status")).toContainText("Production account changes are disabled");
 });

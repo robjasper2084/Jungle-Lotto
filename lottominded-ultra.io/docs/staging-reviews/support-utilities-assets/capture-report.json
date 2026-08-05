@@ -1,0 +1,46 @@
+[
+  {
+    "route": "/index.html#top",
+    "viewport": {
+      "name": "desktop",
+      "width": 1440,
+      "height": 900
+    },
+    "file": "search-1440x900.png",
+    "overflow": false,
+    "errors": []
+  },
+  {
+    "route": "/account.html",
+    "viewport": {
+      "name": "desktop",
+      "width": 1440,
+      "height": 900
+    },
+    "file": "account-1440x900.png",
+    "overflow": false,
+    "errors": []
+  },
+  {
+    "route": "/index.html#top",
+    "viewport": {
+      "name": "mobile",
+      "width": 390,
+      "height": 844
+    },
+    "file": "search-390x844.png",
+    "overflow": false,
+    "errors": []
+  },
+  {
+    "route": "/account.html",
+    "viewport": {
+      "name": "mobile",
+      "width": 390,
+      "height": 844
+    },
+    "file": "account-390x844.png",
+    "overflow": false,
+    "errors": []
+  }
+]

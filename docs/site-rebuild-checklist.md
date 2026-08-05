@@ -1,35 +1,50 @@
 # LottoMind Site Rebuild Checklist
 
-Use `Pass`, `Fail`, `Blocked`, `Not tested`, or `Not applicable` in each review column. Rows marked `Not present` are required upgrade-workflow checks but are not files in the current production tree.
+This matrix records the current release-signoff evidence for the upgrade branch. Use `Pass`, `Fail`, `Blocked`, `Measured`, or `Not applicable`. `Measured` means performance telemetry was captured but no release budget has been approved; it is not an optimization claim.
 
-Step 1 captured the 23 present visual states at desktop, tablet, and mobile in `docs/visual-baseline/v1/` (69 route screenshots plus three contact sheets). The `Pending` cells below are the future redesign comparison and performance sign-off, not missing v1 baseline files.
+## Evidence
 
-| Route | Source | Production screenshot | Staging screenshot | Desktop | Tablet | Mobile | Keyboard | Reduced motion | Console errors | Metadata | Performance | Status |
+- Production baseline: `v1-final` at `975c637cea7003533cdc30aed9d96be51929bfc8`, with 69 route captures in [`visual-baseline/v1/`](visual-baseline/v1/)
+- Audited site content: `upgrade-redesign` implementation SHA `0a79345cb4df241a46611e4c1350937155af8d2c`
+- Current staging captures: 78/78 passed across 26 routes at `1440x900`, `768x1024`, and `390x844`
+- Contact sheets: [desktop](staging-reviews/release-signoff-assets/desktop-contact-sheet.png), [tablet](staging-reviews/release-signoff-assets/tablet-contact-sheet.png), and [mobile](staging-reviews/release-signoff-assets/mobile-contact-sheet.png)
+- Machine-readable results: [`release-signoff-manifest.json`](staging-reviews/release-signoff-assets/release-signoff-manifest.json)
+- Route gate: 156/156 passed across source and staging, including Help, Account, visible keyboard focus, reduced motion, console/page errors, same-origin assets, overflow, noindex, preview banner, and environment write protections
+- Review reports: [`release-candidate-v2-rc4.md`](staging-reviews/release-candidate-v2-rc4.md), [`help-media-release.md`](staging-reviews/help-media-release.md), and [`release-blocker-remediation.md`](staging-reviews/release-blocker-remediation.md)
+
+## Sign-Off Matrix
+
+| Route | Source | Production screenshot | Staging screenshot | Desktop | Tablet | Mobile | Keyboard | Reduced motion | Console/assets | Metadata/safety | Performance | Status |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `/` | Sitemap | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Baseline pending |
-| `/features-app.html` | Sitemap | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Baseline pending |
-| `/memberships.html` | Sitemap | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Baseline pending |
-| `/news/` | Sitemap | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Baseline pending |
-| `/live-events.html` | Sitemap | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Baseline pending |
-| `/lottery-spheres.html` | Sitemap | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Baseline pending |
-| `/beat2lotto-plus.html` | Sitemap | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Baseline pending |
-| `/merch-store.html` | Sitemap | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Baseline pending |
-| `/how-to-use.html` | Sitemap | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Baseline pending |
-| `/privacy.html` | Sitemap | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Baseline pending |
-| `/terms.html` | Sitemap | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Baseline pending |
-| `/accessibility.html` | Sitemap | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Baseline pending |
-| `/product.html` | Required workflow route | Not applicable | Not applicable | Not applicable | Not applicable | Not applicable | Not applicable | Not applicable | Not applicable | Not applicable | Not applicable | Not present |
-| `/create.html` | Required workflow route | Not applicable | Not applicable | Not applicable | Not applicable | Not applicable | Not applicable | Not applicable | Not applicable | Not applicable | Not applicable | Not present |
-| `/prompt-lab.html` | Required + arcade | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Baseline pending |
-| `/redeem.html` | Required route | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Baseline pending |
-| `/contact.html` | Required route | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Baseline pending |
-| `/404.html` | Required route | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Baseline pending |
-| `/games/gothtechnology2/` | Arcade manifest | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Baseline pending |
-| `/games/lottomind-jackpot-maze/` | Arcade manifest | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Baseline pending |
-| `/games/opengw-levels/` | Arcade manifest | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Baseline pending |
-| `/games/shadow-ops-canvas/` | Arcade manifest | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Baseline pending |
-| `/games/raytrace-pong-background/` | Arcade manifest | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Baseline pending |
-| `/lottery-spheres.html#spheres` | Arcade manifest | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Baseline pending |
-| `/lottomind-stem-studio/` | Required + arcade | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Pending | Baseline pending |
+| `/` | Sitemap | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Measured | Startup commercial stays dismissed after its delayed fallback window |
+| `/features-app.html` | Sitemap | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Measured | Current staging sign-off complete |
+| `/memberships.html` | Sitemap | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Measured | Collector deep link focuses email reliably; guarded recovery controls preserved |
+| `/news/` | Sitemap | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Measured | Current staging sign-off complete |
+| `/live-events.html` | Sitemap | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Measured | Current staging sign-off complete |
+| `/lottery-spheres.html` | Sitemap | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Measured | Current staging sign-off complete |
+| `/beat2lotto-plus.html` | Sitemap | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Measured | Current staging sign-off complete |
+| `/merch-store.html` | Sitemap | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Measured | Current staging sign-off complete |
+| `/how-to-use.html` | Sitemap | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Measured | Current staging sign-off complete |
+| `/privacy.html` | Sitemap | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Measured | Current staging sign-off complete |
+| `/terms.html` | Sitemap | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Measured | Current staging sign-off complete |
+| `/accessibility.html` | Sitemap | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Measured | Current staging sign-off complete |
+| `/product.html` | Required workflow route | Not applicable | Not applicable | Not applicable | Not applicable | Not applicable | Not applicable | Not applicable | Not applicable | Not applicable | Not applicable | Route not present |
+| `/create.html` | Required workflow route | Not applicable | Not applicable | Not applicable | Not applicable | Not applicable | Not applicable | Not applicable | Not applicable | Not applicable | Not applicable | Route not present |
+| `/prompt-lab.html` | Required + arcade | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Measured | Current staging sign-off complete |
+| `/redeem.html` | Required route | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Measured | Current staging sign-off complete |
+| `/contact.html` | Required route | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Measured | Current staging sign-off complete |
+| `/help.html` | Support route | Not applicable | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Measured | Mobile actions clear fixed Credits and Menu controls; no v1 route existed |
+| `/account.html` | Upgrade route | Not applicable | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Measured | Staging sign-off complete; no v1 route existed |
+| `/404.html` | Required route | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Measured | Current staging sign-off complete |
+| `/games/gothtechnology2/` | Arcade manifest | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Measured | Current staging sign-off complete |
+| `/games/lottomind-jackpot-maze/` | Arcade manifest | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Measured | Current staging sign-off complete |
+| `/games/lottomind-313-fortune-grid/` | Arcade manifest | Not applicable | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Measured | New route; 3/3 current staging states passed with visible setup controls and no v1 route |
+| `/games/opengw-levels/` | Arcade manifest | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Measured | Current staging sign-off complete |
+| `/games/shadow-ops-canvas/` | Arcade manifest | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Measured | Current staging sign-off complete |
+| `/games/raytrace-pong-background/` | Arcade manifest | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Measured | Current staging sign-off complete |
+| `/lottery-spheres.html#spheres` | Arcade manifest | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Measured | Current staging sign-off complete |
+| `/lottomind-stem-studio/` | Required + arcade | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Measured | Current staging sign-off complete |
 
-`account.html` is not present in the current production tree and is therefore omitted as directed.
+## Release Boundary
+
+The matrix closes the current documentation gap; it does not authorize production. The staging artifact remains noindex and fail-closed for live payments, production account writes, real redemptions, and production analytics. The Home, Arcade, Storefront, and shared artwork payload reductions are verified without removing the original source media. Authenticated Stripe Sandbox handoff and cancellation passed without payment entry or charge. Production approval remains `Not approved`.

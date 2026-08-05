@@ -1,0 +1,18 @@
+.card-art {
+  width: min(100%, 420px);
+  aspect-ratio: 4 / 3;
+  margin: 0.75rem auto;
+  border: 1px solid #b88be8;
+  border-radius: 18px;
+  background-size: 600% 400%;
+  background-repeat: no-repeat;
+  box-shadow: 0 16px 44px rgba(0, 0, 0, 0.42);
+}
+
+.card-art--pulse {
+  background-image: url("../art/city-pulse-card-atlas.png");
+}
+
+.card-art--oracle {
+  background-image: url("../art/dream-oracle-card-atlas.png");
+}

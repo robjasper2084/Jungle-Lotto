@@ -744,6 +744,10 @@ function createSynthSound(host) {
 
 async function initializeParticleEntity() {
   const canvas = document.getElementById("featureEntity");
+  if (canvas?.dataset.entityMode === "pucks") {
+    document.body.classList.add("feature-entity-pucks");
+    return;
+  }
   const earthOnly = canvas?.dataset.entityMode === "earth";
   await waitForRuntime(!earthOnly);
 

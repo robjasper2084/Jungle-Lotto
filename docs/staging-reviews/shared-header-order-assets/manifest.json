@@ -1,0 +1,80 @@
+[
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "filename": "home-header-1440x900.png",
+    "errors": [],
+    "labels": [
+      "Home",
+      "Events",
+      "News",
+      "Games",
+      "Static Wav",
+      "Robot RAHBEE",
+      "Storefront",
+      "Memberships",
+      "LottoMind App"
+    ],
+    "pills": [
+      {
+        "label": "Search",
+        "radius": 999,
+        "height": 40
+      },
+      {
+        "label": "Credits",
+        "radius": 999,
+        "height": 40
+      },
+      {
+        "label": "Account",
+        "radius": 999,
+        "height": 40
+      }
+    ],
+    "overflow": false,
+    "noindex": "noindex,nofollow,noarchive",
+    "banner": true
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "filename": "home-header-390x844.png",
+    "errors": [],
+    "labels": [
+      "Home",
+      "Events",
+      "News",
+      "Games",
+      "Static Wav",
+      "Robot RAHBEE",
+      "Storefront",
+      "Memberships",
+      "LottoMind App"
+    ],
+    "pills": [
+      {
+        "label": "Search",
+        "radius": 999,
+        "height": 36
+      },
+      {
+        "label": "Credits",
+        "radius": 999,
+        "height": 36
+      },
+      {
+        "label": "Account",
+        "radius": 999,
+        "height": 36
+      }
+    ],
+    "overflow": false,
+    "noindex": "noindex,nofollow,noarchive",
+    "banner": true
+  }
+]
