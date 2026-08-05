@@ -159,6 +159,22 @@
 - Staging URL: Local only (`http://127.0.0.1:8321/`)
 - Production approval status: Not approved; production remains unchanged
 
+## B2B Commercial Services
+
+- Step number: Owner-requested B2B Services page
+- Working branch: `feature/lottomind-b2b-services`, created from the secure-backend foundation without modifying `main` or `upgrade-redesign`
+- Implementation commit: This status file is part of the focused commit; resolve with `git log -1 --format=%H -- docs/upgrade-redesign-status.md`
+- Route: `/services/`
+- Capabilities: Branded browser mini-games, interactive music launches, virtual event rooms, merchandise drops, cinematic product pages, prompt labs, event installations, white-label creative-number experiences, custom HUDs, music visualizers, and promotional worlds
+- Packages: Signal Starter from $750, Campaign Experience from $2,500, and Custom World from $5,000+; all are explicitly described as starting project prices rather than fixed quotes
+- Inquiry safety: The static form prepares a local email draft and never performs a write request or claims that an inquiry was sent. Browser validation, a honeypot, minimum completion time, required consent, and a session cooldown are active.
+- Tests: Focused services browser checks 6/6; release audit 7/7; source/staging route matrix 162/162; staging safety 12/12; static staging artifact 27 pages and 614 same-origin references
+- Visual review: `docs/staging-reviews/b2b-services.md` with `1440x900` and `390x844` captures; the route has no production or v1 equivalent
+- Staging URL: Local only (`/services/`; final local preview URL recorded in the completion report)
+- Production approval status: Not approved; production, `main`, `upgrade-redesign`, `v1-final`, and existing release tags remain unchanged
+- Deferred work: A live form endpoint requires server-side validation, rate limiting, origin checks, and CAPTCHA or equivalent abuse protection before use
+- Trivia status: Paused until the owner says `finish trivia`
+
 ## Home Commercial, Storefront Patch, And Spheres Console
 
 - Step number: Owner-requested Home, Storefront, and Spheres corrections
