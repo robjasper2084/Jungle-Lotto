@@ -14,6 +14,7 @@
     "arcade-pilot:test": "playwright test --config=playwright.arcade-pilot.config.cjs",
     "arcade-pilot:capture": "node scripts/capture-arcade-pilot.mjs",
     "baseline:capture": "node scripts/capture-visual-baseline.mjs",
+    "trivia:test": "node --test games/lottomind-trivia/tests/*.test.mjs",
     "test": "playwright test"
   },
   "devDependencies": {
