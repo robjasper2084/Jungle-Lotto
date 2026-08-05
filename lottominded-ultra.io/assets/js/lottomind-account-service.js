@@ -189,6 +189,11 @@
     return payload;
   }
 
+  function createIdempotencyKey(prefix) {
+    var random = global.crypto && global.crypto.randomUUID ? global.crypto.randomUUID() : Math.random().toString(36).slice(2) + Date.now().toString(36);
+    return String(prefix || "action").replace(/[^a-zA-Z0-9:_-]/g, "-").slice(0, 40) + ":" + random;
+  }
+
   if (channel) {
     channel.addEventListener("message", function onMessage(event) {
       if (!event.data || event.data.type !== "refresh") return;
@@ -236,7 +241,12 @@
       broadcastRefresh("logout");
       return getSnapshot({ force: true });
     },
-    redeemCollectible: function redeemCollectible(code) { return mutation("/redemption/claim", { code: String(code || "").trim() }); },
+    redeemCollectible: function redeemCollectible(code) {
+      return mutation("/redemption/claim", {
+        code: String(code || "").trim(),
+        idempotencyKey: createIdempotencyKey("collector-redemption"),
+      });
+    },
     spendCredits: async function spendCredits(action, idempotencyKey, context) {
       var result = await request("/credits/spend", { method: "POST", body: JSON.stringify({ action: action, idempotencyKey: idempotencyKey, context: context || {} }) });
       await getSnapshot({ force: true });
@@ -258,10 +268,7 @@
       if (snapshotCache) callback(snapshotCache);
       return function unsubscribe() { subscribers.delete(callback); };
     },
-    createIdempotencyKey: function createIdempotencyKey(prefix) {
-      var random = global.crypto && global.crypto.randomUUID ? global.crypto.randomUUID() : Math.random().toString(36).slice(2) + Date.now().toString(36);
-      return String(prefix || "action").replace(/[^a-zA-Z0-9:_-]/g, "-").slice(0, 40) + ":" + random;
-    },
+    createIdempotencyKey: createIdempotencyKey,
     getAccessToken: getAccessToken,
     refresh: function refresh() { snapshotTime = 0; return getSnapshot({ force: true }); },
   });

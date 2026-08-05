@@ -178,6 +178,18 @@
 
 - Frontend behavior: Billing requests now validate JSON, configuration shape, plan identifiers, and Stripe redirect hosts; stalled, malformed, rejected, and unreachable responses receive distinct accessible messages
 - Checkout return behavior: A Stripe return is no longer described as payment confirmation until an active membership is verified from the account service
+
+## Secure Account Backend Foundation
+
+- Step number: Missing-feature secure backend foundation; Trivia remains paused
+- Branch: `feature/lottomind-secure-backend`, created from the completed account-dashboard commit
+- Scope: Added RLS-protected profiles, subscriptions, entitlements, append-only credit ledger, collector codes, verified game reward events, orders, and downloads
+- Credit authority: LottoCredits are derived from immutable ledger entries; spends are serialized and idempotent; refunds are compensating entries
+- Commerce authority: Checkout remains Stripe-hosted; a separate Edge Function validates the raw Stripe webhook signature before updating account state
+- Entitlement authority: Premium access is read from server-managed entitlement rows through authenticated API requests
+- Staging status: Code and migration prepared locally only; no isolated staging Supabase project is configured, no migration/function was deployed, and no live data or charge path was changed
+- Deployment guide: `docs/secure-backend-architecture.md`
+- Production approval status: Not approved; `main`, production, `v1-final`, and existing release tags remain unchanged
 - Edge Function source: `supabase/functions/lottomind-api/index.ts` is now versioned in the repository with CORS-aware auth responses, JSON body validation, Stripe mode reporting, and checkout/portal URL validation
 - Connected backend check: Production function version 5 currently returns `401 AUTH_REQUIRED` with the expected CORS header for an unauthenticated checkout request; no unexplained `500` billing failures appeared in the inspected 24-hour Edge Function log window
 - Backend deployment: Not performed because the connected Supabase project exposes only its production `main` branch and production approval is not granted
@@ -703,4 +715,20 @@
 - Commerce and backend impact: None; no checkout, account-write, redemption, analytics, or production behavior changed
 - Staging URL: Local only (`http://127.0.0.1:8544/` after the committed staging build)
 - Trivia Vault: Paused on `feature/lottomind-trivia-vault`; resume only when the owner says `finish trivia`
+- Production approval status: Not approved; `main`, production, and `v1-final` remain unchanged
+
+## Missing Feature 2 - Secure Account Backend Foundation
+
+- Step number: Missing-feature roadmap item 2; Trivia Vault remains paused
+- Working branch: `feature/lottomind-secure-backend`, created from `feature/lottomind-account-dashboard` at `f12f1f257d7c3f62274315c5d7eac972dbd450ea`
+- Implementation commit: This file is part of the focused secure-backend commit; resolve it with `git log -1 --format=%H -- docs/upgrade-redesign-status.md`
+- Added authority: Supabase Auth, RLS-protected profiles, subscriptions, entitlements, append-only credit ledger, collector codes, game reward events, orders, and downloads
+- Payment boundary: Checkout Sessions are created only by the authenticated API; Stripe events are accepted only after raw-body signature verification; stale subscription events cannot overwrite newer state
+- Credit boundary: LottoCredits are calculated from append-only ledger entries and changed only by service-role RPCs with idempotency keys; browser clients have read-only access to their own rows
+- Redemption and reward boundary: Collector redemption is atomic and code-hash based; game rewards fail closed until a trusted verifier is connected
+- Backend tests: Secure backend contract passed; Deno typechecks passed for both Edge Functions; account/checkout/browser regression passed 104 with 2 expected desktop skips
+- Site tests: 17 HTML files validated; release audit passed 7/7 groups; source/staging route matrix passed 156/156 across desktop, mobile, and tablet; staging safety passed 12/12 with 601 same-origin references
+- Visual review: Account desktop `1440x900` and mobile `390x844` remain visually unchanged; review: `docs/staging-reviews/secure-backend.md`
+- Deployment status: Migration and Edge Functions are prepared but were not applied to Supabase; Stripe webhook endpoint and plan catalog require isolated staging configuration before live verification
+- Staging URL: Local only (`http://127.0.0.1:8497/` while the verified server is running)
 - Production approval status: Not approved; `main`, production, and `v1-final` remain unchanged
