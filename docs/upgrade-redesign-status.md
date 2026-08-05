@@ -688,3 +688,19 @@
 - Commerce impact: None; no payment or checkout behavior changed
 - Staging URL: Local only (`http://127.0.0.1:8321/`)
 - Production approval status: Not approved; `main`, production, and `v1-final` remain unchanged
+
+## Missing Feature 1 - Unified Account Dashboard
+
+- Step number: Missing-feature roadmap item 1
+- Working branch: `feature/lottomind-account-dashboard`, created from `origin/upgrade-redesign` at `4106bac9a6118683072bdcc4471535097247e710`
+- Implementation commit: This file is part of the focused account-dashboard commit; resolve it with `git log -1 --format=%H -- docs/upgrade-redesign-status.md`
+- Affected route: `/account.html`
+- Added surface: One return deck for verified plan, LottoCredits, Guardian status, device-only saved sets, device-only dreams, and recent games
+- Data boundary: Plan, wallet, and Guardian state come only from the existing account service; local activity remains labeled device-only and cannot verify identity, mutate credits, activate plans, or prove redemption
+- Tests: Account dashboard 6/6 passed; Collector Access and recovery 14/14 passed; source/staging route matrix 156/156 passed; staging safety 12/12 passed
+- Visual review: Desktop `1440x900` and mobile `390x844` captures passed without console errors or horizontal overflow; review: `docs/staging-reviews/unified-account-dashboard.md`
+- Intentional visual departure: Six compact HUD panels extend the Account route while preserving its existing Collector Access form and LottoMind visual identity; no v1 Account route existed
+- Commerce and backend impact: None; no checkout, account-write, redemption, analytics, or production behavior changed
+- Staging URL: Local only (`http://127.0.0.1:8544/` after the committed staging build)
+- Trivia Vault: Paused on `feature/lottomind-trivia-vault`; resume only when the owner says `finish trivia`
+- Production approval status: Not approved; `main`, production, and `v1-final` remain unchanged

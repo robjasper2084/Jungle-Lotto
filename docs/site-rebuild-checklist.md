@@ -34,7 +34,7 @@ This matrix records the current release-signoff evidence for the upgrade branch.
 | `/redeem.html` | Required route | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Measured | Current staging sign-off complete |
 | `/contact.html` | Required route | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Measured | Current staging sign-off complete |
 | `/help.html` | Support route | Not applicable | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Measured | Mobile actions clear fixed Credits and Menu controls; no v1 route existed |
-| `/account.html` | Upgrade route | Not applicable | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Measured | Staging sign-off complete; no v1 route existed |
+| `/account.html` | Upgrade route | Not applicable | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Measured | Unified dashboard verified at desktop/mobile; service data and device-only activity remain clearly separated; no v1 route existed |
 | `/404.html` | Required route | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Measured | Current staging sign-off complete |
 | `/games/gothtechnology2/` | Arcade manifest | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Measured | Current staging sign-off complete |
 | `/games/lottomind-jackpot-maze/` | Arcade manifest | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Measured | Current staging sign-off complete |
