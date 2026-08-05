@@ -2,7 +2,7 @@
 
 - Production URL: https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/
 - Production branch: `main`
-- Production commit SHA: `09f8e5d2c8bc10d0cf1af240216404c6af74c3c0`
+- Production commit SHA: `26df75658204442ab5b2273ae7c70f043f58796f`
 - Snapshot tag: `v1-final`
 - Snapshot annotated tag object SHA: `9ba25352efc17d5b514e5afd59c8afde5c9d2949`
 - Snapshot target commit SHA: `975c637cea7003533cdc30aed9d96be51929bfc8`
@@ -11,11 +11,11 @@
 - Upgrade branch SHA at Step 0A branch creation: `1fc4c95ca4d0b22ee5188d06f8ea75573c63a00a`
 - Upgrade branch SHA before Step 0B commit: `220653bbc300d0e0b236c6e834043f39fdfcd76c`
 - Step 0B commit SHA: `6e58aafc4addabf5281262ec951a7d6df3dc66a0`
-- Deployment mechanism discovered: GitHub Pages Actions from repository-root `.github/workflows/pages.yml`; pushes to `main` upload the repository root with `actions/upload-pages-artifact` and deploy with `actions/deploy-pages`. Current remote production head is `09f8e5d2c8bc10d0cf1af240216404c6af74c3c0`.
+- Deployment mechanism discovered: GitHub Pages Actions from repository-root `.github/workflows/pages.yml`; pushes to `main` upload the repository root with `actions/upload-pages-artifact` and deploy with `actions/deploy-pages`. Current remote production head is `26df75658204442ab5b2273ae7c70f043f58796f`.
 - Staging provider: Local static server (Mode C); no remote preview provider is configured
 - Staging URL: Local only (`http://127.0.0.1:8381/` during the latest verified staging run)
 - Staging integrations: No isolated staging backend is configured; the staging artifact keeps payments, account writes, redemptions, and production analytics disabled. The connected backend was verified separately with Stripe `test` mode.
-- Last completed step: Step 34 production release candidate preparation after authenticated Stripe Sandbox checkout cancellation
+- Last completed step: Step 35 controlled production merge and live verification
 - Step 1 commit SHA: This file is part of the Step 1 commit; use `git log -1 --format=%H -- docs/upgrade-redesign-status.md` to resolve its exact non-self-referential SHA. The completion report records it explicitly.
 - Last staging review: `docs/staging-reviews/release-candidate-v2-rc4.md`
 - Staging review commit SHA: This file is part of the staging-review commit; the completion report records its exact SHA.
@@ -26,8 +26,8 @@
 - Latest visual comparison: Home and Memberships were rechecked at 1440x900 and 390x844 with no console errors or horizontal overflow; the release-gate fix changes dismissal/focus behavior only. All 26 current routes retain completed desktop, tablet, and mobile sign-off.
 - Latest performance comparison: three presentation videos are 73.4-73.5% smaller; the Account hero is 92.0% smaller; the Arcade marquee is 93.7% smaller. Current staging transfer measurements are recorded in `docs/staging-reviews/help-media-release.md`
 - Staging review approval status: Ready for production review; authenticated Stripe Sandbox checkout and cancellation passed without payment entry or charge
-- Production approval status: Not approved for `v2-rc4`; a fresh exact `APPROVE PRODUCTION MERGE` authorization is required after pull-request review
-- Rollback reference: `git revert -m 1 09f8e5d2c8bc10d0cf1af240216404c6af74c3c0`; permanent snapshot `v1-final` remains at `975c637cea7003533cdc30aed9d96be51929bfc8`
+- Production approval status: Approved and merged through PR #3 on 2026-08-05
+- Rollback reference: `git revert -m 1 26df75658204442ab5b2273ae7c70f043f58796f`; permanent snapshot `v1-final` remains at `975c637cea7003533cdc30aed9d96be51929bfc8`
 - Known pre-existing repository changes: The working tree was clean when Step 0A began. Local `main` already contained commit `1fc4c95ca4d0b22ee5188d06f8ea75573c63a00a` ahead of `origin/main`; that commit was preserved as the starting point of `upgrade-redesign` and was not pushed to production.
 
 ## Step 34 Preflight Refresh
@@ -57,6 +57,19 @@
 - Tag safety: local and remote `v2-rc1` annotated tag objects differ, but both peel to `971dd17accd03be8bd1ff20664ad98734c792867`; no tag was moved, replaced, or deleted
 - Review: `docs/staging-reviews/step34-preflight-refresh.md`
 - Approval status: Ready for production review; production remains not approved
+
+## Step 35 Controlled Production Launch
+
+- Authorization: exact `APPROVE PRODUCTION MERGE` received from the repository owner
+- Pull request: [#3](https://github.com/robjasper2084/Jungle-Lotto/pull/3), merged with a merge commit
+- Release candidate: `v2-rc4` at `fa9b664d206423a9e09c55b26c3e600e681ded3c`
+- Production merge: `26df75658204442ab5b2273ae7c70f043f58796f`
+- Launch tag: `v2-launch4`; prior launch tags remain unchanged
+- Deployment: GitHub Pages run 30982175584 completed successfully
+- Tests: 182 browser passes with 8 intentional skips; 156/156 route matrix; 12/12 staging safety; 26 staging pages and 593 same-origin references; 17 HTML files; 7/7 release audit groups
+- Live checkout: production billing reports ready; signed-out plan selection stops at Collector Access and no charge is initiated. The authenticated Step 34 Stripe Sandbox check was cancelled without payment entry or charge.
+- Live issue: Fortune Grid's optional account/rewards scripts use two incorrect GitHub Pages subpath URLs and return `404`; core gameplay remains visible. Follow-up requires a new tested candidate and approval.
+- Launch report: `docs/production-launch-report.md`
 
 ## News Lottery Results Ticker
 
