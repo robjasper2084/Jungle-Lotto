@@ -404,6 +404,7 @@ let startupOpenTimer = 0;
 let startupFallbackTimer = 0;
 let startupTransitionFallback = 0;
 let startupVideoClosing = false;
+let startupVideoDismissed = false;
 let startupShouldPlayMusic = false;
 const domainStrip = document.querySelector(".domain-strip");
 const gamePip = document.querySelector("[data-game-pip]");
@@ -3313,8 +3314,10 @@ function handleStartupTransitionComplete(event) {
 function closeStartupVideo(options = {}) {
   const transitionAlreadyRunning = startupVideoClosing;
   startupVideoClosing = true;
+  startupVideoDismissed = true;
   startupShouldPlayMusic = options.playMusic === true;
   clearStartupOpenTimer();
+  clearStartupFallbackTimer();
   if (options.remember !== false) rememberStartupVideoSeen();
   startupVideoModal?.classList.add("is-hidden");
   startupVideoModal?.classList.remove("is-awaiting-video-play");
@@ -3345,7 +3348,7 @@ function showStartupVideo() {
     document.body.classList.remove("has-startup-modal");
     return;
   }
-  if (hasSeenStartupVideo()) return;
+  if (startupVideoDismissed || hasSeenStartupVideo()) return;
   document.body.classList.add("has-startup-modal");
   startupVideoModal.classList.remove("is-hidden");
   startupVideoModal.setAttribute("aria-hidden", "false");
@@ -3358,18 +3361,19 @@ function showStartupVideo() {
 }
 
 function scheduleStartupVideoOpen() {
-  if (!startupVideoModal || startupOpenTimer || hasSeenStartupVideo()) return;
+  if (!startupVideoModal || startupOpenTimer || startupVideoDismissed || hasSeenStartupVideo()) return;
   startupOpenTimer = window.setTimeout(() => {
     startupOpenTimer = 0;
+    if (startupVideoDismissed) return;
     showStartupVideo();
   }, STARTUP_MODAL_OPEN_DELAY);
 }
 
 function scheduleStartupVideoFallback() {
-  if (!startupVideoModal || startupFallbackTimer || hasSeenStartupVideo()) return;
+  if (!startupVideoModal || startupFallbackTimer || startupVideoDismissed || hasSeenStartupVideo()) return;
   startupFallbackTimer = window.setTimeout(() => {
     startupFallbackTimer = 0;
-    if (!startupVideoModal || isStartupVideoOpen()) return;
+    if (!startupVideoModal || startupVideoDismissed || isStartupVideoOpen()) return;
     showStartupVideo();
   }, STARTUP_MODAL_FALLBACK_DELAY);
 }

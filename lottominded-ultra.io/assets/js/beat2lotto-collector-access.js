@@ -169,6 +169,14 @@
     }
   }
 
+  function focusRequestedCollectorEmail() {
+    var email = authForm.elements.email;
+    var active = document.activeElement;
+    if (!requestedCollectorAccess || panel.hidden || authForm.hidden || !email) return;
+    if (active && panel.contains(active) && active !== closeButton) return;
+    email.focus({ preventScroll: true });
+  }
+
   function revealRequestedPanel(unavailableMessage) {
     if (recoveryMode) {
       togglePanel(true);
@@ -184,7 +192,9 @@
     if (requestedCollectorAccess) {
       togglePanel(true);
       setMessage(unavailableMessage || "Sign in to open Collector Access.", Boolean(unavailableMessage));
-      setTimeout(function focusCollectorEmail() { authForm.elements.email.focus(); }, 0);
+      [0, 250, 1000].forEach(function scheduleCollectorFocus(delay) {
+        setTimeout(focusRequestedCollectorEmail, delay);
+      });
       return true;
     }
     return false;
