@@ -5,6 +5,7 @@ import { resolve } from "node:path";
 const root = resolve(process.cwd());
 const htmlPath = resolve(root, "index.html");
 const html = readFileSync(htmlPath, "utf8");
+const storefrontHtml = readFileSync(resolve(root, "merch-store.html"), "utf8");
 const siteScript = readFileSync(resolve(root, "site.js"), "utf8");
 const styles = readFileSync(resolve(root, "styles.css"), "utf8");
 const failures = [];
@@ -40,12 +41,28 @@ if (/lm-healing-generator|healing-frequency\.js/i.test(html)) {
   failures.push("The removed healing-frequency generator is still referenced by index.html.");
 }
 
-if (!/data-startup-video/i.test(html) || !/lottomind-membership-unboxing-commercial-20260716\.opt\.mp4/i.test(html)) {
+if (!/data-startup-video/i.test(html) || !/lottomind-home-apparel-commercial-20260804\.opt\.mp4/i.test(html)) {
   failures.push("The restored homepage startup commercial is missing.");
 }
 
 if (!/data-startup-video-play/i.test(html) || !/Play with sound/i.test(html)) {
   failures.push("The homepage startup commercial is missing its explicit sound control.");
+}
+
+const sharedCommercialStylesheet = /assets\/css\/lm-commercial-hud\.css/i;
+if (!sharedCommercialStylesheet.test(html) || !sharedCommercialStylesheet.test(storefrontHtml)) {
+  failures.push("Home and Storefront are not loading the shared commercial HUD stylesheet.");
+}
+
+for (const requiredClass of [
+  "merch-commercial-modal__panel",
+  "merch-commercial-modal__header",
+  "merch-commercial-modal__body",
+  "merch-commercial-modal__stage",
+  "merch-commercial-modal__telemetry",
+  "merch-commercial-modal__footer",
+]) {
+  if (!html.includes(requiredClass)) failures.push(`The homepage commercial is missing ${requiredClass}.`);
 }
 
 if (!/class=["']home-sphere-scanline["']/i.test(html) || !/@keyframes\s+homeHeroScanBars/i.test(styles)) {

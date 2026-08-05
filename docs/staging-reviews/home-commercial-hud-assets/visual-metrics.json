@@ -1,0 +1,104 @@
+[
+  {
+    "name": "home-staging-desktop",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "errors": [],
+    "panel": {
+      "x": 112,
+      "y": 66,
+      "width": 1216,
+      "height": 768
+    },
+    "gridColumns": "1214px",
+    "stageVisible": true,
+    "telemetryVisible": true,
+    "footerVisible": true,
+    "overflowX": false,
+    "sharedCss": true,
+    "actions": [
+      "X",
+      "Play with sound",
+      "Enter Site"
+    ]
+  },
+  {
+    "name": "storefront-staging-desktop",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "errors": [],
+    "panel": {
+      "x": 112,
+      "y": 66,
+      "width": 1216,
+      "height": 768
+    },
+    "gridColumns": "1214px",
+    "stageVisible": true,
+    "telemetryVisible": true,
+    "footerVisible": true,
+    "overflowX": false,
+    "sharedCss": true,
+    "actions": [
+      "X",
+      "Play with sound",
+      "Replay",
+      "Buy Now"
+    ]
+  },
+  {
+    "name": "home-staging-mobile",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "errors": [],
+    "panel": {
+      "x": 0,
+      "y": 0,
+      "width": 390,
+      "height": 844
+    },
+    "gridColumns": "390px",
+    "stageVisible": true,
+    "telemetryVisible": true,
+    "footerVisible": true,
+    "overflowX": false,
+    "sharedCss": true,
+    "actions": [
+      "X",
+      "Play with sound",
+      "Enter Site"
+    ]
+  },
+  {
+    "name": "storefront-staging-mobile",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "errors": [],
+    "panel": {
+      "x": 0,
+      "y": 0,
+      "width": 390,
+      "height": 844
+    },
+    "gridColumns": "390px",
+    "stageVisible": true,
+    "telemetryVisible": true,
+    "footerVisible": true,
+    "overflowX": false,
+    "sharedCss": true,
+    "actions": [
+      "X",
+      "Play with sound",
+      "Replay",
+      "Buy Now"
+    ]
+  }
+]

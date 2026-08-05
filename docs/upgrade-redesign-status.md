@@ -83,6 +83,20 @@
 - Staging URL: Local only (`http://127.0.0.1:8365/news/` during focused source validation)
 - Production approval status: Not approved; `main`, production deployment, `v1-final`, and existing release tags remain unchanged
 
+## Home And Storefront Commercial HUD Parity
+
+- Step number: Owner-requested Home commercial visual parity with Storefront
+- Implementation commit: This status file is part of the focused commit; resolve with `git log -1 --format=%H -- docs/upgrade-redesign-status.md`
+- Affected routes: `/index.html#top` and `/merch-store.html`
+- Changes: Home now uses the same responsive full-screen HUD frame, telemetry rail, scan treatment, corner brackets, signal meter, and command deck as the Storefront commercial while preserving the Home film and controls
+- Exact visual parity: Both dialogs measured `1216x768` at `1440x900` and `390x844` at the mobile viewport, with no horizontal overflow or console errors
+- Tests: Home static check; site validation for 17 HTML files; static staging verification for 26 pages and 597 same-origin references; staging safety 12/12; source/staging route matrix 156/156; focused media rerun 4/4; full browser suite 182 passed with 8 intentional skips; release audit 7/7
+- Visual review: `docs/staging-reviews/home-commercial-hud.md` with desktop and mobile Home and Storefront captures
+- Intentional visual departure: The v1 Home baseline did not contain the full-screen Storefront HUD; LottoMind's black, gold, cyan, violet, Detroit, cinematic, and music-technology identity remains recognizable
+- Staging safety: Noindex and preview banners are present; live payments, production account writes, real redemptions, and production analytics remain blocked
+- Staging URL: Local only (`http://127.0.0.1:8500/` during focused verification)
+- Production approval status: Not approved for this change; production HTML does not load the new shared HUD stylesheet, and `main`, the production URL, `v1-final`, and existing release tags remain unchanged
+
 ## Future Commercial And Publisher Media
 
 - Step number: Owner-requested future commercial, Help film, and News publisher-image pass
