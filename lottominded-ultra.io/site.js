@@ -3311,7 +3311,7 @@ function handleStartupTransitionComplete(event) {
 }
 
 function closeStartupVideo(options = {}) {
-  if (startupVideoClosing) return;
+  const transitionAlreadyRunning = startupVideoClosing;
   startupVideoClosing = true;
   startupShouldPlayMusic = options.playMusic === true;
   clearStartupOpenTimer();
@@ -3320,6 +3320,7 @@ function closeStartupVideo(options = {}) {
   startupVideoModal?.classList.remove("is-awaiting-video-play");
   startupVideoModal?.setAttribute("aria-hidden", "true");
   startupVideoPlayer?.pause();
+  if (transitionAlreadyRunning) return;
   window.addEventListener("lottomind:transition-complete", handleStartupTransitionComplete);
   window.dispatchEvent(new CustomEvent("lottomind:commercial-dismissed", {
     detail: {
