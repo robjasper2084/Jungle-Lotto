@@ -9,7 +9,9 @@ test("creates a game and completes the first turn without console errors", async
   await expect(page).toHaveTitle(/Fortune Grid/);
   await page.getByRole("button", { name: "Launch Fortune Grid" }).click();
   await expect(page.getByText(/Round 1 \/ 3/)).toBeVisible();
-  await page.getByRole("button", { name: /Roll Movement Cube/ }).click();
+  await expect(page.locator("#game canvas")).toBeVisible();
+  await expect.poll(() => page.locator("#game canvas").evaluate((canvas) => canvas.getAttribute("aria-label"))).toBe("3D Detroit Fortune Grid map");
+  await page.getByRole("button", { name: /Roll 2 Movement Cubes/ }).click();
   const route = page.getByRole("button", { name: /Route 1:/ });
   if (await route.isVisible().catch(() => false)) await route.click();
   await expect(page.getByRole("button", { name: "End turn" })).toBeVisible({ timeout: 10000 });
@@ -17,7 +19,7 @@ test("creates a game and completes the first turn without console errors", async
     await page.screenshot({ path: resolve("docs/screenshots", `${testInfo.project.name}-first-turn.png`), fullPage: true });
   }
   await page.getByRole("button", { name: "End turn" }).click();
-  await expect(page.getByText(/CPU/).first()).toBeVisible();
+  await expect.poll(() => page.evaluate(() => { const state = (window as any).__fortuneGridState?.(); return state ? `${state.currentPlayer}:${state.phase}` : "missing"; })).toMatch(/^(0:roll|1:roll|1:moving|1:action)$/);
   expect(errors).toEqual([]);
 });
 
@@ -29,7 +31,7 @@ test("supports reduced motion and keyboard-only setup", async ({ page }) => {
   await page.getByRole("button", { name: "Settings" }).click();
   await page.getByLabel(/Reduced motion/).check();
   await page.getByRole("button", { name: "Apply" }).click();
-  await expect(page.getByRole("button", { name: /Roll Movement Cube/ })).toBeEnabled();
+  await expect(page.getByRole("button", { name: /Roll 2 Movement Cubes/ })).toBeEnabled();
 });
 
 test("supports four local pass-and-play players", async ({ page }) => {
@@ -58,9 +60,11 @@ test("a player can complete a standard thirteen-round solo match", async ({ page
   await page.goto("/");
   await page.getByLabel("Mode").selectOption("standard");
   await page.getByRole("button", { name: "Launch Fortune Grid" }).click();
-  for (let round = 1; round <= 13; round += 1) {
-    await expect.poll(() => page.evaluate(() => { const state = (window as any).__fortuneGridState?.(); return state ? `${state.currentPlayer}:${state.phase}` : "missing"; }), { timeout: 15000 }).toBe("0:roll");
-    const roll = page.getByRole("button", { name: /Roll Movement Cube/ });
+  for (let turn = 0; turn < 40; turn += 1) {
+    await expect.poll(() => page.evaluate(() => { const state = (window as any).__fortuneGridState?.(); return state?.phase === "ended" ? "ended" : state ? `${state.currentPlayer}:${state.phase}` : "missing"; }), { timeout: 15000 }).toMatch(/^(0:roll|ended)$/);
+    const phase = await page.evaluate(() => (window as any).__fortuneGridState?.().phase);
+    if (phase === "ended") break;
+    const roll = page.getByRole("button", { name: /Roll 2 Movement Cubes/ });
     await expect(roll).toBeEnabled({ timeout: 15000 });
     await roll.click();
     await page.waitForTimeout(800);

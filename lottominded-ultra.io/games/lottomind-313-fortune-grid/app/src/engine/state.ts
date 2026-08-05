@@ -1,4 +1,4 @@
-export const RULESET_VERSION = "1.0.0-beta.1";
+export const RULESET_VERSION = "1.1.0-beta.3";
 export type GameMode = "quick313" | "standard" | "daily";
 export type Personality = "Builder" | "Visionary" | "Analyst" | "Creator";
 export type Phase = "setup" | "roll" | "route" | "moving" | "action" | "ended";
@@ -19,11 +19,12 @@ export interface Player {
   lockedSignals: number[];
   ventures: Record<number, number>;
   rebuild: boolean;
+  bonusRoll: boolean;
   savedSequences: number[][];
 }
 
 export interface MatchEvent { id: number; type: string; message: string; playerId?: string; payload?: Record<string, unknown> }
-export interface PendingRoll { movement: number; signal: number; routes: number[][] }
+export interface PendingRoll { movement: number; movementDice: [number, number]; signal: number; routes: number[][] }
 export interface GameSettings { reducedMotion: boolean; particles: boolean; highContrast: boolean; textScale: number; muted: boolean }
 
 export interface GameState {
@@ -57,7 +58,7 @@ export function createInitialState(input: SetupInput): GameState {
     cpu: index >= input.localPlayers,
     personality: index >= input.localPlayers ? personalities[index % personalities.length] : undefined,
     color: colors[index], nodeId: 0, previousNodeId: null, dollars: 1313, legacy: 0, focus: 3,
-    signals: [], lockedSignals: [], ventures: {}, rebuild: false, savedSequences: []
+    signals: [], lockedSignals: [], ventures: {}, rebuild: false, bonusRoll: false, savedSequences: []
   }));
   return {
     rulesetVersion: RULESET_VERSION,
