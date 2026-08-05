@@ -1,5 +1,20 @@
 # LottoMind Upgrade Redesign Status
 
+## Secure Account And Commerce Authority
+
+- Step number: Owner-requested Supabase and Stripe production architecture
+- Implementation commit: This status file is part of the focused commit; resolve with `git log -1 --format=%H -- docs/upgrade-redesign-status.md`
+- Affected systems: Supabase Auth, account snapshot, plan catalog, entitlements, LottoCredits ledger, collector redemption, Stripe Checkout, Customer Portal, signed webhook, orders, downloads, and shared browser account client
+- Database authority: `profiles`, `subscriptions`, `entitlements`, `credit_ledger`, `collector_codes`, `game_reward_events`, `orders`, and `downloads` use RLS. Browser roles retain read-only access to their own account rows; mutations and entitlement decisions remain service-role-only.
+- Commerce safety: Gold, Ultra, and Guardian launch SKUs are canonical but default to unavailable with no Stripe Price IDs. This change does not enable checkout or deploy a live secret.
+- Account contract: `/account/snapshot` returns one normalized current plan, one ledger-derived balance, active entitlements, orders, and download history. Premium checks use the service-role-only `has_active_entitlement` database function.
+- Cross-app balance: `credit_ledger` is included in Supabase Realtime while RLS limits authenticated listeners to their own rows; Ultra and Refined must refresh from the same append-only ledger instead of browser balances.
+- Documentation: `lottominded-ultra.io/docs/secure-production-architecture.md`
+- Tests: Secure backend contract passed; site validation passed for 17 HTML files; release audit passed 7 groups; route matrix passed 162/162; staging safety passed 12/12 across 27 pages and 627 same-origin references. The full browser run completed with 201 passed and 8 skipped; three worker-contention timeouts all passed in a focused single-worker rerun (6/6).
+- Visual review: `docs/staging-reviews/secure-account-architecture.md` with desktop and mobile account captures. No visual redesign was introduced; current identity and read-only staging messaging remain intact.
+- Staging URL: Local only
+- Production approval status: Not approved for this change; `main`, production deployment, `v1-final`, and existing release tags remain unchanged.
+
 ## Storefront And Membership Product Definition
 
 - Step number: Owner-requested Storefront and membership definition

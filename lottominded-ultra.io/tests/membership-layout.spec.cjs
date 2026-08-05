@@ -23,8 +23,8 @@ test("membership hero leads, Collector follows Gaming Showcase, and the Guardian
   const showcase = page.locator("#worlds");
   const life = page.locator("#life");
   const ultra = page.locator('[data-lm-tier="ultra"]');
-  const vault = page.locator('[data-lm-tier="vault"]');
-  const [deckBox, heroBox, collectorBox, guardianBox, showcaseBox, lifeBox, ultraBox, vaultBox] = await Promise.all([
+  const guardianBundle = page.locator('[data-lm-tier="guardian_bundle"]');
+  const [deckBox, heroBox, collectorBox, guardianBox, showcaseBox, lifeBox, ultraBox, guardianBundleBox] = await Promise.all([
     deck.boundingBox(),
     hero.boundingBox(),
     collector.boundingBox(),
@@ -32,7 +32,7 @@ test("membership hero leads, Collector follows Gaming Showcase, and the Guardian
     showcase.boundingBox(),
     life.boundingBox(),
     ultra.boundingBox(),
-    vault.boundingBox(),
+    guardianBundle.boundingBox(),
   ]);
 
   expect(deckBox).not.toBeNull();
@@ -44,7 +44,7 @@ test("membership hero leads, Collector follows Gaming Showcase, and the Guardian
   await expect(heroCommercial).toBeVisible();
   await expect(heroCommercial.locator("video")).toHaveAttribute("poster", /membership-feature-commercial-poster/);
   expect(ultraBox).not.toBeNull();
-  expect(vaultBox).not.toBeNull();
+  expect(guardianBundleBox).not.toBeNull();
   const heroPrecedesDeckInDom = await hero.evaluate((node) =>
     Boolean(node.compareDocumentPosition(document.querySelector("#membership-plans")) & Node.DOCUMENT_POSITION_FOLLOWING)
   );
@@ -60,23 +60,24 @@ test("membership hero leads, Collector follows Gaming Showcase, and the Guardian
   await expect(collector.locator("#plansTitle")).toHaveCount(1);
   await expect(page.locator("#membership-plans > .membership-plan-support-grid > *")).toHaveCount(0);
   await expect(page.locator("#membership-plans .membership-collectible-card")).toHaveCount(0);
-  await expect(page.locator(".membership-comparison, .membership-benefit-strip, #lm-credits, .membership-billing-tools")).toHaveCount(0);
+  await expect(page.locator(".membership-comparison")).toBeVisible();
+  await expect(page.locator(".membership-benefit-strip, #lm-credits, .membership-billing-tools")).toHaveCount(0);
   expect(heroBox.y).toBeLessThan(deckBox.y);
   expect(collectorBox.y).toBeGreaterThan(showcaseBox.y);
   expect(collectorBox.y).toBeLessThan(lifeBox.y);
   expect(guardianBox.y).toBeGreaterThan(lifeBox.y);
-  expect(Math.abs(ultraBox.y - vaultBox.y)).toBeLessThan(2);
-  expect(vaultBox.x).toBeGreaterThan(ultraBox.x);
+  expect(Math.abs(ultraBox.y - guardianBundleBox.y)).toBeLessThan(2);
+  expect(guardianBundleBox.x).toBeGreaterThan(ultraBox.x);
 
   await page.setViewportSize({ width: 390, height: 844 });
-  const [mobileDeckBox, mobileHeroBox, mobileCollectorBox, mobileGuardianBox, mobileShowcaseBox, mobileUltraBox, mobileVaultBox] = await Promise.all([
+  const [mobileDeckBox, mobileHeroBox, mobileCollectorBox, mobileGuardianBox, mobileShowcaseBox, mobileUltraBox, mobileGuardianBundleBox] = await Promise.all([
     deck.boundingBox(),
     hero.boundingBox(),
     collector.boundingBox(),
     guardian.boundingBox(),
     showcase.boundingBox(),
     ultra.boundingBox(),
-    vault.boundingBox(),
+    guardianBundle.boundingBox(),
   ]);
   const mobileWidths = await page.evaluate(() => ({
     viewport: document.documentElement.clientWidth,
@@ -86,6 +87,6 @@ test("membership hero leads, Collector follows Gaming Showcase, and the Guardian
   expect(mobileHeroBox.y).toBeLessThan(mobileDeckBox.y);
   expect(mobileCollectorBox.y).toBeGreaterThan(mobileShowcaseBox.y);
   expect(mobileGuardianBox.y).toBeGreaterThan(mobileCollectorBox.y);
-  expect(mobileVaultBox.y).toBeGreaterThan(mobileUltraBox.y);
+  expect(mobileGuardianBundleBox.y).toBeGreaterThan(mobileUltraBox.y);
   expect(mobileWidths.content).toBeLessThanOrEqual(mobileWidths.viewport);
 });

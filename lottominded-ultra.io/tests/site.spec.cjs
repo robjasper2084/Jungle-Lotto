@@ -853,7 +853,8 @@ test("membership hero leads, Collector follows Gaming Showcase, and the Guardian
   await expect(collector).toHaveCount(1);
   await expect(guardian).toHaveCount(1);
   await expect(collector.locator("#plansTitle")).toHaveText(/Choose your signal level/i);
-  await expect(page.locator(".membership-comparison, .membership-benefit-strip, #lm-credits, .membership-billing-tools")).toHaveCount(0);
+  await expect(page.locator(".membership-comparison")).toBeVisible();
+  await expect(page.locator(".membership-benefit-strip, #lm-credits, .membership-billing-tools")).toHaveCount(0);
   await expect(page.locator("#dust .membership-collectible-card")).toHaveCount(0);
   await expect(page.locator("#water")).toHaveCount(0);
   await expect(page.getByText(/Film 04/i)).toHaveCount(0);

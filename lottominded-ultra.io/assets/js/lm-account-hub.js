@@ -114,7 +114,9 @@
     }
 
     const memberships = Array.isArray(snapshot.memberships) ? snapshot.memberships : [];
-    const currentMembership = memberships.find((membership) => ["active", "trialing"].includes(String(membership?.status).toLowerCase())) || memberships[0];
+    const currentMembership = snapshot.currentPlan?.code && snapshot.currentPlan.code !== "free"
+      ? snapshot.currentPlan
+      : memberships.find((membership) => ["active", "trialing"].includes(String(membership?.status).toLowerCase())) || memberships[0];
     const planDetail = currentMembership
       ? [currentMembership.status, formatDate(currentMembership.currentPeriodEnd || currentMembership.current_period_end)].filter(Boolean).join(" / ")
       : "No active membership returned by the account service.";

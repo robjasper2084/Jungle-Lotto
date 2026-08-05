@@ -175,6 +175,12 @@
     }
   }
 
+  function checkEntitlement(code) {
+    var normalized = String(code || "").trim().toLowerCase();
+    if (!/^[a-z0-9_.-]{1,80}$/.test(normalized)) return Promise.reject(new Error("Choose a valid entitlement."));
+    return request("/entitlements/" + encodeURIComponent(normalized));
+  }
+
   function broadcastRefresh(reason) {
     if (channel) channel.postMessage({ type: "refresh", reason: reason || "account-change", at: Date.now() });
   }
@@ -218,7 +224,9 @@
       return { authenticated: snapshot.authenticated, user: snapshot.user, verified: snapshot.verified, offline: snapshot.offline };
     },
     getWallet: async function getWallet() { return (await getSnapshot()).wallet; },
+    getCurrentPlan: async function getCurrentPlan() { return (await getSnapshot()).currentPlan || { code: "free", status: "active" }; },
     getMemberships: async function getMemberships() { return (await getSnapshot()).memberships || []; },
+    getDownloads: async function getDownloads() { return (await getSnapshot()).downloads || []; },
     getCollectorStatus: async function getCollectorStatus() { return (await getSnapshot()).collector; },
     register: function register(input) { return mutation("/auth/register", input); },
     signIn: function signIn(input) {
@@ -259,7 +267,8 @@
       broadcastRefresh("credit-refund");
       return result;
     },
-    getBeat2LottoEntitlements: function getBeat2LottoEntitlements() { return request("/entitlements/beat2lotto"); },
+    checkEntitlement: checkEntitlement,
+    getBeat2LottoEntitlements: function getBeat2LottoEntitlements() { return checkEntitlement("beat2lotto"); },
     analytics: function analytics(event, metadata) {
       return request("/analytics", { method: "POST", body: JSON.stringify({ event: event, metadata: metadata || {} }) }).catch(function ignoreAnalytics() {});
     },

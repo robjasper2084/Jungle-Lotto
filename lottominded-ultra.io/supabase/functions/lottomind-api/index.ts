@@ -108,24 +108,27 @@ async function snapshot(user: { id: string; email?: string | null } | null) {
       authenticated: false,
       user: null,
       wallet: { balance: 0 },
+      currentPlan: { code: "free", status: "active", currentPeriodEnd: null },
       memberships: [],
       entitlements: [],
       orders: [],
+      downloads: [],
       collector: { redeemed: false, complimentaryUntil: null },
     };
   }
 
   const db = admin();
-  const [profileResult, balanceResult, ledgerResult, subscriptionsResult, entitlementsResult, ordersResult] = await Promise.all([
+  const [profileResult, balanceResult, ledgerResult, subscriptionsResult, entitlementsResult, ordersResult, downloadsResult] = await Promise.all([
     db.from("profiles").select("display_name,stripe_customer_id").eq("user_id", user.id).maybeSingle(),
     db.rpc("credit_balance_for_user", { p_user_id: user.id }),
     db.from("credit_ledger").select("entry_id,amount_delta,reason,source_id,created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(50),
     db.from("subscriptions").select("subscription_id,provider,plan_code,status,current_period_end,cancel_at_period_end,updated_at").eq("user_id", user.id).order("updated_at", { ascending: false }),
     db.from("entitlements").select("entitlement_code,active,starts_at,ends_at,source_type").eq("user_id", user.id).eq("active", true),
     db.from("orders").select("order_id,plan_code,status,amount_total,currency,created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(10),
+    db.from("downloads").select("download_id,asset_key,entitlement_code,source_id,created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(20),
   ]);
 
-  for (const result of [profileResult, balanceResult, ledgerResult, subscriptionsResult, entitlementsResult, ordersResult]) {
+  for (const result of [profileResult, balanceResult, ledgerResult, subscriptionsResult, entitlementsResult, ordersResult, downloadsResult]) {
     if (result.error) throw result.error;
   }
 
@@ -133,6 +136,11 @@ async function snapshot(user: { id: string; email?: string | null } | null) {
   const balance = Number(balanceResult.data || 0);
   const subscriptions = subscriptionsResult.data || [];
   const collectorSubscription = subscriptions.find((entry) => entry.provider === "collector");
+  const planPriority: Record<string, number> = { ultra: 30, gold: 20, guardian_bundle: 10 };
+  const activeSubscription = subscriptions
+    .filter((entry) => ["active", "trialing"].includes(entry.status)
+      && (!entry.current_period_end || new Date(entry.current_period_end).getTime() > Date.now()))
+    .sort((left, right) => (planPriority[right.plan_code] || 0) - (planPriority[left.plan_code] || 0))[0];
 
   return {
     authenticated: true,
@@ -152,6 +160,13 @@ async function snapshot(user: { id: string; email?: string | null } | null) {
         createdAt: entry.created_at,
       })),
     },
+    currentPlan: activeSubscription ? {
+      code: activeSubscription.plan_code,
+      status: activeSubscription.status,
+      currentPeriodEnd: activeSubscription.current_period_end,
+      cancelAtPeriodEnd: activeSubscription.cancel_at_period_end,
+      provider: activeSubscription.provider,
+    } : { code: "free", status: "active", currentPeriodEnd: null },
     memberships: subscriptions.map((entry) => ({
       subscriptionId: entry.subscription_id,
       planCode: entry.plan_code,
@@ -168,6 +183,13 @@ async function snapshot(user: { id: string; email?: string | null } | null) {
       sourceType: entry.source_type,
     })),
     orders: ordersResult.data || [],
+    downloads: (downloadsResult.data || []).map((entry) => ({
+      downloadId: entry.download_id,
+      assetKey: entry.asset_key,
+      entitlementCode: entry.entitlement_code,
+      sourceId: entry.source_id,
+      createdAt: entry.created_at,
+    })),
     collector: {
       redeemed: Boolean(collectorSubscription),
       redeemedAt: collectorSubscription?.updated_at || null,
@@ -460,13 +482,16 @@ async function route(req: Request) {
     if (!ENTITLEMENT_CODE_PATTERN.test(entitlementCode)) {
       return fail(req, 400, "INVALID_ENTITLEMENT", "Choose a valid premium tool entitlement.");
     }
+    const { data: active, error } = await admin().rpc("has_active_entitlement", {
+      p_user_id: auth.id,
+      p_entitlement_code: entitlementCode,
+    });
+    if (error) throw error;
     const state = await snapshot(auth);
-    const explicit = state.entitlements.find((entry: { code: string; active: boolean }) => entry.code === entitlementCode && entry.active);
-    const active = Boolean(explicit);
     return json(req, {
-      entitled: active,
+      entitled: Boolean(active),
       entitlement: entitlementCode,
-      tier: active ? state.memberships.find((entry: { status: string }) => ["active", "trialing"].includes(entry.status))?.planCode || "member" : "free",
+      tier: active ? state.currentPlan.code : "free",
     });
   }
 

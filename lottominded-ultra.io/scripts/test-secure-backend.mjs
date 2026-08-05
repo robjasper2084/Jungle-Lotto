@@ -5,6 +5,7 @@ import { resolve } from "node:path";
 const root = resolve(import.meta.dirname, "..");
 const read = (file) => readFileSync(resolve(root, file), "utf8");
 const migration = read("supabase/migrations/20260805_secure_account_ledger.sql");
+const authorityMigration = read("supabase/migrations/20260805202103_secure_plan_catalog_and_entitlement_authority.sql");
 const api = read("supabase/functions/lottomind-api/index.ts");
 const webhook = read("supabase/functions/lottomind-stripe-webhook/index.ts");
 const config = read("supabase/config.toml");
@@ -38,6 +39,12 @@ assert.doesNotMatch(migration, /policy[\s\S]{0,120}credit_ledger[\s\S]{0,80}for 
 assert.match(migration, /grant execute on function public\.spend_credits[\s\S]+to service_role/i);
 assert.match(migration, /revoke all on function public\.spend_credits[\s\S]+from public, anon, authenticated/i);
 assert.match(migration, /pg_advisory_xact_lock/i);
+assert.match(authorityMigration, /guardian_bundle_once[\s\S]+2995[\s\S]+false/i);
+assert.match(authorityMigration, /gold_monthly[\s\S]+499[\s\S]+false/i);
+assert.match(authorityMigration, /ultra_monthly[\s\S]+999[\s\S]+false/i);
+assert.match(authorityMigration, /create or replace function public\.has_active_entitlement/i);
+assert.match(authorityMigration, /grant execute on function public\.has_active_entitlement\(uuid, text\) to service_role/i);
+assert.match(authorityMigration, /alter publication supabase_realtime add table public\.credit_ledger/i);
 
 assert.doesNotMatch(api, /from\("wallets"\)/);
 assert.doesNotMatch(api, /from\("memberships"\)/);
@@ -45,6 +52,9 @@ assert.match(api, /rpc\("credit_balance_for_user"/);
 assert.match(api, /from\("credit_ledger"\)/);
 assert.match(api, /from\("subscriptions"\)/);
 assert.match(api, /from\("entitlements"\)/);
+assert.match(api, /from\("downloads"\)/);
+assert.match(api, /currentPlan:/);
+assert.match(api, /rpc\("has_active_entitlement"/);
 assert.match(api, /rpc\("redeem_collector_code"/);
 assert.match(api, /REWARD_VERIFICATION_REQUIRED/);
 assert.match(api, /auth\.getUser\(token\)/);
@@ -62,6 +72,9 @@ assert.match(webhook, /existing\.provider_event_created_at > eventCreatedAt/);
 assert.match(config, /\[functions\.lottomind-stripe-webhook\][\s\S]*verify_jwt = false/);
 
 assert.match(accountService, /idempotencyKey: createIdempotencyKey\("collector-redemption"\)/);
+assert.match(accountService, /checkEntitlement:/);
+assert.match(accountService, /getCurrentPlan:/);
+assert.match(accountService, /getDownloads:/);
 assert.match(envExample, /^STRIPE_WEBHOOK_SECRET=$/m);
 for (const line of envExample.trim().split(/\r?\n/)) assert.match(line, /^[A-Z0-9_]+=$/, `environment example contains a value: ${line}`);
 

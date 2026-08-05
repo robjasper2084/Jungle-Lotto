@@ -163,7 +163,7 @@ test("every static account client loads the production runtime configuration fir
     return source.includes("lottomind-account-service.js");
   });
 
-  expect(accountPages.sort()).toEqual(["account.html", "index.html", "memberships.html", "redeem.html"]);
+  expect(accountPages.sort()).toEqual(["account.html", "index.html", "memberships.html", "merch-store.html", "redeem.html"]);
   for (const name of accountPages) {
     const source = fs.readFileSync(path.join(siteRoot, name), "utf8");
     const runtimeIndex = source.indexOf("lottomind-runtime-config.js");
