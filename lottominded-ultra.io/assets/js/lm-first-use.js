@@ -8,6 +8,7 @@
   const result = dialog.querySelector("[data-first-use-result]");
   const title = dialog.querySelector("[data-first-use-title]");
   const saveButton = dialog.querySelector("[data-first-use-save]");
+  const upgradeLink = dialog.querySelector("[data-first-use-upgrade]");
   const summary = document.querySelector("[data-first-use-summary]");
   const storageKey = "lottomind.guest.first-use.v1";
   const usageKey = "lottomind.guest.usage.v1";
@@ -42,6 +43,7 @@
     const usage = readUsage();
     usage[activeChoice] += 1;
     writeUsage(usage);
+    if (usage[activeChoice] >= limits[activeChoice]) upgradeLink.hidden = false;
   };
 
   const render = (choice) => {
@@ -51,6 +53,7 @@
     result.innerHTML = "";
     saveButton.disabled = true;
     const remaining = Math.max(0, limits[choice] - readUsage()[choice]);
+    upgradeLink.hidden = remaining > 0;
     const labels = { numbers: "Explore My Numbers", dream: "Interpret a Dream", beat: "Create From a Beat", game: "Play a Game" };
     title.textContent = labels[choice];
     if (!remaining) {
@@ -100,6 +103,7 @@
     const usage = readUsage();
     if (usage.saves >= limits.saves) {
       summary.textContent = "Five guest items are already saved on this device. Create an account to keep more connected results.";
+      upgradeLink.hidden = false;
       dialog.close();
       return;
     }
@@ -108,6 +112,7 @@
     localStorage.setItem(storageKey, JSON.stringify(saved.slice(0, limits.saves)));
     usage.saves = Math.min(limits.saves, usage.saves + 1);
     writeUsage(usage);
+    if (usage.saves >= limits.saves) upgradeLink.hidden = false;
     summary.textContent = `${pendingResult.heading} saved on this device. Create an account to keep results connected across sessions.`;
     dialog.close();
   });

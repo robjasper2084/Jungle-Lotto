@@ -39,4 +39,13 @@ test("free access presents action limits and no ten-minute offer", async ({ page
   await expect(page.getByText("10 creative number sets")).toBeVisible();
   await expect(page.getByText("1 Studio export preview")).toBeVisible();
   await expect(page.getByText(/10-minute demo/i)).toHaveCount(0);
+  await expect(page.getByRole("link", { name: "See what membership adds" })).toBeHidden();
+});
+
+test("upgrade prompt appears only after the selected action allowance is reached", async ({ page }) => {
+  await openHome(page);
+  await page.evaluate(() => localStorage.setItem("lottomind.guest.usage.v1", JSON.stringify({ numbers: 10, dream: 0, beat: 0, game: 0, saves: 0 })));
+  await page.getByRole("button", { name: /Explore My Numbers/ }).click();
+  await expect(page.getByText(/used the free Explore My Numbers allowance/i)).toBeVisible();
+  await expect(page.getByRole("link", { name: "See what membership adds" })).toBeVisible();
 });

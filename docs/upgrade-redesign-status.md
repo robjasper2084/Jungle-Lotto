@@ -1,5 +1,18 @@
 # LottoMind Upgrade Redesign Status
 
+## Action-Based Free Access
+
+- Step number: Owner-requested replacement of the timed free demo
+- Implementation commit: This status file is part of the focused commit; resolve with `git log -1 --format=%H -- docs/upgrade-redesign-status.md`
+- Affected routes: `/index.html` and `/memberships.html`
+- Free allowances: 3 Dream Oracle entries, 10 creative number sets, 5 saved items, 3 Prompt Lab generations, 2 premium game missions, and 1 Studio export preview
+- Upgrade timing: The first-use upgrade action remains hidden until the selected action allowance or five-item save allowance is exhausted.
+- Timer removal: Dormant timed-pass state and expiration routing were removed; the membership action now reads `Start Free`.
+- Tests: Site validation passed for 17 HTML files; focused onboarding browser checks passed 8/8; release audit passed 7 groups; route matrix passed 162/162; static staging passed across 27 pages and 627 same-origin references; staging safety passed 12/12.
+- Visual review: `docs/staging-reviews/action-based-free-access.md` with `1440x900` and `390x844` captures for Home and Memberships. No material redesign was introduced and the visual identity invariants remain recognizable.
+- Staging URL: Local only
+- Production approval status: Not approved for this change; `main`, production deployment, `v1-final`, and existing release tags remain unchanged.
+
 ## Secure Account And Commerce Authority
 
 - Step number: Owner-requested Supabase and Stripe production architecture

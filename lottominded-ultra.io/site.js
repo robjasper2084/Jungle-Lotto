@@ -1737,8 +1737,6 @@ const VAULT_KEYS = {
   plan: "lottomind_plan",
   credits: "lottomind_credits",
   ledger: "lottomind_credit_ledger",
-  unlockedUntil: "lottomind_unlocked_until",
-  dailyUsage: "lottomind_daily_usage",
   betaAccess: "lottomind_beta_access"
 };
 const VAULT_DISCLAIMER = "LottoMind and LottoCredits are for entertainment, organization, music creation, and creative number journaling only. LottoCredits have no cash value and cannot be redeemed for money, prizes, lottery tickets, or gambling. LottoMind does not predict winning lottery numbers.";
@@ -1764,14 +1762,10 @@ function writeVaultLedger(entry) {
 
 function getVaultState() {
   const plan = localStorage.getItem(VAULT_KEYS.plan) || "free";
-  const unlockedUntil = 0;
-  const passActive = false;
   const vaultActive = ["gold", "ultra"].includes(plan);
   return {
     plan,
     credits: readVaultNumber(VAULT_KEYS.credits),
-    unlockedUntil,
-    passActive,
     vaultActive,
     betaAccess: localStorage.getItem(VAULT_KEYS.betaAccess) === "true"
   };
@@ -1861,28 +1855,11 @@ function setVaultState(next = {}) {
   const credits = Number.isFinite(Number(next.credits)) ? Number(next.credits) : current.credits;
   localStorage.setItem(VAULT_KEYS.plan, plan);
   localStorage.setItem(VAULT_KEYS.credits, String(Math.max(0, Math.round(credits))));
-  if (Number.isFinite(Number(next.unlockedUntil))) {
-    localStorage.setItem(VAULT_KEYS.unlockedUntil, String(Number(next.unlockedUntil)));
-  }
   if (typeof next.betaAccess === "boolean") {
     localStorage.setItem(VAULT_KEYS.betaAccess, String(next.betaAccess));
   }
   const updated = getVaultState();
   window.dispatchEvent(new CustomEvent("lottomind:vault-updated", { detail: updated }));
-}
-
-function redirectToVaultCredits(reason = "demo-expired") {
-  try {
-    sessionStorage.setItem("lottomind_vault_redirect_reason", reason);
-  } catch {
-    /* Session storage can be unavailable in strict browser modes. */
-  }
-  const target = new URL(VAULT_BUY_CREDITS_URL, window.location.href);
-  if (window.location.href === target.href) {
-    window.dispatchEvent(new CustomEvent("lottomind:vault-buy-credits"));
-    return;
-  }
-  window.location.href = target.toString();
 }
 
 function addVaultCredits(amount, reason) {
