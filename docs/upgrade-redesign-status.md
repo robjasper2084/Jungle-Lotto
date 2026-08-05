@@ -748,3 +748,18 @@
 - Deployment status: Migration and Edge Functions are prepared but were not applied to Supabase; Stripe webhook endpoint and plan catalog require isolated staging configuration before live verification
 - Staging URL: Local only (`http://127.0.0.1:8497/` while the verified server is running)
 - Production approval status: Not approved; `main`, production, and `v1-final` remain unchanged
+
+## Missing Feature 3 - Brand Architecture And First-Use Paths
+
+- Step number: Missing-feature roadmap item 3; Trivia Vault remains paused
+- Working branch: `feature/lottomind-b2b-services`
+- Implementation commit: This file is part of the focused brand-onboarding commit; resolve it with `git log -1 --format=%H -- docs/upgrade-redesign-status.md`
+- Affected routes: `/`, `/help.html`, `/memberships.html`, plus metadata for Arcade, Storefront, and Studio
+- Brand architecture: LottoMind is the master consumer brand; LOTTOMINDED ULTRA, LottoMind App, Arcade, Studio, Guardian Collection, and Beat2Lotto+ have distinct supporting roles; Robot RAHBEE and Static Wav remain named experiences
+- First-use flow: Four guest paths create a local number set, dream reflection, beat prompt, or zero-credit game receipt before showing account and membership actions
+- Free-access model: Replaced the 10-minute local demo timer with visible action-based limits; guest results remain device-only and cannot verify identity, mutate credits, redeem collectibles, or unlock paid entitlements
+- Tests: Site validation passed 17 HTML files; focused desktop/mobile onboarding passed 6/6; Home and Membership regression passed 19 checks with 5 intentional viewport skips; source/staging route matrix passed 162/162; committed-tree staging safety passed 12/12 and exact-tree verification follows this commit
+- Visual review: Desktop `1440x900` and mobile `390x844` captures are recorded in `docs/staging-reviews/brand-onboarding.md`
+- Commerce and backend impact: None; Stripe, production account writes, real redemptions, verified credits, and production analytics remain unchanged and blocked in staging
+- Staging URL: Local only (`http://127.0.0.1:8568/` after the exact-tree staging build)
+- Production approval status: Not approved; `main`, production, and `v1-final` remain unchanged

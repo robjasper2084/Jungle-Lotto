@@ -83,14 +83,14 @@ window.LMAudioMix = {
   if (!header) return;
 
   const navItems = [
-    { label: "Home", href: siteUrl("./index.html#top"), icon: "HM" },
+    { label: "Home", searchLabel: "LottoMind", href: siteUrl("./index.html#top"), icon: "HM", description: "Open the LottoMind consumer ecosystem." },
     { label: "Events", href: siteUrl("./live-events.html"), icon: "EV" },
     { label: "News", href: siteUrl("./news/"), icon: "NW" },
-    { label: "Games", href: siteUrl("./features-app.html"), icon: "FX" },
-    { label: "Static Wav", href: siteUrl("./how-to-use.html"), icon: "GD" },
-    { label: "Robot RAHBEE", href: siteUrl("./beat2lotto-plus.html#beat2lotto"), icon: "B2" },
-    { label: "Storefront", href: siteUrl("./merch-store.html"), icon: "DR" },
-    { label: "Memberships", href: siteUrl("./memberships.html"), icon: "MB" },
+    { label: "Games", searchLabel: "LottoMind Arcade", href: siteUrl("./features-app.html"), icon: "FX", description: "Open LottoMind Arcade and its playable experiences." },
+    { label: "Static Wav", href: siteUrl("./how-to-use.html"), icon: "GD", description: "Open the Static Wav arcade experience." },
+    { label: "Robot RAHBEE", href: siteUrl("./beat2lotto-plus.html#beat2lotto"), icon: "B2", description: "Open the Robot RAHBEE arcade experience." },
+    { label: "Storefront", searchLabel: "Guardian Collection", href: siteUrl("./merch-store.html"), icon: "DR", description: "Explore Guardian Collection merchandise and collectibles." },
+    { label: "Memberships", searchLabel: "LottoMind Memberships", href: siteUrl("./memberships.html"), icon: "MB", description: "Compare LottoMind membership access." },
     {
       label: "LottoMind App",
       href: "https://robjasper2084.github.io/Jungle-Lotto/lotto%20mind%20refined/",
@@ -120,9 +120,9 @@ window.LMAudioMix = {
   header.outerHTML = `
     <header class="site-header home-like-header home-sphere-header global-sphere-header" data-site-header>
       <div class="site-header-main">
-        <a class="brand" href="${siteUrl("./index.html#top")}" aria-label="LOTTOMINDED ULTRA home">
+        <a class="brand" href="${siteUrl("./index.html#top")}" aria-label="LottoMind home">
           <img src="${siteUrl("./assets/brand/lm-orb-mark.webp")}" alt="" />
-          <span>LOTTOMINDED ULTRA</span>
+          <span class="brand-copy"><strong>LottoMind</strong><small>LOTTOMINDED ULTRA</small></span>
         </a>
       </div>
       <nav aria-label="LOTTOMINDED ULTRA sphere navigation">
@@ -138,11 +138,12 @@ window.LMAudioMix = {
 
   const searchableRoutes = [
     ...navItems.map((item) => ({
-      label: item.label,
+      label: item.searchLabel || item.label,
       href: item.href,
       section: "Explore",
-      description: `Open ${item.label}.`,
+      description: item.description || `Open ${item.label}.`,
     })),
+    { label: "LottoMind Studio", href: siteUrl("./lottomind-stem-studio/index.html"), section: "Create", description: "Open the LottoMind music workstation." },
     { label: "Lottery Spheres", href: siteUrl("./lottery-spheres.html#spheres"), section: "Explore", description: "Open the entertainment-only number sphere experience." },
     { label: "Credits", href: siteUrl("./account.html#credits"), section: "Account", description: "View verified LottoCredits and membership status." },
     { label: "Account", href: siteUrl("./account.html"), section: "Account", description: "Open Collector Access and the account vault." },
@@ -1741,9 +1742,7 @@ const VAULT_KEYS = {
   betaAccess: "lottomind_beta_access"
 };
 const VAULT_DISCLAIMER = "LottoMind and LottoCredits are for entertainment, organization, music creation, and creative number journaling only. LottoCredits have no cash value and cannot be redeemed for money, prizes, lottery tickets, or gambling. LottoMind does not predict winning lottery numbers.";
-const VAULT_DEMO_PASS_MS = 10 * 60 * 1000;
 const VAULT_BUY_CREDITS_URL = "./features-app.html?buy=credits#vault-gateway";
-let vaultDemoExpiryTimer = 0;
 
 function readVaultNumber(key, fallback = 0) {
   const value = Number(localStorage.getItem(key));
@@ -1764,15 +1763,10 @@ function writeVaultLedger(entry) {
 }
 
 function getVaultState() {
-  const now = Date.now();
   const plan = localStorage.getItem(VAULT_KEYS.plan) || "free";
-  let unlockedUntil = readVaultNumber(VAULT_KEYS.unlockedUntil);
-  if (plan === "free" && unlockedUntil > now + VAULT_DEMO_PASS_MS) {
-    unlockedUntil = now + VAULT_DEMO_PASS_MS;
-    localStorage.setItem(VAULT_KEYS.unlockedUntil, String(unlockedUntil));
-  }
-  const passActive = unlockedUntil > now;
-  const vaultActive = ["gold", "ultra"].includes(plan) || passActive;
+  const unlockedUntil = 0;
+  const passActive = false;
+  const vaultActive = ["gold", "ultra"].includes(plan);
   return {
     plan,
     credits: readVaultNumber(VAULT_KEYS.credits),
@@ -1874,7 +1868,6 @@ function setVaultState(next = {}) {
     localStorage.setItem(VAULT_KEYS.betaAccess, String(next.betaAccess));
   }
   const updated = getVaultState();
-  scheduleVaultDemoExpiry(updated);
   window.dispatchEvent(new CustomEvent("lottomind:vault-updated", { detail: updated }));
 }
 
@@ -1890,22 +1883,6 @@ function redirectToVaultCredits(reason = "demo-expired") {
     return;
   }
   window.location.href = target.toString();
-}
-
-function scheduleVaultDemoExpiry(state = getVaultState()) {
-  window.clearTimeout(vaultDemoExpiryTimer);
-  if (!state.passActive || !state.unlockedUntil) return;
-  const remaining = Number(state.unlockedUntil) - Date.now();
-  if (remaining <= 0) {
-    localStorage.setItem(VAULT_KEYS.unlockedUntil, "0");
-    redirectToVaultCredits();
-    return;
-  }
-  vaultDemoExpiryTimer = window.setTimeout(() => {
-    localStorage.setItem(VAULT_KEYS.unlockedUntil, "0");
-    window.dispatchEvent(new CustomEvent("lottomind:vault-updated", { detail: getVaultState() }));
-    redirectToVaultCredits();
-  }, Math.min(remaining, 2147483647));
 }
 
 function addVaultCredits(amount, reason) {
@@ -1927,7 +1904,6 @@ function buildRefinedLaunchUrl(state = getVaultState(), override = {}) {
   params.set("credits", String(state.credits || 0));
   if (override.tool) params.set("tool", override.tool);
   if (plan === "gold" || plan === "ultra" || state.vaultActive || override.vault === "active") params.set("vault", "active");
-  if (override.pass === "10min" || state.passActive) params.set("pass", "10min");
   if (state.betaAccess) params.set("beta", "active");
   return launchUrl.toString();
 }
@@ -1958,10 +1934,10 @@ function setupLottoMindVaultGateway() {
       <button class="vault-gateway-close" type="button" aria-label="Close LottoMind Vault Gateway">X</button>
       <p class="eyebrow">LottoMind Vault Gateway</p>
       <h2>LottoMind Vault Gateway</h2>
-      <p class="vault-gateway-copy">Choose an access lane before entering LottoMind Refined. Premium tools stay locked unless credits, Ultra access, or a 10-minute demo pass is active.</p>
+      <p class="vault-gateway-copy">Start with action-based free limits before entering LottoMind Refined. Premium tools stay locked unless a paid membership entitlement is active.</p>
       <div class="vault-gateway-status" data-vault-gateway-status aria-live="polite"></div>
       <div class="vault-gateway-actions">
-        <button type="button" data-vault-choice="pass">Use 10-Min Demo</button>
+        <a href="${siteUrl("./index.html#choose-your-path")}">View Free Limits</a>
         <button type="button" data-vault-choice="credits">Buy Credits</button>
         <button type="button" class="primary-action" data-vault-continue>Continue to App</button>
       </div>
@@ -1973,7 +1949,7 @@ function setupLottoMindVaultGateway() {
   const statusTargets = document.querySelectorAll("[data-vault-status], [data-vault-gateway-status]");
   const update = (message = "") => {
     const state = getVaultState();
-    const planLabel = state.plan === "ultra" ? "Ultra" : state.plan === "gold" ? "Gold" : state.passActive ? "10-min demo" : "Free";
+    const planLabel = state.plan === "ultra" ? "Ultra" : state.plan === "gold" ? "Gold" : "Free";
     const activeText = state.vaultActive
       ? "Vault Access Active. Premium LottoMind Refined tools unlocked."
       : "Standard access active. Premium tools stay locked inside LottoMind Refined.";
@@ -1994,7 +1970,7 @@ function setupLottoMindVaultGateway() {
 
   const openBuyCredits = () => {
     pendingLaunchOverride = {};
-    open("Your 10-minute demo has ended. Buy credits or continue with standard access.");
+    open("Action-based free access remains available. Buy credits only when a connected offer is clearly presented.");
   };
 
   const close = () => {
@@ -2059,10 +2035,6 @@ function setupLottoMindVaultGateway() {
         setVaultState({ plan: "gold", credits });
         update("Vault Access Active. Premium LottoMind Refined tools unlocked.");
       }
-      if (choice === "pass") {
-        setVaultState({ plan: "free", unlockedUntil: Date.now() + VAULT_DEMO_PASS_MS });
-        update("10-minute demo pass active. Premium LottoMind Refined tools unlocked for this demo window.");
-      }
       if (choice === "credits") {
         addVaultCredits(250, "Demo credit pack");
         update("250 LottoCredits added in demo mode.");
@@ -2078,7 +2050,6 @@ function setupLottoMindVaultGateway() {
   window.addEventListener("lottomind:vault-updated", () => update());
   window.addEventListener("lottomind:vault-buy-credits", openBuyCredits);
   update();
-  scheduleVaultDemoExpiry();
   const buyCreditsRequested = new URLSearchParams(window.location.search).get("buy") === "credits";
   if (buyCreditsRequested) {
     window.setTimeout(openBuyCredits, 120);
