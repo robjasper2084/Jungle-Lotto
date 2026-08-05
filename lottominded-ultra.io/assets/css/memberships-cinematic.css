@@ -1913,6 +1913,13 @@ body.memberships-page .lm-worlds__progress span {
   will-change: transform;
 }
 
+body.memberships-page .membership-games-checked {
+  margin: 12px 0 0;
+  color: rgba(218, 238, 255, 0.72);
+  font: 700 11px/1.4 var(--lm-font-mono, monospace);
+  text-transform: uppercase;
+}
+
 body.memberships-page .membership-signal-strip {
   justify-content: center;
   margin-top: 26px;

@@ -1,5 +1,18 @@
 # LottoMind Upgrade Redesign Status
 
+## Verified Game Manifest
+
+- Step number: Owner-requested central game directory and trust-state repair
+- Implementation commit: This status file is part of the focused commit; resolve with `git log -1 --format=%H -- docs/upgrade-redesign-status.md`
+- Central source: `lottominded-ultra.io/games/games-manifest.json`
+- Consumers: Arcade directory, Memberships Gaming Showcase, Account recent-game lookup, generated browser fallback, build validation, and route smoke matrix
+- Verified routes: 9 records with IDs, public titles, routes, thumbnails, status, membership requirements, estimated session time, controls, reward eligibility, and version numbers
+- Failure handling: Loading skeleton, explicit `Unable to load games` message, checked fallback cards, Retry action, and visible `Last checked` date
+- Tests: Manifest validator 9/9; focused browser tests 6/6; site validation 17 HTML files; affected regression suite 87 passed with 3 intentional viewport skips; release audit 7/7; route matrix 162/162; exact pending staging artifact 27 pages and 621 same-origin references; staging safety 12/12
+- Visual review: `docs/staging-reviews/game-manifest.md` with `1440x900` and `390x844` captures for Arcade and Memberships. The current nine-route directory is visible without weakening LottoMind's visual-identity invariants.
+- Staging URL: Local only
+- Production approval status: Not approved for this change; `main`, production deployment, `v1-final`, and existing release tags remain unchanged.
+
 ## Action-Based Free Access
 
 - Step number: Owner-requested replacement of the timed free demo

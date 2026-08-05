@@ -217,6 +217,7 @@
   });
   service?.subscribeToWallet?.(displaySnapshot);
   renderLocalActivity();
+  window.LottoMindArcadeGamesReady?.then(renderLocalActivity);
   window.addEventListener("storage", (event) => {
     if (Object.values(localKeys).includes(event.key)) renderLocalActivity();
   });
