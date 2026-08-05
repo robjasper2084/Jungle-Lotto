@@ -311,7 +311,7 @@ async function route(req: Request) {
     if (input instanceof Response) return input;
     const email = String(input.email || "").trim().toLowerCase();
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return fail(req, 400, "INVALID_RECOVERY_REQUEST", "Enter a valid account email.");
-    const redirectTo = `${safeReturnUrl(req)}/memberships.html?account=recovery`;
+    const redirectTo = `${safeReturnUrl(req)}/index.html?account=recovery`;
     const { error } = await anon().auth.resetPasswordForEmail(email, { redirectTo });
     if (error) return fail(req, 503, "RECOVERY_UNAVAILABLE", "Password recovery is temporarily unavailable. Try again later.");
     return json(req, { requested: true });

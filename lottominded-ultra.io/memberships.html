@@ -202,64 +202,7 @@
               <h2 id="collectorSectionTitle">Collector Access</h2>
               <p>Sign in, view your shared LottoCredits wallet, or redeem the protected code included with an eligible physical collectible.</p>
             </div>
-            <div class="collector-access" data-collector-access hidden>
-              <button class="collector-access__trigger" type="button" data-collector-trigger data-state="signed-out" aria-expanded="false" aria-controls="collectorAccessPanel"><span>Collector Access</span><b data-collector-trigger-balance>--</b></button>
-              <section class="collector-access__panel" id="collectorAccessPanel" data-collector-panel hidden aria-labelledby="collectorAccessTitle">
-                <button class="collector-access__close" type="button" data-collector-close aria-label="Close Collector Access">X</button>
-                <p class="collector-access__eyebrow">Vault Guardian Series 01</p>
-                <h2 class="collector-access__title" id="collectorAccessTitle">Collector Access</h2>
-                <h3 class="collector-access__offer-title">Your Collectible Unlocks Member Access</h3>
-                <p class="collector-access__offer">Purchase an eligible LottoMind collectible and redeem the protected code inside the package for a complimentary 30-day Collector Starter Membership, 150 Lotto Credits, and an exclusive Series 01 digital badge. No automatic renewal.</p>
-                <p class="collector-access__status" data-collector-status>Checking account access...</p>
-                <p class="collector-access__status" data-collector-membership></p>
-                <ul class="collector-access__benefits">
-                  <li>Additional saved lottery drops</li>
-                  <li>Premium mission visualizer access</li>
-                  <li>Gold circuit collector theme and Series 01 badge</li>
-                  <li>Verified Lotto Credit actions with server-priced confirmation</li>
-                </ul>
-                <div class="collector-access__wallet" data-collector-wallet hidden><span>Verified LottoCredits</span><strong>0</strong></div>
-                <section class="collector-access__results" data-game-results hidden aria-labelledby="collectorGameResultsTitle">
-                  <h3 id="collectorGameResultsTitle">Recent Game Results</h3>
-                  <p>Verified Shadow Ops and GOTHTECHNOLOGY finishes appear here and add fixed LottoCredits to this wallet.</p>
-                  <ul data-game-results-list></ul>
-                </section>
-                <form class="collector-access__form" data-collector-auth-form>
-                  <label for="collectorEmail">Account email</label>
-                  <input id="collectorEmail" name="email" type="email" autocomplete="email" required />
-                  <label for="collectorPassword">Password</label>
-                  <div class="collector-access__password-field">
-                    <input id="collectorPassword" name="password" type="password" autocomplete="current-password" minlength="10" required />
-                    <button class="collector-access__password-toggle" type="button" data-password-toggle aria-controls="collectorPassword" aria-label="Show password" aria-pressed="false" title="Show password"><span aria-hidden="true">&#128065;</span></button>
-                  </div>
-                  <label class="collector-access__remember"><input name="remember" type="checkbox" value="yes" /> <span>Remember me on this device</span></label>
-                  <div class="collector-access__actions"><button class="is-primary" type="submit" name="mode" value="login">Sign In</button><button type="submit" name="mode" value="register">Create Account</button><button type="button" data-collector-forgot-password>Forgot Password?</button></div>
-                </form>
-                <form class="collector-access__form" data-collector-recovery-form hidden>
-                  <h3>Set a new password</h3>
-                  <p>Enter a new password for the account connected to this recovery link.</p>
-                  <label for="collectorNewPassword">New password</label>
-                  <div class="collector-access__password-field">
-                    <input id="collectorNewPassword" name="password" type="password" autocomplete="new-password" minlength="10" required />
-                    <button class="collector-access__password-toggle" type="button" data-password-toggle aria-controls="collectorNewPassword" aria-label="Show new password" aria-pressed="false" title="Show new password"><span aria-hidden="true">&#128065;</span></button>
-                  </div>
-                  <label for="collectorConfirmPassword">Confirm new password</label>
-                  <div class="collector-access__password-field">
-                    <input id="collectorConfirmPassword" name="confirmPassword" type="password" autocomplete="new-password" minlength="10" required />
-                    <button class="collector-access__password-toggle" type="button" data-password-toggle aria-controls="collectorConfirmPassword" aria-label="Show confirmed password" aria-pressed="false" title="Show confirmed password"><span aria-hidden="true">&#128065;</span></button>
-                  </div>
-                  <div class="collector-access__actions"><button class="is-primary" type="submit">Update Password</button><button type="button" data-collector-recovery-cancel>Cancel</button></div>
-                </form>
-                <form class="collector-access__form" data-collector-redeem-form hidden>
-                  <label for="collectorCode">Collectible code</label>
-                  <input id="collectorCode" name="code" type="text" autocomplete="one-time-code" maxlength="96" spellcheck="false" placeholder="Enter the code from your insert" required />
-                  <button class="is-primary" type="submit">Redeem Collector Code</button>
-                </form>
-                <div class="collector-access__actions"><a href="./redeem.html?source=memberships">Open Redemption Center</a><button type="button" data-collector-logout hidden>Sign Out</button></div>
-                <p class="collector-access__message" data-collector-message role="status" aria-live="polite"></p>
-                <p class="collector-access__legal">Collector Starter lasts 30 days and does not renew automatically. Beat2Lotto and LottoMind are entertainment and creative number-generation tools. Generated numbers do not predict or guarantee lottery results.</p>
-              </section>
-            </div>
+            <a class="collector-access__trigger" href="./index.html?collector=access&amp;return=memberships#lottomind-refined" data-collector-home-link><span>Open Collector Access on Home</span><b aria-hidden="true">HOME</b></a>
           </section>
 
         </div>
@@ -505,7 +448,6 @@
     <script src="./site.js?v=header-toggle-routes-5" defer></script>
     <script src="./assets/js/lottomind-runtime-config.js?v=supabase-live-1"></script>
     <script src="./assets/js/lottomind-account-service.js?v=password-recovery-1"></script>
-    <script src="./assets/js/beat2lotto-collector-access.js?v=password-recovery-1" defer></script>
     <script src="./assets/js/lm-stripe-memberships.js?v=stripe-validation-3" defer></script>
     <script src="./assets/vendor/gsap/gsap.min.js?v=3.13.0" defer></script>
     <script src="./assets/vendor/gsap/ScrollTrigger.min.js?v=3.13.0" defer></script>

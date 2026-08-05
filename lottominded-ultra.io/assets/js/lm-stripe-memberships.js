@@ -156,9 +156,11 @@
       return false;
     }
     setStatus("Sign in through Collector Access before starting secure checkout.", "auth-required");
-    const collector = document.querySelector("#lm-access-hero, .membership-collector-section");
-    collector?.scrollIntoView({ behavior: "smooth", block: "start" });
-    window.setTimeout(() => collector?.querySelector("[data-collector-trigger]")?.click(), 450);
+    const collectorUrl = new URL("./index.html", window.location.href);
+    collectorUrl.searchParams.set("collector", "access");
+    collectorUrl.searchParams.set("return", "memberships");
+    collectorUrl.hash = "lottomind-refined";
+    window.location.assign(collectorUrl.href);
     return false;
   };
 

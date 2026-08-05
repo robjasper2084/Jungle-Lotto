@@ -97,6 +97,19 @@
 - Staging URL: Local only (`http://127.0.0.1:8500/` during focused verification)
 - Production approval status: Not approved for this change; production HTML does not load the new shared HUD stylesheet, and `main`, the production URL, `v1-final`, and existing release tags remain unchanged
 
+## Collector Access Home Relocation
+
+- Step number: Owner-requested Collector Access relocation
+- Implementation commit: This status file is part of the focused commit; resolve with `git log -1 --format=%H -- docs/upgrade-redesign-status.md`
+- Affected routes: `/index.html?collector=access#lottomind-refined` and `/memberships.html?collector=access`
+- Changes: The complete Collector Access account, recovery, wallet, and redemption dialog now lives on Home; Memberships keeps a contextual handoff to Home; signed-out checkout and password-recovery redirects target the Home flow
+- Preserved behavior: Membership pricing, checkout hooks, authentication utilities, account service, redemption protections, navigation, games, and commercial media are unchanged
+- Tests: Collector recovery 14/14; full browser suite 182 passed with 8 intentional skips; Home validation 14 IDs and 75 references; site validation 17 HTML files; release audit 7/7; source/staging route matrix 156/156; staging safety 12/12; static staging 26 pages and 600 same-origin references
+- Visual review: `docs/staging-reviews/collector-access-home.md` with desktop and mobile captures at `1440x900` and `390x844`
+- Intentional visual departure: Collector Access moves from Memberships to Home; Memberships retains a visible handoff and all related functionality remains available
+- Staging URL: Local only (`http://127.0.0.1:8507/` during focused verification)
+- Production approval status: Not approved; `main`, production, `v1-final`, and existing release tags remain unchanged
+
 ## Future Commercial And Publisher Media
 
 - Step number: Owner-requested future commercial, Help film, and News publisher-image pass

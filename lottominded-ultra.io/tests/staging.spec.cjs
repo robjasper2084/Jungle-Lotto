@@ -267,11 +267,11 @@ test("production writes are rejected while local-only browser state remains avai
 
 test("Collector Access deep link remains reviewable while staging account writes stay blocked", async ({ page }) => {
   await blockHeavyMedia(page);
-  await page.goto("/memberships.html?collector=access#lm-access-hero", { waitUntil: "domcontentloaded" });
+  await page.goto("/index.html?collector=access&return=memberships#lottomind-refined", { waitUntil: "domcontentloaded" });
 
   const panel = page.locator("[data-collector-panel]");
   await expect(panel).toBeVisible();
-  await expect(page.locator("[data-membership-commercial-modal]")).toBeHidden();
+  await expect(page.locator("[data-startup-video-modal]")).toBeHidden();
   await page.locator("#collectorEmail").fill("preview@example.invalid");
   await page.locator('[data-password-toggle][aria-controls="collectorPassword"]').click();
   await expect(page.locator("#collectorPassword")).toHaveAttribute("type", "text");

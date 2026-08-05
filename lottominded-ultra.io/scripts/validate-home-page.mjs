@@ -5,6 +5,7 @@ import { resolve } from "node:path";
 const root = resolve(process.cwd());
 const htmlPath = resolve(root, "index.html");
 const html = readFileSync(htmlPath, "utf8");
+const membershipsHtml = readFileSync(resolve(root, "memberships.html"), "utf8");
 const storefrontHtml = readFileSync(resolve(root, "merch-store.html"), "utf8");
 const siteScript = readFileSync(resolve(root, "site.js"), "utf8");
 const styles = readFileSync(resolve(root, "styles.css"), "utf8");
@@ -63,6 +64,31 @@ for (const requiredClass of [
   "merch-commercial-modal__footer",
 ]) {
   if (!html.includes(requiredClass)) failures.push(`The homepage commercial is missing ${requiredClass}.`);
+}
+
+for (const collectorRequirement of [
+  /data-collector-access\b/i,
+  /id=["']collectorAccessPanel["']/i,
+  /data-collector-forgot-password\b/i,
+  /data-collector-recovery-form\b/i,
+  /data-collector-redeem-form\b/i,
+  /assets\/css\/beat2lotto-collector-access\.css/i,
+  /assets\/js\/lottomind-account-service\.js/i,
+  /assets\/js\/beat2lotto-collector-access\.js/i,
+]) {
+  if (!collectorRequirement.test(html)) failures.push(`The homepage Collector Access move is incomplete: ${collectorRequirement}.`);
+}
+
+if (/data-collector-access\b/i.test(membershipsHtml) || /id=["']collectorAccessPanel["']/i.test(membershipsHtml)) {
+  failures.push("Collector Access is still mounted on memberships.html instead of Home.");
+}
+
+if (!/index\.html\?collector=access(?:&amp;|&)return=memberships#lottomind-refined/i.test(membershipsHtml)) {
+  failures.push("Memberships is missing its Collector Access handoff to Home.");
+}
+
+if (!/shouldSuppressStartupVideo[\s\S]*collector["']\)\s*===\s*["']access/i.test(siteScript)) {
+  failures.push("The Home commercial is not suppressed while Collector Access is requested.");
 }
 
 if (!/class=["']home-sphere-scanline["']/i.test(html) || !/@keyframes\s+homeHeroScanBars/i.test(styles)) {

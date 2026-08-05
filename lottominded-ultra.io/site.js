@@ -3342,6 +3342,7 @@ function closeStartupVideoWithMusic() {
 
 function showStartupVideo() {
   clearStartupOpenTimer();
+  if (shouldSuppressStartupVideo()) return;
   if (!startupVideoModal) {
     startupVideoModal?.classList.add("is-hidden");
     startupVideoModal?.setAttribute("aria-hidden", "true");
@@ -3360,8 +3361,13 @@ function showStartupVideo() {
   startupVideoPlay?.focus({ preventScroll: true });
 }
 
+function shouldSuppressStartupVideo() {
+  const parameters = new URLSearchParams(window.location.search);
+  return parameters.get("collector") === "access" || parameters.get("account") === "recovery";
+}
+
 function scheduleStartupVideoOpen() {
-  if (!startupVideoModal || startupOpenTimer || startupVideoDismissed || hasSeenStartupVideo()) return;
+  if (!startupVideoModal || startupOpenTimer || startupVideoDismissed || hasSeenStartupVideo() || shouldSuppressStartupVideo()) return;
   startupOpenTimer = window.setTimeout(() => {
     startupOpenTimer = 0;
     if (startupVideoDismissed) return;
@@ -3370,7 +3376,7 @@ function scheduleStartupVideoOpen() {
 }
 
 function scheduleStartupVideoFallback() {
-  if (!startupVideoModal || startupFallbackTimer || startupVideoDismissed || hasSeenStartupVideo()) return;
+  if (!startupVideoModal || startupFallbackTimer || startupVideoDismissed || hasSeenStartupVideo() || shouldSuppressStartupVideo()) return;
   startupFallbackTimer = window.setTimeout(() => {
     startupFallbackTimer = 0;
     if (!startupVideoModal || startupVideoDismissed || isStartupVideoOpen()) return;

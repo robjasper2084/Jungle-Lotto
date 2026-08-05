@@ -51,9 +51,9 @@ async function mockAccountApi(page, onRequest = () => {}) {
 }
 
 async function openCollector(page) {
-  await page.goto("/memberships.html?collector=access#lm-access-hero", { waitUntil: "domcontentloaded" });
+  await page.goto("/index.html?collector=access#lottomind-refined", { waitUntil: "domcontentloaded" });
   await expect(page.locator("[data-collector-panel]")).toBeVisible();
-  await expect(page.locator("[data-membership-commercial-modal]")).toBeHidden();
+  await expect(page.locator("[data-startup-video-modal]")).toBeHidden();
 }
 
 test("Collector Access requests password recovery without sending a password", async ({ page }) => {
@@ -77,19 +77,22 @@ test("Collector Access requests password recovery without sending a password", a
   expect(recoveryPayload).toEqual({ email: "collector@example.com" });
 });
 
-test("Home places Collector Access beside Unlock Vault and opens the shared sign-in", async ({ page }) => {
+test("Home places Collector Access beside Unlock Vault and owns the shared sign-in", async ({ page }) => {
   await blockMedia(page);
   await mockAccountApi(page);
   await page.goto("/index.html", { waitUntil: "domcontentloaded" });
 
   const actions = page.locator(".refined-actions");
   const labels = await actions.locator(":scope > *").evaluateAll((elements) => elements.map((element) => element.textContent.trim()));
-  expect(labels.indexOf("Collector Access")).toBe(labels.indexOf("Unlock Vault") + 1);
-  await expect(actions.getByRole("link", { name: "Collector Access" })).toHaveAttribute("href", "./memberships.html?collector=access#lm-access-hero");
+  expect(labels.findIndex((label) => label.includes("Collector Access"))).toBe(labels.indexOf("Unlock Vault") + 1);
 
-  await page.goto("/memberships.html?collector=access#lm-access-hero", { waitUntil: "domcontentloaded" });
+  await page.goto("/index.html?collector=access&return=memberships#lottomind-refined", { waitUntil: "domcontentloaded" });
   await expect(page.locator("[data-collector-panel]")).toBeVisible();
   await expect(page.locator("#collectorEmail")).toBeFocused();
+
+  await page.goto("/memberships.html#lm-access-hero", { waitUntil: "domcontentloaded" });
+  await expect(page.locator("[data-collector-panel]")).toHaveCount(0);
+  await expect(page.locator("[data-collector-home-link]")).toHaveAttribute("href", "./index.html?collector=access&return=memberships#lottomind-refined");
 });
 
 test("Collector Access only persists sign-in when Remember me is selected", async ({ page }) => {
@@ -117,7 +120,7 @@ test("Collector recovery link completes a password update with its temporary ses
     if (path.endsWith("/auth/password-update")) updateAuthorization = request.headers().authorization || "";
   });
 
-  await page.goto("/memberships.html?account=recovery#access_token=recovery-token&refresh_token=recovery-refresh&expires_at=4102444800&type=recovery", { waitUntil: "domcontentloaded" });
+  await page.goto("/index.html?account=recovery#access_token=recovery-token&refresh_token=recovery-refresh&expires_at=4102444800&type=recovery", { waitUntil: "domcontentloaded" });
   await expect(page.locator("[data-collector-recovery-form]")).toBeVisible();
   await page.locator("#collectorNewPassword").fill("new-secure-password");
   await page.locator("#collectorConfirmPassword").fill("new-secure-password");
@@ -143,6 +146,8 @@ test("password recovery API keeps reset responses generic and validates updates"
   const source = fs.readFileSync(path.join(__dirname, "..", "supabase", "functions", "lottomind-api", "index.ts"), "utf8");
   expect(source).toContain('path === "/auth/password-reset"');
   expect(source).toContain("resetPasswordForEmail(email, { redirectTo })");
+  expect(source).toContain('/index.html?account=recovery');
+  expect(source).not.toContain('/memberships.html?account=recovery');
   expect(source).toContain('path === "/auth/password-update"');
   expect(source).toContain("password.length < 10");
   expect(source).not.toContain("No account exists");
@@ -158,7 +163,7 @@ test("every static account client loads the production runtime configuration fir
     return source.includes("lottomind-account-service.js");
   });
 
-  expect(accountPages.sort()).toEqual(["account.html", "memberships.html", "redeem.html"]);
+  expect(accountPages.sort()).toEqual(["account.html", "index.html", "memberships.html", "redeem.html"]);
   for (const name of accountPages) {
     const source = fs.readFileSync(path.join(siteRoot, name), "utf8");
     const runtimeIndex = source.indexOf("lottomind-runtime-config.js");
