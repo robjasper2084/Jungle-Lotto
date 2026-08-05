@@ -1,5 +1,19 @@
 # LottoMind Upgrade Redesign Status
 
+## Storefront And Membership Product Definition
+
+- Step number: Owner-requested Storefront and membership definition
+- Implementation commit: This status file is part of the focused commit; resolve with `git log -1 --format=%H -- docs/upgrade-redesign-status.md`
+- Affected routes: `/merch-store.html` and `/memberships.html`
+- Storefront: Exactly three launch products are visible. Concept/TBA catalog sections and simulated cart/wishlist controls are excluded from the rendered shopping experience.
+- Guardian offer: `$29.95` one time for the physical Little Man Guardian, exactly three calendar months Ultra, 150 LottoCredits, Series 01 badge, one-time code, and no automatic renewal.
+- Memberships: Free action limits, Gold `$4.99/mo` or `$49/yr`, Ultra `$9.99/mo` or `$99/yr`, credit grants, storage, exports, reports, packs, beta access, and renewal are defined in a comparison matrix.
+- Commerce safety: Ordering remains locked until verified inventory, shipping, tax, returns, confirmation email, tracking, and fulfillment configuration exist. Staging continues to block live payments and production mutations.
+- Tests: Site validation 17 HTML files; focused Storefront/Membership browser checks 10/10; News Hub account/news tests 24/24; News Hub TypeScript and Vite build passed; staging safety 12/12; static staging 27 pages and 627 same-origin references; source/staging route matrix 162/162.
+- Visual review: `docs/staging-reviews/store-membership-definition.md` with `1440x900` and `390x844` captures for both affected routes.
+- Staging URL: Local only
+- Production approval status: Not approved for this change; `main`, production deployment, `v1-final`, and existing release tags remain unchanged.
+
 - Production URL: https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/
 - Production branch: `main`
 - Production commit SHA: `26df75658204442ab5b2273ae7c70f043f58796f`

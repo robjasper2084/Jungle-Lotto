@@ -5,54 +5,86 @@ import { fileURLToPath } from "node:url";
 
 const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const repositoryRoot = resolve(packageRoot, "..");
-const outputDirectory = resolve(repositoryRoot, "docs", "staging-reviews", "storefront-bundles-assets");
+const outputDirectory = resolve(repositoryRoot, "docs", "staging-reviews", "store-membership-definition-assets");
 const baseUrl = process.env.LOTTOMIND_CAPTURE_BASE_URL || "http://127.0.0.1:8143";
+const routes = [
+  {
+    name: "storefront",
+    path: "/merch-store.html#launch-catalog",
+    dismiss: "[data-merch-commercial-close]",
+    focus: "#launch-catalog",
+  },
+  {
+    name: "memberships",
+    path: "/memberships.html#membership-plans",
+    dismiss: "[data-membership-commercial-close]",
+    focus: "#membership-plans",
+  },
+];
 const viewports = [
   { width: 1440, height: 900 },
-  { width: 390, height: 844 },
+  { width: 390, height: 844, isMobile: true, hasTouch: true },
 ];
 
 await mkdir(outputDirectory, { recursive: true });
-
 const browser = await chromium.launch({ headless: true });
 const report = [];
 
 try {
   for (const viewport of viewports) {
-    const page = await browser.newPage({ viewport });
-    const errors = [];
-    page.on("console", (message) => {
-      if (message.type() === "error") errors.push(message.text());
+    const context = await browser.newContext({
+      viewport: { width: viewport.width, height: viewport.height },
+      isMobile: viewport.isMobile || false,
+      hasTouch: viewport.hasTouch || false,
+      reducedMotion: "reduce",
     });
-    page.on("pageerror", (error) => errors.push(error.message));
+    for (const route of routes) {
+      const page = await context.newPage();
+      const errors = [];
+      const assetFailures = [];
+      page.on("console", (message) => {
+        if (message.type() === "error") errors.push(message.text());
+      });
+      page.on("pageerror", (error) => errors.push(error.message));
+      page.on("response", (response) => {
+        const url = new URL(response.url());
+        if (url.origin === baseUrl && response.status() >= 400 && !url.pathname.endsWith("favicon.ico")) {
+          assetFailures.push(`${response.status()} ${url.pathname}`);
+        }
+      });
 
-    await page.goto(`${baseUrl}/merch-store.html?bundle=capture#drop`, { waitUntil: "domcontentloaded" });
-    const commercialClose = page.locator("[data-merch-commercial-close]");
-    try {
-      await commercialClose.waitFor({ state: "visible", timeout: 5_000 });
-      await commercialClose.click();
-    } catch {}
+      const response = await page.goto(`${baseUrl}${route.path}`, { waitUntil: "domcontentloaded" });
+      const dismiss = page.locator(route.dismiss);
+      if (await dismiss.count() && await dismiss.first().isVisible()) await dismiss.first().click();
+      await page.locator(route.focus).scrollIntoViewIfNeeded();
+      await page.waitForTimeout(500);
 
-    const bundleSection = page.locator(".bundle-showcase");
-    await bundleSection.scrollIntoViewIfNeeded();
-    await page.waitForTimeout(500);
+      const result = await page.evaluate(() => ({
+        launchProductCount: document.querySelectorAll("#launch-catalog [data-launch-product]").length,
+        comparisonTableCount: document.querySelectorAll(".membership-comparison table").length,
+        horizontalOverflow: document.documentElement.scrollWidth > document.documentElement.clientWidth,
+        stagingNoindex: document.querySelector('meta[name="robots"]')?.content || "",
+        stagingBanner: Boolean(document.querySelector("[data-lm-staging-banner]")),
+      }));
+      if (
+        response?.status() !== 200 ||
+        result.horizontalOverflow ||
+        result.stagingNoindex !== "noindex,nofollow,noarchive" ||
+        !result.stagingBanner ||
+        errors.length ||
+        assetFailures.length
+      ) {
+        throw new Error(`Capture failed for ${route.name} at ${viewport.width}x${viewport.height}: ${JSON.stringify({ ...result, errors, assetFailures })}`);
+      }
+      if (route.name === "storefront" && result.launchProductCount !== 3) throw new Error("Storefront must show exactly three launch products.");
+      if (route.name === "memberships" && result.comparisonTableCount !== 1) throw new Error("Membership comparison table is missing.");
 
-    const result = await page.evaluate(() => ({
-      bundleCount: document.querySelectorAll(".bundle-card").length,
-      imagesLoaded: Array.from(document.querySelectorAll(".bundle-card img")).every((image) => image.naturalWidth > 0),
-      horizontalOverflow: document.documentElement.scrollWidth > document.documentElement.clientWidth,
-      stagingNoindex: document.querySelector('meta[name="robots"]')?.content || "",
-      stagingBanner: document.body.textContent.includes("LottoMind Upgrade Preview"),
-    }));
-
-    if (result.bundleCount !== 2 || !result.imagesLoaded || result.horizontalOverflow || errors.length) {
-      throw new Error(`Storefront bundle capture failed at ${viewport.width}x${viewport.height}: ${JSON.stringify({ ...result, errors })}`);
+      const fileName = `${route.name}-${viewport.width}x${viewport.height}.png`;
+      await page.screenshot({ path: resolve(outputDirectory, fileName), fullPage: false });
+      report.push({ route: route.path, viewport, fileName, ...result, errors, assetFailures });
+      await page.close();
     }
-
-    const fileName = `storefront-bundles-${viewport.width}x${viewport.height}.png`;
-    await page.screenshot({ path: resolve(outputDirectory, fileName) });
-    report.push({ viewport, fileName, ...result, errors });
-    await page.close();
+    await context.close();
   }
 } finally {
   await browser.close();
@@ -64,4 +96,4 @@ await writeFile(
   "utf8",
 );
 
-console.log(`Captured ${report.length} Storefront bundle views from ${baseUrl}.`);
+console.log(`Captured and verified ${report.length} Storefront and Membership views from ${baseUrl}.`);

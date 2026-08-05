@@ -15912,6 +15912,32 @@ footer a.footer-link:focus-visible {
   width: auto;
 }
 
+.membership-plan-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.membership-comparison {
+  margin-top: 28px;
+  padding: clamp(18px, 3vw, 30px);
+  border: 1px solid rgba(41, 247, 255, 0.3);
+  background: rgba(3, 13, 26, 0.94);
+}
+
+.membership-comparison header { max-width: 880px; }
+.membership-comparison header > span { color: #29f7ff; font-weight: 900; text-transform: uppercase; }
+.membership-comparison h2 { margin: 8px 0; color: #f6fbff; font-size: clamp(2rem, 4vw, 3.4rem); line-height: 1; text-transform: uppercase; }
+.membership-comparison header p { color: #c8dff0; line-height: 1.55; }
+.membership-comparison__scroll { overflow-x: auto; margin-top: 22px; outline-offset: 4px; }
+.membership-comparison table { width: 100%; min-width: 920px; border-collapse: collapse; color: #e6f2fb; }
+.membership-comparison th,
+.membership-comparison td { padding: 13px 14px; border: 1px solid rgba(41, 247, 255, 0.2); text-align: left; vertical-align: top; }
+.membership-comparison thead th { color: #041226; background: linear-gradient(135deg, #fff0a8, #71f3ff); }
+.membership-comparison tbody th { color: #fff0a8; background: rgba(10, 30, 50, 0.85); }
+.membership-comparison tbody tr:nth-child(even) td { background: rgba(19, 29, 54, 0.48); }
+
 .membership-feature-grid,
 .membership-app-grid,
 .stripe-structure-grid {

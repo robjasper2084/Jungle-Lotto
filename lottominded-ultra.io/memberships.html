@@ -194,7 +194,7 @@
             <div class="membership-section-heading membership-plan-control-heading">
               <span>Membership control deck</span>
               <h2 id="plansTitle">Choose your <em>signal level.</em></h2>
-              <p>Start free, step into Gold, or choose Ultra for the full premium route. Vault remains a limited founder unlock.</p>
+              <p>Start with action-based limits, choose Gold for the complete app and arcade, or choose Ultra for Studio and Vault access.</p>
             </div>
             <p class="membership-billing-status" data-stripe-membership-status role="status" aria-live="polite">Connecting to secure Stripe checkout...</p>
             <div class="home-collector-access-section__heading">
@@ -237,11 +237,15 @@
               <li>Saved Wallet</li>
               <li>Number Radar</li>
               <li>History Vault</li>
-              <li>Monthly LottoCredits</li>
-              <li>Use LottoMind app tools</li>
-              <li>Member download access when beta builds are posted</li>
+              <li>Complete LottoMind Arcade</li>
+              <li>250 LottoCredits each billing month</li>
+              <li>Account-synced app records</li>
+              <li>Member beta builds when posted</li>
             </ul>
-            <button class="secondary-action" type="button" data-stripe-lookup-key="gold_monthly">Choose Gold Monthly</button>
+            <div class="membership-plan-actions">
+              <button class="secondary-action" type="button" data-stripe-lookup-key="gold_monthly">$4.99 Monthly</button>
+              <button class="secondary-action" type="button" data-stripe-lookup-key="gold_yearly">$49 Yearly</button>
+            </div>
           </article>
 
           <article class="membership-plan-card is-featured" aria-label="Ultra Membership, featured best value plan" data-lm-tier="ultra">
@@ -255,32 +259,65 @@
             <ul>
               <li>Everything in Gold</li>
               <li>Premium Vault tools</li>
-              <li>Advanced creative reports</li>
-              <li>Early beta drops</li>
-              <li>Priority studio access</li>
-              <li>Use and download LottoMind app beta builds</li>
+              <li>Local WAV Studio exports</li>
+              <li>Advanced creative reports when available</li>
+              <li>750 LottoCredits each billing month</li>
+              <li>One monthly digital pack</li>
+              <li>Early beta builds when posted</li>
             </ul>
-            <button class="primary-action" type="button" data-stripe-lookup-key="ultra_monthly">Choose Ultra Monthly</button>
+            <div class="membership-plan-actions">
+              <button class="primary-action" type="button" data-stripe-lookup-key="ultra_monthly">$9.99 Monthly</button>
+              <button class="secondary-action" type="button" data-stripe-lookup-key="ultra_yearly">$99 Yearly</button>
+            </div>
           </article>
 
-          <article class="membership-plan-card" data-lm-tier="vault">
+          <article class="membership-plan-card" data-lm-tier="guardian_bundle">
             <img class="membership-plan-emblem membership-plan-emblem-vault" src="./assets/icons/vault.svg" alt="" loading="lazy" decoding="async" />
             <div>
-              <span class="plan-label">Vault Pass</span>
-              <h3>$29.99</h3>
-              <p class="plan-year">One-time founder access with the Little Man Luggage Charm included. Terms shown in Stripe Checkout.</p>
+              <span class="plan-label">Guardian Starter Bundle</span>
+              <h3>$29.95</h3>
+              <p class="plan-year">One-time physical bundle. It does not renew automatically.</p>
             </div>
             <ul>
-              <li>Beta access</li>
-              <li>Private drops</li>
-              <li>Supporter badge</li>
-              <li>Little Man Luggage Charm included</li>
-              <li>Lifetime or limited-time unlock language</li>
-              <li>Founder app download route when the package is supplied</li>
+              <li>Little Man Guardian luggage charm</li>
+              <li>Exactly 3 months of Ultra</li>
+              <li>150 LottoCredits</li>
+              <li>Series 01 digital badge</li>
+              <li>One-time redemption code</li>
+              <li>No automatic renewal</li>
             </ul>
-            <button class="secondary-action" type="button" data-stripe-lookup-key="vault_founder_once">Unlock Vault</button>
+            <button class="secondary-action" type="button" data-stripe-lookup-key="guardian_bundle_once">Check Guardian Availability</button>
           </article>
         </div>
+
+        <section class="membership-comparison" aria-labelledby="membershipComparisonTitle">
+          <header>
+            <span>Membership entitlement matrix</span>
+            <h2 id="membershipComparisonTitle">Know exactly what changes.</h2>
+            <p>Checkout availability comes from the secure billing service. Features marked “when posted” are not promised on a fixed release schedule.</p>
+          </header>
+          <div class="membership-comparison__scroll" tabindex="0" aria-label="Scrollable membership comparison table">
+            <table>
+              <thead><tr><th scope="col">Feature</th><th scope="col">Free</th><th scope="col">Gold</th><th scope="col">Ultra</th><th scope="col">Guardian Bundle</th></tr></thead>
+              <tbody>
+                <tr><th scope="row">Price</th><td>$0</td><td>$4.99/mo or $49/yr</td><td>$9.99/mo or $99/yr</td><td>$29.95 one time</td></tr>
+                <tr><th scope="row">Dream Oracle</th><td>3 entries</td><td>Included</td><td>Included</td><td>Ultra access for 3 months</td></tr>
+                <tr><th scope="row">Creative number sets</th><td>10 sets</td><td>Included</td><td>Included</td><td>Ultra access for 3 months</td></tr>
+                <tr><th scope="row">Saved records</th><td>5 items</td><td>Account-synced Wallet + History</td><td>Account-synced Wallet + History</td><td>Ultra access for 3 months</td></tr>
+                <tr><th scope="row">File storage</th><td>Local browser storage</td><td>No separate cloud-file quota</td><td>No separate cloud-file quota</td><td>Same as Ultra for 3 months</td></tr>
+                <tr><th scope="row">Prompt Lab</th><td>3 generations</td><td>Included</td><td>Included</td><td>Ultra access for 3 months</td></tr>
+                <tr><th scope="row">Arcade</th><td>Selected games + 2 premium missions</td><td>Complete arcade</td><td>Complete arcade</td><td>Complete arcade for 3 months</td></tr>
+                <tr><th scope="row">LottoCredits</th><td>No recurring grant</td><td>250 each billing month</td><td>750 each billing month</td><td>150 one time</td></tr>
+                <tr><th scope="row">Studio exports</th><td>1 preview</td><td>Not included</td><td>Local WAV exports</td><td>Local WAV exports for 3 months</td></tr>
+                <tr><th scope="row">Creative reports</th><td>Demo output only</td><td>Standard app results</td><td>Advanced reports when available</td><td>Ultra access for 3 months</td></tr>
+                <tr><th scope="row">Digital packs</th><td>Not included</td><td>Not included</td><td>1 monthly pack</td><td>Available during the 3-month Ultra term</td></tr>
+                <tr><th scope="row">Beta access</th><td>Public previews</td><td>Member builds when posted</td><td>Early builds when posted</td><td>Ultra beta access for 3 months</td></tr>
+                <tr><th scope="row">Physical item</th><td>None</td><td>None</td><td>None</td><td>Little Man Guardian</td></tr>
+                <tr><th scope="row">Renewal</th><td>None</td><td>Auto-renews until canceled</td><td>Auto-renews until canceled</td><td>No automatic renewal</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
       </section>
 
       <section class="membership-section membership-what-you-get lm-observatory-section lm-worlds" id="worlds" aria-labelledby="worldsTitle" data-lm-shape="2" data-lm-bg="#070910" data-lm-glow="#c9a06a" data-lm-epoch="Worlds" data-lm-time="T − 4.6 Gyr">
