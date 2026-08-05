@@ -1,7 +1,7 @@
-import { drawSheetFrame } from "../engine/assets.js?v=heartline41-epic-amara-ezra";
-import { rectsOverlap } from "../engine/math.js?v=heartline41-epic-amara-ezra";
-import { LovePulseEffect, SpriteEffect } from "./effects.js?v=heartline41-epic-amara-ezra";
-import { sliceAttackForHit } from "./hits.js?v=heartline41-epic-amara-ezra";
+import { drawSheetFrame } from "../engine/assets.js?v=semantic-motion-v2";
+import { rectsOverlap } from "../engine/math.js?v=semantic-motion-v2";
+import { LovePulseEffect, SpriteEffect } from "./effects.js?v=semantic-motion-v2";
+import { sliceAttackForHit } from "./hits.js?v=semantic-motion-v2";
 
 const hexAlpha = (color, alpha) => {
   if (!color?.startsWith("#") || color.length !== 7) return color;
@@ -178,15 +178,15 @@ export class Projectile {
 
   renderEyeLaser(ctx, visualY) {
     const length = this.radius * 7.4;
-    const startX = this.x - this.direction * length;
-    const endX = this.x + this.direction * this.radius * 0.9;
+    const startX = this.x - this.direction * this.radius * 0.16;
+    const endX = startX + this.direction * length;
     ctx.save();
     ctx.globalCompositeOperation = "lighter";
     const beam = ctx.createLinearGradient(startX, visualY, endX, visualY);
-    beam.addColorStop(0, "rgba(90, 0, 0, 0)");
-    beam.addColorStop(0.38, "rgba(210, 24, 32, 0.4)");
-    beam.addColorStop(0.82, "rgba(255, 48, 54, 0.96)");
-    beam.addColorStop(1, "rgba(255, 245, 220, 1)");
+    beam.addColorStop(0, "rgba(255, 248, 230, 1)");
+    beam.addColorStop(0.12, "rgba(255, 48, 54, 0.98)");
+    beam.addColorStop(0.82, "rgba(210, 24, 32, 0.52)");
+    beam.addColorStop(1, "rgba(90, 0, 0, 0)");
     ctx.strokeStyle = beam;
     ctx.lineCap = "round";
     ctx.lineWidth = this.radius * (0.32 + Math.sin(this.age * 46) * 0.05);
@@ -199,8 +199,8 @@ export class Projectile {
     ctx.strokeStyle = "rgba(255, 246, 226, 0.95)";
     ctx.lineWidth = Math.max(2, this.radius * 0.09);
     ctx.beginPath();
-    ctx.moveTo(startX + this.direction * length * 0.34, visualY);
-    ctx.lineTo(endX, visualY);
+    ctx.moveTo(startX, visualY);
+    ctx.lineTo(endX - this.direction * length * 0.2, visualY);
     ctx.stroke();
     ctx.restore();
   }

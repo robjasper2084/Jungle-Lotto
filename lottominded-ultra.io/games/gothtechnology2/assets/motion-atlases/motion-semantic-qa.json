@@ -1,0 +1,286 @@
+{
+  "version": 1,
+  "repair": "semantic-body-only-v1",
+  "motions": {
+    "KALYX/WALK_BACK": {
+      "poseClass": "grounded-locomotion",
+      "bodyOnly": true,
+      "figureCount": 1,
+      "minUniqueSilhouettes": 6,
+      "maxEdgePixelRatio": 0.012,
+      "maxOpaqueAreaRatioToIdle": 1.65
+    },
+    "KALYX/DASH_FORWARD": {
+      "poseClass": "forward-burst",
+      "bodyOnly": true,
+      "figureCount": 1,
+      "minUniqueSilhouettes": 6,
+      "maxEdgePixelRatio": 0.012,
+      "maxOpaqueAreaRatioToIdle": 1.65
+    },
+    "KALYX/DASH_BACK": {
+      "poseClass": "backward-burst",
+      "bodyOnly": true,
+      "figureCount": 1,
+      "minUniqueSilhouettes": 6,
+      "maxEdgePixelRatio": 0.012,
+      "maxOpaqueAreaRatioToIdle": 1.65
+    },
+    "KALYX/JUMP_START": {
+      "poseClass": "takeoff",
+      "bodyOnly": true,
+      "figureCount": 1,
+      "minUniqueSilhouettes": 6,
+      "maxEdgePixelRatio": 0.012,
+      "maxOpaqueAreaRatioToIdle": 1.65
+    },
+    "KALYX/JUMP_RISE": {
+      "poseClass": "aerial-rise",
+      "bodyOnly": true,
+      "figureCount": 1,
+      "minUniqueSilhouettes": 6,
+      "maxEdgePixelRatio": 0.012,
+      "maxOpaqueAreaRatioToIdle": 1.65
+    },
+    "KALYX/JUMP_PEAK": {
+      "poseClass": "aerial-peak",
+      "bodyOnly": true,
+      "figureCount": 1,
+      "minUniqueSilhouettes": 6,
+      "maxEdgePixelRatio": 0.012,
+      "maxOpaqueAreaRatioToIdle": 1.65
+    },
+    "KALYX/JUMP_FALL": {
+      "poseClass": "aerial-fall",
+      "bodyOnly": true,
+      "figureCount": 1,
+      "minUniqueSilhouettes": 6,
+      "maxEdgePixelRatio": 0.012,
+      "maxOpaqueAreaRatioToIdle": 1.65
+    },
+    "KALYX/LANDING": {
+      "poseClass": "landing-recovery",
+      "bodyOnly": true,
+      "figureCount": 1,
+      "minUniqueSilhouettes": 6,
+      "maxEdgePixelRatio": 0.012,
+      "maxOpaqueAreaRatioToIdle": 1.65
+    },
+    "MASTER_EZRA/JUMP_START": {
+      "poseClass": "takeoff",
+      "bodyOnly": true,
+      "figureCount": 1,
+      "minUniqueSilhouettes": 6,
+      "maxEdgePixelRatio": 0.012,
+      "maxOpaqueAreaRatioToIdle": 1.65
+    },
+    "MASTER_EZRA/JUMP_RISE": {
+      "poseClass": "aerial-rise",
+      "bodyOnly": true,
+      "figureCount": 1,
+      "minUniqueSilhouettes": 6,
+      "maxEdgePixelRatio": 0.012,
+      "maxOpaqueAreaRatioToIdle": 1.65
+    },
+    "MASTER_EZRA/JUMP_PEAK": {
+      "poseClass": "aerial-peak",
+      "bodyOnly": true,
+      "figureCount": 1,
+      "minUniqueSilhouettes": 6,
+      "maxEdgePixelRatio": 0.012,
+      "maxOpaqueAreaRatioToIdle": 1.65
+    },
+    "MASTER_EZRA/JUMP_FALL": {
+      "poseClass": "aerial-fall",
+      "bodyOnly": true,
+      "figureCount": 1,
+      "minUniqueSilhouettes": 6,
+      "maxEdgePixelRatio": 0.012,
+      "maxOpaqueAreaRatioToIdle": 1.65
+    },
+    "MASTER_EZRA/LANDING": {
+      "poseClass": "landing-recovery",
+      "bodyOnly": true,
+      "figureCount": 1,
+      "minUniqueSilhouettes": 6,
+      "maxEdgePixelRatio": 0.012,
+      "maxOpaqueAreaRatioToIdle": 1.65
+    },
+    "MASTER_EZRA/SUPER_CHARGE": {
+      "poseClass": "power-charge",
+      "bodyOnly": true,
+      "figureCount": 1,
+      "minUniqueSilhouettes": 6,
+      "maxEdgePixelRatio": 0.012,
+      "maxOpaqueAreaRatioToIdle": 1.65
+    },
+    "MASTER_EZRA/THROW_FINISH": {
+      "poseClass": "throw-release",
+      "bodyOnly": true,
+      "figureCount": 1,
+      "minUniqueSilhouettes": 6,
+      "maxEdgePixelRatio": 0.012,
+      "maxOpaqueAreaRatioToIdle": 1.65
+    },
+    "DETROIT_LENS_NOIR/SPECIAL_START": {
+      "poseClass": "companion-command",
+      "bodyOnly": true,
+      "figureCount": 1,
+      "minUniqueSilhouettes": 6,
+      "maxEdgePixelRatio": 0.012,
+      "maxOpaqueAreaRatioToIdle": 1.65
+    },
+    "DETROIT_LENS_NOIR/SUPER_CHARGE": {
+      "poseClass": "power-charge",
+      "bodyOnly": true,
+      "figureCount": 1,
+      "minUniqueSilhouettes": 6,
+      "maxEdgePixelRatio": 0.012,
+      "maxOpaqueAreaRatioToIdle": 1.65
+    },
+    "DETROIT_LENS_NOIR/SUPER_RELEASE": {
+      "poseClass": "eye-laser-release",
+      "bodyOnly": true,
+      "figureCount": 1,
+      "minUniqueSilhouettes": 6,
+      "maxEdgePixelRatio": 0.012,
+      "maxOpaqueAreaRatioToIdle": 1.65
+    },
+    "DETROIT_LENS_NOIR/THROW_GRAB": {
+      "poseClass": "throw-grab",
+      "bodyOnly": true,
+      "figureCount": 1,
+      "minUniqueSilhouettes": 6,
+      "maxEdgePixelRatio": 0.012,
+      "maxOpaqueAreaRatioToIdle": 1.65
+    },
+    "AMARA_VALENTINE/RUN_BACK": {
+      "poseClass": "grounded-run",
+      "bodyOnly": true,
+      "figureCount": 1,
+      "minUniqueSilhouettes": 6,
+      "maxEdgePixelRatio": 0.012,
+      "maxOpaqueAreaRatioToIdle": 1.65
+    },
+    "AMARA_VALENTINE/RUN_FORWARD": {
+      "poseClass": "grounded-run",
+      "bodyOnly": true,
+      "figureCount": 1,
+      "minUniqueSilhouettes": 6,
+      "maxEdgePixelRatio": 0.012,
+      "maxOpaqueAreaRatioToIdle": 1.65
+    },
+    "AMARA_VALENTINE/DASH_FORWARD": {
+      "poseClass": "forward-burst",
+      "bodyOnly": true,
+      "figureCount": 1,
+      "minUniqueSilhouettes": 6,
+      "maxEdgePixelRatio": 0.012,
+      "maxOpaqueAreaRatioToIdle": 1.65
+    },
+    "AMARA_VALENTINE/JUMP_START": {
+      "poseClass": "takeoff",
+      "bodyOnly": true,
+      "figureCount": 1,
+      "minUniqueSilhouettes": 6,
+      "maxEdgePixelRatio": 0.012,
+      "maxOpaqueAreaRatioToIdle": 1.65
+    },
+    "AMARA_VALENTINE/JUMP_RISE": {
+      "poseClass": "aerial-rise",
+      "bodyOnly": true,
+      "figureCount": 1,
+      "minUniqueSilhouettes": 6,
+      "maxEdgePixelRatio": 0.012,
+      "maxOpaqueAreaRatioToIdle": 1.65
+    },
+    "AMARA_VALENTINE/JUMP_PEAK": {
+      "poseClass": "aerial-peak",
+      "bodyOnly": true,
+      "figureCount": 1,
+      "minUniqueSilhouettes": 6,
+      "maxEdgePixelRatio": 0.012,
+      "maxOpaqueAreaRatioToIdle": 1.65
+    },
+    "AMARA_VALENTINE/JUMP_FALL": {
+      "poseClass": "aerial-fall",
+      "bodyOnly": true,
+      "figureCount": 1,
+      "minUniqueSilhouettes": 6,
+      "maxEdgePixelRatio": 0.012,
+      "maxOpaqueAreaRatioToIdle": 1.65
+    },
+    "AMARA_VALENTINE/LANDING": {
+      "poseClass": "landing-recovery",
+      "bodyOnly": true,
+      "figureCount": 1,
+      "minUniqueSilhouettes": 6,
+      "maxEdgePixelRatio": 0.012,
+      "maxOpaqueAreaRatioToIdle": 1.65
+    },
+    "AMARA_VALENTINE/CROUCH_ATTACK": {
+      "poseClass": "low-strike",
+      "bodyOnly": true,
+      "figureCount": 1,
+      "minUniqueSilhouettes": 6,
+      "maxEdgePixelRatio": 0.012,
+      "maxOpaqueAreaRatioToIdle": 1.65
+    },
+    "AMARA_VALENTINE/HEAVY_KICK": {
+      "poseClass": "heavy-strike",
+      "bodyOnly": true,
+      "figureCount": 1,
+      "minUniqueSilhouettes": 6,
+      "maxEdgePixelRatio": 0.012,
+      "maxOpaqueAreaRatioToIdle": 1.65
+    },
+    "AMARA_VALENTINE/SPECIAL_PROJECTILE": {
+      "poseClass": "love-projectile-release",
+      "bodyOnly": true,
+      "figureCount": 1,
+      "minUniqueSilhouettes": 6,
+      "maxEdgePixelRatio": 0.012,
+      "maxOpaqueAreaRatioToIdle": 1.65
+    },
+    "AMARA_VALENTINE/SPECIAL_START": {
+      "poseClass": "love-projectile-start",
+      "bodyOnly": true,
+      "figureCount": 1,
+      "minUniqueSilhouettes": 6,
+      "maxEdgePixelRatio": 0.012,
+      "maxOpaqueAreaRatioToIdle": 1.65
+    },
+    "AMARA_VALENTINE/SPECIAL_RECOVER": {
+      "poseClass": "special-recovery",
+      "bodyOnly": true,
+      "figureCount": 1,
+      "minUniqueSilhouettes": 6,
+      "maxEdgePixelRatio": 0.012,
+      "maxOpaqueAreaRatioToIdle": 1.65
+    },
+    "AMARA_VALENTINE/KNOCKDOWN": {
+      "poseClass": "knockdown",
+      "bodyOnly": true,
+      "figureCount": 1,
+      "minUniqueSilhouettes": 6,
+      "maxEdgePixelRatio": 0.012,
+      "maxOpaqueAreaRatioToIdle": 1.65
+    },
+    "AMARA_VALENTINE/DEFEAT": {
+      "poseClass": "defeat",
+      "bodyOnly": true,
+      "figureCount": 1,
+      "minUniqueSilhouettes": 6,
+      "maxEdgePixelRatio": 0.012,
+      "maxOpaqueAreaRatioToIdle": 1.65
+    },
+    "AMARA_VALENTINE/GET_UP": {
+      "poseClass": "get-up",
+      "bodyOnly": true,
+      "figureCount": 1,
+      "minUniqueSilhouettes": 6,
+      "maxEdgePixelRatio": 0.012,
+      "maxOpaqueAreaRatioToIdle": 1.65
+    }
+  }
+}

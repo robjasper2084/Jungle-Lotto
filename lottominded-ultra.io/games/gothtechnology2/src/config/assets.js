@@ -1,6 +1,6 @@
 export const PACK_ROOT = "assets/GOTHTECHNOLOGY_EXPANDED_SPRITE_PACK_V2";
 export const LOCAL_ROOT = "assets";
-export const MOTION_ASSET_VERSION = "heartline41-epic-amara-ezra";
+export const MOTION_ASSET_VERSION = "semantic-motion-v2";
 
 export const COMMERCIAL_URLS = [
   `${LOCAL_ROOT}/commercials/detroit-commercial-01.mp4`,
@@ -80,7 +80,7 @@ export const MOTION_PLAYBACK = {
     JUMP_RISE: [0, 1, 2],
     JUMP_PEAK: [0, 1],
     JUMP_FALL: [0, 1, 2, 3],
-    LANDING: [1, 0, 4, 5]
+    LANDING: [0, 1, 2, 3, 4, 5]
   },
   DETROIT_LENS_NOIR: {
     WALK_FORWARD: [0, 1, 2, 3, 4, 5],
@@ -418,7 +418,7 @@ FIGHTERS.DETROIT_LENS_NOIR = {
   scale: 1.31,
   stableScale: 1.31,
   motionScaleOverrides: {
-    SUPER_RELEASE: 1.38
+    SUPER_RELEASE: 1.02
   },
   motionRemap: {
     SPECIAL_START: "SPECIAL_PROJECTILE"
