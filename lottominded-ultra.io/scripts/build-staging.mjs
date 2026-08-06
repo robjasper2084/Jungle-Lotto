@@ -115,6 +115,38 @@ async function extractCommittedSite() {
   ]);
 }
 
+async function overlayWorkingTreeChanges() {
+  if (requestedSourceCommit !== "HEAD") return [];
+  const prefix = "lottominded-ultra.io/";
+  const collectPaths = (output) => output
+    .split(/\r?\n/)
+    .map((value) => value.trim())
+    .filter((value) => value.startsWith(prefix))
+    .map((value) => value.slice(prefix.length));
+  const changedPaths = [...new Set([
+    ...collectPaths(runGit(["diff", "--name-only", "HEAD", "--", "lottominded-ultra.io"])),
+    ...collectPaths(runGit(["ls-files", "--others", "--exclude-standard", "--", "lottominded-ultra.io"])),
+  ])];
+
+  for (const relativePath of changedPaths) {
+    const sourcePath = resolve(packageRoot, relativePath);
+    const destinationPath = resolve(outputRoot, relativePath);
+    if (!sourcePath.startsWith(`${packageRoot}${sep}`) || !destinationPath.startsWith(`${outputRoot}${sep}`)) {
+      throw new Error(`Refusing to overlay path outside the staging roots: ${relativePath}`);
+    }
+    try {
+      const details = await stat(sourcePath);
+      if (!details.isFile()) continue;
+      await mkdir(dirname(destinationPath), { recursive: true });
+      await copyFile(sourcePath, destinationPath);
+    } catch (error) {
+      if (error && error.code === "ENOENT") await rm(destinationPath, { force: true });
+      else throw error;
+    }
+  }
+  return changedPaths;
+}
+
 function toPosix(pathValue) {
   return pathValue.split(sep).join("/");
 }
@@ -279,6 +311,7 @@ async function main() {
   await rm(outputRoot, { recursive: true, force: true });
   await mkdir(outputRoot, { recursive: true });
   await extractCommittedSite();
+  const workingTreeFiles = await overlayWorkingTreeChanges();
   await removeDevelopmentFiles();
 
   const generatedAssets = join(outputRoot, "assets", "js");
@@ -304,6 +337,8 @@ async function main() {
   const manifest = {
     buildTimestamp: new Date().toISOString(),
     sourceCommitSHA,
+    sourceIncludesWorkingTreeChanges: workingTreeFiles.length > 0,
+    workingTreeFiles,
     copiedRoutes,
     injectedPages: injectedPages.sort(),
     skippedFiles: Array.from(skippedFiles).sort(),

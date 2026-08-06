@@ -27,6 +27,53 @@
   --lm-commercial-poster: url("../video/lottomind-home-apparel-commercial-poster-20260804.jpg");
 }
 
+.home-story.merch-commercial-modal {
+  --lm-commercial-poster: url("../video/lottomind-home-apparel-commercial-poster-20260804.jpg");
+  position: relative;
+  inset: auto;
+  z-index: 2;
+  display: block;
+  width: min(76rem, calc(100% - 2rem));
+  margin: clamp(2rem, 6vw, 5rem) auto;
+  padding: 0;
+  overflow: visible;
+  background: transparent;
+  backdrop-filter: none;
+}
+
+.home-story .merch-commercial-modal__panel {
+  width: 100%;
+  height: auto;
+  min-height: 34rem;
+  max-height: none;
+}
+
+.home-story .merch-commercial-modal__stage video {
+  min-height: 24rem;
+}
+
+@media (max-width: 700px) {
+  .home-story.merch-commercial-modal {
+    width: calc(100% - 1rem);
+    margin-block: 1.25rem 3rem;
+  }
+
+  .home-story .merch-commercial-modal__panel {
+    min-height: 0;
+  }
+
+  .home-story .merch-commercial-modal__stage video {
+    min-height: 0;
+    aspect-ratio: 16 / 9;
+  }
+}
+
+html.lm-reduce-motion .merch-commercial-modal,
+html.lm-reduce-motion .merch-commercial-modal * {
+  animation: none !important;
+  transition: none !important;
+}
+
 .merch-commercial-modal.is-hidden {
   display: none;
   visibility: hidden;

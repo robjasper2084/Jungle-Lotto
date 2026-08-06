@@ -109,11 +109,18 @@ try {
       const consoleErrors = [];
       const pageErrors = [];
       const assetFailures = [];
+      const externalAssetWarnings = [];
       let sameOriginBytes = 0;
       await page.route(/\.(?:mp3|wav|ogg)(?:\?.*)?$/i, (requestRoute) => requestRoute.fulfill({ status: 204, body: "" }));
       await page.route(/(?:stripe\.com|supabase\.co|google-analytics\.com|googletagmanager\.com)/i, (requestRoute) => requestRoute.abort("blockedbyclient"));
       page.on("console", (message) => {
-        if (message.type() === "error" && !/ERR_BLOCKED_BY_CLIENT/i.test(message.text())) consoleErrors.push(message.text());
+        if (message.type() !== "error" || /ERR_BLOCKED_BY_CLIENT/i.test(message.text())) return;
+        const locationUrl = message.location()?.url || "";
+        if (/^https?:\/\//i.test(locationUrl) && new URL(locationUrl).origin !== new URL(baseUrl).origin && /Failed to load resource/i.test(message.text())) {
+          externalAssetWarnings.push(`PUBLISHER MEDIA ${locationUrl}`);
+          return;
+        }
+        consoleErrors.push(message.text());
       });
       page.on("pageerror", (error) => pageErrors.push(error.message));
       page.on("response", (response) => {
@@ -126,7 +133,11 @@ try {
       page.on("requestfailed", (request) => {
         const url = new URL(request.url());
         const reason = request.failure()?.errorText || "";
-        if (url.origin === new URL(baseUrl).origin && !/ERR_ABORTED/i.test(reason)) assetFailures.push(`FAILED ${url.pathname}: ${reason || "unknown"}`);
+        if (url.origin === new URL(baseUrl).origin && !/ERR_ABORTED/i.test(reason)) {
+          assetFailures.push(`FAILED ${url.pathname}: ${reason || "unknown"}`);
+        } else if (url.origin !== new URL(baseUrl).origin && /\.(?:avif|gif|jpe?g|png|webp)(?:$|\?)/i.test(url.pathname + url.search)) {
+          externalAssetWarnings.push(`PUBLISHER MEDIA ${url.href}: ${reason || "unavailable"}`);
+        }
       });
 
       const response = await page.goto(`${baseUrl}${route}`, { waitUntil: "domcontentloaded" });
@@ -158,6 +169,7 @@ try {
         consoleErrors,
         pageErrors,
         assetFailures,
+        externalAssetWarnings: [...new Set(externalAssetWarnings)],
         temporaryScreenshot,
       };
       await page.screenshot({ path: temporaryScreenshot, type: "jpeg", quality: 72, fullPage: false });

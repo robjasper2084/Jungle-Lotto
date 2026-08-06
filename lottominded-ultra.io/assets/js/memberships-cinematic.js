@@ -1163,6 +1163,9 @@
   state.lenis?.start();
   revealHero();
   ScrollTrigger?.refresh();
+  if (membershipSoundtrack?.dataset.autoplay === "true" && !state.soundOptOut) {
+    void playMembershipSoundtrack({ restart: true });
+  }
   scheduleEntryCommercial();
   };
 

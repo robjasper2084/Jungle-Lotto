@@ -314,21 +314,23 @@ test("Storefront commercial closes itself when playback ends", async ({ page }) 
   await expect(page.locator(".header-click-toggle")).toHaveCount(0);
 });
 
-test("Storefront exposes only the three truthful launch products", async ({ page }) => {
+test("Storefront exposes only the two truthful launch products", async ({ page }) => {
   await blockHeavyMedia(page);
   await page.goto("/merch-store.html", { waitUntil: "domcontentloaded" });
   await page.locator("[data-merch-commercial-close]").click();
 
   const catalog = page.locator("#launch-catalog");
-  await expect(catalog.locator("[data-launch-product]")).toHaveCount(3);
+  await expect(catalog.locator("[data-launch-product]")).toHaveCount(2);
   await expect(catalog.getByRole("heading", { name: "Guardian Starter Bundle" })).toBeVisible();
   await expect(catalog.getByRole("heading", { name: "Detroit Embroidered Hoodie" })).toBeVisible();
-  await expect(catalog.getByRole("heading", { name: "Detroit 1701 Embroidered Patch" })).toBeVisible();
+  await expect(catalog.getByRole("heading", { name: /Detroit 1701 Embroidered Patch/ })).toHaveCount(0);
   await expect(catalog).not.toContainText("Pricing TBA");
   await expect(catalog).not.toContainText("Concept package");
   await expect(catalog.locator("#detroit-embroidered-hoodie button")).toBeDisabled();
-  await expect(catalog.locator("#detroit-1701-patch button")).toBeDisabled();
-  await expect(catalog.locator(".merch-product-gallery img")).toHaveCount(9);
+  await expect(catalog.locator(".merch-product-gallery img")).toHaveCount(6);
+  await expect(page.locator("#product-boogie-man-knit-sweater, #product-innovation-floor-model-hoodie, #hoodies")).toHaveCount(0);
+  await expect(page.locator("#store-operations")).toContainText("Preorders are closed");
+  await expect(page.locator("#store-operations")).toContainText("Carrier rates must appear in secure checkout");
 
   const capsule = page.locator(".merch-commercial-capsule");
   const heroVideo = page.locator(".merch-hero-video");
@@ -736,7 +738,7 @@ test("features combines the cinematic shell with the manifest-driven Arcade dire
   expect(localFailures).toEqual([]);
 });
 
-test("home loads the supplied muted-first startup commercial", async ({ page }) => {
+test("home opens on the product and keeps the story optional until requested", async ({ page }) => {
   const commercialRequests = [];
   page.on("request", (request) => {
     if (/lottomind-home-apparel-commercial-20260804\.opt\.mp4/i.test(request.url())) commercialRequests.push(request.url());
@@ -745,22 +747,53 @@ test("home loads the supplied muted-first startup commercial", async ({ page }) 
   const startup = page.locator("[data-startup-video]");
   const heroFilm = page.locator(".hero-motion");
   await expect(startup).toBeVisible({ timeout: 5_000 });
-  await expect(startup.getByRole("button", { name: "Play with sound" })).toBeVisible();
-  await expect.poll(() => startup.locator("video").evaluate((video) => ({ muted: video.muted, paused: video.paused }))).toMatchObject({ muted: true });
-  await expect.poll(() => commercialRequests.length).toBeGreaterThan(0);
-  await startup.getByRole("button", { name: "Enter Site", exact: true }).click();
-  await expect(startup).toBeHidden();
+  await expect(page.locator('[role="dialog"][data-startup-video]')).toHaveCount(0);
+  await expect(startup.getByRole("button", { name: "Watch the Story" })).toBeVisible();
+  await expect.poll(() => startup.locator("video").evaluate((video) => video.paused)).toBe(true);
+  expect(commercialRequests).toEqual([]);
   await expect(heroFilm).toBeVisible();
 });
 
-test("commercial popups retain a visible native pointer above mascot cursor layers", async ({ page }) => {
+test("home story dismissal persists for at least 30 days", async ({ page }) => {
+  await blockHeavyMedia(page);
+  await page.goto("/index.html#top", { waitUntil: "domcontentloaded" });
+  const story = page.locator("[data-startup-video]");
+  await expect(story).toBeVisible();
+  await story.getByRole("button", { name: "Hide Story" }).click();
+  await expect(story).toBeHidden();
+
+  const remainingDays = await page.evaluate(() => {
+    const expires = Number(localStorage.getItem("lottominded.ultra.homeStoryDismissedUntil.v1"));
+    return (expires - Date.now()) / (24 * 60 * 60 * 1000);
+  });
+  expect(remainingDays).toBeGreaterThanOrEqual(29.9);
+  await page.reload({ waitUntil: "domcontentloaded" });
+  await expect(story).toBeHidden();
+});
+
+test("global Reduce Motion control persists and stops automatic game expansion", async ({ page }) => {
+  await blockHeavyMedia(page);
+  await page.goto("/index.html#top", { waitUntil: "domcontentloaded" });
+  const motionToggle = page.locator("[data-reduce-motion-toggle]");
+  await expect(motionToggle).toHaveAttribute("aria-pressed", "false");
+  await motionToggle.click();
+  await expect(page.locator("html")).toHaveClass(/lm-reduce-motion/);
+  await expect(motionToggle).toHaveAttribute("aria-pressed", "true");
+  await page.waitForTimeout(1_500);
+  await expect(page.locator("[data-game-pip].is-open")).toHaveCount(0);
+  await page.reload({ waitUntil: "domcontentloaded" });
+  await expect(page.locator("html")).toHaveClass(/lm-reduce-motion/);
+  await expect(page.locator("[data-reduce-motion-toggle]")).toHaveAttribute("aria-pressed", "true");
+});
+
+test("commercial controls retain a visible native pointer above mascot cursor layers", async ({ page }) => {
   await blockHeavyMedia(page);
 
   await page.goto("/index.html#top", { waitUntil: "domcontentloaded" });
   const startup = page.locator("[data-startup-video]");
   await expect(startup).toBeVisible({ timeout: 5_000 });
   await expect.poll(() => startup.evaluate((element) => getComputedStyle(element).cursor)).toBe("auto");
-  await expect.poll(() => startup.getByRole("button", { name: "Enter Site", exact: true }).evaluate((element) => getComputedStyle(element).cursor)).toBe("pointer");
+  await expect.poll(() => startup.getByRole("button", { name: "Watch the Story" }).evaluate((element) => getComputedStyle(element).cursor)).toBe("pointer");
 
   await page.goto("/memberships.html", { waitUntil: "domcontentloaded" });
   const membershipCommercial = page.locator("[data-membership-commercial-modal]");

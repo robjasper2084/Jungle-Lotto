@@ -15912,6 +15912,31 @@ footer a.footer-link:focus-visible {
   width: auto;
 }
 
+.lm-page-soundtrack-toggle {
+  position: fixed;
+  right: clamp(0.9rem, 2vw, 1.4rem);
+  bottom: clamp(5rem, 8vw, 5.8rem);
+  z-index: 90;
+  min-height: 2.75rem;
+  padding: 0.7rem 1rem;
+  border: 1px solid rgba(41, 247, 255, 0.7);
+  border-radius: 999px;
+  color: #eaffff;
+  background: rgba(4, 10, 17, 0.94);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4), 0 0 22px rgba(41, 247, 255, 0.18);
+  font-family: var(--font-heading);
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.lm-page-soundtrack-toggle[aria-pressed="true"] {
+  border-color: rgba(255, 224, 113, 0.82);
+  color: #fff8c8;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4), 0 0 24px rgba(255, 224, 113, 0.24);
+}
+
 .membership-plan-actions {
   display: flex;
   flex-wrap: wrap;
@@ -17386,4 +17411,19 @@ body:is(.has-membership-commercial, .has-merch-commercial-modal, .has-lm-commerc
     position: static;
     flex-wrap: wrap;
   }
+}
+html.lm-reduce-motion *,
+html.lm-reduce-motion *::before,
+html.lm-reduce-motion *::after {
+  scroll-behavior: auto !important;
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+}
+
+html.lm-reduce-motion .motion-orb-layer,
+html.lm-reduce-motion .hero-circuit-layer,
+html.lm-reduce-motion .merch-akari-field,
+html.lm-reduce-motion .home-sphere-canvas {
+  display: none !important;
 }

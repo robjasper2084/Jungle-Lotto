@@ -736,11 +736,16 @@
   }
 
   .lm-help-page .lm-platform-actions {
+    align-items: stretch;
+    width: min(12.5rem, calc(100% - 7.5rem));
+    flex-direction: column;
     gap: 8px;
     margin-top: 14px;
   }
 
   .lm-help-page .lm-platform-action {
+    justify-content: center;
+    width: 100%;
     padding-inline: 12px;
   }
 }

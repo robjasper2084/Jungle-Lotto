@@ -61,7 +61,7 @@ test("News presents verified draw results in the signal banner and keeps the doc
   expect(new Set(utilityBackgrounds).size).toBe(3);
 });
 
-test("Home startup media points to the new commercial and Storefront theme", async ({ page }) => {
+test("page soundtracks use their assigned local music with accessible controls", async ({ page }) => {
   await page.goto("/index.html#top", { waitUntil: "domcontentloaded" });
 
   await expect(page.locator("[data-startup-video] video source")).toHaveAttribute(
@@ -70,6 +70,24 @@ test("Home startup media points to the new commercial and Storefront theme", asy
   );
   await expect(page.locator("#siteSoundtrack source")).toHaveAttribute(
     "data-src",
-    /lottomind-storefront-theme-20260717\.mp3$/,
+    /lottomind-home-theme-untitled-12\.mp3$/,
   );
+  await expect(page.locator("#siteSoundtrack")).toHaveAttribute("data-autoplay", "true");
+  await expect(page.getByRole("button", { name: /Home Music/ })).toBeVisible();
+
+  await page.goto("/memberships.html", { waitUntil: "domcontentloaded" });
+  await expect(page.locator("#siteSoundtrack source")).toHaveAttribute(
+    "data-src",
+    /lottomind-membership-theme-untitled-14\.mp3$/,
+  );
+  await expect(page.locator("#siteSoundtrack")).toHaveAttribute("data-autoplay", "true");
+  await expect(page.locator(".lm-sound-toggle")).toBeVisible();
+
+  await page.goto("/news/", { waitUntil: "domcontentloaded" });
+  await expect(page.locator("#siteSoundtrack source")).toHaveAttribute(
+    "data-src",
+    /lottomind-news-theme-instrumental\.mp3$/,
+  );
+  await expect(page.locator("#siteSoundtrack")).toHaveAttribute("data-autoplay", "true");
+  await expect(page.getByRole("button", { name: /News Music/ })).toBeVisible();
 });

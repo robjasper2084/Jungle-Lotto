@@ -16,6 +16,16 @@ const SITE_AUDIO_LEVELS = Object.freeze({
   preview: 0.48,
   ui: 0.022,
 });
+const REDUCE_MOTION_KEY = "lottominded.ultra.reduceMotion.v1";
+const HOME_STORY_DISMISSED_UNTIL_KEY = "lottominded.ultra.homeStoryDismissedUntil.v1";
+const HOME_STORY_DISMISSAL_MS = 30 * 24 * 60 * 60 * 1000;
+const storedReduceMotion = (() => {
+  try { return localStorage.getItem(REDUCE_MOTION_KEY) === "true"; } catch { return false; }
+})();
+if (storedReduceMotion) document.documentElement.classList.add("lm-reduce-motion");
+const isMotionReduced = () =>
+  document.documentElement.classList.contains("lm-reduce-motion") ||
+  window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 window.LMAudioMix = {
   ...(window.LMAudioMix || {}),
   levels: SITE_AUDIO_LEVELS,
@@ -132,6 +142,7 @@ window.LMAudioMix = {
         <button type="button" data-command-search-open aria-label="Search LottoMind routes">Search</button>
         <a href="${siteUrl("./account.html#credits")}">Credits</a>
         <a href="${siteUrl("./account.html")}">Account</a>
+        <button type="button" data-reduce-motion-toggle aria-pressed="${storedReduceMotion}" aria-label="Reduce nonessential motion">${storedReduceMotion ? "Motion Reduced" : "Reduce Motion"}</button>
       </div>
     </header>
   `;
@@ -196,6 +207,15 @@ window.LMAudioMix = {
     requestAnimationFrame(() => commandInput.focus());
   };
   document.querySelector("[data-command-search-open]")?.addEventListener("click", openCommandPalette);
+  const reduceMotionButton = document.querySelector("[data-reduce-motion-toggle]");
+  reduceMotionButton?.addEventListener("click", () => {
+    const reduced = !document.documentElement.classList.contains("lm-reduce-motion");
+    document.documentElement.classList.toggle("lm-reduce-motion", reduced);
+    try { localStorage.setItem(REDUCE_MOTION_KEY, String(reduced)); } catch {}
+    reduceMotionButton.setAttribute("aria-pressed", String(reduced));
+    reduceMotionButton.textContent = reduced ? "Motion Reduced" : "Reduce Motion";
+    window.dispatchEvent(new CustomEvent("lottomind:motion-preference", { detail: { reduced } }));
+  });
   commandInput.addEventListener("input", renderCommandResults);
   commandDialog.addEventListener("close", () => commandOpener?.focus?.());
 
@@ -275,7 +295,7 @@ function setupStaticPerformanceDefaults() {
 
   const shouldConserveMedia =
     mobilePerformanceQuery.matches ||
-    reducedMotionQuery.matches ||
+    isMotionReduced() ||
     Boolean(navigator.connection?.saveData) ||
     /(^|-)2g$/i.test(navigator.connection?.effectiveType || "");
 
@@ -398,16 +418,9 @@ const siteBackButton = document.querySelector("[data-site-back]");
 const siteSoundtrack = document.querySelector("#siteSoundtrack");
 const soundtrackButtons = document.querySelectorAll("[data-soundtrack-toggle]");
 const startupVideoModal = document.querySelector("[data-startup-video]");
-const startupVideoCloseButtons = document.querySelectorAll("[data-startup-video-close]");
+const startupVideoDismiss = document.querySelector("[data-startup-video-dismiss]");
 const startupVideoPlay = document.querySelector("[data-startup-video-play]");
-const startupMusicStart = document.querySelector("[data-startup-music-start]");
 const startupVideoPlayer = startupVideoModal?.querySelector("video");
-let startupOpenTimer = 0;
-let startupFallbackTimer = 0;
-let startupTransitionFallback = 0;
-let startupVideoClosing = false;
-let startupVideoDismissed = false;
-let startupShouldPlayMusic = false;
 const domainStrip = document.querySelector(".domain-strip");
 const gamePip = document.querySelector("[data-game-pip]");
 const gamePipClose = document.querySelector("[data-game-pip-close]");
@@ -426,18 +439,12 @@ const compactHeaderLabels =
   document.body.classList.contains("manual-page");
 const conciseSoundtrackLabels = document.body.classList.contains("home-page");
 const HEADER_COLLAPSED_KEY = "lottominded.ultra.siteHeaderCollapsed.v1";
-const STARTUP_MODAL_OPEN_DELAY = 10_000;
-const STARTUP_MODAL_FALLBACK_DELAY = 1_200;
-const GAME_PIP_AUTO_DELAY = 90000;
-const GAME_PIP_AUTO_KEY = "lottominded.ultra.homeGamePipAutoShown.v1";
 const MEMBER_SIGNUP_KEY = "lottominded.ultra.memberSignup.v1";
 const PROMPT_ACCESS_KEY = "lottominded.ultra.promptAccess.v1";
 const PROMPT_ACCESS_PASSWORD = "lottomind";
 const SUPPORT_EMAIL = "robjasper2084@gmail.com";
 let soundtrackStartedFromPage = false;
 let soundtrackStartedFromHover = false;
-let soundtrackPrimingForHandoff = false;
-let soundtrackPrimedForHandoff = false;
 let gamePipHideTimer = 0;
 let gamePipOpenedAt = 0;
 let gamePipShouldResumeSoundtrack = false;
@@ -447,11 +454,7 @@ let gamePipDragState = null;
 let activePasswordGatePanel = null;
 
 function isStartupVideoOpen() {
-  return Boolean(
-    startupVideoModal
-    && !startupVideoModal.classList.contains("is-hidden")
-    && startupVideoModal.getAttribute("aria-hidden") !== "true"
-  );
+  return Boolean(startupVideoPlayer && !startupVideoPlayer.paused && !startupVideoPlayer.muted);
 }
 
 function getSharedSignalHref() {
@@ -907,7 +910,7 @@ function initVideoPerformanceMode() {
   if (!videos.length) return;
 
   const shouldConserveMedia =
-    reducedMotionQuery.matches ||
+    isMotionReduced() ||
     mobilePerformanceQuery.matches ||
     Boolean(navigator.connection?.saveData) ||
     /(^|-)2g$/i.test(navigator.connection?.effectiveType || "");
@@ -983,7 +986,7 @@ function initVideoPerformanceMode() {
 
   const unloadVideoSources = (video, options = {}) => {
     const force = options.force === true;
-    if (isSoundActive(video) || (!force && isNearViewport(video, 80))) return;
+    if (!force && (isSoundActive(video) || isNearViewport(video, 80))) return;
     let changed = false;
     if (video.dataset.lmLazySrc && video.hasAttribute("src")) {
       video.removeAttribute("src");
@@ -996,13 +999,13 @@ function initVideoPerformanceMode() {
       }
     });
     if (changed) {
-      pauseManagedVideo(video);
+      pauseManagedVideo(video, { force });
       video.load();
     }
   };
 
-  const pauseManagedVideo = (video) => {
-    if (isSoundActive(video)) return;
+  const pauseManagedVideo = (video, options = {}) => {
+    if (isSoundActive(video) && options.force !== true) return;
     try {
       video.pause();
     } catch {
@@ -1011,7 +1014,7 @@ function initVideoPerformanceMode() {
   };
 
   const isPlayableDecorativeVideo = (video) => {
-    if (!video.isConnected || document.hidden) return false;
+    if (!video.isConnected || document.hidden || isMotionReduced()) return false;
     if (document.body.classList.contains("lm-page-is-transitioning") || performance.now() < transitionCooldownUntil) {
       return false;
     }
@@ -1030,7 +1033,7 @@ function initVideoPerformanceMode() {
     refreshFrame = 0;
 
     if (document.hidden) {
-      managedVideos.forEach(pauseManagedVideo);
+      managedVideos.forEach((video) => pauseManagedVideo(video, { force: true }));
       document.body.dataset.lmActiveVideoCount = "0";
       return;
     }
@@ -1113,8 +1116,8 @@ function initVideoPerformanceMode() {
           visibleVideos.add(entry.target);
         } else {
           visibleVideos.delete(entry.target);
-          pauseManagedVideo(entry.target);
-          unloadVideoSources(entry.target);
+          pauseManagedVideo(entry.target, { force: true });
+          unloadVideoSources(entry.target, { force: true });
         }
       });
       scheduleVideoRefresh();
@@ -1131,7 +1134,11 @@ function initVideoPerformanceMode() {
   document.addEventListener("visibilitychange", scheduleVideoRefresh);
   window.addEventListener("scroll", scheduleVideoRefresh, { passive: true });
   window.addEventListener("resize", scheduleVideoRefresh);
-  window.addEventListener("pagehide", () => managedVideos.forEach(pauseManagedVideo));
+  window.addEventListener("pagehide", () => managedVideos.forEach((video) => pauseManagedVideo(video, { force: true })));
+  window.addEventListener("lottomind:motion-preference", (event) => {
+    if (event.detail?.reduced) managedVideos.forEach((video) => pauseManagedVideo(video, { force: true }));
+    scheduleVideoRefresh();
+  });
   window.addEventListener("lottomind:page-transition", (event) => {
     const phase = event.detail?.phase;
     transitionCooldownUntil = performance.now() + (phase === "close" ? 760 : 560);
@@ -2046,7 +2053,7 @@ function getReactivePoint(event) {
 }
 
 function setupUniversalInteractionReactivity() {
-  if (mobilePerformanceQuery.matches || reducedMotionQuery.matches) return;
+  if (mobilePerformanceQuery.matches || isMotionReduced()) return;
 
   const reactiveTargets = document.querySelectorAll([
     "[data-site-header]",
@@ -2725,12 +2732,11 @@ function setHeaderCollapsed(collapsed) {
 
 function syncHeroMotionPreference() {
   if (!heroMotion) return;
-  const startupOpen = startupVideoModal && !startupVideoModal.classList.contains("is-hidden");
-  if (startupOpen) {
+  if (isStartupVideoOpen()) {
     heroMotion.pause();
     return;
   }
-  if (reducedMotionQuery.matches) {
+  if (isMotionReduced()) {
     heroMotion.pause();
     return;
   }
@@ -2740,9 +2746,10 @@ function syncHeroMotionPreference() {
 }
 
 reducedMotionQuery.addEventListener?.("change", syncHeroMotionPreference);
+window.addEventListener("lottomind:motion-preference", syncHeroMotionPreference);
 syncHeroMotionPreference();
 
-if (kineticHero && !reducedMotionQuery.matches) {
+if (kineticHero && !isMotionReduced()) {
   kineticHero.addEventListener("pointermove", (event) => {
     const rect = kineticHero.getBoundingClientRect();
     const x = ((event.clientX - rect.left) / rect.width) * 100;
@@ -2899,7 +2906,7 @@ function initMotionReveal() {
   });
 
   if (!targets.length) return;
-  if (!("IntersectionObserver" in window) || reducedMotionQuery.matches) {
+  if (!("IntersectionObserver" in window) || isMotionReduced()) {
     targets.forEach((target) => target.classList.add("is-visible"));
     return;
   }
@@ -2918,7 +2925,7 @@ function initMotionReveal() {
 }
 
 function initMagneticCards() {
-  if (reducedMotionQuery.matches || window.matchMedia("(pointer: coarse)").matches) return;
+  if (isMotionReduced() || window.matchMedia("(pointer: coarse)").matches) return;
   const selectors = [
     ".home-page .feature-grid article",
     ".home-page .prompt-launch-card",
@@ -3115,43 +3122,6 @@ function setupInlineSoundVideos() {
 
 setupInlineSoundVideos();
 
-function hasSeenStartupVideo() {
-  return Boolean(window.__lottomindStartupVideoSeenThisLoad);
-}
-
-function rememberStartupVideoSeen() {
-  window.__lottomindStartupVideoSeenThisLoad = true;
-}
-
-function hasAutoShownGamePip() {
-  try {
-    return sessionStorage.getItem(GAME_PIP_AUTO_KEY) === "true";
-  } catch {
-    return Boolean(window.__lottomindHomeGamePipAutoShown);
-  }
-}
-
-function rememberAutoShownGamePip() {
-  window.__lottomindHomeGamePipAutoShown = true;
-  try {
-    sessionStorage.setItem(GAME_PIP_AUTO_KEY, "true");
-  } catch {
-    // Session storage can be unavailable in locked-down browsers.
-  }
-}
-
-function clearStartupOpenTimer() {
-  if (!startupOpenTimer) return;
-  window.clearTimeout(startupOpenTimer);
-  startupOpenTimer = 0;
-}
-
-function clearStartupFallbackTimer() {
-  if (!startupFallbackTimer) return;
-  window.clearTimeout(startupFallbackTimer);
-  startupFallbackTimer = 0;
-}
-
 function prepareStartupVideoAudio(options = {}) {
   if (!startupVideoPlayer) return;
   startupVideoPlayer.preload = "metadata";
@@ -3181,157 +3151,38 @@ function stopStartupSoundtrack(options = {}) {
   setSoundtrackButtonState(false);
 }
 
-async function primeSiteSoundtrackForHandoff() {
-  if (!siteSoundtrack || soundtrackPrimedForHandoff) return soundtrackPrimedForHandoff;
-  soundtrackPrimingForHandoff = true;
-  try {
-    restoreDeferredVideoSources(siteSoundtrack);
-    siteSoundtrack.volume = 0;
-    siteSoundtrack.currentTime = 0;
-    await siteSoundtrack.play();
-    soundtrackPrimedForHandoff = true;
-    return true;
-  } catch {
-    soundtrackPrimedForHandoff = false;
-    return false;
-  } finally {
-    soundtrackPrimingForHandoff = false;
-  }
-}
-
 async function playStartupVideoWithSound(options = {}) {
-  if (!startupVideoPlayer || !isStartupVideoOpen()) return false;
+  if (!startupVideoPlayer) return false;
   stopStartupSoundtrack({ reset: true });
   window.LMAudioMix.claim(startupVideoPlayer);
   prepareStartupVideoAudio(options);
   try {
     await startupVideoPlayer.play();
-    void primeSiteSoundtrackForHandoff();
-    startupVideoModal?.classList.remove("is-awaiting-video-play");
-    if (startupVideoPlay) startupVideoPlay.textContent = "Playing with sound";
+    if (startupVideoPlay) startupVideoPlay.textContent = "Pause Story";
     return true;
   } catch {
-    // Browsers block unmuted autoplay without a gesture. Keep the film moving
-    // muted so `ended` can still release the page, then let the first pointer
-    // gesture restore its commercial audio channel.
-    startupVideoPlayer.muted = true;
-    startupVideoPlayer.defaultMuted = true;
-    startupVideoPlayer.setAttribute("muted", "");
-    startupVideoModal?.classList.add("is-awaiting-video-play");
-    if (startupVideoPlay) startupVideoPlay.textContent = "Play with sound";
-    await startupVideoPlayer.play().catch(() => {});
+    if (startupVideoPlay) startupVideoPlay.textContent = "Watch the Story";
     return false;
   }
 }
 
-async function playStartupVideoMuted(options = {}) {
-  if (!startupVideoPlayer || !isStartupVideoOpen()) return false;
-  stopStartupSoundtrack({ reset: true });
-  restoreDeferredVideoSources(startupVideoPlayer);
-  if (options.reset) {
-    try {
-      startupVideoPlayer.currentTime = 0;
-    } catch {}
-  }
-  startupVideoPlayer.muted = true;
-  startupVideoPlayer.defaultMuted = true;
-  startupVideoPlayer.setAttribute("muted", "");
-  startupVideoPlayer.volume = Number(startupVideoPlayer.dataset.startupVideoVolume || SITE_AUDIO_LEVELS.commercial);
-  startupVideoModal?.classList.add("is-awaiting-video-play");
-  if (startupVideoPlay) startupVideoPlay.textContent = "Play with sound";
-  await startupVideoPlayer.play().catch(() => {});
-  return !startupVideoPlayer.paused;
-}
-
-async function finishStartupVideoHandoff() {
-  window.clearTimeout(startupTransitionFallback);
-  window.removeEventListener("lottomind:transition-complete", handleStartupTransitionComplete);
-  document.body.classList.remove("has-startup-modal");
-  syncHeroMotionPreference();
-  startupVideoClosing = false;
-  if (startupShouldPlayMusic) {
-    await playSiteSoundtrack({ fromPage: true, restart: true, volume: SITE_AUDIO_LEVELS.background });
-  }
-  soundtrackPrimedForHandoff = false;
-}
-
-function handleStartupTransitionComplete(event) {
-  if (event?.detail?.source !== "home-commercial") return;
-  finishStartupVideoHandoff();
-}
-
-function closeStartupVideo(options = {}) {
-  const transitionAlreadyRunning = startupVideoClosing;
-  startupVideoClosing = true;
-  startupVideoDismissed = true;
-  startupShouldPlayMusic = options.playMusic === true;
-  clearStartupOpenTimer();
-  clearStartupFallbackTimer();
-  if (options.remember !== false) rememberStartupVideoSeen();
-  startupVideoModal?.classList.add("is-hidden");
-  startupVideoModal?.classList.remove("is-awaiting-video-play");
-  startupVideoModal?.setAttribute("aria-hidden", "true");
-  startupVideoPlayer?.pause();
-  if (transitionAlreadyRunning) return;
-  window.addEventListener("lottomind:transition-complete", handleStartupTransitionComplete);
-  window.dispatchEvent(new CustomEvent("lottomind:commercial-dismissed", {
-    detail: {
-      label: "Home",
-      source: "home-commercial",
-      theme: "home"
-    }
-  }));
-  startupTransitionFallback = window.setTimeout(finishStartupVideoHandoff, 1500);
-}
-
-function closeStartupVideoWithMusic() {
-  void primeSiteSoundtrackForHandoff();
-  closeStartupVideo({ playMusic: true });
-}
-
-function showStartupVideo() {
-  clearStartupOpenTimer();
-  if (shouldSuppressStartupVideo()) return;
-  if (!startupVideoModal) {
-    startupVideoModal?.classList.add("is-hidden");
-    startupVideoModal?.setAttribute("aria-hidden", "true");
-    document.body.classList.remove("has-startup-modal");
+function initializeHomeStory() {
+  if (!startupVideoModal) return;
+  if (shouldSuppressStartupVideo()) {
+    startupVideoModal.hidden = true;
     return;
   }
-  if (startupVideoDismissed || hasSeenStartupVideo()) return;
-  document.body.classList.add("has-startup-modal");
-  startupVideoModal.classList.remove("is-hidden");
-  startupVideoModal.setAttribute("aria-hidden", "false");
-  stopStartupSoundtrack({ reset: true });
-  syncHeroMotionPreference();
-  rememberStartupVideoSeen();
-  startupVideoModal.classList.add("is-awaiting-video-play");
-  void playStartupVideoMuted({ reset: true });
-  startupVideoPlay?.focus({ preventScroll: true });
+  let dismissedUntil = 0;
+  try { dismissedUntil = Number(localStorage.getItem(HOME_STORY_DISMISSED_UNTIL_KEY) || 0); } catch {}
+  if (dismissedUntil > Date.now()) startupVideoModal.hidden = true;
 }
 
 function shouldSuppressStartupVideo() {
-  const parameters = new URLSearchParams(window.location.search);
-  return parameters.get("collector") === "access" || parameters.get("account") === "recovery";
+  const params = new URLSearchParams(window.location.search);
+  return params.get("collector") === "access";
 }
 
-function scheduleStartupVideoOpen() {
-  if (!startupVideoModal || startupOpenTimer || startupVideoDismissed || hasSeenStartupVideo() || shouldSuppressStartupVideo()) return;
-  startupOpenTimer = window.setTimeout(() => {
-    startupOpenTimer = 0;
-    if (startupVideoDismissed) return;
-    showStartupVideo();
-  }, STARTUP_MODAL_OPEN_DELAY);
-}
-
-function scheduleStartupVideoFallback() {
-  if (!startupVideoModal || startupFallbackTimer || startupVideoDismissed || hasSeenStartupVideo() || shouldSuppressStartupVideo()) return;
-  startupFallbackTimer = window.setTimeout(() => {
-    startupFallbackTimer = 0;
-    if (!startupVideoModal || startupVideoDismissed || isStartupVideoOpen()) return;
-    showStartupVideo();
-  }, STARTUP_MODAL_FALLBACK_DELAY);
-}
+initializeHomeStory();
 
 function getGamePipOffset() {
   if (!gamePip) return { x: 0, y: 0 };
@@ -3429,7 +3280,7 @@ function setupGuidePuckField() {
   }
 
   function canRenderGuideField() {
-    return !reducedMotionQuery.matches && !document.hidden && guideFieldInView;
+    return !isMotionReduced() && !document.hidden && guideFieldInView;
   }
 
   function scheduleGuideField() {
@@ -3441,7 +3292,7 @@ function setupGuidePuckField() {
     guideFrame = 0;
     if (!canRenderGuideField()) return;
     const hot = pointer.active && now - pointer.lastMove < 1600;
-    const driftScale = reducedMotionQuery.matches ? 0 : 1;
+    const driftScale = isMotionReduced() ? 0 : 1;
 
     puckState.forEach((puck, index) => {
       const orbitX = Math.cos(now * 0.00032 + index) * 42 * driftScale;
@@ -3452,7 +3303,7 @@ function setupGuidePuckField() {
       puck.vx += (targetX - puck.x) * 0.006;
       puck.vy += (targetY - puck.y) * 0.006;
 
-      if (hot && !reducedMotionQuery.matches) {
+      if (hot && !isMotionReduced()) {
         const dx = puck.x + puck.size * 0.5 - pointer.x;
         const dy = puck.y + puck.size * 0.5 - pointer.y;
         const distance = Math.max(80, Math.hypot(dx, dy));
@@ -3724,7 +3575,7 @@ function setupPromptBallpassGame() {
   }
 
   function canDrawBallpass() {
-    return !reducedMotionQuery.matches && !document.hidden && ballpassInView;
+    return !isMotionReduced() && !document.hidden && ballpassInView;
   }
 
   function scheduleBallpass() {
@@ -3761,7 +3612,7 @@ function setupPromptBallpassGame() {
     }
 
     balls.forEach((ball, index) => {
-      const drift = reducedMotionQuery.matches ? 0 : now * ball.speed;
+      const drift = isMotionReduced() ? 0 : now * ball.speed;
       const angle = (ball.t + drift) * Math.PI * 2;
       const pullX = (pointerX - centerX) * 0.08;
       const pullY = (pointerY - centerY) * 0.08;
@@ -3868,15 +3719,6 @@ function showGamePip() {
   }
 }
 
-function scheduleAutoGamePip() {
-  if (!gamePip || hasAutoShownGamePip()) return;
-  window.setTimeout(() => {
-    if (!gamePip || hasAutoShownGamePip() || document.visibilityState === "hidden") return;
-    rememberAutoShownGamePip();
-    showGamePip();
-  }, GAME_PIP_AUTO_DELAY);
-}
-
 function resumeGamePipSoundtrack() {
   if (!siteSoundtrack || !gamePipShouldResumeSoundtrack) return;
   playSiteSoundtrack({
@@ -3935,38 +3777,25 @@ function endGamePipDrag(event) {
   gamePipHead?.releasePointerCapture?.(event.pointerId);
 }
 
-if (document.readyState === "complete") {
-  scheduleStartupVideoOpen();
-  scheduleStartupVideoFallback();
-} else {
-  window.addEventListener("load", () => {
-    scheduleStartupVideoOpen();
-    scheduleStartupVideoFallback();
-  }, { once: true });
-}
-window.addEventListener("pagehide", () => {
-  clearStartupOpenTimer();
-  clearStartupFallbackTimer();
-}, { once: true });
-scheduleAutoGamePip();
-
-startupVideoCloseButtons.forEach((button) => {
-  button.addEventListener("click", closeStartupVideoWithMusic);
+startupVideoPlay?.addEventListener("click", () => {
+  if (!startupVideoPlayer) return;
+  if (!startupVideoPlayer.paused) {
+    startupVideoPlayer.pause();
+    startupVideoPlay.textContent = "Watch the Story";
+    return;
+  }
+  void playStartupVideoWithSound({ reset: startupVideoPlayer.ended });
 });
-startupVideoPlay?.addEventListener("click", () => playStartupVideoWithSound({ reset: true }));
-startupMusicStart?.addEventListener("click", closeStartupVideoWithMusic);
-startupVideoPlayer?.addEventListener("pointerdown", () => {
-  playStartupVideoWithSound();
-}, { passive: true });
+startupVideoDismiss?.addEventListener("click", () => {
+  startupVideoPlayer?.pause();
+  startupVideoModal.hidden = true;
+  try { localStorage.setItem(HOME_STORY_DISMISSED_UNTIL_KEY, String(Date.now() + HOME_STORY_DISMISSAL_MS)); } catch {}
+});
 startupVideoPlayer?.addEventListener("play", () => {
-  // The commercial owns the home-page audio channel for its entire run.
-  if (isStartupVideoOpen()) stopStartupSoundtrack({ reset: true });
+  if (!startupVideoPlayer.muted) stopStartupSoundtrack({ reset: true });
 });
 startupVideoPlayer?.addEventListener("ended", () => {
-  closeStartupVideo({ playMusic: true });
-});
-startupVideoModal?.addEventListener("click", (event) => {
-  if (event.target === startupVideoModal) void closeStartupVideoWithMusic();
+  if (startupVideoPlay) startupVideoPlay.textContent = "Watch the Story";
 });
 
 function isEditableTarget(target) {
@@ -3980,9 +3809,6 @@ document.addEventListener("keydown", (event) => {
       event.preventDefault();
       event.stopPropagation();
     }
-  }
-  if (event.key === "Escape" && !startupVideoModal?.classList.contains("is-hidden")) {
-    void closeStartupVideoWithMusic();
   }
   if (event.key === "Escape" && gamePip?.classList.contains("is-open")) {
     hideGamePip({ resumeSoundtrack: true });
@@ -4022,7 +3848,7 @@ async function playSiteSoundtrack(options = {}) {
 
 siteSoundtrack?.addEventListener("play", () => {
   // Protect against any direct audio.play() call outside playSiteSoundtrack().
-  if (isStartupVideoOpen() && !soundtrackPrimingForHandoff) stopStartupSoundtrack({ reset: true });
+  if (isStartupVideoOpen()) stopStartupSoundtrack({ reset: true });
 });
 siteSoundtrack?.addEventListener("pause", () => setSoundtrackButtonState(false));
 
@@ -4043,6 +3869,17 @@ soundtrackButtons.forEach((button) => {
     }
   });
 });
+
+if (siteSoundtrack?.dataset.autoplay === "true") {
+  const attemptPageSoundtrackAutoplay = () => {
+    void playSiteSoundtrack({ fromPage: true, restart: true });
+  };
+  if (document.readyState === "complete") {
+    queueMicrotask(attemptPageSoundtrackAutoplay);
+  } else {
+    window.addEventListener("load", attemptPageSoundtrackAutoplay, { once: true });
+  }
+}
 
 function setDomainStripOpen(open) {
   if (gamePipDragState) return;
@@ -4260,7 +4097,7 @@ generateMiniVideoPrompt();
 generateMiniNumberSignals();
 
 function setupMascotPointer() {
-  if (mobilePerformanceQuery.matches || reducedMotionQuery.matches) return;
+  if (mobilePerformanceQuery.matches || isMotionReduced()) return;
   if (document.body?.classList.contains("features-cinematic-page")) return;
   if (!document.body || document.querySelector(".lm-mascot-pointer")) return;
   document.documentElement.dataset.cursorMode = "mascot";
@@ -4336,7 +4173,7 @@ function setupMascotPointer() {
   document.body.appendChild(heartPointer);
 
   const image = pointer.querySelector("img");
-  const reduceMotion = reducedMotionQuery.matches;
+  const reduceMotion = isMotionReduced();
   const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
   const state = {
     x: window.innerWidth * 0.82,

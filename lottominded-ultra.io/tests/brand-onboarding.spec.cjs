@@ -3,10 +3,8 @@ const { test, expect } = require("@playwright/test");
 async function openHome(page) {
   await page.route(/\.(?:mp3|mp4|wav|webm)(?:\?.*)?$/i, (route) => route.fulfill({ status: 204, body: "" }));
   await page.goto("/index.html#choose-your-path", { waitUntil: "domcontentloaded" });
-  const startup = page.locator("[data-startup-video]");
-  await expect(startup).toBeVisible({ timeout: 12_000 });
-  await page.locator("[data-startup-video-close]").last().click({ force: true });
-  await expect(startup).toBeHidden({ timeout: 12_000 });
+  await expect(page.locator("[data-startup-video]")).toBeVisible({ timeout: 12_000 });
+  await expect(page.locator("#choose-your-path")).toBeVisible();
 }
 
 test("LottoMind is presented as the master brand without changing header order", async ({ page }) => {

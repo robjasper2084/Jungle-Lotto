@@ -1,5 +1,18 @@
 # LottoMind Upgrade Redesign Status
 
+## Entry Motion And Page Soundtracks
+
+- Step number: Owner-requested entry motion, performance, and assigned page soundtracks
+- Implementation commit: This status file is part of the focused commit; resolve with `git log -1 --format=%H -- docs/upgrade-redesign-status.md`
+- Affected routes: `/`, `/memberships.html`, and `/news/`
+- Assigned audio: Home uses `lottomind-home-theme-untitled-12.mp3`; Memberships uses `lottomind-membership-theme-untitled-14.mp3`; News uses `lottomind-news-theme-instrumental.mp3`
+- Playback behavior: Each page attempts entry playback and retains a visible Play/Pause control. Browser autoplay policy can require a visitor gesture before unmuted audio starts; blocked playback is never reported as successful.
+- Entry and motion: Home opens directly on its value proposition; the commercial is inline and user-triggered; game picture-in-picture does not auto-expand; dismissed state lasts 30 days; Reduce Motion is available; off-screen videos, canvases, and particles pause; Magic 8 is compact on mobile.
+- Tests: Home validation passed with 20 IDs and 85 references; site validation passed for 17 HTML files; focused media checks 8/8; source/staging route matrix 162/162; release audit 7/7; staging safety 12/12; static staging 27 pages and 616 same-origin references; visual sign-off 78/78.
+- Visual review: `docs/staging-reviews/entry-motion-page-soundtracks.md` with desktop, tablet, and mobile contact sheets. The direct-entry composition and soundtrack controls are intentional; LottoMind's visual-identity invariants remain recognizable.
+- Staging URL: Local only (`http://127.0.0.1:8573/` during final verification)
+- Production approval status: Not approved for this change; `main`, production deployment, `v1-final`, and existing release tags remain unchanged.
+
 ## Verified Game Manifest
 
 - Step number: Owner-requested central game directory and trust-state repair

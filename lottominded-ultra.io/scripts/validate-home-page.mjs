@@ -43,11 +43,11 @@ if (/lm-healing-generator|healing-frequency\.js/i.test(html)) {
 }
 
 if (!/data-startup-video/i.test(html) || !/lottomind-home-apparel-commercial-20260804\.opt\.mp4/i.test(html)) {
-  failures.push("The restored homepage startup commercial is missing.");
+  failures.push("The optional inline homepage story is missing.");
 }
 
-if (!/data-startup-video-play/i.test(html) || !/Play with sound/i.test(html)) {
-  failures.push("The homepage startup commercial is missing its explicit sound control.");
+if (!/data-startup-video-play/i.test(html) || !/Watch the Story/i.test(html)) {
+  failures.push("The inline homepage story is missing its explicit user-triggered playback control.");
 }
 
 const sharedCommercialStylesheet = /assets\/css\/lm-commercial-hud\.css/i;
