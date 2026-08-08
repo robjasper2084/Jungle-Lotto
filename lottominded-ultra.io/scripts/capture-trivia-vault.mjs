@@ -46,7 +46,7 @@ try {
       await page.getByRole("button", { name: /Quick Play/ }).click();
       await page.locator("[data-question-text]").waitFor();
     }
-    await page.waitForTimeout(250);
+    await page.waitForTimeout(1_600);
 
     const output = resolve(outputRoot, `${capture.name}.png`);
     await page.screenshot({ path: output, fullPage: false });
