@@ -140,7 +140,7 @@ window.LMAudioMix = {
         <button type="button" data-command-search-open aria-label="Search LottoMind routes">Search</button>
         <a href="${siteUrl("./account.html#credits")}">Credits</a>
         <a href="${siteUrl("./account.html")}">Account</a>
-        <button type="button" data-reduce-motion-toggle aria-pressed="${storedReduceMotion}" aria-label="Reduce nonessential motion">${storedReduceMotion ? "Motion Reduced" : "Reduce Motion"}</button>
+        <button type="button" data-reduce-motion-toggle aria-pressed="${storedReduceMotion}" aria-label="${storedReduceMotion ? "Restore nonessential motion" : "Reduce nonessential motion"}">Motion</button>
       </div>
     </header>
   `;
@@ -211,7 +211,8 @@ window.LMAudioMix = {
     document.documentElement.classList.toggle("lm-reduce-motion", reduced);
     try { localStorage.setItem(REDUCE_MOTION_KEY, String(reduced)); } catch {}
     reduceMotionButton.setAttribute("aria-pressed", String(reduced));
-    reduceMotionButton.textContent = reduced ? "Motion Reduced" : "Reduce Motion";
+    reduceMotionButton.textContent = "Motion";
+    reduceMotionButton.setAttribute("aria-label", reduced ? "Restore nonessential motion" : "Reduce nonessential motion");
     window.dispatchEvent(new CustomEvent("lottomind:motion-preference", { detail: { reduced } }));
   });
   commandInput.addEventListener("input", renderCommandResults);

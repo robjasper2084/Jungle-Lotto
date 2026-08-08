@@ -14,6 +14,13 @@ test("membership hero leads, Collector follows Gaming Showcase, and the Guardian
   await page.setViewportSize({ width: 1440, height: 900 });
   await prepareMembershipPage(page);
 
+  await expect(page.locator("#lmMembership")).toHaveAttribute("data-audio-reactive-source", "disabled");
+  const audioReactiveState = await page.evaluate(() => ({
+    energy: window.__lmMembershipAudioEnergy,
+    source: window.__lmMembershipAudioReactive?.source,
+  }));
+  expect(audioReactiveState).toEqual({ energy: 0, source: "disabled" });
+
   const deck = page.locator("#membership-plans");
   const hero = page.locator("#dust");
   const collector = page.locator(".membership-support-card--collector");

@@ -207,6 +207,12 @@ test("Shadow Ops defers campaign assets until the run starts", async ({ page }) 
 test("News uses its static feed without contacting production Supabase", async ({ page }) => {
   const productionRequests = [];
   const consoleErrors = [];
+  await page.route(/^https?:\/\/(?!127\.0\.0\.1)/i, (route) => {
+    if (route.request().resourceType() === "image") {
+      return route.fulfill({ status: 204, body: "" });
+    }
+    return route.continue();
+  });
   page.on("request", (request) => {
     if (/\.supabase\.co\//i.test(request.url())) productionRequests.push(request.url());
   });

@@ -67,3 +67,25 @@ test("account dashboard remains usable at 390 by 844", async ({ page }) => {
   expect(overflow).toBeLessThanOrEqual(1);
   await expect(page.locator("#credits")).toBeVisible();
 });
+
+test("account dashboard keeps the Robot RAHBEE depth treatment", async ({ page }) => {
+  await blockMedia(page);
+  await page.goto("/account.html", { waitUntil: "domcontentloaded" });
+
+  const depth = await page.locator("body").evaluate((element) => ({
+    background: getComputedStyle(element).backgroundImage,
+    before: getComputedStyle(element, "::before").backgroundImage,
+  }));
+  expect(depth.background).toContain("startup-3d-mid.webp");
+  expect(depth.before).toContain("startup-3d-emissive.webp");
+
+  const cards = page.locator(".lm-dashboard-card");
+  await expect(cards).toHaveCount(6);
+  const cardStyle = await cards.first().evaluate((element) => {
+    const styles = getComputedStyle(element);
+    return { background: styles.backgroundImage, shadow: styles.boxShadow, transformStyle: styles.transformStyle };
+  });
+  expect(cardStyle.background).not.toBe("none");
+  expect(cardStyle.shadow).not.toBe("none");
+  expect(cardStyle.transformStyle).toBe("preserve-3d");
+});

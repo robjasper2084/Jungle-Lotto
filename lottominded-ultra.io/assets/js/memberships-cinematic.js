@@ -76,81 +76,13 @@
     membershipSoundtrack.volume = window.LMAudioMix?.levels.background ?? 0.42;
   }
 
-  const audioReactiveMedia = new Map();
-  let audioReactiveFrame = 0;
-  let audioReactiveEnergy = 0;
-
-  const updateAudioReactiveEnergy = () => {
-    let targetEnergy = 0;
-    let activeSource = "none";
-    audioReactiveMedia.forEach((entry, media) => {
-      if (media.paused || media.muted || media.volume <= 0) return;
-      entry.analyser.getByteFrequencyData(entry.data);
-      const upperBin = Math.max(8, Math.floor(entry.data.length * 0.58));
-      let total = 0;
-      let peak = 0;
-      for (let index = 2; index < upperBin; index += 1) {
-        total += entry.data[index];
-        peak = Math.max(peak, entry.data[index]);
-      }
-      const average = total / Math.max(1, upperBin - 2);
-      const normalizedAverage = Math.max(0, Math.min(1, (average - 14) / 112));
-      const normalizedPeak = Math.max(0, Math.min(1, (peak - 42) / 180));
-      const energy = normalizedAverage * 0.68 + normalizedPeak * 0.32;
-      if (energy > targetEnergy) {
-        targetEnergy = energy;
-        activeSource = media === featuredCommercialVideo
-          ? "featured-commercial"
-          : media === commercialVideo
-            ? "commercial-modal"
-            : "membership-soundtrack";
-      }
-    });
-    const smoothing = targetEnergy > audioReactiveEnergy ? 0.34 : 0.1;
-    audioReactiveEnergy += (targetEnergy - audioReactiveEnergy) * smoothing;
-    if (audioReactiveEnergy < 0.002) audioReactiveEnergy = 0;
-    window.__lmMembershipAudioEnergy = reducedMotion.matches ? 0 : audioReactiveEnergy;
-    root.style.setProperty("--lm-membership-audio-energy", window.__lmMembershipAudioEnergy.toFixed(3));
-    root.dataset.audioReactiveSource = activeSource;
-    audioReactiveFrame = requestAnimationFrame(updateAudioReactiveEnergy);
-  };
-
-  const enableAudioReactiveMedia = async (media) => {
-    if (!media) return false;
-    if (audioReactiveMedia.has(media)) return true;
-    const AudioContext = window.AudioContext || window.webkitAudioContext;
-    if (!AudioContext) return false;
-    state.audioContext ||= new AudioContext();
-    const context = state.audioContext;
-    if (context.state === "suspended") await context.resume().catch(() => {});
-    if (context.state !== "running") return false;
-    try {
-      const source = context.createMediaElementSource(media);
-      const analyser = context.createAnalyser();
-      analyser.fftSize = 256;
-      analyser.smoothingTimeConstant = 0.68;
-      source.connect(analyser);
-      analyser.connect(context.destination);
-      audioReactiveMedia.set(media, {
-        source,
-        analyser,
-        data: new Uint8Array(analyser.frequencyBinCount),
-      });
-      if (!audioReactiveFrame) audioReactiveFrame = requestAnimationFrame(updateAudioReactiveEnergy);
-      return true;
-    } catch (_) {
-      return false;
-    }
-  };
-
+  window.__lmMembershipAudioEnergy = 0;
+  root.style.removeProperty("--lm-membership-audio-energy");
+  root.dataset.audioReactiveSource = "disabled";
   window.__lmMembershipAudioReactive = Object.freeze({
-    get energy() { return window.__lmMembershipAudioEnergy || 0; },
-    get source() { return root.dataset.audioReactiveSource || "none"; },
+    energy: 0,
+    source: "disabled",
   });
-  window.addEventListener("pagehide", () => {
-    cancelAnimationFrame(audioReactiveFrame);
-    audioReactiveFrame = 0;
-  }, { once: true });
 
   const syncMembershipSoundState = () => {
     if (!soundToggle) return;
@@ -171,7 +103,6 @@
       try { membershipSoundtrack.currentTime = 0; } catch (_) {}
     }
     try {
-      await enableAudioReactiveMedia(membershipSoundtrack);
       window.LMAudioMix?.claim?.(membershipSoundtrack);
       await membershipSoundtrack.play();
       state.soundEnabled = !silent;
@@ -270,7 +201,6 @@
     commercialVideo.defaultMuted = false;
     commercialVideo.removeAttribute("muted");
     try {
-      await enableAudioReactiveMedia(commercialVideo);
       await commercialVideo.play();
       if (commercialSound) commercialSound.hidden = true;
       return true;
@@ -389,7 +319,6 @@
     if (featuredCommercialSoundEnabled) {
       window.LMAudioMix?.claim?.(featuredCommercialVideo);
       restoreDeferredVideoSources(featuredCommercialVideo);
-      await enableAudioReactiveMedia(featuredCommercialVideo);
       featuredCommercialVideo.play().catch(() => {});
     }
   });
