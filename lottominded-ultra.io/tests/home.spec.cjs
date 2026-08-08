@@ -8,9 +8,11 @@ async function openHome(page) {
   await page.goto("/index.html#top", { waitUntil: "domcontentloaded" });
   await page.waitForLoadState("networkidle").catch(() => {});
 
-  await expect(page.locator("[data-startup-video]")).toBeVisible({ timeout: 12_000 });
-  await expect(page.locator('[role="dialog"][data-startup-video]')).toHaveCount(0);
-  await expect(page.locator(".hero-motion")).toBeVisible();
+  const startup = page.locator("[data-startup-video]");
+  await expect(startup).toBeVisible({ timeout: 12_000 });
+  await expect(startup.locator('[role="dialog"]')).toBeVisible();
+  await startup.getByRole("button", { name: "Enter Site", exact: true }).click();
+  await expect(startup).toBeHidden();
   await expect(page.locator("body.home-page")).toBeVisible();
 }
 

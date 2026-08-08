@@ -551,14 +551,6 @@ body.has-open-modal .lm-healing-generator {
     width: 38px;
   }
 
-  .lm-healing-generator:not(.lm-healing-generator--news-dock).is-minimized {
-    width: 64px;
-    height: 64px;
-    right: 8px;
-    bottom: max(78px, calc(env(safe-area-inset-bottom) + 8px));
-    padding: 10px;
-    border-radius: 50%;
-  }
 }
 
 @media (min-width: 681px) and (max-width: 1100px) {

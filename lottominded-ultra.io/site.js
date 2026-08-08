@@ -17,8 +17,6 @@ const SITE_AUDIO_LEVELS = Object.freeze({
   ui: 0.022,
 });
 const REDUCE_MOTION_KEY = "lottominded.ultra.reduceMotion.v1";
-const HOME_STORY_DISMISSED_UNTIL_KEY = "lottominded.ultra.homeStoryDismissedUntil.v1";
-const HOME_STORY_DISMISSAL_MS = 30 * 24 * 60 * 60 * 1000;
 const storedReduceMotion = (() => {
   try { return localStorage.getItem(REDUCE_MOTION_KEY) === "true"; } catch { return false; }
 })();
@@ -418,9 +416,11 @@ const siteBackButton = document.querySelector("[data-site-back]");
 const siteSoundtrack = document.querySelector("#siteSoundtrack");
 const soundtrackButtons = document.querySelectorAll("[data-soundtrack-toggle]");
 const startupVideoModal = document.querySelector("[data-startup-video]");
-const startupVideoDismiss = document.querySelector("[data-startup-video-dismiss]");
+const startupVideoCloseButtons = document.querySelectorAll("[data-startup-video-close]");
 const startupVideoPlay = document.querySelector("[data-startup-video-play]");
 const startupVideoPlayer = startupVideoModal?.querySelector("video");
+let startupOpenTimer = 0;
+let startupVideoDismissed = false;
 const domainStrip = document.querySelector(".domain-strip");
 const gamePip = document.querySelector("[data-game-pip]");
 const gamePipClose = document.querySelector("[data-game-pip-close]");
@@ -439,6 +439,9 @@ const compactHeaderLabels =
   document.body.classList.contains("manual-page");
 const conciseSoundtrackLabels = document.body.classList.contains("home-page");
 const HEADER_COLLAPSED_KEY = "lottominded.ultra.siteHeaderCollapsed.v1";
+const STARTUP_MODAL_OPEN_DELAY = 800;
+const GAME_PIP_AUTO_DELAY = 90_000;
+const GAME_PIP_AUTO_KEY = "lottominded.ultra.homeGamePipAutoShown.v1";
 const MEMBER_SIGNUP_KEY = "lottominded.ultra.memberSignup.v1";
 const PROMPT_ACCESS_KEY = "lottominded.ultra.promptAccess.v1";
 const PROMPT_ACCESS_PASSWORD = "lottomind";
@@ -454,7 +457,11 @@ let gamePipDragState = null;
 let activePasswordGatePanel = null;
 
 function isStartupVideoOpen() {
-  return Boolean(startupVideoPlayer && !startupVideoPlayer.paused && !startupVideoPlayer.muted);
+  return Boolean(
+    startupVideoModal
+    && !startupVideoModal.classList.contains("is-hidden")
+    && startupVideoModal.getAttribute("aria-hidden") !== "true"
+  );
 }
 
 function getSharedSignalHref() {
@@ -3122,6 +3129,31 @@ function setupInlineSoundVideos() {
 
 setupInlineSoundVideos();
 
+function hasSeenStartupVideo() {
+  return Boolean(window.__lottomindStartupVideoSeenThisLoad);
+}
+
+function rememberStartupVideoSeen() {
+  window.__lottomindStartupVideoSeenThisLoad = true;
+}
+
+function hasAutoShownGamePip() {
+  try {
+    return sessionStorage.getItem(GAME_PIP_AUTO_KEY) === "true";
+  } catch {
+    return Boolean(window.__lottomindHomeGamePipAutoShown);
+  }
+}
+
+function rememberAutoShownGamePip() {
+  window.__lottomindHomeGamePipAutoShown = true;
+  try {
+    sessionStorage.setItem(GAME_PIP_AUTO_KEY, "true");
+  } catch {
+    // Session storage can be unavailable in locked-down browsers.
+  }
+}
+
 function prepareStartupVideoAudio(options = {}) {
   if (!startupVideoPlayer) return;
   startupVideoPlayer.preload = "metadata";
@@ -3166,15 +3198,26 @@ async function playStartupVideoWithSound(options = {}) {
   }
 }
 
-function initializeHomeStory() {
-  if (!startupVideoModal) return;
-  if (shouldSuppressStartupVideo()) {
-    startupVideoModal.hidden = true;
-    return;
+async function playStartupVideoMuted(options = {}) {
+  if (!startupVideoPlayer) return false;
+  stopStartupSoundtrack({ reset: true });
+  restoreDeferredVideoSources(startupVideoPlayer);
+  startupVideoPlayer.preload = "metadata";
+  startupVideoPlayer.muted = true;
+  startupVideoPlayer.defaultMuted = true;
+  startupVideoPlayer.autoplay = true;
+  if (options.reset) {
+    try { startupVideoPlayer.currentTime = 0; } catch {}
   }
-  let dismissedUntil = 0;
-  try { dismissedUntil = Number(localStorage.getItem(HOME_STORY_DISMISSED_UNTIL_KEY) || 0); } catch {}
-  if (dismissedUntil > Date.now()) startupVideoModal.hidden = true;
+  try {
+    await startupVideoPlayer.play();
+    startupVideoModal?.classList.remove("is-awaiting-video-play");
+    if (startupVideoPlay) startupVideoPlay.textContent = "Play with sound";
+    return true;
+  } catch {
+    startupVideoModal?.classList.add("is-awaiting-video-play");
+    return false;
+  }
 }
 
 function shouldSuppressStartupVideo() {
@@ -3182,7 +3225,39 @@ function shouldSuppressStartupVideo() {
   return params.get("collector") === "access";
 }
 
-initializeHomeStory();
+function showStartupVideo() {
+  startupOpenTimer = 0;
+  if (!startupVideoModal || startupVideoDismissed || hasSeenStartupVideo() || shouldSuppressStartupVideo()) return;
+  document.body.classList.add("has-startup-modal");
+  startupVideoModal.hidden = false;
+  startupVideoModal.classList.remove("is-hidden");
+  startupVideoModal.setAttribute("aria-hidden", "false");
+  rememberStartupVideoSeen();
+  void playStartupVideoMuted({ reset: true });
+  startupVideoPlay?.focus({ preventScroll: true });
+}
+
+function closeStartupVideo() {
+  if (!startupVideoModal) return;
+  startupVideoDismissed = true;
+  if (startupOpenTimer) window.clearTimeout(startupOpenTimer);
+  startupOpenTimer = 0;
+  rememberStartupVideoSeen();
+  startupVideoPlayer?.pause();
+  startupVideoModal.classList.add("is-hidden");
+  startupVideoModal.classList.remove("is-awaiting-video-play");
+  startupVideoModal.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("has-startup-modal");
+  void playSiteSoundtrack({ fromPage: true, restart: true });
+}
+
+function scheduleStartupVideoOpen() {
+  if (!startupVideoModal || startupOpenTimer || startupVideoDismissed || hasSeenStartupVideo() || shouldSuppressStartupVideo()) return;
+  startupOpenTimer = window.setTimeout(showStartupVideo, STARTUP_MODAL_OPEN_DELAY);
+}
+
+if (document.readyState === "complete") scheduleStartupVideoOpen();
+else window.addEventListener("load", scheduleStartupVideoOpen, { once: true });
 
 function getGamePipOffset() {
   if (!gamePip) return { x: 0, y: 0 };
@@ -3719,6 +3794,15 @@ function showGamePip() {
   }
 }
 
+function scheduleAutoGamePip() {
+  if (!gamePip || hasAutoShownGamePip()) return;
+  window.setTimeout(() => {
+    if (!gamePip || hasAutoShownGamePip() || document.visibilityState === "hidden") return;
+    rememberAutoShownGamePip();
+    showGamePip();
+  }, GAME_PIP_AUTO_DELAY);
+}
+
 function resumeGamePipSoundtrack() {
   if (!siteSoundtrack || !gamePipShouldResumeSoundtrack) return;
   playSiteSoundtrack({
@@ -3777,26 +3861,17 @@ function endGamePipDrag(event) {
   gamePipHead?.releasePointerCapture?.(event.pointerId);
 }
 
-startupVideoPlay?.addEventListener("click", () => {
-  if (!startupVideoPlayer) return;
-  if (!startupVideoPlayer.paused) {
-    startupVideoPlayer.pause();
-    startupVideoPlay.textContent = "Watch the Story";
-    return;
-  }
-  void playStartupVideoWithSound({ reset: startupVideoPlayer.ended });
-});
-startupVideoDismiss?.addEventListener("click", () => {
-  startupVideoPlayer?.pause();
-  startupVideoModal.hidden = true;
-  try { localStorage.setItem(HOME_STORY_DISMISSED_UNTIL_KEY, String(Date.now() + HOME_STORY_DISMISSAL_MS)); } catch {}
-});
+startupVideoCloseButtons.forEach((button) => button.addEventListener("click", closeStartupVideo));
+startupVideoPlay?.addEventListener("click", () => void playStartupVideoWithSound({ reset: startupVideoPlayer?.ended }));
 startupVideoPlayer?.addEventListener("play", () => {
-  if (!startupVideoPlayer.muted) stopStartupSoundtrack({ reset: true });
+  stopStartupSoundtrack({ reset: true });
 });
-startupVideoPlayer?.addEventListener("ended", () => {
-  if (startupVideoPlay) startupVideoPlay.textContent = "Watch the Story";
+startupVideoPlayer?.addEventListener("ended", closeStartupVideo);
+startupVideoModal?.addEventListener("click", (event) => {
+  if (event.target === startupVideoModal) closeStartupVideo();
 });
+
+scheduleAutoGamePip();
 
 function isEditableTarget(target) {
   return Boolean(target?.closest?.("input, textarea, select, [contenteditable='true']"));
@@ -3810,6 +3885,7 @@ document.addEventListener("keydown", (event) => {
       event.stopPropagation();
     }
   }
+  if (event.key === "Escape" && isStartupVideoOpen()) closeStartupVideo();
   if (event.key === "Escape" && gamePip?.classList.contains("is-open")) {
     hideGamePip({ resumeSoundtrack: true });
   }

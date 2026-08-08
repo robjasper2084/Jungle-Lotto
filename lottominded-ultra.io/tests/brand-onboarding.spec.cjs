@@ -3,7 +3,10 @@ const { test, expect } = require("@playwright/test");
 async function openHome(page) {
   await page.route(/\.(?:mp3|mp4|wav|webm)(?:\?.*)?$/i, (route) => route.fulfill({ status: 204, body: "" }));
   await page.goto("/index.html#choose-your-path", { waitUntil: "domcontentloaded" });
-  await expect(page.locator("[data-startup-video]")).toBeVisible({ timeout: 12_000 });
+  const startup = page.locator("[data-startup-video]");
+  await expect(startup).toBeVisible({ timeout: 12_000 });
+  await startup.getByRole("button", { name: "Enter Site", exact: true }).click();
+  await expect(startup).toBeHidden();
   await expect(page.locator("#choose-your-path")).toBeVisible();
 }
 
