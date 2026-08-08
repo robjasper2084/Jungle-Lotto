@@ -10,6 +10,7 @@ import {
   scoreAnswer,
   summarizeStats,
 } from "../src/trivia-engine.mjs";
+import { validateQuestionCollection } from "../src/question-validator.mjs";
 
 test("question bank meets production schema and review requirements", () => {
   assert.equal(QUESTIONS.length, 154);
@@ -27,7 +28,10 @@ test("question bank meets production schema and review requirements", () => {
     assert.equal(question.active, true);
     assert.match(question.reviewedAt, /^\d{4}-\d{2}-\d{2}$/);
     assert.equal(question.version, 1);
+    assert.ok(question.lastEditedBy);
+    assert.ok(question.lastEditedAt);
   }
+  assert.deepEqual(validateQuestionCollection(QUESTIONS).errors, []);
 });
 
 test("each category has at least twenty questions", () => {
@@ -47,6 +51,14 @@ test("quick play returns ten unique mixed questions", () => {
   assert.equal(set.length, TRIVIA_CONFIG.quickPlayLength);
   assert.equal(new Set(set.map((question) => question.id)).size, set.length);
   assert.ok(new Set(set.map((question) => question.category)).size > 1);
+});
+
+test("survival raises difficulty after each five-answer stage", () => {
+  const set = createQuestionSet({ mode: "survival", seed: "test-survival" });
+  assert.deepEqual(set.slice(0, 5).map(({ difficulty }) => difficulty), Array(5).fill("easy"));
+  assert.deepEqual(set.slice(5, 10).map(({ difficulty }) => difficulty), Array(5).fill("medium"));
+  assert.deepEqual(set.slice(10, 15).map(({ difficulty }) => difficulty), Array(5).fill("hard"));
+  assert.equal(new Set(set.map(({ id }) => id)).size, set.length);
 });
 
 test("daily practice selection is deterministic by UTC challenge ID", () => {

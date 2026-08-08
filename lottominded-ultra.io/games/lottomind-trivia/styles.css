@@ -307,7 +307,7 @@ body.trivia-vault-page button { font: inherit; }
 .vault-play-header span { display: block; color: var(--tv-cyan); font-size: 0.65rem; font-weight: 800; text-transform: uppercase; }
 .vault-play-header strong { display: block; margin-top: 4px; overflow-wrap: anywhere; font-size: 1rem; }
 .vault-play-header nav { display: flex; align-items: center; gap: 7px; padding: 10px; }
-.vault-play-header button { min-height: 42px; padding: 8px 11px; border: 1px solid rgba(255,255,255,.2); border-radius: 4px; color: var(--tv-white); background: #0d1825; cursor: pointer; }
+.vault-play-header button { min-height: 44px; padding: 8px 11px; border: 1px solid rgba(255,255,255,.2); border-radius: 4px; color: var(--tv-white); background: #0d1825; cursor: pointer; }
 
 .vault-reactor-stage {
   position: relative;

@@ -48,6 +48,24 @@ function mixedDifficulty(questions) {
   return ["easy", "medium", "hard"].flatMap((difficulty) => groups[difficulty] || []);
 }
 
+function survivalDifficultyOrder(questions, seed) {
+  const pools = Object.fromEntries(
+    ["easy", "medium", "hard"].map((difficulty) => [
+      difficulty,
+      shuffled(questions.filter((question) => question.difficulty === difficulty), `${seed}:${difficulty}`),
+    ])
+  );
+  const ordered = [];
+  while (Object.values(pools).some((pool) => pool.length)) {
+    const stage = Math.min(2, Math.floor(ordered.length / TRIVIA_CONFIG.survivalDifficultyStep));
+    const preferred = ["easy", "medium", "hard"][stage];
+    const fallback = [preferred, "hard", "medium", "easy"].find((difficulty) => pools[difficulty].length);
+    if (!fallback) break;
+    ordered.push(pools[fallback].shift());
+  }
+  return ordered;
+}
+
 export function createQuestionSet({ mode = "quick", category = "", seed = "", date = new Date() } = {}) {
   const bank = publicQuestions();
   if (mode === "daily") {
@@ -61,7 +79,7 @@ export function createQuestionSet({ mode = "quick", category = "", seed = "", da
     const selected = bank.filter((question) => question.category === category);
     return shuffled(mixedDifficulty(selected), seed || `${category}:${Date.now()}`).slice(0, TRIVIA_CONFIG.quickPlayLength);
   }
-  if (mode === "survival") return shuffled(bank, seed || `survival:${Date.now()}`);
+  if (mode === "survival") return survivalDifficultyOrder(bank, seed || `survival:${Date.now()}`);
   return shuffled(bank, seed || `quick:${Date.now()}`).slice(0, TRIVIA_CONFIG.quickPlayLength);
 }
 

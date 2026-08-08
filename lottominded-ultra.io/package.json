@@ -19,6 +19,8 @@
     "arcade-pilot:capture": "node scripts/capture-arcade-pilot.mjs",
     "baseline:capture": "node scripts/capture-visual-baseline.mjs",
     "trivia:test": "node --test games/lottomind-trivia/tests/*.test.mjs",
+    "trivia:capture": "node scripts/capture-trivia-vault.mjs",
+    "trivia:questions": "node scripts/manage-trivia-questions.mjs",
     "test": "playwright test"
   },
   "devDependencies": {

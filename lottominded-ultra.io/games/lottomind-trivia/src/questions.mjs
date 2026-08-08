@@ -197,7 +197,10 @@ const banks = Object.freeze({
 });
 
 function normalizeSource(source) {
-  return source || Object.freeze({ name: "LottoMind editorial review", url: "../../how-to-use.html" });
+  return source || Object.freeze({
+    name: "LottoMind editorial review",
+    url: "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/how-to-use.html",
+  });
 }
 
 function buildQuestion(category, entry, categoryIndex, questionIndex) {
@@ -222,6 +225,8 @@ function buildQuestion(category, entry, categoryIndex, questionIndex) {
     active: true,
     tags: Object.freeze(tags),
     version: 1,
+    lastEditedBy: "LottoMind editorial review",
+    lastEditedAt: "2026-08-05T12:00:00.000Z",
   });
 }
 

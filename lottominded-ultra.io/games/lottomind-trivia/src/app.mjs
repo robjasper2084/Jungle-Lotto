@@ -31,7 +31,9 @@ function showScreen(name) {
   });
   const target = screens.get(name);
   target?.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
-  target?.querySelector("h1, h2, button, a")?.focus({ preventScroll: true });
+  const heading = target?.querySelector("h1, h2");
+  if (heading) heading.tabIndex = -1;
+  (heading || target?.querySelector("button, a"))?.focus({ preventScroll: true });
 }
 
 function setServiceState() {
@@ -233,7 +235,7 @@ function chooseAnswer(selectedChoiceIndex, timedOut = false) {
   correct ? audio.correct() : audio.incorrect();
   announce(`${$("[data-feedback-title]").textContent}. ${question.explanation} ${lastAnswer.points} points earned.`);
   $("[data-continue]").focus({ preventScroll: true });
-  feedbackTimeout = setTimeout(advanceQuestion, TRIVIA_CONFIG.feedbackDelayMs);
+  feedbackTimeout = window.setTimeout(advanceQuestion, TRIVIA_CONFIG.feedbackDelayMs);
 }
 
 function pauseGame(dialog = pauseDialog) {
@@ -268,7 +270,7 @@ function finishGame() {
   $("[data-result-accuracy]").textContent = `${summary.accuracy}%`;
   $("[data-result-fastest]").textContent = summary.fastestAnswerMs === null ? "--" : `${(summary.fastestAnswerMs / 1000).toFixed(2)} sec`;
   $("[data-result-streak]").textContent = String(summary.longestStreak);
-  $("[data-result-credits]").textContent = available.creditRewards ? "Pending authoritative server result" : "Not enabled";
+  $("[data-result-credits]").textContent = available.creditRewards ? "Pending authoritative server result" : "Disabled in static build";
   $("[data-record-message]").textContent = saved.isRecord ? "New personal record stored on this device." : "Run stored in your local guest record.";
 
   const categoryResults = $("[data-category-results]");
