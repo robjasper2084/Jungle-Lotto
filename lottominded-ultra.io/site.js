@@ -244,6 +244,9 @@ window.LMAudioMix = {
 
 (() => {
   const pageFooter = [...document.querySelectorAll("body > footer")].find((footer) => footer.id !== "player" && !footer.matches("[data-feature-live-player]"));
+  if (pageFooter) {
+    pageFooter.classList.add("lm-site-footer-hud");
+  }
   if (pageFooter && !pageFooter.querySelector(".lm-footer-support-links")) {
     const supportLinks = document.createElement("nav");
     supportLinks.className = "lm-footer-support-links";

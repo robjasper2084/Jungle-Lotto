@@ -3797,12 +3797,48 @@ body.has-merch-shadow-popup {
 
 /* Three-product launch catalog: operational facts stay visible and checkout fails closed. */
 .merch-launch-catalog {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
   width: min(1180px, calc(100% - 32px));
   margin: clamp(36px, 7vw, 92px) auto;
   padding: clamp(20px, 4vw, 42px);
-  border: 1px solid rgba(41, 247, 255, 0.38);
-  background: rgba(2, 10, 20, 0.94);
-  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.55), inset 0 0 44px rgba(41, 247, 255, 0.06);
+  border: 1px solid rgba(82, 246, 255, 0.72);
+  clip-path: polygon(0 18px, 18px 0, calc(100% - 80px) 0, calc(100% - 64px) 12px, 100% 12px, 100% calc(100% - 18px), calc(100% - 18px) 100%, 78px 100%, 62px calc(100% - 10px), 0 calc(100% - 10px));
+  background:
+    linear-gradient(rgba(82, 246, 255, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(82, 246, 255, 0.045) 1px, transparent 1px),
+    radial-gradient(circle at 78% 8%, rgba(137, 90, 255, 0.18), transparent 32%),
+    linear-gradient(145deg, rgba(4, 24, 43, 0.98), rgba(2, 9, 19, 0.98) 58%, rgba(14, 8, 31, 0.98));
+  background-size: 28px 28px, 28px 28px, auto, auto;
+  box-shadow:
+    0 34px 100px rgba(0, 0, 0, 0.66),
+    0 0 40px rgba(41, 247, 255, 0.12),
+    inset 0 0 0 5px rgba(1, 8, 17, 0.82),
+    inset 0 0 72px rgba(41, 247, 255, 0.08);
+}
+
+.merch-launch-catalog::before {
+  position: absolute;
+  z-index: -1;
+  inset: 8px;
+  content: "";
+  border: 1px solid rgba(255, 224, 113, 0.22);
+  clip-path: polygon(0 22px, 22px 0, 34% 0, 36% 8px, 64% 8px, 66% 0, 100% 0, 100% calc(100% - 22px), calc(100% - 22px) 100%, 66% 100%, 64% calc(100% - 8px), 36% calc(100% - 8px), 34% 100%, 0 100%);
+  pointer-events: none;
+}
+
+.merch-launch-catalog::after {
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  right: clamp(28px, 6vw, 90px);
+  width: min(230px, 28vw);
+  height: 4px;
+  content: "";
+  background: linear-gradient(90deg, #ffe071 0 28%, #52f6ff 28% 72%, #a875ff 72%);
+  box-shadow: 0 0 18px rgba(82, 246, 255, 0.74);
+  pointer-events: none;
 }
 
 .merch-launch-catalog__header,
@@ -3811,6 +3847,16 @@ body.has-merch-shadow-popup {
   grid-template-columns: minmax(0, 1.3fr) minmax(280px, 0.7fr);
   gap: 24px;
   align-items: end;
+}
+
+.merch-launch-catalog__header {
+  position: relative;
+  margin: -8px -8px 28px;
+  padding: clamp(18px, 3vw, 28px);
+  border: 1px solid rgba(82, 246, 255, 0.2);
+  border-left: 4px solid #52f6ff;
+  background: linear-gradient(100deg, rgba(6, 34, 57, 0.82), rgba(5, 17, 32, 0.48) 58%, rgba(62, 30, 94, 0.34));
+  box-shadow: inset 0 0 28px rgba(82, 246, 255, 0.06);
 }
 
 .merch-launch-catalog__header span,
@@ -3836,7 +3882,8 @@ body.has-merch-shadow-popup {
   padding: 14px 16px;
   border-left: 3px solid #ffe071;
   color: #dcefff;
-  background: rgba(8, 30, 51, 0.86);
+  background: linear-gradient(135deg, rgba(8, 35, 60, 0.96), rgba(12, 13, 34, 0.94));
+  box-shadow: inset 0 0 24px rgba(82, 246, 255, 0.08), 0 0 18px rgba(0, 0, 0, 0.28);
   line-height: 1.5;
 }
 

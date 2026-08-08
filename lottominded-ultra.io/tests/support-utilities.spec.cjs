@@ -85,6 +85,7 @@ test("footer links are unique and use the canonical support destinations globall
 
   for (const route of ["/index.html#top", "/accessibility.html", "/memberships.html", "/merch-store.html"]) {
     await page.goto(route, { waitUntil: "domcontentloaded" });
+    await expect(page.locator("body > footer")).toHaveClass(/lm-site-footer-hud/);
     const links = await page.locator("body > footer :is(.lm-footer-support-links, .site-legal-links) a").evaluateAll((items) =>
       items.map((item) => [item.textContent.trim(), `${new URL(item.href).pathname}${new URL(item.href).hash}`])
     );
@@ -95,7 +96,28 @@ test("footer links are unique and use the canonical support destinations globall
       const footerPadding = await page.locator("body > footer").evaluate((element) => Number.parseFloat(getComputedStyle(element).paddingBottom));
       expect(footerPadding, `${route} should reserve space below footer links`).toBeGreaterThanOrEqual(112);
     }
+    expect(await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1)).toBe(false);
   }
+});
+
+test("shared signal marquee uses smooth motion and preserves reduced-motion behavior", async ({ page }) => {
+  await page.goto("/merch-store.html", { waitUntil: "domcontentloaded" });
+  const track = page.locator(".home-signal-marquee-track").first();
+  await expect(track).toBeVisible();
+
+  const motion = await track.evaluate((element) => {
+    const styles = getComputedStyle(element);
+    return { name: styles.animationName, duration: styles.animationDuration };
+  });
+  if (page.viewportSize()?.width <= 760) {
+    expect(motion.name).toBe("none");
+  } else {
+    expect(motion.name).toBe("home-signal-marquee");
+    expect(motion.duration).toBe("31s");
+  }
+
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await expect(track).toHaveCSS("animation-name", "none");
 });
 
 test("account route stays read-only in local preview and exposes support links", async ({ page }) => {

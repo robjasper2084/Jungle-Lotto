@@ -320,6 +320,9 @@ test("Storefront exposes only the two truthful launch products", async ({ page }
   await page.locator("[data-merch-commercial-close]").click();
 
   const catalog = page.locator("#launch-catalog");
+  await expect(catalog).toHaveCSS("overflow", "hidden");
+  expect(await catalog.evaluate((element) => getComputedStyle(element).clipPath)).not.toBe("none");
+  expect(await catalog.evaluate((element) => getComputedStyle(element, "::after").content)).not.toBe("none");
   await expect(catalog.locator("[data-launch-product]")).toHaveCount(2);
   await expect(catalog.getByRole("heading", { name: "Guardian Starter Bundle" })).toBeVisible();
   await expect(catalog.getByRole("heading", { name: "Detroit Embroidered Hoodie" })).toBeVisible();
