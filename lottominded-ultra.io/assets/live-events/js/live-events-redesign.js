@@ -41,6 +41,7 @@
   let liveWaveFrame = null;
   let heroSingerSoundEnabled = false;
   let heroSingerHandoffStarted = false;
+  let heroSingerSyncTimer = 0;
   let shadowOpsShouldResumeLiveAudio = false;
   let shadowOpsLiveAudioVolume = 0.56;
 
@@ -70,6 +71,20 @@
       } catch {}
     };
 
+    const stopHeroSync = () => {
+      if (!heroSingerSyncTimer) return;
+      window.clearInterval(heroSingerSyncTimer);
+      heroSingerSyncTimer = 0;
+    };
+
+    const startHeroSync = () => {
+      stopHeroSync();
+      alignHeroSoundtrack();
+      heroSingerSyncTimer = window.setInterval(() => {
+        if (heroSingerSoundEnabled && !document.hidden && isVisible) alignHeroSoundtrack();
+      }, 120);
+    };
+
     const syncPlayback = () => {
       if (document.hidden || !isVisible) {
         heroSingerFilm.pause();
@@ -91,6 +106,7 @@
 
     const stopHeroAudio = (options = {}) => {
       heroSingerSoundEnabled = false;
+      stopHeroSync();
       heroSingerFilm.pause();
       heroSingerAudio?.pause();
       if (options.reset) {
@@ -122,6 +138,7 @@
       try {
         await Promise.all([heroSingerFilm.play(), heroSingerAudio.play()]);
         heroSingerSoundEnabled = true;
+        startHeroSync();
         setSoundState(true);
         return true;
       } catch {
@@ -155,13 +172,21 @@
 
     heroSingerAudio?.addEventListener("play", () => {
       heroSingerSoundEnabled = true;
+      alignHeroSoundtrack();
       setSoundState(true);
     });
     heroSingerAudio?.addEventListener("pause", () => {
       if (!document.hidden && isVisible && heroSingerSoundEnabled) return;
       setSoundState(false);
     });
+    heroSingerAudio?.addEventListener("timeupdate", () => {
+      if (heroSingerSoundEnabled) alignHeroSoundtrack();
+    });
     heroSingerAudio?.addEventListener("ended", handoffToPageMix);
+    heroSingerFilm.addEventListener("timeupdate", () => {
+      if (heroSingerSoundEnabled) alignHeroSoundtrack();
+    });
+    heroSingerFilm.addEventListener("seeked", alignHeroSoundtrack);
     heroSingerFilm.addEventListener("ended", handoffToPageMix);
 
     if ("IntersectionObserver" in window) {

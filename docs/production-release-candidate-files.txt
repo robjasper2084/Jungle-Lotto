@@ -1,404 +1,168 @@
-﻿docs/archived-pages/studio-phase1.md
-docs/HIGGSFIELD-ART-PROMPTS.md
-docs/production-launch-assets/memberships-1440x900.png
-docs/production-launch-assets/memberships-390x844.png
-docs/production-launch-assets/static-wav-1440x900.png
-docs/production-launch-assets/static-wav-390x844.png
-docs/production-launch-report.md
-docs/production-release-candidate.md
-docs/production-release-candidate-files.txt
-docs/site-rebuild-checklist.md
-docs/site-rebuild-release-report.md
-docs/staging-reviews/account-hero-nav-assets/account-1440x900.png
-docs/staging-reviews/account-hero-nav-assets/account-390x844.png
-docs/staging-reviews/account-hero-nav-assets/account-768x1024.png
-docs/staging-reviews/account-hero-nav-assets/home-nav-1440x900.png
-docs/staging-reviews/account-hero-nav-assets/home-nav-390x844.png
-docs/staging-reviews/account-hero-nav-assets/home-nav-768x1024.png
-docs/staging-reviews/account-hero-nav-assets/robot-rahbee-1440x900.png
-docs/staging-reviews/account-hero-nav-assets/robot-rahbee-390x844.png
-docs/staging-reviews/account-hero-nav-assets/robot-rahbee-768x1024.png
-docs/staging-reviews/account-static-config-assets/redeem--desktop.png
-docs/staging-reviews/account-static-config-assets/redeem--mobile.png
-docs/staging-reviews/account-static-configuration.md
-docs/staging-reviews/collector-access-recovery.md
-docs/staging-reviews/collector-access-recovery-assets/home-collector-entry--desktop.png
-docs/staging-reviews/collector-access-recovery-assets/home-collector-entry--mobile.png
-docs/staging-reviews/collector-access-recovery-assets/memberships-collector-access--desktop.png
-docs/staging-reviews/collector-access-recovery-assets/memberships-collector-access--mobile.png
-docs/staging-reviews/features-return-hud.md
-docs/staging-reviews/features-return-hud-assets/features-app-1440x900.png
-docs/staging-reviews/features-return-hud-assets/features-app-390x844.png
-docs/staging-reviews/features-return-hud-assets/features-app-768x1024.png
-docs/staging-reviews/features-return-hud-assets/features-app-top-1440x900.png
-docs/staging-reviews/features-return-hud-assets/features-app-top-390x844.png
-docs/staging-reviews/features-return-hud-assets/features-app-top-768x1024.png
-docs/staging-reviews/features-return-hud-assets/news-events-hud-1440x900.png
-docs/staging-reviews/features-return-hud-assets/news-events-hud-390x844.png
-docs/staging-reviews/features-return-hud-assets/news-events-hud-768x1024.png
-docs/staging-reviews/footer-pointer-fix.md
-docs/staging-reviews/footer-pointer-fix/screenshots/accessibility-footer-1440x900.png
-docs/staging-reviews/footer-pointer-fix/screenshots/accessibility-footer-390x844.png
-docs/staging-reviews/footer-pointer-fix/screenshots/capture-report.json
-docs/staging-reviews/footer-pointer-fix/screenshots/home-footer-1440x900.png
-docs/staging-reviews/footer-pointer-fix/screenshots/home-footer-390x844.png
-docs/staging-reviews/footer-pointer-fix/screenshots/home-popup-1440x900.png
-docs/staging-reviews/footer-pointer-fix/screenshots/home-popup-390x844.png
-docs/staging-reviews/future-commercial-media.md
-docs/staging-reviews/future-commercial-media/help--desktop.png
-docs/staging-reviews/future-commercial-media/help--mobile.png
-docs/staging-reviews/future-commercial-media/lottomind-app--desktop.png
-docs/staging-reviews/future-commercial-media/lottomind-app--mobile.png
-docs/staging-reviews/future-commercial-media/memberships--desktop.png
-docs/staging-reviews/future-commercial-media/memberships--mobile.png
-docs/staging-reviews/future-commercial-media/news--desktop.png
-docs/staging-reviews/future-commercial-media/news--mobile.png
-docs/staging-reviews/help-media-release.md
-docs/staging-reviews/help-rahbee-depth.md
-docs/staging-reviews/home-storefront-spheres-corrections.md
-docs/staging-reviews/layout-restoration.md
-docs/staging-reviews/layout-restoration-assets/account-1440x900.png
-docs/staging-reviews/layout-restoration-assets/account-390x844.png
-docs/staging-reviews/layout-restoration-assets/account-768x1024.png
-docs/staging-reviews/layout-restoration-assets/account-footer-1440x900.png
-docs/staging-reviews/layout-restoration-assets/app-1440x900.png
-docs/staging-reviews/layout-restoration-assets/app-390x844.png
-docs/staging-reviews/layout-restoration-assets/app-768x1024.png
-docs/staging-reviews/layout-restoration-assets/arcade-1440x900.png
-docs/staging-reviews/layout-restoration-assets/arcade-390x844.png
-docs/staging-reviews/layout-restoration-assets/arcade-768x1024.png
-docs/staging-reviews/layout-restoration-assets/capture-report.json
-docs/staging-reviews/layout-restoration-assets/help-1440x900.png
-docs/staging-reviews/layout-restoration-assets/help-390x844.png
-docs/staging-reviews/layout-restoration-assets/help-768x1024.png
-docs/staging-reviews/layout-restoration-assets/home-1440x900.png
-docs/staging-reviews/layout-restoration-assets/home-390x844.png
-docs/staging-reviews/layout-restoration-assets/home-768x1024.png
-docs/staging-reviews/layout-restoration-assets/memberships-1440x900.png
-docs/staging-reviews/layout-restoration-assets/memberships-390x844.png
-docs/staging-reviews/layout-restoration-assets/memberships-768x1024.png
-docs/staging-reviews/layout-restoration-assets/news-1440x900.png
-docs/staging-reviews/layout-restoration-assets/news-390x844.png
-docs/staging-reviews/layout-restoration-assets/news-768x1024.png
-docs/staging-reviews/lottery-results-ticker.md
-docs/staging-reviews/lottery-results-ticker/news-desktop-1440x900.png
-docs/staging-reviews/lottery-results-ticker/news-mobile-390x844.png
-docs/staging-reviews/performance-media-pass.md
-docs/staging-reviews/performance-media-pass-assets/arcade--desktop.jpg
-docs/staging-reviews/performance-media-pass-assets/arcade--mobile.jpg
-docs/staging-reviews/performance-media-pass-assets/arcade--tablet.jpg
-docs/staging-reviews/performance-media-pass-assets/desktop-contact-sheet.jpg
-docs/staging-reviews/performance-media-pass-assets/live-events--desktop.jpg
-docs/staging-reviews/performance-media-pass-assets/live-events--mobile.jpg
-docs/staging-reviews/performance-media-pass-assets/live-events--tablet.jpg
-docs/staging-reviews/performance-media-pass-assets/manifest.json
-docs/staging-reviews/performance-media-pass-assets/memberships--desktop.jpg
-docs/staging-reviews/performance-media-pass-assets/memberships--mobile.jpg
-docs/staging-reviews/performance-media-pass-assets/memberships--tablet.jpg
-docs/staging-reviews/performance-media-pass-assets/mobile-contact-sheet.jpg
-docs/staging-reviews/performance-media-pass-assets/robot-rahbee--desktop.jpg
-docs/staging-reviews/performance-media-pass-assets/robot-rahbee--mobile.jpg
-docs/staging-reviews/performance-media-pass-assets/robot-rahbee--tablet.jpg
-docs/staging-reviews/performance-media-pass-assets/static-wav--desktop.jpg
-docs/staging-reviews/performance-media-pass-assets/static-wav--mobile.jpg
-docs/staging-reviews/performance-media-pass-assets/static-wav--tablet.jpg
-docs/staging-reviews/performance-media-pass-assets/storefront--desktop.jpg
-docs/staging-reviews/performance-media-pass-assets/storefront--mobile.jpg
-docs/staging-reviews/performance-media-pass-assets/storefront--tablet.jpg
-docs/staging-reviews/performance-media-pass-assets/tablet-contact-sheet.jpg
-docs/staging-reviews/phase1-full-rollback.md
-docs/staging-reviews/phase1-full-rollback-assets/beat2lotto-production-1440x900.png
-docs/staging-reviews/phase1-full-rollback-assets/beat2lotto-production-390x844.png
-docs/staging-reviews/phase1-full-rollback-assets/beat2lotto-production-768x1024.png
-docs/staging-reviews/phase1-full-rollback-assets/beat2lotto-staging-1440x900.png
-docs/staging-reviews/phase1-full-rollback-assets/beat2lotto-staging-390x844.png
-docs/staging-reviews/phase1-full-rollback-assets/beat2lotto-staging-768x1024.png
-docs/staging-reviews/phase1-full-rollback-assets/capture-report.json
-docs/staging-reviews/phase-1-platform.md
-docs/staging-reviews/phase-1-platform-assets/account-1440x900.png
-docs/staging-reviews/phase-1-platform-assets/account-390x844.png
-docs/staging-reviews/phase-1-platform-assets/account-768x1024.png
-docs/staging-reviews/phase-1-platform-assets/app-1440x900.png
-docs/staging-reviews/phase-1-platform-assets/app-390x844.png
-docs/staging-reviews/phase-1-platform-assets/app-768x1024.png
-docs/staging-reviews/phase-1-platform-assets/arcade-1440x900.png
-docs/staging-reviews/phase-1-platform-assets/arcade-390x844.png
-docs/staging-reviews/phase-1-platform-assets/arcade-768x1024.png
-docs/staging-reviews/phase-1-platform-assets/capture-report.json
-docs/staging-reviews/phase-1-platform-assets/help-1440x900.png
-docs/staging-reviews/phase-1-platform-assets/help-390x844.png
-docs/staging-reviews/phase-1-platform-assets/help-768x1024.png
-docs/staging-reviews/phase-1-platform-assets/home-1440x900.png
-docs/staging-reviews/phase-1-platform-assets/home-390x844.png
-docs/staging-reviews/phase-1-platform-assets/home-768x1024.png
-docs/staging-reviews/phase-1-platform-assets/memberships-1440x900.png
-docs/staging-reviews/phase-1-platform-assets/memberships-390x844.png
-docs/staging-reviews/phase-1-platform-assets/memberships-768x1024.png
-docs/staging-reviews/phase-1-platform-assets/studio-1440x900.png
-docs/staging-reviews/phase-1-platform-assets/studio-390x844.png
-docs/staging-reviews/phase-1-platform-assets/studio-768x1024.png
-docs/staging-reviews/platform-hud-depth.md
-docs/staging-reviews/platform-hud-depth-assets/account-desktop.png
-docs/staging-reviews/platform-hud-depth-assets/account-mobile.png
-docs/staging-reviews/platform-hud-depth-assets/account-tablet.png
-docs/staging-reviews/platform-hud-depth-assets/arcade-footer-desktop.png
-docs/staging-reviews/platform-hud-depth-assets/arcade-footer-mobile.png
-docs/staging-reviews/platform-hud-depth-assets/arcade-footer-tablet.png
-docs/staging-reviews/platform-hud-depth-assets/help-desktop.png
-docs/staging-reviews/platform-hud-depth-assets/help-mobile.png
-docs/staging-reviews/platform-hud-depth-assets/help-tablet.png
-docs/staging-reviews/release-blocker-remediation.md
-docs/staging-reviews/release-blocker-remediation-assets/memberships-1440x900.png
-docs/staging-reviews/release-blocker-remediation-assets/memberships-390x844.png
-docs/staging-reviews/release-candidate-v2-rc4.md
-docs/staging-reviews/release-documentation-signoff.md
-docs/staging-reviews/release-signoff-assets/desktop-contact-sheet.png
-docs/staging-reviews/release-signoff-assets/lottomind-313-fortune-grid--desktop.png
-docs/staging-reviews/release-signoff-assets/lottomind-313-fortune-grid--mobile.png
-docs/staging-reviews/release-signoff-assets/lottomind-313-fortune-grid--tablet.png
-docs/staging-reviews/release-signoff-assets/mobile-contact-sheet.png
-docs/staging-reviews/release-signoff-assets/release-signoff-manifest.json
-docs/staging-reviews/release-signoff-assets/tablet-contact-sheet.png
-docs/staging-reviews/robot-rahbee-account-nav.md
-docs/staging-reviews/selective-phase1-restore.md
-docs/staging-reviews/selective-phase1-restore-assets/account-1440x900.png
-docs/staging-reviews/selective-phase1-restore-assets/account-390x844.png
-docs/staging-reviews/selective-phase1-restore-assets/account-768x1024.png
-docs/staging-reviews/selective-phase1-restore-assets/app-1440x900.png
-docs/staging-reviews/selective-phase1-restore-assets/app-390x844.png
-docs/staging-reviews/selective-phase1-restore-assets/app-768x1024.png
-docs/staging-reviews/selective-phase1-restore-assets/arcade-1440x900.png
-docs/staging-reviews/selective-phase1-restore-assets/arcade-390x844.png
-docs/staging-reviews/selective-phase1-restore-assets/arcade-768x1024.png
-docs/staging-reviews/selective-phase1-restore-assets/capture-report.json
-docs/staging-reviews/selective-phase1-restore-assets/help-1440x900.png
-docs/staging-reviews/selective-phase1-restore-assets/help-390x844.png
-docs/staging-reviews/selective-phase1-restore-assets/help-768x1024.png
-docs/staging-reviews/selective-phase1-restore-assets/home-1440x900.png
-docs/staging-reviews/selective-phase1-restore-assets/home-390x844.png
-docs/staging-reviews/selective-phase1-restore-assets/home-768x1024.png
-docs/staging-reviews/selective-phase1-restore-assets/memberships-1440x900.png
-docs/staging-reviews/selective-phase1-restore-assets/memberships-390x844.png
-docs/staging-reviews/selective-phase1-restore-assets/memberships-768x1024.png
-docs/staging-reviews/selective-phase1-restore-assets/news-1440x900.png
-docs/staging-reviews/selective-phase1-restore-assets/news-390x844.png
-docs/staging-reviews/selective-phase1-restore-assets/news-768x1024.png
-docs/staging-reviews/shared-header-order.md
-docs/staging-reviews/shared-header-order-assets/home-header-1440x900.png
-docs/staging-reviews/shared-header-order-assets/home-header-390x844.png
-docs/staging-reviews/shared-header-order-assets/manifest.json
-docs/staging-reviews/signal-media-audio-pucks-20260804.md
-docs/staging-reviews/signal-media-corrections-assets/home-1440x900.png
-docs/staging-reviews/signal-media-corrections-assets/home-390x844.png
-docs/staging-reviews/signal-media-corrections-assets/home-768x1024.png
-docs/staging-reviews/signal-media-corrections-assets/home-storefront-spheres-report.json
-docs/staging-reviews/signal-media-corrections-assets/live-events-1440x900.png
-docs/staging-reviews/signal-media-corrections-assets/live-events-390x844.png
-docs/staging-reviews/signal-media-corrections-assets/live-events-768x1024.png
-docs/staging-reviews/signal-media-corrections-assets/news-1440x900.png
-docs/staging-reviews/signal-media-corrections-assets/news-390x844.png
-docs/staging-reviews/signal-media-corrections-assets/news-768x1024.png
-docs/staging-reviews/signal-media-corrections-assets/signal-media-20260804.json
-docs/staging-reviews/signal-media-corrections-assets/spheres-1440x900.png
-docs/staging-reviews/signal-media-corrections-assets/spheres-390x844.png
-docs/staging-reviews/signal-media-corrections-assets/spheres-768x1024.png
-docs/staging-reviews/signal-media-corrections-assets/storefront-patches-1440x900.png
-docs/staging-reviews/signal-media-corrections-assets/storefront-patches-390x844.png
-docs/staging-reviews/signal-media-corrections-assets/storefront-patches-768x1024.png
-docs/staging-reviews/spheres-audit-assets/spheres-1440x900.png
-docs/staging-reviews/spheres-audit-assets/spheres-390x844.png
-docs/staging-reviews/spheres-audit-corrections.md
-docs/staging-reviews/step34-preflight-refresh.md
-docs/staging-reviews/transition-restore.md
-docs/staging-reviews/transition-restore-assets/memberships-commercial-restored-1440x900.png
-docs/staging-reviews/transition-restore-assets/memberships-commercial-restored-390x844.png
-docs/staging-reviews/transition-restore-assets/memberships-commercial-restored-768x1024.png
-docs/upgrade-redesign-status.md
-lotto mind refined/index.html
-lottominded-ultra.io/account.html
-lottominded-ultra.io/articles.json
-lottominded-ultra.io/assets/audio/lottomind-storefront-theme-20260717.mp3
-lottominded-ultra.io/assets/brand/lottomind-floating-puck-20260417.webp
-lottominded-ultra.io/assets/brand/lottomind-little-man-membership-hero-v2.webp
-lottominded-ultra.io/assets/css/beat2lotto-collector-access.css
-lottominded-ultra.io/assets/css/lm-future-commercial.css
-lottominded-ultra.io/assets/css/lm-healing-frequency.css
-lottominded-ultra.io/assets/css/lm-mascot-cinematic.css
-lottominded-ultra.io/assets/css/lm-phase1-platform.css
-lottominded-ultra.io/assets/css/lm-rahbee-depth.css
-lottominded-ultra.io/assets/css/lm-support-utilities.css
-lottominded-ultra.io/assets/css/memberships-cinematic.css
-lottominded-ultra.io/assets/features-app/js/main.js
-lottominded-ultra.io/assets/features-app/lottomind-arcade-hero-film-20260723.opt.mp4
-lottominded-ultra.io/assets/js/arcade-games.js
-lottominded-ultra.io/assets/js/beat2lotto-collector-access.js
-lottominded-ultra.io/assets/js/lm-account-hub.js
-lottominded-ultra.io/assets/js/lm-commercial-gate.js
-lottominded-ultra.io/assets/js/lm-future-commercial.js
-lottominded-ultra.io/assets/js/lm-healing-frequency.js
-lottominded-ultra.io/assets/js/lm-help-center.js
-lottominded-ultra.io/assets/js/lm-staging-guard.js
-lottominded-ultra.io/assets/js/lottomind-account-service.js
-lottominded-ultra.io/assets/js/memberships-cinematic.js
-lottominded-ultra.io/assets/live-events/css/live-events-redesign.css
-lottominded-ultra.io/assets/live-events/js/live-events-redesign.js
-lottominded-ultra.io/assets/merch/detroit-1701-embroidered-patch-20260730.webp
-lottominded-ultra.io/assets/merch/detroit-carry-bundle-20260725.webp
-lottominded-ultra.io/assets/merch/guardian-hoodie-bundle-20260725.webp
-lottominded-ultra.io/assets/merch/lottomind-community-signal-commercial-20260717.opt.mp4
-lottominded-ultra.io/assets/merch/lottomind-future-membership-commercial-20260626.opt.mp4
-lottominded-ultra.io/assets/merch/lottomind-future-membership-commercial-poster-20260626.webp
-lottominded-ultra.io/assets/merch/lottomind-membership-unboxing-commercial-20260716.opt.mp4
-lottominded-ultra.io/assets/video/lottomind-help-signal-commercial-20260417.opt.mp4
-lottominded-ultra.io/assets/video/lottomind-help-signal-commercial-poster-20260417.webp
-lottominded-ultra.io/assets/video/lottomind-home-apparel-commercial-20260804.opt.mp4
-lottominded-ultra.io/assets/video/lottomind-home-apparel-commercial-poster-20260804.jpg
-lottominded-ultra.io/beat2lotto-plus.html
-lottominded-ultra.io/docs/staging-reviews/support-utilities.md
-lottominded-ultra.io/docs/staging-reviews/support-utilities-assets/account-1440x900.png
-lottominded-ultra.io/docs/staging-reviews/support-utilities-assets/account-390x844.png
-lottominded-ultra.io/docs/staging-reviews/support-utilities-assets/capture-report.json
-lottominded-ultra.io/docs/staging-reviews/support-utilities-assets/search-1440x900.png
-lottominded-ultra.io/docs/staging-reviews/support-utilities-assets/search-390x844.png
-lottominded-ultra.io/features-app.css
-lottominded-ultra.io/features-app.html
-lottominded-ultra.io/features-app.js
-lottominded-ultra.io/games/lottomind-313-fortune-grid/ACCESSIBILITY.md
-lottominded-ultra.io/games/lottomind-313-fortune-grid/app/index.html
-lottominded-ultra.io/games/lottomind-313-fortune-grid/app/public/assets/icons/icon.svg
-lottominded-ultra.io/games/lottomind-313-fortune-grid/app/public/assets/key-art.svg
-lottominded-ultra.io/games/lottomind-313-fortune-grid/app/public/manifest.webmanifest
-lottominded-ultra.io/games/lottomind-313-fortune-grid/app/public/sw.js
-lottominded-ultra.io/games/lottomind-313-fortune-grid/app/src/art.css
-lottominded-ultra.io/games/lottomind-313-fortune-grid/app/src/content/board.ts
-lottominded-ultra.io/games/lottomind-313-fortune-grid/app/src/content/cards.ts
-lottominded-ultra.io/games/lottomind-313-fortune-grid/app/src/content/districts.ts
-lottominded-ultra.io/games/lottomind-313-fortune-grid/app/src/content/ventures.ts
-lottominded-ultra.io/games/lottomind-313-fortune-grid/app/src/engine/actions.ts
-lottominded-ultra.io/games/lottomind-313-fortune-grid/app/src/engine/ai.ts
-lottominded-ultra.io/games/lottomind-313-fortune-grid/app/src/engine/economy.ts
-lottominded-ultra.io/games/lottomind-313-fortune-grid/app/src/engine/movement.ts
-lottominded-ultra.io/games/lottomind-313-fortune-grid/app/src/engine/reducer.ts
-lottominded-ultra.io/games/lottomind-313-fortune-grid/app/src/engine/rng.ts
-lottominded-ultra.io/games/lottomind-313-fortune-grid/app/src/engine/scoring.ts
-lottominded-ultra.io/games/lottomind-313-fortune-grid/app/src/engine/signals.ts
-lottominded-ultra.io/games/lottomind-313-fortune-grid/app/src/engine/state.ts
-lottominded-ultra.io/games/lottomind-313-fortune-grid/app/src/main.ts
-lottominded-ultra.io/games/lottomind-313-fortune-grid/app/src/polish.css
-lottominded-ultra.io/games/lottomind-313-fortune-grid/app/src/scene/BoardScene.ts
-lottominded-ultra.io/games/lottomind-313-fortune-grid/app/src/services/rewards.ts
-lottominded-ultra.io/games/lottomind-313-fortune-grid/app/src/services/storage.ts
-lottominded-ultra.io/games/lottomind-313-fortune-grid/app/src/services/wallet.ts
-lottominded-ultra.io/games/lottomind-313-fortune-grid/app/src/styles.css
-lottominded-ultra.io/games/lottomind-313-fortune-grid/ARCHITECTURE.md
-lottominded-ultra.io/games/lottomind-313-fortune-grid/ASSET-MANIFEST.md
-lottominded-ultra.io/games/lottomind-313-fortune-grid/assets/art/board-pieces-atlas.png
-lottominded-ultra.io/games/lottomind-313-fortune-grid/assets/art/city-pulse-card-atlas.png
-lottominded-ultra.io/games/lottomind-313-fortune-grid/assets/art/detroit-fortune-grid-board.png
-lottominded-ultra.io/games/lottomind-313-fortune-grid/assets/art/dream-oracle-card-atlas.png
-lottominded-ultra.io/games/lottomind-313-fortune-grid/assets/art/fortune-grid-arcade-key-art.png
-lottominded-ultra.io/games/lottomind-313-fortune-grid/assets/art/gateways/gateway-01.png
-lottominded-ultra.io/games/lottomind-313-fortune-grid/assets/art/gateways/gateway-02.png
-lottominded-ultra.io/games/lottomind-313-fortune-grid/assets/art/gateways/gateway-03.png
-lottominded-ultra.io/games/lottomind-313-fortune-grid/assets/art/gateways/gateway-04.png
-lottominded-ultra.io/games/lottomind-313-fortune-grid/assets/art/gateways/gateway-05.png
-lottominded-ultra.io/games/lottomind-313-fortune-grid/assets/art/gateways/gateway-06.png
-lottominded-ultra.io/games/lottomind-313-fortune-grid/assets/art/gateways/gateway-07.png
-lottominded-ultra.io/games/lottomind-313-fortune-grid/assets/art/gateways/gateway-08.png
-lottominded-ultra.io/games/lottomind-313-fortune-grid/assets/art/guardian-vault.png
-lottominded-ultra.io/games/lottomind-313-fortune-grid/assets/art/lottomind-mascot-travel-preview.png
-lottominded-ultra.io/games/lottomind-313-fortune-grid/assets/art/mascot/01.png
-lottominded-ultra.io/games/lottomind-313-fortune-grid/assets/art/mascot/02.png
-lottominded-ultra.io/games/lottomind-313-fortune-grid/assets/art/mascot/03.png
-lottominded-ultra.io/games/lottomind-313-fortune-grid/assets/art/mascot/04.png
-lottominded-ultra.io/games/lottomind-313-fortune-grid/assets/art/mascot/05.png
-lottominded-ultra.io/games/lottomind-313-fortune-grid/assets/art/mascot/06.png
-lottominded-ultra.io/games/lottomind-313-fortune-grid/assets/art/source/board-pieces-atlas-chroma.png
-lottominded-ultra.io/games/lottomind-313-fortune-grid/assets/art/source/lottomind-mascot-travel-alpha.png
-lottominded-ultra.io/games/lottomind-313-fortune-grid/assets/art/source/lottomind-mascot-travel-chroma.png
-lottominded-ultra.io/games/lottomind-313-fortune-grid/assets/art/tokens/token-01.png
-lottominded-ultra.io/games/lottomind-313-fortune-grid/assets/art/tokens/token-02.png
-lottominded-ultra.io/games/lottomind-313-fortune-grid/assets/art/tokens/token-03.png
-lottominded-ultra.io/games/lottomind-313-fortune-grid/assets/art/tokens/token-04.png
-lottominded-ultra.io/games/lottomind-313-fortune-grid/assets/art/tokens/token-05.png
-lottominded-ultra.io/games/lottomind-313-fortune-grid/assets/art/tokens/token-06.png
-lottominded-ultra.io/games/lottomind-313-fortune-grid/assets/art/ventures/venture-level-1.png
-lottominded-ultra.io/games/lottomind-313-fortune-grid/assets/art/ventures/venture-level-2.png
-lottominded-ultra.io/games/lottomind-313-fortune-grid/assets/art/ventures/venture-level-3.png
-lottominded-ultra.io/games/lottomind-313-fortune-grid/assets/art/ventures/venture-level-4.png
-lottominded-ultra.io/games/lottomind-313-fortune-grid/assets/build/index-9oHsOwI5.js
-lottominded-ultra.io/games/lottomind-313-fortune-grid/assets/build/index-CaI81xPD.css
-lottominded-ultra.io/games/lottomind-313-fortune-grid/assets/build/phaser-DFK5Ua9d.js
-lottominded-ultra.io/games/lottomind-313-fortune-grid/assets/icons/icon.svg
-lottominded-ultra.io/games/lottomind-313-fortune-grid/assets/key-art.svg
-lottominded-ultra.io/games/lottomind-313-fortune-grid/BALANCE-NOTES.md
-lottominded-ultra.io/games/lottomind-313-fortune-grid/CHANGELOG.md
-lottominded-ultra.io/games/lottomind-313-fortune-grid/docs/screenshots/desktop-1440-first-turn.png
-lottominded-ultra.io/games/lottomind-313-fortune-grid/docs/screenshots/mobile-390-first-turn.png
-lottominded-ultra.io/games/lottomind-313-fortune-grid/docs/screenshots/README.md
-lottominded-ultra.io/games/lottomind-313-fortune-grid/GAME-RULES.md
-lottominded-ultra.io/games/lottomind-313-fortune-grid/index.html
-lottominded-ultra.io/games/lottomind-313-fortune-grid/manifest.webmanifest
-lottominded-ultra.io/games/lottomind-313-fortune-grid/package.json
-lottominded-ultra.io/games/lottomind-313-fortune-grid/package-lock.json
-lottominded-ultra.io/games/lottomind-313-fortune-grid/playwright.config.ts
-lottominded-ultra.io/games/lottomind-313-fortune-grid/scripts/build.mjs
-lottominded-ultra.io/games/lottomind-313-fortune-grid/scripts/process-art.py
-lottominded-ultra.io/games/lottomind-313-fortune-grid/SECURITY-AND-REWARDS.md
-lottominded-ultra.io/games/lottomind-313-fortune-grid/STAGING-TEST-REPORT.md
-lottominded-ultra.io/games/lottomind-313-fortune-grid/sw.js
-lottominded-ultra.io/games/lottomind-313-fortune-grid/tests/e2e/fortune-grid.spec.ts
-lottominded-ultra.io/games/lottomind-313-fortune-grid/tests/engine.test.ts
-lottominded-ultra.io/games/lottomind-313-fortune-grid/tests/simulation.test.ts
-lottominded-ultra.io/games/lottomind-313-fortune-grid/THIRD_PARTY_NOTICES.md
-lottominded-ultra.io/games/lottomind-313-fortune-grid/tsconfig.json
-lottominded-ultra.io/games/lottomind-313-fortune-grid/vite.config.ts
-lottominded-ultra.io/games/lottomind-313-fortune-grid/vitest.config.ts
-lottominded-ultra.io/games/opengw-levels/assets/2084/branding/marquee-gameplay-keyart.webp
-lottominded-ultra.io/games/shadow-ops-canvas/index.html
-lottominded-ultra.io/games/shadow-ops-canvas/src/brand-title.js
-lottominded-ultra.io/games/shadow-ops-canvas/src/brand-title-v2.js
-lottominded-ultra.io/games/shadow-ops-canvas/src/game.js
-lottominded-ultra.io/help.html
-lottominded-ultra.io/how-to-use.html
-lottominded-ultra.io/index.html
-lottominded-ultra.io/live-events.html
-lottominded-ultra.io/lottery-spheres.html
-lottominded-ultra.io/lottery-spheres-console.css
-lottominded-ultra.io/memberships.html
-lottominded-ultra.io/merch-store.css
-lottominded-ultra.io/merch-store.html
-lottominded-ultra.io/merch-store.js
-lottominded-ultra.io/news/assets/index-BXgcZKTD.css
-lottominded-ultra.io/news/assets/index-D2xd5sSz.js
-lottominded-ultra.io/news/assets/index-DKPqrAdX.js
-lottominded-ultra.io/news/index.html
-lottominded-ultra.io/news-hub/package.json
-lottominded-ultra.io/news-hub/scripts/hydrate-static-article-images.ts
-lottominded-ultra.io/news-hub/scripts/refresh-lottery-results.ts
-lottominded-ultra.io/news-hub/src/data/latestLotteryResults.json
-lottominded-ultra.io/news-hub/src/lib/news/lotteryResults.test.ts
-lottominded-ultra.io/news-hub/src/lib/news/lotteryResults.ts
-lottominded-ultra.io/news-hub/src/pages/LottoMindNewsPage.tsx
-lottominded-ultra.io/news-hub/src/styles/news.css
-lottominded-ultra.io/package.json
-lottominded-ultra.io/playwright.routes.config.cjs
-lottominded-ultra.io/privacy.html
-lottominded-ultra.io/redeem.html
-lottominded-ultra.io/scripts/build-staging.mjs
-lottominded-ultra.io/scripts/capture-footer-pointer-fix.mjs
-lottominded-ultra.io/scripts/capture-release-signoff.mjs
-lottominded-ultra.io/scripts/capture-signal-media-corrections.mjs
-lottominded-ultra.io/scripts/validate-home-page.mjs
-lottominded-ultra.io/site.js
-lottominded-ultra.io/sitemap.xml
-lottominded-ultra.io/styles.css
-lottominded-ultra.io/supabase/functions/lottomind-api/index.ts
-lottominded-ultra.io/terms.html
-lottominded-ultra.io/tests/collector-password-recovery.spec.cjs
-lottominded-ultra.io/tests/home.spec.cjs
-lottominded-ultra.io/tests/route-smoke.spec.cjs
-lottominded-ultra.io/tests/signal-media.spec.cjs
-lottominded-ultra.io/tests/site.spec.cjs
-lottominded-ultra.io/tests/staging.spec.cjs
-lottominded-ultra.io/tests/support-utilities.spec.cjs
+M`tdocs/production-release-candidate-files.txt
+A	docs/brand-architecture.md
+M	docs/production-launch-assets/memberships-1440x900.png
+M	docs/production-launch-assets/memberships-390x844.png
+M	docs/production-launch-assets/static-wav-1440x900.png
+M	docs/production-launch-assets/static-wav-390x844.png
+M	docs/production-launch-report.md
+M	docs/production-release-candidate.md
+A	docs/secure-backend-architecture.md
+M	docs/site-rebuild-checklist.md
+M	docs/site-rebuild-release-report.md
+A	docs/staging-reviews/action-based-free-access-home-desktop.png
+A	docs/staging-reviews/action-based-free-access-home-mobile.png
+A	docs/staging-reviews/action-based-free-access-memberships-desktop.png
+A	docs/staging-reviews/action-based-free-access-memberships-mobile.png
+A	docs/staging-reviews/action-based-free-access.md
+A	docs/staging-reviews/b2b-services-assets/services-desktop-1440x900.png
+A	docs/staging-reviews/b2b-services-assets/services-mobile-390x844.png
+A	docs/staging-reviews/b2b-services.md
+A	docs/staging-reviews/brand-onboarding-assets/help--desktop.png
+A	docs/staging-reviews/brand-onboarding-assets/help--mobile.png
+A	docs/staging-reviews/brand-onboarding-assets/home--desktop.png
+A	docs/staging-reviews/brand-onboarding-assets/home--mobile.png
+A	docs/staging-reviews/brand-onboarding-assets/memberships--desktop.png
+A	docs/staging-reviews/brand-onboarding-assets/memberships--mobile.png
+A	docs/staging-reviews/brand-onboarding.md
+A	docs/staging-reviews/collector-access-home-assets/home-collector--desktop.png
+A	docs/staging-reviews/collector-access-home-assets/home-collector--mobile.png
+A	docs/staging-reviews/collector-access-home-assets/memberships-handoff--desktop.png
+A	docs/staging-reviews/collector-access-home-assets/memberships-handoff--mobile.png
+A	docs/staging-reviews/collector-access-home.md
+A	docs/staging-reviews/entry-motion-page-soundtracks.md
+A	docs/staging-reviews/game-manifest-arcade-desktop.png
+A	docs/staging-reviews/game-manifest-arcade-mobile.png
+A	docs/staging-reviews/game-manifest-memberships-desktop.png
+A	docs/staging-reviews/game-manifest-memberships-mobile.png
+A	docs/staging-reviews/game-manifest.md
+A	docs/staging-reviews/home-commercial-hud-assets/home-staging-desktop.png
+A	docs/staging-reviews/home-commercial-hud-assets/home-staging-mobile.png
+A	docs/staging-reviews/home-commercial-hud-assets/storefront-staging-desktop.png
+A	docs/staging-reviews/home-commercial-hud-assets/storefront-staging-mobile.png
+A	docs/staging-reviews/home-commercial-hud-assets/visual-metrics.json
+A	docs/staging-reviews/home-commercial-hud.md
+M	docs/staging-reviews/release-signoff-assets/desktop-contact-sheet.png
+M	docs/staging-reviews/release-signoff-assets/mobile-contact-sheet.png
+M	docs/staging-reviews/release-signoff-assets/release-signoff-manifest.json
+M	docs/staging-reviews/release-signoff-assets/tablet-contact-sheet.png
+A	docs/staging-reviews/secure-account-architecture-desktop.png
+A	docs/staging-reviews/secure-account-architecture-mobile.png
+A	docs/staging-reviews/secure-account-architecture.md
+A	docs/staging-reviews/secure-backend.md
+A	docs/staging-reviews/secure-backend/account-1440x900.png
+A	docs/staging-reviews/secure-backend/account-390x844.png
+A	docs/staging-reviews/store-membership-definition-assets/capture-report.json
+A	docs/staging-reviews/store-membership-definition-assets/memberships-1440x900.png
+A	docs/staging-reviews/store-membership-definition-assets/memberships-390x844.png
+A	docs/staging-reviews/store-membership-definition-assets/storefront-1440x900.png
+A	docs/staging-reviews/store-membership-definition-assets/storefront-390x844.png
+A	docs/staging-reviews/store-membership-definition.md
+A	docs/staging-reviews/unified-account-dashboard-assets/account-dashboard-desktop.png
+A	docs/staging-reviews/unified-account-dashboard-assets/account-dashboard-mobile.png
+A	docs/staging-reviews/unified-account-dashboard.md
+A	docs/storefront-launch-readiness.md
+A	docs/trivia-vault-rollback.md
+M	docs/upgrade-redesign-status.md
+M	lottominded-ultra.io/STRIPE_TEST_SETUP.md
+M	lottominded-ultra.io/account.html
+M	lottominded-ultra.io/articles.json
+A	lottominded-ultra.io/assets/audio/lottomind-home-theme-untitled-12.mp3
+A	lottominded-ultra.io/assets/audio/lottomind-membership-theme-untitled-14.mp3
+A	lottominded-ultra.io/assets/audio/lottomind-news-theme-instrumental.mp3
+A	lottominded-ultra.io/assets/css/lm-commercial-hud.css
+M	lottominded-ultra.io/assets/css/lm-healing-frequency.css
+M	lottominded-ultra.io/assets/css/lm-page-transition.css
+M	lottominded-ultra.io/assets/css/lm-phase1-platform.css
+M	lottominded-ultra.io/assets/css/lm-rahbee-depth.css
+A	lottominded-ultra.io/assets/css/lm-services.css
+M	lottominded-ultra.io/assets/css/lm-support-utilities.css
+M	lottominded-ultra.io/assets/css/memberships-cinematic.css
+M	lottominded-ultra.io/assets/js/arcade-games.js
+M	lottominded-ultra.io/assets/js/lm-account-hub.js
+A	lottominded-ultra.io/assets/js/lm-first-use.js
+M	lottominded-ultra.io/assets/js/lm-healing-frequency.js
+A	lottominded-ultra.io/assets/js/lm-membership-games.js
+A	lottominded-ultra.io/assets/js/lm-services-inquiry.js
+M	lottominded-ultra.io/assets/js/lm-stripe-memberships.js
+M	lottominded-ultra.io/assets/js/lottomind-account-service.js
+M	lottominded-ultra.io/assets/js/memberships-cinematic.js
+M	lottominded-ultra.io/assets/live-events/js/live-events-redesign.js
+A	lottominded-ultra.io/assets/merch/guardian-bundle-boxed-20260807.webp
+A	lottominded-ultra.io/assets/merch/guardian-camera-pair-20260807.webp
+A	lottominded-ultra.io/assets/merch/guardian-carry-couple-20260807.webp
+A	lottominded-ultra.io/assets/merch/guardian-package-pair-20260807.webp
+A	lottominded-ultra.io/deno.lock
+A	lottominded-ultra.io/docs/secure-production-architecture.md
+M	lottominded-ultra.io/features-app.css
+M	lottominded-ultra.io/features-app.html
+M	lottominded-ultra.io/features-app.js
+A	lottominded-ultra.io/games/games-manifest.json
+A	lottominded-ultra.io/games/lottomind-trivia/DEPLOYMENT.md
+A	lottominded-ultra.io/games/lottomind-trivia/QUESTION-AUTHORING.md
+A	lottominded-ultra.io/games/lottomind-trivia/README.md
+A	lottominded-ultra.io/games/lottomind-trivia/SECURITY.md
+A	lottominded-ultra.io/games/lottomind-trivia/assets/trivia-vault-key-art.webp
+A	lottominded-ultra.io/games/lottomind-trivia/index.html
+A	lottominded-ultra.io/games/lottomind-trivia/src/app.mjs
+A	lottominded-ultra.io/games/lottomind-trivia/src/question-validator.mjs
+A	lottominded-ultra.io/games/lottomind-trivia/src/questions.mjs
+A	lottominded-ultra.io/games/lottomind-trivia/src/trivia-audio.mjs
+A	lottominded-ultra.io/games/lottomind-trivia/src/trivia-config.mjs
+A	lottominded-ultra.io/games/lottomind-trivia/src/trivia-engine.mjs
+A	lottominded-ultra.io/games/lottomind-trivia/src/trivia-security.mjs
+A	lottominded-ultra.io/games/lottomind-trivia/src/trivia-services.mjs
+A	lottominded-ultra.io/games/lottomind-trivia/styles.css
+A	lottominded-ultra.io/games/lottomind-trivia/tests/trivia-engine.test.mjs
+A	lottominded-ultra.io/games/lottomind-trivia/tests/trivia-security.test.mjs
+M	lottominded-ultra.io/help.html
+M	lottominded-ultra.io/index.html
+M	lottominded-ultra.io/lottery-spheres.js
+M	lottominded-ultra.io/lottomind-stem-studio/index.html
+M	lottominded-ultra.io/memberships.html
+M	lottominded-ultra.io/merch-store.css
+M	lottominded-ultra.io/merch-store.html
+M	lottominded-ultra.io/news-hub/.env.example
+M	lottominded-ultra.io/news-hub/scripts/hydrate-static-article-images.ts
+M	lottominded-ultra.io/news-hub/server/account/store.test.ts
+M	lottominded-ultra.io/news-hub/server/account/store.ts
+M	lottominded-ultra.io/news-hub/server/billing/routes.ts
+D	lottominded-ultra.io/news/assets/index-BXgcZKTD.css
+D	lottominded-ultra.io/news/assets/index-D2xd5sSz.js
+M	lottominded-ultra.io/news/index.html
+M	lottominded-ultra.io/package.json
+M	lottominded-ultra.io/scripts/build-source-test.mjs
+M	lottominded-ultra.io/scripts/build-staging.mjs
+A	lottominded-ultra.io/scripts/capture-master-overhaul-baseline.mjs
+M	lottominded-ultra.io/scripts/capture-release-signoff.mjs
+M	lottominded-ultra.io/scripts/capture-storefront-bundles.mjs
+A	lottominded-ultra.io/scripts/capture-trivia-vault.mjs
+A	lottominded-ultra.io/scripts/manage-trivia-questions.mjs
+M	lottominded-ultra.io/scripts/route-inventory.mjs
+M	lottominded-ultra.io/scripts/serve-site.mjs
+A	lottominded-ultra.io/scripts/test-secure-backend.mjs
+A	lottominded-ultra.io/scripts/validate-game-manifest.mjs
+M	lottominded-ultra.io/scripts/validate-home-page.mjs
+A	lottominded-ultra.io/services/index.html
+M	lottominded-ultra.io/site.js
+M	lottominded-ultra.io/sitemap.xml
+M	lottominded-ultra.io/styles.css
+A	lottominded-ultra.io/supabase/config.toml
+A	lottominded-ultra.io/supabase/functions/.env.example
+M	lottominded-ultra.io/supabase/functions/lottomind-api/index.ts
+A	lottominded-ultra.io/supabase/functions/lottomind-stripe-webhook/index.ts
+A	lottominded-ultra.io/supabase/migrations/20260805202103_secure_plan_catalog_and_entitlement_authority.sql
+A	lottominded-ultra.io/supabase/migrations/20260805_secure_account_ledger.sql
+A	lottominded-ultra.io/tests/account-dashboard.spec.cjs
+A	lottominded-ultra.io/tests/brand-onboarding.spec.cjs
+M	lottominded-ultra.io/tests/collector-password-recovery.spec.cjs
+A	lottominded-ultra.io/tests/game-manifest.spec.cjs
+M	lottominded-ultra.io/tests/home.spec.cjs
+M	lottominded-ultra.io/tests/membership-layout.spec.cjs
+A	lottominded-ultra.io/tests/merch-lifestyle-gallery.spec.cjs
+M	lottominded-ultra.io/tests/route-smoke.spec.cjs
+A	lottominded-ultra.io/tests/services.spec.cjs
+M	lottominded-ultra.io/tests/signal-media.spec.cjs
+M	lottominded-ultra.io/tests/site.spec.cjs
+M	lottominded-ultra.io/tests/staging.spec.cjs
+M	lottominded-ultra.io/tests/support-utilities.spec.cjs
+A	lottominded-ultra.io/tests/trivia-vault.spec.cjs

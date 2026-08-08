@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-08-06T00:00:48.823Z",
-  "sourceCommit": "bdda8b516f03f82291865e99a36c611ea4f72a2a",
-  "stagingUrl": "http://127.0.0.1:8573",
+  "generatedAt": "2026-08-08T21:17:31.453Z",
+  "sourceCommit": "0b478b0a7f0045b2e6279e32b35a3fddc5f873df",
+  "stagingUrl": "http://127.0.0.1:8617",
   "productionReference": {
     "branch": "main",
     "commit": "975c637cea7003533cdc30aed9d96be51929bfc8",
@@ -23,7 +23,7 @@
       "dimensions": "1440x900",
       "status": 200,
       "title": "LottoMind | App, Arcade, Studio and Creative Hub",
-      "firstHeading": "LOTTOMINDEDULTRA",
+      "firstHeading": "Start the Home Frequency.",
       "horizontalOverflow": false,
       "visibleKeyboardFocus": true,
       "reducedMotion": true,
@@ -36,7 +36,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 4944222,
+      "sameOriginBytes": 4953110,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -61,7 +61,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 8028323,
+      "sameOriginBytes": 8038958,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -86,7 +86,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 11205309,
+      "sameOriginBytes": 11328233,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -111,13 +111,11 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1645548,
+      "sameOriginBytes": 1762257,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
       "externalAssetWarnings": [
-        "PUBLISHER MEDIA https://www.palottery.pa.gov/PaLotteryWebSite/media/Logos/pal-ogimage.png: net::ERR_CONNECTION_CLOSED",
-        "PUBLISHER MEDIA https://www.palottery.pa.gov/PaLotteryWebSite/media/Logos/pal-ogimage.png",
         "PUBLISHER MEDIA https://feeds.feedblitz.com/Custom/img/webcash.png: net::ERR_BLOCKED_BY_ORB",
         "PUBLISHER MEDIA https://feeds.feedblitz.com/PaLotteryWebSite/media/Games-Section/Draw%20Games/Match%206/gamePg-playInThePool-img-new3-m6.png?ext=.png: net::ERR_BLOCKED_BY_ORB"
       ]
@@ -141,7 +139,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 8794926,
+      "sameOriginBytes": 8803919,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -166,7 +164,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1383103,
+      "sameOriginBytes": 1390949,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -191,7 +189,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 10801385,
+      "sameOriginBytes": 10809559,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -216,7 +214,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 4817435,
+      "sameOriginBytes": 4296984,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -241,7 +239,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 14579887,
+      "sameOriginBytes": 14588061,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -266,7 +264,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 2251110,
+      "sameOriginBytes": 2260860,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -291,7 +289,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 2251300,
+      "sameOriginBytes": 2261050,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -316,7 +314,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1119425,
+      "sameOriginBytes": 1127599,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -341,7 +339,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1262282,
+      "sameOriginBytes": 1365032,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -366,7 +364,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 583230,
+      "sameOriginBytes": 583405,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -391,7 +389,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1124051,
+      "sameOriginBytes": 1132225,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -416,7 +414,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1299018,
+      "sameOriginBytes": 1307206,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -441,7 +439,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 2781979,
+      "sameOriginBytes": 2794204,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -466,7 +464,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 542857,
+      "sameOriginBytes": 543032,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -491,7 +489,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1582248,
+      "sameOriginBytes": 1606963,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -641,7 +639,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1383103,
+      "sameOriginBytes": 1390949,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -678,7 +676,7 @@
       "dimensions": "768x1024",
       "status": 200,
       "title": "LottoMind | App, Arcade, Studio and Creative Hub",
-      "firstHeading": "LOTTOMINDEDULTRA",
+      "firstHeading": "Start the Home Frequency.",
       "horizontalOverflow": false,
       "visibleKeyboardFocus": true,
       "reducedMotion": true,
@@ -691,7 +689,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 4782454,
+      "sameOriginBytes": 4791342,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -716,7 +714,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 7305671,
+      "sameOriginBytes": 7316306,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -741,7 +739,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 11043541,
+      "sameOriginBytes": 11166465,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -766,7 +764,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1337852,
+      "sameOriginBytes": 1723463,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -791,7 +789,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 8783648,
+      "sameOriginBytes": 8792641,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -816,7 +814,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1210057,
+      "sameOriginBytes": 1217903,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -841,7 +839,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 10628339,
+      "sameOriginBytes": 10636513,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -866,7 +864,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 4806157,
+      "sameOriginBytes": 4285706,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -891,7 +889,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 14406841,
+      "sameOriginBytes": 14415015,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -916,7 +914,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 2078064,
+      "sameOriginBytes": 2087814,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -941,7 +939,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 2078254,
+      "sameOriginBytes": 2088004,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -966,7 +964,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 946379,
+      "sameOriginBytes": 954553,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -991,7 +989,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1325240,
+      "sameOriginBytes": 1108702,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -1016,7 +1014,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 583230,
+      "sameOriginBytes": 583405,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -1041,7 +1039,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 951005,
+      "sameOriginBytes": 959179,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -1066,7 +1064,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1125972,
+      "sameOriginBytes": 1134160,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -1091,7 +1089,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 2608933,
+      "sameOriginBytes": 2621158,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -1116,7 +1114,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 542857,
+      "sameOriginBytes": 543032,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -1141,7 +1139,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1582248,
+      "sameOriginBytes": 1606963,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -1291,7 +1289,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1210057,
+      "sameOriginBytes": 1217903,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -1328,7 +1326,7 @@
       "dimensions": "390x844",
       "status": 200,
       "title": "LottoMind | App, Arcade, Studio and Creative Hub",
-      "firstHeading": "LOTTOMINDEDULTRA",
+      "firstHeading": "Start the Home Frequency.",
       "horizontalOverflow": false,
       "visibleKeyboardFocus": true,
       "reducedMotion": true,
@@ -1341,7 +1339,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 4782454,
+      "sameOriginBytes": 4791342,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -1366,7 +1364,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 4483705,
+      "sameOriginBytes": 4494340,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -1391,7 +1389,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 11043167,
+      "sameOriginBytes": 11166091,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -1416,7 +1414,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1483780,
+      "sameOriginBytes": 1507567,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -1441,7 +1439,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 8783648,
+      "sameOriginBytes": 8792641,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -1466,7 +1464,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1210057,
+      "sameOriginBytes": 1217903,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -1491,7 +1489,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 10628339,
+      "sameOriginBytes": 10636513,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -1516,7 +1514,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 4806157,
+      "sameOriginBytes": 4118414,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -1541,7 +1539,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 14406841,
+      "sameOriginBytes": 14415015,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -1566,7 +1564,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 2078064,
+      "sameOriginBytes": 2087814,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -1591,7 +1589,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 2078254,
+      "sameOriginBytes": 2088004,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -1616,7 +1614,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 946379,
+      "sameOriginBytes": 954553,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -1641,7 +1639,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1325240,
+      "sameOriginBytes": 1108702,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -1666,7 +1664,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 583230,
+      "sameOriginBytes": 583405,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -1691,7 +1689,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 951005,
+      "sameOriginBytes": 959179,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -1716,7 +1714,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1125972,
+      "sameOriginBytes": 1134160,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -1741,7 +1739,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 2608933,
+      "sameOriginBytes": 2621158,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -1766,7 +1764,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 542857,
+      "sameOriginBytes": 543032,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -1791,7 +1789,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1582248,
+      "sameOriginBytes": 1606963,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -1941,7 +1939,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1355313,
+      "sameOriginBytes": 1363159,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],

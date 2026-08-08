@@ -831,3 +831,18 @@
 - Commerce and backend impact: None; Stripe, production account writes, real redemptions, verified credits, and production analytics remain unchanged and blocked in staging
 - Staging URL: Local only (`http://127.0.0.1:8568/` after the exact-tree staging build)
 - Production approval status: Not approved; `main`, production, and `v1-final` remain unchanged
+
+## Step 34 - Production Release Candidate v2-rc5
+
+- Step number: 34
+- Branch: `upgrade-redesign`
+- Candidate SHA: immutable target of annotated tag `v2-rc5`
+- Main synchronization: merged `origin/main` with normal merge commit `0b478b0a7f0045b2e6279e32b35a3fddc5f873df`; no rebase, reset, force-push, or history rewrite
+- Tests: 232 source browser checks passed with 8 intentional skips; 168/168 route checks; 7/7 release-audit groups; 12/12 staging safety; 24/24 Live Events sync stress; 24/24 News; 13/13 Trivia; 43/43 GothTechnology unit plus 27 browser checks
+- Staging build: 28 noindexed pages and 635 same-origin references
+- Visual sign-off: 78/78 route states across 26 routes at `1440x900`, `768x1024`, and `390x844`
+- Staging URL: Local only (`http://127.0.0.1:8617/` during final visual sign-off)
+- Checkout safety: authenticated Gold checkout opened in Stripe Sandbox; no payment details, submission, or charge; cancellation returned safely
+- Production integrations blocked in staging: live payments, production account writes, real redemptions, and production analytics
+- Remaining warnings: local-only staging, manual screen-reader review recommended, two external News publisher ORB warnings, heavy Static Wav and Memberships first-view transfers, and Store ordering locked pending verified operations
+- Approval status: Ready for production review; production remains unchanged and a fresh exact `APPROVE PRODUCTION MERGE` is required after pull-request review

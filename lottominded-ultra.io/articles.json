@@ -20,7 +20,8 @@
     "importMethod": "rss",
     "automated": true,
     "generatedAt": "2026-07-03T00:31:44.912Z",
-    "imageUrl": "https://hoosierlottery.com/getmedia/860fe269-8cb6-4f2b-94b6-3c3e4f0fd4f7/Hoosier-Lotto_white_OL_280x183.png?width=560&height=366&ext=.png"
+    "imageUrl": "../assets/news/publishers/hoosier-lottery-media-resources-2026-07-04t05-00-a6db5198093b.png",
+    "publisherImageUrl": "https://hoosierlottery.com/getmedia/860fe269-8cb6-4f2b-94b6-3c3e4f0fd4f7/Hoosier-Lotto_white_OL_280x183.png?width=560&height=366&ext=.png"
   },
   {
     "id": "hoosier-lottery-media-resources-2026-07-03t05-00-00-000z-jackpot-for-mega-millions",
@@ -43,7 +44,8 @@
     "importMethod": "rss",
     "automated": true,
     "generatedAt": "2026-07-03T00:31:44.913Z",
-    "imageUrl": "https://hoosierlottery.com/getmedia/6937daa4-03c8-491a-9a74-32b52b131e74/Mega-Millions_280x183.png?width=561&height=367&ext=.png"
+    "imageUrl": "../assets/news/publishers/hoosier-lottery-media-resources-2026-07-03t05-00-e3240039b932.png",
+    "publisherImageUrl": "https://hoosierlottery.com/getmedia/6937daa4-03c8-491a-9a74-32b52b131e74/Mega-Millions_280x183.png?width=561&height=367&ext=.png"
   },
   {
     "id": "texas-lottery-rss-feed-2026-07-03t00-06-28-000z-powerball-estimated-jackpot-for-07-04-2026",
@@ -66,7 +68,8 @@
     "importMethod": "rss",
     "automated": true,
     "generatedAt": "2026-07-03T00:33:32.501Z",
-    "imageUrl": "https://www.texaslottery.com/export/sites/lottery/Images/latest_results/powerball.png"
+    "imageUrl": "../assets/news/publishers/texas-lottery-rss-feed-2026-07-03t00-06-28-000z--3139251d4873.png",
+    "publisherImageUrl": "https://www.texaslottery.com/export/sites/lottery/Images/latest_results/powerball.png"
   },
   {
     "id": "texas-lottery-rss-feed-2026-07-03t00-06-28-000z-mega-millions-estimated-jackpot-for-07-03-20",
@@ -89,7 +92,8 @@
     "importMethod": "rss",
     "automated": true,
     "generatedAt": "2026-07-03T00:33:32.501Z",
-    "imageUrl": "https://www.texaslottery.com/export/sites/lottery/Images/mega-millions-banner.png"
+    "imageUrl": "../assets/news/publishers/texas-lottery-rss-feed-2026-07-03t00-06-28-000z--5d433d866330.png",
+    "publisherImageUrl": "https://www.texaslottery.com/export/sites/lottery/Images/mega-millions-banner.png"
   },
   {
     "id": "texas-lottery-rss-feed-2026-07-03t00-06-28-000z-lotto-texas-estimated-jackpot-for-07-04-2026",
@@ -112,7 +116,8 @@
     "importMethod": "rss",
     "automated": true,
     "generatedAt": "2026-07-03T00:33:32.502Z",
-    "imageUrl": "https://www.texaslottery.com/export/sites/lottery/Images/lotto-texas-banner.png"
+    "imageUrl": "../assets/news/publishers/texas-lottery-rss-feed-2026-07-03t00-06-28-000z--b8b75300c559.png",
+    "publisherImageUrl": "https://www.texaslottery.com/export/sites/lottery/Images/lotto-texas-banner.png"
   },
   {
     "id": "texas-lottery-rss-feed-2026-07-03t00-06-28-000z-texas-two-step-advertised-jackpot-for-07-02-",
@@ -135,7 +140,8 @@
     "importMethod": "rss",
     "automated": true,
     "generatedAt": "2026-07-03T00:33:32.502Z",
-    "imageUrl": "https://www.texaslottery.com/export/sites/lottery/Images/texas-two-step-banner.png"
+    "imageUrl": "../assets/news/publishers/texas-lottery-rss-feed-2026-07-03t00-06-28-000z--f1218f230ae4.png",
+    "publisherImageUrl": "https://www.texaslottery.com/export/sites/lottery/Images/texas-two-step-banner.png"
   },
   {
     "id": "pennsylvania-lottery-rss-directory-2026-07-02t18-59-00-000z-match-6-07-02-2026",
@@ -158,7 +164,8 @@
     "importMethod": "rss",
     "automated": true,
     "generatedAt": "2026-07-03T00:33:29.623Z",
-    "imageUrl": "https://feeds.feedblitz.com/PaLotteryWebSite/media/Games-Section/Draw%20Games/Match%206/gamePg-playInThePool-img-new3-m6.png?ext=.png"
+    "imageUrl": "https://feeds.feedblitz.com/PaLotteryWebSite/media/Games-Section/Draw%20Games/Match%206/gamePg-playInThePool-img-new3-m6.png?ext=.png",
+    "publisherImageUrl": "https://feeds.feedblitz.com/PaLotteryWebSite/media/Games-Section/Draw%20Games/Match%206/gamePg-playInThePool-img-new3-m6.png?ext=.png"
   },
   {
     "id": "pennsylvania-lottery-rss-directory-2026-07-02t18-59-00-000z-cash-5-07-02-2026",
@@ -181,7 +188,8 @@
     "importMethod": "rss",
     "automated": true,
     "generatedAt": "2026-07-03T00:33:29.623Z",
-    "imageUrl": "https://feeds.feedblitz.com/Custom/img/webcash.png"
+    "imageUrl": "https://feeds.feedblitz.com/Custom/img/webcash.png",
+    "publisherImageUrl": "https://feeds.feedblitz.com/Custom/img/webcash.png"
   },
   {
     "id": "hoosier-lottery-media-resources-2026-07-02t17-26-29-000z-quick-draw-midday-winning-numbers-f",
@@ -248,7 +256,8 @@
     "importMethod": "rss",
     "automated": true,
     "generatedAt": "2026-07-03T00:33:29.624Z",
-    "imageUrl": "https://www.palottery.pa.gov/PaLotteryWebSite/media/Logos/pal-ogimage.png"
+    "imageUrl": "../assets/news/publishers/pennsylvania-lottery-rss-directory-2026-07-02t13-e6e3ce24f7ed.png",
+    "publisherImageUrl": "https://www.palottery.pa.gov/PaLotteryWebSite/media/Logos/pal-ogimage.png"
   },
   {
     "id": "pennsylvania-lottery-rss-directory-2026-07-02t13-35-00-000z-treasure-hunt-07-02-2026",
@@ -271,7 +280,8 @@
     "importMethod": "rss",
     "automated": true,
     "generatedAt": "2026-07-03T00:33:29.624Z",
-    "imageUrl": "https://www.palottery.pa.gov/PaLotteryWebSite/media/Logos/pal-ogimage.png"
+    "imageUrl": "../assets/news/publishers/pennsylvania-lottery-rss-directory-2026-07-02t13-e6e3ce24f7ed.png",
+    "publisherImageUrl": "https://www.palottery.pa.gov/PaLotteryWebSite/media/Logos/pal-ogimage.png"
   },
   {
     "id": "hoosier-lottery-media-resources-2026-07-02t13-27-32-000z-cash-pop-morning-winning-numbers-fo",
@@ -294,7 +304,8 @@
     "importMethod": "rss",
     "automated": true,
     "generatedAt": "2026-07-03T00:33:32.096Z",
-    "imageUrl": "https://hoosierlottery.com/Content/img/games/draw/cashPop/afternoon-drawing.png"
+    "imageUrl": "../assets/news/publishers/hoosier-lottery-media-resources-2026-07-02t13-27-2956fb9eac17.png",
+    "publisherImageUrl": "https://hoosierlottery.com/Content/img/games/draw/cashPop/afternoon-drawing.png"
   },
   {
     "id": "hoosier-lottery-media-resources-2026-07-02t05-00-00-000z-jackpot-for-ca-h-5",
@@ -317,7 +328,8 @@
     "importMethod": "rss",
     "automated": true,
     "generatedAt": "2026-07-03T00:33:32.326Z",
-    "imageUrl": "https://hoosierlottery.com/Content/img/myLottery-26-btn-JOIN.png"
+    "imageUrl": "../assets/news/publishers/hoosier-lottery-media-resources-2026-07-02t05-00-c6ddb375bbae.png",
+    "publisherImageUrl": "https://hoosierlottery.com/Content/img/myLottery-26-btn-JOIN.png"
   },
   {
     "id": "pennsylvania-lottery-news-rss-2026-07-02t04-00-00-000z-pennsylvania-lottery-treasure-hunt-ja",
@@ -362,7 +374,8 @@
     "importMethod": "rss",
     "automated": true,
     "generatedAt": "2026-07-03T00:33:32.096Z",
-    "imageUrl": "https://hoosierlottery.com/getmedia/ef200a58-69d0-4b6f-87f7-e5952535872d/Powerball_white_OL-shad_280x183.png?width=2409&height=1601&ext=.png"
+    "imageUrl": "../assets/news/publishers/hoosier-lottery-media-resources-2026-07-02t03-44-eb900b018b5d.png",
+    "publisherImageUrl": "https://hoosierlottery.com/getmedia/ef200a58-69d0-4b6f-87f7-e5952535872d/Powerball_white_OL-shad_280x183.png?width=2409&height=1601&ext=.png"
   },
   {
     "id": "pennsylvania-lottery-rss-directory-2026-07-02t00-00-00-000z-pick-2-day-07-02-2026",
@@ -385,7 +398,8 @@
     "importMethod": "rss",
     "automated": true,
     "generatedAt": "2026-07-03T00:31:41.179Z",
-    "imageUrl": "https://www.palottery.pa.gov/PaLotteryWebSite/media/Logos/pal-ogimage.png"
+    "imageUrl": "../assets/news/publishers/pennsylvania-lottery-rss-directory-2026-07-02t00-e6e3ce24f7ed.png",
+    "publisherImageUrl": "https://www.palottery.pa.gov/PaLotteryWebSite/media/Logos/pal-ogimage.png"
   },
   {
     "id": "pennsylvania-lottery-news-rss-2026-07-01t04-00-00-000z-pennsylvania-lottery-winning-scratch-",
@@ -474,7 +488,8 @@
     "importMethod": "rss",
     "automated": true,
     "generatedAt": "2026-07-03T00:33:28.954Z",
-    "imageUrl": "https://milotteryconnect.com/wp-content/uploads/2026/06/06.25.26-Triple-Red-777s-IG-693-500000-Anonymous-Genesee-County.jpg"
+    "imageUrl": "../assets/news/publishers/michigan-lottery-connect-instant-games-2026-06-2-fd8c94201e48.jpg",
+    "publisherImageUrl": "https://milotteryconnect.com/wp-content/uploads/2026/06/06.25.26-Triple-Red-777s-IG-693-500000-Anonymous-Genesee-County.jpg"
   },
   {
     "id": "pennsylvania-lottery-news-rss-2026-06-29t04-00-00-000z-million-dollar-moment-on-million-doll",
@@ -563,7 +578,8 @@
     "importMethod": "rss",
     "automated": true,
     "generatedAt": "2026-07-03T00:33:32.851Z",
-    "imageUrl": "https://wilottery.com/sites/default/files/styles/super_medium_330x330_/public/images/2026-06/7412cb36-fc0e-4f3e-be36-c0a635b8b48e.png?itok=FJQ1dFIl"
+    "imageUrl": "../assets/news/publishers/wisconsin-lottery-feeds-2026-06-25t23-29-24-000z-09b96ce28068.png",
+    "publisherImageUrl": "https://wilottery.com/sites/default/files/styles/super_medium_330x330_/public/images/2026-06/7412cb36-fc0e-4f3e-be36-c0a635b8b48e.png?itok=FJQ1dFIl"
   },
   {
     "id": "fate-magazine-2026-06-24t21-36-40-000z-not-another-disclosure-day-review",
@@ -590,7 +606,8 @@
     "importMethod": "rss",
     "automated": true,
     "generatedAt": "2026-07-03T00:33:28.017Z",
-    "imageUrl": "https://static.wixstatic.com/media/6d3df7_901d29b832f54e38b35e05f1e1a24352~mv2.jpg/v1/fill/w_1000,h_621,al_c,q_85,usm_0.66_1.00_0.01/6d3df7_901d29b832f54e38b35e05f1e1a24352~mv2.jpg"
+    "imageUrl": "../assets/news/publishers/fate-magazine-2026-06-24t21-36-40-000z-not-anoth-a2d7d123d928.jpg",
+    "publisherImageUrl": "https://static.wixstatic.com/media/6d3df7_901d29b832f54e38b35e05f1e1a24352~mv2.jpg/v1/fill/w_1000,h_621,al_c,q_85,usm_0.66_1.00_0.01/6d3df7_901d29b832f54e38b35e05f1e1a24352~mv2.jpg"
   },
   {
     "id": "michigan-lottery-connect-instant-games-2026-06-22t12-00-44-000z-st-clair-county-woman-wins-1",
@@ -613,7 +630,8 @@
     "importMethod": "rss",
     "automated": true,
     "generatedAt": "2026-07-03T00:33:28.955Z",
-    "imageUrl": "https://milotteryconnect.com/wp-content/uploads/2026/06/06.16.26-King-Cashword-IG-715-1-Million-Anonymous-St.-Clair-County.jpg"
+    "imageUrl": "https://milotteryconnect.com/wp-content/uploads/2026/06/06.16.26-King-Cashword-IG-715-1-Million-Anonymous-St.-Clair-County.jpg",
+    "publisherImageUrl": "https://milotteryconnect.com/wp-content/uploads/2026/06/06.16.26-King-Cashword-IG-715-1-Million-Anonymous-St.-Clair-County.jpg"
   },
   {
     "id": "pennsylvania-lottery-news-rss-2026-06-22t04-00-00-000z-pennsylvania-lottery-winning-powerbal",
@@ -658,7 +676,8 @@
     "importMethod": "rss",
     "automated": true,
     "generatedAt": "2026-07-03T00:33:32.852Z",
-    "imageUrl": "https://wilottery.com/sites/default/files/styles/super_medium_330x330_/public/images/2026-06/IMG_0935.jpg?itok=duPtdZWX"
+    "imageUrl": "../assets/news/publishers/wisconsin-lottery-feeds-2026-06-19t22-05-46-000z-6769189d4aaa.jpg",
+    "publisherImageUrl": "https://wilottery.com/sites/default/files/styles/super_medium_330x330_/public/images/2026-06/IMG_0935.jpg?itok=duPtdZWX"
   },
   {
     "id": "wisconsin-lottery-feeds-2026-06-18t21-53-28-000z-wisconsin-lottery-releases-how-odds-work-vi",
@@ -681,7 +700,8 @@
     "importMethod": "rss",
     "automated": true,
     "generatedAt": "2026-07-03T00:33:32.853Z",
-    "imageUrl": "https://wilottery.com/sites/default/files/styles/super_medium_330x330_/public/images/2026-06/ae1923a9-3956-4d93-bc7f-8be7f0d86b08.png?itok=kaGlOzvd"
+    "imageUrl": "../assets/news/publishers/wisconsin-lottery-feeds-2026-06-18t21-53-28-000z-f846b6826964.png",
+    "publisherImageUrl": "https://wilottery.com/sites/default/files/styles/super_medium_330x330_/public/images/2026-06/ae1923a9-3956-4d93-bc7f-8be7f0d86b08.png?itok=kaGlOzvd"
   },
   {
     "id": "michigan-lottery-connect-instant-games-2026-06-18t13-00-02-000z-calhoun-county-man-wins-1-mi",
@@ -704,7 +724,8 @@
     "importMethod": "rss",
     "automated": true,
     "generatedAt": "2026-07-03T00:33:28.956Z",
-    "imageUrl": "https://milotteryconnect.com/wp-content/uploads/2026/06/06.16.26-Millionaire-Maker-IG-722-1-Million-Anonymous-Calhoun-County.jpg"
+    "imageUrl": "../assets/news/publishers/michigan-lottery-connect-instant-games-2026-06-1-f729aefd40a3.jpg",
+    "publisherImageUrl": "https://milotteryconnect.com/wp-content/uploads/2026/06/06.16.26-Millionaire-Maker-IG-722-1-Million-Anonymous-Calhoun-County.jpg"
   },
   {
     "id": "michigan-lottery-connect-instant-games-2026-06-16t12-00-52-000z-wayne-county-man-wins-500-00",
@@ -727,7 +748,8 @@
     "importMethod": "rss",
     "automated": true,
     "generatedAt": "2026-07-03T00:33:28.957Z",
-    "imageUrl": "https://milotteryconnect.com/wp-content/uploads/2026/06/06.11.26-Emerald-7s-IG-753-500000-Anonymous-Wayne-County.jpg"
+    "imageUrl": "../assets/news/publishers/michigan-lottery-connect-instant-games-2026-06-1-a94e65c8ca6c.jpg",
+    "publisherImageUrl": "https://milotteryconnect.com/wp-content/uploads/2026/06/06.11.26-Emerald-7s-IG-753-500000-Anonymous-Wayne-County.jpg"
   },
   {
     "id": "wisconsin-lottery-feeds-2026-06-12t22-34-42-000z-100-000-all-of-nothing-ticket-sold-in-new-r",
@@ -750,7 +772,8 @@
     "importMethod": "rss",
     "automated": true,
     "generatedAt": "2026-07-03T00:33:32.854Z",
-    "imageUrl": "https://wilottery.com/sites/default/files/styles/super_medium_330x330_/public/images/2026-06/d779ae7c-2753-478d-8e64-27cc018eeac3.png?itok=eQoetLt3"
+    "imageUrl": "../assets/news/publishers/wisconsin-lottery-feeds-2026-06-12t22-34-42-000z-7f8d7779f41e.png",
+    "publisherImageUrl": "https://wilottery.com/sites/default/files/styles/super_medium_330x330_/public/images/2026-06/d779ae7c-2753-478d-8e64-27cc018eeac3.png?itok=eQoetLt3"
   },
   {
     "id": "fate-magazine-2026-06-10t15-48-49-000z-john-philip-bessor-s-mysterious-electronic-voices-the",
@@ -777,7 +800,8 @@
     "importMethod": "rss",
     "automated": true,
     "generatedAt": "2026-07-03T00:33:28.018Z",
-    "imageUrl": "https://static.wixstatic.com/media/6d3df7_d7d1198df3d144bcac7112a1774e04b8~mv2.png/v1/fill/w_1000,h_1000,al_c,q_90,usm_0.66_1.00_0.01/6d3df7_d7d1198df3d144bcac7112a1774e04b8~mv2.png"
+    "imageUrl": "../assets/news/publishers/fate-magazine-2026-06-10t15-48-49-000z-john-phil-b7d8adf0e2be.png",
+    "publisherImageUrl": "https://static.wixstatic.com/media/6d3df7_d7d1198df3d144bcac7112a1774e04b8~mv2.png/v1/fill/w_1000,h_1000,al_c,q_90,usm_0.66_1.00_0.01/6d3df7_d7d1198df3d144bcac7112a1774e04b8~mv2.png"
   },
   {
     "id": "wisconsin-lottery-feeds-2026-06-08t23-45-56-000z-winning-2-million-scratch-ticket-claimed-by",
@@ -822,7 +846,8 @@
     "importMethod": "rss",
     "automated": true,
     "generatedAt": "2026-07-03T00:33:32.855Z",
-    "imageUrl": "https://wilottery.com/sites/default/files/styles/super_medium_330x330_/public/images/2026-06/FB-winningnumber.png?itok=IJ7PR93a"
+    "imageUrl": "../assets/news/publishers/wisconsin-lottery-feeds-2026-06-05t20-54-51-000z-fc06bc7529ff.png",
+    "publisherImageUrl": "https://wilottery.com/sites/default/files/styles/super_medium_330x330_/public/images/2026-06/FB-winningnumber.png?itok=IJ7PR93a"
   },
   {
     "id": "wisconsin-lottery-feeds-2026-06-04t23-13-29-000z-winning-50-000-powerball-ticket-sold-in-sup",
@@ -845,7 +870,8 @@
     "importMethod": "rss",
     "automated": true,
     "generatedAt": "2026-07-03T00:33:32.856Z",
-    "imageUrl": "https://wilottery.com/sites/default/files/styles/super_medium_330x330_/public/images/2026-06/c4dbb10b-6093-4d83-9abb-ba98bd4f4bd3.png?itok=721KuG3H"
+    "imageUrl": "../assets/news/publishers/wisconsin-lottery-feeds-2026-06-04t23-13-29-000z-456efd1b4fb4.png",
+    "publisherImageUrl": "https://wilottery.com/sites/default/files/styles/super_medium_330x330_/public/images/2026-06/c4dbb10b-6093-4d83-9abb-ba98bd4f4bd3.png?itok=721KuG3H"
   },
   {
     "id": "wisconsin-lottery-feeds-2026-06-03t21-48-22-000z-350-000-supercash-ticket-sold-in-fond-du-la",
@@ -868,7 +894,8 @@
     "importMethod": "rss",
     "automated": true,
     "generatedAt": "2026-07-03T00:33:32.856Z",
-    "imageUrl": "https://wilottery.com/sites/default/files/styles/super_medium_330x330_/public/images/2026-06/525b9828-d930-4467-aa7b-74ed27557039.png?itok=rhhMsVe4"
+    "imageUrl": "../assets/news/publishers/wisconsin-lottery-feeds-2026-06-03t21-48-22-000z-a623d61a0756.png",
+    "publisherImageUrl": "https://wilottery.com/sites/default/files/styles/super_medium_330x330_/public/images/2026-06/525b9828-d930-4467-aa7b-74ed27557039.png?itok=rhhMsVe4"
   },
   {
     "id": "michigan-lottery-connect-instant-games-2026-06-03t12-00-22-000z-27-year-old-mackinac-county-",
@@ -891,7 +918,8 @@
     "importMethod": "rss",
     "automated": true,
     "generatedAt": "2026-07-03T00:33:28.958Z",
-    "imageUrl": "https://milotteryconnect.com/wp-content/uploads/2026/05/05.28.26-Two-Million-Dollar-Cashword-IG-0719-2-Million-Anonymous-Mackinac-County.jpg"
+    "imageUrl": "https://milotteryconnect.com/wp-content/uploads/2026/05/05.28.26-Two-Million-Dollar-Cashword-IG-0719-2-Million-Anonymous-Mackinac-County.jpg",
+    "publisherImageUrl": "https://milotteryconnect.com/wp-content/uploads/2026/05/05.28.26-Two-Million-Dollar-Cashword-IG-0719-2-Million-Anonymous-Mackinac-County.jpg"
   },
   {
     "id": "michigan-lottery-connect-instant-games-2026-06-01t12-00-30-000z-gem-7s-family-of-instant-gam",
@@ -914,7 +942,8 @@
     "importMethod": "rss",
     "automated": true,
     "generatedAt": "2026-07-03T00:33:28.959Z",
-    "imageUrl": "https://milotteryconnect.com/wp-content/uploads/2026/05/Gems-26_IG-300x300.jpg"
+    "imageUrl": "../assets/news/publishers/michigan-lottery-connect-instant-games-2026-06-0-660c71f3acae.webp",
+    "publisherImageUrl": "https://milotteryconnect.com/wp-content/uploads/2026/05/Gems-26_IG-300x300.jpg"
   },
   {
     "id": "michigan-lottery-connect-instant-games-2026-05-27t12-00-04-000z-kent-county-man-wins-2-milli",
@@ -936,7 +965,9 @@
     "officialVerificationLanguage": null,
     "importMethod": "rss",
     "automated": true,
-    "generatedAt": "2026-07-03T00:33:28.960Z"
+    "generatedAt": "2026-07-03T00:33:28.960Z",
+    "imageUrl": "../assets/news/publishers/michigan-lottery-connect-instant-games-2026-05-2-0e574cb99dd0.jpg",
+    "publisherImageUrl": "https://milotteryconnect.com/wp-content/uploads/2026/05/05.21.26-2000000-Bonus-Scratch-Multiplier-IG-737-2-Million-Anonymous-Kent-County.jpg"
   },
   {
     "id": "michigan-lottery-connect-instant-games-2026-05-26t12-00-47-000z-wayne-county-woman-wins-1-mi",
@@ -958,7 +989,9 @@
     "officialVerificationLanguage": null,
     "importMethod": "rss",
     "automated": true,
-    "generatedAt": "2026-07-03T00:33:28.961Z"
+    "generatedAt": "2026-07-03T00:33:28.961Z",
+    "imageUrl": "../assets/news/publishers/michigan-lottery-connect-instant-games-2026-05-2-5f2837e4d05d.jpg",
+    "publisherImageUrl": "https://milotteryconnect.com/wp-content/uploads/2026/05/05.19.26-Lady-Luck-777-IG-711-1-Million-Anonymous-Wayne-County.jpg"
   },
   {
     "id": "fate-magazine-2026-05-19t19-32-38-000z-the-fate-files-vol-1-no-2",
@@ -984,7 +1017,9 @@
     "officialVerificationLanguage": null,
     "importMethod": "rss",
     "automated": true,
-    "generatedAt": "2026-07-03T00:33:28.019Z"
+    "generatedAt": "2026-07-03T00:33:28.019Z",
+    "imageUrl": "../assets/news/publishers/fate-magazine-2026-05-19t19-32-38-000z-the-fate--9a8b6bd776a1.jpg",
+    "publisherImageUrl": "https://static.wixstatic.com/media/6d3df7_949c9c9f1f82432393855db07df5094d~mv2.jpg/v1/fill/w_750,h_1000,al_c,q_85,usm_0.66_1.00_0.01/6d3df7_949c9c9f1f82432393855db07df5094d~mv2.jpg"
   },
   {
     "id": "fate-magazine-2026-04-28t18-50-45-000z-moon-bases-moon-bases",
@@ -1010,7 +1045,9 @@
     "officialVerificationLanguage": null,
     "importMethod": "rss",
     "automated": true,
-    "generatedAt": "2026-07-03T00:33:28.021Z"
+    "generatedAt": "2026-07-03T00:33:28.021Z",
+    "imageUrl": "../assets/news/publishers/fate-magazine-2026-04-28t18-50-45-000z-moon-base-7963942b8d42.jpg",
+    "publisherImageUrl": "https://static.wixstatic.com/media/6d3df7_4b250be691d24a7f8fc411d8d87a940d~mv2.jpg/v1/fill/w_1000,h_650,al_c,q_85,usm_0.66_1.00_0.01/6d3df7_4b250be691d24a7f8fc411d8d87a940d~mv2.jpg"
   },
   {
     "id": "fate-magazine-2026-04-07t22-59-08-000z-bigfoot-on-deck",
@@ -1036,7 +1073,9 @@
     "officialVerificationLanguage": null,
     "importMethod": "rss",
     "automated": true,
-    "generatedAt": "2026-07-03T00:33:28.022Z"
+    "generatedAt": "2026-07-03T00:33:28.022Z",
+    "imageUrl": "../assets/news/publishers/fate-magazine-2026-04-07t22-59-08-000z-bigfoot-o-cd3f403afbea.png",
+    "publisherImageUrl": "https://static.wixstatic.com/media/6d3df7_3554c656321c49d5987cbb97ea73eaf4~mv2.png/v1/fill/w_600,h_600,al_c,lg_1,q_85/6d3df7_3554c656321c49d5987cbb97ea73eaf4~mv2.png"
   },
   {
     "id": "fate-magazine-2026-03-11t04-04-16-000z-what-are-trolls",
@@ -1062,7 +1101,9 @@
     "officialVerificationLanguage": null,
     "importMethod": "rss",
     "automated": true,
-    "generatedAt": "2026-07-03T00:33:28.023Z"
+    "generatedAt": "2026-07-03T00:33:28.023Z",
+    "imageUrl": "../assets/news/publishers/fate-magazine-2026-03-11t04-04-16-000z-what-are--eafe7afd7bce.jpg",
+    "publisherImageUrl": "https://static.wixstatic.com/media/af5ec8_d8b0890cc03d405ea2be239cd569dec2~mv2.jpg/v1/fill/w_1024,h_683,al_c/af5ec8_d8b0890cc03d405ea2be239cd569dec2~mv2.jpg"
   },
   {
     "id": "fate-magazine-2026-03-07t10-07-57-000z-nc-cities-with-the-most-ufo-sightings",
@@ -1088,7 +1129,9 @@
     "officialVerificationLanguage": null,
     "importMethod": "rss",
     "automated": true,
-    "generatedAt": "2026-07-03T00:33:28.024Z"
+    "generatedAt": "2026-07-03T00:33:28.024Z",
+    "imageUrl": "../assets/news/publishers/fate-magazine-2026-03-07t10-07-57-000z-nc-cities-b325cb364715.jpg",
+    "publisherImageUrl": "https://static.wixstatic.com/media/af5ec8_e2cc3d47d5e84008b3d928fed2c0aabe~mv2.jpg/v1/fill/w_980,h_699,al_c/af5ec8_e2cc3d47d5e84008b3d928fed2c0aabe~mv2.jpg"
   },
   {
     "id": "fate-magazine-2026-03-03t23-24-50-000z-the-5-most-haunted-truck-stops-in-the-u-s",
@@ -1114,7 +1157,9 @@
     "officialVerificationLanguage": null,
     "importMethod": "rss",
     "automated": true,
-    "generatedAt": "2026-07-03T00:33:28.025Z"
+    "generatedAt": "2026-07-03T00:33:28.025Z",
+    "imageUrl": "../assets/news/publishers/fate-magazine-2026-03-03t23-24-50-000z-the-5-mos-6c1974c6a37b.jpg",
+    "publisherImageUrl": "https://static.wixstatic.com/media/af5ec8_04b3cb83456a4eed8e768a135ceddc49~mv2.jpg/v1/fill/w_748,h_545,al_c/af5ec8_04b3cb83456a4eed8e768a135ceddc49~mv2.jpg"
   },
   {
     "id": "fox-2-detroit-lottery-2025-06-26t17-09-24-000z-michigan-lottery-office-searched-by-msp-in-fr",
@@ -1136,7 +1181,9 @@
     "officialVerificationLanguage": "Official results and prize claims should be checked against the relevant lottery operator before relying on them.",
     "importMethod": "rss",
     "automated": true,
-    "generatedAt": "2026-07-03T00:33:28.826Z"
+    "generatedAt": "2026-07-03T00:33:28.826Z",
+    "imageUrl": "../assets/news/publishers/fox-2-detroit-lottery-2025-06-26t17-09-24-000z-m-210360261612.webp",
+    "publisherImageUrl": "https://images.foxtv.com/static.fox2detroit.com/www.fox2detroit.com/content/uploads/2025/06/1200/630/michigan-lottery-livonia-scaled.jpg?ve=1&tl=1"
   },
   {
     "id": "fox-2-detroit-lottery-2024-06-24t15-18-42-000z-are-we-millionaires-wayne-county-man-buys-2nd",
@@ -1158,7 +1205,9 @@
     "officialVerificationLanguage": "Official results and prize claims should be checked against the relevant lottery operator before relying on them.",
     "importMethod": "rss",
     "automated": true,
-    "generatedAt": "2026-07-03T00:33:28.827Z"
+    "generatedAt": "2026-07-03T00:33:28.827Z",
+    "imageUrl": "../assets/news/publishers/fox-2-detroit-lottery-2024-06-24t15-18-42-000z-a-d353874ec2d5.webp",
+    "publisherImageUrl": "https://images.foxtv.com/static.fox2detroit.com/www.fox2detroit.com/content/uploads/2024/06/1200/630/money-maker.jpg?ve=1&tl=1"
   },
   {
     "id": "fox-2-detroit-lottery-2024-06-21t17-57-21-000z-76-year-old-lottery-winner-in-michigan-scores",
@@ -1180,7 +1229,9 @@
     "officialVerificationLanguage": "Official results and prize claims should be checked against the relevant lottery operator before relying on them.",
     "importMethod": "rss",
     "automated": true,
-    "generatedAt": "2026-07-03T00:33:28.828Z"
+    "generatedAt": "2026-07-03T00:33:28.828Z",
+    "imageUrl": "../assets/news/publishers/fox-2-detroit-lottery-2024-06-21t17-57-21-000z-7-6fec789fea95.webp",
+    "publisherImageUrl": "https://images.foxtv.com/static.fox2detroit.com/www.fox2detroit.com/content/uploads/2024/06/1200/630/1m-WIN.jpg?ve=1&tl=1"
   },
   {
     "id": "fox-2-detroit-lottery-2024-06-17t14-00-45-000z-dad-s-tip-helps-son-win-7-19m-michigan-lotter",
@@ -1202,7 +1253,9 @@
     "officialVerificationLanguage": "Official results and prize claims should be checked against the relevant lottery operator before relying on them.",
     "importMethod": "rss",
     "automated": true,
-    "generatedAt": "2026-07-03T00:33:28.829Z"
+    "generatedAt": "2026-07-03T00:33:28.829Z",
+    "imageUrl": "../assets/news/publishers/fox-2-detroit-lottery-2024-06-17t14-00-45-000z-d-d2ae1f153410.webp",
+    "publisherImageUrl": "https://images.foxtv.com/static.fox2detroit.com/www.fox2detroit.com/content/uploads/2023/04/1200/630/pile-g7ba92f537_1280.jpg?ve=1&tl=1"
   },
   {
     "id": "fox-2-detroit-lottery-2024-06-16t16-49-44-000z-maryland-man-wins-32-000-after-mistake-purcha",
@@ -1224,7 +1277,9 @@
     "officialVerificationLanguage": "Official results and prize claims should be checked against the relevant lottery operator before relying on them.",
     "importMethod": "rss",
     "automated": true,
-    "generatedAt": "2026-07-03T00:33:28.830Z"
+    "generatedAt": "2026-07-03T00:33:28.830Z",
+    "imageUrl": "../assets/news/publishers/fox-2-detroit-lottery-2024-06-16t16-49-44-000z-m-6cc62fb1f449.webp",
+    "publisherImageUrl": "https://images.foxtv.com/static.fox2detroit.com/www.fox2detroit.com/content/uploads/2024/06/1200/630/GettyImages-938855960.jpg?ve=1&tl=1"
   },
   {
     "id": "fox-2-detroit-lottery-2024-06-11t18-01-13-000z-mid-michigan-couple-attorney-win-842-4m-power",
@@ -1246,7 +1301,9 @@
     "officialVerificationLanguage": "Official results and prize claims should be checked against the relevant lottery operator before relying on them.",
     "importMethod": "rss",
     "automated": true,
-    "generatedAt": "2026-07-03T00:33:28.832Z"
+    "generatedAt": "2026-07-03T00:33:28.832Z",
+    "imageUrl": "../assets/news/publishers/fox-2-detroit-lottery-2024-06-11t18-01-13-000z-m-8d430e25a903.webp",
+    "publisherImageUrl": "https://images.foxtv.com/static.fox2detroit.com/www.fox2detroit.com/content/uploads/2024/04/1200/630/Powerball1.jpg?ve=1&tl=1"
   },
   {
     "id": "fox-2-detroit-lottery-2024-06-08t21-21-22-000z-gut-feeling-leads-to-300-000-lottery-win-for-",
@@ -1268,7 +1325,9 @@
     "officialVerificationLanguage": "Official results and prize claims should be checked against the relevant lottery operator before relying on them.",
     "importMethod": "rss",
     "automated": true,
-    "generatedAt": "2026-07-03T00:33:28.833Z"
+    "generatedAt": "2026-07-03T00:33:28.833Z",
+    "imageUrl": "../assets/news/publishers/fox-2-detroit-lottery-2024-06-08t21-21-22-000z-g-8c2b139a9ec5.webp",
+    "publisherImageUrl": "https://images.foxtv.com/static.fox2detroit.com/www.fox2detroit.com/content/uploads/2024/06/1200/630/GettyImages-480270267.jpg?ve=1&tl=1"
   },
   {
     "id": "fox-2-detroit-lottery-2024-06-01t20-00-03-000z-washington-educator-wins-200-000-jackpot-afte",
@@ -1290,6 +1349,8 @@
     "officialVerificationLanguage": "Official results and prize claims should be checked against the relevant lottery operator before relying on them.",
     "importMethod": "rss",
     "automated": true,
-    "generatedAt": "2026-07-03T00:33:28.835Z"
+    "generatedAt": "2026-07-03T00:33:28.835Z",
+    "imageUrl": "../assets/news/publishers/fox-2-detroit-lottery-2024-06-01t20-00-03-000z-w-577b3eac7b97.webp",
+    "publisherImageUrl": "https://images.foxtv.com/static.fox2detroit.com/www.fox2detroit.com/content/uploads/2024/06/1200/630/31d05508-c215c087-3280508d-classroom-1.jpg?ve=1&tl=1"
   }
 ]

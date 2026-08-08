@@ -27,8 +27,10 @@ test("initial presentation media uses bounded web delivery assets", () => {
 
 test("static News feed carries attributed publisher imagery", () => {
   const articles = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "articles.json"), "utf8"));
-  const withImages = articles.filter((article) => /^https:\/\//i.test(article.imageUrl || ""));
-  expect(withImages.length).toBeGreaterThanOrEqual(20);
+  const withCachedImages = articles.filter((article) => /^\.\.\/assets\/news\/publishers\//i.test(article.imageUrl || ""));
+  const withPublisherSources = articles.filter((article) => /^https:\/\//i.test(article.publisherImageUrl || ""));
+  expect(withCachedImages.length).toBeGreaterThanOrEqual(20);
+  expect(withPublisherSources.length).toBeGreaterThanOrEqual(20);
 });
 
 function trackLocalFailures(page) {
@@ -688,6 +690,8 @@ test("Static Wav defers its game until the player launches it", async ({ page })
 });
 
 test("features combines the cinematic shell with the manifest-driven Arcade directory", async ({ page }) => {
+  const manifest = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "games", "games-manifest.json"), "utf8"));
+  const expectedGames = manifest.games;
   await blockHeavyMedia(page);
   const localFailures = trackLocalFailures(page);
   await page.goto("/features-app.html", { waitUntil: "domcontentloaded" });
@@ -703,9 +707,9 @@ test("features combines the cinematic shell with the manifest-driven Arcade dire
   await expect.poll(() => page.evaluate(() => document.body.classList.contains("feature-entity-ready"))).toBe(true);
   expect(await page.locator("#arcade-title").evaluate((title) => getComputedStyle(title).fontFamily)).not.toMatch(/Impact/i);
   await expect(page.locator(".feature-channel")).toHaveCount(5);
-  await expect(page.locator("[data-arcade-grid] .arcade-game-card")).toHaveCount(9);
-  await expect(page.locator("[data-arcade-count]")).toHaveText("9");
-  await expect(page.locator(".arcade-game-card__status")).toHaveText(["Playable", "Playable", "Beta", "Playable", "Playable", "Playable", "Playable", "Playable", "Playable"]);
+  await expect(page.locator("[data-arcade-grid] .arcade-game-card")).toHaveCount(expectedGames.length);
+  await expect(page.locator("[data-arcade-count]")).toHaveText(String(expectedGames.length));
+  await expect(page.locator(".arcade-game-card__status")).toHaveText(expectedGames.map((game) => game.status));
   const fortuneGridCard = page.locator('[data-game-id="fortune-grid-313"]');
   await expect(fortuneGridCard.getByRole("heading", { name: "LottoMind 313: Fortune Grid" })).toBeVisible();
   await expect(fortuneGridCard.getByRole("link", { name: "Play Beta" })).toHaveAttribute("href", "./games/lottomind-313-fortune-grid/");
@@ -1006,7 +1010,7 @@ test("news route renders from the static feed without probing the missing API", 
   const firstArticleImage = page.locator(".article-grid .news-card__media img").first();
   await firstArticleImage.scrollIntoViewIfNeeded();
   await expect(firstArticleImage).toBeVisible();
-  await expect(firstArticleImage).toHaveAttribute("src", /^https:\/\//);
+  await expect(firstArticleImage).toHaveAttribute("src", /^\.\.\/assets\/news\/publishers\//);
   await expect(firstArticleImage.locator("xpath=..")).toHaveClass(/has-publisher-image/);
   await expect.poll(() => firstArticleImage.evaluate((image) => image.complete && image.naturalWidth > 0)).toBe(true);
   expect(apiRequests).toEqual([]);

@@ -38,4 +38,4 @@ The v1 baseline focused on cinematic commercial gates. The updated routes retain
 
 ## Approval Status
 
-Needs revision for commerce launch. Ready for continued staging review as a truthful fail-closed catalog.
+Ready for production review as a truthful fail-closed catalog. Ordering is not approved for commerce launch and remains locked until inventory, fulfillment, tax, returns, confirmation email, and tracking are verified.

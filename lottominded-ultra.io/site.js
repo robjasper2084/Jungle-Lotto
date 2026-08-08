@@ -3226,7 +3226,10 @@ async function playStartupVideoMuted(options = {}) {
 
 function shouldSuppressStartupVideo() {
   const params = new URLSearchParams(window.location.search);
-  return params.get("collector") === "access";
+  const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+  return params.get("collector") === "access"
+    || params.get("account") === "recovery"
+    || hashParams.get("type") === "recovery";
 }
 
 function showStartupVideo() {

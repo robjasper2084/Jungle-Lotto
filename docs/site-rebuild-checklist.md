@@ -5,13 +5,13 @@ This matrix records the current release-signoff evidence for the upgrade branch.
 ## Evidence
 
 - Production baseline: `v1-final` at `975c637cea7003533cdc30aed9d96be51929bfc8`, with 69 route captures in [`visual-baseline/v1/`](visual-baseline/v1/)
-- Audited site content: current `upgrade-redesign` working tree based on `bdda8b5`; the exact focused commit is recorded by `git log -1 --format=%H -- docs/site-rebuild-checklist.md`
+- Audited site content: immutable target of annotated tag `v2-rc5`
 - Current staging captures: 78/78 passed across 26 routes at `1440x900`, `768x1024`, and `390x844`
 - Contact sheets: [desktop](staging-reviews/release-signoff-assets/desktop-contact-sheet.png), [tablet](staging-reviews/release-signoff-assets/tablet-contact-sheet.png), and [mobile](staging-reviews/release-signoff-assets/mobile-contact-sheet.png)
 - Machine-readable results: [`release-signoff-manifest.json`](staging-reviews/release-signoff-assets/release-signoff-manifest.json)
-- Route gate: 162/162 passed across source and staging, including Help, Account, visible keyboard focus, reduced motion, console/page errors, same-origin assets, overflow, noindex, preview banner, and environment write protections
-- Current staging artifact: 27 pages, 616 same-origin references, and 12/12 safety checks
-- Review reports: [`entry-motion-page-soundtracks.md`](staging-reviews/entry-motion-page-soundtracks.md), [`release-candidate-v2-rc4.md`](staging-reviews/release-candidate-v2-rc4.md), and [`help-media-release.md`](staging-reviews/help-media-release.md)
+- Route gate: 168/168 passed across source and staging, including Help, Account, visible keyboard focus, reduced motion, console/page errors, same-origin assets, overflow, noindex, preview banner, and environment write protections
+- Current staging artifact: 28 pages, 635 same-origin references, and 12/12 safety checks
+- Review reports: [`release-candidate-v2-rc5.md`](staging-reviews/release-candidate-v2-rc5.md), [`store-membership-definition.md`](staging-reviews/store-membership-definition.md), and [`help-media-release.md`](staging-reviews/help-media-release.md)
 
 ## Sign-Off Matrix
 
@@ -20,7 +20,7 @@ This matrix records the current release-signoff evidence for the upgrade branch.
 | `/` | Sitemap | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Measured | Opens directly on the value proposition; story and soundtrack controls remain user accessible |
 | `/features-app.html` | Sitemap | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Measured | Current staging sign-off complete |
 | `/memberships.html` | Sitemap | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Measured | Assigned soundtrack and visible sound control verified; guarded checkout preserved |
-| `/news/` | Sitemap | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Measured | Assigned soundtrack verified; unavailable third-party publisher images remain external warnings, not same-origin failures |
+| `/news/` | Sitemap | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Measured | Publisher imagery is cached locally; two desktop-only external assets remain ORB warnings, not same-origin failures |
 | `/live-events.html` | Sitemap | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Measured | Current staging sign-off complete |
 | `/lottery-spheres.html` | Sitemap | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Measured | Current staging sign-off complete |
 | `/beat2lotto-plus.html` | Sitemap | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Measured | Current staging sign-off complete |
@@ -49,4 +49,4 @@ This matrix records the current release-signoff evidence for the upgrade branch.
 
 ## Release Boundary
 
-The matrix closes the current documentation gap; it does not authorize production. The staging artifact remains noindex and fail-closed for live payments, production account writes, real redemptions, and production analytics. The Home, Arcade, Storefront, and shared artwork payload reductions are verified without removing the original source media. Authenticated Stripe Sandbox handoff and cancellation passed without payment entry or charge. Production approval remains `Not approved`.
+The matrix closes the current documentation gap; it does not authorize production. The staging artifact remains noindex and fail-closed for live payments, production account writes, real redemptions, and production analytics. Authenticated Stripe Sandbox handoff and cancellation passed without payment entry or charge. Store ordering remains locked pending verified operations. Production approval remains `Not approved`.
