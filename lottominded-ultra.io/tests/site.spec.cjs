@@ -738,42 +738,38 @@ test("features combines the cinematic shell with the manifest-driven Arcade dire
   expect(localFailures).toEqual([]);
 });
 
-test("home opens on the product and keeps the story optional until requested", async ({ page }) => {
+test("home opens the startup commercial and begins muted playback", async ({ page }) => {
   const commercialRequests = [];
   page.on("request", (request) => {
     if (/lottomind-home-apparel-commercial-20260804\.opt\.mp4/i.test(request.url())) commercialRequests.push(request.url());
   });
   await page.goto("/", { waitUntil: "domcontentloaded" });
   const startup = page.locator("[data-startup-video]");
-  const heroFilm = page.locator(".hero-motion");
   await expect(startup).toBeVisible({ timeout: 5_000 });
-  await expect(page.locator('[role="dialog"][data-startup-video]')).toHaveCount(0);
-  await expect(startup.getByRole("button", { name: "Watch the Story" })).toBeVisible();
-  await expect.poll(() => startup.locator("video").evaluate((video) => video.paused)).toBe(true);
-  expect(commercialRequests).toEqual([]);
-  await expect(heroFilm).toBeVisible();
+  await expect(startup.locator('[role="dialog"]')).toBeVisible();
+  await expect(startup.getByRole("button", { name: "Play with sound" })).toBeVisible();
+  await expect.poll(() => startup.locator("video").evaluate((video) => video.muted)).toBe(true);
+  await expect.poll(() => commercialRequests.length).toBeGreaterThan(0);
+  await startup.getByRole("button", { name: "Enter Site", exact: true }).click();
+  await expect(startup).toBeHidden();
 });
 
-test("home story dismissal persists for at least 30 days", async ({ page }) => {
+test("home commercial dismissal lasts only for the current page load", async ({ page }) => {
   await blockHeavyMedia(page);
   await page.goto("/index.html#top", { waitUntil: "domcontentloaded" });
   const story = page.locator("[data-startup-video]");
   await expect(story).toBeVisible();
-  await story.getByRole("button", { name: "Hide Story" }).click();
+  await story.getByRole("button", { name: "Enter Site", exact: true }).click();
   await expect(story).toBeHidden();
-
-  const remainingDays = await page.evaluate(() => {
-    const expires = Number(localStorage.getItem("lottominded.ultra.homeStoryDismissedUntil.v1"));
-    return (expires - Date.now()) / (24 * 60 * 60 * 1000);
-  });
-  expect(remainingDays).toBeGreaterThanOrEqual(29.9);
+  await expect.poll(() => page.evaluate(() => localStorage.getItem("lottominded.ultra.homeStoryDismissedUntil.v1"))).toBeNull();
   await page.reload({ waitUntil: "domcontentloaded" });
-  await expect(story).toBeHidden();
+  await expect(story).toBeVisible({ timeout: 5_000 });
 });
 
-test("global Reduce Motion control persists and stops automatic game expansion", async ({ page }) => {
+test("global Reduce Motion control persists", async ({ page }) => {
   await blockHeavyMedia(page);
   await page.goto("/index.html#top", { waitUntil: "domcontentloaded" });
+  await page.locator("[data-startup-video-close]").last().click();
   const motionToggle = page.locator("[data-reduce-motion-toggle]");
   await expect(motionToggle).toHaveAttribute("aria-pressed", "false");
   await motionToggle.click();
@@ -793,7 +789,7 @@ test("commercial controls retain a visible native pointer above mascot cursor la
   const startup = page.locator("[data-startup-video]");
   await expect(startup).toBeVisible({ timeout: 5_000 });
   await expect.poll(() => startup.evaluate((element) => getComputedStyle(element).cursor)).toBe("auto");
-  await expect.poll(() => startup.getByRole("button", { name: "Watch the Story" }).evaluate((element) => getComputedStyle(element).cursor)).toBe("pointer");
+  await expect.poll(() => startup.getByRole("button", { name: "Play with sound" }).evaluate((element) => getComputedStyle(element).cursor)).toBe("pointer");
 
   await page.goto("/memberships.html", { waitUntil: "domcontentloaded" });
   const membershipCommercial = page.locator("[data-membership-commercial-modal]");
@@ -842,14 +838,7 @@ test("Spheres exposes one Oracle and consistent Robot RAHBEE handoffs", async ({
   await expect(page.locator(".sphere-copy")).not.toContainText("Beat2Lotto+");
 
   if (page.viewportSize()?.width <= 680) {
-    await expect(page.locator("[data-lm-healing-generator]")).toHaveClass(/is-minimized/);
-    const overlapsPrimaryActions = await page.evaluate(() => {
-      const oracle = document.querySelector("[data-lm-healing-generator]")?.getBoundingClientRect();
-      const actions = document.querySelector(".sphere-actions")?.getBoundingClientRect();
-      if (!oracle || !actions) return true;
-      return !(oracle.right <= actions.left || oracle.left >= actions.right || oracle.bottom <= actions.top || oracle.top >= actions.bottom);
-    });
-    expect(overlapsPrimaryActions).toBe(false);
+    await expect(page.locator("[data-lm-healing-generator]")).not.toHaveClass(/is-minimized/);
   }
 });
 

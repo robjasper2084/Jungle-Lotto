@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "version": "2026.08.05",
-  "lastChecked": "2026-08-05",
+  "version": "2026.08.08",
+  "lastChecked": "2026-08-08",
   "games": [
     {
       "id": "gothtechnology",
@@ -170,6 +170,25 @@
       "tags": ["music", "mixer", "stems", "studio"],
       "featured": false,
       "accent": "cyan"
+    },
+    {
+      "id": "lottomind-trivia-vault",
+      "title": "LottoMind Trivia Vault",
+      "route": "./games/lottomind-trivia/",
+      "thumbnail": "./games/lottomind-trivia/assets/trivia-vault-key-art.webp",
+      "status": "Playable",
+      "membershipRequirement": "Free",
+      "estimatedSessionTime": "5-20 minutes",
+      "supportedControls": "Keyboard + pointer + touch",
+      "rewardEligibility": "Demo points only; server rewards disabled",
+      "version": "1.0",
+      "description": "Test seven knowledge channels through Quick Play, Daily Vault, Survival, and focused Category runs.",
+      "category": "Trivia",
+      "difficulty": "Mixed",
+      "tags": ["trivia", "knowledge", "daily", "Detroit", "numbers"],
+      "featured": false,
+      "accent": "gold",
+      "notice": "Entertainment and educational purposes only. No prediction, wagering, cash value, or browser-issued LottoCredits."
     }
   ]
 }

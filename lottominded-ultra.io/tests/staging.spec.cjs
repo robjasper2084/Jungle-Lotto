@@ -54,7 +54,7 @@ test("preview shell is noindex, visibly marked, and free of broken same-origin r
   expect(consoleFailures).toEqual([]);
 });
 
-test("home staging opens directly and defers the optional inline story", async ({ page }) => {
+test("home staging opens the startup commercial and begins muted playback", async ({ page }) => {
   const commercialRequests = [];
   page.on("request", (request) => {
     if (/lottomind-home-apparel-commercial-20260804\.opt\.mp4/i.test(request.url())) {
@@ -65,10 +65,12 @@ test("home staging opens directly and defers the optional inline story", async (
   await page.goto("/", { waitUntil: "domcontentloaded" });
   const story = page.locator("[data-startup-video]");
   await expect(story).toBeVisible({ timeout: 5_000 });
-  await expect(page.locator('[role="dialog"][data-startup-video]')).toHaveCount(0);
-  await expect(story.getByRole("button", { name: "Watch the Story" })).toBeVisible();
-  await expect.poll(() => story.locator("video").evaluate((video) => video.paused)).toBe(true);
-  expect(commercialRequests).toEqual([]);
+  await expect(story.locator('[role="dialog"]')).toBeVisible();
+  await expect(story.getByRole("button", { name: "Play with sound" })).toBeVisible();
+  await expect.poll(() => story.locator("video").evaluate((video) => video.muted)).toBe(true);
+  await expect.poll(() => commercialRequests.length).toBeGreaterThan(0);
+  await story.getByRole("button", { name: "Enter Site", exact: true }).click();
+  await expect(story).toBeHidden();
   await expect(page.locator(".hero-motion")).toBeVisible();
 });
 

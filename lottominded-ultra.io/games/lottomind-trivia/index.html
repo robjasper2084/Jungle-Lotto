@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Enter LottoMind Trivia Vault, a futuristic knowledge game with Quick Play, Daily Practice, Survival, and Category Run modes." />
+    <meta name="theme-color" content="#050508" />
+    <title>LottoMind Trivia Vault | LOTTOMINDED ULTRA</title>
+    <link rel="icon" href="../../assets/brand/lm-orb-mark.webp" type="image/webp" />
+    <link rel="canonical" href="https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/games/lottomind-trivia/" />
+    <link rel="preload" href="./assets/trivia-vault-key-art.webp" as="image" type="image/webp" fetchpriority="high" />
+    <link rel="stylesheet" href="../../styles.css?v=trivia-vault-1" />
+    <link rel="stylesheet" href="../../assets/css/lm-page-transition.css?v=transition-exit-audit-4" />
+    <link rel="stylesheet" href="../../assets/css/lm-global-orb-header.css?v=header-consistency-4" />
+    <link rel="stylesheet" href="./styles.css?v=trivia-vault-1" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="LOTTOMINDED ULTRA" />
+    <meta property="og:title" content="LottoMind Trivia Vault" />
+    <meta property="og:description" content="Test your knowledge. Unlock the vault." />
+    <meta property="og:url" content="https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/games/lottomind-trivia/" />
+    <meta property="og:image" content="https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/games/lottomind-trivia/assets/trivia-vault-key-art.webp" />
+    <meta property="og:image:alt" content="A gold, cyan, and violet Trivia Vault reactor surrounded by numbered spheres" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"VideoGame","name":"LottoMind Trivia Vault","description":"A futuristic knowledge game with Quick Play, Daily Practice, Survival, and Category Run modes.","genre":["Trivia","Educational","Arcade"],"playMode":"SinglePlayer","applicationCategory":"Game","operatingSystem":"Any modern web browser","url":"https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/games/lottomind-trivia/","isPartOf":{"@type":"WebSite","name":"LOTTOMINDED ULTRA","url":"https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/"}}</script>
+  </head>
+  <body class="trivia-vault-page home-page has-sphere-header has-global-sphere-header" data-no-header-toggle>
+    <div class="lm-page-transition" data-lm-page-transition aria-hidden="true">
+      <div class="lm-page-transition__flash"></div>
+      <video class="lm-page-transition__video" data-lm-transition-video muted playsinline preload="metadata"></video>
+      <div class="lm-page-transition__vignette"></div>
+      <div class="lm-page-transition__scanlines"></div>
+      <p class="lm-page-transition__label" data-lm-transition-label>Opening Trivia Vault</p>
+    </div>
+
+    <header class="site-header home-like-header home-sphere-header global-sphere-header" data-site-header>
+      <div class="site-header-main">
+        <a class="brand" href="../../index.html#top" aria-label="LOTTOMINDED ULTRA home">
+          <img src="../../assets/brand/lm-orb-mark.webp" alt="" />
+          <span>LOTTOMINDED ULTRA</span>
+        </a>
+      </div>
+    </header>
+
+    <main id="main-content" class="vault-main">
+      <div class="vault-atmosphere" aria-hidden="true">
+        <span data-sphere="07"></span><span data-sphere="13"></span><span data-sphere="26"></span><span data-sphere="42"></span><span data-sphere="68"></span>
+      </div>
+
+      <section class="vault-screen vault-launcher is-active" data-screen="launcher" aria-labelledby="vaultTitle">
+        <div class="vault-hero-art" role="img" aria-label="Gold, cyan, and violet Trivia Vault reactor surrounded by numbered spheres">
+          <img src="./assets/trivia-vault-key-art.webp" alt="" width="1200" height="733" fetchpriority="high" decoding="async" />
+          <div class="vault-hero-readout">
+            <span>LM / KNOWLEDGE REACTOR</span>
+            <strong>154 reviewed signals online</strong>
+          </div>
+        </div>
+        <div class="vault-launch-copy">
+          <p class="vault-kicker">LottoMind Arcade / Knowledge Signal</p>
+          <h1 id="vaultTitle">LottoMind <span>Trivia Vault</span></h1>
+          <p class="vault-tagline">Test Your Knowledge. Unlock the Vault.</p>
+          <p class="vault-intro">Enter seven knowledge channels through a Detroit-built game-show terminal. Every number challenge is entertainment only and never predicts a lottery result.</p>
+          <div class="vault-service-state" data-service-state role="status"></div>
+          <div class="vault-mode-grid" aria-label="Choose a game mode">
+            <button class="vault-mode vault-mode--gold" type="button" data-start-mode="quick">
+              <span>01 / 10 questions</span><strong>Quick Play</strong><small>Score, streak, and speed bonuses</small>
+            </button>
+            <button class="vault-mode vault-mode--cyan" type="button" data-start-mode="daily">
+              <span>02 / daily practice</span><strong>Daily Vault</strong><small data-daily-countdown>Next signal calculating</small>
+            </button>
+            <button class="vault-mode vault-mode--red" type="button" data-start-mode="survival">
+              <span>03 / three lives</span><strong>Survival</strong><small>Difficulty rises every five answers</small>
+            </button>
+            <button class="vault-mode vault-mode--violet" type="button" data-open-category>
+              <span>04 / choose channel</span><strong>Category Run</strong><small>Focus one knowledge sector</small>
+            </button>
+          </div>
+          <div class="vault-launch-actions">
+            <button type="button" class="vault-command" data-open-records>Records &amp; badges</button>
+            <button type="button" class="vault-command" data-open-leaderboards>Leaderboards</button>
+            <a class="vault-command" href="../../features-app.html#arcade-library">Return to Arcade</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="vault-screen vault-play" data-screen="play" aria-labelledby="questionText" hidden>
+        <header class="vault-play-header">
+          <div><span>Mode</span><strong data-mode-label>Quick Play</strong></div>
+          <div><span>Question</span><strong data-question-number>1 / 10</strong></div>
+          <div><span>Score</span><strong data-score>0</strong></div>
+          <div><span>Streak</span><strong data-streak>0</strong></div>
+          <div data-lives-wrap hidden><span>Lives</span><strong data-lives>3</strong></div>
+          <nav aria-label="Game controls">
+            <button type="button" data-pause>Pause</button>
+            <button type="button" data-mute aria-pressed="false">Sound off</button>
+            <button type="button" data-exit>Exit</button>
+          </nav>
+        </header>
+
+        <div class="vault-reactor-stage">
+          <div class="vault-reactor" aria-hidden="true"><span></span><span></span><span></span></div>
+          <div class="vault-question-panel">
+            <div class="vault-question-meta">
+              <span data-category>Category</span>
+              <span data-difficulty>Difficulty</span>
+              <span data-jackpot-label hidden>Jackpot Round</span>
+            </div>
+            <div class="vault-timer" role="timer" aria-label="Question time remaining">
+              <span data-timer-text>15.0</span>
+              <div><i data-timer-bar></i></div>
+            </div>
+            <h2 id="questionText" data-question-text>Question text</h2>
+            <div class="vault-choices" data-choices aria-label="Answer choices"></div>
+            <div class="vault-progress" aria-label="Question progress"><i data-progress-bar></i></div>
+          </div>
+        </div>
+
+        <section class="vault-feedback" data-feedback aria-labelledby="feedbackTitle" hidden>
+          <div>
+            <p data-feedback-signal>Signal analyzed</p>
+            <h3 id="feedbackTitle" data-feedback-title>Correct</h3>
+            <p data-feedback-explanation></p>
+            <p class="vault-source" data-feedback-source></p>
+          </div>
+          <div class="vault-points"><span>Points earned</span><strong data-feedback-points>0</strong></div>
+          <button type="button" data-continue>Continue</button>
+        </section>
+      </section>
+
+      <section class="vault-screen vault-results" data-screen="results" aria-labelledby="resultsTitle" hidden>
+        <div class="vault-results-heading">
+          <p class="vault-kicker">Vault analysis complete</p>
+          <h2 id="resultsTitle">Signal Results</h2>
+          <p data-record-message></p>
+        </div>
+        <div class="vault-results-grid">
+          <dl class="vault-result-stats">
+            <div><dt>Final score</dt><dd data-result-score>0</dd></div>
+            <div><dt>Correct</dt><dd data-result-correct>0</dd></div>
+            <div><dt>Incorrect</dt><dd data-result-incorrect>0</dd></div>
+            <div><dt>Accuracy</dt><dd data-result-accuracy>0%</dd></div>
+            <div><dt>Fastest answer</dt><dd data-result-fastest>--</dd></div>
+            <div><dt>Longest streak</dt><dd data-result-streak>0</dd></div>
+            <div><dt>Credits earned</dt><dd data-result-credits>Not enabled</dd></div>
+          </dl>
+          <section class="vault-category-results" aria-labelledby="categoryResultsTitle">
+            <h3 id="categoryResultsTitle">Category performance</h3>
+            <div data-category-results></div>
+          </section>
+          <section class="vault-badge-results" aria-labelledby="badgeResultsTitle">
+            <h3 id="badgeResultsTitle">Badge progress</h3>
+            <div data-badge-results></div>
+          </section>
+        </div>
+        <div class="vault-result-actions">
+          <button type="button" class="vault-primary" data-play-again>Play again</button>
+          <button type="button" data-change-mode>Change mode</button>
+          <button type="button" data-share>Share result</button>
+          <a href="../../features-app.html#arcade-library">Return to Arcade</a>
+        </div>
+        <p class="vault-result-note">Scores and generated number themes are for entertainment only. Trivia play does not improve lottery odds.</p>
+      </section>
+
+      <section class="vault-screen vault-records" data-screen="records" aria-labelledby="recordsTitle" hidden>
+        <div class="vault-panel-heading"><p class="vault-kicker">Local profile</p><h2 id="recordsTitle">Records &amp; Badges</h2></div>
+        <div class="vault-record-grid" data-record-grid></div>
+        <div class="vault-earned-badges" data-earned-badges></div>
+        <p>Guest progress stays only in this browser. <a href="../../account.html">Sign in through Collector Access</a> when secure profile badges become available.</p>
+        <button type="button" data-back-launcher>Back to modes</button>
+      </section>
+
+      <section class="vault-screen vault-leaderboards" data-screen="leaderboards" aria-labelledby="leaderboardTitle" hidden>
+        <div class="vault-panel-heading"><p class="vault-kicker">Verified rankings</p><h2 id="leaderboardTitle">Leaderboards</h2></div>
+        <div class="vault-tabs" role="tablist" aria-label="Leaderboard period">
+          <button type="button" role="tab" aria-selected="true" data-board="daily">Daily</button>
+          <button type="button" role="tab" aria-selected="false" data-board="weekly">Weekly</button>
+          <button type="button" role="tab" aria-selected="false" data-board="all-time">All-time</button>
+          <button type="button" role="tab" aria-selected="false" data-board="survival">Survival</button>
+        </div>
+        <div class="vault-board-empty" data-leaderboard-status role="status"></div>
+        <button type="button" data-back-launcher>Back to modes</button>
+      </section>
+    </main>
+
+    <dialog class="vault-dialog" data-category-dialog aria-labelledby="categoryDialogTitle">
+      <form method="dialog">
+        <header><div><span>Category channel</span><h2 id="categoryDialogTitle">Select a signal</h2></div><button value="cancel" aria-label="Close category selection">Close</button></header>
+        <div data-category-options></div>
+      </form>
+    </dialog>
+
+    <dialog class="vault-dialog" data-pause-dialog aria-labelledby="pauseTitle">
+      <form method="dialog"><span>Signal held</span><h2 id="pauseTitle">Game paused</h2><p>The timer is stopped. Resume when you are ready.</p><button value="resume" class="vault-primary">Resume</button></form>
+    </dialog>
+
+    <dialog class="vault-dialog" data-exit-dialog aria-labelledby="exitTitle">
+      <form method="dialog"><span>Exit confirmation</span><h2 id="exitTitle">Leave this run?</h2><p>Your current score will not be saved.</p><div><button value="cancel">Keep playing</button><button value="exit" class="vault-danger">Exit run</button></div></form>
+    </dialog>
+
+    <div class="vault-live" data-live-region role="status" aria-live="polite" aria-atomic="true"></div>
+
+    <footer class="vault-footer">
+      <img src="../../assets/brand/lm-orb-mark.webp" alt="" width="36" height="36" loading="lazy" decoding="async" />
+      <p><strong>LOTTOMINDED ULTRA</strong><span>Trivia Vault / original knowledge arcade / responsible entertainment.</span></p>
+      <a href="../../help.html">Help</a><a href="../../accessibility.html">Accessibility</a><a href="../../privacy.html">Privacy</a>
+    </footer>
+
+    <script src="../../assets/js/lm-page-transition-audio.js?v=transition-audio-in-out-7" defer></script>
+    <script src="../../assets/js/lm-page-transition.js?v=transition-every-route-5" defer></script>
+    <script src="../../site.js?v=trivia-vault-1" defer></script>
+    <script type="module" src="./src/app.mjs?v=trivia-vault-1"></script>
+  </body>
+</html>

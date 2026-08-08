@@ -52,9 +52,6 @@
   root.className = `lm-healing-generator${isNewsDock ? " lm-healing-generator--news-dock" : ""}${isLotterySpheres ? " lm-healing-generator--oracle-only" : ""}`;
   root.dataset.lmHealingGenerator = "true";
   root.setAttribute("aria-label", isLotterySpheres ? "Magic 8 Ball oracle" : "Healing frequency generator and Magic 8 Ball oracle");
-  if (!isNewsDock && window.matchMedia("(max-width: 680px)").matches) {
-    root.classList.add("is-minimized");
-  }
   root.innerHTML = isLotterySpheres ? `
     <button class="lm-healing-generator__drag" type="button" aria-label="Move Magic 8 Ball" title="Drag to move the Magic 8 Ball"><span aria-hidden="true">Move</span></button>
     <div class="lm-healing-generator__header">
