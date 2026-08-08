@@ -8,6 +8,8 @@ const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "
 const STRIPE_SECRET_KEY = Deno.env.get("STRIPE_SECRET_KEY") || "";
 const PRODUCTION_SITE_URL = "https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io";
 const LOOKUP_KEY_PATTERN = /^[a-z0-9_]{1,80}$/;
+const ENTITLEMENT_CODE_PATTERN = /^[a-z0-9_.-]{1,80}$/;
+const IDEMPOTENCY_KEY_PATTERN = /^[A-Za-z0-9_.:-]{8,200}$/;
 
 const allowedOrigins = new Set([
   "http://127.0.0.1:8142",
@@ -106,18 +108,39 @@ async function snapshot(user: { id: string; email?: string | null } | null) {
       authenticated: false,
       user: null,
       wallet: { balance: 0 },
+      currentPlan: { code: "free", status: "active", currentPeriodEnd: null },
       memberships: [],
+      entitlements: [],
+      orders: [],
+      downloads: [],
       collector: { redeemed: false, complimentaryUntil: null },
     };
   }
 
   const db = admin();
-  const [profileResult, walletResult, membershipsResult, collectorResult] = await Promise.all([
+  const [profileResult, balanceResult, ledgerResult, subscriptionsResult, entitlementsResult, ordersResult, downloadsResult] = await Promise.all([
     db.from("profiles").select("display_name,stripe_customer_id").eq("user_id", user.id).maybeSingle(),
-    db.from("wallets").select("balance,updated_at").eq("user_id", user.id).maybeSingle(),
-    db.from("memberships").select("plan_code,status,current_period_end,stripe_price_id").eq("user_id", user.id).order("created_at", { ascending: false }),
-    db.from("collector_redemptions").select("redeemed_at,complimentary_until").eq("user_id", user.id).order("redeemed_at", { ascending: false }).limit(1).maybeSingle(),
+    db.rpc("credit_balance_for_user", { p_user_id: user.id }),
+    db.from("credit_ledger").select("entry_id,amount_delta,reason,source_id,created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(50),
+    db.from("subscriptions").select("subscription_id,provider,plan_code,status,current_period_end,cancel_at_period_end,updated_at").eq("user_id", user.id).order("updated_at", { ascending: false }),
+    db.from("entitlements").select("entitlement_code,active,starts_at,ends_at,source_type").eq("user_id", user.id).eq("active", true),
+    db.from("orders").select("order_id,plan_code,status,amount_total,currency,created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(10),
+    db.from("downloads").select("download_id,asset_key,entitlement_code,source_id,created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(20),
   ]);
+
+  for (const result of [profileResult, balanceResult, ledgerResult, subscriptionsResult, entitlementsResult, ordersResult, downloadsResult]) {
+    if (result.error) throw result.error;
+  }
+
+  const ledgerEntries = ledgerResult.data || [];
+  const balance = Number(balanceResult.data || 0);
+  const subscriptions = subscriptionsResult.data || [];
+  const collectorSubscription = subscriptions.find((entry) => entry.provider === "collector");
+  const planPriority: Record<string, number> = { ultra: 30, gold: 20, guardian_bundle: 10 };
+  const activeSubscription = subscriptions
+    .filter((entry) => ["active", "trialing"].includes(entry.status)
+      && (!entry.current_period_end || new Date(entry.current_period_end).getTime() > Date.now()))
+    .sort((left, right) => (planPriority[right.plan_code] || 0) - (planPriority[left.plan_code] || 0))[0];
 
   return {
     authenticated: true,
@@ -127,21 +150,63 @@ async function snapshot(user: { id: string; email?: string | null } | null) {
       displayName: profileResult.data?.display_name || "LottoMind Member",
     },
     wallet: {
-      balance: Number(walletResult.data?.balance || 0),
-      updatedAt: walletResult.data?.updated_at || null,
+      balance,
+      updatedAt: ledgerEntries[0]?.created_at || null,
+      entries: ledgerEntries.map((entry) => ({
+        entryId: entry.entry_id,
+        amountDelta: entry.amount_delta,
+        reason: entry.reason,
+        sourceId: entry.source_id,
+        createdAt: entry.created_at,
+      })),
     },
-    memberships: (membershipsResult.data || []).map((entry) => ({
+    currentPlan: activeSubscription ? {
+      code: activeSubscription.plan_code,
+      status: activeSubscription.status,
+      currentPeriodEnd: activeSubscription.current_period_end,
+      cancelAtPeriodEnd: activeSubscription.cancel_at_period_end,
+      provider: activeSubscription.provider,
+    } : { code: "free", status: "active", currentPeriodEnd: null },
+    memberships: subscriptions.map((entry) => ({
+      subscriptionId: entry.subscription_id,
       planCode: entry.plan_code,
       status: entry.status,
       currentPeriodEnd: entry.current_period_end,
-      stripePriceId: entry.stripe_price_id,
+      cancelAtPeriodEnd: entry.cancel_at_period_end,
+      provider: entry.provider,
+    })),
+    entitlements: (entitlementsResult.data || []).map((entry) => ({
+      code: entry.entitlement_code,
+      active: entry.active && (!entry.ends_at || new Date(entry.ends_at).getTime() > Date.now()),
+      startsAt: entry.starts_at,
+      endsAt: entry.ends_at,
+      sourceType: entry.source_type,
+    })),
+    orders: ordersResult.data || [],
+    downloads: (downloadsResult.data || []).map((entry) => ({
+      downloadId: entry.download_id,
+      assetKey: entry.asset_key,
+      entitlementCode: entry.entitlement_code,
+      sourceId: entry.source_id,
+      createdAt: entry.created_at,
     })),
     collector: {
-      redeemed: Boolean(collectorResult.data),
-      redeemedAt: collectorResult.data?.redeemed_at || null,
-      complimentaryUntil: collectorResult.data?.complimentary_until || null,
+      redeemed: Boolean(collectorSubscription),
+      redeemedAt: collectorSubscription?.updated_at || null,
+      complimentaryUntil: collectorSubscription?.current_period_end || null,
     },
   };
+}
+
+async function sha256(value: string) {
+  const bytes = new TextEncoder().encode(value);
+  const digest = await crypto.subtle.digest("SHA-256", bytes);
+  return Array.from(new Uint8Array(digest)).map((byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
+function idempotencyKey(input: unknown) {
+  const value = String(input || "").trim();
+  return IDEMPOTENCY_KEY_PATTERN.test(value) ? value : "";
 }
 
 function safeReturnUrl(req: Request) {
@@ -226,9 +291,12 @@ async function checkout(req: Request) {
       metadata: { supabase_user_id: auth.id },
     });
     customerId = customer.id;
-    const { error: updateError } = await db.from("profiles")
-      .update({ stripe_customer_id: customerId, updated_at: new Date().toISOString() })
-      .eq("user_id", auth.id);
+    const { error: updateError } = await db.from("profiles").upsert({
+      user_id: auth.id,
+      display_name: auth.user_metadata?.display_name || "LottoMind Member",
+      stripe_customer_id: customerId,
+      updated_at: new Date().toISOString(),
+    }, { onConflict: "user_id" });
     if (updateError) throw updateError;
   }
 
@@ -357,11 +425,13 @@ async function route(req: Request) {
     const action = String(input.action || "");
     const amount = creditCosts[action];
     if (!amount) return fail(req, 400, "UNKNOWN_CREDIT_ACTION", "That credit action is not configured.");
+    const requestKey = idempotencyKey(input.idempotencyKey);
+    if (!requestKey) return fail(req, 400, "INVALID_IDEMPOTENCY_KEY", "A valid idempotency key is required for credit changes.");
     const { data, error } = await admin().rpc("spend_credits", {
       p_user_id: auth.id,
       p_amount: amount,
       p_reason: action,
-      p_idempotency_key: String(input.idempotencyKey || ""),
+      p_idempotency_key: requestKey,
       p_metadata: input.context || {},
     });
     if (error) return fail(req, /insufficient/i.test(error.message) ? 409 : 400, "CREDIT_SPEND_FAILED", error.message);
@@ -375,10 +445,12 @@ async function route(req: Request) {
     if (input instanceof Response) return input;
     const transactionId = String(input.transactionId || "").trim();
     if (!transactionId) return fail(req, 400, "INVALID_TRANSACTION", "Choose a valid credit transaction to refund.");
+    const requestKey = idempotencyKey(input.idempotencyKey);
+    if (!requestKey) return fail(req, 400, "INVALID_IDEMPOTENCY_KEY", "A valid idempotency key is required for credit changes.");
     const { data, error } = await admin().rpc("refund_credits", {
       p_user_id: auth.id,
       p_transaction_id: transactionId,
-      p_idempotency_key: String(input.idempotencyKey || ""),
+      p_idempotency_key: requestKey,
     });
     if (error) return fail(req, 400, "CREDIT_REFUND_FAILED", error.message);
     return json(req, data);
@@ -387,18 +459,46 @@ async function route(req: Request) {
   if (req.method === "POST" && path === "/redemption/claim") {
     const auth = await authenticatedUser(req);
     if (auth instanceof Response) return auth;
-    return fail(req, 503, "REDEMPTION_NOT_OPEN", "Collector code redemption is secured and will open when production codes are loaded.");
+    const input = await readJson(req);
+    if (input instanceof Response) return input;
+    const code = String(input.code || "").trim().toUpperCase();
+    const requestKey = idempotencyKey(input.idempotencyKey);
+    if (!/^[A-Z0-9-]{8,80}$/.test(code) || !requestKey) {
+      return fail(req, 400, "INVALID_REDEMPTION", "Enter a valid collector code and request key.");
+    }
+    const { data, error } = await admin().rpc("redeem_collector_code", {
+      p_user_id: auth.id,
+      p_code_hash: await sha256(code),
+      p_idempotency_key: requestKey,
+    });
+    if (error) return fail(req, 409, "REDEMPTION_FAILED", "That collector code is invalid, expired, or already redeemed.");
+    return json(req, { ...data, snapshot: await snapshot(auth) });
   }
 
-  if (req.method === "GET" && path === "/entitlements/beat2lotto") {
+  if (req.method === "GET" && path.startsWith("/entitlements/")) {
     const auth = await authenticatedUser(req);
     if (auth instanceof Response) return auth;
-    const state = await snapshot(auth);
-    const active = state.memberships.some((entry: { status: string; planCode: string }) => entry.status === "active" && ["gold", "ultra", "vault", "guardian_bundle"].includes(entry.planCode));
-    return json(req, {
-      entitled: active,
-      tier: active ? state.memberships.find((entry: { status: string }) => entry.status === "active")?.planCode : "free",
+    const entitlementCode = decodeURIComponent(path.slice("/entitlements/".length)).trim().toLowerCase();
+    if (!ENTITLEMENT_CODE_PATTERN.test(entitlementCode)) {
+      return fail(req, 400, "INVALID_ENTITLEMENT", "Choose a valid premium tool entitlement.");
+    }
+    const { data: active, error } = await admin().rpc("has_active_entitlement", {
+      p_user_id: auth.id,
+      p_entitlement_code: entitlementCode,
     });
+    if (error) throw error;
+    const state = await snapshot(auth);
+    return json(req, {
+      entitled: Boolean(active),
+      entitlement: entitlementCode,
+      tier: active ? state.currentPlan.code : "free",
+    });
+  }
+
+  if (req.method === "POST" && path === "/game-rewards/claim") {
+    const auth = await authenticatedUser(req);
+    if (auth instanceof Response) return auth;
+    return fail(req, 503, "REWARD_VERIFICATION_REQUIRED", "Game rewards require a configured server-side verifier. Local scores cannot issue LottoCredits.");
   }
 
   return fail(req, 404, "NOT_FOUND", "That LottoMind service route does not exist.");

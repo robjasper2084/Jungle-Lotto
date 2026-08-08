@@ -13,6 +13,10 @@
     status.dataset.state = state;
   };
 
+  const unavailableMessage = () => status?.dataset.commerceContext === "store"
+    ? "Store ordering is locked until inventory, shipping, tax, returns, confirmation email, and tracking are verified."
+    : "Membership plans are visible, but secure checkout is not connected on this static site.";
+
   const billingUrl = (path) => {
     const base = accountService?.getApiBase?.() || "";
     if (base) return `${base}${base.includes("/functions/v1/") ? path : `/api${path}`}`;
@@ -165,6 +169,10 @@
   };
 
   const beginCheckout = async (button) => {
+    if (button.dataset.storeRequiresFulfillment === "true" && window.LOTTOMIND_STORE_FULFILLMENT_READY !== true) {
+      setStatus("Ordering is locked until inventory, shipping, returns, confirmation email, and tracking are verified.", "disabled");
+      return;
+    }
     if (!configuration?.enabled) {
       setStatus(configuration?.message || "Secure membership checkout is not configured.", "disabled");
       return;
@@ -284,7 +292,7 @@
   };
 
   if (!billingUrl("/billing/config")) {
-    disableBilling("Membership plans are visible, but secure checkout is not connected on this static site.");
+    disableBilling(unavailableMessage());
     return;
   }
 
@@ -292,7 +300,8 @@
     .then((payload) => {
       configuration = validateConfiguration(payload);
       checkoutButtons.forEach((button) => {
-        const available = Boolean(configuration.enabled && configuration.plans.find((plan) => plan.lookupKey === button.dataset.stripeLookupKey)?.available);
+        const fulfillmentReady = button.dataset.storeRequiresFulfillment !== "true" || window.LOTTOMIND_STORE_FULFILLMENT_READY === true;
+        const available = Boolean(fulfillmentReady && configuration.enabled && configuration.plans.find((plan) => plan.lookupKey === button.dataset.stripeLookupKey)?.available);
         button.disabled = !available;
         button.setAttribute("aria-disabled", String(!available));
       });
@@ -300,7 +309,14 @@
         portalButton.disabled = !configuration.enabled;
         portalButton.setAttribute("aria-disabled", String(!configuration.enabled));
       }
-      if (!checkoutState) setStatus(configuration.message, configuration.enabled ? "ready" : "disabled");
+      const storeFulfillmentBlocked = checkoutButtons.some((button) => (
+        button.dataset.storeRequiresFulfillment === "true" && window.LOTTOMIND_STORE_FULFILLMENT_READY !== true
+      ));
+      if (!checkoutState && storeFulfillmentBlocked) {
+        setStatus("Store checkout is locked until inventory and fulfillment are verified.", "disabled");
+      } else if (!checkoutState) {
+        setStatus(configuration.message, configuration.enabled ? "ready" : "disabled");
+      }
     })
     .catch((error) => disableBilling(`${error.message || "The billing service is unavailable."} Membership details remain visible.`));
 })();

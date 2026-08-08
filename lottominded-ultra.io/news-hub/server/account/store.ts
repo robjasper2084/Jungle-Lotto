@@ -7,7 +7,6 @@ import type { AccountDatabase, AccountSnapshot, CollectibleInventoryStatus, Ledg
 
 const scrypt = promisify(scryptCallback);
 const SESSION_DAYS = 30;
-const COLLECTOR_DAYS = 30;
 const COLLECTOR_CREDITS = 150;
 const COLLECTOR_BADGE = "vault-guardian-series-01";
 const GAME_REWARD_AMOUNTS = {
@@ -32,6 +31,16 @@ function publicError(code: string, message: string, status = 400): Error & { cod
 
 function addDays(date: Date, days: number): string {
   return new Date(date.getTime() + days * 86_400_000).toISOString();
+}
+
+function addUtcMonths(date: Date, months: number): string {
+  const result = new Date(date);
+  const originalDay = result.getUTCDate();
+  result.setUTCDate(1);
+  result.setUTCMonth(result.getUTCMonth() + months);
+  const lastDay = new Date(Date.UTC(result.getUTCFullYear(), result.getUTCMonth() + 1, 0)).getUTCDate();
+  result.setUTCDate(Math.min(originalDay, lastDay));
+  return result.toISOString();
 }
 
 export class AccountLedgerStore {
@@ -171,11 +180,12 @@ export class AccountLedgerStore {
       if (this.database.idempotency[idempotencyKey]) return;
       if (input.customerId) user.stripeCustomerId = input.customerId;
 
-      const membershipLookup: Record<string, { kind: "gold" | "ultra" | "vault"; days: number | null; autoRenew: boolean }> = {
+      const membershipLookup: Record<string, { kind: "collector-starter" | "gold" | "ultra" | "vault"; days: number | null; months?: number; autoRenew: boolean; credits?: number; badge?: string }> = {
         gold_monthly: { kind: "gold", days: 32, autoRenew: true },
         gold_yearly: { kind: "gold", days: 370, autoRenew: true },
         ultra_monthly: { kind: "ultra", days: 32, autoRenew: true },
         ultra_yearly: { kind: "ultra", days: 370, autoRenew: true },
+        guardian_bundle_once: { kind: "collector-starter", days: null, months: 3, autoRenew: false, credits: COLLECTOR_CREDITS, badge: COLLECTOR_BADGE },
         vault_founder_once: { kind: "vault", days: null, autoRenew: false },
         vault_yearly: { kind: "vault", days: 370, autoRenew: true },
         vault_lifetime_once: { kind: "vault", days: null, autoRenew: false },
@@ -190,7 +200,7 @@ export class AccountLedgerStore {
       const credits = creditLookup[input.lookupKey];
       if (membership) {
         const startsAt = this.now();
-        const expiresAt = membership.days ? addDays(startsAt, membership.days) : null;
+        const expiresAt = membership.months ? addUtcMonths(startsAt, membership.months) : membership.days ? addDays(startsAt, membership.days) : null;
         user.memberships = user.memberships.filter((item) => item.kind !== membership.kind || item.source !== "paid");
         user.memberships.push({
           id: randomUUID(),
@@ -200,6 +210,19 @@ export class AccountLedgerStore {
           autoRenew: membership.autoRenew,
           source: "paid",
         });
+        if (membership.credits) {
+          user.credits += membership.credits;
+          this.database.transactions.push({
+            id: randomUUID(),
+            userId: user.id,
+            type: "credit",
+            amount: membership.credits,
+            action: `stripe.${input.lookupKey}`,
+            createdAt: startsAt.toISOString(),
+            idempotencyKey: `${idempotencyKey}:credits`,
+          });
+        }
+        if (membership.badge && !user.badges.includes(membership.badge)) user.badges.push(membership.badge);
       } else if (credits) {
         user.credits += credits;
         this.database.transactions.push({
@@ -288,7 +311,7 @@ export class AccountLedgerStore {
       if (collectible.expiresAt && Date.parse(collectible.expiresAt) <= this.now().getTime()) throw publicError("CODE_EXPIRED", "This collectible code has expired.", 410);
 
       const current = this.now();
-      const expiresAt = addDays(current, COLLECTOR_DAYS);
+      const expiresAt = addUtcMonths(current, 3);
       collectible.redeemedBy = user.id;
       collectible.redeemedAt = current.toISOString();
       user.credits += COLLECTOR_CREDITS;

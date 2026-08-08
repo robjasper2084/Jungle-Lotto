@@ -1,5 +1,73 @@
 # LottoMind Upgrade Redesign Status
 
+## Entry Motion And Page Soundtracks
+
+- Step number: Owner-requested entry motion, performance, and assigned page soundtracks
+- Implementation commit: This status file is part of the focused commit; resolve with `git log -1 --format=%H -- docs/upgrade-redesign-status.md`
+- Affected routes: `/`, `/memberships.html`, and `/news/`
+- Assigned audio: Home uses `lottomind-home-theme-untitled-12.mp3`; Memberships uses `lottomind-membership-theme-untitled-14.mp3`; News uses `lottomind-news-theme-instrumental.mp3`
+- Playback behavior: Each page attempts entry playback and retains a visible Play/Pause control. Browser autoplay policy can require a visitor gesture before unmuted audio starts; blocked playback is never reported as successful.
+- Entry and motion: Home opens directly on its value proposition; the commercial is inline and user-triggered; game picture-in-picture does not auto-expand; dismissed state lasts 30 days; Reduce Motion is available; off-screen videos, canvases, and particles pause; Magic 8 is compact on mobile.
+- Tests: Home validation passed with 20 IDs and 85 references; site validation passed for 17 HTML files; focused media checks 8/8; source/staging route matrix 162/162; release audit 7/7; staging safety 12/12; static staging 27 pages and 616 same-origin references; visual sign-off 78/78.
+- Visual review: `docs/staging-reviews/entry-motion-page-soundtracks.md` with desktop, tablet, and mobile contact sheets. The direct-entry composition and soundtrack controls are intentional; LottoMind's visual-identity invariants remain recognizable.
+- Staging URL: Local only (`http://127.0.0.1:8573/` during final verification)
+- Production approval status: Not approved for this change; `main`, production deployment, `v1-final`, and existing release tags remain unchanged.
+
+## Verified Game Manifest
+
+- Step number: Owner-requested central game directory and trust-state repair
+- Implementation commit: This status file is part of the focused commit; resolve with `git log -1 --format=%H -- docs/upgrade-redesign-status.md`
+- Central source: `lottominded-ultra.io/games/games-manifest.json`
+- Consumers: Arcade directory, Memberships Gaming Showcase, Account recent-game lookup, generated browser fallback, build validation, and route smoke matrix
+- Verified routes: 9 records with IDs, public titles, routes, thumbnails, status, membership requirements, estimated session time, controls, reward eligibility, and version numbers
+- Failure handling: Loading skeleton, explicit `Unable to load games` message, checked fallback cards, Retry action, and visible `Last checked` date
+- Tests: Manifest validator 9/9; focused browser tests 6/6; site validation 17 HTML files; affected regression suite 87 passed with 3 intentional viewport skips; release audit 7/7; route matrix 162/162; exact pending staging artifact 27 pages and 621 same-origin references; staging safety 12/12
+- Visual review: `docs/staging-reviews/game-manifest.md` with `1440x900` and `390x844` captures for Arcade and Memberships. The current nine-route directory is visible without weakening LottoMind's visual-identity invariants.
+- Staging URL: Local only
+- Production approval status: Not approved for this change; `main`, production deployment, `v1-final`, and existing release tags remain unchanged.
+
+## Action-Based Free Access
+
+- Step number: Owner-requested replacement of the timed free demo
+- Implementation commit: This status file is part of the focused commit; resolve with `git log -1 --format=%H -- docs/upgrade-redesign-status.md`
+- Affected routes: `/index.html` and `/memberships.html`
+- Free allowances: 3 Dream Oracle entries, 10 creative number sets, 5 saved items, 3 Prompt Lab generations, 2 premium game missions, and 1 Studio export preview
+- Upgrade timing: The first-use upgrade action remains hidden until the selected action allowance or five-item save allowance is exhausted.
+- Timer removal: Dormant timed-pass state and expiration routing were removed; the membership action now reads `Start Free`.
+- Tests: Site validation passed for 17 HTML files; focused onboarding browser checks passed 8/8; release audit passed 7 groups; route matrix passed 162/162; static staging passed across 27 pages and 627 same-origin references; staging safety passed 12/12.
+- Visual review: `docs/staging-reviews/action-based-free-access.md` with `1440x900` and `390x844` captures for Home and Memberships. No material redesign was introduced and the visual identity invariants remain recognizable.
+- Staging URL: Local only
+- Production approval status: Not approved for this change; `main`, production deployment, `v1-final`, and existing release tags remain unchanged.
+
+## Secure Account And Commerce Authority
+
+- Step number: Owner-requested Supabase and Stripe production architecture
+- Implementation commit: This status file is part of the focused commit; resolve with `git log -1 --format=%H -- docs/upgrade-redesign-status.md`
+- Affected systems: Supabase Auth, account snapshot, plan catalog, entitlements, LottoCredits ledger, collector redemption, Stripe Checkout, Customer Portal, signed webhook, orders, downloads, and shared browser account client
+- Database authority: `profiles`, `subscriptions`, `entitlements`, `credit_ledger`, `collector_codes`, `game_reward_events`, `orders`, and `downloads` use RLS. Browser roles retain read-only access to their own account rows; mutations and entitlement decisions remain service-role-only.
+- Commerce safety: Gold, Ultra, and Guardian launch SKUs are canonical but default to unavailable with no Stripe Price IDs. This change does not enable checkout or deploy a live secret.
+- Account contract: `/account/snapshot` returns one normalized current plan, one ledger-derived balance, active entitlements, orders, and download history. Premium checks use the service-role-only `has_active_entitlement` database function.
+- Cross-app balance: `credit_ledger` is included in Supabase Realtime while RLS limits authenticated listeners to their own rows; Ultra and Refined must refresh from the same append-only ledger instead of browser balances.
+- Documentation: `lottominded-ultra.io/docs/secure-production-architecture.md`
+- Tests: Secure backend contract passed; site validation passed for 17 HTML files; release audit passed 7 groups; route matrix passed 162/162; staging safety passed 12/12 across 27 pages and 627 same-origin references. The full browser run completed with 201 passed and 8 skipped; three worker-contention timeouts all passed in a focused single-worker rerun (6/6).
+- Visual review: `docs/staging-reviews/secure-account-architecture.md` with desktop and mobile account captures. No visual redesign was introduced; current identity and read-only staging messaging remain intact.
+- Staging URL: Local only
+- Production approval status: Not approved for this change; `main`, production deployment, `v1-final`, and existing release tags remain unchanged.
+
+## Storefront And Membership Product Definition
+
+- Step number: Owner-requested Storefront and membership definition
+- Implementation commit: This status file is part of the focused commit; resolve with `git log -1 --format=%H -- docs/upgrade-redesign-status.md`
+- Affected routes: `/merch-store.html` and `/memberships.html`
+- Storefront: Exactly three launch products are visible. Concept/TBA catalog sections and simulated cart/wishlist controls are excluded from the rendered shopping experience.
+- Guardian offer: `$29.95` one time for the physical Little Man Guardian, exactly three calendar months Ultra, 150 LottoCredits, Series 01 badge, one-time code, and no automatic renewal.
+- Memberships: Free action limits, Gold `$4.99/mo` or `$49/yr`, Ultra `$9.99/mo` or `$99/yr`, credit grants, storage, exports, reports, packs, beta access, and renewal are defined in a comparison matrix.
+- Commerce safety: Ordering remains locked until verified inventory, shipping, tax, returns, confirmation email, tracking, and fulfillment configuration exist. Staging continues to block live payments and production mutations.
+- Tests: Site validation 17 HTML files; focused Storefront/Membership browser checks 10/10; News Hub account/news tests 24/24; News Hub TypeScript and Vite build passed; staging safety 12/12; static staging 27 pages and 627 same-origin references; source/staging route matrix 162/162.
+- Visual review: `docs/staging-reviews/store-membership-definition.md` with `1440x900` and `390x844` captures for both affected routes.
+- Staging URL: Local only
+- Production approval status: Not approved for this change; `main`, production deployment, `v1-final`, and existing release tags remain unchanged.
+
 - Production URL: https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/
 - Production branch: `main`
 - Production commit SHA: `26df75658204442ab5b2273ae7c70f043f58796f`
@@ -159,6 +227,22 @@
 - Staging URL: Local only (`http://127.0.0.1:8321/`)
 - Production approval status: Not approved; production remains unchanged
 
+## B2B Commercial Services
+
+- Step number: Owner-requested B2B Services page
+- Working branch: `feature/lottomind-b2b-services`, created from the secure-backend foundation without modifying `main` or `upgrade-redesign`
+- Implementation commit: This status file is part of the focused commit; resolve with `git log -1 --format=%H -- docs/upgrade-redesign-status.md`
+- Route: `/services/`
+- Capabilities: Branded browser mini-games, interactive music launches, virtual event rooms, merchandise drops, cinematic product pages, prompt labs, event installations, white-label creative-number experiences, custom HUDs, music visualizers, and promotional worlds
+- Packages: Signal Starter from $750, Campaign Experience from $2,500, and Custom World from $5,000+; all are explicitly described as starting project prices rather than fixed quotes
+- Inquiry safety: The static form prepares a local email draft and never performs a write request or claims that an inquiry was sent. Browser validation, a honeypot, minimum completion time, required consent, and a session cooldown are active.
+- Tests: Focused services browser checks 6/6; release audit 7/7; source/staging route matrix 162/162; staging safety 12/12; static staging artifact 27 pages and 614 same-origin references
+- Visual review: `docs/staging-reviews/b2b-services.md` with `1440x900` and `390x844` captures; the route has no production or v1 equivalent
+- Staging URL: Local only (`/services/`; final local preview URL recorded in the completion report)
+- Production approval status: Not approved; production, `main`, `upgrade-redesign`, `v1-final`, and existing release tags remain unchanged
+- Deferred work: A live form endpoint requires server-side validation, rate limiting, origin checks, and CAPTCHA or equivalent abuse protection before use
+- Trivia status: Paused until the owner says `finish trivia`
+
 ## Home Commercial, Storefront Patch, And Spheres Console
 
 - Step number: Owner-requested Home, Storefront, and Spheres corrections
@@ -178,6 +262,18 @@
 
 - Frontend behavior: Billing requests now validate JSON, configuration shape, plan identifiers, and Stripe redirect hosts; stalled, malformed, rejected, and unreachable responses receive distinct accessible messages
 - Checkout return behavior: A Stripe return is no longer described as payment confirmation until an active membership is verified from the account service
+
+## Secure Account Backend Foundation
+
+- Step number: Missing-feature secure backend foundation; Trivia remains paused
+- Branch: `feature/lottomind-secure-backend`, created from the completed account-dashboard commit
+- Scope: Added RLS-protected profiles, subscriptions, entitlements, append-only credit ledger, collector codes, verified game reward events, orders, and downloads
+- Credit authority: LottoCredits are derived from immutable ledger entries; spends are serialized and idempotent; refunds are compensating entries
+- Commerce authority: Checkout remains Stripe-hosted; a separate Edge Function validates the raw Stripe webhook signature before updating account state
+- Entitlement authority: Premium access is read from server-managed entitlement rows through authenticated API requests
+- Staging status: Code and migration prepared locally only; no isolated staging Supabase project is configured, no migration/function was deployed, and no live data or charge path was changed
+- Deployment guide: `docs/secure-backend-architecture.md`
+- Production approval status: Not approved; `main`, production, `v1-final`, and existing release tags remain unchanged
 - Edge Function source: `supabase/functions/lottomind-api/index.ts` is now versioned in the repository with CORS-aware auth responses, JSON body validation, Stripe mode reporting, and checkout/portal URL validation
 - Connected backend check: Production function version 5 currently returns `401 AUTH_REQUIRED` with the expected CORS header for an unauthenticated checkout request; no unexplained `500` billing failures appeared in the inspected 24-hour Edge Function log window
 - Backend deployment: Not performed because the connected Supabase project exposes only its production `main` branch and production approval is not granted
@@ -687,4 +783,51 @@
 - Visual review: Redemption desktop and mobile remain aligned with the v1 layout; the intentional staging-only message is recorded in `docs/staging-reviews/account-static-configuration.md`
 - Commerce impact: None; no payment or checkout behavior changed
 - Staging URL: Local only (`http://127.0.0.1:8321/`)
+- Production approval status: Not approved; `main`, production, and `v1-final` remain unchanged
+
+## Missing Feature 1 - Unified Account Dashboard
+
+- Step number: Missing-feature roadmap item 1
+- Working branch: `feature/lottomind-account-dashboard`, created from `origin/upgrade-redesign` at `4106bac9a6118683072bdcc4471535097247e710`
+- Implementation commit: This file is part of the focused account-dashboard commit; resolve it with `git log -1 --format=%H -- docs/upgrade-redesign-status.md`
+- Affected route: `/account.html`
+- Added surface: One return deck for verified plan, LottoCredits, Guardian status, device-only saved sets, device-only dreams, and recent games
+- Data boundary: Plan, wallet, and Guardian state come only from the existing account service; local activity remains labeled device-only and cannot verify identity, mutate credits, activate plans, or prove redemption
+- Tests: Account dashboard 6/6 passed; Collector Access and recovery 14/14 passed; source/staging route matrix 156/156 passed; staging safety 12/12 passed
+- Visual review: Desktop `1440x900` and mobile `390x844` captures passed without console errors or horizontal overflow; review: `docs/staging-reviews/unified-account-dashboard.md`
+- Intentional visual departure: Six compact HUD panels extend the Account route while preserving its existing Collector Access form and LottoMind visual identity; no v1 Account route existed
+- Commerce and backend impact: None; no checkout, account-write, redemption, analytics, or production behavior changed
+- Staging URL: Local only (`http://127.0.0.1:8544/` after the committed staging build)
+- Trivia Vault: Paused on `feature/lottomind-trivia-vault`; resume only when the owner says `finish trivia`
+- Production approval status: Not approved; `main`, production, and `v1-final` remain unchanged
+
+## Missing Feature 2 - Secure Account Backend Foundation
+
+- Step number: Missing-feature roadmap item 2; Trivia Vault remains paused
+- Working branch: `feature/lottomind-secure-backend`, created from `feature/lottomind-account-dashboard` at `f12f1f257d7c3f62274315c5d7eac972dbd450ea`
+- Implementation commit: This file is part of the focused secure-backend commit; resolve it with `git log -1 --format=%H -- docs/upgrade-redesign-status.md`
+- Added authority: Supabase Auth, RLS-protected profiles, subscriptions, entitlements, append-only credit ledger, collector codes, game reward events, orders, and downloads
+- Payment boundary: Checkout Sessions are created only by the authenticated API; Stripe events are accepted only after raw-body signature verification; stale subscription events cannot overwrite newer state
+- Credit boundary: LottoCredits are calculated from append-only ledger entries and changed only by service-role RPCs with idempotency keys; browser clients have read-only access to their own rows
+- Redemption and reward boundary: Collector redemption is atomic and code-hash based; game rewards fail closed until a trusted verifier is connected
+- Backend tests: Secure backend contract passed; Deno typechecks passed for both Edge Functions; account/checkout/browser regression passed 104 with 2 expected desktop skips
+- Site tests: 17 HTML files validated; release audit passed 7/7 groups; source/staging route matrix passed 156/156 across desktop, mobile, and tablet; staging safety passed 12/12 with 601 same-origin references
+- Visual review: Account desktop `1440x900` and mobile `390x844` remain visually unchanged; review: `docs/staging-reviews/secure-backend.md`
+- Deployment status: Migration and Edge Functions are prepared but were not applied to Supabase; Stripe webhook endpoint and plan catalog require isolated staging configuration before live verification
+- Staging URL: Local only (`http://127.0.0.1:8497/` while the verified server is running)
+- Production approval status: Not approved; `main`, production, and `v1-final` remain unchanged
+
+## Missing Feature 3 - Brand Architecture And First-Use Paths
+
+- Step number: Missing-feature roadmap item 3; Trivia Vault remains paused
+- Working branch: `feature/lottomind-b2b-services`
+- Implementation commit: This file is part of the focused brand-onboarding commit; resolve it with `git log -1 --format=%H -- docs/upgrade-redesign-status.md`
+- Affected routes: `/`, `/help.html`, `/memberships.html`, plus metadata for Arcade, Storefront, and Studio
+- Brand architecture: LottoMind is the master consumer brand; LOTTOMINDED ULTRA, LottoMind App, Arcade, Studio, Guardian Collection, and Beat2Lotto+ have distinct supporting roles; Robot RAHBEE and Static Wav remain named experiences
+- First-use flow: Four guest paths create a local number set, dream reflection, beat prompt, or zero-credit game receipt before showing account and membership actions
+- Free-access model: Replaced the 10-minute local demo timer with visible action-based limits; guest results remain device-only and cannot verify identity, mutate credits, redeem collectibles, or unlock paid entitlements
+- Tests: Site validation passed 17 HTML files; focused desktop/mobile onboarding passed 6/6; Home and Membership regression passed 19 checks with 5 intentional viewport skips; source/staging route matrix passed 162/162; committed-tree staging safety passed 12/12 and exact-tree verification follows this commit
+- Visual review: Desktop `1440x900` and mobile `390x844` captures are recorded in `docs/staging-reviews/brand-onboarding.md`
+- Commerce and backend impact: None; Stripe, production account writes, real redemptions, verified credits, and production analytics remain unchanged and blocked in staging
+- Staging URL: Local only (`http://127.0.0.1:8568/` after the exact-tree staging build)
 - Production approval status: Not approved; `main`, production, and `v1-final` remain unchanged

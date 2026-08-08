@@ -307,34 +307,30 @@ test("Storefront commercial closes itself when playback ends", async ({ page }) 
   const commercial = page.locator("[data-merch-commercial-modal]");
   const video = commercial.locator("[data-merch-commercial-modal-video]");
   await expect(commercial).toBeVisible({ timeout: 5_000 });
-  await expect(commercial.getByRole("link", { name: "Buy Now" })).toHaveAttribute("href", "#keychains");
+  await expect(commercial.getByRole("link", { name: "View Launch Products" })).toHaveAttribute("href", "#launch-catalog");
   await expect(page.locator(".header-click-toggle")).toHaveCount(0);
   await video.evaluate((element) => element.dispatchEvent(new Event("ended")));
   await expect(commercial).toBeHidden();
   await expect(page.locator(".header-click-toggle")).toHaveCount(0);
 });
 
-test("Storefront applies the requested price, removals, and larger commercial", async ({ page }) => {
+test("Storefront exposes only the two truthful launch products", async ({ page }) => {
   await blockHeavyMedia(page);
   await page.goto("/merch-store.html", { waitUntil: "domcontentloaded" });
   await page.locator("[data-merch-commercial-close]").click();
 
-  const hoodie = page.locator("#product-detroit-embroidery-hoodie");
-  await expect(hoodie.locator(".product-hover-price")).toHaveText("$89.99");
-  await expect(hoodie.locator(".product-row strong")).toHaveText("$89.99");
-  await expect(hoodie.locator("[data-add-item]")).toHaveAttribute("data-item-price", "89.99");
-  await expect(page.getByRole("heading", { name: "Cyber Brain Glow Hoodie" })).toHaveCount(0);
-  await expect(page.getByRole("heading", { name: "LottoMind Coin Set" })).toHaveCount(0);
-  await expect(page.locator("#gallery article", { hasText: "Boogie Knit" })).toHaveCount(0);
-
-  const patchCards = page.locator("#product-innovation-floor-model-hoodie, #hoodies");
-  await expect(patchCards).toHaveCount(2);
-  await expect(patchCards.locator(".product-hover-price")).toHaveText(["$10", "$10"]);
-  await expect(patchCards.locator(".product-row strong")).toHaveText(["$10", "$10"]);
-  expect(await patchCards.locator("[data-add-item]").evaluateAll((buttons) => buttons.map((button) => button.dataset.itemPrice))).toEqual(["10", "10"]);
-  await expect(patchCards.locator("[data-item-sizes]")).toHaveCount(0);
-  expect(await patchCards.locator("img").evaluateAll((images) => images.every((image) => /detroit-1701-embroidered-patch-20260730\.webp$/.test(image.getAttribute("src") || "")))).toBe(true);
-  await expect(page.locator("#gallery article", { hasText: "Detroit Patch" }).locator(".gallery-price")).toHaveText("$10");
+  const catalog = page.locator("#launch-catalog");
+  await expect(catalog.locator("[data-launch-product]")).toHaveCount(2);
+  await expect(catalog.getByRole("heading", { name: "Guardian Starter Bundle" })).toBeVisible();
+  await expect(catalog.getByRole("heading", { name: "Detroit Embroidered Hoodie" })).toBeVisible();
+  await expect(catalog.getByRole("heading", { name: /Detroit 1701 Embroidered Patch/ })).toHaveCount(0);
+  await expect(catalog).not.toContainText("Pricing TBA");
+  await expect(catalog).not.toContainText("Concept package");
+  await expect(catalog.locator("#detroit-embroidered-hoodie button")).toBeDisabled();
+  await expect(catalog.locator(".merch-product-gallery img")).toHaveCount(6);
+  await expect(page.locator("#product-boogie-man-knit-sweater, #product-innovation-floor-model-hoodie, #hoodies")).toHaveCount(0);
+  await expect(page.locator("#store-operations")).toContainText("Preorders are closed");
+  await expect(page.locator("#store-operations")).toContainText("Carrier rates must appear in secure checkout");
 
   const capsule = page.locator(".merch-commercial-capsule");
   const heroVideo = page.locator(".merch-hero-video");
@@ -353,23 +349,19 @@ test("Storefront applies the requested price, removals, and larger commercial", 
   expect(capsuleBox.x + capsuleBox.width).toBeLessThanOrEqual(heroBox.x + heroBox.width + 1);
 });
 
-test("Storefront presents supplied Guardian bundles without inventing checkout claims", async ({ page }) => {
+test("Storefront Guardian checkout stays locked when secure inventory is unavailable", async ({ page }) => {
   await blockHeavyMedia(page);
   await page.goto("/merch-store.html", { waitUntil: "domcontentloaded" });
   await page.locator("[data-merch-commercial-close]").click();
 
-  const bundles = page.locator(".bundle-card");
-  await expect(bundles).toHaveCount(2);
-  await expect(page.locator("#guardian-hoodie-bundle")).toContainText("Guardian Hoodie Package");
-  await expect(page.locator("#detroit-carry-bundle")).toContainText("Detroit Carry Package");
-  await expect(bundles).toContainText(["Pricing TBA", "Pricing TBA"]);
-  await expect(bundles.locator("[data-add-item]")).toHaveCount(0);
-  expect(await bundles.locator("img").evaluateAll((images) => images.every((image) => /bundle-20260725\.webp$/.test(image.getAttribute("src") || "")))).toBe(true);
-  await expect.poll(() => bundles.locator("img").evaluateAll((images) => images.every((image) => image.naturalWidth > 0))).toBe(true);
-
-  const saveBundle = page.locator('#guardian-hoodie-bundle [data-wishlist-toggle="guardian-hoodie-bundle"]');
-  await saveBundle.click();
-  await expect(saveBundle).toHaveAttribute("aria-pressed", "true");
+  const guardian = page.locator("#guardian-starter-bundle");
+  await expect(guardian).toContainText("Exactly 3 months of Ultra");
+  await expect(guardian).toContainText("150 LottoCredits");
+  await expect(guardian).toContainText("No automatic renewal");
+  await expect(guardian).toContainText("$29.95");
+  await expect(guardian.locator('[data-stripe-lookup-key="guardian_bundle_once"]')).toBeDisabled();
+  await expect(page.locator("[data-bag-toggle]")).toHaveCount(0);
+  await expect(page.locator("[data-wishlist-toggle-drawer]")).toHaveCount(0);
 });
 
 test("Arcade hero fits the supplied Guardian film with accessible motion control", async ({ page }) => {
@@ -422,6 +414,25 @@ test("membership checkout explains an authenticated backend rejection", async ({
   await expect(page.locator("[data-stripe-membership-status]")).toHaveText("Sign in is required.");
   await expect(page.locator('[data-stripe-lookup-key="gold_monthly"]')).toBeEnabled();
   await expect(page).toHaveURL(/\/memberships\.html$/);
+});
+
+test("membership plans publish concrete quotas and one consistent Guardian offer", async ({ page }) => {
+  await blockHeavyMedia(page);
+  await page.goto("/memberships.html", { waitUntil: "domcontentloaded" });
+
+  const comparison = page.locator(".membership-comparison");
+  await expect(comparison).toContainText("$4.99/mo or $49/yr");
+  await expect(comparison).toContainText("$9.99/mo or $99/yr");
+  await expect(comparison).toContainText("250 each billing month");
+  await expect(comparison).toContainText("750 each billing month");
+  await expect(comparison).toContainText("Local WAV exports");
+  await expect(comparison).toContainText("No automatic renewal");
+  await expect(page.locator('[data-lm-tier="guardian_bundle"]')).toContainText("$29.95");
+  await expect(page.locator('[data-stripe-lookup-key="guardian_bundle_once"]')).toHaveCount(1);
+  await expect(page.locator('[data-stripe-lookup-key="gold_yearly"]')).toHaveCount(1);
+  await expect(page.locator('[data-stripe-lookup-key="ultra_yearly"]')).toHaveCount(1);
+  await expect(page.locator("main")).not.toContainText("Lifetime or limited-time unlock language");
+  await expect(page.locator("main")).not.toContainText("$29.99");
 });
 
 test("membership checkout sends the signed-in account token", async ({ page }) => {
@@ -727,7 +738,7 @@ test("features combines the cinematic shell with the manifest-driven Arcade dire
   expect(localFailures).toEqual([]);
 });
 
-test("home loads the supplied muted-first startup commercial", async ({ page }) => {
+test("home opens on the product and keeps the story optional until requested", async ({ page }) => {
   const commercialRequests = [];
   page.on("request", (request) => {
     if (/lottomind-home-apparel-commercial-20260804\.opt\.mp4/i.test(request.url())) commercialRequests.push(request.url());
@@ -736,22 +747,53 @@ test("home loads the supplied muted-first startup commercial", async ({ page }) 
   const startup = page.locator("[data-startup-video]");
   const heroFilm = page.locator(".hero-motion");
   await expect(startup).toBeVisible({ timeout: 5_000 });
-  await expect(startup.getByRole("button", { name: "Play with sound" })).toBeVisible();
-  await expect.poll(() => startup.locator("video").evaluate((video) => ({ muted: video.muted, paused: video.paused }))).toMatchObject({ muted: true });
-  await expect.poll(() => commercialRequests.length).toBeGreaterThan(0);
-  await startup.getByRole("button", { name: "Enter Site", exact: true }).click();
-  await expect(startup).toBeHidden();
+  await expect(page.locator('[role="dialog"][data-startup-video]')).toHaveCount(0);
+  await expect(startup.getByRole("button", { name: "Watch the Story" })).toBeVisible();
+  await expect.poll(() => startup.locator("video").evaluate((video) => video.paused)).toBe(true);
+  expect(commercialRequests).toEqual([]);
   await expect(heroFilm).toBeVisible();
 });
 
-test("commercial popups retain a visible native pointer above mascot cursor layers", async ({ page }) => {
+test("home story dismissal persists for at least 30 days", async ({ page }) => {
+  await blockHeavyMedia(page);
+  await page.goto("/index.html#top", { waitUntil: "domcontentloaded" });
+  const story = page.locator("[data-startup-video]");
+  await expect(story).toBeVisible();
+  await story.getByRole("button", { name: "Hide Story" }).click();
+  await expect(story).toBeHidden();
+
+  const remainingDays = await page.evaluate(() => {
+    const expires = Number(localStorage.getItem("lottominded.ultra.homeStoryDismissedUntil.v1"));
+    return (expires - Date.now()) / (24 * 60 * 60 * 1000);
+  });
+  expect(remainingDays).toBeGreaterThanOrEqual(29.9);
+  await page.reload({ waitUntil: "domcontentloaded" });
+  await expect(story).toBeHidden();
+});
+
+test("global Reduce Motion control persists and stops automatic game expansion", async ({ page }) => {
+  await blockHeavyMedia(page);
+  await page.goto("/index.html#top", { waitUntil: "domcontentloaded" });
+  const motionToggle = page.locator("[data-reduce-motion-toggle]");
+  await expect(motionToggle).toHaveAttribute("aria-pressed", "false");
+  await motionToggle.click();
+  await expect(page.locator("html")).toHaveClass(/lm-reduce-motion/);
+  await expect(motionToggle).toHaveAttribute("aria-pressed", "true");
+  await page.waitForTimeout(1_500);
+  await expect(page.locator("[data-game-pip].is-open")).toHaveCount(0);
+  await page.reload({ waitUntil: "domcontentloaded" });
+  await expect(page.locator("html")).toHaveClass(/lm-reduce-motion/);
+  await expect(page.locator("[data-reduce-motion-toggle]")).toHaveAttribute("aria-pressed", "true");
+});
+
+test("commercial controls retain a visible native pointer above mascot cursor layers", async ({ page }) => {
   await blockHeavyMedia(page);
 
   await page.goto("/index.html#top", { waitUntil: "domcontentloaded" });
   const startup = page.locator("[data-startup-video]");
   await expect(startup).toBeVisible({ timeout: 5_000 });
   await expect.poll(() => startup.evaluate((element) => getComputedStyle(element).cursor)).toBe("auto");
-  await expect.poll(() => startup.getByRole("button", { name: "Enter Site", exact: true }).evaluate((element) => getComputedStyle(element).cursor)).toBe("pointer");
+  await expect.poll(() => startup.getByRole("button", { name: "Watch the Story" }).evaluate((element) => getComputedStyle(element).cursor)).toBe("pointer");
 
   await page.goto("/memberships.html", { waitUntil: "domcontentloaded" });
   const membershipCommercial = page.locator("[data-membership-commercial-modal]");
@@ -844,7 +886,8 @@ test("membership hero leads, Collector follows Gaming Showcase, and the Guardian
   await expect(collector).toHaveCount(1);
   await expect(guardian).toHaveCount(1);
   await expect(collector.locator("#plansTitle")).toHaveText(/Choose your signal level/i);
-  await expect(page.locator(".membership-comparison, .membership-benefit-strip, #lm-credits, .membership-billing-tools")).toHaveCount(0);
+  await expect(page.locator(".membership-comparison")).toBeVisible();
+  await expect(page.locator(".membership-benefit-strip, #lm-credits, .membership-billing-tools")).toHaveCount(0);
   await expect(page.locator("#dust .membership-collectible-card")).toHaveCount(0);
   await expect(page.locator("#water")).toHaveCount(0);
   await expect(page.getByText(/Film 04/i)).toHaveCount(0);

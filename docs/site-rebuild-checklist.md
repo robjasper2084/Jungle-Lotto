@@ -5,25 +5,26 @@ This matrix records the current release-signoff evidence for the upgrade branch.
 ## Evidence
 
 - Production baseline: `v1-final` at `975c637cea7003533cdc30aed9d96be51929bfc8`, with 69 route captures in [`visual-baseline/v1/`](visual-baseline/v1/)
-- Audited site content: `upgrade-redesign` implementation SHA `0a79345cb4df241a46611e4c1350937155af8d2c`
+- Audited site content: current `upgrade-redesign` working tree based on `bdda8b5`; the exact focused commit is recorded by `git log -1 --format=%H -- docs/site-rebuild-checklist.md`
 - Current staging captures: 78/78 passed across 26 routes at `1440x900`, `768x1024`, and `390x844`
 - Contact sheets: [desktop](staging-reviews/release-signoff-assets/desktop-contact-sheet.png), [tablet](staging-reviews/release-signoff-assets/tablet-contact-sheet.png), and [mobile](staging-reviews/release-signoff-assets/mobile-contact-sheet.png)
 - Machine-readable results: [`release-signoff-manifest.json`](staging-reviews/release-signoff-assets/release-signoff-manifest.json)
-- Route gate: 156/156 passed across source and staging, including Help, Account, visible keyboard focus, reduced motion, console/page errors, same-origin assets, overflow, noindex, preview banner, and environment write protections
-- Review reports: [`release-candidate-v2-rc4.md`](staging-reviews/release-candidate-v2-rc4.md), [`help-media-release.md`](staging-reviews/help-media-release.md), and [`release-blocker-remediation.md`](staging-reviews/release-blocker-remediation.md)
+- Route gate: 162/162 passed across source and staging, including Help, Account, visible keyboard focus, reduced motion, console/page errors, same-origin assets, overflow, noindex, preview banner, and environment write protections
+- Current staging artifact: 27 pages, 616 same-origin references, and 12/12 safety checks
+- Review reports: [`entry-motion-page-soundtracks.md`](staging-reviews/entry-motion-page-soundtracks.md), [`release-candidate-v2-rc4.md`](staging-reviews/release-candidate-v2-rc4.md), and [`help-media-release.md`](staging-reviews/help-media-release.md)
 
 ## Sign-Off Matrix
 
 | Route | Source | Production screenshot | Staging screenshot | Desktop | Tablet | Mobile | Keyboard | Reduced motion | Console/assets | Metadata/safety | Performance | Status |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `/` | Sitemap | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Measured | Startup commercial stays dismissed after its delayed fallback window |
+| `/` | Sitemap | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Measured | Opens directly on the value proposition; story and soundtrack controls remain user accessible |
 | `/features-app.html` | Sitemap | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Measured | Current staging sign-off complete |
-| `/memberships.html` | Sitemap | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Measured | Collector deep link focuses email reliably; guarded recovery controls preserved |
-| `/news/` | Sitemap | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Measured | Current staging sign-off complete |
+| `/memberships.html` | Sitemap | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Measured | Assigned soundtrack and visible sound control verified; guarded checkout preserved |
+| `/news/` | Sitemap | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Measured | Assigned soundtrack verified; unavailable third-party publisher images remain external warnings, not same-origin failures |
 | `/live-events.html` | Sitemap | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Measured | Current staging sign-off complete |
 | `/lottery-spheres.html` | Sitemap | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Measured | Current staging sign-off complete |
 | `/beat2lotto-plus.html` | Sitemap | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Measured | Current staging sign-off complete |
-| `/merch-store.html` | Sitemap | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Measured | Current staging sign-off complete |
+| `/merch-store.html` | Sitemap | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Measured | Three-product launch catalog reviewed at desktop/mobile; ordering remains locked pending verified fulfillment |
 | `/how-to-use.html` | Sitemap | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Measured | Current staging sign-off complete |
 | `/privacy.html` | Sitemap | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Measured | Current staging sign-off complete |
 | `/terms.html` | Sitemap | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Measured | Current staging sign-off complete |
@@ -34,7 +35,8 @@ This matrix records the current release-signoff evidence for the upgrade branch.
 | `/redeem.html` | Required route | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Measured | Current staging sign-off complete |
 | `/contact.html` | Required route | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Measured | Current staging sign-off complete |
 | `/help.html` | Support route | Not applicable | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Measured | Mobile actions clear fixed Credits and Menu controls; no v1 route existed |
-| `/account.html` | Upgrade route | Not applicable | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Measured | Staging sign-off complete; no v1 route existed |
+| `/account.html` | Upgrade route | Not applicable | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Measured | Unified dashboard verified at desktop/mobile; service data and device-only activity remain clearly separated; no v1 route existed |
+| `/services/` | Commercial services route | Not applicable | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Measured | New B2B route; local-only inquiry draft, explicit starting prices, and no undocumented client or result claims |
 | `/404.html` | Required route | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Measured | Current staging sign-off complete |
 | `/games/gothtechnology2/` | Arcade manifest | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Measured | Current staging sign-off complete |
 | `/games/lottomind-jackpot-maze/` | Arcade manifest | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Measured | Current staging sign-off complete |

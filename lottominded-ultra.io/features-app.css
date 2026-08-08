@@ -840,6 +840,76 @@ body.arcade-pilot-page.feature-entity-ready .feature-entity {
   text-align: center;
 }
 
+.arcade-loading,
+.arcade-load-error {
+  width: min(1320px, calc(100% - 3rem));
+  margin: 1rem auto;
+  border: 1px solid var(--arcade-line);
+  background: rgba(3, 13, 21, 0.94);
+  color: var(--arcade-text);
+}
+
+.arcade-loading {
+  padding: 1rem;
+  color: var(--arcade-cyan);
+  font-size: 0.76rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.arcade-loading__cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 0.85rem;
+}
+
+.arcade-loading__cards i {
+  display: block;
+  min-height: 180px;
+  border: 1px solid rgba(91, 240, 216, 0.2);
+  background: linear-gradient(90deg, #07111a 20%, #0c2330 50%, #07111a 80%);
+  background-size: 220% 100%;
+  animation: arcade-manifest-pulse 1.4s linear infinite;
+}
+
+.arcade-load-error {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.2rem;
+  border-color: rgba(241, 199, 91, 0.7);
+}
+
+.arcade-load-error[hidden] { display: none; }
+.arcade-load-error div { display: grid; gap: 0.2rem; }
+.arcade-load-error strong { color: var(--arcade-gold); text-transform: uppercase; }
+.arcade-load-error span { color: var(--arcade-muted); }
+.arcade-load-error button {
+  min-width: 96px;
+  min-height: 44px;
+  border: 1px solid var(--arcade-cyan);
+  background: #071823;
+  color: var(--arcade-cyan);
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+@keyframes arcade-manifest-pulse { to { background-position: -220% 0; } }
+
+@media (max-width: 700px) {
+  .arcade-loading,
+  .arcade-load-error { width: min(100% - 1.5rem, 1320px); }
+  .arcade-loading__cards { grid-template-columns: 1fr; }
+  .arcade-loading__cards i:nth-child(n + 2) { display: none; }
+  .arcade-load-error { align-items: stretch; flex-direction: column; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .arcade-loading__cards i { animation: none; }
+}
+
 .arcade-responsible-note {
   display: grid;
   content-visibility: visible !important;

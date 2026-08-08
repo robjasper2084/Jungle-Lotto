@@ -57,6 +57,7 @@ test("footer links are unique and use the canonical support destinations globall
   const expectedLinks = [
     ["Help", "/help.html"],
     ["Contact", "/contact.html"],
+    ["Services", "/services/"],
     ["Credits", "/account.html#credits"],
     ["Account", "/account.html"],
     ["Privacy", "/privacy.html"],

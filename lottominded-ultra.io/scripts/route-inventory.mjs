@@ -46,6 +46,7 @@ export async function getRouteInventory() {
     { route: "/lottomind-stem-studio/", source: "required" },
     { route: "/redeem.html", source: "required" },
     { route: "/contact.html", source: "required" },
+    { route: "/services/", source: "required" },
     { route: "/404.html", source: "required" },
   ];
 

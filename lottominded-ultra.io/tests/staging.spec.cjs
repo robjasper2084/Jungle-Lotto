@@ -54,7 +54,7 @@ test("preview shell is noindex, visibly marked, and free of broken same-origin r
   expect(consoleFailures).toEqual([]);
 });
 
-test("home staging restores the muted-first startup commercial", async ({ page }) => {
+test("home staging opens directly and defers the optional inline story", async ({ page }) => {
   const commercialRequests = [];
   page.on("request", (request) => {
     if (/lottomind-home-apparel-commercial-20260804\.opt\.mp4/i.test(request.url())) {
@@ -63,13 +63,12 @@ test("home staging restores the muted-first startup commercial", async ({ page }
   });
 
   await page.goto("/", { waitUntil: "domcontentloaded" });
-  const startup = page.locator("[data-startup-video]");
-  await expect(startup).toBeVisible({ timeout: 5_000 });
-  await expect(startup.getByRole("button", { name: "Play with sound" })).toBeVisible();
-  await expect.poll(() => startup.locator("video").evaluate((video) => ({ muted: video.muted, paused: video.paused }))).toMatchObject({ muted: true });
-  await expect.poll(() => commercialRequests.length).toBeGreaterThan(0);
-  await startup.getByRole("button", { name: "Enter Site", exact: true }).click();
-  await expect(startup).toBeHidden();
+  const story = page.locator("[data-startup-video]");
+  await expect(story).toBeVisible({ timeout: 5_000 });
+  await expect(page.locator('[role="dialog"][data-startup-video]')).toHaveCount(0);
+  await expect(story.getByRole("button", { name: "Watch the Story" })).toBeVisible();
+  await expect.poll(() => story.locator("video").evaluate((video) => video.paused)).toBe(true);
+  expect(commercialRequests).toEqual([]);
   await expect(page.locator(".hero-motion")).toBeVisible();
 });
 
@@ -78,14 +77,15 @@ test("membership entry film requests sound and keeps an accessible fallback", as
   const soundtrackRequests = [];
   page.on("request", (request) => {
     if (/assets\/merch\/.*commercial.*\.mp4/i.test(request.url())) filmRequests.push(request.url());
-    if (/home-screen-song\.mp3/i.test(request.url())) soundtrackRequests.push(request.url());
+    if (/lottomind-membership-theme-untitled-14\.mp3/i.test(request.url())) soundtrackRequests.push(request.url());
   });
 
   await page.goto("/memberships.html", { waitUntil: "domcontentloaded" });
   const commercial = page.locator("[data-membership-commercial-modal]");
   await expect(commercial).toBeVisible({ timeout: 15_000 });
   await expect.poll(() => filmRequests.length).toBeGreaterThan(0);
-  expect(soundtrackRequests).toEqual([]);
+  await expect.poll(() => soundtrackRequests.length).toBeGreaterThan(0);
+  await expect(page.locator(".lm-sound-toggle")).toBeVisible();
   await expect.poll(() =>
     commercial.locator("video").evaluate((video) => ({ muted: video.muted, paused: video.paused }))
   ).toMatchObject({ paused: false });
@@ -98,7 +98,7 @@ test("membership entry film requests sound and keeps an accessible fallback", as
     await expect(page.locator("[data-membership-commercial-sound]")).toBeHidden();
   }
   await page.locator("[data-membership-commercial-close]").click();
-  await expect.poll(() => soundtrackRequests.length).toBeGreaterThan(0);
+  await expect(page.locator(".lm-sound-toggle")).toBeVisible();
 });
 
 test("guide keeps its single commercial gate and safe sound handoff", async ({ page }) => {
