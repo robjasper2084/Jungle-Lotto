@@ -228,8 +228,24 @@
 
       .utility-buttons {
         display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 5px;
+      }
+
+      .utility-buttons[hidden] {
+        display: none;
+      }
+
+      .utility-toolbar {
+        display: grid;
+        justify-items: end;
+        gap: 5px;
+      }
+
+      #mobileUtilityToggle {
+        width: 44px;
+        min-height: 30px;
+        font-size: 16px;
       }
 
       .utility-buttons .touch {
@@ -520,6 +536,32 @@
         font: 800 13px/1.2 system-ui, sans-serif;
       }
 
+      .binding-heading {
+        margin-top: 16px;
+      }
+
+      .binding-system-heading,
+      .binding-system-row {
+        grid-template-columns: minmax(120px, 1fr) 310px;
+      }
+
+      .binding-system-heading span:last-child,
+      .binding-system-row .binding-button {
+        grid-column: 2;
+      }
+
+      .settings-help,
+      .binding-status {
+        margin: 10px 0 0;
+        color: rgba(255, 246, 211, 0.72);
+        font: 700 12px/1.45 system-ui, sans-serif;
+      }
+
+      .binding-status {
+        min-height: 18px;
+        color: #9ed8ff;
+      }
+
       .binding-button[data-listening="true"] {
         border-color: #9ed8ff;
         color: #fff;
@@ -595,9 +637,11 @@
           box-sizing: border-box;
           display: grid;
           grid-template-columns: auto auto;
+          align-items: end;
           justify-items: center;
           margin-top: 8px;
           padding-bottom: max(12px, var(--safe-bottom));
+          z-index: 12;
         }
 
         body:not([data-phase="fight"]):not([data-phase="pause"]) #shell {
@@ -622,6 +666,12 @@
         .buttons {
           grid-auto-rows: clamp(44px, 13vw, 52px);
           gap: 7px;
+        }
+
+        .touch-handle {
+          min-height: 18px;
+          font-size: 8px;
+          opacity: 0.72;
         }
       }
 
@@ -699,6 +749,11 @@
           font-size: 11px;
         }
 
+        .binding-system-heading,
+        .binding-system-row {
+          grid-template-columns: minmax(86px, 1fr) 214px;
+        }
+
         .setting-row,
         .training-row,
         .command-row {
@@ -754,11 +809,14 @@
             <button class="touch" type="button" data-touch="p1.special" aria-label="Player 1 special move">SP</button>
             <button class="touch" type="button" data-touch="p1.modifier" aria-label="Player 1 modifier. Combine with attack buttons for throw, super, assists, or taunt">MOD</button>
           </div>
-          <div class="utility-buttons">
-            <button class="touch" type="button" data-touch="p1.dash" aria-label="Player 1 dash">DASH</button>
-            <button class="touch" type="button" data-touch="ui.pause">PAUSE</button>
-            <button id="mobileCommands" class="touch" type="button">MOVES</button>
-            <button id="mobileTrainingTools" class="touch training-touch" type="button">TOOLS</button>
+          <div class="utility-toolbar">
+            <button id="mobileUtilityToggle" class="touch" type="button" aria-label="Open match tools" aria-controls="mobileUtilityActions" aria-expanded="false">...</button>
+            <div id="mobileUtilityActions" class="utility-buttons" hidden>
+              <button class="touch" type="button" data-touch="p1.dash" aria-label="Player 1 dash">DASH</button>
+              <button class="touch" type="button" data-touch="ui.pause">PAUSE</button>
+              <button id="mobileCommands" class="touch" type="button">MOVES</button>
+              <button id="mobileTrainingTools" class="touch training-touch" type="button">TOOLS</button>
+            </div>
           </div>
         </div>
       </div>
@@ -787,8 +845,9 @@
           <input id="replayImportFile" type="file" accept="application/json,.json" hidden />
           <button id="resetBindings" class="settings-button" type="button">RESET KEYS</button>
         </div>
-        <div class="binding-heading" aria-hidden="true"><span>ACTION</span><span>PLAYER 1</span><span>PLAYER 2</span></div>
-        <div id="keyBindings"></div>
+        <p class="settings-help">Select any key to remap it. Conflicts swap keys automatically. Press Backspace to clear a binding.</p>
+        <p id="bindingStatus" class="binding-status" role="status" aria-live="polite">Changes save automatically.</p>
+        <div id="keyBindings" aria-label="Keyboard bindings"></div>
       </section>
     </div>
     <div id="commandPanel" role="dialog" aria-modal="true" aria-labelledby="commandTitle" hidden>
@@ -826,6 +885,6 @@
       </section>
     </div>
     <script src="../../assets/js/lm-game-rewards-sdk.js?v=rewards-sdk-1"></script>
-    <script type="module" src="./src/main.js?v=heartline41-epic-amara-ezra"></script>
+    <script type="module" src="./src/main.js?v=semantic-motion-v2"></script>
   </body>
 </html>

@@ -121,7 +121,7 @@
           ],
           "higgsfieldJobId": "3ecb1159-8c5e-4778-99d1-8f031c4d4582",
           "stableHeight": true,
-          "targetVisibleHeight": 174
+          "targetVisibleHeight": 174.0
         },
         "READY_STANCE": {
           "sheet": "assets/motion-atlases/kalyx-locomotion.webp",
@@ -232,7 +232,7 @@
           ],
           "higgsfieldJobId": "7b7c172e-0fde-4ca7-a323-0a830904fc4d",
           "stableHeight": true,
-          "targetVisibleHeight": 174
+          "targetVisibleHeight": 174.0
         },
         "CROUCH_IDLE": {
           "sheet": "assets/motion-atlases/kalyx-locomotion.webp",
@@ -464,7 +464,7 @@
           "cellHeight": 192,
           "renderScale": 1.3333333333333333,
           "sourceFacing": 1,
-          "source": "higgsfield-v3-body-vfx",
+          "source": "derived-body-only-v1",
           "frames": [
             {
               "x": 0,
@@ -473,13 +473,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 22,
-                "y": 19,
-                "w": 147,
-                "h": 171,
-                "visibleW": 143,
-                "visibleH": 167,
-                "scale": 0.916886
+                "x": 38,
+                "y": 22,
+                "w": 127,
+                "h": 167,
+                "visibleW": 123,
+                "visibleH": 163,
+                "scale": 0.939387
               }
             },
             {
@@ -489,11 +489,11 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 20,
-                "y": 18,
-                "w": 151,
+                "x": 26,
+                "y": 17,
+                "w": 147,
                 "h": 172,
-                "visibleW": 147,
+                "visibleW": 143,
                 "visibleH": 168,
                 "scale": 0.911429
               }
@@ -505,13 +505,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 8,
-                "y": 17,
-                "w": 176,
-                "h": 173,
-                "visibleW": 172,
-                "visibleH": 169,
-                "scale": 0.906036
+                "x": 18,
+                "y": 26,
+                "w": 159,
+                "h": 163,
+                "visibleW": 155,
+                "visibleH": 159,
+                "scale": 0.963019
               }
             },
             {
@@ -521,13 +521,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 19,
-                "y": 14,
-                "w": 154,
-                "h": 176,
-                "visibleW": 150,
-                "visibleH": 172,
-                "scale": 0.890233
+                "x": 23,
+                "y": 21,
+                "w": 142,
+                "h": 168,
+                "visibleW": 138,
+                "visibleH": 164,
+                "scale": 0.933659
               }
             },
             {
@@ -537,13 +537,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 13,
-                "y": 15,
-                "w": 165,
-                "h": 175,
-                "visibleW": 161,
-                "visibleH": 171,
-                "scale": 0.895439
+                "x": 30,
+                "y": 11,
+                "w": 124,
+                "h": 178,
+                "visibleW": 120,
+                "visibleH": 174,
+                "scale": 0.88
               }
             },
             {
@@ -553,19 +553,35 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 27,
-                "y": 8,
-                "w": 137,
-                "h": 182,
-                "visibleW": 133,
-                "visibleH": 178,
-                "scale": 0.860225
+                "x": 32,
+                "y": 13,
+                "w": 115,
+                "h": 176,
+                "visibleW": 111,
+                "visibleH": 172,
+                "scale": 0.890233
               }
             }
           ],
           "higgsfieldJobId": "c6a92952-43bd-4eae-8dd7-ce0649c417e5",
           "stableHeight": true,
-          "targetVisibleHeight": 153.12
+          "targetVisibleHeight": 153.12,
+          "repair": "semantic-body-only-v1",
+          "semantic": {
+            "version": 1,
+            "bodyOnly": true,
+            "figureCount": 1,
+            "anchor": "bottom-center",
+            "poseClass": "backward-burst"
+          },
+          "repairSourceFrames": [
+            "RUN_BACK:0",
+            "RUN_BACK:1",
+            "RUN_BACK:2",
+            "RUN_BACK:3",
+            "RUN_BACK:4",
+            "RUN_BACK:5"
+          ]
         },
         "DASH_FORWARD": {
           "sheet": "assets/motion-atlases/kalyx-locomotion.webp",
@@ -575,7 +591,7 @@
           "cellHeight": 192,
           "renderScale": 1.3333333333333333,
           "sourceFacing": 1,
-          "source": "higgsfield-v3-body-vfx",
+          "source": "derived-body-only-v1",
           "frames": [
             {
               "x": 1152,
@@ -584,13 +600,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 27,
-                "y": 22,
-                "w": 137,
-                "h": 168,
-                "visibleW": 133,
-                "visibleH": 164,
-                "scale": 0.933659
+                "x": 22,
+                "y": 16,
+                "w": 140,
+                "h": 173,
+                "visibleW": 136,
+                "visibleH": 169,
+                "scale": 0.906036
               }
             },
             {
@@ -600,13 +616,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 17,
-                "y": 21,
-                "w": 158,
-                "h": 169,
-                "visibleW": 154,
-                "visibleH": 165,
-                "scale": 0.928
+                "x": 13,
+                "y": 23,
+                "w": 162,
+                "h": 166,
+                "visibleW": 158,
+                "visibleH": 162,
+                "scale": 0.945185
               }
             },
             {
@@ -616,13 +632,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 5,
-                "y": 19,
-                "w": 181,
-                "h": 171,
-                "visibleW": 177,
-                "visibleH": 167,
-                "scale": 0.916886
+                "x": 7,
+                "y": 40,
+                "w": 178,
+                "h": 149,
+                "visibleW": 174,
+                "visibleH": 145,
+                "scale": 1.056
               }
             },
             {
@@ -632,13 +648,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 22,
-                "y": 13,
+                "x": 26,
+                "y": 23,
                 "w": 147,
-                "h": 177,
+                "h": 166,
                 "visibleW": 143,
-                "visibleH": 173,
-                "scale": 0.885087
+                "visibleH": 162,
+                "scale": 0.945185
               }
             },
             {
@@ -648,13 +664,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 25,
-                "y": 8,
-                "w": 141,
-                "h": 182,
-                "visibleW": 137,
-                "visibleH": 178,
-                "scale": 0.860225
+                "x": 16,
+                "y": 25,
+                "w": 169,
+                "h": 164,
+                "visibleW": 165,
+                "visibleH": 160,
+                "scale": 0.957
               }
             },
             {
@@ -664,19 +680,35 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 27,
-                "y": 8,
-                "w": 137,
-                "h": 182,
-                "visibleW": 133,
-                "visibleH": 178,
-                "scale": 0.860225
+                "x": 39,
+                "y": 15,
+                "w": 128,
+                "h": 174,
+                "visibleW": 124,
+                "visibleH": 170,
+                "scale": 0.900706
               }
             }
           ],
           "higgsfieldJobId": "02d44ae2-b6ce-4333-b3cf-8b2de23bc680",
           "stableHeight": true,
-          "targetVisibleHeight": 153.12
+          "targetVisibleHeight": 153.12,
+          "repair": "semantic-body-only-v1",
+          "semantic": {
+            "version": 1,
+            "bodyOnly": true,
+            "figureCount": 1,
+            "anchor": "bottom-center",
+            "poseClass": "forward-burst"
+          },
+          "repairSourceFrames": [
+            "RUN_FORWARD:0",
+            "RUN_FORWARD:1",
+            "RUN_FORWARD:2",
+            "RUN_FORWARD:3",
+            "RUN_FORWARD:4",
+            "RUN_FORWARD:5"
+          ]
         },
         "JUMP_FALL": {
           "sheet": "assets/motion-atlases/kalyx-locomotion.webp",
@@ -686,7 +718,7 @@
           "cellHeight": 192,
           "renderScale": 1.3333333333333333,
           "sourceFacing": 1,
-          "source": "higgsfield-v3-body-vfx",
+          "source": "derived-body-only-v1",
           "frames": [
             {
               "x": 768,
@@ -695,13 +727,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 28,
-                "y": 8,
-                "w": 135,
-                "h": 182,
-                "visibleW": 131,
-                "visibleH": 178,
-                "scale": 0.977528
+                "x": 14,
+                "y": 57,
+                "w": 165,
+                "h": 132,
+                "visibleW": 161,
+                "visibleH": 128,
+                "scale": 0.994286
               }
             },
             {
@@ -711,13 +743,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 22,
-                "y": 8,
-                "w": 147,
-                "h": 182,
-                "visibleW": 143,
-                "visibleH": 178,
-                "scale": 0.977528
+                "x": 24,
+                "y": 14,
+                "w": 144,
+                "h": 175,
+                "visibleW": 140,
+                "visibleH": 171,
+                "scale": 0.994286
               }
             },
             {
@@ -727,13 +759,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 22,
-                "y": 8,
-                "w": 147,
-                "h": 182,
-                "visibleW": 143,
-                "visibleH": 178,
-                "scale": 0.977528
+                "x": 24,
+                "y": 20,
+                "w": 144,
+                "h": 169,
+                "visibleW": 140,
+                "visibleH": 165,
+                "scale": 0.994286
               }
             },
             {
@@ -743,13 +775,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 21,
-                "y": 11,
-                "w": 149,
-                "h": 179,
-                "visibleW": 145,
-                "visibleH": 175,
-                "scale": 0.977528
+                "x": 30,
+                "y": 38,
+                "w": 133,
+                "h": 151,
+                "visibleW": 129,
+                "visibleH": 147,
+                "scale": 0.994286
               }
             },
             {
@@ -759,13 +791,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 27,
-                "y": 8,
-                "w": 138,
-                "h": 182,
-                "visibleW": 134,
-                "visibleH": 178,
-                "scale": 0.977528
+                "x": 4,
+                "y": 10,
+                "w": 184,
+                "h": 179,
+                "visibleW": 180,
+                "visibleH": 175,
+                "scale": 0.994286
               }
             },
             {
@@ -775,19 +807,35 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 36,
-                "y": 14,
-                "w": 120,
-                "h": 176,
-                "visibleW": 116,
-                "visibleH": 172,
-                "scale": 0.977528
+                "x": 49,
+                "y": 17,
+                "w": 94,
+                "h": 172,
+                "visibleW": 90,
+                "visibleH": 168,
+                "scale": 0.994286
               }
             }
           ],
           "higgsfieldJobId": "5394b85d-d360-47d8-b8a7-dd6d39562ac1",
           "stableHeight": false,
-          "targetVisibleHeight": 174.0
+          "targetVisibleHeight": 174.0,
+          "repair": "semantic-body-only-v1",
+          "semantic": {
+            "version": 1,
+            "bodyOnly": true,
+            "figureCount": 1,
+            "anchor": "bottom-center",
+            "poseClass": "aerial-fall"
+          },
+          "repairSourceFrames": [
+            "AIR_ATTACK:2",
+            "AIR_ATTACK:3",
+            "AIR_ATTACK:4",
+            "AIR_ATTACK:0",
+            "AIR_ATTACK:1",
+            "AIR_ATTACK:5"
+          ]
         },
         "JUMP_PEAK": {
           "sheet": "assets/motion-atlases/kalyx-locomotion.webp",
@@ -797,7 +845,7 @@
           "cellHeight": 192,
           "renderScale": 1.3333333333333333,
           "sourceFacing": 1,
-          "source": "higgsfield-v3-body-vfx",
+          "source": "derived-body-only-v1",
           "frames": [
             {
               "x": 384,
@@ -806,13 +854,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 37,
-                "y": 8,
-                "w": 117,
-                "h": 182,
-                "visibleW": 113,
-                "visibleH": 178,
-                "scale": 0.977528
+                "x": 4,
+                "y": 10,
+                "w": 184,
+                "h": 179,
+                "visibleW": 180,
+                "visibleH": 175,
+                "scale": 0.994286
               }
             },
             {
@@ -822,13 +870,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 26,
-                "y": 16,
-                "w": 139,
-                "h": 174,
-                "visibleW": 135,
-                "visibleH": 170,
-                "scale": 0.977528
+                "x": 14,
+                "y": 57,
+                "w": 165,
+                "h": 132,
+                "visibleW": 161,
+                "visibleH": 128,
+                "scale": 0.994286
               }
             },
             {
@@ -838,13 +886,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 26,
-                "y": 20,
-                "w": 139,
-                "h": 170,
-                "visibleW": 135,
-                "visibleH": 166,
-                "scale": 0.977528
+                "x": 24,
+                "y": 14,
+                "w": 144,
+                "h": 175,
+                "visibleW": 140,
+                "visibleH": 171,
+                "scale": 0.994286
               }
             },
             {
@@ -854,13 +902,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 37,
-                "y": 8,
-                "w": 117,
-                "h": 182,
-                "visibleW": 113,
-                "visibleH": 178,
-                "scale": 0.977528
+                "x": 24,
+                "y": 20,
+                "w": 144,
+                "h": 169,
+                "visibleW": 140,
+                "visibleH": 165,
+                "scale": 0.994286
               }
             },
             {
@@ -870,13 +918,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 8,
-                "y": 8,
-                "w": 176,
-                "h": 182,
-                "visibleW": 172,
-                "visibleH": 178,
-                "scale": 0.977528
+                "x": 30,
+                "y": 38,
+                "w": 133,
+                "h": 151,
+                "visibleW": 129,
+                "visibleH": 147,
+                "scale": 0.994286
               }
             },
             {
@@ -886,19 +934,35 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 31,
-                "y": 8,
-                "w": 130,
-                "h": 182,
-                "visibleW": 126,
-                "visibleH": 178,
-                "scale": 0.977528
+                "x": 49,
+                "y": 17,
+                "w": 94,
+                "h": 172,
+                "visibleW": 90,
+                "visibleH": 168,
+                "scale": 0.994286
               }
             }
           ],
           "higgsfieldJobId": "735572f2-5d69-495a-bc11-55e7e117dffd",
           "stableHeight": false,
-          "targetVisibleHeight": 174.0
+          "targetVisibleHeight": 174.0,
+          "repair": "semantic-body-only-v1",
+          "semantic": {
+            "version": 1,
+            "bodyOnly": true,
+            "figureCount": 1,
+            "anchor": "bottom-center",
+            "poseClass": "aerial-peak"
+          },
+          "repairSourceFrames": [
+            "AIR_ATTACK:1",
+            "AIR_ATTACK:2",
+            "AIR_ATTACK:3",
+            "AIR_ATTACK:4",
+            "AIR_ATTACK:0",
+            "AIR_ATTACK:5"
+          ]
         },
         "JUMP_RISE": {
           "sheet": "assets/motion-atlases/kalyx-locomotion.webp",
@@ -908,7 +972,7 @@
           "cellHeight": 192,
           "renderScale": 1.3333333333333333,
           "sourceFacing": 1,
-          "source": "higgsfield-v3-body-vfx",
+          "source": "derived-body-only-v1",
           "frames": [
             {
               "x": 0,
@@ -917,13 +981,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 21,
-                "y": 20,
-                "w": 150,
-                "h": 170,
-                "visibleW": 146,
-                "visibleH": 166,
-                "scale": 0.977528
+                "x": 30,
+                "y": 38,
+                "w": 133,
+                "h": 151,
+                "visibleW": 129,
+                "visibleH": 147,
+                "scale": 0.994286
               }
             },
             {
@@ -933,13 +997,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 21,
-                "y": 8,
-                "w": 150,
-                "h": 182,
-                "visibleW": 146,
-                "visibleH": 178,
-                "scale": 0.977528
+                "x": 4,
+                "y": 10,
+                "w": 184,
+                "h": 179,
+                "visibleW": 180,
+                "visibleH": 175,
+                "scale": 0.994286
               }
             },
             {
@@ -949,13 +1013,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 6,
-                "y": 8,
-                "w": 179,
-                "h": 182,
-                "visibleW": 175,
-                "visibleH": 178,
-                "scale": 0.977528
+                "x": 24,
+                "y": 20,
+                "w": 144,
+                "h": 169,
+                "visibleW": 140,
+                "visibleH": 165,
+                "scale": 0.994286
               }
             },
             {
@@ -965,13 +1029,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 31,
-                "y": 8,
-                "w": 130,
-                "h": 182,
-                "visibleW": 126,
-                "visibleH": 178,
-                "scale": 0.977528
+                "x": 14,
+                "y": 57,
+                "w": 165,
+                "h": 132,
+                "visibleW": 161,
+                "visibleH": 128,
+                "scale": 0.994286
               }
             },
             {
@@ -981,13 +1045,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 31,
-                "y": 8,
-                "w": 130,
-                "h": 182,
-                "visibleW": 126,
-                "visibleH": 178,
-                "scale": 0.977528
+                "x": 24,
+                "y": 14,
+                "w": 144,
+                "h": 175,
+                "visibleW": 140,
+                "visibleH": 171,
+                "scale": 0.994286
               }
             },
             {
@@ -997,19 +1061,35 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 36,
-                "y": 14,
-                "w": 119,
-                "h": 176,
-                "visibleW": 115,
-                "visibleH": 172,
-                "scale": 0.977528
+                "x": 49,
+                "y": 17,
+                "w": 94,
+                "h": 172,
+                "visibleW": 90,
+                "visibleH": 168,
+                "scale": 0.994286
               }
             }
           ],
           "higgsfieldJobId": "29b36cf3-6b8f-4f8e-9273-53f656fbdcff",
           "stableHeight": false,
-          "targetVisibleHeight": 174.0
+          "targetVisibleHeight": 174.0,
+          "repair": "semantic-body-only-v1",
+          "semantic": {
+            "version": 1,
+            "bodyOnly": true,
+            "figureCount": 1,
+            "anchor": "bottom-center",
+            "poseClass": "aerial-rise"
+          },
+          "repairSourceFrames": [
+            "AIR_ATTACK:0",
+            "AIR_ATTACK:1",
+            "AIR_ATTACK:4",
+            "AIR_ATTACK:2",
+            "AIR_ATTACK:3",
+            "AIR_ATTACK:5"
+          ]
         },
         "JUMP_START": {
           "sheet": "assets/motion-atlases/kalyx-locomotion.webp",
@@ -1019,7 +1099,7 @@
           "cellHeight": 192,
           "renderScale": 1.3333333333333333,
           "sourceFacing": 1,
-          "source": "higgsfield-v3-body-vfx",
+          "source": "derived-body-only-v1",
           "frames": [
             {
               "x": 1152,
@@ -1028,12 +1108,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 27,
-                "y": 15,
-                "w": 137,
-                "h": 175,
-                "visibleW": 133,
-                "visibleH": 171,
+                "x": 44,
+                "y": 7,
+                "w": 104,
+                "h": 182,
+                "visibleW": 100,
+                "visibleH": 178,
                 "scale": 0.977528
               }
             },
@@ -1044,12 +1124,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 23,
-                "y": 30,
-                "w": 145,
-                "h": 160,
-                "visibleW": 141,
-                "visibleH": 156,
+                "x": 30,
+                "y": 51,
+                "w": 133,
+                "h": 138,
+                "visibleW": 129,
+                "visibleH": 134,
                 "scale": 0.977528
               }
             },
@@ -1060,12 +1140,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 17,
-                "y": 8,
-                "w": 157,
-                "h": 182,
-                "visibleW": 153,
-                "visibleH": 178,
+                "x": 30,
+                "y": 38,
+                "w": 133,
+                "h": 151,
+                "visibleW": 129,
+                "visibleH": 147,
                 "scale": 0.977528
               }
             },
@@ -1076,12 +1156,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 39,
-                "y": 8,
-                "w": 114,
-                "h": 182,
-                "visibleW": 110,
-                "visibleH": 178,
+                "x": 4,
+                "y": 10,
+                "w": 184,
+                "h": 179,
+                "visibleW": 180,
+                "visibleH": 175,
                 "scale": 0.977528
               }
             },
@@ -1092,12 +1172,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 32,
-                "y": 8,
-                "w": 127,
-                "h": 182,
-                "visibleW": 123,
-                "visibleH": 178,
+                "x": 24,
+                "y": 20,
+                "w": 144,
+                "h": 169,
+                "visibleW": 140,
+                "visibleH": 165,
                 "scale": 0.977528
               }
             },
@@ -1108,19 +1188,35 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 35,
-                "y": 8,
-                "w": 122,
-                "h": 182,
-                "visibleW": 118,
-                "visibleH": 178,
+                "x": 49,
+                "y": 17,
+                "w": 94,
+                "h": 172,
+                "visibleW": 90,
+                "visibleH": 168,
                 "scale": 0.977528
               }
             }
           ],
           "higgsfieldJobId": "fbe5f7b8-4cb0-47f2-b110-1730b94c7626",
           "stableHeight": false,
-          "targetVisibleHeight": 174.0
+          "targetVisibleHeight": 174.0,
+          "repair": "semantic-body-only-v1",
+          "semantic": {
+            "version": 1,
+            "bodyOnly": true,
+            "figureCount": 1,
+            "anchor": "bottom-center",
+            "poseClass": "takeoff"
+          },
+          "repairSourceFrames": [
+            "IDLE:4",
+            "CROUCH_ATTACK:0",
+            "AIR_ATTACK:0",
+            "AIR_ATTACK:1",
+            "AIR_ATTACK:4",
+            "AIR_ATTACK:5"
+          ]
         },
         "LANDING": {
           "sheet": "assets/motion-atlases/kalyx-locomotion.webp",
@@ -1130,7 +1226,7 @@
           "cellHeight": 192,
           "renderScale": 1.3333333333333333,
           "sourceFacing": 1,
-          "source": "higgsfield-v3-body-vfx",
+          "source": "derived-body-only-v1",
           "frames": [
             {
               "x": 768,
@@ -1139,13 +1235,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 27,
-                "y": 8,
-                "w": 137,
-                "h": 182,
-                "visibleW": 133,
-                "visibleH": 178,
-                "scale": 0.977528
+                "x": 24,
+                "y": 20,
+                "w": 144,
+                "h": 169,
+                "visibleW": 140,
+                "visibleH": 165,
+                "scale": 1.00578
               }
             },
             {
@@ -1155,13 +1251,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 9,
-                "y": 11,
-                "w": 174,
-                "h": 179,
-                "visibleW": 170,
-                "visibleH": 175,
-                "scale": 0.977528
+                "x": 30,
+                "y": 39,
+                "w": 133,
+                "h": 150,
+                "visibleW": 129,
+                "visibleH": 146,
+                "scale": 1.00578
               }
             },
             {
@@ -1171,13 +1267,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 4,
-                "y": 13,
-                "w": 184,
-                "h": 177,
-                "visibleW": 180,
-                "visibleH": 173,
-                "scale": 0.977528
+                "x": 24,
+                "y": 53,
+                "w": 145,
+                "h": 136,
+                "visibleW": 141,
+                "visibleH": 132,
+                "scale": 1.00578
               }
             },
             {
@@ -1187,13 +1283,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 6,
+                "x": 35,
                 "y": 12,
-                "w": 180,
-                "h": 178,
-                "visibleW": 176,
-                "visibleH": 174,
-                "scale": 0.977528
+                "w": 122,
+                "h": 177,
+                "visibleW": 118,
+                "visibleH": 173,
+                "scale": 1.00578
               }
             },
             {
@@ -1203,13 +1299,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 15,
-                "y": 12,
-                "w": 161,
-                "h": 178,
-                "visibleW": 157,
-                "visibleH": 174,
-                "scale": 0.977528
+                "x": 44,
+                "y": 15,
+                "w": 103,
+                "h": 174,
+                "visibleW": 99,
+                "visibleH": 170,
+                "scale": 1.00578
               }
             },
             {
@@ -1219,19 +1315,35 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 32,
-                "y": 12,
-                "w": 127,
-                "h": 178,
-                "visibleW": 123,
-                "visibleH": 174,
-                "scale": 0.977528
+                "x": 45,
+                "y": 15,
+                "w": 102,
+                "h": 174,
+                "visibleW": 98,
+                "visibleH": 170,
+                "scale": 1.00578
               }
             }
           ],
           "higgsfieldJobId": "3a092f94-ce9c-4374-a89d-b163add3a5ed",
           "stableHeight": false,
-          "targetVisibleHeight": 174.0
+          "targetVisibleHeight": 174.0,
+          "repair": "semantic-body-only-v1",
+          "semantic": {
+            "version": 1,
+            "bodyOnly": true,
+            "figureCount": 1,
+            "anchor": "bottom-center",
+            "poseClass": "landing-recovery"
+          },
+          "repairSourceFrames": [
+            "AIR_ATTACK:4",
+            "CROUCH_ATTACK:0",
+            "CROUCH_ATTACK:1",
+            "READY_STANCE:0",
+            "IDLE:0",
+            "IDLE:1"
+          ]
         },
         "RUN_BACK": {
           "sheet": "assets/motion-atlases/kalyx-locomotion.webp",
@@ -1463,7 +1575,7 @@
           "cellHeight": 192,
           "renderScale": 1.3333333333333333,
           "sourceFacing": 1,
-          "source": "higgsfield-v3-body-vfx",
+          "source": "derived-body-only-v1",
           "frames": [
             {
               "x": 1152,
@@ -1472,13 +1584,13 @@
               "h": 192,
               "duration_ms": 98,
               "content": {
-                "x": 36,
-                "y": 11,
-                "w": 119,
-                "h": 179,
-                "visibleW": 115,
-                "visibleH": 175,
-                "scale": 0.9744
+                "x": 34,
+                "y": 7,
+                "w": 125,
+                "h": 182,
+                "visibleW": 121,
+                "visibleH": 178,
+                "scale": 0.957978
               }
             },
             {
@@ -1488,13 +1600,13 @@
               "h": 192,
               "duration_ms": 98,
               "content": {
-                "x": 33,
-                "y": 12,
-                "w": 125,
-                "h": 178,
-                "visibleW": 121,
-                "visibleH": 174,
-                "scale": 0.98
+                "x": 31,
+                "y": 8,
+                "w": 130,
+                "h": 181,
+                "visibleW": 126,
+                "visibleH": 177,
+                "scale": 0.96339
               }
             },
             {
@@ -1504,13 +1616,13 @@
               "h": 192,
               "duration_ms": 98,
               "content": {
-                "x": 4,
-                "y": 13,
-                "w": 184,
-                "h": 177,
-                "visibleW": 180,
-                "visibleH": 173,
-                "scale": 0.985665
+                "x": 32,
+                "y": 8,
+                "w": 128,
+                "h": 181,
+                "visibleW": 124,
+                "visibleH": 177,
+                "scale": 0.96339
               }
             },
             {
@@ -1520,13 +1632,13 @@
               "h": 192,
               "duration_ms": 98,
               "content": {
-                "x": 36,
-                "y": 8,
-                "w": 119,
-                "h": 182,
-                "visibleW": 115,
-                "visibleH": 178,
-                "scale": 0.957978
+                "x": 28,
+                "y": 9,
+                "w": 135,
+                "h": 180,
+                "visibleW": 131,
+                "visibleH": 176,
+                "scale": 0.968864
               }
             },
             {
@@ -1536,13 +1648,13 @@
               "h": 192,
               "duration_ms": 98,
               "content": {
-                "x": 30,
-                "y": 15,
-                "w": 131,
-                "h": 175,
-                "visibleW": 127,
-                "visibleH": 171,
-                "scale": 0.997193
+                "x": 28,
+                "y": 9,
+                "w": 135,
+                "h": 180,
+                "visibleW": 131,
+                "visibleH": 176,
+                "scale": 0.968864
               }
             },
             {
@@ -1552,11 +1664,11 @@
               "h": 192,
               "duration_ms": 98,
               "content": {
-                "x": 37,
-                "y": 8,
-                "w": 118,
+                "x": 33,
+                "y": 7,
+                "w": 126,
                 "h": 182,
-                "visibleW": 114,
+                "visibleW": 122,
                 "visibleH": 178,
                 "scale": 0.957978
               }
@@ -1564,7 +1676,23 @@
           ],
           "higgsfieldJobId": "ceaf1727-cd24-4515-9efe-59dbb777c49f",
           "stableHeight": true,
-          "targetVisibleHeight": 170.52
+          "targetVisibleHeight": 170.52,
+          "repair": "semantic-body-only-v1",
+          "semantic": {
+            "version": 1,
+            "bodyOnly": true,
+            "figureCount": 1,
+            "anchor": "bottom-center",
+            "poseClass": "grounded-locomotion"
+          },
+          "repairSourceFrames": [
+            "WALK_FORWARD:5",
+            "WALK_FORWARD:4",
+            "WALK_FORWARD:3",
+            "WALK_FORWARD:2",
+            "WALK_FORWARD:1",
+            "WALK_FORWARD:0"
+          ]
         },
         "WALK_FORWARD": {
           "sheet": "assets/motion-atlases/kalyx-locomotion.webp",
@@ -3587,7 +3715,7 @@
                 "h": 178,
                 "visibleW": 107,
                 "visibleH": 174,
-                "scale": 1
+                "scale": 1.0
               }
             },
             {
@@ -3603,7 +3731,7 @@
                 "h": 164,
                 "visibleW": 128,
                 "visibleH": 160,
-                "scale": 1
+                "scale": 1.0
               }
             },
             {
@@ -3619,7 +3747,7 @@
                 "h": 115,
                 "visibleW": 175,
                 "visibleH": 111,
-                "scale": 1
+                "scale": 1.0
               }
             },
             {
@@ -3635,7 +3763,7 @@
                 "h": 78,
                 "visibleW": 178,
                 "visibleH": 74,
-                "scale": 1
+                "scale": 1.0
               }
             },
             {
@@ -3651,7 +3779,7 @@
                 "h": 102,
                 "visibleW": 180,
                 "visibleH": 98,
-                "scale": 1
+                "scale": 1.0
               }
             },
             {
@@ -3667,13 +3795,13 @@
                 "h": 62,
                 "visibleW": 178,
                 "visibleH": 58,
-                "scale": 1
+                "scale": 1.0
               }
             }
           ],
           "higgsfieldJobId": "33a0eb4e-9665-4026-9b9b-c5e4543fc2e1",
           "stableHeight": false,
-          "targetVisibleHeight": 174
+          "targetVisibleHeight": 174.0
         },
         "GET_UP": {
           "sheet": "assets/motion-atlases/kalyx-reaction.webp",
@@ -3784,7 +3912,7 @@
           ],
           "higgsfieldJobId": "fee3c972-2d71-453c-900e-c4d486b2d3db",
           "stableHeight": false,
-          "targetVisibleHeight": 174
+          "targetVisibleHeight": 174.0
         },
         "HURT_HEAVY": {
           "sheet": "assets/motion-atlases/kalyx-reaction.webp",
@@ -4117,7 +4245,7 @@
           ],
           "higgsfieldJobId": "dd5532f6-eb48-4c16-b9f2-1f54ddf3c470",
           "stableHeight": false,
-          "targetVisibleHeight": 174
+          "targetVisibleHeight": 174.0
         },
         "TAUNT": {
           "sheet": "assets/motion-atlases/kalyx-reaction.webp",
@@ -4343,7 +4471,7 @@
         }
       },
       "stabilization": {
-        "canonicalHeight": 174,
+        "canonicalHeight": 174.0,
         "stableHeightMotions": [
           "BLOCK_HIGH",
           "BLOCK_LOW",
@@ -5052,7 +5180,7 @@
           "cellHeight": 192,
           "renderScale": 1.3333333333333333,
           "sourceFacing": 1,
-          "source": "higgsfield-v2",
+          "source": "derived-body-only-v1",
           "frames": [
             {
               "x": 768,
@@ -5061,13 +5189,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 30,
-                "y": 32,
-                "w": 132,
-                "h": 158,
-                "visibleW": 128,
-                "visibleH": 154,
-                "scale": 0.952247
+                "x": 21,
+                "y": 35,
+                "w": 150,
+                "h": 154,
+                "visibleW": 146,
+                "visibleH": 150,
+                "scale": 1.086538
               }
             },
             {
@@ -5077,13 +5205,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 32,
-                "y": 21,
-                "w": 127,
-                "h": 169,
-                "visibleW": 123,
-                "visibleH": 165,
-                "scale": 0.952247
+                "x": 27,
+                "y": 29,
+                "w": 138,
+                "h": 160,
+                "visibleW": 134,
+                "visibleH": 156,
+                "scale": 1.086538
               }
             },
             {
@@ -5093,13 +5221,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 33,
-                "y": 27,
-                "w": 126,
-                "h": 163,
-                "visibleW": 122,
-                "visibleH": 159,
-                "scale": 0.952247
+                "x": 39,
+                "y": 38,
+                "w": 114,
+                "h": 151,
+                "visibleW": 110,
+                "visibleH": 147,
+                "scale": 1.086538
               }
             },
             {
@@ -5109,13 +5237,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 36,
-                "y": 23,
-                "w": 120,
-                "h": 167,
-                "visibleW": 116,
-                "visibleH": 163,
-                "scale": 0.952247
+                "x": 38,
+                "y": 52,
+                "w": 117,
+                "h": 137,
+                "visibleW": 113,
+                "visibleH": 133,
+                "scale": 1.086538
               }
             },
             {
@@ -5125,13 +5253,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 26,
-                "y": 8,
-                "w": 140,
-                "h": 182,
-                "visibleW": 136,
-                "visibleH": 178,
-                "scale": 0.952247
+                "x": 39,
+                "y": 30,
+                "w": 114,
+                "h": 159,
+                "visibleW": 110,
+                "visibleH": 155,
+                "scale": 1.086538
               }
             },
             {
@@ -5141,19 +5269,35 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 27,
-                "y": 12,
-                "w": 138,
-                "h": 178,
-                "visibleW": 134,
-                "visibleH": 174,
-                "scale": 0.952247
+                "x": 36,
+                "y": 33,
+                "w": 121,
+                "h": 156,
+                "visibleW": 117,
+                "visibleH": 152,
+                "scale": 1.086538
               }
             }
           ],
           "higgsfieldJobId": "ba56eead-eeed-411b-9cc7-899c09c68a1e",
           "stableHeight": false,
-          "targetVisibleHeight": 169.5
+          "targetVisibleHeight": 169.5,
+          "repair": "semantic-body-only-v1",
+          "semantic": {
+            "version": 1,
+            "bodyOnly": true,
+            "figureCount": 1,
+            "anchor": "bottom-center",
+            "poseClass": "aerial-fall"
+          },
+          "repairSourceFrames": [
+            "AIR_ATTACK:2",
+            "AIR_ATTACK:3",
+            "AIR_ATTACK:4",
+            "AIR_ATTACK:0",
+            "AIR_ATTACK:1",
+            "AIR_ATTACK:5"
+          ]
         },
         "JUMP_PEAK": {
           "sheet": "assets/motion-atlases/master-ezra-locomotion.webp",
@@ -5163,7 +5307,7 @@
           "cellHeight": 192,
           "renderScale": 1.3333333333333333,
           "sourceFacing": 1,
-          "source": "higgsfield-v2",
+          "source": "derived-body-only-v1",
           "frames": [
             {
               "x": 384,
@@ -5173,12 +5317,12 @@
               "duration_ms": 78,
               "content": {
                 "x": 37,
-                "y": 13,
+                "y": 34,
                 "w": 118,
-                "h": 177,
+                "h": 155,
                 "visibleW": 114,
-                "visibleH": 173,
-                "scale": 0.952247
+                "visibleH": 151,
+                "scale": 1.107843
               }
             },
             {
@@ -5188,13 +5332,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 48,
-                "y": 45,
-                "w": 95,
-                "h": 145,
-                "visibleW": 91,
-                "visibleH": 141,
-                "scale": 0.952247
+                "x": 15,
+                "y": 51,
+                "w": 162,
+                "h": 138,
+                "visibleW": 158,
+                "visibleH": 134,
+                "scale": 1.107843
               }
             },
             {
@@ -5204,13 +5348,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 30,
-                "y": 8,
-                "w": 132,
-                "h": 182,
-                "visibleW": 128,
-                "visibleH": 178,
-                "scale": 0.952247
+                "x": 22,
+                "y": 39,
+                "w": 148,
+                "h": 150,
+                "visibleW": 144,
+                "visibleH": 146,
+                "scale": 1.107843
               }
             },
             {
@@ -5220,13 +5364,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 28,
-                "y": 10,
-                "w": 135,
-                "h": 180,
-                "visibleW": 131,
-                "visibleH": 176,
-                "scale": 0.952247
+                "x": 36,
+                "y": 41,
+                "w": 119,
+                "h": 148,
+                "visibleW": 115,
+                "visibleH": 144,
+                "scale": 1.107843
               }
             },
             {
@@ -5236,13 +5380,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 21,
-                "y": 18,
-                "w": 150,
-                "h": 172,
-                "visibleW": 146,
-                "visibleH": 168,
-                "scale": 0.952247
+                "x": 38,
+                "y": 56,
+                "w": 116,
+                "h": 133,
+                "visibleW": 112,
+                "visibleH": 129,
+                "scale": 1.107843
               }
             },
             {
@@ -5252,19 +5396,35 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 21,
-                "y": 14,
-                "w": 149,
-                "h": 176,
-                "visibleW": 145,
-                "visibleH": 172,
-                "scale": 0.952247
+                "x": 36,
+                "y": 32,
+                "w": 119,
+                "h": 157,
+                "visibleW": 115,
+                "visibleH": 153,
+                "scale": 1.107843
               }
             }
           ],
           "higgsfieldJobId": "3038f237-3275-46b5-b978-ba528cb33130",
           "stableHeight": false,
-          "targetVisibleHeight": 169.5
+          "targetVisibleHeight": 169.5,
+          "repair": "semantic-body-only-v1",
+          "semantic": {
+            "version": 1,
+            "bodyOnly": true,
+            "figureCount": 1,
+            "anchor": "bottom-center",
+            "poseClass": "aerial-peak"
+          },
+          "repairSourceFrames": [
+            "AIR_ATTACK:1",
+            "AIR_ATTACK:2",
+            "AIR_ATTACK:3",
+            "AIR_ATTACK:4",
+            "AIR_ATTACK:0",
+            "AIR_ATTACK:5"
+          ]
         },
         "JUMP_RISE": {
           "sheet": "assets/motion-atlases/master-ezra-locomotion.webp",
@@ -5274,7 +5434,7 @@
           "cellHeight": 192,
           "renderScale": 1.3333333333333333,
           "sourceFacing": 1,
-          "source": "higgsfield-v2",
+          "source": "derived-body-only-v1",
           "frames": [
             {
               "x": 0,
@@ -5283,13 +5443,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 45,
-                "y": 58,
-                "w": 102,
-                "h": 132,
-                "visibleW": 98,
-                "visibleH": 128,
-                "scale": 0.952247
+                "x": 38,
+                "y": 56,
+                "w": 115,
+                "h": 133,
+                "visibleW": 111,
+                "visibleH": 129,
+                "scale": 1.122517
               }
             },
             {
@@ -5299,13 +5459,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 38,
-                "y": 15,
-                "w": 116,
-                "h": 175,
-                "visibleW": 112,
-                "visibleH": 171,
-                "scale": 0.952247
+                "x": 36,
+                "y": 34,
+                "w": 120,
+                "h": 155,
+                "visibleW": 116,
+                "visibleH": 151,
+                "scale": 1.122517
               }
             },
             {
@@ -5315,13 +5475,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 40,
-                "y": 8,
-                "w": 112,
-                "h": 182,
-                "visibleW": 108,
-                "visibleH": 178,
-                "scale": 0.952247
+                "x": 14,
+                "y": 52,
+                "w": 164,
+                "h": 137,
+                "visibleW": 160,
+                "visibleH": 133,
+                "scale": 1.122517
               }
             },
             {
@@ -5331,13 +5491,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 48,
-                "y": 18,
-                "w": 96,
-                "h": 172,
-                "visibleW": 92,
-                "visibleH": 168,
-                "scale": 0.952247
+                "x": 21,
+                "y": 40,
+                "w": 150,
+                "h": 149,
+                "visibleW": 146,
+                "visibleH": 145,
+                "scale": 1.122517
               }
             },
             {
@@ -5347,13 +5507,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 46,
-                "y": 16,
-                "w": 100,
-                "h": 174,
-                "visibleW": 96,
-                "visibleH": 170,
-                "scale": 0.952247
+                "x": 36,
+                "y": 42,
+                "w": 120,
+                "h": 147,
+                "visibleW": 116,
+                "visibleH": 143,
+                "scale": 1.122517
               }
             },
             {
@@ -5363,19 +5523,35 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 32,
-                "y": 20,
-                "w": 127,
-                "h": 170,
-                "visibleW": 123,
-                "visibleH": 166,
-                "scale": 0.952247
+                "x": 34,
+                "y": 34,
+                "w": 123,
+                "h": 155,
+                "visibleW": 119,
+                "visibleH": 151,
+                "scale": 1.122517
               }
             }
           ],
           "higgsfieldJobId": "638b8398-c4b9-4f0f-aebe-70502ae77654",
           "stableHeight": false,
-          "targetVisibleHeight": 169.5
+          "targetVisibleHeight": 169.5,
+          "repair": "semantic-body-only-v1",
+          "semantic": {
+            "version": 1,
+            "bodyOnly": true,
+            "figureCount": 1,
+            "anchor": "bottom-center",
+            "poseClass": "aerial-rise"
+          },
+          "repairSourceFrames": [
+            "AIR_ATTACK:0",
+            "AIR_ATTACK:1",
+            "AIR_ATTACK:2",
+            "AIR_ATTACK:3",
+            "AIR_ATTACK:4",
+            "AIR_ATTACK:5"
+          ]
         },
         "JUMP_START": {
           "sheet": "assets/motion-atlases/master-ezra-locomotion.webp",
@@ -5385,7 +5561,7 @@
           "cellHeight": 192,
           "renderScale": 1.3333333333333333,
           "sourceFacing": 1,
-          "source": "higgsfield-v2",
+          "source": "derived-body-only-v1",
           "frames": [
             {
               "x": 1152,
@@ -5394,13 +5570,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 45,
-                "y": 70,
-                "w": 102,
-                "h": 120,
-                "visibleW": 98,
-                "visibleH": 116,
-                "scale": 0.957627
+                "x": 16,
+                "y": 16,
+                "w": 159,
+                "h": 173,
+                "visibleW": 155,
+                "visibleH": 169,
+                "scale": 1.002959
               }
             },
             {
@@ -5410,13 +5586,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 4,
-                "y": 9,
-                "w": 184,
-                "h": 181,
-                "visibleW": 180,
-                "visibleH": 177,
-                "scale": 0.957627
+                "x": 38,
+                "y": 55,
+                "w": 116,
+                "h": 134,
+                "visibleW": 112,
+                "visibleH": 130,
+                "scale": 1.002959
               }
             },
             {
@@ -5426,13 +5602,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 37,
-                "y": 19,
-                "w": 118,
-                "h": 171,
-                "visibleW": 114,
-                "visibleH": 167,
-                "scale": 0.957627
+                "x": 38,
+                "y": 31,
+                "w": 115,
+                "h": 158,
+                "visibleW": 111,
+                "visibleH": 154,
+                "scale": 1.002959
               }
             },
             {
@@ -5442,13 +5618,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 48,
-                "y": 18,
-                "w": 95,
-                "h": 172,
-                "visibleW": 91,
-                "visibleH": 168,
-                "scale": 0.957627
+                "x": 18,
+                "y": 42,
+                "w": 156,
+                "h": 147,
+                "visibleW": 152,
+                "visibleH": 143,
+                "scale": 1.002959
               }
             },
             {
@@ -5458,13 +5634,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 49,
-                "y": 49,
-                "w": 94,
-                "h": 141,
-                "visibleW": 90,
-                "visibleH": 137,
-                "scale": 0.957627
+                "x": 24,
+                "y": 34,
+                "w": 143,
+                "h": 155,
+                "visibleW": 139,
+                "visibleH": 151,
+                "scale": 1.002959
               }
             },
             {
@@ -5474,19 +5650,35 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 44,
-                "y": 49,
-                "w": 103,
-                "h": 141,
-                "visibleW": 99,
-                "visibleH": 137,
-                "scale": 0.957627
+                "x": 38,
+                "y": 40,
+                "w": 117,
+                "h": 149,
+                "visibleW": 113,
+                "visibleH": 145,
+                "scale": 1.002959
               }
             }
           ],
           "higgsfieldJobId": "25dee7ec-fe32-4eb8-b3b1-eca5fcd512b7",
           "stableHeight": false,
-          "targetVisibleHeight": 169.5
+          "targetVisibleHeight": 169.5,
+          "repair": "semantic-body-only-v1",
+          "semantic": {
+            "version": 1,
+            "bodyOnly": true,
+            "figureCount": 1,
+            "anchor": "bottom-center",
+            "poseClass": "takeoff"
+          },
+          "repairSourceFrames": [
+            "CROUCH_IDLE:0",
+            "AIR_ATTACK:0",
+            "AIR_ATTACK:1",
+            "AIR_ATTACK:2",
+            "AIR_ATTACK:3",
+            "AIR_ATTACK:4"
+          ]
         },
         "LANDING": {
           "sheet": "assets/motion-atlases/master-ezra-locomotion.webp",
@@ -5496,7 +5688,7 @@
           "cellHeight": 192,
           "renderScale": 1.3333333333333333,
           "sourceFacing": 1,
-          "source": "higgsfield-v2",
+          "source": "derived-body-only-v1",
           "frames": [
             {
               "x": 768,
@@ -5505,13 +5697,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 32,
-                "y": 19,
-                "w": 127,
-                "h": 171,
-                "visibleW": 123,
-                "visibleH": 167,
-                "scale": 0.952247
+                "x": 38,
+                "y": 40,
+                "w": 117,
+                "h": 149,
+                "visibleW": 113,
+                "visibleH": 145,
+                "scale": 0.979769
               }
             },
             {
@@ -5521,13 +5713,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 24,
-                "y": 34,
-                "w": 144,
-                "h": 156,
-                "visibleW": 140,
-                "visibleH": 152,
-                "scale": 0.952247
+                "x": 16,
+                "y": 16,
+                "w": 159,
+                "h": 173,
+                "visibleW": 155,
+                "visibleH": 169,
+                "scale": 0.979769
               }
             },
             {
@@ -5538,12 +5730,12 @@
               "duration_ms": 78,
               "content": {
                 "x": 16,
-                "y": 42,
-                "w": 160,
-                "h": 148,
-                "visibleW": 156,
-                "visibleH": 144,
-                "scale": 0.952247
+                "y": 12,
+                "w": 159,
+                "h": 177,
+                "visibleW": 155,
+                "visibleH": 173,
+                "scale": 0.979769
               }
             },
             {
@@ -5553,13 +5745,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 10,
-                "y": 8,
-                "w": 172,
-                "h": 182,
-                "visibleW": 168,
-                "visibleH": 178,
-                "scale": 0.952247
+                "x": 30,
+                "y": 14,
+                "w": 133,
+                "h": 175,
+                "visibleW": 129,
+                "visibleH": 171,
+                "scale": 0.979769
               }
             },
             {
@@ -5569,13 +5761,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 26,
-                "y": 10,
-                "w": 140,
-                "h": 180,
-                "visibleW": 136,
-                "visibleH": 176,
-                "scale": 0.952247
+                "x": 34,
+                "y": 25,
+                "w": 124,
+                "h": 164,
+                "visibleW": 120,
+                "visibleH": 160,
+                "scale": 0.979769
               }
             },
             {
@@ -5585,19 +5777,35 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 28,
-                "y": 8,
-                "w": 136,
-                "h": 182,
-                "visibleW": 132,
-                "visibleH": 178,
-                "scale": 0.952247
+                "x": 34,
+                "y": 23,
+                "w": 125,
+                "h": 166,
+                "visibleW": 121,
+                "visibleH": 162,
+                "scale": 0.979769
               }
             }
           ],
           "higgsfieldJobId": "f5a02098-a496-473f-af69-fd61a2220781",
           "stableHeight": false,
-          "targetVisibleHeight": 169.5
+          "targetVisibleHeight": 169.5,
+          "repair": "semantic-body-only-v1",
+          "semantic": {
+            "version": 1,
+            "bodyOnly": true,
+            "figureCount": 1,
+            "anchor": "bottom-center",
+            "poseClass": "landing-recovery"
+          },
+          "repairSourceFrames": [
+            "AIR_ATTACK:4",
+            "CROUCH_IDLE:0",
+            "CROUCH_IDLE:1",
+            "READY_STANCE:0",
+            "IDLE:0",
+            "IDLE:1"
+          ]
         },
         "RUN_BACK": {
           "sheet": "assets/motion-atlases/master-ezra-locomotion.webp",
@@ -6981,9 +7189,9 @@
               "duration_ms": 78,
               "content": {
                 "x": 18,
-                "y": 8,
+                "y": 21,
                 "w": 156,
-                "h": 182,
+                "h": 169,
                 "visibleW": 152,
                 "visibleH": 165,
                 "scale": 0.933202
@@ -7012,11 +7220,11 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 26,
+                "x": 27,
                 "y": 8,
-                "w": 139,
+                "w": 138,
                 "h": 182,
-                "visibleW": 135,
+                "visibleW": 134,
                 "visibleH": 178,
                 "scale": 0.933202
               }
@@ -7272,7 +7480,7 @@
           "cellHeight": 192,
           "renderScale": 1.3333333333333333,
           "sourceFacing": 1,
-          "source": "higgsfield-v4-body-only",
+          "source": "derived-body-only-v1",
           "frames": [
             {
               "x": 384,
@@ -7281,13 +7489,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 9,
-                "y": 68,
-                "w": 173,
-                "h": 122,
-                "visibleW": 169,
-                "visibleH": 118,
-                "scale": 1.022222
+                "x": 34,
+                "y": 7,
+                "w": 123,
+                "h": 182,
+                "visibleW": 119,
+                "visibleH": 178,
+                "scale": 0.933202
               }
             },
             {
@@ -7297,13 +7505,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 53,
-                "y": 83,
-                "w": 85,
-                "h": 107,
-                "visibleW": 81,
-                "visibleH": 103,
-                "scale": 1.022222
+                "x": 31,
+                "y": 11,
+                "w": 130,
+                "h": 178,
+                "visibleW": 126,
+                "visibleH": 174,
+                "scale": 0.933202
               }
             },
             {
@@ -7313,13 +7521,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 53,
-                "y": 76,
-                "w": 86,
-                "h": 114,
-                "visibleW": 82,
-                "visibleH": 110,
-                "scale": 1.022222
+                "x": 32,
+                "y": 10,
+                "w": 127,
+                "h": 179,
+                "visibleW": 123,
+                "visibleH": 175,
+                "scale": 0.933202
               }
             },
             {
@@ -7329,13 +7537,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 50,
-                "y": 72,
-                "w": 92,
-                "h": 118,
-                "visibleW": 88,
-                "visibleH": 114,
-                "scale": 1.022222
+                "x": 26,
+                "y": 9,
+                "w": 140,
+                "h": 180,
+                "visibleW": 136,
+                "visibleH": 176,
+                "scale": 0.933202
               }
             },
             {
@@ -7345,13 +7553,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 51,
-                "y": 72,
-                "w": 89,
-                "h": 118,
-                "visibleW": 85,
-                "visibleH": 114,
-                "scale": 1.022222
+                "x": 25,
+                "y": 9,
+                "w": 142,
+                "h": 180,
+                "visibleW": 138,
+                "visibleH": 176,
+                "scale": 0.933202
               }
             },
             {
@@ -7361,19 +7569,35 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 4,
-                "y": 71,
-                "w": 184,
-                "h": 119,
-                "visibleW": 180,
-                "visibleH": 115,
-                "scale": 1.022222
+                "x": 25,
+                "y": 9,
+                "w": 142,
+                "h": 180,
+                "visibleW": 138,
+                "visibleH": 176,
+                "scale": 0.933202
               }
             }
           ],
           "higgsfieldJobId": "b8a75a08-22ef-46d8-a9f6-c791c9d53ddf",
           "stableHeight": false,
-          "targetVisibleHeight": 166.11
+          "targetVisibleHeight": 166.11,
+          "repair": "semantic-body-only-v1",
+          "semantic": {
+            "version": 1,
+            "bodyOnly": true,
+            "figureCount": 1,
+            "anchor": "bottom-center",
+            "poseClass": "power-charge"
+          },
+          "repairSourceFrames": [
+            "SPECIAL_START:0",
+            "SPECIAL_START:1",
+            "SPECIAL_START:2",
+            "SPECIAL_START:3",
+            "SPECIAL_START:4",
+            "SPECIAL_START:5"
+          ]
         },
         "SUPER_RELEASE": {
           "sheet": "assets/motion-atlases/master-ezra-combat.webp",
@@ -7494,7 +7718,7 @@
           "cellHeight": 192,
           "renderScale": 1.3333333333333333,
           "sourceFacing": 1,
-          "source": "higgsfield-v2",
+          "source": "derived-body-only-v1",
           "frames": [
             {
               "x": 1152,
@@ -7503,13 +7727,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 49,
-                "y": 31,
-                "w": 94,
-                "h": 159,
-                "visibleW": 90,
-                "visibleH": 155,
-                "scale": 1.071677
+                "x": 28,
+                "y": 17,
+                "w": 135,
+                "h": 172,
+                "visibleW": 131,
+                "visibleH": 168,
+                "scale": 0.98875
               }
             },
             {
@@ -7519,13 +7743,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 50,
-                "y": 21,
-                "w": 91,
-                "h": 169,
-                "visibleW": 87,
-                "visibleH": 165,
-                "scale": 1.006727
+                "x": 20,
+                "y": 16,
+                "w": 152,
+                "h": 173,
+                "visibleW": 148,
+                "visibleH": 169,
+                "scale": 0.982899
               }
             },
             {
@@ -7535,13 +7759,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 41,
-                "y": 13,
-                "w": 109,
-                "h": 177,
-                "visibleW": 105,
-                "visibleH": 173,
-                "scale": 0.960173
+                "x": 15,
+                "y": 21,
+                "w": 162,
+                "h": 168,
+                "visibleW": 158,
+                "visibleH": 164,
+                "scale": 1.012866
               }
             },
             {
@@ -7551,13 +7775,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 40,
-                "y": 8,
-                "w": 112,
-                "h": 182,
-                "visibleW": 108,
-                "visibleH": 178,
-                "scale": 0.933202
+                "x": 18,
+                "y": 12,
+                "w": 155,
+                "h": 177,
+                "visibleW": 151,
+                "visibleH": 173,
+                "scale": 0.960173
               }
             },
             {
@@ -7567,13 +7791,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 51,
-                "y": 20,
-                "w": 90,
-                "h": 170,
-                "visibleW": 86,
-                "visibleH": 166,
-                "scale": 1.000663
+                "x": 24,
+                "y": 17,
+                "w": 145,
+                "h": 172,
+                "visibleW": 141,
+                "visibleH": 168,
+                "scale": 0.98875
               }
             },
             {
@@ -7583,19 +7807,35 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 51,
-                "y": 16,
-                "w": 90,
-                "h": 174,
-                "visibleW": 86,
-                "visibleH": 170,
-                "scale": 0.977118
+                "x": 26,
+                "y": 7,
+                "w": 139,
+                "h": 182,
+                "visibleW": 135,
+                "visibleH": 178,
+                "scale": 0.933202
               }
             }
           ],
           "higgsfieldJobId": "e6084aac-e775-40af-bb77-e3c28592b665",
           "stableHeight": true,
-          "targetVisibleHeight": 166.11
+          "targetVisibleHeight": 166.11,
+          "repair": "semantic-body-only-v1",
+          "semantic": {
+            "version": 1,
+            "bodyOnly": true,
+            "figureCount": 1,
+            "anchor": "bottom-center",
+            "poseClass": "throw-release"
+          },
+          "repairSourceFrames": [
+            "COMBO_2:0",
+            "COMBO_2:1",
+            "COMBO_2:2",
+            "COMBO_2:3",
+            "COMBO_2:4",
+            "COMBO_2:5"
+          ]
         },
         "THROW_GRAB": {
           "sheet": "assets/motion-atlases/master-ezra-combat.webp",
@@ -11527,7 +11767,7 @@
           "cellHeight": 192,
           "renderScale": 1.3333333333333333,
           "sourceFacing": 1,
-          "source": "higgsfield-v3-body-vfx",
+          "source": "derived-body-only-v1",
           "frames": [
             {
               "x": 768,
@@ -11536,12 +11776,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 45,
-                "y": 9,
-                "w": 101,
-                "h": 181,
-                "visibleW": 97,
-                "visibleH": 177,
+                "x": 48,
+                "y": 10,
+                "w": 96,
+                "h": 179,
+                "visibleW": 92,
+                "visibleH": 175,
                 "scale": 0.968989
               }
             },
@@ -11552,12 +11792,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 28,
-                "y": 8,
-                "w": 136,
-                "h": 182,
-                "visibleW": 132,
-                "visibleH": 178,
+                "x": 48,
+                "y": 10,
+                "w": 97,
+                "h": 179,
+                "visibleW": 93,
+                "visibleH": 175,
                 "scale": 0.968989
               }
             },
@@ -11568,12 +11808,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 41,
-                "y": 9,
-                "w": 109,
-                "h": 181,
-                "visibleW": 105,
-                "visibleH": 177,
+                "x": 44,
+                "y": 12,
+                "w": 103,
+                "h": 177,
+                "visibleW": 99,
+                "visibleH": 173,
                 "scale": 0.968989
               }
             },
@@ -11584,12 +11824,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 31,
-                "y": 9,
-                "w": 130,
-                "h": 181,
-                "visibleW": 126,
-                "visibleH": 177,
+                "x": 34,
+                "y": 10,
+                "w": 123,
+                "h": 179,
+                "visibleW": 119,
+                "visibleH": 175,
                 "scale": 0.968989
               }
             },
@@ -11600,11 +11840,11 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 20,
-                "y": 8,
-                "w": 151,
+                "x": 32,
+                "y": 7,
+                "w": 127,
                 "h": 182,
-                "visibleW": 147,
+                "visibleW": 123,
                 "visibleH": 178,
                 "scale": 0.968989
               }
@@ -11616,19 +11856,35 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 47,
+                "x": 48,
                 "y": 8,
-                "w": 98,
-                "h": 182,
-                "visibleW": 94,
-                "visibleH": 178,
+                "w": 97,
+                "h": 181,
+                "visibleW": 93,
+                "visibleH": 177,
                 "scale": 0.968989
               }
             }
           ],
           "higgsfieldJobId": "13a8f06f-7f25-40e0-9872-ecfc6f69df01",
           "stableHeight": false,
-          "targetVisibleHeight": 172.48
+          "targetVisibleHeight": 172.48,
+          "repair": "semantic-body-only-v1",
+          "semantic": {
+            "version": 1,
+            "bodyOnly": true,
+            "figureCount": 1,
+            "anchor": "bottom-center",
+            "poseClass": "companion-command"
+          },
+          "repairSourceFrames": [
+            "SPECIAL_PROJECTILE:0",
+            "SPECIAL_PROJECTILE:1",
+            "SPECIAL_PROJECTILE:2",
+            "SPECIAL_PROJECTILE:3",
+            "SPECIAL_PROJECTILE:4",
+            "SPECIAL_PROJECTILE:5"
+          ]
         },
         "SUPER_CHARGE": {
           "sheet": "assets/motion-atlases/detroit-lens-noir-combat.webp",
@@ -11638,7 +11894,7 @@
           "cellHeight": 192,
           "renderScale": 1.3333333333333333,
           "sourceFacing": 1,
-          "source": "higgsfield-v4-body-only",
+          "source": "derived-body-only-v1",
           "frames": [
             {
               "x": 384,
@@ -11647,11 +11903,11 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 49,
-                "y": 11,
-                "w": 94,
+                "x": 48,
+                "y": 10,
+                "w": 96,
                 "h": 179,
-                "visibleW": 90,
+                "visibleW": 92,
                 "visibleH": 175,
                 "scale": 0.968989
               }
@@ -11663,11 +11919,11 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 51,
-                "y": 11,
-                "w": 90,
+                "x": 47,
+                "y": 10,
+                "w": 98,
                 "h": 179,
-                "visibleW": 86,
+                "visibleW": 94,
                 "visibleH": 175,
                 "scale": 0.968989
               }
@@ -11679,12 +11935,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 51,
-                "y": 11,
-                "w": 90,
-                "h": 179,
-                "visibleW": 86,
-                "visibleH": 175,
+                "x": 44,
+                "y": 12,
+                "w": 104,
+                "h": 177,
+                "visibleW": 100,
+                "visibleH": 173,
                 "scale": 0.968989
               }
             },
@@ -11695,12 +11951,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 48,
-                "y": 8,
-                "w": 96,
-                "h": 182,
-                "visibleW": 92,
-                "visibleH": 178,
+                "x": 34,
+                "y": 10,
+                "w": 125,
+                "h": 179,
+                "visibleW": 121,
+                "visibleH": 175,
                 "scale": 0.968989
               }
             },
@@ -11711,11 +11967,11 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 47,
-                "y": 8,
-                "w": 97,
+                "x": 31,
+                "y": 7,
+                "w": 130,
                 "h": 182,
-                "visibleW": 93,
+                "visibleW": 126,
                 "visibleH": 178,
                 "scale": 0.968989
               }
@@ -11727,19 +11983,35 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 44,
+                "x": 46,
                 "y": 8,
-                "w": 103,
-                "h": 182,
-                "visibleW": 99,
-                "visibleH": 178,
+                "w": 100,
+                "h": 181,
+                "visibleW": 96,
+                "visibleH": 177,
                 "scale": 0.968989
               }
             }
           ],
           "higgsfieldJobId": "a0d5cd40-6606-4c65-a4c8-72097a80d64b",
           "stableHeight": false,
-          "targetVisibleHeight": 172.48
+          "targetVisibleHeight": 172.48,
+          "repair": "semantic-body-only-v1",
+          "semantic": {
+            "version": 1,
+            "bodyOnly": true,
+            "figureCount": 1,
+            "anchor": "bottom-center",
+            "poseClass": "power-charge"
+          },
+          "repairSourceFrames": [
+            "SPECIAL_PROJECTILE:0",
+            "SPECIAL_PROJECTILE:1",
+            "SPECIAL_PROJECTILE:2",
+            "SPECIAL_PROJECTILE:3",
+            "SPECIAL_PROJECTILE:4",
+            "SPECIAL_PROJECTILE:5"
+          ]
         },
         "SUPER_RELEASE": {
           "sheet": "assets/motion-atlases/detroit-lens-noir-combat.webp",
@@ -11749,7 +12021,7 @@
           "cellHeight": 192,
           "renderScale": 1.3333333333333333,
           "sourceFacing": 1,
-          "source": "higgsfield-v4-body-only",
+          "source": "derived-body-only-v1",
           "frames": [
             {
               "x": 0,
@@ -11758,13 +12030,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 61,
-                "y": 62,
-                "w": 70,
-                "h": 128,
-                "visibleW": 66,
-                "visibleH": 124,
-                "scale": 1.022222
+                "x": 38,
+                "y": 11,
+                "w": 117,
+                "h": 178,
+                "visibleW": 113,
+                "visibleH": 174,
+                "scale": 0.968989
               }
             },
             {
@@ -11774,13 +12046,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 56,
-                "y": 63,
-                "w": 80,
-                "h": 127,
-                "visibleW": 76,
-                "visibleH": 123,
-                "scale": 1.022222
+                "x": 27,
+                "y": 18,
+                "w": 138,
+                "h": 171,
+                "visibleW": 134,
+                "visibleH": 167,
+                "scale": 0.968989
               }
             },
             {
@@ -11790,13 +12062,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 4,
-                "y": 61,
-                "w": 184,
-                "h": 129,
-                "visibleW": 180,
-                "visibleH": 125,
-                "scale": 1.022222
+                "x": 12,
+                "y": 14,
+                "w": 168,
+                "h": 175,
+                "visibleW": 164,
+                "visibleH": 171,
+                "scale": 0.968989
               }
             },
             {
@@ -11806,13 +12078,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 10,
-                "y": 60,
-                "w": 172,
-                "h": 130,
-                "visibleW": 168,
-                "visibleH": 126,
-                "scale": 1.022222
+                "x": 16,
+                "y": 10,
+                "w": 161,
+                "h": 179,
+                "visibleW": 157,
+                "visibleH": 175,
+                "scale": 0.968989
               }
             },
             {
@@ -11822,13 +12094,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 61,
-                "y": 61,
-                "w": 70,
-                "h": 129,
-                "visibleW": 66,
-                "visibleH": 125,
-                "scale": 1.022222
+                "x": 25,
+                "y": 10,
+                "w": 142,
+                "h": 179,
+                "visibleW": 138,
+                "visibleH": 175,
+                "scale": 0.968989
               }
             },
             {
@@ -11838,19 +12110,35 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 61,
-                "y": 61,
-                "w": 70,
-                "h": 129,
-                "visibleW": 66,
-                "visibleH": 125,
-                "scale": 1.022222
+                "x": 46,
+                "y": 7,
+                "w": 99,
+                "h": 182,
+                "visibleW": 95,
+                "visibleH": 178,
+                "scale": 0.968989
               }
             }
           ],
           "higgsfieldJobId": "5e486385-e18d-4afc-9b44-78baa4dc5d00",
           "stableHeight": false,
-          "targetVisibleHeight": 172.48
+          "targetVisibleHeight": 172.48,
+          "repair": "semantic-body-only-v1",
+          "semantic": {
+            "version": 1,
+            "bodyOnly": true,
+            "figureCount": 1,
+            "anchor": "bottom-center",
+            "poseClass": "eye-laser-release"
+          },
+          "repairSourceFrames": [
+            "HEAVY_PUNCH:0",
+            "HEAVY_PUNCH:1",
+            "HEAVY_PUNCH:2",
+            "HEAVY_PUNCH:3",
+            "HEAVY_PUNCH:4",
+            "HEAVY_PUNCH:5"
+          ]
         },
         "THROW_FINISH": {
           "sheet": "assets/motion-atlases/detroit-lens-noir-combat.webp",
@@ -11971,7 +12259,7 @@
           "cellHeight": 192,
           "renderScale": 1.3333333333333333,
           "sourceFacing": 1,
-          "source": "higgsfield-v3-body-vfx",
+          "source": "derived-body-only-v1",
           "frames": [
             {
               "x": 768,
@@ -11982,11 +12270,11 @@
               "content": {
                 "x": 48,
                 "y": 9,
-                "w": 95,
-                "h": 181,
-                "visibleW": 91,
-                "visibleH": 177,
-                "scale": 0.974463
+                "w": 97,
+                "h": 180,
+                "visibleW": 93,
+                "visibleH": 176,
+                "scale": 0.98
               }
             },
             {
@@ -11996,13 +12284,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 18,
-                "y": 12,
-                "w": 156,
-                "h": 178,
-                "visibleW": 152,
-                "visibleH": 174,
-                "scale": 0.991264
+                "x": 36,
+                "y": 9,
+                "w": 120,
+                "h": 180,
+                "visibleW": 116,
+                "visibleH": 176,
+                "scale": 0.98
               }
             },
             {
@@ -12012,13 +12300,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 4,
+                "x": 44,
                 "y": 9,
-                "w": 184,
-                "h": 181,
-                "visibleW": 180,
-                "visibleH": 177,
-                "scale": 0.974463
+                "w": 103,
+                "h": 180,
+                "visibleW": 99,
+                "visibleH": 176,
+                "scale": 0.98
               }
             },
             {
@@ -12028,13 +12316,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 27,
-                "y": 9,
-                "w": 138,
-                "h": 181,
-                "visibleW": 134,
-                "visibleH": 177,
-                "scale": 0.974463
+                "x": 30,
+                "y": 7,
+                "w": 132,
+                "h": 182,
+                "visibleW": 128,
+                "visibleH": 178,
+                "scale": 0.968989
               }
             },
             {
@@ -12044,13 +12332,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 29,
-                "y": 8,
-                "w": 133,
-                "h": 182,
-                "visibleW": 129,
-                "visibleH": 178,
-                "scale": 0.968989
+                "x": 44,
+                "y": 11,
+                "w": 103,
+                "h": 178,
+                "visibleW": 99,
+                "visibleH": 174,
+                "scale": 0.991264
               }
             },
             {
@@ -12060,11 +12348,11 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 42,
-                "y": 8,
-                "w": 108,
+                "x": 48,
+                "y": 7,
+                "w": 96,
                 "h": 182,
-                "visibleW": 104,
+                "visibleW": 92,
                 "visibleH": 178,
                 "scale": 0.968989
               }
@@ -12072,7 +12360,23 @@
           ],
           "higgsfieldJobId": "28595516-1908-42ca-820a-aeb932576856",
           "stableHeight": true,
-          "targetVisibleHeight": 172.48
+          "targetVisibleHeight": 172.48,
+          "repair": "semantic-body-only-v1",
+          "semantic": {
+            "version": 1,
+            "bodyOnly": true,
+            "figureCount": 1,
+            "anchor": "bottom-center",
+            "poseClass": "throw-grab"
+          },
+          "repairSourceFrames": [
+            "COMBO_1:0",
+            "COMBO_1:1",
+            "COMBO_1:2",
+            "COMBO_1:3",
+            "COMBO_1:4",
+            "COMBO_1:5"
+          ]
         },
         "BLOCK_HIGH": {
           "sheet": "assets/motion-atlases/detroit-lens-noir-reaction.webp",
@@ -13673,7 +13977,7 @@
           "cellHeight": 192,
           "renderScale": 1.3333333333333333,
           "sourceFacing": 1,
-          "source": "higgsfield-v2",
+          "source": "derived-body-only-v1",
           "frames": [
             {
               "x": 1152,
@@ -13682,13 +13986,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 57,
-                "y": 21,
-                "w": 78,
-                "h": 169,
-                "visibleW": 74,
-                "visibleH": 165,
-                "scale": 0.949333
+                "x": 56,
+                "y": 30,
+                "w": 69,
+                "h": 159,
+                "visibleW": 65,
+                "visibleH": 155,
+                "scale": 1.010581
               }
             },
             {
@@ -13698,13 +14002,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 55,
+                "x": 56,
                 "y": 32,
-                "w": 81,
-                "h": 158,
-                "visibleW": 77,
-                "visibleH": 154,
-                "scale": 1.017143
+                "w": 76,
+                "h": 157,
+                "visibleW": 72,
+                "visibleH": 153,
+                "scale": 1.023791
               }
             },
             {
@@ -13714,13 +14018,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 55,
-                "y": 42,
-                "w": 81,
-                "h": 148,
-                "visibleW": 77,
-                "visibleH": 144,
-                "scale": 1.087778
+                "x": 56,
+                "y": 60,
+                "w": 82,
+                "h": 129,
+                "visibleW": 78,
+                "visibleH": 125,
+                "scale": 1.25312
               }
             },
             {
@@ -13730,13 +14034,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 55,
-                "y": 46,
-                "w": 81,
-                "h": 144,
-                "visibleW": 77,
-                "visibleH": 140,
-                "scale": 1.118857
+                "x": 60,
+                "y": 36,
+                "w": 80,
+                "h": 153,
+                "visibleW": 76,
+                "visibleH": 149,
+                "scale": 1.051275
               }
             },
             {
@@ -13746,13 +14050,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 55,
-                "y": 17,
-                "w": 81,
-                "h": 173,
-                "visibleW": 77,
-                "visibleH": 169,
-                "scale": 0.926864
+                "x": 66,
+                "y": 33,
+                "w": 73,
+                "h": 156,
+                "visibleW": 69,
+                "visibleH": 152,
+                "scale": 1.030526
               }
             },
             {
@@ -13762,19 +14066,35 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 55,
-                "y": 8,
-                "w": 81,
-                "h": 182,
-                "visibleW": 77,
-                "visibleH": 178,
-                "scale": 0.88
+                "x": 72,
+                "y": 18,
+                "w": 65,
+                "h": 171,
+                "visibleW": 61,
+                "visibleH": 167,
+                "scale": 0.937964
               }
             }
           ],
           "higgsfieldJobId": "05b0e04b-1d89-45ac-be86-4e761fd17a2b",
           "stableHeight": true,
-          "targetVisibleHeight": 156.64
+          "targetVisibleHeight": 156.64,
+          "repair": "semantic-body-only-v1",
+          "semantic": {
+            "version": 1,
+            "bodyOnly": true,
+            "figureCount": 1,
+            "anchor": "bottom-center",
+            "poseClass": "forward-burst"
+          },
+          "repairSourceFrames": [
+            "DASH_BACK:0",
+            "DASH_BACK:1",
+            "DASH_BACK:2",
+            "DASH_BACK:3",
+            "DASH_BACK:4",
+            "DASH_BACK:5"
+          ]
         },
         "JUMP_FALL": {
           "sheet": "assets/motion-atlases/amara-valentine-locomotion.webp",
@@ -13784,7 +14104,7 @@
           "cellHeight": 192,
           "renderScale": 1.3333333333333333,
           "sourceFacing": 1,
-          "source": "higgsfield-v2",
+          "source": "derived-body-only-v1",
           "frames": [
             {
               "x": 768,
@@ -13793,13 +14113,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 51,
-                "y": 8,
-                "w": 89,
-                "h": 182,
-                "visibleW": 85,
-                "visibleH": 178,
-                "scale": 1.0
+                "x": 49,
+                "y": 11,
+                "w": 94,
+                "h": 178,
+                "visibleW": 90,
+                "visibleH": 174,
+                "scale": 1.022989
               }
             },
             {
@@ -13809,13 +14129,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 55,
-                "y": 9,
-                "w": 81,
-                "h": 181,
-                "visibleW": 77,
-                "visibleH": 177,
-                "scale": 1.0
+                "x": 54,
+                "y": 27,
+                "w": 85,
+                "h": 162,
+                "visibleW": 81,
+                "visibleH": 158,
+                "scale": 1.022989
               }
             },
             {
@@ -13825,13 +14145,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 57,
-                "y": 11,
-                "w": 78,
-                "h": 179,
-                "visibleW": 74,
-                "visibleH": 175,
-                "scale": 1.0
+                "x": 60,
+                "y": 26,
+                "w": 72,
+                "h": 163,
+                "visibleW": 68,
+                "visibleH": 159,
+                "scale": 1.022989
               }
             },
             {
@@ -13841,13 +14161,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 57,
-                "y": 18,
-                "w": 77,
-                "h": 172,
-                "visibleW": 73,
-                "visibleH": 168,
-                "scale": 1.0
+                "x": 54,
+                "y": 34,
+                "w": 83,
+                "h": 155,
+                "visibleW": 79,
+                "visibleH": 151,
+                "scale": 1.022989
               }
             },
             {
@@ -13857,13 +14177,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 51,
-                "y": 29,
-                "w": 89,
-                "h": 161,
-                "visibleW": 85,
-                "visibleH": 157,
-                "scale": 1.0
+                "x": 55,
+                "y": 32,
+                "w": 82,
+                "h": 157,
+                "visibleW": 78,
+                "visibleH": 153,
+                "scale": 1.022989
               }
             },
             {
@@ -13873,19 +14193,35 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 61,
-                "y": 8,
-                "w": 70,
-                "h": 182,
-                "visibleW": 66,
-                "visibleH": 178,
-                "scale": 1.0
+                "x": 54,
+                "y": 19,
+                "w": 83,
+                "h": 170,
+                "visibleW": 79,
+                "visibleH": 166,
+                "scale": 1.022989
               }
             }
           ],
           "higgsfieldJobId": "c70e5f1d-7abc-4329-bdc3-b1dc060272ac",
           "stableHeight": false,
-          "targetVisibleHeight": 178.0
+          "targetVisibleHeight": 178.0,
+          "repair": "semantic-body-only-v1",
+          "semantic": {
+            "version": 1,
+            "bodyOnly": true,
+            "figureCount": 1,
+            "anchor": "bottom-center",
+            "poseClass": "aerial-fall"
+          },
+          "repairSourceFrames": [
+            "AIR_ATTACK:2",
+            "AIR_ATTACK:3",
+            "AIR_ATTACK:4",
+            "AIR_ATTACK:0",
+            "AIR_ATTACK:1",
+            "AIR_ATTACK:5"
+          ]
         },
         "JUMP_PEAK": {
           "sheet": "assets/motion-atlases/amara-valentine-locomotion.webp",
@@ -13895,7 +14231,7 @@
           "cellHeight": 192,
           "renderScale": 1.3333333333333333,
           "sourceFacing": 1,
-          "source": "higgsfield-v2",
+          "source": "derived-body-only-v1",
           "frames": [
             {
               "x": 384,
@@ -13904,13 +14240,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 61,
-                "y": 42,
-                "w": 69,
-                "h": 148,
-                "visibleW": 65,
-                "visibleH": 144,
-                "scale": 1.0
+                "x": 54,
+                "y": 35,
+                "w": 85,
+                "h": 154,
+                "visibleW": 81,
+                "visibleH": 150,
+                "scale": 0.978022
               }
             },
             {
@@ -13920,13 +14256,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 60,
-                "y": 56,
-                "w": 72,
-                "h": 134,
-                "visibleW": 68,
-                "visibleH": 130,
-                "scale": 1.0
+                "x": 52,
+                "y": 3,
+                "w": 88,
+                "h": 186,
+                "visibleW": 84,
+                "visibleH": 182,
+                "scale": 0.978022
               }
             },
             {
@@ -13936,13 +14272,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 63,
-                "y": 68,
-                "w": 66,
-                "h": 122,
-                "visibleW": 62,
-                "visibleH": 118,
-                "scale": 1.0
+                "x": 50,
+                "y": 23,
+                "w": 93,
+                "h": 166,
+                "visibleW": 89,
+                "visibleH": 162,
+                "scale": 0.978022
               }
             },
             {
@@ -13952,13 +14288,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 58,
-                "y": 8,
-                "w": 75,
-                "h": 182,
-                "visibleW": 71,
-                "visibleH": 178,
-                "scale": 1.0
+                "x": 60,
+                "y": 26,
+                "w": 72,
+                "h": 163,
+                "visibleW": 68,
+                "visibleH": 159,
+                "scale": 0.978022
               }
             },
             {
@@ -13968,13 +14304,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 63,
-                "y": 39,
-                "w": 66,
-                "h": 151,
-                "visibleW": 62,
-                "visibleH": 147,
-                "scale": 1.0
+                "x": 54,
+                "y": 35,
+                "w": 84,
+                "h": 154,
+                "visibleW": 80,
+                "visibleH": 150,
+                "scale": 0.978022
               }
             },
             {
@@ -13984,20 +14320,35 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 57,
-                "y": 41,
-                "w": 77,
-                "h": 149,
-                "visibleW": 73,
-                "visibleH": 145,
-                "scale": 1.0
+                "x": 54,
+                "y": 19,
+                "w": 83,
+                "h": 170,
+                "visibleW": 79,
+                "visibleH": 166,
+                "scale": 0.978022
               }
             }
           ],
           "higgsfieldJobId": "99981662-07a3-4459-b3dc-37743f3b4012",
-          "repair": "amara-aerial-v1",
+          "repair": "semantic-body-only-v1",
           "stableHeight": false,
-          "targetVisibleHeight": 178.0
+          "targetVisibleHeight": 178.0,
+          "semantic": {
+            "version": 1,
+            "bodyOnly": true,
+            "figureCount": 1,
+            "anchor": "bottom-center",
+            "poseClass": "aerial-peak"
+          },
+          "repairSourceFrames": [
+            "AIR_ATTACK:1",
+            "AIR_ATTACK:2",
+            "AIR_ATTACK:3",
+            "AIR_ATTACK:4",
+            "AIR_ATTACK:0",
+            "AIR_ATTACK:5"
+          ]
         },
         "JUMP_RISE": {
           "sheet": "assets/motion-atlases/amara-valentine-locomotion.webp",
@@ -14007,7 +14358,7 @@
           "cellHeight": 192,
           "renderScale": 1.3333333333333333,
           "sourceFacing": 1,
-          "source": "higgsfield-v2",
+          "source": "derived-body-only-v1",
           "frames": [
             {
               "x": 0,
@@ -14016,13 +14367,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 63,
-                "y": 16,
-                "w": 66,
-                "h": 174,
-                "visibleW": 62,
-                "visibleH": 170,
-                "scale": 1.0
+                "x": 53,
+                "y": 36,
+                "w": 86,
+                "h": 153,
+                "visibleW": 82,
+                "visibleH": 149,
+                "scale": 0.978022
               }
             },
             {
@@ -14032,13 +14383,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 61,
-                "y": 8,
-                "w": 70,
-                "h": 182,
-                "visibleW": 66,
-                "visibleH": 178,
-                "scale": 1.0
+                "x": 53,
+                "y": 35,
+                "w": 86,
+                "h": 154,
+                "visibleW": 82,
+                "visibleH": 150,
+                "scale": 0.978022
               }
             },
             {
@@ -14048,13 +14399,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 63,
-                "y": 31,
-                "w": 66,
-                "h": 159,
-                "visibleW": 62,
-                "visibleH": 155,
-                "scale": 1.0
+                "x": 52,
+                "y": 3,
+                "w": 88,
+                "h": 186,
+                "visibleW": 84,
+                "visibleH": 182,
+                "scale": 0.978022
               }
             },
             {
@@ -14064,13 +14415,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 62,
-                "y": 10,
-                "w": 68,
-                "h": 180,
-                "visibleW": 64,
-                "visibleH": 176,
-                "scale": 1.0
+                "x": 48,
+                "y": 23,
+                "w": 95,
+                "h": 166,
+                "visibleW": 91,
+                "visibleH": 162,
+                "scale": 0.978022
               }
             },
             {
@@ -14080,13 +14431,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 63,
-                "y": 17,
-                "w": 66,
-                "h": 173,
-                "visibleW": 62,
-                "visibleH": 169,
-                "scale": 1.0
+                "x": 60,
+                "y": 26,
+                "w": 72,
+                "h": 163,
+                "visibleW": 68,
+                "visibleH": 159,
+                "scale": 0.978022
               }
             },
             {
@@ -14096,19 +14447,35 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 64,
+                "x": 54,
                 "y": 19,
-                "w": 63,
-                "h": 171,
-                "visibleW": 59,
-                "visibleH": 167,
-                "scale": 1.0
+                "w": 83,
+                "h": 170,
+                "visibleW": 79,
+                "visibleH": 166,
+                "scale": 0.978022
               }
             }
           ],
           "higgsfieldJobId": "17f2b0cd-4f02-4585-9a9c-5bf83d9a97d3",
           "stableHeight": false,
-          "targetVisibleHeight": 178.0
+          "targetVisibleHeight": 178.0,
+          "repair": "semantic-body-only-v1",
+          "semantic": {
+            "version": 1,
+            "bodyOnly": true,
+            "figureCount": 1,
+            "anchor": "bottom-center",
+            "poseClass": "aerial-rise"
+          },
+          "repairSourceFrames": [
+            "AIR_ATTACK:0",
+            "AIR_ATTACK:1",
+            "AIR_ATTACK:2",
+            "AIR_ATTACK:3",
+            "AIR_ATTACK:4",
+            "AIR_ATTACK:5"
+          ]
         },
         "JUMP_START": {
           "sheet": "assets/motion-atlases/amara-valentine-locomotion.webp",
@@ -14118,7 +14485,7 @@
           "cellHeight": 192,
           "renderScale": 1.3333333333333333,
           "sourceFacing": 1,
-          "source": "higgsfield-v2",
+          "source": "derived-body-only-v1",
           "frames": [
             {
               "x": 1152,
@@ -14127,12 +14494,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 64,
-                "y": 11,
-                "w": 64,
-                "h": 179,
-                "visibleW": 60,
-                "visibleH": 175,
+                "x": 66,
+                "y": 7,
+                "w": 59,
+                "h": 182,
+                "visibleW": 55,
+                "visibleH": 178,
                 "scale": 1.0
               }
             },
@@ -14143,12 +14510,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 61,
-                "y": 48,
-                "w": 70,
-                "h": 142,
-                "visibleW": 66,
-                "visibleH": 138,
+                "x": 29,
+                "y": 7,
+                "w": 134,
+                "h": 182,
+                "visibleW": 130,
+                "visibleH": 178,
                 "scale": 1.0
               }
             },
@@ -14159,12 +14526,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 61,
-                "y": 14,
-                "w": 69,
-                "h": 176,
-                "visibleW": 65,
-                "visibleH": 172,
+                "x": 54,
+                "y": 35,
+                "w": 83,
+                "h": 154,
+                "visibleW": 79,
+                "visibleH": 150,
                 "scale": 1.0
               }
             },
@@ -14175,12 +14542,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 61,
-                "y": 8,
-                "w": 70,
-                "h": 182,
-                "visibleW": 66,
-                "visibleH": 178,
+                "x": 56,
+                "y": 33,
+                "w": 81,
+                "h": 156,
+                "visibleW": 77,
+                "visibleH": 152,
                 "scale": 1.0
               }
             },
@@ -14191,12 +14558,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 61,
-                "y": 10,
-                "w": 70,
-                "h": 180,
-                "visibleW": 66,
-                "visibleH": 176,
+                "x": 52,
+                "y": 7,
+                "w": 87,
+                "h": 182,
+                "visibleW": 83,
+                "visibleH": 178,
                 "scale": 1.0
               }
             },
@@ -14207,19 +14574,35 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 58,
-                "y": 33,
-                "w": 75,
-                "h": 157,
-                "visibleW": 71,
-                "visibleH": 153,
+                "x": 54,
+                "y": 26,
+                "w": 85,
+                "h": 163,
+                "visibleW": 81,
+                "visibleH": 159,
                 "scale": 1.0
               }
             }
           ],
           "higgsfieldJobId": "82001d7a-f43a-4d60-b9f1-d10f4adf3633",
           "stableHeight": false,
-          "targetVisibleHeight": 178.0
+          "targetVisibleHeight": 178.0,
+          "repair": "semantic-body-only-v1",
+          "semantic": {
+            "version": 1,
+            "bodyOnly": true,
+            "figureCount": 1,
+            "anchor": "bottom-center",
+            "poseClass": "takeoff"
+          },
+          "repairSourceFrames": [
+            "IDLE:0",
+            "CROUCH_IDLE:0",
+            "AIR_ATTACK:0",
+            "AIR_ATTACK:1",
+            "AIR_ATTACK:2",
+            "AIR_ATTACK:3"
+          ]
         },
         "LANDING": {
           "sheet": "assets/motion-atlases/amara-valentine-locomotion.webp",
@@ -14229,7 +14612,7 @@
           "cellHeight": 192,
           "renderScale": 1.3333333333333333,
           "sourceFacing": 1,
-          "source": "higgsfield-v2",
+          "source": "derived-body-only-v1",
           "frames": [
             {
               "x": 768,
@@ -14238,13 +14621,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 66,
-                "y": 24,
-                "w": 60,
-                "h": 166,
-                "visibleW": 56,
-                "visibleH": 162,
-                "scale": 1.092025
+                "x": 60,
+                "y": 26,
+                "w": 72,
+                "h": 163,
+                "visibleW": 68,
+                "visibleH": 159,
+                "scale": 1.0
               }
             },
             {
@@ -14254,13 +14637,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 67,
-                "y": 30,
-                "w": 57,
-                "h": 160,
-                "visibleW": 53,
-                "visibleH": 156,
-                "scale": 1.092025
+                "x": 29,
+                "y": 7,
+                "w": 134,
+                "h": 182,
+                "visibleW": 130,
+                "visibleH": 178,
+                "scale": 1.0
               }
             },
             {
@@ -14270,13 +14653,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 68,
-                "y": 8,
-                "w": 58,
-                "h": 160,
-                "visibleW": 54,
-                "visibleH": 156,
-                "scale": 1.092025
+                "x": 30,
+                "y": 9,
+                "w": 133,
+                "h": 180,
+                "visibleW": 129,
+                "visibleH": 176,
+                "scale": 1.0
               }
             },
             {
@@ -14286,13 +14669,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 65,
-                "y": 27,
-                "w": 61,
-                "h": 163,
-                "visibleW": 57,
-                "visibleH": 159,
-                "scale": 1.092025
+                "x": 64,
+                "y": 7,
+                "w": 63,
+                "h": 182,
+                "visibleW": 59,
+                "visibleH": 178,
+                "scale": 1.0
               }
             },
             {
@@ -14303,12 +14686,12 @@
               "duration_ms": 78,
               "content": {
                 "x": 66,
-                "y": 24,
-                "w": 60,
-                "h": 166,
-                "visibleW": 56,
-                "visibleH": 162,
-                "scale": 1.092025
+                "y": 7,
+                "w": 59,
+                "h": 182,
+                "visibleW": 55,
+                "visibleH": 178,
+                "scale": 1.0
               }
             },
             {
@@ -14318,19 +14701,35 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 65,
-                "y": 23,
-                "w": 61,
-                "h": 167,
-                "visibleW": 57,
-                "visibleH": 163,
-                "scale": 1.092025
+                "x": 66,
+                "y": 7,
+                "w": 60,
+                "h": 182,
+                "visibleW": 56,
+                "visibleH": 178,
+                "scale": 1.0
               }
             }
           ],
           "higgsfieldJobId": "14195c7b-7a48-41ef-8589-fee6ddfc49b1",
           "stableHeight": false,
-          "targetVisibleHeight": 178.0
+          "targetVisibleHeight": 178.0,
+          "repair": "semantic-body-only-v1",
+          "semantic": {
+            "version": 1,
+            "bodyOnly": true,
+            "figureCount": 1,
+            "anchor": "bottom-center",
+            "poseClass": "landing-recovery"
+          },
+          "repairSourceFrames": [
+            "AIR_ATTACK:4",
+            "CROUCH_IDLE:0",
+            "CROUCH_IDLE:1",
+            "READY_STANCE:0",
+            "IDLE:0",
+            "IDLE:1"
+          ]
         },
         "RUN_BACK": {
           "sheet": "assets/motion-atlases/amara-valentine-locomotion.webp",
@@ -14340,7 +14739,7 @@
           "cellHeight": 192,
           "renderScale": 1.3333333333333333,
           "sourceFacing": 1,
-          "source": "higgsfield-v2",
+          "source": "derived-body-only-v1",
           "frames": [
             {
               "x": 384,
@@ -14349,13 +14748,13 @@
               "h": 192,
               "duration_ms": 72,
               "content": {
-                "x": 66,
-                "y": 60,
-                "w": 59,
-                "h": 130,
-                "visibleW": 55,
-                "visibleH": 126,
-                "scale": 1.271429
+                "x": 71,
+                "y": 22,
+                "w": 58,
+                "h": 167,
+                "visibleW": 54,
+                "visibleH": 163,
+                "scale": 0.982822
               }
             },
             {
@@ -14365,13 +14764,13 @@
               "h": 192,
               "duration_ms": 72,
               "content": {
-                "x": 69,
-                "y": 60,
-                "w": 54,
-                "h": 130,
-                "visibleW": 50,
-                "visibleH": 126,
-                "scale": 1.271429
+                "x": 66,
+                "y": 22,
+                "w": 63,
+                "h": 167,
+                "visibleW": 59,
+                "visibleH": 163,
+                "scale": 0.982822
               }
             },
             {
@@ -14381,13 +14780,13 @@
               "h": 192,
               "duration_ms": 72,
               "content": {
-                "x": 65,
-                "y": 61,
-                "w": 61,
-                "h": 129,
-                "visibleW": 57,
-                "visibleH": 125,
-                "scale": 1.2816
+                "x": 67,
+                "y": 22,
+                "w": 58,
+                "h": 167,
+                "visibleW": 54,
+                "visibleH": 163,
+                "scale": 0.982822
               }
             },
             {
@@ -14397,13 +14796,13 @@
               "h": 192,
               "duration_ms": 72,
               "content": {
-                "x": 68,
-                "y": 8,
-                "w": 56,
-                "h": 182,
-                "visibleW": 52,
-                "visibleH": 178,
-                "scale": 0.9
+                "x": 66,
+                "y": 21,
+                "w": 57,
+                "h": 168,
+                "visibleW": 53,
+                "visibleH": 164,
+                "scale": 0.976829
               }
             },
             {
@@ -14413,13 +14812,13 @@
               "h": 192,
               "duration_ms": 72,
               "content": {
-                "x": 70,
-                "y": 63,
-                "w": 51,
-                "h": 127,
-                "visibleW": 47,
-                "visibleH": 123,
-                "scale": 1.302439
+                "x": 62,
+                "y": 21,
+                "w": 60,
+                "h": 168,
+                "visibleW": 56,
+                "visibleH": 164,
+                "scale": 0.976829
               }
             },
             {
@@ -14429,19 +14828,35 @@
               "h": 192,
               "duration_ms": 72,
               "content": {
-                "x": 66,
-                "y": 60,
+                "x": 62,
+                "y": 18,
                 "w": 59,
-                "h": 130,
+                "h": 171,
                 "visibleW": 55,
-                "visibleH": 126,
-                "scale": 1.271429
+                "visibleH": 167,
+                "scale": 0.959281
               }
             }
           ],
           "higgsfieldJobId": "bbe549a4-6f08-462d-96d2-293d474e5624",
           "stableHeight": true,
-          "targetVisibleHeight": 160.2
+          "targetVisibleHeight": 160.2,
+          "repair": "semantic-body-only-v1",
+          "semantic": {
+            "version": 1,
+            "bodyOnly": true,
+            "figureCount": 1,
+            "anchor": "bottom-center",
+            "poseClass": "grounded-run"
+          },
+          "repairSourceFrames": [
+            "WALK_BACK:0",
+            "WALK_BACK:1",
+            "WALK_BACK:2",
+            "WALK_BACK:3",
+            "WALK_BACK:4",
+            "WALK_BACK:5"
+          ]
         },
         "RUN_FORWARD": {
           "sheet": "assets/motion-atlases/amara-valentine-locomotion.webp",
@@ -14451,7 +14866,7 @@
           "cellHeight": 192,
           "renderScale": 1.3333333333333333,
           "sourceFacing": 1,
-          "source": "higgsfield-v2",
+          "source": "derived-body-only-v1",
           "frames": [
             {
               "x": 0,
@@ -14460,13 +14875,13 @@
               "h": 192,
               "duration_ms": 72,
               "content": {
-                "x": 66,
-                "y": 12,
-                "w": 59,
-                "h": 178,
-                "visibleW": 55,
-                "visibleH": 174,
-                "scale": 0.92069
+                "x": 58,
+                "y": 27,
+                "w": 69,
+                "h": 162,
+                "visibleW": 65,
+                "visibleH": 158,
+                "scale": 1.013924
               }
             },
             {
@@ -14476,13 +14891,13 @@
               "h": 192,
               "duration_ms": 72,
               "content": {
-                "x": 65,
-                "y": 24,
-                "w": 62,
-                "h": 166,
-                "visibleW": 58,
-                "visibleH": 162,
-                "scale": 0.988889
+                "x": 58,
+                "y": 28,
+                "w": 74,
+                "h": 161,
+                "visibleW": 70,
+                "visibleH": 157,
+                "scale": 1.020382
               }
             },
             {
@@ -14492,13 +14907,13 @@
               "h": 192,
               "duration_ms": 72,
               "content": {
-                "x": 65,
-                "y": 15,
-                "w": 62,
-                "h": 175,
-                "visibleW": 58,
-                "visibleH": 171,
-                "scale": 0.936842
+                "x": 58,
+                "y": 58,
+                "w": 80,
+                "h": 131,
+                "visibleW": 76,
+                "visibleH": 127,
+                "scale": 1.261417
               }
             },
             {
@@ -14508,13 +14923,13 @@
               "h": 192,
               "duration_ms": 72,
               "content": {
-                "x": 64,
-                "y": 16,
-                "w": 63,
-                "h": 173,
-                "visibleW": 59,
-                "visibleH": 169,
-                "scale": 0.947929
+                "x": 62,
+                "y": 35,
+                "w": 77,
+                "h": 154,
+                "visibleW": 73,
+                "visibleH": 150,
+                "scale": 1.068
               }
             },
             {
@@ -14525,12 +14940,12 @@
               "duration_ms": 72,
               "content": {
                 "x": 65,
-                "y": 15,
-                "w": 62,
-                "h": 175,
-                "visibleW": 58,
-                "visibleH": 171,
-                "scale": 0.936842
+                "y": 31,
+                "w": 72,
+                "h": 158,
+                "visibleW": 68,
+                "visibleH": 154,
+                "scale": 1.04026
               }
             },
             {
@@ -14540,19 +14955,35 @@
               "h": 192,
               "duration_ms": 72,
               "content": {
-                "x": 65,
-                "y": 8,
-                "w": 62,
-                "h": 182,
-                "visibleW": 58,
-                "visibleH": 178,
-                "scale": 0.9
+                "x": 70,
+                "y": 16,
+                "w": 65,
+                "h": 173,
+                "visibleW": 61,
+                "visibleH": 169,
+                "scale": 0.947929
               }
             }
           ],
           "higgsfieldJobId": "c6325a2d-880b-449d-a244-c13eac279b9e",
           "stableHeight": true,
-          "targetVisibleHeight": 160.2
+          "targetVisibleHeight": 160.2,
+          "repair": "semantic-body-only-v1",
+          "semantic": {
+            "version": 1,
+            "bodyOnly": true,
+            "figureCount": 1,
+            "anchor": "bottom-center",
+            "poseClass": "grounded-run"
+          },
+          "repairSourceFrames": [
+            "DASH_BACK:0",
+            "DASH_BACK:1",
+            "DASH_BACK:2",
+            "DASH_BACK:3",
+            "DASH_BACK:4",
+            "DASH_BACK:5"
+          ]
         },
         "WALK_BACK": {
           "sheet": "assets/motion-atlases/amara-valentine-locomotion.webp",
@@ -15118,7 +15549,7 @@
           "cellHeight": 192,
           "renderScale": 1.3333333333333333,
           "sourceFacing": 1,
-          "source": "higgsfield-v2",
+          "source": "derived-body-only-v1",
           "frames": [
             {
               "x": 384,
@@ -15127,12 +15558,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 57,
-                "y": 29,
-                "w": 78,
-                "h": 161,
-                "visibleW": 74,
-                "visibleH": 157,
+                "x": 29,
+                "y": 7,
+                "w": 134,
+                "h": 182,
+                "visibleW": 130,
+                "visibleH": 178,
                 "scale": 0.72
               }
             },
@@ -15143,12 +15574,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 56,
-                "y": 46,
-                "w": 79,
-                "h": 144,
-                "visibleW": 75,
-                "visibleH": 140,
+                "x": 67,
+                "y": 24,
+                "w": 58,
+                "h": 165,
+                "visibleW": 54,
+                "visibleH": 161,
                 "scale": 0.72
               }
             },
@@ -15159,12 +15590,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 56,
-                "y": 17,
-                "w": 80,
-                "h": 173,
-                "visibleW": 76,
-                "visibleH": 169,
+                "x": 67,
+                "y": 20,
+                "w": 58,
+                "h": 169,
+                "visibleW": 54,
+                "visibleH": 165,
                 "scale": 0.72
               }
             },
@@ -15175,12 +15606,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 56,
-                "y": 22,
-                "w": 80,
-                "h": 168,
-                "visibleW": 76,
-                "visibleH": 164,
+                "x": 68,
+                "y": 20,
+                "w": 57,
+                "h": 169,
+                "visibleW": 53,
+                "visibleH": 165,
                 "scale": 0.72
               }
             },
@@ -15191,12 +15622,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 56,
-                "y": 23,
-                "w": 80,
-                "h": 167,
-                "visibleW": 76,
-                "visibleH": 163,
+                "x": 67,
+                "y": 19,
+                "w": 58,
+                "h": 170,
+                "visibleW": 54,
+                "visibleH": 166,
                 "scale": 0.72
               }
             },
@@ -15207,19 +15638,35 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 58,
-                "y": 8,
-                "w": 76,
-                "h": 182,
-                "visibleW": 72,
-                "visibleH": 178,
+                "x": 30,
+                "y": 9,
+                "w": 133,
+                "h": 180,
+                "visibleW": 129,
+                "visibleH": 176,
                 "scale": 0.72
               }
             }
           ],
           "higgsfieldJobId": "d951caa8-0d96-4156-a509-9d366abdc46b",
           "stableHeight": false,
-          "targetVisibleHeight": 128.16
+          "targetVisibleHeight": 128.16,
+          "repair": "semantic-body-only-v1",
+          "semantic": {
+            "version": 1,
+            "bodyOnly": true,
+            "figureCount": 1,
+            "anchor": "bottom-center",
+            "poseClass": "low-strike"
+          },
+          "repairSourceFrames": [
+            "CROUCH_IDLE:0",
+            "LIGHT_KICK:0",
+            "LIGHT_KICK:1",
+            "LIGHT_KICK:2",
+            "LIGHT_KICK:3",
+            "CROUCH_IDLE:1"
+          ]
         },
         "HEAVY_KICK": {
           "sheet": "assets/motion-atlases/amara-valentine-combat.webp",
@@ -15229,7 +15676,7 @@
           "cellHeight": 192,
           "renderScale": 1.3333333333333333,
           "sourceFacing": 1,
-          "source": "higgsfield-v2",
+          "source": "derived-body-only-v1",
           "frames": [
             {
               "x": 0,
@@ -15238,13 +15685,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 55,
-                "y": 8,
-                "w": 82,
-                "h": 182,
-                "visibleW": 78,
-                "visibleH": 178,
-                "scale": 0.98
+                "x": 66,
+                "y": 24,
+                "w": 60,
+                "h": 165,
+                "visibleW": 56,
+                "visibleH": 161,
+                "scale": 1.083478
               }
             },
             {
@@ -15254,13 +15701,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 47,
-                "y": 10,
-                "w": 97,
-                "h": 180,
-                "visibleW": 93,
-                "visibleH": 176,
-                "scale": 0.991136
+                "x": 66,
+                "y": 20,
+                "w": 61,
+                "h": 169,
+                "visibleW": 57,
+                "visibleH": 165,
+                "scale": 1.057212
               }
             },
             {
@@ -15270,13 +15717,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 46,
-                "y": 16,
-                "w": 99,
-                "h": 174,
-                "visibleW": 95,
-                "visibleH": 170,
-                "scale": 1.026118
+                "x": 66,
+                "y": 19,
+                "w": 60,
+                "h": 170,
+                "visibleW": 56,
+                "visibleH": 166,
+                "scale": 1.050843
               }
             },
             {
@@ -15286,13 +15733,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 48,
-                "y": 12,
-                "w": 95,
-                "h": 178,
-                "visibleW": 91,
-                "visibleH": 174,
-                "scale": 1.002529
+                "x": 64,
+                "y": 19,
+                "w": 63,
+                "h": 170,
+                "visibleW": 59,
+                "visibleH": 166,
+                "scale": 1.050843
               }
             },
             {
@@ -15302,13 +15749,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 58,
-                "y": 10,
-                "w": 76,
-                "h": 180,
-                "visibleW": 72,
-                "visibleH": 176,
-                "scale": 0.991136
+                "x": 65,
+                "y": 19,
+                "w": 62,
+                "h": 170,
+                "visibleW": 58,
+                "visibleH": 166,
+                "scale": 1.050843
               }
             },
             {
@@ -15318,19 +15765,35 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 52,
-                "y": 9,
-                "w": 87,
-                "h": 181,
-                "visibleW": 83,
-                "visibleH": 177,
-                "scale": 0.985537
+                "x": 66,
+                "y": 15,
+                "w": 61,
+                "h": 174,
+                "visibleW": 57,
+                "visibleH": 170,
+                "scale": 1.026118
               }
             }
           ],
           "higgsfieldJobId": "2f914d4c-ada7-4dcf-a1d2-4f5ba3a122b0",
           "stableHeight": true,
-          "targetVisibleHeight": 174.44
+          "targetVisibleHeight": 174.44,
+          "repair": "semantic-body-only-v1",
+          "semantic": {
+            "version": 1,
+            "bodyOnly": true,
+            "figureCount": 1,
+            "anchor": "bottom-center",
+            "poseClass": "heavy-strike"
+          },
+          "repairSourceFrames": [
+            "LIGHT_KICK:0",
+            "LIGHT_KICK:1",
+            "LIGHT_KICK:2",
+            "LIGHT_KICK:3",
+            "LIGHT_KICK:4",
+            "LIGHT_KICK:5"
+          ]
         },
         "HEAVY_PUNCH": {
           "sheet": "assets/motion-atlases/amara-valentine-combat.webp",
@@ -15673,7 +16136,7 @@
           "cellHeight": 192,
           "renderScale": 1.3333333333333333,
           "sourceFacing": 1,
-          "source": "higgsfield-v2",
+          "source": "derived-body-only-v1",
           "frames": [
             {
               "x": 0,
@@ -15682,12 +16145,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 68,
-                "y": 8,
-                "w": 56,
-                "h": 182,
-                "visibleW": 52,
-                "visibleH": 178,
+                "x": 45,
+                "y": 18,
+                "w": 102,
+                "h": 171,
+                "visibleW": 98,
+                "visibleH": 167,
                 "scale": 0.98
               }
             },
@@ -15698,12 +16161,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 66,
-                "y": 10,
-                "w": 59,
-                "h": 180,
-                "visibleW": 55,
-                "visibleH": 176,
+                "x": 29,
+                "y": 18,
+                "w": 134,
+                "h": 171,
+                "visibleW": 130,
+                "visibleH": 167,
                 "scale": 0.98
               }
             },
@@ -15714,12 +16177,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 66,
-                "y": 15,
-                "w": 59,
-                "h": 175,
-                "visibleW": 55,
-                "visibleH": 171,
+                "x": 27,
+                "y": 18,
+                "w": 138,
+                "h": 171,
+                "visibleW": 134,
+                "visibleH": 167,
                 "scale": 0.98
               }
             },
@@ -15730,11 +16193,11 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 66,
-                "y": 15,
-                "w": 59,
+                "x": 33,
+                "y": 14,
+                "w": 126,
                 "h": 175,
-                "visibleW": 55,
+                "visibleW": 122,
                 "visibleH": 171,
                 "scale": 0.98
               }
@@ -15746,11 +16209,11 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 66,
-                "y": 8,
-                "w": 59,
+                "x": 55,
+                "y": 7,
+                "w": 82,
                 "h": 182,
-                "visibleW": 55,
+                "visibleW": 78,
                 "visibleH": 178,
                 "scale": 0.98
               }
@@ -15762,11 +16225,11 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 66,
-                "y": 8,
-                "w": 60,
+                "x": 64,
+                "y": 7,
+                "w": 65,
                 "h": 182,
-                "visibleW": 56,
+                "visibleW": 61,
                 "visibleH": 178,
                 "scale": 0.98
               }
@@ -15774,7 +16237,23 @@
           ],
           "higgsfieldJobId": "fb1ba97b-c03c-42e7-85e5-5b508e5136f4",
           "stableHeight": false,
-          "targetVisibleHeight": 174.44
+          "targetVisibleHeight": 174.44,
+          "repair": "semantic-body-only-v1",
+          "semantic": {
+            "version": 1,
+            "bodyOnly": true,
+            "figureCount": 1,
+            "anchor": "bottom-center",
+            "poseClass": "love-projectile-release"
+          },
+          "repairSourceFrames": [
+            "SUPER_RELEASE:0",
+            "SUPER_RELEASE:1",
+            "SUPER_RELEASE:2",
+            "SUPER_RELEASE:3",
+            "SUPER_RELEASE:4",
+            "SUPER_RELEASE:5"
+          ]
         },
         "SPECIAL_RECOVER": {
           "sheet": "assets/motion-atlases/amara-valentine-combat.webp",
@@ -15784,7 +16263,7 @@
           "cellHeight": 192,
           "renderScale": 1.3333333333333333,
           "sourceFacing": 1,
-          "source": "higgsfield-v2",
+          "source": "derived-body-only-v1",
           "frames": [
             {
               "x": 1152,
@@ -15793,12 +16272,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 55,
-                "y": 10,
-                "w": 81,
-                "h": 180,
-                "visibleW": 77,
-                "visibleH": 176,
+                "x": 64,
+                "y": 7,
+                "w": 63,
+                "h": 182,
+                "visibleW": 59,
+                "visibleH": 178,
                 "scale": 0.98
               }
             },
@@ -15809,12 +16288,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 68,
-                "y": 10,
-                "w": 56,
-                "h": 180,
-                "visibleW": 52,
-                "visibleH": 176,
+                "x": 70,
+                "y": 12,
+                "w": 53,
+                "h": 177,
+                "visibleW": 49,
+                "visibleH": 173,
                 "scale": 0.98
               }
             },
@@ -15825,12 +16304,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 72,
-                "y": 8,
-                "w": 47,
-                "h": 182,
-                "visibleW": 43,
-                "visibleH": 178,
+                "x": 67,
+                "y": 18,
+                "w": 58,
+                "h": 171,
+                "visibleW": 54,
+                "visibleH": 167,
                 "scale": 0.98
               }
             },
@@ -15842,11 +16321,11 @@
               "duration_ms": 78,
               "content": {
                 "x": 66,
-                "y": 8,
-                "w": 60,
-                "h": 182,
-                "visibleW": 56,
-                "visibleH": 178,
+                "y": 18,
+                "w": 59,
+                "h": 171,
+                "visibleW": 55,
+                "visibleH": 167,
                 "scale": 0.98
               }
             },
@@ -15857,12 +16336,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 65,
-                "y": 8,
-                "w": 61,
-                "h": 182,
-                "visibleW": 57,
-                "visibleH": 178,
+                "x": 66,
+                "y": 18,
+                "w": 59,
+                "h": 171,
+                "visibleW": 55,
+                "visibleH": 167,
                 "scale": 0.98
               }
             },
@@ -15874,18 +16353,34 @@
               "duration_ms": 78,
               "content": {
                 "x": 66,
-                "y": 9,
-                "w": 59,
-                "h": 181,
-                "visibleW": 55,
-                "visibleH": 177,
+                "y": 17,
+                "w": 60,
+                "h": 172,
+                "visibleW": 56,
+                "visibleH": 168,
                 "scale": 0.98
               }
             }
           ],
           "higgsfieldJobId": "6aeb77b0-cab4-4cfe-90a4-1bfd667d43c5",
           "stableHeight": false,
-          "targetVisibleHeight": 174.44
+          "targetVisibleHeight": 174.44,
+          "repair": "semantic-body-only-v1",
+          "semantic": {
+            "version": 1,
+            "bodyOnly": true,
+            "figureCount": 1,
+            "anchor": "bottom-center",
+            "poseClass": "special-recovery"
+          },
+          "repairSourceFrames": [
+            "READY_STANCE:0",
+            "READY_STANCE:1",
+            "READY_STANCE:2",
+            "READY_STANCE:3",
+            "READY_STANCE:4",
+            "READY_STANCE:5"
+          ]
         },
         "SPECIAL_START": {
           "sheet": "assets/motion-atlases/amara-valentine-combat.webp",
@@ -15895,7 +16390,7 @@
           "cellHeight": 192,
           "renderScale": 1.3333333333333333,
           "sourceFacing": 1,
-          "source": "higgsfield-v2",
+          "source": "derived-body-only-v1",
           "frames": [
             {
               "x": 768,
@@ -15904,12 +16399,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 68,
-                "y": 11,
-                "w": 56,
-                "h": 179,
-                "visibleW": 52,
-                "visibleH": 175,
+                "x": 64,
+                "y": 7,
+                "w": 65,
+                "h": 182,
+                "visibleW": 61,
+                "visibleH": 178,
                 "scale": 0.98
               }
             },
@@ -15920,12 +16415,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 68,
-                "y": 11,
-                "w": 56,
-                "h": 179,
-                "visibleW": 52,
-                "visibleH": 175,
+                "x": 55,
+                "y": 7,
+                "w": 82,
+                "h": 182,
+                "visibleW": 78,
+                "visibleH": 178,
                 "scale": 0.98
               }
             },
@@ -15936,12 +16431,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 68,
-                "y": 11,
-                "w": 56,
-                "h": 179,
-                "visibleW": 52,
-                "visibleH": 175,
+                "x": 33,
+                "y": 14,
+                "w": 126,
+                "h": 175,
+                "visibleW": 122,
+                "visibleH": 171,
                 "scale": 0.98
               }
             },
@@ -15952,12 +16447,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 67,
-                "y": 11,
-                "w": 57,
-                "h": 179,
-                "visibleW": 53,
-                "visibleH": 175,
+                "x": 27,
+                "y": 18,
+                "w": 138,
+                "h": 171,
+                "visibleW": 134,
+                "visibleH": 167,
                 "scale": 0.98
               }
             },
@@ -15968,12 +16463,12 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 67,
-                "y": 8,
-                "w": 58,
-                "h": 182,
-                "visibleW": 54,
-                "visibleH": 178,
+                "x": 29,
+                "y": 18,
+                "w": 134,
+                "h": 171,
+                "visibleW": 130,
+                "visibleH": 167,
                 "scale": 0.98
               }
             },
@@ -15984,19 +16479,35 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 67,
-                "y": 11,
-                "w": 58,
-                "h": 179,
-                "visibleW": 54,
-                "visibleH": 175,
+                "x": 45,
+                "y": 18,
+                "w": 102,
+                "h": 171,
+                "visibleW": 98,
+                "visibleH": 167,
                 "scale": 0.98
               }
             }
           ],
           "higgsfieldJobId": "04915d96-9ea8-4a0a-b3c0-af4dbbdcdde7",
           "stableHeight": false,
-          "targetVisibleHeight": 174.44
+          "targetVisibleHeight": 174.44,
+          "repair": "semantic-body-only-v1",
+          "semantic": {
+            "version": 1,
+            "bodyOnly": true,
+            "figureCount": 1,
+            "anchor": "bottom-center",
+            "poseClass": "love-projectile-start"
+          },
+          "repairSourceFrames": [
+            "SUPER_RELEASE:5",
+            "SUPER_RELEASE:4",
+            "SUPER_RELEASE:3",
+            "SUPER_RELEASE:2",
+            "SUPER_RELEASE:1",
+            "SUPER_RELEASE:0"
+          ]
         },
         "SUPER_CHARGE": {
           "sheet": "assets/motion-atlases/amara-valentine-combat.webp",
@@ -16672,7 +17183,7 @@
           "cellHeight": 192,
           "renderScale": 1.3333333333333333,
           "sourceFacing": 1,
-          "source": "higgsfield-v2",
+          "source": "derived-body-only-v1",
           "frames": [
             {
               "x": 768,
@@ -16681,13 +17192,13 @@
               "h": 192,
               "duration_ms": 112,
               "content": {
-                "x": 60,
-                "y": 8,
-                "w": 72,
-                "h": 182,
-                "visibleW": 68,
-                "visibleH": 178,
-                "scale": 1.0
+                "x": 44,
+                "y": 13,
+                "w": 104,
+                "h": 176,
+                "visibleW": 100,
+                "visibleH": 172,
+                "scale": 1.00565
               }
             },
             {
@@ -16697,13 +17208,13 @@
               "h": 192,
               "duration_ms": 112,
               "content": {
-                "x": 59,
-                "y": 33,
-                "w": 74,
-                "h": 157,
-                "visibleW": 70,
-                "visibleH": 153,
-                "scale": 1.0
+                "x": 32,
+                "y": 8,
+                "w": 127,
+                "h": 181,
+                "visibleW": 123,
+                "visibleH": 177,
+                "scale": 1.00565
               }
             },
             {
@@ -16713,13 +17224,13 @@
               "h": 192,
               "duration_ms": 112,
               "content": {
-                "x": 59,
-                "y": 53,
-                "w": 74,
-                "h": 137,
-                "visibleW": 70,
-                "visibleH": 133,
-                "scale": 1.0
+                "x": 14,
+                "y": 22,
+                "w": 164,
+                "h": 167,
+                "visibleW": 160,
+                "visibleH": 163,
+                "scale": 1.00565
               }
             },
             {
@@ -16729,13 +17240,13 @@
               "h": 192,
               "duration_ms": 112,
               "content": {
-                "x": 59,
-                "y": 46,
-                "w": 74,
-                "h": 144,
-                "visibleW": 70,
-                "visibleH": 140,
-                "scale": 1.0
+                "x": 10,
+                "y": 55,
+                "w": 173,
+                "h": 134,
+                "visibleW": 169,
+                "visibleH": 130,
+                "scale": 1.00565
               }
             },
             {
@@ -16745,13 +17256,13 @@
               "h": 192,
               "duration_ms": 112,
               "content": {
-                "x": 59,
-                "y": 116,
-                "w": 74,
-                "h": 74,
-                "visibleW": 70,
-                "visibleH": 70,
-                "scale": 1.0
+                "x": 6,
+                "y": 79,
+                "w": 181,
+                "h": 110,
+                "visibleW": 177,
+                "visibleH": 106,
+                "scale": 1.00565
               }
             },
             {
@@ -16761,19 +17272,35 @@
               "h": 192,
               "duration_ms": 112,
               "content": {
-                "x": 59,
-                "y": 130,
-                "w": 74,
-                "h": 60,
-                "visibleW": 70,
-                "visibleH": 56,
-                "scale": 1.0
+                "x": 6,
+                "y": 103,
+                "w": 181,
+                "h": 86,
+                "visibleW": 177,
+                "visibleH": 82,
+                "scale": 1.00565
               }
             }
           ],
           "higgsfieldJobId": "ad9f7f1a-b63d-4b3c-ae83-ec6a6a840dd9",
           "stableHeight": false,
-          "targetVisibleHeight": 178.0
+          "targetVisibleHeight": 178.0,
+          "repair": "semantic-body-only-v1",
+          "semantic": {
+            "version": 1,
+            "bodyOnly": true,
+            "figureCount": 1,
+            "anchor": "bottom-center",
+            "poseClass": "defeat"
+          },
+          "repairSourceFrames": [
+            "HURT_HEAVY:0",
+            "HURT_HEAVY:1",
+            "HURT_HEAVY:0",
+            "HURT_HEAVY:1",
+            "HURT_HEAVY:0",
+            "HURT_HEAVY:1"
+          ]
         },
         "GET_UP": {
           "sheet": "assets/motion-atlases/amara-valentine-reaction.webp",
@@ -16783,7 +17310,7 @@
           "cellHeight": 192,
           "renderScale": 1.3333333333333333,
           "sourceFacing": 1,
-          "source": "higgsfield-v2",
+          "source": "derived-body-only-v1",
           "frames": [
             {
               "x": 384,
@@ -16792,13 +17319,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 62,
-                "y": 75,
-                "w": 67,
-                "h": 115,
-                "visibleW": 63,
-                "visibleH": 111,
-                "scale": 1.0
+                "x": 6,
+                "y": 103,
+                "w": 181,
+                "h": 86,
+                "visibleW": 177,
+                "visibleH": 82,
+                "scale": 0.994413
               }
             },
             {
@@ -16808,13 +17335,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 63,
-                "y": 55,
-                "w": 66,
-                "h": 135,
-                "visibleW": 62,
-                "visibleH": 131,
-                "scale": 1.0
+                "x": 4,
+                "y": 67,
+                "w": 183,
+                "h": 122,
+                "visibleW": 179,
+                "visibleH": 118,
+                "scale": 0.994413
               }
             },
             {
@@ -16824,13 +17351,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 63,
-                "y": 25,
-                "w": 66,
-                "h": 165,
-                "visibleW": 62,
-                "visibleH": 161,
-                "scale": 1.0
+                "x": 12,
+                "y": 43,
+                "w": 168,
+                "h": 146,
+                "visibleW": 164,
+                "visibleH": 142,
+                "scale": 0.994413
               }
             },
             {
@@ -16840,13 +17367,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 63,
-                "y": 19,
-                "w": 66,
-                "h": 171,
-                "visibleW": 62,
-                "visibleH": 167,
-                "scale": 1.0
+                "x": 18,
+                "y": 17,
+                "w": 155,
+                "h": 172,
+                "visibleW": 151,
+                "visibleH": 168,
+                "scale": 0.994413
               }
             },
             {
@@ -16856,13 +17383,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 63,
-                "y": 12,
-                "w": 66,
-                "h": 178,
-                "visibleW": 62,
-                "visibleH": 174,
-                "scale": 1.0
+                "x": 38,
+                "y": 6,
+                "w": 115,
+                "h": 183,
+                "visibleW": 111,
+                "visibleH": 179,
+                "scale": 0.994413
               }
             },
             {
@@ -16872,19 +17399,35 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 63,
-                "y": 8,
-                "w": 65,
-                "h": 182,
-                "visibleW": 61,
-                "visibleH": 178,
-                "scale": 1.0
+                "x": 53,
+                "y": 13,
+                "w": 86,
+                "h": 176,
+                "visibleW": 82,
+                "visibleH": 172,
+                "scale": 0.994413
               }
             }
           ],
           "higgsfieldJobId": "8eb7f8eb-4932-4dc9-8ca5-b1bfbe491d26",
           "stableHeight": false,
-          "targetVisibleHeight": 178.0
+          "targetVisibleHeight": 178.0,
+          "repair": "semantic-body-only-v1",
+          "semantic": {
+            "version": 1,
+            "bodyOnly": true,
+            "figureCount": 1,
+            "anchor": "bottom-center",
+            "poseClass": "get-up"
+          },
+          "repairSourceFrames": [
+            "HURT_HEAVY:1",
+            "HURT_HEAVY:0",
+            "HURT_HEAVY:1",
+            "HURT_HEAVY:0",
+            "HURT_HEAVY:1",
+            "HURT_HEAVY:0"
+          ]
         },
         "HURT_HEAVY": {
           "sheet": "assets/motion-atlases/amara-valentine-reaction.webp",
@@ -17116,7 +17659,7 @@
           "cellHeight": 192,
           "renderScale": 1.3333333333333333,
           "sourceFacing": 1,
-          "source": "higgsfield-v2",
+          "source": "derived-body-only-v1",
           "frames": [
             {
               "x": 768,
@@ -17125,13 +17668,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 64,
-                "y": 8,
-                "w": 64,
-                "h": 182,
-                "visibleW": 60,
-                "visibleH": 178,
-                "scale": 1.0
+                "x": 53,
+                "y": 13,
+                "w": 86,
+                "h": 176,
+                "visibleW": 82,
+                "visibleH": 172,
+                "scale": 0.994413
               }
             },
             {
@@ -17141,13 +17684,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 60,
-                "y": 10,
-                "w": 72,
-                "h": 180,
-                "visibleW": 68,
-                "visibleH": 176,
-                "scale": 1.0
+                "x": 38,
+                "y": 6,
+                "w": 115,
+                "h": 183,
+                "visibleW": 111,
+                "visibleH": 179,
+                "scale": 0.994413
               }
             },
             {
@@ -17157,13 +17700,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 60,
-                "y": 26,
-                "w": 72,
-                "h": 164,
-                "visibleW": 68,
-                "visibleH": 160,
-                "scale": 1.0
+                "x": 18,
+                "y": 17,
+                "w": 155,
+                "h": 172,
+                "visibleW": 151,
+                "visibleH": 168,
+                "scale": 0.994413
               }
             },
             {
@@ -17173,13 +17716,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 60,
+                "x": 12,
                 "y": 43,
-                "w": 72,
-                "h": 147,
-                "visibleW": 68,
-                "visibleH": 143,
-                "scale": 1.0
+                "w": 168,
+                "h": 146,
+                "visibleW": 164,
+                "visibleH": 142,
+                "scale": 0.994413
               }
             },
             {
@@ -17189,13 +17732,13 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 60,
-                "y": 79,
-                "w": 72,
-                "h": 111,
-                "visibleW": 68,
-                "visibleH": 107,
-                "scale": 1.0
+                "x": 4,
+                "y": 67,
+                "w": 183,
+                "h": 122,
+                "visibleW": 179,
+                "visibleH": 118,
+                "scale": 0.994413
               }
             },
             {
@@ -17205,19 +17748,35 @@
               "h": 192,
               "duration_ms": 78,
               "content": {
-                "x": 60,
-                "y": 129,
-                "w": 72,
-                "h": 61,
-                "visibleW": 68,
-                "visibleH": 57,
-                "scale": 1.0
+                "x": 6,
+                "y": 102,
+                "w": 181,
+                "h": 87,
+                "visibleW": 177,
+                "visibleH": 83,
+                "scale": 0.994413
               }
             }
           ],
           "higgsfieldJobId": "ad1fc01d-c40b-4ca3-b9ee-7a232a656f22",
           "stableHeight": false,
-          "targetVisibleHeight": 178.0
+          "targetVisibleHeight": 178.0,
+          "repair": "semantic-body-only-v1",
+          "semantic": {
+            "version": 1,
+            "bodyOnly": true,
+            "figureCount": 1,
+            "anchor": "bottom-center",
+            "poseClass": "knockdown"
+          },
+          "repairSourceFrames": [
+            "HURT_HEAVY:0",
+            "HURT_HEAVY:1",
+            "HURT_HEAVY:0",
+            "HURT_HEAVY:1",
+            "HURT_HEAVY:0",
+            "HURT_HEAVY:1"
+          ]
         },
         "TAUNT": {
           "sheet": "assets/motion-atlases/amara-valentine-reaction.webp",

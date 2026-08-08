@@ -12,8 +12,10 @@ import { LovePulseEffect } from "../src/gameplay/effects.js";
 import { registerAttackHit, sliceAttackForHit } from "../src/gameplay/hits.js";
 import { BoerboelStrike, Projectile } from "../src/gameplay/projectiles.js";
 import { applyRoundOutcomeMotions, resolveRoundOutcome } from "../src/gameplay/rounds.js";
+import { DEFAULT_KEYMAP, normalizeKeymap, remapKey, unbindKey } from "../src/engine/input.js";
 
 const motionManifest = JSON.parse(readFileSync(new URL("../assets/motion-atlases/motion-atlas-manifest.json", import.meta.url), "utf8"));
+const semanticMotionQa = JSON.parse(readFileSync(new URL("../assets/motion-atlases/motion-semantic-qa.json", import.meta.url), "utf8"));
 const boerboelManifest = JSON.parse(readFileSync(new URL("../assets/user-effects/detroit-boerboel-atlas.json", import.meta.url), "utf8"));
 const companionManifest = JSON.parse(readFileSync(new URL("../assets/user-assists/companion-projectiles.json", import.meta.url), "utf8"));
 const EXPECTED_MOTIONS = [
@@ -37,6 +39,26 @@ const makeGame = () => ({
   spawnProjectile() {},
   spawnFighterVfx() {},
   recordCombatEvent() {}
+});
+
+test("keyboard remaps persist without restoring replaced movement keys", () => {
+  const remapped = remapKey(DEFAULT_KEYMAP, "p1.left", "KeyQ");
+  assert.ok(remapped);
+  assert.equal(remapped.keymap.KeyQ, "p1.left");
+  assert.equal(remapped.keymap.KeyA, undefined);
+  const reloaded = normalizeKeymap(JSON.parse(JSON.stringify(remapped.keymap)));
+  assert.equal(reloaded.KeyQ, "p1.left");
+  assert.equal(reloaded.KeyA, undefined);
+});
+
+test("keyboard conflicts swap actions and bindings can be cleared", () => {
+  const remapped = remapKey(DEFAULT_KEYMAP, "p1.left", "KeyD");
+  assert.ok(remapped);
+  assert.equal(remapped.swappedAction, "p1.right");
+  assert.equal(remapped.keymap.KeyD, "p1.left");
+  assert.equal(remapped.keymap.KeyA, "p1.right");
+  const cleared = unbindKey(remapped.keymap, "p1.left");
+  assert.equal(Object.values(cleared).includes("p1.left"), false);
 });
 
 const animation = (durationMs = 90) => ({
@@ -80,7 +102,39 @@ test("Ezra crouches without shrinking his entire body", () => {
 });
 
 test("Detroit Lens keeps full body scale while firing the eye laser", () => {
-  assert.equal(FIGHTERS.DETROIT_LENS_NOIR.motionScaleOverrides.SUPER_RELEASE, 1.38);
+  assert.equal(FIGHTERS.DETROIT_LENS_NOIR.motionScaleOverrides.SUPER_RELEASE, 1.02);
+});
+
+test("Detroit Lens eye laser starts at the eye socket and extends toward the opponent", () => {
+  const projectile = new Projectile({
+    owner: { id: "detroit", config: FIGHTERS.DETROIT_LENS_NOIR },
+    x: 500,
+    y: 300,
+    direction: 1,
+    attack: { radius: 38, speed: 1540 },
+    image: null,
+    kind: "eye-laser",
+    color: "#ff2838"
+  });
+  const gradients = [];
+  const segments = [];
+  let currentPoint = null;
+  const context = {
+    save() {},
+    restore() {},
+    beginPath() { currentPoint = null; },
+    moveTo(x, y) { currentPoint = { x, y }; },
+    lineTo(x, y) { segments.push({ start: currentPoint, end: { x, y } }); },
+    stroke() {},
+    createLinearGradient(startX, startY, endX, endY) {
+      gradients.push({ startX, startY, endX, endY });
+      return { addColorStop() {} };
+    }
+  };
+  projectile.renderEyeLaser(context, 124);
+  assert.ok(gradients[0].startX > projectile.x - projectile.radius, "beam origin moved behind the fighter");
+  assert.ok(gradients[0].endX > projectile.x + projectile.radius * 6, "beam does not extend toward the opponent");
+  assert.ok(segments.every(({ end, start }) => end.x > start.x), "beam segment points backward");
 });
 
 test("double KO and tied timeout are neutral draws", () => {
@@ -218,7 +272,7 @@ test("Amara Valentine ships 39 complete motions and a distinct love-power combat
   assert.ok(fighter.attackOverrides.super.knockback > 0, "Heartbreak Nova should repel on hit");
   assert.equal(fighter.attackOverrides.super.multiHit, 4);
   assert.equal(Object.keys(motionManifest.characters.AMARA_VALENTINE.motions).length, 39);
-  assert.equal(motionManifest.characters.AMARA_VALENTINE.motions.JUMP_PEAK.repair, "amara-aerial-v1");
+  assert.equal(motionManifest.characters.AMARA_VALENTINE.motions.JUMP_PEAK.repair, "semantic-body-only-v1");
   assert.equal(motionManifest.characters.AMARA_VALENTINE.motions.AIR_ATTACK.repair, "amara-aerial-v1");
   assert.match(ASSET_URLS.rosterPortraits.amaraValentine, /amara-valentine-idle\.webp/);
   assert.ok(COMMAND_LISTS.AMARA_VALENTINE.commands.some((command) => command.name === "CHARM COUNTER"));
@@ -357,28 +411,56 @@ test("Detroit Lens keeps only the original black costume atlas", () => {
   }
 });
 
-test("Kalyx aerial atlas keeps one bounded unique figure in every frame", () => {
+test("Kalyx aerial atlas keeps six semantically approved body-only frames", () => {
   for (const motionName of ["JUMP_START", "JUMP_RISE", "JUMP_PEAK", "JUMP_FALL", "LANDING", "AIR_ATTACK"]) {
     const motion = motionManifest.characters.KALYX.motions[motionName];
     assert.equal(motion.frames.length, 6);
-    assert.ok(motion.uniqueFrames >= 5);
-    if (motionName === "AIR_ATTACK") assert.equal(motion.source, "higgsfield-v4-body-only");
-    else assert.match(motion.source, /^higgsfield-v3-body-vfx$/);
-    for (const frame of motion.frames) {
-      assert.ok(frame.content.w < 190, `${motionName} retained a full-cell divider or duplicate silhouette`);
-      assert.ok(frame.content.h <= 184);
+    assert.equal(motion.uniqueFrames, 6);
+    if (motionName === "AIR_ATTACK") {
+      assert.equal(motion.source, "higgsfield-v4-body-only");
+    } else {
+      assert.equal(motion.source, "derived-body-only-v1");
+      assert.equal(motion.semantic.bodyOnly, true);
+      assert.equal(motion.semantic.figureCount, 1);
+      assert.match(motion.semantic.poseClass, /^(takeoff|aerial-|landing-)/);
     }
+    for (const frame of motion.frames) {
+      assert.ok(frame.content.visibleW <= 184, `${motionName} retained an over-wide silhouette`);
+      assert.ok(frame.content.visibleH <= 184, `${motionName} retained an over-tall silhouette`);
+    }
+  }
+});
+
+test("repaired motion sequences have semantic provenance and six unique single-body poses", () => {
+  assert.equal(semanticMotionQa.version, 1);
+  assert.equal(semanticMotionQa.repair, "semantic-body-only-v1");
+  assert.ok(Object.keys(semanticMotionQa.motions).length >= 30);
+  for (const [key, rule] of Object.entries(semanticMotionQa.motions)) {
+    const [characterId, motionName] = key.split("/");
+    const motion = motionManifest.characters[characterId].motions[motionName];
+    assert.equal(motion.source, "derived-body-only-v1", key);
+    assert.equal(motion.repair, semanticMotionQa.repair, key);
+    assert.equal(motion.uniqueFrames, rule.minUniqueSilhouettes, key);
+    assert.equal(motion.semantic.bodyOnly, true, key);
+    assert.equal(motion.semantic.figureCount, 1, key);
+    assert.equal(motion.semantic.anchor, "bottom-center", key);
+    assert.equal(motion.semantic.poseClass, rule.poseClass, key);
+    assert.equal(motion.repairSourceFrames.length, 6, key);
   }
 });
 
 test("special and super releases use body-only runtime frames with layered engine effects", () => {
   for (const characterId of ["KALYX", "MASTER_EZRA"]) {
     for (const motionName of ["SPECIAL_START", "SPECIAL_PROJECTILE", "SPECIAL_RECOVER", "SUPER_CHARGE", "SUPER_RELEASE"]) {
-      assert.equal(motionManifest.characters[characterId].motions[motionName].source, "higgsfield-v4-body-only");
+      const motion = motionManifest.characters[characterId].motions[motionName];
+      assert.ok(["higgsfield-v4-body-only", "derived-body-only-v1"].includes(motion.source));
+      if (motion.source === "derived-body-only-v1") assert.equal(motion.semantic.bodyOnly, true);
     }
   }
   for (const motionName of ["SPECIAL_PROJECTILE", "SPECIAL_RECOVER", "SUPER_CHARGE", "SUPER_RELEASE"]) {
-    assert.equal(motionManifest.characters.DETROIT_LENS_NOIR.motions[motionName].source, "higgsfield-v4-body-only");
+    const motion = motionManifest.characters.DETROIT_LENS_NOIR.motions[motionName];
+    assert.ok(["higgsfield-v4-body-only", "derived-body-only-v1"].includes(motion.source));
+    if (motion.source === "derived-body-only-v1") assert.equal(motion.semantic.bodyOnly, true);
   }
 });
 
@@ -424,7 +506,7 @@ test("Master Ezra jump keeps takeoff, advances once through each air phase, and 
   }
 
   assert.deepEqual([...seen], ["JUMP_START", "JUMP_RISE", "JUMP_PEAK", "JUMP_FALL", "LANDING"]);
-  assert.deepEqual(MOTION_PLAYBACK.MASTER_EZRA.LANDING, [1, 0, 4, 5]);
+  assert.deepEqual(MOTION_PLAYBACK.MASTER_EZRA.LANDING, [0, 1, 2, 3, 4, 5]);
 });
 
 test("Kalyx aerial states use dedicated rise, peak, fall, attack, and landing motion", () => {

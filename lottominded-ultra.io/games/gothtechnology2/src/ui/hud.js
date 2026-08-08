@@ -1,7 +1,7 @@
-import { CANVAS_HEIGHT, CANVAS_WIDTH, COLORS, ROUND_SECONDS } from "../config/constants.js?v=heartline41-epic-amara-ezra";
-import { FIGHTERS } from "../config/assets.js?v=heartline41-epic-amara-ezra";
-import { GAME_MODES, ROSTER_CARD_LAYOUT, ROSTER_IDS, STAGES } from "../config/content.js?v=heartline41-epic-amara-ezra";
-import { drawSpriteFrame } from "../engine/assets.js?v=heartline41-epic-amara-ezra";
+import { CANVAS_HEIGHT, CANVAS_WIDTH, COLORS, ROUND_SECONDS } from "../config/constants.js?v=semantic-motion-v2";
+import { FIGHTERS } from "../config/assets.js?v=semantic-motion-v2";
+import { GAME_MODES, ROSTER_CARD_LAYOUT, ROSTER_IDS, STAGES } from "../config/content.js?v=semantic-motion-v2";
+import { drawSpriteFrame } from "../engine/assets.js?v=semantic-motion-v2";
 
 const FUTURE = {
   cyan: "#67e8ff",
@@ -846,7 +846,11 @@ const drawCharacterCard = (ctx, x, y, w, h, fighter, name, subtitle, selected, o
   for (let sy = y + 12; sy < y + h - 94; sy += 6) ctx.fillRect(x + 8, sy, w - 16, 1);
   ctx.fillStyle = selected ? "rgba(103, 232, 255, 0.12)" : (opponent ? "rgba(255, 64, 93, 0.1)" : "rgba(255,255,255,0.035)");
   ctx.fillRect(x + 8, y + h - 110, w - 16, 18);
-  if (fighter) drawRosterPortrait(ctx, fighter, x + w / 2, y + h - 92, 0.82);
+  if (fighter) drawRosterPortrait(ctx, fighter, x + w / 2, y + h - 92, {
+    scale: 0.82,
+    maxWidth: w - 42,
+    maxHeight: h - 126
+  });
   ctx.restore();
   ctx.save();
   ctx.fillStyle = "rgba(2, 6, 10, 0.98)";
@@ -893,15 +897,30 @@ const drawFighterPortrait = (ctx, fighter, x, y, scale) => {
   }
 };
 
-const drawRosterPortrait = (ctx, fighter, x, y, scale) => {
+const ROSTER_PRESENCE = {
+  KALYX: 0.92,
+  MASTER_EZRA: 0.9,
+  DETROIT_LENS_NOIR: 1.04,
+  AMARA_VALENTINE: 1.08
+};
+
+const drawRosterPortrait = (ctx, fighter, x, y, options) => {
   const portrait = fighter.assets.images[fighter.config.rosterPortraitKey];
   if (portrait?.naturalWidth > 0) {
+    const settings = typeof options === "number" ? { scale: options } : options;
+    const presence = ROSTER_PRESENCE[fighter.config.manifestKey] ?? 1;
+    const requestedScale = (settings?.scale ?? 1) * presence;
+    const fitScale = Math.min(
+      settings?.maxWidth ? settings.maxWidth / portrait.naturalWidth : Infinity,
+      settings?.maxHeight ? settings.maxHeight / portrait.naturalHeight : Infinity
+    );
+    const scale = Math.min(requestedScale, fitScale);
     const width = portrait.naturalWidth * scale;
     const height = portrait.naturalHeight * scale;
     ctx.drawImage(portrait, x - width / 2, y - height, width, height);
     return;
   }
-  drawFighterPortrait(ctx, fighter, x, y, scale);
+  drawFighterPortrait(ctx, fighter, x, y, typeof options === "number" ? options : options?.scale ?? 1);
 };
 
 const drawCoverImage = (ctx, image, x = 0, y = 0, width = CANVAS_WIDTH, height = CANVAS_HEIGHT) => {

@@ -1,6 +1,6 @@
-const STORAGE_KEY = "gothtechnology.keymap.v2";
+export const STORAGE_KEY = "gothtechnology.keymap.v2";
 
-const DEFAULT_KEYMAP = Object.freeze({
+export const DEFAULT_KEYMAP = Object.freeze({
   KeyA: "p1.left",
   KeyD: "p1.right",
   KeyW: "p1.up",
@@ -46,6 +46,33 @@ const DEFAULT_KEYMAP = Object.freeze({
   KeyX: "ui.frameData"
 });
 
+const VALID_ACTIONS = new Set(Object.values(DEFAULT_KEYMAP));
+
+export const normalizeKeymap = (saved) => {
+  if (saved === null || typeof saved !== "object" || Array.isArray(saved)) return { ...DEFAULT_KEYMAP };
+  return Object.fromEntries(Object.entries(saved).filter(([code, action]) => (
+    typeof code === "string" && code.length > 0 && VALID_ACTIONS.has(action)
+  )));
+};
+
+export const remapKey = (keymap, action, code) => {
+  if (!VALID_ACTIONS.has(action) || typeof code !== "string" || code.length === 0) return null;
+  const next = { ...keymap };
+  const previousCodes = Object.entries(next)
+    .filter(([, mappedAction]) => mappedAction === action)
+    .map(([mappedCode]) => mappedCode);
+  const previousCode = previousCodes[0] || null;
+  const swappedAction = next[code] && next[code] !== action ? next[code] : null;
+  for (const mappedCode of previousCodes) delete next[mappedCode];
+  if (swappedAction && previousCode && previousCode !== code) next[previousCode] = swappedAction;
+  next[code] = action;
+  return { keymap: next, previousCode, swappedAction };
+};
+
+export const unbindKey = (keymap, action) => Object.fromEntries(
+  Object.entries(keymap).filter(([, mappedAction]) => mappedAction !== action)
+);
+
 const isEditableTarget = (target) => {
   const tag = target?.tagName?.toLowerCase?.();
   return Boolean(target?.isContentEditable || ["button", "input", "select", "textarea"].includes(tag));
@@ -87,7 +114,7 @@ export class InputManager {
   loadKeymap() {
     try {
       const saved = JSON.parse(window.localStorage?.getItem(STORAGE_KEY) || "null");
-      if (saved && typeof saved === "object") return { ...DEFAULT_KEYMAP, ...saved };
+      return normalizeKeymap(saved);
     } catch {
       // Invalid or blocked storage falls back to the built-in bindings.
     }
@@ -107,17 +134,30 @@ export class InputManager {
     return Object.entries(this.keymap).find(([, mappedAction]) => mappedAction === action)?.[0] || "Unbound";
   }
 
+  getActionForCode(code) {
+    return this.keymap[code] || null;
+  }
+
   rebind(action, code) {
-    if (!action || !code) return false;
-    for (const [mappedCode, mappedAction] of Object.entries(this.keymap)) {
-      if (mappedAction === action || mappedCode === code) delete this.keymap[mappedCode];
-    }
-    this.keymap[code] = action;
+    const result = remapKey(this.keymap, action, code);
+    if (!result) return false;
+    this.clear();
+    this.keymap = result.keymap;
+    this.lastRebind = result;
+    this.saveKeymap();
+    return true;
+  }
+
+  unbind(action) {
+    if (!VALID_ACTIONS.has(action)) return false;
+    this.clear();
+    this.keymap = unbindKey(this.keymap, action);
     this.saveKeymap();
     return true;
   }
 
   resetBindings() {
+    this.clear();
     this.keymap = { ...DEFAULT_KEYMAP };
     this.saveKeymap();
   }
