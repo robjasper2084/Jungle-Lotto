@@ -33,11 +33,12 @@
   const LOTTERY_STORAGE_KEY = DEBUG ? "lottomind-number-run-lottery-v1-debug" : "lottomind-number-run-lottery-v1";
   const LOTTERY_DISCLAIMER = "Random number generator - not an official lottery ticket or guarantee.";
   const GAME_MUSIC_SRC = "./assets/audio/digital-static-10.mp3";
-  const MUSIC_TRACK_VERSION = "digital-static-10";
+  const MUSIC_TRACK_VERSION = "digital-static-10-gameplay";
   const MENU_MUSIC_VOLUME = 0.46;
-  const GAMEPLAY_MUSIC_VOLUME = 0.22;
+  const GAMEPLAY_MUSIC_VOLUME = 0.3;
   const BOSS_MUSIC_VOLUME = 0.28;
   const AMBIENT_MUSIC_VOLUME = 0.16;
+  const CUTSCENE_MUSIC_VOLUME = 0.015;
   const SFX_GAIN_BOOST = 1.65;
   const REWARD_BUILD_ID = "shadow-ops-2026-06-25";
   let rewardClient = null;
@@ -564,6 +565,7 @@
   let sfxLimiter = null;
   let gameMusic = null;
   let musicPlayBlocked = false;
+  let musicRetryTimer = 0;
   let commercialGateActive = new URLSearchParams(window.location.search).get("commercialGate") === "1";
   document.documentElement.dataset.commercialGate = commercialGateActive ? "active" : "released";
   let accountState = {
@@ -1351,6 +1353,12 @@
       });
     });
 
+    document.addEventListener("pointerdown", (event) => {
+      if (!event.isTrusted) return;
+      if (!event.target?.closest?.(".joystick-layer, .touchbar, #game, [data-action]")) return;
+      initAudio();
+    }, { capture: true, passive: true });
+
     document.querySelectorAll("[data-share-platform]").forEach((button) => {
       button.addEventListener("click", () => shareResult(button.dataset.sharePlatform));
     });
@@ -1755,6 +1763,8 @@
     playTone(420, 0.08, "triangle", 0.05);
     playTone(720, 0.10, "sine", 0.035);
     syncGameMusic();
+    window.setTimeout(syncGameMusic, 80);
+    window.setTimeout(syncGameMusic, 320);
   }
 
   function pauseRun() {
@@ -7702,6 +7712,7 @@
     if (mode === "playing") {
       return run?.boss && !run.bossDefeated ? BOSS_MUSIC_VOLUME : GAMEPLAY_MUSIC_VOLUME;
     }
+    if (mode === "cutscene") return CUTSCENE_MUSIC_VOLUME;
     if (mode === "paused" || mode === "lottery") return AMBIENT_MUSIC_VOLUME;
     if (mode === "settings" && (modeBeforeSettings === "paused" || modeBeforeSettings === "playing")) {
       return AMBIENT_MUSIC_VOLUME;
@@ -7710,7 +7721,7 @@
   }
 
   function shouldPlayGameMusic() {
-    return !commercialGateActive && settings.music && ["title", "playing", "paused", "settings", "results", "lottery"].includes(mode);
+    return !commercialGateActive && settings.music && ["title", "cutscene", "playing", "paused", "settings", "results", "lottery"].includes(mode);
   }
 
   function syncGameMusic() {
@@ -7731,10 +7742,12 @@
       playPromise
         .then(() => {
           musicPlayBlocked = false;
+          musicRetryTimer = 0;
           document.documentElement.dataset.musicPlayback = "playing";
         })
         .catch(() => {
           musicPlayBlocked = true;
+          musicRetryTimer = 1.2;
           document.documentElement.dataset.musicPlayback = "blocked";
         });
     }
@@ -7773,7 +7786,11 @@
   }
 
   function updatePulseMusic(dt) {
-    if (musicPlayBlocked || (gameMusic && !gameMusic.paused)) return;
+    if (!shouldPlayGameMusic()) return;
+    if (!musicPlayBlocked && gameMusic && !gameMusic.paused) return;
+    musicRetryTimer = Math.max(0, musicRetryTimer - dt);
+    if (musicRetryTimer > 0) return;
+    musicRetryTimer = musicPlayBlocked ? 1.2 : 0.35;
     syncGameMusic();
   }
 

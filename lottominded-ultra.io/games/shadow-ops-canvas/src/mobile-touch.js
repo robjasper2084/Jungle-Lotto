@@ -68,7 +68,7 @@
       }
       body.touch-forced .touchbar {
         --touch-size: clamp(56px, 8vw, 74px);
-        --stick-size: clamp(112px, 17vw, 154px);
+        --stick-size: clamp(124px, 18vw, 168px);
         inset: auto max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left)) !important;
         width: calc(100vw - max(12px, env(safe-area-inset-left)) - max(12px, env(safe-area-inset-right)));
         max-width: 1120px;
@@ -174,13 +174,13 @@
       }
       body.touch-forced .touch-quick {
         display: grid;
-        grid-template-columns: repeat(2, clamp(56px, 7.5vw, 70px));
+        grid-template-columns: repeat(2, clamp(62px, 8vw, 78px));
         gap: 8px;
         pointer-events: auto;
       }
       body.touch-forced .touch-quick button {
-        height: clamp(50px, 6.8vw, 62px);
-        min-height: 50px;
+        height: clamp(56px, 7.2vw, 68px);
+        min-height: 56px;
         padding: 0 8px;
         border-width: 2px;
         background: linear-gradient(180deg, rgba(18, 12, 22, 0.88), rgba(5, 4, 7, 0.8));
@@ -247,7 +247,7 @@
       }
       body.touch-forced.touch-landscape .touchbar {
         --touch-size: clamp(46px, 8.5vh, 64px);
-        --stick-size: clamp(106px, 19vh, 146px);
+        --stick-size: clamp(116px, 21vh, 158px);
       }
       body.touch-forced.touch-portrait .game-shell {
         place-items: start center !important;
@@ -261,7 +261,7 @@
       }
       body.touch-forced.touch-portrait .touchbar {
         --touch-size: clamp(48px, 13vw, 62px);
-        --stick-size: clamp(96px, 25vw, 122px);
+        --stick-size: clamp(108px, 28vw, 142px);
         width: calc(100vw - max(10px, env(safe-area-inset-left)) - max(10px, env(safe-area-inset-right)));
         inset: auto max(10px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left)) !important;
         flex-wrap: wrap;
@@ -273,12 +273,12 @@
         gap: 8px;
       }
       body.touch-forced.touch-portrait .touch-quick {
-        grid-template-columns: repeat(2, clamp(48px, 13vw, 58px));
+        grid-template-columns: repeat(2, clamp(54px, 14vw, 66px));
         gap: 6px;
       }
       body.touch-forced.touch-portrait .touch-quick button {
-        height: clamp(44px, 11.5vw, 52px);
-        min-height: 44px;
+        height: clamp(50px, 12.5vw, 60px);
+        min-height: 50px;
         font-size: 0.54rem;
       }
       body.touch-forced.touch-portrait .touch-cluster {
@@ -301,13 +301,13 @@
         }
         body.touch-forced.touch-portrait .touchbar {
           --touch-size: clamp(44px, 12vw, 52px);
-          --stick-size: clamp(86px, 24vw, 106px);
+          --stick-size: clamp(94px, 26vw, 116px);
         }
       }
       @media (orientation: landscape) and (max-height: 520px) {
         body.touch-forced.touch-landscape .touchbar {
           --touch-size: clamp(42px, 12vh, 58px);
-          --stick-size: clamp(96px, 24vh, 132px);
+          --stick-size: clamp(104px, 26vh, 140px);
           bottom: max(8px, env(safe-area-inset-bottom)) !important;
         }
         body.touch-forced .touch-quick {
@@ -322,7 +322,7 @@
       @media (max-width: 380px) {
         body.touch-forced.touch-portrait .touchbar {
           --touch-size: clamp(40px, 11.5vw, 48px);
-          --stick-size: clamp(78px, 23vw, 96px);
+          --stick-size: clamp(84px, 24vw, 104px);
         }
         body.touch-forced.touch-portrait .touch-cluster {
           gap: 5px !important;
@@ -406,19 +406,19 @@
     bindStick(layer.querySelector('[data-stick="move"]'), {
       actions: ["left", "right", "jump", "down"],
       update: ({ x, y }) => {
-        setVirtualAction("left", x < -0.3);
-        setVirtualAction("right", x > 0.3);
-        setVirtualAction("jump", y < -0.42);
-        setVirtualAction("down", y > 0.55);
+        setVirtualAction("left", x < -0.22);
+        setVirtualAction("right", x > 0.22);
+        setVirtualAction("jump", y < -0.38);
+        setVirtualAction("down", y > 0.68);
       }
     });
 
     bindStick(layer.querySelector('[data-stick="fire"]'), {
       actions: ["fire"],
-      activation: 0.12,
-      deadZone: 0.14,
-      knobTravel: 42,
-      smoothing: 0.58,
+      activation: 0.05,
+      deadZone: 0.08,
+      knobTravel: 48,
+      smoothing: 0.72,
       activeOnHold: true,
       update: ({ x, y, active, distance }) => {
         setVirtualAction("fire", active);
