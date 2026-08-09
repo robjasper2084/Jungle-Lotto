@@ -6,6 +6,8 @@ const root = resolve(import.meta.dirname, "..");
 const read = (file) => readFileSync(resolve(root, file), "utf8");
 const migration = read("supabase/migrations/20260805_secure_account_ledger.sql");
 const authorityMigration = read("supabase/migrations/20260805202103_secure_plan_catalog_and_entitlement_authority.sql");
+const triviaMigration = read("supabase/migrations/20260809141838_secure_trivia_rewards.sql");
+const triviaLockMigration = read("supabase/migrations/20260809173935_lock_trivia_tables.sql");
 const api = read("supabase/functions/lottomind-api/index.ts");
 const webhook = read("supabase/functions/lottomind-stripe-webhook/index.ts");
 const config = read("supabase/config.toml");
@@ -46,18 +48,35 @@ assert.match(authorityMigration, /create or replace function public\.has_active_
 assert.match(authorityMigration, /grant execute on function public\.has_active_entitlement\(uuid, text\) to service_role/i);
 assert.match(authorityMigration, /alter publication supabase_realtime add table public\.credit_ledger/i);
 
-assert.doesNotMatch(api, /from\("wallets"\)/);
-assert.doesNotMatch(api, /from\("memberships"\)/);
-assert.match(api, /rpc\("credit_balance_for_user"/);
-assert.match(api, /from\("credit_ledger"\)/);
-assert.match(api, /from\("subscriptions"\)/);
-assert.match(api, /from\("entitlements"\)/);
-assert.match(api, /from\("downloads"\)/);
+// The deployed account service keeps the established production wallet and
+// membership tables until a separately planned data migration can move users.
+assert.match(api, /from\("wallets"\)/);
+assert.match(api, /from\("memberships"\)/);
+assert.match(api, /from\("credit_transactions"\)/);
+assert.match(api, /from\("collector_redemptions"\)/);
+assert.doesNotMatch(api, /from\("credit_ledger"\)/);
+assert.doesNotMatch(api, /from\("subscriptions"\)/);
+assert.doesNotMatch(api, /from\("entitlements"\)/);
 assert.match(api, /currentPlan:/);
-assert.match(api, /rpc\("has_active_entitlement"/);
-assert.match(api, /rpc\("redeem_collector_code"/);
+assert.doesNotMatch(api, /rpc\("has_active_entitlement"/);
+assert.doesNotMatch(api, /rpc\("redeem_collector_code"/);
+assert.match(api, /REDEMPTION_NOT_OPEN/);
 assert.match(api, /REWARD_VERIFICATION_REQUIRED/);
 assert.match(api, /auth\.getUser\(token\)/);
+
+for (const table of ["trivia_sessions", "trivia_answers", "trivia_reward_claims"]) {
+  assert.match(triviaMigration, new RegExp(`create table if not exists public\\.${table}\\b`, "i"), `${table} table is missing`);
+  assert.match(triviaMigration, new RegExp(`alter table public\\.${table} enable row level security`, "i"), `${table} RLS is missing`);
+  assert.match(triviaMigration, new RegExp(`revoke all on public\\.${table} from anon, authenticated`, "i"), `${table} client access is not revoked`);
+  assert.match(triviaLockMigration, new RegExp(`create policy ${table}_service_only[\\s\\S]+using \\(false\\)[\\s\\S]+with check \\(false\\)`, "i"), `${table} deny policy is missing`);
+}
+assert.match(triviaMigration, /grant execute on function public\.record_trivia_answer[\s\S]+to service_role/i);
+assert.match(triviaMigration, /grant execute on function public\.award_trivia_credits[\s\S]+to service_role/i);
+assert.match(triviaMigration, /unique \(user_id, challenge_id\)/i);
+assert.match(api, /path === "\/trivia\/sessions"/);
+assert.match(api, /record_trivia_answer/);
+assert.match(api, /award_trivia_credits/);
+assert.match(api, /hasClientRewardField\(input\)/);
 
 assert.match(webhook, /stripe\.webhooks\.constructEventAsync\(/);
 assert.match(webhook, /req\.text\(\)/);
@@ -78,4 +97,4 @@ assert.match(accountService, /getDownloads:/);
 assert.match(envExample, /^STRIPE_WEBHOOK_SECRET=$/m);
 for (const line of envExample.trim().split(/\r?\n/)) assert.match(line, /^[A-Z0-9_]+=$/, `environment example contains a value: ${line}`);
 
-console.log(`Secure backend contract passed: ${tables.length} RLS tables, append-only ledger, authenticated API, and signed Stripe webhook.`);
+console.log(`Secure backend contract passed: production wallet compatibility, ${tables.length} candidate RLS tables, server-authoritative trivia, and signed Stripe webhook.`);
