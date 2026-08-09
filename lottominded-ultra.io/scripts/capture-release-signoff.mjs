@@ -11,7 +11,12 @@ const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const repositoryRoot = resolve(packageRoot, "..");
 const outputRoot = resolve(repositoryRoot, "docs", "staging-reviews", "release-signoff-assets");
 const temporaryRoot = resolve(tmpdir(), `lottomind-release-signoff-${Date.now()}`);
-const baseUrl = String(process.env.LOTTOMIND_STAGING_URL || "http://127.0.0.1:8304").replace(/\/$/, "");
+const baseUrlArgumentIndex = process.argv.indexOf("--base-url");
+const inlineBaseUrlArgument = process.argv.find((argument) => argument.startsWith("--base-url="));
+const requestedBaseUrl = baseUrlArgumentIndex >= 0
+  ? process.argv[baseUrlArgumentIndex + 1]
+  : inlineBaseUrlArgument?.slice("--base-url=".length);
+const baseUrl = String(requestedBaseUrl || process.env.LOTTOMIND_STAGING_URL || "http://127.0.0.1:8304").replace(/\/$/, "");
 const sourceCommit = execFileSync("git", ["rev-parse", "HEAD"], { cwd: repositoryRoot, encoding: "utf8" }).trim();
 const baselineManifest = JSON.parse(await readFile(resolve(repositoryRoot, "docs", "visual-baseline", "v1", "baseline-manifest.json"), "utf8"));
 
