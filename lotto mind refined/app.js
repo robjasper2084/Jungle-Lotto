@@ -741,17 +741,11 @@ const MERCH_PRICE_FALLBACKS = {
   pick34Playbook: 19,
   dreamSymbolGuide: 24,
   crosswordPack: 12,
-  innovationFloorModelHoodie: 49,
-  innovationFloorHoodie: 84,
   boogieManKnitSweater: 365,
-  city1701Mark: 42,
   cityOfDetroit1701Hoodie: 72,
-  cyberBrainGlowHoodie: 150,
-  lottomindCoinSet: 75,
   neuralVaultI: 68,
   frequencyHalo: 38,
   liveOrbStudy: 72,
-  cyberBrainPlate: 54,
 };
 
 const MERCH_CATALOG_FALLBACK = [
@@ -761,20 +755,6 @@ const MERCH_CATALOG_FALLBACK = [
     copy: "Close-detail fleece concept with textured skyline embroidery and launch-team color hits.",
     type: "Clothing",
     className: "detroit-hoodie",
-  },
-  {
-    priceKey: "innovationFloorModelHoodie",
-    title: "Innovation Floor Model Hoodie",
-    copy: "Studio-ready navy hoodie with oversized Innovation Floor mark and clean editorial product fit.",
-    type: "Clothing",
-    className: "innovation-model-hoodie",
-  },
-  {
-    priceKey: "innovationFloorHoodie",
-    title: "Innovation Floor Hoodie",
-    copy: "Navy heavyweight fleece with a bold Innovation Floor skyline graphic and launch-team presence.",
-    type: "Clothing",
-    className: "innovation-floor-hoodie",
   },
   {
     priceKey: "detroitCap",
@@ -805,27 +785,6 @@ const MERCH_CATALOG_FALLBACK = [
     className: "detroit-1701-hoodie",
   },
   {
-    priceKey: "cyberBrainGlowHoodie",
-    title: "Cyber Brain Glow Hoodie",
-    copy: "Black tech-fleece visual with electric brain circuitry and blue stage-light energy.",
-    type: "Clothing",
-    className: "cyber-brain-hoodie",
-  },
-  {
-    priceKey: "lottomindCoinSet",
-    title: "LottoMind Coin Set",
-    copy: "Black hoodie and cap drop with purple coin emblem, gold edgework, and matched set styling.",
-    type: "Clothing",
-    className: "coin-set",
-  },
-  {
-    priceKey: "city1701Mark",
-    title: "City 1701 Mark",
-    copy: "Gallery-ready city mark artwork for the 1701 merch lane.",
-    type: "Gallery Art",
-    className: "city-1701-mark",
-  },
-  {
     priceKey: "neuralVaultI",
     title: "Neural Vault I",
     copy: "Neon LottoMind gallery artwork with vault-orb energy.",
@@ -846,30 +805,17 @@ const MERCH_CATALOG_FALLBACK = [
     type: "Gallery Art",
     className: "live-orb-study",
   },
-  {
-    priceKey: "cyberBrainPlate",
-    title: "Cyber Brain Plate",
-    copy: "Cyber brain gallery plate with circuit glow and stage-light depth.",
-    type: "Gallery Art",
-    className: "cyber-brain-plate",
-  },
 ];
 
 const MERCH_ART_BY_KEY = {
   detroitHoodie: ASSETS.detroitHoodieClose,
-  innovationFloorModelHoodie: ASSETS.detroitCollection,
-  innovationFloorHoodie: ASSETS.detroitCollection,
   detroitCap: ASSETS.detroitCapFront,
   detroitPolo: ASSETS.detroitPoloClose,
   boogieManKnitSweater: ASSETS.detroitCollection,
   cityOfDetroit1701Hoodie: ASSETS.detroitCollection,
-  cyberBrainGlowHoodie: ASSETS.powerTools,
-  lottomindCoinSet: ASSETS.lmLive,
-  city1701Mark: ASSETS.detroitCollection,
   neuralVaultI: ASSETS.logo,
   frequencyHalo: ASSETS.reset,
   liveOrbStudy: ASSETS.live,
-  cyberBrainPlate: ASSETS.aiCoachHost,
 };
 
 function merchPriceValue(priceKey) {
@@ -882,8 +828,16 @@ function merchPriceLabel(priceKey) {
   return `$${merchPriceValue(priceKey).toFixed(0)}`;
 }
 
+const RETIRED_MERCH_KEYS = new Set([
+  "innovationFloorModelHoodie",
+  "innovationFloorHoodie",
+  "cyberBrainGlowHoodie",
+  "lottomindCoinSet",
+  "city1701Mark",
+  "cyberBrainPlate",
+]);
 const SHARED_MERCH_CATALOG = Array.isArray(window.LOTTOMIND_MERCH_CATALOG) ? window.LOTTOMIND_MERCH_CATALOG : MERCH_CATALOG_FALLBACK;
-const MERCH_ITEMS = SHARED_MERCH_CATALOG.map((item) => ({
+const MERCH_ITEMS = SHARED_MERCH_CATALOG.filter((item) => !RETIRED_MERCH_KEYS.has(item.priceKey)).map((item) => ({
   title: item.title,
   copy: item.copy,
   priceKey: item.priceKey,
@@ -2939,7 +2893,7 @@ function dashboardView() {
           <span>${escapeHtml(item.type)}</span><strong>${escapeHtml(item.title)}</strong><b>${item.price}</b>
         </button>`).join("")}
       </div>
-      <div>
+      <div class="merch-hero-copy">
         <span class="eyebrow">Official Merch Store</span>
         <h2>LottoMind Gear Drop</h2>
         <p>Featured products are pulled from the same catalog and prices used by the Merch Store.</p>
@@ -5870,7 +5824,8 @@ function marketplaceView() {
 }
 
 function merchStoreView() {
-  const selected = MERCH_ITEMS[state.selectedMerchIndex] || MERCH_ITEMS[0];
+  const selectedIndex = Math.min(Math.max(Number(state.selectedMerchIndex) || 0, 0), Math.max(MERCH_ITEMS.length - 1, 0));
+  const selected = MERCH_ITEMS[selectedIndex] || MERCH_ITEMS[0];
   const categories = ["All", ...Array.from(new Set(MERCH_ITEMS.map((item) => item.type)))];
   const filtered = MERCH_ITEMS.filter((item) => state.merchCategory === "All" || item.type === state.merchCategory);
   return `<section class="screen merch-screen">
@@ -5891,6 +5846,7 @@ function merchStoreView() {
         </div>
       </div>
       <div class="merch-video-medallion"><img src="${ASSETS.detroitCapClose}" alt="" /></div>
+      <div class="merch-hero-status" aria-label="Merch store status"><span>Inventory</span><strong>${MERCH_ITEMS.length} drops online</strong></div>
     </div>
     <div class="panel shop-toolbar merch-shop-control">
       <div class="shop-toolbar-copy"><span>Shop Mode</span><strong>Detroit Merch Shelves</strong><small>${filtered.length} items in ${state.merchCategory}</small></div>
@@ -5908,7 +5864,7 @@ function merchStoreView() {
     <div class="merch-grid">
       ${filtered.map((item) => {
         const index = MERCH_ITEMS.indexOf(item);
-        return `<article class="panel product-card ${index === state.selectedMerchIndex ? "active" : ""}">
+        return `<article class="panel product-card ${index === selectedIndex ? "active" : ""}">
         <div class="product-media merch-item-art ${item.className}" style="--product-art:url('${item.art}')"></div>
         <div>
           <span>${index === 0 ? "Featured Drop" : "Official Drop"}</span>

@@ -25653,3 +25653,207 @@ body .route-dreams .future-music-store .record-disc-btn::after {
     max-width: 78%;
   }
 }
+
+/* Merch Store future HUD and square product showcase */
+body .route-store .merch-hero {
+  position: relative;
+  display: block !important;
+  min-height: 372px !important;
+  overflow: hidden;
+  padding: 20px !important;
+  isolation: isolate;
+  border: 1px solid rgba(248, 223, 118, 0.64) !important;
+  border-radius: 18px !important;
+  background:
+    linear-gradient(90deg, rgba(0, 7, 17, 0.96) 0 34%, rgba(0, 10, 22, 0.76) 60%, rgba(0, 8, 18, 0.28) 100%),
+    linear-gradient(180deg, rgba(0, 236, 255, 0.05), rgba(0, 4, 12, 0.88)),
+    var(--panel-art) center / cover no-repeat !important;
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 236, 255, 0.22),
+    inset 0 0 42px rgba(0, 236, 255, 0.08),
+    0 0 28px rgba(0, 236, 255, 0.18) !important;
+}
+
+body .route-store .merch-hero .hero-bg-video {
+  opacity: 0.3 !important;
+  object-fit: cover !important;
+  object-position: center !important;
+  filter: saturate(1.12) contrast(1.12) brightness(0.64) !important;
+  transform: none !important;
+}
+
+body .route-store .merch-hero::before {
+  z-index: 1;
+  background:
+    radial-gradient(circle at 78% 36%, rgba(0, 236, 255, 0.2), transparent 27%),
+    linear-gradient(90deg, rgba(0, 7, 17, 0.9), rgba(0, 7, 17, 0.24) 72%),
+    repeating-linear-gradient(90deg, rgba(0, 236, 255, 0.05) 0 1px, transparent 1px 34px),
+    repeating-linear-gradient(0deg, rgba(0, 236, 255, 0.035) 0 1px, transparent 1px 34px) !important;
+}
+
+body .route-store .merch-hero::after {
+  content: "";
+  position: absolute;
+  inset: 9px;
+  z-index: 1;
+  border: 1px solid rgba(0, 236, 255, 0.28);
+  border-radius: 12px;
+  background:
+    linear-gradient(90deg, #f8df76, #f8df76) left top / 34px 2px no-repeat,
+    linear-gradient(180deg, #f8df76, #f8df76) left top / 2px 34px no-repeat,
+    linear-gradient(90deg, #00ecff, #00ecff) right bottom / 34px 2px no-repeat,
+    linear-gradient(180deg, #00ecff, #00ecff) right bottom / 2px 34px no-repeat;
+  pointer-events: none;
+}
+
+body .route-store .merch-hero-copy {
+  position: relative;
+  z-index: 3 !important;
+  width: min(62%, 246px);
+  max-width: 246px;
+  padding: 14px;
+  border: 1px solid rgba(0, 236, 255, 0.28);
+  border-left: 3px solid #f8df76;
+  border-radius: 12px;
+  background: linear-gradient(120deg, rgba(0, 8, 18, 0.9), rgba(0, 13, 25, 0.62));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 12px 26px rgba(0, 0, 0, 0.32);
+}
+
+body .route-store .merch-hero-copy .eyebrow {
+  color: #58efff;
+  font-size: 8px;
+  letter-spacing: 0.08em;
+}
+
+body .route-store .merch-hero-copy h1 {
+  max-width: 7ch;
+  margin: 6px 0 10px !important;
+  font-size: clamp(36px, 8vw, 52px) !important;
+  line-height: 0.86 !important;
+}
+
+body .route-store .merch-hero-copy p {
+  max-width: 27ch;
+  margin: 0 0 12px;
+  color: rgba(235, 248, 255, 0.9);
+  font-size: 11px;
+  line-height: 1.24;
+}
+
+body .route-store .merch-hero-copy .store-badges {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 5px;
+  margin-bottom: 12px;
+}
+
+body .route-store .merch-hero-copy .store-badges span {
+  width: fit-content;
+  padding: 5px 8px;
+  border-color: rgba(248, 223, 118, 0.38);
+  background: rgba(0, 9, 18, 0.78);
+  color: #fff0a9;
+  font-size: 7px;
+}
+
+body .route-store .merch-hero-copy .hero-actions {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 7px;
+}
+
+body .route-store .merch-video-medallion {
+  position: absolute !important;
+  right: 18px;
+  bottom: 18px;
+  z-index: 4 !important;
+  width: 142px !important;
+  height: 142px !important;
+  aspect-ratio: 1;
+  padding: 7px;
+  overflow: hidden;
+  border: 1px solid rgba(248, 223, 118, 0.72) !important;
+  border-radius: 18px !important;
+  background:
+    radial-gradient(circle at 50% 38%, rgba(0, 236, 255, 0.18), transparent 48%),
+    linear-gradient(145deg, rgba(3, 21, 34, 0.96), rgba(0, 6, 14, 0.98)) !important;
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 236, 255, 0.3),
+    inset 0 -7px 0 rgba(0, 4, 10, 0.82),
+    0 7px 0 rgba(0, 5, 12, 0.92),
+    0 0 25px rgba(0, 236, 255, 0.3) !important;
+}
+
+body .route-store .merch-video-medallion::before,
+body .route-store .merch-video-medallion::after {
+  content: "";
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  pointer-events: none;
+}
+
+body .route-store .merch-video-medallion::before {
+  left: 5px;
+  top: 5px;
+  border-left: 2px solid #00ecff;
+  border-top: 2px solid #00ecff;
+}
+
+body .route-store .merch-video-medallion::after {
+  right: 5px;
+  bottom: 5px;
+  border-right: 2px solid #f8df76;
+  border-bottom: 2px solid #f8df76;
+}
+
+body .route-store .merch-video-medallion img {
+  width: 100% !important;
+  height: 100% !important;
+  border-radius: 11px !important;
+  object-fit: contain !important;
+  object-position: center !important;
+  background: rgba(0, 5, 12, 0.76);
+  filter: saturate(1.08) contrast(1.06) brightness(0.96) !important;
+  transform: none !important;
+}
+
+body .route-store .merch-hero-status {
+  position: absolute !important;
+  right: 18px;
+  top: 18px;
+  z-index: 4 !important;
+  display: grid;
+  min-width: 116px;
+  gap: 2px;
+  padding: 8px 10px;
+  border: 1px solid rgba(0, 236, 255, 0.54);
+  border-radius: 999px;
+  background: rgba(0, 8, 18, 0.84);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 0 18px rgba(0, 236, 255, 0.18);
+  text-align: center;
+  text-transform: uppercase;
+}
+
+body .route-store .merch-hero-status span {
+  color: #59efff;
+  font-size: 7px;
+  line-height: 1;
+}
+
+body .route-store .merch-hero-status strong {
+  color: #fff0a8;
+  font-size: 9px;
+  line-height: 1;
+}
+
+@media (max-width: 430px) {
+  body .route-store .merch-hero-copy {
+    width: min(64%, 224px);
+  }
+
+  body .route-store .merch-video-medallion {
+    width: 126px !important;
+    height: 126px !important;
+  }
+}
