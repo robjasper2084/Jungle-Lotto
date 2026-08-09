@@ -37,6 +37,7 @@ const routes = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/gi)].map((match) => mat
 if (!routes.length) fail("sitemap.xml contains no production routes");
 
 let structuredDataBlocks = 0;
+let transitionRoutes = 0;
 for (const route of routes) {
   if (!route.startsWith(productionBaseUrl)) {
     fail(`sitemap route is outside the production base URL: ${route}`);
@@ -58,6 +59,13 @@ for (const route of routes) {
     fail(`${relativePath}: staging preview banner leaked into production source`);
   }
 
+  if (html.includes("data-lm-page-transition")) {
+    transitionRoutes += 1;
+    if (!html.includes("lm-page-transition.js?v=transition-every-route-6")) {
+      fail(`${relativePath}: shared page transition controller is stale`);
+    }
+  }
+
   for (const match of html.matchAll(/<script\s+[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)) {
     structuredDataBlocks += 1;
     try {
@@ -68,6 +76,8 @@ for (const route of routes) {
   }
 }
 pass(`${routes.length} sitemap routes have production-safe metadata`);
+if (!transitionRoutes) fail("no transition-enabled production routes were found");
+else pass(`${transitionRoutes} transition-enabled routes share the current controller`);
 
 if (!structuredDataBlocks) fail("no structured-data blocks were found");
 else pass(`${structuredDataBlocks} structured-data blocks parse as JSON`);
@@ -122,6 +132,35 @@ if (!accountService.includes("offline: true") || !accountService.includes("verif
   fail("account offline mode does not preserve read-only behavior");
 } else {
   pass("account offline mode blocks mutations and preserves read-only state");
+}
+
+const accountPage = read("account.html");
+const platformStyles = read("assets/css/lm-phase1-platform.css");
+if (
+  !accountPage.includes('class="lm-platform-hero__art lm-account-hero-film"')
+  || !accountPage.includes('src="./assets/video/lottomind-account-vault-film-20260626.mp4"')
+  || !accountPage.includes("controls playsinline preload=\"none\"")
+  || !fs.existsSync(path.resolve(siteRoot, "assets/video/lottomind-account-vault-film-20260626.mp4"))
+) {
+  fail("Account hero does not use the user-controlled Collector Vault film");
+} else if (
+  !platformStyles.includes(".lm-account-page .lm-header-utilities")
+  || !platformStyles.includes("border-radius: 4px")
+) {
+  fail("Account utilities do not retain the compact HUD treatment");
+} else {
+  pass("Account hero film and non-orb HUD utilities are configured");
+}
+
+const articles = JSON.parse(read("articles.json") || "[]");
+const externalArticleImages = articles.filter((article) => /^https?:\/\//i.test(article.imageUrl || ""));
+const imageHydrator = read("news-hub/scripts/hydrate-static-article-images.ts");
+if (externalArticleImages.length) {
+  fail(`${externalArticleImages.length} News cards still hotlink external images`);
+} else if (!imageHydrator.includes("withoutUncachedExternalImage")) {
+  fail("News image hydration does not preserve the local fallback for failed publisher media");
+} else {
+  pass("News cards use local images or local fallback art without broken external hotlinks");
 }
 
 const refinedApp = read("lotto mind refined/app.js", repositoryRoot);

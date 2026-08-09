@@ -27,7 +27,7 @@
   const liveBallpassCanvas = document.querySelector("[data-live-ballpass-bg]");
   const previewIframes = Array.from(document.querySelectorAll(".event-card .video-thumb iframe"));
   const heroSingerFilm = document.querySelector("[data-live-hero-film-video]");
-  const heroSingerAudio = document.querySelector("[data-live-hero-film-audio]");
+  const heroSingerAudio = document.querySelector("[data-live-hero-film-audio]") || heroSingerFilm;
   const heroSingerSound = document.querySelector("[data-live-hero-film-sound]");
   const decorativeVideos = Array.from(document.querySelectorAll("video")).filter((video) => (
     !video.closest("#twitch-live") &&
@@ -55,7 +55,7 @@
       if (!heroSingerSound) return;
       heroSingerSound.classList.toggle("is-active", active);
       heroSingerSound.setAttribute("aria-pressed", String(active));
-      heroSingerSound.textContent = active ? "Stop performance" : "Start with sound";
+      heroSingerSound.textContent = active ? "Stop performance" : "Play with sound";
       heroSingerFilm.dataset.soundState = active ? "playing" : "ready";
     };
 
@@ -88,11 +88,23 @@
     const syncPlayback = () => {
       if (document.hidden || !isVisible) {
         heroSingerFilm.pause();
-        heroSingerAudio?.pause();
+        if (heroSingerAudio !== heroSingerFilm) heroSingerAudio?.pause();
         return;
       }
-      if (!heroSingerSoundEnabled) return;
-      Promise.all([heroSingerFilm.play(), heroSingerAudio?.play()]).catch(() => stopHeroAudio());
+      if (reducedMotion.matches && !heroSingerSoundEnabled) {
+        heroSingerFilm.pause();
+        return;
+      }
+      if (!heroSingerSoundEnabled) {
+        heroSingerFilm.muted = true;
+        heroSingerFilm.defaultMuted = true;
+        heroSingerFilm.play().catch(() => {});
+        return;
+      }
+      const playback = heroSingerAudio === heroSingerFilm
+        ? [heroSingerFilm.play()]
+        : [heroSingerFilm.play(), heroSingerAudio?.play()];
+      Promise.all(playback).catch(() => stopHeroAudio());
     };
 
     const stopBackgroundAudio = () => {
@@ -108,7 +120,7 @@
       heroSingerSoundEnabled = false;
       stopHeroSync();
       heroSingerFilm.pause();
-      heroSingerAudio?.pause();
+      if (heroSingerAudio !== heroSingerFilm) heroSingerAudio?.pause();
       if (options.reset) {
         try { heroSingerFilm.currentTime = 0; } catch {}
         try { if (heroSingerAudio) heroSingerAudio.currentTime = 0; } catch {}
@@ -136,7 +148,10 @@
         alignHeroSoundtrack();
       }
       try {
-        await Promise.all([heroSingerFilm.play(), heroSingerAudio.play()]);
+        const playback = heroSingerAudio === heroSingerFilm
+          ? [heroSingerFilm.play()]
+          : [heroSingerFilm.play(), heroSingerAudio.play()];
+        await Promise.all(playback);
         heroSingerSoundEnabled = true;
         startHeroSync();
         setSoundState(true);
@@ -163,6 +178,7 @@
     heroSingerSound?.addEventListener("click", async () => {
       if (heroSingerSoundEnabled) {
         stopHeroAudio({ reset: true });
+        syncPlayback();
         return;
       }
 
@@ -171,6 +187,7 @@
     });
 
     heroSingerAudio?.addEventListener("play", () => {
+      if (heroSingerAudio === heroSingerFilm && heroSingerFilm.muted) return;
       heroSingerSoundEnabled = true;
       alignHeroSoundtrack();
       setSoundState(true);
@@ -199,13 +216,14 @@
 
     document.addEventListener("visibilitychange", syncPlayback);
     reducedMotion.addEventListener?.("change", syncPlayback);
-    heroSingerFilm.pause();
-    heroSingerFilm.muted = false;
-    heroSingerFilm.defaultMuted = false;
-    heroSingerFilm.removeAttribute("muted");
+    heroSingerFilm.muted = true;
+    heroSingerFilm.defaultMuted = true;
+    heroSingerFilm.setAttribute("muted", "");
+    heroSingerFilm.loop = false;
     try { heroSingerFilm.currentTime = 0; } catch {}
     try { if (heroSingerAudio) heroSingerAudio.currentTime = 0; } catch {}
     setSoundState(false);
+    syncPlayback();
   }
   function two(value) {
     return String(value).padStart(2, "0");
@@ -372,7 +390,7 @@
         livePlayer?.removeAttribute("data-hero-audio");
         heroSingerSound?.classList.remove("is-active");
         heroSingerSound?.setAttribute("aria-pressed", "false");
-        if (heroSingerSound) heroSingerSound.textContent = "Start with sound";
+        if (heroSingerSound) heroSingerSound.textContent = "Play with sound";
       }
       livePlayerAudio.volume = options.volume ?? window.LMAudioMix?.levels.live ?? 0.56;
       window.LMAudioMix?.claim?.(livePlayerAudio);

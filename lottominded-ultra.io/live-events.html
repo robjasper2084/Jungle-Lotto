@@ -144,26 +144,28 @@
           <div class="lm-live-hero-film__stage">
             <video
               controls
+              autoplay
+              muted
               playsinline
               preload="metadata"
+              poster="./assets/video/E2887E5E-CD89-45E3-ABC2-E32ED00C2652-poster.webp"
               data-lm-video-unmanaged="true"
               data-live-hero-film-video
-              aria-label="Bloom Through Gloom singer performance"
+              aria-label="Featured Stream Events archive performance"
             >
-              <source src="./assets/video/merch-hero-blended.mp4" type="video/mp4" />
+              <source
+                src="./assets/video/E2887E5E-CD89-45E3-ABC2-E32ED00C2652.mobile.mp4"
+                type="video/mp4"
+                media="(max-width: 720px)"
+              />
+              <source src="./assets/video/E2887E5E-CD89-45E3-ABC2-E32ED00C2652.mp4" type="video/mp4" />
             </video>
-            <audio
-              preload="metadata"
-              data-live-hero-film-audio
-              src="./assets/audio/featured-stream-events-start.mp3"
-              aria-label="Bloom Through Gloom performance music"
-            ></audio>
-            <span class="lm-live-hero-film__status" data-scramble>Archive performance</span>
+            <span class="lm-live-hero-film__status" data-scramble>Featured stream archive</span>
           </div>
           <figcaption>
-            <span data-scramble>Bloom Through Gloom</span>
-            <strong>Limited Signal Capsule</strong>
-            <small>Start the film with sound. The page mix follows when it ends.</small>
+            <span data-scramble>Featured Stream Events</span>
+            <strong>New Signal Capsule</strong>
+            <small>The film previews silently. Play with sound to hear the performance; the page mix follows when it ends.</small>
           </figcaption>
         </figure>
         <button
@@ -171,7 +173,7 @@
           type="button"
           data-live-hero-film-sound
           aria-pressed="false"
-        >Start with sound</button>
+        >Play with sound</button>
       </section>
 
       <section class="lm-section panel-glow" id="upcoming" data-shape="1" data-entity-label="Upcoming" data-bg="#09070f" data-glow="#ffe66d">
@@ -349,9 +351,9 @@
     </footer>
 
 <script src="./assets/js/lm-page-transition-audio.js?v=transition-audio-in-out-7" defer></script>
-<script src="./assets/js/lm-page-transition.js?v=transition-every-route-5" defer></script>
+<script src="./assets/js/lm-page-transition.js?v=transition-every-route-6" defer></script>
 <script src="./site.js?v=header-toggle-routes-5" defer></script>
-    <script src="./assets/live-events/js/live-events-redesign.js?v=audible-film-handoff-6" defer></script>
+    <script src="./assets/live-events/js/live-events-redesign.js?v=featured-archive-film-8" defer></script>
     <script src="./assets/live-events/js/live-events-console.js?v=live-console-1" defer></script>
     <script src="./assets/vendor/gsap/gsap.min.js?v=3.13.0" defer></script>
     <script src="./assets/vendor/gsap/ScrollTrigger.min.js?v=3.13.0" defer></script>

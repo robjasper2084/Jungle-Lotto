@@ -40,6 +40,14 @@ function safeExtension(url: string, contentType: string): string | undefined {
     : undefined;
 }
 
+function withoutUncachedExternalImage(article: StaticArticle, publisherImageUrl: string): StaticArticle {
+  const nextArticle = { ...article, publisherImageUrl };
+  if (/^https?:\/\//i.test(nextArticle.imageUrl || "")) {
+    delete nextArticle.imageUrl;
+  }
+  return nextArticle;
+}
+
 async function cachePublisherImage(article: StaticArticle, index: number): Promise<StaticArticle> {
   const publisherImageUrl = article.publisherImageUrl
     || (/^https:\/\//i.test(article.imageUrl || "") ? article.imageUrl : undefined);
@@ -56,13 +64,15 @@ async function cachePublisherImage(article: StaticArticle, index: number): Promi
       redirect: "follow",
       signal: controller.signal,
     });
-    if (!response.ok) return { ...article, publisherImageUrl };
+    if (!response.ok) return withoutUncachedExternalImage(article, publisherImageUrl);
     const declaredSize = Number(response.headers.get("content-length") || 0);
-    if (declaredSize > MAX_IMAGE_BYTES) return { ...article, publisherImageUrl };
+    if (declaredSize > MAX_IMAGE_BYTES) return withoutUncachedExternalImage(article, publisherImageUrl);
     const extension = safeExtension(response.url || publisherImageUrl, response.headers.get("content-type") || "");
-    if (!extension) return { ...article, publisherImageUrl };
+    if (!extension) return withoutUncachedExternalImage(article, publisherImageUrl);
     const bytes = new Uint8Array(await response.arrayBuffer());
-    if (!bytes.length || bytes.length > MAX_IMAGE_BYTES) return { ...article, publisherImageUrl };
+    if (!bytes.length || bytes.length > MAX_IMAGE_BYTES) {
+      return withoutUncachedExternalImage(article, publisherImageUrl);
+    }
 
     const articleId = article.id || `static-${index}`;
     const digest = createHash("sha256").update(publisherImageUrl).digest("hex").slice(0, 12);
@@ -75,7 +85,7 @@ async function cachePublisherImage(article: StaticArticle, index: number): Promi
       imageUrl: `../assets/news/publishers/${filename}`,
     };
   } catch {
-    return { ...article, publisherImageUrl };
+    return withoutUncachedExternalImage(article, publisherImageUrl);
   } finally {
     clearTimeout(timeout);
   }

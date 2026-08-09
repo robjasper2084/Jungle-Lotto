@@ -3,6 +3,13 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script>
+      try {
+        if (sessionStorage.getItem("lmTransitionArriving") === "yes") {
+          document.documentElement.classList.add("lm-transition-arriving");
+        }
+      } catch (_) {}
+    </script>
     <meta name="robots" content="noindex,follow" />
     <meta name="description" content="Access your LottoMind account, verified LottoCredits, membership summary, and Collector Vault routes." />
     <title>Account and Vault | LOTTOMINDED ULTRA</title>
@@ -21,7 +28,7 @@
     <link rel="stylesheet" href="./styles.css?v=phase1-shell-1" />
     <link rel="stylesheet" href="./assets/css/lm-page-transition.css?v=transition-exit-audit-4" />
     <link rel="stylesheet" href="./assets/css/lm-global-orb-header.css?v=header-consistency-4" />
-    <link rel="stylesheet" href="./assets/css/lm-phase1-platform.css?v=platform-hud-depth-1" />
+    <link rel="stylesheet" href="./assets/css/lm-phase1-platform.css?v=platform-hud-depth-2" />
     <link rel="stylesheet" href="./assets/css/lm-rahbee-depth.css?v=1" />
   </head>
   <body class="lm-platform-page lm-account-page lm-rahbee-depth-page home-page has-sphere-header">
@@ -29,16 +36,18 @@
     <header class="site-header" data-site-header></header>
     <main id="main-content" class="lm-platform-main">
       <section class="lm-platform-hero">
-        <video class="lm-platform-hero__video" autoplay muted loop playsinline preload="metadata" aria-hidden="true" tabindex="-1">
-          <source src="./assets/video/lm-feature-portal-loop.mp4" type="video/mp4" />
-        </video>
         <div class="lm-platform-hero__copy">
           <p class="lm-platform-kicker">Collector Vault / verified account uplink</p>
           <h1>Your LottoMind signal.</h1>
           <p>Sign in to view verified identity, LottoCredits, membership, and Collector Vault routes. Offline snapshots are always labeled read-only and unverified.</p>
           <p data-account-status role="status" aria-live="polite">Checking account service...</p>
         </div>
-        <img class="lm-platform-hero__art" src="./assets/brand/lottomind-little-man-membership-hero-v2.webp" alt="Little Man Guardian collectible in the LottoMind signal vault" fetchpriority="high" decoding="async" />
+        <figure class="lm-platform-hero__media">
+          <video class="lm-platform-hero__art lm-account-hero-film" controls playsinline preload="none" poster="./assets/brand/lottomind-little-man-membership-hero-v2.webp" aria-label="LottoMind Collector Vault signal film">
+            <source src="./assets/video/lottomind-account-vault-film-20260626.mp4" type="video/mp4" />
+          </video>
+          <figcaption>Collector Vault signal film. Playback begins only when selected.</figcaption>
+        </figure>
       </section>
 
       <section class="lm-platform-section" aria-labelledby="account-title">
@@ -153,7 +162,7 @@
     <script src="./assets/js/lottomind-account-service.js"></script>
     <script src="./assets/js/arcade-games.js"></script>
     <script src="./assets/js/lm-page-transition-audio.js?v=transition-audio-in-out-7" defer></script>
-    <script src="./assets/js/lm-page-transition.js?v=phase1-routes-1" defer></script>
+    <script src="./assets/js/lm-page-transition.js?v=transition-every-route-6" defer></script>
     <script src="./site.js?v=phase1-shell-1" defer></script>
     <script src="./assets/js/lm-account-hub.js?v=account-dashboard-1" defer></script>
   </body>

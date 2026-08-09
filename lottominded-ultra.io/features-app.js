@@ -122,6 +122,7 @@
   function createCard(game, index) {
     const article = document.createElement("article");
     article.className = `arcade-game-card arcade-game-card--${game.accent || "signal"}`;
+    article.setAttribute("role", "listitem");
     article.dataset.gameId = game.id;
     article.dataset.category = game.category;
 
