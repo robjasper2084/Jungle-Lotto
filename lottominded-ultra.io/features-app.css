@@ -559,9 +559,21 @@ body.arcade-pilot-page.feature-entity-ready .feature-entity {
 }
 
 .arcade-directory {
+  position: relative;
   width: min(1320px, calc(100% - 3rem));
   margin: 0 auto;
   padding: 5.5rem 0 4rem;
+}
+
+.arcade-directory::before {
+  position: absolute;
+  top: 3.2rem;
+  right: 0;
+  left: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--arcade-cyan) 0 19%, transparent 19% 21%, var(--arcade-gold) 21% 76%, transparent 76% 78%, var(--arcade-violet) 78% 100%);
+  content: "";
+  opacity: 0.8;
 }
 
 .arcade-directory__header {
@@ -600,6 +612,12 @@ body.arcade-pilot-page.feature-entity-ready .feature-entity {
   display: grid;
   justify-items: end;
   gap: 0.45rem;
+  min-width: 180px;
+  padding: 0.8rem 1rem;
+  border: 1px solid var(--arcade-line);
+  border-right: 3px solid var(--arcade-gold);
+  background: rgba(5, 13, 20, 0.9);
+  clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
 }
 
 .arcade-directory__rail-status > span {
@@ -673,28 +691,9 @@ body.arcade-pilot-page.feature-entity-ready .feature-entity {
 
 .arcade-grid {
   display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: minmax(280px, calc((100% - 2rem) / 3));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 1rem;
-  padding: 0 0.15rem 1.15rem;
-  overflow-x: auto;
-  overscroll-behavior-inline: contain;
-  scroll-behavior: smooth;
-  scroll-snap-type: inline mandatory;
-  scrollbar-color: var(--arcade-gold) rgba(81, 231, 238, 0.12);
-  scrollbar-width: thin;
-}
-
-.arcade-grid::-webkit-scrollbar {
-  height: 8px;
-}
-
-.arcade-grid::-webkit-scrollbar-track {
-  background: rgba(81, 231, 238, 0.1);
-}
-
-.arcade-grid::-webkit-scrollbar-thumb {
-  background: linear-gradient(90deg, var(--arcade-gold), var(--arcade-cyan));
+  padding: 0.2rem 0 1rem;
 }
 
 .arcade-game-card {
@@ -708,8 +707,15 @@ body.arcade-pilot-page.feature-entity-ready .feature-entity {
   border-radius: 5px;
   background: var(--arcade-panel);
   box-shadow: 0 14px 32px rgba(0, 0, 0, 0.28);
-  scroll-snap-align: start;
-  scroll-snap-stop: always;
+  min-height: 100%;
+  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+
+.arcade-game-card:hover,
+.arcade-game-card:focus-within {
+  border-color: var(--card-accent);
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.4), 0 0 24px color-mix(in srgb, var(--card-accent) 22%, transparent);
+  transform: translateY(-3px);
 }
 
 .arcade-game-card--gold,
@@ -840,6 +846,76 @@ body.arcade-pilot-page.feature-entity-ready .feature-entity {
   text-align: center;
 }
 
+.arcade-loading,
+.arcade-load-error {
+  width: min(1320px, calc(100% - 3rem));
+  margin: 1rem auto;
+  border: 1px solid var(--arcade-line);
+  background: rgba(3, 13, 21, 0.94);
+  color: var(--arcade-text);
+}
+
+.arcade-loading {
+  padding: 1rem;
+  color: var(--arcade-cyan);
+  font-size: 0.76rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.arcade-loading__cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 0.85rem;
+}
+
+.arcade-loading__cards i {
+  display: block;
+  min-height: 180px;
+  border: 1px solid rgba(91, 240, 216, 0.2);
+  background: linear-gradient(90deg, #07111a 20%, #0c2330 50%, #07111a 80%);
+  background-size: 220% 100%;
+  animation: arcade-manifest-pulse 1.4s linear infinite;
+}
+
+.arcade-load-error {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.2rem;
+  border-color: rgba(241, 199, 91, 0.7);
+}
+
+.arcade-load-error[hidden] { display: none; }
+.arcade-load-error div { display: grid; gap: 0.2rem; }
+.arcade-load-error strong { color: var(--arcade-gold); text-transform: uppercase; }
+.arcade-load-error span { color: var(--arcade-muted); }
+.arcade-load-error button {
+  min-width: 96px;
+  min-height: 44px;
+  border: 1px solid var(--arcade-cyan);
+  background: #071823;
+  color: var(--arcade-cyan);
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+@keyframes arcade-manifest-pulse { to { background-position: -220% 0; } }
+
+@media (max-width: 700px) {
+  .arcade-loading,
+  .arcade-load-error { width: min(100% - 1.5rem, 1320px); }
+  .arcade-loading__cards { grid-template-columns: 1fr; }
+  .arcade-loading__cards i:nth-child(n + 2) { display: none; }
+  .arcade-load-error { align-items: stretch; flex-direction: column; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .arcade-loading__cards i { animation: none; }
+}
+
 .arcade-responsible-note {
   display: grid;
   content-visibility: visible !important;
@@ -922,7 +998,7 @@ body.arcade-pilot-page.feature-entity-ready .feature-entity {
   }
 
   .arcade-grid {
-    grid-auto-columns: minmax(280px, calc((100% - 1rem) / 2));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .feature-channel-rail__grid {
@@ -1056,6 +1132,10 @@ body.arcade-pilot-page.feature-entity-ready .feature-entity {
     padding-top: 3.5rem;
   }
 
+  .arcade-directory::before {
+    top: 2rem;
+  }
+
   .arcade-directory__header {
     align-items: start;
   }
@@ -1079,8 +1159,7 @@ body.arcade-pilot-page.feature-entity-ready .feature-entity {
   }
 
   .arcade-grid {
-    grid-auto-columns: minmax(270px, 86vw);
-    scroll-padding-inline: 0.15rem;
+    grid-template-columns: 1fr;
   }
 
   .arcade-responsible-note {

@@ -1,15 +1,15 @@
 {
-  "generatedAt": "2026-08-04T04:42:56.906Z",
-  "sourceCommit": "0dc245f2c7eee8ddcaf19599613900bb07f010d4",
-  "stagingUrl": "http://127.0.0.1:8405",
+  "generatedAt": "2026-08-09T05:55:39.275Z",
+  "sourceCommit": "afbf7a58ab89750e65f7051ba34ecefe3057984f",
+  "stagingUrl": "http://127.0.0.1:8649",
   "productionReference": {
     "branch": "main",
     "commit": "975c637cea7003533cdc30aed9d96be51929bfc8",
     "tag": "v1-final"
   },
-  "routeCount": 26,
+  "routeCount": 27,
   "viewportCount": 3,
-  "captureCount": 78,
+  "captureCount": 81,
   "failureCount": 0,
   "contactSheets": [
     "desktop-contact-sheet.png",
@@ -22,8 +22,8 @@
       "viewport": "desktop",
       "dimensions": "1440x900",
       "status": 200,
-      "title": "LOTTOMINDED ULTRA | Browser Music Workstation",
-      "firstHeading": "Start the home frequency.",
+      "title": "LottoMind | App, Arcade, Studio and Creative Hub",
+      "firstHeading": "Start the Home Frequency.",
       "horizontalOverflow": false,
       "visibleKeyboardFocus": true,
       "reducedMotion": true,
@@ -36,10 +36,11 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 5577087,
+      "sameOriginBytes": 4954096,
       "consoleErrors": [],
       "pageErrors": [],
-      "assetFailures": []
+      "assetFailures": [],
+      "externalAssetWarnings": []
     },
     {
       "route": "/features-app.html",
@@ -60,10 +61,11 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 8001629,
+      "sameOriginBytes": 10696332,
       "consoleErrors": [],
       "pageErrors": [],
-      "assetFailures": []
+      "assetFailures": [],
+      "externalAssetWarnings": []
     },
     {
       "route": "/memberships.html",
@@ -84,10 +86,11 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 4971642,
+      "sameOriginBytes": 11329219,
       "consoleErrors": [],
       "pageErrors": [],
-      "assetFailures": []
+      "assetFailures": [],
+      "externalAssetWarnings": []
     },
     {
       "route": "/news/",
@@ -108,10 +111,11 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1348871,
+      "sameOriginBytes": 1910826,
       "consoleErrors": [],
       "pageErrors": [],
-      "assetFailures": []
+      "assetFailures": [],
+      "externalAssetWarnings": []
     },
     {
       "route": "/live-events.html",
@@ -132,10 +136,11 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 8747497,
+      "sameOriginBytes": 10521048,
       "consoleErrors": [],
       "pageErrors": [],
-      "assetFailures": []
+      "assetFailures": [],
+      "externalAssetWarnings": []
     },
     {
       "route": "/lottery-spheres.html",
@@ -156,10 +161,11 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1375087,
+      "sameOriginBytes": 1393432,
       "consoleErrors": [],
       "pageErrors": [],
-      "assetFailures": []
+      "assetFailures": [],
+      "externalAssetWarnings": []
     },
     {
       "route": "/beat2lotto-plus.html",
@@ -180,18 +186,19 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 10794009,
+      "sameOriginBytes": 10810545,
       "consoleErrors": [],
       "pageErrors": [],
-      "assetFailures": []
+      "assetFailures": [],
+      "externalAssetWarnings": []
     },
     {
       "route": "/merch-store.html",
       "viewport": "desktop",
       "dimensions": "1440x900",
       "status": 200,
-      "title": "LOTTOMINDED ULTRA | Merch + Gallery Store",
-      "firstHeading": "Lottomind™ Merch + Art Gallery",
+      "title": "Guardian Collection | LottoMind Storefront",
+      "firstHeading": "Guardian Collection Storefront",
       "horizontalOverflow": false,
       "visibleKeyboardFocus": true,
       "reducedMotion": true,
@@ -204,10 +211,11 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 4224670,
+      "sameOriginBytes": 4300987,
       "consoleErrors": [],
       "pageErrors": [],
-      "assetFailures": []
+      "assetFailures": [],
+      "externalAssetWarnings": []
     },
     {
       "route": "/how-to-use.html",
@@ -228,10 +236,11 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 14572511,
+      "sameOriginBytes": 14589047,
       "consoleErrors": [],
       "pageErrors": [],
-      "assetFailures": []
+      "assetFailures": [],
+      "externalAssetWarnings": []
     },
     {
       "route": "/privacy.html",
@@ -252,10 +261,11 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 2243734,
+      "sameOriginBytes": 2261846,
       "consoleErrors": [],
       "pageErrors": [],
-      "assetFailures": []
+      "assetFailures": [],
+      "externalAssetWarnings": []
     },
     {
       "route": "/terms.html",
@@ -276,10 +286,11 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 2243924,
+      "sameOriginBytes": 2262036,
       "consoleErrors": [],
       "pageErrors": [],
-      "assetFailures": []
+      "assetFailures": [],
+      "externalAssetWarnings": []
     },
     {
       "route": "/accessibility.html",
@@ -300,10 +311,11 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1112049,
+      "sameOriginBytes": 1128585,
       "consoleErrors": [],
       "pageErrors": [],
-      "assetFailures": []
+      "assetFailures": [],
+      "externalAssetWarnings": []
     },
     {
       "route": "/prompt-lab.html",
@@ -324,10 +336,11 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1254599,
+      "sameOriginBytes": 1366018,
       "consoleErrors": [],
       "pageErrors": [],
-      "assetFailures": []
+      "assetFailures": [],
+      "externalAssetWarnings": []
     },
     {
       "route": "/redeem.html",
@@ -348,10 +361,11 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 570528,
+      "sameOriginBytes": 584068,
       "consoleErrors": [],
       "pageErrors": [],
-      "assetFailures": []
+      "assetFailures": [],
+      "externalAssetWarnings": []
     },
     {
       "route": "/contact.html",
@@ -372,10 +386,11 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1116675,
+      "sameOriginBytes": 1133211,
       "consoleErrors": [],
       "pageErrors": [],
-      "assetFailures": []
+      "assetFailures": [],
+      "externalAssetWarnings": []
     },
     {
       "route": "/help.html",
@@ -396,10 +411,11 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1287943,
+      "sameOriginBytes": 1309747,
       "consoleErrors": [],
       "pageErrors": [],
-      "assetFailures": []
+      "assetFailures": [],
+      "externalAssetWarnings": []
     },
     {
       "route": "/account.html",
@@ -420,10 +436,11 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 2739486,
+      "sameOriginBytes": 2495219,
       "consoleErrors": [],
       "pageErrors": [],
-      "assetFailures": []
+      "assetFailures": [],
+      "externalAssetWarnings": []
     },
     {
       "route": "/404.html",
@@ -444,10 +461,11 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 531555,
+      "sameOriginBytes": 543695,
       "consoleErrors": [],
       "pageErrors": [],
-      "assetFailures": []
+      "assetFailures": [],
+      "externalAssetWarnings": []
     },
     {
       "route": "/games/gothtechnology2/",
@@ -468,10 +486,11 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1582242,
+      "sameOriginBytes": 1606963,
       "consoleErrors": [],
       "pageErrors": [],
-      "assetFailures": []
+      "assetFailures": [],
+      "externalAssetWarnings": []
     },
     {
       "route": "/games/lottomind-jackpot-maze/",
@@ -492,10 +511,11 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 971185,
+      "sameOriginBytes": 971191,
       "consoleErrors": [],
       "pageErrors": [],
-      "assetFailures": []
+      "assetFailures": [],
+      "externalAssetWarnings": []
     },
     {
       "route": "/games/lottomind-313-fortune-grid/",
@@ -516,10 +536,36 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 5763936,
+      "sameOriginBytes": 5764902,
       "consoleErrors": [],
       "pageErrors": [],
-      "assetFailures": []
+      "assetFailures": [],
+      "externalAssetWarnings": []
+    },
+    {
+      "route": "/games/lottomind-trivia/",
+      "viewport": "desktop",
+      "dimensions": "1440x900",
+      "status": 200,
+      "title": "LottoMind Trivia Vault | LOTTOMINDED ULTRA",
+      "firstHeading": "LottoMind Trivia Vault",
+      "horizontalOverflow": false,
+      "visibleKeyboardFocus": true,
+      "reducedMotion": true,
+      "noindex": "noindex,nofollow,noarchive",
+      "stagingBannerVisible": true,
+      "environment": {
+        "name": "staging",
+        "allowLivePayments": false,
+        "allowAccountWrites": false,
+        "allowRedemptions": false,
+        "allowProductionAnalytics": false
+      },
+      "sameOriginBytes": 1487796,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "assetFailures": [],
+      "externalAssetWarnings": []
     },
     {
       "route": "/games/opengw-levels/",
@@ -540,10 +586,11 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 5474489,
+      "sameOriginBytes": 5474495,
       "consoleErrors": [],
       "pageErrors": [],
-      "assetFailures": []
+      "assetFailures": [],
+      "externalAssetWarnings": []
     },
     {
       "route": "/games/shadow-ops-canvas/",
@@ -564,10 +611,11 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 3880314,
+      "sameOriginBytes": 3880320,
       "consoleErrors": [],
       "pageErrors": [],
-      "assetFailures": []
+      "assetFailures": [],
+      "externalAssetWarnings": []
     },
     {
       "route": "/games/raytrace-pong-background/",
@@ -588,10 +636,11 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 64051,
+      "sameOriginBytes": 64057,
       "consoleErrors": [],
       "pageErrors": [],
-      "assetFailures": []
+      "assetFailures": [],
+      "externalAssetWarnings": []
     },
     {
       "route": "/lottery-spheres.html#spheres",
@@ -612,17 +661,18 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1375087,
+      "sameOriginBytes": 1393432,
       "consoleErrors": [],
       "pageErrors": [],
-      "assetFailures": []
+      "assetFailures": [],
+      "externalAssetWarnings": []
     },
     {
       "route": "/lottomind-stem-studio/",
       "viewport": "desktop",
       "dimensions": "1440x900",
       "status": 200,
-      "title": "LOTTOMINDED ULTRA | Stem Studio",
+      "title": "LottoMind Studio | Music Workstation",
       "firstHeading": "Stem Studio",
       "horizontalOverflow": false,
       "visibleKeyboardFocus": true,
@@ -636,18 +686,19 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 3025871,
+      "sameOriginBytes": 3025882,
       "consoleErrors": [],
       "pageErrors": [],
-      "assetFailures": []
+      "assetFailures": [],
+      "externalAssetWarnings": []
     },
     {
       "route": "/",
       "viewport": "tablet",
       "dimensions": "768x1024",
       "status": 200,
-      "title": "LOTTOMINDED ULTRA | Browser Music Workstation",
-      "firstHeading": "Start the home frequency.",
+      "title": "LottoMind | App, Arcade, Studio and Creative Hub",
+      "firstHeading": "Start the Home Frequency.",
       "horizontalOverflow": false,
       "visibleKeyboardFocus": true,
       "reducedMotion": true,
@@ -660,10 +711,11 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 5415319,
+      "sameOriginBytes": 4792328,
       "consoleErrors": [],
       "pageErrors": [],
-      "assetFailures": []
+      "assetFailures": [],
+      "externalAssetWarnings": []
     },
     {
       "route": "/features-app.html",
@@ -684,10 +736,11 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 7278977,
+      "sameOriginBytes": 10523286,
       "consoleErrors": [],
       "pageErrors": [],
-      "assetFailures": []
+      "assetFailures": [],
+      "externalAssetWarnings": []
     },
     {
       "route": "/memberships.html",
@@ -708,10 +761,11 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 4809874,
+      "sameOriginBytes": 11167451,
       "consoleErrors": [],
       "pageErrors": [],
-      "assetFailures": []
+      "assetFailures": [],
+      "externalAssetWarnings": []
     },
     {
       "route": "/news/",
@@ -732,10 +786,11 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1339408,
+      "sameOriginBytes": 1580176,
       "consoleErrors": [],
       "pageErrors": [],
-      "assetFailures": []
+      "assetFailures": [],
+      "externalAssetWarnings": []
     },
     {
       "route": "/live-events.html",
@@ -756,10 +811,11 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 8736219,
+      "sameOriginBytes": 10509770,
       "consoleErrors": [],
       "pageErrors": [],
-      "assetFailures": []
+      "assetFailures": [],
+      "externalAssetWarnings": []
     },
     {
       "route": "/lottery-spheres.html",
@@ -780,10 +836,11 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1202041,
+      "sameOriginBytes": 1220386,
       "consoleErrors": [],
       "pageErrors": [],
-      "assetFailures": []
+      "assetFailures": [],
+      "externalAssetWarnings": []
     },
     {
       "route": "/beat2lotto-plus.html",
@@ -804,18 +861,19 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 10620963,
+      "sameOriginBytes": 10637499,
       "consoleErrors": [],
       "pageErrors": [],
-      "assetFailures": []
+      "assetFailures": [],
+      "externalAssetWarnings": []
     },
     {
       "route": "/merch-store.html",
       "viewport": "tablet",
       "dimensions": "768x1024",
       "status": 200,
-      "title": "LOTTOMINDED ULTRA | Merch + Gallery Store",
-      "firstHeading": "Lottomind™ Merch + Art Gallery",
+      "title": "Guardian Collection | LottoMind Storefront",
+      "firstHeading": "Guardian Collection Storefront",
       "horizontalOverflow": false,
       "visibleKeyboardFocus": true,
       "reducedMotion": true,
@@ -828,10 +886,11 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 4213392,
+      "sameOriginBytes": 4289709,
       "consoleErrors": [],
       "pageErrors": [],
-      "assetFailures": []
+      "assetFailures": [],
+      "externalAssetWarnings": []
     },
     {
       "route": "/how-to-use.html",
@@ -852,10 +911,11 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 14399465,
+      "sameOriginBytes": 14416001,
       "consoleErrors": [],
       "pageErrors": [],
-      "assetFailures": []
+      "assetFailures": [],
+      "externalAssetWarnings": []
     },
     {
       "route": "/privacy.html",
@@ -876,10 +936,11 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 2070688,
+      "sameOriginBytes": 2088800,
       "consoleErrors": [],
       "pageErrors": [],
-      "assetFailures": []
+      "assetFailures": [],
+      "externalAssetWarnings": []
     },
     {
       "route": "/terms.html",
@@ -900,10 +961,11 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 2070878,
+      "sameOriginBytes": 2088990,
       "consoleErrors": [],
       "pageErrors": [],
-      "assetFailures": []
+      "assetFailures": [],
+      "externalAssetWarnings": []
     },
     {
       "route": "/accessibility.html",
@@ -924,10 +986,11 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 939003,
+      "sameOriginBytes": 955539,
       "consoleErrors": [],
       "pageErrors": [],
-      "assetFailures": []
+      "assetFailures": [],
+      "externalAssetWarnings": []
     },
     {
       "route": "/prompt-lab.html",
@@ -948,10 +1011,11 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1317557,
+      "sameOriginBytes": 1109688,
       "consoleErrors": [],
       "pageErrors": [],
-      "assetFailures": []
+      "assetFailures": [],
+      "externalAssetWarnings": []
     },
     {
       "route": "/redeem.html",
@@ -972,10 +1036,11 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 570528,
+      "sameOriginBytes": 584068,
       "consoleErrors": [],
       "pageErrors": [],
-      "assetFailures": []
+      "assetFailures": [],
+      "externalAssetWarnings": []
     },
     {
       "route": "/contact.html",
@@ -996,10 +1061,11 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 943629,
+      "sameOriginBytes": 960165,
       "consoleErrors": [],
       "pageErrors": [],
-      "assetFailures": []
+      "assetFailures": [],
+      "externalAssetWarnings": []
     },
     {
       "route": "/help.html",
@@ -1020,10 +1086,11 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1114897,
+      "sameOriginBytes": 1136701,
       "consoleErrors": [],
       "pageErrors": [],
-      "assetFailures": []
+      "assetFailures": [],
+      "externalAssetWarnings": []
     },
     {
       "route": "/account.html",
@@ -1044,10 +1111,11 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 2566440,
+      "sameOriginBytes": 2322173,
       "consoleErrors": [],
       "pageErrors": [],
-      "assetFailures": []
+      "assetFailures": [],
+      "externalAssetWarnings": []
     },
     {
       "route": "/404.html",
@@ -1068,10 +1136,11 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 531555,
+      "sameOriginBytes": 543695,
       "consoleErrors": [],
       "pageErrors": [],
-      "assetFailures": []
+      "assetFailures": [],
+      "externalAssetWarnings": []
     },
     {
       "route": "/games/gothtechnology2/",
@@ -1092,10 +1161,11 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1582242,
+      "sameOriginBytes": 1606963,
       "consoleErrors": [],
       "pageErrors": [],
-      "assetFailures": []
+      "assetFailures": [],
+      "externalAssetWarnings": []
     },
     {
       "route": "/games/lottomind-jackpot-maze/",
@@ -1116,10 +1186,11 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 971185,
+      "sameOriginBytes": 971191,
       "consoleErrors": [],
       "pageErrors": [],
-      "assetFailures": []
+      "assetFailures": [],
+      "externalAssetWarnings": []
     },
     {
       "route": "/games/lottomind-313-fortune-grid/",
@@ -1140,10 +1211,36 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 5763936,
+      "sameOriginBytes": 5764902,
       "consoleErrors": [],
       "pageErrors": [],
-      "assetFailures": []
+      "assetFailures": [],
+      "externalAssetWarnings": []
+    },
+    {
+      "route": "/games/lottomind-trivia/",
+      "viewport": "tablet",
+      "dimensions": "768x1024",
+      "status": 200,
+      "title": "LottoMind Trivia Vault | LOTTOMINDED ULTRA",
+      "firstHeading": "LottoMind Trivia Vault",
+      "horizontalOverflow": false,
+      "visibleKeyboardFocus": true,
+      "reducedMotion": true,
+      "noindex": "noindex,nofollow,noarchive",
+      "stagingBannerVisible": true,
+      "environment": {
+        "name": "staging",
+        "allowLivePayments": false,
+        "allowAccountWrites": false,
+        "allowRedemptions": false,
+        "allowProductionAnalytics": false
+      },
+      "sameOriginBytes": 1314750,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "assetFailures": [],
+      "externalAssetWarnings": []
     },
     {
       "route": "/games/opengw-levels/",
@@ -1164,10 +1261,11 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 4291807,
+      "sameOriginBytes": 4291813,
       "consoleErrors": [],
       "pageErrors": [],
-      "assetFailures": []
+      "assetFailures": [],
+      "externalAssetWarnings": []
     },
     {
       "route": "/games/shadow-ops-canvas/",
@@ -1188,10 +1286,11 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 3880314,
+      "sameOriginBytes": 3880320,
       "consoleErrors": [],
       "pageErrors": [],
-      "assetFailures": []
+      "assetFailures": [],
+      "externalAssetWarnings": []
     },
     {
       "route": "/games/raytrace-pong-background/",
@@ -1212,10 +1311,11 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 64051,
+      "sameOriginBytes": 64057,
       "consoleErrors": [],
       "pageErrors": [],
-      "assetFailures": []
+      "assetFailures": [],
+      "externalAssetWarnings": []
     },
     {
       "route": "/lottery-spheres.html#spheres",
@@ -1236,17 +1336,18 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1202041,
+      "sameOriginBytes": 1220386,
       "consoleErrors": [],
       "pageErrors": [],
-      "assetFailures": []
+      "assetFailures": [],
+      "externalAssetWarnings": []
     },
     {
       "route": "/lottomind-stem-studio/",
       "viewport": "tablet",
       "dimensions": "768x1024",
       "status": 200,
-      "title": "LOTTOMINDED ULTRA | Stem Studio",
+      "title": "LottoMind Studio | Music Workstation",
       "firstHeading": "Stem Studio",
       "horizontalOverflow": false,
       "visibleKeyboardFocus": true,
@@ -1260,18 +1361,19 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 3025871,
+      "sameOriginBytes": 3025882,
       "consoleErrors": [],
       "pageErrors": [],
-      "assetFailures": []
+      "assetFailures": [],
+      "externalAssetWarnings": []
     },
     {
       "route": "/",
       "viewport": "mobile",
       "dimensions": "390x844",
       "status": 200,
-      "title": "LOTTOMINDED ULTRA | Browser Music Workstation",
-      "firstHeading": "Start the home frequency.",
+      "title": "LottoMind | App, Arcade, Studio and Creative Hub",
+      "firstHeading": "Start the Home Frequency.",
       "horizontalOverflow": false,
       "visibleKeyboardFocus": true,
       "reducedMotion": true,
@@ -1284,10 +1386,11 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 4677898,
+      "sameOriginBytes": 4792328,
       "consoleErrors": [],
       "pageErrors": [],
-      "assetFailures": []
+      "assetFailures": [],
+      "externalAssetWarnings": []
     },
     {
       "route": "/features-app.html",
@@ -1308,10 +1411,11 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 4457011,
+      "sameOriginBytes": 4495412,
       "consoleErrors": [],
       "pageErrors": [],
-      "assetFailures": []
+      "assetFailures": [],
+      "externalAssetWarnings": []
     },
     {
       "route": "/memberships.html",
@@ -1332,10 +1436,11 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 4809500,
+      "sameOriginBytes": 11167077,
       "consoleErrors": [],
       "pageErrors": [],
-      "assetFailures": []
+      "assetFailures": [],
+      "externalAssetWarnings": []
     },
     {
       "route": "/news/",
@@ -1356,10 +1461,11 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1485336,
+      "sameOriginBytes": 1510208,
       "consoleErrors": [],
       "pageErrors": [],
-      "assetFailures": []
+      "assetFailures": [],
+      "externalAssetWarnings": []
     },
     {
       "route": "/live-events.html",
@@ -1380,10 +1486,11 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 8736219,
+      "sameOriginBytes": 8167976,
       "consoleErrors": [],
       "pageErrors": [],
-      "assetFailures": []
+      "assetFailures": [],
+      "externalAssetWarnings": []
     },
     {
       "route": "/lottery-spheres.html",
@@ -1404,10 +1511,11 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1202041,
+      "sameOriginBytes": 1220386,
       "consoleErrors": [],
       "pageErrors": [],
-      "assetFailures": []
+      "assetFailures": [],
+      "externalAssetWarnings": []
     },
     {
       "route": "/beat2lotto-plus.html",
@@ -1428,18 +1536,19 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 10620963,
+      "sameOriginBytes": 10637499,
       "consoleErrors": [],
       "pageErrors": [],
-      "assetFailures": []
+      "assetFailures": [],
+      "externalAssetWarnings": []
     },
     {
       "route": "/merch-store.html",
       "viewport": "mobile",
       "dimensions": "390x844",
       "status": 200,
-      "title": "LOTTOMINDED ULTRA | Merch + Gallery Store",
-      "firstHeading": "Lottomind™ Merch + Art Gallery",
+      "title": "Guardian Collection | LottoMind Storefront",
+      "firstHeading": "Guardian Collection Storefront",
       "horizontalOverflow": false,
       "visibleKeyboardFocus": true,
       "reducedMotion": true,
@@ -1452,10 +1561,11 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 4213392,
+      "sameOriginBytes": 4122417,
       "consoleErrors": [],
       "pageErrors": [],
-      "assetFailures": []
+      "assetFailures": [],
+      "externalAssetWarnings": []
     },
     {
       "route": "/how-to-use.html",
@@ -1476,10 +1586,11 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 14399465,
+      "sameOriginBytes": 14416001,
       "consoleErrors": [],
       "pageErrors": [],
-      "assetFailures": []
+      "assetFailures": [],
+      "externalAssetWarnings": []
     },
     {
       "route": "/privacy.html",
@@ -1500,10 +1611,11 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 2070688,
+      "sameOriginBytes": 2088800,
       "consoleErrors": [],
       "pageErrors": [],
-      "assetFailures": []
+      "assetFailures": [],
+      "externalAssetWarnings": []
     },
     {
       "route": "/terms.html",
@@ -1524,10 +1636,11 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 2070878,
+      "sameOriginBytes": 2088990,
       "consoleErrors": [],
       "pageErrors": [],
-      "assetFailures": []
+      "assetFailures": [],
+      "externalAssetWarnings": []
     },
     {
       "route": "/accessibility.html",
@@ -1548,10 +1661,11 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 939003,
+      "sameOriginBytes": 955539,
       "consoleErrors": [],
       "pageErrors": [],
-      "assetFailures": []
+      "assetFailures": [],
+      "externalAssetWarnings": []
     },
     {
       "route": "/prompt-lab.html",
@@ -1572,10 +1686,11 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1092831,
+      "sameOriginBytes": 1334414,
       "consoleErrors": [],
       "pageErrors": [],
-      "assetFailures": []
+      "assetFailures": [],
+      "externalAssetWarnings": []
     },
     {
       "route": "/redeem.html",
@@ -1596,10 +1711,11 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 570528,
+      "sameOriginBytes": 584068,
       "consoleErrors": [],
       "pageErrors": [],
-      "assetFailures": []
+      "assetFailures": [],
+      "externalAssetWarnings": []
     },
     {
       "route": "/contact.html",
@@ -1620,10 +1736,11 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 943629,
+      "sameOriginBytes": 960165,
       "consoleErrors": [],
       "pageErrors": [],
-      "assetFailures": []
+      "assetFailures": [],
+      "externalAssetWarnings": []
     },
     {
       "route": "/help.html",
@@ -1644,10 +1761,11 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1114897,
+      "sameOriginBytes": 1136701,
       "consoleErrors": [],
       "pageErrors": [],
-      "assetFailures": []
+      "assetFailures": [],
+      "externalAssetWarnings": []
     },
     {
       "route": "/account.html",
@@ -1668,10 +1786,11 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 2566440,
+      "sameOriginBytes": 2322173,
       "consoleErrors": [],
       "pageErrors": [],
-      "assetFailures": []
+      "assetFailures": [],
+      "externalAssetWarnings": []
     },
     {
       "route": "/404.html",
@@ -1692,10 +1811,11 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 531555,
+      "sameOriginBytes": 543695,
       "consoleErrors": [],
       "pageErrors": [],
-      "assetFailures": []
+      "assetFailures": [],
+      "externalAssetWarnings": []
     },
     {
       "route": "/games/gothtechnology2/",
@@ -1716,10 +1836,11 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1582242,
+      "sameOriginBytes": 1606963,
       "consoleErrors": [],
       "pageErrors": [],
-      "assetFailures": []
+      "assetFailures": [],
+      "externalAssetWarnings": []
     },
     {
       "route": "/games/lottomind-jackpot-maze/",
@@ -1740,10 +1861,11 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 971185,
+      "sameOriginBytes": 971191,
       "consoleErrors": [],
       "pageErrors": [],
-      "assetFailures": []
+      "assetFailures": [],
+      "externalAssetWarnings": []
     },
     {
       "route": "/games/lottomind-313-fortune-grid/",
@@ -1764,10 +1886,36 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 5763936,
+      "sameOriginBytes": 5764902,
       "consoleErrors": [],
       "pageErrors": [],
-      "assetFailures": []
+      "assetFailures": [],
+      "externalAssetWarnings": []
+    },
+    {
+      "route": "/games/lottomind-trivia/",
+      "viewport": "mobile",
+      "dimensions": "390x844",
+      "status": 200,
+      "title": "LottoMind Trivia Vault | LOTTOMINDED ULTRA",
+      "firstHeading": "LottoMind Trivia Vault",
+      "horizontalOverflow": false,
+      "visibleKeyboardFocus": true,
+      "reducedMotion": true,
+      "noindex": "noindex,nofollow,noarchive",
+      "stagingBannerVisible": true,
+      "environment": {
+        "name": "staging",
+        "allowLivePayments": false,
+        "allowAccountWrites": false,
+        "allowRedemptions": false,
+        "allowProductionAnalytics": false
+      },
+      "sameOriginBytes": 1314750,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "assetFailures": [],
+      "externalAssetWarnings": []
     },
     {
       "route": "/games/opengw-levels/",
@@ -1788,10 +1936,11 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 4291807,
+      "sameOriginBytes": 4291813,
       "consoleErrors": [],
       "pageErrors": [],
-      "assetFailures": []
+      "assetFailures": [],
+      "externalAssetWarnings": []
     },
     {
       "route": "/games/shadow-ops-canvas/",
@@ -1812,10 +1961,11 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 3880314,
+      "sameOriginBytes": 3880320,
       "consoleErrors": [],
       "pageErrors": [],
-      "assetFailures": []
+      "assetFailures": [],
+      "externalAssetWarnings": []
     },
     {
       "route": "/games/raytrace-pong-background/",
@@ -1836,10 +1986,11 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 64051,
+      "sameOriginBytes": 64057,
       "consoleErrors": [],
       "pageErrors": [],
-      "assetFailures": []
+      "assetFailures": [],
+      "externalAssetWarnings": []
     },
     {
       "route": "/lottery-spheres.html#spheres",
@@ -1860,17 +2011,18 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1202041,
+      "sameOriginBytes": 1220386,
       "consoleErrors": [],
       "pageErrors": [],
-      "assetFailures": []
+      "assetFailures": [],
+      "externalAssetWarnings": []
     },
     {
       "route": "/lottomind-stem-studio/",
       "viewport": "mobile",
       "dimensions": "390x844",
       "status": 200,
-      "title": "LOTTOMINDED ULTRA | Stem Studio",
+      "title": "LottoMind Studio | Music Workstation",
       "firstHeading": "Stem Studio",
       "horizontalOverflow": false,
       "visibleKeyboardFocus": true,
@@ -1884,10 +2036,11 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 3025871,
+      "sameOriginBytes": 3025882,
       "consoleErrors": [],
       "pageErrors": [],
-      "assetFailures": []
+      "assetFailures": [],
+      "externalAssetWarnings": []
     }
   ]
 }

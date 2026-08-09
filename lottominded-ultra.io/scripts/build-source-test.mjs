@@ -37,18 +37,18 @@ async function hardlinkArtifact() {
   }
 }
 
-async function restoreCommittedHtml(sourceCommitSHA) {
-  const tracked = String(runGit(["ls-tree", "-r", "--name-only", `${sourceCommitSHA}:lottominded-ultra.io`]))
+async function restoreSourceHtml() {
+  const tracked = String(runGit(["ls-files", "--cached", "--others", "--exclude-standard", "--", "lottominded-ultra.io"]))
     .split(/\r?\n/)
-    .filter(Boolean);
+    .filter((file) => file.startsWith("lottominded-ultra.io/"))
+    .map((file) => file.slice("lottominded-ultra.io/".length));
   const htmlFiles = tracked.filter((file) => file.toLowerCase().endsWith(".html"));
   for (const relativePath of htmlFiles) {
     const target = resolve(outputRoot, relativePath.split("/").join(sep));
     if (target !== outputRoot && !target.startsWith(`${outputRoot}${sep}`)) throw new Error(`Unsafe source-test path: ${relativePath}`);
     await mkdir(dirname(target), { recursive: true });
     await unlink(target).catch((error) => { if (error.code !== "ENOENT") throw error; });
-    const content = runGit(["show", `${sourceCommitSHA}:lottominded-ultra.io/${relativePath}`], null);
-    await writeFile(target, content);
+    await copyFile(resolve(packageRoot, relativePath.split("/").join(sep)), target);
   }
   return { tracked, htmlFiles };
 }
@@ -62,7 +62,7 @@ async function main() {
   if (!/^[0-9a-f]{40}$/i.test(sourceCommitSHA)) {
     throw new Error("Staging manifest is missing a valid source commit SHA.");
   }
-  const { tracked, htmlFiles } = await restoreCommittedHtml(sourceCommitSHA);
+  const { tracked, htmlFiles } = await restoreSourceHtml();
 
   for (const generated of ["staging-manifest.json", "assets/js/lm-support.js"]) {
     if (tracked.includes(generated)) continue;

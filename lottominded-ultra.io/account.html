@@ -3,6 +3,13 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script>
+      try {
+        if (sessionStorage.getItem("lmTransitionArriving") === "yes") {
+          document.documentElement.classList.add("lm-transition-arriving");
+        }
+      } catch (_) {}
+    </script>
     <meta name="robots" content="noindex,follow" />
     <meta name="description" content="Access your LottoMind account, verified LottoCredits, membership summary, and Collector Vault routes." />
     <title>Account and Vault | LOTTOMINDED ULTRA</title>
@@ -21,7 +28,7 @@
     <link rel="stylesheet" href="./styles.css?v=phase1-shell-1" />
     <link rel="stylesheet" href="./assets/css/lm-page-transition.css?v=transition-exit-audit-4" />
     <link rel="stylesheet" href="./assets/css/lm-global-orb-header.css?v=header-consistency-4" />
-    <link rel="stylesheet" href="./assets/css/lm-phase1-platform.css?v=platform-hud-depth-1" />
+    <link rel="stylesheet" href="./assets/css/lm-phase1-platform.css?v=platform-hud-depth-2" />
     <link rel="stylesheet" href="./assets/css/lm-rahbee-depth.css?v=1" />
   </head>
   <body class="lm-platform-page lm-account-page lm-rahbee-depth-page home-page has-sphere-header">
@@ -29,16 +36,18 @@
     <header class="site-header" data-site-header></header>
     <main id="main-content" class="lm-platform-main">
       <section class="lm-platform-hero">
-        <video class="lm-platform-hero__video" autoplay muted loop playsinline preload="metadata" aria-hidden="true" tabindex="-1">
-          <source src="./assets/video/lm-feature-portal-loop.mp4" type="video/mp4" />
-        </video>
         <div class="lm-platform-hero__copy">
           <p class="lm-platform-kicker">Collector Vault / verified account uplink</p>
           <h1>Your LottoMind signal.</h1>
           <p>Sign in to view verified identity, LottoCredits, membership, and Collector Vault routes. Offline snapshots are always labeled read-only and unverified.</p>
           <p data-account-status role="status" aria-live="polite">Checking account service...</p>
         </div>
-        <img class="lm-platform-hero__art" src="./assets/brand/lottomind-little-man-membership-hero-v2.webp" alt="Little Man Guardian collectible in the LottoMind signal vault" fetchpriority="high" decoding="async" />
+        <figure class="lm-platform-hero__media">
+          <video class="lm-platform-hero__art lm-account-hero-film" controls playsinline preload="none" poster="./assets/brand/lottomind-little-man-membership-hero-v2.webp" aria-label="LottoMind Collector Vault signal film">
+            <source src="./assets/video/lottomind-account-vault-film-20260626.mp4" type="video/mp4" />
+          </video>
+          <figcaption>Collector Vault signal film. Playback begins only when selected.</figcaption>
+        </figure>
       </section>
 
       <section class="lm-platform-section" aria-labelledby="account-title">
@@ -61,7 +70,7 @@
 
           <section class="lm-account-panel" data-account-signed-in hidden>
             <h3>Verified Account</h3>
-            <div class="lm-account-readout" id="credits">
+            <div class="lm-account-readout">
               <div><span>Identity</span><strong data-account-identity>Unavailable</strong></div>
               <div><span>Verification</span><strong data-account-verification>Checking</strong></div>
               <div><span>LottoCredits</span><strong data-account-credits>--</strong></div>
@@ -84,14 +93,77 @@
           </aside>
         </div>
       </section>
+
+      <section class="lm-platform-section lm-account-dashboard" aria-labelledby="account-dashboard-title">
+        <header class="lm-account-dashboard__header">
+          <div>
+            <p class="lm-platform-eyebrow">Unified return deck</p>
+            <h2 id="account-dashboard-title">Your plan, credits, and recent signals.</h2>
+          </div>
+          <p>Account records are verified through the connected service. Saved sets, dreams, and recent games remain on this device and are labeled separately.</p>
+        </header>
+
+        <div class="lm-account-dashboard__grid">
+          <article class="lm-dashboard-card lm-dashboard-card--gold" data-dashboard-plan>
+            <p class="lm-dashboard-card__label">Verified plan</p>
+            <strong class="lm-dashboard-card__value" data-dashboard-plan-name>Sign in to verify</strong>
+            <p data-dashboard-plan-detail>No membership record is shown while signed out.</p>
+            <a href="./memberships.html">Compare memberships</a>
+          </article>
+
+          <article class="lm-dashboard-card lm-dashboard-card--cyan" id="credits" data-dashboard-credits-card>
+            <p class="lm-dashboard-card__label">Verified LottoCredits</p>
+            <strong class="lm-dashboard-card__value" data-dashboard-credit-balance>--</strong>
+            <p data-dashboard-credit-detail>Sign in to view the connected wallet balance.</p>
+            <a href="./help.html#lottocredits">How credits work</a>
+          </article>
+
+          <article class="lm-dashboard-card lm-dashboard-card--violet" data-dashboard-collector>
+            <p class="lm-dashboard-card__label">Guardian link</p>
+            <strong class="lm-dashboard-card__value" data-dashboard-collector-state>Sign in to verify</strong>
+            <p data-dashboard-collector-detail>Collector status is never inferred from local activity.</p>
+            <a href="./redeem.html">Open Collector Vault</a>
+          </article>
+
+          <article class="lm-dashboard-card lm-dashboard-card--violet" data-dashboard-saved>
+            <p class="lm-dashboard-card__label">Device-only saved sets</p>
+            <strong class="lm-dashboard-card__value" data-dashboard-saved-count>0 saved</strong>
+            <ul class="lm-dashboard-list" data-dashboard-saved-list>
+              <li class="lm-dashboard-empty">No saved sets found on this device.</li>
+            </ul>
+            <a href="../lotto%20mind%20refined/?route=history">Open History Vault</a>
+          </article>
+
+          <article class="lm-dashboard-card lm-dashboard-card--gold" data-dashboard-dreams>
+            <p class="lm-dashboard-card__label">Device-only dreams</p>
+            <strong class="lm-dashboard-card__value" data-dashboard-dream-count>0 saved</strong>
+            <ul class="lm-dashboard-list" data-dashboard-dream-list>
+              <li class="lm-dashboard-empty">No dream readings found on this device.</li>
+            </ul>
+            <a href="../lotto%20mind%20refined/?route=dreams">Open Dream Oracle</a>
+          </article>
+
+          <article class="lm-dashboard-card lm-dashboard-card--cyan" data-dashboard-recent>
+            <p class="lm-dashboard-card__label">Recent games on this device</p>
+            <strong class="lm-dashboard-card__value" data-dashboard-recent-count>0 recent</strong>
+            <ul class="lm-dashboard-list" data-dashboard-recent-list>
+              <li class="lm-dashboard-empty">No recent arcade activity found on this device.</li>
+            </ul>
+            <a href="./features-app.html#arcade-library">Open Arcade</a>
+          </article>
+        </div>
+
+        <p class="lm-account-dashboard__integrity" role="note"><strong>Data boundary:</strong> local activity can help you continue where you left off, but it does not verify identity, change LottoCredits, activate a plan, or prove a redemption.</p>
+      </section>
     </main>
     <footer><p><strong>LOTTOMINDED ULTRA</strong> / Account and Collector Vault.</p></footer>
     <script src="./assets/js/lm-environment.js"></script>
     <script src="./assets/js/lottomind-runtime-config.js"></script>
     <script src="./assets/js/lottomind-account-service.js"></script>
+    <script src="./assets/js/arcade-games.js"></script>
     <script src="./assets/js/lm-page-transition-audio.js?v=transition-audio-in-out-7" defer></script>
-    <script src="./assets/js/lm-page-transition.js?v=phase1-routes-1" defer></script>
+    <script src="./assets/js/lm-page-transition.js?v=transition-every-route-6" defer></script>
     <script src="./site.js?v=phase1-shell-1" defer></script>
-    <script src="./assets/js/lm-account-hub.js?v=1" defer></script>
+    <script src="./assets/js/lm-account-hub.js?v=account-dashboard-1" defer></script>
   </body>
 </html>

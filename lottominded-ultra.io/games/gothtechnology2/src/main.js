@@ -1,7 +1,7 @@
-import { FIGHTERS } from "./config/assets.js?v=heartline41-epic-amara-ezra";
-import { COMMAND_LISTS, GAME_MODES, ROSTER_IDS } from "./config/content.js?v=heartline41-epic-amara-ezra";
-import { GothTechnologyGame } from "./scenes/game.js?v=heartline41-epic-amara-ezra";
-import { PHASE } from "./config/constants.js?v=heartline41-epic-amara-ezra";
+import { FIGHTERS } from "./config/assets.js?v=semantic-motion-v2";
+import { COMMAND_LISTS, GAME_MODES, ROSTER_IDS } from "./config/content.js?v=semantic-motion-v2";
+import { GothTechnologyGame } from "./scenes/game.js?v=semantic-motion-v2";
+import { PHASE } from "./config/constants.js?v=semantic-motion-v2";
 
 const syncViewportHeight = () => {
   document.documentElement.style.setProperty("--app-height", `${window.innerHeight}px`);
@@ -85,6 +85,7 @@ const closeSettings = document.getElementById("closeSettings");
 const resetBindings = document.getElementById("resetBindings");
 const fullscreenToggle = document.getElementById("fullscreenToggle");
 const keyBindings = document.getElementById("keyBindings");
+const bindingStatus = document.getElementById("bindingStatus");
 const controllerStatus = document.getElementById("controllerStatus");
 const commandPanel = document.getElementById("commandPanel");
 const commandIdentity = document.getElementById("commandIdentity");
@@ -94,6 +95,8 @@ const trainingPanel = document.getElementById("trainingPanel");
 const closeTraining = document.getElementById("closeTraining");
 const mobileCommands = document.getElementById("mobileCommands");
 const mobileTrainingTools = document.getElementById("mobileTrainingTools");
+const mobileUtilityToggle = document.getElementById("mobileUtilityToggle");
+const mobileUtilityActions = document.getElementById("mobileUtilityActions");
 const replayImport = document.getElementById("replayImport");
 const replayImportFile = document.getElementById("replayImportFile");
 const TOUCH_POSITIONS_KEY = "gothtechnology.touch.positions.v1";
@@ -168,23 +171,49 @@ const bindMovableZone = (zoneId, handleId) => {
 bindMovableZone("padZone", "movePad");
 bindMovableZone("combatZone", "moveCombat");
 
-const actionRows = [
-  ["MOVE LEFT", "left"],
-  ["MOVE RIGHT", "right"],
-  ["JUMP", "up"],
-  ["CROUCH", "down"],
-  ["LIGHT PUNCH", "lightPunch"],
-  ["HEAVY PUNCH", "heavyPunch"],
-  ["LIGHT KICK", "lightKick"],
-  ["HEAVY KICK", "heavyKick"],
-  ["SPECIAL", "special"],
-  ["SUPER", "super"],
-  ["THROW", "throw"],
-  ["ASSIST 1", "assist1"],
-  ["ASSIST 2", "assist2"],
-  ["TAUNT", "taunt"],
-  ["DASH", "dash"]
+const playerBindingGroups = [
+  ["MOVEMENT", [
+    ["MOVE LEFT", "left"],
+    ["MOVE RIGHT", "right"],
+    ["JUMP", "up"],
+    ["CROUCH", "down"],
+    ["DASH", "dash"]
+  ]],
+  ["ATTACKS & SKILLS", [
+    ["LIGHT PUNCH", "lightPunch"],
+    ["HEAVY PUNCH", "heavyPunch"],
+    ["LIGHT KICK", "lightKick"],
+    ["HEAVY KICK", "heavyKick"],
+    ["SPECIAL", "special"],
+    ["SUPER", "super"],
+    ["THROW", "throw"],
+    ["ASSIST 1", "assist1"],
+    ["ASSIST 2", "assist2"],
+    ["TAUNT", "taunt"]
+  ]]
 ];
+
+const systemBindingRows = [
+  ["CONFIRM", "ui.confirm"],
+  ["BACK", "ui.back"],
+  ["PAUSE", "ui.pause"],
+  ["CPU MODE", "ui.cpu"],
+  ["TRAINING MODE", "ui.training"],
+  ["FRAME DATA", "ui.frameData"],
+  ["MUTE AUDIO", "ui.mute"],
+  ["RESET ROUND", "ui.reset"],
+  ["DUMMY CONTROL", "ui.dummy"],
+  ["RECORD INPUT", "ui.record"],
+  ["PLAY RECORDING", "ui.playback"]
+];
+
+const actionLabels = new Map([
+  ...playerBindingGroups.flatMap(([, rows]) => rows.flatMap(([label, suffix]) => [
+    [`p1.${suffix}`, `${label}, Player 1`],
+    [`p2.${suffix}`, `${label}, Player 2`]
+  ])),
+  ...systemBindingRows.map(([label, action]) => [action, label])
+]);
 
 const KEY_LABELS = {
   Slash: "/",
@@ -207,44 +236,95 @@ const formatKey = (code) => KEY_LABELS[code] ?? String(code || "Unbound")
 let listeningButton = null;
 let settingsOpener = null;
 let dialogOpener = null;
-const renderBindings = () => {
-  if (!keyBindings) return;
-  keyBindings.replaceChildren(...actionRows.map(([label, suffix]) => {
-    const row = document.createElement("div");
-    row.className = "binding-row";
-    const name = document.createElement("span");
-    name.textContent = label;
-    row.append(name);
-    for (const player of [1, 2]) {
-      const action = `p${player}.${suffix}`;
-      const button = document.createElement("button");
-      button.type = "button";
-      button.className = "binding-button";
-      button.dataset.action = action;
-      button.textContent = formatKey(game.input.getBinding(action));
-      button.setAttribute("aria-label", `${label}, player ${player}, ${button.textContent}`);
-      button.addEventListener("click", () => beginBinding(button, action));
-      row.append(button);
-    }
-    return row;
-  }));
+const setBindingStatus = (message) => {
+  if (bindingStatus) bindingStatus.textContent = message;
+  game.announce(message);
 };
 
-const cancelBinding = () => {
+const makeBindingHeading = (label, system = false) => {
+  const heading = document.createElement("div");
+  heading.className = `binding-heading${system ? " binding-system-heading" : ""}`;
+  heading.append(Object.assign(document.createElement("span"), { textContent: label }));
+  heading.append(Object.assign(document.createElement("span"), { textContent: system ? "KEY" : "PLAYER 1" }));
+  if (!system) heading.append(Object.assign(document.createElement("span"), { textContent: "PLAYER 2" }));
+  return heading;
+};
+
+const makeBindingButton = (label, action, player = null) => {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "binding-button";
+  button.dataset.action = action;
+  button.textContent = formatKey(game.input.getBinding(action));
+  button.setAttribute("aria-label", `${label}${player ? `, player ${player}` : ""}, ${button.textContent}`);
+  button.addEventListener("click", () => beginBinding(button, action));
+  return button;
+};
+
+const renderBindings = () => {
+  if (!keyBindings) return;
+  const content = [];
+  for (const [groupLabel, rows] of playerBindingGroups) {
+    content.push(makeBindingHeading(groupLabel));
+    for (const [label, suffix] of rows) {
+      const row = document.createElement("div");
+      row.className = "binding-row";
+      row.append(Object.assign(document.createElement("span"), { textContent: label }));
+      for (const player of [1, 2]) row.append(makeBindingButton(label, `p${player}.${suffix}`, player));
+      content.push(row);
+    }
+  }
+  content.push(makeBindingHeading("SYSTEM & TRAINING", true));
+  for (const [label, action] of systemBindingRows) {
+    const row = document.createElement("div");
+    row.className = "binding-row binding-system-row";
+    row.append(Object.assign(document.createElement("span"), { textContent: label }));
+    row.append(makeBindingButton(label, action));
+    content.push(row);
+  }
+  keyBindings.replaceChildren(...content);
+};
+
+const cancelBinding = (restore = true) => {
   if (!listeningButton) return;
+  const button = listeningButton;
   listeningButton.dataset.listening = "false";
   listeningButton = null;
+  window.removeEventListener("keydown", captureBinding, true);
+  if (restore && button.isConnected) {
+    button.textContent = formatKey(game.input.getBinding(button.dataset.action));
+    button.setAttribute("aria-label", `${actionLabels.get(button.dataset.action) || "ACTION"}, ${button.textContent}`);
+  }
 };
 
 const captureBinding = (event) => {
   if (!listeningButton) return;
   event.preventDefault();
   event.stopImmediatePropagation();
+  if (event.repeat) return;
   const action = listeningButton.dataset.action;
-  if (event.code !== "Escape") game.input.rebind(action, event.code);
-  cancelBinding();
+  if (event.code === "Escape") {
+    cancelBinding();
+    setBindingStatus(`${actionLabels.get(action) || "Binding"} unchanged`);
+    return;
+  }
+  if (["Backspace", "Delete"].includes(event.code)) {
+    game.input.unbind(action);
+    cancelBinding(false);
+    renderBindings();
+    setBindingStatus(`${actionLabels.get(action) || "Binding"} cleared`);
+    return;
+  }
+  const previousCode = game.input.getBinding(action);
+  const swappedAction = game.input.getActionForCode(event.code);
+  game.input.rebind(action, event.code);
+  cancelBinding(false);
   renderBindings();
-  window.removeEventListener("keydown", captureBinding, true);
+  const swapMessage = swappedAction && swappedAction !== action
+    ? `. ${actionLabels.get(swappedAction) || "Conflicting action"} moved to ${formatKey(previousCode)}`
+    : "";
+  setBindingStatus(`${actionLabels.get(action) || "Binding"} set to ${formatKey(event.code)}${swapMessage}`);
+  keyBindings?.querySelector(`[data-action="${action}"]`)?.focus();
 };
 
 function beginBinding(button, action) {
@@ -253,6 +333,7 @@ function beginBinding(button, action) {
   button.dataset.action = action;
   button.dataset.listening = "true";
   button.textContent = "PRESS KEY";
+  setBindingStatus(`Press a key for ${actionLabels.get(action) || "this action"}. Escape cancels. Backspace clears.`);
   window.addEventListener("keydown", captureBinding, true);
 }
 
@@ -268,6 +349,7 @@ const openSettingsPanel = () => {
   if (!settingsPanel) return;
   settingsOpener = document.activeElement;
   renderBindings();
+  if (bindingStatus) bindingStatus.textContent = "Changes save automatically. Select a key to remap it.";
   updateControllerStatus();
   for (const [key, field] of Object.entries(settingFields)) {
     if (!field) continue;
@@ -465,8 +547,22 @@ window.addEventListener("gamepaddisconnected", updateControllerStatus);
 closeSettings?.addEventListener("click", closeSettingsPanel);
 closeCommands?.addEventListener("click", () => closeDialog(commandPanel, "Command list closed"));
 closeTraining?.addEventListener("click", () => closeDialog(trainingPanel, "Training tools closed"));
-mobileCommands?.addEventListener("click", () => game.openCommands());
-mobileTrainingTools?.addEventListener("click", () => game.openTrainingTools());
+const setMobileUtilityExpanded = (expanded) => {
+  if (!mobileUtilityToggle || !mobileUtilityActions) return;
+  mobileUtilityToggle.setAttribute("aria-expanded", String(expanded));
+  mobileUtilityActions.hidden = !expanded;
+};
+mobileUtilityToggle?.addEventListener("click", () => {
+  setMobileUtilityExpanded(mobileUtilityToggle.getAttribute("aria-expanded") !== "true");
+});
+mobileCommands?.addEventListener("click", () => {
+  setMobileUtilityExpanded(false);
+  game.openCommands();
+});
+mobileTrainingTools?.addEventListener("click", () => {
+  setMobileUtilityExpanded(false);
+  game.openTrainingTools();
+});
 commercialSkip?.addEventListener("click", () => game.finishCommercialBreak());
 commercialVideo?.addEventListener("ended", () => game.finishCommercialBreak());
 commercialVideo?.addEventListener("error", () => game.finishCommercialBreak());
@@ -512,7 +608,7 @@ document.getElementById("trainingReset")?.addEventListener("click", () => game.r
 resetBindings?.addEventListener("click", () => {
   game.input.resetBindings();
   renderBindings();
-  game.announce("Keyboard bindings reset");
+  setBindingStatus("Keyboard bindings reset to defaults");
 });
 fullscreenToggle?.addEventListener("click", async () => {
   try {

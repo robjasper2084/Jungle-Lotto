@@ -1,0 +1,639 @@
+.merch-commercial-modal {
+  --merch-hud-cyan: #6ff7ff;
+  --merch-hud-gold: #ffe071;
+  --merch-hud-violet: #b58cff;
+  --merch-hud-pink: #ff4f9a;
+  --lm-commercial-poster: url("../merch/lottomind-membership-unboxing-commercial-poster-20260716.jpg");
+  position: fixed;
+  inset: 0;
+  z-index: 2147483000;
+  display: grid;
+  place-items: center;
+  padding: clamp(0.8rem, 3vw, 2.5rem);
+  overflow-y: auto;
+  background:
+    linear-gradient(rgba(111, 247, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(111, 247, 255, 0.025) 1px, transparent 1px),
+    radial-gradient(circle at 50% 42%, rgba(41, 247, 255, 0.15), transparent 46%),
+    rgba(1, 3, 8, 0.96);
+  background-size: 2.5rem 2.5rem, 2.5rem 2.5rem, auto, auto;
+  backdrop-filter: blur(22px);
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 180ms ease, visibility 180ms ease;
+}
+
+.startup-video-modal.merch-commercial-modal {
+  --lm-commercial-poster: url("../video/lottomind-home-apparel-commercial-poster-20260804.jpg");
+}
+
+.home-story.merch-commercial-modal {
+  --lm-commercial-poster: url("../video/lottomind-home-apparel-commercial-poster-20260804.jpg");
+  position: relative;
+  inset: auto;
+  z-index: 2;
+  display: block;
+  width: min(76rem, calc(100% - 2rem));
+  margin: clamp(2rem, 6vw, 5rem) auto;
+  padding: 0;
+  overflow: visible;
+  background: transparent;
+  backdrop-filter: none;
+}
+
+.home-story .merch-commercial-modal__panel {
+  width: 100%;
+  height: auto;
+  min-height: 34rem;
+  max-height: none;
+}
+
+.home-story .merch-commercial-modal__stage video {
+  min-height: 24rem;
+}
+
+@media (max-width: 700px) {
+  .home-story.merch-commercial-modal {
+    width: calc(100% - 1rem);
+    margin-block: 1.25rem 3rem;
+  }
+
+  .home-story .merch-commercial-modal__panel {
+    min-height: 0;
+  }
+
+  .home-story .merch-commercial-modal__stage video {
+    min-height: 0;
+    aspect-ratio: 16 / 9;
+  }
+}
+
+html.lm-reduce-motion .merch-commercial-modal,
+html.lm-reduce-motion .merch-commercial-modal * {
+  animation: none !important;
+  transition: none !important;
+}
+
+.merch-commercial-modal.is-hidden {
+  display: none;
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.merch-commercial-modal[hidden] {
+  display: none !important;
+}
+
+.merch-commercial-modal__panel {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  align-items: stretch;
+  gap: 0;
+  width: min(76rem, calc(100vw - 2rem));
+  height: min(48rem, calc(100dvh - 2rem));
+  min-height: 0;
+  max-height: calc(100dvh - 2rem);
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid rgba(111, 247, 255, 0.72);
+  border-radius: 0;
+  clip-path: polygon(1.15rem 0, calc(100% - 1.15rem) 0, 100% 1.15rem, 100% calc(100% - 1.15rem), calc(100% - 1.15rem) 100%, 1.15rem 100%, 0 calc(100% - 1.15rem), 0 1.15rem);
+  background:
+    linear-gradient(135deg, rgba(111, 247, 255, 0.08), transparent 24%),
+    linear-gradient(315deg, rgba(181, 140, 255, 0.08), transparent 25%),
+    #020914;
+  box-shadow:
+    0 0 0 1px rgba(255, 224, 113, 0.18),
+    0 0 0 0.45rem rgba(2, 9, 20, 0.82),
+    0 0 5rem rgba(41, 247, 255, 0.22),
+    0 3rem 10rem rgba(0, 0, 0, 0.82);
+}
+
+.merch-commercial-modal__panel::before,
+.merch-commercial-modal__panel::after {
+  content: "";
+  position: absolute;
+  z-index: 5;
+  inset: auto 3rem;
+  height: 2px;
+  border: 0;
+  border-radius: 0;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, var(--merch-hud-cyan) 18% 42%, var(--merch-hud-gold) 56% 82%, transparent);
+  background-size: auto;
+  box-shadow: none;
+  mask-image: none;
+  opacity: 0.7;
+}
+
+.merch-commercial-modal__panel::before {
+  top: 0;
+}
+
+.merch-commercial-modal__panel::after {
+  bottom: 0;
+  transform: scaleX(-1);
+}
+
+.merch-commercial-modal__corner {
+  position: absolute;
+  z-index: 6;
+  width: 2.8rem;
+  height: 2.8rem;
+  pointer-events: none;
+  border-color: var(--merch-hud-gold);
+  opacity: 0.82;
+}
+
+.merch-commercial-modal__corner--tl {
+  top: 0.55rem;
+  left: 0.55rem;
+  border-top: 2px solid;
+  border-left: 2px solid;
+}
+
+.merch-commercial-modal__corner--tr {
+  top: 0.55rem;
+  right: 0.55rem;
+  border-top: 2px solid;
+  border-right: 2px solid;
+}
+
+.merch-commercial-modal__corner--bl {
+  bottom: 0.55rem;
+  left: 0.55rem;
+  border-bottom: 2px solid;
+  border-left: 2px solid;
+}
+
+.merch-commercial-modal__corner--br {
+  right: 0.55rem;
+  bottom: 0.55rem;
+  border-right: 2px solid;
+  border-bottom: 2px solid;
+}
+
+.merch-commercial-modal__header,
+.merch-commercial-modal__footer {
+  display: grid;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.merch-commercial-modal__header {
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  min-height: 6.7rem;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid rgba(111, 247, 255, 0.28);
+  background: linear-gradient(90deg, rgba(111, 247, 255, 0.08), transparent 42%), rgba(2, 10, 23, 0.94);
+}
+
+.merch-commercial-modal__header small {
+  display: block;
+  margin-bottom: 0.45rem;
+  color: #7ff5ff;
+  font: 800 0.64rem/1 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.merch-commercial-modal__header h2 {
+  margin: 0;
+  color: #f4fbff;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 3.5rem;
+  line-height: 0.92;
+  letter-spacing: 0;
+  text-shadow: 0 0 1.4rem rgba(111, 247, 255, 0.22);
+  text-transform: uppercase;
+}
+
+.merch-commercial-modal__header-status {
+  display: grid;
+  gap: 0.42rem;
+  min-width: 10.5rem;
+  padding: 0.6rem 0.85rem;
+  border-left: 1px solid rgba(111, 247, 255, 0.3);
+  color: rgba(239, 251, 255, 0.72);
+  font: 800 0.6rem/1.15 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.merch-commercial-modal__header-status span:first-child {
+  color: var(--merch-hud-gold);
+}
+
+.merch-commercial-modal__header-status b,
+.merch-commercial-modal__footer > p > span {
+  display: inline-block;
+  width: 0.5rem;
+  height: 0.5rem;
+  margin-right: 0.42rem;
+  border-radius: 50%;
+  background: var(--merch-hud-cyan);
+  box-shadow: 0 0 0.7rem var(--merch-hud-cyan);
+  animation: lm-commercial-hud-pulse 1.8s ease-in-out infinite;
+}
+
+.merch-commercial-modal__close {
+  position: static;
+  top: auto;
+  right: auto;
+  width: 2.8rem;
+  height: 2.8rem;
+  flex: 0 0 auto;
+  border: 1px solid rgba(255, 224, 113, 0.72);
+  border-radius: 50%;
+  color: #effbff;
+  background: linear-gradient(135deg, rgba(255, 224, 113, 0.13), transparent 55%), #020914;
+  box-shadow: inset 0 0 1rem rgba(255, 224, 113, 0.08), 0 0 1.2rem rgba(255, 224, 113, 0.12);
+  font-weight: 900;
+  transform: none;
+}
+
+.merch-commercial-modal__body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(17rem, 22rem);
+  min-height: 0;
+  overflow: hidden;
+}
+
+.merch-commercial-modal__stage {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  place-items: center;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  border-right: 1px solid rgba(111, 247, 255, 0.24);
+  background:
+    linear-gradient(rgba(111, 247, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(111, 247, 255, 0.035) 1px, transparent 1px),
+    #010714;
+  background-size: 2rem 2rem;
+}
+
+.merch-commercial-modal__stage::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: -2rem;
+  background:
+    linear-gradient(90deg, rgba(1, 7, 20, 0.88), rgba(1, 7, 20, 0.25) 32% 68%, rgba(1, 7, 20, 0.88)),
+    var(--lm-commercial-poster) center / cover no-repeat;
+  filter: blur(22px) brightness(0.5) saturate(1.2);
+  transform: scale(1.08);
+  opacity: 0.5;
+}
+
+.merch-commercial-modal__stage video {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: auto;
+  max-width: min(100%, 29rem);
+  height: 100%;
+  aspect-ratio: auto;
+  object-fit: contain;
+  background: #000;
+  box-shadow:
+    0 0 0 1px rgba(127, 245, 255, 0.32),
+    0 0 3rem rgba(41, 247, 255, 0.2),
+    0 1.5rem 4rem rgba(0, 0, 0, 0.58);
+}
+
+.startup-video-modal .merch-commercial-modal__stage video {
+  width: 100%;
+  max-width: 100%;
+}
+
+.merch-commercial-modal__scan {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  pointer-events: none;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: linear-gradient(180deg, transparent 0 48%, rgba(127, 245, 255, 0.1) 50%, transparent 52%);
+  background-size: 100% 220%;
+  mix-blend-mode: screen;
+  animation: lm-commercial-hud-scan 4.5s linear infinite;
+}
+
+.merch-commercial-modal__reticle {
+  position: absolute;
+  z-index: 3;
+  inset: 1rem;
+  pointer-events: none;
+  border: 1px solid rgba(111, 247, 255, 0.15);
+}
+
+.merch-commercial-modal__reticle span {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 3.2rem;
+  height: 3.2rem;
+  border: 1px solid rgba(255, 224, 113, 0.26);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.merch-commercial-modal__telemetry {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  justify-content: center;
+  padding: clamp(1.25rem, 2.4vw, 2rem);
+  overflow: hidden;
+  background:
+    linear-gradient(160deg, rgba(111, 247, 255, 0.08), transparent 42%),
+    linear-gradient(15deg, rgba(181, 140, 255, 0.08), transparent 55%),
+    rgba(2, 10, 23, 0.96);
+}
+
+.merch-commercial-modal__telemetry-kicker {
+  margin: 0 0 0.65rem;
+  color: var(--merch-hud-cyan);
+  font: 900 0.62rem/1 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.merch-commercial-modal__telemetry h3 {
+  margin: 0;
+  color: #f4fbff;
+  font-size: 2.3rem;
+  line-height: 1;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.merch-commercial-modal__telemetry > p:not(.merch-commercial-modal__telemetry-kicker) {
+  margin: 1rem 0 1.25rem;
+  color: rgba(239, 251, 255, 0.72);
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+
+.merch-commercial-modal__telemetry dl {
+  display: grid;
+  margin: 0;
+}
+
+.merch-commercial-modal__telemetry dl > div {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 1rem;
+  padding: 0.68rem 0;
+  border-top: 1px solid rgba(111, 247, 255, 0.16);
+}
+
+.merch-commercial-modal__telemetry dt,
+.merch-commercial-modal__telemetry dd {
+  margin: 0;
+  font: 800 0.62rem/1.2 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.merch-commercial-modal__telemetry dt {
+  color: rgba(111, 247, 255, 0.68);
+}
+
+.merch-commercial-modal__telemetry dd {
+  color: var(--merch-hud-gold);
+  text-align: right;
+}
+
+.merch-commercial-modal__meter {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  align-items: end;
+  height: 2.5rem;
+  gap: 0.35rem;
+  margin-top: 1.25rem;
+}
+
+.merch-commercial-modal__meter span {
+  height: 38%;
+  background: linear-gradient(var(--merch-hud-cyan), rgba(111, 247, 255, 0.12));
+  box-shadow: 0 0 0.6rem rgba(111, 247, 255, 0.28);
+  animation: lm-commercial-hud-meter 1.4s ease-in-out infinite alternate;
+}
+
+.merch-commercial-modal__meter span:nth-child(2),
+.merch-commercial-modal__meter span:nth-child(5) {
+  height: 72%;
+  animation-delay: -0.35s;
+}
+
+.merch-commercial-modal__meter span:nth-child(3) {
+  height: 100%;
+  background: linear-gradient(var(--merch-hud-gold), rgba(255, 224, 113, 0.12));
+}
+
+.merch-commercial-modal__meter span:nth-child(4) {
+  height: 58%;
+  background: linear-gradient(var(--merch-hud-violet), rgba(181, 140, 255, 0.12));
+}
+
+.merch-commercial-modal__meter span:nth-child(6) {
+  height: 46%;
+  background: linear-gradient(var(--merch-hud-pink), rgba(255, 79, 154, 0.12));
+}
+
+.merch-commercial-modal__footer {
+  grid-template-columns: auto minmax(0, 1fr);
+  min-height: 4.8rem;
+  padding: 0.8rem 1.4rem;
+  border-top: 1px solid rgba(111, 247, 255, 0.18);
+  background: rgba(2, 9, 20, 0.96);
+}
+
+.merch-commercial-modal__footer > p {
+  display: flex;
+  max-width: 44rem;
+  align-items: center;
+  margin: 0;
+  color: rgba(239, 251, 255, 0.68);
+  font: 800 0.64rem/1.2 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.merch-commercial-modal__footer > div {
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.65rem;
+}
+
+.merch-commercial-modal__footer button,
+.merch-commercial-modal__footer a {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  padding: 0.72rem 1rem;
+  border: 1px solid rgba(41, 247, 255, 0.45);
+  border-radius: 0.25rem;
+  clip-path: polygon(0.45rem 0, 100% 0, 100% calc(100% - 0.45rem), calc(100% - 0.45rem) 100%, 0 100%, 0 0.45rem);
+  color: #effbff;
+  background: rgba(2, 8, 18, 0.82);
+  font: 900 0.68rem/1 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  letter-spacing: 0;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.merch-commercial-modal__footer a,
+.startup-video-modal .merch-commercial-modal__footer button:last-child {
+  border-color: rgba(255, 209, 102, 0.72);
+  color: #071016;
+  background: linear-gradient(135deg, #ffe071, #7ff5ff);
+}
+
+body.has-merch-commercial-modal,
+body.has-startup-modal {
+  overflow: hidden;
+}
+
+@keyframes lm-commercial-hud-pulse {
+  50% { opacity: 0.45; transform: scale(0.72); }
+}
+
+@keyframes lm-commercial-hud-meter {
+  to { height: 22%; opacity: 0.52; }
+}
+
+@keyframes lm-commercial-hud-scan {
+  to { background-position: 0 -220%; }
+}
+
+@media (max-width: 760px) {
+  .merch-commercial-modal {
+    place-items: start center;
+    padding: 0;
+  }
+
+  .merch-commercial-modal__panel {
+    width: 100%;
+    height: 100dvh;
+    min-height: 0;
+    max-height: 100dvh;
+    clip-path: none;
+    border: 0;
+  }
+
+  .merch-commercial-modal__corner,
+  .merch-commercial-modal__header-status {
+    display: none;
+  }
+
+  .merch-commercial-modal__header {
+    grid-template-columns: minmax(0, 1fr) auto;
+    min-height: 5.7rem;
+    padding: 0.75rem 1rem;
+  }
+
+  .merch-commercial-modal__header h2 {
+    font-size: 2.35rem;
+  }
+
+  .merch-commercial-modal__body {
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(0, 1fr) auto;
+  }
+
+  .merch-commercial-modal__stage {
+    height: auto;
+    border-right: 0;
+    border-bottom: 1px solid rgba(111, 247, 255, 0.24);
+  }
+
+  .merch-commercial-modal__stage video,
+  .startup-video-modal .merch-commercial-modal__stage video {
+    max-width: 100%;
+  }
+
+  .merch-commercial-modal__telemetry {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.25rem 1rem;
+    padding: 0.8rem 1rem;
+  }
+
+  .merch-commercial-modal__telemetry-kicker,
+  .merch-commercial-modal__telemetry h3,
+  .merch-commercial-modal__telemetry > p:not(.merch-commercial-modal__telemetry-kicker) {
+    grid-column: 1;
+  }
+
+  .merch-commercial-modal__telemetry h3 {
+    font-size: 1.15rem;
+  }
+
+  .merch-commercial-modal__telemetry > p:not(.merch-commercial-modal__telemetry-kicker) {
+    margin: 0.35rem 0 0;
+    font-size: 0.74rem;
+    line-height: 1.35;
+  }
+
+  .merch-commercial-modal__telemetry dl {
+    display: none;
+  }
+
+  .merch-commercial-modal__meter {
+    grid-column: 2;
+    grid-row: 1 / span 3;
+    width: 4.8rem;
+    height: 2.8rem;
+    margin: 0;
+  }
+
+  .merch-commercial-modal__footer {
+    grid-template-columns: 1fr;
+    min-height: 0;
+    gap: 0.65rem;
+    padding: 0.75rem 1rem max(0.75rem, env(safe-area-inset-bottom));
+  }
+
+  .merch-commercial-modal__footer > p {
+    font-size: 0.56rem;
+  }
+
+  .merch-commercial-modal__footer > div {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    justify-content: stretch;
+  }
+
+  .merch-commercial-modal__footer a {
+    grid-column: 1 / -1;
+  }
+
+  .merch-commercial-modal__footer button,
+  .merch-commercial-modal__footer a {
+    min-height: 2.9rem;
+    padding-inline: 0.7rem;
+    font-size: 0.64rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .merch-commercial-modal,
+  .merch-commercial-modal__header-status b,
+  .merch-commercial-modal__footer > p > span,
+  .merch-commercial-modal__meter span,
+  .merch-commercial-modal__scan {
+    animation: none;
+    transition: none;
+  }
+}

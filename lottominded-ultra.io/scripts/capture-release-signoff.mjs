@@ -11,7 +11,12 @@ const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const repositoryRoot = resolve(packageRoot, "..");
 const outputRoot = resolve(repositoryRoot, "docs", "staging-reviews", "release-signoff-assets");
 const temporaryRoot = resolve(tmpdir(), `lottomind-release-signoff-${Date.now()}`);
-const baseUrl = String(process.env.LOTTOMIND_STAGING_URL || "http://127.0.0.1:8304").replace(/\/$/, "");
+const baseUrlArgumentIndex = process.argv.indexOf("--base-url");
+const inlineBaseUrlArgument = process.argv.find((argument) => argument.startsWith("--base-url="));
+const requestedBaseUrl = baseUrlArgumentIndex >= 0
+  ? process.argv[baseUrlArgumentIndex + 1]
+  : inlineBaseUrlArgument?.slice("--base-url=".length);
+const baseUrl = String(requestedBaseUrl || process.env.LOTTOMIND_STAGING_URL || "http://127.0.0.1:8304").replace(/\/$/, "");
 const sourceCommit = execFileSync("git", ["rev-parse", "HEAD"], { cwd: repositoryRoot, encoding: "utf8" }).trim();
 const baselineManifest = JSON.parse(await readFile(resolve(repositoryRoot, "docs", "visual-baseline", "v1", "baseline-manifest.json"), "utf8"));
 
@@ -37,6 +42,7 @@ const routes = [
   "/games/gothtechnology2/",
   "/games/lottomind-jackpot-maze/",
   "/games/lottomind-313-fortune-grid/",
+  "/games/lottomind-trivia/",
   "/games/opengw-levels/",
   "/games/shadow-ops-canvas/",
   "/games/raytrace-pong-background/",
@@ -109,11 +115,18 @@ try {
       const consoleErrors = [];
       const pageErrors = [];
       const assetFailures = [];
+      const externalAssetWarnings = [];
       let sameOriginBytes = 0;
       await page.route(/\.(?:mp3|wav|ogg)(?:\?.*)?$/i, (requestRoute) => requestRoute.fulfill({ status: 204, body: "" }));
       await page.route(/(?:stripe\.com|supabase\.co|google-analytics\.com|googletagmanager\.com)/i, (requestRoute) => requestRoute.abort("blockedbyclient"));
       page.on("console", (message) => {
-        if (message.type() === "error" && !/ERR_BLOCKED_BY_CLIENT/i.test(message.text())) consoleErrors.push(message.text());
+        if (message.type() !== "error" || /ERR_BLOCKED_BY_CLIENT/i.test(message.text())) return;
+        const locationUrl = message.location()?.url || "";
+        if (/^https?:\/\//i.test(locationUrl) && new URL(locationUrl).origin !== new URL(baseUrl).origin && /Failed to load resource/i.test(message.text())) {
+          externalAssetWarnings.push(`PUBLISHER MEDIA ${locationUrl}`);
+          return;
+        }
+        consoleErrors.push(message.text());
       });
       page.on("pageerror", (error) => pageErrors.push(error.message));
       page.on("response", (response) => {
@@ -126,7 +139,11 @@ try {
       page.on("requestfailed", (request) => {
         const url = new URL(request.url());
         const reason = request.failure()?.errorText || "";
-        if (url.origin === new URL(baseUrl).origin && !/ERR_ABORTED/i.test(reason)) assetFailures.push(`FAILED ${url.pathname}: ${reason || "unknown"}`);
+        if (url.origin === new URL(baseUrl).origin && !/ERR_ABORTED/i.test(reason)) {
+          assetFailures.push(`FAILED ${url.pathname}: ${reason || "unknown"}`);
+        } else if (url.origin !== new URL(baseUrl).origin && /\.(?:avif|gif|jpe?g|png|webp)(?:$|\?)/i.test(url.pathname + url.search)) {
+          externalAssetWarnings.push(`PUBLISHER MEDIA ${url.href}: ${reason || "unavailable"}`);
+        }
       });
 
       const response = await page.goto(`${baseUrl}${route}`, { waitUntil: "domcontentloaded" });
@@ -145,7 +162,7 @@ try {
         horizontalOverflow: await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1),
         visibleKeyboardFocus: await hasVisibleKeyboardFocus(page),
         reducedMotion: await page.evaluate(() => matchMedia("(prefers-reduced-motion: reduce)").matches),
-        noindex: await page.locator('meta[name="robots"]').getAttribute("content"),
+        noindex: await page.evaluate(() => document.querySelector('meta[name="robots"]')?.getAttribute("content") || ""),
         stagingBannerVisible: await page.locator("[data-lm-staging-banner]").isVisible().catch(() => false),
         environment: await page.evaluate(() => ({
           name: window.LottoMindEnvironment?.name,
@@ -158,6 +175,7 @@ try {
         consoleErrors,
         pageErrors,
         assetFailures,
+        externalAssetWarnings: [...new Set(externalAssetWarnings)],
         temporaryScreenshot,
       };
       await page.screenshot({ path: temporaryScreenshot, type: "jpeg", quality: 72, fullPage: false });

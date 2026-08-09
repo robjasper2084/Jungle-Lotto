@@ -1,34 +1,26 @@
 const { test, expect } = require("@playwright/test");
 
-test("Live Events waits for the start action, plays the film audibly, and hands off to the page mix", async ({ page }) => {
+test("Live Events attempts audible autoplay, keeps a fallback control, and hands off to the page mix", async ({ page }) => {
   await page.goto("/live-events.html", { waitUntil: "domcontentloaded" });
 
   const film = page.locator("[data-live-hero-film-video]");
-  const filmAudio = page.locator("[data-live-hero-film-audio]");
-  const start = page.getByRole("button", { name: "Start with sound" });
+  const soundControl = page.locator("[data-live-hero-film-sound]");
   const pageMix = page.locator("[data-live-player-audio]");
 
-  await expect(start).toBeVisible();
-  await expect(film).not.toHaveAttribute("autoplay", "");
+  await expect(soundControl).toBeVisible();
+  await expect(film).toHaveAttribute("autoplay", "");
   await expect(film).not.toHaveAttribute("muted", "");
-  await expect.poll(() => film.evaluate((video) => video.paused)).toBe(true);
-  await expect.poll(() => filmAudio.evaluate((audio) => audio.paused)).toBe(true);
-
-  await start.click();
+  await expect.poll(() => film.evaluate((video) => video.dataset.soundState)).toMatch(/playing|blocked/);
+  if (await film.evaluate((video) => video.paused || video.muted)) {
+    await soundControl.click();
+  }
   await expect(page.getByRole("button", { name: "Stop performance" })).toBeVisible();
   await expect.poll(() => film.evaluate((video) => video.paused)).toBe(false);
-  await expect.poll(() => filmAudio.evaluate((audio) => audio.paused)).toBe(false);
-  await expect.poll(async () => {
-    const [filmTime, audioTime] = await Promise.all([
-      film.evaluate((video) => video.currentTime),
-      filmAudio.evaluate((audio) => audio.currentTime),
-    ]);
-    return Math.abs(filmTime - audioTime);
-  }).toBeLessThan(0.75);
+  await expect.poll(() => film.evaluate((video) => video.muted)).toBe(false);
 
   await film.evaluate((video) => video.dispatchEvent(new Event("ended")));
   await expect.poll(() => pageMix.evaluate((audio) => audio.paused)).toBe(false);
-  await expect(page.getByRole("button", { name: "Start with sound" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Play with sound" })).toBeVisible();
 });
 
 test("Live Events uses the supplied puck field instead of the particle entity", async ({ page }) => {
@@ -61,7 +53,7 @@ test("News presents verified draw results in the signal banner and keeps the doc
   expect(new Set(utilityBackgrounds).size).toBe(3);
 });
 
-test("Home startup media points to the new commercial and Storefront theme", async ({ page }) => {
+test("page soundtracks use their assigned local music with accessible controls", async ({ page }) => {
   await page.goto("/index.html#top", { waitUntil: "domcontentloaded" });
 
   await expect(page.locator("[data-startup-video] video source")).toHaveAttribute(
@@ -70,6 +62,24 @@ test("Home startup media points to the new commercial and Storefront theme", asy
   );
   await expect(page.locator("#siteSoundtrack source")).toHaveAttribute(
     "data-src",
-    /lottomind-storefront-theme-20260717\.mp3$/,
+    /lottomind-home-theme-untitled-12\.mp3$/,
   );
+  await expect(page.locator("#siteSoundtrack")).toHaveAttribute("data-autoplay", "true");
+  await expect(page.getByRole("button", { name: /Home Music/ })).toBeVisible();
+
+  await page.goto("/memberships.html", { waitUntil: "domcontentloaded" });
+  await expect(page.locator("#siteSoundtrack source")).toHaveAttribute(
+    "data-src",
+    /lottomind-membership-theme-untitled-14\.mp3$/,
+  );
+  await expect(page.locator("#siteSoundtrack")).toHaveAttribute("data-autoplay", "true");
+  await expect(page.locator(".lm-sound-toggle")).toBeVisible();
+
+  await page.goto("/news/", { waitUntil: "domcontentloaded" });
+  await expect(page.locator("#siteSoundtrack source")).toHaveAttribute(
+    "data-src",
+    /lottomind-news-theme-instrumental\.mp3$/,
+  );
+  await expect(page.locator("#siteSoundtrack")).toHaveAttribute("data-autoplay", "true");
+  await expect(page.getByRole("button", { name: /News Music/ })).toBeVisible();
 });

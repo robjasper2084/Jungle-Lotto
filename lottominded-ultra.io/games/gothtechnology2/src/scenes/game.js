@@ -1,17 +1,17 @@
-import { ASSET_URLS, COMMERCIAL_URLS, FIGHTERS } from "../config/assets.js?v=heartline41-epic-amara-ezra";
-import { arcadeRouteFor, GAME_MODES, ROSTER_CARD_LAYOUT, ROSTER_IDS, STAGES, opponentFor } from "../config/content.js?v=heartline41-epic-amara-ezra";
-import { ASSISTS, ATTACKS } from "../config/moves.js?v=heartline41-epic-amara-ezra";
-import { CANVAS_HEIGHT, CANVAS_WIDTH, COLORS, GROUND_Y, PHASE, ROUND_SECONDS, WORLD } from "../config/constants.js?v=heartline41-epic-amara-ezra";
-import { AssetLoader } from "../engine/assets.js?v=heartline41-epic-amara-ezra";
-import { WebAudioBus } from "../engine/audio.js?v=heartline41-epic-amara-ezra";
-import { InputManager } from "../engine/input.js?v=heartline41-epic-amara-ezra";
-import { clamp, rectsOverlap } from "../engine/math.js?v=heartline41-epic-amara-ezra";
-import { applyHit, resolveMelee } from "../gameplay/combat.js?v=heartline41-epic-amara-ezra";
-import { CpuController } from "../gameplay/cpu.js?v=heartline41-epic-amara-ezra";
-import { AttachedSpriteEffect, LovePulseEffect, SpriteEffect } from "../gameplay/effects.js?v=heartline41-epic-amara-ezra";
-import { Fighter } from "../gameplay/fighter.js?v=heartline41-epic-amara-ezra";
-import { AssistStrike, BoerboelStrike, Projectile } from "../gameplay/projectiles.js?v=heartline41-epic-amara-ezra";
-import { applyRoundOutcomeMotions, resolveRoundOutcome } from "../gameplay/rounds.js?v=heartline41-epic-amara-ezra";
+import { ASSET_URLS, COMMERCIAL_URLS, FIGHTERS } from "../config/assets.js?v=semantic-motion-v2";
+import { arcadeRouteFor, GAME_MODES, ROSTER_CARD_LAYOUT, ROSTER_IDS, STAGES, opponentFor } from "../config/content.js?v=semantic-motion-v2";
+import { ASSISTS, ATTACKS } from "../config/moves.js?v=semantic-motion-v2";
+import { CANVAS_HEIGHT, CANVAS_WIDTH, COLORS, GROUND_Y, PHASE, ROUND_SECONDS, WORLD } from "../config/constants.js?v=semantic-motion-v2";
+import { AssetLoader } from "../engine/assets.js?v=semantic-motion-v2";
+import { WebAudioBus } from "../engine/audio.js?v=semantic-motion-v2";
+import { InputManager } from "../engine/input.js?v=semantic-motion-v2";
+import { clamp, rectsOverlap } from "../engine/math.js?v=semantic-motion-v2";
+import { applyHit, resolveMelee } from "../gameplay/combat.js?v=semantic-motion-v2";
+import { CpuController } from "../gameplay/cpu.js?v=semantic-motion-v2";
+import { AttachedSpriteEffect, LovePulseEffect, SpriteEffect } from "../gameplay/effects.js?v=semantic-motion-v2";
+import { Fighter } from "../gameplay/fighter.js?v=semantic-motion-v2";
+import { AssistStrike, BoerboelStrike, Projectile } from "../gameplay/projectiles.js?v=semantic-motion-v2";
+import { applyRoundOutcomeMotions, resolveRoundOutcome } from "../gameplay/rounds.js?v=semantic-motion-v2";
 import {
   drawCharacterSelect,
   drawArcadeEnding,
@@ -24,7 +24,7 @@ import {
   drawRoundMessage,
   drawTitle,
   drawVersus
-} from "../ui/hud.js?v=heartline41-epic-amara-ezra";
+} from "../ui/hud.js?v=semantic-motion-v2";
 
 const GAME_SELECT_ITEMS = [
   {
@@ -1489,7 +1489,7 @@ export class GothTechnologyGame {
         super: { x: 108, y: -132 }
       },
       DETROIT_LENS: {
-        super: { x: 114, y: -176 }
+        super: { x: 34, y: -238 }
       }
     };
     const socketKey = isDetroitLens ? "DETROIT_LENS" : manifestKey;

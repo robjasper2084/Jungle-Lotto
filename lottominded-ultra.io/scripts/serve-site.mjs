@@ -25,7 +25,7 @@ const mimeTypes = {
   ".xml": "application/xml; charset=utf-8"
 };
 
-createServer((request, response) => {
+const server = createServer((request, response) => {
   try {
     const pathname = decodeURIComponent(new URL(request.url || "/", "http://127.0.0.1").pathname);
     const relativePath = normalize(pathname).replace(/^[/\\]+/, "");
@@ -50,6 +50,17 @@ createServer((request, response) => {
   } catch {
     response.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" }).end("Not found");
   }
-}).listen(port, "127.0.0.1", () => {
+});
+
+function shutdown() {
+  server.close(() => process.exit(0));
+  server.closeAllConnections?.();
+  setTimeout(() => process.exit(0), 1_000).unref();
+}
+
+process.once("SIGINT", shutdown);
+process.once("SIGTERM", shutdown);
+
+server.listen(port, "127.0.0.1", () => {
   console.log(`LottoMind test server serving ${root} on http://127.0.0.1:${port}`);
 });

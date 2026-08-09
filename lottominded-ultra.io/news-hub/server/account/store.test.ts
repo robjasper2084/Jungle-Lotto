@@ -43,7 +43,7 @@ test("signed-out users get only free entitlements", async () => {
   }
 });
 
-test("valid collectible redemption grants exactly 150 credits and 30 non-renewing days", async () => {
+test("valid collectible redemption grants exactly 150 credits and three non-renewing calendar months", async () => {
   const context = await fixture();
   try {
     await context.store.provisionCollectible({ code: "VG01-VALID-0001" });
@@ -55,7 +55,34 @@ test("valid collectible redemption grants exactly 150 credits and 30 non-renewin
     assert.equal(result.snapshot.collector.badge, "vault-guardian-series-01");
     const collector = result.snapshot.memberships.find((membership) => membership.kind === "collector-starter");
     assert.equal(collector?.autoRenew, false);
-    assert.equal(result.membershipExpiresAt, "2026-08-09T16:00:00.000Z");
+    assert.equal(result.membershipExpiresAt, "2026-10-10T16:00:00.000Z");
+  } finally {
+    await context.cleanup();
+  }
+});
+
+test("Guardian checkout grants the same three-month membership, credits, and badge once", async () => {
+  const context = await fixture();
+  try {
+    const registered = await context.store.register({ email: "guardian@example.com", password: "correct-horse-guardian" });
+    await context.store.applyStripeCheckout({
+      userId: registered.snapshot.user!.id,
+      lookupKey: "guardian_bundle_once",
+      eventId: "evt_guardian_0001",
+      customerId: "cus_guardian_0001",
+    });
+    await context.store.applyStripeCheckout({
+      userId: registered.snapshot.user!.id,
+      lookupKey: "guardian_bundle_once",
+      eventId: "evt_guardian_0001",
+      customerId: "cus_guardian_0001",
+    });
+    const snapshot = await context.store.snapshot(registered.token);
+    const collector = snapshot.memberships.find((membership) => membership.kind === "collector-starter");
+    assert.equal(snapshot.wallet?.balance, 150);
+    assert.equal(snapshot.collector.badge, "vault-guardian-series-01");
+    assert.equal(collector?.expiresAt, "2026-10-10T16:00:00.000Z");
+    assert.equal(collector?.autoRenew, false);
   } finally {
     await context.cleanup();
   }
@@ -182,7 +209,7 @@ test("collector expiration does not remove a paid membership or the remaining wa
     const registered = await context.store.register({ email: "paid@example.com", password: "correct-horse-paid" });
     await context.store.addPaidMembershipForTest(registered.token, "ultra", null);
     await context.store.claimCollectible(registered.token, "PAID-PLUS-COLLECTOR");
-    context.setNow("2026-08-10T16:00:00.000Z");
+    context.setNow("2026-10-11T16:00:00.000Z");
     const refreshed = await context.store.login({ email: "paid@example.com", password: "correct-horse-paid" });
     const snapshot = await context.store.snapshot(refreshed.token);
     assert.equal(snapshot.collector.status, "expired");

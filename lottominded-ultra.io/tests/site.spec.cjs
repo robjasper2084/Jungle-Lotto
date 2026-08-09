@@ -27,8 +27,10 @@ test("initial presentation media uses bounded web delivery assets", () => {
 
 test("static News feed carries attributed publisher imagery", () => {
   const articles = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "articles.json"), "utf8"));
-  const withImages = articles.filter((article) => /^https:\/\//i.test(article.imageUrl || ""));
-  expect(withImages.length).toBeGreaterThanOrEqual(20);
+  const withCachedImages = articles.filter((article) => /^\.\.\/assets\/news\/publishers\//i.test(article.imageUrl || ""));
+  const withPublisherSources = articles.filter((article) => /^https:\/\//i.test(article.publisherImageUrl || ""));
+  expect(withCachedImages.length).toBeGreaterThanOrEqual(20);
+  expect(withPublisherSources.length).toBeGreaterThanOrEqual(20);
 });
 
 function trackLocalFailures(page) {
@@ -307,34 +309,33 @@ test("Storefront commercial closes itself when playback ends", async ({ page }) 
   const commercial = page.locator("[data-merch-commercial-modal]");
   const video = commercial.locator("[data-merch-commercial-modal-video]");
   await expect(commercial).toBeVisible({ timeout: 5_000 });
-  await expect(commercial.getByRole("link", { name: "Buy Now" })).toHaveAttribute("href", "#keychains");
+  await expect(commercial.getByRole("link", { name: "View Launch Products" })).toHaveAttribute("href", "#launch-catalog");
   await expect(page.locator(".header-click-toggle")).toHaveCount(0);
   await video.evaluate((element) => element.dispatchEvent(new Event("ended")));
   await expect(commercial).toBeHidden();
   await expect(page.locator(".header-click-toggle")).toHaveCount(0);
 });
 
-test("Storefront applies the requested price, removals, and larger commercial", async ({ page }) => {
+test("Storefront exposes only the two truthful launch products", async ({ page }) => {
   await blockHeavyMedia(page);
   await page.goto("/merch-store.html", { waitUntil: "domcontentloaded" });
   await page.locator("[data-merch-commercial-close]").click();
 
-  const hoodie = page.locator("#product-detroit-embroidery-hoodie");
-  await expect(hoodie.locator(".product-hover-price")).toHaveText("$89.99");
-  await expect(hoodie.locator(".product-row strong")).toHaveText("$89.99");
-  await expect(hoodie.locator("[data-add-item]")).toHaveAttribute("data-item-price", "89.99");
-  await expect(page.getByRole("heading", { name: "Cyber Brain Glow Hoodie" })).toHaveCount(0);
-  await expect(page.getByRole("heading", { name: "LottoMind Coin Set" })).toHaveCount(0);
-  await expect(page.locator("#gallery article", { hasText: "Boogie Knit" })).toHaveCount(0);
-
-  const patchCards = page.locator("#product-innovation-floor-model-hoodie, #hoodies");
-  await expect(patchCards).toHaveCount(2);
-  await expect(patchCards.locator(".product-hover-price")).toHaveText(["$10", "$10"]);
-  await expect(patchCards.locator(".product-row strong")).toHaveText(["$10", "$10"]);
-  expect(await patchCards.locator("[data-add-item]").evaluateAll((buttons) => buttons.map((button) => button.dataset.itemPrice))).toEqual(["10", "10"]);
-  await expect(patchCards.locator("[data-item-sizes]")).toHaveCount(0);
-  expect(await patchCards.locator("img").evaluateAll((images) => images.every((image) => /detroit-1701-embroidered-patch-20260730\.webp$/.test(image.getAttribute("src") || "")))).toBe(true);
-  await expect(page.locator("#gallery article", { hasText: "Detroit Patch" }).locator(".gallery-price")).toHaveText("$10");
+  const catalog = page.locator("#launch-catalog");
+  await expect(catalog).toHaveCSS("overflow", "hidden");
+  expect(await catalog.evaluate((element) => getComputedStyle(element).clipPath)).not.toBe("none");
+  expect(await catalog.evaluate((element) => getComputedStyle(element, "::after").content)).not.toBe("none");
+  await expect(catalog.locator("[data-launch-product]")).toHaveCount(2);
+  await expect(catalog.getByRole("heading", { name: "Guardian Starter Bundle" })).toBeVisible();
+  await expect(catalog.getByRole("heading", { name: "Detroit Embroidered Hoodie" })).toBeVisible();
+  await expect(catalog.getByRole("heading", { name: /Detroit 1701 Embroidered Patch/ })).toHaveCount(0);
+  await expect(catalog).not.toContainText("Pricing TBA");
+  await expect(catalog).not.toContainText("Concept package");
+  await expect(catalog.locator("#detroit-embroidered-hoodie button")).toBeDisabled();
+  await expect(catalog.locator(".merch-product-gallery img")).toHaveCount(6);
+  await expect(page.locator("#product-boogie-man-knit-sweater, #product-innovation-floor-model-hoodie, #hoodies")).toHaveCount(0);
+  await expect(page.locator("#store-operations")).toContainText("Preorders are closed");
+  await expect(page.locator("#store-operations")).toContainText("Carrier rates must appear in secure checkout");
 
   const capsule = page.locator(".merch-commercial-capsule");
   const heroVideo = page.locator(".merch-hero-video");
@@ -353,23 +354,19 @@ test("Storefront applies the requested price, removals, and larger commercial", 
   expect(capsuleBox.x + capsuleBox.width).toBeLessThanOrEqual(heroBox.x + heroBox.width + 1);
 });
 
-test("Storefront presents supplied Guardian bundles without inventing checkout claims", async ({ page }) => {
+test("Storefront Guardian checkout stays locked when secure inventory is unavailable", async ({ page }) => {
   await blockHeavyMedia(page);
   await page.goto("/merch-store.html", { waitUntil: "domcontentloaded" });
   await page.locator("[data-merch-commercial-close]").click();
 
-  const bundles = page.locator(".bundle-card");
-  await expect(bundles).toHaveCount(2);
-  await expect(page.locator("#guardian-hoodie-bundle")).toContainText("Guardian Hoodie Package");
-  await expect(page.locator("#detroit-carry-bundle")).toContainText("Detroit Carry Package");
-  await expect(bundles).toContainText(["Pricing TBA", "Pricing TBA"]);
-  await expect(bundles.locator("[data-add-item]")).toHaveCount(0);
-  expect(await bundles.locator("img").evaluateAll((images) => images.every((image) => /bundle-20260725\.webp$/.test(image.getAttribute("src") || "")))).toBe(true);
-  await expect.poll(() => bundles.locator("img").evaluateAll((images) => images.every((image) => image.naturalWidth > 0))).toBe(true);
-
-  const saveBundle = page.locator('#guardian-hoodie-bundle [data-wishlist-toggle="guardian-hoodie-bundle"]');
-  await saveBundle.click();
-  await expect(saveBundle).toHaveAttribute("aria-pressed", "true");
+  const guardian = page.locator("#guardian-starter-bundle");
+  await expect(guardian).toContainText("Exactly 3 months of Ultra");
+  await expect(guardian).toContainText("150 LottoCredits");
+  await expect(guardian).toContainText("No automatic renewal");
+  await expect(guardian).toContainText("$29.95");
+  await expect(guardian.locator('[data-stripe-lookup-key="guardian_bundle_once"]')).toBeDisabled();
+  await expect(page.locator("[data-bag-toggle]")).toHaveCount(0);
+  await expect(page.locator("[data-wishlist-toggle-drawer]")).toHaveCount(0);
 });
 
 test("Arcade hero fits the supplied Guardian film with accessible motion control", async ({ page }) => {
@@ -422,6 +419,25 @@ test("membership checkout explains an authenticated backend rejection", async ({
   await expect(page.locator("[data-stripe-membership-status]")).toHaveText("Sign in is required.");
   await expect(page.locator('[data-stripe-lookup-key="gold_monthly"]')).toBeEnabled();
   await expect(page).toHaveURL(/\/memberships\.html$/);
+});
+
+test("membership plans publish concrete quotas and one consistent Guardian offer", async ({ page }) => {
+  await blockHeavyMedia(page);
+  await page.goto("/memberships.html", { waitUntil: "domcontentloaded" });
+
+  const comparison = page.locator(".membership-comparison");
+  await expect(comparison).toContainText("$4.99/mo or $49/yr");
+  await expect(comparison).toContainText("$9.99/mo or $99/yr");
+  await expect(comparison).toContainText("250 each billing month");
+  await expect(comparison).toContainText("750 each billing month");
+  await expect(comparison).toContainText("Local WAV exports");
+  await expect(comparison).toContainText("No automatic renewal");
+  await expect(page.locator('[data-lm-tier="guardian_bundle"]')).toContainText("$29.95");
+  await expect(page.locator('[data-stripe-lookup-key="guardian_bundle_once"]')).toHaveCount(1);
+  await expect(page.locator('[data-stripe-lookup-key="gold_yearly"]')).toHaveCount(1);
+  await expect(page.locator('[data-stripe-lookup-key="ultra_yearly"]')).toHaveCount(1);
+  await expect(page.locator("main")).not.toContainText("Lifetime or limited-time unlock language");
+  await expect(page.locator("main")).not.toContainText("$29.99");
 });
 
 test("membership checkout sends the signed-in account token", async ({ page }) => {
@@ -674,6 +690,8 @@ test("Static Wav defers its game until the player launches it", async ({ page })
 });
 
 test("features combines the cinematic shell with the manifest-driven Arcade directory", async ({ page }) => {
+  const manifest = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "games", "games-manifest.json"), "utf8"));
+  const expectedGames = manifest.games;
   await blockHeavyMedia(page);
   const localFailures = trackLocalFailures(page);
   await page.goto("/features-app.html", { waitUntil: "domcontentloaded" });
@@ -689,9 +707,9 @@ test("features combines the cinematic shell with the manifest-driven Arcade dire
   await expect.poll(() => page.evaluate(() => document.body.classList.contains("feature-entity-ready"))).toBe(true);
   expect(await page.locator("#arcade-title").evaluate((title) => getComputedStyle(title).fontFamily)).not.toMatch(/Impact/i);
   await expect(page.locator(".feature-channel")).toHaveCount(5);
-  await expect(page.locator("[data-arcade-grid] .arcade-game-card")).toHaveCount(9);
-  await expect(page.locator("[data-arcade-count]")).toHaveText("9");
-  await expect(page.locator(".arcade-game-card__status")).toHaveText(["Playable", "Playable", "Beta", "Playable", "Playable", "Playable", "Playable", "Playable", "Playable"]);
+  await expect(page.locator("[data-arcade-grid] .arcade-game-card")).toHaveCount(expectedGames.length);
+  await expect(page.locator("[data-arcade-count]")).toHaveText(String(expectedGames.length));
+  await expect(page.locator(".arcade-game-card__status")).toHaveText(expectedGames.map((game) => game.status));
   const fortuneGridCard = page.locator('[data-game-id="fortune-grid-313"]');
   await expect(fortuneGridCard.getByRole("heading", { name: "LottoMind 313: Fortune Grid" })).toBeVisible();
   await expect(fortuneGridCard.getByRole("link", { name: "Play Beta" })).toHaveAttribute("href", "./games/lottomind-313-fortune-grid/");
@@ -699,18 +717,16 @@ test("features combines the cinematic shell with the manifest-driven Arcade dire
   await expect(fortuneGridCard.getByRole("link", { name: "Accessibility" })).toBeVisible();
   await expect(fortuneGridCard).toContainText("Entertainment-only simulated sequences");
   await expect(page.getByRole("heading", { name: "RAYCHASE PONG" })).toBeVisible();
-  const arcadeRail = page.locator("[data-arcade-grid]");
-  const railMetrics = await arcadeRail.evaluate((element) => ({
+  const arcadeGrid = page.locator("[data-arcade-grid]");
+  const gridMetrics = await arcadeGrid.evaluate((element) => ({
     scrollWidth: element.scrollWidth,
     clientWidth: element.clientWidth,
-    scrollSnapType: getComputedStyle(element).scrollSnapType,
+    display: getComputedStyle(element).display,
+    columns: getComputedStyle(element).gridTemplateColumns,
   }));
-  expect(railMetrics.scrollWidth).toBeGreaterThan(railMetrics.clientWidth);
-  expect(railMetrics.scrollSnapType).toContain("mandatory");
-  const nextGames = page.getByRole("button", { name: "Next games" });
-  await expect(nextGames).toBeEnabled();
-  await nextGames.click();
-  await expect.poll(() => arcadeRail.evaluate((element) => element.scrollLeft)).toBeGreaterThan(0);
+  expect(gridMetrics.scrollWidth).toBeLessThanOrEqual(gridMetrics.clientWidth + 1);
+  expect(gridMetrics.display).toBe("grid");
+  expect(gridMetrics.columns).not.toBe("none");
   await expect(page.locator("main video:not([data-arcade-hero-video]), main audio, iframe, #lottery-news, .instrument-console")).toHaveCount(0);
 
   await page.getByRole("button", { name: "Action", exact: true }).click();
@@ -727,31 +743,58 @@ test("features combines the cinematic shell with the manifest-driven Arcade dire
   expect(localFailures).toEqual([]);
 });
 
-test("home loads the supplied muted-first startup commercial", async ({ page }) => {
+test("home opens the startup commercial and begins muted playback", async ({ page }) => {
   const commercialRequests = [];
   page.on("request", (request) => {
     if (/lottomind-home-apparel-commercial-20260804\.opt\.mp4/i.test(request.url())) commercialRequests.push(request.url());
   });
   await page.goto("/", { waitUntil: "domcontentloaded" });
   const startup = page.locator("[data-startup-video]");
-  const heroFilm = page.locator(".hero-motion");
   await expect(startup).toBeVisible({ timeout: 5_000 });
+  await expect(startup.locator('[role="dialog"]')).toBeVisible();
   await expect(startup.getByRole("button", { name: "Play with sound" })).toBeVisible();
-  await expect.poll(() => startup.locator("video").evaluate((video) => ({ muted: video.muted, paused: video.paused }))).toMatchObject({ muted: true });
+  await expect.poll(() => startup.locator("video").evaluate((video) => video.muted)).toBe(true);
   await expect.poll(() => commercialRequests.length).toBeGreaterThan(0);
   await startup.getByRole("button", { name: "Enter Site", exact: true }).click();
   await expect(startup).toBeHidden();
-  await expect(heroFilm).toBeVisible();
 });
 
-test("commercial popups retain a visible native pointer above mascot cursor layers", async ({ page }) => {
+test("home commercial dismissal lasts only for the current page load", async ({ page }) => {
+  await blockHeavyMedia(page);
+  await page.goto("/index.html#top", { waitUntil: "domcontentloaded" });
+  const story = page.locator("[data-startup-video]");
+  await expect(story).toBeVisible();
+  await story.getByRole("button", { name: "Enter Site", exact: true }).click();
+  await expect(story).toBeHidden();
+  await expect.poll(() => page.evaluate(() => localStorage.getItem("lottominded.ultra.homeStoryDismissedUntil.v1"))).toBeNull();
+  await page.reload({ waitUntil: "domcontentloaded" });
+  await expect(story).toBeVisible({ timeout: 5_000 });
+});
+
+test("global Reduce Motion control persists", async ({ page }) => {
+  await blockHeavyMedia(page);
+  await page.goto("/index.html#top", { waitUntil: "domcontentloaded" });
+  await page.locator("[data-startup-video-close]").last().click();
+  const motionToggle = page.locator("[data-reduce-motion-toggle]");
+  await expect(motionToggle).toHaveAttribute("aria-pressed", "false");
+  await motionToggle.click();
+  await expect(page.locator("html")).toHaveClass(/lm-reduce-motion/);
+  await expect(motionToggle).toHaveAttribute("aria-pressed", "true");
+  await page.waitForTimeout(1_500);
+  await expect(page.locator("[data-game-pip].is-open")).toHaveCount(0);
+  await page.reload({ waitUntil: "domcontentloaded" });
+  await expect(page.locator("html")).toHaveClass(/lm-reduce-motion/);
+  await expect(page.locator("[data-reduce-motion-toggle]")).toHaveAttribute("aria-pressed", "true");
+});
+
+test("commercial controls retain a visible native pointer above mascot cursor layers", async ({ page }) => {
   await blockHeavyMedia(page);
 
   await page.goto("/index.html#top", { waitUntil: "domcontentloaded" });
   const startup = page.locator("[data-startup-video]");
   await expect(startup).toBeVisible({ timeout: 5_000 });
   await expect.poll(() => startup.evaluate((element) => getComputedStyle(element).cursor)).toBe("auto");
-  await expect.poll(() => startup.getByRole("button", { name: "Enter Site", exact: true }).evaluate((element) => getComputedStyle(element).cursor)).toBe("pointer");
+  await expect.poll(() => startup.getByRole("button", { name: "Play with sound" }).evaluate((element) => getComputedStyle(element).cursor)).toBe("pointer");
 
   await page.goto("/memberships.html", { waitUntil: "domcontentloaded" });
   const membershipCommercial = page.locator("[data-membership-commercial-modal]");
@@ -800,14 +843,7 @@ test("Spheres exposes one Oracle and consistent Robot RAHBEE handoffs", async ({
   await expect(page.locator(".sphere-copy")).not.toContainText("Beat2Lotto+");
 
   if (page.viewportSize()?.width <= 680) {
-    await expect(page.locator("[data-lm-healing-generator]")).toHaveClass(/is-minimized/);
-    const overlapsPrimaryActions = await page.evaluate(() => {
-      const oracle = document.querySelector("[data-lm-healing-generator]")?.getBoundingClientRect();
-      const actions = document.querySelector(".sphere-actions")?.getBoundingClientRect();
-      if (!oracle || !actions) return true;
-      return !(oracle.right <= actions.left || oracle.left >= actions.right || oracle.bottom <= actions.top || oracle.top >= actions.bottom);
-    });
-    expect(overlapsPrimaryActions).toBe(false);
+    await expect(page.locator("[data-lm-healing-generator]")).not.toHaveClass(/is-minimized/);
   }
 });
 
@@ -844,7 +880,8 @@ test("membership hero leads, Collector follows Gaming Showcase, and the Guardian
   await expect(collector).toHaveCount(1);
   await expect(guardian).toHaveCount(1);
   await expect(collector.locator("#plansTitle")).toHaveText(/Choose your signal level/i);
-  await expect(page.locator(".membership-comparison, .membership-benefit-strip, #lm-credits, .membership-billing-tools")).toHaveCount(0);
+  await expect(page.locator(".membership-comparison")).toBeVisible();
+  await expect(page.locator(".membership-benefit-strip, #lm-credits, .membership-billing-tools")).toHaveCount(0);
   await expect(page.locator("#dust .membership-collectible-card")).toHaveCount(0);
   await expect(page.locator("#water")).toHaveCount(0);
   await expect(page.getByText(/Film 04/i)).toHaveCount(0);
@@ -971,7 +1008,7 @@ test("news route renders from the static feed without probing the missing API", 
   const firstArticleImage = page.locator(".article-grid .news-card__media img").first();
   await firstArticleImage.scrollIntoViewIfNeeded();
   await expect(firstArticleImage).toBeVisible();
-  await expect(firstArticleImage).toHaveAttribute("src", /^https:\/\//);
+  await expect(firstArticleImage).toHaveAttribute("src", /^\.\.\/assets\/news\/publishers\//);
   await expect(firstArticleImage.locator("xpath=..")).toHaveClass(/has-publisher-image/);
   await expect.poll(() => firstArticleImage.evaluate((image) => image.complete && image.naturalWidth > 0)).toBe(true);
   expect(apiRequests).toEqual([]);

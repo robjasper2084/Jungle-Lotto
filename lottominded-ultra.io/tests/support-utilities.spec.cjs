@@ -10,6 +10,7 @@ test("shared support utilities expose Search, Credits, Account, Help, Contact, a
   await expect(utilities.getByRole("button", { name: "Search LottoMind routes" })).toBeVisible();
   await expect(utilities.getByRole("link", { name: "Credits" })).toHaveAttribute("href", /account\.html#credits$/);
   await expect(utilities.getByRole("link", { name: "Account", exact: true })).toHaveAttribute("href", /account\.html$/);
+  await expect(utilities.getByRole("button", { name: /motion/i })).toHaveText("Motion");
   const sphereTabs = page.getByRole("navigation", { name: "LOTTOMINDED ULTRA sphere navigation" }).getByRole("link");
   await expect(sphereTabs).toHaveText([
     "Home",
@@ -29,6 +30,23 @@ test("shared support utilities expose Search, Credits, Account, Help, Contact, a
     return { radius: Number.parseFloat(styles.borderRadius), height: item.getBoundingClientRect().height };
   }));
   utilityShapes.forEach(({ radius, height }) => expect(radius).toBeGreaterThanOrEqual(height / 2));
+  const utilityLayout = await utilities.locator("a, button").evaluateAll((items) => items.map((item) => {
+    const box = item.getBoundingClientRect();
+    return { left: box.left, right: box.right, top: box.top, bottom: box.bottom, width: box.width, height: box.height };
+  }));
+  utilityLayout.forEach(({ width, height }) => {
+    expect(width).toBeGreaterThanOrEqual(40);
+    expect(height).toBeGreaterThanOrEqual(40);
+  });
+  for (let index = 0; index < utilityLayout.length; index += 1) {
+    for (let compare = index + 1; compare < utilityLayout.length; compare += 1) {
+      const first = utilityLayout[index];
+      const second = utilityLayout[compare];
+      const overlapWidth = Math.max(0, Math.min(first.right, second.right) - Math.max(first.left, second.left));
+      const overlapHeight = Math.max(0, Math.min(first.bottom, second.bottom) - Math.max(first.top, second.top));
+      expect(overlapWidth * overlapHeight).toBe(0);
+    }
+  }
   if (page.viewportSize()?.width <= 470) {
     const utilityBox = await utilities.boundingBox();
     const navBox = await page.getByRole("navigation", { name: "LOTTOMINDED ULTRA sphere navigation" }).boundingBox();
@@ -57,6 +75,7 @@ test("footer links are unique and use the canonical support destinations globall
   const expectedLinks = [
     ["Help", "/help.html"],
     ["Contact", "/contact.html"],
+    ["Services", "/services/"],
     ["Credits", "/account.html#credits"],
     ["Account", "/account.html"],
     ["Privacy", "/privacy.html"],
@@ -66,6 +85,7 @@ test("footer links are unique and use the canonical support destinations globall
 
   for (const route of ["/index.html#top", "/accessibility.html", "/memberships.html", "/merch-store.html"]) {
     await page.goto(route, { waitUntil: "domcontentloaded" });
+    await expect(page.locator("body > footer")).toHaveClass(/lm-site-footer-hud/);
     const links = await page.locator("body > footer :is(.lm-footer-support-links, .site-legal-links) a").evaluateAll((items) =>
       items.map((item) => [item.textContent.trim(), `${new URL(item.href).pathname}${new URL(item.href).hash}`])
     );
@@ -76,19 +96,41 @@ test("footer links are unique and use the canonical support destinations globall
       const footerPadding = await page.locator("body > footer").evaluate((element) => Number.parseFloat(getComputedStyle(element).paddingBottom));
       expect(footerPadding, `${route} should reserve space below footer links`).toBeGreaterThanOrEqual(112);
     }
+    expect(await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1)).toBe(false);
   }
+});
+
+test("shared signal marquee uses smooth motion and preserves reduced-motion behavior", async ({ page }) => {
+  await page.goto("/merch-store.html", { waitUntil: "domcontentloaded" });
+  const track = page.locator(".home-signal-marquee-track").first();
+  await expect(track).toBeVisible();
+
+  const motion = await track.evaluate((element) => {
+    const styles = getComputedStyle(element);
+    return { name: styles.animationName, duration: styles.animationDuration };
+  });
+  if (page.viewportSize()?.width <= 760) {
+    expect(motion.name).toBe("none");
+  } else {
+    expect(motion.name).toBe("home-signal-marquee");
+    expect(motion.duration).toBe("31s");
+  }
+
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await expect(track).toHaveCSS("animation-name", "none");
 });
 
 test("account route stays read-only in local preview and exposes support links", async ({ page }) => {
   await page.goto("/account.html");
 
   await expect(page.getByRole("heading", { name: "Your LottoMind signal." })).toBeVisible();
-  const heroVideo = page.locator(".lm-platform-hero__video");
-  await expect(heroVideo).toHaveAttribute("muted", "");
-  await expect(heroVideo).toHaveAttribute("data-autoplay-on-visible", "true");
+  const heroVideo = page.locator(".lm-account-hero-film");
+  await expect(heroVideo).toHaveAttribute("controls", "");
+  await expect(heroVideo).toHaveAttribute("preload", "none");
+  await expect(heroVideo).not.toHaveAttribute("autoplay", "");
   const heroVideoSource = await heroVideo.locator("source").evaluate((source) => source.getAttribute("src") || source.dataset.src);
-  expect(heroVideoSource).toMatch(/lm-feature-portal-loop\.mp4$/);
-  await expect(page.getByRole("status")).toContainText("read-only");
+  expect(heroVideoSource).toMatch(/lottomind-account-vault-film-20260626\.mp4$/);
+  await expect(page.locator("[data-account-status]")).toContainText("read-only");
   await expect(page.getByRole("link", { name: "Need account or password support?" })).toHaveAttribute("href", /contact\.html/);
   await expect(page.getByRole("link", { name: "Read Account and Credits Help" })).toHaveAttribute("href", /help\.html#lottocredits$/);
 });
@@ -98,7 +140,7 @@ test("Help Center is searchable and Account, Terms, and Privacy share RAHBEE dep
   await expect(page).toHaveTitle("Help Center | LOTTOMINDED ULTRA");
   await expect(page.getByRole("heading", { name: "Find the right route fast." })).toBeVisible();
   await page.getByRole("searchbox", { name: "Search Help Center" }).fill("credits");
-  await expect(page.getByRole("status")).toContainText("help topic");
+  await expect(page.locator("[data-help-status]")).toContainText("help topic");
   await expect(page.getByText("How accounts and LottoCredits work")).toBeVisible();
   await expect(page.getByText("How to play Robot RAHBEE")).toBeHidden();
 

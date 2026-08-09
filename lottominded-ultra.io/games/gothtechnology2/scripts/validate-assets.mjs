@@ -7,7 +7,7 @@ const root = resolve(import.meta.dirname, "..");
 const failures = [];
 const REQUIRED_FRAME_COUNT = 6;
 const REQUIRED_PROVIDER = "Higgsfield Nano Banana Pro";
-const REQUIRED_SOURCES = new Set(["higgsfield-v2", "higgsfield-v3-body-vfx", "higgsfield-v4-body-only"]);
+const REQUIRED_SOURCES = new Set(["higgsfield-v2", "higgsfield-v3-body-vfx", "higgsfield-v4-body-only", "derived-body-only-v1"]);
 const STABLE_HEIGHT_MOTIONS = new Set([
   "IDLE", "READY_STANCE", "WALK_FORWARD", "WALK_BACK", "RUN_FORWARD", "RUN_BACK",
   "DASH_FORWARD", "DASH_BACK", "CROUCH_IDLE", "CROUCH_WALK", "BLOCK_HIGH", "BLOCK_LOW",
@@ -24,6 +24,7 @@ const collectUrls = (value, urls = new Set()) => {
 const localAssetPath = (url) => url.split(/[?#]/, 1)[0];
 const manifestPath = resolve(root, localAssetPath(ASSET_URLS.manifest));
 const manifest = JSON.parse(await readFile(manifestPath, "utf8"));
+const semanticQa = JSON.parse(await readFile(resolve(root, "assets/motion-atlases/motion-semantic-qa.json"), "utf8"));
 const companionManifest = JSON.parse(await readFile(resolve(root, "assets/user-assists/companion-projectiles.json"), "utf8"));
 const urls = collectUrls(ASSET_URLS);
 COMMERCIAL_URLS.forEach((url) => urls.add(url));
@@ -54,6 +55,9 @@ if (!indexSource.includes(`./src/main.js?v=${MOTION_ASSET_VERSION}`)) {
 }
 
 if (manifest.provider !== REQUIRED_PROVIDER) failures.push(`Unexpected sprite provider: ${manifest.provider}`);
+if (semanticQa.version !== 1 || semanticQa.repair !== "semantic-body-only-v1") {
+  failures.push("Motion semantic QA manifest is missing or unsupported");
+}
 if (manifest.stabilizationVersion !== 1) failures.push("Motion manifest is missing stabilization metadata");
 if (manifest.framesPerMotion !== REQUIRED_FRAME_COUNT) {
   failures.push(`Manifest declares ${manifest.framesPerMotion} frames per motion; requires ${REQUIRED_FRAME_COUNT}`);
@@ -96,6 +100,22 @@ for (const [characterId, character] of Object.entries(manifest.characters ?? {})
     if (!motion.higgsfieldJobId) {
       failures.push(`${characterId}/${motionName}: missing Higgsfield job provenance`);
     }
+    const semanticKey = `${characterId}/${motionName}`;
+    const semanticRule = semanticQa.motions?.[semanticKey];
+    if (motion.source === "derived-body-only-v1") {
+      if (!semanticRule || motion.repair !== "semantic-body-only-v1") {
+        failures.push(`${semanticKey}: derived sequence lacks semantic QA approval`);
+      }
+      if (motion.semantic?.bodyOnly !== true || motion.semantic?.figureCount !== 1 || motion.semantic?.anchor !== "bottom-center") {
+        failures.push(`${semanticKey}: semantic approval must require one bottom-anchored body-only figure`);
+      }
+      if (!motion.semantic?.poseClass || motion.semantic.poseClass !== semanticRule?.poseClass) {
+        failures.push(`${semanticKey}: semantic pose class does not match the QA manifest`);
+      }
+      if (motion.repairSourceFrames?.length !== REQUIRED_FRAME_COUNT) {
+        failures.push(`${semanticKey}: repaired sequence must declare six source poses`);
+      }
+    }
     if (motion.frames?.some((frame) => frame.w <= 0 || frame.h <= 0 || frame.x < 0 || frame.y < 0)) {
       failures.push(`${characterId}/${motionName}: invalid packed frame rectangle`);
     }
@@ -135,7 +155,7 @@ for (const [characterId, character] of Object.entries(manifest.characters ?? {})
   }
   if (characterId === "AMARA_VALENTINE") {
     for (const motionName of ["JUMP_PEAK", "AIR_ATTACK"]) {
-      if (runtimeMotions[motionName].repair !== "amara-aerial-v1") {
+      if (!["amara-aerial-v1", "semantic-body-only-v1"].includes(runtimeMotions[motionName].repair)) {
         failures.push(`${characterId}/${motionName}: missing approved aerial repair provenance`);
       }
     }
@@ -151,6 +171,13 @@ for (const [characterId, character] of Object.entries(manifest.characters ?? {})
   }
   if (signature("DASH_BACK") === signature("RUN_BACK") || signature("DASH_BACK") === signature("WALK_BACK")) {
     failures.push(`${characterId}: DASH_BACK reuses a locomotion sequence`);
+  }
+}
+
+for (const semanticKey of Object.keys(semanticQa.motions ?? {})) {
+  const [characterId, motionName] = semanticKey.split("/");
+  if (manifest.characters?.[characterId]?.motions?.[motionName]?.source !== "derived-body-only-v1") {
+    failures.push(`${semanticKey}: semantic QA entry does not point to a derived body-only motion`);
   }
 }
 

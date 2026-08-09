@@ -293,6 +293,159 @@ test("boots, reaches versus, fights, and pauses without page errors", async ({ p
   expect(pageErrors).toEqual([]);
 });
 
+test("keyboard movement remaps, swaps conflicts, and persists", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== "desktop-chromium", "Keyboard persistence needs one desktop browser pass");
+  await page.goto(gameUrl);
+  await expect.poll(() => phase(page)).toBe("title");
+  await page.evaluate(() => window.__gothTechnologyGame.openSettings());
+  await expect(page.locator("#settingsPanel")).toBeVisible();
+
+  await page.getByRole("button", { name: "MOVE LEFT, player 1, A" }).click();
+  await page.keyboard.press("KeyQ");
+  await expect(page.getByRole("button", { name: "MOVE LEFT, player 1, Q" })).toBeVisible();
+
+  await page.getByRole("button", { name: "MOVE RIGHT, player 1, D" }).click();
+  await page.keyboard.press("KeyQ");
+  await expect(page.getByRole("button", { name: "MOVE RIGHT, player 1, Q" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "MOVE LEFT, player 1, D" })).toBeVisible();
+  await expect(page.locator("#bindingStatus")).toContainText("moved to D");
+
+  await page.getByRole("button", { name: "Close control settings" }).click();
+  await page.evaluate(() => { window.__gothTechnologyGame.titleMenuIndex = 0; });
+  await page.keyboard.press("KeyQ");
+  await expect.poll(() => page.evaluate(() => window.__gothTechnologyGame.titleMenuIndex)).toBe(1);
+  await page.keyboard.press("KeyD");
+  await expect.poll(() => page.evaluate(() => window.__gothTechnologyGame.titleMenuIndex)).toBe(0);
+
+  await page.reload();
+  await expect.poll(() => phase(page)).toBe("title");
+  await page.evaluate(() => window.__gothTechnologyGame.openSettings());
+  await expect(page.getByRole("button", { name: "MOVE RIGHT, player 1, Q" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "MOVE LEFT, player 1, D" })).toBeVisible();
+  await page.getByRole("button", { name: "MOVE LEFT, player 1, D" }).scrollIntoViewIfNeeded();
+  if (!process.env.NO_TEST_ARTIFACTS) await page.screenshot({ path: testInfo.outputPath("keyboard-remapping.png") });
+  await page.getByRole("button", { name: "MOVE LEFT, player 1, D" }).click();
+  await page.keyboard.press("Backspace");
+  await expect(page.getByRole("button", { name: "MOVE LEFT, player 1, Unbound" })).toBeVisible();
+  await page.getByRole("button", { name: "RESET KEYS" }).click();
+  await expect(page.getByRole("button", { name: "MOVE LEFT, player 1, A" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "MOVE RIGHT, player 1, D" })).toBeVisible();
+});
+
+test("repaired motion pixels remain unclipped single-body silhouettes", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== "desktop-chromium", "Atlas pixels only need one browser pass");
+  test.setTimeout(120_000);
+  await page.goto(gameUrl);
+  await expect.poll(() => phase(page)).toBe("title");
+
+  const results = await page.evaluate(async () => {
+    const [manifest, qa] = await Promise.all([
+      fetch("assets/motion-atlases/motion-atlas-manifest.json").then((response) => response.json()),
+      fetch("assets/motion-atlases/motion-semantic-qa.json").then((response) => response.json())
+    ]);
+    const images = new Map();
+    const loadImage = async (url) => {
+      if (!images.has(url)) {
+        images.set(url, new Promise((resolve, reject) => {
+          const image = new Image();
+          image.onload = () => resolve(image);
+          image.onerror = () => reject(new Error(`Unable to load ${url}`));
+          image.src = `${url}?semantic-pixel-test=1`;
+        }));
+      }
+      return images.get(url);
+    };
+    const canvas = document.createElement("canvas");
+    canvas.width = 96;
+    canvas.height = 96;
+    const context = canvas.getContext("2d", { willReadFrequently: true });
+    const inspectFrame = async (motion, frame) => {
+      const image = await loadImage(motion.sheet);
+      context.clearRect(0, 0, 96, 96);
+      context.drawImage(image, frame.x, frame.y, frame.w, frame.h, 0, 0, 96, 96);
+      const pixels = context.getImageData(0, 0, 96, 96).data;
+      const mask = new Uint8Array(96 * 96);
+      let opaque = 0;
+      let edge = 0;
+      let hash = 2166136261;
+      for (let index = 0; index < mask.length; index += 1) {
+        const visible = pixels[index * 4 + 3] > 24 ? 1 : 0;
+        mask[index] = visible;
+        hash = Math.imul(hash ^ visible, 16777619) >>> 0;
+        if (!visible) continue;
+        opaque += 1;
+        const x = index % 96;
+        const y = Math.floor(index / 96);
+        if (x < 2 || y < 2 || x > 93 || y > 93) edge += 1;
+      }
+      const dilated = new Uint8Array(mask.length);
+      for (let y = 0; y < 96; y += 1) {
+        for (let x = 0; x < 96; x += 1) {
+          if (!mask[y * 96 + x]) continue;
+          for (let dy = -1; dy <= 1; dy += 1) {
+            for (let dx = -1; dx <= 1; dx += 1) {
+              const nx = x + dx;
+              const ny = y + dy;
+              if (nx >= 0 && nx < 96 && ny >= 0 && ny < 96) dilated[ny * 96 + nx] = 1;
+            }
+          }
+        }
+      }
+      const visited = new Uint8Array(mask.length);
+      let largeComponents = 0;
+      for (let start = 0; start < dilated.length; start += 1) {
+        if (!dilated[start] || visited[start]) continue;
+        const stack = [start];
+        visited[start] = 1;
+        let area = 0;
+        while (stack.length) {
+          const current = stack.pop();
+          area += 1;
+          const x = current % 96;
+          const y = Math.floor(current / 96);
+          for (const next of [current - 1, current + 1, current - 96, current + 96]) {
+            if (next < 0 || next >= dilated.length || visited[next] || !dilated[next]) continue;
+            const nx = next % 96;
+            const ny = Math.floor(next / 96);
+            if (Math.abs(nx - x) + Math.abs(ny - y) !== 1) continue;
+            visited[next] = 1;
+            stack.push(next);
+          }
+        }
+        if (area >= 6) largeComponents += 1;
+      }
+      return { opaque, edgeRatio: edge / Math.max(1, opaque), hash, largeComponents };
+    };
+
+    const output = [];
+    for (const [key, rule] of Object.entries(qa.motions)) {
+      const [characterId, motionName] = key.split("/");
+      const character = manifest.characters[characterId];
+      const motion = character.motions[motionName];
+      const idle = character.motions.IDLE;
+      const idleFrames = await Promise.all(idle.frames.map((frame) => inspectFrame(idle, frame)));
+      const idleArea = idleFrames.reduce((sum, frame) => sum + frame.opaque, 0) / idleFrames.length;
+      const frames = await Promise.all(motion.frames.map((frame) => inspectFrame(motion, frame)));
+      output.push({
+        key,
+        uniqueSilhouettes: new Set(frames.map((frame) => frame.hash)).size,
+        maxEdgePixelRatio: Math.max(...frames.map((frame) => frame.edgeRatio)),
+        maxOpaqueAreaRatioToIdle: Math.max(...frames.map((frame) => frame.opaque / idleArea)),
+        maxLargeComponents: Math.max(...frames.map((frame) => frame.largeComponents)),
+        rule
+      });
+    }
+    return output;
+  });
+
+  for (const result of results) {
+    expect(result.uniqueSilhouettes, `${result.key} repeated a silhouette`).toBeGreaterThanOrEqual(result.rule.minUniqueSilhouettes);
+    expect(result.maxEdgePixelRatio, `${result.key} touches a frame edge`).toBeLessThanOrEqual(result.rule.maxEdgePixelRatio);
+    expect(result.maxOpaqueAreaRatioToIdle, `${result.key} likely contains an extra figure`).toBeLessThanOrEqual(result.rule.maxOpaqueAreaRatioToIdle);
+    expect(result.maxLargeComponents, `${result.key} contains detached body fragments`).toBeLessThanOrEqual(5);
+  }
+});
+
 test("Detroit Lens Noir loads the Boerboel, eye laser, and six arenas", async ({ page }, testInfo) => {
   test.setTimeout(180_000);
   const pageErrors = [];
@@ -380,10 +533,12 @@ test("Detroit Lens Noir loads the Boerboel, eye laser, and six arenas", async ({
     dog.update(0.48, game);
     dogPhases.push(dog.phase);
     game.spawnProjectile(fighter, "super");
+    const laser = game.projectiles.at(-1);
     game.effects.length = 0;
     game.spawnFighterVfx(fighter, "special", "charge");
     return {
       projectileKinds: game.projectiles.map((projectile) => projectile.kind),
+      laserSocket: { x: laser.x - fighter.x, y: laser.y - fighter.y },
       dogPhases,
       hasTabletEffect: game.effects.some((effect) => effect.constructor.name === "AttachedImageEffect"),
       duplicateSpecialEffects: game.effects.length,
@@ -401,6 +556,7 @@ test("Detroit Lens Noir loads the Boerboel, eye laser, and six arenas", async ({
   });
   expect(expansionState).toEqual({
     projectileKinds: ["boerboel-rush", "eye-laser"],
+    laserSocket: { x: 34, y: -238 },
     dogPhases: ["summon", "run", "attack", "recover"],
     hasTabletEffect: false,
     duplicateSpecialEffects: 0,
@@ -909,7 +1065,7 @@ test("Amara aerial frames and Heartlink counter play cleanly in a real match", a
   });
 
   expect(audit.fighterId).toBe("AMARA_VALENTINE");
-  expect(audit.peakRepair).toBe("amara-aerial-v1");
+  expect(audit.peakRepair).toBe("semantic-body-only-v1");
   expect(audit.airRepair).toBe("amara-aerial-v1");
   expect(Math.max(...audit.fragmentRatios)).toBeLessThan(0.035);
   expect(audit.preCounter).toEqual({ motion: "SPECIAL_START", opponentVx: 0 });
@@ -1002,7 +1158,7 @@ test("real attacks connect and training exposes expanded frame data", async ({ p
   expect(hitResult.readout).toHaveProperty("comboScale");
 });
 
-test("mobile portrait keeps controls adjacent to a useful playfield", async ({ page }, testInfo) => {
+test("mobile portrait keeps compact primary controls adjacent and collapses match tools", async ({ page }, testInfo) => {
   test.setTimeout(120_000);
   test.skip(!testInfo.project.name.includes("mobile"), "Mobile layout check");
   await page.goto(gameUrl);
@@ -1017,6 +1173,9 @@ test("mobile portrait keeps controls adjacent to a useful playfield", async ({ p
       canvasHeight: canvas.height,
       canvasTop: canvas.top,
       gap: controls.top - canvas.bottom,
+      primaryButtons: document.querySelectorAll("#mobileControls .pad .touch:not(.blank), #mobileControls .buttons .touch").length,
+      toolsHidden: document.getElementById("mobileUtilityActions").hidden,
+      toolsExpanded: document.getElementById("mobileUtilityToggle").getAttribute("aria-expanded"),
       controlsBottom: controls.bottom,
       viewportHeight: innerHeight,
       controlsVisible: getComputedStyle(document.getElementById("mobileControls")).display !== "none"
@@ -1026,9 +1185,16 @@ test("mobile portrait keeps controls adjacent to a useful playfield", async ({ p
   expect(layout.canvasWidth).toBeGreaterThan(360);
   expect(layout.canvasHeight).toBeGreaterThan(190);
   expect(layout.canvasTop).toBeLessThan(40);
+  expect(layout.gap).toBeGreaterThanOrEqual(0);
   expect(layout.gap).toBeLessThan(32);
+  expect(layout.primaryButtons).toBe(10);
+  expect(layout.toolsHidden).toBe(true);
+  expect(layout.toolsExpanded).toBe("false");
   expect(layout.controlsBottom).toBeLessThanOrEqual(layout.viewportHeight + 2);
   if (!process.env.NO_TEST_ARTIFACTS) await page.screenshot({ path: testInfo.outputPath("mobile-title.png") });
+  await page.getByRole("button", { name: "Open match tools" }).click();
+  await expect(page.locator("#mobileUtilityActions")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Open match tools" })).toHaveAttribute("aria-expanded", "true");
 });
 
 test("mobile landscape keeps primary controls in side rails", async ({ page }, testInfo) => {
