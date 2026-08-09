@@ -109,11 +109,12 @@ body.trivia-vault-page button { font: inherit; }
 }
 
 .vault-screen {
+  position: relative;
   width: 100%;
-  border: 1px solid var(--tv-line);
-  border-radius: 6px;
-  background: rgba(5, 8, 15, 0.94);
-  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.46), inset 0 1px rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(38, 230, 255, 0.58);
+  border-radius: 4px;
+  background: rgba(3, 8, 15, 0.97);
+  box-shadow: 0 34px 100px rgba(0, 0, 0, 0.62), 0 0 44px rgba(38, 230, 255, 0.07), inset 0 1px rgba(255, 255, 255, 0.08);
   animation: vault-enter 360ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
@@ -124,14 +125,45 @@ body.trivia-vault-page button { font: inherit; }
 
 .vault-launcher {
   display: grid;
-  grid-template-columns: minmax(0, 1.15fr) minmax(390px, 0.85fr);
-  min-height: 690px;
+  grid-template-columns: minmax(0, 1.24fr) minmax(410px, 0.76fr);
+  min-height: 720px;
   overflow: hidden;
+  border-top-color: var(--tv-gold);
+  background:
+    linear-gradient(90deg, rgba(38, 230, 255, 0.06), transparent 36%),
+    #030811;
+}
+
+.vault-launcher::before {
+  content: "LM / KNOWLEDGE VAULT 02";
+  position: absolute;
+  z-index: 5;
+  top: 14px;
+  right: 18px;
+  padding: 6px 9px;
+  border: 1px solid rgba(212, 175, 55, 0.48);
+  color: var(--tv-gold-soft);
+  background: rgba(2, 8, 17, 0.84);
+  font-size: 0.6rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.vault-launcher::after {
+  content: "";
+  position: absolute;
+  z-index: 5;
+  right: 0;
+  bottom: 22px;
+  width: 5px;
+  height: 92px;
+  background: linear-gradient(var(--tv-cyan), var(--tv-purple), var(--tv-gold));
+  box-shadow: 0 0 18px rgba(38, 230, 255, 0.54);
 }
 
 .vault-hero-art {
   position: relative;
-  min-height: 690px;
+  min-height: 720px;
   overflow: hidden;
   border-right: 1px solid var(--tv-line);
   background: #020308;
@@ -143,16 +175,30 @@ body.trivia-vault-page button { font: inherit; }
   inset: 0;
   z-index: 1;
   pointer-events: none;
-  background: linear-gradient(90deg, transparent 58%, rgba(5, 5, 8, 0.74)), linear-gradient(0deg, rgba(5, 5, 8, 0.55), transparent 45%);
+  background:
+    linear-gradient(90deg, transparent 62%, rgba(3, 8, 15, 0.62)),
+    linear-gradient(0deg, rgba(2, 7, 14, 0.7), transparent 48%);
+}
+
+.vault-hero-art::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(0deg, transparent 0 5px, rgba(38, 230, 255, 0.035) 6px),
+    linear-gradient(115deg, transparent 72%, rgba(212, 175, 55, 0.12));
+  mix-blend-mode: screen;
 }
 
 .vault-hero-art img {
   width: 100%;
   height: 100%;
-  min-height: 690px;
+  min-height: 720px;
   object-fit: cover;
   object-position: center;
-  filter: saturate(0.94) contrast(1.04);
+  filter: saturate(1.04) contrast(1.05) brightness(0.96);
 }
 
 .vault-hero-readout {
@@ -165,8 +211,9 @@ body.trivia-vault-page button { font: inherit; }
   justify-content: space-between;
   gap: 20px;
   padding: 14px 16px;
+  border: 1px solid rgba(38, 230, 255, 0.34);
   border-left: 3px solid var(--tv-cyan);
-  background: rgba(2, 8, 18, 0.88);
+  background: rgba(2, 8, 18, 0.92);
   color: var(--tv-muted);
   font-size: 0.78rem;
   text-transform: uppercase;
@@ -175,8 +222,40 @@ body.trivia-vault-page button { font: inherit; }
 .vault-hero-readout strong { color: var(--tv-cyan); }
 
 .vault-launch-copy {
-  align-self: center;
-  padding: 42px;
+  position: relative;
+  z-index: 2;
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 54px 38px 38px;
+  background:
+    linear-gradient(135deg, rgba(38, 230, 255, 0.075), transparent 28%),
+    linear-gradient(315deg, rgba(139, 92, 246, 0.08), transparent 34%),
+    rgba(4, 10, 19, 0.94);
+}
+
+.vault-launch-copy::before,
+.vault-launch-copy::after {
+  content: "";
+  position: absolute;
+  width: 54px;
+  height: 54px;
+  pointer-events: none;
+}
+
+.vault-launch-copy::before {
+  top: 20px;
+  left: 20px;
+  border-top: 2px solid var(--tv-cyan);
+  border-left: 2px solid var(--tv-cyan);
+}
+
+.vault-launch-copy::after {
+  right: 20px;
+  bottom: 20px;
+  border-right: 2px solid var(--tv-gold);
+  border-bottom: 2px solid var(--tv-gold);
 }
 
 .vault-kicker,
@@ -194,7 +273,7 @@ body.trivia-vault-page button { font: inherit; }
   margin: 0;
   color: var(--tv-white);
   font-family: Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
-  font-size: 4.2rem;
+  font-size: 4rem;
   font-weight: 800;
   line-height: 0.94;
   letter-spacing: 0;
@@ -219,8 +298,34 @@ body.trivia-vault-page button { font: inherit; }
   line-height: 1.65;
 }
 
+.vault-launch-status {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  margin: 20px 0 0;
+  border: 1px solid rgba(38, 230, 255, 0.28);
+  background: rgba(38, 230, 255, 0.24);
+}
+
+.vault-launch-status span {
+  min-width: 0;
+  padding: 10px 9px;
+  color: var(--tv-white);
+  background: #071321;
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.vault-launch-status b {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--tv-cyan);
+  font-size: 0.58rem;
+}
+
 .vault-service-state {
-  margin: 22px 0;
+  margin: 12px 0 18px;
   padding: 12px 14px;
   border-left: 3px solid var(--tv-gold);
   background: rgba(212, 175, 55, 0.08);
@@ -236,19 +341,25 @@ body.trivia-vault-page button { font: inherit; }
 }
 
 .vault-mode {
-  min-height: 132px;
-  padding: 16px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  min-height: 136px;
+  padding: 17px 15px 15px 18px;
   border: 1px solid rgba(255, 255, 255, 0.18);
   border-top: 3px solid var(--tv-cyan);
-  border-radius: 4px;
+  border-radius: 2px;
   color: var(--tv-white);
   text-align: left;
-  background: #0a111c;
+  background: linear-gradient(145deg, rgba(38, 230, 255, 0.055), transparent 42%), #08121e;
   cursor: pointer;
   transition: transform 160ms ease, border-color 160ms ease, background-color 160ms ease;
 }
 
-.vault-mode:hover { transform: translateY(-3px); border-color: currentColor; background: #0e1927; }
+.vault-mode::after { content: ""; position: absolute; right: 9px; bottom: 9px; width: 18px; height: 18px; border-right: 1px solid currentColor; border-bottom: 1px solid currentColor; opacity: 0.45; }
+.vault-mode:hover { transform: translateY(-3px); border-color: currentColor; background-color: #0e1927; }
 .vault-mode--gold { color: var(--tv-gold-soft); border-top-color: var(--tv-gold); }
 .vault-mode--cyan { color: var(--tv-cyan); }
 .vault-mode--red { color: var(--tv-red); border-top-color: var(--tv-red); }
@@ -256,6 +367,39 @@ body.trivia-vault-page button { font: inherit; }
 .vault-mode span { display: block; margin-bottom: 10px; font-size: 0.66rem; font-weight: 800; text-transform: uppercase; }
 .vault-mode strong { display: block; color: var(--tv-white); font-size: 1.25rem; text-transform: uppercase; }
 .vault-mode small { display: block; margin-top: 8px; color: var(--tv-muted); font-size: 0.78rem; line-height: 1.4; }
+
+.trivia-vault-page .lm-header-utilities {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 3px;
+  overflow: hidden;
+  border: 1px solid rgba(38, 230, 255, 0.46);
+  border-radius: 999px;
+  background: rgba(2, 10, 18, 0.94);
+  box-shadow: 0 0 20px rgba(38, 230, 255, 0.12);
+}
+
+.trivia-vault-page .lm-header-utilities > button,
+.trivia-vault-page .lm-header-utilities > a {
+  min-width: 0;
+  min-height: 38px;
+  padding: 0 12px;
+  border: 0;
+  border-right: 1px solid rgba(38, 230, 255, 0.22);
+  border-radius: 0;
+  color: #dce8f7;
+  background: transparent;
+  box-shadow: none;
+  font-size: 0.66rem;
+  font-weight: 900;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.trivia-vault-page .lm-header-utilities > :last-child { border-right: 0; }
+.trivia-vault-page .lm-header-utilities > button:hover,
+.trivia-vault-page .lm-header-utilities > a:hover { color: #061017; background: var(--tv-cyan); }
 
 .vault-launch-actions,
 .vault-result-actions {
@@ -458,7 +602,7 @@ a:focus-visible,
   .vault-launcher { grid-template-columns: 1fr; }
   .vault-hero-art { min-height: 430px; border-right: 0; border-bottom: 1px solid var(--tv-line); }
   .vault-hero-art img { min-height: 430px; }
-  .vault-launch-copy { padding: 34px; }
+  .vault-launch-copy { padding: 44px 34px 34px; }
   .vault-launch-copy h1,
   .vault-results-heading h2,
   .vault-panel-heading h2 { font-size: 3.25rem; }
@@ -474,14 +618,21 @@ a:focus-visible,
   .vault-footer { width: calc(100% - 20px); }
   .vault-main { padding: 22px 0 96px; }
   .vault-launcher { min-height: 0; }
+  .vault-launcher::before { top: 8px; right: 10px; font-size: 0.54rem; }
+  .vault-launcher::after { bottom: 12px; height: 54px; }
   .vault-hero-art,
   .vault-hero-art img { min-height: 300px; }
   .vault-hero-readout { left: 10px; right: 10px; bottom: 10px; flex-direction: column; gap: 4px; }
-  .vault-launch-copy { padding: 24px 18px; }
+  .vault-launch-copy { padding: 42px 18px 24px; }
+  .vault-launch-copy::before,
+  .vault-launch-copy::after { width: 34px; height: 34px; }
   .vault-launch-copy h1,
   .vault-results-heading h2,
   .vault-panel-heading h2 { font-size: 2.5rem; }
   .vault-tagline { font-size: 1.05rem; }
+  .vault-launch-status { grid-template-columns: 1fr; }
+  .vault-launch-status span { display: flex; justify-content: space-between; gap: 12px; }
+  .vault-launch-status b { margin: 0; }
   .vault-mode-grid { grid-template-columns: 1fr; }
   .vault-mode { min-height: 112px; }
   .vault-play-header { grid-template-columns: repeat(2, 1fr); }
@@ -506,6 +657,8 @@ a:focus-visible,
   .vault-dialog [data-category-options] { grid-template-columns: 1fr; }
   .vault-footer { flex-wrap: wrap; padding-bottom: 80px; }
   .vault-footer p { flex-basis: calc(100% - 60px); }
+  .trivia-vault-page .lm-header-utilities > button,
+  .trivia-vault-page .lm-header-utilities > a { min-height: 36px; padding: 0 9px; font-size: 0.6rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {
