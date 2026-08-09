@@ -37,6 +37,7 @@ const routes = [
   "/games/gothtechnology2/",
   "/games/lottomind-jackpot-maze/",
   "/games/lottomind-313-fortune-grid/",
+  "/games/lottomind-trivia/",
   "/games/opengw-levels/",
   "/games/shadow-ops-canvas/",
   "/games/raytrace-pong-background/",
