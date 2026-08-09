@@ -6,8 +6,8 @@
 - Production: `main` at `441127f6d69d3021b9080f48e4246013ca674a6a`
 - Permanent rollback snapshot: `v1-final` at `975c637cea7003533cdc30aed9d96be51929bfc8`
 - Upgrade branch: `upgrade-redesign`
-- Audited candidate: annotated tag `v2-rc5`
-- Staging URL: Local only (`http://127.0.0.1:8617/` during visual verification)
+- Audited candidate: annotated tag `v2-rc6`
+- Staging URL: Local only (`http://127.0.0.1:8649/` during visual verification)
 - Production state: unchanged by Step 34
 
 ## Verification Summary
@@ -15,9 +15,9 @@
 - 232 source browser checks passed with 8 intentional viewport skips and 0 failures.
 - 168/168 source/staging route checks passed.
 - 12/12 staging browser safety checks passed.
-- 28 generated staging pages and 635 same-origin references passed static verification.
-- Seven release-audit groups passed.
-- 78/78 visual states passed across 26 routes at desktop, tablet, and mobile sizes.
+- 28 generated staging pages and 636 same-origin references passed static verification.
+- All 10 release-audit groups passed.
+- 81/81 visual states passed across 27 routes at desktop, tablet, and mobile sizes, including Trivia Vault.
 - Live Events media synchronization passed 24/24 repeated checks.
 - News passed 24/24; Trivia passed 13/13; GothTechnology passed 43/43 unit and 27 browser checks.
 
@@ -29,7 +29,7 @@ Keyboard focus, reduced motion, responsive overflow, console/page errors, same-o
 
 Initial Membership and Arcade media are deferred, game iframes launch lazily, Storefront media and motion are reduced, and Live Events film/audio synchronization is stable. The visual audit measured a 2.0 MiB median and 13.9 MiB maximum same-origin transfer. Static Wav and Memberships remain the heaviest routes.
 
-Publisher-supplied News images are cached locally for 41 of 56 articles. Two external publisher assets were blocked by browser ORB policy during the desktop capture; they are warnings rather than broken same-origin assets.
+Publisher-supplied News images are cached locally. The corrected final capture recorded zero external-asset warnings and zero broken same-origin assets.
 
 ## SEO, Metadata, PWA, And Safety
 
@@ -45,11 +45,11 @@ Store ordering remains locked until inventory, shipping, tax, returns, confirmat
 
 - Baseline: [`visual-baseline/v1/`](visual-baseline/v1/)
 - Full current sign-off: [`staging-reviews/release-signoff-assets/`](staging-reviews/release-signoff-assets/)
-- Candidate review: [`staging-reviews/release-candidate-v2-rc5.md`](staging-reviews/release-candidate-v2-rc5.md)
+- Candidate review: [`staging-reviews/release-candidate-v2-rc6.md`](staging-reviews/release-candidate-v2-rc6.md)
 
 ## Release Recommendation
 
-Create immutable tag `v2-rc5` and an unmerged pull request from `upgrade-redesign` to `main`. Production must remain unchanged until the pull request is reviewed and a fresh exact `APPROVE PRODUCTION MERGE` authorization is supplied.
+Create immutable tag `v2-rc6` and keep pull request #5 unmerged from `upgrade-redesign` to `main`. Production must remain unchanged until the pull request is reviewed and a fresh exact `APPROVE PRODUCTION MERGE` authorization is supplied after this candidate exists.
 
 Rollback after any future approved merge uses a normal merge revert:
 

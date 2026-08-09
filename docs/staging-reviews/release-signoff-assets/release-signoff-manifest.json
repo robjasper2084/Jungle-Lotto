@@ -1,15 +1,15 @@
 {
-  "generatedAt": "2026-08-08T21:17:31.453Z",
-  "sourceCommit": "0b478b0a7f0045b2e6279e32b35a3fddc5f873df",
-  "stagingUrl": "http://127.0.0.1:8617",
+  "generatedAt": "2026-08-09T05:55:39.275Z",
+  "sourceCommit": "afbf7a58ab89750e65f7051ba34ecefe3057984f",
+  "stagingUrl": "http://127.0.0.1:8649",
   "productionReference": {
     "branch": "main",
     "commit": "975c637cea7003533cdc30aed9d96be51929bfc8",
     "tag": "v1-final"
   },
-  "routeCount": 26,
+  "routeCount": 27,
   "viewportCount": 3,
-  "captureCount": 78,
+  "captureCount": 81,
   "failureCount": 0,
   "contactSheets": [
     "desktop-contact-sheet.png",
@@ -36,7 +36,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 4953110,
+      "sameOriginBytes": 4954096,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -61,7 +61,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 8038958,
+      "sameOriginBytes": 10696332,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -86,7 +86,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 11328233,
+      "sameOriginBytes": 11329219,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -111,14 +111,11 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1762257,
+      "sameOriginBytes": 1910826,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
-      "externalAssetWarnings": [
-        "PUBLISHER MEDIA https://feeds.feedblitz.com/Custom/img/webcash.png: net::ERR_BLOCKED_BY_ORB",
-        "PUBLISHER MEDIA https://feeds.feedblitz.com/PaLotteryWebSite/media/Games-Section/Draw%20Games/Match%206/gamePg-playInThePool-img-new3-m6.png?ext=.png: net::ERR_BLOCKED_BY_ORB"
-      ]
+      "externalAssetWarnings": []
     },
     {
       "route": "/live-events.html",
@@ -139,7 +136,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 8803919,
+      "sameOriginBytes": 10521048,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -164,7 +161,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1390949,
+      "sameOriginBytes": 1393432,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -189,7 +186,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 10809559,
+      "sameOriginBytes": 10810545,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -214,7 +211,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 4296984,
+      "sameOriginBytes": 4300987,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -239,7 +236,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 14588061,
+      "sameOriginBytes": 14589047,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -264,7 +261,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 2260860,
+      "sameOriginBytes": 2261846,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -289,7 +286,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 2261050,
+      "sameOriginBytes": 2262036,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -314,7 +311,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1127599,
+      "sameOriginBytes": 1128585,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -339,7 +336,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1365032,
+      "sameOriginBytes": 1366018,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -364,7 +361,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 583405,
+      "sameOriginBytes": 584068,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -389,7 +386,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1132225,
+      "sameOriginBytes": 1133211,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -414,7 +411,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1307206,
+      "sameOriginBytes": 1309747,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -439,7 +436,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 2794204,
+      "sameOriginBytes": 2495219,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -464,7 +461,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 543032,
+      "sameOriginBytes": 543695,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -546,6 +543,31 @@
       "externalAssetWarnings": []
     },
     {
+      "route": "/games/lottomind-trivia/",
+      "viewport": "desktop",
+      "dimensions": "1440x900",
+      "status": 200,
+      "title": "LottoMind Trivia Vault | LOTTOMINDED ULTRA",
+      "firstHeading": "LottoMind Trivia Vault",
+      "horizontalOverflow": false,
+      "visibleKeyboardFocus": true,
+      "reducedMotion": true,
+      "noindex": "noindex,nofollow,noarchive",
+      "stagingBannerVisible": true,
+      "environment": {
+        "name": "staging",
+        "allowLivePayments": false,
+        "allowAccountWrites": false,
+        "allowRedemptions": false,
+        "allowProductionAnalytics": false
+      },
+      "sameOriginBytes": 1487796,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "assetFailures": [],
+      "externalAssetWarnings": []
+    },
+    {
       "route": "/games/opengw-levels/",
       "viewport": "desktop",
       "dimensions": "1440x900",
@@ -564,7 +586,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 5515303,
+      "sameOriginBytes": 5474495,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -639,7 +661,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1390949,
+      "sameOriginBytes": 1393432,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -689,7 +711,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 4791342,
+      "sameOriginBytes": 4792328,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -714,7 +736,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 7316306,
+      "sameOriginBytes": 10523286,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -739,7 +761,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 11166465,
+      "sameOriginBytes": 11167451,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -764,7 +786,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1723463,
+      "sameOriginBytes": 1580176,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -789,7 +811,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 8792641,
+      "sameOriginBytes": 10509770,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -814,7 +836,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1217903,
+      "sameOriginBytes": 1220386,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -839,7 +861,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 10636513,
+      "sameOriginBytes": 10637499,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -864,7 +886,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 4285706,
+      "sameOriginBytes": 4289709,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -889,7 +911,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 14415015,
+      "sameOriginBytes": 14416001,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -914,7 +936,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 2087814,
+      "sameOriginBytes": 2088800,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -939,7 +961,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 2088004,
+      "sameOriginBytes": 2088990,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -964,7 +986,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 954553,
+      "sameOriginBytes": 955539,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -989,7 +1011,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1108702,
+      "sameOriginBytes": 1109688,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -1014,7 +1036,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 583405,
+      "sameOriginBytes": 584068,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -1039,7 +1061,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 959179,
+      "sameOriginBytes": 960165,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -1064,7 +1086,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1134160,
+      "sameOriginBytes": 1136701,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -1089,7 +1111,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 2621158,
+      "sameOriginBytes": 2322173,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -1114,7 +1136,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 543032,
+      "sameOriginBytes": 543695,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -1190,6 +1212,31 @@
         "allowProductionAnalytics": false
       },
       "sameOriginBytes": 5764902,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "assetFailures": [],
+      "externalAssetWarnings": []
+    },
+    {
+      "route": "/games/lottomind-trivia/",
+      "viewport": "tablet",
+      "dimensions": "768x1024",
+      "status": 200,
+      "title": "LottoMind Trivia Vault | LOTTOMINDED ULTRA",
+      "firstHeading": "LottoMind Trivia Vault",
+      "horizontalOverflow": false,
+      "visibleKeyboardFocus": true,
+      "reducedMotion": true,
+      "noindex": "noindex,nofollow,noarchive",
+      "stagingBannerVisible": true,
+      "environment": {
+        "name": "staging",
+        "allowLivePayments": false,
+        "allowAccountWrites": false,
+        "allowRedemptions": false,
+        "allowProductionAnalytics": false
+      },
+      "sameOriginBytes": 1314750,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -1289,7 +1336,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1217903,
+      "sameOriginBytes": 1220386,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -1339,7 +1386,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 4791342,
+      "sameOriginBytes": 4792328,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -1364,7 +1411,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 4494340,
+      "sameOriginBytes": 4495412,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -1389,7 +1436,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 11166091,
+      "sameOriginBytes": 11167077,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -1414,7 +1461,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1507567,
+      "sameOriginBytes": 1510208,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -1439,7 +1486,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 8792641,
+      "sameOriginBytes": 8167976,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -1464,7 +1511,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1217903,
+      "sameOriginBytes": 1220386,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -1489,7 +1536,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 10636513,
+      "sameOriginBytes": 10637499,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -1514,7 +1561,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 4118414,
+      "sameOriginBytes": 4122417,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -1539,7 +1586,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 14415015,
+      "sameOriginBytes": 14416001,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -1564,7 +1611,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 2087814,
+      "sameOriginBytes": 2088800,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -1589,7 +1636,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 2088004,
+      "sameOriginBytes": 2088990,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -1614,7 +1661,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 954553,
+      "sameOriginBytes": 955539,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -1639,7 +1686,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1108702,
+      "sameOriginBytes": 1334414,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -1664,7 +1711,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 583405,
+      "sameOriginBytes": 584068,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -1689,7 +1736,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 959179,
+      "sameOriginBytes": 960165,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -1714,7 +1761,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1134160,
+      "sameOriginBytes": 1136701,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -1739,7 +1786,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 2621158,
+      "sameOriginBytes": 2322173,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -1764,7 +1811,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 543032,
+      "sameOriginBytes": 543695,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -1840,6 +1887,31 @@
         "allowProductionAnalytics": false
       },
       "sameOriginBytes": 5764902,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "assetFailures": [],
+      "externalAssetWarnings": []
+    },
+    {
+      "route": "/games/lottomind-trivia/",
+      "viewport": "mobile",
+      "dimensions": "390x844",
+      "status": 200,
+      "title": "LottoMind Trivia Vault | LOTTOMINDED ULTRA",
+      "firstHeading": "LottoMind Trivia Vault",
+      "horizontalOverflow": false,
+      "visibleKeyboardFocus": true,
+      "reducedMotion": true,
+      "noindex": "noindex,nofollow,noarchive",
+      "stagingBannerVisible": true,
+      "environment": {
+        "name": "staging",
+        "allowLivePayments": false,
+        "allowAccountWrites": false,
+        "allowRedemptions": false,
+        "allowProductionAnalytics": false
+      },
+      "sameOriginBytes": 1314750,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
@@ -1939,7 +2011,7 @@
         "allowRedemptions": false,
         "allowProductionAnalytics": false
       },
-      "sameOriginBytes": 1363159,
+      "sameOriginBytes": 1220386,
       "consoleErrors": [],
       "pageErrors": [],
       "assetFailures": [],
