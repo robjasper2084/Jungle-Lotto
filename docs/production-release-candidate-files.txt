@@ -42,6 +42,8 @@ A	docs/staging-reviews/home-commercial-hud-assets/storefront-staging-mobile.png
 A	docs/staging-reviews/home-commercial-hud-assets/visual-metrics.json
 A	docs/staging-reviews/home-commercial-hud.md
 A	docs/staging-reviews/release-candidate-v2-rc5.md
+A	docs/staging-reviews/release-candidate-v2-rc6.md
+A	docs/staging-reviews/release-candidate-v2-rc7.md
 M	docs/staging-reviews/release-signoff-assets/desktop-contact-sheet.png
 M	docs/staging-reviews/release-signoff-assets/mobile-contact-sheet.png
 M	docs/staging-reviews/release-signoff-assets/release-signoff-manifest.json

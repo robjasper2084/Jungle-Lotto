@@ -6,7 +6,7 @@
 - Production: `main` at `441127f6d69d3021b9080f48e4246013ca674a6a`
 - Permanent rollback snapshot: `v1-final` at `975c637cea7003533cdc30aed9d96be51929bfc8`
 - Upgrade branch: `upgrade-redesign`
-- Audited candidate: annotated tag `v2-rc6`
+- Audited candidate: annotated tag `v2-rc7`
 - Staging URL: Local only (`http://127.0.0.1:8649/` during visual verification)
 - Production state: unchanged by Step 34
 
@@ -45,11 +45,11 @@ Store ordering remains locked until inventory, shipping, tax, returns, confirmat
 
 - Baseline: [`visual-baseline/v1/`](visual-baseline/v1/)
 - Full current sign-off: [`staging-reviews/release-signoff-assets/`](staging-reviews/release-signoff-assets/)
-- Candidate review: [`staging-reviews/release-candidate-v2-rc6.md`](staging-reviews/release-candidate-v2-rc6.md)
+- Candidate review: [`staging-reviews/release-candidate-v2-rc7.md`](staging-reviews/release-candidate-v2-rc7.md)
 
 ## Release Recommendation
 
-Create immutable tag `v2-rc6` and keep pull request #5 unmerged from `upgrade-redesign` to `main`. Production must remain unchanged until the pull request is reviewed and a fresh exact `APPROVE PRODUCTION MERGE` authorization is supplied after this candidate exists.
+Create immutable tag `v2-rc7` and keep pull request #5 unmerged from `upgrade-redesign` to `main`. Production must remain unchanged until the pull request is reviewed and a fresh exact `APPROVE PRODUCTION MERGE` authorization is supplied after this candidate exists.
 
 Rollback after any future approved merge uses a normal merge revert:
 

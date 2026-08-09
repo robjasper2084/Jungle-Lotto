@@ -861,3 +861,19 @@
 - Production integrations blocked in staging: live payments, production account writes, real redemptions, and production analytics
 - Remaining warnings: local-only staging, manual screen-reader review recommended, heavy Static Wav and Memberships first-view transfers, browser-dependent audible autoplay, and Store ordering locked pending verified operations
 - Approval status: Ready for production review; production remains unchanged and a fresh exact `APPROVE PRODUCTION MERGE` is required after pull-request review
+
+## Step 34 - Production Release Candidate v2-rc7
+
+- Step number: 34
+- Branch: `upgrade-redesign`
+- Candidate SHA: immutable target of annotated tag `v2-rc7`
+- Change from `v2-rc6`: normalized the final newline in `docs/staging-reviews/secure-account-architecture.md`; application source and reviewed visual evidence are unchanged
+- Visual source SHA: `afbf7a58ab89750e65f7051ba34ecefe3057984f`
+- Tests: 232 source browser checks passed with 8 intentional skips; 168/168 route checks; all 10 release-audit groups; 12/12 staging safety; 24/24 Live Events sync stress; 24/24 News; 13/13 Trivia; 43/43 GothTechnology unit plus 27 browser checks
+- Staging build: 28 noindexed pages and 636 same-origin references
+- Visual sign-off: 81/81 route states across 27 routes at `1440x900`, `768x1024`, and `390x844`; zero external-asset warnings
+- Staging URL: Local only (`http://127.0.0.1:8649/` during final visual sign-off)
+- Checkout safety: authenticated Gold checkout was previously verified in Stripe Sandbox; no payment details, submission, or charge
+- Production integrations blocked in staging: live payments, production account writes, real redemptions, and production analytics
+- Remaining warnings: local-only staging, manual screen-reader review recommended, heavy Static Wav and Memberships first-view transfers, browser-dependent audible autoplay, and Store ordering locked pending verified operations
+- Approval status: Ready for production review after the exact candidate tag and pull-request head are verified; production remains unchanged and a fresh exact `APPROVE PRODUCTION MERGE` is required

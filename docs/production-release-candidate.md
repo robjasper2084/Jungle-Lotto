@@ -8,9 +8,9 @@
 - Production SHA: `441127f6d69d3021b9080f48e4246013ca674a6a`
 - Permanent rollback snapshot: `v1-final` at `975c637cea7003533cdc30aed9d96be51929bfc8`
 - Upgrade branch: `upgrade-redesign`
-- Upgrade branch SHA: the immutable target of annotated tag `v2-rc6` (`git rev-list -n 1 v2-rc6`)
-- Release-candidate tag: `v2-rc6`
-- Historical immutable tags: `v2-rc1`, `v2-rc2`, `v2-rc3`, `v2-rc4`, and `v2-rc5`
+- Upgrade branch SHA: the immutable target of annotated tag `v2-rc7` (`git rev-list -n 1 v2-rc7`)
+- Release-candidate tag: `v2-rc7`
+- Historical immutable tags: `v2-rc1`, `v2-rc2`, `v2-rc3`, `v2-rc4`, `v2-rc5`, and `v2-rc6`
 - Step 34 approval: recorded
 - Production merge approval: not recorded for this fresh candidate
 
@@ -74,7 +74,7 @@ Changed systems include shared navigation, transitions, sound controls, staging 
 
 - Permanent v1 baseline: [`visual-baseline/v1/`](visual-baseline/v1/)
 - Full current sign-off: [`staging-reviews/release-signoff-assets/`](staging-reviews/release-signoff-assets/)
-- Candidate review: [`staging-reviews/release-candidate-v2-rc6.md`](staging-reviews/release-candidate-v2-rc6.md)
+- Candidate review: [`staging-reviews/release-candidate-v2-rc7.md`](staging-reviews/release-candidate-v2-rc7.md)
 
 Compared with v1, the candidate adds clearer platform relationships, account and support surfaces, the Fortune Grid route, repaired Jackpot Maze rendering, publisher-supplied News imagery, explicit membership and Storefront safety states, and richer media controls. The Detroit-inspired black, gold, cyan, and violet system, Guardian and orb artwork, music-technology controls, original arcade character, cinematic identity, and responsible-entertainment language remain recognizable on desktop, tablet, and mobile.
 
