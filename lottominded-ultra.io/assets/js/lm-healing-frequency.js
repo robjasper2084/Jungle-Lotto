@@ -49,12 +49,9 @@
     </section>`;
 
   const root = document.createElement("aside");
-  root.className = `lm-healing-generator${isNewsDock ? " lm-healing-generator--news-dock" : ""}${isLotterySpheres ? " lm-healing-generator--oracle-only" : ""}`;
+  root.className = `lm-healing-generator${isNewsDock ? " lm-healing-generator--news-dock lm-healing-generator--tone-only" : ""}${isLotterySpheres ? " lm-healing-generator--oracle-only" : ""}`;
   root.dataset.lmHealingGenerator = "true";
-  root.setAttribute("aria-label", isLotterySpheres ? "Magic 8 Ball oracle" : "Healing frequency generator and Magic 8 Ball oracle");
-  if (isLotterySpheres && window.matchMedia("(max-width: 680px)").matches) {
-    root.classList.add("is-minimized");
-  }
+  root.setAttribute("aria-label", isLotterySpheres ? "Magic 8 Ball oracle" : isNewsDock ? "Healing frequency generator" : "Healing frequency generator and Magic 8 Ball oracle");
   root.innerHTML = isLotterySpheres ? `
     <button class="lm-healing-generator__drag" type="button" aria-label="Move Magic 8 Ball" title="Drag to move the Magic 8 Ball"><span aria-hidden="true">Move</span></button>
     <div class="lm-healing-generator__header">
@@ -69,7 +66,7 @@
       <span class="lm-healing-generator__copy"><small>Magic 8 frequency</small><strong>528 Hz Love</strong></span>
       <button class="lm-healing-generator__minimize" type="button" aria-label="Minimize frequency oracle" aria-expanded="true">-</button>
     </div>
-    ${oracleMarkup}
+    ${isNewsDock ? "" : oracleMarkup}
     <div class="lm-healing-generator__presets" aria-label="Frequency presets">
       ${presets.map((preset) => `<button type="button" data-healing-preset="${preset}" aria-pressed="${preset === 528}">${preset}<br>${names[preset]}</button>`).join("")}
     </div>
@@ -270,7 +267,7 @@
   volume?.addEventListener("input", () => {
     if (gain && context) gain.gain.setTargetAtTime(Number(volume.value), context.currentTime, 0.03);
   });
-  oracleForm.addEventListener("submit", (event) => {
+  oracleForm?.addEventListener("submit", (event) => {
     event.preventDefault();
     const question = oracleQuestion.value.trim();
     if (question) askOracle(question);

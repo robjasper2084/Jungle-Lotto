@@ -20,7 +20,8 @@
     guide:       { rgb: "94 255 157",  color: "#5eff9d" },
     studio:      { rgb: "61 123 255",  color: "#3d7bff" },
     beat2lotto:  { rgb: "255 105 45",  color: "#ff692d" },
-    spheres:     { rgb: "255 200 74",  color: "#ffc84a" }
+    spheres:     { rgb: "255 200 74",  color: "#ffc84a" },
+    account:     { rgb: "91 233 255",  color: "#5be9ff", clip: "studio" }
   };
 
   let overlay = document.querySelector("[data-lm-page-transition]");
@@ -66,6 +67,7 @@
     const filename = path.split("/").filter(Boolean).pop() || "";
 
     if (/memberships/.test(path)) return "memberships";
+    if (/account\.html|\/account(?:\/|$)/.test(path)) return "account";
     if (/\/news(?:-hub)?(?:\/|$)/.test(path)) return "news";
     if (/beat2lotto/.test(path)) return "beat2lotto";
     if (/lottery-spheres|selcirm|spheres/.test(path)) return "spheres";
@@ -100,10 +102,14 @@
       filename === "prompt-lab.html" ||
       filename === "how-to-use.html" ||
       filename === "redeem.html" ||
+      filename === "account.html" ||
+      filename === "help.html" ||
       filename === "accessibility.html" ||
       filename === "contact.html" ||
       filename === "privacy.html" ||
-      filename === "terms.html"
+      filename === "terms.html" ||
+      path.endsWith("/services") ||
+      path.endsWith("/services/index.html")
     );
   }
 

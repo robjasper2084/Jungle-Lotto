@@ -2,14 +2,16 @@ const { test, expect } = require("@playwright/test");
 
 async function openHome(page) {
   await page.route(/\.(?:mp3|mp4|wav|webm)(?:\?.*)?$/i, (route) => route.fulfill({ status: 204, body: "" }));
+  await page.route("**/functions/v1/lottomind-api/account/snapshot", (route) =>
+    route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ ok: true, authenticated: false }) })
+  );
   await page.goto("/index.html#top", { waitUntil: "domcontentloaded" });
   await page.waitForLoadState("networkidle").catch(() => {});
 
   const startup = page.locator("[data-startup-video]");
   await expect(startup).toBeVisible({ timeout: 12_000 });
-  await page.locator("[data-startup-video-close]").last().click();
-  await expect(startup).toBeHidden();
-  await page.waitForTimeout(250);
+  await expect(startup.locator('[role="dialog"]')).toBeVisible();
+  await startup.getByRole("button", { name: "Enter Site", exact: true }).click();
   await expect(startup).toBeHidden();
   await expect(page.locator("body.home-page")).toBeVisible();
 }

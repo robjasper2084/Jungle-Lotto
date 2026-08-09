@@ -5,6 +5,8 @@ import { resolve } from "node:path";
 const root = resolve(process.cwd());
 const htmlPath = resolve(root, "index.html");
 const html = readFileSync(htmlPath, "utf8");
+const membershipsHtml = readFileSync(resolve(root, "memberships.html"), "utf8");
+const storefrontHtml = readFileSync(resolve(root, "merch-store.html"), "utf8");
 const siteScript = readFileSync(resolve(root, "site.js"), "utf8");
 const styles = readFileSync(resolve(root, "styles.css"), "utf8");
 const failures = [];
@@ -40,12 +42,57 @@ if (/lm-healing-generator|healing-frequency\.js/i.test(html)) {
   failures.push("The removed healing-frequency generator is still referenced by index.html.");
 }
 
-if (!/data-startup-video/i.test(html) || !/lottomind-membership-unboxing-commercial-20260716\.opt\.mp4/i.test(html)) {
-  failures.push("The restored homepage startup commercial is missing.");
+if (!/data-startup-video/i.test(html) || !/lottomind-home-apparel-commercial-20260804\.opt\.mp4/i.test(html)) {
+  failures.push("The homepage startup commercial is missing.");
+}
+
+if (!/startup-video-modal/i.test(html) || !/role=["']dialog["']/i.test(html) || !/data-startup-video-close/i.test(html)) {
+  failures.push("The homepage commercial is not configured as a dismissible startup dialog.");
 }
 
 if (!/data-startup-video-play/i.test(html) || !/Play with sound/i.test(html)) {
-  failures.push("The homepage startup commercial is missing its explicit sound control.");
+  failures.push("The homepage startup commercial is missing its sound control.");
+}
+
+const sharedCommercialStylesheet = /assets\/css\/lm-commercial-hud\.css/i;
+if (!sharedCommercialStylesheet.test(html) || !sharedCommercialStylesheet.test(storefrontHtml)) {
+  failures.push("Home and Storefront are not loading the shared commercial HUD stylesheet.");
+}
+
+for (const requiredClass of [
+  "merch-commercial-modal__panel",
+  "merch-commercial-modal__header",
+  "merch-commercial-modal__body",
+  "merch-commercial-modal__stage",
+  "merch-commercial-modal__telemetry",
+  "merch-commercial-modal__footer",
+]) {
+  if (!html.includes(requiredClass)) failures.push(`The homepage commercial is missing ${requiredClass}.`);
+}
+
+for (const collectorRequirement of [
+  /data-collector-access\b/i,
+  /id=["']collectorAccessPanel["']/i,
+  /data-collector-forgot-password\b/i,
+  /data-collector-recovery-form\b/i,
+  /data-collector-redeem-form\b/i,
+  /assets\/css\/beat2lotto-collector-access\.css/i,
+  /assets\/js\/lottomind-account-service\.js/i,
+  /assets\/js\/beat2lotto-collector-access\.js/i,
+]) {
+  if (!collectorRequirement.test(html)) failures.push(`The homepage Collector Access move is incomplete: ${collectorRequirement}.`);
+}
+
+if (/data-collector-access\b/i.test(membershipsHtml) || /id=["']collectorAccessPanel["']/i.test(membershipsHtml)) {
+  failures.push("Collector Access is still mounted on memberships.html instead of Home.");
+}
+
+if (!/index\.html\?collector=access(?:&amp;|&)return=memberships#lottomind-refined/i.test(membershipsHtml)) {
+  failures.push("Memberships is missing its Collector Access handoff to Home.");
+}
+
+if (!/shouldSuppressStartupVideo[\s\S]*collector["']\)\s*===\s*["']access/i.test(siteScript)) {
+  failures.push("The Home commercial is not suppressed while Collector Access is requested.");
 }
 
 if (!/class=["']home-sphere-scanline["']/i.test(html) || !/@keyframes\s+homeHeroScanBars/i.test(styles)) {

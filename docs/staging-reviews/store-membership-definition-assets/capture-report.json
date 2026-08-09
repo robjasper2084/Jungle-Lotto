@@ -1,0 +1,70 @@
+{
+  "baseUrl": "http://127.0.0.1:8598",
+  "capturedAt": "2026-08-05T20:06:25.339Z",
+  "captures": [
+    {
+      "route": "/merch-store.html#launch-catalog",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "fileName": "storefront-1440x900.png",
+      "launchProductCount": 3,
+      "comparisonTableCount": 0,
+      "horizontalOverflow": false,
+      "stagingNoindex": "noindex,nofollow,noarchive",
+      "stagingBanner": true,
+      "errors": [],
+      "assetFailures": []
+    },
+    {
+      "route": "/memberships.html#membership-plans",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "fileName": "memberships-1440x900.png",
+      "launchProductCount": 0,
+      "comparisonTableCount": 1,
+      "horizontalOverflow": false,
+      "stagingNoindex": "noindex,nofollow,noarchive",
+      "stagingBanner": true,
+      "errors": [],
+      "assetFailures": []
+    },
+    {
+      "route": "/merch-store.html#launch-catalog",
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "isMobile": true,
+        "hasTouch": true
+      },
+      "fileName": "storefront-390x844.png",
+      "launchProductCount": 3,
+      "comparisonTableCount": 0,
+      "horizontalOverflow": false,
+      "stagingNoindex": "noindex,nofollow,noarchive",
+      "stagingBanner": true,
+      "errors": [],
+      "assetFailures": []
+    },
+    {
+      "route": "/memberships.html#membership-plans",
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "isMobile": true,
+        "hasTouch": true
+      },
+      "fileName": "memberships-390x844.png",
+      "launchProductCount": 0,
+      "comparisonTableCount": 1,
+      "horizontalOverflow": false,
+      "stagingNoindex": "noindex,nofollow,noarchive",
+      "stagingBanner": true,
+      "errors": [],
+      "assetFailures": []
+    }
+  ]
+}

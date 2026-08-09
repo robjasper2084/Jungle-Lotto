@@ -175,6 +175,12 @@
     }
   }
 
+  function checkEntitlement(code) {
+    var normalized = String(code || "").trim().toLowerCase();
+    if (!/^[a-z0-9_.-]{1,80}$/.test(normalized)) return Promise.reject(new Error("Choose a valid entitlement."));
+    return request("/entitlements/" + encodeURIComponent(normalized));
+  }
+
   function broadcastRefresh(reason) {
     if (channel) channel.postMessage({ type: "refresh", reason: reason || "account-change", at: Date.now() });
   }
@@ -187,6 +193,11 @@
     else await getSnapshot({ force: true });
     broadcastRefresh(path);
     return payload;
+  }
+
+  function createIdempotencyKey(prefix) {
+    var random = global.crypto && global.crypto.randomUUID ? global.crypto.randomUUID() : Math.random().toString(36).slice(2) + Date.now().toString(36);
+    return String(prefix || "action").replace(/[^a-zA-Z0-9:_-]/g, "-").slice(0, 40) + ":" + random;
   }
 
   if (channel) {
@@ -213,7 +224,9 @@
       return { authenticated: snapshot.authenticated, user: snapshot.user, verified: snapshot.verified, offline: snapshot.offline };
     },
     getWallet: async function getWallet() { return (await getSnapshot()).wallet; },
+    getCurrentPlan: async function getCurrentPlan() { return (await getSnapshot()).currentPlan || { code: "free", status: "active" }; },
     getMemberships: async function getMemberships() { return (await getSnapshot()).memberships || []; },
+    getDownloads: async function getDownloads() { return (await getSnapshot()).downloads || []; },
     getCollectorStatus: async function getCollectorStatus() { return (await getSnapshot()).collector; },
     register: function register(input) { return mutation("/auth/register", input); },
     signIn: function signIn(input) {
@@ -236,7 +249,12 @@
       broadcastRefresh("logout");
       return getSnapshot({ force: true });
     },
-    redeemCollectible: function redeemCollectible(code) { return mutation("/redemption/claim", { code: String(code || "").trim() }); },
+    redeemCollectible: function redeemCollectible(code) {
+      return mutation("/redemption/claim", {
+        code: String(code || "").trim(),
+        idempotencyKey: createIdempotencyKey("collector-redemption"),
+      });
+    },
     spendCredits: async function spendCredits(action, idempotencyKey, context) {
       var result = await request("/credits/spend", { method: "POST", body: JSON.stringify({ action: action, idempotencyKey: idempotencyKey, context: context || {} }) });
       await getSnapshot({ force: true });
@@ -249,7 +267,8 @@
       broadcastRefresh("credit-refund");
       return result;
     },
-    getBeat2LottoEntitlements: function getBeat2LottoEntitlements() { return request("/entitlements/beat2lotto"); },
+    checkEntitlement: checkEntitlement,
+    getBeat2LottoEntitlements: function getBeat2LottoEntitlements() { return checkEntitlement("beat2lotto"); },
     analytics: function analytics(event, metadata) {
       return request("/analytics", { method: "POST", body: JSON.stringify({ event: event, metadata: metadata || {} }) }).catch(function ignoreAnalytics() {});
     },
@@ -258,10 +277,7 @@
       if (snapshotCache) callback(snapshotCache);
       return function unsubscribe() { subscribers.delete(callback); };
     },
-    createIdempotencyKey: function createIdempotencyKey(prefix) {
-      var random = global.crypto && global.crypto.randomUUID ? global.crypto.randomUUID() : Math.random().toString(36).slice(2) + Date.now().toString(36);
-      return String(prefix || "action").replace(/[^a-zA-Z0-9:_-]/g, "-").slice(0, 40) + ":" + random;
-    },
+    createIdempotencyKey: createIdempotencyKey,
     getAccessToken: getAccessToken,
     refresh: function refresh() { snapshotTime = 0; return getSnapshot({ force: true }); },
   });

@@ -1,14 +1,11 @@
 const { readFileSync } = require("node:fs");
 const { join } = require("node:path");
-const { runInNewContext } = require("node:vm");
 const { test, expect } = require("@playwright/test");
 
 const packageRoot = join(__dirname, "..");
 const productionBasePath = "/Jungle-Lotto/lottominded-ultra.io/";
 const sitemap = readFileSync(join(packageRoot, "sitemap.xml"), "utf8");
-const sandbox = {};
-sandbox.window = sandbox;
-runInNewContext(readFileSync(join(packageRoot, "assets", "js", "arcade-games.js"), "utf8"), sandbox);
+const gameManifest = JSON.parse(readFileSync(join(packageRoot, "games", "games-manifest.json"), "utf8"));
 const knownFailures = JSON.parse(readFileSync(join(__dirname, "known-route-failures.json"), "utf8"));
 
 function normalizeRoute(value) {
@@ -26,9 +23,10 @@ const routes = [...new Set([
   "/lottomind-stem-studio/",
   "/redeem.html",
   "/contact.html",
+  "/services/",
   "/account.html",
   "/404.html",
-  ...(sandbox.LottoMindArcadeGames || []).map((game) => normalizeRoute(game.path)),
+  ...gameManifest.games.map((game) => normalizeRoute(game.route)),
 ])];
 
 function failureKey(testInfo, route) {

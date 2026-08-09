@@ -1,0 +1,8 @@
+[functions.lottomind-api]
+# Public auth/config routes share this handler. Protected routes verify the
+# caller's Supabase access token inside the function before any mutation.
+verify_jwt = false
+
+[functions.lottomind-stripe-webhook]
+# Stripe signs the raw request body instead of sending a Supabase JWT.
+verify_jwt = false

@@ -1,7 +1,7 @@
 (function initializeArcadePilot(global, document) {
   "use strict";
 
-  const games = Array.isArray(global.LottoMindArcadeGames)
+  let games = Array.isArray(global.LottoMindArcadeGames)
     ? global.LottoMindArcadeGames.slice()
     : [];
   const grid = document.querySelector("[data-arcade-grid]");
@@ -14,6 +14,10 @@
   const visibleCount = document.querySelector("[data-arcade-visible-count]");
   const railButtons = [...document.querySelectorAll("[data-arcade-scroll]")];
   const featuredLink = document.querySelector("[data-arcade-featured-link]");
+  const loading = document.querySelector("[data-arcade-loading]");
+  const loadError = document.querySelector("[data-arcade-load-error]");
+  const retry = document.querySelector("[data-arcade-retry]");
+  const lastChecked = document.querySelector("[data-arcade-last-checked]");
   const heroVideo = document.querySelector("[data-arcade-hero-video]");
   const heroVideoToggle = document.querySelector("[data-arcade-hero-video-toggle]");
   const reducedMotion = global.matchMedia("(prefers-reduced-motion: reduce)");
@@ -118,6 +122,7 @@
   function createCard(game, index) {
     const article = document.createElement("article");
     article.className = `arcade-game-card arcade-game-card--${game.accent || "signal"}`;
+    article.setAttribute("role", "listitem");
     article.dataset.gameId = game.id;
     article.dataset.category = game.category;
 
@@ -224,12 +229,6 @@
     global.requestAnimationFrame(updateRailControls);
   }
 
-  const categories = ["All", ...new Set(games.map((game) => game.category))];
-  filters.replaceChildren(...categories.map(filterButton));
-  count.textContent = String(games.length);
-  const featured = games.find((game) => game.featured) || games[0];
-  if (featured && featuredLink) featuredLink.href = featured.path;
-
   filters.addEventListener("click", (event) => {
     const button = event.target.closest("button[data-category]");
     if (!button) return;
@@ -250,5 +249,30 @@
   grid.addEventListener("scroll", updateRailControls, { passive: true });
   global.addEventListener("resize", updateRailControls);
 
-  render();
+  async function loadDirectory(force = false) {
+    if (loading) loading.hidden = false;
+    if (loadError) loadError.hidden = true;
+    grid.setAttribute("aria-busy", "true");
+    const loader = force ? global.LottoMindLoadArcadeGames?.({ cache: "reload" }) : global.LottoMindArcadeGamesReady;
+    const result = await (loader || Promise.resolve({
+      games: global.LottoMindArcadeGames || [],
+      manifest: global.LottoMindArcadeManifest,
+      error: new Error("Game manifest loader is unavailable")
+    }));
+    games = Array.isArray(result?.games) ? result.games.slice() : [];
+    const categories = ["All", ...new Set(games.map((game) => game.category))];
+    filters.replaceChildren(...categories.map(filterButton));
+    count.textContent = String(games.length);
+    const featured = games.find((game) => game.featured) || games[0];
+    if (featured && featuredLink) featuredLink.href = featured.path;
+    if (lastChecked) lastChecked.textContent = `Last checked ${result?.manifest?.lastChecked || "not available"}`;
+    if (loading) loading.hidden = true;
+    grid.setAttribute("aria-busy", "false");
+    if (loadError) loadError.hidden = !result?.error;
+    render();
+    if (result?.error) announce(`Unable to refresh games. Showing ${games.length} verified fallback routes.`);
+  }
+
+  retry?.addEventListener("click", () => loadDirectory(true));
+  loadDirectory();
 })(window, document);

@@ -51,6 +51,38 @@
   z-index: 1;
 }
 
+.lm-account-page .lm-platform-main {
+  transform-style: preserve-3d;
+}
+
+.lm-account-page .lm-platform-hero,
+.lm-account-page .lm-account-dashboard {
+  transform: translateZ(12px);
+}
+
+.lm-account-page .lm-dashboard-card {
+  transform-style: preserve-3d;
+  border-color: color-mix(in srgb, var(--dashboard-accent, #5be9ff) 56%, transparent);
+  background:
+    linear-gradient(145deg, rgba(9, 30, 50, 0.94), rgba(2, 8, 18, 0.97) 58%, rgba(18, 7, 36, 0.92));
+  box-shadow:
+    inset 0 1px rgba(255, 255, 255, 0.07),
+    inset 0 0 28px color-mix(in srgb, var(--dashboard-accent, #5be9ff) 8%, transparent),
+    0 24px 54px rgba(0, 0, 0, 0.42);
+  transform: translateZ(0);
+  transition: transform 240ms cubic-bezier(0.22, 0.61, 0.36, 1), border-color 240ms ease, box-shadow 240ms ease;
+}
+
+.lm-account-page .lm-dashboard-card:hover,
+.lm-account-page .lm-dashboard-card:focus-within {
+  border-color: color-mix(in srgb, var(--dashboard-accent, #5be9ff) 82%, white 18%);
+  box-shadow:
+    inset 0 1px rgba(255, 255, 255, 0.1),
+    inset 0 0 34px color-mix(in srgb, var(--dashboard-accent, #5be9ff) 12%, transparent),
+    0 30px 66px rgba(0, 0, 0, 0.52);
+  transform: translateY(-5px) translateZ(20px);
+}
+
 .lm-legal-depth-page .legal-main article {
   position: relative;
   border-color: rgba(91, 233, 255, 0.54);
@@ -85,6 +117,12 @@
   .lm-legal-depth-page .legal-main article {
     transform: none;
   }
+
+  .lm-account-page .lm-platform-hero,
+  .lm-account-page .lm-account-dashboard,
+  .lm-account-page .lm-dashboard-card {
+    transform: none;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -94,5 +132,12 @@
   .lm-legal-depth-page .legal-main article {
     transform: none !important;
     background-attachment: scroll;
+  }
+
+  .lm-account-page .lm-platform-hero,
+  .lm-account-page .lm-account-dashboard,
+  .lm-account-page .lm-dashboard-card {
+    transform: none !important;
+    transition: none !important;
   }
 }

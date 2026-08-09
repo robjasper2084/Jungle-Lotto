@@ -367,8 +367,12 @@
     });
   }
 
+  function motionIsReduced() {
+    return reduceMotion.matches || document.documentElement.classList.contains("lm-reduce-motion");
+  }
+
   function canRender() {
-    return !reduceMotion.matches && !document.hidden && stageInView;
+    return !motionIsReduced() && !document.hidden && stageInView;
   }
 
   function scheduleRender() {
@@ -394,7 +398,7 @@
   }
 
   function drawBackdrop(time, pulse = 0) {
-    const drift = reduceMotion.matches ? 0 : Math.sin(time * 0.00032) * 70;
+    const drift = motionIsReduced() ? 0 : Math.sin(time * 0.00032) * 70;
     const gradient = ctx.createRadialGradient(width * 0.55 + drift, height * 0.45, 0, width * 0.55, height * 0.45, Math.max(width, height) * 0.8);
     gradient.addColorStop(0, `rgba(41, 247, 255, ${0.2 + pulse * 0.16})`);
     gradient.addColorStop(0.28, "rgba(4, 18, 34, 0.32)");
@@ -712,6 +716,12 @@
     observer.observe(stage);
   }
   document.addEventListener("visibilitychange", scheduleRender);
+  window.addEventListener("lottomind:motion-preference", () => {
+    window.cancelAnimationFrame(raf);
+    raf = 0;
+    render(performance.now(), true);
+    scheduleRender();
+  });
 
   if (sphereSoundtrack && audioGate && sphereAudioGateEnabled) {
     setAudioGateOpen(true);

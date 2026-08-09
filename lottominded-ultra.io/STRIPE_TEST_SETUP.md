@@ -10,6 +10,7 @@ In the Stripe Dashboard, turn on **Test mode** and create these lookup keys:
 - `gold_yearly`
 - `ultra_monthly`
 - `ultra_yearly`
+- `guardian_bundle_once`
 - `vault_founder_once`
 - `vault_yearly`
 - `vault_lifetime_once`
@@ -28,6 +29,7 @@ STRIPE_PRICE_GOLD_MONTHLY=price_REPLACE_ME
 STRIPE_PRICE_GOLD_YEARLY=price_REPLACE_ME
 STRIPE_PRICE_ULTRA_MONTHLY=price_REPLACE_ME
 STRIPE_PRICE_ULTRA_YEARLY=price_REPLACE_ME
+STRIPE_PRICE_GUARDIAN_BUNDLE_ONCE=price_REPLACE_ME
 STRIPE_PRICE_VAULT_FOUNDER_ONCE=price_REPLACE_ME
 STRIPE_PRICE_VAULT_YEARLY=price_REPLACE_ME
 STRIPE_PRICE_VAULT_LIFETIME_ONCE=price_REPLACE_ME

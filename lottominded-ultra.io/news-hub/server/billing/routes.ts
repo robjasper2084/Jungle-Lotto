@@ -13,6 +13,7 @@ const PLANS: BillingPlan[] = [
   { lookupKey: "gold_yearly", envKey: "STRIPE_PRICE_GOLD_YEARLY", mode: "subscription" },
   { lookupKey: "ultra_monthly", envKey: "STRIPE_PRICE_ULTRA_MONTHLY", mode: "subscription" },
   { lookupKey: "ultra_yearly", envKey: "STRIPE_PRICE_ULTRA_YEARLY", mode: "subscription" },
+  { lookupKey: "guardian_bundle_once", envKey: "STRIPE_PRICE_GUARDIAN_BUNDLE_ONCE", mode: "payment" },
   { lookupKey: "vault_founder_once", envKey: "STRIPE_PRICE_VAULT_FOUNDER_ONCE", mode: "payment" },
   { lookupKey: "vault_yearly", envKey: "STRIPE_PRICE_VAULT_YEARLY", mode: "subscription" },
   { lookupKey: "vault_lifetime_once", envKey: "STRIPE_PRICE_VAULT_LIFETIME_ONCE", mode: "payment" },
@@ -108,6 +109,10 @@ export function createBillingRoutes(store: AccountLedgerStore): { router: Router
         "metadata[userId]": identity.id,
         "metadata[lookupKey]": lookupKey,
       });
+      if (lookupKey === "guardian_bundle_once") {
+        form.set("shipping_address_collection[allowed_countries][0]", "US");
+        form.set("shipping_address_collection[allowed_countries][1]", "CA");
+      }
       if (identity.stripeCustomerId) form.set("customer", identity.stripeCustomerId);
       else form.set("customer_email", identity.email);
       const session = await stripeRequest("checkout/sessions", secret, form);

@@ -1,138 +1,46 @@
-(function exposeArcadeManifest(global) {
+(function exposeArcadeManifest(global, document) {
   "use strict";
 
-  global.LottoMindArcadeGames = Object.freeze([
-    {
-      id: "gothtechnology",
-      title: "GOTHTECHNOLOGY",
-      path: "./games/gothtechnology2/",
-      description: "Cross the Blackwood forest, break the signal lock, and fight your way into the vault.",
-      category: "Action",
-      tags: ["fighter", "vault", "keyboard", "gamepad"],
-      image: "./games/gothtechnology2/assets/user-title/gothtechnology-cover-start-bg.webp",
-      status: "Playable",
-      featured: true,
-      controls: "Keyboard + gamepad",
-      difficulty: "Advanced",
-      accent: "ember"
-    },
-    {
-      id: "jackpot-maze",
-      title: "LottoMind: Jackpot Maze",
-      path: "./games/lottomind-jackpot-maze/",
-      description: "Collect secure number reveals, outsmart five comic villains, and open the neon vault.",
-      category: "Arcade",
-      tags: ["maze", "numbers", "vault", "strategy"],
-      image: "./games/lottomind-jackpot-maze/public/assets/ui/lottomind-jackpot-maze-title-card-gpt2.webp",
-      status: "Playable",
-      featured: true,
-      controls: "Keyboard + touch",
-      difficulty: "Intermediate",
-      accent: "gold"
-    },
-    {
-      id: "fortune-grid-313",
-      title: "LottoMind 313: Fortune Grid",
-      path: "./games/lottomind-313-fortune-grid/",
-      description: "Build Detroit ventures, collect number signals, and become the city's next Fortune Visionary.",
-      category: "Strategy",
-      tags: ["board game", "Detroit", "numbers", "strategy", "local multiplayer", "accessible"],
-      image: "./games/lottomind-313-fortune-grid/assets/art/fortune-grid-arcade-key-art.png",
-      status: "Beta",
-      featured: true,
-      controls: "Keyboard + pointer + touch",
-      difficulty: "Intermediate",
-      accent: "violet",
-      notice: "Entertainment-only simulated sequences. No prediction, wagering, or cash value.",
-      actions: [
-        { label: "Play Beta", path: "./games/lottomind-313-fortune-grid/" },
-        { label: "How to Play", path: "./games/lottomind-313-fortune-grid/GAME-RULES.md" },
-        { label: "Accessibility", path: "./games/lottomind-313-fortune-grid/ACCESSIBILITY.md" }
-      ]
-    },
-    {
-      id: "static-wave-2084",
-      title: "2084 Static Wave",
-      path: "./games/opengw-levels/",
-      description: "Pilot the static signal through a fast neon combat grid with solo and multiplayer routes.",
-      category: "Action",
-      tags: ["arcade", "combat", "multiplayer", "neon"],
-      image: "./games/opengw-levels/assets/2084/branding/marquee-gameplay-keyart.webp",
-      status: "Playable",
-      featured: true,
-      controls: "Keyboard + gamepad",
-      difficulty: "Advanced",
-      accent: "cyan"
-    },
-    {
-      id: "robot-rahbe",
-      title: "Robot RAHBEE",
-      path: "./games/shadow-ops-canvas/",
-      description: "Enter the Shadow Ops arena, survive the mission grid, and hold the tactical signal.",
-      category: "Action",
-      tags: ["shadow ops", "combat", "arena", "canvas"],
-      image: "./games/shadow-ops-canvas/assets/backgrounds/robot-rahbe-gameplay-keyart.png",
-      status: "Playable",
-      featured: false,
-      controls: "Keyboard + touch",
-      difficulty: "Intermediate",
-      accent: "violet"
-    },
-    {
-      id: "raytrace-pong",
-      title: "RAYCHASE PONG",
-      path: "./games/raytrace-pong-background/",
-      description: "Play a light-traced Pong simulation where the ball illuminates the arena and casts live shadows.",
-      category: "Simulation",
-      tags: ["pong", "webgl", "light", "simulation"],
-      image: "./assets/arcade/raytrace-pong-title.webp",
-      status: "Playable",
-      featured: false,
-      controls: "Keyboard",
-      difficulty: "Casual",
-      accent: "signal"
-    },
-    {
-      id: "lottery-spheres",
-      title: "Lottery Spheres in Motion",
-      path: "./lottery-spheres.html#spheres",
-      description: "Guide the glowing spheres, reroll a creative set, and bend the orbit path with your pointer.",
-      category: "Arcade",
-      tags: ["spheres", "numbers", "orbit", "creative"],
-      image: "./assets/arcade/lottery-spheres-title.webp",
-      status: "Playable",
-      featured: false,
-      controls: "Pointer + touch",
-      difficulty: "Casual",
-      accent: "gold"
-    },
-    {
-      id: "beat2lotto-lab",
-      title: "Beat2Lotto+ Prompt Lab",
-      path: "./prompt-lab.html",
-      description: "Turn local beat energy into entertainment-only number signals and production-ready creative prompts.",
-      category: "Creative Tools",
-      tags: ["beats", "generator", "prompts", "audio"],
-      image: "./assets/arcade/beat2lotto-prompt-lab-title.webp",
-      status: "Playable",
-      featured: false,
-      controls: "Pointer + keyboard",
-      difficulty: "Casual",
-      accent: "violet"
-    },
-    {
-      id: "stem-studio",
-      title: "LottoMind Stem Studio",
-      path: "./lottomind-stem-studio/",
-      description: "Mix stems, shape the live signal, and build a playable music route in the browser studio.",
-      category: "Music & Rhythm",
-      tags: ["music", "mixer", "stems", "studio"],
-      image: "./assets/arcade/stem-studio-title.webp",
-      status: "Playable",
-      featured: false,
-      controls: "Pointer + keyboard",
-      difficulty: "Intermediate",
-      accent: "cyan"
+  // Generated from games/games-manifest.json. Do not maintain game records here.
+  const manifestUrl = new URL("../../games/games-manifest.json", document.currentScript.src).href;
+  const fallbackManifest = Object.freeze({"schemaVersion":1,"version":"2026.08.08","lastChecked":"2026-08-08","games":[{"id":"gothtechnology","title":"GOTHTECHNOLOGY","route":"./games/gothtechnology2/","thumbnail":"./games/gothtechnology2/assets/user-title/gothtechnology-cover-start-bg.webp","status":"Playable","membershipRequirement":"Free","estimatedSessionTime":"10-20 minutes","supportedControls":"Keyboard + gamepad","rewardEligibility":"Not eligible","version":"1.0","description":"Cross the Blackwood forest, break the signal lock, and fight your way into the vault.","category":"Action","difficulty":"Advanced","tags":["fighter","vault","keyboard","gamepad"],"featured":true,"accent":"ember"},{"id":"jackpot-maze","title":"LottoMind: Jackpot Maze","route":"./games/lottomind-jackpot-maze/","thumbnail":"./games/lottomind-jackpot-maze/public/assets/ui/lottomind-jackpot-maze-title-card-gpt2.webp","status":"Playable","membershipRequirement":"Free","estimatedSessionTime":"10-15 minutes","supportedControls":"Keyboard + touch","rewardEligibility":"Not eligible","version":"1.0","description":"Collect secure number reveals, outsmart five comic villains, and open the neon vault.","category":"Arcade","difficulty":"Intermediate","tags":["maze","numbers","vault","strategy"],"featured":true,"accent":"gold"},{"id":"fortune-grid-313","title":"LottoMind 313: Fortune Grid","route":"./games/lottomind-313-fortune-grid/","thumbnail":"./games/lottomind-313-fortune-grid/assets/art/fortune-grid-arcade-key-art.png","status":"Beta","membershipRequirement":"Free beta","estimatedSessionTime":"20-35 minutes","supportedControls":"Keyboard + pointer + touch","rewardEligibility":"Not eligible in beta","version":"0.9","description":"Build Detroit ventures, collect number signals, and become the city's next Fortune Visionary.","category":"Strategy","difficulty":"Intermediate","tags":["board game","Detroit","numbers","strategy","local multiplayer","accessible"],"featured":true,"accent":"violet","notice":"Entertainment-only simulated sequences. No prediction, wagering, or cash value.","actions":[{"label":"Play Beta","route":"./games/lottomind-313-fortune-grid/"},{"label":"How to Play","route":"./games/lottomind-313-fortune-grid/GAME-RULES.md"},{"label":"Accessibility","route":"./games/lottomind-313-fortune-grid/ACCESSIBILITY.md"}]},{"id":"static-wave-2084","title":"2084 Static Wave","route":"./games/opengw-levels/","thumbnail":"./games/opengw-levels/assets/2084/branding/marquee-gameplay-keyart.webp","status":"Playable","membershipRequirement":"Free","estimatedSessionTime":"10-20 minutes","supportedControls":"Keyboard + gamepad","rewardEligibility":"Not eligible","version":"1.0","description":"Pilot the static signal through a fast neon combat grid with solo and multiplayer routes.","category":"Action","difficulty":"Advanced","tags":["arcade","combat","multiplayer","neon"],"featured":true,"accent":"cyan"},{"id":"robot-rahbe","title":"Robot RAHBEE","route":"./games/shadow-ops-canvas/","thumbnail":"./games/shadow-ops-canvas/assets/backgrounds/robot-rahbe-gameplay-keyart.png","status":"Playable","membershipRequirement":"Free","estimatedSessionTime":"10-20 minutes","supportedControls":"Keyboard + touch","rewardEligibility":"Not eligible","version":"1.0","description":"Enter the Shadow Ops arena, survive the mission grid, and hold the tactical signal.","category":"Action","difficulty":"Intermediate","tags":["shadow ops","combat","arena","canvas"],"featured":false,"accent":"violet"},{"id":"raytrace-pong","title":"RAYCHASE PONG","route":"./games/raytrace-pong-background/","thumbnail":"./assets/arcade/raytrace-pong-title.webp","status":"Playable","membershipRequirement":"Free","estimatedSessionTime":"5-10 minutes","supportedControls":"Keyboard","rewardEligibility":"Not eligible","version":"1.0","description":"Play a light-traced Pong simulation where the ball illuminates the arena and casts live shadows.","category":"Simulation","difficulty":"Casual","tags":["pong","webgl","light","simulation"],"featured":false,"accent":"signal"},{"id":"lottery-spheres","title":"Lottery Spheres in Motion","route":"./lottery-spheres.html#spheres","thumbnail":"./assets/arcade/lottery-spheres-title.webp","status":"Playable","membershipRequirement":"Free","estimatedSessionTime":"5-10 minutes","supportedControls":"Pointer + touch","rewardEligibility":"Not eligible","version":"1.0","description":"Guide the glowing spheres, reroll a creative set, and bend the orbit path with your pointer.","category":"Arcade","difficulty":"Casual","tags":["spheres","numbers","orbit","creative"],"featured":false,"accent":"gold"},{"id":"beat2lotto-lab","title":"Beat2Lotto+ Prompt Lab","route":"./prompt-lab.html","thumbnail":"./assets/arcade/beat2lotto-prompt-lab-title.webp","status":"Playable","membershipRequirement":"Free allowance","estimatedSessionTime":"5-15 minutes","supportedControls":"Pointer + keyboard","rewardEligibility":"Not eligible","version":"1.0","description":"Turn local beat energy into entertainment-only number signals and production-ready creative prompts.","category":"Creative Tools","difficulty":"Casual","tags":["beats","generator","prompts","audio"],"featured":false,"accent":"violet"},{"id":"stem-studio","title":"LottoMind Stem Studio","route":"./lottomind-stem-studio/","thumbnail":"./assets/arcade/stem-studio-title.webp","status":"Playable","membershipRequirement":"Free preview","estimatedSessionTime":"10-25 minutes","supportedControls":"Pointer + keyboard","rewardEligibility":"Not eligible","version":"1.0","description":"Mix stems, shape the live signal, and build a playable music route in the browser studio.","category":"Music & Rhythm","difficulty":"Intermediate","tags":["music","mixer","stems","studio"],"featured":false,"accent":"cyan"},{"id":"lottomind-trivia-vault","title":"LottoMind Trivia Vault","route":"./games/lottomind-trivia/","thumbnail":"./games/lottomind-trivia/assets/trivia-vault-key-art.webp","status":"Playable","membershipRequirement":"Free","estimatedSessionTime":"5-20 minutes","supportedControls":"Keyboard + pointer + touch","rewardEligibility":"Demo points only; server rewards disabled","version":"1.0","description":"Test seven knowledge channels through Quick Play, Daily Vault, Survival, and focused Category runs.","category":"Trivia","difficulty":"Mixed","tags":["trivia","knowledge","daily","Detroit","numbers"],"featured":false,"accent":"gold","notice":"Entertainment and educational purposes only. No prediction, wagering, cash value, or browser-issued LottoCredits."}]});
+
+  function normalize(manifest, source, error) {
+    const games = Object.freeze(manifest.games.map((game) => Object.freeze({
+      ...game,
+      path: game.route,
+      image: game.thumbnail,
+      controls: game.supportedControls,
+      actions: Array.isArray(game.actions) ? game.actions.map((action) => ({ ...action, path: action.route })) : undefined
+    })));
+    global.LottoMindArcadeGames = games;
+    global.LottoMindArcadeManifest = Object.freeze({
+      schemaVersion: manifest.schemaVersion,
+      version: manifest.version,
+      lastChecked: manifest.lastChecked,
+      source,
+      error: error ? String(error.message || error) : ""
+    });
+    return Object.freeze({ games, manifest: global.LottoMindArcadeManifest, error: error || null });
+  }
+
+  const fallbackGames = [{"id":"gothtechnology","title":"GOTHTECHNOLOGY","route":"./games/gothtechnology2/","thumbnail":"./games/gothtechnology2/assets/user-title/gothtechnology-cover-start-bg.webp","status":"Playable","membershipRequirement":"Free","estimatedSessionTime":"10-20 minutes","supportedControls":"Keyboard + gamepad","rewardEligibility":"Not eligible","version":"1.0","description":"Cross the Blackwood forest, break the signal lock, and fight your way into the vault.","category":"Action","difficulty":"Advanced","tags":["fighter","vault","keyboard","gamepad"],"featured":true,"accent":"ember"},{"id":"jackpot-maze","title":"LottoMind: Jackpot Maze","route":"./games/lottomind-jackpot-maze/","thumbnail":"./games/lottomind-jackpot-maze/public/assets/ui/lottomind-jackpot-maze-title-card-gpt2.webp","status":"Playable","membershipRequirement":"Free","estimatedSessionTime":"10-15 minutes","supportedControls":"Keyboard + touch","rewardEligibility":"Not eligible","version":"1.0","description":"Collect secure number reveals, outsmart five comic villains, and open the neon vault.","category":"Arcade","difficulty":"Intermediate","tags":["maze","numbers","vault","strategy"],"featured":true,"accent":"gold"},{"id":"fortune-grid-313","title":"LottoMind 313: Fortune Grid","route":"./games/lottomind-313-fortune-grid/","thumbnail":"./games/lottomind-313-fortune-grid/assets/art/fortune-grid-arcade-key-art.png","status":"Beta","membershipRequirement":"Free beta","estimatedSessionTime":"20-35 minutes","supportedControls":"Keyboard + pointer + touch","rewardEligibility":"Not eligible in beta","version":"0.9","description":"Build Detroit ventures, collect number signals, and become the city's next Fortune Visionary.","category":"Strategy","difficulty":"Intermediate","tags":["board game","Detroit","numbers","strategy","local multiplayer","accessible"],"featured":true,"accent":"violet","notice":"Entertainment-only simulated sequences. No prediction, wagering, or cash value.","actions":[{"label":"Play Beta","route":"./games/lottomind-313-fortune-grid/"},{"label":"How to Play","route":"./games/lottomind-313-fortune-grid/GAME-RULES.md"},{"label":"Accessibility","route":"./games/lottomind-313-fortune-grid/ACCESSIBILITY.md"}]},{"id":"static-wave-2084","title":"2084 Static Wave","route":"./games/opengw-levels/","thumbnail":"./games/opengw-levels/assets/2084/branding/marquee-gameplay-keyart.webp","status":"Playable","membershipRequirement":"Free","estimatedSessionTime":"10-20 minutes","supportedControls":"Keyboard + gamepad","rewardEligibility":"Not eligible","version":"1.0","description":"Pilot the static signal through a fast neon combat grid with solo and multiplayer routes.","category":"Action","difficulty":"Advanced","tags":["arcade","combat","multiplayer","neon"],"featured":true,"accent":"cyan"},{"id":"robot-rahbe","title":"Robot RAHBEE","route":"./games/shadow-ops-canvas/","thumbnail":"./games/shadow-ops-canvas/assets/backgrounds/robot-rahbe-gameplay-keyart.png","status":"Playable","membershipRequirement":"Free","estimatedSessionTime":"10-20 minutes","supportedControls":"Keyboard + touch","rewardEligibility":"Not eligible","version":"1.0","description":"Enter the Shadow Ops arena, survive the mission grid, and hold the tactical signal.","category":"Action","difficulty":"Intermediate","tags":["shadow ops","combat","arena","canvas"],"featured":false,"accent":"violet"},{"id":"raytrace-pong","title":"RAYCHASE PONG","route":"./games/raytrace-pong-background/","thumbnail":"./assets/arcade/raytrace-pong-title.webp","status":"Playable","membershipRequirement":"Free","estimatedSessionTime":"5-10 minutes","supportedControls":"Keyboard","rewardEligibility":"Not eligible","version":"1.0","description":"Play a light-traced Pong simulation where the ball illuminates the arena and casts live shadows.","category":"Simulation","difficulty":"Casual","tags":["pong","webgl","light","simulation"],"featured":false,"accent":"signal"},{"id":"lottery-spheres","title":"Lottery Spheres in Motion","route":"./lottery-spheres.html#spheres","thumbnail":"./assets/arcade/lottery-spheres-title.webp","status":"Playable","membershipRequirement":"Free","estimatedSessionTime":"5-10 minutes","supportedControls":"Pointer + touch","rewardEligibility":"Not eligible","version":"1.0","description":"Guide the glowing spheres, reroll a creative set, and bend the orbit path with your pointer.","category":"Arcade","difficulty":"Casual","tags":["spheres","numbers","orbit","creative"],"featured":false,"accent":"gold"},{"id":"beat2lotto-lab","title":"Beat2Lotto+ Prompt Lab","route":"./prompt-lab.html","thumbnail":"./assets/arcade/beat2lotto-prompt-lab-title.webp","status":"Playable","membershipRequirement":"Free allowance","estimatedSessionTime":"5-15 minutes","supportedControls":"Pointer + keyboard","rewardEligibility":"Not eligible","version":"1.0","description":"Turn local beat energy into entertainment-only number signals and production-ready creative prompts.","category":"Creative Tools","difficulty":"Casual","tags":["beats","generator","prompts","audio"],"featured":false,"accent":"violet"},{"id":"stem-studio","title":"LottoMind Stem Studio","route":"./lottomind-stem-studio/","thumbnail":"./assets/arcade/stem-studio-title.webp","status":"Playable","membershipRequirement":"Free preview","estimatedSessionTime":"10-25 minutes","supportedControls":"Pointer + keyboard","rewardEligibility":"Not eligible","version":"1.0","description":"Mix stems, shape the live signal, and build a playable music route in the browser studio.","category":"Music & Rhythm","difficulty":"Intermediate","tags":["music","mixer","stems","studio"],"featured":false,"accent":"cyan"},{"id":"lottomind-trivia-vault","title":"LottoMind Trivia Vault","route":"./games/lottomind-trivia/","thumbnail":"./games/lottomind-trivia/assets/trivia-vault-key-art.webp","status":"Playable","membershipRequirement":"Free","estimatedSessionTime":"5-20 minutes","supportedControls":"Keyboard + pointer + touch","rewardEligibility":"Demo points only; server rewards disabled","version":"1.0","description":"Test seven knowledge channels through Quick Play, Daily Vault, Survival, and focused Category runs.","category":"Trivia","difficulty":"Mixed","tags":["trivia","knowledge","daily","Detroit","numbers"],"featured":false,"accent":"gold","notice":"Entertainment and educational purposes only. No prediction, wagering, cash value, or browser-issued LottoCredits."}];
+  normalize({ ...fallbackManifest, games: fallbackGames }, "fallback", null);
+
+  async function load(options = {}) {
+    try {
+      const response = await fetch(manifestUrl, { cache: options.cache || "no-cache", credentials: "same-origin" });
+      if (!response.ok) throw new Error(`Manifest request failed with ${response.status}`);
+      const manifest = await response.json();
+      if (!Array.isArray(manifest.games) || !manifest.games.length) throw new Error("Manifest contains no games");
+      return normalize(manifest, "network", null);
+    } catch (error) {
+      return normalize({ ...fallbackManifest, games: fallbackGames }, "fallback", error);
+    } finally {
+      document.dispatchEvent(new CustomEvent("lottomind:games-ready"));
     }
-  ]);
-})(window);
+  }
+
+  global.LottoMindLoadArcadeGames = load;
+  global.LottoMindArcadeGamesReady = load();
+})(window, document);
