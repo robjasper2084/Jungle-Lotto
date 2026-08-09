@@ -17073,12 +17073,13 @@ html.lm-mobile-performance body.home-page .signal-particle-layer {
 
 html.lm-mobile-performance .home-signal-marquee-track {
   min-width: max-content;
-  animation: home-signal-marquee 32s linear infinite !important;
-  will-change: transform;
+  animation: none !important;
+  transform: none !important;
+  will-change: auto;
 }
 
 html.lm-mobile-performance .home-signal-marquee-track[aria-hidden="true"] {
-  display: inline-flex !important;
+  display: none !important;
 }
 
 html.lm-reduce-motion .home-signal-marquee-track,

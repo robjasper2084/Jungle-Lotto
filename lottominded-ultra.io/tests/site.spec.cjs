@@ -717,18 +717,16 @@ test("features combines the cinematic shell with the manifest-driven Arcade dire
   await expect(fortuneGridCard.getByRole("link", { name: "Accessibility" })).toBeVisible();
   await expect(fortuneGridCard).toContainText("Entertainment-only simulated sequences");
   await expect(page.getByRole("heading", { name: "RAYCHASE PONG" })).toBeVisible();
-  const arcadeRail = page.locator("[data-arcade-grid]");
-  const railMetrics = await arcadeRail.evaluate((element) => ({
+  const arcadeGrid = page.locator("[data-arcade-grid]");
+  const gridMetrics = await arcadeGrid.evaluate((element) => ({
     scrollWidth: element.scrollWidth,
     clientWidth: element.clientWidth,
-    scrollSnapType: getComputedStyle(element).scrollSnapType,
+    display: getComputedStyle(element).display,
+    columns: getComputedStyle(element).gridTemplateColumns,
   }));
-  expect(railMetrics.scrollWidth).toBeGreaterThan(railMetrics.clientWidth);
-  expect(railMetrics.scrollSnapType).toContain("mandatory");
-  const nextGames = page.getByRole("button", { name: "Next games" });
-  await expect(nextGames).toBeEnabled();
-  await nextGames.click();
-  await expect.poll(() => arcadeRail.evaluate((element) => element.scrollLeft)).toBeGreaterThan(0);
+  expect(gridMetrics.scrollWidth).toBeLessThanOrEqual(gridMetrics.clientWidth + 1);
+  expect(gridMetrics.display).toBe("grid");
+  expect(gridMetrics.columns).not.toBe("none");
   await expect(page.locator("main video:not([data-arcade-hero-video]), main audio, iframe, #lottery-news, .instrument-console")).toHaveCount(0);
 
   await page.getByRole("button", { name: "Action", exact: true }).click();

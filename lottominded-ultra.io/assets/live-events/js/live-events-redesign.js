@@ -96,9 +96,6 @@
         return;
       }
       if (!heroSingerSoundEnabled) {
-        heroSingerFilm.muted = true;
-        heroSingerFilm.defaultMuted = true;
-        heroSingerFilm.play().catch(() => {});
         return;
       }
       const playback = heroSingerAudio === heroSingerFilm
@@ -216,14 +213,14 @@
 
     document.addEventListener("visibilitychange", syncPlayback);
     reducedMotion.addEventListener?.("change", syncPlayback);
-    heroSingerFilm.muted = true;
-    heroSingerFilm.defaultMuted = true;
-    heroSingerFilm.setAttribute("muted", "");
+    heroSingerFilm.muted = false;
+    heroSingerFilm.defaultMuted = false;
+    heroSingerFilm.removeAttribute("muted");
     heroSingerFilm.loop = false;
     try { heroSingerFilm.currentTime = 0; } catch {}
     try { if (heroSingerAudio) heroSingerAudio.currentTime = 0; } catch {}
     setSoundState(false);
-    syncPlayback();
+    startHeroSoundtrack({ restart: true });
   }
   function two(value) {
     return String(value).padStart(2, "0");

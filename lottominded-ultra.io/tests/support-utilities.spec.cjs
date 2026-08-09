@@ -124,11 +124,12 @@ test("account route stays read-only in local preview and exposes support links",
   await page.goto("/account.html");
 
   await expect(page.getByRole("heading", { name: "Your LottoMind signal." })).toBeVisible();
-  const heroVideo = page.locator(".lm-platform-hero__video");
-  await expect(heroVideo).toHaveAttribute("muted", "");
-  await expect(heroVideo).toHaveAttribute("data-autoplay-on-visible", "true");
+  const heroVideo = page.locator(".lm-account-hero-film");
+  await expect(heroVideo).toHaveAttribute("controls", "");
+  await expect(heroVideo).toHaveAttribute("preload", "none");
+  await expect(heroVideo).not.toHaveAttribute("autoplay", "");
   const heroVideoSource = await heroVideo.locator("source").evaluate((source) => source.getAttribute("src") || source.dataset.src);
-  expect(heroVideoSource).toMatch(/lm-feature-portal-loop\.mp4$/);
+  expect(heroVideoSource).toMatch(/lottomind-account-vault-film-20260626\.mp4$/);
   await expect(page.locator("[data-account-status]")).toContainText("read-only");
   await expect(page.getByRole("link", { name: "Need account or password support?" })).toHaveAttribute("href", /contact\.html/);
   await expect(page.getByRole("link", { name: "Read Account and Credits Help" })).toHaveAttribute("href", /help\.html#lottocredits$/);
