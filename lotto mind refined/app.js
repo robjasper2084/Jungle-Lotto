@@ -741,10 +741,7 @@ const MERCH_PRICE_FALLBACKS = {
   pick34Playbook: 19,
   dreamSymbolGuide: 24,
   crosswordPack: 12,
-  boogieManKnitSweater: 365,
-  cityOfDetroit1701Hoodie: 72,
   neuralVaultI: 68,
-  frequencyHalo: 38,
   liveOrbStudy: 72,
 };
 
@@ -771,32 +768,11 @@ const MERCH_CATALOG_FALLBACK = [
     className: "detroit-polo",
   },
   {
-    priceKey: "boogieManKnitSweater",
-    title: "Boogie Man Knit Sweater",
-    copy: "Collector knit with skyline, moon, waveform, and bold nocturne graphic language.",
-    type: "Clothing",
-    className: "boogie-knit",
-  },
-  {
-    priceKey: "cityOfDetroit1701Hoodie",
-    title: "City of Detroit 1701 Hoodie",
-    copy: "Navy fleece with the 1701 skyline badge, sun mark, and everyday streetwear silhouette.",
-    type: "Clothing",
-    className: "detroit-1701-hoodie",
-  },
-  {
     priceKey: "neuralVaultI",
     title: "Neural Vault I",
     copy: "Neon LottoMind gallery artwork with vault-orb energy.",
     type: "Gallery Art",
     className: "neural-vault",
-  },
-  {
-    priceKey: "frequencyHalo",
-    title: "Frequency Halo",
-    copy: "Frequency-ring gallery artwork for the studio signal lane.",
-    type: "Gallery Art",
-    className: "frequency-halo",
   },
   {
     priceKey: "liveOrbStudy",
@@ -811,10 +787,7 @@ const MERCH_ART_BY_KEY = {
   detroitHoodie: ASSETS.detroitHoodieClose,
   detroitCap: ASSETS.detroitCapFront,
   detroitPolo: ASSETS.detroitPoloClose,
-  boogieManKnitSweater: ASSETS.detroitCollection,
-  cityOfDetroit1701Hoodie: ASSETS.detroitCollection,
   neuralVaultI: ASSETS.logo,
-  frequencyHalo: ASSETS.reset,
   liveOrbStudy: ASSETS.live,
 };
 
@@ -835,6 +808,9 @@ const RETIRED_MERCH_KEYS = new Set([
   "lottomindCoinSet",
   "city1701Mark",
   "cyberBrainPlate",
+  "boogieManKnitSweater",
+  "cityOfDetroit1701Hoodie",
+  "frequencyHalo",
 ]);
 const SHARED_MERCH_CATALOG = Array.isArray(window.LOTTOMIND_MERCH_CATALOG) ? window.LOTTOMIND_MERCH_CATALOG : MERCH_CATALOG_FALLBACK;
 const MERCH_ITEMS = SHARED_MERCH_CATALOG.filter((item) => !RETIRED_MERCH_KEYS.has(item.priceKey)).map((item) => ({
