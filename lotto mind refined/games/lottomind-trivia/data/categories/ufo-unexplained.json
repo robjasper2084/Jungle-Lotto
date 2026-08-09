@@ -1,0 +1,552 @@
+[
+  {
+    "id": "ufo-unexplained-001",
+    "category": "ufo-unexplained",
+    "difficulty": "easy",
+    "question": "What does UAP stand for in current U.S. government usage?",
+    "choices": [
+      "Unidentified Anomalous Phenomena",
+      "Universal Astronomy Program",
+      "United Aircraft Patrol",
+      "Unknown Atmospheric Pressure"
+    ],
+    "correctChoiceIndex": 0,
+    "explanation": "UAP is the current umbrella term used in official records.",
+    "sourceName": "U.S. National Archives UAP Records",
+    "sourceUrl": "https://www.archives.gov/research/topics/uaps",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "terminology"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "ufo-unexplained-002",
+    "category": "ufo-unexplained",
+    "difficulty": "easy",
+    "question": "What does 'unidentified' mean in a UAP report?",
+    "choices": [
+      "It proves an alien origin",
+      "The observation has not yet been conclusively identified",
+      "It was invisible to all sensors",
+      "It cannot ever be explained"
+    ],
+    "correctChoiceIndex": 1,
+    "explanation": "Unidentified describes the state of available evidence, not a verified cause.",
+    "sourceName": "NASA UAP Independent Study",
+    "sourceUrl": "https://science.nasa.gov/uap/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "critical-thinking"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "ufo-unexplained-003",
+    "category": "ufo-unexplained",
+    "difficulty": "easy",
+    "question": "What is a common challenge when analyzing distant lights in video?",
+    "choices": [
+      "Videos automatically contain full radar data",
+      "Every camera has perfect focus",
+      "Limited distance, scale, and motion context",
+      "Pixels reveal the object's owner"
+    ],
+    "correctChoiceIndex": 2,
+    "explanation": "Without contextual data, apparent speed and size can be difficult to infer.",
+    "sourceName": "NASA UAP Independent Study",
+    "sourceUrl": "https://science.nasa.gov/uap/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "evidence"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "ufo-unexplained-004",
+    "category": "ufo-unexplained",
+    "difficulty": "easy",
+    "question": "What was Project Blue Book?",
+    "choices": [
+      "NASA's first Moon landing",
+      "A Detroit music label",
+      "A weather satellite",
+      "A U.S. Air Force program that investigated UFO reports"
+    ],
+    "correctChoiceIndex": 3,
+    "explanation": "Project Blue Book collected and evaluated reported UFO sightings from 1952 to 1969.",
+    "sourceName": "National Museum of the U.S. Air Force",
+    "sourceUrl": "https://www.nationalmuseum.af.mil/Visit/Museum-Exhibits/Fact-Sheets/Display/Article/196709/project-blue-book/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "history"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "ufo-unexplained-005",
+    "category": "ufo-unexplained",
+    "difficulty": "easy",
+    "question": "Which approach best distinguishes a report from a verified conclusion?",
+    "choices": [
+      "Describe what witnesses reported and separately state what evidence establishes",
+      "Repeat the most dramatic claim as fact",
+      "Ignore all uncertainty",
+      "Treat popularity as proof"
+    ],
+    "correctChoiceIndex": 0,
+    "explanation": "Careful wording preserves the difference between testimony and verification.",
+    "sourceName": "NASA UAP Independent Study",
+    "sourceUrl": "https://science.nasa.gov/uap/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "media-literacy"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "ufo-unexplained-006",
+    "category": "ufo-unexplained",
+    "difficulty": "easy",
+    "question": "Why can Venus be mistaken for an unusual aerial light?",
+    "choices": [
+      "It moves between buildings at street level",
+      "It can appear exceptionally bright near the horizon",
+      "It broadcasts aircraft signals",
+      "It changes into a satellite"
+    ],
+    "correctChoiceIndex": 1,
+    "explanation": "Bright celestial objects can look unfamiliar without a reference frame.",
+    "sourceName": "NASA Science",
+    "sourceUrl": "https://science.nasa.gov/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "astronomy"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "ufo-unexplained-007",
+    "category": "ufo-unexplained",
+    "difficulty": "easy",
+    "question": "What is parallax?",
+    "choices": [
+      "A type of engine noise",
+      "A measure of radio volume",
+      "An apparent position shift caused by a change in viewpoint",
+      "A guaranteed sign of propulsion"
+    ],
+    "correctChoiceIndex": 2,
+    "explanation": "Parallax can make motion look different when observer and object positions change.",
+    "sourceName": "NASA Science",
+    "sourceUrl": "https://science.nasa.gov/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "observation"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "ufo-unexplained-008",
+    "category": "ufo-unexplained",
+    "difficulty": "medium",
+    "question": "What can weather balloons carry?",
+    "choices": [
+      "Passengers to the Moon",
+      "Ocean-floor cameras only",
+      "Lottery drawing machines",
+      "Instruments that measure atmospheric conditions"
+    ],
+    "correctChoiceIndex": 3,
+    "explanation": "Weather balloons lift instrument packages through the atmosphere.",
+    "sourceName": "NOAA Ocean Exploration",
+    "sourceUrl": "https://oceanexplorer.noaa.gov/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "atmosphere"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "ufo-unexplained-009",
+    "category": "ufo-unexplained",
+    "difficulty": "medium",
+    "question": "Why are multiple independent sensors useful for an unusual observation?",
+    "choices": [
+      "They can provide complementary data and reduce single-sensor ambiguity",
+      "They guarantee an extraordinary cause",
+      "They remove the need for timestamps",
+      "They make witness accounts unnecessary"
+    ],
+    "correctChoiceIndex": 0,
+    "explanation": "Correlated observations can improve confidence in position, timing, and motion.",
+    "sourceName": "NASA UAP Independent Study",
+    "sourceUrl": "https://science.nasa.gov/uap/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "evidence"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "ufo-unexplained-010",
+    "category": "ufo-unexplained",
+    "difficulty": "medium",
+    "question": "What is a meteor?",
+    "choices": [
+      "A permanent artificial satellite",
+      "The visible streak produced when a meteoroid enters the atmosphere",
+      "A cloud that emits radio programs",
+      "A star leaving its galaxy"
+    ],
+    "correctChoiceIndex": 1,
+    "explanation": "Atmospheric entry heats material and creates a visible trail.",
+    "sourceName": "NASA Science",
+    "sourceUrl": "https://science.nasa.gov/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "astronomy"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "ufo-unexplained-011",
+    "category": "ufo-unexplained",
+    "difficulty": "medium",
+    "question": "Which statement reflects scientific caution?",
+    "choices": [
+      "No answer proves the wildest answer",
+      "One blurry image settles the issue",
+      "Insufficient data means the cause remains unresolved",
+      "A famous witness cannot be mistaken"
+    ],
+    "correctChoiceIndex": 2,
+    "explanation": "Uncertainty is a limit on conclusions, not evidence for a specific extraordinary explanation.",
+    "sourceName": "NASA UAP Independent Study",
+    "sourceUrl": "https://science.nasa.gov/uap/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "scientific-method"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "ufo-unexplained-012",
+    "category": "ufo-unexplained",
+    "difficulty": "medium",
+    "question": "What is atmospheric scintillation?",
+    "choices": [
+      "A spacecraft changing color intentionally",
+      "A camera recording sound",
+      "A magnetic compass spinning",
+      "Apparent twinkling caused by light passing through turbulent air"
+    ],
+    "correctChoiceIndex": 3,
+    "explanation": "Turbulent air refracts light and can make stars appear to shimmer.",
+    "sourceName": "NASA Science",
+    "sourceUrl": "https://science.nasa.gov/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "atmosphere"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "ufo-unexplained-013",
+    "category": "ufo-unexplained",
+    "difficulty": "medium",
+    "question": "Why does metadata matter in a photo investigation?",
+    "choices": [
+      "It can provide time, device, and capture context",
+      "It always identifies every object",
+      "It changes the pixels into radar",
+      "It guarantees the file is unedited"
+    ],
+    "correctChoiceIndex": 0,
+    "explanation": "Metadata adds context but still must be authenticated and interpreted carefully.",
+    "sourceName": "U.S. National Archives UAP Records",
+    "sourceUrl": "https://www.archives.gov/research/topics/uaps",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "evidence"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "ufo-unexplained-014",
+    "category": "ufo-unexplained",
+    "difficulty": "medium",
+    "question": "What is the best label for a story passed through generations without confirming evidence?",
+    "choices": [
+      "Scientific consensus",
+      "Folklore or legend",
+      "A controlled experiment",
+      "A legal verdict"
+    ],
+    "correctChoiceIndex": 1,
+    "explanation": "Folklore can be culturally meaningful without being established as physical fact.",
+    "sourceName": "Smithsonian Institution",
+    "sourceUrl": "https://www.si.edu/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "folklore"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "ufo-unexplained-015",
+    "category": "ufo-unexplained",
+    "difficulty": "medium",
+    "question": "What is satellite flare?",
+    "choices": [
+      "A star exploding in Earth's atmosphere",
+      "A camera deleting a frame",
+      "Sunlight reflecting from a satellite and briefly brightening",
+      "Lightning beneath the ocean"
+    ],
+    "correctChoiceIndex": 2,
+    "explanation": "Reflective surfaces can produce short, bright events in the sky.",
+    "sourceName": "NASA Science",
+    "sourceUrl": "https://science.nasa.gov/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "astronomy"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "ufo-unexplained-016",
+    "category": "ufo-unexplained",
+    "difficulty": "hard",
+    "question": "Why can a zoomed phone video make movement look unstable?",
+    "choices": [
+      "Digital zoom adds radar tracking",
+      "Phone lenses stop recording perspective",
+      "Unstable video proves high speed",
+      "Hand motion and digital zoom amplify small shifts"
+    ],
+    "correctChoiceIndex": 3,
+    "explanation": "Magnification and stabilization artifacts can exaggerate apparent movement.",
+    "sourceName": "NASA UAP Independent Study",
+    "sourceUrl": "https://science.nasa.gov/uap/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "media-literacy"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "ufo-unexplained-017",
+    "category": "ufo-unexplained",
+    "difficulty": "hard",
+    "question": "What should a responsible mystery game avoid doing?",
+    "choices": [
+      "Presenting unverified paranormal claims as established fact",
+      "Labeling folklore clearly",
+      "Providing source context",
+      "Inviting critical thinking"
+    ],
+    "correctChoiceIndex": 0,
+    "explanation": "Entertainment can explore mysteries while keeping claims and evidence distinct.",
+    "sourceName": "LottoMind product guide",
+    "sourceUrl": "",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "safety"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "ufo-unexplained-018",
+    "category": "ufo-unexplained",
+    "difficulty": "hard",
+    "question": "What is ball lightning?",
+    "choices": [
+      "A confirmed alien probe",
+      "A rare reported luminous atmospheric phenomenon that remains incompletely understood",
+      "A routine form of hail",
+      "A planet visible at noon"
+    ],
+    "correctChoiceIndex": 1,
+    "explanation": "Reports describe glowing spheres, but the phenomenon is rare and difficult to study.",
+    "sourceName": "NOAA Ocean Exploration",
+    "sourceUrl": "https://oceanexplorer.noaa.gov/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "atmosphere"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "ufo-unexplained-019",
+    "category": "ufo-unexplained",
+    "difficulty": "hard",
+    "question": "Which record source preserves many official U.S. UAP-related documents?",
+    "choices": [
+      "The Patent Office gift shop",
+      "A private horoscope feed",
+      "The U.S. National Archives",
+      "A music streaming chart"
+    ],
+    "correctChoiceIndex": 2,
+    "explanation": "The National Archives provides research access to government records on UAP topics.",
+    "sourceName": "U.S. National Archives UAP Records",
+    "sourceUrl": "https://www.archives.gov/research/topics/uaps",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "archives"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "ufo-unexplained-020",
+    "category": "ufo-unexplained",
+    "difficulty": "hard",
+    "question": "What does corroboration mean?",
+    "choices": [
+      "A story has many social likes",
+      "A claim uses dramatic language",
+      "The observer repeats the same sentence",
+      "Independent evidence supports part of an account"
+    ],
+    "correctChoiceIndex": 3,
+    "explanation": "Corroboration comes from independent sources or evidence, not repetition alone.",
+    "sourceName": "NASA UAP Independent Study",
+    "sourceUrl": "https://science.nasa.gov/uap/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "critical-thinking"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "ufo-unexplained-021",
+    "category": "ufo-unexplained",
+    "difficulty": "hard",
+    "question": "Why is a timestamp important in sky observation?",
+    "choices": [
+      "It helps compare the report with aircraft, satellite, weather, and astronomy data",
+      "It proves the object was solid",
+      "It predicts another sighting",
+      "It replaces location data"
+    ],
+    "correctChoiceIndex": 0,
+    "explanation": "Accurate time and place enable meaningful cross-checks.",
+    "sourceName": "NASA UAP Independent Study",
+    "sourceUrl": "https://science.nasa.gov/uap/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "evidence"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "ufo-unexplained-022",
+    "category": "ufo-unexplained",
+    "difficulty": "hard",
+    "question": "What conclusion did NASA's independent UAP study emphasize about data?",
+    "choices": [
+      "Every report has one known cause",
+      "Better calibrated, standardized data is needed for stronger analysis",
+      "Civilian observations have no value",
+      "No further study is possible"
+    ],
+    "correctChoiceIndex": 1,
+    "explanation": "NASA emphasized rigorous data collection and scientific analysis rather than extraordinary assumptions.",
+    "sourceName": "NASA UAP Independent Study",
+    "sourceUrl": "https://science.nasa.gov/uap/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "scientific-method"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  }
+]

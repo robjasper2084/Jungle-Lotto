@@ -1,0 +1,552 @@
+[
+  {
+    "id": "detroit-history-culture-001",
+    "category": "detroit-history-culture",
+    "difficulty": "easy",
+    "question": "Which river separates Detroit from Windsor, Ontario?",
+    "choices": [
+      "The Hudson River",
+      "The Missouri River",
+      "The Detroit River",
+      "The Potomac River"
+    ],
+    "correctChoiceIndex": 2,
+    "explanation": "The Detroit River links Lake St. Clair and Lake Erie and forms part of the U.S.–Canada boundary.",
+    "sourceName": "Encyclopedia of Detroit",
+    "sourceUrl": "https://detroithistorical.org/learn/encyclopedia-of-detroit",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "geography"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "detroit-history-culture-002",
+    "category": "detroit-history-culture",
+    "difficulty": "easy",
+    "question": "What nickname reflects Detroit's automotive history?",
+    "choices": [
+      "The Emerald City",
+      "The Mile High City",
+      "The Crescent City",
+      "The Motor City"
+    ],
+    "correctChoiceIndex": 3,
+    "explanation": "Detroit became globally associated with automobile manufacturing.",
+    "sourceName": "Encyclopedia of Detroit",
+    "sourceUrl": "https://detroithistorical.org/learn/encyclopedia-of-detroit",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "industry"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "detroit-history-culture-003",
+    "category": "detroit-history-culture",
+    "difficulty": "easy",
+    "question": "Where is the Motown Museum located?",
+    "choices": [
+      "The former Hitsville U.S.A. site in Detroit",
+      "Inside the Detroit Zoo",
+      "On Mackinac Island",
+      "At Niagara Falls"
+    ],
+    "correctChoiceIndex": 0,
+    "explanation": "The museum preserves the Detroit houses where Motown's early music business operated.",
+    "sourceName": "Motown Museum",
+    "sourceUrl": "https://www.motownmuseum.org/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "music"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "detroit-history-culture-004",
+    "category": "detroit-history-culture",
+    "difficulty": "easy",
+    "question": "Which industry made the moving assembly line central to Detroit's identity?",
+    "choices": [
+      "Whaling",
+      "Automobile manufacturing",
+      "Silk weaving",
+      "Orange farming"
+    ],
+    "correctChoiceIndex": 1,
+    "explanation": "Detroit's auto plants transformed mass production and the region's economy.",
+    "sourceName": "Encyclopedia of Detroit",
+    "sourceUrl": "https://detroithistorical.org/learn/encyclopedia-of-detroit",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "industry"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "detroit-history-culture-005",
+    "category": "detroit-history-culture",
+    "difficulty": "easy",
+    "question": "What is Belle Isle?",
+    "choices": [
+      "A downtown skyscraper",
+      "A suburban airport",
+      "An island park in the Detroit River",
+      "A music record label"
+    ],
+    "correctChoiceIndex": 2,
+    "explanation": "Belle Isle is a large public island park with cultural and natural attractions.",
+    "sourceName": "Encyclopedia of Detroit",
+    "sourceUrl": "https://detroithistorical.org/learn/encyclopedia-of-detroit",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "places"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "detroit-history-culture-006",
+    "category": "detroit-history-culture",
+    "difficulty": "easy",
+    "question": "What major art museum is known for Diego Rivera's Detroit Industry murals?",
+    "choices": [
+      "The Motown Museum",
+      "The Henry Ford airport",
+      "The Michigan Science shipyard",
+      "The Detroit Institute of Arts"
+    ],
+    "correctChoiceIndex": 3,
+    "explanation": "Rivera's mural cycle is housed in the DIA's Rivera Court.",
+    "sourceName": "Detroit Institute of Arts",
+    "sourceUrl": "https://dia.org/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "art"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "detroit-history-culture-007",
+    "category": "detroit-history-culture",
+    "difficulty": "easy",
+    "question": "Which Detroit neighborhood is known for a historic public market?",
+    "choices": [
+      "Eastern Market",
+      "Hollywood Hills",
+      "French Quarter",
+      "Beacon Hill"
+    ],
+    "correctChoiceIndex": 0,
+    "explanation": "Eastern Market has served as a major food and community market district.",
+    "sourceName": "Encyclopedia of Detroit",
+    "sourceUrl": "https://detroithistorical.org/learn/encyclopedia-of-detroit",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "places"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "detroit-history-culture-008",
+    "category": "detroit-history-culture",
+    "difficulty": "medium",
+    "question": "Detroit was founded in 1701 by which French explorer?",
+    "choices": [
+      "Jacques Cousteau",
+      "Antoine de la Mothe Cadillac",
+      "Samuel Morse",
+      "Louis Pasteur"
+    ],
+    "correctChoiceIndex": 1,
+    "explanation": "Cadillac established Fort Pontchartrain du Détroit in 1701.",
+    "sourceName": "Encyclopedia of Detroit",
+    "sourceUrl": "https://detroithistorical.org/learn/encyclopedia-of-detroit",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "history"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "detroit-history-culture-009",
+    "category": "detroit-history-culture",
+    "difficulty": "medium",
+    "question": "What does the French word 'détroit' mean?",
+    "choices": [
+      "Mountain",
+      "Forest",
+      "Strait",
+      "Golden city"
+    ],
+    "correctChoiceIndex": 2,
+    "explanation": "The name refers to the narrow waterway connecting the lakes.",
+    "sourceName": "Encyclopedia of Detroit",
+    "sourceUrl": "https://detroithistorical.org/learn/encyclopedia-of-detroit",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "language"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "detroit-history-culture-010",
+    "category": "detroit-history-culture",
+    "difficulty": "medium",
+    "question": "Which baseball team plays at Comerica Park?",
+    "choices": [
+      "Detroit Lions",
+      "Detroit Red Wings",
+      "Detroit Pistons",
+      "Detroit Tigers"
+    ],
+    "correctChoiceIndex": 3,
+    "explanation": "Comerica Park is the home ballpark of the Detroit Tigers.",
+    "sourceName": "City of Detroit",
+    "sourceUrl": "https://detroitmi.gov/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "sports"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "detroit-history-culture-011",
+    "category": "detroit-history-culture",
+    "difficulty": "medium",
+    "question": "Which Detroit music label helped popularize artists such as the Supremes and the Temptations?",
+    "choices": [
+      "Motown Records",
+      "Sun Records",
+      "Blue Note Records",
+      "Sub Pop"
+    ],
+    "correctChoiceIndex": 0,
+    "explanation": "Motown's Detroit sound became a major force in popular music.",
+    "sourceName": "Motown Museum",
+    "sourceUrl": "https://www.motownmuseum.org/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "music"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "detroit-history-culture-012",
+    "category": "detroit-history-culture",
+    "difficulty": "medium",
+    "question": "What architectural complex is headquartered beside the Detroit River downtown?",
+    "choices": [
+      "The Space Needle",
+      "The Renaissance Center",
+      "The Alamo",
+      "The Gateway Arch"
+    ],
+    "correctChoiceIndex": 1,
+    "explanation": "The Renaissance Center is a prominent Detroit riverfront landmark.",
+    "sourceName": "Encyclopedia of Detroit",
+    "sourceUrl": "https://detroithistorical.org/learn/encyclopedia-of-detroit",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "architecture"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "detroit-history-culture-013",
+    "category": "detroit-history-culture",
+    "difficulty": "medium",
+    "question": "Which avenue became famous for mansions built by Detroit industrial leaders?",
+    "choices": [
+      "Sunset Boulevard",
+      "Pennsylvania Avenue",
+      "Woodward Avenue",
+      "Bourbon Street"
+    ],
+    "correctChoiceIndex": 2,
+    "explanation": "Woodward is a historic spine of Detroit and the region.",
+    "sourceName": "Encyclopedia of Detroit",
+    "sourceUrl": "https://detroithistorical.org/learn/encyclopedia-of-detroit",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "places"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "detroit-history-culture-014",
+    "category": "detroit-history-culture",
+    "difficulty": "medium",
+    "question": "What was the Underground Railroad's code name for Detroit?",
+    "choices": [
+      "Sunrise",
+      "Liberty Bell",
+      "North Star City",
+      "Midnight"
+    ],
+    "correctChoiceIndex": 3,
+    "explanation": "Detroit's location near Canada made it a crucial crossing point for freedom seekers.",
+    "sourceName": "Encyclopedia of Detroit",
+    "sourceUrl": "https://detroithistorical.org/learn/encyclopedia-of-detroit",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "history"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "detroit-history-culture-015",
+    "category": "detroit-history-culture",
+    "difficulty": "medium",
+    "question": "Which Detroit landmark was once one of the world's busiest train stations?",
+    "choices": [
+      "Michigan Central Station",
+      "Guardian Building",
+      "Fisher Building",
+      "Penobscot Building"
+    ],
+    "correctChoiceIndex": 0,
+    "explanation": "Michigan Central opened in 1913 and became a monumental rail gateway.",
+    "sourceName": "Encyclopedia of Detroit",
+    "sourceUrl": "https://detroithistorical.org/learn/encyclopedia-of-detroit",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "architecture"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "detroit-history-culture-016",
+    "category": "detroit-history-culture",
+    "difficulty": "hard",
+    "question": "What style is strongly associated with the Guardian Building's colorful interior?",
+    "choices": [
+      "Brutalist",
+      "Art Deco",
+      "Gothic Revival only",
+      "Colonial farmhouse"
+    ],
+    "correctChoiceIndex": 1,
+    "explanation": "The Guardian Building is celebrated for its richly ornamented Art Deco design.",
+    "sourceName": "Encyclopedia of Detroit",
+    "sourceUrl": "https://detroithistorical.org/learn/encyclopedia-of-detroit",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "architecture"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "detroit-history-culture-017",
+    "category": "detroit-history-culture",
+    "difficulty": "hard",
+    "question": "Which lake is directly upstream from the Detroit River?",
+    "choices": [
+      "Lake Superior",
+      "Lake Tahoe",
+      "Lake St. Clair",
+      "Great Salt Lake"
+    ],
+    "correctChoiceIndex": 2,
+    "explanation": "Water flows from Lake St. Clair through the Detroit River toward Lake Erie.",
+    "sourceName": "Encyclopedia of Detroit",
+    "sourceUrl": "https://detroithistorical.org/learn/encyclopedia-of-detroit",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "geography"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "detroit-history-culture-018",
+    "category": "detroit-history-culture",
+    "difficulty": "hard",
+    "question": "What annual Detroit event celebrates car culture along Woodward Avenue?",
+    "choices": [
+      "Mardi Gras",
+      "Rose Parade",
+      "Running of the Bulls",
+      "Woodward Dream Cruise"
+    ],
+    "correctChoiceIndex": 3,
+    "explanation": "The Dream Cruise draws classic and custom vehicles to Woodward.",
+    "sourceName": "City of Detroit",
+    "sourceUrl": "https://detroitmi.gov/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "events"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "detroit-history-culture-019",
+    "category": "detroit-history-culture",
+    "difficulty": "hard",
+    "question": "Which Detroit venue has long hosted major performances and is known for its ornate interior?",
+    "choices": [
+      "Fox Theatre",
+      "Sydney Opera House",
+      "Radio City only",
+      "Red Rocks Amphitheatre"
+    ],
+    "correctChoiceIndex": 0,
+    "explanation": "The Fox Theatre is a restored 1920s movie palace and performance venue.",
+    "sourceName": "Encyclopedia of Detroit",
+    "sourceUrl": "https://detroithistorical.org/learn/encyclopedia-of-detroit",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "culture"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "detroit-history-culture-020",
+    "category": "detroit-history-culture",
+    "difficulty": "hard",
+    "question": "What was Paradise Valley historically known for?",
+    "choices": [
+      "A gold-mining camp",
+      "A center of Black business, music, and nightlife",
+      "A ski resort",
+      "An automobile test track"
+    ],
+    "correctChoiceIndex": 1,
+    "explanation": "Paradise Valley and Black Bottom were vital centers of Detroit's Black cultural life.",
+    "sourceName": "Encyclopedia of Detroit",
+    "sourceUrl": "https://detroithistorical.org/learn/encyclopedia-of-detroit",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "culture"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "detroit-history-culture-021",
+    "category": "detroit-history-culture",
+    "difficulty": "hard",
+    "question": "Which Detroit team plays professional hockey?",
+    "choices": [
+      "Detroit Tigers",
+      "Detroit Lions",
+      "Detroit Red Wings",
+      "Detroit City FC"
+    ],
+    "correctChoiceIndex": 2,
+    "explanation": "The Red Wings are Detroit's National Hockey League team.",
+    "sourceName": "City of Detroit",
+    "sourceUrl": "https://detroitmi.gov/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "sports"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "detroit-history-culture-022",
+    "category": "detroit-history-culture",
+    "difficulty": "hard",
+    "question": "Why is Detroit important to techno music history?",
+    "choices": [
+      "The genre began as a silent film",
+      "Techno was invented by an auto company",
+      "The city banned electronic instruments",
+      "Detroit artists helped create and define techno in the 1980s"
+    ],
+    "correctChoiceIndex": 3,
+    "explanation": "Detroit innovators fused electronic music, futurism, and dance culture into a foundational techno sound.",
+    "sourceName": "Smithsonian Music",
+    "sourceUrl": "https://music.si.edu/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "music"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  }
+]

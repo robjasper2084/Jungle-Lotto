@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#050508" />
+    <meta name="description" content="LottoMind Trivia Vault — a futuristic knowledge game for entertainment and education." />
+    <title>LottoMind Trivia Vault</title>
+    <link rel="icon" href="../../assets/custom/studio/studio-brain-coin.webp" />
+    <link rel="preload" href="../../assets/custom/studio/studio-brain-coin.webp" as="image" type="image/webp" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body class="booting">
+    <a class="skip-link" href="#game-root">Skip to game</a>
+    <div class="vault-bg" aria-hidden="true">
+      <span class="orb orb-a"></span><span class="orb orb-b"></span><span class="orb orb-c"></span>
+      <span class="grid-plane"></span>
+    </div>
+    <header class="site-header">
+      <a class="brand" href="../../arcade/" aria-label="LottoMind Arcade home">
+        <img src="../../assets/custom/studio/studio-brain-coin.webp" alt="" width="46" height="46" />
+        <span><b>LOTTOMIND</b><small>TRIVIA VAULT</small></span>
+      </a>
+      <nav aria-label="Trivia controls">
+        <button class="icon-button" id="mute-button" type="button" aria-pressed="true">Sound: Off</button>
+        <button class="icon-button" id="settings-button" type="button" aria-expanded="false">Settings</button>
+        <a class="icon-button" href="../../arcade/">Arcade</a>
+      </nav>
+    </header>
+    <main id="game-root" tabindex="-1">
+      <div class="boot-state" role="status"><span class="loader"></span><p>Opening the Trivia Vault…</p></div>
+    </main>
+    <footer>
+      LottoMind Trivia Vault is for entertainment and educational purposes only. Trivia results, numerology content, and game scores do not predict lottery outcomes or improve the odds of winning.
+    </footer>
+    <div id="live-region" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+    <dialog id="settings-dialog" class="vault-dialog">
+      <form method="dialog">
+        <div class="dialog-head"><h2>Trivia Settings</h2><button value="close" aria-label="Close settings">×</button></div>
+        <label class="setting-row"><span>Reduced visual effects</span><input id="reduced-effects" type="checkbox" /></label>
+        <label class="setting-row"><span>Vibration feedback</span><input id="vibration-enabled" type="checkbox" /></label>
+        <label class="setting-row"><span>Auto-continue after feedback</span><input id="auto-continue" type="checkbox" checked /></label>
+        <p class="dialog-note">Audio begins muted. Accessibility preferences are stored only on this device.</p>
+        <button class="primary-button" value="close">Save settings</button>
+      </form>
+    </dialog>
+    <dialog id="exit-dialog" class="vault-dialog">
+      <form method="dialog">
+        <h2>Leave this round?</h2><p>Your completed answers will be saved, but this run will count as abandoned.</p>
+        <div class="button-row"><button class="secondary-button" value="cancel">Keep playing</button><button class="danger-button" id="confirm-exit" value="exit">Exit round</button></div>
+      </form>
+    </dialog>
+    <script type="module" src="./src/app.mjs"></script>
+  </body>
+</html>

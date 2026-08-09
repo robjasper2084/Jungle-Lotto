@@ -1,0 +1,553 @@
+[
+  {
+    "id": "lottomind-universe-001",
+    "category": "lottomind-universe",
+    "difficulty": "easy",
+    "question": "What is LottoMind's safest promise about number suggestions?",
+    "choices": [
+      "They guarantee a jackpot",
+      "They change official odds",
+      "They are entertainment and organization tools, not winning predictions",
+      "They replace ticket verification"
+    ],
+    "correctChoiceIndex": 2,
+    "explanation": "LottoMind does not claim to predict random lottery outcomes.",
+    "sourceName": "LottoMind product guide",
+    "sourceUrl": "",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "safety"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "lottomind-universe-002",
+    "category": "lottomind-universe",
+    "difficulty": "easy",
+    "question": "Which LottoMind lane stores saved sets and readings?",
+    "choices": [
+      "Abundance Radio",
+      "Merch Store",
+      "Weather Radar",
+      "History Vault"
+    ],
+    "correctChoiceIndex": 3,
+    "explanation": "History Vault is the app's saved-record lane.",
+    "sourceName": "LottoMind product guide",
+    "sourceUrl": "",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "product"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "lottomind-universe-003",
+    "category": "lottomind-universe",
+    "difficulty": "easy",
+    "question": "What does Dream Oracle do with dream text?",
+    "choices": [
+      "Creates a symbolic entertainment interpretation",
+      "Certifies a winning ticket",
+      "Changes a lottery drawing",
+      "Provides medical diagnosis"
+    ],
+    "correctChoiceIndex": 0,
+    "explanation": "Dream Oracle is a symbolic creative feature, not a prediction engine.",
+    "sourceName": "LottoMind product guide",
+    "sourceUrl": "",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "dream-oracle"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "lottomind-universe-004",
+    "category": "lottomind-universe",
+    "difficulty": "easy",
+    "question": "Which tool is intended to scan ticket images?",
+    "choices": [
+      "Sonic Studio",
+      "Ticket Scanner",
+      "Horoscope",
+      "Trivia Vault"
+    ],
+    "correctChoiceIndex": 1,
+    "explanation": "Ticket Scanner is the capture lane, while official verification remains required.",
+    "sourceName": "LottoMind product guide",
+    "sourceUrl": "",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "scanner"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "lottomind-universe-005",
+    "category": "lottomind-universe",
+    "difficulty": "easy",
+    "question": "What should happen before relying on a scanned ticket result?",
+    "choices": [
+      "Treat OCR as final",
+      "Post the barcode publicly",
+      "Verify it with the official lottery operator or retailer",
+      "Change the printed digits"
+    ],
+    "correctChoiceIndex": 2,
+    "explanation": "OCR can make mistakes; the official lottery is authoritative.",
+    "sourceName": "LottoMind product guide",
+    "sourceUrl": "",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "scanner",
+      "safety"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "lottomind-universe-006",
+    "category": "lottomind-universe",
+    "difficulty": "easy",
+    "question": "Which color pair anchors LottoMind's premium interface?",
+    "choices": [
+      "Beige and brown",
+      "Orange and pink only",
+      "White and lime only",
+      "Black and gold"
+    ],
+    "correctChoiceIndex": 3,
+    "explanation": "LottoMind's visual identity uses dark cinematic panels with gold energy accents.",
+    "sourceName": "LottoMind product guide",
+    "sourceUrl": "",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "brand"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "lottomind-universe-007",
+    "category": "lottomind-universe",
+    "difficulty": "easy",
+    "question": "What is the role of Signal Radar?",
+    "choices": [
+      "Comparing historical number activity for entertainment analysis",
+      "Guaranteeing future numbers",
+      "Redeeming a ticket",
+      "Mixing a music master"
+    ],
+    "correctChoiceIndex": 0,
+    "explanation": "Historical patterns can be organized without claiming predictive power.",
+    "sourceName": "LottoMind product guide",
+    "sourceUrl": "",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "radar"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "lottomind-universe-008",
+    "category": "lottomind-universe",
+    "difficulty": "medium",
+    "question": "Which LottoMind area contains playable experiences?",
+    "choices": [
+      "Policies",
+      "Arcade",
+      "Store Locator",
+      "Account Recovery"
+    ],
+    "correctChoiceIndex": 1,
+    "explanation": "The Arcade collects LottoMind game routes.",
+    "sourceName": "LottoMind product guide",
+    "sourceUrl": "",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "product"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "lottomind-universe-009",
+    "category": "lottomind-universe",
+    "difficulty": "medium",
+    "question": "What is Abundance Radio designed for?",
+    "choices": [
+      "Official draw certification",
+      "Ticket barcode encryption",
+      "Optional music and reset sessions",
+      "Tax filing"
+    ],
+    "correctChoiceIndex": 2,
+    "explanation": "Abundance Radio supports the app's music and mindset lane.",
+    "sourceName": "LottoMind product guide",
+    "sourceUrl": "",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "music"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "lottomind-universe-010",
+    "category": "lottomind-universe",
+    "difficulty": "medium",
+    "question": "What should a guest earn in the static Trivia Vault build?",
+    "choices": [
+      "Real wallet credits",
+      "Cash prizes",
+      "Purchasable lottery tickets",
+      "Non-monetary score and local badge progress"
+    ],
+    "correctChoiceIndex": 3,
+    "explanation": "Without a secure reward backend, guest play remains score-only.",
+    "sourceName": "LottoMind product guide",
+    "sourceUrl": "",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "security"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "lottomind-universe-011",
+    "category": "lottomind-universe",
+    "difficulty": "medium",
+    "question": "Why are real trivia credits disabled in this build?",
+    "choices": [
+      "The existing backend has no secure trivia session and reward endpoint",
+      "The answer buttons are too large",
+      "The timer is circular",
+      "The questions use categories"
+    ],
+    "correctChoiceIndex": 0,
+    "explanation": "Authoritative rewards require server-side sessions, scoring, caps, and ledger writes.",
+    "sourceName": "LottoMind product guide",
+    "sourceUrl": "",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "security"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "lottomind-universe-012",
+    "category": "lottomind-universe",
+    "difficulty": "medium",
+    "question": "What does the LottoMind Guardian represent visually?",
+    "choices": [
+      "An official lottery regulator",
+      "A futuristic branded guide through app tools",
+      "A guarantee of luck",
+      "A television game-show character"
+    ],
+    "correctChoiceIndex": 1,
+    "explanation": "The Guardian supports LottoMind's original cinematic technology identity.",
+    "sourceName": "LottoMind product guide",
+    "sourceUrl": "",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "brand"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "lottomind-universe-013",
+    "category": "lottomind-universe",
+    "difficulty": "medium",
+    "question": "Which control should always remain visible during trivia?",
+    "choices": [
+      "Purchase ticket",
+      "Claim jackpot",
+      "Mute",
+      "Autoplay all audio"
+    ],
+    "correctChoiceIndex": 2,
+    "explanation": "Players need immediate control of optional sound.",
+    "sourceName": "LottoMind product guide",
+    "sourceUrl": "",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "accessibility"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "lottomind-universe-014",
+    "category": "lottomind-universe",
+    "difficulty": "medium",
+    "question": "What happens when reduced motion is enabled?",
+    "choices": [
+      "Questions become harder",
+      "Answers are hidden",
+      "Scores double",
+      "Nonessential animation is minimized"
+    ],
+    "correctChoiceIndex": 3,
+    "explanation": "Reduced motion preserves play while limiting visual movement.",
+    "sourceName": "LottoMind product guide",
+    "sourceUrl": "",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "accessibility"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "lottomind-universe-015",
+    "category": "lottomind-universe",
+    "difficulty": "medium",
+    "question": "What are Quick Play's keyboard answer shortcuts?",
+    "choices": [
+      "Keys 1 through 4",
+      "Only F1",
+      "The arrow keys plus ten",
+      "No keyboard controls"
+    ],
+    "correctChoiceIndex": 0,
+    "explanation": "Four numbered shortcuts map directly to the four answer choices.",
+    "sourceName": "LottoMind product guide",
+    "sourceUrl": "",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "accessibility"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "lottomind-universe-016",
+    "category": "lottomind-universe",
+    "difficulty": "hard",
+    "question": "What does the Dream Video Studio create before a provider video?",
+    "choices": [
+      "An official winning number",
+      "A structured scene and provider prompt",
+      "A ticket barcode",
+      "A tax receipt"
+    ],
+    "correctChoiceIndex": 1,
+    "explanation": "The studio turns symbolic content into a creative production prompt.",
+    "sourceName": "LottoMind product guide",
+    "sourceUrl": "",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "dream-video"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "lottomind-universe-017",
+    "category": "lottomind-universe",
+    "difficulty": "hard",
+    "question": "Which notice belongs near LottoMind trivia?",
+    "choices": [
+      "Eight correct answers guarantee a prize",
+      "Numerology changes random drawings",
+      "Scores do not predict lottery outcomes or improve winning odds",
+      "A streak makes a ticket valid"
+    ],
+    "correctChoiceIndex": 2,
+    "explanation": "Clear entertainment-only language prevents misleading claims.",
+    "sourceName": "LottoMind product guide",
+    "sourceUrl": "",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "safety"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "lottomind-universe-018",
+    "category": "lottomind-universe",
+    "difficulty": "hard",
+    "question": "Why does the Vault keep admin tools in a separate route?",
+    "choices": [
+      "To expose correct answers sooner",
+      "To autoplay sound",
+      "To remove validation",
+      "To split authoring controls from the player experience"
+    ],
+    "correctChoiceIndex": 3,
+    "explanation": "Separating authoring tools reduces public UI complexity and supports stricter access controls later.",
+    "sourceName": "LottoMind product guide",
+    "sourceUrl": "",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "architecture"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "lottomind-universe-019",
+    "category": "lottomind-universe",
+    "difficulty": "hard",
+    "question": "What does a cyan focus outline communicate?",
+    "choices": [
+      "Which interactive control currently has keyboard focus",
+      "The answer is correct",
+      "Credits were claimed",
+      "The network is offline"
+    ],
+    "correctChoiceIndex": 0,
+    "explanation": "A visible focus indicator helps keyboard users track navigation.",
+    "sourceName": "LottoMind product guide",
+    "sourceUrl": "",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "accessibility"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "lottomind-universe-020",
+    "category": "lottomind-universe",
+    "difficulty": "hard",
+    "question": "What does local leaderboard mean in this static build?",
+    "choices": [
+      "It invents global competitors",
+      "It shows only genuine runs saved on the current device",
+      "It exposes player emails",
+      "It validates wallet credits"
+    ],
+    "correctChoiceIndex": 1,
+    "explanation": "The preview never fabricates public ranks or social proof.",
+    "sourceName": "LottoMind product guide",
+    "sourceUrl": "",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "privacy"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "lottomind-universe-021",
+    "category": "lottomind-universe",
+    "difficulty": "hard",
+    "question": "Which action should never be handled by localStorage?",
+    "choices": [
+      "Remembering mute preference",
+      "Saving guest badge progress",
+      "Granting authoritative wallet credits",
+      "Saving a local score"
+    ],
+    "correctChoiceIndex": 2,
+    "explanation": "Wallet credits require a trusted shared ledger and server validation.",
+    "sourceName": "LottoMind product guide",
+    "sourceUrl": "",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "security"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "lottomind-universe-022",
+    "category": "lottomind-universe",
+    "difficulty": "hard",
+    "question": "What should happen if leaderboard saving fails after a round?",
+    "choices": [
+      "Erase the entire round",
+      "Change correct answers",
+      "Grant extra credits",
+      "Keep the completed score and explain the leaderboard issue"
+    ],
+    "correctChoiceIndex": 3,
+    "explanation": "Secondary-service failures must not destroy a completed result.",
+    "sourceName": "LottoMind product guide",
+    "sourceUrl": "",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "resilience"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  }
+]

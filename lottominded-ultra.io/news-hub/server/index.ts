@@ -11,6 +11,7 @@ import type { LottoMindNewsItem, NewsCategory, NewsSourceStatus } from "../src/t
 import { createAccountRouter } from "./account/routes";
 import { AccountLedgerStore } from "./account/store";
 import { createGameRewardsRouter } from "./game-rewards/routes";
+import { createTriviaRewardsRouter } from "./trivia-rewards/routes";
 import { createBillingRoutes } from "./billing/routes";
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -31,6 +32,8 @@ const accountStore = new AccountLedgerStore(
 const allowedOrigins = new Set([
   "http://127.0.0.1:8143",
   "http://127.0.0.1:8170",
+  "http://127.0.0.1:8196",
+  "http://127.0.0.1:8204",
   "http://localhost:8170",
   "https://robjasper2084.github.io",
   ...String(process.env.LOTTOMIND_ALLOWED_ORIGINS || "").split(",").map((origin) => origin.trim()).filter(Boolean),
@@ -65,7 +68,7 @@ app.use((request, response, next) => {
   if (request.headers.origin && allowedOrigins.has(request.headers.origin)) {
     response.setHeader("Access-Control-Allow-Origin", request.headers.origin);
     response.setHeader("Access-Control-Allow-Credentials", "true");
-    response.setHeader("Access-Control-Allow-Headers", "Content-Type, X-Requested-With");
+    response.setHeader("Access-Control-Allow-Headers", "Content-Type, X-Requested-With, Authorization");
     response.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
     response.setHeader("Vary", "Origin");
   }
@@ -74,6 +77,7 @@ app.use((request, response, next) => {
 });
 
 app.use("/api", createAccountRouter(accountStore, isProduction));
+app.use("/api", createTriviaRewardsRouter(accountStore));
 app.use("/api/v1", createGameRewardsRouter(accountStore));
 app.use("/api/billing", billing.router);
 

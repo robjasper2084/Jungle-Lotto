@@ -1,0 +1,552 @@
+[
+  {
+    "id": "lottery-knowledge-001",
+    "category": "lottery-knowledge",
+    "difficulty": "easy",
+    "question": "What does a lottery jackpot advertise before a drawing?",
+    "choices": [
+      "The top prize available under the game's rules",
+      "A guaranteed payment to every ticket",
+      "The number most likely to be drawn",
+      "A prediction from the retailer"
+    ],
+    "correctChoiceIndex": 0,
+    "explanation": "A jackpot is the advertised top prize, not a promise that any particular ticket will win.",
+    "sourceName": "Powerball and official lottery education",
+    "sourceUrl": "https://www.powerball.com/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "responsible-play"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "lottery-knowledge-002",
+    "category": "lottery-knowledge",
+    "difficulty": "easy",
+    "question": "Which statement best describes lottery drawings?",
+    "choices": [
+      "Past numbers force future numbers",
+      "Each drawing is a random event under the game's procedures",
+      "A long gap guarantees a number",
+      "Buying at a lucky hour changes the machine"
+    ],
+    "correctChoiceIndex": 1,
+    "explanation": "Past outcomes do not force future independent random outcomes.",
+    "sourceName": "Michigan Lottery",
+    "sourceUrl": "https://www.michiganlottery.com/resources/responsible-gaming",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "randomness"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "lottery-knowledge-003",
+    "category": "lottery-knowledge",
+    "difficulty": "easy",
+    "question": "Why should players check an official lottery source after a drawing?",
+    "choices": [
+      "To improve the printed ticket",
+      "To make a near miss count",
+      "To verify results and claim instructions",
+      "To change the draw order"
+    ],
+    "correctChoiceIndex": 2,
+    "explanation": "Only official operators and authorized retailers can verify results and claims.",
+    "sourceName": "Michigan Lottery",
+    "sourceUrl": "https://www.michiganlottery.com/resources/responsible-gaming",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "verification"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "lottery-knowledge-004",
+    "category": "lottery-knowledge",
+    "difficulty": "easy",
+    "question": "What is a lottery ticket's barcode primarily used for?",
+    "choices": [
+      "Predicting the next numbers",
+      "Displaying a player's credit score",
+      "Changing the ticket after purchase",
+      "Identifying and validating the ticket in an authorized system"
+    ],
+    "correctChoiceIndex": 3,
+    "explanation": "Barcodes support ticket identification and validation; they do not predict results.",
+    "sourceName": "Michigan Lottery",
+    "sourceUrl": "https://www.michiganlottery.com/resources/responsible-gaming",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "tickets"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "lottery-knowledge-005",
+    "category": "lottery-knowledge",
+    "difficulty": "easy",
+    "question": "In a draw game, what does 'quick pick' usually mean?",
+    "choices": [
+      "Numbers selected automatically by the lottery terminal",
+      "Numbers chosen by the cashier from memory",
+      "The most frequently drawn numbers",
+      "A ticket that skips verification"
+    ],
+    "correctChoiceIndex": 0,
+    "explanation": "A quick pick is an automated number selection, not a forecast.",
+    "sourceName": "Powerball and official lottery education",
+    "sourceUrl": "https://www.powerball.com/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "terms"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "lottery-knowledge-006",
+    "category": "lottery-knowledge",
+    "difficulty": "easy",
+    "question": "What is the safest way to set a lottery spending limit?",
+    "choices": [
+      "Increase it after every loss",
+      "Choose an affordable amount before playing and stop at it",
+      "Borrow to keep a streak alive",
+      "Use winnings that have not occurred"
+    ],
+    "correctChoiceIndex": 1,
+    "explanation": "A pre-set affordable limit supports responsible play.",
+    "sourceName": "National Council on Problem Gambling",
+    "sourceUrl": "https://www.ncpgambling.org/help-treatment/about-the-national-problem-gambling-helpline/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "responsible-play"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "lottery-knowledge-007",
+    "category": "lottery-knowledge",
+    "difficulty": "easy",
+    "question": "What does 'odds' express in a lottery game?",
+    "choices": [
+      "The order in which tickets print",
+      "A promise that someone nearby wins",
+      "The mathematical likelihood of a defined outcome",
+      "A schedule for number repeats"
+    ],
+    "correctChoiceIndex": 2,
+    "explanation": "Odds quantify likelihood; they do not guarantee an individual result.",
+    "sourceName": "Powerball and official lottery education",
+    "sourceUrl": "https://www.powerball.com/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "odds"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "lottery-knowledge-008",
+    "category": "lottery-knowledge",
+    "difficulty": "medium",
+    "question": "Why is a near miss not the same as a win?",
+    "choices": [
+      "Near misses are paid one week later",
+      "Retailers may convert them manually",
+      "The next drawing completes the match",
+      "Prizes depend on exact published match rules"
+    ],
+    "correctChoiceIndex": 3,
+    "explanation": "A ticket earns only the prize defined by the official rules for its exact match.",
+    "sourceName": "Michigan Lottery",
+    "sourceUrl": "https://www.michiganlottery.com/resources/responsible-gaming",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "verification"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "lottery-knowledge-009",
+    "category": "lottery-knowledge",
+    "difficulty": "medium",
+    "question": "What should a player do with a signed winning ticket?",
+    "choices": [
+      "Protect it and follow the official claim process",
+      "Post every identifying detail online",
+      "Alter the printed numbers",
+      "Mail it to an unknown tip account"
+    ],
+    "correctChoiceIndex": 0,
+    "explanation": "Official claim guidance explains how to safeguard and submit a ticket.",
+    "sourceName": "Michigan Lottery",
+    "sourceUrl": "https://www.michiganlottery.com/resources/responsible-gaming",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "claims"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "lottery-knowledge-010",
+    "category": "lottery-knowledge",
+    "difficulty": "medium",
+    "question": "What is a lottery drawing matrix?",
+    "choices": [
+      "A map of winning retailers",
+      "The set of number fields and selections used by a game",
+      "A player's personal budget",
+      "A guarantee table"
+    ],
+    "correctChoiceIndex": 1,
+    "explanation": "The matrix defines how many numbers are selected and from what ranges.",
+    "sourceName": "Powerball and official lottery education",
+    "sourceUrl": "https://www.powerball.com/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "terms"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "lottery-knowledge-011",
+    "category": "lottery-knowledge",
+    "difficulty": "medium",
+    "question": "If a game uses five main numbers plus one separate ball, what is the separate ball?",
+    "choices": [
+      "A replacement for any main number",
+      "Always the largest number",
+      "A distinct selection drawn from its own field",
+      "A free ticket code"
+    ],
+    "correctChoiceIndex": 2,
+    "explanation": "Games with a separate ball treat it as a distinct part of the match rules.",
+    "sourceName": "Powerball and official lottery education",
+    "sourceUrl": "https://www.powerball.com/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "game-structure"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "lottery-knowledge-012",
+    "category": "lottery-knowledge",
+    "difficulty": "medium",
+    "question": "What happens to the probability of matching all numbers when a number field grows?",
+    "choices": [
+      "It always becomes easier",
+      "It becomes exactly fifty percent",
+      "It stops being random",
+      "It generally becomes harder if the number of picks stays the same"
+    ],
+    "correctChoiceIndex": 3,
+    "explanation": "More possible combinations generally reduce the chance of matching one exact combination.",
+    "sourceName": "Wolfram MathWorld",
+    "sourceUrl": "https://mathworld.wolfram.com/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "combinations"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "lottery-knowledge-013",
+    "category": "lottery-knowledge",
+    "difficulty": "medium",
+    "question": "Which behavior is a warning sign for harmful play?",
+    "choices": [
+      "Chasing losses with money needed for essentials",
+      "Checking results once",
+      "Keeping a ticket in a safe place",
+      "Reading the published rules"
+    ],
+    "correctChoiceIndex": 0,
+    "explanation": "Using essential funds or chasing losses can indicate gambling harm.",
+    "sourceName": "National Council on Problem Gambling",
+    "sourceUrl": "https://www.ncpgambling.org/help-treatment/about-the-national-problem-gambling-helpline/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "responsible-play"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "lottery-knowledge-014",
+    "category": "lottery-knowledge",
+    "difficulty": "medium",
+    "question": "What is the purpose of an official draw audit?",
+    "choices": [
+      "To select popular numbers",
+      "To document that procedures and controls were followed",
+      "To create numerology meanings",
+      "To guarantee a jackpot winner"
+    ],
+    "correctChoiceIndex": 1,
+    "explanation": "Audits and controls support integrity; they do not influence which numbers should win.",
+    "sourceName": "Michigan Lottery",
+    "sourceUrl": "https://www.michiganlottery.com/resources/responsible-gaming",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "integrity"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "lottery-knowledge-015",
+    "category": "lottery-knowledge",
+    "difficulty": "medium",
+    "question": "When multiple tickets win the same jackpot, what commonly happens?",
+    "choices": [
+      "The oldest ticket takes all",
+      "The retailer chooses one winner",
+      "The jackpot prize is divided according to the game's rules",
+      "Every ticket receives the full jackpot"
+    ],
+    "correctChoiceIndex": 2,
+    "explanation": "Shared jackpots are allocated under the published prize rules.",
+    "sourceName": "Powerball and official lottery education",
+    "sourceUrl": "https://www.powerball.com/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "prizes"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "lottery-knowledge-016",
+    "category": "lottery-knowledge",
+    "difficulty": "hard",
+    "question": "What is the main difference between an annuity and a cash option?",
+    "choices": [
+      "An annuity changes the winning numbers",
+      "Cash is always tax-free",
+      "Only retailers can choose",
+      "An annuity pays over time while cash is a current lump-sum option"
+    ],
+    "correctChoiceIndex": 3,
+    "explanation": "Large prizes may offer payment choices with different timing and values.",
+    "sourceName": "Powerball and official lottery education",
+    "sourceUrl": "https://www.powerball.com/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "prizes"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "lottery-knowledge-017",
+    "category": "lottery-knowledge",
+    "difficulty": "hard",
+    "question": "Can a number be 'due' because it has not appeared recently?",
+    "choices": [
+      "No; a past gap does not force an independent future draw",
+      "Yes, after exactly ten draws",
+      "Yes, if many players choose it",
+      "Only on weekends"
+    ],
+    "correctChoiceIndex": 0,
+    "explanation": "The 'due number' idea is a form of gambler's fallacy for independent drawings.",
+    "sourceName": "Michigan Lottery",
+    "sourceUrl": "https://www.michiganlottery.com/resources/responsible-gaming",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "randomness"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "lottery-knowledge-018",
+    "category": "lottery-knowledge",
+    "difficulty": "hard",
+    "question": "What should an entertainment-only number tool avoid claiming?",
+    "choices": [
+      "That users can save a list",
+      "That its suggestions improve the odds of winning",
+      "That numbers can be sorted",
+      "That results should be verified"
+    ],
+    "correctChoiceIndex": 1,
+    "explanation": "Creative number tools must not present inspiration as an advantage over random odds.",
+    "sourceName": "Michigan Lottery",
+    "sourceUrl": "https://www.michiganlottery.com/resources/responsible-gaming",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "responsible-play"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "lottery-knowledge-019",
+    "category": "lottery-knowledge",
+    "difficulty": "hard",
+    "question": "Why should a ticket be checked before its claim deadline?",
+    "choices": [
+      "Numbers change after the deadline",
+      "The barcode becomes a prediction",
+      "Valid prizes can expire under the game's published rules",
+      "Expired tickets enter the next draw"
+    ],
+    "correctChoiceIndex": 2,
+    "explanation": "Claim periods are defined by the responsible lottery jurisdiction.",
+    "sourceName": "Michigan Lottery",
+    "sourceUrl": "https://www.michiganlottery.com/resources/responsible-gaming",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "claims"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "lottery-knowledge-020",
+    "category": "lottery-knowledge",
+    "difficulty": "hard",
+    "question": "What does 'pari-mutuel' describe in some prize structures?",
+    "choices": [
+      "A fixed number printed twice",
+      "A guaranteed retailer bonus",
+      "A drawing with no random process",
+      "A prize pool shared among winning tickets"
+    ],
+    "correctChoiceIndex": 3,
+    "explanation": "Pari-mutuel prizes depend on the pool and number of winning tickets.",
+    "sourceName": "Michigan Lottery",
+    "sourceUrl": "https://www.michiganlottery.com/resources/responsible-gaming",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "prizes"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "lottery-knowledge-021",
+    "category": "lottery-knowledge",
+    "difficulty": "hard",
+    "question": "What is the best source for game-specific rules?",
+    "choices": [
+      "The official lottery operator for that jurisdiction",
+      "An anonymous prediction post",
+      "A dream dictionary",
+      "A resale listing"
+    ],
+    "correctChoiceIndex": 0,
+    "explanation": "Official operators publish current rules, odds, deadlines, and claim instructions.",
+    "sourceName": "Michigan Lottery",
+    "sourceUrl": "https://www.michiganlottery.com/resources/responsible-gaming",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "verification"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "lottery-knowledge-022",
+    "category": "lottery-knowledge",
+    "difficulty": "hard",
+    "question": "What does responsible lottery play treat ticket cost as?",
+    "choices": [
+      "A guaranteed investment",
+      "Entertainment spending that can be lost",
+      "Emergency savings",
+      "A loan repayment method"
+    ],
+    "correctChoiceIndex": 1,
+    "explanation": "Lottery spending should be affordable entertainment, never relied on for income.",
+    "sourceName": "National Council on Problem Gambling",
+    "sourceUrl": "https://www.ncpgambling.org/help-treatment/about-the-national-problem-gambling-helpline/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "responsible-play"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  }
+]

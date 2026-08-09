@@ -11,9 +11,10 @@
         var base = index >= 0 ? window.location.pathname.slice(0, index + slug.length) : slug;
         window.__LOTTOMIND_BASE__ = base.replace(/\/$/, "");
         window.__LOTTOMIND_ROOT__ = window.__LOTTOMIND_BASE__.replace(/\/lotto%20mind%20refined$/i, "");
-        document.write('<link rel="stylesheet" href="' + window.__LOTTOMIND_BASE__ + '/styles.css?v=brand-controls-20260722b" />');
+        document.write('<link rel="stylesheet" href="' + window.__LOTTOMIND_BASE__ + '/styles.css?v=hud-surfaces-20260809" />');
         document.write('<link rel="stylesheet" href="../lottominded-ultra.io/assets/css/lm-future-commercial.css?v=future-membership-1" />');
         document.write('<script src="' + window.__LOTTOMIND_ROOT__ + '/assets/js/lottomind-merch-prices.js?v=merch-catalog-20260626c"><\/script>');
+        document.write('<script src="' + window.__LOTTOMIND_ROOT__ + '/lottominded-ultra.io/assets/js/lottomind-runtime-config.js?v=trivia-rewards-1"><\/script>');
       })();
     </script>
   </head>
@@ -21,12 +22,12 @@
     <div id="app"></div>
     <script>
       (function () {
-        var isLocal = (window.location.hostname === "127.0.0.1" || window.location.hostname === "localhost") && window.location.port === "8142";
+        var isLocal = window.location.hostname === "127.0.0.1" || window.location.hostname === "localhost";
         if (isLocal) {
           window.LOTTOMIND_API_BASE_URL = "http://127.0.0.1:8142";
-          document.write('<script src="http://127.0.0.1:8142/assets/js/lottomind-account-service.js?v=collector-access-2"><\/script>');
         }
-        document.write('<script src="' + window.__LOTTOMIND_BASE__ + '/app.js?v=revenuecat-brand-controls-20260722"><\/script>');
+        document.write('<script src="' + window.__LOTTOMIND_ROOT__ + '/lottominded-ultra.io/assets/js/lottomind-account-service.js?v=trivia-rewards-2"><\/script>');
+        document.write('<script src="' + window.__LOTTOMIND_BASE__ + '/app.js?v=hud-surfaces-20260809"><\/script>');
         document.write('<script src="../lottominded-ultra.io/assets/js/lm-future-commercial.js?v=future-membership-1"><\/script>');
       })();
     </script>

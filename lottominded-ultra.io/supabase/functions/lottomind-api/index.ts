@@ -28,7 +28,25 @@ const creditCosts: Record<string, number> = {
   beat2lotto_session: 1,
 };
 
+const TRIVIA_BUILD_ID = "lottomind-refined-trivia-2026-08-09";
+const TRIVIA_QUESTIONS = [
+  { id: "oracle-first-move", q: "What is the safest first move before saving a Dream Oracle pick?", options: ["Run the interpretation", "Clear the vault", "Mute every tab", "Treat it as a guaranteed result"], answer: 0, note: "Dream picks work best after the Oracle reads the symbols and creates the set.", category: "lottomind-universe", difficulty: "easy" },
+  { id: "signal-radar-lane", q: "Which LottoMind lane compares hot, cold, and balance signals?", options: ["Signal Radar", "Merch Store", "Privacy Policy", "Music Store"], answer: 0, note: "Signal Radar is the quick scan lane for number movement.", category: "lottery-knowledge", difficulty: "easy" },
+  { id: "history-vault", q: "Where should saved numbers and dream readings live?", options: ["History Vault", "Search bar", "Mode switch", "Arcade player"], answer: 0, note: "History Vault keeps saved sets and readings together.", category: "lottomind-universe", difficulty: "medium" },
+  { id: "abundance-radio", q: "What does Abundance Radio connect back into?", options: ["Reset tones", "State taxes", "A scratch-off camera", "Ticket redemption"], answer: 0, note: "Radio sessions can load frequency lanes into the Reset player.", category: "music-pop-culture", difficulty: "medium" },
+  { id: "random-outcomes", q: "Which reminder matters before every play session?", options: ["Lottery outcomes are random", "More taps guarantee wins", "Only one number can repeat", "A streak predicts the next draw"], answer: 0, note: "LottoMind is for entertainment and education. Lottery outcomes are random.", category: "lottery-knowledge", difficulty: "hard" },
+] as const;
+const CLIENT_REWARD_FIELDS = new Set(["reward", "rewardAmount", "credits", "creditAmount", "userId", "accountId", "walletId"]);
+
 type JsonObject = Record<string, unknown>;
+
+function hasClientRewardField(input: JsonObject) {
+  return Object.keys(input).some((key) => CLIENT_REWARD_FIELDS.has(key));
+}
+
+function publicTriviaQuestions() {
+  return TRIVIA_QUESTIONS.map(({ answer: _answer, ...question }) => question);
+}
 
 function corsHeaders(req: Request) {
   const origin = req.headers.get("origin") || "";
@@ -347,6 +365,86 @@ async function route(req: Request) {
     const event = typeof input.event === "string" ? input.event.trim().slice(0, 120) : "";
     if (user && event) await admin().from("analytics_events").insert({ user_id: user.id, event_name: event, metadata: input.metadata || {} });
     return new Response(null, { status: 204, headers: corsHeaders(req) });
+  }
+
+  if (req.method === "POST" && path === "/trivia/sessions") {
+    const auth = await authenticatedUser(req);
+    if (auth instanceof Response) return auth;
+    const input = await readJson(req);
+    if (input instanceof Response) return input;
+    if (hasClientRewardField(input)) return fail(req, 400, "CLIENT_REWARD_NOT_ALLOWED", "Client-supplied identity or reward values are not allowed.");
+    if (String(input.buildId || "") !== TRIVIA_BUILD_ID || String(input.mode || "") !== "daily") {
+      return fail(req, 403, "BUILD_NOT_APPROVED", "This trivia build is not approved for wallet rewards.");
+    }
+    const challengeId = `trivia:daily:${new Date().toISOString().slice(0, 10)}`;
+    const expiresAt = new Date(Date.now() + 30 * 60 * 1000).toISOString();
+    const { data, error } = await admin().from("trivia_sessions").insert({
+      user_id: auth.id,
+      challenge_id: challengeId,
+      build_id: TRIVIA_BUILD_ID,
+      mode: "daily",
+      expires_at: expiresAt,
+    }).select("id").single();
+    if (error || !data) return fail(req, 503, "TRIVIA_SERVICE_ERROR", "The verified trivia session could not be started.");
+    return json(req, { sessionId: data.id, challengeId, eligible: true, expiresAt, questions: publicTriviaQuestions() }, 201);
+  }
+
+  const triviaAnswerMatch = path.match(/^\/trivia\/sessions\/([0-9a-f-]{36})\/answer$/i);
+  if (req.method === "POST" && triviaAnswerMatch) {
+    const auth = await authenticatedUser(req);
+    if (auth instanceof Response) return auth;
+    const input = await readJson(req);
+    if (input instanceof Response) return input;
+    if (hasClientRewardField(input)) return fail(req, 400, "CLIENT_REWARD_NOT_ALLOWED", "Client-supplied reward values are not allowed.");
+    const sequence = Number(input.sequence);
+    const selectedIndex = Number(input.selectedIndex);
+    const elapsedMs = Number(input.elapsedMs);
+    const question = TRIVIA_QUESTIONS[sequence];
+    if (!question || String(input.questionId || "") !== question.id || !Number.isInteger(selectedIndex) || selectedIndex < -1 || selectedIndex >= question.options.length || !Number.isInteger(elapsedMs) || elapsedMs < 0 || elapsedMs > 60000) {
+      return fail(req, 422, "INVALID_STATE_TRANSITION", "Trivia answer order or content could not be verified.");
+    }
+    const correct = selectedIndex === question.answer;
+    const { data, error } = await admin().rpc("record_trivia_answer", {
+      p_user_id: auth.id,
+      p_session_id: triviaAnswerMatch[1],
+      p_sequence: sequence,
+      p_question_id: question.id,
+      p_selected_index: selectedIndex,
+      p_correct: correct,
+      p_elapsed_ms: elapsedMs,
+    });
+    if (error) return fail(req, 422, "INVALID_STATE_TRANSITION", "Trivia answer order or content could not be verified.");
+    const row = Array.isArray(data) ? data[0] : data;
+    return json(req, { accepted: true, correct, correctIndex: question.answer, note: question.note, nextSequence: Number(row?.next_sequence ?? sequence + 1), remaining: TRIVIA_QUESTIONS.length - Number(row?.next_sequence ?? sequence + 1) });
+  }
+
+  const triviaClaimMatch = path.match(/^\/trivia\/sessions\/([0-9a-f-]{36})\/claim$/i);
+  if (req.method === "POST" && triviaClaimMatch) {
+    const auth = await authenticatedUser(req);
+    if (auth instanceof Response) return auth;
+    const input = await readJson(req);
+    if (input instanceof Response) return input;
+    if (hasClientRewardField(input)) return fail(req, 400, "CLIENT_REWARD_NOT_ALLOWED", "Client-supplied reward values are not allowed.");
+    const { data: session, error: sessionError } = await admin().from("trivia_sessions").select("challenge_id").eq("id", triviaClaimMatch[1]).eq("user_id", auth.id).maybeSingle();
+    if (sessionError || !session) return fail(req, 404, "SESSION_NOT_FOUND", "Trivia reward session not found.");
+    const { data, error } = await admin().rpc("award_trivia_credits", {
+      p_user_id: auth.id,
+      p_session_id: triviaClaimMatch[1],
+      p_challenge_id: session.challenge_id,
+      p_idempotency_key: String(input.idempotencyKey || ""),
+    });
+    if (error) {
+      const code = /DAILY_REWARD_ALREADY_CLAIMED/.test(error.message) ? "DAILY_REWARD_ALREADY_CLAIMED" : /INVALID_IDEMPOTENCY_KEY/.test(error.message) ? "INVALID_IDEMPOTENCY_KEY" : "INVALID_STATE_TRANSITION";
+      return fail(req, code === "DAILY_REWARD_ALREADY_CLAIMED" ? 409 : 422, code, code === "DAILY_REWARD_ALREADY_CLAIMED" ? "Today's verified trivia reward has already been claimed." : "The trivia reward claim could not be verified.");
+    }
+    const row = Array.isArray(data) ? data[0] : data;
+    return json(req, {
+      status: "rewarded",
+      reward: { amount: Number(row?.amount || 0), bucket: "promotional", challengeId: session.challenge_id },
+      wallet: { promotionalBalance: Number(row?.balance || 0), monthlyBalance: 0, purchasedBalance: 0, totalBalance: Number(row?.balance || 0), version: 1 },
+      transactionId: row?.transaction_id,
+      duplicate: Boolean(row?.duplicate),
+    });
   }
 
   if (req.method === "POST" && path === "/credits/spend") {

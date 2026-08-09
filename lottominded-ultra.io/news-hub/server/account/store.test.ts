@@ -209,3 +209,40 @@ test("feature flag disables redemption and premium spending", async () => {
     await context.cleanup();
   }
 });
+
+test("verified trivia claims are server-priced, idempotent, and limited to one daily challenge", async () => {
+  const context = await fixture({ now: new Date("2026-08-09T14:00:00.000Z") });
+  try {
+    const registered = await context.store.register({ email: "trivia@example.com", password: "correct-horse-trivia" });
+    const input = {
+      challengeId: "trivia:daily:2026-08-09",
+      sessionId: "f3628223-67d5-4568-b184-c32b7e8b7241",
+      correctCount: 4,
+      questionCount: 5,
+      idempotencyKey: "trivia:daily:claim-0001",
+    };
+    const first = await context.store.grantTriviaReward(registered.token, input);
+    const duplicate = await context.store.grantTriviaReward(registered.token, input);
+    assert.equal(first.amount, 10);
+    assert.equal(first.balance, 10);
+    assert.equal(duplicate.duplicate, true);
+    assert.equal(duplicate.transactionId, first.transactionId);
+    assert.equal((await context.store.snapshot(registered.token)).wallet?.balance, 10);
+    assert.equal(await errorCode(() => context.store.grantTriviaReward(registered.token, {
+      ...input,
+      sessionId: "97b508fa-5d7f-4682-a4fa-f249ce48bcc8",
+      idempotencyKey: "trivia:daily:claim-0002",
+    })), "DAILY_REWARD_ALREADY_CLAIMED");
+    const perfectPlayer = await context.store.register({ email: "perfect-trivia@example.com", password: "correct-horse-perfect" });
+    const perfect = await context.store.grantTriviaReward(perfectPlayer.token, {
+      ...input,
+      sessionId: "f75f19ec-cb8e-4b85-83b0-1d48074b2928",
+      correctCount: 5,
+      idempotencyKey: "trivia:daily:perfect-0001",
+    });
+    assert.equal(perfect.amount, 20);
+    assert.equal(perfect.balance, 20);
+  } finally {
+    await context.cleanup();
+  }
+});

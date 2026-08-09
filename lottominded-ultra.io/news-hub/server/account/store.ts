@@ -421,6 +421,40 @@ export class AccountLedgerStore {
     });
   }
 
+  async grantTriviaReward(token: string, input: {
+    challengeId: string;
+    sessionId: string;
+    correctCount: number;
+    questionCount: number;
+    idempotencyKey: string;
+  }): Promise<{ transactionId: string; balance: number; amount: number; duplicate: boolean }> {
+    return this.mutate(() => {
+      const user = this.userForToken(token);
+      if (!user) throw publicError("AUTH_REQUIRED", "Sign in before earning Lotto Credits from trivia.", 401);
+      if (!/^[a-zA-Z0-9:_-]{8,128}$/.test(input.idempotencyKey)) throw publicError("INVALID_IDEMPOTENCY_KEY", "A valid trivia claim key is required.");
+      if (!/^trivia:daily:\d{4}-\d{2}-\d{2}$/.test(input.challengeId) || !/^[a-f0-9-]{36}$/i.test(input.sessionId)) throw publicError("INVALID_STATE_TRANSITION", "Trivia claim identity is invalid.", 422);
+      if (input.questionCount !== 5 || !Number.isInteger(input.correctCount) || input.correctCount < 0 || input.correctCount > input.questionCount) throw publicError("INVALID_STATE_TRANSITION", "Trivia result could not be verified.", 422);
+      const lookup = `${user.id}:trivia:${input.idempotencyKey}`;
+      const previous = this.database.idempotency[lookup]?.response as { transactionId: string; balance: number; amount: number } | undefined;
+      if (previous) return { ...previous, duplicate: true };
+      const priorDaily = this.database.transactions.find((transaction) => transaction.userId === user.id && transaction.type === "credit" && transaction.action === "trivia.reward.daily" && transaction.context?.challengeId === input.challengeId);
+      if (priorDaily) throw publicError("DAILY_REWARD_ALREADY_CLAIMED", "Today's verified trivia reward has already been claimed.", 409);
+
+      const accuracy = input.correctCount / input.questionCount;
+      const amount = Math.min(20, 5 + (accuracy >= 0.8 ? 5 : 0) + (accuracy === 1 ? 10 : 0));
+      user.credits += amount;
+      const transaction: LedgerTransaction = {
+        id: randomUUID(), userId: user.id, type: "credit", amount, action: "trivia.reward.daily",
+        createdAt: this.now().toISOString(), idempotencyKey: input.idempotencyKey,
+        context: { challengeId: input.challengeId, sessionId: input.sessionId, correctCount: input.correctCount, questionCount: input.questionCount },
+      };
+      this.database.transactions.push(transaction);
+      const response = { transactionId: transaction.id, balance: user.credits, amount };
+      this.database.idempotency[lookup] = { transactionId: transaction.id, response };
+      return { ...response, duplicate: false };
+    });
+  }
+
   async addPaidMembershipForTest(token: string, kind: "gold" | "ultra" | "vault", expiresAt: string | null): Promise<void> {
     await this.mutate(() => {
       const user = this.userForToken(token);

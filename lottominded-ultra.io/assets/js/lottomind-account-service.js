@@ -249,6 +249,24 @@
       broadcastRefresh("credit-refund");
       return result;
     },
+    createTriviaSession: function createTriviaSession(input) {
+      return request("/trivia/sessions", { method: "POST", body: JSON.stringify({ mode: input && input.mode, buildId: input && input.buildId }) });
+    },
+    submitTriviaAnswer: function submitTriviaAnswer(sessionId, input) {
+      return request("/trivia/sessions/" + encodeURIComponent(sessionId) + "/answer", {
+        method: "POST",
+        body: JSON.stringify({ questionId: input && input.questionId, selectedIndex: input && input.selectedIndex, sequence: input && input.sequence, elapsedMs: input && input.elapsedMs }),
+      });
+    },
+    claimTriviaReward: async function claimTriviaReward(sessionId, idempotencyKey) {
+      var result = await request("/trivia/sessions/" + encodeURIComponent(sessionId) + "/claim", {
+        method: "POST",
+        body: JSON.stringify({ idempotencyKey: idempotencyKey }),
+      });
+      await getSnapshot({ force: true });
+      broadcastRefresh("trivia-reward");
+      return result;
+    },
     getBeat2LottoEntitlements: function getBeat2LottoEntitlements() { return request("/entitlements/beat2lotto"); },
     analytics: function analytics(event, metadata) {
       return request("/analytics", { method: "POST", body: JSON.stringify({ event: event, metadata: metadata || {} }) }).catch(function ignoreAnalytics() {});

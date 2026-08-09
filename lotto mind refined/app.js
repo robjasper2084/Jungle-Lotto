@@ -118,6 +118,16 @@ const ASSETS = {
   heatmapToolNumberAnalyzer: `${BASE}/assets/custom/higgsfield-heatmap-tools/radar-number-analyzer.png?v=nano-banana2-heatmap-tools-20260626`,
   heatmapToolTicketScanner: `${BASE}/assets/custom/higgsfield-heatmap-tools/radar-ticket-scanner.png?v=nano-banana2-heatmap-tools-20260626`,
   heatmapToolLiveVaultHeatmap: `${BASE}/assets/custom/higgsfield-heatmap-tools/radar-live-vault-heatmap.png?v=nano-banana2-heatmap-tools-20260626`,
+  radarRotaryCore: `${BASE}/assets/custom/generated-heatmap-art-20260809/radar-rotary-core.png`,
+  radarToolDeckCore: `${BASE}/assets/custom/generated-heatmap-art-20260809/radar-tool-deck-core.png`,
+  commandButtonCore: `${BASE}/assets/custom/generated-button-art-20260809/command-button-core.png`,
+  frequencyToneCore: `${BASE}/assets/custom/generated-button-art-20260809/frequency-tone-core.png`,
+  mainLabSurface: `${BASE}/assets/custom/generated-hud-surfaces-20260809/main-lab-surface.png`,
+  arcadeTrainingSurface: `${BASE}/assets/custom/generated-hud-surfaces-20260809/arcade-training-surface.png`,
+  arcadeQuestSurface: `${BASE}/assets/custom/generated-hud-surfaces-20260809/arcade-quest-surface.png`,
+  arcadeHero: `${BASE}/assets/custom/generated-hud-surfaces-20260809/arcade-hero.png`,
+  futureMusicStoreHero: `${BASE}/assets/custom/generated-hud-surfaces-20260809/future-music-store-hero.png`,
+  futureMusicControlSurface: `${BASE}/assets/custom/generated-hud-surfaces-20260809/future-music-control-surface.png`,
   oracleFlowSonicStudio: `${BASE}/assets/custom/higgsfield-oracle-flow/sonic-studio-record-booth.png?v=nano-banana2-oracle-flow-20260626`,
   oracleFlowResetStudio: `${BASE}/assets/custom/higgsfield-oracle-flow/reset-studio.png?v=nano-banana2-oracle-flow-20260626`,
   oracleFlowDreamOracle: `${BASE}/assets/custom/higgsfield-oracle-flow/dream-oracle.png?v=nano-banana2-oracle-flow-20260626`,
@@ -127,10 +137,10 @@ const ASSETS = {
   strategyHot: `${BASE}/assets/custom/higgsfield-strategies/hot.png?v=nano-banana2-strategies-20260626`,
   strategyCold: `${BASE}/assets/custom/higgsfield-strategies/cold.png?v=nano-banana2-strategies-20260626`,
   strategyDreamSymbol: `${BASE}/assets/custom/higgsfield-strategies/dream-symbol.png?v=nano-banana2-strategies-20260626`,
-  dreamActionInterpret: `${BASE}/assets/custom/higgsfield-dream-actions/interpret-dream.png?v=nano-banana2-dream-actions-20260626`,
-  dreamActionPsychicFusion: `${BASE}/assets/custom/higgsfield-dream-actions/psychic-fusion.png?v=nano-banana2-dream-actions-20260626`,
-  dreamActionGenerateDreams: `${BASE}/assets/custom/higgsfield-dream-actions/generate-your-dreams.png?v=nano-banana2-dream-actions-20260626`,
-  dreamActionRecordDreamSong: `${BASE}/assets/custom/higgsfield-dream-actions/record-dream-song.png?v=nano-banana2-dream-actions-20260626`,
+  dreamActionInterpret: `${BASE}/assets/custom/generated-dream-actions-20260809/interpret-dream.png`,
+  dreamActionPsychicFusion: `${BASE}/assets/custom/generated-dream-actions-20260809/psychic-fusion.png`,
+  dreamActionGenerateDreams: `${BASE}/assets/custom/generated-dream-actions-20260809/generate-your-dreams.png`,
+  dreamActionRecordDreamSong: `${BASE}/assets/custom/generated-dream-actions-20260809/record-dream-song.png`,
   generatorAddonWheelBuilder: `${BASE}/assets/custom/higgsfield-generator-addons/wheel-builder.png?v=nano-banana2-generator-addons-20260626`,
   generatorAddonEnergyMeter: `${BASE}/assets/custom/higgsfield-generator-addons/energy-meter.png?v=nano-banana2-generator-addons-20260626`,
   generatorAddonLottoIntel: `${BASE}/assets/custom/higgsfield-generator-addons/lotto-intelligence.png?v=nano-banana2-generator-addons-20260626`,
@@ -541,36 +551,123 @@ const RESET_PRESETS = {
 
 const TRIVIA_QUESTIONS = [
   {
+    id: "oracle-first-move",
     q: "What is the safest first move before saving a Dream Oracle pick?",
     options: ["Run the interpretation", "Clear the vault", "Mute every tab"],
     answer: 0,
     note: "Dream picks work best after the Oracle reads the symbols and creates the set.",
   },
   {
+    id: "signal-radar-lane",
     q: "Which LottoMind lane compares hot, cold, and balance signals?",
     options: ["Signal Radar", "Merch Store", "Privacy Policy"],
     answer: 0,
     note: "Signal Radar is the quick scan lane for number movement.",
   },
   {
+    id: "history-vault",
     q: "Where should saved numbers and dream readings live?",
     options: ["History Vault", "Search bar", "Mode switch"],
     answer: 0,
     note: "History Vault keeps saved sets, dream readings, and psychic readings together.",
   },
   {
+    id: "abundance-radio",
     q: "What does Abundance Radio connect back into?",
     options: ["Reset tones", "State taxes", "A scratch-off camera"],
     answer: 0,
     note: "Radio sessions can load frequency lanes into the Reset player.",
   },
   {
+    id: "random-outcomes",
     q: "Which reminder matters before every play session?",
     options: ["Lottery outcomes are random", "More taps guarantee wins", "Only one number can repeat"],
     answer: 0,
     note: "LottoMind is entertainment and organization; lottery results are random.",
   },
 ];
+
+const TRIVIA_BUILD_ID = "lottomind-refined-trivia-2026-08-09";
+let accountServiceLoadPromise = null;
+let refinedTriviaModulePromise = null;
+let refinedTriviaMount = null;
+
+function loadAppScript(src, marker) {
+  return new Promise((resolve, reject) => {
+    const existing = document.querySelector(`script[data-lottomind-loader="${marker}"]`);
+    if (existing) {
+      if (existing.dataset.loaded === "true") resolve();
+      else {
+        existing.addEventListener("load", resolve, { once: true });
+        existing.addEventListener("error", reject, { once: true });
+      }
+      return;
+    }
+    const script = document.createElement("script");
+    script.src = src;
+    script.async = true;
+    script.dataset.lottomindLoader = marker;
+    script.addEventListener("load", () => { script.dataset.loaded = "true"; resolve(); }, { once: true });
+    script.addEventListener("error", reject, { once: true });
+    document.head.appendChild(script);
+  });
+}
+
+function ensureLottoMindAccountService() {
+  if (window.LottoMindAccountService) return Promise.resolve(window.LottoMindAccountService);
+  if (accountServiceLoadPromise) return accountServiceLoadPromise;
+  const root = window.__LOTTOMIND_ROOT__ || "";
+  accountServiceLoadPromise = (async () => {
+    if (!window.LOTTOMIND_SUPABASE_URL) {
+      await loadAppScript(`${root}/lottominded-ultra.io/assets/js/lottomind-runtime-config.js?v=trivia-rewards-1`, "runtime-config");
+    }
+    if (location.hostname === "127.0.0.1" || location.hostname === "localhost") {
+      window.LOTTOMIND_API_BASE_URL = "http://127.0.0.1:8142";
+    }
+    await loadAppScript(`${root}/lottominded-ultra.io/assets/js/lottomind-account-service.js?v=trivia-rewards-2`, "account-service");
+    return window.LottoMindAccountService || null;
+  })().catch(() => null);
+  return accountServiceLoadPromise;
+}
+
+function ensureRefinedTriviaModule() {
+  if (!document.querySelector('link[data-lottomind-trivia-embed="true"]')) {
+    const stylesheet = document.createElement("link");
+    stylesheet.rel = "stylesheet";
+    stylesheet.href = `${BASE}/games/lottomind-trivia/refined-embed.css?v=20260809-2`;
+    stylesheet.dataset.lottomindTriviaEmbed = "true";
+    document.head.appendChild(stylesheet);
+  }
+  refinedTriviaModulePromise ||= import(`${BASE}/games/lottomind-trivia/src/refined-embed.mjs?v=20260809-2`);
+  return refinedTriviaModulePromise;
+}
+
+async function mountRefinedTriviaRoute() {
+  const root = document.getElementById("refined-trivia-vault-root");
+  if (!root || state.route !== "triviaPlay") return;
+  try {
+    const module = await ensureRefinedTriviaModule();
+    if (!root.isConnected || state.route !== "triviaPlay") return;
+    refinedTriviaMount?.destroy?.();
+    refinedTriviaMount = module.mountRefinedTriviaVault(root, {
+      onRoute: (route) => go(route),
+      accountServicePromise: ensureLottoMindAccountService,
+    });
+  } catch (error) {
+    root.innerHTML = `<div class="panel"><h1>Trivia Vault unavailable</h1><p>${escapeHtml(error?.message || "The game module could not load.")}</p><button class="primary-btn" data-route="arcade">Return to Arcade</button></div>`;
+  }
+}
+
+const ARCADE_GAMES = Object.freeze([
+  { id: "gothtechnology", title: "GOTHTECHNOLOGY", copy: "Cross Blackwood forest, break the signal lock, and fight into the vault.", url: `${WEBSITE_BASE}/games/gothtechnology2/`, featureClass: "featured-fighter", art: `${WEBSITE_BASE}/games/gothtechnology2/assets/user-title/gothtechnology-cover-start-bg.webp` },
+  { id: "jackpot-maze", title: "LottoMind: Jackpot Maze", copy: "Collect number reveals, outsmart five villains, and open the neon vault.", url: `${WEBSITE_BASE}/games/lottomind-jackpot-maze/`, featureClass: "featured-maze", art: `${WEBSITE_BASE}/games/lottomind-jackpot-maze/public/assets/ui/lottomind-jackpot-maze-title-card-gpt2.webp` },
+  { id: "static-wave", title: "2084 Static Wave", copy: "Pilot the static signal through a fast neon combat grid.", url: `${WEBSITE_BASE}/games/opengw-levels/`, featureClass: "featured-static-wave", art: `${WEBSITE_BASE}/games/opengw-levels/assets/2084/branding/marquee-gameplay-keyart.png` },
+  { id: "robot-rahbe", title: "Robot Rahbe", copy: "Enter the Shadow Ops arena and hold the tactical signal.", url: `${WEBSITE_BASE}/games/shadow-ops-canvas/`, featureClass: "featured-robot-rahbe", art: `${WEBSITE_BASE}/games/shadow-ops-canvas/assets/backgrounds/robot-rahbe-gameplay-keyart.png` },
+  { id: "raytrace-pong", title: "Raytrace Pong", copy: "Play a light-traced Pong simulation with live shadows.", url: `${WEBSITE_BASE}/games/raytrace-pong-background/`, art: `${WEBSITE_BASE}/assets/arcade/raytrace-pong-title.webp` },
+  { id: "lottery-spheres", title: "Lottery Spheres in Motion", copy: "Guide glowing spheres and bend the orbit path with touch or pointer.", url: `${WEBSITE_BASE}/lottery-spheres.html#spheres`, art: `${WEBSITE_BASE}/assets/arcade/lottery-spheres-title.webp` },
+  { id: "beat2lotto", title: "Beat2Lotto+ Prompt Lab", copy: "Turn local beat energy into entertainment-only creative signals.", url: `${WEBSITE_BASE}/prompt-lab.html`, art: `${WEBSITE_BASE}/assets/arcade/beat2lotto-prompt-lab-title.webp` },
+  { id: "stem-studio", title: "LottoMind Stem Studio", copy: "Mix stems and build a playable music route.", url: `${WEBSITE_BASE}/lottomind-stem-studio/`, art: `${WEBSITE_BASE}/assets/arcade/stem-studio-title.webp` },
+]);
 
 const LOTTO_GAMES = [
   { id: "powerball", name: "Powerball", mainCount: 5, mainMax: 69, specialName: "Powerball", specialMax: 26 },
@@ -1293,6 +1390,7 @@ const state = {
   gameId: localStorage.getItem("lottomind.oracle.real.game") || "powerball",
   strategy: localStorage.getItem("lottomind.oracle.real.strategy") || "balanced",
   selectedState: localStorage.getItem("lottomind.oracle.real.state") || "NY",
+  radarPicks: [],
   viewMode: localStorage.getItem("lottomind.oracle.real.view") || "app",
   dreamText: "I dreamed I was flying over water and found a golden key near a moonlit bridge.",
   numberInput: "7 23 38 42 11",
@@ -1333,6 +1431,10 @@ const state = {
   triviaStreak: 0,
   triviaAnswered: null,
   triviaComplete: false,
+  triviaRewardSession: null,
+  triviaRewardStatus: "score-only",
+  triviaRewardError: "",
+  triviaAward: null,
   revenueCat: null,
   selectedMerchIndex: 0,
   merchCategory: "All",
@@ -1354,6 +1456,7 @@ const state = {
   wordSearchMarks: loadJson("lottomind.oracle.real.wordSearch.v1", []),
   crosswordSolved: loadJson("lottomind.oracle.real.crossword.v1", { solved: false }).solved || false,
   privacyDeleteArmed: false,
+  activeArcadeGameId: localStorage.getItem("lottomind.refined.arcade.active-game.v1") || "jackpot-maze",
 };
 
 syncCreditsFromLaunchParams();
@@ -1991,10 +2094,7 @@ function completeTriviaProgress() {
   const gap = daysBetween(progress.lastPlayedDate, today);
   const dailyStreak = gap === 1 ? progress.dailyStreak + 1 : gap === 0 ? Math.max(1, progress.dailyStreak) : 1;
   const weeklyStreak = Math.min(7, Math.max(progress.weeklyStreak || 0, dailyStreak));
-  let bonus = 0;
-  if (dailyStreak > 0 && dailyStreak % 3 === 0) bonus += 50;
-  if (dailyStreak > 0 && dailyStreak % 7 === 0) bonus += 200;
-  if (bonus) setCredits(getCredits() + bonus);
+  const bonus = Number(state.triviaAward?.amount || 0);
   const next = {
     ...progress,
     dailyStreak,
@@ -2004,6 +2104,104 @@ function completeTriviaProgress() {
   };
   saveTriviaProgress(next);
   return { ...next, bonus };
+}
+
+function triviaRewardMessage() {
+  if (state.triviaRewardStatus === "eligible") return "Server verified · reward eligible";
+  if (state.triviaRewardStatus === "connecting") return "Connecting secure reward session…";
+  if (state.triviaRewardStatus === "submitting") return "Validating answer on the server…";
+  if (state.triviaRewardStatus === "claiming") return "Claiming verified reward…";
+  if (state.triviaRewardStatus === "rewarded") return `Verified reward +${Number(state.triviaAward?.amount || 0)} credits`;
+  if (state.triviaRewardStatus === "signin-required") return "Sign in for verified credits · score-only now";
+  return "Score-only · wallet values never change in the browser";
+}
+
+async function startSecureTriviaRun() {
+  state.triviaRewardSession = null;
+  state.triviaAward = null;
+  state.triviaRewardError = "";
+  state.triviaRewardStatus = "connecting";
+  render();
+  const service = await ensureLottoMindAccountService();
+  if (!service?.createTriviaSession) {
+    state.triviaRewardStatus = "score-only";
+    state.triviaRewardError = "Secure reward service is unavailable. This run remains score-only.";
+    render();
+    return;
+  }
+  try {
+    const session = await service.createTriviaSession({ mode: "daily", buildId: TRIVIA_BUILD_ID });
+    state.triviaRewardSession = session;
+    state.triviaRewardStatus = session?.eligible ? "eligible" : "score-only";
+  } catch (error) {
+    state.triviaRewardStatus = error?.code === "AUTH_REQUIRED" ? "signin-required" : "score-only";
+    state.triviaRewardError = error?.message || "Secure rewards are unavailable. This run remains score-only.";
+  }
+  render();
+}
+
+async function submitSecureTriviaAnswer(selected) {
+  if (state.triviaRewardStatus === "submitting" || state.triviaAnswered) return;
+  const question = TRIVIA_QUESTIONS[state.triviaIndex] || TRIVIA_QUESTIONS[0];
+  const sessionId = state.triviaRewardSession?.sessionId;
+  let correct = selected === question.answer;
+  if (sessionId && state.triviaRewardStatus === "eligible") {
+    state.triviaRewardStatus = "submitting";
+    render();
+    try {
+      const result = await window.LottoMindAccountService.submitTriviaAnswer(sessionId, {
+        questionId: question.id,
+        selectedIndex: selected,
+        sequence: state.triviaIndex,
+      });
+      correct = Boolean(result.correct);
+      state.triviaRewardStatus = "eligible";
+    } catch (error) {
+      state.triviaRewardStatus = "score-only";
+      state.triviaRewardError = error?.message || "The answer could not be verified. The rest of this run is score-only.";
+    }
+  }
+  const scorePoints = triviaRewardFor(state.triviaIndex) * 4 + (state.triviaStreak * 10);
+  state.triviaAnswered = { selected, correct };
+  if (correct) {
+    state.triviaStreak += 1;
+    state.triviaScore += scorePoints;
+  } else {
+    state.triviaStreak = 0;
+  }
+  toast(correct ? `Trivia signal locked: +${scorePoints} score` : "Try the next signal");
+  render();
+}
+
+async function claimSecureTriviaReward() {
+  const sessionId = state.triviaRewardSession?.sessionId;
+  if (!sessionId || state.triviaRewardStatus !== "eligible") {
+    completeTriviaProgress();
+    state.triviaComplete = true;
+    toast("Run saved as score-only. No wallet value changed.");
+    go("triviaRewards");
+    return;
+  }
+  state.triviaRewardStatus = "claiming";
+  render();
+  try {
+    const result = await window.LottoMindAccountService.claimTriviaReward(
+      sessionId,
+      window.LottoMindAccountService.createIdempotencyKey("trivia-daily"),
+    );
+    state.triviaAward = result.reward || { amount: 0 };
+    state.triviaRewardStatus = "rewarded";
+    completeTriviaProgress();
+    state.triviaComplete = true;
+    toast(`Verified trivia reward: +${Number(state.triviaAward.amount || 0)} credits`);
+  } catch (error) {
+    state.triviaRewardStatus = "score-only";
+    state.triviaRewardError = error?.message || "The reward could not be verified. No wallet value changed.";
+    completeTriviaProgress();
+    state.triviaComplete = true;
+    toast("Reward not verified. No wallet value changed.");
+  }
+  go("triviaRewards");
 }
 
 function storeFavorites() {
@@ -2091,32 +2289,16 @@ function getCredits() {
   if (centralAccountSnapshot?.authenticated && centralAccountSnapshot.wallet) {
     return normalizeCreditValue(centralAccountSnapshot.wallet.balance) ?? 0;
   }
-  const appCredits = readCreditValue(STORAGE.credits);
-  if (appCredits !== null) return appCredits;
-
-  const webCredits = readCreditValue(WEB_CREDIT_STORAGE_KEY);
-  if (webCredits !== null) {
-    localStorage.setItem(STORAGE.credits, String(webCredits));
-    return webCredits;
-  }
-
   return 0;
 }
 
 function setCredits(value) {
-  if (centralAccountSnapshot?.authenticated) {
-    return getCredits();
-  }
-  const credits = normalizeCreditValue(value) ?? 0;
-  localStorage.setItem(STORAGE.credits, String(credits));
-  localStorage.setItem(WEB_CREDIT_STORAGE_KEY, String(credits));
-  return credits;
+  void value;
+  return getCredits();
 }
 
 function syncCreditsFromLaunchParams() {
-  const webCredits = readCreditValue(WEB_CREDIT_STORAGE_KEY);
-  const appCredits = readCreditValue(STORAGE.credits);
-  if (webCredits !== null && appCredits === null) setCredits(webCredits);
+  // Wallet values are server snapshots only. Legacy query/local values are intentionally ignored.
 }
 
 function installCentralAccountSync() {
@@ -2128,7 +2310,8 @@ function installCentralAccountSync() {
     const previousStatus = centralAccountSnapshot?.authenticated;
     centralAccountSnapshot = snapshot;
     const changed = previousBalance !== snapshot.wallet?.balance || previousStatus !== snapshot.authenticated;
-    if (changed) render();
+    if (changed && state.route !== "triviaPlay") render();
+    if (changed) window.dispatchEvent(new CustomEvent("lottomind:wallet-sync", { detail: snapshot }));
   };
   centralAccountUnsubscribe?.();
   centralAccountUnsubscribe = service.subscribeToWallet(applySnapshot);
@@ -2656,6 +2839,7 @@ function oracleStudioControl({
   label,
   hint,
   art,
+  surfaceArt = art,
   route = "",
   action = "",
   className = "",
@@ -2670,7 +2854,7 @@ function oracleStudioControl({
 }) {
   const knob = knobControlAttributes({ key, label, min, max, step, unit, fallback, pressVerb });
   const command = action ? `data-action="${action}"` : `data-route="${route}"`;
-  return `<button class="oracle-studio-control ${className}" type="button" ${command} ${extraAttributes} ${knob.attributes} style="--oracle-control-art:url('${art}');--oracle-knob-art:url('${art}');--knob-live-angle:${knob.angle}deg">
+  return `<button class="oracle-studio-control ${className}" type="button" ${command} ${extraAttributes} ${knob.attributes} style="--oracle-control-art:url('${surfaceArt}');--oracle-knob-art:url('${art}');--knob-live-angle:${knob.angle}deg">
     <i aria-hidden="true"></i><span${liveReadout ? " data-knob-readout" : ""}>${label}</span><small>${hint}</small>
   </button>`;
 }
@@ -2750,20 +2934,15 @@ function dashboardView() {
     </div>
 
     <div class="panel home-merch-video" data-art-kind="store">
-      <div class="home-merch-slideshow" aria-label="LottoMind merch preview slideshow">
-        ${[
-          ASSETS.detroitCollection,
-          ASSETS.detroitHoodieClose,
-          ASSETS.detroitPoloClose,
-          ASSETS.detroitCapFront,
-          ASSETS.detroitCapClose,
-        ].map((src, index) => `<img class="home-merch-product" src="${src}" alt="" style="--slide:${index}" />`).join("")}
-        <div class="merch-slide-dots" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></div>
+      <div class="home-merch-catalog" aria-label="Featured products from the LottoMind Merch Store">
+        ${MERCH_ITEMS.slice(0, 4).map((item) => `<button class="home-merch-card" data-route="store" style="--product-art:url('${item.art}')">
+          <span>${escapeHtml(item.type)}</span><strong>${escapeHtml(item.title)}</strong><b>${item.price}</b>
+        </button>`).join("")}
       </div>
       <div>
         <span class="eyebrow">Official Merch Store</span>
         <h2>LottoMind Gear Drop</h2>
-        <p>Shop branded gear, coin art, promo drops, and marketplace-ready merch lanes.</p>
+        <p>Featured products are pulled from the same catalog and prices used by the Merch Store.</p>
         <div class="hero-actions">
           <button class="primary-btn" data-route="store">Open Merch Store</button>
           <button class="ghost-btn" data-route="marketplace">Marketplace</button>
@@ -2827,10 +3006,11 @@ function circleTool(title, sub, route, index, options = {}) {
       ? `<video class="circle-tool-video singer-video" data-src="${BASE}/videos/power-tools-button-green-screen.mp4" poster="${ASSETS.music}" muted loop playsinline preload="none" data-autoplay-on-visible="true"></video>`
       : "";
   const art = options.art || categoryArtForTool(title, route, index);
+  const surfaceArt = options.surfaceArt || art;
   const knob = options.knob
     ? knobControlAttributes({ key: `tool:${route}`, label: title, fallback: 30 + ((index * 13) % 58) })
     : null;
-  return `<button class="circle-tool" data-route="${route}" data-art-kind="${artKind}" ${knob?.attributes || ""} style="--circle-art:url('${art}');${knob ? `--knob-live-angle:${knob.angle}deg` : ""}">
+  return `<button class="circle-tool" data-route="${route}" data-art-kind="${artKind}" ${knob?.attributes || ""} style="--circle-art:url('${art}');--circle-surface:url('${surfaceArt}');${knob ? `--knob-live-angle:${knob.angle}deg` : ""}">
     ${video}
     <span>${title}</span>
     <small>${sub}</small>
@@ -2839,18 +3019,21 @@ function circleTool(title, sub, route, index, options = {}) {
 
 function powerToolsView() {
   const current = state.currentSet || generateLottoSet(state.gameId, state.strategy, "power-tools");
+  const commandActions = [
+    ["primary-btn", "data-action=\"run-power-analysis\"", "power", "Run Analysis", ASSETS.powerTools],
+    ["ghost-btn", "data-route=\"numberGenerator\"", "power", "Number Generator", ASSETS.powerToolNumberAnalyzer],
+    ["ghost-btn", "data-route=\"lottoIntel\"", "ai", "Lotto Intelligence", ASSETS.powerToolLottoIntelligence],
+    ["ghost-btn", "data-route=\"dailyTools\"", "power", "Pick 3 / Pick 4", ASSETS.powerToolPick34],
+    ["ghost-btn", "data-route=\"radioStation\"", "music", "Abundance Radio", ASSETS.dreamToolAbundanceRadio],
+    ["ghost-btn", "data-route=\"marketplace\"", "marketplace", "Marketplace", ASSETS.powerToolMarketplace],
+  ];
   return `<section class="screen power-screen">
     <div class="panel arcade-deck art-panel" style="--panel-art:url('${ASSETS.power}')">
       <div>
         <h1 class="game-title">Command Deck</h1>
         <p>Swipe tool medals, lock a state pin, then run the next analysis like a mission.</p>
-        <div class="hero-actions">
-          <button class="primary-btn" data-action="run-power-analysis" data-art-kind="power">Run Analysis</button>
-          <button class="ghost-btn" data-route="numberGenerator" data-art-kind="power">Number Generator</button>
-          <button class="ghost-btn" data-route="lottoIntel" data-art-kind="ai">Lotto Intelligence</button>
-          <button class="ghost-btn" data-route="dailyTools" data-art-kind="power">Pick 3 / Pick 4</button>
-          <button class="ghost-btn" data-route="radioStation" data-art-kind="music">Abundance Radio</button>
-          <button class="ghost-btn" data-route="marketplace" data-art-kind="marketplace">Marketplace</button>
+        <div class="hero-actions command-action-grid">
+          ${commandActions.map(([className, command, artKind, label, iconArt]) => `<button class="${className} command-action" ${command} data-art-kind="${artKind}" style="--button-surface:url('${ASSETS.commandButtonCore}');--button-icon:url('${iconArt}')"><i aria-hidden="true"></i><span>${label}</span></button>`).join("")}
         </div>
       </div>
       <div class="deck-coin command-crest lm-live-crest"><img src="${ASSETS.lmLive}" alt="LottoMind Live LM logo" /><span>Power Tools</span></div>
@@ -2875,6 +3058,7 @@ function powerToolsView() {
         <div class="circle-carousel tool-bento ${group.title === "Main Lab" ? "main-lab-bento" : ""}">
           ${group.tools.map(([title, sub, route], index) => circleTool(title, sub, route, groupIndex * 4 + index, {
             art: group.title === "Main Lab" ? POWER_TOOL_ART[title] : undefined,
+            surfaceArt: group.title === "Main Lab" ? ASSETS.mainLabSurface : undefined,
             preferStaticArt: group.title === "Main Lab",
             knob: group.title === "Main Lab",
           })).join("")}
@@ -2919,7 +3103,7 @@ function resetView() {
     </div>`;
   return `<section class="screen reset-screen">
     ${resetRecordsPanel}
-    <div class="panel tone-wheel art-panel" style="--panel-art:url('${ASSETS.reset}')">
+    <div class="panel tone-wheel art-panel" style="--panel-art:url('${ASSETS.reset}');--tone-control-art:url('${ASSETS.frequencyToneCore}')">
       <div class="tone-top">
         <h1><span>Frequency</span> Reset</h1>
         <span class="pro-badge">PRO</span>
@@ -2928,8 +3112,8 @@ function resetView() {
         ${Object.entries(RESET_PRESETS).map(([key, preset]) => `<button class="lm-pill ${state.resetPreset === key ? "active" : ""}" data-action="load-reset-preset" data-preset="${key}">${preset.label}</button>`).join("")}
       </div>
       <div class="wheel-orbit">
-        ${tones.filter(([hz]) => hz !== state.tone).slice(0, 4).map(([hz, label], index) => `<button class="orbit-tone t${index + 1}" data-action="load-reset-session" data-tone="${hz}" data-autoplay="true"><strong>${hz}</strong><small>${label}</small></button>`).join("")}
-        <button class="center-tone" data-action="load-reset-session" data-tone="${state.tone}" data-autoplay="true"><strong>${state.tone} Hz</strong><small>${tones.find(([hz]) => hz === state.tone)?.[1] || "Reset"}</small></button>
+        ${tones.filter(([hz]) => hz !== state.tone).slice(0, 4).map(([hz, label], index) => `<button class="orbit-tone t${index + 1}" data-action="load-reset-session" data-tone="${hz}" data-autoplay="true" style="--tone-art:url('${ASSETS.frequencyToneCore}')"><strong>${hz}</strong><small>${label}</small></button>`).join("")}
+        <button class="center-tone" data-action="load-reset-session" data-tone="${state.tone}" data-autoplay="true" style="--tone-art:url('${ASSETS.frequencyToneCore}')"><strong>${state.tone} Hz</strong><small>${tones.find(([hz]) => hz === state.tone)?.[1] || "Reset"}</small></button>
       </div>
       <div class="session-card">
         <div><strong>${formatTimer(state.timerRemaining)} ${currentPreset.label} Session</strong><span>${pct}% volume</span></div>
@@ -2958,7 +3142,8 @@ function resetView() {
           action: "load-reset-session",
           label: `${hz} Hz`,
           hint: `${label} - ${label === "Heart Field" ? "528 Hz box" : hz === "528" ? "Love frequency" : hz === "741" ? "Clear signal" : "Focus support"}`,
-          art: index % 2 ? ASSETS.logo : ASSETS.music,
+          art: ASSETS.frequencyToneCore,
+          surfaceArt: ASSETS.frequencyToneCore,
           className: `sound-card tone-pill ${state.tone === hz ? "active" : ""}`,
           extraAttributes: `data-tone="${hz}" data-autoplay="true" data-knob-bind="tone"`,
           min: 174,
@@ -3286,10 +3471,10 @@ function dreamsView() {
       <textarea class="dream-input" data-bind="dreamText" placeholder="Speak or type your dream...">${escapeHtml(state.dreamText)}</textarea>
       ${state.dreamListening ? `<div class="dream-dictation-status" role="status">Live dictation active${state.dreamInterimText ? `: ${escapeHtml(state.dreamInterimText)}` : ""}</div>` : ""}
       <div class="hero-actions">
-        <button class="primary-btn" data-action="interpret-dream" data-art-kind="dream" style="--button-art:url('${DREAM_ACTION_ART.interpretDream}')">Interpret Dream</button>
-        <button class="ghost-btn" data-action="psychic-fusion" data-art-kind="ai" style="--button-art:url('${DREAM_ACTION_ART.psychicFusion}')">Psychic Fusion</button>
-        <button class="ghost-btn" data-action="build-dream-video" data-art-kind="dream" style="--button-art:url('${DREAM_ACTION_ART.generateDreams}')">Generate Your Dreams</button>
-        <button class="ghost-btn" data-route="studio" data-art-kind="music" style="--button-art:url('${DREAM_ACTION_ART.recordDreamSong}')">Record Dream Song</button>
+        <button class="primary-btn" data-action="interpret-dream" data-art-kind="dream" style="--button-art:url('${DREAM_ACTION_ART.interpretDream}')"><span class="dream-action-label">Interpret Dream</span></button>
+        <button class="ghost-btn" data-action="psychic-fusion" data-art-kind="ai" style="--button-art:url('${DREAM_ACTION_ART.psychicFusion}')"><span class="dream-action-label">Psychic Fusion</span></button>
+        <button class="ghost-btn" data-action="build-dream-video" data-art-kind="dream" style="--button-art:url('${DREAM_ACTION_ART.generateDreams}')"><span class="dream-action-label">Generate Your Dreams</span></button>
+        <button class="ghost-btn" data-route="studio" data-art-kind="music" style="--button-art:url('${DREAM_ACTION_ART.recordDreamSong}')"><span class="dream-action-label">Record Dream Song</span></button>
       </div>
     </div>
 
@@ -3378,7 +3563,7 @@ function dreamsView() {
 
     ${localSignalPanel()}
 
-    <div class="panel record-label-panel dream-record-label art-panel" data-art-kind="music" style="--panel-art:url('${CATEGORY_ART.music}')">
+    <div class="panel record-label-panel dream-record-label future-music-store art-panel" data-art-kind="music" style="--panel-art:url('${ASSETS.futureMusicStoreHero}');--record-surface:url('${ASSETS.futureMusicControlSurface}')">
       <div>
         <span class="eyebrow">LottoMind Records</span>
         <h2>Music Store</h2>
@@ -3469,6 +3654,7 @@ function dailyToolsView() {
 function heatmapView() {
   const heatmap = getHeatmap("powerball");
   const stats = getMatrixStats("powerball");
+  const radarPicks = Array.isArray(state.radarPicks) ? state.radarPicks : [];
   const hot = [...heatmap].sort((a, b) => b.count - a.count || a.number - b.number).slice(0, 8);
   const cold = [...heatmap].sort((a, b) => a.count - b.count || a.number - b.number).slice(0, 8);
   const active = heatmap.filter((cell) => cell.label === "active").slice(0, 8);
@@ -3503,6 +3689,7 @@ function heatmapView() {
         label,
         hint,
         art,
+        surfaceArt: ASSETS.radarRotaryCore,
         action: ["hot", "cold", "balanced"].includes(mode) ? "set-strategy" : "",
         route: ["hot", "cold", "balanced"].includes(mode) ? "" : mode,
         className: `control-chip ${state.strategy === mode ? "active" : ""}`,
@@ -3520,6 +3707,7 @@ function heatmapView() {
           label: title,
           hint: sub,
           art: HEATMAP_TOOL_ART[title] || categoryArtForTool(title, route, index),
+          surfaceArt: ASSETS.radarToolDeckCore,
           className: "radar-tool-control",
           fallback: 30 + ((index * 13) % 58),
         })).join("")}
@@ -3528,7 +3716,11 @@ function heatmapView() {
     <div class="panel radar-panel">
       <div class="radar-titlebar">
         <div><span>Live Board</span><strong>${stats.game.name} Signal Grid</strong></div>
-        <button class="tiny-btn" data-action="generate-set">Generate from Radar</button>
+        <button class="tiny-btn" data-action="build-radar-locks">Generate from Radar</button>
+      </div>
+      <div class="radar-lock-strip" role="status" aria-live="polite">
+        <div><span>Target locks</span><strong>${radarPicks.length ? radarPicks.join(" / ") : "Tap signal nodes"}</strong><small>${radarPicks.length}/${stats.game.mainCount} main-number locks</small></div>
+        <div class="radar-lock-actions"><button type="button" data-action="clear-radar-picks" ${radarPicks.length ? "" : "disabled"}>Clear</button><button type="button" data-action="build-radar-locks">Build set</button></div>
       </div>
       <div class="radar-map ${heatmap.length > 36 ? "dense" : ""}">
         ${heatmap.map((cell, index) => radarDot(cell, index, heatmap.length)).join("")}
@@ -3584,17 +3776,31 @@ function radarDot(cell, index, total = 28) {
   let x;
   let y;
   if (large) {
-    const ring = index % 4;
-    const step = Math.floor(index / 4);
-    const perRing = Math.ceil(total / 4);
-    const angle = (step / perRing) * Math.PI * 2 + ring * 0.34;
-    const radius = 16 + ring * 10;
+    const angle = index * 2.399963229728653;
+    const radius = 14 + Math.sqrt((index + 0.5) / total) * 31;
     x = 50 + Math.cos(angle) * radius;
     y = 50 + Math.sin(angle) * radius;
   } else {
     [x, y] = RADAR_POSITIONS[index % RADAR_POSITIONS.length];
   }
-  return `<button class="radar-dot ${cell.label}" style="left:${x}%;top:${y}%">${cell.number}</button>`;
+  const selected = Array.isArray(state.radarPicks) && state.radarPicks.includes(cell.number);
+  const signalLabel = cell.label === "hot" ? "hot" : cell.label === "cold" ? "cold" : "active";
+  return `<button type="button" class="radar-dot ${cell.label} ${selected ? "selected" : ""}" data-action="toggle-radar-number" data-number="${cell.number}" aria-pressed="${selected ? "true" : "false"}" aria-label="${cell.number}, ${signalLabel} signal, ${cell.count} reference hits" title="${cell.number}: ${signalLabel}, ${cell.count} hits" style="left:${x}%;top:${y}%">${cell.number}</button>`;
+}
+
+function buildRadarSetFromLocks() {
+  const game = getGame("powerball");
+  const locked = uniqueSorted((state.radarPicks || []).filter((number) => number >= 1 && number <= game.mainMax)).slice(0, game.mainCount);
+  const generated = generateLottoSet("powerball", state.strategy, `radar-locks-${locked.join("-")}`);
+  const numbers = uniqueSorted([...locked, ...generated.numbers]).slice(0, game.mainCount);
+  state.currentSet = {
+    ...generated,
+    numbers,
+    note: locked.length
+      ? `Built from ${locked.length} player-selected Radar lock${locked.length === 1 ? "" : "s"}, then completed with the ${state.strategy} lane.`
+      : `Built from the current ${state.strategy} Radar lane with no manual locks.`,
+  };
+  toast(locked.length ? `Radar set built with ${locked.length} locked signal${locked.length === 1 ? "" : "s"}` : "Radar set generated");
 }
 
 function sequenceView() {
@@ -5793,71 +5999,69 @@ function policiesView() {
 }
 
 function jackpotChaseView() {
-  const gameUrl = `${WEBSITE_BASE}/games/lottomind-jackpot-maze/`;
-  return `<section class="screen jackpot-chase-screen">
-    <div class="panel art-panel jackpot-chase-hero" style="--panel-art:url('${ASSETS.arcade}')">
-      <span class="eyebrow">LottoMind Arcade Original</span>
-      <h1>Jackpot Chase</h1>
-      <p>Collect number reveals, outsmart the villains, and open the neon vault in the full Jackpot Maze chase game.</p>
-      <div class="hero-actions"><button class="primary-btn" data-external-url="${gameUrl}">Open Full Screen</button><button class="ghost-btn" data-route="arcade">All Games</button></div>
+  const game = ARCADE_GAMES.find((entry) => entry.id === state.activeArcadeGameId) || ARCADE_GAMES[0];
+  return `<section class="screen jackpot-chase-screen arcade-player-screen">
+    <div class="panel art-panel jackpot-chase-hero arcade-player-hero" style="--panel-art:url('${game.art || ASSETS.arcade}')">
+      <span class="eyebrow">LottoMind In-App Game Player</span>
+      <h1>${escapeHtml(game.title)}</h1>
+      <p>${escapeHtml(game.copy)}</p>
+      <div class="hero-actions"><button class="primary-btn" data-action="fullscreen-arcade-game">Full Screen</button><button class="ghost-btn" data-action="reload-arcade-game">Reload Game</button><button class="ghost-btn" data-route="arcade">Back to Game Select</button></div>
     </div>
     <div class="panel jackpot-chase-stage">
-      <iframe src="${gameUrl}" title="Jackpot Chase game" loading="eager" allow="autoplay; fullscreen; gamepad" allowfullscreen></iframe>
+      <iframe id="lottomind-arcade-player" src="${game.url}" title="${escapeHtml(game.title)} game" loading="eager" allow="fullscreen; gamepad" allowfullscreen></iframe>
     </div>
-    <div class="panel disclaimer-card"><strong>Entertainment Only</strong><p>Game points and number reveals have no cash value and do not predict lottery results.</p></div>
+    <div class="panel disclaimer-card"><strong>Entertainment Only</strong><p>Game scores, points, and number reveals have no cash value and do not predict lottery results. Audio starts only after player interaction inside the game.</p></div>
   </section>`;
 }
 
 function arcadeView() {
   const games = [
-    ["GOTHTECHNOLOGY", "Cross Blackwood forest, break the signal lock, and fight into the vault.", "arcadeGame", `${WEBSITE_BASE}/games/gothtechnology2/`, "featured-fighter", `${WEBSITE_BASE}/games/gothtechnology2/assets/user-title/gothtechnology-cover-start-bg.webp`],
-    ["LottoMind: Jackpot Maze", "Collect number reveals, outsmart five villains, and open the neon vault.", "arcadeGame", `${WEBSITE_BASE}/games/lottomind-jackpot-maze/`, "featured-maze", `${WEBSITE_BASE}/games/lottomind-jackpot-maze/public/assets/ui/lottomind-jackpot-maze-title-card-gpt2.webp`],
-    ["2084 Static Wave", "Pilot the static signal through a fast neon combat grid.", "arcadeGame", `${WEBSITE_BASE}/games/opengw-levels/`, "featured-static-wave", `${WEBSITE_BASE}/games/opengw-levels/assets/2084/branding/marquee-gameplay-keyart.png`],
-    ["Robot Rahbe", "Enter the Shadow Ops arena and hold the tactical signal.", "arcadeGame", `${WEBSITE_BASE}/games/shadow-ops-canvas/`, "featured-robot-rahbe", `${WEBSITE_BASE}/games/shadow-ops-canvas/assets/backgrounds/robot-rahbe-gameplay-keyart.png`],
-    ["Raytrace Pong", "Play a light-traced Pong simulation with live shadows.", "arcadeGame", `${WEBSITE_BASE}/games/raytrace-pong-background/`, "", `${WEBSITE_BASE}/assets/arcade/raytrace-pong-title.webp`],
-    ["Lottery Spheres in Motion", "Guide glowing spheres and bend the orbit path with touch or pointer.", "arcadeGame", `${WEBSITE_BASE}/lottery-spheres.html#spheres`, "", `${WEBSITE_BASE}/assets/arcade/lottery-spheres-title.webp`],
-    ["Beat2Lotto+ Prompt Lab", "Turn local beat energy into entertainment-only creative signals.", "arcadeGame", `${WEBSITE_BASE}/prompt-lab.html`, "", `${WEBSITE_BASE}/assets/arcade/beat2lotto-prompt-lab-title.webp`],
-    ["LottoMind Stem Studio", "Mix stems and build a playable music route.", "arcadeGame", `${WEBSITE_BASE}/lottomind-stem-studio/`, "", `${WEBSITE_BASE}/assets/arcade/stem-studio-title.webp`],
-    ["Trivia Rewards", "Answer responsible-play questions and earn free activity points.", "triviaRewards", "", "", ASSETS.arcadeTrivia],
+    ...ARCADE_GAMES.map((game) => ({ ...game, route: "arcadeGame" })),
+    { id: "trivia-rewards", title: "Trivia Rewards", copy: "Review verified Daily Vault rewards and local streak progress.", route: "triviaRewards", art: ASSETS.arcadeTrivia },
+    { id: "trivia-vault", title: "LottoMind Trivia Vault", copy: "Play five complete modes with 154 reviewed questions.", route: "triviaPlay", featureClass: "featured-trivia-vault", art: ASSETS.arcadeTrivia },
   ];
   const activeArcadePanel = state.route === "crossword" ? crosswordGameView() : state.route === "wordSearch" ? wordSearchGameView() : state.route !== "arcade" ? miniGameView(routeMeta(state.route)[0]) : "";
   return `<section class="screen">
-    <div class="panel art-panel" data-art-kind="arcade" style="--panel-art:url('${CATEGORY_ART.arcade}')">
-      <h1 class="game-title">LottoMind Arcade</h1>
-      <p>Original games, rewards, and future Jackpot Run hooks.</p>
-      <div class="hero-actions arcade-launch-actions"><button class="primary-btn" data-route="triviaPlay">Launch Trivia Game</button><button class="ghost-btn" data-route="triviaRewards">Rewards</button></div>
+    <div class="panel art-panel arcade-hero-panel" data-art-kind="arcade" style="--panel-art:url('${ASSETS.arcadeHero}')">
+      <div class="arcade-hero-copy">
+        <span class="eyebrow">Future Play Grid</span>
+        <h1 class="game-title">LottoMind Arcade</h1>
+        <p>Original games, verified trivia runs, learning missions, and reward-status tools.</p>
+        <div class="hero-actions arcade-launch-actions"><button class="primary-btn" data-route="triviaPlay">Launch Trivia Game</button><button class="ghost-btn" data-route="triviaRewards">Rewards</button></div>
+      </div>
+      <div class="arcade-hero-status" aria-label="Arcade status"><span>${games.length} games</span><strong>Grid online</strong></div>
     </div>
-    <div class="panel arcade-motion">
+    <div class="panel arcade-motion arcade-hud-panel">
           <video data-src="${BASE}/videos/play-arcade-button-loop.mp4" muted loop playsinline preload="none" data-autoplay-on-visible="true"></video>
-      <div><span>Arcade motion asset</span><strong>Play Arcade Button</strong><p>Moved out of Marketplace and into the Arcade tab.</p></div>
+      <div class="arcade-hud-copy"><span class="arcade-hud-kicker">Arcade Command Link</span><strong>Mission Control Online</strong><p>Launch games, verify trivia runs, and track reward status from one built-in HUD.</p><div class="arcade-hud-meter" aria-hidden="true"><i></i></div><div class="arcade-hud-chips"><span>09 stages</span><span>secure claim</span><span>live</span></div></div>
     </div>
     ${activeArcadePanel}
     <div class="panel arcade-game-panel">
       <div class="section-head"><div><h2>Game Select</h2><p>Live LottoMind games from the current website build.</p></div><span>${games.length} games</span></div>
-      <div class="arcade-game-grid">${games.map(([title, copy, route, externalUrl, featureClass, art], index) => `
-        <button class="arcade-game-card ${featureClass || ""}" ${externalUrl ? `data-external-url="${externalUrl}"` : `data-route="${route}"`} style="--game-art:url('${art || ASSETS.arcadeArcade}')">
+      <div class="arcade-game-grid">${games.map((game, index) => `
+        <button class="arcade-game-card ${game.featureClass || ""}" ${game.url ? `data-action="open-arcade-game" data-game-id="${game.id}"` : `data-route="${game.route}"`} style="--game-art:url('${game.art || ASSETS.arcadeArcade}')">
           <span>Stage ${String(index + 1).padStart(2, "0")}</span>
-          <strong>${title}</strong>
-          <small>${copy}</small>
-          <b>${featureClass ? "Launch" : "Play"}</b>
+          <strong>${escapeHtml(game.title)}</strong>
+          <small>${escapeHtml(game.copy)}</small>
+          <b>${game.featureClass ? "Launch" : "Play"}</b>
         </button>
       `).join("")}</div>
     </div>
-    ${PLAY_LEARN_GROUP ? `<div class="panel tool-bank arcade-learn-bank">
-      <div class="section-head"><div><h2>${PLAY_LEARN_GROUP.title}</h2><p>${PLAY_LEARN_GROUP.copy}</p></div><span>${PLAY_LEARN_GROUP.tools.length} tools</span></div>
+    ${PLAY_LEARN_GROUP ? `<div class="panel tool-bank arcade-learn-bank arcade-hud-panel">
+      <div class="section-head arcade-hud-head"><div><span class="arcade-hud-kicker">Training Matrix</span><h2>${PLAY_LEARN_GROUP.title}</h2><p>${PLAY_LEARN_GROUP.copy}</p></div><span class="arcade-hud-status">${PLAY_LEARN_GROUP.tools.length} tools · online</span></div>
       <div class="circle-carousel tool-bento">
-        ${PLAY_LEARN_GROUP.tools.map(([title, sub, route], index) => circleTool(title, sub, route, index + 8)).join("")}
+        ${PLAY_LEARN_GROUP.tools.map(([title, sub, route], index) => circleTool(title, sub, route, index + 8, { surfaceArt: ASSETS.arcadeTrainingSurface, preferStaticArt: true })).join("")}
       </div>
     </div>` : ""}
     <div class="panel quest-board arcade-quest-board">
-      <div class="section-head movie-head"><div><h2>Quest Board</h2><p>Arcade path from warmup to reward run.</p></div><span>4 steps</span></div>
+      <div class="section-head movie-head arcade-hud-head"><div><span class="arcade-hud-kicker">Verified Run Protocol</span><h2>Quest Board</h2></div><span class="arcade-hud-status">4 steps</span></div>
       <div class="quest-steps">
         ${[
           ["1", "Pick Stage", "Choose a game lane", "triviaPlay", ASSETS.arcade],
-          ["2", "Run", "Start the mission", "triviaPlay", ASSETS.arcadeCoin],
-          ["3", "Score", "Earn credits", "triviaRewards", ASSETS.credit],
-          ["4", "Vault", "Save the run", "history", ASSETS.live],
-        ].map(([step, title, copy, route, art]) => `<button class="quest-step ${state.route === route ? "active" : ""}" data-route="${route}" style="--quest-art:url('${art}')"><b>${step}</b><strong>${title}</strong><small>${copy}</small></button>`).join("")}
+          ["2", "Run", "Complete the mission", "triviaPlay", ASSETS.arcadeCoin],
+          ["3", "Verify", "Server validates the result", "triviaRewards", ASSETS.credit],
+          ["4", "Wallet", "Claim once, then sync", "history", ASSETS.live],
+        ].map(([step, title, copy, route, art]) => `<button class="quest-step ${state.route === route ? "active" : ""}" data-route="${route}" style="--quest-art:url('${art}');--quest-surface:url('${ASSETS.arcadeQuestSurface}')"><b>${step}</b><strong>${title}</strong><small>${copy}</small></button>`).join("")}
       </div>
     </div>
   </section>`;
@@ -5954,7 +6158,7 @@ function triviaGameView() {
           const isPicked = answered?.selected === optionIndex;
           const isCorrect = answered && question.answer === optionIndex;
           const stateClass = answered ? (isCorrect ? "correct" : isPicked ? "wrong" : "muted") : "";
-          return `<button class="trivia-option ${stateClass}" data-action="answer-trivia" data-answer="${optionIndex}">
+          return `<button class="trivia-option ${stateClass}" data-action="answer-trivia" data-answer="${optionIndex}" ${state.triviaRewardStatus === "submitting" ? "disabled" : ""}>
             <span>${String.fromCharCode(65 + optionIndex)}</span>
             <strong>${escapeHtml(option)}</strong>
           </button>`;
@@ -6004,58 +6208,15 @@ function triviaRewardsView() {
 }
 
 function triviaGameView() {
-  const index = Math.min(state.triviaIndex, TRIVIA_QUESTIONS.length - 1);
-  const question = TRIVIA_QUESTIONS[index];
-  const answered = state.triviaAnswered;
-  const stored = getTriviaProgress();
-  const difficulty = triviaDifficulty(index);
-  const reward = triviaRewardFor(index);
-  const progress = Math.round(((index + (answered ? 1 : 0)) / TRIVIA_QUESTIONS.length) * 100);
-  return `<section class="screen trivia-screen">
-    <div class="panel art-panel trivia-hero trivia-show-hero" style="--panel-art:url('${ASSETS.commandDeck}')">
-      <div>
-        <span class="eyebrow">LottoMind Game Show</span>
-        <h1>Game Show Trivia</h1>
-        <p>Answer fast, build a streak, and turn arcade knowledge into Lotto Credits.</p>
-        <div class="trivia-streak-strip"><span>Lotto Credits ${getCredits()}</span><span>Daily ${stored.dailyStreak}/7</span><span>Weekly ${stored.weeklyStreak}/7</span><span>${difficulty} +${reward}</span></div>
-        <div class="hero-actions">
-          <button class="primary-btn" data-action="restart-trivia">New Run</button>
-          <button class="ghost-btn" data-route="arcade">Game Select</button>
-          <button class="ghost-btn" data-route="triviaRewards">Redeem</button>
-        </div>
-      </div>
-      <div class="trivia-score-orb"><strong>${state.triviaScore}</strong><span>Score</span></div>
-    </div>
-    <div class="panel trivia-console trivia-game-show-console">
-      <div class="trivia-status">
-        <span>Question ${index + 1} / ${TRIVIA_QUESTIONS.length} &middot; ${difficulty} &middot; +${reward} credits</span>
-        <strong>${state.triviaStreak}x streak</strong>
-      </div>
-      <div class="trivia-progress"><i style="width:${progress}%"></i></div>
-      <div class="trivia-stage-label"><span>Live Question Pod</span><b>${answered ? (answered.correct ? "Correct lock" : "Try next") : "Choose an answer"}</b></div>
-      <h2>${escapeHtml(question.q)}</h2>
-      <div class="trivia-options">
-        ${question.options.map((option, optionIndex) => {
-          const isPicked = answered?.selected === optionIndex;
-          const isCorrect = answered && question.answer === optionIndex;
-          const stateClass = answered ? (isCorrect ? "correct" : isPicked ? "wrong" : "muted") : "";
-          return `<button class="trivia-option ${stateClass}" data-action="answer-trivia" data-answer="${optionIndex}">
-            <span>${String.fromCharCode(65 + optionIndex)}</span>
-            <strong>${escapeHtml(option)}</strong>
-          </button>`;
-        }).join("")}
-      </div>
-      ${answered ? `<div class="trivia-feedback ${answered.correct ? "is-correct" : "is-wrong"}">
-        <strong>${answered.correct ? `Signal locked +${reward}` : "Signal missed"}</strong>
-        <p>${escapeHtml(question.note)}</p>
-      </div>
-      <button class="primary-btn full" data-action="${index >= TRIVIA_QUESTIONS.length - 1 ? "claim-trivia-reward" : "next-trivia"}">${index >= TRIVIA_QUESTIONS.length - 1 ? "Claim Reward" : "Next Question"}</button>` : ""}
+  return `<section class="screen trivia-screen refined-trivia-route">
+    <div id="refined-trivia-vault-root" class="refined-trivia-vault" aria-busy="true">
+      <div class="panel"><span class="eyebrow">Loading game engine</span><h1>LottoMind Trivia Vault</h1><p>Preparing 154 reviewed questions and saved local progress...</p></div>
     </div>
   </section>`;
 }
 
 function triviaRewardsView() {
-  const reward = Math.max(25, Math.round(state.triviaScore / 12));
+  const reward = Number(state.triviaAward?.amount || 0);
   const progress = getTriviaProgress();
   const dailyPct = Math.min(100, Math.round((progress.dailyStreak / 7) * 100));
   const weeklyPct = Math.min(100, Math.round((progress.weeklyStreak / 7) * 100));
@@ -6063,35 +6224,35 @@ function triviaRewardsView() {
     <div class="panel art-panel trivia-hero reward-hero trivia-show-hero" style="--panel-art:url('${ASSETS.commandDeck}')">
       <div>
         <span class="eyebrow">LottoMind Trivia Home</span>
-        <h1>Lotto Credits</h1>
-        <p>Play the daily challenge, stack streak bonuses, and spend credits on premium LottoMind unlocks.</p>
-        <div class="trivia-streak-strip"><span>Daily ${progress.dailyStreak}/7</span><span>Weekly ${progress.weeklyStreak}/7</span><span>${getCredits()} credits</span></div>
+        <h1>Verified Trivia Rewards</h1>
+        <p>Scores stay local; wallet credits are issued only by the authenticated reward service after a completed run.</p>
+        <div class="trivia-streak-strip"><span>${triviaRewardMessage()}</span><span>Daily ${progress.dailyStreak}/7</span><span>Weekly ${progress.weeklyStreak}/7</span></div>
         <div class="hero-actions">
           <button class="primary-btn" data-route="triviaPlay">Start Trivia</button>
           <button class="ghost-btn" data-route="arcade">Arcade</button>
           <button class="ghost-btn" data-route="marketplace">Redeem Credits</button>
         </div>
       </div>
-      <div class="trivia-score-orb"><strong>${reward}</strong><span>Credit lane</span></div>
+      <div class="trivia-score-orb"><strong>${reward}</strong><span>Verified credits</span></div>
     </div>
     <div class="trivia-home-grid">
       <div class="panel streak-card">
         <span class="eyebrow">Daily Challenge</span>
         <h2>5 Questions</h2>
-        <p>Easy, medium, and hard questions pay 10, 25, and 50 credits.</p>
+        <p>Complete all five questions, then request one idempotent server-verified daily claim.</p>
         <button class="primary-btn full" data-action="restart-trivia">Start Trivia</button>
       </div>
       <div class="panel streak-card">
         <span class="eyebrow">Daily Streak</span>
         <h2>${progress.dailyStreak} days</h2>
         <div class="progress-rail"><i style="width:${dailyPct}%"></i></div>
-        <p>3-day streak bonus: +50 credits.</p>
+        <p>Streaks are progress markers. They do not mutate the wallet in the browser.</p>
       </div>
       <div class="panel streak-card">
         <span class="eyebrow">Weekly Streak</span>
         <h2>${progress.weeklyStreak}/7</h2>
         <div class="progress-rail"><i style="width:${weeklyPct}%"></i></div>
-        <p>7-day weekly bonus: +200 credits.</p>
+        <p>Wallet awards remain controlled by the authoritative reward API.</p>
       </div>
       <div class="panel streak-card">
         <span class="eyebrow">Leaderboard</span>
@@ -6101,7 +6262,7 @@ function triviaRewardsView() {
       </div>
     </div>
     <div class="panel trivia-console trivia-reward-panel trivia-game-show-console">
-      <div class="section-head"><div><h2>Reward Summary</h2><p>Credits earned from correct answers, streaks, and completion.</p></div><span>${getCredits()} credits</span></div>
+      <div class="section-head"><div><h2>Reward Summary</h2><p>Server claim status for the completed daily run.</p></div><span>${reward} verified</span></div>
       <div class="trivia-reward-grid">
         <div><span>Run Score</span><strong>${state.triviaScore}</strong></div>
         <div><span>Best Streak</span><strong>${state.triviaStreak}x</strong></div>
@@ -6110,16 +6271,13 @@ function triviaRewardsView() {
         <div><span>Weekly Track</span><strong>${progress.weeklyStreak}/7</strong></div>
         <div><span>History</span><strong>${progress.history.length}</strong></div>
       </div>
-      <p class="release-note">Activity points are earned only through completed on-device activities. Paid boosts and rewarded ads are not included in this release.</p>
+      <p class="release-note">No wallet values are simulated or modified by Trivia Vault. A failed, offline, or signed-out claim stays score-only.</p>
       <button class="primary-btn full" data-action="restart-trivia">Start New Trivia Run</button>
     </div>
-    <div class="panel">
-      <div class="section-head"><div><h2>Use Activity Points</h2><p>Free on-device unlocks persist locally. Activity points have no cash value.</p></div><span>${FEATURE_UNLOCKS.length} unlocks</span></div>
-      <div class="unlock-shop-grid">
-        ${FEATURE_UNLOCKS.map((item) => `<button class="store-card ${isUnlocked(item.id) ? "unlocked" : ""}" data-action="unlock-feature" data-unlock="${item.id}">
-          <strong>${item.title}</strong><span>${item.window}</span><small>${isUnlocked(item.id) ? "Unlocked" : `${item.cost} credits`}</small>
-        </button>`).join("")}
-      </div>
+    <div class="panel disclaimer-card">
+      <strong>Secure reward model</strong>
+      <p>Trivia Vault never spends or grants credits from local storage. Marketplace unlocks require the verified account wallet and its authoritative spend API.</p>
+      <div class="hero-actions"><button class="ghost-btn" data-route="profile">Account Status</button><button class="ghost-btn" data-route="marketplace">Marketplace</button></div>
       <p class="tiny-note">LottoMind does not guarantee winnings. Trivia rewards and AI insights are for entertainment and education only.</p>
     </div>
   </section>`;
@@ -6965,6 +7123,10 @@ function render() {
   const previousShell = app.querySelector(".real-shell");
   const previousRoute = previousShell?.dataset.route || "";
   const previousScrollTop = previousShell?.scrollTop || 0;
+  if (refinedTriviaMount) {
+    refinedTriviaMount.destroy?.();
+    refinedTriviaMount = null;
+  }
   app.innerHTML = `<div class="real-shell route-${state.route}" data-route="${state.route}">
     <div class="future-vault-chrome" aria-hidden="true">
       <span class="vault-ring ring-a"></span>
@@ -6989,6 +7151,7 @@ function render() {
   syncRouteAudio();
   hydrateDeferredMedia(app);
   startAmbientVideos();
+  if (state.route === "triviaPlay") requestAnimationFrame(mountRefinedTriviaRoute);
 }
 
 function handleResetControlEvent(event) {
@@ -8067,6 +8230,33 @@ function handleStudioPolishAction(action, target) {
 
 function handleAction(action, target) {
   if (handleStudioPolishAction(action, target)) return;
+  if (action === "open-arcade-game") {
+    const gameId = target.getAttribute("data-game-id");
+    const game = ARCADE_GAMES.find((entry) => entry.id === gameId);
+    if (!game) {
+      toast("That game is unavailable");
+      return;
+    }
+    state.activeArcadeGameId = game.id;
+    localStorage.setItem("lottomind.refined.arcade.active-game.v1", game.id);
+    go("arcadeGame");
+    return;
+  }
+  if (action === "reload-arcade-game") {
+    const frame = document.getElementById("lottomind-arcade-player");
+    if (frame) frame.src = frame.src;
+    toast("Game reloaded");
+    return;
+  }
+  if (action === "fullscreen-arcade-game") {
+    const frame = document.getElementById("lottomind-arcade-player");
+    if (!frame?.requestFullscreen) {
+      toast("Full screen is unavailable in this browser");
+      return;
+    }
+    frame.requestFullscreen().catch(() => toast("Full screen request was blocked"));
+    return;
+  }
   if (action === "set-social-challenge") {
     const challenge = target.getAttribute("data-challenge") || "Trivia";
     state.socialChallengeType = SOCIAL_CHALLENGE_TYPES.includes(challenge) ? challenge : "Trivia";
@@ -8535,6 +8725,32 @@ function handleAction(action, target) {
     state.currentSet = generateLottoSet(state.gameId, state.strategy, state.strategy === "dream" ? state.dreamText : "strategy-change");
     render();
   }
+  if (action === "toggle-radar-number") {
+    const number = Number(target.getAttribute("data-number"));
+    const game = getGame("powerball");
+    const picks = Array.isArray(state.radarPicks) ? [...state.radarPicks] : [];
+    const existingIndex = picks.indexOf(number);
+    if (existingIndex >= 0) picks.splice(existingIndex, 1);
+    else if (Number.isFinite(number) && picks.length < game.mainCount) picks.push(number);
+    else {
+      toast(`Lock up to ${game.mainCount} main numbers`);
+      return;
+    }
+    state.radarPicks = uniqueSorted(picks);
+    render();
+    return;
+  }
+  if (action === "clear-radar-picks") {
+    state.radarPicks = [];
+    toast("Radar locks cleared");
+    render();
+    return;
+  }
+  if (action === "build-radar-locks") {
+    buildRadarSetFromLocks();
+    render();
+    return;
+  }
   if (action === "generate-set" || action === "run-power-analysis") {
     state.currentSet = generateLottoSet(state.gameId, state.strategy, state.dreamText);
     toast(action === "run-power-analysis" ? "Power analysis complete" : "Numbers generated");
@@ -8768,7 +8984,6 @@ function handleAction(action, target) {
     toast(`${state.selectedState} store locator saved`);
   }
   if (action === "buy-item") {
-    const cost = Number(target.getAttribute("data-cost")) || 0;
     const unlockId = target.getAttribute("data-unlock");
     if (unlockId === "credits-pack") {
       toast("Activity points are not sold");
@@ -8776,14 +8991,7 @@ function handleAction(action, target) {
     } else if (unlockId && isUnlocked(unlockId)) {
       toast("Already unlocked");
     } else {
-      const next = getCredits() - cost;
-      if (next < 0) {
-        toast("Not enough credits");
-      } else {
-        setCredits(next);
-        if (unlockId) saveUnlock(unlockId, unlockId.includes("24") ? "24h" : "permanent");
-        toast(unlockId ? "Feature unlocked" : "Credit purchase applied");
-      }
+      toast("Secure marketplace checkout is not connected for this item. No wallet value changed.");
     }
   }
   if (action === "go-back") {
@@ -8805,12 +9013,8 @@ function handleAction(action, target) {
       toast("Unlock not found");
     } else if (isUnlocked(unlock.id)) {
       toast(`${unlock.title} is already unlocked`);
-    } else if (getCredits() < unlock.cost) {
-      toast("Not enough credits");
     } else {
-      setCredits(getCredits() - unlock.cost);
-      saveUnlock(unlock.id, unlock.id.includes("24") ? "24h" : "permanent");
-      toast(`${unlock.title} unlocked`);
+      toast("Secure marketplace unlocks are not connected yet. No wallet value changed.");
     }
   }
   if (action === "watch-rewarded-ad") {
@@ -8873,17 +9077,8 @@ function handleAction(action, target) {
     const question = TRIVIA_QUESTIONS[state.triviaIndex] || TRIVIA_QUESTIONS[0];
     const selected = Number(target.getAttribute("data-answer"));
     if (!state.triviaAnswered && Number.isFinite(selected)) {
-      const correct = selected === question.answer;
-      const reward = triviaRewardFor(state.triviaIndex);
-      state.triviaAnswered = { selected, correct };
-      if (correct) {
-        state.triviaStreak += 1;
-        state.triviaScore += reward * 4 + (state.triviaStreak - 1) * 10;
-        setCredits(getCredits() + reward);
-      } else {
-        state.triviaStreak = 0;
-      }
-      toast(correct ? `Trivia signal locked: +${reward} credits` : "Try the next signal");
+      submitSecureTriviaAnswer(selected);
+      return;
     }
   }
   if (action === "next-trivia") {
@@ -8896,18 +9091,16 @@ function handleAction(action, target) {
     state.triviaStreak = 0;
     state.triviaAnswered = null;
     state.triviaComplete = false;
+    state.triviaAward = null;
     if (state.route !== "triviaPlay") {
       go("triviaPlay");
       return;
     }
+    startSecureTriviaRun();
+    return;
   }
   if (action === "claim-trivia-reward") {
-    const bonus = Math.max(25, Math.round(state.triviaScore / 12));
-    setCredits(getCredits() + bonus);
-    const streak = completeTriviaProgress();
-    state.triviaComplete = true;
-    toast(`Trivia reward claimed: +${bonus + (streak.bonus || 0)} credits`);
-    go("triviaRewards");
+    claimSecureTriviaReward();
     return;
   }
   if (action === "check-crossword") {
@@ -8916,8 +9109,7 @@ function handleAction(action, target) {
     } else {
       state.crosswordSolved = true;
       saveJson(STORAGE.crossword, { solved: true, solvedAt: new Date().toISOString() });
-      setCredits(getCredits() + 40);
-      toast("Crossword validated: +40 credits");
+      toast("Crossword solved and saved locally. No wallet value changed.");
     }
   }
   if (action === "toggle-word-letter") {
@@ -8940,8 +9132,7 @@ function handleAction(action, target) {
     } else if (state.wordSearchMarks.length >= 8) {
       state.wordSearchMarks = state.wordSearchMarks.concat("SOLVED");
       saveJson(STORAGE.wordSearch, state.wordSearchMarks);
-      setCredits(getCredits() + 30);
-      toast("Word search validated: +30 credits");
+      toast("Word search solved and saved locally. No wallet value changed.");
     } else {
       toast("Mark more letters before locking words");
     }
@@ -8956,8 +9147,7 @@ function handleAction(action, target) {
     return;
   }
   if (action === "play-mini-game") {
-    setCredits(getCredits() + 10);
-    toast("Arcade run complete: +10 credits");
+    toast("Arcade run complete. No wallet value changed.");
   }
   render();
 }
@@ -9362,3 +9552,4 @@ window.addEventListener("popstate", () => {
 render();
 installCentralAccountSync();
 installRevenueCatSync();
+ensureLottoMindAccountService().then((service) => { if (service) installCentralAccountSync(); });
