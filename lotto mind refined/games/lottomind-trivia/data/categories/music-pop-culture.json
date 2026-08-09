@@ -1,0 +1,552 @@
+[
+  {
+    "id": "music-pop-culture-001",
+    "category": "music-pop-culture",
+    "difficulty": "easy",
+    "question": "What does BPM measure in music?",
+    "choices": [
+      "Beats per minute",
+      "Bass pitch memory",
+      "Bars per melody",
+      "Broadcast power mode"
+    ],
+    "correctChoiceIndex": 0,
+    "explanation": "BPM is a common way to describe tempo.",
+    "sourceName": "Smithsonian Music",
+    "sourceUrl": "https://music.si.edu/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "music-theory"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "music-pop-culture-002",
+    "category": "music-pop-culture",
+    "difficulty": "easy",
+    "question": "Which instrument family includes the violin?",
+    "choices": [
+      "Brass",
+      "Strings",
+      "Woodwind",
+      "Percussion"
+    ],
+    "correctChoiceIndex": 1,
+    "explanation": "A violin produces sound from vibrating strings.",
+    "sourceName": "Smithsonian Music",
+    "sourceUrl": "https://music.si.edu/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "instruments"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "music-pop-culture-003",
+    "category": "music-pop-culture",
+    "difficulty": "easy",
+    "question": "What is a chorus in a popular song?",
+    "choices": [
+      "The silence before recording",
+      "A tuning tool",
+      "A recurring section that usually carries the main hook",
+      "A legal copyright form"
+    ],
+    "correctChoiceIndex": 2,
+    "explanation": "The chorus commonly repeats musical and lyrical material.",
+    "sourceName": "Smithsonian Music",
+    "sourceUrl": "https://music.si.edu/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "songwriting"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "music-pop-culture-004",
+    "category": "music-pop-culture",
+    "difficulty": "easy",
+    "question": "Which city is closely linked to the birth of Motown Records?",
+    "choices": [
+      "Seattle",
+      "Nashville",
+      "Miami",
+      "Detroit"
+    ],
+    "correctChoiceIndex": 3,
+    "explanation": "Berry Gordy founded Motown in Detroit.",
+    "sourceName": "Motown Museum",
+    "sourceUrl": "https://www.motownmuseum.org/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "motown"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "music-pop-culture-005",
+    "category": "music-pop-culture",
+    "difficulty": "easy",
+    "question": "What is sampling in music production?",
+    "choices": [
+      "Reusing a recorded sound within a new work",
+      "Measuring concert attendance",
+      "Tuning only acoustic pianos",
+      "Deleting every repeated beat"
+    ],
+    "correctChoiceIndex": 0,
+    "explanation": "Sampling incorporates recorded audio and can require rights clearance.",
+    "sourceName": "Smithsonian Music",
+    "sourceUrl": "https://music.si.edu/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "production"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "music-pop-culture-006",
+    "category": "music-pop-culture",
+    "difficulty": "easy",
+    "question": "What is a music bridge?",
+    "choices": [
+      "A cable between two speakers only",
+      "A contrasting section that connects other song sections",
+      "The first beat of every bar",
+      "A list of tour dates"
+    ],
+    "correctChoiceIndex": 1,
+    "explanation": "A bridge often creates contrast before returning to a familiar section.",
+    "sourceName": "Smithsonian Music",
+    "sourceUrl": "https://music.si.edu/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "songwriting"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "music-pop-culture-007",
+    "category": "music-pop-culture",
+    "difficulty": "easy",
+    "question": "What does a DJ commonly use crossfading for?",
+    "choices": [
+      "Printing sheet music",
+      "Changing a singer's name",
+      "Blending audio from one source into another",
+      "Building a stage roof"
+    ],
+    "correctChoiceIndex": 2,
+    "explanation": "A crossfader can transition between decks or channels.",
+    "sourceName": "Smithsonian Music",
+    "sourceUrl": "https://music.si.edu/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "dj-culture"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "music-pop-culture-008",
+    "category": "music-pop-culture",
+    "difficulty": "medium",
+    "question": "Which device converts sound waves into an electrical signal?",
+    "choices": [
+      "A projector",
+      "A turntable platter",
+      "A drumstick",
+      "A microphone"
+    ],
+    "correctChoiceIndex": 3,
+    "explanation": "Microphones transduce acoustic energy into an electrical signal.",
+    "sourceName": "Smithsonian Music",
+    "sourceUrl": "https://music.si.edu/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "audio"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "music-pop-culture-009",
+    "category": "music-pop-culture",
+    "difficulty": "medium",
+    "question": "What is syncopation?",
+    "choices": [
+      "Rhythmic emphasis placed on unexpected beats or subdivisions",
+      "Every note played at once",
+      "A song with no rhythm",
+      "A method for painting album art"
+    ],
+    "correctChoiceIndex": 0,
+    "explanation": "Syncopation shifts accents away from expected strong beats.",
+    "sourceName": "Smithsonian Music",
+    "sourceUrl": "https://music.si.edu/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "rhythm"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "music-pop-culture-010",
+    "category": "music-pop-culture",
+    "difficulty": "medium",
+    "question": "What does 'a cappella' mean?",
+    "choices": [
+      "Playing only drums",
+      "Singing without instrumental accompaniment",
+      "A very fast tempo",
+      "Recording outdoors"
+    ],
+    "correctChoiceIndex": 1,
+    "explanation": "A cappella performance centers unaccompanied voices.",
+    "sourceName": "Smithsonian Music",
+    "sourceUrl": "https://music.si.edu/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "performance"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "music-pop-culture-011",
+    "category": "music-pop-culture",
+    "difficulty": "medium",
+    "question": "What is an LP in recorded music?",
+    "choices": [
+      "A lighting program",
+      "A lyric paragraph",
+      "A long-playing record",
+      "A loudspeaker patent"
+    ],
+    "correctChoiceIndex": 2,
+    "explanation": "LP became a standard term for long-form vinyl albums.",
+    "sourceName": "Library of Congress National Recording Registry",
+    "sourceUrl": "https://www.loc.gov/programs/national-recording-preservation-board/recording-registry/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "recordings"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "music-pop-culture-012",
+    "category": "music-pop-culture",
+    "difficulty": "medium",
+    "question": "Which role is responsible for shaping the overall sound of a recording session?",
+    "choices": [
+      "Ticket usher",
+      "Costume tailor",
+      "Venue architect",
+      "Record producer"
+    ],
+    "correctChoiceIndex": 3,
+    "explanation": "A producer guides creative and technical decisions in making a recording.",
+    "sourceName": "Smithsonian Music",
+    "sourceUrl": "https://music.si.edu/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "production"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "music-pop-culture-013",
+    "category": "music-pop-culture",
+    "difficulty": "medium",
+    "question": "What is a remix?",
+    "choices": [
+      "A new version made by altering or recombining recorded elements",
+      "An untouched master recording",
+      "A concert ticket refund",
+      "A silent rehearsal"
+    ],
+    "correctChoiceIndex": 0,
+    "explanation": "Remixes reshape existing stems, tracks, or arrangements.",
+    "sourceName": "Smithsonian Music",
+    "sourceUrl": "https://music.si.edu/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "production"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "music-pop-culture-014",
+    "category": "music-pop-culture",
+    "difficulty": "medium",
+    "question": "Which format stores audio as digital samples?",
+    "choices": [
+      "A paper poster",
+      "A WAV file",
+      "A guitar pick",
+      "A stage pass"
+    ],
+    "correctChoiceIndex": 1,
+    "explanation": "WAV is a container commonly used for digital audio data.",
+    "sourceName": "Smithsonian Music",
+    "sourceUrl": "https://music.si.edu/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "audio"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "music-pop-culture-015",
+    "category": "music-pop-culture",
+    "difficulty": "medium",
+    "question": "What is the purpose of a metronome?",
+    "choices": [
+      "Adding lyrics automatically",
+      "Changing a record label",
+      "Providing a steady pulse for tempo practice",
+      "Measuring microphone color"
+    ],
+    "correctChoiceIndex": 2,
+    "explanation": "Metronomes mark regular beats at a chosen tempo.",
+    "sourceName": "Smithsonian Music",
+    "sourceUrl": "https://music.si.edu/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "music-theory"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "music-pop-culture-016",
+    "category": "music-pop-culture",
+    "difficulty": "hard",
+    "question": "Which register preserves recordings judged culturally, historically, or aesthetically significant in the United States?",
+    "choices": [
+      "The Patent Drawing Vault",
+      "The Highway Register",
+      "The Weather Almanac",
+      "The National Recording Registry"
+    ],
+    "correctChoiceIndex": 3,
+    "explanation": "The Library of Congress adds selected recordings to the National Recording Registry.",
+    "sourceName": "Library of Congress National Recording Registry",
+    "sourceUrl": "https://www.loc.gov/programs/national-recording-preservation-board/recording-registry/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "archives"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "music-pop-culture-017",
+    "category": "music-pop-culture",
+    "difficulty": "hard",
+    "question": "What is a synthesizer?",
+    "choices": [
+      "An instrument that generates or shapes electronic sound",
+      "A stand that holds sheet music",
+      "A purely acoustic drum",
+      "A camera lens"
+    ],
+    "correctChoiceIndex": 0,
+    "explanation": "Synthesizers create sound using electronic or digital methods.",
+    "sourceName": "Smithsonian Music",
+    "sourceUrl": "https://music.si.edu/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "instruments"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "music-pop-culture-018",
+    "category": "music-pop-culture",
+    "difficulty": "hard",
+    "question": "What is call and response?",
+    "choices": [
+      "A method for selling tickets",
+      "A musical phrase answered by another phrase or group",
+      "A silent section between albums",
+      "A microphone repair"
+    ],
+    "correctChoiceIndex": 1,
+    "explanation": "Call and response is a foundational musical interaction across many traditions.",
+    "sourceName": "Smithsonian Music",
+    "sourceUrl": "https://music.si.edu/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "music-theory"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "music-pop-culture-019",
+    "category": "music-pop-culture",
+    "difficulty": "hard",
+    "question": "What does stereo audio provide?",
+    "choices": [
+      "Exactly three singers",
+      "One note at a time",
+      "Two channels that can create left-right spatial placement",
+      "A guarantee of high volume"
+    ],
+    "correctChoiceIndex": 2,
+    "explanation": "Stereo uses two channels to represent spatial differences.",
+    "sourceName": "Smithsonian Music",
+    "sourceUrl": "https://music.si.edu/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "audio"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "music-pop-culture-020",
+    "category": "music-pop-culture",
+    "difficulty": "hard",
+    "question": "What is a hook in popular music?",
+    "choices": [
+      "A cable used to hang speakers",
+      "The legal end of a contract",
+      "A count of microphones",
+      "A memorable musical or lyrical idea"
+    ],
+    "correctChoiceIndex": 3,
+    "explanation": "Hooks are designed to be distinctive and easy to remember.",
+    "sourceName": "Smithsonian Music",
+    "sourceUrl": "https://music.si.edu/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "songwriting"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "music-pop-culture-021",
+    "category": "music-pop-culture",
+    "difficulty": "hard",
+    "question": "Why should a game use original or licensed sound effects?",
+    "choices": [
+      "To respect creators' rights and avoid copying protected recordings",
+      "To make every sound silent",
+      "To guarantee a chart hit",
+      "To change lottery odds"
+    ],
+    "correctChoiceIndex": 0,
+    "explanation": "Original or properly licensed audio avoids unauthorized use of protected material.",
+    "sourceName": "Library of Congress National Recording Registry",
+    "sourceUrl": "https://www.loc.gov/programs/national-recording-preservation-board/recording-registry/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "copyright"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "music-pop-culture-022",
+    "category": "music-pop-culture",
+    "difficulty": "hard",
+    "question": "What is a stem in music production?",
+    "choices": [
+      "A printed concert seat",
+      "A grouped audio export such as drums, vocals, or instruments",
+      "A microphone brand",
+      "A single album review"
+    ],
+    "correctChoiceIndex": 1,
+    "explanation": "Stems let creators rebalance or remix major parts of a production.",
+    "sourceName": "Smithsonian Music",
+    "sourceUrl": "https://music.si.edu/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "production"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  }
+]

@@ -10,9 +10,9 @@ The LottoMind mascot turnaround was supplied by the user for this project. Gener
 
 The board silhouette and label placement were informed by public City of Detroit GIS and Base Unit map resources. Building and bridge depictions are stylized game illustrations. Venue logos, team marks, city seals, and advertising are intentionally omitted.
 
-## Phaser
+## Three.js
 
-Phaser 3 is used as an unmodified runtime dependency under the MIT License. Copyright © 2013–2025 Photon Storm Ltd. The dependency's complete license is distributed in its npm package and permits use, copy, modification, distribution, sublicensing, and sale subject to inclusion of its copyright and permission notice.
+Three.js is used as an unmodified runtime dependency under the MIT License. Copyright © 2010–2026 three.js authors. The dependency's complete license is distributed in its npm package and permits use, copy, modification, distribution, sublicensing, and sale subject to inclusion of its copyright and permission notice.
 
 ## Build and test tooling
 

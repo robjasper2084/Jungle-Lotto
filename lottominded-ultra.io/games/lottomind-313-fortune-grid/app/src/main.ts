@@ -1,8 +1,7 @@
-import Phaser from "phaser";
 import "./styles.css";
 import "./polish.css";
 import "./art.css";
-import { BoardScene } from "./scene/BoardScene";
+import { DetroitBoard3D } from "./render/app/DetroitBoard3D";
 import { createInitialState, type GameMode, type GameState } from "./engine/state";
 import { reducer } from "./engine/reducer";
 import type { GameAction } from "./engine/actions";
@@ -13,6 +12,7 @@ import { districts } from "./content/districts";
 import { developmentNames, ventures } from "./content/ventures";
 import { scorePlayer } from "./engine/scoring";
 import { dailySeed } from "./engine/rng";
+import { collaborationFee, districtVentureIds } from "./engine/economy";
 import { clearSave, loadGame, saveGame } from "./services/storage";
 import { sendToSavedWallet } from "./services/wallet";
 
@@ -24,8 +24,8 @@ app.innerHTML=`<div class="shell"><header class="topbar"><a class="brand" href="
 
 const modal=app.querySelector<HTMLElement>("[data-modal]")!;const hud=app.querySelector<HTMLElement>("[data-hud]")!;const live=app.querySelector<HTMLElement>("[data-live]")!;const roundChip=app.querySelector<HTMLElement>("[data-round]")!;const toastHost=app.querySelector<HTMLElement>("[data-toast]")!;
 let state:any=null;let busy=false;let cpuRunning=false;let selectedRoute:number[]|null=null;
-const game=new Phaser.Game({type:Phaser.CANVAS,parent:"game",backgroundColor:"#05040a",scene:[BoardScene],scale:{mode:Phaser.Scale.RESIZE,width:"100%",height:"100%"},render:{antialias:true,powerPreference:"high-performance"}});
-const scene=()=>game.scene.getScene("board") as BoardScene;
+const board3d=new DetroitBoard3D(app.querySelector<HTMLElement>("#game")!);
+const scene=()=>board3d;
 
 function announce(message:string){live.textContent="";requestAnimationFrame(()=>live.textContent=message)}
 function toast(message:string){toastHost.innerHTML=`<p class="toast" role="status">${escapeHtml(message)}</p>`;setTimeout(()=>toastHost.replaceChildren(),3500)}
@@ -33,7 +33,7 @@ function escapeHtml(value:unknown){return String(value).replace(/[&<>"']/g,(c)=>
 function dispatch(action:GameAction){if(!state)return;const previous=state;state=reducer(state,action);if(state===previous)return;saveGame(state);scene().setState(state);render();const message=state.eventLog.at(-1)?.message;if(message)announce(message);queueCpu();}
 
 function showSetup(){modal.innerHTML=`<div class="modal-backdrop"><form class="modal" data-setup><p class="disclaimer">Original LottoMind Arcade strategy experience · Beta</p><h1>LottoMind 313: Fortune Grid</h1><p>Travel a real-Detroit-inspired map with recognizable landmarks and major streets while establishing fictional ventures. Play solo with CPU opponents or local pass-and-play with up to four people.</p><div class="setup-grid"><label>Mode<select name="mode"><option value="quick313">Quick 313 · 3 rounds</option><option value="standard">Standard · 13 rounds</option><option value="daily">Daily seeded · 3 rounds</option></select></label><label>Total players<select name="players"><option>2</option><option>3</option><option>4</option></select></label><label>Local players<select name="locals"><option>1</option><option>2</option><option>3</option><option>4</option></select></label></div><p class="disclaimer">Players establish original ventures and partnerships in represented districts; they do not buy neighborhoods. Detroit Dollars exist only within this match. LottoMind Credits are never granted by the browser.</p><div class="dialog-actions"><button class="primary" type="submit">Launch Fortune Grid</button>${loadGame()?'<button type="button" data-resume>Resume saved match</button>':""}<a class="button" href="../../features-app.html">Return to LottoMind Arcade</a></div></form></div>`;const form=modal.querySelector<HTMLFormElement>("[data-setup]")!;form.addEventListener("submit",(event)=>{event.preventDefault();const data=new FormData(form);const mode=data.get("mode") as GameMode;const players=Number(data.get("players"));const locals=Math.min(players,Number(data.get("locals")));const seed=mode==="daily"?dailySeed():Number(`${Date.now()}`.slice(-9));start(createInitialState({mode,playerCount:players,localPlayers:locals,seed}));});modal.querySelector("[data-resume]")?.addEventListener("click",()=>{const saved=loadGame();if(saved)start(saved)});}
-function start(next:GameState){state=next;modal.replaceChildren();document.documentElement.style.setProperty("--text-scale",String(state.settings.textScale));document.body.classList.toggle("high-contrast",state.settings.highContrast);const hydrate=()=>{const board=scene();if(!board.sys.isActive()){setTimeout(hydrate,50);return;}board.setState(state);board.fitOverview();render();queueCpu()};hydrate()}
+function start(next:GameState){state=next;modal.replaceChildren();document.documentElement.style.setProperty("--text-scale",String(state.settings.textScale));document.body.classList.toggle("high-contrast",state.settings.highContrast);const board=scene();board.setState(state);board.fitOverview();render();queueCpu()}
 
 async function roll(){if(!state||busy||state.phase!=="roll")return;busy=true;dispatch({type:"ROLL"});await new Promise(r=>setTimeout(r,state?.settings.reducedMotion?0:650));busy=false;const rolledState=state as GameState|null;if(!rolledState)return;if(rolledState.phase==="moving"){selectedRoute=rolledState.players[rolledState.currentPlayer].cpu?chooseRoute(rolledState):rolledState.pendingRoll!.routes[0];await moveSelected();}else render();}
 async function moveSelected(){if(!state||busy||!selectedRoute)return;busy=true;const player=state.players[state.currentPlayer];await scene().animateRoute(player.id,selectedRoute,state.settings.reducedMotion);const route=selectedRoute;selectedRoute=null;busy=false;dispatch({type:"COMPLETE_MOVEMENT",route});scene().followPlayer();}
@@ -81,12 +81,55 @@ function decorateHudControls(){
     hud.prepend(utilities);
   }
   const player=state.players[state.currentPlayer];
+  const rollButton=hud.querySelector<HTMLButtonElement>("[data-game-action=roll]");
+  if(rollButton&&rollButton.textContent!=="Roll 2 Movement Cubes + Signal Orb")rollButton.textContent="Roll 2 Movement Cubes + Signal Orb";
+  const rollResult=hud.querySelector<HTMLElement>(".roll-result");
+  if(rollResult&&!rollResult.dataset.circuitRoll){
+    const dice=state.pendingRoll?.movementDice||[state.pendingRoll?.movement,0];
+    rollResult.dataset.circuitRoll="true";
+    rollResult.innerHTML=`<span>Cube A <strong>${dice[0]}</strong></span><span>Cube B <strong>${dice[1]}</strong></span><span>Move <strong>${state.pendingRoll?.movement}</strong></span><span>Signal <strong>${state.pendingRoll?.signal}</strong></span>`;
+  }
+  const currentNode=boardNodes[player.nodeId];
+  const actionPanel=rollButton?.closest<HTMLElement>(".panel");
+  if(actionPanel&&!actionPanel.querySelector("[data-map-location]")){
+    const location=document.createElement("p");
+    location.className="map-location";
+    location.dataset.mapLocation="true";
+    location.innerHTML=`<strong>${escapeHtml(currentNode.spot)}</strong><small>${escapeHtml(currentNode.street)} · geographically anchored Detroit stop</small>`;
+    actionPanel.insertBefore(location,rollButton);
+  }
+  if(actionPanel&&currentNode.kind==="venture"&&!actionPanel.querySelector("[data-venture-deed]")){
+    const venture=ventures[currentNode.ventureId!];
+    const district=districts.find((entry)=>entry.id===venture.district)!;
+    const owner=state.players.find((entry:GameState["players"][number])=>entry.ventures[venture.id]);
+    const level=owner?.ventures[venture.id]||1;
+    const owned=districtVentureIds(venture.district).filter((id)=>Boolean(player.ventures[id])).length;
+    const deed=document.createElement("div");
+    deed.className="venture-deed";
+    deed.dataset.ventureDeed="true";
+    deed.innerHTML=`<small>${escapeHtml(district.name)} set · ${owned}/3 operated</small><span><b>Launch</b> ${venture.launchCost} DD</span><span><b>Collaboration fee</b> ${collaborationFee(venture.id,level)} DD${owner?` · ${escapeHtml(owner.name)}`:""}</span><span><b>Development</b> ${owner?developmentNames[level]:"Available"}</span>`;
+    actionPanel.insertBefore(deed,rollButton);
+  }
+  const turnCard=hud.querySelector<HTMLElement>(".turn-card");
+  if(turnCard&&player.bonusRoll&&!turnCard.querySelector("[data-bonus-roll]"))turnCard.insertAdjacentHTML("beforeend",'<p data-bonus-roll><strong>Matched cubes:</strong> finish this stop, then roll again.</p>');
   hud.querySelectorAll<HTMLButtonElement>("[data-digit]").forEach((button)=>{
     const index=Number(button.dataset.digit);const locked=player.lockedSignals?.includes(index);const digit=player.signals[index];
     button.classList.toggle("locked",Boolean(locked));button.setAttribute("aria-pressed",String(Boolean(locked)));button.setAttribute("aria-label",`Signal digit ${index+1}: ${digit}. ${locked?"Locked":"Unlocked"}`);const nextText=`${locked?"🔒 ":""}${digit}`;if(button.textContent!==nextText)button.textContent=nextText;
   });
   const portfolioRow=hud.querySelector<HTMLElement>("[data-portfolio=sponsor]")?.parentElement;
   if(portfolioRow&&!portfolioRow.querySelector("[data-portfolio=trade]")){const trade=document.createElement("button");trade.dataset.portfolio="trade";trade.textContent="Trade";portfolioRow.append(trade)}
+}
+
+function decorateDialogCopy(){
+  const setup=modal.querySelector<HTMLFormElement>("[data-setup]");
+  const setupIntro=setup?.querySelectorAll("p")[1];
+  if(setupIntro&&!setupIntro.dataset.detroit3dCopy){setupIntro.dataset.detroit3dCopy="true";setupIntro.textContent="Travel a 3D Detroit map whose stops follow real street and landmark positions. Roll two Movement Cubes, pass the 313 Hub for a City Dividend, launch fictional ventures, develop district networks, trade, and collect collaboration fees. Play solo with CPU opponents or local pass-and-play with up to four people.";}
+  const help=modal.querySelector<HTMLElement>("article.modal");
+  const helpList=help?.querySelector("ol");
+  if(help?.querySelector("h2")?.textContent==="How to Play"&&helpList&&!helpList.hasAttribute("data-detroit3d-help")){
+    helpList.setAttribute("data-detroit3d-help","true");
+    helpList.innerHTML="<li>Roll two Movement Cubes (1–6 each) and one Signal Orb (0–9), then move clockwise by the combined cube total.</li><li>Pass or land on the LottoMind 313 Hub to collect a 200 DD City Dividend. Matching cubes unlock one bonus turn.</li><li>Launch available fictional ventures, collect Collaboration Fees, trade, upgrade through four development levels, and complete three-venture district networks.</li><li>Stops follow real Detroit street and landmark positions; ventures remain fictional and no neighborhood is bought or sold.</li><li>Drag to orbit the 3D city, use the wheel or pinch to zoom, right-drag to pan, arrow keys or WASD to move the camera target, and 0 for overview.</li>";
+  }
 }
 
 function showNumberLab(){
@@ -100,4 +143,6 @@ function showNumberLab(){
 }
 
 new MutationObserver(decorateHudControls).observe(hud,{childList:true,subtree:true});
+new MutationObserver(decorateDialogCopy).observe(modal,{childList:true,subtree:true});
+decorateDialogCopy();
 hud.addEventListener("click",(event)=>{const target=(event.target as HTMLElement).closest<HTMLElement>("button");if(!target||!state)return;if(target.dataset.digit!==undefined)dispatch({type:"SIGNAL_LOCK",index:Number(target.dataset.digit)});if(target.dataset.utility==="save"){dispatch({type:"MANUAL_SAVE"});toast("Match saved on this device.")}if(target.dataset.utility==="lab")showNumberLab();if(target.dataset.utility==="restart"){clearSave();state=null;hud.replaceChildren();showSetup()}if(target.dataset.portfolio==="trade"){const player=state.players[state.currentPlayer];const ventureId=Number(Object.keys(player.ventures)[0]);const targetPlayer=(state.currentPlayer+1)%state.players.length;if(Number.isFinite(ventureId))dispatch({type:"TRADE_VENTURE",ventureId,targetPlayer})}});

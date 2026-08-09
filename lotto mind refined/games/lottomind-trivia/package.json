@@ -1,0 +1,12 @@
+{
+  "name": "lottomind-trivia-vault",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build-question-bank.mjs && node scripts/validate-build.mjs",
+    "preview": "node scripts/serve-preview.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "lint": "node --check src/app.mjs && node --check src/refined-embed.mjs && node --check src/engine.mjs && node --check src/services.mjs && node --check src/question-schema.mjs && node --check admin/admin.mjs && node --check scripts/build-question-bank.mjs && node --check scripts/validate-build.mjs && node --check scripts/serve-preview.mjs",
+    "typecheck": "node scripts/validate-build.mjs"
+  }
+}

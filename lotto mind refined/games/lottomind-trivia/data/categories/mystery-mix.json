@@ -1,0 +1,552 @@
+[
+  {
+    "id": "mystery-mix-001",
+    "category": "mystery-mix",
+    "difficulty": "easy",
+    "question": "Which planet is known for its prominent ring system?",
+    "choices": [
+      "Saturn",
+      "Mercury",
+      "Venus",
+      "Mars"
+    ],
+    "correctChoiceIndex": 0,
+    "explanation": "All giant planets have rings, but Saturn's are the most visually prominent.",
+    "sourceName": "NASA Science",
+    "sourceUrl": "https://science.nasa.gov/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "space"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "mystery-mix-002",
+    "category": "mystery-mix",
+    "difficulty": "easy",
+    "question": "What creates the aurora near Earth's polar regions?",
+    "choices": [
+      "Moonlight reflecting from snow only",
+      "Charged particles interacting with Earth's magnetic field and atmosphere",
+      "Ocean waves reaching the sky",
+      "City lasers crossing clouds"
+    ],
+    "correctChoiceIndex": 1,
+    "explanation": "Solar particles guided by the magnetic field excite atmospheric gases.",
+    "sourceName": "NASA Science",
+    "sourceUrl": "https://science.nasa.gov/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "science"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "mystery-mix-003",
+    "category": "mystery-mix",
+    "difficulty": "easy",
+    "question": "What is bioluminescence?",
+    "choices": [
+      "Sunlight reflected from metal",
+      "Heat visible through glass",
+      "Light produced by a living organism",
+      "A painted glow"
+    ],
+    "correctChoiceIndex": 2,
+    "explanation": "Many ocean organisms produce light through chemical reactions.",
+    "sourceName": "NOAA Ocean Exploration",
+    "sourceUrl": "https://oceanexplorer.noaa.gov/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "ocean"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "mystery-mix-004",
+    "category": "mystery-mix",
+    "difficulty": "easy",
+    "question": "Which ancient writing material was made from a Nile-region plant?",
+    "choices": [
+      "Plastic",
+      "Aluminum foil",
+      "Rubber",
+      "Papyrus"
+    ],
+    "correctChoiceIndex": 3,
+    "explanation": "Papyrus sheets were made from the papyrus plant and used for writing.",
+    "sourceName": "Smithsonian Institution",
+    "sourceUrl": "https://www.si.edu/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "history"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "mystery-mix-005",
+    "category": "mystery-mix",
+    "difficulty": "easy",
+    "question": "What is the deepest known part of the world's oceans?",
+    "choices": [
+      "Challenger Deep",
+      "Great Blue Hole",
+      "Lake Baikal",
+      "Hudson Canyon"
+    ],
+    "correctChoiceIndex": 0,
+    "explanation": "Challenger Deep lies within the Mariana Trench.",
+    "sourceName": "NOAA Ocean Exploration",
+    "sourceUrl": "https://oceanexplorer.noaa.gov/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "ocean"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "mystery-mix-006",
+    "category": "mystery-mix",
+    "difficulty": "easy",
+    "question": "Which force keeps planets in orbit around the Sun?",
+    "choices": [
+      "Sound",
+      "Gravity",
+      "Friction with air",
+      "Magnetism alone"
+    ],
+    "correctChoiceIndex": 1,
+    "explanation": "Gravity bends planetary motion into orbits around the Sun.",
+    "sourceName": "NASA Science",
+    "sourceUrl": "https://science.nasa.gov/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "space"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "mystery-mix-007",
+    "category": "mystery-mix",
+    "difficulty": "easy",
+    "question": "What is dendrochronology?",
+    "choices": [
+      "Mapping ocean currents with drums",
+      "Reading ancient star signs",
+      "Dating and studying events using tree rings",
+      "Measuring cave echoes"
+    ],
+    "correctChoiceIndex": 2,
+    "explanation": "Tree-ring patterns can provide precisely dated environmental records.",
+    "sourceName": "National Park Service",
+    "sourceUrl": "https://www.nps.gov/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "science"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "mystery-mix-008",
+    "category": "mystery-mix",
+    "difficulty": "medium",
+    "question": "Which animal is the largest known to have lived on Earth?",
+    "choices": [
+      "African elephant",
+      "Tyrannosaurus rex",
+      "Giant squid",
+      "Blue whale"
+    ],
+    "correctChoiceIndex": 3,
+    "explanation": "Blue whales exceed the mass of any known dinosaur.",
+    "sourceName": "Smithsonian Institution",
+    "sourceUrl": "https://www.si.edu/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "animals"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "mystery-mix-009",
+    "category": "mystery-mix",
+    "difficulty": "medium",
+    "question": "What is a cryptogram?",
+    "choices": [
+      "A puzzle in which text is encoded",
+      "A map of cloud types",
+      "A fossil footprint",
+      "A musical tempo"
+    ],
+    "correctChoiceIndex": 0,
+    "explanation": "Solvers decode substituted or transformed symbols to reveal a message.",
+    "sourceName": "Library of Congress",
+    "sourceUrl": "https://www.loc.gov/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "puzzles"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "mystery-mix-010",
+    "category": "mystery-mix",
+    "difficulty": "medium",
+    "question": "What causes a lunar eclipse?",
+    "choices": [
+      "The Moon turns off its light",
+      "Earth passes between the Sun and Moon",
+      "Venus blocks every star",
+      "Clouds cover the entire planet"
+    ],
+    "correctChoiceIndex": 1,
+    "explanation": "Earth's shadow falls across the Moon during a lunar eclipse.",
+    "sourceName": "NASA Science",
+    "sourceUrl": "https://science.nasa.gov/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "space"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "mystery-mix-011",
+    "category": "mystery-mix",
+    "difficulty": "medium",
+    "question": "What is the Rosetta Stone famous for helping scholars do?",
+    "choices": [
+      "Predict eclipses with electricity",
+      "Invent paper currency",
+      "Decipher Egyptian hieroglyphs",
+      "Map the ocean floor"
+    ],
+    "correctChoiceIndex": 2,
+    "explanation": "Parallel texts in multiple scripts helped unlock ancient Egyptian writing.",
+    "sourceName": "Smithsonian Institution",
+    "sourceUrl": "https://www.si.edu/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "history"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "mystery-mix-012",
+    "category": "mystery-mix",
+    "difficulty": "medium",
+    "question": "Which layer of Earth is liquid and helps generate the magnetic field?",
+    "choices": [
+      "Crust",
+      "Inner core",
+      "Upper atmosphere",
+      "Outer core"
+    ],
+    "correctChoiceIndex": 3,
+    "explanation": "Flowing iron-rich material in the outer core powers the geodynamo.",
+    "sourceName": "Smithsonian Institution",
+    "sourceUrl": "https://www.si.edu/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "earth-science"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "mystery-mix-013",
+    "category": "mystery-mix",
+    "difficulty": "medium",
+    "question": "What is echolocation?",
+    "choices": [
+      "Using reflected sound to locate objects",
+      "Seeing ultraviolet colors",
+      "Reading magnetic tape",
+      "Measuring temperature with light only"
+    ],
+    "correctChoiceIndex": 0,
+    "explanation": "Bats and toothed whales can interpret returning echoes.",
+    "sourceName": "Smithsonian Institution",
+    "sourceUrl": "https://www.si.edu/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "animals"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "mystery-mix-014",
+    "category": "mystery-mix",
+    "difficulty": "medium",
+    "question": "Which civilization built Machu Picchu?",
+    "choices": [
+      "The Roman",
+      "The Inca",
+      "The Viking",
+      "The Phoenician"
+    ],
+    "correctChoiceIndex": 1,
+    "explanation": "Machu Picchu was an Inca site in the Andes.",
+    "sourceName": "Smithsonian Institution",
+    "sourceUrl": "https://www.si.edu/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "history"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "mystery-mix-015",
+    "category": "mystery-mix",
+    "difficulty": "medium",
+    "question": "What does a seismograph record?",
+    "choices": [
+      "Wind direction only",
+      "Ocean salinity",
+      "Ground motion from seismic waves",
+      "Starlight color"
+    ],
+    "correctChoiceIndex": 2,
+    "explanation": "Seismographs measure vibrations traveling through Earth.",
+    "sourceName": "National Park Service",
+    "sourceUrl": "https://www.nps.gov/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "earth-science"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "mystery-mix-016",
+    "category": "mystery-mix",
+    "difficulty": "hard",
+    "question": "Why do deep-sea animals often have unusual adaptations?",
+    "choices": [
+      "They breathe only desert air",
+      "They never encounter pressure",
+      "They live above the atmosphere",
+      "They live under darkness, cold, pressure, and scarce food"
+    ],
+    "correctChoiceIndex": 3,
+    "explanation": "Extreme deep-ocean conditions favor specialized bodies and behaviors.",
+    "sourceName": "NOAA Ocean Exploration",
+    "sourceUrl": "https://oceanexplorer.noaa.gov/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "ocean"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "mystery-mix-017",
+    "category": "mystery-mix",
+    "difficulty": "hard",
+    "question": "What is the Milky Way?",
+    "choices": [
+      "The galaxy that contains our Solar System",
+      "A cloud inside Earth's atmosphere",
+      "A ring around Saturn",
+      "A single nearby comet"
+    ],
+    "correctChoiceIndex": 0,
+    "explanation": "The Sun is one star among hundreds of billions in the Milky Way.",
+    "sourceName": "NASA Science",
+    "sourceUrl": "https://science.nasa.gov/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "space"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "mystery-mix-018",
+    "category": "mystery-mix",
+    "difficulty": "hard",
+    "question": "What are the moving stone tracks of Racetrack Playa linked to?",
+    "choices": [
+      "Hidden animal teams",
+      "Thin ice, water, and wind moving rocks across mud",
+      "A magnetic lottery machine",
+      "Volcanic eruptions every night"
+    ],
+    "correctChoiceIndex": 1,
+    "explanation": "Observed conditions showed wind pushing ice panels that moved rocks across the playa.",
+    "sourceName": "National Park Service",
+    "sourceUrl": "https://www.nps.gov/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "mystery-explained"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "mystery-mix-019",
+    "category": "mystery-mix",
+    "difficulty": "hard",
+    "question": "What is a mirage?",
+    "choices": [
+      "A permanent lake appearing instantly",
+      "A message from a satellite",
+      "An optical effect caused by light bending through layers of air",
+      "A shadow with no light source"
+    ],
+    "correctChoiceIndex": 2,
+    "explanation": "Temperature gradients refract light and can shift or invert distant images.",
+    "sourceName": "NOAA Ocean Exploration",
+    "sourceUrl": "https://oceanexplorer.noaa.gov/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "atmosphere"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "mystery-mix-020",
+    "category": "mystery-mix",
+    "difficulty": "hard",
+    "question": "Which library is the largest in the United States by collection size?",
+    "choices": [
+      "A neighborhood bookmobile",
+      "New York Public Library alone",
+      "The Vatican Library",
+      "Library of Congress"
+    ],
+    "correctChoiceIndex": 3,
+    "explanation": "The Library of Congress maintains the country's largest library collection.",
+    "sourceName": "Library of Congress",
+    "sourceUrl": "https://www.loc.gov/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "culture"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "mystery-mix-021",
+    "category": "mystery-mix",
+    "difficulty": "hard",
+    "question": "What is the scientific value of a null result?",
+    "choices": [
+      "It can show that a tested effect was not detected under the study conditions",
+      "It proves every alternative is true",
+      "It means no data was collected",
+      "It must be hidden"
+    ],
+    "correctChoiceIndex": 0,
+    "explanation": "Null results constrain ideas and help refine future questions.",
+    "sourceName": "Smithsonian Institution",
+    "sourceUrl": "https://www.si.edu/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "scientific-method"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "mystery-mix-022",
+    "category": "mystery-mix",
+    "difficulty": "hard",
+    "question": "Which practice makes a mystery claim easier to evaluate?",
+    "choices": [
+      "Removing all context",
+      "Preserving original data, time, location, and methods",
+      "Sharing only a cropped screenshot",
+      "Changing the story after questions"
+    ],
+    "correctChoiceIndex": 1,
+    "explanation": "Transparent records let others inspect evidence and attempt independent checks.",
+    "sourceName": "Smithsonian Institution",
+    "sourceUrl": "https://www.si.edu/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "critical-thinking"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  }
+]

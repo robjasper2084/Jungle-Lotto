@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+  <head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><meta name="robots" content="noindex,nofollow" /><title>Trivia Vault Question Authoring</title><link rel="stylesheet" href="./admin.css" /></head>
+  <body>
+    <header><div><span>LOTTOMIND INTERNAL AUTHORING</span><h1>Trivia Vault Question Manager</h1><p>Offline review and import workflow. This static tool cannot publish or change production data.</p></div><a href="../">Player Preview</a></header>
+    <main>
+      <section class="notice" role="note"><strong>Security boundary</strong><p>No authentication or backend write contract is configured, so this page is intentionally excluded from player navigation. Use it locally, export a reviewed backup, and commit validated shards through the repository review process.</p></section>
+      <section class="toolbar" aria-label="Question tools">
+        <label>Search <input id="search" type="search" placeholder="ID, question, tag…" /></label>
+        <label>Category <select id="category-filter"><option value="">All categories</option></select></label>
+        <label>Difficulty <select id="difficulty-filter"><option value="">All difficulties</option><option>easy</option><option>medium</option><option>hard</option></select></label>
+        <button id="add-question">Add question</button><button id="import-button">Import JSON / CSV</button><button id="export-button">Export backup</button><input id="import-file" type="file" accept=".json,.csv,application/json,text/csv" hidden />
+      </section>
+      <div id="status" role="status" aria-live="polite"></div>
+      <section class="summary" id="summary"></section>
+      <div class="table-wrap"><table><thead><tr><th>Status</th><th>ID</th><th>Category</th><th>Difficulty</th><th>Question</th><th>Last edit</th><th>Actions</th></tr></thead><tbody id="question-rows"></tbody></table></div>
+    </main>
+    <dialog id="question-dialog">
+      <form id="question-form" method="dialog">
+        <div class="dialog-head"><h2 id="dialog-title">Edit question</h2><button type="button" id="close-dialog" aria-label="Close">×</button></div>
+        <div class="form-grid">
+          <label>ID<input name="id" required pattern="[a-z0-9][a-z0-9-]{4,79}" /></label>
+          <label>Category<select name="category" required></select></label>
+          <label>Difficulty<select name="difficulty" required><option>easy</option><option>medium</option><option>hard</option></select></label>
+          <label>Review status<select name="reviewStatus"><option>draft</option><option>in-review</option><option>approved</option></select></label>
+          <label class="wide">Question<textarea name="question" required rows="3"></textarea></label>
+          <label>Choice 1<input name="choice0" required /></label><label>Choice 2<input name="choice1" required /></label><label>Choice 3<input name="choice2" required /></label><label>Choice 4<input name="choice3" required /></label>
+          <label>Correct choice<select name="correctChoiceIndex"><option value="0">Choice 1</option><option value="1">Choice 2</option><option value="2">Choice 3</option><option value="3">Choice 4</option></select></label>
+          <label>Active<select name="active"><option value="true">Active</option><option value="false">Inactive</option></select></label>
+          <label class="wide">Explanation<textarea name="explanation" required rows="3"></textarea></label>
+          <label>Source name<input name="sourceName" /></label><label>Source URL<input name="sourceUrl" type="url" /></label>
+          <label>Reviewed at<input name="reviewedAt" type="date" /></label><label>Tags<input name="tags" placeholder="comma, separated" /></label>
+          <label>Editor<input name="editedBy" required /></label><label>Version<input name="version" type="number" min="1" value="1" /></label>
+        </div>
+        <div id="form-errors" role="alert"></div>
+        <div class="actions"><button type="button" id="preview-question">Preview</button><button type="submit" class="primary">Save local draft</button></div>
+      </form>
+    </dialog>
+    <dialog id="preview-dialog"><div id="preview-content"></div><button type="button" id="close-preview">Close preview</button></dialog>
+    <script type="module" src="./admin.mjs"></script>
+  </body>
+</html>
