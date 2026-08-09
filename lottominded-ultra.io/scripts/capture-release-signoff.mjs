@@ -157,7 +157,7 @@ try {
         horizontalOverflow: await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1),
         visibleKeyboardFocus: await hasVisibleKeyboardFocus(page),
         reducedMotion: await page.evaluate(() => matchMedia("(prefers-reduced-motion: reduce)").matches),
-        noindex: await page.locator('meta[name="robots"]').getAttribute("content"),
+        noindex: await page.evaluate(() => document.querySelector('meta[name="robots"]')?.getAttribute("content") || ""),
         stagingBannerVisible: await page.locator("[data-lm-staging-banner]").isVisible().catch(() => false),
         environment: await page.evaluate(() => ({
           name: window.LottoMindEnvironment?.name,
