@@ -42,6 +42,7 @@ jobs:
             assets \
             gothtechnology \
             gothtechnology-canvas \
+            "lotto mind refined" \
             lottomind-motion-intro \
             lottomind-stem-studio \
             shadow-ops-canvas; do
