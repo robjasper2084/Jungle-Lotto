@@ -38,4 +38,3 @@ No new image, video, canvas, or font payload was added. The browser client adds 
 - Route matrix: 162/162 passed.
 - Staging safety: 12/12 passed; 27 pages and 627 same-origin references checked.
 - Full browser run: 201 passed and 8 skipped; three worker-contention timeouts all passed in a focused single-worker rerun (6/6).
-
