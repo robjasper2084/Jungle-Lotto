@@ -7578,7 +7578,7 @@ body.motion-page-ready .home-page .hero h1 > span {
   border-color: rgba(41, 247, 255, 0.34);
   background:
     radial-gradient(circle at var(--mx) var(--my), rgba(41, 247, 255, 0.12), transparent 16rem),
-    linear-gradient(90deg, rgba(3, 5, 10, 0.97), rgba(3, 5, 10, 0.88)),
+    linear-gradient(90deg, rgba(3, 5, 10, 0.998) 0%, rgba(3, 5, 10, 0.99) 62%, rgba(3, 5, 10, 0.96) 100%),
     linear-gradient(135deg, rgba(41, 247, 255, 0.12), rgba(255, 79, 216, 0.045));
 }
 
@@ -15521,6 +15521,21 @@ html.lm-mobile-performance body.home-page .hero-copy::before {
 /* Keep the home wordmark crisp: duplicated glitch glyphs read as text bleed. */
 body.home-page .hero h1 > span::before,
 body.home-page .hero h1 > span::after {
+  display: none !important;
+  content: none !important;
+  animation: none !important;
+}
+
+body.home-page #top .hero-copy h1,
+body.home-page #top .hero-copy h1 > span {
+  opacity: 1 !important;
+  filter: none !important;
+  transform: none !important;
+  animation: none !important;
+}
+
+body.home-page #top .hero-copy h1::before,
+body.home-page #top .hero-copy h1::after {
   display: none !important;
   content: none !important;
   animation: none !important;

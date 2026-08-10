@@ -1,6 +1,11 @@
 const { test, expect } = require("@playwright/test");
 
 const API_PATTERN = /https:\/\/sqdasdbvlkgpbbiyeune\.supabase\.co\/functions\/v1\/lottomind-api.*/i;
+const testPort = Number(process.env.LOTTOMIND_TEST_PORT);
+if (!Number.isInteger(testPort) || testPort < 1) {
+  throw new Error("LOTTOMIND_TEST_PORT is required. Run `npm test` to allocate an isolated test port.");
+}
+const localTestOrigin = `http://127.0.0.1:${testPort}`;
 
 async function blockMedia(page) {
   await page.route(/\.(?:mp4|webm|mp3|wav)(?:\?.*)?$/i, (route) => route.abort());
@@ -11,7 +16,7 @@ async function mockAccountApi(page, onRequest = () => {}) {
     const request = route.request();
     const path = new URL(request.url()).pathname;
     const headers = {
-      "Access-Control-Allow-Origin": request.headers().origin || "http://127.0.0.1:8142",
+      "Access-Control-Allow-Origin": request.headers().origin || localTestOrigin,
       "Access-Control-Allow-Credentials": "true",
       "Access-Control-Allow-Headers": "authorization, content-type, x-client-info, x-requested-with",
       "Access-Control-Allow-Methods": "GET, POST, OPTIONS",

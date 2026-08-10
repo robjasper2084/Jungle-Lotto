@@ -91,6 +91,7 @@ window.LMAudioMix = {
   if (!header) return;
 
   const navItems = [
+    { label: "Spheres", searchLabel: "Lottery Spheres", href: siteUrl("./lottery-spheres.html#spheres"), icon: "SP", description: "Open the entertainment-only number sphere experience." },
     { label: "Home", searchLabel: "LottoMind", href: siteUrl("./index.html#top"), icon: "HM", description: "Open the LottoMind consumer ecosystem." },
     { label: "Events", href: siteUrl("./live-events.html"), icon: "EV" },
     { label: "News", href: siteUrl("./news/"), icon: "NW" },
@@ -138,9 +139,7 @@ window.LMAudioMix = {
       </nav>
       <div class="lm-header-utilities" aria-label="Account and support utilities">
         <button type="button" data-command-search-open aria-label="Search LottoMind routes">Search</button>
-        <a href="${siteUrl("./account.html#credits")}">Credits</a>
         <a href="${siteUrl("./account.html")}">Account</a>
-        <button type="button" data-reduce-motion-toggle aria-pressed="${storedReduceMotion}" aria-label="${storedReduceMotion ? "Restore nonessential motion" : "Reduce nonessential motion"}">Motion</button>
       </div>
     </header>
   `;

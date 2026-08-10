@@ -1,5 +1,7 @@
 # LottoMind v2 Production Release Candidate
 
+> Historical candidate notice (2026-08-09): this file records `v2-rc7`. The focused Pages-artifact, route-isolation, shared-console, Arcade-discovery, and Trivia-presentation maintenance passed its local gates but is not a fresh Step 34 candidate. Hosted staging is not configured, commerce operations remain locked, and no production approval is implied by this document.
+
 ## Release Identity
 
 - Production URL: https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/

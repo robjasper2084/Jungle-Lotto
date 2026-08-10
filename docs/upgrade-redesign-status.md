@@ -1,5 +1,21 @@
 # LottoMind Upgrade Redesign Status
 
+## Pages Artifact And Discovery Maintenance - Verified Locally
+
+- Maintenance date: 2026-08-09
+- Working branch: `upgrade-redesign`, derived from `af3b2def12a031f9d7ea6208d540c25a5514ffe4`; the focused maintenance commit contains this status record
+- Pages artifact: the production workflow packages source-controlled and non-ignored site files from the root launcher, `lottominded-ultra.io`, `lotto mind refined`, and `lottomind-stem-studio` instead of uploading the repository root
+- Measured package: 1,750 source files and 1,117 MiB, with a 1,200 MiB hard gate
+- Media boundary: route-reachable game, Storefront, audio, video, Refined, and STEM assets remain intact. The packager omitted 166 unreferenced media files totaling 476.1 MiB without altering source media.
+- Route-test isolation: source and staging servers use dynamically allocated available ports; the suite no longer depends on port 8142 or an unrelated process already using it
+- Hosted staging: Blocked. No isolated remote preview provider is configured. The guarded local staging build remains the only verified staging mode and must not be represented as hosted staging.
+- Commerce operations: Blocked. Store ordering remains locked until inventory, shipping, tax, returns, confirmation email, and carrier tracking are operationally verified.
+- Arcade discovery: Grid and Rail modes expose all 10 manifest routes from one verified source. Grid is the default overview, Rail preserves swipe/scroll browsing, Spheres is first in the shared header, and desktop/mobile checks found no horizontal overflow or browser errors.
+- Trivia presentation: Launcher spacing, typography, mode-card targets, and responsive stacking were tightened. Desktop/mobile checks found no horizontal overflow or browser errors, and a real Quick Play interaction opened the first question successfully.
+- Shared surface verification: the complete 18-key, six-preset instrument console passed interaction checks on News and Live Events. The desktop Magic 8 oracle is 30% smaller and retained its question input and Ask action.
+- Focused verification: `check:site` passed 17/17 HTML files; `backend:test` passed the secure backend contract; `games:validate` passed all 10 manifest routes; `trivia:test` passed 13/13; `arcade-pilot:test` passed 2/2 desktop/mobile checks; `routes:test` passed 168/168 source and staging route checks; and the packaged artifact route smoke passed 84/84.
+- Release status: This maintenance commit is not a Step 34 release candidate, is not production approved, and has not been deployed
+
 ## Entry Motion And Page Soundtracks
 
 - Step number: Owner-requested entry motion, performance, and assigned page soundtracks

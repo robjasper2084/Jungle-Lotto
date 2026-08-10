@@ -4,6 +4,18 @@ This matrix records the current release-signoff evidence for the upgrade branch.
 
 ## Evidence
 
+### 2026-08-09 Maintenance Delta
+
+- Current maintenance source: `upgrade-redesign`, derived from `af3b2def12a031f9d7ea6208d540c25a5514ffe4`; the focused maintenance commit contains this report
+- Lean Pages package: 1,750 source files, 1,117 MiB measured, 1,200 MiB maximum gate. The packager omitted 166 unreferenced media files totaling 476.1 MiB without modifying source media.
+- Route isolation: `routes:test` now allocates available source and staging ports dynamically instead of assuming port 8142. The full source/staging gate passed 168/168, and the packaged artifact route smoke passed 84/84.
+- Shared interactive surfaces: the complete compact instrument console is present on News and Live Events, and the desktop Magic 8 oracle is 30% smaller while retaining its input and action controls.
+- Hosted staging: `Blocked`; no isolated remote preview provider is configured
+- Commerce operations: `Blocked`; Storefront ordering remains locked pending verified inventory, shipping, tax, returns, confirmation email, and tracking
+- Arcade discovery and Trivia launcher visual states: `Pass` in fresh desktop/mobile verification. Grid mode exposes all 10 routes, Rail mode preserves swipe/scroll browsing, Spheres is first in the shared header, Trivia Quick Play opens a real question, and neither route produced horizontal overflow or browser errors.
+- Focused maintenance tests: `check:site` 17/17 HTML files; `backend:test` secure contract pass; `games:validate` 10/10 manifest routes; `trivia:test` 13/13; `arcade-pilot:test` 2/2; `routes:test` 168/168; packaged route smoke 84/84.
+- The `v2-rc7` evidence below remains historical and must not be used to approve this maintenance commit without a fresh Step 34 candidate.
+
 - Production baseline: `v1-final` at `975c637cea7003533cdc30aed9d96be51929bfc8`, with 69 route captures in [`visual-baseline/v1/`](visual-baseline/v1/)
 - Audited site content: immutable target of annotated tag `v2-rc7`; visual source commit `afbf7a58ab89750e65f7051ba34ecefe3057984f`
 - Current staging captures: 81/81 passed across 27 routes at `1440x900`, `768x1024`, and `390x844`

@@ -828,3 +828,44 @@ body.has-lm-news-healing-dock {
       "actions";
   }
 }
+
+@media (min-width: 681px) {
+  .lm-healing-generator--oracle-only,
+  .lm-healing-generator--oracle-only.is-positioned {
+    --lm-healing-size: min(259px, calc(100vw - 24px), calc(100dvh - 130px));
+    padding: 24px 22px;
+  }
+
+  .lm-healing-generator--oracle-only .lm-healing-generator__orb-mark {
+    width: 42px;
+  }
+
+  .lm-healing-generator--oracle-only .lm-healing-generator__oracle {
+    margin-top: 7px;
+    padding-block: 8px;
+  }
+
+  .lm-healing-generator--oracle-only .lm-healing-generator__reading {
+    min-height: 36px;
+    font-size: 0.78rem;
+  }
+
+  .lm-healing-generator--oracle-only .lm-healing-generator__copy small,
+  .lm-healing-generator--oracle-only .lm-healing-generator__oracle-kicker {
+    font-size: 0.6rem;
+  }
+
+  .lm-healing-generator--oracle-only .lm-healing-generator__copy strong {
+    font-size: 0.82rem;
+  }
+
+  .lm-healing-generator--oracle-only .lm-healing-generator__oracle-form input,
+  .lm-healing-generator--oracle-only .lm-healing-generator__ask {
+    min-height: 36px;
+    height: 36px;
+  }
+
+  .lm-healing-generator--oracle-only .lm-healing-generator__oracle-status {
+    font-size: 0.56rem;
+  }
+}

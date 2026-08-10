@@ -12,6 +12,9 @@
   const live = document.querySelector("[data-arcade-live]");
   const count = document.querySelector("[data-arcade-count]");
   const visibleCount = document.querySelector("[data-arcade-visible-count]");
+  const directory = document.querySelector("[data-view]");
+  const viewButtons = [...document.querySelectorAll("[data-arcade-view]")];
+  const viewStatus = document.querySelector("[data-arcade-view-status]");
   const railButtons = [...document.querySelectorAll("[data-arcade-scroll]")];
   const featuredLink = document.querySelector("[data-arcade-featured-link]");
   const loading = document.querySelector("[data-arcade-loading]");
@@ -22,17 +25,28 @@
   const heroVideoToggle = document.querySelector("[data-arcade-hero-video-toggle]");
   const reducedMotion = global.matchMedia("(prefers-reduced-motion: reduce)");
   const difficultyOrder = { Casual: 0, Intermediate: 1, Advanced: 2 };
-  const state = { category: "All", query: "", sort: "featured" };
+  const viewStorageKey = "lm-arcade-directory-view";
+  let savedView = "grid";
+  try {
+    const storedView = global.localStorage.getItem(viewStorageKey);
+    if (storedView === "grid" || storedView === "rail") savedView = storedView;
+  } catch (_error) {
+    // Storage can be unavailable in private browsing or restricted previews.
+  }
+  const state = { category: "All", query: "", sort: "featured", view: savedView };
 
   function updateRailControls() {
+    const railActive = state.view === "rail";
     const maxScroll = Math.max(0, grid.scrollWidth - grid.clientWidth);
     railButtons.forEach((button) => {
       const direction = Number(button.dataset.arcadeScroll);
-      button.disabled = direction < 0 ? grid.scrollLeft <= 2 : grid.scrollLeft >= maxScroll - 2;
+      button.disabled = !railActive
+        || (direction < 0 ? grid.scrollLeft <= 2 : grid.scrollLeft >= maxScroll - 2);
     });
   }
 
   function scrollRail(direction) {
+    if (state.view !== "rail") return;
     const card = grid.querySelector(".arcade-game-card");
     const gap = Number.parseFloat(global.getComputedStyle(grid).columnGap) || 16;
     const distance = card ? card.getBoundingClientRect().width + gap : grid.clientWidth * 0.85;
@@ -100,13 +114,34 @@
     updateHeroVideoControl();
   }
 
-  if (!grid || !filters || !search || !sort || !empty || !live || !count || !visibleCount) return;
+  if (!grid || !filters || !search || !sort || !empty || !live || !count || !visibleCount || !directory) return;
 
   function announce(message) {
     live.textContent = "";
     global.requestAnimationFrame(() => {
       live.textContent = message;
     });
+  }
+
+  function applyView(view, options = {}) {
+    const nextView = view === "rail" ? "rail" : "grid";
+    const { persist = true, announceChange = true } = options;
+    state.view = nextView;
+    directory.dataset.view = nextView;
+    viewButtons.forEach((button) => {
+      button.setAttribute("aria-pressed", String(button.dataset.arcadeView === nextView));
+    });
+    if (viewStatus) viewStatus.textContent = nextView === "grid" ? "All routes shown" : "Swipe or scroll routes";
+    if (nextView === "grid") grid.scrollLeft = 0;
+    if (persist) {
+      try {
+        global.localStorage.setItem(viewStorageKey, nextView);
+      } catch (_error) {
+        // The selected view still works for this session without persistence.
+      }
+    }
+    global.requestAnimationFrame(updateRailControls);
+    if (announceChange) announce(`${nextView === "grid" ? "Grid" : "Rail"} view selected.`);
   }
 
   function filterButton(category) {
@@ -225,7 +260,7 @@
     filters.querySelectorAll("button").forEach((button) => {
       button.setAttribute("aria-pressed", String(button.dataset.category === state.category));
     });
-    announce(`${visible.length} arcade route${visible.length === 1 ? "" : "s"} visible.`);
+    announce(`${visible.length} arcade route${visible.length === 1 ? "" : "s"} visible in ${state.view} view.`);
     global.requestAnimationFrame(updateRailControls);
   }
 
@@ -242,6 +277,9 @@
   sort.addEventListener("change", () => {
     state.sort = sort.value;
     render();
+  });
+  viewButtons.forEach((button) => {
+    button.addEventListener("click", () => applyView(button.dataset.arcadeView));
   });
   railButtons.forEach((button) => {
     button.addEventListener("click", () => scrollRail(Number(button.dataset.arcadeScroll)));
@@ -274,5 +312,6 @@
   }
 
   retry?.addEventListener("click", () => loadDirectory(true));
+  applyView(state.view, { persist: false, announceChange: false });
   loadDirectory();
 })(window, document);

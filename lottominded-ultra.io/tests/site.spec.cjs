@@ -1,6 +1,11 @@
 const { test, expect } = require("@playwright/test");
 const fs = require("node:fs");
 const path = require("node:path");
+const testPort = Number(process.env.LOTTOMIND_TEST_PORT);
+if (!Number.isInteger(testPort) || testPort < 1) {
+  throw new Error("LOTTOMIND_TEST_PORT is required. Run `npm test` to allocate an isolated test port.");
+}
+const localTestOrigin = `http://127.0.0.1:${testPort}`;
 
 async function blockHeavyMedia(page) {
   await page.route(/\.(?:mp3|mp4|wav|webm)(?:\?.*)?$/i, (route) => route.fulfill({ status: 204, body: "" }));
@@ -37,7 +42,7 @@ function trackLocalFailures(page) {
   const failures = [];
   page.on("response", (response) => {
     const url = new URL(response.url());
-    if (url.origin !== "http://127.0.0.1:8142") return;
+    if (url.origin !== localTestOrigin) return;
     if (url.pathname.includes("favicon")) return;
     if (response.status() >= 400) failures.push(`${response.status()} ${url.pathname}`);
   });
@@ -55,7 +60,7 @@ async function mockAuthenticatedBilling(page, checkoutResponse) {
     const request = route.request();
     const pathname = new URL(request.url()).pathname;
     const headers = {
-      "Access-Control-Allow-Origin": request.headers().origin || "http://127.0.0.1:8142",
+      "Access-Control-Allow-Origin": request.headers().origin || localTestOrigin,
       "Access-Control-Allow-Credentials": "true",
       "Access-Control-Allow-Headers": "authorization, content-type, x-client-info, x-requested-with",
       "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
@@ -102,7 +107,7 @@ test("memberships opens its entry commercial and keeps manual replay available",
   const apiRequests = [];
   page.on("request", (request) => {
     const url = new URL(request.url());
-    if (url.origin === "http://127.0.0.1:8142" && url.pathname.includes("/api/")) apiRequests.push(url.pathname);
+    if (url.origin === localTestOrigin && url.pathname.includes("/api/")) apiRequests.push(url.pathname);
   });
 
   await page.goto("/memberships.html", { waitUntil: "domcontentloaded" });
@@ -473,7 +478,7 @@ test("membership checkout return resolves immediately when the visitor is signed
   await page.route(/https:\/\/sqdasdbvlkgpbbiyeune\.supabase\.co\/functions\/v1\/lottomind-api.*/i, (route) => {
     const request = route.request();
     const headers = {
-      "Access-Control-Allow-Origin": request.headers().origin || "http://127.0.0.1:8142",
+      "Access-Control-Allow-Origin": request.headers().origin || localTestOrigin,
       "Access-Control-Allow-Credentials": "true",
       "Access-Control-Allow-Headers": "authorization, content-type, x-client-info, x-requested-with",
       "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
@@ -509,7 +514,7 @@ test("membership checkout return confirms an active paid membership", async ({ p
   await page.route(/https:\/\/sqdasdbvlkgpbbiyeune\.supabase\.co\/functions\/v1\/lottomind-api.*/i, (route) => {
     const request = route.request();
     const headers = {
-      "Access-Control-Allow-Origin": request.headers().origin || "http://127.0.0.1:8142",
+      "Access-Control-Allow-Origin": request.headers().origin || localTestOrigin,
       "Access-Control-Allow-Credentials": "true",
       "Access-Control-Allow-Headers": "authorization, content-type, x-client-info, x-requested-with",
       "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
@@ -548,7 +553,7 @@ test("membership checkout stays disabled for malformed plan configuration", asyn
   await page.route(/https:\/\/sqdasdbvlkgpbbiyeune\.supabase\.co\/functions\/v1\/lottomind-api.*/i, (route) => {
     const request = route.request();
     const headers = {
-      "Access-Control-Allow-Origin": request.headers().origin || "http://127.0.0.1:8142",
+      "Access-Control-Allow-Origin": request.headers().origin || localTestOrigin,
       "Access-Control-Allow-Credentials": "true",
       "Access-Control-Allow-Headers": "authorization, content-type, x-client-info, x-requested-with",
       "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
@@ -727,6 +732,16 @@ test("features combines the cinematic shell with the manifest-driven Arcade dire
   expect(gridMetrics.scrollWidth).toBeLessThanOrEqual(gridMetrics.clientWidth + 1);
   expect(gridMetrics.display).toBe("grid");
   expect(gridMetrics.columns).not.toBe("none");
+
+  await page.getByRole("button", { name: "Rail", exact: true }).click();
+  await expect(page.locator("#arcade-library")).toHaveAttribute("data-view", "rail");
+  await expect(page.locator("[data-arcade-view-status]")).toHaveText("Swipe or scroll routes");
+  await expect.poll(() => arcadeGrid.evaluate((element) => element.scrollWidth > element.clientWidth + 1)).toBe(true);
+
+  await page.getByRole("button", { name: "Grid", exact: true }).click();
+  await expect(page.locator("#arcade-library")).toHaveAttribute("data-view", "grid");
+  await expect(page.locator("[data-arcade-view-status]")).toHaveText("All routes shown");
+  await expect.poll(() => arcadeGrid.evaluate((element) => element.scrollWidth <= element.clientWidth + 1)).toBe(true);
   await expect(page.locator("main video:not([data-arcade-hero-video]), main audio, iframe, #lottery-news, .instrument-console")).toHaveCount(0);
 
   await page.getByRole("button", { name: "Action", exact: true }).click();
@@ -998,7 +1013,7 @@ test("news route renders from the static feed without probing the missing API", 
   const apiRequests = [];
   page.on("request", (request) => {
     const url = new URL(request.url());
-    if (url.origin === "http://127.0.0.1:8142" && url.pathname.includes("/api/")) apiRequests.push(url.pathname);
+    if (url.origin === localTestOrigin && url.pathname.includes("/api/")) apiRequests.push(url.pathname);
   });
 
   await page.goto("/news/", { waitUntil: "domcontentloaded" });

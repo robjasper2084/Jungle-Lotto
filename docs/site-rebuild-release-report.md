@@ -1,5 +1,7 @@
 # LottoMind Site Rebuild Release Report
 
+> Maintenance note (2026-08-09): this report remains the historical `v2-rc7` release record. The focused maintenance commit replaces whole-repository Pages packaging with a 1,750-file, 1,117 MiB public artifact and a 1,200 MiB gate. It omits 166 unreferenced media files totaling 476.1 MiB while preserving source media. The full dynamic-port source/staging route gate passed 168/168 and the packaged artifact route smoke passed 84/84. Fresh local desktop/mobile sign-off also passed for Arcade Grid/Rail discovery, the tightened Trivia launcher, the shared News/Live instrument console, and the smaller desktop Magic 8 oracle. Hosted staging remains unavailable, commerce remains locked, and this maintenance commit is not a new release candidate.
+
 ## Release Scope
 
 - Production URL: https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/
