@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-08-09T16:53:20.755Z",
+  "totalQuestions": 154,
+  "categories": [
+    {
+      "id": "lottery-knowledge",
+      "label": "Lottery Knowledge",
+      "file": "lottery-knowledge.json",
+      "count": 22,
+      "sha256": "cebc021a647ff3d69ef09bc39e8f9c2a3f5f89a2eaee8556016905db20dafdd1"
+    },
+    {
+      "id": "numbers-numerology",
+      "label": "Numbers and Numerology",
+      "file": "numbers-numerology.json",
+      "count": 22,
+      "sha256": "38a562bdec2b3902eba0ad44edcf42ffe836a300bee641d5ca615fc82a4ee24f"
+    },
+    {
+      "id": "ufo-unexplained",
+      "label": "UFO and Unexplained",
+      "file": "ufo-unexplained.json",
+      "count": 22,
+      "sha256": "6abfa5feb1f5c41acd9fbbe16461a5f3ea61b9567212214c71a069df041e17f2"
+    },
+    {
+      "id": "detroit-history-culture",
+      "label": "Detroit History and Culture",
+      "file": "detroit-history-culture.json",
+      "count": 22,
+      "sha256": "d79d6e6c3717e139d75801776a484e25c1dc15e2f315d223f0e0a78838a826cb"
+    },
+    {
+      "id": "music-pop-culture",
+      "label": "Music and Pop Culture",
+      "file": "music-pop-culture.json",
+      "count": 22,
+      "sha256": "d4d6785573f7fec9bd424c78658fcf7b181ddce316297b296d3df7571f8c2680"
+    },
+    {
+      "id": "lottomind-universe",
+      "label": "LottoMind Universe",
+      "file": "lottomind-universe.json",
+      "count": 22,
+      "sha256": "3e9d050b0c913c734af4c1422e6868c9b53b46064ca3a8c444788445bb4705c1"
+    },
+    {
+      "id": "mystery-mix",
+      "label": "Mystery Mix",
+      "file": "mystery-mix.json",
+      "count": 22,
+      "sha256": "55c0892b7815b18fccc617460d42cc55f1e40e56f0e4d26b351359274bd05bc5"
+    }
+  ]
+}

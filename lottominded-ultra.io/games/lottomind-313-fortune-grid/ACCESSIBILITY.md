@@ -1,6 +1,6 @@
 # Accessibility
 
-- All setup, roll, route, venture, portfolio, Signal, settings, card, and results actions are semantic DOM controls.
+- All setup, roll, movement, venture, portfolio, Signal, settings, card, and results actions are semantic DOM controls.
 - Roll, movement, fees, cards, Signal changes, score changes, and turn changes are announced through a polite live region.
 - Visible focus indicators and 44 CSS-pixel minimum controls are provided.
 - Districts have text labels plus eight symbols/pattern names; color is never the sole identifier.

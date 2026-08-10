@@ -30,7 +30,25 @@ const creditCosts: Record<string, number> = {
   beat2lotto_session: 1,
 };
 
+const TRIVIA_BUILD_ID = "lottomind-refined-trivia-2026-08-09";
+const TRIVIA_QUESTIONS = [
+  { id: "oracle-first-move", q: "What is the safest first move before saving a Dream Oracle pick?", options: ["Run the interpretation", "Clear the vault", "Mute every tab", "Treat it as a guaranteed result"], answer: 0, note: "Dream picks work best after the Oracle reads the symbols and creates the set.", category: "lottomind-universe", difficulty: "easy" },
+  { id: "signal-radar-lane", q: "Which LottoMind lane compares hot, cold, and balance signals?", options: ["Signal Radar", "Merch Store", "Privacy Policy", "Music Store"], answer: 0, note: "Signal Radar is the quick scan lane for number movement.", category: "lottery-knowledge", difficulty: "easy" },
+  { id: "history-vault", q: "Where should saved numbers and dream readings live?", options: ["History Vault", "Search bar", "Mode switch", "Arcade player"], answer: 0, note: "History Vault keeps saved sets and readings together.", category: "lottomind-universe", difficulty: "medium" },
+  { id: "abundance-radio", q: "What does Abundance Radio connect back into?", options: ["Reset tones", "State taxes", "A scratch-off camera", "Ticket redemption"], answer: 0, note: "Radio sessions can load frequency lanes into the Reset player.", category: "music-pop-culture", difficulty: "medium" },
+  { id: "random-outcomes", q: "Which reminder matters before every play session?", options: ["Lottery outcomes are random", "More taps guarantee wins", "Only one number can repeat", "A streak predicts the next draw"], answer: 0, note: "LottoMind is for entertainment and education. Lottery outcomes are random.", category: "lottery-knowledge", difficulty: "hard" },
+] as const;
+const CLIENT_REWARD_FIELDS = new Set(["reward", "rewardAmount", "credits", "creditAmount", "userId", "accountId", "walletId"]);
+
 type JsonObject = Record<string, unknown>;
+
+function hasClientRewardField(input: JsonObject) {
+  return Object.keys(input).some((key) => CLIENT_REWARD_FIELDS.has(key));
+}
+
+function publicTriviaQuestions() {
+  return TRIVIA_QUESTIONS.map(({ answer: _answer, ...question }) => question);
+}
 
 function corsHeaders(req: Request) {
   const origin = req.headers.get("origin") || "";
@@ -118,29 +136,25 @@ async function snapshot(user: { id: string; email?: string | null } | null) {
   }
 
   const db = admin();
-  const [profileResult, balanceResult, ledgerResult, subscriptionsResult, entitlementsResult, ordersResult, downloadsResult] = await Promise.all([
+  const [profileResult, walletResult, membershipsResult, collectorResult, transactionsResult] = await Promise.all([
     db.from("profiles").select("display_name,stripe_customer_id").eq("user_id", user.id).maybeSingle(),
-    db.rpc("credit_balance_for_user", { p_user_id: user.id }),
-    db.from("credit_ledger").select("entry_id,amount_delta,reason,source_id,created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(50),
-    db.from("subscriptions").select("subscription_id,provider,plan_code,status,current_period_end,cancel_at_period_end,updated_at").eq("user_id", user.id).order("updated_at", { ascending: false }),
-    db.from("entitlements").select("entitlement_code,active,starts_at,ends_at,source_type").eq("user_id", user.id).eq("active", true),
-    db.from("orders").select("order_id,plan_code,status,amount_total,currency,created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(10),
-    db.from("downloads").select("download_id,asset_key,entitlement_code,source_id,created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(20),
+    db.from("wallets").select("balance,updated_at").eq("user_id", user.id).maybeSingle(),
+    db.from("memberships").select("id,plan_code,status,current_period_end,stripe_price_id,updated_at").eq("user_id", user.id).order("created_at", { ascending: false }),
+    db.from("collector_redemptions").select("redeemed_at,complimentary_until").eq("user_id", user.id).order("redeemed_at", { ascending: false }).limit(1).maybeSingle(),
+    db.from("credit_transactions").select("id,delta,reason,metadata,created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(50),
   ]);
 
-  for (const result of [profileResult, balanceResult, ledgerResult, subscriptionsResult, entitlementsResult, ordersResult, downloadsResult]) {
+  for (const result of [profileResult, walletResult, membershipsResult, collectorResult, transactionsResult]) {
     if (result.error) throw result.error;
   }
 
-  const ledgerEntries = ledgerResult.data || [];
-  const balance = Number(balanceResult.data || 0);
-  const subscriptions = subscriptionsResult.data || [];
-  const collectorSubscription = subscriptions.find((entry) => entry.provider === "collector");
-  const planPriority: Record<string, number> = { ultra: 30, gold: 20, guardian_bundle: 10 };
-  const activeSubscription = subscriptions
+  const memberships = membershipsResult.data || [];
+  const planPriority: Record<string, number> = { vault: 40, ultra: 30, gold: 20, guardian_bundle: 10 };
+  const activeMembership = memberships
     .filter((entry) => ["active", "trialing"].includes(entry.status)
       && (!entry.current_period_end || new Date(entry.current_period_end).getTime() > Date.now()))
     .sort((left, right) => (planPriority[right.plan_code] || 0) - (planPriority[left.plan_code] || 0))[0];
+  const transactions = transactionsResult.data || [];
 
   return {
     authenticated: true,
@@ -150,58 +164,40 @@ async function snapshot(user: { id: string; email?: string | null } | null) {
       displayName: profileResult.data?.display_name || "LottoMind Member",
     },
     wallet: {
-      balance,
-      updatedAt: ledgerEntries[0]?.created_at || null,
-      entries: ledgerEntries.map((entry) => ({
-        entryId: entry.entry_id,
-        amountDelta: entry.amount_delta,
+      balance: Number(walletResult.data?.balance || 0),
+      updatedAt: walletResult.data?.updated_at || null,
+      entries: transactions.map((entry) => ({
+        entryId: entry.id,
+        amountDelta: Number(entry.delta || 0),
         reason: entry.reason,
-        sourceId: entry.source_id,
+        sourceId: String(entry.metadata?.sourceId || entry.metadata?.source_id || ""),
         createdAt: entry.created_at,
       })),
     },
-    currentPlan: activeSubscription ? {
-      code: activeSubscription.plan_code,
-      status: activeSubscription.status,
-      currentPeriodEnd: activeSubscription.current_period_end,
-      cancelAtPeriodEnd: activeSubscription.cancel_at_period_end,
-      provider: activeSubscription.provider,
+    currentPlan: activeMembership ? {
+      code: activeMembership.plan_code,
+      status: activeMembership.status,
+      currentPeriodEnd: activeMembership.current_period_end,
+      cancelAtPeriodEnd: false,
+      provider: activeMembership.stripe_price_id ? "stripe" : "collector",
     } : { code: "free", status: "active", currentPeriodEnd: null },
-    memberships: subscriptions.map((entry) => ({
-      subscriptionId: entry.subscription_id,
+    memberships: memberships.map((entry) => ({
+      subscriptionId: entry.id,
       planCode: entry.plan_code,
       status: entry.status,
       currentPeriodEnd: entry.current_period_end,
-      cancelAtPeriodEnd: entry.cancel_at_period_end,
-      provider: entry.provider,
+      cancelAtPeriodEnd: false,
+      provider: entry.stripe_price_id ? "stripe" : "collector",
     })),
-    entitlements: (entitlementsResult.data || []).map((entry) => ({
-      code: entry.entitlement_code,
-      active: entry.active && (!entry.ends_at || new Date(entry.ends_at).getTime() > Date.now()),
-      startsAt: entry.starts_at,
-      endsAt: entry.ends_at,
-      sourceType: entry.source_type,
-    })),
-    orders: ordersResult.data || [],
-    downloads: (downloadsResult.data || []).map((entry) => ({
-      downloadId: entry.download_id,
-      assetKey: entry.asset_key,
-      entitlementCode: entry.entitlement_code,
-      sourceId: entry.source_id,
-      createdAt: entry.created_at,
-    })),
+    entitlements: activeMembership ? [{ code: "beat2lotto", active: true, endsAt: activeMembership.current_period_end }] : [],
+    orders: [],
+    downloads: [],
     collector: {
-      redeemed: Boolean(collectorSubscription),
-      redeemedAt: collectorSubscription?.updated_at || null,
-      complimentaryUntil: collectorSubscription?.current_period_end || null,
+      redeemed: Boolean(collectorResult.data),
+      redeemedAt: collectorResult.data?.redeemed_at || null,
+      complimentaryUntil: collectorResult.data?.complimentary_until || null,
     },
   };
-}
-
-async function sha256(value: string) {
-  const bytes = new TextEncoder().encode(value);
-  const digest = await crypto.subtle.digest("SHA-256", bytes);
-  return Array.from(new Uint8Array(digest)).map((byte) => byte.toString(16).padStart(2, "0")).join("");
 }
 
 function idempotencyKey(input: unknown) {
@@ -344,16 +340,19 @@ async function portal(req: Request) {
 }
 
 async function route(req: Request) {
-  const path = new URL(req.url).pathname.replace(/^\/lottomind-api/, "") || "/";
+  const requestPath = new URL(req.url).pathname;
+  const protectedMode = /^\/lottomind-protected(?:\/|$)/.test(requestPath);
+  const publicMode = !protectedMode;
+  const path = requestPath.replace(/^\/(?:lottomind-api|lottomind-protected)/, "") || "/";
   if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: corsHeaders(req) });
 
-  if (req.method === "POST" && path === "/auth/register") {
+  if (publicMode && req.method === "POST" && path === "/auth/register") {
     const input = await readJson(req);
     if (input instanceof Response) return input;
     const email = String(input.email || "").trim().toLowerCase();
     const password = String(input.password || "");
     const displayName = String(input.displayName || input.display_name || "").trim().slice(0, 80);
-    if (!email || password.length < 8) return fail(req, 400, "INVALID_REGISTRATION", "Enter a valid email and a password of at least 8 characters.");
+    if (!email || password.length < 12) return fail(req, 400, "INVALID_REGISTRATION", "Enter a valid email and a password of at least 12 characters.");
     const { data, error } = await anon().auth.signUp({ email, password, options: { data: { display_name: displayName } } });
     if (error) return fail(req, 400, "REGISTRATION_FAILED", error.message);
     return json(req, {
@@ -363,7 +362,7 @@ async function route(req: Request) {
     }, 201);
   }
 
-  if (req.method === "POST" && path === "/auth/login") {
+  if (publicMode && req.method === "POST" && path === "/auth/login") {
     const input = await readJson(req);
     if (input instanceof Response) return input;
     const email = String(input.email || "").trim().toLowerCase();
@@ -374,7 +373,7 @@ async function route(req: Request) {
     return json(req, { session: data.session, snapshot: await snapshot(data.user) });
   }
 
-  if (req.method === "POST" && path === "/auth/password-reset") {
+  if (publicMode && req.method === "POST" && path === "/auth/password-reset") {
     const input = await readJson(req);
     if (input instanceof Response) return input;
     const email = String(input.email || "").trim().toLowerCase();
@@ -385,36 +384,118 @@ async function route(req: Request) {
     return json(req, { requested: true });
   }
 
-  if (req.method === "POST" && path === "/auth/password-update") {
+  if (publicMode && req.method === "POST" && path === "/auth/password-update") {
     const token = bearer(req);
     if (!token || !(await currentUser(req))) return fail(req, 401, "RECOVERY_SESSION_REQUIRED", "This recovery link is invalid or expired. Request a new one.");
     const input = await readJson(req);
     if (input instanceof Response) return input;
     const password = String(input.password || "");
-    if (password.length < 10) return fail(req, 400, "INVALID_NEW_PASSWORD", "Use a new password of at least 10 characters.");
+    if (password.length < 12) return fail(req, 400, "INVALID_NEW_PASSWORD", "Use a new password of at least 12 characters.");
     const { error } = await anon(token).auth.updateUser({ password });
     if (error) return fail(req, 400, "PASSWORD_UPDATE_FAILED", "The password could not be updated. Request a new recovery link.");
     return json(req, { updated: true });
   }
 
-  if (req.method === "POST" && path === "/auth/logout") {
+  if (publicMode && req.method === "POST" && path === "/auth/logout") {
     const token = bearer(req);
     if (token) await anon(token).auth.signOut({ scope: "local" });
     return new Response(null, { status: 204, headers: corsHeaders(req) });
   }
 
-  if (req.method === "GET" && path === "/account/snapshot") return json(req, await snapshot(await currentUser(req)));
-  if (req.method === "GET" && path === "/billing/config") return billingConfig(req);
-  if (req.method === "POST" && path === "/billing/checkout") return checkout(req);
-  if (req.method === "POST" && path === "/billing/portal") return portal(req);
+  if (protectedMode && req.method === "GET" && path === "/account/snapshot") return json(req, await snapshot(await currentUser(req)));
+  if (publicMode && req.method === "GET" && path === "/billing/config") return billingConfig(req);
+  if (protectedMode && req.method === "POST" && path === "/billing/checkout") return checkout(req);
+  if (protectedMode && req.method === "POST" && path === "/billing/portal") return portal(req);
 
-  if (req.method === "POST" && path === "/analytics") {
+  if (publicMode && req.method === "POST" && path === "/analytics") {
     const user = await currentUser(req);
     const input = await readJson(req);
     if (input instanceof Response) return input;
     const event = typeof input.event === "string" ? input.event.trim().slice(0, 120) : "";
     if (user && event) await admin().from("analytics_events").insert({ user_id: user.id, event_name: event, metadata: input.metadata || {} });
     return new Response(null, { status: 204, headers: corsHeaders(req) });
+  }
+
+  if (publicMode) return fail(req, 404, "NOT_FOUND", "That public LottoMind service route does not exist.");
+
+  if (req.method === "POST" && path === "/trivia/sessions") {
+    const auth = await authenticatedUser(req);
+    if (auth instanceof Response) return auth;
+    const input = await readJson(req);
+    if (input instanceof Response) return input;
+    if (hasClientRewardField(input)) return fail(req, 400, "CLIENT_REWARD_NOT_ALLOWED", "Client-supplied identity or reward values are not allowed.");
+    if (String(input.buildId || "") !== TRIVIA_BUILD_ID || String(input.mode || "") !== "daily") {
+      return fail(req, 403, "BUILD_NOT_APPROVED", "This trivia build is not approved for wallet rewards.");
+    }
+    const challengeId = `trivia:daily:${new Date().toISOString().slice(0, 10)}`;
+    const expiresAt = new Date(Date.now() + 30 * 60 * 1000).toISOString();
+    const { data, error } = await admin().from("trivia_sessions").insert({
+      user_id: auth.id,
+      challenge_id: challengeId,
+      build_id: TRIVIA_BUILD_ID,
+      mode: "daily",
+      expires_at: expiresAt,
+    }).select("id").single();
+    if (error || !data) return fail(req, 503, "TRIVIA_SERVICE_ERROR", "The verified trivia session could not be started.");
+    return json(req, { sessionId: data.id, challengeId, eligible: true, expiresAt, questions: publicTriviaQuestions() }, 201);
+  }
+
+  const triviaAnswerMatch = path.match(/^\/trivia\/sessions\/([0-9a-f-]{36})\/answer$/i);
+  if (req.method === "POST" && triviaAnswerMatch) {
+    const auth = await authenticatedUser(req);
+    if (auth instanceof Response) return auth;
+    const input = await readJson(req);
+    if (input instanceof Response) return input;
+    if (hasClientRewardField(input)) return fail(req, 400, "CLIENT_REWARD_NOT_ALLOWED", "Client-supplied reward values are not allowed.");
+    const sequence = Number(input.sequence);
+    const selectedIndex = Number(input.selectedIndex);
+    const elapsedMs = Number(input.elapsedMs);
+    const question = TRIVIA_QUESTIONS[sequence];
+    if (!question || String(input.questionId || "") !== question.id || !Number.isInteger(selectedIndex) || selectedIndex < -1 || selectedIndex >= question.options.length || !Number.isInteger(elapsedMs) || elapsedMs < 0 || elapsedMs > 60000) {
+      return fail(req, 422, "INVALID_STATE_TRANSITION", "Trivia answer order or content could not be verified.");
+    }
+    const correct = selectedIndex === question.answer;
+    const { data, error } = await admin().rpc("record_trivia_answer", {
+      p_user_id: auth.id,
+      p_session_id: triviaAnswerMatch[1],
+      p_sequence: sequence,
+      p_question_id: question.id,
+      p_selected_index: selectedIndex,
+      p_correct: correct,
+      p_elapsed_ms: elapsedMs,
+    });
+    if (error) return fail(req, 422, "INVALID_STATE_TRANSITION", "Trivia answer order or content could not be verified.");
+    const row = Array.isArray(data) ? data[0] : data;
+    return json(req, { accepted: true, correct, correctIndex: question.answer, note: question.note, nextSequence: Number(row?.next_sequence ?? sequence + 1), remaining: TRIVIA_QUESTIONS.length - Number(row?.next_sequence ?? sequence + 1) });
+  }
+
+  const triviaClaimMatch = path.match(/^\/trivia\/sessions\/([0-9a-f-]{36})\/claim$/i);
+  if (req.method === "POST" && triviaClaimMatch) {
+    const auth = await authenticatedUser(req);
+    if (auth instanceof Response) return auth;
+    const input = await readJson(req);
+    if (input instanceof Response) return input;
+    if (hasClientRewardField(input)) return fail(req, 400, "CLIENT_REWARD_NOT_ALLOWED", "Client-supplied reward values are not allowed.");
+    const { data: session, error: sessionError } = await admin().from("trivia_sessions").select("challenge_id").eq("id", triviaClaimMatch[1]).eq("user_id", auth.id).maybeSingle();
+    if (sessionError || !session) return fail(req, 404, "SESSION_NOT_FOUND", "Trivia reward session not found.");
+    const { data, error } = await admin().rpc("award_trivia_credits", {
+      p_user_id: auth.id,
+      p_session_id: triviaClaimMatch[1],
+      p_challenge_id: session.challenge_id,
+      p_idempotency_key: String(input.idempotencyKey || ""),
+    });
+    if (error) {
+      const code = /DAILY_REWARD_ALREADY_CLAIMED/.test(error.message) ? "DAILY_REWARD_ALREADY_CLAIMED" : /INVALID_IDEMPOTENCY_KEY/.test(error.message) ? "INVALID_IDEMPOTENCY_KEY" : "INVALID_STATE_TRANSITION";
+      return fail(req, code === "DAILY_REWARD_ALREADY_CLAIMED" ? 409 : 422, code, code === "DAILY_REWARD_ALREADY_CLAIMED" ? "Today's verified trivia reward has already been claimed." : "The trivia reward claim could not be verified.");
+    }
+    const row = Array.isArray(data) ? data[0] : data;
+    return json(req, {
+      status: "rewarded",
+      reward: { amount: Number(row?.amount || 0), bucket: "promotional", challengeId: session.challenge_id },
+      wallet: { promotionalBalance: Number(row?.balance || 0), monthlyBalance: 0, purchasedBalance: 0, totalBalance: Number(row?.balance || 0), version: 1 },
+      transactionId: row?.transaction_id,
+      duplicate: Boolean(row?.duplicate),
+    });
   }
 
   if (req.method === "POST" && path === "/credits/spend") {
@@ -459,20 +540,7 @@ async function route(req: Request) {
   if (req.method === "POST" && path === "/redemption/claim") {
     const auth = await authenticatedUser(req);
     if (auth instanceof Response) return auth;
-    const input = await readJson(req);
-    if (input instanceof Response) return input;
-    const code = String(input.code || "").trim().toUpperCase();
-    const requestKey = idempotencyKey(input.idempotencyKey);
-    if (!/^[A-Z0-9-]{8,80}$/.test(code) || !requestKey) {
-      return fail(req, 400, "INVALID_REDEMPTION", "Enter a valid collector code and request key.");
-    }
-    const { data, error } = await admin().rpc("redeem_collector_code", {
-      p_user_id: auth.id,
-      p_code_hash: await sha256(code),
-      p_idempotency_key: requestKey,
-    });
-    if (error) return fail(req, 409, "REDEMPTION_FAILED", "That collector code is invalid, expired, or already redeemed.");
-    return json(req, { ...data, snapshot: await snapshot(auth) });
+    return fail(req, 503, "REDEMPTION_NOT_OPEN", "Collector code redemption remains closed until production codes are loaded.");
   }
 
   if (req.method === "GET" && path.startsWith("/entitlements/")) {
@@ -482,14 +550,13 @@ async function route(req: Request) {
     if (!ENTITLEMENT_CODE_PATTERN.test(entitlementCode)) {
       return fail(req, 400, "INVALID_ENTITLEMENT", "Choose a valid premium tool entitlement.");
     }
-    const { data: active, error } = await admin().rpc("has_active_entitlement", {
-      p_user_id: auth.id,
-      p_entitlement_code: entitlementCode,
-    });
-    if (error) throw error;
     const state = await snapshot(auth);
+    const active = entitlementCode === "beat2lotto" && state.memberships.some((entry: { status: string; planCode: string; currentPeriodEnd?: string | null }) =>
+      ["active", "trialing"].includes(entry.status)
+      && ["gold", "ultra", "vault", "guardian_bundle"].includes(entry.planCode)
+      && (!entry.currentPeriodEnd || new Date(entry.currentPeriodEnd).getTime() > Date.now()));
     return json(req, {
-      entitled: Boolean(active),
+      entitled: active,
       entitlement: entitlementCode,
       tier: active ? state.currentPlan.code : "free",
     });

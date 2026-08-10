@@ -18,7 +18,10 @@
     : "Membership plans are visible, but secure checkout is not connected on this static site.";
 
   const billingUrl = (path) => {
-    const base = accountService?.getApiBase?.() || "";
+    const protectedRoute = path === "/billing/checkout" || path === "/billing/portal";
+    const base = protectedRoute
+      ? accountService?.getProtectedApiBase?.() || ""
+      : accountService?.getApiBase?.() || "";
     if (base) return `${base}${base.includes("/functions/v1/") ? path : `/api${path}`}`;
     if (window.LOTTOMIND_API_SAME_ORIGIN === true) return `/api${path}`;
     return "";

@@ -1,0 +1,554 @@
+[
+  {
+    "id": "numbers-numerology-001",
+    "category": "numbers-numerology",
+    "difficulty": "easy",
+    "question": "What is a prime number?",
+    "choices": [
+      "Any odd number",
+      "A number divisible by ten",
+      "A whole number greater than one with exactly two positive divisors",
+      "A negative fraction"
+    ],
+    "correctChoiceIndex": 2,
+    "explanation": "A prime has only 1 and itself as positive divisors.",
+    "sourceName": "Wolfram MathWorld",
+    "sourceUrl": "https://mathworld.wolfram.com/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "mathematics"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "numbers-numerology-002",
+    "category": "numbers-numerology",
+    "difficulty": "easy",
+    "question": "Which number is the multiplicative identity?",
+    "choices": [
+      "0",
+      "2",
+      "10",
+      "1"
+    ],
+    "correctChoiceIndex": 3,
+    "explanation": "Multiplying any number by 1 leaves it unchanged.",
+    "sourceName": "Wolfram MathWorld",
+    "sourceUrl": "https://mathworld.wolfram.com/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "mathematics"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "numbers-numerology-003",
+    "category": "numbers-numerology",
+    "difficulty": "easy",
+    "question": "What is the digital root of 38?",
+    "choices": [
+      "2",
+      "3",
+      "8",
+      "11"
+    ],
+    "correctChoiceIndex": 0,
+    "explanation": "Add 3 + 8 = 11, then 1 + 1 = 2.",
+    "sourceName": "Wolfram MathWorld",
+    "sourceUrl": "https://mathworld.wolfram.com/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "digital-root"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "numbers-numerology-004",
+    "category": "numbers-numerology",
+    "difficulty": "easy",
+    "question": "Which sequence begins 1, 1, 2, 3, 5, 8?",
+    "choices": [
+      "The prime sequence",
+      "The Fibonacci sequence",
+      "The square numbers",
+      "The powers of ten"
+    ],
+    "correctChoiceIndex": 1,
+    "explanation": "Each Fibonacci term after the first two is the sum of the previous two.",
+    "sourceName": "Wolfram MathWorld",
+    "sourceUrl": "https://mathworld.wolfram.com/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "sequences"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "numbers-numerology-005",
+    "category": "numbers-numerology",
+    "difficulty": "easy",
+    "question": "What is a palindrome number?",
+    "choices": [
+      "A number with no digits",
+      "A number always divisible by five",
+      "A number that reads the same forward and backward",
+      "A number written only in Roman numerals"
+    ],
+    "correctChoiceIndex": 2,
+    "explanation": "Examples include 121 and 7447.",
+    "sourceName": "Wolfram MathWorld",
+    "sourceUrl": "https://mathworld.wolfram.com/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "patterns"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "numbers-numerology-006",
+    "category": "numbers-numerology",
+    "difficulty": "easy",
+    "question": "How many degrees are in a full circle?",
+    "choices": [
+      "90",
+      "180",
+      "720",
+      "360"
+    ],
+    "correctChoiceIndex": 3,
+    "explanation": "A full rotation is conventionally divided into 360 degrees.",
+    "sourceName": "Wolfram MathWorld",
+    "sourceUrl": "https://mathworld.wolfram.com/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "geometry"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "numbers-numerology-007",
+    "category": "numbers-numerology",
+    "difficulty": "easy",
+    "question": "What is 7 squared?",
+    "choices": [
+      "49",
+      "14",
+      "21",
+      "56"
+    ],
+    "correctChoiceIndex": 0,
+    "explanation": "Squaring 7 means multiplying 7 by itself.",
+    "sourceName": "Wolfram MathWorld",
+    "sourceUrl": "https://mathworld.wolfram.com/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "arithmetic"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "numbers-numerology-008",
+    "category": "numbers-numerology",
+    "difficulty": "medium",
+    "question": "Which number is neither positive nor negative?",
+    "choices": [
+      "1",
+      "0",
+      "-1",
+      "10"
+    ],
+    "correctChoiceIndex": 1,
+    "explanation": "Zero is the boundary between positive and negative numbers.",
+    "sourceName": "Wolfram MathWorld",
+    "sourceUrl": "https://mathworld.wolfram.com/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "mathematics"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "numbers-numerology-009",
+    "category": "numbers-numerology",
+    "difficulty": "medium",
+    "question": "What does the symbol π represent?",
+    "choices": [
+      "The count of prime numbers",
+      "The square root of ten",
+      "The ratio of a circle's circumference to its diameter",
+      "A unit of time"
+    ],
+    "correctChoiceIndex": 2,
+    "explanation": "Pi is a constant that appears throughout circle geometry.",
+    "sourceName": "Wolfram MathWorld",
+    "sourceUrl": "https://mathworld.wolfram.com/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "geometry"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "numbers-numerology-010",
+    "category": "numbers-numerology",
+    "difficulty": "medium",
+    "question": "What is the least common multiple of 4 and 6?",
+    "choices": [
+      "2",
+      "10",
+      "24",
+      "12"
+    ],
+    "correctChoiceIndex": 3,
+    "explanation": "12 is the smallest positive number divisible by both 4 and 6.",
+    "sourceName": "Wolfram MathWorld",
+    "sourceUrl": "https://mathworld.wolfram.com/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "arithmetic"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "numbers-numerology-011",
+    "category": "numbers-numerology",
+    "difficulty": "medium",
+    "question": "In folklore-based numerology, how should a number meaning be presented?",
+    "choices": [
+      "As a symbolic tradition, not a verified prediction",
+      "As a guaranteed scientific result",
+      "As legal advice",
+      "As proof of a future lottery outcome"
+    ],
+    "correctChoiceIndex": 0,
+    "explanation": "Numerology is a symbolic belief practice and should not be confused with empirical prediction.",
+    "sourceName": "LottoMind product guide",
+    "sourceUrl": "",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "numerology",
+      "safety"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "numbers-numerology-012",
+    "category": "numbers-numerology",
+    "difficulty": "medium",
+    "question": "What is the Roman numeral for 50?",
+    "choices": [
+      "C",
+      "L",
+      "X",
+      "V"
+    ],
+    "correctChoiceIndex": 1,
+    "explanation": "In the Roman numeral system, L represents 50.",
+    "sourceName": "Wolfram MathWorld",
+    "sourceUrl": "https://mathworld.wolfram.com/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "number-systems"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "numbers-numerology-013",
+    "category": "numbers-numerology",
+    "difficulty": "medium",
+    "question": "Which fraction equals 0.25?",
+    "choices": [
+      "1/2",
+      "2/3",
+      "1/4",
+      "3/4"
+    ],
+    "correctChoiceIndex": 2,
+    "explanation": "One divided by four equals twenty-five hundredths.",
+    "sourceName": "Wolfram MathWorld",
+    "sourceUrl": "https://mathworld.wolfram.com/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "fractions"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "numbers-numerology-014",
+    "category": "numbers-numerology",
+    "difficulty": "medium",
+    "question": "What is an even number?",
+    "choices": [
+      "Any number ending in 5",
+      "A number with three digits",
+      "Only a positive number",
+      "An integer divisible by 2"
+    ],
+    "correctChoiceIndex": 3,
+    "explanation": "Even integers have no remainder when divided by 2.",
+    "sourceName": "Wolfram MathWorld",
+    "sourceUrl": "https://mathworld.wolfram.com/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "mathematics"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "numbers-numerology-015",
+    "category": "numbers-numerology",
+    "difficulty": "medium",
+    "question": "What is the next square number after 36?",
+    "choices": [
+      "49",
+      "42",
+      "48",
+      "64"
+    ],
+    "correctChoiceIndex": 0,
+    "explanation": "36 is 6 squared; the next positive square is 7 squared, or 49.",
+    "sourceName": "Wolfram MathWorld",
+    "sourceUrl": "https://mathworld.wolfram.com/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "sequences"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "numbers-numerology-016",
+    "category": "numbers-numerology",
+    "difficulty": "hard",
+    "question": "What is the sum of the interior angles of a triangle?",
+    "choices": [
+      "90 degrees",
+      "180 degrees",
+      "270 degrees",
+      "360 degrees"
+    ],
+    "correctChoiceIndex": 1,
+    "explanation": "In Euclidean geometry, a triangle's interior angles total 180 degrees.",
+    "sourceName": "Wolfram MathWorld",
+    "sourceUrl": "https://mathworld.wolfram.com/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "geometry"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "numbers-numerology-017",
+    "category": "numbers-numerology",
+    "difficulty": "hard",
+    "question": "What does a percentage measure?",
+    "choices": [
+      "A quantity per twelve",
+      "Only a probability above one",
+      "A quantity per hundred",
+      "A unit of distance"
+    ],
+    "correctChoiceIndex": 2,
+    "explanation": "Percent literally describes a ratio out of 100.",
+    "sourceName": "Wolfram MathWorld",
+    "sourceUrl": "https://mathworld.wolfram.com/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "arithmetic"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "numbers-numerology-018",
+    "category": "numbers-numerology",
+    "difficulty": "hard",
+    "question": "Which operation reverses multiplication?",
+    "choices": [
+      "Addition",
+      "Squaring",
+      "Rounding",
+      "Division"
+    ],
+    "correctChoiceIndex": 3,
+    "explanation": "Division can undo multiplication when the divisor is nonzero.",
+    "sourceName": "Wolfram MathWorld",
+    "sourceUrl": "https://mathworld.wolfram.com/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "arithmetic"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "numbers-numerology-019",
+    "category": "numbers-numerology",
+    "difficulty": "hard",
+    "question": "What is the binary representation of decimal 2?",
+    "choices": [
+      "10",
+      "01",
+      "11",
+      "100"
+    ],
+    "correctChoiceIndex": 0,
+    "explanation": "Binary 10 equals one group of two and zero ones.",
+    "sourceName": "Wolfram MathWorld",
+    "sourceUrl": "https://mathworld.wolfram.com/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "number-systems"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "numbers-numerology-020",
+    "category": "numbers-numerology",
+    "difficulty": "hard",
+    "question": "What is the absolute value of -9?",
+    "choices": [
+      "-9",
+      "9",
+      "0",
+      "18"
+    ],
+    "correctChoiceIndex": 1,
+    "explanation": "Absolute value is distance from zero, so it is nonnegative.",
+    "sourceName": "Wolfram MathWorld",
+    "sourceUrl": "https://mathworld.wolfram.com/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "arithmetic"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "numbers-numerology-021",
+    "category": "numbers-numerology",
+    "difficulty": "hard",
+    "question": "Which is an irrational number?",
+    "choices": [
+      "1/2",
+      "0.75",
+      "The square root of 2",
+      "4"
+    ],
+    "correctChoiceIndex": 2,
+    "explanation": "The square root of 2 cannot be expressed as a ratio of integers.",
+    "sourceName": "Wolfram MathWorld",
+    "sourceUrl": "https://mathworld.wolfram.com/",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "mathematics"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  },
+  {
+    "id": "numbers-numerology-022",
+    "category": "numbers-numerology",
+    "difficulty": "hard",
+    "question": "Why can a visually striking number pattern be misleading in random data?",
+    "choices": [
+      "Patterns always control the next result",
+      "Random data cannot repeat",
+      "Every pattern is intentionally designed",
+      "Humans naturally notice patterns even when chance produced them"
+    ],
+    "correctChoiceIndex": 3,
+    "explanation": "Pattern recognition is useful, but random sequences can contain clusters and repetitions.",
+    "sourceName": "LottoMind product guide",
+    "sourceUrl": "",
+    "reviewedAt": "2026-08-05",
+    "reviewStatus": "approved",
+    "active": true,
+    "tags": [
+      "randomness",
+      "critical-thinking"
+    ],
+    "version": 1,
+    "editedBy": "LottoMind editorial seed",
+    "editedAt": "2026-08-05T12:00:00.000Z"
+  }
+]

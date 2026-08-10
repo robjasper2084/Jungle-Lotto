@@ -12,17 +12,22 @@ Each player begins at the LottoMind 313 Hub with 1,313 Detroit Dollars, 3 Focus 
 
 ## Turn sequence
 
-1. Roll a Movement Cube (1–6) and Signal Orb (0–9).
-2. Choose a legal branch when routes split.
-3. Move node by node and resolve the destination.
-4. Add the Signal digit to the current player's four-digit strip.
+1. Roll two Movement Cubes (1–6 each) and a Signal Orb (0–9).
+2. Add the cubes and move that many spaces clockwise around the Detroit street circuit.
+3. Passing or landing on the LottoMind 313 Hub awards a 200 Detroit Dollar City Dividend.
+4. Resolve the destination and add the Signal digit to the current player's four-digit strip.
 5. Launch or upgrade a venture, use a special system, manage a portfolio, then end the turn.
+6. Matching Movement Cubes unlock one bonus turn after the current stop is resolved.
 
 The seeded match generator determines both results and card order. Saved games include the seed, ruleset version, and action log.
 
 ## Ventures
 
-Available ventures may be launched, then developed through Pop-Up, Local Favorite, Creative Hub, and City Landmark. Landing at another player's venture pays a Collaboration Fee. Operating all three ventures in one network activates its unique bonus. Portfolio actions include launch, upgrade, sponsor, temporary partnership, trade, sell-back, and view.
+Available ventures may be launched, then developed through Pop-Up, Local Favorite, Creative Hub, and City Landmark. Landing at another player's venture pays its displayed Collaboration Fee. Operating all three ventures in one color-coded district network activates its unique bonus. Portfolio actions include launch, upgrade, sponsor, temporary partnership, trade, sell-back, and view.
+
+## Detroit map
+
+The 3D board uses geospatial anchors for Detroit's major streets, riverfront, bridges, sports venues, and landmarks. The route is a stylized game circuit, not a navigation map. Fictional ventures are associated with nearby stops; players never buy or sell real streets, landmarks, neighborhoods, or property.
 
 ## Recovery and victory
 
