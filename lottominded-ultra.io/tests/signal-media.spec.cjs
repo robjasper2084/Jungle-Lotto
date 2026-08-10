@@ -32,7 +32,7 @@ test("Live Events uses the supplied puck field instead of the particle entity", 
   expect(puckImage).toContain("lottomind-floating-puck-20260417.webp");
 });
 
-test("News presents verified draw results in the signal banner and keeps the dock wide", async ({ page }) => {
+test("News presents verified draw results without the retired oracle", async ({ page }) => {
   await page.goto("/news/", { waitUntil: "domcontentloaded" });
   await page.waitForFunction(() => (document.querySelector("#root")?.textContent || "").includes("LottoMind News Intelligence"));
 
@@ -43,14 +43,13 @@ test("News presents verified draw results in the signal banner and keeps the doc
   await expect(banner).toContainText("4 18 26 43 51");
 
   const dock = page.locator(".lm-healing-generator--news-dock");
-  await expect(dock).toBeVisible();
-  const widthRatio = await dock.evaluate((element) => element.getBoundingClientRect().width / window.innerWidth);
-  expect(widthRatio).toBeGreaterThan(0.94);
+  await expect(dock).toHaveCount(1);
+  await expect(dock.locator(".lm-healing-generator__oracle")).toHaveCount(0);
 
   const utilityBackgrounds = await page.locator(".lm-header-utilities > *").evaluateAll((items) => (
     items.map((item) => getComputedStyle(item).backgroundImage)
   ));
-  expect(new Set(utilityBackgrounds).size).toBe(3);
+  expect(new Set(utilityBackgrounds).size).toBe(2);
 });
 
 test("page soundtracks use their assigned local music with accessible controls", async ({ page }) => {

@@ -17,7 +17,7 @@ test("LottoMind is presented as the master brand without changing header order",
   await expect(page.getByText("Robot RAHBEE, Static Wav, and individual games live inside LottoMind Arcade.")).toBeVisible();
 
   const labels = await page.locator("[data-site-header] nav a").allTextContents();
-  expect(labels).toEqual(["Home", "Events", "News", "Games", "Static Wav", "Robot RAHBEE", "Storefront", "Memberships", "LottoMind App"]);
+  expect(labels).toEqual(["Spheres", "Home", "Events", "News", "Games", "Static Wav", "Robot RAHBEE", "Storefront", "Memberships", "LottoMind App"]);
 });
 
 test("guest first use produces and saves a local result without verified credits", async ({ page }) => {
@@ -44,8 +44,10 @@ test("free access presents action limits and no ten-minute offer", async ({ page
 });
 
 test("upgrade prompt appears only after the selected action allowance is reached", async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem("lottomind.guest.usage.v1", JSON.stringify({ numbers: 10, dream: 0, beat: 0, game: 0, saves: 0 }));
+  });
   await openHome(page);
-  await page.evaluate(() => localStorage.setItem("lottomind.guest.usage.v1", JSON.stringify({ numbers: 10, dream: 0, beat: 0, game: 0, saves: 0 })));
   await page.getByRole("button", { name: /Explore My Numbers/ }).click();
   await expect(page.getByText(/used the free Explore My Numbers allowance/i)).toBeVisible();
   await expect(page.getByRole("link", { name: "See what membership adds" })).toBeVisible();

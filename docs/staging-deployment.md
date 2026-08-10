@@ -6,7 +6,7 @@ No Vercel, Netlify, Cloudflare Pages, or other branch-preview project is configu
 
 The 2026-08-09 maintenance audit reconfirmed this as an explicit release blocker. A generated or uploaded artifact is not a hosted staging environment. Hosted staging may be marked `Pass` only after a separate preview URL is deployed, noindexed, visibly labeled, tested against isolated services, and recorded here and in `docs/upgrade-redesign-status.md`.
 
-The focused maintenance artifact passed an 84/84 packaged-route smoke test and measured 1,117 MiB under the 1,200 MiB Pages gate. That validates the package locally; it does not satisfy hosted staging.
+The focused maintenance artifact passed an 84/84 packaged-route smoke test and contains 1,589 files totaling 944.2 MiB under the 1,200 MiB Pages gate. That validates the package locally; it does not satisfy hosted staging.
 
 The staging build is isolated from the GitHub Pages production workflow. It does not change `.github/workflows/pages.yml`, `main`, `gh-pages`, the production Pages project, or the production URL.
 

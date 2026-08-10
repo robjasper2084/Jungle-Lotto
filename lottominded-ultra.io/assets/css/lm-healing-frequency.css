@@ -1,4 +1,4 @@
-.has-lm-healing-generator footer#player,
+.has-lm-healing-generator:not(.live-events-page) footer#player,
 .has-lm-healing-generator audio[data-feature-entry-track] {
   display: none !important;
 }

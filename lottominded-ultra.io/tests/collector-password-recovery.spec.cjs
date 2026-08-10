@@ -1,6 +1,6 @@
 const { test, expect } = require("@playwright/test");
 
-const API_PATTERN = /https:\/\/sqdasdbvlkgpbbiyeune\.supabase\.co\/functions\/v1\/lottomind-api.*/i;
+const API_PATTERN = /\/(?:functions\/v1\/lottomind-(?:api|protected)|api)\/(?:account\/snapshot|billing\/config|auth\/(?:login|password-reset|password-update))(?:\?.*)?$/i;
 const testPort = Number(process.env.LOTTOMIND_TEST_PORT);
 if (!Number.isInteger(testPort) || testPort < 1) {
   throw new Error("LOTTOMIND_TEST_PORT is required. Run `npm test` to allocate an isolated test port.");
@@ -12,6 +12,7 @@ async function blockMedia(page) {
 }
 
 async function mockAccountApi(page, onRequest = () => {}) {
+  let passwordUpdated = false;
   await page.route(API_PATTERN, async (route) => {
     const request = route.request();
     const path = new URL(request.url()).pathname;
@@ -28,7 +29,15 @@ async function mockAccountApi(page, onRequest = () => {}) {
         status: 200,
         contentType: "application/json",
         headers,
-        body: JSON.stringify({ authenticated: false, verified: true, featureEnabled: true, wallet: { balance: 0 }, memberships: [], collector: {} }),
+        body: JSON.stringify({
+          authenticated: passwordUpdated,
+          verified: true,
+          featureEnabled: true,
+          user: passwordUpdated ? { id: "collector" } : null,
+          wallet: { balance: 0 },
+          memberships: [],
+          collector: {},
+        }),
       });
     }
     if (path.endsWith("/billing/config")) {
@@ -49,6 +58,7 @@ async function mockAccountApi(page, onRequest = () => {}) {
       return route.fulfill({ status: 200, contentType: "application/json", headers, body: '{"requested":true}' });
     }
     if (path.endsWith("/auth/password-update")) {
+      passwordUpdated = true;
       return route.fulfill({ status: 200, contentType: "application/json", headers, body: '{"updated":true}' });
     }
     return route.fulfill({ status: 204, headers });
@@ -154,7 +164,7 @@ test("password recovery API keeps reset responses generic and validates updates"
   expect(source).toContain('/index.html?account=recovery');
   expect(source).not.toContain('/memberships.html?account=recovery');
   expect(source).toContain('path === "/auth/password-update"');
-  expect(source).toContain("password.length < 10");
+  expect(source).toContain("password.length < 12");
   expect(source).not.toContain("No account exists");
 });
 

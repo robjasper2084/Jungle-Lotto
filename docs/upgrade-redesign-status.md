@@ -893,3 +893,17 @@
 - Production integrations blocked in staging: live payments, production account writes, real redemptions, and production analytics
 - Remaining warnings: local-only staging, manual screen-reader review recommended, heavy Static Wav and Memberships first-view transfers, browser-dependent audible autoplay, and Store ordering locked pending verified operations
 - Approval status: Ready for production review after the exact candidate tag and pull-request head are verified; production remains unchanged and a fresh exact `APPROVE PRODUCTION MERGE` is required
+
+## Step 34 - Production Release Candidate v2-rc8
+
+- Step number: 34
+- Branch: `upgrade-redesign`
+- Candidate SHA: immutable target of annotated tag `v2-rc8`
+- Change from `v2-rc7`: smaller Pages artifact, dynamic route isolation, synchronized Arcade registry, repaired Collector recovery coverage, corrected Robot RAHBEE asset paths, and restored Live Events player visibility
+- Tests: 232 source browser checks passed with 8 intentional skips; 168/168 route checks; 84/84 packaged Pages route checks; all 10 release-audit groups; 12/12 staging safety; 13/13 Trivia; secure backend contract passed
+- Staging build: 28 noindexed pages and 645 same-origin references
+- Pages artifact: 1,589 files and 944.2 MiB under the 1,200 MiB gate; 134 unreferenced media files totaling 400.1 MiB omitted without modifying source media
+- Visual evidence: existing 81/81 route-state sign-off remains the reviewed visual baseline; the fresh source and route suites passed with zero failures
+- Hosted staging: unavailable; local staging remains noindexed and fail-closed
+- Commerce: ordering remains locked pending verified inventory, shipping, tax, returns, confirmation email, and tracking
+- Approval status: Step 34 and the exact `APPROVE PRODUCTION MERGE` authorization are recorded for this candidate

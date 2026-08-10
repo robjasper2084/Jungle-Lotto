@@ -1,6 +1,6 @@
 const { test, expect } = require("@playwright/test");
 
-test("shared support utilities expose Search, Credits, Account, Help, Contact, and Accessibility", async ({ page }) => {
+test("shared support utilities expose Search and Account while Credits stays in the floating Vault control", async ({ page }) => {
   await page.goto("/index.html#top");
   await page.waitForFunction(() =>
     [...document.styleSheets].some((sheet) => sheet.href?.includes("lm-support-utilities.css"))
@@ -8,11 +8,13 @@ test("shared support utilities expose Search, Credits, Account, Help, Contact, a
 
   const utilities = page.getByLabel("Account and support utilities");
   await expect(utilities.getByRole("button", { name: "Search LottoMind routes" })).toBeVisible();
-  await expect(utilities.getByRole("link", { name: "Credits" })).toHaveAttribute("href", /account\.html#credits$/);
+  await expect(utilities.getByRole("link", { name: "Credits" })).toHaveCount(0);
   await expect(utilities.getByRole("link", { name: "Account", exact: true })).toHaveAttribute("href", /account\.html$/);
-  await expect(utilities.getByRole("button", { name: /motion/i })).toHaveText("Motion");
+  await expect(utilities.getByRole("button", { name: /motion/i })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Open LottoMind Vault Gateway" })).toBeVisible();
   const sphereTabs = page.getByRole("navigation", { name: "LOTTOMINDED ULTRA sphere navigation" }).getByRole("link");
   await expect(sphereTabs).toHaveText([
+    "Spheres",
     "Home",
     "Events",
     "News",
