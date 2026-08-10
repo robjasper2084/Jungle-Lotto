@@ -1,0 +1,358 @@
+:root {
+  --lm-console-bg: #031326;
+  --lm-console-panel: #071d36;
+  --lm-console-line: #11dbea;
+  --lm-console-gold: #f1d66c;
+  --lm-console-text: #eef9ff;
+  --lm-console-muted: #8fb4c9;
+}
+
+body:has([data-lm-instrument-console-host]) {
+  padding-bottom: 118px;
+}
+
+[data-lm-instrument-console-host] {
+  position: relative;
+  z-index: 90;
+}
+
+[data-lm-instrument-console-host] .ultra-page-instrument-console {
+  position: fixed;
+  right: clamp(72px, 7vw, 116px);
+  bottom: 10px;
+  left: clamp(72px, 7vw, 116px);
+  z-index: 90;
+  display: grid;
+  grid-template-columns: minmax(112px, .7fr) minmax(330px, 3.2fr) minmax(260px, 1.8fr) minmax(130px, 1fr) minmax(220px, 1.7fr) minmax(150px, 1.1fr);
+  gap: 10px;
+  min-height: 96px;
+  padding: 10px;
+  color: var(--lm-console-text);
+  background:
+    linear-gradient(90deg, rgba(17, 219, 234, .09), transparent 30%, rgba(130, 84, 255, .08)),
+    rgba(3, 19, 38, .97);
+  border: 1px solid var(--lm-console-line);
+  border-radius: 8px;
+  box-shadow: 0 0 28px rgba(0, 218, 234, .18);
+  backdrop-filter: blur(14px);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+[data-lm-instrument-console-host] button,
+[data-lm-instrument-console-host] input {
+  font: inherit;
+}
+
+[data-lm-instrument-console-host] button {
+  min-width: 32px;
+  min-height: 30px;
+  color: var(--lm-console-text);
+  background: #092440;
+  border: 1px solid rgba(99, 218, 240, .45);
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+[data-lm-instrument-console-host] button:hover,
+[data-lm-instrument-console-host] button:focus-visible,
+[data-lm-instrument-console-host] button[aria-pressed="true"] {
+  color: #06131d;
+  background: linear-gradient(90deg, var(--lm-console-gold), #5ef0d7);
+  outline: 2px solid rgba(255, 255, 255, .86);
+  outline-offset: 2px;
+}
+
+[data-lm-instrument-console-host] small {
+  display: block;
+  color: var(--lm-console-muted);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+[data-lm-instrument-console-host] .console-pill,
+[data-lm-instrument-console-host] .console-frequency,
+[data-lm-instrument-console-host] .console-eq,
+[data-lm-instrument-console-host] .console-knobs,
+[data-lm-instrument-console-host] .console-status {
+  min-width: 0;
+  padding: 9px;
+  background: rgba(4, 18, 34, .78);
+  border: 1px solid rgba(105, 219, 241, .22);
+  border-radius: 6px;
+}
+
+[data-lm-instrument-console-host] .console-pill,
+[data-lm-instrument-console-host] .console-status {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+[data-lm-instrument-console-host] .console-pill strong,
+[data-lm-instrument-console-host] .console-status strong {
+  margin-top: 5px;
+  color: #5ef0d7;
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+[data-lm-instrument-console-host] .console-keyboard {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  min-width: 0;
+}
+
+[data-lm-instrument-console-host] .mode-tabs {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(42px, 1fr));
+  gap: 4px;
+  margin-bottom: 5px;
+}
+
+[data-lm-instrument-console-host] .mode-tabs button {
+  min-height: 25px;
+  padding: 3px 6px;
+  font-size: 9px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+[data-lm-instrument-console-host] .mode-tabs button.is-active {
+  color: #fff;
+  background: linear-gradient(135deg, #6d34a5, #183755);
+  border-color: #c487ff;
+}
+
+[data-lm-instrument-console-host] .playable-piano {
+  display: grid;
+  grid-template-columns: repeat(18, minmax(17px, 1fr));
+  gap: 2px;
+  min-height: 46px;
+}
+
+[data-lm-instrument-console-host] .piano-key {
+  min-width: 0;
+  min-height: 46px;
+  padding: 0 1px 4px;
+  align-items: end;
+  color: #071626;
+  background: linear-gradient(#f8ffff, #9eeefa);
+  border-color: #dffbff;
+  border-radius: 2px 2px 4px 4px;
+  font-size: 8px;
+  font-weight: 900;
+}
+
+[data-lm-instrument-console-host] .piano-key.is-accidental {
+  color: #fff;
+  background: linear-gradient(#10162d, #402b67);
+}
+
+[data-lm-instrument-console-host] .piano-key.is-root {
+  background: linear-gradient(#fffbd0, #63e8ef);
+}
+
+[data-lm-instrument-console-host] .piano-key.is-playing {
+  transform: translateY(3px);
+  filter: brightness(1.35);
+}
+
+[data-lm-instrument-console-host] .console-frequency {
+  display: grid;
+  gap: 6px;
+}
+
+[data-lm-instrument-console-host] .console-frequency__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+[data-lm-instrument-console-host] .console-frequency__header strong {
+  display: block;
+  margin-top: 2px;
+  color: var(--lm-console-gold);
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+[data-lm-instrument-console-host] .console-frequency__header i {
+  color: #5ef0d7;
+  font-style: normal;
+}
+
+[data-lm-instrument-console-host] .console-frequency__signal {
+  width: 7px;
+  height: 7px;
+  background: #5ef0d7;
+  border-radius: 50%;
+  box-shadow: 0 0 10px #5ef0d7;
+}
+
+[data-lm-instrument-console-host] .console-frequency__presets {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 3px;
+}
+
+[data-lm-instrument-console-host] .console-frequency__presets button {
+  min-height: 22px;
+  padding: 2px;
+  font-size: 7px;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+[data-lm-instrument-console-host] .console-frequency__presets b,
+[data-lm-instrument-console-host] .console-frequency__presets span {
+  display: block;
+}
+
+[data-lm-instrument-console-host] .console-frequency__controls {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 6px;
+}
+
+[data-lm-instrument-console-host] .console-frequency__controls label {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 5px;
+  color: var(--lm-console-muted);
+  font-size: 8px;
+  text-transform: uppercase;
+}
+
+[data-lm-instrument-console-host] .console-frequency__controls input {
+  width: 100%;
+  accent-color: var(--lm-console-gold);
+}
+
+[data-lm-instrument-console-host] .console-frequency__controls button {
+  min-height: 24px;
+  padding: 3px 8px;
+  font-size: 8px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+[data-lm-instrument-console-host] .console-frequency p {
+  margin: 0;
+  color: var(--lm-console-muted);
+  font-size: 7px;
+}
+
+[data-lm-instrument-console-host] .console-eq {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: 5px;
+}
+
+[data-lm-instrument-console-host] .live-eq-meter {
+  display: flex;
+  align-items: end;
+  justify-content: center;
+  gap: 3px;
+  min-height: 38px;
+}
+
+[data-lm-instrument-console-host] .live-eq-meter i {
+  width: 4px;
+  height: 20%;
+  background: linear-gradient(#ff5acf, #46e8ee);
+  box-shadow: 0 0 4px rgba(78, 231, 239, .8);
+}
+
+[data-lm-instrument-console-host] .live-eq-meter i:nth-child(3n) { height: 55%; }
+[data-lm-instrument-console-host] .live-eq-meter i:nth-child(4n) { height: 82%; }
+[data-lm-instrument-console-host] .live-eq-meter i:nth-child(5n) { height: 38%; }
+
+[data-lm-instrument-console-host] .eq-source-status {
+  color: var(--lm-console-muted);
+  font-size: 8px;
+  text-transform: uppercase;
+}
+
+[data-lm-instrument-console-host] .console-knobs {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 5px;
+}
+
+[data-lm-instrument-console-host] .console-knobs button {
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  padding: 3px;
+  border: 0;
+  background: transparent;
+  font-size: 7px;
+  text-transform: uppercase;
+}
+
+[data-lm-instrument-console-host] .console-knobs i {
+  width: 30px;
+  height: 30px;
+  background: conic-gradient(from 220deg, #19e1d1, #573a99, #f5d66d, #19e1d1);
+  border: 2px solid #0c4662;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 6px #071628;
+}
+
+[data-lm-instrument-console-host] .console-knobs span {
+  margin-top: 4px;
+}
+
+[data-lm-instrument-console-host] .status-wave {
+  height: 28px;
+  margin-top: 8px;
+  background: linear-gradient(150deg, transparent 35%, #5ef0d7 36% 44%, transparent 45% 52%, #58b9ed 53% 62%, transparent 63%);
+  opacity: .8;
+}
+
+@media (max-width: 1350px) {
+  [data-lm-instrument-console-host] .ultra-page-instrument-console {
+    right: 12px;
+    left: 12px;
+    grid-template-columns: 100px minmax(300px, 2.8fr) minmax(250px, 1.8fr) minmax(115px, .9fr) minmax(180px, 1.3fr);
+  }
+  [data-lm-instrument-console-host] .console-status { display: none; }
+}
+
+@media (max-width: 900px) {
+  body:has([data-lm-instrument-console-host]) { padding-bottom: 104px; }
+  [data-lm-instrument-console-host] .ultra-page-instrument-console {
+    grid-template-columns: 88px minmax(290px, 1fr) minmax(230px, .75fr);
+    overflow-x: auto;
+  }
+  [data-lm-instrument-console-host] .console-eq,
+  [data-lm-instrument-console-host] .console-knobs { display: none; }
+}
+
+@media (max-width: 620px) {
+  body:has([data-lm-instrument-console-host]) { padding-bottom: 88px; }
+  [data-lm-instrument-console-host] .ultra-page-instrument-console {
+    right: 6px;
+    bottom: 6px;
+    left: 6px;
+    grid-template-columns: 72px minmax(260px, 1fr) minmax(220px, .8fr);
+    min-height: 76px;
+    padding: 6px;
+  }
+  [data-lm-instrument-console-host] .playable-piano { min-height: 38px; }
+  [data-lm-instrument-console-host] .piano-key { min-height: 38px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-lm-instrument-console-host] *,
+  [data-lm-instrument-console-host] *::before,
+  [data-lm-instrument-console-host] *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

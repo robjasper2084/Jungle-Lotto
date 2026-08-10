@@ -86,7 +86,7 @@
     frequency = Number(localStorage.getItem("lottomind_healing_frequency")) || 528;
   } catch {}
 
-  const toneRoot = isLotterySpheres ? document.querySelector("[data-console-frequency-generator]") : root;
+  const toneRoot = document.querySelector("[data-console-frequency-generator]") || root;
   const toggle = toneRoot?.querySelector("[data-healing-toggle]");
   const status = toneRoot?.querySelector("[data-healing-status]");
   const volume = toneRoot?.querySelector("[data-healing-volume]");

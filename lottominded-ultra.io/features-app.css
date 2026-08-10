@@ -626,6 +626,33 @@ body.arcade-pilot-page.feature-entity-ready .feature-entity {
   text-transform: uppercase;
 }
 
+.arcade-directory__view-switch {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.35rem;
+  width: 100%;
+}
+
+.arcade-directory__view-switch button {
+  min-height: 44px;
+  padding: 0.65rem 0.8rem;
+  border: 1px solid var(--arcade-line);
+  color: var(--arcade-muted);
+  background: #080d12;
+  font: 800 0.68rem/1 "IBM Plex Mono", Consolas, monospace;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.arcade-directory__view-switch button:hover,
+.arcade-directory__view-switch button:focus-visible,
+.arcade-directory__view-switch button[aria-pressed="true"] {
+  border-color: var(--arcade-cyan);
+  color: #031018;
+  background: var(--arcade-cyan);
+  outline: none;
+}
+
 .arcade-directory__rail-controls {
   display: flex;
   gap: 0.45rem;
@@ -633,8 +660,8 @@ body.arcade-pilot-page.feature-entity-ready .feature-entity {
 
 .arcade-directory__rail-controls button {
   display: grid;
-  width: 42px;
-  height: 42px;
+  width: 44px;
+  height: 44px;
   place-items: center;
   padding: 0;
   border: 1px solid var(--arcade-line);
@@ -694,6 +721,24 @@ body.arcade-pilot-page.feature-entity-ready .feature-entity {
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 1rem;
   padding: 0.2rem 0 1rem;
+}
+
+.arcade-directory[data-view="grid"] .arcade-directory__rail-controls {
+  display: none;
+}
+
+.arcade-directory[data-view="rail"] .arcade-grid {
+  grid-template-columns: none;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(270px, 31%);
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  scroll-snap-type: x mandatory;
+  scrollbar-color: var(--arcade-gold) #07121b;
+}
+
+.arcade-directory[data-view="rail"] .arcade-game-card {
+  scroll-snap-align: start;
 }
 
 .arcade-game-card {
@@ -1137,7 +1182,9 @@ body.arcade-pilot-page.feature-entity-ready .feature-entity {
   }
 
   .arcade-directory__header {
-    align-items: start;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
   }
 
   .arcade-directory__header h2 {
@@ -1145,12 +1192,13 @@ body.arcade-pilot-page.feature-entity-ready .feature-entity {
   }
 
   .arcade-directory__rail-status {
-    justify-items: end;
+    width: 100%;
+    justify-items: stretch;
   }
 
   .arcade-directory__rail-status > p {
-    max-width: 80px;
-    text-align: right;
+    max-width: none;
+    text-align: left;
   }
 
   .arcade-directory__tools,
@@ -1160,6 +1208,10 @@ body.arcade-pilot-page.feature-entity-ready .feature-entity {
 
   .arcade-grid {
     grid-template-columns: 1fr;
+  }
+
+  .arcade-directory[data-view="rail"] .arcade-grid {
+    grid-auto-columns: minmax(270px, 82vw);
   }
 
   .arcade-responsible-note {

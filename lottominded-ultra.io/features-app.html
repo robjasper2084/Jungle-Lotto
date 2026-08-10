@@ -20,7 +20,7 @@
     <link rel="stylesheet" href="./assets/css/lm-commercial-gate.css?v=mobile-fit-1" />
     <link rel="stylesheet" href="./assets/features-app/css/feature-particle-organism.css?v=arcade-mascot-return-1" />
     <link rel="stylesheet" href="./assets/css/lm-mascot-cinematic.css?v=arcade-mascot-return-1" />
-    <link rel="stylesheet" href="./features-app.css?v=arcade-signal-matrix-6" />
+  <link rel="stylesheet" href="./features-app.css?v=arcade-view-modes-1" />
     <link rel="stylesheet" href="./assets/css/lm-global-orb-header.css?v=header-consistency-4" />
     <script type="importmap">
       {"imports":{"three":"./assets/vendor/three/three.module.min.js?v=0.160.1"}}
@@ -57,15 +57,15 @@
         </a>
       </div>
       <nav aria-label="LOTTOMINDED ULTRA sphere navigation">
-        <a href="./memberships.html" data-icon="MB">Memberships</a>
-        <a href="./index.html#top" data-icon="HM">Home</a>
-        <a href="./features-app.html" data-icon="FX" aria-current="page">Games</a>
-        <a href="./news/" data-icon="NW">News</a>
-        <a href="./live-events.html" data-icon="EV">Events</a>
         <a href="./lottery-spheres.html#spheres" data-icon="SP">Spheres</a>
-        <a href="./beat2lotto-plus.html#beat2lotto" data-icon="B2">RAHBE</a>
-        <a href="./merch-store.html" data-icon="DR">Storefront</a>
+        <a href="./index.html#top" data-icon="HM">Home</a>
+        <a href="./live-events.html" data-icon="EV">Events</a>
+        <a href="./news/" data-icon="NW">News</a>
+        <a href="./features-app.html" data-icon="FX" aria-current="page">Games</a>
         <a href="./how-to-use.html" data-icon="GD">Static Wav</a>
+        <a href="./beat2lotto-plus.html#beat2lotto" data-icon="B2">Robot RAHBEE</a>
+        <a href="./merch-store.html" data-icon="DR">Storefront</a>
+        <a href="./memberships.html" data-icon="MB">Memberships</a>
         <a href="https://robjasper2084.github.io/Jungle-Lotto/lotto%20mind%20refined/" data-icon="LM" data-member-app-public="true" aria-label="Open LottoMind Refined App">LottoMind App</a>
       </nav>
       <div class="direct-launch" aria-label="Direct studio launch">
@@ -148,16 +148,24 @@
         </div>
       </nav>
 
-      <section class="arcade-directory" id="arcade-library" aria-labelledby="arcade-library-title" data-shape="6" data-entity-label="Game directory">
+    <section class="arcade-directory" id="arcade-library" aria-labelledby="arcade-library-title" data-shape="6" data-entity-label="Game directory" data-view="grid">
         <header class="arcade-directory__header">
           <div>
             <p class="arcade-pilot-kicker">Playable signal directory</p>
             <h2 id="arcade-library-title">Choose a world</h2>
           </div>
-          <div class="arcade-directory__rail-status">
-            <p><span data-arcade-visible-count>&mdash;</span> routes visible</p>
-            <span>Full signal matrix</span>
+        <div class="arcade-directory__rail-status">
+          <p><span data-arcade-visible-count>&mdash;</span> routes visible</p>
+          <span data-arcade-view-status>All routes shown</span>
+          <div class="arcade-directory__view-switch" role="group" aria-label="Game directory view">
+            <button type="button" data-arcade-view="grid" aria-pressed="true">Grid</button>
+            <button type="button" data-arcade-view="rail" aria-pressed="false">Rail</button>
           </div>
+          <div class="arcade-directory__rail-controls" aria-label="Scroll game directory">
+            <button type="button" data-arcade-scroll="-1" aria-label="Previous games">&larr;</button>
+            <button type="button" data-arcade-scroll="1" aria-label="Next games">&rarr;</button>
+          </div>
+        </div>
         </header>
 
         <div class="arcade-directory__tools">
@@ -209,6 +217,6 @@
     <script src="./assets/js/lm-page-transition.js?v=transition-every-route-6" defer></script>
     <script src="./site.js?v=header-toggle-routes-5" defer></script>
     <script type="module" src="./assets/features-app/js/main.js?v=arcade-mascot-return-1"></script>
-    <script src="./features-app.js?v=arcade-signal-matrix-2" defer></script>
+  <script src="./features-app.js?v=arcade-view-modes-1" defer></script>
   </body>
 </html>

@@ -1,6 +1,9 @@
 const { defineConfig } = require("@playwright/test");
 
-const testPort = Number(process.env.LOTTOMIND_TEST_PORT || 8142);
+const testPort = Number(process.env.LOTTOMIND_TEST_PORT);
+if (!Number.isInteger(testPort) || testPort < 1) {
+  throw new Error("LOTTOMIND_TEST_PORT is required. Run `npm test` to allocate an isolated test port.");
+}
 const testRoot = process.env.LOTTOMIND_TEST_ROOT || ".";
 
 module.exports = defineConfig({
@@ -23,7 +26,7 @@ module.exports = defineConfig({
   webServer: {
     command: `node scripts/serve-site.mjs "${testRoot}" ${testPort}`,
     url: `http://127.0.0.1:${testPort}/index.html`,
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: process.env.LOTTOMIND_REUSE_TEST_SERVER === "1",
     timeout: 120_000
   },
   projects: [

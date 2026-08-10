@@ -2,12 +2,12 @@
   position: relative;
   display: flex;
   flex: 0 0 auto;
-  gap: 6px;
+  gap: 12px;
   align-items: center;
   justify-content: flex-end;
-  max-width: min(100%, 430px);
+  max-width: min(100%, 260px);
   min-width: 0;
-  padding: 5px;
+  padding: 6px 8px;
   border: 1px solid rgba(41, 247, 255, 0.2);
   border-radius: 999px;
   background:
@@ -21,7 +21,7 @@
 .lm-header-utilities a,
 .lm-header-utilities button {
   display: inline-grid;
-  min-width: 40px !important;
+  min-width: 76px !important;
   min-height: 42px !important;
   place-items: center;
   padding: 8px 12px;
@@ -45,10 +45,9 @@
 }
 
 .lm-header-utilities > :nth-child(2) {
-  border-color: rgba(255, 224, 113, 0.78);
-  color: #fff7c7;
-  background: linear-gradient(145deg, rgba(255, 224, 113, 0.3), rgba(119, 74, 209, 0.64) 54%, rgba(13, 9, 29, 0.96));
-  box-shadow: inset 0 0 0 1px rgba(255, 246, 188, 0.12), 0 0 16px rgba(255, 224, 113, 0.16);
+  border-color: rgba(255, 79, 216, 0.72);
+  background: linear-gradient(145deg, rgba(255, 79, 216, 0.28), rgba(21, 176, 189, 0.62) 56%, rgba(4, 12, 23, 0.96));
+  box-shadow: inset 0 0 0 1px rgba(255, 210, 247, 0.1), 0 0 16px rgba(255, 79, 216, 0.16);
 }
 
 .lm-header-utilities > :nth-child(3) {
@@ -310,7 +309,7 @@ body > footer.lm-site-footer-hud :is(.lm-footer-support-links, .site-legal-links
 
   body .site-header.home-like-header .lm-header-utilities {
     display: flex !important;
-    max-width: 330px;
+    max-width: 260px;
   }
 
   .lm-header-utilities a,

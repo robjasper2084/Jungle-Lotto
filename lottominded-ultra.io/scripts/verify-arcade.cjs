@@ -31,7 +31,11 @@ async function inspectPage(page) {
   });
   page.on("pageerror", (error) => errors.push(error.message));
 
-  await page.goto("http://127.0.0.1:8142/features-app.html#arcade-library", {
+  const origin = process.env.LOTTOMIND_TEST_ORIGIN;
+  if (!origin) {
+    throw new Error("LOTTOMIND_TEST_ORIGIN is required for arcade verification.");
+  }
+  await page.goto(`${origin}/features-app.html#arcade-library`, {
     waitUntil: "networkidle",
     timeout: 30000
   });

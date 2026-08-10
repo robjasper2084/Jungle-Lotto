@@ -17,6 +17,8 @@ screenshots/
 .local-untracked-backup/
 Crashpad/
 preview/
+_site/
+lottominded-ultra.io/output/
 .archive-*
 .goth-preview-server.cjs
 npx

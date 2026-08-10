@@ -1,4 +1,7 @@
-﻿A	docs/brand-architecture.md
+M	.github/workflows/pages.yml
+M	.gitignore
+A	design-qa.md
+A	docs/brand-architecture.md
 M	docs/production-launch-assets/memberships-1440x900.png
 M	docs/production-launch-assets/memberships-390x844.png
 M	docs/production-launch-assets/static-wav-1440x900.png
@@ -9,6 +12,7 @@ M	docs/production-release-candidate.md
 A	docs/secure-backend-architecture.md
 M	docs/site-rebuild-checklist.md
 M	docs/site-rebuild-release-report.md
+M	docs/staging-deployment.md
 A	docs/staging-reviews/action-based-free-access-home-desktop.png
 A	docs/staging-reviews/action-based-free-access-home-mobile.png
 A	docs/staging-reviews/action-based-free-access-memberships-desktop.png
@@ -66,6 +70,70 @@ A	docs/staging-reviews/unified-account-dashboard.md
 A	docs/storefront-launch-readiness.md
 A	docs/trivia-vault-rollback.md
 M	docs/upgrade-redesign-status.md
+M	lotto mind refined/app.js
+M	lotto mind refined/arcade/index.html
+A	lotto mind refined/assets/custom/generated-button-art-20260809/command-button-core.png
+A	lotto mind refined/assets/custom/generated-button-art-20260809/frequency-tone-core.png
+A	lotto mind refined/assets/custom/generated-dream-actions-20260809/generate-your-dreams.png
+A	lotto mind refined/assets/custom/generated-dream-actions-20260809/interpret-dream.png
+A	lotto mind refined/assets/custom/generated-dream-actions-20260809/psychic-fusion.png
+A	lotto mind refined/assets/custom/generated-dream-actions-20260809/record-dream-song.png
+A	lotto mind refined/assets/custom/generated-heatmap-art-20260809/radar-rotary-core.png
+A	lotto mind refined/assets/custom/generated-heatmap-art-20260809/radar-tool-deck-core.png
+A	lotto mind refined/assets/custom/generated-hud-surfaces-20260809/arcade-hero.png
+A	lotto mind refined/assets/custom/generated-hud-surfaces-20260809/arcade-quest-surface.png
+A	lotto mind refined/assets/custom/generated-hud-surfaces-20260809/arcade-training-surface.png
+A	lotto mind refined/assets/custom/generated-hud-surfaces-20260809/future-music-control-surface.png
+A	lotto mind refined/assets/custom/generated-hud-surfaces-20260809/future-music-store-hero.png
+A	lotto mind refined/assets/custom/generated-hud-surfaces-20260809/main-lab-surface.png
+M	lotto mind refined/dreams/index.html
+A	lotto mind refined/games/lottomind-trivia/BACKEND_INTEGRATION.md
+A	lotto mind refined/games/lottomind-trivia/DEPLOYMENT.md
+A	lotto mind refined/games/lottomind-trivia/IMPLEMENTATION_REPORT.md
+A	lotto mind refined/games/lottomind-trivia/QUESTION_AUTHORING.md
+A	lotto mind refined/games/lottomind-trivia/README.md
+A	lotto mind refined/games/lottomind-trivia/ROLLBACK.md
+A	lotto mind refined/games/lottomind-trivia/SECURITY.md
+A	lotto mind refined/games/lottomind-trivia/admin/admin.css
+A	lotto mind refined/games/lottomind-trivia/admin/admin.mjs
+A	lotto mind refined/games/lottomind-trivia/admin/index.html
+A	lotto mind refined/games/lottomind-trivia/data/categories/detroit-history-culture.json
+A	lotto mind refined/games/lottomind-trivia/data/categories/lottery-knowledge.json
+A	lotto mind refined/games/lottomind-trivia/data/categories/lottomind-universe.json
+A	lotto mind refined/games/lottomind-trivia/data/categories/music-pop-culture.json
+A	lotto mind refined/games/lottomind-trivia/data/categories/mystery-mix.json
+A	lotto mind refined/games/lottomind-trivia/data/categories/numbers-numerology.json
+A	lotto mind refined/games/lottomind-trivia/data/categories/ufo-unexplained.json
+A	lotto mind refined/games/lottomind-trivia/data/manifest.json
+A	lotto mind refined/games/lottomind-trivia/docs/QA-REPORT.md
+A	lotto mind refined/games/lottomind-trivia/index.html
+A	lotto mind refined/games/lottomind-trivia/output/playwright/lighthouse-mobile.json
+A	lotto mind refined/games/lottomind-trivia/output/playwright/trivia-home-desktop.png
+A	lotto mind refined/games/lottomind-trivia/output/playwright/trivia-question-mobile.png
+A	lotto mind refined/games/lottomind-trivia/output/playwright/trivia-results-desktop.png
+A	lotto mind refined/games/lottomind-trivia/package.json
+A	lotto mind refined/games/lottomind-trivia/refined-embed.css
+A	lotto mind refined/games/lottomind-trivia/scripts/build-question-bank.mjs
+A	lotto mind refined/games/lottomind-trivia/scripts/serve-preview.mjs
+A	lotto mind refined/games/lottomind-trivia/scripts/validate-build.mjs
+A	lotto mind refined/games/lottomind-trivia/src/app.mjs
+A	lotto mind refined/games/lottomind-trivia/src/config.mjs
+A	lotto mind refined/games/lottomind-trivia/src/engine.mjs
+A	lotto mind refined/games/lottomind-trivia/src/question-schema.mjs
+A	lotto mind refined/games/lottomind-trivia/src/refined-embed.mjs
+A	lotto mind refined/games/lottomind-trivia/src/services.mjs
+A	lotto mind refined/games/lottomind-trivia/styles.css
+A	lotto mind refined/games/lottomind-trivia/tests/engine.test.mjs
+A	lotto mind refined/games/lottomind-trivia/tests/questions.test.mjs
+M	lotto mind refined/heatmap/index.html
+M	lotto mind refined/index.html
+M	lotto mind refined/meditation/index.html
+M	lotto mind refined/powertools/index.html
+M	lotto mind refined/shop/index.html
+M	lotto mind refined/styles.css
+M	lotto mind refined/trivia-play/index.html
+M	lotto mind refined/trivia-redeem/index.html
+M	lotto mind refined/trivia-rewards/index.html
 M	lottominded-ultra.io/STRIPE_TEST_SETUP.md
 M	lottominded-ultra.io/accessibility.html
 M	lottominded-ultra.io/account.html
@@ -75,6 +143,8 @@ A	lottominded-ultra.io/assets/audio/lottomind-membership-theme-untitled-14.mp3
 A	lottominded-ultra.io/assets/audio/lottomind-news-theme-instrumental.mp3
 A	lottominded-ultra.io/assets/css/lm-commercial-hud.css
 M	lottominded-ultra.io/assets/css/lm-healing-frequency.css
+A	lottominded-ultra.io/assets/css/lm-instrument-console.css
+M	lottominded-ultra.io/assets/css/lm-mascot-cinematic.css
 M	lottominded-ultra.io/assets/css/lm-page-transition.css
 M	lottominded-ultra.io/assets/css/lm-phase1-platform.css
 M	lottominded-ultra.io/assets/css/lm-rahbee-depth.css
@@ -82,15 +152,20 @@ A	lottominded-ultra.io/assets/css/lm-services.css
 M	lottominded-ultra.io/assets/css/lm-support-utilities.css
 M	lottominded-ultra.io/assets/css/memberships-cinematic.css
 M	lottominded-ultra.io/assets/js/arcade-games.js
+M	lottominded-ultra.io/assets/js/beat2lotto-collector-access.js
 M	lottominded-ultra.io/assets/js/lm-account-hub.js
 A	lottominded-ultra.io/assets/js/lm-first-use.js
 M	lottominded-ultra.io/assets/js/lm-healing-frequency.js
+A	lottominded-ultra.io/assets/js/lm-instrument-console.js
 A	lottominded-ultra.io/assets/js/lm-membership-games.js
 M	lottominded-ultra.io/assets/js/lm-page-transition.js
 A	lottominded-ultra.io/assets/js/lm-services-inquiry.js
+M	lottominded-ultra.io/assets/js/lm-staging-guard.js
 M	lottominded-ultra.io/assets/js/lm-stripe-memberships.js
 M	lottominded-ultra.io/assets/js/lottomind-account-service.js
+M	lottominded-ultra.io/assets/js/lottomind-runtime-config.js
 M	lottominded-ultra.io/assets/js/memberships-cinematic.js
+M	lottominded-ultra.io/assets/live-events/css/live-events-redesign.css
 M	lottominded-ultra.io/assets/live-events/js/live-events-redesign.js
 A	lottominded-ultra.io/assets/merch/guardian-bundle-boxed-20260807.webp
 A	lottominded-ultra.io/assets/merch/guardian-camera-pair-20260807.webp
@@ -146,6 +221,37 @@ M	lottominded-ultra.io/features-app.css
 M	lottominded-ultra.io/features-app.html
 M	lottominded-ultra.io/features-app.js
 A	lottominded-ultra.io/games/games-manifest.json
+M	lottominded-ultra.io/games/lottomind-313-fortune-grid/ACCESSIBILITY.md
+M	lottominded-ultra.io/games/lottomind-313-fortune-grid/ARCHITECTURE.md
+M	lottominded-ultra.io/games/lottomind-313-fortune-grid/ASSET-MANIFEST.md
+M	lottominded-ultra.io/games/lottomind-313-fortune-grid/BALANCE-NOTES.md
+A	lottominded-ultra.io/games/lottomind-313-fortune-grid/DETROIT-MAP-NOTES.md
+M	lottominded-ultra.io/games/lottomind-313-fortune-grid/GAME-RULES.md
+M	lottominded-ultra.io/games/lottomind-313-fortune-grid/STAGING-TEST-REPORT.md
+M	lottominded-ultra.io/games/lottomind-313-fortune-grid/THIRD_PARTY_NOTICES.md
+M	lottominded-ultra.io/games/lottomind-313-fortune-grid/app/src/content/board.ts
+A	lottominded-ultra.io/games/lottomind-313-fortune-grid/app/src/content/detroitGeo.ts
+M	lottominded-ultra.io/games/lottomind-313-fortune-grid/app/src/content/districts.ts
+M	lottominded-ultra.io/games/lottomind-313-fortune-grid/app/src/engine/movement.ts
+M	lottominded-ultra.io/games/lottomind-313-fortune-grid/app/src/engine/reducer.ts
+M	lottominded-ultra.io/games/lottomind-313-fortune-grid/app/src/engine/state.ts
+M	lottominded-ultra.io/games/lottomind-313-fortune-grid/app/src/main.ts
+M	lottominded-ultra.io/games/lottomind-313-fortune-grid/app/src/polish.css
+A	lottominded-ultra.io/games/lottomind-313-fortune-grid/app/src/render/app/DetroitBoard3D.ts
+D	lottominded-ultra.io/games/lottomind-313-fortune-grid/app/src/scene/BoardScene.ts
+M	lottominded-ultra.io/games/lottomind-313-fortune-grid/app/src/services/storage.ts
+R084	lottominded-ultra.io/games/lottomind-313-fortune-grid/assets/build/index-CaI81xPD.css	lottominded-ultra.io/games/lottomind-313-fortune-grid/assets/build/index-0En4BSan.css
+D	lottominded-ultra.io/games/lottomind-313-fortune-grid/assets/build/index-9oHsOwI5.js
+A	lottominded-ultra.io/games/lottomind-313-fortune-grid/assets/build/index-CzE6--hS.js
+D	lottominded-ultra.io/games/lottomind-313-fortune-grid/assets/build/phaser-DFK5Ua9d.js
+A	lottominded-ultra.io/games/lottomind-313-fortune-grid/assets/build/three-spg7Nm45.js
+M	lottominded-ultra.io/games/lottomind-313-fortune-grid/index.html
+M	lottominded-ultra.io/games/lottomind-313-fortune-grid/package-lock.json
+M	lottominded-ultra.io/games/lottomind-313-fortune-grid/package.json
+M	lottominded-ultra.io/games/lottomind-313-fortune-grid/scripts/build.mjs
+M	lottominded-ultra.io/games/lottomind-313-fortune-grid/tests/e2e/fortune-grid.spec.ts
+M	lottominded-ultra.io/games/lottomind-313-fortune-grid/tests/engine.test.ts
+M	lottominded-ultra.io/games/lottomind-313-fortune-grid/vite.config.ts
 A	lottominded-ultra.io/games/lottomind-trivia/DEPLOYMENT.md
 A	lottominded-ultra.io/games/lottomind-trivia/QUESTION-AUTHORING.md
 A	lottominded-ultra.io/games/lottomind-trivia/README.md
@@ -164,6 +270,261 @@ A	lottominded-ultra.io/games/lottomind-trivia/src/trivia-services.mjs
 A	lottominded-ultra.io/games/lottomind-trivia/styles.css
 A	lottominded-ultra.io/games/lottomind-trivia/tests/trivia-engine.test.mjs
 A	lottominded-ultra.io/games/lottomind-trivia/tests/trivia-security.test.mjs
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/backgrounds/lottomind-store-startup.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/backgrounds/robot-rahbe-gameplay-keyart-flipped.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/backgrounds/robot-rahbe-gameplay-keyart.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/backgrounds/robot-rahbe-gameplay-reference-clean.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/backgrounds/robot-rahbe-gameplay-reference.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/backgrounds/robot-rahbe-higgsfield-hero-keyart.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/backgrounds/robot-rahbe-startup-card-higgsfield.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/backgrounds/startup-card-render-check.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/bosses/canopy_drone_queen.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/bosses/canopy_drone_queen_motion_sheet.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/bosses/canopy_drone_queen_motion_sheet_runtime_384.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/bosses/jackpot_forge_titan.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/bosses/jackpot_forge_titan_motion_sheet.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/bosses/jackpot_forge_titan_motion_sheet_runtime_384.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/bosses/midas_heartcore_overlord.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/bosses/midas_heartcore_overlord_motion_sheet.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/bosses/midas_heartcore_overlord_motion_sheet_runtime_384.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/characters/chatgpt_cannon_turret_motion_strip_alpha.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/characters/chatgpt_cannon_turret_motion_strip_runtime.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/characters/chatgpt_cannon_turret_motion_strip_runtime_legacy_2172x724.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/characters/chatgpt_drone_laser_overlay_strip_runtime.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/characters/chatgpt_drone_laser_overlay_strip_runtime_clean.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/characters/chatgpt_robot_dog_walk_strip_alpha.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/characters/chatgpt_robot_dog_walk_strip_runtime.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/characters/chatgpt_shield_robot_mission_strip_runtime.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/characters/chatgpt_shield_robot_mission_strip_runtime_v2.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/characters/chatgpt_shield_robot_mission_strip_runtime_v3.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/characters/chatgpt_shield_robot_mission_strip_runtime_v4.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/characters/chatgpt_shield_robot_motion_strip_alpha.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/characters/chatgpt_shield_robot_motion_strip_runtime.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/characters/chatgpt_shield_robot_walk_attack_strip_alpha.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/characters/chatgpt_shield_robot_walk_attack_strip_runtime.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/characters/higgsfield_cannon_turret_motion_strip_runtime_v2.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/characters/higgsfield_drone_laser_overlay_strip_runtime.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/characters/higgsfield_drone_motion_strip_runtime.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/characters/higgsfield_drone_motion_strip_runtime_v2.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/characters/higgsfield_enemy_anim_source_20260623.jpeg
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/characters/higgsfield_enemy_motion_sheet.webp
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/characters/higgsfield_enemy_motion_sheet_alpha.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/environment3d/cyber-vault-v1/environment-pack-manifest.json
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/environment3d/cyber-vault-v1/layers/distant-cyber-vault-silhouettes.webp
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/environment3d/cyber-vault-v1/layers/far-purple-nebula-sky.webp
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/environment3d/cyber-vault-v1/layers/hologram-fog-overlay.webp
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/environment3d/cyber-vault-v1/layers/mid-circuit-wall.webp
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/environment3d/cyber-vault-v1/overlays/amber_circuit_glow.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/environment3d/cyber-vault-v1/overlays/fog_bank.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/environment3d/cyber-vault-v1/overlays/foreground-overlay-sheet.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/environment3d/cyber-vault-v1/overlays/hanging_vines.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/environment3d/cyber-vault-v1/overlays/jungle_leaves.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/environment3d/cyber-vault-v1/overlays/magenta_glow.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/environment3d/cyber-vault-v1/overlays/particle_sparks.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/environment3d/cyber-vault-v1/overlays/purple_mushrooms.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/environment3d/cyber-vault-v1/overlays/smoke_ribbon.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/environment3d/cyber-vault-v1/platforms/boss_arena_platform.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/environment3d/cyber-vault-v1/platforms/broken_ledge.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/environment3d/cyber-vault-v1/platforms/broken_ledge.webp
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/environment3d/cyber-vault-v1/platforms/elevator_pad.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/environment3d/cyber-vault-v1/platforms/elevator_pad.webp
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/environment3d/cyber-vault-v1/platforms/hatch_platform.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/environment3d/cyber-vault-v1/platforms/hatch_platform.webp
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/environment3d/cyber-vault-v1/platforms/left_cap.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/environment3d/cyber-vault-v1/platforms/left_cap.webp
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/environment3d/cyber-vault-v1/platforms/middle_tile.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/environment3d/cyber-vault-v1/platforms/middle_tile.webp
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/environment3d/cyber-vault-v1/platforms/platform-modules-sheet.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/environment3d/cyber-vault-v1/platforms/right_cap.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/environment3d/cyber-vault-v1/platforms/right_cap.webp
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/environment3d/cyber-vault-v1/platforms/small_ledge.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/environment3d/cyber-vault-v1/platforms/small_ledge.webp
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/environment3d/cyber-vault-v1/platforms/wide_bridge.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/environment3d/cyber-vault-v1/platforms/wide_bridge.webp
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/environment3d/cyber-vault-v1/preview/shadow-ops-environment-pack-preview.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/environment3d/cyber-vault-v1/props/boss_portal_frame.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/environment3d/cyber-vault-v1/props/checkpoint_pad.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/environment3d/cyber-vault-v1/props/elevator_terminal.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/environment3d/cyber-vault-v1/props/energy_battery.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/environment3d/cyber-vault-v1/props/gold_circuit_switch.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/environment3d/cyber-vault-v1/props/heart-core-reactor-states-sheet.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/environment3d/cyber-vault-v1/props/heart_core_activated.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/environment3d/cyber-vault-v1/props/heart_core_damaged.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/environment3d/cyber-vault-v1/props/heart_core_defeated.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/environment3d/cyber-vault-v1/props/heart_core_dormant.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/environment3d/cyber-vault-v1/props/heart_core_overloaded.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/environment3d/cyber-vault-v1/props/hologram_terminal.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/environment3d/cyber-vault-v1/props/interactive-cyber-vault-props-sheet.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/environment3d/cyber-vault-v1/props/locked_vault_door.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/environment3d/cyber-vault-v1/props/purple_crystal.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/environment3d/cyber-vault-v1/props/reward_crate.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/environment3d/cyber-vault-v1/props/security_console.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/environment3d/cyber-vault-v1/props/unlockable_hatch.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/environment3d/cyber-vault-v1/props/warning_beacon.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/fx/lottomind-fx-sheet-source.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/fx/lottomind-fx-sheet.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/hero/lottomind-hero-main-313.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/hero/lottomind-reference-hero-crop-20260624.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/hero/lottomind_hero_base_higgsfield_alpha_20260624.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/hero/lottomind_hero_base_higgsfield_runtime_512.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/hero/lottomind_hero_base_higgsfield_source_20260624.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/levels/level1_bg_far.webp
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/levels/platform_tiles_level1.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/levels/platform_tiles_level2.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/levels/platform_tiles_level3.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mascot/higgsfield-hero-motion-atlas-1.webp
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mascot/higgsfield-hero-motion-atlas-2.webp
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mascot/lottomind-mascot-runner-atlas-green.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mascot/lottomind_hero_photo_atlas_alpha_20260624.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mascot/lottomind_hero_photo_atlas_runtime_v1.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mascot/lottomind_hero_photo_atlas_source_20260624.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mascot/lottomind_hero_photo_dash_alpha_20260624.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mascot/lottomind_hero_photo_dash_runtime_v1.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mascot/lottomind_hero_photo_dash_source_20260624.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mascot/lottomind_hero_userref_candidate_source_20260624.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mascot/master-ezra-action-sheet-chatgpt-source.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mascot/master-ezra-seed-idle.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mascot/master-ezra-shadowops-atlas.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mascot/master-ezra-shadowops-preview.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/chatgpt_drone_fx_strip_alpha.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/chatgpt_drone_fx_strip_runtime.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/chatgpt_drone_fx_strip_runtime_clean.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/chatgpt_drone_fx_strip_runtime_v2.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/chatgpt_drone_fx_strip_runtime_v3.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/chatgpt_gameplay_fx_sheet_alpha.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/chatgpt_gameplay_fx_sheet_runtime.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/chatgpt_gameplay_fx_sheet_runtime_clean.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/chatgpt_mission_fx_sheet_runtime_clean.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/chatgpt_world_elements_sheet_alpha.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/chatgpt_world_elements_sheet_runtime.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/clipboard_drone_fx_transparent_alpha.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/higgsfield_background_props_sheet.webp
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/higgsfield_background_props_sheet_alpha.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/higgsfield_background_props_sheet_runtime.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/higgsfield_batch_fx_alpha_20260624.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/higgsfield_batch_fx_retry_alpha_20260624.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/higgsfield_batch_fx_retry_runtime_v1.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/higgsfield_batch_fx_retry_runtime_v2.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/higgsfield_batch_fx_retry_source_20260624.jpeg
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/higgsfield_batch_fx_runtime_v1.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/higgsfield_batch_fx_source_20260624.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/higgsfield_batch_props_alpha_20260624.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/higgsfield_batch_props_runtime_v1.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/higgsfield_batch_props_runtime_v2.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/higgsfield_batch_props_source_20260624.jpeg
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/higgsfield_batch_world_alpha_20260624.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/higgsfield_batch_world_runtime_v1.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/higgsfield_batch_world_source_20260624.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/higgsfield_fx_repair_alpha_20260624.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/higgsfield_fx_repair_runtime_v1.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/higgsfield_fx_repair_source_20260624.jpeg
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/higgsfield_heart_fx_sheet_runtime_v2.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/higgsfield_heart_fx_source_20260623.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/higgsfield_missing_assets_alpha_20260623.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/higgsfield_missing_assets_source_20260623.jpeg
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/higgsfield_missing_fx_sheet_runtime_v1.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/higgsfield_missing_world_props_runtime_v1.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/higgsfield_missing_world_props_runtime_v2.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/higgsfield_mission_fx_collectibles_sheet.webp
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/higgsfield_mission_fx_collectibles_sheet_alpha.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/higgsfield_mission_fx_collectibles_sheet_runtime.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/higgsfield_photo_fx_alpha_20260624.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/higgsfield_photo_fx_runtime_v1.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/higgsfield_photo_fx_source_20260624.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/higgsfield_photo_world_alpha_20260624.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/higgsfield_photo_world_retry_alpha_20260624.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/higgsfield_photo_world_retry_runtime_v1.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/higgsfield_photo_world_retry_runtime_v2.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/higgsfield_photo_world_retry_source_20260624.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/higgsfield_photo_world_runtime_v1.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/higgsfield_photo_world_source_20260624.jpeg
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/higgsfield_reference_assets_alpha_20260624.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/higgsfield_reference_assets_runtime_v1.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/higgsfield_reference_assets_source_20260624.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/higgsfield_separate_cell_sources/frame_02_source_higgsfield_20260624.jpeg
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/higgsfield_separate_cell_sources/frame_03_source_higgsfield_20260624.jpeg
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/higgsfield_separate_cell_sources/frame_04_source_higgsfield_20260624.jpeg
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/higgsfield_separate_cell_sources/frame_05_source_higgsfield_20260624.jpeg
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/higgsfield_separate_cell_sources/frame_06_source_higgsfield_20260624.jpeg
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/higgsfield_separate_cell_sources/frame_17_source_higgsfield_20260624.jpeg
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/higgsfield_separate_cell_sources/frame_18_source_higgsfield_20260624.jpeg
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/higgsfield_separate_cell_sources/frame_19_source_higgsfield_20260624.jpeg
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/higgsfield_separate_fx_cells/frame_02.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/higgsfield_separate_fx_cells/frame_03.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/higgsfield_separate_fx_cells/frame_04.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/higgsfield_separate_fx_cells/frame_05.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/higgsfield_separate_fx_cells/frame_06.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/higgsfield_separate_fx_cells/frame_17.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/higgsfield_separate_fx_cells/frame_18.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/higgsfield_separate_fx_cells/frame_19.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/higgsfield_separate_fx_repair_runtime_v1.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/higgsfield_separate_fx_repair_runtime_v2.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/higgsfield_separate_fx_repair_runtime_v3.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/higgsfield_userref_fx_alpha_20260624.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/higgsfield_userref_fx_runtime_v1.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/higgsfield_userref_fx_source_20260624.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/higgsfield_userref_world_alpha_20260624.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/higgsfield_userref_world_runtime_v1.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/higgsfield_userref_world_source_20260624.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/higgsfield_world_props_alpha_20260623.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/higgsfield_world_props_runtime_v2.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/higgsfield_world_props_source_20260623.jpeg
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/mission_collectibles_sheet.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/robot_rahbe_floor_laser_v1.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/robot_rahbe_underground_gate_v1.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/separate_fx_repair_cells/frame_02.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/separate_fx_repair_cells/frame_03.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/separate_fx_repair_cells/frame_04.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/separate_fx_repair_cells/frame_05.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/separate_fx_repair_cells/frame_06.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/separate_fx_repair_cells/frame_17.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/separate_fx_repair_cells/frame_18.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/mission/separate_fx_repair_cells/frame_19.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/title3d/cards/chevrons.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/title3d/cards/crate_a.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/title3d/cards/crate_b.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/title3d/cards/crystal_a.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/title3d/cards/crystal_b.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/title3d/cards/energy_pylon_a.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/title3d/cards/energy_pylon_b.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/title3d/cards/gold_corner.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/title3d/cards/heart_node.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/title3d/cards/lock_icon.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/title3d/cards/m_plaque.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/title3d/cards/mushrooms_a.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/title3d/cards/mushrooms_b.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/title3d/cards/neon_arrow.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/title3d/cards/platform_chunk_a.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/title3d/cards/platform_chunk_b.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/title3d/cards/portal_card.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/title3d/cards/power_rune.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/title3d/cards/scan_strip.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/title3d/cards/terminal_a.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/title3d/cards/terminal_b.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/title3d/cards/terminal_screen.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/title3d/cards/vault_ring.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/title3d/cards/vines_a.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/title3d/cards/vines_b.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/title3d/cards/wall_panel_a.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/title3d/cards/wall_panel_b.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/title3d/ref_cards/crate_stack_v2.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/title3d/ref_cards/heart_core_v2.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/title3d/ref_cards/mid_platform_v2.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/title3d/title3d_asset_manifest.json
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/title3d/title3d_hf_backdrop.jpg
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/title3d/title3d_hf_decals_alpha.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/title3d/title3d_hf_platform_tile.jpg
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/title3d/title3d_hf_props_alpha.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/title3d/title3d_hf_props_source.jpg
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/title3d/title3d_hoodie_mascot_standee_alpha.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/title3d/title3d_ref_backdrop_v2.jpg
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/title3d/title3d_ref_cards_preview_v2.png
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/title3d/title3d_ref_nebula_tile_v2.jpg
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/video/lottomind-number-run-startup-higgsfield-20260624.mp4
+D	lottominded-ultra.io/games/shadow-ops-canvas/assets/video/lottomind-number-run-what-up-doe-trailer.mp4
+M	lottominded-ultra.io/games/shadow-ops-canvas/index.html
+M	lottominded-ultra.io/games/shadow-ops-canvas/src/game.js
+M	lottominded-ultra.io/games/shadow-ops-canvas/src/mobile-touch.js
 M	lottominded-ultra.io/help.html
 M	lottominded-ultra.io/how-to-use.html
 M	lottominded-ultra.io/index.html
@@ -180,14 +541,19 @@ M	lottominded-ultra.io/news-hub/scripts/hydrate-static-article-images.ts
 M	lottominded-ultra.io/news-hub/server/account/store.test.ts
 M	lottominded-ultra.io/news-hub/server/account/store.ts
 M	lottominded-ultra.io/news-hub/server/billing/routes.ts
+M	lottominded-ultra.io/news-hub/server/index.ts
+A	lottominded-ultra.io/news-hub/server/trivia-rewards/routes.ts
 A	lottominded-ultra.io/news/assets/index-Ax5Q-sKY.css
 D	lottominded-ultra.io/news/assets/index-BXgcZKTD.css
 R100	lottominded-ultra.io/news/assets/index-D2xd5sSz.js	lottominded-ultra.io/news/assets/index-Bfm56bGR.js
 M	lottominded-ultra.io/news/index.html
 M	lottominded-ultra.io/package.json
+M	lottominded-ultra.io/playwright.arcade-pilot.config.cjs
+M	lottominded-ultra.io/playwright.config.cjs
 A	lottominded-ultra.io/playwright.source.config.cjs
 M	lottominded-ultra.io/privacy.html
 M	lottominded-ultra.io/prompt-lab.html
+M	lottominded-ultra.io/redeem.html
 M	lottominded-ultra.io/scripts/build-source-test.mjs
 M	lottominded-ultra.io/scripts/build-staging.mjs
 A	lottominded-ultra.io/scripts/capture-master-overhaul-baseline.mjs
@@ -196,11 +562,15 @@ M	lottominded-ultra.io/scripts/capture-storefront-bundles.mjs
 A	lottominded-ultra.io/scripts/capture-trivia-vault.mjs
 A	lottominded-ultra.io/scripts/manage-trivia-questions.mjs
 M	lottominded-ultra.io/scripts/route-inventory.mjs
+M	lottominded-ultra.io/scripts/run-route-tests.mjs
+A	lottominded-ultra.io/scripts/run-site-tests.mjs
 M	lottominded-ultra.io/scripts/serve-site.mjs
 A	lottominded-ultra.io/scripts/test-secure-backend.mjs
+A	lottominded-ultra.io/scripts/test-server-ports.mjs
 A	lottominded-ultra.io/scripts/validate-game-manifest.mjs
 M	lottominded-ultra.io/scripts/validate-home-page.mjs
 M	lottominded-ultra.io/scripts/validate-release-gates.mjs
+M	lottominded-ultra.io/scripts/verify-arcade.cjs
 A	lottominded-ultra.io/services/index.html
 M	lottominded-ultra.io/site.js
 M	lottominded-ultra.io/sitemap.xml
@@ -208,9 +578,13 @@ M	lottominded-ultra.io/styles.css
 A	lottominded-ultra.io/supabase/config.toml
 A	lottominded-ultra.io/supabase/functions/.env.example
 M	lottominded-ultra.io/supabase/functions/lottomind-api/index.ts
+A	lottominded-ultra.io/supabase/functions/lottomind-protected/index.ts
 A	lottominded-ultra.io/supabase/functions/lottomind-stripe-webhook/index.ts
 A	lottominded-ultra.io/supabase/migrations/20260805202103_secure_plan_catalog_and_entitlement_authority.sql
 A	lottominded-ultra.io/supabase/migrations/20260805_secure_account_ledger.sql
+A	lottominded-ultra.io/supabase/migrations/20260809141838_secure_trivia_rewards.sql
+A	lottominded-ultra.io/supabase/migrations/20260809173935_lock_trivia_tables.sql
+A	lottominded-ultra.io/supabase/migrations/20260810000134_narrow_data_api_grants.sql
 M	lottominded-ultra.io/terms.html
 A	lottominded-ultra.io/tests/account-dashboard.spec.cjs
 A	lottominded-ultra.io/tests/brand-onboarding.spec.cjs
@@ -226,3 +600,4 @@ M	lottominded-ultra.io/tests/site.spec.cjs
 M	lottominded-ultra.io/tests/staging.spec.cjs
 M	lottominded-ultra.io/tests/support-utilities.spec.cjs
 A	lottominded-ultra.io/tests/trivia-vault.spec.cjs
+A	scripts/build-pages-artifact.mjs

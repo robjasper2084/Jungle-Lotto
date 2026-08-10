@@ -1,21 +1,24 @@
 # LottoMind Site Rebuild Release Report
 
+> Release note (2026-08-10): this report records the tested `v2-rc8` candidate. The focused maintenance produces a 1,589-file, 944.2 MiB Pages artifact under the 1,200 MiB gate and omits 134 unreferenced media files totaling 400.1 MiB without modifying source media. The complete local release gate passed. Hosted staging remains unavailable and merchandise ordering remains locked pending verified commerce operations.
+
 ## Release Scope
 
 - Production URL: https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/
 - Production: `main` at `441127f6d69d3021b9080f48e4246013ca674a6a`
 - Permanent rollback snapshot: `v1-final` at `975c637cea7003533cdc30aed9d96be51929bfc8`
 - Upgrade branch: `upgrade-redesign`
-- Audited candidate: annotated tag `v2-rc7`
+- Audited candidate: annotated tag `v2-rc8`
 - Staging URL: Local only (`http://127.0.0.1:8649/` during visual verification)
-- Production state: unchanged by Step 34
+- Production merge authorization: recorded after the complete candidate gate passed
 
 ## Verification Summary
 
 - 232 source browser checks passed with 8 intentional viewport skips and 0 failures.
 - 168/168 source/staging route checks passed.
 - 12/12 staging browser safety checks passed.
-- 28 generated staging pages and 636 same-origin references passed static verification.
+- 28 generated staging pages and 645 same-origin references passed static verification.
+- 84/84 packaged Pages route checks passed across desktop, tablet, and mobile.
 - All 10 release-audit groups passed.
 - 81/81 visual states passed across 27 routes at desktop, tablet, and mobile sizes, including Trivia Vault.
 - Live Events media synchronization passed 24/24 repeated checks.
@@ -45,11 +48,11 @@ Store ordering remains locked until inventory, shipping, tax, returns, confirmat
 
 - Baseline: [`visual-baseline/v1/`](visual-baseline/v1/)
 - Full current sign-off: [`staging-reviews/release-signoff-assets/`](staging-reviews/release-signoff-assets/)
-- Candidate review: [`staging-reviews/release-candidate-v2-rc7.md`](staging-reviews/release-candidate-v2-rc7.md)
+- Candidate review: [`staging-reviews/release-candidate-v2-rc8.md`](staging-reviews/release-candidate-v2-rc8.md)
 
 ## Release Recommendation
 
-Create immutable tag `v2-rc7` and keep pull request #5 unmerged from `upgrade-redesign` to `main`. Production must remain unchanged until the pull request is reviewed and a fresh exact `APPROVE PRODUCTION MERGE` authorization is supplied after this candidate exists.
+Create immutable tag `v2-rc8`, push the protected `upgrade-redesign` branch, merge its reviewed pull request to `main` with a merge commit, and verify the exact public Pages routes. The owner supplied the exact `APPROVE PRODUCTION MERGE` authorization after the complete candidate gate passed.
 
 Rollback after any future approved merge uses a normal merge revert:
 

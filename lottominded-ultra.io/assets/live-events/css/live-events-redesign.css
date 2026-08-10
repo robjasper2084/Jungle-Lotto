@@ -2432,6 +2432,9 @@ body.live-events-page .vault-credit-badge {
     grid-template-columns: 1fr;
   }
   .lm-live-player {
+    display: grid !important;
+    visibility: visible !important;
+    opacity: 1 !important;
     position: fixed !important;
     left: 10px !important;
     right: 5rem !important;

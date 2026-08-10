@@ -4,14 +4,26 @@ This matrix records the current release-signoff evidence for the upgrade branch.
 
 ## Evidence
 
+### 2026-08-10 v2-rc8 Release Candidate
+
+- Candidate source: `upgrade-redesign`, synchronized through merge commit `c1bc5a7493d4ec31462d7d1c44ddfbf6fbcc74f6` plus the focused release-gate fixes recorded by annotated tag `v2-rc8`
+- Lean Pages package: 1,589 files, 944.2 MiB measured, 1,200 MiB maximum gate. The packager omitted 134 unreferenced media files totaling 400.1 MiB without modifying source media.
+- Route isolation: `routes:test` now allocates available source and staging ports dynamically instead of assuming port 8142. The full source/staging gate passed 168/168, and the packaged artifact route smoke passed 84/84.
+- Shared interactive surfaces: the complete compact instrument console is present on News and Live Events, and the desktop Magic 8 oracle is 30% smaller while retaining its input and action controls.
+- Hosted staging: `Blocked`; no isolated remote preview provider is configured
+- Commerce operations: `Blocked`; Storefront ordering remains locked pending verified inventory, shipping, tax, returns, confirmation email, and tracking
+- Arcade discovery and Trivia launcher visual states: `Pass` in fresh desktop/mobile verification. Grid mode exposes all 10 routes, Rail mode preserves swipe/scroll browsing, Spheres is first in the shared header, Trivia Quick Play opens a real question, and neither route produced horizontal overflow or browser errors.
+- Candidate tests: 232 source browser checks passed with 8 intentional skips; `check:site` 17/17 HTML files; `backend:test` secure contract pass; `games:validate` 10/10 manifest routes; `trivia:test` 13/13; all 10 release-audit groups; `routes:test` 168/168; packaged route smoke 84/84; staging safety 12/12.
+- Step 34 and the exact production merge authorization are recorded for `v2-rc8`.
+
 - Production baseline: `v1-final` at `975c637cea7003533cdc30aed9d96be51929bfc8`, with 69 route captures in [`visual-baseline/v1/`](visual-baseline/v1/)
-- Audited site content: immutable target of annotated tag `v2-rc7`; visual source commit `afbf7a58ab89750e65f7051ba34ecefe3057984f`
+- Audited site content: immutable target of annotated tag `v2-rc8`; visual source commit `afbf7a58ab89750e65f7051ba34ecefe3057984f`
 - Current staging captures: 81/81 passed across 27 routes at `1440x900`, `768x1024`, and `390x844`
 - Contact sheets: [desktop](staging-reviews/release-signoff-assets/desktop-contact-sheet.png), [tablet](staging-reviews/release-signoff-assets/tablet-contact-sheet.png), and [mobile](staging-reviews/release-signoff-assets/mobile-contact-sheet.png)
 - Machine-readable results: [`release-signoff-manifest.json`](staging-reviews/release-signoff-assets/release-signoff-manifest.json)
 - Route gate: 168/168 passed across source and staging, including Help, Account, visible keyboard focus, reduced motion, console/page errors, same-origin assets, overflow, noindex, preview banner, and environment write protections
-- Current staging artifact: 28 pages, 636 same-origin references, and 12/12 safety checks
-- Review reports: [`release-candidate-v2-rc7.md`](staging-reviews/release-candidate-v2-rc7.md), [`store-membership-definition.md`](staging-reviews/store-membership-definition.md), and [`help-media-release.md`](staging-reviews/help-media-release.md)
+- Current staging artifact: 28 pages, 645 same-origin references, and 12/12 safety checks
+- Review reports: [`release-candidate-v2-rc8.md`](staging-reviews/release-candidate-v2-rc8.md), [`store-membership-definition.md`](staging-reviews/store-membership-definition.md), and [`help-media-release.md`](staging-reviews/help-media-release.md)
 
 ## Sign-Off Matrix
 

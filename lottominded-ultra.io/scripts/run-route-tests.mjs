@@ -2,13 +2,12 @@ import { spawn } from "node:child_process";
 import { createRequire } from "node:module";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { reserveOpenPort } from "./test-server-ports.mjs";
 
 const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const require = createRequire(import.meta.url);
 const playwrightCli = require.resolve("@playwright/test/cli");
 const servers = [];
-const sourcePort = String(Number(process.env.LOTTOMIND_ROUTE_SOURCE_PORT || 8142));
-const stagingPort = String(Number(process.env.LOTTOMIND_ROUTE_STAGING_PORT || 8143));
 
 function waitForExit(child) {
   return new Promise((resolvePromise, rejectPromise) => {
@@ -39,6 +38,10 @@ async function stopServer(child) {
 }
 
 async function main() {
+  const sourcePort = String(await reserveOpenPort(Number(process.env.LOTTOMIND_ROUTE_SOURCE_PORT || 0)));
+  let stagingPort = String(await reserveOpenPort(Number(process.env.LOTTOMIND_ROUTE_STAGING_PORT || 0)));
+  while (stagingPort === sourcePort) stagingPort = String(await reserveOpenPort());
+
   for (const [directory, port] of [["dist-source-test", sourcePort], ["dist-staging", stagingPort]]) {
     const child = spawn(process.execPath, ["scripts/serve-site.mjs", directory, port], {
       cwd: packageRoot,
@@ -59,6 +62,11 @@ async function main() {
       ...process.argv.slice(2),
     ], {
       cwd: packageRoot,
+      env: {
+        ...process.env,
+        LOTTOMIND_ROUTE_SOURCE_PORT: sourcePort,
+        LOTTOMIND_ROUTE_STAGING_PORT: stagingPort,
+      },
       stdio: "inherit",
     });
     const result = await waitForExit(tests);

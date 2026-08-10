@@ -1,7 +1,12 @@
 [functions.lottomind-api]
-# Public auth/config routes share this handler. Protected routes verify the
-# caller's Supabase access token inside the function before any mutation.
+# Registration, login, recovery, billing configuration, and best-effort
+# analytics remain public. This function never accepts wallet mutations.
 verify_jwt = false
+
+[functions.lottomind-protected]
+# Account, billing, credit, trivia, reward, and entitlement routes require a
+# valid Supabase access token at the Edge gateway and inside the handler.
+verify_jwt = true
 
 [functions.lottomind-stripe-webhook]
 # Stripe signs the raw request body instead of sending a Supabase JWT.

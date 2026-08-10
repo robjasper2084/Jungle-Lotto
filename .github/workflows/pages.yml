@@ -23,46 +23,20 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Build lean Pages artifact
+        run: node scripts/build-pages-artifact.mjs
       - name: Setup Pages
         uses: actions/configure-pages@v5
         with:
           enablement: true
-      - name: Build public artifact
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p .pages-deploy
-
-          for entry in \
-            .nojekyll \
-            404.html \
-            index.html \
-            public-site.css \
-            public-site.js \
-            assets \
-            gothtechnology \
-            gothtechnology-canvas \
-            "lotto mind refined" \
-            lottomind-motion-intro \
-            lottomind-stem-studio \
-            shadow-ops-canvas; do
-            if [[ -e "$entry" ]]; then
-              rsync -a "$entry" .pages-deploy/
-            fi
-          done
-
-          rsync -a \
-            --exclude 'games/shadow-ops-canvas/audit/' \
-            --exclude 'games/shadow-ops-canvas/design/' \
-            --exclude 'games/shadow-ops-canvas/docs/' \
-            lottominded-ultra.io \
-            .pages-deploy/
-
-          du -sh .pages-deploy
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: .pages-deploy
+          path: _site
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4

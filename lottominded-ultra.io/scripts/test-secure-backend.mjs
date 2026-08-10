@@ -8,10 +8,13 @@ const migration = read("supabase/migrations/20260805_secure_account_ledger.sql")
 const authorityMigration = read("supabase/migrations/20260805202103_secure_plan_catalog_and_entitlement_authority.sql");
 const triviaMigration = read("supabase/migrations/20260809141838_secure_trivia_rewards.sql");
 const triviaLockMigration = read("supabase/migrations/20260809173935_lock_trivia_tables.sql");
+const grantMigration = read("supabase/migrations/20260810000134_narrow_data_api_grants.sql");
 const api = read("supabase/functions/lottomind-api/index.ts");
+const protectedApi = read("supabase/functions/lottomind-protected/index.ts");
 const webhook = read("supabase/functions/lottomind-stripe-webhook/index.ts");
 const config = read("supabase/config.toml");
 const accountService = read("assets/js/lottomind-account-service.js");
+const stagingGuard = read("assets/js/lm-staging-guard.js");
 const envExample = read("supabase/functions/.env.example");
 
 const tables = [
@@ -63,6 +66,21 @@ assert.doesNotMatch(api, /rpc\("redeem_collector_code"/);
 assert.match(api, /REDEMPTION_NOT_OPEN/);
 assert.match(api, /REWARD_VERIFICATION_REQUIRED/);
 assert.match(api, /auth\.getUser\(token\)/);
+assert.match(api, /protectedMode = \/\^\\\/lottomind-protected/);
+assert.match(api, /publicMode && req\.method === "POST" && path === "\/auth\/login"/);
+assert.match(api, /protectedMode && req\.method === "GET" && path === "\/account\/snapshot"/);
+assert.match(api, /if \(publicMode\) return fail\(req, 404/);
+assert.match(api, /password\.length < 12/g);
+assert.match(protectedApi, /import "\.\.\/lottomind-api\/index\.ts"/);
+assert.match(config, /\[functions\.lottomind-api\][\s\S]*verify_jwt = false/);
+assert.match(config, /\[functions\.lottomind-protected\][\s\S]*verify_jwt = true/);
+
+for (const table of ["profiles", "wallets", "memberships", "collector_redemptions", "credit_transactions", "billing_events", "analytics_events", "plan_catalog"]) {
+  assert.match(grantMigration, new RegExp(`revoke all on table public\\.${table} from anon, authenticated`, "i"), `${table} Data API grants are not revoked`);
+}
+assert.match(grantMigration, /grant select on table public\.news_articles to anon, authenticated/i);
+assert.match(grantMigration, /revoke all on sequence public\.analytics_events_id_seq from anon, authenticated/i);
+assert.match(grantMigration, /alter default privileges for role postgres in schema public[\s\S]+revoke all on tables from anon, authenticated/i);
 
 for (const table of ["trivia_sessions", "trivia_answers", "trivia_reward_claims"]) {
   assert.match(triviaMigration, new RegExp(`create table if not exists public\\.${table}\\b`, "i"), `${table} table is missing`);
@@ -94,6 +112,10 @@ assert.match(accountService, /idempotencyKey: createIdempotencyKey\("collector-r
 assert.match(accountService, /checkEntitlement:/);
 assert.match(accountService, /getCurrentPlan:/);
 assert.match(accountService, /getDownloads:/);
+assert.match(accountService, /LOTTOMIND_PROTECTED_API_BASE_URL/);
+assert.match(accountService, /protectedRequest\("\/credits\/spend"/);
+assert.match(accountService, /protectedRequest\("\/trivia\/sessions"/);
+assert.match(stagingGuard, /LOTTOMIND_PROTECTED_API_BASE_URL: marker\.stagingBackendUrl \|\| ""/);
 assert.match(envExample, /^STRIPE_WEBHOOK_SECRET=$/m);
 for (const line of envExample.trim().split(/\r?\n/)) assert.match(line, /^[A-Z0-9_]+=$/, `environment example contains a value: ${line}`);
 

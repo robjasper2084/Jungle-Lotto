@@ -34,6 +34,12 @@
   var collectorPackReported = false;
   var analyticsSurface = document.body.classList.contains("memberships-page") ? "memberships" : document.body.classList.contains("home-page") ? "home" : "beat2lotto";
 
+  if (recoveryMode) {
+    authForm.hidden = true;
+    recoveryForm.hidden = false;
+    redeemForm.hidden = true;
+  }
+
   function formatDate(value) {
     if (!value) return "No expiration";
     try { return new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric", year: "numeric" }).format(new Date(value)); }
