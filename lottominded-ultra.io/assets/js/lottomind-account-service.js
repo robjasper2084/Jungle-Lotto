@@ -6,6 +6,7 @@
   var CACHE_KEY = "lottomind.account.snapshot.v1";
   var SESSION_KEY = "lottomind.account.session.v1";
   var API_BASE_KEY = "lottomind.api.base";
+  var PROTECTED_API_BASE_KEY = "lottomind.protected.api.base";
   var CACHE_TTL = 30000;
   var snapshotCache = null;
   var snapshotTime = 0;
@@ -28,6 +29,21 @@
     if (base) return base + (base.indexOf("/functions/v1/") >= 0 ? path : "/api" + path);
     if (global.LOTTOMIND_API_SAME_ORIGIN === true) return "/api" + path;
     return "";
+  }
+
+  function defaultProtectedApiBase() {
+    if (typeof global.LOTTOMIND_PROTECTED_API_BASE_URL === "string") return global.LOTTOMIND_PROTECTED_API_BASE_URL.replace(/\/$/, "");
+    var configured = "";
+    try { configured = localStorage.getItem(PROTECTED_API_BASE_KEY) || ""; } catch (_error) {}
+    if (configured) return configured.replace(/\/$/, "");
+    var publicBase = defaultApiBase();
+    if (/\/functions\/v1\/lottomind-api$/.test(publicBase)) return publicBase.replace(/\/lottomind-api$/, "/lottomind-protected");
+    return "";
+  }
+
+  function protectedApiUrl(path) {
+    var base = defaultProtectedApiBase();
+    return base ? base + path : "";
   }
 
   function isConfigured() {
@@ -121,8 +137,8 @@
     }
   }
 
-  async function request(path, options) {
-    var url = apiUrl(path);
+  async function serviceRequest(path, options, protectedRoute) {
+    var url = protectedRoute ? protectedApiUrl(path) : apiUrl(path);
     if (!url) {
       var previewDisabled = global.LottoMindEnvironment && global.LottoMindEnvironment.isProduction === false;
       var configurationError = new Error(previewDisabled
@@ -135,6 +151,12 @@
     var requestOptions = options || {};
     var headers = Object.assign({ "Content-Type": "application/json", "X-Requested-With": "LottoMind-Web" }, requestOptions.headers || {});
     var accessToken = await getAccessToken();
+    if (protectedRoute && !accessToken) {
+      var authError = new Error("Sign in is required before using this protected LottoMind service.");
+      authError.code = "AUTH_REQUIRED";
+      authError.status = 401;
+      throw authError;
+    }
     if (accessToken) headers.Authorization = "Bearer " + accessToken;
     try {
       response = await fetch(url, Object.assign({}, requestOptions, {
@@ -159,11 +181,34 @@
     return payload;
   }
 
+  function request(path, options) {
+    return serviceRequest(path, options, false);
+  }
+
+  function protectedRequest(path, options) {
+    return serviceRequest(path, options, true);
+  }
+
+  function signedOutSnapshot() {
+    return {
+      authenticated: false,
+      user: null,
+      wallet: { balance: 0 },
+      currentPlan: { code: "free", status: "active", currentPeriodEnd: null },
+      memberships: [],
+      entitlements: [],
+      orders: [],
+      downloads: [],
+      collector: { redeemed: false, complimentaryUntil: null },
+    };
+  }
+
   async function getSnapshot(options) {
     var force = options && options.force;
     if (!force && snapshotCache && Date.now() - snapshotTime < CACHE_TTL) return snapshotCache;
     try {
-      return saveSnapshot(await request("/account/snapshot"));
+      if (!(await getAccessToken())) return saveSnapshot(signedOutSnapshot());
+      return saveSnapshot(await protectedRequest("/account/snapshot"));
     } catch (error) {
       var cached = cachedOfflineSnapshot();
       if (cached) {
@@ -178,7 +223,7 @@
   function checkEntitlement(code) {
     var normalized = String(code || "").trim().toLowerCase();
     if (!/^[a-z0-9_.-]{1,80}$/.test(normalized)) return Promise.reject(new Error("Choose a valid entitlement."));
-    return request("/entitlements/" + encodeURIComponent(normalized));
+    return protectedRequest("/entitlements/" + encodeURIComponent(normalized));
   }
 
   function broadcastRefresh(reason) {
@@ -190,6 +235,15 @@
     if (payload && payload.session) saveSession(payload.session, options && options.remember);
     var snapshot = payload && payload.snapshot ? payload.snapshot : payload;
     if (snapshot && typeof snapshot.authenticated === "boolean") saveSnapshot(snapshot);
+    else await getSnapshot({ force: true });
+    broadcastRefresh(path);
+    return payload;
+  }
+
+  async function protectedMutation(path, body) {
+    var payload = await protectedRequest(path, { method: "POST", body: JSON.stringify(body || {}) });
+    var nextSnapshot = payload && payload.snapshot ? payload.snapshot : null;
+    if (nextSnapshot && typeof nextSnapshot.authenticated === "boolean") saveSnapshot(nextSnapshot);
     else await getSnapshot({ force: true });
     broadcastRefresh(path);
     return payload;
@@ -216,6 +270,7 @@
 
   global.LottoMindAccountService = Object.freeze({
     getApiBase: defaultApiBase,
+    getProtectedApiBase: defaultProtectedApiBase,
     isConfigured: isConfigured,
     getAccessToken: getAccessToken,
     getSnapshot: getSnapshot,
@@ -250,34 +305,34 @@
       return getSnapshot({ force: true });
     },
     redeemCollectible: function redeemCollectible(code) {
-      return mutation("/redemption/claim", {
+      return protectedMutation("/redemption/claim", {
         code: String(code || "").trim(),
         idempotencyKey: createIdempotencyKey("collector-redemption"),
       });
     },
     spendCredits: async function spendCredits(action, idempotencyKey, context) {
-      var result = await request("/credits/spend", { method: "POST", body: JSON.stringify({ action: action, idempotencyKey: idempotencyKey, context: context || {} }) });
+      var result = await protectedRequest("/credits/spend", { method: "POST", body: JSON.stringify({ action: action, idempotencyKey: idempotencyKey, context: context || {} }) });
       await getSnapshot({ force: true });
       broadcastRefresh("credit-spend");
       return result;
     },
     refundCredits: async function refundCredits(transactionId, idempotencyKey, refundToken) {
-      var result = await request("/credits/refund", { method: "POST", body: JSON.stringify({ transactionId: transactionId, idempotencyKey: idempotencyKey, refundToken: refundToken }) });
+      var result = await protectedRequest("/credits/refund", { method: "POST", body: JSON.stringify({ transactionId: transactionId, idempotencyKey: idempotencyKey, refundToken: refundToken }) });
       await getSnapshot({ force: true });
       broadcastRefresh("credit-refund");
       return result;
     },
     createTriviaSession: function createTriviaSession(input) {
-      return request("/trivia/sessions", { method: "POST", body: JSON.stringify({ mode: input && input.mode, buildId: input && input.buildId }) });
+      return protectedRequest("/trivia/sessions", { method: "POST", body: JSON.stringify({ mode: input && input.mode, buildId: input && input.buildId }) });
     },
     submitTriviaAnswer: function submitTriviaAnswer(sessionId, input) {
-      return request("/trivia/sessions/" + encodeURIComponent(sessionId) + "/answer", {
+      return protectedRequest("/trivia/sessions/" + encodeURIComponent(sessionId) + "/answer", {
         method: "POST",
         body: JSON.stringify({ questionId: input && input.questionId, selectedIndex: input && input.selectedIndex, sequence: input && input.sequence, elapsedMs: input && input.elapsedMs }),
       });
     },
     claimTriviaReward: async function claimTriviaReward(sessionId, idempotencyKey) {
-      var result = await request("/trivia/sessions/" + encodeURIComponent(sessionId) + "/claim", {
+      var result = await protectedRequest("/trivia/sessions/" + encodeURIComponent(sessionId) + "/claim", {
         method: "POST",
         body: JSON.stringify({ idempotencyKey: idempotencyKey }),
       });

@@ -85,7 +85,7 @@
       "id": "robot-rahbe",
       "title": "Robot RAHBEE",
       "route": "./games/shadow-ops-canvas/",
-      "thumbnail": "./games/shadow-ops-canvas/assets/backgrounds/robot-rahbe-gameplay-keyart.png",
+      "thumbnail": "./games/shadow-ops-canvas/assets/backgrounds/robot-rahbe-title-keyart-cinematic-v3.png",
       "status": "Playable",
       "membershipRequirement": "Free",
       "estimatedSessionTime": "10-20 minutes",

@@ -14,6 +14,7 @@
   var accountMutationPathPattern = /\/(?:auth\/(?:register|login|logout|password-(?:reset|update))|credits\/(?:spend|refund)|account\/|game-sessions?)(?:\/|$)/i;
   var protectedRuntimeValues = {
     LOTTOMIND_API_BASE_URL: marker.stagingBackendUrl || "",
+    LOTTOMIND_PROTECTED_API_BASE_URL: marker.stagingBackendUrl || "",
     LOTTOMIND_SUPABASE_URL: marker.stagingSupabaseUrl || "",
     LOTTOMIND_SUPABASE_PUBLISHABLE_KEY: marker.stagingSupabasePublishableKey || "",
     LOTTOMIND_REWARDS_API_BASE_URL: marker.stagingBackendUrl || "",
@@ -263,6 +264,10 @@
       } else if ((target.matches("[data-sign-out], [data-collector-logout]") || target.closest(accountSelector)) && !environment.allowAccountWrites) {
         event.preventDefault();
         event.stopImmediatePropagation();
+        if (target.matches("[data-collector-forgot-password]")) {
+          var collectorMessage = document.querySelector("[data-collector-message]");
+          if (collectorMessage) collectorMessage.textContent = "Production account services are configured but disabled in this preview.";
+        }
         announce("Production account changes are disabled in this preview. No account data was changed.", "LM_STAGING_ACCOUNT_WRITE_BLOCKED");
       }
     }, true);

@@ -340,16 +340,19 @@ async function portal(req: Request) {
 }
 
 async function route(req: Request) {
-  const path = new URL(req.url).pathname.replace(/^\/lottomind-api/, "") || "/";
+  const requestPath = new URL(req.url).pathname;
+  const protectedMode = /^\/lottomind-protected(?:\/|$)/.test(requestPath);
+  const publicMode = !protectedMode;
+  const path = requestPath.replace(/^\/(?:lottomind-api|lottomind-protected)/, "") || "/";
   if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: corsHeaders(req) });
 
-  if (req.method === "POST" && path === "/auth/register") {
+  if (publicMode && req.method === "POST" && path === "/auth/register") {
     const input = await readJson(req);
     if (input instanceof Response) return input;
     const email = String(input.email || "").trim().toLowerCase();
     const password = String(input.password || "");
     const displayName = String(input.displayName || input.display_name || "").trim().slice(0, 80);
-    if (!email || password.length < 8) return fail(req, 400, "INVALID_REGISTRATION", "Enter a valid email and a password of at least 8 characters.");
+    if (!email || password.length < 12) return fail(req, 400, "INVALID_REGISTRATION", "Enter a valid email and a password of at least 12 characters.");
     const { data, error } = await anon().auth.signUp({ email, password, options: { data: { display_name: displayName } } });
     if (error) return fail(req, 400, "REGISTRATION_FAILED", error.message);
     return json(req, {
@@ -359,7 +362,7 @@ async function route(req: Request) {
     }, 201);
   }
 
-  if (req.method === "POST" && path === "/auth/login") {
+  if (publicMode && req.method === "POST" && path === "/auth/login") {
     const input = await readJson(req);
     if (input instanceof Response) return input;
     const email = String(input.email || "").trim().toLowerCase();
@@ -370,7 +373,7 @@ async function route(req: Request) {
     return json(req, { session: data.session, snapshot: await snapshot(data.user) });
   }
 
-  if (req.method === "POST" && path === "/auth/password-reset") {
+  if (publicMode && req.method === "POST" && path === "/auth/password-reset") {
     const input = await readJson(req);
     if (input instanceof Response) return input;
     const email = String(input.email || "").trim().toLowerCase();
@@ -381,30 +384,30 @@ async function route(req: Request) {
     return json(req, { requested: true });
   }
 
-  if (req.method === "POST" && path === "/auth/password-update") {
+  if (publicMode && req.method === "POST" && path === "/auth/password-update") {
     const token = bearer(req);
     if (!token || !(await currentUser(req))) return fail(req, 401, "RECOVERY_SESSION_REQUIRED", "This recovery link is invalid or expired. Request a new one.");
     const input = await readJson(req);
     if (input instanceof Response) return input;
     const password = String(input.password || "");
-    if (password.length < 10) return fail(req, 400, "INVALID_NEW_PASSWORD", "Use a new password of at least 10 characters.");
+    if (password.length < 12) return fail(req, 400, "INVALID_NEW_PASSWORD", "Use a new password of at least 12 characters.");
     const { error } = await anon(token).auth.updateUser({ password });
     if (error) return fail(req, 400, "PASSWORD_UPDATE_FAILED", "The password could not be updated. Request a new recovery link.");
     return json(req, { updated: true });
   }
 
-  if (req.method === "POST" && path === "/auth/logout") {
+  if (publicMode && req.method === "POST" && path === "/auth/logout") {
     const token = bearer(req);
     if (token) await anon(token).auth.signOut({ scope: "local" });
     return new Response(null, { status: 204, headers: corsHeaders(req) });
   }
 
-  if (req.method === "GET" && path === "/account/snapshot") return json(req, await snapshot(await currentUser(req)));
-  if (req.method === "GET" && path === "/billing/config") return billingConfig(req);
-  if (req.method === "POST" && path === "/billing/checkout") return checkout(req);
-  if (req.method === "POST" && path === "/billing/portal") return portal(req);
+  if (protectedMode && req.method === "GET" && path === "/account/snapshot") return json(req, await snapshot(await currentUser(req)));
+  if (publicMode && req.method === "GET" && path === "/billing/config") return billingConfig(req);
+  if (protectedMode && req.method === "POST" && path === "/billing/checkout") return checkout(req);
+  if (protectedMode && req.method === "POST" && path === "/billing/portal") return portal(req);
 
-  if (req.method === "POST" && path === "/analytics") {
+  if (publicMode && req.method === "POST" && path === "/analytics") {
     const user = await currentUser(req);
     const input = await readJson(req);
     if (input instanceof Response) return input;
@@ -412,6 +415,8 @@ async function route(req: Request) {
     if (user && event) await admin().from("analytics_events").insert({ user_id: user.id, event_name: event, metadata: input.metadata || {} });
     return new Response(null, { status: 204, headers: corsHeaders(req) });
   }
+
+  if (publicMode) return fail(req, 404, "NOT_FOUND", "That public LottoMind service route does not exist.");
 
   if (req.method === "POST" && path === "/trivia/sessions") {
     const auth = await authenticatedUser(req);
