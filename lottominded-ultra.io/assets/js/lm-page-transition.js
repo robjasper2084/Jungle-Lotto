@@ -71,7 +71,6 @@
     if (/\/news(?:-hub)?(?:\/|$)/.test(path)) return "news";
     if (/beat2lotto/.test(path)) return "beat2lotto";
     if (/lottery-spheres|selcirm|spheres/.test(path)) return "spheres";
-    if (/lottomind-stem-studio|stem-studio|studio/.test(path)) return "studio";
     if (/live-events|events/.test(path)) return "events";
     if (/merch/.test(path)) return "merch";
     if (/prompt/.test(path)) return "prompts";

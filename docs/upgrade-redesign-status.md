@@ -1,5 +1,19 @@
 # LottoMind Upgrade Redesign Status
 
+## v2-rc9 Publish Candidate - Verified Locally
+
+- Maintenance date: 2026-08-11
+- Working branch: `upgrade-redesign`; candidate tag: `v2-rc9`
+- Exact preview source: `http://127.0.0.1:8624/`
+- Source browser suite: 230 passed, 8 intentional skips, 0 failed.
+- Route matrix: 162/162 passed; staging safety: 12/12 passed; release audit: 10/10 groups passed.
+- Backend and game contracts: secure backend contract passed; Trivia passed 13/13.
+- Current tracked site payload: approximately 0.72 GiB across 1,308 files.
+- Current presentation: Spheres and Robot RAHBEE are discoverable inside Arcade and removed from the shared header; Magic 8 and the compact instrument console are removed from Spheres; the News dock is removed; Live Events retains the featured performance video without a second background audio player.
+- Hosted staging remains unavailable. Commerce remains fail-closed until inventory, shipping, tax, returns, confirmation email, and tracking are operationally verified.
+- Audio note: featured media attempts unmuted playback when the route opens, but browser autoplay policy may require a visitor gesture.
+- Release status: local candidate gates passed and owner production authorization is recorded; controlled pull-request merge and public route verification remain.
+
 ## Pages Artifact And Discovery Maintenance - Verified Locally
 
 - Maintenance date: 2026-08-09

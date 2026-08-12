@@ -20,7 +20,6 @@ const sitemapRoutes = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/gi)].map((match)
 const routes = [...new Set([
   ...sitemapRoutes,
   "/prompt-lab.html",
-  "/lottomind-stem-studio/",
   "/redeem.html",
   "/contact.html",
   "/services/",

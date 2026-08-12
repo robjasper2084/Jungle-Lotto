@@ -1,9 +1,10 @@
 (() => {
   const normalizedPath = location.pathname.replace(/\/index\.html$/i, "").replace(/\/$/, "");
   const isLotterySpheres = /\/lottery-spheres\.html$/i.test(location.pathname);
-  const healingDisabled =
-    document.body?.hasAttribute("data-lm-healing-disabled") ||
-    /\/merch-store\.html$/i.test(location.pathname);
+const healingDisabled =
+  document.body?.hasAttribute("data-lm-healing-disabled") ||
+  normalizedPath === "/news" ||
+  /\/merch-store\.html$/i.test(location.pathname);
   if (healingDisabled) {
     document.querySelectorAll(".lm-healing-generator, [data-lm-healing-generator]").forEach((node) => node.remove());
     document.body?.classList.remove("has-lm-healing-generator");

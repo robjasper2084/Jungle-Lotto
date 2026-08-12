@@ -14,18 +14,16 @@ test("shared support utilities expose Search and Account while Credits stays in 
   await expect(page.getByRole("button", { name: "Open LottoMind Vault Gateway" })).toBeVisible();
   const sphereTabs = page.getByRole("navigation", { name: "LOTTOMINDED ULTRA sphere navigation" }).getByRole("link");
   await expect(sphereTabs).toHaveText([
-    "Spheres",
     "Home",
     "Events",
     "News",
     "Games",
     "Static Wav",
-    "Robot RAHBEE",
     "Storefront",
     "Memberships",
     "LottoMind App",
   ]);
-  await expect(sphereTabs.filter({ hasText: "Robot RAHBEE" })).toHaveCount(1);
+  await expect(sphereTabs.filter({ hasText: "Robot RAHBEE" })).toHaveCount(0);
   await expect(sphereTabs.filter({ hasText: "Static Wav" })).toHaveCount(1);
   const utilityShapes = await utilities.locator("a, button").evaluateAll((items) => items.map((item) => {
     const styles = getComputedStyle(item);

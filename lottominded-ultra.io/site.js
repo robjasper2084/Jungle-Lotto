@@ -91,13 +91,11 @@ window.LMAudioMix = {
   if (!header) return;
 
   const navItems = [
-    { label: "Spheres", searchLabel: "Lottery Spheres", href: siteUrl("./lottery-spheres.html#spheres"), icon: "SP", description: "Open the entertainment-only number sphere experience." },
     { label: "Home", searchLabel: "LottoMind", href: siteUrl("./index.html#top"), icon: "HM", description: "Open the LottoMind consumer ecosystem." },
     { label: "Events", href: siteUrl("./live-events.html"), icon: "EV" },
     { label: "News", href: siteUrl("./news/"), icon: "NW" },
     { label: "Games", searchLabel: "LottoMind Arcade", href: siteUrl("./features-app.html"), icon: "FX", description: "Open LottoMind Arcade and its playable experiences." },
     { label: "Static Wav", href: siteUrl("./how-to-use.html"), icon: "GD", description: "Open the Static Wav arcade experience." },
-    { label: "Robot RAHBEE", href: siteUrl("./beat2lotto-plus.html#beat2lotto"), icon: "B2", description: "Open the Robot RAHBEE arcade experience." },
     { label: "Storefront", searchLabel: "Guardian Collection", href: siteUrl("./merch-store.html"), icon: "DR", description: "Explore Guardian Collection merchandise and collectibles." },
     { label: "Memberships", searchLabel: "LottoMind Memberships", href: siteUrl("./memberships.html"), icon: "MB", description: "Compare LottoMind membership access." },
     {
@@ -151,7 +149,6 @@ window.LMAudioMix = {
       section: "Explore",
       description: item.description || `Open ${item.label}.`,
     })),
-    { label: "LottoMind Studio", href: siteUrl("./lottomind-stem-studio/index.html"), section: "Create", description: "Open the LottoMind music workstation." },
     { label: "Lottery Spheres", href: siteUrl("./lottery-spheres.html#spheres"), section: "Explore", description: "Open the entertainment-only number sphere experience." },
     { label: "Credits", href: siteUrl("./account.html#credits"), section: "Account", description: "View verified LottoCredits and membership status." },
     { label: "Account", href: siteUrl("./account.html"), section: "Account", description: "Open Collector Access and the account vault." },
@@ -539,25 +536,10 @@ function setupFeatureDropdown() {
   if (!featureLink) return;
 
   const featureItems = [
-    ["Beat DNA Engine", "./lottomind-stem-studio/index.html#beat-dna"],
-    ["Stem Studio", "./lottomind-stem-studio/index.html#stems"],
-    ["DJ Decks", "./lottomind-stem-studio/index.html#dj-decks"],
-    ["Touch Pads", "./lottomind-stem-studio/index.html#pads"],
-    ["16-Level Pads", "./lottomind-stem-studio/index.html#pads"],
-    ["Song Editor", "./lottomind-stem-studio/index.html#song"],
-    ["Waveform Studio", "./lottomind-stem-studio/index.html#song"],
-    ["Piano Roll", "./lottomind-stem-studio/index.html#piano-roll"],
-    ["Pattern Editor", "./lottomind-stem-studio/index.html#patterns"],
-    ["AI Master", "./lottomind-stem-studio/index.html#ai-master"],
-    ["Vocal Remover", "./lottomind-stem-studio/index.html#vocal-remover"],
-    ["Stem Splitter", "./lottomind-stem-studio/index.html#stem-splitter"],
-    ["Suno Prompt", "./lottomind-stem-studio/index.html#suno-prompt"],
-    ["Video Prompt", "./lottomind-stem-studio/index.html#video-prompt"],
-    ["Beat Lottery", "./lottomind-stem-studio/index.html#beat-lottery"],
+    ["LottoMind Arcade", "./features-app.html"],
+    ["Prompt Lab", "./prompt-lab.html"],
     ["Lottery Spheres", "./lottery-spheres.html#spheres"],
-    ["Creative Bundle", "./lottomind-stem-studio/index.html#creative-bundle"],
-    ["Sampler", "./lottomind-stem-studio/index.html#sampler"],
-    ["How To Drive Manual", "./how-to-use.html"],
+    ["Static Wav", "./how-to-use.html"],
     ["Open Tools Lab", "./features-app.html#support"]
   ];
 
@@ -799,10 +781,6 @@ function setGate(target, gate, label) {
 function setupAccessGateTargets() {
   document.querySelectorAll(".piano-key[href], .piano-key[data-href], .direct-action[href], .site-header nav a[href]").forEach((target) => {
     const url = getGateUrl(target);
-    if (url.includes("lottomind-stem-studio")) {
-      setGate(target, "studio", "Studio");
-      return;
-    }
 
     if (url.includes("prompt-lab.html#beat-suno")) {
       setGate(target, "prompt-lab", "Music Prompt");
@@ -1279,11 +1257,8 @@ function setupUniversalFloatingMenu() {
     ["Home", siteUrl("./index.html#top")],
     ["Games", siteUrl("./features-app.html")],
     ["Events", siteUrl("./live-events.html")],
-    ["Spheres", siteUrl("./lottery-spheres.html#spheres")],
-    ["Robot RAHBEE", siteUrl("./beat2lotto-plus.html#beat2lotto")],
     ["Storefront", siteUrl("./merch-store.html")],
-    ["Static Wav", siteUrl("./how-to-use.html")],
-    ["Studio", siteUrl("./lottomind-stem-studio/index.html")]
+    ["Static Wav", siteUrl("./how-to-use.html")]
   ];
 
   const existingToggle = document.querySelector("[data-universal-menu-toggle], .motion-menu-toggle, .pl-floating");
@@ -2742,6 +2717,12 @@ function setHeaderCollapsed(collapsed) {
 
 function syncHeroMotionPreference() {
   if (!heroMotion) return;
+  heroMotion.muted = true;
+  heroMotion.defaultMuted = true;
+  heroMotion.playsInline = true;
+  heroMotion.setAttribute("muted", "");
+  heroMotion.setAttribute("playsinline", "");
+  heroMotion.setAttribute("webkit-playsinline", "");
   if (isStartupVideoOpen()) {
     heroMotion.pause();
     return;
@@ -2757,6 +2738,10 @@ function syncHeroMotionPreference() {
 
 reducedMotionQuery.addEventListener?.("change", syncHeroMotionPreference);
 window.addEventListener("lottomind:motion-preference", syncHeroMotionPreference);
+window.addEventListener("pageshow", syncHeroMotionPreference);
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden) syncHeroMotionPreference();
+});
 syncHeroMotionPreference();
 
 if (kineticHero && !isMotionReduced()) {
