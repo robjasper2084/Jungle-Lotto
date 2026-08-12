@@ -4,6 +4,19 @@ This matrix records the current release-signoff evidence for the upgrade branch.
 
 ## Evidence
 
+### 2026-08-11 v2-rc9 Release Candidate
+
+- Candidate source: the current `upgrade-redesign` maintenance build served at `http://127.0.0.1:8624/`.
+- Source browser suite: 230 passed, 8 intentional skips, 0 failed.
+- Route matrix: 162/162 passed across source and staging.
+- Release audit: all 10 groups passed; staging safety passed 12/12; backend contract passed; Trivia passed 13/13.
+- Git-tracked site payload: approximately 0.72 GiB across 1,308 files. Local dependencies and generated test output are not part of that tracked payload.
+- Hosted staging: `Blocked`; no isolated remote preview provider is configured.
+- Commerce operations: `Blocked`; ordering remains locked pending verified inventory, shipping, tax, returns, confirmation email, and tracking.
+- Media behavior: Live Events uses its featured performance video without the separate background player. Unmuted autoplay is attempted, but browsers may require a user gesture.
+- Navigation and shared surfaces: Spheres and Robot RAHBEE remain Arcade experiences rather than top-level header tabs; the Spheres page no longer carries Magic 8 or the instrument console.
+- Step 34 and production merge authorization are recorded for `v2-rc9`.
+
 ### 2026-08-10 v2-rc8 Release Candidate
 
 - Candidate source: `upgrade-redesign`, synchronized through merge commit `c1bc5a7493d4ec31462d7d1c44ddfbf6fbcc74f6` plus the focused release-gate fixes recorded by annotated tag `v2-rc8`

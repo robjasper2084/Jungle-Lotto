@@ -40,7 +40,6 @@
   let liveAudioSource = null;
   let liveWaveFrame = null;
   let heroSingerSoundEnabled = false;
-  let heroSingerHandoffStarted = false;
   let heroSingerSyncTimer = 0;
   let shadowOpsShouldResumeLiveAudio = false;
   let shadowOpsLiveAudioVolume = 0.56;
@@ -108,9 +107,6 @@
       document.querySelectorAll("audio").forEach((audio) => {
         if (audio !== heroSingerAudio) audio.pause();
       });
-      resetLiveWave();
-      updateLivePlayer();
-      livePlayer?.setAttribute("data-hero-audio", "active");
     };
 
     const stopHeroAudio = (options = {}) => {
@@ -122,7 +118,6 @@
         try { heroSingerFilm.currentTime = 0; } catch {}
         try { if (heroSingerAudio) heroSingerAudio.currentTime = 0; } catch {}
       }
-      livePlayer?.removeAttribute("data-hero-audio");
       setSoundState(false);
     };
 
@@ -130,7 +125,6 @@
       if (!heroSingerAudio || document.hidden || !isVisible) return false;
       heroSingerFilm.dataset.soundState = "attempting";
       stopBackgroundAudio();
-      heroSingerHandoffStarted = false;
       heroSingerFilm.muted = false;
       heroSingerFilm.defaultMuted = false;
       heroSingerFilm.removeAttribute("muted");
@@ -160,16 +154,10 @@
       }
     };
 
-    const handoffToPageMix = async () => {
-      if (!heroSingerSoundEnabled || heroSingerHandoffStarted) return;
-      heroSingerHandoffStarted = true;
+    const finishHeroPerformance = () => {
+      if (!heroSingerSoundEnabled) return;
       stopHeroAudio({ reset: true });
-      const started = await startLivePlayer({
-        restart: true,
-        volume: window.LMAudioMix?.levels.live ?? 0.56,
-        timeout: 1400
-      });
-      livePlayer?.setAttribute("data-stream-open-state", started ? "playing" : "blocked");
+      filmStage?.setAttribute("data-performance-state", "complete");
     };
 
     heroSingerSound?.addEventListener("click", async () => {
@@ -196,12 +184,12 @@
     heroSingerAudio?.addEventListener("timeupdate", () => {
       if (heroSingerSoundEnabled) alignHeroSoundtrack();
     });
-    heroSingerAudio?.addEventListener("ended", handoffToPageMix);
+    heroSingerAudio?.addEventListener("ended", finishHeroPerformance);
     heroSingerFilm.addEventListener("timeupdate", () => {
       if (heroSingerSoundEnabled) alignHeroSoundtrack();
     });
     heroSingerFilm.addEventListener("seeked", alignHeroSoundtrack);
-    heroSingerFilm.addEventListener("ended", handoffToPageMix);
+    heroSingerFilm.addEventListener("ended", finishHeroPerformance);
 
     if ("IntersectionObserver" in window) {
       const observer = new IntersectionObserver((entries) => {

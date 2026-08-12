@@ -43,7 +43,6 @@ export async function getRouteInventory() {
 
   const requiredRoutes = [
     { route: "/prompt-lab.html", source: "required" },
-    { route: "/lottomind-stem-studio/", source: "required" },
     { route: "/redeem.html", source: "required" },
     { route: "/contact.html", source: "required" },
     { route: "/services/", source: "required" },

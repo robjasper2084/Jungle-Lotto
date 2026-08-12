@@ -154,24 +154,6 @@
       "accent": "violet"
     },
     {
-      "id": "stem-studio",
-      "title": "LottoMind Stem Studio",
-      "route": "./lottomind-stem-studio/",
-      "thumbnail": "./assets/arcade/stem-studio-title.webp",
-      "status": "Playable",
-      "membershipRequirement": "Free preview",
-      "estimatedSessionTime": "10-25 minutes",
-      "supportedControls": "Pointer + keyboard",
-      "rewardEligibility": "Not eligible",
-      "version": "1.0",
-      "description": "Mix stems, shape the live signal, and build a playable music route in the browser studio.",
-      "category": "Music & Rhythm",
-      "difficulty": "Intermediate",
-      "tags": ["music", "mixer", "stems", "studio"],
-      "featured": false,
-      "accent": "cyan"
-    },
-    {
       "id": "lottomind-trivia-vault",
       "title": "LottoMind Trivia Vault",
       "route": "./games/lottomind-trivia/",

@@ -1,6 +1,6 @@
 # LottoMind v2 Production Release Candidate
 
-> Current candidate notice (2026-08-10): this file records `v2-rc8`. The focused Pages-artifact, route-isolation, account-recovery, Live Events player, Arcade-registry, and shared-interface maintenance passed the complete local release gate. Hosted staging is not configured and merchandise ordering remains locked, so those operational limits remain fail-closed.
+> Current candidate notice (2026-08-11): this file records `v2-rc9`. The current 8624 maintenance build passed the complete local source, staging, route, backend, Trivia, and release-audit gates. Hosted staging is not configured and merchandise ordering remains locked, so those operational limits remain fail-closed.
 
 ## Release Identity
 
@@ -10,20 +10,23 @@
 - Production SHA: `441127f6d69d3021b9080f48e4246013ca674a6a`
 - Permanent rollback snapshot: `v1-final` at `975c637cea7003533cdc30aed9d96be51929bfc8`
 - Upgrade branch: `upgrade-redesign`
-- Upgrade branch SHA: the immutable target of annotated tag `v2-rc8` (`git rev-list -n 1 v2-rc8`)
-- Release-candidate tag: `v2-rc8`
-- Historical immutable tags: `v2-rc1`, `v2-rc2`, `v2-rc3`, `v2-rc4`, `v2-rc5`, `v2-rc6`, and `v2-rc7`
+- Upgrade branch SHA: the immutable target of annotated tag `v2-rc9` (`git rev-list -n 1 v2-rc9`)
+- Release-candidate tag: `v2-rc9`
+- Historical immutable tags: `v2-rc1` through `v2-rc8`
 - Step 34 approval: recorded
 - Production merge approval: recorded in the current task after the complete candidate gate passed
 
-The current remote upgrade head was merged into the local protected branch with normal merge commit `c1bc5a7493d4ec31462d7d1c44ddfbf6fbcc74f6`; no rebase, reset, force-push, stash, or history rewrite was used. Production `main` remains unchanged until the controlled pull-request merge completes.
+The current remote upgrade head is incorporated in the local protected branch; no rebase, reset, force-push, stash, or history rewrite was used. Production `main` remains unchanged until the controlled pull-request merge completes.
 
 ## Full Route Test Summary
 
-- Full source browser suite: 232 passed, 8 intentional viewport skips, 0 failed (240 total).
-- Source/staging route matrix: 168/168 passed across desktop, tablet, and mobile.
+- Full source browser suite: 230 passed, 8 intentional viewport skips, 0 failed (238 total).
+- Source/staging route matrix: 162/162 passed across desktop, tablet, and mobile.
 - Release audit: all 10 groups passed, covering site validation, routes, staging safety, metadata, structured data, PWA, checkout hooks, offline account behavior, challenges, and share cards.
 - Staging browser safety: 12/12 passed.
+- Secure backend contract: passed, including server-authoritative credits and signed Stripe webhook handling.
+- Trivia contract: 13/13 passed.
+- Git-tracked site payload: approximately 0.72 GiB across 1,308 files; local dependencies and generated output are excluded from this measurement.
 - Static staging artifact: 28 noindexed pages and 645 same-origin references passed.
 - Packaged Pages route smoke: 84/84 passed across desktop, tablet, and mobile.
 - Visual sign-off: 81/81 route states passed across 27 routes at `1440x900`, `768x1024`, and `390x844`, including LottoMind Trivia Vault.

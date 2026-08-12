@@ -17,7 +17,7 @@ test("LottoMind is presented as the master brand without changing header order",
   await expect(page.getByText("Robot RAHBEE, Static Wav, and individual games live inside LottoMind Arcade.")).toBeVisible();
 
   const labels = await page.locator("[data-site-header] nav a").allTextContents();
-  expect(labels).toEqual(["Spheres", "Home", "Events", "News", "Games", "Static Wav", "Robot RAHBEE", "Storefront", "Memberships", "LottoMind App"]);
+  expect(labels).toEqual(["Home", "Events", "News", "Games", "Static Wav", "Storefront", "Memberships", "LottoMind App"]);
 });
 
 test("guest first use produces and saves a local result without verified credits", async ({ page }) => {

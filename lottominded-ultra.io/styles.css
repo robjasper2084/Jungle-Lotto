@@ -2418,6 +2418,7 @@ button {
   padding: 128px clamp(18px, 5vw, 76px) 42px;
   overflow: hidden;
   isolation: isolate;
+  background: #010207 url("./assets/video/lottomind-home-apparel-commercial-poster-20260804.jpg") center / cover no-repeat;
   --mx: 50%;
   --my: 42%;
   perspective: 1200px;
@@ -2427,7 +2428,7 @@ button {
 .hero::after {
   position: absolute;
   inset: 0;
-  z-index: -1;
+  z-index: 1;
   content: "";
   pointer-events: none;
 }
@@ -2451,7 +2452,7 @@ button {
 .hero-motion {
   position: absolute;
   inset: 0;
-  z-index: -2;
+  z-index: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -2470,7 +2471,7 @@ button {
 .hero-mouse-light {
   position: absolute;
   inset: 0;
-  z-index: -1;
+  z-index: 1;
   pointer-events: none;
 }
 

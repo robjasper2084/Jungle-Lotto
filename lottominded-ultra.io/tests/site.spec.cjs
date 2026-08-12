@@ -749,9 +749,9 @@ test("features combines the cinematic shell with the manifest-driven Arcade dire
   await expect(page.locator("[data-arcade-visible-count]")).toHaveText("3");
 
   await page.getByRole("button", { name: "All", exact: true }).click();
-  await page.locator("[data-arcade-search]").fill("Stem Studio");
+  await page.locator("[data-arcade-search]").fill("Trivia Vault");
   await expect(page.locator("[data-arcade-grid] .arcade-game-card")).toHaveCount(1);
-  await expect(page.getByRole("heading", { name: "LottoMind Stem Studio" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "LottoMind Trivia Vault" })).toBeVisible();
 
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1);
   expect(overflow).toBe(false);
@@ -835,21 +835,17 @@ test("Spheres has no automatic Jackpot Maze popup", async ({ page }) => {
   await expect(page.locator("[data-jackpot-maze-popup]")).toHaveCount(0);
 });
 
-test("Spheres exposes one Oracle and consistent Robot RAHBEE handoffs", async ({ page }) => {
+test("Spheres removes the Oracle and keeps consistent Robot RAHBEE handoffs", async ({ page }) => {
   await page.goto("/lottery-spheres.html#spheres", { waitUntil: "domcontentloaded" });
 
   await expect(page.locator(".sphere-eightball")).toHaveCount(0);
-  await expect(page.locator("[data-lm-healing-generator]")).toHaveCount(1);
+  await expect(page.locator("[data-lm-healing-generator]")).toHaveCount(0);
   await expect(page.getByRole("heading", { name: "Lottery Spheres in Motion", exact: true })).toHaveAccessibleName("Lottery Spheres in Motion");
   await expect(page.getByRole("heading", { name: "Orbit", exact: true })).toHaveAccessibleName("Orbit");
   await expect(page.getByRole("heading", { name: "Signal", exact: true })).toHaveAccessibleName("Signal");
   await expect(page.getByRole("heading", { name: "Studio", exact: true })).toHaveAccessibleName("Studio");
   await expect(page.getByRole("link", { name: "Open Robot RAHBEE", exact: true })).toHaveAttribute("href", "./beat2lotto-plus.html#beat2lotto");
   await expect(page.locator(".sphere-copy")).not.toContainText("Beat2Lotto+");
-
-  if (page.viewportSize()?.width <= 680) {
-    await expect(page.locator("[data-lm-healing-generator]")).not.toHaveClass(/is-minimized/);
-  }
 });
 
 test("Contact prepares a support request locally", async ({ page }) => {
@@ -926,33 +922,19 @@ test("shared navigation uses the requested route labels and order", async ({ pag
   await page.goto("/lottery-spheres.html", { waitUntil: "domcontentloaded" });
   const navigation = page.locator(".site-header nav");
   await expect(navigation.locator('a[data-icon="FX"]')).toContainText("Games");
-  await expect(navigation.locator('a[data-icon="B2"]')).toContainText("Robot RAHBEE");
+  await expect(navigation.locator('a[data-icon="B2"]')).toHaveCount(0);
   await expect(navigation.locator('a[data-icon="DR"]')).toContainText("Storefront");
   await expect(navigation.locator('a[data-icon="GD"]')).toContainText("Static Wav");
   await expect(navigation.locator("a")).toHaveText([
-    "Spheres",
     "Home",
     "Events",
     "News",
     "Games",
     "Static Wav",
-    "Robot RAHBEE",
     "Storefront",
     "Memberships",
     "LottoMind App",
   ]);
-});
-
-test("Stem Studio contains the workstation at compact mobile width", async ({ page }) => {
-  await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto("/lottomind-stem-studio/", { waitUntil: "domcontentloaded" });
-  await expect(page.getByRole("heading", { name: "LottoMind Stem Studio" })).toBeVisible();
-
-  const viewport = await page.evaluate(() => ({
-    clientWidth: document.documentElement.clientWidth,
-    scrollWidth: document.documentElement.scrollWidth,
-  }));
-  expect(viewport.scrollWidth).toBeLessThanOrEqual(viewport.clientWidth + 1);
 });
 
 test("mobile memberships hero keeps its title inside the viewport", async ({ page }, testInfo) => {
@@ -972,29 +954,16 @@ test("mobile memberships hero keeps its title inside the viewport", async ({ pag
   expect(membershipWordBox.x + membershipWordBox.width).toBeLessThanOrEqual(viewportWidth);
 });
 
-test("mobile Live Events player stays compact and clear of the floating menu", async ({ page }, testInfo) => {
+test("mobile Live Events keeps the featured film and removes the background player", async ({ page }, testInfo) => {
   test.skip(!testInfo.project.name.startsWith("mobile"), "Mobile layout assertion");
   await blockHeavyMedia(page);
   await page.goto("/live-events.html", { waitUntil: "domcontentloaded" });
 
-  const player = page.locator("[data-live-player]");
-  const playButton = player.locator("[data-live-player-toggle]");
-  const menuButton = page.locator(".universal-menu-toggle");
-  await expect(player).toBeVisible();
-  await expect(playButton).toBeVisible();
-  await expect(menuButton).toBeVisible();
-  await expect(player.locator("[data-live-player-prev]")).toBeHidden();
-  await expect(player.locator("[data-live-player-next]")).toBeHidden();
+  await expect(page.locator("[data-live-player]")).toHaveCount(0);
+  await expect(page.locator(".lm-live-hero-film")).toBeVisible();
+  await expect(page.locator(".lm-live-hero-film__stage video")).toBeVisible();
 
-  const [playerBox, menuBox, viewport] = await Promise.all([
-    player.boundingBox(),
-    menuButton.boundingBox(),
-    page.evaluate(() => ({ width: innerWidth, scrollWidth: document.documentElement.scrollWidth })),
-  ]);
-  expect(playerBox).toBeTruthy();
-  expect(menuBox).toBeTruthy();
-  expect(playerBox.height).toBeLessThanOrEqual(72);
-  expect(playerBox.x + playerBox.width).toBeLessThanOrEqual(menuBox.x + 1);
+  const viewport = await page.evaluate(() => ({ width: innerWidth, scrollWidth: document.documentElement.scrollWidth }));
   expect(viewport.scrollWidth).toBeLessThanOrEqual(viewport.width);
 });
 
