@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
-    <title>ROBOT RAHBEE</title>
+    <title>ROBOT RAHBE</title>
     <link rel="icon" href="data:," />
     <style>
       #loadingScreen,
@@ -11,11 +11,11 @@
         display: none !important;
       }
     </style>
-    <link rel="stylesheet" href="./style.css?v=intro-cutscene-1" />
+    <link rel="stylesheet" href="./style.css?v=gamepad-responsive-1" />
   </head>
   <body class="is-title-mode">
-    <main class="game-shell" aria-label="ROBOT RAHBEE browser game">
-      <canvas id="game" width="1280" height="720" aria-label="ROBOT RAHBEE playfield"></canvas>
+    <main class="game-shell" aria-label="ROBOT RAHBE browser game">
+      <canvas id="game" width="1280" height="720" aria-label="ROBOT RAHBE playfield"></canvas>
 
       <section id="titleScreen" class="screen screen--title">
         <div id="startupScene" aria-hidden="true">
@@ -29,8 +29,8 @@
         </div>
         <div class="title-copy">
           <p class="small-label">Lil-Man Presents</p>
-          <h1>ROBOT RAHBEE</h1>
-          <figure class="title-product-card title-product-card--gameplay" aria-label="Robot RAHBEE gameplay key art">
+          <h1>ROBOT RAHBE</h1>
+          <figure class="title-product-card title-product-card--gameplay" aria-label="Robot RAHBE gameplay key art">
             <img src="./assets/backgrounds/robot-rahbe-title-keyart-cinematic-v3.png?v=title-cinematic-1" alt="" />
             <figcaption>Gameplay key art</figcaption>
           </figure>
@@ -54,20 +54,21 @@
             <kbd class="control-key" title="Fire">J</kbd>
             <kbd class="control-key" title="Dash">K</kbd>
             <kbd class="control-key" title="Overdrive">L</kbd>
+            <span id="controllerStatus" class="controller-status" role="status" aria-live="polite">Gamepad: connect controller</span>
           </p>
         </div>
       </section>
 
-      <section id="cutsceneScreen" class="screen screen--cutscene is-hidden" aria-label="Robot RAHBEE mission intro">
+      <section id="cutsceneScreen" class="screen screen--cutscene is-hidden" aria-label="Robot RAHBE mission intro">
         <div class="cutscene-stage">
-          <video id="introCutscene" preload="none" playsinline aria-label="Robot RAHBEE mission transmission">
+          <video id="introCutscene" preload="none" playsinline aria-label="Robot RAHBE mission transmission">
             <source data-src="./assets/video/robot-rahbe-intro-cutscene.mp4?v=intro-cutscene-1" type="video/mp4" />
           </video>
           <div class="cutscene-shade" aria-hidden="true"></div>
           <header class="cutscene-header">
             <div>
               <p class="small-label">Mission Transmission</p>
-              <strong>Vault Entry // Robot RAHBEE</strong>
+              <strong>Vault Entry // Robot RAHBE</strong>
             </div>
             <div class="cutscene-actions">
               <button data-action="cancel-cutscene">Back</button>
@@ -86,7 +87,7 @@
         <div class="screen-panel purchase-panel">
           <div class="purchase-copy">
             <p class="small-label">Collectible Drop</p>
-            <h2>Robot RAHBEE Keychain</h2>
+            <h2>Robot RAHBE Keychain</h2>
             <p class="screen-copy">Open the merch vault to view the LottoMind collectible keychain and add it from the store page.</p>
             <div class="button-row">
               <a class="button-link primary" href="../../merch-store.html#keychains" target="_blank" rel="noopener">Open Store</a>
@@ -248,7 +249,7 @@
         <div class="hud-left">
           <img src="./assets/hero/lottomind-hero-main.png" alt="" class="portrait" loading="lazy" decoding="async" />
           <div>
-            <div id="hudTitle" class="hud-title">ROBOT RAHBEE</div>
+            <div id="hudTitle" class="hud-title">ROBOT RAHBE</div>
             <div id="hpHearts" class="hearts" aria-label="Health"></div>
             <div class="lives">Lives <span id="livesText">3</span></div>
           </div>
@@ -295,9 +296,9 @@
       </div>
     </main>
     <script src="../../assets/js/lm-game-rewards-sdk.js?v=rewards-sdk-1"></script>
-    <script src="./src/mobile-touch.js?v=controls-music-1"></script>
+    <script src="./src/mobile-touch.js?v=gamepad-responsive-1"></script>
     <script type="module" src="./src/startup3d.js?v=startup3d-opengw-1"></script>
-  <script src="./src/game.js?v=controls-music-1"></script>
-    <script src="./src/brand-title-v2.js?v=observer-guard-3"></script>
+    <script src="./src/game.js?v=gamepad-responsive-1"></script>
+    <script src="./src/brand-title-v2.js?v=audit-fixes-1"></script>
   </body>
 </html>

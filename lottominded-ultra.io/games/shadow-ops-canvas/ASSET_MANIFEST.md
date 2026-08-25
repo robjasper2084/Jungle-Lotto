@@ -13,12 +13,9 @@
 | `level1Tiles` | `assets/levels/platform_tiles_level1_clean.png` | Active cleaned Level 1 modular platform source |
 | `level2Tiles` | `assets/levels/platform_tiles_level2_clean.png` | Active cleaned Level 2 modular platform source |
 | `level3Tiles` | `assets/levels/platform_tiles_level3_clean.png` | Active cleaned Level 3 modular platform source |
-| `bossCanopy` | `assets/bosses/canopy_drone_queen_cutout.png` | Level 1 boss sprite |
-| `bossCanopyMotion` | `assets/bosses/canopy_drone_queen_motion_sheet_runtime_384.png` | Repacked 6-frame Level 1 boss motion sheet, resized under browser texture limits |
-| `bossForge` | `assets/bosses/jackpot_forge_titan_cutout.png` | Level 2 boss sprite |
-| `bossForgeMotion` | `assets/bosses/jackpot_forge_titan_motion_sheet_runtime_384.png` | Repacked 6-frame Level 2 boss motion sheet, resized under browser texture limits |
-| `bossMidas` | `assets/bosses/midas_heartcore_overlord_cutout.png` | Final boss sprite |
-| `bossMidasMotion` | `assets/bosses/midas_heartcore_overlord_motion_sheet_runtime_384.png` | Repacked 6-frame final boss motion sheet, resized under browser texture limits |
+| `bossCanopy` | `assets/bosses/canopy_drone_queen_cutout.png` | Clean Level 1 boss cutout with procedural hover, charge, attack recoil, and hit motion |
+| `bossForge` | `assets/bosses/jackpot_forge_titan_cutout.png` | Clean Level 2 boss cutout with procedural hover, charge, attack recoil, and hit motion |
+| `bossMidas` | `assets/bosses/midas_heartcore_overlord_cutout.png` | Clean final boss cutout with procedural hover, charge, attack recoil, and hit motion |
 | `levelFrame` | `assets/ui/level_card_frame.png` | Canvas level intro and complete card frame |
 | `victoryBadge` | `assets/ui/final_victory_badge.png` | Final victory card badge source |
 | `enemyCrawler` | `assets/characters/enemy_crawler.png` | Standard ground crawler sprite |

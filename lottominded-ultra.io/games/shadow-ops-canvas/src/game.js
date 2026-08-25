@@ -56,11 +56,8 @@
     level2Tiles: "./assets/levels/platform_tiles_level2_clean.png",
     level3Tiles: "./assets/levels/platform_tiles_level3_clean.png",
     bossCanopy: "./assets/bosses/canopy_drone_queen_cutout.png",
-    bossCanopyMotion: "./assets/bosses/canopy_drone_queen_motion_v2_runtime_384.png",
     bossForge: "./assets/bosses/jackpot_forge_titan_cutout.png",
-    bossForgeMotion: "./assets/bosses/jackpot_forge_titan_motion_v2_runtime_384.png",
     bossMidas: "./assets/bosses/midas_heartcore_overlord_cutout.png",
-    bossMidasMotion: "./assets/bosses/midas_heartcore_overlord_motion_v2_runtime_384.png",
     levelFrame: "./assets/ui/level_card_frame.png",
     bossFrame: "./assets/ui/boss_health_frame.png",
     victoryBadge: "./assets/ui/final_victory_badge.png",
@@ -518,15 +515,16 @@
     shakeToggle: document.getElementById("shakeToggle"),
     contrastToggle: document.getElementById("contrastToggle"),
     touchToggle: document.getElementById("touchToggle"),
-    difficultySelect: document.getElementById("difficultySelect")
+    difficultySelect: document.getElementById("difficultySelect"),
+    controllerStatus: document.getElementById("controllerStatus")
   };
 
   const images = {};
   const assetKeys = Object.keys(ASSETS);
   const LEVEL_ASSET_KEYS = {
-    1: ["level1Bg", "level1Tiles", "bossCanopy", "bossCanopyMotion"],
-    2: ["level2Bg", "level2Tiles", "bossForge", "bossForgeMotion"],
-    3: ["level3Bg", "level3Tiles", "bossMidas", "bossMidasMotion", "victoryBadge"]
+    1: ["level1Bg", "level1Tiles", "bossCanopy"],
+    2: ["level2Bg", "level2Tiles", "bossForge"],
+    3: ["level3Bg", "level3Tiles", "bossMidas", "victoryBadge"]
   };
   const deferredLevelAssetKeys = new Set(Object.values(LEVEL_ASSET_KEYS).flat());
   const unusedLegacyAssetKeys = new Set(["hero", "bossFrame"]);
@@ -552,6 +550,7 @@
   let mode = "title";
   let modeBeforeSettings = "title";
   let run = null;
+  let viewportPortrait = window.innerHeight >= window.innerWidth;
   let pendingRunMode = "solo";
   let pendingCutsceneRunMode = "solo";
   let cutsceneSession = 0;
@@ -627,9 +626,18 @@
   const touchPressed = new Set();
   const touchReleased = new Set();
   const touchPointers = new Map();
-  let padDown = new Set();
-  let padPressed = new Set();
-  let padReleased = new Set();
+  const gamepadStates = Array.from({ length: 2 }, () => ({
+    down: new Set(),
+    pressed: new Set(),
+    released: new Set(),
+    move: { x: 0, y: 0, strength: 0 },
+    aim: { x: 0, y: 0, strength: 0 },
+    index: null,
+    id: ""
+  }));
+  let debugGamepads = null;
+  let controllerDebugPublish = null;
+  let gamepadSignature = "";
 
   const pointer = {
     x: W * 0.75,
@@ -781,7 +789,6 @@
       comboGem: { row: 3, frame: 4 }
     }
   };
-  const BOSS_MOTION_FRAMES = 8;
 
   const MOVEMENT = {
     maxGroundSpeed: 430,
@@ -1011,7 +1018,10 @@
   bindInputs();
   bindCutscene();
   installAccountBridge();
-  if (DEBUG) installDebugPanel();
+  if (DEBUG) {
+    installDebugPanel();
+    installControllerDebugApi();
+  }
   setMode("title");
   requestAnimationFrame(loop);
 
@@ -1263,7 +1273,8 @@
     });
 
     window.addEventListener("pagehide", clearTouchActions);
-    window.addEventListener("orientationchange", clearTouchActions);
+    window.addEventListener("gamepadconnected", pollGamepad);
+    window.addEventListener("gamepaddisconnected", pollGamepad);
 
     document.addEventListener("gesturestart", (event) => event.preventDefault(), { passive: false });
     document.addEventListener("gesturechange", (event) => event.preventDefault(), { passive: false });
@@ -1395,13 +1406,136 @@
       <button type="button" data-debug="generate">Generate</button>
       <button type="button" data-debug="clear-drops">Clear Drops</button>
       <button type="button" data-debug="victory">Victory</button>
+      <button type="button" data-debug-pad="connect-p1">Pad P1</button>
+      <button type="button" data-debug-pad="connect-p2">Pad P2</button>
+      <button type="button" data-debug-pad="safe-test">Pad Safe</button>
+      <button type="button" data-debug-pad="p1-a-down">P1 A</button>
+      <button type="button" data-debug-pad="p1-a-up">P1 A Up</button>
+      <button type="button" data-debug-pad="p1-move">P1 Move</button>
+      <button type="button" data-debug-pad="p1-aim-fire">P1 Aim+Fire</button>
+      <button type="button" data-debug-pad="p1-neutral">P1 Neutral</button>
+      <button type="button" data-debug-pad="p2-move">P2 Move</button>
+      <button type="button" data-debug-pad="p2-neutral">P2 Neutral</button>
+      <button type="button" data-debug-pad="p2-menu-down">P2 Menu</button>
+      <button type="button" data-debug-pad="p2-menu-up">P2 Menu Up</button>
     `;
     document.querySelector(".game-shell").appendChild(panel);
     panel.addEventListener("click", (event) => {
+      const padButton = event.target.closest("[data-debug-pad]");
+      if (padButton) {
+        runControllerDebugAction(padButton.dataset.debugPad);
+        return;
+      }
       const button = event.target.closest("[data-debug]");
       if (!button) return;
       runDebugAction(button.dataset.debug);
     });
+  }
+
+  function runControllerDebugAction(action) {
+    const controller = window.__shadowOpsControllerDebug;
+    if (!controller) return;
+    if (action === "connect-p1") controller.setTestPad(0);
+    if (action === "connect-p2") controller.setTestPad(1);
+    if (action === "safe-test" && run) {
+      allPlayers(run).forEach((player) => {
+        player.hp = player.maxHp;
+        player.lives = Math.max(player.lives, 99);
+        player.invuln = Math.max(player.invuln, 300);
+      });
+    }
+    if (action === "p1-a-down") controller.setTestPad(0, { buttons: [0] });
+    if (action === "p1-a-up") controller.setTestPad(0);
+    if (action === "p1-move") controller.setTestPad(0, { axes: [0.85, 0, 0, 0] });
+    if (action === "p1-aim-fire") controller.setTestPad(0, { axes: [0, 0, 0.9, -0.45], buttons: [7] });
+    if (action === "p1-neutral") controller.setTestPad(0);
+    if (action === "p2-move") controller.setTestPad(1, { axes: [0.85, 0, 0, 0] });
+    if (action === "p2-neutral") controller.setTestPad(1);
+    if (action === "p2-menu-down") controller.setTestPad(1, { buttons: [9] });
+    if (action === "p2-menu-up") controller.setTestPad(1);
+  }
+
+  function installControllerDebugApi() {
+    const output = document.createElement("output");
+    output.id = "controllerDebugState";
+    output.hidden = true;
+    document.body.appendChild(output);
+
+    const snapshot = () => ({
+      mode,
+      pads: gamepadStates.map((state, index) => ({
+        player: index + 1,
+        connected: state.index !== null,
+        index: state.index,
+        id: state.id,
+        move: { ...state.move },
+        aim: { ...state.aim },
+        down: [...state.down]
+      })),
+      players: run ? allPlayers(run).map((player) => ({
+        index: player.index,
+        x: player.x,
+        y: player.y,
+        vx: player.vx,
+        vy: player.vy,
+        hp: player.hp,
+        lives: player.lives,
+        grounded: player.grounded,
+        action: player.action,
+        knockbackTime: player.knockbackTime,
+        aim: { ...player.aim }
+      })) : [],
+      shots: run?.playerShots?.length || 0
+    });
+
+    const publishSnapshot = () => {
+      output.value = JSON.stringify(snapshot());
+      return snapshot();
+    };
+
+    const setTestPad = (slot, config = {}) => {
+      const index = clamp(Math.floor(Number(slot) || 0), 0, gamepadStates.length - 1);
+      if (!debugGamepads) debugGamepads = Array(gamepadStates.length).fill(null);
+      if (config.connected === false) {
+        debugGamepads[index] = null;
+      } else {
+        const axes = Array.from({ length: 4 }, (_, axis) => clamp(Number(config.axes?.[axis]) || 0, -1, 1));
+        const activeButtons = new Set((config.buttons || []).map((button) => Number(button)));
+        debugGamepads[index] = {
+          id: config.id || `Debug Standard Controller P${index + 1}`,
+          index,
+          connected: true,
+          mapping: "standard",
+          axes,
+          buttons: Array.from({ length: 17 }, (_, button) => ({
+            pressed: activeButtons.has(button),
+            touched: activeButtons.has(button),
+            value: activeButtons.has(button) ? 1 : 0
+          }))
+        };
+      }
+      return publishSnapshot();
+    };
+
+    window.__shadowOpsControllerDebug = {
+      setTestPad(slot, config = {}) {
+        return setTestPad(slot, config);
+      },
+      clearTestPads() {
+        debugGamepads = null;
+        return publishSnapshot();
+      },
+      snapshot() {
+        return publishSnapshot();
+      }
+    };
+
+    document.addEventListener("shadowops:debug-gamepad", (event) => {
+      setTestPad(event.detail?.slot, event.detail?.config);
+    });
+    document.addEventListener("shadowops:debug-controller-snapshot", publishSnapshot);
+    controllerDebugPublish = publishSnapshot;
+    publishSnapshot();
   }
 
   function runDebugAction(action) {
@@ -1623,11 +1757,18 @@
   }
 
   function syncViewportMode() {
+    const portrait = window.innerHeight >= window.innerWidth;
+    const orientationChanged = portrait !== viewportPortrait;
+    viewportPortrait = portrait;
     const compact = window.innerWidth <= 820 || window.innerHeight <= 620 || touchMedia.matches || anyTouchMedia.matches || hasTouchEvents;
     document.body.classList.toggle("compact-play", compact);
     if (compact && !settings.touch) {
       settings.touch = true;
       applySettings();
+    }
+    if (orientationChanged) {
+      clearTouchActions();
+      if (mode === "playing") pauseRun();
     }
   }
 
@@ -2385,7 +2526,7 @@
     return source.startsWith("DROP") ? source : `DROP ${source.slice(-4).toUpperCase().padStart(4, "0")}`;
   }
 
-  function formatTicketCopy(ticket, prefix = `ROBOT RAHBEE - Level ${ticket.levelId} Vault Drop`) {
+  function formatTicketCopy(ticket, prefix = `ROBOT RAHBE - Level ${ticket.levelId} Vault Drop`) {
     return [
       prefix,
       `Pick 3: ${ticket.pick3}`,
@@ -2761,7 +2902,7 @@
     const pick6Balls = Array.from(dom.resultLotto6?.querySelectorAll(".pick6-ball") || []).map((ball) => ball.textContent.trim());
     const pick6 = pick6Balls.length ? pick6Balls.join(" ") : dom.resultLotto6?.textContent?.trim().replace(/\s+/g, " ") || "------";
     return [
-      `ROBOT RAHBEE - ${dom.resultTitle?.textContent || "Run Result"}`,
+      `ROBOT RAHBE - ${dom.resultTitle?.textContent || "Run Result"}`,
       `Score ${dom.resultScore?.textContent || "0"} | Rank ${dom.resultRank?.textContent || "-"} | Time ${dom.resultTime?.textContent || "00:00"}`,
       `Pick 3 ${dom.resultPick3?.textContent || "---"} | Pick 4 ${dom.resultPick4?.textContent || "----"} | Pick 6 Mega ${pick6}`
     ].join("\n");
@@ -2815,9 +2956,10 @@
     touchDown.clear();
     touchPressed.clear();
     touchReleased.clear();
-    padDown = new Set();
-    padPressed = new Set();
-    padReleased = new Set();
+    for (const state of gamepadStates) {
+      state.pressed.clear();
+      state.released.clear();
+    }
   }
 
   function makeEnemy(type, x, groundY) {
@@ -2898,6 +3040,8 @@
   }
 
   function update(dt) {
+    if (mode !== "playing" && handleGamepadMenuInput()) return;
+
     if (mode === "title") {
       if (actionPressed("start") || actionPressed("fire")) beginCutscene();
       if (actionPressed("settings")) openSettings();
@@ -2937,10 +3081,12 @@
       return;
     }
     updateAreaPrompt(run);
-    if ((actionPressed("interact") || actionPressed("down") || keyboardPressed.has("p2-down")) && tryUseAreaPortal(run)) {
+    const secondaryInteract = gamepadStates[1].pressed.has("interact");
+    const secondaryDown = gamepadStates[1].pressed.has("down");
+    if ((actionPressed("interact") || actionPressed("down") || keyboardPressed.has("p2-down") || secondaryInteract || secondaryDown) && tryUseAreaPortal(run)) {
       return;
     }
-    if (actionPressed("interact")) {
+    if (actionPressed("interact") || secondaryInteract) {
       tryOpenLotteryTerminal();
       return;
     }
@@ -3007,43 +3153,165 @@
   }
 
   function pollGamepad() {
-    const pads = navigator.getGamepads ? Array.from(navigator.getGamepads()).filter(Boolean) : [];
-    const next = new Set();
-    const pad = pads[0];
-    if (pad) {
-      const ax = pad.axes[0] || 0;
-      const ay = pad.axes[1] || 0;
-      if (ax < -0.35) next.add("left");
-      if (ax > 0.35) next.add("right");
-      if (ay < -0.45) next.add("up");
-      if (ay > 0.45) next.add("down");
-      const buttons = pad.buttons || [];
-      if (buttons[0]?.pressed || buttons[12]?.pressed) next.add("jump");
-      if (buttons[2]?.pressed || buttons[7]?.pressed) next.add("fire");
-      if (buttons[1]?.pressed || buttons[5]?.pressed) next.add("dash");
-      if (buttons[3]?.pressed || buttons[4]?.pressed) next.add("overdrive");
-      if (buttons[6]?.pressed) next.add("interact");
-      if (buttons[9]?.pressed) next.add("start");
-      if (buttons[8]?.pressed) next.add("pause");
-      if (buttons[13]?.pressed) next.add("down");
-      if (buttons[14]?.pressed) next.add("left");
-      if (buttons[15]?.pressed) next.add("right");
+    let pads = [];
+    if (DEBUG && debugGamepads) {
+      pads = debugGamepads.slice(0, gamepadStates.length);
+    } else {
+      try {
+        pads = navigator.getGamepads ? Array.from(navigator.getGamepads()).filter(Boolean).slice(0, 2) : [];
+      } catch {
+        pads = [];
+      }
     }
-    padPressed = new Set([...next].filter((action) => !padDown.has(action)));
-    padReleased = new Set([...padDown].filter((action) => !next.has(action)));
-    padDown = next;
+
+    for (let slot = 0; slot < gamepadStates.length; slot += 1) {
+      const state = gamepadStates[slot];
+      const pad = pads[slot];
+      const next = new Set();
+
+      if (pad) {
+        const move = readGamepadStick(pad.axes?.[0], pad.axes?.[1], 0.18);
+        const aim = readGamepadStick(pad.axes?.[2], pad.axes?.[3], 0.2);
+        const buttons = pad.buttons || [];
+
+        state.move = move;
+        state.aim = aim;
+        state.index = pad.index;
+        state.id = pad.id || `Controller ${slot + 1}`;
+
+        if (move.x < -0.12 || gamepadButtonDown(buttons[14])) next.add("left");
+        if (move.x > 0.12 || gamepadButtonDown(buttons[15])) next.add("right");
+        if (move.y < -0.24 || gamepadButtonDown(buttons[12])) next.add("up");
+        if (move.y > 0.24 || gamepadButtonDown(buttons[13])) next.add("down");
+
+        if (gamepadButtonDown(buttons[0])) {
+          next.add("jump");
+          next.add("confirm");
+        }
+        if (gamepadButtonDown(buttons[2]) || gamepadButtonDown(buttons[7])) next.add("fire");
+        if (gamepadButtonDown(buttons[1]) || gamepadButtonDown(buttons[5])) next.add("dash");
+        if (gamepadButtonDown(buttons[3]) || gamepadButtonDown(buttons[4])) next.add("overdrive");
+        if (gamepadButtonDown(buttons[6]) || gamepadButtonDown(buttons[8]) || gamepadButtonDown(buttons[10])) next.add("interact");
+        if (gamepadButtonDown(buttons[9])) {
+          next.add("start");
+          next.add("pause");
+        }
+      } else {
+        state.move = { x: 0, y: 0, strength: 0 };
+        state.aim = { x: 0, y: 0, strength: 0 };
+        state.index = null;
+        state.id = "";
+      }
+
+      state.pressed = new Set([...next].filter((action) => !state.down.has(action)));
+      state.released = new Set([...state.down].filter((action) => !next.has(action)));
+      state.down = next;
+    }
+
+    updateGamepadStatus(pads);
+    if (DEBUG) controllerDebugPublish?.();
+  }
+
+  function gamepadButtonDown(button) {
+    return Boolean(button && (button.pressed || Number(button.value) >= 0.45));
+  }
+
+  function readGamepadStick(rawX, rawY, deadZone) {
+    const x = clamp(Number(rawX) || 0, -1, 1);
+    const y = clamp(Number(rawY) || 0, -1, 1);
+    const magnitude = Math.min(1, Math.hypot(x, y));
+    if (magnitude <= deadZone) return { x: 0, y: 0, strength: 0 };
+    const strength = (magnitude - deadZone) / (1 - deadZone);
+    const scale = strength / (magnitude || 1);
+    return { x: x * scale, y: y * scale, strength };
+  }
+
+  function updateGamepadStatus(pads) {
+    const connectedPads = pads.filter(Boolean);
+    const signature = connectedPads.map((pad) => `${pad.index}:${pad.id}`).join("|");
+    if (signature === gamepadSignature) return;
+    gamepadSignature = signature;
+    document.body.classList.toggle("gamepad-active", connectedPads.length > 0);
+    if (!dom.controllerStatus) return;
+    dom.controllerStatus.classList.toggle("is-connected", connectedPads.length > 0);
+    dom.controllerStatus.textContent = connectedPads.length > 1
+      ? "Gamepad: P1 + P2 connected"
+      : connectedPads.length === 1
+        ? "Gamepad: P1 connected"
+        : "Gamepad: connect controller";
+    dom.controllerStatus.title = connectedPads.length
+      ? connectedPads.map((pad, index) => `P${index + 1}: ${pad.id || "Standard controller"}`).join(" | ")
+      : "Connect a standard controller. Left stick or D-pad moves, right stick aims, A jumps, X or right trigger fires, B or right bumper dashes, and Menu pauses.";
+  }
+
+  function gamepadMenuRoot() {
+    if (mode === "title") return dom.titleScreen;
+    if (mode === "cutscene") return dom.cutsceneScreen;
+    if (mode === "purchase") return dom.purchaseScreen;
+    if (mode === "paused") return dom.pauseScreen;
+    if (mode === "settings") return dom.settingsScreen;
+    if (mode === "results") return dom.resultsScreen;
+    if (mode === "lottery") return dom.lotteryTerminalScreen;
+    return null;
+  }
+
+  function defaultGamepadMenuControl(root) {
+    const selectors = {
+      title: '[data-action="start-solo"]',
+      cutscene: '[data-action="skip-cutscene"]',
+      purchase: '[data-action="close-purchase"]',
+      paused: '[data-action="resume"]',
+      settings: '[data-action="close-settings"]',
+      results: '[data-action="restart"]',
+      lottery: '#generateLotteryButton:not(:disabled), [data-action="close-lottery"]'
+    };
+    return root?.querySelector(selectors[mode] || "button:not(:disabled), a[href]");
+  }
+
+  function handleGamepadMenuInput() {
+    const root = gamepadMenuRoot();
+    if (!root) return false;
+    const controls = [...root.querySelectorAll('button:not(:disabled), a.button-link[href]')]
+      .filter((control) => control.offsetParent !== null);
+    if (!controls.length) return false;
+
+    const previous = gamepadStates.some((state) => state.pressed.has("left") || state.pressed.has("up"));
+    const next = gamepadStates.some((state) => state.pressed.has("right") || state.pressed.has("down"));
+    const confirm = gamepadStates.some((state) => state.pressed.has("confirm"));
+    const focusedIndex = controls.indexOf(document.activeElement);
+
+    if (previous || next) {
+      const direction = next ? 1 : -1;
+      const defaultIndex = controls.indexOf(defaultGamepadMenuControl(root));
+      const startIndex = focusedIndex >= 0 ? focusedIndex : Math.max(0, defaultIndex);
+      const index = (startIndex + direction + controls.length) % controls.length;
+      controls[index].focus({ preventScroll: true });
+      return true;
+    }
+
+    if (confirm) {
+      const control = focusedIndex >= 0 ? controls[focusedIndex] : defaultGamepadMenuControl(root) || controls[0];
+      initAudio();
+      control?.click();
+      return true;
+    }
+    return false;
   }
 
   function actionDown(action) {
-    return keyboardDown.has(action) || touchDown.has(action) || padDown.has(action);
+    return keyboardDown.has(action) || touchDown.has(action) || gamepadStates[0].down.has(action);
   }
 
   function actionPressed(action) {
-    return keyboardPressed.has(action) || touchPressed.has(action) || padPressed.has(action);
+    const globalPadAction = ["pause", "start", "settings", "confirm"].includes(action);
+    return keyboardPressed.has(action)
+      || touchPressed.has(action)
+      || gamepadStates[0].pressed.has(action)
+      || (globalPadAction && gamepadStates[1].pressed.has(action));
   }
 
   function actionReleased(action) {
-    return keyboardReleased.has(action) || touchReleased.has(action) || padReleased.has(action);
+    return keyboardReleased.has(action) || touchReleased.has(action) || gamepadStates[0].released.has(action);
   }
 
   function playerActionName(player, action) {
@@ -3052,19 +3320,19 @@
 
   function playerActionDown(player, action) {
     const mapped = playerActionName(player, action);
-    if (player.index === 1) return keyboardDown.has(mapped);
+    if (player.index === 1) return keyboardDown.has(mapped) || gamepadStates[1].down.has(action);
     return actionDown(action);
   }
 
   function playerActionPressed(player, action) {
     const mapped = playerActionName(player, action);
-    if (player.index === 1) return keyboardPressed.has(mapped);
+    if (player.index === 1) return keyboardPressed.has(mapped) || gamepadStates[1].pressed.has(action);
     return actionPressed(action);
   }
 
   function playerActionReleased(player, action) {
     const mapped = playerActionName(player, action);
-    if (player.index === 1) return keyboardReleased.has(mapped);
+    if (player.index === 1) return keyboardReleased.has(mapped) || gamepadStates[1].released.has(action);
     return actionReleased(action);
   }
 
@@ -3073,8 +3341,10 @@
     keyboardReleased.clear();
     touchPressed.clear();
     touchReleased.clear();
-    padPressed.clear();
-    padReleased.clear();
+    for (const state of gamepadStates) {
+      state.pressed.clear();
+      state.released.clear();
+    }
   }
 
   function updatePlatforms(state, dt) {
@@ -3146,7 +3416,9 @@
     const jumpReleased = playerActionReleased(p, "jump") || playerActionReleased(p, "up");
     const left = playerActionDown(p, "left");
     const right = playerActionDown(p, "right");
-    const moving = Number(right) - Number(left);
+    const digitalMove = Number(right) - Number(left);
+    const analogMove = gamepadStates[p.index]?.move?.x || 0;
+    const moving = Math.abs(analogMove) > 0.01 ? analogMove : digitalMove;
     const wantsCrouch = playerActionDown(p, "down") && p.grounded && p.dashTime <= 0 && !jumpPressed && !playerInAreaPortal(state, p);
     const oldBottom = p.y + p.h;
 
@@ -3216,14 +3488,14 @@
       }
     } else {
       const max = p.crouching ? MOVEMENT.crouchSpeed : MOVEMENT.maxGroundSpeed;
-      const reversingAir = !p.grounded && moving !== 0 && Math.sign(p.vx || moving) !== moving;
+      const reversingAir = !p.grounded && moving !== 0 && Math.sign(p.vx || moving) !== Math.sign(moving);
       const accel = p.grounded ? MOVEMENT.groundAccel : reversingAir ? MOVEMENT.airTurnAccel : MOVEMENT.airAccel;
       const friction = p.grounded ? MOVEMENT.groundDecel : MOVEMENT.airDecel;
       if (moving !== 0 && !p.crouching && p.knockbackTime <= 0) p.vx = approach(p.vx, moving * max, accel * dt);
       else p.vx = approach(p.vx, 0, friction * dt);
       const gravityScale = p.vy < 0 && jumpHeld ? 0.68 : p.vy > 0 ? 1.14 : 1;
       if (!jumpedEarly) p.vy = Math.min(1320, p.vy + GRAVITY * gravityScale * dt);
-      if (!p.grounded && p.wallSide && moving === p.wallSide && p.vy > MOVEMENT.wallSlideSpeed) {
+      if (!p.grounded && p.wallSide && Math.sign(moving) === p.wallSide && p.vy > MOVEMENT.wallSlideSpeed) {
         p.vy = approach(p.vy, MOVEMENT.wallSlideSpeed, GRAVITY * 1.6 * dt);
         p.wallStick = MOVEMENT.wallStickTime;
         if (state.time % 0.18 < dt) {
@@ -3369,6 +3641,12 @@
   }
 
   function getAim(state, p) {
+    const padAim = gamepadStates[p.index]?.aim;
+    if (padAim?.strength > 0.08) {
+      const length = Math.hypot(padAim.x, padAim.y) || 1;
+      return { x: padAim.x / length, y: padAim.y / length };
+    }
+
     const virtualAimFresh = performance.now() < virtualAim.activeUntil && mode === "playing";
     if (virtualAimFresh && p.index === 0) {
       return { x: virtualAim.x, y: virtualAim.y };
@@ -4590,7 +4868,11 @@
     drawBackground(state);
     ctx.save();
     const shake = cameraShake(state);
-    ctx.translate(shake.x - state.cameraX, shake.y - (state.cameraY || 0));
+    const touchLandscapeLift = document.body.classList.contains("touch-forced")
+      && document.body.classList.contains("touch-landscape")
+      ? (window.innerHeight <= 620 ? 64 : 36)
+      : 0;
+    ctx.translate(shake.x - state.cameraX, shake.y - (state.cameraY || 0) - touchLandscapeLift);
     drawBacklightRays(state);
     drawWorldAssetPass(state);
     if (DRAW_DECORATIVE_WORLD_PROPS) {
@@ -7419,44 +7701,37 @@
   }
 
   function drawBossMotionFrame(state, boss, fallbackImage, hurt) {
-    const sheet = images[`${boss.imageKey}Motion`];
     const drawW = boss.w * 1.18;
     const drawH = boss.h * 1.18;
     const actionDuration = 0.46;
     const actionProgress = 1 - clamp((boss.attackAnim || 0) / actionDuration, 0, 1);
-    let frame = Math.floor(boss.time * (2.4 + boss.phase * 0.25)) % 2;
-    if (boss.attackAnim > 0) frame = 3 + Math.min(2, Math.floor(actionProgress * 3));
-    if (boss.telegraph > 0) frame = boss.telegraph > 0.55 ? 2 : boss.telegraph > 0.22 ? 3 : 4;
-    if (boss.shieldTime > 0) frame = 2;
-    if (boss.phase >= 2 && boss.attackAnim <= 0 && boss.telegraph <= 0 && boss.shieldTime <= 0) {
-      frame = Math.floor(boss.time * (3.1 + boss.phase * 0.35)) % 2;
-    }
-    if (boss.hp / boss.maxHp < 0.18 && boss.telegraph <= 0 && boss.attackAnim <= 0) frame = 7;
-    if (hurt) frame = 6;
-    const jitterX = hurt ? Math.sin(state.time * 54) * 4 : 0;
-    const jitterY = boss.telegraph > 0 ? Math.sin(state.time * 18) * 3 : 0;
     const nativeFacing = BOSS_NATIVE_FACING[boss.kind] || 1;
     const flip = (boss.facing || -1) !== nativeFacing;
+    const motionScale = settings.reducedMotion ? 0 : 1;
+    const idleBob = Math.sin(boss.time * (2.2 + boss.phase * 0.2)) * Math.min(6, boss.h * 0.025) * motionScale;
+    const hurtShake = hurt ? Math.sin(state.time * 54) * 5 * motionScale : 0;
+    const attackKick = boss.attackAnim > 0 ? Math.sin(actionProgress * Math.PI) * 10 * motionScale : 0;
+    const telegraphPulse = boss.telegraph > 0 ? 1 + Math.sin(state.time * 18) * 0.018 * motionScale : 1;
+    const shieldPulse = boss.shieldTime > 0 ? 1 + Math.sin(state.time * 10) * 0.012 * motionScale : 1;
+    const attackTilt = boss.attackAnim > 0 ? Math.sin(actionProgress * Math.PI) * 0.055 * motionScale : 0;
+    const hurtTilt = hurt ? Math.sin(state.time * 48) * 0.04 * motionScale : 0;
 
     ctx.save();
     if (flip) ctx.scale(-1, 1);
-    if (sheet?.complete && sheet.naturalWidth) {
-      const cellW = sheet.naturalWidth / BOSS_MOTION_FRAMES;
-      const cellH = sheet.naturalHeight;
-      if (boss.telegraph > 0 || boss.attackAnim > 0) {
-        ctx.save();
-        ctx.globalAlpha = boss.telegraph > 0 ? 0.28 : 0.18;
-        ctx.globalCompositeOperation = "screen";
-        ctx.drawImage(sheet, frame * cellW, 0, cellW, cellH, -drawW * 0.5 + jitterX - 8, -drawH * 0.5 + jitterY, drawW, drawH);
-        ctx.drawImage(sheet, frame * cellW, 0, cellW, cellH, -drawW * 0.5 + jitterX + 8, -drawH * 0.5 + jitterY, drawW, drawH);
-        ctx.restore();
-      }
-      ctx.drawImage(sheet, frame * cellW, 0, cellW, cellH, -drawW * 0.5 + jitterX, -drawH * 0.5 + jitterY, drawW, drawH);
+    ctx.translate(hurtShake - attackKick, idleBob);
+    ctx.rotate(attackTilt + hurtTilt);
+    ctx.scale(telegraphPulse * shieldPulse, telegraphPulse * shieldPulse);
+
+    if (boss.telegraph > 0 || boss.attackAnim > 0) {
+      ctx.save();
+      ctx.globalAlpha = boss.telegraph > 0 ? 0.25 : 0.14;
+      ctx.globalCompositeOperation = "screen";
+      ctx.drawImage(fallbackImage, -drawW * 0.5 - 7, -drawH * 0.5, drawW, drawH);
+      ctx.drawImage(fallbackImage, -drawW * 0.5 + 7, -drawH * 0.5, drawW, drawH);
       ctx.restore();
-      return;
     }
 
-    ctx.drawImage(fallbackImage, -drawW * 0.5 + jitterX, -drawH * 0.5 + jitterY, drawW, drawH);
+    ctx.drawImage(fallbackImage, -drawW * 0.5, -drawH * 0.5, drawW, drawH);
     ctx.restore();
   }
 
@@ -7619,7 +7894,7 @@
       dom.hpHearts.appendChild(row);
     }
     dom.livesText.textContent = players.map((p) => `${p.label} ${p.lives}`).join(" | ");
-    dom.hudTitle.textContent = run.runMode === "coop" ? "ROBOT RAHBEE CO-OP" : run.coOp ? "ROBOT RAHBEE 2P" : "ROBOT RAHBEE";
+    dom.hudTitle.textContent = run.runMode === "coop" ? "ROBOT RAHBE CO-OP" : run.coOp ? "ROBOT RAHBE 2P" : "ROBOT RAHBE";
     dom.levelText.textContent = `${run.level.id} ${run.level.shortName} ${isUnderground(run) ? "UNDERGROUND" : "SURFACE"}`;
     dom.scoreText.textContent = String(run.stats.score).padStart(6, "0");
     dom.comboText.textContent = `x${run.combo}`;
