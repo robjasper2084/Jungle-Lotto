@@ -247,17 +247,18 @@
       }
       body.touch-forced.touch-landscape .touchbar {
         --touch-size: clamp(46px, 8.5vh, 64px);
-        --stick-size: clamp(116px, 21vh, 158px);
+        --stick-size: clamp(104px, 19vh, 142px);
       }
       body.touch-forced.touch-portrait .game-shell {
-        place-items: start center !important;
+        place-items: center !important;
       }
       body.touch-forced.touch-portrait #game {
-        width: min(190vw, 1520px) !important;
-        max-width: none !important;
-        height: min(106.875vw, calc(100dvh - 300px)) !important;
+        width: min(100vw, calc((100dvh - 300px) * 16 / 9)) !important;
+        max-width: 100vw !important;
+        height: auto !important;
         max-height: calc(100dvh - 300px) !important;
-        margin-top: clamp(116px, 14dvh, 154px) !important;
+        aspect-ratio: 16 / 9;
+        margin-top: 0 !important;
       }
       body.touch-forced.touch-portrait .touchbar {
         --touch-size: clamp(48px, 13vw, 62px);
@@ -288,9 +289,16 @@
         grid-template-columns: repeat(4, var(--touch-size)) !important;
       }
       body.touch-forced.touch-portrait .hud {
-        transform: scale(0.9);
-        transform-origin: top center;
-        width: calc(111.111vw - 18px);
+        left: max(8px, env(safe-area-inset-left));
+        right: max(8px, env(safe-area-inset-right));
+        width: auto;
+        max-width: none;
+        transform: none;
+      }
+      body.touch-forced.touch-portrait .hud-left,
+      body.touch-forced.touch-portrait .hud-mid,
+      body.touch-forced.touch-portrait .hud-right {
+        min-width: 0;
       }
       body.touch-forced.touch-portrait .objective-chip {
         top: clamp(104px, 15dvh, 148px) !important;
@@ -306,17 +314,17 @@
       }
       @media (orientation: landscape) and (max-height: 520px) {
         body.touch-forced.touch-landscape .touchbar {
-          --touch-size: clamp(42px, 12vh, 58px);
-          --stick-size: clamp(104px, 26vh, 140px);
+          --touch-size: clamp(40px, 10vh, 52px);
+          --stick-size: clamp(92px, 22vh, 116px);
           bottom: max(8px, env(safe-area-inset-bottom)) !important;
         }
         body.touch-forced .touch-quick {
-          grid-template-columns: repeat(2, clamp(48px, 12vh, 62px));
+          grid-template-columns: repeat(2, clamp(44px, 10vh, 54px));
           gap: 6px;
         }
         body.touch-forced .touch-quick button {
-          height: clamp(42px, 10vh, 54px);
-          min-height: 42px;
+          height: clamp(40px, 9vh, 48px);
+          min-height: 40px;
         }
       }
       @media (max-width: 380px) {

@@ -1,7 +1,7 @@
 ﻿(() => {
-  const BRAND = "ROBOT RAHBEE";
-  const BRAND_COOP = "ROBOT RAHBEE CO-OP";
-  const BRAND_2P = "ROBOT RAHBEE 2P";
+  const BRAND = "ROBOT RAHBE";
+  const BRAND_COOP = "ROBOT RAHBE CO-OP";
+  const BRAND_2P = "ROBOT RAHBE 2P";
   const LEGACY_PATTERNS = [
     /KLNM WITH KNDNSS/g,
     /\.KLN WITH KNDNSS/g,
