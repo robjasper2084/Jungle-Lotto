@@ -52,7 +52,8 @@ def main() -> None:
     jobs = json.loads(JOBS_PATH.read_text(encoding="utf-8"))
     if args.character not in jobs["characters"]:
         raise SystemExit(f"Unknown character: {args.character}")
-    motions = jobs["characters"][args.character]["motions"]
+    character = jobs["characters"][args.character]
+    motions = character["motions"]
     if args.motion:
         unknown = set(args.motion) - set(motions)
         if unknown:
@@ -63,27 +64,42 @@ def main() -> None:
     failures = []
 
     for index, (motion, entry) in enumerate(motions.items(), start=1):
+        replacements = character.get("replacementHistory", {}).get(motion, [])
+        if (entry.get("status") != "completed" or not entry.get("resultUrl")) and replacements:
+            replacement = next(
+                (candidate for candidate in reversed(replacements) if candidate.get("status") == "completed" and candidate.get("resultUrl")),
+                None,
+            )
+            if replacement:
+                entry.update(replacement)
         target = output / f"{motion.lower()}.png"
         try:
             if target.exists() and target.stat().st_size >= 100_000 and entry.get("resultUrl"):
                 print(f"{args.character} {index}/{len(motions)} {motion} cached", flush=True)
                 continue
-            result = wait_for_job(entry["jobId"])
-            entry["status"] = result.get("status", "unknown")
-            entry["resultUrl"] = result.get("result_url")
+            if entry.get("resultUrl"):
+                # A local copy failure does not invalidate a completed remote job.
+                # Reuse the saved result URL without requiring a fresh provider login.
+                entry["status"] = "completed"
+                result = {"status": "completed", "result_url": entry["resultUrl"]}
+            else:
+                result = wait_for_job(entry["jobId"])
+                entry["status"] = result.get("status", "unknown")
+                entry["resultUrl"] = result.get("result_url")
             if entry["status"] != "completed" or not entry["resultUrl"]:
                 raise RuntimeError(f"job status is {entry['status']}")
             download(entry["resultUrl"], target)
             entry["rawPath"] = target.relative_to(ROOT).as_posix()
             entry["rawBytes"] = target.stat().st_size
+            entry.pop("collectError", None)
+            entry.pop("error", None)
             save_jobs(jobs)
             print(
                 f"{args.character} {index}/{len(motions)} {motion} {entry['rawBytes']} bytes",
                 flush=True,
             )
         except Exception as error:
-            entry["status"] = "failed"
-            entry["error"] = str(error)
+            entry["collectError"] = str(error)
             failures.append(f"{motion}: {error}")
             save_jobs(jobs)
 

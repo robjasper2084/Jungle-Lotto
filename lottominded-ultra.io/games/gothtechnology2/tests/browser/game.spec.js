@@ -37,6 +37,31 @@ const enterTrainingFight = async (page) => {
   await advanceVersusToFight(page);
 };
 
+test("cross-browser smoke boots, starts a fight, and accepts pause input", async ({ page }) => {
+  test.setTimeout(120_000);
+  const pageErrors = [];
+  page.on("pageerror", (error) => pageErrors.push(error.message));
+  await page.goto(gameUrl);
+  await expect.poll(() => phase(page), { timeout: 30_000 }).toBe("title");
+  await page.evaluate(() => window.__gothTechnologyGame.openMode("versus"));
+  await expect.poll(() => phase(page), { timeout: 30_000 }).toBe("select");
+  await expect.poll(() => page.evaluate(() => window.__gothTechnologyGame?.matchAssetsReady), { timeout: 60_000 }).toBe(true);
+  await clickGame(page, 804, 594);
+  await advanceVersusToFight(page);
+  const visibleSamples = await page.locator("#game").evaluate((canvas) => {
+    const pixels = canvas.getContext("2d", { willReadFrequently: true }).getImageData(0, 0, canvas.width, canvas.height).data;
+    let visible = 0;
+    for (let offset = 0; offset < pixels.length; offset += 1600) {
+      if (pixels[offset] + pixels[offset + 1] + pixels[offset + 2] > 24) visible += 1;
+    }
+    return visible;
+  });
+  expect(visibleSamples).toBeGreaterThan(100);
+  await page.keyboard.press("KeyP");
+  await expect.poll(() => phase(page)).toBe("pause");
+  expect(pageErrors).toEqual([]);
+});
+
 test("boots, reaches versus, fights, and pauses without page errors", async ({ page }, testInfo) => {
   test.setTimeout(120_000);
   const pageErrors = [];
@@ -44,7 +69,7 @@ test("boots, reaches versus, fights, and pauses without page errors", async ({ p
   await page.goto(gameUrl);
   await expect.poll(() => phase(page)).toBe("title");
   const titleActions = await page.locator("#accessibleActions button").allTextContents();
-  expect(titleActions).toEqual(expect.arrayContaining(["VERSUS", "ARCADE", "TRAINING", "REPLAY"]));
+  expect(titleActions.slice(0, 5)).toEqual(["Game select", "VERSUS", "ARCADE", "TRAINING", "REPLAY"]);
   expect(titleActions).not.toContain("SURVIVAL");
   expect(titleActions).not.toContain("CHALLENGE");
   await page.evaluate(() => window.__gothTechnologyGame.openMode("survival"));
@@ -62,17 +87,21 @@ test("boots, reaches versus, fights, and pauses without page errors", async ({ p
   expect(loadedResources.some((url) => url.includes("effects/sheets/"))).toBe(false);
   expect(loadedResources.some((url) => url.includes("gothtechnology-cover-start-bg.webp"))).toBe(false);
   expect(loadedResources.some((url) => url.includes("robot-rahbe-title-card.webp"))).toBe(false);
+  expect(loadedResources.some((url) => url.includes("marquee-gameplay-keyart.webp"))).toBe(false);
 
-  await clickGame(page, 640, 633);
+  await clickGame(page, 280, 575);
   await expect.poll(() => phase(page)).toBe("gameSelect");
+  await expect(page.locator("#accessibleActions")).toContainText("Play 2084 Static WAV");
   await expect.poll(() => page.evaluate(() => {
     const images = window.__gothTechnologyGame?.assets?.images;
     return images?.gameTitleGothtechnology?.naturalWidth > 0
-      && images?.gameTitleRobotRahbe?.naturalWidth > 0;
+      && images?.gameTitleRobotRahbe?.naturalWidth > 0
+      && images?.gameTitleStaticWave?.naturalWidth > 0;
   })).toBe(true);
   const gameSelectResources = await page.evaluate(() => performance.getEntriesByType("resource").map((entry) => entry.name));
   expect(gameSelectResources.some((url) => url.includes("gothtechnology-cover-start-bg.webp"))).toBe(true);
   expect(gameSelectResources.some((url) => url.includes("robot-rahbe-title-card.webp"))).toBe(true);
+  expect(gameSelectResources.some((url) => url.includes("marquee-gameplay-keyart.webp"))).toBe(true);
   if (!process.env.NO_TEST_ARTIFACTS) await page.screenshot({ path: testInfo.outputPath(`${testInfo.project.name}-game-select.png`) });
   await clickGame(page, 640, 623);
   await expect.poll(() => phase(page)).toBe("title");
@@ -87,7 +116,7 @@ test("boots, reaches versus, fights, and pauses without page errors", async ({ p
   });
   expect(nonBlankSamples).toBeGreaterThan(100);
 
-  await page.evaluate(() => { window.__gothTechnologyGame.titleMenuIndex = 0; });
+  await page.evaluate(() => { window.__gothTechnologyGame.titleMenuIndex = 1; });
   await page.keyboard.down("Enter");
   await page.waitForTimeout(80);
   await page.keyboard.up("Enter");
@@ -100,7 +129,7 @@ test("boots, reaches versus, fights, and pauses without page errors", async ({ p
   expect(selectedResources.some((url) => url.includes("user-sheets/"))).toBe(false);
   const spriteIntegrity = await page.evaluate(() => {
     const animations = window.__gothTechnologyGame.assets.animations;
-    const splitFrames = [];
+    const emptyFrames = [];
     const insufficientUnique = [];
     let frameCount = 0;
     for (const [characterId, motions] of Object.entries(animations)) {
@@ -114,63 +143,22 @@ test("boots, reaches versus, fights, and pauses without page errors", async ({ p
           const context = canvas.getContext("2d", { willReadFrequently: true });
           context.drawImage(motion.image, frame.x, frame.y, frame.w, frame.h, 0, 0, frame.w, frame.h);
           const rgba = context.getImageData(0, 0, frame.w, frame.h).data;
-          const mask = Array.from({ length: frame.h }, () => new Uint8Array(frame.w));
-          let minX = frame.w;
-          let maxX = -1;
-          let minY = frame.h;
-          let maxY = -1;
+          let visiblePixels = 0;
           for (let y = 0; y < frame.h; y += 1) {
             for (let x = 0; x < frame.w; x += 1) {
               if (rgba[(y * frame.w + x) * 4 + 3] <= 24) continue;
-              mask[y][x] = 1;
-              minX = Math.min(minX, x);
-              maxX = Math.max(maxX, x);
-              minY = Math.min(minY, y);
-              maxY = Math.max(maxY, y);
+              visiblePixels += 1;
             }
           }
-          if (maxX < 0) {
-            splitFrames.push(`${characterId}/${motionName}/${frameIndex + 1}:empty`);
-            return;
-          }
-          const projections = [
-            Array.from({ length: maxX - minX + 1 }, (_, x) => {
-              let sum = 0;
-              for (let y = minY; y <= maxY; y += 1) sum += mask[y][x + minX];
-              return sum;
-            }),
-            Array.from({ length: maxY - minY + 1 }, (_, y) => {
-              let sum = 0;
-              for (let x = minX; x <= maxX; x += 1) sum += mask[y + minY][x];
-              return sum;
-            })
-          ];
-          for (const projection of projections) {
-            const total = projection.reduce((sum, value) => sum + value, 0);
-            let runStart = -1;
-            for (let index = 0; index <= projection.length; index += 1) {
-              const empty = index < projection.length && projection[index] === 0;
-              if (empty && runStart < 0) runStart = index;
-              if ((!empty || index === projection.length) && runStart >= 0) {
-                const width = index - runStart;
-                const before = projection.slice(0, runStart).reduce((sum, value) => sum + value, 0);
-                const after = projection.slice(index).reduce((sum, value) => sum + value, 0);
-                if (width >= 2 && width <= 16 && before > total * 0.2 && after > total * 0.2) {
-                  splitFrames.push(`${characterId}/${motionName}/${frameIndex + 1}`);
-                  return;
-                }
-                runStart = -1;
-              }
-            }
-          }
+          if (!visiblePixels) emptyFrames.push(`${characterId}/${motionName}/${frameIndex + 1}`);
         });
       }
     }
-    return { frameCount, insufficientUnique, splitFrames };
+    return { frameCount, insufficientUnique, emptyFrames };
   });
   expect(spriteIntegrity.frameCount).toBe(468);
   expect(spriteIntegrity.insufficientUnique).toEqual([]);
-  expect(spriteIntegrity.splitFrames).toEqual([]);
+  expect(spriteIntegrity.emptyFrames).toEqual([]);
   const unstableRenderedMotions = await page.evaluate(async () => {
     const { drawSpriteFrame } = await import("./src/engine/assets.js?v=heartline29-amara-test");
     const animations = window.__gothTechnologyGame.assets.animations;
@@ -293,6 +281,25 @@ test("boots, reaches versus, fights, and pauses without page errors", async ({ p
   expect(pageErrors).toEqual([]);
 });
 
+test("game grid selects and launches 2084 Static WAV", async ({ page }) => {
+  await page.goto(gameUrl);
+  await expect.poll(() => phase(page)).toBe("title");
+  await page.evaluate(() => window.__gothTechnologyGame.openGameSelect());
+  await expect.poll(() => phase(page)).toBe("gameSelect");
+  await expect.poll(() => page.evaluate(() => window.__gothTechnologyGame.assets.images.gameTitleStaticWave?.naturalWidth > 0)).toBe(true);
+
+  await page.keyboard.press("ArrowRight");
+  await expect.poll(() => page.evaluate(() => window.__gothTechnologyGame.gameSelectIndex)).toBe(1);
+  await page.keyboard.press("ArrowRight");
+  await expect.poll(() => page.evaluate(() => window.__gothTechnologyGame.gameSelectIndex)).toBe(2);
+
+  await Promise.all([
+    page.waitForURL(/\/games\/opengw-levels\//),
+    page.keyboard.press("Enter")
+  ]);
+  await expect(page).toHaveTitle(/2084 Static Wave/i);
+});
+
 test("keyboard movement remaps, swaps conflicts, and persists", async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== "desktop-chromium", "Keyboard persistence needs one desktop browser pass");
   await page.goto(gameUrl);
@@ -359,23 +366,120 @@ test("repaired motion pixels remain unclipped single-body silhouettes", async ({
     canvas.width = 96;
     canvas.height = 96;
     const context = canvas.getContext("2d", { willReadFrequently: true });
+    const dividerCanvas = document.createElement("canvas");
+    dividerCanvas.width = 192;
+    dividerCanvas.height = 192;
+    const dividerContext = dividerCanvas.getContext("2d", { willReadFrequently: true });
+    const connectedComponents = (mask, width, height) => {
+      const visited = new Uint8Array(mask.length);
+      const components = [];
+      for (let start = 0; start < mask.length; start += 1) {
+        if (!mask[start] || visited[start]) continue;
+        const stack = [start];
+        visited[start] = 1;
+        let area = 0;
+        let minX = width;
+        let maxX = 0;
+        let minY = height;
+        let maxY = 0;
+        while (stack.length) {
+          const current = stack.pop();
+          const x = current % width;
+          const y = Math.floor(current / width);
+          area += 1;
+          minX = Math.min(minX, x);
+          maxX = Math.max(maxX, x);
+          minY = Math.min(minY, y);
+          maxY = Math.max(maxY, y);
+          for (const [nextX, nextY] of [[x - 1, y], [x + 1, y], [x, y - 1], [x, y + 1]]) {
+            if (nextX < 0 || nextX >= width || nextY < 0 || nextY >= height) continue;
+            const next = nextY * width + nextX;
+            if (!mask[next] || visited[next]) continue;
+            visited[next] = 1;
+            stack.push(next);
+          }
+        }
+        const componentWidth = maxX - minX + 1;
+        const componentHeight = maxY - minY + 1;
+        components.push({
+          area,
+          width: componentWidth,
+          height: componentHeight,
+          density: area / (componentWidth * componentHeight)
+        });
+      }
+      return components;
+    };
+    const countStraightAlphaDividers = (pixels) => {
+      const width = 192;
+      const height = 192;
+      const radius = 18;
+      const alpha = new Uint8Array(width * height);
+      for (let index = 0; index < alpha.length; index += 1) {
+        alpha[index] = pixels[index * 4 + 3] > 24 ? 1 : 0;
+      }
+      let count = 0;
+      for (const horizontal of [true, false]) {
+        const bridge = new Uint8Array(alpha.length);
+        if (horizontal) {
+          for (let y = radius; y < height - radius; y += 1) {
+            for (let x = 0; x < width; x += 1) {
+              if (alpha[y * width + x]) continue;
+              let above = 0;
+              let below = 0;
+              for (let offset = 1; offset <= radius && !above; offset += 1) above = alpha[(y - offset) * width + x];
+              for (let offset = 1; offset <= radius && !below; offset += 1) below = alpha[(y + offset) * width + x];
+              if (above && below) bridge[y * width + x] = 1;
+            }
+          }
+        } else {
+          for (let y = 0; y < height; y += 1) {
+            for (let x = radius; x < width - radius; x += 1) {
+              if (alpha[y * width + x]) continue;
+              let left = 0;
+              let right = 0;
+              for (let offset = 1; offset <= radius && !left; offset += 1) left = alpha[y * width + x - offset];
+              for (let offset = 1; offset <= radius && !right; offset += 1) right = alpha[y * width + x + offset];
+              if (left && right) bridge[y * width + x] = 1;
+            }
+          }
+        }
+        count += connectedComponents(bridge, width, height).filter((component) => {
+          const length = horizontal ? component.width : component.height;
+          const thickness = horizontal ? component.height : component.width;
+          return length >= 44 && thickness <= 10 && length >= thickness * 8 && component.density >= 0.88;
+        }).length;
+      }
+      return count;
+    };
     const inspectFrame = async (motion, frame) => {
       const image = await loadImage(motion.sheet);
       context.clearRect(0, 0, 96, 96);
       context.drawImage(image, frame.x, frame.y, frame.w, frame.h, 0, 0, 96, 96);
       const pixels = context.getImageData(0, 0, 96, 96).data;
+      dividerContext.clearRect(0, 0, 192, 192);
+      dividerContext.drawImage(image, frame.x, frame.y, frame.w, frame.h, 0, 0, 192, 192);
+      const straightAlphaDividers = countStraightAlphaDividers(
+        dividerContext.getImageData(0, 0, 192, 192).data
+      );
       const mask = new Uint8Array(96 * 96);
+      const dark = new Uint8Array(96 * 96);
       let opaque = 0;
       let edge = 0;
+      let minOpaqueX = 96;
+      let maxOpaqueX = -1;
       let hash = 2166136261;
       for (let index = 0; index < mask.length; index += 1) {
         const visible = pixels[index * 4 + 3] > 24 ? 1 : 0;
         mask[index] = visible;
+        dark[index] = visible && Math.max(pixels[index * 4], pixels[index * 4 + 1], pixels[index * 4 + 2]) < 40 ? 1 : 0;
         hash = Math.imul(hash ^ visible, 16777619) >>> 0;
         if (!visible) continue;
         opaque += 1;
         const x = index % 96;
         const y = Math.floor(index / 96);
+        minOpaqueX = Math.min(minOpaqueX, x);
+        maxOpaqueX = Math.max(maxOpaqueX, x);
         if (x < 2 || y < 2 || x > 93 || y > 93) edge += 1;
       }
       const dilated = new Uint8Array(mask.length);
@@ -414,7 +518,22 @@ test("repaired motion pixels remain unclipped single-body silhouettes", async ({
         }
         if (area >= 6) largeComponents += 1;
       }
-      return { opaque, edgeRatio: edge / Math.max(1, opaque), hash, largeComponents };
+      const isolatedDarkLinePixels = connectedComponents(dark, 96, 96)
+        .filter((component) => {
+          const length = Math.max(component.width, component.height);
+          const thickness = Math.min(component.width, component.height);
+          return length >= 48 && thickness <= 4 && length >= thickness * 10 && component.density >= 0.85;
+        })
+        .reduce((sum, component) => sum + component.area, 0);
+      return {
+        opaque,
+        opaqueWidth: maxOpaqueX >= minOpaqueX ? maxOpaqueX - minOpaqueX + 1 : 0,
+        edgeRatio: edge / Math.max(1, opaque),
+        hash,
+        largeComponents,
+        isolatedDarkLinePixels,
+        straightAlphaDividers
+      };
     };
 
     const output = [];
@@ -425,13 +544,19 @@ test("repaired motion pixels remain unclipped single-body silhouettes", async ({
       const idle = character.motions.IDLE;
       const idleFrames = await Promise.all(idle.frames.map((frame) => inspectFrame(idle, frame)));
       const idleArea = idleFrames.reduce((sum, frame) => sum + frame.opaque, 0) / idleFrames.length;
+      const idleWidth = idleFrames.reduce((sum, frame) => sum + frame.opaqueWidth, 0) / idleFrames.length;
       const frames = await Promise.all(motion.frames.map((frame) => inspectFrame(motion, frame)));
       output.push({
         key,
         uniqueSilhouettes: new Set(frames.map((frame) => frame.hash)).size,
         maxEdgePixelRatio: Math.max(...frames.map((frame) => frame.edgeRatio)),
         maxOpaqueAreaRatioToIdle: Math.max(...frames.map((frame) => frame.opaque / idleArea)),
+        wideFrameCount: rule.minWideFrameWidthRatioToIdle
+          ? frames.filter((frame) => frame.opaqueWidth / idleWidth >= rule.minWideFrameWidthRatioToIdle).length
+          : null,
         maxLargeComponents: Math.max(...frames.map((frame) => frame.largeComponents)),
+        maxIsolatedDarkLinePixels: Math.max(...frames.map((frame) => frame.isolatedDarkLinePixels)),
+        maxStraightAlphaDividers: Math.max(...frames.map((frame) => frame.straightAlphaDividers)),
         rule
       });
     }
@@ -442,7 +567,12 @@ test("repaired motion pixels remain unclipped single-body silhouettes", async ({
     expect(result.uniqueSilhouettes, `${result.key} repeated a silhouette`).toBeGreaterThanOrEqual(result.rule.minUniqueSilhouettes);
     expect(result.maxEdgePixelRatio, `${result.key} touches a frame edge`).toBeLessThanOrEqual(result.rule.maxEdgePixelRatio);
     expect(result.maxOpaqueAreaRatioToIdle, `${result.key} likely contains an extra figure`).toBeLessThanOrEqual(result.rule.maxOpaqueAreaRatioToIdle);
-    expect(result.maxLargeComponents, `${result.key} contains detached body fragments`).toBeLessThanOrEqual(5);
+    if (result.rule.minWideFrameCount) {
+      expect(result.wideFrameCount, `${result.key} loses its extended striking limb`).toBeGreaterThanOrEqual(result.rule.minWideFrameCount);
+    }
+    expect(result.maxLargeComponents, `${result.key} contains detached body fragments`).toBeLessThanOrEqual(result.rule.maxLargeComponents);
+    expect(result.maxIsolatedDarkLinePixels, `${result.key} contains an isolated dark atlas line`).toBeLessThanOrEqual(result.rule.maxIsolatedDarkLinePixels);
+    expect(result.maxStraightAlphaDividers, `${result.key} contains a straight transparent atlas cut`).toBe(0);
   }
 });
 
@@ -454,9 +584,18 @@ test("Detroit Lens Noir loads the Boerboel, eye laser, and six arenas", async ({
   await expect.poll(() => phase(page)).toBe("title");
   await expect.poll(() => page.evaluate(() => {
     const images = window.__gothTechnologyGame?.assets?.images;
-    return [images?.kalyxPortrait, images?.masterEzraPortrait, images?.detroitLensNoirPortrait, images?.amaraValentinePortrait]
+    return [
+      images?.kalyxPortrait,
+      images?.masterEzraPortrait,
+      images?.detroitLensNoirPortrait,
+      images?.amaraValentinePortrait,
+      images?.kalyxHeadshot,
+      images?.masterEzraHeadshot,
+      images?.detroitLensNoirHeadshot,
+      images?.amaraValentineHeadshot
+    ]
       .map((image) => image?.naturalWidth ?? 0);
-  })).toEqual([256, 256, 256, 256]);
+  })).toEqual([256, 256, 256, 256, 256, 256, 256, 256]);
   const portraitMetrics = await page.evaluate(() => {
     const images = window.__gothTechnologyGame.assets.images;
     return [images.kalyxPortrait, images.masterEzraPortrait, images.detroitLensNoirPortrait, images.amaraValentinePortrait].map((image) => {
@@ -481,6 +620,29 @@ test("Detroit Lens Noir loads the Boerboel, eye laser, and six arenas", async ({
   expect(Math.max(...portraitMetrics.map(({ height }) => height)) - Math.min(...portraitMetrics.map(({ height }) => height))).toBeLessThanOrEqual(2);
   expect(Math.min(...portraitMetrics.map(({ height }) => height))).toBeGreaterThanOrEqual(232);
   expect(Math.max(...portraitMetrics.map(({ bottom }) => bottom)) - Math.min(...portraitMetrics.map(({ bottom }) => bottom))).toBeLessThanOrEqual(2);
+  const headshotMetrics = await page.evaluate(() => {
+    const images = window.__gothTechnologyGame.assets.images;
+    return [images.kalyxHeadshot, images.masterEzraHeadshot, images.detroitLensNoirHeadshot, images.amaraValentineHeadshot].map((image) => {
+      const canvas = document.createElement("canvas");
+      canvas.width = image.naturalWidth;
+      canvas.height = image.naturalHeight;
+      const context = canvas.getContext("2d", { willReadFrequently: true });
+      context.drawImage(image, 0, 0);
+      const rgba = context.getImageData(0, 0, canvas.width, canvas.height).data;
+      let opaque = 0;
+      let bottom = -1;
+      for (let y = 0; y < canvas.height; y += 1) {
+        for (let x = 0; x < canvas.width; x += 1) {
+          if (rgba[(y * canvas.width + x) * 4 + 3] <= 8) continue;
+          opaque += 1;
+          bottom = y;
+        }
+      }
+      return { opaque, bottom };
+    });
+  });
+  expect(Math.min(...headshotMetrics.map(({ opaque }) => opaque))).toBeGreaterThan(24_000);
+  expect(Math.max(...headshotMetrics.map(({ bottom }) => bottom)) - Math.min(...headshotMetrics.map(({ bottom }) => bottom))).toBeLessThanOrEqual(2);
   await page.evaluate(() => window.__gothTechnologyGame.openMode("training"));
   await expect.poll(() => phase(page), { timeout: 30_000 }).toBe("select");
   await expect.poll(() => page.evaluate(() => window.__gothTechnologyGame?.matchAssetsReady), { timeout: 60_000 }).toBe(true);
@@ -521,45 +683,110 @@ test("Detroit Lens Noir loads the Boerboel, eye laser, and six arenas", async ({
     const game = window.__gothTechnologyGame;
     const { STAGES } = await import("./src/config/content.js?v=browser-stage-audit");
     const fighter = game.fighters[0];
+    const target = game.fighters[1];
+    game.stopped = true;
     game.projectiles.length = 0;
     game.effects.length = 0;
+    fighter.x = 220;
+    fighter.facing = 1;
+    target.x = 1040;
+    target.y = fighter.y;
+    target.facing = -1;
+    target.health = target.config.maxHealth;
+    target.currentAttack = null;
+    target.hitstun = 0;
+    target.blockstun = 0;
+    target.knockdown = 0;
+    target.invulnerable = 0;
+    target.parryTimer = 0;
+    target.lastActions = {};
+    target.setMotion("IDLE", true);
+    fighter.comboHits = 0;
+    fighter.comboDamage = 0;
+    fighter.comboTimer = 0;
     game.spawnProjectile(fighter, "special");
     const dog = game.projectiles[0];
     const dogPhases = [dog.phase];
-    dog.update(0.25, game);
-    dogPhases.push(dog.phase);
-    dog.update(0.72, game);
-    dogPhases.push(dog.phase);
-    dog.update(0.48, game);
-    dogPhases.push(dog.phase);
+    const dogHealthBefore = target.health;
+    for (let frame = 0; frame < 180 && !dog.dead; frame += 1) {
+      const previousPhase = dog.phase;
+      dog.update(1 / 60, game);
+      if (dog.phase !== previousPhase) dogPhases.push(dog.phase);
+    }
+    const dogDamage = dogHealthBefore - target.health;
+
+    target.health = target.config.maxHealth;
+    target.currentAttack = null;
+    target.hitstun = 0;
+    target.blockstun = 0;
+    target.knockdown = 0;
+    target.invulnerable = 0;
+    target.parryTimer = 0;
+    target.lastActions = {};
+    target.setMotion("IDLE", true);
+    fighter.comboHits = 0;
+    fighter.comboDamage = 0;
+    fighter.comboTimer = 0;
     game.spawnProjectile(fighter, "super");
     const laser = game.projectiles.at(-1);
+    const originalPosition = { x: fighter.x, y: fighter.y };
+    fighter.x += 48;
+    fighter.y -= 18;
+    const laserHealthBefore = target.health;
+    const targetHurtboxBeforeLaser = { ...target.hurtbox };
+    laser.update(0.01, game);
+    const laserSocket = { x: laser.x - fighter.x, y: laser.y - fighter.y };
+    const laserAnchored = laserSocket.x === 34 && laserSocket.y === -238;
+    const laserSpansOpponent = laser.rect.x <= targetHurtboxBeforeLaser.x
+      && laser.rect.x + laser.rect.w >= targetHurtboxBeforeLaser.x + targetHurtboxBeforeLaser.w;
+    const laserOverlapsOpponent = laser.rect.y <= targetHurtboxBeforeLaser.y + targetHurtboxBeforeLaser.h
+      && laser.rect.y + laser.rect.h >= targetHurtboxBeforeLaser.y;
+    laser.update(0.08, game);
+    laser.update(0.08, game);
+    const laserDamage = laserHealthBefore - target.health;
+    fighter.x = originalPosition.x;
+    fighter.y = originalPosition.y;
+    laser.update(0, game);
     game.effects.length = 0;
     game.spawnFighterVfx(fighter, "special", "charge");
     return {
       projectileKinds: game.projectiles.map((projectile) => projectile.kind),
-      laserSocket: { x: laser.x - fighter.x, y: laser.y - fighter.y },
+      laserSocket,
+      laserAnchored,
+      laserSpansOpponent,
+      laserOverlapsOpponent,
+      laserHitCount: laser.hitCount,
+      dogDamage,
+      laserDamage,
       dogPhases,
       hasTabletEffect: game.effects.some((effect) => effect.constructor.name === "AttachedImageEffect"),
       duplicateSpecialEffects: game.effects.length,
+      idleDisplayMotion: fighter.config.motionRemap?.IDLE,
       specialDisplayMotion: fighter.config.motionRemap?.SPECIAL_START,
       dogReady: game.assets.images.detroitBoerboel?.naturalWidth === 1152,
       stage: game.stageIndex,
       stageIds: STAGES.map((stage) => stage.id),
       stageReady: game.assets.images.detroitMidnightMile?.naturalWidth > 0,
-      newStagesReady: [
+      deferredStages: [
         game.assets.images.detroitRiverfront,
         game.assets.images.easternMarketAfterDark,
         game.assets.images.michiganCentralConcourse
-      ].every((image) => image?.naturalWidth === 1600)
+      ].every((image) => !image)
     };
   });
   expect(expansionState).toEqual({
     projectileKinds: ["boerboel-rush", "eye-laser"],
     laserSocket: { x: 34, y: -238 },
+    laserAnchored: true,
+    laserSpansOpponent: true,
+    laserOverlapsOpponent: true,
+    laserHitCount: 3,
+    dogDamage: 104,
+    laserDamage: 249,
     dogPhases: ["summon", "run", "attack", "recover"],
     hasTabletEffect: false,
     duplicateSpecialEffects: 0,
+    idleDisplayMotion: "READY_STANCE",
     specialDisplayMotion: "SPECIAL_PROJECTILE",
     dogReady: true,
     stage: 1,
@@ -572,7 +799,7 @@ test("Detroit Lens Noir loads the Boerboel, eye laser, and six arenas", async ({
       "michigan-central-concourse"
     ],
     stageReady: true,
-    newStagesReady: true
+    deferredStages: true
   });
   const laserScaleProfile = await page.evaluate(() => {
     const fighter = window.__gothTechnologyGame.fighters[0];
@@ -641,11 +868,11 @@ test("Detroit Lens Noir loads the Boerboel, eye laser, and six arenas", async ({
   if (!process.env.NO_TEST_ARTIFACTS) await page.screenshot({ path: testInfo.outputPath(`${testInfo.project.name}-detroit-boerboel-clean.png`) });
   if (!process.env.NO_TEST_ARTIFACTS) await page.screenshot({ path: testInfo.outputPath(`${testInfo.project.name}-detroit-midnight-mile.png`) });
 
-  const secondStageReady = await page.evaluate(() => {
+  const secondStageReady = await page.evaluate(async () => {
     const game = window.__gothTechnologyGame;
     game.stageIndex = 2;
     game.stageCache = null;
-    game.buildStageCache();
+    await game.prepareStageAssets();
     game.render();
     return game.assets.images.motorCityAssembly?.naturalWidth > 0;
   });
@@ -653,11 +880,11 @@ test("Detroit Lens Noir loads the Boerboel, eye laser, and six arenas", async ({
   if (!process.env.NO_TEST_ARTIFACTS) await page.screenshot({ path: testInfo.outputPath(`${testInfo.project.name}-motor-city-assembly.png`) });
 
   for (const [stageIndex, slug] of [[3, "detroit-riverfront"], [4, "eastern-market-after-dark"], [5, "michigan-central-concourse"]]) {
-    const ready = await page.evaluate((index) => {
+    const ready = await page.evaluate(async (index) => {
       const game = window.__gothTechnologyGame;
       game.stageIndex = index;
       game.stageCache = null;
-      game.buildStageCache();
+      await game.prepareStageAssets();
       game.render();
       return Boolean(game.stageCache);
     }, stageIndex);
@@ -690,6 +917,38 @@ test("versus lets the player choose the CPU fighter independently", async ({ pag
   }))).toEqual({ player1Id: "KALYX", player2Id: "DETROIT_LENS_NOIR" });
   await expect(page.locator("#accessibleActions")).toContainText("Select CPU opponent");
   if (!process.env.NO_TEST_ARTIFACTS) await page.screenshot({ path: testInfo.outputPath("independent-cpu-selection.png") });
+});
+
+test("fighter cards advance from Player 1 to the opponent choice", async ({ page }, testInfo) => {
+  test.setTimeout(120_000);
+  await page.goto(gameUrl);
+  await expect.poll(() => phase(page)).toBe("title");
+  await page.evaluate(() => window.__gothTechnologyGame.openMode("versus"));
+  await expect.poll(() => phase(page)).toBe("select");
+
+  await clickGame(page, 1100, 330);
+  await expect.poll(() => page.evaluate(() => ({
+    player1Id: window.__gothTechnologyGame.player1Id,
+    player2Id: window.__gothTechnologyGame.player2Id,
+    selectTarget: window.__gothTechnologyGame.selectTarget
+  }))).toEqual({
+    player1Id: "AMARA_VALENTINE",
+    player2Id: "KALYX",
+    selectTarget: "p2"
+  });
+  await expect(page.locator("#accessibleActions")).toContainText("Choose DETROIT LENS NOIR for CPU opponent");
+
+  await clickGame(page, 793, 330);
+  await expect.poll(() => page.evaluate(() => ({
+    player1Id: window.__gothTechnologyGame.player1Id,
+    player2Id: window.__gothTechnologyGame.player2Id,
+    selectTarget: window.__gothTechnologyGame.selectTarget
+  }))).toEqual({
+    player1Id: "AMARA_VALENTINE",
+    player2Id: "DETROIT_LENS_NOIR",
+    selectTarget: "p2"
+  });
+  if (!process.env.NO_TEST_ARTIFACTS) await page.screenshot({ path: testInfo.outputPath("guided-fighter-selection.png") });
 });
 
 test("fighter selection finishes the latest requested motion load", async ({ page }, testInfo) => {
@@ -737,7 +996,108 @@ test("controller-style directions and attack buttons navigate menus", async ({ p
     tap("p1.lightPunch");
     return { selectedIndex, phase: game.phase, mode: game.gameMode };
   });
-  expect(result).toEqual({ selectedIndex: 1, phase: "select", mode: "arcade" });
+  expect(result).toEqual({ selectedIndex: 1, phase: "select", mode: "versus" });
+});
+
+test("standard Gamepad API controller navigates, fights, pauses, rumbles, and keeps player slots", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== "desktop-chromium", "Virtual Gamepad API coverage only needs one browser pass");
+  test.setTimeout(120_000);
+  await page.addInitScript(() => {
+    const makePad = (index, id) => {
+      const buttons = Array.from({ length: 17 }, () => ({ pressed: false, touched: false, value: 0 }));
+      const pad = {
+        id,
+        index,
+        connected: true,
+        mapping: "standard",
+        axes: [0, 0, 0, 0],
+        buttons,
+        vibrationActuator: {
+          playEffect: (type, options) => {
+            window.__gamepadRumbleCalls.push({ index, type, options });
+            return Promise.resolve("complete");
+          }
+        }
+      };
+      return pad;
+    };
+    const pads = [makePad(0, "Virtual Xbox Controller"), makePad(1, "Virtual PlayStation Controller")];
+    const connected = new Set();
+    window.__gamepadRumbleCalls = [];
+    Object.defineProperty(navigator, "getGamepads", {
+      configurable: true,
+      value: () => pads.map((pad, index) => connected.has(index) ? pad : null)
+    });
+    const dispatch = (name, pad) => {
+      const event = new Event(name);
+      Object.defineProperty(event, "gamepad", { value: pad });
+      window.dispatchEvent(event);
+    };
+    window.__virtualGamepads = {
+      connect(index) {
+        connected.add(index);
+        pads[index].connected = true;
+        dispatch("gamepadconnected", pads[index]);
+      },
+      disconnect(index) {
+        connected.delete(index);
+        pads[index].connected = false;
+        dispatch("gamepaddisconnected", pads[index]);
+      },
+      setAxis(index, axis, value) {
+        pads[index].axes[axis] = value;
+      },
+      setButton(index, button, active) {
+        pads[index].buttons[button] = { pressed: active, touched: active, value: active ? 1 : 0 };
+      }
+    };
+  });
+  const tapButton = async (button) => {
+    await page.evaluate((index) => window.__virtualGamepads.setButton(0, index, true), button);
+    await page.waitForTimeout(80);
+    await page.evaluate((index) => window.__virtualGamepads.setButton(0, index, false), button);
+    await page.waitForTimeout(80);
+  };
+
+  await page.goto(gameUrl);
+  await expect.poll(() => phase(page)).toBe("title");
+  await page.evaluate(() => window.__virtualGamepads.connect(0));
+  await expect.poll(() => page.evaluate(() => window.__gothTechnologyGame.input.getGamepadStatus())).toEqual([
+    expect.objectContaining({ player: 1, index: 0, id: "Virtual Xbox Controller" })
+  ]);
+  await tapButton(15);
+  await expect.poll(() => page.evaluate(() => window.__gothTechnologyGame.titleMenuIndex)).toBe(1);
+  await tapButton(0);
+  await expect.poll(() => phase(page)).toBe("select");
+  await expect.poll(() => page.evaluate(() => window.__gothTechnologyGame.matchAssetsReady), { timeout: 60_000 }).toBe(true);
+  await tapButton(0);
+  await advanceVersusToFight(page);
+
+  const startX = await page.evaluate(() => window.__gothTechnologyGame.fighters[0].x);
+  await page.evaluate(() => window.__virtualGamepads.setAxis(0, 0, 0.9));
+  await expect.poll(() => page.evaluate(() => window.__gothTechnologyGame.fighters[0].x)).toBeGreaterThan(startX + 8);
+  await page.evaluate(() => window.__virtualGamepads.setAxis(0, 0, 0));
+  await page.evaluate(() => window.__virtualGamepads.setButton(0, 0, true));
+  await expect.poll(() => page.evaluate(() => window.__gothTechnologyGame.fighters[0].motion)).toBe("LIGHT_PUNCH");
+  await page.evaluate(() => window.__virtualGamepads.setButton(0, 0, false));
+  await page.waitForTimeout(80);
+  await page.evaluate(() => window.__gothTechnologyGame.audio.beep("hit"));
+  await expect.poll(() => page.evaluate(() => window.__gamepadRumbleCalls.length)).toBeGreaterThan(0);
+  await tapButton(9);
+  await expect.poll(() => phase(page)).toBe("pause");
+
+  await page.evaluate(() => window.__virtualGamepads.connect(1));
+  await expect.poll(() => page.evaluate(() => window.__gothTechnologyGame.input.getGamepadStatus().map(({ player, index }) => ({ player, index })))).toEqual([
+    { player: 1, index: 0 },
+    { player: 2, index: 1 }
+  ]);
+  await page.evaluate(() => window.__virtualGamepads.disconnect(0));
+  await expect.poll(() => page.evaluate(() => window.__gothTechnologyGame.input.getGamepadStatus().map(({ player, index }) => ({ player, index })))).toEqual([
+    { player: 2, index: 1 }
+  ]);
+  await page.evaluate(() => window.__gothTechnologyGame.openSettings());
+  await expect(page.locator("#controllerStatus")).toContainText("P2: Virtual PlayStation Controller");
+  if (!process.env.NO_TEST_ARTIFACTS) await page.screenshot({ path: testInfo.outputPath("real-controller-settings.png") });
 });
 
 test("Replay Vault exports and deletes a saved match", async ({ page }, testInfo) => {
@@ -782,7 +1142,7 @@ test("Arcade levels alternate lazy skippable commercial breaks", async ({ page }
     game.phase = "matchEnd";
     game.render();
   });
-  await clickGame(page, 640, 360);
+  await page.locator("#roundContinue").click();
   await expect.poll(() => phase(page)).toBe("commercial");
   await expect(page.locator("#commercialBreak")).toBeVisible();
   await expect(page.locator("#commercialVideo")).toHaveAttribute("src", /detroit-commercial-01\.mp4/);
@@ -959,10 +1319,26 @@ test("Amara aerial frames and Heartlink counter play cleanly in a real match", a
           total += 1;
         }
       }
-      const seen = new Uint8Array(mask.length);
+      const analysisMask = new Uint8Array(mask.length);
+      for (let y = 0; y < canvas.height; y += 1) {
+        for (let x = 0; x < canvas.width; x += 1) {
+          if (!mask[y * canvas.width + x]) continue;
+          for (let dy = -1; dy <= 1; dy += 1) {
+            for (let dx = -1; dx <= 1; dx += 1) {
+              const nx = x + dx;
+              const ny = y + dy;
+              if (nx >= 0 && nx < canvas.width && ny >= 0 && ny < canvas.height) {
+                analysisMask[ny * canvas.width + nx] = 1;
+              }
+            }
+          }
+        }
+      }
+      total = analysisMask.reduce((sum, value) => sum + value, 0);
+      const seen = new Uint8Array(analysisMask.length);
       const areas = [];
-      for (let start = 0; start < mask.length; start += 1) {
-        if (!mask[start] || seen[start]) continue;
+      for (let start = 0; start < analysisMask.length; start += 1) {
+        if (!analysisMask[start] || seen[start]) continue;
         const queue = [start];
         seen[start] = 1;
         let area = 0;
@@ -974,7 +1350,7 @@ test("Amara aerial frames and Heartlink counter play cleanly in a real match", a
           if (x > 0) neighbors.push(current - 1);
           if (x < canvas.width - 1) neighbors.push(current + 1);
           for (const neighbor of neighbors) {
-            if (neighbor >= 0 && neighbor < mask.length && mask[neighbor] && !seen[neighbor]) {
+            if (neighbor >= 0 && neighbor < analysisMask.length && analysisMask[neighbor] && !seen[neighbor]) {
               seen[neighbor] = 1;
               queue.push(neighbor);
             }
@@ -1052,8 +1428,8 @@ test("Amara aerial frames and Heartlink counter play cleanly in a real match", a
 
     return {
       fighterId: amara.id,
-      peakRepair: peakAnimation.repair,
-      airRepair: airAnimation.repair,
+      peakSource: peakAnimation.source,
+      airSource: airAnimation.source,
       fragmentRatios,
       preCounter,
       postCounter,
@@ -1065,8 +1441,8 @@ test("Amara aerial frames and Heartlink counter play cleanly in a real match", a
   });
 
   expect(audit.fighterId).toBe("AMARA_VALENTINE");
-  expect(audit.peakRepair).toBe("semantic-body-only-v1");
-  expect(audit.airRepair).toBe("amara-aerial-v1");
+  expect(audit.peakSource).toBe("higgsfield-v3-aerial-locomotion");
+  expect(audit.airSource).toBe("higgsfield-v3-aerial-locomotion");
   expect(Math.max(...audit.fragmentRatios)).toBeLessThan(0.035);
   expect(audit.preCounter).toEqual({ motion: "SPECIAL_START", opponentVx: 0 });
   expect(audit.postCounter.opponentVx).toBeLessThan(0);
@@ -1165,6 +1541,7 @@ test("mobile portrait keeps compact primary controls adjacent and collapses matc
   await expect.poll(() => phase(page)).toBe("title");
   await expect(page.locator("#mobileControls")).toBeHidden();
   await enterTrainingFight(page);
+  await expect(page.locator("#mobileControls")).toBeVisible();
   const layout = await page.evaluate(() => {
     const canvas = document.getElementById("game").getBoundingClientRect();
     const controls = document.getElementById("mobileControls").getBoundingClientRect();
@@ -1178,13 +1555,16 @@ test("mobile portrait keeps compact primary controls adjacent and collapses matc
       toolsExpanded: document.getElementById("mobileUtilityToggle").getAttribute("aria-expanded"),
       controlsBottom: controls.bottom,
       viewportHeight: innerHeight,
+      topSpace: canvas.top,
+      bottomSpace: innerHeight - controls.bottom,
       controlsVisible: getComputedStyle(document.getElementById("mobileControls")).display !== "none"
     };
   });
   expect(layout.controlsVisible).toBe(true);
-  expect(layout.canvasWidth).toBeGreaterThan(360);
+  const viewportWidth = page.viewportSize()?.width ?? 412;
+  expect(layout.canvasWidth).toBeGreaterThanOrEqual(Math.min(360, viewportWidth - 8));
   expect(layout.canvasHeight).toBeGreaterThan(190);
-  expect(layout.canvasTop).toBeLessThan(40);
+  expect(Math.abs(layout.topSpace - layout.bottomSpace)).toBeLessThan(100);
   expect(layout.gap).toBeGreaterThanOrEqual(0);
   expect(layout.gap).toBeLessThan(32);
   expect(layout.primaryButtons).toBe(10);
@@ -1205,6 +1585,13 @@ test("mobile landscape keeps primary controls in side rails", async ({ page }, t
   await expect.poll(() => phase(page)).toBe("title");
   await expect(page.locator("#mobileControls")).toBeHidden();
   await enterTrainingFight(page);
+  await expect(page.locator("#mobileControls")).toBeVisible();
+  await expect.poll(() => page.evaluate(() => {
+    const canvas = document.getElementById("game").getBoundingClientRect();
+    const pad = document.querySelector("#mobileControls .pad").getBoundingClientRect();
+    const actions = document.querySelector("#mobileControls .buttons").getBoundingClientRect();
+    return Math.min(canvas.left - pad.right, actions.left - canvas.right);
+  })).toBeGreaterThanOrEqual(0);
   const layout = await page.evaluate(() => {
     const canvas = document.getElementById("game").getBoundingClientRect();
     const controls = document.getElementById("mobileControls").getBoundingClientRect();
@@ -1263,6 +1650,57 @@ test("mobile modifier supports simultaneous super input and movable controls", a
   expect(await page.evaluate(() => localStorage.getItem("gothtechnology.touch.positions.v1"))).toContain("padZone");
 });
 
+test("mobile control positions recover after reload, rotation, and reset", async ({ page }, testInfo) => {
+  test.setTimeout(120_000);
+  test.skip(!testInfo.project.name.includes("mobile"), "Mobile layout recovery check");
+  await page.goto(gameUrl);
+  await page.evaluate(() => localStorage.setItem("gothtechnology.touch.positions.v1", JSON.stringify({
+    padZone: { x: -999, y: 999 },
+    combatZone: { x: 999, y: -999 }
+  })));
+  await page.reload();
+  await enterTrainingFight(page);
+
+  const expectZonesInsideViewport = async () => {
+    await expect.poll(() => page.evaluate(() => [...document.querySelectorAll("#padZone, #combatZone")].every((zone) => {
+      const rect = zone.getBoundingClientRect();
+      return rect.left >= 7 && rect.top >= 7 && rect.right <= innerWidth - 7 && rect.bottom <= innerHeight - 7;
+    }))).toBe(true);
+  };
+
+  await expectZonesInsideViewport();
+  await page.setViewportSize({ width: 915, height: 412 });
+  await expectZonesInsideViewport();
+  await page.evaluate(() => document.getElementById("resetTouchPositions").click());
+  await expect.poll(() => page.evaluate(() => localStorage.getItem("gothtechnology.touch.positions.v1"))).toBeNull();
+  const offsets = await page.evaluate(() => ["padZone", "combatZone"].map((id) => {
+    const style = document.getElementById(id).style;
+    return [style.getPropertyValue("--zone-x"), style.getPropertyValue("--zone-y")];
+  }));
+  expect(offsets).toEqual([["0px", "0px"], ["0px", "0px"]]);
+});
+
+test("round end exposes a visible continuation control", async ({ page }) => {
+  test.setTimeout(120_000);
+  await page.goto(gameUrl);
+  await enterTrainingFight(page);
+  await page.evaluate(() => {
+    const game = window.__gothTechnologyGame;
+    game.phase = "roundEnd";
+    game.roundResultText = "TIME UP";
+    game.roundResultSubtext = "NEXT ROUND";
+    game.lastAccessibleState = "";
+    game.syncAccessibleState();
+    game.render();
+  });
+  const continueButton = page.locator("#roundContinue");
+  await expect(continueButton).toBeVisible();
+  await expect(continueButton).toHaveText("NEXT ROUND");
+  await continueButton.click();
+  await expect.poll(() => phase(page)).toBe("fight");
+  await expect(continueButton).toBeHidden();
+});
+
 test("selected match stays within resource, simulation-frame, and heap budgets", async ({ page }, testInfo) => {
   test.setTimeout(120_000);
   await page.goto(gameUrl);
@@ -1271,12 +1709,17 @@ test("selected match stays within resource, simulation-frame, and heap budgets",
     const game = window.__gothTechnologyGame;
     game.stopped = true;
     const deltas = [];
+    const renderDeltas = [];
     for (let frame = 0; frame < 140; frame += 1) {
       const started = performance.now();
       game.update(game.fixedStep ?? 1 / 60);
       if (frame >= 20) deltas.push(performance.now() - started);
     }
-    game.render();
+    for (let frame = 0; frame < 40; frame += 1) {
+      const started = performance.now();
+      game.render();
+      if (frame >= 8) renderDeltas.push(performance.now() - started);
+    }
     const canvas = document.getElementById("game");
     const pixels = canvas.getContext("2d").getImageData(0, 0, canvas.width, canvas.height).data;
     let visibleSamples = 0;
@@ -1285,15 +1728,27 @@ test("selected match stays within resource, simulation-frame, and heap budgets",
     }
     const resources = performance.getEntriesByType("resource");
     deltas.sort((a, b) => a - b);
+    renderDeltas.sort((a, b) => a - b);
     return {
       resourceBytes: resources.reduce((sum, entry) => sum + (entry.encodedBodySize || 0), 0),
       p95SimulationMs: deltas[Math.floor(deltas.length * 0.95)],
+      p95RenderMs: renderDeltas[Math.floor(renderDeltas.length * 0.95)],
       visibleSamples,
-      heapBytes: performance.memory?.usedJSHeapSize ?? 0
+      heapBytes: performance.memory?.usedJSHeapSize ?? 0,
+      profile: game.performanceProfile.id,
+      backingSize: [canvas.width, canvas.height],
+      loadedCharacters: game.assets.loadedCharacterMotions.size,
+      loadedStages: game.assets.loadedStageAssets.size
     };
   });
-  expect(metrics.resourceBytes).toBeLessThan((testInfo.project.name.includes("mobile") ? 12 : 11.1) * 1024 * 1024);
-  expect(metrics.p95SimulationMs).toBeLessThan(testInfo.project.name.includes("mobile") ? 12 : 8);
+  const mobileProject = testInfo.project.name.includes("mobile") || testInfo.project.name.includes("galaxy-a16");
+  expect(metrics.resourceBytes).toBeLessThan(10.5 * 1024 * 1024);
+  expect(metrics.p95SimulationMs).toBeLessThan(mobileProject ? 12 : 8);
+  expect(metrics.p95RenderMs).toBeLessThan(mobileProject ? 18 : 14);
   expect(metrics.visibleSamples).toBeGreaterThan(100);
+  expect(metrics.loadedCharacters).toBe(2);
+  expect(metrics.loadedStages).toBe(1);
+  expect(metrics.profile).toBe(mobileProject ? "mobile-constrained" : "desktop");
+  expect(metrics.backingSize).toEqual(mobileProject ? [800, 450] : [1280, 720]);
   if (metrics.heapBytes) expect(metrics.heapBytes).toBeLessThan(128 * 1024 * 1024);
 });

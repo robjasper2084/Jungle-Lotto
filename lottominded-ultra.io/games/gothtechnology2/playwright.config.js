@@ -23,6 +23,23 @@ export default defineConfig({
     {
       name: "mobile-chromium",
       use: { ...devices["Pixel 7"] }
+    },
+    {
+      name: "mobile-galaxy-a16",
+      grep: /cross-browser smoke|mobile portrait|mobile landscape|mobile modifier|mobile control positions|selected match stays/,
+      use: {
+        ...devices["Pixel 7"],
+        viewport: { width: 360, height: 780 },
+        screen: { width: 360, height: 780 },
+        deviceScaleFactor: 3,
+        hasTouch: true,
+        isMobile: true
+      }
+    },
+    {
+      name: "desktop-webkit",
+      grep: /cross-browser smoke/,
+      use: { ...devices["Desktop Safari"], viewport: { width: 1280, height: 720 } }
     }
   ]
 });

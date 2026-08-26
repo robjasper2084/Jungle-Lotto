@@ -1,0 +1,48 @@
+{
+  "version": "front-roster-headshots-v1",
+  "provider": "Higgsfield",
+  "generationModel": "nano_banana_2",
+  "backgroundModel": "image_background_remover",
+  "view": "front-facing",
+  "canvas": {
+    "width": 256,
+    "height": 256,
+    "fullBodyHeight": 236,
+    "fullBodyBottom": 249,
+    "anchor": "bottom-center"
+  },
+  "fighters": {
+    "KALYX": {
+      "portrait": "kalyx-idle.webp",
+      "headshot": "kalyx-headshot.webp",
+      "portraitJob": "25a4f121-b160-48b7-97d9-4c031a76d6a2",
+      "headshotJob": "3893044b-1f2e-4e06-8976-2c42d304ee6e",
+      "portraitCleanupJob": "dc43315e-dd50-4138-aa37-355cd1a7efa9",
+      "headshotCleanupJob": "76b80472-b79b-4b1a-be59-f343b0e5374c"
+    },
+    "MASTER_EZRA": {
+      "portrait": "master-ezra-idle.webp",
+      "headshot": "master-ezra-headshot.webp",
+      "portraitJob": "2e3d8d81-48a2-44f5-866c-fc37040bdad4",
+      "headshotJob": "bcfcadc3-7733-442f-b15a-a4027aa59291",
+      "portraitCleanupJob": "7934aaeb-6823-4891-937c-64149fae57a9",
+      "headshotCleanupJob": "1fcf5484-ae48-4d8d-bc1b-9aa701f80b7d"
+    },
+    "DETROIT_LENS_NOIR": {
+      "portrait": "detroit-lens-noir-idle.webp",
+      "headshot": "detroit-lens-noir-headshot.webp",
+      "portraitJob": "4decb73c-3586-4a00-9d08-0b432e054ac5",
+      "headshotJob": "6773703f-3628-484d-a8e0-f7e55740771c",
+      "portraitCleanupJob": "358c855f-452a-4496-a44e-403571eade13",
+      "headshotCleanupJob": "e563e53b-5be6-41cc-be1b-d6bf7b603830"
+    },
+    "AMARA_VALENTINE": {
+      "portrait": "amara-valentine-idle.webp",
+      "headshot": "amara-valentine-headshot.webp",
+      "portraitJob": "22ff2925-1f86-4aa4-9bbc-b283d2fd38da",
+      "headshotJob": "ca40034f-5770-4547-bcd2-8ea341394ce4",
+      "portraitCleanupJob": "69dc8e27-c484-4930-af76-75a8b714af1c",
+      "headshotCleanupJob": "b0c68e45-7d6e-4a63-ae3e-a43485963c6a"
+    }
+  }
+}

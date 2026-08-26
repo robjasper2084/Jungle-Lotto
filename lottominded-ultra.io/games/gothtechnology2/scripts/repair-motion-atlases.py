@@ -14,6 +14,12 @@ CELL_SIZE = 192
 ALPHA_THRESHOLD = 24
 PADDING = 5
 
+PROTECTED_GENERATED_MOTIONS = {
+    "KALYX": {"WALK_BACK", "DASH_FORWARD", "DASH_BACK", "JUMP_START", "JUMP_RISE", "JUMP_PEAK", "JUMP_FALL", "LANDING"},
+    "MASTER_EZRA": {"JUMP_START", "JUMP_RISE", "JUMP_PEAK", "JUMP_FALL", "LANDING"},
+    "AMARA_VALENTINE": {"RUN_BACK", "RUN_FORWARD", "DASH_FORWARD", "JUMP_START", "JUMP_RISE", "JUMP_PEAK", "JUMP_FALL", "LANDING"},
+}
+
 
 def pose(source_motion: str, frame: int, *, angle: float = 0, scale_x: float = 1, scale_y: float = 1,
          shift_x: int = 0, shift_y: int = 0) -> dict:
@@ -285,6 +291,12 @@ def main() -> None:
         character = manifest["characters"][character_id]
         for motion_name, repair in repairs.items():
             motion = character["motions"][motion_name]
+            if motion_name in PROTECTED_GENERATED_MOTIONS.get(character_id, set()):
+                if motion.get("source") != "higgsfield-v3-aerial-locomotion":
+                    raise RuntimeError(
+                        f"{character_id}/{motion_name} must be restored with import-higgsfield-v3.py"
+                    )
+                continue
             frames = [compose_body_only(source_frame(manifest, original_sheets, character_id, spec), spec)
                       for spec in repair["frames"]]
             if len({alpha_hash(frame) for frame in frames}) != 6:

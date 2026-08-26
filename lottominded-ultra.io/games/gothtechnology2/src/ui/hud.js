@@ -1,7 +1,7 @@
-import { CANVAS_HEIGHT, CANVAS_WIDTH, COLORS, ROUND_SECONDS } from "../config/constants.js?v=semantic-motion-v2";
-import { FIGHTERS } from "../config/assets.js?v=semantic-motion-v2";
-import { GAME_MODES, ROSTER_CARD_LAYOUT, ROSTER_IDS, STAGES } from "../config/content.js?v=semantic-motion-v2";
-import { drawSpriteFrame } from "../engine/assets.js?v=semantic-motion-v2";
+import { CANVAS_HEIGHT, CANVAS_WIDTH, COLORS, ROUND_SECONDS } from "../config/constants.js?v=galaxy-a16-performance-v1";
+import { FIGHTERS } from "../config/assets.js?v=galaxy-a16-performance-v1";
+import { GAME_MODES, GAME_SELECT_CARD_LAYOUT, ROSTER_CARD_LAYOUT, ROSTER_IDS, STAGES } from "../config/content.js?v=galaxy-a16-performance-v1";
+import { drawSpriteFrame } from "../engine/assets.js?v=galaxy-a16-performance-v1";
 
 const FUTURE = {
   cyan: "#67e8ff",
@@ -110,7 +110,7 @@ const drawFutureButton = (ctx, x, y, w, h, kicker, label, tone, background = nul
   ctx.restore();
 };
 
-const drawSelectionTarget = (ctx, x, y, w, h, role, fighterName, active, tone) => {
+const drawSelectionTarget = (ctx, x, y, w, h, step, role, fighterName, active, tone, status) => {
   drawAngularPanel(
     ctx,
     x,
@@ -119,25 +119,35 @@ const drawSelectionTarget = (ctx, x, y, w, h, role, fighterName, active, tone) =
     h,
     active ? "rgba(7, 25, 32, 0.98)" : "rgba(2, 8, 12, 0.88)",
     active ? tone : "rgba(126, 160, 174, 0.42)",
-    active ? 2 : 1,
-    8
+    active ? 3 : 1.25,
+    10
   );
   ctx.save();
   ctx.textBaseline = "middle";
   ctx.textAlign = "left";
   ctx.fillStyle = active ? tone : FUTURE.muted;
-  ctx.font = `900 11px ${HUD_MONO}`;
-  ctx.fillText(role, x + 16, y + h / 2);
+  ctx.fillRect(x + 14, y + 10, 34, h - 20);
+  ctx.fillStyle = active ? "#02070a" : FUTURE.panel;
+  ctx.font = `900 16px ${HUD_FONT}`;
+  ctx.textAlign = "center";
+  ctx.fillText(step, x + 31, y + h / 2 + 1);
+  ctx.textAlign = "left";
+  ctx.fillStyle = active ? tone : FUTURE.muted;
+  ctx.font = `900 10px ${HUD_MONO}`;
+  ctx.fillText(role, x + 60, y + 16);
+  ctx.textAlign = "right";
+  ctx.fillText(status, x + w - 18, y + 16);
+  ctx.textAlign = "left";
   ctx.fillStyle = active ? FUTURE.white : "rgba(238, 250, 255, 0.66)";
-  let fontSize = 12;
+  let fontSize = 16;
   ctx.font = `900 ${fontSize}px ${HUD_FONT}`;
-  while (fontSize > 9 && ctx.measureText(fighterName).width > w - 92) {
+  while (fontSize > 11 && ctx.measureText(fighterName).width > w - 102) {
     fontSize -= 1;
     ctx.font = `900 ${fontSize}px ${HUD_FONT}`;
   }
-  ctx.fillText(fighterName, x + 76, y + h / 2);
+  ctx.fillText(fighterName, x + 60, y + 38);
   ctx.fillStyle = active ? tone : FUTURE.muted;
-  ctx.fillRect(x + w - 28, y + h / 2 - 1, 12, 2);
+  ctx.fillRect(x + 60, y + h - 5, active ? w - 78 : 30, 2);
   ctx.restore();
 };
 
@@ -324,11 +334,11 @@ export const drawTitle = (ctx, game) => {
   footer.addColorStop(1, "rgba(2, 7, 11, 0.96)");
   ctx.fillStyle = footer;
   ctx.fillRect(0, 504, CANVAS_WIDTH, 216);
-  drawTitleAction(ctx, 124, 552, 312, 46, "01", "VERSUS", FUTURE.red, game.titleMenuIndex === 0);
-  drawTitleAction(ctx, 484, 552, 312, 46, "02", "ARCADE", FUTURE.amber, game.titleMenuIndex === 1);
-  drawTitleAction(ctx, 844, 552, 312, 46, "03", "TRAINING", FUTURE.cyan, game.titleMenuIndex === 2);
-  drawTitleAction(ctx, 124, 610, 312, 46, "04", "REPLAY", FUTURE.cyan, game.titleMenuIndex === 3);
-  drawTitleAction(ctx, 484, 610, 312, 46, "05", "GAME SELECT", FUTURE.amber, game.titleMenuIndex === 4);
+  drawTitleAction(ctx, 124, 552, 312, 46, "01", "GAME SELECT", FUTURE.amber, game.titleMenuIndex === 0);
+  drawTitleAction(ctx, 484, 552, 312, 46, "02", "VERSUS", FUTURE.red, game.titleMenuIndex === 1);
+  drawTitleAction(ctx, 844, 552, 312, 46, "03", "ARCADE", FUTURE.amber, game.titleMenuIndex === 2);
+  drawTitleAction(ctx, 124, 610, 312, 46, "04", "TRAINING", FUTURE.cyan, game.titleMenuIndex === 3);
+  drawTitleAction(ctx, 484, 610, 312, 46, "05", "REPLAY", FUTURE.cyan, game.titleMenuIndex === 4);
   drawTitleAction(ctx, 844, 610, 312, 46, "06", "SETTINGS", FUTURE.red, game.titleMenuIndex === 5);
   ctx.fillStyle = FUTURE.muted;
   ctx.font = `700 10px ${HUD_MONO}`;
@@ -346,7 +356,7 @@ export const drawGameSelect = (ctx, game, games) => {
   ctx.textAlign = "left";
   ctx.fillText("LM-84 // ENTERTAINMENT NETWORK", 34, 34);
   ctx.textAlign = "right";
-  ctx.fillText("2 DEPLOYABLE TITLES // LINK READY", 1246, 34);
+  ctx.fillText(`${games.length} DEPLOYABLE TITLES // LINK READY`, 1246, 34);
   ctx.textAlign = "center";
   ctx.fillStyle = FUTURE.white;
   ctx.font = `900 42px ${HUD_FONT}`;
@@ -355,14 +365,28 @@ export const drawGameSelect = (ctx, game, games) => {
   ctx.font = `800 12px ${HUD_MONO}`;
   ctx.fillText("SELECT SOFTWARE // LEFT-RIGHT NAVIGATE // A OR ENTER DEPLOYS", 640, 112);
 
-  drawGameCard(ctx, 88, 154, 512, 396, games[0], game.gameSelectIndex === 0, "fighter", game.assets?.images?.[games[0].imageKey]);
-  drawGameCard(ctx, 680, 154, 512, 396, games[1], game.gameSelectIndex === 1, "runGun", game.assets?.images?.[games[1].imageKey]);
+  GAME_SELECT_CARD_LAYOUT.forEach((layout, index) => {
+    const item = games[index];
+    if (!item) return;
+    drawGameCard(
+      ctx,
+      layout.x,
+      layout.y,
+      layout.w,
+      layout.h,
+      item,
+      game.gameSelectIndex === index,
+      item.variant ?? (item.id === "gothtechnology" ? "fighter" : "runGun"),
+      game.assets?.images?.[item.imageKey]
+    );
+  });
   drawFutureButton(ctx, 494, 596, 292, 54, "SYSTEM", "BACK", FUTURE.cyan);
   ctx.restore();
 };
 
 const drawGameCard = (ctx, x, y, w, h, item, selected, variant, titleArt) => {
-  const stroke = selected ? FUTURE.white : variant === "runGun" ? FUTURE.cyan : FUTURE.red;
+  const accent = variant === "runGun" ? FUTURE.cyan : variant === "staticWave" ? FUTURE.amber : FUTURE.red;
+  const stroke = selected ? FUTURE.white : accent;
   drawAngularPanel(ctx, x, y, w, h, FUTURE.panel, stroke, selected ? 3 : 1.5, 16);
   const artX = x + 14;
   const artY = y + 14;
@@ -372,8 +396,8 @@ const drawGameCard = (ctx, x, y, w, h, item, selected, variant, titleArt) => {
   angularPath(ctx, artX, artY, artW, artH, 10);
   ctx.clip();
   const grad = ctx.createLinearGradient(x, y, x + w, y + h);
-  grad.addColorStop(0, variant === "runGun" ? "#080b12" : "#0b0808");
-  grad.addColorStop(0.56, variant === "runGun" ? "#101922" : "#15110c");
+  grad.addColorStop(0, variant === "runGun" ? "#080b12" : variant === "staticWave" ? "#100b04" : "#0b0808");
+  grad.addColorStop(0.56, variant === "runGun" ? "#101922" : variant === "staticWave" ? "#1a1208" : "#15110c");
   grad.addColorStop(1, "#020202");
   ctx.fillStyle = grad;
   ctx.fillRect(artX, artY, artW, artH);
@@ -407,10 +431,20 @@ const drawGameCard = (ctx, x, y, w, h, item, selected, variant, titleArt) => {
   ctx.font = `900 11px ${HUD_MONO}`;
   ctx.fillText(item.badge, x + 32, y + h - 70);
   ctx.fillStyle = FUTURE.white;
-  ctx.font = `900 27px ${HUD_FONT}`;
+  let titleSize = 27;
+  ctx.font = `900 ${titleSize}px ${HUD_FONT}`;
+  while (titleSize > 18 && ctx.measureText(item.title).width > w - 64) {
+    titleSize -= 1;
+    ctx.font = `900 ${titleSize}px ${HUD_FONT}`;
+  }
   ctx.fillText(item.title, x + 32, y + h - 42);
   ctx.fillStyle = selected ? stroke : FUTURE.muted;
-  ctx.font = `800 11px ${HUD_MONO}`;
+  let subtitleSize = 11;
+  ctx.font = `800 ${subtitleSize}px ${HUD_MONO}`;
+  while (subtitleSize > 8 && ctx.measureText(item.subtitle.toUpperCase()).width > w - 64) {
+    subtitleSize -= 1;
+    ctx.font = `800 ${subtitleSize}px ${HUD_MONO}`;
+  }
   ctx.fillText(item.subtitle.toUpperCase(), x + 32, y + h - 20);
   if (selected) {
     ctx.fillStyle = stroke;
@@ -520,7 +554,7 @@ export const drawCharacterSelect = (ctx, game) => {
   ctx.save();
   ctx.textAlign = "center";
   ctx.fillStyle = "rgba(3, 8, 12, 0.92)";
-  ctx.fillRect(0, 0, CANVAS_WIDTH, 122);
+  ctx.fillRect(0, 0, CANVAS_WIDTH, 152);
   ctx.fillStyle = FUTURE.red;
   ctx.fillRect(32, 40, 292, 2);
   ctx.fillStyle = FUTURE.cyan;
@@ -538,9 +572,10 @@ export const drawCharacterSelect = (ctx, game) => {
   ctx.fillStyle = FUTURE.cyan;
   ctx.font = `800 13px ${HUD_MONO}`;
   ctx.fillText(`${GAME_MODES[game.gameMode]?.label || "VERSUS"} PROTOCOL // SELECT COMBATANT`, 640, 88);
-  const opponentRole = game.training ? "DUMMY" : (game.cpuEnabled ? "CPU" : "P2");
-  drawSelectionTarget(ctx, 352, 98, 272, 32, "P1", FIGHTERS[game.player1Id].name, game.selectTarget !== "p2", FUTURE.cyan);
-  drawSelectionTarget(ctx, 656, 98, 272, 32, opponentRole, FIGHTERS[game.player2Id].name, game.selectTarget === "p2", FUTURE.red);
+  const arcadeLocked = game.gameMode === "arcade";
+  const opponentRole = arcadeLocked ? "ARCADE RIVAL" : (game.training ? "TRAINING DUMMY" : (game.cpuEnabled ? "CPU OPPONENT" : "PLAYER 2"));
+  drawSelectionTarget(ctx, 274, 96, 352, 54, "1", "PLAYER 1", FIGHTERS[game.player1Id].name, game.selectTarget !== "p2", FUTURE.cyan, game.selectTarget !== "p2" ? "CHOOSE NOW" : "CLICK TO EDIT");
+  drawSelectionTarget(ctx, 654, 96, 352, 54, "2", opponentRole, FIGHTERS[game.player2Id].name, game.selectTarget === "p2", FUTURE.red, arcadeLocked ? "LOCKED" : (game.selectTarget === "p2" ? "CHOOSE NOW" : "NEXT"));
   for (const [index, layout] of ROSTER_CARD_LAYOUT.entries()) {
     const characterId = ROSTER_IDS[index];
     const config = FIGHTERS[characterId];
@@ -549,27 +584,33 @@ export const drawCharacterSelect = (ctx, game) => {
     const preview = { assets: game.assets, config };
     const selected = game.player1Id === characterId;
     const opponent = game.player2Id === characterId;
-    drawCharacterCard(ctx, x, y, w, h, preview, config.name, config.title, selected, opponent, color, index);
+    const focused = game.rosterIndex === index;
+    const focusTone = game.selectTarget === "p2" ? FUTURE.red : FUTURE.cyan;
+    drawCharacterCard(ctx, x, y, w, h, preview, config.name, config.title, selected, opponent, focused, focusTone, color, index);
     if (selected) drawSelectBadge(ctx, x + 48, y + 36, "P1", FUTURE.cyan);
     if (opponent) drawSelectBadge(ctx, x + w - 52, y + 36, game.training ? "DUMMY" : (game.cpuEnabled ? "CPU" : "P2"), FUTURE.red);
   }
   const selectedStage = STAGES[game.stageIndex];
-  drawFutureButton(ctx, 330, 568, 292, 64, `ARENA ${String(game.stageIndex + 1).padStart(2, "0")}/${String(STAGES.length).padStart(2, "0")}`, selectedStage.name, FUTURE.amber, game.assets?.images?.[selectedStage.backgroundKey]);
-  drawFutureButton(ctx, 658, 568, 292, 64, "MATCH COMMAND", "ENGAGE", FUTURE.red);
-  ctx.fillStyle = FUTURE.muted;
-  ctx.font = `700 11px ${HUD_MONO}`;
+  drawFutureButton(ctx, 330, 556, 292, 64, `ARENA ${String(game.stageIndex + 1).padStart(2, "0")}/${String(STAGES.length).padStart(2, "0")}`, selectedStage.name, FUTURE.amber, game.assets?.images?.[selectedStage.backgroundKey]);
+  drawFutureButton(ctx, 658, 556, 292, 64, "MATCH COMMAND", "ENGAGE", FUTURE.red);
+  const activeRole = game.selectTarget === "p2" ? opponentRole : "PLAYER 1";
+  ctx.fillStyle = game.selectTarget === "p2" ? FUTURE.red : FUTURE.cyan;
+  ctx.font = `900 15px ${HUD_FONT}`;
   ctx.textAlign = "center";
-  ctx.fillText(`${game.selectTarget === "p2" ? opponentRole : "P1"} TARGET // CLICK FIGHTER // UP-DOWN SWITCH TARGET // ENTER TO DEPLOY`, 640, 658);
+  ctx.fillText(`CHOOSE ${activeRole}`, 640, 646);
+  ctx.fillStyle = FUTURE.muted;
+  ctx.font = `700 10px ${HUD_MONO}`;
+  ctx.fillText(arcadeLocked ? "CLICK FIGHTER // LEFT-RIGHT BROWSE // ENTER FIGHT" : "CLICK FIGHTER // UP-DOWN SWITCH SIDE // ENTER FIGHT", 640, 666);
   if (game.motionLoadError || game.fightLoadError) {
     ctx.fillStyle = FUTURE.red;
-    ctx.fillText("LINK FAILURE // SELECT VERSUS TO RETRY", 640, 687);
+    ctx.fillText("LINK FAILURE // SELECT VERSUS TO RETRY", 640, 692);
   } else if (!game.matchAssetsReady) {
     const progress = Math.round(((game.motionLoadingProgress + game.fightLoadingProgress) / 2) * 100);
     ctx.fillStyle = FUTURE.cyan;
-    ctx.fillText(`SYNCING COMBAT ASSETS // ${progress}%`, 640, 687);
+    ctx.fillText(`SYNCING COMBAT ASSETS // ${progress}%`, 640, 692);
   } else {
     ctx.fillStyle = FUTURE.white;
-    ctx.fillText(game.training ? "TRAINING TARGET ONLINE" : (game.cpuEnabled ? `HOSTILE LINK // ${FIGHTERS[game.player2Id].name} // ${game.cpuDifficulty.toUpperCase()}` : "LOCAL DUEL LINK // TWO CONTROLLERS READY"), 640, 687);
+    ctx.fillText(game.training ? "TRAINING TARGET ONLINE" : (game.cpuEnabled ? `HOSTILE LINK // ${FIGHTERS[game.player2Id].name} // ${game.cpuDifficulty.toUpperCase()}` : "LOCAL DUEL LINK // TWO CONTROLLERS READY"), 640, 692);
   }
   ctx.restore();
 };
@@ -822,9 +863,9 @@ export const drawArcadeEnding = (ctx, game) => {
   ctx.restore();
 };
 
-const drawCharacterCard = (ctx, x, y, w, h, fighter, name, subtitle, selected, opponent, color, index) => {
-  const tone = selected ? FUTURE.cyan : (opponent ? FUTURE.red : "rgba(126, 160, 174, 0.58)");
-  drawAngularPanel(ctx, x, y, w, h, FUTURE.panel, tone, selected || opponent ? 2.5 : 1.25, 16);
+const drawCharacterCard = (ctx, x, y, w, h, fighter, name, subtitle, selected, opponent, focused, focusTone, color, index) => {
+  const tone = focused ? focusTone : (selected ? FUTURE.cyan : (opponent ? FUTURE.red : "rgba(126, 160, 174, 0.58)"));
+  drawAngularPanel(ctx, x, y, w, h, FUTURE.panel, tone, focused ? 4 : (selected || opponent ? 2.5 : 1.25), 16);
   ctx.save();
   angularPath(ctx, x + 8, y + 8, w - 16, h - 100, 11);
   ctx.clip();
@@ -844,7 +885,7 @@ const drawCharacterCard = (ctx, x, y, w, h, fighter, name, subtitle, selected, o
   }
   ctx.fillStyle = "rgba(255,255,255,0.025)";
   for (let sy = y + 12; sy < y + h - 94; sy += 6) ctx.fillRect(x + 8, sy, w - 16, 1);
-  ctx.fillStyle = selected ? "rgba(103, 232, 255, 0.12)" : (opponent ? "rgba(255, 64, 93, 0.1)" : "rgba(255,255,255,0.035)");
+  ctx.fillStyle = focused ? (focusTone === FUTURE.red ? "rgba(255, 64, 93, 0.16)" : "rgba(103, 232, 255, 0.16)") : (selected ? "rgba(103, 232, 255, 0.12)" : (opponent ? "rgba(255, 64, 93, 0.1)" : "rgba(255,255,255,0.035)"));
   ctx.fillRect(x + 8, y + h - 110, w - 16, 18);
   if (fighter) drawRosterPortrait(ctx, fighter, x + w / 2, y + h - 92, {
     scale: 0.82,
@@ -857,14 +898,15 @@ const drawCharacterCard = (ctx, x, y, w, h, fighter, name, subtitle, selected, o
   ctx.fillRect(x + 1, y + h - 94, w - 2, 93);
   ctx.fillStyle = tone;
   ctx.fillRect(x + 18, y + h - 83, 4, 62);
+  if (fighter) drawRosterHeadshot(ctx, fighter, x + w - 80, y + h - 80, 64, tone);
   ctx.textAlign = "left";
   ctx.fillStyle = FUTURE.muted;
   ctx.font = `800 10px ${HUD_MONO}`;
-  ctx.fillText(`FTR-${String(index + 1).padStart(2, "0")} // ${selected ? "LINKED" : (opponent ? "HOSTILE" : "STANDBY")}`, x + 34, y + h - 70);
+  ctx.fillText(`FTR-${String(index + 1).padStart(2, "0")} // ${focused ? "ACTIVE PICK" : (selected ? "P1 LINKED" : (opponent ? "OPPONENT" : "AVAILABLE"))}`, x + 34, y + h - 70);
   ctx.fillStyle = FUTURE.white;
   let nameSize = 22;
   ctx.font = `900 ${nameSize}px ${HUD_FONT}`;
-  while (nameSize > 15 && ctx.measureText(name).width > w - 54) {
+  while (nameSize > 13 && ctx.measureText(name).width > w - 128) {
     nameSize -= 1;
     ctx.font = `900 ${nameSize}px ${HUD_FONT}`;
   }
@@ -872,9 +914,28 @@ const drawCharacterCard = (ctx, x, y, w, h, fighter, name, subtitle, selected, o
   ctx.fillStyle = color;
   ctx.font = `800 11px ${HUD_MONO}`;
   ctx.fillText(subtitle.toUpperCase(), x + 34, y + h - 22);
-  ctx.fillStyle = tone;
-  ctx.fillRect(x + w - 48, y + h - 34, 26, 3);
+  if (focused) {
+    ctx.fillStyle = focusTone;
+    ctx.fillRect(x + 18, y + 10, w - 36, 3);
+    ctx.fillRect(x + 18, y + h - 11, w - 36, 3);
+  }
   ctx.restore();
+};
+
+const drawRosterHeadshot = (ctx, fighter, x, y, size, tone) => {
+  const headshot = fighter.assets.images[fighter.config.headshotKey];
+  if (!headshot?.naturalWidth) return;
+  ctx.save();
+  angularPath(ctx, x, y, size, size, 8);
+  ctx.clip();
+  ctx.fillStyle = "#071018";
+  ctx.fillRect(x, y, size, size);
+  ctx.drawImage(headshot, x, y, size, size);
+  ctx.restore();
+  angularPath(ctx, x, y, size, size, 8);
+  ctx.strokeStyle = tone;
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
 };
 
 const drawFighterPortrait = (ctx, fighter, x, y, scale) => {
@@ -897,19 +958,11 @@ const drawFighterPortrait = (ctx, fighter, x, y, scale) => {
   }
 };
 
-const ROSTER_PRESENCE = {
-  KALYX: 0.92,
-  MASTER_EZRA: 0.9,
-  DETROIT_LENS_NOIR: 1.04,
-  AMARA_VALENTINE: 1.08
-};
-
 const drawRosterPortrait = (ctx, fighter, x, y, options) => {
   const portrait = fighter.assets.images[fighter.config.rosterPortraitKey];
   if (portrait?.naturalWidth > 0) {
     const settings = typeof options === "number" ? { scale: options } : options;
-    const presence = ROSTER_PRESENCE[fighter.config.manifestKey] ?? 1;
-    const requestedScale = (settings?.scale ?? 1) * presence;
+    const requestedScale = settings?.scale ?? 1;
     const fitScale = Math.min(
       settings?.maxWidth ? settings.maxWidth / portrait.naturalWidth : Infinity,
       settings?.maxHeight ? settings.maxHeight / portrait.naturalHeight : Infinity

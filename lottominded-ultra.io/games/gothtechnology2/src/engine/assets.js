@@ -1,4 +1,4 @@
-import { ASSET_URLS, MOTION_ASSET_VERSION, MOTION_PLAYBACK } from "../config/assets.js?v=semantic-motion-v2";
+import { ASSET_URLS, MOTION_ASSET_VERSION, MOTION_PLAYBACK } from "../config/assets.js?v=galaxy-a16-performance-v1";
 
 const imageCache = new Map();
 
@@ -28,8 +28,12 @@ export class AssetLoader {
     this.animations = {};
     this.loadedCharacterMotions = new Set();
     this.characterMotionLoads = new Map();
+    this.characterSheetAssets = new Map();
     this.groupLoads = new Map();
     this.loadedGroups = new Set();
+    this.loadedStageAssets = new Set();
+    this.stageAssetLoads = new Map();
+    this.stageAssetGroups = new Map();
   }
 
   async load() {
@@ -52,29 +56,24 @@ export class AssetLoader {
       kalyxPortrait: ASSET_URLS.rosterPortraits.kalyx,
       masterEzraPortrait: ASSET_URLS.rosterPortraits.masterEzra,
       detroitLensNoirPortrait: ASSET_URLS.rosterPortraits.detroitLensNoir,
-      amaraValentinePortrait: ASSET_URLS.rosterPortraits.amaraValentine
+      amaraValentinePortrait: ASSET_URLS.rosterPortraits.amaraValentine,
+      kalyxHeadshot: ASSET_URLS.rosterHeadshots.kalyx,
+      masterEzraHeadshot: ASSET_URLS.rosterHeadshots.masterEzra,
+      detroitLensNoirHeadshot: ASSET_URLS.rosterHeadshots.detroitLensNoir,
+      amaraValentineHeadshot: ASSET_URLS.rosterHeadshots.amaraValentine
     }, onProgress, { strict: false });
   }
 
   loadGameSelectAssets(onProgress = () => {}) {
     return this.loadGroup("gameSelect", {
       gameTitleGothtechnology: ASSET_URLS.gameTitles.gothtechnology,
-      gameTitleRobotRahbe: ASSET_URLS.gameTitles.robotRahbe
+      gameTitleRobotRahbe: ASSET_URLS.gameTitles.robotRahbe,
+      gameTitleStaticWave: ASSET_URLS.gameTitles.staticWave
     }, onProgress, { strict: false });
   }
 
   loadFightAssets(onProgress = () => {}) {
     return this.loadGroup("fight", {
-      background: ASSET_URLS.background,
-      detroitMidnightMile: ASSET_URLS.stages.detroitMidnightMile,
-      motorCityAssembly: ASSET_URLS.stages.motorCityAssembly,
-      detroitRiverfront: ASSET_URLS.stages.detroitRiverfront,
-      easternMarketAfterDark: ASSET_URLS.stages.easternMarketAfterDark,
-      michiganCentralConcourse: ASSET_URLS.stages.michiganCentralConcourse,
-      farTrees: ASSET_URLS.farTrees,
-      fog: ASSET_URLS.fog,
-      embers: ASSET_URLS.embers,
-      ground: ASSET_URLS.ground,
       hitSpark: ASSET_URLS.effects.hitSpark,
       blockShield: ASSET_URLS.effects.blockShield,
       dust: ASSET_URLS.effects.dust,
@@ -88,6 +87,54 @@ export class AssetLoader {
       assistRaven: ASSET_URLS.assists.raven,
       assistNocturna: ASSET_URLS.assists.nocturna
     }, onProgress);
+  }
+
+  loadStageAssets(stage, onProgress = () => {}, options = {}) {
+    if (!stage?.id || !stage.backgroundKey) return Promise.reject(new Error("Invalid stage asset request"));
+    if (this.loadedStageAssets.has(stage.id)) {
+      onProgress(1);
+      return Promise.resolve(this);
+    }
+    if (this.stageAssetLoads.has(stage.id)) return this.stageAssetLoads.get(stage.id);
+
+    const backgroundUrl = ASSET_URLS.stageBackgrounds[stage.backgroundKey];
+    if (!backgroundUrl) return Promise.reject(new Error(`Unknown stage background: ${stage.backgroundKey}`));
+    const imageMap = { [stage.backgroundKey]: backgroundUrl };
+    if (stage.legacyLayers) {
+      imageMap.farTrees = ASSET_URLS.farTrees;
+      imageMap.ground = ASSET_URLS.ground;
+    }
+    if (options.dynamicStageEffects ?? true) {
+      imageMap.fog = ASSET_URLS.fog;
+      imageMap.embers = ASSET_URLS.embers;
+    }
+
+    const groupName = `stage:${stage.id}`;
+    const loadPromise = this.loadGroup(groupName, imageMap, onProgress).then(() => {
+      this.loadedStageAssets.add(stage.id);
+      this.stageAssetGroups.set(stage.id, new Map(Object.entries(imageMap)));
+      return this;
+    }).finally(() => {
+      this.stageAssetLoads.delete(stage.id);
+    });
+    this.stageAssetLoads.set(stage.id, loadPromise);
+    return loadPromise;
+  }
+
+  releaseStageAssetsExcept(stageId) {
+    const keepAssets = this.stageAssetGroups.get(stageId) ?? new Map();
+    const keepKeys = new Set(keepAssets.keys());
+    for (const [loadedStageId, assets] of [...this.stageAssetGroups]) {
+      if (loadedStageId === stageId) continue;
+      for (const [key, url] of assets) {
+        if (keepKeys.has(key)) continue;
+        delete this.images[key];
+        imageCache.delete(url);
+      }
+      this.loadedStageAssets.delete(loadedStageId);
+      this.loadedGroups.delete(`stage:${loadedStageId}`);
+      this.stageAssetGroups.delete(loadedStageId);
+    }
   }
 
   loadGroup(name, imageMap, onProgress = () => {}, options = {}) {
@@ -157,9 +204,15 @@ export class AssetLoader {
       const character = this.manifest.characters[characterId];
       if (!character) throw new Error(`Unknown character motion atlas: ${characterId}`);
       const sheetImages = new Map();
-      await Promise.all([...new Set(Object.values(character.motions).map((motion) => motion.sheet))].map(async (sheet, index) => {
-        const key = `${characterId}_motions_${index}`;
-        const image = await loadImage(key, `${sheet}?v=${MOTION_ASSET_VERSION}`);
+      const sheets = [...new Set(Object.values(character.motions).map((motion) => motion.sheet))];
+      const sheetAssets = sheets.map((sheet, index) => ({
+        key: `${characterId}_motions_${index}`,
+        sheet,
+        url: `${sheet}?v=${MOTION_ASSET_VERSION}`
+      }));
+      this.characterSheetAssets.set(characterId, sheetAssets);
+      await Promise.all(sheetAssets.map(async ({ key, sheet, url }) => {
+        const image = await loadImage(key, url);
         if (!image) throw new Error(`Unable to load character motion atlas: ${characterId} ${sheet}`);
         this.images[key] = image;
         sheetImages.set(sheet, image);
@@ -184,6 +237,20 @@ export class AssetLoader {
     }
   }
 
+  releaseCharacterMotionsExcept(characterIds) {
+    const keep = new Set(characterIds);
+    for (const characterId of [...this.loadedCharacterMotions]) {
+      if (keep.has(characterId)) continue;
+      for (const { key, url } of this.characterSheetAssets.get(characterId) ?? []) {
+        delete this.images[key];
+        imageCache.delete(url);
+      }
+      this.animations[characterId] = {};
+      this.loadedCharacterMotions.delete(characterId);
+      this.characterSheetAssets.delete(characterId);
+    }
+  }
+
 }
 
 export const drawSpriteFrame = (ctx, animation, frameIndex, x, y, options = {}) => {
@@ -200,7 +267,7 @@ export const drawSpriteFrame = (ctx, animation, frameIndex, x, y, options = {}) 
   const h = sourceH * scale;
   ctx.save();
   ctx.imageSmoothingEnabled = true;
-  ctx.imageSmoothingQuality = "high";
+  ctx.imageSmoothingQuality = ctx.gothPerformance?.smoothingQuality ?? "high";
   ctx.globalCompositeOperation = options.composite ?? "source-over";
   ctx.translate(x, y);
   if (options.flip) ctx.scale(-1, 1);
@@ -237,7 +304,7 @@ export const drawSheetFrame = (ctx, image, frameIndex, cellW, cellH, x, y, optio
   const scale = options.scale ?? 1;
   ctx.save();
   ctx.imageSmoothingEnabled = true;
-  ctx.imageSmoothingQuality = "high";
+  ctx.imageSmoothingQuality = ctx.gothPerformance?.smoothingQuality ?? "high";
   ctx.translate(x, y);
   if (options.flip) ctx.scale(-1, 1);
   ctx.globalAlpha = options.alpha ?? 1;

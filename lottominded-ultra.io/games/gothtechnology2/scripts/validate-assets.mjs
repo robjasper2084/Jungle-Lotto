@@ -7,7 +7,10 @@ const root = resolve(import.meta.dirname, "..");
 const failures = [];
 const REQUIRED_FRAME_COUNT = 6;
 const REQUIRED_PROVIDER = "Higgsfield Nano Banana Pro";
-const REQUIRED_SOURCES = new Set(["higgsfield-v2", "higgsfield-v3-body-vfx", "higgsfield-v4-body-only", "derived-body-only-v1"]);
+const REQUIRED_SOURCES = new Set([
+  "higgsfield-v2", "higgsfield-v3-body-vfx", "higgsfield-v4-body-only",
+  "higgsfield-v3-aerial-locomotion", "derived-body-only-v1", "chatgpt-image-body-only-v1"
+]);
 const STABLE_HEIGHT_MOTIONS = new Set([
   "IDLE", "READY_STANCE", "WALK_FORWARD", "WALK_BACK", "RUN_FORWARD", "RUN_BACK",
   "DASH_FORWARD", "DASH_BACK", "CROUCH_IDLE", "CROUCH_WALK", "BLOCK_HIGH", "BLOCK_LOW",
@@ -54,8 +57,20 @@ if (!indexSource.includes(`./src/main.js?v=${MOTION_ASSET_VERSION}`)) {
   failures.push("index.html: main module version does not match MOTION_ASSET_VERSION");
 }
 
+const atlasPackerSource = await readFile(resolve(root, "scripts/pack-higgsfield-v2.py"), "utf8");
+const destructiveAlphaMutations = [
+  /clear_long_dark_runs/,
+  /alpha\[:,\s*start:end\]\s*=\s*0/,
+  /alpha\[start:end,\s*:\]\s*=\s*0/,
+  /alpha\[top:bottom,\s*:\]\s*=\s*0/,
+  /alpha\[:,\s*left:right\]\s*=\s*0/
+];
+if (destructiveAlphaMutations.some((pattern) => pattern.test(atlasPackerSource))) {
+  failures.push("Sprite packer must not erase projected atlas rows or columns through character pixels");
+}
+
 if (manifest.provider !== REQUIRED_PROVIDER) failures.push(`Unexpected sprite provider: ${manifest.provider}`);
-if (semanticQa.version !== 1 || semanticQa.repair !== "semantic-body-only-v1") {
+if (semanticQa.version !== 2 || semanticQa.pipeline !== "semantic-sprite-quality-v2") {
   failures.push("Motion semantic QA manifest is missing or unsupported");
 }
 if (manifest.stabilizationVersion !== 1) failures.push("Motion manifest is missing stabilization metadata");
@@ -97,13 +112,25 @@ for (const [characterId, character] of Object.entries(manifest.characters ?? {})
     if (!REQUIRED_SOURCES.has(motion.source)) {
       failures.push(`${characterId}/${motionName}: unexpected source ${motion.source}`);
     }
-    if (!motion.higgsfieldJobId) {
-      failures.push(`${characterId}/${motionName}: missing Higgsfield job provenance`);
+    const hasHiggsfieldProvenance = Boolean(motion.higgsfieldJobId);
+    const hasChatGptImageProvenance = motion.generationProvider === "ChatGPT Image" && Boolean(motion.generationId);
+    if (!hasHiggsfieldProvenance && !hasChatGptImageProvenance) {
+      failures.push(`${characterId}/${motionName}: missing generation provenance`);
     }
     const semanticKey = `${characterId}/${motionName}`;
     const semanticRule = semanticQa.motions?.[semanticKey];
+    if (!semanticRule) failures.push(`${semanticKey}: missing semantic sprite-quality rule`);
+    if (
+      motion.semantic?.version !== 2
+      || motion.semantic?.bodyOnly !== true
+      || motion.semantic?.figureCount !== 1
+      || motion.semantic?.anchor !== "bottom-center"
+      || motion.semantic?.poseClass !== semanticRule?.poseClass
+    ) {
+      failures.push(`${semanticKey}: semantic metadata does not match the sprite-quality manifest`);
+    }
     if (motion.source === "derived-body-only-v1") {
-      if (!semanticRule || motion.repair !== "semantic-body-only-v1") {
+      if (motion.repair !== "semantic-body-only-v1") {
         failures.push(`${semanticKey}: derived sequence lacks semantic QA approval`);
       }
       if (motion.semantic?.bodyOnly !== true || motion.semantic?.figureCount !== 1 || motion.semantic?.anchor !== "bottom-center") {
@@ -153,11 +180,9 @@ for (const [characterId, character] of Object.entries(manifest.characters ?? {})
       failures.push(`${characterId}/${motionName}: full-body scale does not match idle (${(peakHeight / idleHeight).toFixed(3)})`);
     }
   }
-  if (characterId === "AMARA_VALENTINE") {
-    for (const motionName of ["JUMP_PEAK", "AIR_ATTACK"]) {
-      if (!["amara-aerial-v1", "semantic-body-only-v1"].includes(runtimeMotions[motionName].repair)) {
-        failures.push(`${characterId}/${motionName}: missing approved aerial repair provenance`);
-      }
+  for (const motionName of ["JUMP_START", "JUMP_RISE", "JUMP_PEAK", "JUMP_FALL", "LANDING", "AIR_ATTACK"]) {
+    if (runtimeMotions[motionName].source !== "higgsfield-v3-aerial-locomotion") {
+      failures.push(`${characterId}/${motionName}: aerial motion must use a direct Higgsfield v3 strip`);
     }
   }
 
@@ -174,11 +199,12 @@ for (const [characterId, character] of Object.entries(manifest.characters ?? {})
   }
 }
 
+if (Object.keys(semanticQa.motions ?? {}).length !== Object.keys(manifest.characters ?? {}).length * MOTIONS.length) {
+  failures.push("Semantic sprite-quality manifest must cover every runtime motion");
+}
 for (const semanticKey of Object.keys(semanticQa.motions ?? {})) {
   const [characterId, motionName] = semanticKey.split("/");
-  if (manifest.characters?.[characterId]?.motions?.[motionName]?.source !== "derived-body-only-v1") {
-    failures.push(`${semanticKey}: semantic QA entry does not point to a derived body-only motion`);
-  }
+  if (!manifest.characters?.[characterId]?.motions?.[motionName]) failures.push(`${semanticKey}: semantic QA entry has no runtime motion`);
 }
 
 urls.add("../../assets/js/lm-game-rewards-sdk.js");

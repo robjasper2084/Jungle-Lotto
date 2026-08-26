@@ -1,4 +1,6 @@
-import { drawSheetFrame } from "../engine/assets.js?v=semantic-motion-v2";
+import { drawSheetFrame } from "../engine/assets.js?v=galaxy-a16-performance-v1";
+
+const reducedEffects = (ctx) => ctx.gothPerformance?.effects === "reduced";
 
 export class SpriteEffect {
   constructor({ x, y, image, cellW = 256, cellH = 256, frames = 8, duration = 0.42, scale = 1, flip = false, alpha = 1 }) {
@@ -101,11 +103,12 @@ export class LovePulseEffect {
     ctx.strokeStyle = "#ff69c8";
     ctx.lineWidth = Math.max(2, 6 * (1 - t));
     ctx.shadowColor = "#ff3cad";
-    ctx.shadowBlur = 26;
+    ctx.shadowBlur = reducedEffects(ctx) ? 10 : 26;
     ctx.beginPath();
     ctx.arc(0, 0, radius, 0, Math.PI * 2);
     ctx.stroke();
-    for (let index = 0; index < 3; index += 1) {
+    const heartCount = reducedEffects(ctx) ? 2 : 3;
+    for (let index = 0; index < heartCount; index += 1) {
       const phase = t * 2.4 + index * 0.72;
       const x = this.direction * (18 + phase * 36) * this.scale;
       const y = Math.sin(phase * 3.2) * 18 * this.scale - index * 10;
@@ -144,7 +147,7 @@ export class FloatingText {
     ctx.font = "700 24px Georgia";
     ctx.textAlign = "center";
     ctx.shadowColor = this.color;
-    ctx.shadowBlur = 14;
+    ctx.shadowBlur = reducedEffects(ctx) ? 6 : 14;
     ctx.fillText(this.text, this.x, this.y);
     ctx.restore();
   }

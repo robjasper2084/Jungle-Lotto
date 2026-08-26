@@ -1,17 +1,18 @@
-import { ASSET_URLS, COMMERCIAL_URLS, FIGHTERS } from "../config/assets.js?v=semantic-motion-v2";
-import { arcadeRouteFor, GAME_MODES, ROSTER_CARD_LAYOUT, ROSTER_IDS, STAGES, opponentFor } from "../config/content.js?v=semantic-motion-v2";
-import { ASSISTS, ATTACKS } from "../config/moves.js?v=semantic-motion-v2";
-import { CANVAS_HEIGHT, CANVAS_WIDTH, COLORS, GROUND_Y, PHASE, ROUND_SECONDS, WORLD } from "../config/constants.js?v=semantic-motion-v2";
-import { AssetLoader } from "../engine/assets.js?v=semantic-motion-v2";
-import { WebAudioBus } from "../engine/audio.js?v=semantic-motion-v2";
-import { InputManager } from "../engine/input.js?v=semantic-motion-v2";
-import { clamp, rectsOverlap } from "../engine/math.js?v=semantic-motion-v2";
-import { applyHit, resolveMelee } from "../gameplay/combat.js?v=semantic-motion-v2";
-import { CpuController } from "../gameplay/cpu.js?v=semantic-motion-v2";
-import { AttachedSpriteEffect, LovePulseEffect, SpriteEffect } from "../gameplay/effects.js?v=semantic-motion-v2";
-import { Fighter } from "../gameplay/fighter.js?v=semantic-motion-v2";
-import { AssistStrike, BoerboelStrike, Projectile } from "../gameplay/projectiles.js?v=semantic-motion-v2";
-import { applyRoundOutcomeMotions, resolveRoundOutcome } from "../gameplay/rounds.js?v=semantic-motion-v2";
+import { ASSET_URLS, COMMERCIAL_URLS, FIGHTERS } from "../config/assets.js?v=galaxy-a16-performance-v1";
+import { arcadeRouteFor, GAME_MODES, GAME_SELECT_CARD_LAYOUT, ROSTER_CARD_LAYOUT, ROSTER_IDS, STAGES, opponentFor } from "../config/content.js?v=galaxy-a16-performance-v1";
+import { ASSISTS, ATTACKS } from "../config/moves.js?v=galaxy-a16-performance-v1";
+import { CANVAS_HEIGHT, CANVAS_WIDTH, COLORS, GROUND_Y, PHASE, ROUND_SECONDS, WORLD } from "../config/constants.js?v=galaxy-a16-performance-v1";
+import { detectPerformanceProfile } from "../config/performance.js?v=galaxy-a16-performance-v1";
+import { AssetLoader } from "../engine/assets.js?v=galaxy-a16-performance-v1";
+import { WebAudioBus } from "../engine/audio.js?v=galaxy-a16-performance-v1";
+import { InputManager } from "../engine/input.js?v=galaxy-a16-performance-v1";
+import { clamp, rectsOverlap } from "../engine/math.js?v=galaxy-a16-performance-v1";
+import { applyHit, resolveMelee } from "../gameplay/combat.js?v=galaxy-a16-performance-v1";
+import { CpuController } from "../gameplay/cpu.js?v=galaxy-a16-performance-v1";
+import { AttachedSpriteEffect, LovePulseEffect, SpriteEffect } from "../gameplay/effects.js?v=galaxy-a16-performance-v1";
+import { Fighter } from "../gameplay/fighter.js?v=galaxy-a16-performance-v1";
+import { AssistStrike, BoerboelStrike, Projectile } from "../gameplay/projectiles.js?v=galaxy-a16-performance-v1";
+import { applyRoundOutcomeMotions, resolveRoundOutcome } from "../gameplay/rounds.js?v=galaxy-a16-performance-v1";
 import {
   drawCharacterSelect,
   drawArcadeEnding,
@@ -24,7 +25,7 @@ import {
   drawRoundMessage,
   drawTitle,
   drawVersus
-} from "../ui/hud.js?v=semantic-motion-v2";
+} from "../ui/hud.js?v=galaxy-a16-performance-v1";
 
 const GAME_SELECT_ITEMS = [
   {
@@ -40,7 +41,17 @@ const GAME_SELECT_ITEMS = [
     subtitle: "Number-vault run-and-gun adventure",
     badge: "RUN + GUN",
     imageKey: "gameTitleRobotRahbe",
+    variant: "runGun",
     href: "../shadow-ops-canvas/index.html"
+  },
+  {
+    id: "static-wave",
+    title: "2084 STATIC WAV",
+    subtitle: "Pilot the signal through a neon combat grid",
+    badge: "NEON ACTION",
+    imageKey: "gameTitleStaticWave",
+    variant: "staticWave",
+    href: "../opengw-levels/index.html"
   }
 ];
 
@@ -84,11 +95,14 @@ const moveGridIndex = (index, columns, length, dx, dy) => {
 export class GothTechnologyGame {
   constructor(canvas) {
     this.canvas = canvas;
-    this.renderScale = window.matchMedia?.("(pointer: coarse)")?.matches ? 0.75 : 1;
     this.reducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ?? false;
+    this.performanceProfile = detectPerformanceProfile(window);
+    this.renderScale = this.performanceProfile.renderScale;
     this.canvas.width = Math.round(CANVAS_WIDTH * this.renderScale);
     this.canvas.height = Math.round(CANVAS_HEIGHT * this.renderScale);
-    this.ctx = canvas.getContext("2d", { alpha: false });
+    this.ctx = canvas.getContext("2d", { alpha: false, desynchronized: true });
+    this.ctx.gothPerformance = this.performanceProfile;
+    document.body.dataset.performanceProfile = this.performanceProfile.id;
     this.input = new InputManager(window);
     this.audio = new WebAudioBus(ASSET_URLS.music, ASSET_URLS.fightMusic);
     this.settings = readStorage(SETTINGS_KEY, {
@@ -116,10 +130,13 @@ export class GothTechnologyGame {
     this.motionLoadPromise = null;
     this.motionLoadError = "";
     this.fightAssetsReady = false;
+    this.fightCoreLoadingProgress = 0;
+    this.stageLoadingProgress = 0;
     this.fightLoadingProgress = 0;
     this.fightLoadPromise = null;
     this.fightLoadError = "";
     this.stageCache = null;
+    this.menuCaches = new Map();
     this.cpuEnabled = true;
     this.cpuDifficulty = "normal";
     this.cpuController = new CpuController();
@@ -328,7 +345,9 @@ export class GothTechnologyGame {
   cycleStage() {
     this.stageIndex = (this.stageIndex + 1) % STAGES.length;
     this.stageCache = null;
-    if (this.fightAssetsReady) this.buildStageCache();
+    this.stageLoadingProgress = 0;
+    this.updateFightLoadingProgress();
+    this.prepareStageAssets();
     this.audio.beep("select");
     this.announce(`Stage ${STAGES[this.stageIndex].name}`);
   }
@@ -416,8 +435,12 @@ export class GothTechnologyGame {
     this.selectCharacter(id, "p2");
   }
 
-  selectCharacter(id, target = this.selectTarget) {
+  selectCharacter(id, target = this.selectTarget, { advance = false } = {}) {
     if (!FIGHTERS[id]) return;
+    if (target === "p2" && this.gameMode === "arcade") {
+      this.announce("Arcade rival is locked by the ladder");
+      return;
+    }
     if (target === "p2") this.player2Id = id;
     else {
       this.player1Id = id;
@@ -429,16 +452,36 @@ export class GothTechnologyGame {
         this.cpuDifficulty = node.difficulty;
       }
     }
-    this.rosterIndex = ROSTER_IDS.indexOf(id);
+    const advanceToOpponent = advance && target === "p1" && this.gameMode !== "arcade";
+    if (advanceToOpponent) {
+      this.selectTarget = "p2";
+      this.rosterIndex = Math.max(0, ROSTER_IDS.indexOf(this.player2Id));
+    } else {
+      this.rosterIndex = ROSTER_IDS.indexOf(id);
+    }
     this.createFighters();
     this.prepareCharacterMotions();
     this.audio.beep("select");
-    this.lastAccessibleState = "";
+    const role = target === "p2"
+      ? (this.training ? "training dummy" : (this.cpuEnabled ? "CPU opponent" : "Player 2"))
+      : "Player 1";
+    const nextRole = this.training ? "training dummy" : (this.cpuEnabled ? "CPU opponent" : "Player 2");
+    this.announce(advanceToOpponent
+      ? `${FIGHTERS[id].name} selected for Player 1. Choose ${nextRole}.`
+      : `${FIGHTERS[id].name} selected for ${role}. Engage when ready.`);
     this.render();
+  }
+
+  chooseCharacter(id) {
+    this.selectCharacter(id, this.selectTarget, { advance: true });
   }
 
   setSelectionTarget(target) {
     if (target !== "p1" && target !== "p2") return;
+    if (target === "p2" && this.gameMode === "arcade") {
+      this.announce("Arcade rival is locked by the ladder");
+      return;
+    }
     this.selectTarget = target;
     const activeId = target === "p2" ? this.player2Id : this.player1Id;
     this.rosterIndex = Math.max(0, ROSTER_IDS.indexOf(activeId));
@@ -552,6 +595,7 @@ export class GothTechnologyGame {
       this.motionAssetsReady = true;
       this.motionLoadingProgress = 1;
       this.createFighters();
+      this.assets.releaseCharacterMotionsExcept(manifests);
       return Promise.resolve(this.assets);
     }
     if (this.motionLoadPromise) {
@@ -572,6 +616,7 @@ export class GothTechnologyGame {
       if (this.motionAssetsReady) {
         this.motionLoadingProgress = 1;
         this.createFighters();
+        this.assets.releaseCharacterMotionsExcept(selectedManifests);
       }
       this.render();
       return assets;
@@ -596,16 +641,27 @@ export class GothTechnologyGame {
   }
 
   prepareFightAssets() {
+    const coreLoad = this.prepareFightCoreAssets();
+    const stageLoad = this.prepareStageAssets();
+    return Promise.all([coreLoad, stageLoad]).then(() => this.assets);
+  }
+
+  updateFightLoadingProgress() {
+    this.fightLoadingProgress = (this.fightCoreLoadingProgress + this.stageLoadingProgress) / 2;
+  }
+
+  prepareFightCoreAssets() {
     if (this.fightAssetsReady) return Promise.resolve(this.assets);
     if (this.fightLoadPromise) return this.fightLoadPromise;
     this.fightLoadError = "";
     this.fightLoadPromise = this.assets.loadFightAssets((progress) => {
-      this.fightLoadingProgress = progress;
+      this.fightCoreLoadingProgress = progress;
+      this.updateFightLoadingProgress();
       this.render();
     }).then((assets) => {
       this.fightAssetsReady = true;
-      this.fightLoadingProgress = 1;
-      this.buildStageCache();
+      this.fightCoreLoadingProgress = 1;
+      this.updateFightLoadingProgress();
       this.render();
       return assets;
     }).catch((error) => {
@@ -620,8 +676,45 @@ export class GothTechnologyGame {
     return this.fightLoadPromise;
   }
 
+  prepareStageAssets(stageIndex = this.stageIndex) {
+    const stage = STAGES[stageIndex] ?? STAGES[0];
+    if (this.assets.loadedStageAssets.has(stage.id)) {
+      if (stageIndex === this.stageIndex && !this.stageCache) this.buildStageCache();
+      this.stageLoadingProgress = 1;
+      this.updateFightLoadingProgress();
+      return Promise.resolve(this.assets);
+    }
+    this.stageLoadingProgress = 0;
+    this.updateFightLoadingProgress();
+    return this.assets.loadStageAssets(stage, (progress) => {
+      if (stageIndex !== this.stageIndex) return;
+      this.stageLoadingProgress = progress;
+      this.updateFightLoadingProgress();
+      this.render();
+    }, {
+      dynamicStageEffects: this.performanceProfile.dynamicStageEffects
+    }).then((assets) => {
+      const currentStage = STAGES[this.stageIndex] ?? STAGES[0];
+      this.assets.releaseStageAssetsExcept(currentStage.id);
+      if (stageIndex === this.stageIndex) {
+        this.stageLoadingProgress = 1;
+        this.updateFightLoadingProgress();
+        this.buildStageCache();
+        this.render();
+      }
+      return assets;
+    }).catch((error) => {
+      this.fightLoadError = error?.message || String(error);
+      this.phase = PHASE.SELECT;
+      this.announce("Stage failed to load. Select versus to retry");
+      console.warn("[GOTHTECHNOLOGY] Stage failed", error);
+      return null;
+    });
+  }
+
   get matchAssetsReady() {
-    return this.motionAssetsReady && this.fightAssetsReady;
+    const stage = STAGES[this.stageIndex] ?? STAGES[0];
+    return this.motionAssetsReady && this.fightAssetsReady && Boolean(this.assets?.loadedStageAssets.has(stage.id));
   }
 
   startRound() {
@@ -673,7 +766,7 @@ export class GothTechnologyGame {
       steps += 1;
     }
     if (steps === 5) this.accumulator = 0;
-    this.render();
+    if (steps > 0) this.render();
     if (steps > 0) this.input.endFrame();
     this.raf = requestAnimationFrame((next) => this.loop(next));
   }
@@ -747,6 +840,8 @@ export class GothTechnologyGame {
     this.projectiles = this.projectiles.filter((p) => !p.dead);
     this.assists = this.assists.filter((a) => !a.dead);
     this.effects = this.effects.filter((e) => !e.dead);
+    const effectOverflow = this.effects.length - this.performanceProfile.maxEffects;
+    if (effectOverflow > 0) this.effects.splice(0, effectOverflow);
 
     this.keepFightersSeparated();
     this.faceFighters();
@@ -779,11 +874,11 @@ export class GothTechnologyGame {
 
     if (this.phase === PHASE.TITLE) {
       const titleActions = [
+        () => this.openGameSelect(),
         () => this.openMode("versus"),
         () => this.openMode("arcade"),
         () => this.openMode("training"),
         () => this.openMode("replay"),
-        () => this.openGameSelect(),
         () => this.openSettings()
       ];
       const layouts = [
@@ -816,12 +911,18 @@ export class GothTechnologyGame {
 
     if (this.phase === PHASE.GAME_SELECT) {
       this.menuHitAreas = [
-        { x: 88, y: 154, w: 512, h: 396, action: () => { this.selectGame(0); this.launchSelectedGame(); } },
-        { x: 680, y: 154, w: 512, h: 396, action: () => { this.selectGame(1); this.launchSelectedGame(); } },
+        ...GAME_SELECT_CARD_LAYOUT.map((layout, index) => ({
+          ...layout,
+          action: () => { this.selectGame(index); this.launchSelectedGame(); }
+        })),
         { x: 494, y: 596, w: 292, h: 54, action: () => { this.phase = PHASE.TITLE; this.syncMusicForPhase(); } }
       ];
-      if (this.input.consume("p1.left") || this.input.consume("p2.left")) this.selectGame(0);
-      if (this.input.consume("p1.right") || this.input.consume("p2.right")) this.selectGame(1);
+      const left = this.input.consume("p1.left") || this.input.consume("p2.left");
+      const right = this.input.consume("p1.right") || this.input.consume("p2.right");
+      if (left || right) {
+        const direction = right ? 1 : -1;
+        this.selectGame((this.gameSelectIndex + direction + GAME_SELECT_ITEMS.length) % GAME_SELECT_ITEMS.length);
+      }
       if (consumeMenuConfirm(this.input)) this.launchSelectedGame();
       if (consumeMenuBack(this.input)) {
         this.phase = PHASE.TITLE;
@@ -863,17 +964,17 @@ export class GothTechnologyGame {
 
     if (this.phase === PHASE.SELECT) {
       this.menuHitAreas = [
-        { x: 352, y: 98, w: 272, h: 32, action: () => this.setSelectionTarget("p1") },
-        { x: 656, y: 98, w: 272, h: 32, action: () => this.setSelectionTarget("p2") },
+        { x: 274, y: 96, w: 352, h: 54, action: () => this.setSelectionTarget("p1") },
+        { x: 654, y: 96, w: 352, h: 54, action: () => this.setSelectionTarget("p2") },
         ...ROSTER_CARD_LAYOUT.map((layout, index) => ({
           ...layout,
-          action: () => this.selectCharacter(ROSTER_IDS[index])
+          action: () => this.chooseCharacter(ROSTER_IDS[index])
         })),
-        { x: 330, y: 570, w: 292, h: 52, action: () => this.cycleStage() },
-        { x: 658, y: 570, w: 292, h: 52, action: () => this.startVersus() }
+        { x: 330, y: 556, w: 292, h: 64, action: () => this.cycleStage() },
+        { x: 658, y: 556, w: 292, h: 64, action: () => this.startVersus() }
       ];
       if (this.input.consume("p1.up") || this.input.consume("p2.up")) this.setSelectionTarget("p1");
-      if (this.input.consume("p1.down") || this.input.consume("p2.down")) this.setSelectionTarget("p2");
+      if (this.gameMode !== "arcade" && (this.input.consume("p1.down") || this.input.consume("p2.down"))) this.setSelectionTarget("p2");
       if (
         this.input.consume("p1.left") ||
         this.input.consume("p1.right") ||
@@ -1319,8 +1420,10 @@ export class GothTechnologyGame {
     this.player2Id = node?.opponentId ?? this.opponentForMode();
     this.stageIndex = node?.stageIndex ?? ((this.stageIndex + 1) % STAGES.length);
     this.cpuDifficulty = node?.difficulty ?? this.cpuDifficulty;
+    this.stageCache = null;
+    this.stageLoadingProgress = 0;
+    this.updateFightLoadingProgress();
     this.createFighters();
-    this.buildStageCache();
     this.phase = PHASE.VERSUS;
     this.roundMessageTimer = 0.85;
     this.prepareCharacterMotions();
@@ -1743,11 +1846,32 @@ export class GothTechnologyGame {
     }));
   }
 
+  getMenuCache(cacheKey, backdrop) {
+    if (this.menuCaches.has(cacheKey)) return this.menuCaches.get(cacheKey);
+    const layer = document.createElement("canvas");
+    layer.width = Math.round(CANVAS_WIDTH * this.renderScale);
+    layer.height = Math.round(CANVAS_HEIGHT * this.renderScale);
+    const cacheContext = layer.getContext("2d", { alpha: false, desynchronized: true });
+    cacheContext.setTransform(this.renderScale, 0, 0, this.renderScale, 0, 0);
+    cacheContext.fillStyle = "#050403";
+    cacheContext.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+    if (backdrop) cacheContext.drawImage(backdrop, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+    const wash = cacheContext.createLinearGradient(0, 0, 0, CANVAS_HEIGHT);
+    wash.addColorStop(0, "rgba(0,0,0,0.7)");
+    wash.addColorStop(0.48, "rgba(0,0,0,0.26)");
+    wash.addColorStop(1, "rgba(0,0,0,0.78)");
+    cacheContext.fillStyle = wash;
+    cacheContext.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+    this.menuCaches.set(cacheKey, layer);
+    return layer;
+  }
+
   buildStageCache() {
     const layer = document.createElement("canvas");
-    layer.width = CANVAS_WIDTH;
-    layer.height = CANVAS_HEIGHT;
-    const ctx = layer.getContext("2d", { alpha: false });
+    layer.width = Math.round(CANVAS_WIDTH * this.renderScale);
+    layer.height = Math.round(CANVAS_HEIGHT * this.renderScale);
+    const ctx = layer.getContext("2d", { alpha: false, desynchronized: true });
+    ctx.setTransform(this.renderScale, 0, 0, this.renderScale, 0, 0);
     const stage = STAGES[this.stageIndex] ?? STAGES[0];
     const background = this.assets.images[stage.backgroundKey] ?? this.assets.images.background;
     const { farTrees, ground } = this.assets.images;
@@ -1798,20 +1922,16 @@ export class GothTechnologyGame {
       const menuBackdrop = this.phase === PHASE.TITLE
         ? this.assets?.images.titleBackdrop
         : this.assets?.images.menuBackdrop;
-      if (menuBackdrop) ctx.drawImage(menuBackdrop, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-      const wash = ctx.createLinearGradient(0, 0, 0, CANVAS_HEIGHT);
-      wash.addColorStop(0, "rgba(0,0,0,0.7)");
-      wash.addColorStop(0.48, "rgba(0,0,0,0.26)");
-      wash.addColorStop(1, "rgba(0,0,0,0.78)");
-      ctx.fillStyle = wash;
-      ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+      const cacheKey = this.phase === PHASE.TITLE ? "title" : "menu";
+      const menuCache = this.getMenuCache(cacheKey, menuBackdrop);
+      ctx.drawImage(menuCache, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
       return;
     }
 
     if (this.stageCache) ctx.drawImage(this.stageCache, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
     const fog = this.assets?.images.fog;
     const stage = STAGES[this.stageIndex] ?? STAGES[0];
-    if (fog) {
+    if (fog && this.performanceProfile.dynamicStageEffects) {
       const width = CANVAS_WIDTH * 1.14;
       const drift = this.reducedMotion ? 0 : (this.parallax * 18) % width;
       ctx.save();
@@ -1830,7 +1950,7 @@ export class GothTechnologyGame {
     }
     ctx.restore();
     const embers = this.assets?.images.embers;
-    if (embers) {
+    if (embers && this.performanceProfile.dynamicStageEffects) {
       const drift = this.reducedMotion ? 0 : (this.parallax * 24) % CANVAS_WIDTH;
       ctx.save();
       ctx.globalAlpha = stage.emberAlpha;
@@ -1838,7 +1958,7 @@ export class GothTechnologyGame {
       ctx.drawImage(embers, CANVAS_WIDTH - drift, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
       ctx.restore();
     }
-    if (!stage.legacyLayers) {
+    if (!stage.legacyLayers && this.performanceProfile.dynamicStageEffects) {
       const motion = this.reducedMotion ? 0 : this.parallax * 52;
       ctx.save();
       ctx.globalCompositeOperation = "screen";

@@ -154,7 +154,7 @@
           "status": "completed",
           "resultUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260714_131022_24fefa5b-38f9-476a-bb40-ebc26985ac3b.png",
           "rawPath": "assets/sprite-production/higgsfield-v2/raw/kalyx/heavy_punch.png",
-          "rawBytes": 5069662
+          "rawBytes": 5041502
         },
         "LIGHT_KICK": {
           "jobId": "6543cfee-3eb7-445b-8edc-61880d9bc012",
@@ -259,7 +259,7 @@
           "status": "completed",
           "resultUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260714_131140_efe6aaee-2fee-45c1-b683-c6f503e57631.png",
           "rawPath": "assets/sprite-production/higgsfield-v2/raw/kalyx/hurt_light.png",
-          "rawBytes": 5006148
+          "rawBytes": 4977988
         },
         "KNOCKDOWN": {
           "jobId": "dd5532f6-eb48-4c16-b9f2-1f54ddf3c470",
@@ -273,7 +273,7 @@
           "status": "completed",
           "resultUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260714_131145_0b5a7582-a844-4f89-9804-3ef808eb2c22.png",
           "rawPath": "assets/sprite-production/higgsfield-v2/raw/kalyx/taunt.png",
-          "rawBytes": 5156359
+          "rawBytes": 5128199
         },
         "VICTORY": {
           "jobId": "09974db5-9d01-4a8d-b34a-369d533fde7e",
@@ -524,14 +524,14 @@
           "status": "completed",
           "resultUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260714_131208_5ed0fea1-ca0d-4813-84e0-7478f6175c9f.png",
           "rawPath": "assets/sprite-production/higgsfield-v2/raw/master-ezra/crouch_walk.png",
-          "rawBytes": 5233315
+          "rawBytes": 5225378
         },
         "DASH_BACK": {
           "jobId": "a11ce6ae-69cb-47f5-b10f-23a7216ba484",
           "status": "completed",
           "resultUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260714_131211_a11ce6ae-69cb-47f5-b10f-23a7216ba484.png",
           "rawPath": "assets/sprite-production/higgsfield-v2/raw/master-ezra/dash_back.png",
-          "rawBytes": 5227780
+          "rawBytes": 5199620
         },
         "DASH_FORWARD": {
           "jobId": "e218187f-6da1-4c9f-85b4-ba282b9c69a6",
@@ -580,21 +580,21 @@
           "status": "completed",
           "resultUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260714_131226_34e08a68-b263-4195-b703-57a8f7733183.png",
           "rawPath": "assets/sprite-production/higgsfield-v2/raw/master-ezra/run_back.png",
-          "rawBytes": 5194321
+          "rawBytes": 5186384
         },
         "RUN_FORWARD": {
           "jobId": "d1496053-1c7e-4311-b1fb-93fd1b9b96d6",
           "status": "completed",
           "resultUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260714_131228_d1496053-1c7e-4311-b1fb-93fd1b9b96d6.png",
           "rawPath": "assets/sprite-production/higgsfield-v2/raw/master-ezra/run_forward.png",
-          "rawBytes": 5282579
+          "rawBytes": 5274642
         },
         "WALK_BACK": {
           "jobId": "14bc477b-fc2d-4dc3-b3ec-af6406e25f3a",
           "status": "completed",
           "resultUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260714_131230_14bc477b-fc2d-4dc3-b3ec-af6406e25f3a.png",
           "rawPath": "assets/sprite-production/higgsfield-v2/raw/master-ezra/walk_back.png",
-          "rawBytes": 5136081
+          "rawBytes": 5107921
         },
         "WALK_FORWARD": {
           "jobId": "8332e6e2-cc9d-4724-8922-c02b66b5c0b5",
@@ -660,31 +660,46 @@
           "rawBytes": 4947483
         },
         "SPECIAL_PROJECTILE": {
-          "jobId": "29e67b56-9f0c-44a8-bdfb-167f539381c7",
-          "status": "submitted"
+          "jobId": "de4b6764-8e46-4e7a-bb74-a68b245d5715",
+          "status": "completed",
+          "resultUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260715_004626_de4b6764-8e46-4e7a-bb74-a68b245d5715.png",
+          "rawPath": "assets/sprite-production/higgsfield-v2/raw/master-ezra/special_projectile.png",
+          "rawBytes": 5143751
         },
         "SPECIAL_RECOVER": {
-          "jobId": "b5b06cbd-f39b-4b7a-a0eb-28c15602e620",
-          "status": "submitted"
+          "jobId": "cee91846-6248-46f4-bf1f-cdc2c9b4d1d4",
+          "status": "completed",
+          "resultUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260715_004627_cee91846-6248-46f4-bf1f-cdc2c9b4d1d4.png",
+          "rawPath": "assets/sprite-production/higgsfield-v2/raw/master-ezra/special_recover.png",
+          "rawBytes": 5198866
         },
         "SPECIAL_START": {
-          "jobId": "778f90f4-6e23-4ed8-a6e5-2cb1fb5c305d",
-          "status": "submitted"
+          "jobId": "b44ab655-72a7-441e-a63e-87a5290ba3b0",
+          "status": "completed",
+          "resultUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260715_004629_b44ab655-72a7-441e-a63e-87a5290ba3b0.png",
+          "rawPath": "assets/sprite-production/higgsfield-v2/raw/master-ezra/special_start.png",
+          "rawBytes": 5917439
         },
         "SUPER_CHARGE": {
-          "jobId": "b8a75a08-22ef-46d8-a9f6-c791c9d53ddf",
-          "status": "submitted"
+          "jobId": "2fd794b7-5f94-4ad0-b9ca-b7bd6a19c81e",
+          "status": "completed",
+          "resultUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260715_004631_2fd794b7-5f94-4ad0-b9ca-b7bd6a19c81e.png",
+          "rawPath": "assets/sprite-production/higgsfield-v2/raw/master-ezra/super_charge.png",
+          "rawBytes": 5173185
         },
         "SUPER_RELEASE": {
-          "jobId": "cc78cafb-6741-4411-b3c8-1c0535254f97",
-          "status": "submitted"
+          "jobId": "2d775662-e46c-466e-a79c-f22e50bd57b8",
+          "status": "completed",
+          "resultUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260715_004633_2d775662-e46c-466e-a79c-f22e50bd57b8.png",
+          "rawPath": "assets/sprite-production/higgsfield-v2/raw/master-ezra/super_release.png",
+          "rawBytes": 5246707
         },
         "THROW_FINISH": {
           "jobId": "e6084aac-e775-40af-bb77-e3c28592b665",
           "status": "completed",
           "resultUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260714_131324_e6084aac-e775-40af-bb77-e3c28592b665.png",
           "rawPath": "assets/sprite-production/higgsfield-v2/raw/master-ezra/throw_finish.png",
-          "rawBytes": 4496702
+          "rawBytes": 4488765
         },
         "THROW_GRAB": {
           "jobId": "0a92935b-f8f1-4a59-8b18-d1ac534439ae",
@@ -824,11 +839,12 @@
       "masterJobId": "8c3e4e29-296b-4ffa-b1d9-9104f945075c",
       "motions": {
         "IDLE": {
-          "jobId": "bd0bc6bb-db90-42c3-9bcb-62a94fba29d5",
+          "jobId": "e11e4329-7541-4efc-8390-41516415a85b",
           "status": "completed",
-          "resultUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260715_170625_bd0bc6bb-db90-42c3-9bcb-62a94fba29d5.png",
+          "resultUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260715_170316_e11e4329-7541-4efc-8390-41516415a85b.png",
           "rawPath": "assets/sprite-production/higgsfield-v2/raw/detroit-lens/idle.png",
-          "rawBytes": 3863727
+          "rawBytes": 4656989,
+          "error": "<urlopen error [WinError 10013] An attempt was made to access a socket in a way forbidden by its access permissions>"
         },
         "READY_STANCE": {
           "jobId": "f3920b16-0aa2-4f74-86b8-4aa897e43850",
@@ -936,18 +952,20 @@
           "rawBytes": 3960579
         },
         "COMBO_1": {
-          "jobId": "ff2598b2-58c9-4048-ac5f-69edcc183c2b",
+          "jobId": "a9542a15-422e-4371-9268-f14e2f712339",
           "status": "completed",
-          "resultUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260715_173559_ff2598b2-58c9-4048-ac5f-69edcc183c2b.png",
+          "resultUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260715_170955_a9542a15-422e-4371-9268-f14e2f712339.png",
           "rawPath": "assets/sprite-production/higgsfield-v2/raw/detroit-lens/combo_1.png",
-          "rawBytes": 3820285
+          "rawBytes": 4081708,
+          "error": "<urlopen error [WinError 10013] An attempt was made to access a socket in a way forbidden by its access permissions>"
         },
         "COMBO_2": {
-          "jobId": "8ca2dc05-405a-4c9f-947e-cc10f50c45ca",
+          "jobId": "fd0d17e9-031a-4c80-be2b-77f5d055fc38",
           "status": "completed",
-          "resultUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260715_172541_8ca2dc05-405a-4c9f-947e-cc10f50c45ca.png",
+          "resultUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260715_170958_fd0d17e9-031a-4c80-be2b-77f5d055fc38.png",
           "rawPath": "assets/sprite-production/higgsfield-v2/raw/detroit-lens/combo_2.png",
-          "rawBytes": 4014041
+          "rawBytes": 4030855,
+          "error": "<urlopen error [WinError 10013] An attempt was made to access a socket in a way forbidden by its access permissions>"
         },
         "CROUCH_ATTACK": {
           "jobId": "ee2db38e-049d-4202-95fc-1a8559e6c348",
@@ -985,38 +1003,60 @@
           "rawBytes": 3882344
         },
         "SPECIAL_PROJECTILE": {
-          "jobId": "f70a69ed-0a08-4702-a4c4-dd7334b3afdc",
-          "status": "submitted"
+          "jobId": "1d63a4a7-b5b9-4c9d-9d1f-99455df0caf7",
+          "status": "completed",
+          "resultUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260715_211648_1d63a4a7-b5b9-4c9d-9d1f-99455df0caf7.png",
+          "error": "<urlopen error [WinError 10013] An attempt was made to access a socket in a way forbidden by its access permissions>",
+          "rawPath": "assets/sprite-production/higgsfield-v2/raw/detroit-lens/special_projectile.png",
+          "rawBytes": 3845029
         },
         "SPECIAL_RECOVER": {
-          "jobId": "d51bacb4-ac34-47d4-89a6-ec426a01fca8",
-          "status": "submitted"
+          "jobId": "56d68023-f59a-48a1-a07a-aa85075495e5",
+          "status": "completed",
+          "resultUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260715_211653_56d68023-f59a-48a1-a07a-aa85075495e5.png",
+          "error": "<urlopen error [WinError 10013] An attempt was made to access a socket in a way forbidden by its access permissions>",
+          "rawPath": "assets/sprite-production/higgsfield-v2/raw/detroit-lens/special_recover.png",
+          "rawBytes": 3944320
         },
         "SPECIAL_START": {
-          "jobId": "1a78baae-e9c2-4d89-a180-ac01a442755c",
-          "status": "submitted"
+          "jobId": "13a8f06f-7f25-40e0-9872-ecfc6f69df01",
+          "status": "completed",
+          "resultUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260715_212119_13a8f06f-7f25-40e0-9872-ecfc6f69df01.png",
+          "error": "<urlopen error [WinError 10013] An attempt was made to access a socket in a way forbidden by its access permissions>",
+          "rawPath": "assets/sprite-production/higgsfield-v2/raw/detroit-lens/special_start.png",
+          "rawBytes": 3873667
         },
         "SUPER_CHARGE": {
-          "jobId": "a0d5cd40-6606-4c65-a4c8-72097a80d64b",
-          "status": "submitted"
+          "jobId": "b8e293cd-7f97-470b-9751-f5cf15894c02",
+          "status": "completed",
+          "resultUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260715_174411_b8e293cd-7f97-470b-9751-f5cf15894c02.png",
+          "error": "<urlopen error [WinError 10013] An attempt was made to access a socket in a way forbidden by its access permissions>",
+          "rawPath": "assets/sprite-production/higgsfield-v2/raw/detroit-lens/super_charge.png",
+          "rawBytes": 3941926
         },
         "SUPER_RELEASE": {
-          "jobId": "5e486385-e18d-4afc-9b44-78baa4dc5d00",
-          "status": "submitted"
+          "jobId": "6c443fe1-a258-431a-826f-fdae2ca7badf",
+          "status": "completed",
+          "resultUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260715_171122_6c443fe1-a258-431a-826f-fdae2ca7badf.png",
+          "error": "<urlopen error [WinError 10013] An attempt was made to access a socket in a way forbidden by its access permissions>",
+          "rawPath": "assets/sprite-production/higgsfield-v2/raw/detroit-lens/super_release.png",
+          "rawBytes": 3931814
         },
         "THROW_FINISH": {
-          "jobId": "7bf2b22f-f687-4890-bbc5-4d6096d8af63",
+          "jobId": "2cc6244f-7ca6-4573-b020-66584b3ec3a4",
           "status": "completed",
-          "resultUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260715_173623_7bf2b22f-f687-4890-bbc5-4d6096d8af63.png",
+          "resultUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260715_171129_2cc6244f-7ca6-4573-b020-66584b3ec3a4.png",
           "rawPath": "assets/sprite-production/higgsfield-v2/raw/detroit-lens/throw_finish.png",
-          "rawBytes": 3907611
+          "rawBytes": 4111746,
+          "error": "<urlopen error [WinError 10013] An attempt was made to access a socket in a way forbidden by its access permissions>"
         },
         "THROW_GRAB": {
-          "jobId": "28595516-1908-42ca-820a-aeb932576856",
+          "jobId": "0d68edd2-f594-4d4e-abf1-fb9578b2b7cd",
           "status": "completed",
-          "resultUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260715_182306_28595516-1908-42ca-820a-aeb932576856.png",
+          "resultUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260715_181904_0d68edd2-f594-4d4e-abf1-fb9578b2b7cd.png",
           "rawPath": "assets/sprite-production/higgsfield-v2/raw/detroit-lens/throw_grab.png",
-          "rawBytes": 4043643
+          "rawBytes": 4215968,
+          "error": "<urlopen error [WinError 10013] An attempt was made to access a socket in a way forbidden by its access permissions>"
         },
         "BLOCK_HIGH": {
           "jobId": "911efb15-f842-467d-98b9-2cbfd544998f",
@@ -1033,11 +1073,12 @@
           "rawBytes": 3974991
         },
         "DEFEAT": {
-          "jobId": "89bb1a7c-4b62-40cf-9793-f68e546d2c17",
+          "jobId": "50e3d04c-98eb-4159-a5f5-77aeea5a8c1e",
           "status": "completed",
-          "resultUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260715_173603_89bb1a7c-4b62-40cf-9793-f68e546d2c17.png",
+          "resultUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260715_171155_50e3d04c-98eb-4159-a5f5-77aeea5a8c1e.png",
           "rawPath": "assets/sprite-production/higgsfield-v2/raw/detroit-lens/defeat.png",
-          "rawBytes": 3841672
+          "rawBytes": 4044870,
+          "error": "<urlopen error [WinError 10013] An attempt was made to access a socket in a way forbidden by its access permissions>"
         },
         "GET_UP": {
           "jobId": "a3523c68-be29-4396-83b8-03c2934238e8",
@@ -1061,11 +1102,12 @@
           "rawBytes": 3984196
         },
         "KNOCKDOWN": {
-          "jobId": "cef0a3e9-5aee-495a-8da1-286326044917",
+          "jobId": "e9ab5f5d-e62b-4cad-ba80-1e63d9d589e2",
           "status": "completed",
-          "resultUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260715_174403_cef0a3e9-5aee-495a-8da1-286326044917.png",
+          "resultUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260715_173608_e9ab5f5d-e62b-4cad-ba80-1e63d9d589e2.png",
           "rawPath": "assets/sprite-production/higgsfield-v2/raw/detroit-lens/knockdown.png",
-          "rawBytes": 3765052
+          "rawBytes": 3681961,
+          "error": "<urlopen error [WinError 10013] An attempt was made to access a socket in a way forbidden by its access permissions>"
         },
         "TAUNT": {
           "jobId": "23a3e951-ebab-4cfb-8127-e4983fa008e1",
@@ -1260,7 +1302,7 @@
           "status": "completed",
           "resultUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260717_030419_c8e85fd9-b5de-4416-9cb4-741b0e84df08.png",
           "rawPath": "assets/sprite-production/higgsfield-v2/raw/amara-valentine/dash_back.png",
-          "rawBytes": 5194845
+          "rawBytes": 5186908
         },
         "DASH_FORWARD": {
           "jobId": "05b0e04b-1d89-45ac-be86-4e761fd17a2b",
@@ -1428,7 +1470,7 @@
           "status": "completed",
           "resultUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260717_030515_e8fe74f9-0110-4f1a-9f67-ef0db30235f4.png",
           "rawPath": "assets/sprite-production/higgsfield-v2/raw/amara-valentine/throw_finish.png",
-          "rawBytes": 4897902
+          "rawBytes": 4869742
         },
         "THROW_GRAB": {
           "jobId": "dc4645a3-eb1b-4ae3-b985-e097647ce19e",
@@ -1477,7 +1519,7 @@
           "status": "completed",
           "resultUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260717_030532_d2665c0c-ad86-44eb-b4eb-4f93e2f0a314.png",
           "rawPath": "assets/sprite-production/higgsfield-v2/raw/amara-valentine/hurt_light.png",
-          "rawBytes": 5156770
+          "rawBytes": 5128610
         },
         "KNOCKDOWN": {
           "jobId": "ad1fc01d-c40b-4ca3-b9ee-7a232a656f22",

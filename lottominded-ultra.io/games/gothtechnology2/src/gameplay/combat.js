@@ -1,7 +1,7 @@
-import { rectsOverlap } from "../engine/math.js?v=semantic-motion-v2";
-import { ATTACKS } from "../config/moves.js?v=semantic-motion-v2";
-import { FloatingText, LovePulseEffect, SpriteEffect } from "./effects.js?v=semantic-motion-v2";
-import { registerAttackHit, sliceAttackForHit } from "./hits.js?v=semantic-motion-v2";
+import { rectsOverlap } from "../engine/math.js?v=galaxy-a16-performance-v1";
+import { ATTACKS } from "../config/moves.js?v=galaxy-a16-performance-v1";
+import { FloatingText, LovePulseEffect, SpriteEffect } from "./effects.js?v=galaxy-a16-performance-v1";
+import { registerAttackHit, sliceAttackForHit } from "./hits.js?v=galaxy-a16-performance-v1";
 
 export function resolveMelee(attacker, defender, game) {
   const attackState = attacker.currentAttack;

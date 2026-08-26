@@ -5,6 +5,7 @@ import { attackIntentFromActions, resolveCancelAttack } from "../src/gameplay/co
 import { ASSET_URLS, COMMERCIAL_URLS, FIGHTERS, MOTION_PLAYBACK } from "../src/config/assets.js";
 import { ARCADE_LADDER, COMMAND_LISTS, GAME_MODES, ROSTER_CARD_LAYOUT, ROSTER_IDS, STAGES, arcadeRouteFor } from "../src/config/content.js";
 import { GROUND_Y } from "../src/config/constants.js";
+import { PERFORMANCE_PROFILES, selectPerformanceProfile } from "../src/config/performance.js";
 import { Fighter } from "../src/gameplay/fighter.js";
 import { applyHit, resolveMelee } from "../src/gameplay/combat.js";
 import { CpuController } from "../src/gameplay/cpu.js";
@@ -12,7 +13,7 @@ import { LovePulseEffect } from "../src/gameplay/effects.js";
 import { registerAttackHit, sliceAttackForHit } from "../src/gameplay/hits.js";
 import { BoerboelStrike, Projectile } from "../src/gameplay/projectiles.js";
 import { applyRoundOutcomeMotions, resolveRoundOutcome } from "../src/gameplay/rounds.js";
-import { DEFAULT_KEYMAP, normalizeKeymap, remapKey, unbindKey } from "../src/engine/input.js";
+import { DEFAULT_KEYMAP, gamepadActionsForPad, normalizeKeymap, remapKey, unbindKey } from "../src/engine/input.js";
 
 const motionManifest = JSON.parse(readFileSync(new URL("../assets/motion-atlases/motion-atlas-manifest.json", import.meta.url), "utf8"));
 const semanticMotionQa = JSON.parse(readFileSync(new URL("../assets/motion-atlases/motion-semantic-qa.json", import.meta.url), "utf8"));
@@ -41,6 +42,33 @@ const makeGame = () => ({
   recordCombatEvent() {}
 });
 
+test("Samsung A16 class phones use the constrained 60 Hz rendering profile", () => {
+  const profile = selectPerformanceProfile({
+    coarsePointer: true,
+    shortViewport: 360,
+    deviceMemory: 4,
+    hardwareConcurrency: 8
+  });
+  assert.equal(profile.id, "mobile-constrained");
+  assert.equal(profile.renderScale, 0.625);
+  assert.equal(profile.targetRenderFps, 60);
+  assert.equal(profile.dynamicStageEffects, false);
+  assert.equal(profile.maxProjectileTrail, 4);
+});
+
+test("desktop rendering retains the full visual profile", () => {
+  const profile = selectPerformanceProfile({
+    coarsePointer: false,
+    shortViewport: 720,
+    deviceMemory: 4,
+    hardwareConcurrency: 4,
+    saveData: true
+  });
+  assert.equal(profile, PERFORMANCE_PROFILES.desktop);
+  assert.equal(profile.renderScale, 1);
+  assert.equal(profile.dynamicStageEffects, true);
+});
+
 test("keyboard remaps persist without restoring replaced movement keys", () => {
   const remapped = remapKey(DEFAULT_KEYMAP, "p1.left", "KeyQ");
   assert.ok(remapped);
@@ -59,6 +87,28 @@ test("keyboard conflicts swap actions and bindings can be cleared", () => {
   assert.equal(remapped.keymap.KeyA, "p1.right");
   const cleared = unbindKey(remapped.keymap, "p1.left");
   assert.equal(Object.values(cleared).includes("p1.left"), false);
+});
+
+test("standard gamepads map sticks, D-pad, face buttons, triggers, pause, and super chord", () => {
+  const buttons = Array.from({ length: 17 }, () => ({ pressed: false, value: 0 }));
+  const pad = { axes: [0.72, -0.8, 0, 0], buttons, mapping: "standard" };
+  for (const index of [0, 2, 4, 5, 6, 7, 9, 10, 11, 13]) {
+    buttons[index] = { pressed: true, value: 1 };
+  }
+  const actions = gamepadActionsForPad(pad, 2);
+  assert.equal(actions.has("p2.right"), true);
+  assert.equal(actions.has("p2.up"), true);
+  assert.equal(actions.has("p2.down"), true);
+  assert.equal(actions.has("p2.lightPunch"), true);
+  assert.equal(actions.has("p2.heavyPunch"), true);
+  assert.equal(actions.has("p2.throw"), true);
+  assert.equal(actions.has("p2.special"), true);
+  assert.equal(actions.has("p2.super"), true);
+  assert.equal(actions.has("p2.dash"), true);
+  assert.equal(actions.has("p2.taunt"), true);
+  assert.equal(actions.has("ui.pause"), true);
+  assert.equal(actions.has("p2.assist1"), false);
+  assert.equal(actions.has("p2.assist2"), false);
 });
 
 const animation = (durationMs = 90) => ({
@@ -103,6 +153,11 @@ test("Ezra crouches without shrinking his entire body", () => {
 
 test("Detroit Lens keeps full body scale while firing the eye laser", () => {
   assert.equal(FIGHTERS.DETROIT_LENS_NOIR.motionScaleOverrides.SUPER_RELEASE, 1.02);
+  assert.deepEqual(FIGHTERS.DETROIT_LENS_NOIR.antiSeamUnderpaint, {
+    scale: 1.006,
+    alpha: 0.68,
+    filter: "brightness(0.18) saturate(0.3)"
+  });
 });
 
 test("Detroit Lens eye laser starts at the eye socket and extends toward the opponent", () => {
@@ -135,6 +190,92 @@ test("Detroit Lens eye laser starts at the eye socket and extends toward the opp
   assert.ok(gradients[0].startX > projectile.x - projectile.radius, "beam origin moved behind the fighter");
   assert.ok(gradients[0].endX > projectile.x + projectile.radius * 6, "beam does not extend toward the opponent");
   assert.ok(segments.every(({ end, start }) => end.x > start.x), "beam segment points backward");
+});
+
+test("Detroit Lens eye laser stays attached and hits real standing and crouching hurtboxes", () => {
+  const owner = makeFighter("DETROIT_LENS_NOIR", 120, 1, completeAnimations);
+  const target = makeFighter("KALYX", 1120, -1, completeAnimations);
+  target.slot = 2;
+  const hits = [];
+  const projectile = new Projectile({
+    owner,
+    x: owner.x + 34,
+    y: owner.y - 238,
+    direction: 1,
+    attack: owner.getAttackData("super"),
+    image: null,
+    kind: "eye-laser",
+    color: "#ff2838"
+  });
+  const game = {
+    ...makeGame(),
+    fighters: [owner, target],
+    resolveIncomingHit(_owner, _target, _attack, meta) { hits.push(meta); }
+  };
+
+  projectile.update(0.01, game);
+  assert.equal(projectile.x - owner.x, 34);
+  assert.equal(projectile.y - owner.y, -238);
+  assert.ok(projectile.rect.x <= target.hurtbox.x);
+  assert.ok(projectile.rect.x + projectile.rect.w >= target.hurtbox.x + target.hurtbox.w);
+  assert.ok(projectile.rect.y <= target.hurtbox.y + target.hurtbox.h);
+  assert.ok(projectile.rect.y + projectile.rect.h >= target.hurtbox.y);
+  assert.equal(hits.length, 1);
+
+  owner.x += 60;
+  owner.y -= 20;
+  target.setMotion("CROUCH_IDLE", true);
+  projectile.update(0.07, game);
+  assert.equal(projectile.x - owner.x, 34);
+  assert.equal(projectile.y - owner.y, -238);
+  assert.equal(hits.length, 2);
+  projectile.update(0.07, game);
+  projectile.update(0.07, game);
+  assert.equal(projectile.hitCount, 3);
+  assert.equal(hits.length, 3);
+});
+
+test("projectiles can hit the opposing fighter in a mirror match", () => {
+  const owner = makeFighter("DETROIT_LENS_NOIR", 260, 1, completeAnimations);
+  const target = makeFighter("DETROIT_LENS_NOIR", 840, -1, completeAnimations);
+  target.slot = 2;
+  const hits = [];
+  const projectile = new Projectile({
+    owner,
+    x: owner.x + 34,
+    y: owner.y - 238,
+    direction: 1,
+    attack: owner.getAttackData("super"),
+    image: null,
+    kind: "eye-laser",
+    color: "#ff2838"
+  });
+  projectile.update(1 / 60, {
+    fighters: [owner, target],
+    effects: [],
+    resolveIncomingHit() { hits.push(1); }
+  });
+  assert.equal(hits.length, 1);
+});
+
+test("special and super attacks clear dash echoes before Detroit summons or fires", () => {
+  const game = makeGame();
+  const opponent = makeFighter("KALYX", 700, -1, completeAnimations);
+  for (const attackName of ["special", "super"]) {
+    const detroit = makeFighter("DETROIT_LENS_NOIR", 420, 1, completeAnimations);
+    detroit.meter = 100;
+    detroit.dashTimer = 0.2;
+    detroit.dashRecoveryTimer = 0.1;
+    assert.equal(detroit.beginAttack(attackName, game), true);
+    assert.equal(detroit.dashTimer, 0);
+    assert.equal(detroit.dashRecoveryTimer, 0);
+  }
+
+  const detroit = makeFighter("DETROIT_LENS_NOIR", 420, 1, completeAnimations);
+  detroit.meter = 100;
+  detroit.dashTimer = 0.2;
+  assert.equal(detroit.useCharacterSkill(opponent, game), true);
+  assert.equal(detroit.dashTimer, 0);
 });
 
 test("double KO and tied timeout are neutral draws", () => {
@@ -231,11 +372,15 @@ test("Detroit Lens Noir ships a complete guardian kit, Boerboel command list, an
   assert.equal(fighter.superName, "Red-Eye Exposure");
   assert.equal(fighter.costumePalette, "black-black");
   assert.equal(fighter.palette, "#9ca3ad");
+  assert.equal(fighter.motionRemap.IDLE, "READY_STANCE");
   assert.equal(Object.keys(motionManifest.characters.DETROIT_LENS_NOIR.motions).length, 39);
   assert.deepEqual(ROSTER_IDS, ["KALYX", "MASTER_EZRA", "DETROIT_LENS_NOIR", "AMARA_VALENTINE"]);
   assert.equal(ROSTER_CARD_LAYOUT.length, ROSTER_IDS.length);
   assert.deepEqual(Object.keys(ASSET_URLS.rosterPortraits), ["kalyx", "masterEzra", "detroitLensNoir", "amaraValentine"]);
+  assert.deepEqual(Object.keys(ASSET_URLS.rosterHeadshots), ["kalyx", "masterEzra", "detroitLensNoir", "amaraValentine"]);
   assert.equal(new Set(ROSTER_IDS.map((id) => FIGHTERS[id].rosterPortraitKey)).size, ROSTER_IDS.length);
+  assert.equal(new Set(ROSTER_IDS.map((id) => FIGHTERS[id].headshotKey)).size, ROSTER_IDS.length);
+  assert.ok(ROSTER_IDS.every((id) => FIGHTERS[id].headshotKey.endsWith("Headshot")));
   assert.ok(!Object.hasOwn(FIGHTERS, "KALYX_ECLIPSE"));
   assert.ok(!Object.hasOwn(FIGHTERS, "EZRA_ASCENDANT"));
   assert.ok(!Object.hasOwn(COMMAND_LISTS, "KALYX_ECLIPSE"));
@@ -272,8 +417,8 @@ test("Amara Valentine ships 39 complete motions and a distinct love-power combat
   assert.ok(fighter.attackOverrides.super.knockback > 0, "Heartbreak Nova should repel on hit");
   assert.equal(fighter.attackOverrides.super.multiHit, 4);
   assert.equal(Object.keys(motionManifest.characters.AMARA_VALENTINE.motions).length, 39);
-  assert.equal(motionManifest.characters.AMARA_VALENTINE.motions.JUMP_PEAK.repair, "semantic-body-only-v1");
-  assert.equal(motionManifest.characters.AMARA_VALENTINE.motions.AIR_ATTACK.repair, "amara-aerial-v1");
+  assert.equal(motionManifest.characters.AMARA_VALENTINE.motions.JUMP_PEAK.source, "higgsfield-v3-aerial-locomotion");
+  assert.equal(motionManifest.characters.AMARA_VALENTINE.motions.AIR_ATTACK.source, "higgsfield-v3-aerial-locomotion");
   assert.match(ASSET_URLS.rosterPortraits.amaraValentine, /amara-valentine-idle\.webp/);
   assert.ok(COMMAND_LISTS.AMARA_VALENTINE.commands.some((command) => command.name === "CHARM COUNTER"));
   assert.ok(COMMAND_LISTS.AMARA_VALENTINE.commands.some((command) => command.name === "HEARTLINE PULSE"));
@@ -411,19 +556,17 @@ test("Detroit Lens keeps only the original black costume atlas", () => {
   }
 });
 
-test("Kalyx aerial atlas keeps six semantically approved body-only frames", () => {
+test("Kalyx aerial atlas keeps six direct semantically approved body-only frames", () => {
   for (const motionName of ["JUMP_START", "JUMP_RISE", "JUMP_PEAK", "JUMP_FALL", "LANDING", "AIR_ATTACK"]) {
     const motion = motionManifest.characters.KALYX.motions[motionName];
     assert.equal(motion.frames.length, 6);
     assert.equal(motion.uniqueFrames, 6);
-    if (motionName === "AIR_ATTACK") {
-      assert.equal(motion.source, "higgsfield-v4-body-only");
-    } else {
-      assert.equal(motion.source, "derived-body-only-v1");
-      assert.equal(motion.semantic.bodyOnly, true);
-      assert.equal(motion.semantic.figureCount, 1);
-      assert.match(motion.semantic.poseClass, /^(takeoff|aerial-|landing-)/);
-    }
+    assert.equal(motion.source, "higgsfield-v3-aerial-locomotion");
+    assert.equal(motion.semantic.version, 2);
+    assert.equal(motion.semantic.bodyOnly, true);
+    assert.equal(motion.semantic.figureCount, 1);
+    assert.equal(motion.semantic.anchor, "bottom-center");
+    assert.match(motion.semantic.poseClass, /^(takeoff|aerial-|landing-)/);
     for (const frame of motion.frames) {
       assert.ok(frame.content.visibleW <= 184, `${motionName} retained an over-wide silhouette`);
       assert.ok(frame.content.visibleH <= 184, `${motionName} retained an over-tall silhouette`);
@@ -431,21 +574,23 @@ test("Kalyx aerial atlas keeps six semantically approved body-only frames", () =
   }
 });
 
-test("repaired motion sequences have semantic provenance and six unique single-body poses", () => {
-  assert.equal(semanticMotionQa.version, 1);
-  assert.equal(semanticMotionQa.repair, "semantic-body-only-v1");
-  assert.ok(Object.keys(semanticMotionQa.motions).length >= 30);
+test("every runtime motion has semantic provenance and minimum unique single-body poses", () => {
+  assert.equal(semanticMotionQa.version, 2);
+  assert.equal(semanticMotionQa.pipeline, "semantic-sprite-quality-v2");
+  assert.equal(Object.keys(semanticMotionQa.motions).length, Object.keys(FIGHTERS).length * 39);
   for (const [key, rule] of Object.entries(semanticMotionQa.motions)) {
     const [characterId, motionName] = key.split("/");
     const motion = motionManifest.characters[characterId].motions[motionName];
-    assert.equal(motion.source, "derived-body-only-v1", key);
-    assert.equal(motion.repair, semanticMotionQa.repair, key);
-    assert.equal(motion.uniqueFrames, rule.minUniqueSilhouettes, key);
+    assert.ok(motion.uniqueFrames >= rule.minUniqueSilhouettes, key);
+    assert.equal(motion.semantic.version, semanticMotionQa.version, key);
     assert.equal(motion.semantic.bodyOnly, true, key);
     assert.equal(motion.semantic.figureCount, 1, key);
     assert.equal(motion.semantic.anchor, "bottom-center", key);
     assert.equal(motion.semantic.poseClass, rule.poseClass, key);
-    assert.equal(motion.repairSourceFrames.length, 6, key);
+    if (motion.source === "derived-body-only-v1") {
+      assert.equal(motion.repair, "semantic-body-only-v1", key);
+      assert.equal(motion.repairSourceFrames.length, 6, key);
+    }
   }
 });
 
@@ -473,6 +618,28 @@ test("runtime locomotion playback retains at least four distinct poses", () => {
     }
   }
   assert.deepEqual(MOTION_PLAYBACK.KALYX.KNOCKDOWN, [0, 1, 3, 4, 2, 5]);
+});
+
+test("aerial and repaired locomotion sequences use direct Higgsfield strips", () => {
+  const aerial = ["JUMP_START", "JUMP_RISE", "JUMP_PEAK", "JUMP_FALL", "LANDING", "AIR_ATTACK"];
+  for (const characterId of Object.keys(FIGHTERS)) {
+    for (const motionName of aerial) {
+      const motion = motionManifest.characters[characterId].motions[motionName];
+      assert.equal(motion.source, "higgsfield-v3-aerial-locomotion", `${characterId}/${motionName}`);
+      assert.equal(motion.repairSourceFrames, undefined, `${characterId}/${motionName}`);
+      assert.deepEqual(MOTION_PLAYBACK[characterId]?.[motionName] ?? [0, 1, 2, 3, 4, 5], [0, 1, 2, 3, 4, 5]);
+    }
+  }
+  for (const [characterId, motions] of Object.entries({
+    KALYX: ["WALK_BACK", "DASH_FORWARD", "DASH_BACK"],
+    AMARA_VALENTINE: ["RUN_BACK", "RUN_FORWARD", "DASH_FORWARD"]
+  })) {
+    for (const motionName of motions) {
+      const motion = motionManifest.characters[characterId].motions[motionName];
+      assert.equal(motion.source, "higgsfield-v3-aerial-locomotion", `${characterId}/${motionName}`);
+      assert.equal(motion.repairSourceFrames, undefined, `${characterId}/${motionName}`);
+    }
+  }
 });
 
 test("Master Ezra jump keeps takeoff, advances once through each air phase, and lands cleanly", () => {
@@ -533,7 +700,7 @@ test("Kalyx aerial states use dedicated rise, peak, fall, attack, and landing mo
     assert.ok(seen.has(motion), `${motion} was unreachable`);
   }
   assert.equal(fighter.currentAttack, null, "air attack should end when the fighter touches down");
-  assert.deepEqual(MOTION_PLAYBACK.KALYX.LANDING, [2, 3, 4, 5]);
+  assert.deepEqual(MOTION_PLAYBACK.KALYX.LANDING, [0, 1, 2, 3, 4, 5]);
 });
 
 test("fighter identity skills reach Kalyx shadow step and Ezra parry", () => {
@@ -601,6 +768,35 @@ test("Boerboel Rush advances through summon, run, bite hit, and recovery", () =>
   assert.equal(dog.phase, "recover");
   dog.update(0.45, game);
   assert.equal(dog.dead, true);
+});
+
+test("Boerboel bite remains active through target movement and mirror matches", () => {
+  const hits = [];
+  const owner = makeFighter("DETROIT_LENS_NOIR", 300, 1, completeAnimations);
+  const target = makeFighter("DETROIT_LENS_NOIR", 650, -1, completeAnimations);
+  target.slot = 2;
+  const game = {
+    ...makeGame(),
+    fighters: [owner, target],
+    resolveIncomingHit(attacker, defender, attack, meta) { hits.push({ attacker, defender, attack, meta }); }
+  };
+  const dog = new BoerboelStrike({
+    owner,
+    x: owner.x - 72,
+    y: owner.y,
+    direction: 1,
+    attack: owner.getAttackData("special"),
+    image: null
+  });
+
+  for (let frame = 0; frame < 180 && !dog.dead; frame += 1) {
+    dog.update(1 / 60, game);
+    if (dog.phase === "attack" && dog.phaseAge < 0.18) target.y = GROUND_Y - 248;
+    else if (dog.phase === "attack") target.y = GROUND_Y;
+  }
+
+  assert.equal(hits.length, 1);
+  assert.equal(hits[0].meta.sourceName, "boerboelRush");
 });
 
 test("Detroit Lens precision projectiles gain bonus meter at long range", () => {
