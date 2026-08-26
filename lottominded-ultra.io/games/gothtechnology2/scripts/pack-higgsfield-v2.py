@@ -256,36 +256,13 @@ def connected_components(mask: np.ndarray) -> list[dict]:
 def remove_edge_grid_seams(image: Image.Image) -> Image.Image:
     rgba = np.asarray(image, dtype=np.uint8).copy()
     alpha = rgba[:, :, 3]
-    dark_foreground = (alpha > 24) & (rgba[:, :, :3].max(axis=2) < 24)
-
-    def clear_long_dark_runs(projection: np.ndarray, axis: str, span: int) -> None:
-        indices = np.where(projection > span * 0.52)[0]
-        if not len(indices):
-            return
-        run_start = previous = int(indices[0])
-        for raw_index in (*indices[1:], None):
-            index = None if raw_index is None else int(raw_index)
-            if index is not None and index == previous + 1:
-                previous = index
-                continue
-            if previous - run_start + 1 <= 18:
-                start = max(0, run_start - 3)
-                end = previous + 4
-                if axis == "vertical":
-                    alpha[:, start:end] = 0
-                else:
-                    alpha[start:end, :] = 0
-            if index is not None:
-                run_start = previous = index
-
-    clear_long_dark_runs(dark_foreground.sum(axis=0), "vertical", image.height)
-    clear_long_dark_runs(dark_foreground.sum(axis=1), "horizontal", image.width)
-
+    # Grid remnants are handled only when they are detached edge components.
+    # Clearing whole projected rows or columns also erases dark clothing.
     reduced = Image.fromarray(alpha, "L").resize(
         (max(1, image.width // COMPONENT_SCALE), max(1, image.height // COMPONENT_SCALE)),
-        Image.Resampling.NEAREST,
+        Image.Resampling.BOX,
     )
-    reduced_mask = np.asarray(reduced) > 24
+    reduced_mask = np.asarray(reduced) > 8
     vertical_edge_band = max(4, round(reduced_mask.shape[1] * 0.25))
     horizontal_edge_band = max(4, round(reduced_mask.shape[0] * 0.25))
     for component in connected_components(reduced_mask):
@@ -304,7 +281,9 @@ def remove_edge_grid_seams(image: Image.Image) -> Image.Image:
         ):
             left = max(0, component["min_x"] * COMPONENT_SCALE - 2)
             right = min(image.width, (component["max_x"] + 1) * COMPONENT_SCALE + 2)
-            alpha[:, left:right] = 0
+            top = max(0, component["min_y"] * COMPONENT_SCALE - 2)
+            bottom = min(image.height, (component["max_y"] + 1) * COMPONENT_SCALE + 2)
+            alpha[top:bottom, left:right] = 0
         if (
             touches_horizontal_edge
             and component["height"] <= 5
@@ -312,7 +291,9 @@ def remove_edge_grid_seams(image: Image.Image) -> Image.Image:
         ):
             top = max(0, component["min_y"] * COMPONENT_SCALE - 2)
             bottom = min(image.height, (component["max_y"] + 1) * COMPONENT_SCALE + 2)
-            alpha[top:bottom, :] = 0
+            left = max(0, component["min_x"] * COMPONENT_SCALE - 2)
+            right = min(image.width, (component["max_x"] + 1) * COMPONENT_SCALE + 2)
+            alpha[top:bottom, left:right] = 0
     rgba[:, :, 3] = alpha
     return Image.fromarray(rgba, "RGBA")
 

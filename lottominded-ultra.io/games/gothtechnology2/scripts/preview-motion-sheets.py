@@ -34,7 +34,7 @@ def main() -> None:
     draw = ImageDraw.Draw(preview)
     amara_sources = {}
     if args.character == "AMARA_VALENTINE":
-        expected = {motion for motions in packer.CATEGORIES.values() for motion in motions}
+        expected = set(args.motion)
         amara_sources = {
             motion: packer.split_horizontal_strip(raw_root / f"{motion.lower()}.png")
             for motion in expected

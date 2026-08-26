@@ -1,6 +1,6 @@
 export const PACK_ROOT = "assets/GOTHTECHNOLOGY_EXPANDED_SPRITE_PACK_V2";
 export const LOCAL_ROOT = "assets";
-export const MOTION_ASSET_VERSION = "semantic-motion-v2";
+export const MOTION_ASSET_VERSION = "galaxy-a16-performance-v1";
 
 export const COMMERCIAL_URLS = [
   `${LOCAL_ROOT}/commercials/detroit-commercial-01.mp4`,
@@ -14,7 +14,8 @@ export const ASSET_URLS = {
   menuBackdrop: `${LOCAL_ROOT}/user-stage/forest-fight-background.jpg`,
   gameTitles: {
     gothtechnology: `${LOCAL_ROOT}/user-title/gothtechnology-cover-start-bg.webp?v=${MOTION_ASSET_VERSION}`,
-    robotRahbe: `${LOCAL_ROOT}/user-title/robot-rahbe-title-card.webp?v=${MOTION_ASSET_VERSION}`
+    robotRahbe: `${LOCAL_ROOT}/user-title/robot-rahbe-title-card.webp?v=${MOTION_ASSET_VERSION}`,
+    staticWave: `../opengw-levels/assets/2084/branding/marquee-gameplay-keyart.webp?v=${MOTION_ASSET_VERSION}`
   },
   rosterPortraits: {
     kalyx: `${LOCAL_ROOT}/user-roster/kalyx-idle.webp?v=${MOTION_ASSET_VERSION}`,
@@ -22,8 +23,22 @@ export const ASSET_URLS = {
     detroitLensNoir: `${LOCAL_ROOT}/user-roster/detroit-lens-noir-idle.webp?v=${MOTION_ASSET_VERSION}`,
     amaraValentine: `${LOCAL_ROOT}/user-roster/amara-valentine-idle.webp?v=${MOTION_ASSET_VERSION}`
   },
+  rosterHeadshots: {
+    kalyx: `${LOCAL_ROOT}/user-roster/kalyx-headshot.webp?v=${MOTION_ASSET_VERSION}`,
+    masterEzra: `${LOCAL_ROOT}/user-roster/master-ezra-headshot.webp?v=${MOTION_ASSET_VERSION}`,
+    detroitLensNoir: `${LOCAL_ROOT}/user-roster/detroit-lens-noir-headshot.webp?v=${MOTION_ASSET_VERSION}`,
+    amaraValentine: `${LOCAL_ROOT}/user-roster/amara-valentine-headshot.webp?v=${MOTION_ASSET_VERSION}`
+  },
   background: `${LOCAL_ROOT}/user-stage/forest-fight-background.jpg`,
   stages: {
+    detroitMidnightMile: `${LOCAL_ROOT}/user-stage/detroit-midnight-mile.webp`,
+    motorCityAssembly: `${LOCAL_ROOT}/user-stage/motor-city-assembly.webp`,
+    detroitRiverfront: `${LOCAL_ROOT}/user-stage/detroit-riverfront.webp`,
+    easternMarketAfterDark: `${LOCAL_ROOT}/user-stage/eastern-market-after-dark.webp`,
+    michiganCentralConcourse: `${LOCAL_ROOT}/user-stage/michigan-central-concourse.webp`
+  },
+  stageBackgrounds: {
+    background: `${LOCAL_ROOT}/user-stage/forest-fight-background.jpg`,
     detroitMidnightMile: `${LOCAL_ROOT}/user-stage/detroit-midnight-mile.webp`,
     motorCityAssembly: `${LOCAL_ROOT}/user-stage/motor-city-assembly.webp`,
     detroitRiverfront: `${LOCAL_ROOT}/user-stage/detroit-riverfront.webp`,
@@ -62,11 +77,11 @@ export const MOTION_PLAYBACK = {
     RUN_BACK: [1, 2, 3, 4, 3, 2],
     DASH_FORWARD: [0, 1, 2, 3, 4, 5],
     DASH_BACK: [0, 1, 2, 3, 4, 5],
-    JUMP_START: [0, 1, 2, 3],
-    JUMP_RISE: [0, 1, 2, 3, 4],
-    JUMP_PEAK: [0, 1, 2, 3],
-    JUMP_FALL: [0, 1, 2, 3],
-    LANDING: [2, 3, 4, 5],
+    JUMP_START: [0, 1, 2, 3, 4, 5],
+    JUMP_RISE: [0, 1, 2, 3, 4, 5],
+    JUMP_PEAK: [0, 1, 2, 3, 4, 5],
+    JUMP_FALL: [0, 1, 2, 3, 4, 5],
+    LANDING: [0, 1, 2, 3, 4, 5],
     KNOCKDOWN: [0, 1, 3, 4, 2, 5]
   },
   MASTER_EZRA: {
@@ -76,10 +91,10 @@ export const MOTION_PLAYBACK = {
     RUN_BACK: [1, 2, 3, 4, 3, 2],
     DASH_FORWARD: [0, 1, 2, 3, 4, 5],
     DASH_BACK: [0, 1, 2, 3, 4, 5],
-    JUMP_START: [0, 1],
-    JUMP_RISE: [0, 1, 2],
-    JUMP_PEAK: [0, 1],
-    JUMP_FALL: [0, 1, 2, 3],
+    JUMP_START: [0, 1, 2, 3, 4, 5],
+    JUMP_RISE: [0, 1, 2, 3, 4, 5],
+    JUMP_PEAK: [0, 1, 2, 3, 4, 5],
+    JUMP_FALL: [0, 1, 2, 3, 4, 5],
     LANDING: [0, 1, 2, 3, 4, 5]
   },
   DETROIT_LENS_NOIR: {
@@ -89,10 +104,10 @@ export const MOTION_PLAYBACK = {
     RUN_BACK: [0, 1, 2, 3, 4, 5],
     DASH_FORWARD: [0, 1, 2, 3, 4, 5],
     DASH_BACK: [0, 1, 2, 3, 4, 5],
-    JUMP_START: [0, 1, 2, 3],
-    JUMP_RISE: [0, 1, 2, 3, 4],
-    JUMP_PEAK: [0, 1, 2, 3],
-    JUMP_FALL: [0, 1, 2, 3, 4],
+    JUMP_START: [0, 1, 2, 3, 4, 5],
+    JUMP_RISE: [0, 1, 2, 3, 4, 5],
+    JUMP_PEAK: [0, 1, 2, 3, 4, 5],
+    JUMP_FALL: [0, 1, 2, 3, 4, 5],
     LANDING: [0, 1, 2, 3, 4, 5]
   },
   AMARA_VALENTINE: {
@@ -102,10 +117,10 @@ export const MOTION_PLAYBACK = {
     RUN_BACK: [0, 1, 2, 3, 4, 5],
     DASH_FORWARD: [0, 1, 2, 3, 4, 5],
     DASH_BACK: [0, 1, 2, 3, 4, 5],
-    JUMP_START: [0, 1, 2, 3],
-    JUMP_RISE: [0, 1, 2, 3, 4],
-    JUMP_PEAK: [0, 1, 2, 3],
-    JUMP_FALL: [0, 1, 2, 3, 4],
+    JUMP_START: [0, 1, 2, 3, 4, 5],
+    JUMP_RISE: [0, 1, 2, 3, 4, 5],
+    JUMP_PEAK: [0, 1, 2, 3, 4, 5],
+    JUMP_FALL: [0, 1, 2, 3, 4, 5],
     LANDING: [0, 1, 2, 3, 4, 5]
   }
 };
@@ -121,6 +136,7 @@ export const FIGHTERS = {
     accent: "#ff5b68",
     costumePalette: "black-crimson",
     rosterPortraitKey: "kalyxPortrait",
+    headshotKey: "kalyxHeadshot",
     scale: 1.34,
     stableScale: 1.34,
     archetype: "rushdown",
@@ -289,6 +305,7 @@ export const FIGHTERS = {
     palette: "#8bd4ff",
     accent: "#d8aa45",
     rosterPortraitKey: "masterEzraPortrait",
+    headshotKey: "masterEzraHeadshot",
     scale: 1.3,
     stableScale: 1.3,
     motionScaleOverrides: {
@@ -415,12 +432,19 @@ FIGHTERS.DETROIT_LENS_NOIR = {
   accent: "#df4d4d",
   costumePalette: "black-black",
   rosterPortraitKey: "detroitLensNoirPortrait",
+  headshotKey: "detroitLensNoirHeadshot",
   scale: 1.31,
   stableScale: 1.31,
+  antiSeamUnderpaint: {
+    scale: 1.006,
+    alpha: 0.68,
+    filter: "brightness(0.18) saturate(0.3)"
+  },
   motionScaleOverrides: {
     SUPER_RELEASE: 1.02
   },
   motionRemap: {
+    IDLE: "READY_STANCE",
     SPECIAL_START: "SPECIAL_PROJECTILE"
   },
   archetype: "precision",
@@ -485,6 +509,10 @@ FIGHTERS.DETROIT_LENS_NOIR = {
     super: {
       speed: 1540,
       radius: 38,
+      beamLength: 1240,
+      beamDuration: 0.34,
+      beamHitOffsetY: 92,
+      beamHitHeight: 144,
       damage: 276,
       chip: 48,
       stun: 0.72,
@@ -509,6 +537,7 @@ FIGHTERS.AMARA_VALENTINE = {
   accent: "#ffd2dc",
   costumePalette: "cobalt-rose",
   rosterPortraitKey: "amaraValentinePortrait",
+  headshotKey: "amaraValentineHeadshot",
   scale: 1.31,
   stableScale: 1.31,
   archetype: "heartline",

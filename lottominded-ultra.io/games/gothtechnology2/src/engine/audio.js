@@ -16,6 +16,8 @@ export class WebAudioBus {
     this.musicVolume = 0.58;
     this.sfxVolume = 0.9;
     this.vibrationEnabled = true;
+    this.sfxMaster = null;
+    this.sfxCompressor = null;
   }
 
   musicGainForMode(mode) {
@@ -31,16 +33,42 @@ export class WebAudioBus {
 
   setSfxVolume(value) {
     this.sfxVolume = Math.max(0, Math.min(1, Number(value) || 0));
+    if (this.sfxMaster && this.ctx) this.sfxMaster.gain.setValueAtTime(0.9 * this.sfxVolume, this.ctx.currentTime);
   }
 
   setVibrationEnabled(enabled) {
     this.vibrationEnabled = Boolean(enabled);
   }
 
+  vibrate(duration, strength = 0.6) {
+    if (!this.vibrationEnabled || duration <= 0) return;
+    navigator.vibrate?.(duration);
+    for (const pad of Array.from(navigator.getGamepads?.() || []).filter(Boolean).slice(0, 2)) {
+      const actuator = pad.vibrationActuator || pad.hapticActuators?.[0];
+      if (typeof actuator?.playEffect === "function") {
+        actuator.playEffect("dual-rumble", {
+          startDelay: 0,
+          duration,
+          weakMagnitude: Math.max(0, Math.min(1, strength * 0.72)),
+          strongMagnitude: Math.max(0, Math.min(1, strength))
+        }).catch?.(() => {});
+      } else if (typeof actuator?.pulse === "function") {
+        actuator.pulse(Math.max(0, Math.min(1, strength)), duration).catch?.(() => {});
+      }
+    }
+  }
+
   ensure() {
     if (!this.ctx) {
       const AudioContext = window.AudioContext || window.webkitAudioContext;
       if (AudioContext) this.ctx = new AudioContext();
+    }
+    if (this.ctx && !this.sfxMaster) {
+      this.sfxMaster = this.ctx.createGain();
+      this.sfxCompressor = this.ctx.createDynamicsCompressor();
+      this.sfxMaster.gain.setValueAtTime(0.9 * this.sfxVolume, this.ctx.currentTime);
+      this.sfxMaster.connect(this.sfxCompressor);
+      this.sfxCompressor.connect(this.ctx.destination);
     }
     this.unlocked = true;
     if (this.ctx?.state === "suspended") this.ctx.resume?.();
@@ -132,15 +160,13 @@ export class WebAudioBus {
   }
 
   beep(type = "hit") {
+    const vibration = { hit: [18, 0.46], block: [10, 0.3], special: [24, 0.58], super: [45, 0.88], ko: [55, 1] }[type];
+    if (vibration) this.vibrate(...vibration);
     if (this.muted || this.sfxVolume <= 0) return;
     this.ensure();
-    if (!this.ctx) return;
+    if (!this.ctx || !this.sfxMaster) return;
     const now = this.ctx.currentTime;
-    const master = this.ctx.createGain();
-    const compressor = this.ctx.createDynamicsCompressor();
-    master.gain.setValueAtTime(0.9 * this.sfxVolume, now);
-    master.connect(compressor);
-    compressor.connect(this.ctx.destination);
+    const master = this.sfxMaster;
     const settings = {
       hit: { tones: [[105, 58, 0.095, "square", 0.12], [270, 92, 0.055, "triangle", 0.055]], noise: [0.085, 0.1, 1150] },
       block: { tones: [[460, 230, 0.12, "triangle", 0.07], [910, 520, 0.06, "sine", 0.035]], noise: [0.05, 0.05, 2600] },
@@ -190,7 +216,5 @@ export class WebAudioBus {
       source.stop(now + duration);
     }
 
-    const vibration = { hit: 18, block: 10, special: 24, super: 45, ko: 55 }[type];
-    if (vibration && this.vibrationEnabled) navigator.vibrate?.(vibration);
   }
 }

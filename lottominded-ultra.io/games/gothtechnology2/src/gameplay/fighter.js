@@ -1,9 +1,9 @@
-import { GRAVITY, GROUND_Y, WORLD } from "../config/constants.js?v=semantic-motion-v2";
-import { ATTACKS } from "../config/moves.js?v=semantic-motion-v2";
-import { drawSpriteFrame } from "../engine/assets.js?v=semantic-motion-v2";
-import { approach, clamp, makeRect } from "../engine/math.js?v=semantic-motion-v2";
-import { attackIntentFromActions, resolveCancelAttack } from "./commands.js?v=semantic-motion-v2";
-import { SpriteEffect } from "./effects.js?v=semantic-motion-v2";
+import { GRAVITY, GROUND_Y, WORLD } from "../config/constants.js?v=galaxy-a16-performance-v1";
+import { ATTACKS } from "../config/moves.js?v=galaxy-a16-performance-v1";
+import { drawSpriteFrame } from "../engine/assets.js?v=galaxy-a16-performance-v1";
+import { approach, clamp, makeRect } from "../engine/math.js?v=galaxy-a16-performance-v1";
+import { attackIntentFromActions, resolveCancelAttack } from "./commands.js?v=galaxy-a16-performance-v1";
+import { SpriteEffect } from "./effects.js?v=galaxy-a16-performance-v1";
 
 const MOTION_LOCKS = new Set([
   "LIGHT_PUNCH",
@@ -244,6 +244,10 @@ export class Fighter {
     if (!data || this.currentAttack || this.hitstun || this.blockstun || this.knockdown || this.isKO) return false;
     if (name === "special" && this.specialCooldown > 0) return false;
     if (name === "super" && (this.superCooldown > 0 || this.meter < data.cost)) return false;
+    if (name === "special" || name === "super") {
+      this.dashTimer = 0;
+      this.dashRecoveryTimer = 0;
+    }
     if (name === "super") {
       this.meter -= data.cost;
       game.audio.beep("super");
@@ -318,6 +322,8 @@ export class Fighter {
 
     this.meter -= cost;
     this.characterSkillCooldown = this.config.skillCooldown ?? 1;
+    this.dashTimer = 0;
+    this.dashRecoveryTimer = 0;
     if (this.config.archetype === "rushdown") {
       const direction = opponent.x >= this.x ? 1 : -1;
       const margin = this.config.stageMargin ?? 0;
@@ -741,11 +747,12 @@ export class Fighter {
     const flipSprite = this.facing !== sourceFacing;
     const motionScale = this.config.motionScaleOverrides?.[this.motion] ?? 1;
     const drawScale = (this.config.stableScale ?? this.config.scale) * motionScale;
+    const underpaint = this.config.antiSeamUnderpaint;
     ctx.save();
     ctx.globalAlpha = 1;
     ctx.globalCompositeOperation = "source-over";
     ctx.filter = "none";
-    if (this.dashTimer > 0) {
+    if (this.dashTimer > 0 && (ctx.gothPerformance?.afterimages ?? true)) {
       drawSpriteFrame(ctx, anim, frameIndex, this.x - this.dashDir * 32, this.y + 14, {
         scale: drawScale,
         flip: flipSprite,
@@ -759,7 +766,11 @@ export class Fighter {
       flip: flipSprite,
       alpha: bodyAlpha,
       composite: "source-over",
-      filter: this.config.renderFilter ?? "none"
+      filter: this.config.renderFilter ?? "none",
+      underpaint: Boolean(underpaint),
+      underpaintScale: underpaint?.scale,
+      underpaintAlpha: underpaint?.alpha,
+      underpaintFilter: underpaint?.filter
     });
     if (!drewPrimary && this.assets.animations[this.config.manifestKey]?.READY_STANCE) {
       drawSpriteFrame(ctx, this.assets.animations[this.config.manifestKey].READY_STANCE, 0, this.x, this.y + 14, {
@@ -767,7 +778,11 @@ export class Fighter {
         flip: flipSprite,
         alpha: 1,
         composite: "source-over",
-        filter: this.config.renderFilter ?? "none"
+        filter: this.config.renderFilter ?? "none",
+        underpaint: Boolean(underpaint),
+        underpaintScale: underpaint?.scale,
+        underpaintAlpha: underpaint?.alpha,
+        underpaintFilter: underpaint?.filter
       });
     }
     ctx.restore();
@@ -778,8 +793,10 @@ export class Fighter {
       ctx.globalCompositeOperation = "lighter";
       ctx.fillStyle = "rgba(255, 96, 190, 0.82)";
       ctx.shadowColor = "#ff58bd";
-      ctx.shadowBlur = 12;
-      for (let index = 0; index < 3; index += 1) {
+      const reducedEffects = ctx.gothPerformance?.effects === "reduced";
+      ctx.shadowBlur = reducedEffects ? 6 : 12;
+      const heartCount = reducedEffects ? 2 : 3;
+      for (let index = 0; index < heartCount; index += 1) {
         const angle = this.charmedTimer * 5 + index * Math.PI * 2 / 3;
         const x = this.x + Math.cos(angle) * 34;
         const y = this.y - 176 + Math.sin(angle) * 9;
@@ -799,7 +816,7 @@ export class Fighter {
       ctx.strokeStyle = heartlineShield ? "rgba(255, 104, 194, 0.82)" : "rgba(158, 216, 255, 0.72)";
       ctx.lineWidth = 3;
       ctx.shadowColor = heartlineShield ? "#ff58bd" : "#9ed8ff";
-      ctx.shadowBlur = 18;
+      ctx.shadowBlur = ctx.gothPerformance?.effects === "reduced" ? 8 : 18;
       ctx.beginPath();
       ctx.ellipse(this.x, this.y - 105, 58, 92, 0, 0, Math.PI * 2);
       ctx.stroke();
@@ -814,7 +831,7 @@ export class Fighter {
       ctx.strokeStyle = this.id === "MASTER_EZRA" ? "rgba(139, 212, 255, 0.9)" : "rgba(255, 214, 109, 0.86)";
       ctx.lineWidth = 2 + t * 3;
       ctx.shadowColor = this.id === "MASTER_EZRA" ? "#8bd4ff" : "#ffd66d";
-      ctx.shadowBlur = 14 + t * 16;
+      ctx.shadowBlur = ctx.gothPerformance?.effects === "reduced" ? 6 + t * 6 : 14 + t * 16;
       ctx.beginPath();
       ctx.ellipse(this.x - this.facing * 18, this.y - 104, 52 + t * 16, 84 + t * 18, -0.1 * this.facing, 0, Math.PI * 2);
       ctx.stroke();

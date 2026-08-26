@@ -78,7 +78,46 @@ const isEditableTarget = (target) => {
   return Boolean(target?.isContentEditable || ["button", "input", "select", "textarea"].includes(tag));
 };
 
-const buttonPressed = (pad, index) => Boolean(pad?.buttons?.[index]?.pressed || (pad?.buttons?.[index]?.value ?? 0) > 0.55);
+export const GAMEPAD_DEADZONE = 0.45;
+
+const buttonPressed = (pad, index) => {
+  const button = pad?.buttons?.[index];
+  if (typeof button === "number") return button > 0.55;
+  return Boolean(button?.pressed || (button?.value ?? 0) > 0.55);
+};
+
+const axisValue = (pad, index) => {
+  const value = Number(pad?.axes?.[index] ?? 0);
+  return Number.isFinite(value) ? Math.max(-1, Math.min(1, value)) : 0;
+};
+
+export const gamepadActionsForPad = (pad, player = 1) => {
+  const prefix = `p${player}`;
+  const actions = new Set();
+  const add = (active, action) => {
+    if (active) actions.add(action);
+  };
+  const axisX = axisValue(pad, 0);
+  const axisY = axisValue(pad, 1);
+  const superChord = buttonPressed(pad, 4) && buttonPressed(pad, 5);
+  add(axisX < -GAMEPAD_DEADZONE || buttonPressed(pad, 14), `${prefix}.left`);
+  add(axisX > GAMEPAD_DEADZONE || buttonPressed(pad, 15), `${prefix}.right`);
+  add(axisY < -GAMEPAD_DEADZONE || buttonPressed(pad, 12), `${prefix}.up`);
+  add(axisY > GAMEPAD_DEADZONE || buttonPressed(pad, 13), `${prefix}.down`);
+  add(buttonPressed(pad, 0), `${prefix}.lightPunch`);
+  add(buttonPressed(pad, 1), `${prefix}.lightKick`);
+  add(buttonPressed(pad, 2), `${prefix}.heavyPunch`);
+  add(buttonPressed(pad, 3), `${prefix}.heavyKick`);
+  add(buttonPressed(pad, 4) && !superChord, `${prefix}.assist1`);
+  add(buttonPressed(pad, 5) && !superChord, `${prefix}.assist2`);
+  add(buttonPressed(pad, 6), `${prefix}.throw`);
+  add(buttonPressed(pad, 7), `${prefix}.special`);
+  add(buttonPressed(pad, 8) || superChord, `${prefix}.super`);
+  add(buttonPressed(pad, 9), "ui.pause");
+  add(buttonPressed(pad, 10), `${prefix}.dash`);
+  add(buttonPressed(pad, 11), `${prefix}.taunt`);
+  return actions;
+};
 
 export class InputManager {
   constructor(target = window) {
@@ -87,6 +126,7 @@ export class InputManager {
     this.pressed = new Set();
     this.released = new Set();
     this.gamepadHeld = new Set();
+    this.gamepadSlots = [null, null];
     this.touchPointers = new Map();
     this.touchBindings = [];
     this.lastTap = new Map();
@@ -206,37 +246,50 @@ export class InputManager {
     });
   }
 
+  assignGamepads(rawPads = Array.from(navigator.getGamepads?.() || [])) {
+    const connected = rawPads
+      .map((pad, browserIndex) => pad && pad.connected !== false
+        ? { pad, index: Number.isInteger(pad.index) ? pad.index : browserIndex }
+        : null)
+      .filter(Boolean);
+    const connectedByIndex = new Map(connected.map((entry) => [entry.index, entry.pad]));
+    this.gamepadSlots = this.gamepadSlots.map((index) => connectedByIndex.has(index) ? index : null);
+    const assigned = new Set(this.gamepadSlots.filter((index) => index !== null));
+    for (const entry of connected) {
+      if (assigned.has(entry.index)) continue;
+      const openSlot = this.gamepadSlots.indexOf(null);
+      if (openSlot < 0) break;
+      this.gamepadSlots[openSlot] = entry.index;
+      assigned.add(entry.index);
+    }
+    return this.gamepadSlots.map((index, playerIndex) => index === null ? null : ({
+      player: playerIndex + 1,
+      index,
+      pad: connectedByIndex.get(index)
+    }));
+  }
+
+  getGamepadStatus() {
+    return this.assignGamepads().filter(Boolean).map(({ player, index, pad }) => ({
+      player,
+      index,
+      id: String(pad?.id || "STANDARD CONTROLLER"),
+      mapping: String(pad?.mapping || "unknown")
+    }));
+  }
+
   pollGamepads() {
-    const pads = Array.from(navigator.getGamepads?.() || []).filter(Boolean).slice(0, 2);
     const nextHeld = new Set();
-    pads.forEach((pad, index) => {
-      const player = index + 1;
-      const prefix = `p${player}`;
-      const axisX = pad.axes?.[0] ?? 0;
-      const axisY = pad.axes?.[1] ?? 0;
-      const add = (active, action) => {
-        if (active) nextHeld.add(action);
-      };
-      add(axisX < -0.45 || buttonPressed(pad, 14), `${prefix}.left`);
-      add(axisX > 0.45 || buttonPressed(pad, 15), `${prefix}.right`);
-      add(axisY < -0.5 || buttonPressed(pad, 12), `${prefix}.up`);
-      add(axisY > 0.5 || buttonPressed(pad, 13), `${prefix}.down`);
-      add(buttonPressed(pad, 0), `${prefix}.lightPunch`);
-      add(buttonPressed(pad, 1), `${prefix}.lightKick`);
-      add(buttonPressed(pad, 2), `${prefix}.heavyPunch`);
-      add(buttonPressed(pad, 3), `${prefix}.heavyKick`);
-      add(buttonPressed(pad, 4), `${prefix}.assist1`);
-      add(buttonPressed(pad, 5), `${prefix}.assist2`);
-      add(buttonPressed(pad, 6), `${prefix}.throw`);
-      add(buttonPressed(pad, 7), `${prefix}.special`);
-      add(buttonPressed(pad, 8), `${prefix}.super`);
-      add(buttonPressed(pad, 9), "ui.pause");
-      add(buttonPressed(pad, 10), `${prefix}.dash`);
-      add(buttonPressed(pad, 11), `${prefix}.taunt`);
-    });
+    for (const assignment of this.assignGamepads()) {
+      if (!assignment?.pad) continue;
+      for (const action of gamepadActionsForPad(assignment.pad, assignment.player)) nextHeld.add(action);
+    }
 
     for (const action of nextHeld) {
-      if (!this.gamepadHeld.has(action)) this.pressed.add(action);
+      if (!this.gamepadHeld.has(action)) {
+        this.pressed.add(action);
+        this.trackDirectionalTap(action);
+      }
     }
     for (const action of this.gamepadHeld) {
       if (!nextHeld.has(action)) this.released.add(action);
@@ -244,15 +297,18 @@ export class InputManager {
     this.gamepadHeld = nextHeld;
   }
 
+  trackDirectionalTap(action) {
+    if (!action.endsWith(".left") && !action.endsWith(".right")) return;
+    const now = performance.now() / 1000;
+    const last = this.lastTap.get(action) ?? -10;
+    if (now - last < this.dashWindow) this.pressed.add(action.replace(/\.(left|right)$/, ".dashTap"));
+    this.lastTap.set(action, now);
+  }
+
   press(action) {
     if (!this.down.has(action)) {
       this.pressed.add(action);
-      if (action.endsWith(".left") || action.endsWith(".right")) {
-        const now = performance.now() / 1000;
-        const last = this.lastTap.get(action) ?? -10;
-        if (now - last < this.dashWindow) this.pressed.add(action.replace(/\.(left|right)$/, ".dashTap"));
-        this.lastTap.set(action, now);
-      }
+      this.trackDirectionalTap(action);
     }
     this.down.add(action);
   }
@@ -351,5 +407,6 @@ export class InputManager {
       button.removeEventListener("contextmenu", blockContextMenu);
     }
     this.touchBindings = [];
+    this.gamepadSlots = [null, null];
   }
 }

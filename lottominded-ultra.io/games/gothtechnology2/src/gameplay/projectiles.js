@@ -1,7 +1,7 @@
-import { drawSheetFrame } from "../engine/assets.js?v=semantic-motion-v2";
-import { rectsOverlap } from "../engine/math.js?v=semantic-motion-v2";
-import { LovePulseEffect, SpriteEffect } from "./effects.js?v=semantic-motion-v2";
-import { sliceAttackForHit } from "./hits.js?v=semantic-motion-v2";
+import { drawSheetFrame } from "../engine/assets.js?v=galaxy-a16-performance-v1";
+import { rectsOverlap } from "../engine/math.js?v=galaxy-a16-performance-v1";
+import { LovePulseEffect, SpriteEffect } from "./effects.js?v=galaxy-a16-performance-v1";
+import { sliceAttackForHit } from "./hits.js?v=galaxy-a16-performance-v1";
 
 const hexAlpha = (color, alpha) => {
   if (!color?.startsWith("#") || color.length !== 7) return color;
@@ -22,6 +22,11 @@ const fighterEffectColor = (owner, alpha = 1) => {
 
 const COMPANION_PROJECTILES = new Set(["shadow-raven", "arcane-owl"]);
 const LOVE_PROJECTILES = new Set(["heartline-pulse", "heartbreak-nova"]);
+const opponentFor = (game, owner) => game.fighters.find((fighter) => fighter !== owner);
+const reducedEffects = (ctx) => ctx.gothPerformance?.effects === "reduced";
+const setGlow = (ctx, amount) => {
+  ctx.shadowBlur = reducedEffects(ctx) ? Math.min(12, amount * 0.45) : amount;
+};
 
 export class Projectile {
   constructor({ owner, x, y, direction, attack, image, kind = "projectile", color = "#9ed8ff" }) {
@@ -42,9 +47,23 @@ export class Projectile {
     this.trail = [];
     this.seed = Math.random() * Math.PI * 2;
     this.burstDone = false;
+    this.anchorForward = Number.isFinite(owner?.x) ? (x - owner.x) * direction : null;
+    this.anchorOffsetY = Number.isFinite(owner?.y) ? y - owner.y : null;
+    this.beamLength = attack.beamLength ?? Math.max(760, this.radius * 18);
+    this.beamDuration = attack.beamDuration ?? 0.3;
   }
 
   get rect() {
+    if (this.kind === "eye-laser") {
+      const hitHeight = this.attack.beamHitHeight ?? this.radius * 0.64;
+      const hitOffsetY = this.attack.beamHitOffsetY ?? 0;
+      return {
+        x: this.direction > 0 ? this.x : this.x - this.beamLength,
+        y: this.y + hitOffsetY - hitHeight / 2,
+        w: this.beamLength,
+        h: hitHeight
+      };
+    }
     return {
       x: this.x - this.radius,
       y: this.y - this.radius,
@@ -54,25 +73,44 @@ export class Projectile {
   }
 
   update(dt, game) {
+    if (this.dead) return;
     this.age += dt;
     this.hitCooldown = Math.max(0, this.hitCooldown - dt);
+    if (this.kind === "eye-laser") {
+      if (this.anchorForward !== null && this.anchorOffsetY !== null) {
+        this.x = this.owner.x + this.anchorForward * this.direction;
+        this.y = this.owner.y + this.anchorOffsetY;
+      }
+      if (this.age > this.beamDuration) {
+        this.dead = true;
+        return;
+      }
+      this.resolveTargetHit(game);
+      return;
+    }
     if (!COMPANION_PROJECTILES.has(this.kind)) {
       this.trail.unshift({
         x: this.x,
         y: this.y + Math.sin(this.age * 14 + this.seed) * Math.min(18, this.radius * 0.32),
         age: this.age
       });
-      this.trail.length = Math.min(this.trail.length, this.kind === "super" || this.kind === "heartbreak-nova" ? 12 : 8);
+      const authoredLimit = this.kind === "super" || this.kind === "heartbreak-nova" ? 12 : 8;
+      const profileLimit = game.performanceProfile?.maxProjectileTrail ?? authoredLimit;
+      this.trail.length = Math.min(this.trail.length, authoredLimit, profileLimit);
     }
     this.x += this.direction * this.speed * dt;
     if (this.x < -140 || this.x > 1420 || this.age > 3.2) {
       this.spawnBurst(game, this.x, this.y, false);
       this.dead = true;
     }
-    const target = game.fighters.find((fighter) => fighter.id !== this.owner.id);
-    if (!target || target.isKO || this.hitCooldown > 0) return;
+    this.resolveTargetHit(game);
+  }
+
+  resolveTargetHit(game) {
+    const target = opponentFor(game, this.owner);
+    const maxHits = Math.max(1, Math.floor(this.attack.multiHit ?? 1));
+    if (!target || target.isKO || this.hitCooldown > 0 || this.hitCount >= maxHits) return;
     if (rectsOverlap(this.rect, target.hurtbox)) {
-      const maxHits = Math.max(1, Math.floor(this.attack.multiHit ?? 1));
       this.hitCount += 1;
       game.resolveIncomingHit(this.owner, target, sliceAttackForHit(this.attack, this.hitCount), {
         box: this.rect,
@@ -147,7 +185,8 @@ export class Projectile {
   renderTrail(ctx, visualY) {
     ctx.save();
     ctx.globalCompositeOperation = "lighter";
-    for (let i = this.trail.length - 1; i >= 0; i -= 1) {
+    const trailStep = reducedEffects(ctx) ? 2 : 1;
+    for (let i = this.trail.length - 1; i >= 0; i -= trailStep) {
       const p = this.trail[i];
       const t = 1 - i / Math.max(1, this.trail.length);
       const w = this.radius * (0.34 + t * 0.72);
@@ -155,7 +194,7 @@ export class Projectile {
       ctx.globalAlpha = 0.08 + t * 0.28;
       ctx.fillStyle = hexAlpha(this.color, 0.28 + t * 0.42);
       ctx.shadowColor = this.color;
-      ctx.shadowBlur = 12 + t * 22;
+      setGlow(ctx, 12 + t * 22);
       ctx.beginPath();
       ctx.ellipse(p.x - this.direction * this.radius * 0.65, p.y, w, h, 0, 0, Math.PI * 2);
       ctx.fill();
@@ -163,7 +202,7 @@ export class Projectile {
     ctx.strokeStyle = hexAlpha(this.color, 0.68);
     ctx.lineWidth = Math.max(2, this.radius * 0.08);
     ctx.shadowColor = this.color;
-    ctx.shadowBlur = 16;
+    setGlow(ctx, 16);
     ctx.beginPath();
     ctx.moveTo(this.x - this.direction * this.radius * 3.25, visualY);
     ctx.quadraticCurveTo(
@@ -177,8 +216,8 @@ export class Projectile {
   }
 
   renderEyeLaser(ctx, visualY) {
-    const length = this.radius * 7.4;
-    const startX = this.x - this.direction * this.radius * 0.16;
+    const length = this.beamLength;
+    const startX = this.x;
     const endX = startX + this.direction * length;
     ctx.save();
     ctx.globalCompositeOperation = "lighter";
@@ -191,7 +230,7 @@ export class Projectile {
     ctx.lineCap = "round";
     ctx.lineWidth = this.radius * (0.32 + Math.sin(this.age * 46) * 0.05);
     ctx.shadowColor = "#ff2838";
-    ctx.shadowBlur = 30;
+    setGlow(ctx, 30);
     ctx.beginPath();
     ctx.moveTo(startX, visualY);
     ctx.lineTo(endX, visualY);
@@ -213,7 +252,7 @@ export class Projectile {
     ctx.translate(this.x, visualY);
     ctx.globalCompositeOperation = "lighter";
     ctx.shadowColor = "#ff3cad";
-    ctx.shadowBlur = superMove ? 38 : 24;
+    setGlow(ctx, superMove ? 38 : 24);
     ctx.fillStyle = superMove ? "rgba(255, 88, 184, 0.9)" : "rgba(255, 116, 202, 0.92)";
     ctx.beginPath();
     ctx.moveTo(0, size * 0.38);
@@ -223,7 +262,8 @@ export class Projectile {
     ctx.strokeStyle = "rgba(255, 235, 247, 0.95)";
     ctx.lineWidth = Math.max(2, size * 0.08);
     ctx.stroke();
-    for (let ring = 0; ring < (superMove ? 3 : 2); ring += 1) {
+    const ringCount = reducedEffects(ctx) ? (superMove ? 2 : 1) : (superMove ? 3 : 2);
+    for (let ring = 0; ring < ringCount; ring += 1) {
       ctx.globalAlpha = 0.5 - ring * 0.12;
       ctx.beginPath();
       ctx.arc(0, 0, size * (1.45 + ring * 0.52 + Math.sin(this.age * 11 + ring) * 0.08), 0, Math.PI * 2);
@@ -238,7 +278,7 @@ export class Projectile {
       const visualY = this.y + Math.sin(this.age * 13 + this.seed) * 8;
       ctx.save();
       ctx.shadowColor = this.color;
-      ctx.shadowBlur = 18;
+      setGlow(ctx, 18);
       drawSheetFrame(ctx, this.image, frame, 256, 256, this.x, visualY + this.radius * 1.45, {
         scale: this.kind === "shadow-raven" ? 0.68 : 0.72,
         flip: this.direction < 0,
@@ -249,7 +289,9 @@ export class Projectile {
     }
     const frame = Math.floor(this.age * 18) % 8;
     const flip = this.direction < 0;
-    const visualY = this.y + Math.sin(this.age * 14 + this.seed) * Math.min(18, this.radius * 0.26);
+    const visualY = this.kind === "eye-laser"
+      ? this.y
+      : this.y + Math.sin(this.age * 14 + this.seed) * Math.min(18, this.radius * 0.26);
     if (this.kind === "eye-laser") {
       this.renderEyeLaser(ctx, visualY);
       return;
@@ -268,7 +310,7 @@ export class Projectile {
     trail.addColorStop(1, hexAlpha(this.color, 0.82));
     ctx.fillStyle = trail;
     ctx.shadowColor = this.color;
-    ctx.shadowBlur = 22;
+    setGlow(ctx, 22);
     ctx.beginPath();
     ctx.ellipse(this.x - this.direction * this.radius * 1.2, visualY, this.radius * 2.25, this.radius * 0.68, 0, 0, Math.PI * 2);
     ctx.fill();
@@ -276,7 +318,7 @@ export class Projectile {
 
     ctx.save();
     ctx.shadowColor = this.color;
-    ctx.shadowBlur = this.kind === "super" ? 34 : 24;
+    setGlow(ctx, this.kind === "super" ? 34 : 24);
     const drewSprite = drawSheetFrame(ctx, this.image, frame, 256, 256, this.x, visualY + this.radius, {
       scale: (this.radius / 62) * (this.kind === "super" ? 1.08 : 0.96),
       flip,
@@ -288,7 +330,7 @@ export class Projectile {
       ctx.save();
       ctx.fillStyle = this.color;
       ctx.shadowColor = this.color;
-      ctx.shadowBlur = 28;
+      setGlow(ctx, 28);
       ctx.beginPath();
       ctx.ellipse(this.x, visualY, this.radius * 1.4, this.radius * 0.78, 0, 0, Math.PI * 2);
       ctx.fill();
@@ -299,7 +341,7 @@ export class Projectile {
     ctx.globalCompositeOperation = "screen";
     ctx.fillStyle = "rgba(255, 246, 211, 0.72)";
     ctx.shadowColor = this.color;
-    ctx.shadowBlur = 18;
+    setGlow(ctx, 18);
     ctx.beginPath();
     ctx.ellipse(this.x + this.direction * this.radius * 0.45, visualY - this.radius * 0.05, this.radius * 0.22, this.radius * 0.12, 0, 0, Math.PI * 2);
     ctx.fill();
@@ -320,6 +362,8 @@ const BOERBOEL_PHASES = {
   attack: { row: 2, duration: 0.46, frameRate: 13 },
   recover: { row: 3, duration: 0.44, frameRate: 12 }
 };
+
+const BOERBOEL_BITE_ACTIVE = { start: 0.1, end: 0.34 };
 
 export class BoerboelStrike extends Projectile {
   constructor({ owner, x, y, direction, attack, image }) {
@@ -346,9 +390,10 @@ export class BoerboelStrike extends Projectile {
   }
 
   update(dt, game) {
+    if (this.dead) return;
     this.age += dt;
     this.phaseAge += dt;
-    const target = game.fighters.find((fighter) => fighter.id !== this.owner.id);
+    const target = opponentFor(game, this.owner);
 
     if (this.phase === "summon") {
       if (this.phaseAge >= BOERBOEL_PHASES.summon.duration) this.setPhase("run");
@@ -359,7 +404,7 @@ export class BoerboelStrike extends Projectile {
       this.x += this.direction * this.speed * dt;
       const distance = target ? this.direction * (target.x - this.x) : Infinity;
       if (target && distance <= 126 && distance >= -76) {
-        this.x = target.x - this.direction * 94;
+        this.x = target.x - this.direction * 62;
         this.setPhase("attack");
         return;
       }
@@ -368,9 +413,14 @@ export class BoerboelStrike extends Projectile {
     }
 
     if (this.phase === "attack") {
-      if (!this.hitApplied && this.phaseAge >= 0.15) {
-        this.hitApplied = true;
-        if (target && !target.isKO && rectsOverlap(this.rect, target.hurtbox)) {
+      const biteActive = this.phaseAge >= BOERBOEL_BITE_ACTIVE.start
+        && this.phaseAge <= BOERBOEL_BITE_ACTIVE.end;
+      if (!this.hitApplied && target && !target.isKO && biteActive) {
+        const targetX = target.x - this.direction * 62;
+        const followDistance = this.speed * 0.8 * dt;
+        this.x += Math.sign(targetX - this.x) * Math.min(Math.abs(targetX - this.x), followDistance);
+        if (rectsOverlap(this.rect, target.hurtbox)) {
+          this.hitApplied = true;
           game.resolveIncomingHit(this.owner, target, this.attack, {
             box: this.rect,
             projectile: false,
@@ -422,7 +472,7 @@ export class BoerboelStrike extends Projectile {
     if (this.direction < 0) ctx.scale(-1, 1);
     ctx.globalAlpha = alpha;
     ctx.imageSmoothingEnabled = true;
-    ctx.imageSmoothingQuality = "high";
+    ctx.imageSmoothingQuality = ctx.gothPerformance?.smoothingQuality ?? "high";
     ctx.drawImage(
       this.image,
       frame * 192,
@@ -480,13 +530,14 @@ export class AssistStrike extends Projectile {
     const color = "#8bd4ff";
     ctx.save();
     ctx.globalCompositeOperation = "lighter";
-    for (let i = this.trail.length - 1; i >= 0; i -= 1) {
+    const trailStep = reducedEffects(ctx) ? 2 : 1;
+    for (let i = this.trail.length - 1; i >= 0; i -= trailStep) {
       const p = this.trail[i];
       const t = 1 - i / Math.max(1, this.trail.length);
       ctx.globalAlpha = 0.05 + t * 0.15;
       ctx.fillStyle = `rgba(80, 188, 255, ${0.08 + t * 0.16})`;
       ctx.shadowColor = color;
-      ctx.shadowBlur = 12 + t * 20;
+      setGlow(ctx, 12 + t * 20);
       ctx.beginPath();
       ctx.ellipse(
         p.x - this.direction * radius * (0.4 + t * 0.85),
@@ -514,7 +565,7 @@ export class AssistStrike extends Projectile {
     glow.addColorStop(1, "rgba(15, 54, 112, 0)");
     ctx.fillStyle = glow;
     ctx.shadowColor = color;
-    ctx.shadowBlur = 28;
+    setGlow(ctx, 28);
     ctx.beginPath();
     ctx.ellipse(this.x, visualY, radius * 0.98, radius * 0.9, 0.05 * this.direction, 0, Math.PI * 2);
     ctx.fill();
@@ -538,7 +589,7 @@ export class AssistStrike extends Projectile {
     ctx.stroke();
 
     ctx.fillStyle = "rgba(255, 255, 255, 0.86)";
-    ctx.shadowBlur = 16;
+    setGlow(ctx, 16);
     ctx.beginPath();
     ctx.ellipse(
       this.x + this.direction * radius * 0.36,
@@ -569,13 +620,14 @@ export class AssistStrike extends Projectile {
       const visualY = this.y + Math.sin(this.age * 12 + this.seed) * 18;
       ctx.save();
       ctx.globalCompositeOperation = "lighter";
-      for (let i = this.trail.length - 1; i >= 0; i -= 1) {
+      const trailStep = reducedEffects(ctx) ? 2 : 1;
+      for (let i = this.trail.length - 1; i >= 0; i -= trailStep) {
         const p = this.trail[i];
         const t = 1 - i / Math.max(1, this.trail.length);
         ctx.globalAlpha = 0.06 + t * 0.22;
         ctx.fillStyle = fighterEffectColor(this.owner, 0.44);
         ctx.shadowColor = color;
-        ctx.shadowBlur = 10 + t * 18;
+        setGlow(ctx, 10 + t * 18);
         ctx.beginPath();
         ctx.ellipse(p.x - this.direction * 36, p.y + this.radius - 88, 94 * t, 24 * t, 0, 0, Math.PI * 2);
         ctx.fill();
@@ -585,7 +637,7 @@ export class AssistStrike extends Projectile {
       ctx.globalCompositeOperation = "lighter";
       ctx.fillStyle = fighterEffectColor(this.owner, 0.22);
       ctx.shadowColor = color;
-      ctx.shadowBlur = 28;
+      setGlow(ctx, 28);
       ctx.beginPath();
       ctx.ellipse(this.x - this.direction * 46, visualY + this.radius - 72, 138, 42, 0, 0, Math.PI * 2);
       ctx.fill();
@@ -602,7 +654,7 @@ export class AssistStrike extends Projectile {
       if (flip) ctx.scale(-1, 1);
       ctx.globalAlpha = 0.96;
       ctx.shadowColor = fighterEffectColor(this.owner, 0.55);
-      ctx.shadowBlur = 22;
+      setGlow(ctx, 22);
       ctx.drawImage(
         this.image,
         sx,

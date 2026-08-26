@@ -50,7 +50,14 @@ CHARACTERS = {
     },
 }
 
-AMARA_GRID_MOTIONS = {"LIGHT_PUNCH", "SUPER_RELEASE"}
+AMARA_GRID_MOTIONS = {
+    "LIGHT_PUNCH",
+    "SUPER_RELEASE",
+    "LIGHT_KICK",
+    "HEAVY_KICK",
+    "CROUCH_ATTACK",
+    "COMBO_2",
+}
 
 MOTIONS = {
     "IDLE": "subtle combat-idle breathing loop with small weight and cloth shifts",
@@ -246,10 +253,11 @@ def build_prompt(character: str, motion: str) -> str:
                 f"3/4 profile facing screen-right. Preserve the identical face, long side-parted curls, costume, "
                 f"jewelry, curvy strong body proportions, camera distance, and lighting in every frame. "
                 f"{single_body_rule}Energy rule: {energy}. Each figure occupies no more than 50 percent of its "
-                f"cell height and 70 percent of its cell width. Every one of the six cells must show the same "
+                f"cell height and 78 percent of its cell width. Every one of the six cells must show the same "
                 f"small full-body camera scale; torso-only or waist-up cells invalidate the entire sheet. Keep "
-                f"uninterrupted green clearance around every "
-                f"body part, including a fully extended arm, plus green above the hair and below both complete "
+                f"uninterrupted green clearance around every body part. A kick must show the complete hip, "
+                f"thigh, knee, shin, ankle, and boot inside its own cell without touching or crossing a divider, "
+                f"plus green above the hair and below both complete "
                 f"boots. Flat pure chroma green #00FF00 background. No crop, close-up, floor, shadow, scenery, "
                 f"text, labels, frame numbers, effects, opponent, animal, prop, or partial figure. Production "
                 f"animation sheet, not concept art."

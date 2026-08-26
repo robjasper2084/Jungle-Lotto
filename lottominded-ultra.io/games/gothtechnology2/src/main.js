@@ -1,7 +1,7 @@
-import { FIGHTERS } from "./config/assets.js?v=semantic-motion-v2";
-import { COMMAND_LISTS, GAME_MODES, ROSTER_IDS } from "./config/content.js?v=semantic-motion-v2";
-import { GothTechnologyGame } from "./scenes/game.js?v=semantic-motion-v2";
-import { PHASE } from "./config/constants.js?v=semantic-motion-v2";
+import { FIGHTERS } from "./config/assets.js?v=galaxy-a16-performance-v1";
+import { COMMAND_LISTS, GAME_MODES, ROSTER_IDS } from "./config/content.js?v=galaxy-a16-performance-v1";
+import { GothTechnologyGame } from "./scenes/game.js?v=galaxy-a16-performance-v1";
+import { PHASE } from "./config/constants.js?v=galaxy-a16-performance-v1";
 
 const syncViewportHeight = () => {
   document.documentElement.style.setProperty("--app-height", `${window.innerHeight}px`);
@@ -97,8 +97,10 @@ const mobileCommands = document.getElementById("mobileCommands");
 const mobileTrainingTools = document.getElementById("mobileTrainingTools");
 const mobileUtilityToggle = document.getElementById("mobileUtilityToggle");
 const mobileUtilityActions = document.getElementById("mobileUtilityActions");
+const roundContinue = document.getElementById("roundContinue");
 const replayImport = document.getElementById("replayImport");
 const replayImportFile = document.getElementById("replayImportFile");
+const resetTouchPositions = document.getElementById("resetTouchPositions");
 const TOUCH_POSITIONS_KEY = "gothtechnology.touch.positions.v1";
 
 const settingFields = {
@@ -130,16 +132,68 @@ try {
   touchPositions = {};
 }
 
+const saveTouchPositions = () => {
+  try {
+    window.localStorage?.setItem(TOUCH_POSITIONS_KEY, JSON.stringify(touchPositions));
+  } catch {
+    // The layout remains movable for this session when storage is blocked.
+  }
+};
+
+const touchZoneReflows = [];
+const touchZoneResetters = [];
+let touchZoneReflowFrame = 0;
+const scheduleTouchZoneReflow = () => {
+  window.cancelAnimationFrame(touchZoneReflowFrame);
+  touchZoneReflowFrame = window.requestAnimationFrame(() => {
+    touchZoneReflows.forEach((reflow) => reflow());
+  });
+};
+
 const bindMovableZone = (zoneId, handleId) => {
   const zone = document.getElementById(zoneId);
   const handle = document.getElementById(handleId);
   if (!zone || !handle) return;
-  let current = touchPositions[zoneId] || { x: 0, y: 0 };
+  const saved = touchPositions[zoneId] || {};
+  let current = {
+    x: Number.isFinite(Number(saved.x)) ? Number(saved.x) : 0,
+    y: Number.isFinite(Number(saved.y)) ? Number(saved.y) : 0
+  };
   const apply = () => {
     zone.style.setProperty("--zone-x", `${current.x}px`);
     zone.style.setProperty("--zone-y", `${current.y}px`);
   };
+  const clampToViewport = (persist = false) => {
+    const rect = zone.getBoundingClientRect();
+    if (!rect.width || !rect.height) return;
+    const padding = 8;
+    const base = {
+      left: rect.left - current.x,
+      right: rect.right - current.x,
+      top: rect.top - current.y,
+      bottom: rect.bottom - current.y
+    };
+    const minX = Math.max(-96, padding - base.left);
+    const maxX = Math.min(96, window.innerWidth - padding - base.right);
+    const minY = Math.max(-72, padding - base.top);
+    const maxY = Math.min(72, window.innerHeight - padding - base.bottom);
+    current = {
+      x: minX <= maxX ? Math.max(minX, Math.min(maxX, current.x)) : 0,
+      y: minY <= maxY ? Math.max(minY, Math.min(maxY, current.y)) : 0
+    };
+    apply();
+    if (persist) {
+      touchPositions[zoneId] = current;
+      saveTouchPositions();
+    }
+  };
   apply();
+  touchZoneReflows.push(clampToViewport);
+  touchZoneResetters.push(() => {
+    current = { x: 0, y: 0 };
+    apply();
+    clampToViewport();
+  });
   handle.addEventListener("pointerdown", (event) => {
     event.preventDefault();
     handle.setPointerCapture?.(event.pointerId);
@@ -150,17 +204,13 @@ const bindMovableZone = (zoneId, handleId) => {
         y: Math.max(-72, Math.min(72, start.baseY + moveEvent.clientY - start.y))
       };
       apply();
+      clampToViewport();
     };
     const finish = () => {
       handle.removeEventListener("pointermove", move);
       handle.removeEventListener("pointerup", finish);
       handle.removeEventListener("pointercancel", finish);
-      touchPositions[zoneId] = current;
-      try {
-        window.localStorage?.setItem(TOUCH_POSITIONS_KEY, JSON.stringify(touchPositions));
-      } catch {
-        // The layout remains movable for this session when storage is blocked.
-      }
+      clampToViewport(true);
     };
     handle.addEventListener("pointermove", move);
     handle.addEventListener("pointerup", finish);
@@ -170,6 +220,9 @@ const bindMovableZone = (zoneId, handleId) => {
 
 bindMovableZone("padZone", "movePad");
 bindMovableZone("combatZone", "moveCombat");
+scheduleTouchZoneReflow();
+window.addEventListener("resize", scheduleTouchZoneReflow, { passive: true });
+window.addEventListener("orientationchange", scheduleTouchZoneReflow, { passive: true });
 
 const playerBindingGroups = [
   ["MOVEMENT", [
@@ -339,10 +392,10 @@ function beginBinding(button, action) {
 
 const updateControllerStatus = () => {
   if (!controllerStatus) return;
-  const count = Array.from(navigator.getGamepads?.() || []).filter(Boolean).length;
-  controllerStatus.textContent = count === 0
+  const controllers = game.input.getGamepadStatus?.() || [];
+  controllerStatus.textContent = controllers.length === 0
     ? "GAMEPADS: NONE CONNECTED"
-    : `GAMEPADS: ${Math.min(2, count)} CONNECTED`;
+    : controllers.map(({ player, id }) => `P${player}: ${id}`).join(" // ");
 };
 
 const openSettingsPanel = () => {
@@ -436,6 +489,14 @@ const renderAccessibleActions = (state) => {
   document.body.dataset.highContrast = String(Boolean(game.settings.highContrast));
   document.body.dataset.touchLayout = game.settings.touchLayout || "classic";
   document.body.dataset.colorFilter = game.settings.colorFilter || "normal";
+  scheduleTouchZoneReflow();
+  if (roundContinue) {
+    const canContinue = state.phase === PHASE.ROUND_END || state.phase === PHASE.MATCH_END;
+    roundContinue.hidden = !canContinue;
+    roundContinue.textContent = state.phase === PHASE.ROUND_END
+      ? "NEXT ROUND"
+      : (game.matchEndPrompt || "CONTINUE");
+  }
   if (gameStatus) {
     const combat = state.phase === PHASE.FIGHT
       ? ` Player one health ${state.player1Health} percent, meter ${state.player1Meter}. Player two health ${state.player2Health} percent.`
@@ -444,15 +505,16 @@ const renderAccessibleActions = (state) => {
   }
   const actions = [];
   if (state.phase === PHASE.TITLE) {
+    actions.push(actionButton("Game select", () => game.openGameSelect()));
     for (const [mode, config] of Object.entries(GAME_MODES)) {
       actions.push(actionButton(config.label, () => game.openMode(mode)));
     }
-    actions.push(actionButton("Game select", () => game.openGameSelect()));
     actions.push(actionButton(state.cpuEnabled ? `CPU ${state.cpuDifficulty}. Change opponent mode` : "Local two-player. Change opponent mode", () => game.cycleCpuMode()));
     actions.push(actionButton("Control settings", () => game.openSettings()));
   } else if (state.phase === PHASE.GAME_SELECT) {
     actions.push(actionButton("Play GOTHTECHNOLOGY", () => { game.selectGame(0); game.launchSelectedGame(); }));
     actions.push(actionButton("Play Robot Rahbe", () => { game.selectGame(1); game.launchSelectedGame(); }));
+    actions.push(actionButton("Play 2084 Static WAV", () => { game.selectGame(2); game.launchSelectedGame(); }));
     actions.push(actionButton("Back", () => game.returnToTitle()));
   } else if (state.phase === PHASE.REPLAY_SELECT) {
     const replays = game.getReplayLibrary();
@@ -470,10 +532,10 @@ const renderAccessibleActions = (state) => {
   } else if (state.phase === PHASE.SELECT) {
     const opponentRole = state.training ? "training dummy" : (state.cpuEnabled ? "CPU opponent" : "Player 2");
     actions.push(actionButton("Select Player 1", () => game.setSelectionTarget("p1")));
-    actions.push(actionButton(`Select ${opponentRole}`, () => game.setSelectionTarget("p2")));
+    if (game.gameMode !== "arcade") actions.push(actionButton(`Select ${opponentRole}`, () => game.setSelectionTarget("p2")));
     const activeRole = state.selectTarget === "p2" ? opponentRole : "Player 1";
     for (const characterId of ROSTER_IDS) {
-      actions.push(actionButton(`Choose ${FIGHTERS[characterId].name} for ${activeRole}`, () => game.selectCharacter(characterId)));
+      actions.push(actionButton(`Choose ${FIGHTERS[characterId].name} for ${activeRole}`, () => game.chooseCharacter(characterId)));
     }
     actions.push(actionButton("Change stage", () => game.cycleStage()));
     actions.push(actionButton(`Start ${GAME_MODES[game.gameMode]?.label || "fight"}`, () => game.startVersus()));
@@ -555,6 +617,11 @@ const setMobileUtilityExpanded = (expanded) => {
 mobileUtilityToggle?.addEventListener("click", () => {
   setMobileUtilityExpanded(mobileUtilityToggle.getAttribute("aria-expanded") !== "true");
 });
+roundContinue?.addEventListener("click", () => {
+  if (game.phase === PHASE.ROUND_END) game.startRound();
+  else if (game.phase === PHASE.MATCH_END) game.advanceAfterMatch();
+  canvas.focus();
+});
 mobileCommands?.addEventListener("click", () => {
   setMobileUtilityExpanded(false);
   game.openCommands();
@@ -609,6 +676,17 @@ resetBindings?.addEventListener("click", () => {
   game.input.resetBindings();
   renderBindings();
   setBindingStatus("Keyboard bindings reset to defaults");
+});
+resetTouchPositions?.addEventListener("click", () => {
+  touchPositions = {};
+  try {
+    window.localStorage?.removeItem(TOUCH_POSITIONS_KEY);
+  } catch {
+    // The visible layout can still be reset for this session.
+  }
+  touchZoneResetters.forEach((reset) => reset());
+  scheduleTouchZoneReflow();
+  setBindingStatus("Touch controls reset to safe positions");
 });
 fullscreenToggle?.addEventListener("click", async () => {
   try {
