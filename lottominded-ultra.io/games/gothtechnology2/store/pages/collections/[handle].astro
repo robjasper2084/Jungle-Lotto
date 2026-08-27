@@ -1,0 +1,13 @@
+---
+import Shell from '../../layouts/Shell.astro';
+import Filters from '../../components/Filters.astro';
+import ProductCard from '../../components/ProductCard.astro';
+import { buildProvider } from '../../commerce/provider';
+import { characters } from '../../content/catalog';
+import { href } from '../../utilities/paths';
+export async function getStaticPaths() { const all=await buildProvider.getCollections();return all.map(collection=>({params:{handle:collection.handle},props:{collection}})); }
+const { collection }=Astro.props;
+const products=await buildProvider.getProducts();
+const character=characters.find(c=>c.collection===collection.handle);
+---
+<Shell title={collection.title} path={`collections/${collection.handle}/`} description={collection.description}><header class="page-heading"><span class="section-number">COLLECTION / THE ARMORY</span><h1>{collection.title}.</h1><p>{collection.description}</p>{character && <a class="button secondary" href={href(`play/?character=${character.id}`)}>Play as {character.name}</a>}</header><section class="section catalog-section"><Filters activeCollection={collection.handle}/><div class="products-grid" id="product-grid">{products.map(product=><div hidden={!product.collections.includes(collection.handle)} data-product-wrapper><ProductCard product={product}/></div>)}</div></section></Shell>

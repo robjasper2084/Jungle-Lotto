@@ -1,0 +1,6 @@
+{
+  "extends": "astro/tsconfigs/strict",
+  "include": [".astro/types.d.ts", "store/**/*.ts", "tests/store/**/*.ts"],
+  "exclude": ["dist", "node_modules", "src"],
+  "compilerOptions": { "allowImportingTsExtensions": true, "noEmit": true, "lib": ["ES2023", "DOM", "DOM.Iterable"], "types": ["astro/client", "node"] }
+}

@@ -1,0 +1,21 @@
+---
+import { buildProvider } from '../commerce/provider';
+const collections = await buildProvider.getCollections();
+const products = await buildProvider.getProducts();
+const categories = [...new Set(products.map(p=>p.productType))];
+const sizes = [...new Set(products.flatMap(p=>p.sizes))];
+const colors = [...new Set(products.flatMap(p=>p.colors))];
+const { activeCollection = '' } = Astro.props;
+---
+<form class="filters" id="product-filters" role="search" aria-label="Filter products">
+  <label class="search-field">Search products<input type="search" name="search" placeholder="Find your equipment" autocomplete="off"/></label>
+  <label>Category<select name="category"><option value="">All equipment</option>{categories.map(c => <option>{c}</option>)}</select></label>
+  <label>Collection<select name="collection"><option value="">All collections</option>{collections.map(c => <option value={c.handle} selected={c.handle === activeCollection}>{c.title}</option>)}</select></label>
+  <label>Size<select name="size"><option value="">All sizes</option>{sizes.map(s => <option>{s}</option>)}</select></label>
+  <label>Color<select name="color"><option value="">All colors</option>{colors.map(c => <option>{c}</option>)}</select></label>
+  <label>Availability<select name="availability"><option value="">All</option><option value="available">Available options</option><option value="unavailable">Unavailable</option></select></label>
+  <label>Sort<select name="sort"><option value="featured">Featured</option><option value="newest">Newest</option><option value="price-low">Price: low to high</option><option value="price-high">Price: high to low</option><option value="name">Name</option></select></label>
+  <button type="reset" class="text-button">Reset filters</button>
+</form>
+<p id="result-count" class="mono" role="status" aria-live="polite"></p>
+<div id="no-results" class="empty-state" hidden><h2>No signal found.</h2><p>Try another name or reset the filters to see all equipment.</p><button class="button" data-reset-filters>Reset filters</button></div>

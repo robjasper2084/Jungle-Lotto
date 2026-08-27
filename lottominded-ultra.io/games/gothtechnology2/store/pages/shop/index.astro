@@ -1,0 +1,8 @@
+---
+import Shell from '../../layouts/Shell.astro';
+import Filters from '../../components/Filters.astro';
+import ProductCard from '../../components/ProductCard.astro';
+import { buildProvider } from '../../commerce/provider';
+const products = await buildProvider.getProducts();
+---
+<Shell title="Shop the Armory" path="shop/"><header class="page-heading"><span class="section-number">THE COMPLETE LOADOUT</span><h1>Find your equipment.</h1><p>Apparel, artifacts, and digital transmissions. Select a collection, find your fit, and make it your own.</p></header><section class="section catalog-section"><Filters/><div class="products-grid" id="product-grid">{products.map(product=><ProductCard product={product}/>)}</div></section></Shell>

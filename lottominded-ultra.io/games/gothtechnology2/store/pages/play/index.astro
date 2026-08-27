@@ -1,0 +1,14 @@
+---
+import Shell from '../../layouts/Shell.astro';
+import Icon from '../../components/Icon.astro';
+import {href} from '../../utilities/paths';
+---
+<Shell title="Enter the Fight" path="play/" description="Play the original GOTHTECHNOLOGY fighting game. No purchase required.">
+<section class="play-shell">
+<div class="play-toolbar"><a class="text-link" href={href()}>← Back to Store</a><p id="game-connection" role="status">Launch when you are ready. The game loads only after a click.</p><a class="text-link" href={href('legacy-game/')} target="_blank" rel="noopener">Open standalone game ↗</a></div>
+<div class="game-reward"><p id="requested-character">Choose a fighter inside the game.</p><a class="text-link" id="game-collection-link" href={href('collections/combat-systems/')}>View game collection</a></div>
+<div class="play-frame-wrap" data-game-host><div class="game-loading" id="game-launch-cover"><img src={href('media/combat-campaign.webp')} alt="GOTHTECHNOLOGY fighters at Michigan Central; supplied campaign artwork" width="1280" height="720"/><h1>Enter the fight.</h1><p>The original characters, controls, settings, training, and soundtrack.</p><button class="button" id="launch-game">Launch game <Icon name="play"/></button><p class="muted">Keyboard, controller, and touch controls are available inside the game.</p></div></div>
+<div class="game-reward"><span id="game-reward-status" role="status">Finish a match lasting at least 30 seconds to save a local cosmetic badge. No purchase, cash, credit, or discount.</span></div>
+<noscript><p class="section">Open the standalone game link above to play. The original game itself requires JavaScript.</p></noscript>
+</section>
+</Shell>

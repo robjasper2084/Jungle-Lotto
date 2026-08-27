@@ -1,0 +1,5 @@
+---
+import { href } from '../utilities/paths';
+const { tile, alt } = Astro.props as {tile:number;alt:string};
+---
+<div class="equipment-art"><img src={href('media/equipment-atlas.webp')} style={`--tile-x:${tile%3};--tile-y:${Math.floor(tile/3)}`} alt={alt} width="1800" height="1200" loading="lazy" decoding="async"/></div>

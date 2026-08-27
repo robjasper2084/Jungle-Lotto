@@ -4,6 +4,13 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "dev": "astro dev --host 127.0.0.1 --port 4180",
+    "build": "astro build",
+    "preview": "astro preview --host 127.0.0.1 --port 4180",
+    "check:store": "tsc --noEmit",
+    "test:store": "node --experimental-transform-types --test tests/store/*.test.ts",
+    "test:store:browser": "node node_modules/playwright/cli.js test --config playwright.store.config.mjs",
+    "prepare:media": "node scripts/prepare-store-assets.mjs",
     "check:syntax": "node scripts/check-syntax.mjs",
     "check:assets": "node scripts/validate-assets.mjs",
     "check": "npm run check:syntax && npm run check:assets",
@@ -14,6 +21,13 @@
     "ci": "npm run check && npm run test:unit && npm run test:browser"
   },
   "devDependencies": {
-    "@playwright/test": "^1.51.1"
+    "@playwright/test": "^1.51.1",
+    "@types/node": "24.13.3",
+    "@types/three": "0.185.4",
+    "typescript": "7.0.2"
+  },
+  "dependencies": {
+    "astro": "7.2.9",
+    "three": "0.185.1"
   }
 }

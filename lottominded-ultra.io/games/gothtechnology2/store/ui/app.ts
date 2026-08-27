@@ -1,0 +1,9 @@
+import type { Product } from '../commerce/types';
+import { initDialogs } from './dom';
+import { initCart } from './cart';
+import { initCatalog } from './catalog';
+import { initExperience } from './experience';
+const data=JSON.parse(document.getElementById('store-data')?.textContent??'{"products":[]}') as {products:Product[]};
+initDialogs();initCart(data.products);initCatalog(data.products);initExperience();
+if(document.querySelector('[data-game-host]')) import('../game/play').then(m=>m.initPlay());
+if(document.querySelector('[data-load-viewer]')) import('../three/viewer-entry').then(m=>m.initViewers(data.products));

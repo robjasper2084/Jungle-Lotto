@@ -1,0 +1,10 @@
+---
+import Shell from '../../layouts/Shell.astro';
+import Newsletter from '../../components/Newsletter.astro';
+import {href} from '../../utilities/paths';
+---
+<Shell title="Built in Detroit. Transmitted worldwide." path="about/" description="The creative world behind GOTHTECHNOLOGY: Detroit sound, underground gaming, industrial design, and Digital Static.">
+<header class="page-heading"><span class="section-number">ORIGIN / DIGITAL STATIC</span><h1>Built in Detroit.<br/>Transmitted worldwide.</h1></header>
+<section class="section origin-section"><div><h2>A city.<br/>A signal.<br/>A world of your own.</h2><p>Born from Detroit sound, underground gaming, industrial design, and the glow of technology after midnight, GOTHTECHNOLOGY creates apparel and artifacts for people building their own world.</p><p>The 313 hood, the stitched skyline, the small companion on your bag. Familiar city symbols carried into an imagined future.</p><p>A creative world by Digital Static. The product references and original fighting game share one home here.</p><a class="button" href={href('shop/')}>Explore the armory →</a></div><img src={href('media/mascot-illustration.webp')} alt="Illustrated LottoMind mascot wearing a Detroit hoodie against a blue painted background" width="1680" height="938" loading="lazy"/></section>
+<section class="section document-page"><h2>From game world to everyday objects.</h2><p>GOTHTECHNOLOGY began here as a browser fighting game. Its characters, stages, settings, and controls remain playable. The armory extends that visual world into a concept catalog of apparel, accessories, collectibles, and digital artifacts.</p><p>All products in this preview are demo concepts. Final stock, manufacturing, commercial asset rights, and sales policies must be confirmed before the store accepts orders.</p><a class="text-link" href={href('play/')}>Enter the original game →</a></section><Newsletter/>
+</Shell>
