@@ -1,6 +1,6 @@
 import { createReadStream } from 'node:fs';
 import { cp, mkdir, readFile, stat, writeFile } from 'node:fs/promises';
-import { dirname, extname, resolve, sep } from 'node:path';
+import { extname, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = resolve(import.meta.dirname, '..');
@@ -19,13 +19,16 @@ export function legacyIntegration() {
     'astro:server:setup': ({ server }) => {
       server.middlewares.use(async (req, res, next) => {
         const pathname = new URL(req.url || '/', 'http://localhost').pathname;
-        if (pathname === `${base}legacy-game/` || pathname === `${base}legacy-game/index.html`) {
+        // Astro rewrites req.url before this integration runs in development.
+        // Accept either form, but keep the public base in the generated entry.
+        const route = pathname.startsWith(base) ? `/${pathname.slice(base.length)}` : pathname;
+        if (route === '/legacy-game/' || route === '/legacy-game/index.html') {
           res.setHeader('Content-Type', 'text/html; charset=utf-8'); res.end(await legacyEntry(base)); return;
         }
         let file;
-        if (pathname === `${base}legacy-game/reward-sdk.js`) file = resolve(root, '../../assets/js/lm-game-rewards-sdk.js');
-        else if (pathname.startsWith(`${base}src/`) || pathname.startsWith(`${base}assets/`)) {
-          file = resolve(root, decodeURIComponent(pathname.slice(base.length)));
+        if (route === '/legacy-game/reward-sdk.js') file = resolve(root, '../../assets/js/lm-game-rewards-sdk.js');
+        else if (route.startsWith('/src/') || route.startsWith('/assets/')) {
+          file = resolve(root, decodeURIComponent(route.slice(1)));
           if (!file.startsWith(`${root}${sep}`)) { res.statusCode = 403; res.end(); return; }
         } else return next();
         try { const info = await stat(file); if (!info.isFile()) return next();

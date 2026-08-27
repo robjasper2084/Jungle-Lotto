@@ -1,5 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+import { PassThrough } from 'node:stream';
+import { finished } from 'node:stream/promises';
+import { legacyIntegration } from '../../scripts/store-integration.mjs';
 import { DemoProvider, DEMO_CART_KEY } from '../../store/commerce/demo.ts';
 import { demoProducts, filterProducts, selectVariant } from '../../store/content/catalog.ts';
 import { fromDecimal, formatMoney, subtotal, quantity } from '../../store/commerce/money.ts';
@@ -11,6 +15,59 @@ import { createAnalytics } from '../../store/state/analytics.ts';
 import { serialize } from '../../store/utilities/serialize.ts';
 const memory=()=>{const values=new Map<string,string>();return {getItem:(k:string)=>values.get(k)??null,setItem:(k:string,v:string)=>{values.set(k,v);},removeItem:(k:string)=>{values.delete(k);}};};
 const hoodie=demoProducts[0],variant=hoodie.variants[0];
+
+class PreviewResponse extends PassThrough {
+  statusCode=200;
+  headers=new Map<string,string|number>();
+  setHeader(name:string,value:string|number){this.headers.set(name.toLowerCase(),value);}
+}
+type PreviewMiddleware=(req:{url:string},res:PreviewResponse,next:()=>void)=>Promise<void>;
+function previewMiddleware(base:string){
+  let handler:PreviewMiddleware|undefined;
+  const {hooks}=legacyIntegration();
+  hooks['astro:config:done']({config:{base}});
+  hooks['astro:server:setup']({server:{middlewares:{use(fn:PreviewMiddleware){handler=fn;}}}});
+  assert.ok(handler);
+  return handler;
+}
+async function previewResponse(handler:PreviewMiddleware,url:string){
+  const res=new PreviewResponse(),chunks:Buffer[]=[];
+  let passedThrough=false;
+  res.on('data',(chunk:Buffer)=>chunks.push(chunk));
+  const complete=finished(res);
+  await handler({url},res,()=>{passedThrough=true;res.end();});
+  await complete;
+  return {res,passedThrough,body:Buffer.concat(chunks)};
+}
+test('legacy dev middleware serves game entry before and after Astro strips the base',async()=>{
+  for(const base of ['/Jungle-Lotto/lottominded-ultra.io/games/gothtechnology2/','/']){
+    const middleware=previewMiddleware(base);
+    for(const prefix of new Set([base,'/']))for(const route of ['legacy-game/','legacy-game/index.html?character=KALYX']){
+      const result=await previewResponse(middleware,prefix+route),html=result.body.toString();
+      assert.equal(result.passedThrough,false,prefix+route);
+      assert.equal(result.res.statusCode,200);
+      assert.match(String(result.res.headers.get('content-type')),/text\/html/);
+      assert.ok(html.includes(`<base href="${base}">`));
+      assert.ok(html.includes('./legacy-game/reward-sdk.js'));
+      assert.ok(html.includes('./legacy-game/bridge.js'));
+      assert.ok(html.includes('./src/main.js'));
+    }
+  }
+});
+test('legacy dev middleware preserves raw game modules, SDK and assets with query strings',async()=>{
+  const base='/Jungle-Lotto/lottominded-ultra.io/games/gothtechnology2/',middleware=previewMiddleware(base);
+  const files=[['src/main.js','../../src/main.js','text/javascript'],['legacy-game/reward-sdk.js','../../../../assets/js/lm-game-rewards-sdk.js','text/javascript'],['assets/user-stage/detroit-riverfront.webp','../../assets/user-stage/detroit-riverfront.webp','image/webp']];
+  for(const prefix of [base,'/'])for(const [route,source,type] of files){
+    const result=await previewResponse(middleware,prefix+route+'?build=regression');
+    assert.equal(result.passedThrough,false,prefix+route);
+    assert.equal(result.res.statusCode,200);
+    assert.equal(result.res.headers.get('content-type'),type);
+    assert.deepEqual(result.body,await readFile(new URL(source,import.meta.url)));
+  }
+  assert.equal((await previewResponse(middleware,'/play/')).passedThrough,true);
+  assert.equal((await previewResponse(middleware,'/assets/not-present.webp')).res.statusCode,404);
+  assert.equal((await previewResponse(middleware,'/assets/%2e%2e%2f%2e%2e%2fpackage.json')).res.statusCode,403);
+});
 test('money uses integer minor units across zero, two, and three-decimal currencies',()=>{
   assert.deepEqual(fromDecimal('79.10','USD'),{amount:7910,currency:'USD'});
   assert.deepEqual(fromDecimal('1800','JPY'),{amount:1800,currency:'JPY'});
