@@ -51,6 +51,6 @@ const support = ['contact','faq','shipping','returns','privacy','terms','accessi
   <noscript><p class="noscript-notice">Catalog pages and the game link work without store JavaScript. Enable JavaScript for variant selection and shopping cart controls.</p></noscript>
   <script id="store-data" type="application/json" set:html={pageData}/>
   <SignalDisplay/>
-  {path === '' && <HomeCommercial/>}
+  {(path === '' || path === 'shop/') && <HomeCommercial/>}
   <script>import '../ui/app.ts';</script>
 </body></html>

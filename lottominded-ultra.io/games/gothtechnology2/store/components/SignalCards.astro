@@ -2,6 +2,8 @@
 import { signals } from '../content/signals';
 import { characters } from '../content/catalog';
 import { href } from '../utilities/paths';
+interface Props { showGameCharacters?: boolean; }
+const { showGameCharacters = true } = Astro.props;
 const cards = signals.map(signal => ({...signal, character:characters.find(character => character.id === signal.characterId)}));
 ---
 <div class="signal-grid">
@@ -12,7 +14,7 @@ const cards = signals.map(signal => ({...signal, character:characters.find(chara
       <h3>{signal.name}</h3><span class="signal-merch-label">{signal.merch}</span>
     </a>
     <button class="signal-inspect" aria-label={'Inspect '+signal.name+' display'} aria-haspopup="dialog" disabled>Inspect display</button>
-    {signal.character && <a class="signal-game" href={href('play/?character='+signal.character.id)} aria-label={'Play as '+signal.character.name}>
+    {showGameCharacters && signal.character && <a class="signal-game" href={href('play/?character='+signal.character.id)} aria-label={'Play as '+signal.character.name}>
       <span class="signal-game-label">From the game</span>
       <img src={href('assets/user-roster/'+signal.character.image)} alt={signal.character.name+' — GOTHTECHNOLOGY game character artwork'} width="256" height="256" loading="lazy" decoding="async"/>
       <strong>{signal.character.name}</strong><span class="signal-game-cta">Play character →</span>
