@@ -138,6 +138,8 @@ test('newsletter consent is required and demo does not send personal data',async
 
 test('game portal preserves the runtime, preselects a fighter and rejects forged messages',async({page},info)=>{
   test.setTimeout(90000);const errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto(base+'play/?character=KALYX');await expect(page.locator('#game-frame')).toHaveCount(0);await page.getByRole('button',{name:'Launch game',exact:true}).click();await expect(page.locator('#game-connection')).toContainText('Game ready',{timeout:45000});
+  // A late iframe load must not overwrite the earlier validated ready message.
+  await page.locator('#game-frame').dispatchEvent('load');await expect(page.locator('#game-connection')).toContainText('Game ready');
   const frame=page.frames().find(f=>f.url().includes('/legacy-game/'));expect(frame).toBeTruthy();expect(await frame.evaluate(()=>window.__gothTechnologyGame.player1Id)).toBe('KALYX');
   await page.evaluate(()=>window.postMessage({type:'GOTHTECH_MATCH_COMPLETED',characterId:'KALYX',result:'win',durationSeconds:60},location.origin));await expect(page.locator('#game-reward-status')).not.toContainText('unlocked');
   await frame.evaluate(()=>window.__gothTechnologyGame.openMode('training'));await expect.poll(()=>frame.evaluate(()=>window.__gothTechnologyGame.matchAssetsReady),{timeout:45000}).toBe(true);
