@@ -73,14 +73,18 @@ test('signal keychain cards use matching artwork and retain their collection fil
   await expect(page.locator('[data-product-card]:visible')).toHaveCount(1);
 });
 
+test('homepage signal row keeps the collectibles without game-character portraits',async({page})=>{
+  await page.goto(base+'#character-vault');
+  await expect(page.locator('#character-vault .signal-card')).toHaveCount(4);
+  await expect(page.locator('#character-vault .signal-inspect')).toHaveCount(4);
+  await expect(page.locator('#character-vault .signal-game')).toHaveCount(0);
+});
+
 const signalFighters=[['DETROIT_LENS_NOIR','Detroit Lens Noir','detroit-lens-noir'],['MASTER_EZRA','Master Ezra','master-ezra'],['AMARA_VALENTINE','Amara Valentine','amara-valentine'],['KALYX','Kalyx','kalyx']];
 for(const [index,[id,name,image]] of signalFighters.entries()){
-  test('every signal column opens its matching fighter: '+name,async({page})=>{
-    await page.goto(base);await ready(page);
-    // Exercise the dismissal UI so the idle commercial cannot interrupt the link check.
-    await page.getByRole('button',{name:'Watch transmission',exact:true}).click();
-    await page.getByRole('button',{name:'Don’t show automatically again',exact:true}).click();
-    const card=page.locator('#character-vault .cinematic-card').nth(index);
+  test('collection signal columns still open their matching fighters: '+name,async({page})=>{
+    await page.goto(base+'collections/');await ready(page);
+    const card=page.locator('.collection-signals .cinematic-card').nth(index);
     await expect(card.locator('.signal-card img')).toBeVisible();
     await expect(card.locator('.signal-game img')).toHaveAttribute('src',base+'assets/user-roster/'+image+'-headshot.webp');
     await card.getByRole('link',{name:'Play as '+name,exact:true}).click();
@@ -156,8 +160,9 @@ test('Lookbook silent transmission is requested explicitly and can always close'
   await page.getByRole('button',{name:'Do not show again',exact:true}).click();await expect(page.locator('#transmission-dialog')).not.toBeVisible();await expect(page.locator('#store-video')).not.toHaveAttribute('src');
 });
 
-test('homepage commercial starts muted once per session and supports replay',async({page})=>{
-  await page.goto(base);await ready(page);
+for(const [surface,path,watchLabel] of [['homepage','','Watch transmission'],['shop','shop/','Watch commercial']]){
+test(surface+' commercial starts muted once per session and supports replay',async({page})=>{
+  await page.goto(base+path);await ready(page);
   const dialog=page.locator('#home-commercial'),video=page.locator('#home-commercial-video');
   await expect(video).not.toHaveAttribute('src');
   await expect(dialog).toBeVisible({timeout:15000});
@@ -167,17 +172,17 @@ test('homepage commercial starts muted once per session and supports replay',asy
   await expect(dialog).not.toBeVisible();await expect(video).not.toHaveAttribute('src');
   await page.reload();await page.waitForTimeout(9000);
   await expect(dialog).not.toBeVisible();await expect(video).not.toHaveAttribute('src');
-  await page.getByRole('button',{name:'Watch transmission',exact:true}).click();
+  await page.getByRole('button',{name:watchLabel,exact:true}).click();
   await expect(dialog).toBeVisible();
   await page.getByRole('button',{name:'Don’t show automatically again',exact:true}).click();
   await expect(dialog).not.toBeVisible();
-  await page.getByRole('button',{name:'Watch transmission',exact:true}).click();
+  await page.getByRole('button',{name:watchLabel,exact:true}).click();
   await expect(dialog).toBeVisible();
   await page.getByRole('button',{name:'Close commercial',exact:true}).click();
 });
 
-test('homepage commercial waits for an open shopping cart',async({page})=>{
-  await page.goto(base);await page.getByRole('button',{name:'Open shopping cart',exact:true}).click();
+test(surface+' commercial waits for an open shopping cart',async({page})=>{
+  await page.goto(base+path);await page.getByRole('button',{name:'Open shopping cart',exact:true}).click();
   await page.waitForTimeout(9000);
   await expect(page.locator('#cart-dialog')).toBeVisible();
   await expect(page.locator('#home-commercial')).not.toBeVisible();
@@ -187,14 +192,15 @@ test('homepage commercial waits for an open shopping cart',async({page})=>{
   await page.keyboard.press('Escape');
 });
 
-test('reduced motion leaves the homepage commercial on request',async({page})=>{
-  await page.emulateMedia({reducedMotion:'reduce'});await page.goto(base);
+test('reduced motion leaves the '+surface+' commercial on request',async({page})=>{
+  await page.emulateMedia({reducedMotion:'reduce'});await page.goto(base+path);
   await page.waitForTimeout(9000);await expect(page.locator('#home-commercial')).not.toBeVisible();
-  await page.getByRole('button',{name:'Watch transmission',exact:true}).click();
+  await page.getByRole('button',{name:watchLabel,exact:true}).click();
   await expect(page.locator('#home-commercial')).toBeVisible();
   expect(await page.locator('#home-commercial-video').evaluate(v=>v.paused&&v.muted)).toBe(true);
   await page.getByRole('button',{name:'Close commercial',exact:true}).click();
 });
+}
 
 test('newsletter consent is required and demo does not send personal data',async({page})=>{
   const posts=[];page.on('request',r=>{if(r.method()==='POST')posts.push(r.url());});await page.goto(base);await page.getByLabel('Email address',{exact:true}).fill('qa@example.test');await page.getByRole('button',{name:'Join the signal',exact:true}).click();await expect(page.locator('#newsletter-form .form-status')).toContainText('not connected');
