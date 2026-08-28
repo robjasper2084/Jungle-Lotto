@@ -4,25 +4,6 @@ import { href } from '../utilities/paths';
 
 export function initStory() {
   const root = document.documentElement;
-  const pause = document.querySelector<HTMLButtonElement>('#scene-pause')!;
-  const sound = document.querySelector<HTMLButtonElement>('[data-sound-proxy]')!;
-  const motion = document.querySelector<HTMLButtonElement>('[data-motion-proxy]')!;
-  const soundOriginal = document.querySelector<HTMLButtonElement>('#sound-toggle')!;
-  const motionOriginal = document.querySelector<HTMLButtonElement>('#motion-toggle')!;
-  const sync = () => {
-    sound.textContent = soundOriginal.textContent; sound.setAttribute('aria-pressed', soundOriginal.getAttribute('aria-pressed') ?? 'false');
-    motion.textContent = motionOriginal.textContent; motion.setAttribute('aria-pressed', String(isReduced()));
-    pause.disabled = isReduced();
-    if (isReduced()) root.dataset.cinemaPaused = 'true';
-    pause.textContent = isReduced() ? 'Motion reduced' : root.dataset.cinemaPaused === 'true' ? 'Resume motion' : 'Pause motion';
-    pause.setAttribute('aria-pressed', String(root.dataset.cinemaPaused === 'true'));
-    document.dispatchEvent(new Event('store:motion'));
-  };
-  pause.addEventListener('click', () => { root.dataset.cinemaPaused = String(root.dataset.cinemaPaused !== 'true'); sync(); });
-  sound.addEventListener('click', () => soundOriginal.click());
-  motion.addEventListener('click', () => motionOriginal.click());
-  document.addEventListener('store:preferences', sync); document.addEventListener('store:sound', sync); sync();
-
   const portal = document.querySelector<HTMLElement>('#enter-the-fight')!;
   portal.dataset.storyScene = 'portal';
   portal.querySelectorAll('a').forEach(a => a.setAttribute('data-portal-link', ''));

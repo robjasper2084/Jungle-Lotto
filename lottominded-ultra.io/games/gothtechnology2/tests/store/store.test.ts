@@ -12,6 +12,9 @@ import { validGameMessage, acceptGameMessage, cosmeticReward, monetaryRewards } 
 import { chooseQuality, PerformanceGovernor } from '../../store/three/governor.ts';
 import { createConfig } from '../../store/config.ts';
 import { createAnalytics } from '../../store/state/analytics.ts';
+import { conversionMode, launchReadiness, productReadiness } from '../../store/commerce/mode.ts';
+import { launchOwner, pendingInformation, type LaunchOwner } from '../../store/content/launch.ts';
+import { createSubscription, disconnectedMessage, secureEndpoint, type SubscriptionRequest } from '../../store/state/subscription.ts';
 import { serialize } from '../../store/utilities/serialize.ts';
 const memory=()=>{const values=new Map<string,string>();return {getItem:(k:string)=>values.get(k)??null,setItem:(k:string,v:string)=>{values.set(k,v);},removeItem:(k:string)=>{values.delete(k);}};};
 const hoodie=demoProducts[0],variant=hoodie.variants[0];
@@ -211,4 +214,67 @@ test('configuration and analytics fail closed, and embedded JSON cannot close a 
   const sent:any[]=[];const analytics=createAnalytics((...args)=>sent.push(args));analytics.trackEvent('add_to_cart',{quantity:1});assert.equal(sent.length,0);
   analytics.setConsent(true);analytics.trackEvent('add_to_cart',{quantity:1,email:'private@example.com',handle:'safe'});assert.deepEqual(sent[0],['add_to_cart',{quantity:1,handle:'safe'}]);
   const payload={title:'</script><script>alert(1)</script>'};assert.equal(serialize(payload).includes('<'),false);assert.deepEqual(JSON.parse(serialize(payload)),payload);
+});
+
+test('interest mode remains safe even when a launch flag is set without owner facts',()=>{
+  const approvedFlag=createConfig({PUBLIC_COMMERCE_MODE:'shopify',PUBLIC_LAUNCH_APPROVED:'true',PUBLIC_SHOPIFY_STORE_DOMAIN:settings.domain,PUBLIC_SHOPIFY_STOREFRONT_TOKEN:settings.token});
+  assert.equal(conversionMode(demoProducts,approvedFlag),'interest');
+  assert.equal(launchReadiness(demoProducts,approvedFlag).ready,false);
+  assert.ok(launchReadiness(demoProducts,approvedFlag).issues.some(issue=>issue.includes('checkout test')));
+});
+test('approved commerce requires complete products, policies and a tested checkout',()=>{
+  const product=normalizeProduct(rawProduct);
+  product.information={...pendingInformation(),materials:'Test fixture cotton',careInstructions:'Test fixture care',processingTime:'Test fixture processing',shippingMessage:'Test fixture shipping',returnMessage:'Test fixture returns',sizeGuide:'Test fixture size chart',measurements:'Test fixture measurements',productionStatus:'approved',photographyStatus:'approved',priceApproved:true};
+  const owner={...Object.fromEntries(Object.entries(launchOwner).map(([key,value])=>[key,value===null?'Owner-approved test fixture':value])),supportEmail:'support@example.test',accessibilityEmail:'access@example.test',shippingRegions:['Test region'],policiesApproved:true,checkoutTested:true} as LaunchOwner;
+  const cfg=createConfig({PUBLIC_COMMERCE_MODE:'shopify',PUBLIC_LAUNCH_APPROVED:'true',PUBLIC_SHOPIFY_STORE_DOMAIN:settings.domain,PUBLIC_SHOPIFY_STOREFRONT_TOKEN:settings.token});
+  assert.deepEqual(productReadiness(product),[]);
+  assert.equal(conversionMode([product],cfg,owner),'commerce');
+  for(const field of ['materials','careInstructions','sizeGuide','shippingMessage','returnMessage'] as const){
+    const broken=structuredClone(product);broken.information[field]=null;
+    assert.equal(conversionMode([broken],cfg,owner),'interest',field);
+  }
+  assert.equal(conversionMode([product],cfg,{...owner,checkoutTested:false}),'interest');
+  const digital={...product,digital:true};
+  assert.ok(productReadiness(digital).includes('licenseInformation'));
+  assert.ok(productReadiness(digital).includes('digitalContents'));
+});
+const alertRequest: SubscriptionRequest={email:'qa@example.test',consent:true,source:'/Jungle-Lotto/lottominded-ultra.io/games/gothtechnology2/',interests:[{handle:hoodie.handle,variantId:variant.id,size:variant.size,color:variant.color,quantity:2}]};
+test('disconnected and unapproved subscriptions do not transmit an email',async()=>{
+  let calls=0;const fetcher=(async()=>{calls++;return new Response('{}');}) as typeof fetch;
+  for(const [endpoint,approved] of [['',false],['https://mail.example.test/subscribe',false]] as const){
+    assert.deepEqual(await createSubscription(endpoint,approved,fetcher).subscribe(alertRequest),{ok:false,message:disconnectedMessage});
+  }
+  assert.equal(calls,0);
+});
+test('subscription validates consent, email, identifiers and HTTPS without URL credentials',async()=>{
+  let calls=0;const fetcher=(async()=>{calls++;return new Response('{}');}) as typeof fetch;
+  const service=createSubscription('https://mail.example.test/subscribe',true,fetcher);
+  for(const request of [{...alertRequest,consent:false},{...alertRequest,email:'invalid'},{...alertRequest,source:'/page?email=private'},{...alertRequest,interests:[{...alertRequest.interests[0],quantity:100}]}]){
+    assert.equal((await service.subscribe(request)).ok,false);
+  }
+  for(const url of ['http://mail.example.test/','https://user:pass@mail.example.test/','javascript:alert(1)','/relative']){
+    assert.equal(secureEndpoint(url),null);
+    assert.equal((await createSubscription(url,true,fetcher).subscribe(alertRequest)).ok,false);
+  }
+  assert.equal(calls,0);
+});
+test('subscription sends one scoped request and requires an explicit service acknowledgment',async()=>{
+  let captured: RequestInit|undefined;
+  const fetcher=(async(_url,options)=>{captured=options;return new Response(JSON.stringify({status:'pending_confirmation'}));}) as typeof fetch;
+  const result=await createSubscription('https://mail.example.test/subscribe',true,fetcher).subscribe(alertRequest);
+  assert.equal(result.ok,true);
+  assert.equal(captured?.credentials,'omit');assert.equal(captured?.redirect,'error');
+  const body=JSON.parse(String(captured?.body));assert.equal(body.email,'qa@example.test');assert.equal(body.consent,true);
+  assert.deepEqual(body.productHandles,[hoodie.handle]);assert.equal(body.interests[0].quantity,2);
+  for(const response of [new Response('{}'),new Response('bad'),new Response('{}',{status:500})]){
+    assert.equal((await createSubscription('https://mail.example.test/subscribe',true,(async()=>response) as typeof fetch).subscribe(alertRequest)).ok,false);
+  }
+  const offline=(async()=>{throw new Error('offline');}) as typeof fetch;
+  assert.equal((await createSubscription('https://mail.example.test/subscribe',true,offline).subscribe(alertRequest)).ok,false);
+});
+test('conversion events stay no-op until consent and never carry contact or search text',()=>{
+  const calls:unknown[]=[];const tracker=createAnalytics((...args)=>calls.push(args));
+  tracker.trackEvent('launch_alert_submit',{email:'private@example.test'});assert.equal(calls.length,0);
+  tracker.setConsent(true);tracker.trackEvent('search',{count:2,search:'private query',email:'private@example.test',name:'Person'});
+  assert.deepEqual(calls,[['search',{count:2}]]);
 });

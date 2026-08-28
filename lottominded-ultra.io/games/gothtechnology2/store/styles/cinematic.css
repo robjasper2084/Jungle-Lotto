@@ -33,15 +33,9 @@
 .display-note{font:12px/1.6 var(--mono);color:#c0bba9;margin:16px 0}
 .signal-display-dialog>a{font-size:11px;min-height:44px}
 @media(prefers-reduced-motion:no-preference){
-  @view-transition{navigation:auto}
-  ::view-transition-old(root){animation:armory-exit .28s ease both}
-  ::view-transition-new(root){animation:armory-enter .38s ease both}
   .signal-display-dialog[open] .display-object{animation:display-arrive .55s ease-out}
 }
-@keyframes armory-exit{to{opacity:0;transform:scale(1.02)}}
-@keyframes armory-enter{from{opacity:0;transform:scale(.985)}to{opacity:1;transform:none}}
 @keyframes display-arrive{from{opacity:0;translate:0 20px}to{opacity:1;translate:0 0}}
-html[data-reduced-motion=true]::view-transition-old(root),html[data-reduced-motion=true]::view-transition-new(root){animation:none}
 html[data-reduced-motion=true] .cinematic-card .signal-card{transform:none}
 html[data-reduced-motion=true] .signal-display-stage{cursor:default}
 @media(prefers-reduced-motion:reduce){.cinematic-card .signal-card{transform:none}.signal-display-stage{cursor:default}}

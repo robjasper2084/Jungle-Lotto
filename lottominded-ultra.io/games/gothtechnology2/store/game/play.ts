@@ -1,5 +1,6 @@
 import { acceptGameMessage, cosmeticReward, type GameStoreMessage } from './messages';
 import { characters } from '../content/catalog';
+import { analytics } from '../state/analytics';
 import { config } from '../config';
 import { href } from '../utilities/paths';
 import { $, save, saved } from '../ui/dom';
@@ -19,6 +20,7 @@ export function initPlay() {
   window.addEventListener('message',event=>{
     if(!acceptGameMessage(event,location.origin,frame?.contentWindow??null))return;
     const data=event.data as GameStoreMessage;
+    if(data.type==='GOTHTECH_MATCH_COMPLETED')analytics.trackEvent('game_match_complete',{character:data.characterId,result:data.result,duration:data.durationSeconds});
     if(data.type==='GOTHTECH_GAME_READY'){ready=true;clearTimeout(timer);notice.textContent='Game ready. Use the in-game controls or keyboard. Back to Store remains above the game.';}
     if(data.type==='GOTHTECH_CHARACTER_SELECTED'){
       const selected=characters.find(c=>c.id===data.characterId)!;const link=$<HTMLAnchorElement>('#game-collection-link')!;link.href=href(`collections/${selected.collection}/`);link.textContent='View '+selected.name+' collection';
