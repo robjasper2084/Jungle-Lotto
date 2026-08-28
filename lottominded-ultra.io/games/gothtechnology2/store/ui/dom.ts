@@ -33,7 +33,7 @@ export function initDialogs() {
       items[next].focus();
     });
     dialog.addEventListener('cancel', event => { event.preventDefault(); dialog.close(); });
-    dialog.addEventListener('close', () => { const trigger=triggers.get(dialog); requestAnimationFrame(()=>trigger?.focus({preventScroll:true})); document.dispatchEvent(new Event('store:dialog')); });
+    dialog.addEventListener('close', () => { const trigger=triggers.get(dialog); requestAnimationFrame(()=>{if(!document.querySelector('dialog[open]') && trigger?.isConnected) trigger.focus({preventScroll:true});}); document.dispatchEvent(new Event('store:dialog')); });
     dialog.addEventListener('click', event => { if(event.target===dialog) { const r=dialog.getBoundingClientRect(); if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom) dialog.close(); } });
   });
 }

@@ -9,7 +9,8 @@ export function initViewers(products:Product[]) {
     const root=button.closest<HTMLElement>('.model-viewer')!,stage=$<HTMLElement>('.model-stage',root)!,controls=$<HTMLElement>('.model-controls',root)!,note=$('[data-viewer-status]',root)!;
     if(root.dataset.loaded==='true')return;
     const product=products.find(p=>p.handle===root.dataset.handle)!;
-    if(isReduced()){note.textContent='Reduced motion is active. Use the standard image gallery and zoom above.';return;}
+    const saveData=(navigator as Navigator & {connection?:{saveData?:boolean}}).connection?.saveData;
+    if(isReduced() || saveData || document.querySelector<HTMLSelectElement>('#quality-select')?.value==='fallback'){note.textContent='Static display preference is active. Use the standard image gallery and zoom above.';return;}
     if(!product.model&&!product.images.length){note.textContent='Product photography and a model are not supplied yet. The concept illustration remains available above.';return;}
     root.dataset.loaded='true';stage.hidden=false;controls.hidden=false;button.setAttribute('aria-expanded','true');
     if(product.model) {

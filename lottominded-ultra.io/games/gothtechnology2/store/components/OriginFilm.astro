@@ -12,9 +12,8 @@ const {
 } = Astro.props;
 ---
 <figure class:list={['origin-film', {'feature-film':feature}]} data-inline-film>
-  <video id={id} controls muted playsinline preload="metadata" width="1280" height="720"
+  <video id={id} data-src={href(source)} controls muted playsinline preload="none" width="1280" height="720"
     poster={href(poster)} aria-label={label} aria-describedby={id+'-description'}>
-    <source src={href(source)} type="video/mp4"/>
     Your browser cannot play this video. <a href={href(source)}>Open the film</a>.
   </video>
   <figcaption>

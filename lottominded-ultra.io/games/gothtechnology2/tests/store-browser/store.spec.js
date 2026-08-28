@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 import { writeFile } from 'node:fs/promises';
 const base='/Jungle-Lotto/lottominded-ultra.io/games/gothtechnology2/';
 const product=base+'products/night-protocol-hoodie/';
+const settle=async page=>page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
 const ready=async page=>{await expect(page.locator('#store-data')).toBeAttached();await expect(page.locator('#sound-toggle')).toHaveText('Sound off');};
 
 test('visual: homepage renders, keeps content accessible, and does not load game or video',async({page},info)=>{
@@ -12,41 +13,51 @@ test('visual: homepage renders, keeps content accessible, and does not load game
   await page.screenshot({path:info.outputPath('home-viewport.png')});
   const metrics=await page.evaluate(()=>({...window.__metrics,width:innerWidth,height:innerHeight,domReady:performance.getEntriesByType('navigation')[0]?.domContentLoadedEventEnd,resources:performance.getEntriesByType('resource').map(r=>({name:new URL(r.name).pathname,bytes:r.encodedBodySize}))}));
   await writeFile(info.outputPath('performance.json'),JSON.stringify(metrics,null,2));
-  expect(requests.some(u=>/\/src\/main\.js|motion-atlases|\.mp4|\.mp3/.test(u))).toBe(false);
+  expect(requests.some(u=>/\/src\/main\.js|motion-atlases|\.mp4|\.mp3|\/cathedral\.|\/model\.|\/three\./.test(u))).toBe(false);
   expect(await page.evaluate(()=>({width:innerWidth,scroll:document.documentElement.scrollWidth,offenders:[...document.querySelectorAll('body *')].filter(el=>el.getBoundingClientRect().right>innerWidth+1&&!el.closest('.equipment-art,.signal-portrait,.lookbook-strip,.hero,dialog')).map(el=>({tag:el.tagName,cls:el.className,right:el.getBoundingClientRect().right}))}))).toMatchObject({scroll:info.project.use.viewport.width});
-  for(const section of await page.locator('main>section').all()){await section.scrollIntoViewIfNeeded();}await expect.poll(()=>page.locator('main img').evaluateAll(images=>images.every(img=>img.complete&&img.naturalWidth>0))).toBe(true);
+  for(const section of await page.locator('main>section').all()){await section.scrollIntoViewIfNeeded();}await expect.poll(()=>page.locator('main img[src]').evaluateAll(images=>images.every(img=>img.complete&&img.naturalWidth>0))).toBe(true);
   await page.evaluate(()=>window.scrollTo({top:0,behavior:"instant"}));await page.screenshot({path:info.outputPath('home-full.png'),fullPage:true});
   expect(errors).toEqual([]);
 });
 
-test('shopping cart: variants, quantity, persistence, removal, focus and demo checkout',async({page},info)=>{
+test('shopping cart: launch preferences, quantity, persistence, alert flow and focus',async({page},info)=>{
   await page.goto(product);await ready(page);await page.getByRole('radio',{name:'M',exact:true}).check();await page.getByLabel('Quantity',{exact:true}).fill('2');
-  await page.getByRole('button',{name:'Add this item to shopping cart'}).click();const cart=page.getByRole('dialog',{name:'Your Loadout'});await expect(cart).toBeVisible();await expect(cart).toContainText('M / Obsidian');await expect(cart.locator('.cart-subtotal')).toContainText('$158');
+  await page.getByRole('button',{name:'Save to Launch Loadout',exact:true}).click();const cart=page.getByRole('dialog',{name:'Your Launch Loadout'});await expect(cart).toBeVisible();await expect(cart).toContainText('M / Obsidian');await expect(cart.locator('.cart-subtotal')).toContainText('$158');
   await page.getByRole('button',{name:/Increase quantity/}).click();await expect(cart.locator('.cart-subtotal')).toContainText('$237');
-  await cart.getByRole('button',{name:'Proceed to checkout',exact:true}).click();await expect(cart).toContainText('No order has been placed.');
-  await page.screenshot({path:info.outputPath('cart.png')});
-  await page.keyboard.press('Escape');await expect(cart).not.toBeVisible();await expect(page.getByRole('button',{name:'Add this item to shopping cart'})).toBeFocused();
-  await page.reload();await page.getByRole('button',{name:'Open shopping cart'}).click();await expect(cart.locator('.cart-subtotal')).toContainText('$237');
-  await page.getByRole('button',{name:/Remove Night Protocol/}).click();await expect(cart).toContainText('Your loadout is empty.');await expect(cart.getByRole('button',{name:'Proceed to checkout',exact:true})).toBeDisabled();
+  await page.screenshot({path:info.outputPath('launch-loadout.png'),scale:'css'});
+  await cart.getByRole('button',{name:'Get Launch Alert',exact:true}).click();
+  const alert=page.locator('#launch-alert-dialog');await expect(alert).toBeVisible();
+  await expect(alert.locator('[data-launch-selection]')).toContainText('M / Obsidian × 3');
+  await alert.getByLabel('Email address',{exact:true}).fill('qa@example.test');await alert.getByRole('checkbox').check();
+  await alert.getByRole('button',{name:'Get Launch Alert',exact:true}).click();await expect(alert).toContainText('Your email was not saved or sent.');
+  expect(await page.evaluate(()=>JSON.stringify(localStorage))).not.toContain('qa@example.test');
+  await page.screenshot({path:info.outputPath('launch-alert.png'),scale:'css'});
+  await page.keyboard.press('Escape');await expect(cart).not.toBeVisible();await expect(page.getByRole('button',{name:'Save to Launch Loadout',exact:true})).toBeFocused();
+  await page.reload();await page.getByRole('button',{name:'Open launch loadout'}).click();await expect(cart.locator('.cart-subtotal')).toContainText('$237');
+  await page.getByRole('button',{name:/Remove Night Protocol/}).click();await expect(cart).toContainText('Your launch loadout is empty.');await expect(cart.getByRole('button',{name:'Get Launch Alert',exact:true})).toBeDisabled();
 });
 
-test('catalog filters, sorting, no-results and quick view work',async({page})=>{
+test('catalog filters, sorting, no-results and product actions work',async({page})=>{
   await page.goto(base+'shop/?category=Accessories');await expect(page.locator('#result-count')).toHaveText('3 products');
   await page.getByLabel('Search products',{exact:true}).fill('charm');await expect(page.locator('[data-product-card]:visible')).toHaveCount(1);
-  await page.getByRole('button',{name:'Quick view',exact:true}).click();await expect(page.getByRole('dialog',{name:'GOTHTECHNOLOGY Luggage Charm'})).toBeVisible();await page.getByRole('button',{name:'Add this item to shopping cart'}).click();await expect(page.getByRole('dialog',{name:'Your Loadout'})).toContainText('$19.99');await page.keyboard.press('Escape');
+  await page.getByRole('button',{name:'Save to Launch Loadout: GOTHTECHNOLOGY Luggage Charm',exact:true}).click();
+  await expect(page.getByRole('dialog',{name:'Your Launch Loadout'})).toContainText('$19.99');await page.keyboard.press('Escape');
   await page.getByLabel('Search products',{exact:true}).fill('zzz-no-match');await expect(page.locator('#no-results')).toBeVisible();
-  await page.locator('#no-results').getByRole('button',{name:'Reset filters'}).click();await expect(page.locator('#result-count')).toHaveText('9 products');await page.getByRole('combobox',{name:'Sort',exact:true}).selectOption('price-low');
+  await page.locator('#no-results').getByRole('button',{name:'Clear filters'}).click();await expect(page.locator('#result-count')).toHaveText('9 products');
+  await page.getByRole('combobox',{name:'Sort',exact:true}).selectOption('price-low');
   const order=await page.locator('[data-product-card]').evaluateAll(nodes=>nodes.filter(n=>!n.hidden).sort((a,b)=>Number(a.style.order)-Number(b.style.order)).map(n=>n.dataset.handle));expect(order[0]).toBe('black-signal-digital-pack');
-  await page.getByLabel('Search products',{exact:true}).fill('beanie');
-  const beanieCard=page.locator('[data-product-card]:visible');await expect(beanieCard).toHaveCount(1);await expect(beanieCard.locator('img')).toHaveAttribute('src',/\/media\/detroit-beanie\.webp$/);
-  await beanieCard.getByRole('button',{name:'Quick view',exact:true}).click();const beanieQuickView=page.getByRole('dialog',{name:'Detroit Skyline Embroidered Beanie'});
-  await expect(beanieQuickView).toBeVisible();await expect(beanieQuickView.getByRole('combobox',{name:'Color',exact:true})).toHaveValue('Black');await expect(beanieQuickView.locator('img')).toHaveAttribute('src',/\/media\/detroit-beanie\.webp$/);
+  await page.getByLabel('Search products',{exact:true}).fill('hoodie');
+  await page.getByRole('button',{name:/Choose Options for Night Protocol/}).click();
+  const quick=page.locator('#quick-dialog');await expect(quick).toBeVisible();
+  await quick.getByRole('combobox',{name:'Size',exact:true}).selectOption('L');
+  await quick.getByRole('button',{name:'Save to Launch Loadout',exact:true}).click();
+  await expect(page.locator('#cart-dialog')).toContainText('L / Obsidian');
 });
 
 test('homepage category tile uses the ashtray artwork and retains the Collectibles filter',async({page})=>{
   await page.goto(base);
   const categories=page.locator('#armory .equipment-case');
-  await expect(categories.nth(3).getByRole('heading')).toHaveText('Orignal ArtWork');
+  await expect(categories.nth(3).getByRole('heading')).toHaveText('Original Artwork');
   const collectibles=categories.filter({has:page.getByRole('heading',{name:'Collectibles',exact:true})});
   await expect(collectibles.locator('img')).toHaveAttribute('src',/\/media\/mascot-leaf-collectible\.webp$/);
   await collectibles.click();
@@ -61,14 +72,16 @@ test('signal keychain cards use matching artwork and retain their collection fil
     await page.goto(base+'#character-vault');
     const card=page.getByRole('link',{name,exact:true});
     await expect(card.locator('img')).toHaveAttribute('src',base+'media/keychain-'+artwork+'-campaign.webp');
-    await card.click();await expect(page).toHaveURL(base+'collections/'+handle+'/');
+    await card.click();await expect(page).toHaveURL(base+'collections/'+handle+'/');await page.waitForLoadState('domcontentloaded');await ready(page);
+    if(await page.locator('.filter-disclosure summary').isVisible() && !(await page.locator('.filter-disclosure').evaluate(el=>el.open)))await page.locator('.filter-disclosure summary').click();
     await expect(page.getByRole('combobox',{name:'Collection',exact:true})).toHaveValue(handle);
     await expect(page.locator('[data-product-card]:visible')).toHaveCount(count);
   }
   await page.getByRole('combobox',{name:'Collection',exact:true}).selectOption('');
   await expect(page.locator('[data-product-card]:visible')).toHaveCount(9);
   await page.reload();await expect(page.locator('[data-product-card]:visible')).toHaveCount(9);
-  await page.getByRole('button',{name:'Reset filters',exact:true}).click();
+  if(await page.locator('.filter-disclosure summary').isVisible())await page.locator('.filter-disclosure summary').click();
+  await page.getByRole('button',{name:'Clear filters',exact:true}).click();
   await expect(page.getByRole('combobox',{name:'Collection',exact:true})).toHaveValue('cyber-cathedral');
   await expect(page.locator('[data-product-card]:visible')).toHaveCount(1);
 });
@@ -94,7 +107,7 @@ for(const [index,[id,name,image]] of signalFighters.entries()){
 }
 
 test('mobile navigation, search and keyboard dialog containment',async({page})=>{
-  await page.goto(base);if(await page.getByRole('button',{name:'Open navigation menu'}).isVisible()){await page.getByRole('button',{name:'Open navigation menu'}).click();await expect(page.getByRole('dialog',{name:'The Armory'})).toBeVisible();await page.getByRole('dialog',{name:'The Armory'}).getByRole('link',{name:'SHOP',exact:true}).click();await expect(page).toHaveURL(/shop\/$/);}
+  await page.goto(base);if(await page.getByRole('button',{name:'Open navigation menu'}).isVisible()){await page.getByRole('button',{name:'Open navigation menu'}).click();await expect(page.getByRole('dialog',{name:'The Armory'})).toBeVisible();await page.getByRole('dialog',{name:'The Armory'}).getByRole('link',{name:'SHOP',exact:true}).click();await expect(page).toHaveURL(/shop\/$/);await page.waitForLoadState('domcontentloaded');await ready(page);}
   await page.getByRole('button',{name:'Search the store'}).click();await page.getByLabel('Search equipment and collections').fill('hoodie');await expect(page.locator('#search-results')).toContainText('Night Protocol');
   for(let i=0;i<8;i++){await page.keyboard.press('Tab');expect(await page.evaluate(()=>!!document.activeElement.closest('#search-dialog'))).toBe(true);}
   await page.keyboard.press('Escape');await expect(page.getByRole('button',{name:'Search the store'})).toBeFocused();
@@ -112,99 +125,51 @@ test('product gallery and honest 2.5D display remain usable',async({page},info)=
 
 test('reduced motion and WebGL fallback keep shopping available',async({page})=>{
   await page.emulateMedia({reducedMotion:'reduce'});const requests=[];page.on('request',r=>requests.push(r.url()));await page.goto(base);
-  await expect(page.locator('#scene-status')).toHaveText('Static armory');expect(requests.some(u=>/scene\.[^/]+\.js/.test(u))).toBe(false);
-  await page.getByRole('button',{name:'Open shopping cart'}).click();await expect(page.getByRole('dialog',{name:'Your Loadout'})).toContainText('Your loadout is empty.');await page.keyboard.press('Escape');
-  await page.emulateMedia({reducedMotion:'no-preference'});await page.addInitScript(()=>{const original=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(type,...args){if(type==='webgl2'||type==='webgl')return null;return original.call(this,type,...args);};});await page.reload();await expect(page.locator('#scene-status')).toHaveText('Static armory');await expect(page.getByRole('link',{name:'Shop the drop',exact:true})).toBeVisible();
+  await expect(page.locator('#scene-status')).toHaveText('Armory Online — Static Display');expect(requests.some(u=>/scene\.[^/]+\.js/.test(u))).toBe(false);
+  await page.getByRole('button',{name:'Open launch loadout'}).click();await expect(page.getByRole('dialog',{name:'Your Launch Loadout'})).toContainText('Your launch loadout is empty.');await page.keyboard.press('Escape');
+  await page.emulateMedia({reducedMotion:'no-preference'});await page.addInitScript(()=>{const original=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(type,...args){if(type==='webgl2'||type==='webgl')return null;return original.call(this,type,...args);};});await page.reload();await expect(page.locator('#scene-status')).toHaveText('Armory Online — Static Display');await expect(page.getByRole('link',{name:'Explore Drop 001',exact:true})).toBeVisible();
 });
 
-test('inline Lookbook films autoplay muted only in view and preserve a manual pause',async({page})=>{
-  await page.goto(base+'lookbook/');await ready(page);
-  const first=page.locator('#lookbook-detroit-film'),riverfront=page.locator('#lookbook-riverfront-film');
-  await first.scrollIntoViewIfNeeded();
-  await expect.poll(()=>first.evaluate(v=>!v.paused&&v.muted&&v.currentTime>0)).toBe(true);
-  await expect.poll(()=>riverfront.evaluate(v=>v.paused)).toBe(true);
-  await page.getByRole('button',{name:'Pause Lookbook film',exact:true}).click();
-  await riverfront.scrollIntoViewIfNeeded();
-  await expect.poll(()=>riverfront.evaluate(v=>!v.paused&&v.muted&&v.currentTime>0)).toBe(true);
-  await first.scrollIntoViewIfNeeded();
-  await expect.poll(()=>riverfront.evaluate(v=>v.paused)).toBe(true);
-  await expect(page.getByRole('button',{name:'Play Lookbook film',exact:true})).toBeVisible();
-  expect(await first.evaluate(v=>v.paused)).toBe(true);
-  await page.getByRole('button',{name:'Play Lookbook film',exact:true}).click();
-  const firstHost=page.locator('[data-inline-film]').filter({has:first});
-  await firstHost.getByRole('button',{name:'Turn sound on',exact:true}).click();
-  await expect(firstHost.getByRole('button',{name:'Mute sound',exact:true})).toHaveAttribute('aria-pressed','true');
-  await page.getByRole('button',{name:'Open shopping cart',exact:true}).click();
-  await expect.poll(()=>first.evaluate(v=>v.paused)).toBe(true);
-  await page.getByRole('button',{name:'Close shopping cart',exact:true}).click();
-  await expect.poll(()=>first.evaluate(v=>!v.paused&&v.muted)).toBe(true);
+test('inline films load only after Play and stay paused when returning',async({page})=>{
+  const requests=[];page.on('request',r=>requests.push(r.url()));await page.goto(base+'lookbook/');
+  const host=page.locator('[data-inline-film]').first(),video=host.locator('video');
+  await host.scrollIntoViewIfNeeded();await page.waitForTimeout(1000);
+  expect(requests.some(url=>/\.mp4/.test(url))).toBe(false);await expect(video).not.toHaveAttribute('src');
+  await host.locator('[data-origin-film-toggle]').click();await expect.poll(()=>video.evaluate(v=>!v.paused&&v.muted)).toBe(true);
+  await host.locator('[data-origin-film-toggle]').click();await expect.poll(()=>video.evaluate(v=>v.paused)).toBe(true);
+  await page.locator('h1').scrollIntoViewIfNeeded();await host.scrollIntoViewIfNeeded();expect(await video.evaluate(v=>v.paused)).toBe(true);
 });
-
-test('reduced motion keeps inline films on request and manual playback remains available',async({page})=>{
-  await page.emulateMedia({reducedMotion:'reduce'});await page.goto(base+'lookbook/');await ready(page);
-  const film=page.locator('#lookbook-riverfront-film');await film.scrollIntoViewIfNeeded();
-  await expect(page.getByRole('button',{name:'Play riverfront film',exact:true})).toBeVisible();
-  expect(await film.evaluate(v=>v.paused&&v.muted)).toBe(true);
-  await page.getByRole('button',{name:'Play riverfront film',exact:true}).click();
-  await expect.poll(()=>film.evaluate(v=>!v.paused)).toBe(true);
-  await page.getByRole('button',{name:'Pause riverfront film',exact:true}).click();
-  await page.goto(base+'about/');
-  const origin=page.locator('#detroit-origin-film');await origin.scrollIntoViewIfNeeded();
-  await expect(page.getByRole('button',{name:'Play Detroit film',exact:true})).toBeVisible();
-  expect(await origin.evaluate(v=>v.paused&&v.muted)).toBe(true);
+test('reduced motion and save-data keep films on request',async({page})=>{
+  await page.emulateMedia({reducedMotion:'reduce'});
+  await page.addInitScript(()=>Object.defineProperty(navigator,'connection',{value:{saveData:true},configurable:true}));
+  await page.goto(base+'about/');const host=page.locator('[data-inline-film]'),video=host.locator('video');
+  await host.scrollIntoViewIfNeeded();await expect(video).not.toHaveAttribute('src');
+  await host.locator('[data-origin-film-toggle]').click();await expect.poll(()=>video.evaluate(v=>!v.paused)).toBe(true);
 });
-
-test('Lookbook silent transmission is requested explicitly and can always close',async({page})=>{
-  await page.goto(base+'lookbook/');await expect(page.locator('#store-video')).not.toHaveAttribute('src');await page.getByRole('button',{name:'Watch the 15-second charm film',exact:true}).click();await expect(page.getByRole('dialog',{name:'Transmission received'})).toBeVisible();
-  await expect.poll(()=>page.locator('#store-video').evaluate(video=>video.readyState)).toBeGreaterThan(0);expect(await page.locator('#store-video').evaluate(video=>video.muted)).toBe(true);
-  await page.getByRole('button',{name:'Do not show again',exact:true}).click();await expect(page.locator('#transmission-dialog')).not.toBeVisible();await expect(page.locator('#store-video')).not.toHaveAttribute('src');
+test('Lookbook transmission is requested explicitly and can always close',async({page})=>{
+  await page.goto(base+'lookbook/');await page.getByRole('button',{name:'Watch the 15-second charm film'}).click();
+  await expect(page.locator('#transmission-dialog')).toBeVisible();await expect(page.locator('#store-video')).toHaveAttribute('src',/charm-transmission-silent/);
+  await page.keyboard.press('Escape');await expect(page.locator('#store-video')).not.toHaveAttribute('src');
 });
-
-for(const [surface,path,watchLabel] of [['homepage','','Watch transmission'],['shop','shop/','Watch commercial']]){
-test(surface+' commercial starts muted once per session and supports replay',async({page})=>{
-  await page.goto(base+path);await ready(page);
-  const dialog=page.locator('#home-commercial'),video=page.locator('#home-commercial-video');
-  await expect(video).not.toHaveAttribute('src');
-  await expect(dialog).toBeVisible({timeout:15000});
-  await expect.poll(()=>video.evaluate(v=>v.readyState)).toBeGreaterThan(1);
-  expect(await video.evaluate(v=>v.muted)).toBe(true);
-  await page.keyboard.press('Escape');
-  await expect(dialog).not.toBeVisible();await expect(video).not.toHaveAttribute('src');
-  await page.reload();await page.waitForTimeout(9000);
-  await expect(dialog).not.toBeVisible();await expect(video).not.toHaveAttribute('src');
-  await page.getByRole('button',{name:watchLabel,exact:true}).click();
-  await expect(dialog).toBeVisible();
-  await page.getByRole('button',{name:'Don’t show automatically again',exact:true}).click();
-  await expect(dialog).not.toBeVisible();
-  await page.getByRole('button',{name:watchLabel,exact:true}).click();
-  await expect(dialog).toBeVisible();
-  await page.getByRole('button',{name:'Close commercial',exact:true}).click();
+for(const [surface,path,watchLabel] of [['Homepage','','Watch Campaign Film'],['Shop','shop/','Watch commercial']]){
+test(surface+' commercial opens with sound on request and releases media on close',async({page})=>{
+  await page.goto(base+path);const dialog=page.locator('#home-commercial'),video=page.locator('#home-commercial-video');
+  await page.waitForTimeout(9000);await expect(dialog).not.toBeVisible();await expect(video).not.toHaveAttribute('src');
+  const trigger=page.getByRole('button',{name:watchLabel,exact:true});await trigger.click();
+  await expect(dialog).toBeVisible();await expect.poll(()=>video.evaluate(v=>!v.paused&&!v.muted&&v.volume>0)).toBe(true);
+  await dialog.getByRole('button',{name:'Mute sound',exact:true}).click();expect(await video.evaluate(v=>v.muted)).toBe(true);
+  await page.keyboard.press('Escape');await expect(video).not.toHaveAttribute('src');await expect(trigger).toBeFocused();
+  await trigger.click();await expect.poll(()=>video.evaluate(v=>!v.paused&&!v.muted)).toBe(true);
 });
-
-test(surface+' commercial waits for an open shopping cart',async({page})=>{
-  await page.goto(base+path);await page.getByRole('button',{name:'Open shopping cart',exact:true}).click();
-  await page.waitForTimeout(9000);
-  await expect(page.locator('#cart-dialog')).toBeVisible();
-  await expect(page.locator('#home-commercial')).not.toBeVisible();
-  await expect(page.locator('#home-commercial-video')).not.toHaveAttribute('src');
-  await page.getByRole('button',{name:'Close shopping cart',exact:true}).click();
-  await expect(page.locator('#home-commercial')).toBeVisible({timeout:10000});
-  await page.keyboard.press('Escape');
-});
-
-test('reduced motion leaves the '+surface+' commercial on request',async({page})=>{
-  await page.emulateMedia({reducedMotion:'reduce'});await page.goto(base+path);
-  await page.waitForTimeout(9000);await expect(page.locator('#home-commercial')).not.toBeVisible();
-  await page.getByRole('button',{name:watchLabel,exact:true}).click();
-  await expect(page.locator('#home-commercial')).toBeVisible();
-  expect(await page.locator('#home-commercial-video').evaluate(v=>v.paused&&v.muted)).toBe(true);
-  await page.getByRole('button',{name:'Close commercial',exact:true}).click();
+test(surface+' commercial never interrupts an open launch loadout',async({page})=>{
+  await page.goto(base+path);await page.getByRole('button',{name:'Open launch loadout',exact:true}).click();
+  await page.waitForTimeout(9000);await expect(page.locator('#cart-dialog')).toBeVisible();await expect(page.locator('#home-commercial-video')).not.toHaveAttribute('src');
 });
 }
 
 test('newsletter consent is required and demo does not send personal data',async({page})=>{
-  const posts=[];page.on('request',r=>{if(r.method()==='POST')posts.push(r.url());});await page.goto(base);await page.getByLabel('Email address',{exact:true}).fill('qa@example.test');await page.getByRole('button',{name:'Join the signal',exact:true}).click();await expect(page.locator('#newsletter-form .form-status')).toContainText('not connected');
-  await page.getByRole('checkbox',{name:/I agree to receive/}).check();await page.getByRole('button',{name:'Join the signal',exact:true}).click();await expect(page.locator('#newsletter-form .form-status')).toContainText('not saved or sent');expect(posts).toEqual([]);
+  const posts=[];page.on('request',r=>{if(r.method()==='POST')posts.push(r.url());});await page.goto(base);await page.locator('#newsletter-form').getByLabel('Email address',{exact:true}).fill('qa@example.test');await page.locator('#newsletter-form').getByRole('button',{name:'Get Launch Alert',exact:true}).click();await expect(page.locator('#newsletter-form .form-status')).toContainText('Please agree');
+  await page.locator('#newsletter-form').getByRole('checkbox',{name:/I agree to receive/}).check();await page.locator('#newsletter-form').getByRole('button',{name:'Get Launch Alert',exact:true}).click();await expect(page.locator('#newsletter-form .form-status')).toContainText('not saved or sent');expect(posts).toEqual([]);
 });
 
 test('game portal preserves the runtime, preselects a fighter and rejects forged messages',async({page},info)=>{
@@ -222,11 +187,50 @@ test('game portal preserves the runtime, preselects a fighter and rejects forged
 test('all required static routes, metadata, galleries, and media resolve',async({page,request},info)=>{
   test.skip(info.project.name!=='desktop','Static routes need one pass');
   const sitemap=await request.get(base+'sitemap.xml');expect(sitemap.status()).toBe(200);const paths=[...(await sitemap.text()).matchAll(/<loc>(.*?)<\/loc>/g)].map(m=>new URL(m[1]).pathname);
-  for(const path of paths){const response=await request.get(path);expect(response.status(),path).toBe(200);const html=await response.text();expect(html,path).toContain('rel="canonical"');expect(html,path).toContain('<h1');}
+  for(const path of paths){const response=await request.get(path);expect(response.status(),path).toBe(200);const html=await response.text();expect(html,path).toContain('rel="canonical"');expect(html,path).toContain('<h1');expect(html,path).toContain('noindex,follow');expect(html,path).not.toMatch(/\"@type\"\s*:\s*\"(?:Offer|AggregateOffer)\"/);}
   await page.goto(base+'lookbook/');for(const img of await page.locator('main img').all()){await img.scrollIntoViewIfNeeded();await expect.poll(()=>img.evaluate(i=>i.complete&&i.naturalWidth>0)).toBe(true);}
 });
 
 test('widths 320 through 1920 do not overflow or hide purchase controls',async({page},info)=>{
-  test.skip(info.project.name!=='desktop','Breakpoint sweep needs one Chromium pass');
-  for(const width of [320,360,390,428,768,1024,1440,1920]){await page.setViewportSize({width,height:900});for(const path of [base,product,base+'shop/']){await page.goto(path);expect(await page.evaluate(()=>[...document.querySelectorAll('body *')].filter(el=>{const r=el.getBoundingClientRect();if(r.width<=0||r.right<=innerWidth+1||el.closest('dialog'))return false;for(let p=el.parentElement;p;p=p.parentElement){if(['hidden','clip'].includes(getComputedStyle(p).overflowX)&&p.getBoundingClientRect().right<=innerWidth+1)return false;}return true;}).map(el=>({tag:el.tagName,class:el.className,text:el.textContent?.slice(0,80),right:el.getBoundingClientRect().right}))),width+' '+path).toEqual([]);}await expect(page.getByLabel('Search products',{exact:true})).toBeVisible();}
+  test.skip(info.project.name!=='desktop','Breakpoint sweep needs one Chromium pass');test.setTimeout(90000);
+  for(const width of [320,360,375,390,428,768,1024,1440,1920]){await page.setViewportSize({width,height:900});for(const path of [base,product,base+'shop/']){await page.goto(path);await ready(page);await page.evaluate(()=>document.fonts.ready);expect(await page.evaluate(()=>document.documentElement.scrollWidth),width+' '+path).toBe(width);if(path===base){expect(await page.locator('#drop-title').evaluate(el=>{const range=document.createRange();range.selectNodeContents(el);return [...range.getClientRects()].every(rect=>rect.right<=el.getBoundingClientRect().right+2);})).toBe(true);await expect(page.getByRole('link',{name:'Explore Drop 001',exact:true})).toBeVisible();expect(await page.locator('.hero-positioning').evaluate(el=>parseFloat(getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(16);expect(await page.locator('.hero-status').evaluate(el=>parseFloat(getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(13);await page.screenshot({path:info.outputPath('home-'+width+'.png'),scale:'css'});}expect(await page.evaluate(()=>[...document.querySelectorAll('body *')].filter(el=>{const r=el.getBoundingClientRect();if(r.width<=0||r.right<=innerWidth+1||el.closest('dialog'))return false;for(let p=el.parentElement;p;p=p.parentElement){if(['hidden','clip'].includes(getComputedStyle(p).overflowX)&&p.getBoundingClientRect().right<=innerWidth+1)return false;}return true;}).map(el=>({tag:el.tagName,class:el.className,text:el.textContent?.slice(0,80),right:el.getBoundingClientRect().right}))),width+' '+path).toEqual([]);}await expect(page.getByLabel('Search products',{exact:true})).toBeVisible();}
+});
+test('conversion UI: keyboard, mobile filters, settings and sticky action',async({page},info)=>{
+  await page.goto(base);await ready(page);await page.keyboard.press('Tab');
+  await expect(page.getByRole('link',{name:'Skip to content'})).toBeFocused();await page.keyboard.press('Enter');await expect(page.locator('#main')).toBeFocused();
+  const settings=page.locator('.hero-settings');await settings.click();
+  const dialog=page.locator('#experience-dialog');await expect(dialog).toBeVisible();
+  await dialog.getByLabel('Display quality').selectOption('fallback');await page.keyboard.press('Escape');await expect(settings).toBeFocused();
+  await page.reload();await settings.click();await expect(dialog.getByLabel('Display quality')).toHaveValue('fallback');
+  for(let i=0;i<8;i++){await page.keyboard.press('Tab');expect(await page.evaluate(()=>!!document.activeElement.closest('#experience-dialog'))).toBe(true);}
+  await page.screenshot({path:info.outputPath('experience-settings.png'),scale:'css'});await page.keyboard.press('Escape');
+  await page.goto(base+'shop/');
+  const disclosure=page.locator('.filter-disclosure'),summary=disclosure.locator('summary');
+  const compact=info.project.use.viewport.width<=760;
+  if(compact){await expect(disclosure).not.toHaveAttribute('open');await summary.click();}
+  await page.getByRole('combobox',{name:'Category',exact:true}).selectOption('Accessories');await expect(page.locator('#result-count')).toHaveText('3 products');
+  if(compact)await summary.click();
+  await page.getByRole('button',{name:'Clear category filter'}).click();await expect(page.locator('#result-count')).toHaveText('9 products');
+  if(compact)await expect(summary).toBeFocused();
+  await page.goto(product);await ready(page);
+  if(compact){await expect(page.locator('.mobile-product-bar')).toBeVisible();await page.locator('.mobile-product-bar [data-select-options]').click();await expect(page.locator('#product-options')).toBeFocused();await expect(page.locator('.mobile-product-bar')).not.toBeVisible();await page.locator('.site-footer').scrollIntoViewIfNeeded();await expect(page.locator('.mobile-product-bar')).not.toBeVisible();}
+});
+test('responsive evidence: sections, shop, product, lookbook, about and play',async({page},info)=>{
+  test.skip(info.project.name!=='desktop','One controlled screenshot set');test.setTimeout(90000);
+  for(const width of [1440,390]){
+    await page.setViewportSize({width,height:900});
+    await page.goto(base);await ready(page);await page.evaluate(()=>document.fonts.ready);
+    for(const [name,selector] of [['drop','#current-drop'],['featured','#featured'],['campaign','.campaign-film'],['signals','#character-vault'],['portal','#enter-the-fight']]){
+      const section=page.locator(selector);await section.scrollIntoViewIfNeeded();const bounds=await section.boundingBox();if(bounds.height>900){await page.evaluate(selector=>window.scrollTo({top:document.querySelector(selector).getBoundingClientRect().top+scrollY-80,behavior:'instant'}),selector);await settle(page);await page.screenshot({path:info.outputPath(name+'-'+width+'.png'),scale:'css'});}else await section.screenshot({path:info.outputPath(name+'-'+width+'.png'),scale:'css'});
+    }
+    for(const [name,path] of [['shop','shop/'],['product','products/night-protocol-hoodie/'],['lookbook','lookbook/'],['about','about/'],['play','play/']]){
+      await page.goto(base+path);await ready(page);await page.evaluate(()=>document.fonts.ready);
+      if(name==='shop'&&width===390)await page.locator('.filter-disclosure summary').click();
+      if(name==='product')await page.locator('.product-information').evaluate(el=>el.scrollIntoView({block:'start',behavior:'instant'}));
+      if(name==='shop')await page.locator('.filters').evaluate(el=>el.scrollIntoView({block:'start',behavior:'instant'}));
+      await settle(page);
+      await page.screenshot({path:info.outputPath(name+'-'+width+'.png'),scale:'css'});
+    }
+    if(width===390){await page.getByRole('button',{name:'Open navigation menu'}).click();await page.screenshot({path:info.outputPath('mobile-menu.png'),scale:'css'});await page.keyboard.press('Escape');}
+  }
 });

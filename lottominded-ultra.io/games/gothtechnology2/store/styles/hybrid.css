@@ -49,7 +49,7 @@ html[data-portal-entering=true] .portal-transition{opacity:1;visibility:visible}
 .material-image-wrap{overflow:auto;max-height:60vh;margin:18px 0;background:#080909}
 .material-image-wrap img{width:100%;height:auto;max-width:none;object-fit:contain}
 .material-dialog[data-zoom=true] .material-image-wrap img{width:160%}
-.material-dialog p{font:12px/1.5 var(--mono)!important;margin:18px 0 0}
+.material-dialog p{font:12px/1.5 var(--mono);margin:18px 0 0}
 html[data-cinema-paused=true] *,html[data-cinema-paused=true] *:before,html[data-cinema-paused=true] *:after{animation-play-state:paused!important}
 html[data-cinema-paused=true] .signal-card,html[data-cinema-paused=true] .portal-art>img{transform:none!important;transition:none!important}
 html[data-reduced-motion=true]{scroll-behavior:auto}
@@ -74,4 +74,4 @@ html[data-reduced-motion=true] .portal-art>img{transform:none!important;will-cha
  body[data-cinematic=true] .armory-row{padding-top:34px;padding-bottom:34px}.row-heading .text-link{white-space:normal}
  .material-dialog{padding:16px}.material-dialog h2{font-size:32px}.material-image-wrap{max-height:50vh}
 }
-@media(max-width:360px){.chapter-nav{gap:11px}.chapter-nav a{font-size:9px}.cinema-controls button{font-size:9px;padding:9px 8px}body[data-cinematic=true] .cathedral-hero h1{font-size:40px}.material-hotspot{font-size:9px;padding:8px}.signal-card h3{font-size:12px!important}}
+@media(max-width:360px){.chapter-nav{gap:11px}.chapter-nav a{font-size:9px}.cinema-controls button{font-size:9px;padding:9px 8px}body[data-cinematic=true] .cathedral-hero h1{font-size:40px}.material-hotspot{font-size:9px;padding:8px}.signal-card h3{font-size:12px}}

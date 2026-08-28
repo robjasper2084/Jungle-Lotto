@@ -1,10 +1,7 @@
 ---
-import { config } from '../config';
+import LaunchAlertForm from './LaunchAlertForm.astro';
 ---
-<section class="newsletter section" aria-labelledby="newsletter-title"><div><h2 id="newsletter-title">Receive the next<br/>transmission</h2><p>Updates on new drops, digital transmissions,<br/>and Armory intel.<br/>No spam. No noise.</p></div>
-  <form id="newsletter-form"><label for="newsletter-email">Email address</label><div class="email-row"><input type="email" id="newsletter-email" name="email" autocomplete="email" placeholder="Enter your email address" required/><button class="button" type="submit">Join the signal</button></div>
-    <label class="consent-label"><input type="checkbox" name="consent" required/>I agree to receive GOTHTECHNOLOGY drop emails. I can unsubscribe at any time.</label>
-    <p class="form-status" role="status">{config.newsletterEndpoint ? 'Your consent is required to subscribe.' : 'Preview only: email signup is not connected. Your address will not be saved or sent.'}</p>
-  </form>
+<section class="newsletter section" aria-labelledby="newsletter-title"><div><h2 id="newsletter-title">Get the first<br/>launch signal.</h2><p>Drop 001 is in development. Get an email when the first collection is ready to explore.</p></div>
+  <LaunchAlertForm id="newsletter-form"/>
   <div class="signal-station" aria-hidden="true"><svg viewBox="0 0 240 130" fill="none" stroke="currentColor" stroke-width=".6"><circle cx="120" cy="44" r="6"/><circle cx="120" cy="44" r="12"/><circle cx="120" cy="44" r="20"/><circle cx="120" cy="44" r="29"/><circle cx="120" cy="44" r="39"/><circle cx="120" cy="44" r="50"/><circle cx="120" cy="44" r="62"/><circle cx="120" cy="44" r="75"/><path d="M120 44v78m-10 0 10-60 10 60m-17-18h14m-12-14h10m-18 32h26M20 124h200"/><circle cx="120" cy="44" r="2" fill="currentColor"/></svg><p>STAY TUNED · STAY SHARP</p></div>
 </section>

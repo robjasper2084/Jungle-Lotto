@@ -426,5 +426,25 @@
     "frameSeconds": 6,
     "origin": "Poster frame from user-supplied Lookbook film",
     "bytes": 42860
+  },
+  {
+    "source": "armory-hero-v2.webp",
+    "output": "armory-hero-v2-640.webp",
+    "sourceWidth": 2048,
+    "sourceHeight": 768,
+    "width": 640,
+    "height": 240,
+    "bytes": 9778,
+    "origin": "Responsive derivative of existing campaign concept; no new imagery or rights approval"
+  },
+  {
+    "source": "armory-hero-v2.webp",
+    "output": "armory-hero-v2-1600.webp",
+    "sourceWidth": 2048,
+    "sourceHeight": 768,
+    "width": 1600,
+    "height": 600,
+    "bytes": 36710,
+    "origin": "Responsive derivative of existing campaign concept; no new imagery or rights approval"
   }
 ]

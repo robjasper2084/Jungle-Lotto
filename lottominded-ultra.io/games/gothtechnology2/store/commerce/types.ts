@@ -1,13 +1,26 @@
 export type Money = { amount: number; currency: string };
-export type ProductImage = { src: string; alt: string; label: string; width?: number; height?: number };
+export type MediaKind = 'SUPPLIED PRODUCT REFERENCE' | 'CAMPAIGN CONCEPT' | 'DETAIL REFERENCE' | 'SCALE REFERENCE' | '2.5D DISPLAY' | 'VERIFIED PRODUCT PHOTOGRAPHY';
+export type ProductImage = { src: string; alt: string; label: string; kind?: MediaKind; width?: number; height?: number };
+export type ProductInformation = {
+  materials: string | null; fabricWeight: string | null; construction: string | null;
+  finish: string | null; measurements: string | null; sizeGuide: string | null;
+  modelMeasurements: string | null; careInstructions: string | null;
+  countryOfManufacture: string | null; sku: string | null; inventory: number | null;
+  processingTime: string | null; shippingMessage: string | null; returnMessage: string | null;
+  includedItems: string | null; digitalContents: string | null; fileFormats: string | null;
+  deliveryMethod: string | null; licenseInformation: string | null; refundLimitations: string | null;
+  productionStatus: 'concept' | 'sampling' | 'approved';
+  photographyStatus: 'reference' | 'approved'; priceApproved: boolean;
+};
 export type Variant = { id: string; title: string; size: string; color: string; available: boolean; price: Money };
 export type Product = {
   id: string; handle: string; title: string; subtitle: string; description: string;
   price: Money; compareAtPrice: Money | null; productType: string; collection: string;
   collections: string[]; tags: string[]; images: ProductImage[]; model: string | null;
   video: string | null; colors: string[]; sizes: string[]; variants: Variant[];
-  inventory: number | null; materials: string; fabricWeight: string; finish: string;
-  careInstructions: string; shippingMessage: string; returnMessage: string;
+  information: ProductInformation;
+  inventory: number | null; materials: string | null; fabricWeight: string | null; finish: string | null;
+  careInstructions: string | null; shippingMessage: string | null; returnMessage: string | null;
   featured: boolean; digital: boolean; preorder: boolean; demo: boolean;
   characterAssociation: string; seo: { title: string; description: string };
 };

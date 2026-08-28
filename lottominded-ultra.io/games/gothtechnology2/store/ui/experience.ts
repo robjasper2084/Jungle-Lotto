@@ -10,6 +10,18 @@ export function initExperience() {
   const updateMotion=()=>{const reduced=motionQuery.matches||saved('gothtechnology.armory.motion')==='reduced';document.documentElement.dataset.reducedMotion=String(reduced);motionButton.setAttribute('aria-pressed',String(reduced));motionButton.textContent=reduced?'Reduced motion on':'Reduce motion';document.dispatchEvent(new Event('store:preferences'));};
   motionButton.addEventListener('click',()=>{save('gothtechnology.armory.motion',isReduced()?'full':'reduced');updateMotion();if(motionQuery.matches)announce('Your system reduced-motion preference remains active.');});
   motionQuery.addEventListener('change',updateMotion);updateMotion();
+  $$('[data-open-settings]').forEach(button=>button.addEventListener('click',()=>openDialog('experience-dialog',button)));
+  const pause=$<HTMLButtonElement>('#scene-pause')!;
+  const syncPause=()=>{
+    const paused=isReduced()||saved('gothtechnology.armory.pause')==='true';
+    document.documentElement.dataset.cinemaPaused=String(paused);
+    pause.disabled=isReduced();
+    pause.setAttribute('aria-pressed',String(paused));
+    pause.textContent=paused?'Resume decorative motion':'Pause decorative motion';
+    document.dispatchEvent(new Event('store:motion'));
+  };
+  pause.addEventListener('click',()=>{save('gothtechnology.armory.pause',String(document.documentElement.dataset.cinemaPaused!=='true'));syncPause();});
+  document.addEventListener('store:preferences',syncPause);syncPause();
   const selected=saved('gothtechnology.armory.quality');if(['auto','high','balanced','low','fallback'].includes(selected??''))quality.value=selected!;
   quality.addEventListener('change',()=>{save('gothtechnology.armory.quality',quality.value);document.dispatchEvent(new Event('store:preferences'));});
   const offline=()=>{$('#offline-notice')!.hidden=navigator.onLine;};offline();window.addEventListener('online',offline);window.addEventListener('offline',offline);
@@ -33,23 +45,8 @@ export function initExperience() {
   }));
   video.addEventListener('error',()=>announce('Transmission unavailable. Product imagery and the catalog are still available.'));
   transmission.addEventListener('close',()=>{video.pause();video.removeAttribute('src');video.load();});
-  $('#hide-transmissions')?.addEventListener('click',()=>{save('gothtechnology.armory.hideTransmissions','true');transmission.close();announce('Transmission prompts are disabled. You can still request a film with Watch transmission.');});
+
   initHomeCommercial();
-  const newsletter=$<HTMLFormElement>('#newsletter-form');
-  newsletter?.addEventListener('submit',async event=>{
-    event.preventDefault();if(!newsletter.reportValidity()||newsletter.dataset.busy==='true')return;
-    const note=$('.form-status',newsletter)!, button=$<HTMLButtonElement>('[type=submit]',newsletter)!;
-    if(!config.newsletterEndpoint){note.textContent='Signup is not connected. Your email was not saved or sent.';return;}
-    try {
-      const endpoint=new URL(config.newsletterEndpoint,location.origin);if(endpoint.protocol!=='https:')throw new Error('Newsletter is not configured securely.');
-      newsletter.dataset.busy='true';button.disabled=true;note.textContent='Sending your subscription request…';
-      const form=new FormData(newsletter);
-      const response=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:String(form.get('email')),consent:true,source:'gothtechnology',version:1}),signal:AbortSignal.timeout(12000),credentials:'omit'});
-      if(!response.ok)throw new Error('Signup could not be confirmed. Please try again later.');
-      note.textContent='Subscription request received. Check your inbox for any confirmation required by the mailing service.';newsletter.reset();
-    } catch(error){note.textContent=error instanceof Error?error.message:'Signup is unavailable.';}
-    finally{newsletter.dataset.busy='false';button.disabled=false;}
-  });
   const host=$('#armory-scene');
   if(host&&config.features.enable3DHero) {
     let dispose:(()=>void)|undefined, generation=0;
@@ -62,14 +59,15 @@ export function initExperience() {
       let webgl=false;
       if(!fallback){try{const canvas=document.createElement('canvas');const context=canvas.getContext('webgl2');webgl=!!context;context?.getExtension('WEBGL_lose_context')?.loseContext();}catch{/* Static artwork stays visible. */}}
       const level=chooseQuality({webgl,reducedMotion:isReduced(),saveData:!!nav.connection?.saveData,memory:nav.deviceMemory,cores:nav.hardwareConcurrency,mobile:matchMedia('(max-width: 760px)').matches,choice:quality.value as QualityChoice});
-      const state=$('#scene-status')!;state.textContent=level==='fallback'?(modelsMissing&&!isReduced()?'Static armory · product models pending':'Static armory'):'Loading atmosphere';host.dataset.quality=level;
+      const state=$('#scene-status')!;state.textContent=level==='fallback'?'Armory Online — Static Display':'Loading optional atmosphere';host.dataset.quality=level;
       const pause=$<HTMLButtonElement>('#scene-pause');if(pause){pause.hidden=false;pause.disabled=isReduced();}
       if(level==='fallback')return;
       try{const {mountScene}=await import('../three/cathedral');if(request!==generation)return;dispose=mountScene(host,level,update=>{state.textContent=update;});}
-      catch{state.textContent='Static armory';host.replaceChildren();host.dataset.quality='fallback';}
+      catch{state.textContent='Armory Online — Static Display';host.replaceChildren();host.dataset.quality='fallback';}
     };
     const idle=window.requestIdleCallback??((fn:IdleRequestCallback)=>window.setTimeout(()=>fn({didTimeout:false,timeRemaining:()=>0}),600));
-    idle(()=>void start(),{timeout:1500});document.addEventListener('store:preferences',()=>void start());
+    if (!host.dataset.hoodieModel || !host.dataset.charmModel) void start();
+    else idle(()=>void start(),{timeout:1500});document.addEventListener('store:preferences',()=>void start());
     window.addEventListener('pagehide',()=>{generation++;dispose?.();},{once:true});
   }
 }

@@ -1,0 +1,10 @@
+import { createConfig } from '../store/config.ts';
+import { launchReadiness } from '../store/commerce/mode.ts';
+import { demoProducts } from '../store/content/catalog.ts';
+import { ShopifyProvider } from '../store/commerce/shopify.ts';
+const config = createConfig(process.env);
+const products = config.commerceMode === 'shopify' ? await new ShopifyProvider(config.shopify).getProducts() : demoProducts;
+const result = launchReadiness(products, config);
+console.log(result.ready ? 'Commerce readiness checks passed. This is not deployment approval.' : 'Interest mode remains active. Launch blockers:');
+result.issues.forEach(issue => console.log(' - ' + issue));
+if (config.commerceMode === 'shopify' && config.launchApproved && !result.ready) process.exitCode = 1;
