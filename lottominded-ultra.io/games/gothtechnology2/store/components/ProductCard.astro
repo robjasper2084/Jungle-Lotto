@@ -5,7 +5,7 @@ import Icon from './Icon.astro';
 import { formatMoney } from '../commerce/money';
 import { href } from '../utilities/paths';
 const { product, compact = false } = Astro.props as {product:Product;compact?:boolean};
-const shortTitles:Record<string,string> = {'night-protocol-hoodie':'Night Protocol Hoodie','detroit-2084-shirt':'Detroit 2084 Tee','black-signal-beanie':'GT Signal Beanie','gothtechnology-luggage-charm':'LottoMind Charm // 001','static-saints-patch-set':'Detroit Patch Study','cyber-cathedral-art-print':'Cyber Cathedral // Print'};
+const shortTitles:Record<string,string> = {'night-protocol-hoodie':'Night Protocol Hoodie','detroit-2084-shirt':'Detroit 2084 Tee','black-signal-beanie':'Detroit Skyline Beanie','gothtechnology-luggage-charm':'LottoMind Charm // 001','static-saints-patch-set':'Detroit Patch Study'};
 ---
 <article class:list={['product-card',compact && 'compact-product']} data-product-card data-handle={product.handle}>
   <a class="product-image-link" href={href(`products/${product.handle}/`)} aria-label={`View ${product.title}`}><ProductMedia product={product} campaign/></a>

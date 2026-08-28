@@ -2,6 +2,7 @@ import { execFileSync } from "node:child_process";
 import { copyFile, mkdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { basename, dirname, extname, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
+import { gothtechnologyPath, requiredStoreFiles, readGothtechnologyBuild, copyGothtechnologyBuild } from "./gothtechnology-pages.mjs";
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const outputRoot = resolve(repoRoot, "_site");
@@ -25,6 +26,7 @@ const requiredRoutes = [
   "lottominded-ultra.io/games/lottomind-trivia/index.html",
   "lotto mind refined/index.html",
   "lottomind-stem-studio/index.html",
+  ...requiredStoreFiles.map(file => gothtechnologyPath + "/" + file),
 ];
 const referenceTextExtensions = new Set([
   ".cjs",
@@ -140,8 +142,8 @@ function mediaReferenceTokens(file) {
   ];
 }
 
-async function planArtifact(files) {
-  const referenceCorpus = await buildReferenceCorpus(files);
+async function planArtifact(files, referenceFiles = files) {
+  const referenceCorpus = await buildReferenceCorpus(referenceFiles);
   const includedFiles = [];
   const omittedFiles = [];
   let omittedBytes = 0;
@@ -183,21 +185,26 @@ if (dirname(outputRoot) !== repoRoot) {
 
 // Include intended, untracked working-tree additions so a dirty release preview
 // is validated as it is actually served. Ignored build output stays excluded.
-const sourceFiles = git(["ls-files", "-z", "--cached", "--others", "--exclude-standard"])
+const publicFiles = git(["ls-files", "-z", "--cached", "--others", "--exclude-standard"])
   .split("\0")
   .filter(Boolean)
   .filter(isPublicFile);
+// This game's production subtree comes only from the compiled Astro build.
+// Retain its source in the reference scan so shared arcade media stays included.
+const sourceFiles = publicFiles.filter(file => !file.startsWith(gothtechnologyPath + "/"));
+const storeBuild = await readGothtechnologyBuild(repoRoot);
 
 if (!sourceFiles.length) {
   throw new Error("No public source files were found for the Pages artifact.");
 }
 
-const artifactPlan = await planArtifact(sourceFiles);
+const artifactPlan = await planArtifact(sourceFiles, publicFiles);
 
 await rm(outputRoot, { recursive: true, force: true });
 await mkdir(outputRoot, { recursive: true });
 
-const totalBytes = await copyInBatches(artifactPlan.includedFiles);
+const totalBytes = await copyInBatches(artifactPlan.includedFiles)
+  + await copyGothtechnologyBuild(storeBuild, outputRoot);
 
 for (const route of requiredRoutes) {
   const routeStats = await stat(outputPathFor(route)).catch(() => null);
@@ -218,7 +225,8 @@ const manifest = {
   branch: process.env.GITHUB_REF_NAME || git(["branch", "--show-current"]),
   commit: git(["rev-parse", "HEAD"]),
   sourceFileCount: sourceFiles.length,
-  fileCount: artifactPlan.includedFiles.length,
+  fileCount: artifactPlan.includedFiles.length + storeBuild.length,
+  gothtechnologyBuildFiles: storeBuild.length,
   omittedMediaFileCount: artifactPlan.omittedFiles.length,
   omittedMediaBytes: artifactPlan.omittedBytes,
   omittedMediaMebibytes: Number((artifactPlan.omittedBytes / 1024 / 1024).toFixed(1)),

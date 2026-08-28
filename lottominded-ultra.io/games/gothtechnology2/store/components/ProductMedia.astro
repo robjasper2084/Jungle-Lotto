@@ -5,11 +5,10 @@ import EquipmentArt from './EquipmentArt.astro';
 const { product, priority = false, campaign = false } = Astro.props as {product:Product;priority?:boolean;campaign?:boolean};
 const special = campaign && product.demo ? product.handle.includes('hoodie') ? 'media/hero.webp' : product.handle.includes('charm') ? 'media/charm-campaign.webp' : null : null;
 const image = product.images[0];
-const atlasHandles = ['night-protocol-hoodie','detroit-2084-shirt','black-signal-beanie','gothtechnology-luggage-charm','static-saints-patch-set','cyber-cathedral-art-print'];
-const atlasTile = product.demo && (campaign || !image) ? atlasHandles.indexOf(product.handle) : -1;
+const atlasTiles: Record<string, number> = {'night-protocol-hoodie':0,'detroit-2084-shirt':1,'gothtechnology-luggage-charm':3,'static-saints-patch-set':4};
+const atlasTile = product.demo && (campaign || !image) ? atlasTiles[product.handle] ?? -1 : -1;
 const silhouettes: Record<string, string> = {
   'detroit-2084-shirt': 'M64 34 40 42 14 84l34 18 8-20v128h128V82l8 20 34-18-26-42-24-8c-8 26-104 26-112 0Z',
-  'black-signal-beanie': 'M49 154V91a71 71 0 0 1 142 0v63M38 151h164v59H38Z',
   'static-saints-patch-set': 'm62 34 34 20v40l-34 20-34-20V54l34-20Zm110 0 34 20v40l-34 20-34-20V54l34-20Zm-52 94 34 20v40l-34 20-34-20v-40l34-20Z',
   'cyber-cathedral-art-print': 'M38 20h164v208H38ZM50 32h140v184H50Zm20 180V96l50-58 50 58v116m-70 0V108l20-26 20 26v104',
   'black-signal-digital-pack': 'M42 32h156v176H42Zm12 12h132v108H54ZM70 176h100M86 191h68',

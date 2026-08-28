@@ -1,0 +1,55 @@
+---
+import Icon from './Icon.astro';
+import {href} from '../utilities/paths';
+---
+<dialog id="home-commercial" class="home-commercial" aria-labelledby="commercial-title" aria-describedby="commercial-description">
+  <div class="commercial-heading">
+    <div><p class="mono gold">LOTTOMIND / 15 SECOND COMMERCIAL</p><h2 id="commercial-title">Carry your signal.</h2></div>
+    <button class="icon-button" type="button" data-close-dialog aria-label="Close commercial" autofocus><Icon name="close"/></button>
+  </div>
+  <video id="home-commercial-video" data-src={href('media/home-charm-commercial.mp4')} controls muted playsinline preload="none" tabindex="0" width="1280" height="720" poster={href('media/home-charm-commercial-poster.webp')} aria-label="LottoMind charm commercial">
+    Your browser cannot play this video. <a href={href('media/home-charm-commercial.mp4')}>Open the commercial</a>.
+  </video>
+  <div class="commercial-controls">
+    <button type="button" class="text-button" data-commercial-play aria-controls="home-commercial-video">Play film</button>
+    <button type="button" class="text-button" data-commercial-sound aria-controls="home-commercial-video" aria-pressed="false">Turn sound on</button>
+    <span class="mono">15 SEC / SOUND STARTS OFF</span>
+  </div>
+  <div class="commercial-copy">
+    <p id="commercial-description">The LottoMind companion, from the package to your everyday bag.</p>
+    <p class="commercial-status" data-commercial-status role="status"></p>
+    <div class="commercial-actions">
+      <a class="button" href={href('products/gothtechnology-luggage-charm/')}>Shop the charm <Icon size={16}/></a>
+      <button type="button" class="button secondary" data-close-dialog>Continue exploring</button>
+    </div>
+    <button type="button" class="text-button commercial-opt-out" data-commercial-hide>Don’t show automatically again</button>
+  </div>
+</dialog>
+<style>
+  .home-commercial{width:880px;padding:0;background:#080a0b;box-shadow:0 24px 100px #000b}
+  .home-commercial::backdrop{background:#000c;backdrop-filter:blur(6px)}
+  .commercial-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:20px 24px}
+  .commercial-heading p{font-size:10px;margin:0 0 8px}
+  .commercial-heading h2{font-size:clamp(28px,4vw,42px);line-height:1.1;margin:0}
+  .commercial-heading .icon-button{flex:none;min-width:44px;min-height:44px}
+  video{display:block;width:100%;height:auto;max-height:52dvh;aspect-ratio:16/9;object-fit:contain;background:#000}
+  .commercial-controls{display:flex;align-items:center;gap:20px;flex-wrap:wrap;padding:4px 24px;border-bottom:1px solid var(--rule)}
+  .commercial-controls .text-button{min-height:44px}
+  .commercial-controls span{font-size:9px;color:var(--goth-muted);margin-left:auto}
+  .commercial-copy{padding:18px 24px 14px}
+  .commercial-copy p{font-size:14px;line-height:1.6;margin:0 0 16px}
+  .commercial-status{color:var(--goth-gold-light)}
+  .commercial-status:empty{display:none}
+  .commercial-actions{display:flex;gap:12px;flex-wrap:wrap}
+  .commercial-actions .button{min-height:44px}
+  .commercial-opt-out{min-height:44px;margin-top:8px;font-size:11px;color:var(--goth-muted);text-decoration:underline;text-underline-offset:4px}
+  @media(max-width:560px){
+    .commercial-heading{padding:16px}
+    .commercial-heading p{font-size:8px}
+    .commercial-controls{padding:4px 16px;gap:14px}
+    .commercial-controls span{width:100%;margin:0 0 8px}
+    .commercial-copy{padding:16px}
+    .commercial-actions{display:grid}
+    .commercial-actions .button{width:100%;font-size:10px}
+  }
+</style>

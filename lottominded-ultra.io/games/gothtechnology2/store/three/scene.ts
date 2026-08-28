@@ -18,6 +18,17 @@ export function mountScene(host:HTMLElement,quality:Quality,status:(text:string)
   const markerGeometry=new THREE.PlaneGeometry(.02,2.4),markerMaterial=new THREE.MeshBasicMaterial({color:0x649d99,transparent:true,opacity:.18,side:THREE.DoubleSide});
   for(let i=0;i<8;i++){const line=new THREE.Mesh(markerGeometry,markerMaterial);line.position.set(1+i*.72,-1.1,-i*.45);group.add(line);}
   let disposed=false,visible=true,paused=false,lost=false,raf=0,last=0,time=0;
+  let pointerX=0,pointerY=0,cameraX=0,cameraY=0;
+  const hero=host.closest<HTMLElement>('.hero')??host;
+  const aim=(event:PointerEvent)=>{
+    if(event.pointerType!=='mouse')return;
+    const bounds=hero.getBoundingClientRect();
+    pointerX=(event.clientX-bounds.left)/Math.max(1,bounds.width)-.5;
+    pointerY=(event.clientY-bounds.top)/Math.max(1,bounds.height)-.5;
+  };
+  const center=()=>{pointerX=0;pointerY=0;};
+  hero.addEventListener('pointermove',aim);
+  hero.addEventListener('pointerleave',center);
   const resize=()=>{if(disposed)return;const {width,height}=host.getBoundingClientRect();renderer.setSize(Math.max(1,width),Math.max(1,height),false);camera.aspect=width/Math.max(1,height);camera.updateProjectionMatrix();};
   const observer=new ResizeObserver(resize);observer.observe(host);resize();
   const visibleObserver=new IntersectionObserver(entries=>{visible=entries[0]?.isIntersecting??false;schedule();});visibleObserver.observe(host);
@@ -30,7 +41,11 @@ export function mountScene(host:HTMLElement,quality:Quality,status:(text:string)
     if(!canRun())return;
     const delta=last?now-last:16;last=now;time+=Math.min(delta,60)/1000;
     if(governor.sample(delta)){quality=governor.quality;host.dataset.quality=quality;renderer.setPixelRatio(Math.min(devicePixelRatio,qualitySettings[quality].dpr));geometry.setDrawRange(0,qualitySettings[quality].particles);status(quality==='fallback'?'Static armory / performance safeguard':quality+' atmosphere');if(quality==='fallback'){host.style.opacity='0';return;}}
-    const progress=Math.min(1,window.scrollY/Math.max(1,innerHeight));camera.position.x=progress*.18;camera.position.y=.2-progress*.15;camera.lookAt(0,0,-3);
+    const progress=Math.min(1,window.scrollY/Math.max(1,innerHeight));
+    const easing=1-Math.exp(-Math.min(delta,60)/180);
+    cameraX+=(pointerX-cameraX)*easing;cameraY+=(pointerY-cameraY)*easing;
+    camera.position.set(progress*.3+cameraX*.6,.2-progress*.15-cameraY*.3,8-progress*.5);
+    camera.lookAt(0,0,-3);
     group.rotation.y=Math.sin(time*.1)*.015;particles.rotation.z=Math.sin(time*.045)*.022;
     renderer.render(scene,camera);raf=requestAnimationFrame(frame);
   }
@@ -38,5 +53,5 @@ export function mountScene(host:HTMLElement,quality:Quality,status:(text:string)
   renderer.domElement.addEventListener('webglcontextlost',contextLost);
   document.addEventListener('visibilitychange',schedule);document.addEventListener('store:dialog',schedule);
   status(quality+' atmosphere');renderer.render(scene,camera);schedule();
-  return ()=>{disposed=true;cancelAnimationFrame(raf);observer.disconnect();visibleObserver.disconnect();document.removeEventListener('visibilitychange',schedule);document.removeEventListener('store:dialog',schedule);pauseButton?.removeEventListener('click',toggle);renderer.domElement.removeEventListener('webglcontextlost',contextLost);edges.dispose();gold.dispose();geometry.dispose();material.dispose();markerGeometry.dispose();markerMaterial.dispose();renderer.dispose();renderer.forceContextLoss();renderer.domElement.remove();host.style.opacity='';};
+  return ()=>{hero.removeEventListener('pointermove',aim);hero.removeEventListener('pointerleave',center);disposed=true;cancelAnimationFrame(raf);observer.disconnect();visibleObserver.disconnect();document.removeEventListener('visibilitychange',schedule);document.removeEventListener('store:dialog',schedule);pauseButton?.removeEventListener('click',toggle);renderer.domElement.removeEventListener('webglcontextlost',contextLost);edges.dispose();gold.dispose();geometry.dispose();material.dispose();markerGeometry.dispose();markerMaterial.dispose();renderer.dispose();renderer.forceContextLoss();renderer.domElement.remove();host.style.opacity='';};
 }

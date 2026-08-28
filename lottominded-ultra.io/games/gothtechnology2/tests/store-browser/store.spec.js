@@ -33,10 +33,32 @@ test('shopping cart: variants, quantity, persistence, removal, focus and demo ch
 test('catalog filters, sorting, no-results and quick view work',async({page})=>{
   await page.goto(base+'shop/?category=Accessories');await expect(page.locator('#result-count')).toHaveText('3 products');
   await page.getByLabel('Search products',{exact:true}).fill('charm');await expect(page.locator('[data-product-card]:visible')).toHaveCount(1);
-  await page.getByRole('button',{name:'Quick view',exact:true}).click();await expect(page.getByRole('dialog',{name:'GOTHTECHNOLOGY Luggage Charm'})).toBeVisible();await page.getByRole('button',{name:'Add this item to shopping cart'}).click();await expect(page.getByRole('dialog',{name:'Your Loadout'})).toContainText('$16');await page.keyboard.press('Escape');
+  await page.getByRole('button',{name:'Quick view',exact:true}).click();await expect(page.getByRole('dialog',{name:'GOTHTECHNOLOGY Luggage Charm'})).toBeVisible();await page.getByRole('button',{name:'Add this item to shopping cart'}).click();await expect(page.getByRole('dialog',{name:'Your Loadout'})).toContainText('$19.99');await page.keyboard.press('Escape');
   await page.getByLabel('Search products',{exact:true}).fill('zzz-no-match');await expect(page.locator('#no-results')).toBeVisible();
   await page.locator('#no-results').getByRole('button',{name:'Reset filters'}).click();await expect(page.locator('#result-count')).toHaveText('9 products');await page.getByRole('combobox',{name:'Sort',exact:true}).selectOption('price-low');
   const order=await page.locator('[data-product-card]').evaluateAll(nodes=>nodes.filter(n=>!n.hidden).sort((a,b)=>Number(a.style.order)-Number(b.style.order)).map(n=>n.dataset.handle));expect(order[0]).toBe('black-signal-digital-pack');
+  await page.getByLabel('Search products',{exact:true}).fill('beanie');
+  const beanieCard=page.locator('[data-product-card]:visible');await expect(beanieCard).toHaveCount(1);await expect(beanieCard.locator('img')).toHaveAttribute('src',/\/media\/detroit-beanie\.webp$/);
+  await beanieCard.getByRole('button',{name:'Quick view',exact:true}).click();const beanieQuickView=page.getByRole('dialog',{name:'Detroit Skyline Embroidered Beanie'});
+  await expect(beanieQuickView).toBeVisible();await expect(beanieQuickView.getByRole('combobox',{name:'Color',exact:true})).toHaveValue('Black');await expect(beanieQuickView.locator('img')).toHaveAttribute('src',/\/media\/detroit-beanie\.webp$/);
+});
+
+test('signal keychain cards use matching artwork and retain their collection filter defaults',async({page})=>{
+  const signals=[['The Analog: Cyan circuit keychain','detroit-2084',3,'analog'],['The Disciples: Gold guardian keychain','night-protocol',1,'disciples'],['The Observers: Silver observer keychain','static-saints',1,'observers'],['The Null: Shadow hood keychain','cyber-cathedral',1,'null']];
+  for(const [name,handle,count,artwork] of signals){
+    await page.goto(base+'#character-vault');
+    const card=page.getByRole('link',{name,exact:true});
+    await expect(card.locator('img')).toHaveAttribute('src',base+'media/keychain-'+artwork+'-campaign.webp');
+    await card.click();await expect(page).toHaveURL(base+'collections/'+handle+'/');
+    await expect(page.getByRole('combobox',{name:'Collection',exact:true})).toHaveValue(handle);
+    await expect(page.locator('[data-product-card]:visible')).toHaveCount(count);
+  }
+  await page.getByRole('combobox',{name:'Collection',exact:true}).selectOption('');
+  await expect(page.locator('[data-product-card]:visible')).toHaveCount(9);
+  await page.reload();await expect(page.locator('[data-product-card]:visible')).toHaveCount(9);
+  await page.getByRole('button',{name:'Reset filters',exact:true}).click();
+  await expect(page.getByRole('combobox',{name:'Collection',exact:true})).toHaveValue('cyber-cathedral');
+  await expect(page.locator('[data-product-card]:visible')).toHaveCount(1);
 });
 
 test('mobile navigation, search and keyboard dialog containment',async({page})=>{
@@ -51,6 +73,9 @@ test('product gallery and honest 2.5D display remain usable',async({page},info)=
   await page.getByRole('button',{name:'Zoom image',exact:true}).click();await expect(page.locator('#gallery-zoom')).toHaveAttribute('aria-pressed','true');
   await page.getByRole('button',{name:/Open depth display/}).click();await expect(page.locator('.depth-frame img')).toBeVisible();await page.getByRole('button',{name:'Back',exact:true}).click();await expect(page.locator('[data-viewer-status]')).toContainText('not supplied');
   await page.getByRole('button',{name:'Reset view',exact:true}).click();await page.locator('.product-information').scrollIntoViewIfNeeded();await page.screenshot({path:info.outputPath('product.png')});
+  await page.goto(base+'products/black-signal-beanie/');await expect(page.getByRole('heading',{level:1})).toHaveText('Detroit Skyline Embroidered Beanie');
+  await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/detroit-beanie\.webp$/);await expect(page.getByRole('radio',{name:'Black',exact:true})).toBeChecked();
+  await page.getByRole('button',{name:'Zoom image',exact:true}).click();await expect(page.locator('#gallery-zoom')).toHaveAttribute('aria-pressed','true');
 });
 
 test('reduced motion and WebGL fallback keep shopping available',async({page})=>{
@@ -60,10 +85,50 @@ test('reduced motion and WebGL fallback keep shopping available',async({page})=>
   await page.emulateMedia({reducedMotion:'no-preference'});await page.addInitScript(()=>{const original=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(type,...args){if(type==='webgl2'||type==='webgl')return null;return original.call(this,type,...args);};});await page.reload();await expect(page.locator('#scene-status')).toHaveText('Static armory');await expect(page.getByRole('link',{name:'Shop the drop',exact:true})).toBeVisible();
 });
 
-test('silent transmission is requested explicitly and can always close',async({page})=>{
-  await page.goto(base);await expect(page.locator('#store-video')).not.toHaveAttribute('src');await page.getByRole('button',{name:'Watch transmission',exact:true}).click();await expect(page.getByRole('dialog',{name:'Transmission received'})).toBeVisible();
+test('Lookbook silent transmission is requested explicitly and can always close',async({page})=>{
+  await page.goto(base+'lookbook/');await expect(page.locator('#store-video')).not.toHaveAttribute('src');await page.getByRole('button',{name:'Watch the 15-second charm film',exact:true}).click();await expect(page.getByRole('dialog',{name:'Transmission received'})).toBeVisible();
   await expect.poll(()=>page.locator('#store-video').evaluate(video=>video.readyState)).toBeGreaterThan(0);expect(await page.locator('#store-video').evaluate(video=>video.muted)).toBe(true);
   await page.getByRole('button',{name:'Do not show again',exact:true}).click();await expect(page.locator('#transmission-dialog')).not.toBeVisible();await expect(page.locator('#store-video')).not.toHaveAttribute('src');
+});
+
+test('homepage commercial starts muted once per session and supports replay',async({page})=>{
+  await page.goto(base);await ready(page);
+  const dialog=page.locator('#home-commercial'),video=page.locator('#home-commercial-video');
+  await expect(video).not.toHaveAttribute('src');
+  await expect(dialog).toBeVisible({timeout:15000});
+  await expect.poll(()=>video.evaluate(v=>v.readyState)).toBeGreaterThan(1);
+  expect(await video.evaluate(v=>v.muted)).toBe(true);
+  await page.keyboard.press('Escape');
+  await expect(dialog).not.toBeVisible();await expect(video).not.toHaveAttribute('src');
+  await page.reload();await page.waitForTimeout(9000);
+  await expect(dialog).not.toBeVisible();await expect(video).not.toHaveAttribute('src');
+  await page.getByRole('button',{name:'Watch transmission',exact:true}).click();
+  await expect(dialog).toBeVisible();
+  await page.getByRole('button',{name:'Don’t show automatically again',exact:true}).click();
+  await expect(dialog).not.toBeVisible();
+  await page.getByRole('button',{name:'Watch transmission',exact:true}).click();
+  await expect(dialog).toBeVisible();
+  await page.getByRole('button',{name:'Close commercial',exact:true}).click();
+});
+
+test('homepage commercial waits for an open shopping cart',async({page})=>{
+  await page.goto(base);await page.getByRole('button',{name:'Open shopping cart',exact:true}).click();
+  await page.waitForTimeout(9000);
+  await expect(page.locator('#cart-dialog')).toBeVisible();
+  await expect(page.locator('#home-commercial')).not.toBeVisible();
+  await expect(page.locator('#home-commercial-video')).not.toHaveAttribute('src');
+  await page.getByRole('button',{name:'Close shopping cart',exact:true}).click();
+  await expect(page.locator('#home-commercial')).toBeVisible({timeout:10000});
+  await page.keyboard.press('Escape');
+});
+
+test('reduced motion leaves the homepage commercial on request',async({page})=>{
+  await page.emulateMedia({reducedMotion:'reduce'});await page.goto(base);
+  await page.waitForTimeout(9000);await expect(page.locator('#home-commercial')).not.toBeVisible();
+  await page.getByRole('button',{name:'Watch transmission',exact:true}).click();
+  await expect(page.locator('#home-commercial')).toBeVisible();
+  expect(await page.locator('#home-commercial-video').evaluate(v=>v.paused&&v.muted)).toBe(true);
+  await page.getByRole('button',{name:'Close commercial',exact:true}).click();
 });
 
 test('newsletter consent is required and demo does not send personal data',async({page})=>{

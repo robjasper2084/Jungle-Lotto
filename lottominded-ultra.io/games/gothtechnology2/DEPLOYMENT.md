@@ -1,6 +1,6 @@
 # Build and deployment
 
-No production deployment or push was performed. Do not publish until the owner approves the content and merchant setup.
+The owner approved publishing the current storefront on August 28, 2026. This release remains a demo catalog: payments, fulfillment, and live inventory are disabled. Publishing the preview does not authorize enabling commerce.
 
 The build preserves the existing GitHub Pages base:
 /Jungle-Lotto/lottominded-ultra.io/games/gothtechnology2/
@@ -16,9 +16,13 @@ node scripts/serve-store.mjs
 
 The isolated production preview uses port 4181. Open the same nested route there. The dev preview is port 4180. Do not use file:// for ES modules or the game.
 
-## Future Pages release
+## GitHub Pages release
 
-The repository's existing Pages workflow builds a lean static artifact from repository files. It has NOT been switched to publish this new store. Before a separately approved release, add a Node 24 setup and npm ci/build for this game, then overlay only this game's dist/ into _site/lottominded-ultra.io/games/gothtechnology2/. Exclude store/media-sources, source TypeScript, local output, node_modules, .env files and caches from the published artifact. Keep the rest of the site artifact unchanged. The complete built game subtree must be copied, including lazy chunks, legacy-game, src and assets.
+The repository's Pages workflow installs this game's locked dependencies with Node 24, runs store and game checks, and builds Astro with PUBLIC_COMMERCE_MODE=demo and PUBLIC_LAUNCH_APPROVED=false. Pull requests validate and assemble the artifact without deploying. A successful main-branch run publishes it through GitHub Pages.
+
+The lean artifact builder replaces only _site/lottominded-ultra.io/games/gothtechnology2/ with this game's complete dist/ tree, including lazy chunks, legacy-game, src, assets, fonts, and supplied media. It excludes this game's authoring tree and rejects private environment files, TypeScript, Astro source, source maps, and symlinks in the generated output. The rest of the static site's assembly rules stay unchanged. Missing required routes or videos fail the build before the existing artifact is removed.
+
+The homepage retains its artwork fallback while the hoodie and charm model paths are null. The gated cathedral scene is not a completed or verified 3D product model experience.
 
 Verify home, shop, all product routes, play, legacy entry, fonts, all media and the existing SDK on the public nested URL after Pages finishes. A successful CI job alone is not public runtime verification. Roll back with a scoped repository release; do not reset unrelated work or move protected tags.
 

@@ -115,6 +115,39 @@ test('filters combine variant options and handle search, availability and price 
   const p=structuredClone(hoodie);p.variants=[{...variant,size:'S',color:'Red'},{...variant,id:'v2',size:'M',color:'Blue'}];
   assert.equal(filterProducts([p],{size:'S',color:'Blue'}).length,0);
 });
+
+test('Detroit beanie is searchable in black and keeps its reference image in the saved cart',async()=>{
+  const products=filterProducts(demoProducts,{search:'Detroit Skyline Embroidered Beanie',color:'Black'});
+  assert.equal(products.length,1);
+  const beanie=products[0],beanieVariant=selectVariant(beanie,'One size','Black');
+  assert.ok(beanieVariant);
+  const storage=memory(),provider=new DemoProvider(storage);
+  assert.equal((await provider.getProduct('black-signal-beanie'))?.id,beanie.id);
+  const cart=await provider.addCartLine((await provider.createCart()).id,beanieVariant.id,1);
+  const restored=(await new DemoProvider(storage).getCart(cart.id))!;
+  assert.equal(restored.lines[0].title,'Detroit Skyline Embroidered Beanie');
+  assert.equal(restored.lines[0].color,'Black');
+  assert.equal(restored.lines[0].image?.src,'media/detroit-beanie.webp');
+});
+test('Detroit ashtray keeps its existing product link and supplied artwork in the cart',async()=>{
+  const [ashtray]=filterProducts(demoProducts,{search:'I Love Detroit Ashtray',category:'Collectibles'});
+  assert.ok(ashtray);
+  assert.equal(ashtray.handle,'cyber-cathedral-art-print');
+  const storage=memory(),provider=new DemoProvider(storage);
+  const cart=await provider.addCartLine((await provider.createCart()).id,ashtray.variants[0].id,1);
+  const restored=(await new DemoProvider(storage).getCart(cart.id))!;
+  assert.equal(restored.lines[0].title,'I Love Detroit Ashtray');
+  assert.equal(restored.lines[0].image?.src,'media/mascot-leaf-collectible.webp');
+});
+test('LottoMind charm uses exact cents in the catalog and cart',async()=>{
+  const charm=demoProducts.find(p=>p.handle==='gothtechnology-luggage-charm')!;
+  assert.equal(charm.price.amount,1999);
+  assert.equal(formatMoney(charm.price),'$19.99');
+  assert.ok(charm.variants.every(v=>v.price.amount===1999));
+  const provider=new DemoProvider(memory());
+  const cart=await provider.addCartLine((await provider.createCart()).id,charm.variants[0].id,2);
+  assert.equal(cart.subtotal.amount,3998);
+});
 const settings={domain:'armory-demo.myshopify.com',token:'a'.repeat(32),version:'2026-07'};
 const money={amount:'79.00',currencyCode:'USD'};
 const rawVariant={id:'gid://shopify/ProductVariant/1',title:'M / Black',availableForSale:true,price:money,selectedOptions:[{name:'Size',value:'M'},{name:'Color',value:'Black'}]};

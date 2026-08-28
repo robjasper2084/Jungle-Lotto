@@ -1,4 +1,5 @@
 import type { Collection, Product } from '../commerce/types.ts';
+import { fromDecimal } from '../commerce/money.ts';
 
 export const collections: Collection[] = [
   ['night-protocol', 'Night Protocol', 'The first transmission. Apparel for the hours you make your own.'],
@@ -21,10 +22,10 @@ const reference = (name: string, alt: string, label = 'Reference') => ({ src: `m
 const seeds = [
   { handle: 'night-protocol-hoodie', title: 'Night Protocol Heavyweight Embroidered Hoodie', subtitle: '313 / Detroit embroidery reference', dollars: 79, type: 'Apparel', collection: 'night-protocol', character: 'MASTER_EZRA', images: [reference('hoodie', 'Black 313 hoodie with multicolor Detroit embroidery and attached LottoMind charm', 'Front reference'), reference('embroidery', 'Close view of the multicolor Detroit skyline and heart embroidery', 'Embroidery reference'), reference('apparel', 'Detroit sweatshirt and hoodie with a LottoMind charm on a brown bag', 'Styling reference')], sizes: ['S', 'M', 'L', 'XL', '2XL'] },
   { handle: 'detroit-2084-shirt', title: 'Detroit 2084 Heavyweight Graphic T-Shirt', subtitle: 'City signals / proposed apparel', dollars: 36, type: 'Apparel', collection: 'detroit-2084', character: 'DETROIT_LENS_NOIR', images: [], sizes: ['S', 'M', 'L', 'XL', '2XL'] },
-  { handle: 'black-signal-beanie', title: 'Black Signal Embroidered Beanie', subtitle: 'After-hours / proposed headwear', dollars: 32, type: 'Apparel', collection: 'black-signal', character: 'KALYX', images: [] },
-  { handle: 'gothtechnology-luggage-charm', title: 'GOTHTECHNOLOGY Luggage Charm', subtitle: 'LottoMind character / gold hardware reference', dollars: 16, type: 'Accessories', collection: 'detroit-2084', character: 'DETROIT_LENS_NOIR', images: [reference('charm', 'Purple LottoMind mascot key charm with gold clasp and black circuit-pattern strap', 'Product reference'), reference('charm-bags', 'LottoMind charm and gold clasp attached to a brown backpack', 'Scale reference'), reference('sling-bag', 'LottoMind charm attached to a black Detroit sling bag', 'Placement reference')] },
+  { handle: 'black-signal-beanie', title: 'Detroit Skyline Embroidered Beanie', subtitle: 'Black / Detroit skyline embroidery reference', dollars: 32, type: 'Apparel', collection: 'detroit-2084', character: 'DETROIT_LENS_NOIR', images: [{ ...reference('detroit-beanie', 'Black ribbed Detroit beanie with a red skyline heart, gold sunrise, and multicolor embroidered city lettering on a dark pedestal', 'Front reference'), width: 896, height: 1200 }], colors: ['Black'] },
+  { handle: 'gothtechnology-luggage-charm', title: 'GOTHTECHNOLOGY Luggage Charm', subtitle: 'LottoMind character / gold hardware reference', dollars: 19.99, type: 'Accessories', collection: 'detroit-2084', character: 'DETROIT_LENS_NOIR', images: [reference('charm', 'Purple LottoMind mascot key charm with gold clasp and black circuit-pattern strap', 'Product reference'), reference('charm-bags', 'LottoMind charm and gold clasp attached to a brown backpack', 'Scale reference'), reference('sling-bag', 'LottoMind charm attached to a black Detroit sling bag', 'Placement reference')] },
   { handle: 'static-saints-patch-set', title: 'Static Saints Embroidered Patch Set', subtitle: 'Wear your signal / proposed patch set', dollars: 18, type: 'Accessories', collection: 'static-saints', character: 'AMARA_VALENTINE', images: [reference('patch', 'Round Detroit embroidered patch with a gold edge, skyline, red heart, and sunrise; set contents are unconfirmed', 'Patch reference')] },
-  { handle: 'cyber-cathedral-art-print', title: 'Cyber Cathedral Art Print', subtitle: 'Architecture after midnight / proposed print', dollars: 28, type: 'Collectibles', collection: 'cyber-cathedral', character: 'MASTER_EZRA', images: [] },
+  { handle: 'cyber-cathedral-art-print', title: 'I Love Detroit Ashtray', subtitle: 'Detroit mascot / leaf-shaped ashtray concept', dollars: 28, type: 'Collectibles', collection: 'cyber-cathedral', character: 'MASTER_EZRA', images: [{ ...reference('mascot-leaf-collectible', 'LottoMind mascot wearing a Detroit cap and hoodie, holding a sculpted gray leaf-shaped ashtray against a dark background', 'Product reference'), width: 1200, height: 1604 }] },
   { handle: 'combat-grid-desk-mat', title: 'Combat Grid Extended Gaming Desk Mat', subtitle: 'A place for your next move / proposed desk mat', dollars: 42, type: 'Accessories', collection: 'combat-systems', character: 'KALYX', images: [] },
   { handle: 'black-signal-digital-pack', title: 'Black Signal Digital Transmission Pack', subtitle: 'Digital artifacts / proposed download pack', dollars: 12, type: 'Digital', collection: 'black-signal', character: 'KALYX', images: [] },
   { handle: 'founder-loadout-bundle', title: 'Founder Loadout Bundle', subtitle: 'Your first transmission / contents awaiting confirmation', dollars: 129, type: 'Bundles', collection: 'founder-transmission', character: 'MASTER_EZRA', images: [reference('apparel', 'Detroit apparel and charm styling reference; proposed bundle contents are unconfirmed', 'Styling reference')] },
@@ -32,8 +33,8 @@ const seeds = [
 
 export const demoProducts: Product[] = seeds.map((seed, index) => {
   const sizes = seed.sizes ?? ['One size'];
-  const colors = ['Obsidian'];
-  const price = { amount: seed.dollars * 100, currency: 'USD' };
+  const colors = seed.colors ?? ['Obsidian'];
+  const price = fromDecimal(String(seed.dollars), 'USD');
   return { id: `demo-${seed.handle}`, handle: seed.handle, title: seed.title, subtitle: seed.subtitle,
     description: `${seed.subtitle}. Part of the ${collections.find(c => c.handle === seed.collection)?.title} collection. This is a demo catalog concept, not an offer of available stock. Product specifications and final imagery require owner confirmation.`,
     price, compareAtPrice: null, productType: seed.type, collection: seed.collection, collections: [seed.collection, 'combat-systems'], tags: [seed.type, seed.collection],
