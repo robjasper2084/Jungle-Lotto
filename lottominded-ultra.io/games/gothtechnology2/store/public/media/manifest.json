@@ -408,5 +408,23 @@
     "frameSeconds": 8,
     "origin": "Poster frame from user-supplied Lookbook film",
     "bytes": 65346
+  },
+  {
+    "source": "hf_20260716_132243_9ba2705e-c23b-4a1c-b536-f9f489de596c.mp4",
+    "output": "lookbook-riverfront-film.mp4",
+    "width": 1280,
+    "height": 720,
+    "duration": 15.069,
+    "origin": "User-supplied Lookbook film; web encode preserves original audio; rights require owner confirmation",
+    "bytes": 3348618
+  },
+  {
+    "source": "hf_20260716_132243_9ba2705e-c23b-4a1c-b536-f9f489de596c.mp4",
+    "output": "lookbook-riverfront-film-poster.webp",
+    "width": 1280,
+    "height": 720,
+    "frameSeconds": 6,
+    "origin": "Poster frame from user-supplied Lookbook film",
+    "bytes": 42860
   }
 ]
