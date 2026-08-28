@@ -1,0 +1,27 @@
+---
+import { href } from '../utilities/paths';
+import { cinematicModels } from '../content/cinematic-models';
+---
+<section class="hero cathedral-hero" id="arrival" aria-labelledby="hero-title" data-story-scene="arrival">
+  <img class="hero-image" src={href('media/armory-hero-v2.webp')} width="2400" height="900" alt="Concept artwork of the 313 Detroit hoodie and LottoMind charm in a gold-lit cathedral armory" fetchpriority="high"/>
+  <div class="scene-wrap" id="armory-scene" aria-hidden="true" data-hoodie-model={cinematicModels.hoodie ? href(cinematicModels.hoodie) : undefined} data-charm-model={cinematicModels.charm ? href(cinematicModels.charm) : undefined}></div>
+  <div class="hero-copy">
+    <h1 id="hero-title">Equipment for the world<br/>after midnight</h1>
+  </div>
+  <div class="cathedral-actions">
+    <a class="button" href="#current-drop">Shop the drop</a>
+    <a class="text-link" href={href('play/')} data-portal-link>Enter the fight</a>
+  </div>
+  <div class="cathedral-caption"><span id="scene-status" role="status">Initializing armory</span><span>Product concept artwork · not a 360° garment model</span></div>
+  <nav class="chapter-nav" aria-label="Story chapters">
+    <a href="#arrival" data-chapter="arrival" aria-current="location">Arrival</a>
+    <a href="#current-drop" data-chapter="drop">Night Protocol</a>
+    <a href="#character-vault" data-chapter="signals">Your Signal</a>
+    <a href="#enter-the-fight" data-chapter="portal">The Portal</a>
+  </nav>
+  <div class="cinema-controls" aria-label="Cinematic controls">
+    <button type="button" data-sound-proxy aria-pressed="false">Sound off</button>
+    <button type="button" id="scene-pause" aria-pressed="false">Pause motion</button>
+    <button type="button" data-motion-proxy aria-pressed="false">Reduce motion</button>
+  </div>
+</section>

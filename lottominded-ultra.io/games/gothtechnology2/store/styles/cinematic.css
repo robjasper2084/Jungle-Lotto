@@ -1,0 +1,59 @@
+.cinematic-card{position:relative;min-width:0;perspective:1100px;--card-x:0deg;--card-y:0deg;--light-x:50%;--light-y:35%}
+.cinematic-card .signal-card{display:block;position:relative;transform:rotateX(var(--card-x)) rotateY(var(--card-y));transform-origin:50% 65%;transition:transform .24s ease,box-shadow .24s,border-color .24s;box-shadow:0 12px 24px #0008;backface-visibility:hidden}
+.cinematic-card.is-lit .signal-card{border-color:var(--signal-accent);box-shadow:0 20px 34px #000b,0 0 18px color-mix(in srgb,var(--signal-accent) 12%,transparent)}
+.cinematic-card .signal-portrait:after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at var(--light-x) var(--light-y),#ffffff28,transparent 56%);opacity:0;transition:opacity .25s}
+.cinematic-card.is-lit .signal-portrait:after{opacity:1}
+.signal-inspect{display:block;width:100%;min-height:44px;border:1px solid var(--rule);border-top:0;background:#0b0d0e;color:var(--goth-cream);font:11px var(--mono);letter-spacing:.06em;text-transform:uppercase}
+.signal-inspect:hover,.signal-inspect:focus-visible{background:#1b1a15;color:var(--signal-accent)}
+.signal-display-dialog{width:min(1050px,94vw);max-width:94vw;max-height:94dvh;overflow:auto;background:#07090b;border:1px solid #6f6041;padding:24px;color:var(--goth-cream)}
+.signal-display-dialog::backdrop{background:#000d}
+.signal-display-dialog .dialog-heading{margin-bottom:16px}
+.signal-display-dialog h2{font-size:clamp(30px,4vw,50px)}
+.signal-display-dialog .mono{margin-bottom:8px}
+.signal-display-stage{--stage-light:#e5bb68;--light-x:55%;--light-y:30%;--rotate-x:0deg;--rotate-y:0deg;--display-zoom:1;position:relative;height:clamp(300px,52vh,560px);isolation:isolate;overflow:hidden;perspective:1100px;background:#060809;touch-action:pan-y;cursor:grab;border:1px solid #32332e}
+.signal-display-stage:active{cursor:grabbing}
+.signal-display-stage[data-light=cool]{--stage-light:#83dfe8}
+.signal-display-stage[data-light=neutral]{--stage-light:#d9dce1}
+.signal-display-stage:before{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at var(--light-x) var(--light-y),color-mix(in srgb,var(--stage-light) 23%,transparent),transparent 62%);transition:background .25s}
+.display-architecture{position:absolute;inset:9% 18% 9%;pointer-events:none;transform:translateZ(-150px)}
+.display-architecture i{position:absolute;inset:0;border:1px solid color-mix(in srgb,var(--stage-light) 65%,transparent);border-radius:48% 48% 0 0;box-shadow:0 0 20px color-mix(in srgb,var(--stage-light) 10%,transparent),inset 0 0 20px #0008}
+.display-architecture i:nth-child(2){inset:5% 8%}
+.display-architecture i:nth-child(3){inset:10% 16%;opacity:.35}
+.display-floor{position:absolute;left:-25%;right:-25%;bottom:-25%;height:50%;transform:rotateX(65deg);background:repeating-linear-gradient(90deg,transparent 0 99px,#85704322 100px),linear-gradient(#161a1d,#040506);border-top:1px solid var(--stage-light);box-shadow:0 -15px 80px #000}
+.display-object{position:absolute;left:50%;top:46%;width:min(46%,300px);height:76%;transform-style:preserve-3d;transform:translate(-50%,-50%) rotateX(var(--rotate-x)) rotateY(var(--rotate-y)) scale(var(--display-zoom));transition:transform .18s ease}
+.display-frame{height:100%;position:relative;padding:6px;background:#13181b;border:1px solid var(--stage-light);box-shadow:8px 6px 0 #25282b,14px 22px 30px #000b;transform:translateZ(28px);backface-visibility:hidden}
+.display-frame:after{content:"";position:absolute;inset:0;pointer-events:none;border:1px solid #ffffff15;box-shadow:inset 0 0 18px color-mix(in srgb,var(--stage-light) 12%,transparent)}
+.signal-display-image{width:100%;height:100%;object-fit:contain;background:#080a0b}
+.display-plinth{position:absolute;left:-20%;right:-20%;height:12%;bottom:-10%;background:linear-gradient(100deg,#1b2226,#353b3a 48%,#0b0e10);border-top:2px solid var(--stage-light);transform:translateZ(12px);box-shadow:0 25px 26px #0009}
+.display-hint{position:absolute;bottom:12px;left:0;right:0;text-align:center;font:10px var(--mono);letter-spacing:.14em;color:#d2c9b1;pointer-events:none}
+.display-toolbar{display:flex;gap:14px;flex-wrap:wrap;justify-content:space-between;padding-top:16px}
+.display-view-controls,.display-lights{display:flex;gap:6px;flex-wrap:wrap}
+.display-toolbar button{min-height:44px;min-width:44px;padding:9px 12px;font:11px var(--mono);background:#111518;border:1px solid #4c473b}
+.display-toolbar button:hover,.display-toolbar button[aria-pressed=true]{border-color:var(--goth-gold);color:var(--goth-gold-light);background:#252016}
+.display-note{font:12px/1.6 var(--mono);color:#c0bba9;margin:16px 0}
+.signal-display-dialog>a{font-size:11px;min-height:44px}
+@media(prefers-reduced-motion:no-preference){
+  @view-transition{navigation:auto}
+  ::view-transition-old(root){animation:armory-exit .28s ease both}
+  ::view-transition-new(root){animation:armory-enter .38s ease both}
+  .signal-display-dialog[open] .display-object{animation:display-arrive .55s ease-out}
+}
+@keyframes armory-exit{to{opacity:0;transform:scale(1.02)}}
+@keyframes armory-enter{from{opacity:0;transform:scale(.985)}to{opacity:1;transform:none}}
+@keyframes display-arrive{from{opacity:0;translate:0 20px}to{opacity:1;translate:0 0}}
+html[data-reduced-motion=true]::view-transition-old(root),html[data-reduced-motion=true]::view-transition-new(root){animation:none}
+html[data-reduced-motion=true] .cinematic-card .signal-card{transform:none}
+html[data-reduced-motion=true] .signal-display-stage{cursor:default}
+@media(prefers-reduced-motion:reduce){.cinematic-card .signal-card{transform:none}.signal-display-stage{cursor:default}}
+@media(max-width:600px){
+  .signal-display-dialog{width:calc(100% - 24px);max-width:calc(100% - 24px);padding:14px;max-height:94dvh}
+  .signal-display-dialog .mono{font-size:9px}
+  .signal-display-stage{height:360px;max-height:48dvh;min-height:250px}
+  .display-object{width:58%;height:72%}
+  .display-architecture{inset:10% 7%}
+  .display-toolbar{gap:10px}
+  .display-toolbar button{padding:8px 10px}
+  .signal-inspect{font-size:10px}
+}
+
+body[data-cinematic=true] .scene-wrap{opacity:.28}.collection-signals{padding-top:12px;padding-bottom:42px}.collection-signals .signal-grid{gap:clamp(12px,2vw,28px)}

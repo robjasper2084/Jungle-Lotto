@@ -1,0 +1,77 @@
+/* Hybrid cathedral: real architecture, honest concept imagery, ordinary document scroll. */
+body[data-cinematic=true]>.commerce-notice{position:relative;width:auto;height:auto;overflow:visible;clip-path:none;padding:9px 18px;border-bottom:1px solid var(--rule);font-size:11px;background:#080907}
+body[data-cinematic=true] main{max-width:none;margin:0}
+body[data-cinematic=true] .cathedral-hero{display:block;height:calc(100svh - 106px);min-height:700px;max-height:1100px;background:#050605}
+body[data-cinematic=true] .cathedral-hero .hero-image{inset:0;width:100%;height:100%;object-fit:cover;object-position:72% center;opacity:.75;transition:opacity 1s}
+body[data-cinematic=true] .cathedral-hero[data-scene-ready=true] .hero-image{opacity:0}
+body[data-cinematic=true] .cathedral-hero .scene-wrap{inset:0;opacity:0;z-index:-1;transition:opacity 1.2s}
+body[data-cinematic=true] .cathedral-hero .scene-wrap[data-ready=true]{opacity:1}
+body[data-cinematic=true] .cathedral-hero .hero-copy{position:absolute;inset:4% 5% auto;width:auto;padding:0;text-align:center;max-width:none;background:none;pointer-events:none}
+body[data-cinematic=true] .cathedral-hero h1{font:400 clamp(44px,5.8vw,88px)/.95 var(--display);letter-spacing:-.035em;text-transform:none;margin:0;color:#ebddb9;text-shadow:0 3px 20px #000b}
+.cathedral-actions{position:absolute;bottom:135px;left:20%;right:20%;display:flex;flex-direction:column;align-items:center;gap:10px}
+body[data-cinematic=true] .cathedral-actions .button{min-width:250px;min-height:54px;font-size:14px;letter-spacing:.09em;padding:16px 26px}
+body[data-cinematic=true] .cathedral-actions .text-link{font-size:13px;color:#efddb4;letter-spacing:.08em;min-height:44px;text-shadow:0 2px 4px #000}
+.cathedral-caption{position:absolute;bottom:105px;left:4%;right:4%;display:flex;justify-content:center;gap:20px;flex-wrap:wrap;color:#bdb197;font:11px/1.4 var(--mono);text-align:center}
+.chapter-nav{position:absolute;bottom:0;left:0;right:0;height:88px;display:flex;align-items:center;justify-content:flex-start;gap:24px;padding:12px 3%;padding-right:420px;border-top:1px solid var(--rule);background:#050605ed}
+.chapter-nav a{font:11px var(--mono);text-transform:uppercase;letter-spacing:.1em;min-height:44px;display:flex;align-items:center;border-bottom:2px solid transparent;white-space:nowrap}
+.chapter-nav a[aria-current]{color:var(--goth-gold);border-color:var(--goth-gold)}
+.cinema-controls{position:absolute;bottom:22px;right:3%;display:flex;gap:10px;align-items:center}
+.cinema-controls button{font:11px var(--mono);background:transparent;border:1px solid #625238;min-height:44px;padding:10px 12px;color:#decca2}
+.cinema-controls button:hover{border-color:var(--goth-gold);background:#201b11}
+.cathedral-hero[data-scene-ready=true] .hero-copy{animation:cathedral-title 1.4s ease both}
+@keyframes cathedral-title{from{opacity:.15;transform:translateY(10px)}to{opacity:1;transform:none}}
+body[data-cinematic=true] .armory-drop{grid-template-columns:28% minmax(0,1fr) 16%;padding:42px 0}
+body[data-cinematic=true] .armory-drop h2{font-size:clamp(42px,4.5vw,78px)}
+body[data-cinematic=true] main .drop-copy>p,body[data-cinematic=true] main .row-heading>p{font-size:14px;line-height:1.65}
+.drop-showcase{position:relative;padding-bottom:46px;gap:14px;background:#070807}
+.drop-showcase figure{align-self:center;border-bottom:1px solid var(--rule)}
+.drop-showcase figcaption{position:static;font-size:11px;line-height:1.4;padding:12px 8px;color:#d0c3a7}
+.material-hotspot{position:absolute;left:50%;bottom:60px;transform:translateX(-50%);background:#080907e8;color:#e9d2a0;border:1px solid #977744;min-height:44px;font:12px var(--mono);padding:10px 16px;white-space:nowrap}
+.material-hotspot:hover{background:#292112;border-color:#e2b95f}
+.drop-transmission{position:absolute;bottom:0;left:24px;font:12px var(--mono);gap:12px}
+body[data-cinematic=true] .armory-row{padding-top:48px;padding-bottom:48px}
+body[data-cinematic=true] .row-heading h2{font-size:clamp(34px,3.2vw,54px)}
+body[data-cinematic=true] .signal-card h3{font-size:14px;padding:16px 8px}.signal-merch-label{font-size:12px;padding-bottom:16px}
+.cinematic-card{border-top:2px solid var(--signal-accent)}
+.signal-display-stage[data-light=shadow]{--stage-light:#9b87b8}
+.signal-inspect{min-height:48px;font-size:12px}
+.portal-art{perspective:900px}
+.portal-art>img{transform:scale(calc(1.03 + var(--portal-depth,0)*.06));transition:transform .18s linear;will-change:transform}
+.portal-wordmark{transform:translateZ(40px);transition:transform .45s}
+.portal-art:hover .portal-wordmark{transform:translateZ(50px) scale(1.035)}
+.portal-row.scene-in-view .portal-art>img{animation:portal-breathe 7s ease-in-out infinite alternate}
+@keyframes portal-breathe{from{filter:brightness(.8) saturate(.75)}to{filter:brightness(1.08) saturate(1.1)}}
+.portal-transition{position:fixed;inset:0;z-index:200;background:#030605;display:grid;place-items:center;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .28s,visibility .28s}
+.portal-transition span{font:clamp(32px,5vw,72px) var(--display);color:#e7d3a5}
+html[data-portal-entering=true] .portal-transition{opacity:1;visibility:visible}
+.material-dialog{width:min(1000px,94vw);max-height:92dvh;overflow:auto;padding:24px;background:#0a0c0b;border:1px solid #77613a}
+.material-dialog::backdrop{background:#000d}
+.material-image-wrap{overflow:auto;max-height:60vh;margin:18px 0;background:#080909}
+.material-image-wrap img{width:100%;height:auto;max-width:none;object-fit:contain}
+.material-dialog[data-zoom=true] .material-image-wrap img{width:160%}
+.material-dialog p{font:12px/1.5 var(--mono)!important;margin:18px 0 0}
+html[data-cinema-paused=true] *,html[data-cinema-paused=true] *:before,html[data-cinema-paused=true] *:after{animation-play-state:paused!important}
+html[data-cinema-paused=true] .signal-card,html[data-cinema-paused=true] .portal-art>img{transform:none!important;transition:none!important}
+html[data-reduced-motion=true]{scroll-behavior:auto}
+html[data-reduced-motion=true] *,html[data-reduced-motion=true] *:before,html[data-reduced-motion=true] *:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+html[data-reduced-motion=true] .portal-art>img{transform:none!important;will-change:auto}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.cathedral-hero *,.portal-row *{animation:none!important;transition:none!important}.portal-art>img{transform:none!important}}
+@media(max-width:1100px){.chapter-nav{height:126px;bottom:0;padding:10px 24px 66px;justify-content:center;gap:24px}.cinema-controls{bottom:14px;right:0;left:0;justify-content:center}.cathedral-caption{bottom:140px}.cathedral-actions{bottom:175px}body[data-cinematic=true] .armory-drop{grid-template-columns:34% minmax(0,1fr)}.drop-telemetry{grid-column:1/-1;display:flex;padding:16px 24px;border-top:1px solid var(--rule);border-left:0}.drop-telemetry dl{display:flex;gap:10px;flex-wrap:wrap;font-size:12px}.drop-telemetry dt{margin:0}.drop-telemetry dd{margin-right:16px}.drop-telemetry .signal-mark,.drop-telemetry>p{display:none}.desktop-nav{gap:18px}}
+@media(max-width:760px){
+ body[data-cinematic=true] .cathedral-hero{height:790px;min-height:790px;max-height:none}
+ body[data-cinematic=true] .cathedral-hero .hero-copy{inset:32px 20px auto}
+ body[data-cinematic=true] .cathedral-hero h1{font-size:clamp(42px,8.5vw,60px);line-height:1;letter-spacing:-.03em}
+ body[data-cinematic=true] .cathedral-hero .scene-wrap{top:80px;bottom:150px}
+ body[data-cinematic=true] .cathedral-hero .hero-image{height:540px;top:80px;bottom:auto;object-position:74% center}
+ .cathedral-actions{bottom:185px;left:20px;right:20px;gap:4px}
+ body[data-cinematic=true] .cathedral-actions .button{min-height:48px;font-size:12px;min-width:220px}
+ .cathedral-caption{bottom:134px;left:20px;right:20px;gap:5px;font-size:10px;flex-direction:column}
+ .chapter-nav{gap:16px;padding-left:15px;padding-right:15px}.chapter-nav a{font-size:10px;letter-spacing:0}
+ .cinema-controls{gap:6px}.cinema-controls button{padding:9px 10px;font-size:10px}
+ body[data-cinematic=true] .armory-drop{grid-template-columns:1fr;padding:0}
+ .armory-drop .drop-copy{border:0;max-width:none;padding:30px 22px}
+ .drop-showcase{gap:0}.material-hotspot{font-size:10px;padding:9px 10px;bottom:52px}.drop-showcase figcaption{font-size:9px}
+ body[data-cinematic=true] .armory-row{padding-top:34px;padding-bottom:34px}.row-heading .text-link{white-space:normal}
+ .material-dialog{padding:16px}.material-dialog h2{font-size:32px}.material-image-wrap{max-height:50vh}
+}
+@media(max-width:360px){.chapter-nav{gap:11px}.chapter-nav a{font-size:9px}.cinema-controls button{font-size:9px;padding:9px 8px}body[data-cinematic=true] .cathedral-hero h1{font-size:40px}.material-hotspot{font-size:9px;padding:8px}.signal-card h3{font-size:12px!important}}

@@ -1,0 +1,412 @@
+[
+  {
+    "source": "apparel.png",
+    "output": "apparel.webp",
+    "sourceWidth": 1376,
+    "sourceHeight": 768,
+    "width": 1376,
+    "height": 768,
+    "bytes": 115548,
+    "origin": "User-supplied reference; rights require owner confirmation"
+  },
+  {
+    "source": "armory-city.png",
+    "output": "armory-city.webp",
+    "sourceWidth": 1983,
+    "sourceHeight": 793,
+    "width": 1680,
+    "height": 672,
+    "bytes": 58432,
+    "origin": "AI campaign concept; user reference"
+  },
+  {
+    "source": "armory-hero-v2.png",
+    "output": "armory-hero-v2.webp",
+    "sourceWidth": 2048,
+    "sourceHeight": 768,
+    "width": 2048,
+    "height": 768,
+    "bytes": 65726,
+    "origin": "AI campaign concept; user reference"
+  },
+  {
+    "source": "armory-lookbook.png",
+    "output": "armory-lookbook.webp",
+    "sourceWidth": 1737,
+    "sourceHeight": 905,
+    "width": 1680,
+    "height": 875,
+    "bytes": 138120,
+    "origin": "AI campaign concept; user reference"
+  },
+  {
+    "source": "cap.png",
+    "output": "cap.webp",
+    "sourceWidth": 2752,
+    "sourceHeight": 1536,
+    "width": 1680,
+    "height": 938,
+    "bytes": 109446,
+    "origin": "User-supplied reference; rights require owner confirmation"
+  },
+  {
+    "source": "charm-bags.png",
+    "output": "charm-bags.webp",
+    "sourceWidth": 1392,
+    "sourceHeight": 752,
+    "width": 1392,
+    "height": 752,
+    "bytes": 93650,
+    "origin": "User-supplied reference; rights require owner confirmation"
+  },
+  {
+    "source": "charm-campaign.png",
+    "output": "charm-campaign.webp",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "width": 1254,
+    "height": 1254,
+    "bytes": 80078,
+    "origin": "AI campaign concept; user reference"
+  },
+  {
+    "source": "charm.png",
+    "output": "charm.webp",
+    "sourceWidth": 1376,
+    "sourceHeight": 768,
+    "width": 1376,
+    "height": 768,
+    "bytes": 26696,
+    "origin": "User-supplied reference; rights require owner confirmation"
+  },
+  {
+    "source": "combat-campaign.png",
+    "output": "combat-campaign.webp",
+    "sourceWidth": 2752,
+    "sourceHeight": 1536,
+    "width": 1680,
+    "height": 938,
+    "bytes": 169558,
+    "origin": "AI campaign concept; user reference"
+  },
+  {
+    "source": "detroit-beanie.png",
+    "output": "detroit-beanie.webp",
+    "sourceWidth": 896,
+    "sourceHeight": 1200,
+    "width": 896,
+    "height": 1200,
+    "bytes": 74898,
+    "origin": "User-supplied reference; rights require owner confirmation"
+  },
+  {
+    "source": "detroit-mark.png",
+    "output": "detroit-mark.webp",
+    "sourceWidth": 1376,
+    "sourceHeight": 768,
+    "width": 1376,
+    "height": 768,
+    "bytes": 15318,
+    "origin": "User-supplied reference; rights require owner confirmation"
+  },
+  {
+    "source": "embroidery.png",
+    "output": "embroidery.webp",
+    "sourceWidth": 2752,
+    "sourceHeight": 1536,
+    "width": 1680,
+    "height": 938,
+    "bytes": 286676,
+    "origin": "User-supplied reference; rights require owner confirmation"
+  },
+  {
+    "source": "equipment-atlas.png",
+    "output": "equipment-atlas.webp",
+    "sourceWidth": 1536,
+    "sourceHeight": 1024,
+    "width": 1536,
+    "height": 1024,
+    "bytes": 132380,
+    "origin": "AI campaign concept; user reference"
+  },
+  {
+    "source": "hero.png",
+    "output": "hero.webp",
+    "sourceWidth": 1672,
+    "sourceHeight": 941,
+    "width": 1672,
+    "height": 941,
+    "bytes": 54516,
+    "origin": "AI campaign concept; user reference"
+  },
+  {
+    "source": "hoodie.png",
+    "output": "hoodie.webp",
+    "sourceWidth": 1376,
+    "sourceHeight": 768,
+    "width": 1376,
+    "height": 768,
+    "bytes": 81592,
+    "origin": "User-supplied reference; rights require owner confirmation"
+  },
+  {
+    "source": "keychain-analog-campaign.png",
+    "output": "keychain-analog-campaign.webp",
+    "sourceWidth": 1792,
+    "sourceHeight": 2400,
+    "width": 900,
+    "height": 1205,
+    "bytes": 69610,
+    "origin": "Higgsfield AI keychain concept; user mascot and category references",
+    "model": "nano_banana_2",
+    "generationId": "0a3324cd-315d-4644-b82c-c24bff9616bf"
+  },
+  {
+    "source": "keychain-disciples-campaign.png",
+    "output": "keychain-disciples-campaign.webp",
+    "sourceWidth": 1792,
+    "sourceHeight": 2400,
+    "width": 900,
+    "height": 1205,
+    "bytes": 79130,
+    "origin": "Higgsfield AI keychain concept; user mascot and category references",
+    "model": "nano_banana_2",
+    "generationId": "4925ce26-d6a4-4b4c-88dd-2c561a4c8405"
+  },
+  {
+    "source": "keychain-null-campaign.png",
+    "output": "keychain-null-campaign.webp",
+    "sourceWidth": 1792,
+    "sourceHeight": 2400,
+    "width": 900,
+    "height": 1205,
+    "bytes": 46700,
+    "origin": "Higgsfield AI keychain concept; user mascot and category references",
+    "model": "nano_banana_2",
+    "generationId": "45da90c0-70fc-489a-88b5-1145b189b025"
+  },
+  {
+    "source": "keychain-observers-campaign.png",
+    "output": "keychain-observers-campaign.webp",
+    "sourceWidth": 1792,
+    "sourceHeight": 2400,
+    "width": 900,
+    "height": 1205,
+    "bytes": 69448,
+    "origin": "Higgsfield AI keychain concept; user mascot and category references",
+    "model": "nano_banana_2",
+    "generationId": "3b0e3c11-4046-4200-b94e-f8274ecfcad5"
+  },
+  {
+    "source": "mascot-illustration.png",
+    "output": "mascot-illustration.webp",
+    "sourceWidth": 2752,
+    "sourceHeight": 1536,
+    "width": 1680,
+    "height": 938,
+    "bytes": 239476,
+    "origin": "User-supplied reference; rights require owner confirmation"
+  },
+  {
+    "source": "mascot-world.png",
+    "output": "mascot-world.webp",
+    "sourceWidth": 2752,
+    "sourceHeight": 1536,
+    "width": 1680,
+    "height": 938,
+    "bytes": 173450,
+    "origin": "User-supplied reference; rights require owner confirmation"
+  },
+  {
+    "source": "mascot.png",
+    "output": "mascot.webp",
+    "sourceWidth": 1376,
+    "sourceHeight": 768,
+    "width": 1376,
+    "height": 768,
+    "bytes": 62050,
+    "origin": "User-supplied reference; rights require owner confirmation"
+  },
+  {
+    "source": "patch.png",
+    "output": "patch.webp",
+    "sourceWidth": 2720,
+    "sourceHeight": 1536,
+    "width": 1680,
+    "height": 949,
+    "bytes": 182504,
+    "origin": "User-supplied reference; rights require owner confirmation"
+  },
+  {
+    "source": "signal-analog-campaign.png",
+    "output": "signal-analog-campaign.webp",
+    "sourceWidth": 1792,
+    "sourceHeight": 2400,
+    "width": 900,
+    "height": 1205,
+    "bytes": 107790,
+    "origin": "Higgsfield AI campaign concept; user product references",
+    "model": "nano_banana_2",
+    "generationId": "b2feb518-3874-4d9d-9e78-ce1ca16c09ba"
+  },
+  {
+    "source": "signal-disciples-campaign.png",
+    "output": "signal-disciples-campaign.webp",
+    "sourceWidth": 1792,
+    "sourceHeight": 2400,
+    "width": 900,
+    "height": 1205,
+    "bytes": 80662,
+    "origin": "Higgsfield AI campaign concept; user product references",
+    "model": "nano_banana_2",
+    "generationId": "6ade9ba0-17b6-4250-80bc-c7025eec62f2"
+  },
+  {
+    "source": "signal-null-campaign.png",
+    "output": "signal-null-campaign.webp",
+    "sourceWidth": 1792,
+    "sourceHeight": 2400,
+    "width": 900,
+    "height": 1205,
+    "bytes": 65914,
+    "origin": "Higgsfield AI campaign concept; user product references",
+    "model": "nano_banana_2",
+    "generationId": "6675aeba-b82b-4f51-ab08-4ea36ccc81e7"
+  },
+  {
+    "source": "signal-observers-campaign.png",
+    "output": "signal-observers-campaign.webp",
+    "sourceWidth": 1792,
+    "sourceHeight": 2400,
+    "width": 900,
+    "height": 1205,
+    "bytes": 92662,
+    "origin": "Higgsfield AI campaign concept; user product references",
+    "model": "nano_banana_2",
+    "generationId": "a366fa06-6f2a-4606-9c3c-ae0165890d8c"
+  },
+  {
+    "source": "signal-portals.png",
+    "output": "signal-portals.webp",
+    "sourceWidth": 1774,
+    "sourceHeight": 887,
+    "width": 1680,
+    "height": 840,
+    "bytes": 90104,
+    "origin": "AI campaign concept; user reference"
+  },
+  {
+    "source": "sling-bag.png",
+    "output": "sling-bag.webp",
+    "sourceWidth": 1376,
+    "sourceHeight": 768,
+    "width": 1376,
+    "height": 768,
+    "bytes": 40478,
+    "origin": "User-supplied reference; rights require owner confirmation"
+  },
+  {
+    "source": "detroit-hoodie-portrait.png",
+    "output": "detroit-hoodie-portrait.webp",
+    "sourceWidth": 1760,
+    "sourceHeight": 2352,
+    "width": 1200,
+    "height": 1604,
+    "bytes": 145318,
+    "origin": "User-supplied reference; rights require owner confirmation"
+  },
+  {
+    "source": "detroit-boutique-loadout.png",
+    "output": "detroit-boutique-loadout.webp",
+    "sourceWidth": 1376,
+    "sourceHeight": 768,
+    "width": 1376,
+    "height": 768,
+    "bytes": 82294,
+    "origin": "User-supplied reference; rights require owner confirmation"
+  },
+  {
+    "source": "mascot-leaf-collectible.png",
+    "output": "mascot-leaf-collectible.webp",
+    "sourceWidth": 1760,
+    "sourceHeight": 2352,
+    "width": 1200,
+    "height": 1604,
+    "bytes": 136478,
+    "origin": "User-supplied reference; rights require owner confirmation"
+  },
+  {
+    "source": "hf_20260804_011402_d471da83-4d6e-46a0-93e2-34d5eff7d154.mp4",
+    "output": "about-detroit-film.mp4",
+    "width": 1280,
+    "height": 720,
+    "duration": 15.069,
+    "bytes": 5337971,
+    "origin": "User-supplied film; web encode preserves original audio"
+  },
+  {
+    "source": "hf_20260804_011402_d471da83-4d6e-46a0-93e2-34d5eff7d154.mp4",
+    "output": "about-detroit-film-poster.webp",
+    "width": 1280,
+    "height": 720,
+    "frameSeconds": 9,
+    "bytes": 61712,
+    "origin": "Poster frame from user-supplied film"
+  },
+  {
+    "source": "hf_20260716_112955_a457820c-4261-40ec-80fa-d3842515fe72 (1).mp4",
+    "output": "home-charm-commercial.mp4",
+    "width": 1280,
+    "height": 720,
+    "duration": 15.069,
+    "origin": "User-supplied commercial; web encode preserves original audio",
+    "bytes": 3554710
+  },
+  {
+    "source": "hf_20260716_112955_a457820c-4261-40ec-80fa-d3842515fe72 (1).mp4",
+    "output": "home-charm-commercial-poster.webp",
+    "width": 1280,
+    "height": 720,
+    "frameSeconds": 3,
+    "origin": "Poster frame from user-supplied commercial",
+    "bytes": 48440
+  },
+  {
+    "source": "hf_20260808_161025_5392b51f-29ab-4f8c-af3c-9a6fd429a6b7.png",
+    "output": "detroit-community.webp",
+    "sourceWidth": 1376,
+    "sourceHeight": 768,
+    "width": 1376,
+    "height": 768,
+    "bytes": 108166,
+    "origin": "User-supplied reference; rights require owner confirmation"
+  },
+  {
+    "source": "hf_20260807_162926_653c41a5-6c21-48bf-99bd-ea5cdae5786f (1).png",
+    "output": "detroit-sling-couple.webp",
+    "sourceWidth": 1376,
+    "sourceHeight": 768,
+    "width": 1376,
+    "height": 768,
+    "origin": "User-supplied reference; rights require owner confirmation",
+    "bytes": 95246
+  },
+  {
+    "source": "hf_20260716_124643_204b9223-6513-4471-8d74-bd2d92fd1499.mp4",
+    "output": "lookbook-detroit-film.mp4",
+    "width": 1280,
+    "height": 720,
+    "duration": 15.069,
+    "origin": "User-supplied Lookbook film; web encode preserves original audio",
+    "bytes": 5684163
+  },
+  {
+    "source": "hf_20260716_124643_204b9223-6513-4471-8d74-bd2d92fd1499.mp4",
+    "output": "lookbook-detroit-film-poster.webp",
+    "width": 1280,
+    "height": 720,
+    "frameSeconds": 8,
+    "origin": "Poster frame from user-supplied Lookbook film",
+    "bytes": 65346
+  }
+]

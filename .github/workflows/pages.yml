@@ -3,6 +3,11 @@ name: Deploy GitHub Pages
 on:
   push:
     branches: [main]
+  pull_request:
+    paths:
+      - 'lottominded-ultra.io/games/gothtechnology2/**'
+      - 'scripts/*pages*.mjs'
+      - '.github/workflows/pages.yml'
   workflow_dispatch:
 
 permissions:
@@ -11,14 +16,11 @@ permissions:
   id-token: write
 
 concurrency:
-  group: pages
+  group: pages-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -26,17 +28,43 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
+          cache: npm
+          cache-dependency-path: lottominded-ultra.io/games/gothtechnology2/package-lock.json
+      - name: Install GothTechnology dependencies
+        working-directory: lottominded-ultra.io/games/gothtechnology2
+        run: npm ci
+      - name: Validate and build GothTechnology storefront
+        working-directory: lottominded-ultra.io/games/gothtechnology2
+        env:
+          PUBLIC_COMMERCE_MODE: demo
+          PUBLIC_LAUNCH_APPROVED: 'false'
+        run: |
+          npm run check:store
+          npm run test:store
+          npm run check
+          npm run test:unit
+          npm run build
+      - name: Validate Pages assembly
+        run: node --test scripts/gothtechnology-pages.test.mjs
       - name: Build lean Pages artifact
         run: node scripts/build-pages-artifact.mjs
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
-        with:
-          enablement: true
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: _site
+  deploy:
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    needs: build
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4

@@ -1,0 +1,15 @@
+---
+import { signals } from '../content/signals';
+import { href } from '../utilities/paths';
+---
+<div class="signal-grid">
+  {signals.map((signal,index)=>
+    <div class="cinematic-card" data-signal-light={['cool','warm','neutral','shadow'][index]} style={'--signal-accent:'+['#76dbe4','#e5bb68','#c5d7e8','#c6b8e2'][index]}>
+    <a class="signal-card" href={href('collections/'+signal.collection+'/')} aria-label={signal.name+': '+signal.merch}>
+      <div class="signal-portrait"><img src={href('media/'+signal.image)} alt={signal.alt} width="900" height="1205" loading="lazy" decoding="async"/></div>
+      <h3>{signal.name}</h3><span class="signal-merch-label">{signal.merch}</span>
+    </a>
+    <button class="signal-inspect" aria-label={'Inspect '+signal.name+' display'} aria-haspopup="dialog" disabled>Inspect display</button>
+    </div>
+  )}
+</div>

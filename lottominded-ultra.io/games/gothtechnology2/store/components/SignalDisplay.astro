@@ -1,0 +1,35 @@
+---
+import Icon from './Icon.astro';
+---
+<dialog id="signal-display" class="signal-display-dialog" aria-labelledby="signal-display-title">
+  <div class="dialog-heading">
+    <div><p class="mono gold">The Armory / Interactive display</p><h2 id="signal-display-title">Your signal</h2></div>
+    <button class="icon-button" data-close-dialog aria-label="Close signal display"><Icon name="close"/></button>
+  </div>
+  <div class="signal-display-stage" data-light="warm" tabindex="0" role="group" aria-label="Keychain depth display. Arrow keys tilt, plus and minus zoom, Home resets.">
+    <div class="display-architecture" aria-hidden="true"><i></i><i></i><i></i></div>
+    <div class="display-floor" aria-hidden="true"></div>
+    <div class="display-object">
+      <div class="display-frame"><img class="signal-display-image" alt="Selected keychain concept"/></div>
+      <div class="display-plinth" aria-hidden="true"></div>
+    </div>
+    <span class="display-hint" aria-hidden="true">DRAG TO EXPLORE</span>
+  </div>
+  <div class="display-toolbar" aria-label="Display controls">
+    <div class="display-view-controls">
+      <button data-display-view="left" aria-label="Tilt display left">Left</button>
+      <button data-display-view="right" aria-label="Tilt display right">Right</button>
+      <button data-display-view="in" aria-label="Zoom display in">Zoom +</button>
+      <button data-display-view="out" aria-label="Zoom display out">Zoom −</button>
+      <button data-display-view="reset">Reset view</button>
+    </div>
+    <div class="display-lights" role="group" aria-label="Display lighting">
+      <button data-display-light="warm" aria-pressed="true">Warm</button>
+      <button data-display-light="cool" aria-pressed="false">Cool</button>
+      <button data-display-light="neutral" aria-pressed="false">Neutral</button>
+      <button data-display-light="shadow" aria-pressed="false">Shadow</button>
+    </div>
+  </div>
+  <p class="display-note" data-display-status role="status">Concept artwork presented in a depth display.</p>
+  <a class="button" data-display-collection>View collection <Icon/></a>
+</dialog>

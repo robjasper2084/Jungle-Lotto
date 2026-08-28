@@ -1,0 +1,62 @@
+---
+import { href } from '../utilities/paths';
+const {
+  id='detroit-origin-film',
+  source='media/about-detroit-film.mp4',
+  poster='media/about-detroit-film-poster.webp',
+  label='Detroit origin film',
+  title='DETROIT / THE FIRST TRANSMISSION',
+  description='A 15-second street sequence featuring the 313 hoodie, Detroit embroidery, and the LottoMind companion.',
+  buttonLabel='Detroit film',
+  feature=false,
+} = Astro.props;
+---
+<figure class:list={['origin-film', {'feature-film':feature}]} data-inline-film>
+  <video id={id} controls playsinline preload="metadata" width="1280" height="720"
+    poster={href(poster)} aria-label={label} aria-describedby={id+'-description'}>
+    <source src={href(source)} type="video/mp4"/>
+    Your browser cannot play this video. <a href={href(source)}>Open the film</a>.
+  </video>
+  <figcaption>
+    <p class="mono gold">{title}</p>
+    <p id={id+'-description'}>{description}</p>
+    <div class="film-actions">
+      <button class="button secondary" type="button" data-origin-film-toggle data-film-label={buttonLabel} aria-controls={id}>Play {buttonLabel}</button>
+      <a class="text-link" href={href(source)}>Open video file →</a>
+    </div>
+    <p class="film-status" data-origin-film-status role="status"></p>
+  </figcaption>
+</figure>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-inline-film]').forEach(host => {
+    const film = host.querySelector<HTMLVideoElement>('video')!;
+    const toggle = host.querySelector<HTMLButtonElement>('[data-origin-film-toggle]')!;
+    const status = host.querySelector<HTMLElement>('[data-origin-film-status]')!;
+    const sync = () => { toggle.textContent = (film.paused ? 'Play ' : 'Pause ') + toggle.dataset.filmLabel; };
+    toggle.addEventListener('click', async () => {
+      if (!film.paused) { film.pause(); return; }
+      try { await film.play(); status.textContent = ''; }
+      catch { status.textContent = 'Playback could not start. Use the video controls or open the video file.'; }
+    });
+    film.addEventListener('play', () => { sync(); document.dispatchEvent(new Event('store:media-play')); });
+    film.addEventListener('pause', sync);
+    film.addEventListener('ended', sync);
+    film.addEventListener('error', () => { status.textContent = 'Video unavailable. Try opening the video file.'; });
+    document.addEventListener('visibilitychange', () => { if (document.hidden) film.pause(); });
+    document.addEventListener('store:dialog', () => { if (document.querySelector('dialog[open]')) film.pause(); });
+    window.addEventListener('pagehide', () => film.pause(), { once: true });
+  });
+</script>
+
+<style>
+  .origin-film{min-width:0;margin:0;border:1px solid var(--rule);background:#080a0b}
+  .origin-film.feature-film{grid-column:1/-1;grid-row:auto}
+  .origin-film video{display:block;width:100%;height:auto;aspect-ratio:16/9;object-fit:contain;background:#000}
+  .origin-film figcaption{position:static;max-width:none;padding:18px 20px}
+  .origin-film .mono{font-size:10px;letter-spacing:.08em}
+  .origin-film p{font-size:12px;line-height:1.6}
+  .film-actions{display:flex;align-items:center;flex-wrap:wrap;gap:12px 20px}
+  .film-actions .button,.film-actions .text-link{min-height:44px;font-size:11px}
+  .film-status:empty{display:none}
+</style>

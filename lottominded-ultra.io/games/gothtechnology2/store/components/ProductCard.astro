@@ -1,0 +1,18 @@
+---
+import type { Product } from '../commerce/types';
+import ProductMedia from './ProductMedia.astro';
+import Icon from './Icon.astro';
+import { formatMoney } from '../commerce/money';
+import { href } from '../utilities/paths';
+const { product, compact = false } = Astro.props as {product:Product;compact?:boolean};
+const shortTitles:Record<string,string> = {'night-protocol-hoodie':'Night Protocol Hoodie','detroit-2084-shirt':'Detroit 2084 Tee','black-signal-beanie':'Detroit Skyline Beanie','gothtechnology-luggage-charm':'LottoMind Charm // 001','static-saints-patch-set':'Detroit Patch Study'};
+---
+<article class:list={['product-card',compact && 'compact-product']} data-product-card data-handle={product.handle}>
+  <a class="product-image-link" href={href(`products/${product.handle}/`)} aria-label={`View ${product.title}`}><ProductMedia product={product} campaign/></a>
+  <div class="product-card-copy"><p class="mono muted">{product.collection.replaceAll('-', ' ')}</p>
+    <h3><a href={href(`products/${product.handle}/`)}>{compact ? shortTitles[product.handle] || product.title : product.title}</a></h3>
+    <div class="price-line"><strong>{formatMoney(product.price)}</strong><span>{product.demo ? 'Demo catalog' : product.variants.some(v => v.available) ? 'Available' : 'Unavailable'}</span></div>
+    <p class="color-line"><span class="swatch" aria-hidden="true"></span>{product.colors.join(' / ')}</p>
+    <div class="card-actions"><button class="text-button" data-quick-view={product.handle}>Quick view <Icon/></button><button class="button compact" data-quick-view={product.handle} aria-label={`Select options to add ${product.title} to shopping cart`}>Add to Loadout</button></div>
+  </div>
+</article>

@@ -1,0 +1,14 @@
+---
+import Shell from '../layouts/Shell.astro';
+import { supportPages } from '../content/support';
+import { config } from '../config';
+import { href } from '../utilities/paths';
+export function getStaticPaths(){return Object.entries(supportPages).map(([page,content])=>({params:{page},props:{content,page}}));}
+const {content,page}=Astro.props;
+---
+<Shell title={content.title} description={content.intro} path={`${page}/`}>
+<article class="section document-page"><span class="section-number">GOTHTECHNOLOGY / SUPPORT</span><h1>{content.title}</h1><p class:list={['shipping','returns','terms','privacy'].includes(page)?'policy-notice':''}>{content.intro}</p>
+{page==='contact' && config.contactEmail && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(config.contactEmail) && <p><a href={`mailto:${config.contactEmail}`}>{config.contactEmail}</a></p>}
+{content.sections.map(([title,text])=><section><h2>{title}</h2><p>{text}</p></section>)}
+<p><a href={href('shop/')}>Browse the armory</a> / <a href={href('play/')}>Play GOTHTECHNOLOGY</a></p>
+</article></Shell>

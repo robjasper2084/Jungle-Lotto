@@ -1,0 +1,56 @@
+---
+import '../styles/global.css';
+import '../styles/armory.css';
+import '../styles/cinematic.css';
+import '../styles/hybrid.css';
+import SignalDisplay from '../components/SignalDisplay.astro';
+import HomeCommercial from '../components/HomeCommercial.astro';
+import Icon from '../components/Icon.astro';
+import { href, canonical } from '../utilities/paths';
+import { config } from '../config';
+import { buildProvider } from '../commerce/provider';
+import { serialize } from '../utilities/serialize';
+const { title = 'The Armory', description = 'Equipment for the world after midnight. Apparel, artifacts, collectibles, and the GOTHTECHNOLOGY fighting game.', path = '', cinematic = false, schema = null } = Astro.props;
+const products = await buildProvider.getProducts();
+const pageData = serialize({ products, config, base: href() });
+const links = [['NEW DROP', '#current-drop'],['SHOP','shop/'],['COLLECTIONS','collections/'],['LOOKBOOK','lookbook/'],['PLAY','play/'],['ABOUT','about/']];
+const support = ['contact','faq','shipping','returns','privacy','terms','accessibility'];
+---
+<!doctype html><html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+  <title>{title} | GOTHTECHNOLOGY</title><meta name="description" content={description}/><meta name="theme-color" content="#030303"/>
+  <link rel="canonical" href={canonical(path)}/><meta property="og:title" content={`${title} | GOTHTECHNOLOGY`}/><meta property="og:description" content={description}/><meta property="og:type" content="website"/><meta property="og:url" content={canonical(path)}/><meta property="og:image" content={canonical('media/hero.webp')}/><meta name="twitter:card" content="summary_large_image"/>
+  <link rel="icon" href={href('favicon.svg')} type="image/svg+xml"/><link rel="manifest" href={href('manifest.webmanifest')}/>
+  {config.commerceMode === 'demo' && <meta name="robots" content="noindex,follow"/>}
+  {schema && <script type="application/ld+json" set:html={serialize(schema)}/>}
+  <script type="application/ld+json" set:html={serialize({'@context':'https://schema.org','@type':'Organization',name:'GOTHTECHNOLOGY',url:canonical()})}/>
+</head><body data-cinematic={cinematic ? 'true' : 'false'}>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header"><a class="wordmark" href={href()} aria-label="GOTHTECHNOLOGY home">GOTHTECHNOLOGY<span>// THE ARMORY</span></a>
+    <nav class="desktop-nav" aria-label="Main navigation">{links.map(([label,url])=><a href={href(url)} aria-current={path === url ? 'page' : undefined}>{label}</a>)}</nav>
+    <div class="nav-utilities"><button class="icon-button" data-open-search aria-label="Search the store"><Icon name="search"/><span>Search</span></button><button class="cart-trigger" data-open-cart aria-label="Open shopping cart"><Icon name="bag"/><span>Loadout</span><b data-cart-count>0</b></button><button class="icon-button menu-trigger" data-open-menu aria-label="Open navigation menu"><Icon name="menu"/></button></div>
+  </header>
+  <div class="commerce-notice">{config.commerceMode === 'demo' ? 'DEMO STORE — CONCEPT CATALOG. PAYMENTS DISABLED.' : !config.launchApproved ? 'STORE PREVIEW — CHECKOUT AWAITS OWNER APPROVAL.' : 'GOTHTECHNOLOGY // EQUIPMENT FOR THE WORLD AFTER MIDNIGHT'}</div>
+  <main id="main" tabindex="-1"><slot/></main>
+  <footer class="site-footer section"><div class="footer-brand"><a class="wordmark" href={href()}>GOTHTECHNOLOGY<span>// THE ARMORY</span></a><p>Equipment for the world<br/>after midnight.</p>{config.commerceMode==='demo' && <span class="footer-demo">DEMO STORE<br/>CONCEPTS ONLY<br/>NOT FOR SALE</span>}</div>
+    <nav aria-label="Shop"><h3>Shop</h3><a href={href('#current-drop')}>New Drop</a><a href={href('shop/')}>All Equipment</a>{['Apparel','Accessories','Collectibles','Digital','Bundles'].map(category=><a href={href(`shop/?category=${category}`)}>{category}</a>)}</nav>
+    <nav aria-label="Company"><h3>Company</h3><a href={href('about/')}>About</a><a href={href('lookbook/')}>Lookbook</a><a href={href('play/')}>Play</a><a href={href('about/')}>Built in Detroit</a><a href={href('collections/')}>Collections</a></nav>
+    <nav aria-label="Support"><h3>Support</h3>{support.filter(s=>s!=='contact').map(s=><a href={href(`${s}/`)}>{s==='faq'?'Help Center':s.charAt(0).toUpperCase()+s.slice(1)}</a>)}</nav>
+    <nav aria-label="Connect"><h3>Connect</h3><a href={href('contact/')}>Contact</a><a href={href('#newsletter-title')}>Drop alerts</a><a href={href('lookbook/')}>Transmissions</a><a href={href('accessibility/')}>Accessibility</a></nav>
+    <div class="footer-digital"><h3>Digital Static</h3><p>Site Design & Development<br/>by DIGITAL STATIC</p><a class="text-link" href="https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/">Return to LottoMind</a><p>© {new Date().getFullYear()} DIGITAL STATIC<br/>All rights reserved. {config.commerceMode==='demo'?'(Demo)':''}</p></div>
+    <details class="footer-preferences"><summary>Experience controls — sound, motion & quality</summary><div class="experience-controls"><button class="text-button" id="sound-toggle" aria-pressed="false"><Icon name="sound"/>Sound off</button><button class="text-button" id="motion-toggle" aria-pressed="false">Reduce motion</button><label>3D quality<select id="quality-select"><option value="auto">Automatic</option><option value="high">High</option><option value="balanced">Balanced</option><option value="low">Low</option><option value="fallback">Static image</option></select></label><p class="muted">No advertising analytics are active.</p></div></details>
+    <div class="footer-bottom"><span>+ SIGNAL: LOCAL</span><span>NODE: ARMORY_001</span><span>{config.commerceMode === 'demo' ? 'Concept catalog. No orders or payments.' : 'Secure checkout provided by Shopify.'}</span></div>
+  </footer>
+  <dialog id="cart-dialog" class="drawer" aria-labelledby="cart-title"><div class="dialog-heading"><div><p class="mono gold">SHOPPING CART</p><h2 id="cart-title">Your Loadout</h2></div><button class="icon-button" data-close-dialog aria-label="Close shopping cart"><Icon name="close"/></button></div>
+    <div id="cart-lines"></div><div id="cart-summary"></div><p id="cart-status" role="status" aria-live="polite"></p><div class="drawer-actions"><button class="button" id="checkout-button">Proceed to checkout <Icon/></button><button class="button secondary" data-close-dialog>Continue shopping</button></div>
+  </dialog>
+  <dialog id="quick-dialog" class="quick-dialog" aria-labelledby="quick-title"><button class="icon-button modal-close" data-close-dialog aria-label="Close quick view"><Icon name="close"/></button><div id="quick-content"></div><p id="quick-status" role="status"></p></dialog>
+  <dialog id="search-dialog" class="search-dialog" aria-labelledby="search-title"><div class="dialog-heading"><h2 id="search-title">Find your signal.</h2><button class="icon-button" data-close-dialog aria-label="Close search"><Icon name="close"/></button></div><form action={href('shop/')}><label for="global-search">Search equipment and collections</label><div class="email-row"><input id="global-search" type="search" name="search" placeholder="Hoodie, charm, Detroit…"/><button class="button">Search</button></div></form><div id="search-results" aria-live="polite"></div></dialog>
+  <dialog id="menu-dialog" class="mobile-menu" aria-labelledby="menu-title"><div class="dialog-heading"><h2 id="menu-title">The Armory</h2><button class="icon-button" data-close-dialog aria-label="Close navigation menu"><Icon name="close"/></button></div><nav aria-label="Mobile navigation">{links.map(([label,url])=><a href={href(url)}>{label}<Icon/></a>)}<button class="text-button" data-open-search>Search</button><button class="text-button" data-open-cart>Loadout / shopping cart <span data-cart-count>0</span></button></nav></dialog>
+  <dialog id="transmission-dialog" class="transmission-dialog" aria-labelledby="transmission-title"><div class="dialog-heading"><h2 id="transmission-title">Transmission received</h2><button class="icon-button" data-close-dialog aria-label="Skip transmission"><Icon name="close"/></button></div><video id="store-video" controls muted playsinline preload="none" poster={href('media/charm-campaign.webp')} aria-label="Silent LottoMind charm campaign transmission"></video><p>Silent edit of the supplied 15-second LottoMind charm concept film. A packaged character charm is shown close up, rotates against a white backdrop, and appears beside a black bag in an industrial setting. The screen reads “LottoMind” and “Cyber Explorer Luggage Charm.” The original soundtrack is omitted from this silent preview.</p><div class="button-row"><a class="button" href={href('products/gothtechnology-luggage-charm/')}>View product</a><button class="button secondary" data-close-dialog>Continue</button><button class="text-button" id="hide-transmissions">Do not show again</button></div></dialog>
+  <p class="sr-only" id="store-status" role="status" aria-live="polite"></p><div id="offline-notice" role="status" hidden>You are offline. Your saved demo loadout still works. Reconnect for live inventory and checkout.</div>
+  <noscript><p class="noscript-notice">Catalog pages and the game link work without store JavaScript. Enable JavaScript for variant selection and shopping cart controls.</p></noscript>
+  <script id="store-data" type="application/json" set:html={pageData}/>
+  <SignalDisplay/>
+  {path === '' && <HomeCommercial/>}
+  <script>import '../ui/app.ts';</script>
+</body></html>
