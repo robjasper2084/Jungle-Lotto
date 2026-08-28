@@ -73,18 +73,21 @@ test('signal keychain cards use matching artwork and retain their collection fil
   await expect(page.locator('[data-product-card]:visible')).toHaveCount(1);
 });
 
-test('every signal column shows its game artwork and opens the matching fighter',async({page})=>{
-  const fighters=[['DETROIT_LENS_NOIR','Detroit Lens Noir','detroit-lens-noir'],['MASTER_EZRA','Master Ezra','master-ezra'],['AMARA_VALENTINE','Amara Valentine','amara-valentine'],['KALYX','Kalyx','kalyx']];
-  for(const [index,[id,name,image]] of fighters.entries()){
-    await page.goto(base+'#character-vault');
+const signalFighters=[['DETROIT_LENS_NOIR','Detroit Lens Noir','detroit-lens-noir'],['MASTER_EZRA','Master Ezra','master-ezra'],['AMARA_VALENTINE','Amara Valentine','amara-valentine'],['KALYX','Kalyx','kalyx']];
+for(const [index,[id,name,image]] of signalFighters.entries()){
+  test('every signal column opens its matching fighter: '+name,async({page})=>{
+    await page.goto(base);await ready(page);
+    // Exercise the dismissal UI so the idle commercial cannot interrupt the link check.
+    await page.getByRole('button',{name:'Watch transmission',exact:true}).click();
+    await page.getByRole('button',{name:'Don’t show automatically again',exact:true}).click();
     const card=page.locator('#character-vault .cinematic-card').nth(index);
     await expect(card.locator('.signal-card img')).toBeVisible();
     await expect(card.locator('.signal-game img')).toHaveAttribute('src',base+'assets/user-roster/'+image+'-headshot.webp');
     await card.getByRole('link',{name:'Play as '+name,exact:true}).click();
     await expect(page).toHaveURL(base+'play/?character='+id);
     await expect(page.locator('#requested-character')).toContainText('Starting character: '+name);
-  }
-});
+  });
+}
 
 test('mobile navigation, search and keyboard dialog containment',async({page})=>{
   await page.goto(base);if(await page.getByRole('button',{name:'Open navigation menu'}).isVisible()){await page.getByRole('button',{name:'Open navigation menu'}).click();await expect(page.getByRole('dialog',{name:'The Armory'})).toBeVisible();await page.getByRole('dialog',{name:'The Armory'}).getByRole('link',{name:'SHOP',exact:true}).click();await expect(page).toHaveURL(/shop\/$/);}
