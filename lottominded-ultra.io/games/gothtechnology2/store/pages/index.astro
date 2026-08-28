@@ -7,15 +7,15 @@ import Newsletter from '../components/Newsletter.astro';
 import Icon from '../components/Icon.astro';
 import CathedralHero from '../components/CathedralHero.astro';
 import { buildProvider } from '../commerce/provider';
-import { href } from '../utilities/paths';
+import { href, media } from '../utilities/paths';
 import { formatMoney } from '../commerce/money';
 const products = await buildProvider.getProducts();
 const drop = products.find(p => p.handle === 'night-protocol-hoodie') || products[0];
 const cases = [
   {name:'Apparel',url:'shop/?category=Apparel',tile:0},
   {name:'Accessories',url:'shop/?category=Accessories',tile:3},
-  {name:'Collectibles',url:'shop/?category=Collectibles',tile:5},
-  {name:'Digital bundles',url:'collections/black-signal/',tile:null},
+  {name:'Collectibles',url:'shop/?category=Collectibles',tile:5,image:products.find(p => p.handle === 'cyber-cathedral-art-print')?.images[0]},
+  {name:'Orignal ArtWork',url:'collections/black-signal/',tile:null},
 ];
 
 ---
@@ -28,7 +28,7 @@ const cases = [
     <div class="drop-showcase"><figure><EquipmentArt tile={0} alt="Studio concept of the supplied 313 Detroit hoodie, front view"/><figcaption>01 / THE 313 HOODIE</figcaption><button class="material-hotspot" data-inspect-material="embroidery" aria-haspopup="dialog">Inspect embroidery</button></figure><figure><EquipmentArt tile={3} alt="Studio concept of the supplied LottoMind charm and gold clasp"/><figcaption>02 / THE EVERYDAY COMPANION</figcaption><button class="material-hotspot" data-inspect-material="charm" aria-haspopup="dialog">Inspect the charm</button></figure><button class="text-button drop-transmission" data-watch-transmission><Icon name="play" size={13}/>Watch transmission</button></div>
     <aside class="drop-telemetry" aria-label="Drop information"><p>DROP INFO</p><dl><dt>001</dt><dd>Night Protocol</dd><dt>Reference</dt><dd>313 / Detroit</dd><dt>Type</dt><dd>Apparel + artifact</dd><dt>Status</dt><dd>{drop?.demo ? 'Demo concept' : 'View product details'}</dd></dl><span class="signal-mark" aria-hidden="true">⌖</span></aside>
   </section>
-  <section class="armory-row category-row" id="armory" aria-labelledby="armory-title"><div class="row-heading"><h2 id="armory-title">The<br/>Armory</h2><p>Select your category.<br/>Outfit. Equip. Transmit.</p></div><div class="equipment-cases">{cases.map(item=><a class="equipment-case" href={href(item.url)}>{item.tile!==null ? <EquipmentArt tile={item.tile} alt={`${item.name} — campaign concept`}/> : <div class="digital-case"><img src={href('media/mascot-illustration.webp')} width="1376" height="768" alt="LottoMind digital artwork concept" loading="lazy"/><span aria-hidden="true">TRANSMISSION_001<br/>DIGITAL ARCHIVE</span></div>}<h3>{item.name}</h3></a>)}</div></section>
+  <section class="armory-row category-row" id="armory" aria-labelledby="armory-title"><div class="row-heading"><h2 id="armory-title">The<br/>Armory</h2><p>Select your category.<br/>Outfit. Equip. Transmit.</p></div><div class="equipment-cases">{cases.map(item=><a class="equipment-case" href={href(item.url)}>{item.image ? <div class="category-product-art"><img src={media(item.image.src)} alt={item.image.alt} width={item.image.width} height={item.image.height} loading="lazy" decoding="async"/></div> : item.tile!==null ? <EquipmentArt tile={item.tile} alt={`${item.name} — campaign concept`}/> : <div class="digital-case"><img src={href('media/mascot-illustration.webp')} width="1376" height="768" alt="LottoMind digital artwork concept" loading="lazy"/><span aria-hidden="true">TRANSMISSION_001<br/>DIGITAL ARCHIVE</span></div>}<h3>{item.name}</h3></a>)}</div></section>
   <section class="armory-row featured-row" id="featured" aria-labelledby="featured-title"><div class="row-heading"><h2 id="featured-title">Featured<br/>Equipment</h2><p>Demo concepts.<br/>Not final products.</p><span class="signal-mark" aria-hidden="true">✣</span><a class="text-link" href={href('shop/')}>View all equipment <Icon size={18}/></a></div><div class="featured-equipment">{products.slice(0,6).map(product=><ProductCard product={product} compact/>)}</div></section>
   <section class="armory-row signal-row" id="character-vault" aria-labelledby="signal-title" data-story-scene="signals"><div class="row-heading"><h2 id="signal-title">Choose<br/>Your Signal</h2><p>Your channel.<br/>Your allegiance.</p><span class="signal-mark" aria-hidden="true">⌖</span><p class="demo-caption">keychain concepts</p></div><SignalCards/></section>
   <section class="armory-row lookbook-row" id="combat-lookbook" aria-labelledby="lookbook-title"><div class="row-heading"><h2 id="lookbook-title">Combat<br/>Lookbook</h2><p>Field tested.<br/>Night approved.</p><a class="button secondary" href={href('lookbook/')}>View lookbook</a></div><a class="lookbook-strip" href={href('lookbook/')} aria-label="Explore the Combat Lookbook"><img src={href('media/armory-lookbook.webp')} alt="Campaign concepts: Detroit hoodie in an industrial alley, a rear garment view, LottoMind charm on a bag, and embroidered sleeve detail" width="2400" height="500" loading="lazy"/></a></section>
@@ -43,3 +43,8 @@ const cases = [
   </dialog>
   <div class="portal-transition" aria-hidden="true"><span>Entering the fight</span></div>
 </Shell>
+<style>
+  .category-product-art{position:relative;width:100%;aspect-ratio:1.18;background:#080b0b}
+  .category-product-art img{position:absolute;width:100%;height:100%;object-fit:contain}
+  @media(max-width:560px){.category-product-art{aspect-ratio:1.1}}
+</style>

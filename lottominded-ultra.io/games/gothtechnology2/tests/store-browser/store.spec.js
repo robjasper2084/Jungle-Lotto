@@ -43,6 +43,18 @@ test('catalog filters, sorting, no-results and quick view work',async({page})=>{
   await expect(beanieQuickView).toBeVisible();await expect(beanieQuickView.getByRole('combobox',{name:'Color',exact:true})).toHaveValue('Black');await expect(beanieQuickView.locator('img')).toHaveAttribute('src',/\/media\/detroit-beanie\.webp$/);
 });
 
+test('homepage category tile uses the ashtray artwork and retains the Collectibles filter',async({page})=>{
+  await page.goto(base);
+  const categories=page.locator('#armory .equipment-case');
+  await expect(categories.nth(3).getByRole('heading')).toHaveText('Orignal ArtWork');
+  const collectibles=categories.filter({has:page.getByRole('heading',{name:'Collectibles',exact:true})});
+  await expect(collectibles.locator('img')).toHaveAttribute('src',/\/media\/mascot-leaf-collectible\.webp$/);
+  await collectibles.click();
+  await expect(page).toHaveURL(/shop\/\?category=Collectibles$/);
+  await expect(page.locator('[data-product-card]:visible')).toHaveCount(1);
+  await expect(page.getByRole('link',{name:'I Love Detroit Ashtray',exact:true})).toBeVisible();
+});
+
 test('signal keychain cards use matching artwork and retain their collection filter defaults',async({page})=>{
   const signals=[['The Analog: Cyan circuit keychain','detroit-2084',3,'analog'],['The Disciples: Gold guardian keychain','night-protocol',1,'disciples'],['The Observers: Silver observer keychain','static-saints',1,'observers'],['The Null: Shadow hood keychain','cyber-cathedral',1,'null']];
   for(const [name,handle,count,artwork] of signals){
@@ -59,6 +71,19 @@ test('signal keychain cards use matching artwork and retain their collection fil
   await page.getByRole('button',{name:'Reset filters',exact:true}).click();
   await expect(page.getByRole('combobox',{name:'Collection',exact:true})).toHaveValue('cyber-cathedral');
   await expect(page.locator('[data-product-card]:visible')).toHaveCount(1);
+});
+
+test('every signal column shows its game artwork and opens the matching fighter',async({page})=>{
+  const fighters=[['DETROIT_LENS_NOIR','Detroit Lens Noir','detroit-lens-noir'],['MASTER_EZRA','Master Ezra','master-ezra'],['AMARA_VALENTINE','Amara Valentine','amara-valentine'],['KALYX','Kalyx','kalyx']];
+  for(const [index,[id,name,image]] of fighters.entries()){
+    await page.goto(base+'#character-vault');
+    const card=page.locator('#character-vault .cinematic-card').nth(index);
+    await expect(card.locator('.signal-card img')).toBeVisible();
+    await expect(card.locator('.signal-game img')).toHaveAttribute('src',base+'assets/user-roster/'+image+'-headshot.webp');
+    await card.getByRole('link',{name:'Play as '+name,exact:true}).click();
+    await expect(page).toHaveURL(base+'play/?character='+id);
+    await expect(page.locator('#requested-character')).toContainText('Starting character: '+name);
+  }
 });
 
 test('mobile navigation, search and keyboard dialog containment',async({page})=>{
@@ -83,6 +108,43 @@ test('reduced motion and WebGL fallback keep shopping available',async({page})=>
   await expect(page.locator('#scene-status')).toHaveText('Static armory');expect(requests.some(u=>/scene\.[^/]+\.js/.test(u))).toBe(false);
   await page.getByRole('button',{name:'Open shopping cart'}).click();await expect(page.getByRole('dialog',{name:'Your Loadout'})).toContainText('Your loadout is empty.');await page.keyboard.press('Escape');
   await page.emulateMedia({reducedMotion:'no-preference'});await page.addInitScript(()=>{const original=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(type,...args){if(type==='webgl2'||type==='webgl')return null;return original.call(this,type,...args);};});await page.reload();await expect(page.locator('#scene-status')).toHaveText('Static armory');await expect(page.getByRole('link',{name:'Shop the drop',exact:true})).toBeVisible();
+});
+
+test('inline Lookbook films autoplay muted only in view and preserve a manual pause',async({page})=>{
+  await page.goto(base+'lookbook/');await ready(page);
+  const first=page.locator('#lookbook-detroit-film'),riverfront=page.locator('#lookbook-riverfront-film');
+  await first.scrollIntoViewIfNeeded();
+  await expect.poll(()=>first.evaluate(v=>!v.paused&&v.muted&&v.currentTime>0)).toBe(true);
+  await expect.poll(()=>riverfront.evaluate(v=>v.paused)).toBe(true);
+  await page.getByRole('button',{name:'Pause Lookbook film',exact:true}).click();
+  await riverfront.scrollIntoViewIfNeeded();
+  await expect.poll(()=>riverfront.evaluate(v=>!v.paused&&v.muted&&v.currentTime>0)).toBe(true);
+  await first.scrollIntoViewIfNeeded();
+  await expect.poll(()=>riverfront.evaluate(v=>v.paused)).toBe(true);
+  await expect(page.getByRole('button',{name:'Play Lookbook film',exact:true})).toBeVisible();
+  expect(await first.evaluate(v=>v.paused)).toBe(true);
+  await page.getByRole('button',{name:'Play Lookbook film',exact:true}).click();
+  const firstHost=page.locator('[data-inline-film]').filter({has:first});
+  await firstHost.getByRole('button',{name:'Turn sound on',exact:true}).click();
+  await expect(firstHost.getByRole('button',{name:'Mute sound',exact:true})).toHaveAttribute('aria-pressed','true');
+  await page.getByRole('button',{name:'Open shopping cart',exact:true}).click();
+  await expect.poll(()=>first.evaluate(v=>v.paused)).toBe(true);
+  await page.getByRole('button',{name:'Close shopping cart',exact:true}).click();
+  await expect.poll(()=>first.evaluate(v=>!v.paused&&v.muted)).toBe(true);
+});
+
+test('reduced motion keeps inline films on request and manual playback remains available',async({page})=>{
+  await page.emulateMedia({reducedMotion:'reduce'});await page.goto(base+'lookbook/');await ready(page);
+  const film=page.locator('#lookbook-riverfront-film');await film.scrollIntoViewIfNeeded();
+  await expect(page.getByRole('button',{name:'Play riverfront film',exact:true})).toBeVisible();
+  expect(await film.evaluate(v=>v.paused&&v.muted)).toBe(true);
+  await page.getByRole('button',{name:'Play riverfront film',exact:true}).click();
+  await expect.poll(()=>film.evaluate(v=>!v.paused)).toBe(true);
+  await page.getByRole('button',{name:'Pause riverfront film',exact:true}).click();
+  await page.goto(base+'about/');
+  const origin=page.locator('#detroit-origin-film');await origin.scrollIntoViewIfNeeded();
+  await expect(page.getByRole('button',{name:'Play Detroit film',exact:true})).toBeVisible();
+  expect(await origin.evaluate(v=>v.paused&&v.muted)).toBe(true);
 });
 
 test('Lookbook silent transmission is requested explicitly and can always close',async({page})=>{

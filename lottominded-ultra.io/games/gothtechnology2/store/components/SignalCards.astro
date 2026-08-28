@@ -1,15 +1,31 @@
 ---
 import { signals } from '../content/signals';
+import { characters } from '../content/catalog';
 import { href } from '../utilities/paths';
+const cards = signals.map(signal => ({...signal, character:characters.find(character => character.id === signal.characterId)}));
 ---
 <div class="signal-grid">
-  {signals.map((signal,index)=>
+  {cards.map((signal,index)=>
     <div class="cinematic-card" data-signal-light={['cool','warm','neutral','shadow'][index]} style={'--signal-accent:'+['#76dbe4','#e5bb68','#c5d7e8','#c6b8e2'][index]}>
     <a class="signal-card" href={href('collections/'+signal.collection+'/')} aria-label={signal.name+': '+signal.merch}>
       <div class="signal-portrait"><img src={href('media/'+signal.image)} alt={signal.alt} width="900" height="1205" loading="lazy" decoding="async"/></div>
       <h3>{signal.name}</h3><span class="signal-merch-label">{signal.merch}</span>
     </a>
     <button class="signal-inspect" aria-label={'Inspect '+signal.name+' display'} aria-haspopup="dialog" disabled>Inspect display</button>
+    {signal.character && <a class="signal-game" href={href('play/?character='+signal.character.id)} aria-label={'Play as '+signal.character.name}>
+      <span class="signal-game-label">From the game</span>
+      <img src={href('assets/user-roster/'+signal.character.image)} alt={signal.character.name+' — GOTHTECHNOLOGY game character artwork'} width="256" height="256" loading="lazy" decoding="async"/>
+      <strong>{signal.character.name}</strong><span class="signal-game-cta">Play character →</span>
+    </a>}
     </div>
   )}
 </div>
+<style>
+  .signal-game{display:grid;justify-items:center;margin-top:10px;border:1px solid var(--rule);background:#090c10;text-align:center;text-decoration:none;overflow:hidden}
+  .signal-game-label{padding:12px 8px 0;font:9px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--signal-accent)}
+  .signal-game img{display:block;width:100%;height:auto;aspect-ratio:4/3;object-fit:contain;background:radial-gradient(ellipse at bottom,color-mix(in srgb,var(--signal-accent) 17%,transparent),transparent 72%)}
+  .signal-game strong{font:clamp(10px,1vw,14px) var(--mono);color:var(--goth-cream);padding:12px 8px 0;overflow-wrap:anywhere}
+  .signal-game-cta{display:grid;place-items:center;min-height:44px;font:10px var(--mono);color:var(--signal-accent)}
+  .signal-game:hover,.signal-game:focus-visible{border-color:var(--signal-accent)}
+  .signal-game:focus-visible{outline:2px solid var(--signal-accent);outline-offset:3px}
+</style>

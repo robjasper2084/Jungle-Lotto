@@ -8,6 +8,7 @@ export const requiredStoreFiles = [
   'legacy-game/reward-sdk.js', 'src/main.js',
   'media/home-charm-commercial.mp4', 'media/lookbook-detroit-film.mp4',
   'media/about-detroit-film.mp4',
+  'media/lookbook-riverfront-film.mp4', 'media/lookbook-riverfront-film-poster.webp',
 ];
 
 export async function readGothtechnologyBuild(repoRoot) {
