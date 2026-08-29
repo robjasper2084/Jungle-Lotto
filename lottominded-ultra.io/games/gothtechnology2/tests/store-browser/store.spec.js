@@ -3,7 +3,7 @@ import { writeFile } from 'node:fs/promises';
 const base='/Jungle-Lotto/lottominded-ultra.io/games/gothtechnology2/';
 const product=base+'products/night-protocol-hoodie/';
 const settle=async page=>page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
-const ready=async page=>{await expect(page.locator('#store-data')).toBeAttached();await expect(page.locator('#sound-toggle')).toHaveText('Sound off');};
+const ready=async page=>{await expect(page.locator('#store-data')).toBeAttached();await expect(page.locator('#sound-toggle')).toHaveText(/^Sound (?:on|off)$/);};
 
 test('visual: homepage renders, keeps content accessible, and does not load game or video',async({page},info)=>{
   const errors=[],requests=[];page.on('pageerror',e=>errors.push(e.message));page.on('request',r=>requests.push(r.url()));
@@ -13,11 +13,23 @@ test('visual: homepage renders, keeps content accessible, and does not load game
   await page.screenshot({path:info.outputPath('home-viewport.png')});
   const metrics=await page.evaluate(()=>({...window.__metrics,width:innerWidth,height:innerHeight,domReady:performance.getEntriesByType('navigation')[0]?.domContentLoadedEventEnd,resources:performance.getEntriesByType('resource').map(r=>({name:new URL(r.name).pathname,bytes:r.encodedBodySize}))}));
   await writeFile(info.outputPath('performance.json'),JSON.stringify(metrics,null,2));
-  expect(requests.some(u=>/\/src\/main\.js|motion-atlases|\.mp4|\.mp3|\/cathedral\.|\/model\.|\/three\./.test(u))).toBe(false);
+  expect(requests.some(u=>/\/src\/main\.js|motion-atlases|\.mp4|\/cathedral\.|\/model\.|\/three\./.test(u))).toBe(false);
   expect(await page.evaluate(()=>({width:innerWidth,scroll:document.documentElement.scrollWidth,offenders:[...document.querySelectorAll('body *')].filter(el=>el.getBoundingClientRect().right>innerWidth+1&&!el.closest('.equipment-art,.signal-portrait,.lookbook-strip,.hero,dialog')).map(el=>({tag:el.tagName,cls:el.className,right:el.getBoundingClientRect().right}))}))).toMatchObject({scroll:info.project.use.viewport.width});
   for(const section of await page.locator('main>section').all()){await section.scrollIntoViewIfNeeded();}await expect.poll(()=>page.locator('main img[src]').evaluateAll(images=>images.every(img=>img.complete&&img.naturalWidth>0))).toBe(true);
   await page.evaluate(()=>window.scrollTo({top:0,behavior:"instant"}));await page.screenshot({path:info.outputPath('home-full.png'),fullPage:true});
   expect(errors).toEqual([]);
+});
+
+test('New Drop supplies looping background music with a browser-policy fallback control',async({page})=>{
+  await page.addInitScript(()=>{HTMLMediaElement.prototype.play=function(){this.dispatchEvent(new Event('play'));return Promise.resolve();};});
+  await page.goto(base);
+  const audio=page.locator('#new-drop-music');
+  await expect(audio).toHaveAttribute('src',base+'media/lottomind-vault-174hz-background.mp3');
+  await expect(audio).toHaveAttribute('autoplay','');await expect(audio).toHaveAttribute('loop','');await expect(audio).toHaveAttribute('preload','auto');
+  await expect(page.locator('#sound-toggle')).toHaveText('Sound on');
+  await page.locator('.hero-settings').click();await page.locator('#sound-toggle').click();
+  await expect(page.locator('#sound-toggle')).toHaveText('Sound off');await expect(page.locator('#sound-toggle')).toHaveAttribute('aria-pressed','false');
+  await page.goto(base+'shop/');await expect(page.locator('[data-background-audio]')).toHaveCount(0);
 });
 
 test('shopping cart: launch preferences, quantity, persistence, alert flow and focus',async({page},info)=>{
@@ -38,9 +50,11 @@ test('shopping cart: launch preferences, quantity, persistence, alert flow and f
 });
 
 test('catalog filters, sorting, no-results and product actions work',async({page})=>{
-  await page.goto(base+'shop/?category=Accessories');await expect(page.locator('#result-count')).toHaveText('3 products');
+  await page.goto(base+'shop/?category=Accessories');await expect(page.locator('#result-count')).toHaveText('4 products');
   const mobsterCharm=page.locator('[data-product-card][data-handle="mobster-luggage-charm"]');await expect(mobsterCharm).toContainText('Mobster Luggage Charm');await expect(mobsterCharm).toContainText('$19.99');
-  await expect(mobsterCharm.locator('img')).toHaveAttribute('src',/\/media\/mobster-luggage-charm-reference\.webp$/);
+  await expect(mobsterCharm.locator('img')).toHaveAttribute('src',/\/media\/mobster-luggage-charm-black-background-card-reference\.webp$/);
+  const railAdapter=page.locator('[data-product-card][data-handle="black-signal-digital-pack"]');await expect(railAdapter).toContainText('Gun Charm Heavy Duty Rail Adapter');await expect(railAdapter).toContainText('$12');
+  await expect(railAdapter.locator('img')).toHaveAttribute('src',/\/media\/black-signal-gun-charm-rail-adapter-black-group-reference\.webp$/);
   await page.getByLabel('Search products',{exact:true}).fill('GOTHTECHNOLOGY Luggage Charm');await expect(page.locator('[data-product-card]:visible')).toHaveCount(1);
   await page.getByRole('button',{name:'Save to Launch Loadout: GOTHTECHNOLOGY Luggage Charm',exact:true}).click();
   await expect(page.getByRole('dialog',{name:'Your Launch Loadout'})).toContainText('$19.99');await page.keyboard.press('Escape');
@@ -69,7 +83,7 @@ test('homepage category tile uses the ashtray artwork and retains the Collectibl
 });
 
 test('signal keychain cards use matching artwork and retain their collection filter defaults',async({page})=>{
-  const signals=[['The Analog: Cyan circuit keychain','detroit-2084',4,'keychain-analog-cyan-arch-reference.webp'],['The Champ: Gold guardian keychain','night-protocol',1,'keychain-disciples-campaign.webp'],['The Mobster: Gold mobster keychain','static-saints',1,'keychain-mobster-suit-gold-arch-reference.webp'],['The Observer: Gold observer keychain','cyber-cathedral',2,'keychain-observer-gold-arch-reference.webp']];
+  const signals=[['The Analog: Cyan circuit keychain','detroit-2084',4,'keychain-analog-mobster-adapter-black-reference.webp'],['The Champ: Gold guardian keychain','night-protocol',1,'keychain-disciples-campaign.webp'],['The Mobster: Gold mobster keychain','static-saints',1,'keychain-mobster-suit-gold-arch-reference.webp'],['The Observer: Gold observer keychain','cyber-cathedral',2,'keychain-analog-mobster-cyan-arch-reference.webp']];
   for(const [name,handle,count,artwork] of signals){
     await page.goto(base+'#character-vault');
     const card=page.getByRole('link',{name,exact:true});
@@ -101,6 +115,7 @@ for(const [index,[id,name,image]] of signalFighters.entries()){
     await page.goto(base+'collections/');await ready(page);
     const card=page.locator('.collection-signals .cinematic-card').nth(index);
     await expect(card.locator('.signal-card img')).toBeVisible();
+    if(index===3)await expect(card.locator('.signal-card img')).toHaveAttribute('src',base+'media/keychain-observer-gold-arch-reference.webp');
     await expect(card.locator('.signal-game img')).toHaveAttribute('src',base+'assets/user-roster/'+image+'-headshot.webp');
     await card.getByRole('link',{name:'Play as '+name,exact:true}).click();
     await expect(page).toHaveURL(base+'play/?character='+id);
@@ -131,7 +146,14 @@ test('product gallery and honest 2.5D display remain usable',async({page},info)=
   await page.goto(base+'products/detroit-skyline-cap/');await expect(page.getByRole('heading',{level:1})).toHaveText('Detroit Skyline Embroidered Cap');
   await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/detroit-skyline-cap-reference\.webp$/);await expect(page.locator('[data-selected-price]')).toHaveText('$32');
   await page.goto(base+'products/mobster-luggage-charm/');await expect(page.getByRole('heading',{level:1})).toHaveText('Mobster Luggage Charm');
-  await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/mobster-luggage-charm-reference\.webp$/);await expect(page.locator('[data-selected-price]')).toHaveText('$19.99');
+  await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/mobster-luggage-charm-cyan-arch-reference\.webp$/);await expect(page.locator('[data-selected-price]')).toHaveText('$19.99');
+  await page.getByRole('button',{name:'Equipment context',exact:true}).click();await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/mobster-luggage-charm-equipment-context-reference\.webp$/);
+  await page.goto(base+'products/black-signal-digital-pack/');await expect(page.getByRole('heading',{level:1})).toHaveText('Black Signal Gun Charm Rail Adaptern Pack');
+  await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/black-signal-gun-charm-rail-adapter-black-group-reference\.webp$/);await expect(page.locator('[data-selected-price]')).toHaveText('$12');
+  await expect(page.getByRole('button',{name:'Equipment context',exact:true})).toBeVisible();await expect(page.getByRole('button',{name:'White-background group reference',exact:true})).toBeVisible();
+  await page.getByRole('button',{name:'Front reference',exact:true}).click();await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/black-signal-gun-charm-rail-adapter-black-fabric-reference\.webp$/);
+  await page.getByRole('button',{name:'Underside reference',exact:true}).click();await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/black-signal-gun-charm-rail-adapter-underside-reference\.webp$/);
+  await expect(page.getByText('Digital contents & license',{exact:true})).toHaveCount(0);await expect(page.getByText('Shipping & returns',{exact:true})).toBeVisible();
 });
 
 test('reduced motion and WebGL fallback keep shopping available',async({page})=>{
@@ -219,7 +241,7 @@ test('conversion UI: keyboard, mobile filters, settings and sticky action',async
   const disclosure=page.locator('.filter-disclosure'),summary=disclosure.locator('summary');
   const compact=info.project.use.viewport.width<=760;
   if(compact){await expect(disclosure).not.toHaveAttribute('open');await summary.click();}
-  await page.getByRole('combobox',{name:'Category',exact:true}).selectOption('Accessories');await expect(page.locator('#result-count')).toHaveText('3 products');
+  await page.getByRole('combobox',{name:'Category',exact:true}).selectOption('Accessories');await expect(page.locator('#result-count')).toHaveText('4 products');
   if(compact)await summary.click();
   await page.getByRole('button',{name:'Clear category filter'}).click();await expect(page.locator('#result-count')).toHaveText('10 products');
   if(compact)await expect(summary).toBeFocused();

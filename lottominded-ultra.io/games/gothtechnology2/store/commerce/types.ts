@@ -16,7 +16,7 @@ export type Variant = { id: string; title: string; size: string; color: string; 
 export type Product = {
   id: string; handle: string; title: string; subtitle: string; description: string;
   price: Money; compareAtPrice: Money | null; productType: string; collection: string;
-  collections: string[]; tags: string[]; images: ProductImage[]; model: string | null;
+  collections: string[]; tags: string[]; images: ProductImage[]; cardImage?: ProductImage; model: string | null;
   video: string | null; colors: string[]; sizes: string[]; variants: Variant[];
   information: ProductInformation;
   inventory: number | null; materials: string | null; fabricWeight: string | null; finish: string | null;

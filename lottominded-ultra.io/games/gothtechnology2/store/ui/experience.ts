@@ -25,18 +25,26 @@ export function initExperience() {
   const selected=saved('gothtechnology.armory.quality');if(['auto','high','balanced','low','fallback'].includes(selected??''))quality.value=selected!;
   quality.addEventListener('change',()=>{save('gothtechnology.armory.quality',quality.value);document.dispatchEvent(new Event('store:preferences'));});
   const offline=()=>{$('#offline-notice')!.hidden=navigator.onLine;};offline();window.addEventListener('online',offline);window.addEventListener('offline',offline);
-  let ambient:HTMLAudioElement|null=null, sound=false;
+  const soundPreference='gothtechnology.armory.sound';
+  let ambient=$<HTMLAudioElement>('[data-background-audio]'), sound=false;
   const soundButton=$<HTMLButtonElement>('#sound-toggle')!;
-  const stopAudio=()=>{ambient?.pause();sound=false;soundButton.setAttribute('aria-pressed','false');soundButton.textContent='Sound off';document.documentElement.dataset.sound='off';document.dispatchEvent(new Event('store:sound'));};
+  const syncSound=(playing:boolean)=>{sound=playing;soundButton.setAttribute('aria-pressed',String(playing));soundButton.textContent=playing?'Sound on':'Sound off';document.documentElement.dataset.sound=playing?'on':'off';document.dispatchEvent(new Event('store:sound'));};
+  const stopAudio=(remember=false)=>{ambient?.pause();if(remember)save(soundPreference,'off');syncSound(false);};
+  const startAudio=async(announceFailure=false)=>{
+    if(!config.features.enableStoreAudio)return false;
+    ambient??=new Audio(href('media/lottomind-vault-174hz-background.mp3'));ambient.volume=.13;ambient.loop=true;
+    try{await ambient.play();save(soundPreference,'on');syncSound(true);return true;}
+    catch{syncSound(false);if(announceFailure)announce('Audio could not start automatically. Use Sound on to try again.');return false;}
+  };
   soundButton.addEventListener('click',async()=>{
     if(!config.features.enableStoreAudio)return;
-    if(sound){stopAudio();return;}
-    ambient??=new Audio(href('assets/audio/lottomind-frequency-112.mp3'));ambient.volume=.13;ambient.loop=true;
-    try{await ambient.play();sound=true;soundButton.setAttribute('aria-pressed','true');soundButton.textContent='Sound on';document.documentElement.dataset.sound='on';document.dispatchEvent(new Event('store:sound'));}catch{announce('Audio could not start. Sound remains off.');}
+    if(sound){stopAudio(true);return;}
+    await startAudio(true);
   });
-  document.addEventListener('visibilitychange',()=>{if(document.hidden)stopAudio();});
-  document.addEventListener('store:game-launch',stopAudio);
-  document.addEventListener('store:media-play',stopAudio);
+  if(ambient&&saved(soundPreference)!=='off')void startAudio();
+  document.addEventListener('visibilitychange',()=>{if(document.hidden)stopAudio();else if(ambient&&saved(soundPreference)!=='off')void startAudio();});
+  document.addEventListener('store:game-launch',()=>stopAudio());
+  document.addEventListener('store:media-play',()=>stopAudio());
   const video=$<HTMLVideoElement>('#store-video')!, transmission=$<HTMLDialogElement>('#transmission-dialog')!;
   $$('[data-watch-transmission]').forEach(button=>button.addEventListener('click',async()=>{
     if(!config.features.enableCommercialTransmissions||$('#home-commercial'))return;

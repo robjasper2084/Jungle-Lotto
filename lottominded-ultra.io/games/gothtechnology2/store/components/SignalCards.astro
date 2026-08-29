@@ -2,9 +2,10 @@
 import { signals } from '../content/signals';
 import { characters } from '../content/catalog';
 import { href } from '../utilities/paths';
-interface Props { showGameCharacters?: boolean; }
-const { showGameCharacters = true } = Astro.props;
-const cards = signals.map(signal => ({...signal, character:characters.find(character => character.id === signal.characterId)}));
+interface SignalOverride { image: string; alt: string; }
+interface Props { showGameCharacters?: boolean; signalOverrides?: Record<string, SignalOverride>; }
+const { showGameCharacters = true, signalOverrides = {} } = Astro.props;
+const cards = signals.map(signal => ({...signal, ...signalOverrides[signal.collection], character:characters.find(character => character.id === signal.characterId)}));
 ---
 <div class="signal-grid">
   {cards.map((signal,index)=>

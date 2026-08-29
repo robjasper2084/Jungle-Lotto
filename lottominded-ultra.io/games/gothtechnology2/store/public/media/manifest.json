@@ -516,5 +516,122 @@
     "height": 1200,
     "bytes": 51412,
     "origin": "User-supplied keychain reference; centered portrait storefront crop; rights require owner confirmation"
+  },
+  {
+    "source": "H24f011545f2f49528b43a1846d2d01bfC.jpg",
+    "output": "black-signal-gun-charm-rail-adapter-front-reference.webp",
+    "sourceWidth": 800,
+    "sourceHeight": 800,
+    "width": 800,
+    "height": 800,
+    "bytes": 16030,
+    "origin": "User-supplied product reference; format-converted to WebP; rights require owner confirmation"
+  },
+  {
+    "source": "Hec76efcf459846f2b23294fd24a40b61b.jpg_300x300.avif",
+    "output": "black-signal-gun-charm-rail-adapter-underside-reference.webp",
+    "sourceWidth": 300,
+    "sourceHeight": 300,
+    "width": 300,
+    "height": 300,
+    "bytes": 3646,
+    "origin": "User-supplied product reference; format-converted to WebP; rights require owner confirmation"
+  },
+  {
+    "source": "hf_20260829_150439_3948b818-a6a5-43a8-9276-70d79a102d3b.png",
+    "output": "black-signal-gun-charm-rail-adapter-black-group-reference.webp",
+    "sourceWidth": 1376,
+    "sourceHeight": 768,
+    "width": 1376,
+    "height": 768,
+    "bytes": 52952,
+    "origin": "User-supplied product reference; format-converted to WebP; rights require owner confirmation"
+  },
+  {
+    "source": "hf_20260829_145936_c1aff452-1637-442d-85c6-310fd9e80a38.png",
+    "output": "black-signal-gun-charm-rail-adapter-equipment-context-reference.webp",
+    "sourceWidth": 5504,
+    "sourceHeight": 3072,
+    "width": 1600,
+    "height": 893,
+    "bytes": 37152,
+    "origin": "User-supplied product reference; resized and format-converted to WebP; rights require owner confirmation"
+  },
+  {
+    "source": "hf_20260829_145747_b5474532-6320-4f72-817b-cb16197132d4 (1).png",
+    "output": "black-signal-gun-charm-rail-adapter-charm-group-reference.webp",
+    "sourceWidth": 5504,
+    "sourceHeight": 3072,
+    "width": 1600,
+    "height": 893,
+    "bytes": 88128,
+    "origin": "User-supplied product reference; resized and format-converted to WebP; rights require owner confirmation"
+  },
+  {
+    "source": "hf_20260829_145619_6eb533d2-725a-4148-b10b-c9ef53357af7.png",
+    "output": "mobster-luggage-charm-cyan-arch-reference.webp",
+    "sourceWidth": 5504,
+    "sourceHeight": 3072,
+    "width": 1600,
+    "height": 893,
+    "bytes": 75950,
+    "origin": "User-supplied product reference; resized and format-converted to WebP; rights require owner confirmation"
+  },
+  {
+    "source": "hf_20260829_145619_6eb533d2-725a-4148-b10b-c9ef53357af7.png",
+    "output": "keychain-analog-mobster-cyan-arch-reference.webp",
+    "sourceWidth": 5504,
+    "sourceHeight": 3072,
+    "width": 900,
+    "height": 1205,
+    "bytes": 91502,
+    "origin": "User-supplied keychain reference; centered portrait storefront crop; rights require owner confirmation"
+  },
+  {
+    "source": "hf_20260829_151851_5627724c-208a-48a2-bd7a-2cff5c0550f6.png",
+    "output": "mobster-luggage-charm-black-background-card-reference.webp",
+    "sourceWidth": 1376,
+    "sourceHeight": 768,
+    "width": 1376,
+    "height": 768,
+    "bytes": 46372,
+    "origin": "User-supplied product reference; format-converted to WebP for the Shop card; rights require owner confirmation"
+  },
+  {
+    "source": "hf_20260829_152408_8bd01638-c6b8-46ec-bda0-b204fadc88a2.png",
+    "output": "black-signal-gun-charm-rail-adapter-black-fabric-reference.webp",
+    "sourceWidth": 1376,
+    "sourceHeight": 768,
+    "width": 1376,
+    "height": 768,
+    "bytes": 40780,
+    "origin": "User-supplied product reference; format-converted to WebP and assigned to the Front reference gallery slot; rights require owner confirmation"
+  },
+  {
+    "source": "hf_20260829_152758_66cb837c-c186-4552-b0b7-16fd15080678.png",
+    "output": "keychain-analog-mobster-adapter-black-reference.webp",
+    "sourceWidth": 1376,
+    "sourceHeight": 768,
+    "width": 900,
+    "height": 1200,
+    "bytes": 57460,
+    "origin": "User-supplied keychain reference; cropped to the existing portrait signal-card ratio and format-converted to WebP; rights require owner confirmation"
+  },
+  {
+    "source": "LottoMind Vault 174 Hz (Without Lead Vocal) (Without No Lead Vocal).mp3",
+    "output": "lottomind-vault-174hz-background.mp3",
+    "durationSeconds": 49.16,
+    "bytes": 1109718,
+    "origin": "User-supplied background music; copied without modification; rights require owner confirmation"
+  },
+  {
+    "source": "hf_20260829_154548_7726da8e-36fc-43bd-9893-7d66b07b4fa5.png",
+    "output": "mobster-luggage-charm-equipment-context-reference.webp",
+    "sourceWidth": 1376,
+    "sourceHeight": 768,
+    "width": 1376,
+    "height": 768,
+    "bytes": 54926,
+    "origin": "User-supplied AI product reference; format-converted to WebP for the Mobster product gallery; rights require owner confirmation"
   }
 ]

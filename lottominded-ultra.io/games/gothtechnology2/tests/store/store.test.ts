@@ -181,12 +181,44 @@ test('Mobster luggage charm replaces the desk mat at $19.99 with supplied artwor
   assert.equal(charm.productType,'Accessories');
   assert.equal(charm.price.amount,1999);
   assert.equal(formatMoney(charm.price),'$19.99');
-  assert.equal(charm.images[0]?.src,'media/mobster-luggage-charm-reference.webp');
+  assert.equal(charm.cardImage?.src,'media/mobster-luggage-charm-black-background-card-reference.webp');
+  assert.equal(charm.images[0]?.src,'media/mobster-luggage-charm-cyan-arch-reference.webp');
+  assert.equal(charm.images[1]?.src,'media/mobster-luggage-charm-equipment-context-reference.webp');
+  assert.equal(charm.images[1]?.label,'Equipment context');
   const storage=memory(),provider=new DemoProvider(storage);
   const cart=await provider.addCartLine((await provider.createCart()).id,charm.variants[0].id,1);
   const restored=(await new DemoProvider(storage).getCart(cart.id))!;
   assert.equal(restored.lines[0].title,'Mobster Luggage Charm');
-  assert.equal(restored.lines[0].image?.src,'media/mobster-luggage-charm-reference.webp');
+  assert.equal(restored.lines[0].image?.src,'media/mobster-luggage-charm-cyan-arch-reference.webp');
+});
+test('New Drop declares the supplied looping background track and browser fallback controller',async()=>{
+  const [home,experience]=await Promise.all([
+    readFile(new URL('../../store/pages/index.astro',import.meta.url),'utf8'),
+    readFile(new URL('../../store/ui/experience.ts',import.meta.url),'utf8'),
+  ]);
+  assert.match(home,/data-background-audio/);assert.match(home,/autoplay loop preload="auto"/);
+  assert.match(home,/media\/lottomind-vault-174hz-background\.mp3/);
+  assert.match(experience,/saved\(soundPreference\)!=='off'/);assert.match(experience,/await ambient\.play\(\)/);
+});
+test('Black Signal rail adapter keeps its card and detail titles, $12 price and supplied photo views',async()=>{
+  const adapter=demoProducts.find(product=>product.handle==='black-signal-digital-pack')!;
+  assert.equal(adapter.title,'Black Signal Gun Charm Rail Adaptern Pack');
+  assert.equal(adapter.productType,'Accessories');
+  assert.equal(adapter.digital,false);
+  assert.equal(adapter.price.amount,1200);
+  assert.equal(formatMoney(adapter.price),'$12');
+  assert.deepEqual(adapter.images.map(image=>image.src),[
+    'media/black-signal-gun-charm-rail-adapter-black-group-reference.webp',
+    'media/black-signal-gun-charm-rail-adapter-equipment-context-reference.webp',
+    'media/black-signal-gun-charm-rail-adapter-charm-group-reference.webp',
+    'media/black-signal-gun-charm-rail-adapter-black-fabric-reference.webp',
+    'media/black-signal-gun-charm-rail-adapter-underside-reference.webp',
+  ]);
+  const storage=memory(),provider=new DemoProvider(storage);
+  const cart=await provider.addCartLine((await provider.createCart()).id,adapter.variants[0].id,1);
+  const restored=(await new DemoProvider(storage).getCart(cart.id))!;
+  assert.equal(restored.lines[0].title,'Black Signal Gun Charm Rail Adaptern Pack');
+  assert.equal(restored.lines[0].image?.src,'media/black-signal-gun-charm-rail-adapter-black-group-reference.webp');
 });
 const settings={domain:'armory-demo.myshopify.com',token:'a'.repeat(32),version:'2026-07'};
 const money={amount:'79.00',currencyCode:'USD'};
