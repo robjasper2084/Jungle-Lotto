@@ -5,5 +5,11 @@ import Icon from '../../components/Icon.astro';
 import { buildProvider } from '../../commerce/provider';
 import { href } from '../../utilities/paths';
 const collections = await buildProvider.getCollections();
+const signalOverrides = {
+  'cyber-cathedral': {
+    image: 'keychain-observer-gold-arch-reference.webp',
+    alt: 'Supplied keychain reference: LottoMind mascot in a Detroit cap, hoodie and sunglasses with gold hardware, a black circuit strap and an illuminated gold arch',
+  },
+};
 ---
-<Shell title="Collections" path="collections/"><header class="page-heading"><span class="section-number">FREQUENCIES FROM THE ARMORY</span><h1>Choose your collection.</h1><p>Different systems. A shared world after midnight.</p></header><section class="section collection-signals" aria-label="Interactive keychain displays"><SignalCards/></section><section class="section collection-list">{collections.map((collection,i)=><a class="collection-link" href={href(`collections/${collection.handle}/`)}><p class="mono gold">COLLECTION / {String(i+1).padStart(2,'0')}</p><h2>{collection.title}</h2><p>{collection.description}</p><span class="text-link">Explore collection <Icon/></span></a>)}</section></Shell>
+<Shell title="Collections" path="collections/"><header class="page-heading"><span class="section-number">FREQUENCIES FROM THE ARMORY</span><h1>Choose your collection.</h1><p>Different systems. A shared world after midnight.</p></header><section class="section collection-signals" aria-label="Interactive keychain displays"><SignalCards signalOverrides={signalOverrides}/></section><section class="section collection-list">{collections.map((collection,i)=><a class="collection-link" href={href(`collections/${collection.handle}/`)}><p class="mono gold">COLLECTION / {String(i+1).padStart(2,'0')}</p><h2>{collection.title}</h2><p>{collection.description}</p><span class="text-link">Explore collection <Icon/></span></a>)}</section></Shell>
