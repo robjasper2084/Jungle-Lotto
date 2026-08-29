@@ -34,20 +34,22 @@ test('shopping cart: launch preferences, quantity, persistence, alert flow and f
   await page.screenshot({path:info.outputPath('launch-alert.png'),scale:'css'});
   await page.keyboard.press('Escape');await expect(cart).not.toBeVisible();await expect(page.getByRole('button',{name:'Save to Launch Loadout',exact:true})).toBeFocused();
   await page.reload();await page.getByRole('button',{name:'Open launch loadout'}).click();await expect(cart.locator('.cart-subtotal')).toContainText('$237');
-  await page.getByRole('button',{name:/Remove Night Protocol/}).click();await expect(cart).toContainText('Your launch loadout is empty.');await expect(cart.getByRole('button',{name:'Get Launch Alert',exact:true})).toBeDisabled();
+  await page.getByRole('button',{name:/Remove Knight Protocol/}).click();await expect(cart).toContainText('Your launch loadout is empty.');await expect(cart.getByRole('button',{name:'Get Launch Alert',exact:true})).toBeDisabled();
 });
 
 test('catalog filters, sorting, no-results and product actions work',async({page})=>{
   await page.goto(base+'shop/?category=Accessories');await expect(page.locator('#result-count')).toHaveText('3 products');
-  await page.getByLabel('Search products',{exact:true}).fill('charm');await expect(page.locator('[data-product-card]:visible')).toHaveCount(1);
+  const mobsterCharm=page.locator('[data-product-card][data-handle="mobster-luggage-charm"]');await expect(mobsterCharm).toContainText('Mobster Luggage Charm');await expect(mobsterCharm).toContainText('$19.99');
+  await expect(mobsterCharm.locator('img')).toHaveAttribute('src',/\/media\/mobster-luggage-charm-reference\.webp$/);
+  await page.getByLabel('Search products',{exact:true}).fill('GOTHTECHNOLOGY Luggage Charm');await expect(page.locator('[data-product-card]:visible')).toHaveCount(1);
   await page.getByRole('button',{name:'Save to Launch Loadout: GOTHTECHNOLOGY Luggage Charm',exact:true}).click();
   await expect(page.getByRole('dialog',{name:'Your Launch Loadout'})).toContainText('$19.99');await page.keyboard.press('Escape');
   await page.getByLabel('Search products',{exact:true}).fill('zzz-no-match');await expect(page.locator('#no-results')).toBeVisible();
-  await page.locator('#no-results').getByRole('button',{name:'Clear filters'}).click();await expect(page.locator('#result-count')).toHaveText('9 products');
+  await page.locator('#no-results').getByRole('button',{name:'Clear filters'}).click();await expect(page.locator('#result-count')).toHaveText('10 products');
   await page.getByRole('combobox',{name:'Sort',exact:true}).selectOption('price-low');
   const order=await page.locator('[data-product-card]').evaluateAll(nodes=>nodes.filter(n=>!n.hidden).sort((a,b)=>Number(a.style.order)-Number(b.style.order)).map(n=>n.dataset.handle));expect(order[0]).toBe('black-signal-digital-pack');
   await page.getByLabel('Search products',{exact:true}).fill('hoodie');
-  await page.getByRole('button',{name:/Choose Options for Night Protocol/}).click();
+  await page.getByRole('button',{name:/Choose Options for Knight Protocol/}).click();
   const quick=page.locator('#quick-dialog');await expect(quick).toBeVisible();
   await quick.getByRole('combobox',{name:'Size',exact:true}).selectOption('L');
   await quick.getByRole('button',{name:'Save to Launch Loadout',exact:true}).click();
@@ -67,23 +69,23 @@ test('homepage category tile uses the ashtray artwork and retains the Collectibl
 });
 
 test('signal keychain cards use matching artwork and retain their collection filter defaults',async({page})=>{
-  const signals=[['The Analog: Cyan circuit keychain','detroit-2084',3,'analog'],['The Disciples: Gold guardian keychain','night-protocol',1,'disciples'],['The Observers: Silver observer keychain','static-saints',1,'observers'],['The Null: Shadow hood keychain','cyber-cathedral',1,'null']];
+  const signals=[['The Analog: Cyan circuit keychain','detroit-2084',4,'keychain-analog-cyan-arch-reference.webp'],['The Champ: Gold guardian keychain','night-protocol',1,'keychain-disciples-campaign.webp'],['The Mobster: Gold mobster keychain','static-saints',1,'keychain-mobster-suit-gold-arch-reference.webp'],['The Observer: Gold observer keychain','cyber-cathedral',2,'keychain-observer-gold-arch-reference.webp']];
   for(const [name,handle,count,artwork] of signals){
     await page.goto(base+'#character-vault');
     const card=page.getByRole('link',{name,exact:true});
-    await expect(card.locator('img')).toHaveAttribute('src',base+'media/keychain-'+artwork+'-campaign.webp');
+    await expect(card.locator('img')).toHaveAttribute('src',base+'media/'+artwork);
     await card.click();await expect(page).toHaveURL(base+'collections/'+handle+'/');await page.waitForLoadState('domcontentloaded');await ready(page);
     if(await page.locator('.filter-disclosure summary').isVisible() && !(await page.locator('.filter-disclosure').evaluate(el=>el.open)))await page.locator('.filter-disclosure summary').click();
     await expect(page.getByRole('combobox',{name:'Collection',exact:true})).toHaveValue(handle);
     await expect(page.locator('[data-product-card]:visible')).toHaveCount(count);
   }
   await page.getByRole('combobox',{name:'Collection',exact:true}).selectOption('');
-  await expect(page.locator('[data-product-card]:visible')).toHaveCount(9);
-  await page.reload();await expect(page.locator('[data-product-card]:visible')).toHaveCount(9);
+  await expect(page.locator('[data-product-card]:visible')).toHaveCount(10);
+  await page.reload();await expect(page.locator('[data-product-card]:visible')).toHaveCount(10);
   if(await page.locator('.filter-disclosure summary').isVisible())await page.locator('.filter-disclosure summary').click();
   await page.getByRole('button',{name:'Clear filters',exact:true}).click();
   await expect(page.getByRole('combobox',{name:'Collection',exact:true})).toHaveValue('cyber-cathedral');
-  await expect(page.locator('[data-product-card]:visible')).toHaveCount(1);
+  await expect(page.locator('[data-product-card]:visible')).toHaveCount(2);
 });
 
 test('homepage signal row keeps the collectibles without game-character portraits',async({page})=>{
@@ -108,7 +110,7 @@ for(const [index,[id,name,image]] of signalFighters.entries()){
 
 test('mobile navigation, search and keyboard dialog containment',async({page})=>{
   await page.goto(base);if(await page.getByRole('button',{name:'Open navigation menu'}).isVisible()){await page.getByRole('button',{name:'Open navigation menu'}).click();await expect(page.getByRole('dialog',{name:'The Armory'})).toBeVisible();await page.getByRole('dialog',{name:'The Armory'}).getByRole('link',{name:'SHOP',exact:true}).click();await expect(page).toHaveURL(/shop\/$/);await page.waitForLoadState('domcontentloaded');await ready(page);}
-  await page.getByRole('button',{name:'Search the store'}).click();await page.getByLabel('Search equipment and collections').fill('hoodie');await expect(page.locator('#search-results')).toContainText('Night Protocol');
+  await page.getByRole('button',{name:'Search the store'}).click();await page.getByLabel('Search equipment and collections').fill('hoodie');await expect(page.locator('#search-results')).toContainText('Knight Protocol');
   for(let i=0;i<8;i++){await page.keyboard.press('Tab');expect(await page.evaluate(()=>!!document.activeElement.closest('#search-dialog'))).toBe(true);}
   await page.keyboard.press('Escape');await expect(page.getByRole('button',{name:'Search the store'})).toBeFocused();
 });
@@ -118,9 +120,18 @@ test('product gallery and honest 2.5D display remain usable',async({page},info)=
   await page.getByRole('button',{name:'Zoom image',exact:true}).click();await expect(page.locator('#gallery-zoom')).toHaveAttribute('aria-pressed','true');
   await page.getByRole('button',{name:/Open depth display/}).click();await expect(page.locator('.depth-frame img')).toBeVisible();await page.getByRole('button',{name:'Back',exact:true}).click();await expect(page.locator('[data-viewer-status]')).toContainText('not supplied');
   await page.getByRole('button',{name:'Reset view',exact:true}).click();await page.locator('.product-information').scrollIntoViewIfNeeded();await page.screenshot({path:info.outputPath('product.png')});
+  await page.goto(base);
+  await expect(page.locator('[data-product-card][data-handle="detroit-2084-shirt"] img')).toHaveAttribute('src',/\/media\/detroit-2084-tee-reference\.webp$/);
+  await expect(page.locator('[data-product-card][data-handle="black-signal-beanie"] img')).toHaveAttribute('src',/\/media\/detroit-skyline-beanie-reference\.webp$/);
   await page.goto(base+'products/black-signal-beanie/');await expect(page.getByRole('heading',{level:1})).toHaveText('Detroit Skyline Embroidered Beanie');
-  await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/detroit-beanie\.webp$/);await expect(page.getByRole('radio',{name:'Black',exact:true})).toBeChecked();
+  await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/detroit-skyline-beanie-reference\.webp$/);await expect(page.getByRole('radio',{name:'Black',exact:true})).toBeChecked();
   await page.getByRole('button',{name:'Zoom image',exact:true}).click();await expect(page.locator('#gallery-zoom')).toHaveAttribute('aria-pressed','true');
+  await page.goto(base+'products/detroit-2084-shirt/');await expect(page.getByRole('heading',{level:1})).toHaveText('Detroit 2084 Graphic T-Shirt');
+  await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/detroit-2084-tee-reference\.webp$/);await expect(page.locator('[data-selected-price]')).toHaveText('$36');
+  await page.goto(base+'products/detroit-skyline-cap/');await expect(page.getByRole('heading',{level:1})).toHaveText('Detroit Skyline Embroidered Cap');
+  await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/detroit-skyline-cap-reference\.webp$/);await expect(page.locator('[data-selected-price]')).toHaveText('$32');
+  await page.goto(base+'products/mobster-luggage-charm/');await expect(page.getByRole('heading',{level:1})).toHaveText('Mobster Luggage Charm');
+  await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/mobster-luggage-charm-reference\.webp$/);await expect(page.locator('[data-selected-price]')).toHaveText('$19.99');
 });
 
 test('reduced motion and WebGL fallback keep shopping available',async({page})=>{
@@ -210,7 +221,7 @@ test('conversion UI: keyboard, mobile filters, settings and sticky action',async
   if(compact){await expect(disclosure).not.toHaveAttribute('open');await summary.click();}
   await page.getByRole('combobox',{name:'Category',exact:true}).selectOption('Accessories');await expect(page.locator('#result-count')).toHaveText('3 products');
   if(compact)await summary.click();
-  await page.getByRole('button',{name:'Clear category filter'}).click();await expect(page.locator('#result-count')).toHaveText('9 products');
+  await page.getByRole('button',{name:'Clear category filter'}).click();await expect(page.locator('#result-count')).toHaveText('10 products');
   if(compact)await expect(summary).toBeFocused();
   await page.goto(product);await ready(page);
   if(compact){await expect(page.locator('.mobile-product-bar')).toBeVisible();await page.locator('.mobile-product-bar [data-select-options]').click();await expect(page.locator('#product-options')).toBeFocused();await expect(page.locator('.mobile-product-bar')).not.toBeVisible();await page.locator('.site-footer').scrollIntoViewIfNeeded();await expect(page.locator('.mobile-product-bar')).not.toBeVisible();}

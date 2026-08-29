@@ -446,5 +446,75 @@
     "height": 600,
     "bytes": 36710,
     "origin": "Responsive derivative of existing campaign concept; no new imagery or rights approval"
+  },
+  {
+    "source": "hf_20260829_013249_1d73a2bd-2a14-4c3e-8f51-4962395f95ac.png",
+    "output": "detroit-2084-tee-reference.webp",
+    "sourceWidth": 1376,
+    "sourceHeight": 768,
+    "width": 768,
+    "height": 768,
+    "bytes": 32412,
+    "origin": "User-supplied product reference; centered storefront crop; rights require owner confirmation"
+  },
+  {
+    "source": "hf_20260829_014206_bf139506-967e-435d-927a-7f932838947a.png",
+    "output": "detroit-skyline-beanie-reference.webp",
+    "sourceWidth": 1376,
+    "sourceHeight": 768,
+    "width": 768,
+    "height": 768,
+    "bytes": 34456,
+    "origin": "User-supplied product reference; centered storefront crop; rights require owner confirmation"
+  },
+  {
+    "source": "hf_20260829_015205_ef926a31-f5f0-494c-af0f-7a0cb9b13a8c.png",
+    "output": "detroit-skyline-cap-reference.webp",
+    "sourceWidth": 1376,
+    "sourceHeight": 768,
+    "width": 768,
+    "height": 768,
+    "bytes": 37380,
+    "origin": "User-supplied product reference; centered storefront crop; rights require owner confirmation"
+  },
+  {
+    "source": "hf_20260829_021256_dbfed77a-7323-4e4a-aef6-a483c467d975 (1).png",
+    "output": "keychain-analog-cyan-arch-reference.webp",
+    "sourceWidth": 1376,
+    "sourceHeight": 768,
+    "width": 900,
+    "height": 1200,
+    "bytes": 56362,
+    "origin": "User-supplied keychain reference; centered portrait storefront crop; rights require owner confirmation"
+  },
+  {
+    "source": "hf_20260829_015004_4ad99cd3-78ca-4441-9456-45f4d0865f0d.png",
+    "output": "keychain-observer-gold-arch-reference.webp",
+    "sourceWidth": 1376,
+    "sourceHeight": 768,
+    "width": 900,
+    "height": 1200,
+    "bytes": 60530,
+    "origin": "User-supplied keychain reference; centered portrait storefront crop; rights require owner confirmation"
+  },
+  {
+    "source": "hf_20260829_022340_41b78d00-cdbd-48fa-80b5-bdbf0c485fe6.png",
+    "output": "mobster-luggage-charm-reference.webp",
+    "sourceWidth": 1376,
+    "sourceHeight": 768,
+    "width": 768,
+    "height": 768,
+    "bytes": 45530,
+    "origin": "User-supplied product reference; centered storefront crop; rights require owner confirmation"
+  },
+  {
+    "source": "hf_20260829_020616_8ee5b408-100b-4e64-b618-a62d16419e0d (1).png",
+    "output": "keychain-mobster-suit-gold-arch-reference.webp",
+    "sourceWidth": 1376,
+    "sourceHeight": 768,
+    "width": 900,
+    "height": 1200,
+    "bytes": 51412,
+    "origin": "User-supplied keychain reference; centered portrait storefront crop; rights require owner confirmation"
   }
 ]

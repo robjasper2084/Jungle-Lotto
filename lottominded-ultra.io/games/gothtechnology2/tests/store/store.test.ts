@@ -130,7 +130,30 @@ test('Detroit beanie is searchable in black and keeps its reference image in the
   const restored=(await new DemoProvider(storage).getCart(cart.id))!;
   assert.equal(restored.lines[0].title,'Detroit Skyline Embroidered Beanie');
   assert.equal(restored.lines[0].color,'Black');
-  assert.equal(restored.lines[0].image?.src,'media/detroit-beanie.webp');
+  assert.equal(restored.lines[0].image?.src,'media/detroit-skyline-beanie-reference.webp');
+});
+test('Detroit 2084 shirt keeps its $36 preview price and supplied artwork in the saved cart',async()=>{
+  const shirt=demoProducts.find(product=>product.handle==='detroit-2084-shirt')!;
+  assert.equal(shirt.title,'Detroit 2084 Graphic T-Shirt');
+  assert.equal(shirt.price.amount,3600);
+  assert.equal(formatMoney(shirt.price),'$36');
+  assert.equal(shirt.images[0]?.src,'media/detroit-2084-tee-reference.webp');
+  const storage=memory(),provider=new DemoProvider(storage);
+  const cart=await provider.addCartLine((await provider.createCart()).id,shirt.variants[0].id,1);
+  const restored=(await new DemoProvider(storage).getCart(cart.id))!;
+  assert.equal(restored.lines[0].image?.src,'media/detroit-2084-tee-reference.webp');
+});
+test('Detroit skyline cap is a separate $32 store product with supplied artwork',async()=>{
+  const cap=demoProducts.find(product=>product.handle==='detroit-skyline-cap')!;
+  assert.equal(cap.title,'Detroit Skyline Embroidered Cap');
+  assert.equal(cap.price.amount,3200);
+  assert.equal(formatMoney(cap.price),'$32');
+  assert.equal(cap.colors[0],'Black');
+  assert.equal(cap.images[0]?.src,'media/detroit-skyline-cap-reference.webp');
+  const storage=memory(),provider=new DemoProvider(storage);
+  const cart=await provider.addCartLine((await provider.createCart()).id,cap.variants[0].id,1);
+  const restored=(await new DemoProvider(storage).getCart(cart.id))!;
+  assert.equal(restored.lines[0].image?.src,'media/detroit-skyline-cap-reference.webp');
 });
 test('Detroit ashtray keeps its existing product link and supplied artwork in the cart',async()=>{
   const [ashtray]=filterProducts(demoProducts,{search:'I Love Detroit Ashtray',category:'Collectibles'});
@@ -150,6 +173,20 @@ test('LottoMind charm uses exact cents in the catalog and cart',async()=>{
   const provider=new DemoProvider(memory());
   const cart=await provider.addCartLine((await provider.createCart()).id,charm.variants[0].id,2);
   assert.equal(cart.subtotal.amount,3998);
+});
+test('Mobster luggage charm replaces the desk mat at $19.99 with supplied artwork',async()=>{
+  assert.equal(demoProducts.some(product=>product.handle==='combat-grid-desk-mat'),false);
+  const charm=demoProducts.find(product=>product.handle==='mobster-luggage-charm')!;
+  assert.equal(charm.title,'Mobster Luggage Charm');
+  assert.equal(charm.productType,'Accessories');
+  assert.equal(charm.price.amount,1999);
+  assert.equal(formatMoney(charm.price),'$19.99');
+  assert.equal(charm.images[0]?.src,'media/mobster-luggage-charm-reference.webp');
+  const storage=memory(),provider=new DemoProvider(storage);
+  const cart=await provider.addCartLine((await provider.createCart()).id,charm.variants[0].id,1);
+  const restored=(await new DemoProvider(storage).getCart(cart.id))!;
+  assert.equal(restored.lines[0].title,'Mobster Luggage Charm');
+  assert.equal(restored.lines[0].image?.src,'media/mobster-luggage-charm-reference.webp');
 });
 const settings={domain:'armory-demo.myshopify.com',token:'a'.repeat(32),version:'2026-07'};
 const money={amount:'79.00',currencyCode:'USD'};
