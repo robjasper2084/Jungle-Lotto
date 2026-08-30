@@ -11,7 +11,11 @@ export const pendingInformation = (): ProductInformation => ({
 });
 
 // Populate by product handle only after the owner verifies each fact and image.
-export const approvedProductInformation: Record<string, Partial<ProductInformation>> = {};
+export const approvedProductInformation: Record<string, Partial<ProductInformation>> = {
+  'night-protocol-hoodie': {
+    includedItems: 'Hoodie only. The LottoMind charm shown in some supplied reference imagery is not included with the hoodie.',
+  },
+};
 export function productInformation(handle: string): ProductInformation {
   return { ...pendingInformation(), ...approvedProductInformation[handle] };
 }

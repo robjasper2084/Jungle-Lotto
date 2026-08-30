@@ -34,8 +34,8 @@ test('New Drop supplies looping background music with a browser-policy fallback 
 
 test('shopping cart: launch preferences, quantity, persistence, alert flow and focus',async({page},info)=>{
   await page.goto(product);await ready(page);await page.getByRole('radio',{name:'M',exact:true}).check();await page.getByLabel('Quantity',{exact:true}).fill('2');
-  await page.getByRole('button',{name:'Save to Launch Loadout',exact:true}).click();const cart=page.getByRole('dialog',{name:'Your Launch Loadout'});await expect(cart).toBeVisible();await expect(cart).toContainText('M / Obsidian');await expect(cart.locator('.cart-subtotal')).toContainText('$158');
-  await page.getByRole('button',{name:/Increase quantity/}).click();await expect(cart.locator('.cart-subtotal')).toContainText('$237');
+  await page.getByRole('button',{name:'Save to Launch Loadout',exact:true}).click();const cart=page.getByRole('dialog',{name:'Your Launch Loadout'});await expect(cart).toBeVisible();await expect(cart).toContainText('M / Obsidian');await expect(cart.locator('.cart-subtotal')).toContainText('$178');
+  await page.getByRole('button',{name:/Increase quantity/}).click();await expect(cart.locator('.cart-subtotal')).toContainText('$267');
   await page.screenshot({path:info.outputPath('launch-loadout.png'),scale:'css'});
   await cart.getByRole('button',{name:'Get Launch Alert',exact:true}).click();
   const alert=page.locator('#launch-alert-dialog');await expect(alert).toBeVisible();
@@ -45,7 +45,7 @@ test('shopping cart: launch preferences, quantity, persistence, alert flow and f
   expect(await page.evaluate(()=>JSON.stringify(localStorage))).not.toContain('qa@example.test');
   await page.screenshot({path:info.outputPath('launch-alert.png'),scale:'css'});
   await page.keyboard.press('Escape');await expect(cart).not.toBeVisible();await expect(page.getByRole('button',{name:'Save to Launch Loadout',exact:true})).toBeFocused();
-  await page.reload();await page.getByRole('button',{name:'Open launch loadout'}).click();await expect(cart.locator('.cart-subtotal')).toContainText('$237');
+  await page.reload();await page.getByRole('button',{name:'Open launch loadout'}).click();await expect(cart.locator('.cart-subtotal')).toContainText('$267');
   await page.getByRole('button',{name:/Remove Knight Protocol/}).click();await expect(cart).toContainText('Your launch loadout is empty.');await expect(cart.getByRole('button',{name:'Get Launch Alert',exact:true})).toBeDisabled();
 });
 
@@ -72,6 +72,8 @@ test('catalog filters, sorting, no-results and product actions work',async({page
 
 test('homepage category tile uses the ashtray artwork and retains the Collectibles filter',async({page})=>{
   await page.goto(base);
+  await expect(page.locator('#current-drop .drop-price')).toContainText('$89');
+  await expect(page.locator('[data-product-card][data-handle="night-protocol-hoodie"]')).toContainText('$89');
   const categories=page.locator('#armory .equipment-case');
   await expect(categories.nth(3).getByRole('heading')).toHaveText('Original Artwork');
   const collectibles=categories.filter({has:page.getByRole('heading',{name:'Collectibles',exact:true})});
@@ -131,7 +133,9 @@ test('mobile navigation, search and keyboard dialog containment',async({page})=>
 });
 
 test('product gallery and honest 2.5D display remain usable',async({page},info)=>{
-  await page.goto(product);await page.getByRole('button',{name:'Embroidery reference',exact:true}).click();await expect(page.locator('#gallery-image')).toHaveAttribute('src',/embroidery/);
+  await page.goto(product);await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/night-protocol-hoodie-no-charm-reference\.webp$/);await expect(page.locator('[data-selected-price]')).toHaveText('$89');
+  await expect(page.locator('.development-status')).toContainText('The LottoMind charm shown in some supplied reference imagery is not included with the hoodie.');
+  await page.getByRole('button',{name:'Embroidery reference',exact:true}).click();await expect(page.locator('#gallery-image')).toHaveAttribute('src',/embroidery/);
   await page.getByRole('button',{name:'Zoom image',exact:true}).click();await expect(page.locator('#gallery-zoom')).toHaveAttribute('aria-pressed','true');
   await page.getByRole('button',{name:/Open depth display/}).click();await expect(page.locator('.depth-frame img')).toBeVisible();await page.getByRole('button',{name:'Back',exact:true}).click();await expect(page.locator('[data-viewer-status]')).toContainText('not supplied');
   await page.getByRole('button',{name:'Reset view',exact:true}).click();await page.locator('.product-information').scrollIntoViewIfNeeded();await page.screenshot({path:info.outputPath('product.png')});
@@ -152,6 +156,8 @@ test('product gallery and honest 2.5D display remain usable',async({page},info)=
   await expect(page.getByText('The rail adapter and sporting equipment shown in the demonstration are not included with the Mobster Luggage Charm.',{exact:false})).toBeVisible();
   await expect(page.getByRole('link',{name:'Watch on YouTube',exact:false})).toHaveAttribute('href','https://www.youtube.com/shorts/0yPqZEvKnFU');
   await page.getByRole('button',{name:'Equipment context',exact:true}).click();await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/mobster-luggage-charm-equipment-context-reference\.webp$/);
+  await page.goto(base+'products/static-saints-patch-set/');await expect(page.getByRole('heading',{level:1})).toHaveText('Static Saints Embroidered Patch Set');
+  await page.getByRole('button',{name:'White embroidery reference',exact:true}).click();await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/static-saints-patch-white-reference\.webp$/);
   await page.goto(base+'products/black-signal-digital-pack/');await expect(page.getByRole('heading',{level:1})).toHaveText('Black Signal Gun Charm Rail Adaptern Pack');
   await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/black-signal-gun-charm-rail-adapter-black-group-reference\.webp$/);await expect(page.locator('[data-selected-price]')).toHaveText('$12');
   await expect(page.getByRole('button',{name:'Equipment context',exact:true})).toBeVisible();await expect(page.getByRole('button',{name:'White-background group reference',exact:true})).toBeVisible();
