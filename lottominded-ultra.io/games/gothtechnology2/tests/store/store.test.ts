@@ -185,6 +185,8 @@ test('Mobster luggage charm replaces the desk mat at $19.99 with supplied artwor
   assert.equal(charm.images[0]?.src,'media/mobster-luggage-charm-cyan-arch-reference.webp');
   assert.equal(charm.images[1]?.src,'media/mobster-luggage-charm-equipment-context-reference.webp');
   assert.equal(charm.images[1]?.label,'Equipment context');
+  assert.equal(charm.video,'https://www.youtube-nocookie.com/embed/0yPqZEvKnFU?rel=0');
+  assert.equal(charm.video.includes('autoplay=1'),false);
   const storage=memory(),provider=new DemoProvider(storage);
   const cart=await provider.addCartLine((await provider.createCart()).id,charm.variants[0].id,1);
   const restored=(await new DemoProvider(storage).getCart(cart.id))!;

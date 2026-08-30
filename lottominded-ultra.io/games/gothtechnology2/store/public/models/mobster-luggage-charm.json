@@ -1,0 +1,18 @@
+{
+  "source": "e38492efa55a1fbc83fd8245064367c2.stl",
+  "sourceSha256": "9c7b53faa47b4076604a9b673fceb983f73c82d068669e7bfbcb5b98184a56ec",
+  "sourceBytes": 74972534,
+  "originalTriangles": 1499449,
+  "triangles": 79999,
+  "sourceDimensions": [
+    1.0256119668483734,
+    0.42504000663757324,
+    0.7608730170080853
+  ],
+  "normalizedHeight": 1,
+  "axisConversion": "STL Z-up to glTF Y-up",
+  "material": "Neutral obsidian display material; STL contains geometry only.",
+  "bytes": 1133628,
+  "compression": "EXT_meshopt_compression",
+  "rights": "User-supplied STL; ownership and production accuracy not independently verified."
+}

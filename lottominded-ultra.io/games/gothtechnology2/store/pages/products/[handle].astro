@@ -27,7 +27,17 @@ const schema = [{'@context':'https://schema.org','@type':'Product',name:product.
       {isDemoMode && <p class="demo-box"><strong>CONCEPT PREVIEW</strong>Save your preferred options for launch. No order, payment, or stock reservation.</p>}
       <form id="product-options" class="purchase-form" tabindex="-1" data-add-form={product.handle}><fieldset><legend>Size</legend><div class="variant-options">{product.sizes.map((size,i)=><label><input type="radio" name="size" value={size} checked={product.sizes.length===1} required/><span>{size}</span></label>)}</div></fieldset><fieldset><legend>Color</legend><div class="variant-options">{product.colors.map((color,i)=><label><input type="radio" name="color" value={color} checked={i===0}/><span>{color}</span></label>)}</div></fieldset><label>Quantity<input type="number" min="1" max="99" name="quantity" value="1" inputmode="numeric" required/></label><p class="availability" data-variant-status>{isDemoMode ? 'Concept options — final measurements and availability pending.' : 'Select your preferred options.'}</p><button class="button" type="submit" aria-label={labels.save}>{labels.save} <Icon/></button><button class="button secondary" type="button" data-buy-now>{labels.action}</button><p class="form-status" role="status" data-purchase-status></p></form>
       <ProductDevelopment product={product} isDemoMode={isDemoMode}/>
-      <p class="product-description">{product.description}</p>{character && <a class="text-link" href={href(`play/?character=${character.id}`)}>Play as {character.name} <Icon/></a>}<p class="game-product-note">The same creative world, ready to play. No purchase required.</p><button class="text-button" data-share-product>Share product</button><p class="form-status" data-share-status role="status"></p>
+      <p class="product-description">{product.description}</p>
+      {product.video && <section class="product-video" aria-labelledby="product-video-title">
+        <p class="mono gold">Product walkthrough</p>
+        <h2 id="product-video-title">See the attachment in action.</h2>
+        <div class="product-video-frame">
+          <iframe src={product.video} title={`${product.title} attachment demonstration`} loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+        </div>
+        <p class="product-video-note">Installation reference supplied by the product owner. The rail adapter and sporting equipment shown in the demonstration are not included with the Mobster Luggage Charm.</p>
+        <a class="text-link" href="https://www.youtube.com/shorts/0yPqZEvKnFU" target="_blank" rel="noopener noreferrer">Watch on YouTube <Icon/></a>
+      </section>}
+      {character && <a class="text-link" href={href(`play/?character=${character.id}`)}>Play as {character.name} <Icon/></a>}<p class="game-product-note">The same creative world, ready to play. No purchase required.</p><button class="text-button" data-share-product>Share product</button><p class="form-status" data-share-status role="status"></p>
     </div>
   </section>
   {related.length>0 && <section class="section"><div class="section-heading"><h2>Complete your signal.</h2></div><div class="products-grid">{related.map(product=><ProductCard product={product}/>)}</div></section>}

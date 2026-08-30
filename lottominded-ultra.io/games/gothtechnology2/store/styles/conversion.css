@@ -170,6 +170,12 @@ body[data-store-v2] .newsletter .email-row input{font-size:16px;min-height:48px}
 body[data-store-v2] .newsletter .consent-label{font-size:14px;line-height:1.6}
 .document-page section p{white-space:pre-line}
 .footer-owner{grid-column:1/-1;font-size:14px}
+.product-video{margin-top:28px;padding:22px;border:1px solid var(--rule);background:#080a0b}
+.product-video h2{font-size:clamp(28px,3vw,38px);line-height:1.1;margin:8px 0 20px}
+.product-video-frame{width:min(100%,360px);aspect-ratio:9/16;margin-inline:auto;background:#020303;border:1px solid #3c3b34;overflow:hidden}
+.product-video-frame iframe{display:block;width:100%;height:100%;border:0}
+body[data-store-v2] main .product-video-note{font-size:14px;line-height:1.6;color:#c8c3b5;margin:18px 0 4px}
+.product-video .text-link{display:inline-flex}
 /* The original armory rules use compound selectors: keep these v2 overrides scoped to their owning components. */
 body[data-store-v2] .drop-copy .button-row .button{font-size:13px;line-height:1.4;white-space:normal;min-height:48px}
 body[data-store-v2] main .armory-origin p,body[data-store-v2] main .newsletter h2+p{font-size:16px;line-height:1.65}
