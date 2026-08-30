@@ -1,6 +1,7 @@
 import type { Collection, Product } from '../commerce/types.ts';
 import { fromDecimal } from '../commerce/money.ts';
 import { productInformation } from './launch.ts';
+import { cinematicModels } from './cinematic-models.ts';
 
 export const collections: Collection[] = [
   ['night-protocol', 'Knight Protocol', 'The first transmission. Apparel for the hours you make your own.'],
@@ -42,7 +43,9 @@ export const demoProducts: Product[] = seeds.map((seed, index) => {
     price, compareAtPrice: null, productType: seed.type, collection: seed.collection, collections: [seed.collection, 'combat-systems'], tags: [seed.type, seed.collection],
     images: seed.images.map(image => ({...image, kind: /scale|placement/i.test(image.label) ? 'SCALE REFERENCE' as const : /embroidery/i.test(image.label) ? 'DETAIL REFERENCE' as const : 'SUPPLIED PRODUCT REFERENCE' as const})),
     cardImage: seed.cardImage ? {...seed.cardImage, kind: 'SUPPLIED PRODUCT REFERENCE' as const} : undefined,
-    model: null, video: null, colors, sizes,
+    model: seed.handle === 'mobster-luggage-charm' ? cinematicModels.mobsterCharm : null,
+    video: seed.handle === 'mobster-luggage-charm' ? 'https://www.youtube-nocookie.com/embed/0yPqZEvKnFU?rel=0' : null,
+    colors, sizes,
     information: productInformation(seed.handle),
     variants: colors.flatMap(color => sizes.map(size => ({ id: `demo-${seed.handle}-${color.toLowerCase()}-${size.toLowerCase().replaceAll(' ', '-')}`, title: `${size} / ${color}`, size, color, available: true, price }))),
     inventory: null, materials: null, fabricWeight: null, finish: null, careInstructions: null, shippingMessage: null, returnMessage: null,
