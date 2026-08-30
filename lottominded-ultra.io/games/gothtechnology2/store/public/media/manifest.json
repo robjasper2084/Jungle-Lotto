@@ -633,5 +633,25 @@
     "height": 768,
     "bytes": 54926,
     "origin": "User-supplied AI product reference; format-converted to WebP for the Mobster product gallery; rights require owner confirmation"
+  },
+  {
+    "source": "night-protocol-hoodie-no-charm-reference.png",
+    "output": "night-protocol-hoodie-no-charm-reference.webp",
+    "sourceWidth": 1376,
+    "sourceHeight": 768,
+    "width": 1376,
+    "height": 768,
+    "bytes": 78174,
+    "origin": "User-supplied reference; rights require owner confirmation"
+  },
+  {
+    "source": "static-saints-patch-white-reference.png",
+    "output": "static-saints-patch-white-reference.webp",
+    "sourceWidth": 2560,
+    "sourceHeight": 1440,
+    "width": 1680,
+    "height": 945,
+    "bytes": 127368,
+    "origin": "User-supplied reference; rights require owner confirmation"
   }
 ]

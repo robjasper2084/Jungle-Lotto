@@ -83,8 +83,8 @@ test('money uses integer minor units across zero, two, and three-decimal currenc
 test('cart adds, merges, updates, removes and persists without trusting stored prices',async()=>{
   const storage=memory(),provider=new DemoProvider(storage);const empty=await provider.createCart();assert.equal(empty.totalQuantity,0);
   await provider.addCartLine(empty.id,variant.id,1);let cart=await provider.addCartLine(empty.id,variant.id,2);
-  assert.equal(cart.lines.length,1);assert.equal(cart.subtotal.amount,23700);
-  cart=await provider.updateCartLine(cart.id,cart.lines[0].id,2);assert.equal(cart.subtotal.amount,15800);
+  assert.equal(cart.lines.length,1);assert.equal(cart.subtotal.amount,26700);
+  cart=await provider.updateCartLine(cart.id,cart.lines[0].id,2);assert.equal(cart.subtotal.amount,17800);
   const saved=JSON.parse(storage.getItem(DEMO_CART_KEY)!);assert.equal(saved.lines[0].price,undefined);
   cart=(await new DemoProvider(storage).getCart(cart.id))!;assert.equal(cart.totalQuantity,2);
   cart=await provider.removeCartLine(cart.id,cart.lines[0].id);assert.equal(cart.lines.length,0);
@@ -143,6 +143,18 @@ test('Detroit 2084 shirt keeps its $36 preview price and supplied artwork in the
   const restored=(await new DemoProvider(storage).getCart(cart.id))!;
   assert.equal(restored.lines[0].image?.src,'media/detroit-2084-tee-reference.webp');
 });
+test('Knight Protocol hoodie uses the $89 preview price, no-charm lead image and inclusion disclosure',async()=>{
+  const hoodie=demoProducts.find(product=>product.handle==='night-protocol-hoodie')!;
+  assert.equal(hoodie.price.amount,8900);
+  assert.equal(formatMoney(hoodie.price),'$89');
+  assert.ok(hoodie.variants.every(variant=>variant.price.amount===8900));
+  assert.equal(hoodie.images[0]?.src,'media/night-protocol-hoodie-no-charm-reference.webp');
+  assert.match(hoodie.information.includedItems ?? '',/charm.+not included with the hoodie/i);
+  const storage=memory(),provider=new DemoProvider(storage);
+  const cart=await provider.addCartLine((await provider.createCart()).id,hoodie.variants[0].id,2);
+  assert.equal(cart.subtotal.amount,17800);
+  assert.equal(cart.lines[0].image?.src,'media/night-protocol-hoodie-no-charm-reference.webp');
+});
 test('Detroit skyline cap is a separate $32 store product with supplied artwork',async()=>{
   const cap=demoProducts.find(product=>product.handle==='detroit-skyline-cap')!;
   assert.equal(cap.title,'Detroit Skyline Embroidered Cap');
@@ -173,6 +185,15 @@ test('LottoMind charm uses exact cents in the catalog and cart',async()=>{
   const provider=new DemoProvider(memory());
   const cart=await provider.addCartLine((await provider.createCart()).id,charm.variants[0].id,2);
   assert.equal(cart.subtotal.amount,3998);
+});
+test('Static Saints patch set includes the supplied white embroidery reference',()=>{
+  const patches=demoProducts.find(product=>product.handle==='static-saints-patch-set')!;
+  assert.deepEqual(patches.images.map(image=>image.src),[
+    'media/patch.webp',
+    'media/static-saints-patch-white-reference.webp',
+  ]);
+  assert.equal(patches.images[1]?.label,'White embroidery reference');
+  assert.equal(patches.images[1]?.kind,'DETAIL REFERENCE');
 });
 test('Mobster luggage charm replaces the desk mat at $19.99 with supplied artwork',async()=>{
   assert.equal(demoProducts.some(product=>product.handle==='combat-grid-desk-mat'),false);
