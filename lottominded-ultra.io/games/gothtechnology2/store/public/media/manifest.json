@@ -653,5 +653,55 @@
     "height": 945,
     "bytes": 127368,
     "origin": "User-supplied reference; rights require owner confirmation"
+  },
+  {
+    "source": "games/shadow-ops-canvas/assets/backgrounds/robot-rahbe-title-keyart-cinematic-v3.png",
+    "output": "robot-rahbe-game-popup.webp",
+    "sourceWidth": 1672,
+    "sourceHeight": 941,
+    "width": 1200,
+    "height": 675,
+    "bytes": 116842,
+    "origin": "Existing LottoMind Robot RAHBE game artwork; rights require owner confirmation"
+  },
+  {
+    "source": "hf_20260202_172437_36c41f92-64d3-460b-99df-e5a62124906e.png",
+    "output": "boogie-man-knit-sweater-supplied.webp",
+    "sourceWidth": 2752,
+    "sourceHeight": 1536,
+    "width": 1600,
+    "height": 893,
+    "bytes": 330044,
+    "origin": "User-supplied product design reference; rights require owner confirmation"
+  },
+  {
+    "source": "Image-generation edit of hf_20260202_172437_36c41f92-64d3-460b-99df-e5a62124906e.png",
+    "output": "boogie-man-knit-sweater-campaign.webp",
+    "sourceWidth": 1694,
+    "sourceHeight": 947,
+    "width": 1600,
+    "height": 900,
+    "bytes": 265826,
+    "origin": "AI armory campaign concept derived from the user-supplied product reference; not verified product photography"
+  },
+  {
+    "source": "hf_20260218_010033_ad9dd5f2-d4c5-459e-bdbf-8e62729b3380.png",
+    "output": "boogeyman-graphic-hoodie-supplied.webp",
+    "sourceWidth": 2752,
+    "sourceHeight": 1536,
+    "width": 1600,
+    "height": 893,
+    "bytes": 322010,
+    "origin": "User-supplied product design reference; rights require owner confirmation"
+  },
+  {
+    "source": "Image-generation edit of hf_20260218_010033_ad9dd5f2-d4c5-459e-bdbf-8e62729b3380.png",
+    "output": "boogeyman-graphic-hoodie-campaign.webp",
+    "sourceWidth": 1694,
+    "sourceHeight": 947,
+    "width": 1600,
+    "height": 900,
+    "bytes": 120870,
+    "origin": "AI armory campaign concept derived from the user-supplied product reference; not verified product photography"
   }
 ]

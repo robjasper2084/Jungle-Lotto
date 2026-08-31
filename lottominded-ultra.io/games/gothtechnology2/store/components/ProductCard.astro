@@ -8,17 +8,17 @@ import { formatMoney } from '../commerce/money';
 import { href } from '../utilities/paths';
 const { product, compact = false } = Astro.props as {product:Product;compact?:boolean};
 const mode = conversionMode(await buildProvider.getProducts()), labels = labelsFor(mode);
-const shortTitles:Record<string,string> = {'night-protocol-hoodie':'Knight Protocol Hoodie','detroit-2084-shirt':'Detroit 2084 Tee','black-signal-beanie':'Detroit Skyline Beanie','gothtechnology-luggage-charm':'LottoMind Charm // 001','static-saints-patch-set':'Detroit Patch Study'};
-const cardTitles:Record<string,string> = {'black-signal-digital-pack':'Gun Charm Heavy Duty Rail Adapter'};
-const displayTitle = compact ? shortTitles[product.handle] || cardTitles[product.handle] || product.title : cardTitles[product.handle] || product.title;
+const shortTitles:Record<string,string> = {'night-protocol-hoodie':'Knight Protocol Hoodie','boogie-man-knit-sweater':'Boogie Man Knit','boogeyman-graphic-hoodie':'Boogeyman Hoodie','detroit-2084-shirt':'Detroit 2084 Tee','black-signal-beanie':'Detroit Skyline Beanie','gothtechnology-luggage-charm':'LottoMind Charm // 001','static-saints-patch-set':'Detroit Patch Study'};
+const displayTitle = compact ? shortTitles[product.handle] || product.title : product.title;
+const pricePending = product.price.amount <= 0;
 ---
 <article class:list={['product-card',compact && 'compact-product']} data-product-card data-handle={product.handle}>
   <a class="product-image-link" href={href(`products/${product.handle}/`)} aria-label={`View ${product.title}`}><ProductMedia product={product} campaign/></a>
   <div class="product-card-copy"><p class="mono muted">{product.collection.replaceAll('-', ' ')}</p>
     <h3><a href={href(`products/${product.handle}/`)}>{displayTitle}</a></h3>
-    <div class="price-line"><strong><small>{labels.price}</small>{formatMoney(product.price)}</strong><span>{mode === 'interest' ? 'Concept Preview' : product.variants.some(v => v.available) ? 'Available' : 'Unavailable'}</span></div>
+    <div class="price-line"><strong><small>{pricePending ? 'Price' : labels.price}</small>{pricePending ? 'Pending' : formatMoney(product.price)}</strong><span>{mode === 'interest' ? 'Concept Preview' : product.variants.some(v => v.available) ? 'Available' : 'Unavailable'}</span></div>
     <p class="color-line"><span class="swatch" aria-hidden="true"></span>{product.colors.join(' / ')}</p>
     {product.information.materials && <p class="product-verified-detail">{product.information.materials}</p>}
-    <div class="card-actions"><a class="text-link" href={href(`products/${product.handle}/`)}>View Product <Icon/></a>{product.variants.length > 1 ? <button class="button compact" data-quick-view={product.handle} aria-label={`Choose Options for ${product.title}`}>Choose Options</button> : <button class="button compact" data-save-product={product.handle} aria-label={`${labels.save}: ${product.title}`}>{labels.save}</button>}</div>
+    <div class="card-actions"><a class="text-link" href={href(`products/${product.handle}/`)}>View Product <Icon/></a>{!pricePending && (product.variants.length > 1 ? <button class="button compact" data-quick-view={product.handle} aria-label={`Choose Options for ${product.title}`}>Choose Options</button> : <button class="button compact" data-save-product={product.handle} aria-label={`${labels.save}: ${product.title}`}>{labels.save}</button>)}</div>
   </div>
 </article>

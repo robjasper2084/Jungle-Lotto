@@ -27,21 +27,21 @@ export function initExperience() {
   const offline=()=>{$('#offline-notice')!.hidden=navigator.onLine;};offline();window.addEventListener('online',offline);window.addEventListener('offline',offline);
   const soundPreference='gothtechnology.armory.sound';
   let ambient=$<HTMLAudioElement>('[data-background-audio]'), sound=false;
-  const soundButton=$<HTMLButtonElement>('#sound-toggle')!;
-  const syncSound=(playing:boolean)=>{sound=playing;soundButton.setAttribute('aria-pressed',String(playing));soundButton.textContent=playing?'Sound on':'Sound off';document.documentElement.dataset.sound=playing?'on':'off';document.dispatchEvent(new Event('store:sound'));};
+  const soundButtons=$$<HTMLButtonElement>('#sound-toggle,[data-toggle-sound]');
+  const syncSound=(playing:boolean)=>{sound=playing;soundButtons.forEach(button=>{button.setAttribute('aria-pressed',String(playing));button.textContent=playing?'Sound on':'Sound off';});document.documentElement.dataset.sound=playing?'on':'off';document.dispatchEvent(new Event('store:sound'));};
   const stopAudio=(remember=false)=>{ambient?.pause();if(remember)save(soundPreference,'off');syncSound(false);};
   const startAudio=async(announceFailure=false)=>{
     if(!config.features.enableStoreAudio)return false;
     ambient??=new Audio(href('media/lottomind-vault-174hz-background.mp3'));ambient.volume=.13;ambient.loop=true;
     try{await ambient.play();save(soundPreference,'on');syncSound(true);return true;}
-    catch{syncSound(false);if(announceFailure)announce('Audio could not start automatically. Use Sound on to try again.');return false;}
+    catch{syncSound(false);if(announceFailure)announce('Audio could not start. Check your browser sound settings and try again.');return false;}
   };
-  soundButton.addEventListener('click',async()=>{
+  soundButtons.forEach(soundButton=>soundButton.addEventListener('click',async()=>{
     if(!config.features.enableStoreAudio)return;
     if(sound){stopAudio(true);return;}
     await startAudio(true);
-  });
-  if(ambient&&saved(soundPreference)!=='off')void startAudio();
+  }));
+  syncSound(false);
   document.addEventListener('visibilitychange',()=>{if(document.hidden)stopAudio();else if(ambient&&saved(soundPreference)!=='off')void startAudio();});
   document.addEventListener('store:game-launch',()=>stopAudio());
   document.addEventListener('store:media-play',()=>stopAudio());
