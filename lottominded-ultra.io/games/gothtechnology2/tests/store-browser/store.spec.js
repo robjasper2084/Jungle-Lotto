@@ -13,22 +13,24 @@ test('visual: homepage renders, keeps content accessible, and does not load game
   await page.screenshot({path:info.outputPath('home-viewport.png')});
   const metrics=await page.evaluate(()=>({...window.__metrics,width:innerWidth,height:innerHeight,domReady:performance.getEntriesByType('navigation')[0]?.domContentLoadedEventEnd,resources:performance.getEntriesByType('resource').map(r=>({name:new URL(r.name).pathname,bytes:r.encodedBodySize}))}));
   await writeFile(info.outputPath('performance.json'),JSON.stringify(metrics,null,2));
-  expect(requests.some(u=>/\/src\/main\.js|motion-atlases|\.mp4|\/cathedral\.|\/model\.|\/three\./.test(u))).toBe(false);
+  expect(requests.some(u=>/\/src\/main\.js|motion-atlases|\.mp4|lottomind-vault-174hz-background\.mp3|\/cathedral\.|\/model\.|\/three\./.test(u))).toBe(false);
   expect(await page.evaluate(()=>({width:innerWidth,scroll:document.documentElement.scrollWidth,offenders:[...document.querySelectorAll('body *')].filter(el=>el.getBoundingClientRect().right>innerWidth+1&&!el.closest('.equipment-art,.signal-portrait,.lookbook-strip,.hero,dialog')).map(el=>({tag:el.tagName,cls:el.className,right:el.getBoundingClientRect().right}))}))).toMatchObject({scroll:info.project.use.viewport.width});
   for(const section of await page.locator('main>section').all()){await section.scrollIntoViewIfNeeded();}await expect.poll(()=>page.locator('main img[src]').evaluateAll(images=>images.every(img=>img.complete&&img.naturalWidth>0))).toBe(true);
   await page.evaluate(()=>window.scrollTo({top:0,behavior:"instant"}));await page.screenshot({path:info.outputPath('home-full.png'),fullPage:true});
   expect(errors).toEqual([]);
 });
 
-test('New Drop supplies looping background music with a browser-policy fallback control',async({page})=>{
+test('New Drop keeps background music user initiated with a visible control',async({page})=>{
   await page.addInitScript(()=>{HTMLMediaElement.prototype.play=function(){this.dispatchEvent(new Event('play'));return Promise.resolve();};});
   await page.goto(base);
   const audio=page.locator('#new-drop-music');
   await expect(audio).toHaveAttribute('src',base+'media/lottomind-vault-174hz-background.mp3');
-  await expect(audio).toHaveAttribute('autoplay','');await expect(audio).toHaveAttribute('loop','');await expect(audio).toHaveAttribute('preload','auto');
-  await expect(page.locator('#sound-toggle')).toHaveText('Sound on');
+  await expect(audio).not.toHaveAttribute('autoplay','');await expect(audio).toHaveAttribute('loop','');await expect(audio).toHaveAttribute('preload','none');
+  const heroSound=page.locator('[data-toggle-sound]');
+  await expect(heroSound).toBeVisible();await expect(heroSound).toHaveText('Sound off');await expect(page.locator('#sound-toggle')).toHaveText('Sound off');
+  await heroSound.click();await expect(heroSound).toHaveText('Sound on');await expect(page.locator('#sound-toggle')).toHaveText('Sound on');
   await page.locator('.hero-settings').click();await page.locator('#sound-toggle').click();
-  await expect(page.locator('#sound-toggle')).toHaveText('Sound off');await expect(page.locator('#sound-toggle')).toHaveAttribute('aria-pressed','false');
+  await expect(heroSound).toHaveText('Sound off');await expect(page.locator('#sound-toggle')).toHaveText('Sound off');await expect(page.locator('#sound-toggle')).toHaveAttribute('aria-pressed','false');
   await page.goto(base+'shop/');await expect(page.locator('[data-background-audio]')).toHaveCount(0);
 });
 
@@ -36,12 +38,13 @@ test('shopping cart: launch preferences, quantity, persistence, alert flow and f
   await page.goto(product);await ready(page);await page.getByRole('radio',{name:'M',exact:true}).check();await page.getByLabel('Quantity',{exact:true}).fill('2');
   await page.getByRole('button',{name:'Save to Launch Loadout',exact:true}).click();const cart=page.getByRole('dialog',{name:'Your Launch Loadout'});await expect(cart).toBeVisible();await expect(cart).toContainText('M / Obsidian');await expect(cart.locator('.cart-subtotal')).toContainText('$178');
   await page.getByRole('button',{name:/Increase quantity/}).click();await expect(cart.locator('.cart-subtotal')).toContainText('$267');
+  await expect(cart).toContainText('Save products and options on this device for launch day.');
   await page.screenshot({path:info.outputPath('launch-loadout.png'),scale:'css'});
   await cart.getByRole('button',{name:'Get Launch Alert',exact:true}).click();
   const alert=page.locator('#launch-alert-dialog');await expect(alert).toBeVisible();
   await expect(alert.locator('[data-launch-selection]')).toContainText('M / Obsidian × 3');
-  await alert.getByLabel('Email address',{exact:true}).fill('qa@example.test');await alert.getByRole('checkbox').check();
-  await alert.getByRole('button',{name:'Get Launch Alert',exact:true}).click();await expect(alert).toContainText('Your email was not saved or sent.');
+  await expect(alert.getByLabel('Email address',{exact:true})).toBeDisabled();await expect(alert.getByRole('checkbox')).toBeDisabled();
+  await expect(alert.getByRole('button',{name:'Get Launch Alert',exact:true})).toBeDisabled();await expect(alert).toContainText('Your email was not saved or sent.');
   expect(await page.evaluate(()=>JSON.stringify(localStorage))).not.toContain('qa@example.test');
   await page.screenshot({path:info.outputPath('launch-alert.png'),scale:'css'});
   await page.keyboard.press('Escape');await expect(cart).not.toBeVisible();await expect(page.getByRole('button',{name:'Save to Launch Loadout',exact:true})).toBeFocused();
@@ -53,13 +56,16 @@ test('catalog filters, sorting, no-results and product actions work',async({page
   await page.goto(base+'shop/?category=Accessories');await expect(page.locator('#result-count')).toHaveText('4 products');
   const mobsterCharm=page.locator('[data-product-card][data-handle="mobster-luggage-charm"]');await expect(mobsterCharm).toContainText('Mobster Luggage Charm');await expect(mobsterCharm).toContainText('$19.99');
   await expect(mobsterCharm.locator('img')).toHaveAttribute('src',/\/media\/mobster-luggage-charm-black-background-card-reference\.webp$/);
-  const railAdapter=page.locator('[data-product-card][data-handle="black-signal-digital-pack"]');await expect(railAdapter).toContainText('Gun Charm Heavy Duty Rail Adapter');await expect(railAdapter).toContainText('$12');
+  const railAdapter=page.locator('[data-product-card][data-handle="black-signal-digital-pack"]');await expect(railAdapter).toContainText('Black Signal Gun Charm Rail Adapter Pack');await expect(railAdapter).toContainText('$12');
   await expect(railAdapter.locator('img')).toHaveAttribute('src',/\/media\/black-signal-gun-charm-rail-adapter-black-group-reference\.webp$/);
   await page.getByLabel('Search products',{exact:true}).fill('GOTHTECHNOLOGY Luggage Charm');await expect(page.locator('[data-product-card]:visible')).toHaveCount(1);
   await page.getByRole('button',{name:'Save to Launch Loadout: GOTHTECHNOLOGY Luggage Charm',exact:true}).click();
   await expect(page.getByRole('dialog',{name:'Your Launch Loadout'})).toContainText('$19.99');await page.keyboard.press('Escape');
   await page.getByLabel('Search products',{exact:true}).fill('zzz-no-match');await expect(page.locator('#no-results')).toBeVisible();
-  await page.locator('#no-results').getByRole('button',{name:'Clear filters'}).click();await expect(page.locator('#result-count')).toHaveText('10 products');
+  await page.locator('#no-results').getByRole('button',{name:'Clear filters'}).click();await expect(page.locator('#result-count')).toHaveText('12 products');
+  await page.getByLabel('Search products',{exact:true}).fill('Boog');await expect(page.locator('[data-product-card]:visible')).toHaveCount(2);
+  for(const handle of ['boogie-man-knit-sweater','boogeyman-graphic-hoodie']){const card=page.locator(`[data-product-card][data-handle="${handle}"]`);await expect(card).toContainText('Pending');await expect(card.locator('img')).toHaveAttribute('src',/-campaign\.webp$/);await expect(card.locator('[data-save-product],[data-quick-view]')).toHaveCount(0);}
+  await page.getByLabel('Search products',{exact:true}).fill('');
   await page.getByRole('combobox',{name:'Sort',exact:true}).selectOption('price-low');
   const order=await page.locator('[data-product-card]').evaluateAll(nodes=>nodes.filter(n=>!n.hidden).sort((a,b)=>Number(a.style.order)-Number(b.style.order)).map(n=>n.dataset.handle));expect(order[0]).toBe('black-signal-digital-pack');
   await page.getByLabel('Search products',{exact:true}).fill('hoodie');
@@ -70,18 +76,14 @@ test('catalog filters, sorting, no-results and product actions work',async({page
   await expect(page.locator('#cart-dialog')).toContainText('L / Obsidian');
 });
 
-test('homepage category tile uses the ashtray artwork and retains the Collectibles filter',async({page})=>{
+test('homepage keeps the four core beats and links deeper world-building from navigation',async({page})=>{
   await page.goto(base);
+  for(const selector of ['#current-drop','#featured','#character-vault','#enter-the-fight'])await expect(page.locator(selector)).toBeVisible();
   await expect(page.locator('#current-drop .drop-price')).toContainText('$89');
   await expect(page.locator('[data-product-card][data-handle="night-protocol-hoodie"]')).toContainText('$89');
-  const categories=page.locator('#armory .equipment-case');
-  await expect(categories.nth(3).getByRole('heading')).toHaveText('Original Artwork');
-  const collectibles=categories.filter({has:page.getByRole('heading',{name:'Collectibles',exact:true})});
-  await expect(collectibles.locator('img')).toHaveAttribute('src',/\/media\/mascot-leaf-collectible\.webp$/);
-  await collectibles.click();
-  await expect(page).toHaveURL(/shop\/\?category=Collectibles$/);
-  await expect(page.locator('[data-product-card]:visible')).toHaveCount(1);
-  await expect(page.getByRole('link',{name:'I Love Detroit Ashtray',exact:true})).toBeVisible();
+  await expect(page.locator('main .campaign-film,main #combat-lookbook,main .armory-origin,main #armory')).toHaveCount(0);
+  await expect(page.locator('.desktop-nav').getByRole('link',{name:'Lookbook',exact:true})).toHaveAttribute('href',base+'lookbook/');
+  await expect(page.locator('.desktop-nav').getByRole('link',{name:'About',exact:true})).toHaveAttribute('href',base+'about/');
 });
 
 test('signal keychain cards use matching artwork and retain their collection filter defaults',async({page})=>{
@@ -132,10 +134,12 @@ test('mobile navigation, search and keyboard dialog containment',async({page})=>
   await page.keyboard.press('Escape');await expect(page.getByRole('button',{name:'Search the store'})).toBeFocused();
 });
 
-test('product gallery and honest 2.5D display remain usable',async({page},info)=>{
-  await page.goto(product);await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/night-protocol-hoodie-no-charm-reference\.webp$/);await expect(page.locator('[data-selected-price]')).toHaveText('$89');
+test('product gallery uses image-aware modes and honest 2.5D remains lazy',async({page},info)=>{
+  const requests=[];page.on('request',request=>requests.push(request.url()));
+  await page.goto(product);await expect(page.locator('.gallery-main')).toHaveAttribute('data-gallery-orientation','landscape');expect(requests.some(url=>/\/model\.[^/]*\.js/.test(url))).toBe(false);
+  await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/night-protocol-hoodie-no-charm-reference\.webp$/);await expect(page.locator('[data-selected-price]')).toHaveText('$89');
   await expect(page.locator('.development-status')).toContainText('The LottoMind charm shown in some supplied reference imagery is not included with the hoodie.');
-  await page.getByRole('button',{name:'Embroidery reference',exact:true}).click();await expect(page.locator('#gallery-image')).toHaveAttribute('src',/embroidery/);
+  await page.getByRole('button',{name:'Embroidery reference',exact:true}).click();await expect(page.locator('#gallery-image')).toHaveAttribute('src',/embroidery/);await expect(page.locator('.gallery-main')).toHaveClass(/is-landscape/);
   await page.getByRole('button',{name:'Zoom image',exact:true}).click();await expect(page.locator('#gallery-zoom')).toHaveAttribute('aria-pressed','true');
   await page.getByRole('button',{name:/Open depth display/}).click();await expect(page.locator('.depth-frame img')).toBeVisible();await page.getByRole('button',{name:'Back',exact:true}).click();await expect(page.locator('[data-viewer-status]')).toContainText('not supplied');
   await page.getByRole('button',{name:'Reset view',exact:true}).click();await page.locator('.product-information').scrollIntoViewIfNeeded();await page.screenshot({path:info.outputPath('product.png')});
@@ -149,6 +153,11 @@ test('product gallery and honest 2.5D display remain usable',async({page},info)=
   await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/detroit-2084-tee-reference\.webp$/);await expect(page.locator('[data-selected-price]')).toHaveText('$36');
   await page.goto(base+'products/detroit-skyline-cap/');await expect(page.getByRole('heading',{level:1})).toHaveText('Detroit Skyline Embroidered Cap');
   await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/detroit-skyline-cap-reference\.webp$/);await expect(page.locator('[data-selected-price]')).toHaveText('$32');
+  await page.goto(base+'products/boogie-man-knit-sweater/');await expect(page.getByRole('heading',{level:1})).toHaveText('The Boogie Man Knit Sweater');
+  await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/boogie-man-knit-sweater-campaign\.webp$/);await expect(page.locator('.gallery-main [data-gallery-kind]')).toHaveText('CAMPAIGN CONCEPT');await expect(page.locator('[data-selected-price]')).toHaveText('Pending');await expect(page.getByRole('button',{name:'Price pending',exact:true})).toBeDisabled();
+  await page.getByRole('button',{name:'Supplied design reference',exact:true}).click();await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/boogie-man-knit-sweater-supplied\.webp$/);await expect(page.locator('.gallery-main [data-gallery-kind]')).toHaveText('SUPPLIED PRODUCT REFERENCE');
+  await page.goto(base+'products/boogeyman-graphic-hoodie/');await expect(page.getByRole('heading',{level:1})).toHaveText('Boogeyman Graphic Hoodie');
+  await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/boogeyman-graphic-hoodie-campaign\.webp$/);await expect(page.locator('.gallery-main [data-gallery-kind]')).toHaveText('CAMPAIGN CONCEPT');await expect(page.locator('[data-selected-price]')).toHaveText('Pending');await expect(page.getByRole('button',{name:'Price pending',exact:true})).toBeDisabled();
   await page.goto(base+'products/mobster-luggage-charm/');await expect(page.getByRole('heading',{level:1})).toHaveText('Mobster Luggage Charm');
   await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/mobster-luggage-charm-cyan-arch-reference\.webp$/);await expect(page.locator('[data-selected-price]')).toHaveText('$19.99');
   await expect(page.getByRole('button',{name:'Load 3D model',exact:true})).toBeVisible();await page.getByRole('button',{name:'Load 3D model',exact:true}).click();await expect(page.locator('.model-stage canvas')).toBeVisible();await expect(page.locator('[data-viewer-status]')).toContainText('3D model loaded');
@@ -158,11 +167,12 @@ test('product gallery and honest 2.5D display remain usable',async({page},info)=
   await page.getByRole('button',{name:'Equipment context',exact:true}).click();await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/mobster-luggage-charm-equipment-context-reference\.webp$/);
   await page.goto(base+'products/static-saints-patch-set/');await expect(page.getByRole('heading',{level:1})).toHaveText('Static Saints Embroidered Patch Set');
   await page.getByRole('button',{name:'White embroidery reference',exact:true}).click();await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/static-saints-patch-white-reference\.webp$/);
-  await page.goto(base+'products/black-signal-digital-pack/');await expect(page.getByRole('heading',{level:1})).toHaveText('Black Signal Gun Charm Rail Adaptern Pack');
+  await expect(page.locator('.gallery-main')).toHaveAttribute('data-gallery-orientation','landscape');
+  await page.goto(base+'products/black-signal-digital-pack/');await expect(page.getByRole('heading',{level:1})).toHaveText('Black Signal Gun Charm Rail Adapter Pack');
   await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/black-signal-gun-charm-rail-adapter-black-group-reference\.webp$/);await expect(page.locator('[data-selected-price]')).toHaveText('$12');
   await expect(page.getByRole('button',{name:'Equipment context',exact:true})).toBeVisible();await expect(page.getByRole('button',{name:'White-background group reference',exact:true})).toBeVisible();
   await page.getByRole('button',{name:'Front reference',exact:true}).click();await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/black-signal-gun-charm-rail-adapter-black-fabric-reference\.webp$/);
-  await page.getByRole('button',{name:'Underside reference',exact:true}).click();await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/black-signal-gun-charm-rail-adapter-underside-reference\.webp$/);
+  await page.getByRole('button',{name:'Underside reference',exact:true}).click();await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/black-signal-gun-charm-rail-adapter-underside-reference\.webp$/);await expect(page.locator('.gallery-main')).toHaveAttribute('data-gallery-orientation','square');
   await expect(page.getByText('Digital contents & license',{exact:true})).toHaveCount(0);await expect(page.getByText('Shipping & returns',{exact:true})).toBeVisible();
 });
 
@@ -170,7 +180,7 @@ test('reduced motion and WebGL fallback keep shopping available',async({page})=>
   await page.emulateMedia({reducedMotion:'reduce'});const requests=[];page.on('request',r=>requests.push(r.url()));await page.goto(base);
   await expect(page.locator('#scene-status')).toHaveText('Armory Online — Static Display');expect(requests.some(u=>/scene\.[^/]+\.js/.test(u))).toBe(false);
   await page.getByRole('button',{name:'Open launch loadout'}).click();await expect(page.getByRole('dialog',{name:'Your Launch Loadout'})).toContainText('Your launch loadout is empty.');await page.keyboard.press('Escape');
-  await page.emulateMedia({reducedMotion:'no-preference'});await page.addInitScript(()=>{const original=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(type,...args){if(type==='webgl2'||type==='webgl')return null;return original.call(this,type,...args);};});await page.reload();await expect(page.locator('#scene-status')).toHaveText('Armory Online — Static Display');await expect(page.getByRole('link',{name:'Explore Drop 001',exact:true})).toBeVisible();
+  await page.emulateMedia({reducedMotion:'no-preference'});await page.addInitScript(()=>{const original=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(type,...args){if(type==='webgl2'||type==='webgl')return null;return original.call(this,type,...args);};});await page.reload();await expect(page.locator('#scene-status')).toHaveText('Armory Online — Static Display');await expect(page.getByRole('link',{name:'Shop the drop',exact:true})).toBeVisible();
 });
 
 test('inline films load only after Play and stay paused when returning',async({page})=>{
@@ -210,13 +220,13 @@ test(surface+' commercial never interrupts an open launch loadout',async({page})
 });
 }
 
-test('newsletter consent is required and demo does not send personal data',async({page})=>{
-  const posts=[];page.on('request',r=>{if(r.method()==='POST')posts.push(r.url());});await page.goto(base);await page.locator('#newsletter-form').getByLabel('Email address',{exact:true}).fill('qa@example.test');await page.locator('#newsletter-form').getByRole('button',{name:'Get Launch Alert',exact:true}).click();await expect(page.locator('#newsletter-form .form-status')).toContainText('Please agree');
-  await page.locator('#newsletter-form').getByRole('checkbox',{name:/I agree to receive/}).check();await page.locator('#newsletter-form').getByRole('button',{name:'Get Launch Alert',exact:true}).click();await expect(page.locator('#newsletter-form .form-status')).toContainText('not saved or sent');expect(posts).toEqual([]);
+test('disconnected newsletter is visibly unavailable and does not collect personal data',async({page})=>{
+  const posts=[];page.on('request',r=>{if(r.method()==='POST')posts.push(r.url());});await page.goto(base);const form=page.locator('#newsletter-form');
+  await expect(form).toHaveAttribute('data-subscription-connected','false');await expect(form.getByLabel('Email address',{exact:true})).toBeDisabled();await expect(form.getByRole('checkbox',{name:/I agree to receive/})).toBeDisabled();await expect(form.getByRole('button',{name:'Get Launch Alert',exact:true})).toBeDisabled();await expect(form.locator('.form-status')).toContainText('not saved or sent');expect(posts).toEqual([]);
 });
 
 test('game portal preserves the runtime, preselects a fighter and rejects forged messages',async({page},info)=>{
-  test.setTimeout(90000);const errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto(base+'play/?character=KALYX');await expect(page.locator('#game-frame')).toHaveCount(0);await page.getByRole('button',{name:'Launch game',exact:true}).click();await expect(page.locator('#game-connection')).toContainText('Game ready',{timeout:45000});
+  test.setTimeout(90000);const errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto(base+'play/?character=KALYX');await expect(page.locator('#rahbee-promo')).toBeVisible();await expect(page.getByRole('link',{name:'Play Robot RAHBE',exact:true})).toHaveAttribute('href',/games\/shadow-ops-canvas\/$/);await page.getByRole('button',{name:'Continue to GOTHTECHNOLOGY',exact:true}).click();await expect(page.locator('#rahbee-promo')).not.toBeVisible();await expect(page.locator('#game-frame')).toHaveCount(0);await page.getByRole('button',{name:'Launch game',exact:true}).click();await expect(page.locator('#game-connection')).toContainText('Game ready',{timeout:45000});
   // A late iframe load must not overwrite the earlier validated ready message.
   await page.locator('#game-frame').dispatchEvent('load');await expect(page.locator('#game-connection')).toContainText('Game ready');
   const frame=page.frames().find(f=>f.url().includes('/legacy-game/'));expect(frame).toBeTruthy();expect(await frame.evaluate(()=>window.__gothTechnologyGame.player1Id)).toBe('KALYX');
@@ -236,7 +246,12 @@ test('all required static routes, metadata, galleries, and media resolve',async(
 
 test('widths 320 through 1920 do not overflow or hide purchase controls',async({page},info)=>{
   test.skip(info.project.name!=='desktop','Breakpoint sweep needs one Chromium pass');test.setTimeout(90000);
-  for(const width of [320,360,375,390,428,768,1024,1440,1920]){await page.setViewportSize({width,height:900});for(const path of [base,product,base+'shop/']){await page.goto(path);await ready(page);await page.evaluate(()=>document.fonts.ready);expect(await page.evaluate(()=>document.documentElement.scrollWidth),width+' '+path).toBe(width);if(path===base){expect(await page.locator('#drop-title').evaluate(el=>{const range=document.createRange();range.selectNodeContents(el);return [...range.getClientRects()].every(rect=>rect.right<=el.getBoundingClientRect().right+2);})).toBe(true);await expect(page.getByRole('link',{name:'Explore Drop 001',exact:true})).toBeVisible();expect(await page.locator('.hero-positioning').evaluate(el=>parseFloat(getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(16);expect(await page.locator('.hero-status').evaluate(el=>parseFloat(getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(13);await page.screenshot({path:info.outputPath('home-'+width+'.png'),scale:'css'});}expect(await page.evaluate(()=>[...document.querySelectorAll('body *')].filter(el=>{const r=el.getBoundingClientRect();if(r.width<=0||r.right<=innerWidth+1||el.closest('dialog'))return false;for(let p=el.parentElement;p;p=p.parentElement){if(['hidden','clip'].includes(getComputedStyle(p).overflowX)&&p.getBoundingClientRect().right<=innerWidth+1)return false;}return true;}).map(el=>({tag:el.tagName,class:el.className,text:el.textContent?.slice(0,80),right:el.getBoundingClientRect().right}))),width+' '+path).toEqual([]);}await expect(page.getByLabel('Search products',{exact:true})).toBeVisible();}
+  for(const width of [320,360,375,390,428,768,1024,1440,1920]){await page.setViewportSize({width,height:900});for(const path of [base,product,base+'shop/']){await page.goto(path);await ready(page);await page.evaluate(()=>document.fonts.ready);expect(await page.evaluate(()=>document.documentElement.scrollWidth),width+' '+path).toBe(width);if(path===base){expect(await page.locator('#drop-title').evaluate(el=>{const range=document.createRange();range.selectNodeContents(el);return [...range.getClientRects()].every(rect=>rect.right<=el.getBoundingClientRect().right+2);})).toBe(true);await expect(page.getByRole('link',{name:'Shop the drop',exact:true})).toBeVisible();expect(await page.locator('.cathedral-hero').evaluate(el=>el.getBoundingClientRect().height)).toBeGreaterThanOrEqual(700);expect(await page.locator('#hero-title').evaluate(el=>parseFloat(getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(39);await page.screenshot({path:info.outputPath('home-'+width+'.png'),scale:'css'});}expect(await page.evaluate(()=>[...document.querySelectorAll('body *')].filter(el=>{const r=el.getBoundingClientRect();if(r.width<=0||r.right<=innerWidth+1||el.closest('dialog'))return false;for(let p=el.parentElement;p;p=p.parentElement){if(['hidden','clip'].includes(getComputedStyle(p).overflowX)&&p.getBoundingClientRect().right<=innerWidth+1)return false;}return true;}).map(el=>({tag:el.tagName,class:el.className,text:el.textContent?.slice(0,80),right:el.getBoundingClientRect().right}))),width+' '+path).toEqual([]);}await expect(page.getByLabel('Search products',{exact:true})).toBeVisible();}
+});
+test('shop uses one readable product column at 500px',async({page})=>{
+  await page.setViewportSize({width:500,height:900});await page.goto(base+'shop/');
+  const layout=await page.locator('.products-grid').evaluate(grid=>{const card=grid.querySelector('.product-card');const title=card.querySelector('h3');const meta=card.querySelector('.mono');return{columns:getComputedStyle(grid).gridTemplateColumns.split(/\s+/).filter(Boolean).length,title:parseFloat(getComputedStyle(title).fontSize),meta:parseFloat(getComputedStyle(meta).fontSize),scroll:document.documentElement.scrollWidth,width:innerWidth};});
+  expect(layout).toMatchObject({columns:1,scroll:500,width:500});expect(layout.title).toBeGreaterThanOrEqual(22);expect(layout.meta).toBeGreaterThanOrEqual(12);
 });
 test('conversion UI: keyboard, mobile filters, settings and sticky action',async({page},info)=>{
   await page.goto(base);await ready(page);await page.keyboard.press('Tab');
@@ -253,7 +268,7 @@ test('conversion UI: keyboard, mobile filters, settings and sticky action',async
   if(compact){await expect(disclosure).not.toHaveAttribute('open');await summary.click();}
   await page.getByRole('combobox',{name:'Category',exact:true}).selectOption('Accessories');await expect(page.locator('#result-count')).toHaveText('4 products');
   if(compact)await summary.click();
-  await page.getByRole('button',{name:'Clear category filter'}).click();await expect(page.locator('#result-count')).toHaveText('10 products');
+  await page.getByRole('button',{name:'Clear category filter'}).click();await expect(page.locator('#result-count')).toHaveText('12 products');
   if(compact)await expect(summary).toBeFocused();
   await page.goto(product);await ready(page);
   if(compact){await expect(page.locator('.mobile-product-bar')).toBeVisible();await page.locator('.mobile-product-bar [data-select-options]').click();await expect(page.locator('#product-options')).toBeFocused();await expect(page.locator('.mobile-product-bar')).not.toBeVisible();await page.locator('.site-footer').scrollIntoViewIfNeeded();await expect(page.locator('.mobile-product-bar')).not.toBeVisible();}
@@ -263,7 +278,7 @@ test('responsive evidence: sections, shop, product, lookbook, about and play',as
   for(const width of [1440,390]){
     await page.setViewportSize({width,height:900});
     await page.goto(base);await ready(page);await page.evaluate(()=>document.fonts.ready);
-    for(const [name,selector] of [['drop','#current-drop'],['featured','#featured'],['campaign','.campaign-film'],['signals','#character-vault'],['portal','#enter-the-fight']]){
+    for(const [name,selector] of [['drop','#current-drop'],['featured','#featured'],['signals','#character-vault'],['portal','#enter-the-fight']]){
       const section=page.locator(selector);await section.scrollIntoViewIfNeeded();const bounds=await section.boundingBox();if(bounds.height>900){await page.evaluate(selector=>window.scrollTo({top:document.querySelector(selector).getBoundingClientRect().top+scrollY-80,behavior:'instant'}),selector);await settle(page);await page.screenshot({path:info.outputPath(name+'-'+width+'.png'),scale:'css'});}else await section.screenshot({path:info.outputPath(name+'-'+width+'.png'),scale:'css'});
     }
     for(const [name,path] of [['shop','shop/'],['product','products/night-protocol-hoodie/'],['lookbook','lookbook/'],['about','about/'],['play','play/']]){

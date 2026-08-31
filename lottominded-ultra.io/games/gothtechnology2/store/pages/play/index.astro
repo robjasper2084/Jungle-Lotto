@@ -1,7 +1,8 @@
 ---
 import Shell from '../../layouts/Shell.astro';
 import Icon from '../../components/Icon.astro';
-import {href} from '../../utilities/paths';
+import {canonical, href} from '../../utilities/paths';
+const rahbeeGameUrl = canonical('../shadow-ops-canvas/');
 ---
 <Shell title="Enter the Fight" path="play/" description="Play the original GOTHTECHNOLOGY fighting game. No purchase required.">
 <section class="play-shell">
@@ -11,4 +12,61 @@ import {href} from '../../utilities/paths';
 <div class="game-reward"><span id="game-reward-status" role="status">Finish a match lasting at least 30 seconds to save a local cosmetic badge. No purchase, cash, credit, or discount.</span></div>
 <noscript><p class="section">Open the standalone game link above to play. The original game itself requires JavaScript.</p></noscript>
 </section>
+<dialog id="rahbee-promo" class="rahbee-promo" aria-labelledby="rahbee-promo-title" aria-describedby="rahbee-promo-description">
+  <div class="rahbee-promo-card">
+    <img src={href('media/robot-rahbe-game-popup.webp')} width="1200" height="675" alt="Robot RAHBE battling drones and a shield robot beside a glowing purple portal"/>
+    <button class="icon-button rahbee-promo-close" type="button" data-close-dialog aria-label="Close Robot RAHBE game popup"><Icon name="close"/></button>
+    <div class="rahbee-promo-copy">
+      <p class="mono gold">LOTTOMIND ARCADE / INCOMING GAME</p>
+      <h2 id="rahbee-promo-title">Robot<br/>RAHBE</h2>
+      <p id="rahbee-promo-description">Enter Shadow Ops. Survive the mission grid, break through the cyber vault, and hold the tactical signal.</p>
+      <div class="rahbee-promo-actions">
+        <a class="button" href={rahbeeGameUrl}>Play Robot RAHBE <Icon name="play"/></a>
+        <button class="text-button" type="button" data-close-dialog>Continue to GOTHTECHNOLOGY</button>
+      </div>
+      <small>Free to play. No purchase required.</small>
+    </div>
+  </div>
+</dialog>
+<script>
+  const rahbeePromo = document.querySelector<HTMLDialogElement>('#rahbee-promo');
+  const launchGame = document.querySelector<HTMLButtonElement>('#launch-game');
+  const openRahbeePromo = () => {
+    if (!rahbeePromo || rahbeePromo.open || document.querySelector('dialog[open]')) return;
+    rahbeePromo.showModal();
+  };
+  rahbeePromo?.addEventListener('close', () => launchGame?.focus({preventScroll:true}));
+  window.setTimeout(openRahbeePromo, 350);
+</script>
+<style>
+  .rahbee-promo{width:min(1040px,calc(100vw - 32px));padding:0;overflow:hidden;border:1px solid #9d7a35;background:#050406;box-shadow:0 32px 90px #000}
+  .rahbee-promo::backdrop{background:#000d;backdrop-filter:blur(7px)}
+  .rahbee-promo-card{position:relative;min-height:585px;isolation:isolate;overflow:hidden}
+  .rahbee-promo-card>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center}
+  .rahbee-promo-card:after{content:"";position:absolute;inset:0;z-index:0;background:linear-gradient(90deg,#030305 0%,#050407e8 25%,#05040799 47%,transparent 72%),linear-gradient(0deg,#030305c7,transparent 48%)}
+  .rahbee-promo-close{position:absolute;z-index:2;top:16px;right:16px;border-color:#c09a4d;background:#050406d9}
+  .rahbee-promo-copy{position:relative;z-index:1;width:min(47%,470px);min-height:585px;padding:56px 42px 36px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center}
+  .rahbee-promo-copy .mono{font-size:12px;letter-spacing:.14em;margin:0 0 18px}
+  .rahbee-promo-copy h2{font-size:clamp(64px,7vw,106px);line-height:.76;letter-spacing:-.04em;margin:0 0 30px;text-transform:uppercase;text-shadow:0 6px 28px #000}
+  .rahbee-promo-copy>p:not(.mono){font-size:16px;line-height:1.6;color:#e0dbcf;max-width:420px;margin:0}
+  .rahbee-promo-actions{display:grid;gap:12px;margin-top:28px;align-items:start}
+  .rahbee-promo-actions .button{min-width:240px;justify-content:center}
+  .rahbee-promo-actions .text-button{font-size:12px;text-align:left;padding:8px 0}
+  .rahbee-promo-copy small{font:11px var(--mono);color:#bbb4a4;margin-top:22px}
+  @media(max-width:680px){
+    .rahbee-promo{width:min(94vw,520px);max-height:calc(100dvh - 24px)}
+    .rahbee-promo-card{min-height:0;display:flex;flex-direction:column}
+    .rahbee-promo-card>img{position:relative;aspect-ratio:16/9;height:auto;object-position:64% center}
+    .rahbee-promo-card:after{background:linear-gradient(0deg,#050406 0%,transparent 48%);height:48vw;max-height:250px}
+    .rahbee-promo-copy{width:100%;min-height:0;padding:24px 22px 28px}
+    .rahbee-promo-copy .mono{font-size:10px;margin-bottom:12px}
+    .rahbee-promo-copy h2{font-size:clamp(48px,17vw,78px);line-height:.8;margin-bottom:20px}
+    .rahbee-promo-copy>p:not(.mono){font-size:14px;line-height:1.5}
+    .rahbee-promo-actions{width:100%;margin-top:22px}
+    .rahbee-promo-actions .button{width:100%;min-width:0}
+    .rahbee-promo-actions .text-button{min-height:44px}
+    .rahbee-promo-copy small{margin-top:12px}
+  }
+  @media(prefers-reduced-motion:reduce){.rahbee-promo{scroll-behavior:auto}}
+</style>
 </Shell>

@@ -1,21 +1,16 @@
 ---
 import { href } from '../utilities/paths';
-const { isDemoMode = true } = Astro.props;
 import { cinematicModels } from '../content/cinematic-models';
 ---
 <section class="hero cathedral-hero" id="arrival" aria-labelledby="hero-title" data-story-scene="arrival">
   <img class="hero-image" srcset={`${href('media/armory-hero-v2-640.webp')} 640w, ${href('media/armory-hero-v2-960.webp')} 960w, ${href('media/armory-hero-v2-1600.webp')} 1600w, ${href('media/armory-hero-v2.webp')} 2048w`} sizes="100vw" src={href('media/armory-hero-v2.webp')} width="2048" height="768" alt="Concept artwork of the 313 Detroit hoodie and LottoMind charm in a gold-lit cathedral armory" fetchpriority="high"/>
   <div class="scene-wrap" id="armory-scene" aria-hidden="true" data-hoodie-model={cinematicModels.hoodie ? href(cinematicModels.hoodie) : undefined} data-charm-model={cinematicModels.charm ? href(cinematicModels.charm) : undefined}></div>
   <div class="hero-copy">
-    <p class="hero-eyebrow">GOTHTECHNOLOGY / DETROIT 313</p>
-    <h1 id="hero-title">Equipment for the world<br/>after midnight.</h1>
-    <p class="hero-positioning">A Detroit-born fighting-game universe. Explore its characters, apparel, and artifacts.</p>
-    <p class="hero-status">{isDemoMode ? 'Concept Preview · Drop 001 in development' : 'Drop 001 · Explore Knight Protocol'}</p>
+    <h1 id="hero-title">Equipment for the world<br/>after midnight</h1>
   </div>
   <div class="cathedral-actions">
-    <a class="button" href="#current-drop">Explore Drop 001</a>
-    <a class="text-link" href={href('play/')} data-portal-link>Play the Game</a>
-    <span class="hero-free">Free to play. No purchase required.</span>
+    <a class="button" href="#current-drop">Shop the drop</a>
+    <a class="text-link" href={href('play/')} data-portal-link>Enter the fight</a>
   </div>
   <div class="cathedral-caption"><span id="scene-status" role="status">Armory Online — Static Display</span><span>Product concept artwork · not a 360° garment model</span></div>
   <nav class="chapter-nav" aria-label="Story chapters">
@@ -24,5 +19,8 @@ import { cinematicModels } from '../content/cinematic-models';
     <a href="#character-vault" data-chapter="signals">Your Signal</a>
     <a href="#enter-the-fight" data-chapter="portal">The Portal</a>
   </nav>
-  <button class="text-button hero-settings" data-open-settings>Experience settings</button>
+  <div class="hero-controls">
+    <button class="text-button hero-sound" type="button" data-toggle-sound aria-pressed="false">Sound off</button>
+    <button class="text-button hero-settings" type="button" data-open-settings>Experience settings</button>
+  </div>
 </section>

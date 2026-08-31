@@ -20,11 +20,10 @@ const cases = [
   {name:'Collectibles',url:'shop/?category=Collectibles',tile:5,image:products.find(p => p.handle === 'cyber-cathedral-art-print')?.images[0]},
   {name:'Original Artwork',url:'collections/black-signal/',tile:null},
 ];
-
 ---
 <Shell title="The Armory — Equipment for the world after midnight" cinematic>
-  <audio id="new-drop-music" data-background-audio autoplay loop preload="auto" src={href('media/lottomind-vault-174hz-background.mp3')} aria-label="LottoMind Vault 174 Hz background music"></audio>
-  <CathedralHero isDemoMode={isDemoMode}/>
+  <audio id="new-drop-music" data-background-audio loop preload="none" src={href('media/lottomind-vault-174hz-background.mp3')} aria-label="LottoMind Vault 174 Hz background music"></audio>
+  <CathedralHero/>
   <section class="trust-strip" aria-label="About the armory"><span>DESIGNED IN DETROIT</span><span>INDEPENDENT CREATIVE WORLD</span><span>FREE FIGHTING GAME</span><span>{isDemoMode ? 'DROP 001 IN DEVELOPMENT' : 'EXPLORE DROP 001'}</span></section>
   <section class="current-drop armory-drop" id="current-drop" aria-labelledby="drop-title" data-story-scene="drop">
     <div class="drop-copy"><p class="section-number">DROP 001 //</p><h2 id="drop-title">Knight<br/> Protocol</h2><p>The first transmission. A Detroit hoodie and everyday companion, connected to the Knight Protocol world.</p>

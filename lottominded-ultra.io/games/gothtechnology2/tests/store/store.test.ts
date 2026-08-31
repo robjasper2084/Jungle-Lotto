@@ -111,7 +111,7 @@ test('cart restoration recalculates current prices and rejects duplicate lines',
 test('filters combine variant options and handle search, availability and price sorting',()=>{
   assert.equal(filterProducts(demoProducts,{search:'hoodie',size:'M',color:'Obsidian'}).length,1);
   assert.equal(filterProducts(demoProducts,{search:'no-such-product'}).length,0);
-  assert.equal(filterProducts(demoProducts,{availability:'unavailable'}).length,0);
+  assert.equal(filterProducts(demoProducts,{availability:'unavailable'}).length,2);
   assert.equal(filterProducts(demoProducts,{sort:'price-low'})[0].price.amount,1200);
   assert.equal(filterProducts(demoProducts,{sort:'price-high'})[0].price.amount,12900);
   assert.equal(selectVariant(hoodie,'M','Obsidian')?.size,'M');assert.equal(selectVariant(hoodie,'XXXS','Obsidian'),null);
@@ -154,6 +154,20 @@ test('Knight Protocol hoodie uses the $89 preview price, no-charm lead image and
   const cart=await provider.addCartLine((await provider.createCart()).id,hoodie.variants[0].id,2);
   assert.equal(cart.subtotal.amount,17800);
   assert.equal(cart.lines[0].image?.src,'media/night-protocol-hoodie-no-charm-reference.webp');
+});
+test('Boogie Man garments use themed campaign art and remain unsellable until the owner supplies prices',()=>{
+  const sweater=demoProducts.find(product=>product.handle==='boogie-man-knit-sweater')!;
+  const hoodie=demoProducts.find(product=>product.handle==='boogeyman-graphic-hoodie')!;
+  assert.equal(sweater.title,'The Boogie Man Knit Sweater');
+  assert.equal(hoodie.title,'Boogeyman Graphic Hoodie');
+  for(const product of [sweater,hoodie]){
+    assert.equal(product.price.amount,0);
+    assert.ok(product.variants.every(variant=>!variant.available));
+    assert.equal(product.images[0]?.kind,'CAMPAIGN CONCEPT');
+    assert.equal(product.images[1]?.kind,'SUPPLIED PRODUCT REFERENCE');
+    assert.match(product.images[0]?.src ?? '',/-campaign\.webp$/);
+    assert.match(product.images[1]?.src ?? '',/-supplied\.webp$/);
+  }
 });
 test('Detroit skyline cap is a separate $32 store product with supplied artwork',async()=>{
   const cap=demoProducts.find(product=>product.handle==='detroit-skyline-cap')!;
@@ -219,13 +233,13 @@ test('New Drop declares the supplied looping background track and browser fallba
     readFile(new URL('../../store/pages/index.astro',import.meta.url),'utf8'),
     readFile(new URL('../../store/ui/experience.ts',import.meta.url),'utf8'),
   ]);
-  assert.match(home,/data-background-audio/);assert.match(home,/autoplay loop preload="auto"/);
+  assert.match(home,/data-background-audio/);assert.match(home,/loop preload="none"/);assert.doesNotMatch(home,/\sautoplay(?:\s|>)/);
   assert.match(home,/media\/lottomind-vault-174hz-background\.mp3/);
   assert.match(experience,/saved\(soundPreference\)!=='off'/);assert.match(experience,/await ambient\.play\(\)/);
 });
-test('Black Signal rail adapter keeps its card and detail titles, $12 price and supplied photo views',async()=>{
+test('Black Signal rail adapter keeps one canonical title, $12 price and supplied photo views',async()=>{
   const adapter=demoProducts.find(product=>product.handle==='black-signal-digital-pack')!;
-  assert.equal(adapter.title,'Black Signal Gun Charm Rail Adaptern Pack');
+  assert.equal(adapter.title,'Black Signal Gun Charm Rail Adapter Pack');
   assert.equal(adapter.productType,'Accessories');
   assert.equal(adapter.digital,false);
   assert.equal(adapter.price.amount,1200);
@@ -240,7 +254,7 @@ test('Black Signal rail adapter keeps its card and detail titles, $12 price and 
   const storage=memory(),provider=new DemoProvider(storage);
   const cart=await provider.addCartLine((await provider.createCart()).id,adapter.variants[0].id,1);
   const restored=(await new DemoProvider(storage).getCart(cart.id))!;
-  assert.equal(restored.lines[0].title,'Black Signal Gun Charm Rail Adaptern Pack');
+  assert.equal(restored.lines[0].title,'Black Signal Gun Charm Rail Adapter Pack');
   assert.equal(restored.lines[0].image?.src,'media/black-signal-gun-charm-rail-adapter-black-group-reference.webp');
 });
 const settings={domain:'armory-demo.myshopify.com',token:'a'.repeat(32),version:'2026-07'};
