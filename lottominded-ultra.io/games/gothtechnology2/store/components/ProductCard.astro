@@ -8,7 +8,7 @@ import { formatMoney } from '../commerce/money';
 import { href } from '../utilities/paths';
 const { product, compact = false } = Astro.props as {product:Product;compact?:boolean};
 const mode = conversionMode(await buildProvider.getProducts()), labels = labelsFor(mode);
-const shortTitles:Record<string,string> = {'night-protocol-hoodie':'Knight Protocol Hoodie','boogie-man-knit-sweater':'Boogie Man Knit','boogeyman-graphic-hoodie':'Boogeyman Hoodie','detroit-2084-shirt':'Detroit 2084 Tee','black-signal-beanie':'Detroit Skyline Beanie','gothtechnology-luggage-charm':'LottoMind Charm // 001','static-saints-patch-set':'Detroit Patch Study'};
+const shortTitles:Record<string,string> = {'night-protocol-hoodie':'Knight Protocol Hoodie','boogeyman-graphic-hoodie':'Boogeyman Hoodie','detroit-2084-shirt':'Detroit 2084 Tee','black-signal-beanie':'Detroit Skyline Beanie','gothtechnology-luggage-charm':'LottoMind Charm // 001','static-saints-patch-set':'Detroit Patch Study'};
 const displayTitle = compact ? shortTitles[product.handle] || product.title : product.title;
 const pricePending = product.price.amount <= 0;
 ---

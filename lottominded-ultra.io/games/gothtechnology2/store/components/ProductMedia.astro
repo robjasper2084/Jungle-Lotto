@@ -3,10 +3,10 @@ import type { Product } from '../commerce/types';
 import { media } from '../utilities/paths';
 import EquipmentArt from './EquipmentArt.astro';
 const { product, priority = false, campaign = false } = Astro.props as {product:Product;priority?:boolean;campaign?:boolean};
-const special = campaign && product.demo ? product.handle === 'night-protocol-hoodie' ? 'media/hero.webp' : product.handle === 'gothtechnology-luggage-charm' ? 'media/charm-campaign.webp' : null : null;
+const special = campaign && product.demo && !product.cardImage ? product.handle === 'night-protocol-hoodie' ? 'media/hero.webp' : product.handle === 'gothtechnology-luggage-charm' ? 'media/charm-campaign.webp' : null : null;
 const image = campaign ? product.cardImage ?? product.images[0] : product.images[0];
 const atlasTiles: Record<string, number> = {'night-protocol-hoodie':0,'detroit-2084-shirt':1,'gothtechnology-luggage-charm':3,'static-saints-patch-set':4};
-const atlasTile = product.demo && (campaign || !image) && product.handle !== 'detroit-2084-shirt' ? atlasTiles[product.handle] ?? -1 : -1;
+const atlasTile = product.demo && !product.cardImage && (campaign || !image) && product.handle !== 'detroit-2084-shirt' ? atlasTiles[product.handle] ?? -1 : -1;
 const silhouettes: Record<string, string> = {
   'detroit-2084-shirt': 'M64 34 40 42 14 84l34 18 8-20v128h128V82l8 20 34-18-26-42-24-8c-8 26-104 26-112 0Z',
   'static-saints-patch-set': 'm62 34 34 20v40l-34 20-34-20V54l34-20Zm110 0 34 20v40l-34 20-34-20V54l34-20Zm-52 94 34 20v40l-34 20-34-20v-40l34-20Z',
