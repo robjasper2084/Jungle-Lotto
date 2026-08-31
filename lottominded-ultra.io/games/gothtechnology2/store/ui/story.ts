@@ -27,14 +27,15 @@ export function initStory() {
 
   const dialog = document.querySelector<HTMLDialogElement>('#material-display')!;
   const image = dialog.querySelector<HTMLImageElement>('#material-image')!;
+  const video = dialog.querySelector<HTMLVideoElement>('#material-video')!;
   const title = dialog.querySelector<HTMLElement>('#material-title')!;
   const product = dialog.querySelector<HTMLAnchorElement>('[data-material-product]')!;
   const zoom = dialog.querySelector<HTMLButtonElement>('[data-material-zoom]')!;
-  const reset = () => { dialog.dataset.zoom = 'false'; zoom.setAttribute('aria-pressed', 'false'); zoom.textContent = 'Zoom detail'; };
+  const reset = () => { dialog.dataset.zoom = 'false'; zoom.setAttribute('aria-pressed', 'false'); zoom.textContent = 'Zoom detail'; video.pause(); video.currentTime = 0; };
   document.querySelectorAll<HTMLButtonElement>('[data-inspect-material]').forEach(button => button.addEventListener('click', () => {
     const embroidery = button.dataset.inspectMaterial === 'embroidery';
-    image.src = href(`media/${embroidery ? 'embroidery' : 'charm'}.webp`);
-    image.alt = embroidery ? 'Close-up reference of the Detroit skyline embroidery' : 'LottoMind character, gold clasp and branded strap reference';
+    image.hidden = embroidery; video.hidden = !embroidery; zoom.hidden = embroidery;
+    if (!embroidery) { image.src = href('media/charm.webp'); image.alt = 'LottoMind character, gold clasp and branded strap reference'; }
     title.textContent = embroidery ? 'The embroidery study' : 'The signature charm';
     product.href = href(`products/${embroidery ? 'night-protocol-hoodie' : 'gothtechnology-luggage-charm'}/`);
     reset(); openDialog('material-display', button);

@@ -17,6 +17,12 @@ const pricePending=product.price.amount<=0;
 const related=products.filter(p=>p.handle!==product.handle && (p.collection===product.collection || p.productType===product.productType)).slice(0,3);
 const character=characters.find(c=>c.id===product.characterAssociation);
 const imageOrientation=(image:{width:number;height:number})=>image.width/image.height>=1.25?'landscape':image.width/image.height<=.8?'portrait':'square';
+const videoPresentation=product.handle==='night-protocol-hoodie'
+  ? {eyebrow:'Supplied product film',title:'See the Detroit apparel story.',note:'Supplied campaign film featuring Detroit apparel and accessories. It is a styling reference, not verified product photography of the Knight Protocol hoodie.',orientation:'portrait',link:null}
+  : product.handle==='black-signal-digital-pack'
+    ? {eyebrow:'Supplied product film',title:'See the attachment concept in motion.',note:'Supplied campaign film featuring the LottoMind charm and attachment context. Final rail-adapter materials, measurements, compatibility, and production remain awaiting owner confirmation.',orientation:'landscape',link:null}
+    : {eyebrow:'Product walkthrough',title:'See the attachment in action.',note:'Installation reference supplied by the product owner. The rail adapter and sporting equipment shown in the demonstration are not included with the Mobster Luggage Charm.',orientation:'portrait',link:'https://www.youtube.com/shorts/0yPqZEvKnFU'};
+const localVideo=Boolean(product.video && !/^https:\/\//.test(product.video));
 const schema = [{'@context':'https://schema.org','@type':'Product',name:product.title,description:product.description,image:product.images.map(im=>new URL(media(im.src),canonical()).href),brand:{'@type':'Brand',name:'GOTHTECHNOLOGY'},...(isDemoMode ? {} : {offers:{'@type':'Offer',price:product.price.amount/(10**precision(product.price.currency)),priceCurrency:product.price.currency,url:canonical(`products/${product.handle}/`),availability:product.variants.some(v=>v.available)?'https://schema.org/InStock':'https://schema.org/OutOfStock'}})}, {'@context':'https://schema.org','@type':'BreadcrumbList',itemListElement:[{'@type':'ListItem',position:1,name:'Shop',item:canonical('shop/')},{'@type':'ListItem',position:2,name:product.title,item:canonical(`products/${product.handle}/`)}]}];
 ---
 <Shell title={product.seo.title} description={product.seo.description} path={`products/${product.handle}/`} schema={schema} socialImage={product.images[0]?.src}>
@@ -31,13 +37,15 @@ const schema = [{'@context':'https://schema.org','@type':'Product',name:product.
       <ProductDevelopment product={product} isDemoMode={isDemoMode}/>
       <p class="product-description">{product.description}</p>
       {product.video && <section class="product-video" aria-labelledby="product-video-title">
-        <p class="mono gold">Product walkthrough</p>
-        <h2 id="product-video-title">See the attachment in action.</h2>
-        <div class="product-video-frame">
-          <iframe src={product.video} title={`${product.title} attachment demonstration`} loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+        <p class="mono gold">{videoPresentation.eyebrow}</p>
+        <h2 id="product-video-title">{videoPresentation.title}</h2>
+        <div class:list={['product-video-frame',`is-${videoPresentation.orientation}`]}>
+          {localVideo
+            ? <video controls preload="metadata" playsinline aria-label={`${product.title} supplied product film`}><source src={media(product.video)} type="video/mp4"/>Your browser does not support embedded video.</video>
+            : <iframe src={product.video} title={`${product.title} attachment demonstration`} loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>}
         </div>
-        <p class="product-video-note">Installation reference supplied by the product owner. The rail adapter and sporting equipment shown in the demonstration are not included with the Mobster Luggage Charm.</p>
-        <a class="text-link" href="https://www.youtube.com/shorts/0yPqZEvKnFU" target="_blank" rel="noopener noreferrer">Watch on YouTube <Icon/></a>
+        <p class="product-video-note">{videoPresentation.note}</p>
+        {videoPresentation.link && <a class="text-link" href={videoPresentation.link} target="_blank" rel="noopener noreferrer">Watch on YouTube <Icon/></a>}
       </section>}
       {character && <a class="text-link" href={href(`play/?character=${character.id}`)}>Play as {character.name} <Icon/></a>}<p class="game-product-note">The same creative world, ready to play. No purchase required.</p><button class="text-button" data-share-product>Share product</button><p class="form-status" data-share-status role="status"></p>
     </div>

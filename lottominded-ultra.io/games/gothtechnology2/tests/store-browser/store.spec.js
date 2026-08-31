@@ -55,7 +55,8 @@ test('shopping cart: launch preferences, quantity, persistence, alert flow and f
 test('catalog filters, sorting, no-results and product actions work',async({page})=>{
   await page.goto(base+'shop/?category=Accessories');await expect(page.locator('#result-count')).toHaveText('4 products');
   const mobsterCharm=page.locator('[data-product-card][data-handle="mobster-luggage-charm"]');await expect(mobsterCharm).toContainText('Mobster Luggage Charm');await expect(mobsterCharm).toContainText('$19.99');
-  await expect(mobsterCharm.locator('img')).toHaveAttribute('src',/\/media\/mobster-luggage-charm-black-background-card-reference\.webp$/);
+  await expect(mobsterCharm.locator('img')).toHaveAttribute('src',/\/media\/mobster-luggage-charm-armory-campaign-v2\.webp$/);
+  await expect(page.locator('[data-product-card][data-handle="gothtechnology-luggage-charm"] img')).toHaveAttribute('src',/\/media\/gothtechnology-luggage-charm-armory-higgsfield-v1\.webp$/);
   const railAdapter=page.locator('[data-product-card][data-handle="black-signal-digital-pack"]');await expect(railAdapter).toContainText('Black Signal Gun Charm Rail Adapter Pack');await expect(railAdapter).toContainText('$12');
   await expect(railAdapter.locator('img')).toHaveAttribute('src',/\/media\/black-signal-gun-charm-rail-adapter-black-group-reference\.webp$/);
   await page.getByLabel('Search products',{exact:true}).fill('GOTHTECHNOLOGY Luggage Charm');await expect(page.locator('[data-product-card]:visible')).toHaveCount(1);
@@ -63,8 +64,8 @@ test('catalog filters, sorting, no-results and product actions work',async({page
   await expect(page.getByRole('dialog',{name:'Your Launch Loadout'})).toContainText('$19.99');await page.keyboard.press('Escape');
   await page.getByLabel('Search products',{exact:true}).fill('zzz-no-match');await expect(page.locator('#no-results')).toBeVisible();
   await page.locator('#no-results').getByRole('button',{name:'Clear filters'}).click();await expect(page.locator('#result-count')).toHaveText('12 products');
-  await page.getByLabel('Search products',{exact:true}).fill('Boog');await expect(page.locator('[data-product-card]:visible')).toHaveCount(2);
-  for(const handle of ['boogie-man-knit-sweater','boogeyman-graphic-hoodie']){const card=page.locator(`[data-product-card][data-handle="${handle}"]`);await expect(card).toContainText('Pending');await expect(card.locator('img')).toHaveAttribute('src',/-campaign\.webp$/);await expect(card.locator('[data-save-product],[data-quick-view]')).toHaveCount(0);}
+  await page.getByLabel('Search products',{exact:true}).fill('Boog');await expect(page.locator('[data-product-card]:visible')).toHaveCount(1);
+  const boogeyman=page.locator('[data-product-card][data-handle="boogeyman-graphic-hoodie"]');await expect(boogeyman).toContainText('Pending');await expect(boogeyman.locator('img')).toHaveAttribute('src',/-campaign\.webp$/);await expect(boogeyman.locator('[data-save-product],[data-quick-view]')).toHaveCount(0);await expect(page.locator('[data-product-card][data-handle="boogie-man-knit-sweater"]')).toHaveCount(0);
   await page.getByLabel('Search products',{exact:true}).fill('');
   await page.getByRole('combobox',{name:'Sort',exact:true}).selectOption('price-low');
   const order=await page.locator('[data-product-card]').evaluateAll(nodes=>nodes.filter(n=>!n.hidden).sort((a,b)=>Number(a.style.order)-Number(b.style.order)).map(n=>n.dataset.handle));expect(order[0]).toBe('black-signal-digital-pack');
@@ -81,25 +82,31 @@ test('homepage keeps the four core beats and links deeper world-building from na
   for(const selector of ['#current-drop','#featured','#character-vault','#enter-the-fight'])await expect(page.locator(selector)).toBeVisible();
   await expect(page.locator('#current-drop .drop-price')).toContainText('$89');
   await expect(page.locator('[data-product-card][data-handle="night-protocol-hoodie"]')).toContainText('$89');
-  await expect(page.locator('main .campaign-film,main #combat-lookbook,main .armory-origin,main #armory')).toHaveCount(0);
-  await expect(page.locator('.desktop-nav').getByRole('link',{name:'Lookbook',exact:true})).toHaveAttribute('href',base+'lookbook/');
-  await expect(page.locator('.desktop-nav').getByRole('link',{name:'About',exact:true})).toHaveAttribute('href',base+'about/');
+  await expect(page.locator('#featured [data-product-card][data-handle="boogeyman-graphic-hoodie"]')).toHaveCount(0);
+  await expect(page.locator('#featured [data-product-card]')).toHaveCount(6);
+  await page.getByRole('button',{name:'Inspect embroidery',exact:true}).click();const material=page.getByRole('dialog',{name:'The embroidery study'});await expect(material).toBeVisible();const embroideryFilm=page.getByLabel('Embroidery study supplied product film');await expect(embroideryFilm).toBeVisible();await expect(embroideryFilm.locator('source')).toHaveAttribute('src',base+'media/embroidery-study-supplied-film-v1.mp4');await expect(embroideryFilm).toHaveAttribute('controls','');await expect(embroideryFilm).not.toHaveAttribute('autoplay','');await expect(material.locator('#material-image')).toBeHidden();await expect(material.getByRole('button',{name:'Zoom detail'})).toBeHidden();await page.keyboard.press('Escape');
+  const charmFigure=page.locator('.drop-charm-figure');await expect(charmFigure).toBeVisible();expect(await charmFigure.evaluate(figure=>{const button=figure.querySelector('.material-hotspot')?.getBoundingClientRect(),art=figure.querySelector('.equipment-art')?.getBoundingClientRect();return Boolean(button&&art&&button.bottom<=art.top+1);})).toBe(true);
+  await page.getByRole('button',{name:'Inspect the charm',exact:true}).click();await expect(page.getByRole('dialog',{name:'The signature charm'}).locator('#material-image')).toBeVisible();await expect(embroideryFilm).toBeHidden();await page.keyboard.press('Escape');
+  await expect(page.locator('main .campaign-film,main #combat-lookbook,main .armory-origin,main #armory')).toHaveCount(4);
+  await expect(page.locator(`.desktop-nav a[href="${base}lookbook/"]`)).toHaveCount(1);
+  await expect(page.locator(`.desktop-nav a[href="${base}about/"]`)).toHaveCount(1);
 });
 
 test('signal keychain cards use matching artwork and retain their collection filter defaults',async({page})=>{
-  const signals=[['The Analog: Cyan circuit keychain','detroit-2084',4,'keychain-analog-mobster-adapter-black-reference.webp'],['The Champ: Gold guardian keychain','night-protocol',1,'keychain-disciples-campaign.webp'],['The Mobster: Gold mobster keychain','static-saints',1,'keychain-mobster-suit-gold-arch-reference.webp'],['The Observer: Gold observer keychain','cyber-cathedral',2,'keychain-analog-mobster-cyan-arch-reference.webp']];
+  const signals=[['The Mobster: Cyan circuit keychain','detroit-2084',5,'signal-analog-armory-campaign-v2.webp'],['The Champ: Gold guardian keychain','night-protocol',1,'keychain-disciples-campaign.webp'],['The Mobster: Gold mobster keychain','static-saints',1,'keychain-mobster-suit-gold-arch-reference.webp'],['The Observer: Gold observer keychain','cyber-cathedral',2,'gothtechnology-luggage-charm-armory-higgsfield-v1.webp']];
   for(const [name,handle,count,artwork] of signals){
     await page.goto(base+'#character-vault');
     const card=page.getByRole('link',{name,exact:true});
     await expect(card.locator('img')).toHaveAttribute('src',base+'media/'+artwork);
+    if(handle==='cyber-cathedral')await expect(card.locator('.signal-portrait')).toHaveClass(/signal-portrait-cover/);
     await card.click();await expect(page).toHaveURL(base+'collections/'+handle+'/');await page.waitForLoadState('domcontentloaded');await ready(page);
     if(await page.locator('.filter-disclosure summary').isVisible() && !(await page.locator('.filter-disclosure').evaluate(el=>el.open)))await page.locator('.filter-disclosure summary').click();
     await expect(page.getByRole('combobox',{name:'Collection',exact:true})).toHaveValue(handle);
     await expect(page.locator('[data-product-card]:visible')).toHaveCount(count);
   }
   await page.getByRole('combobox',{name:'Collection',exact:true}).selectOption('');
-  await expect(page.locator('[data-product-card]:visible')).toHaveCount(10);
-  await page.reload();await expect(page.locator('[data-product-card]:visible')).toHaveCount(10);
+  await expect(page.locator('[data-product-card]:visible')).toHaveCount(12);
+  await page.reload();await expect(page.locator('[data-product-card]:visible')).toHaveCount(12);
   if(await page.locator('.filter-disclosure summary').isVisible())await page.locator('.filter-disclosure summary').click();
   await page.getByRole('button',{name:'Clear filters',exact:true}).click();
   await expect(page.getByRole('combobox',{name:'Collection',exact:true})).toHaveValue('cyber-cathedral');
@@ -139,6 +146,7 @@ test('product gallery uses image-aware modes and honest 2.5D remains lazy',async
   await page.goto(product);await expect(page.locator('.gallery-main')).toHaveAttribute('data-gallery-orientation','landscape');expect(requests.some(url=>/\/model\.[^/]*\.js/.test(url))).toBe(false);
   await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/night-protocol-hoodie-no-charm-reference\.webp$/);await expect(page.locator('[data-selected-price]')).toHaveText('$89');
   await expect(page.locator('.development-status')).toContainText('The LottoMind charm shown in some supplied reference imagery is not included with the hoodie.');
+  const hoodieFilm=page.getByLabel('Knight Protocol Embroidered Hoodie supplied product film');await expect(hoodieFilm).toBeVisible();await expect(hoodieFilm.locator('source')).toHaveAttribute('src',base+'media/knight-protocol-supplied-product-film-v1.mp4');await expect(hoodieFilm).toHaveAttribute('controls','');await expect(hoodieFilm).not.toHaveAttribute('autoplay','');
   await page.getByRole('button',{name:'Embroidery reference',exact:true}).click();await expect(page.locator('#gallery-image')).toHaveAttribute('src',/embroidery/);await expect(page.locator('.gallery-main')).toHaveClass(/is-landscape/);
   await page.getByRole('button',{name:'Zoom image',exact:true}).click();await expect(page.locator('#gallery-zoom')).toHaveAttribute('aria-pressed','true');
   await page.getByRole('button',{name:/Open depth display/}).click();await expect(page.locator('.depth-frame img')).toBeVisible();await page.getByRole('button',{name:'Back',exact:true}).click();await expect(page.locator('[data-viewer-status]')).toContainText('not supplied');
@@ -146,18 +154,21 @@ test('product gallery uses image-aware modes and honest 2.5D remains lazy',async
   await page.goto(base);
   await expect(page.locator('[data-product-card][data-handle="detroit-2084-shirt"] img')).toHaveAttribute('src',/\/media\/detroit-2084-tee-reference\.webp$/);
   await expect(page.locator('[data-product-card][data-handle="black-signal-beanie"] img')).toHaveAttribute('src',/\/media\/detroit-skyline-beanie-reference\.webp$/);
+  await expect(page.locator('[data-product-card][data-handle="detroit-skull-cap-alt"] img')).toHaveAttribute('src',/\/media\/detroit-skull-cap-alt-reference\.webp$/);
   await page.goto(base+'products/black-signal-beanie/');await expect(page.getByRole('heading',{level:1})).toHaveText('Detroit Skyline Embroidered Beanie');
-  await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/detroit-skyline-beanie-reference\.webp$/);await expect(page.getByRole('radio',{name:'Black',exact:true})).toBeChecked();
+  await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/detroit-skyline-beanie-reference\.webp$/);await expect(page.locator('[data-selected-price]')).toHaveText('$19');await expect(page.getByRole('radio',{name:'Black',exact:true})).toBeChecked();
   await page.getByRole('button',{name:'Zoom image',exact:true}).click();await expect(page.locator('#gallery-zoom')).toHaveAttribute('aria-pressed','true');
+  await page.goto(base+'products/detroit-skull-cap-alt/');await expect(page.getByRole('heading',{level:1})).toHaveText('Detroit Embroidered Skull Cap — Alt Version');
+  await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/detroit-skull-cap-alt-reference\.webp$/);await expect(page.locator('[data-selected-price]')).toHaveText('$22');await expect(page.getByRole('radio',{name:'Black',exact:true})).toBeChecked();
   await page.goto(base+'products/detroit-2084-shirt/');await expect(page.getByRole('heading',{level:1})).toHaveText('Detroit 2084 Graphic T-Shirt');
   await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/detroit-2084-tee-reference\.webp$/);await expect(page.locator('[data-selected-price]')).toHaveText('$36');
   await page.goto(base+'products/detroit-skyline-cap/');await expect(page.getByRole('heading',{level:1})).toHaveText('Detroit Skyline Embroidered Cap');
   await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/detroit-skyline-cap-reference\.webp$/);await expect(page.locator('[data-selected-price]')).toHaveText('$32');
-  await page.goto(base+'products/boogie-man-knit-sweater/');await expect(page.getByRole('heading',{level:1})).toHaveText('The Boogie Man Knit Sweater');
-  await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/boogie-man-knit-sweater-campaign\.webp$/);await expect(page.locator('.gallery-main [data-gallery-kind]')).toHaveText('CAMPAIGN CONCEPT');await expect(page.locator('[data-selected-price]')).toHaveText('Pending');await expect(page.getByRole('button',{name:'Price pending',exact:true})).toBeDisabled();
-  await page.getByRole('button',{name:'Supplied design reference',exact:true}).click();await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/boogie-man-knit-sweater-supplied\.webp$/);await expect(page.locator('.gallery-main [data-gallery-kind]')).toHaveText('SUPPLIED PRODUCT REFERENCE');
   await page.goto(base+'products/boogeyman-graphic-hoodie/');await expect(page.getByRole('heading',{level:1})).toHaveText('Boogeyman Graphic Hoodie');
   await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/boogeyman-graphic-hoodie-campaign\.webp$/);await expect(page.locator('.gallery-main [data-gallery-kind]')).toHaveText('CAMPAIGN CONCEPT');await expect(page.locator('[data-selected-price]')).toHaveText('Pending');await expect(page.getByRole('button',{name:'Price pending',exact:true})).toBeDisabled();
+  await page.goto(base+'products/gothtechnology-luggage-charm/');await expect(page.getByRole('heading',{level:1})).toHaveText('GOTHTECHNOLOGY Luggage Charm');
+  await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/gothtechnology-luggage-charm-armory-higgsfield-v1\.webp$/);await expect(page.locator('.gallery-main [data-gallery-kind]')).toHaveText('CAMPAIGN CONCEPT');
+  await page.getByRole('button',{name:'Product reference',exact:true}).click();await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/charm\.webp$/);await expect(page.locator('.gallery-main [data-gallery-kind]')).toHaveText('SUPPLIED PRODUCT REFERENCE');
   await page.goto(base+'products/mobster-luggage-charm/');await expect(page.getByRole('heading',{level:1})).toHaveText('Mobster Luggage Charm');
   await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/mobster-luggage-charm-cyan-arch-reference\.webp$/);await expect(page.locator('[data-selected-price]')).toHaveText('$19.99');
   await expect(page.getByRole('button',{name:'Load 3D model',exact:true})).toBeVisible();await page.getByRole('button',{name:'Load 3D model',exact:true}).click();await expect(page.locator('.model-stage canvas')).toBeVisible();await expect(page.locator('[data-viewer-status]')).toContainText('3D model loaded');
@@ -165,11 +176,12 @@ test('product gallery uses image-aware modes and honest 2.5D remains lazy',async
   await expect(page.getByText('The rail adapter and sporting equipment shown in the demonstration are not included with the Mobster Luggage Charm.',{exact:false})).toBeVisible();
   await expect(page.getByRole('link',{name:'Watch on YouTube',exact:false})).toHaveAttribute('href','https://www.youtube.com/shorts/0yPqZEvKnFU');
   await page.getByRole('button',{name:'Equipment context',exact:true}).click();await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/mobster-luggage-charm-equipment-context-reference\.webp$/);
-  await page.goto(base+'products/static-saints-patch-set/');await expect(page.getByRole('heading',{level:1})).toHaveText('Static Saints Embroidered Patch Set');
+  await page.goto(base+'products/static-saints-patch-set/');await expect(page.getByRole('heading',{level:1})).toHaveText('Static Saints Embroidered Patch Set');await expect(page.locator('[data-selected-price]')).toHaveText('$20');
   await page.getByRole('button',{name:'White embroidery reference',exact:true}).click();await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/static-saints-patch-white-reference\.webp$/);
   await expect(page.locator('.gallery-main')).toHaveAttribute('data-gallery-orientation','landscape');
   await page.goto(base+'products/black-signal-digital-pack/');await expect(page.getByRole('heading',{level:1})).toHaveText('Black Signal Gun Charm Rail Adapter Pack');
   await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/black-signal-gun-charm-rail-adapter-black-group-reference\.webp$/);await expect(page.locator('[data-selected-price]')).toHaveText('$12');
+  const adapterFilm=page.getByLabel('Black Signal Gun Charm Rail Adapter Pack supplied product film');await expect(adapterFilm).toBeVisible();await expect(adapterFilm.locator('source')).toHaveAttribute('src',base+'media/black-signal-rail-adapter-supplied-film-v1.mp4');await expect(adapterFilm).toHaveAttribute('controls','');await expect(adapterFilm).not.toHaveAttribute('autoplay','');
   await expect(page.getByRole('button',{name:'Equipment context',exact:true})).toBeVisible();await expect(page.getByRole('button',{name:'White-background group reference',exact:true})).toBeVisible();
   await page.getByRole('button',{name:'Front reference',exact:true}).click();await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/black-signal-gun-charm-rail-adapter-black-fabric-reference\.webp$/);
   await page.getByRole('button',{name:'Underside reference',exact:true}).click();await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/black-signal-gun-charm-rail-adapter-underside-reference\.webp$/);await expect(page.locator('.gallery-main')).toHaveAttribute('data-gallery-orientation','square');

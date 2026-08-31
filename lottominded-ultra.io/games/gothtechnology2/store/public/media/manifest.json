@@ -703,5 +703,85 @@
     "height": 900,
     "bytes": 120870,
     "origin": "AI armory campaign concept derived from the user-supplied product reference; not verified product photography"
+  },
+  {
+    "source": "hf_20260716_225651_278168cb-7cea-4bc2-b20e-d025f54ae6b2 (2).mp4",
+    "output": "knight-protocol-supplied-product-film-v1.mp4",
+    "sourceWidth": 720,
+    "sourceHeight": 1280,
+    "width": 540,
+    "height": 960,
+    "bytes": 2440437,
+    "origin": "User-supplied campaign video; rights and product accuracy require owner confirmation"
+  },
+  {
+    "source": "hf_20260716_132525_f95bd986-99cf-447e-9bfb-9e7980dc1a40.mp4",
+    "output": "black-signal-rail-adapter-supplied-film-v1.mp4",
+    "sourceWidth": 1280,
+    "sourceHeight": 720,
+    "width": 960,
+    "height": 540,
+    "bytes": 2082846,
+    "origin": "User-supplied campaign video; rights and product accuracy require owner confirmation"
+  },
+  {
+    "source": "hf_20260716_130142_95a33c4c-a137-43a9-838b-36987c007fcf.mp4",
+    "output": "embroidery-study-supplied-film-v1.mp4",
+    "sourceWidth": 1280,
+    "sourceHeight": 720,
+    "width": 960,
+    "height": 540,
+    "bytes": 3226668,
+    "origin": "User-supplied campaign video; rights and product accuracy require owner confirmation"
+  },
+  {
+    "source": "Built-in image edit of mascot-leaf-collectible.webp using boogeyman-graphic-hoodie-campaign.webp as the armory style reference",
+    "output": "i-love-detroit-ashtray-armory-campaign-v2.webp",
+    "sourceWidth": 1694,
+    "sourceHeight": 941,
+    "width": 1600,
+    "height": 900,
+    "bytes": 144360,
+    "origin": "AI armory campaign concept derived from the existing product reference; not verified product photography"
+  },
+  {
+    "source": "Built-in image edit of mobster-luggage-charm-black-background-card-reference.webp using boogeyman-graphic-hoodie-campaign.webp as the armory style reference",
+    "output": "mobster-luggage-charm-armory-campaign-v2.webp",
+    "sourceWidth": 1694,
+    "sourceHeight": 941,
+    "width": 1600,
+    "height": 900,
+    "bytes": 204684,
+    "origin": "AI armory campaign concept derived from the existing product reference; not verified product photography"
+  },
+  {
+    "source": "Built-in image edit of keychain-analog-mobster-adapter-black-reference.webp using boogeyman-graphic-hoodie-campaign.webp as the armory style reference",
+    "output": "signal-analog-armory-campaign-v2.webp",
+    "sourceWidth": 1086,
+    "sourceHeight": 1448,
+    "width": 900,
+    "height": 1200,
+    "bytes": 155624,
+    "origin": "AI armory campaign concept derived from the existing product reference; not verified product photography"
+  },
+  {
+    "source": "Higgsfield generation 25f7edc6-edc6-4e81-9351-3a4b8a53633f from hf_20260812_041808_8a5ab03b-24f1-484c-9d8f-cf1c4d54dad8.png",
+    "output": "gothtechnology-luggage-charm-armory-higgsfield-v1.webp",
+    "sourceWidth": 2752,
+    "sourceHeight": 1536,
+    "width": 1600,
+    "height": 900,
+    "bytes": 125664,
+    "origin": "Higgsfield AI armory campaign concept derived from the user-supplied product reference; not verified product photography"
+  },
+  {
+    "source": "hf_20260827_212159_814938bf-9a42-4e9a-a217-c5992d08c4d4 (1).png",
+    "output": "detroit-skull-cap-alt-reference.webp",
+    "sourceWidth": 896,
+    "sourceHeight": 1200,
+    "width": 896,
+    "height": 1200,
+    "bytes": 70144,
+    "origin": "User-supplied product reference; rights and product accuracy require owner confirmation"
   }
 ]

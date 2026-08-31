@@ -111,7 +111,7 @@ test('cart restoration recalculates current prices and rejects duplicate lines',
 test('filters combine variant options and handle search, availability and price sorting',()=>{
   assert.equal(filterProducts(demoProducts,{search:'hoodie',size:'M',color:'Obsidian'}).length,1);
   assert.equal(filterProducts(demoProducts,{search:'no-such-product'}).length,0);
-  assert.equal(filterProducts(demoProducts,{availability:'unavailable'}).length,2);
+  assert.equal(filterProducts(demoProducts,{availability:'unavailable'}).length,1);
   assert.equal(filterProducts(demoProducts,{sort:'price-low'})[0].price.amount,1200);
   assert.equal(filterProducts(demoProducts,{sort:'price-high'})[0].price.amount,12900);
   assert.equal(selectVariant(hoodie,'M','Obsidian')?.size,'M');assert.equal(selectVariant(hoodie,'XXXS','Obsidian'),null);
@@ -129,8 +129,28 @@ test('Detroit beanie is searchable in black and keeps its reference image in the
   const cart=await provider.addCartLine((await provider.createCart()).id,beanieVariant.id,1);
   const restored=(await new DemoProvider(storage).getCart(cart.id))!;
   assert.equal(restored.lines[0].title,'Detroit Skyline Embroidered Beanie');
+  assert.equal(beanie.price.amount,1900);
+  assert.equal(formatMoney(beanie.price),'$19');
   assert.equal(restored.lines[0].color,'Black');
   assert.equal(restored.lines[0].image?.src,'media/detroit-skyline-beanie-reference.webp');
+});
+test('alternate Detroit skull cap is a distinct $22 Shop product with its supplied portrait reference',async()=>{
+  const products=filterProducts(demoProducts,{search:'Detroit Embroidered Skull Cap',color:'Black'});
+  assert.equal(products.length,1);
+  const cap=products[0],capVariant=selectVariant(cap,'One size','Black');
+  assert.ok(capVariant);
+  assert.equal(cap.handle,'detroit-skull-cap-alt');
+  assert.equal(cap.title,'Detroit Embroidered Skull Cap — Alt Version');
+  assert.equal(cap.price.amount,2200);
+  assert.equal(formatMoney(cap.price),'$22');
+  assert.equal(cap.featured,false);
+  assert.equal(cap.images[0]?.src,'media/detroit-skull-cap-alt-reference.webp');
+  assert.deepEqual([cap.images[0]?.width,cap.images[0]?.height],[896,1200]);
+  const storage=memory(),provider=new DemoProvider(storage);
+  const cart=await provider.addCartLine((await provider.createCart()).id,capVariant.id,1);
+  const restored=(await new DemoProvider(storage).getCart(cart.id))!;
+  assert.equal(restored.lines[0].title,'Detroit Embroidered Skull Cap — Alt Version');
+  assert.equal(restored.lines[0].image?.src,'media/detroit-skull-cap-alt-reference.webp');
 });
 test('Detroit 2084 shirt keeps its $36 preview price and supplied artwork in the saved cart',async()=>{
   const shirt=demoProducts.find(product=>product.handle==='detroit-2084-shirt')!;
@@ -149,25 +169,24 @@ test('Knight Protocol hoodie uses the $89 preview price, no-charm lead image and
   assert.equal(formatMoney(hoodie.price),'$89');
   assert.ok(hoodie.variants.every(variant=>variant.price.amount===8900));
   assert.equal(hoodie.images[0]?.src,'media/night-protocol-hoodie-no-charm-reference.webp');
+  assert.equal(hoodie.video,'media/knight-protocol-supplied-product-film-v1.mp4');
   assert.match(hoodie.information.includedItems ?? '',/charm.+not included with the hoodie/i);
   const storage=memory(),provider=new DemoProvider(storage);
   const cart=await provider.addCartLine((await provider.createCart()).id,hoodie.variants[0].id,2);
   assert.equal(cart.subtotal.amount,17800);
   assert.equal(cart.lines[0].image?.src,'media/night-protocol-hoodie-no-charm-reference.webp');
 });
-test('Boogie Man garments use themed campaign art and remain unsellable until the owner supplies prices',()=>{
-  const sweater=demoProducts.find(product=>product.handle==='boogie-man-knit-sweater')!;
+test('Boogeyman hoodie keeps its themed campaign art and remains unsellable until the owner supplies a price',()=>{
   const hoodie=demoProducts.find(product=>product.handle==='boogeyman-graphic-hoodie')!;
-  assert.equal(sweater.title,'The Boogie Man Knit Sweater');
+  assert.equal(demoProducts.some(product=>product.handle==='boogie-man-knit-sweater'),false);
   assert.equal(hoodie.title,'Boogeyman Graphic Hoodie');
-  for(const product of [sweater,hoodie]){
-    assert.equal(product.price.amount,0);
-    assert.ok(product.variants.every(variant=>!variant.available));
-    assert.equal(product.images[0]?.kind,'CAMPAIGN CONCEPT');
-    assert.equal(product.images[1]?.kind,'SUPPLIED PRODUCT REFERENCE');
-    assert.match(product.images[0]?.src ?? '',/-campaign\.webp$/);
-    assert.match(product.images[1]?.src ?? '',/-supplied\.webp$/);
-  }
+  assert.equal(hoodie.featured,false);
+  assert.equal(hoodie.price.amount,0);
+  assert.ok(hoodie.variants.every(variant=>!variant.available));
+  assert.equal(hoodie.images[0]?.kind,'CAMPAIGN CONCEPT');
+  assert.equal(hoodie.images[1]?.kind,'SUPPLIED PRODUCT REFERENCE');
+  assert.match(hoodie.images[0]?.src ?? '',/-campaign\.webp$/);
+  assert.match(hoodie.images[1]?.src ?? '',/-supplied\.webp$/);
 });
 test('Detroit skyline cap is a separate $32 store product with supplied artwork',async()=>{
   const cap=demoProducts.find(product=>product.handle==='detroit-skyline-cap')!;
@@ -181,10 +200,12 @@ test('Detroit skyline cap is a separate $32 store product with supplied artwork'
   const restored=(await new DemoProvider(storage).getCart(cart.id))!;
   assert.equal(restored.lines[0].image?.src,'media/detroit-skyline-cap-reference.webp');
 });
-test('Detroit ashtray keeps its existing product link and supplied artwork in the cart',async()=>{
+test('Detroit ashtray keeps its existing product link and uses armory campaign art on cards',async()=>{
   const [ashtray]=filterProducts(demoProducts,{search:'I Love Detroit Ashtray',category:'Collectibles'});
   assert.ok(ashtray);
   assert.equal(ashtray.handle,'cyber-cathedral-art-print');
+  assert.equal(ashtray.cardImage?.src,'media/i-love-detroit-ashtray-armory-campaign-v2.webp');
+  assert.equal(ashtray.cardImage?.kind,'CAMPAIGN CONCEPT');
   const storage=memory(),provider=new DemoProvider(storage);
   const cart=await provider.addCartLine((await provider.createCart()).id,ashtray.variants[0].id,1);
   const restored=(await new DemoProvider(storage).getCart(cart.id))!;
@@ -196,12 +217,18 @@ test('LottoMind charm uses exact cents in the catalog and cart',async()=>{
   assert.equal(charm.price.amount,1999);
   assert.equal(formatMoney(charm.price),'$19.99');
   assert.ok(charm.variants.every(v=>v.price.amount===1999));
+  assert.equal(charm.cardImage?.src,'media/gothtechnology-luggage-charm-armory-higgsfield-v1.webp');
+  assert.equal(charm.cardImage?.kind,'CAMPAIGN CONCEPT');
+  assert.equal(charm.images[0]?.src,'media/gothtechnology-luggage-charm-armory-higgsfield-v1.webp');
+  assert.equal(charm.images[1]?.src,'media/charm.webp');
   const provider=new DemoProvider(memory());
   const cart=await provider.addCartLine((await provider.createCart()).id,charm.variants[0].id,2);
   assert.equal(cart.subtotal.amount,3998);
 });
-test('Static Saints patch set includes the supplied white embroidery reference',()=>{
+test('Static Saints patch set is $20 and includes the supplied white embroidery reference',()=>{
   const patches=demoProducts.find(product=>product.handle==='static-saints-patch-set')!;
+  assert.equal(patches.price.amount,2000);
+  assert.equal(formatMoney(patches.price),'$20');
   assert.deepEqual(patches.images.map(image=>image.src),[
     'media/patch.webp',
     'media/static-saints-patch-white-reference.webp',
@@ -216,7 +243,8 @@ test('Mobster luggage charm replaces the desk mat at $19.99 with supplied artwor
   assert.equal(charm.productType,'Accessories');
   assert.equal(charm.price.amount,1999);
   assert.equal(formatMoney(charm.price),'$19.99');
-  assert.equal(charm.cardImage?.src,'media/mobster-luggage-charm-black-background-card-reference.webp');
+  assert.equal(charm.cardImage?.src,'media/mobster-luggage-charm-armory-campaign-v2.webp');
+  assert.equal(charm.cardImage?.kind,'CAMPAIGN CONCEPT');
   assert.equal(charm.images[0]?.src,'media/mobster-luggage-charm-cyan-arch-reference.webp');
   assert.equal(charm.images[1]?.src,'media/mobster-luggage-charm-equipment-context-reference.webp');
   assert.equal(charm.images[1]?.label,'Equipment context');
@@ -243,6 +271,7 @@ test('Black Signal rail adapter keeps one canonical title, $12 price and supplie
   assert.equal(adapter.productType,'Accessories');
   assert.equal(adapter.digital,false);
   assert.equal(adapter.price.amount,1200);
+  assert.equal(adapter.video,'media/black-signal-rail-adapter-supplied-film-v1.mp4');
   assert.equal(formatMoney(adapter.price),'$12');
   assert.deepEqual(adapter.images.map(image=>image.src),[
     'media/black-signal-gun-charm-rail-adapter-black-group-reference.webp',
