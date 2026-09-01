@@ -14,7 +14,7 @@ const { product }=Astro.props;
 const products=await buildProvider.getProducts();
 const mode=conversionMode(products), isDemoMode=mode==='interest', labels=labelsFor(mode);
 const pricePending=product.price.amount<=0;
-const requiresKnifeSafety=product.handle==='key-knife-keychain';
+const requiresKnifeSafety=['key-knife-keychain','key-knife-gun-attachment-bundle'].includes(product.handle);
 const related=products.filter(p=>p.handle!==product.handle && (p.collection===product.collection || p.productType===product.productType)).slice(0,3);
 const character=characters.find(c=>c.id===product.characterAssociation);
 const imageOrientation=(image:{width:number;height:number})=>image.width/image.height>=1.25?'landscape':image.width/image.height<=.8?'portrait':'square';
@@ -58,3 +58,4 @@ const schema = [{'@context':'https://schema.org','@type':'Product',name:product.
   <div class="mobile-product-bar"><div><strong>{pricePending ? 'Price pending' : formatMoney(product.price)}</strong><span>{pricePending ? 'Concept preview' : labels.price}</span></div><a class="button" href="#product-options" data-select-options>{pricePending ? 'View Details' : 'Choose Options'} <Icon/></a></div>
   </div>
 </Shell>
+

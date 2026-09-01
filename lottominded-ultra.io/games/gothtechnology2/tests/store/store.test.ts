@@ -293,7 +293,7 @@ test('Key Knife is one $11.99 Shop product with black and silver variants plus s
   assert.equal(knife.featured,false);
   assert.deepEqual(knife.colors,['Black','Silver']);
   assert.deepEqual(knife.variants.map(variant=>variant.color),['Black','Silver']);
-  assert.equal(knife.cardImage?.src,'media/key-knife-signal-ensemble-campaign.webp');
+  assert.equal(knife.cardImage?.src,'media/key-knife-gothic-open-side-campaign.webp');
   assert.deepEqual(knife.images.slice(0,2).map(image=>image.src),['media/key-knife-black-reference.webp','media/key-knife-silver-reference.webp']);
   assert.equal(knife.images[2].src,'media/key-knife-gothic-open-side-campaign.webp');
   assert.equal(knife.images[2].label,'Open-blade Gothic armory campaign concept');
@@ -319,6 +319,30 @@ test('Key Knife is one $11.99 Shop product with black and silver variants plus s
   assert.match(filters,/>All Gear</);
   assert.match(catalogUI,/ArrowRight/);
   assert.match(catalogUI,/Spacebar/);
+});
+test('Key Knife and gun attachment bundle is a $39 Shop-only bundle with closed and open references',()=>{
+  const bundle=demoProducts.find(product=>product.handle==='key-knife-gun-attachment-bundle')!;
+  assert.ok(bundle);
+  assert.equal(bundle.title,'Key Knife + Gun Attachment Bundle');
+  assert.equal(bundle.productType,'Bundles');
+  assert.equal(bundle.price.amount,3900);
+  assert.equal(formatMoney(bundle.price),'$39');
+  assert.equal(bundle.featured,false);
+  assert.deepEqual(bundle.colors,['Black']);
+  assert.deepEqual(bundle.images.map(image=>image.src),[
+    'media/key-knife-gun-attachment-bundle-closed-reference.webp',
+    'media/key-knife-gun-attachment-bundle-open-reference.webp',
+  ]);
+  assert.match(bundle.description,/Mobster luggage charm.+styling only.+not included/i);
+  assert.match(bundle.description,/rail compatibility and fit.+age requirements.+legal carry and shipping restrictions/i);
+});
+test('default Shop order places Detroit Winter Sunset Artwork third in the featured row',()=>{
+  const featured=filterProducts(demoProducts);
+  assert.deepEqual(featured.slice(0,3).map(product=>product.handle),[
+    'night-protocol-hoodie',
+    'detroit-2084-shirt',
+    'detroit-winter-sunset-artwork',
+  ]);
 });
 test('New Drop declares the supplied looping background track and browser fallback controller',async()=>{
   const [home,experience]=await Promise.all([
