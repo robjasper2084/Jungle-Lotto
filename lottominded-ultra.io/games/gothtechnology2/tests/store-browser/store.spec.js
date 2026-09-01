@@ -86,6 +86,7 @@ test('homepage keeps the four core beats and links deeper world-building from na
   await expect(page.locator('#featured [data-product-card][data-handle="static-saints-patch-set"]')).toHaveCount(0);
   await expect(page.locator('#featured [data-product-card][data-handle="detroit-winter-sunset-artwork"] img')).toHaveAttribute('src',/detroit-winter-sunset-artwork-gothic-frame-alt\.webp$/);
   await expect(page.locator('#featured [data-product-card]')).toHaveCount(6);
+  await expect(page.locator('#featured [data-product-card]').first()).toHaveAttribute('data-handle','detroit-winter-sunset-artwork');
   const armoryCases=page.locator('#armory .equipment-case');await expect(armoryCases.first().getByRole('heading',{level:3})).toHaveText('Original Artwork');
   const originalArtworkCase=page.getByRole('link',{name:/Original Artwork/});await expect(originalArtworkCase.locator('img')).toHaveAttribute('src',base+'media/detroit-winter-sunset-artwork-gothic-frame-alt.webp');
   const categoryArtwork=page.locator('#armory .category-product-art img');await expect(categoryArtwork).toHaveCount(2);expect(await categoryArtwork.evaluateAll(images=>images.every(image=>getComputedStyle(image).objectFit==='cover'))).toBe(true);
@@ -120,9 +121,14 @@ test('signal keychain cards use matching artwork and retain their collection fil
 
 test('homepage signal row keeps the collectibles without game-character portraits',async({page})=>{
   await page.goto(base+'#character-vault');
-  await expect(page.locator('#character-vault .signal-card')).toHaveCount(4);
+  const cards=page.locator('#character-vault .signal-card');
+  await expect(cards).toHaveCount(4);
+  await expect(cards.first()).toHaveAttribute('aria-label','The Observer: Gold observer keychain');
+  await expect(cards.last()).toHaveAttribute('aria-label','The Mobster: Cyan circuit keychain');
   await expect(page.locator('#character-vault .signal-inspect')).toHaveCount(4);
   await expect(page.locator('#character-vault .signal-game')).toHaveCount(0);
+  await expect(page.locator('footer nav[aria-label="Shop"]')).toContainText('All Gear');
+  await expect(page.locator('footer nav[aria-label="Shop"]')).not.toContainText('All Equipment');
 });
 
 test('Original Artwork collection presents both Detroit works with Gothic frame alternatives',async({page})=>{
