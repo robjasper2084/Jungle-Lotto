@@ -933,5 +933,15 @@
     "height": 1254,
     "bytes": 236850,
     "origin": "AI group campaign concept derived from supplied product references; not verified product photography"
+  },
+  {
+    "source": "Higgsfield restyle of hf_20260901_150632_3103086f-4753-41c0-9626-c5d7d47ab0f4.png",
+    "output": "key-knife-gothic-open-side-campaign.webp",
+    "sourceWidth": 2752,
+    "sourceHeight": 1536,
+    "width": 2752,
+    "height": 1536,
+    "bytes": 67284,
+    "origin": "Higgsfield Gothic armory campaign concept derived from a user-supplied product reference; not verified product photography"
   }
 ]
