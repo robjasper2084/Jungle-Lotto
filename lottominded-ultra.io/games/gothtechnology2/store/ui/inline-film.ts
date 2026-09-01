@@ -6,7 +6,7 @@ export function initInlineFilms() {
     const toggle = host.querySelector<HTMLButtonElement>('[data-origin-film-toggle]')!;
     const sound = host.querySelector<HTMLButtonElement>('[data-origin-film-sound]')!;
     const status = host.querySelector<HTMLElement>('[data-origin-film-status]')!;
-    film.muted = true;
+    film.defaultMuted = false; film.muted = false; film.volume = 1;
     const sync = () => {
       toggle.textContent = (film.ended ? 'Replay ' : film.paused ? 'Play ' : 'Pause ') + toggle.dataset.filmLabel;
       sound.textContent = film.muted ? 'Turn sound on' : 'Mute sound';

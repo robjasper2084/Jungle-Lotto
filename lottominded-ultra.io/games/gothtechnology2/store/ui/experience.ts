@@ -48,7 +48,7 @@ export function initExperience() {
   const video=$<HTMLVideoElement>('#store-video')!, transmission=$<HTMLDialogElement>('#transmission-dialog')!;
   $$('[data-watch-transmission]').forEach(button=>button.addEventListener('click',async()=>{
     if(!config.features.enableCommercialTransmissions||$('#home-commercial'))return;
-    stopAudio();video.muted=true;video.src=href('media/charm-transmission-silent.mp4');openDialog('transmission-dialog',button);
+    stopAudio();video.defaultMuted=false;video.muted=false;video.volume=1;video.src=href('media/charm-transmission-silent.mp4');openDialog('transmission-dialog',button);
     if(!isReduced())try{await video.play();}catch{announce('Press play to start the transmission.');}
   }));
   video.addEventListener('error',()=>announce('Transmission unavailable. Product imagery and the catalog are still available.'));

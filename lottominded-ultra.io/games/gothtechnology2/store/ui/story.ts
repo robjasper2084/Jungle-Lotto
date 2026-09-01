@@ -32,16 +32,20 @@ export function initStory() {
   const product = dialog.querySelector<HTMLAnchorElement>('[data-material-product]')!;
   const zoom = dialog.querySelector<HTMLButtonElement>('[data-material-zoom]')!;
   const reset = () => { dialog.dataset.zoom = 'false'; zoom.setAttribute('aria-pressed', 'false'); zoom.textContent = 'Zoom detail'; video.pause(); video.currentTime = 0; };
+  const release = () => { reset(); video.removeAttribute('src'); video.load(); };
   document.querySelectorAll<HTMLButtonElement>('[data-inspect-material]').forEach(button => button.addEventListener('click', () => {
     const embroidery = button.dataset.inspectMaterial === 'embroidery';
-    image.hidden = embroidery; video.hidden = !embroidery; zoom.hidden = embroidery;
-    if (!embroidery) { image.src = href('media/charm.webp'); image.alt = 'LottoMind character, gold clasp and branded strap reference'; }
+    release(); image.hidden = true; video.hidden = false; zoom.hidden = true;
     title.textContent = embroidery ? 'The embroidery study' : 'The signature charm';
     product.href = href(`products/${embroidery ? 'night-protocol-hoodie' : 'gothtechnology-luggage-charm'}/`);
-    reset(); openDialog('material-display', button);
+    video.src = embroidery ? video.dataset.embroiderySrc! : video.dataset.charmSrc!;
+    video.poster = embroidery ? video.dataset.embroideryPoster! : video.dataset.charmPoster!;
+    video.setAttribute('aria-label', embroidery ? 'Embroidery study supplied product film' : 'Signature charm supplied product film');
+    video.defaultMuted = false; video.muted = false; video.volume = 1;
+    openDialog('material-display', button); void video.play().catch(() => { /* Controls remain available if autoplay is blocked. */ });
   }));
   zoom.addEventListener('click', () => { const zoomed = dialog.dataset.zoom !== 'true'; dialog.dataset.zoom = String(zoomed); zoom.setAttribute('aria-pressed', String(zoomed)); zoom.textContent = zoomed ? 'Reset detail' : 'Zoom detail'; });
-  dialog.addEventListener('close', reset);
+  dialog.addEventListener('close', release);
 
   let transitionTimer = 0, audio: AudioContext | null = null;
   document.querySelectorAll<HTMLAnchorElement>('[data-portal-link]').forEach(link => link.addEventListener('click', event => {

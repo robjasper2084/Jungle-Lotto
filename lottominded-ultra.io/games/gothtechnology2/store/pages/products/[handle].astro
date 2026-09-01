@@ -41,7 +41,7 @@ const schema = [{'@context':'https://schema.org','@type':'Product',name:product.
         <h2 id="product-video-title">{videoPresentation.title}</h2>
         <div class:list={['product-video-frame',`is-${videoPresentation.orientation}`]}>
           {localVideo
-            ? <video controls preload="metadata" playsinline aria-label={`${product.title} supplied product film`}><source src={media(product.video)} type="video/mp4"/>Your browser does not support embedded video.</video>
+            ? <video controls autoplay preload="metadata" playsinline aria-label={`${product.title} supplied product film`}><source src={media(product.video)} type="video/mp4"/>Your browser does not support embedded video.</video>
             : <iframe src={product.video} title={`${product.title} attachment demonstration`} loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>}
         </div>
         <p class="product-video-note">{videoPresentation.note}</p>
