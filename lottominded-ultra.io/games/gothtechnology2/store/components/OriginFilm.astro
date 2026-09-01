@@ -12,7 +12,7 @@ const {
 } = Astro.props;
 ---
 <figure class:list={['origin-film', {'feature-film':feature}]} data-inline-film>
-  <video id={id} data-src={href(source)} controls muted playsinline preload="none" width="1280" height="720"
+  <video id={id} data-src={href(source)} controls autoplay playsinline preload="none" width="1280" height="720"
     poster={href(poster)} aria-label={label} aria-describedby={id+'-description'}>
     Your browser cannot play this video. <a href={href(source)}>Open the film</a>.
   </video>
@@ -21,7 +21,7 @@ const {
     <p id={id+'-description'}>{description}</p>
     <div class="film-actions">
       <button class="button secondary" type="button" data-origin-film-toggle data-film-label={buttonLabel} aria-controls={id}>Play {buttonLabel}</button>
-      <button class="button secondary" type="button" data-origin-film-sound aria-controls={id} aria-pressed="false">Turn sound on</button>
+      <button class="button secondary" type="button" data-origin-film-sound aria-controls={id} aria-pressed="true">Mute sound</button>
       <a class="text-link" href={href(source)}>Open video file →</a>
     </div>
     <p class="film-status" data-origin-film-status role="status"></p>

@@ -63,7 +63,7 @@ test('catalog filters, sorting, no-results and product actions work',async({page
   await page.getByRole('button',{name:'Save to Launch Loadout: GOTHTECHNOLOGY Luggage Charm',exact:true}).click();
   await expect(page.getByRole('dialog',{name:'Your Launch Loadout'})).toContainText('$19.99');await page.keyboard.press('Escape');
   await page.getByLabel('Search products',{exact:true}).fill('zzz-no-match');await expect(page.locator('#no-results')).toBeVisible();
-  await page.locator('#no-results').getByRole('button',{name:'Clear filters'}).click();await expect(page.locator('#result-count')).toHaveText('12 products');
+  await page.locator('#no-results').getByRole('button',{name:'Clear filters'}).click();await expect(page.locator('#result-count')).toHaveText('14 products');
   await page.getByLabel('Search products',{exact:true}).fill('Boog');await expect(page.locator('[data-product-card]:visible')).toHaveCount(1);
   const boogeyman=page.locator('[data-product-card][data-handle="boogeyman-graphic-hoodie"]');await expect(boogeyman).toContainText('Pending');await expect(boogeyman.locator('img')).toHaveAttribute('src',/-campaign\.webp$/);await expect(boogeyman.locator('[data-save-product],[data-quick-view]')).toHaveCount(0);await expect(page.locator('[data-product-card][data-handle="boogie-man-knit-sweater"]')).toHaveCount(0);
   await page.getByLabel('Search products',{exact:true}).fill('');
@@ -83,10 +83,15 @@ test('homepage keeps the four core beats and links deeper world-building from na
   await expect(page.locator('#current-drop .drop-price')).toContainText('$89');
   await expect(page.locator('[data-product-card][data-handle="night-protocol-hoodie"]')).toContainText('$89');
   await expect(page.locator('#featured [data-product-card][data-handle="boogeyman-graphic-hoodie"]')).toHaveCount(0);
+  await expect(page.locator('#featured [data-product-card][data-handle="static-saints-patch-set"]')).toHaveCount(0);
+  await expect(page.locator('#featured [data-product-card][data-handle="detroit-winter-sunset-artwork"] img')).toHaveAttribute('src',/detroit-winter-sunset-artwork-gothic-frame-alt\.webp$/);
   await expect(page.locator('#featured [data-product-card]')).toHaveCount(6);
-  await page.getByRole('button',{name:'Inspect embroidery',exact:true}).click();const material=page.getByRole('dialog',{name:'The embroidery study'});await expect(material).toBeVisible();const embroideryFilm=page.getByLabel('Embroidery study supplied product film');await expect(embroideryFilm).toBeVisible();await expect(embroideryFilm.locator('source')).toHaveAttribute('src',base+'media/embroidery-study-supplied-film-v1.mp4');await expect(embroideryFilm).toHaveAttribute('controls','');await expect(embroideryFilm).not.toHaveAttribute('autoplay','');await expect(material.locator('#material-image')).toBeHidden();await expect(material.getByRole('button',{name:'Zoom detail'})).toBeHidden();await page.keyboard.press('Escape');
-  const charmFigure=page.locator('.drop-charm-figure');await expect(charmFigure).toBeVisible();expect(await charmFigure.evaluate(figure=>{const button=figure.querySelector('.material-hotspot')?.getBoundingClientRect(),art=figure.querySelector('.equipment-art')?.getBoundingClientRect();return Boolean(button&&art&&button.bottom<=art.top+1);})).toBe(true);
-  await page.getByRole('button',{name:'Inspect the charm',exact:true}).click();await expect(page.getByRole('dialog',{name:'The signature charm'}).locator('#material-image')).toBeVisible();await expect(embroideryFilm).toBeHidden();await page.keyboard.press('Escape');
+  const armoryCases=page.locator('#armory .equipment-case');await expect(armoryCases.first().getByRole('heading',{level:3})).toHaveText('Original Artwork');
+  const originalArtworkCase=page.getByRole('link',{name:/Original Artwork/});await expect(originalArtworkCase.locator('img')).toHaveAttribute('src',base+'media/detroit-winter-sunset-artwork-gothic-frame-alt.webp');
+  const categoryArtwork=page.locator('#armory .category-product-art img');await expect(categoryArtwork).toHaveCount(2);expect(await categoryArtwork.evaluateAll(images=>images.every(image=>getComputedStyle(image).objectFit==='cover'))).toBe(true);
+  const figures=page.locator('.drop-showcase>figure');await expect(figures).toHaveCount(2);const geometry=await figures.evaluateAll(items=>items.map(figure=>{const button=figure.querySelector('.material-hotspot')?.getBoundingClientRect(),art=figure.querySelector('.equipment-art')?.getBoundingClientRect();return {buttonTop:button?.top,artTop:art?.top,artHeight:art?.height};}));expect(Math.abs(geometry[0].buttonTop-geometry[1].buttonTop)).toBeLessThan(1);expect(Math.abs(geometry[0].artTop-geometry[1].artTop)).toBeLessThan(1);expect(Math.abs(geometry[0].artHeight-geometry[1].artHeight)).toBeLessThan(1);
+  await page.getByRole('button',{name:'Inspect embroidery',exact:true}).click();const material=page.getByRole('dialog',{name:'The embroidery study'});await expect(material).toBeVisible();const embroideryFilm=page.getByLabel('Embroidery study supplied product film');await expect(embroideryFilm).toBeVisible();await expect(embroideryFilm).toHaveAttribute('src',base+'media/embroidery-study-supplied-film-v1.mp4');await expect(embroideryFilm).toHaveAttribute('controls','');await expect(embroideryFilm).toHaveAttribute('autoplay','');expect(await embroideryFilm.evaluate(video=>!video.muted&&video.volume===1)).toBe(true);await expect(material.locator('#material-image')).toBeHidden();await expect(material.getByRole('button',{name:'Zoom detail'})).toBeHidden();await page.keyboard.press('Escape');await expect(embroideryFilm).not.toHaveAttribute('src');
+  await page.getByRole('button',{name:'Inspect the charm',exact:true}).click();const charmFilm=page.getByLabel('Signature charm supplied product film');await expect(page.getByRole('dialog',{name:'The signature charm'})).toBeVisible();await expect(charmFilm).toBeVisible();await expect(charmFilm).toHaveAttribute('src',base+'media/signature-charm-supplied-film-v1.mp4');await expect(charmFilm).toHaveAttribute('autoplay','');expect(await charmFilm.evaluate(video=>!video.muted&&video.volume===1)).toBe(true);await expect(material.locator('#material-image')).toBeHidden();await page.keyboard.press('Escape');
   await expect(page.locator('main .campaign-film,main #combat-lookbook,main .armory-origin,main #armory')).toHaveCount(4);
   await expect(page.locator(`.desktop-nav a[href="${base}lookbook/"]`)).toHaveCount(1);
   await expect(page.locator(`.desktop-nav a[href="${base}about/"]`)).toHaveCount(1);
@@ -105,8 +110,8 @@ test('signal keychain cards use matching artwork and retain their collection fil
     await expect(page.locator('[data-product-card]:visible')).toHaveCount(count);
   }
   await page.getByRole('combobox',{name:'Collection',exact:true}).selectOption('');
-  await expect(page.locator('[data-product-card]:visible')).toHaveCount(12);
-  await page.reload();await expect(page.locator('[data-product-card]:visible')).toHaveCount(12);
+  await expect(page.locator('[data-product-card]:visible')).toHaveCount(14);
+  await page.reload();await expect(page.locator('[data-product-card]:visible')).toHaveCount(14);
   if(await page.locator('.filter-disclosure summary').isVisible())await page.locator('.filter-disclosure summary').click();
   await page.getByRole('button',{name:'Clear filters',exact:true}).click();
   await expect(page.getByRole('combobox',{name:'Collection',exact:true})).toHaveValue('cyber-cathedral');
@@ -118,6 +123,19 @@ test('homepage signal row keeps the collectibles without game-character portrait
   await expect(page.locator('#character-vault .signal-card')).toHaveCount(4);
   await expect(page.locator('#character-vault .signal-inspect')).toHaveCount(4);
   await expect(page.locator('#character-vault .signal-game')).toHaveCount(0);
+});
+
+test('Original Artwork collection presents both Detroit works with Gothic frame alternatives',async({page})=>{
+  await page.goto(base+'collections/original-artwork/');
+  await expect(page.getByRole('heading',{level:1})).toHaveText('Original Artwork.');
+  await expect(page.locator('[data-product-card]:visible')).toHaveCount(2);
+  await expect(page.locator('[data-product-card][data-handle="detroit-riverfront-sunset-artwork"]')).toContainText('Pending');
+  await expect(page.locator('[data-product-card][data-handle="detroit-winter-sunset-artwork"]')).toContainText('Pending');
+  await page.goto(base+'products/detroit-winter-sunset-artwork/');
+  await expect(page.getByRole('button',{name:'Gothic frame alt',exact:true})).toBeVisible();
+  await page.getByRole('button',{name:'Gothic frame alt',exact:true}).click();
+  await expect(page.locator('#gallery-image')).toHaveAttribute('src',/detroit-winter-sunset-artwork-gothic-frame-alt\.webp$/);
+  await expect(page.locator('.gallery-main [data-gallery-kind]')).toHaveText('CAMPAIGN CONCEPT');
 });
 
 const signalFighters=[['DETROIT_LENS_NOIR','Detroit Lens Noir','detroit-lens-noir'],['MASTER_EZRA','Master Ezra','master-ezra'],['AMARA_VALENTINE','Amara Valentine','amara-valentine'],['KALYX','Kalyx','kalyx']];
@@ -146,12 +164,13 @@ test('product gallery uses image-aware modes and honest 2.5D remains lazy',async
   await page.goto(product);await expect(page.locator('.gallery-main')).toHaveAttribute('data-gallery-orientation','landscape');expect(requests.some(url=>/\/model\.[^/]*\.js/.test(url))).toBe(false);
   await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/night-protocol-hoodie-no-charm-reference\.webp$/);await expect(page.locator('[data-selected-price]')).toHaveText('$89');
   await expect(page.locator('.development-status')).toContainText('The LottoMind charm shown in some supplied reference imagery is not included with the hoodie.');
-  const hoodieFilm=page.getByLabel('Knight Protocol Embroidered Hoodie supplied product film');await expect(hoodieFilm).toBeVisible();await expect(hoodieFilm.locator('source')).toHaveAttribute('src',base+'media/knight-protocol-supplied-product-film-v1.mp4');await expect(hoodieFilm).toHaveAttribute('controls','');await expect(hoodieFilm).not.toHaveAttribute('autoplay','');
+  const hoodieFilm=page.getByLabel('Knight Protocol Embroidered Hoodie supplied product film');await expect(hoodieFilm).toBeVisible();await expect(hoodieFilm.locator('source')).toHaveAttribute('src',base+'media/knight-protocol-supplied-product-film-v1.mp4');await expect(hoodieFilm).toHaveAttribute('controls','');await expect(hoodieFilm).toHaveAttribute('autoplay','');await expect(hoodieFilm).not.toHaveAttribute('muted','');
   await page.getByRole('button',{name:'Embroidery reference',exact:true}).click();await expect(page.locator('#gallery-image')).toHaveAttribute('src',/embroidery/);await expect(page.locator('.gallery-main')).toHaveClass(/is-landscape/);
+  await page.getByRole('button',{name:'Cathedral styling reference',exact:true}).click();await expect(page.locator('#gallery-image')).toHaveAttribute('src',/night-protocol-hoodie-cathedral-styling-reference/);await expect(page.locator('.gallery-main')).toHaveClass(/is-landscape/);
   await page.getByRole('button',{name:'Zoom image',exact:true}).click();await expect(page.locator('#gallery-zoom')).toHaveAttribute('aria-pressed','true');
   await page.getByRole('button',{name:/Open depth display/}).click();await expect(page.locator('.depth-frame img')).toBeVisible();await page.getByRole('button',{name:'Back',exact:true}).click();await expect(page.locator('[data-viewer-status]')).toContainText('not supplied');
   await page.getByRole('button',{name:'Reset view',exact:true}).click();await page.locator('.product-information').scrollIntoViewIfNeeded();await page.screenshot({path:info.outputPath('product.png')});
-  await page.goto(base);
+  await page.goto(base+'shop/');
   await expect(page.locator('[data-product-card][data-handle="detroit-2084-shirt"] img')).toHaveAttribute('src',/\/media\/detroit-2084-tee-reference\.webp$/);
   await expect(page.locator('[data-product-card][data-handle="black-signal-beanie"] img')).toHaveAttribute('src',/\/media\/detroit-skyline-beanie-reference\.webp$/);
   await expect(page.locator('[data-product-card][data-handle="detroit-skull-cap-alt"] img')).toHaveAttribute('src',/\/media\/detroit-skull-cap-alt-reference\.webp$/);
@@ -172,7 +191,7 @@ test('product gallery uses image-aware modes and honest 2.5D remains lazy',async
   await page.goto(base+'products/mobster-luggage-charm/');await expect(page.getByRole('heading',{level:1})).toHaveText('Mobster Luggage Charm');
   await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/mobster-luggage-charm-cyan-arch-reference\.webp$/);await expect(page.locator('[data-selected-price]')).toHaveText('$19.99');
   await expect(page.getByRole('button',{name:'Load 3D model',exact:true})).toBeVisible();await page.getByRole('button',{name:'Load 3D model',exact:true}).click();await expect(page.locator('.model-stage canvas')).toBeVisible();await expect(page.locator('[data-viewer-status]')).toContainText('3D model loaded');
-  const mobsterVideo=page.getByTitle('Mobster Luggage Charm attachment demonstration');await expect(mobsterVideo).toBeVisible();await expect(mobsterVideo).toHaveAttribute('src','https://www.youtube-nocookie.com/embed/0yPqZEvKnFU?rel=0');
+  const mobsterVideo=page.getByTitle('Mobster Luggage Charm attachment demonstration');await expect(mobsterVideo).toBeVisible();await expect(mobsterVideo).toHaveAttribute('src','https://www.youtube-nocookie.com/embed/0yPqZEvKnFU?rel=0&autoplay=1');
   await expect(page.getByText('The rail adapter and sporting equipment shown in the demonstration are not included with the Mobster Luggage Charm.',{exact:false})).toBeVisible();
   await expect(page.getByRole('link',{name:'Watch on YouTube',exact:false})).toHaveAttribute('href','https://www.youtube.com/shorts/0yPqZEvKnFU');
   await page.getByRole('button',{name:'Equipment context',exact:true}).click();await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/mobster-luggage-charm-equipment-context-reference\.webp$/);
@@ -181,7 +200,7 @@ test('product gallery uses image-aware modes and honest 2.5D remains lazy',async
   await expect(page.locator('.gallery-main')).toHaveAttribute('data-gallery-orientation','landscape');
   await page.goto(base+'products/black-signal-digital-pack/');await expect(page.getByRole('heading',{level:1})).toHaveText('Black Signal Gun Charm Rail Adapter Pack');
   await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/black-signal-gun-charm-rail-adapter-black-group-reference\.webp$/);await expect(page.locator('[data-selected-price]')).toHaveText('$12');
-  const adapterFilm=page.getByLabel('Black Signal Gun Charm Rail Adapter Pack supplied product film');await expect(adapterFilm).toBeVisible();await expect(adapterFilm.locator('source')).toHaveAttribute('src',base+'media/black-signal-rail-adapter-supplied-film-v1.mp4');await expect(adapterFilm).toHaveAttribute('controls','');await expect(adapterFilm).not.toHaveAttribute('autoplay','');
+  const adapterFilm=page.getByLabel('Black Signal Gun Charm Rail Adapter Pack supplied product film');await expect(adapterFilm).toBeVisible();await expect(adapterFilm.locator('source')).toHaveAttribute('src',base+'media/black-signal-rail-adapter-supplied-film-v1.mp4');await expect(adapterFilm).toHaveAttribute('controls','');await expect(adapterFilm).toHaveAttribute('autoplay','');await expect(adapterFilm).not.toHaveAttribute('muted','');
   await expect(page.getByRole('button',{name:'Equipment context',exact:true})).toBeVisible();await expect(page.getByRole('button',{name:'White-background group reference',exact:true})).toBeVisible();
   await page.getByRole('button',{name:'Front reference',exact:true}).click();await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/black-signal-gun-charm-rail-adapter-black-fabric-reference\.webp$/);
   await page.getByRole('button',{name:'Underside reference',exact:true}).click();await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/black-signal-gun-charm-rail-adapter-underside-reference\.webp$/);await expect(page.locator('.gallery-main')).toHaveAttribute('data-gallery-orientation','square');
@@ -200,7 +219,7 @@ test('inline films load only after Play and stay paused when returning',async({p
   const host=page.locator('[data-inline-film]').first(),video=host.locator('video');
   await host.scrollIntoViewIfNeeded();await page.waitForTimeout(1000);
   expect(requests.some(url=>/\.mp4/.test(url))).toBe(false);await expect(video).not.toHaveAttribute('src');
-  await host.locator('[data-origin-film-toggle]').click();await expect.poll(()=>video.evaluate(v=>!v.paused&&v.muted)).toBe(true);
+  await host.locator('[data-origin-film-toggle]').click();await expect.poll(()=>video.evaluate(v=>!v.paused&&!v.muted&&v.volume===1)).toBe(true);
   await host.locator('[data-origin-film-toggle]').click();await expect.poll(()=>video.evaluate(v=>v.paused)).toBe(true);
   await page.locator('h1').scrollIntoViewIfNeeded();await host.scrollIntoViewIfNeeded();expect(await video.evaluate(v=>v.paused)).toBe(true);
 });
@@ -213,7 +232,7 @@ test('reduced motion and save-data keep films on request',async({page})=>{
 });
 test('Lookbook transmission is requested explicitly and can always close',async({page})=>{
   await page.goto(base+'lookbook/');await page.getByRole('button',{name:'Watch the 15-second charm film'}).click();
-  await expect(page.locator('#transmission-dialog')).toBeVisible();await expect(page.locator('#store-video')).toHaveAttribute('src',/charm-transmission-silent/);
+  await expect(page.locator('#transmission-dialog')).toBeVisible();await expect(page.locator('#store-video')).toHaveAttribute('src',/charm-transmission-silent/);await expect(page.locator('#store-video')).toHaveAttribute('autoplay','');expect(await page.locator('#store-video').evaluate(video=>!video.muted&&video.volume===1)).toBe(true);
   await page.keyboard.press('Escape');await expect(page.locator('#store-video')).not.toHaveAttribute('src');
 });
 for(const [surface,path,watchLabel] of [['Homepage','','Watch Campaign Film'],['Shop','shop/','Watch commercial']]){
@@ -280,7 +299,7 @@ test('conversion UI: keyboard, mobile filters, settings and sticky action',async
   if(compact){await expect(disclosure).not.toHaveAttribute('open');await summary.click();}
   await page.getByRole('combobox',{name:'Category',exact:true}).selectOption('Accessories');await expect(page.locator('#result-count')).toHaveText('4 products');
   if(compact)await summary.click();
-  await page.getByRole('button',{name:'Clear category filter'}).click();await expect(page.locator('#result-count')).toHaveText('12 products');
+  await page.getByRole('button',{name:'Clear category filter'}).click();await expect(page.locator('#result-count')).toHaveText('14 products');
   if(compact)await expect(summary).toBeFocused();
   await page.goto(product);await ready(page);
   if(compact){await expect(page.locator('.mobile-product-bar')).toBeVisible();await page.locator('.mobile-product-bar [data-select-options]').click();await expect(page.locator('#product-options')).toBeFocused();await expect(page.locator('.mobile-product-bar')).not.toBeVisible();await page.locator('.site-footer').scrollIntoViewIfNeeded();await expect(page.locator('.mobile-product-bar')).not.toBeVisible();}

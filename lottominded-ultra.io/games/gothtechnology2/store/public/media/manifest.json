@@ -783,5 +783,85 @@
     "height": 1200,
     "bytes": 70144,
     "origin": "User-supplied product reference; rights and product accuracy require owner confirmation"
+  },
+  {
+    "source": "hf_20260831_200045_c2ee15a3-6f35-48e7-ae55-b6057c384ed8.png",
+    "output": "night-protocol-hoodie-cathedral-styling-reference.webp",
+    "sourceWidth": 2048,
+    "sourceHeight": 1152,
+    "width": 1600,
+    "height": 900,
+    "bytes": 67856,
+    "origin": "User-supplied styling reference; accessories shown are not included with the hoodie; rights and product accuracy require owner confirmation"
+  },
+  {
+    "source": "hf_20260723_195333_4036acf3-c2b4-4561-a729-a3853224ab52 (2).mp4",
+    "output": "signature-charm-supplied-film-v1.mp4",
+    "sourceWidth": 1280,
+    "sourceHeight": 720,
+    "width": 960,
+    "height": 540,
+    "bytes": 1528349,
+    "origin": "User-supplied campaign video; rights and product accuracy require owner confirmation"
+  },
+  {
+    "source": "Built-in image edit of 471416631_10164522633379167_1043009366817453832_n.jpg",
+    "output": "detroit-riverfront-sunset-artwork-armory-campaign.webp",
+    "sourceWidth": 1672,
+    "sourceHeight": 941,
+    "width": 1600,
+    "height": 900,
+    "bytes": 130848,
+    "origin": "AI armory campaign concept derived from the user-supplied artwork reference; creator credit preserved in the supplied reference; rights and product accuracy require owner confirmation"
+  },
+  {
+    "source": "471416631_10164522633379167_1043009366817453832_n.jpg",
+    "output": "detroit-riverfront-sunset-artwork-supplied.webp",
+    "sourceWidth": 960,
+    "sourceHeight": 638,
+    "width": 960,
+    "height": 638,
+    "bytes": 107938,
+    "origin": "User-supplied artwork reference with visible creator credit; rights, edition details, and product accuracy require owner confirmation"
+  },
+  {
+    "source": "Built-in image edit of 598308874_10166326247114167_8885767374643666816_n.jpg",
+    "output": "detroit-winter-sunset-artwork-armory-campaign.webp",
+    "sourceWidth": 1672,
+    "sourceHeight": 941,
+    "width": 1600,
+    "height": 900,
+    "bytes": 121324,
+    "origin": "AI armory campaign concept derived from the user-supplied artwork reference; creator credit preserved; rights and product accuracy require owner confirmation"
+  },
+  {
+    "source": "598308874_10166326247114167_8885767374643666816_n.jpg",
+    "output": "detroit-winter-sunset-artwork-supplied.webp",
+    "sourceWidth": 720,
+    "sourceHeight": 478,
+    "width": 720,
+    "height": 478,
+    "bytes": 60358,
+    "origin": "User-supplied artwork reference with visible creator credit; rights, edition details, and product accuracy require owner confirmation"
+  },
+  {
+    "source": "Built-in image edit of 471416631_10164522633379167_1043009366817453832_n.jpg",
+    "output": "detroit-riverfront-sunset-artwork-gothic-frame-alt.webp",
+    "sourceWidth": 1672,
+    "sourceHeight": 941,
+    "width": 1600,
+    "height": 900,
+    "bytes": 135254,
+    "origin": "AI alternate black-and-gold wooden Gothic frame concept derived from the user-supplied artwork reference; rights and product accuracy require owner confirmation"
+  },
+  {
+    "source": "Built-in image edit of 598308874_10166326247114167_8885767374643666816_n.jpg",
+    "output": "detroit-winter-sunset-artwork-gothic-frame-alt.webp",
+    "sourceWidth": 1672,
+    "sourceHeight": 941,
+    "width": 1600,
+    "height": 900,
+    "bytes": 155010,
+    "origin": "AI alternate black-and-gold wooden Gothic frame concept derived from the user-supplied artwork reference; creator credit preserved; rights and product accuracy require owner confirmation"
   }
 ]

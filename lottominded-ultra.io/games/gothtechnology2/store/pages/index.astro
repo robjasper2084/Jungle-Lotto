@@ -15,10 +15,10 @@ const products = await buildProvider.getProducts();
 const isDemoMode = conversionMode(products) === 'interest';
 const drop = products.find(p => p.handle === 'night-protocol-hoodie') || products[0];
 const cases = [
+  {name:'Original Artwork',url:'collections/original-artwork/',tile:null,image:products.find(p => p.handle === 'detroit-winter-sunset-artwork')?.cardImage ?? products.find(p => p.handle === 'detroit-winter-sunset-artwork')?.images[1]},
   {name:'Apparel',url:'shop/?category=Apparel',tile:0},
   {name:'Accessories',url:'shop/?category=Accessories',tile:3},
   {name:'Collectibles',url:'shop/?category=Collectibles',tile:5,image:products.find(p => p.handle === 'cyber-cathedral-art-print')?.cardImage ?? products.find(p => p.handle === 'cyber-cathedral-art-print')?.images[0]},
-  {name:'Original Artwork',url:'collections/black-signal/',tile:null},
 ];
 ---
 <Shell title="The Armory — Equipment for the world after midnight" cinematic>
@@ -31,7 +31,7 @@ const cases = [
     </div>
     <div class="drop-showcase">
       <figure><EquipmentArt tile={0} alt="Studio concept of the supplied 313 Detroit hoodie, front view"/><figcaption>01 / THE 313 HOODIE</figcaption><button class="material-hotspot" data-inspect-material="embroidery" aria-haspopup="dialog">Inspect embroidery</button></figure>
-      <figure class="drop-charm-figure"><button class="material-hotspot" data-inspect-material="charm" aria-haspopup="dialog">Inspect the charm</button><EquipmentArt tile={3} alt="Studio concept of the supplied LottoMind charm and gold clasp"/><figcaption>02 / THE EVERYDAY COMPANION</figcaption></figure>
+      <figure><EquipmentArt tile={3} alt="Studio concept of the supplied LottoMind charm and gold clasp"/><figcaption>02 / THE EVERYDAY COMPANION</figcaption><button class="material-hotspot" data-inspect-material="charm" aria-haspopup="dialog">Inspect the charm</button></figure>
       <button class="text-button drop-transmission" data-watch-transmission><Icon name="play" size={13}/>Watch Campaign Film</button>
     </div>
     <aside class="drop-telemetry" aria-label="Drop information"><p>DROP INFO</p><dl><dt>001</dt><dd>Knight Protocol</dd><dt>Reference</dt><dd>313 / Detroit</dd><dt>Type</dt><dd>Apparel + artifact</dd><dt>Status</dt><dd>{isDemoMode ? 'In development' : 'View product details'}</dd></dl><span class="signal-mark" aria-hidden="true">⌖</span></aside>
@@ -48,7 +48,7 @@ const cases = [
   <Newsletter/>
   <dialog id="material-display" class="material-dialog" aria-labelledby="material-title">
     <div class="dialog-heading"><h2 id="material-title">Material study</h2><button class="icon-button" data-close-dialog aria-label="Close material study"><Icon name="close"/></button></div>
-    <div class="material-image-wrap"><img id="material-image" alt="" width="1376" height="768"/><video id="material-video" controls preload="metadata" playsinline aria-label="Embroidery study supplied product film" hidden><source src={media('media/embroidery-study-supplied-film-v1.mp4')} type="video/mp4"/>Your browser does not support embedded video.</video></div>
+    <div class="material-image-wrap"><img id="material-image" alt="" width="1376" height="768" hidden/><video id="material-video" controls autoplay preload="metadata" playsinline data-embroidery-src={media('media/embroidery-study-supplied-film-v1.mp4')} data-charm-src={media('media/signature-charm-supplied-film-v1.mp4')} data-embroidery-poster={media('media/embroidery.webp')} data-charm-poster={media('media/charm.webp')} aria-label="Material study supplied product film" hidden>Your browser does not support embedded video.</video></div>
     <div class="button-row"><button class="button secondary" data-material-zoom aria-pressed="false">Zoom detail</button><a class="button" data-material-product>View product</a></div>
     <p>Reference artwork, not final product photography. {isDemoMode && 'No orders or payments.'}</p>
   </dialog>
@@ -56,6 +56,6 @@ const cases = [
 </Shell>
 <style>
   .category-product-art{position:relative;width:100%;aspect-ratio:1.18;background:#080b0b}
-  .category-product-art img{position:absolute;width:100%;height:100%;object-fit:contain}
+  .category-product-art img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
   @media(max-width:560px){.category-product-art{aspect-ratio:1.1}}
 </style>

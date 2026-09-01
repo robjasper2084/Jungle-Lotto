@@ -111,7 +111,7 @@ test('cart restoration recalculates current prices and rejects duplicate lines',
 test('filters combine variant options and handle search, availability and price sorting',()=>{
   assert.equal(filterProducts(demoProducts,{search:'hoodie',size:'M',color:'Obsidian'}).length,1);
   assert.equal(filterProducts(demoProducts,{search:'no-such-product'}).length,0);
-  assert.equal(filterProducts(demoProducts,{availability:'unavailable'}).length,1);
+  assert.equal(filterProducts(demoProducts,{availability:'unavailable'}).length,3);
   assert.equal(filterProducts(demoProducts,{sort:'price-low'})[0].price.amount,1200);
   assert.equal(filterProducts(demoProducts,{sort:'price-high'})[0].price.amount,12900);
   assert.equal(selectVariant(hoodie,'M','Obsidian')?.size,'M');assert.equal(selectVariant(hoodie,'XXXS','Obsidian'),null);
@@ -169,6 +169,8 @@ test('Knight Protocol hoodie uses the $89 preview price, no-charm lead image and
   assert.equal(formatMoney(hoodie.price),'$89');
   assert.ok(hoodie.variants.every(variant=>variant.price.amount===8900));
   assert.equal(hoodie.images[0]?.src,'media/night-protocol-hoodie-no-charm-reference.webp');
+  assert.equal(hoodie.images[3]?.src,'media/night-protocol-hoodie-cathedral-styling-reference.webp');
+  assert.deepEqual([hoodie.images[3]?.width,hoodie.images[3]?.height],[1600,900]);
   assert.equal(hoodie.video,'media/knight-protocol-supplied-product-film-v1.mp4');
   assert.match(hoodie.information.includedItems ?? '',/charm.+not included with the hoodie/i);
   const storage=memory(),provider=new DemoProvider(storage);
@@ -228,6 +230,7 @@ test('LottoMind charm uses exact cents in the catalog and cart',async()=>{
 test('Static Saints patch set is $20 and includes the supplied white embroidery reference',()=>{
   const patches=demoProducts.find(product=>product.handle==='static-saints-patch-set')!;
   assert.equal(patches.price.amount,2000);
+  assert.equal(patches.featured,false);
   assert.equal(formatMoney(patches.price),'$20');
   assert.deepEqual(patches.images.map(image=>image.src),[
     'media/patch.webp',
@@ -235,6 +238,27 @@ test('Static Saints patch set is $20 and includes the supplied white embroidery 
   ]);
   assert.equal(patches.images[1]?.label,'White embroidery reference');
   assert.equal(patches.images[1]?.kind,'DETAIL REFERENCE');
+});
+test('Original Artwork collection keeps both supplied Detroit references price-pending and features only the winter alt',()=>{
+  const artwork=demoProducts.filter(product=>product.collection==='original-artwork');
+  assert.deepEqual(artwork.map(product=>product.handle),['detroit-riverfront-sunset-artwork','detroit-winter-sunset-artwork']);
+  for(const product of artwork){
+    assert.equal(product.price.amount,0);
+    assert.equal(product.featured,product.handle==='detroit-winter-sunset-artwork');
+    assert.ok(product.variants.every(variant=>!variant.available));
+    assert.equal(product.cardImage?.kind,'CAMPAIGN CONCEPT');
+    assert.equal(product.images[0]?.kind,'CAMPAIGN CONCEPT');
+    assert.equal(product.images[2]?.kind,'SUPPLIED PRODUCT REFERENCE');
+  }
+  assert.equal(artwork[0].images[1]?.src,'media/detroit-riverfront-sunset-artwork-gothic-frame-alt.webp');
+  assert.equal(artwork[1].images[1]?.src,'media/detroit-winter-sunset-artwork-gothic-frame-alt.webp');
+  assert.equal(artwork[1].cardImage?.src,'media/detroit-winter-sunset-artwork-gothic-frame-alt.webp');
+  assert.equal(artwork[0].images[1]?.label,'Gothic frame alt');
+  assert.equal(artwork[1].images[1]?.label,'Gothic frame alt');
+  assert.equal(artwork[0].images[1]?.kind,'CAMPAIGN CONCEPT');
+  assert.equal(artwork[1].images[1]?.kind,'CAMPAIGN CONCEPT');
+  assert.equal(artwork[0].images[2]?.src,'media/detroit-riverfront-sunset-artwork-supplied.webp');
+  assert.equal(artwork[1].images[2]?.src,'media/detroit-winter-sunset-artwork-supplied.webp');
 });
 test('Mobster luggage charm replaces the desk mat at $19.99 with supplied artwork',async()=>{
   assert.equal(demoProducts.some(product=>product.handle==='combat-grid-desk-mat'),false);
@@ -248,8 +272,8 @@ test('Mobster luggage charm replaces the desk mat at $19.99 with supplied artwor
   assert.equal(charm.images[0]?.src,'media/mobster-luggage-charm-cyan-arch-reference.webp');
   assert.equal(charm.images[1]?.src,'media/mobster-luggage-charm-equipment-context-reference.webp');
   assert.equal(charm.images[1]?.label,'Equipment context');
-  assert.equal(charm.video,'https://www.youtube-nocookie.com/embed/0yPqZEvKnFU?rel=0');
-  assert.equal(charm.video.includes('autoplay=1'),false);
+  assert.equal(charm.video,'https://www.youtube-nocookie.com/embed/0yPqZEvKnFU?rel=0&autoplay=1');
+  assert.equal(charm.video.includes('autoplay=1'),true);
   const storage=memory(),provider=new DemoProvider(storage);
   const cart=await provider.addCartLine((await provider.createCart()).id,charm.variants[0].id,1);
   const restored=(await new DemoProvider(storage).getCart(cart.id))!;
@@ -261,7 +285,7 @@ test('New Drop declares the supplied looping background track and browser fallba
     readFile(new URL('../../store/pages/index.astro',import.meta.url),'utf8'),
     readFile(new URL('../../store/ui/experience.ts',import.meta.url),'utf8'),
   ]);
-  assert.match(home,/data-background-audio/);assert.match(home,/loop preload="none"/);assert.doesNotMatch(home,/\sautoplay(?:\s|>)/);
+  assert.match(home,/data-background-audio/);assert.match(home,/loop preload="none"/);assert.doesNotMatch(home,/<audio[^>]*data-background-audio[^>]*autoplay/);
   assert.match(home,/media\/lottomind-vault-174hz-background\.mp3/);
   assert.match(experience,/saved\(soundPreference\)!=='off'/);assert.match(experience,/await ambient\.play\(\)/);
 });
