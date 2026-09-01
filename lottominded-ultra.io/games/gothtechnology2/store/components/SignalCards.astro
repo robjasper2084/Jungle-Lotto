@@ -5,7 +5,16 @@ import { href } from '../utilities/paths';
 interface SignalOverride { image: string; alt: string; }
 interface Props { showGameCharacters?: boolean; signalOverrides?: Record<string, SignalOverride>; }
 const { showGameCharacters = true, signalOverrides = {} } = Astro.props;
-const cards = signals.map(signal => ({...signal, ...signalOverrides[signal.collection], character:characters.find(character => character.id === signal.characterId)}));
+const homepageOrder = new Map([
+  ['cyber-cathedral', 0],
+  ['night-protocol', 1],
+  ['static-saints', 2],
+  ['detroit-2084', 3],
+]);
+const orderedSignals = showGameCharacters
+  ? signals
+  : [...signals].sort((a, b) => homepageOrder.get(a.collection)! - homepageOrder.get(b.collection)!);
+const cards = orderedSignals.map(signal => ({...signal, ...signalOverrides[signal.collection], character:characters.find(character => character.id === signal.characterId)}));
 ---
 <div class="signal-grid">
   {cards.map((signal,index)=>
