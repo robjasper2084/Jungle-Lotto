@@ -86,6 +86,7 @@ test('homepage keeps the four core beats and links deeper world-building from na
   await expect(page.getByRole('link',{name:'Shop the current drop',exact:true})).toHaveAttribute('href','#current-drop');
   await expect(page.getByRole('button',{name:'Watch transmission',exact:true})).toBeVisible();
   await expect(page.getByRole('link',{name:'Explore the Armory',exact:true})).toHaveAttribute('href','#armory');
+  const ticker=page.locator('.lotto-ticker');await expect(ticker).toContainText('LottoMind Lottery and Tool Generator App Coming Soon');await expect(ticker).toBeVisible();expect(await ticker.locator('.lotto-ticker-track span').first().evaluate(node=>parseFloat(getComputedStyle(node).fontSize))).toBeGreaterThanOrEqual(44);
   const storyOrder=await page.locator('main > section').evaluateAll(nodes=>nodes.filter(node=>node.matches('#current-drop,#armory,#featured,#character-vault,#combat-lookbook,#enter-the-fight,.armory-origin,.newsletter')).map(node=>node.id||(node.classList.contains('armory-origin')?'origin':'newsletter')));
   expect(storyOrder).toEqual(['current-drop','armory','featured','character-vault','combat-lookbook','enter-the-fight','origin','newsletter']);
   await expect(page.locator('#current-drop .drop-price')).toContainText('$89');
@@ -232,6 +233,7 @@ test('product gallery uses image-aware modes and honest 2.5D remains lazy',async
 
 test('reduced motion and WebGL fallback keep shopping available',async({page})=>{
   await page.emulateMedia({reducedMotion:'reduce'});const requests=[];page.on('request',r=>requests.push(r.url()));await page.goto(base);
+  await expect(page.locator('.lotto-ticker-track')).toHaveCSS('animation-name','none');
   await expect(page.locator('#scene-status')).toHaveText('Armory Online — Static Display');expect(requests.some(u=>/scene\.[^/]+\.js/.test(u))).toBe(false);
   await page.getByRole('button',{name:'Open launch loadout'}).click();await expect(page.getByRole('dialog',{name:'Your Launch Loadout'})).toContainText('Your launch loadout is empty.');await page.keyboard.press('Escape');
   await page.emulateMedia({reducedMotion:'no-preference'});await page.addInitScript(()=>{const original=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(type,...args){if(type==='webgl2'||type==='webgl')return null;return original.call(this,type,...args);};});await page.reload();await expect(page.locator('#scene-status')).toHaveText('Armory Online — Static Display');await expect(page.getByRole('link',{name:'Shop the current drop',exact:true})).toBeVisible();
