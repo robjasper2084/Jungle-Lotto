@@ -280,7 +280,7 @@ test('Mobster luggage charm replaces the desk mat at $19.99 with supplied artwor
   assert.equal(restored.lines[0].title,'Mobster Luggage Charm');
   assert.equal(restored.lines[0].image?.src,'media/mobster-luggage-charm-cyan-arch-reference.webp');
 });
-test('Key Knife is one $11.99 Shop product with black and silver variants plus five campaign displays',async()=>{
+test('Key Knife is one $11.99 Shop product with black and silver variants plus six campaign displays',async()=>{
   const knife=demoProducts.find(product=>product.handle==='key-knife-keychain')!;
   assert.ok(knife);
   assert.equal(knife.title,'Key Knife Keychain — 2-Inch Utility Pocketknife');
@@ -295,7 +295,9 @@ test('Key Knife is one $11.99 Shop product with black and silver variants plus f
   assert.deepEqual(knife.variants.map(variant=>variant.color),['Black','Silver']);
   assert.equal(knife.cardImage?.src,'media/key-knife-signal-ensemble-campaign.webp');
   assert.deepEqual(knife.images.slice(0,2).map(image=>image.src),['media/key-knife-black-reference.webp','media/key-knife-silver-reference.webp']);
-  assert.equal(knife.images.filter(image=>image.kind==='CAMPAIGN CONCEPT').length,5);
+  assert.equal(knife.images[2].src,'media/key-knife-gothic-open-side-campaign.webp');
+  assert.equal(knife.images[2].label,'Open-blade Gothic armory campaign concept');
+  assert.equal(knife.images.filter(image=>image.kind==='CAMPAIGN CONCEPT').length,6);
   const silver=selectVariant(knife,'One size','Silver');assert.ok(silver);
   const storage=memory(),provider=new DemoProvider(storage);
   const cart=await provider.addCartLine((await provider.createCart()).id,silver.id,1);
@@ -475,3 +477,4 @@ test('conversion events stay no-op until consent and never carry contact or sear
   tracker.setConsent(true);tracker.trackEvent('search',{count:2,search:'private query',email:'private@example.test',name:'Person'});
   assert.deepEqual(calls,[['search',{count:2}]]);
 });
+

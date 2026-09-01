@@ -21,7 +21,7 @@ const featuredProducts = products
 const cases = [
   {name:'Original Artwork',url:'collections/original-artwork/',tile:null,image:products.find(p => p.handle === 'detroit-winter-sunset-artwork')?.cardImage ?? products.find(p => p.handle === 'detroit-winter-sunset-artwork')?.images[1]},
   {name:'Apparel',url:'shop/?category=Apparel',tile:0},
-  {name:'Accessories',url:'shop/?category=Accessories',tile:3},
+  {name:'Accessories',url:'shop/?category=Accessories',tile:3,image:products.find(p => p.handle === 'key-knife-keychain')?.cardImage ?? products.find(p => p.handle === 'key-knife-keychain')?.images[0]},
   {name:'Collectibles',url:'shop/?category=Collectibles',tile:5,image:products.find(p => p.handle === 'cyber-cathedral-art-print')?.cardImage ?? products.find(p => p.handle === 'cyber-cathedral-art-print')?.images[0]},
 ];
 ---
@@ -63,3 +63,4 @@ const cases = [
   .category-product-art img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
   @media(max-width:560px){.category-product-art{aspect-ratio:1.1}}
 </style>
+
