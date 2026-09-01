@@ -112,7 +112,7 @@ test('filters combine variant options and handle search, availability and price 
   assert.equal(filterProducts(demoProducts,{search:'hoodie',size:'M',color:'Obsidian'}).length,1);
   assert.equal(filterProducts(demoProducts,{search:'no-such-product'}).length,0);
   assert.equal(filterProducts(demoProducts,{availability:'unavailable'}).length,3);
-  assert.equal(filterProducts(demoProducts,{sort:'price-low'})[0].price.amount,1200);
+  assert.equal(filterProducts(demoProducts,{sort:'price-low'})[0].price.amount,1199);
   assert.equal(filterProducts(demoProducts,{sort:'price-high'})[0].price.amount,12900);
   assert.equal(selectVariant(hoodie,'M','Obsidian')?.size,'M');assert.equal(selectVariant(hoodie,'XXXS','Obsidian'),null);
   const p=structuredClone(hoodie);p.variants=[{...variant,size:'S',color:'Red'},{...variant,id:'v2',size:'M',color:'Blue'}];
@@ -279,6 +279,24 @@ test('Mobster luggage charm replaces the desk mat at $19.99 with supplied artwor
   const restored=(await new DemoProvider(storage).getCart(cart.id))!;
   assert.equal(restored.lines[0].title,'Mobster Luggage Charm');
   assert.equal(restored.lines[0].image?.src,'media/mobster-luggage-charm-cyan-arch-reference.webp');
+});
+test('Key Knife is one $11.99 Shop product with black and silver variants plus five campaign displays',async()=>{
+  const knife=demoProducts.find(product=>product.handle==='key-knife-keychain')!;
+  assert.ok(knife);
+  assert.equal(knife.productType,'Accessories');
+  assert.equal(knife.price.amount,1199);
+  assert.equal(formatMoney(knife.price),'$11.99');
+  assert.equal(knife.featured,false);
+  assert.deepEqual(knife.colors,['Black','Silver']);
+  assert.deepEqual(knife.variants.map(variant=>variant.color),['Black','Silver']);
+  assert.equal(knife.cardImage?.src,'media/key-knife-signal-ensemble-campaign.webp');
+  assert.deepEqual(knife.images.slice(0,2).map(image=>image.src),['media/key-knife-black-reference.webp','media/key-knife-silver-reference.webp']);
+  assert.equal(knife.images.filter(image=>image.kind==='CAMPAIGN CONCEPT').length,5);
+  const silver=selectVariant(knife,'One size','Silver');assert.ok(silver);
+  const storage=memory(),provider=new DemoProvider(storage);
+  const cart=await provider.addCartLine((await provider.createCart()).id,silver.id,1);
+  assert.equal(cart.lines[0].color,'Silver');
+  assert.equal(cart.lines[0].price.amount,1199);
 });
 test('New Drop declares the supplied looping background track and browser fallback controller',async()=>{
   const [home,experience]=await Promise.all([

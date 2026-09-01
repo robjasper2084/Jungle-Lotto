@@ -53,7 +53,7 @@ test('shopping cart: launch preferences, quantity, persistence, alert flow and f
 });
 
 test('catalog filters, sorting, no-results and product actions work',async({page})=>{
-  await page.goto(base+'shop/?category=Accessories');await expect(page.locator('#result-count')).toHaveText('4 products');
+  await page.goto(base+'shop/?category=Accessories');await expect(page.locator('#result-count')).toHaveText('5 products');
   const mobsterCharm=page.locator('[data-product-card][data-handle="mobster-luggage-charm"]');await expect(mobsterCharm).toContainText('Mobster Luggage Charm');await expect(mobsterCharm).toContainText('$19.99');
   await expect(mobsterCharm.locator('img')).toHaveAttribute('src',/\/media\/mobster-luggage-charm-armory-campaign-v2\.webp$/);
   await expect(page.locator('[data-product-card][data-handle="gothtechnology-luggage-charm"] img')).toHaveAttribute('src',/\/media\/gothtechnology-luggage-charm-armory-higgsfield-v1\.webp$/);
@@ -63,12 +63,12 @@ test('catalog filters, sorting, no-results and product actions work',async({page
   await page.getByRole('button',{name:'Save to Launch Loadout: GOTHTECHNOLOGY Luggage Charm',exact:true}).click();
   await expect(page.getByRole('dialog',{name:'Your Launch Loadout'})).toContainText('$19.99');await page.keyboard.press('Escape');
   await page.getByLabel('Search products',{exact:true}).fill('zzz-no-match');await expect(page.locator('#no-results')).toBeVisible();
-  await page.locator('#no-results').getByRole('button',{name:'Clear filters'}).click();await expect(page.locator('#result-count')).toHaveText('14 products');
+  await page.locator('#no-results').getByRole('button',{name:'Clear filters'}).click();await expect(page.locator('#result-count')).toHaveText('15 products');
   await page.getByLabel('Search products',{exact:true}).fill('Boog');await expect(page.locator('[data-product-card]:visible')).toHaveCount(1);
   const boogeyman=page.locator('[data-product-card][data-handle="boogeyman-graphic-hoodie"]');await expect(boogeyman).toContainText('Pending');await expect(boogeyman.locator('img')).toHaveAttribute('src',/-campaign\.webp$/);await expect(boogeyman.locator('[data-save-product],[data-quick-view]')).toHaveCount(0);await expect(page.locator('[data-product-card][data-handle="boogie-man-knit-sweater"]')).toHaveCount(0);
   await page.getByLabel('Search products',{exact:true}).fill('');
   await page.getByRole('combobox',{name:'Sort',exact:true}).selectOption('price-low');
-  const order=await page.locator('[data-product-card]').evaluateAll(nodes=>nodes.filter(n=>!n.hidden).sort((a,b)=>Number(a.style.order)-Number(b.style.order)).map(n=>n.dataset.handle));expect(order[0]).toBe('black-signal-digital-pack');
+  const order=await page.locator('[data-product-card]').evaluateAll(nodes=>nodes.filter(n=>!n.hidden).sort((a,b)=>Number(a.style.order)-Number(b.style.order)).map(n=>n.dataset.handle));expect(order[0]).toBe('key-knife-keychain');
   await page.getByLabel('Search products',{exact:true}).fill('hoodie');
   await page.getByRole('button',{name:/Choose Options for Knight Protocol/}).click();
   const quick=page.locator('#quick-dialog');await expect(quick).toBeVisible();
@@ -111,8 +111,8 @@ test('signal keychain cards use matching artwork and retain their collection fil
     await expect(page.locator('[data-product-card]:visible')).toHaveCount(count);
   }
   await page.getByRole('combobox',{name:'Collection',exact:true}).selectOption('');
-  await expect(page.locator('[data-product-card]:visible')).toHaveCount(14);
-  await page.reload();await expect(page.locator('[data-product-card]:visible')).toHaveCount(14);
+  await expect(page.locator('[data-product-card]:visible')).toHaveCount(15);
+  await page.reload();await expect(page.locator('[data-product-card]:visible')).toHaveCount(15);
   if(await page.locator('.filter-disclosure summary').isVisible())await page.locator('.filter-disclosure summary').click();
   await page.getByRole('button',{name:'Clear filters',exact:true}).click();
   await expect(page.getByRole('combobox',{name:'Collection',exact:true})).toHaveValue('cyber-cathedral');
@@ -211,6 +211,10 @@ test('product gallery uses image-aware modes and honest 2.5D remains lazy',async
   await page.getByRole('button',{name:'Front reference',exact:true}).click();await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/black-signal-gun-charm-rail-adapter-black-fabric-reference\.webp$/);
   await page.getByRole('button',{name:'Underside reference',exact:true}).click();await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/black-signal-gun-charm-rail-adapter-underside-reference\.webp$/);await expect(page.locator('.gallery-main')).toHaveAttribute('data-gallery-orientation','square');
   await expect(page.getByText('Digital contents & license',{exact:true})).toHaveCount(0);await expect(page.getByText('Shipping & returns',{exact:true})).toBeVisible();
+  await page.goto(base+'products/key-knife-keychain/');await expect(page.getByRole('heading',{level:1})).toHaveText("Key Knife Keychain – Small Utility Pocketknife - 2'' Blade");
+  await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/key-knife-black-reference\.webp$/);await expect(page.locator('[data-selected-price]')).toHaveText('$11.99');
+  await expect(page.getByRole('radio',{name:'Black',exact:true})).toBeChecked();await page.getByRole('radio',{name:'Silver',exact:true}).check();await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/key-knife-silver-reference\.webp$/);
+  await expect(page.getByRole('button',{name:'Signal ensemble campaign concept',exact:true})).toBeVisible();await expect(page.locator('.gallery-thumbs button')).toHaveCount(7);
 });
 
 test('reduced motion and WebGL fallback keep shopping available',async({page})=>{
@@ -303,9 +307,9 @@ test('conversion UI: keyboard, mobile filters, settings and sticky action',async
   const disclosure=page.locator('.filter-disclosure'),summary=disclosure.locator('summary');
   const compact=info.project.use.viewport.width<=760;
   if(compact){await expect(disclosure).not.toHaveAttribute('open');await summary.click();}
-  await page.getByRole('combobox',{name:'Category',exact:true}).selectOption('Accessories');await expect(page.locator('#result-count')).toHaveText('4 products');
+  await page.getByRole('combobox',{name:'Category',exact:true}).selectOption('Accessories');await expect(page.locator('#result-count')).toHaveText('5 products');
   if(compact)await summary.click();
-  await page.getByRole('button',{name:'Clear category filter'}).click();await expect(page.locator('#result-count')).toHaveText('14 products');
+  await page.getByRole('button',{name:'Clear category filter'}).click();await expect(page.locator('#result-count')).toHaveText('15 products');
   if(compact)await expect(summary).toBeFocused();
   await page.goto(product);await ready(page);
   if(compact){await expect(page.locator('.mobile-product-bar')).toBeVisible();await page.locator('.mobile-product-bar [data-select-options]').click();await expect(page.locator('#product-options')).toBeFocused();await expect(page.locator('.mobile-product-bar')).not.toBeVisible();await page.locator('.site-footer').scrollIntoViewIfNeeded();await expect(page.locator('.mobile-product-bar')).not.toBeVisible();}

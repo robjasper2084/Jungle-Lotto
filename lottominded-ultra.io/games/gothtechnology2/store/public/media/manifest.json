@@ -863,5 +863,75 @@
     "height": 900,
     "bytes": 155010,
     "origin": "AI alternate black-and-gold wooden Gothic frame concept derived from the user-supplied artwork reference; creator credit preserved; rights and product accuracy require owner confirmation"
+  },
+  {
+    "source": "codex-clipboard-cbc23b89-b868-48be-9ba1-a32cc693cd9c.png",
+    "output": "key-knife-black-reference.webp",
+    "sourceWidth": 1080,
+    "sourceHeight": 1080,
+    "width": 1080,
+    "height": 1080,
+    "bytes": 18750,
+    "origin": "User-supplied product reference; rights, safety guidance, legal restrictions, and product accuracy require owner confirmation"
+  },
+  {
+    "source": "https://cdn.shopify.com/s/files/1/0780/8637/3678/files/Colorful-Keychain-Usefu-Cute-Utility-Pocket-Keychain_10.jpg?v=1690297521",
+    "output": "key-knife-silver-reference.webp",
+    "sourceWidth": 2000,
+    "sourceHeight": 2000,
+    "width": 1280,
+    "height": 1280,
+    "bytes": 55254,
+    "origin": "Supplier product reference from the matching public product page; rights, safety guidance, legal restrictions, and product accuracy require owner confirmation"
+  },
+  {
+    "source": "Built-in image generation from the user-supplied black Key Knife and Cyan Mobster keychain references",
+    "output": "key-knife-cyan-mobster-campaign.webp",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "width": 1254,
+    "height": 1254,
+    "bytes": 195408,
+    "origin": "AI campaign concept derived from user-supplied product references; not verified product photography"
+  },
+  {
+    "source": "Built-in image generation from the user-supplied black Key Knife and existing Champ keychain references",
+    "output": "key-knife-champ-campaign.webp",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "width": 1254,
+    "height": 1254,
+    "bytes": 114160,
+    "origin": "AI campaign concept derived from supplied product references; not verified product photography"
+  },
+  {
+    "source": "Built-in image generation from the user-supplied black Key Knife and existing Gold Mobster keychain references",
+    "output": "key-knife-gold-mobster-campaign.webp",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "width": 1254,
+    "height": 1254,
+    "bytes": 90536,
+    "origin": "AI campaign concept derived from supplied product references; not verified product photography"
+  },
+  {
+    "source": "Built-in image generation from the user-supplied black Key Knife and existing Observer keychain references",
+    "output": "key-knife-observer-campaign.webp",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "width": 1254,
+    "height": 1254,
+    "bytes": 141536,
+    "origin": "AI campaign concept derived from supplied product references; not verified product photography"
+  },
+  {
+    "source": "Built-in image generation from the supplied Key Knife and four signal-figure keychain references",
+    "output": "key-knife-signal-ensemble-campaign.webp",
+    "sourceWidth": 1254,
+    "sourceHeight": 1254,
+    "width": 1254,
+    "height": 1254,
+    "bytes": 236850,
+    "origin": "AI group campaign concept derived from supplied product references; not verified product photography"
   }
 ]
