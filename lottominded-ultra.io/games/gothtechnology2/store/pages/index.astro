@@ -21,7 +21,7 @@ const featuredProducts = products
 const cases = [
   {name:'Original Artwork',url:'collections/original-artwork/',tile:null,image:products.find(p => p.handle === 'detroit-winter-sunset-artwork')?.cardImage ?? products.find(p => p.handle === 'detroit-winter-sunset-artwork')?.images[1]},
   {name:'Apparel',url:'shop/?category=Apparel',tile:0},
-  {name:'Accessories',url:'shop/?category=Accessories',tile:3,image:products.find(p => p.handle === 'key-knife-keychain')?.cardImage ?? products.find(p => p.handle === 'key-knife-keychain')?.images[0]},
+  {name:'Accessories',url:'shop/?category=Accessories',tile:3,image:products.find(p => p.handle === 'key-knife-keychain')?.images.find(image => image.src === 'media/key-knife-signal-ensemble-campaign.webp') ?? products.find(p => p.handle === 'key-knife-keychain')?.images[0]},
   {name:'Collectibles',url:'shop/?category=Collectibles',tile:5,image:products.find(p => p.handle === 'cyber-cathedral-art-print')?.cardImage ?? products.find(p => p.handle === 'cyber-cathedral-art-print')?.images[0]},
 ];
 ---

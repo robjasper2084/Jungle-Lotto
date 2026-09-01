@@ -943,5 +943,25 @@
     "height": 1536,
     "bytes": 67284,
     "origin": "Higgsfield Gothic armory campaign concept derived from a user-supplied product reference; not verified product photography"
+  },
+  {
+    "source": "hf_20260901_195251_7f70079f-adcd-48ea-92eb-9888d7742a81.png",
+    "output": "key-knife-gun-attachment-bundle-closed-reference.webp",
+    "sourceWidth": 1376,
+    "sourceHeight": 768,
+    "width": 1376,
+    "height": 768,
+    "bytes": 48530,
+    "origin": "User-supplied AI bundle reference; product accuracy, bundle contents, rights, safety, legal restrictions, and availability require owner confirmation"
+  },
+  {
+    "source": "hf_20260901_195205_b98b45ce-4886-4758-a5ae-5960c4f51140.png",
+    "output": "key-knife-gun-attachment-bundle-open-reference.webp",
+    "sourceWidth": 1376,
+    "sourceHeight": 768,
+    "width": 1376,
+    "height": 768,
+    "bytes": 48634,
+    "origin": "User-supplied AI bundle reference; product accuracy, bundle contents, rights, safety, legal restrictions, and availability require owner confirmation"
   }
 ]
