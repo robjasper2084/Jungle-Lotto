@@ -283,6 +283,8 @@ test('Mobster luggage charm replaces the desk mat at $19.99 with supplied artwor
 test('Key Knife is one $11.99 Shop product with black and silver variants plus five campaign displays',async()=>{
   const knife=demoProducts.find(product=>product.handle==='key-knife-keychain')!;
   assert.ok(knife);
+  assert.equal(knife.title,'Key Knife Keychain — 2-Inch Utility Pocketknife');
+  assert.match(knife.description,/age requirements.+safety guidance.+legal carry and shipping restrictions/i);
   assert.equal(knife.productType,'Accessories');
   assert.equal(knife.price.amount,1199);
   assert.equal(formatMoney(knife.price),'$11.99');
@@ -297,6 +299,18 @@ test('Key Knife is one $11.99 Shop product with black and silver variants plus f
   const cart=await provider.addCartLine((await provider.createCart()).id,silver.id,1);
   assert.equal(cart.lines[0].color,'Silver');
   assert.equal(cart.lines[0].price.amount,1199);
+  const [productPage,filters,catalogUI]=await Promise.all([
+    readFile(new URL('../../store/pages/products/[handle].astro',import.meta.url),'utf8'),
+    readFile(new URL('../../store/components/Filters.astro',import.meta.url),'utf8'),
+    readFile(new URL('../../store/ui/catalog.ts',import.meta.url),'utf8'),
+  ]);
+  assert.match(productPage,/UTILITY KNIFE SAFETY/);
+  assert.match(productPage,/Save & Get Launch Alert/);
+  assert.match(productPage,/class="model-viewer-title"/);
+  assert.doesNotMatch(productPage,/not a garment model/i);
+  assert.match(filters,/>All Gear</);
+  assert.match(catalogUI,/ArrowRight/);
+  assert.match(catalogUI,/Spacebar/);
 });
 test('New Drop declares the supplied looping background track and browser fallback controller',async()=>{
   const [home,experience]=await Promise.all([
