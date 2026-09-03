@@ -111,7 +111,7 @@ test('cart restoration recalculates current prices and rejects duplicate lines',
 test('filters combine variant options and handle search, availability and price sorting',()=>{
   assert.equal(filterProducts(demoProducts,{search:'hoodie',size:'M',color:'Obsidian'}).length,1);
   assert.equal(filterProducts(demoProducts,{search:'no-such-product'}).length,0);
-  assert.equal(filterProducts(demoProducts,{availability:'unavailable'}).length,3);
+  assert.equal(filterProducts(demoProducts,{availability:'unavailable'}).length,4);
   assert.equal(filterProducts(demoProducts,{sort:'price-low'})[0].price.amount,1199);
   assert.equal(filterProducts(demoProducts,{sort:'price-high'})[0].price.amount,12900);
   assert.equal(selectVariant(hoodie,'M','Obsidian')?.size,'M');assert.equal(selectVariant(hoodie,'XXXS','Obsidian'),null);
@@ -227,17 +227,42 @@ test('LottoMind charm uses exact cents in the catalog and cart',async()=>{
   const cart=await provider.addCartLine((await provider.createCart()).id,charm.variants[0].id,2);
   assert.equal(cart.subtotal.amount,3998);
 });
-test('Static Saints patch set is $20 and includes the supplied white embroidery reference',()=>{
+test('Static Saints patch set offers three $20 Detroit styles with campaign and supplied references',()=>{
   const patches=demoProducts.find(product=>product.handle==='static-saints-patch-set')!;
   assert.equal(patches.price.amount,2000);
   assert.equal(patches.featured,false);
   assert.equal(formatMoney(patches.price),'$20');
   assert.deepEqual(patches.images.map(image=>image.src),[
-    'media/patch.webp',
-    'media/static-saints-patch-white-reference.webp',
+    'media/static-saints-patch-black-backed-armory-campaign.webp',
+    'media/static-saints-patch-rectangular-armory-campaign.webp',
+    'media/static-saints-patch-openwork-armory-campaign.webp',
+    'media/static-saints-patch-black-backed-reference.webp',
+    'media/static-saints-patch-rectangular-reference.webp',
+    'media/static-saints-patch-openwork-reference.webp',
   ]);
-  assert.equal(patches.images[1]?.label,'White embroidery reference');
-  assert.equal(patches.images[1]?.kind,'DETAIL REFERENCE');
+  assert.deepEqual(patches.colors,['Black-backed Die-cut','Rectangular Black','Openwork Die-cut']);
+  assert.ok(patches.variants.every(variant=>variant.price.amount===2000));
+  assert.equal(patches.images[0]?.kind,'CAMPAIGN CONCEPT');
+  assert.equal(patches.images[3]?.kind,'SUPPLIED PRODUCT REFERENCE');
+});
+test('Static Saints Detroit rug is a truthful price-pending collectible with both supplied views',()=>{
+  const rug=demoProducts.find(product=>product.handle==='static-saints-detroit-rug')!;
+  assert.ok(rug);
+  assert.equal(rug.productType,'Collectibles');
+  assert.equal(rug.collection,'static-saints');
+  assert.equal(rug.price.amount,0);
+  assert.ok(rug.tags.includes('Price pending'));
+  assert.deepEqual(rug.images.map(image=>image.src),[
+    'media/static-saints-detroit-rug-front-reference.webp',
+    'media/static-saints-detroit-rug-angle-reference.webp',
+  ]);
+  assert.deepEqual(rug.images.map(image=>image.kind),[
+    'SUPPLIED PRODUCT REFERENCE',
+    'SUPPLIED PRODUCT REFERENCE',
+  ]);
+  assert.deepEqual(rug.colors,['As shown']);
+  assert.deepEqual(rug.sizes,['Dimensions pending']);
+  assert.ok(rug.variants.every(variant=>variant.available===false));
 });
 test('Original Artwork collection keeps both supplied Detroit references price-pending and features only the winter alt',()=>{
   const artwork=demoProducts.filter(product=>product.collection==='original-artwork');
@@ -323,7 +348,7 @@ test('Key Knife is one $11.99 Shop product with black and silver variants plus s
 test('Key Knife and gun attachment bundle is a $39 Shop-only bundle with closed and open references',()=>{
   const bundle=demoProducts.find(product=>product.handle==='key-knife-gun-attachment-bundle')!;
   assert.ok(bundle);
-  assert.equal(bundle.title,'Key Knife + Gun Attachment Bundle');
+  assert.equal(bundle.title,'Key Knife + Paint/ Gun Attachment Bundle');
   assert.equal(bundle.productType,'Bundles');
   assert.equal(bundle.price.amount,3900);
   assert.equal(formatMoney(bundle.price),'$39');
@@ -344,14 +369,14 @@ test('default Shop order places Detroit Winter Sunset Artwork third in the featu
     'detroit-winter-sunset-artwork',
   ]);
 });
-test('New Drop declares the supplied looping background track and browser fallback controller',async()=>{
-  const [home,experience]=await Promise.all([
-    readFile(new URL('../../store/pages/index.astro',import.meta.url),'utf8'),
+test('Armory shell declares the supplied looping background track and browser fallback controller',async()=>{
+  const [shell,experience]=await Promise.all([
+    readFile(new URL('../../store/layouts/Shell.astro',import.meta.url),'utf8'),
     readFile(new URL('../../store/ui/experience.ts',import.meta.url),'utf8'),
   ]);
-  assert.match(home,/data-background-audio/);assert.match(home,/loop preload="none"/);assert.doesNotMatch(home,/<audio[^>]*data-background-audio[^>]*autoplay/);
-  assert.match(home,/media\/lottomind-vault-174hz-background\.mp3/);
-  assert.match(experience,/saved\(soundPreference\)!=='off'/);assert.match(experience,/await ambient\.play\(\)/);
+  assert.match(shell,/data-background-audio/);assert.match(shell,/loop preload="none"/);assert.doesNotMatch(shell,/<audio[^>]*data-background-audio[^>]*autoplay/);
+  assert.match(shell,/media\/lottomind-vault-174hz-background\.mp3/);
+  assert.match(experience,/saved\(soundPreference\)==='on'/);assert.match(experience,/resumeSavedAudio/);assert.match(experience,/await ambient\.play\(\)/);
 });
 test('Black Signal rail adapter keeps one canonical title, $12 price and supplied photo views',async()=>{
   const adapter=demoProducts.find(product=>product.handle==='black-signal-digital-pack')!;
@@ -501,4 +526,3 @@ test('conversion events stay no-op until consent and never carry contact or sear
   tracker.setConsent(true);tracker.trackEvent('search',{count:2,search:'private query',email:'private@example.test',name:'Person'});
   assert.deepEqual(calls,[['search',{count:2}]]);
 });
-

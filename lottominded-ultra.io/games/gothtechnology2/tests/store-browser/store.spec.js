@@ -20,18 +20,18 @@ test('visual: homepage renders, keeps content accessible, and does not load game
   expect(errors).toEqual([]);
 });
 
-test('New Drop keeps background music user initiated with a visible control',async({page})=>{
+test('Armory background music stays user initiated and follows the visitor across pages',async({page})=>{
   await page.addInitScript(()=>{HTMLMediaElement.prototype.play=function(){this.dispatchEvent(new Event('play'));return Promise.resolve();};});
   await page.goto(base);
-  const audio=page.locator('#new-drop-music');
+  const audio=page.locator('#armory-background-music');
   await expect(audio).toHaveAttribute('src',base+'media/lottomind-vault-174hz-background.mp3');
   await expect(audio).not.toHaveAttribute('autoplay','');await expect(audio).toHaveAttribute('loop','');await expect(audio).toHaveAttribute('preload','none');
   const heroSound=page.locator('[data-toggle-sound]');
   await expect(heroSound).toBeVisible();await expect(heroSound).toHaveText('Sound off');await expect(page.locator('#sound-toggle')).toHaveText('Sound off');
   await heroSound.click();await expect(heroSound).toHaveText('Sound on');await expect(page.locator('#sound-toggle')).toHaveText('Sound on');
-  await page.locator('.hero-settings').click();await page.locator('#sound-toggle').click();
-  await expect(heroSound).toHaveText('Sound off');await expect(page.locator('#sound-toggle')).toHaveText('Sound off');await expect(page.locator('#sound-toggle')).toHaveAttribute('aria-pressed','false');
-  await page.goto(base+'shop/');await expect(page.locator('[data-background-audio]')).toHaveCount(0);
+  await page.goto(base+'shop/');await expect(page.locator('[data-background-audio]')).toHaveCount(1);await expect(page.locator('#sound-toggle')).toHaveText('Sound on');
+  await page.locator('[data-open-settings]').last().click();await page.locator('#sound-toggle').click();
+  await expect(page.locator('#sound-toggle')).toHaveText('Sound off');await expect(page.locator('#sound-toggle')).toHaveAttribute('aria-pressed','false');
 });
 
 test('shopping cart: launch preferences, quantity, persistence, alert flow and focus',async({page},info)=>{
@@ -54,6 +54,7 @@ test('shopping cart: launch preferences, quantity, persistence, alert flow and f
 
 test('catalog filters, sorting, no-results and product actions work',async({page})=>{
   await page.goto(base+'shop/');const defaultOrder=await page.locator('[data-product-card]').evaluateAll(nodes=>nodes.filter(node=>!node.hidden).sort((a,b)=>Number(a.style.order)-Number(b.style.order)).map(node=>node.dataset.handle));expect(defaultOrder.slice(0,3)).toEqual(['night-protocol-hoodie','detroit-2084-shirt','detroit-winter-sunset-artwork']);
+  const ticker=page.locator('.lotto-ticker');await expect(ticker).toContainText('LottoMind Lottery and Tool Generator App Coming Soon');await expect(ticker).toBeVisible();expect(await ticker.locator('.lotto-ticker-track span').first().evaluate(node=>parseFloat(getComputedStyle(node).fontSize))).toBeGreaterThanOrEqual(page.viewportSize().width<=560?36:44);
   await page.goto(base+'shop/?category=Accessories');await expect(page.locator('#result-count')).toHaveText('5 products');
   const mobsterCharm=page.locator('[data-product-card][data-handle="mobster-luggage-charm"]');await expect(mobsterCharm).toContainText('Mobster Luggage Charm');await expect(mobsterCharm).toContainText('$19.99');
   await expect(mobsterCharm.locator('img')).toHaveAttribute('src',/\/media\/mobster-luggage-charm-armory-campaign-v2\.webp$/);
@@ -65,7 +66,7 @@ test('catalog filters, sorting, no-results and product actions work',async({page
   await page.getByRole('button',{name:'Save to Launch Loadout: GOTHTECHNOLOGY Luggage Charm',exact:true}).click();
   await expect(page.getByRole('dialog',{name:'Your Launch Loadout'})).toContainText('$19.99');await page.keyboard.press('Escape');
   await page.getByLabel('Search products',{exact:true}).fill('zzz-no-match');await expect(page.locator('#no-results')).toBeVisible();
-  await page.locator('#no-results').getByRole('button',{name:'Clear filters'}).click();await expect(page.locator('#result-count')).toHaveText('16 products');
+  await page.locator('#no-results').getByRole('button',{name:'Clear filters'}).click();await expect(page.locator('#result-count')).toHaveText('17 products');
   await page.getByLabel('Search products',{exact:true}).fill('Boog');await expect(page.locator('[data-product-card]:visible')).toHaveCount(1);
   const boogeyman=page.locator('[data-product-card][data-handle="boogeyman-graphic-hoodie"]');await expect(boogeyman).toContainText('Pending');await expect(boogeyman.locator('img')).toHaveAttribute('src',/-campaign\.webp$/);await expect(boogeyman.locator('[data-save-product],[data-quick-view]')).toHaveCount(0);await expect(page.locator('[data-product-card][data-handle="boogie-man-knit-sweater"]')).toHaveCount(0);
   await page.getByLabel('Search products',{exact:true}).fill('');
@@ -82,11 +83,13 @@ test('catalog filters, sorting, no-results and product actions work',async({page
 test('homepage keeps the four core beats and links deeper world-building from navigation',async({page})=>{
   await page.goto(base);
   for(const selector of ['#current-drop','#featured','#character-vault','#enter-the-fight'])await expect(page.locator(selector)).toBeVisible();
+  await expect(page.locator('.site-header .wordmark span')).toHaveText('// Bloom Through Gloom');
+  await expect(page.locator('.site-footer .wordmark span')).toHaveText('// THE ARMORY');
   await expect(page.getByRole('heading',{level:1,name:'Equipment for the world after midnight'})).toBeVisible();
   await expect(page.getByRole('link',{name:'Shop the current drop',exact:true})).toHaveAttribute('href','#current-drop');
   await expect(page.getByRole('button',{name:'Watch transmission',exact:true})).toBeVisible();
   await expect(page.getByRole('link',{name:'Explore the Armory',exact:true})).toHaveAttribute('href','#armory');
-  const ticker=page.locator('.lotto-ticker');await expect(ticker).toContainText('LottoMind Lottery and Tool Generator App Coming Soon');await expect(ticker).toBeVisible();expect(await ticker.locator('.lotto-ticker-track span').first().evaluate(node=>parseFloat(getComputedStyle(node).fontSize))).toBeGreaterThanOrEqual(44);
+  await expect(page.locator('.lotto-ticker')).toHaveCount(0);
   const storyOrder=await page.locator('main > section').evaluateAll(nodes=>nodes.filter(node=>node.matches('#current-drop,#armory,#featured,#character-vault,#combat-lookbook,#enter-the-fight,.armory-origin,.newsletter')).map(node=>node.id||(node.classList.contains('armory-origin')?'origin':'newsletter')));
   expect(storyOrder).toEqual(['current-drop','armory','featured','character-vault','combat-lookbook','enter-the-fight','origin','newsletter']);
   await expect(page.locator('#current-drop .drop-price')).toContainText('$89');
@@ -109,7 +112,7 @@ test('homepage keeps the four core beats and links deeper world-building from na
 });
 
 test('signal keychain cards use matching artwork and retain their collection filter defaults',async({page})=>{
-  const signals=[['The Mobster: Cyan circuit keychain','detroit-2084',5,'signal-analog-armory-campaign-v2.webp'],['The Champ: Gold guardian keychain','night-protocol',1,'keychain-disciples-campaign.webp'],['The Mobster: Gold mobster keychain','static-saints',1,'keychain-mobster-suit-gold-arch-reference.webp'],['The Observer: Gold observer keychain','cyber-cathedral',2,'gothtechnology-luggage-charm-armory-higgsfield-v1.webp']];
+  const signals=[['The Mobster: Cyan circuit keychain','detroit-2084',5,'signal-analog-armory-campaign-v2.webp'],['The Champ: Gold guardian keychain','night-protocol',1,'keychain-disciples-campaign.webp'],['The Mobster: Gold mobster keychain','static-saints',2,'keychain-mobster-suit-gold-arch-reference.webp'],['The Observer: Gold observer keychain','cyber-cathedral',2,'gothtechnology-luggage-charm-armory-higgsfield-v1.webp']];
   for(const [name,handle,count,artwork] of signals){
     await page.goto(base+'#character-vault');
     const card=page.getByRole('link',{name,exact:true});
@@ -121,8 +124,8 @@ test('signal keychain cards use matching artwork and retain their collection fil
     await expect(page.locator('[data-product-card]:visible')).toHaveCount(count);
   }
   await page.getByRole('combobox',{name:'Collection',exact:true}).selectOption('');
-  await expect(page.locator('[data-product-card]:visible')).toHaveCount(16);
-  await page.reload();await expect(page.locator('[data-product-card]:visible')).toHaveCount(16);
+  await expect(page.locator('[data-product-card]:visible')).toHaveCount(17);
+  await page.reload();await expect(page.locator('[data-product-card]:visible')).toHaveCount(17);
   if(await page.locator('.filter-disclosure summary').isVisible())await page.locator('.filter-disclosure summary').click();
   await page.getByRole('button',{name:'Clear filters',exact:true}).click();
   await expect(page.getByRole('combobox',{name:'Collection',exact:true})).toHaveValue('cyber-cathedral');
@@ -212,8 +215,10 @@ test('product gallery uses image-aware modes and honest 2.5D remains lazy',async
   await expect(page.getByRole('link',{name:'Watch on YouTube',exact:false})).toHaveAttribute('href','https://www.youtube.com/shorts/0yPqZEvKnFU');
   await page.getByRole('button',{name:'Equipment context',exact:true}).click();await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/mobster-luggage-charm-equipment-context-reference\.webp$/);
   await page.goto(base+'products/static-saints-patch-set/');await expect(page.getByRole('heading',{level:1})).toHaveText('Static Saints Embroidered Patch Set');await expect(page.locator('[data-selected-price]')).toHaveText('$20');
-  await page.getByRole('button',{name:'White embroidery reference',exact:true}).click();await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/static-saints-patch-white-reference\.webp$/);
+  await expect(page.locator('.gallery-thumbs button')).toHaveCount(6);await expect(page.getByRole('radio',{name:'Black-backed Die-cut',exact:true})).toBeChecked();
+  await page.getByRole('radio',{name:'Rectangular Black',exact:true}).check();await page.getByRole('button',{name:'Rectangular armory campaign concept',exact:true}).click();await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/static-saints-patch-rectangular-armory-campaign\.webp$/);
   await expect(page.locator('.gallery-main')).toHaveAttribute('data-gallery-orientation','landscape');
+  await page.goto(base+'products/static-saints-detroit-rug/');await expect(page.getByRole('heading',{level:1})).toHaveText('Detroit Skyline Cutout Rug');await expect(page.locator('[data-selected-price]')).toHaveText('Pending');await expect(page.locator('.gallery-thumbs button')).toHaveCount(2);await expect(page.getByRole('button',{name:'Price pending',exact:true})).toBeDisabled();
   await page.goto(base+'products/black-signal-digital-pack/');await expect(page.getByRole('heading',{level:1})).toHaveText('Black Signal Gun Charm Rail Adapter Pack');
   await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/black-signal-gun-charm-rail-adapter-black-group-reference\.webp$/);await expect(page.locator('[data-selected-price]')).toHaveText('$12');
   const adapterFilm=page.getByLabel('Black Signal Gun Charm Rail Adapter Pack supplied product film');await expect(adapterFilm).toBeVisible();await expect(adapterFilm.locator('source')).toHaveAttribute('src',base+'media/black-signal-rail-adapter-supplied-film-v1.mp4');await expect(adapterFilm).toHaveAttribute('controls','');await expect(adapterFilm).toHaveAttribute('autoplay','');await expect(adapterFilm).not.toHaveAttribute('muted','');
@@ -225,15 +230,16 @@ test('product gallery uses image-aware modes and honest 2.5D remains lazy',async
   await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/key-knife-black-reference\.webp$/);await expect(page.locator('[data-selected-price]')).toHaveText('$11.99');
   await expect(page.getByRole('radio',{name:'Black',exact:true})).toBeChecked();await page.getByRole('radio',{name:'Silver',exact:true}).check();await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/key-knife-silver-reference\.webp$/);
   await expect(page.getByRole('button',{name:'Open-blade Gothic armory campaign concept',exact:true})).toBeVisible();await expect(page.getByRole('button',{name:'Signal ensemble campaign concept',exact:true})).toBeVisible();await expect(page.locator('.gallery-thumbs button')).toHaveCount(8);
-  await page.goto(base+'products/key-knife-gun-attachment-bundle/');await expect(page.getByRole('heading',{level:1})).toHaveText('Key Knife + Gun Attachment Bundle');
+  await page.goto(base+'products/key-knife-gun-attachment-bundle/');await expect(page.getByRole('heading',{level:1})).toHaveText('Key Knife + Paint/ Gun Attachment Bundle');
   await expect(page.locator('[data-selected-price]')).toHaveText('$39');await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/key-knife-gun-attachment-bundle-closed-reference\.webp$/);
   await expect(page.getByText('UTILITY KNIFE SAFETY & LEGAL REVIEW',{exact:true})).toBeVisible();await expect(page.getByText('The Mobster luggage charm pictured in the supplied references is styling only and is not included.',{exact:false})).toBeVisible();
   await page.getByRole('button',{name:'Open bundle reference',exact:true}).click();await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/key-knife-gun-attachment-bundle-open-reference\.webp$/);await expect(page.locator('.gallery-thumbs button')).toHaveCount(2);
 });
 
 test('reduced motion and WebGL fallback keep shopping available',async({page})=>{
-  await page.emulateMedia({reducedMotion:'reduce'});const requests=[];page.on('request',r=>requests.push(r.url()));await page.goto(base);
+  await page.emulateMedia({reducedMotion:'reduce'});const requests=[];page.on('request',r=>requests.push(r.url()));await page.goto(base+'shop/');
   await expect(page.locator('.lotto-ticker-track')).toHaveCSS('animation-name','none');
+  await page.goto(base);await expect(page.locator('.lotto-ticker')).toHaveCount(0);
   await expect(page.locator('#scene-status')).toHaveText('Armory Online — Static Display');expect(requests.some(u=>/scene\.[^/]+\.js/.test(u))).toBe(false);
   await page.getByRole('button',{name:'Open launch loadout'}).click();await expect(page.getByRole('dialog',{name:'Your Launch Loadout'})).toContainText('Your launch loadout is empty.');await page.keyboard.press('Escape');
   await page.emulateMedia({reducedMotion:'no-preference'});await page.addInitScript(()=>{const original=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(type,...args){if(type==='webgl2'||type==='webgl')return null;return original.call(this,type,...args);};});await page.reload();await expect(page.locator('#scene-status')).toHaveText('Armory Online — Static Display');await expect(page.getByRole('link',{name:'Shop the current drop',exact:true})).toBeVisible();
@@ -324,7 +330,7 @@ test('conversion UI: keyboard, mobile filters, settings and sticky action',async
   if(compact){await expect(disclosure).not.toHaveAttribute('open');await summary.click();}
   await page.getByRole('combobox',{name:'Category',exact:true}).selectOption('Accessories');await expect(page.locator('#result-count')).toHaveText('5 products');
   if(compact)await summary.click();
-  await page.getByRole('button',{name:'Clear category filter'}).click();await expect(page.locator('#result-count')).toHaveText('16 products');
+  await page.getByRole('button',{name:'Clear category filter'}).click();await expect(page.locator('#result-count')).toHaveText('17 products');
   if(compact)await expect(summary).toBeFocused();
   await page.goto(product);await ready(page);
   if(compact){await expect(page.locator('.mobile-product-bar')).toBeVisible();await page.locator('.mobile-product-bar [data-select-options]').click();await expect(page.locator('#product-options')).toBeFocused();await expect(page.locator('.mobile-product-bar')).not.toBeVisible();await page.locator('.site-footer').scrollIntoViewIfNeeded();await expect(page.locator('.mobile-product-bar')).not.toBeVisible();}
