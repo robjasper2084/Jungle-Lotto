@@ -32,7 +32,8 @@ const support = ['contact','faq','shipping','returns','privacy','terms','accessi
   <script type="application/ld+json" set:html={serialize({'@context':'https://schema.org','@type':'Organization',name:'GOTHTECHNOLOGY',url:canonical()})}/>
 </head><body data-cinematic={cinematic ? 'true' : 'false'} data-store-v2="true" data-conversion-mode={mode}>
   <a class="skip-link" href="#main">Skip to content</a>
-  <header class="site-header"><a class="wordmark" href={href()} aria-label="GOTHTECHNOLOGY home">GOTHTECHNOLOGY<span>// THE ARMORY</span></a>
+  <audio id="armory-background-music" data-background-audio loop preload="none" src={href('media/lottomind-vault-174hz-background.mp3')} aria-label="LottoMind Vault 174 Hz background music"></audio>
+  <header class="site-header"><a class="wordmark" href={href()} aria-label="GOTHTECHNOLOGY home">GOTHTECHNOLOGY<span>// Bloom Through Gloom</span></a>
     <nav class="desktop-nav" aria-label="Main navigation">{links.map(([label,url])=><a href={href(url)} aria-current={path.startsWith(url) ? 'page' : undefined}>{label}</a>)}</nav>
     <div class="nav-utilities"><button class="icon-button" data-open-search aria-label="Search the store"><Icon name="search"/><span>Search</span></button><button class="cart-trigger" data-open-cart aria-label={isDemoMode ? 'Open launch loadout' : 'Open shopping cart'}><Icon name="bag"/><span>{isDemoMode ? 'Launch Loadout' : 'Loadout'}</span><b data-cart-count>0</b></button><button class="icon-button menu-trigger" data-open-menu aria-label="Open navigation menu"><Icon name="menu"/></button></div>
   </header>

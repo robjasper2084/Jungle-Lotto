@@ -32,7 +32,7 @@ export function initExperience() {
   const stopAudio=(remember=false)=>{ambient?.pause();if(remember)save(soundPreference,'off');syncSound(false);};
   const startAudio=async(announceFailure=false)=>{
     if(!config.features.enableStoreAudio)return false;
-    ambient??=new Audio(href('media/lottomind-vault-174hz-background.mp3'));ambient.volume=.13;ambient.loop=true;
+    ambient??=new Audio(href('media/lottomind-vault-174hz-background.mp3'));ambient.volume=.24;ambient.loop=true;
     try{await ambient.play();save(soundPreference,'on');syncSound(true);return true;}
     catch{syncSound(false);if(announceFailure)announce('Audio could not start. Check your browser sound settings and try again.');return false;}
   };
@@ -42,6 +42,13 @@ export function initExperience() {
     await startAudio(true);
   }));
   syncSound(false);
+  // Restore only a visitor's explicit opt-in. A first visit remains silent.
+  if(saved(soundPreference)==='on'){
+    void startAudio();
+    const resumeSavedAudio=()=>{if(!sound&&saved(soundPreference)==='on')void startAudio();};
+    window.addEventListener('pointerdown',resumeSavedAudio,{once:true});
+    window.addEventListener('keydown',resumeSavedAudio,{once:true});
+  }
   document.addEventListener('visibilitychange',()=>{if(document.hidden)stopAudio();else if(ambient&&saved(soundPreference)!=='off')void startAudio();});
   document.addEventListener('store:game-launch',()=>stopAudio());
   document.addEventListener('store:media-play',()=>stopAudio());

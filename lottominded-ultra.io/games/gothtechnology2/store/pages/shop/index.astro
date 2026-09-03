@@ -15,8 +15,28 @@ const products = await buildProvider.getProducts();
       <button class="button secondary" type="button" data-watch-commercial aria-haspopup="dialog" aria-controls="home-commercial">Watch commercial</button>
     </div>}
   </header>
+  <section class="lotto-ticker" aria-label="LottoMind app announcement">
+    <p class="sr-only">LottoMind Lottery and Tool Generator App Coming Soon</p>
+    <div class="lotto-ticker-track" aria-hidden="true">
+      <span>LottoMind Lottery and Tool Generator App <strong>Coming Soon</strong><i>//</i></span>
+      <span>LottoMind Lottery and Tool Generator App <strong>Coming Soon</strong><i>//</i></span>
+    </div>
+  </section>
   <section class="section catalog-section">
     <Filters/>
     <div class="products-grid" id="product-grid">{products.map(product=><ProductCard product={product}/>)}</div>
   </section>
 </Shell>
+<style>
+  .lotto-ticker{position:relative;display:flex;align-items:center;min-height:clamp(116px,10vw,168px);overflow:hidden;border-block:1px solid #75602f;background:repeating-linear-gradient(90deg,#0a0c0d 0,#0a0c0d 2px,#080909 2px,#080909 8px);box-shadow:inset 0 1px #d7ad4a40,inset 0 -1px #45d8ef2b}
+  .lotto-ticker::before,.lotto-ticker::after{content:"";position:absolute;z-index:1;inset-block:0;width:min(12vw,180px);pointer-events:none}
+  .lotto-ticker::before{left:0;background:linear-gradient(90deg,#050605 10%,transparent)}
+  .lotto-ticker::after{right:0;background:linear-gradient(270deg,#050605 10%,transparent)}
+  .lotto-ticker-track{display:flex;width:max-content;align-items:center;animation:lotto-signal-scroll 24s linear infinite;will-change:transform}
+  .lotto-ticker-track span{flex:none;padding-right:clamp(48px,7vw,130px);white-space:nowrap;font:400 clamp(44px,6.4vw,104px)/.9 var(--display);letter-spacing:-.025em;text-transform:uppercase;color:#ebddb9;text-shadow:0 0 22px #d7ad4a38}
+  .lotto-ticker-track strong{font-weight:400;color:var(--goth-cyan);text-shadow:0 0 22px #45d8ef57}
+  .lotto-ticker-track i{margin-left:clamp(28px,4vw,72px);font:400 .42em/1 var(--mono);letter-spacing:.12em;color:var(--goth-gold);vertical-align:middle}
+  @keyframes lotto-signal-scroll{to{transform:translateX(-50%)}}
+  @media(max-width:560px){.lotto-ticker{min-height:104px}.lotto-ticker-track span{font-size:36px;letter-spacing:-.01em}}
+  @media(prefers-reduced-motion:reduce){.lotto-ticker{padding:24px 20px}.lotto-ticker-track{width:100%;animation:none;will-change:auto}.lotto-ticker-track span{display:none;width:100%;padding:0;text-align:center;white-space:normal}.lotto-ticker-track span:first-child{display:block}}
+</style>
