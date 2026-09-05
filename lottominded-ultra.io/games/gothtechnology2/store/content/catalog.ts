@@ -2,6 +2,7 @@ import type { Collection, Product } from '../commerce/types.ts';
 import { fromDecimal } from '../commerce/money.ts';
 import { productInformation } from './launch.ts';
 import { cinematicModels } from './cinematic-models.ts';
+import { fragranceCollection } from './fragrance.ts';
 
 export const collections: Collection[] = [
   ['night-protocol', 'Knight Protocol', 'The first transmission. Apparel for the hours you make your own.'],
@@ -12,6 +13,7 @@ export const collections: Collection[] = [
   ['founder-transmission', 'Founder Transmission', 'An introduction to the world of GOTHTECHNOLOGY.'],
   ['combat-systems', 'Combat Systems', 'From the character vault to your everyday equipment.'],
   ['original-artwork', 'Original Artwork', 'Detroit horizons and original photography presented through the armory.'],
+  ['armory-fragrance', 'Armory Fragrance', 'Carry your signal after midnight. Fragrance roller concepts in black, gold, and cyan.'],
 ].map(([handle, title, description]) => ({ handle, title, description }));
 
 export const characters = [
@@ -20,7 +22,7 @@ export const characters = [
   { id: 'DETROIT_LENS_NOIR', name: 'Detroit Lens Noir', collection: 'detroit-2084', image: 'detroit-lens-noir-headshot.webp', signal: 'Guardian / Detroit' },
   { id: 'AMARA_VALENTINE', name: 'Amara Valentine', collection: 'static-saints', image: 'amara-valentine-headshot.webp', signal: 'Heart / Devotion' },
 ];
-export const categories = ['Apparel', 'Accessories', 'Collectibles', 'Digital', 'Bundles'];
+export const categories = ['Apparel', 'Accessories', 'Collectibles', 'Fragrance', 'Digital', 'Bundles'];
 const reference = (name: string, alt: string, label = 'Reference') => ({ src: `media/${name}.webp`, alt, label, width: 1376, height: 768 });
 const featuredOrder = ['night-protocol-hoodie', 'detroit-2084-shirt', 'detroit-winter-sunset-artwork', 'black-signal-beanie', 'gothtechnology-luggage-charm', 'cyber-cathedral-art-print'];
 const featuredHandles = new Set(featuredOrder);
@@ -28,6 +30,13 @@ const seeds = [
   { handle: 'night-protocol-hoodie', title: 'Knight Protocol Embroidered Hoodie', subtitle: '313 / Detroit embroidery reference', dollars: 89, type: 'Apparel', collection: 'night-protocol', character: 'MASTER_EZRA', images: [reference('night-protocol-hoodie-no-charm-reference', 'Black 313 embroidered hoodie displayed without accessories in a Detroit boutique', 'Front reference'), reference('embroidery', 'Close view of the multicolor Detroit skyline and heart embroidery', 'Embroidery reference'), reference('apparel', 'Detroit sweatshirt and hoodie with a separate LottoMind charm on a brown bag', 'Styling reference'), { ...reference('night-protocol-hoodie-cathedral-styling-reference', 'Model wearing the Knight Protocol hoodie in a gold-lit cathedral; the separate beanie and LottoMind charm shown are styling accessories and are not included with the hoodie', 'Cathedral styling reference'), width: 1600, height: 900 }], sizes: ['S', 'M', 'L', 'XL', '2XL'] },
   { handle: 'boogeyman-graphic-hoodie', title: 'Boogeyman Graphic Hoodie', subtitle: 'Supplied hoodie design / armory campaign concept', dollars: 0, pricePending: true, type: 'Apparel', collection: 'black-signal', character: 'KALYX', cardImage: { ...reference('boogeyman-graphic-hoodie-campaign', 'Black Boogeyman graphic hoodie displayed on a black stone pedestal in a gold-lit cathedral armory', 'Armory campaign concept'), width: 1600, height: 900 }, images: [{ ...reference('boogeyman-graphic-hoodie-campaign', 'Black Boogeyman graphic hoodie displayed on a black stone pedestal in a gold-lit cathedral armory', 'Armory campaign concept'), width: 1600, height: 900 }, { ...reference('boogeyman-graphic-hoodie-supplied', 'Supplied front view of a black Boogeyman hoodie with oversized red and green lettering and red sleeve marks on a wood background', 'Supplied design reference'), width: 1600, height: 893 }], colors: ['As shown'], sizes: ['Size pending'], description: 'A supplied black Boogeyman graphic hoodie concept, restaged as armory campaign artwork. Final materials, sizing, price, production, and availability await owner confirmation.' },
   { handle: 'detroit-2084-shirt', title: 'Detroit 2084 Graphic T-Shirt', subtitle: 'Detroit skyline-heart graphic / supplied product reference', dollars: 36, type: 'Apparel', collection: 'detroit-2084', character: 'DETROIT_LENS_NOIR', images: [{ ...reference('detroit-2084-tee-reference', 'Black Detroit 2084 graphic T-shirt with skyline lettering and a heart emblem on a gray pedestal', 'Front reference'), width: 768, height: 768 }], sizes: ['S', 'M', 'L', 'XL', '2XL'] },
+  {
+    ...fragranceCollection, dollars: 0, pricePending: true, type: 'Fragrance', character: '',
+    // Lead the product gallery with the selected circuit-grid study; keep campaign artwork unchanged.
+    images: [fragranceCollection.images[2], fragranceCollection.images[0], fragranceCollection.images[1]],
+    cardImage: { ...fragranceCollection.images[2], src: 'media/armory-fragrance-circuit-grid-card.webp', width: 640, height: 640 },
+    colors: ['Black / gold'], sizes: ['Volume pending'],
+  },
   { handle: 'black-signal-beanie', title: 'Detroit Skyline Embroidered Beanie', subtitle: 'Black / Detroit skyline embroidery reference', dollars: 19, type: 'Apparel', collection: 'detroit-2084', character: 'DETROIT_LENS_NOIR', images: [{ ...reference('detroit-skyline-beanie-reference', 'Black cuffed Detroit skyline beanie with multicolor city lettering on a dark pedestal', 'Front reference'), width: 768, height: 768 }], colors: ['Black'] },
   { handle: 'detroit-skull-cap-alt', title: 'Detroit Embroidered Skull Cap — Alt Version', subtitle: 'Black knit / alternate Detroit embroidery reference', dollars: 22, type: 'Apparel', collection: 'detroit-2084', character: 'DETROIT_LENS_NOIR', images: [{ ...reference('detroit-skull-cap-alt-reference', 'Alternate black knit skull cap with multicolor I Love Detroit skyline embroidery on a dark marble pedestal', 'Alternate front reference'), width: 896, height: 1200 }], colors: ['Black'], description: 'An alternate black knit skull-cap concept featuring the Detroit skyline-heart embroidery. Supplied product reference; final materials, measurements, and production details await owner confirmation.' },
   { handle: 'gothtechnology-luggage-charm', title: 'GOTHTECHNOLOGY Luggage Charm', subtitle: 'LottoMind character / gold hardware reference', dollars: 19.99, type: 'Accessories', collection: 'detroit-2084', character: 'DETROIT_LENS_NOIR', cardImage: { ...reference('gothtechnology-luggage-charm-armory-higgsfield-v1', 'LottoMind character luggage charm with gold hardware and a black circuit strap on a black stone pedestal in a gold-lit cathedral armory', 'Higgsfield armory campaign concept'), width: 1600, height: 900 }, images: [{ ...reference('gothtechnology-luggage-charm-armory-higgsfield-v1', 'LottoMind character luggage charm with gold hardware and a black circuit strap on a black stone pedestal in a gold-lit cathedral armory', 'Higgsfield armory campaign concept'), width: 1600, height: 900 }, reference('charm', 'Purple LottoMind mascot key charm with gold clasp and black circuit-pattern strap', 'Product reference'), reference('charm-bags', 'LottoMind charm and gold clasp attached to a brown backpack', 'Scale reference'), reference('sling-bag', 'LottoMind charm attached to a black Detroit sling bag', 'Placement reference')] },

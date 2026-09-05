@@ -5,15 +5,15 @@ const product=base+'products/night-protocol-hoodie/';
 const settle=async page=>page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
 const ready=async page=>{await expect(page.locator('#store-data')).toBeAttached();await expect(page.locator('#sound-toggle')).toHaveText(/^Sound (?:on|off)$/);};
 
-test('visual: homepage renders, keeps content accessible, and does not load game or video',async({page},info)=>{
+test('visual: homepage renders, keeps content accessible, and only loads the silent hero video',async({page},info)=>{
   const errors=[],requests=[];page.on('pageerror',e=>errors.push(e.message));page.on('request',r=>requests.push(r.url()));
   await page.addInitScript(()=>{window.__metrics={lcp:0,cls:0};try{new PerformanceObserver(l=>{for(const e of l.getEntries())window.__metrics.lcp=e.startTime;}).observe({type:'largest-contentful-paint',buffered:true});new PerformanceObserver(l=>{for(const e of l.getEntries())if(!e.hadRecentInput)window.__metrics.cls+=e.value;}).observe({type:'layout-shift',buffered:true});}catch{}});
   await page.goto(base+'?build=a4eb5ec6');await ready(page);await page.evaluate(()=>document.fonts.ready);await expect(page.getByRole('heading',{level:1})).toHaveText(/Equipment\s*for the world\s*after midnight/);
-  await expect(page.locator('.hero-image')).toBeVisible();await expect.poll(()=>page.locator('.hero-image').evaluate(el=>el.complete&&el.naturalWidth>0)).toBe(true);
+  await expect(page.locator('img.hero-image')).toBeVisible();await expect.poll(()=>page.locator('img.hero-image').evaluate(el=>el.complete&&el.naturalWidth>0)).toBe(true);
   await page.screenshot({path:info.outputPath('home-viewport.png')});
   const metrics=await page.evaluate(()=>({...window.__metrics,width:innerWidth,height:innerHeight,domReady:performance.getEntriesByType('navigation')[0]?.domContentLoadedEventEnd,resources:performance.getEntriesByType('resource').map(r=>({name:new URL(r.name).pathname,bytes:r.encodedBodySize}))}));
   await writeFile(info.outputPath('performance.json'),JSON.stringify(metrics,null,2));
-  expect(requests.some(u=>/\/src\/main\.js|motion-atlases|\.mp4|lottomind-vault-174hz-background\.mp3|\/cathedral\.|\/model\.|\/three\./.test(u))).toBe(false);
+  expect(requests.filter(u=>!u.includes('armory-hero-higgsfield-loop.mp4')).some(u=>/\/src\/main\.js|motion-atlases|\.mp4|lottomind-vault-174hz-background\.mp3|\/cathedral\.|\/model\.|\/three\./.test(u))).toBe(false);
   expect(await page.evaluate(()=>({width:innerWidth,scroll:document.documentElement.scrollWidth,offenders:[...document.querySelectorAll('body *')].filter(el=>el.getBoundingClientRect().right>innerWidth+1&&!el.closest('.equipment-art,.signal-portrait,.lookbook-strip,.hero,dialog')).map(el=>({tag:el.tagName,cls:el.className,right:el.getBoundingClientRect().right}))}))).toMatchObject({scroll:info.project.use.viewport.width});
   for(const section of await page.locator('main>section').all()){await section.scrollIntoViewIfNeeded();}await expect.poll(()=>page.locator('main img[src]').evaluateAll(images=>images.every(img=>img.complete&&img.naturalWidth>0))).toBe(true);
   await page.evaluate(()=>window.scrollTo({top:0,behavior:"instant"}));await page.screenshot({path:info.outputPath('home-full.png'),fullPage:true});
@@ -66,7 +66,7 @@ test('catalog filters, sorting, no-results and product actions work',async({page
   await page.getByRole('button',{name:'Save to Launch Loadout: GOTHTECHNOLOGY Luggage Charm',exact:true}).click();
   await expect(page.getByRole('dialog',{name:'Your Launch Loadout'})).toContainText('$19.99');await page.keyboard.press('Escape');
   await page.getByLabel('Search products',{exact:true}).fill('zzz-no-match');await expect(page.locator('#no-results')).toBeVisible();
-  await page.locator('#no-results').getByRole('button',{name:'Clear filters'}).click();await expect(page.locator('#result-count')).toHaveText('17 products');
+  await page.locator('#no-results').getByRole('button',{name:'Clear filters'}).click();await expect(page.locator('#result-count')).toHaveText('18 products');
   await page.getByLabel('Search products',{exact:true}).fill('Boog');await expect(page.locator('[data-product-card]:visible')).toHaveCount(1);
   const boogeyman=page.locator('[data-product-card][data-handle="boogeyman-graphic-hoodie"]');await expect(boogeyman).toContainText('Pending');await expect(boogeyman.locator('img')).toHaveAttribute('src',/-campaign\.webp$/);await expect(boogeyman.locator('[data-save-product],[data-quick-view]')).toHaveCount(0);await expect(page.locator('[data-product-card][data-handle="boogie-man-knit-sweater"]')).toHaveCount(0);
   await page.getByLabel('Search products',{exact:true}).fill('');
@@ -330,7 +330,7 @@ test('conversion UI: keyboard, mobile filters, settings and sticky action',async
   if(compact){await expect(disclosure).not.toHaveAttribute('open');await summary.click();}
   await page.getByRole('combobox',{name:'Category',exact:true}).selectOption('Accessories');await expect(page.locator('#result-count')).toHaveText('5 products');
   if(compact)await summary.click();
-  await page.getByRole('button',{name:'Clear category filter'}).click();await expect(page.locator('#result-count')).toHaveText('17 products');
+  await page.getByRole('button',{name:'Clear category filter'}).click();await expect(page.locator('#result-count')).toHaveText('18 products');
   if(compact)await expect(summary).toBeFocused();
   await page.goto(product);await ready(page);
   if(compact){await expect(page.locator('.mobile-product-bar')).toBeVisible();await page.locator('.mobile-product-bar [data-select-options]').click();await expect(page.locator('#product-options')).toBeFocused();await expect(page.locator('.mobile-product-bar')).not.toBeVisible();await page.locator('.site-footer').scrollIntoViewIfNeeded();await expect(page.locator('.mobile-product-bar')).not.toBeVisible();}
@@ -353,4 +353,39 @@ test('responsive evidence: sections, shop, product, lookbook, about and play',as
     }
     if(width===390){await page.getByRole('button',{name:'Open navigation menu'}).click();await page.screenshot({path:info.outputPath('mobile-menu.png'),scale:'css'});await page.keyboard.press('Escape');}
   }
+});
+
+test('hero background loops silently and respects pause, scrolling and motion settings',async({page})=>{
+  await page.goto(base);await ready(page);
+  const video=page.locator('#hero-background-video'),toggle=page.locator('[data-toggle-hero-video]');
+  await expect.poll(()=>video.evaluate(v=>!v.paused&&v.currentTime>0&&v.muted&&v.loop)).toBe(true);
+  expect(await video.evaluate(v=>v.playbackRate)).toBe(0.4);
+  await expect(page.locator('#arrival')).toHaveAttribute('data-video-ready','true');
+  await toggle.focus();await page.keyboard.press('Enter');await expect.poll(()=>video.evaluate(v=>v.paused)).toBe(true);
+  await page.locator('#featured').scrollIntoViewIfNeeded();await page.evaluate(()=>scrollTo(0,0));await expect(toggle).toHaveText('Play background');
+  await toggle.click();await expect.poll(()=>video.evaluate(v=>!v.paused)).toBe(true);
+  await page.locator('#featured').scrollIntoViewIfNeeded();await expect.poll(()=>video.evaluate(v=>v.paused)).toBe(true);
+  await page.evaluate(()=>scrollTo(0,0));await expect.poll(()=>video.evaluate(v=>!v.paused)).toBe(true);
+  await page.locator('[data-open-settings]').first().click();await page.locator('#scene-pause').click();
+  await expect.poll(()=>video.evaluate(v=>v.paused)).toBe(true);await expect(toggle).toHaveText('Motion off');
+});
+for(const preference of ['reduced','saved-reduced','save-data'])test('hero background keeps its still image without fetching video: '+preference,async({page})=>{
+  if(preference==='reduced')await page.emulateMedia({reducedMotion:'reduce'});
+  if(preference==='saved-reduced')await page.addInitScript(()=>localStorage.setItem('gothtechnology.armory.motion','reduced'));
+  if(preference==='save-data')await page.addInitScript(()=>Object.defineProperty(navigator,'connection',{value:{saveData:true},configurable:true}));
+  const requests=[];page.on('request',r=>requests.push(r.url()));await page.goto(base);await ready(page);
+  await expect(page.locator('[data-toggle-hero-video]')).toHaveText('Motion off');
+  await expect(page.locator('#hero-background-video')).not.toHaveAttribute('src');
+  await expect(page.locator('img.hero-image')).toHaveCSS('opacity','0.75');
+  expect(requests.some(url=>url.includes('armory-hero-higgsfield-loop.mp4'))).toBe(false);
+});
+
+test('fragrance stays out of homepage features and opens its circuit-grid gallery from Shop',async({page})=>{
+  await page.goto(base);await ready(page);await expect(page.locator('#featured [data-handle="armory-fragrance-roller-collection"]')).toHaveCount(0);
+  await page.goto(base+'shop/?category=Fragrance');await ready(page);await expect(page.locator('#result-count')).toHaveText('1 product');
+  const card=page.locator('[data-handle="armory-fragrance-roller-collection"]');await expect(card.locator('img')).toHaveAttribute('src',/circuit-grid-card\.webp$/);
+  await card.locator('h3 a').click();await expect(page.locator('h1')).toHaveText('Armory Fragrance Roller Collection');
+  await expect(page.locator('#gallery-image')).toHaveAttribute('src',/circuit-grid-campaign\.webp$/);await expect(page.locator('.gallery-thumbs button')).toHaveCount(3);
+  await expect(page.getByRole('button',{name:'Price pending',exact:true})).toBeDisabled();await expect(page.locator('.fragrance-identities li')).toHaveCount(9);
+  await page.locator('.gallery-thumbs button').nth(1).click();await expect(page.locator('#gallery-image')).toHaveAttribute('src',/gold-arch-campaign\.webp$/);
 });

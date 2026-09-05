@@ -1,0 +1,27 @@
+---
+import FragranceIdentities from './FragranceIdentities.astro';
+import { fragranceCollection } from '../content/fragrance';
+import { href, media } from '../utilities/paths';
+const image=fragranceCollection.images[0];
+---
+<section class="section fragrance-campaign" aria-labelledby="fragrance-campaign-title">
+  <a class="fragrance-art" href={href(`products/${fragranceCollection.handle}/`)} aria-label={`Explore ${fragranceCollection.title}`}>
+    <img src={media(image.src)} alt={image.alt} width={image.width} height={image.height} fetchpriority="high"/>
+    <span class="media-caption">CAMPAIGN CONCEPT</span>
+  </a>
+  <div>
+    <p class="mono gold">THE ARMORY / FRAGRANCE</p>
+    <h2 id="fragrance-campaign-title">Carry your signal<br/>after midnight.</h2>
+    <p class="fragrance-intro">Clear rollers. Black labels. Gold lettering. A cyan circuit running through it all. Explore a new expression of the Armory through three fragrance packaging studies.</p>
+    <FragranceIdentities/>
+    <a class="button" href={href(`products/${fragranceCollection.handle}/`)}>Explore the roller collection</a>
+  </div>
+</section>
+<style>
+  .fragrance-campaign{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(24px,4vw,64px);align-items:center}
+  .fragrance-art{display:block;position:relative;border:1px solid var(--rule);background:#080a09}
+  .fragrance-art img{display:block;width:100%;height:auto;aspect-ratio:1;object-fit:contain}
+  .fragrance-campaign h2{font-size:clamp(32px,4vw,60px);line-height:1.07;margin:14px 0 20px}
+  .fragrance-campaign .fragrance-intro{font-size:16px;line-height:1.7;color:#d6cdb9}
+  @media(max-width:760px){.fragrance-campaign{grid-template-columns:minmax(0,1fr)}}
+</style>

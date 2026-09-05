@@ -111,7 +111,7 @@ test('cart restoration recalculates current prices and rejects duplicate lines',
 test('filters combine variant options and handle search, availability and price sorting',()=>{
   assert.equal(filterProducts(demoProducts,{search:'hoodie',size:'M',color:'Obsidian'}).length,1);
   assert.equal(filterProducts(demoProducts,{search:'no-such-product'}).length,0);
-  assert.equal(filterProducts(demoProducts,{availability:'unavailable'}).length,4);
+  assert.equal(filterProducts(demoProducts,{availability:'unavailable'}).length,5);
   assert.equal(filterProducts(demoProducts,{sort:'price-low'})[0].price.amount,1199);
   assert.equal(filterProducts(demoProducts,{sort:'price-high'})[0].price.amount,12900);
   assert.equal(selectVariant(hoodie,'M','Obsidian')?.size,'M');assert.equal(selectVariant(hoodie,'XXXS','Obsidian'),null);

@@ -1,0 +1,16 @@
+---
+import { fragranceCollection } from '../content/fragrance';
+---
+<section class="fragrance-identities" aria-label="Fragrance label concepts">
+  <p class="mono gold">DROP 001 / LABEL CONCEPTS</p>
+  <h2>Nine identities. Your signal.</h2>
+  <ul>{fragranceCollection.identities.map(name => <li>{name}</li>)}</ul>
+  <p class="fragrance-note">Names shown on the proposed packaging. Scent notes and formulas will be announced with the launch details.</p>
+</section>
+<style>
+  .fragrance-identities{margin-block:28px;padding-block:24px;border-block:1px solid var(--rule)}
+  .fragrance-identities h2{font-size:clamp(26px,3vw,36px);line-height:1.15;margin:10px 0 18px}
+  .fragrance-identities ul{display:flex;flex-wrap:wrap;gap:8px;list-style:none;padding:0;margin:0}
+  .fragrance-identities li{padding:10px 12px;border:1px solid #796033;background:#101211;color:#edddb7;font:400 14px/1.4 var(--mono)}
+  .fragrance-identities .fragrance-note{margin:18px 0 0;font-size:14px;line-height:1.7;color:#c8c3b5}
+</style>

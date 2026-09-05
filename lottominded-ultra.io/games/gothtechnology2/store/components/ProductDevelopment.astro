@@ -3,6 +3,7 @@ import type { Product } from '../commerce/types';
 import { href } from '../utilities/paths';
 const { product, isDemoMode } = Astro.props as { product: Product; isDemoMode: boolean };
 const info = product.information;
+const isFragrance = product.productType === 'Fragrance';
 const specifications = [
   ['Materials', info.materials], ['Fabric weight', info.fabricWeight],
   ['Construction', info.construction], ['Finish', info.finish],
@@ -10,9 +11,9 @@ const specifications = [
   ['Country of manufacture', info.countryOfManufacture], ['Included items', info.includedItems],
 ].filter(([,value])=>value);
 const pending = [
-  !info.materials && !product.digital && 'Materials and construction',
-  !info.measurements && !product.digital && 'Measurements and fit',
-  !info.careInstructions && !product.digital && 'Care instructions',
+  !info.materials && !product.digital && (isFragrance ? 'Ingredients and fragrance notes' : 'Materials and construction'),
+  !info.measurements && !product.digital && (isFragrance ? 'Bottle volume' : 'Measurements and fit'),
+  !info.careInstructions && !product.digital && (isFragrance ? 'Use and storage instructions' : 'Care instructions'),
   info.photographyStatus !== 'approved' && 'Final imagery and packaging',
   info.productionStatus !== 'approved' && 'Production and inventory approval',
   (!info.shippingMessage || !info.returnMessage) && !product.digital && 'Delivery and returns',
@@ -20,13 +21,8 @@ const pending = [
 ].filter(Boolean);
 ---
 <div class="product-accordions">
-  {isDemoMode && <details open class="development-status">
-    <summary>Product Development Status</summary>
-    <p>{info.photographyStatus === 'approved' ? 'Product imagery is approved. Review the remaining development details below.' : 'These images guide the design; they are not verified product photography.'}</p>
-    {info.includedItems && <p><strong>Included items:</strong> {info.includedItems}</p>}
-    <ul>{pending.map(item=><li>{item}: awaiting owner confirmation.</li>)}</ul>
-  </details>}
-  {!product.digital && <details><summary>Size guide</summary><p>{info.sizeGuide || 'Verified measurements have not been supplied. The option labels are for recording your preference, not a confirmed fit guide.'}</p>{info.measurements && <p>{info.measurements}</p>}</details>}
+  {isDemoMode && <details open class="development-status"><summary>Product Development Status</summary><p>{info.photographyStatus === 'approved' ? 'Product imagery is approved. Review the remaining development details below.' : 'These images guide the design; they are not verified product photography.'}</p>{info.includedItems && <p><strong>Included items:</strong> {info.includedItems}</p>}<ul>{pending.map(item=><li>{item}: awaiting owner confirmation.</li>)}</ul></details>}
+  {!product.digital && !isFragrance && <details><summary>Size guide</summary><p>{info.sizeGuide || 'Verified measurements have not been supplied. The option labels are for recording your preference, not a confirmed fit guide.'}</p>{info.measurements && <p>{info.measurements}</p>}</details>}
   {specifications.length > 0 && <details><summary>Materials & construction</summary><dl>{specifications.map(([label,value])=><><dt>{label}</dt><dd>{value}</dd></>)}</dl></details>}
   {info.careInstructions && <details><summary>Care instructions</summary><p>{info.careInstructions}</p></details>}
   {!product.digital && <details><summary>Shipping & returns</summary><p>{info.shippingMessage || 'This preview does not ship items. Delivery regions and processing times will be published before orders open.'}</p>{info.returnMessage && <p>{info.returnMessage}</p>}<p><a class="text-link" href={href('shipping/')}>Shipping details</a> / <a class="text-link" href={href('returns/')}>Returns information</a></p></details>}

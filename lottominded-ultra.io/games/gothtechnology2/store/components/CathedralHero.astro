@@ -1,10 +1,9 @@
 ---
 import { href } from '../utilities/paths';
-import { cinematicModels } from '../content/cinematic-models';
 ---
 <section class="hero cathedral-hero" id="arrival" aria-labelledby="hero-title" data-story-scene="arrival">
   <img class="hero-image" srcset={`${href('media/armory-hero-v2-640.webp')} 640w, ${href('media/armory-hero-v2-960.webp')} 960w, ${href('media/armory-hero-v2-1600.webp')} 1600w, ${href('media/armory-hero-v2.webp')} 2048w`} sizes="100vw" src={href('media/armory-hero-v2.webp')} width="2048" height="768" alt="Concept artwork of the 313 Detroit hoodie and LottoMind charm in a gold-lit cathedral armory" fetchpriority="high"/>
-  <div class="scene-wrap" id="armory-scene" aria-hidden="true" data-hoodie-model={cinematicModels.hoodie ? href(cinematicModels.hoodie) : undefined} data-charm-model={cinematicModels.charm ? href(cinematicModels.charm) : undefined}></div>
+  <video id="hero-background-video" class="hero-image hero-video" data-src={href('media/armory-hero-higgsfield-loop.mp4')} poster={href('media/armory-hero-v2.webp')} width="1680" height="720" muted loop playsinline preload="none" aria-hidden="true" tabindex="-1"></video>
   <div class="hero-copy">
     <p class="hero-kicker">GOTHTECHNOLOGY</p>
     <h1 id="hero-title">Equipment for the world<br/>after midnight</h1>
@@ -26,7 +25,17 @@ import { cinematicModels } from '../content/cinematic-models';
     <a href="#enter-the-fight" data-chapter="portal">The Portal</a>
   </nav>
   <div class="hero-controls">
+    <button class="text-button" type="button" data-toggle-hero-video aria-controls="hero-background-video" aria-pressed="false" hidden>Play background</button>
     <button class="text-button hero-sound" type="button" data-toggle-sound aria-pressed="false">Sound off</button>
     <button class="text-button hero-settings" type="button" data-open-settings>Experience settings</button>
   </div>
 </section>
+<script>
+  import { initHeroVideo } from '../ui/hero-video';
+  initHeroVideo();
+</script>
+<style>
+  :global(body[data-store-v2]) .cathedral-hero .hero-video{opacity:0;pointer-events:none}
+  :global(body[data-store-v2]) .cathedral-hero[data-video-ready="true"] .hero-video{opacity:.75}
+  :global(body[data-store-v2]) .cathedral-hero[data-video-ready="true"] img.hero-image{opacity:0}
+</style>

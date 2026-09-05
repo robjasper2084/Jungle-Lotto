@@ -96,7 +96,7 @@ export function initCart(products: Product[]) {
     const product=products.find(p=>p.handle===form.dataset.addForm); if(!product)return;
     const data=new FormData(form), variant=selectVariant(product,String(data.get('size')),String(data.get('color')));
     const price=$('[data-selected-price]',form.closest('[data-product-detail]')??form); if(price)price.textContent=product.price.amount<=0?'Pending':formatMoney(variant?.price??product.price);
-    const notice=$('[data-variant-status]',form); if(notice)notice.textContent=product.price.amount<=0?'Price, final sizes, and availability are awaiting owner confirmation.':!variant?mode==='interest'?'Choose a size and color to save this concept.':'Choose a size and color.':!variant.available?'This variant is unavailable.':mode==='interest'?'Concept options — final sizes and availability are pending.':'Available. Final inventory and price checked at checkout.';
+    const notice=$('[data-variant-status]',form); if(notice)notice.textContent=product.price.amount<=0?(product.productType==='Fragrance'?'Bottle volume, price, and availability will be announced.':'Price, final sizes, and availability are awaiting owner confirmation.'):!variant?mode==='interest'?'Choose a size and color to save this concept.':'Choose a size and color.':!variant.available?'This variant is unavailable.':mode==='interest'?'Concept options — final sizes and availability are pending.':'Available. Final inventory and price checked at checkout.';
     const submit=$<HTMLButtonElement>('[type=submit]',form); if(submit)submit.disabled=!variant?.available;
   }
   async function add(form:HTMLFormElement, buy=false) {
