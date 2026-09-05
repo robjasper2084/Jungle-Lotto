@@ -387,5 +387,6 @@ test('fragrance stays out of homepage features and opens its circuit-grid galler
   await card.locator('h3 a').click();await expect(page.locator('h1')).toHaveText('Armory Fragrance Roller Collection');
   await expect(page.locator('#gallery-image')).toHaveAttribute('src',/circuit-grid-campaign\.webp$/);await expect(page.locator('.gallery-thumbs button')).toHaveCount(3);
   await expect(page.getByRole('button',{name:'Price pending',exact:true})).toBeDisabled();await expect(page.locator('.fragrance-identities li')).toHaveCount(9);
+  const galleryBounds=await page.locator('#gallery-image').boundingBox();expect(Math.abs(galleryBounds.height-galleryBounds.width)).toBeLessThan(2);
   await page.locator('.gallery-thumbs button').nth(1).click();await expect(page.locator('#gallery-image')).toHaveAttribute('src',/gold-arch-campaign\.webp$/);
 });
