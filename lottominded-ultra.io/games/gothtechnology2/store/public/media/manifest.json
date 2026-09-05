@@ -963,5 +963,56 @@
     "height": 768,
     "bytes": 48634,
     "origin": "User-supplied AI bundle reference; product accuracy, bundle contents, rights, safety, legal restrictions, and availability require owner confirmation"
+  },
+  {
+    "source": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260905_003412_ca096a7e-8334-4b31-8d20-0b27a6cb43bd.png",
+    "output": "armory-fragrance-gold-arch-campaign.webp",
+    "sourceWidth": 2048,
+    "sourceHeight": 2048,
+    "width": 1600,
+    "height": 1600,
+    "bytes": 210580,
+    "origin": "Higgsfield campaign concept created from user-supplied fragrance roller references; product specifications pending"
+  },
+  {
+    "source": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260905_003412_1d69dfb3-2a30-4b37-845b-a16cb7a39c8b.png",
+    "output": "armory-fragrance-tiered-display-campaign.webp",
+    "sourceWidth": 2048,
+    "sourceHeight": 2048,
+    "width": 1600,
+    "height": 1600,
+    "bytes": 179226,
+    "origin": "Higgsfield campaign concept created from user-supplied fragrance roller references; product specifications pending"
+  },
+  {
+    "source": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260905_003412_00972e1a-6cb5-4e7e-9c20-e4d86ba046ce.png",
+    "output": "armory-fragrance-circuit-grid-campaign.webp",
+    "sourceWidth": 2048,
+    "sourceHeight": 2048,
+    "width": 1600,
+    "height": 1600,
+    "bytes": 526498,
+    "origin": "Higgsfield campaign concept created from user-supplied fragrance roller references; product specifications pending"
+  },
+  {
+    "source": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260905_095033_959cfb16-43b3-4902-ab37-36b272b72e70.mp4",
+    "output": "armory-hero-higgsfield-loop.mp4",
+    "sourceWidth": 2206,
+    "sourceHeight": 946,
+    "width": 1680,
+    "height": 720,
+    "duration": 6.041667,
+    "origin": "Higgsfield Seedance 2.5 silent hero loop from the existing Armory hero artwork; job 959cfb16-43b3-4902-ab37-36b272b72e70",
+    "bytes": 509322
+  },
+  {
+    "source": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260905_003412_00972e1a-6cb5-4e7e-9c20-e4d86ba046ce.png",
+    "output": "armory-fragrance-circuit-grid-card.webp",
+    "sourceWidth": 2048,
+    "sourceHeight": 2048,
+    "width": 640,
+    "height": 640,
+    "origin": "Higgsfield campaign study selected by the user for the fragrance shop card",
+    "bytes": 52250
   }
 ]
