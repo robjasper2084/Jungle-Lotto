@@ -6,6 +6,7 @@ import { finished } from 'node:stream/promises';
 import { legacyIntegration } from '../../scripts/store-integration.mjs';
 import { DemoProvider, DEMO_CART_KEY } from '../../store/commerce/demo.ts';
 import { demoProducts, filterProducts, selectVariant } from '../../store/content/catalog.ts';
+import { fragranceBundles, scentDirections } from '../../store/content/fragrance-pairings.ts';
 import { fromDecimal, formatMoney, subtotal, quantity } from '../../store/commerce/money.ts';
 import { ShopifyProvider, normalizeProduct, validateCheckoutUrl } from '../../store/commerce/shopify.ts';
 import { validGameMessage, acceptGameMessage, cosmeticReward, monetaryRewards } from '../../store/game/messages.ts';
@@ -264,7 +265,7 @@ test('Static Saints Detroit rug is a truthful price-pending collectible with bot
   assert.deepEqual(rug.sizes,['Dimensions pending']);
   assert.ok(rug.variants.every(variant=>variant.available===false));
 });
-test('Original Artwork collection keeps both supplied Detroit references price-pending and features only the winter alt',()=>{
+test('Original Artwork collection keeps both supplied Detroit references price-pending and features the simple winter frame',()=>{
   const artwork=demoProducts.filter(product=>product.collection==='original-artwork');
   assert.deepEqual(artwork.map(product=>product.handle),['detroit-riverfront-sunset-artwork','detroit-winter-sunset-artwork']);
   for(const product of artwork){
@@ -273,17 +274,17 @@ test('Original Artwork collection keeps both supplied Detroit references price-p
     assert.ok(product.variants.every(variant=>!variant.available));
     assert.equal(product.cardImage?.kind,'CAMPAIGN CONCEPT');
     assert.equal(product.images[0]?.kind,'CAMPAIGN CONCEPT');
-    assert.equal(product.images[2]?.kind,'SUPPLIED PRODUCT REFERENCE');
+    assert.equal(product.images[2]?.kind,product.handle==='detroit-winter-sunset-artwork'?'CAMPAIGN CONCEPT':'SUPPLIED PRODUCT REFERENCE');
   }
   assert.equal(artwork[0].images[1]?.src,'media/detroit-riverfront-sunset-artwork-gothic-frame-alt.webp');
-  assert.equal(artwork[1].images[1]?.src,'media/detroit-winter-sunset-artwork-gothic-frame-alt.webp');
-  assert.equal(artwork[1].cardImage?.src,'media/detroit-winter-sunset-artwork-gothic-frame-alt.webp');
+  assert.equal(artwork[1].images[1]?.src,'media/detroit-winter-sunset-simple-frame-alt.webp');
+  assert.equal(artwork[1].cardImage?.src,'media/detroit-winter-sunset-simple-frame-campaign.webp');
   assert.equal(artwork[0].images[1]?.label,'Gothic frame alt');
-  assert.equal(artwork[1].images[1]?.label,'Gothic frame alt');
+  assert.equal(artwork[1].images[1]?.label,'Simple frame alternate campaign');
   assert.equal(artwork[0].images[1]?.kind,'CAMPAIGN CONCEPT');
   assert.equal(artwork[1].images[1]?.kind,'CAMPAIGN CONCEPT');
   assert.equal(artwork[0].images[2]?.src,'media/detroit-riverfront-sunset-artwork-supplied.webp');
-  assert.equal(artwork[1].images[2]?.src,'media/detroit-winter-sunset-artwork-supplied.webp');
+  assert.equal(artwork[1].images[2]?.src,'media/detroit-winter-sunset-retouched-artwork.webp');
 });
 test('Mobster luggage charm replaces the desk mat at $19.99 with supplied artwork',async()=>{
   assert.equal(demoProducts.some(product=>product.handle==='combat-grid-desk-mat'),false);
@@ -297,8 +298,8 @@ test('Mobster luggage charm replaces the desk mat at $19.99 with supplied artwor
   assert.equal(charm.images[0]?.src,'media/mobster-luggage-charm-cyan-arch-reference.webp');
   assert.equal(charm.images[1]?.src,'media/mobster-luggage-charm-equipment-context-reference.webp');
   assert.equal(charm.images[1]?.label,'Equipment context');
-  assert.equal(charm.video,'https://www.youtube-nocookie.com/embed/0yPqZEvKnFU?rel=0&autoplay=1');
-  assert.equal(charm.video.includes('autoplay=1'),true);
+  assert.equal(charm.video,'https://www.youtube-nocookie.com/embed/0yPqZEvKnFU?rel=0&playsinline=1');
+  assert.equal(charm.video.includes('autoplay'),false);
   const storage=memory(),provider=new DemoProvider(storage);
   const cart=await provider.addCartLine((await provider.createCart()).id,charm.variants[0].id,1);
   const restored=(await new DemoProvider(storage).getCart(cart.id))!;
@@ -525,4 +526,22 @@ test('conversion events stay no-op until consent and never carry contact or sear
   tracker.trackEvent('launch_alert_submit',{email:'private@example.test'});assert.equal(calls.length,0);
   tracker.setConsent(true);tracker.trackEvent('search',{count:2,search:'private query',email:'private@example.test',name:'Person'});
   assert.deepEqual(calls,[['search',{count:2}]]);
+});
+
+test('Mobster charm and Key Knife bundle uses the approved preview price and explicit contents',()=>{
+  const bundle=demoProducts.find(p=>p.handle==='mobster-charm-key-knife-bundle')!;
+  assert.equal(bundle.price.amount,2999);assert.equal(bundle.productType,'Bundles');assert.equal(bundle.featured,false);
+  assert.match(bundle.information.includedItems!,/one Mobster Luggage Charm and one black Key Knife/);
+  assert.match(bundle.information.includedItems!,/fragrance are not included/);
+  assert.equal(bundle.information.productionStatus,'concept');assert.equal(bundle.demo,true);
+});
+
+test('fragrance pairings resolve to unique scent anchors and existing products',()=>{
+  const ids=scentDirections.map(scent=>scent.id);
+  assert.equal(new Set(ids).size,ids.length,'scent links must have unique targets');
+  for(const bundle of fragranceBundles){
+    const scent=scentDirections.find(scent=>scent.id===bundle.scentId);
+    assert.ok(scent,`${bundle.name} must resolve its scent profile`);
+    assert.ok(demoProducts.some(product=>product.handle===bundle.handle),`${bundle.name} must resolve its product`);
+  }
 });

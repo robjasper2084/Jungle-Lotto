@@ -4,7 +4,7 @@ export const fragranceCollection = {
   title: 'Armory Fragrance Roller Collection',
   subtitle: 'Drop 001 / Fragrance oil roller concepts',
   collection: 'armory-fragrance',
-  description: 'Carry your signal after midnight. The Armory fragrance collection brings its character and collection identities to clear roller bottles with black labels, gold lettering, and cyan circuit details. Explore three campaign studies of the proposed packaging. Fragrance notes, ingredients, bottle volume, pricing, and launch availability are still in development.',
+  description: 'Carry your signal after midnight. The Armory fragrance collection brings its character and collection identities to clear roller bottles with black labels, gold lettering, and cyan circuit details. Explore three packaging studies, proposed scent directions for the characters and artwork, and suggested pairings. These creative concepts are not confirmed formulas or purchasable bundles. Ingredients, bottle volume, pricing, and launch availability are still in development.',
   identities: ['The Analog', 'The Champ', 'The Mobster', 'The Observer', 'Knight Protocol', 'Detroit 2084', 'Static Saints', 'Black Signal', 'Cyber Cathedral'],
   images: [
     { src: 'media/armory-fragrance-gold-arch-campaign.webp', alt: 'Armory fragrance roller bottles with black and gold labels and cyan circuit details beneath a gold cathedral arch', label: 'Gold-arch campaign concept', width: 1600, height: 1600 },

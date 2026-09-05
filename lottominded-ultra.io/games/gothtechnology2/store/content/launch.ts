@@ -12,6 +12,9 @@ export const pendingInformation = (): ProductInformation => ({
 
 // Populate by product handle only after the owner verifies each fact and image.
 export const approvedProductInformation: Record<string, Partial<ProductInformation>> = {
+  'mobster-charm-key-knife-bundle': {
+    includedItems: 'Proposed contents: one Mobster Luggage Charm and one black Key Knife. Rail adapter, sporting equipment, and fragrance are not included.',
+  },
   'night-protocol-hoodie': {
     includedItems: 'Hoodie only. The LottoMind charm shown in some supplied reference imagery is not included with the hoodie.',
   },

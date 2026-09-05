@@ -5,14 +5,15 @@ import { disconnectedMessage } from '../state/subscription';
 import { href } from '../utilities/paths';
 interface Props { id: string; loadout?: boolean }
 const { id, loadout = false } = Astro.props;
+const connected = Boolean(config.newsletterEndpoint && launchOwner.subscriptionApproved);
 ---
-<form id={id} data-subscription-form data-loadout-alert={loadout ? 'true' : undefined}>
+<form id={id} data-subscription-form data-subscription-connected={connected ? 'true' : 'false'} data-loadout-alert={loadout ? 'true' : undefined}>
   <label for={id+'-email'}>Email address</label>
   <div class="email-row">
-    <input type="email" id={id+'-email'} name="email" autocomplete="email" maxlength="254" placeholder="you@example.com" required aria-describedby={id+'-status'}/>
-    <button class="button" type="submit">Get Launch Alert</button>
+    <input type="email" id={id+'-email'} name="email" autocomplete="email" maxlength="254" placeholder={connected ? 'you@example.com' : 'Alerts coming soon'} required disabled={!connected} aria-describedby={id+'-status'}/>
+    <button class="button" type="submit" disabled={!connected}>Get Launch Alert</button>
   </div>
-  <label class="consent-label"><input type="checkbox" name="consent" required aria-describedby={id+'-status'}/>I agree to receive GOTHTECHNOLOGY launch emails and can unsubscribe at any time.</label>
-  <p class="form-status" id={id+'-status'} role="status" aria-live="polite">{config.newsletterEndpoint && launchOwner.subscriptionApproved ? 'Your consent is required. See the privacy notice before submitting.' : disconnectedMessage}</p>
+  <label class="consent-label"><input type="checkbox" name="consent" required disabled={!connected} aria-describedby={id+'-status'}/>I agree to receive GOTHTECHNOLOGY launch emails and can unsubscribe at any time.</label>
+  <p class="form-status" id={id+'-status'} role="status" aria-live="polite">{connected ? 'Your consent is required. See the privacy notice before submitting.' : disconnectedMessage}</p>
   <p class="form-privacy"><a href={href('privacy/')}>Privacy & your data</a>. Saving a loadout does not reserve stock or place an order.</p>
 </form>

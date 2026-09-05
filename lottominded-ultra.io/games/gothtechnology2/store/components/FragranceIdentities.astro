@@ -1,16 +1,61 @@
 ---
-import { fragranceCollection } from '../content/fragrance';
+import { scentConceptNotice, scentDirections } from '../content/fragrance-pairings';
+const groups = [
+  { id: 'character-scents', title: 'Character signatures', scents: scentDirections.filter(scent => scent.kind === 'Character') },
+  { id: 'world-scents', title: 'Artwork & worlds', scents: scentDirections.filter(scent => scent.kind !== 'Character') },
+];
 ---
-<section class="fragrance-identities" aria-label="Fragrance label concepts">
-  <p class="mono gold">DROP 001 / LABEL CONCEPTS</p>
-  <h2>Nine identities. Your signal.</h2>
-  <ul>{fragranceCollection.identities.map(name => <li>{name}</li>)}</ul>
-  <p class="fragrance-note">Names shown on the proposed packaging. Scent notes and formulas will be announced with the launch details.</p>
+<section class="fragrance-identities" aria-label="Character and artwork scent concepts">
+  <p class="mono gold">DROP 001 / PROPOSED SCENT DIRECTIONS</p>
+  <h2>Match your character. Carry the scene.</h2>
+  <p class="fragrance-note">{scentConceptNotice}</p>
+  <nav class="scent-nav" aria-label="Browse scent concepts"><a href="#character-scents">Character signatures</a><a href="#world-scents">Artwork & worlds</a></nav>
+  {groups.map(group => <div class="scent-group" id={group.id}>
+    <h3>{group.title}</h3>
+    <ul>{group.scents.map(scent => <li class="scent-card" id={`scent-${scent.id}`} tabindex="-1">
+      <span class="scent-kind">{scent.kind} / {scent.family}</span>
+      <h4>{scent.name}</h4>
+      <p class="scent-mood">{scent.mood}</p>
+      <p class="scent-notes"><span>Proposed notes</span>{scent.notes}</p>
+      <p>{scent.story}</p>
+      <details>
+        <summary>Explore the scent story</summary>
+        <dl class="scent-composition">
+          <div><dt>Opening concept</dt><dd>{scent.composition.opening}</dd></div>
+          <div><dt>Heart concept</dt><dd>{scent.composition.heart}</dd></div>
+          <div><dt>Trail concept</dt><dd>{scent.composition.trail}</dd></div>
+        </dl>
+        {scent.inspiration && <div class="scent-scene"><p class="scene-title">Reading the artwork</p><dl>{scent.inspiration.map(cue => <div><dt>{cue.detail}</dt><dd>{cue.impression}</dd></div>)}</dl></div>}
+      </details>
+    </li>)}</ul>
+  </div>)}
 </section>
 <style>
-  .fragrance-identities{margin-block:28px;padding-block:24px;border-block:1px solid var(--rule)}
+  .fragrance-identities{margin-block:28px;padding-block:24px;border-block:1px solid var(--rule);container-type:inline-size}
   .fragrance-identities h2{font-size:clamp(26px,3vw,36px);line-height:1.15;margin:10px 0 18px}
-  .fragrance-identities ul{display:flex;flex-wrap:wrap;gap:8px;list-style:none;padding:0;margin:0}
-  .fragrance-identities li{padding:10px 12px;border:1px solid #796033;background:#101211;color:#edddb7;font:400 14px/1.4 var(--mono)}
-  .fragrance-identities .fragrance-note{margin:18px 0 0;font-size:14px;line-height:1.7;color:#c8c3b5}
+  .fragrance-identities .fragrance-note{margin:0 0 16px;font-size:14px;line-height:1.7;color:#c8c3b5}
+  .scent-nav{display:flex;flex-wrap:wrap;gap:8px 20px;margin-bottom:24px}
+  .scent-nav a{display:inline-flex;align-items:center;min-height:44px;font-size:14px;text-decoration:underline;text-underline-offset:4px}
+  .scent-group,.scent-card{scroll-margin-top:110px}
+  .scent-group + .scent-group{margin-top:28px}
+  .scent-group > h3{font:26px/1.2 var(--display);margin:0 0 14px;color:var(--goth-cream)}
+  .fragrance-identities ul{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:start;gap:12px;list-style:none;padding:0;margin:0}
+  .scent-card{padding:18px;border:1px solid #796033;background:#101211;color:#edddb7}
+  .scent-card:target{border-color:#78d0d0;outline:1px solid #78d0d0;outline-offset:3px}
+  .scent-card h4{font:28px/1.15 var(--display);margin:12px 0;color:var(--goth-cream)}
+  .scent-card p,.scent-card dd{font:14px/1.65 var(--sans);margin:10px 0;color:#c8c3b5}
+  .scent-card .scent-mood{color:var(--goth-cream)}
+  .scent-card .scent-notes{color:#e8c777}
+  .scent-notes span{display:block;margin-bottom:4px;font:12px/1.5 var(--mono);text-transform:uppercase;color:#b9d3d0}
+  .scent-kind{font:12px/1.5 var(--mono);color:#b9d3d0}
+  .scent-card details{margin-top:14px;border-top:1px solid var(--rule)}
+  .scent-card summary{padding:12px 0;min-height:44px;font:14px/1.5 var(--sans);color:#e8c777;cursor:pointer}
+  .scent-composition,.scent-scene dl{margin:6px 0 0}
+  .scent-card dt{font:12px/1.5 var(--mono);color:#b9d3d0}
+  .scent-card dd{margin:4px 0 16px}
+  .scent-scene{border-top:1px solid var(--rule);padding-top:12px}
+  .scent-card .scene-title{font-weight:600;color:var(--goth-cream)}
+  @container(max-width:580px){.fragrance-identities ul{grid-template-columns:minmax(0,1fr)}}
+  @container(min-width:1100px){#character-scents ul{grid-template-columns:repeat(4,minmax(0,1fr))}#world-scents ul{grid-template-columns:repeat(3,minmax(0,1fr))}}
+  @media(max-width:600px){.fragrance-identities ul{grid-template-columns:minmax(0,1fr)}}
 </style>

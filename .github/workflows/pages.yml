@@ -50,7 +50,7 @@ jobs:
         run: npx playwright install --with-deps chromium
       - name: Verify game portal, artwork and video controls
         working-directory: lottominded-ultra.io/games/gothtechnology2
-        run: npm run test:store:browser -- --project=desktop --grep "game portal|homepage category tile|homepage signal row|collection signal columns|commercial|inline Lookbook films|reduced motion keeps inline films|hero background|fragrance stays"
+        run: npm run test:store:browser -- --project=desktop --grep "game portal|homepage category tile|homepage signal row|collection signal columns|commercial|inline Lookbook films|reduced motion keeps inline films|hero background|fragrance stays|fragrance concept stories|charm and knife preview|Original Artwork"
       - name: Validate Pages assembly
         run: node --test scripts/gothtechnology-pages.test.mjs
       - name: Build lean Pages artifact
