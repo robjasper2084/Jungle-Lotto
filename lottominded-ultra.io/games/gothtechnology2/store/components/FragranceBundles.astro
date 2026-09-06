@@ -1,0 +1,32 @@
+---
+import { fragranceBundles, scentDirections } from '../content/fragrance-pairings';
+import { href } from '../utilities/paths';
+const { productHandle } = Astro.props as { productHandle?: string };
+const bundles = (productHandle ? fragranceBundles.filter(bundle=>bundle.handle===productHandle) : fragranceBundles).map(bundle => ({...bundle, scent:scentDirections.find(scent=>scent.id===bundle.scentId)!}));
+---
+{bundles.length > 0 && <section class="fragrance-bundles" aria-label="Suggested fragrance bundles">
+  <p class="mono gold">ART / CHARACTER / SCENT</p>
+  <h2>Suggested bundles.</h2>
+  <p class="pairing-disclaimer">These are creative pairings for a future launch, not purchasable bundles. Each imagines one roller alongside the named item. Formulas, individual rollers, final contents, pricing and availability are not confirmed. No bundle discount is offered.</p>
+  <div class="pairing-grid">{bundles.map(bundle=><article class="fragrance-pairing">
+    <h3>{bundle.name}</h3>
+    <p class="pairing-items">{bundle.scent.name} roller concept + {bundle.product}</p>
+    <p class="pairing-notes"><span>Proposed scent</span>{bundle.scent.notes}</p>
+    <p>{bundle.story}</p>
+    <div class="pairing-links"><a href={href(`products/${bundle.handle}/`)}>Explore {bundle.product}</a><a href={`${href('products/armory-fragrance-roller-collection/')}#scent-${bundle.scent.id}`}>Explore {bundle.scent.name} scent concept</a></div>
+  </article>)}</div>
+</section>}
+<style>
+  .fragrance-bundles{margin-block:30px;padding-block:24px;border-top:1px solid var(--rule)}
+  .fragrance-bundles h2{font-size:clamp(28px,3vw,38px);margin:10px 0 16px}
+  .pairing-disclaimer{font-size:14px;line-height:1.7;color:#c8c3b5}
+  .pairing-grid{display:grid;gap:14px;margin-top:20px}
+  .fragrance-pairing{padding:20px;border:1px solid var(--rule);background:#0c100f}
+  .fragrance-pairing h3{font-size:25px;margin:0 0 12px;color:var(--goth-cream)}
+  .fragrance-pairing p{font-size:15px;line-height:1.6;margin:10px 0;color:#c8c3b5}
+  .fragrance-pairing .pairing-items{color:#e8c777}
+  .fragrance-pairing .pairing-notes{font-size:14px}
+  .pairing-notes span{display:block;font:12px/1.5 var(--mono);color:#b9d3d0;text-transform:uppercase;margin-bottom:4px}
+  .pairing-links{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:14px}
+  .pairing-links a{display:inline-flex;align-items:center;min-height:44px;font-size:14px;text-decoration:underline;text-underline-offset:4px}
+</style>

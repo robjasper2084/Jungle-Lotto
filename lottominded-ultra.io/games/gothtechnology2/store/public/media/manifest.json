@@ -1014,5 +1014,39 @@
     "height": 640,
     "origin": "Higgsfield campaign study selected by the user for the fragrance shop card",
     "bytes": 52250
+  },
+  {
+    "source": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260905_224248_751a63aa-9e4f-4820-9cab-6bae0e07c999.png",
+    "output": "detroit-winter-sunset-simple-frame-campaign.webp",
+    "width": 1600,
+    "height": 893,
+    "bytes": 159370,
+    "origin": "Higgsfield retouch requested by the owner: remove the bottom-right signature; simplify framed views. AI-edited campaign image; original credited reference retained separately. Rights, edition details, and product accuracy require owner confirmation."
+  },
+  {
+    "source": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260905_224248_3f1066cd-da4d-40ea-82a5-8ab3fe2a6a59.png",
+    "output": "detroit-winter-sunset-simple-frame-alt.webp",
+    "width": 1600,
+    "height": 893,
+    "bytes": 122320,
+    "origin": "Higgsfield retouch requested by the owner: remove the bottom-right signature; simplify framed views. AI-edited campaign image; original credited reference retained separately. Rights, edition details, and product accuracy require owner confirmation."
+  },
+  {
+    "source": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260905_224249_69fc4ef8-4628-4e55-92cc-0d46786f9edc.png",
+    "output": "detroit-winter-sunset-retouched-artwork.webp",
+    "width": 1600,
+    "height": 1073,
+    "bytes": 330920,
+    "origin": "Higgsfield retouch requested by the owner: remove the bottom-right signature; simplify framed views. AI-edited campaign image; original credited reference retained separately. Rights, edition details, and product accuracy require owner confirmation."
+  },
+  {
+    "source": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260905_003412_ca096a7e-8334-4b31-8d20-0b27a6cb43bd.png",
+    "output": "armory-fragrance-gold-arch-card.webp",
+    "sourceWidth": 2048,
+    "sourceHeight": 2048,
+    "width": 640,
+    "height": 640,
+    "bytes": 58770,
+    "origin": "Higgsfield campaign concept created from user-supplied fragrance roller references; product specifications pending"
   }
 ]

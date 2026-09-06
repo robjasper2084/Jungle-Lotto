@@ -66,7 +66,7 @@ test('catalog filters, sorting, no-results and product actions work',async({page
   await page.getByRole('button',{name:'Save to Launch Loadout: GOTHTECHNOLOGY Luggage Charm',exact:true}).click();
   await expect(page.getByRole('dialog',{name:'Your Launch Loadout'})).toContainText('$19.99');await page.keyboard.press('Escape');
   await page.getByLabel('Search products',{exact:true}).fill('zzz-no-match');await expect(page.locator('#no-results')).toBeVisible();
-  await page.locator('#no-results').getByRole('button',{name:'Clear filters'}).click();await expect(page.locator('#result-count')).toHaveText('18 products');
+  await page.locator('#no-results').getByRole('button',{name:'Clear filters'}).click();await expect(page.locator('#result-count')).toHaveText('19 products');
   await page.getByLabel('Search products',{exact:true}).fill('Boog');await expect(page.locator('[data-product-card]:visible')).toHaveCount(1);
   const boogeyman=page.locator('[data-product-card][data-handle="boogeyman-graphic-hoodie"]');await expect(boogeyman).toContainText('Pending');await expect(boogeyman.locator('img')).toHaveAttribute('src',/-campaign\.webp$/);await expect(boogeyman.locator('[data-save-product],[data-quick-view]')).toHaveCount(0);await expect(page.locator('[data-product-card][data-handle="boogie-man-knit-sweater"]')).toHaveCount(0);
   await page.getByLabel('Search products',{exact:true}).fill('');
@@ -96,11 +96,11 @@ test('homepage keeps the four core beats and links deeper world-building from na
   await expect(page.locator('[data-product-card][data-handle="night-protocol-hoodie"]')).toContainText('$89');
   await expect(page.locator('#featured [data-product-card][data-handle="boogeyman-graphic-hoodie"]')).toHaveCount(0);
   await expect(page.locator('#featured [data-product-card][data-handle="static-saints-patch-set"]')).toHaveCount(0);
-  await expect(page.locator('#featured [data-product-card][data-handle="detroit-winter-sunset-artwork"] img')).toHaveAttribute('src',/detroit-winter-sunset-artwork-gothic-frame-alt\.webp$/);
+  await expect(page.locator('#featured [data-product-card][data-handle="detroit-winter-sunset-artwork"] img')).toHaveAttribute('src',/detroit-winter-sunset-simple-frame-campaign\.webp$/);
   await expect(page.locator('#featured [data-product-card]')).toHaveCount(6);
   await expect(page.locator('#featured [data-product-card]').first()).toHaveAttribute('data-handle','detroit-winter-sunset-artwork');
   const armoryCases=page.locator('#armory .equipment-case');await expect(armoryCases).toHaveCount(6);await expect(armoryCases.locator('h3')).toHaveText(['Original Artwork','Apparel','Accessories','Collectibles','Digital','Bundles']);
-  const originalArtworkCase=page.getByRole('link',{name:/Original Artwork/});await expect(originalArtworkCase.locator('img')).toHaveAttribute('src',base+'media/detroit-winter-sunset-artwork-gothic-frame-alt.webp');
+  const originalArtworkCase=page.getByRole('link',{name:/Original Artwork/});await expect(originalArtworkCase.locator('img')).toHaveAttribute('src',base+'media/detroit-winter-sunset-simple-frame-campaign.webp');
   const accessoriesCase=page.getByRole('link',{name:/Accessories/});await expect(accessoriesCase.locator('img')).toHaveAttribute('src',base+'media/key-knife-signal-ensemble-campaign.webp');
   const categoryArtwork=page.locator('#armory .category-product-art img');await expect(categoryArtwork).toHaveCount(4);expect(await categoryArtwork.evaluateAll(images=>images.every(image=>getComputedStyle(image).objectFit==='cover'))).toBe(true);
   const figures=page.locator('.drop-showcase>figure');await expect(figures).toHaveCount(2);const geometry=await figures.evaluateAll(items=>items.map(figure=>{const button=figure.querySelector('.material-hotspot')?.getBoundingClientRect(),art=figure.querySelector('.equipment-art')?.getBoundingClientRect();return {buttonTop:button?.top,artTop:art?.top,artHeight:art?.height};}));expect(Math.abs(geometry[0].buttonTop-geometry[1].buttonTop)).toBeLessThan(1);expect(Math.abs(geometry[0].artTop-geometry[1].artTop)).toBeLessThan(1);expect(Math.abs(geometry[0].artHeight-geometry[1].artHeight)).toBeLessThan(1);
@@ -144,16 +144,18 @@ test('homepage signal row keeps the collectibles without game-character portrait
   await expect(page.locator('footer nav[aria-label="Shop"]')).not.toContainText('All Equipment');
 });
 
-test('Original Artwork collection presents both Detroit works with Gothic frame alternatives',async({page})=>{
+test('Original Artwork collection presents both Detroit works with a simple winter-sunset frame',async({page})=>{
   await page.goto(base+'collections/original-artwork/');
   await expect(page.getByRole('heading',{level:1})).toHaveText('Original Artwork.');
   await expect(page.locator('[data-product-card]:visible')).toHaveCount(2);
   await expect(page.locator('[data-product-card][data-handle="detroit-riverfront-sunset-artwork"]')).toContainText('Pending');
   await expect(page.locator('[data-product-card][data-handle="detroit-winter-sunset-artwork"]')).toContainText('Pending');
   await page.goto(base+'products/detroit-winter-sunset-artwork/');
-  await expect(page.getByRole('button',{name:'Gothic frame alt',exact:true})).toBeVisible();
-  await page.getByRole('button',{name:'Gothic frame alt',exact:true}).click();
-  await expect(page.locator('#gallery-image')).toHaveAttribute('src',/detroit-winter-sunset-artwork-gothic-frame-alt\.webp$/);
+  await expect(page.getByRole('button',{name:'Simple frame alternate campaign',exact:true})).toBeVisible();
+  await page.getByRole('button',{name:'Simple frame alternate campaign',exact:true}).click();
+  await expect(page.locator('#gallery-image')).toHaveAttribute('src',/detroit-winter-sunset-simple-frame-alt\.webp$/);
+  await page.getByRole('button',{name:'Unframed artwork campaign',exact:true}).click();
+  await expect(page.locator('#gallery-image')).toHaveAttribute('src',/detroit-winter-sunset-retouched-artwork\.webp$/);
   await expect(page.locator('.gallery-main [data-gallery-kind]')).toHaveText('CAMPAIGN CONCEPT');
 });
 
@@ -210,7 +212,7 @@ test('product gallery uses image-aware modes and honest 2.5D remains lazy',async
   await page.goto(base+'products/mobster-luggage-charm/');await expect(page.getByRole('heading',{level:1})).toHaveText('Mobster Luggage Charm');
   await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/mobster-luggage-charm-cyan-arch-reference\.webp$/);await expect(page.locator('[data-selected-price]')).toHaveText('$19.99');
   await expect(page.getByRole('button',{name:'Load 3D model',exact:true})).toBeVisible();await page.getByRole('button',{name:'Load 3D model',exact:true}).click();await expect(page.locator('.model-stage canvas')).toBeVisible();await expect(page.locator('[data-viewer-status]')).toContainText('3D model loaded');
-  const mobsterVideo=page.getByTitle('Mobster Luggage Charm attachment demonstration');await expect(mobsterVideo).toBeVisible();await expect(mobsterVideo).toHaveAttribute('src','https://www.youtube-nocookie.com/embed/0yPqZEvKnFU?rel=0&autoplay=1');
+  const mobsterVideo=page.getByTitle('Mobster Luggage Charm attachment demonstration');await expect(mobsterVideo).toBeVisible();await expect(mobsterVideo).toHaveAttribute('src','https://www.youtube-nocookie.com/embed/0yPqZEvKnFU?rel=0&playsinline=1');await expect(mobsterVideo).not.toHaveAttribute('allow',/autoplay/);
   await expect(page.getByText('The rail adapter and sporting equipment shown in the demonstration are not included with the Mobster Luggage Charm.',{exact:false})).toBeVisible();
   await expect(page.getByRole('link',{name:'Watch on YouTube',exact:false})).toHaveAttribute('href','https://www.youtube.com/shorts/0yPqZEvKnFU');
   await page.getByRole('button',{name:'Equipment context',exact:true}).click();await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/mobster-luggage-charm-equipment-context-reference\.webp$/);
@@ -330,7 +332,7 @@ test('conversion UI: keyboard, mobile filters, settings and sticky action',async
   if(compact){await expect(disclosure).not.toHaveAttribute('open');await summary.click();}
   await page.getByRole('combobox',{name:'Category',exact:true}).selectOption('Accessories');await expect(page.locator('#result-count')).toHaveText('5 products');
   if(compact)await summary.click();
-  await page.getByRole('button',{name:'Clear category filter'}).click();await expect(page.locator('#result-count')).toHaveText('18 products');
+  await page.getByRole('button',{name:'Clear category filter'}).click();await expect(page.locator('#result-count')).toHaveText('19 products');
   if(compact)await expect(summary).toBeFocused();
   await page.goto(product);await ready(page);
   if(compact){await expect(page.locator('.mobile-product-bar')).toBeVisible();await page.locator('.mobile-product-bar [data-select-options]').click();await expect(page.locator('#product-options')).toBeFocused();await expect(page.locator('.mobile-product-bar')).not.toBeVisible();await page.locator('.site-footer').scrollIntoViewIfNeeded();await expect(page.locator('.mobile-product-bar')).not.toBeVisible();}
@@ -380,13 +382,58 @@ for(const preference of ['reduced','saved-reduced','save-data'])test('hero backg
   expect(requests.some(url=>url.includes('armory-hero-higgsfield-loop.mp4'))).toBe(false);
 });
 
-test('fragrance stays out of homepage features and opens its circuit-grid gallery from Shop',async({page})=>{
+test('charm and knife preview bundle links the components and shows its price and safety notice',async({page})=>{
+  await page.goto(base+'products/key-knife-keychain/');
+  await expect(page.locator('.charm-knife-offer')).toContainText('$29.99');
+  await page.getByRole('link',{name:'View bundle details',exact:true}).click();
+  await expect(page.locator('h1')).toHaveText('Mobster Charm + Key Knife Bundle');
+  await expect(page.locator('[data-selected-price]')).toHaveText('$29.99');
+  await expect(page.locator('.product-safety-notice')).toContainText('not available for purchase');
+  await expect(page.locator('.development-status')).toContainText('one Mobster Luggage Charm and one black Key Knife');
+  await page.locator('#product-options button[type=submit]').click();
+  await expect(page.locator('#cart-dialog')).toContainText('Mobster Charm + Key Knife Bundle');
+  await expect(page.locator('#cart-dialog')).toContainText('$29.99');
+});
+
+test('fragrance concept stories expand with the keyboard and artwork pairings link to the matching scent',async({page})=>{
+  await page.emulateMedia({reducedMotion:'reduce'});
+  const errors=[];page.on('pageerror',error=>errors.push(error.message));
+  await page.goto(base+'products/armory-fragrance-roller-collection/');
+  await expect(page.getByRole('heading',{level:1})).toHaveText('Armory Fragrance Roller Collection');
+  await expect(page.getByRole('button',{name:'Price pending',exact:true})).toBeDisabled();
+  await page.getByRole('link',{name:'Explore the nine scent concepts',exact:true}).click();
+  const concepts=page.getByRole('region',{name:'Character and artwork scent concepts'});
+  await expect(concepts.locator('.scent-card')).toHaveCount(9);
+  await expect(concepts.locator('.fragrance-note')).toContainText('not confirmed ingredients, formulas or available variants');
+  const mobster=concepts.locator('#scent-the-mobster');
+  const summary=mobster.locator('summary');await summary.focus();await page.keyboard.press('Enter');
+  await expect(mobster.locator('details')).toHaveAttribute('open','');
+  await expect(mobster.locator('.scent-composition')).toContainText('Black tea: dry, dark and quietly bitter.');
+  await page.keyboard.press('Enter');await expect(mobster.locator('details')).not.toHaveAttribute('open');
+  await page.getByRole('link',{name:'Explore Detroit Winter Sunset Artwork',exact:true}).click();
+  await expect(page.getByRole('heading',{level:1})).toHaveText('Detroit Winter Sunset Artwork');
+  const pairing=page.getByRole('region',{name:'Suggested fragrance bundles'});
+  await expect(pairing.locator('.fragrance-pairing')).toHaveCount(1);
+  await expect(pairing).toContainText('not purchasable bundles');
+  await pairing.getByRole('link',{name:'Explore Detroit 2084 scent concept',exact:true}).click();
+  await expect(page).toHaveURL(new RegExp('/products/armory-fragrance-roller-collection/#scent-detroit-2084$'));
+  const artwork=page.locator('#scent-detroit-2084');
+  await expect(artwork).toBeInViewport();
+  await artwork.locator('summary').click();
+  await expect(artwork.locator('.scent-scene')).toContainText('Orange horizon');
+  await expect(artwork.locator('.scent-scene')).toContainText('Icy river');
+  await expect(artwork.locator('.scent-scene')).toContainText('Bare branches');
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+  expect(errors).toEqual([]);
+});
+
+test('fragrance stays out of homepage features and opens its gold-arch gallery from Shop',async({page})=>{
   await page.goto(base);await ready(page);await expect(page.locator('#featured [data-handle="armory-fragrance-roller-collection"]')).toHaveCount(0);
   await page.goto(base+'shop/?category=Fragrance');await ready(page);await expect(page.locator('#result-count')).toHaveText('1 product');
-  const card=page.locator('[data-handle="armory-fragrance-roller-collection"]');await expect(card.locator('img')).toHaveAttribute('src',/circuit-grid-card\.webp$/);
+  const card=page.locator('[data-handle="armory-fragrance-roller-collection"]');await expect(card.locator('img')).toHaveAttribute('src',/gold-arch-card\.webp$/);
   await card.locator('h3 a').click();await expect(page.locator('h1')).toHaveText('Armory Fragrance Roller Collection');
-  await expect(page.locator('#gallery-image')).toHaveAttribute('src',/circuit-grid-campaign\.webp$/);await expect(page.locator('.gallery-thumbs button')).toHaveCount(3);
+  await expect(page.locator('#gallery-image')).toHaveAttribute('src',/gold-arch-campaign\.webp$/);await expect(page.locator('.gallery-thumbs button')).toHaveCount(3);
   await expect(page.getByRole('button',{name:'Price pending',exact:true})).toBeDisabled();await expect(page.locator('.fragrance-identities li')).toHaveCount(9);
   const galleryBounds=await page.locator('#gallery-image').boundingBox();expect(Math.abs(galleryBounds.height-galleryBounds.width)).toBeLessThan(2);
-  await page.locator('.gallery-thumbs button').nth(1).click();await expect(page.locator('#gallery-image')).toHaveAttribute('src',/gold-arch-campaign\.webp$/);
+  await page.locator('.gallery-thumbs button').nth(1).click();await expect(page.locator('#gallery-image')).toHaveAttribute('src',/circuit-grid-campaign\.webp$/);
 });

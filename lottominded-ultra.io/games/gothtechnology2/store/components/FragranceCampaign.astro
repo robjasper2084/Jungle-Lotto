@@ -1,4 +1,5 @@
 ---
+import FragranceBundles from './FragranceBundles.astro';
 import FragranceIdentities from './FragranceIdentities.astro';
 import { fragranceCollection } from '../content/fragrance';
 import { href, media } from '../utilities/paths';
@@ -13,12 +14,14 @@ const image=fragranceCollection.images[0];
     <p class="mono gold">THE ARMORY / FRAGRANCE</p>
     <h2 id="fragrance-campaign-title">Carry your signal<br/>after midnight.</h2>
     <p class="fragrance-intro">Clear rollers. Black labels. Gold lettering. A cyan circuit running through it all. Explore a new expression of the Armory through three fragrance packaging studies.</p>
-    <FragranceIdentities/>
+    <p class="fragrance-intro">Nine proposed scent stories connect the character signatures, Detroit artwork and Armory worlds. Notes remain creative concepts, with formulas and launch details still pending.</p>
+    <a class="text-link" href="#character-scents">Explore the scent stories</a>
     <a class="button" href={href(`products/${fragranceCollection.handle}/`)}>Explore the roller collection</a>
   </div>
 </section>
+<div class="section"><FragranceIdentities/><FragranceBundles/></div>
 <style>
-  .fragrance-campaign{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(24px,4vw,64px);align-items:center}
+  .fragrance-campaign{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(24px,4vw,64px);align-items:start}
   .fragrance-art{display:block;position:relative;border:1px solid var(--rule);background:#080a09}
   .fragrance-art img{display:block;width:100%;height:auto;aspect-ratio:1;object-fit:contain}
   .fragrance-campaign h2{font-size:clamp(32px,4vw,60px);line-height:1.07;margin:14px 0 20px}

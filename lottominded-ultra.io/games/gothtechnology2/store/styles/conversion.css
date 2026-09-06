@@ -91,9 +91,9 @@ body[data-store-v2] .product-price small{display:block;font:14px var(--mono);col
 .development-status li{margin:10px 0}
 body[data-store-v2] .product-accordions summary{font-size:14px;letter-spacing:.04em}
 body[data-store-v2] .product-accordions p{font-size:15px}
-body[data-store-v2] .gallery-main.is-landscape img{aspect-ratio:16/9;object-fit:contain}
-body[data-store-v2] .gallery-main.is-portrait img{aspect-ratio:4/5;object-fit:contain}
-body[data-store-v2] .gallery-main.is-square img{aspect-ratio:1;object-fit:contain}
+body[data-store-v2] .gallery-main.is-landscape img{height:auto;aspect-ratio:16/9;object-fit:contain}
+body[data-store-v2] .gallery-main.is-portrait img{height:auto;aspect-ratio:4/5;object-fit:contain}
+body[data-store-v2] .gallery-main.is-square img{height:auto;aspect-ratio:1;object-fit:contain}
 .launch-alert-dialog,.experience-dialog{width:min(680px,calc(100vw - 32px));padding:28px}
 .launch-alert-dialog h2,.experience-dialog h2{font-size:36px}
 .launch-selection{font:14px/1.6 var(--mono);padding:14px;border-left:2px solid var(--goth-gold);background:#111411;overflow-wrap:anywhere}
@@ -201,7 +201,8 @@ body[data-store-v2] .newsletter .consent-label{font-size:14px;line-height:1.6}
 .product-video{margin-top:28px;padding:22px;border:1px solid var(--rule);background:#080a0b}
 .product-video h2{font-size:clamp(28px,3vw,38px);line-height:1.1;margin:8px 0 20px}
 .product-video-frame{width:min(100%,360px);aspect-ratio:9/16;margin-inline:auto;background:#020303;border:1px solid #3c3b34;overflow:hidden}
-.product-video-frame iframe{display:block;width:100%;height:100%;border:0}
+.product-video-frame.is-landscape{width:100%;aspect-ratio:16/9}
+.product-video-frame :is(iframe,video){display:block;width:100%;height:100%;border:0;object-fit:contain;background:#020303}
 body[data-store-v2] main .product-video-note{font-size:14px;line-height:1.6;color:#c8c3b5;margin:18px 0 4px}
 .product-video .text-link{display:inline-flex}
 /* The original armory rules use compound selectors: keep these v2 overrides scoped to their owning components. */
@@ -216,7 +217,3 @@ body[data-store-v2] .site-footer p{font-size:14px;line-height:1.6}
 body[data-store-v2] .footer-demo,body[data-store-v2] .footer-digital .text-link{font-size:12px;line-height:1.5}
 body[data-store-v2] .portal-display{grid-template-columns:minmax(0,3fr) minmax(116px,1fr)}
 body[data-store-v2] .portal-status p{font-size:13px;line-height:1.5}
-.product-video-frame :is(iframe,video){display:block;width:100%;height:100%;border:0}
-.product-video-frame video{object-fit:cover}
-.product-video-frame.is-landscape{width:100%;aspect-ratio:16/9}
-.product-video-frame.is-portrait{width:min(100%,360px);aspect-ratio:9/16}
