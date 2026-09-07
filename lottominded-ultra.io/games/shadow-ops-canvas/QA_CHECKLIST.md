@@ -79,7 +79,24 @@
 - Debug Wave and Boss smoke screenshots after asset pass: passed.
 - Console warnings/errors during asset-pass QA: none observed.
 
-## Remaining Manual Checks
+## Audit Regression Suite (September 6, 2026)
+
+- Input edges are consumed once per simulation step, with keyboard and both controller slots checked at 30, 60, 120, and 144 Hz.
+- Controller assignments survive sparse device indexes, disconnects, replacements, and reconnects. Active-controller loss pauses the run.
+- Controller navigation reaches every settings checkbox and the difficulty selector; changes persist. Space still toggles a keyboard-focused checkbox.
+- Pointer aiming reverses the vertical camera offset and the phone/tablet landscape lift.
+- Portrait HUD meters retain usable width, objectives occupy their own row, and narrow-landscape pause controls stay within the viewport.
+- Browser regression suite: 25 checks passed. Phone/tablet viewports: 390x844, 844x390, 768x1024, 1024x768, 320x568, 568x320. Reduced-motion mode and canvas pixels were checked.
+
+Run from the game directory against a running HTTP preview:
+
+```text
+node tests/audit-regressions.cjs http://127.0.0.1:8151/games/shadow-ops-canvas/index.html
+```
+
+The suite requires Playwright and Chrome. It can reuse an existing Playwright installation through `PLAYWRIGHT_MODULE_PATH` or `NODE_PATH`. `PLAYWRIGHT_CHANNEL` selects another installed Chromium channel. `AUDIT_OUTPUT_DIR` selects a screenshot/results directory; the default is under the operating system's temporary directory. Test-only state hooks are injected into the isolated browser response, never into shipped source. No rewards, payments, or live deployment are exercised.
+
+## Remaining Device Checks
 
 - Full non-debug 10-15 minute campaign clear.
 - Touch-only pass on a physical phone.

@@ -147,7 +147,7 @@
       body.touch-forced .virtual-stick__label {
         position: absolute;
         left: 50%;
-        bottom: -22px;
+        bottom: 8px;
         transform: translateX(-50%);
         color: #ffeab1;
         font-size: 0.62rem;
@@ -301,7 +301,8 @@
         min-width: 0;
       }
       body.touch-forced.touch-portrait .objective-chip {
-        top: clamp(104px, 15dvh, 148px) !important;
+        padding: 6px 10px;
+        font-size: 0.68rem;
       }
       @media (max-width: 580px) {
         body.touch-forced .touchbar {
