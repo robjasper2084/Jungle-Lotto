@@ -633,6 +633,7 @@
     move: { x: 0, y: 0, strength: 0 },
     aim: { x: 0, y: 0, strength: 0 },
     index: null,
+    assignedIndex: null,
     id: ""
   }));
   let debugGamepads = null;
@@ -1247,6 +1248,7 @@
   function bindInputs() {
     window.addEventListener("keydown", (event) => {
       const code = normalizeKey(event);
+      if (event.target.matches?.("input, select, textarea") && code !== "Escape") return;
       const action = keyMap.get(code);
       if (!action) return;
       if (!keyboardDown.has(action)) keyboardPressed.add(action);
@@ -3031,11 +3033,11 @@
     accumulator += frameDt;
     while (accumulator >= STEP) {
       update(STEP);
+      clearPressed();
       accumulator -= STEP;
     }
     render();
     updateHUD();
-    clearPressed();
     requestAnimationFrame(loop);
   }
 
@@ -3158,16 +3160,39 @@
       pads = debugGamepads.slice(0, gamepadStates.length);
     } else {
       try {
-        pads = navigator.getGamepads ? Array.from(navigator.getGamepads()).filter(Boolean).slice(0, 2) : [];
+        pads = navigator.getGamepads ? Array.from(navigator.getGamepads()) : [];
       } catch {
         pads = [];
       }
     }
 
+    const connected = pads.filter((pad) => pad && pad.connected !== false);
+    const assigned = gamepadStates.map((state, slot) => connected.find((pad) =>
+      pad.index === (DEBUG && debugGamepads ? slot : state.assignedIndex)
+    ));
+    const claimed = new Set(assigned.filter(Boolean).map((pad) => pad.index));
+    // Match existing assignments before filling empty slots, so P2 never shifts to P1.
+    for (const pad of connected) {
+      if (DEBUG && debugGamepads) break;
+      if (claimed.has(pad.index)) continue;
+      const slot = assigned.findIndex((entry) => !entry);
+      if (slot < 0) break;
+      assigned[slot] = pad;
+      claimed.add(pad.index);
+    }
+
+    let disconnectedPlayer = null;
     for (let slot = 0; slot < gamepadStates.length; slot += 1) {
       const state = gamepadStates[slot];
-      const pad = pads[slot];
+      const pad = assigned[slot];
       const next = new Set();
+      if (state.index !== null && (!pad || pad.index !== state.index)) {
+        state.pressed.clear();
+        state.released.clear();
+        if (run && allPlayers(run).some((player) => player.index === slot && player.lives > 0)) {
+          disconnectedPlayer = slot + 1;
+        }
+      }
 
       if (pad) {
         const move = readGamepadStick(pad.axes?.[0], pad.axes?.[1], 0.18);
@@ -3177,6 +3202,7 @@
         state.move = move;
         state.aim = aim;
         state.index = pad.index;
+        state.assignedIndex = pad.index;
         state.id = pad.id || `Controller ${slot + 1}`;
 
         if (move.x < -0.12 || gamepadButtonDown(buttons[14])) next.add("left");
@@ -3203,12 +3229,16 @@
         state.id = "";
       }
 
-      state.pressed = new Set([...next].filter((action) => !state.down.has(action)));
-      state.released = new Set([...state.down].filter((action) => !next.has(action)));
+      for (const action of next) if (!state.down.has(action)) state.pressed.add(action);
+      for (const action of state.down) if (!next.has(action)) state.released.add(action);
       state.down = next;
     }
 
-    updateGamepadStatus(pads);
+    if (disconnectedPlayer !== null && mode === "playing") {
+      pauseRun();
+      setObjective(run, `P${disconnectedPlayer} controller disconnected`, 3);
+    }
+    updateGamepadStatus(assigned);
     if (DEBUG) controllerDebugPublish?.();
   }
 
@@ -3228,19 +3258,18 @@
 
   function updateGamepadStatus(pads) {
     const connectedPads = pads.filter(Boolean);
-    const signature = connectedPads.map((pad) => `${pad.index}:${pad.id}`).join("|");
+    const signature = pads.map((pad) => pad ? `${pad.index}:${pad.id}` : "-").join("|");
     if (signature === gamepadSignature) return;
     gamepadSignature = signature;
     document.body.classList.toggle("gamepad-active", connectedPads.length > 0);
     if (!dom.controllerStatus) return;
     dom.controllerStatus.classList.toggle("is-connected", connectedPads.length > 0);
-    dom.controllerStatus.textContent = connectedPads.length > 1
-      ? "Gamepad: P1 + P2 connected"
-      : connectedPads.length === 1
-        ? "Gamepad: P1 connected"
-        : "Gamepad: connect controller";
+    const players = pads.flatMap((pad, index) => pad ? [`P${index + 1}`] : []);
+    dom.controllerStatus.textContent = players.length
+      ? `Gamepad: ${players.join(" + ")} connected`
+      : "Gamepad: connect controller";
     dom.controllerStatus.title = connectedPads.length
-      ? connectedPads.map((pad, index) => `P${index + 1}: ${pad.id || "Standard controller"}`).join(" | ")
+      ? pads.flatMap((pad, index) => pad ? [`P${index + 1}: ${pad.id || "Standard controller"}`] : []).join(" | ")
       : "Connect a standard controller. Left stick or D-pad moves, right stick aims, A jumps, X or right trigger fires, B or right bumper dashes, and Menu pauses.";
   }
 
@@ -3261,7 +3290,7 @@
       cutscene: '[data-action="skip-cutscene"]',
       purchase: '[data-action="close-purchase"]',
       paused: '[data-action="resume"]',
-      settings: '[data-action="close-settings"]',
+      settings: '#soundToggle',
       results: '[data-action="restart"]',
       lottery: '#generateLotteryButton:not(:disabled), [data-action="close-lottery"]'
     };
@@ -3271,27 +3300,42 @@
   function handleGamepadMenuInput() {
     const root = gamepadMenuRoot();
     if (!root) return false;
-    const controls = [...root.querySelectorAll('button:not(:disabled), a.button-link[href]')]
+    const controls = [...root.querySelectorAll('button:not(:disabled), a.button-link[href], input[type="checkbox"]:not(:disabled), select:not(:disabled)')]
       .filter((control) => control.offsetParent !== null);
     if (!controls.length) return false;
 
-    const previous = gamepadStates.some((state) => state.pressed.has("left") || state.pressed.has("up"));
-    const next = gamepadStates.some((state) => state.pressed.has("right") || state.pressed.has("down"));
+    const left = gamepadStates.some((state) => state.pressed.has("left"));
+    const right = gamepadStates.some((state) => state.pressed.has("right"));
+    const previous = gamepadStates.some((state) => state.pressed.has("up"));
+    const next = gamepadStates.some((state) => state.pressed.has("down"));
     const confirm = gamepadStates.some((state) => state.pressed.has("confirm"));
     const focusedIndex = controls.indexOf(document.activeElement);
+    const focused = controls[focusedIndex];
 
-    if (previous || next) {
-      const direction = next ? 1 : -1;
+    if (focused?.tagName === "SELECT" && (left || right || confirm) && !previous && !next) {
+      const options = [...focused.options].filter((option) => !option.disabled && !option.hidden);
+      const index = options.indexOf(focused.selectedOptions[0]);
+      const option = options[(index + (left ? -1 : 1) + options.length) % options.length];
+      if (option) {
+        focused.value = option.value;
+        focused.dispatchEvent(new Event("change", { bubbles: true }));
+      }
+      return true;
+    }
+
+    if (previous || next || left || right) {
+      const direction = next || right ? 1 : -1;
       const defaultIndex = controls.indexOf(defaultGamepadMenuControl(root));
       const startIndex = focusedIndex >= 0 ? focusedIndex : Math.max(0, defaultIndex);
       const index = (startIndex + direction + controls.length) % controls.length;
-      controls[index].focus({ preventScroll: true });
+      controls[index].focus();
       return true;
     }
 
     if (confirm) {
       const control = focusedIndex >= 0 ? controls[focusedIndex] : defaultGamepadMenuControl(root) || controls[0];
       initAudio();
+      control?.focus();
       control?.click();
       return true;
     }
@@ -3654,9 +3698,9 @@
 
     const pointerFresh = performance.now() < pointer.activeUntil && mode === "playing";
     if (pointerFresh && p.index === 0) {
-      const worldX = pointer.x + state.cameraX;
-      const dx = worldX - (p.x + p.w * 0.5);
-      const dy = pointer.y - (p.y + p.h * 0.48);
+      const view = gameplayViewOffset(state);
+      const dx = pointer.x + view.x - (p.x + p.w * 0.5);
+      const dy = pointer.y + view.y - (p.y + p.h * 0.48);
       const length = Math.hypot(dx, dy) || 1;
       return { x: dx / length, y: dy / length };
     }
@@ -4864,15 +4908,20 @@
     ctx.restore();
   }
 
-  function drawGame(state) {
-    drawBackground(state);
-    ctx.save();
-    const shake = cameraShake(state);
+  function gameplayViewOffset(state) {
     const touchLandscapeLift = document.body.classList.contains("touch-forced")
       && document.body.classList.contains("touch-landscape")
       ? (window.innerHeight <= 620 ? 64 : 36)
       : 0;
-    ctx.translate(shake.x - state.cameraX, shake.y - (state.cameraY || 0) - touchLandscapeLift);
+    return { x: state.cameraX, y: (state.cameraY || 0) + touchLandscapeLift };
+  }
+
+  function drawGame(state) {
+    drawBackground(state);
+    ctx.save();
+    const shake = cameraShake(state);
+    const view = gameplayViewOffset(state);
+    ctx.translate(shake.x - view.x, shake.y - view.y);
     drawBacklightRays(state);
     drawWorldAssetPass(state);
     if (DRAW_DECORATIVE_WORLD_PROPS) {
