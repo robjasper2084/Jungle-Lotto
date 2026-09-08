@@ -1,0 +1,14 @@
+---
+import CFiles from '../../layouts/CFiles.astro';
+import CFileIndex from '../../components/CFileIndex.astro';
+import news from '../../cfiles/news.json';
+import { href } from '../../utilities/paths';
+const date=(s:string|null)=>s?new Date(s).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',timeZone:'UTC'}):'Date not supplied';
+---
+<CFiles><section class="cf-intro"><h1>The unexplained. On the record.</h1><p>A research desk for unusual events. Original sources. Open questions.</p></section>
+<div class="cf-ticker"><span class="cf-mono cf-gold">SOURCE UPDATES</span><div aria-live="off" data-ticker><a href={news.items[0]?.url||href('c-files/sources/')}>{news.items[0]?.title||'No feed items available.'}</a><time>{date(news.items[0]?.published_at)}</time></div><button class="cf-icon-button" data-ticker-toggle aria-label="Pause news ticker" aria-pressed="false">Ⅱ</button></div>
+<section class="cf-desk"><div class="cf-news-column"><article class="cf-feature"><img src={href('media/cfiles-observatory.webp')} alt="Illustrated observatory beneath a star-filled night sky" width="1600" height="900" fetchpriority="high"/><span class="cf-image-credit">Editorial illustration</span><div class="cf-feature-copy"><h2>Better data. Better questions.</h2><span class="cf-mono cf-gold">NASA · RESEARCH NOTE</span><p>NASA’s independent UAP study sets out a path toward better observations and scientific analysis.</p><a class="cf-text-link" href="https://science.nasa.gov/uap/" target="_blank" rel="noopener noreferrer">Read the source <span aria-hidden="true">↗</span></a></div></article><div class="cf-news-rows">{news.items.slice(0,3).map(n=><article><span>{n.source}</span><a href={n.url} target="_blank" rel="noopener noreferrer">{n.title}</a><time>{date(n.published_at)}</time></article>)}</div><p class="cf-caption">Science context · feed checked {date(news.checked_at)}. <a href={href('c-files/sources/')}>View source health</a></p></div>
+<aside class="cf-map-column"><h2>The case archive.</h2><div class="cf-map" data-case-map aria-label="Map of approximate case locations"></div><p class="cf-caption">Regional markers, not exact sighting coordinates. Some records have no mapped location.</p><a class="cf-text-link" href={href('c-files/map/')}>Explore the map <span aria-hidden="true">↗</span></a></aside></section>
+<CFileIndex compact/><section class="cf-news-feed"><div class="cf-index-heading"><h2>From the source.</h2><span class="cf-mono">SCIENCE & STRANGE EVENTS</span></div>{news.items.slice(3).map(n=><article class="cf-feed-item"><div><span class="cf-mono cf-gold">{n.source}</span><h3><a href={n.url} target="_blank" rel="noopener noreferrer">{n.title}</a></h3></div><time>{date(n.published_at)}</time></article>)}</section>
+<script id="cf-news" type="application/json" set:html={JSON.stringify(news.items).replace(/</g,'\u003c')}/>
+</CFiles>

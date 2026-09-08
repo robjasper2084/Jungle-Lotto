@@ -1,0 +1,241 @@
+{
+  "date": "2026-09-08",
+  "provider": "Higgsfield",
+  "requestedModel": "nano_banana_pro",
+  "usedModel": "nano_banana_2",
+  "route": [
+    "Detroit Riverwalk / Renaissance Center",
+    "Detroit Riverwalk / Cullen Plaza",
+    "Detroit Riverwalk / Milliken Harbor",
+    "Dequindre Cut / Atwater Entrance",
+    "Dequindre Cut / Campbell Terrace",
+    "Dequindre Cut / Freight Yard"
+  ],
+  "sectionMeters": 800,
+  "officialSources": [
+    "https://www.detroitriverfront.org/plan-your-visit/parks-greenways/the-riverwalk",
+    "https://www.detroitriverfront.org/plan-your-visit/parks-greenways/dequindre-cut",
+    "https://www.detroitriverfront.org/plan-your-visit/parks-greenways/cullen-plaza",
+    "https://www.detroitriverfront.org/plan-your-visit/parks-greenways/milliken-state-park-harbor"
+  ],
+  "requests": [
+    {
+      "index": 1,
+      "params": {
+        "model": "nano_banana_pro",
+        "aspect_ratio": "21:9",
+        "resolution": "2k",
+        "count": 1,
+        "medias": [
+          {
+            "role": "image",
+            "value": "https://detroitriverfront.b-cdn.net/files/parks/crop/theriverwalk21.jpg"
+          }
+        ],
+        "prompt": "Create a premium 3D-rendered environment background for the side-scrolling action game ROBOT RAHBE: VAULT RUSH, specifically the DOWNTOWN DETROIT RIVERWALK. Use the attached official Riverwalk photograph for recognizable place and architecture, but render an original stylized cinematic game environment, not a photo collage. Broad horizontal panorama, side-on playable promenade running horizontally across the lower 20%, Detroit River glittering blue to the right and extending across the scene, distinctive Renaissance Center cluster of cylindrical glass towers grouped prominently in the LEFT third on the Detroit shore, warm brick downtown architecture, Riverwalk black metal waterside railing, modern lamps, subtle benches, lush landscaped planters. Clear summer early-evening golden hour, pastel blue sky, warm ivory pavement and bronze highlights, mint-teal atmospheric shadows, rich dimensional materials, visible depth, ambient occlusion, polished console adventure-game quality. The far skyline and promenade are legible at small game sizes. Foreground must be open, flat and uncluttered for a separately drawn character and hazards. Camera at low eye height broad SIDE VIEW, not a path vanishing down the center. Keep architecture in upper/middle area, river visible, horizon around upper half. No people, no characters, no monsters, no HUD, no text, no logos, no real business names, no oversized neon, no vault interior, no futuristic city replacing Detroit. This is a lovingly recognizable Detroit Riverwalk backdrop. Calm lighting so the separate action sprites stand out."
+      }
+    },
+    {
+      "index": 2,
+      "params": {
+        "model": "nano_banana_pro",
+        "aspect_ratio": "21:9",
+        "resolution": "2k",
+        "count": 1,
+        "medias": [
+          {
+            "role": "image",
+            "value": "https://detroitriverfront.b-cdn.net/files/parks/crop/dequindrecutbiker2.jpg"
+          }
+        ],
+        "prompt": "Create a premium 3D-rendered environment background for the side-scrolling action game ROBOT RAHBE: VAULT RUSH, specifically DETROIT'S DEQUINDRE CUT GREENWAY, continuing from a golden-hour Riverwalk level. Use attached official Dequindre Cut reference for authentic character of the real place: a BELOW-STREET-GRADE former railroad corridor now a paved greenway, tall aged concrete retaining walls carrying colorful urban murals and graffiti-style abstract art, weathered bridge abutments, an old street overpass crossing overhead in the upper third, green trees and vines atop retaining walls, strips of grass and wildflowers beside the path. Broad horizontal panorama; SIDE-ON view with an open flat trail running horizontally across the lower 20%, no steep path vanishing down center. In the left/background a visible low overpass and layered concrete arches, in the middle/right long colorful ORIGINAL ABSTRACT murals in coral, turquoise, ocher and indigo without copying identifiable artworks. Warm late-afternoon sunlight through trees, cool mint-teal shadows beneath bridge, soft atmospheric depth, realistic concrete/pavement, attractive greenery, ambient occlusion, cinematic dimensional console-adventure game style. Preserve recognizable Detroit urban trail, not a subway, not industrial indoor vault, not wasteland. Medium-wide set composition with readable silhouettes and depth that also crops well for portrait gameplay. Empty path with no people, no hero, no vehicles, no rail tracks on the paved path, no monsters, no UI, no typography or readable text. Scene should belong to the same polished 3D art world as a warm golden-hour Detroit Riverwalk."
+      }
+    },
+    {
+      "index": 3,
+      "params": {
+        "model": "nano_banana_pro",
+        "aspect_ratio": "21:9",
+        "resolution": "2k",
+        "count": 1,
+        "medias": [
+          {
+            "role": "image",
+            "value": "https://detroitriverfront.b-cdn.net/files/parks/crop/cullenplaza20242.jpg"
+          },
+          {
+            "role": "image",
+            "value": "https://detroitriverfront.b-cdn.net/files/attractions/listing/cullencarouseldusk.jpg"
+          },
+          {
+            "role": "image",
+            "value": "56972212-9b37-4848-97d6-efbfda3f0d98"
+          }
+        ],
+        "prompt": "Create a premium dimensional 3D-rendered environment painting for ROBOT RAHBE: VAULT RUSH, a side-scrolling browser action runner in real Detroit. Wide cinematic 21:9 landscape. Warm golden-hour daylight, realistic masonry and metal, rich depth, soft atmospheric perspective, attractive colorful game art. Use the first reference for location features, and last reference for the lighting and visual style of adjacent game scenery. This must be a NEW distinct view, not a replica of the style reference. Camera near pedestrian eye level, panoramic mostly side-on composition with broad paved foreground occupying bottom 20%, no characters, robots, enemies, collectibles, interface, titles, readable signs, watermarks, logos or borders. Clear visual hierarchy; intricate attractive midground detail without heavy foreground occlusion. Cullen Plaza on Atwater Street on the downtown Detroit Riverwalk: distinctive glass-walled round carousel pavilion with green metal roof on the left-center, sculptural river-animal carousel inside, planted garden beds, fountains, pale brick promenade and black waterfront railing, blue Detroit River and distant Windsor waterfront to the right. Renaissance Center visible small in far left background. Pavilion and plaza are focal points, not giant skyscrapers. Keep carousel pavilion visible in central third for mobile crop."
+      }
+    },
+    {
+      "index": 4,
+      "params": {
+        "model": "nano_banana_pro",
+        "aspect_ratio": "21:9",
+        "resolution": "2k",
+        "count": 1,
+        "medias": [
+          {
+            "role": "image",
+            "value": "https://detroitriverfront.b-cdn.net/files/parks/crop/millikenstatepark3.jpg"
+          },
+          {
+            "role": "image",
+            "value": "56972212-9b37-4848-97d6-efbfda3f0d98"
+          }
+        ],
+        "prompt": "Create a premium dimensional 3D-rendered environment painting for ROBOT RAHBE: VAULT RUSH, a side-scrolling browser action runner in real Detroit. Wide cinematic 21:9 landscape. Warm golden-hour daylight, realistic masonry and metal, rich depth, soft atmospheric perspective, attractive colorful game art. Use the first reference for location features, and last reference for the lighting and visual style of adjacent game scenery. This must be a NEW distinct view, not a replica of the style reference. Camera near pedestrian eye level, panoramic mostly side-on composition with broad paved foreground occupying bottom 20%, no characters, robots, enemies, collectibles, interface, titles, readable signs, watermarks, logos or borders. Clear visual hierarchy; intricate attractive midground detail without heavy foreground occlusion. William G. Milliken State Park and Harbor on Detroit's Atwater Street: distinctive white lighthouse tower with red roof marks harbor entrance near center, marina sailboats and masts, wetland reeds and native grasses, pale promenade and black railing, river beyond. A small distant Detroit skyline gives geographical context. Strong new riverfront vista, white lighthouse is focal point center frame. Sunlight shimmering on water, lush green oasis."
+      }
+    },
+    {
+      "index": 5,
+      "params": {
+        "model": "nano_banana_pro",
+        "aspect_ratio": "21:9",
+        "resolution": "2k",
+        "count": 1,
+        "medias": [
+          {
+            "role": "image",
+            "value": "https://detroitriverfront.b-cdn.net/files/attractions/listing/campbellterrace2.jpg"
+          },
+          {
+            "role": "image",
+            "value": "22ab8770-5f25-43d6-9757-cba4524e7ace"
+          }
+        ],
+        "prompt": "Create a premium dimensional 3D-rendered environment painting for ROBOT RAHBE: VAULT RUSH, a side-scrolling browser action runner in real Detroit. Wide cinematic 21:9 landscape. Warm golden-hour daylight, realistic masonry and metal, rich depth, soft atmospheric perspective, attractive colorful game art. Use the first reference for location features, and last reference for the lighting and visual style of adjacent game scenery. This must be a NEW distinct view, not a replica of the style reference. Camera near pedestrian eye level, panoramic mostly side-on composition with broad paved foreground occupying bottom 20%, no characters, robots, enemies, collectibles, interface, titles, readable signs, watermarks, logos or borders. Clear visual hierarchy; intricate attractive midground detail without heavy foreground occlusion. The Dequindre Cut at Campbell Terrace just north of Lafayette in Detroit. A former railroad trench turned wide greenway, pale concrete retaining walls with ORIGINAL colorful abstract mural patterns (do not copy existing mural works), an outdoor community performance terrace with layered concrete seating and modest canopy structure integrated into the landscaped embankment. Street bridge in upper background, leafy trees on elevated street level, red brick Detroit warehouses above, broad asphalt pedestrian and cycle path below. Camera shows open terrace and trail in central third; distinctly different from a dark tunnel."
+      }
+    },
+    {
+      "index": 6,
+      "params": {
+        "model": "nano_banana_pro",
+        "aspect_ratio": "21:9",
+        "resolution": "2k",
+        "count": 1,
+        "medias": [
+          {
+            "role": "image",
+            "value": "https://detroitriverfront.b-cdn.net/files/attractions/listing/freigthyard2.jpg"
+          },
+          {
+            "role": "image",
+            "value": "22ab8770-5f25-43d6-9757-cba4524e7ace"
+          }
+        ],
+        "prompt": "Create a premium dimensional 3D-rendered environment painting for ROBOT RAHBE: VAULT RUSH, a side-scrolling browser action runner in real Detroit. Wide cinematic 21:9 landscape. Warm golden-hour daylight, realistic masonry and metal, rich depth, soft atmospheric perspective, attractive colorful game art. Use the first reference for location features, and last reference for the lighting and visual style of adjacent game scenery. This must be a NEW distinct view, not a replica of the style reference. Camera near pedestrian eye level, panoramic mostly side-on composition with broad paved foreground occupying bottom 20%, no characters, robots, enemies, collectibles, interface, titles, readable signs, watermarks, logos or borders. Clear visual hierarchy; intricate attractive midground detail without heavy foreground occlusion. The Dequindre Cut Freight Yard on the approach toward Detroit's Eastern Market: reuse of colorful shipping containers creating a lively outdoor gathering space beside the below-grade greenway, orange red teal and charcoal corrugated containers, wooden terrace and empty picnic tables, light strings overhead, original colorful abstract murals on concrete retaining walls, leafy trees and Detroit red brick warehouse buildings at elevated street level. Wide empty paved cycling and walking path in foreground. Freight Yard containers form the focal point across central third; warm inviting Detroit industrial character."
+      }
+    }
+  ],
+  "jobs": [
+    {
+      "index": 1,
+      "job_id": "56972212-9b37-4848-97d6-efbfda3f0d98",
+      "status": "completed",
+      "type": "image",
+      "model": "nano_banana_2",
+      "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260908_190221_56972212-9b37-4848-97d6-efbfda3f0d98.png"
+    },
+    {
+      "index": 2,
+      "job_id": "22ab8770-5f25-43d6-9757-cba4524e7ace",
+      "status": "completed",
+      "type": "image",
+      "model": "nano_banana_2",
+      "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260908_190221_22ab8770-5f25-43d6-9757-cba4524e7ace.png"
+    },
+    {
+      "index": 3,
+      "job_id": "c5330aed-145b-4220-93f6-152424ecbd39",
+      "status": "completed",
+      "type": "image",
+      "model": "nano_banana_2",
+      "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260908_191446_c5330aed-145b-4220-93f6-152424ecbd39.png"
+    },
+    {
+      "index": 4,
+      "job_id": "7df39026-681e-406a-85ea-0bc8bcab3255",
+      "status": "completed",
+      "type": "image",
+      "model": "nano_banana_2",
+      "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260908_191446_7df39026-681e-406a-85ea-0bc8bcab3255.png"
+    },
+    {
+      "index": 5,
+      "job_id": "8852c6d7-2209-4f50-b44b-004037223847",
+      "status": "completed",
+      "type": "image",
+      "model": "nano_banana_2",
+      "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260908_191445_8852c6d7-2209-4f50-b44b-004037223847.png"
+    },
+    {
+      "index": 6,
+      "job_id": "52fd963c-82fc-43a5-b136-ecd0a7e5b9c3",
+      "status": "completed",
+      "type": "image",
+      "model": "nano_banana_2",
+      "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260908_191446_52fd963c-82fc-43a5-b136-ecd0a7e5b9c3.png"
+    }
+  ],
+  "optimized": [
+    {
+      "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/0eeb85a0-c401-47b3-bf1c-94629dcb552e.webp",
+      "media_id": "0eeb85a0-c401-47b3-bf1c-94629dcb552e",
+      "file": "C:/Users/digit/Documents/phone/_robot_rahbe_arcade_work/lottominded-ultra.io/games/robot-rahbe-vault-rush/assets/environment/detroit-riverwalk.webp",
+      "width": 2112,
+      "height": 896,
+      "quality": 89
+    },
+    {
+      "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/931066af-1a05-42ee-8287-9427acd8b34b.webp",
+      "media_id": "931066af-1a05-42ee-8287-9427acd8b34b",
+      "file": "C:/Users/digit/Documents/phone/_robot_rahbe_arcade_work/lottominded-ultra.io/games/robot-rahbe-vault-rush/assets/environment/dequindre-cut.webp",
+      "width": 2112,
+      "height": 896,
+      "quality": 89
+    },
+    {
+      "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/3bb8dec0-ac39-4c8e-a4b8-5e679826f89a.webp",
+      "media_id": "3bb8dec0-ac39-4c8e-a4b8-5e679826f89a",
+      "file": "C:/Users/digit/Documents/phone/_robot_rahbe_arcade_work/lottominded-ultra.io/games/robot-rahbe-vault-rush/assets/environment/riverwalk-cullen-plaza.webp",
+      "width": 2112,
+      "height": 896,
+      "quality": 89
+    },
+    {
+      "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/567d4964-1bbf-4213-b303-3eaec8397ce7.webp",
+      "media_id": "567d4964-1bbf-4213-b303-3eaec8397ce7",
+      "file": "C:/Users/digit/Documents/phone/_robot_rahbe_arcade_work/lottominded-ultra.io/games/robot-rahbe-vault-rush/assets/environment/riverwalk-milliken-harbor.webp",
+      "width": 2112,
+      "height": 896,
+      "quality": 89
+    },
+    {
+      "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/38f71e70-08d3-42fc-91d5-1f44eeda7c94.webp",
+      "media_id": "38f71e70-08d3-42fc-91d5-1f44eeda7c94",
+      "file": "C:/Users/digit/Documents/phone/_robot_rahbe_arcade_work/lottominded-ultra.io/games/robot-rahbe-vault-rush/assets/environment/dequindre-campbell-terrace.webp",
+      "width": 2112,
+      "height": 896,
+      "quality": 89
+    },
+    {
+      "url": "https://d2ol7oe51mr4n9.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/d0250ba1-3847-4e90-b3c9-769fe93f5324.webp",
+      "media_id": "d0250ba1-3847-4e90-b3c9-769fe93f5324",
+      "file": "C:/Users/digit/Documents/phone/_robot_rahbe_arcade_work/lottominded-ultra.io/games/robot-rahbe-vault-rush/assets/environment/dequindre-freight-yard.webp",
+      "width": 2112,
+      "height": 896,
+      "quality": 89
+    }
+  ],
+  "locationMeters": 2400,
+  "loopMeters": 4800
+}

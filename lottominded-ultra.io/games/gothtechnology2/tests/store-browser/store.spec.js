@@ -36,35 +36,32 @@ test('Armory background music stays user initiated and follows the visitor acros
 
 test('shopping cart: launch preferences, quantity, persistence, alert flow and focus',async({page},info)=>{
   await page.goto(product);await ready(page);await page.getByRole('radio',{name:'M',exact:true}).check();await page.getByLabel('Quantity',{exact:true}).fill('2');
-  await page.getByRole('button',{name:'Save to Launch Loadout',exact:true}).click();const cart=page.getByRole('dialog',{name:'Your Launch Loadout'});await expect(cart).toBeVisible();await expect(cart).toContainText('M / Obsidian');await expect(cart.locator('.cart-subtotal')).toContainText('$178');
-  await page.getByRole('button',{name:/Increase quantity/}).click();await expect(cart.locator('.cart-subtotal')).toContainText('$267');
+  await page.getByRole('button',{name:'Save to Launch Loadout',exact:true}).click();const cart=page.getByRole('dialog',{name:'Your Launch Loadout'});await expect(cart).toBeVisible();await expect(cart).toContainText('M / Obsidian');await expect(cart.locator('.cart-subtotal')).toContainText('$213.60');
+  await page.getByRole('button',{name:/Increase quantity/}).click();await expect(cart.locator('.cart-subtotal')).toContainText('$320.40');
   await expect(cart).toContainText('Save products and options on this device for launch day.');
   await page.screenshot({path:info.outputPath('launch-loadout.png'),scale:'css'});
-  await cart.getByRole('button',{name:'Get Launch Alert',exact:true}).click();
-  const alert=page.locator('#launch-alert-dialog');await expect(alert).toBeVisible();
-  await expect(alert.locator('[data-launch-selection]')).toContainText('M / Obsidian × 3');
-  await expect(alert.getByLabel('Email address',{exact:true})).toBeDisabled();await expect(alert.getByRole('checkbox')).toBeDisabled();
-  await expect(alert.getByRole('button',{name:'Get Launch Alert',exact:true})).toBeDisabled();await expect(alert).toContainText('Your email was not saved or sent.');
-  expect(await page.evaluate(()=>JSON.stringify(localStorage))).not.toContain('qa@example.test');
-  await page.screenshot({path:info.outputPath('launch-alert.png'),scale:'css'});
+  await expect(cart.getByRole('button',{name:'Alerts coming soon',exact:true})).toBeDisabled();
+  await expect(page.locator('#launch-alert-dialog')).not.toBeVisible();
   await page.keyboard.press('Escape');await expect(cart).not.toBeVisible();await expect(page.getByRole('button',{name:'Save to Launch Loadout',exact:true})).toBeFocused();
-  await page.reload();await page.getByRole('button',{name:'Open launch loadout'}).click();await expect(cart.locator('.cart-subtotal')).toContainText('$267');
-  await page.getByRole('button',{name:/Remove Knight Protocol/}).click();await expect(cart).toContainText('Your launch loadout is empty.');await expect(cart.getByRole('button',{name:'Get Launch Alert',exact:true})).toBeDisabled();
+  await expect(page.locator('[data-buy-now]')).toHaveText('Alerts coming soon');
+  await expect(page.locator('[data-buy-now]')).toBeDisabled();
+  await page.reload();await page.getByRole('button',{name:'Open launch loadout'}).click();await expect(cart.locator('.cart-subtotal')).toContainText('$320.40');
+  await page.getByRole('button',{name:/Remove Knight Protocol/}).click();await expect(cart).toContainText('Your launch loadout is empty.');await expect(cart.getByRole('button',{name:'Alerts coming soon',exact:true})).toBeDisabled();
 });
 
 test('catalog filters, sorting, no-results and product actions work',async({page})=>{
   await page.goto(base+'shop/');const defaultOrder=await page.locator('[data-product-card]').evaluateAll(nodes=>nodes.filter(node=>!node.hidden).sort((a,b)=>Number(a.style.order)-Number(b.style.order)).map(node=>node.dataset.handle));expect(defaultOrder.slice(0,3)).toEqual(['night-protocol-hoodie','detroit-2084-shirt','detroit-winter-sunset-artwork']);
   const ticker=page.locator('.lotto-ticker');await expect(ticker).toContainText('LottoMind Lottery and Tool Generator App Coming Soon');await expect(ticker).toBeVisible();expect(await ticker.locator('.lotto-ticker-track span').first().evaluate(node=>parseFloat(getComputedStyle(node).fontSize))).toBeGreaterThanOrEqual(page.viewportSize().width<=560?36:44);
   await page.goto(base+'shop/?category=Accessories');await expect(page.locator('#result-count')).toHaveText('5 products');
-  const mobsterCharm=page.locator('[data-product-card][data-handle="mobster-luggage-charm"]');await expect(mobsterCharm).toContainText('Mobster Luggage Charm');await expect(mobsterCharm).toContainText('$19.99');
+  const mobsterCharm=page.locator('[data-product-card][data-handle="mobster-luggage-charm"]');await expect(mobsterCharm).toContainText('Mobster Luggage Charm');await expect(mobsterCharm).toContainText('$23.99');
   await expect(mobsterCharm.locator('img')).toHaveAttribute('src',/\/media\/mobster-luggage-charm-armory-campaign-v2\.webp$/);
   await expect(page.locator('[data-product-card][data-handle="gothtechnology-luggage-charm"] img')).toHaveAttribute('src',/\/media\/gothtechnology-luggage-charm-armory-higgsfield-v1\.webp$/);
-  const railAdapter=page.locator('[data-product-card][data-handle="black-signal-digital-pack"]');await expect(railAdapter).toContainText('Black Signal Gun Charm Rail Adapter Pack');await expect(railAdapter).toContainText('$12');
+  const railAdapter=page.locator('[data-product-card][data-handle="black-signal-digital-pack"]');await expect(railAdapter).toContainText('Black Signal Gun Charm Rail Adapter Pack');await expect(railAdapter).toContainText('$14.40');
   await expect(railAdapter.locator('img')).toHaveAttribute('src',/\/media\/black-signal-gun-charm-rail-adapter-black-group-reference\.webp$/);
   await expect(page.locator('[data-product-card][data-handle="key-knife-keychain"] img')).toHaveAttribute('src',/\/media\/key-knife-gothic-open-side-campaign\.webp$/);
   await page.getByLabel('Search products',{exact:true}).fill('GOTHTECHNOLOGY Luggage Charm');await expect(page.locator('[data-product-card]:visible')).toHaveCount(1);
   await page.getByRole('button',{name:'Save to Launch Loadout: GOTHTECHNOLOGY Luggage Charm',exact:true}).click();
-  await expect(page.getByRole('dialog',{name:'Your Launch Loadout'})).toContainText('$19.99');await page.keyboard.press('Escape');
+  await expect(page.getByRole('dialog',{name:'Your Launch Loadout'})).toContainText('$23.99');await page.keyboard.press('Escape');
   await page.getByLabel('Search products',{exact:true}).fill('zzz-no-match');await expect(page.locator('#no-results')).toBeVisible();
   await page.locator('#no-results').getByRole('button',{name:'Clear filters'}).click();await expect(page.locator('#result-count')).toHaveText('19 products');
   await page.getByLabel('Search products',{exact:true}).fill('Boog');await expect(page.locator('[data-product-card]:visible')).toHaveCount(1);
@@ -92,8 +89,8 @@ test('homepage keeps the four core beats and links deeper world-building from na
   await expect(page.locator('.lotto-ticker')).toHaveCount(0);
   const storyOrder=await page.locator('main > section').evaluateAll(nodes=>nodes.filter(node=>node.matches('#current-drop,#armory,#featured,#character-vault,#combat-lookbook,#enter-the-fight,.armory-origin,.newsletter')).map(node=>node.id||(node.classList.contains('armory-origin')?'origin':'newsletter')));
   expect(storyOrder).toEqual(['current-drop','armory','featured','character-vault','combat-lookbook','enter-the-fight','origin','newsletter']);
-  await expect(page.locator('#current-drop .drop-price')).toContainText('$89');
-  await expect(page.locator('[data-product-card][data-handle="night-protocol-hoodie"]')).toContainText('$89');
+  await expect(page.locator('#current-drop .drop-price')).toContainText('$106.80');
+  await expect(page.locator('[data-product-card][data-handle="night-protocol-hoodie"]')).toContainText('$106.80');
   await expect(page.locator('#featured [data-product-card][data-handle="boogeyman-graphic-hoodie"]')).toHaveCount(0);
   await expect(page.locator('#featured [data-product-card][data-handle="static-saints-patch-set"]')).toHaveCount(0);
   await expect(page.locator('#featured [data-product-card][data-handle="detroit-winter-sunset-artwork"] img')).toHaveAttribute('src',/detroit-winter-sunset-simple-frame-campaign\.webp$/);
@@ -183,7 +180,7 @@ test('mobile navigation, search and keyboard dialog containment',async({page})=>
 test('product gallery uses image-aware modes and honest 2.5D remains lazy',async({page},info)=>{
   const requests=[];page.on('request',request=>requests.push(request.url()));
   await page.goto(product);await expect(page.locator('.gallery-main')).toHaveAttribute('data-gallery-orientation','landscape');expect(requests.some(url=>/\/model\.[^/]*\.js/.test(url))).toBe(false);
-  await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/night-protocol-hoodie-no-charm-reference\.webp$/);await expect(page.locator('[data-selected-price]')).toHaveText('$89');
+  await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/night-protocol-hoodie-no-charm-reference\.webp$/);await expect(page.locator('[data-selected-price]')).toHaveText('$106.80');
   await expect(page.locator('.development-status')).toContainText('The LottoMind charm shown in some supplied reference imagery is not included with the hoodie.');
   const hoodieFilm=page.getByLabel('Knight Protocol Embroidered Hoodie supplied product film');await expect(hoodieFilm).toBeVisible();await expect(hoodieFilm.locator('source')).toHaveAttribute('src',base+'media/knight-protocol-supplied-product-film-v1.mp4');await expect(hoodieFilm).toHaveAttribute('controls','');await expect(hoodieFilm).toHaveAttribute('autoplay','');await expect(hoodieFilm).not.toHaveAttribute('muted','');
   await page.getByRole('button',{name:'Embroidery reference',exact:true}).click();await expect(page.locator('#gallery-image')).toHaveAttribute('src',/embroidery/);await expect(page.locator('.gallery-main')).toHaveClass(/is-landscape/);
@@ -196,44 +193,44 @@ test('product gallery uses image-aware modes and honest 2.5D remains lazy',async
   await expect(page.locator('[data-product-card][data-handle="black-signal-beanie"] img')).toHaveAttribute('src',/\/media\/detroit-skyline-beanie-reference\.webp$/);
   await expect(page.locator('[data-product-card][data-handle="detroit-skull-cap-alt"] img')).toHaveAttribute('src',/\/media\/detroit-skull-cap-alt-reference\.webp$/);
   await page.goto(base+'products/black-signal-beanie/');await expect(page.getByRole('heading',{level:1})).toHaveText('Detroit Skyline Embroidered Beanie');
-  await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/detroit-skyline-beanie-reference\.webp$/);await expect(page.locator('[data-selected-price]')).toHaveText('$19');await expect(page.getByRole('radio',{name:'Black',exact:true})).toBeChecked();
+  await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/detroit-skyline-beanie-reference\.webp$/);await expect(page.locator('[data-selected-price]')).toHaveText('$22.80');await expect(page.getByRole('radio',{name:'Black',exact:true})).toBeChecked();
   await page.getByRole('button',{name:'Zoom image',exact:true}).click();await expect(page.locator('#gallery-zoom')).toHaveAttribute('aria-pressed','true');
   await page.goto(base+'products/detroit-skull-cap-alt/');await expect(page.getByRole('heading',{level:1})).toHaveText('Detroit Embroidered Skull Cap — Alt Version');
-  await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/detroit-skull-cap-alt-reference\.webp$/);await expect(page.locator('[data-selected-price]')).toHaveText('$22');await expect(page.getByRole('radio',{name:'Black',exact:true})).toBeChecked();
+  await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/detroit-skull-cap-alt-reference\.webp$/);await expect(page.locator('[data-selected-price]')).toHaveText('$26.40');await expect(page.getByRole('radio',{name:'Black',exact:true})).toBeChecked();
   await page.goto(base+'products/detroit-2084-shirt/');await expect(page.getByRole('heading',{level:1})).toHaveText('Detroit 2084 Graphic T-Shirt');
-  await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/detroit-2084-tee-reference\.webp$/);await expect(page.locator('[data-selected-price]')).toHaveText('$36');
+  await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/detroit-2084-tee-reference\.webp$/);await expect(page.locator('[data-selected-price]')).toHaveText('$43.20');
   await page.goto(base+'products/detroit-skyline-cap/');await expect(page.getByRole('heading',{level:1})).toHaveText('Detroit Skyline Embroidered Cap');
-  await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/detroit-skyline-cap-reference\.webp$/);await expect(page.locator('[data-selected-price]')).toHaveText('$32');
+  await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/detroit-skyline-cap-reference\.webp$/);await expect(page.locator('[data-selected-price]')).toHaveText('$38.40');
   await page.goto(base+'products/boogeyman-graphic-hoodie/');await expect(page.getByRole('heading',{level:1})).toHaveText('Boogeyman Graphic Hoodie');
   await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/boogeyman-graphic-hoodie-campaign\.webp$/);await expect(page.locator('.gallery-main [data-gallery-kind]')).toHaveText('CAMPAIGN CONCEPT');await expect(page.locator('[data-selected-price]')).toHaveText('Pending');await expect(page.getByRole('button',{name:'Price pending',exact:true})).toBeDisabled();
   await page.goto(base+'products/gothtechnology-luggage-charm/');await expect(page.getByRole('heading',{level:1})).toHaveText('GOTHTECHNOLOGY Luggage Charm');
   await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/gothtechnology-luggage-charm-armory-higgsfield-v1\.webp$/);await expect(page.locator('.gallery-main [data-gallery-kind]')).toHaveText('CAMPAIGN CONCEPT');
   await page.getByRole('button',{name:'Product reference',exact:true}).click();await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/charm\.webp$/);await expect(page.locator('.gallery-main [data-gallery-kind]')).toHaveText('SUPPLIED PRODUCT REFERENCE');
   await page.goto(base+'products/mobster-luggage-charm/');await expect(page.getByRole('heading',{level:1})).toHaveText('Mobster Luggage Charm');
-  await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/mobster-luggage-charm-cyan-arch-reference\.webp$/);await expect(page.locator('[data-selected-price]')).toHaveText('$19.99');
+  await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/mobster-luggage-charm-cyan-arch-reference\.webp$/);await expect(page.locator('[data-selected-price]')).toHaveText('$23.99');
   await expect(page.getByRole('button',{name:'Load 3D model',exact:true})).toBeVisible();await page.getByRole('button',{name:'Load 3D model',exact:true}).click();await expect(page.locator('.model-stage canvas')).toBeVisible();await expect(page.locator('[data-viewer-status]')).toContainText('3D model loaded');
   const mobsterVideo=page.getByTitle('Mobster Luggage Charm attachment demonstration');await expect(mobsterVideo).toBeVisible();await expect(mobsterVideo).toHaveAttribute('src','https://www.youtube-nocookie.com/embed/0yPqZEvKnFU?rel=0&playsinline=1');await expect(mobsterVideo).not.toHaveAttribute('allow',/autoplay/);
   await expect(page.getByText('The rail adapter and sporting equipment shown in the demonstration are not included with the Mobster Luggage Charm.',{exact:false})).toBeVisible();
   await expect(page.getByRole('link',{name:'Watch on YouTube',exact:false})).toHaveAttribute('href','https://www.youtube.com/shorts/0yPqZEvKnFU');
   await page.getByRole('button',{name:'Equipment context',exact:true}).click();await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/mobster-luggage-charm-equipment-context-reference\.webp$/);
-  await page.goto(base+'products/static-saints-patch-set/');await expect(page.getByRole('heading',{level:1})).toHaveText('Static Saints Embroidered Patch Set');await expect(page.locator('[data-selected-price]')).toHaveText('$20');
+  await page.goto(base+'products/static-saints-patch-set/');await expect(page.getByRole('heading',{level:1})).toHaveText('Static Saints Embroidered Patch Set');await expect(page.locator('[data-selected-price]')).toHaveText('$24');
   await expect(page.locator('.gallery-thumbs button')).toHaveCount(6);await expect(page.getByRole('radio',{name:'Black-backed Die-cut',exact:true})).toBeChecked();
   await page.getByRole('radio',{name:'Rectangular Black',exact:true}).check();await page.getByRole('button',{name:'Rectangular armory campaign concept',exact:true}).click();await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/static-saints-patch-rectangular-armory-campaign\.webp$/);
   await expect(page.locator('.gallery-main')).toHaveAttribute('data-gallery-orientation','landscape');
   await page.goto(base+'products/static-saints-detroit-rug/');await expect(page.getByRole('heading',{level:1})).toHaveText('Detroit Skyline Cutout Rug');await expect(page.locator('[data-selected-price]')).toHaveText('Pending');await expect(page.locator('.gallery-thumbs button')).toHaveCount(2);await expect(page.getByRole('button',{name:'Price pending',exact:true})).toBeDisabled();
   await page.goto(base+'products/black-signal-digital-pack/');await expect(page.getByRole('heading',{level:1})).toHaveText('Black Signal Gun Charm Rail Adapter Pack');
-  await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/black-signal-gun-charm-rail-adapter-black-group-reference\.webp$/);await expect(page.locator('[data-selected-price]')).toHaveText('$12');
+  await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/black-signal-gun-charm-rail-adapter-black-group-reference\.webp$/);await expect(page.locator('[data-selected-price]')).toHaveText('$14.40');
   const adapterFilm=page.getByLabel('Black Signal Gun Charm Rail Adapter Pack supplied product film');await expect(adapterFilm).toBeVisible();await expect(adapterFilm.locator('source')).toHaveAttribute('src',base+'media/black-signal-rail-adapter-supplied-film-v1.mp4');await expect(adapterFilm).toHaveAttribute('controls','');await expect(adapterFilm).toHaveAttribute('autoplay','');await expect(adapterFilm).not.toHaveAttribute('muted','');
   await expect(page.getByRole('button',{name:'Equipment context',exact:true})).toBeVisible();await expect(page.getByRole('button',{name:'White-background group reference',exact:true})).toBeVisible();
   await page.getByRole('button',{name:'Front reference',exact:true}).click();await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/black-signal-gun-charm-rail-adapter-black-fabric-reference\.webp$/);
   await page.getByRole('button',{name:'Underside reference',exact:true}).click();await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/black-signal-gun-charm-rail-adapter-underside-reference\.webp$/);await expect(page.locator('.gallery-main')).toHaveAttribute('data-gallery-orientation','square');
   await expect(page.getByText('Digital contents & license',{exact:true})).toHaveCount(0);await expect(page.getByText('Shipping & returns',{exact:true})).toBeVisible();
   await page.goto(base+'products/key-knife-keychain/');await expect(page.getByRole('heading',{level:1})).toHaveText('Key Knife Keychain — 2-Inch Utility Pocketknife');
-  await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/key-knife-black-reference\.webp$/);await expect(page.locator('[data-selected-price]')).toHaveText('$11.99');
+  await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/key-knife-black-reference\.webp$/);await expect(page.locator('[data-selected-price]')).toHaveText('$14.39');
   await expect(page.getByRole('radio',{name:'Black',exact:true})).toBeChecked();await page.getByRole('radio',{name:'Silver',exact:true}).check();await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/key-knife-silver-reference\.webp$/);
   await expect(page.getByRole('button',{name:'Open-blade Gothic armory campaign concept',exact:true})).toBeVisible();await expect(page.getByRole('button',{name:'Signal ensemble campaign concept',exact:true})).toBeVisible();await expect(page.locator('.gallery-thumbs button')).toHaveCount(8);
   await page.goto(base+'products/key-knife-gun-attachment-bundle/');await expect(page.getByRole('heading',{level:1})).toHaveText('Key Knife + Paint/ Gun Attachment Bundle');
-  await expect(page.locator('[data-selected-price]')).toHaveText('$39');await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/key-knife-gun-attachment-bundle-closed-reference\.webp$/);
+  await expect(page.locator('[data-selected-price]')).toHaveText('$46.80');await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/key-knife-gun-attachment-bundle-closed-reference\.webp$/);
   await expect(page.getByText('UTILITY KNIFE SAFETY & LEGAL REVIEW',{exact:true})).toBeVisible();await expect(page.getByText('The Mobster luggage charm pictured in the supplied references is styling only and is not included.',{exact:false})).toBeVisible();
   await page.getByRole('button',{name:'Open bundle reference',exact:true}).click();await expect(page.locator('#gallery-image')).toHaveAttribute('src',/\/media\/key-knife-gun-attachment-bundle-open-reference\.webp$/);await expect(page.locator('.gallery-thumbs button')).toHaveCount(2);
 });
@@ -286,11 +283,11 @@ test(surface+' commercial never interrupts an open launch loadout',async({page})
 
 test('disconnected newsletter is visibly unavailable and does not collect personal data',async({page})=>{
   const posts=[];page.on('request',r=>{if(r.method()==='POST')posts.push(r.url());});await page.goto(base);const form=page.locator('#newsletter-form');
-  await expect(form).toHaveAttribute('data-subscription-connected','false');await expect(form.getByLabel('Email address',{exact:true})).toBeDisabled();await expect(form.getByRole('checkbox',{name:/I agree to receive/})).toBeDisabled();await expect(form.getByRole('button',{name:'Get Launch Alert',exact:true})).toBeDisabled();await expect(form.locator('.form-status')).toContainText('not saved or sent');expect(posts).toEqual([]);
+  await expect(form).toHaveAttribute('data-subscription-connected','false');await expect(form.getByLabel('Email address',{exact:true})).toBeDisabled();await expect(form.getByRole('checkbox',{name:/I agree to receive/})).toBeDisabled();await expect(form.getByRole('button',{name:'Alerts coming soon',exact:true})).toBeDisabled();await expect(form.locator('.form-status')).toContainText('not saved or sent');expect(posts).toEqual([]);
 });
 
 test('game portal preserves the runtime, preselects a fighter and rejects forged messages',async({page},info)=>{
-  test.setTimeout(90000);const errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto(base+'play/?character=KALYX');await expect(page.locator('#rahbee-promo')).toBeVisible();await expect(page.getByRole('link',{name:'Play Robot RAHBE',exact:true})).toHaveAttribute('href',/games\/shadow-ops-canvas\/$/);await page.getByRole('button',{name:'Continue to GOTHTECHNOLOGY',exact:true}).click();await expect(page.locator('#rahbee-promo')).not.toBeVisible();await expect(page.locator('#game-frame')).toHaveCount(0);await page.getByRole('button',{name:'Launch game',exact:true}).click();await expect(page.locator('#game-connection')).toContainText('Game ready',{timeout:45000});
+  test.setTimeout(90000);const errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto(base+'play/?character=KALYX');await expect(page.locator('#rahbee-promo')).toBeVisible();await expect(page.getByRole('link',{name:'Play Robot RAHBE',exact:true})).toHaveAttribute('href',/arcade\/shadow-ops-canvas\/\?arcade=1$/);await page.getByRole('button',{name:'Continue to GOTHTECHNOLOGY',exact:true}).click();await expect(page.locator('#rahbee-promo')).not.toBeVisible();await expect(page.locator('#game-frame')).toHaveCount(0);await page.getByRole('button',{name:'Launch game',exact:true}).click();await expect(page.locator('#game-connection')).toContainText('Game ready',{timeout:45000});
   // A late iframe load must not overwrite the earlier validated ready message.
   await page.locator('#game-frame').dispatchEvent('load');await expect(page.locator('#game-connection')).toContainText('Game ready');
   const frame=page.frames().find(f=>f.url().includes('/legacy-game/'));expect(frame).toBeTruthy();expect(await frame.evaluate(()=>window.__gothTechnologyGame.player1Id)).toBe('KALYX');
@@ -384,15 +381,15 @@ for(const preference of ['reduced','saved-reduced','save-data'])test('hero backg
 
 test('charm and knife preview bundle links the components and shows its price and safety notice',async({page})=>{
   await page.goto(base+'products/key-knife-keychain/');
-  await expect(page.locator('.charm-knife-offer')).toContainText('$29.99');
+  await expect(page.locator('.charm-knife-offer')).toContainText('$35.99');
   await page.getByRole('link',{name:'View bundle details',exact:true}).click();
   await expect(page.locator('h1')).toHaveText('Mobster Charm + Key Knife Bundle');
-  await expect(page.locator('[data-selected-price]')).toHaveText('$29.99');
+  await expect(page.locator('[data-selected-price]')).toHaveText('$35.99');
   await expect(page.locator('.product-safety-notice')).toContainText('not available for purchase');
   await expect(page.locator('.development-status')).toContainText('one Mobster Luggage Charm and one black Key Knife');
   await page.locator('#product-options button[type=submit]').click();
   await expect(page.locator('#cart-dialog')).toContainText('Mobster Charm + Key Knife Bundle');
-  await expect(page.locator('#cart-dialog')).toContainText('$29.99');
+  await expect(page.locator('#cart-dialog')).toContainText('$35.99');
 });
 
 test('fragrance concept stories expand with the keyboard and artwork pairings link to the matching scent',async({page})=>{
@@ -436,4 +433,28 @@ test('fragrance stays out of homepage features and opens its gold-arch gallery f
   await expect(page.getByRole('button',{name:'Price pending',exact:true})).toBeDisabled();await expect(page.locator('.fragrance-identities li')).toHaveCount(9);
   const galleryBounds=await page.locator('#gallery-image').boundingBox();expect(Math.abs(galleryBounds.height-galleryBounds.width)).toBeLessThan(2);
   await page.locator('.gallery-thumbs button').nth(1).click();await expect(page.locator('#gallery-image')).toHaveAttribute('src',/circuit-grid-campaign\.webp$/);
+});
+
+
+test('Digital homepage category preserves an empty filter and can be cleared',async({page},info)=>{
+  const errors=[];page.on('pageerror',error=>errors.push(error.message));
+  await page.emulateMedia({reducedMotion:'reduce'});
+  await page.goto(base);await ready(page);
+  await page.locator('main a[href="'+base+'shop/?category=Digital"]').click();
+  await expect(page).toHaveURL(base+'shop/?category=Digital');
+  await expect(page.locator('[name=category]')).toHaveValue('Digital');
+  await expect(page.locator('#result-count')).toHaveText('0 products');
+  await expect(page.locator('[data-product-card]:visible')).toHaveCount(0);
+  await expect(page.getByRole('heading',{name:'Digital items coming soon.'})).toBeVisible();
+  await page.locator('#no-results').scrollIntoViewIfNeeded();
+  await page.screenshot({path:info.outputPath('digital-empty.png'),scale:'css'});
+  await page.reload();await expect(page.locator('[name=category]')).toHaveValue('Digital');
+  await page.locator('[data-reset-filters]').press('Enter');
+  await expect(page.locator('#no-results')).not.toBeVisible();
+  await expect(page.locator('[name=category]')).toHaveValue('');
+  await expect(page.locator('[data-product-card]:visible')).toHaveCount(await page.locator('[data-product-card]').count());
+  await page.goto(base+'faq/');
+  await expect(page.locator('main')).toContainText('Alerts coming soon. Email signup is not available yet');
+  await expect(page.locator('main')).not.toContainText('Use Get Launch Alert');
+  expect(errors).toEqual([]);
 });

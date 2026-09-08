@@ -5,7 +5,8 @@ const allCollections = await buildProvider.getCollections();
 const products = await buildProvider.getProducts();
 const collections = allCollections.filter(c=>products.some(p=>p.collections.includes(c.handle)));
 const isDemoMode = conversionMode(products)==='interest';
-const categories = [...new Set(products.map(p=>p.productType))];
+// Digital is advertised on the homepage even before its first product launches.
+const categories = [...new Set([...products.map(p=>p.productType), 'Digital'])];
 const sizes = [...new Set(products.flatMap(p=>p.sizes))];
 const colors = [...new Set(products.flatMap(p=>p.colors))];
 const { activeCollection = '' } = Astro.props;

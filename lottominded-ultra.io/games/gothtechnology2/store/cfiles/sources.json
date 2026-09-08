@@ -1,0 +1,86 @@
+[
+  {
+    "id": "nasa",
+    "name": "NASA",
+    "type": "Science / primary source",
+    "url": "https://www.nasa.gov/rss-feeds/",
+    "feed": "https://www.nasa.gov/feed/",
+    "access": "Public RSS headlines with links to the original publication.",
+    "keywords": [
+      "uap",
+      "ufo",
+      "unidentified",
+      "apod",
+      "moon",
+      "lunar",
+      "venus",
+      "meteor",
+      "asteroid",
+      "comet",
+      "aurora",
+      "solar",
+      "telescope",
+      "spacecraft",
+      "planet",
+      "galaxy",
+      "eclipse"
+    ]
+  },
+  {
+    "id": "jpl",
+    "name": "NASA / JPL",
+    "type": "Astronomy / primary source",
+    "url": "https://www.jpl.nasa.gov/rss/",
+    "feed": "https://www.jpl.nasa.gov/feeds/news/",
+    "access": "Public RSS. Space science context, not a feed of confirmed anomalous sightings."
+  },
+  {
+    "id": "black-vault",
+    "name": "The Black Vault",
+    "type": "FOIA document archive",
+    "url": "https://www.theblackvault.com/documentarchive/",
+    "access": "Source directory link. Check the underlying released document and its context."
+  },
+  {
+    "id": "mufon",
+    "name": "MUFON",
+    "type": "Witness-report organization",
+    "url": "https://mufon.com/",
+    "access": "Membership restrictions apply to its case database. No member reports are copied or scraped."
+  },
+  {
+    "id": "space",
+    "name": "Space.com",
+    "type": "Science reporting",
+    "url": "https://www.space.com/",
+    "access": "Editorial source link; automated ingestion is not enabled."
+  },
+  {
+    "id": "livescience",
+    "name": "Live Science",
+    "type": "Science reporting",
+    "url": "https://www.livescience.com/",
+    "access": "Editorial source link; automated ingestion is not enabled."
+  },
+  {
+    "id": "debrief",
+    "name": "The Debrief",
+    "type": "Science and disclosure reporting",
+    "url": "https://thedebrief.org/",
+    "access": "Editorial source link. Legislative reporting should be checked against the bill or hearing record."
+  },
+  {
+    "id": "aaro",
+    "name": "AARO",
+    "type": "Official imagery and case analysis",
+    "url": "https://www.aaro.mil/UAP-Cases/Official-UAP-Imagery/",
+    "access": "Official records. Individual cases may have updated analyses or resolutions."
+  },
+  {
+    "id": "congress",
+    "name": "Congress.gov",
+    "type": "Legislation / primary source",
+    "url": "https://www.congress.gov/search?q=%7B%22search%22%3A%22UAP%20Disclosure%22%7D",
+    "access": "Check bill text, amendments and legislative status at the source."
+  }
+]

@@ -2,7 +2,7 @@ import { execFileSync } from "node:child_process";
 import { copyFile, mkdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { basename, dirname, extname, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
-import { gothtechnologyPath, requiredStoreFiles, readGothtechnologyBuild, copyGothtechnologyBuild } from "./gothtechnology-pages.mjs";
+import { gothtechnologyPath, requiredStoreFiles, readGothtechnologyBuild, copyGothtechnologyBuild, shareShadowOpsAssets } from "./gothtechnology-pages.mjs";
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const outputRoot = resolve(repoRoot, "_site");
@@ -59,7 +59,7 @@ const optionalMediaExtensions = new Set([
   ".webp",
 ]);
 const smallMediaMaxBytes = 256 * 1024;
-const defaultMaxBytes = 1_200 * 1024 * 1024;
+const defaultMaxBytes = 1_024 * 1024 * 1024;
 const maxBytes = Number(process.env.PAGES_ARTIFACT_MAX_BYTES || defaultMaxBytes);
 
 function git(args) {
@@ -203,8 +203,9 @@ const artifactPlan = await planArtifact(sourceFiles, publicFiles);
 await rm(outputRoot, { recursive: true, force: true });
 await mkdir(outputRoot, { recursive: true });
 
-const totalBytes = await copyInBatches(artifactPlan.includedFiles)
-  + await copyGothtechnologyBuild(storeBuild, outputRoot);
+const publicBytes = await copyInBatches(artifactPlan.includedFiles);
+const sharedStoreBuild = await shareShadowOpsAssets(storeBuild, outputRoot);
+const totalBytes = publicBytes + await copyGothtechnologyBuild(sharedStoreBuild, outputRoot);
 
 for (const route of requiredRoutes) {
   const routeStats = await stat(outputPathFor(route)).catch(() => null);
@@ -225,8 +226,9 @@ const manifest = {
   branch: process.env.GITHUB_REF_NAME || git(["branch", "--show-current"]),
   commit: git(["rev-parse", "HEAD"]),
   sourceFileCount: sourceFiles.length,
-  fileCount: artifactPlan.includedFiles.length + storeBuild.length,
-  gothtechnologyBuildFiles: storeBuild.length,
+  fileCount: artifactPlan.includedFiles.length + sharedStoreBuild.length,
+  gothtechnologyBuildFiles: sharedStoreBuild.length,
+  sharedArcadeAssetCount: storeBuild.length - sharedStoreBuild.length,
   omittedMediaFileCount: artifactPlan.omittedFiles.length,
   omittedMediaBytes: artifactPlan.omittedBytes,
   omittedMediaMebibytes: Number((artifactPlan.omittedBytes / 1024 / 1024).toFixed(1)),

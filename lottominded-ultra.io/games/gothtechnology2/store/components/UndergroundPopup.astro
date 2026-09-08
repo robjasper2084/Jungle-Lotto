@@ -1,0 +1,58 @@
+---
+import { href } from '../utilities/paths';
+import Icon from './Icon.astro';
+import {DISCOUNT_TIERS} from '../public/arcade/rewards.js';
+import {REWARD_GAMES} from '../public/arcade/games.js';
+const game=href('arcade/robot-rahbe-underground/');
+---
+<section class="drop-arcade" aria-labelledby="underground-feature-title">
+  <button class="underground-poster" type="button" data-open-underground aria-label="Play Robot RAHBE Underground" aria-haspopup="dialog" aria-controls="underground-dialog">
+    <img src={href('media/underground-armory-campaign-v1.webp')} alt="RAHBE carrying a gold lantern through a dark gothic underground vault" width="1600" height="900" loading="lazy"/>
+    <span><Icon name="play" size={22}/> ENTER THE ARCADE</span>
+  </button>
+  <div class="underground-copy"><p class="mono gold">NEW DROP / PLAYABLE FEATURE</p><h3 id="underground-feature-title">ROBOT RAHBE<br/><span>UNDERGROUND</span></h3><p>Descend beneath Detroit. Explore seven depths, recover the number seals, and face the Warden.</p><button class="button" type="button" data-open-underground aria-haspopup="dialog" aria-controls="underground-dialog">Play Underground <Icon name="play" size={16}/></button><p class="underground-note">Free to play · Keyboard, touch & gamepad · Sound starts off</p></div>
+  <section class="underground-reward" id="underground-rewards" data-underground-reward aria-label="Game discount preview">
+    <div class="reward-heading"><div><p class="mono gold">ALL GAMES / ONE REWARD</p><h4>Every run builds toward 20% off.</h4></div><strong data-reward-percent>0%</strong></div>
+    <ol class="reward-tiers">{DISCOUNT_TIERS.map(tier=><li data-tier-points={tier.points} data-reached="false"><strong>{tier.percent}%</strong><span>{tier.points.toLocaleString('en-US')} pts</span><small data-tier-state>Target</small></li>)}</ol>
+    <progress value="0" max={DISCOUNT_TIERS[0].points} aria-label="Progress toward the next game discount tier"></progress>
+    <p class="reward-progress"><span>Total: <b data-reward-score>0</b> points</span><span data-reward-next>{DISCOUNT_TIERS[0].points.toLocaleString('en-US')} points to 5%</span></p>
+    <p class="reward-note"><span data-reward-saved>Points from all games and new runs add together on this browser.</span> Continuing a saved run counts only newly earned points.</p>
+    <div class="reward-games">{REWARD_GAMES.map(game=><article><h5>{game.title}</h5><p>{game.rule}</p><span><b data-game-points={game.id}>0</b> points contributed</span><button class="button secondary" type="button" data-open-reward-game={game.id} aria-haspopup="dialog" aria-controls="underground-dialog">Play {game.title}</button></article>)}</div>
+    <p class="reward-note" data-reward-carried hidden></p>
+    <p class="reward-note">Preview only. Discounts are not redeemable yet. No purchase required.</p>
+  </section>
+</section>
+<dialog id="underground-dialog" aria-labelledby="underground-title" aria-describedby="underground-help" data-game-url={game}>
+  <div class="underground-heading"><h2 id="underground-title">ROBOT RAHBE: UNDERGROUND</h2><button class="button secondary" type="button" data-close-dialog autofocus>Close game <Icon name="close" size={16}/></button></div>
+  <div class="underground-stage"><div data-underground-host></div><div class="underground-loading" data-underground-loading><p role="status" data-underground-status>Loading Underground…</p><button class="button secondary" type="button" data-underground-retry hidden>Retry game</button></div></div>
+  <div class="underground-footer">
+    <div class="reward-live" data-underground-reward aria-label="Current game discount preview"><strong><span data-reward-percent>0%</span> discount preview</strong><span>Total: <b data-reward-score>0</b> points</span><span data-reward-next>{DISCOUNT_TIERS[0].points.toLocaleString('en-US')} points to 5%</span><progress value="0" max={DISCOUNT_TIERS[0].points} aria-label="Progress toward the next game discount tier"></progress><small>Preview only · Not redeemable yet</small><button class="text-button" type="button" data-open-cart>View price preview</button></div>
+    <p id="underground-help">A/D move · Space jump · J fire · E interact · P pause · Esc closes popup. Progress saves at beacons on this browser.</p><a class="text-link" data-game-fullpage href={game} target="_blank" rel="noopener noreferrer">Open full page <Icon size={14}/></a><small>Entertainment only. No purchase required; game collectibles have no cash value.</small>
+  </div>
+</dialog>
+<script>import { initUndergroundPopup } from '../ui/underground-popup';initUndergroundPopup();</script>
+<style>
+  .drop-arcade{grid-column:1/-1;margin:32px var(--armory-space,32px) 0;border:1px solid var(--rule);display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);background:#090e0e}
+  .underground-poster{position:relative;padding:0;min-height:270px;overflow:hidden;border:0;border-right:1px solid var(--rule);background:#0b171b;cursor:pointer;color:var(--goth-gold)}
+  .underground-poster img{display:block;width:100%;height:100%;position:absolute;inset:0;object-fit:cover;object-position:center}
+  .underground-poster span{position:absolute;bottom:20px;left:20px;display:flex;align-items:center;gap:12px;padding:12px 18px;background:#050909e8;border:1px solid var(--goth-gold);font:12px var(--mono)}
+  .underground-copy{padding:28px 32px}.underground-copy h3{font:clamp(25px,2.7vw,40px)/1.12 var(--display);margin:12px 0;color:var(--goth-gold)}.underground-copy h3 span{color:var(--goth-cyan)}
+  .underground-copy>p{max-width:530px}.underground-copy .button{margin-top:18px}.underground-copy .underground-note{font-size:12px;margin:12px 0 0;color:#bab49f}
+  .underground-reward{grid-column:1/-1;border-top:1px solid var(--rule);padding:24px 28px;background:#080c0b}.reward-heading{display:flex;justify-content:space-between;gap:20px;align-items:center}.reward-heading p{margin:0 0 8px;font-size:11px}.reward-heading h4{font:28px var(--display);margin:0}.reward-heading>strong{font:36px var(--display);color:var(--goth-cyan)}.reward-tiers{list-style:none;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;padding:0;margin:20px 0}.reward-tiers li{border:1px solid var(--rule);padding:12px;display:grid;gap:5px;font:12px var(--mono)}.reward-tiers li[data-reached=true]{border-color:var(--goth-gold);background:#b9943420}.reward-tiers strong{font-size:20px;color:var(--goth-gold)}.reward-tiers small{font-size:10px;color:#c4bcaa}.reward-progress{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font:12px var(--mono)}.reward-note{font-size:12px;color:#bab49f;line-height:1.6;margin-bottom:0}progress{display:block;width:100%;height:6px;border:0;accent-color:var(--goth-gold);background:#26302b}progress::-webkit-progress-bar{background:#26302b}progress::-webkit-progress-value{background:var(--goth-gold)}
+  .reward-live{width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px 20px;flex-wrap:wrap;padding-bottom:10px;border-bottom:1px solid var(--rule);font:11px var(--mono)}.reward-live>strong{color:var(--goth-cyan)}.reward-live small{width:auto}.reward-live .text-button{min-height:32px;padding:4px 0;font-size:11px}
+  @media(max-width:700px){.underground-reward{padding:20px}.reward-tiers{grid-template-columns:repeat(2,minmax(0,1fr))}.reward-live{font-size:10px;gap:6px 12px}.reward-live>strong{width:100%}.reward-live .text-button{font-size:10px}.reward-heading h4{font-size:24px}}
+  #underground-dialog{width:min(1280px,calc(100vw - 32px));height:min(880px,calc(100dvh - 32px));max-width:none;max-height:calc(100dvh - 32px);padding:0;overflow:hidden;border:1px solid var(--goth-gold);background:#070d0e;color:var(--goth-gold)}
+  #underground-dialog[open]{display:grid;grid-template-rows:auto minmax(0,1fr) auto}
+  #underground-dialog::backdrop{background:#000e}
+  .underground-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 20px;border-bottom:1px solid var(--rule)}
+  #underground-dialog .underground-heading h2{font:clamp(16px,1.6vw,24px)/1.2 var(--display);margin:0}.underground-heading .button{flex-shrink:0;min-height:44px}
+  .underground-stage{position:relative;min-height:0;background:#0b1518}[data-underground-host]{height:100%;width:100%}
+  :global(#underground-dialog iframe){display:block;width:100%;height:100%;border:0}
+  .underground-loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:20px;background:#0b1518}.underground-loading[hidden]{display:none}
+  .underground-footer{padding:10px 20px;display:flex;justify-content:space-between;align-items:center;gap:8px 20px;flex-wrap:wrap;border-top:1px solid var(--rule)}.underground-footer p{font-size:12px;line-height:1.5;flex:1;min-width:200px;margin:0}.underground-footer small{font-size:10px;color:#c1b99e;width:100%}.underground-footer a{white-space:nowrap}
+  @media(max-width:700px){.drop-arcade{grid-template-columns:1fr;margin:20px}.underground-poster{height:180px;min-height:180px;border-right:0;border-bottom:1px solid var(--rule)}.underground-copy{padding:22px}.underground-copy h3{font-size:30px}#underground-dialog{width:100vw;height:100dvh;max-height:100dvh;max-width:100vw;border:0}.underground-heading{padding:8px 12px;gap:10px}.underground-heading .button{padding:8px;font-size:11px}.underground-footer{padding:8px 12px}.underground-footer p{font-size:10px}.underground-footer small{font-size:9px}}
+</style>
+<style>
+  .reward-games{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:20px}.reward-games article{display:flex;flex-direction:column;border:1px solid var(--rule);padding:16px;min-width:0}.reward-games h5{font:21px var(--display);margin:0}.reward-games p{font-size:12px;line-height:1.6;flex:1}.reward-games span{font:11px var(--mono);color:var(--goth-cyan);margin:8px 0 14px}.reward-games button{font-size:10px;white-space:normal}.reward-games b{font-weight:normal}@media(max-width:1000px){.reward-games{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:480px){.reward-games{grid-template-columns:1fr}}
+  .underground-footer .reward-live small{width:auto}
+</style>

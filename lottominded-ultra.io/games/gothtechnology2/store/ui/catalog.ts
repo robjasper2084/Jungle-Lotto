@@ -19,6 +19,9 @@ export function initCatalog(products:Product[]) {
       const results=filterProducts(products,filters), order=new Map(results.map((p,i)=>[p.handle,i]));
       $$('[data-product-card]',grid).forEach(card=>{const wrapper=card.closest<HTMLElement>('[data-product-wrapper]')??card;const index=order.get(card.dataset.handle!);wrapper.hidden=index===undefined;wrapper.style.order=String(index??999);});
       $('#result-count')!.textContent=`${results.length} ${results.length===1?'product':'products'}`;$('#no-results')!.hidden=results.length!==0;
+      const digitalPending=filters.category==='Digital'&&!products.some(p=>p.productType==='Digital');
+      $('#no-results h2')!.textContent=digitalPending?'Digital items coming soon.':'No signal found.';
+      $('#no-results p')!.textContent=digitalPending?'No digital products are available to browse yet. Clear this filter to explore the rest of the armory.':'Try a different search or clear your filters.';
       const active=fields.filter(name=>name!=='sort' && filters[name] && filters[name]!==defaults[name]);
       $('#active-filters')!.innerHTML=active.map(name=>`<button type="button" class="filter-chip" data-clear-filter="${e(name)}" aria-label="Clear ${e(name)} filter">${e(name==='search'?'Search':filters[name])} ×</button>`).join('');
       $('[data-filter-count]')!.textContent=active.length ? '('+active.length+')' : '';

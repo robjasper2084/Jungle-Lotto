@@ -1,0 +1,110 @@
+[
+  {
+    "index": 10,
+    "job_id": "b5a6f411-02d9-4164-882f-d3d74f98ec7a",
+    "status": "completed",
+    "type": "image",
+    "model": "nano_banana_2",
+    "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260908_133846_b5a6f411-02d9-4164-882f-d3d74f98ec7a.png",
+    "name": "detroit-street"
+  },
+  {
+    "index": 11,
+    "job_id": "864ef569-3c20-4b06-92a5-c352f517a0b7",
+    "status": "completed",
+    "type": "image",
+    "model": "nano_banana_2",
+    "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260908_133846_864ef569-3c20-4b06-92a5-c352f517a0b7.png",
+    "name": "detroit-transit"
+  },
+  {
+    "index": 12,
+    "job_id": "cddacd9c-f42c-4654-9752-2fb1bdc03de0",
+    "status": "completed",
+    "type": "image",
+    "model": "nano_banana_2",
+    "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260908_133846_cddacd9c-f42c-4654-9752-2fb1bdc03de0.png",
+    "name": "detroit-station"
+  },
+  {
+    "index": 13,
+    "job_id": "25503cb2-1d5c-4c8f-9982-ab356e51d5ad",
+    "status": "completed",
+    "type": "image",
+    "model": "nano_banana_2",
+    "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260908_133847_25503cb2-1d5c-4c8f-9982-ab356e51d5ad.png",
+    "name": "detroit-tunnels"
+  },
+  {
+    "index": 14,
+    "job_id": "213dc027-e1f4-4a59-8c0c-4c2551bbbc66",
+    "status": "completed",
+    "type": "image",
+    "model": "nano_banana_2",
+    "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260908_133846_213dc027-e1f4-4a59-8c0c-4c2551bbbc66.png",
+    "name": "detroit-vault"
+  },
+  {
+    "index": 15,
+    "job_id": "eb1c0591-4f8d-4012-8d37-ded9f472fddf",
+    "status": "completed",
+    "type": "image",
+    "model": "nano_banana_2",
+    "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260908_133846_eb1c0591-4f8d-4012-8d37-ded9f472fddf.png",
+    "name": "detroit-chamber"
+  },
+  {
+    "index": 16,
+    "job_id": "447cbfd9-70aa-4f86-9f09-98e2d1cf5e8a",
+    "status": "completed",
+    "type": "image",
+    "model": "nano_banana_2",
+    "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260908_133849_447cbfd9-70aa-4f86-9f09-98e2d1cf5e8a.png",
+    "name": "detroit-boss"
+  },
+  {
+    "index": 17,
+    "job_id": "b482dc09-4689-427f-9159-f18f2461ae3e",
+    "status": "completed",
+    "type": "image",
+    "model": "nano_banana_2",
+    "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260908_133850_b482dc09-4689-427f-9159-f18f2461ae3e.png",
+    "name": "detroit-structures"
+  },
+  {
+    "index": 18,
+    "job_id": "4edce5a1-ffe3-4f21-9671-c71a5b92fe62",
+    "status": "completed",
+    "type": "image",
+    "model": "nano_banana_2",
+    "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260908_133849_4edce5a1-ffe3-4f21-9671-c71a5b92fe62.png",
+    "name": "detroit-vehicles"
+  },
+  {
+    "index": 19,
+    "job_id": "35a8a13f-a1b7-4545-940b-e638afb684ba",
+    "status": "completed",
+    "type": "image",
+    "model": "nano_banana_2",
+    "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260908_133849_35a8a13f-a1b7-4545-940b-e638afb684ba.png",
+    "name": "detroit-treasures"
+  },
+  {
+    "index": 20,
+    "job_id": "fad0b25a-82f4-4be4-87cd-45847931f8b0",
+    "status": "completed",
+    "type": "image",
+    "model": "nano_banana_2",
+    "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260908_133850_fad0b25a-82f4-4be4-87cd-45847931f8b0.png",
+    "name": "detroit-enemies"
+  },
+  {
+    "index": 21,
+    "job_id": "a9803573-7048-411f-97ed-dfad9a454e49",
+    "status": "completed",
+    "type": "image",
+    "model": "nano_banana_2",
+    "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260908_134127_a9803573-7048-411f-97ed-dfad9a454e49.png",
+    "name": "detroit-fire"
+  }
+]

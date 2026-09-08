@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { basename, dirname, join, resolve } from 'node:path';
-import { gothtechnologyPath, requiredStoreFiles, readGothtechnologyBuild, copyGothtechnologyBuild } from './gothtechnology-pages.mjs';
+import { gothtechnologyPath, requiredStoreFiles, readGothtechnologyBuild, copyGothtechnologyBuild, shareShadowOpsAssets } from './gothtechnology-pages.mjs';
 
 async function fixture(t) {
   const root = await mkdtemp(join(tmpdir(), 'goth-pages-'));
@@ -45,4 +45,25 @@ test('Pages assembly refuses private environment files in generated output', asy
   for (const file of requiredStoreFiles) await write(root, gothtechnologyPath + '/dist/' + file);
   await write(root, gothtechnologyPath + '/dist/.env', 'not-a-real-secret');
   await assert.rejects(readGothtechnologyBuild(root), /Refusing to publish/);
+});
+
+test('Pages shares identical cabinet assets and resolves both document and module URLs',async t=>{
+  const root=await fixture(t),cabinet=gothtechnologyPath+'/arcade/shadow-ops-canvas/';
+  const entries=[];
+  for(const [path,content] of [['assets/hero.png','same-image'],['src/game.js','const image="./assets/hero.png";'],['src/title-3d.js','new URL("../assets/hero.png",import.meta.url)'],['style.css','url("./assets/hero.png")']]){
+    const source=join(root,'build',path);await write(root,'build/'+path,content);entries.push({source,path:cabinet+path,bytes:Buffer.byteLength(content)});
+  }
+  const canonical='lottominded-ultra.io/games/shadow-ops-canvas/assets/hero.png';
+  await write(root,'_site/'+canonical,'same-image');
+  const shared=await shareShadowOpsAssets(entries,join(root,'_site'));assert.equal(shared.length,3);
+  await copyGothtechnologyBuild(shared,join(root,'_site'));
+  const pageURL=new URL('https://example.test/Jungle-Lotto/'+cabinet);
+  for(const entry of shared){
+    const url=entry.content.match(/"([^"]*assets\/hero.png)"/)[1];
+    const base=entry.path.endsWith('title-3d.js')?new URL('src/title-3d.js',pageURL):pageURL;
+    assert.equal(new URL(url,base).href,'https://example.test/Jungle-Lotto/'+canonical);
+  }
+  assert.equal(await readFile(entries[1].source,'utf8'),'const image="./assets/hero.png";','the original local build is unchanged');
+  await write(root,'_site/'+canonical,'different-image');
+  assert.equal((await shareShadowOpsAssets(entries,join(root,'_site'))).length,4,'different media must remain independent');
 });

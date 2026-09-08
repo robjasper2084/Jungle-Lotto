@@ -221,6 +221,7 @@ export class GothTechnologyGame {
     this.rewardRoundTicks = 0;
     this.rewardTotalTicks = 0;
     this.rewardMeaningfulActions = 0;
+    this.rewardMatchActions = 0;
     this.rewardStatus = "";
     this.rewardStatusTimer = 0;
     this.lastAccessibleState = "";
@@ -359,6 +360,7 @@ export class GothTechnologyGame {
     this.rewardRoundTicks = 0;
     this.rewardTotalTicks = 0;
     this.rewardMeaningfulActions = 0;
+    this.rewardMatchActions = 0;
     this.rewards = window.LottoMindGameRewards?.createClient?.({
       gameId: "fighter",
       buildId: "fighter-2026-06-25",
@@ -1183,6 +1185,7 @@ export class GothTechnologyGame {
     if (actions.dash) labels.push("DASH");
     if (!labels.length) return;
     this.rewardMeaningfulActions += 1;
+    this.rewardMatchActions += 1;
     this.inputLog.unshift(labels.join("+"));
     this.inputLog = this.inputLog.slice(0, 6);
   }
