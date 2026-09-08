@@ -54,6 +54,8 @@ export async function copyGothtechnologyBuild(files, outputRoot) {
 export async function shareShadowOpsAssets(files, outputRoot) {
   const cabinet=gothtechnologyPath+'/arcade/shadow-ops-canvas/';
   const assets=cabinet+'assets/';
+  // Shared arcade modules and the cabinet catalog also use these original URLs.
+  const keepAliases=new Set(['mascot/lottomind-mascot-runner-atlas.png','backgrounds/higgsfield-soul-location-backplate.png']);
   const duplicates=files.filter(file=>file.path.startsWith(assets));
   if(!duplicates.length)return files;
   for(const file of duplicates){
@@ -61,7 +63,7 @@ export async function shareShadowOpsAssets(files, outputRoot) {
     const existing=await readFile(canonical).catch(()=>null);
     if(!existing||!existing.equals(await readFile(file.source)))return files;
   }
-  return Promise.all(files.filter(file=>!file.path.startsWith(assets)).map(async file=>{
+  return Promise.all(files.filter(file=>!file.path.startsWith(assets)||keepAliases.has(file.path.slice(assets.length))).map(async file=>{
     if(!file.path.startsWith(cabinet)||! /\.(js|css|html)$/.test(file.path))return file;
     const text=await readFile(file.source,'utf8');
     const content=text.replace(/(\.\.\/|\.\/)assets\//g,(_,prefix)=>prefix==='../'?'../../../../shadow-ops-canvas/assets/':'../../../shadow-ops-canvas/assets/');
