@@ -1,0 +1,6 @@
+---
+import type {Money} from '../commerce/types';
+import {gamePriceMarkup} from '../ui/game-price';
+const {price}=Astro.props as {price:Money};
+---
+<Fragment set:html={gamePriceMarkup(price)}/>

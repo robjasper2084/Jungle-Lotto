@@ -1,0 +1,13 @@
+import {tone} from './core.js';
+const cues={jump:[560,.07,'square'],land:[130,.055,'sine'],dash:[180,.08,'sawtooth'],shoot:[740,.045,'triangle'],enemy:[100,.16,'sawtooth'],coin:[1100,.035,'sine'],chip:[880,.12,'triangle'],key:[1320,.15,'sine'],hurt:[140,.16,'sawtooth'],perfect:[980,.09,'sine'],overdrive:[240,.2,'sawtooth'],checkpoint:[640,.18,'triangle'],dead:[80,.4,'triangle'],power:[760,.14,'triangle'],slide:[220,.07,'sawtooth']};
+export class AudioManager{
+ constructor(){this.settings={sound:false,music:false,volume:.65,sfxVolume:1,musicVolume:.5};this.clock=0;this.beat=0;this.voices=0;this.muted=false;this.last=new Map();this.timers=new Set();}
+ applySettings(s){Object.assign(this.settings,s);if(this.master)this.master.gain.value=this.muted?0:this.settings.volume;}
+ context(){if(!this.ctx){const C=globalThis.AudioContext||globalThis.webkitAudioContext;if(!C)return null;try{this.ctx=new C();this.master=this.ctx.createGain();this.master.gain.value=this.settings.volume;this.master.connect(this.ctx.destination);}catch{return null;}}if(this.ctx.state==='suspended')this.ctx.resume().catch(()=>{});return this.ctx;}
+ play(name){if(!this.settings.sound||!this.settings.volume||this.muted)return;const now=performance.now();if(now-(this.last.get(name)||-1000)<(name==='shoot'?80:45))return;this.last.set(name,now);const cue=cues[name]||cues.coin;this.note(...cue,.025*this.settings.sfxVolume);}
+ note(freq,duration,type,gain){if(!gain||!this.settings.volume||this.muted||this.voices>=10)return;const ctx=this.context();if(!ctx)return;this.voices++;tone(ctx,freq,duration,type,gain,this.master);const timer=setTimeout(()=>{this.voices=Math.max(0,this.voices-1);this.timers.delete(timer);},(duration+.1)*1000);this.timers.add(timer);}
+ update(dt,tier,overdrive){if(!this.settings.music||!this.settings.volume||this.muted)return;this.clock+=dt;const interval=60/(112+tier*8)/2;if(this.clock<interval)return;this.clock%=interval;const b=this.beat++%16;this.note(b%4===0?65:110,.07,'sine',.035*this.settings.musicVolume);if(tier>0&&b%2)this.note(1760,.025,'triangle',.008*this.settings.musicVolume);if(tier>1||overdrive)this.note([110,110,130.81,98][Math.floor(b/4)],.15,'sawtooth',.01*this.settings.musicVolume);if(overdrive)this.note([440,523.25,587.33,392][b%4],.1,'triangle',.013*this.settings.musicVolume);}
+ pause(){this.muted=true;if(this.master)this.master.gain.value=0;}
+ resume(){this.muted=false;if(this.master)this.master.gain.value=this.settings.volume;}
+ destroy(){this.muted=true;for(const timer of this.timers)clearTimeout(timer);this.timers.clear();this.voices=0;this.ctx?.close().catch(()=>{});this.last.clear();}
+}

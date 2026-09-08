@@ -1,11 +1,13 @@
 import type { Product } from '../commerce/types';
 import { config } from '../config';
 import { launchOwner } from '../content/launch';
+import { launchAlertsConnected } from '../state/launch-alert';
 import { createSubscription, disconnectedMessage, type LaunchInterest } from '../state/subscription';
 import { analytics } from '../state/analytics';
 import { $, $$, openDialog } from './dom';
 let selection: LaunchInterest[] = [];
 export function openLaunchAlert(interests: LaunchInterest[], trigger?: HTMLElement) {
+  if (!launchAlertsConnected) return;
   selection = interests;
   const form = $<HTMLFormElement>('#launch-alert-form')!;
   if (form.dataset.busy !== 'true') {

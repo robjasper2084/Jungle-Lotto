@@ -1,4 +1,5 @@
 import { config } from '../config.ts';
+import { launchAlertLabel } from '../state/launch-alert.ts';
 import { launchOwner, type LaunchOwner } from '../content/launch.ts';
 import type { Product, ProductInformation } from './types.ts';
 
@@ -47,6 +48,6 @@ export const labelsFor = (mode: ConversionMode) => mode === 'commerce' ? {
   status: 'Shop the collection', price: 'Price', save: 'Add to Loadout', title: 'Your Loadout',
   action: 'Proceed to Checkout', subtotal: 'Subtotal', added: 'Added to your loadout.',
 } : {
-  status: 'Concept Preview', price: 'Preview Price', save: 'Save to Launch Loadout', title: 'Your Launch Loadout',
-  action: 'Get Launch Alert', subtotal: 'Preview subtotal', added: 'Saved to your Launch Loadout.',
+  status: 'Concept Preview', price: 'Before game discount', save: 'Save to Launch Loadout', title: 'Your Launch Loadout',
+  action: launchAlertLabel, subtotal: 'Preview subtotal', added: 'Saved to your Launch Loadout.',
 };

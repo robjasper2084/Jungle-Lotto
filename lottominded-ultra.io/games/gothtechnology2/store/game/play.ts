@@ -4,7 +4,9 @@ import { analytics } from '../state/analytics';
 import { config } from '../config';
 import { href } from '../utilities/paths';
 import { $, save, saved } from '../ui/dom';
+import {initUndergroundDiscount} from '../ui/underground-discount';
 export function initPlay() {
+  initUndergroundDiscount();
   const host=$('[data-game-host]')!,launch=$<HTMLButtonElement>('#launch-game')!,notice=$('#game-connection')!,reward=$('#game-reward-status')!;
   let frame:HTMLIFrameElement|null=null,timer:ReturnType<typeof setTimeout>|undefined,ready=false;
   const requested=new URLSearchParams(location.search).get('character'),character=characters.find(c=>c.id===requested);

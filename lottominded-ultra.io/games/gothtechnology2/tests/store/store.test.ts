@@ -84,8 +84,8 @@ test('money uses integer minor units across zero, two, and three-decimal currenc
 test('cart adds, merges, updates, removes and persists without trusting stored prices',async()=>{
   const storage=memory(),provider=new DemoProvider(storage);const empty=await provider.createCart();assert.equal(empty.totalQuantity,0);
   await provider.addCartLine(empty.id,variant.id,1);let cart=await provider.addCartLine(empty.id,variant.id,2);
-  assert.equal(cart.lines.length,1);assert.equal(cart.subtotal.amount,26700);
-  cart=await provider.updateCartLine(cart.id,cart.lines[0].id,2);assert.equal(cart.subtotal.amount,17800);
+  assert.equal(cart.lines.length,1);assert.equal(cart.subtotal.amount,32040);
+  cart=await provider.updateCartLine(cart.id,cart.lines[0].id,2);assert.equal(cart.subtotal.amount,21360);
   const saved=JSON.parse(storage.getItem(DEMO_CART_KEY)!);assert.equal(saved.lines[0].price,undefined);
   cart=(await new DemoProvider(storage).getCart(cart.id))!;assert.equal(cart.totalQuantity,2);
   cart=await provider.removeCartLine(cart.id,cart.lines[0].id);assert.equal(cart.lines.length,0);
@@ -113,8 +113,8 @@ test('filters combine variant options and handle search, availability and price 
   assert.equal(filterProducts(demoProducts,{search:'hoodie',size:'M',color:'Obsidian'}).length,1);
   assert.equal(filterProducts(demoProducts,{search:'no-such-product'}).length,0);
   assert.equal(filterProducts(demoProducts,{availability:'unavailable'}).length,5);
-  assert.equal(filterProducts(demoProducts,{sort:'price-low'})[0].price.amount,1199);
-  assert.equal(filterProducts(demoProducts,{sort:'price-high'})[0].price.amount,12900);
+  assert.equal(filterProducts(demoProducts,{sort:'price-low'})[0].price.amount,1439);
+  assert.equal(filterProducts(demoProducts,{sort:'price-high'})[0].price.amount,15480);
   assert.equal(selectVariant(hoodie,'M','Obsidian')?.size,'M');assert.equal(selectVariant(hoodie,'XXXS','Obsidian'),null);
   const p=structuredClone(hoodie);p.variants=[{...variant,size:'S',color:'Red'},{...variant,id:'v2',size:'M',color:'Blue'}];
   assert.equal(filterProducts([p],{size:'S',color:'Blue'}).length,0);
@@ -130,20 +130,20 @@ test('Detroit beanie is searchable in black and keeps its reference image in the
   const cart=await provider.addCartLine((await provider.createCart()).id,beanieVariant.id,1);
   const restored=(await new DemoProvider(storage).getCart(cart.id))!;
   assert.equal(restored.lines[0].title,'Detroit Skyline Embroidered Beanie');
-  assert.equal(beanie.price.amount,1900);
-  assert.equal(formatMoney(beanie.price),'$19');
+  assert.equal(beanie.price.amount,2280);
+  assert.equal(formatMoney(beanie.price),'$22.80');
   assert.equal(restored.lines[0].color,'Black');
   assert.equal(restored.lines[0].image?.src,'media/detroit-skyline-beanie-reference.webp');
 });
-test('alternate Detroit skull cap is a distinct $22 Shop product with its supplied portrait reference',async()=>{
+test('alternate Detroit skull cap is a distinct $26.40 Shop product with its supplied portrait reference',async()=>{
   const products=filterProducts(demoProducts,{search:'Detroit Embroidered Skull Cap',color:'Black'});
   assert.equal(products.length,1);
   const cap=products[0],capVariant=selectVariant(cap,'One size','Black');
   assert.ok(capVariant);
   assert.equal(cap.handle,'detroit-skull-cap-alt');
   assert.equal(cap.title,'Detroit Embroidered Skull Cap — Alt Version');
-  assert.equal(cap.price.amount,2200);
-  assert.equal(formatMoney(cap.price),'$22');
+  assert.equal(cap.price.amount,2640);
+  assert.equal(formatMoney(cap.price),'$26.40');
   assert.equal(cap.featured,false);
   assert.equal(cap.images[0]?.src,'media/detroit-skull-cap-alt-reference.webp');
   assert.deepEqual([cap.images[0]?.width,cap.images[0]?.height],[896,1200]);
@@ -153,22 +153,22 @@ test('alternate Detroit skull cap is a distinct $22 Shop product with its suppli
   assert.equal(restored.lines[0].title,'Detroit Embroidered Skull Cap — Alt Version');
   assert.equal(restored.lines[0].image?.src,'media/detroit-skull-cap-alt-reference.webp');
 });
-test('Detroit 2084 shirt keeps its $36 preview price and supplied artwork in the saved cart',async()=>{
+test('Detroit 2084 shirt keeps its $43.20 preview price and supplied artwork in the saved cart',async()=>{
   const shirt=demoProducts.find(product=>product.handle==='detroit-2084-shirt')!;
   assert.equal(shirt.title,'Detroit 2084 Graphic T-Shirt');
-  assert.equal(shirt.price.amount,3600);
-  assert.equal(formatMoney(shirt.price),'$36');
+  assert.equal(shirt.price.amount,4320);
+  assert.equal(formatMoney(shirt.price),'$43.20');
   assert.equal(shirt.images[0]?.src,'media/detroit-2084-tee-reference.webp');
   const storage=memory(),provider=new DemoProvider(storage);
   const cart=await provider.addCartLine((await provider.createCart()).id,shirt.variants[0].id,1);
   const restored=(await new DemoProvider(storage).getCart(cart.id))!;
   assert.equal(restored.lines[0].image?.src,'media/detroit-2084-tee-reference.webp');
 });
-test('Knight Protocol hoodie uses the $89 preview price, no-charm lead image and inclusion disclosure',async()=>{
+test('Knight Protocol hoodie uses the $106.80 preview price, no-charm lead image and inclusion disclosure',async()=>{
   const hoodie=demoProducts.find(product=>product.handle==='night-protocol-hoodie')!;
-  assert.equal(hoodie.price.amount,8900);
-  assert.equal(formatMoney(hoodie.price),'$89');
-  assert.ok(hoodie.variants.every(variant=>variant.price.amount===8900));
+  assert.equal(hoodie.price.amount,10680);
+  assert.equal(formatMoney(hoodie.price),'$106.80');
+  assert.ok(hoodie.variants.every(variant=>variant.price.amount===10680));
   assert.equal(hoodie.images[0]?.src,'media/night-protocol-hoodie-no-charm-reference.webp');
   assert.equal(hoodie.images[3]?.src,'media/night-protocol-hoodie-cathedral-styling-reference.webp');
   assert.deepEqual([hoodie.images[3]?.width,hoodie.images[3]?.height],[1600,900]);
@@ -176,7 +176,7 @@ test('Knight Protocol hoodie uses the $89 preview price, no-charm lead image and
   assert.match(hoodie.information.includedItems ?? '',/charm.+not included with the hoodie/i);
   const storage=memory(),provider=new DemoProvider(storage);
   const cart=await provider.addCartLine((await provider.createCart()).id,hoodie.variants[0].id,2);
-  assert.equal(cart.subtotal.amount,17800);
+  assert.equal(cart.subtotal.amount,21360);
   assert.equal(cart.lines[0].image?.src,'media/night-protocol-hoodie-no-charm-reference.webp');
 });
 test('Boogeyman hoodie keeps its themed campaign art and remains unsellable until the owner supplies a price',()=>{
@@ -191,11 +191,11 @@ test('Boogeyman hoodie keeps its themed campaign art and remains unsellable unti
   assert.match(hoodie.images[0]?.src ?? '',/-campaign\.webp$/);
   assert.match(hoodie.images[1]?.src ?? '',/-supplied\.webp$/);
 });
-test('Detroit skyline cap is a separate $32 store product with supplied artwork',async()=>{
+test('Detroit skyline cap is a separate $38.40 store product with supplied artwork',async()=>{
   const cap=demoProducts.find(product=>product.handle==='detroit-skyline-cap')!;
   assert.equal(cap.title,'Detroit Skyline Embroidered Cap');
-  assert.equal(cap.price.amount,3200);
-  assert.equal(formatMoney(cap.price),'$32');
+  assert.equal(cap.price.amount,3840);
+  assert.equal(formatMoney(cap.price),'$38.40');
   assert.equal(cap.colors[0],'Black');
   assert.equal(cap.images[0]?.src,'media/detroit-skyline-cap-reference.webp');
   const storage=memory(),provider=new DemoProvider(storage);
@@ -217,22 +217,22 @@ test('Detroit ashtray keeps its existing product link and uses armory campaign a
 });
 test('LottoMind charm uses exact cents in the catalog and cart',async()=>{
   const charm=demoProducts.find(p=>p.handle==='gothtechnology-luggage-charm')!;
-  assert.equal(charm.price.amount,1999);
-  assert.equal(formatMoney(charm.price),'$19.99');
-  assert.ok(charm.variants.every(v=>v.price.amount===1999));
+  assert.equal(charm.price.amount,2399);
+  assert.equal(formatMoney(charm.price),'$23.99');
+  assert.ok(charm.variants.every(v=>v.price.amount===2399));
   assert.equal(charm.cardImage?.src,'media/gothtechnology-luggage-charm-armory-higgsfield-v1.webp');
   assert.equal(charm.cardImage?.kind,'CAMPAIGN CONCEPT');
   assert.equal(charm.images[0]?.src,'media/gothtechnology-luggage-charm-armory-higgsfield-v1.webp');
   assert.equal(charm.images[1]?.src,'media/charm.webp');
   const provider=new DemoProvider(memory());
   const cart=await provider.addCartLine((await provider.createCart()).id,charm.variants[0].id,2);
-  assert.equal(cart.subtotal.amount,3998);
+  assert.equal(cart.subtotal.amount,4798);
 });
-test('Static Saints patch set offers three $20 Detroit styles with campaign and supplied references',()=>{
+test('Static Saints patch set offers three $24 Detroit styles with campaign and supplied references',()=>{
   const patches=demoProducts.find(product=>product.handle==='static-saints-patch-set')!;
-  assert.equal(patches.price.amount,2000);
+  assert.equal(patches.price.amount,2400);
   assert.equal(patches.featured,false);
-  assert.equal(formatMoney(patches.price),'$20');
+  assert.equal(formatMoney(patches.price),'$24');
   assert.deepEqual(patches.images.map(image=>image.src),[
     'media/static-saints-patch-black-backed-armory-campaign.webp',
     'media/static-saints-patch-rectangular-armory-campaign.webp',
@@ -242,7 +242,7 @@ test('Static Saints patch set offers three $20 Detroit styles with campaign and 
     'media/static-saints-patch-openwork-reference.webp',
   ]);
   assert.deepEqual(patches.colors,['Black-backed Die-cut','Rectangular Black','Openwork Die-cut']);
-  assert.ok(patches.variants.every(variant=>variant.price.amount===2000));
+  assert.ok(patches.variants.every(variant=>variant.price.amount===2400));
   assert.equal(patches.images[0]?.kind,'CAMPAIGN CONCEPT');
   assert.equal(patches.images[3]?.kind,'SUPPLIED PRODUCT REFERENCE');
 });
@@ -286,13 +286,13 @@ test('Original Artwork collection keeps both supplied Detroit references price-p
   assert.equal(artwork[0].images[2]?.src,'media/detroit-riverfront-sunset-artwork-supplied.webp');
   assert.equal(artwork[1].images[2]?.src,'media/detroit-winter-sunset-retouched-artwork.webp');
 });
-test('Mobster luggage charm replaces the desk mat at $19.99 with supplied artwork',async()=>{
+test('Mobster luggage charm replaces the desk mat at $23.99 with supplied artwork',async()=>{
   assert.equal(demoProducts.some(product=>product.handle==='combat-grid-desk-mat'),false);
   const charm=demoProducts.find(product=>product.handle==='mobster-luggage-charm')!;
   assert.equal(charm.title,'Mobster Luggage Charm');
   assert.equal(charm.productType,'Accessories');
-  assert.equal(charm.price.amount,1999);
-  assert.equal(formatMoney(charm.price),'$19.99');
+  assert.equal(charm.price.amount,2399);
+  assert.equal(formatMoney(charm.price),'$23.99');
   assert.equal(charm.cardImage?.src,'media/mobster-luggage-charm-armory-campaign-v2.webp');
   assert.equal(charm.cardImage?.kind,'CAMPAIGN CONCEPT');
   assert.equal(charm.images[0]?.src,'media/mobster-luggage-charm-cyan-arch-reference.webp');
@@ -306,7 +306,7 @@ test('Mobster luggage charm replaces the desk mat at $19.99 with supplied artwor
   assert.equal(restored.lines[0].title,'Mobster Luggage Charm');
   assert.equal(restored.lines[0].image?.src,'media/mobster-luggage-charm-cyan-arch-reference.webp');
 });
-test('Key Knife is one $11.99 Shop product with black and silver variants plus six campaign displays',async()=>{
+test('Key Knife is one $14.39 Shop product with black and silver variants plus six campaign displays',async()=>{
   const knife=demoProducts.find(product=>product.handle==='key-knife-keychain')!;
   assert.ok(knife);
   assert.equal(knife.title,'Key Knife Keychain — 2-Inch Utility Pocketknife');
@@ -314,8 +314,8 @@ test('Key Knife is one $11.99 Shop product with black and silver variants plus s
   assert.match(knife.description,/treat it as sharp/i);
   assert.match(knife.description,/age requirements.+safety guidance.+legal carry and shipping restrictions/i);
   assert.equal(knife.productType,'Accessories');
-  assert.equal(knife.price.amount,1199);
-  assert.equal(formatMoney(knife.price),'$11.99');
+  assert.equal(knife.price.amount,1439);
+  assert.equal(formatMoney(knife.price),'$14.39');
   assert.equal(knife.featured,false);
   assert.deepEqual(knife.colors,['Black','Silver']);
   assert.deepEqual(knife.variants.map(variant=>variant.color),['Black','Silver']);
@@ -328,7 +328,7 @@ test('Key Knife is one $11.99 Shop product with black and silver variants plus s
   const storage=memory(),provider=new DemoProvider(storage);
   const cart=await provider.addCartLine((await provider.createCart()).id,silver.id,1);
   assert.equal(cart.lines[0].color,'Silver');
-  assert.equal(cart.lines[0].price.amount,1199);
+  assert.equal(cart.lines[0].price.amount,1439);
   const [productPage,filters,catalogUI]=await Promise.all([
     readFile(new URL('../../store/pages/products/[handle].astro',import.meta.url),'utf8'),
     readFile(new URL('../../store/components/Filters.astro',import.meta.url),'utf8'),
@@ -346,13 +346,13 @@ test('Key Knife is one $11.99 Shop product with black and silver variants plus s
   assert.match(catalogUI,/ArrowRight/);
   assert.match(catalogUI,/Spacebar/);
 });
-test('Key Knife and gun attachment bundle is a $39 Shop-only bundle with closed and open references',()=>{
+test('Key Knife and gun attachment bundle is a $46.80 Shop-only bundle with closed and open references',()=>{
   const bundle=demoProducts.find(product=>product.handle==='key-knife-gun-attachment-bundle')!;
   assert.ok(bundle);
   assert.equal(bundle.title,'Key Knife + Paint/ Gun Attachment Bundle');
   assert.equal(bundle.productType,'Bundles');
-  assert.equal(bundle.price.amount,3900);
-  assert.equal(formatMoney(bundle.price),'$39');
+  assert.equal(bundle.price.amount,4680);
+  assert.equal(formatMoney(bundle.price),'$46.80');
   assert.equal(bundle.featured,false);
   assert.deepEqual(bundle.colors,['Black']);
   assert.deepEqual(bundle.images.map(image=>image.src),[
@@ -379,14 +379,14 @@ test('Armory shell declares the supplied looping background track and browser fa
   assert.match(shell,/media\/lottomind-vault-174hz-background\.mp3/);
   assert.match(experience,/saved\(soundPreference\)==='on'/);assert.match(experience,/resumeSavedAudio/);assert.match(experience,/await ambient\.play\(\)/);
 });
-test('Black Signal rail adapter keeps one canonical title, $12 price and supplied photo views',async()=>{
+test('Black Signal rail adapter keeps one canonical title, $14.40 price and supplied photo views',async()=>{
   const adapter=demoProducts.find(product=>product.handle==='black-signal-digital-pack')!;
   assert.equal(adapter.title,'Black Signal Gun Charm Rail Adapter Pack');
   assert.equal(adapter.productType,'Accessories');
   assert.equal(adapter.digital,false);
-  assert.equal(adapter.price.amount,1200);
+  assert.equal(adapter.price.amount,1440);
   assert.equal(adapter.video,'media/black-signal-rail-adapter-supplied-film-v1.mp4');
-  assert.equal(formatMoney(adapter.price),'$12');
+  assert.equal(formatMoney(adapter.price),'$14.40');
   assert.deepEqual(adapter.images.map(image=>image.src),[
     'media/black-signal-gun-charm-rail-adapter-black-group-reference.webp',
     'media/black-signal-gun-charm-rail-adapter-equipment-context-reference.webp',
@@ -530,7 +530,7 @@ test('conversion events stay no-op until consent and never carry contact or sear
 
 test('Mobster charm and Key Knife bundle uses the approved preview price and explicit contents',()=>{
   const bundle=demoProducts.find(p=>p.handle==='mobster-charm-key-knife-bundle')!;
-  assert.equal(bundle.price.amount,2999);assert.equal(bundle.productType,'Bundles');assert.equal(bundle.featured,false);
+  assert.equal(bundle.price.amount,3599);assert.equal(bundle.productType,'Bundles');assert.equal(bundle.featured,false);
   assert.match(bundle.information.includedItems!,/one Mobster Luggage Charm and one black Key Knife/);
   assert.match(bundle.information.includedItems!,/fragrance are not included/);
   assert.equal(bundle.information.productionStatus,'concept');assert.equal(bundle.demo,true);

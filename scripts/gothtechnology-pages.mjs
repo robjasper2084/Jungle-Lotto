@@ -1,4 +1,4 @@
-import { copyFile, mkdir, readdir, stat } from 'node:fs/promises';
+import { copyFile, mkdir, readdir, readFile, stat, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 
 export const gothtechnologyPath = 'lottominded-ultra.io/games/gothtechnology2';
@@ -41,8 +41,30 @@ export async function copyGothtechnologyBuild(files, outputRoot) {
   for (const file of files) {
     const target = resolve(outputRoot, file.path);
     await mkdir(dirname(target), {recursive:true});
-    await copyFile(file.source, target);
+    if(file.content!==undefined)await writeFile(target,file.content);
+    else await copyFile(file.source, target);
     bytes += file.bytes;
   }
   return bytes;
+}
+
+// The embedded cabinet uses the same media as the existing standalone game.
+// Only share byte-identical assets that are already in the assembled artifact;
+// keep the standalone Astro preview self-contained and leave its build intact.
+export async function shareShadowOpsAssets(files, outputRoot) {
+  const cabinet=gothtechnologyPath+'/arcade/shadow-ops-canvas/';
+  const assets=cabinet+'assets/';
+  const duplicates=files.filter(file=>file.path.startsWith(assets));
+  if(!duplicates.length)return files;
+  for(const file of duplicates){
+    const canonical=resolve(outputRoot,'lottominded-ultra.io/games/shadow-ops-canvas/assets',file.path.slice(assets.length));
+    const existing=await readFile(canonical).catch(()=>null);
+    if(!existing||!existing.equals(await readFile(file.source)))return files;
+  }
+  return Promise.all(files.filter(file=>!file.path.startsWith(assets)).map(async file=>{
+    if(!file.path.startsWith(cabinet)||! /\.(js|css|html)$/.test(file.path))return file;
+    const text=await readFile(file.source,'utf8');
+    const content=text.replace(/(\.\.\/|\.\/)assets\//g,(_,prefix)=>prefix==='../'?'../../../../shadow-ops-canvas/assets/':'../../../shadow-ops-canvas/assets/');
+    return {...file,content,bytes:Buffer.byteLength(content)};
+  }));
 }

@@ -8,9 +8,10 @@ const original = resolve(root, 'legacy-game/preserved-original-entry/index.html'
 const types = { '.js': 'text/javascript', '.mjs': 'text/javascript', '.json': 'application/json', '.webp': 'image/webp', '.jpg': 'image/jpeg', '.png': 'image/png', '.mp3': 'audio/mpeg', '.mp4': 'video/mp4', '.html': 'text/html' };
 export async function legacyEntry(base) {
   const html = await readFile(original, 'utf8');
-  return html.replace('<head>', `<head>\n    <base href="${base}">`)
+  return html.replace('<head>', `<head>\n    <base href="${base}">
+    <meta name="goth-reward-game" content="gothtechnology">`)
     .replace('../../assets/js/lm-game-rewards-sdk.js?v=rewards-sdk-1', './legacy-game/reward-sdk.js?v=rewards-sdk-1')
-    .replace('</body>', '    <script src="./legacy-game/bridge.js" defer></script>\n  </body>');
+    .replace('</body>', '    <script type="module" src="./arcade/reward-tracker.js"></script><script src="./legacy-game/bridge.js" defer></script>\n  </body>');
 }
 export function legacyIntegration() {
   let base = '/';

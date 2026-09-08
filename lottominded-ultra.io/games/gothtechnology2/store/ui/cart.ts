@@ -3,9 +3,12 @@ import { createProvider } from '../commerce/provider';
 import { config } from '../config';
 import { conversionMode, labelsFor } from '../commerce/mode';
 import { openLaunchAlert } from './subscriptions';
+import { launchAlertsConnected } from '../state/launch-alert';
 import { analytics } from '../state/analytics';
 import { selectVariant } from '../content/catalog';
 import { formatMoney } from '../commerce/money';
+import { DISCOUNT_PREVIEW_KEY, DISCOUNT_TIERS, discountEstimate, readDiscountPreview } from '../public/arcade/rewards.js';
+import { gamePriceMarkup, refreshGamePricePreviews } from './game-price';
 import { href, media } from '../utilities/paths';
 import { $, $$, escape as e, storage, saved, save, openDialog, announce } from './dom';
 
@@ -32,8 +35,14 @@ export function initCart(products: Product[]) {
     $$('[data-cart-count]').forEach(el=>el.textContent=String(cart!.totalQuantity));
     $('#cart-lines')!.innerHTML = cart.lines.length ? cart.lines.map((line,i)=>`<article class="cart-line" data-line="${e(line.id)}">${line.image ? `<img src="${e(media(line.image.src))}" alt="${e(line.image.alt)}" width="88" height="105"/>` : '<div class="cart-placeholder" aria-hidden="true">GT<br/>CONCEPT</div>'}<div><h3><a href="${e(href(`products/${line.productHandle}/`))}">${e(line.title)}</a></h3><p>${e(line.size)} / ${e(line.color)}</p><p>${e(formatMoney(line.price))} each</p><div class="cart-line-controls"><div class="quantity-controls"><button data-quantity="-1" data-focus-key="minus-${i}" aria-label="Decrease quantity for ${e(line.title)}" ${line.quantity<=1?'disabled':''}>−</button><input type="number" min="1" max="99" value="${line.quantity}" data-line-quantity data-focus-key="quantity-${i}" aria-label="Quantity for ${e(line.title)}"/><button data-quantity="1" data-focus-key="plus-${i}" aria-label="Increase quantity for ${e(line.title)}" ${line.quantity>=99?'disabled':''}>+</button></div><strong>${e(formatMoney(line.total))}</strong><button class="cart-remove" data-remove-line data-focus-key="remove-${i}">Remove<span class="sr-only"> ${e(line.title)}</span></button></div></div></article>`).join('') : `<div class="empty-state"><h3>${mode==='interest'?'Your launch loadout is empty.':'Your loadout is empty.'}</h3><p>Find something that carries your signal.</p><a class="text-link" href="${e(href('shop/'))}">Explore the armory →</a></div>`;
     $('#cart-summary')!.innerHTML=`<div class="cart-subtotal"><span>${e(labels.subtotal)}</span><strong>${e(formatMoney(cart.subtotal))}</strong></div><p class="cart-note">${cart.demo?'Preview prices only. Saved on this device; not a reservation, order, or payment.':'Shipping, taxes, and any applicable discounts are calculated at Shopify checkout. Availability and prices are rechecked there.'}</p>`;
+    if(mode==='interest'&&cart.demo&&cart.subtotal.amount>0){
+      const reward=readDiscountPreview(),maximum=DISCOUNT_TIERS.at(-1)!;
+      const estimate=discountEstimate(reward.percent?reward.totalPoints:maximum.points,cart.subtotal.amount);
+      const money=(amount:number)=>e(formatMoney({...cart!.subtotal,amount}));
+      $('#cart-summary')!.insertAdjacentHTML('beforeend',`<div class="cart-game-preview" data-cart-game-preview><p><strong>${reward.percent?'Your ':''}${estimate.percent}% game discount preview</strong></p><div><span>Before game discount</span><b>${money(cart.subtotal.amount)}</b></div><div><span>Discount preview</span><b>−${money(estimate.saving)}</b></div><div><span>After game discount</span><b data-cart-game-total>${money(estimate.total)}</b></div><small>${reward.percent?reward.totalPoints.toLocaleString('en-US')+' total points':maximum.points.toLocaleString('en-US')+' points required'} · Not redeemable yet. Preview prices exclude shipping and tax.</small></div>`);
+    }
     status.textContent=cart.warnings.join(' ');
-    checkoutButton.disabled=!cart.lines.length;
+    checkoutButton.disabled=!cart.lines.length || (mode==='interest'&&!launchAlertsConnected);
     if(focusKey) { const next=$$<HTMLElement>('[data-focus-key]').find(el=>el.dataset.focusKey===focusKey); (next??checkoutButton).focus({preventScroll:true}); }
   }
   async function mutate(action: (current:Cart)=>Promise<Cart>, success: string) {
@@ -51,6 +60,7 @@ export function initCart(products: Product[]) {
   async function checkout() {
     if(busy) return;
     if (mode === 'interest') {
+      if (!launchAlertsConnected) return;
       const current = await ensureCart();
       if (!current.lines.length) return;
       openLaunchAlert(current.lines.map(line => ({handle:line.productHandle, variantId:line.variantId, size:line.size, color:line.color, quantity:line.quantity})), checkoutButton);
@@ -68,6 +78,9 @@ export function initCart(products: Product[]) {
     finally { busy=false; checkoutButton.disabled=!cart?.lines.length; }
   }
   checkoutButton.addEventListener('click',()=>void checkout());
+  const refreshReward=()=>{if($('#cart-dialog')?.hasAttribute('open'))render();};
+  document.addEventListener('store:discount-preview',refreshReward);
+  window.addEventListener('storage',event=>{if(event.key===DISCOUNT_PREVIEW_KEY||event.key===null)refreshReward();});
   document.addEventListener('click', event=>{
     const target=event.target as Element;
     const cartTrigger=target.closest<HTMLElement>('[data-open-cart]');
@@ -96,6 +109,8 @@ export function initCart(products: Product[]) {
     const product=products.find(p=>p.handle===form.dataset.addForm); if(!product)return;
     const data=new FormData(form), variant=selectVariant(product,String(data.get('size')),String(data.get('color')));
     const price=$('[data-selected-price]',form.closest('[data-product-detail]')??form); if(price)price.textContent=product.price.amount<=0?'Pending':formatMoney(variant?.price??product.price);
+    const pricePreview=$<HTMLElement>('[data-game-price-preview]',form.closest('[data-product-detail]')??form.parentElement??form);
+    if(pricePreview){pricePreview.dataset.priceAmount=String(variant?.price.amount??product.price.amount);pricePreview.dataset.priceCurrency=variant?.price.currency??product.price.currency;refreshGamePricePreviews(form.closest('[data-product-detail]')??form.parentElement??form);}
     const notice=$('[data-variant-status]',form); if(notice)notice.textContent=product.price.amount<=0?(product.productType==='Fragrance'?'Bottle volume, price, and availability will be announced.':'Price, final sizes, and availability are awaiting owner confirmation.'):!variant?mode==='interest'?'Choose a size and color to save this concept.':'Choose a size and color.':!variant.available?'This variant is unavailable.':mode==='interest'?'Concept options — final sizes and availability are pending.':'Available. Final inventory and price checked at checkout.';
     const submit=$<HTMLButtonElement>('[type=submit]',form); if(submit)submit.disabled=!variant?.available;
   }
@@ -120,8 +135,8 @@ export function initCart(products: Product[]) {
     analytics.trackEvent('choose_options',{handle});
     const p=products.find(x=>x.handle===handle); if(!p)return;
     const initial=p.variants.find(v=>v.available)??p.variants[0];
-    $('#quick-content')!.innerHTML=`<div class="quick-layout">${p.images[0]?`<img src="${e(media(p.images[0].src))}" alt="${e(p.images[0].alt)}"/>`:'<div class="empty-state">Product imagery pending<br/>CONCEPT DISPLAY</div>'}<div><p class="mono gold">${e(p.collection.replaceAll('-',' '))}</p><h2 id="quick-title">${e(p.title)}</h2><p>${e(formatMoney(p.price))} ${mode==='interest'?' / Preview Price · Concept Preview':''}</p><form data-add-form="${e(p.handle)}"><label>Size<select name="size">${p.sizes.map(x=>`<option ${x===initial?.size?'selected':''}>${e(x)}</option>`).join('')}</select></label><label>Color<select name="color">${p.colors.map(x=>`<option ${x===initial?.color?'selected':''}>${e(x)}</option>`).join('')}</select></label><label>Quantity<input type="number" name="quantity" min="1" max="99" value="1" required/></label><p class="availability" data-variant-status></p><button class="button" type="submit" aria-label="${e(labels.save)}">${e(labels.save)} →</button><p data-purchase-status role="status"></p></form><a class="text-link" href="${e(href(`products/${p.handle}/`))}">View full product →</a></div></div>`;
-    $('#quick-status')!.textContent=''; bindForm($<HTMLFormElement>('[data-add-form]',$('#quick-content')!)!); openDialog('quick-dialog',trigger);
+    $('#quick-content')!.innerHTML=`<div class="quick-layout">${p.images[0]?`<img src="${e(media(p.images[0].src))}" alt="${e(p.images[0].alt)}"/>`:'<div class="empty-state">Product imagery pending<br/>CONCEPT DISPLAY</div>'}<div><p class="mono gold">${e(p.collection.replaceAll('-',' '))}</p><h2 id="quick-title">${e(p.title)}</h2><p>${e(formatMoney(p.price))} ${mode==='interest'?' / Before game discount · Concept Preview':''}</p>${mode==='interest'?gamePriceMarkup(p.price):''}<form data-add-form="${e(p.handle)}"><label>Size<select name="size">${p.sizes.map(x=>`<option ${x===initial?.size?'selected':''}>${e(x)}</option>`).join('')}</select></label><label>Color<select name="color">${p.colors.map(x=>`<option ${x===initial?.color?'selected':''}>${e(x)}</option>`).join('')}</select></label><label>Quantity<input type="number" name="quantity" min="1" max="99" value="1" required/></label><p class="availability" data-variant-status></p><button class="button" type="submit" aria-label="${e(labels.save)}">${e(labels.save)} →</button><p data-purchase-status role="status"></p></form><a class="text-link" href="${e(href(`products/${p.handle}/`))}">View full product →</a></div></div>`;
+    $('#quick-status')!.textContent=''; refreshGamePricePreviews($('#quick-content')!); bindForm($<HTMLFormElement>('[data-add-form]',$('#quick-content')!)!); openDialog('quick-dialog',trigger);
   }
   $$<HTMLFormElement>('[data-add-form]').forEach(bindForm);
   if(mode==='interest'||saved(key)) void ensureCart().catch(()=>{announce('Saved cart is temporarily unavailable. Open Loadout to retry.');});

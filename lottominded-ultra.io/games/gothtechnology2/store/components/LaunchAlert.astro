@@ -1,10 +1,11 @@
 ---
 import LaunchAlertForm from './LaunchAlertForm.astro';
 import Icon from './Icon.astro';
+import { launchAlertsConnected } from '../state/launch-alert';
 ---
 <dialog id="launch-alert-dialog" class="launch-alert-dialog" aria-labelledby="launch-alert-title" aria-describedby="launch-alert-description">
-  <div class="dialog-heading"><h2 id="launch-alert-title">Hear when your signal lands.</h2><button class="icon-button" data-close-dialog aria-label="Close launch alert"><Icon name="close"/></button></div>
-  <p id="launch-alert-description">Drop 001 is in development. Request a launch email for the products and options you saved.</p>
+  <div class="dialog-heading"><h2 id="launch-alert-title">{launchAlertsConnected ? 'Hear when your signal lands.' : 'Alerts coming soon'}</h2><button class="icon-button" data-close-dialog aria-label="Close launch alert"><Icon name="close"/></button></div>
+  <p id="launch-alert-description">{launchAlertsConnected ? 'Drop 001 is in development. Request a launch email for the products and options you saved.' : 'Email signup is not available yet. Your launch loadout remains saved on this device.'}</p>
   <p data-launch-selection class="launch-selection"></p>
   <LaunchAlertForm id="launch-alert-form" loadout/>
 </dialog>

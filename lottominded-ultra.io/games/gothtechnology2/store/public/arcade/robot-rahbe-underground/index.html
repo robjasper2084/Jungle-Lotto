@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0b1518"><meta name="description" content="Descend beneath Detroit. A ROBOT RAHBE exploration platformer through seven forgotten lottery vaults.">
+  <title>ROBOT RAHBE: UNDERGROUND</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%230b1518'/%3E%3Cpath d='M18 14h20l10 10v13l-12 6 14 12H32L18 39zm12 12v10h7l4-5-4-5z' fill='%23edbd6d'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="style.css">
+<meta name="goth-reward-game" content="underground"></head>
+<body>
+  <main id="shell">
+    <div id="game" aria-label="ROBOT RAHBE Underground game world"></div>
+    <div class="grain" aria-hidden="true"></div>
+    <header id="masthead"><a class="wordmark" href="./" aria-label="ROBOT RAHBE home"><span class="brand-icon">R</span><span>ROBOT RAHBE<small>UNDERGROUND</small></span></a><div class="top-tools"><span class="edition">DETROIT / BELOW THE SURFACE</span><button id="sound" aria-pressed="false" aria-label="Enable sound">SOUND OFF</button><button id="fullscreen" aria-label="Enter fullscreen">⛶</button></div></header>
+    <section id="title-screen" class="screen">
+      <div class="intro"><p class="eyebrow"><i></i> AN EXPEDITION INTO THE FORGOTTEN</p><p class="kicker">ROBOT RAHBE:</p><h1>UNDER<span>GROUND</span><b>.</b></h1><p class="tagline">The city was built on a secret.<br>Go deeper.</p><div class="start-actions"><button id="start" class="primary" disabled>PREPARING VAULTS…</button><button id="continue" class="secondary" hidden>CONTINUE EXPEDITION ↗</button></div><div class="brief"><span>07 DEPTHS</span><span>03 NUMBER SEALS</span><span>01 WAY OUT</span></div></div>
+      <aside class="descent-preview" aria-label="The seven depths"><span class="map-heading">THE DESCENT <b>↓</b></span><ol id="title-depths"></ol><p>Every floor has a story.<br>Some doors were never meant to open.</p></aside>
+      <div class="title-footer"><span>A LOTTO MIND ARCADE EXPEDITION</span><button id="howto">CONTROLS & FIELD GUIDE <b>↗</b></button><button id="discount-info" type="button">GAME DISCOUNT · 0% PREVIEW</button><a class="version" href="motions.html">CHARACTER MOTIONS ↗</a></div>
+    </section>
+    <section id="hud" hidden aria-label="Game status"><div class="vitals"><span class="hud-label">RAHBE / INTEGRITY</span><div id="health" aria-label="Health"></div><span id="loot">0000</span><span class="coin-label">POINTS</span></div><div class="depth-readout"><span id="depth-number">00 / 06</span><strong id="depth-name">CITY STREET</strong><span id="objective">Find the subway access ladder →</span></div><div class="hud-tools"><span id="seals" aria-label="Number seals">◇ ◇ ◇</span><button id="map-button" aria-label="Open depth map">MAP <kbd>M</kbd></button><button id="pause" aria-label="Pause game">Ⅱ</button></div></section>
+    <div id="boss-hud" hidden><span>THE NUMBER WARDEN</span><div><i id="boss-health"></i></div></div>
+    <div id="toast" role="status" aria-live="polite"></div><div id="context" hidden></div><div id="game-hint" hidden><span><kbd>A</kbd><kbd>D</kbd> MOVE</span><span><kbd>SPACE</kbd> JUMP</span><span><kbd>J</kbd> FIRE</span><span><kbd>E</kbd> INTERACT</span><span><kbd>W</kbd><kbd>S</kbd> CLIMB</span></div>
+    <div id="touch" hidden aria-label="Touch controls"><div class="dpad"><button data-action="left" aria-label="Move left">◀</button><div><button data-action="up" aria-label="Climb up">▲</button><button data-action="down" aria-label="Climb down">▼</button></div><button data-action="right" aria-label="Move right">▶</button></div><div class="touch-actions"><button data-action="interact" aria-label="Interact">USE</button><button data-action="shoot" aria-label="Fire weapon">FIRE</button><button data-action="jump" aria-label="Jump">JUMP</button></div></div>
+    <dialog id="panel"><div class="panel-top"><span id="panel-label">FIELD GUIDE</span><button id="close-panel" aria-label="Close panel">✕</button></div><div id="panel-content"></div></dialog>
+    <section id="ending" class="screen" hidden><div><p class="eyebrow" id="ending-label">EXPEDITION COMPLETE</p><h2 id="ending-title">The city remembers.</h2><p id="ending-text"></p><button id="replay" class="primary">ANOTHER DESCENT ↗</button><button id="home" class="secondary">RETURN TO TITLE</button></div></section>
+    <noscript>This game requires JavaScript.</noscript>
+  </main>
+  <script src="assets/vendor/phaser.min.js"></script><script type="module" src="src/main.js"></script>
+<script type="module" src="../reward-tracker.js"></script></body></html>

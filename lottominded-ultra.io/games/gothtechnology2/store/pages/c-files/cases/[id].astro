@@ -1,0 +1,8 @@
+---
+import CFiles from "../../../layouts/CFiles.astro";
+import CFileDossier from "../../../components/CFileDossier.astro";
+import seed from "../../../cfiles/seed.json";
+export function getStaticPaths(){return seed.map(record=>({params:{id:record.id},props:{record}}));}
+const {record}=Astro.props;
+---
+<CFiles title={record.title} active="C-Files"><CFileDossier record={record}/></CFiles>
