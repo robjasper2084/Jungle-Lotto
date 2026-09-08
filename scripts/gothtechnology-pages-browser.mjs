@@ -42,7 +42,17 @@ try{
     await page.screenshot({path:resolve(output,name+'-shared-shadow-assets.png')});
     await page.locator('#underground-dialog [data-close-dialog]').click();
     assert.ok(shared.length>10,'game media must load through the existing shared asset URLs');
-    assert.deepEqual(errors,[]);console.log(`PASS ${name}: packaged Shadow Ops plays with ${shared.length} shared asset responses and no browser errors`);
+    await page.locator('[data-open-reward-game="vault-rush"]').click();
+    await page.locator('#underground-dialog [data-underground-loading]').waitFor({state:'hidden',timeout:60000});
+    const vault=page.frames().find(f=>f.parentFrame()===page.mainFrame());
+    await vault.locator('#start').click();
+    await vault.waitForFunction(()=>window.RahbeArcadeGame.getStats().score>0,null,{timeout:30000});
+    await vault.locator('#pause').click();
+    await page.screenshot({path:resolve(output,name+'-packaged-vault-rush.png')});
+    await vault.locator('#arcade-link').click();
+    await page.locator('#underground-dialog').waitFor({state:'hidden'});
+    assert.equal(page.frames().length,1,'Vault Rush must return to the outer storefront');
+    assert.deepEqual(errors,[]);console.log(`PASS ${name}: packaged Shadow Ops and Vault Rush play and return with no browser errors`);
     await context.close();
   }
 }finally{await browser.close();server.closeAllConnections();await new Promise(resolve=>server.close(resolve));}

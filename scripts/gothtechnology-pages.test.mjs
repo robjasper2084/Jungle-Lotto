@@ -67,3 +67,18 @@ test('Pages shares identical cabinet assets and resolves both document and modul
   await write(root,'_site/'+canonical,'different-image');
   assert.equal((await shareShadowOpsAssets(entries,join(root,'_site'))).length,4,'different media must remain independent');
 });
+
+test('Pages retains original media URLs consumed by Vault Rush and the arcade catalog',async t=>{
+  const root=await fixture(t),cabinet=gothtechnologyPath+'/arcade/shadow-ops-canvas/';
+  const names=['mascot/lottomind-mascot-runner-atlas.png','backgrounds/higgsfield-soul-location-backplate.png','other.png'];
+  const entries=[];
+  for(const name of names){
+    const source=join(root,'build/assets',name);
+    await write(root,'build/assets/'+name,'same');
+    await write(root,'_site/lottominded-ultra.io/games/shadow-ops-canvas/assets/'+name,'same');
+    entries.push({source,path:cabinet+'assets/'+name,bytes:4});
+  }
+  const shared=await shareShadowOpsAssets(entries,join(root,'_site'));assert.equal(shared.length,2);
+  await copyGothtechnologyBuild(shared,join(root,'_site'));
+  for(const name of names.slice(0,2))assert.equal(await readFile(join(root,'_site',cabinet,'assets',name),'utf8'),'same');
+});
