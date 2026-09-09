@@ -30,6 +30,7 @@ try{
     const errors=[],shared=[];page.on('pageerror',e=>errors.push(e.message));
     page.on('response',r=>{if(r.status()>=400)errors.push(`${r.status()} ${r.url()}`);if(r.url().includes('/games/shadow-ops-canvas/assets/'))shared.push(r.url());});
     await page.goto(origin+'/Jungle-Lotto/lottominded-ultra.io/games/gothtechnology2/#underground-rewards');
+    await page.getByText('Choose a game',{exact:true}).click();
     await page.locator('[data-open-reward-game="static-wars"]').click();
     await page.locator('#underground-dialog [data-underground-loading]').waitFor({state:'hidden',timeout:60000});
     const frame=page.frames().find(f=>f.parentFrame()===page.mainFrame());
