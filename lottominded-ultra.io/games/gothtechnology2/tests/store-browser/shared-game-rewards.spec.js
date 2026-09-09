@@ -6,11 +6,11 @@ const key='gothtechnology.arcade.discount-preview.v2';
 async function capture(page,info,name){const dir=process.env.UNDERGROUND_SCREENSHOTS;if(dir){await mkdir(dir,{recursive:true});await page.screenshot({path:join(dir,info.project.name+'-'+name+'.png')});}}
 async function read(page){return page.evaluate(key=>{const s=JSON.parse(localStorage.getItem(key)||'{"runs":{}}');return {total:(s.carriedPoints||0)+Object.values(s.runs).reduce((sum,r)=>sum+Math.max(0,r.score-r.baseline),0),runs:s.runs};},key);}
 
-test('shared game rewards combine actual play across all four games and reach store prices',async({page,isMobile},info)=>{
+test('shared game rewards combine actual play across all five games and reach store prices',async({page,isMobile},info)=>{
  test.setTimeout(180000);const errors=[],failed=[];
  page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{if(r.status()>=400)failed.push(r.url());});
  await page.emulateMedia({reducedMotion:'reduce'});await page.goto(base+'#underground-rewards');
- await expect(page.locator('[data-open-reward-game]')).toHaveCount(4);
+ await expect(page.locator('[data-open-reward-game]')).toHaveCount(5);
  const popup=page.locator('#underground-dialog');
  async function open(id){await page.locator(`[data-open-reward-game="${id}"]`).click();await expect(popup.locator('[data-underground-loading]')).toBeHidden({timeout:60000});return page.frames().find(f=>f.parentFrame()===page.mainFrame());}
  async function close(){await popup.getByRole('button',{name:'Close game',exact:true}).click();await expect(popup.locator('iframe')).toHaveCount(0);}
@@ -45,7 +45,22 @@ test('shared game rewards combine actual play across all four games and reach st
  await frame.evaluate(()=>{const g=window.__gothTechnologyGame;g.rewardTotalTicks=1800;g.rewardMatchActions=2;g.fighters[0].roundWins=g.roundsToWin-1;g.fighters[1].health=0;g.checkRoundEnd();});
  await expect.poll(async()=>(await read(page)).total).toBe(runner+5000);
  await close();await page.reload();
- const final=await read(page);expect(new Set(Object.values(final.runs).map(run=>run.game)).size).toBe(4);
+ const beforeStatic=(await read(page)).total;
+ frame=await open('static-wave');await frame.getByRole('button',{name:'Start Sector 1',exact:true}).click();
+ await frame.waitForFunction(()=>window.RahbeArcadeGame.getStats().seconds>=2);
+ await frame.locator('#bombAction').click();
+ await expect.poll(()=>frame.evaluate(()=>window.RahbeArcadeGame.getStats().score)).toBeGreaterThan(0);
+ const staticRun=await frame.evaluate(()=>window.RahbeArcadeGame.getStats().runId);
+ await close();await expect.poll(async()=>(await read(page)).total).toBeGreaterThan(beforeStatic);
+ const afterStatic=(await read(page)).total;
+ frame=await open('static-wave');await frame.getByRole('button',{name:'Start Sector 1',exact:true}).click();
+ expect(await frame.evaluate(()=>window.RahbeArcadeGame.getStats().runId)).not.toBe(staticRun);
+ await frame.waitForFunction(()=>window.RahbeArcadeGame.getStats().seconds>=2);
+ await frame.locator('#bombAction').click();
+ await expect.poll(()=>frame.evaluate(()=>window.RahbeArcadeGame.getStats().score)).toBeGreaterThan(0);
+ await close();await expect.poll(async()=>(await read(page)).total).toBeGreaterThan(afterStatic);
+ await page.reload();
+ const final=await read(page);expect(new Set(Object.values(final.runs).map(run=>run.game)).size).toBe(5);
  await expect(page.locator('#underground-rewards [data-reward-score]')).toHaveText(final.total.toLocaleString('en-US'));
  await page.locator('#underground-rewards .reward-heading').scrollIntoViewIfNeeded();await capture(page,info,'shared-total');
  await page.goto(base+'products/night-protocol-hoodie/');

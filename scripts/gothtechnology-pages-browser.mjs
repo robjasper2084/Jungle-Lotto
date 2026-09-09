@@ -51,8 +51,30 @@ try{
     await page.screenshot({path:resolve(output,name+'-packaged-vault-rush.png')});
     await vault.locator('#arcade-link').click();
     await page.locator('#underground-dialog').waitFor({state:'hidden'});
+    await page.locator('#underground-dialog iframe').waitFor({state:'detached'});
     assert.equal(page.frames().length,1,'Vault Rush must return to the outer storefront');
-    assert.deepEqual(errors,[]);console.log(`PASS ${name}: packaged Shadow Ops and Vault Rush play and return with no browser errors`);
+    await page.locator('[data-open-reward-game="gothtechnology"]').click();
+    await page.locator('#underground-dialog [data-underground-loading]').waitFor({state:'hidden',timeout:60000});
+    const fighter=page.frames().find(f=>f.parentFrame()===page.mainFrame()),canvas=fighter.locator('#game');
+    const box=await canvas.boundingBox();
+    await canvas.click({position:{x:280/1280*box.width,y:575/720*box.height}});
+    await fighter.waitForFunction(()=>window.__gothTechnologyGame.phase==='gameSelect');
+    const grid=await canvas.boundingBox();
+    await canvas.click({position:{x:1048/1280*grid.width,y:340/720*grid.height}});
+    await fighter.waitForURL('**/opengw-levels/?arcade=1');
+    await fighter.getByRole('button',{name:'Start Sector 1',exact:true}).click();
+    await fighter.waitForFunction(()=>window.RahbeArcadeGame.getStats().seconds>=2);
+    await fighter.locator('#bombAction').click();
+    await fighter.waitForFunction(()=>window.RahbeArcadeGame.getStats().score>0);
+    await fighter.locator('#pauseAction').click();
+    await page.waitForFunction(()=>Object.values(JSON.parse(localStorage.getItem('gothtechnology.arcade.discount-preview.v2')).runs).some(run=>run.game==='static-wave'&&run.score>0));
+    assert.equal(await page.locator('#underground-title').textContent(),'2084 Static WAV');
+    await page.screenshot({path:resolve(output,name+'-packaged-static-wav.png')});
+    await page.locator('#underground-dialog [data-close-dialog]').click();
+    assert.equal(await page.locator('a[href*="c-files"]').count(),0);
+    const removed=await context.request.get(origin+'/Jungle-Lotto/lottominded-ultra.io/games/gothtechnology2/c-files/');
+    assert.equal(removed.status(),404);
+    assert.deepEqual(errors,[]);console.log(`PASS ${name}: packaged Shadow Ops, Vault Rush, and Game Grid Static WAV play and bank rewards; C-Files removed; no browser errors`);
     await context.close();
   }
 }finally{await browser.close();server.closeAllConnections();await new Promise(resolve=>server.close(resolve));}

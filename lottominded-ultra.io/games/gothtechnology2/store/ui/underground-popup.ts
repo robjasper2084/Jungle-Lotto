@@ -1,6 +1,6 @@
 import { $, $$, openDialog } from './dom';
 import { initUndergroundDiscount } from './underground-discount';
-import {REWARD_GAMES} from '../public/arcade/games.js';
+import {REWARD_GAMES,rewardGameForURL} from '../public/arcade/games.js';
 import {fighterReceipt} from '../public/arcade/rewards.js';
 import {href} from '../utilities/paths';
 
@@ -38,6 +38,16 @@ export function initUndergroundPopup(){
     let loaded=false,lastReceipt='';
     current.addEventListener('load',()=>{
       if(current!==frame||!dialog!.open)return;
+      try{
+        const url=current.contentWindow!.location.href;
+        const game=rewardGameForURL(url,new URL(href(),location.href).href);
+        if(game){
+          selected=game;loaded=false;lastReceipt='';current.title=game.title+' game';
+          $('#underground-title',dialog!)!.textContent=game.id==='underground'?'ROBOT RAHBE: UNDERGROUND':game.title;
+          $('#underground-help',dialog!)!.textContent=game.help+' Esc closes popup.';
+          $<HTMLAnchorElement>('[data-game-fullpage]',dialog!)!.href=url;
+        }
+      }catch{/* Unrecognized or cross-origin pages cannot select a reward game. */}
       const doc=current.contentDocument;
       doc?.addEventListener('keydown',event=>{
         if(event.key==='Escape'&&!doc.querySelector('dialog[open]')){event.preventDefault();event.stopImmediatePropagation();dialog!.close();}

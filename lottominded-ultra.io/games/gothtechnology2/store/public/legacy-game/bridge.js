@@ -1,7 +1,15 @@
+import {REWARD_GAMES} from '../arcade/games.js';
 (() => {
   'use strict';
   const collections = { MASTER_EZRA:'night-protocol', KALYX:'black-signal', DETROIT_LENS_NOIR:'detroit-2084', AMARA_VALENTINE:'static-saints' };
   const requested = new URLSearchParams(location.search).get('character');
+  window.addEventListener('gothtechnology:launch-game',event=>{
+    const id=event.detail?.id==='shadow-ops'?'static-wars':event.detail?.id;
+    const target=REWARD_GAMES.find(game=>game.id===id);
+    if(!target)return;
+    event.preventDefault();
+    location.href=new URL(target.path,document.baseURI).href;
+  });
   let ready=false, selected='', previous='', started=0, sent=false, attempts=0;
   const send = data => { if(window.parent!==window) window.parent.postMessage(data,location.origin); };
   function state(detail={}) {

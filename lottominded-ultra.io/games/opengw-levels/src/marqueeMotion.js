@@ -290,11 +290,13 @@ if (wrapper && canvas) {
   }
 
   function updateMotionState() {
-    wrapper.dataset.motion = !overlayVisible() ? "paused" : reducedMotion.matches ? "still" : "active";
+    wrapper.dataset.motion = !overlayVisible() ? "paused" : motionReduced() ? "still" : "active";
   }
 
+  function motionReduced() { return reducedMotion.matches || document.documentElement.dataset.reducedMotion==='true'; }
+
   function shouldAnimate() {
-    return state.active && overlayVisible() && !reducedMotion.matches;
+    return state.active && overlayVisible() && !motionReduced();
   }
 
   function stopLoop() {
@@ -337,6 +339,7 @@ if (wrapper && canvas) {
     state.frame = 0;
     syncLoop();
   });
+  window.addEventListener('static-wav:settings',syncLoop);
   coarseMotion.addEventListener("change", () => {
     resize();
     syncLoop();

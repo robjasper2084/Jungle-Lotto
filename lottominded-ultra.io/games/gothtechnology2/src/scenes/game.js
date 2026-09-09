@@ -545,7 +545,10 @@ export class GothTechnologyGame {
       return;
     }
     if (item.href) {
-      window.location.href = new URL(item.href, window.location.href).href;
+      const launch = new CustomEvent('gothtechnology:launch-game', {cancelable:true, detail:{id:item.id}});
+      if (!window.dispatchEvent(launch)) return;
+      // The preserved storefront entry uses <base> to retain the original routes.
+      window.location.href = new URL(item.href, document.baseURI).href;
     }
   }
 

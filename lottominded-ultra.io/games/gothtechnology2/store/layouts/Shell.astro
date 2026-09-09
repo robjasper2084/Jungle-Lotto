@@ -21,7 +21,7 @@ const products = await buildProvider.getProducts();
 const mode = conversionMode(products), labels = labelsFor(mode);
 const isDemoMode = mode === 'interest';
 const pageData = serialize({ products, config, base: href() });
-const links = [['NEW DROP', '#current-drop'],['SHOP','shop/'],['COLLECTIONS','collections/'],['LOOKBOOK','lookbook/'],['PLAY','play/'],['C-FILES','c-files/'],['ABOUT','about/']];
+const links = [['NEW DROP', '#current-drop'],['SHOP','shop/'],['COLLECTIONS','collections/'],['LOOKBOOK','lookbook/'],['PLAY','play/'],['ABOUT','about/']];
 const support = ['contact','faq','shipping','returns','privacy','terms','accessibility'];
 ---
 <!doctype html><html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
