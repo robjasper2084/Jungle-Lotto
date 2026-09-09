@@ -15,6 +15,8 @@
 #title-screen{background:#050707 url('../../media/underground-armory-campaign-v1.webp') center/cover no-repeat}
 #title-screen::before{background:linear-gradient(90deg,#050707f2 0%,#050707d9 30%,#05070726 58%,#0507078c 100%),linear-gradient(0deg,#050707 0%,transparent 24%)}
 @media(max-width:760px) and (min-height:491px){
-  #title-screen{background-size:auto 65%;background-position:45% top}
+  #title-screen{display:flex;flex-direction:column;gap:24px;padding:96px 8% 24px;overflow-y:auto;scroll-padding-top:96px;background-size:auto 65%;background-position:45% top}
+  #title-screen .intro{position:static;flex:none}
+  #title-screen .title-footer{position:static;flex:none;margin-top:auto}
   #title-screen::before{background:linear-gradient(90deg,#050707e6 0%,#05070799 40%,transparent 82%),linear-gradient(0deg,#050707 32%,transparent 65%)}
 }
