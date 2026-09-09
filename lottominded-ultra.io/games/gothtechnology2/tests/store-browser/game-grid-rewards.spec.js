@@ -23,8 +23,20 @@ for(const {surface,id,index,path,title} of [
   const canvas=frame.locator('#game'),box=await canvas.boundingBox();
   await canvas.click({position:{x:280/1280*box.width,y:575/720*box.height}});
   await expect.poll(()=>frame.evaluate(()=>window.__gothTechnologyGame.phase)).toBe('gameSelect');
+  let resumeNavigation;
+  if(id==='static-wars'){
+   const held=new Promise(resolve=>{resumeNavigation=resolve;});
+   await page.route(/\/arcade\/shadow-ops-canvas\/\?arcade=1$/,async route=>{await held;await route.continue();},{times:1});
+  }
   const grid=await canvas.boundingBox();
   await canvas.click({position:{x:(index===1?640:1048)/1280*grid.width,y:340/720*grid.height}});
+  if(resumeNavigation){
+   try{
+    const expected=new URL(path, page.url());expected.search='?arcade=1';
+    await expect(page.locator(surface==='Play'?'#game-standalone-link':'[data-game-fullpage]')).toHaveAttribute('href',expected.href,{timeout:3000});
+    await expect(page.locator(surface==='Play'?'#game-frame':'[data-underground-host] iframe')).toHaveAttribute('title',title+' game');
+   }finally{resumeNavigation();}
+  }
   await expect.poll(()=>new URL(frame.url()).pathname).toBe(new URL(path,'http://example.test').pathname);
   const standalone=page.locator(surface==='Play'?'#game-standalone-link':'[data-game-fullpage]');
   await expect(standalone).toHaveAttribute('href',frame.url());

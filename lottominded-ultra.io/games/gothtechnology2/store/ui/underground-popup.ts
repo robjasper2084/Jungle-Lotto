@@ -1,6 +1,6 @@
 import { $, $$, openDialog } from './dom';
 import { initUndergroundDiscount } from './underground-discount';
-import {REWARD_GAMES,rewardGameForURL} from '../public/arcade/games.js';
+import {REWARD_GAMES,rewardGameForURL,rewardGameForNavigation} from '../public/arcade/games.js';
 import {fighterReceipt} from '../public/arcade/rewards.js';
 import {href} from '../utilities/paths';
 
@@ -18,6 +18,12 @@ export function initUndergroundPopup(){
   const close=$<HTMLButtonElement>('[data-close-dialog]',dialog)!;
   let frame:HTMLIFrameElement|null=null,timer:ReturnType<typeof setInterval>|undefined;
   let selected=REWARD_GAMES[0];
+  function selectGame(game:typeof selected,current:HTMLIFrameElement,url:string){
+    selected=game;current.title=game.title+' game';
+    $('#underground-title',dialog!)!.textContent=game.id==='underground'?'ROBOT RAHBE: UNDERGROUND':game.title;
+    $('#underground-help',dialog!)!.textContent=game.help+' Esc closes popup.';
+    $<HTMLAnchorElement>('[data-game-fullpage]',dialog!)!.href=url;
+  }
   function apiFor(current:HTMLIFrameElement|null):GameAPI|undefined{
     const win=current?.contentWindow as GameWindow|null;
     if(selected.id!=='gothtechnology')return win?.RahbeArcadeGame;
@@ -42,10 +48,7 @@ export function initUndergroundPopup(){
         const url=current.contentWindow!.location.href;
         const game=rewardGameForURL(url,new URL(href(),location.href).href);
         if(game){
-          selected=game;loaded=false;lastReceipt='';current.title=game.title+' game';
-          $('#underground-title',dialog!)!.textContent=game.id==='underground'?'ROBOT RAHBE: UNDERGROUND':game.title;
-          $('#underground-help',dialog!)!.textContent=game.help+' Esc closes popup.';
-          $<HTMLAnchorElement>('[data-game-fullpage]',dialog!)!.href=url;
+          selectGame(game,current,url);loaded=false;lastReceipt='';
         }
       }catch{/* Unrecognized or cross-origin pages cannot select a reward game. */}
       const doc=current.contentDocument;
@@ -83,6 +86,9 @@ export function initUndergroundPopup(){
   retry.addEventListener('click',launch);
   window.addEventListener('message',event=>{
     if(!dialog.open||!frame||event.source!==frame.contentWindow||event.origin!==location.origin)return;
+    const storeBase=new URL(href(),location.href).href;
+    const navigation=rewardGameForNavigation(event,frame.contentWindow,storeBase);
+    if(navigation){selectGame(navigation,frame,new URL(navigation.path,storeBase).href);return;}
     if(event.data?.type==='rahbe-exit'&&event.data.game===selected.id)dialog.close();
   });
   dialog.addEventListener('close',release);
