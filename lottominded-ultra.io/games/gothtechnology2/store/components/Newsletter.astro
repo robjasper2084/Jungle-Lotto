@@ -2,7 +2,17 @@
 import LaunchAlertForm from './LaunchAlertForm.astro';
 import { launchAlertsConnected } from '../state/launch-alert';
 ---
-<section class="newsletter section" aria-labelledby="newsletter-title"><div><h2 id="newsletter-title">{launchAlertsConnected ? <>Get the first<br/>launch signal.</> : 'Alerts coming soon'}</h2><p>{launchAlertsConnected ? 'Drop 001 is in development. Get an email when the first collection is ready to explore.' : 'Drop 001 is in development. Email signup is not available yet. Check back for launch updates.'}</p></div>
+{launchAlertsConnected ? <section class="newsletter section" aria-labelledby="newsletter-title"><div><h2 id="newsletter-title">Get the first<br/>launch signal.</h2><p>Drop 001 is in development. Get an email when the first collection is ready to explore.</p></div>
   <LaunchAlertForm id="newsletter-form"/>
   <div class="signal-station" aria-hidden="true"><svg viewBox="0 0 240 130" fill="none" stroke="currentColor" stroke-width=".6"><circle cx="120" cy="44" r="6"/><circle cx="120" cy="44" r="12"/><circle cx="120" cy="44" r="20"/><circle cx="120" cy="44" r="29"/><circle cx="120" cy="44" r="39"/><circle cx="120" cy="44" r="50"/><circle cx="120" cy="44" r="62"/><circle cx="120" cy="44" r="75"/><path d="M120 44v78m-10 0 10-60 10 60m-17-18h14m-12-14h10m-18 32h26M20 124h200"/><circle cx="120" cy="44" r="2" fill="currentColor"/></svg><p>STAY TUNED · STAY SHARP</p></div>
-</section>
+</section> : <section class="newsletter launch-notice section" aria-labelledby="newsletter-title">
+  <div><span class="mono gold">DROP 001 / IN DEVELOPMENT</span><h2 id="newsletter-title">Launch alerts coming soon</h2></div>
+  <p>We’re preparing the first drop. Email signup isn’t available yet. Check back for launch updates.</p>
+</section>}
+<style>
+  :global(body[data-store-v2]) .newsletter.launch-notice{display:flex;align-items:center;justify-content:space-between;gap:24px 48px;padding:32px var(--gutter);background:#080b09;border-top:1px solid var(--rule)}
+  :global(body[data-store-v2]) .launch-notice h2{font:clamp(24px,2.2vw,32px)/1.2 var(--display);text-transform:none;letter-spacing:0;margin:8px 0 0}
+  :global(body[data-store-v2]) .launch-notice p{font:16px/1.65 var(--sans);color:#d9d3c4;max-width:48ch;margin:0}
+  .launch-notice .mono{font-size:13px;letter-spacing:.08em}
+  @media(max-width:700px){:global(body[data-store-v2]) .newsletter.launch-notice{flex-direction:column;align-items:flex-start;gap:16px}}
+</style>

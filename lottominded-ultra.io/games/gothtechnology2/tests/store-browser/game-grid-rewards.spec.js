@@ -16,7 +16,7 @@ for(const {surface,id,index,path,title} of [
    await page.getByRole('button',{name:'Launch game',exact:true}).click();
    await expect(page.locator('#game-connection')).toContainText('Game ready',{timeout:45000});
   }else{
-   await page.locator('[data-open-reward-game="gothtechnology"]').click();
+   await page.locator('#reward-game-picker summary').click();await page.locator('[data-open-reward-game="gothtechnology"]').click();
    await expect(page.locator('[data-underground-loading]')).toBeHidden({timeout:60000});
   }
   const frame=page.frames().find(f=>f.url().includes('/legacy-game/'));

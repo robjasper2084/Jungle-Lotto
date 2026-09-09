@@ -83,8 +83,12 @@ test('homepage keeps the four core beats and links deeper world-building from na
   await expect(page.locator('.site-header .wordmark span')).toHaveText('// Bloom Through Gloom');
   await expect(page.locator('.site-footer .wordmark span')).toHaveText('// THE ARMORY');
   await expect(page.getByRole('heading',{level:1,name:'Equipment for the world after midnight'})).toBeVisible();
-  await expect(page.getByRole('link',{name:'Shop the current drop',exact:true})).toHaveAttribute('href','#current-drop');
-  await expect(page.getByRole('button',{name:'Watch transmission',exact:true})).toBeVisible();
+  await expect(page.locator('#arrival .cathedral-actions a')).toHaveText(['Explore the Drop','Play Games']);
+  await expect(page.getByRole('link',{name:'Explore the Drop',exact:true})).toHaveAttribute('href','#current-drop');
+  await expect(page.locator('#arrival').getByRole('link',{name:'Play Games',exact:true})).toHaveAttribute('href',base+'play/');
+  await expect(page.locator('#arrival [data-watch-commercial],#arrival nav')).toHaveCount(0);
+  await expect(page.locator('#current-drop').getByRole('button',{name:'Watch Campaign Film',exact:true})).toBeVisible();
+  await expect(page.locator('#current-drop + .page-chapters')).toHaveCount(1);
   await expect(page.getByRole('link',{name:'Explore the Armory',exact:true})).toHaveAttribute('href','#armory');
   await expect(page.locator('.lotto-ticker')).toHaveCount(0);
   const storyOrder=await page.locator('main > section').evaluateAll(nodes=>nodes.filter(node=>node.matches('#current-drop,#armory,#featured,#character-vault,#combat-lookbook,#enter-the-fight,.armory-origin,.newsletter')).map(node=>node.id||(node.classList.contains('armory-origin')?'origin':'newsletter')));
@@ -241,7 +245,7 @@ test('reduced motion and WebGL fallback keep shopping available',async({page})=>
   await page.goto(base);await expect(page.locator('.lotto-ticker')).toHaveCount(0);
   await expect(page.locator('#scene-status')).toHaveText('Armory Online — Static Display');expect(requests.some(u=>/scene\.[^/]+\.js/.test(u))).toBe(false);
   await page.getByRole('button',{name:'Open launch loadout'}).click();await expect(page.getByRole('dialog',{name:'Your Launch Loadout'})).toContainText('Your launch loadout is empty.');await page.keyboard.press('Escape');
-  await page.emulateMedia({reducedMotion:'no-preference'});await page.addInitScript(()=>{const original=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(type,...args){if(type==='webgl2'||type==='webgl')return null;return original.call(this,type,...args);};});await page.reload();await expect(page.locator('#scene-status')).toHaveText('Armory Online — Static Display');await expect(page.getByRole('link',{name:'Shop the current drop',exact:true})).toBeVisible();
+  await page.emulateMedia({reducedMotion:'no-preference'});await page.addInitScript(()=>{const original=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(type,...args){if(type==='webgl2'||type==='webgl')return null;return original.call(this,type,...args);};});await page.reload();await expect(page.locator('#scene-status')).toHaveText('Armory Online — Static Display');await expect(page.getByRole('link',{name:'Explore the Drop',exact:true})).toBeVisible();
 });
 
 test('inline films load only after Play and stay paused when returning',async({page})=>{
@@ -282,8 +286,8 @@ test(surface+' commercial never interrupts an open launch loadout',async({page})
 }
 
 test('disconnected newsletter is visibly unavailable and does not collect personal data',async({page})=>{
-  const posts=[];page.on('request',r=>{if(r.method()==='POST')posts.push(r.url());});await page.goto(base);const form=page.locator('#newsletter-form');
-  await expect(form).toHaveAttribute('data-subscription-connected','false');await expect(form.getByLabel('Email address',{exact:true})).toBeDisabled();await expect(form.getByRole('checkbox',{name:/I agree to receive/})).toBeDisabled();await expect(form.getByRole('button',{name:'Alerts coming soon',exact:true})).toBeDisabled();await expect(form.locator('.form-status')).toContainText('not saved or sent');expect(posts).toEqual([]);
+  const posts=[];page.on('request',r=>{if(r.method()==='POST')posts.push(r.url());});await page.goto(base);const notice=page.locator('.newsletter');
+  await expect(notice.getByRole('heading',{name:'Launch alerts coming soon'})).toBeVisible();await expect(notice).toContainText('Email signup isn’t available yet');await expect(notice.locator('form,input,button')).toHaveCount(0);expect(posts).toEqual([]);
 });
 
 test('game portal preserves the runtime, preselects a fighter and rejects forged messages',async({page},info)=>{
@@ -307,7 +311,7 @@ test('all required static routes, metadata, galleries, and media resolve',async(
 
 test('widths 320 through 1920 do not overflow or hide purchase controls',async({page},info)=>{
   test.skip(info.project.name!=='desktop','Breakpoint sweep needs one Chromium pass');test.setTimeout(90000);
-  for(const width of [320,360,375,390,428,768,1024,1440,1920]){await page.setViewportSize({width,height:900});for(const path of [base,product,base+'shop/']){await page.goto(path);await ready(page);await page.evaluate(()=>document.fonts.ready);expect(await page.evaluate(()=>document.documentElement.scrollWidth),width+' '+path).toBe(width);if(path===base){expect(await page.locator('#drop-title').evaluate(el=>{const range=document.createRange();range.selectNodeContents(el);return [...range.getClientRects()].every(rect=>rect.right<=el.getBoundingClientRect().right+2);})).toBe(true);await expect(page.getByRole('link',{name:'Shop the current drop',exact:true})).toBeVisible();expect(await page.locator('.cathedral-hero').evaluate(el=>el.getBoundingClientRect().height)).toBeGreaterThanOrEqual(700);expect(await page.locator('#hero-title').evaluate(el=>parseFloat(getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(39);await page.screenshot({path:info.outputPath('home-'+width+'.png'),scale:'css'});}expect(await page.evaluate(()=>[...document.querySelectorAll('body *')].filter(el=>{const r=el.getBoundingClientRect();if(r.width<=0||r.right<=innerWidth+1||el.closest('dialog'))return false;for(let p=el.parentElement;p;p=p.parentElement){if(['hidden','clip'].includes(getComputedStyle(p).overflowX)&&p.getBoundingClientRect().right<=innerWidth+1)return false;}return true;}).map(el=>({tag:el.tagName,class:el.className,text:el.textContent?.slice(0,80),right:el.getBoundingClientRect().right}))),width+' '+path).toEqual([]);}await expect(page.getByLabel('Search products',{exact:true})).toBeVisible();}
+  for(const width of [320,360,375,390,428,768,1024,1440,1920]){await page.setViewportSize({width,height:900});for(const path of [base,product,base+'shop/']){await page.goto(path);await ready(page);await page.evaluate(()=>document.fonts.ready);expect(await page.evaluate(()=>document.documentElement.scrollWidth),width+' '+path).toBe(width);if(path===base){expect(await page.locator('#drop-title').evaluate(el=>{const range=document.createRange();range.selectNodeContents(el);return [...range.getClientRects()].every(rect=>rect.right<=el.getBoundingClientRect().right+2);})).toBe(true);await expect(page.getByRole('link',{name:'Explore the Drop',exact:true})).toBeVisible();expect(await page.locator('.cathedral-hero').evaluate(el=>el.getBoundingClientRect().height)).toBeGreaterThanOrEqual(700);expect(await page.locator('#hero-title').evaluate(el=>parseFloat(getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(39);await page.screenshot({path:info.outputPath('home-'+width+'.png'),scale:'css'});}expect(await page.evaluate(()=>[...document.querySelectorAll('body *')].filter(el=>{const r=el.getBoundingClientRect();if(r.width<=0||r.right<=innerWidth+1||el.closest('dialog'))return false;for(let p=el.parentElement;p;p=p.parentElement){if(['hidden','clip'].includes(getComputedStyle(p).overflowX)&&p.getBoundingClientRect().right<=innerWidth+1)return false;}return true;}).map(el=>({tag:el.tagName,class:el.className,text:el.textContent?.slice(0,80),right:el.getBoundingClientRect().right}))),width+' '+path).toEqual([]);}await expect(page.getByLabel('Search products',{exact:true})).toBeVisible();}
 });
 test('shop uses one readable product column at 500px',async({page})=>{
   await page.setViewportSize({width:500,height:900});await page.goto(base+'shop/');

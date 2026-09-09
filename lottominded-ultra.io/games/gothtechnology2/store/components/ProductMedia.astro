@@ -2,11 +2,15 @@
 import type { Product } from '../commerce/types';
 import { media } from '../utilities/paths';
 import EquipmentArt from './EquipmentArt.astro';
+import { productArtwork, artworkFraming } from '../content/product-artwork';
+import '../styles/product-artwork.css';
 const { product, priority = false, campaign = false } = Astro.props as {product:Product;priority?:boolean;campaign?:boolean};
 const special = campaign && product.demo && !product.cardImage ? product.handle === 'night-protocol-hoodie' ? 'media/hero.webp' : product.handle === 'gothtechnology-luggage-charm' ? 'media/charm-campaign.webp' : null : null;
-const image = campaign ? product.cardImage ?? product.images[0] : product.images[0];
+const artwork = campaign && product.demo ? productArtwork[product.handle] : undefined;
+const image = campaign ? artwork?.image ?? product.cardImage ?? product.images[0] : product.images[0];
+const standardArtwork = campaign && !!image;
 const atlasTiles: Record<string, number> = {'night-protocol-hoodie':0,'detroit-2084-shirt':1,'gothtechnology-luggage-charm':3,'static-saints-patch-set':4};
-const atlasTile = product.demo && !product.cardImage && (campaign || !image) && product.handle !== 'detroit-2084-shirt' ? atlasTiles[product.handle] ?? -1 : -1;
+const atlasTile = !standardArtwork && product.demo && !product.cardImage && (campaign || !image) && product.handle !== 'detroit-2084-shirt' ? atlasTiles[product.handle] ?? -1 : -1;
 const silhouettes: Record<string, string> = {
   'detroit-2084-shirt': 'M64 34 40 42 14 84l34 18 8-20v128h128V82l8 20 34-18-26-42-24-8c-8 26-104 26-112 0Z',
   'static-saints-patch-set': 'm62 34 34 20v40l-34 20-34-20V54l34-20Zm110 0 34 20v40l-34 20-34-20V54l34-20Zm-52 94 34 20v40l-34 20-34-20v-40l34-20Z',
@@ -15,11 +19,11 @@ const silhouettes: Record<string, string> = {
 };
 const drawing = product.handle.includes('desk-mat') ? 'M12 64h216v122H12ZM24 76h192v98H24ZM60 80v90m40-90v90m40-90v90m40-90v90M28 112h184m-184 32h184' : silhouettes[product.handle] || 'M30 65h180v140H30ZM30 65 120 24l90 41M120 65v140M45 112h60';
 ---
-<div class:list={['product-media', special && 'campaign-media', !image && 'concept-media']}>
-  {atlasTile >= 0 ? <EquipmentArt tile={atlasTile} alt={`${product.title} — generated studio concept, not final product photography`}/> : image ? <img src={media(special || image.src)} alt={special ? `${product.title} — generated campaign concept based on the owner reference` : image.alt} width="840" height="840" loading={priority ? 'eager' : 'lazy'} decoding="async" /> :
+<div class:list={['product-media', standardArtwork && 'standard-artwork', !standardArtwork && special && 'campaign-media', !image && 'concept-media']} style={standardArtwork ? {'--art-image': `url("${media(image.src)}")`, ...artworkFraming(artwork, image)} : undefined}>
+  {atlasTile >= 0 ? <EquipmentArt tile={atlasTile} alt={`${product.title} — generated studio concept, not final product photography`}/> : image ? <img src={media(standardArtwork ? image.src : special || image.src)} alt={standardArtwork ? image.alt : special ? `${product.title} — generated campaign concept based on the owner reference` : image.alt} width={image.width || 840} height={image.height || 840} loading={priority ? 'eager' : 'lazy'} decoding="async" /> :
     <div class="concept-drawing" role="img" aria-label={`${product.title}. Product photography is not yet supplied.`}>
       <svg viewBox="0 0 240 240" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><path d={drawing}/><path d="M100 123h40m-20-20v40"/></svg>
       <span class="mono">GOTHTECHNOLOGY</span><small>DESIGN STUDY / IMAGE PENDING</small>
     </div>}
-  {product.demo && <span class="media-caption">{atlasTile >= 0 || special ? 'CAMPAIGN CONCEPT' : image ? image.kind || 'SUPPLIED PRODUCT REFERENCE' : 'CAMPAIGN CONCEPT'}</span>}
+  {product.demo && <span class="media-caption">{standardArtwork ? image.kind || 'SUPPLIED PRODUCT REFERENCE' : atlasTile >= 0 || special ? 'CAMPAIGN CONCEPT' : image ? image.kind || 'SUPPLIED PRODUCT REFERENCE' : 'CAMPAIGN CONCEPT'}</span>}
 </div>

@@ -12,14 +12,29 @@ const game=href('arcade/robot-rahbe-underground/');
   </button>
   <div class="underground-copy"><p class="mono gold">NEW DROP / PLAYABLE FEATURE</p><h3 id="underground-feature-title">ROBOT RAHBE<br/><span>UNDERGROUND</span></h3><p>Descend beneath Detroit. Explore seven depths, recover the number seals, and face the Warden.</p><button class="button" type="button" data-open-underground aria-haspopup="dialog" aria-controls="underground-dialog">Play Underground <Icon name="play" size={16}/></button><p class="underground-note">Free to play · Keyboard, touch & gamepad · Sound starts off</p></div>
   <section class="underground-reward" id="underground-rewards" data-underground-reward aria-label="Game discount preview">
-    <div class="reward-heading"><div><p class="mono gold">ALL GAMES / ONE REWARD</p><h4>Every run builds toward 20% off.</h4></div><strong data-reward-percent>0%</strong></div>
-    <ol class="reward-tiers">{DISCOUNT_TIERS.map(tier=><li data-tier-points={tier.points} data-reached="false"><strong>{tier.percent}%</strong><span>{tier.points.toLocaleString('en-US')} pts</span><small data-tier-state>Target</small></li>)}</ol>
+    <h4 class="reward-kicker">ALL GAMES / ONE REWARD</h4>
+    <dl class="reward-summary">
+      <div><dt>Total points</dt><dd data-reward-score>0</dd></div>
+      <div><dt>Discount preview</dt><dd data-reward-percent>0%</dd></div>
+      <div class="reward-milestone"><dt>Next milestone</dt><dd data-reward-next>{DISCOUNT_TIERS[0].points.toLocaleString('en-US')} points to 5%</dd></div>
+    </dl>
     <progress value="0" max={DISCOUNT_TIERS[0].points} aria-label="Progress toward the next game discount tier"></progress>
-    <p class="reward-progress"><span>Total: <b data-reward-score>0</b> points</span><span data-reward-next>{DISCOUNT_TIERS[0].points.toLocaleString('en-US')} points to 5%</span></p>
-    <p class="reward-note"><span data-reward-saved>Points from all games and new runs add together on this browser.</span> Continuing a saved run counts only newly earned points.</p>
-    <div class="reward-games">{REWARD_GAMES.map(game=><article><h5>{game.title}</h5><p>{game.rule}</p><span><b data-game-points={game.id}>0</b> points contributed</span><button class="button secondary" type="button" data-open-reward-game={game.id} aria-haspopup="dialog" aria-controls="underground-dialog">Play {game.title}</button></article>)}</div>
-    <p class="reward-note" data-reward-carried hidden></p>
     <p class="reward-note">Preview only. Discounts are not redeemable yet. No purchase required.</p>
+    <div class="reward-disclosures">
+      <details class="reward-disclosure" id="reward-game-picker">
+        <summary>Choose a game</summary>
+        <div class="reward-games">{REWARD_GAMES.map(game=><article><h5>{game.title}</h5><span><b data-game-points={game.id}>0</b> points contributed</span><button class="button secondary" type="button" data-open-reward-game={game.id} aria-label={`Play ${game.title}`} aria-haspopup="dialog" aria-controls="underground-dialog">Play game <Icon name="play" size={14}/></button></article>)}</div>
+      </details>
+      <details class="reward-disclosure" id="reward-rules">
+        <summary>How rewards work</summary>
+        <div class="reward-rules-body">
+          <p class="reward-note"><span data-reward-saved>Points from all games and new runs add together on this browser.</span> Continuing a saved run counts only newly earned points.</p>
+          <p class="reward-note" data-reward-carried hidden></p>
+          <ol class="reward-tiers" aria-label="Discount preview milestones">{DISCOUNT_TIERS.map(tier=><li data-tier-points={tier.points} data-reached="false"><strong>{tier.percent}%</strong><span>{tier.points.toLocaleString('en-US')} points</span><small data-tier-state>Target</small></li>)}</ol>
+          <dl class="reward-scoring">{REWARD_GAMES.map(game=><div><dt>{game.title}</dt><dd>{game.rule}</dd></div>)}</dl>
+        </div>
+      </details>
+    </div>
   </section>
 </section>
 <dialog id="underground-dialog" aria-labelledby="underground-title" aria-describedby="underground-help" data-game-url={game}>

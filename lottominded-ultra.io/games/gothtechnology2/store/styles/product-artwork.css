@@ -1,0 +1,55 @@
+/* One square exhibition frame across home, shop, collections and related cards. */
+body .product-card .product-media.standard-artwork {
+  aspect-ratio: 1;
+  isolation: isolate;
+  background: #0b0b0a;
+}
+body[data-store-v2] .product-card .product-media.standard-artwork { aspect-ratio: 1; }
+
+/* Extend the photograph's atmosphere behind wide objects without cutting them off. */
+.product-media.standard-artwork::before {
+  content: '';
+  position: absolute;
+  inset: -18px;
+  background-image: var(--art-image);
+  background-position: center;
+  background-size: cover;
+  filter: blur(18px) brightness(.4);
+  opacity: .65;
+  pointer-events: none;
+}
+body .product-card .product-media.standard-artwork > img {
+  position: absolute;
+  width: var(--art-width, 100%);
+  height: auto;
+  max-width: none;
+  left: var(--art-left, 50%);
+  top: var(--art-top, 50%);
+  transform: translate(-50%, -50%);
+  object-fit: contain;
+  filter: none;
+  transition: none;
+  mask-image: linear-gradient(to bottom, transparent, #000 8%, #000 92%, transparent),
+    linear-gradient(to right, transparent, #000 5%, #000 95%, transparent);
+  mask-composite: intersect;
+}
+.product-media.standard-artwork::after {
+  content: '';
+  position: absolute;
+  inset: 10px;
+  z-index: 1;
+  border: 1px solid rgb(196 161 82 / .25);
+  box-shadow: 0 0 0 10px rgb(5 7 7 / .18);
+  background: linear-gradient(135deg, rgb(218 178 91 / .035), transparent 50%, rgb(2 5 6 / .08));
+  pointer-events: none;
+}
+.product-media.standard-artwork .media-caption {
+  z-index: 2;
+  left: 14px;
+  bottom: 14px;
+  right: auto;
+  max-width: calc(100% - 28px);
+  background: rgb(5 7 7 / .86);
+}
+.product-image-link:focus-visible .standard-artwork::after,
+.product-image-link:hover .standard-artwork::after { border-color: rgb(196 161 82 / .6); }
