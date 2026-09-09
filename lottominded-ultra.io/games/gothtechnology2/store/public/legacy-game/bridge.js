@@ -8,6 +8,7 @@ import {REWARD_GAMES} from '../arcade/games.js';
     const target=REWARD_GAMES.find(game=>game.id===id);
     if(!target)return;
     event.preventDefault();
+    if(window.parent!==window)window.parent.postMessage({type:'GOTHTECH_GAME_NAVIGATION',gameId:target.id},location.origin);
     location.href=new URL(target.path,document.baseURI).href;
   });
   let ready=false, selected='', previous='', started=0, sent=false, attempts=0;

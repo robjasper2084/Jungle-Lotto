@@ -14,3 +14,8 @@ export function rewardGameForURL(value,storeBase){
     return REWARD_GAMES.find(game=>normalize(new URL(game.path,base).pathname)===normalize(url.pathname));
   }catch{return undefined;}
 }
+
+export function rewardGameForNavigation(event,source,storeBase){
+  if(!source||event.source!==source||event.origin!==new URL(storeBase).origin||event.data?.type!=='GOTHTECH_GAME_NAVIGATION')return undefined;
+  return REWARD_GAMES.find(game=>game.id===event.data.gameId);
+}
