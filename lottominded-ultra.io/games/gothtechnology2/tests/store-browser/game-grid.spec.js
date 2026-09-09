@@ -50,6 +50,7 @@ test('Game Grid shows Static WAV artwork and launches a playable sector', async 
   await page.waitForTimeout(600);
   await page.keyboard.up('KeyD');
   await page.keyboard.up('KeyI');
+  await frame.waitForFunction(() => window.RahbeArcadeGame.getStats().seconds >= 2);
   if (info.project.name === 'mobile') await frame.locator('#bombAction').tap();
   else await frame.locator('#bombAction').click();
   await expect(frame.locator('#bombsValue')).toHaveText(String(bombs - 1));

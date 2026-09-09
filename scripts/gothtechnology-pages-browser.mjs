@@ -51,6 +51,7 @@ try{
     await page.screenshot({path:resolve(output,name+'-packaged-vault-rush.png')});
     await vault.locator('#arcade-link').click();
     await page.locator('#underground-dialog').waitFor({state:'hidden'});
+    await page.locator('#underground-dialog iframe').waitFor({state:'detached'});
     assert.equal(page.frames().length,1,'Vault Rush must return to the outer storefront');
     await page.locator('[data-open-reward-game="gothtechnology"]').click();
     await page.locator('#underground-dialog [data-underground-loading]').waitFor({state:'hidden',timeout:60000});
