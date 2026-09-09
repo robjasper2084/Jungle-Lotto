@@ -1,0 +1,72 @@
+import {test, expect} from '@playwright/test';
+
+const base = '/Jungle-Lotto/lottominded-ultra.io/games/gothtechnology2/';
+const staticWave = '/Jungle-Lotto/lottominded-ultra.io/games/opengw-levels/';
+
+test('Game Grid shows Static WAV artwork and launches a playable sector', async ({page, request}, info) => {
+  test.setTimeout(90000);
+  const errors = [], failedResources = [];
+  page.on('pageerror', error => errors.push(error.message));
+  page.on('response', response => { if (response.status() >= 400) failedResources.push(response.url()); });
+  const art = await request.get(staticWave + 'assets/2084/branding/marquee-gameplay-keyart.webp');
+  expect(art.status()).toBe(200);
+  expect(art.headers()['content-type']).toContain('image/webp');
+  await page.goto(base + 'play/');
+  await page.getByRole('button', {name:'Continue to GOTHTECHNOLOGY', exact:true}).click();
+  await page.getByRole('button', {name:'Launch game', exact:true}).click();
+  await expect(page.locator('#game-connection')).toContainText('Game ready', {timeout:45000});
+  const frame = page.frames().find(frame => frame.url().includes('/legacy-game/'));
+  const canvas = frame.locator('#game');
+  const titleBounds = await canvas.boundingBox();
+  await canvas.click({position:{x:280 / 1280 * titleBounds.width,y:575 / 720 * titleBounds.height}});
+  await expect.poll(() => frame.evaluate(() => window.__gothTechnologyGame.phase)).toBe('gameSelect');
+  await expect.poll(() => frame.evaluate(() => window.__gothTechnologyGame.assets.images.gameTitleStaticWave?.naturalWidth || 0)).toBeGreaterThan(0);
+  await canvas.screenshot({path:info.outputPath('static-wav-grid.png')});
+  if (info.project.name === 'mobile') {
+    const bounds = await canvas.boundingBox();
+    await canvas.tap({position:{x:1048 / 1280 * bounds.width, y:340 / 720 * bounds.height}});
+  } else {
+    await page.keyboard.press('ArrowRight');
+    await expect.poll(() => frame.evaluate(() => window.__gothTechnologyGame.gameSelectIndex)).toBe(1);
+    await page.keyboard.press('ArrowRight');
+    await expect.poll(() => frame.evaluate(() => window.__gothTechnologyGame.gameSelectIndex)).toBe(2);
+    await page.keyboard.press('Enter');
+  }
+  await expect.poll(() => new URL(frame.url()).pathname).toBe(staticWave);
+  await expect(page.locator('#game-standalone-link')).toHaveAttribute('href',frame.url());
+  await expect(page.locator('#game-frame')).toHaveAttribute('title','2084 Static WAV game');
+  await expect(page.locator('#requested-character')).toContainText('IJKL');
+  await expect(page.locator('#game-collection-link')).toBeHidden();
+  expect(await frame.evaluate(() => window.__staticWavAudio.muted)).toBe(true);
+  await expect(frame.getByRole('button',{name:'Start Sector 1',exact:true})).toBeEnabled();
+  await expect.poll(() => frame.locator('#marquee').evaluate(img => img.naturalWidth)).toBeGreaterThan(0);
+  await frame.locator('#shell').screenshot({path:info.outputPath('static-wav-menu.png')});
+  await frame.getByRole('button',{name:'Start Sector 1',exact:true}).click();
+  await expect(frame.locator('#shell')).toHaveAttribute('data-mode','running');
+  await expect(frame.locator('#statusText')).toContainText('Signal Wake');
+  const bombs = Number(await frame.locator('#bombsValue').innerText());
+  await page.keyboard.down('KeyD');
+  await page.keyboard.down('KeyI');
+  await page.waitForTimeout(600);
+  await page.keyboard.up('KeyD');
+  await page.keyboard.up('KeyI');
+  if (info.project.name === 'mobile') await frame.locator('#bombAction').tap();
+  else await frame.locator('#bombAction').click();
+  await expect(frame.locator('#bombsValue')).toHaveText(String(bombs - 1));
+  await expect.poll(() => frame.evaluate(() => window.RahbeArcadeGame.getStats().score)).toBeGreaterThan(0);
+  await frame.locator('#pauseAction').click();
+  await expect(frame.locator('#shell')).toHaveAttribute('data-mode','paused');
+  const receipt = await frame.evaluate(() => window.RahbeArcadeGame.getStats());
+  await expect.poll(() => page.evaluate(() => Object.values(JSON.parse(localStorage.getItem('gothtechnology.arcade.discount-preview.v2') || '{"runs":{}}').runs).find(run => run.game === 'static-wave')?.score)).toBe(receipt.score);
+  const [standalone] = await Promise.all([page.waitForEvent('popup'),page.locator('#game-standalone-link').click()]);
+  await expect(standalone.locator('#shell')).toHaveAttribute('data-mode','menu');
+  expect(new URL(standalone.url()).pathname).toBe(staticWave);
+  await standalone.close();
+  await frame.getByRole('button',{name:'Resume signal',exact:true}).click();
+  await expect(frame.locator('#shell')).toHaveAttribute('data-mode','running');
+  expect(await frame.evaluate(() => window.RahbeArcadeGame.getStats().runId)).toBe(receipt.runId);
+  await frame.locator('#shell').screenshot({path:info.outputPath('static-wav-running.png')});
+  await expect(page.getByRole('link',{name:'Back to Store',exact:false})).toHaveAttribute('href',base);
+  expect(errors).toEqual([]);
+  expect(failedResources).toEqual([]);
+});

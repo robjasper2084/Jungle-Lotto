@@ -2,6 +2,7 @@ import http from 'node:http';
 import { createReadStream } from 'node:fs';
 import { stat,readFile } from 'node:fs/promises';
 import { resolve,extname,sep } from 'node:path';
+import { linkedGameFile } from './linked-game-files.mjs';
 const root=resolve(import.meta.dirname,'../dist');
 const base=process.env.STORE_BASE_PATH||'/Jungle-Lotto/lottominded-ultra.io/games/gothtechnology2/';
 const port=Number(process.env.STORE_PORT||4181);
@@ -9,10 +10,11 @@ const mime={'.html':'text/html; charset=utf-8','.js':'text/javascript','.css':'t
 const server=http.createServer(async(req,res)=>{
   try {
     const url=new URL(req.url,'http://127.0.0.1');
-    if(!url.pathname.startsWith(base)){res.writeHead(302,{Location:base});res.end();return;}
+    const linkedFile=linkedGameFile(url.pathname,base);
+    if(!linkedFile&&!url.pathname.startsWith(base)){res.writeHead(302,{Location:base});res.end();return;}
     let relative=decodeURIComponent(url.pathname.slice(base.length));if(relative.endsWith('/')||!relative)relative+='index.html';
-    let file=resolve(root,relative);
-    if(!file.startsWith(root+sep)){res.writeHead(403);res.end();return;}
+    let file=linkedFile||resolve(root,relative);
+    if(!linkedFile&&!file.startsWith(root+sep)){res.writeHead(403);res.end();return;}
     let info;
     try{info=await stat(file);if(info.isDirectory()){res.writeHead(302,{Location:url.pathname+'/'});res.end();return;}}
     catch{res.writeHead(404,{'Content-Type':'text/html'});res.end(await readFile(resolve(root,'404.html')));return;}

@@ -16,6 +16,8 @@ node scripts/serve-store.mjs
 
 The isolated production preview uses port 4181. Open the same nested route there. The dev preview is port 4180. Do not use file:// for ES modules or the game.
 
+Game Grid also uses the sibling `opengw-levels` and `shadow-ops-canvas` routes. The preview server serves those game directories from the same checkout. If the storefront checkout is sparse or lacks their runtime files, set `STORE_GAMES_ROOT` to the absolute `lottominded-ultra.io/games` directory of a complete checkout before starting the preview or browser tests. Local files take precedence; the complete checkout supplies missing files. This also supplies the Static WAV tile artwork without duplicating the game into the storefront build.
+
 ## GitHub Pages release
 
 The repository's Pages workflow installs this game's locked dependencies with Node 24, runs store and game checks, and builds Astro with PUBLIC_COMMERCE_MODE=demo and PUBLIC_LAUNCH_APPROVED=false. Pull requests validate and assemble the artifact without deploying. A successful main-branch run publishes it through GitHub Pages.

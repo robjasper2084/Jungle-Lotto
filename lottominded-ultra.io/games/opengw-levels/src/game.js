@@ -1441,6 +1441,26 @@ let lastHudUpdate = 0;
 let startPending = false;
 const devEnabled = new URLSearchParams(location.search).has("dev");
 
+function arcadeSnapshot() {
+  return {runId:state.arcadeRunId,score:state.score,seconds:Math.floor(state.runTime),mode:state.status==='menu'?'title':state.status==='running'?'playing':state.status,debug:devEnabled};
+}
+function flushArcadeProgress() { void window.GothGameRewardFlush?.(arcadeSnapshot()); }
+window.RahbeArcadeGame = {
+  ready:true,
+  getStats:arcadeSnapshot,
+  pause:()=>setPaused(true),
+  applySettings({sound,reducedMotion}={}) {
+    if(typeof sound==='boolean')bus.setMuted(!sound);
+    if(typeof reducedMotion==='boolean'){
+      document.documentElement.dataset.reducedMotion=String(reducedMotion);
+      window.dispatchEvent(new Event('static-wav:settings'));
+    }
+    updateOverlay();
+  }
+};
+if(new URLSearchParams(location.search).has('arcade'))bus.setMuted(true);
+window.addEventListener('pagehide',flushArcadeProgress);
+
 if (devEnabled) devEl.style.display = "block";
 
 resize();
@@ -1637,6 +1657,7 @@ function createState() {
   const players = Array.from({ length: playerCount }, (_, index) => makePlayer(index, playerCount));
   return {
     status: "menu",
+    arcadeRunId:crypto.randomUUID(),
     rng,
     time: 0,
     runTime: 0,
@@ -1695,6 +1716,7 @@ function makePlayer(index, count = 1) {
 }
 
 function startRun() {
+  flushArcadeProgress();
   forgeHudDismissed = true;
   state = createState();
   state.status = "running";
@@ -1724,6 +1746,7 @@ async function primary() {
 }
 
 function returnHome() {
+  flushArcadeProgress();
   bus.unlock();
   clearTouchInput();
   input.bombQueued.clear();
@@ -1793,9 +1816,9 @@ function frame(now) {
   if (state.status === "running" && !pausedByBlur) {
     accumulator += delta;
     let steps = 0;
-    const commands = collectCommands();
     while (accumulator >= STEP && steps < MAX_FRAME_STEPS) {
-      update(STEP, commands);
+      // Consume queued presses only when simulation advances, once per step.
+      update(STEP, collectCommands());
       accumulator -= STEP;
       steps += 1;
     }
@@ -2409,6 +2432,7 @@ function hurtPlayer(player) {
 function finishRun(status) {
   clearTouchInput();
   state.status = status;
+  flushArcadeProgress();
   state.best = Math.max(state.best, state.score);
   saveBest(state.best);
   state.banner.timer = 0;

@@ -129,7 +129,7 @@ function render(state, timeMs) {
 
   if (isMenu) {
     updateInteraction(state.interaction, dt);
-    renderScene(state, state.reducedMotion.matches ? 0 : time);
+    renderScene(state, state.reducedMotion.matches || document.documentElement.dataset.reducedMotion==='true' ? 0 : time);
   }
 
   requestAnimationFrame((time) => render(state, time));

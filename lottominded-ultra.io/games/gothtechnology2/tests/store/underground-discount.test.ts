@@ -32,6 +32,9 @@ test('all games and new runs add points, while polling and resumed checkpoints c
  recordGameProgress('gothtechnology',run('first',2500),storage);
  const state=readDiscountPreview(storage);assert.equal(state.totalPoints,10000);assert.equal(state.percent,5);assert.equal(state.games.underground.points,6000);assert.equal(state.games.underground.runs,2);
  recordGameProgress('vault-rush',run('first',1500),storage);assert.equal(readDiscountPreview(storage).totalPoints,11000);
+ recordGameProgress('static-wave',run('first',200),storage);
+ recordGameProgress('static-wave',run('first',200),storage);
+ assert.equal(readDiscountPreview(storage).totalPoints,11200);
 });
 test('legacy best reward carries forward and its current checkpoint is not counted again',()=>{
  const storage=memory();storage.setItem(LEGACY_DISCOUNT_KEY,JSON.stringify({version:1,bestScore:25000}));storage.setItem('rahbe-underground-v1-arcade-run',JSON.stringify({runId:'saved',score:10000}));

@@ -2,6 +2,7 @@ import { createReadStream } from 'node:fs';
 import { cp, mkdir, readFile, stat, writeFile } from 'node:fs/promises';
 import { extname, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { linkedGameFile } from './linked-game-files.mjs';
 
 const root = resolve(import.meta.dirname, '..');
 const original = resolve(root, 'legacy-game/preserved-original-entry/index.html');
@@ -11,7 +12,7 @@ export async function legacyEntry(base) {
   return html.replace('<head>', `<head>\n    <base href="${base}">
     <meta name="goth-reward-game" content="gothtechnology">`)
     .replace('../../assets/js/lm-game-rewards-sdk.js?v=rewards-sdk-1', './legacy-game/reward-sdk.js?v=rewards-sdk-1')
-    .replace('</body>', '    <script type="module" src="./arcade/reward-tracker.js"></script><script src="./legacy-game/bridge.js" defer></script>\n  </body>');
+    .replace('</body>', '    <script type="module" src="./arcade/reward-tracker.js"></script><script type="module" src="./legacy-game/bridge.js"></script>\n  </body>');
 }
 export function legacyIntegration() {
   let base = '/';
@@ -27,7 +28,10 @@ export function legacyIntegration() {
           res.setHeader('Content-Type', 'text/html; charset=utf-8'); res.end(await legacyEntry(base)); return;
         }
         let file;
-        if (route === '/legacy-game/reward-sdk.js') file = resolve(root, '../../assets/js/lm-game-rewards-sdk.js');
+        try { file = linkedGameFile(pathname, base); }
+        catch { res.statusCode = 400; res.end('Invalid game path.'); return; }
+        if (file) { /* Serve only the explicitly linked sibling games. */ }
+        else if (route === '/legacy-game/reward-sdk.js') file = resolve(root, '../../assets/js/lm-game-rewards-sdk.js');
         else if (route.startsWith('/src/') || route.startsWith('/assets/')) {
           file = resolve(root, decodeURIComponent(route.slice(1)));
           if (!file.startsWith(`${root}${sep}`)) { res.statusCode = 403; res.end(); return; }
