@@ -12,7 +12,7 @@ test('shared game rewards combine actual play across all five games and reach st
  await page.emulateMedia({reducedMotion:'reduce'});await page.goto(base+'#underground-rewards');
  await expect(page.locator('[data-open-reward-game]')).toHaveCount(5);
  const popup=page.locator('#underground-dialog');
- async function open(id){await page.locator(`[data-open-reward-game="${id}"]`).click();await expect(popup.locator('[data-underground-loading]')).toBeHidden({timeout:60000});return page.frames().find(f=>f.parentFrame()===page.mainFrame());}
+ async function open(id){if(await page.locator('#reward-game-picker').getAttribute('open')===null)await page.locator('#reward-game-picker summary').click();await page.locator(`[data-open-reward-game="${id}"]`).click();await expect(popup.locator('[data-underground-loading]')).toBeHidden({timeout:60000});return page.frames().find(f=>f.parentFrame()===page.mainFrame());}
  async function close(){await popup.getByRole('button',{name:'Close game',exact:true}).click();await expect(popup.locator('iframe')).toHaveCount(0);}
  // An isolated checkpoint establishes earlier gameplay; the next points come from a real pickup.
  await page.evaluate(()=>localStorage.setItem('rahbe-underground-v1',JSON.stringify({version:1,reached:0,coins:40,secrets:0,seals:[],taken:[],treasures:[],wallOpen:false})));
@@ -62,7 +62,7 @@ test('shared game rewards combine actual play across all five games and reach st
  await page.reload();
  const final=await read(page);expect(new Set(Object.values(final.runs).map(run=>run.game)).size).toBe(5);
  await expect(page.locator('#underground-rewards [data-reward-score]')).toHaveText(final.total.toLocaleString('en-US'));
- await page.locator('#underground-rewards .reward-heading').scrollIntoViewIfNeeded();await capture(page,info,'shared-total');
+ await page.locator('#underground-rewards .reward-summary').scrollIntoViewIfNeeded();await capture(page,info,'shared-total');
  await page.goto(base+'products/night-protocol-hoodie/');
  const percent=final.total>=100000?20:final.total>=50000?15:final.total>=25000?10:final.total>=10000?5:0;
  expect(percent).toBeGreaterThanOrEqual(5);
@@ -88,7 +88,7 @@ test('shared game reward receipts remain cumulative across tabs, duplicate repor
 test('shared game rewards Vault Rush return banks points and closes only for its own exit message',async({page})=>{
  await page.emulateMedia({reducedMotion:'reduce'});await page.goto(base+'#underground-rewards');
  const trigger=page.locator('[data-open-reward-game="vault-rush"]'),popup=page.locator('#underground-dialog');
- await trigger.click();await expect(popup.locator('[data-underground-loading]')).toBeHidden({timeout:60000});
+ await page.locator('#reward-game-picker summary').click();await trigger.click();await expect(popup.locator('[data-underground-loading]')).toBeHidden({timeout:60000});
  const frame=page.frames().find(f=>f.parentFrame()===page.mainFrame());
  await page.evaluate(()=>window.postMessage({type:'rahbe-exit',game:'vault-rush'},location.origin));
  await frame.evaluate(()=>parent.postMessage({type:'rahbe-exit',game:'underground'},location.origin));
@@ -107,7 +107,7 @@ test('shared game rewards Vault Rush return banks points and closes only for its
 
 test('shared game rewards Fighter preserves earlier round activity and clears it for a new match',async({page})=>{
  test.setTimeout(90000);await page.emulateMedia({reducedMotion:'reduce'});await page.goto(base+'#underground-rewards');
- await page.locator('[data-open-reward-game="gothtechnology"]').click();
+ await page.locator('#reward-game-picker summary').click();await page.locator('[data-open-reward-game="gothtechnology"]').click();
  await expect(page.locator('#underground-dialog [data-underground-loading]')).toBeHidden({timeout:60000});
  const frame=page.frames().find(f=>f.parentFrame()===page.mainFrame());
  await frame.waitForFunction(()=>window.__gothTechnologyGame?.phase==='title');

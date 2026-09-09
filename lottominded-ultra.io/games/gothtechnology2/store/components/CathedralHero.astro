@@ -9,25 +9,19 @@ import { href } from '../utilities/paths';
     <h1 id="hero-title">Equipment for the world<br/>after midnight</h1>
     <p class="hero-support">Limited apparel, artifacts, collectibles, and digital transmissions from GOTHTECHNOLOGY.</p>
   </div>
-  <div class="cathedral-actions">
-    <div class="hero-primary-actions">
-      <a class="button" href="#current-drop">Shop the current drop</a>
-      <a class="button secondary" href={href('play/')} data-portal-link>Enter the fight</a>
+  <div class="hero-opening-footer">
+    <div class="cathedral-actions">
+      <div class="hero-primary-actions">
+        <a class="button" href="#current-drop">Explore the Drop</a>
+        <a class="button secondary" href={href('play/')} data-portal-link>Play Games</a>
+      </div>
     </div>
-    <button class="text-button hero-transmission" type="button" data-watch-commercial>Watch transmission</button>
-    <a class="hero-explore" href="#armory">Explore the Armory</a>
-  </div>
-  <div class="cathedral-caption"><span id="scene-status" role="status">Armory Online — Static Display</span><span>Product concept artwork · not a 360° garment model</span></div>
-  <nav class="chapter-nav" aria-label="Story chapters">
-    <a href="#arrival" data-chapter="arrival" aria-current="location">Arrival</a>
-    <a href="#current-drop" data-chapter="drop">Knight Protocol</a>
-    <a href="#character-vault" data-chapter="signals">Your Signal</a>
-    <a href="#enter-the-fight" data-chapter="portal">The Portal</a>
-  </nav>
-  <div class="hero-controls">
-    <button class="text-button" type="button" data-toggle-hero-video aria-controls="hero-background-video" aria-pressed="false" hidden>Play background</button>
-    <button class="text-button hero-sound" type="button" data-toggle-sound aria-pressed="false">Sound off</button>
-    <button class="text-button hero-settings" type="button" data-open-settings>Experience settings</button>
+    <div class="cathedral-caption"><span id="scene-status" role="status">Armory Online — Static Display</span><span>Product concept artwork · not a 360° garment model</span></div>
+    <div class="hero-controls">
+      <button class="text-button" type="button" data-toggle-hero-video aria-controls="hero-background-video" aria-pressed="false" hidden>Play background</button>
+      <button class="text-button hero-sound" type="button" data-toggle-sound aria-pressed="false">Sound off</button>
+      <button class="text-button hero-settings" type="button" data-open-settings>Experience settings</button>
+    </div>
   </div>
 </section>
 <script>
