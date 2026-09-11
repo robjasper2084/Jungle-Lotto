@@ -1,0 +1,66 @@
+/* A live milestone display, using the same receipt-backed reward values. */
+body[data-cinematic=true] #underground-rewards {
+  position:relative;
+  isolation:isolate;
+  background:linear-gradient(115deg,#0d1719,#080d0e 58%,#18160d);
+  overflow:hidden;
+  padding:26px 28px 12px;
+}
+#underground-rewards::before {
+  content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;
+  background:linear-gradient(110deg,transparent 30%,#6ccede0c 46%,#dfba6714 52%,transparent 68%);
+  background-size:260% 100%;
+  animation:reward-ambient 14s ease-in-out infinite alternate;
+  animation-play-state:paused;
+}
+.reward-signal-heading {display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:22px}
+body[data-cinematic=true] #underground-rewards .reward-kicker {margin:0}
+.reward-motion-toggle {padding:8px 12px;min-height:44px;border:1px solid var(--rule);background:#080f10;color:var(--goth-cream);font:13px/1.5 var(--mono);cursor:pointer}
+.reward-motion-toggle:hover {border-color:var(--goth-gold)}
+.reward-motion-toggle:disabled {cursor:default;color:#c9c3b4}
+.reward-motion-toggle:focus-visible {outline:2px solid var(--goth-cyan);outline-offset:4px}
+body[data-cinematic=true] #underground-rewards .reward-summary {grid-template-columns:1.1fr 1fr 1.2fr;align-items:center;margin-bottom:26px}
+body[data-cinematic=true] #underground-rewards .reward-summary dt {text-transform:uppercase;letter-spacing:.1em}
+body[data-cinematic=true] #underground-rewards .reward-summary dd {font-size:clamp(32px,3.5vw,54px);letter-spacing:-.03em;overflow-wrap:anywhere}
+body[data-cinematic=true] #underground-rewards .reward-summary [data-reward-percent] {font-size:clamp(40px,4.5vw,68px);text-shadow:0 0 30px #70cfde25}
+body[data-cinematic=true] #underground-rewards .reward-summary .reward-milestone dd {font-size:18px;letter-spacing:0;max-width:270px}
+.reward-signal-track {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;list-style:none;padding:0;margin:0}
+.reward-signal-track li {min-width:0;--signal-fill:0;color:#bab8ab}
+.reward-signal-rail {display:block;position:relative;height:10px;overflow:hidden;border:1px solid #47524d;background:#10191a}
+.reward-signal-rail i {display:block;height:100%;position:relative;width:100%;transform:scaleX(var(--signal-fill));transform-origin:left;transition:transform .9s ease;background:linear-gradient(90deg,#8b7037,#e6c273)}
+.reward-signal-rail::after {content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent 10%,#e8ffff80 48%,transparent 85%);transform:translateX(-130%);animation:reward-transmission 4s ease-in-out infinite;animation-delay:var(--signal-delay);animation-play-state:paused;opacity:0}
+.reward-signal-track [data-active=true] .reward-signal-rail {border-color:var(--goth-cyan)}
+.reward-signal-track [data-active=true] .reward-signal-rail i {background:linear-gradient(90deg,#397c89,var(--goth-cyan))}
+.reward-signal-track [data-reached=true] {color:var(--goth-gold-light)}
+.reward-signal-track [data-active=true] {color:var(--goth-cyan)}
+.reward-signal-track :is([data-active=true],[data-reached=true]) .reward-signal-rail::after {opacity:.65}
+.reward-signal-label {display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-top:10px}
+.reward-signal-label strong {font:500 24px/1.2 var(--display)}
+.reward-signal-label>span,.reward-signal-track small {font:13px/1.5 var(--sans)}
+.reward-signal-track small {display:block;margin-top:5px}
+body[data-cinematic=true] #underground-rewards .reward-accessible-progress {position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+#underground-rewards[data-reward-motion=running]::before,
+#underground-rewards[data-reward-motion=running] .reward-signal-rail::after {animation-play-state:running}
+@keyframes reward-ambient {from{background-position:100% 50%}to{background-position:0% 50%}}
+@keyframes reward-transmission {0%,12%{transform:translateX(-130%)}75%,100%{transform:translateX(130%)}}
+@media(max-width:700px) {
+  body[data-cinematic=true] #underground-rewards {padding:20px 20px 8px}
+  .reward-signal-heading {align-items:flex-start;margin-bottom:22px}
+  .reward-signal-heading .reward-kicker {max-width:130px}
+  .reward-motion-toggle {font-size:12px;max-width:150px}
+  body[data-cinematic=true] #underground-rewards .reward-summary {grid-template-columns:1.15fr 1fr;gap:20px}
+  body[data-cinematic=true] #underground-rewards .reward-summary [data-reward-score] {font-size:clamp(26px,7vw,32px)}
+  body[data-cinematic=true] #underground-rewards .reward-summary .reward-milestone dd {max-width:none}
+  .reward-signal-track {gap:10px}
+  .reward-signal-label {align-items:flex-start;flex-direction:column;gap:4px}
+  .reward-signal-label>span,.reward-signal-track small {font-size:12px}
+}
+@media(max-width:380px) {.reward-signal-track {grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}}
+@media(prefers-reduced-motion:reduce) {
+  #underground-rewards::before,#underground-rewards .reward-signal-rail::after {animation:none!important}
+  #underground-rewards .reward-signal-rail i {transition:none}
+}
+html[data-reduced-motion=true] #underground-rewards::before,
+html[data-reduced-motion=true] #underground-rewards .reward-signal-rail::after {animation:none!important}
+html[data-reduced-motion=true] #underground-rewards .reward-signal-rail i,
+#underground-rewards[data-reward-motion=paused] .reward-signal-rail i {transition:none}

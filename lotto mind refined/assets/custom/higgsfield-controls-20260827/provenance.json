@@ -1,0 +1,142 @@
+{
+  "provider": "Higgsfield",
+  "requestedModel": "nano_banana_2",
+  "date": "2026-08-27",
+  "purpose": "Name-matched decorative control artwork; labels remain accessible HTML.",
+  "jobs": [
+    {
+      "index": 1,
+      "job_id": "c0ce9b5b-4f12-4ade-bae1-29d5cb3d86d1",
+      "status": "completed",
+      "type": "image",
+      "model": "nano_banana_flash",
+      "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260827_170228_c0ce9b5b-4f12-4ade-bae1-29d5cb3d86d1.png",
+      "name": "quest",
+      "grid": [
+        2,
+        2
+      ],
+      "names": [
+        "stage",
+        "run",
+        "verify",
+        "wallet"
+      ],
+      "detail": "Exactly FOUR icons arranged as a precise 2 by 2 grid. Top left: a game controller beside a small stage-selection tile. Top right: an athletic running figure with one elegant cyan motion trail. Bottom left: a protective gold shield with a bright cyan check mark for server verification. Bottom right: a sleek closed navy digital wallet with a small cyan circuit clasp; no money, coins, cash or dollar signs.",
+      "prompt": "Create a production UI asset sheet for LottoMind: premium cinematic 3D object icons, midnight navy #06131f background, brushed champagne gold edges, luminous cyan details and restrained violet accents. Strong recognizable silhouettes readable at 48 pixels. Objects centered and fully contained in their own equal cells with 18 percent empty margin. Consistent overhead-front view and controlled soft lighting. No text, letters, numerals, logos, frames, captions, watermarks, or dividing lines. Do not render a screenshot or a full interface. Exactly FOUR icons arranged as a precise 2 by 2 grid. Top left: a game controller beside a small stage-selection tile. Top right: an athletic running figure with one elegant cyan motion trail. Bottom left: a protective gold shield with a bright cyan check mark for server verification. Bottom right: a sleek closed navy digital wallet with a small cyan circuit clasp; no money, coins, cash or dollar signs."
+    },
+    {
+      "index": 2,
+      "job_id": "364036a1-60cb-4502-9737-beffb0c4ea23",
+      "status": "completed",
+      "type": "image",
+      "model": "nano_banana_flash",
+      "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260827_170228_364036a1-60cb-4502-9737-beffb0c4ea23.png",
+      "name": "tones-a",
+      "grid": [
+        2,
+        2
+      ],
+      "names": [
+        "deep-rest",
+        "ground",
+        "calm",
+        "clear"
+      ],
+      "detail": "Exactly FOUR icons arranged as a precise 2 by 2 grid. Top left: crescent moon resting above a soft pillow, deep restful stillness. Top right: a smooth dark grounding stone above a small branching gold root structure. Bottom left: a quiet pool ripple with a floating cyan leaf, calming water. Bottom right: a transparent glass prism splitting a clean cyan beam, clarity.",
+      "prompt": "Create a production UI asset sheet for LottoMind: premium cinematic 3D object icons, midnight navy #06131f background, brushed champagne gold edges, luminous cyan details and restrained violet accents. Strong recognizable silhouettes readable at 48 pixels. Objects centered and fully contained in their own equal cells with 18 percent empty margin. Consistent overhead-front view and controlled soft lighting. No text, letters, numerals, logos, frames, captions, watermarks, or dividing lines. Do not render a screenshot or a full interface. Exactly FOUR icons arranged as a precise 2 by 2 grid. Top left: crescent moon resting above a soft pillow, deep restful stillness. Top right: a smooth dark grounding stone above a small branching gold root structure. Bottom left: a quiet pool ripple with a floating cyan leaf, calming water. Bottom right: a transparent glass prism splitting a clean cyan beam, clarity."
+    },
+    {
+      "index": 3,
+      "job_id": "734c2d7a-e640-4860-9efe-503dc2f00999",
+      "status": "completed",
+      "type": "image",
+      "model": "nano_banana_flash",
+      "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260827_170228_734c2d7a-e640-4860-9efe-503dc2f00999.png",
+      "name": "tones-b",
+      "grid": [
+        2,
+        2
+      ],
+      "names": [
+        "align",
+        "release",
+        "love-reset",
+        "heart-field"
+      ],
+      "detail": "Exactly FOUR icons arranged as a precise 2 by 2 grid. Top left: three perfectly aligned levitating smooth stones with concentric thin gold rings. Top right: a delicate feather floating above an open relaxed palm, release. Bottom left: a sculptural gold heart containing a cyan waveform, love reset. Bottom right: a translucent cyan heart inside a gentle circular gold field halo, heart field. These are decorative music mood symbols, not medical devices.",
+      "prompt": "Create a production UI asset sheet for LottoMind: premium cinematic 3D object icons, midnight navy #06131f background, brushed champagne gold edges, luminous cyan details and restrained violet accents. Strong recognizable silhouettes readable at 48 pixels. Objects centered and fully contained in their own equal cells with 18 percent empty margin. Consistent overhead-front view and controlled soft lighting. No text, letters, numerals, logos, frames, captions, watermarks, or dividing lines. Do not render a screenshot or a full interface. Exactly FOUR icons arranged as a precise 2 by 2 grid. Top left: three perfectly aligned levitating smooth stones with concentric thin gold rings. Top right: a delicate feather floating above an open relaxed palm, release. Bottom left: a sculptural gold heart containing a cyan waveform, love reset. Bottom right: a translucent cyan heart inside a gentle circular gold field halo, heart field. These are decorative music mood symbols, not medical devices."
+    },
+    {
+      "index": 4,
+      "job_id": "9d219577-2a06-44b4-aa49-e904e407c4e9",
+      "status": "completed",
+      "type": "image",
+      "model": "nano_banana_flash",
+      "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260827_170228_9d219577-2a06-44b4-aa49-e904e407c4e9.png",
+      "name": "session",
+      "grid": [
+        3,
+        2
+      ],
+      "names": [
+        "focus",
+        "sleep",
+        "rain",
+        "white-noise",
+        "timer",
+        "save"
+      ],
+      "detail": "Exactly SIX icons arranged as a precise 3 columns by 2 rows grid. Top left: a camera-like focus lens with a crisp cyan focal point. Top middle: crescent moon and a small soft cloud, sleep. Top right: a small rain cloud with five luminous cyan droplets. Bottom left: a compact speaker with a fine white-cyan static particle waveform, white noise. Bottom middle: a simple gold hourglass filled with cyan luminous sand, session timer. Bottom right: a modern gold-edged save disk with a cyan downward arrow, save a result.",
+      "prompt": "Create a production UI asset sheet for LottoMind: premium cinematic 3D object icons, midnight navy #06131f background, brushed champagne gold edges, luminous cyan details and restrained violet accents. Strong recognizable silhouettes readable at 48 pixels. Objects centered and fully contained in their own equal cells with 18 percent empty margin. Consistent overhead-front view and controlled soft lighting. No text, letters, numerals, logos, frames, captions, watermarks, or dividing lines. Do not render a screenshot or a full interface. Exactly SIX icons arranged as a precise 3 columns by 2 rows grid. Top left: a camera-like focus lens with a crisp cyan focal point. Top middle: crescent moon and a small soft cloud, sleep. Top right: a small rain cloud with five luminous cyan droplets. Bottom left: a compact speaker with a fine white-cyan static particle waveform, white noise. Bottom middle: a simple gold hourglass filled with cyan luminous sand, session timer. Bottom right: a modern gold-edged save disk with a cyan downward arrow, save a result."
+    },
+    {
+      "index": 5,
+      "job_id": "32b524f4-c54c-4d1c-bdd3-c25f5cc711d9",
+      "status": "completed",
+      "type": "image",
+      "model": "nano_banana_flash",
+      "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260827_170228_32b524f4-c54c-4d1c-bdd3-c25f5cc711d9.png",
+      "name": "strategy",
+      "grid": [
+        2,
+        2
+      ],
+      "names": [
+        "balanced",
+        "hot",
+        "cold",
+        "dream"
+      ],
+      "detail": "Exactly FOUR icons arranged as a precise 2 by 2 grid. Top left: balanced gold scales holding two equal cyan spheres. Top right: one warm amber sculptural flame with a subtle cyan base. Bottom left: a crystalline cyan snowflake with a small violet rim. Bottom right: a crescent moon surrounding a softly glowing dream cloud. Icons for creative number-set methods, not claims of predictions or improved odds.",
+      "prompt": "Create a production UI asset sheet for LottoMind: premium cinematic 3D object icons, midnight navy #06131f background, brushed champagne gold edges, luminous cyan details and restrained violet accents. Strong recognizable silhouettes readable at 48 pixels. Objects centered and fully contained in their own equal cells with 18 percent empty margin. Consistent overhead-front view and controlled soft lighting. No text, letters, numerals, logos, frames, captions, watermarks, or dividing lines. Do not render a screenshot or a full interface. Exactly FOUR icons arranged as a precise 2 by 2 grid. Top left: balanced gold scales holding two equal cyan spheres. Top right: one warm amber sculptural flame with a subtle cyan base. Bottom left: a crystalline cyan snowflake with a small violet rim. Bottom right: a crescent moon surrounding a softly glowing dream cloud. Icons for creative number-set methods, not claims of predictions or improved odds."
+    },
+    {
+      "index": 6,
+      "job_id": "c6d872b2-0c21-4f80-abd0-829895456d66",
+      "status": "completed",
+      "type": "image",
+      "model": "nano_banana_flash",
+      "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260827_170227_c6d872b2-0c21-4f80-abd0-829895456d66.png",
+      "name": "tools",
+      "grid": [
+        3,
+        2
+      ],
+      "names": [
+        "mega-results",
+        "powerball-results",
+        "official-info",
+        "power-tools",
+        "radar",
+        "quick"
+      ],
+      "detail": "Exactly SIX icons arranged as a precise 3 columns by 2 rows grid. Top left: three blank gold lottery balls with a single small gold star behind them, a generic game results symbol. Top middle: three blank white lottery balls and one red special ball, a generic game results symbol. Top right: a small stylized map of the contiguous United States with a cyan location pin and a tiny open information book. Bottom left: a sleek analysis console with three gold slider knobs and a cyan bar chart. Bottom middle: a circular cyan radar dial with a thin sweeping gold beam. Bottom right: a single gold lightning bolt beside two blank cyan balls, quick creative generation. No official logos and no words or numbers on the balls.",
+      "prompt": "Create a production UI asset sheet for LottoMind: premium cinematic 3D object icons, midnight navy #06131f background, brushed champagne gold edges, luminous cyan details and restrained violet accents. Strong recognizable silhouettes readable at 48 pixels. Objects centered and fully contained in their own equal cells with 18 percent empty margin. Consistent overhead-front view and controlled soft lighting. No text, letters, numerals, logos, frames, captions, watermarks, or dividing lines. Do not render a screenshot or a full interface. Exactly SIX icons arranged as a precise 3 columns by 2 rows grid. Top left: three blank gold lottery balls with a single small gold star behind them, a generic game results symbol. Top middle: three blank white lottery balls and one red special ball, a generic game results symbol. Top right: a small stylized map of the contiguous United States with a cyan location pin and a tiny open information book. Bottom left: a sleek analysis console with three gold slider knobs and a cyan bar chart. Bottom middle: a circular cyan radar dial with a thin sweeping gold beam. Bottom right: a single gold lightning bolt beside two blank cyan balls, quick creative generation. No official logos and no words or numbers on the balls."
+    }
+  ],
+  "processing": {
+    "output": "256x256 JPEG, quality 88",
+    "notes": "Cropped unique icons only. Session and tools sheets repeated the final row; only the first two rows are used. White gutters on tools are excluded. No generated labels or logos are used."
+  }
+}

@@ -7,7 +7,7 @@ async function screenshot(page,info,name){
   if(path){await mkdir(path,{recursive:true});await page.screenshot({path:join(path,info.project.name+'-'+name+'.png')});}
 }
 
-for(const tier of [{points:10000,percent:5,price:'$101.46'},{points:25000,percent:10,price:'$96.12'},{points:50000,percent:15,price:'$90.78'},{points:100000,percent:20,price:'$85.44'}]){
+for(const tier of [{points:12000,percent:5,price:'$101.46'},{points:30000,percent:10,price:'$96.12'},{points:60000,percent:15,price:'$90.78'},{points:120000,percent:20,price:'$85.44'}]){
   test(`New Drop Underground game discount reaches ${tier.percent}% through a pickup and carries into price previews`,async({page,isMobile},info)=>{
     const errors=[];page.on('pageerror',error=>errors.push(error.message));
     page.on('console',message=>{if(message.type()==='error')errors.push(message.text());});
@@ -84,7 +84,7 @@ test('New Drop Underground price comparisons cover all priced products and prese
     if(product.price.amount>0){
       await expect(card.locator('.price-line')).toContainText(money(product.price.amount));
       await expect(card.locator('[data-game-price-value]')).toHaveText(money(product.price.amount-Math.round(product.price.amount*.2)));
-      await expect(card).toContainText('100,000 points required');
+      await expect(card).toContainText('120,000 points required');
     }else{
       await expect(card.locator('.price-line')).toContainText('Pending');
       await expect(card.locator('[data-game-price-preview]')).toHaveCount(0);

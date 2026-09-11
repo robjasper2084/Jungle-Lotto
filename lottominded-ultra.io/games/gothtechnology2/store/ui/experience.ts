@@ -26,15 +26,17 @@ export function initExperience() {
   quality.addEventListener('change',()=>{save('gothtechnology.armory.quality',quality.value);document.dispatchEvent(new Event('store:preferences'));});
   const offline=()=>{$('#offline-notice')!.hidden=navigator.onLine;};offline();window.addEventListener('online',offline);window.addEventListener('offline',offline);
   const soundPreference='gothtechnology.armory.sound';
-  let ambient=$<HTMLAudioElement>('[data-background-audio]'), sound=false;
+  let ambient=$<HTMLAudioElement>('[data-background-audio]'), sound=false, audioRequest=0;
   const soundButtons=$$<HTMLButtonElement>('#sound-toggle,[data-toggle-sound]');
-  const syncSound=(playing:boolean)=>{sound=playing;soundButtons.forEach(button=>{button.setAttribute('aria-pressed',String(playing));button.textContent=playing?'Sound on':'Sound off';});document.documentElement.dataset.sound=playing?'on':'off';document.dispatchEvent(new Event('store:sound'));};
-  const stopAudio=(remember=false)=>{ambient?.pause();if(remember)save(soundPreference,'off');syncSound(false);};
+  const syncSound=(playing:boolean)=>{sound=playing;soundButtons.forEach(button=>{button.setAttribute('aria-pressed',String(playing));button.textContent=playing?'Stop music':'Play music';});document.documentElement.dataset.sound=playing?'on':'off';document.dispatchEvent(new Event('store:sound'));};
+  const stopAudio=(remember=false)=>{audioRequest++;ambient?.pause();if(remember)save(soundPreference,'off');syncSound(false);};
   const startAudio=async(announceFailure=false)=>{
     if(!config.features.enableStoreAudio)return false;
+    const request=++audioRequest;
     ambient??=new Audio(href('media/lottomind-vault-174hz-background.mp3'));ambient.volume=.24;ambient.loop=true;
-    try{await ambient.play();save(soundPreference,'on');syncSound(true);return true;}
-    catch{syncSound(false);if(announceFailure)announce('Audio could not start. Check your browser sound settings and try again.');return false;}
+    syncSound(true);
+    try{await ambient.play();if(request!==audioRequest)return false;save(soundPreference,'on');return true;}
+    catch{if(request!==audioRequest)return false;syncSound(false);if(announceFailure)announce('Audio could not start. Check your browser sound settings and try again.');return false;}
   };
   soundButtons.forEach(soundButton=>soundButton.addEventListener('click',async()=>{
     if(!config.features.enableStoreAudio)return;
@@ -42,14 +44,10 @@ export function initExperience() {
     await startAudio(true);
   }));
   syncSound(false);
-  // Restore only a visitor's explicit opt-in. A first visit remains silent.
-  if(saved(soundPreference)==='on'){
-    void startAudio();
-    const resumeSavedAudio=()=>{if(!sound&&saved(soundPreference)==='on')void startAudio();};
-    window.addEventListener('pointerdown',resumeSavedAudio,{once:true});
-    window.addEventListener('keydown',resumeSavedAudio,{once:true});
-  }
-  document.addEventListener('visibilitychange',()=>{if(document.hidden)stopAudio();else if(ambient&&saved(soundPreference)!=='off')void startAudio();});
+  // Every page starts silent. Returning to a tab never overrides Stop music.
+  document.addEventListener('visibilitychange',()=>{if(document.hidden)stopAudio();});
+  window.addEventListener('pagehide',()=>stopAudio());
+  ambient?.addEventListener('error',()=>{stopAudio();announce('Background music is unavailable. Try Play music again.');});
   document.addEventListener('store:game-launch',()=>stopAudio());
   document.addEventListener('store:media-play',()=>stopAudio());
   const video=$<HTMLVideoElement>('#store-video')!, transmission=$<HTMLDialogElement>('#transmission-dialog')!;

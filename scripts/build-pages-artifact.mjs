@@ -12,6 +12,7 @@ const rootFiles = new Set([
   "index.html",
   "public-site.css",
   "public-site.js",
+  "assets/js/lottomind-merch-prices.js",
 ]);
 const publicRoots = [
   "lottominded-ultra.io/",
@@ -25,6 +26,9 @@ const requiredRoutes = [
   "lottominded-ultra.io/features-app.html",
   "lottominded-ultra.io/games/lottomind-trivia/index.html",
   "lotto mind refined/index.html",
+  "lotto mind refined/companion/index.html",
+  "lotto mind refined/brand-connection.js",
+  "assets/js/lottomind-merch-prices.js",
   "lottomind-stem-studio/index.html",
   ...requiredStoreFiles.map(file => gothtechnologyPath + "/" + file),
 ];

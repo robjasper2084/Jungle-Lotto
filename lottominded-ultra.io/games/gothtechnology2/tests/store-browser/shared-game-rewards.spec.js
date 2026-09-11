@@ -64,7 +64,7 @@ test('shared game rewards combine actual play across all five games and reach st
  await expect(page.locator('#underground-rewards [data-reward-score]')).toHaveText(final.total.toLocaleString('en-US'));
  await page.locator('#underground-rewards .reward-summary').scrollIntoViewIfNeeded();await capture(page,info,'shared-total');
  await page.goto(base+'products/night-protocol-hoodie/');
- const percent=final.total>=100000?20:final.total>=50000?15:final.total>=25000?10:final.total>=10000?5:0;
+ const percent=final.total>=120000?20:final.total>=60000?15:final.total>=30000?10:final.total>=12000?5:0;
  expect(percent).toBeGreaterThanOrEqual(5);
  await expect(page.locator('.product-information>[data-game-price-preview] [data-game-price-label]')).toHaveText(`With your ${percent}% game discount`);
  expect(errors).toEqual([]);expect(failed).toEqual([]);

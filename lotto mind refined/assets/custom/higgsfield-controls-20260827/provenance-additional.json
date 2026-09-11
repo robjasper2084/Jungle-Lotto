@@ -1,0 +1,93 @@
+{
+  "provider": "Higgsfield",
+  "requestedModel": "nano_banana_2",
+  "date": "2026-08-27",
+  "purpose": "Additional name-matched icons requested for Arcade, Home, Radar and Sequence. Decorative assets; accessible labels remain HTML.",
+  "processing": "Cropped 2 by 2 sheets into 256px square JPEG icons. Learning sheet: 16px inner inset to remove generated dividers. Other sheets: 8px inner inset. No semantic image edits.",
+  "jobs": [
+    {
+      "index": 7,
+      "name": "learning",
+      "grid": [
+        2,
+        2
+      ],
+      "names": [
+        "playbook",
+        "academy",
+        "marketplace",
+        "sequence"
+      ],
+      "detail": "Exactly FOUR icons in a 2 by 2 grid. Top left: an open strategy playbook with a small gold tactical diagram of circles and arrows, no text. Top right: a gold-edged graduation cap over an open study book, academy. Bottom left: a compact futuristic shopping bag with a cyan handle, marketplace. Bottom right: five connected cyan spheres forming an orderly rising path, sequence analysis.",
+      "job_id": "2bc610f7-ae2c-4992-bad9-c744fb8eb963",
+      "status": "completed",
+      "type": "image",
+      "model": "nano_banana_flash",
+      "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260827_171429_2bc610f7-ae2c-4992-bad9-c744fb8eb963.png",
+      "prompt": "Create a production UI asset sheet for LottoMind: premium cinematic 3D object icons, midnight navy #06131f background, brushed champagne gold edges, luminous cyan details and restrained violet accents. Strong recognizable silhouettes readable at 48 pixels. Objects centered and fully contained in their own equal cells with 18 percent empty margin. Consistent overhead-front view and controlled soft lighting. No text, letters, numerals, logos, frames, captions, watermarks, or dividing lines. Do not render a screenshot or a full interface. Exactly FOUR icons in a 2 by 2 grid. Top left: an open strategy playbook with a small gold tactical diagram of circles and arrows, no text. Top right: a gold-edged graduation cap over an open study book, academy. Bottom left: a compact futuristic shopping bag with a cyan handle, marketplace. Bottom right: five connected cyan spheres forming an orderly rising path, sequence analysis."
+    },
+    {
+      "index": 8,
+      "name": "research",
+      "grid": [
+        2,
+        2
+      ],
+      "names": [
+        "scanner",
+        "news",
+        "pattern",
+        "archive"
+      ],
+      "detail": "Exactly FOUR icons in a 2 by 2 grid. Top left: a ticket-shaped blank card being read by a cyan camera scanning beam. Top right: a folded news sheet with abstract cyan image blocks and gold ruled lines, no letters. Bottom left: a magnifying glass above a repeating grid of luminous cyan dots, pattern exploration. Bottom right: a sleek archive file drawer with a tiny gold clock, historical records.",
+      "job_id": "d0a59a05-5d31-4591-adf4-483df08da1fc",
+      "status": "completed",
+      "type": "image",
+      "model": "nano_banana_flash",
+      "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260827_171429_d0a59a05-5d31-4591-adf4-483df08da1fc.png",
+      "prompt": "Create a production UI asset sheet for LottoMind: premium cinematic 3D object icons, midnight navy #06131f background, brushed champagne gold edges, luminous cyan details and restrained violet accents. Strong recognizable silhouettes readable at 48 pixels. Objects centered and fully contained in their own equal cells with 18 percent empty margin. Consistent overhead-front view and controlled soft lighting. No text, letters, numerals, logos, frames, captions, watermarks, or dividing lines. Do not render a screenshot or a full interface. Exactly FOUR icons in a 2 by 2 grid. Top left: a ticket-shaped blank card being read by a cyan camera scanning beam. Top right: a folded news sheet with abstract cyan image blocks and gold ruled lines, no letters. Bottom left: a magnifying glass above a repeating grid of luminous cyan dots, pattern exploration. Bottom right: a sleek archive file drawer with a tiny gold clock, historical records."
+    },
+    {
+      "index": 9,
+      "name": "number-tools",
+      "grid": [
+        2,
+        2
+      ],
+      "names": [
+        "mirror",
+        "pairs",
+        "wheel",
+        "statistics"
+      ],
+      "detail": "Exactly FOUR icons in a 2 by 2 grid. Top left: two matching cyan spheres reflected in a freestanding gold-edged mirror. Top right: two interlocked gold links beside a pair of cyan spheres, pair analysis. Bottom left: a symmetrical radial wheel of cyan spheres connected by thin gold spokes. Bottom right: a clear cyan bar graph with a gold trend line and a small magnifier, statistics. No words or digits.",
+      "job_id": "1f4e0885-cfe1-4c63-aed1-ac21811472ab",
+      "status": "completed",
+      "type": "image",
+      "model": "nano_banana_flash",
+      "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260827_171429_1f4e0885-cfe1-4c63-aed1-ac21811472ab.png",
+      "prompt": "Create a production UI asset sheet for LottoMind: premium cinematic 3D object icons, midnight navy #06131f background, brushed champagne gold edges, luminous cyan details and restrained violet accents. Strong recognizable silhouettes readable at 48 pixels. Objects centered and fully contained in their own equal cells with 18 percent empty margin. Consistent overhead-front view and controlled soft lighting. No text, letters, numerals, logos, frames, captions, watermarks, or dividing lines. Do not render a screenshot or a full interface. Exactly FOUR icons in a 2 by 2 grid. Top left: two matching cyan spheres reflected in a freestanding gold-edged mirror. Top right: two interlocked gold links beside a pair of cyan spheres, pair analysis. Bottom left: a symmetrical radial wheel of cyan spheres connected by thin gold spokes. Bottom right: a clear cyan bar graph with a gold trend line and a small magnifier, statistics. No words or digits."
+    },
+    {
+      "index": 10,
+      "name": "community",
+      "grid": [
+        2,
+        2
+      ],
+      "names": [
+        "community",
+        "notifications",
+        "trophy",
+        "help"
+      ],
+      "detail": "Exactly FOUR icons in a 2 by 2 grid. Top left: a circle of three friendly abstract human busts joined by gold connecting arcs, community. Top right: a small gold notification bell with a cyan halo. Bottom left: a sleek gold trophy cup with a single cyan star, challenges and achievements. Bottom right: a gold and cyan lifesaving ring, help and support.",
+      "job_id": "86a3d262-f777-4b68-9220-daf1da50aacf",
+      "status": "completed",
+      "type": "image",
+      "model": "nano_banana_flash",
+      "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260827_171429_86a3d262-f777-4b68-9220-daf1da50aacf.png",
+      "prompt": "Create a production UI asset sheet for LottoMind: premium cinematic 3D object icons, midnight navy #06131f background, brushed champagne gold edges, luminous cyan details and restrained violet accents. Strong recognizable silhouettes readable at 48 pixels. Objects centered and fully contained in their own equal cells with 18 percent empty margin. Consistent overhead-front view and controlled soft lighting. No text, letters, numerals, logos, frames, captions, watermarks, or dividing lines. Do not render a screenshot or a full interface. Exactly FOUR icons in a 2 by 2 grid. Top left: a circle of three friendly abstract human busts joined by gold connecting arcs, community. Top right: a small gold notification bell with a cyan halo. Bottom left: a sleek gold trophy cup with a single cyan star, challenges and achievements. Bottom right: a gold and cyan lifesaving ring, help and support."
+    }
+  ]
+}

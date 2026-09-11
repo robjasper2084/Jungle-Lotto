@@ -1,0 +1,26 @@
+.site-header .music-toggle {
+  flex-shrink: 0;
+  min-height: 44px;
+  padding: 10px 14px;
+  border: 1px solid var(--rule);
+  background: #080c0d;
+  color: var(--goth-cream);
+  font: 600 13px var(--sans);
+  white-space: nowrap;
+}
+.site-header .music-toggle[aria-pressed="true"] {
+  border-color: var(--goth-gold);
+  color: var(--goth-gold-light);
+}
+@media (max-width: 1280px) {
+  body[data-store-v2] .desktop-nav { display: none; }
+  body[data-store-v2] .menu-trigger { display: inline-flex; }
+}
+@media (max-width: 680px) {
+  body[data-store-v2] .site-header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    row-gap: 6px;
+  }
+  .site-header .music-toggle { grid-column: 1 / -1; justify-self: end; }
+}

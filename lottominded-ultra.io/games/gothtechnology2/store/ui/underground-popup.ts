@@ -83,6 +83,14 @@ export function initUndergroundPopup(){
     $<HTMLAnchorElement>('[data-game-fullpage]',dialog)!.href=href(selected.path);
     document.dispatchEvent(new Event('store:game-launch'));openDialog(dialog.id,button);launch();
   }));
+  // A game link from LottoMind selects only a registered title. Sound remains off.
+  const requestedGame = new URLSearchParams(location.search).get('arcade');
+  if (REWARD_GAMES.some(game => game.id === requestedGame)) {
+    const picker = $<HTMLDetailsElement>('#reward-game-picker');
+    if (picker) picker.open = true;
+    const button = $$<HTMLButtonElement>('[data-open-reward-game]').find(button => button.dataset.openRewardGame === requestedGame);
+    if (button) requestAnimationFrame(() => button.click());
+  }
   retry.addEventListener('click',launch);
   window.addEventListener('message',event=>{
     if(!dialog.open||!frame||event.source!==frame.contentWindow||event.origin!==location.origin)return;

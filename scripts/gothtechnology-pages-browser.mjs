@@ -7,7 +7,7 @@ import {resolve,extname,sep} from 'node:path';
 const repo=resolve(import.meta.dirname,'..'),root=resolve(repo,'_site');
 const require=createRequire(resolve(repo,'lottominded-ultra.io/games/gothtechnology2/package.json'));
 const {chromium}=require('playwright');
-const mime={'.html':'text/html','.js':'text/javascript','.css':'text/css','.png':'image/png','.webp':'image/webp','.jpg':'image/jpeg','.jpeg':'image/jpeg','.mp4':'video/mp4','.mp3':'audio/mpeg','.json':'application/json'};
+const mime={'.html':'text/html','.js':'text/javascript','.mjs':'text/javascript','.css':'text/css','.svg':'image/svg+xml','.png':'image/png','.webp':'image/webp','.jpg':'image/jpeg','.jpeg':'image/jpeg','.mp4':'video/mp4','.mp3':'audio/mpeg','.json':'application/json'};
 const server=createServer(async(req,res)=>{
   try{
     const pathname=decodeURIComponent(new URL(req.url,'http://localhost').pathname);
@@ -23,7 +23,7 @@ const server=createServer(async(req,res)=>{
 await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
 const origin=`http://127.0.0.1:${server.address().port}`;
 const browser=await chromium.launch({headless:true});
-const output=resolve(repo,'output/pages-browser');await mkdir(output,{recursive:true});
+const output=resolve(process.env.PAGES_BROWSER_OUTPUT || resolve(repo,'output/pages-browser'));await mkdir(output,{recursive:true});
 try{
   for(const [name,viewport] of [['desktop',{width:1440,height:900}],['mobile',{width:390,height:844}]]){
     const context=await browser.newContext({viewport,reducedMotion:'reduce'}),page=await context.newPage();
@@ -76,6 +76,20 @@ try{
     const removed=await context.request.get(origin+'/Jungle-Lotto/lottominded-ultra.io/games/gothtechnology2/c-files/');
     assert.equal(removed.status(),404);
     assert.deepEqual(errors,[]);console.log(`PASS ${name}: packaged Shadow Ops, Vault Rush, and Game Grid Static WAV play and bank rewards; C-Files removed; no browser errors`);
+    await page.goto(origin+'/Jungle-Lotto/lotto%20mind%20refined/');
+    await page.locator('.hud-allowance').waitFor();
+    const enter=page.getByRole('button',{name:'Enter LottoMind App',exact:true});if(await enter.isVisible())await enter.click();
+    await page.getByRole('button',{name:'GOTHTECHNOLOGY × LottoMind',exact:true}).click();
+    await page.getByRole('button',{name:'Shop GOTHTECHNOLOGY',exact:true}).click();
+    await page.locator('.gt-product').first().waitFor();
+    assert.equal(await page.locator('.gt-product').count(),19);
+    assert.equal(await page.locator('.gt-product-copy > small').first().textContent(),'Knight Protocol');
+    await page.getByLabel('Search products',{exact:true}).fill('hoodie');
+    assert.equal(await page.locator('[data-gt-count]').textContent(),'2 products');
+    await page.getByText('Pricing & details',{exact:true}).first().click();
+    assert.ok(await page.locator('.gt-product details').first().evaluate(node=>node.open));
+    await page.screenshot({path:resolve(output,name+'-packaged-companion.png')});
+    assert.deepEqual(errors,[]);console.log(`PASS ${name}: packaged LottoMind loads the shared catalog, named collections and pricing dropdowns`);
     await context.close();
   }
 }finally{await browser.close();server.closeAllConnections();await new Promise(resolve=>server.close(resolve));}
