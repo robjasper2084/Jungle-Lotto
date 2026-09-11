@@ -1,0 +1,32 @@
+---
+import Shell from '../../layouts/Shell.astro';
+import ProductCard from '../../components/ProductCard.astro';
+import { buildProvider } from '../../commerce/provider';
+import { href } from '../../utilities/paths';
+import { appHref, companionCopy, publicDropUrl } from '../../content/companion';
+const products = (await buildProvider.getProducts()).filter(product => ['night-protocol-hoodie','gothtechnology-luggage-charm'].includes(product.handle));
+---
+<Shell title="LottoMind — Carry your signal" path="lottomind/" description={companionCopy}>
+  <section class="companion-intro section">
+    <div><p class="mono gold">GOTHTECHNOLOGY × LOTTOMIND</p><h1>Create. Play.<br/>Carry your signal.</h1><p class="lead">LottoMind is the digital companion to GOTHTECHNOLOGY. The objects, characters, games, and music share one Detroit-born world.</p><div class="button-row"><a class="button" href={appHref()}>Open LottoMind</a><a class="button secondary" href={href('#current-drop')}>Explore the Drop</a></div></div>
+    <img src={href('media/underground-armory-campaign-v1.webp')} alt="Robot RAHBE Underground campaign artwork in the black and gold Armory world" width="1536" height="1024"/>
+  </section>
+  <section class="section companion-paths" aria-label="Explore the connected world">
+    <a href={appHref('shop')}><small>01 / CARRY</small><h2>The Armory</h2><p>Explore the same product catalog from Marketplace Vault, then choose your gear on GOTHTECHNOLOGY.</p><span>Open Marketplace gear →</span></a>
+    <a href={appHref('companion')}><small>02 / PLAY</small><h2>Follow the signal</h2><p>Five games build the same discount preview on this browser. No purchase is required.</p><span>Games & progress →</span></a>
+    <a href={appHref('radio-station')}><small>03 / LISTEN</small><h2>The drop soundtrack</h2><p>Explore the sound of the Armory in LottoMind Radio. Press play when you are ready.</p><span>Open the radio →</span></a>
+    <a href={appHref('companion')}><small>04 / CREATE</small><h2>Your transmission</h2><p>Use Knight Protocol, RAHBE, and Detroit 2084 briefs in Dream Oracle and Video Studio.</p><span>Choose a creative brief →</span></a>
+  </section>
+  <section class="section companion-drop" aria-labelledby="connected-drop-title">
+    <div><p class="mono gold">DROP 001 / KNIGHT PROTOCOL</p><h2 id="connected-drop-title">From the city.<br/>Into your world.</h2><p>A hoodie. A companion. A game beneath the streets. Begin with Knight Protocol and take the story into LottoMind.</p><audio class="companion-audio" controls preload="none" aria-label="Knight Protocol soundtrack — LottoMind Vault 174" src={href('media/lottomind-vault-174hz-background.mp3')}></audio><p class="audio-caption">LottoMind Vault 174 · From the existing LottoMind library</p><a class="text-link" href={href('collections/night-protocol/')}>Explore Knight Protocol →</a></div>
+    <div class="companion-products">{products.map(product => <ProductCard product={product} compact/>)}</div>
+  </section>
+  <section class="section companion-share" aria-labelledby="share-drop-title"><div><p class="mono gold">TAKE THE SIGNAL WITH YOU</p><h2 id="share-drop-title">One link to the drop.</h2><p>Scan the code to open the public Knight Protocol drop on your phone. Use the same link on future packaging, tags, or campaign material.</p><a class="text-link" href={publicDropUrl}>Open the public drop →</a><a class="text-link" href={href('media/knight-protocol-qr.svg')} download="knight-protocol-qr.svg">Download QR code ↓</a></div><a href={publicDropUrl} aria-label="Open the Knight Protocol public drop"><img src={href('media/knight-protocol-qr.svg')} width="224" height="224" alt="QR code for the public Knight Protocol drop"/></a></section>
+  <p class="section companion-note">Products remain concept previews. Game discounts are saved on this browser and are not redeemable yet. LottoMind account credits are separate.</p>
+</Shell>
+<style>
+.companion-intro{display:grid;grid-template-columns:1fr 1fr;gap:6vw;align-items:center}.companion-intro h1{font-size:clamp(40px,5vw,76px);line-height:1.03}.lead{font:18px/1.7 Arial,sans-serif;max-width:50ch;margin:25px 0}.companion-intro img{width:100%;height:auto;aspect-ratio:1.2;object-fit:cover;border:1px solid #544627}
+.companion-paths{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;padding-top:0}.companion-paths>a{display:block;border:1px solid #544627;background:#0a1010;padding:26px;text-decoration:none}.companion-paths small{color:#c6a85b}.companion-paths h2{font-size:29px;margin:24px 0 15px}.companion-paths p,.companion-drop p,.companion-share p{font:16px/1.75 Arial,sans-serif}.companion-paths span{display:block;color:#70c7d1;font-size:15px;margin-top:24px}
+.companion-drop{border-block:1px solid #544627;display:grid;grid-template-columns:1fr 1.3fr;gap:6vw;align-items:center}.companion-drop h2,.companion-share h2{font-size:clamp(32px,4vw,54px)}.companion-products{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}.companion-audio{width:100%;max-width:420px;margin-top:22px}.companion-drop .audio-caption{font-size:13px;color:#b2b7ad;margin:8px 0 24px}.companion-share{display:flex;align-items:center;justify-content:space-between;gap:50px}.companion-share p{max-width:55ch}.companion-share .text-link{display:block;width:fit-content;margin-top:15px}.companion-share img{background:white;max-width:none}.companion-note{padding-top:0;font:14px/1.7 Arial,sans-serif;color:#b8bbaa}
+@media(max-width:1000px){.companion-paths{grid-template-columns:repeat(2,1fr)}}@media(max-width:680px){.companion-intro,.companion-drop{grid-template-columns:1fr}.companion-intro img{aspect-ratio:1.65}.companion-paths{grid-template-columns:1fr}.companion-share{align-items:flex-start;flex-direction:column}.companion-products{gap:12px}}
+</style>

@@ -3,9 +3,7 @@
 
   const BASE = window.__LOTTOMIND_BASE__ || "/lotto%20mind%20refined";
   const CONFIG_URL = `${BASE}/revenuecat-config.json?v=revenuecat-web-20260722`;
-  const API_KEY_STORAGE = "lottomind.revenuecat.apiKey";
   const USER_ID_STORAGE = "lottomind.revenuecat.appUserId";
-  const MOCK_ACCESS_STORAGE = "lottomind.revenuecat.mockAccess";
   const CONFIG_DEFAULTS = {
     apiKey: "",
     entitlementIds: ["pro", "premium", "vip"],
@@ -70,18 +68,12 @@
   async function getConfig() {
     if (!configPromise) {
       configPromise = (async () => {
-        const params = new URLSearchParams(window.location.search);
-        const queryKey = params.get("rc_api_key");
-        if (queryKey) localStorage.setItem(API_KEY_STORAGE, queryKey.trim());
-        const storedKey = localStorage.getItem(API_KEY_STORAGE) || "";
         const jsonConfig = await loadJsonConfig();
         const windowConfig = window.LOTTOMIND_REVENUECAT_CONFIG || {};
         return normalizeConfig({
           ...jsonConfig,
           ...windowConfig,
-          ...(storedKey ? { apiKey: storedKey } : {}),
-          ...(queryKey ? { apiKey: queryKey } : {}),
-          mockMode: params.has("rc_mock") || windowConfig.mockMode === true || jsonConfig.mockMode === true,
+          mockMode: window.LottoMindEnvironment?.isProduction === false && windowConfig.mockMode === true,
         });
       })();
     }
@@ -144,12 +136,11 @@
     emit({ entitlementIds: config.entitlementIds });
 
     if (isMockConfigured(config)) {
-      const isEntitled = localStorage.getItem(MOCK_ACCESS_STORAGE) === "true";
       return emit({
-        status: isEntitled ? "active" : "ready",
-        message: isEntitled ? "RevenueCat mock entitlement is active." : "RevenueCat mock checkout is ready for local QA.",
+        status: "ready",
+        message: "RevenueCat checkout simulation is available only in this non-production preview and never grants an entitlement.",
         isConfigured: true,
-        isEntitled,
+        isEntitled: false,
         priceLabel: "Mock Pro",
         packageLabel: "QA package",
         appUserId: "mock-user",
@@ -226,12 +217,11 @@
   async function purchase(options = {}) {
     const config = await getConfig();
     if (isMockConfigured(config)) {
-      localStorage.setItem(MOCK_ACCESS_STORAGE, "true");
       return emit({
-        status: "active",
-        message: "RevenueCat mock purchase complete.",
+        status: "ready",
+        message: "RevenueCat preview checkout completed without granting an entitlement.",
         isConfigured: true,
-        isEntitled: true,
+        isEntitled: false,
         priceLabel: "Mock Pro",
         packageLabel: "QA package",
         appUserId: "mock-user",

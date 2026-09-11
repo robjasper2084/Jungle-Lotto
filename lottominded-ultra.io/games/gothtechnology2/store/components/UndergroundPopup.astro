@@ -12,13 +12,23 @@ const game=href('arcade/robot-rahbe-underground/');
   </button>
   <div class="underground-copy"><p class="mono gold">NEW DROP / PLAYABLE FEATURE</p><h3 id="underground-feature-title">ROBOT RAHBE<br/><span>UNDERGROUND</span></h3><p>Descend beneath Detroit. Explore seven depths, recover the number seals, and face the Warden.</p><button class="button" type="button" data-open-underground aria-haspopup="dialog" aria-controls="underground-dialog">Play Underground <Icon name="play" size={16}/></button><p class="underground-note">Free to play · Keyboard, touch & gamepad · Sound starts off</p></div>
   <section class="underground-reward" id="underground-rewards" data-underground-reward aria-label="Game discount preview">
-    <h4 class="reward-kicker">ALL GAMES / ONE REWARD</h4>
+    <div class="reward-signal-heading">
+      <h4 class="reward-kicker">ALL GAMES / ONE REWARD</h4>
+      <button class="reward-motion-toggle" type="button" data-reward-motion-toggle aria-pressed="false" hidden>Pause motion</button>
+    </div>
     <dl class="reward-summary">
       <div><dt>Total points</dt><dd data-reward-score>0</dd></div>
       <div><dt>Discount preview</dt><dd data-reward-percent>0%</dd></div>
       <div class="reward-milestone"><dt>Next milestone</dt><dd data-reward-next>{DISCOUNT_TIERS[0].points.toLocaleString('en-US')} points to 5%</dd></div>
     </dl>
-    <progress value="0" max={DISCOUNT_TIERS[0].points} aria-label="Progress toward the next game discount tier"></progress>
+    <ol class="reward-signal-track" aria-label="Your discount preview journey">
+      {DISCOUNT_TIERS.map((tier,index)=><li data-signal-tier={tier.points} data-reached="false" style={`--signal-delay:${index * -.8}s`}>
+        <span class="reward-signal-rail" aria-hidden="true"><i></i></span>
+        <span class="reward-signal-label"><strong>{tier.percent}%</strong><span>{tier.points.toLocaleString('en-US')} pts</span></span>
+        <small data-signal-state>Target</small>
+      </li>)}
+    </ol>
+    <progress class="reward-accessible-progress" value="0" max={DISCOUNT_TIERS[0].points} aria-label="Progress toward the next game discount tier"></progress>
     <p class="reward-note">Preview only. Discounts are not redeemable yet. No purchase required.</p>
     <div class="reward-disclosures">
       <details class="reward-disclosure" id="reward-game-picker">

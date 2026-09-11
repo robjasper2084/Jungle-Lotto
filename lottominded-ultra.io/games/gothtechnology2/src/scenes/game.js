@@ -362,6 +362,8 @@ export class GothTechnologyGame {
     this.rewardMeaningfulActions = 0;
     this.rewardMatchActions = 0;
     this.rewards = window.LottoMindGameRewards?.createClient?.({
+      // The Armory wrapper banks browser-only discount previews, not LottoCredits.
+      disabled: Boolean(document.querySelector('meta[name="goth-reward-game"]')),
       gameId: "fighter",
       buildId: "fighter-2026-06-25",
       mode: this.training ? "training" : this.cpuEnabled ? "versus_cpu" : "local_pvp",

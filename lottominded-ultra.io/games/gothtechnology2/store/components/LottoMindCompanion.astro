@@ -1,0 +1,13 @@
+---
+import { appHref, companionCopy } from '../content/companion';
+import { href } from '../utilities/paths';
+---
+<section class="companion-strip" aria-labelledby="companion-strip-title">
+  <div><p class="mono gold">GOTHTECHNOLOGY × LOTTOMIND</p><h2 id="companion-strip-title">Carry your signal.</h2><p>{companionCopy}</p></div>
+  <div class="button-row"><a class="button" href={appHref()}>Open LottoMind</a><a class="text-link" href={href('lottomind/')}>Explore the connection →</a></div>
+</section>
+<style>
+.companion-strip{display:flex;justify-content:space-between;align-items:center;gap:28px;padding:38px max(4.4vw,20px);border-block:1px solid #544627;background:linear-gradient(105deg,#12120d,#071012)}
+.companion-strip h2{font-size:clamp(28px,3vw,44px);margin:8px 0}.companion-strip p{max-width:52ch;font-size:16px;line-height:1.65}.companion-strip .mono{font-size:12px;letter-spacing:.13em}.companion-strip .button-row{flex-shrink:0;align-items:center}
+@media(max-width:850px){.companion-strip{align-items:flex-start;flex-direction:column}.companion-strip .button-row{flex-wrap:wrap}}
+</style>

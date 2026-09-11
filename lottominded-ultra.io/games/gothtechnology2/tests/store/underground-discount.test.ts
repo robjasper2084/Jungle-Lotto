@@ -5,8 +5,8 @@ import {demoProducts} from '../../store/content/catalog.ts';
 
 const memory=()=>{const values=new Map<string,string>();return {getItem:(key:string)=>values.get(key)??null,setItem:(key:string,value:string)=>{values.set(key,value);}};};
 
-test('discount targets use the revised accessible milestones and stop at 20 percent',()=>{
-  assert.deepEqual(DISCOUNT_TIERS.map(tier=>tier.points),[10000,25000,50000,100000]);
+test('discount milestones require 20 percent more points and stop at 20 percent',()=>{
+  assert.deepEqual(DISCOUNT_TIERS.map(tier=>tier.points),[12000,30000,60000,120000]);
   assert.equal(discountProgress(0).percent,0);
   for(let index=0;index<DISCOUNT_TIERS.length;index++){
     const tier=DISCOUNT_TIERS[index];
@@ -15,7 +15,7 @@ test('discount targets use the revised accessible milestones and stop at 20 perc
   }
   assert.equal(discountProgress(9999999).percent,20);
   assert.equal(discountProgress(500000).next,null);
-  assert.equal(discountProgress(99000).remaining,1000);
+  assert.equal(discountProgress(119000).remaining,1000);
   for(const invalid of [-1,NaN,Infinity,'500000',500000.5,null])assert.equal(discountProgress(invalid).percent,0);
 });
 
@@ -30,7 +30,7 @@ test('all games and new runs add points, while polling and resumed checkpoints c
  recordGameProgress('static-wars',run('first',1000),storage);
  recordGameProgress('vault-rush',run('first',500),storage);
  recordGameProgress('gothtechnology',run('first',2500),storage);
- const state=readDiscountPreview(storage);assert.equal(state.totalPoints,10000);assert.equal(state.percent,5);assert.equal(state.games.underground.points,6000);assert.equal(state.games.underground.runs,2);
+ const state=readDiscountPreview(storage);assert.equal(state.totalPoints,10000);assert.equal(state.percent,0);assert.equal(state.games.underground.points,6000);assert.equal(state.games.underground.runs,2);
  recordGameProgress('vault-rush',run('first',1500),storage);assert.equal(readDiscountPreview(storage).totalPoints,11000);
  recordGameProgress('static-wave',run('first',200),storage);
  recordGameProgress('static-wave',run('first',200),storage);
@@ -77,8 +77,8 @@ test('a full storage quota keeps new points visible in the current session',()=>
 });
 test('loadout estimate rounds in minor currency units and never discounts more than 20 percent',()=>{
   assert.deepEqual(discountEstimate(500000,8900),{percent:20,saving:1780,total:7120});
-  assert.deepEqual(discountEstimate(10000,1999),{percent:5,saving:100,total:1899});
-  assert.deepEqual(discountEstimate(9999,8900),{percent:0,saving:0,total:8900});
+  assert.deepEqual(discountEstimate(12000,1999),{percent:5,saving:100,total:1899});
+  assert.deepEqual(discountEstimate(11999,8900),{percent:0,saving:0,total:8900});
   assert.deepEqual(discountEstimate(999999999,0),{percent:20,saving:0,total:0});
 });
 
@@ -97,5 +97,5 @@ test('all fourteen priced products and variants are raised 20 percent while five
     assert.ok(product.variants.every(variant=>variant.price.amount===expected),product.handle+' variants');
     assert.equal(product.compareAtPrice,null,'No fabricated historical sale price');
   }
-  assert.deepEqual(discountEstimate(100000,demoProducts[0].price.amount),{percent:20,saving:2136,total:8544});
+  assert.deepEqual(discountEstimate(120000,demoProducts[0].price.amount),{percent:20,saving:2136,total:8544});
 });

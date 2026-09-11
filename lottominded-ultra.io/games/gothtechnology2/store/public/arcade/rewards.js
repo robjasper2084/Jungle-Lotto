@@ -2,7 +2,7 @@
 import {REWARD_GAMES} from './games.js';
 export const DISCOUNT_PREVIEW_KEY='gothtechnology.arcade.discount-preview.v2';
 export const LEGACY_DISCOUNT_KEY='gothtechnology.underground.discount-preview.v1';
-export const DISCOUNT_TIERS=Object.freeze([{points:10000,percent:5},{points:25000,percent:10},{points:50000,percent:15},{points:100000,percent:20}].map(tier=>Object.freeze(tier)));
+export const DISCOUNT_TIERS=Object.freeze([{points:12000,percent:5},{points:30000,percent:10},{points:60000,percent:15},{points:120000,percent:20}].map(tier=>Object.freeze(tier)));
 const ids=new Set(REWARD_GAMES.map(game=>game.id));
 const safeId=value=>typeof value==='string'&&/^[a-zA-Z0-9_-]{1,100}$/.test(value)&&!['__proto__','constructor','prototype'].includes(value);
 export function validScore(value){return typeof value==='number'&&Number.isSafeInteger(value)&&value>=0?value:0;}

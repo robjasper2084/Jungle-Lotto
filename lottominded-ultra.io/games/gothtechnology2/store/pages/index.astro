@@ -4,6 +4,7 @@ import SignalCards from '../components/SignalCards.astro';
 import ProductCard from '../components/ProductCard.astro';
 import EquipmentArt from '../components/EquipmentArt.astro';
 import Newsletter from '../components/Newsletter.astro';
+import LottoMindCompanion from '../components/LottoMindCompanion.astro';
 import Icon from '../components/Icon.astro';
 import CathedralHero from '../components/CathedralHero.astro';
 import CampaignFilm from '../components/CampaignFilm.astro';
@@ -14,6 +15,7 @@ import { buildProvider } from '../commerce/provider';
 import { href, media } from '../utilities/paths';
 import { formatMoney } from '../commerce/money';
 import '../styles/home-polish.css';
+import '../styles/reward-motion.css';
 const products = await buildProvider.getProducts();
 const isDemoMode = conversionMode(products) === 'interest';
 const drop = products.find(p => p.handle === 'night-protocol-hoodie') || products[0];
@@ -62,6 +64,7 @@ const cases = [
   <section class="armory-row lookbook-row" id="combat-lookbook" aria-labelledby="lookbook-title"><div class="row-heading"><h2 id="lookbook-title">Combat<br/> Lookbook</h2><p>Detroit references.<br/> World-building in motion.</p><a class="button secondary" href={href('lookbook/')}>View lookbook</a></div><a class="lookbook-strip" href={href('lookbook/')} aria-label="Explore the Combat Lookbook"><img src={href('media/armory-lookbook.webp')} alt="Campaign concepts: Detroit hoodie in an industrial alley, a rear garment view, LottoMind charm on a bag, and embroidered sleeve detail" width="2400" height="500" loading="lazy"/></a></section>
   <section class="armory-row portal-row" id="enter-the-fight" aria-labelledby="portal-title"><div class="row-heading"><h2 id="portal-title">Enter<br/> The Fight</h2><p>Play the original fighting game for free. No purchase required.</p><a class="button" href={href('play/')}>Play the Game</a></div><div class="portal-display"><a class="portal-art" href={href('play/')} aria-label="Launch GOTHTECHNOLOGY"><img src={href('media/armory-city.webp')} alt="Dark futuristic Detroit city campaign concept" width="2100" height="600" loading="lazy"/><span class="portal-wordmark"><small>GOTHTECHNOLOGY</small><strong>+PLAY</strong><span aria-hidden="true">✣</span></span><span class="portal-corner corner-tl" aria-hidden="true">+</span><span class="portal-corner corner-tr" aria-hidden="true">+</span><span class="portal-corner corner-bl" aria-hidden="true">+</span><span class="portal-corner corner-br" aria-hidden="true">+</span></a><div class="portal-status"><p>// PORTAL STATIC</p><dl><dt>Gateway:</dt><dd>Open</dd><dt>Player:</dt><dd>You</dd><dt>Mission:</dt><dd>Unknown</dd></dl><span class="gt-seal" aria-hidden="true">GT</span><small>No purchase required</small></div></div></section>
   <section class="armory-origin" aria-labelledby="origin-title"><div class="origin-heading"><h2 id="origin-title">Designed in Detroit.<br/> Transmitted<br/> worldwide.</h2><span class="gold-rule" aria-hidden="true"></span><p>Origin matters.</p></div><div class="origin-text"><p>Created by Digital Static in Detroit. Sound, underground gaming, and industrial design connect the fighting game to the objects in the armory.</p><p>Thank you for supporting independent creators and real visions.</p><a class="text-link" href={href('about/')}>Explore the origin <Icon size={14}/></a></div><img src={href('assets/user-stage/detroit-riverfront.webp')} alt="Detroit riverfront and skyline from the original game's stage artwork" width="1600" height="900" loading="lazy"/></section>
+  <LottoMindCompanion/>
   <Newsletter/>
   <dialog id="material-display" class="material-dialog" aria-labelledby="material-title">
     <div class="dialog-heading"><h2 id="material-title">Material study</h2><button class="icon-button" data-close-dialog aria-label="Close material study"><Icon name="close"/></button></div>

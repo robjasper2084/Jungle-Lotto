@@ -1,0 +1,56 @@
+{
+  "provider": "Higgsfield",
+  "createdAt": "2026-08-27",
+  "purpose": "Abundance Radio artwork refresh; original illustrations, not official platform marks.",
+  "processing": "Separated generated atlas tiles; resized JPEG exports at quality 88. Text and functional controls remain HTML. No source images overwritten.",
+  "sources": [
+    {
+      "name": "radio-hero",
+      "jobId": "c8cc55ce-6448-4655-91fb-2826aa1608b2",
+      "requestedModel": "nano_banana_pro",
+      "reportedModel": "nano_banana_2",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260827_161923_c8cc55ce-6448-4655-91fb-2826aa1608b2.png",
+      "prompt": "Original LottoMind music-technology artwork. Premium cinematic 3D product illustration, midnight black and navy, brushed champagne gold, luminous cyan and subtle violet accents. Controlled elegant light, crisp strong silhouette readable at thumbnail size. No words, no letters, no numbers, no watermark, no borders containing text, no UI screenshots, no unrelated logos. All subjects fully visible with generous safe margins. A beautiful futuristic tabletop radio receiver with gold tuning dial, fine cyan waveform display and twin antenna broadcast arcs, on a dark reflective studio desk, with a subtle cosmic blue halo. Radio hardware centered, fills middle 70 percent. Single hero illustration, restrained background, no headphones or microphone."
+    },
+    {
+      "name": "action-icons",
+      "jobId": "726e6549-925e-4375-9e4f-ab2fd6652670",
+      "requestedModel": "nano_banana_pro",
+      "reportedModel": "nano_banana_2",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260827_161923_726e6549-925e-4375-9e4f-ab2fd6652670.png",
+      "prompt": "Original LottoMind music-technology artwork. Premium cinematic 3D product illustration, midnight black and navy, brushed champagne gold, luminous cyan and subtle violet accents. Controlled elegant light, crisp strong silhouette readable at thumbnail size. No words, no letters, no numbers, no watermark, no borders containing text, no UI screenshots, no unrelated logos. All subjects fully visible with generous safe margins. Precisely aligned icon asset atlas: EXACTLY 3 equal columns and 2 equal rows, six separate SQUARE tiles with invisible divisions, identical solid midnight #03111b background. Each icon centered in its own tile with 18 percent empty padding. Top row left: a gold tuning fork surrounded by a cyan sine wave ring (Reset Wheel). Top row middle: a beautiful gold studio microphone in cyan shock mount (Sonic Studio). Top row right: futuristic cinema camera with cyan lens and violet clapperboard (Video Studio). Bottom row left: luminous violet crescent moon floating above an open gold dream journal (Dream Oracle). Bottom row middle: a gold archival vault drawer with cyan record files (History Vault). Bottom row right: a gold music note standing with two sleeve-covered vinyl records in a neat collection (Music Store). Six distinct objects, no words, no digits, no labels. Perfect regular grid, every object wholly inside its assigned square."
+    },
+    {
+      "name": "platform-icons",
+      "jobId": "6083e38c-71e0-49c1-9319-b95d1d12840b",
+      "requestedModel": "nano_banana_pro",
+      "reportedModel": "nano_banana_2",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260827_161923_6083e38c-71e0-49c1-9319-b95d1d12840b.png",
+      "prompt": "Original LottoMind music-technology artwork. Premium cinematic 3D product illustration, midnight black and navy, brushed champagne gold, luminous cyan and subtle violet accents. Controlled elegant light, crisp strong silhouette readable at thumbnail size. No words, no letters, no numbers, no watermark, no borders containing text, no UI screenshots, no unrelated logos. All subjects fully visible with generous safe margins. EXACTLY 3 equal SQUARE tiles side by side, a horizontal icon atlas on solid midnight #03111b. Each object centered and entirely within middle 65 percent of its square. Left tile: luminous coral-pink double music note with gold edge and small musical wave, representing Apple Music without an apple logo. Middle tile: glossy red rounded rectangular video play button with bright white triangular play symbol, representing YouTube. Right tile: glossy ruby circular record medallion with white play triangle at center and two fine circular grooves, representing YouTube Music. Respect distinctive silhouettes. Absolutely no typography or extra symbols. Cleanly separable artwork, not a page mockup."
+    },
+    {
+      "name": "track-covers",
+      "jobId": "eeb86a19-d81d-4c8e-9c14-dd2a77f01229",
+      "requestedModel": "nano_banana_pro",
+      "reportedModel": "nano_banana_2",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260827_161923_eeb86a19-d81d-4c8e-9c14-dd2a77f01229.png",
+      "prompt": "Original LottoMind music-technology artwork. Premium cinematic 3D product illustration, midnight black and navy, brushed champagne gold, luminous cyan and subtle violet accents. Controlled elegant light, crisp strong silhouette readable at thumbnail size. No words, no letters, no numbers, no watermark, no borders containing text, no UI screenshots, no unrelated logos. All subjects fully visible with generous safe margins. Album-cover atlas: EXACTLY 4 equal columns by 2 equal rows, 8 perfectly SQUARE image tiles with invisible divisions and consistent safe margins. No text or typography anywhere. Top row left to right: 1 cyan standing sine-wave ribbon and gold tuning ring (frequency), 2 violet digital static particles and angular cyan interference grid (digital static), 3 luminous gold sunrise seen through a dark arch (gold reset), 4 warm gold musical waveform floating through a violet star field (long focus). Bottom row left to right: 5 rainy Detroit-inspired skyline with cyan puddle reflections (Detroit Rain), 6 golden power-button emblem rising from cyan circuitry (startup), 7 close-up silver rain droplets on dark glass with teal light (rainfield), 8 deep midnight vault door with a restrained gold tuning ring (vault tone). Each tile is a distinct polished cover illustration. Fixed regular 4 by 2 grid, objects centered, no inter-tile overlap, no fake album titles."
+    },
+    {
+      "name": "deck-imported",
+      "jobId": "426f917f-b8f3-4e54-9536-ddbffc1a5afa",
+      "requestedModel": "nano_banana_pro",
+      "reportedModel": "nano_banana_2",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260827_161923_426f917f-b8f3-4e54-9536-ddbffc1a5afa.png",
+      "prompt": "Original LottoMind music-technology artwork. Premium cinematic 3D product illustration, midnight black and navy, brushed champagne gold, luminous cyan and subtle violet accents. Controlled elegant light, crisp strong silhouette readable at thumbnail size. No words, no letters, no numbers, no watermark, no borders containing text, no UI screenshots, no unrelated logos. All subjects fully visible with generous safe margins. Single premium top-down three-quarter product illustration of a professional vinyl turntable, black heavy platter with gold center and cyan edge-light, detailed gold tonearm and small cyan equalizer display, beautiful physically plausible hardware on dark studio background. Entire rectangular deck visible, no circular cropping, no lettering. Gold and cyan accent lighting, suitable for an Imported Music deck header."
+    },
+    {
+      "name": "deck-stems",
+      "jobId": "4555ebf9-10d9-42bf-8e95-00e64bbc2f26",
+      "requestedModel": "nano_banana_pro",
+      "reportedModel": "nano_banana_2",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20260827_161923_4555ebf9-10d9-42bf-8e95-00e64bbc2f26.png",
+      "prompt": "Original LottoMind music-technology artwork. Premium cinematic 3D product illustration, midnight black and navy, brushed champagne gold, luminous cyan and subtle violet accents. Controlled elegant light, crisp strong silhouette readable at thumbnail size. No words, no letters, no numbers, no watermark, no borders containing text, no UI screenshots, no unrelated logos. All subjects fully visible with generous safe margins. Single premium three-quarter product illustration of a compact professional drum sampler and stem mixing console. A clean 4 by 4 array of softly illuminated cyan, violet and gold rubber pads, four gold faders, small waveform display. Whole rectangular device visible on dark studio desktop with safe margins. No vinyl record or microphone, no text. Suitable for a Studio Stems deck header."
+    }
+  ]
+}

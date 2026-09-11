@@ -82,7 +82,8 @@ test('C-Files removed from desktop and mobile navigation, sitemap, and public ro
  if(isMobile){
   await page.getByRole('button',{name:'Open navigation menu',exact:true}).click();
   await expect(page.getByRole('navigation',{name:'Mobile navigation'})).toBeVisible();
-  await expect(page.getByRole('navigation',{name:'Mobile navigation'}).getByRole('link')).toHaveCount(6);
+  await expect(page.getByRole('navigation',{name:'Mobile navigation'}).getByRole('link')).toHaveCount(7);
+  await expect(page.getByRole('navigation',{name:'Mobile navigation'}).getByRole('link',{name:'LOTTOMIND',exact:true})).toBeVisible();
  }
  const sitemap=await request.get(base+'sitemap.xml');expect(sitemap.status()).toBe(200);expect(await sitemap.text()).not.toContain('c-files');
  for(const path of ['c-files/','c-files/archive/','c-files/submit/','media/cfiles-world.json','media/cfiles-observatory.webp']){

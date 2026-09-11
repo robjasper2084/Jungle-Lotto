@@ -3,7 +3,7 @@ import { writeFile } from 'node:fs/promises';
 const base='/Jungle-Lotto/lottominded-ultra.io/games/gothtechnology2/';
 const product=base+'products/night-protocol-hoodie/';
 const settle=async page=>page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
-const ready=async page=>{await expect(page.locator('#store-data')).toBeAttached();await expect(page.locator('#sound-toggle')).toHaveText(/^Sound (?:on|off)$/);};
+const ready=async page=>{await expect(page.locator('#store-data')).toBeAttached();await expect(page.locator('#sound-toggle')).toHaveText(/^(?:Play|Stop) music$/);};
 
 test('visual: homepage renders, keeps content accessible, and only loads the silent hero video',async({page},info)=>{
   const errors=[],requests=[];page.on('pageerror',e=>errors.push(e.message));page.on('request',r=>requests.push(r.url()));
@@ -26,12 +26,13 @@ test('Armory background music stays user initiated and follows the visitor acros
   const audio=page.locator('#armory-background-music');
   await expect(audio).toHaveAttribute('src',base+'media/lottomind-vault-174hz-background.mp3');
   await expect(audio).not.toHaveAttribute('autoplay','');await expect(audio).toHaveAttribute('loop','');await expect(audio).toHaveAttribute('preload','none');
-  const heroSound=page.locator('[data-toggle-sound]');
-  await expect(heroSound).toBeVisible();await expect(heroSound).toHaveText('Sound off');await expect(page.locator('#sound-toggle')).toHaveText('Sound off');
-  await heroSound.click();await expect(heroSound).toHaveText('Sound on');await expect(page.locator('#sound-toggle')).toHaveText('Sound on');
-  await page.goto(base+'shop/');await expect(page.locator('[data-background-audio]')).toHaveCount(1);await expect(page.locator('#sound-toggle')).toHaveText('Sound on');
+  const heroSound=page.locator('.hero-sound[data-toggle-sound]');
+  await expect(heroSound).toBeVisible();await expect(heroSound).toHaveText('Play music');await expect(page.locator('#sound-toggle')).toHaveText('Play music');
+  await heroSound.click();await expect(heroSound).toHaveText('Stop music');await expect(page.locator('#sound-toggle')).toHaveText('Stop music');
+  await page.goto(base+'shop/');await expect(page.locator('[data-background-audio]')).toHaveCount(1);await expect(page.locator('#sound-toggle')).toHaveText('Play music');
   await page.locator('[data-open-settings]').last().click();await page.locator('#sound-toggle').click();
-  await expect(page.locator('#sound-toggle')).toHaveText('Sound off');await expect(page.locator('#sound-toggle')).toHaveAttribute('aria-pressed','false');
+  await expect(page.locator('#sound-toggle')).toHaveText('Stop music');await page.locator('#sound-toggle').click();
+  await expect(page.locator('#sound-toggle')).toHaveText('Play music');await expect(page.locator('#sound-toggle')).toHaveAttribute('aria-pressed','false');
 });
 
 test('shopping cart: launch preferences, quantity, persistence, alert flow and focus',async({page},info)=>{
@@ -248,21 +249,43 @@ test('reduced motion and WebGL fallback keep shopping available',async({page})=>
   await page.emulateMedia({reducedMotion:'no-preference'});await page.addInitScript(()=>{const original=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(type,...args){if(type==='webgl2'||type==='webgl')return null;return original.call(this,type,...args);};});await page.reload();await expect(page.locator('#scene-status')).toHaveText('Armory Online — Static Display');await expect(page.getByRole('link',{name:'Explore the Drop',exact:true})).toBeVisible();
 });
 
-test('inline films load only after Play and stay paused when returning',async({page})=>{
-  const requests=[];page.on('request',r=>requests.push(r.url()));await page.goto(base+'lookbook/');
+test('Lookbook films preview silently in view and respect Pause',async({page})=>{
+  await page.goto(base+'lookbook/');
   const host=page.locator('[data-inline-film]').first(),video=host.locator('video');
-  await host.scrollIntoViewIfNeeded();await page.waitForTimeout(1000);
-  expect(requests.some(url=>/\.mp4/.test(url))).toBe(false);await expect(video).not.toHaveAttribute('src');
-  await host.locator('[data-origin-film-toggle]').click();await expect.poll(()=>video.evaluate(v=>!v.paused&&!v.muted&&v.volume===1)).toBe(true);
+  await video.scrollIntoViewIfNeeded();
+  await expect.poll(()=>video.evaluate(v=>!v.paused&&v.muted&&v.currentTime>0)).toBe(true);
   await host.locator('[data-origin-film-toggle]').click();await expect.poll(()=>video.evaluate(v=>v.paused)).toBe(true);
   await page.locator('h1').scrollIntoViewIfNeeded();await host.scrollIntoViewIfNeeded();expect(await video.evaluate(v=>v.paused)).toBe(true);
+  const riverfront=page.locator('#lookbook-riverfront-film');await riverfront.scrollIntoViewIfNeeded();
+  await expect.poll(()=>riverfront.evaluate(v=>!v.paused&&v.muted&&v.currentTime>0)).toBe(true);
+  await expect.poll(()=>video.evaluate(v=>v.paused)).toBe(true);
 });
 test('reduced motion and save-data keep films on request',async({page})=>{
   await page.emulateMedia({reducedMotion:'reduce'});
   await page.addInitScript(()=>Object.defineProperty(navigator,'connection',{value:{saveData:true},configurable:true}));
-  await page.goto(base+'about/');const host=page.locator('[data-inline-film]'),video=host.locator('video');
-  await host.scrollIntoViewIfNeeded();await expect(video).not.toHaveAttribute('src');
+  await page.goto(base+'lookbook/');const host=page.locator('[data-inline-film]').first(),video=host.locator('video');
+  await video.scrollIntoViewIfNeeded();await expect(video).toHaveAttribute('src',/lookbook-detroit-film\.mp4/);
+  expect(await video.evaluate(v=>v.paused&&v.currentTime===0)).toBe(true);
   await host.locator('[data-origin-film-toggle]').click();await expect.poll(()=>video.evaluate(v=>!v.paused)).toBe(true);
+});
+test('inline film native controls play with reduced motion',async({page})=>{
+  await page.emulateMedia({reducedMotion:'reduce'});await page.goto(base+'lookbook/');
+  const video=page.locator('#lookbook-detroit-film');await video.scrollIntoViewIfNeeded();
+  await video.press('Space');await expect.poll(()=>video.evaluate(v=>!v.paused&&v.currentTime>0)).toBe(true);
+  await video.press('Space');await expect.poll(()=>video.evaluate(v=>v.paused)).toBe(true);
+});
+test('header music control stops audio and never resumes on its own',async({page})=>{
+  await page.emulateMedia({reducedMotion:'reduce'});await page.goto(base+'lookbook/');
+  const music=page.locator('[data-background-audio]'),control=page.locator('.site-header [data-toggle-sound]');
+  expect(await music.evaluate(audio=>audio.paused)).toBe(true);
+  await control.press('Enter');await expect(control).toHaveText('Stop music');
+  await expect.poll(()=>music.evaluate(audio=>!audio.paused&&audio.currentTime>0)).toBe(true);
+  await control.press('Enter');await expect(control).toHaveText('Play music');
+  expect(await music.evaluate(audio=>audio.paused)).toBe(true);
+  await control.press('Enter');await expect.poll(()=>music.evaluate(audio=>!audio.paused)).toBe(true);
+  await page.locator('[data-origin-film-toggle]').first().click();
+  await expect.poll(()=>music.evaluate(audio=>audio.paused)).toBe(true);await expect(control).toHaveText('Play music');
+  await page.reload();expect(await music.evaluate(audio=>audio.paused)).toBe(true);await expect(control).toHaveText('Play music');
 });
 test('Lookbook transmission is requested explicitly and can always close',async({page})=>{
   await page.goto(base+'lookbook/');await page.getByRole('button',{name:'Watch the 15-second charm film'}).click();

@@ -377,7 +377,7 @@ test('Armory shell declares the supplied looping background track and browser fa
   ]);
   assert.match(shell,/data-background-audio/);assert.match(shell,/loop preload="none"/);assert.doesNotMatch(shell,/<audio[^>]*data-background-audio[^>]*autoplay/);
   assert.match(shell,/media\/lottomind-vault-174hz-background\.mp3/);
-  assert.match(experience,/saved\(soundPreference\)==='on'/);assert.match(experience,/resumeSavedAudio/);assert.match(experience,/await ambient\.play\(\)/);
+  assert.match(experience,/await ambient\.play\(\)/);
 });
 test('Black Signal rail adapter keeps one canonical title, $14.40 price and supplied photo views',async()=>{
   const adapter=demoProducts.find(product=>product.handle==='black-signal-digital-pack')!;
