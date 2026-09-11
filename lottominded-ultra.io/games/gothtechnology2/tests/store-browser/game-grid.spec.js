@@ -63,6 +63,7 @@ test('Game Grid shows Static WAV artwork and launches a playable sector', async 
   await expect(standalone.locator('#shell')).toHaveAttribute('data-mode','menu');
   expect(new URL(standalone.url()).pathname).toBe(staticWave);
   await standalone.close();
+  await page.locator('#game-frame').scrollIntoViewIfNeeded();
   await frame.getByRole('button',{name:'Resume signal',exact:true}).click();
   await expect(frame.locator('#shell')).toHaveAttribute('data-mode','running');
   expect(await frame.evaluate(() => window.RahbeArcadeGame.getStats().runId)).toBe(receipt.runId);
