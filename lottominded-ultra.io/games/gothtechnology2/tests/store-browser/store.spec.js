@@ -26,12 +26,13 @@ test('Armory background music stays user initiated and follows the visitor acros
   const audio=page.locator('#armory-background-music');
   await expect(audio).toHaveAttribute('src',base+'media/lottomind-vault-174hz-background.mp3');
   await expect(audio).not.toHaveAttribute('autoplay','');await expect(audio).toHaveAttribute('loop','');await expect(audio).toHaveAttribute('preload','none');
-  const heroSound=page.locator('[data-toggle-sound]');
-  await expect(heroSound).toBeVisible();await expect(heroSound).toHaveText('Sound off');await expect(page.locator('#sound-toggle')).toHaveText('Sound off');
-  await heroSound.click();await expect(heroSound).toHaveText('Sound on');await expect(page.locator('#sound-toggle')).toHaveText('Sound on');
-  await page.goto(base+'shop/');await expect(page.locator('[data-background-audio]')).toHaveCount(1);await expect(page.locator('#sound-toggle')).toHaveText('Sound on');
+  const heroSound=page.locator('.hero-sound[data-toggle-sound]');
+  await expect(heroSound).toBeVisible();await expect(heroSound).toHaveText('Play music');await expect(page.locator('#sound-toggle')).toHaveText('Play music');
+  await heroSound.click();await expect(heroSound).toHaveText('Stop music');await expect(page.locator('#sound-toggle')).toHaveText('Stop music');
+  await page.goto(base+'shop/');await expect(page.locator('[data-background-audio]')).toHaveCount(1);await expect(page.locator('#sound-toggle')).toHaveText('Play music');
   await page.locator('[data-open-settings]').last().click();await page.locator('#sound-toggle').click();
-  await expect(page.locator('#sound-toggle')).toHaveText('Sound off');await expect(page.locator('#sound-toggle')).toHaveAttribute('aria-pressed','false');
+  await expect(page.locator('#sound-toggle')).toHaveText('Stop music');await page.locator('#sound-toggle').click();
+  await expect(page.locator('#sound-toggle')).toHaveText('Play music');await expect(page.locator('#sound-toggle')).toHaveAttribute('aria-pressed','false');
 });
 
 test('shopping cart: launch preferences, quantity, persistence, alert flow and focus',async({page},info)=>{
