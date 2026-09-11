@@ -15,10 +15,10 @@ test('shared game rewards combine actual play across all five games and reach st
  async function open(id){if(await page.locator('#reward-game-picker').getAttribute('open')===null)await page.locator('#reward-game-picker summary').click();await page.locator(`[data-open-reward-game="${id}"]`).click();await expect(popup.locator('[data-underground-loading]')).toBeHidden({timeout:60000});return page.frames().find(f=>f.parentFrame()===page.mainFrame());}
  async function close(){await popup.getByRole('button',{name:'Close game',exact:true}).click();await expect(popup.locator('iframe')).toHaveCount(0);}
  // An isolated checkpoint establishes earlier gameplay; the next points come from a real pickup.
- await page.evaluate(()=>localStorage.setItem('rahbe-underground-v1',JSON.stringify({version:1,reached:0,coins:40,secrets:0,seals:[],taken:[],treasures:[],wallOpen:false})));
+ await page.evaluate(()=>localStorage.setItem('rahbe-underground-v1',JSON.stringify({version:1,reached:0,coins:60,secrets:0,seals:[],taken:[],treasures:[],wallOpen:false})));
  let frame=await open('underground');await frame.locator('#continue').click();
- await page.keyboard.down('d');await expect.poll(()=>frame.evaluate(()=>window.RahbeArcadeGame.getStats().score),{timeout:10000,intervals:[50]}).toBeGreaterThan(4000);await page.keyboard.up('d');
- await expect.poll(async()=>(await read(page)).total).toBeGreaterThanOrEqual(5000);await close();const underground=(await read(page)).total;
+ await page.keyboard.down('d');await expect.poll(()=>frame.evaluate(()=>window.RahbeArcadeGame.getStats().score),{timeout:10000,intervals:[50]}).toBeGreaterThan(6000);await page.keyboard.up('d');
+ await expect.poll(async()=>(await read(page)).total).toBeGreaterThanOrEqual(7000);await close();const underground=(await read(page)).total;
  frame=await open('underground');await frame.locator('#continue').click();await frame.waitForFunction(()=>window.RahbeArcadeGame.getStats().seconds>=1);await close();expect((await read(page)).total).toBe(underground);
 
  frame=await open('static-wars');await frame.getByRole('button',{name:'Solo Run',exact:true}).click();
@@ -73,14 +73,14 @@ test('shared game rewards combine actual play across all five games and reach st
 test('shared game reward receipts remain cumulative across tabs, duplicate reports and reload',async({page,context})=>{
  await page.goto(base);const second=await context.newPage();await second.goto(base);
  const bank=(tab,game,id,score)=>tab.evaluate(async({base,game,id,score})=>{const m=await import(base+'arcade/rewards.js');await m.bankGameProgress(game,{runId:id,score,mode:'playing',seconds:30});},{base,game,id,score});
- await Promise.all([bank(page,'underground','concurrent',6000),bank(second,'vault-rush','concurrent',4000)]);
+ await Promise.all([bank(page,'underground','concurrent',8000),bank(second,'vault-rush','concurrent',4000)]);
  await expect(page.locator('#underground-rewards [data-reward-percent]')).toHaveText('5%');
- await Promise.all([bank(page,'underground','concurrent',6000),bank(second,'underground','concurrent',7000),bank(second,'static-wars','next',14000)]);
- await expect.poll(async()=>(await read(page)).total).toBe(25000);
+ await Promise.all([bank(page,'underground','concurrent',8000),bank(second,'underground','concurrent',9000),bank(second,'static-wars','next',17000)]);
+ await expect.poll(async()=>(await read(page)).total).toBe(30000);
  await page.reload();await expect(page.locator('#underground-rewards [data-reward-percent]')).toHaveText('10%');
  await page.goto(base+'products/night-protocol-hoodie/');await page.getByRole('radio',{name:'M',exact:true}).check();await page.getByRole('button',{name:'Save to Launch Loadout',exact:true}).click();
  await expect(page.locator('[data-cart-game-total]')).toHaveText('$96.12');
- await bank(second,'vault-rush','new-session',25000);
+ await bank(second,'vault-rush','new-session',30000);
  await expect(page.locator('[data-cart-game-total]')).toHaveText('$90.78');
  await second.close();
 });
