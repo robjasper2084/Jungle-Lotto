@@ -3,7 +3,7 @@ import { writeFile } from 'node:fs/promises';
 const base='/Jungle-Lotto/lottominded-ultra.io/games/gothtechnology2/';
 const product=base+'products/night-protocol-hoodie/';
 const settle=async page=>page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
-const ready=async page=>{await expect(page.locator('#store-data')).toBeAttached();await expect(page.locator('#sound-toggle')).toHaveText(/^Sound (?:on|off)$/);};
+const ready=async page=>{await expect(page.locator('#store-data')).toBeAttached();await expect(page.locator('#sound-toggle')).toHaveText(/^(?:Play|Stop) music$/);};
 
 test('visual: homepage renders, keeps content accessible, and only loads the silent hero video',async({page},info)=>{
   const errors=[],requests=[];page.on('pageerror',e=>errors.push(e.message));page.on('request',r=>requests.push(r.url()));
