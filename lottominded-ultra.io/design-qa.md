@@ -15,7 +15,7 @@
 - Confirmed the hero resolves to `Choose Your Membership` after the branded particle-fold intro.
 - Confirmed the three primary membership cards preserve the real Free, Gold, and Ultra plan data and actions.
 - Confirmed the Guardian offer and merchandising cart data use `$29.95` and no `$19.95` Guardian price remains.
-- Confirmed Film 02 loads `lottomind-guardian-commercial-clip-on-mindstate-20260716.mp4`.
+- Confirmed Film 02 loads `lottomind-merch-commercial-20260716.mp4`.
 
 ### Pass 2
 

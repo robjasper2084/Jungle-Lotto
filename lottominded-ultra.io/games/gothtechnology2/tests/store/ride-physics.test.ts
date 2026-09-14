@@ -1,0 +1,15 @@
+import assert from 'node:assert/strict';
+import {RideSimulation,CONFIG,circleSweep,boxSweep} from '../../store/public/arcade/ride-the-cut/ride-physics.mjs';
+assert.equal(circleSweep(0,-4,0,10,.5),.35,'Fast relative motion hits circle');
+assert.equal(circleSweep(2,-4,0,10,.5),null,'Clear lateral pass');
+assert.equal(circleSweep(0,0,0,0,.5),0,'Initial overlap detected');
+assert.equal(boxSweep(0,-4,0,10,1,.5),.35,'Barrier swept slab');
+const s=new RideSimulation();s.obstacles=[];s.start();for(let i=0;i<120;i++)s.step(CONFIG.step,{});assert.ok(Math.abs(s.speed-3)<1e-6);assert.ok(s.travel>1.49&&s.travel<1.53);
+const braking=new RideSimulation();braking.obstacles=[];braking.start();braking.speed=8;for(let i=0;i<120;i++)braking.step(CONFIG.step,{brake:true});assert.ok(Math.abs(braking.speed-1)<1e-6,'Braking removes 7 m/s in one second');for(let i=0;i<30;i++)braking.step(CONFIG.step,{brake:true});assert.equal(braking.speed,0,'Brake stops without reversing');
+const steering=new RideSimulation();steering.obstacles=[];steering.start();for(let i=0;i<120;i++)steering.step(CONFIG.step,{steer:1});assert.equal(steering.x,CONFIG.width/2-CONFIG.radius,'Steering respects path edge');
+const before=s.x;assert.equal(s.dodge(1),true);assert.equal(s.dodge(1),false);for(let i=0;i<39;i++)s.step(CONFIG.step,{});assert.ok(Math.abs(s.x-before-CONFIG.dodgeDistance)<.04,'Dodge covers intended distance');
+s.paused=true;const z=s.z;s.step(CONFIG.step,{});assert.equal(s.z,z,'Pause freezes state');
+s.reset();s.start();s.speed=8;s.obstacles=[{id:0,kind:'pedestrian',x:0,z:-.7,vx:0,vz:5,r:.31,passed:false}];for(let i=0;i<10;i++)s.step(CONFIG.step,{});assert.equal(s.health,2,'Moving pedestrian collision applies one hit');
+s.reset();s.obstacles=[];s.start();for(let i=0;i<120*40;i++)s.step(CONFIG.step,{});assert.equal(s.finished,true,'250m finish reachable');
+s.reset();assert.equal(s.health,3);assert.equal(s.obstacles.length,15);assert.equal(s.started,false);assert.equal(s.travel,0);
+console.log('RIDE_PHYSICS_OK: sweep, overlap, pass, acceleration, braking, steering, dodge, cooldown, pause, moving collision, finish, restart');
