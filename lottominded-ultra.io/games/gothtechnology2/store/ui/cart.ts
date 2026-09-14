@@ -1,4 +1,5 @@
 import type { Cart, CommerceProvider, Product } from '../commerce/types';
+import {recordTransmission} from './transmissions';
 import { createProvider } from '../commerce/provider';
 import { config } from '../config';
 import { conversionMode, labelsFor } from '../commerce/mode';
@@ -96,7 +97,7 @@ export function initCart(products: Product[]) {
     const single=products.find(p=>p.handle===direct?.dataset.saveProduct);
     if(direct && single?.variants.length===1) {
       direct.disabled=true;
-      void mutate(c=>provider.addCartLine(c.id,single.variants[0].id,1),labels.added).then(ok=>{if(ok){analytics.trackEvent('save_to_loadout',{handle:single.handle,quantity:1});openDialog('cart-dialog',direct);}direct.disabled=false;});
+      void mutate(c=>provider.addCartLine(c.id,single.variants[0].id,1),labels.added).then(ok=>{if(ok){recordTransmission(single.title.toUpperCase()+' ADDED TO LOADOUT','loadout:'+single.handle+':'+Date.now());analytics.trackEvent('save_to_loadout',{handle:single.handle,quantity:1});openDialog('cart-dialog',direct);}direct.disabled=false;});
     }
   });
   $('#cart-lines')!.addEventListener('change',event=>{
@@ -122,7 +123,7 @@ export function initCart(products: Product[]) {
     form.dataset.busy='true'; const button=$<HTMLButtonElement>('[type=submit]',form)!; button.disabled=true;
     if(note)note.textContent='Adding to your loadout…';
     const ok=await mutate(c=>provider.addCartLine(c.id,variant.id,Number(data.get('quantity'))),labels.added);
-    if(ok) { if(note)note.textContent=labels.added; analytics.trackEvent(mode==='interest'?'save_to_loadout':'add_to_cart',{handle:product.handle,variant:variant.id,quantity:Number(data.get('quantity'))}); openDialog('cart-dialog',button); if(buy)await checkout(); }
+    if(ok) { recordTransmission(product.title.toUpperCase()+' ADDED TO LOADOUT','loadout:'+product.handle+':'+Date.now());if(note)note.textContent=labels.added; analytics.trackEvent(mode==='interest'?'save_to_loadout':'add_to_cart',{handle:product.handle,variant:variant.id,quantity:Number(data.get('quantity'))}); openDialog('cart-dialog',button); if(buy)await checkout(); }
     else if(note)note.textContent=status.textContent;
     form.dataset.busy='false'; updateForm(form);
   }

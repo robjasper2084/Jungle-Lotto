@@ -65,6 +65,7 @@ export async function bankGameProgress(game,snapshot){
   let state;
   try{state=globalThis.navigator?.locks?await navigator.locks.request(DISCOUNT_PREVIEW_KEY,write):write();}catch{state=write();}
   if(typeof document!=='undefined')document.dispatchEvent(new CustomEvent('store:discount-preview',{detail:state}));
+  if(typeof document!=='undefined'&&validRun(game,copy))document.dispatchEvent(new CustomEvent('store:game-progress',{detail:{game,runId:copy.runId,mode:copy.mode}}));
   return state;
 }
 export function fighterReceipt(game){

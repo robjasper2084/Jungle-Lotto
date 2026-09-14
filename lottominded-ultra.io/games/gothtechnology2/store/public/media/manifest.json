@@ -1048,5 +1048,75 @@
     "height": 640,
     "bytes": 58770,
     "origin": "Higgsfield campaign concept created from user-supplied fragrance roller references; product specifications pending"
+  },
+  {
+    "source": "hf_20260908_210259_2617de48-a6f7-4dca-ae19-e1b94784003d.png",
+    "output": "fragrance-amber-collection.webp",
+    "sourceWidth": 2048,
+    "sourceHeight": 2048,
+    "width": 1600,
+    "height": 1600,
+    "bytes": 176522,
+    "origin": "User-supplied fragrance artwork, September 12 2026. Resized and encoded as WebP without changing the artwork. Product details unconfirmed."
+  },
+  {
+    "source": "hf_20260909_183316_4815b13c-74a3-40c1-aec3-39471863979a.png",
+    "output": "fragrance-amber-baby-power-frankincense.webp",
+    "sourceWidth": 2048,
+    "sourceHeight": 2048,
+    "width": 1600,
+    "height": 1600,
+    "bytes": 124124,
+    "origin": "User-supplied fragrance artwork, September 12 2026. Resized and encoded as WebP without changing the artwork. Product details unconfirmed."
+  },
+  {
+    "source": "hf_20260909_183401_fef87b7f-540d-46e6-aaa8-b1b501687e19.png",
+    "output": "fragrance-amber-ginger-mango-awesome.webp",
+    "sourceWidth": 2048,
+    "sourceHeight": 2048,
+    "width": 1600,
+    "height": 1600,
+    "bytes": 132350,
+    "origin": "User-supplied fragrance artwork, September 12 2026. Resized and encoded as WebP without changing the artwork. Product details unconfirmed."
+  },
+  {
+    "source": "hf_20260909_183235_e1de3407-432f-405a-84dd-b97b28d80360.png",
+    "output": "fragrance-amber-coconut-egyptian-jasmine.webp",
+    "sourceWidth": 2048,
+    "sourceHeight": 2048,
+    "width": 1600,
+    "height": 1600,
+    "bytes": 131738,
+    "origin": "User-supplied fragrance artwork, September 12 2026. Resized and encoded as WebP without changing the artwork. Product details unconfirmed."
+  },
+  {
+    "source": "hf_20260909_183315_fbc31694-8609-42d3-8fe2-fc1023e38f4c.png",
+    "output": "fragrance-amber-kusk-angle.webp",
+    "sourceWidth": 2048,
+    "sourceHeight": 2048,
+    "width": 1600,
+    "height": 1600,
+    "bytes": 130446,
+    "origin": "User-supplied fragrance artwork, September 12 2026. Resized and encoded as WebP without changing the artwork. Product details unconfirmed."
+  },
+  {
+    "source": "hf_20260909_183235_53584e7f-9897-4ca7-aeea-a1c3bef7723a.png",
+    "output": "fragrance-amber-mango-butter-nike.webp",
+    "sourceWidth": 2048,
+    "sourceHeight": 2048,
+    "width": 1600,
+    "height": 1600,
+    "bytes": 125896,
+    "origin": "User-supplied fragrance artwork, September 12 2026. Resized and encoded as WebP without changing the artwork. Product details unconfirmed."
+  },
+  {
+    "source": "hf_20260908_210259_2617de48-a6f7-4dca-ae19-e1b94784003d.png",
+    "output": "fragrance-amber-collection-card.webp",
+    "sourceWidth": 2048,
+    "sourceHeight": 2048,
+    "width": 640,
+    "height": 640,
+    "bytes": 40406,
+    "origin": "User-supplied fragrance artwork, September 12 2026. Resized and encoded as WebP without changing the artwork. Product details unconfirmed."
   }
 ]

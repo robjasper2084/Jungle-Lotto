@@ -19,7 +19,7 @@ export const productArtwork: Record<string, ArtworkProfile> = {
   },
   'boogeyman-graphic-hoodie': { bounds: [.25, .08, .51, .79] },
   'detroit-2084-shirt': { bounds: [.07, .10, .86, .77] },
-  'armory-fragrance-roller-collection': { bounds: [.045, .02, .915, .82] },
+  'armory-fragrance-roller-collection': { bounds: [.13, .12, .73, .78] },
   'black-signal-beanie': { bounds: [.22, .12, .57, .57] },
   'detroit-skull-cap-alt': { bounds: [.16, .13, .70, .57] },
   'gothtechnology-luggage-charm': { bounds: [.265, .035, .325, .84] },

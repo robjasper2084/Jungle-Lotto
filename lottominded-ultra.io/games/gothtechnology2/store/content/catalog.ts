@@ -13,7 +13,7 @@ export const collections: Collection[] = [
   ['founder-transmission', 'Founder Transmission', 'An introduction to the world of GOTHTECHNOLOGY.'],
   ['combat-systems', 'Combat Systems', 'From the character vault to your everyday equipment.'],
   ['original-artwork', 'Original Artwork', 'Detroit horizons and original photography presented through the armory.'],
-  ['armory-fragrance', 'Armory Fragrance', 'Carry your signal after midnight. Fragrance roller concepts in black, gold, and cyan.'],
+  ['armory-fragrance', 'Armory Fragrance', 'Amber fragrance rollers with cream illustrated labels. Explore the supplied collection artwork.'],
 ].map(([handle, title, description]) => ({ handle, title, description }));
 
 export const characters = [
@@ -32,10 +32,9 @@ const seeds = [
   { handle: 'detroit-2084-shirt', title: 'Detroit 2084 Graphic T-Shirt', subtitle: 'Detroit skyline-heart graphic / supplied product reference', dollars: 43.2, type: 'Apparel', collection: 'detroit-2084', character: 'DETROIT_LENS_NOIR', images: [{ ...reference('detroit-2084-tee-reference', 'Black Detroit 2084 graphic T-shirt with skyline lettering and a heart emblem on a gray pedestal', 'Front reference'), width: 768, height: 768 }], sizes: ['S', 'M', 'L', 'XL', '2XL'] },
   {
     ...fragranceCollection, dollars: 0, pricePending: true, type: 'Fragrance', character: '',
-    // Lead the product gallery with the selected circuit-grid study; keep campaign artwork unchanged.
-    images: [fragranceCollection.images[0], fragranceCollection.images[2], fragranceCollection.images[1]],
-    cardImage: { ...fragranceCollection.images[0], src: 'media/armory-fragrance-gold-arch-card.webp', width: 640, height: 640 },
-    colors: ['Black / gold'], sizes: ['Volume pending'],
+    images: fragranceCollection.images,
+    cardImage: { ...fragranceCollection.images[0], src: 'media/fragrance-amber-collection-card.webp', width: 640, height: 640 },
+    colors: ['Amber / cream'], sizes: ['Volume pending'],
   },
   { handle: 'black-signal-beanie', title: 'Detroit Skyline Embroidered Beanie', subtitle: 'Black / Detroit skyline embroidery reference', dollars: 22.8, type: 'Apparel', collection: 'detroit-2084', character: 'DETROIT_LENS_NOIR', images: [{ ...reference('detroit-skyline-beanie-reference', 'Black cuffed Detroit skyline beanie with multicolor city lettering on a dark pedestal', 'Front reference'), width: 768, height: 768 }], colors: ['Black'] },
   { handle: 'detroit-skull-cap-alt', title: 'Detroit Embroidered Skull Cap — Alt Version', subtitle: 'Black knit / alternate Detroit embroidery reference', dollars: 26.4, type: 'Apparel', collection: 'detroit-2084', character: 'DETROIT_LENS_NOIR', images: [{ ...reference('detroit-skull-cap-alt-reference', 'Alternate black knit skull cap with multicolor I Love Detroit skyline embroidery on a dark marble pedestal', 'Alternate front reference'), width: 896, height: 1200 }], colors: ['Black'], description: 'An alternate black knit skull-cap concept featuring the Detroit skyline-heart embroidery. Supplied product reference; final materials, measurements, and production details await owner confirmation.' },

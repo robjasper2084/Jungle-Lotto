@@ -253,6 +253,10 @@ test('Lookbook films preview silently in view and respect Pause',async({page})=>
   await page.goto(base+'lookbook/');
   const host=page.locator('[data-inline-film]').first(),video=host.locator('video');
   await video.scrollIntoViewIfNeeded();
+  await expect(video).toHaveAttribute('poster',/lookbook-detroit-hoodie-poster\.webp$/);
+  await expect(host).not.toHaveAttribute('data-autoplay-preview','true');
+  expect(await video.evaluate(v=>v.paused&&v.currentTime===0)).toBe(true);
+  await host.locator('[data-origin-film-toggle]').click();
   await expect.poll(()=>video.evaluate(v=>!v.paused&&v.muted&&v.currentTime>0)).toBe(true);
   await host.locator('[data-origin-film-toggle]').click();await expect.poll(()=>video.evaluate(v=>v.paused)).toBe(true);
   await page.locator('h1').scrollIntoViewIfNeeded();await host.scrollIntoViewIfNeeded();expect(await video.evaluate(v=>v.paused)).toBe(true);
@@ -419,50 +423,47 @@ test('charm and knife preview bundle links the components and shows its price an
   await expect(page.locator('#cart-dialog')).toContainText('$35.99');
 });
 
-test('fragrance concept stories expand with the keyboard and artwork pairings link to the matching scent',async({page})=>{
+test('fragrance supplied label names expand with the keyboard and keep unconfirmed details clear',async({page})=>{
   await page.emulateMedia({reducedMotion:'reduce'});
   const errors=[];page.on('pageerror',error=>errors.push(error.message));
   await page.goto(base+'products/armory-fragrance-roller-collection/');
   await expect(page.getByRole('heading',{level:1})).toHaveText('Armory Fragrance Roller Collection');
   await expect(page.getByRole('button',{name:'Price pending',exact:true})).toBeDisabled();
-  await page.getByRole('link',{name:'Explore the nine scent concepts',exact:true}).click();
-  const concepts=page.getByRole('region',{name:'Character and artwork scent concepts'});
-  await expect(concepts.locator('.scent-card')).toHaveCount(9);
-  await expect(concepts.locator('.fragrance-note')).toContainText('not confirmed ingredients, formulas or available variants');
-  const mobster=concepts.locator('#scent-the-mobster');
-  const summary=mobster.locator('summary');await summary.focus();await page.keyboard.press('Enter');
-  await expect(mobster.locator('details')).toHaveAttribute('open','');
-  await expect(mobster.locator('.scent-composition')).toContainText('Black tea: dry, dark and quietly bitter.');
-  await page.keyboard.press('Enter');await expect(mobster.locator('details')).not.toHaveAttribute('open');
-  await page.getByRole('link',{name:'Explore Detroit Winter Sunset Artwork',exact:true}).click();
-  await expect(page.getByRole('heading',{level:1})).toHaveText('Detroit Winter Sunset Artwork');
-  const pairing=page.getByRole('region',{name:'Suggested fragrance bundles'});
-  await expect(pairing.locator('.fragrance-pairing')).toHaveCount(1);
-  await expect(pairing).toContainText('not purchasable bundles');
-  await pairing.getByRole('link',{name:'Explore Detroit 2084 scent concept',exact:true}).click();
-  await expect(page).toHaveURL(new RegExp('/products/armory-fragrance-roller-collection/#scent-detroit-2084$'));
-  const artwork=page.locator('#scent-detroit-2084');
-  await expect(artwork).toBeInViewport();
-  await artwork.locator('summary').click();
-  await expect(artwork.locator('.scent-scene')).toContainText('Orange horizon');
-  await expect(artwork.locator('.scent-scene')).toContainText('Icy river');
-  await expect(artwork.locator('.scent-scene')).toContainText('Bare branches');
+  await page.getByRole('link',{name:'Explore the pictured scents',exact:true}).click();
+  const labels=page.getByRole('region',{name:'Pictured fragrance labels'});
+  await expect(labels.locator('.fragrance-note')).toContainText('are not yet confirmed');
+  const summary=labels.locator('summary');await summary.focus();await page.keyboard.press('Enter');
+  await expect(labels.locator('details')).toHaveAttribute('open','');
+  await expect(labels.locator('li')).toHaveText(['Sandalwood','Coconut Jasmine','Ginger Mango','Patchouli','Mary J B','Baby Power','Frankincense','Awesome','Egyptian Jasmine','Kusk','Angle','Mango Butter','Nike']);
+  await page.keyboard.press('Enter');await expect(labels.locator('details')).not.toHaveAttribute('open');
+  await expect(page.getByRole('region',{name:'Suggested fragrance bundles'})).toHaveCount(0);
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
   expect(errors).toEqual([]);
 });
 
-test('fragrance stays out of homepage features and opens its gold-arch gallery from Shop',async({page})=>{
+test('fragrance opens all six amber images from Shop and uses the group portrait on its collection page',async({page},info)=>{
   await page.goto(base);await ready(page);await expect(page.locator('#featured [data-handle="armory-fragrance-roller-collection"]')).toHaveCount(0);
   await page.goto(base+'shop/?category=Fragrance');await ready(page);await expect(page.locator('#result-count')).toHaveText('1 product');
-  const card=page.locator('[data-handle="armory-fragrance-roller-collection"]');await expect(card.locator('img')).toHaveAttribute('src',/gold-arch-card\.webp$/);
+  const card=page.locator('[data-handle="armory-fragrance-roller-collection"]');await expect(card.locator('img')).toHaveAttribute('src',/fragrance-amber-collection-card\.webp$/);
   await card.locator('h3 a').click();await expect(page.locator('h1')).toHaveText('Armory Fragrance Roller Collection');
-  await expect(page.locator('#gallery-image')).toHaveAttribute('src',/gold-arch-campaign\.webp$/);await expect(page.locator('.gallery-thumbs button')).toHaveCount(3);
-  await expect(page.getByRole('button',{name:'Price pending',exact:true})).toBeDisabled();await expect(page.locator('.fragrance-identities li')).toHaveCount(9);
+  await expect(page.locator('#gallery-image')).toHaveAttribute('src',/fragrance-amber-collection\.webp$/);await expect(page.locator('.gallery-thumbs button')).toHaveCount(6);
+  await expect(page.getByRole('button',{name:'Price pending',exact:true})).toBeDisabled();
+  const expected=['collection','baby-power-frankincense','ginger-mango-awesome','coconut-egyptian-jasmine','kusk-angle','mango-butter-nike'];
+  for(const [i,name] of expected.entries()){
+    await page.locator('.gallery-thumbs button').nth(i).press('Enter');
+    await expect(page.locator('#gallery-image')).toHaveAttribute('src',new RegExp('fragrance-amber-'+name+'\\.webp$'));
+    await page.locator('#gallery-image').evaluate(img=>img.decode());
+    await expect(page.locator('.gallery-thumbs button').nth(i)).toHaveAttribute('aria-pressed','true');
+  }
+  await page.locator('.gallery-thumbs button').first().click();await page.locator('#gallery-image').evaluate(img=>img.decode());
   const galleryBounds=await page.locator('#gallery-image').boundingBox();expect(Math.abs(galleryBounds.height-galleryBounds.width)).toBeLessThan(2);
-  await page.locator('.gallery-thumbs button').nth(1).click();await expect(page.locator('#gallery-image')).toHaveAttribute('src',/circuit-grid-campaign\.webp$/);
+  await page.locator('#gallery-zoom').click();await expect(page.locator('#gallery-zoom')).toHaveAttribute('aria-pressed','true');await page.locator('#gallery-zoom').click();
+  await page.locator('#gallery-image').scrollIntoViewIfNeeded();await page.screenshot({path:info.outputPath('fragrance-gallery.png')});
+  await page.goto(base+'collections/armory-fragrance/');await expect(page.locator('.fragrance-art img')).toHaveAttribute('src',/fragrance-amber-collection\.webp$/);
+  await page.locator('.fragrance-art img').evaluate(img=>img.decode());
+  await expect(page.locator('.fragrance-intro').first()).toContainText('Amber glass');
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
 });
-
-
 test('Digital homepage category preserves an empty filter and can be cleared',async({page},info)=>{
   const errors=[];page.on('pageerror',error=>errors.push(error.message));
   await page.emulateMedia({reducedMotion:'reduce'});

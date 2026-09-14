@@ -6,11 +6,11 @@ const key='gothtechnology.arcade.discount-preview.v2';
 async function capture(page,info,name){const dir=process.env.UNDERGROUND_SCREENSHOTS;if(dir){await mkdir(dir,{recursive:true});await page.screenshot({path:join(dir,info.project.name+'-'+name+'.png')});}}
 async function read(page){return page.evaluate(key=>{const s=JSON.parse(localStorage.getItem(key)||'{"runs":{}}');return {total:(s.carriedPoints||0)+Object.values(s.runs).reduce((sum,r)=>sum+Math.max(0,r.score-r.baseline),0),runs:s.runs};},key);}
 
-test('shared game rewards combine actual play across all five games and reach store prices',async({page,isMobile},info)=>{
+test('shared game rewards combine actual play across the existing arcade games and reach store prices',async({page,isMobile},info)=>{
  test.setTimeout(180000);const errors=[],failed=[];
  page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{if(r.status()>=400)failed.push(r.url());});
  await page.emulateMedia({reducedMotion:'reduce'});await page.goto(base+'#underground-rewards');
- await expect(page.locator('[data-open-reward-game]')).toHaveCount(5);
+ await expect(page.locator('[data-open-reward-game]')).toHaveCount(6);
  const popup=page.locator('#underground-dialog');
  async function open(id){if(await page.locator('#reward-game-picker').getAttribute('open')===null)await page.locator('#reward-game-picker summary').click();await page.locator(`[data-open-reward-game="${id}"]`).click();await expect(popup.locator('[data-underground-loading]')).toBeHidden({timeout:60000});return page.frames().find(f=>f.parentFrame()===page.mainFrame());}
  async function close(){await popup.getByRole('button',{name:'Close game',exact:true}).click();await expect(popup.locator('iframe')).toHaveCount(0);}
