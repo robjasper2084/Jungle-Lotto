@@ -3,14 +3,21 @@ import { href } from '../utilities/paths';
 import Icon from './Icon.astro';
 import {DISCOUNT_TIERS} from '../public/arcade/rewards.js';
 import {REWARD_GAMES} from '../public/arcade/games.js';
+const {autoSwoop=false,swoopOnly=false}=Astro.props as {autoSwoop?:boolean;swoopOnly?:boolean};
+const pickerGames=REWARD_GAMES;
 const game=href('arcade/robot-rahbe-underground/');
 ---
-<section class="drop-arcade" aria-labelledby="underground-feature-title">
+{autoSwoop && <section class="swoop-drop">  <aside class="swoop-feature" aria-labelledby="swoop-feature-title">
+    <div><p class="mono gold">DETROIT / PLAYABLE FEATURE</p><h3 id="swoop-feature-title">SWOOP DETROIT</h3><p>Ride the Dequindre Cut. Find your line, land clean tricks, and build your game discount preview.</p><small>Opens once per session · Sound enabled · Starts when you play</small></div>
+    <button class="button" type="button" data-open-reward-game="swoop-detroit" data-auto-game aria-haspopup="dialog" aria-controls="underground-dialog">Play Swoop Detroit <Icon name="play" size={16}/></button>
+  </aside>
+</section>}
+{!swoopOnly && <section class="drop-arcade" aria-labelledby="underground-feature-title">
   <button class="underground-poster" type="button" data-open-underground aria-label="Play Robot RAHBE Underground" aria-haspopup="dialog" aria-controls="underground-dialog">
     <img src={href('media/underground-armory-campaign-v1.webp')} alt="RAHBE carrying a gold lantern through a dark gothic underground vault" width="1600" height="900" loading="lazy"/>
     <span><Icon name="play" size={22}/> ENTER THE ARCADE</span>
   </button>
-  <div class="underground-copy"><p class="mono gold">NEW DROP / PLAYABLE FEATURE</p><h3 id="underground-feature-title">ROBOT RAHBE<br/><span>UNDERGROUND</span></h3><p>Descend beneath Detroit. Explore seven depths, recover the number seals, and face the Warden.</p><button class="button" type="button" data-open-underground aria-haspopup="dialog" aria-controls="underground-dialog">Play Underground <Icon name="play" size={16}/></button><p class="underground-note">Free to play · Keyboard, touch & gamepad · Sound starts off</p></div>
+  <div class="underground-copy"><p class="mono gold">NEW DROP / PLAYABLE FEATURE</p><h3 id="underground-feature-title">ROBOT RAHBE<br/><span>UNDERGROUND</span></h3><p>Descend beneath Detroit. Explore seven depths, recover the number seals, and face the Warden.</p><button class="button" type="button" data-open-underground aria-haspopup="dialog" aria-controls="underground-dialog">Play Underground <Icon name="play" size={16}/></button><p class="underground-note">Free to play · Keyboard, touch & gamepad · Sound enabled</p></div>
   <section class="underground-reward" id="underground-rewards" data-underground-reward aria-label="Game discount preview">
     <div class="reward-signal-heading">
       <h4 class="reward-kicker">ALL GAMES / ONE REWARD</h4>
@@ -33,7 +40,7 @@ const game=href('arcade/robot-rahbe-underground/');
     <div class="reward-disclosures">
       <details class="reward-disclosure" id="reward-game-picker">
         <summary>Choose a game</summary>
-        <div class="reward-games">{REWARD_GAMES.map(game=><article><h5>{game.title}</h5><span><b data-game-points={game.id}>0</b> points contributed</span><button class="button secondary" type="button" data-open-reward-game={game.id} aria-label={`Play ${game.title}`} aria-haspopup="dialog" aria-controls="underground-dialog">Play game <Icon name="play" size={14}/></button></article>)}</div>
+        <div class="reward-games">{pickerGames.map(game=><article><h5>{game.title}</h5><span><b data-game-points={game.id}>0</b> points contributed</span><button class="button secondary" type="button" data-open-reward-game={game.id} aria-label={`Play ${game.title}`} aria-haspopup="dialog" aria-controls="underground-dialog">Play game <Icon name="play" size={14}/></button></article>)}</div>
       </details>
       <details class="reward-disclosure" id="reward-rules">
         <summary>How rewards work</summary>
@@ -41,12 +48,12 @@ const game=href('arcade/robot-rahbe-underground/');
           <p class="reward-note"><span data-reward-saved>Points from all games and new runs add together on this browser.</span> Continuing a saved run counts only newly earned points.</p>
           <p class="reward-note" data-reward-carried hidden></p>
           <ol class="reward-tiers" aria-label="Discount preview milestones">{DISCOUNT_TIERS.map(tier=><li data-tier-points={tier.points} data-reached="false"><strong>{tier.percent}%</strong><span>{tier.points.toLocaleString('en-US')} points</span><small data-tier-state>Target</small></li>)}</ol>
-          <dl class="reward-scoring">{REWARD_GAMES.map(game=><div><dt>{game.title}</dt><dd>{game.rule}</dd></div>)}</dl>
+          <dl class="reward-scoring">{pickerGames.map(game=><div><dt>{game.title}</dt><dd>{game.rule}</dd></div>)}</dl>
         </div>
       </details>
     </div>
   </section>
-</section>
+</section>}
 <dialog id="underground-dialog" aria-labelledby="underground-title" aria-describedby="underground-help" data-game-url={game}>
   <div class="underground-heading"><h2 id="underground-title">ROBOT RAHBE: UNDERGROUND</h2><button class="button secondary" type="button" data-close-dialog autofocus>Close game <Icon name="close" size={16}/></button></div>
   <div class="underground-stage"><div data-underground-host></div><div class="underground-loading" data-underground-loading><p role="status" data-underground-status>Loading Underground…</p><button class="button secondary" type="button" data-underground-retry hidden>Retry game</button></div></div>
@@ -57,6 +64,8 @@ const game=href('arcade/robot-rahbe-underground/');
 </dialog>
 <script>import { initUndergroundPopup } from '../ui/underground-popup';initUndergroundPopup();</script>
 <style>
+  .swoop-drop{grid-column:1/-1;margin:32px var(--armory-space,32px) 0;border:1px solid var(--rule)}
+  .swoop-feature{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:24px;padding:24px 28px;border-top:1px solid var(--rule);background:linear-gradient(115deg,#131714,#080e10)}.swoop-feature h3{font:clamp(25px,3vw,38px)/1.1 var(--display);margin:8px 0;color:var(--goth-gold)}.swoop-feature p{margin:8px 0;max-width:620px}.swoop-feature small{color:#bab49f;font-size:12px}.swoop-feature .button{flex-shrink:0}@media(max-width:700px){.swoop-feature{padding:22px;align-items:flex-start;flex-direction:column}}
   .drop-arcade{grid-column:1/-1;margin:32px var(--armory-space,32px) 0;border:1px solid var(--rule);display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);background:#090e0e}
   .underground-poster{position:relative;padding:0;min-height:270px;overflow:hidden;border:0;border-right:1px solid var(--rule);background:#0b171b;cursor:pointer;color:var(--goth-gold)}
   .underground-poster img{display:block;width:100%;height:100%;position:absolute;inset:0;object-fit:cover;object-position:center}

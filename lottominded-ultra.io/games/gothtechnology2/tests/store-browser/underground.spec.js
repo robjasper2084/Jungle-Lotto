@@ -24,7 +24,7 @@ test('New Drop Underground popup loads on demand, plays, closes and restores foc
   await expect(game.locator('#start')).toBeEnabled({timeout:25000});
   await expect(popup.locator('[data-underground-loading]')).toBeHidden();
   await expect(game.locator('body')).toHaveAttribute('data-missing-assets','');
-  await expect(game.locator('#sound')).toHaveAttribute('aria-pressed','false');
+  await expect(game.locator('#sound')).toHaveAttribute('aria-pressed','true');
   if(screenshots)await page.screenshot({path:join(screenshots,info.project.name+'-popup.png')});
   await game.locator('#start').click();await expect(game.locator('#hud')).toBeVisible();
   const frame=page.frames().find(f=>f.url().includes('/arcade/robot-rahbe-underground/'));

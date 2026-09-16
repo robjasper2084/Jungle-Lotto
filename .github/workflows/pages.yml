@@ -55,7 +55,7 @@ jobs:
         run: npm run test:store:browser -- --project=desktop --grep "game portal|homepage category tile|homepage signal row|collection signal columns|commercial|Lookbook films preview|inline film native controls|reduced motion and save-data|header music control|hero background|fragrance stays|fragrance concept stories|charm and knife preview|Original Artwork"
       - name: Verify New Drop Underground popup on desktop and mobile
         working-directory: lottominded-ultra.io/games/gothtechnology2
-        run: npm run test:store:browser -- --project=desktop --project=mobile --grep "New Drop Underground"
+        run: npm run test:store:browser -- --project=desktop --project=mobile --grep "New Drop Underground|game popup placement"
       - name: Verify shared game rewards and discount prices
         working-directory: lottominded-ultra.io/games/gothtechnology2
         run: npm run test:store:browser -- --project=desktop --project=mobile --grep "shared game reward|Underground discount|Game Grid|C-Files removed"

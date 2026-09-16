@@ -9,7 +9,7 @@ const DEBUG=new URLSearchParams(location.search).has('debug')&&['localhost','127
 const SAVE=DEBUG?'rahbe-underground-v1-debug':'rahbe-underground-v1';
 let sim=createSimulation(),view,ready=false,accumulator=0,lastRevision=-1,lastHUD='',toastUntil=0,returnFocus=null,endingMode='',endingStarted=0;
 const pending={jumpPressed:false,jumpReleased:false,interactPressed:false};
-let soundEnabled=false,audioContext,arcadeVolume=.65,loadProgress=0,arcadeRunId='',arcadeBase={kills:0,seconds:0,bosses:0,completions:0};
+let soundEnabled=true,audioContext,arcadeVolume=.65,loadProgress=0,arcadeRunId='',arcadeBase={kills:0,seconds:0,bosses:0,completions:0};
 const ARCADE_RUN=SAVE+'-arcade-run';
 const reduced=matchMedia('(prefers-reduced-motion: reduce)');
 
@@ -56,6 +56,9 @@ $('title-depths').innerHTML=DEPTHS.map((d,i)=>`<li><span>${String(i).padStart(2,
 $('discount-info').onclick=()=>openPanel('GAME DISCOUNT / PREVIEW',discountDetails());
 $('start').onclick=()=>start();$('continue').onclick=()=>start(true);$('pause').onclick=()=>pause();$('map-button').onclick=showMap;$('howto').onclick=guide;$('close-panel').onclick=closePanel;$('panel').addEventListener('cancel',e=>{e.preventDefault();closePanel();});
 $('replay').onclick=()=>{if(sim.mode==='dead'){respawn(sim);endingMode='';view.reset(sim);input.clear();updateVisibility();game.canvas.focus();}else start();};$('home').onclick=toTitle;
+const unlockGameSound=()=>{if(soundEnabled){try{audioContext??=new(window.AudioContext||window.webkitAudioContext)();void audioContext.resume();}catch{}}};
+document.addEventListener('pointerdown',unlockGameSound,{once:true});document.addEventListener('keydown',unlockGameSound,{once:true});
+$('sound').textContent='SOUND ON';$('sound').setAttribute('aria-pressed','true');$('sound').setAttribute('aria-label','Disable sound');
 $('sound').onclick=async()=>{soundEnabled=!soundEnabled;if(soundEnabled){try{audioContext??=new(window.AudioContext||window.webkitAudioContext)();await audioContext.resume();}catch{soundEnabled=false;toast('Audio is unavailable in this browser.');}}$('sound').textContent=soundEnabled?'SOUND ON':'SOUND OFF';$('sound').setAttribute('aria-pressed',String(soundEnabled));$('sound').setAttribute('aria-label',soundEnabled?'Disable sound':'Enable sound');tone('coin');};
 $('fullscreen').onclick=async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else await $('shell').requestFullscreen();}catch{toast('Fullscreen is unavailable in this browser.');}};
 document.addEventListener('fullscreenchange',()=>$('fullscreen').setAttribute('aria-label',document.fullscreenElement?'Exit fullscreen':'Enter fullscreen'));

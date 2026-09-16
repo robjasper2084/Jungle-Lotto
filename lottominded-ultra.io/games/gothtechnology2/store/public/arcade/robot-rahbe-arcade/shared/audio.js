@@ -1,7 +1,7 @@
 import {tone} from './core.js';
 const cues={jump:[560,.07,'square'],land:[130,.055,'sine'],dash:[180,.08,'sawtooth'],shoot:[740,.045,'triangle'],enemy:[100,.16,'sawtooth'],coin:[1100,.035,'sine'],chip:[880,.12,'triangle'],key:[1320,.15,'sine'],hurt:[140,.16,'sawtooth'],perfect:[980,.09,'sine'],overdrive:[240,.2,'sawtooth'],checkpoint:[640,.18,'triangle'],dead:[80,.4,'triangle'],power:[760,.14,'triangle'],slide:[220,.07,'sawtooth']};
 export class AudioManager{
- constructor(){this.settings={sound:false,music:false,volume:.65,sfxVolume:1,musicVolume:.5};this.clock=0;this.beat=0;this.voices=0;this.muted=false;this.last=new Map();this.timers=new Set();}
+ constructor(){this.settings={sound:true,music:true,volume:.65,sfxVolume:1,musicVolume:.5};this.clock=0;this.beat=0;this.voices=0;this.muted=false;this.last=new Map();this.timers=new Set();}
  applySettings(s){Object.assign(this.settings,s);if(this.master)this.master.gain.value=this.muted?0:this.settings.volume;}
  context(){if(!this.ctx){const C=globalThis.AudioContext||globalThis.webkitAudioContext;if(!C)return null;try{this.ctx=new C();this.master=this.ctx.createGain();this.master.gain.value=this.settings.volume;this.master.connect(this.ctx.destination);}catch{return null;}}if(this.ctx.state==='suspended')this.ctx.resume().catch(()=>{});return this.ctx;}
  play(name){if(!this.settings.sound||!this.settings.volume||this.muted)return;const now=performance.now();if(now-(this.last.get(name)||-1000)<(name==='shoot'?80:45))return;this.last.set(name,now);const cue=cues[name]||cues.coin;this.note(...cue,.025*this.settings.sfxVolume);}

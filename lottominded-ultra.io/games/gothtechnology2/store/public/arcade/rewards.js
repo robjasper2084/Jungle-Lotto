@@ -4,6 +4,8 @@ export const DISCOUNT_PREVIEW_KEY='gothtechnology.arcade.discount-preview.v2';
 export const LEGACY_DISCOUNT_KEY='gothtechnology.underground.discount-preview.v1';
 export const DISCOUNT_TIERS=Object.freeze([{points:12000,percent:5},{points:30000,percent:10},{points:60000,percent:15},{points:120000,percent:20}].map(tier=>Object.freeze(tier)));
 const ids=new Set(REWARD_GAMES.map(game=>game.id));
+// Keep earned points from the removed About game; reject new receipts.
+const historicalIds=new Set([...ids,'elmwood']);
 const safeId=value=>typeof value==='string'&&/^[a-zA-Z0-9_-]{1,100}$/.test(value)&&!['__proto__','constructor','prototype'].includes(value);
 export function validScore(value){return typeof value==='number'&&Number.isSafeInteger(value)&&value>=0?value:0;}
 export function discountProgress(value){const totalPoints=validScore(value),percent=DISCOUNT_TIERS.reduce((n,t)=>totalPoints>=t.points?t.percent:n,0),next=DISCOUNT_TIERS.find(t=>t.points>totalPoints)??null;return {totalPoints,percent,next,remaining:next?next.points-totalPoints:0};}
@@ -18,7 +20,7 @@ function sanitize(raw){
   const out=empty();if(raw?.version!==2)return out;
   out.carriedPoints=validScore(raw.carriedPoints);
   for(const [key,run] of Object.entries(raw.runs??{})){
-    if(!run||!ids.has(run.game)||!safeId(run.runId)||key!==run.game+':'+run.runId)continue;
+    if(!run||!historicalIds.has(run.game)||!safeId(run.runId)||key!==run.game+':'+run.runId)continue;
     out.runs[key]={game:run.game,runId:run.runId,score:validScore(run.score),baseline:validScore(run.baseline)};
   }
   return out;
@@ -39,7 +41,7 @@ function readRecord(storage){
   catch{return {record:session,saved:false};}
 }
 function summarize(record,saved){
-  const games=Object.fromEntries(REWARD_GAMES.map(game=>[game.id,{points:0,runs:0}]));
+  const games=Object.fromEntries([...historicalIds].map(id=>[id,{points:0,runs:0}]));
   let total=record.carriedPoints;
   for(const run of Object.values(record.runs)){const points=Math.max(0,run.score-run.baseline);games[run.game].points+=points;games[run.game].runs++;total+=points;}
   return {...discountProgress(Math.min(Number.MAX_SAFE_INTEGER,total)),games,carriedPoints:record.carriedPoints,saved};

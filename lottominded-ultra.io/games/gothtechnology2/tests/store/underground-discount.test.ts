@@ -20,6 +20,23 @@ test('discount milestones require 20 percent more points and stop at 20 percent'
 });
 
 const run=(runId:string,score:number)=>({runId,score,seconds:60,mode:'playing'});
+test('Swoop points combine with other games, cross a tier once, and persist across rides',()=>{
+ const storage=memory();
+ recordGameProgress('underground',run('vault',11800),storage);
+ const receipt=run('swoop-first',223);
+ recordGameProgress('swoop-detroit',receipt,storage);
+ recordGameProgress('swoop-detroit',{...receipt,mode:'paused'},storage);
+ assert.equal(readDiscountPreview(storage).totalPoints,12023);
+ assert.equal(readDiscountPreview(storage).percent,5);
+ recordGameProgress('swoop-detroit',{...run('idle',0),mode:'title'},storage);
+ assert.equal(readDiscountPreview(storage).games['swoop-detroit'].runs,1);
+ recordGameProgress('swoop-detroit',run('swoop-second',223),storage);
+ const saved=readDiscountPreview(storage);
+ assert.equal(saved.totalPoints,12246);assert.equal(saved.games['swoop-detroit'].points,446);
+ assert.equal(saved.games['swoop-detroit'].runs,2);
+ recordGameProgress('swoop-detroit',{...run('debug',999999),debug:true},storage);
+ assert.equal(readDiscountPreview(storage).totalPoints,12246);
+});
 test('all games and new runs add points, while polling and resumed checkpoints count once',()=>{
  const storage=memory();
  recordGameProgress('underground',run('first',4000),storage);
@@ -98,4 +115,13 @@ test('all fourteen priced products and variants are raised 20 percent while five
     assert.equal(product.compareAtPrice,null,'No fabricated historical sale price');
   }
   assert.deepEqual(discountEstimate(120000,demoProducts[0].price.amount),{percent:20,saving:2136,total:8544});
+});
+
+test('retired Elmwood points persist but cannot earn new receipts',()=>{
+ const storage=memory();storage.setItem(DISCOUNT_PREVIEW_KEY,JSON.stringify({version:2,carriedPoints:0,runs:{'elmwood:retired':{game:'elmwood',runId:'retired',score:12000,baseline:0}}}));
+ assert.equal(readDiscountPreview(storage).totalPoints,12000);
+ assert.equal(recordGameProgress('elmwood',run('retired',20000),storage).totalPoints,12000);
+ const updated=recordGameProgress('swoop-detroit',run('fresh',500),storage);
+ assert.equal(updated.totalPoints,12500);assert.equal(updated.percent,5);
+ assert.equal(readDiscountPreview(storage).totalPoints,12500);
 });
