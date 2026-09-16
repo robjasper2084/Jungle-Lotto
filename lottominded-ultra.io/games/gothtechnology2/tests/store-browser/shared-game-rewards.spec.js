@@ -10,7 +10,7 @@ test('shared game rewards combine actual play across the existing arcade games a
  test.setTimeout(180000);const errors=[],failed=[];
  page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{if(r.status()>=400)failed.push(r.url());});
  await page.emulateMedia({reducedMotion:'reduce'});await page.goto(base+'#underground-rewards');
- await expect(page.locator('[data-open-reward-game]')).toHaveCount(6);
+ await expect(page.locator('#reward-game-picker [data-open-reward-game]')).toHaveCount(7);
  const popup=page.locator('#underground-dialog');
  async function open(id){if(await page.locator('#reward-game-picker').getAttribute('open')===null)await page.locator('#reward-game-picker summary').click();await page.locator(`[data-open-reward-game="${id}"]`).click();await expect(popup.locator('[data-underground-loading]')).toBeHidden({timeout:60000});return page.frames().find(f=>f.parentFrame()===page.mainFrame());}
  async function close(){await popup.getByRole('button',{name:'Close game',exact:true}).click();await expect(popup.locator('iframe')).toHaveCount(0);}
@@ -129,3 +129,4 @@ test('shared game rewards Fighter preserves earlier round activity and clears it
  await page.locator('#underground-dialog [data-close-dialog]').click();await page.reload();
  expect((await read(page)).total).toBe(2500);
 });
+

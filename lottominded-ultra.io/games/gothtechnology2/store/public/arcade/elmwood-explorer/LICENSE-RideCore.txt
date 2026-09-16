@@ -1,0 +1,12 @@
+PRIVATE PROJECT SNAPSHOT
+
+Digital Static RideCore is saved for reuse within the project owner's games.
+No general public redistribution license is declared by this snapshot.
+The npm UNLICENSED field prevents implying an open-source grant.
+
+Third-party dependencies retain their own licenses. The optional Three.js
+adapter imports Three.js and its SkeletonUtils helper; the Three.js MIT notice
+is included in licenses/THREE-LICENSE.txt. Three.js is not bundled in the archive.
+
+Character models, artwork, maps and sounds from external media are not included.
+The motor, scrape and warning audio in this package is synthesized by the code.

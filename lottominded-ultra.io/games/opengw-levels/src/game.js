@@ -1458,7 +1458,7 @@ window.RahbeArcadeGame = {
     updateOverlay();
   }
 };
-if(new URLSearchParams(location.search).has('arcade'))bus.setMuted(true);
+if(new URLSearchParams(location.search).has('arcade'))bus.setMuted(false);
 window.addEventListener('pagehide',flushArcadeProgress);
 
 if (devEnabled) devEl.style.display = "block";

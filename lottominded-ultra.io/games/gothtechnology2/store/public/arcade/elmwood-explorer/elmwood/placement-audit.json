@@ -1,0 +1,15 @@
+{
+  "estimatedInstances": 4760,
+  "mappedBuildings": 5,
+  "estimatedTrees": 228,
+  "minimumDressingCenterToPathOrCreekM": 5.000452187871776,
+  "test": "Static centre-distance clearance; not a player physics test",
+  "unresolved": [
+    "Two mapped building identities unknown",
+    "Family mausoleum and statue positions not established: kept in asset library",
+    "Path widths estimated; no surveyed road edge data",
+    "Pond footprint missing from OSM extract; creek centreline only",
+    "Grave and individual tree positions estimated",
+    "Google satellite visual inspection is not a registered orthophoto residual audit"
+  ]
+}

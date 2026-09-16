@@ -1,0 +1,556 @@
+[
+  {
+    "id": "elmwood-chapel",
+    "label": "1856 Elmwood Chapel",
+    "vertices": 9084,
+    "triangles": 15990,
+    "dimensionsM": [
+      8.440000534057617,
+      12.125,
+      12.71500015258789
+    ],
+    "materials": [
+      "Chapel oak tracery",
+      "Reference Cut limestone trim",
+      "Reference Muted historic glazing",
+      "bronze",
+      "granite",
+      "iron",
+      "Reference limestone",
+      "Reference slate",
+      "wood"
+    ],
+    "confidence": "Official Elmwood_Chapel_3217 front photo and mapped footprint; pointed arches, clipped vertical oak boards, paired lancet tracery and slope-aligned slate UVs refined; hidden sides and dimensions remain inferred",
+    "glb": "models/elmwood-chapel.glb",
+    "fbx": "fbx/elmwood-chapel.fbx",
+    "lod1Triangles": 6714,
+    "referenceSource": "Official Elmwood_Chapel_3217 front photograph; Jonathan Brandt Google Maps Sep 2014 panorama",
+    "materialReference": "Jonathan Brandt / Google Maps, Sep 2014 chapel panorama; Saint Louis Patina site photographs, 2023. Visual color estimates, not measured reflectance.",
+    "runtimeVertices": 18142,
+    "glbBytes": 38792300,
+    "textureBudgetMiBConservative": 144.0,
+    "textureBudgetNote": "Shared material sets at recorded resolution; 3 RGBA8 maps and mipmaps; count shared sets once"
+  },
+  {
+    "id": "elmwood-gatehouse",
+    "label": "1870 Gothic Gatehouse",
+    "vertices": 6737,
+    "triangles": 11091,
+    "dimensionsM": [
+      31.989994049072266,
+      11.585000038146973,
+      13.949999809265137
+    ],
+    "materials": [
+      "Reference Cut limestone trim",
+      "Reference Muted historic glazing",
+      "iron",
+      "Reference limestone",
+      "Reference slate"
+    ],
+    "confidence": "OSM footprint; official front and side photographs; roof and carvings interpreted",
+    "glb": "models/elmwood-gatehouse.glb",
+    "fbx": "fbx/elmwood-gatehouse.fbx",
+    "lod1Triangles": 4657,
+    "runtimeVertices": 12124,
+    "glbBytes": 30920384,
+    "textureBudgetMiBConservative": 96.0,
+    "textureBudgetNote": "Shared material sets at recorded resolution; 3 RGBA8 maps and mipmaps; count shared sets once",
+    "materialReference": "Jonathan Brandt / Google Maps, Sep 2014 chapel panorama; Saint Louis Patina site photographs, 2023. Visual color estimates, not measured reflectance."
+  },
+  {
+    "id": "buhl-mausoleum",
+    "label": "Buhl family mausoleum study",
+    "vertices": 26310,
+    "triangles": 51384,
+    "dimensionsM": [
+      5.159999847412109,
+      6.819999694824219,
+      6.138753414154053
+    ],
+    "materials": [
+      "Muted historic glazing",
+      "Photo reference dressed stone",
+      "Photo reference gray granite",
+      "iron"
+    ],
+    "confidence": "Rebuilt from Chris Naffziger 2023 front/right photograph: rock-faced ashlar, curved entrance supports, smooth columns, shallow arch, layered cornice and narrow side window; dimensions and site coordinates unmeasured",
+    "glb": "models/buhl-mausoleum.glb",
+    "fbx": "fbx/buhl-mausoleum.fbx",
+    "lod1Triangles": 21581,
+    "referenceSource": "https://stlouispatina.com/elmwood-cemetery-detroit/",
+    "referenceImage": "patina/1790.jpg",
+    "sitePlacement": "Unverified; library only",
+    "runtimeVertices": 87148,
+    "glbBytes": 11492656,
+    "textureBudgetMiBConservative": 32.0,
+    "textureBudgetNote": "Shared material sets at recorded resolution; 3 RGBA8 maps and mipmaps; count shared sets once"
+  },
+  {
+    "id": "schmidt-mausoleum",
+    "label": "Traugott Schmidt mausoleum study",
+    "vertices": 9530,
+    "triangles": 16964,
+    "dimensionsM": [
+      5.900000095367432,
+      6.5,
+      7.90500020980835
+    ],
+    "materials": [
+      "Cut limestone trim",
+      "bronze",
+      "granite",
+      "iron",
+      "slate"
+    ],
+    "confidence": "Photo-based architectural interpretation; dimensions and exact placement unverified",
+    "glb": "models/schmidt-mausoleum.glb",
+    "fbx": "fbx/schmidt-mausoleum.fbx",
+    "lod1Triangles": 7123,
+    "runtimeVertices": 14082,
+    "glbBytes": 12836624,
+    "textureBudgetMiBConservative": 64.0,
+    "textureBudgetNote": "Shared material sets at recorded resolution; 3 RGBA8 maps and mipmaps; count shared sets once"
+  },
+  {
+    "id": "plaza-mausoleum",
+    "label": "1994 Mausoleum Plaza study",
+    "vertices": 12742,
+    "triangles": 24564,
+    "dimensionsM": [
+      10.100000381469727,
+      41.099998474121094,
+      5.179999828338623
+    ],
+    "materials": [
+      "Cut limestone trim",
+      "Muted historic glazing",
+      "granite",
+      "limestone",
+      "rose-marble"
+    ],
+    "confidence": "Mapped footprint; official rose-marble and skylight description; facades and gallery configuration estimated",
+    "glb": "models/plaza-mausoleum.glb",
+    "fbx": "fbx/plaza-mausoleum.fbx",
+    "lod1Triangles": 10316,
+    "runtimeVertices": 49086,
+    "glbBytes": 25214832,
+    "textureBudgetMiBConservative": 96.0,
+    "textureBudgetNote": "Shared material sets at recorded resolution; 3 RGBA8 maps and mipmaps; count shared sets once"
+  },
+  {
+    "id": "flying-geese-study",
+    "label": "Flying Wild Geese monument study",
+    "vertices": 3044,
+    "triangles": 5932,
+    "dimensionsM": [
+      1.2377225160598755,
+      1.1953175067901611,
+      2.2133588790893555
+    ],
+    "materials": [
+      "bronze",
+      "granite"
+    ],
+    "confidence": "Museum cast reference and published dimensions; sculptural interpretation; site pedestal and location estimated",
+    "glb": "models/flying-geese-study.glb",
+    "fbx": "fbx/flying-geese-study.fbx",
+    "lod1Triangles": 2490,
+    "runtimeVertices": 4309,
+    "glbBytes": 3790124,
+    "textureBudgetMiBConservative": 32.0,
+    "textureBudgetNote": "Shared material sets at recorded resolution; 3 RGBA8 maps and mipmaps; count shared sets once"
+  },
+  {
+    "id": "headstone",
+    "label": "Headstone module",
+    "vertices": 112,
+    "triangles": 216,
+    "dimensionsM": [
+      1,
+      0.41999998688697815,
+      1.0749999284744263
+    ],
+    "materials": [
+      "granite"
+    ],
+    "confidence": "Generic cemetery module; individual grave identity and placement are not surveyed",
+    "glb": "models/headstone.glb",
+    "fbx": "fbx/headstone.fbx",
+    "lod1Triangles": 90,
+    "runtimeVertices": 432,
+    "glbBytes": 847412,
+    "textureBudgetMiBConservative": 16.0,
+    "textureBudgetNote": "Shared material sets at recorded resolution; 3 RGBA8 maps and mipmaps; count shared sets once"
+  },
+  {
+    "id": "obelisk",
+    "label": "Obelisk module",
+    "vertices": 181,
+    "triangles": 342,
+    "dimensionsM": [
+      1.2999999523162842,
+      1.2999999523162842,
+      4.949999809265137
+    ],
+    "materials": [
+      "granite"
+    ],
+    "confidence": "Generic cemetery module; individual grave identity and placement are not surveyed",
+    "glb": "models/obelisk.glb",
+    "fbx": "fbx/obelisk.fbx",
+    "lod1Triangles": 142,
+    "runtimeVertices": 688,
+    "glbBytes": 860476,
+    "textureBudgetMiBConservative": 16.0,
+    "textureBudgetNote": "Shared material sets at recorded resolution; 3 RGBA8 maps and mipmaps; count shared sets once"
+  },
+  {
+    "id": "ledger",
+    "label": "Ledger module",
+    "vertices": 56,
+    "triangles": 108,
+    "dimensionsM": [
+      0.8999999761581421,
+      1.9500000476837158,
+      0.20000000298023224
+    ],
+    "materials": [
+      "granite"
+    ],
+    "confidence": "Generic cemetery module; individual grave identity and placement are not surveyed",
+    "glb": "models/ledger.glb",
+    "fbx": "fbx/ledger.fbx",
+    "lod1Triangles": 44,
+    "runtimeVertices": 216,
+    "glbBytes": 836420,
+    "textureBudgetMiBConservative": 16.0,
+    "textureBudgetNote": "Shared material sets at recorded resolution; 3 RGBA8 maps and mipmaps; count shared sets once"
+  },
+  {
+    "id": "urn",
+    "label": "Urn module",
+    "vertices": 342,
+    "triangles": 668,
+    "dimensionsM": [
+      0.6000000238418579,
+      0.6000000238418579,
+      1.100000023841858
+    ],
+    "materials": [
+      "Cut limestone trim",
+      "granite"
+    ],
+    "confidence": "Generic cemetery module; individual grave identity and placement are not surveyed",
+    "glb": "models/urn.glb",
+    "fbx": "fbx/urn.fbx",
+    "lod1Triangles": 280,
+    "runtimeVertices": 580,
+    "glbBytes": 856452,
+    "textureBudgetMiBConservative": 16.0,
+    "textureBudgetNote": "Shared material sets at recorded resolution; 3 RGBA8 maps and mipmaps; count shared sets once"
+  },
+  {
+    "id": "white-oak",
+    "label": "White Oak",
+    "vertices": 44232,
+    "triangles": 27680,
+    "dimensionsM": [
+      15.010013580322266,
+      15.13882064819336,
+      17.91067123413086
+    ],
+    "materials": [
+      "leaf-white-oak",
+      "oak-bark"
+    ],
+    "confidence": "Recursive tapered branches, root flare, botanical leaf silhouette; species from official tree tours; individual tree location and shape remain estimates",
+    "glb": "models/white-oak.glb",
+    "fbx": "fbx/white-oak.fbx",
+    "lod1Triangles": 11625,
+    "runtimeVertices": 49952,
+    "glbBytes": 8254496,
+    "textureBudgetMiBConservative": 20.0,
+    "textureBudgetNote": "Shared material sets at recorded resolution; 3 RGBA8 maps and mipmaps; count shared sets once"
+  },
+  {
+    "id": "red-maple",
+    "label": "Red Maple",
+    "vertices": 44232,
+    "triangles": 27680,
+    "dimensionsM": [
+      12.610430717468262,
+      12.905303955078125,
+      15.173929214477539
+    ],
+    "materials": [
+      "leaf-red-maple",
+      "oak-bark"
+    ],
+    "confidence": "Recursive tapered branches, root flare, botanical leaf silhouette; species from official tree tours; individual tree location and shape remain estimates",
+    "glb": "models/red-maple.glb",
+    "fbx": "fbx/red-maple.fbx",
+    "lod1Triangles": 11625,
+    "runtimeVertices": 50112,
+    "glbBytes": 8267128,
+    "textureBudgetMiBConservative": 20.0,
+    "textureBudgetNote": "Shared material sets at recorded resolution; 3 RGBA8 maps and mipmaps; count shared sets once"
+  },
+  {
+    "id": "american-elm",
+    "label": "American Elm",
+    "vertices": 44232,
+    "triangles": 27680,
+    "dimensionsM": [
+      14.6307954788208,
+      15.064311981201172,
+      19.09491539001465
+    ],
+    "materials": [
+      "leaf-american-elm",
+      "oak-bark"
+    ],
+    "confidence": "Recursive tapered branches, root flare, botanical leaf silhouette; species from official tree tours; individual tree location and shape remain estimates",
+    "glb": "models/american-elm.glb",
+    "fbx": "fbx/american-elm.fbx",
+    "lod1Triangles": 11625,
+    "runtimeVertices": 49935,
+    "glbBytes": 8266516,
+    "textureBudgetMiBConservative": 20.0,
+    "textureBudgetNote": "Shared material sets at recorded resolution; 3 RGBA8 maps and mipmaps; count shared sets once"
+  },
+  {
+    "id": "white-pine",
+    "label": "White Pine",
+    "vertices": 44232,
+    "triangles": 27680,
+    "dimensionsM": [
+      11.692831039428711,
+      11.148513793945312,
+      21.619766235351562
+    ],
+    "materials": [
+      "leaf-white-pine",
+      "oak-bark"
+    ],
+    "confidence": "Recursive tapered branches, root flare, botanical leaf silhouette; species from official tree tours; individual tree location and shape remain estimates",
+    "glb": "models/white-pine.glb",
+    "fbx": "fbx/white-pine.fbx",
+    "lod1Triangles": 11625,
+    "runtimeVertices": 50044,
+    "glbBytes": 8347208,
+    "textureBudgetMiBConservative": 20.0,
+    "textureBudgetNote": "Shared material sets at recorded resolution; 3 RGBA8 maps and mipmaps; count shared sets once"
+  },
+  {
+    "id": "weeping-willow",
+    "label": "Weeping Willow",
+    "vertices": 44232,
+    "triangles": 27680,
+    "dimensionsM": [
+      14.75992488861084,
+      14.781388282775879,
+      12.426104545593262
+    ],
+    "materials": [
+      "leaf-weeping-willow",
+      "oak-bark"
+    ],
+    "confidence": "Recursive tapered branches, root flare, botanical leaf silhouette; species from official tree tours; individual tree location and shape remain estimates",
+    "glb": "models/weeping-willow.glb",
+    "fbx": "fbx/weeping-willow.fbx",
+    "lod1Triangles": 11625,
+    "runtimeVertices": 49710,
+    "glbBytes": 8199160,
+    "textureBudgetMiBConservative": 20.0,
+    "textureBudgetNote": "Shared material sets at recorded resolution; 3 RGBA8 maps and mipmaps; count shared sets once"
+  },
+  {
+    "id": "creek-bridge",
+    "label": "Creek bridge module",
+    "vertices": 1320,
+    "triangles": 2468,
+    "dimensionsM": [
+      3.9000000953674316,
+      10.25,
+      1.7400000095367432
+    ],
+    "materials": [
+      "Cut limestone trim",
+      "granite",
+      "limestone"
+    ],
+    "confidence": "Reference-informed module; exact bridge profiles and span require measurement",
+    "glb": "models/creek-bridge.glb",
+    "fbx": "fbx/creek-bridge.fbx",
+    "lod1Triangles": 1036,
+    "runtimeVertices": 2760,
+    "glbBytes": 20348624,
+    "textureBudgetMiBConservative": 80.0,
+    "textureBudgetNote": "Shared material sets at recorded resolution; 3 RGBA8 maps and mipmaps; count shared sets once"
+  },
+  {
+    "id": "grass-tuft",
+    "label": "Path-edge grass tuft",
+    "vertices": 375,
+    "triangles": 225,
+    "dimensionsM": [
+      0.8959734439849854,
+      0.8606044054031372,
+      0.18999090790748596
+    ],
+    "materials": [
+      "Grass blade"
+    ],
+    "confidence": "Original grass blade geometry; decorative placement inferred from photographs",
+    "glb": "models/grass-tuft.glb",
+    "fbx": "fbx/grass-tuft.fbx",
+    "lod1Triangles": 94,
+    "runtimeVertices": 525,
+    "glbBytes": 15268,
+    "textureBudgetMiBConservative": 0.0,
+    "textureBudgetNote": "Shared material sets at recorded resolution; 3 RGBA8 maps and mipmaps; count shared sets once"
+  },
+  {
+    "id": "fallen-leaf-patch",
+    "label": "Fallen leaf patch",
+    "vertices": 200,
+    "triangles": 160,
+    "dimensionsM": [
+      1.4714832305908203,
+      1.4640514850616455,
+      0.04316021874547005
+    ],
+    "materials": [
+      "Dry fallen leaf"
+    ],
+    "confidence": "Decorative seasonal leaf scatter; no claimed surveyed positions",
+    "glb": "models/fallen-leaf-patch.glb",
+    "fbx": "fbx/fallen-leaf-patch.fbx",
+    "lod1Triangles": 67,
+    "runtimeVertices": 480,
+    "glbBytes": 13812,
+    "textureBudgetMiBConservative": 0.0,
+    "textureBudgetNote": "Shared material sets at recorded resolution; 3 RGBA8 maps and mipmaps; count shared sets once"
+  },
+  {
+    "id": "low-shrub",
+    "label": "Low planted shrub",
+    "vertices": 3944,
+    "triangles": 2044,
+    "dimensionsM": [
+      1.8342037200927734,
+      1.644507646560669,
+      1.2335461378097534
+    ],
+    "materials": [
+      "leaf-american-elm",
+      "oak-bark"
+    ],
+    "confidence": "Reference-informed landscaping module; planting offsets approximate",
+    "glb": "models/low-shrub.glb",
+    "fbx": "fbx/low-shrub.fbx",
+    "lod1Triangles": 858,
+    "runtimeVertices": 4016,
+    "glbBytes": 6449788,
+    "textureBudgetMiBConservative": 20.0,
+    "textureBudgetNote": "Shared material sets at recorded resolution; 3 RGBA8 maps and mipmaps; count shared sets once"
+  },
+  {
+    "id": "headstone-arched",
+    "label": "Arched headstone",
+    "vertices": 334,
+    "triangles": 656,
+    "dimensionsM": [
+      0.949999988079071,
+      0.47999998927116394,
+      1.340000033378601
+    ],
+    "materials": [
+      "granite"
+    ],
+    "confidence": "Generic unnamed marker variation; individual grave identity unverified",
+    "glb": "models/headstone-arched.glb",
+    "fbx": "fbx/headstone-arched.fbx",
+    "lod1Triangles": 274,
+    "runtimeVertices": 730,
+    "glbBytes": 864388,
+    "textureBudgetMiBConservative": 16.0,
+    "textureBudgetNote": "Shared material sets at recorded resolution; 3 RGBA8 maps and mipmaps; count shared sets once"
+  },
+  {
+    "id": "headstone-cross",
+    "label": "Cross headstone",
+    "vertices": 168,
+    "triangles": 324,
+    "dimensionsM": [
+      0.949999988079071,
+      0.47999998927116394,
+      1.5449999570846558
+    ],
+    "materials": [
+      "granite",
+      "weathered-stone"
+    ],
+    "confidence": "Generic unnamed marker variation; individual grave identity unverified",
+    "glb": "models/headstone-cross.glb",
+    "fbx": "fbx/headstone-cross.fbx",
+    "lod1Triangles": 136,
+    "runtimeVertices": 648,
+    "glbBytes": 6503360,
+    "textureBudgetMiBConservative": 32.0,
+    "textureBudgetNote": "Shared material sets at recorded resolution; 3 RGBA8 maps and mipmaps; count shared sets once"
+  },
+  {
+    "id": "headstone-weathered",
+    "label": "Weathered headstone",
+    "vertices": 112,
+    "triangles": 216,
+    "dimensionsM": [
+      0.949999988079071,
+      0.47999998927116394,
+      1.076597809791565
+    ],
+    "materials": [
+      "granite",
+      "weathered-stone"
+    ],
+    "confidence": "Generic unnamed marker variation; individual grave identity unverified",
+    "glb": "models/headstone-weathered.glb",
+    "fbx": "fbx/headstone-weathered.fbx",
+    "lod1Triangles": 90,
+    "runtimeVertices": 432,
+    "glbBytes": 6491620,
+    "textureBudgetMiBConservative": 32.0,
+    "textureBudgetNote": "Shared material sets at recorded resolution; 3 RGBA8 maps and mipmaps; count shared sets once"
+  },
+  {
+    "id": "davis-hillside-vault",
+    "label": "Davis hillside vault study",
+    "vertices": 9870,
+    "triangles": 18904,
+    "dimensionsM": [
+      8.699999809265137,
+      1.2999999523162842,
+      3.375699043273926
+    ],
+    "materials": [
+      "Photo reference dressed stone",
+      "Photo reference gray granite",
+      "Vault stone behind iron gate",
+      "iron",
+      "wood"
+    ],
+    "confidence": "From Chris Naffziger 2023 frontal photograph: low gabled coping, DAVIS inscription, shallow segmental arch, iron scroll gate and retaining walls; hidden chamber, dimensions and site coordinates unverified",
+    "glb": "models/davis-hillside-vault.glb",
+    "fbx": "fbx/davis-hillside-vault.fbx",
+    "lod1Triangles": 7938,
+    "referenceSource": "https://stlouispatina.com/elmwood-cemetery-detroit/",
+    "referenceImage": "patina/1793.jpg",
+    "sitePlacement": "Unverified; library only",
+    "runtimeVertices": 29994,
+    "glbBytes": 12577340,
+    "textureBudgetMiBConservative": 48.0,
+    "textureBudgetNote": "Shared material sets at recorded resolution; 3 RGBA8 maps and mipmaps; count shared sets once"
+  }
+]

@@ -8169,7 +8169,7 @@
   // Optional local arcade adapter. The original standalone path, save keys,
   // account bridge, controls, levels, multiplayer and number terminals remain.
   if (QUERY.get('arcade') === '1') {
-    settings.sound = false; settings.music = false;
+    settings.sound = true; settings.music = true;
     loadGameplayAssetsForLevel(0);
   }
   function arcadeSnapshot() {
