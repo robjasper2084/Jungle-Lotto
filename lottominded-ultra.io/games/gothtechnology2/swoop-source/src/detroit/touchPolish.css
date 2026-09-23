@@ -1,0 +1,34 @@
+/* Scrollable interface panels must not inherit the riding canvas gestures. */
+.touchSettings{display:grid;gap:12px;margin-top:24px;border:1px solid #bfa16a;padding:14px}.touchSettings label{display:grid;gap:6px;font-size:14px}.touchSettings select{width:100%;min-height:48px;font-size:16px}.touchSettings legend{font-weight:bold}
+#menu,aside,.cameraControls,.destinationPanel,.boutiqueCatalog{touch-action:pan-y;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+.cameraControls button,.destinationPanel button,.destinationPanel a{touch-action:manipulation}
+@media(any-pointer:coarse),(max-width:1024px){
+ button,select,summary,.destinationPanel a{min-height:48px}
+ button,summary{min-width:44px}
+ #menu select,.cameraControls select{font-size:16px!important}
+ .cameraControls{max-height:calc(100dvh - 145px - var(--safe-top) - var(--safe-bottom));overflow-y:auto}
+ .destinationPanel:is(#galleryArrival,#boutiqueArrival){left:calc(12px + var(--safe-left));right:calc(12px + var(--safe-right));width:auto;bottom:calc(260px + var(--safe-bottom));max-height:calc(100dvh - 335px - var(--safe-top) - var(--safe-bottom));overflow-y:auto;padding:14px}
+ .destinationPanel h2{font-size:22px}
+ .destinationPanel button,.destinationPanel a{min-height:48px;display:inline-flex;align-items:center;justify-content:center}
+ body.visitingGallery .destinationPanel:is(#galleryArrival,#boutiqueArrival){top:auto;bottom:calc(12px + var(--safe-bottom));max-height:calc(75dvh - var(--safe-top) - var(--safe-bottom));width:auto}
+ #boutiqueArrival .boutiqueCatalog{max-height:none;overflow:visible;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+ #boutiqueArrival .boutiqueCatalog a{min-width:0;padding:10px;overflow-wrap:anywhere;text-align:left;align-items:stretch}
+ #boutiqueArrival .boutiqueCatalog strong{font-size:14px;line-height:1.4}
+ aside .close{min-width:48px;min-height:48px}
+ #menu summary{padding-block:12px}
+ .touchActions button{min-height:54px}
+ #stick{touch-action:none}
+}
+@media(max-width:360px){
+ #stick{width:108px;height:108px}
+ .touchActions{grid-template-columns:repeat(2,68px)}
+ header>div{max-width:95px;padding:5px}
+ header nav{gap:3px}header nav button{padding:7px 5px}
+ #menu .options{grid-template-columns:1fr}
+}
+@media(max-height:540px) and (orientation:landscape){
+ .destinationPanel:is(#galleryArrival,#boutiqueArrival){top:calc(65px + var(--safe-top));bottom:calc(70px + var(--safe-bottom));left:50%;right:auto;transform:translateX(-50%);width:min(380px,calc(100vw - 330px));max-height:none}
+ body.visitingGallery .destinationPanel:is(#galleryArrival,#boutiqueArrival){top:calc(12px + var(--safe-top));bottom:calc(12px + var(--safe-bottom));left:12px;right:auto;transform:none;width:min(440px,65vw);max-height:none}
+ .destinationPanel:is(#galleryArrival,#boutiqueArrival) h2{font-size:19px}
+}
+@media(prefers-reduced-motion:reduce){.destinationPanel,.cameraControls{scroll-behavior:auto}}

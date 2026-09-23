@@ -1,0 +1,2 @@
+import {test} from 'node:test';import assert from 'node:assert/strict';import {signSupports} from './signSupports.ts';
+test('all sign orientations have grounded posts aligned to the panel on slopes',()=>{for(const yaw of [0,.6,Math.PI/2,Math.PI,-2]){const ground=(x:number,z:number)=>.3*x-.2*z;for(const p of signSupports(3,4,yaw,5,8,ground)){assert.ok(p.height>0);assert.ok(Math.abs(p.y-p.height/2-ground(p.x,p.z)+.12)<1e-8);assert.ok(Math.abs(p.y+p.height/2-8)<1e-8);assert.ok(Math.abs((p.x-3)*Math.sin(yaw)+(p.z-4)*Math.cos(yaw))<1e-8);}}});
