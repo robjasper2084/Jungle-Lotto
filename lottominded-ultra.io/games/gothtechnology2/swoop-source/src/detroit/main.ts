@@ -1,3 +1,4 @@
+import {FrameSchedule} from './frameSchedule.ts';
 import {PARK_SPAWN,buildFreestylePark,parkContains} from './freestylePark.ts';
 import {windTime} from './windMotion.ts';
 import {RouteSky,DAY_SUN,DUSK_SUN} from './routeSky.ts';
@@ -356,6 +357,7 @@ try{
   setCamera('front');
   if(new URLSearchParams(location.search).get('launch')==='quest')void vr.enterFromPackage();
 }catch(e){console.error(e);$('loading').textContent='The ride could not load: '+String(e);}
+const frameSchedule=new FrameSchedule();
 let hudAt=0,frames=0,fpsAt=performance.now(),fps=0;
 function frameSplit(now:number,dt:number){
  const room=split!;windTime.value=room.simulation.rules.elapsed;const controls=room.input.poll(Array.from(navigator.getGamepads?.()??[]),room.simulation.riders.map(r=>r.pose.speed),dt);
@@ -385,7 +387,9 @@ function frameSplit(now:number,dt:number){
  }
 }
 function frame(now:number,xrFrame?:XRFrame){
-  const rawFrameMs=Math.max(0,now-last),dt=Math.min(rawFrameMs/1000,.06);last=now;if(!ready)return;
+  if(!ready||(document.hidden&&!vr.active)){last=now;return;}
+  if(!frameSchedule.shouldRender(now,(!running||paused)&&!gallery?.active&&!boutique?.active,vr.active))return;
+  const rawFrameMs=Math.max(0,now-last),dt=Math.min(rawFrameMs/1000,.06);last=now;
   if(!loadedAt)loadedAt=now;const budgetActive=!document.hidden&&!vr.active&&running&&!paused&&now-loadedAt>5000;if(adaptiveQuality.sample(rawFrameMs,budgetActive)){renderer.setPixelRatio(basePixelRatio*adaptiveQuality.scale);renderer.setSize(innerWidth,innerHeight);document.documentElement.dataset.renderQuality=adaptiveQuality.scale<.85?'compact':'detailed';}canvas.dataset.renderBudget=JSON.stringify({targetFPS:60,resolutionScale:adaptiveQuality.scale,pixelRatio:renderer.getPixelRatio(),xr:vr.active});for(const destination of [gallery,boutique])if(destination)destination.building.visible=destination.active||Math.hypot(current.x-destination.building.position.x,current.z-destination.building.position.z)<220;frameTimes.push(rawFrameMs);if(frameTimes.length>480)frameTimes.shift();
   if(gallery?.active||boutique?.active){
     const destination=(gallery?.active?gallery:boutique)!;const walking=destination.update(document.hidden?0:dt,camera);

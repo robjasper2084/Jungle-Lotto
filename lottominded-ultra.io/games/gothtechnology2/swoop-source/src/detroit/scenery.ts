@@ -160,12 +160,13 @@ export async function buildScenery(scene:T.Scene,world:DetroitWorld,polish=true)
   for(const g of groups)batchStaticGroup(g);
   const grass=polish?await buildGrassField(scene,world,mats.grass):undefined;
   world.step();
+  const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)'),mobile=matchMedia('(max-width:700px)');
   const trees=treeBatches.reduce((n,b)=>n+b.count,0);
   return {lighting,materials:mats,architecture,trees,routeArt:{...routeArt,cutMurals},rails,landmarks,flowers:flowers.count,grassClumps:grass?.count??0,skins:8,update(x:number,z:number,time=0){
     lighting.update(x,z);
     treeTime.value=time;
     flowers.update(x,z,document.documentElement.dataset.renderQuality==='compact');
-    grass?.update(x,z,time,document.documentElement.dataset.reducedMotion==='true'||matchMedia('(prefers-reduced-motion: reduce)').matches,matchMedia('(max-width:700px)').matches);
+    grass?.update(x,z,time,document.documentElement.dataset.reducedMotion==='true'||reducedMotion.matches,mobile.matches);
     for(const b of treeBatches){const c=b.group.userData.center;b.update(Math.hypot(c.x-x,c.z-z));}
     let visible=0;for(const g of groups){const c=g.userData.center;g.visible=Math.hypot(c.x-x,c.z-z)<(document.documentElement.dataset.renderQuality==='compact'?240:360);if(g.visible)visible++;}return visible;
   }};

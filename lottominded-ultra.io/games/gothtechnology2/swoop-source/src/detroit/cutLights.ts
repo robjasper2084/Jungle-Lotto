@@ -44,8 +44,9 @@ export function buildCutLights(scene:T.Scene,groupAt:(x:number,z:number)=>T.Grou
  }
  // A fixed light pool avoids a shader for every pole and keeps mobile/VR cost bounded.
  const pool=Array.from({length:4},()=>{const l=new T.SpotLight('#fff0d2',0,15,Math.PI*.39,.65,2);l.castShadow=false;scene.add(l,l.target);return l;});
- let dusk=false;
- return {count:sites.length,setDusk(value:boolean){dusk=value;lens.emissiveIntensity=value?1.6:0;},update(x:number,z:number){
+ let dusk=false,lastX=Infinity,lastZ=Infinity;
+ return {count:sites.length,setDusk(value:boolean){dusk=value;lastX=Infinity;lens.emissiveIntensity=value?1.6:0;if(!value)for(const light of pool)light.intensity=0;},update(x:number,z:number){
+  if(!dusk||Math.hypot(x-lastX,z-lastZ)<2)return;lastX=x;lastZ=z;
   const nearest=sites.map(s=>({s,d:Math.hypot(s.x-x,s.z-z)})).sort((a,b)=>a.d-b.d).slice(0,pool.length);
   pool.forEach((l,i)=>{const n=nearest[i];l.intensity=dusk&&n&&n.d<65?110:0;if(n){l.position.set(n.s.x,n.s.y+4.88,n.s.z);l.target.position.set(n.s.x,n.s.y,n.s.z);}});
  }};
