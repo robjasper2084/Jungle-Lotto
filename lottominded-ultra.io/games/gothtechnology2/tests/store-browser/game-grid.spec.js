@@ -37,7 +37,7 @@ test('Game Grid shows Static WAV artwork and launches a playable sector', async 
   await expect(page.locator('#game-frame')).toHaveAttribute('title','2084 Static WAV game');
   await expect(page.locator('#requested-character')).toContainText('IJKL');
   await expect(page.locator('#game-collection-link')).toBeHidden();
-  expect(await frame.evaluate(() => window.__staticWavAudio.muted)).toBe(true);
+  expect(await frame.evaluate(() => window.__staticWavAudio.muted)).toBe(false);
   await expect(frame.getByRole('button',{name:'Start Sector 1',exact:true})).toBeEnabled();
   await expect.poll(() => frame.locator('#marquee').evaluate(img => img.naturalWidth)).toBeGreaterThan(0);
   await frame.locator('#shell').screenshot({path:info.outputPath('static-wav-menu.png')});
