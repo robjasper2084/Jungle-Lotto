@@ -30,4 +30,6 @@ import {href} from '../../utilities/paths';
 .serengeti-copy{padding:clamp(24px,4vw,64px);align-self:center}.serengeti-copy h2{font-size:clamp(30px,3.2vw,52px);line-height:1.1;margin:16px 0}.serengeti-copy p{font:16px/1.7 Arial,sans-serif;color:#e6e5df;margin:0 0 26px;max-width:46ch}
 .serengeti-cta{display:inline-flex;align-items:center;justify-content:space-between;gap:28px;min-height:48px;padding:12px 20px;background:#cfa441;color:#090c0d;font:600 13px/1.4 Arial,sans-serif}.serengeti-banner:hover .serengeti-cta{background:#e3be69}.serengeti-banner:focus-visible{outline:3px solid #78d7e1;outline-offset:5px}
 @media(max-width:700px){.serengeti-banner{grid-template-columns:1fr}.serengeti-banner img{height:auto;min-height:0;aspect-ratio:3/2}.serengeti-copy{padding:24px}.serengeti-copy h2{font-size:34px}}
+@media(pointer:coarse){.serengeti-cta{min-height:48px;font-size:15px}.serengeti-banner:active .serengeti-cta{background:#e3be69}}
+@media(max-width:700px) and (pointer:coarse){.serengeti-cta{display:flex;width:100%}}
 </style>
