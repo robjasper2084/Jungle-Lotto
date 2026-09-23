@@ -28,7 +28,7 @@ await build({root:source,configFile:false,base:'./',publicDir:false,plugins:[{
   if(id.endsWith('/scenery.ts'))code=replace(code,'treeTime.value=time;','treeTime.value=document.documentElement.dataset.reducedMotion==="true"||matchMedia("(prefers-reduced-motion: reduce)").matches?0:time;');
   return code;
  },
- transformIndexHtml(html){return html.replace(/<p class="hint"><a href="\.\/rider-studio.html"[\s\S]*?<\/p>/,'').replace('</head>','<meta name="goth-reward-game" content="swoop-detroit"><style>button:focus-visible,select:focus-visible,a:focus-visible{outline:2px solid #dec57c;outline-offset:3px}button{min-height:44px}@media(min-width:1025px) and (pointer:fine){.session{bottom:85px}}@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}</style></head>').replace('</body>','<script type="module" src="../reward-tracker.js"></script></body>');}
+ transformIndexHtml(html){return html.replace(/<p class="hint"><a href="\.\/rider-studio.html"[\s\S]*?<\/p>/,'').replace('</head>','<meta name="goth-reward-game" content="swoop-detroit"><style>button:focus-visible,select:focus-visible,a:focus-visible{outline:2px solid #dec57c;outline-offset:3px}button{min-height:44px}@media(min-width:1025px) and (pointer:fine){.session{bottom:85px}}@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}</style></head>').replace('</body>','<script type="module" src="../reward-tracker.js"></script><script type="module" src="../swoop-store-return.js"></script></body>');}
 }],build:{outDir:out,emptyOutDir:true,target:'es2022',rollupOptions:{input:resolve(source,'detroit.html')}}});
 await rename(resolve(out,'detroit.html'),resolve(out,'index.html'));
 const files=[];
