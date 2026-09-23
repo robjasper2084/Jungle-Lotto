@@ -12,7 +12,7 @@ test('Game Grid shows Static WAV artwork and launches a playable sector', async 
   expect(art.status()).toBe(200);
   expect(art.headers()['content-type']).toContain('image/webp');
   await page.goto(base + 'play/');
-  await page.getByRole('button', {name:'Continue to GOTHTECHNOLOGY', exact:true}).click();
+  await expect(page.locator('#rahbee-promo')).not.toBeVisible();
   await page.getByRole('button', {name:'Launch game', exact:true}).click();
   await expect(page.locator('#game-connection')).toContainText('Game ready', {timeout:45000});
   const frame = page.frames().find(frame => frame.url().includes('/legacy-game/'));
