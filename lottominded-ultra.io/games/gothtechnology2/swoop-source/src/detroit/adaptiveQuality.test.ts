@@ -1,0 +1,2 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {AdaptiveQuality} from './adaptiveQuality.ts';
+test('slow frames lower resolution, pauses do not, recovery is gradual',()=>{const q=new AdaptiveQuality();for(let i=0;i<180;i++)q.sample(25,true);assert.equal(q.scale,.9);for(let i=0;i<720;i++)q.sample(1000,false);assert.equal(q.scale,.9);for(let i=0;i<720;i++)q.sample(12,true);assert.ok(q.scale>.9&&q.scale<1);for(let i=0;i<2000;i++)q.sample(40,true);assert.equal(q.scale,.65);});

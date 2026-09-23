@@ -1,0 +1,2558 @@
+{
+  "version": 1,
+  "units": "metres",
+  "sourceDate": "2026-09-14",
+  "origin": {
+    "name": "Gratiot Avenue overpass / trail center",
+    "gps": [
+      42.34720336427042,
+      -83.03589124641053
+    ],
+    "map": [
+      1657.4391132754504,
+      -1337.8762790658798
+    ],
+    "trailDatumFeet": 120.55
+  },
+  "bridges": [
+    {
+      "name": "East Jefferson Avenue",
+      "at": 333.938,
+      "center": [
+        246.5307062408581,
+        -1248.5403940487804
+      ],
+      "points": [
+        [
+          236.22085103973166,
+          -1234.4610382698047
+        ],
+        [
+          256.72066636171826,
+          -1234.3740223836558
+        ],
+        [
+          256.84056144198456,
+          -1262.619749827756
+        ],
+        [
+          236.34074611999796,
+          -1262.706765713905
+        ],
+        [
+          236.22085103973166,
+          -1234.4610382698047
+        ]
+      ],
+      "structure": "beam",
+      "source": "OSM road bearing/span; estimated deck width",
+      "osmIds": [
+        "422037756"
+      ]
+    },
+    {
+      "name": "East Larned Street",
+      "at": 431.717,
+      "center": [
+        344.0062142143937,
+        -1249.8048213675047
+      ],
+      "points": [
+        [
+          356.1016596455125,
+          -1263.995663960805
+        ],
+        [
+          332.3038908937528,
+          -1264.32155111577
+        ],
+        [
+          331.91076878327493,
+          -1235.6139787742045
+        ],
+        [
+          355.7085375350346,
+          -1235.2880916192394
+        ],
+        [
+          356.1016596455125,
+          -1263.995663960805
+        ]
+      ],
+      "structure": "beam",
+      "source": "OSM road bearing/span; estimated deck width",
+      "osmIds": [
+        "43512862",
+        "43512863"
+      ]
+    },
+    {
+      "name": "Pedestrian bridge 51600816",
+      "at": 519.768,
+      "center": [
+        431.8843827309082,
+        -1259.1318202271611
+      ],
+      "points": [
+        [
+          426.4560941738926,
+          -1239.7635805082552
+        ],
+        [
+          437.0558620760784,
+          -1239.6934348042485
+        ],
+        [
+          437.3126712879238,
+          -1278.500059946067
+        ],
+        [
+          426.712903385738,
+          -1278.5702056500738
+        ],
+        [
+          426.4560941738926,
+          -1239.7635805082552
+        ]
+      ],
+      "structure": "beam",
+      "source": "OSM road bearing/span; estimated deck width",
+      "osmIds": [
+        "51600816"
+      ]
+    },
+    {
+      "name": "East Lafayette Street",
+      "at": 723.056,
+      "center": [
+        634.7030884569033,
+        -1277.6374937195742
+      ],
+      "points": [
+        [
+          653.0621212675802,
+          -1262.4435907187863
+        ],
+        [
+          653.1877921906512,
+          -1287.7182021293447
+        ],
+        [
+          651.9178167344251,
+          -1287.6692001496367
+        ],
+        [
+          626.770139324449,
+          -1286.7205192178192
+        ],
+        [
+          619.3661429071278,
+          -1286.3420652213413
+        ],
+        [
+          617.4054522380288,
+          -1286.2648970866157
+        ],
+        [
+          617.0955549208023,
+          -1260.2852311568358
+        ],
+        [
+          618.7714943809308,
+          -1260.3880588532065
+        ],
+        [
+          626.8772573283275,
+          -1260.8200655621285
+        ],
+        [
+          642.654483597798,
+          -1261.9464999925206
+        ],
+        [
+          651.8732682727706,
+          -1262.3654005138724
+        ],
+        [
+          653.0621212675802,
+          -1262.4435907187863
+        ]
+      ],
+      "structure": "beam",
+      "source": "OSM bridge footprint",
+      "osmIds": [
+        "43512851",
+        "43512860",
+        "627422088"
+      ]
+    },
+    {
+      "name": "Vernor pedestrian bridge",
+      "at": 1186.133,
+      "center": [
+        1096.6658821446156,
+        -1309.7411448428493
+      ],
+      "points": [
+        [
+          1098.412528355726,
+          -1294.7154005746593
+        ],
+        [
+          1096.0637441494334,
+          -1294.5757181656443
+        ],
+        [
+          1083.2452465355004,
+          -1293.8460873623355
+        ],
+        [
+          1082.8060264136504,
+          -1313.9765187989328
+        ],
+        [
+          1083.5587001307106,
+          -1314.0309536763093
+        ],
+        [
+          1094.8295246945409,
+          -1314.8363448408777
+        ],
+        [
+          1096.8685163787281,
+          -1314.8446836401217
+        ],
+        [
+          1097.8745497723075,
+          -1315.0168866836232
+        ],
+        [
+          1098.1058500371646,
+          -1306.5121669281705
+        ],
+        [
+          1098.37760412283,
+          -1295.9781471121173
+        ],
+        [
+          1098.412528355726,
+          -1294.7154005746593
+        ]
+      ],
+      "structure": "beam",
+      "source": "OSM bridge footprint",
+      "osmIds": [
+        "43512867",
+        "627422083"
+      ]
+    },
+    {
+      "name": "Chestnut Street",
+      "at": 1437.369,
+      "center": [
+        1347.3041173254521,
+        -1327.0611657030022
+      ],
+      "points": [
+        [
+          1355.1222382459187,
+          -1312.3930991614575
+        ],
+        [
+          1353.2249168038286,
+          -1312.3620203040316
+        ],
+        [
+          1347.1171134139877,
+          -1312.076214122454
+        ],
+        [
+          1340.6315604789663,
+          -1312.1329933459526
+        ],
+        [
+          1339.8817082083347,
+          -1312.1181995802608
+        ],
+        [
+          1339.6787278464665,
+          -1323.423659806488
+        ],
+        [
+          1339.6567535829672,
+          -1344.5457282085642
+        ],
+        [
+          1340.903215680797,
+          -1344.5241365205045
+        ],
+        [
+          1347.5239714086374,
+          -1344.6784591890812
+        ],
+        [
+          1353.2446230520618,
+          -1344.6552158688075
+        ],
+        [
+          1354.5310582528598,
+          -1344.675708736344
+        ],
+        [
+          1355.1222382459187,
+          -1312.3930991614575
+        ]
+      ],
+      "structure": "beam",
+      "source": "OSM bridge footprint",
+      "osmIds": [
+        "43512871",
+        "627422082"
+      ]
+    },
+    {
+      "name": "Antietam Avenue",
+      "at": 1523.411,
+      "center": [
+        1432.608557740843,
+        -1337.892583076939
+      ],
+      "points": [
+        [
+          1439.6879347499032,
+          -1305.6053519633551
+        ],
+        [
+          1438.1305038725338,
+          -1305.6089573782633
+        ],
+        [
+          1432.0617317930296,
+          -1305.6117709814741
+        ],
+        [
+          1426.7744379821956,
+          -1305.619128516983
+        ],
+        [
+          1424.9253195144329,
+          -1305.6158796598825
+        ],
+        [
+          1424.944025029946,
+          -1349.844312466589
+        ],
+        [
+          1427.0998801084827,
+          -1349.8060859277946
+        ],
+        [
+          1432.8110083901283,
+          -1349.8438655541377
+        ],
+        [
+          1438.6252445356788,
+          -1349.8366411214213
+        ],
+        [
+          1439.720395796546,
+          -1349.8322234914785
+        ],
+        [
+          1439.6879347499032,
+          -1305.6053519633551
+        ]
+      ],
+      "structure": "arch",
+      "source": "OSM bridge footprint",
+      "osmIds": [
+        "43512864",
+        "627422067"
+      ]
+    },
+    {
+      "name": "Gratiot Avenue",
+      "at": 1748.513,
+      "center": [
+        1660.8071253487635,
+        -1343.6501822310204
+      ],
+      "points": [
+        [
+          1642.0882930111807,
+          -1338.2457566447563
+        ],
+        [
+          1665.5973265290072,
+          -1324.7648314889032
+        ],
+        [
+          1679.5259576863464,
+          -1349.0546078172845
+        ],
+        [
+          1656.0169241685198,
+          -1362.5355329731376
+        ],
+        [
+          1642.0882930111807,
+          -1338.2457566447563
+        ]
+      ],
+      "structure": "beam",
+      "source": "OSM road bearing/span; estimated deck width",
+      "osmIds": [
+        "428212603",
+        "428212607"
+      ]
+    },
+    {
+      "name": "Adelaide Street",
+      "at": 1859.321,
+      "center": [
+        1767.9721748791312,
+        -1345.6341946132648
+      ],
+      "points": [
+        [
+          1776.7961573906907,
+          -1333.019429244456
+        ],
+        [
+          1760.0603737284505,
+          -1336.0245688956795
+        ],
+        [
+          1759.3428502018053,
+          -1359.8430519456801
+        ],
+        [
+          1774.8609291650869,
+          -1366.160574645622
+        ],
+        [
+          1776.7961573906907,
+          -1333.019429244456
+        ]
+      ],
+      "structure": "arch",
+      "source": "OSM bridge footprint",
+      "osmIds": [
+        "49886818",
+        "1061562272"
+      ]
+    },
+    {
+      "name": "Division Street",
+      "at": 1944.826,
+      "center": [
+        1853.2600968163626,
+        -1351.7211212033242
+      ],
+      "points": [
+        [
+          1843.9383585517219,
+          -1386.3996688981852
+        ],
+        [
+          1858.9583311668894,
+          -1386.4331931424526
+        ],
+        [
+          1859.7081873669324,
+          -1385.6687401076972
+        ],
+        [
+          1863.6045522654867,
+          -1334.102606461721
+        ],
+        [
+          1846.6625764523908,
+          -1332.5222734259585
+        ],
+        [
+          1846.2479955128822,
+          -1339.2961566337854
+        ],
+        [
+          1844.647722285601,
+          -1372.0129909613602
+        ],
+        [
+          1843.9383585517219,
+          -1386.3996688981852
+        ]
+      ],
+      "structure": "arch",
+      "source": "OSM bridge footprint",
+      "osmIds": [
+        "49886811",
+        "1061562273"
+      ]
+    },
+    {
+      "name": "Wilkins Street",
+      "at": 2189.29,
+      "center": [
+        2097.0044311875763,
+        -1369.2264608016326
+      ],
+      "points": [
+        [
+          2105.5679180529564,
+          -1389.1661700718626
+        ],
+        [
+          2105.625296619216,
+          -1388.1539634850783
+        ],
+        [
+          2106.8947998643007,
+          -1365.2718635097337
+        ],
+        [
+          2107.026724067951,
+          -1362.8392281028457
+        ],
+        [
+          2104.771524362514,
+          -1362.7155645820055
+        ],
+        [
+          2089.0360336161375,
+          -1361.8508021024172
+        ],
+        [
+          2086.5070167877016,
+          -1361.711595752337
+        ],
+        [
+          2086.4082504668254,
+          -1363.4411440280192
+        ],
+        [
+          2085.038570178527,
+          -1388.0329717216844
+        ],
+        [
+          2103.1875078487255,
+          -1389.03673749765
+        ],
+        [
+          2105.5679180529564,
+          -1389.1661700718626
+        ]
+      ],
+      "structure": "beam",
+      "source": "OSM bridge footprint",
+      "osmIds": [
+        "49886813",
+        "1061562275"
+      ]
+    }
+  ],
+  "ramps": [
+    {
+      "id": "463133153",
+      "name": "Lafayette ramp",
+      "points": [
+        [
+          823.7272196094523,
+          -1290.8732244807388
+        ],
+        [
+          791.6128659534196,
+          -1296.4697087491909
+        ],
+        [
+          651.9743078716388,
+          -1299.4380665519118
+        ],
+        [
+          642.0169606380363,
+          -1298.3836899134074
+        ]
+      ],
+      "at": 912.543,
+      "topAt": 731.803,
+      "width": 3.048,
+      "source": "OSM connected cycleway vertices",
+      "verticalSource": "2013 plans / interpolated endpoint grades"
+    },
+    {
+      "id": "71157008",
+      "name": "Gratiot ramp",
+      "points": [
+        [
+          1503.1448227367302,
+          -1337.4051574311093
+        ],
+        [
+          1559.3882365574918,
+          -1356.6965947633435
+        ],
+        [
+          1587.3592793752427,
+          -1366.3361032934235
+        ],
+        [
+          1594.4873327607756,
+          -1368.617400628776
+        ],
+        [
+          1600.0825315810946,
+          -1370.0137039630558
+        ],
+        [
+          1605.170307651327,
+          -1370.774937287194
+        ],
+        [
+          1609.3726769602208,
+          -1371.1105081143114
+        ],
+        [
+          1616.4537154176794,
+          -1370.912877710364
+        ],
+        [
+          1622.4400754745582,
+          -1370.2067739204404
+        ],
+        [
+          1628.9108217135094,
+          -1368.773008656919
+        ],
+        [
+          1636.590178927285,
+          -1366.1364277810621
+        ],
+        [
+          1651.0934752612636,
+          -1358.7158616483262
+        ],
+        [
+          1658.3403031307198,
+          -1355.0027955805172
+        ]
+      ],
+      "at": 1593.962,
+      "topAt": 1750.793,
+      "width": 3.048,
+      "source": "OSM connected cycleway vertices",
+      "verticalSource": "2013 plans / interpolated endpoint grades"
+    },
+    {
+      "id": "410339375",
+      "name": "Wilkins ramp",
+      "points": [
+        [
+          2110.4299437424484,
+          -1370.3253426551025
+        ],
+        [
+          2112.5069830200896,
+          -1332.5525653359227
+        ],
+        [
+          2115.9230177321615,
+          -1293.3956678986474
+        ],
+        [
+          2117.579578417116,
+          -1289.5245406449567
+        ],
+        [
+          2117.928679938372,
+          -1281.5059671247468
+        ],
+        [
+          2118.2984694427705,
+          -1274.2975929600548
+        ],
+        [
+          2118.687657369401,
+          -1267.1669397431876
+        ]
+      ],
+      "at": 2202.761,
+      "topAt": 2207.088,
+      "width": 3.048,
+      "source": "OSM connected cycleway vertices",
+      "verticalSource": "2013 plans / interpolated endpoint grades"
+    }
+  ],
+  "profile": [
+    {
+      "at": 0,
+      "floor": 138,
+      "street": 138,
+      "source": "south estimate"
+    },
+    {
+      "at": 239,
+      "floor": 138,
+      "street": 138,
+      "source": "Woodbridge at-grade connection; elevation estimate"
+    },
+    {
+      "at": 334,
+      "floor": 123,
+      "street": 138,
+      "source": "Jefferson clearance estimate"
+    },
+    {
+      "at": 715,
+      "floor": 122,
+      "street": 139,
+      "source": "Lafayette elevation estimate"
+    },
+    {
+      "at": 1438,
+      "floor": 123,
+      "street": 138.51,
+      "source": "street benchmark 39-253; trail estimate"
+    },
+    {
+      "at": 1594,
+      "floor": 124.58,
+      "street": 140,
+      "source": "D-C6.6 south tie-in; street estimate"
+    },
+    {
+      "at": 1748.513,
+      "floor": 120.55,
+      "street": 141,
+      "source": "D-C6.6 grading near Gratiot; deck estimate"
+    },
+    {
+      "at": 1859.3,
+      "floor": 124.5,
+      "street": 143,
+      "source": "D-C6.5 Adelaide; street estimate"
+    },
+    {
+      "at": 1944.8,
+      "floor": 127,
+      "street": 144,
+      "source": "D-C6.5 Division; street estimate"
+    },
+    {
+      "at": 2189.4,
+      "floor": 135.5,
+      "street": 144.8,
+      "source": "D-C6.3 Wilkins crossing / approach"
+    },
+    {
+      "at": 2350,
+      "floor": 140.5,
+      "street": 147,
+      "source": "D-C6.2 interpolated grade; street estimate"
+    },
+    {
+      "at": 2589.2426056489808,
+      "floor": 147.9,
+      "street": 148,
+      "source": "D-C6.1 Mack approach"
+    },
+    {
+      "at": 2629.2426056489808,
+      "floor": 148,
+      "street": 148,
+      "source": "D-C6.1 Mack tie-in rounded"
+    }
+  ],
+  "walls": [
+    {
+      "at": 360,
+      "offset": -8,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 368,
+      "offset": -8,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 376,
+      "offset": -8,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 384,
+      "offset": -8,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 392,
+      "offset": -8,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 400,
+      "offset": -8,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 408,
+      "offset": -8,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 416,
+      "offset": -8,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 424,
+      "offset": -8,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 432,
+      "offset": -8,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 440,
+      "offset": -8,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 448,
+      "offset": -8,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 456,
+      "offset": -8,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 464,
+      "offset": -8,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 472,
+      "offset": -8,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 480,
+      "offset": -8,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 488,
+      "offset": -8,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 496,
+      "offset": -8,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 504,
+      "offset": -8,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 512,
+      "offset": -8,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 520,
+      "offset": -8,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 528,
+      "offset": -8,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 536,
+      "offset": -8,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 544,
+      "offset": -8,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 552,
+      "offset": -8,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 560,
+      "offset": -8,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 568,
+      "offset": -8,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 576,
+      "offset": -8,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 584,
+      "offset": -8,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 592,
+      "offset": -8,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 600,
+      "offset": -8,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 608,
+      "offset": -8,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 616,
+      "offset": -8,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 624,
+      "offset": -8,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 632,
+      "offset": -8,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 640,
+      "offset": -8,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 648,
+      "offset": -8,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 656,
+      "offset": -8,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 664,
+      "offset": -8,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 672,
+      "offset": -8,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 680,
+      "offset": -8,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 688,
+      "offset": -8,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 360,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 368,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 376,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 384,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 392,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 400,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 408,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 416,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 424,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 432,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 440,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 448,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 456,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 464,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 472,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 480,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 488,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 496,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 504,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 512,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 520,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 528,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 536,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 544,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 552,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 560,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 568,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 576,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 584,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 592,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 600,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 608,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 616,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 624,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 632,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 640,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 648,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 656,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 664,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 672,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 680,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 688,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 755,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 763,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 771,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 779,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 787,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 795,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 803,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 811,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 819,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 827,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 835,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 843,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 851,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 859,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 867,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 875,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 883,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 891,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 899,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 907,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 915,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 923,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 931,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 939,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 947,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 955,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 963,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 971,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 979,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 987,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 995,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1003,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1011,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1019,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1027,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1035,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1043,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1051,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1059,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1067,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1075,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1083,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1091,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1099,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1107,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1115,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1123,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1131,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1139,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1147,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1155,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1163,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1171,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1179,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1187,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1195,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1203,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1211,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1219,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1227,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1235,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1243,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1251,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1259,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1267,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1275,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1283,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1291,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1299,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1307,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1315,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1323,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1331,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1339,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1347,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1355,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1363,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1371,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1379,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1387,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1395,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1230,
+      "offset": -8,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1238,
+      "offset": -8,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1246,
+      "offset": -8,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1254,
+      "offset": -8,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1262,
+      "offset": -8,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1270,
+      "offset": -8,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1278,
+      "offset": -8,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1286,
+      "offset": -8,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1294,
+      "offset": -8,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1302,
+      "offset": -8,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1310,
+      "offset": -8,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1318,
+      "offset": -8,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1326,
+      "offset": -8,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1334,
+      "offset": -8,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1342,
+      "offset": -8,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1350,
+      "offset": -8,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1358,
+      "offset": -8,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1366,
+      "offset": -8,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1374,
+      "offset": -8,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1382,
+      "offset": -8,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1390,
+      "offset": -8,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1398,
+      "offset": -8,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1550,
+      "offset": 10,
+      "height": 2.0,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1558,
+      "offset": 10,
+      "height": 2.0,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1566,
+      "offset": 10,
+      "height": 2.0,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1574,
+      "offset": 10,
+      "height": 2.0,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1582,
+      "offset": 10,
+      "height": 2.0,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1590,
+      "offset": 10,
+      "height": 2.0,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1598,
+      "offset": 10,
+      "height": 2.0,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1606,
+      "offset": 10,
+      "height": 2.0,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1614,
+      "offset": 10,
+      "height": 2.0,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1622,
+      "offset": 10,
+      "height": 2.0,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1630,
+      "offset": 10,
+      "height": 2.0,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1638,
+      "offset": 10,
+      "height": 2.0,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1646,
+      "offset": 10,
+      "height": 2.0,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1654,
+      "offset": 10,
+      "height": 2.0,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1662,
+      "offset": 10,
+      "height": 2.0,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1670,
+      "offset": 10,
+      "height": 2.0,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1678,
+      "offset": 10,
+      "height": 2.0,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1686,
+      "offset": 10,
+      "height": 2.0,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1694,
+      "offset": 10,
+      "height": 2.0,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1702,
+      "offset": 10,
+      "height": 2.0,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1710,
+      "offset": 10,
+      "height": 2.0,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1718,
+      "offset": 10,
+      "height": 2.0,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1780,
+      "offset": 9,
+      "height": 2.2,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1788,
+      "offset": 9,
+      "height": 2.2,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1796,
+      "offset": 9,
+      "height": 2.2,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1804,
+      "offset": 9,
+      "height": 2.2,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1812,
+      "offset": 9,
+      "height": 2.2,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1820,
+      "offset": 9,
+      "height": 2.2,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1828,
+      "offset": 9,
+      "height": 2.2,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1836,
+      "offset": 9,
+      "height": 2.2,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1844,
+      "offset": 9,
+      "height": 2.2,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1852,
+      "offset": 9,
+      "height": 2.2,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1860,
+      "offset": 9,
+      "height": 2.2,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1868,
+      "offset": 9,
+      "height": 2.2,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1876,
+      "offset": 9,
+      "height": 2.2,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1884,
+      "offset": 9,
+      "height": 2.2,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1892,
+      "offset": 9,
+      "height": 2.2,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1900,
+      "offset": 9,
+      "height": 2.2,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1908,
+      "offset": 9,
+      "height": 2.2,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1916,
+      "offset": 9,
+      "height": 2.2,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1924,
+      "offset": 9,
+      "height": 2.2,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1932,
+      "offset": 9,
+      "height": 2.2,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1960,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1968,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1976,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1984,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 1992,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 2000,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 2008,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 2016,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 2024,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 2032,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 2040,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 2048,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 2056,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 2064,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 2072,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 2080,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 2088,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 2096,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 2104,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 2112,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 2120,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 2128,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 2136,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 2144,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 2152,
+      "offset": 9,
+      "height": 1.5,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 2220,
+      "offset": 10,
+      "height": 1.2,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 2228,
+      "offset": 10,
+      "height": 1.2,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 2236,
+      "offset": 10,
+      "height": 1.2,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 2244,
+      "offset": 10,
+      "height": 1.2,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 2252,
+      "offset": 10,
+      "height": 1.2,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 2260,
+      "offset": 10,
+      "height": 1.2,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 2268,
+      "offset": 10,
+      "height": 1.2,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 2276,
+      "offset": 10,
+      "height": 1.2,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 2284,
+      "offset": 10,
+      "height": 1.2,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 2292,
+      "offset": 10,
+      "height": 1.2,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 2300,
+      "offset": 10,
+      "height": 1.2,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 2308,
+      "offset": 10,
+      "height": 1.2,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 2316,
+      "offset": 10,
+      "height": 1.2,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 2324,
+      "offset": 10,
+      "height": 1.2,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 2332,
+      "offset": 10,
+      "height": 1.2,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 2340,
+      "offset": 10,
+      "height": 1.2,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 2348,
+      "offset": 10,
+      "height": 1.2,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 2356,
+      "offset": 10,
+      "height": 1.2,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 2364,
+      "offset": 10,
+      "height": 1.2,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 2372,
+      "offset": 10,
+      "height": 1.2,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 2380,
+      "offset": 10,
+      "height": 1.2,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 2388,
+      "offset": 10,
+      "height": 1.2,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 2396,
+      "offset": 10,
+      "height": 1.2,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 2404,
+      "offset": 10,
+      "height": 1.2,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 2412,
+      "offset": 10,
+      "height": 1.2,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 2420,
+      "offset": 10,
+      "height": 1.2,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 2428,
+      "offset": 10,
+      "height": 1.2,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 2436,
+      "offset": 10,
+      "height": 1.2,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 2444,
+      "offset": 10,
+      "height": 1.2,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 2452,
+      "offset": 10,
+      "height": 1.2,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 2460,
+      "offset": 10,
+      "height": 1.2,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 2468,
+      "offset": 10,
+      "height": 1.2,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 2476,
+      "offset": 10,
+      "height": 1.2,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 2484,
+      "offset": 10,
+      "height": 1.2,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 2492,
+      "offset": 10,
+      "height": 1.2,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 2500,
+      "offset": 10,
+      "height": 1.2,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    },
+    {
+      "at": 2508,
+      "offset": 10,
+      "height": 1.2,
+      "source": "2013 wall sections / Street View interpretation; offset unverified"
+    }
+  ],
+  "sources": [
+    {
+      "title": "Detroit city engineering plans, Dequindre Cut Phase II, 2013",
+      "url": "https://dpwmaps.detroitmi.gov/dpw_maps/Maps%20and%20Records%20Bureau/Paving%20Projects%20%28Keyword%20Search%29/MDOT%20JN%20115633A%20Detroit%20Link%20-%20%28Dequindre%20Cut%29%20-%202013%20-.pdf",
+      "sheets": [
+        "D-G0.4",
+        "D-G0.5",
+        "D-C6.1",
+        "D-C6.3",
+        "D-C6.5",
+        "D-C6.6"
+      ]
+    },
+    {
+      "title": "Detroit Riverfront Conservancy Cut reference",
+      "url": "https://www.detroitriverfront.org/plan-your-visit/parks-greenways/dequindre-cut"
+    },
+    {
+      "title": "Google Maps / Street View, Chestnut Street, August 2021",
+      "url": "https://www.google.com/maps/search/Dequindre+Cut+Detroit/",
+      "notes": "Dense tree banks, concrete overpass parapet, grassy verges and divided asphalt trail; historical visual reference."
+    }
+  ],
+  "reviewFlags": [
+    {
+      "id": "GEO-01",
+      "severity": "review",
+      "detail": "The named updated addendum and user-provided Street View references were not present; this execution follows the requirements supplied in the conversation."
+    },
+    {
+      "id": "GEO-02",
+      "severity": "review",
+      "detail": "OSM footprints and GPS points are mapped data, not a new survey. Verify residual offsets using the Google satellite overlay."
+    },
+    {
+      "id": "GEO-03",
+      "severity": "review",
+      "detail": "South-segment elevations, bridge deck elevations, wall offsets and mural panels remain reference estimates. Northern floor profile uses historical 2013 design spot levels; this is not an as-built elevation survey."
+    },
+    {
+      "id": "GEO-04",
+      "severity": "review",
+      "detail": "Vegetation density and original artwork are visual interpretations. Google Street View imagery is linked as reference, not baked into textures."
+    }
+  ]
+}

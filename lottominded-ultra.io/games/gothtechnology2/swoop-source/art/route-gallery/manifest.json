@@ -1,0 +1,74 @@
+[
+  {
+    "file": "cat-garden.jpg",
+    "title": "Garden watch",
+    "width": 720,
+    "height": 540,
+    "source": "518305230_10165535943564167_3705407910389280673_n.jpg",
+    "sha256": "e03c308d4fc1a61ed11fc6dc8bfb45b3dda888c09357bff6bdf0697024c4f3fc",
+    "credit": "Original visible image credit retained; user-supplied artwork"
+  },
+  {
+    "file": "monarch.jpg",
+    "title": "A moment in the sun",
+    "width": 604,
+    "height": 453,
+    "source": "520331859_10165514874549167_4067016714520934024_n.jpg",
+    "sha256": "57f87fbd8b9a05a20585f035c5b7d62ba740323f1fd97a0476f25c20b09f4618",
+    "credit": "Original visible image credit retained; user-supplied artwork"
+  },
+  {
+    "file": "dog-riverside.jpg",
+    "title": "Riverside companion",
+    "width": 604,
+    "height": 453,
+    "source": "517426875_10165479285534167_5459219975095996581_n.jpg",
+    "sha256": "d559ce47be087de92a0e58eefe370e52d7c76f87c0f2b9089fa52f6e684160a0",
+    "credit": "Original visible image credit retained; user-supplied artwork"
+  },
+  {
+    "file": "cat-portrait.jpg",
+    "title": "Wild at heart",
+    "width": 604,
+    "height": 453,
+    "source": "518343767_10165507061349167_8147754895408046559_n.jpg",
+    "sha256": "3a9856b50b1ca10e7bb2535809c948feda5075cf1b73e7142efa4851fc859a4b",
+    "credit": "Original visible image credit retained; user-supplied artwork"
+  },
+  {
+    "file": "detroit-sunset.jpg",
+    "title": "Detroit at dusk",
+    "width": 960,
+    "height": 638,
+    "source": "471817716_10164523314009167_4218071120665404653_n.jpg",
+    "sha256": "2bde940aea0dfa1fab8acf5d631bc38cc011de282d585715135084ee1f8ac62b",
+    "credit": "Original visible image credit retained; user-supplied artwork"
+  },
+  {
+    "file": "meadow-portrait.jpg",
+    "title": "Among the wildflowers",
+    "width": 2048,
+    "height": 1360,
+    "source": "471422939_10164523343119167_2401644697316978477_n.jpg",
+    "sha256": "070a7f3f0cba82858fc52498121951ad4fa52c71d477dae2c38bb89c2750b8ae",
+    "credit": "Original visible image credit retained; user-supplied artwork"
+  },
+  {
+    "file": "serengeti-gallery.png",
+    "title": "Serengeti Gallery",
+    "width": 1536,
+    "height": 1024,
+    "source": "b116fd82-dfa7-4522-b80c-7ae3544d0777.png",
+    "sha256": "84b7e9ab9c956edade6d5de68633d937544b35d1141305985d4b4ed377351116",
+    "credit": "Original visible image credit retained; user-supplied artwork"
+  },
+  {
+    "file": "bill-foster.png",
+    "title": "Bill Foster",
+    "width": 559,
+    "height": 738,
+    "source": "Bill-Foster-Pic-2025.png",
+    "sha256": "9427e1288e71b1b45081a836b2b1cbc5c47ab60c863f8bcbe23466a00e6bd488",
+    "credit": "Original visible image credit retained; user-supplied artwork"
+  }
+]

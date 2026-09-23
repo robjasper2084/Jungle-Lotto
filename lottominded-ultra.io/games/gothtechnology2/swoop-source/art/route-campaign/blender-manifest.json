@@ -1,0 +1,32 @@
+[
+  {
+    "asset": "LottoMind_Billboard",
+    "width": 6.4,
+    "artHeight": 3.6,
+    "bottom": 1.5,
+    "units": "metres",
+    "forward": "-Y in Blender / +Z in glTF",
+    "art": "lottomind.jpg",
+    "triangles": 40
+  },
+  {
+    "asset": "GothTechnology_Billboard",
+    "width": 6.4,
+    "artHeight": 3.6,
+    "bottom": 1.5,
+    "units": "metres",
+    "forward": "-Y in Blender / +Z in glTF",
+    "art": "gothtechnology.jpg",
+    "triangles": 40
+  },
+  {
+    "asset": "Detroit_Dreams_Mural",
+    "width": 3.698,
+    "artHeight": 2.08,
+    "bottom": 0,
+    "units": "metres",
+    "forward": "-Y in Blender / +Z in glTF",
+    "art": "detroit-dreams.jpg",
+    "triangles": 2
+  }
+]

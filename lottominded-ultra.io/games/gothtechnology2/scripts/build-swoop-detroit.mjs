@@ -2,8 +2,8 @@ import {readFile,writeFile,mkdir,copyFile,readdir,rename,cp} from 'node:fs/promi
 import {resolve,dirname} from 'node:path';
 import {createRequire} from 'node:module';
 import {pathToFileURL} from 'node:url';
-const source=resolve(process.argv[2]||'../../../../Digital_Static_Street_Asset_Pack/integrations/digital-static-ride');
-const pack=resolve(source,'../..'),store=resolve(import.meta.dirname,'..'),out=resolve(store,'store/public/arcade/swoop-detroit');
+const source=resolve(process.argv[2]||resolve(import.meta.dirname,'../swoop-source'));
+const pack=resolve(process.argv[3]||process.env.SWOOP_ASSET_PACK||resolve(import.meta.dirname,'../../../../../Digital_Static_Street_Asset_Pack')),store=resolve(import.meta.dirname,'..'),out=resolve(store,'store/public/arcade/swoop-detroit');
 if(dirname(out)!==resolve(store,'store/public/arcade'))throw Error('Unexpected build directory');
 const require=createRequire(resolve(source,'package.json'));
 const {build}=await import(pathToFileURL(require.resolve('vite')).href);
@@ -28,15 +28,20 @@ await build({root:source,configFile:false,base:'./',publicDir:false,plugins:[{
   if(id.endsWith('/scenery.ts'))code=replace(code,'treeTime.value=time;','treeTime.value=document.documentElement.dataset.reducedMotion==="true"||matchMedia("(prefers-reduced-motion: reduce)").matches?0:time;');
   return code;
  },
- transformIndexHtml(html){return html.replace(/<p class="hint"><a href="\.\/rider-studio.html"[\s\S]*?<\/p>/,'').replace('</head>','<meta name="goth-reward-game" content="swoop-detroit"><style>button:focus-visible,select:focus-visible,a:focus-visible{outline:2px solid #dec57c;outline-offset:3px}button{min-height:44px}@media(min-width:1025px) and (pointer:fine){.session{bottom:85px}}@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}</style></head>').replace('</body>','<script type="module" src="../reward-tracker.js"></script><script type="module" src="../swoop-store-return.js"></script></body>');}
-}],build:{outDir:out,emptyOutDir:true,target:'es2022',rollupOptions:{input:resolve(source,'detroit.html')}}});
+ transformIndexHtml(html,ctx){if(!ctx.path.endsWith("detroit.html"))return html.replaceAll("./detroit.html","./index.html");return html.replaceAll('\r\n','\n').replace(/<p class="hint"><a href="\.\/rider-studio.html"[\s\S]*?<\/p>/,'').replace('</head>','<meta name="goth-reward-game" content="swoop-detroit"><style>button:focus-visible,select:focus-visible,a:focus-visible{outline:2px solid #dec57c;outline-offset:3px}button{min-height:44px}@media(min-width:1025px) and (pointer:fine){.session{bottom:85px}}@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}</style></head>').replace('</body>','<script type="module" src="../reward-tracker.js"></script><script type="module" src="../swoop-store-return.js"></script></body>');}
+}],build:{outDir:out,emptyOutDir:true,target:'es2022',rollupOptions:{input:Object.fromEntries(['detroit','rider-studio','companion-studio','traffic-studio'].map(name=>[name,resolve(source,name+'.html')]))}}});
 await rename(resolve(out,'detroit.html'),resolve(out,'index.html'));
 const files=[];
 for(const dir of ['exports/architecture','exports/cut','textures/architecture','textures/cut','textures/trees','textures/realistic'])for(const name of await readdir(resolve(pack,dir)))if(/\.(glb|png|jpg|hdr)$/i.test(name)&&!(dir==='textures/cut'&&name.endsWith('.png'))&&!(dir==='exports/architecture'&&!['DS_Detroit_Globe_OAC.glb','DS_Detroit_Shed_3.glb'].includes(name)))files.push(dir+'/'+name);
 for(const id of ['DS_Man_01','DS_EUC_01','DS_Boerboel_01','DS_Pedestrian_01','DS_Cyclist_01','DS_Bicycle_01','DS_Hazard_Cone_01','DS_Hazard_Barrier_01','DS_Hoodie_Man_01','DS_Hoodie_Woman_01','DS_Mascot_Suit_01','DS_Mascot_Hoodie_01'])files.push(`exports/glb/${id}/${id}_LOD${id==='DS_Man_01'?0:1}.glb`);
 for(const id of ['DS_Segway_01','DS_InlineSkate_01'])files.push(`exports/mobility/${id}.glb`);
 for(const file of files){const target=resolve(out,file);await mkdir(dirname(target),{recursive:true});await copyFile(resolve(pack,file),target);}
+await cp(resolve(source,'public/exports/boutique'),resolve(out,'exports/boutique'),{recursive:true});
+await cp(resolve(source,'public/exports/gallery'),resolve(out,'exports/gallery'),{recursive:true});
+await cp(resolve(source,'public/exports/scooter'),resolve(out,'exports/scooter'),{recursive:true});
+await copyFile(resolve(source,'public/mural-credits.html'),resolve(out,'mural-credits.html'));
+for(const file of ['manifest.webmanifest','touch-icon.png'])await copyFile(resolve(source,'public',file),resolve(out,file));
 await cp(resolve(pack,'audio/swoop'),resolve(out,'audio/swoop'),{recursive:true});
 await cp(resolve(pack,'detroit/geospatial'),resolve(out,'geospatial'),{recursive:true});
-await writeFile(resolve(out,'SOURCE.md'),'Digital Static Ride Detroit, supplied via Digital_Static_Street_Asset_Pack/integrations/digital-static-ride. Dequindre Cut map selected; original riding, rider, dog, touch, controller and physics retained. Built by scripts/build-swoop-detroit.mjs without changing the source project. Store additions: portable assets, sound enabled by default, reduced-motion scenery, shared discount-preview receipts for native earned scores. Reference geometry and placement remain approximate as disclosed by the game.\n');
+await writeFile(resolve(out,'SOURCE.md'),'Digital Static Ride Detroit, supplied via Digital_Static_Street_Asset_Pack/integrations/digital-static-ride. Dequindre Cut map selected; original riding, rider, dog, touch, controller and physics retained. Built by scripts/build-swoop-detroit.mjs from versioned swoop-source; original external asset pack remains unchanged. Store additions: portable assets, sound enabled by default, reduced-motion scenery, shared discount-preview receipts for native earned scores. Reference geometry and placement remain approximate as disclosed by the game.\n');
 console.log('Packaged Swoop Detroit: '+files.length+' assets');

@@ -1,0 +1,32 @@
+{
+  "origin": {
+    "name": "Gratiot Avenue overpass / trail center",
+    "gps": [
+      42.34720336427042,
+      -83.03589124641053
+    ],
+    "map": [
+      1657.4391132754504,
+      -1337.8762790658798
+    ],
+    "trailDatumFeet": 120.55
+  },
+  "objects": 861,
+  "triangles": 590580,
+  "kinds": {
+    "terrain": 153,
+    "deck": 11,
+    "roadway": 11,
+    "approach": 11,
+    "abutment": 11,
+    "beam": 11,
+    "sidewalk": 11,
+    "parapet": 11,
+    "metal": 7,
+    "wall": 291,
+    "building": 329,
+    "path": 1,
+    "ramp": 3
+  },
+  "source": "Exported directly from the game terrain and structural mesh builders; building/path envelopes share the map and profile."
+}

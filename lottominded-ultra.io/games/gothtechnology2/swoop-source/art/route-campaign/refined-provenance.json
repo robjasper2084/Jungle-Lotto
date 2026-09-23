@@ -1,0 +1,20 @@
+{
+  "provider": "Higgsfield",
+  "model": "gpt_image_2_5",
+  "jobs": [
+    [
+      "serengeti-refined",
+      "205301_4dce04f6-100d-4a8d-a6b8-be326c03057d"
+    ],
+    [
+      "gothtechnology-refined",
+      "205405_616cb229-272b-41d6-9658-6991be679ca1"
+    ],
+    [
+      "lottomind-refined",
+      "205410_99770cb0-fbc2-49cb-a700-3797cda8ce0b"
+    ]
+  ],
+  "reference": "User-supplied portrait, sunset, embroidered Detroit shirt and Lotto Mind circuit brain",
+  "date": "2026-09-23"
+}
