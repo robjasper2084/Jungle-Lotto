@@ -95,7 +95,7 @@ export function initUndergroundPopup(){
     const autoButton=$<HTMLButtonElement>('[data-auto-game]');
     const sessionKey='gothtechnology.swoop-introduction.v3';
     const cooldown=60_000;
-    let count=0,nextAt=Date.now()+1500;
+    let count=0,nextAt=Date.now()+Math.max(0,60_000-performance.now());
     try{
       const saved=JSON.parse(sessionStorage.getItem(sessionKey)??'null');
       if(saved&&Number.isInteger(saved.count)&&saved.count>=0){
