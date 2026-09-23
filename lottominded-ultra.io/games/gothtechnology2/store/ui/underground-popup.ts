@@ -115,7 +115,10 @@ export function initUndergroundPopup(){
       },500);
       window.addEventListener('pagehide',()=>clearInterval(autoTimer),{once:true});
       const defer=()=>{nextAt=Date.now()+cooldown;remember();};
-      document.addEventListener('store:game-launch',defer);
+      document.addEventListener('store:game-launch',()=>{
+        clearInterval(autoTimer);
+        if(selected.id==='swoop-detroit'){count=1;remember();}
+      },{once:true});
       // Never stack over another dialog or immediately follow its dismissal.
       document.addEventListener('close',event=>{if(event.target instanceof HTMLDialogElement)defer();},true);
     }

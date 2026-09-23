@@ -30,12 +30,12 @@ export function initPlay() {
       if(game.id!=='gothtechnology'){
         ready=true;clearTimeout(timer);
         notice.textContent=game.title+' ready. Use the in-game controls. Back to Store remains above the game.';
-        (frame.contentWindow as any).RahbeArcadeGame?.applySettings({sound:false,reducedMotion:matchMedia('(prefers-reduced-motion:reduce)').matches||document.documentElement.dataset.reducedMotion==='true'});
+        (frame.contentWindow as any).RahbeArcadeGame?.applySettings({sound:true,music:true,reducedMotion:matchMedia('(prefers-reduced-motion:reduce)').matches||document.documentElement.dataset.reducedMotion==='true'});
       }else if(!ready)notice.textContent='Game loaded. Preparing the character systems…';
     }catch{/* Only recognized same-origin game pages can update the toolbar. */}
   }
   launch.addEventListener('click',()=>{
-    if(frame)return;frame=document.createElement('iframe');frame.title='GOTHTECHNOLOGY fighting game';frame.allow='fullscreen; gamepad';frame.allowFullscreen=true;
+    if(frame)return;frame=document.createElement('iframe');frame.title='GOTHTECHNOLOGY fighting game';frame.allow='fullscreen; gamepad; autoplay';frame.allowFullscreen=true;
     frame.src=href('legacy-game/')+(character?`?character=${character.id}`:'');frame.id='game-frame';
     frame.addEventListener('load',()=>syncGame());
     host.append(frame);launch.hidden=true;$('#game-launch-cover')!.hidden=true;notice.textContent='Loading the preserved game…';document.dispatchEvent(new Event('store:game-launch'));

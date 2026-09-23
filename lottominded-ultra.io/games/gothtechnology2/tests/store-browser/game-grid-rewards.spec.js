@@ -12,7 +12,7 @@ for(const {surface,id,index,path,title} of [
   await page.emulateMedia({reducedMotion:'reduce'});
   await page.goto(base+(surface==='Play'?'play/':'#underground-rewards'));
   if(surface==='Play'){
-   await page.getByRole('button',{name:'Continue to GOTHTECHNOLOGY',exact:true}).click();
+   await expect(page.locator('#rahbee-promo')).not.toBeVisible();
    await page.getByRole('button',{name:'Launch game',exact:true}).click();
    await expect(page.locator('#game-connection')).toContainText('Game ready',{timeout:45000});
   }else{

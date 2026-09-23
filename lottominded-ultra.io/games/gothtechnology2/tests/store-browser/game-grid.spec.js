@@ -12,7 +12,7 @@ test('Game Grid shows Static WAV artwork and launches a playable sector', async 
   expect(art.status()).toBe(200);
   expect(art.headers()['content-type']).toContain('image/webp');
   await page.goto(base + 'play/');
-  await page.getByRole('button', {name:'Continue to GOTHTECHNOLOGY', exact:true}).click();
+  await expect(page.locator('#rahbee-promo')).not.toBeVisible();
   await page.getByRole('button', {name:'Launch game', exact:true}).click();
   await expect(page.locator('#game-connection')).toContainText('Game ready', {timeout:45000});
   const frame = page.frames().find(frame => frame.url().includes('/legacy-game/'));
@@ -37,7 +37,7 @@ test('Game Grid shows Static WAV artwork and launches a playable sector', async 
   await expect(page.locator('#game-frame')).toHaveAttribute('title','2084 Static WAV game');
   await expect(page.locator('#requested-character')).toContainText('IJKL');
   await expect(page.locator('#game-collection-link')).toBeHidden();
-  expect(await frame.evaluate(() => window.__staticWavAudio.muted)).toBe(true);
+  expect(await frame.evaluate(() => window.__staticWavAudio.muted)).toBe(false);
   await expect(frame.getByRole('button',{name:'Start Sector 1',exact:true})).toBeEnabled();
   await expect.poll(() => frame.locator('#marquee').evaluate(img => img.naturalWidth)).toBeGreaterThan(0);
   await frame.locator('#shell').screenshot({path:info.outputPath('static-wav-menu.png')});
