@@ -1,4 +1,5 @@
 import {optimizePagesImages} from './optimize-pages-images.mjs';
+import {shareRideTextures} from './share-ride-textures.mjs';
 import { execFileSync } from "node:child_process";
 import { copyFile, mkdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { basename, dirname, extname, relative, resolve, sep } from "node:path";
@@ -211,8 +212,9 @@ await mkdir(outputRoot, { recursive: true });
 const publicBytes = await copyInBatches(artifactPlan.includedFiles);
 const sharedStoreBuild = await shareShadowOpsAssets(storeBuild, outputRoot);
 const copiedBytes = publicBytes + await copyGothtechnologyBuild(sharedStoreBuild, outputRoot);
+const rideTextureSharing = await shareRideTextures(outputRoot);
 const imageOptimization = await optimizePagesImages(outputRoot);
-const totalBytes = copiedBytes - imageOptimization.saved;
+const totalBytes = copiedBytes - rideTextureSharing.saved - imageOptimization.saved;
 
 for (const route of requiredRoutes) {
   const routeStats = await stat(outputPathFor(route)).catch(() => null);
@@ -240,6 +242,7 @@ const manifest = {
   omittedMediaBytes: artifactPlan.omittedBytes,
   omittedMediaMebibytes: Number((artifactPlan.omittedBytes / 1024 / 1024).toFixed(1)),
   imageOptimization,
+  rideTextureSharing,
   bytes: totalBytes,
   mebibytes: Number((totalBytes / 1024 / 1024).toFixed(1)),
   maxMebibytes: Number((maxBytes / 1024 / 1024).toFixed(1)),
