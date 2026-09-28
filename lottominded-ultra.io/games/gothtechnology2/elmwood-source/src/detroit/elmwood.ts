@@ -741,18 +741,3 @@ const started=performance.now();let lastFrame=started;const sunDirection=new T.V
 if(!rideControls?.render(renderer))renderer.render(scene,camera);const measured=frameStats.rendered(now);canvas.dataset.frames=String(frameStats.frames);
 
 if(measured){canvas.dataset.fps=frameStats.fps.toFixed(1);canvas.dataset.frameMsP95=frameStats.frameMsP95.toFixed(1);canvas.dataset.frameMsP99=frameStats.frameMsP99.toFixed(1);performanceReadout.textContent=frameStats.fps.toFixed(1)+' FPS · p95 '+frameStats.frameMsP95.toFixed(1)+' ms · '+renderer.info.render.calls+' draw calls';}canvas.dataset.drawCalls=String(renderer.info.render.calls);}animate();addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(Math.max(1,innerWidth),Math.max(1,innerHeight));});
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
