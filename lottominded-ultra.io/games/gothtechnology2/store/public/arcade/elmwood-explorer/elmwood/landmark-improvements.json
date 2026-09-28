@@ -1,0 +1,73 @@
+{
+  "pond": {
+    "center": [
+      -21.69914245469449,
+      203.01003458153315,
+      -4.6
+    ],
+    "ring": [
+      [
+        -44,
+        246
+      ],
+      [
+        -22.14763978193473,
+        241.4282924303849
+      ],
+      [
+        -1.6408496262978787,
+        208.94219027468898
+      ],
+      [
+        -4.206368268880553,
+        189.27277560686127
+      ],
+      [
+        7.737532363168512,
+        163.58073086244474
+      ],
+      [
+        -0.04981129665263495,
+        153.20623581217103
+      ],
+      [
+        -21.27404316752903,
+        171.735291099366
+      ],
+      [
+        -43.25566335575728,
+        197.7061490574721
+      ],
+      [
+        -45.15458141306128,
+        219.22868067194258
+      ],
+      [
+        -43,
+        239
+      ]
+    ],
+    "areaM2": 2653.006061003446
+  },
+  "avenueTrees": 455,
+  "avenueRoads": [
+    "59197519",
+    "59197464",
+    "739656967",
+    "313128831",
+    "59197503",
+    "59197467",
+    "313128833",
+    "59197530",
+    "739661796"
+  ],
+  "signPosition": [
+    18,
+    -14,
+    -0.14235970545422655
+  ],
+  "source": "https://www.elmwoodhistoriccemetery.org/images/elmwood_cemetery_map-1.pdf",
+  "satellite": "https://www.google.com/maps/@42.3491,-83.0195,1300m/data=!3m1!1e3",
+  "alignment": "Official plan aligned to three approximate boundary corners, then shifted 14 m east and locally adjusted to clear the mapped lane. Shoreline, water elevation and individual tree positions are estimates, not survey data.",
+  "higgsfieldJob": "072c2868-e06a-48ea-b32f-55996cc6ab3c"
+}

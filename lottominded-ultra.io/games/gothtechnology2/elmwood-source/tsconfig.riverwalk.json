@@ -1,0 +1,17 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "types": [
+      "node",
+      "vite/client"
+    ],
+    "resolveJsonModule": true
+  },
+  "include": [
+    "src/detroit",
+    "vite.riverwalk.config.ts"
+  ],
+  "exclude": [
+    "src/**/*.test.ts"
+  ]
+}
