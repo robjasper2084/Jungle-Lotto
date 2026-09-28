@@ -1,0 +1,2369 @@
+{
+  "sources": {
+    "center": "https://www.elmwoodhistoriccemetery.org/images/9316_elm_treetourcs.pdf",
+    "north": "https://www.elmwoodhistoriccemetery.org/images/9317_elm_treetourns.pdf",
+    "south": "https://www.elmwoodhistoriccemetery.org/images/9209_elm_treetourss.pdf"
+  },
+  "stops": [
+    {
+      "species": "European Beech",
+      "diagramPixel": [
+        1363.0,
+        568.0
+      ],
+      "tourStops": [
+        {
+          "tour": "center",
+          "number": 1
+        },
+        {
+          "tour": "north",
+          "number": 1
+        },
+        {
+          "tour": "south",
+          "number": 1
+        }
+      ],
+      "placement": {
+        "asset": "tour-beech",
+        "species": "European Beech",
+        "position": [
+          2.01,
+          -25.67,
+          0.733752993279615
+        ],
+        "rotation": 0.0,
+        "scale": 1,
+        "layer": "estimated",
+        "treeTour": [
+          {
+            "tour": "center",
+            "number": 1
+          },
+          {
+            "tour": "north",
+            "number": 1
+          },
+          {
+            "tour": "south",
+            "number": 1
+          }
+        ],
+        "confidence": "Named species from official Elmwood Tree Tour; approximate diagram-aligned trunk, procedural species-form study. Not a surveyed or botanically exact individual tree."
+      }
+    },
+    {
+      "species": "Paperbark Maple",
+      "diagramPixel": [
+        1320.0,
+        533.0
+      ],
+      "tourStops": [
+        {
+          "tour": "center",
+          "number": 2
+        },
+        {
+          "tour": "north",
+          "number": 2
+        },
+        {
+          "tour": "south",
+          "number": 2
+        }
+      ],
+      "placement": {
+        "asset": "red-maple",
+        "species": "Paperbark Maple",
+        "position": [
+          2.751,
+          10.103,
+          -0.09434881221543437
+        ],
+        "rotation": 2.399963,
+        "scale": 1,
+        "layer": "estimated",
+        "treeTour": [
+          {
+            "tour": "center",
+            "number": 2
+          },
+          {
+            "tour": "north",
+            "number": 2
+          },
+          {
+            "tour": "south",
+            "number": 2
+          }
+        ],
+        "confidence": "Named species from official Elmwood Tree Tour; approximate diagram-aligned trunk, procedural species-form study. Not a surveyed or botanically exact individual tree."
+      }
+    },
+    {
+      "species": "Black Gum",
+      "diagramPixel": [
+        1149.0,
+        529.0
+      ],
+      "tourStops": [
+        {
+          "tour": "center",
+          "number": 3
+        }
+      ],
+      "placement": {
+        "asset": "red-maple",
+        "species": "Black Gum",
+        "position": [
+          -46.079,
+          121.355,
+          -1.2769380142916118
+        ],
+        "rotation": 4.799926,
+        "scale": 1,
+        "layer": "estimated",
+        "treeTour": [
+          {
+            "tour": "center",
+            "number": 3
+          }
+        ],
+        "confidence": "Named species from official Elmwood Tree Tour; approximate diagram-aligned trunk, procedural species-form study. Not a surveyed or botanically exact individual tree."
+      }
+    },
+    {
+      "species": "Black Willow",
+      "diagramPixel": [
+        1006.0,
+        470.0
+      ],
+      "tourStops": [
+        {
+          "tour": "center",
+          "number": 4
+        }
+      ],
+      "placement": {
+        "asset": "weeping-willow",
+        "species": "Black Willow",
+        "position": [
+          -53.756,
+          229.549,
+          -4.832038144831769
+        ],
+        "rotation": 7.199889000000001,
+        "scale": 0.95,
+        "layer": "estimated",
+        "treeTour": [
+          {
+            "tour": "center",
+            "number": 4
+          }
+        ],
+        "confidence": "Named species from official Elmwood Tree Tour; approximate diagram-aligned trunk, procedural species-form study. Not a surveyed or botanically exact individual tree."
+      }
+    },
+    {
+      "species": "Black Cherry",
+      "diagramPixel": [
+        929.0,
+        484.0
+      ],
+      "tourStops": [
+        {
+          "tour": "center",
+          "number": 5
+        }
+      ],
+      "placement": {
+        "asset": "tour-flowering",
+        "species": "Black Cherry",
+        "position": [
+          -88.465,
+          278.43,
+          -4.4173461636073394
+        ],
+        "rotation": 9.599852,
+        "scale": 0.78,
+        "layer": "estimated",
+        "treeTour": [
+          {
+            "tour": "center",
+            "number": 5
+          }
+        ],
+        "confidence": "Named species from official Elmwood Tree Tour; approximate diagram-aligned trunk, procedural species-form study. Not a surveyed or botanically exact individual tree."
+      }
+    },
+    {
+      "species": "Mulberry",
+      "diagramPixel": [
+        980.0,
+        443.0
+      ],
+      "tourStops": [
+        {
+          "tour": "center",
+          "number": 6
+        },
+        {
+          "tour": "north",
+          "number": 10
+        }
+      ],
+      "placement": {
+        "asset": "white-oak",
+        "species": "Mulberry",
+        "position": [
+          -45.457,
+          253.652,
+          -4.772884191697285
+        ],
+        "rotation": 11.999815,
+        "scale": 1,
+        "layer": "estimated",
+        "treeTour": [
+          {
+            "tour": "center",
+            "number": 6
+          },
+          {
+            "tour": "north",
+            "number": 10
+          }
+        ],
+        "confidence": "Named species from official Elmwood Tree Tour; approximate diagram-aligned trunk, procedural species-form study. Not a surveyed or botanically exact individual tree."
+      }
+    },
+    {
+      "species": "Shagbark Hickory",
+      "diagramPixel": [
+        920.0,
+        453.0
+      ],
+      "tourStops": [
+        {
+          "tour": "center",
+          "number": 7
+        }
+      ],
+      "placement": {
+        "asset": "black-walnut",
+        "species": "Shagbark Hickory",
+        "position": [
+          -59.343,
+          288.588,
+          -3.1270131941993955
+        ],
+        "rotation": 14.399778000000001,
+        "scale": 0.91,
+        "layer": "estimated",
+        "treeTour": [
+          {
+            "tour": "center",
+            "number": 7
+          }
+        ],
+        "confidence": "Named species from official Elmwood Tree Tour; approximate diagram-aligned trunk, procedural species-form study. Not a surveyed or botanically exact individual tree."
+      }
+    },
+    {
+      "species": "Bitternut Hickory",
+      "diagramPixel": [
+        675.0,
+        418.0
+      ],
+      "tourStops": [
+        {
+          "tour": "center",
+          "number": 8
+        }
+      ],
+      "placement": {
+        "asset": "black-walnut",
+        "species": "Bitternut Hickory",
+        "position": [
+          -121.908,
+          456.951,
+          3.3856853906291713
+        ],
+        "rotation": 16.799741,
+        "scale": 0.91,
+        "layer": "estimated",
+        "treeTour": [
+          {
+            "tour": "center",
+            "number": 8
+          }
+        ],
+        "confidence": "Named species from official Elmwood Tree Tour; approximate diagram-aligned trunk, procedural species-form study. Not a surveyed or botanically exact individual tree."
+      }
+    },
+    {
+      "species": "Higan Cherry",
+      "diagramPixel": [
+        716.0,
+        386.0
+      ],
+      "tourStops": [
+        {
+          "tour": "center",
+          "number": 9
+        },
+        {
+          "tour": "north",
+          "number": 19
+        }
+      ],
+      "placement": {
+        "asset": "tour-flowering",
+        "species": "Higan Cherry",
+        "position": [
+          -94.564,
+          439.253,
+          4.088589395054292
+        ],
+        "rotation": 19.199704,
+        "scale": 0.78,
+        "layer": "estimated",
+        "treeTour": [
+          {
+            "tour": "center",
+            "number": 9
+          },
+          {
+            "tour": "north",
+            "number": 19
+          }
+        ],
+        "confidence": "Named species from official Elmwood Tree Tour; approximate diagram-aligned trunk, procedural species-form study. Not a surveyed or botanically exact individual tree."
+      }
+    },
+    {
+      "species": "European Birch",
+      "diagramPixel": [
+        705.0,
+        352.0
+      ],
+      "tourStops": [
+        {
+          "tour": "center",
+          "number": 10
+        }
+      ],
+      "placement": {
+        "asset": "tour-birch",
+        "species": "European Birch",
+        "position": [
+          -69.209,
+          464.46,
+          3.5256075605879555
+        ],
+        "rotation": 21.599667,
+        "scale": 0.95,
+        "layer": "estimated",
+        "treeTour": [
+          {
+            "tour": "center",
+            "number": 10
+          }
+        ],
+        "confidence": "Named species from official Elmwood Tree Tour; approximate diagram-aligned trunk, procedural species-form study. Not a surveyed or botanically exact individual tree."
+      }
+    },
+    {
+      "species": "Red Maple",
+      "diagramPixel": [
+        691.0,
+        300.0
+      ],
+      "tourStops": [
+        {
+          "tour": "center",
+          "number": 11
+        },
+        {
+          "tour": "north",
+          "number": 18
+        }
+      ],
+      "placement": {
+        "asset": "red-maple",
+        "species": "Red Maple",
+        "position": [
+          -52.901,
+          486.826,
+          3.711062111788884
+        ],
+        "rotation": 23.99963,
+        "scale": 1,
+        "layer": "estimated",
+        "treeTour": [
+          {
+            "tour": "center",
+            "number": 11
+          },
+          {
+            "tour": "north",
+            "number": 18
+          }
+        ],
+        "confidence": "Named species from official Elmwood Tree Tour; approximate diagram-aligned trunk, procedural species-form study. Not a surveyed or botanically exact individual tree."
+      }
+    },
+    {
+      "species": "White Cedar",
+      "diagramPixel": [
+        724.0,
+        222.0
+      ],
+      "tourStops": [
+        {
+          "tour": "center",
+          "number": 12
+        }
+      ],
+      "placement": {
+        "asset": "tour-cedar",
+        "species": "White Cedar",
+        "position": [
+          9.539,
+          478.765,
+          3.646373076023309
+        ],
+        "rotation": 26.399593,
+        "scale": 1,
+        "layer": "estimated",
+        "treeTour": [
+          {
+            "tour": "center",
+            "number": 12
+          }
+        ],
+        "confidence": "Named species from official Elmwood Tree Tour; approximate diagram-aligned trunk, procedural species-form study. Not a surveyed or botanically exact individual tree."
+      }
+    },
+    {
+      "species": "Ginkgo",
+      "diagramPixel": [
+        755.0,
+        176.0
+      ],
+      "tourStops": [
+        {
+          "tour": "center",
+          "number": 13
+        }
+      ],
+      "placement": {
+        "asset": "red-maple",
+        "species": "Ginkgo",
+        "position": [
+          42.229,
+          471.323,
+          4.176465076403325
+        ],
+        "rotation": 28.799556000000003,
+        "scale": 1,
+        "layer": "estimated",
+        "treeTour": [
+          {
+            "tour": "center",
+            "number": 13
+          }
+        ],
+        "confidence": "Named species from official Elmwood Tree Tour; approximate diagram-aligned trunk, procedural species-form study. Not a surveyed or botanically exact individual tree."
+      }
+    },
+    {
+      "species": "Sweet Gum",
+      "diagramPixel": [
+        561.0,
+        192.0
+      ],
+      "tourStops": [
+        {
+          "tour": "center",
+          "number": 14
+        }
+      ],
+      "placement": {
+        "asset": "red-maple",
+        "species": "Sweet Gum",
+        "position": [
+          -21.405,
+          591.945,
+          4.111389980408264
+        ],
+        "rotation": 31.199519000000002,
+        "scale": 1,
+        "layer": "estimated",
+        "treeTour": [
+          {
+            "tour": "center",
+            "number": 14
+          }
+        ],
+        "confidence": "Named species from official Elmwood Tree Tour; approximate diagram-aligned trunk, procedural species-form study. Not a surveyed or botanically exact individual tree."
+      }
+    },
+    {
+      "species": "Northern Pin Oak",
+      "diagramPixel": [
+        518.0,
+        149.0
+      ],
+      "tourStops": [
+        {
+          "tour": "center",
+          "number": 15
+        },
+        {
+          "tour": "north",
+          "number": 22
+        }
+      ],
+      "placement": {
+        "asset": "white-oak",
+        "species": "Northern Pin Oak",
+        "position": [
+          -8.665,
+          631.358,
+          4.626823333595752
+        ],
+        "rotation": 33.599482,
+        "scale": 1,
+        "layer": "estimated",
+        "treeTour": [
+          {
+            "tour": "center",
+            "number": 15
+          },
+          {
+            "tour": "north",
+            "number": 22
+          }
+        ],
+        "confidence": "Named species from official Elmwood Tree Tour; approximate diagram-aligned trunk, procedural species-form study. Not a surveyed or botanically exact individual tree."
+      }
+    },
+    {
+      "species": "Big-Leaved Linden",
+      "diagramPixel": [
+        413.0,
+        226.0
+      ],
+      "tourStops": [
+        {
+          "tour": "center",
+          "number": 16
+        },
+        {
+          "tour": "north",
+          "number": 23
+        }
+      ],
+      "placement": {
+        "asset": "tour-beech",
+        "species": "Big-Leaved Linden",
+        "position": [
+          -83.158,
+          680.859,
+          4.556396202829973
+        ],
+        "rotation": 35.999445,
+        "scale": 1,
+        "layer": "estimated",
+        "treeTour": [
+          {
+            "tour": "center",
+            "number": 16
+          },
+          {
+            "tour": "north",
+            "number": 23
+          }
+        ],
+        "confidence": "Named species from official Elmwood Tree Tour; approximate diagram-aligned trunk, procedural species-form study. Not a surveyed or botanically exact individual tree."
+      }
+    },
+    {
+      "species": "White Spruce",
+      "diagramPixel": [
+        490.0,
+        422.0
+      ],
+      "tourStops": [
+        {
+          "tour": "center",
+          "number": 17
+        },
+        {
+          "tour": "north",
+          "number": 25
+        }
+      ],
+      "placement": {
+        "asset": "tour-spruce",
+        "species": "White Spruce",
+        "position": [
+          -167.548,
+          576.432,
+          4.232310083584608
+        ],
+        "rotation": 38.399408,
+        "scale": 0.95,
+        "layer": "estimated",
+        "treeTour": [
+          {
+            "tour": "center",
+            "number": 17
+          },
+          {
+            "tour": "north",
+            "number": 25
+          }
+        ],
+        "confidence": "Named species from official Elmwood Tree Tour; approximate diagram-aligned trunk, procedural species-form study. Not a surveyed or botanically exact individual tree."
+      }
+    },
+    {
+      "species": "Japanese Yew",
+      "diagramPixel": [
+        460.0,
+        435.0
+      ],
+      "tourStops": [
+        {
+          "tour": "center",
+          "number": 18
+        }
+      ],
+      "placement": {
+        "asset": "tour-cedar",
+        "species": "Japanese Yew",
+        "position": [
+          -196.427,
+          590.83,
+          3.999544730108255
+        ],
+        "rotation": 40.799371,
+        "scale": 0.72,
+        "layer": "estimated",
+        "treeTour": [
+          {
+            "tour": "center",
+            "number": 18
+          }
+        ],
+        "confidence": "Named species from official Elmwood Tree Tour; approximate diagram-aligned trunk, procedural species-form study. Not a surveyed or botanically exact individual tree."
+      }
+    },
+    {
+      "species": "Southern Catalpa",
+      "diagramPixel": [
+        362.0,
+        410.0
+      ],
+      "tourStops": [
+        {
+          "tour": "center",
+          "number": 19
+        },
+        {
+          "tour": "north",
+          "number": 26
+        }
+      ],
+      "placement": {
+        "asset": "white-oak",
+        "species": "Southern Catalpa",
+        "position": [
+          -210.883,
+          660.773,
+          4.298128567914107
+        ],
+        "rotation": 43.199334,
+        "scale": 1,
+        "layer": "estimated",
+        "treeTour": [
+          {
+            "tour": "center",
+            "number": 19
+          },
+          {
+            "tour": "north",
+            "number": 26
+          }
+        ],
+        "confidence": "Named species from official Elmwood Tree Tour; approximate diagram-aligned trunk, procedural species-form study. Not a surveyed or botanically exact individual tree."
+      }
+    },
+    {
+      "species": "White Oak",
+      "diagramPixel": [
+        309.0,
+        560.0
+      ],
+      "tourStops": [
+        {
+          "tour": "center",
+          "number": 20
+        },
+        {
+          "tour": "north",
+          "number": 31
+        }
+      ],
+      "placement": {
+        "asset": "white-oak",
+        "species": "White Oak",
+        "position": [
+          -322.097,
+          658.79,
+          1.8897467603143965
+        ],
+        "rotation": 45.599297,
+        "scale": 1,
+        "layer": "estimated",
+        "treeTour": [
+          {
+            "tour": "center",
+            "number": 20
+          },
+          {
+            "tour": "north",
+            "number": 31
+          }
+        ],
+        "confidence": "Named species from official Elmwood Tree Tour; approximate diagram-aligned trunk, procedural species-form study. Not a surveyed or botanically exact individual tree."
+      }
+    },
+    {
+      "species": "Swamp White Oak",
+      "diagramPixel": [
+        322.0,
+        609.0
+      ],
+      "tourStops": [
+        {
+          "tour": "center",
+          "number": 21
+        },
+        {
+          "tour": "north",
+          "number": 32
+        }
+      ],
+      "placement": {
+        "asset": "white-oak",
+        "species": "Swamp White Oak",
+        "position": [
+          -337.422,
+          632.343,
+          -0.45801607219945883
+        ],
+        "rotation": 47.99926,
+        "scale": 1,
+        "layer": "estimated",
+        "treeTour": [
+          {
+            "tour": "center",
+            "number": 21
+          },
+          {
+            "tour": "north",
+            "number": 32
+          }
+        ],
+        "confidence": "Named species from official Elmwood Tree Tour; approximate diagram-aligned trunk, procedural species-form study. Not a surveyed or botanically exact individual tree."
+      }
+    },
+    {
+      "species": "Boxelder",
+      "diagramPixel": [
+        232.0,
+        656.0
+      ],
+      "tourStops": [
+        {
+          "tour": "center",
+          "number": 22
+        }
+      ],
+      "placement": {
+        "asset": "red-maple",
+        "species": "Boxelder",
+        "position": [
+          -396.378,
+          677.523,
+          2.084076884863176
+        ],
+        "rotation": 50.399223,
+        "scale": 1,
+        "layer": "estimated",
+        "treeTour": [
+          {
+            "tour": "center",
+            "number": 22
+          }
+        ],
+        "confidence": "Named species from official Elmwood Tree Tour; approximate diagram-aligned trunk, procedural species-form study. Not a surveyed or botanically exact individual tree."
+      }
+    },
+    {
+      "species": "Black Walnut",
+      "diagramPixel": [
+        338.0,
+        733.0
+      ],
+      "tourStops": [
+        {
+          "tour": "center",
+          "number": 23
+        },
+        {
+          "tour": "north",
+          "number": 33
+        }
+      ],
+      "placement": {
+        "asset": "black-walnut",
+        "species": "Black Walnut",
+        "position": [
+          -410.506,
+          588.263,
+          1.2047135057505622
+        ],
+        "rotation": 52.799186,
+        "scale": 0.91,
+        "layer": "estimated",
+        "treeTour": [
+          {
+            "tour": "center",
+            "number": 23
+          },
+          {
+            "tour": "north",
+            "number": 33
+          }
+        ],
+        "confidence": "Named species from official Elmwood Tree Tour; approximate diagram-aligned trunk, procedural species-form study. Not a surveyed or botanically exact individual tree."
+      }
+    },
+    {
+      "species": "Douglas-Fir",
+      "diagramPixel": [
+        352.0,
+        679.0
+      ],
+      "tourStops": [
+        {
+          "tour": "center",
+          "number": 24
+        },
+        {
+          "tour": "north",
+          "number": 34
+        }
+      ],
+      "placement": {
+        "asset": "tour-spruce",
+        "species": "Douglas-Fir",
+        "position": [
+          -374.142,
+          593.951,
+          1.4042669494735487
+        ],
+        "rotation": 55.199149,
+        "scale": 0.95,
+        "layer": "estimated",
+        "treeTour": [
+          {
+            "tour": "center",
+            "number": 24
+          },
+          {
+            "tour": "north",
+            "number": 34
+          }
+        ],
+        "confidence": "Named species from official Elmwood Tree Tour; approximate diagram-aligned trunk, procedural species-form study. Not a surveyed or botanically exact individual tree."
+      }
+    },
+    {
+      "species": "Washington Hawthorn",
+      "diagramPixel": [
+        387.0,
+        709.0
+      ],
+      "tourStops": [
+        {
+          "tour": "center",
+          "number": 25
+        }
+      ],
+      "placement": {
+        "asset": "tour-flowering",
+        "species": "Washington Hawthorn",
+        "position": [
+          -379.344,
+          568.826,
+          3.5130730453122245
+        ],
+        "rotation": 57.599112000000005,
+        "scale": 0.78,
+        "layer": "estimated",
+        "treeTour": [
+          {
+            "tour": "center",
+            "number": 25
+          }
+        ],
+        "confidence": "Named species from official Elmwood Tree Tour; approximate diagram-aligned trunk, procedural species-form study. Not a surveyed or botanically exact individual tree."
+      }
+    },
+    {
+      "species": "Red Oak",
+      "diagramPixel": [
+        619.0,
+        671.0
+      ],
+      "tourStops": [
+        {
+          "tour": "center",
+          "number": 26
+        },
+        {
+          "tour": "north",
+          "number": 35
+        }
+      ],
+      "placement": {
+        "asset": "white-oak",
+        "species": "Red Oak",
+        "position": [
+          -297.587,
+          415.804,
+          4.589489041906526
+        ],
+        "rotation": 59.999075000000005,
+        "scale": 1,
+        "layer": "estimated",
+        "treeTour": [
+          {
+            "tour": "center",
+            "number": 26
+          },
+          {
+            "tour": "north",
+            "number": 35
+          }
+        ],
+        "confidence": "Named species from official Elmwood Tree Tour; approximate diagram-aligned trunk, procedural species-form study. Not a surveyed or botanically exact individual tree."
+      }
+    },
+    {
+      "species": "Weeping Willow",
+      "diagramPixel": [
+        598.0,
+        608.0
+      ],
+      "tourStops": [
+        {
+          "tour": "center",
+          "number": 27
+        }
+      ],
+      "placement": {
+        "asset": "weeping-willow",
+        "species": "Weeping Willow",
+        "position": [
+          -258.166,
+          454.808,
+          -3.2510406855325953
+        ],
+        "rotation": 62.399038000000004,
+        "scale": 0.95,
+        "layer": "estimated",
+        "treeTour": [
+          {
+            "tour": "center",
+            "number": 27
+          }
+        ],
+        "confidence": "Named species from official Elmwood Tree Tour; approximate diagram-aligned trunk, procedural species-form study. Not a surveyed or botanically exact individual tree."
+      }
+    },
+    {
+      "species": "Bur Oak",
+      "diagramPixel": [
+        689.0,
+        544.0
+      ],
+      "tourStops": [
+        {
+          "tour": "center",
+          "number": 28
+        },
+        {
+          "tour": "north",
+          "number": 36
+        }
+      ],
+      "placement": {
+        "asset": "white-oak",
+        "species": "Bur Oak",
+        "position": [
+          -192.783,
+          413.614,
+          -2.5837374419601002
+        ],
+        "rotation": 64.799001,
+        "scale": 1,
+        "layer": "estimated",
+        "treeTour": [
+          {
+            "tour": "center",
+            "number": 28
+          },
+          {
+            "tour": "north",
+            "number": 36
+          }
+        ],
+        "confidence": "Named species from official Elmwood Tree Tour; approximate diagram-aligned trunk, procedural species-form study. Not a surveyed or botanically exact individual tree."
+      }
+    },
+    {
+      "species": "Cottonwood",
+      "diagramPixel": [
+        1038.0,
+        556.0
+      ],
+      "tourStops": [
+        {
+          "tour": "center",
+          "number": 29
+        },
+        {
+          "tour": "north",
+          "number": 37
+        }
+      ],
+      "placement": {
+        "asset": "white-oak",
+        "species": "Cottonwood",
+        "position": [
+          -95.409,
+          185.511,
+          4.033946489142617
+        ],
+        "rotation": 67.198964,
+        "scale": 1,
+        "layer": "estimated",
+        "treeTour": [
+          {
+            "tour": "center",
+            "number": 29
+          },
+          {
+            "tour": "north",
+            "number": 37
+          }
+        ],
+        "confidence": "Named species from official Elmwood Tree Tour; approximate diagram-aligned trunk, procedural species-form study. Not a surveyed or botanically exact individual tree."
+      }
+    },
+    {
+      "species": "Prairie Crabapple",
+      "diagramPixel": [
+        1181.0,
+        560.0
+      ],
+      "tourStops": [
+        {
+          "tour": "center",
+          "number": 30
+        }
+      ],
+      "placement": {
+        "asset": "tour-flowering",
+        "species": "Prairie Crabapple",
+        "position": [
+          -54.964,
+          92.297,
+          1.595980447149096
+        ],
+        "rotation": 69.598927,
+        "scale": 0.78,
+        "layer": "estimated",
+        "treeTour": [
+          {
+            "tour": "center",
+            "number": 30
+          }
+        ],
+        "confidence": "Named species from official Elmwood Tree Tour; approximate diagram-aligned trunk, procedural species-form study. Not a surveyed or botanically exact individual tree."
+      }
+    },
+    {
+      "species": "Anglo-Japanese Yew",
+      "diagramPixel": [
+        1331.0,
+        500.0
+      ],
+      "tourStops": [
+        {
+          "tour": "north",
+          "number": 3
+        },
+        {
+          "tour": "south",
+          "number": 3
+        }
+      ],
+      "placement": {
+        "asset": "tour-cedar",
+        "species": "Anglo-Japanese Yew",
+        "position": [
+          33.706,
+          12.004,
+          0.20046899288784603
+        ],
+        "rotation": 71.99889,
+        "scale": 0.72,
+        "layer": "estimated",
+        "treeTour": [
+          {
+            "tour": "north",
+            "number": 3
+          },
+          {
+            "tour": "south",
+            "number": 3
+          }
+        ],
+        "confidence": "Named species from official Elmwood Tree Tour; approximate diagram-aligned trunk, procedural species-form study. Not a surveyed or botanically exact individual tree."
+      }
+    },
+    {
+      "species": "Apple",
+      "diagramPixel": [
+        1463.0,
+        436.0
+      ],
+      "tourStops": [
+        {
+          "tour": "north",
+          "number": 4
+        },
+        {
+          "tour": "south",
+          "number": 29
+        }
+      ],
+      "placement": {
+        "asset": "tour-flowering",
+        "species": "Apple",
+        "position": [
+          84.817,
+          9.402,
+          -1.0482934250684752
+        ],
+        "rotation": 74.398853,
+        "scale": 0.78,
+        "layer": "estimated",
+        "treeTour": [
+          {
+            "tour": "north",
+            "number": 4
+          },
+          {
+            "tour": "south",
+            "number": 29
+          }
+        ],
+        "confidence": "Named species from official Elmwood Tree Tour; approximate diagram-aligned trunk, procedural species-form study. Not a surveyed or botanically exact individual tree."
+      }
+    },
+    {
+      "species": "Apple Serviceberry",
+      "diagramPixel": [
+        1370.0,
+        332.0
+      ],
+      "tourStops": [
+        {
+          "tour": "north",
+          "number": 5
+        },
+        {
+          "tour": "south",
+          "number": 28
+        }
+      ],
+      "placement": {
+        "asset": "tour-flowering",
+        "species": "Apple Serviceberry",
+        "position": [
+          145.521,
+          41.913,
+          -1.0045052196395259
+        ],
+        "rotation": 76.798816,
+        "scale": 0.78,
+        "layer": "estimated",
+        "treeTour": [
+          {
+            "tour": "north",
+            "number": 5
+          },
+          {
+            "tour": "south",
+            "number": 28
+          }
+        ],
+        "confidence": "Named species from official Elmwood Tree Tour; approximate diagram-aligned trunk, procedural species-form study. Not a surveyed or botanically exact individual tree."
+      }
+    },
+    {
+      "species": "Kentucky Coffeetree",
+      "diagramPixel": [
+        1396.0,
+        248.0
+      ],
+      "tourStops": [
+        {
+          "tour": "north",
+          "number": 6
+        },
+        {
+          "tour": "south",
+          "number": 27
+        }
+      ],
+      "placement": {
+        "asset": "black-walnut",
+        "species": "Kentucky Coffeetree",
+        "position": [
+          183.806,
+          59.443,
+          -0.7009660933836418
+        ],
+        "rotation": 79.198779,
+        "scale": 0.91,
+        "layer": "estimated",
+        "treeTour": [
+          {
+            "tour": "north",
+            "number": 6
+          },
+          {
+            "tour": "south",
+            "number": 27
+          }
+        ],
+        "confidence": "Named species from official Elmwood Tree Tour; approximate diagram-aligned trunk, procedural species-form study. Not a surveyed or botanically exact individual tree."
+      }
+    },
+    {
+      "species": "Amur Corktree",
+      "diagramPixel": [
+        1235.0,
+        291.0
+      ],
+      "tourStops": [
+        {
+          "tour": "north",
+          "number": 7
+        },
+        {
+          "tour": "south",
+          "number": 5
+        }
+      ],
+      "placement": {
+        "asset": "white-oak",
+        "species": "Amur Corktree",
+        "position": [
+          121.472,
+          130.772,
+          -0.2942857217080329
+        ],
+        "rotation": 81.598742,
+        "scale": 1,
+        "layer": "estimated",
+        "treeTour": [
+          {
+            "tour": "north",
+            "number": 7
+          },
+          {
+            "tour": "south",
+            "number": 5
+          }
+        ],
+        "confidence": "Named species from official Elmwood Tree Tour; approximate diagram-aligned trunk, procedural species-form study. Not a surveyed or botanically exact individual tree."
+      }
+    },
+    {
+      "species": "Sycamore Maple",
+      "diagramPixel": [
+        1304.0,
+        466.0
+      ],
+      "tourStops": [
+        {
+          "tour": "north",
+          "number": 8
+        },
+        {
+          "tour": "south",
+          "number": 4
+        }
+      ],
+      "placement": {
+        "asset": "red-maple",
+        "species": "Sycamore Maple",
+        "position": [
+          37.876,
+          38.658,
+          -0.7923308259769168
+        ],
+        "rotation": 83.998705,
+        "scale": 1,
+        "layer": "estimated",
+        "treeTour": [
+          {
+            "tour": "north",
+            "number": 8
+          },
+          {
+            "tour": "south",
+            "number": 4
+          }
+        ],
+        "confidence": "Named species from official Elmwood Tree Tour; approximate diagram-aligned trunk, procedural species-form study. Not a surveyed or botanically exact individual tree."
+      }
+    },
+    {
+      "species": "Golden Raintree",
+      "diagramPixel": [
+        1025.0,
+        428.0
+      ],
+      "tourStops": [
+        {
+          "tour": "north",
+          "number": 9
+        }
+      ],
+      "placement": {
+        "asset": "white-oak",
+        "species": "Golden Raintree",
+        "position": [
+          -9.719,
+          234.633,
+          2.1059844790716893
+        ],
+        "rotation": 86.398668,
+        "scale": 1,
+        "layer": "estimated",
+        "treeTour": [
+          {
+            "tour": "north",
+            "number": 9
+          }
+        ],
+        "confidence": "Named species from official Elmwood Tree Tour; approximate diagram-aligned trunk, procedural species-form study. Not a surveyed or botanically exact individual tree."
+      }
+    },
+    {
+      "species": "Siberian Elm",
+      "diagramPixel": [
+        1002.0,
+        414.0
+      ],
+      "tourStops": [
+        {
+          "tour": "north",
+          "number": 11
+        },
+        {
+          "tour": "south",
+          "number": 10
+        }
+      ],
+      "placement": {
+        "asset": "american-elm",
+        "species": "Siberian Elm",
+        "position": [
+          -21.59,
+          247.378,
+          -0.5840548530352561
+        ],
+        "rotation": 88.798631,
+        "scale": 1,
+        "layer": "estimated",
+        "treeTour": [
+          {
+            "tour": "north",
+            "number": 11
+          },
+          {
+            "tour": "south",
+            "number": 10
+          }
+        ],
+        "confidence": "Named species from official Elmwood Tree Tour; approximate diagram-aligned trunk, procedural species-form study. Not a surveyed or botanically exact individual tree."
+      }
+    },
+    {
+      "species": "Eastern Red Cedar",
+      "diagramPixel": [
+        1072.0,
+        225.0
+      ],
+      "tourStops": [
+        {
+          "tour": "north",
+          "number": 12
+        },
+        {
+          "tour": "south",
+          "number": 21
+        }
+      ],
+      "placement": {
+        "asset": "tour-cedar",
+        "species": "Eastern Red Cedar",
+        "position": [
+          111.976,
+          253.757,
+          3.010640508762889
+        ],
+        "rotation": 91.198594,
+        "scale": 1,
+        "layer": "estimated",
+        "treeTour": [
+          {
+            "tour": "north",
+            "number": 12
+          },
+          {
+            "tour": "south",
+            "number": 21
+          }
+        ],
+        "confidence": "Named species from official Elmwood Tree Tour; approximate diagram-aligned trunk, procedural species-form study. Not a surveyed or botanically exact individual tree."
+      }
+    },
+    {
+      "species": "Sassafras",
+      "diagramPixel": [
+        1010.0,
+        151.0
+      ],
+      "tourStops": [
+        {
+          "tour": "north",
+          "number": 13
+        }
+      ],
+      "placement": {
+        "asset": "white-oak",
+        "species": "Sassafras",
+        "position": [
+          141.495,
+          313.854,
+          3.6708788328799518
+        ],
+        "rotation": 93.598557,
+        "scale": 1,
+        "layer": "estimated",
+        "treeTour": [
+          {
+            "tour": "north",
+            "number": 13
+          }
+        ],
+        "confidence": "Named species from official Elmwood Tree Tour; approximate diagram-aligned trunk, procedural species-form study. Not a surveyed or botanically exact individual tree."
+      }
+    },
+    {
+      "species": "Hackberry",
+      "diagramPixel": [
+        947.0,
+        217.0
+      ],
+      "tourStops": [
+        {
+          "tour": "north",
+          "number": 14
+        },
+        {
+          "tour": "south",
+          "number": 18
+        }
+      ],
+      "placement": {
+        "asset": "white-oak",
+        "species": "Hackberry",
+        "position": [
+          79.305,
+          336.464,
+          4.255739647449951
+        ],
+        "rotation": 95.99852,
+        "scale": 1,
+        "layer": "estimated",
+        "treeTour": [
+          {
+            "tour": "north",
+            "number": 14
+          },
+          {
+            "tour": "south",
+            "number": 18
+          }
+        ],
+        "confidence": "Named species from official Elmwood Tree Tour; approximate diagram-aligned trunk, procedural species-form study. Not a surveyed or botanically exact individual tree."
+      }
+    },
+    {
+      "species": "Horsechestnut",
+      "diagramPixel": [
+        923.0,
+        282.0
+      ],
+      "tourStops": [
+        {
+          "tour": "north",
+          "number": 15
+        },
+        {
+          "tour": "south",
+          "number": 17
+        }
+      ],
+      "placement": {
+        "asset": "white-oak",
+        "species": "Horsechestnut",
+        "position": [
+          33.392,
+          334.223,
+          4.015815930152661
+        ],
+        "rotation": 98.398483,
+        "scale": 1,
+        "layer": "estimated",
+        "treeTour": [
+          {
+            "tour": "north",
+            "number": 15
+          },
+          {
+            "tour": "south",
+            "number": 17
+          }
+        ],
+        "confidence": "Named species from official Elmwood Tree Tour; approximate diagram-aligned trunk, procedural species-form study. Not a surveyed or botanically exact individual tree."
+      }
+    },
+    {
+      "species": "Pignut Hickory",
+      "diagramPixel": [
+        809.0,
+        338.0
+      ],
+      "tourStops": [
+        {
+          "tour": "north",
+          "number": 16
+        },
+        {
+          "tour": "south",
+          "number": 15
+        }
+      ],
+      "placement": {
+        "asset": "black-walnut",
+        "species": "Pignut Hickory",
+        "position": [
+          -34.114,
+          392.413,
+          3.981282055359264
+        ],
+        "rotation": 100.798446,
+        "scale": 0.91,
+        "layer": "estimated",
+        "treeTour": [
+          {
+            "tour": "north",
+            "number": 16
+          },
+          {
+            "tour": "south",
+            "number": 15
+          }
+        ],
+        "confidence": "Named species from official Elmwood Tree Tour; approximate diagram-aligned trunk, procedural species-form study. Not a surveyed or botanically exact individual tree."
+      }
+    },
+    {
+      "species": "European Hornbeam",
+      "diagramPixel": [
+        798.0,
+        307.0
+      ],
+      "tourStops": [
+        {
+          "tour": "north",
+          "number": 17
+        },
+        {
+          "tour": "south",
+          "number": 16
+        }
+      ],
+      "placement": {
+        "asset": "tour-beech",
+        "species": "European Hornbeam",
+        "position": [
+          -18.939,
+          407.942,
+          4.079045919874712
+        ],
+        "rotation": 103.198409,
+        "scale": 1,
+        "layer": "estimated",
+        "treeTour": [
+          {
+            "tour": "north",
+            "number": 17
+          },
+          {
+            "tour": "south",
+            "number": 16
+          }
+        ],
+        "confidence": "Named species from official Elmwood Tree Tour; approximate diagram-aligned trunk, procedural species-form study. Not a surveyed or botanically exact individual tree."
+      }
+    },
+    {
+      "species": "Winter King Hawthorn",
+      "diagramPixel": [
+        617.0,
+        345.0
+      ],
+      "tourStops": [
+        {
+          "tour": "north",
+          "number": 20
+        }
+      ],
+      "placement": {
+        "asset": "tour-flowering",
+        "species": "Winter King Hawthorn",
+        "position": [
+          -95.787,
+          514.198,
+          4.253280124009504
+        ],
+        "rotation": 105.598372,
+        "scale": 0.78,
+        "layer": "estimated",
+        "treeTour": [
+          {
+            "tour": "north",
+            "number": 20
+          }
+        ],
+        "confidence": "Named species from official Elmwood Tree Tour; approximate diagram-aligned trunk, procedural species-form study. Not a surveyed or botanically exact individual tree."
+      }
+    },
+    {
+      "species": "Northern Catalpa",
+      "diagramPixel": [
+        614.0,
+        270.0
+      ],
+      "tourStops": [
+        {
+          "tour": "north",
+          "number": 21
+        }
+      ],
+      "placement": {
+        "asset": "white-oak",
+        "species": "Northern Catalpa",
+        "position": [
+          -56.002,
+          536.557,
+          4.215647148927074
+        ],
+        "rotation": 107.998335,
+        "scale": 1,
+        "layer": "estimated",
+        "treeTour": [
+          {
+            "tour": "north",
+            "number": 21
+          }
+        ],
+        "confidence": "Named species from official Elmwood Tree Tour; approximate diagram-aligned trunk, procedural species-form study. Not a surveyed or botanically exact individual tree."
+      }
+    },
+    {
+      "species": "Freeman Maple",
+      "diagramPixel": [
+        355.0,
+        271.0
+      ],
+      "tourStops": [
+        {
+          "tour": "north",
+          "number": 24
+        }
+      ],
+      "placement": {
+        "asset": "red-maple",
+        "species": "Freeman Maple",
+        "position": [
+          -130.167,
+          703.14,
+          4.665706484955274
+        ],
+        "rotation": 110.398298,
+        "scale": 1,
+        "layer": "estimated",
+        "treeTour": [
+          {
+            "tour": "north",
+            "number": 24
+          }
+        ],
+        "confidence": "Named species from official Elmwood Tree Tour; approximate diagram-aligned trunk, procedural species-form study. Not a surveyed or botanically exact individual tree."
+      }
+    },
+    {
+      "species": "Japanese Tree Lilac",
+      "diagramPixel": [
+        255.0,
+        332.0
+      ],
+      "tourStops": [
+        {
+          "tour": "north",
+          "number": 27
+        }
+      ],
+      "placement": {
+        "asset": "tour-flowering",
+        "species": "Japanese Tree Lilac",
+        "position": [
+          -196.458,
+          750.949,
+          4.921522250973804
+        ],
+        "rotation": 112.798261,
+        "scale": 0.78,
+        "layer": "estimated",
+        "treeTour": [
+          {
+            "tour": "north",
+            "number": 27
+          }
+        ],
+        "confidence": "Named species from official Elmwood Tree Tour; approximate diagram-aligned trunk, procedural species-form study. Not a surveyed or botanically exact individual tree."
+      }
+    },
+    {
+      "species": "Kousa Dogwood",
+      "diagramPixel": [
+        211.0,
+        468.0
+      ],
+      "tourStops": [
+        {
+          "tour": "north",
+          "number": 28
+        }
+      ],
+      "placement": {
+        "asset": "tour-flowering",
+        "species": "Kousa Dogwood",
+        "position": [
+          -294.749,
+          747.796,
+          4.772673000063129
+        ],
+        "rotation": 115.19822400000001,
+        "scale": 0.78,
+        "layer": "estimated",
+        "treeTour": [
+          {
+            "tour": "north",
+            "number": 28
+          }
+        ],
+        "confidence": "Named species from official Elmwood Tree Tour; approximate diagram-aligned trunk, procedural species-form study. Not a surveyed or botanically exact individual tree."
+      }
+    },
+    {
+      "species": "English Oak",
+      "diagramPixel": [
+        106.0,
+        495.0
+      ],
+      "tourStops": [
+        {
+          "tour": "north",
+          "number": 29
+        }
+      ],
+      "placement": {
+        "asset": "white-oak",
+        "species": "English Oak",
+        "position": [
+          -338.194,
+          802.545,
+          4.223949838030937
+        ],
+        "rotation": 117.59818700000001,
+        "scale": 1,
+        "layer": "estimated",
+        "treeTour": [
+          {
+            "tour": "north",
+            "number": 29
+          }
+        ],
+        "confidence": "Named species from official Elmwood Tree Tour; approximate diagram-aligned trunk, procedural species-form study. Not a surveyed or botanically exact individual tree."
+      }
+    },
+    {
+      "species": "Tuliptree",
+      "diagramPixel": [
+        199.0,
+        564.0
+      ],
+      "tourStops": [
+        {
+          "tour": "north",
+          "number": 30
+        }
+      ],
+      "placement": {
+        "asset": "white-oak",
+        "species": "Tuliptree",
+        "position": [
+          -351.45,
+          723.839,
+          2.5132723003540827
+        ],
+        "rotation": 119.99815000000001,
+        "scale": 1,
+        "layer": "estimated",
+        "treeTour": [
+          {
+            "tour": "north",
+            "number": 30
+          }
+        ],
+        "confidence": "Named species from official Elmwood Tree Tour; approximate diagram-aligned trunk, procedural species-form study. Not a surveyed or botanically exact individual tree."
+      }
+    },
+    {
+      "species": "Colorado Spruce",
+      "diagramPixel": [
+        1137.0,
+        312.0
+      ],
+      "tourStops": [
+        {
+          "tour": "south",
+          "number": 6
+        }
+      ],
+      "placement": {
+        "asset": "tour-spruce",
+        "species": "Colorado Spruce",
+        "position": [
+          79.61,
+          188.187,
+          2.1131080181940334
+        ],
+        "rotation": 122.39811300000001,
+        "scale": 0.95,
+        "layer": "estimated",
+        "treeTour": [
+          {
+            "tour": "south",
+            "number": 6
+          }
+        ],
+        "confidence": "Named species from official Elmwood Tree Tour; approximate diagram-aligned trunk, procedural species-form study. Not a surveyed or botanically exact individual tree."
+      }
+    },
+    {
+      "species": "River Birch",
+      "diagramPixel": [
+        1104.0,
+        307.0
+      ],
+      "tourStops": [
+        {
+          "tour": "south",
+          "number": 7
+        }
+      ],
+      "placement": {
+        "asset": "tour-birch",
+        "species": "River Birch",
+        "position": [
+          72.706,
+          210.808,
+          3.024182936036822
+        ],
+        "rotation": 124.79807600000001,
+        "scale": 0.95,
+        "layer": "estimated",
+        "treeTour": [
+          {
+            "tour": "south",
+            "number": 7
+          }
+        ],
+        "confidence": "Named species from official Elmwood Tree Tour; approximate diagram-aligned trunk, procedural species-form study. Not a surveyed or botanically exact individual tree."
+      }
+    },
+    {
+      "species": "American Elm",
+      "diagramPixel": [
+        1104.0,
+        401.0
+      ],
+      "tourStops": [
+        {
+          "tour": "south",
+          "number": 8
+        }
+      ],
+      "placement": {
+        "asset": "american-elm",
+        "species": "American Elm",
+        "position": [
+          13.875,
+          188.035,
+          2.8113799941744917
+        ],
+        "rotation": 127.19803900000001,
+        "scale": 1,
+        "layer": "estimated",
+        "treeTour": [
+          {
+            "tour": "south",
+            "number": 8
+          }
+        ],
+        "confidence": "Named species from official Elmwood Tree Tour; approximate diagram-aligned trunk, procedural species-form study. Not a surveyed or botanically exact individual tree."
+      }
+    },
+    {
+      "species": "Loebner Magnolia",
+      "diagramPixel": [
+        1033.0,
+        396.0
+      ],
+      "tourStops": [
+        {
+          "tour": "south",
+          "number": 9
+        }
+      ],
+      "placement": {
+        "asset": "tour-flowering",
+        "species": "Loebner Magnolia",
+        "position": [
+          -1.582,
+          232.309,
+          3.080839381604002
+        ],
+        "rotation": 129.598002,
+        "scale": 0.78,
+        "layer": "estimated",
+        "treeTour": [
+          {
+            "tour": "south",
+            "number": 9
+          }
+        ],
+        "confidence": "Named species from official Elmwood Tree Tour; approximate diagram-aligned trunk, procedural species-form study. Not a surveyed or botanically exact individual tree."
+      }
+    },
+    {
+      "species": "Star Magnolia",
+      "diagramPixel": [
+        975.0,
+        389.0
+      ],
+      "tourStops": [
+        {
+          "tour": "south",
+          "number": 11
+        }
+      ],
+      "placement": {
+        "asset": "tour-flowering",
+        "species": "Star Magnolia",
+        "position": [
+          -14.782,
+          271.581,
+          1.928130383299258
+        ],
+        "rotation": 131.997965,
+        "scale": 0.78,
+        "layer": "estimated",
+        "treeTour": [
+          {
+            "tour": "south",
+            "number": 11
+          }
+        ],
+        "confidence": "Named species from official Elmwood Tree Tour; approximate diagram-aligned trunk, procedural species-form study. Not a surveyed or botanically exact individual tree."
+      }
+    },
+    {
+      "species": "Japanese Maple",
+      "diagramPixel": [
+        940.0,
+        401.0
+      ],
+      "tourStops": [
+        {
+          "tour": "south",
+          "number": 12
+        }
+      ],
+      "placement": {
+        "asset": "red-maple",
+        "species": "Japanese Maple",
+        "position": [
+          -32.414,
+          290.86,
+          0.9612355157671061
+        ],
+        "rotation": 134.397928,
+        "scale": 0.55,
+        "layer": "estimated",
+        "treeTour": [
+          {
+            "tour": "south",
+            "number": 12
+          }
+        ],
+        "confidence": "Named species from official Elmwood Tree Tour; approximate diagram-aligned trunk, procedural species-form study. Not a surveyed or botanically exact individual tree."
+      }
+    },
+    {
+      "species": "White Pine",
+      "diagramPixel": [
+        913.0,
+        446.0
+      ],
+      "tourStops": [
+        {
+          "tour": "south",
+          "number": 13
+        }
+      ],
+      "placement": {
+        "asset": "white-pine",
+        "species": "White Pine",
+        "position": [
+          -56.419,
+          294.59,
+          -2.2233188129080137
+        ],
+        "rotation": 136.797891,
+        "scale": 1,
+        "layer": "estimated",
+        "treeTour": [
+          {
+            "tour": "south",
+            "number": 13
+          }
+        ],
+        "confidence": "Named species from official Elmwood Tree Tour; approximate diagram-aligned trunk, procedural species-form study. Not a surveyed or botanically exact individual tree."
+      }
+    },
+    {
+      "species": "Littleleaf Linden",
+      "diagramPixel": [
+        878.0,
+        414.0
+      ],
+      "tourStops": [
+        {
+          "tour": "south",
+          "number": 14
+        }
+      ],
+      "placement": {
+        "asset": "tour-beech",
+        "species": "Littleleaf Linden",
+        "position": [
+          -82.728,
+          327.262,
+          0.8966306264736286
+        ],
+        "rotation": 139.197854,
+        "scale": 1,
+        "layer": "estimated",
+        "treeTour": [
+          {
+            "tour": "south",
+            "number": 14
+          }
+        ],
+        "confidence": "Named species from official Elmwood Tree Tour; approximate diagram-aligned trunk, procedural species-form study. Not a surveyed or botanically exact individual tree."
+      }
+    },
+    {
+      "species": "Japanese Sawara Cypress",
+      "diagramPixel": [
+        1004.0,
+        193.0
+      ],
+      "tourStops": [
+        {
+          "tour": "south",
+          "number": 19
+        }
+      ],
+      "placement": {
+        "asset": "tour-cedar",
+        "species": "Japanese Sawara Cypress",
+        "position": [
+          110.675,
+          306.28,
+          3.7568457467318783
+        ],
+        "rotation": 141.597817,
+        "scale": 1,
+        "layer": "estimated",
+        "treeTour": [
+          {
+            "tour": "south",
+            "number": 19
+          }
+        ],
+        "confidence": "Named species from official Elmwood Tree Tour; approximate diagram-aligned trunk, procedural species-form study. Not a surveyed or botanically exact individual tree."
+      }
+    },
+    {
+      "species": "Silver Maple",
+      "diagramPixel": [
+        1028.0,
+        194.0
+      ],
+      "tourStops": [
+        {
+          "tour": "south",
+          "number": 20
+        }
+      ],
+      "placement": {
+        "asset": "red-maple",
+        "species": "Silver Maple",
+        "position": [
+          117.267,
+          290.546,
+          3.5994427908700217
+        ],
+        "rotation": 143.99778,
+        "scale": 1,
+        "layer": "estimated",
+        "treeTour": [
+          {
+            "tour": "south",
+            "number": 20
+          }
+        ],
+        "confidence": "Named species from official Elmwood Tree Tour; approximate diagram-aligned trunk, procedural species-form study. Not a surveyed or botanically exact individual tree."
+      }
+    },
+    {
+      "species": "Paper Birch",
+      "diagramPixel": [
+        1110.0,
+        257.0
+      ],
+      "tourStops": [
+        {
+          "tour": "south",
+          "number": 22
+        }
+      ],
+      "placement": {
+        "asset": "tour-birch",
+        "species": "Paper Birch",
+        "position": [
+          98.635,
+          226.218,
+          2.8224064554032977
+        ],
+        "rotation": 146.397743,
+        "scale": 0.95,
+        "layer": "estimated",
+        "treeTour": [
+          {
+            "tour": "south",
+            "number": 22
+          }
+        ],
+        "confidence": "Named species from official Elmwood Tree Tour; approximate diagram-aligned trunk, procedural species-form study. Not a surveyed or botanically exact individual tree."
+      }
+    },
+    {
+      "species": "Oriental Arborvitae",
+      "diagramPixel": [
+        1127.0,
+        228.0
+      ],
+      "tourStops": [
+        {
+          "tour": "south",
+          "number": 23
+        }
+      ],
+      "placement": {
+        "asset": "tour-cedar",
+        "species": "Oriental Arborvitae",
+        "position": [
+          126.661,
+          217.507,
+          1.688867400562283
+        ],
+        "rotation": 148.797706,
+        "scale": 1,
+        "layer": "estimated",
+        "treeTour": [
+          {
+            "tour": "south",
+            "number": 23
+          }
+        ],
+        "confidence": "Named species from official Elmwood Tree Tour; approximate diagram-aligned trunk, procedural species-form study. Not a surveyed or botanically exact individual tree."
+      }
+    },
+    {
+      "species": "Callery Pear",
+      "diagramPixel": [
+        1185.0,
+        285.0
+      ],
+      "tourStops": [
+        {
+          "tour": "south",
+          "number": 24
+        }
+      ],
+      "placement": {
+        "asset": "tour-flowering",
+        "species": "Callery Pear",
+        "position": [
+          110.072,
+          164.618,
+          0.5369359653503725
+        ],
+        "rotation": 151.197669,
+        "scale": 0.78,
+        "layer": "estimated",
+        "treeTour": [
+          {
+            "tour": "south",
+            "number": 24
+          }
+        ],
+        "confidence": "Named species from official Elmwood Tree Tour; approximate diagram-aligned trunk, procedural species-form study. Not a surveyed or botanically exact individual tree."
+      }
+    },
+    {
+      "species": "Fleshy Hawthorn",
+      "diagramPixel": [
+        1235.0,
+        237.0
+      ],
+      "tourStops": [
+        {
+          "tour": "south",
+          "number": 25
+        }
+      ],
+      "placement": {
+        "asset": "tour-flowering",
+        "species": "Fleshy Hawthorn",
+        "position": [
+          153.644,
+          145.48,
+          -0.3899045567496517
+        ],
+        "rotation": 153.597632,
+        "scale": 0.78,
+        "layer": "estimated",
+        "treeTour": [
+          {
+            "tour": "south",
+            "number": 25
+          }
+        ],
+        "confidence": "Named species from official Elmwood Tree Tour; approximate diagram-aligned trunk, procedural species-form study. Not a surveyed or botanically exact individual tree."
+      }
+    },
+    {
+      "species": "Pin Oak",
+      "diagramPixel": [
+        1393.0,
+        218.0
+      ],
+      "tourStops": [
+        {
+          "tour": "south",
+          "number": 26
+        }
+      ],
+      "placement": {
+        "asset": "white-oak",
+        "species": "Pin Oak",
+        "position": [
+          203.89,
+          71.87,
+          -0.5911391430906235
+        ],
+        "rotation": 155.99759500000002,
+        "scale": 1,
+        "layer": "estimated",
+        "treeTour": [
+          {
+            "tour": "south",
+            "number": 26
+          }
+        ],
+        "confidence": "Named species from official Elmwood Tree Tour; approximate diagram-aligned trunk, procedural species-form study. Not a surveyed or botanically exact individual tree."
+      }
+    }
+  ],
+  "uniqueTrees": 66,
+  "tourMarkers": 96,
+  "genericTreesReplaced": 2,
+  "limitations": [
+    "Tree numbers are transcribed from the three official tours; repeated stops are deduplicated.",
+    "Diagram positions are approximate and shifted locally for road and building clearance.",
+    "Species names are documented; shared procedural crown/branch families approximate their appearance. Leaf shape, age and trunk dimensions are not exact replicas."
+  ]
+}

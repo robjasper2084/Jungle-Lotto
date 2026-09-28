@@ -1,5 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
+import { shareModelTextures, shareRideTextures } from './share-ride-textures.mjs';
 import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { basename, dirname, join, resolve } from 'node:path';
@@ -19,6 +21,51 @@ async function write(root, path, content='fixture') {
   await mkdir(dirname(target), {recursive:true});
   await writeFile(target, content);
 }
+
+function texturedModel(texture) {
+  const mesh = Buffer.from([1, 2, 3, 4, 5, 6, 7, 8]);
+  const json = Buffer.from(JSON.stringify({ asset: { version: '2.0' },
+    buffers: [{ byteLength: texture.length + mesh.length }],
+    bufferViews: [{ buffer: 0, byteOffset: 0, byteLength: texture.length }, { buffer: 0, byteOffset: texture.length, byteLength: mesh.length }],
+    images: [{ bufferView: 0, mimeType: 'image/png' }],
+    accessors: [{ bufferView: 1, componentType: 5121, count: 8, type: 'SCALAR' }],
+  }));
+  const paddedJson = Buffer.alloc(Math.ceil(json.length / 4) * 4, 32);
+  json.copy(paddedJson);
+  const output = Buffer.alloc(28 + paddedJson.length + texture.length + mesh.length);
+  [0x46546c67, 2, output.length, paddedJson.length, 0x4e4f534a].forEach((v, i) => output.writeUInt32LE(v, i * 4));
+  paddedJson.copy(output, 20);
+  output.writeUInt32LE(texture.length + mesh.length, 20 + paddedJson.length);
+  output.writeUInt32LE(0x004e4942, 24 + paddedJson.length);
+  Buffer.concat([texture, mesh]).copy(output, 28 + paddedJson.length);
+  return output;
+}
+
+test('Pages shares identical ride textures and preserves mesh bytes and model-relative URLs', async t => {
+  const root = await fixture(t), arcade = gothtechnologyPath + '/arcade/';
+  const texture = Buffer.alloc(1024, 71), input = texturedModel(texture);
+  const canonical = arcade + 'elmwood-explorer/shared-textures/dog.png';
+  const model = arcade + 'swoop-detroit/exports/glb/dog/dog.glb';
+  await write(root, canonical, texture);
+  await write(root, model, input);
+  const result = await shareRideTextures(root);
+  assert.equal(result.models, 1);
+  const output = await readFile(join(root, model));
+  assert.equal(result.saved, input.length - output.length);
+  const size = output.readUInt32LE(12), gltf = JSON.parse(output.toString('utf8', 20, 20 + size));
+  assert.equal(gltf.accessors[0].bufferView, 0);
+  assert.equal(gltf.images[0].bufferView, undefined);
+  assert.equal(resolve(dirname(join(root, model)), gltf.images[0].uri), resolve(root, canonical));
+  assert.deepEqual(output.subarray(28 + size), Buffer.from([1, 2, 3, 4, 5, 6, 7, 8]));
+  assert.deepEqual(await readFile(join(root, canonical)), texture);
+});
+
+test('Ride sharing leaves unmatched textures intact', () => {
+  const texture = Buffer.alloc(1024, 71), input = texturedModel(texture);
+  assert.equal(shareModelTextures(input, '/game/dog.glb', new Map()), input);
+  const hash = createHash('sha256').update(texture).digest('hex');
+  assert.equal(shareModelTextures(input, '/game/dog.glb', new Map([[hash, { path: '/other.jpg', mime: 'image/jpeg' }]])), input);
+});
 
 test('Pages assembly fails before publishing an absent or partial store build', async t => {
   const root = await fixture(t);

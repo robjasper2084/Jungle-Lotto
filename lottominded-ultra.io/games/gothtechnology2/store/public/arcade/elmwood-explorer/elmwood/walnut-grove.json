@@ -1,0 +1,394 @@
+{
+  "regions": [
+    {
+      "id": "creek-side-lawn",
+      "ring": [
+        [
+          -28,
+          80
+        ],
+        [
+          -29,
+          122
+        ],
+        [
+          -6,
+          155
+        ],
+        [
+          27,
+          155
+        ],
+        [
+          37,
+          131
+        ],
+        [
+          36,
+          76
+        ],
+        [
+          9,
+          64
+        ]
+      ]
+    },
+    {
+      "id": "east-lawn",
+      "ring": [
+        [
+          36,
+          76
+        ],
+        [
+          37,
+          131
+        ],
+        [
+          27,
+          155
+        ],
+        [
+          37,
+          161
+        ],
+        [
+          68,
+          142
+        ],
+        [
+          82,
+          124
+        ],
+        [
+          82,
+          94
+        ],
+        [
+          70,
+          78
+        ]
+      ]
+    }
+  ],
+  "removedGraves": 124,
+  "walnutTrees": 23,
+  "trees": [
+    {
+      "asset": "black-walnut",
+      "position": [
+        4.175,
+        69.628,
+        -0.6405637938400766
+      ],
+      "rotation": 2.2069083968627243,
+      "scale": 1.0253799110268897,
+      "layer": "estimated",
+      "grove": "creek-side-lawn",
+      "confidence": "Black walnut requested in user-marked lawn; satellite-informed spacing, individual trunks estimated"
+    },
+    {
+      "asset": "black-walnut",
+      "position": [
+        27.495,
+        115.345,
+        -4.020740980981637
+      ],
+      "rotation": 5.840556624055248,
+      "scale": 0.9562413229438054,
+      "layer": "estimated",
+      "grove": "creek-side-lawn",
+      "confidence": "Black walnut requested in user-marked lawn; satellite-informed spacing, individual trunks estimated"
+    },
+    {
+      "asset": "black-walnut",
+      "position": [
+        16.52,
+        80.369,
+        -2.9268671247346836
+      ],
+      "rotation": 6.237543820074053,
+      "scale": 1.0435651846636793,
+      "layer": "estimated",
+      "grove": "creek-side-lawn",
+      "confidence": "Black walnut requested in user-marked lawn; satellite-informed spacing, individual trunks estimated"
+    },
+    {
+      "asset": "black-walnut",
+      "position": [
+        -12.826,
+        80.696,
+        -3.5092630256832784
+      ],
+      "rotation": 0.6632457310020402,
+      "scale": 0.88885157951777,
+      "layer": "estimated",
+      "grove": "creek-side-lawn",
+      "confidence": "Black walnut requested in user-marked lawn; satellite-informed spacing, individual trunks estimated"
+    },
+    {
+      "asset": "black-walnut",
+      "position": [
+        -10.447,
+        115.933,
+        -4.870649272599049
+      ],
+      "rotation": 0.2946395470822055,
+      "scale": 1.1177269170604232,
+      "layer": "estimated",
+      "grove": "creek-side-lawn",
+      "confidence": "Black walnut requested in user-marked lawn; satellite-informed spacing, individual trunks estimated"
+    },
+    {
+      "asset": "black-walnut",
+      "position": [
+        -24.32,
+        96.384,
+        -3.5277231784121748
+      ],
+      "rotation": 1.223926603844926,
+      "scale": 1.101424012146398,
+      "layer": "estimated",
+      "grove": "creek-side-lawn",
+      "confidence": "Black walnut requested in user-marked lawn; satellite-informed spacing, individual trunks estimated"
+    },
+    {
+      "asset": "black-walnut",
+      "position": [
+        24.803,
+        93.165,
+        -4.269342271453024
+      ],
+      "rotation": 4.429533007414285,
+      "scale": 1.072971303306548,
+      "layer": "estimated",
+      "grove": "creek-side-lawn",
+      "confidence": "Black walnut requested in user-marked lawn; satellite-informed spacing, individual trunks estimated"
+    },
+    {
+      "asset": "black-walnut",
+      "position": [
+        10.465,
+        148.986,
+        -3.8086934798622734
+      ],
+      "rotation": 6.215266337303315,
+      "scale": 0.9207714323534617,
+      "layer": "estimated",
+      "grove": "creek-side-lawn",
+      "confidence": "Black walnut requested in user-marked lawn; satellite-informed spacing, individual trunks estimated"
+    },
+    {
+      "asset": "black-walnut",
+      "position": [
+        7.0,
+        103.629,
+        -4.631558066448988
+      ],
+      "rotation": 4.330941707119466,
+      "scale": 1.108100112439653,
+      "layer": "estimated",
+      "grove": "creek-side-lawn",
+      "confidence": "Black walnut requested in user-marked lawn; satellite-informed spacing, individual trunks estimated"
+    },
+    {
+      "asset": "black-walnut",
+      "position": [
+        34.12,
+        125.599,
+        -3.8125741469585077
+      ],
+      "rotation": 2.132237271210396,
+      "scale": 1.12638961868466,
+      "layer": "estimated",
+      "grove": "creek-side-lawn",
+      "confidence": "Black walnut requested in user-marked lawn; satellite-informed spacing, individual trunks estimated"
+    },
+    {
+      "asset": "black-walnut",
+      "position": [
+        32.409,
+        82.047,
+        -1.4373726822104156
+      ],
+      "rotation": 5.173087795223854,
+      "scale": 1.0575701931418742,
+      "layer": "estimated",
+      "grove": "creek-side-lawn",
+      "confidence": "Black walnut requested in user-marked lawn; satellite-informed spacing, individual trunks estimated"
+    },
+    {
+      "asset": "black-walnut",
+      "position": [
+        33.536,
+        104.872,
+        -4.2444145058944756
+      ],
+      "rotation": 0.7129939548616667,
+      "scale": 0.9610474527473193,
+      "layer": "estimated",
+      "grove": "creek-side-lawn",
+      "confidence": "Black walnut requested in user-marked lawn; satellite-informed spacing, individual trunks estimated"
+    },
+    {
+      "asset": "black-walnut",
+      "position": [
+        31.023,
+        137.201,
+        -3.705959444805247
+      ],
+      "rotation": 1.7358553489465307,
+      "scale": 1.102445949323515,
+      "layer": "estimated",
+      "grove": "creek-side-lawn",
+      "confidence": "Black walnut requested in user-marked lawn; satellite-informed spacing, individual trunks estimated"
+    },
+    {
+      "asset": "black-walnut",
+      "position": [
+        3.328,
+        122.869,
+        -4.456247115736232
+      ],
+      "rotation": 1.1354334726118003,
+      "scale": 0.8977793041351779,
+      "layer": "estimated",
+      "grove": "creek-side-lawn",
+      "confidence": "Black walnut requested in user-marked lawn; satellite-informed spacing, individual trunks estimated"
+    },
+    {
+      "asset": "black-walnut",
+      "position": [
+        -18.879,
+        135.075,
+        -4.108908200412633
+      ],
+      "rotation": 2.043658199928627,
+      "scale": 0.9914884223176249,
+      "layer": "estimated",
+      "grove": "creek-side-lawn",
+      "confidence": "Black walnut requested in user-marked lawn; satellite-informed spacing, individual trunks estimated"
+    },
+    {
+      "asset": "black-walnut",
+      "position": [
+        -7.051,
+        143.129,
+        -4.563521306230845
+      ],
+      "rotation": 4.536681945442825,
+      "scale": 1.116383734526374,
+      "layer": "estimated",
+      "grove": "creek-side-lawn",
+      "confidence": "Black walnut requested in user-marked lawn; satellite-informed spacing, individual trunks estimated"
+    },
+    {
+      "asset": "black-walnut",
+      "position": [
+        25.217,
+        71.752,
+        -0.6678444929609294
+      ],
+      "rotation": 2.281879880753036,
+      "scale": 1.0206359557390192,
+      "layer": "estimated",
+      "grove": "creek-side-lawn",
+      "confidence": "Black walnut requested in user-marked lawn; satellite-informed spacing, individual trunks estimated"
+    },
+    {
+      "asset": "black-walnut",
+      "position": [
+        50.704,
+        85.288,
+        -1.0624665585171749
+      ],
+      "rotation": 1.026028009852352,
+      "scale": 0.9979290639302849,
+      "layer": "estimated",
+      "grove": "east-lawn",
+      "confidence": "Black walnut requested in user-marked lawn; satellite-informed spacing, individual trunks estimated"
+    },
+    {
+      "asset": "black-walnut",
+      "position": [
+        47.012,
+        108.65,
+        -3.7767014026965566
+      ],
+      "rotation": 1.7450627380508335,
+      "scale": 1.1270661579395438,
+      "layer": "estimated",
+      "grove": "east-lawn",
+      "confidence": "Black walnut requested in user-marked lawn; satellite-informed spacing, individual trunks estimated"
+    },
+    {
+      "asset": "black-walnut",
+      "position": [
+        59.86,
+        101.738,
+        -3.1571446329045174
+      ],
+      "rotation": 4.136521969244705,
+      "scale": 0.9341573963484472,
+      "layer": "estimated",
+      "grove": "east-lawn",
+      "confidence": "Black walnut requested in user-marked lawn; satellite-informed spacing, individual trunks estimated"
+    },
+    {
+      "asset": "black-walnut",
+      "position": [
+        38.697,
+        93.542,
+        -3.514329894709033
+      ],
+      "rotation": 1.9159100852074276,
+      "scale": 1.0760879915321713,
+      "layer": "estimated",
+      "grove": "east-lawn",
+      "confidence": "Black walnut requested in user-marked lawn; satellite-informed spacing, individual trunks estimated"
+    },
+    {
+      "asset": "black-walnut",
+      "position": [
+        63.127,
+        112.903,
+        -1.702427189629421
+      ],
+      "rotation": 1.4673324952115785,
+      "scale": 1.012941264362343,
+      "layer": "estimated",
+      "grove": "east-lawn",
+      "confidence": "Black walnut requested in user-marked lawn; satellite-informed spacing, individual trunks estimated"
+    },
+    {
+      "asset": "black-walnut",
+      "position": [
+        57.766,
+        124.197,
+        -1.8721854943581933
+      ],
+      "rotation": 5.626329800411064,
+      "scale": 0.9727980192119792,
+      "layer": "estimated",
+      "grove": "east-lawn",
+      "confidence": "Black walnut requested in user-marked lawn; satellite-informed spacing, individual trunks estimated"
+    }
+  ],
+  "bench": {
+    "asset": "elmwood-park-bench",
+    "position": [
+      -27.3,
+      76.8,
+      -0.8440512104816973
+    ],
+    "rotation": -1.5707963267948966,
+    "scale": 1,
+    "layer": "reference",
+    "confidence": "User-marked junction behind gatehouse, road-facing; exact bench design and coordinates inferred"
+  },
+  "sources": [
+    "https://www.google.com/maps/@42.3455,-83.0179,310m/data=!3m1!1e3",
+    "https://elmwoodhistoriccemetery.org/foundation/tree-tours"
+  ],
+  "confidence": "User annotations define the edited lawns and bench. Satellite and entrance Street View inform context; canopy and interior bench are not independently surveyed."
+}
