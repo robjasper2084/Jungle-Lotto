@@ -1,4 +1,12 @@
+import {riderEyeMotion} from '@digital-static/ridecore';
+import {boot,bootStage,renderBoot,failBoot} from './bootUi.ts';
+import {BicycleAdapter} from './bicycleAdapter.ts';
+import {LaneRoute} from '@digital-static/ridecore/cycling';
+import {BicycleView,BIKE_STYLES,CyclingSession} from '@digital-static/ridecore/cycling-view';
 import {createGraphicsQuality} from './graphicsQuality.ts';
+import {detroitMinimap} from './detroitMinimap.ts';
+import {settingsPanel} from './settingsPanel.ts';
+import {GameFilm} from './gameFilm.ts';
 import {installTouchLayout} from './touchLayout.ts';
 import {FrameSchedule} from './frameSchedule.ts';
 import {PARK_SPAWN,buildFreestylePark,parkContains} from './freestylePark.ts';
@@ -6,6 +14,8 @@ import {windTime} from './windMotion.ts';
 import {RouteSky,DAY_SUN,DUSK_SUN} from './routeSky.ts';
 import {CourseFeatureView} from './courseFeatureView.ts';
 import {AdaptiveQuality} from './adaptiveQuality.ts';
+import {buildMackStudio} from './mackStudio.ts';
+import {MACK_STUDIO,studioMap,studioRoom} from './mackStudioSite.ts';
 import {GalleryVisit} from './galleryVisit.ts';
 import {destinationLayout} from './destinationLayout.ts';
 import {RouteAmbience,cutEffectPatches} from './routeAmbience.ts';
@@ -35,7 +45,7 @@ import {RIDE_TUNING} from './rideDynamics.ts';
 import * as T from 'three';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import {HDRLoader} from 'three/addons/loaders/HDRLoader.js';
-import { RideController,createPose,copyPose,lerpPose } from './controller.ts';
+import { createPose,copyPose,lerpPose } from './controller.ts';
 import { NEUTRAL_ACTIONS } from './controller.ts';
 import { createGroundSample } from './terrain.ts';
 import { DetroitWorld,SPOTS as MAP_SPOTS,LENGTH,clamp,cutCoords,locationAt } from './world.ts';
@@ -49,6 +59,7 @@ import './style.css';
 import './lobby.css';
 import './touchPolish.css';
 import './mobileHud.css';
+import {northUp} from './routeMap.ts';
 import {GeoTerrain} from './geo-terrain.ts';
 import {GEO,MAP_ORIGIN,toLocal,toMap,gpsAt} from './geo-profile.ts';
 import {createRouteMap} from './routeMap.ts';
@@ -63,11 +74,14 @@ const compactElmwood=detailChoice==='compact'||(detailChoice!=='detailed'&&/Ocul
 const SPOTS=(elmwood?ELM_SPOTS:[...MAP_SPOTS,PARK_SPAWN]).map(p=>({...p,...toLocal(p.x,0,p.z),heading:-p.heading}));
 
 if(!elmwood){const end=routePosition(LENGTH);SPOTS.push({name:'Mack Avenue / Gallery arrival',x:end.x+Math.sin(end.heading)*2,y:end.y,z:end.z+Math.cos(end.heading)*2,heading:end.heading});}
-if(!elmwood)for(const [name,store] of [['Serengeti Galleries forecourt',false],['GothTechnology store',true]] as const){const p=destinationLayout(store);SPOTS.push({name,x:p.local.x+Math.sin(p.heading)*14*p.scale,y:p.local.y,z:p.local.z+Math.cos(p.heading)*14*p.scale,heading:p.heading+Math.PI});}
+if(!elmwood)for(const [name,store] of [['Serengeti Galleries forecourt',false],['GothTechnology store',true]] as const){const p=destinationLayout(store),room=studioRoom(store),at=studioMap(room.u,29),local=toLocal(at.x,MACK_STUDIO.floor,at.z);SPOTS.push({name:name+' · 2000 Mack',...local,heading:p.heading+Math.PI});}
 const coarsePointer=matchMedia('(any-pointer: coarse)');document.documentElement.classList.toggle('touchDevice',coarsePointer.matches);coarsePointer.addEventListener('change',()=>document.documentElement.classList.toggle('touchDevice',coarsePointer.matches));
 const $=<E extends HTMLElement=HTMLElement>(id:string)=>document.getElementById(id) as E;
 const canvas=$<HTMLCanvasElement>('world');
+boot.assertActive();
 const renderer=new T.WebGLRenderer({canvas,antialias:false,powerPreference:'default'});
+// Catch loss during asset loading too, before input and the simulation exist.
+canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();canvas.dataset.paused='true';renderer.setAnimationLoop(null);boot.fail('Graphics were interrupted. Reload to return to the menu.','WebGL context lost; reload releases this session before retrying.');renderBoot();});
 const adaptiveQuality=new AdaptiveQuality();renderer.setPixelRatio(Math.min(devicePixelRatio,1));renderer.setSize(innerWidth,innerHeight);
 renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFShadowMap;
 renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=elmwood?1.0:1.1;
@@ -91,6 +105,8 @@ const confirmation=new RideConfirmation(document.body),riderLamp=new RiderLamp(s
 function confirmRide(kind:string,text:string,token:string){if(confirmation.show(kind,text,token))rideAudio.confirm(kind);}
 const mapScene=new T.Scene();scene.add(mapScene);mapScene.scale.x=-1;mapScene.position.set(MAP_ORIGIN.x,-MAP_ORIGIN.y,-MAP_ORIGIN.z);
 const updateMap=elmwood?createElmwoodMap():createRouteMap();
+const miniMap=elmwood?undefined:detroitMinimap(()=>{clearInput();if(running&&!paused)pause();},()=>canvas.focus());
+const film=new GameFilm('Swoop Detroit',canvas,()=>split?split.view.heroes.map(h=>({root:h.root,body:h.rider})):[{root:sim?.cycling&&bicycleView?bicycleView.root:hero.root,body:sim?.cycling&&bicycleView?bicycleView.rider:hero.rider},...(dogEnabled?[{root:dogView.root}]:[])],()=>{clearInput();if(running&&!paused)pause();loop.stopReplay(false);$('helpPanel').hidden=true;$('menu').hidden=true;});
 function createElmwoodMap(){
   const svg=$('routeMap'),ns='http://www.w3.org/2000/svg';svg.setAttribute('viewBox','0 80 1220 580');svg.setAttribute('aria-label','Elmwood Cemetery garden lanes and rider position');
   const add=(tag:string,attrs:Record<string,string>)=>{const n=document.createElementNS(ns,tag);for(const[k,v]of Object.entries(attrs))n.setAttribute(k,v);svg.append(n);return n;};
@@ -104,12 +120,21 @@ function createElmwoodMap(){
 function mapChooser(){const label=document.createElement('label');label.textContent='MAP ';const select=document.createElement('select');select.setAttribute('aria-label','Choose riding map');for(const[value,name]of [['cut','Dequindre Cut'],['elmwood','Elmwood Explorer']]){const o=document.createElement('option');o.value=value;o.textContent=name;select.append(o);}select.value=elmwood?'elmwood':'cut';select.onchange=()=>{const url=new URL(location.href);if(select.value==='elmwood')url.searchParams.set('map','elmwood');else url.searchParams.delete('map');location.assign(url.href);};label.append(select);return label;}
 if(elmwood){const label=document.createElement('label');label.textContent='VISUAL DETAIL';const select=document.createElement('select');select.setAttribute('aria-label','Visual detail');for(const[value,title]of [['auto','Automatic'],['detailed','Detailed - PC'],['compact','Lighter - Quest / mobile']]){const option=document.createElement('option');option.value=value;option.textContent=title;select.append(option);}select.value=detailChoice;select.onchange=()=>{const url=new URL(location.href);url.searchParams.set('quality',select.value);location.assign(url.href);};label.append(select);document.querySelector('.options')!.append(label);}
 document.querySelector('.options')!.prepend(mapChooser());$('mapPanel').querySelector('h2')!.after(mapChooser());
-let hero!:Hero,traffic:TrafficView,scenery:Awaited<ReturnType<typeof buildScenery>|ReturnType<typeof buildElmwood>>,sim:RideController;
+let hero!:Hero,traffic:TrafficView,scenery:Awaited<ReturnType<typeof buildScenery>|ReturnType<typeof buildElmwood>>,sim:BicycleAdapter;
+let bicycleView:BicycleView|undefined,community:CyclingSession|undefined;
+const communityActive=()=>running&&mode==='free'&&!practice&&!race&&!split&&!challengeRun&&!vr.active;
+const cycleOptions=document.createElement('div');cycleOptions.innerHTML='<label for="ride-vehicle">Vehicle</label><select id="ride-vehicle"><option value="euc">Electric unicycle · all modes</option><option value="bicycle">Bicycle · free ride and racing</option></select><label for="bike-style">Bicycle color and style</label><select id="bike-style"></select><p>Bicycles use the original rider. Forward pedals, release coasts, backward brakes. Bicycle racing has its own rivals and records. Tricks, split and VR keep the EUC.</p><button id="community-start">Meet the Cut cyclists</button>';
+$('start').before(cycleOptions);const vehicle=$<HTMLSelectElement>('ride-vehicle'),bikeStyle=$<HTMLSelectElement>('bike-style');bikeStyle.replaceChildren(...BIKE_STYLES.map((s,i)=>new Option(s.name,String(i))));
+function chooseVehicle(cycling:boolean){if(!sim)return;sim.cycling=cycling;for(const id of ['specialMove','hop','crouch']){const b=$<HTMLButtonElement>(id);b.disabled=cycling;b.title=cycling?'Select the EUC to use this action.':'';}clearInput();loop.stopReplay(false);loop.flow.cancel();if(cycling){setRider('DS_Man_01');if(!bicycleView||bicycleView.style!==Number(bikeStyle.value)){bicycleView?.dispose();bicycleView=new BicycleView(actorData.get('DS_Bicycle_01')!,actorData.get('DS_Man_01')!,Number(bikeStyle.value));scene.add(bicycleView.root);}}if(bicycleView)bicycleView.root.visible=cycling;}
+function travelCommunity(){if(!ready||!community||vr.active)return;$<HTMLSelectElement>('mode').value='free';stopRace();practice=undefined;challengeRun=undefined;district.setRun();mode='free';chooseVehicle(vehicle.value==='bicycle');reset(selectedSpot,850);const at=community.ride.route.at(0,-.5);sim.reset({position:{x:at.x,y:world.sampleGround(at.x,at.z,ground).height,z:at.z},headingY:at.headingY});remount();community.ride.recover();loop.startRun(undefined,selectedRider,actorData,current);beginRide();community.ui.panel.open=true;}
+$('community-start').onclick=()=>{travelCommunity();community?.ride.restart();};
 let actorData:Awaited<ReturnType<typeof loadActors>>,selectedRider=riderChoice(null);
 try{selectedRider=riderChoice(localStorage.getItem('digital-static-rider'));}catch{}
+$('heroSelect').replaceChildren();
 for(const r of RIDER_CHOICES){const o=document.createElement('option');o.value=r.id;o.textContent=r.label;$('heroSelect').append(o);}
 $<HTMLSelectElement>('heroSelect').value=selectedRider;
 function setRider(value:string){
+  if(sim?.cycling&&value!=='DS_Man_01'){toast('Bicycle fit uses the original rider. Select EUC for other riders.');$<HTMLSelectElement>('heroSelect').value='DS_Man_01';return;}
   if(running&&(challengeRun||race||split)&&!finished){if($('menu').hidden){$<HTMLSelectElement>('heroSelect').value=selectedRider;toast('Open the menu to choose a different rider and start a new attempt.');return;}stopRace();challengeRun=undefined;district.setRun();running=false;$('resumeRide').hidden=true;}
   selectedRider=riderChoice(value);$<HTMLSelectElement>('heroSelect').value=selectedRider;
   $('riderQuick').textContent=RIDER_CHOICES.find(r=>r.id===selectedRider)!.label;
@@ -121,8 +146,8 @@ const current=createPose(),previous=createPose(),pose=createPose();
 const follow=new FollowCamera(world),ground=createGroundSample();
 let ready=false,running=false,paused=false,clock=0,acc=0,last=performance.now(),mode='free',selectedSpot=0,gate=0,score=0,finished=false,lastTraffic=0;
 let challengeRun:DistrictRun|undefined,photoPending=false;
-world.extraActors=()=>[...(race?.obstacles()??[]),...(running&&dogEnabled&&!split?[{id:'companion',x:dog.current.x,y:dog.current.y,z:dog.current.z,radius:.36,height:.85,kind:'dog',vx:Math.sin(dog.current.heading)*dog.current.speed,vz:Math.cos(dog.current.heading)*dog.current.speed}]:[])];
-mapWorld.crowdActors=()=>running&&dogEnabled&&!split?[{id:'companion',...toMap(dog.current.x,dog.current.y,dog.current.z),radius:.36,height:.85,kind:'dog',vx:-Math.sin(dog.current.heading)*dog.current.speed,vz:Math.cos(dog.current.heading)*dog.current.speed}]:[];
+world.extraActors=()=>[...(communityActive()?community?.ride.obstacles()??[]:[]),...(race?.obstacles()??[]),...(running&&dogEnabled&&!split?[{id:'companion',x:dog.current.x,y:dog.current.y,z:dog.current.z,radius:.36,height:.85,kind:'dog',vx:Math.sin(dog.current.heading)*dog.current.speed,vz:Math.cos(dog.current.heading)*dog.current.speed}]:[])];
+mapWorld.crowdActors=()=>[...(communityActive()?community?.ride.obstacles().map(o=>({...o,...toMap(o.x,o.y,o.z),vx:-o.vx}))??[]:[]),...(running&&dogEnabled&&!split?[{id:'companion',...toMap(dog.current.x,dog.current.y,dog.current.z),radius:.36,height:.85,kind:'dog',vx:-Math.sin(dog.current.heading)*dog.current.speed,vz:Math.cos(dog.current.heading)*dog.current.speed}]:[])];
 let race:RivalRace|undefined;let practice:PracticeCoach|undefined;const encounterWarning=new EncounterWarning();
 let split:{simulation:SplitRaceSimulation;view:SplitRaceView;input:SplitRideInput;audio:RideAudio}|undefined;
 function stopSplit(){if(!split)return;split.view.dispose();void split.audio.dispose();split=undefined;document.body.classList.remove('splitPlaying');delete canvas.dataset.splitRace;renderer.setScissorTest(false);renderer.setViewport(0,0,innerWidth,innerHeight);hero.root.visible=true;dogView.root.visible=dogEnabled;}
@@ -131,6 +156,7 @@ function recoverSplit(index:number){if(!split||paused)return;if(split.simulation
 function cruiseSplit(index:number){if(!split||paused||finished||split.simulation.rules.countdown>0||split.simulation.riders[index].sim.crashed||split.simulation.rules.racers[index].finish!==null)return;split.input.toggleCruise(index);canvas.focus();}
 function startSplit(){
  if(!ready||vr.active)return;
+ chooseVehicle(false);community?.ride.cancel();if(community){community.view.root.visible=false;community.ui.update(false);}
  if(elmwood){const url=new URL(location.href);url.searchParams.delete('map');url.searchParams.set('tab','split');location.assign(url.href);return;}
  const second=riderChoice($<HTMLSelectElement>('splitRider2').value),bindings=[$<HTMLSelectElement>('splitInput1').value,$<HTMLSelectElement>('splitInput2').value] as [SplitBinding,SplitBinding];
  const error=selectedRider===second?'Choose a different rider for Player 2.':splitSetupError(bindings,Array.from(navigator.getGamepads?.()??[]));$('splitSetupError').textContent=error;if(error)return;
@@ -139,7 +165,7 @@ function startSplit(){
  const view=new SplitRaceView(scene,simulation,actorData,bindings,{pause,restart:startSplit,menu:()=>$('menuButton').click(),recover:recoverSplit,cruise:cruiseSplit,camera:i=>{split?.view.toggleCamera(i);canvas.focus();}},effectPatches,[rideAudio,audio]);
  split={simulation,input,view,audio};loop.startRun(undefined,selectedRider,actorData,current);beginRide();document.body.classList.add('splitPlaying');hero.root.visible=false;dogView.root.visible=false;traffic.update(mapWorld.traffic.map(t=>({...t,...toLocal(t.x,t.y,t.z),heading:-t.heading})),0);contactEffects?.reset();confirmation.reset();pedalSparks.reset();void audio.enable(!muted);canvas.focus();
 }
-function startRace(){if(!ready)return;practice=undefined;$('practiceHUD').hidden=true;if(elmwood){const url=new URL(location.href);url.searchParams.delete('map');url.searchParams.set('tab','race');location.assign(url.href);return;}stopRace();challengeRun=undefined;district.setRun();mode='race';reset(selectedSpot,RACE_ROUTE.start);mapWorld.updateTraffic(0,1e8,1e8);mapWorld.step();race=new RivalRace(scene,world,actorData,selectedRider,$<HTMLSelectElement>('raceDifficulty').value as RaceDifficulty,sim);loop.startRun(undefined,selectedRider,actorData,current);beginRide();document.body.classList.add('racing');setCamera('chase');toast('Rivals ready · follow the gates to Mack Avenue. No time cutoff.');}
+function startRace(){if(!ready)return;chooseVehicle(vehicle.value==='bicycle'&&!vr.active);community?.ride.cancel();practice=undefined;$('practiceHUD').hidden=true;if(elmwood){const url=new URL(location.href);url.searchParams.delete('map');url.searchParams.set('tab','race');location.assign(url.href);return;}stopRace();challengeRun=undefined;district.setRun();mode='race';reset(selectedSpot,RACE_ROUTE.start);mapWorld.updateTraffic(0,1e8,1e8);mapWorld.step();race=new RivalRace(scene,world,actorData,selectedRider,$<HTMLSelectElement>('raceDifficulty').value as RaceDifficulty,sim,sim.cycling);loop.startRun(undefined,selectedRider,actorData,current);beginRide();document.body.classList.add('racing');setCamera('chase');toast('Rivals ready · follow the gates to Mack Avenue. No time cutoff.');}
 function finishRace(){if(!race||finished)return;finished=true;clearInput();if(race.rules.player.finish!==null)loop.flow.bank();else loop.flow.cancel();score=loop.flow.banked;race.finish(score);}
 
 let trickRequest=0,selectedTrick=1;
@@ -182,9 +208,11 @@ function crashEntry(){
 }
 function recoveryLabel(){return inputDevice==='gamepad'?'Recover · X / Square':inputDevice==='keyboard'?'Recover · R':'Recover';}
 
+const bikeRecover=document.createElement('button');bikeRecover.id='bike-recover';bikeRecover.type='button';bikeRecover.textContent='Recover bike · R';bikeRecover.style.minHeight='44px';bikeRecover.hidden=true;bikeRecover.onclick=queueRecovery;$('pause').after(bikeRecover);
+
 function queueRecovery(){
  if(!ready||!running)return;
- if(split){recoverSplit(0);return;}
+ community?.ride.recover();if(split){recoverSplit(0);return;}
  if(race&&finished){startRace();return;}
  if(challengeRun&&!finished){const c=challengeRun,station=c.gateCount?c.challenge.gates[c.gateCount-1]+.5:c.challenge.start,p=routePosition(station);if(!sim.recover({position:{...p,y:world.sampleGround(p.x,p.z,ground).height},headingY:p.heading})){toast('Recovery space occupied · wait, then try again');return;}c.step(1/120,{station,offset:0,speed:0,grounded:true,crashed:false,roll:0,slip:0,traction:0,airHeight:0,recovered:true});remount();toast('Recovered at checkpoint · continue to Mack Avenue');return;}
  if(race){
@@ -193,7 +221,7 @@ function queueRecovery(){
   // Only rebase progress after placement succeeds. No gate award or clock rewind.
   race.rules.recover(selectedRider);
  }else if(!sim.recover()){toast('Recovery space occupied · wait, then try again');return;}
- remount();toast(race?'Recovered · race clock keeps running':paused?'Recovered · Resume when ready':'Recovered · release controls, then ride');
+ remount();practice?.action('recover');toast(race?'Recovered · race clock keeps running':paused?'Recovered · Resume when ready':'Recovered · release controls, then ride');
 }
 
 function reset(spot=selectedSpot,station?:number){
@@ -207,8 +235,8 @@ function reset(spot=selectedSpot,station?:number){
   handledCrash=0;clock=0;lastTraffic=0;const p=toMap(s.x,0,s.z);mapWorld.updateTraffic(0,p.x,p.z);mapWorld.step();gate=0;score=0;finished=false;acc=0;clearInput();$('paused').hidden=true;
 }
 function beginRide(){unlockRideAudio();loop.music.unlock();document.body.classList.add('playing');setCompanion($<HTMLSelectElement>('companion').value==='dog');running=true;paused=false;photoPending=false;$('menu').hidden=true;$('mapPanel').hidden=true;$('helpPanel').hidden=true;$('pause').textContent='Pause';$('paused').hidden=true;$('status').textContent='';$('run').textContent=challengeRun?.progress??'FREE RIDE';canvas.focus();}
-function start(){if(!ready)return;practice=undefined;$('practiceHUD').hidden=true;const selected=$<HTMLSelectElement>('mode').value;if(selected==='race'){startRace();return;}if(selected==='split'){startSplit();return;}stopRace();if(selected!=='free'){startChallenge(CHALLENGES.find(c=>c.kind===selected)!);return;}challengeRun=undefined;district.setRun();mode='free';selectedSpot=Number($<HTMLSelectElement>('spawn').value);reset();loop.startRun(undefined,selectedRider,actorData,current);beginRide();setCamera('chase');}
-function startChallenge(c:Challenge){if(!ready)return;practice=undefined;$('practiceHUD').hidden=true;stopRace();district.selected=c.id;mode=c.kind;challengeRun=new DistrictRun(c);reset(selectedSpot,c.start);district.setRun(challengeRun);loop.startRun(c,selectedRider,actorData,current);if(c.id.startsWith('daily-')&&night)toggleLight();beginRide();setCamera(c.kind==='discovery'?'photo':'chase');toast(c.kind==='trial'?'GO · Follow the gold gates. Brake for people.':c.description);}
+function start(){if(!ready)return;practice=undefined;$('practiceHUD').hidden=true;const selected=$<HTMLSelectElement>('mode').value;if(vehicle.value==='bicycle'&&!['free','race'].includes(selected)){toast('Choose Free ride or Rival race for bicycles.');$('status').textContent='Select Free ride or Rival race for the bicycle.';return;}chooseVehicle(vehicle.value==='bicycle'&&!vr.active);if(community?.ride.stage==='cleanup')community.ride.restart();if(selected==='race'){startRace();return;}if(selected==='split'){startSplit();return;}stopRace();if(selected!=='free'){startChallenge(CHALLENGES.find(c=>c.kind===selected)!);return;}challengeRun=undefined;district.setRun();mode='free';selectedSpot=Number($<HTMLSelectElement>('spawn').value);reset();loop.startRun(undefined,selectedRider,actorData,current);beginRide();setCamera('chase');}
+function startChallenge(c:Challenge){if(!ready)return;chooseVehicle(false);community?.ride.cancel();practice=undefined;$('practiceHUD').hidden=true;stopRace();district.selected=c.id;mode=c.kind;challengeRun=new DistrictRun(c);reset(selectedSpot,c.start);district.setRun(challengeRun);loop.startRun(c,selectedRider,actorData,current);if(c.id.startsWith('daily-')&&night)toggleLight();beginRide();setCamera(c.kind==='discovery'?'photo':'chase');toast(c.kind==='trial'?'GO · Follow the gold gates. Brake for people.':c.description);}
 function freeRideHere(){mapWorld.courseFeatures=[];courseView.set([]);canvas.dataset.hazards=JSON.stringify({seed:mapWorld.hazardSeed,count:mapWorld.hazards.length,features:[]});practice=undefined;practiceHUD.hidden=true;stopRace();challengeRun=undefined;district.setRun();mode='free';finished=false;paused=false;clearInput();loop.startRun(undefined,selectedRider,actorData,current);beginRide();setCamera('chase');$<HTMLSelectElement>('mode').value='free';district.filter('free');}
 function completeChallenge(){if(finished||!challengeRun)return;if(challengeRun.failed&&sim.crashed){const cause=sim.crashCause;challengeRun.reason=cause==='collision'?'Collision. Leave room for other path users and brake before obstacles. Retry / N starts immediately.':cause==='hard landing'?'Hard landing. Use a smaller hop and absorb the touchdown with a crouch. Retry / N starts immediately.':cause==='sideways landing'?'Sideways landing. Align the wheel with your direction of travel before touchdown. Retry / N starts immediately.':cause==='trail boundary'?'Outside the rideable trail. Follow the marked line. Retry / N starts immediately.':cause+'. Retry / N starts immediately.';}finished=true;clearInput();if(challengeRun.failed)loop.flow.cancel();district.finish(challengeRun);loop.finish(challengeRun,current);}
 const district=new DistrictView(scene,startChallenge,()=>loop.retry(),freeRideHere,()=>setCamera('photo'),()=>{photoPending=true;canvas.focus();});
@@ -225,12 +253,12 @@ for(const move of SPECIAL_MOVES){const option=document.createElement('option');o
 $('ridingOptions').append(trickSelect);
 const trickHint=document.createElement('p');trickHint.id='trickReadiness';trickHint.style.cssText='font-size:12px;max-width:220px;margin:4px';$('ridingOptions').append(trickHint);
 function chooseTrick(id:number){selectedTrick=id;trickSelect.value=String(id);for(const button of document.querySelectorAll<HTMLElement>('[data-touch-action="trick"]'))button.textContent='Trick · '+SPECIAL_MOVES[id-1].name;}
-function requestTrick(id=selectedTrick){if(!ready||!running||paused||finished)return;if(sim.crashed){toast('Recover before starting a trick');return;}chooseTrick(id);trickRequest=id;cruise=false;canvas.focus();}
+function requestTrick(id=selectedTrick){if(sim?.cycling){toast('Bicycle · pedal, coast and brake. EUC tricks are unavailable.');return;}if(!ready||!running||paused||finished)return;if(sim.crashed){toast('Recover before starting a trick');return;}chooseTrick(id);trickRequest=id;cruise=false;canvas.focus();}
 trickSelect.onchange=()=>chooseTrick(Number(trickSelect.value));$('specialMove').onclick=()=>requestTrick();
 const ridingOptions=$('ridingOptions');$('optionsToggle').onclick=()=>{const open=!ridingOptions.classList.contains('expanded');ridingOptions.classList.toggle('expanded',open);$('optionsToggle').setAttribute('aria-expanded',String(open));};
 const rideCamera=document.createElement('button');rideCamera.id='rideCamera';rideCamera.textContent='Recenter / Ride camera';rideCamera.onclick=recenterCamera;$('ridingOptions').append(rideCamera);
-const eyesCamera=document.createElement('button');eyesCamera.id='eyesCamera';eyesCamera.textContent='First person';eyesCamera.onclick=()=>{if(!vr.active)setCamera('first');};$('ridingOptions').append(eyesCamera);
-const orbitCamera=document.createElement('button');orbitCamera.textContent='Photo / orbit';orbitCamera.onclick=()=>{if(!vr.active)setCamera('orbit');};$('ridingOptions').append(orbitCamera);
+const eyesCamera=document.createElement('button');eyesCamera.id='eyesCamera';eyesCamera.textContent='First person';eyesCamera.onclick=()=>{if(!vr.active)setCamera('first',true);};$('ridingOptions').append(eyesCamera);
+const orbitCamera=document.createElement('button');orbitCamera.textContent='Photo / orbit';orbitCamera.onclick=()=>{if(!vr.active)setCamera('orbit',true);};$('ridingOptions').append(orbitCamera);
 const touchToggle=document.createElement('button');touchToggle.id='touchToggle';let manualTouch='auto';try{const value=localStorage.getItem('swoop-touch-visibility')??localStorage.getItem('swoop-touch-layout');manualTouch=['auto','on','off'].includes(value??'')?value!:'auto';}catch{}
 function applyTouchChoice(){document.documentElement.classList.toggle('hideTouch',manualTouch==='off');document.documentElement.classList.toggle('forceTouch',manualTouch==='on');touchToggle.textContent='Touch controls: '+manualTouch;touchToggle.setAttribute('aria-pressed',String(manualTouch==='on'));}
 touchToggle.onclick=()=>{manualTouch=manualTouch==='auto'?'on':manualTouch==='on'?'off':'auto';clearInput();applyTouchChoice();try{localStorage.setItem('swoop-touch-visibility',manualTouch);}catch{}};applyTouchChoice();$('helpPanel').append(touchToggle);
@@ -239,24 +267,28 @@ const touchLayoutButton=installTouchLayout(()=>{clearInput();if(running&&!paused
 const quickHelp=document.createElement('p');quickHelp.id='quickHelp';$('helpPanel').querySelector('h2')!.after(quickHelp);
 const resumeRide=document.createElement('button');resumeRide.id='resumeRide';resumeRide.textContent='Resume current ride';resumeRide.hidden=true;$('start').after(resumeRide);resumeRide.onclick=()=>{if(!running||finished)return;$('challengeHUD').hidden=!challengeRun;unlockRideAudio();clearInput();paused=false;document.body.classList.add('playing');$('menu').hidden=true;$('pause').textContent='Pause';$('paused').hidden=true;canvas.focus();};
 function pause(){if(split?.simulation.rules.done||!running||!$('menu').hidden||!$('challengeResults').hidden||!$('raceResults').hidden)return;paused=!paused;if(!paused)unlockRideAudio();clearInput();$('pause').textContent=paused?'Resume':'Pause';$('paused').hidden=!paused;rideAudio.update(pose,!paused);}
-function setCamera(m:string){if(m==='first'&&cameraMode!==m){firstYaw=0;firstPitch=-.10;}cameraMode=m;$<HTMLSelectElement>('camera').value=m;canvas.focus();}
+function setCamera(m:string,user=false){if(user&&m!==cameraMode)practice?.action('camera');if(m==='first'&&cameraMode!==m){firstYaw=0;firstPitch=-.10;}cameraMode=m;$<HTMLSelectElement>('camera').value=m;canvas.focus();}
 function recenterCamera(){if(vr.active)return;clearCameraTouches();orbitYaw=0;orbitHeight=2.2;orbitDistance=5;follow.distance=4.6;firstYaw=0;firstPitch=-.10;follow.reset(current);setCamera('chase');}
-function cycleCamera(){const modes=['chase','first','front','side','orbit'];setCamera(modes[(modes.indexOf(cameraMode)+1)%modes.length]);}
+function cycleCamera(){const modes=['chase','first','front','side','orbit'];setCamera(modes[(modes.indexOf(cameraMode)+1)%modes.length],true);}
 function toggleLight(){night=!night;sky.setDusk(night);if(scenery&&'lighting' in scenery)scenery.lighting.setDusk(night);scene.background=new T.Color(night?'#182831':'#c9dce0');scene.fog=new T.Fog(night?'#182831':'#c9dce0',night?65:elmwood&&compactElmwood?65:130,elmwood&&compactElmwood?165:night?250:370);sun.intensity=night?.65:elmwood?2.5:2.0;hemi.intensity=night?.5:elmwood?.95:1.15;fill.intensity=night?.35:elmwood?.22:.55;scene.environmentIntensity=night?.25:elmwood?.4:.6;$('light').textContent=night?'Day':'Dusk';}
 function toggleAudio(){if(!muted&&rideAudio.state.context==='suspended'){unlockRideAudio();return;}muted=!muted;try{localStorage.setItem('digital-static-ride-sound',muted?'off':'on');}catch{}unlockRideAudio();}
+$('spawn').replaceChildren();
 for(const [i,s]of SPOTS.entries()){
   const o=document.createElement('option');o.value=String(i);o.textContent=s.name;$('spawn').append(o);
   const b=document.createElement('button');b.textContent=s.name;b.onclick=()=>{if(challengeRun&&running){toast('Choose Free Ride before changing location.');return;}reset(i);beginRide();setCamera('front');};$('locations').append(b);
 }
 $<HTMLSelectElement>('spawn').value='0';
 $('mode').onchange=()=>{const kind=$<HTMLSelectElement>('mode').value;district.filter(kind);$('start').textContent=kind==='split'?'START 2-PLAYER RACE →':kind==='race'?'START RACE →':kind==='free'?'LET’S RIDE →':'Start first challenge →';};
-$('start').onclick=start;$('pause').onclick=pause;$('camera').onchange=()=>setCamera($<HTMLSelectElement>('camera').value);
+const setupSummary=document.createElement('p');setupSummary.id='setupSummary';setupSummary.setAttribute('aria-live','polite');$('start').before(setupSummary);
+function describeSetup(){const name=SPOTS[Number($<HTMLSelectElement>('spawn').value)]?.name??'Choose a starting location',rider=RIDER_CHOICES.find(r=>r.id===$<HTMLSelectElement>('heroSelect').value)?.label??'Choose a rider';setupSummary.textContent=`${rider} · ${name}. Free ride has no finish line or time limit; explore and return to the menu whenever you like.`;setupSummary.hidden=$<HTMLSelectElement>('mode').value!=='free';}
+$('spawn').addEventListener('change',describeSetup);$('heroSelect').addEventListener('change',describeSetup);$('mode').addEventListener('change',describeSetup);describeSetup();
+$('start').onclick=start;$('pause').onclick=pause;$('camera').onchange=()=>setCamera($<HTMLSelectElement>('camera').value,true);
 $('companion').onchange=()=>setCompanion($<HTMLSelectElement>('companion').value==='dog');
 $('heroSelect').onchange=()=>setRider($<HTMLSelectElement>('heroSelect').value);
 $('riderQuick').onclick=()=>{setRider(RIDER_CHOICES[(RIDER_CHOICES.findIndex(r=>r.id===selectedRider)+1)%RIDER_CHOICES.length].id);canvas.focus();};
 $('dogToggle').onclick=()=>{setCompanion(!dogEnabled);canvas.focus();};
 $('menuButton').onclick=()=>{loop.stopReplay(false);$('challengeHUD').hidden=true;paused=true;clearInput();$('paused').hidden=true;$('pause').textContent='Resume';$('challengeResults').hidden=true;resumeRide.hidden=!running||finished;document.body.classList.remove('playing');$('menu').hidden=false;$('menuTitle').textContent='Swoop . Detroit';district.refreshBoard();loop.refresh();};
-$('map').onclick=()=>{$('mapPanel').hidden=!$('mapPanel').hidden;};$('closeMap').onclick=()=>{$('mapPanel').hidden=true;};
+$('map').onclick=()=>{if(miniMap){miniMap.hud.open();return;}$('mapPanel').hidden=!$('mapPanel').hidden;};$('closeMap').onclick=()=>{$('mapPanel').hidden=true;};
 let controlSettingsReturn:HTMLElement|null=null;
 function openControlSettings(){controlSettingsReturn=document.activeElement as HTMLElement|null;clearInput();if(running&&!paused)pause();$('ridingOptions').classList.remove('expanded');$('optionsToggle').setAttribute('aria-expanded','false');$('helpPanel').hidden=false;$('helpPanel').scrollTop=0;$('closeHelp').focus();}
 $('helpPanel').querySelector('h2')!.textContent='Control settings';
@@ -268,16 +300,17 @@ $('help').onclick=()=>{if($('helpPanel').hidden)openControlSettings();else $('cl
 $('light').onclick=toggleLight;$('audio').onclick=toggleAudio;$('recover').onclick=()=>{if(finished&&challengeRun)loop.retry();else queueRecovery();};
 const vrControls=document.createElement('div');vrControls.className='vrControls';$('start').after(vrControls);
 const vr=new VRRide(renderer,scene,camera,vrControls,{ready:()=>ready,unlockAudio:unlockRideAudio,message:toast,
- enter:()=>{if(split){stopRace();$<HTMLSelectElement>('mode').value='free';start();}else if(!running)start();else beginRide();clearInput();last=performance.now();acc=0;},
+ enter:()=>{if(sim.cycling){chooseVehicle(false);vehicle.value='euc';sim.reset({position:current,headingY:current.headingY});remount();}if(split){stopRace();$<HTMLSelectElement>('mode').value='free';start();}else if(!running)start();else beginRide();clearInput();last=performance.now();acc=0;},
  exit:()=>{clearInput();paused=true;$('pause').textContent='Resume';$('paused').hidden=false;rideAudio.update(pose,false);follow.reset(current);last=performance.now();acc=0;},
  pause:()=>{if(!paused){paused=true;clearInput();$('pause').textContent='Resume';$('paused').hidden=false;rideAudio.update(pose,false);}}
 });
 const extraHelp=document.createElement('p');extraHelp.textContent='SEATED RIDING · X or Sit down / Stand up; gamepad D-pad down; Quest left grip + A. Feet stay on pedals. Hops, crouching and tricks temporarily stand up. CHALLENGES · N instantly retries the current route; R retries after a result. The Retry button works on touch. Controller X / Square and VR recover retry at results. Personal ghosts and rewards save in this browser. CONTROLLER · Left stick ride/steer · RT/R2 accelerate · LT/L2 brake · A/Cross hold/release hop · B/Circle trick · RB/R1 or D-pad choose trick · LB/L1 crouch · X/Square recover · Y/Triangle camera · right stick look · Start pause/resume. VR · Quest: left stick ride, left trigger brake, grips crouch, right trigger hold/release hop, A trick, B choose, X recover, Y pause. Vive wands: left pad ride; click upper half to recover, lower half to pause. Right pad click upper half to choose trick, lower half to perform it. Right pad sides turn the view. VR HUD on/off: Quest left stick click; Vive right pad center click. Right stick click recenters Quest view.';$('helpPanel').append(extraHelp);
 let seatedRide=false;
-const boardButton=document.createElement('button');boardButton.textContent='Switch to skateboard';boardButton.onclick=()=>{const m=toMap(current.x,0,current.z);if(split||race||challengeRun||!parkContains(m.x,m.z)){toast('Switch boards in the Freestyle Yard during free ride');return;}if(Math.abs(current.speed)>.5||sim.crashed){toast('Stop upright to change your ride');return;}hero.skateboarding=!hero.skateboarding;seatedRide=false;cruise=false;sitButton.disabled=hero.skateboarding;sitButton.textContent='Sit down';sitButton.setAttribute('aria-pressed','false');boardButton.textContent=hero.skateboarding?'Switch to EUC':'Switch to skateboard';boardButton.setAttribute('aria-pressed',String(hero.skateboarding));toast(hero.skateboarding?'Arcade skateboard - steer, crouch and hop with your usual controls':'Electric unicycle');canvas.focus();};$('cruise').before(boardButton);
-const sitButton=document.createElement('button');sitButton.id='sitRide';sitButton.textContent='Sit down';sitButton.setAttribute('aria-pressed','false');sitButton.onclick=()=>{if(hero.skateboarding){toast('Seated riding is available on the EUC');return;}seatedRide=!seatedRide;sitButton.textContent=seatedRide?'Stand up':'Sit down';sitButton.setAttribute('aria-pressed',String(seatedRide));toast(seatedRide?'Seated riding · Space / tricks rise out of the seat':'Standing riding');canvas.focus();};$('cruise').before(sitButton);
+const boardButton=document.createElement('button');boardButton.textContent='Switch to skateboard';boardButton.onclick=()=>{if(sim?.cycling){toast('Choose EUC to use the freestyle skateboard.');return;}const m=toMap(current.x,0,current.z);if(split||race||challengeRun||!parkContains(m.x,m.z)){toast('Switch boards in the Freestyle Yard during free ride');return;}if(Math.abs(current.speed)>.5||sim.crashed){toast('Stop upright to change your ride');return;}hero.skateboarding=!hero.skateboarding;seatedRide=false;cruise=false;sitButton.disabled=hero.skateboarding;sitButton.textContent='Sit down';sitButton.setAttribute('aria-pressed','false');boardButton.textContent=hero.skateboarding?'Switch to EUC':'Switch to skateboard';boardButton.setAttribute('aria-pressed',String(hero.skateboarding));toast(hero.skateboarding?'Arcade skateboard - steer, crouch and hop with your usual controls':'Electric unicycle');canvas.focus();};$('cruise').before(boardButton);
+const sitButton=document.createElement('button');sitButton.id='sitRide';sitButton.textContent='Sit down';sitButton.setAttribute('aria-pressed','false');sitButton.onclick=()=>{if(sim?.cycling){toast('The cyclist is already seated on the saddle.');return;}if(hero.skateboarding){toast('Seated riding is available on the EUC');return;}seatedRide=!seatedRide;sitButton.textContent=seatedRide?'Stand up':'Sit down';sitButton.setAttribute('aria-pressed',String(seatedRide));toast(seatedRide?'Seated riding · Space / tricks rise out of the seat':'Standing riding');canvas.focus();};$('cruise').before(sitButton);
 $('cruise').onclick=()=>{if(!ready||!running||paused||finished||sim.crashed){cruise=false;return;}cruise=!cruise;toast(cruise?`Cruise • ${Math.round(RIDE_RULES.cruiseSpeed*3.6)} km/h · YOU steer · brake to cancel`:'Cruise off');canvas.focus();};
 window.addEventListener('keydown',e=>{
+  if(film.playing){if(e.code==='Escape')film.stopReplay();return;}
   if(gallery?.active||boutique?.active){if(e.code==='Escape')(gallery?.active?gallery:boutique)!.panel.querySelector<HTMLButtonElement>('[data-back]')!.click();return;}
   if(split&&$('menu').hidden){if(document.activeElement?.closest('button,a,input,select,textarea,[contenteditable=true]'))return;if(e.repeat){if(split.input.ownsKey(e.code))e.preventDefault();return;}if(e.code==='Escape'||e.code==='KeyP'){e.preventDefault();pause();return;}if(e.code==='KeyN'){e.preventDefault();startSplit();return;}if(split.input.ownsKey(e.code)){e.preventDefault();if(!paused&&!finished)split.input.handleKey(e.code,true);}return;}
   if(document.activeElement?.closest('button,a,input,select,textarea,[contenteditable=true]'))return;
@@ -294,7 +327,7 @@ let drag:{id:number;x:number;y:number}|undefined;const cameraTouches=new Map<num
 const clearCameraTouches=()=>{for(const id of cameraTouches.keys())if(canvas.hasPointerCapture(id))canvas.releasePointerCapture(id);if(drag&&canvas.hasPointerCapture(drag.id))canvas.releasePointerCapture(drag.id);cameraTouches.clear();drag=undefined;pinchDistance=0;};
 window.addEventListener('blur',clearCameraTouches);window.addEventListener('resize',()=>{clearInput();clearCameraTouches();});
 canvas.onpointerdown=e=>{if(split){canvas.focus();return;}if(!running||paused||finished||sim.crashed||vr.active||!['first','orbit','photo'].includes(cameraMode))return;canvas.focus();if(e.pointerType==='touch'){cameraTouches.set(e.pointerId,{x:e.clientX,y:e.clientY});if(cameraTouches.size===2){const [a,b]=[...cameraTouches.values()];pinchDistance=Math.hypot(a.x-b.x,a.y-b.y);}}drag={id:e.pointerId,x:e.clientX,y:e.clientY};canvas.setPointerCapture(e.pointerId);};
-canvas.onpointermove=e=>{if(cameraMode==='first'){if(drag?.id===e.pointerId){firstYaw=clamp(firstYaw-(e.clientX-drag.x)*.005,-1.45,1.45);firstPitch=clamp(firstPitch-(e.clientY-drag.y)*.005,-1.25,.7);drag.x=e.clientX;drag.y=e.clientY;}return;}if(cameraTouches.has(e.pointerId)){cameraTouches.set(e.pointerId,{x:e.clientX,y:e.clientY});if(cameraTouches.size>=2){const [a,b]=[...cameraTouches.values()],distance=Math.hypot(a.x-b.x,a.y-b.y);if(pinchDistance>0){orbitDistance=clamp(orbitDistance*pinchDistance/Math.max(1,distance),2.5,12);if(cameraMode!=='orbit'){orbitYaw=cameraMode==='front'?Math.PI:cameraMode==='side'?Math.PI/2:0;setCamera('orbit');}}pinchDistance=distance;return;}}if(drag?.id!==e.pointerId)return;if(cameraMode!=='orbit'){orbitYaw=cameraMode==='front'?Math.PI:cameraMode==='side'?Math.PI/2:0;cameraMode='orbit';}
+canvas.onpointermove=e=>{if(cameraMode==='first'){if(drag?.id===e.pointerId){firstYaw=clamp(firstYaw-(e.clientX-drag.x)*.0032,-1.45,1.45);firstPitch=clamp(firstPitch-(e.clientY-drag.y)*.0032,-1.25,.7);drag.x=e.clientX;drag.y=e.clientY;}return;}if(cameraTouches.has(e.pointerId)){cameraTouches.set(e.pointerId,{x:e.clientX,y:e.clientY});if(cameraTouches.size>=2){const [a,b]=[...cameraTouches.values()],distance=Math.hypot(a.x-b.x,a.y-b.y);if(pinchDistance>0){orbitDistance=clamp(orbitDistance*pinchDistance/Math.max(1,distance),2.5,12);if(cameraMode!=='orbit'){orbitYaw=cameraMode==='front'?Math.PI:cameraMode==='side'?Math.PI/2:0;setCamera('orbit');}}pinchDistance=distance;return;}}if(drag?.id!==e.pointerId)return;if(cameraMode!=='orbit'){orbitYaw=cameraMode==='front'?Math.PI:cameraMode==='side'?Math.PI/2:0;cameraMode='orbit';}
   orbitYaw-=(e.clientX-drag.x)*.007;orbitHeight=clamp(orbitHeight+(e.clientY-drag.y)*.015,1,10);drag.x=e.clientX;drag.y=e.clientY;};
 canvas.onpointerup=canvas.onpointercancel=canvas.onlostpointercapture=e=>{cameraTouches.delete(e.pointerId);pinchDistance=0;const first=cameraTouches.entries().next().value;drag=first?{id:first[0],x:first[1].x,y:first[1].y}:undefined;};canvas.oncontextmenu=e=>e.preventDefault();
 canvas.onwheel=e=>{if(split||vr.active||!running)return;e.preventDefault();if(cameraMode==='chase')follow.distance=clamp(follow.distance+e.deltaY*.003,3.5,6.5);else if(cameraMode==='orbit'||cameraMode==='photo')orbitDistance=clamp(orbitDistance+e.deltaY*.006,2.5,12);};
@@ -315,18 +348,33 @@ const splitOption=document.createElement('option');splitOption.value='split';spl
 installLobby(elmwood,startRace,startSplit);
 graphics.mount($('lobbySettings'));
 const lobbyLayout=document.createElement('button');lobbyLayout.textContent='Control settings';lobbyLayout.setAttribute('aria-controls','helpPanel');lobbyLayout.onclick=openControlSettings;$('lobbySettings').querySelector('h2')!.after(lobbyLayout);
+const settingsGame=document.createElement('div');
+for(const id of ['camera','light','sitRide','dogToggle']){const label=document.createElement('label');label.textContent=id==='camera'?'Riding camera':id==='light'?'Time of day':id==='sitRide'?'Riding posture':'Companion';settingsGame.append(label,$(id));}
+const settingsAudio=document.createElement('div');settingsAudio.append($('audio'),$('musicPanel'));
+const garageAudio=document.createElement('button');garageAudio.textContent='Soundtrack settings';garageAudio.onclick=()=>{openControlSettings();settingsTabs.select(2);};$('lobbyGarage').append(garageAudio);
+const settingsNavigation=document.createElement('button');settingsNavigation.textContent='Landmarks & start locations';settingsNavigation.onclick=()=>{$('helpPanel').hidden=true;$('mapPanel').hidden=false;};settingsGame.append(settingsNavigation);
+const mapLayoutButton=document.createElement('button');mapLayoutButton.textContent='Customize mini-map';mapLayoutButton.hidden=!miniMap;mapLayoutButton.onclick=()=>{miniMap?.hud.layout.edit();};
+const communitySetting=document.createElement('button');communitySetting.textContent='Meet the Cut cyclists';communitySetting.onclick=()=>{$('community-start').click();};settingsGame.append(communitySetting);
+const settingsTabs=settingsPanel($('helpPanel'),$<HTMLButtonElement>('closeHelp'),[
+ {name:'Controls',nodes:[mapLayoutButton,...$('helpPanel').querySelectorAll('fieldset:not(.graphicsSettings)'),layoutHelp]},
+ {name:'Graphics',nodes:[...$('helpPanel').querySelectorAll('.graphicsSettings')]},
+ {name:'Audio',nodes:[settingsAudio]},{name:'Gameplay',nodes:[settingsGame]},{name:'Replay',nodes:[film.panel]}
+]);$('help').textContent='Settings';rideControlSettings.textContent='Settings';lobbyLayout.textContent='Open settings';
 const practiceHUD=document.createElement('section');practiceHUD.id='practiceHUD';practiceHUD.hidden=true;practiceHUD.innerHTML='<strong>Optional route practice</strong><p id="practiceCopy"></p><button id="practiceRace">End-to-End Dash</button><button id="practiceFree">Skip / Free ride</button><button id="practiceAgain">Replay lesson</button>';document.body.append(practiceHUD);
-function startPractice(){if(!ready)return;stopRace();challengeRun=undefined;district.setRun();mode='free';reset(selectedSpot,elmwood?undefined:RACE_ROUTE.start);loop.startRun(undefined,selectedRider,actorData,current);practice=new PracticeCoach();beginRide();setCamera('chase');practiceHUD.hidden=false;}
+function startPractice(){if(!ready||vr.active)return;chooseVehicle(vehicle.value==='bicycle');community?.ride.cancel();stopRace();challengeRun=undefined;district.setRun();mode='free';reset(selectedSpot,elmwood?undefined:RACE_ROUTE.start);loop.startRun(undefined,selectedRider,actorData,current);practice=new PracticeCoach(sim.cycling);practiceCompleted=false;try{practiceCompleted=localStorage.getItem(practiceKey())==='complete';}catch{}beginRide();setCamera('chase');practiceHUD.hidden=false;}
 $('practiceRace').hidden=elmwood;$('practiceRace').onclick=()=>startChallenge(CHALLENGES.find(c=>c.id==='gratiot-dash')!);$('practiceFree').onclick=freeRideHere;$('practiceAgain').onclick=startPractice;
 const practiceButton=document.createElement('button');practiceButton.id='practiceRoute';practiceButton.textContent='Practice controls · optional';practiceButton.onclick=startPractice;practiceButton.hidden=$('menu').dataset.tab!=='race';$('raceInfo').after(practiceButton);
 
-let practiceCompleted=false;try{practiceCompleted=localStorage.getItem('swoop-practice-v1')==='complete';}catch{}
+const practiceKey=()=>sim?.cycling?'swoop-practice-v2-bicycle':'swoop-practice-v2';
+let practiceCompleted=false;try{practiceCompleted=localStorage.getItem('swoop-practice-v2')==='complete';}catch{}
 const quickPractice=document.createElement('button');quickPractice.textContent=practiceCompleted?'Replay practice':'Practice · recommended first';quickPractice.onclick=startPractice;
 const quickPark=document.createElement('button');quickPark.textContent='Freestyle Yard / skateboard';quickPark.onclick=()=>{const i=SPOTS.findIndex(s=>s.name===PARK_SPAWN.name);if(i<0||!ready)return;stopRace();challengeRun=undefined;district.setRun();mode='free';selectedSpot=i;reset(i);beginRide();};
 quickPark.hidden=elmwood;$('start').after(quickPractice,quickPark);
+const quickStudio=document.createElement('button');quickStudio.textContent='GothTech Studio · 2000 Mack';quickStudio.hidden=elmwood;quickStudio.onclick=()=>{const i=SPOTS.findIndex(s=>s.name.startsWith('GothTechnology store'));if(i<0||!ready)return;stopRace();challengeRun=undefined;district.setRun();mode='free';selectedSpot=i;reset(i);beginRide();};quickPark.after(quickStudio);
 const parkHUD=document.createElement('section');parkHUD.id='parkCoach';parkHUD.hidden=true;parkHUD.setAttribute('aria-label','Freestyle Yard session');document.body.append(parkHUD);
 let parkLandings=0,parkLastLanding=-Infinity;
 const courseView=new CourseFeatureView(scene);
+let mackStudio:Awaited<ReturnType<typeof buildMackStudio>>|undefined;
 const gallery=elmwood?undefined:new GalleryVisit(scene,()=>{
   if(split||sim.crashed||Math.abs(current.speed)>.5)return;
   freeRideHere();$('challengeResults').hidden=true;$('raceResults').hidden=true;
@@ -336,8 +384,10 @@ const boutique=elmwood?undefined:new GalleryVisit(scene,()=>{
  if(split||sim.crashed||Math.abs(current.speed)>.5)return;freeRideHere();clearInput();paused=true;boutique!.start(actorData,selectedRider,hero,current);
 },()=>{clearInput();paused=false;canvas.focus();},true);
 try{
-  $('loading').textContent='Loading Detroit and your custom rider…';
+  bootStage('loading','Loading your rider and Detroit district…');
   const [data]=await Promise.all([loadActors(),mapWorld.init()]);
+  boot.assertActive();bootStage('preparing','Preparing streets, landmarks and collision…');
+  if(!elmwood)mackStudio=await buildMackStudio(scene,mapWorld as DetroitWorld);
   for(const destination of [gallery,boutique])if(destination){
     await destination.load();destination.building.updateMatrixWorld(true);
     const localMap=(x:number,y:number,z:number)=>{const p=new T.Vector3(x,y,z).applyMatrix4(destination.building.matrixWorld);return toMap(p.x,p.y,p.z);};
@@ -355,6 +405,7 @@ try{
     }
   }
 
+  boot.assertActive();bootStage('preparing','Preparing the ride and controls…');
   if(!elmwood&&!qaVisualBaseline)ambience=new RouteAmbience(scene,world,effectPatches);
   if(!elmwood)buildFreestylePark(mapScene,mapWorld as DetroitWorld);
   actorData=data;scenery=elmwood?await buildElmwood(mapScene,mapWorld as ElmwoodWorld,()=>compactElmwood||vr.active):await buildScenery(mapScene,mapWorld,!qaVisualBaseline);setRider(selectedRider);traffic=new TrafficView(scene,data,world);dogView=new CompanionView(data,world);scene.add(dogView.root);
@@ -369,11 +420,14 @@ try{
     generator.dispose();target.dispose();probe.removeFromParent();scenery.waterGroup.visible=true;hero.root.visible=true;dogView.root.visible=dogEnabled;
   }
   canvas.dataset.architecture=JSON.stringify(scenery.architecture);
-  sim=new RideController(world);sim.mountedVolume=hero.mountedVolume;sim.wheelScale=selectedRider.startsWith('DS_Mascot_')?.75:.86;reset();
-  graphics.apply();ready=true;loop.ready();canvas.dataset.ready='true';canvas.dataset.hero=selectedRider;canvas.dataset.controller=RIDE_TUNING.version;canvas.dataset.physics='Rapier terrain + Digital Static controller';canvas.dataset.routeLength=String(LENGTH);$('loading').hidden=true;$<HTMLButtonElement>('start').disabled=false;document.querySelectorAll<HTMLButtonElement>('.districtCard').forEach(b=>b.disabled=false);
+  sim=new BicycleAdapter(world);sim.mountedVolume=hero.mountedVolume;sim.wheelScale=selectedRider.startsWith('DS_Mascot_')?.75:.86;reset();
+  if(!elmwood){community=new CyclingSession('Swoop Detroit',scene,actorData,world,new LaneRoute(Array.from({length:31},(_,i)=>({...routePosition(850+i*5),width:5}))),()=>current,travelCommunity,()=>canvas.focus());}
+  boot.assertActive();
+  if(!boot.finish(!!actorData.get(selectedRider),!!SPOTS[Number($<HTMLSelectElement>('spawn').value)],!!scenery,!!sim))throw new Error('Rider, start location, scene or controller is unavailable');
+  renderBoot();graphics.apply();ready=true;loop.ready();canvas.dataset.ready='true';canvas.dataset.hero=selectedRider;canvas.dataset.controller=RIDE_TUNING.version;canvas.dataset.physics='Rapier terrain + Digital Static controller';canvas.dataset.routeLength=String(LENGTH);$('loading').hidden=true;$<HTMLButtonElement>('start').disabled=false;document.querySelectorAll<HTMLButtonElement>('.districtCard').forEach(b=>b.disabled=false);
   setCamera('front');
   if(new URLSearchParams(location.search).get('launch')==='quest')void vr.enterFromPackage();
-}catch(e){console.error(e);$('loading').textContent='The ride could not load: '+String(e);}
+}catch(e){console.error(e);failBoot(e);}
 const frameSchedule=new FrameSchedule();
 let hudAt=0,frames=0,fpsAt=performance.now(),fps=0;
 function frameSplit(now:number,dt:number){
@@ -389,14 +443,17 @@ function frameSplit(now:number,dt:number){
  room.view.render(renderer,scene,dt,active&&!finished?Math.min(1,acc*120):1,active&&!finished,paused,visible,p=>{
   sun.position.copy(night?DUSK_SUN:DAY_SUN).multiplyScalar(48).add(new T.Vector3(p.x,p.y,p.z));sun.target.position.set(p.x,p.y,p.z);fill.position.set(p.x-12,p.y+8,p.z-13);fill.target.position.set(p.x,p.y+1,p.z);
   if(!night){const roof=world.raycastObstacle({x:p.x,y:p.y+2.3,z:p.z},{x:0,y:1,z:0},7);fill.intensity=roof===null?.55:.9;}
+  mackStudio?.update(p.x,p.z);
   for(const destination of [gallery,boutique])if(destination)destination.building.visible=Math.hypot(p.x-destination.building.position.x,p.z-destination.building.position.z)<180;
   const m=toMap(p.x,p.y,p.z);scenery.update(m.x,m.z,room.simulation.rules.elapsed);
  },controls.disconnected?'Controller disconnected · reconnect the assigned controller, then Resume':'',room.input.cruising,night);
+ film.capture(dt,active&&!finished,visible);
  const driving=active&&!finished&&room.simulation.rules.countdown<=0;
  rideAudio.update(room.simulation.riders[0].pose,driving&&!room.simulation.riders[0].sim.crashed);
  if(room.audio.enabled!==!muted)void room.audio.enable(!muted);room.audio.update(room.simulation.riders[1].pose,driving&&!room.simulation.riders[1].sim.crashed);
  loop.music.update(dt,finished?'results':'ride',!document.hidden&&(!paused||!visible||finished),0,0,0);
  if(now-hudAt>120){
+  const navPose=room.simulation.riders[0].pose,navPoint=toMap(navPose.x,navPose.y,navPose.z);miniMap?.update(navPoint.x,navPoint.z,navPose.headingY,visible);
   canvas.dataset.effects=JSON.stringify({players:room.view.feedback,patches:effectPatches.length});
   canvas.dataset.splitRace=JSON.stringify({...room.simulation.snapshot,paused,bindings:room.input.bindings,cruise:room.input.cruising});
   const timings=[...frameTimes].sort((a,b)=>a-b);canvas.dataset.performance=JSON.stringify({sampleFrames:timings.length,frameP50:timings[Math.floor(timings.length*.5)],frameP95:timings[Math.floor(timings.length*.95)],geometries:renderer.info.memory.geometries,textures:renderer.info.memory.textures,drawCalls:renderer.info.render.calls,triangles:renderer.info.render.triangles,views:2});
@@ -404,16 +461,18 @@ function frameSplit(now:number,dt:number){
  }
 }
 function frame(now:number,xrFrame?:XRFrame){
-  if(!ready||(document.hidden&&!vr.active)){last=now;return;}
-  if(!frameSchedule.shouldRender(now,(!running||paused)&&!gallery?.active&&!boutique?.active,vr.active,graphics.current.fps))return;
+  bikeRecover.hidden=!(ready&&running&&sim?.cycling&&!vr.active&&!film.playing&&$('menu').hidden);
+  if(!ready||boot.stage==='error'||(document.hidden&&!vr.active)){last=now;return;}
+  if(!frameSchedule.shouldRender(now,(!running||paused)&&!film.playing&&!gallery?.active&&!boutique?.active,vr.active,graphics.current.fps))return;
   const rawFrameMs=Math.max(0,now-last),dt=Math.min(rawFrameMs/1000,.06);last=now;
-  if(!loadedAt)loadedAt=now;const budgetActive=graphics.choice==='auto'&&graphics.current.fps===60&&!document.hidden&&!vr.active&&running&&!paused&&now-loadedAt>5000;if(adaptiveQuality.sample(rawFrameMs,budgetActive)){graphics.resize();renderer.setPixelRatio(renderer.getPixelRatio()*adaptiveQuality.scale);renderer.setSize(innerWidth,innerHeight);document.documentElement.dataset.renderQuality=graphics.current.shadows===0||adaptiveQuality.scale<.85?'compact':'detailed';}canvas.dataset.renderBudget=JSON.stringify({targetFPS:graphics.current.fps,quality:graphics.choice,resolutionScale:adaptiveQuality.scale,pixelRatio:renderer.getPixelRatio(),xr:vr.active});for(const destination of [gallery,boutique])if(destination)destination.building.visible=destination.active||Math.hypot(current.x-destination.building.position.x,current.z-destination.building.position.z)<220;frameTimes.push(rawFrameMs);if(frameTimes.length>480)frameTimes.shift();
+  if(!loadedAt)loadedAt=now;const budgetActive=graphics.choice==='auto'&&graphics.current.fps===60&&!document.hidden&&!vr.active&&running&&!paused&&now-loadedAt>5000;if(adaptiveQuality.sample(rawFrameMs,budgetActive)){graphics.resize();renderer.setPixelRatio(renderer.getPixelRatio()*adaptiveQuality.scale);renderer.setSize(innerWidth,innerHeight);document.documentElement.dataset.renderQuality=graphics.current.shadows===0||adaptiveQuality.scale<.85?'compact':'detailed';}canvas.dataset.renderBudget=JSON.stringify({targetFPS:graphics.current.fps,quality:graphics.choice,resolutionScale:adaptiveQuality.scale,pixelRatio:renderer.getPixelRatio(),xr:vr.active});for(const destination of [gallery,boutique])if(destination)destination.building.visible=destination.active||Math.hypot(current.x-destination.building.position.x,current.z-destination.building.position.z)<220;mackStudio?.update(current.x,current.z);frameTimes.push(rawFrameMs);if(frameTimes.length>480)frameTimes.shift();
+  if(film.playing){film.render(dt,renderer,scene,camera,(focus,wanted)=>{const mapped=toMap(focus.x,focus.y,focus.z);scenery.update(mapped.x,mapped.z,clock);wanted.y=Math.max(wanted.y,world.sampleGround(wanted.x,wanted.z,ground).height+.5);sun.target.position.copy(focus);sun.position.copy(night?DUSK_SUN:DAY_SUN).multiplyScalar(48).add(focus);});return;}
   if(gallery?.active||boutique?.active){
     const destination=(gallery?.active?gallery:boutique)!;const walking=destination.update(document.hidden?0:dt,camera);
     if(vr.active){vr.eyeHeight=hero.vrEyeHeight-hero.mountHeight;vr.update(walking,false,false,'Serengeti Galleries',false,dt,xrFrame);}
     rideAudio.update(current,false);renderer.render(scene,camera);return;
   }
-  courseView.update(split?split.simulation.riders.map(r=>r.pose):[current]);if(split){frameSplit(now,dt);return;}
+  if(split&&community){community.view.root.visible=false;community.ui.update(false);}courseView.update(split?split.simulation.riders.map(r=>r.pose):[current]);if(split){frameSplit(now,dt);return;}
   const gp=gamepad(dt),xp=vr.poll(current.speed);if(vr.active){if(xp.sit)sitButton.click();if(xp.toggleHud)vr.toggleHud();if(previousXRConnected&&!xp.connected&&!paused){clearInput();pause();}if(xp.pause){if(finished)freeRideHere();else pause();}if(xp.recover){if(finished&&challengeRun)startChallenge(challengeRun.challenge);else queueRecovery();}if(xp.nextTrick)chooseTrick(selectedTrick%SPECIAL_MOVES.length+1);if(xp.trick)requestTrick();if(running&&!paused&&xp.hop)hop=true;vr.look(xp.snap,xp.recenter);}previousXRConnected=xp.connected;
   const manualSteer=clamp(touch.steer+gp.steer+xp.steer+(keys.has('KeyD')||keys.has('ArrowRight')?1:0)-(keys.has('KeyA')||keys.has('ArrowLeft')?1:0),-1,1);
   const steer=vr.steering(manualSteer,current,dt,xrFrame);
@@ -433,8 +492,8 @@ function frame(now:number,xrFrame?:XRFrame){
       mapWorld.step();sim.step(1/120,deviceReady?{...NEUTRAL_ACTIONS,throttle,steer,crouch,seated:seatedRide,hop:touch.consumeHop()||hop,hopHeld:touch.hopHeld||gp.hopHeld||xp.hopHeld||keys.has('Space'),reset:resetPressed,trick:trickRequest}:NEUTRAL_ACTIONS);hop=false;resetPressed=false;trickRequest=0;
       if(sim.tricks.award>0)confirmRide('trick',sim.tricks.event,'trick:'+clock);else if(sim.tricks.event)toast(sim.tricks.event);
       if(sim.crashed)crashEntry();sim.writePose(current);contactEffects?.step(1/120,current,sim.snapshot().grounded);confirmation.step(1/120);if(sim.touchedDown){const m=toMap(current.x,0,current.z);if(parkContains(m.x,m.z)&&sim.lastLandingQuality!=='crash'&&clock-parkLastLanding>1){parkLandings++;parkLastLanding=clock;}follow.landing(sim.lastLandingImpact);if(sim.lastLandingQuality!=='crash'){const surface=contactEffects?.land(current,sim.lastLandingImpact);rideAudio.landing(sim.lastLandingImpact,surface?.surface??world.sampleGround(current.x,current.z,ground,current.y).surface,surface?.wet);if(!sim.tricks.active&&!sim.tricks.event)confirmation.show('landing',sim.lastLandingQuality.toUpperCase()+' LANDING','landing:'+clock);}}
-      follow.step(1/120,current);if(dogEnabled)dog.step(1/120,current);loop.step(1/120,current,sim.snapshot().grounded,sim.touchedDown?sim.lastLandingQuality:undefined,sim.tricks.award?sim.tricks.event:undefined,dog.current,dogEnabled,sim.tricks.active,sim.tricks.award);acc=Math.max(0,acc-1/120);if(!challengeRun)score=loop.flow.banked;
-      if(practice){practice.observe(current,sim.snapshot().grounded,sim.touchedDown&&(sim.lastLandingQuality==='clean'||sim.lastLandingQuality==='charged'));if(practice.complete&&!practiceCompleted){practiceCompleted=true;try{localStorage.setItem('swoop-practice-v1','complete');}catch{}quickPractice.textContent='Replay practice';}loop.flow.cancel();score=0;}
+      follow.step(1/120,current);if(dogEnabled)dog.step(1/120,current);if(!sim.cycling&&!community?.ride.joined)loop.step(1/120,current,sim.snapshot().grounded,sim.touchedDown?sim.lastLandingQuality:undefined,sim.tricks.award?sim.tricks.event:undefined,dog.current,dogEnabled,sim.tricks.active,sim.tricks.award);acc=Math.max(0,acc-1/120);if(!challengeRun)score=loop.flow.banked;
+      if(practice){practice.observe(current,sim.snapshot().grounded,sim.touchedDown&&(sim.lastLandingQuality==='clean'||sim.lastLandingQuality==='charged'),Math.abs(throttle)<.05);if(practice.complete&&!practiceCompleted){practiceCompleted=true;try{localStorage.setItem(practiceKey(),'complete');}catch{}quickPractice.textContent='Replay practice';}loop.flow.cancel();score=0;}
       if(race){const oldGate=race.rules.player.gate;race.step(1/120,current);if(race.rules.player.gate>oldGate)confirmRide('checkpoint',race.rules.done?'FINISH LINE':`CHECKPOINT ${race.rules.player.gate} / ${RACE_ROUTE.gates.length}`,'race-gate:'+race.rules.player.gate);if(race.rules.done)finishRace();}
       if(challengeRun){const p=toMap(current.x,0,current.z),c=cutCoords(p.x,p.z),old=challengeRun.gateCount;challengeRun.step(1/120,{station:c.d,offset:c.u,speed:current.speed,grounded:sim.snapshot().grounded,crashed:sim.crashed,roll:current.rollAngle,slip:current.slipAngle,traction:current.tractionUsage,airHeight:current.airHeight,landing:sim.touchedDown?sim.lastLandingQuality:undefined,hopCharge:sim.lastHopCharge});gate=challengeRun.count;score=loop.flow.banked;if(challengeRun.gateCount>old){loop.checkpoint(challengeRun.gateCount,challengeRun.elapsed);confirmRide('checkpoint',challengeRun.progress,'challenge:'+challengeRun.gateCount);}if(challengeRun.done||challengeRun.failed)completeChallenge();}
     }
@@ -445,14 +504,15 @@ function frame(now:number,xrFrame?:XRFrame){
     lerpPose(previous,current,Math.min(1,acc*120),pose);
   }else{acc=0;copyPose(current,pose);}
   if(finished&&challengeRun&&sim.crashed)$('challengeResults').hidden=sim.snapshot().fallPhase!=='settled';
-  for(const destination of [gallery,boutique])if(destination){const p=toMap(current.x,0,current.z),c=cutCoords(p.x,p.z);destination.offer(c.d,c.u,current,!!((race&&!finished)||(challengeRun&&!finished)),running&&$('menu').hidden);}
+  for(const destination of [gallery,boutique])if(destination){const p=toMap(current.x,0,current.z),c=cutCoords(p.x,p.z);destination.offer(c.d,c.u,current,!!((race&&!finished)||(challengeRun&&!finished)),running&&$('menu').hidden&&![gallery,boutique].some(other=>other&&other!==destination&&Math.hypot(current.x-other.approach.x,current.z-other.approach.z)<Math.hypot(current.x-destination.approach.x,current.z-destination.approach.z)));}
   race?.render(running&&$('menu').hidden,vr.active);
   const pm=toMap(pose.x,0,pose.z),inPark=parkContains(pm.x,pm.z);parkHUD.hidden=!inPark||!!race||!!split||!!challengeRun||vr.active||!$('menu').hidden;parkHUD.textContent=`FREESTYLE YARD / ${hero.skateboarding?'SKATEBOARD':'EUC'} / ${parkLandings} clean landings / ${score} banked points. Pump loop outside; bowl on the east side; tabletop through the middle. Brake to switch rides.`;
-  hero.root.visible=true;if(dogView)dogView.root.visible=dogEnabled;hero.apply(pose);pedalSparks.update(dt,pose,running&&!paused&&!finished&&!sim.crashed);
+  community?.update(dt,communityActive(),paused,world.navigationObstacles(current.x,current.z,1000),sim.cycling?'bicycle':'euc');if(community){community.ui.update(communityActive()&&$('menu').hidden&&$('helpPanel').hidden);canvas.dataset.community=JSON.stringify({stage:community.ride.stage,joined:community.ride.joined,gate:community.ride.nextGate,completed:community.ride.completed,riders:community.ride.riders});}canvas.dataset.vehicle=sim.cycling?'bicycle':'euc';
+  hero.root.visible=!sim.cycling;if(bicycleView){bicycleView.root.visible=sim.cycling;bicycleView.apply(pose,sim.bicycle.steeringAngle,sim.bicycle.pedalPhase);}if(dogView)dogView.root.visible=dogEnabled;hero.apply(pose);pedalSparks.update(dt,pose,running&&!paused&&!finished&&!sim.crashed);
   const firstPerson=cameraMode==='first'&&!sim.crashed;
   // Immersive view retains the selected rider's animated body, excluding head geometry.
   hero.visibility.setVR(vr.active);
-  hero.rider.visible=vr.active||!firstPerson;
+  hero.rider.visible=vr.active||!firstPerson;if(bicycleView)bicycleView.rider.visible=!firstPerson;
   vr.eyeHeight=hero.vrEyeHeight;
   const mapTraffic=mapWorld.traffic.map(t=>({...t,...toLocal(t.x,t.y,t.z),heading:-t.heading,fall:t.fall?{...t.fall,headingY:-t.fall.headingY,crashLateral:-t.fall.crashLateral,crashRoll:-t.fall.crashRoll,crashSide:-t.fall.crashSide,wheelCrashLateral:-t.fall.wheelCrashLateral,wheelCrashLean:-t.fall.wheelCrashLean}:undefined}));traffic.update(mapTraffic,running&&!paused&&!finished?dt:0);
   if(dogEnabled){dog.sample(running&&!paused&&!finished?acc*120:1,dogPose);dogView.apply(dogPose);dogView.reactToRider(pose,dogPose);}
@@ -461,14 +521,14 @@ function frame(now:number,xrFrame?:XRFrame){
   const photoTarget=challengeRun?.challenge.kind==='discovery'?district.targets.find(t=>!challengeRun!.photos.has(t.id)):undefined;
   if(vr.active){vr.update(pose,paused,sim.crashed,race?race.rules.label+' · '+race.rules.elapsed.toFixed(1)+' s':finished?'COMPLETE · recover to retry / pause for free ride':SPECIAL_MOVES[selectedTrick-1].name,sim.tricks.active,dt,xrFrame);}
   else if(firstPerson){
-    const eye=hero.head?.getWorldPosition(new T.Vector3())??new T.Vector3(pose.x,pose.y+1.85,pose.z);
+    const eye=(sim.cycling?bicycleView?.head:hero.head)?.getWorldPosition(new T.Vector3())??new T.Vector3(pose.x,pose.y+1.85,pose.z);
     eye.add(new T.Vector3(Math.sin(pose.headingY)*.10,.065,Math.cos(pose.headingY)*.10));
     eye.y=underpassCameraHeight(world,eye,eye.y,pose.y);
-    // Restore the original rider-eye view: the animated head supplies movement,
-    // without a second layer of pitch/roll changing the perceived wheel response.
-    const yaw=pose.headingY+firstYaw,pitch=firstPitch;
+    // Body-mounted eyes follow acceleration, braking and bank without changing physics.
+    const eyes=riderEyeMotion(pose,matchMedia('(prefers-reduced-motion: reduce)').matches);
+    const yaw=pose.headingY+firstYaw,pitch=firstPitch+eyes.pitch;
     camera.position.copy(eye);camera.lookAt(eye.clone().add(new T.Vector3(Math.sin(yaw)*Math.cos(pitch),Math.sin(pitch),Math.cos(yaw)*Math.cos(pitch))));
-    camera.fov=74;
+    camera.rotateZ(eyes.roll);camera.fov=74;
   }
   else if(cameraMode==='photo'&&photoTarget){camera.position.set(pose.x,underpassCameraHeight(world,pose,pose.y+2.35),pose.z);camera.lookAt(photoTarget.x,photoTarget.y,photoTarget.z);camera.fov=60;}
   else if((cameraMode==='chase'||cameraMode==='first')&&running){camera.position.set(follow.eye.x,follow.eye.y,follow.eye.z);camera.lookAt(follow.target.x,follow.target.y,follow.target.z);camera.rotateZ(follow.roll);camera.fov=follow.fov;}
@@ -482,17 +542,18 @@ function frame(now:number,xrFrame?:XRFrame){
     camera.position.y=Math.min(underpassCameraHeight(world,pose,camera.position.y),underpassCameraHeight(world,camera.position,camera.position.y,pose.y));
     camera.lookAt(target);camera.fov=52;
   }
-  loop.render(dt,running&&!paused&&!finished,hero,dogView.root,camera,vr.active,sim.tricks.snapshot());
+  loop.render(dt,running&&!paused&&!finished&&!sim.cycling&&!community?.ride.joined,hero,dogView.root,camera,vr.active,sim.tricks.snapshot());
   if(!vr.active)camera.updateProjectionMatrix();sun.position.copy(night?DUSK_SUN:DAY_SUN).multiplyScalar(48).add(new T.Vector3(pose.x,pose.y,pose.z));sun.target.position.set(pose.x,pose.y,pose.z);fill.position.set(pose.x-12,pose.y+8,pose.z-13);fill.target.position.copy(hero.root.position);if(!qaVisualBaseline&&!elmwood&&!night){const roof=world.raycastObstacle({x:pose.x,y:pose.y+2.3,z:pose.z},{x:0,y:1,z:0},7);fill.intensity=T.MathUtils.damp(fill.intensity,roof===null?.55:.9,5,dt);}
   canvas.dataset.visibleChunks=String(scenery.update(toMap(pose.x,0,pose.z).x,toMap(pose.x,0,pose.z).z,clock));canvas.dataset.environment=JSON.stringify({rails:'rails' in scenery?scenery.rails:0,landmarks:'landmarks' in scenery?scenery.landmarks:null,flowers:'flowers' in scenery?scenery.flowers:0,trees:scenery.trees,grassClumps:'grassClumps' in scenery?scenery.grassClumps:0,routeArt:'routeArt' in scenery?scenery.routeArt:null,generatedSkins:scenery.skins,treeVersion:elmwood?'elmwood-five-species-20260916':'curved-elm-maple-20260915',style:elmwood?'Five botanical meshes, photographic PBR and outdoor HDR lighting':'Higgsfield elm/maple foliage, tapered branches and bark',quality:compactElmwood||vr.active?'compact':'detailed'});renderer.render(scene,camera);if(finished)loop.capture(canvas);frames++;if(now-fpsAt>1000){fps=frames*1000/(now-fpsAt);frames=0;fpsAt=now;}
   if(photoPending){photoPending=false;if(photoTarget&&challengeRun&&!finished&&!paused){const target=new T.Vector3(photoTarget.x,photoTarget.y,photoTarget.z),direction=target.clone().sub(camera.position),distance=direction.length(),projected=target.clone().project(camera),hit=world.raycast(camera.position,direction.clone().normalize(),Math.max(0,distance-.8));const check={distance:Math.hypot(target.x-pose.x,target.z-pose.z),speed:pose.speed,inFrame:Math.abs(projected.x)<.85&&Math.abs(projected.y)<.85&&projected.z>-1&&projected.z<1,unobstructed:hit===null||hit>=distance-.8};if(photoAllowed(check)&&challengeRun.capture(photoTarget.id,check)){district.savePhoto(photoTarget.id,canvas);confirmRide('checkpoint','PHOTO SAVED · '+photoTarget.name,'photo:'+photoTarget.id);if(challengeRun.done)completeChallenge();}else toast('Stop within 3–42 m with a clear view. Use Frame subject or orbit the camera.');}}
-  rideAudio.update(pose,running&&!paused&&!finished&&!sim.crashed);
+  film.capture(dt,running&&!paused&&!finished,running&&$('menu').hidden&&!vr.active);
+  rideAudio.update(pose,running&&!paused&&!finished&&!sim.crashed&&!sim.cycling);
   loop.music.update(dt,finished?'results':elmwood||challengeRun?.challenge.kind==='discovery'?'garden':challengeRun?.challenge.kind==='style'?'style':'ride',!document.hidden&&(!paused||!$('menu').hidden||finished),pose.speed,loop.flow.pending,pose.warningLevel+pose.scrape);
   if(now-hudAt>120){
     if(race){race.hud();canvas.dataset.race=JSON.stringify({countdown:race.rules.countdown,elapsed:race.rules.elapsed,place:race.rules.place,done:race.rules.done,racers:race.rules.racers});}else delete canvas.dataset.race;
     const timings=[...frameTimes].sort((a,b)=>a-b),gl=renderer.getContext(),gpu=gl.getExtension('WEBGL_debug_renderer_info');
     canvas.dataset.performance=JSON.stringify({sampleFrames:timings.length,frameP50:timings[Math.floor(timings.length*.5)],frameP95:timings[Math.floor(timings.length*.95)],loadMs:loadedAt-bootStarted,geometries:renderer.info.memory.geometries,textures:renderer.info.memory.textures,programs:renderer.info.programs?.length,heapMB:((performance as Performance&{memory?:{usedJSHeapSize:number}}).memory?.usedJSHeapSize??0)/1048576,renderer:gpu?gl.getParameter(gpu.UNMASKED_RENDERER_WEBGL):gl.getParameter(gl.RENDERER),visualBaseline:qaVisualBaseline});
-    const s=sim.snapshot(),mapped=toMap(pose.x,pose.y,pose.z),gps=gpsAt(mapped.x,mapped.z);updateMap(mapped.x,mapped.z);
+    const s=sim.snapshot(),mapped=toMap(pose.x,pose.y,pose.z),gps=gpsAt(mapped.x,mapped.z);updateMap(mapped.x,mapped.z);miniMap?.update(mapped.x,mapped.z,pose.headingY,running&&$('menu').hidden&&!vr.active);if(communityActive()&&community?.ride.joined)miniMap?.hud.setRoute(community.ride.route.points.map(p=>{const m=toMap(p.x,0,p.z);return northUp(m.x,m.z);}),[],'Cut community ride · '+community.ride.nextGate+'/'+community.ride.gates.length);
     if(elmwood)Object.assign(canvas.dataset,{map:'elmwood',origin:JSON.stringify({name:'Elmwood entrance / local plan coordinates',source:ELMWOOD_SOURCE,estimated:true}),routeLength:String(ELM_PATHS.reduce((n,p)=>n+p.length,0))});
     else Object.assign(canvas.dataset,{map:'cut',latitude:gps.lat.toFixed(7),longitude:gps.lon.toFixed(7),station:cutCoords(mapped.x,mapped.z).d.toFixed(2),origin:JSON.stringify(GEO.origin)});
     const footErrors=hero.legs.map((l,i)=>l.foot.getWorldPosition(new T.Vector3()).distanceTo(hero.footTarget(i,pose)));
@@ -512,7 +573,7 @@ function frame(now:number,xrFrame?:XRFrame){
     $('speedAlert').textContent=paused||s.crashed?'':s.powerStage!=='normal'?`${s.powerStage.toUpperCase()} · EASE OFF`:pose.scrape>.05?'PEDAL SCRAPE · EASE THE CARVE':'';
     const hazard=encounterWarning.step((now-hudAt)/1000,pose,world,running&&!paused&&!finished);
     const m=toMap(pose.x,0,pose.z),route=cutCoords(m.x,m.z),feature=mapWorld.courseFeatures.find(f=>f.station-route.d>-f.length&&f.station-route.d<35);const courseWarning=!hazard&&feature&&running&&!paused?`${feature.kind==='jump'?'Jump ramp':'Slippery patch'} · ${Math.max(0,Math.round(feature.station-route.d))} m · pass ${feature.offset>0?'left':'right'} to avoid`:'';$('warning').hidden=!(hazard||courseWarning);$('warning').textContent=hazard||courseWarning;
-    if(practice){$('practiceCopy').textContent=`${Math.min(4,practice.stepIndex+1)}/4 · ${practice.instruction}${practice.complete?'':inputDevice==='touch'?' · Joystick rides; Brake stops; Hold / hop jumps.':inputDevice==='gamepad'?' · Left stick steers; RT rides; LT brakes; A holds/releases Hop.':inputDevice==='vr'?' · Use your configured VR ride controls.':' · WASD rides; S brakes; Space holds/releases Hop.'}`;$('practiceHUD').hidden=!$('menu').hidden||vr.active;}
+    if(practice){$('practiceCopy').textContent=`${Math.min(6,practice.stepIndex+1)}/6 · ${practice.instruction}${practice.complete?'':sim.cycling?' · Forward pedals; release to coast; backward brakes. Use the Camera and Recover controls.':inputDevice==='touch'?' · Joystick rides; Brake stops; Hold / hop jumps.':inputDevice==='gamepad'?' · Left stick steers; RT rides; LT brakes; A holds/releases Hop.':inputDevice==='vr'?' · Use your configured VR ride controls.':' · WASD rides; S brakes; Space holds/releases Hop.'}`;$('practiceHUD').hidden=!$('menu').hidden||vr.active;}
     $('toast').hidden=now>toastUntil||sim.crashed||paused;$<HTMLSelectElement>('camera').value=cameraMode;
     canvas.dataset.cruise=String(cruise);canvas.dataset.inputDevice=inputDevice;crashOverlay.hidden=!running||!sim.crashed||!$('menu').hidden||finished||vr.active;crashRecover.textContent=recoveryLabel();$<HTMLButtonElement>('cruise').disabled=paused||sim.crashed||finished;
     canvas.dataset.touchInput=JSON.stringify({throttle:touch.throttle,steer:touch.steer,crouch:touch.crouch,brake:touch.braking,hopHeld:touch.hopHeld});canvas.dataset.trafficKinds=JSON.stringify(mapWorld.traffic.map(t=>({id:t.id,kind:t.kind,speed:t.speed,x:t.x,y:t.y,z:t.z,heading:t.heading})));
@@ -521,11 +582,4 @@ function frame(now:number,xrFrame?:XRFrame){
 }
 renderer.setAnimationLoop(frame);
 window.addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;graphics.resize();camera.updateProjectionMatrix();});
-canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();paused=true;clearInput();$('loading').hidden=false;$('loading').textContent='Restoring the graphics context…';});canvas.addEventListener('webglcontextrestored',()=>location.reload());
-
-
-
-
-
-
-
+canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();paused=true;clearInput();renderer.setAnimationLoop(null);boot.fail('Graphics were interrupted. Reload to return to the menu.','WebGL context lost; simulation and race clocks stopped. Your saved records are unchanged.');renderBoot();});

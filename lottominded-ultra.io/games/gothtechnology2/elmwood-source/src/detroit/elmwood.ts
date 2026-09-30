@@ -175,7 +175,8 @@ async function load(id:string){
 
 
 
- const gltf=await loader.loadAsync(`/elmwood/models/${id==='flying-geese-study'?'flying-geese-baked':id}.glb`);
+ const modelId=id==='hdrp-lab-car-black'&&canvas.dataset.quality!=='high'?id+'-lod1':id;
+ const gltf=await loader.loadAsync(`/elmwood/models/${modelId==='flying-geese-study'?'flying-geese-baked':modelId}.glb`);
 
 
 
@@ -239,7 +240,7 @@ async function load(id:string){
 
 
 
-   if(m.name.startsWith('leaf')){configureElmwoodFoliage(m);m.userData.species=id;m.onBeforeCompile=(shader:Parameters<T.MeshStandardMaterial['onBeforeCompile']>[0])=>{shader.uniforms.elmwoodWind=wind;shader.uniforms.elmwoodWindStrength=weather.uniforms.wind;shader.vertexShader='uniform float elmwoodWind,elmwoodWindStrength;\n'+shader.vertexShader;shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\ntransformed.x += sin(elmwoodWind*1.6+position.y*.9+position.z*.7)*min(max(position.y,0.0)*.003, .05)*elmwoodWindStrength;');};m.customProgramCacheKey=()=> 'elmwood-leaf-wind-v2';}
+   if(m.name.startsWith('leaf')){configureElmwoodFoliage(m);seasonElmwoodFoliage(m,el<HTMLSelectElement>('season').value);m.userData.species=id;m.onBeforeCompile=(shader:Parameters<T.MeshStandardMaterial['onBeforeCompile']>[0])=>{shader.uniforms.elmwoodWind=wind;shader.uniforms.elmwoodWindStrength=weather.uniforms.wind;shader.vertexShader='uniform float elmwoodWind,elmwoodWindStrength;\n'+shader.vertexShader;shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\ntransformed.x += sin(elmwoodWind*1.6+position.y*.9+position.z*.7)*min(max(position.y,0.0)*.003, .05)*elmwoodWindStrength;');};m.customProgramCacheKey=()=> 'elmwood-leaf-wind-v2';}
 
 
 
@@ -477,7 +478,7 @@ async function choose(){
 
   if(id==='view-geese')el('detail').textContent='Canada geese - approximately 0.86 m tall with Higgsfield plumage, metre-scale Blender models, walking, grazing, swimming and a brief protective chase.';
 
-  if(id==='view-car-lot')el('detail').textContent='Black 2018 Chrysler 300S Sport - parked in the gatehouse bay as requested. A second car is parked on the grass beside the Davis/Schmidt lane.';
+  if(id==='view-car-lot')el('detail').textContent='Black HDRP Lab coupe - parked in the gatehouse bay as requested. A second car is parked on the grass beside the Davis/Schmidt lane.';
 
   if(id==='view-grove')el('detail').textContent='Black walnut grove · the two marked lawns behind the gatehouse, beside Bloody Run. Estimated grave markers removed; walnut spacing follows the open paths and creek. Junction bench faces the lane. Individual placements are approximate.';
 
@@ -510,6 +511,7 @@ async function choose(){
  if(id.startsWith('tree-tour-')){
 
  const stop=treeTours!.stops[Number(id.slice(10))],p=stop.placement,c=pos(p.position);
+ if(stop.species==='Higan Cherry'){el<HTMLSelectElement>('season').value='spring';el('season').dispatchEvent(new Event('change'));}
 
  const height=(assets.find(a=>a.id===p.asset)?.dimensionsM[2]??16)*p.scale;
 
@@ -519,7 +521,7 @@ async function choose(){
 
  }
 
- const a=assets.find(x=>x.id===id)!;library.clear();const model=(await load(id)).clone(true);library.add(model);selection=model;el('detail').textContent=`${a.label} · ${a.triangles.toLocaleString()} triangles · ${a.dimensionsM.map(x=>x.toFixed(1)).join(' × ')} m. ${a.confidence.replace(/\.$/,'')}.`;if(library.visible)fit(model);else{const p=placements.find(x=>x.asset===id);if(p){const c=pos(p.position),davis=id==='davis-hillside-vault'||id==='hammond-bank-vault';controls.target.copy(c).add(new T.Vector3(0,id==='elmwood-park-bench' ? .5 : id==='firemen-memorial' ? 5.2 : davis?1.6:id==='chrysler-300s-2018'?.7:3,0));const distance=davis?15:12;camera.position.copy(c).add(id==='elmwood-park-bench'?new T.Vector3(-4,2.3,3.5):id==='firemen-memorial'?new T.Vector3(-19,11,14):/crypt|mausoleum|vault/.test(id)?new T.Vector3(Math.sin(p.rotation)*distance+Math.cos(p.rotation)*3,davis?4.3:3.8,Math.cos(p.rotation)*distance-Math.sin(p.rotation)*3):id==='chrysler-300s-2018'?new T.Vector3(Math.sin(p.rotation)*7+Math.cos(p.rotation)*4,2.6,Math.cos(p.rotation)*7-Math.sin(p.rotation)*4):new T.Vector3(19,6,27));}else el('detail').textContent+=' This asset has no verified site position. Switch to individual asset review.';}updateSun();
+ const a=assets.find(x=>x.id===id)!;library.clear();const model=(await load(id)).clone(true);library.add(model);selection=model;el('detail').textContent=`${a.label} · ${a.triangles.toLocaleString()} triangles · ${a.dimensionsM.map(x=>x.toFixed(1)).join(' × ')} m. ${a.confidence.replace(/\.$/,'')}.`;if(library.visible)fit(model);else{const p=placements.find(x=>x.asset===id);if(p){const c=pos(p.position),davis=id==='davis-hillside-vault'||id==='hammond-bank-vault';controls.target.copy(c).add(new T.Vector3(0,id==='elmwood-park-bench' ? .5 : id==='firemen-memorial' ? 5.2 : davis?1.6:id==='hdrp-lab-car-black'?.7:3,0));const distance=davis?15:12;camera.position.copy(c).add(id==='elmwood-park-bench'?new T.Vector3(-4,2.3,3.5):id==='firemen-memorial'?new T.Vector3(-19,11,14):/crypt|mausoleum|vault/.test(id)?new T.Vector3(Math.sin(p.rotation)*distance+Math.cos(p.rotation)*3,davis?4.3:3.8,Math.cos(p.rotation)*distance-Math.sin(p.rotation)*3):id==='hdrp-lab-car-black'?new T.Vector3(Math.sin(p.rotation)*7+Math.cos(p.rotation)*4,2.6,Math.cos(p.rotation)*7-Math.sin(p.rotation)*4):new T.Vector3(19,6,27));}else el('detail').textContent+=' This asset has no verified site position. Switch to individual asset review.';}updateSun();
 
 
 
@@ -575,7 +577,7 @@ try{
 
 
 
- el<HTMLSelectElement>('asset').replaceChildren(...[{id:'view-pond',label:'Pond, fountain and wildlife'},{id:'view-geese',label:'Canada geese - shore view'},{id:'view-car-lot',label:'Chrysler - gatehouse parking'},{id:'view-creek',label:'Bloody Run flowers and willows'},{id:'view-bench',label:'Second junction bench'},{id:'view-creek-bench',label:'New creek overlook bench'},{id:'view-parking',label:'Gatehouse parking and planting'},{id:'view-bridges',label:'Bloody Run stone bridges'},{id:'view-crypts',label:'Pond-side crypt'},{id:'view-grove',label:'Black walnut grove and junction bench'},{id:'view-young',label:'Coleman A. Young · Hazel Dell'},{id:'view-gates',label:'Entrance gates and curbs'},{id:'view-avenue',label:'Tree-lined entrance lanes'},...assets,...treeTours!.stops.map((s,i)=>({id:'tree-tour-'+i,label:'Tree Tour - '+s.species}))].map(a=>{const o=document.createElement('option');o.value=a.id;o.textContent=a.label;return o;}));
+ el<HTMLSelectElement>('asset').replaceChildren(...[{id:'view-pond',label:'Pond, fountain and wildlife'},{id:'view-geese',label:'Canada geese - shore view'},{id:'view-car-lot',label:'Black coupe - gatehouse parking'},{id:'view-creek',label:'Bloody Run flowers and willows'},{id:'view-bench',label:'Second junction bench'},{id:'view-creek-bench',label:'New creek overlook bench'},{id:'view-parking',label:'Gatehouse parking and planting'},{id:'view-bridges',label:'Bloody Run stone bridges'},{id:'view-crypts',label:'Pond-side crypt'},{id:'view-grove',label:'Black walnut grove and junction bench'},{id:'view-young',label:'Coleman A. Young · Hazel Dell'},{id:'view-gates',label:'Entrance gates and curbs'},{id:'view-avenue',label:'Tree-lined entrance lanes'},...assets,...treeTours!.stops.map((s,i)=>({id:'tree-tour-'+i,label:'Tree Tour - '+s.species}))].map(a=>{const o=document.createElement('option');o.value=a.id;o.textContent=a.label;return o;}));
 
 
 

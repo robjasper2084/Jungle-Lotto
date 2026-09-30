@@ -15,6 +15,6 @@ export function seasonElmwoodFoliage(material:T.MeshStandardMaterial,season:stri
  const evergreen=['white-pine','tour-spruce','tour-cedar'].includes(material.userData.species);
  material.color.copy(material.userData.elmwoodBaseColor??new T.Color('#ffffff'));
  if(season==='autumn'&&!evergreen)material.color.multiply(new T.Color('#e0a04b'));
- material.opacity=season==='winter'&&!evergreen?0:1;
+ material.opacity=material.name.includes('blossom')?(season==='spring'?1:0):season==='winter'&&!evergreen?0:1;
  configureElmwoodFoliage(material);
 }

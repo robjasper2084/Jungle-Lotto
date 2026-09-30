@@ -1,5 +1,6 @@
 import {isCharacter} from './actorAvoidance.ts';
-import {RideController,NEUTRAL_ACTIONS,createPose} from './controller.ts';
+import {NEUTRAL_ACTIONS,createPose} from './controller.ts';
+import {BicycleAdapter as RideController} from './bicycleAdapter.ts';
 import {routePosition} from './districtView.ts';
 import {cutCoords,cutPoint,clamp} from './world.ts';
 import {RIDE_TUNING} from './rideDynamics.ts';
@@ -10,7 +11,7 @@ import type {RiderId} from './riderChoices.ts';
 export class RacePilot {
  readonly sim:RideController;pose=createPose();private recovery=0;private blockedFor=0;private backoff=0;private smoothLane=0;private surfaceCheck=0;private surfacePace=Infinity;private passLane:number|undefined;private passUntil=0;private ground=createGroundSample();
  private terrain:TerrainSampler;readonly id:RiderId;readonly index:number;readonly difficulty:RaceDifficulty;
- constructor(terrain:TerrainSampler,id:RiderId,index:number,difficulty:RaceDifficulty,neighbours:()=>NavigationObstacle[]=()=>[]){this.terrain=terrain;this.id=id;this.index=index;this.difficulty=difficulty;this.sim=new RideController({sampleGround:(...args)=>terrain.sampleGround(...args),raycast:(...args)=>terrain.raycast(...args),raycastObstacle:(...args)=>terrain.raycastObstacle(...args),mountedClear:terrain.mountedClear?(...args)=>terrain.mountedClear!(...args):undefined,navigationObstacles:(x,z,radius)=>(terrain.navigationObstacles?.(x,z,radius)??[]).filter(o=>o.id!==`rival-${index}`&&o.id!==`rival-${index}-wheel`).concat(neighbours())});this.sim.wheelScale=id.startsWith('DS_Mascot_')?.75:.86;this.reset(RACE_ROUTE.start-(index+1)*2.2);}
+ constructor(terrain:TerrainSampler,id:RiderId,index:number,difficulty:RaceDifficulty,neighbours:()=>NavigationObstacle[]=()=>[],readonly cycling=false){this.terrain=terrain;this.id=id;this.index=index;this.difficulty=difficulty;this.sim=new RideController({sampleGround:(...args)=>terrain.sampleGround(...args),raycast:(...args)=>terrain.raycast(...args),raycastObstacle:(...args)=>terrain.raycastObstacle(...args),mountedClear:terrain.mountedClear?(...args)=>terrain.mountedClear!(...args):undefined,navigationObstacles:(x,z,radius)=>(terrain.navigationObstacles?.(x,z,radius)??[]).filter(o=>o.id!==`rival-${index}`&&o.id!==`rival-${index}-wheel`).concat(neighbours())});this.sim.cycling=cycling;this.sim.precisionSteering=true;this.sim.wheelScale=id.startsWith('DS_Mascot_')?.75:.86;this.reset(RACE_ROUTE.start-(index+1)*2.2);}
  reset(d:number){this.passLane=undefined;this.blockedFor=this.backoff=0;this.smoothLane=[-1.35,1.35,-.55][this.index];const p=routePosition(d,[-1.35,1.35,-.55][this.index]);p.y=this.terrain.sampleGround(p.x,p.z,this.ground).height;this.sim.reset({position:p,headingY:p.heading});this.sim.writePose(this.pose);}
  step(dt:number,rules:RaceRules){
   const me=rules.racers.find(r=>r.id===this.id)!;
@@ -91,6 +92,7 @@ export class RacePilot {
    const bend=Math.abs(Math.atan2(Math.sin(after.heading-ahead.heading),Math.cos(after.heading-ahead.heading)))/10;
    if(bend>.002){const cornerSpeed=Math.sqrt(2.5/bend);curvePace=Math.min(curvePace,Math.sqrt(cornerSpeed*cornerSpeed+2*4*Math.max(0,distance-5)));}
   }
+  if(this.cycling)pace=Math.min(pace,this.difficulty==='expert'?7.9:this.difficulty==='club'?6.7:5.4);
   pace=Math.min(pace,curvePace)*clamp(1-Math.abs(error)*.5,.4,1);
   const tuck=p.speed>12&&Math.abs(error)<.16&&this.sim.snapshot().grounded;
   // Feed-forward drag compensation lets the pilot reach its target instead of
@@ -101,3 +103,5 @@ export class RacePilot {
   const mapped=toMap(this.pose.x,this.pose.y,this.pose.z),c=cutCoords(mapped.x,mapped.z);rules.observe(this.id,c.d,c.u,dt);
  }
 }
+
+

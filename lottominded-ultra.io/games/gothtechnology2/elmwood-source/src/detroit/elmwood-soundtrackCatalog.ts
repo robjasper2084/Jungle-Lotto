@@ -78,13 +78,6 @@ export const TRACKS=[
     "group": "results"
   },
   {
-    "id": "track-12",
-    "title": "Digital static (2)",
-    "duration": 479.4,
-    "url": "../swoop-detroit/audio/swoop/track-12.mp3",
-    "group": "ride"
-  },
-  {
     "id": "track-13",
     "title": "Digital static (1)",
     "duration": 479.4,

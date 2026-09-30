@@ -3,10 +3,21 @@ import {resolve,dirname,relative} from 'node:path';
 import {createHash} from 'node:crypto';
 import {createRequire} from 'node:module';
 import {pathToFileURL} from 'node:url';
-const source=resolve(process.argv[2]||'../../../../euc-detroit-riverwalk'),store=resolve(import.meta.dirname,'..'),out=resolve(store,'store/public/arcade/elmwood-explorer');
-if(dirname(out)!==resolve(store,'store/public/arcade'))throw Error('Unexpected build directory');
+import {buildRelease,readableTree,runtimeLicenses,modelDependencies} from './game-package.mjs';
+export async function prepareElmwood(source=process.env.ELMWOOD_SOURCE||resolve(import.meta.dirname,'../../../../../euc-detroit-riverwalk'),soundtrackRoot=resolve(import.meta.dirname,'../store/public/arcade/swoop-detroit/audio/swoop')){
+source=resolve(source);
 const require=createRequire(resolve(source,'package.json')),{build}=await import(pathToFileURL(require.resolve('vite')).href);
 const css=(await readFile(resolve(import.meta.dirname,'elmwood-explorer-embed.css'),'utf8'))+(await readFile(resolve(import.meta.dirname,'mobile-hud.css'),'utf8')),js=await readFile(resolve(import.meta.dirname,'elmwood-explorer-embed.js'),'utf8'),assetRevision=Date.now().toString(36);
+const assets=JSON.parse(await readFile(resolve(source,'public/elmwood/asset-manifest.json'),'utf8'));
+const files=new Set(['elmwood/models/hdrp-lab-car-black-lod1.glb','elmwood/hdrp-lab-car-NOTICE.txt','elmwood/title-screen.png','elmwood/asset-manifest.json','elmwood/placements.json','elmwood/terrain.json','elmwood/site.json','elmwood/placement-audit.json','elmwood/landmark-improvements.json','elmwood/walnut-grove.json','elmwood/firemen-memorial.json','elmwood/site-polish.json','elmwood/crypt-garden.json','elmwood/tree-tours.json','elmwood/forest_grove_2k.hdr','elmwood/Elmwood_Map_Audit.kml','elmwood/map-audit.png','elmwood/cemetery-plan.png','elmwood/reference-gallery.html','elmwood/models/elmwood-foundation.glb',...assets.map(a=>'elmwood/models/'+(a.id==='flying-geese-study'?'flying-geese-baked':a.id)+'.glb'),'exports/glb/DS_Man_01/DS_Man_01_LOD0.glb','exports/glb/DS_EUC_01/DS_EUC_Compact.glb','exports/glb/DS_Boerboel_01/DS_Boerboel_Elmwood.glb','exports/glb/DS_Pedestrian_01/DS_Pedestrian_01_LOD1.glb','exports/glb/DS_Cyclist_01/DS_Cyclist_01_LOD1.glb','exports/glb/DS_Bicycle_01/DS_Bicycle_01_LOD1.glb',...['DS_Hoodie_Woman_01','DS_Mascot_Suit_01','DS_Mascot_Hoodie_01'].map(id=>`exports/glb/${id}/${id}_LOD1.glb`),...['suit','hoodie','euc'].map(id=>`circuit-riders/models/circuit-${id}.glb`)]);
+files.add('exports/glb/DS_Bicycle_Styles/DS_Bicycle_Styles_LOD1.glb');files.add('exports/glb/DS_Bicycle_Styles/manifest.json');
+async function collect(dir){for(const item of await readdir(resolve(source,'public',dir),{withFileTypes:true})){const file=dir+'/'+item.name;if(item.isDirectory())await collect(file);else files.add(file);}}await collect('elmwood/references');
+for(const file of await modelDependencies(resolve(source,'public'),files))files.add(file);
+const licenses=await runtimeLicenses(source,{ridecore:true});
+await readableTree(soundtrackRoot);
+for(const file of files)await readableTree(resolve(source,'public',file));
+await readableTree(resolve(source,'node_modules/@digital-static/ridecore/dist'));
+return {name:'elmwood-explorer',entry:'elmwood.html',source,async build(out){
 await build({root:source,configFile:false,base:'./',publicDir:false,plugins:[{name:'elmwood-explorer-store',enforce:'pre',
  transform(code,id){id=id.replaceAll('\\','/');if(!id.includes('/src/'))return;
   code=code.replace(/(['"`])\/elmwood\//g,'$1./elmwood/');
@@ -18,9 +29,6 @@ await build({root:source,configFile:false,base:'./',publicDir:false,plugins:[{na
  },
  transformIndexHtml(html){return html.replaceAll('"/elmwood/','"./elmwood/').replace('<a href="/">Return to Detroit ride</a>','<a href="../swoop-detroit/" target="_top">Return to Swoop Detroit</a>').replace('</head>',`<style>${css}</style></head>`).replace('</body>',`<script>${js}</script></body>`);}
 }],build:{outDir:out,emptyOutDir:true,target:'es2022',rollupOptions:{input:resolve(source,'elmwood.html'),output:{banner:'/*! EUC Thrills (c) 2026 VibezZzCoder, MIT. Digital Static adaptation and RideCore. */'}}}});
-const assets=JSON.parse(await readFile(resolve(source,'public/elmwood/asset-manifest.json'),'utf8'));
-const files=new Set(['elmwood/title-screen.png','elmwood/asset-manifest.json','elmwood/placements.json','elmwood/terrain.json','elmwood/site.json','elmwood/placement-audit.json','elmwood/landmark-improvements.json','elmwood/walnut-grove.json','elmwood/firemen-memorial.json','elmwood/site-polish.json','elmwood/crypt-garden.json','elmwood/tree-tours.json','elmwood/forest_grove_2k.hdr','elmwood/Elmwood_Map_Audit.kml','elmwood/map-audit.png','elmwood/cemetery-plan.png','elmwood/reference-gallery.html','elmwood/models/elmwood-foundation.glb',...assets.map(a=>'elmwood/models/'+(a.id==='flying-geese-study'?'flying-geese-baked':a.id)+'.glb'),'exports/glb/DS_Man_01/DS_Man_01_LOD0.glb','exports/glb/DS_EUC_01/DS_EUC_Compact.glb','exports/glb/DS_Boerboel_01/DS_Boerboel_Elmwood.glb','exports/glb/DS_Pedestrian_01/DS_Pedestrian_01_LOD1.glb','exports/glb/DS_Cyclist_01/DS_Cyclist_01_LOD1.glb','exports/glb/DS_Bicycle_01/DS_Bicycle_01_LOD1.glb',...['DS_Hoodie_Woman_01','DS_Mascot_Suit_01','DS_Mascot_Hoodie_01'].map(id=>`exports/glb/${id}/${id}_LOD1.glb`),...['suit','hoodie','euc'].map(id=>`circuit-riders/models/circuit-${id}.glb`)]);
-async function collect(dir){for(const item of await readdir(resolve(source,'public',dir),{withFileTypes:true})){const file=dir+'/'+item.name;if(item.isDirectory())await collect(file);else files.add(file);}}await collect('elmwood/references');
 const textures=new Set();let total=0;
 for(const file of files){const target=resolve(out,file),input=await readFile(resolve(source,'public',file));await mkdir(dirname(target),{recursive:true});
  if(!file.endsWith('.glb')){const data=file.endsWith('reference-gallery.html')?Buffer.from(input.toString().replaceAll('"/elmwood/','"./')):input;await writeFile(target,data);total+=data.length;continue;}
@@ -32,6 +40,14 @@ for(const file of files){const target=resolve(out,file),input=await readFile(res
  gltf.bufferViews=views;function remapViews(o){if(!o||typeof o!=='object')return;for(const [key,value]of Object.entries(o)){if(key==='bufferView'){if(!remap.has(value))throw Error('Removed referenced buffer view');o[key]=remap.get(value);}else remapViews(value);}}remapViews(gltf);
  gltf.buffers[0].byteLength=offset;const json=Buffer.from(JSON.stringify(gltf)),paddedJson=Buffer.alloc(Math.ceil(json.length/4)*4,32);json.copy(paddedJson);const binary=Buffer.concat(chunks),result=Buffer.alloc(28+paddedJson.length+binary.length);result.writeUInt32LE(0x46546c67,0);result.writeUInt32LE(2,4);result.writeUInt32LE(result.length,8);result.writeUInt32LE(paddedJson.length,12);result.writeUInt32LE(0x4e4f534a,16);paddedJson.copy(result,20);result.writeUInt32LE(binary.length,20+paddedJson.length);result.writeUInt32LE(0x004e4942,24+paddedJson.length);binary.copy(result,28+paddedJson.length);await writeFile(target,result);total+=result.length;
 }
-await copyFile(resolve(source,'LICENSE'),resolve(out,'LICENSE-EUC-Thrills.txt'));await copyFile(resolve(source,'../Digital_Static_RideCore/LICENSE.txt'),resolve(out,'LICENSE-RideCore.txt'));
+for(const file of licenses){const target=resolve(out,file.output);await mkdir(dirname(target),{recursive:true});await copyFile(file.input,target);}
 await writeFile(resolve(out,'SOURCE.md'),'Original Elmwood exploration scene supplied from euc-detroit-riverwalk at localhost:8198/elmwood.html. Includes the local landmark pass: official-plan pond, tree-lined mapped lanes and photo-informed entrance sign. EUC Thrills by VibezZzCoder (MIT), Digital Static adaptation and RideCore. Built using scripts/build-elmwood-explorer.mjs. Shared textures retain identical bytes. Store additions: portable paths, popup ready/pause API, reduced-motion wind, responsive settings and touch controls. Includes local free ride, challenge scores, split-screen riding and optional Boerboel companions. Scores have no cash value.\n');
 console.log(JSON.stringify({files:files.size,textures:textures.size,megabytes:Math.round(total/1048576)}));
+}};
+}
+if(process.argv[1]&&resolve(process.argv[1])===import.meta.filename){
+ const args=process.argv.slice(2).filter(a=>!a.startsWith("--"));
+ const plan=await prepareElmwood(args[0]);
+ if(!process.argv.includes('--preflight'))await buildRelease(resolve(import.meta.dirname,'..'),[plan]);
+ else console.log('Elmwood preflight passed');
+}

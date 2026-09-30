@@ -1,0 +1,5 @@
+HDRP Lab Car Free - Realistic Car Model 2.0, URPLabStudio.
+https://assetstore.unity.com/packages/3d/vehicles/land/hdrp-lab-car-free-realistic-car-model-185778
+Acquired by the user through Unity Asset Store; Unity Asset Store EULA applies.
+Embedded game use. Not offered as a standalone asset download.
+Local derivative: black PBR materials, closed body, simplified geometry; Blender conversion on 2026-09-30. Original authoring package remains local.

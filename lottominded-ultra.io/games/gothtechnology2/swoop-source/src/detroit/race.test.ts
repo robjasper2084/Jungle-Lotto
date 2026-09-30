@@ -16,6 +16,11 @@ test('shortcuts and missed gates do not finish; recovery preserves time and earn
 test('off-course crossing cannot earn a gate and reverse crossing cannot repair it',()=>{const r=new RaceRules(player);r.advance(3);for(let d=(RACE_ROUTE.start+.1);d<(RACE_ROUTE.gates[0]+2);d+=.1)r.observe(player,d,3,.02);assert.equal(r.player.gate,0);r.observe(player,(RACE_ROUTE.gates[0]-1),0,.02);assert.equal(r.player.gate,0);});
 test('ordered gates finish the player and freeze elapsed time',()=>{const r=new RaceRules(player);r.advance(3);for(let d=(RACE_ROUTE.start+.1);d<RACE_ROUTE.end+.2;d+=.1){r.advance(.02);r.observe(player,d,0,.02);}assert.ok(r.done);assert.equal(r.player.gate,RACE_ROUTE.gates.length);assert.ok(r.player.finish!>77);const time=r.elapsed;r.advance(10);assert.equal(r.elapsed,time);assert.equal(r.place,1);});
 const mapped=await new DetroitWorld().init(),terrain=new GeoTerrain(mapped),dt=1/120;
+test('bicycle rivals pedal through the full mapped race with cycling speed limits',()=>{
+ const r=new RaceRules(player),pilots=r.racers.slice(1).map((p,i)=>new RacePilot(terrain,p.id,i,'club',()=>[],true));r.advance(3);
+ for(let i=0;i<120*800&&!r.racers.slice(1).every(p=>p.finish!==null);i++){r.advance(dt);mapped.step();for(const p of pilots)p.step(dt,r);}
+ for(const p of pilots){const result=r.racers.find(r=>r.id===p.id)!;assert.equal(p.sim.cycling,true);assert.notEqual(result.finish,null,JSON.stringify(result));assert.ok(p.sim.bicycle.travel>100);assert.ok(p.pose.speed<=8);}
+});
 test('the existing Freight Yard side line has continuous support and rejoins before the next main-route checkpoint',()=>{
  for(let i=1;i<CUT_THROUGH.length;i++){
   const a=cutPoint(...CUT_THROUGH[i-1]),b=cutPoint(...CUT_THROUGH[i]);let last:number|undefined;

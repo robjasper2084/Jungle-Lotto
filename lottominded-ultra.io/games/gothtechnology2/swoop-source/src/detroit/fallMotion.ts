@@ -37,6 +37,7 @@ export class FallMotion {
     p.crashReach=posture.reach;p.crashAbsorb=posture.absorb;p.crashCurl=posture.curl;p.crashHeadTuck=posture.headTuck;p.crashStagger=posture.stagger;p.crashSide=this.side;p.crashDirection=this.direction;
     const release=ramp(t,.10,.38),tip=ramp(t,.10,contact+.08),impact=ramp(t,contact-.07,contact+.06),settle=ramp(t,contact+.12,this.settleTime);
     const brace=ramp(t,0,.13)*(1-.65*ramp(t,contact,contact+.45));
+    const recoil=t>contact?Math.sin((t-contact)*13)*Math.exp(-(t-contact)*5)*(1-settle):0;
     const pulse=t<contact?0:Math.sin(Math.min(1,(t-contact)/.19)*Math.PI)*Math.exp(-(t-contact)*9);
     // Carry momentum through separation, then dissipate it under ground friction.
     // The old exponential drift slowed the rider in mid-air and never quite stopped.
@@ -71,7 +72,7 @@ export class FallMotion {
     p.bodyPitch=lerp(i.bodyPitch,.10+.36*posture.curl+.08*posture.absorb);p.bodyDrop=lerp(i.bodyDrop,.09);
     p.bodyShift=lerp(i.bodyShift,0);p.bodyLateral=lerp(i.bodyLateral,0);p.bodyHipTilt=lerp(i.bodyHipTilt,0);
     p.bodyTwist=lerp(i.bodyTwist,this.side*(.10*brace+.16*posture.absorb-.08*settle));p.bodyLook=lerp(i.bodyLook,-this.side*(.10*brace+.07*posture.curl));
-    p.bodyHipYaw=lerp(i.bodyHipYaw,0);p.bodyChestRoll=lerp(i.bodyChestRoll,-this.side*.06*brace);p.bodyHeadRoll=lerp(i.bodyHeadRoll,0);
+    p.bodyHipYaw=lerp(i.bodyHipYaw,-this.side*.055*recoil);p.bodyChestRoll=lerp(i.bodyChestRoll,-this.side*.06*brace);p.bodyHeadRoll=lerp(i.bodyHeadRoll,0);
     p.armBank=lerp(i.armBank,0);p.armSwing=lerp(i.armSwing,0);
     p.crouch=lerp(i.crouch,.22);p.tuck=0;p.trickFoot=i.trickFoot*(1-release);
     p.rollAngle=i.rollAngle*(1-tip);p.riderRoll=i.riderRoll*(1-tip);p.wheelPitch=i.wheelPitch*(1-tip);

@@ -1,3 +1,4 @@
+import {styleCyclist} from '@digital-static/ridecore/cycling-view';
 import {HairWind} from './windMotion.ts';
 import * as T from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
@@ -37,7 +38,10 @@ function rotateWorld(bone:T.Object3D|undefined,axis:T.Vector3,angle:number){if(!
 function prepare(o:T.Object3D){o.traverse(n=>{const m=n as T.Mesh;if(m.isMesh){m.castShadow=true;m.receiveShadow=true;m.frustumCulled=!(m as T.SkinnedMesh).isSkinnedMesh;}});}
 export async function loadActors(){
   const loader=new GLTFLoader(),data=new Map<string,GLTF>();
-  await Promise.all(['DS_Man_01','DS_EUC_01','DS_Boerboel_01','DS_Pedestrian_01','DS_Cyclist_01','DS_Bicycle_01','DS_Hazard_Cone_01','DS_Hazard_Barrier_01'].map(async id=>data.set(id,await loader.loadAsync(`/exports/glb/${id}/${id}_LOD${id==='DS_Man_01'?0:1}.glb`))));
+  await Promise.all(['DS_Man_01','DS_EUC_01','DS_Boerboel_01','DS_Pedestrian_01','DS_Cyclist_01','DS_Bicycle_01','DS_Hazard_Cone_01','DS_Hazard_Barrier_01'].map(async id=>{
+    const original=()=>loader.loadAsync(`/exports/glb/${id}/${id}_LOD${id==='DS_Man_01'?0:1}.glb`);
+    data.set(id,id==='DS_Bicycle_01'?await loader.loadAsync('/exports/glb/DS_Bicycle_Styles/DS_Bicycle_Styles_LOD1.glb').catch(original):await original());
+  }));
   await Promise.all(['DS_Segway_01','DS_InlineSkate_01'].map(async id=>data.set(id,await loader.loadAsync(`/exports/mobility/${id}.glb`))));
   await Promise.all(['SW_Scooter_01','SW_Detroit_Tee_Rider'].map(async id=>data.set(id,await loader.loadAsync(`/exports/scooter/${id}.glb`))));
   await Promise.all(['DS_Hoodie_Man_01','DS_Hoodie_Woman_01','DS_Mascot_Suit_01','DS_Mascot_Hoodie_01'].map(async id=>data.set(id,await loader.loadAsync(`/exports/glb/${id}/${id}_LOD1.glb`))));
@@ -252,16 +256,16 @@ export class Hero {
   }
 }
 export class TrafficView {
-  scene:T.Scene;data:Map<string,GLTF>;items=new Map<number,{root:T.Group;mixers:T.AnimationMixer[];pedalPhase:number;clipStart:number;clipDuration:number;mobility?:MobilityRider;foot?:FootTraffic;fallRig?:HumanFallRig}>();
+  scene:T.Scene;data:Map<string,GLTF>;items=new Map<number,{root:T.Group;mixers:T.AnimationMixer[];pedalPhase:number;clipStart:number;clipDuration:number;mobility?:MobilityRider;foot?:FootTraffic;fallRig?:HumanFallRig;disposeStyle?:()=>void}>();
   constructor(scene:T.Scene,data:Map<string,GLTF>,readonly terrain?:TerrainSampler){this.scene=scene;this.data=data;}
   update(actors:TrafficState[],dt:number){const keep=new Set<number>();for(const a of actors){keep.add(a.id);let item=this.items.get(a.id);
     if(!item){const root=new T.Group(),mixers:T.AnimationMixer[]=[];const add=(id:string,animate=false)=>{const d=this.data.get(id)!,o=animate?clone(d.scene):d.scene.clone(true);root.add(o);prepare(o);if(animate&&d.animations.length){const m=new T.AnimationMixer(o);m.clipAction(d.animations[0]).play();mixers.push(m);}};
-      let mobility:MobilityRider|undefined,foot:FootTraffic|undefined;
+      let mobility:MobilityRider|undefined,foot:FootTraffic|undefined,disposeStyle:(()=>void)|undefined;
       if(a.kind==='segway'||a.kind==='skater'||a.kind==='scooter'){mobility=new MobilityRider(a.kind,this.data);mobility.phase=(a.id*.37)%1;root.add(mobility.root);}
       else if(a.kind==='pedestrian'||a.kind==='jogger'){foot=new FootTraffic(this.data.get(Math.floor(a.id/2)%2?'DS_Hoodie_Woman_01':'DS_Hoodie_Man_01')!,a.kind==='jogger');foot.phase=(a.id*.37)%1;root.add(foot.root);}
-      else if(a.kind==='cyclist'){add('DS_Cyclist_01',true);add('DS_Bicycle_01');}else add(a.kind==='cone'?'DS_Hazard_Cone_01':'DS_Hazard_Barrier_01');
+      else if(a.kind==='cyclist'){add('DS_Cyclist_01',true);add('DS_Bicycle_01');disposeStyle=styleCyclist(root.children[1],root.children[0],Math.abs((a.id*7)^(a.id>>>1))%6);}else add(a.kind==='cone'?'DS_Hazard_Cone_01':'DS_Hazard_Barrier_01');
       const clip=this.data.get('DS_Cyclist_01')?.animations[0],clipStart=clip?Math.min(...clip.tracks.map(t=>t.times[0])):0;
-      item={root,mixers,pedalPhase:0,clipStart,clipDuration:(clip?.duration??2)-clipStart,mobility,foot};this.items.set(a.id,item);this.scene.add(root);
+      item={root,mixers,pedalPhase:0,clipStart,clipDuration:(clip?.duration??2)-clipStart,mobility,foot,disposeStyle};this.items.set(a.id,item);this.scene.add(root);
     }
     item.root.position.set(a.x,a.y,a.z);item.root.rotation.y=a.heading;
     if(a.fall){
@@ -284,6 +288,6 @@ export class TrafficView {
       for(const name of ['Bicycle_Pedal_L_Pivot','Bicycle_Pedal_R_Pivot']){const pedal=item.root.getObjectByName(name);if(pedal)pedal.rotation.x=-item.pedalPhase;}
       for(const name of ['Bicycle_Front_Wheel_Pivot','Bicycle_Rear_Wheel_Pivot']){const w=item.root.getObjectByName(name);if(w)w.rotation.x+=wheelTurn;}
     }else for(const m of item.mixers)m.update(dt);
-  }for(const[id,item]of this.items)if(!keep.has(id)){item.root.removeFromParent();item.mixers.forEach(m=>m.stopAllAction());item.mobility?.dispose();this.items.delete(id);}}
+  }for(const[id,item]of this.items)if(!keep.has(id)){item.root.removeFromParent();item.mixers.forEach(m=>m.stopAllAction());item.mobility?.dispose();item.disposeStyle?.();this.items.delete(id);}}
 }
 

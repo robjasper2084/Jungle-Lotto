@@ -78,7 +78,7 @@ test('crypts use named official map references and keep full thresholds above te
  const c=mapped[0];
  for(const u of [-2,-1,0,1,2]){const x=c.position[0]+Math.cos(c.rotation)*u+Math.sin(c.rotation)*3.9,n=c.position[1]+Math.sin(c.rotation)*u-Math.cos(c.rotation)*3.9;assert.ok(c.position[2]>=terrain.ground(x,n)+.119);}
  for(const id of ['buhl-mausoleum','alger-mausoleum','schmidt-mausoleum','hammond-bank-vault','davis-hillside-vault']){
-  const matches=placements.filter((p:any)=>p.asset===id);assert.equal(matches.length,1);const p=matches[0];assert.ok(p.confidence.includes('Official Elmwood'));assert.ok(terrain.nearest(p.position[0],p.position[1]).distance>=p.footprint[1]/2+3.9);
+  const matches=placements.filter((p:any)=>p.asset===id);assert.equal(matches.length,1);const p=matches[0];assert.match(p.confidence,/Tree Tour/,id+' retains its reference provenance');assert.ok(terrain.nearest(p.position[0],p.position[1]).distance>=p.footprint[1]/2+3.9);
   assert.notEqual(terrain.raycastObstacle({x:p.position[0],y:p.position[2]+1,z:-p.position[1]},{x:1,y:0,z:0},1),null);
  }
  const davis=placements.find((p:any)=>p.asset==='davis-hillside-vault');

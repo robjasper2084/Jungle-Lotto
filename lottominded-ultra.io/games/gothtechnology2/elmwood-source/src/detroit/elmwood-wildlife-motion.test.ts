@@ -16,9 +16,9 @@ test('water transitions blend instead of snapping, and zero time cannot move wil
 });
 test('goose and car assets have real-world dimensions and both requested car placements',()=>{
  const read=(n:string)=>JSON.parse(fs.readFileSync(new URL('../../public/elmwood/'+n,import.meta.url),'utf8'));
- const assets=read('asset-manifest.json'),goose=assets.find((a:any)=>a.id==='canada-goose'),car=assets.find((a:any)=>a.id==='chrysler-300s-2018');
+ const assets=read('asset-manifest.json'),goose=assets.find((a:any)=>a.id==='canada-goose'),car=assets.find((a:any)=>a.id==='hdrp-lab-car-black');
  assert.ok(goose.dimensionsM[2]>.8&&goose.dimensionsM[2]<.9);assert.ok(goose.dimensionsM[1]<1.1);
- assert.ok(Math.abs(car.dimensionsM[1]-5.044)<.002);assert.ok(Math.abs(car.dimensionsM[2]-1.492)<.002);assert.equal(car.wheelbaseM,3.052);
+ assert.ok(car.dimensionsM[1]>4.6&&car.dimensionsM[1]<4.9);assert.ok(car.dimensionsM[2]>1.3&&car.dimensionsM[2]<1.5);assert.equal(car.wheelbaseM,2.88);assert.ok(car.lod1Triangles<55000);assert.ok(car.sourceUrl.includes('185778'));assert.ok(!assets.some((a:any)=>a.id==='chrysler-300s-2018'));
  const ps=read('placements.json'),cars=ps.filter((p:any)=>p.asset===car.id);assert.equal(cars.length,2);assert.ok(cars.some((p:any)=>p.addition.endsWith('lane')));assert.ok(cars.some((p:any)=>p.addition.endsWith('gatehouse')));
  const hammond=ps.find((p:any)=>p.asset==='hammond-bank-vault');assert.equal(hammond.bankVaultRepair,true);assert.ok(hammond.footprint[1]>9);
 });

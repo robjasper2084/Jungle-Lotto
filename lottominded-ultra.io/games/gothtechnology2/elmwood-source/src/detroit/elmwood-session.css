@@ -41,3 +41,6 @@
 @media(max-height:600px) and (min-width:651px){#elmwood-main-menu .menu-inner{width:590px;padding:20px 28px;min-height:0}#elmwood-menu-title{font-size:44px}#elmwood-main-menu .menu-eyebrow{margin-bottom:8px}#elmwood-main-menu .menu-inner>h1+p{margin:4px 0}#elmwood-main-menu .mode-card{min-height:72px}}
 
 #elmwood-main-menu .menu-selectors{display:grid;grid-template-columns:1fr 1fr;gap:12px}#elmwood-main-menu .menu-selectors label{margin:10px 0 0}#elmwood-main-menu .menu-selectors select{margin-top:5px;min-height:44px}
+.elmwood-lesson,.elmwood-result{position:fixed;z-index:22;left:50%;bottom:max(26px,env(safe-area-inset-bottom));transform:translateX(-50%);width:min(400px,calc(100vw - 32px));box-sizing:border-box;padding:12px 16px;background:#102820f2;border:1px solid #cfb575;border-radius:8px;color:#f0ead9;font:14px/1.5 system-ui;max-height:38vh;overflow:auto;pointer-events:auto}
+.elmwood-lesson[hidden],.elmwood-result[hidden]{display:none}.elmwood-lesson p,.elmwood-result p{margin:6px 0}.elmwood-lesson button,.elmwood-result button{min-height:44px;padding:8px 14px;margin:3px;border:1px solid #cfb575;background:#264235;color:#f0ead9;border-radius:5px}
+.elmwood-lesson :focus-visible,.elmwood-result :focus-visible{outline:3px solid #eed290;outline-offset:2px}

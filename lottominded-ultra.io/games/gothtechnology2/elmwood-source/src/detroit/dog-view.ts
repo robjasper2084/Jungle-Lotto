@@ -55,7 +55,7 @@ export class DogView {
     }
     // Ground the visible skin, including the seated haunch, not only the rig origin.
     this.supportAge+=dt;this.ground.position.y=0;
-    if(sit+lie>.001&&(this.supportAge>.2||Math.abs(sit-this.supportSit)>.02||Math.abs(lie-this.supportLie)>.02)){
+    if(sit+lie>.001&&(this.supportAge>.2||Math.abs(sit-this.supportSit)>.001||Math.abs(lie-this.supportLie)>.001)){
       this.root.updateMatrixWorld(true);this.groundInverse.copy(this.ground.matrixWorld).invert();let floor=Infinity;
       for(const {mesh,indices}of this.supports){mesh.skeleton.update();this.supportMatrix.multiplyMatrices(this.groundInverse,mesh.matrixWorld);const p=mesh.geometry.getAttribute('position');for(const index of indices){this.supportPoint.fromBufferAttribute(p,index);mesh.applyBoneTransform(index,this.supportPoint);this.supportPoint.applyMatrix4(this.supportMatrix);floor=Math.min(floor,this.supportPoint.y);}}
       if(Number.isFinite(floor))this.supportLift=Math.max(0,.02-floor);

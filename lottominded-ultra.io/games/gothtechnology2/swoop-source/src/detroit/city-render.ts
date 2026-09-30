@@ -1,5 +1,6 @@
 import * as T from 'three';
 import {orleansFloors,orleansMaterial} from './orleansLanding.ts';
+import {inMillikenPark} from './parkPaths.ts';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {CITY,nearestCut} from './geography.ts';
 import {GEO,cutWidth} from './geo-profile.ts';
@@ -17,6 +18,8 @@ export async function buildCity(_scene:T.Scene,world:DetroitWorld,groupAt:(x:num
  const roof=new T.MeshStandardMaterial({color:'#656865',roughness:.98});
  const curb=skins.concrete;
  const roadMat=skins.asphalt.clone();roadMat.polygonOffset=true;roadMat.polygonOffsetFactor=-1;
+ const parkMat=skins.asphalt.clone();parkMat.color.set('#a5aaa8');parkMat.normalScale.set(.13,.13);parkMat.roughness=.98;parkMat.polygonOffset=true;parkMat.polygonOffsetFactor=-1;
+ const parkEdge=skins.concrete.clone();parkEdge.color.set('#c5c3b8');parkEdge.polygonOffset=true;parkEdge.polygonOffsetFactor=-1;
  const sidewalk=skins.sidewalk;
  const paint=new T.MeshStandardMaterial({color:'#d8bc68',roughness:.95,polygonOffset:true,polygonOffsetFactor:-2});
  const paths=new Map<T.Group,Map<T.Material,number[]>>();
@@ -41,17 +44,23 @@ export async function buildCity(_scene:T.Scene,world:DetroitWorld,groupAt:(x:num
    if(!world.chunks.some(c=>Math.max(a[0],b[0])+width+2>=c.x-50&&Math.min(a[0],b[0])-width-2<=c.x+50&&Math.max(a[1],b[1])+width+2>=c.z-50&&Math.min(a[1],b[1])-width-2<=c.z+50))continue;
    streetSections++;
    const concreteWalk=['footway','pedestrian'].includes(road.kind)&&road.name!=='Dequindre Cut Greenway';
+   const parkWalk=walk&&inMillikenPark(x,z)&&road.name!=='Dequindre Cut Greenway';
+   const surface=parkWalk?parkMat:concreteWalk?sidewalk:roadMat;
    const elevation=(px:number,pz:number,terrain:number)=>streetElevation(road,px,pz,terrain);
-   strip(concreteWalk?sidewalk:roadMat,a[0],a[1],b[0],b[1],width,0,elevation,.035);
+   // Thin flush aggregate border, batched underneath the entire path surface.
+   if(parkWalk)strip(parkEdge,a[0],a[1],b[0],b[1],width+.14,0,elevation,.025);
+   strip(surface,a[0],a[1],b[0],b[1],width,0,elevation,.035);
    for(const p of [a,b]){
-     const key=`${p[0]},${p[1]},${width},${walk},${road.bridge},${concreteWalk}`;
+     const key=`${p[0]},${p[1]},${width},${walk},${road.bridge},${concreteWalk},${parkWalk}`;
      if(junctions.has(key))continue;junctions.add(key);
-     append(concreteWalk?sidewalk:roadMat,drapeJunction(p[0],p[1],width,world.chunks,elevation,.035));
+     if(parkWalk)append(parkEdge,drapeJunction(p[0],p[1],width+.14,world.chunks,elevation,.025));
+     append(surface,drapeJunction(p[0],p[1],width,world.chunks,elevation,.035));
    }
    if(hasStreetCurb(road)){
      for(const sign of [-1,1]){
        const raised=(px:number,pz:number,terrain:number)=>elevation(px,pz,terrain)+curbRise(road,px,pz);
-       strip(sidewalk,a[0],a[1],b[0],b[1],.85,sign*(width+1),raised,.035);
+       const walkHalf=road.name==='Atwater Street'?1.4:.85;
+       strip(sidewalk,a[0],a[1],b[0],b[1],walkHalf,sign*(width+.15+walkHalf),raised,.035);
        // A chamfered front and a separate cap replace the nearly flat painted ribbon.
        const face=(px:number,pz:number,terrain:number)=>{
          const lateral=Math.abs((px-a[0])*(-dz/length)+(pz-a[1])*(dx/length));
@@ -69,7 +78,7 @@ export async function buildCity(_scene:T.Scene,world:DetroitWorld,groupAt:(x:num
    // These ribbons can sit above the bank terrain and extend beyond the deck.
    // Share their exact surface with riding, dog paws, falls and camera queries.
    if(material!==paint)world.addRideSurface(geo.attributes.position.array as Float32Array);
-   const uv=[],scale=material===sidewalk?4:2;for(let i=0;i<positions.length;i+=3)uv.push(positions[i]/scale-Math.floor(g.userData.center.x/scale),positions[i+2]/scale-Math.floor(g.userData.center.z/scale));geo.setAttribute('uv',new T.Float32BufferAttribute(uv,2));geo.computeVertexNormals();const m=new T.Mesh(geo,material);m.name=material===sidewalk?'Concrete sidewalks':'Mapped street surface';m.receiveShadow=true;g.add(m);}
+   const uv=[],scale=material===parkMat?1.1:material===sidewalk?4:2;for(let i=0;i<positions.length;i+=3)uv.push(positions[i]/scale-Math.floor(g.userData.center.x/scale),positions[i+2]/scale-Math.floor(g.userData.center.z/scale));geo.setAttribute('uv',new T.Float32BufferAttribute(uv,2));geo.computeVertexNormals();const m=new T.Mesh(geo,material);m.name=material===parkMat?'Milliken smooth park paths':material===sidewalk?'Concrete sidewalks':'Mapped street surface';m.receiveShadow=true;g.add(m);}
  const residential=new Map([[3,orleansMaterial(3)],[4,orleansMaterial(4)]]);
  const landmarks:string[]=[];
  for(const{data:b,geometry:geo}of world.buildingMeshes){

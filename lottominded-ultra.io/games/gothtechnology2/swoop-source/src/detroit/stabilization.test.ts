@@ -150,7 +150,8 @@ test('practice advances only through actual movement, braking, turn, and an airb
  assert.equal(coach.stepIndex,1);p.speed=0;coach.observe(p,true,false);assert.equal(coach.stepIndex,2);
  p.speed=2;for(let i=0;i<8;i++){p.headingY+=.08;coach.observe(p,true,false);}
  assert.equal(coach.stepIndex,3);coach.observe(p,true,true);assert.equal(coach.complete,false);
- p.airHeight=.3;coach.observe(p,false,false);p.airHeight=0;coach.observe(p,true,true);assert.equal(coach.complete,true);
+ p.airHeight=.3;coach.observe(p,false,false);p.airHeight=0;coach.observe(p,true,true);assert.equal(coach.stepIndex,4);assert.equal(coach.complete,false);
+ coach.action('camera');coach.action('recover');assert.equal(coach.complete,true);
 });
 
 

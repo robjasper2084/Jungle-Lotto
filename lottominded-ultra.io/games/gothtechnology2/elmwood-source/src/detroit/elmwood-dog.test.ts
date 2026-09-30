@@ -15,7 +15,7 @@ test('dog finds a route around a short fence without teleporting or passing thro
  assert.equal(dog.recoveries,0);assert.ok(dog.z>7);
 });
 test('dog sits after one second, lies down, stays put and comes when recalled',()=>{
- const dog=new ElmwoodCompanion(flat);dog.reset(rider);for(let i=0;i<60;i++)dog.update(rider,1/60);assert.ok(dog.sit<.2);for(let i=0;i<60;i++)dog.update(rider,1/60);assert.ok(dog.sit>.99);
+ const dog=new ElmwoodCompanion(flat);dog.reset(rider);for(let i=0;i<60;i++)dog.update(rider,1/60);assert.ok(dog.sit<.2);for(let i=0;i<60;i++)dog.update(rider,1/60);assert.ok(dog.sit>.9);for(let i=0;i<60;i++)dog.update(rider,1/60);assert.ok(dog.sit>.99);
  dog.order('down');for(let i=0;i<60;i++)dog.update(rider,1/60);assert.ok(dog.lie>.99);const x=dog.x,z=dog.z;dog.order('stay');for(let i=0;i<180;i++)dog.update({...rider,z:20,speed:4},1/60);assert.equal(dog.x,x);assert.equal(dog.z,z);assert.ok(dog.lie>.99);dog.order('come');for(let i=0;i<180;i++)dog.update({...rider,z:12},1/60);assert.ok(dog.z>10);assert.ok(dog.lie<.01);
 });
 test('voice command words route down and bark, without triggering inside other words',()=>{

@@ -1,3 +1,4 @@
+import {riderEyeMotion} from '@digital-static/ridecore';
 import * as T from 'three';
 import type {RidePose} from '@digital-static/ridecore';
 
@@ -16,7 +17,7 @@ export function nextElmwoodCamera(value:string):ElmwoodCameraMode{
 }
 export function cameraFrame(){return {eye:new T.Vector3(),target:new T.Vector3(),roll:0,fov:55,hideRider:false};}
 /** Same body-mounted pitch, roll and 74-degree lens as Swoop Detroit. */
-export function swoopFirstPersonMotion(p:RidePose,reducedMotion=false){const amount=reducedMotion?.18:1;return {pitch:T.MathUtils.clamp(-p.riderPitch*.65-p.landingCompression*.075+p.takeoffExtension*.04,-.22,.22)*amount,roll:T.MathUtils.clamp(-p.rollAngle*.65,-.28,.28)*amount};}
+export const swoopFirstPersonMotion=riderEyeMotion;
 /** Offsets are in the rider's frame; the existing RideCore Follow camera stays separate. */
 export function frameElmwoodCamera(mode:ElmwoodCameraMode,p:RidePose,reducedMotion:boolean,out= cameraFrame(),first?:{head?:T.Vector3;yaw:number;pitch:number}){
   const s=Math.sin(p.headingY),c=Math.cos(p.headingY),speed=Math.abs(p.speed);

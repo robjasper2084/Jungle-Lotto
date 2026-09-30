@@ -42,7 +42,7 @@ function solve(l:Limb,target:T.Vector3,pole:T.Vector3,rotation?:T.Quaternion){
 export class FootTraffic {
   readonly root=new T.Group();readonly rider:T.Object3D;readonly jog:boolean;
   bones:{o:T.Object3D;p:T.Vector3;q:T.Quaternion}[]=[];legs:Limb[]=[];arms:Limb[]=[];footTargets:T.Vector3[]=[];
-  hips:T.Object3D;phase=0;legLength=.9;
+  hips:T.Object3D;phase=0;legLength=.9;private idleTime=0;
   constructor(data:GLTF,jog:boolean){
     this.jog=jog;this.rider=clone(data.scene);this.root.add(this.rider);this.root.name=jog?'Detroit hoodie jogger':'Detroit hoodie walker';
     this.root.updateMatrixWorld(true);this.hips=this.rider.getObjectByName('Hips')!;
@@ -58,13 +58,14 @@ export class FootTraffic {
     this.apply(0,0);
   }
   apply(speed:number,dt:number){
+    this.idleTime+=Math.max(0,dt);
     const effort=Math.min(1,Math.abs(speed)/(this.jog?2.65:1.1)),timing=gaitTiming(Math.abs(speed),this.jog,this.legLength);
     this.phase=(this.phase+Math.max(0,dt)*timing.cadence*effort)%1;
     for(const b of this.bones){b.o.position.copy(b.p);b.o.quaternion.copy(b.q);}
     this.root.updateMatrixWorld(true);
     const forward=new T.Vector3(0,0,1).transformDirection(this.root.matrixWorld),right=new T.Vector3(1,0,0).transformDirection(this.root.matrixWorld),up=new T.Vector3(0,1,0);
     const wave=Math.sin(this.phase*tau),bob=(this.jog?.022:.012)*Math.cos((this.phase-(this.jog?.46:.25))*tau*2)*effort;
-    const hips=this.hips.getWorldPosition(v()).addScaledVector(up,-(this.jog?.075:.015)+bob).addScaledVector(right,wave*(this.jog?.012:.020)*effort);
+    const hips=this.hips.getWorldPosition(v()).addScaledVector(up,-(this.jog?.075:.015)+bob+Math.sin(this.idleTime*1.6)*.003*(1-effort)).addScaledVector(right,wave*(this.jog?.012:.020)*effort);
     this.hips.position.copy(this.hips.parent!.worldToLocal(hips));this.root.updateMatrixWorld(true);
     rotate(this.hips,forward,wave*.025*effort);rotate(this.hips,up,wave*.04*effort);
     const spine=['Spine02','Spine01','Spine'].map(n=>this.rider.getObjectByName(n));
@@ -99,8 +100,8 @@ export class FootTraffic {
       // The upper arm drives the swing. On the backstroke the elbow opens a
       // little; the return hand rises toward the ribs with a relaxed wrist.
       // Keeping both forearms forward made running look like carrying a tray.
-      const shoulderAngle=this.jog?-.12-(.56+timing.run*.12)*swing:-.045-.30*swing;
-      const elbowAngle=this.jog?1.32-.18*swing:.20-.07*swing+.04*Math.sin((this.phase+i*.5)*tau);
+      const shoulderAngle=this.jog?-.12-(.56+timing.run*.12)*swing:-.025-.23*swing;
+      const elbowAngle=this.jog?1.32-.18*swing:.16-.045*swing+.025*Math.sin((this.phase+i*.5)*tau)*effort;
       // Anatomical elbow path gives a relaxed sagittal swing. Solving to a hand
       // point near full reach let tiny changes flip the elbow and twist sleeves.
       const elbowTarget=shoulder.clone().addScaledVector(up,-upper*Math.cos(shoulderAngle)).addScaledVector(forward,upper*Math.sin(shoulderAngle)).addScaledVector(right,side*(this.jog?.025:.012));

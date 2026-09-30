@@ -85,7 +85,7 @@ export class ElmwoodCompanion extends DogCompanion {
     const distance=Math.hypot(this.x-r.x,this.z-r.z);
     this.stopped=Math.abs(r.speed)<.15&&this.speed<.18?this.stopped+dt:0;
     const seated=this.command==='sit'||this.command==='stay'&&!this.holdDown||this.command==='follow'&&!wandering&&this.stopped>=1;
-    this.sit+=(Number(seated)-this.sit)*(1-Math.exp(-dt*7));this.lie+=(Number(this.command==='down'||this.command==='stay'&&this.holdDown)-this.lie)*(1-Math.exp(-dt*7));
+    this.sit+=(Number(seated)-this.sit)*(1-Math.exp(-dt*(seated?3.2:5)));this.lie+=(Number(this.command==='down'||this.command==='stay'&&this.holdDown)-this.lie)*(1-Math.exp(-dt*7));
     if(this.command==='follow'&&!wandering&&this.stopped>=1)this.note='Sitting beside rider';else if(this.command==='follow'&&Math.abs(r.speed)>.3)this.note='Following';
     this.stalled=this.command==='follow'&&distance>3&&Math.hypot(this.x-x,this.z-z)<.012?this.stalled+dt:Math.max(0,this.stalled-dt*2);
     if(this.command==='follow'&&(this.stalled>.85||distance>24)){super.reset(r);this.stalled=0;this.waypoint=undefined;this.recoveries++;this.note='Regrouped beside rider';}
