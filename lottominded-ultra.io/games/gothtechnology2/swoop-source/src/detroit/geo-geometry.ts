@@ -1,14 +1,15 @@
 import * as T from 'three';
+import {orleansFloors} from './orleansLanding.ts';
 import {GEO,profileLevel,nearestRamp} from './geo-profile.ts';
 import {pointOnCut,nearestCut} from './geography.ts';
 import {completeBridges} from './bridges.ts';
 import type {BridgeMesh} from './bridges.ts';
-export function buildingEnvelope(b:{points:number[][];height:number},heightAt:(x:number,z:number)=>number){
+export function buildingEnvelope(b:{id?:string;points:number[][];height:number},heightAt:(x:number,z:number)=>number){
   const cx=b.points.reduce((s,p)=>s+p[0],0)/b.points.length,cz=b.points.reduce((s,p)=>s+p[1],0)/b.points.length,c=nearestCut(cx,cz);
   const base=Math.abs(c.u)<90&&c.d>280?profileLevel(c.d,'street'):heightAt(cx,cz);
   // Extend foundations down to the bank without shifting the mapped footprint or roof.
   const bottom=c.distance<100?Math.min(base,...b.points.map(p=>heightAt(p[0],p[1])-.2)):base;
-  const geometry=new T.ExtrudeGeometry(new T.Shape(b.points.map(p=>new T.Vector2(p[0]-cx,-p[1]+cz))),{depth:b.height+base-bottom,bevelEnabled:false,steps:1});
+  const geometry=new T.ExtrudeGeometry(new T.Shape(b.points.map(p=>new T.Vector2(p[0]-cx,-p[1]+cz))),{depth:(orleansFloors(b.id??'')*3.3||b.height)+base-bottom,bevelEnabled:false,steps:1});
   geometry.rotateX(-Math.PI/2);geometry.translate(cx,bottom,cz);geometry.userData.streetBase=base;return geometry;
 }
 export type GeoMesh=BridgeMesh|{name:string;kind:'wall';geometry:T.BufferGeometry;source:string;collision?:boolean};

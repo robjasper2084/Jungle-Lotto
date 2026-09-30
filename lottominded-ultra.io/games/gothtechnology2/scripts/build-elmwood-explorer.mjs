@@ -6,13 +6,13 @@ import {pathToFileURL} from 'node:url';
 const source=resolve(process.argv[2]||'../../../../euc-detroit-riverwalk'),store=resolve(import.meta.dirname,'..'),out=resolve(store,'store/public/arcade/elmwood-explorer');
 if(dirname(out)!==resolve(store,'store/public/arcade'))throw Error('Unexpected build directory');
 const require=createRequire(resolve(source,'package.json')),{build}=await import(pathToFileURL(require.resolve('vite')).href);
-const css=await readFile(resolve(import.meta.dirname,'elmwood-explorer-embed.css'),'utf8'),js=await readFile(resolve(import.meta.dirname,'elmwood-explorer-embed.js'),'utf8'),assetRevision=Date.now().toString(36);
+const css=(await readFile(resolve(import.meta.dirname,'elmwood-explorer-embed.css'),'utf8'))+(await readFile(resolve(import.meta.dirname,'mobile-hud.css'),'utf8')),js=await readFile(resolve(import.meta.dirname,'elmwood-explorer-embed.js'),'utf8'),assetRevision=Date.now().toString(36);
 await build({root:source,configFile:false,base:'./',publicDir:false,plugins:[{name:'elmwood-explorer-store',enforce:'pre',
  transform(code,id){id=id.replaceAll('\\','/');if(!id.includes('/src/'))return;
   code=code.replace(/(['"`])\/elmwood\//g,'$1./elmwood/');
   // Keep changed placements, terrain and model bytes from mixing across releases.
   code=code.replace(/(\.(?:json|glb|hdr))(['"`])/g,`$1?v=${assetRevision}$2`);
-  if(id.endsWith('/elmwood-ride.ts')&&!code.includes('return {stop,pause,dogThreats,update'))throw Error('Ride API changed');
+  if(id.endsWith('/elmwood-ride.ts')&&!code.includes('return {stop,pause,dogThreats,'))throw Error('Ride API changed');
   if(id.endsWith('/elmwood.ts')){code=code.replace('wind.value=t;','wind.value=matchMedia("(prefers-reduced-motion: reduce)").matches||new URLSearchParams(location.search).has("reducedMotion")?0:t;');code+='\n(window as any).RahbeArcadeGame={get ready(){return el("detail").dataset.loaded==="true";},pause(){rideControls?.pause(true);}};';}
   return code;
  },

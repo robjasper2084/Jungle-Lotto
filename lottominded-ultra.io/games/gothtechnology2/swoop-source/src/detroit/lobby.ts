@@ -16,7 +16,7 @@ export function installLobby(elmwood:boolean,onRace:()=>void,onSplit:()=>void){
  const hero=$('heroSelect') as HTMLSelectElement,p2=splitSetup.querySelector<HTMLSelectElement>('#splitRider2')!;for(const option of hero.options)p2.append(option.cloneNode(true));p2.value=hero.value==='DS_Hoodie_Woman_01'?'DS_Man_01':'DS_Hoodie_Woman_01';
  for(const [i,id]of ['splitInput1','splitInput2'].entries()){const select=splitSetup.querySelector<HTMLSelectElement>('#'+id)!;for(const[value,label]of [['wasd','Keyboard · WASD'],['arrows','Keyboard · Arrow keys'],...Array.from({length:4},(_,n)=>['pad:'+n,'Controller '+(n+1)])]){const o=document.createElement('option');o.value=value;o.textContent=label;select.append(o);}select.value=i?'arrows':'wasd';}setup.querySelector('.options')!.after(splitSetup);
  const actions=document.createElement('div');actions.className='launchActions';actions.append($('start'),$('resumeRide'),$('enterVR'));setup.append(actions);
- const settings=document.createElement('div');settings.id='lobbySettings';settings.className='lobbyPanel';settings.innerHTML='<p class="eyebrow">MAKE IT YOUR RIDE</p><h2>Controls & VR</h2><p>Choose your steering, comfort speed and view. Your riding controls stay the same.</p>';
+ const settings=document.createElement('div');settings.id='lobbySettings';settings.className='lobbyPanel';settings.innerHTML='<p class="eyebrow">MAKE IT YOUR RIDE</p><h2>Settings</h2><p>Choose your steering, comfort speed and view. Your riding controls stay the same.</p>';
  settings.append(setup.querySelector('.vrControls')!,$('controllerStatus'));
  for(const hint of [...setup.querySelectorAll('.hint,.touchHint')])settings.append(hint);
  const garage=document.createElement('div');garage.id='lobbyGarage';garage.className='lobbyPanel';garage.innerHTML='<p class="eyebrow">YOUR OWN FREQUENCY</p><h2>Garage & soundtrack</h2>';
@@ -32,7 +32,7 @@ export function installLobby(elmwood:boolean,onRace:()=>void,onSplit:()=>void){
   intro.hidden=!['ride','race','split'].includes(tab);difficulty.hidden=tab!=='race';raceInfo.hidden=tab!=='race';splitSetup.hidden=tab!=='split';$('enterVR').hidden=tab==='split';
   $('spawn').closest('label')!.hidden=tab==='race'||tab==='split';$('companion').closest('label')!.hidden=tab==='race'||tab==='split';
   const practice=document.getElementById('practiceRoute');if(practice)practice.hidden=tab!=='race';
-  setupHeading.textContent=tab==='split'?'Bring a friend. Pick your line.':tab==='race'?'Race the other riders.':'Your ride starts here.';
+  setupHeading.textContent=tab==='split'?'Bring a friend. Pick your line.':tab==='race'?'Race the other riders.':elmwood?'Explore Elmwood.':'Your ride starts here.';
   if(tab==='ride'||tab==='race'||tab==='split'){
    mode.value=tab==='split'?'split':tab==='race'&&!elmwood?'race':'free';mode.dispatchEvent(new Event('change'));
    $('menuCopy').textContent=tab==='split'?'Two riders. Two views. One Detroit showdown.':tab==='race'?'Pick your rider. The other three are your competition.':elmwood?'Quiet lanes. Rolling hills. A ride at your own pace.':'Carve the Cut. Chase the skyline. Make every ride your own.';
@@ -43,9 +43,10 @@ export function installLobby(elmwood:boolean,onRace:()=>void,onSplit:()=>void){
   menu.scrollTop=0;
  };
  const originalStart=$('start').onclick!;
- for(const [id,label]of [['ride','Free ride'],['race','Race rivals'],['split','2-player race'],['challenges','Challenges'],['garage','Garage + music'],['settings','Controls + VR']]){
+ for(const [id,label]of [['ride','Free ride'],['race','Race rivals'],['split','2-player race'],['challenges','Challenges'],['garage','Garage + music'],['settings','Settings']]){
   const button=document.createElement('button');button.textContent=label;button.dataset.lobbyTab=id;button.setAttribute('aria-pressed','false');button.onclick=()=>show(id);if(elmwood&&id==='challenges')button.hidden=true;buttons.set(id,button);tabs.append(button);
  }
+ const destination=document.createElement('button');destination.textContent=elmwood?'Dequindre Cut':'Elmwood Explorer';destination.setAttribute('aria-label',elmwood?'Switch to Dequindre Cut':'Explore Elmwood Cemetery');destination.onclick=()=>{const url=new URL(location.href);url.searchParams.delete('tab');if(elmwood)url.searchParams.delete('map');else url.searchParams.set('map','elmwood');location.assign(url.href);};tabs.append(destination);
  chrome.querySelector('a')!.onclick=e=>{e.preventDefault();show('ride');};
  $('menuButton').addEventListener('click',()=>show(['race','split'].includes(mode.value)?mode.value:'ride'));
  show(['race','split'].includes(new URLSearchParams(location.search).get('tab')??'')?new URLSearchParams(location.search).get('tab')!:'ride');

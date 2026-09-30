@@ -1,0 +1,14 @@
+import {test} from 'node:test';import assert from 'node:assert/strict';
+import {PracticeCoach} from './practiceCoach.ts';import {createPose} from './controller.ts';
+function lesson(){const coach=new PracticeCoach(),p=createPose();coach.observe(p,true,false);for(let i=0;i<18;i++){p.x+=.5;p.speed=3;coach.observe(p,true,false);}return {coach,p};}
+function hopLesson(){const pair=lesson();pair.p.speed=0;pair.coach.observe(pair.p,true,false);pair.p.speed=2;pair.p.headingY=.5;pair.coach.observe(pair.p,true,false);assert.equal(pair.coach.stepIndex,3);return pair;}
+test('immediate braking after forward task advances without reaccelerating',()=>{const {coach,p}=lesson();p.speed=0;coach.observe(p,true,false);assert.equal(coach.stepIndex,2);});
+test('forward lesson needs distance and speed',()=>{const coach=new PracticeCoach(),p=createPose();coach.observe(p,true,false);p.x=.5;coach.observe(p,true,false);assert.equal(coach.stepIndex,0);});
+test('turn requires controlled rolling speed',()=>{const {coach,p}=lesson();p.speed=0;coach.observe(p,true,false);p.headingY=1;coach.observe(p,true,false);assert.equal(coach.stepIndex,2);});
+test('fresh clean hop completes practice',()=>{const {coach,p}=hopLesson();p.airHeight=.2;coach.observe(p,false,false);coach.observe(p,true,true);assert.equal(coach.complete,true);});
+test('small hop is not enough',()=>{const {coach,p}=hopLesson();p.airHeight=.05;coach.observe(p,false,false);coach.observe(p,true,true);assert.equal(coach.complete,false);});
+for(const kind of ['crash','recovery','teleport'] as const)test(`${kind} invalidates the current hop and accepts a later fresh hop`,()=>{const {coach,p}=hopLesson();p.airHeight=.2;coach.observe(p,false,false);if(kind==='crash')p.crashBlend=1;if(kind==='recovery')p.crashRecovery=1;if(kind==='teleport')p.x+=10;coach.observe(p,false,false);p.crashBlend=p.crashRecovery=0;coach.observe(p,true,true);assert.equal(coach.complete,false);coach.observe(p,false,false);coach.observe(p,true,true);assert.equal(coach.complete,true);});
+test('stale landing event cannot validate a failed contact',()=>{const {coach,p}=hopLesson();p.airHeight=.2;coach.observe(p,false,false);coach.observe(p,true,false);coach.observe(p,true,true);assert.equal(coach.complete,false);});
+test('starting in air does not count as takeoff',()=>{const {coach,p}=hopLesson();p.x+=10;coach.observe(p,false,false);p.airHeight=.3;coach.observe(p,false,false);coach.observe(p,true,true);assert.equal(coach.complete,false);});
+test('completed lessons survive a crash',()=>{const {coach,p}=hopLesson();p.crashBlend=1;coach.observe(p,true,false);assert.equal(coach.stepIndex,3);});
+test('completion is stable across repeated landing notifications',()=>{const {coach,p}=hopLesson();p.airHeight=.2;coach.observe(p,false,false);coach.observe(p,true,true);coach.observe(p,true,true);assert.equal(coach.stepIndex,4);});

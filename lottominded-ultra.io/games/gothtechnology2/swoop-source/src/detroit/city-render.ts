@@ -1,4 +1,5 @@
 import * as T from 'three';
+import {orleansFloors,orleansMaterial} from './orleansLanding.ts';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {CITY,nearestCut} from './geography.ts';
 import {GEO,cutWidth} from './geo-profile.ts';
@@ -69,13 +70,16 @@ export async function buildCity(_scene:T.Scene,world:DetroitWorld,groupAt:(x:num
    // Share their exact surface with riding, dog paws, falls and camera queries.
    if(material!==paint)world.addRideSurface(geo.attributes.position.array as Float32Array);
    const uv=[],scale=material===sidewalk?4:2;for(let i=0;i<positions.length;i+=3)uv.push(positions[i]/scale-Math.floor(g.userData.center.x/scale),positions[i+2]/scale-Math.floor(g.userData.center.z/scale));geo.setAttribute('uv',new T.Float32BufferAttribute(uv,2));geo.computeVertexNormals();const m=new T.Mesh(geo,material);m.name=material===sidewalk?'Concrete sidewalks':'Mapped street surface';m.receiveShadow=true;g.add(m);}
+ const residential=new Map([[3,orleansMaterial(3)],[4,orleansMaterial(4)]]);
  const landmarks:string[]=[];
  for(const{data:b,geometry:geo}of world.buildingMeshes){
    geo.computeBoundingBox();const bounds=geo.boundingBox!,center=bounds.getCenter(new T.Vector3()),g=groupAt(center.x,center.z);
    const pos=geo.getAttribute('position'),normal=geo.getAttribute('normal'),uv=geo.getAttribute('uv');
    // Eight metre facade repeat preserves plausible door/window scale.
    for(let i=0;i<pos.count;i++)uv.setXY(i,(Math.abs(normal.getX(i))>.5?pos.getZ(i):pos.getX(i))/8,pos.getY(i)/7.5);
-   const side=facades[Math.floor(hash(Number(b.id))*facades.length)];
+   const floors=orleansFloors(b.id);
+   if(floors)for(let i=0;i<pos.count;i++)uv.setXY(i,(Math.abs(normal.getX(i))>.5?pos.getZ(i):pos.getX(i))/9.6,(pos.getY(i)-bounds.min.y)/(floors*3.3));
+   const side=floors?residential.get(floors)!:facades[Math.floor(hash(Number(b.id))*facades.length)];
    const mesh=new T.Mesh(geo,[roof,side]);mesh.name='OSM '+b.id+' '+b.name;mesh.userData={osmId:b.id,source:'OSM footprint; facade and height require visual verification'};mesh.castShadow=mesh.receiveShadow=true;g.add(mesh);
    // Cornice follows every polygon edge, including non-rectangular footprints.
    for(let i=1;i<b.points.length;i++){

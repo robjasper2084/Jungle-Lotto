@@ -1,4 +1,5 @@
 import {parkContains} from './freestylePark.ts';
+import {millikenHill,MILLIKEN_BERM} from './millikenTerrain.ts';
 import {courseFeatures,featureContact,rampLift,type CourseFeature} from './courseFeatures.ts';
 import {routeHazards} from './routeHazards.ts';
 import {advanceCrowd,type CrowdAgent} from './crowdFlow.ts';
@@ -35,7 +36,7 @@ export const CUT_STATIONS=[
 export function cutPoint(d:number,u=0){return pointOnCut(d,u);}
 export function cutCoords(x:number,z:number){return nearestCut(x,z);}
 export const SPOTS=[
- {name:'Riverwalk / Cut entrance',...cutPoint(30),heading:pointOnCut(30).heading},
+ {name:'Atwater Street / Renaissance Center view',x:-72.5,z:-1180,heading:.075},
  {name:'Gratiot / geographic origin',...cutPoint(GEO.bridges.find(b=>b.name==='Gratiot Avenue')!.at),heading:pointOnCut(GEO.bridges.find(b=>b.name==='Gratiot Avenue')!.at).heading},
  {name:'Lafayette ramp',...cutPoint(GEO.ramps[0].at-15),heading:pointOnCut(GEO.ramps[0].at-15).heading},
  {name:'Chestnut overpass',...cutPoint(1438-20),heading:pointOnCut(1418).heading},
@@ -48,6 +49,7 @@ export const SPOTS=[
  {name:'Woodbridge / Fit Park',...cutPoint(265),heading:pointOnCut(265).heading},
  {name:'MoGo / bike repair',...cutPoint(2130),heading:pointOnCut(2130).heading},
  {name:'Detroit heart / field sign',...cutPoint(1600),heading:pointOnCut(1600).heading+Math.PI/2},
+ {name:'Ze Mound overlook',x:MILLIKEN_BERM.x+42,z:MILLIKEN_BERM.z,heading:-Math.PI/2},
  {name:'Adelaide / Detroit mural',...cutPoint(1864),heading:pointOnCut(1864).heading-Math.PI/2},
 ];
 export const STATIONS=CUT_STATIONS;
@@ -58,9 +60,10 @@ export const CHECKPOINTS=[
   {name:'Freight Yard',...cutPoint(2050)},{name:'Mack Avenue',...cutPoint(CUT_METRES-20)},
 ];
 export function locationAt(x:number,z:number){
+  if(Math.hypot(x-MILLIKEN_BERM.x,z-MILLIKEN_BERM.z)<80)return 'Ze Mound / Milliken State Park';
   const c=cutCoords(x,z);
   if(c.d>30&&Math.abs(c.u)<100)return [...CUT_STATIONS].reverse().find(s=>c.d>=s.at)?.name??'Dequindre Cut';
-  const street=roadAt(x,z);if(street?.name&&x>160)return street.name;
+  const street=roadAt(x,z);if(street?.name&&(x>160||street.name==='Atwater Street'))return street.name;
   if(z>170)return 'Hart Plaza';
   if(z> -260)return x>55?'Renaissance Center':'GM Plaza / Riverwalk';
   if(z> -650)return 'Atwater Street / Riverwalk';
@@ -71,6 +74,7 @@ export function isAccess(x:number,z:number){
   const c=cutCoords(x,z),r=nearestRamp(x,z);return r.distance<r.width/2+2||c.d<280||c.d>CUT_LENGTH-45;
 }
 export function heightAt(x:number,z:number){
+  const hill=millikenHill(x,z);if(hill>0)return hill;
   if(x<riverEdge(z)-3)return -1.1;
   const c=cutCoords(x,z);
   if(c.d<0)return 0;
@@ -85,11 +89,14 @@ export function heightAt(x:number,z:number){
   return h*(1-blend)+ramp.height*blend;
 }
 export function surfaceAt(x:number,z:number):SurfaceId{
+  if(millikenHill(x,z)>.01)return 'grass';
   if(parkContains(x,z))return 'pavement';
   const c=cutCoords(x,z);
   // Elevated streets must not paint brick/asphalt stripes onto the trail floor.
   const mapped=roadAt(x,z);
   if(mapped&&(c.distance>35||c.d<280||isAccess(x,z)))return 'pavement';
+  // Milliken's riverfront lawns are not a giant asphalt apron beside Atwater.
+  if(z< -1050&&x<28&&c.distance>12)return 'grass';
   if(c.d>0&&c.d<CUT_LENGTH+MACK_TRANSITION_END&&Math.abs(c.u)<110){
     if(Math.abs(c.u)<4||c.d<CUT_LENGTH&&isAccess(x,z))return 'pavement';
     if(c.d>2570&&c.d<2730&&c.u>5&&c.u<45)return 'brick';
@@ -105,10 +112,11 @@ export function terrainChunks():TerrainChunk[]{
   const chunks:TerrainChunk[]=[];
   for(let x0=-900;x0<4250;x0+=100)for(let z0=-4200;z0<1100;z0+=100){
     const cx=x0+50,cz=z0+50,c=cutCoords(cx,cz);
-    if(!inCity(cx,cz)||c.distance>260)continue;
+    const atwaterCorridor=cx> -300&&cx<350&&cz> -1750&&cz<200;
+    if(!inCity(cx,cz)||c.distance>260&&!atwaterCorridor)continue;
     const vertices:number[]=[],indices:number[]=[],surfaces:SurfaceId[]=[];
     // Fine collision triangles keep the narrow access ramps at their mapped grade.
-    const step=nearestRamp(cx,cz).distance<85?1:Math.abs(c.u)<100&&c.d> -80&&c.d<CUT_LENGTH+MACK_TRANSITION_END+70?2:20,n=100/step;
+    const step=nearestRamp(cx,cz).distance<85?1:millikenHill(cx,cz)>0||Math.hypot(cx-MILLIKEN_BERM.x,cz-MILLIKEN_BERM.z)<140?2:Math.abs(c.u)<100&&c.d> -80&&c.d<CUT_LENGTH+MACK_TRANSITION_END+70?2:20,n=100/step;
     for(let j=0;j<=n;j++)for(let i=0;i<=n;i++){const x=x0+i*step,z=z0+j*step;vertices.push(x,heightAt(x,z),z);}
     for(let j=0;j<n;j++)for(let i=0;i<n;i++){
       const a=j*(n+1)+i,b=a+1,c=a+n+1,d=c+1;indices.push(a,c,b,b,c,d);
