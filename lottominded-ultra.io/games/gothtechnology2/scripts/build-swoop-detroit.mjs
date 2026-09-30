@@ -12,13 +12,13 @@ const {build}=await import(pathToFileURL(require.resolve('vite')).href);
 const bridge=await readFile(resolve(import.meta.dirname,'swoop-reward-bridge.ts'),'utf8');
 function replace(code,from,to){if(!code.includes(from))throw Error('Elmwood source changed: '+from.slice(0,70));return code.replace(from,to);}
 const files=[];
-for(const dir of ['exports/architecture','exports/cut','textures/architecture','textures/cut','textures/trees','textures/realistic','exports/elmwood','textures/elmwood-library'])for(const name of await readdir(resolve(pack,dir)))if(/\.(glb|png|jpg|hdr)$/i.test(name)&&!(dir==='textures/cut'&&name.endsWith('.png'))&&!(dir==='exports/architecture'&&!['DS_Detroit_Globe_OAC.glb','DS_Detroit_Shed_3.glb'].includes(name)))files.push(dir+'/'+name);
+for(const dir of ['exports/architecture','exports/cut','textures/architecture','textures/cut','textures/trees','textures/realistic'])for(const name of await readdir(resolve(pack,dir)))if(/\.(glb|png|jpg|hdr)$/i.test(name)&&!(dir==='textures/cut'&&name.endsWith('.png'))&&!(dir==='exports/architecture'&&!['DS_Detroit_Globe_OAC.glb','DS_Detroit_Shed_3.glb'].includes(name)))files.push(dir+'/'+name);
 for(const id of ['DS_Man_01','DS_EUC_01','DS_Boerboel_01','DS_Pedestrian_01','DS_Cyclist_01','DS_Bicycle_01','DS_Hazard_Cone_01','DS_Hazard_Barrier_01','DS_Hoodie_Man_01','DS_Hoodie_Woman_01','DS_Mascot_Suit_01','DS_Mascot_Hoodie_01'])files.push(`exports/glb/${id}/${id}_LOD${id==='DS_Man_01'?0:1}.glb`);
 for(const id of ['DS_Segway_01','DS_InlineSkate_01'])files.push(`exports/mobility/${id}.glb`);
 // Check all inputs before touching the previous working package.
 async function readableTree(path){const info=await stat(path);await access(path);if(info.isDirectory())for(const item of await readdir(path))await readableTree(resolve(path,item));}
 for(const file of files)await readableTree(resolve(pack,file));
-for(const dir of ['audio/swoop','detroit/geospatial','exports/elmwood/LIBRARY_PROVENANCE.md'])await readableTree(resolve(pack,dir));
+for(const dir of ['audio/swoop','detroit/geospatial'])await readableTree(resolve(pack,dir));
 for(const file of ['exports/boutique','exports/gallery','exports/scooter','mural-credits.html','manifest.webmanifest','touch-icon.png'])await readableTree(resolve(source,'public',file));
 await mkdir(stagingRoot,{recursive:true});
 await build({root:source,configFile:false,base:'./',publicDir:false,plugins:[{
@@ -26,6 +26,8 @@ await build({root:source,configFile:false,base:'./',publicDir:false,plugins:[{
  transform(code,id){id=id.replaceAll('\\','/');if(!id.includes('/src/'))return;code=code.replaceAll('\r\n','\n');
   code=code.replace(/(['"`])\/(exports|textures|audio)\//g,'$1./$2/');
   if(id.endsWith('/detroit/main.ts')){
+   // The published map chooser routes to the separate Explorer before this module runs.
+   code=replace(code,"const elmwood=new URLSearchParams(location.search).get('map')==='elmwood';",'const elmwood=false;');
    code=replace(code,'let ready=false,','let rewardRunId=crypto.randomUUID(),rewardEngaged=false,rewardBaseline=0;\nlet ready=false,');
    code=replace(code,'function reset(spot=selectedSpot,station?:number){','function reset(spot=selectedSpot,station?:number){\n void (window as any).GothGameRewardFlush?.(swoopReceipt());rewardRunId=crypto.randomUUID();rewardEngaged=false;rewardBaseline=0;');
    code=replace(code,'if(running&&!paused&&!finished){\n    acc+=dt;',`if(running&&!paused&&!finished){
@@ -49,8 +51,7 @@ await copyFile(resolve(source,'public/mural-credits.html'),resolve(out,'mural-cr
 for(const file of ['manifest.webmanifest','touch-icon.png'])await copyFile(resolve(source,'public',file),resolve(out,file));
 await cp(resolve(pack,'audio/swoop'),resolve(out,'audio/swoop'),{recursive:true});
 await cp(resolve(pack,'detroit/geospatial'),resolve(out,'geospatial'),{recursive:true});
-await copyFile(resolve(pack,'exports/elmwood/LIBRARY_PROVENANCE.md'),resolve(out,'exports/elmwood/LIBRARY_PROVENANCE.md'));
-await writeFile(resolve(out,'SOURCE.md'),'Digital Static Ride Detroit, supplied via Digital_Static_Street_Asset_Pack/integrations/digital-static-ride. Dequindre Cut and Elmwood Explorer maps included; original riding, rider, dog, touch, controller and physics retained. Built by scripts/build-swoop-detroit.mjs from versioned swoop-source; original external asset pack remains unchanged. Store additions: portable assets, saved sound preference respected, reduced-motion scenery, shared discount-preview receipts for native earned scores. Reference geometry and placement remain approximate as disclosed by the game.\n');
+await writeFile(resolve(out,'SOURCE.md'),'Digital Static Ride Detroit, supplied via Digital_Static_Street_Asset_Pack/integrations/digital-static-ride. Dequindre Cut with navigation to the separately packaged Elmwood Explorer; original riding, rider, dog, touch, controller and physics retained. Built by scripts/build-swoop-detroit.mjs from versioned swoop-source; original external asset pack remains unchanged. Store additions: portable assets, saved sound preference respected, reduced-motion scenery, shared discount-preview receipts for native earned scores. Reference geometry and placement remain approximate as disclosed by the game.\n');
 console.log('Packaged Swoop Detroit: '+files.length+' assets');
 
 await access(resolve(out,'index.html'));
