@@ -1,3 +1,4 @@
+import {BicycleView} from '@digital-static/ridecore/cycling-view';
 import {routeGuide} from './routeGuide.ts';
 import * as T from 'three';
 
@@ -60,17 +61,17 @@ export class RivalRace {
 
  private playerPose?:RidePose;
 
- rules:RaceRules;pilots:RacePilot[];private heroes:Hero[];private group=new T.Group();private materials:T.Material[]=[];private geometry:T.BufferGeometry[]=[];
+ rules:RaceRules;pilots:RacePilot[];private heroes:(Hero|BicycleView)[];private group=new T.Group();private materials:T.Material[]=[];private geometry:T.BufferGeometry[]=[];
 
 
 
- constructor(scene:T.Scene,terrain:TerrainSampler,data:Awaited<ReturnType<typeof loadActors>>,player:RiderId,readonly difficulty:RaceDifficulty,playerController?:RideController){
+ constructor(scene:T.Scene,terrain:TerrainSampler,data:Awaited<ReturnType<typeof loadActors>>,player:RiderId,readonly difficulty:RaceDifficulty,playerController?:RideController,readonly cycling=false){
 
 
-  this.rules=new RaceRules(player);this.pilots=this.rules.racers.slice(1).map((r,i)=>new RacePilot(terrain,r.id,i,difficulty,()=>playerController?playerController.obstacles('human-player'):this.playerPose?[{id:'human-player',x:this.playerPose.x,y:this.playerPose.y,z:this.playerPose.z,radius:.52,height:2.2,kind:'rider',vx:this.playerPose.velocityX,vz:this.playerPose.velocityZ}]:[]));
+  this.rules=new RaceRules(player);this.pilots=this.rules.racers.slice(1).map((r,i)=>new RacePilot(terrain,r.id,i,difficulty,()=>playerController?playerController.obstacles('human-player'):this.playerPose?[{id:'human-player',x:this.playerPose.x,y:this.playerPose.y,z:this.playerPose.z,radius:.52,height:2.2,kind:'rider',vx:this.playerPose.velocityX,vz:this.playerPose.velocityZ}]:[],cycling));
 
 
-  this.heroes=this.pilots.map(p=>{const h=new Hero(data,terrain,p.id);p.sim.mountedVolume=h.mountedVolume;h.apply(p.pose);scene.add(h.root);return h;});
+  this.heroes=this.pilots.map(p=>{const h=cycling?new BicycleView(data.get('DS_Bicycle_01')!,data.get('DS_Cyclist_01')!,p.index+1,true):new Hero(data,terrain,p.id);if(h instanceof Hero)p.sim.mountedVolume=h.mountedVolume;h.apply(p.pose);scene.add(h.root);return h;});
 
 
 
@@ -122,7 +123,7 @@ export class RivalRace {
 
 
 
- render(visible:boolean,vr:boolean){this.group.visible=visible;this.heroes.forEach((h,i)=>{h.root.visible=visible;h.apply(this.pilots[i].pose);});$('raceHUD').hidden=!visible||vr;$('raceCountdown').hidden=!visible||vr||this.rules.countdown<=0;}
+ render(visible:boolean,vr:boolean){this.group.visible=visible;this.heroes.forEach((h,i)=>{h.root.visible=visible;const p=this.pilots[i];if(h instanceof BicycleView)h.apply(p.pose,p.sim.bicycle.steeringAngle,p.sim.bicycle.pedalPhase);else h.apply(p.pose);});$('raceHUD').hidden=!visible||vr;$('raceCountdown').hidden=!visible||vr||this.rules.countdown<=0;}
 
 
 
@@ -135,7 +136,7 @@ export class RivalRace {
 
 
 
-  $('raceOrder').replaceChildren(...r.order.map((p,i)=>{const li=document.createElement('li');li.textContent=`${i+1}. ${p.player?'YOU':name(p.id)}${p.finish!==null?' · '+p.finish.toFixed(1)+' s':!p.player?' · '+Math.round(p.speed*3.6)+' km/h':''}`;li.classList.toggle('isPlayer',p.player);return li;}));
+  $('raceOrder').replaceChildren(...r.order.map((p,i)=>{const li=document.createElement('li');li.textContent=`${i+1}. ${p.player?'YOU':this.cycling?'Cyclist '+(this.pilots.findIndex(r=>r.id===p.id)+1):name(p.id)}${p.finish!==null?' · '+p.finish.toFixed(1)+' s':!p.player?' · '+Math.round(p.speed*3.6)+' km/h':''}`;li.classList.toggle('isPlayer',p.player);return li;}));
 
 
 
@@ -151,7 +152,7 @@ export class RivalRace {
 
 
 
-  $('raceResultOrder').replaceChildren(...r.order.map((p,i)=>{const row=document.createElement('li');row.textContent=`${i+1} — ${p.player?'You · ':''}${name(p.id)} — ${p.finish===null?Math.max(0,Math.round(RACE_ROUTE.end-p.station))+' m remaining':p.finish.toFixed(2)+' s'}`;return row;}));
+  $('raceResultOrder').replaceChildren(...r.order.map((p,i)=>{const row=document.createElement('li');row.textContent=`${i+1} — ${p.player?'You · ':''}${this.cycling?(p.player?'Bicycle':'Cyclist '+(this.pilots.findIndex(r=>r.id===p.id)+1)):name(p.id)} — ${p.finish===null?Math.max(0,Math.round(RACE_ROUTE.end-p.station))+' m remaining':p.finish.toFixed(2)+' s'}`;return row;}));
 
 
 
@@ -159,7 +160,7 @@ export class RivalRace {
 
 
 
-  if(r.player.finish!==null)try{const key=`swoop-rivals-best:${RACE_ROUTE.id}:${this.difficulty}:${r.player.id}`,old=Number(localStorage.getItem(key));if(!old||r.player.finish<old){localStorage.setItem(key,String(r.player.finish));$('raceResultCopy').textContent+=' · NEW PERSONAL BEST';}else $('raceResultCopy').textContent+=` · Best ${old.toFixed(2)} s`;}catch{}
+  if(r.player.finish!==null)try{const key=`swoop-rivals-best:${this.cycling?'bicycle-v1:':''}${RACE_ROUTE.id}:${this.difficulty}:${r.player.id}`,old=Number(localStorage.getItem(key));if(!old||r.player.finish<old){localStorage.setItem(key,String(r.player.finish));$('raceResultCopy').textContent+=' · NEW PERSONAL BEST';}else $('raceResultCopy').textContent+=` · Best ${old.toFixed(2)} s`;}catch{}
 
 
 
@@ -196,6 +197,4 @@ export function installRaceUI(retry:()=>void,free:()=>void,menu:()=>void){
 
 
 }
-
-
 

@@ -1,6 +1,7 @@
+import {gentleSteering} from '@digital-static/ridecore';
 import {RIDE_TUNING as tune,advanceSpring,clamp,damp,spring} from './rideDynamics.ts';
 
-export type BalanceInput={steer:number;speed:number;grounded:boolean;crouch:boolean;grip:number};
+export type BalanceInput={steer:number;speed:number;grounded:boolean;crouch:boolean;grip:number;precision?:boolean};
 /** Original EUC balance model. Steering shifts weight; the bank then bends the
  * contact trajectory. At walking pace a blended body pivot keeps tight turns usable.
  * No reference-game code or constants are used here. Units: metres, seconds, radians. */
@@ -14,8 +15,8 @@ export class BalanceEngine {
     const speed=Math.abs(a.speed),direction=a.speed<-.05?-1:1;
     const raw=Number.isFinite(a.steer)?clamp(a.steer,-1,1):0;
     // Gentle around stick centre, but keyboard/full stick still reaches full lock.
-    const command=.82*raw+.18*raw*raw*raw;
-    const intent=advanceSpring(this.input,command,16,dt);
+    const command=a.precision?.82*raw+.18*raw*raw*raw:gentleSteering(raw);
+    const intent=advanceSpring(this.input,command,a.precision?16:10,dt);
     const moving=clamp(speed/.8,0,1),technical=1-clamp((speed-1.5)/3.8,0,1);
     const maxYaw=tune.highSpeedYaw+(tune.lowSpeedYaw-tune.highSpeedYaw)*Math.exp(-speed/4.8);
     const yawDemand=-intent*maxYaw*moving*direction;

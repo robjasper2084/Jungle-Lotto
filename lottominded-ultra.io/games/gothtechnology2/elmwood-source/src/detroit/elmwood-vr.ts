@@ -22,6 +22,7 @@ type VRRide={startVR():Promise<void>;endVR():void;pauseVR():void;vrInput(packet:
 export function makeElmwoodVR(scene:T.Scene,camera:T.PerspectiveCamera,renderer:T.WebGLRenderer,canvas:HTMLCanvasElement,ride:VRRide){
   const rig=new T.Group();rig.name='Elmwood headset tracking origin';scene.add(rig);
   const input=new ElmwoodVRInput(),buttons:HTMLButtonElement[]=[];let session:XRSession|undefined,starting=false;
+  canvas.addEventListener('elmwood-clear-input',e=>{const seat=(e as CustomEvent<{seat?:number}>).detail?.seat;if(seat===undefined||seat===0)input.reset();});
   renderer.xr.enabled=true;renderer.xr.setReferenceSpaceType('local-floor');
   const help=document.createElement('p');help.id='elmwood-vr-status';help.setAttribute('role','status');
   help.textContent='Headset: left stick ride/steer, left grip brake, right A hop, right grip crouch, right B recover, left X pause. Use the headset system menu to exit.';

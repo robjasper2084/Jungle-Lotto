@@ -50,8 +50,8 @@ test('one-foot glide plants again before scoring and steering hard cancels it',(
   step(c,2);c.writePose(pose);assert.ok(pose.trickFoot<.001);assert.equal(c.tricks.completed,1);
   const cancel=moving();step(cancel,.01,{trick:4});step(cancel,.5);step(cancel,.01,{steer:1});step(cancel,1);assert.equal(cancel.tricks.completed,0);assert.equal(cancel.tricks.phase,'idle');
 });
-test('collision cancels a trick and recovery clears the pose',()=>{
-  let blocked=false;const c=new RideController({...flat,raycastObstacle:()=>blocked?0:null});step(c,.7,{throttle:.55});step(c,.01,{trick:3});step(c,.85);blocked=true;step(c,.1);assert.equal(c.crashed,true);assert.equal(c.tricks.completed,0);blocked=false;step(c,.01,{reset:true});const p=createPose();c.writePose(p);assert.equal(c.tricks.phase,'idle');assert.equal(p.trickFoot,0);assert.equal(c.crashed,false);
+test('a light collision cancels a trick without throwing the rider',()=>{
+  let blocked=false;const c=new RideController({...flat,raycastObstacle:()=>blocked?0:null});step(c,.7,{throttle:.55});step(c,.01,{trick:3});step(c,.85);blocked=true;step(c,.1);assert.equal(c.crashed,false);assert.equal(c.tricks.completed,0);blocked=false;step(c,.01,{reset:true});const p=createPose();c.writePose(p);assert.equal(c.tricks.phase,'idle');assert.equal(p.trickFoot,0);assert.equal(c.crashed,false);
 });
 test('an early raised landing cannot award an unfinished spin',()=>{
   let height=0;const c=new RideController({...flat,sampleGround(x,z,out){flat.sampleGround(x,z,out);out.height=height;return out;}});step(c,.01,{trick:3});step(c,.93);assert.equal(c.snapshot().grounded,false);height=1.2;step(c,2);assert.equal(c.tricks.completed,0);

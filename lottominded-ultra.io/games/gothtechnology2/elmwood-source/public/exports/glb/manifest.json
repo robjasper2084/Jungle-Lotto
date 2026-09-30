@@ -1,0 +1,128 @@
+{
+  "version": "phase4.1",
+  "units": "metres",
+  "runtime_forward": "+Z",
+  "wheelbase_m": 1.09,
+  "wheel_radius_m": 0.34,
+  "styles": [
+    "Teal city",
+    "Coral commuter",
+    "Golden cruiser",
+    "Violet touring",
+    "Sky blue road",
+    "Lime trail"
+  ],
+  "files": [
+    {
+      "file": "exports/glb/DS_Bicycle_Styles/DS_Bicycle_Styles_LOD1.glb",
+      "sha256": "136307564948795cde707c069788e56647baf085d16358d794ae98d74a20c6b5",
+      "bytes": 498552,
+      "styles": [
+        {
+          "name": "Teal city",
+          "triangles": 8750,
+          "meshes": 58,
+          "materials": 8
+        },
+        {
+          "name": "Coral commuter",
+          "triangles": 8442,
+          "meshes": 58,
+          "materials": 8
+        },
+        {
+          "name": "Golden cruiser",
+          "triangles": 8858,
+          "meshes": 58,
+          "materials": 8
+        },
+        {
+          "name": "Violet touring",
+          "triangles": 8554,
+          "meshes": 58,
+          "materials": 8
+        },
+        {
+          "name": "Sky blue road",
+          "triangles": 8538,
+          "meshes": 59,
+          "materials": 8
+        },
+        {
+          "name": "Lime trail",
+          "triangles": 7998,
+          "meshes": 57,
+          "materials": 8
+        }
+      ]
+    },
+    {
+      "file": "exports/glb/DS_Bicycle_Styles/DS_Bicycle_Styles_LOD2.glb",
+      "sha256": "76569370f25c3df1161397a7dfca9b3b91f594006aeea036e45f414362107174",
+      "bytes": 364232,
+      "styles": [
+        {
+          "name": "Teal city",
+          "triangles": 5040,
+          "meshes": 58,
+          "materials": 8
+        },
+        {
+          "name": "Coral commuter",
+          "triangles": 4732,
+          "meshes": 58,
+          "materials": 8
+        },
+        {
+          "name": "Golden cruiser",
+          "triangles": 5148,
+          "meshes": 58,
+          "materials": 8
+        },
+        {
+          "name": "Violet touring",
+          "triangles": 4844,
+          "meshes": 58,
+          "materials": 8
+        },
+        {
+          "name": "Sky blue road",
+          "triangles": 4828,
+          "meshes": 59,
+          "materials": 8
+        },
+        {
+          "name": "Lime trail",
+          "triangles": 4288,
+          "meshes": 57,
+          "materials": 8
+        }
+      ]
+    }
+  ],
+  "source": "source/vehicles/DS_Bicycle_Styles.blend",
+  "authoring": "scripts/build_bicycle_styles.py",
+  "origin": "Original Blender procedural frame designs; existing owned Digital Static mechanical parts",
+  "selection": "Keep only BikeStyle_N before rendering; preserve common pivots and original rider IK",
+  "lod_policy": "LOD1 currently shipped; LOD2 exported for later distance tuning",
+  "textures": "No new textures or decoder extensions",
+  "unity": "FBX exported; Editor validation pending license availability",
+  "higgsfield": {
+    "job": "68f0c1c6-45ec-4b3c-a048-5a7549a995b1",
+    "model": "gpt_image_2_5",
+    "approvedCredits": 0.25,
+    "status": "completed",
+    "reference": "higgsfield-reference.png",
+    "note": "Visual design reference, not mesh or baked animation. Blender mechanical measurements are authoritative."
+  },
+  "riders": {
+    "player": "DS_Man_01 original identity retained",
+    "npc": "DS_Cyclist_01 six existing skin/clothing palettes; isolated skeletons and shared per-clone materials",
+    "newRiderMesh": false
+  },
+  "validation": {
+    "mechanicalNodes": true,
+    "webIK": "Both human rigs, all six styles, four pedal phases, hand error <3cm; source clone isolation and steering fender checks",
+    "unity": "LicenseClient-digit connection refused on 2026-09-30; preview FBX and assembly script prepared, scene execution unverified"
+  }
+}

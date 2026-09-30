@@ -13,11 +13,13 @@
   "homepage": "https://vibezzzcoder.github.io/EUC-thrills/",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
-    "check": "tsc -p tsconfig.riverwalk.json --noEmit"
+    "check": "tsc -p tsconfig.riverwalk.json --noEmit",
+    "test:elmwood": "node --experimental-transform-types --test src/detroit/elmwood-*.test.ts src/detroit/blockingPack.test.ts"
   },
   "dependencies": {
     "@digital-static/ridecore": "file:../../../../../Digital_Static_RideCore",
     "@dimforge/rapier3d-compat": "^0.20.0",
+    "fflate": "0.8.3",
     "three": "0.185.1"
   },
   "devDependencies": {

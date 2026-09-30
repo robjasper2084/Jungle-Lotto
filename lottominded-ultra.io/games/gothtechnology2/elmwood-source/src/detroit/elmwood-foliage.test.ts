@@ -2,6 +2,11 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import * as T from 'three';
 import {configureElmwoodFoliage,seasonElmwoodFoliage} from './elmwood-foliage.ts';
+test('Higan cherry flowers bloom only in spring without hiding the summer foliage',()=>{
+ const blossom=new T.MeshStandardMaterial();blossom.name='leaf blossom Higan cherry';
+ seasonElmwoodFoliage(blossom,'spring');assert.equal(blossom.opacity,1);
+ for(const season of ['summer','autumn','winter']){seasonElmwoodFoliage(blossom,season);assert.equal(blossom.opacity,0);}
+});
 
 test('thin leaf coverage survives mip levels that erased pine and willow canopies',()=>{
  const m=new T.MeshStandardMaterial({map:new T.Texture()});configureElmwoodFoliage(m);

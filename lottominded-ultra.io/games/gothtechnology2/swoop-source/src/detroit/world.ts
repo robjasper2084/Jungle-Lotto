@@ -1,4 +1,6 @@
+import {inHarbor} from './harbor.ts';
 import {parkContains} from './freestylePark.ts';
+import {MACK_STUDIO,studioGrade,studioLot} from './mackStudioSite.ts';
 import {millikenHill,MILLIKEN_BERM} from './millikenTerrain.ts';
 import {courseFeatures,featureContact,rampLift,type CourseFeature} from './courseFeatures.ts';
 import {routeHazards} from './routeHazards.ts';
@@ -60,6 +62,7 @@ export const CHECKPOINTS=[
   {name:'Freight Yard',...cutPoint(2050)},{name:'Mack Avenue',...cutPoint(CUT_METRES-20)},
 ];
 export function locationAt(x:number,z:number){
+  if(studioLot(x,z))return 'GothTech Studio / 2000 Mack';
   if(Math.hypot(x-MILLIKEN_BERM.x,z-MILLIKEN_BERM.z)<80)return 'Ze Mound / Milliken State Park';
   const c=cutCoords(x,z);
   if(c.d>30&&Math.abs(c.u)<100)return [...CUT_STATIONS].reverse().find(s=>c.d>=s.at)?.name??'Dequindre Cut';
@@ -75,7 +78,7 @@ export function isAccess(x:number,z:number){
 }
 export function heightAt(x:number,z:number){
   const hill=millikenHill(x,z);if(hill>0)return hill;
-  if(x<riverEdge(z)-3)return -1.1;
+  if(x<riverEdge(z)-3||inHarbor(x,z))return -1.1;
   const c=cutCoords(x,z);
   if(c.d<0)return 0;
   const floor=profileLevel(c.d,'floor'),street=profileLevel(c.d,'street');
@@ -86,9 +89,10 @@ export function heightAt(x:number,z:number){
   // Campbell Terrace opens onto the path instead of sitting on the generic bank.
   if(c.u>3&&c.u<17&&Math.abs(c.d-930.563)<14){const f=(1-clamp((Math.abs(c.d-930.563)-9)/5,0,1))*(1-clamp((c.u-14)/3,0,1));h=h*(1-f)+floor*f;}
   const ramp=nearestRamp(x,z),blend=1-clamp((ramp.distance-ramp.width/2)/3,0,1);
-  return h*(1-blend)+ramp.height*blend;
+  return studioGrade(x,z,h*(1-blend)+ramp.height*blend);
 }
 export function surfaceAt(x:number,z:number):SurfaceId{
+  if(studioLot(x,z))return 'pavement';
   if(millikenHill(x,z)>.01)return 'grass';
   if(parkContains(x,z))return 'pavement';
   const c=cutCoords(x,z);
@@ -172,7 +176,7 @@ export class DetroitWorld implements TerrainSampler{
   physics!:RAPIER.World;
   chunks=terrainChunks();solids=worldSolids();
   geoMeshes=geospatialMeshes(heightAt);
-  buildingMeshes=CITY.buildings.filter(b=>b.points.some(p=>this.chunks.some(c=>Math.abs(c.x-p[0])<50&&Math.abs(c.z-p[1])<50))).map(b=>({data:b,geometry:buildingEnvelope(b,heightAt)}));
+  buildingMeshes=CITY.buildings.filter(b=>b.id!==MACK_STUDIO.osmId&&b.points.some(p=>this.chunks.some(c=>Math.abs(c.x-p[0])<50&&Math.abs(c.z-p[1])<50))).map(b=>({data:b,geometry:buildingEnvelope(b,heightAt)}));
   metadata=new Map<number,{hx:number;hz:number}>();
   rideIntent={speed:0,heading:0};rejectedEncounters=0;
   private recoverySpace:{position:Vec3;radius:number;height:number;remaining:number}|undefined;

@@ -16,7 +16,7 @@ export class ElmwoodWalkerView{
   private bones:{node:T.Object3D;p:T.Vector3;q:T.Quaternion;s:T.Vector3}[]=[];
   private legs:{upper:T.Object3D;knee:T.Object3D;foot:T.Object3D;target:T.Vector3;rotation:T.Quaternion;anchor:T.Vector3;stance:boolean}[]=[];
   private arms:{upper:T.Object3D;knee:T.Object3D;foot:T.Object3D;target:T.Vector3;rotation:T.Quaternion}[]=[];
-  private movement=0;
+  private movement=0;private idleTime=0;
   private walkMixer:T.AnimationMixer;private walkDuration=2;
   constructor(asset:GLTF){
     this.model=clone(asset.scene);this.root.add(this.model,this.phone);
@@ -35,12 +35,13 @@ export class ElmwoodWalkerView{
   }
   update(distance:number,dt:number,photo:boolean,height:(x:number,z:number)=>number){
     if(dt<=0)return;
+    this.idleTime+=dt;
     this.phase=(this.phase+Math.max(0,distance)/WALK_CYCLE_METRES)%1;
     const moving=distance/dt>.025&&!photo;this.movement+=(Number(moving)-this.movement)*(1-Math.exp(-dt*9));this.photoBlend+=(Number(photo)-this.photoBlend)*(1-Math.exp(-dt*4));
     for(const b of this.bones){b.node.position.copy(b.p);b.node.quaternion.copy(b.q);b.node.scale.copy(b.s);}
     // Use the same authored upper-body motion as Swoop, synchronized to travel.
     this.walkMixer.setTime(this.phase*this.walkDuration);
-    const hips=this.model.getObjectByName('Hips')!;hips.position.y-=.035*this.movement;
+    const hips=this.model.getObjectByName('Hips')!;hips.position.y-=.035*this.movement;hips.position.y+=Math.sin(this.idleTime*1.6)*.003*(1-this.movement);
     this.root.updateMatrixWorld(true);const rotation=this.root.getWorldQuaternion(new T.Quaternion()),forward=new T.Vector3(0,0,1).applyQuaternion(rotation);
     this.legs.forEach((leg,i)=>{
       const step=walkingFoot(this.phase+i*.5),local=leg.target.clone();local.z+=step.z*this.movement;local.y+=step.lift*this.movement;
@@ -49,8 +50,9 @@ export class ElmwoodWalkerView{
       leg.stance=moving&&step.stance;solve(leg,wanted,forward.clone(),rotation.clone().multiply(leg.rotation));
     });
     this.arms.forEach((arm,i)=>{
-      if(this.photoBlend<.001)return;
-      const hand=this.root.worldToLocal(arm.foot.getWorldPosition(new T.Vector3()));
+      const shoulder=this.root.worldToLocal(arm.upper.getWorldPosition(new T.Vector3())),length=arm.upper.getWorldPosition(new T.Vector3()).distanceTo(arm.knee.getWorldPosition(new T.Vector3()))+arm.knee.getWorldPosition(new T.Vector3()).distanceTo(arm.foot.getWorldPosition(new T.Vector3()));
+      const swing=Math.sin((this.phase+i*.5)*Math.PI*2)*.16*this.movement;
+      const hand=shoulder.clone().add(new T.Vector3(i?-.025:.025,-length*.94,.035-swing));
       hand.lerp(new T.Vector3(i?-.056:.056,1.41,.34),this.photoBlend);
       solve(arm,this.root.localToWorld(hand),new T.Vector3(i?-.5:.5,-1,.15).applyQuaternion(rotation),rotation.clone().multiply(arm.rotation));
     });

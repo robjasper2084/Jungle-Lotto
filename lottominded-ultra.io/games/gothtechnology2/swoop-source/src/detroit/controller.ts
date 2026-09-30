@@ -36,6 +36,7 @@ type Spawn={position:Vec3;headingY:number};
 export class RideController {
   terrain:TerrainSampler;
   wheelScale=.86;
+  precisionSteering=false; // Path-following AI supplies an exact steering demand, without thumb filtering.
   mountedVolume:MountedVolume={...DEFAULT_MOUNTED_VOLUME};
   private recoveryAge=0;
   private recoveryPose:RidePose|undefined;private recoveryDuration=0;
@@ -70,7 +71,7 @@ export class RideController {
   }
   private fall(reason:string,impact?:ActorImpact){if(this.crashed)return;this.crashed=true;this.crashCause=reason;this.counts.crashes++;this.crashAge=0;this.fallMotion=new FallMotion(this.pose,reason,tune.wheelRadius*this.wheelScale,impact);this.charge=this.hopQueue=this.hopWindup=this.pendingCharge=this.motor=0;this.pose.driveIntent=0;this.tricks.cancel();}
   receiveImpact(impact:ActorImpact){
-    if(!Number.isFinite(impact.speed+impact.vx+impact.vz)||impact.speed<2.2||this.crashed||this.recoveryPose)return false;
+    if(!Number.isFinite(impact.speed+impact.vx+impact.vz)||impact.speed<4.2||this.crashed||this.recoveryPose)return false;
     this.fall('collision',impact);return true;
   }
   /** The reserved fallen envelope follows both body and wheel, not an invisible upright rider. */
@@ -158,7 +159,7 @@ export class RideController {
       p.speed=clamp(speed,-tune.reverseSpeed,tune.maxSpeed);
     }
     this.acceleration=damp(this.acceleration,(p.speed-speedBefore)/dt,10,dt);
-    const balance=this.balance.step(dt,{steer,speed:p.speed,grounded:this.grounded,crouch:input.crouch,grip:ice?.14:rough?.60:.9});
+    const balance=this.balance.step(dt,{steer,speed:p.speed,grounded:this.grounded,crouch:input.crouch,precision:this.precisionSteering,grip:ice?.14:rough?.60:.9});
     const intent=balance.intent,moving=clamp(absSpeed/.8,0,1),technical=1-clamp((absSpeed-1.5)/3.8,0,1);
     p.yawRate=balance.yawRate;p.headingY+=p.yawRate*dt+this.tricks.airStep(dt)+this.tricks.groundYaw;
     const s=Math.sin(p.headingY),c=Math.cos(p.headingY);
@@ -213,7 +214,17 @@ export class RideController {
         this.vx=this.vz=this.motor=0;if(!this.crashed)p.speed=0;
         if(this.crashed)return;
       }
-      else if(hit!==null){const clear=clamp(hit-.33,0,travel);p.x+=dx*clear/travel;p.z+=dz*clear/travel;if(Math.hypot(this.vx,this.vz)>1.6)this.fall('collision');else{p.speed=this.vx=this.vz=this.motor=0;}}
+      else if(hit!==null){this.tricks.cancel();const clear=clamp(hit-.33,0,travel);p.x+=dx*clear/travel;p.z+=dz*clear/travel;
+        // Small knocks stop the wheel. A free tangential axis lets a glancing
+        // contact scrub speed along the obstacle instead of throwing the rider.
+        const remaining=1-clear/travel,ox=dx*remaining,oz=dz*remaining;
+        const freeX=Math.abs(ox)>1e-5&&this.terrain.raycastObstacle({x:p.x,y:p.y+.65,z:p.z},{x:ox,y:0,z:0},Math.abs(ox)+.34,.28)===null;
+        const freeZ=Math.abs(oz)>1e-5&&this.terrain.raycastObstacle({x:p.x,y:p.y+.65,z:p.z},{x:0,y:0,z:oz},Math.abs(oz)+.34,.28)===null;
+        const slideX=freeX&&(!freeZ||Math.abs(ox)>Math.abs(oz)),slideZ=freeZ&&!slideX;
+        const normalSpeed=slideX?Math.abs(this.vz):slideZ?Math.abs(this.vx):Math.hypot(this.vx,this.vz);
+        if(normalSpeed>4.2)this.fall('collision');
+        else if(slideX||slideZ){if(slideX){p.x+=ox*.75;this.vx*=.75;this.vz=0;}else{p.z+=oz*.75;this.vz*=.75;this.vx=0;}p.speed=this.vx*Math.sin(p.headingY)+this.vz*Math.cos(p.headingY);this.motor=0;}
+        else{p.speed=this.vx=this.vz=this.motor=0;}}
       else{p.x+=dx;p.z+=dz;}
     }
     this.terrain.sampleGround(p.x,p.z,this.ground,p.y);const floor=this.ground.height;

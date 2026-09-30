@@ -8,6 +8,7 @@ import {stanceTargets} from './riderMotion.ts';
  */
 export class NaturalMotionEngine {
   private channels=new Map<string,Spring>();
+  private idleTime=0;
   private move(name:string,target:number,frequency:number,dt:number){
     let state=this.channels.get(name);
     if(!state){state=spring();state.value=target;this.channels.set(name,state);}
@@ -16,6 +17,11 @@ export class NaturalMotionEngine {
   step(dt:number,p:RidePose,acceleration:number){
     const t=stanceTargets(p),live=1-clamp(p.crashBlend,0,1);
     const move=(name:string,target:number,frequency:number)=>this.move(name,target,frequency,dt);
+    this.idleTime+=dt;
+    const idle=(1-clamp(Math.abs(p.speed)/.7,0,1))*(1-p.airBlend)*live,breath=Math.sin(this.idleTime*1.6)*idle;
+    t.drop+=breath*.004;t.pitch+=breath*.006;
+    t.headYaw+=Math.sin(this.idleTime*.31)*idle*.045;
+
     p.bodyDrop=move('drop',t.drop,p.landingCompression>.12?23:14);
     p.bodyShift=move('shift',t.shift,14);p.bodyLateral=move('lateral',t.lateral,13);
     p.bodyHipTilt=move('hipTilt',t.hipTilt,13);p.bodyPitch=move('pitch',t.pitch,9);

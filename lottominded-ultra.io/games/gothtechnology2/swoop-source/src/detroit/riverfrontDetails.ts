@@ -1,5 +1,7 @@
+import {buildHarbor,harborBoundary} from './harbor.ts';
 import * as T from 'three';
 import {makeRoadSign} from './roadSigns.ts';
+import {roadsidePoint} from './roadsidePlacement.ts';
 import {CITY,riverEdge} from './geography.ts';
 import {heightAt,type DetroitWorld} from './world.ts';
 import {MILLIKEN_BERM} from './millikenTerrain.ts';
@@ -7,7 +9,7 @@ import {MILLIKEN_BERM} from './millikenTerrain.ts';
 export function buildRiverfrontDetails(scene:T.Scene,world:DetroitWorld,groupAt:(x:number,z:number)=>T.Group){
  const concrete=new T.MeshStandardMaterial({color:0xb8b4a8,roughness:.92}),metal=new T.MeshStandardMaterial({color:0x263e3b,metalness:.5,roughness:.48}),asphalt=new T.MeshStandardMaterial({color:0x424747,roughness:.96}),white=new T.MeshStandardMaterial({color:0xe2e3cf});
  function box(x:number,y:number,z:number,w:number,h:number,d:number,m:T.Material,angle=0){const mesh=new T.Mesh(new T.BoxGeometry(w,h,d),m);mesh.position.set(x,y,z);mesh.rotation.y=angle;mesh.receiveShadow=true;groupAt(x,z).add(mesh);return mesh;}
- function sign(x:number,z:number,name:string,stop=false,angle=0,allWay=false){const root=makeRoadSign(name,stop,allWay);root.position.set(x,heightAt(x,z),z);root.rotation.y=angle;groupAt(x,z).add(root);}
+ function sign(x:number,z:number,name:string,stop=false,angle=0,allWay=false){const p=roadsidePoint(x,z,(px,pz)=>world.chunks.some(c=>Math.abs(c.x-px)<=50&&Math.abs(c.z-pz)<=50));if(!p)return;const root=makeRoadSign(name,stop,allWay);root.position.set(p.x,heightAt(p.x,p.z),p.z);root.rotation.y=angle;groupAt(p.x,p.z).add(root);}
  // Label actual named streets at well-separated visible road starts.
  const used:{x:number;z:number;name:string}[]=[];
  for(const road of CITY.roads){if(!road.name)continue;const p=road.points[0],q=road.points[1];if(!q||!world.chunks.some(c=>Math.abs(c.x-p[0])<50&&Math.abs(c.z-p[1])<50)||used.some(a=>a.name===road.name&&Math.hypot(a.x-p[0],a.z-p[1])<180))continue;
@@ -25,7 +27,7 @@ export function buildRiverfrontDetails(scene:T.Scene,world:DetroitWorld,groupAt:
  }
  // Other controls remain authored outside the Atwater corridor; do not fabricate its inventory.
  const stops:{x:number;z:number}[]=[];
- for(const road of CITY.roads){if(!road.name||['Atwater Street','Mack Avenue','Jefferson Avenue'].includes(road.name))continue;
+ for(const road of CITY.roads){if(!road.name||['cycleway','footway','path','pedestrian','steps'].includes(road.kind)||['Atwater Street','Mack Avenue','Jefferson Avenue'].includes(road.name))continue;
   for(const end of [0,road.points.length-1]){const p=road.points[end],q=road.points[end===0?1:end-1];if(!q)continue;
    if(!world.chunks.some(c=>Math.abs(c.x-p[0])<50&&Math.abs(c.z-p[1])<50))continue;
    if(p[0]<200&&p[1]<-650)continue;
@@ -56,6 +58,7 @@ export function buildRiverfrontDetails(scene:T.Scene,world:DetroitWorld,groupAt:
 
  // River surface follows the mapped shoreline instead of covering park terrain.
  const positions:number[]=[];for(let z=-1900;z<450;z+=20){const a=riverEdge(z)-3,c=riverEdge(z+20)-3;positions.push(a,-.3,z,a-1400,-.3,z,c,-.3,z+20,c,-.3,z+20,a-1400,-.3,z,c-1400,-.3,z+20);}
+ const shape=new T.Shape(harborBoundary.map(p=>new T.Vector2(p[0],-p[1]))),basin=new T.ShapeGeometry(shape);basin.rotateX(-Math.PI/2);const basinMesh=new T.Mesh(basin,new T.MeshStandardMaterial({color:0x285d68,metalness:.35,roughness:.3}));basinMesh.position.y=-.3;basinMesh.name='Milliken Harbor basin';scene.add(basinMesh);buildHarbor(world,groupAt);
  const geometry=new T.BufferGeometry();geometry.setAttribute('position',new T.Float32BufferAttribute(positions,3));geometry.computeVertexNormals();const time={value:0};const water=new T.MeshStandardMaterial({color:0x285d68,metalness:.35,roughness:.3,side:T.DoubleSide});water.onBeforeCompile=s=>{s.uniforms.riverTime=time;s.vertexShader='uniform float riverTime;\n'+s.vertexShader;s.vertexShader=s.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\ntransformed.y += .055*sin(position.x*.16+riverTime*.8)+.035*cos(position.z*.22-riverTime*.6);');};const mesh=new T.Mesh(geometry,water);mesh.name='Detroit River shoreline';scene.add(mesh);
  return {update:(seconds:number)=>{time.value=seconds;}};
 }

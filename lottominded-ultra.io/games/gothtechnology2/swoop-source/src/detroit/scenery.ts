@@ -1,4 +1,5 @@
 import {signSupports} from './signSupports.ts';
+import {terrainVisualSurface} from './parkPaths.ts';
 import {buildAtwaterSkyline} from './atwater.ts';
 import {buildMillikenLandmarks} from './millikenLandmarks.ts';
 import {buildRiverfrontDetails} from './riverfrontDetails.ts';
@@ -78,10 +79,8 @@ export async function buildScenery(scene:T.Scene,world:DetroitWorld,polish=true)
     // The mapped road ribbons own the visible trail edge. Painting whole collision
     // triangles as asphalt creates a stair-step fringe outside that smooth edge.
     const visibleSurfaces=c.surfaces.map((s,t)=>{
-      if(s==='grass'||s==='brick')return si(s);
       let x=0,z=0;for(let k=0;k<3;k++){const v=c.indices[t*3+k]*3;x+=c.vertices[v]/3;z+=c.vertices[v+2]/3;}
-      const cut=cutCoords(x,z);
-      return cut.d>300&&Math.abs(cut.u)<110?1:si(s);
+      return si(terrainVisualSurface(x,z,s));
     });
     for(let m=0;m<3;m++){const start=sorted.length;for(let t=0;t<c.surfaces.length;t++)if(visibleSurfaces[t]===m)sorted.push(c.indices[t*3],c.indices[t*3+1],c.indices[t*3+2]);geo.addGroup(start,sorted.length-start,m);}
     geo.setIndex(sorted);geo.computeVertexNormals();const mesh=new T.Mesh(geo,surfaceMats);mesh.receiveShadow=true;g.add(mesh);

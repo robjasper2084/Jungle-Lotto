@@ -19,7 +19,10 @@
     "test:unit:ci": "node --test --test-reporter=junit --test-reporter-destination=output/test-results/unit.xml tests/gameplay.test.js",
     "test:browser": "node node_modules/playwright/cli.js test",
     "ci": "npm run check && npm run test:unit && npm run test:browser",
-    "check:launch-readiness": "node --env-file-if-exists=.env --experimental-transform-types scripts/check-launch-readiness.ts"
+    "check:launch-readiness": "node --env-file-if-exists=.env --experimental-transform-types scripts/check-launch-readiness.ts",
+    "check:riding-assets": "node scripts/build-riding-games.mjs --preflight",
+    "build:riding-games": "node scripts/build-riding-games.mjs",
+    "test:riding-maintenance": "node --experimental-transform-types --test scripts/game-package.test.mjs scripts/game-audio.test.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.51.1",

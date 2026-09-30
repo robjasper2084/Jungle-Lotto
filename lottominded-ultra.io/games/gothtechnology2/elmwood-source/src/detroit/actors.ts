@@ -1,3 +1,4 @@
+import {styleCyclist} from '@digital-static/ridecore/cycling-view';
 import * as T from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import type { GLTF } from 'three/addons/loaders/GLTFLoader.js';
@@ -26,7 +27,10 @@ function rotateWorld(bone:T.Object3D|undefined,axis:T.Vector3,angle:number){if(!
 function prepare(o:T.Object3D){o.traverse(n=>{const m=n as T.Mesh;if(m.isMesh){m.castShadow=true;m.receiveShadow=true;m.frustumCulled=!(m as T.SkinnedMesh).isSkinnedMesh;}});}
 export async function loadActors(ids=['DS_Man_01','DS_EUC_01','DS_Pedestrian_01','DS_Cyclist_01','DS_Bicycle_01','DS_Hazard_Cone_01','DS_Hazard_Barrier_01','DS_Boerboel_01']){
   const loader=new GLTFLoader(),data=new Map<string,GLTF>();
-  await Promise.all(ids.map(async id=>data.set(id,await loader.loadAsync(`${import.meta.env.BASE_URL}exports/glb/${id}/${id==='DS_EUC_01'?'DS_EUC_Compact':id+'_LOD'+(id==='DS_Man_01'?0:1)}.glb`))));
+  await Promise.all(ids.map(async id=>{
+    const original=()=>loader.loadAsync(`${import.meta.env.BASE_URL}exports/glb/${id}/${id==='DS_EUC_01'?'DS_EUC_Compact':id+'_LOD'+(id==='DS_Man_01'?0:1)}.glb`);
+    data.set(id,id==='DS_Bicycle_01'?await loader.loadAsync(`${import.meta.env.BASE_URL}exports/glb/DS_Bicycle_Styles/DS_Bicycle_Styles_LOD1.glb`).catch(original):await original());
+  }));
   return data;
 }
 export class Hero {
@@ -121,8 +125,8 @@ export class CyclistView {
   bones:{o:T.Object3D;p:T.Vector3;q:T.Quaternion}[]=[];
   legs:{limb:Limb;pedal:T.Object3D;offset:T.Vector3}[]=[];
   phase=0;wheelSpin=0;
-  constructor(data:Map<string,GLTF>){
-    const asset=data.get('DS_Cyclist_01')!;this.rider=clone(asset.scene);this.bicycle=data.get('DS_Bicycle_01')!.scene.clone(true);this.root.add(this.rider,this.bicycle);
+  constructor(data:Map<string,GLTF>,style=0){
+    const asset=data.get('DS_Cyclist_01')!;this.rider=clone(asset.scene);this.bicycle=data.get('DS_Bicycle_01')!.scene.clone(true);this.root.add(this.rider,this.bicycle);styleCyclist(this.bicycle,this.rider,style);
     const mixer=new T.AnimationMixer(this.rider);mixer.clipAction(asset.animations[0]).play();mixer.setTime(0);
     // Keep the supplied seated body pose; the exported clip's knee poles bend backward.
     this.root.updateMatrixWorld(true);this.rider.traverse(o=>{if((o as T.Bone).isBone)this.bones.push({o,p:o.position.clone(),q:o.quaternion.clone()});});

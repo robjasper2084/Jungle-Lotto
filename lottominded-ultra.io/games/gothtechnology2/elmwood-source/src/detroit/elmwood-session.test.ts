@@ -25,6 +25,18 @@ test('keyboard plus gamepad and simultaneous touch sources stay independent',()=
 test('cruise cancels on brake and pause clears held controls',()=>{
   const i=new ElmwoodSessionInput();i.key('KeyV',true);assert.ok(i.consume(0,0,1).actions.throttle>0);i.key('KeyS',true);assert.equal(i.consume(0,0,1).actions.throttle,-1);assert.equal(i.seats[0].cruise,false);i.clear();assert.equal(i.consume(0,0,1).actions.throttle,0);
 });
+for(const transition of ['pause','menu','blur','recovery'])test(`${transition} requires a new key press and cancels queued actions`,()=>{
+  const i=new ElmwoodSessionInput();i.key('KeyW',true);i.key('Space',true);i.key('KeyV',true);
+  assert.ok(i.consume(0,0,1).actions.throttle>0);i.clear();
+  i.key('KeyW',true,true);i.key('Space',true,true);i.key('KeyV',true,true);
+  const packet=i.consume(0,0,1);assert.equal(packet.actions.throttle,0);assert.equal(packet.actions.hop,false);assert.equal(i.seats[0].cruise,false);
+  i.key('KeyW',false);i.key('KeyW',true);assert.equal(i.consume(0,0,1).actions.throttle,1);
+});
+test('recover consumes a neutral frame and clearing one seat preserves the other player',()=>{
+  const i=new ElmwoodSessionInput();i.configure(['wasd','arrows']);i.key('ArrowUp',true);i.key('KeyW',true);i.key('KeyR',true);i.key('KeyT',true);i.key('Space',true);
+  const p=i.consume(0,0,1);assert.equal(p.recover,true);assert.equal(p.actions.throttle,0);assert.equal(p.actions.hop,false);assert.equal(p.actions.trick,0);
+  i.clear(0);assert.equal(i.consume(1,0,1).actions.throttle,1);assert.equal(i.consume(0,0,1).actions.throttle,0);
+});
 test('route checkpoints are ordered, pause freezes time, recovery cannot skip gates',()=>{
   const gates=laneGates([[0,0],[0,-52],[26,-52]],26),r=new ElmwoodRun(gates);r.reset('sprint',{x:0,z:0});r.update(1,{x:26,z:52},[]);assert.equal(r.gate,1);r.relocate({x:0,z:22});r.update(1,{x:0,z:26},[]);assert.equal(r.gate,2);const t=r.elapsed;r.update(20,{x:0,z:52},[],true);assert.equal(r.elapsed,t);r.relocate({x:0,z:48});r.update(1,{x:0,z:52},[]);r.relocate({x:22,z:52});r.update(1,{x:26,z:52},[]);assert.equal(r.finished,true);assert.equal(r.score,300);
 });
