@@ -17,8 +17,13 @@ export class ElmwoodWalkerView{
   private legs:{upper:T.Object3D;knee:T.Object3D;foot:T.Object3D;target:T.Vector3;rotation:T.Quaternion;anchor:T.Vector3;stance:boolean}[]=[];
   private arms:{upper:T.Object3D;knee:T.Object3D;foot:T.Object3D;target:T.Vector3;rotation:T.Quaternion}[]=[];
   private movement=0;
+  private walkMixer:T.AnimationMixer;private walkDuration=2;
   constructor(asset:GLTF){
-    this.model=clone(asset.scene);this.root.add(this.model,this.phone);this.root.updateMatrixWorld(true);
+    this.model=clone(asset.scene);this.root.add(this.model,this.phone);
+    this.walkMixer=new T.AnimationMixer(this.model);
+    const walk=asset.animations.find(c=>/walk/i.test(c.name));
+    if(walk){this.walkDuration=walk.duration;const upperBody=walk.clone();upperBody.tracks=upperBody.tracks.filter(t=>/Arm|Hand|Shoulder|Spine|neck|Head|head/.test(t.name));this.walkMixer.clipAction(upperBody).play();this.walkMixer.setTime(walk.duration*.25);}
+    this.root.updateMatrixWorld(true);
     this.model.traverse(node=>{if((node as T.Bone).isBone)this.bones.push({node,p:node.position.clone(),q:node.quaternion.clone(),s:node.scale.clone()});if((node as T.Mesh).isMesh){node.castShadow=true;node.frustumCulled=false;}});
     for(const side of ['Left','Right']){
       const limb=(a:string,b:string,c:string)=>{const upper=this.model.getObjectByName(side+a)!,knee=this.model.getObjectByName(side+b)!,foot=this.model.getObjectByName(side+c)!;return {upper,knee,foot,target:foot.getWorldPosition(new T.Vector3()),rotation:foot.getWorldQuaternion(new T.Quaternion())};};
@@ -33,6 +38,8 @@ export class ElmwoodWalkerView{
     this.phase=(this.phase+Math.max(0,distance)/WALK_CYCLE_METRES)%1;
     const moving=distance/dt>.025&&!photo;this.movement+=(Number(moving)-this.movement)*(1-Math.exp(-dt*9));this.photoBlend+=(Number(photo)-this.photoBlend)*(1-Math.exp(-dt*4));
     for(const b of this.bones){b.node.position.copy(b.p);b.node.quaternion.copy(b.q);b.node.scale.copy(b.s);}
+    // Use the same authored upper-body motion as Swoop, synchronized to travel.
+    this.walkMixer.setTime(this.phase*this.walkDuration);
     const hips=this.model.getObjectByName('Hips')!;hips.position.y-=.035*this.movement;
     this.root.updateMatrixWorld(true);const rotation=this.root.getWorldQuaternion(new T.Quaternion()),forward=new T.Vector3(0,0,1).applyQuaternion(rotation);
     this.legs.forEach((leg,i)=>{
@@ -42,8 +49,8 @@ export class ElmwoodWalkerView{
       leg.stance=moving&&step.stance;solve(leg,wanted,forward.clone(),rotation.clone().multiply(leg.rotation));
     });
     this.arms.forEach((arm,i)=>{
-      const hand=arm.target.clone(),swing=Math.sin(this.phase*Math.PI*2+i*Math.PI)*.16*this.movement;
-      hand.z+=swing;hand.y+=Math.abs(swing)*.2;
+      if(this.photoBlend<.001)return;
+      const hand=this.root.worldToLocal(arm.foot.getWorldPosition(new T.Vector3()));
       hand.lerp(new T.Vector3(i?-.056:.056,1.41,.34),this.photoBlend);
       solve(arm,this.root.localToWorld(hand),new T.Vector3(i?-.5:.5,-1,.15).applyQuaternion(rotation),rotation.clone().multiply(arm.rotation));
     });

@@ -11,6 +11,7 @@ import {ElmwoodTerrain} from './elmwood-terrain.ts';
 import {RideMotion} from './ride-motion.ts';
 import {chooseElmwoodSpawn} from './elmwood-details.ts';
 import {ELMWOOD_CAMERAS,cameraMode,nextElmwoodCamera,cameraFrame,frameElmwoodCamera,clearElmwoodCamera} from './elmwood-camera.ts';
+import type {VRPacket} from './elmwood-vr.ts';
 import {ElmwoodSessionInput,setupError,type Binding,type Action} from './elmwood-session-input.ts';
 import {ElmwoodRun,laneGates,MODES,type RunMode} from './elmwood-gameplay.ts';
 import {ElmwoodCompanion,type DogTarget} from './elmwood-companion.ts';
@@ -73,6 +74,7 @@ export function makeElmwoodRide(scene:T.Scene,camera:T.PerspectiveCamera,control
   const markers=[0xedcf85,0x83d9ff].map(color=>{const marker=new T.Group(),mat=new T.MeshBasicMaterial({color,transparent:true,opacity:.8,depthWrite:false});
     for(const side of [-1,1]){const post=new T.Mesh(new T.CylinderGeometry(.07,.07,2,6),mat);post.position.set(side*2,1,0);marker.add(post);}const bar=new T.Mesh(new T.BoxGeometry(4.1,.08,.08),mat);bar.position.y=2;marker.add(bar);marker.visible=false;gates.add(marker);return marker;});
   let active=false,paused=false,count=1,orbitFov=camera.fov,terrain:ElmwoodTerrain|undefined,countdown=0,hudClock=0,initializing:Promise<void>|undefined,dogAsset:GLTF|undefined,dogLoading:Promise<void>|undefined;
+  let vrMode=false,vrPacket:VRPacket|undefined;
   let route:ReturnType<typeof laneGates>=[],walkers:ReturnType<typeof makeElmwoodWalkers>|undefined;
   const targets=()=>[...birdTargets(),...(walkers?.targets??[])];
   const dogThreats=()=>active?seats.slice(0,count).filter((s,i)=>wantsDog(i)&&s.dog&&s.dogView?.root.visible).map(s=>({x:s.dog!.x,z:s.dog!.z,chasing:s.dog!.command==='chase'||s.dog!.barking>0})):[];
@@ -184,6 +186,7 @@ export function makeElmwoodRide(scene:T.Scene,camera:T.PerspectiveCamera,control
   function frameSeat(s:Seat,i:number,dt:number){
     const p=s.motion.pose,view=s.motion.view,cam=s.camera,framing=s.framing,mode=cameraMode(cameras[i].value);s.hero.apply(p);anchor.set(p.x,p.y+1.05,p.z);
     if(i===0)controls.target.copy(anchor);
+    if(vrMode){controls.enabled=false;return;}
     if(mode==='orbit'&&count===1){
       if(s.lastCamera!==mode){frameElmwoodCamera(mode,p,reducedMotion.matches,framing);cam.position.copy(framing.eye);previousOrbitTarget.copy(controls.target);controls.enablePan=false;controls.minDistance=3;controls.maxDistance=40;controls.minPolarAngle=.12;controls.maxPolarAngle=Math.PI*.49;controls.enableDamping=!reducedMotion.matches;}
       controls.enabled=true;orbitDelta.copy(controls.target).sub(previousOrbitTarget);cam.position.add(orbitDelta);previousOrbitTarget.copy(controls.target);controls.update();clearElmwoodCamera(cam.position,controls.target,terrain!,direction);cam.lookAt(controls.target);cam.fov=60;
@@ -205,13 +208,19 @@ export function makeElmwoodRide(scene:T.Scene,camera:T.PerspectiveCamera,control
     if(s.bestRecorded||!s.run.finished)return;s.bestRecorded=true;const r=s.run,key='elmwood-best-'+r.mode;
     try{const old=Number(localStorage.getItem(key)),value=r.mode==='tricks'?r.score:r.finishTime;if(!old||(r.mode==='tricks'?value>old:value<old))localStorage.setItem(key,String(value));best.textContent='Personal best: '+localStorage.getItem(key)+(r.mode==='tricks'?' points':' seconds');}catch{best.textContent='Result saved for this session.';}
   }
-  return {stop,pause,dogThreats,update(dt:number){
+  return {stop,pause,dogThreats,async startVR(){
+    if(active&&count!==1)stop();players.value='1';inputs[0].value='wasd';
+    if(!active)await toggleRide();if(!active)throw new Error('The rider could not load.');
+    count=1;configure();clearInput();vrMode=true;vrPacket=undefined;pause(false);
+    document.querySelector<HTMLDialogElement>('#elmwood-main-menu')?.close();
+  },endVR(){vrMode=false;vrPacket=undefined;clearInput();pause(true);},pauseVR(){pause(true);},
+  vrInput(packet:VRPacket){vrPacket=packet;if(packet.pause)pause();},vrPose(){return active?seats[0]?.motion.pose:undefined;},update(dt:number){
     if(!active||!terrain)return;
-    if(!paused){const error=input.poll(pads());if(error){pause(true);message.textContent=error;}}
+    if(!paused&&!vrMode){const error=input.poll(pads());if(error){pause(true);message.textContent=error;}}
     if(!paused&&countdown>0){countdown=Math.max(0,countdown-dt);clearInput();}
     if(!paused)walkers?.update(dt,dogThreats(),seats.slice(0,count).map(s=>s.motion.pose));Object.assign(canvas.dataset,{fleeingWalkers:String(walkers?.fleeing??0),photographingVisitors:String(walkers?.photographing??0),cyclists:String(walkers?.cyclists??0)});const contacts=targets();
     for(let i=0;i<count;i++){
-      const s=seats[i],packet=input.consume(i,s.motion.pose.speed,Number(trick.value));if(packet.recover)resetSeat(i,true);if(packet.camera)cycleCamera(i);
+      const s=seats[i],packet=vrMode&&vrPacket?{actions:vrPacket.actions,recover:!paused&&vrPacket.recover,camera:false}:input.consume(i,s.motion.pose.speed,Number(trick.value));if(packet.recover)resetSeat(i,true);if(packet.camera&&!vrMode)cycleCamera(i);
       s.motion.update(dt,packet.actions,paused||countdown>0);s.run.update(dt,s.motion.pose,s.motion.events,paused||countdown>0);saveBest(s);frameSeat(s,i,dt);
       if(s.dog&&s.dogView&&wantsDog(i)){if(!paused)s.dog.update(s.motion.pose,dt,contacts);s.dogView.update(s.dog,paused?0:dt);}
       const p=s.motion.pose,ss=s.motion.sim.snapshot();
@@ -235,6 +244,7 @@ export function makeElmwoodRide(scene:T.Scene,camera:T.PerspectiveCamera,control
     status(paused?'Paused · P / Resume ride':count===2?'P1 WASD · P2 arrows · P pause · Settings for gamepads, touch and challenges':'WASD / arrows · Space hop · T trick · R recover · C camera · Settings for more');touch.update();}
   },render(renderer:T.WebGLRenderer){
     if(!active)return false;
+    if(vrMode&&renderer.xr.isPresenting){renderer.setScissorTest(false);seats[0].hero.rider.visible=false;renderer.render(scene,camera);seats[0].hero.rider.visible=true;return true;}
     const boxes=rects();const size=renderer.getSize(new T.Vector2());if(size.x!==innerWidth||size.y!==innerHeight)renderer.setSize(innerWidth,innerHeight);renderer.setScissorTest(true);const shadows=renderer.shadowMap.autoUpdate;renderer.shadowMap.autoUpdate=false;renderer.shadowMap.needsUpdate=true;
     for(let i=0;i<count;i++){
       const r=boxes[i],s=seats[i],aspect=r.width/r.height;if(s.camera.aspect!==aspect){s.camera.aspect=aspect;s.camera.updateProjectionMatrix();}

@@ -18,7 +18,7 @@ test('creek planting follows open water banks while keeping riding lanes and bri
 });
 test('all added crypts remain within cemetery bounds and the annotated bench stays off pavement',()=>{
  for(const p of ps.filter((p:any)=>p.footprint))assert.ok(inRing(p.position[0],p.position[1],site.boundary),p.asset);
- const benches=ps.filter((p:any)=>p.asset==='elmwood-park-bench');assert.equal(benches.length,2);
+ const benches=ps.filter((p:any)=>p.asset==='elmwood-park-bench');assert.equal(benches.length,3);
  for(const p of benches)assert.ok(terrain.nearest(p.position[0],p.position[1]).distance>3.2);
 });
 test('official Tree Tour stops are deduplicated and keep trunks on land outside riding lanes',()=>{
@@ -37,3 +37,5 @@ test('expanded garden beds keep flower crowns off parking, monuments and grave m
  for(const p of gardens){assert.ok(terrain.nearest(p.x,p.north).distance>3.5);assert.equal(inElmwoodPond(p.x,p.north,site.features),false);assert.ok(inRing(p.x,p.north,site.boundary));for(const grave of ps.filter((q:any)=>['ledger','headstone','cross-headstone','arched-headstone','weathered-headstone'].includes(q.asset)))assert.ok(Math.hypot(p.x-grave.position[0],p.north-grave.position[1])>1.3);}
  console.log('Garden flowers:',gardens.length*9);
 });
+
+

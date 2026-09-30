@@ -10,6 +10,19 @@ export const SPECIAL_MOVES=[
   {id:6,name:'Pendulum',key:'6',maxSpeed:1,preload:0,turn:0,points:180},
   {id:7,name:'Tuck hop',key:'7',maxSpeed:6,preload:.68,turn:0,points:220},
 ] as const;
+/** Empty text means ready; shared by simulation and HUD. Units remain metres/second. */
+export function moveReadiness(id:number,s:{grounded:boolean;crashed:boolean;speed:number;bank:number;cooldown:number;active:boolean;clear:boolean}){
+ const move=SPECIAL_MOVES.find(m=>m.id===id);if(!move)return 'Select a move';
+ if(s.crashed)return 'Recover before starting a trick';
+ if(s.active)return 'Finish or settle the current move first';
+ if(!s.grounded)return 'Land before starting a special move';
+ if(s.cooldown>0)return 'Let the wheel settle before another move';
+ if(Math.abs(s.speed)>move.maxSpeed)return `${move.name}: slow below ${Math.round(move.maxSpeed*3.6)} km/h`;
+ if(Math.abs(s.bank)>.22)return 'Straighten the wheel before starting a trick';
+ if(!s.clear)return 'Not enough clear space for this move';
+ if(move.id===4&&s.speed<1)return 'One-foot glide: roll forward at 4–18 km/h';
+ return '';
+}
 const smooth=(t:number)=>{t=clamp(t,0,1);return t*t*t*(t*(t*6-15)+10);};
 type Phase='idle'|'preload'|'launch'|'flight'|'glide'|'flow'|'settle';
 
@@ -31,12 +44,8 @@ export class SpecialMoves {
     if(edge&&this.active)this.event='Finish or settle the current move first';
     if(edge&&!this.active){const move=SPECIAL_MOVES.find(m=>m.id===request);
       if(move){
-        if(!grounded)this.event='Land before starting a special move';
-        else if(this.cooldown>0)this.event='Let the wheel settle before another move';
-        else if(Math.abs(speed)>move.maxSpeed)this.event=`${move.name}: slow below ${Math.round(move.maxSpeed*3.6)} km/h`;
-        else if(Math.abs(bank)>.22)this.event='Straighten the wheel before starting a trick';
-        else if(!clear)this.event='Not enough clear space for this move';
-        else if(move.id===4&&speed<1)this.event='One-foot glide: roll forward at 4–18 km/h';
+        const blocked=moveReadiness(move.id,{grounded,crashed,speed,bank,cooldown:this.cooldown,active:this.active,clear});
+        if(blocked)this.event=blocked;
         else {this.id=move.id;this.age=0;this.rotation=0;this.direction=steer>.1?-1:steer<-.1?1:1;this.phase=move.id===4?'glide':move.id===5||move.id===6?'flow':'preload';this.event=move.name+' · '+(move.preload?'preload':'balance');}
       }
     }

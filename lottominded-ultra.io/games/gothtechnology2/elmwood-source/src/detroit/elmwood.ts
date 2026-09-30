@@ -1,3 +1,4 @@
+import {makeElmwoodVR} from './elmwood-vr.ts';
 import {makeElmwoodQuality} from './elmwood-quality.ts';
 import * as T from 'three';
 
@@ -85,7 +86,7 @@ const el=<E extends HTMLElement>(id:string)=>document.getElementById(id) as E;
 
 
 
-const canvas=el<HTMLCanvasElement>('view'),renderer=new T.WebGLRenderer({canvas,antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));renderer.setSize(Math.max(1,innerWidth),Math.max(1,innerHeight));renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFShadowMap;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1;
+const canvas=el<HTMLCanvasElement>('view'),renderer=new T.WebGLRenderer({canvas,antialias:false});renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));renderer.setSize(Math.max(1,innerWidth),Math.max(1,innerHeight));renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFShadowMap;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1;
 
 
 
@@ -454,7 +455,7 @@ async function choose(){
 
 
 
- if(['view-pond','view-geese','view-car-lot','view-avenue','view-young','view-gates','view-grove','view-parking','view-bridges','view-crypts','view-creek','view-bench'].includes(id)){
+ if(['view-pond','view-geese','view-car-lot','view-avenue','view-young','view-gates','view-grove','view-parking','view-bridges','view-crypts','view-creek','view-bench','view-creek-bench'].includes(id)){
 
 
 
@@ -462,11 +463,11 @@ async function choose(){
 
 
 
-  const p=id==='view-geese'?[environment!.birds[0].state.x,environment!.birds[0].state.north,environment!.birds[0].rig.g.position.y]:id==='view-car-lot'?[-12.325,13.715,1]:id==='view-creek'?[-110,293,-4]:id==='view-bench'?[15,62,0]:id==='view-parking'?[-5,22,1]:id==='view-bridges'?[-136.3515,317.686,-3.06]:id==='view-crypts'?[-125.777,339.466,2.2]:id==='view-pond'?landmarkPass!.pond.center:id==='view-grove'?[24,111,1]:[-10,55,1];const c=id==='view-young'?environment!.young.position.clone():id==='view-gates'?environment!.gate.position.clone():pos(p);
+  const p=id==='view-geese'?[environment!.birds[0].state.x,environment!.birds[0].state.north,environment!.birds[0].rig.g.position.y]:id==='view-car-lot'?[-12.325,13.715,1]:id==='view-creek'?[-110,293,-4]:id==='view-creek-bench'?[-32,160.12,-4.373825124686446]:id==='view-bench'?[15,62,0]:id==='view-parking'?[-5,22,1]:id==='view-bridges'?[-136.3515,317.686,-3.06]:id==='view-crypts'?[-125.777,339.466,2.2]:id==='view-pond'?landmarkPass!.pond.center:id==='view-grove'?[24,111,1]:[-10,55,1];const c=id==='view-young'?environment!.young.position.clone():id==='view-gates'?environment!.gate.position.clone():pos(p);
 
 
 
-  controls.target.copy(c);camera.position.copy(c).add(id==='view-geese'?new T.Vector3(2,1.1,2):id==='view-car-lot'?new T.Vector3(6,3,7):id==='view-creek'?new T.Vector3(14,10,18):id==='view-bench'?new T.Vector3(5,3,7):id==='view-parking'?new T.Vector3(28,35,32):id==='view-bridges'?new T.Vector3(11,5,9):id==='view-crypts'?new T.Vector3(12,8,14):id==='view-pond'?new T.Vector3(25,78,55):id==='view-young'?new T.Vector3(2,2.7,5):id==='view-gates'?new T.Vector3(13,6,-10):id==='view-grove'?new T.Vector3(63,110,135):new T.Vector3(18,9,30));
+  controls.target.copy(c);camera.position.copy(c).add(id==='view-geese'?new T.Vector3(2,1.1,2):id==='view-car-lot'?new T.Vector3(6,3,7):id==='view-creek'?new T.Vector3(14,10,18):id==='view-creek-bench'?new T.Vector3(4,2.5,6):id==='view-bench'?new T.Vector3(5,3,7):id==='view-parking'?new T.Vector3(28,35,32):id==='view-bridges'?new T.Vector3(11,5,9):id==='view-crypts'?new T.Vector3(12,8,14):id==='view-pond'?new T.Vector3(25,78,55):id==='view-young'?new T.Vector3(2,2.7,5):id==='view-gates'?new T.Vector3(13,6,-10):id==='view-grove'?new T.Vector3(63,110,135):new T.Vector3(18,9,30));
 
 
 
@@ -574,7 +575,7 @@ try{
 
 
 
- el<HTMLSelectElement>('asset').replaceChildren(...[{id:'view-pond',label:'Pond, fountain and wildlife'},{id:'view-geese',label:'Canada geese - shore view'},{id:'view-car-lot',label:'Chrysler - gatehouse parking'},{id:'view-creek',label:'Bloody Run flowers and willows'},{id:'view-bench',label:'Second junction bench'},{id:'view-parking',label:'Gatehouse parking and planting'},{id:'view-bridges',label:'Bloody Run stone bridges'},{id:'view-crypts',label:'Pond-side crypt'},{id:'view-grove',label:'Black walnut grove and junction bench'},{id:'view-young',label:'Coleman A. Young · Hazel Dell'},{id:'view-gates',label:'Entrance gates and curbs'},{id:'view-avenue',label:'Tree-lined entrance lanes'},...assets,...treeTours!.stops.map((s,i)=>({id:'tree-tour-'+i,label:'Tree Tour - '+s.species}))].map(a=>{const o=document.createElement('option');o.value=a.id;o.textContent=a.label;return o;}));
+ el<HTMLSelectElement>('asset').replaceChildren(...[{id:'view-pond',label:'Pond, fountain and wildlife'},{id:'view-geese',label:'Canada geese - shore view'},{id:'view-car-lot',label:'Chrysler - gatehouse parking'},{id:'view-creek',label:'Bloody Run flowers and willows'},{id:'view-bench',label:'Second junction bench'},{id:'view-creek-bench',label:'New creek overlook bench'},{id:'view-parking',label:'Gatehouse parking and planting'},{id:'view-bridges',label:'Bloody Run stone bridges'},{id:'view-crypts',label:'Pond-side crypt'},{id:'view-grove',label:'Black walnut grove and junction bench'},{id:'view-young',label:'Coleman A. Young · Hazel Dell'},{id:'view-gates',label:'Entrance gates and curbs'},{id:'view-avenue',label:'Tree-lined entrance lanes'},...assets,...treeTours!.stops.map((s,i)=>({id:'tree-tour-'+i,label:'Tree Tour - '+s.species}))].map(a=>{const o=document.createElement('option');o.value=a.id;o.textContent=a.label;return o;}));
 
 
 
@@ -720,6 +721,7 @@ rideControls=makeElmwoodRide(scene,camera,controls,canvas,notice,()=>{world.visi
 
 
 
+const vr=makeElmwoodVR(scene,camera,renderer,canvas,rideControls);
 const frameStats=new ElmwoodPerformance();
 
 addEventListener('visibilitychange',()=>frameStats.resetWindow());
@@ -734,10 +736,26 @@ performanceToggle.onchange=()=>{performanceReadout.hidden=!performanceToggle.che
 
 el('date').after(performanceLabel,performanceReadout);
 
-const started=performance.now();let lastFrame=started;const sunDirection=new T.Vector3();function animate(){requestAnimationFrame(animate);const now=performance.now();if(document.hidden||document.querySelector<HTMLDialogElement>('#elmwood-main-menu')?.open||now-lastFrame<1000/quality.current.fps-.5)return;const t=(now-started)/1000,dt=Math.min(.1,(now-lastFrame)/1000);wind.value=quality.current.wind?t:0;rideControls?.update(dt);const paused=canvas.dataset.riding==='true'&&canvas.dataset.paused==='true';sunDirection.copy(sun.position).sub(sun.target.position).normalize();weather.update(dt,sunDirection,world.visible,paused);sun.target.position.copy(controls.target);sun.position.copy(controls.target).addScaledVector(sunDirection,500);const chasing=environment?.update(dt,{x:Number(canvas.dataset.x)||0,north:-(Number(canvas.dataset.z)||0),active:canvas.dataset.riding==='true'},sunDirection.copy(sun.position).sub(sun.target.position),paused,weather.uniforms,rideControls?.dogThreats());canvas.dataset.weather=weather.mode;canvas.dataset.wetness=weather.uniforms.wet.value.toFixed(2);canvas.dataset.chasingBirds=String(chasing??0);canvas.dataset.fleeingBirds=String(environment?.birds.filter(b=>b.state.mode==='flee').length??0);lastFrame=now;if(controls.enabled&&(canvas.dataset.riding!=="true"||canvas.dataset.cameraMode!=="orbit"))controls.update();for(const tile of landscapeTiles){tile.visible=canvas.dataset.riding!=="true"||(rideControls?.nearPlayers(tile.userData.center,quality.current.distance)??true);}
+const started=performance.now();let lastFrame=started;const sunDirection=new T.Vector3();function animate(){const now=performance.now();if(!renderer.xr.isPresenting&&(document.hidden||document.querySelector<HTMLDialogElement>('#elmwood-main-menu')?.open||now-lastFrame<1000/quality.current.fps-.5))return;const t=(now-started)/1000,dt=Math.min(.1,(now-lastFrame)/1000);wind.value=quality.current.wind?t:0;vr.beforeFrame();rideControls?.update(dt);vr.afterFrame();const paused=canvas.dataset.riding==='true'&&canvas.dataset.paused==='true';sunDirection.copy(sun.position).sub(sun.target.position).normalize();weather.update(dt,sunDirection,world.visible,paused);sun.target.position.copy(controls.target);sun.position.copy(controls.target).addScaledVector(sunDirection,500);const chasing=environment?.update(dt,{x:Number(canvas.dataset.x)||0,north:-(Number(canvas.dataset.z)||0),active:canvas.dataset.riding==='true'},sunDirection.copy(sun.position).sub(sun.target.position),paused,weather.uniforms,rideControls?.dogThreats());canvas.dataset.weather=weather.mode;canvas.dataset.wetness=weather.uniforms.wet.value.toFixed(2);canvas.dataset.chasingBirds=String(chasing??0);canvas.dataset.fleeingBirds=String(environment?.birds.filter(b=>b.state.mode==='flee').length??0);lastFrame=now;if(controls.enabled&&(canvas.dataset.riding!=="true"||canvas.dataset.cameraMode!=="orbit"))controls.update();for(const tile of landscapeTiles){tile.visible=canvas.dataset.riding!=="true"||(rideControls?.nearPlayers(tile.userData.center,quality.current.distance)??true);}
 
 
 
 if(!rideControls?.render(renderer))renderer.render(scene,camera);const measured=frameStats.rendered(now);canvas.dataset.frames=String(frameStats.frames);
 
-if(measured){canvas.dataset.fps=frameStats.fps.toFixed(1);canvas.dataset.frameMsP95=frameStats.frameMsP95.toFixed(1);canvas.dataset.frameMsP99=frameStats.frameMsP99.toFixed(1);performanceReadout.textContent=frameStats.fps.toFixed(1)+' FPS · p95 '+frameStats.frameMsP95.toFixed(1)+' ms · '+renderer.info.render.calls+' draw calls';}canvas.dataset.drawCalls=String(renderer.info.render.calls);}animate();addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(Math.max(1,innerWidth),Math.max(1,innerHeight));});
+if(measured){canvas.dataset.fps=frameStats.fps.toFixed(1);canvas.dataset.frameMsP95=frameStats.frameMsP95.toFixed(1);canvas.dataset.frameMsP99=frameStats.frameMsP99.toFixed(1);performanceReadout.textContent=frameStats.fps.toFixed(1)+' FPS · p95 '+frameStats.frameMsP95.toFixed(1)+' ms · '+renderer.info.render.calls+' draw calls';}canvas.dataset.drawCalls=String(renderer.info.render.calls);}renderer.setAnimationLoop(animate);addEventListener('resize',()=>{if(renderer.xr.isPresenting)return;camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();quality.resize();});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

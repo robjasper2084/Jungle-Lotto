@@ -1,3 +1,5 @@
+import {createGraphicsQuality} from './graphicsQuality.ts';
+import {installTouchLayout} from './touchLayout.ts';
 import {FrameSchedule} from './frameSchedule.ts';
 import {PARK_SPAWN,buildFreestylePark,parkContains} from './freestylePark.ts';
 import {windTime} from './windMotion.ts';
@@ -46,6 +48,7 @@ import {CompanionView} from './companionView.ts';
 import './style.css';
 import './lobby.css';
 import './touchPolish.css';
+import './mobileHud.css';
 import {GeoTerrain} from './geo-terrain.ts';
 import {GEO,MAP_ORIGIN,toLocal,toMap,gpsAt} from './geo-profile.ts';
 import {createRouteMap} from './routeMap.ts';
@@ -64,11 +67,12 @@ if(!elmwood)for(const [name,store] of [['Serengeti Galleries forecourt',false],[
 const coarsePointer=matchMedia('(any-pointer: coarse)');document.documentElement.classList.toggle('touchDevice',coarsePointer.matches);coarsePointer.addEventListener('change',()=>document.documentElement.classList.toggle('touchDevice',coarsePointer.matches));
 const $=<E extends HTMLElement=HTMLElement>(id:string)=>document.getElementById(id) as E;
 const canvas=$<HTMLCanvasElement>('world');
-const renderer=new T.WebGLRenderer({canvas,antialias:true,powerPreference:'high-performance'});
-const adaptiveQuality=new AdaptiveQuality();const basePixelRatio=Math.min(devicePixelRatio,1.25);renderer.setPixelRatio(basePixelRatio);renderer.setSize(innerWidth,innerHeight);
+const renderer=new T.WebGLRenderer({canvas,antialias:false,powerPreference:'default'});
+const adaptiveQuality=new AdaptiveQuality();renderer.setPixelRatio(Math.min(devicePixelRatio,1));renderer.setSize(innerWidth,innerHeight);
 renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFShadowMap;
 renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=elmwood?1.0:1.1;
 const scene=new T.Scene();scene.background=new T.Color('#c9dce0');scene.fog=new T.Fog('#c9dce0',elmwood&&compactElmwood?65:130,elmwood&&compactElmwood?165:370);
+const graphics=createGraphicsQuality(renderer,scene,canvas);
 const sky=new RouteSky();scene.add(sky);
 const camera=new T.PerspectiveCamera(55,innerWidth/innerHeight,.08,1500);
 const pm=new T.PMREMGenerator(renderer);
@@ -97,7 +101,7 @@ function createElmwoodMap(){
   return(x:number,z:number)=>{const p=planPoint(x,z);dot.setAttribute('cx',String(p.x));dot.setAttribute('cy',String(p.z));};
 }
 // Map changes reload only the selected environment; rider/dog preferences persist.
-function mapChooser(){const label=document.createElement('label');label.textContent='MAP ';const select=document.createElement('select');select.setAttribute('aria-label','Choose riding map');for(const[value,name]of [['cut','Dequindre Cut'],['elmwood','Elmwood Cemetery']]){const o=document.createElement('option');o.value=value;o.textContent=name;select.append(o);}select.value=elmwood?'elmwood':'cut';select.onchange=()=>{const url=new URL(location.href);if(select.value==='elmwood')url.searchParams.set('map','elmwood');else url.searchParams.delete('map');location.assign(url.href);};label.append(select);return label;}
+function mapChooser(){const label=document.createElement('label');label.textContent='MAP ';const select=document.createElement('select');select.setAttribute('aria-label','Choose riding map');for(const[value,name]of [['cut','Dequindre Cut'],['elmwood','Elmwood Explorer']]){const o=document.createElement('option');o.value=value;o.textContent=name;select.append(o);}select.value=elmwood?'elmwood':'cut';select.onchange=()=>{const url=new URL(location.href);if(select.value==='elmwood')url.searchParams.set('map','elmwood');else url.searchParams.delete('map');location.assign(url.href);};label.append(select);return label;}
 if(elmwood){const label=document.createElement('label');label.textContent='VISUAL DETAIL';const select=document.createElement('select');select.setAttribute('aria-label','Visual detail');for(const[value,title]of [['auto','Automatic'],['detailed','Detailed - PC'],['compact','Lighter - Quest / mobile']]){const option=document.createElement('option');option.value=value;option.textContent=title;select.append(option);}select.value=detailChoice;select.onchange=()=>{const url=new URL(location.href);url.searchParams.set('quality',select.value);location.assign(url.href);};label.append(select);document.querySelector('.options')!.append(label);}
 document.querySelector('.options')!.prepend(mapChooser());$('mapPanel').querySelector('h2')!.after(mapChooser());
 let hero!:Hero,traffic:TrafficView,scenery:Awaited<ReturnType<typeof buildScenery>|ReturnType<typeof buildElmwood>>,sim:RideController;
@@ -115,7 +119,7 @@ function setRider(value:string){
 const dog=new DogFollower(world),dogPose={...dog.current};let dogView:CompanionView;
 const current=createPose(),previous=createPose(),pose=createPose();
 const follow=new FollowCamera(world),ground=createGroundSample();
-let ready=false,running=false,paused=false,clock=0,acc=0,last=performance.now(),mode='free',selectedSpot=elmwood?0:1,gate=0,score=0,finished=false,lastTraffic=0;
+let ready=false,running=false,paused=false,clock=0,acc=0,last=performance.now(),mode='free',selectedSpot=0,gate=0,score=0,finished=false,lastTraffic=0;
 let challengeRun:DistrictRun|undefined,photoPending=false;
 world.extraActors=()=>[...(race?.obstacles()??[]),...(running&&dogEnabled&&!split?[{id:'companion',x:dog.current.x,y:dog.current.y,z:dog.current.z,radius:.36,height:.85,kind:'dog',vx:Math.sin(dog.current.heading)*dog.current.speed,vz:Math.cos(dog.current.heading)*dog.current.speed}]:[])];
 mapWorld.crowdActors=()=>running&&dogEnabled&&!split?[{id:'companion',...toMap(dog.current.x,dog.current.y,dog.current.z),radius:.36,height:.85,kind:'dog',vx:-Math.sin(dog.current.heading)*dog.current.speed,vz:Math.cos(dog.current.heading)*dog.current.speed}]:[];
@@ -209,7 +213,7 @@ function freeRideHere(){mapWorld.courseFeatures=[];courseView.set([]);canvas.dat
 function completeChallenge(){if(finished||!challengeRun)return;if(challengeRun.failed&&sim.crashed){const cause=sim.crashCause;challengeRun.reason=cause==='collision'?'Collision. Leave room for other path users and brake before obstacles. Retry / N starts immediately.':cause==='hard landing'?'Hard landing. Use a smaller hop and absorb the touchdown with a crouch. Retry / N starts immediately.':cause==='sideways landing'?'Sideways landing. Align the wheel with your direction of travel before touchdown. Retry / N starts immediately.':cause==='trail boundary'?'Outside the rideable trail. Follow the marked line. Retry / N starts immediately.':cause+'. Retry / N starts immediately.';}finished=true;clearInput();if(challengeRun.failed)loop.flow.cancel();district.finish(challengeRun);loop.finish(challengeRun,current);}
 const district=new DistrictView(scene,startChallenge,()=>loop.retry(),freeRideHere,()=>setCamera('photo'),()=>{photoPending=true;canvas.focus();});
 const loop=new RideLoop(scene,district,world,elmwood?'elmwood':'cut',startChallenge,freeRideHere,toast);
-if(elmwood){$('districtBoard').hidden=true;$<HTMLSelectElement>('mode').innerHTML='<option value="free">Free ride</option>';$('menuCopy').textContent='Explore the garden lanes, pond and wooded grounds of Elmwood Cemetery. Choose your rider and optional Boerboel companion.';document.querySelector('.eyebrow')!.textContent='DETROIT • ELMWOOD CEMETERY';document.title='Elmwood Cemetery • Swoop . Detroit';$('mapPanel').querySelector('small')!.textContent='Paths traced from the official cemetery plan. Heights, vegetation and individual monuments are approximate; this is a game environment.';const source=$('mapPanel').querySelector('a')!;source.href=ELMWOOD_SOURCE;source.textContent='Official Elmwood plan ↗';}
+if(elmwood){$('districtBoard').hidden=true;$<HTMLSelectElement>('mode').innerHTML='<option value="free">Free ride</option>';$('menuCopy').textContent='Explore the garden lanes, pond and wooded grounds of Elmwood Cemetery. Choose your rider and optional Boerboel companion.';document.querySelector('.eyebrow')!.textContent='DETROIT • ELMWOOD CEMETERY';document.title='Elmwood Explorer | Swoop . Detroit';$('menuTitle').textContent='ELMWOOD EXPLORER';$('mapPanel').querySelector('small')!.textContent='Paths traced from the official cemetery plan. Heights, vegetation and individual monuments are approximate; this is a game environment.';const source=$('mapPanel').querySelector('a')!;source.href=ELMWOOD_SOURCE;source.textContent='Official Elmwood plan ↗';}
 const crashOverlay=document.createElement('section');crashOverlay.id='crashOverlay';crashOverlay.hidden=true;crashOverlay.setAttribute('aria-label','Crash recovery');
 const crashCopy=document.createElement('p');crashCopy.textContent='Take a breath. Your banked points are safe.';
 const crashRecover=document.createElement('button');crashRecover.id='crashRecover';crashRecover.textContent='Recover';crashRecover.onclick=queueRecovery;crashOverlay.append(crashCopy,crashRecover);document.body.append(crashOverlay);
@@ -219,6 +223,7 @@ const mobileMap=document.createElement('button');mobileMap.textContent='Map';mob
 const trickSelect=document.createElement('select');trickSelect.id='trickSelect';trickSelect.setAttribute('aria-label','Special move');
 for(const move of SPECIAL_MOVES){const option=document.createElement('option');option.value=String(move.id);option.textContent=move.name;trickSelect.append(option);}
 $('ridingOptions').append(trickSelect);
+const trickHint=document.createElement('p');trickHint.id='trickReadiness';trickHint.style.cssText='font-size:12px;max-width:220px;margin:4px';$('ridingOptions').append(trickHint);
 function chooseTrick(id:number){selectedTrick=id;trickSelect.value=String(id);for(const button of document.querySelectorAll<HTMLElement>('[data-touch-action="trick"]'))button.textContent='Trick · '+SPECIAL_MOVES[id-1].name;}
 function requestTrick(id=selectedTrick){if(!ready||!running||paused||finished)return;if(sim.crashed){toast('Recover before starting a trick');return;}chooseTrick(id);trickRequest=id;cruise=false;canvas.focus();}
 trickSelect.onchange=()=>chooseTrick(Number(trickSelect.value));$('specialMove').onclick=()=>requestTrick();
@@ -226,9 +231,11 @@ const ridingOptions=$('ridingOptions');$('optionsToggle').onclick=()=>{const ope
 const rideCamera=document.createElement('button');rideCamera.id='rideCamera';rideCamera.textContent='Recenter / Ride camera';rideCamera.onclick=recenterCamera;$('ridingOptions').append(rideCamera);
 const eyesCamera=document.createElement('button');eyesCamera.id='eyesCamera';eyesCamera.textContent='First person';eyesCamera.onclick=()=>{if(!vr.active)setCamera('first');};$('ridingOptions').append(eyesCamera);
 const orbitCamera=document.createElement('button');orbitCamera.textContent='Photo / orbit';orbitCamera.onclick=()=>{if(!vr.active)setCamera('orbit');};$('ridingOptions').append(orbitCamera);
-const touchToggle=document.createElement('button');touchToggle.id='touchToggle';let manualTouch='auto';try{manualTouch=localStorage.getItem('swoop-touch-layout')??'auto';}catch{}
+const touchToggle=document.createElement('button');touchToggle.id='touchToggle';let manualTouch='auto';try{const value=localStorage.getItem('swoop-touch-visibility')??localStorage.getItem('swoop-touch-layout');manualTouch=['auto','on','off'].includes(value??'')?value!:'auto';}catch{}
 function applyTouchChoice(){document.documentElement.classList.toggle('hideTouch',manualTouch==='off');document.documentElement.classList.toggle('forceTouch',manualTouch==='on');touchToggle.textContent='Touch controls: '+manualTouch;touchToggle.setAttribute('aria-pressed',String(manualTouch==='on'));}
-touchToggle.onclick=()=>{manualTouch=manualTouch==='auto'?'on':manualTouch==='on'?'off':'auto';clearInput();applyTouchChoice();try{localStorage.setItem('swoop-touch-layout',manualTouch);}catch{}};applyTouchChoice();$('helpPanel').append(touchToggle);
+touchToggle.onclick=()=>{manualTouch=manualTouch==='auto'?'on':manualTouch==='on'?'off':'auto';clearInput();applyTouchChoice();try{localStorage.setItem('swoop-touch-visibility',manualTouch);}catch{}};applyTouchChoice();$('helpPanel').append(touchToggle);
+graphics.mount($('helpPanel'));
+const touchLayoutButton=installTouchLayout(()=>{clearInput();if(running&&!paused)pause();});
 const quickHelp=document.createElement('p');quickHelp.id='quickHelp';$('helpPanel').querySelector('h2')!.after(quickHelp);
 const resumeRide=document.createElement('button');resumeRide.id='resumeRide';resumeRide.textContent='Resume current ride';resumeRide.hidden=true;$('start').after(resumeRide);resumeRide.onclick=()=>{if(!running||finished)return;$('challengeHUD').hidden=!challengeRun;unlockRideAudio();clearInput();paused=false;document.body.classList.add('playing');$('menu').hidden=true;$('pause').textContent='Pause';$('paused').hidden=true;canvas.focus();};
 function pause(){if(split?.simulation.rules.done||!running||!$('menu').hidden||!$('challengeResults').hidden||!$('raceResults').hidden)return;paused=!paused;if(!paused)unlockRideAudio();clearInput();$('pause').textContent=paused?'Resume':'Pause';$('paused').hidden=!paused;rideAudio.update(pose,!paused);}
@@ -241,7 +248,7 @@ for(const [i,s]of SPOTS.entries()){
   const o=document.createElement('option');o.value=String(i);o.textContent=s.name;$('spawn').append(o);
   const b=document.createElement('button');b.textContent=s.name;b.onclick=()=>{if(challengeRun&&running){toast('Choose Free Ride before changing location.');return;}reset(i);beginRide();setCamera('front');};$('locations').append(b);
 }
-$<HTMLSelectElement>('spawn').value=elmwood?'0':'1';
+$<HTMLSelectElement>('spawn').value='0';
 $('mode').onchange=()=>{const kind=$<HTMLSelectElement>('mode').value;district.filter(kind);$('start').textContent=kind==='split'?'START 2-PLAYER RACE →':kind==='race'?'START RACE →':kind==='free'?'LET’S RIDE →':'Start first challenge →';};
 $('start').onclick=start;$('pause').onclick=pause;$('camera').onchange=()=>setCamera($<HTMLSelectElement>('camera').value);
 $('companion').onchange=()=>setCompanion($<HTMLSelectElement>('companion').value==='dog');
@@ -250,7 +257,14 @@ $('riderQuick').onclick=()=>{setRider(RIDER_CHOICES[(RIDER_CHOICES.findIndex(r=>
 $('dogToggle').onclick=()=>{setCompanion(!dogEnabled);canvas.focus();};
 $('menuButton').onclick=()=>{loop.stopReplay(false);$('challengeHUD').hidden=true;paused=true;clearInput();$('paused').hidden=true;$('pause').textContent='Resume';$('challengeResults').hidden=true;resumeRide.hidden=!running||finished;document.body.classList.remove('playing');$('menu').hidden=false;$('menuTitle').textContent='Swoop . Detroit';district.refreshBoard();loop.refresh();};
 $('map').onclick=()=>{$('mapPanel').hidden=!$('mapPanel').hidden;};$('closeMap').onclick=()=>{$('mapPanel').hidden=true;};
-$('help').onclick=()=>{$('helpPanel').hidden=!$('helpPanel').hidden;};$('closeHelp').onclick=()=>{$('helpPanel').hidden=true;};
+let controlSettingsReturn:HTMLElement|null=null;
+function openControlSettings(){controlSettingsReturn=document.activeElement as HTMLElement|null;clearInput();if(running&&!paused)pause();$('ridingOptions').classList.remove('expanded');$('optionsToggle').setAttribute('aria-expanded','false');$('helpPanel').hidden=false;$('helpPanel').scrollTop=0;$('closeHelp').focus();}
+$('helpPanel').querySelector('h2')!.textContent='Control settings';
+const touchSettings=$('helpPanel').querySelector('.touchSettings')!;
+touchSettings.querySelector('legend')!.after(touchLayoutButton,touchToggle);$('quickHelp').after(touchSettings);
+const layoutHelp=document.createElement('p');layoutHelp.textContent='Customize touch controls to move and resize your joystick and buttons. Choose floating or fixed joystick and assign each button below.';touchLayoutButton.before(layoutHelp);
+const rideControlSettings=document.createElement('button');rideControlSettings.id='rideControlSettings';rideControlSettings.textContent='Control settings';rideControlSettings.setAttribute('aria-controls','helpPanel');rideControlSettings.onclick=openControlSettings;$('ridingOptions').append(rideControlSettings);
+$('help').onclick=()=>{if($('helpPanel').hidden)openControlSettings();else $('closeHelp').click();};$('closeHelp').onclick=()=>{$('helpPanel').hidden=true;controlSettingsReturn?.focus();};
 $('light').onclick=toggleLight;$('audio').onclick=toggleAudio;$('recover').onclick=()=>{if(finished&&challengeRun)loop.retry();else queueRecovery();};
 const vrControls=document.createElement('div');vrControls.className='vrControls';$('start').after(vrControls);
 const vr=new VRRide(renderer,scene,camera,vrControls,{ready:()=>ready,unlockAudio:unlockRideAudio,message:toast,
@@ -265,8 +279,8 @@ const sitButton=document.createElement('button');sitButton.id='sitRide';sitButto
 $('cruise').onclick=()=>{if(!ready||!running||paused||finished||sim.crashed){cruise=false;return;}cruise=!cruise;toast(cruise?`Cruise • ${Math.round(RIDE_RULES.cruiseSpeed*3.6)} km/h · YOU steer · brake to cancel`:'Cruise off');canvas.focus();};
 window.addEventListener('keydown',e=>{
   if(gallery?.active||boutique?.active){if(e.code==='Escape')(gallery?.active?gallery:boutique)!.panel.querySelector<HTMLButtonElement>('[data-back]')!.click();return;}
-  if(split&&$('menu').hidden){if(['SELECT','INPUT','TEXTAREA'].includes(document.activeElement?.tagName??''))return;if(e.repeat){if(split.input.ownsKey(e.code))e.preventDefault();return;}if(e.code==='Escape'||e.code==='KeyP'){e.preventDefault();pause();return;}if(e.code==='KeyN'){e.preventDefault();startSplit();return;}if(split.input.ownsKey(e.code)){e.preventDefault();if(!paused&&!finished)split.input.handleKey(e.code,true);}return;}
-  if(['SELECT','INPUT','TEXTAREA'].includes(document.activeElement?.tagName??''))return;
+  if(split&&$('menu').hidden){if(document.activeElement?.closest('button,a,input,select,textarea,[contenteditable=true]'))return;if(e.repeat){if(split.input.ownsKey(e.code))e.preventDefault();return;}if(e.code==='Escape'||e.code==='KeyP'){e.preventDefault();pause();return;}if(e.code==='KeyN'){e.preventDefault();startSplit();return;}if(split.input.ownsKey(e.code)){e.preventDefault();if(!paused&&!finished)split.input.handleKey(e.code,true);}return;}
+  if(document.activeElement?.closest('button,a,input,select,textarea,[contenteditable=true]'))return;
   if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','ShiftLeft','ShiftRight'].includes(e.code))e.preventDefault();
   inputDevice='keyboard';if(e.repeat)return;keys.add(e.code);if(e.code==='Enter'&&!running)start();if(e.code==='Space')hop=true;if(e.code==='KeyR'){if(finished&&challengeRun)loop.retry();else queueRecovery();}if(e.code==='KeyN'&&running){if(race)startRace();else if(challengeRun)loop.retry();}
   if(e.code==='KeyX')sitButton.click();if(e.code==='KeyH')recenterCamera();if(e.code==='KeyC')cycleCamera();if(e.code==='KeyP'||e.code==='Escape')pause();if(e.code==='KeyM')$('map').click();if(e.code==='KeyV')$('cruise').click();
@@ -299,14 +313,17 @@ let toastUntil=0;function toast(text:string){$('toast').textContent=text;toastUn
 installRaceUI(startRace,freeRideHere,()=>{stopRace();$('menuButton').click();});
 const splitOption=document.createElement('option');splitOption.value='split';splitOption.textContent='2-player split-screen';$('mode').append(splitOption);
 installLobby(elmwood,startRace,startSplit);
-const practiceHUD=document.createElement('section');practiceHUD.id='practiceHUD';practiceHUD.hidden=true;practiceHUD.innerHTML='<strong>Optional route practice</strong><p id="practiceCopy"></p><button id="practiceRace">Skip / Start race</button><button id="practiceAgain">Replay lesson</button>';document.body.append(practiceHUD);
-function startPractice(){if(!ready)return;stopRace();challengeRun=undefined;district.setRun();mode='free';reset(selectedSpot,RACE_ROUTE.start);loop.startRun(undefined,selectedRider,actorData,current);practice=new PracticeCoach();beginRide();setCamera('chase');practiceHUD.hidden=false;}
-$('practiceRace').onclick=startRace;$('practiceAgain').onclick=startPractice;
+graphics.mount($('lobbySettings'));
+const lobbyLayout=document.createElement('button');lobbyLayout.textContent='Control settings';lobbyLayout.setAttribute('aria-controls','helpPanel');lobbyLayout.onclick=openControlSettings;$('lobbySettings').querySelector('h2')!.after(lobbyLayout);
+const practiceHUD=document.createElement('section');practiceHUD.id='practiceHUD';practiceHUD.hidden=true;practiceHUD.innerHTML='<strong>Optional route practice</strong><p id="practiceCopy"></p><button id="practiceRace">End-to-End Dash</button><button id="practiceFree">Skip / Free ride</button><button id="practiceAgain">Replay lesson</button>';document.body.append(practiceHUD);
+function startPractice(){if(!ready)return;stopRace();challengeRun=undefined;district.setRun();mode='free';reset(selectedSpot,elmwood?undefined:RACE_ROUTE.start);loop.startRun(undefined,selectedRider,actorData,current);practice=new PracticeCoach();beginRide();setCamera('chase');practiceHUD.hidden=false;}
+$('practiceRace').hidden=elmwood;$('practiceRace').onclick=()=>startChallenge(CHALLENGES.find(c=>c.id==='gratiot-dash')!);$('practiceFree').onclick=freeRideHere;$('practiceAgain').onclick=startPractice;
 const practiceButton=document.createElement('button');practiceButton.id='practiceRoute';practiceButton.textContent='Practice controls · optional';practiceButton.onclick=startPractice;practiceButton.hidden=$('menu').dataset.tab!=='race';$('raceInfo').after(practiceButton);
 
-const quickPractice=document.createElement('button');quickPractice.textContent='Learn to ride';quickPractice.onclick=startPractice;
+let practiceCompleted=false;try{practiceCompleted=localStorage.getItem('swoop-practice-v1')==='complete';}catch{}
+const quickPractice=document.createElement('button');quickPractice.textContent=practiceCompleted?'Replay practice':'Practice · recommended first';quickPractice.onclick=startPractice;
 const quickPark=document.createElement('button');quickPark.textContent='Freestyle Yard / skateboard';quickPark.onclick=()=>{const i=SPOTS.findIndex(s=>s.name===PARK_SPAWN.name);if(i<0||!ready)return;stopRace();challengeRun=undefined;district.setRun();mode='free';selectedSpot=i;reset(i);beginRide();};
-$('start').after(quickPractice,quickPark);
+quickPark.hidden=elmwood;$('start').after(quickPractice,quickPark);
 const parkHUD=document.createElement('section');parkHUD.id='parkCoach';parkHUD.hidden=true;parkHUD.setAttribute('aria-label','Freestyle Yard session');document.body.append(parkHUD);
 let parkLandings=0,parkLastLanding=-Infinity;
 const courseView=new CourseFeatureView(scene);
@@ -353,7 +370,7 @@ try{
   }
   canvas.dataset.architecture=JSON.stringify(scenery.architecture);
   sim=new RideController(world);sim.mountedVolume=hero.mountedVolume;sim.wheelScale=selectedRider.startsWith('DS_Mascot_')?.75:.86;reset();
-  ready=true;loop.ready();canvas.dataset.ready='true';canvas.dataset.hero=selectedRider;canvas.dataset.controller=RIDE_TUNING.version;canvas.dataset.physics='Rapier terrain + Digital Static controller';canvas.dataset.routeLength=String(LENGTH);$('loading').hidden=true;$<HTMLButtonElement>('start').disabled=false;document.querySelectorAll<HTMLButtonElement>('.districtCard').forEach(b=>b.disabled=false);
+  graphics.apply();ready=true;loop.ready();canvas.dataset.ready='true';canvas.dataset.hero=selectedRider;canvas.dataset.controller=RIDE_TUNING.version;canvas.dataset.physics='Rapier terrain + Digital Static controller';canvas.dataset.routeLength=String(LENGTH);$('loading').hidden=true;$<HTMLButtonElement>('start').disabled=false;document.querySelectorAll<HTMLButtonElement>('.districtCard').forEach(b=>b.disabled=false);
   setCamera('front');
   if(new URLSearchParams(location.search).get('launch')==='quest')void vr.enterFromPackage();
 }catch(e){console.error(e);$('loading').textContent='The ride could not load: '+String(e);}
@@ -388,9 +405,9 @@ function frameSplit(now:number,dt:number){
 }
 function frame(now:number,xrFrame?:XRFrame){
   if(!ready||(document.hidden&&!vr.active)){last=now;return;}
-  if(!frameSchedule.shouldRender(now,(!running||paused)&&!gallery?.active&&!boutique?.active,vr.active))return;
+  if(!frameSchedule.shouldRender(now,(!running||paused)&&!gallery?.active&&!boutique?.active,vr.active,graphics.current.fps))return;
   const rawFrameMs=Math.max(0,now-last),dt=Math.min(rawFrameMs/1000,.06);last=now;
-  if(!loadedAt)loadedAt=now;const budgetActive=!document.hidden&&!vr.active&&running&&!paused&&now-loadedAt>5000;if(adaptiveQuality.sample(rawFrameMs,budgetActive)){renderer.setPixelRatio(basePixelRatio*adaptiveQuality.scale);renderer.setSize(innerWidth,innerHeight);document.documentElement.dataset.renderQuality=adaptiveQuality.scale<.85?'compact':'detailed';}canvas.dataset.renderBudget=JSON.stringify({targetFPS:60,resolutionScale:adaptiveQuality.scale,pixelRatio:renderer.getPixelRatio(),xr:vr.active});for(const destination of [gallery,boutique])if(destination)destination.building.visible=destination.active||Math.hypot(current.x-destination.building.position.x,current.z-destination.building.position.z)<220;frameTimes.push(rawFrameMs);if(frameTimes.length>480)frameTimes.shift();
+  if(!loadedAt)loadedAt=now;const budgetActive=graphics.choice==='auto'&&!document.hidden&&!vr.active&&running&&!paused&&now-loadedAt>5000;if(adaptiveQuality.sample(rawFrameMs,budgetActive)){graphics.resize();renderer.setPixelRatio(renderer.getPixelRatio()*adaptiveQuality.scale);renderer.setSize(innerWidth,innerHeight);document.documentElement.dataset.renderQuality=graphics.current.shadows===0||adaptiveQuality.scale<.85?'compact':'detailed';}canvas.dataset.renderBudget=JSON.stringify({targetFPS:graphics.current.fps,quality:graphics.choice,resolutionScale:adaptiveQuality.scale,pixelRatio:renderer.getPixelRatio(),xr:vr.active});for(const destination of [gallery,boutique])if(destination)destination.building.visible=destination.active||Math.hypot(current.x-destination.building.position.x,current.z-destination.building.position.z)<220;frameTimes.push(rawFrameMs);if(frameTimes.length>480)frameTimes.shift();
   if(gallery?.active||boutique?.active){
     const destination=(gallery?.active?gallery:boutique)!;const walking=destination.update(document.hidden?0:dt,camera);
     if(vr.active){vr.eyeHeight=hero.vrEyeHeight-hero.mountHeight;vr.update(walking,false,false,'Serengeti Galleries',false,dt,xrFrame);}
@@ -417,7 +434,7 @@ function frame(now:number,xrFrame?:XRFrame){
       if(sim.tricks.award>0)confirmRide('trick',sim.tricks.event,'trick:'+clock);else if(sim.tricks.event)toast(sim.tricks.event);
       if(sim.crashed)crashEntry();sim.writePose(current);contactEffects?.step(1/120,current,sim.snapshot().grounded);confirmation.step(1/120);if(sim.touchedDown){const m=toMap(current.x,0,current.z);if(parkContains(m.x,m.z)&&sim.lastLandingQuality!=='crash'&&clock-parkLastLanding>1){parkLandings++;parkLastLanding=clock;}follow.landing(sim.lastLandingImpact);if(sim.lastLandingQuality!=='crash'){const surface=contactEffects?.land(current,sim.lastLandingImpact);rideAudio.landing(sim.lastLandingImpact,surface?.surface??world.sampleGround(current.x,current.z,ground,current.y).surface,surface?.wet);if(!sim.tricks.active&&!sim.tricks.event)confirmation.show('landing',sim.lastLandingQuality.toUpperCase()+' LANDING','landing:'+clock);}}
       follow.step(1/120,current);if(dogEnabled)dog.step(1/120,current);loop.step(1/120,current,sim.snapshot().grounded,sim.touchedDown?sim.lastLandingQuality:undefined,sim.tricks.award?sim.tricks.event:undefined,dog.current,dogEnabled,sim.tricks.active,sim.tricks.award);acc=Math.max(0,acc-1/120);if(!challengeRun)score=loop.flow.banked;
-      if(practice){practice.observe(current,sim.snapshot().grounded,sim.touchedDown);loop.flow.cancel();score=0;}
+      if(practice){practice.observe(current,sim.snapshot().grounded,sim.touchedDown&&(sim.lastLandingQuality==='clean'||sim.lastLandingQuality==='charged'));if(practice.complete&&!practiceCompleted){practiceCompleted=true;try{localStorage.setItem('swoop-practice-v1','complete');}catch{}quickPractice.textContent='Replay practice';}loop.flow.cancel();score=0;}
       if(race){const oldGate=race.rules.player.gate;race.step(1/120,current);if(race.rules.player.gate>oldGate)confirmRide('checkpoint',race.rules.done?'FINISH LINE':`CHECKPOINT ${race.rules.player.gate} / ${RACE_ROUTE.gates.length}`,'race-gate:'+race.rules.player.gate);if(race.rules.done)finishRace();}
       if(challengeRun){const p=toMap(current.x,0,current.z),c=cutCoords(p.x,p.z),old=challengeRun.gateCount;challengeRun.step(1/120,{station:c.d,offset:c.u,speed:current.speed,grounded:sim.snapshot().grounded,crashed:sim.crashed,roll:current.rollAngle,slip:current.slipAngle,traction:current.tractionUsage,airHeight:current.airHeight,landing:sim.touchedDown?sim.lastLandingQuality:undefined,hopCharge:sim.lastHopCharge});gate=challengeRun.count;score=loop.flow.banked;if(challengeRun.gateCount>old){loop.checkpoint(challengeRun.gateCount,challengeRun.elapsed);confirmRide('checkpoint',challengeRun.progress,'challenge:'+challengeRun.gateCount);}if(challengeRun.done||challengeRun.failed)completeChallenge();}
     }
@@ -447,8 +464,10 @@ function frame(now:number,xrFrame?:XRFrame){
     const eye=hero.head?.getWorldPosition(new T.Vector3())??new T.Vector3(pose.x,pose.y+1.85,pose.z);
     eye.add(new T.Vector3(Math.sin(pose.headingY)*.10,.065,Math.cos(pose.headingY)*.10));
     eye.y=underpassCameraHeight(world,eye,eye.y,pose.y);
-    const yaw=pose.headingY+firstYaw;
-    camera.position.copy(eye);camera.lookAt(eye.clone().add(new T.Vector3(Math.sin(yaw)*Math.cos(firstPitch),Math.sin(firstPitch),Math.cos(yaw)*Math.cos(firstPitch))));
+    // Restore the original rider-eye view: the animated head supplies movement,
+    // without a second layer of pitch/roll changing the perceived wheel response.
+    const yaw=pose.headingY+firstYaw,pitch=firstPitch;
+    camera.position.copy(eye);camera.lookAt(eye.clone().add(new T.Vector3(Math.sin(yaw)*Math.cos(pitch),Math.sin(pitch),Math.cos(yaw)*Math.cos(pitch))));
     camera.fov=74;
   }
   else if(cameraMode==='photo'&&photoTarget){camera.position.set(pose.x,underpassCameraHeight(world,pose,pose.y+2.35),pose.z);camera.lookAt(photoTarget.x,photoTarget.y,photoTarget.z);camera.fov=60;}
@@ -483,7 +502,7 @@ function frame(now:number,xrFrame?:XRFrame){
     canvas.dataset.rideFeedback=JSON.stringify({stopFoot:pose.stopFoot,scrape:pose.scrape,scrapeSide:pose.scrapeSide,warningLevel:pose.warningLevel,beepPulse:pose.beepPulse,audio:rideAudio.state});
     canvas.dataset.replayLoop=JSON.stringify(loop.state);canvas.dataset.controllerInput=JSON.stringify(gp);canvas.dataset.vr=JSON.stringify({active:vr.active,hud:vr.hudEnabled,steering:vr.steeringMode,drive:vr.driveMode,bodyVisible:hero.rider.visible,eyeHeight:vr.eyeHeight,comfort:vr.comfort,controllers:xp.connected,secure:isSecureContext});
     canvas.dataset.fall=JSON.stringify({phase:s.fallPhase,brace:pose.crashBrace,release:pose.crashRelease,impact:pose.crashImpactPulse,bodyForward:pose.crashForward,wheelForward:pose.wheelCrashForward});
-    canvas.dataset.trick=JSON.stringify({...sim.tricks.snapshot(),selected:selectedTrick});
+    const readiness=sim.moveReadiness(selectedTrick);trickHint.textContent=readiness||SPECIAL_MOVES[selectedTrick-1].name+' · Ready';canvas.dataset.trick=JSON.stringify({...sim.tricks.snapshot(),selected:selectedTrick,readiness:readiness||'Ready'});
     canvas.dataset.motion=JSON.stringify({state:paused?'paused':s.state,velocity:s.velocity,yawRate:pose.yawRate,turnIntent:pose.turnIntent,brake:pose.brakeAmount,compression:pose.landingCompression,extension:pose.takeoffExtension,airHeight:pose.airHeight,slip:pose.slipAngle,traction:pose.tractionUsage,lateralAcceleration:pose.lateralAcceleration,weightShift:pose.weightShift});
     quickHelp.textContent=inputDevice==='touch'?'Left thumb rides and steers. Hold/release Hop with your right thumb. Ride options changes view.':inputDevice==='gamepad'?'Left stick steers · RT rides · LT brakes · A holds/releases Hop · X recovers · Y changes view.':inputDevice==='vr'?'Use your configured Quest or Vive controls. Head tracking stays independent of flat-screen cameras.':'WASD rides and steers · S brakes · Space holds/releases Hop · R recovers · H recenters. Select Photo / orbit before dragging the view.';
     $('speedAlert').classList.toggle('beep-pulse',pose.beepPulse>.4&&!paused);
@@ -493,7 +512,7 @@ function frame(now:number,xrFrame?:XRFrame){
     $('speedAlert').textContent=paused||s.crashed?'':s.powerStage!=='normal'?`${s.powerStage.toUpperCase()} · EASE OFF`:pose.scrape>.05?'PEDAL SCRAPE · EASE THE CARVE':'';
     const hazard=encounterWarning.step((now-hudAt)/1000,pose,world,running&&!paused&&!finished);
     const m=toMap(pose.x,0,pose.z),route=cutCoords(m.x,m.z),feature=mapWorld.courseFeatures.find(f=>f.station-route.d>-f.length&&f.station-route.d<35);const courseWarning=!hazard&&feature&&running&&!paused?`${feature.kind==='jump'?'Jump ramp':'Slippery patch'} · ${Math.max(0,Math.round(feature.station-route.d))} m · pass ${feature.offset>0?'left':'right'} to avoid`:'';$('warning').hidden=!(hazard||courseWarning);$('warning').textContent=hazard||courseWarning;
-    if(practice){$('practiceCopy').textContent=`${Math.min(4,practice.stepIndex+1)}/4 · ${practice.instruction}`;$('practiceHUD').hidden=!$('menu').hidden||vr.active;}
+    if(practice){$('practiceCopy').textContent=`${Math.min(4,practice.stepIndex+1)}/4 · ${practice.instruction}${practice.complete?'':inputDevice==='touch'?' · Joystick rides; Brake stops; Hold / hop jumps.':inputDevice==='gamepad'?' · Left stick steers; RT rides; LT brakes; A holds/releases Hop.':inputDevice==='vr'?' · Use your configured VR ride controls.':' · WASD rides; S brakes; Space holds/releases Hop.'}`;$('practiceHUD').hidden=!$('menu').hidden||vr.active;}
     $('toast').hidden=now>toastUntil||sim.crashed||paused;$<HTMLSelectElement>('camera').value=cameraMode;
     canvas.dataset.cruise=String(cruise);canvas.dataset.inputDevice=inputDevice;crashOverlay.hidden=!running||!sim.crashed||!$('menu').hidden||finished||vr.active;crashRecover.textContent=recoveryLabel();$<HTMLButtonElement>('cruise').disabled=paused||sim.crashed||finished;
     canvas.dataset.touchInput=JSON.stringify({throttle:touch.throttle,steer:touch.steer,crouch:touch.crouch,brake:touch.braking,hopHeld:touch.hopHeld});canvas.dataset.trafficKinds=JSON.stringify(mapWorld.traffic.map(t=>({id:t.id,kind:t.kind,speed:t.speed,x:t.x,y:t.y,z:t.z,heading:t.heading})));
@@ -501,7 +520,7 @@ function frame(now:number,xrFrame?:XRFrame){
   }
 }
 renderer.setAnimationLoop(frame);
-window.addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;renderer.setSize(innerWidth,innerHeight);camera.updateProjectionMatrix();});
+window.addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;graphics.resize();camera.updateProjectionMatrix();});
 canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();paused=true;clearInput();$('loading').hidden=false;$('loading').textContent='Restoring the graphics context…';});canvas.addEventListener('webglcontextrestored',()=>location.reload());
 
 

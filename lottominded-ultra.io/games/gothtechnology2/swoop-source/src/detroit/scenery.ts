@@ -1,4 +1,7 @@
 import {signSupports} from './signSupports.ts';
+import {buildAtwaterSkyline} from './atwater.ts';
+import {buildMillikenLandmarks} from './millikenLandmarks.ts';
+import {buildRiverfrontDetails} from './riverfrontDetails.ts';
 import {buildCutLights} from './cutLights.ts';
 import {buildGrassField} from './grassField.ts';
 import {bridgeFrame} from './bridges.ts';
@@ -149,6 +152,9 @@ export async function buildScenery(scene:T.Scene,world:DetroitWorld,polish=true)
   }
   const wp=cutPoint(2052,-10),wg=groupAt(wp.x,wp.z);label(wg,'EASTERN MARKET / FREIGHT YARD',wp.x,heightAt(wp.x,wp.z)+3,wp.z,7,.8,wp.heading-Math.PI);for(const post of signSupports(wp.x,wp.z,wp.heading-Math.PI,7,heightAt(wp.x,wp.z)+3.2,heightAt))box(wg,post.x,post.y,post.z,.10,post.height,.10,steel);
   const architecture=await buildCity(scene,world,groupAt,skins);
+  await buildAtwaterSkyline(scene);
+  await buildMillikenLandmarks(scene,world);
+  const riverfront=buildRiverfrontDetails(scene,world,groupAt);
   const rails=buildRouteRails(world,groupAt,heightAt);
   const landmarks=buildCutLandmarks(world,groupAt,label);
   const flowers=buildCutFlowers(scene,world);
@@ -164,10 +170,11 @@ export async function buildScenery(scene:T.Scene,world:DetroitWorld,polish=true)
   const trees=treeBatches.reduce((n,b)=>n+b.count,0);
   return {lighting,materials:mats,architecture,trees,routeArt:{...routeArt,cutMurals},rails,landmarks,flowers:flowers.count,grassClumps:grass?.count??0,skins:8,update(x:number,z:number,time=0){
     lighting.update(x,z);
-    treeTime.value=time;
+    riverfront.update(time);
+    treeTime.value=document.documentElement.dataset.renderQuality==='compact'?0:time;
     flowers.update(x,z,document.documentElement.dataset.renderQuality==='compact');
-    grass?.update(x,z,time,document.documentElement.dataset.reducedMotion==='true'||reducedMotion.matches,mobile.matches);
+    grass?.update(x,z,time,document.documentElement.dataset.reducedMotion==='true'||reducedMotion.matches,mobile.matches||document.documentElement.dataset.renderQuality==='compact');
     for(const b of treeBatches){const c=b.group.userData.center;b.update(Math.hypot(c.x-x,c.z-z));}
-    let visible=0;for(const g of groups){const c=g.userData.center;g.visible=Math.hypot(c.x-x,c.z-z)<(document.documentElement.dataset.renderQuality==='compact'?240:360);if(g.visible)visible++;}return visible;
+    let visible=0;for(const g of groups){const c=g.userData.center;g.visible=Math.hypot(c.x-x,c.z-z)<(Number(document.documentElement.dataset.drawDistance)||360);if(g.visible)visible++;}return visible;
   }};
 }

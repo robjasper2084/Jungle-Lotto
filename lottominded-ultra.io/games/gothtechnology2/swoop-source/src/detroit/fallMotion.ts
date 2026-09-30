@@ -56,7 +56,10 @@ export class FallMotion {
     p.crashTumble=this.direction*(pitch*tip-pitch*settle)-this.direction*.08*pulse;
     // Rider roll uses the opposite Euler sign to the controller's bank angle.
     // Roll toward the displaced hip, rather than corkscrewing back toward the wheel.
-    p.crashRoll=-this.side*((this.forwardFall?.45:1.42)*tip+(this.forwardFall?1.05:.08)*settle)-this.side*.035*pulse;
+    // A forward fall first reaches the ground on the braced hands/forearm.
+    // Only then roll onto the shoulder; avoid a corkscrew while still airborne.
+    const shoulder=ramp(t,contact+.12,Math.min(this.settleTime,contact+.85));
+    p.crashRoll=-this.side*(this.forwardFall?.18*tip+1.32*shoulder:1.42*tip+.08*settle)-this.side*.035*pulse;
     p.wheelCrashLean=-this.side*1.48*ramp(t,.06,.65);
     p.wheelCrashSpin=this.side*(.25+.3*this.severity)*ramp(t,.12,.9);
     p.wheelCrashForward=forward*drift*.28;

@@ -12,3 +12,5 @@ dist/
 .env.*
 !.env.example
 /store/media-sources/
+
+.swoop-builds/

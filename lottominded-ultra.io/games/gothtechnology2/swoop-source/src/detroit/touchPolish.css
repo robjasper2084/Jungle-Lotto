@@ -32,3 +32,13 @@
  .destinationPanel:is(#galleryArrival,#boutiqueArrival) h2{font-size:19px}
 }
 @media(prefers-reduced-motion:reduce){.destinationPanel,.cameraControls{scroll-behavior:auto}}
+#touchLayoutEditor{position:fixed;inset:0;z-index:10000;background:#061d24c9;touch-action:none;overscroll-behavior:none}
+.layoutToolbar{position:absolute;top:max(12px,env(safe-area-inset-top));left:50%;transform:translateX(-50%);width:min(540px,94vw);padding:12px;background:#102d29;border:1px solid #dec57c;border-radius:10px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.layoutToolbar strong,.layoutToolbar span{flex-basis:100%}.layoutToolbar span{font-size:12px}.layoutToolbar label{display:flex;align-items:center;gap:8px}.layoutToolbar input{width:120px;min-height:44px}.layoutToolbar button{min-height:44px}.layoutToolbar p:empty{display:none}
+.layoutControl{z-index:1;touch-action:none;border:2px dashed #dec57c!important;background:#123e38e8!important;padding:5px!important;cursor:move;font-size:12px;overflow-wrap:anywhere}
+.layoutControl[aria-pressed=true]{outline:3px solid #4ef0d0;outline-offset:3px}
+.layoutToolbar{z-index:2}#touchLayoutEditor .layoutControl:first-of-type{border-radius:50%}
+.layoutToolbar{max-height:calc(100dvh - 24px - env(safe-area-inset-top) - env(safe-area-inset-bottom));overflow:auto;touch-action:pan-y;overscroll-behavior:contain}
+@media(max-height:540px) and (orientation:landscape){
+ .destinationPanel:is(#galleryArrival,#boutiqueArrival){width:min(380px,calc(100vw - 32px));overflow:auto}
+}

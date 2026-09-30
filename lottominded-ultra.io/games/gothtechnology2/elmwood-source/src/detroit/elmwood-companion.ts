@@ -16,12 +16,13 @@ function sweptDistance(ax:number,az:number,bx:number,bz:number,p:DogTarget){cons
 export class ElmwoodCompanion extends DogCompanion {
   private stalled=0;private stopped=0;private chaseTime=0;private selected?:string;private lookTarget?:string;private map:TerrainSampler;private sample=createGroundSample();
   private waypoint?:{x:number;z:number};private routeClock=0;private routeAge=0;private trail:{x:number;z:number}[]=[];private holdDown=false;
+  private idleTime=0;private wanderClock=0;private wanderStep=0;private wanderTarget?:{x:number;z:number};
   recoveries=0;sit=0;lie=0;excitement=0;barking=0;lookYaw=0;command:DogCommand='follow';chaseKind:'birds'|'people'='birds';note='Following';
   constructor(map:TerrainSampler){super(map);this.map=map;}
-  override reset(r:CompanionRider){super.reset(r);this.stalled=this.stopped=this.sit=this.lie=0;this.command='follow';this.selected=undefined;this.waypoint=undefined;this.trail=[];this.holdDown=false;this.note='Following';}
+  override reset(r:CompanionRider){super.reset(r);this.stalled=this.stopped=this.sit=this.lie=this.idleTime=this.wanderClock=0;this.wanderTarget=undefined;this.speedLimit=Infinity;this.command='follow';this.selected=undefined;this.waypoint=undefined;this.trail=[];this.holdDown=false;this.note='Following';}
   order(command:DogCommand,targets:readonly DogTarget[]=[],kind=this.chaseKind){
     if(command==='bark'){this.barking=1.3;this.excitement=1;const target=targets.filter(t=>kind==='people'?t.kind==='person':t.kind!=='person').sort((a,b)=>Math.hypot(a.x-this.x,a.z-this.z)-Math.hypot(b.x-this.x,b.z-this.z))[0];this.lookTarget=target&&Math.hypot(target.x-this.x,target.z-this.z)<18?target.id:undefined;this.note='Barking'+(this.lookTarget?' at nearby '+(kind==='people'?'walker':'birds'):' on command');return;}
-    this.holdDown=command==='down'||command==='stay'&&(this.command==='down'||this.holdDown);this.waypoint=undefined;
+    this.holdDown=command==='down'||command==='stay'&&(this.command==='down'||this.holdDown);this.waypoint=undefined;this.idleTime=this.wanderClock=0;this.wanderTarget=undefined;
     this.command=command==='come'?'follow':command;this.stopped=this.stalled=this.chaseTime=0;this.chaseKind=kind;
     if(command==='sit'||command==='stay'||command==='down'){this.speed=0;this.note=(command==='down'?'Lying down':command==='sit'?'Sitting':'Staying')+' · say come to follow';}
     else if(command==='chase'){
@@ -51,6 +52,23 @@ export class ElmwoodCompanion extends DogCompanion {
     const watch=targets.find(t=>t.id===this.lookTarget),headAngle=watch&&this.barking>0?Math.atan2(watch.x-this.x,watch.z-this.z)-this.heading:0;this.lookYaw+=(Math.max(-.65,Math.min(.65,Math.atan2(Math.sin(headAngle),Math.cos(headAngle))))-this.lookYaw)*(1-Math.exp(-dt*6));
     const last=this.trail.at(-1);if(!last||Math.hypot(r.x-last.x,r.z-last.z)>1.5){this.trail.push({x:r.x,z:r.z});if(this.trail.length>60)this.trail.shift();}
     const x=this.x,z=this.z;let goal=r;
+    this.idleTime=this.command==='follow'&&Math.abs(r.speed)<.15?this.idleTime+dt:0;
+    const wandering=this.idleTime>=11;this.speedLimit=wandering?1.05:Infinity;
+    if(!wandering){this.wanderTarget=undefined;this.wanderClock=0;}
+    else{
+      this.wanderClock-=dt;
+      if(this.wanderClock<=0){
+        this.wanderClock=4;this.wanderTarget=undefined;
+        for(let i=0;i<12;i++){
+          const angle=++this.wanderStep*2.399963,radius=1.8+(this.wanderStep%3)*.45;
+          const px=r.x+Math.sin(angle)*radius,pz=r.z+Math.cos(angle)*radius,g=this.map.sampleGround(px,pz,this.sample);
+          if(g.offCourse||g.normal.y<.75||Math.abs(g.height-this.y)>.5||!this.clearTo(px,pz)||targets.some(t=>Math.hypot(t.x-px,t.z-pz)<1+t.radius))continue;
+          this.wanderTarget={x:px,z:pz};break;
+        }
+      }
+      if(this.wanderTarget)goal={x:this.wanderTarget.x-1.35*this.side,z:this.wanderTarget.z-.15,headingY:0,speed:0};
+      this.note='Exploring nearby';
+    }
     if(this.command==='chase'){
       this.chaseTime+=dt;const target=targets.find(t=>t.id===this.selected);
       if(!target||target.water||this.chaseTime>15||Math.hypot(this.x-r.x,this.z-r.z)>35){this.command='follow';this.note='Returning to rider';}
@@ -66,9 +84,9 @@ export class ElmwoodCompanion extends DogCompanion {
     }
     const distance=Math.hypot(this.x-r.x,this.z-r.z);
     this.stopped=Math.abs(r.speed)<.15&&this.speed<.18?this.stopped+dt:0;
-    const seated=this.command==='sit'||this.command==='stay'&&!this.holdDown||this.command==='follow'&&this.stopped>=1;
+    const seated=this.command==='sit'||this.command==='stay'&&!this.holdDown||this.command==='follow'&&!wandering&&this.stopped>=1;
     this.sit+=(Number(seated)-this.sit)*(1-Math.exp(-dt*7));this.lie+=(Number(this.command==='down'||this.command==='stay'&&this.holdDown)-this.lie)*(1-Math.exp(-dt*7));
-    if(this.command==='follow'&&this.stopped>=1)this.note='Sitting beside rider';else if(this.command==='follow'&&Math.abs(r.speed)>.3)this.note='Following';
+    if(this.command==='follow'&&!wandering&&this.stopped>=1)this.note='Sitting beside rider';else if(this.command==='follow'&&Math.abs(r.speed)>.3)this.note='Following';
     this.stalled=this.command==='follow'&&distance>3&&Math.hypot(this.x-x,this.z-z)<.012?this.stalled+dt:Math.max(0,this.stalled-dt*2);
     if(this.command==='follow'&&(this.stalled>.85||distance>24)){super.reset(r);this.stalled=0;this.waypoint=undefined;this.recoveries++;this.note='Regrouped beside rider';}
   }

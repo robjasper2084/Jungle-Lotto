@@ -2,7 +2,7 @@ import {actorContact,isCharacter} from './actorAvoidance.ts';
 import {FallMotion,getUpPose} from './fallMotion.ts';
 import {safeRecovery,DEFAULT_MOUNTED_VOLUME,type MountedVolume,type RideSpawn} from './recovery.ts';
 import {RideFeedback} from './rideFeedback.ts';
-import {SpecialMoves} from './specialMoves.ts';
+import {SpecialMoves,moveReadiness} from './specialMoves.ts';
 import {BalanceEngine} from './balanceEngine.ts';
 import {NaturalMotionEngine} from './naturalMotion.ts';
 import {createGroundSample} from './terrain.ts';
@@ -278,6 +278,7 @@ export class RideController {
     if(this.ground.offCourse)this.fall('trail boundary');
     if(this.grounded&&!this.crashed&&Math.abs(p.rollAngle)<.12&&this.terrain.raycastObstacle({x:p.x,y:p.y+.65,z:p.z},{x:s,y:0,z:c},3,.35)===null)this.safe={position:{x:p.x,y:floor,z:p.z},headingY:p.headingY};
   }
+  moveReadiness(id:number){return moveReadiness(id,{grounded:this.grounded,crashed:this.crashed,speed:this.pose.speed,bank:this.pose.rollAngle,cooldown:this.tricks.cooldown,active:this.tricks.active,clear:this.trickClearance()});}
   private trickClearance(){
     const p=this.pose,s=Math.sin(p.headingY),c=Math.cos(p.headingY),height=this.mountedVolume.height;
     const overhead=this.terrain.raycastObstacle({x:p.x,y:p.y+height,z:p.z},{x:0,y:1,z:0},1.3,this.mountedVolume.radius,{x:c,y:0,z:-s});

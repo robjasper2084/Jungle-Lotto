@@ -7,6 +7,7 @@ const angle=(x:number)=>Math.atan2(Math.sin(x),Math.cos(x));
 export class DogCompanion {
   x=0;y=0;z=0;heading=0;speed=0;groundPitch=0;groundRoll=0;
   side=1;
+  protected speedLimit=Infinity;
   private ready=false;
   private ground=createGroundSample();
   private targetGround=createGroundSample();
@@ -34,7 +35,7 @@ export class DogCompanion {
     const dt=clamp(seconds,0,.06);if(!dt)return;
     if(Math.hypot(this.x-r.x,this.z-r.z)>45){this.reset(r);return;}
     const target=this.goal(r),dx=target.x-this.x,dz=target.z-this.z,distance=Math.hypot(dx,dz);
-    const desired=Math.min(Math.max(7,Math.abs(r.speed)*1.25),Math.max(0,distance-.055)*7);
+    const desired=Math.min(this.speedLimit,Math.max(7,Math.abs(r.speed)*1.25),Math.max(0,distance-.055)*7);
     this.speed+=(desired-this.speed)*(1-Math.exp(-dt*10));
     if(distance<.065){this.speed=0;this.heading+=angle(target.heading-this.heading)*(1-Math.exp(-dt*3));this.orientToGround();return;}
     const direction=Math.atan2(dx,dz),step=Math.min(distance,this.speed*dt);
