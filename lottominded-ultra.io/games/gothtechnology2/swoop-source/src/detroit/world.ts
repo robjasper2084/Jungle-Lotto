@@ -53,6 +53,7 @@ export const SPOTS=[
  {name:'Detroit heart / field sign',...cutPoint(1600),heading:pointOnCut(1600).heading+Math.PI/2},
  {name:'Ze Mound overlook',x:MILLIKEN_BERM.x+42,z:MILLIKEN_BERM.z,heading:-Math.PI/2},
  {name:'Adelaide / Detroit mural',...cutPoint(1864),heading:pointOnCut(1864).heading-Math.PI/2},
+ {name:'Atwater / Milliken Harbor docks',x:-95,z:-1385,heading:-Math.PI/2},
 ];
 export const STATIONS=CUT_STATIONS;
 export const CHECKPOINTS=[

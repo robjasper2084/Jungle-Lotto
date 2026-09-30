@@ -1,2 +1,0 @@
-const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["./main-DRUYvrH1.js","./humanFallRig-n_UYK6xs.js","./terrain-EiNY29eF.js","./bootUi-Bjz4-9gr.js","./bootUi-Xb1Dg62q.css","./rideAudio-D7BTzh15.js","./rideAudio-C19J8wjh.css","./dogSteering-BfELcJFu.js","./main-8cPNXWdn.css"])))=>i.map(i=>d[i]);
-import"./modulepreload-polyfill-B5Qt9EMX.js";import{_ as r,f as i}from"./bootUi-Bjz4-9gr.js";try{await r(()=>import("./main-DRUYvrH1.js"),__vite__mapDeps([0,1,2,3,4,5,6,7,8]),import.meta.url)}catch(t){i(t,/WebGL|graphics context/i.test(String(t)))}
