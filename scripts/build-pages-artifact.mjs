@@ -2,6 +2,7 @@ import {optimizePagesImages} from './optimize-pages-images.mjs';
 import {shareRideTextures} from './share-ride-textures.mjs';
 import {compressRideModels} from './compress-ride-models.mjs';
 import {shareRideVehicles} from './share-ride-vehicles.mjs';
+import {shareRidingMedia} from './share-riding-media.mjs';
 import { execFileSync } from "node:child_process";
 import { copyFile, mkdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { basename, dirname, extname, relative, resolve, sep } from "node:path";
@@ -218,7 +219,8 @@ const rideTextureSharing = await shareRideTextures(outputRoot);
 const imageOptimization = await optimizePagesImages(outputRoot);
 const rideModelCompression = await compressRideModels(outputRoot);
 const rideVehicleSharing = await shareRideVehicles(outputRoot);
-const totalBytes = copiedBytes - rideTextureSharing.saved - imageOptimization.saved - rideModelCompression.saved - rideVehicleSharing.saved;
+const ridingMediaSharing = await shareRidingMedia(outputRoot);
+const totalBytes = copiedBytes - rideTextureSharing.saved - imageOptimization.saved - rideModelCompression.saved - rideVehicleSharing.saved - ridingMediaSharing.saved;
 
 for (const route of requiredRoutes) {
   const routeStats = await stat(outputPathFor(route)).catch(() => null);
@@ -249,6 +251,7 @@ const manifest = {
   rideTextureSharing,
   rideModelCompression,
   rideVehicleSharing,
+  ridingMediaSharing,
   bytes: totalBytes,
   mebibytes: Number((totalBytes / 1024 / 1024).toFixed(1)),
   maxMebibytes: Number((maxBytes / 1024 / 1024).toFixed(1)),
