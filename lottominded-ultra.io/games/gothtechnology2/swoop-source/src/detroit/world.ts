@@ -284,9 +284,10 @@ export class DetroitWorld implements TerrainSampler{
     return this.sampleGround(x,z,{height:0,normal:{x:0,y:1,z:0},surface:'pavement',offCourse:false},referenceY).height<(pond?-.18:-.25);
   }
   navigationObstacles(x:number,z:number,radius:number):NavigationObstacle[]{
-    return [...this.traffic.map(t=>({...trafficObstacle(t),onImpact:(impact:ActorImpact)=>this.receiveTrafficImpact(t.id,impact)})),
-      ...this.solids.map((s,i)=>({id:'solid-'+i,x:s.x,y:s.y-s.hy,z:s.z,radius:Math.hypot(s.hx,s.hz),height:s.hy*2,kind:s.kind,vx:0,vz:0,raycastSolid:true}))]
-      .filter(o=>Math.hypot(o.x-x,o.z-z)<radius+o.radius);
+    const result:NavigationObstacle[]=[];
+    for(const t of this.traffic){const o=trafficObstacle(t);if(Math.hypot(o.x-x,o.z-z)<radius+o.radius)result.push({...o,onImpact:(impact:ActorImpact)=>this.receiveTrafficImpact(t.id,impact)});}
+    for(let i=0;i<this.solids.length;i++){const s=this.solids[i],r=Math.hypot(s.hx,s.hz);if(Math.hypot(s.x-x,s.z-z)<radius+r)result.push({id:'solid-'+i,x:s.x,y:s.y-s.hy,z:s.z,radius:r,height:s.hy*2,kind:s.kind,vx:0,vz:0,raycastSolid:true});}
+    return result;
   }
   raycast(origin:Vec3,direction:Vec3,maxDistance:number){
     const n=Math.hypot(direction.x,direction.y,direction.z);if(n<1e-8)return null;

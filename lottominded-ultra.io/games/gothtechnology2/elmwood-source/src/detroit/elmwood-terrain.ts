@@ -1,3 +1,4 @@
+import {SegmentIndex} from './segmentIndex.ts';
 import R from '@dimforge/rapier3d-compat';
 import {bankHeight,type BankSurface} from './elmwood-bank.ts';
 import {makeElmwoodCurbs,curbContains,ELMWOOD_GATE,ELMWOOD_YOUNG,ELMWOOD_PARKING,inRing,type Curb} from './elmwood-details.ts';
@@ -13,7 +14,7 @@ export function inElmwoodPond(x:number,north:number,features:Feature[]){
 }
 /** Uses the same DEM, path offsets and bridge transitions as the visible foundation. */
 export class ElmwoodTerrain implements TerrainSampler{
- physics!:R.World;segments:Segment[]=[];decks=new Map<string,number>();
+ physics!:R.World;segments:Segment[]=[];private laneIndex:SegmentIndex;decks=new Map<string,number>();
  curbs:Curb[]=[];curbTiles=new Map<string,Curb[]>();
  readonly banks:Placement[];
  readonly grid:ElmwoodGrid;readonly features:Feature[];readonly placements:Placement[];
@@ -25,6 +26,7 @@ export class ElmwoodTerrain implements TerrainSampler{
    if(f.tags.bridge==='yes'){const h=Math.max(...f.points.map(p=>this.ground(p[0],p[1])))+.25;this.decks.set(f.points[0].slice(0,2).join(','),h);this.decks.set(f.points.at(-1)!.slice(0,2).join(','),h);}
    for(let i=1;i<f.points.length;i++)this.segments.push({a:f.points[i-1],b:f.points[i],feature:f});
   }
+  this.laneIndex=new SegmentIndex(this.segments.map(s=>({ax:s.a[0],ay:s.a[1],bx:s.b[0],by:s.b[1]})));
  }
  async init(){await R.init();this.physics=new R.World({x:0,y:-9.81,z:0});
   const young=ELMWOOD_YOUNG;this.physics.createCollider(R.ColliderDesc.cuboid(1.05,.86,.43).setTranslation(young.x,this.ground(young.x,young.north)+.86,-young.north).setRotation({x:0,y:Math.sin(young.heading/2),z:0,w:Math.cos(young.heading/2)}));
@@ -52,7 +54,7 @@ export class ElmwoodTerrain implements TerrainSampler{
   const nw=g.heights[j*g.width+i],ne=g.heights[j*g.width+i1],sw=g.heights[j1*g.width+i],se=g.heights[j1*g.width+i1];
   return a>=b?nw+(ne-nw)*a+(se-ne)*b:nw+(se-sw)*a+(sw-nw)*b;
  }
- nearest(x:number,north:number){let distance=Infinity,result=this.segments[0],px=0,py=0;for(const s of this.segments){const dx=s.b[0]-s.a[0],dy=s.b[1]-s.a[1],t=Math.max(0,Math.min(1,((x-s.a[0])*dx+(north-s.a[1])*dy)/(dx*dx+dy*dy||1))),xx=s.a[0]+t*dx,yy=s.a[1]+t*dy,d=Math.hypot(x-xx,north-yy);if(d<distance){distance=d;result=s;px=xx;py=yy;}}return {distance,segment:result,x:px,north:py};}
+ nearest(x:number,north:number){const p=this.laneIndex.nearest(x,north);return {distance:p.distance,segment:this.segments[p.index],x:p.x,north:p.y};}
  height(x:number,north:number){let height=this.baseHeight(x,north);for(const bank of this.banks)height=Math.max(height,bankHeight(bank,x,north)??-Infinity);return height;}
  private baseHeight(x:number,north:number){const close=this.nearest(x,north),f=close.segment.feature;let h=this.ground(x,north);if(inRing(x,north,ELMWOOD_PARKING))return this.surfaceGround(x,north)+.046;const half=f.tags.bridge==='yes'&&f.tags.highway==='footway'?1.5:2;if(close.distance>half){const tile=this.curbTiles.get(Math.floor(x/10)+','+Math.floor(north/10));return h+(tile?.some(c=>curbContains(c,x,north))?.155:0);}if(f.tags.bridge==='yes')return this.decks.get(f.points[0].slice(0,2).join(','))!+.045;h=this.surfaceGround(x,north);for(const p of [f.points[0],f.points.at(-1)!]){const z=this.decks.get(p.slice(0,2).join(','));if(z!==undefined){const blend=Math.max(0,1-Math.hypot(x-p[0],north-p[1])/5);h=h*(1-blend)+z*blend;}}return h+.045;}
  sampleGround(x:number,z:number,out:GroundSample){out.height=this.height(x,-z);const dx=(this.height(x+.25,-z)-this.height(x-.25,-z))/.5,dz=(this.height(x,-z-.25)-this.height(x,-z+.25))/.5,len=Math.hypot(dx,1,dz);out.normal.x=-dx/len;out.normal.y=1/len;out.normal.z=-dz/len;out.surface=this.nearest(x,-z).distance<=2||inRing(x,-z,ELMWOOD_PARKING)?'pavement':'grass';const g=this.grid;out.offCourse=x<g.x0||x>g.x0+(g.width-1)*g.spacing||-z>g.y0||-z<g.y0-(g.height-1)*g.spacing||inElmwoodPond(x,-z,this.features);return out;}

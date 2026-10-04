@@ -4,7 +4,7 @@ type Entry=StreamJob&{state:'waiting'|'loading'|'loaded'|'error';promise?:Promis
 
 /** Fetch nearby art in priority order. Collision/ground data stays resident. */
 export class SpatialAssetStream {
- private entries=new Map<string,Entry>();private active=0;private points:readonly StreamPoint[]=[];private radius=0;
+ private nextPump=0;private entries=new Map<string,Entry>();private active=0;private points:readonly StreamPoint[]=[];private radius=0;
  private concurrency:number;private changed:()=>void;
  constructor(concurrency=2,changed:()=>void=()=>{}){
   this.concurrency=concurrency;this.changed=changed;
@@ -22,7 +22,7 @@ export class SpatialAssetStream {
   const nearby=[...this.entries.values()].filter(e=>(e.state==='waiting'||e.state==='error'&&Date.now()>=e.retryAt)&&this.distance(e)<=this.radius).sort((a,b)=>this.distance(a)-this.distance(b));
   for(const entry of nearby){if(this.active>=this.concurrency)break;void this.start(entry).catch(()=>{});}
  }
- update(points:readonly StreamPoint[],radius:number){this.points=points;this.radius=Math.max(0,radius);this.pump();}
+ update(points:readonly StreamPoint[],radius:number){this.points=points;this.radius=Math.max(0,radius);const now=performance.now();if(now>=this.nextPump){this.nextPump=now+100;this.pump();}}
  async ensure(id:string){const entry=this.entries.get(id);if(!entry)return;if(entry.state==='error')entry.retryAt=0;await this.start(entry);}
  async warm(points:readonly StreamPoint[],radius:number){
   const jobs=[...this.entries.values()].filter(e=>this.distance(e,points)<=radius).sort((a,b)=>this.distance(a,points)-this.distance(b,points));
