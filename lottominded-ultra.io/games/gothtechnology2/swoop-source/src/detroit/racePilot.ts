@@ -1,3 +1,4 @@
+import {type EbikeProfile,type EucProfile,vehicleSummary} from './electricVehicles.ts';
 import {isCharacter} from './actorAvoidance.ts';
 import {NEUTRAL_ACTIONS,createPose} from './controller.ts';
 import {BicycleAdapter as RideController} from './bicycleAdapter.ts';
@@ -14,12 +15,13 @@ const raceHuman=(o:NavigationObstacle)=>o.id==='human-player'||o.id==='human-pla
 export class RacePilot {
  readonly sim:RideController;pose=createPose();private recovery=0;private blockedFor=0;private backoff=0;private smoothLane=0;private surfaceCheck=0;private surfacePace=Infinity;private passLane:number|undefined;private passUntil=0;private ground=createGroundSample();
  private terrain:TerrainSampler;readonly id:RiderId;readonly index:number;readonly difficulty:RaceDifficulty;
- constructor(terrain:TerrainSampler,id:RiderId,index:number,difficulty:RaceDifficulty,private neighbours:()=>NavigationObstacle[]=()=>[],readonly cycling=false){
+ constructor(terrain:TerrainSampler,id:RiderId,index:number,difficulty:RaceDifficulty,private neighbours:()=>NavigationObstacle[]=()=>[],readonly cycling=false,readonly electric?:EbikeProfile,readonly wheel?:EucProfile){
   this.terrain=terrain;this.id=id;this.index=index;this.difficulty=difficulty;
   const base=cycling?terrain.withActorPassThrough?.(computerBikeContact)??terrain:terrain;
   this.sim=new RideController({sampleGround:(...args)=>base.sampleGround(...args),raycast:(...args)=>base.raycast(...args),raycastObstacle:(...args)=>base.raycastObstacle(...args),mountedClear:base.mountedClear?(...args)=>base.mountedClear!(...args):undefined,navigationObstacles:(x,z,radius)=>(base.navigationObstacles?.(x,z,radius)??[]).concat(neighbours()).filter(o=>o.id!==`rival-${index}`&&o.id!==`rival-${index}-wheel`&&!(cycling&&(computerBikeContact(o)||raceHuman(o))))});
-  this.sim.cycling=cycling;this.sim.precisionSteering=true;this.sim.wheelScale=id.startsWith('DS_Mascot_')?.75:.86;this.reset(RACE_ROUTE.start-(index+1)*2.2);
+  this.sim.selectVehicle(electric?'ebike:'+electric.id:wheel?'euc:'+wheel.id:cycling?'bicycle':'euc');this.sim.precisionSteering=true;this.sim.wheelScale=id.startsWith('DS_Mascot_')?.75:.86;this.reset(RACE_ROUTE.start-(index+1)*2.2);
  }
+ get vehicleLabel(){return vehicleSummary(this.sim.vehicleId).split(' · ').slice(0,2).join(' · ');}
  diagnostics(){const p=this.pose,s=Math.sin(p.headingY),c=Math.cos(p.headingY),ground=(distance:number)=>{const q=createGroundSample();this.sim.terrain.sampleGround(p.x+s*distance,p.z+c*distance,q,p.y);return {distance,height:q.height,offCourse:q.offCourse,surface:q.surface};};return {position:{x:p.x,y:p.y,z:p.z},heading:p.headingY,ground:[-.6,-.53,0,.56,.65].map(ground),speed:p.speed,state:this.sim.snapshot().state,blocked:this.sim.bicycle.blocked,lastBlock:this.sim.bicycle.lastBlock,blockedFor:this.blockedFor,backoff:this.backoff,lane:this.passLane,forward:this.sim.terrain.raycastObstacle({x:p.x,y:p.y+.55,z:p.z},{x:s,y:0,z:c},4,.31),nearby:this.sim.terrain.navigationObstacles?.(p.x,p.z,3).map(o=>({id:o.id,kind:o.kind,distance:Math.hypot(o.x-p.x,o.z-p.z),radius:o.radius}))};}
  reset(d:number){
   this.passLane=undefined;this.blockedFor=this.backoff=0;let lane=[-1.35,1.35,-.55][this.index];
@@ -53,10 +55,10 @@ export class RacePilot {
   const attack=rivals.some(r=>r.station-coord.d>-3&&r.station-coord.d<30);
   // A bounded pursuit effort uses the same motor and grip as the human rider.
   // Leaders retain their pace; no teleporting or forced slowdown to bunch the field.
-  const cap=this.difficulty==='expert'?19.8:this.difficulty==='club'?17.3:11.2;
+  const baseCap=this.difficulty==='expert'?19.8:this.difficulty==='club'?17.3:11.2;const cap=this.electric?Math.min(this.electric.topKph/3.6,baseCap*1.35):this.wheel?Math.min(this.wheel.topKph/3.6*.9,baseCap):baseCap;
   const pursuit=this.difficulty==='cruise'?0:clamp((behind-8)/55,0,1)*1.1;
   let lane=[-1.35,1.35,-.55][this.index];
-  let pace=Math.min(cap,Math.max(RACE_PACE[this.difficulty],behind>12?Math.min(leader.speed+.4,cap):0)+pursuit+[.25,-.12,.08][this.index]+Math.sin(rules.elapsed*.28+this.index*2)*.3+(attack?.35:0)+(coord.d>RACE_ROUTE.end-240?.45:0));
+  let pace=Math.min(cap,Math.max(this.electric?cap*.88:RACE_PACE[this.difficulty],behind>12?Math.min(leader.speed+.4,cap):0)+pursuit+[.25,-.12,.08][this.index]+Math.sin(rules.elapsed*.28+this.index*2)*.3+(attack?.35:0)+(coord.d>RACE_ROUTE.end-240?.45:0));
   // Commit to a clear overtaking line early, including space for a racer behind.
   const blocked=rivals.find(r=>r.station-coord.d>-.8&&r.station-coord.d<Math.max(20,p.speed*2.5)&&Math.abs(r.offset-(this.passLane??lane))<1.25);
   if(blocked){
@@ -112,12 +114,12 @@ export class RacePilot {
    const bend=Math.abs(Math.atan2(Math.sin(after.heading-ahead.heading),Math.cos(after.heading-ahead.heading)))/10;
    if(bend>.002){const cornerSpeed=Math.sqrt(2.5/bend);curvePace=Math.min(curvePace,Math.sqrt(cornerSpeed*cornerSpeed+2*4*Math.max(0,distance-5)));}
   }
-  if(this.cycling)pace=Math.min(pace,this.difficulty==='expert'?7.9:this.difficulty==='club'?7.2:5.8);
+  if(this.cycling&&!this.electric)pace=Math.min(pace,this.difficulty==='expert'?7.9:this.difficulty==='club'?7.2:5.8);
   pace=Math.min(pace,curvePace)*clamp(1-Math.abs(error)*.5,.4,1);
   const tuck=p.speed>12&&Math.abs(error)<.16&&this.sim.snapshot().grounded;
   // Feed-forward drag compensation lets the pilot reach its target instead of
   // coasting permanently below it, while launch jerk still comes from RideCore.
-  const drag=this.cycling?.13+p.speed*p.speed*.009:p.speed*.055+p.speed*p.speed*(tuck?.004:.006),drive=this.cycling?2.35:RIDE_TUNING.driveAcceleration,taper=clamp((RIDE_TUNING.maxSpeed-p.speed)/6.5,.12,1);
+  const drag=this.electric?.09+.32*p.speed*p.speed/(this.electric.mass+80):this.cycling?.13+p.speed*p.speed*.009:p.speed*.055+p.speed*p.speed*(tuck?.004:.006),drive=this.electric?this.electric.acceleration:this.cycling?2.35:RIDE_TUNING.driveAcceleration,taper=clamp((RIDE_TUNING.maxSpeed-p.speed)/6.5,.12,1);
   const throttle=clamp((pace-p.speed)*.75+(pace>0?drag/(drive*(this.cycling?1:taper)):0),-.9,1);
   this.sim.step(dt,{...NEUTRAL_ACTIONS,throttle,crouch:tuck,steer:this.sim.snapshot().grounded?clamp(-error*2.5,-.8,.8):0});this.sim.writePose(this.pose);
   const mapped=toMap(this.pose.x,this.pose.y,this.pose.z),c=cutCoords(mapped.x,mapped.z);rules.observe(this.id,c.d,c.u,dt);

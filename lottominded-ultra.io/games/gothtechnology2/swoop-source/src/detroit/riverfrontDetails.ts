@@ -5,6 +5,7 @@ import {roadsidePoint} from './roadsidePlacement.ts';
 import {CITY,riverEdge} from './geography.ts';
 import {heightAt,type DetroitWorld} from './world.ts';
 import {MILLIKEN_BERM} from './millikenTerrain.ts';
+import {MACK_PARKING_LOTS} from './mackParkingLayout.ts';
 /** Authored landscape detail on mapped roads. No map photography is baked into assets. */
 export function buildRiverfrontDetails(scene:T.Scene,world:DetroitWorld,groupAt:(x:number,z:number)=>T.Group){
  const concrete=new T.MeshStandardMaterial({color:0xb8b4a8,roughness:.92}),metal=new T.MeshStandardMaterial({color:0x263e3b,metalness:.5,roughness:.48}),asphalt=new T.MeshStandardMaterial({color:0x424747,roughness:.96}),white=new T.MeshStandardMaterial({color:0xe2e3cf});
@@ -40,10 +41,10 @@ export function buildRiverfrontDetails(scene:T.Scene,world:DetroitWorld,groupAt:
   }
  }
  // Small off-street lots beside the fictional Mack destinations, with clear drive aisles.
- for(const x of [2495,2583]){const z=-1471,y=heightAt(x,z);box(x,y+.025,z,20,.05,25,asphalt);
+ for(const {x,z,width,depth} of MACK_PARKING_LOTS){const y=heightAt(x,z);box(x,y+.025,z,width,.05,depth,asphalt);
   for(let i=0;i<=6;i++)box(x-8+i*2.7,y+.057,z-6,.09,.015,5.4,white);
   box(x,y+.15,z-12.2,20,.25,.25,concrete);sign(x+9,z+10,'STOP',true,-Math.PI/2);
-  const plane=new T.PlaneGeometry(20,25);plane.rotateX(-Math.PI/2);plane.translate(x,y+.05,z);const indexed=plane.toNonIndexed();world.addRideSurface(indexed.attributes.position.array as Float32Array);plane.dispose();indexed.dispose();
+  const plane=new T.PlaneGeometry(width,depth);plane.rotateX(-Math.PI/2);plane.translate(x,y+.05,z);const indexed=plane.toNonIndexed();world.addRideSurface(indexed.attributes.position.array as Float32Array);plane.dispose();indexed.dispose();
  }
  // A gently curving paved viewing walk climbs the berm. Match render and collision.
  const b=MILLIKEN_BERM;

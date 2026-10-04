@@ -1,7 +1,7 @@
 import {actorTravelFraction} from './actorAvoidance.ts';
 import type {NavigationObstacle} from './terrain.ts';
 import {computerBikeContact} from './cyclistContacts.ts';
-export interface CrowdAgent {id:string;kind?:string;distance:number;lane:number;direction:number;pace:number;speed:number;radius:number;height:number;x:number;y:number;z:number;heading:number;passing?:string;passLane?:number;stuck?:number;motionSpeed?:number;incapacitated?:boolean}
+export interface CrowdAgent {id:string;kind?:string;distance:number;lane:number;direction:number;pace:number;speed:number;radius:number;height:number;x:number;y:number;z:number;heading:number;passing?:string;passLane?:number;stuck?:number;motionSpeed?:number;incapacitated?:boolean;retreat?:number;behavior?:'moving'|'passing'|'yielding'|'stepping aside'}
 export interface CrowdPath {length:number;runout:number;offsetSign?:number;point:(d:number,u:number)=>{x:number;y:number;z:number;heading:number};width:(d:number)=>number;walkable?:(x:number,y:number,z:number)=>boolean}
 const clamp=(v:number,a:number,b:number)=>Math.max(a,Math.min(b,v));
 const angle=(v:number)=>Math.atan2(Math.sin(v),Math.cos(v));
@@ -30,14 +30,27 @@ export function advanceCrowd(agents:CrowdAgent[],dt:number,path:CrowdPath,extern
    // A slower lead actor gets a deliberate overtake; a blocked gap yields smoothly.
    pace=Math.min(pace,Math.sqrt(Math.max(0,gap)*2*1.5));
   }
+  // Give an approaching player space even when they are behind us. Pick a
+  // reachable shoulder and hold it long enough for the wheel to pass.
+  const rider=external.find(o=>o.kind==='rider'&&!o.fallen&&Math.abs(o.y-a.y)<1.3&&Math.hypot(o.x-a.x,o.z-a.z)<3.2);
+  if(rider){
+   const side=(rider.x-a.x)*nz-(rider.z-a.z)*nx,offset=a.direction*(path.offsetSign??1);
+   const wanted=clamp(a.lane-offset*(side>=0?1:-1)*1.25,-limit,limit),q=path.point(a.distance,wanted);
+   if(!path.walkable||path.walkable(q.x,q.y,q.z)){target=wanted;a.passLane=target;a.passing=rider.id;}
+  }
   a.stuck=(a.motionSpeed??a.speed)<.15?(a.stuck??0)+dt:0;
   if(a.stuck>.6){
    // If another passer occupies our reservation, pick a reachable gap instead of queueing forever.
    const score=(lane:number)=>{const q=path.point(a.distance,lane),ahead=path.point(a.distance+a.direction*.8,lane);if(path.walkable&&!path.walkable(q.x,q.y,q.z))return -10;const fraction=actorTravelFraction(a,q.x-a.x,q.z-a.z,a.radius,a.height,solid);return fraction*3+Math.min(2,...obstacles.map(o=>Math.hypot(ahead.x-o.x,ahead.z-o.z)-a.radius-o.radius))-.08*Math.abs(lane-a.lane);};
    const choices=[target,-limit,limit,home,0].sort((a,b)=>score(b)-score(a));target=choices[0];a.passLane=target;a.passing=threat?.o.id??a.passing;
+   // Back up a short distance if an occupied shoulder leaves no sideways
+   // escape. Never teleport or reverse the person's chosen route direction.
+   if(a.stuck>2&&!a.retreat&&score(target)<.5){const back=path.point(a.distance-a.direction*.6,a.lane);if((!path.walkable||path.walkable(back.x,back.y,back.z))&&actorTravelFraction(a,back.x-a.x,back.z-a.z,a.radius,a.height,solid)>.8)a.retreat=.8;}
   }
+  a.behavior=rider?'stepping aside':pace<.15?'yielding':a.passing?'passing':'moving';
   a.speed+=clamp(pace-a.speed,-2.8*dt,1.4*dt);
-  const nextLane=a.lane+clamp(target-a.lane,-.85*dt,.85*dt),nextDistance=a.distance+a.direction*a.speed*dt;
+  const retreat=(a.retreat??0)>0;if(retreat)a.retreat=Math.max(0,a.retreat!-dt);
+  const nextLane=a.lane+clamp(target-a.lane,-.85*dt,.85*dt),nextDistance=a.distance+a.direction*(retreat?-.65:a.speed)*dt;
   const next=path.point(nextDistance,nextLane),dx=next.x-a.x,dz=next.z-a.z;
   const fraction=path.walkable&&!path.walkable(next.x,next.y,next.z)?0:actorTravelFraction(a,dx,dz,a.radius,a.height,solid);
   a.distance+=(nextDistance-a.distance)*fraction;a.lane+=(nextLane-a.lane)*fraction;

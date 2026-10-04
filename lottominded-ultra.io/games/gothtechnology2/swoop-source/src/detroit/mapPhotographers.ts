@@ -1,0 +1,12 @@
+import * as T from 'three';
+import type {GLTF} from './compressedGLTFLoader.ts';
+import type {TerrainSampler} from './terrain.ts';
+import {createGroundSample} from './terrain.ts';
+import {routePosition} from './districtView.ts';
+import {ElmwoodWalkerView} from './photographerView.ts';
+/** Visitors stroll between viewpoints, stop for photos and yield to approaching riders. */
+export class MapPhotographers {
+ readonly root=new T.Group();private ground=createGroundSample();private visitors:{view:ElmwoodWalkerView;a:T.Vector3;b:T.Vector3;target:T.Vector3;photo:number;clock:number;heading:number}[]=[];
+ constructor(scene:T.Scene,data:Map<string,GLTF>,private terrain:TerrainSampler){this.root.name='Map photographers / CMU walking';scene.add(this.root);for(let i=0;i<18;i++){const station=100+i*115,offset=i%2?2:-2,a=routePosition(station-12,offset),b=routePosition(station+12,offset),view=new ElmwoodWalkerView(data.get('DS_Pedestrian_01')!);view.root.position.set(a.x,terrain.sampleGround(a.x,a.z,this.ground,a.y).height,a.z);view.root.rotation.y=a.heading;this.root.add(view.root);this.visitors.push({view,a:new T.Vector3(a.x,a.y,a.z),b:new T.Vector3(b.x,b.y,b.z),target:new T.Vector3(b.x,b.y,b.z),photo:0,clock:5+i*1.7,heading:a.heading});}}
+ update(dt:number,riders:readonly {x:number;z:number}[],distance=140){if(dt<=0)return;dt=Math.min(dt,.05);for(const v of this.visitors){const p=v.view.root.position,near=riders.some(r=>Math.hypot(r.x-p.x,r.z-p.z)<distance);v.view.root.visible=near;const approaching=riders.some(r=>Math.hypot(r.x-p.x,r.z-p.z)<4);v.clock-=dt;if(approaching){v.photo=0;v.clock=Math.max(v.clock,10);}else if(v.clock<=0){v.photo=4+v.a.x%3;v.clock=26+Math.abs(v.a.z%11);}v.photo=Math.max(0,v.photo-dt);let travel=0;if(!v.photo){if(p.distanceTo(v.target)<1.2)v.target=v.target===v.b?v.a:v.b;const dx=v.target.x-p.x,dz=v.target.z-p.z,angle=Math.atan2(dx,dz),delta=Math.atan2(Math.sin(angle-v.heading),Math.cos(angle-v.heading));v.heading+=T.MathUtils.clamp(delta,-dt*2.2,dt*2.2);const speed=.95*Math.max(0,Math.cos(delta)),x=p.x+Math.sin(v.heading)*speed*dt,z=p.z+Math.cos(v.heading)*speed*dt,hit=this.terrain.raycastObstacle({x:p.x,y:p.y+.6,z:p.z},{x:Math.sin(v.heading),y:0,z:Math.cos(v.heading)},.8,.25),g=this.terrain.sampleGround(x,z,this.ground,p.y);if(hit===null&&!g.offCourse&&Math.abs(g.height-p.y)<.3){travel=Math.hypot(x-p.x,z-p.z);p.set(x,g.height,z);}else v.target=v.target===v.b?v.a:v.b;}v.view.root.rotation.y=v.heading;if(near)v.view.update(travel,dt,!!v.photo,(x,z)=>this.terrain.sampleGround(x,z,this.ground,p.y).height);}}
+}

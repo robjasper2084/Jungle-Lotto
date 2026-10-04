@@ -3,7 +3,6 @@ import {destinationLayout} from './destinationLayout.ts';
 import * as T from 'three';
 import {GLTFLoader,type GLTF} from './compressedGLTFLoader.ts';
 import {FootTraffic} from './footTraffic.ts';
-import {RetailWalker,type RetailWalkClip} from './retailWalker.ts';
 import {RetailVisitors} from './retailVisitors.ts';
 import {Hero} from './actors.ts';
 import {heightAt} from './world.ts';
@@ -15,7 +14,7 @@ import {createPose,type RidePose} from './controller.ts';
 import type {RiderId} from './riderChoices.ts';
 export class GalleryVisit {
  readonly building=new T.Group();readonly panel=document.createElement('section');readonly door=new T.Vector3();readonly approach=new T.Vector3();readonly anchor;readonly forward:T.Vector3;
- active=false;dismissed=false;private time=0;private walker?:FootTraffic;private walkClip?:RetailWalkClip;private parked?:Hero;private origin=new T.Vector3();private side=new T.Vector3();private path:T.Vector3[]=[];private parkedPose=createPose();private boneStart=new Map<string,T.Quaternion>();private copy:HTMLElement;private visit:HTMLButtonElement;private enter:HTMLAnchorElement;private catalog=document.createElement('details');
+ loaded=false;active=false;dismissed=false;private time=0;private walker?:FootTraffic;private parked?:Hero;private origin=new T.Vector3();private side=new T.Vector3();private path:T.Vector3[]=[];private parkedPose=createPose();private boneStart=new Map<string,T.Quaternion>();private copy:HTMLElement;private visit:HTMLButtonElement;private enter:HTMLAnchorElement;private catalog=document.createElement('details');
  private visitors?:RetailVisitors;private visitorReport=0;
  constructor(private scene:T.Scene,private begin:()=>void,private leave:()=>void,readonly store=false){
   this.anchor=routePosition(CUT_METRES);this.forward=new T.Vector3(Math.sin(this.anchor.heading),0,Math.cos(this.anchor.heading));
@@ -31,7 +30,7 @@ export class GalleryVisit {
   this.copy=this.panel.querySelector('[data-copy]')!;this.visit=this.panel.querySelector('[data-visit]')!;this.enter=this.panel.querySelector('[data-enter]')!;this.visit.textContent=store?'Park & enter store':'Dismount & walk to gallery';this.enter.textContent=store?'Shop GothTech merch ↗':'Shop / visit Serengeti ↗';this.enter.href=store?'https://robjasper2084.github.io/Jungle-Lotto/lottominded-ultra.io/games/gothtechnology2/shop/':GALLERY_URL;
   this.copy.textContent='Park your wheel and explore the studio. Shop online on each brand’s website.';this.visit.onclick=()=>this.begin();this.panel.querySelector<HTMLButtonElement>('[data-back]')!.onclick=()=>{this.reset();this.dismissed=true;this.leave();};this.catalog.className='boutiqueCatalog';const browse=document.createElement('summary');browse.textContent='Browse collection / availability on storefront';this.catalog.append(browse);this.catalog.hidden=true;this.panel.append(this.catalog);document.body.append(this.panel);
  }
- async load(){const motion=await fetch('/exports/polish/hero-retail-walk.json');if(!motion.ok)throw Error('Retail walk animation unavailable');this.walkClip=await motion.json();const data=await new GLTFLoader().loadAsync(this.store?'/exports/boutique/GothTechnology-Store.glb?v=retail-polish-20261003':'/exports/gallery/Serengeti-Galleries.glb?v=production-studio-20261003');data.scene.traverse(o=>{if((o as T.Mesh).isMesh){(o as T.Mesh).castShadow=true;(o as T.Mesh).receiveShadow=true;}});this.building.add(data.scene);
+ async load(){const data=await new GLTFLoader().loadAsync(this.store?'/exports/boutique/GothTechnology-Store.glb?v=retail-polish-20261003':'/exports/gallery/Serengeti-Galleries.glb?v=production-studio-20261003');data.scene.traverse(o=>{if((o as T.Mesh).isMesh){(o as T.Mesh).castShadow=true;(o as T.Mesh).receiveShadow=true;}});this.building.add(data.scene);
   // Keep the user's art, merchandise and retail furnishings inside the warehouse.
   // Remove standalone roofs, forecourts and Gothic tower extensions.
   data.scene.traverse(o=>{if(/^(Roof|Crown|Gothic Gothic|Forecourt|Entry canopy|Canopy|Bronze facade fin|Icosphere|Facade vertical joint)/.test(o.name.replace(/_/g,' ')))o.visible=false;});
@@ -40,12 +39,12 @@ export class GalleryVisit {
    const note=document.createElement('p');note.textContent='Official catalog concepts. Availability and checkout are managed by the storefront; concept items cannot be ordered.';this.catalog.append(note);
    for(const p of products){const a=document.createElement('a');a.href=p.url;a.target='_blank';a.rel='noopener noreferrer';const img=document.createElement('img');img.src='/exports/boutique/'+p.image;img.alt=p.title;img.loading='lazy';const label=document.createElement('strong');label.textContent=p.title;const status=document.createElement('span');status.textContent=(p.pending?'Price pending':new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(p.price))+(p.concept?' · Concept preview':'');a.append(img,label,status);this.catalog.append(a);}
   }
- }
+ this.loaded=true; }
  animateVisitors(dt:number){if(!this.visitors||!this.building.visible||dt<=0)return;this.visitors.update(dt);this.visitorReport+=dt;if(this.visitorReport>.5){this.visitorReport=0;this.panel.dataset.visitors=JSON.stringify(this.visitors.summary);}}
- offer(station:number,_offset:number,p:RidePose,attemptActive:boolean,visible:boolean){if(this.active)return;const near=Math.hypot(p.x-this.approach.x,p.z-this.approach.z)<16;if(!near&&Math.abs(station-CUT_METRES)>30)this.dismissed=false;this.panel.hidden=this.dismissed||!visible||attemptActive||Math.abs(p.speed)>=.5||p.crashBlend>0||!near;}
+ offer(station:number,_offset:number,p:RidePose,attemptActive:boolean,visible:boolean){if(!this.loaded||this.active)return;const near=Math.hypot(p.x-this.approach.x,p.z-this.approach.z)<16;if(!near&&Math.abs(station-CUT_METRES)>30)this.dismissed=false;this.panel.hidden=this.dismissed||!visible||attemptActive||Math.abs(p.speed)>=.5||p.crashBlend>0||!near;}
 
  start(data:Map<string,GLTF>,rider:RiderId,hero:Hero,p:RidePose){this.active=true;document.body.classList.add('visitingGallery');this.time=0;this.parked=hero;Object.assign(this.parkedPose,p);this.origin.set(p.x,p.y,p.z);this.side.copy(this.origin).add(new T.Vector3(Math.cos(p.headingY),0,-Math.sin(p.headingY)).multiplyScalar(.75));this.path=[this.side.clone(),...studioWalk(this.store).map(p=>{const v=toLocal(p.x,MACK_STUDIO.floor+.05,p.z);return new T.Vector3(v.x,v.y,v.z);})];
- this.walker=rider==='DS_Man_01'&&this.walkClip?new RetailWalker(data.get(rider)!,this.walkClip):new FootTraffic(data.get(rider)!,false);this.panel.dataset.walkAnimation=rider==='DS_Man_01'?'Blender / Human Basic Motions Walk01':'Foot contact IK';this.walker.root.rotation.y=p.headingY;this.scene.add(this.walker.root);hero.rider.visible=false;this.boneStart.clear();for(const b of hero.bones)this.boneStart.set(b.o.name,b.o.quaternion.clone());this.visit.hidden=true;this.enter.hidden=true;this.panel.hidden=false;this.copy.textContent='Parking the wheel · walking to the entrance';}
+ this.walker=new FootTraffic(data.get(rider)!,false);this.panel.dataset.walkAnimation='CMU 07_01 walking / Blender retarget / planted foot IK';this.walker.root.rotation.y=p.headingY;this.scene.add(this.walker.root);hero.rider.visible=false;this.boneStart.clear();for(const b of hero.bones)this.boneStart.set(b.o.name,b.o.quaternion.clone());this.visit.hidden=true;this.enter.hidden=true;this.panel.hidden=false;this.copy.textContent='Parking the wheel · walking to the entrance';}
  update(dt:number,camera:T.PerspectiveCamera){if(!this.walker||!this.parked)return this.parkedPose;this.time+=Math.max(0,dt);const w=this.walker,p=this.parkedPose;this.parked.apply(p);this.parked.rider.visible=false;const t=Math.min(1,this.time/1.25),ease=t*t*(3-2*t),lengths=this.path.slice(1).map((v,i)=>v.distanceTo(this.path[i])),distance=lengths.reduce((a,b)=>a+b,0),walk=Math.min(1,Math.max(0,this.time-1.9)*1.4/Math.max(.01,distance));
   let travel=walk*distance,index=0;while(index<lengths.length-1&&travel>lengths[index])travel-=lengths[index++];
   const start=this.path[index],end=this.path[index+1],dest=start.clone().lerp(end,Math.min(1,travel/Math.max(.01,lengths[index])));
