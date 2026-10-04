@@ -1,0 +1,55 @@
+/* Adapted from the requested Higgsfield HUD concept. All controls remain native. */
+.destinationPanel.arrival-hud:is(#galleryArrival,#boutiqueArrival){
+ left:50%;right:auto;bottom:150px;transform:translateX(-50%);width:min(620px,calc(100vw - 48px));
+ padding:22px 26px 20px;border:1px solid #cab77e99;border-radius:2px 18px 2px 18px;
+ color:#f4efdf;background:linear-gradient(125deg,#172820f7,#101b18f7 65%);
+ box-shadow:0 16px 45px #0006,inset 0 0 30px #d9c58c08;overflow:auto;
+ max-height:calc(100dvh - 230px);isolation:isolate;
+}
+.arrival-hud::before{content:'';position:absolute;inset:0;z-index:-1;pointer-events:none;opacity:.3;background:linear-gradient(#d2dcc410 1px,transparent 1px),linear-gradient(90deg,#d2dcc410 1px,transparent 1px);background-size:24px 24px}
+.arrival-hud::after{content:'';position:absolute;left:22px;bottom:0;width:70px;height:2px;background:#e9ca83;box-shadow:110px 0 0 #a4b7a0}
+.destinationPanel.arrival-hud:is(#galleryArrival,#boutiqueArrival) .arrival-topline{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 16px}
+.destinationPanel.arrival-hud:is(#galleryArrival,#boutiqueArrival) .eyebrow{margin:0;font:600 10px/1.5 system-ui;letter-spacing:.12em;color:#e8ce92}
+.arrival-status{display:inline-flex;align-items:center;gap:6px;border:1px solid #d8b76766;border-radius:20px;padding:5px 9px;white-space:nowrap;font:600 9px/1.2 system-ui;letter-spacing:.08em;color:#f3d183;text-transform:uppercase}
+.arrival-status::before{content:'';width:5px;height:5px;flex-shrink:0;border-radius:50%;background:currentColor;box-shadow:0 0 8px #f3d18380}
+.destinationPanel.arrival-hud:is(#galleryArrival,#boutiqueArrival) .arrival-content{display:grid;grid-template-columns:84px minmax(0,1fr);align-items:center;gap:18px}
+.arrival-portal{width:84px;height:92px;color:#c1d2b2;opacity:.9}
+.destinationPanel.arrival-hud:is(#galleryArrival,#boutiqueArrival) .arrival-copy{display:block;min-width:0}
+.destinationPanel.arrival-hud:is(#galleryArrival,#boutiqueArrival) h2{margin:0 0 7px;font:600 clamp(22px,2.2vw,28px)/1.15 system-ui;letter-spacing:-.035em;color:#fff4d8}
+.destinationPanel.arrival-hud:is(#galleryArrival,#boutiqueArrival) [data-copy]{margin:0;color:#d3ddce;font:14px/1.6 system-ui}
+.destinationPanel.arrival-hud:is(#galleryArrival,#boutiqueArrival) .arrival-actions{display:flex;gap:10px;margin-top:18px}
+.destinationPanel.arrival-hud:is(#galleryArrival,#boutiqueArrival) .arrival-actions :is(button,a){display:inline-flex;flex:1;align-items:center;justify-content:center;min-height:48px;margin:0;padding:12px 16px;font:600 14px/1.35 system-ui;border:1px solid #c7b47e91;border-radius:5px;background:#24392e;color:#eee6cc;touch-action:manipulation;text-align:center;text-decoration:none;transition:background .15s}
+.destinationPanel.arrival-hud:is(#galleryArrival,#boutiqueArrival) .arrival-actions :is([data-visit],[data-enter]){background:#e1c984;border-color:#e1c984;color:#18261e}
+.destinationPanel.arrival-hud:is(#galleryArrival,#boutiqueArrival) .arrival-actions :is(button,a):hover{background:#3c5140;color:#fff}
+.destinationPanel.arrival-hud:is(#galleryArrival,#boutiqueArrival) .arrival-actions :is(button,a):disabled{opacity:.5;cursor:wait}
+.destinationPanel.arrival-hud:is(#galleryArrival,#boutiqueArrival) :focus-visible{outline:3px solid #f8d78e;outline-offset:3px}
+.destinationPanel.arrival-hud:is(#galleryArrival,#boutiqueArrival) [hidden]{display:none!important}
+@media(any-pointer:coarse),(max-width:1024px){
+ .destinationPanel.arrival-hud:is(#galleryArrival,#boutiqueArrival){left:50%;right:auto;width:min(620px,calc(100vw - 24px));bottom:calc(260px + var(--safe-bottom));padding:18px;max-height:calc(100dvh - 335px - var(--safe-top) - var(--safe-bottom))}
+}
+@media(max-width:600px){
+ .destinationPanel.arrival-hud:is(#galleryArrival,#boutiqueArrival) .arrival-topline{flex-wrap:wrap;gap:8px;margin-bottom:12px}
+ .destinationPanel.arrival-hud:is(#galleryArrival,#boutiqueArrival) .arrival-content{grid-template-columns:50px minmax(0,1fr);gap:12px}
+ .arrival-portal{width:50px;height:64px}
+ .destinationPanel.arrival-hud:is(#galleryArrival,#boutiqueArrival) .eyebrow{font-size:9px}
+ .destinationPanel.arrival-hud:is(#galleryArrival,#boutiqueArrival) .arrival-actions{gap:8px;margin-top:14px}
+ .destinationPanel.arrival-hud:is(#galleryArrival,#boutiqueArrival) .arrival-actions :is(button,a){padding:10px 9px;font-size:13px}
+ .destinationPanel.arrival-hud:is(#galleryArrival,#boutiqueArrival) [data-copy]{font-size:13px}
+}
+body.visitingGallery .destinationPanel.arrival-hud:is(#galleryArrival,#boutiqueArrival){left:50%;right:auto;top:auto;bottom:calc(18px + var(--safe-bottom));width:min(620px,calc(100vw - 24px));max-height:calc(70dvh - var(--safe-top));transform:translateX(-50%)}
+@media(max-height:540px) and (orientation:landscape){
+ .destinationPanel.arrival-hud:is(#galleryArrival,#boutiqueArrival){top:calc(70px + var(--safe-top));bottom:calc(90px + var(--safe-bottom));width:min(440px,calc(100vw - 320px));max-height:none;padding:14px}
+ .destinationPanel.arrival-hud:is(#galleryArrival,#boutiqueArrival) .arrival-topline{flex-wrap:wrap;margin-bottom:9px}
+ .destinationPanel.arrival-hud:is(#galleryArrival,#boutiqueArrival) .arrival-content{grid-template-columns:minmax(0,1fr)}
+ .destinationPanel.arrival-hud:is(#galleryArrival,#boutiqueArrival) .arrival-portal{display:none}
+}
+@media(prefers-reduced-motion:reduce){.destinationPanel.arrival-hud:is(#galleryArrival,#boutiqueArrival) *{transition:none!important;animation:none!important}}
+html[data-reduced-motion=true] .arrival-hud *{transition:none!important;animation:none!important}
+/* Leave the tactical map clear when the companion controls are available. */
+body.playing .dogCommandTray{top:320px}
+@media(max-width:600px){
+ body.playing #flowHUD{top:120px;max-width:calc(50vw - 24px);font-size:10px;padding:4px 8px}
+ body.playing .dogCommandTray{left:12px;right:auto;top:153px;max-width:160px}
+ body.playing .community-panel:not([open]){left:12px;right:auto;top:408px;bottom:auto;transform:none;width:calc(50vw - 24px);max-width:170px}
+}
+@media(max-height:540px) and (orientation:landscape){body.playing .dogCommandTray{left:50%;right:auto;transform:translateX(-50%);top:64px;width:230px;max-width:230px}body.playing .dogCommandTray[data-collapsed=true]{width:150px}body.playing .dogCommandTray div{grid-template-columns:repeat(3,1fr)}}

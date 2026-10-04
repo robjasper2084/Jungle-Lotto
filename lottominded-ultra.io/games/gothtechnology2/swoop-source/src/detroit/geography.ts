@@ -1,5 +1,8 @@
 import data from './city-data.json' with {type:'json'};
-export const CITY=data;
+import {VALADE} from './valadeSite.ts';
+import {mappedShorelineAt} from './waterfrontSite.ts';
+const valadePathIds=new Set(VALADE.paths.map(r=>r.id));
+export const CITY={...data,roads:[...data.roads.filter(r=>!valadePathIds.has(r.id)),...VALADE.paths]};
 type Point=number[];
 export const CUT_LINE=data.cut;
 export const CUT_DIST=[0];
@@ -30,7 +33,7 @@ export function nearestCut(x:number,z:number){
 }
 type Segment={a:Point;b:Point;width:number;name:string;kind:string};
 const cells=new Map<string,Segment[]>();
-for(const road of data.roads)for(let i=1;i<road.points.length;i++){
+for(const road of CITY.roads)for(let i=1;i<road.points.length;i++){
   const a=road.points[i-1],b=road.points[i],s={a,b,width:road.width,name:road.name,kind:road.kind};
   for(let x=Math.floor((Math.min(a[0],b[0])-20)/64);x<=Math.floor((Math.max(a[0],b[0])+20)/64);x++)
     for(let z=Math.floor((Math.min(a[1],b[1])-20)/64);z<=Math.floor((Math.max(a[1],b[1])+20)/64);z++){
@@ -47,8 +50,9 @@ export function roadAt(x:number,z:number){
   }
   return nearest;
 }
-const riverPoints=data.roads.filter(r=>r.name==='Detroit Riverwalk').flatMap(r=>r.points);
+const riverPoints=CITY.roads.filter(r=>r.name==='Detroit Riverwalk').flatMap(r=>r.points);
 export function riverEdge(z:number){
+  const mapped=mappedShorelineAt(z);if(mapped!==undefined)return mapped;
   let min=Infinity;
   for(const p of riverPoints)if(Math.abs(p[1]-z)<55)min=Math.min(min,p[0]);
   return Number.isFinite(min)?min-13:-160;

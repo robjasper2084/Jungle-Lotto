@@ -1,0 +1,50 @@
+{
+    "editor": "6000.3.24f1",
+    "importer": "Unity glTFast 6.20.0",
+    "assets": [
+        {
+            "asset": "mack-gothtech-studio",
+            "renderers": 37,
+            "triangles": 65208,
+            "texturedMaterials": 12,
+            "size": {
+                "x": 48.87550354003906,
+                "y": 8.549999237060547,
+                "z": 45.866004943847659
+            }
+        },
+        {
+            "asset": "GothTechnology-Store",
+            "renderers": 32,
+            "triangles": 43687,
+            "texturedMaterials": 25,
+            "size": {
+                "x": 18.0,
+                "y": 4.645000457763672,
+                "z": 12.139999389648438
+            }
+        },
+        {
+            "asset": "Serengeti-Galleries",
+            "renderers": 17,
+            "triangles": 16456,
+            "texturedMaterials": 11,
+            "size": {
+                "x": 18.0,
+                "y": 4.575000762939453,
+                "z": 12.139999389648438
+            }
+        },
+        {
+            "asset": "lottomind-store",
+            "renderers": 19,
+            "triangles": 31720,
+            "texturedMaterials": 10,
+            "size": {
+                "x": 13.899999618530274,
+                "y": 9.970000267028809,
+                "z": 20.0
+            }
+        }
+    ]
+}

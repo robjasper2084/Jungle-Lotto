@@ -1,0 +1,10 @@
+{
+  "source": "Digital_Static_Street_Asset_Pack/source/dog/DS_Boerboel_01.blend",
+  "authoring": "Blender 5.2.1 LTS built-in rig, Action and glTF exporter",
+  "commands": [
+    "Dog_Sit",
+    "Dog_Down"
+  ],
+  "originalGaitsPreserved": true,
+  "tailWagDisabledInRuntime": true
+}

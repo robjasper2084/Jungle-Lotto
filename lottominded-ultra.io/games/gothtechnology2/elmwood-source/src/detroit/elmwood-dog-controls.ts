@@ -11,7 +11,7 @@ export function dogControls(parent:HTMLElement,order:(command:DogCommand,recipie
   if(!Speech){voice.disabled=true;voice.textContent='Voice unavailable · use command buttons';}
   function issue(command:DogCommand,kind=target.value as 'birds'|'people'){
     feedback.textContent=ready()?order(command,recipient.value,kind):'Start or resume your ride and enable a Boerboel companion first.';
-    if(command==='bark'&&feedback.textContent.startsWith('Barking')&&soundToggle.checked)void sound.bark().catch(()=>{feedback.textContent+=' · tap Bark to enable sound';});
+    if(command==='bark'&&feedback.textContent.startsWith('Barking')&&soundToggle.checked&&document.querySelector<HTMLInputElement>('#session-audio')?.checked)void sound.bark().catch(()=>{feedback.textContent+=' · tap Bark to enable sound';});
   }
   section.querySelectorAll<HTMLButtonElement>('[data-command]').forEach(button=>button.onclick=()=>issue(button.dataset.command as DogCommand));
   function stopped(){listening=false;voice.setAttribute('aria-pressed','false');if(Speech)voice.textContent='Enable voice commands';}

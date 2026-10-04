@@ -1,0 +1,34 @@
+[
+  {
+    "file": "birdsong.mp3",
+    "title": "Morning Birdsong and Distant Dog Bark in the Park",
+    "author": "WhisperingEarth",
+    "source": "https://freesound.org/people/WhisperingEarth/sounds/799143/",
+    "license": "CC0 1.0",
+    "edit": "25-second excerpt, mono, one-second loop crossfade; no synthetic replacement"
+  },
+  {
+    "file": "creek.mp3",
+    "title": "Water, small stream",
+    "author": "peridactyloptrix",
+    "source": "https://freesound.org/people/peridactyloptrix/sounds/197705/",
+    "license": "CC0 1.0",
+    "edit": "25-second excerpt, mono, one-second loop crossfade; no synthetic replacement"
+  },
+  {
+    "file": "waterfall.mp3",
+    "title": "Waterfall",
+    "author": "Fabrizio84",
+    "source": "https://freesound.org/people/Fabrizio84/sounds/458711/",
+    "license": "CC0 1.0",
+    "edit": "25-second excerpt, mono, one-second loop crossfade; no synthetic replacement"
+  },
+  {
+    "file": "big-dog-bark.mp3",
+    "title": "Angry big dog barking - Close [d15].wav",
+    "author": "v23",
+    "source": "https://freesound.org/people/v23/sounds/440866/",
+    "license": "CC0 1.0",
+    "edit": "Single .4-second bark excerpt from a recorded Central Asian Shepherd Dog; mono, faded edges"
+  }
+]

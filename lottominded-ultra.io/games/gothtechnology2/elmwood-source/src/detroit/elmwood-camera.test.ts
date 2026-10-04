@@ -2,7 +2,7 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import * as T from 'three';
 import {createPose} from '@digital-static/ridecore';
-import {ELMWOOD_CAMERAS,cameraMode,nextElmwoodCamera,frameElmwoodCamera,clearElmwoodCamera} from './elmwood-camera.ts';
+import {ELMWOOD_CAMERAS,cameraMode,nextElmwoodCamera,cameraFrame,frameElmwoodCamera,clearElmwoodCamera} from './elmwood-camera.ts';
 
 test('camera cycle reaches all views and rejects obsolete saved settings',()=>{
   let mode='chase';const reached=new Set<string>();
@@ -21,6 +21,20 @@ test('first person faces travel heading, responds to crouch, and keeps natural m
   assert.ok(frameElmwoodCamera('first',pose,false).eye.y<standing-.3);
   assert.notEqual(frameElmwoodCamera('first',pose,false).roll,0);
   assert.ok(Math.abs(frameElmwoodCamera('first',pose,true).roll)<Math.abs(frameElmwoodCamera('first',pose,false).roll));
+});
+
+test('first-person banking and looking right agree with the rider frame on every heading',()=>{
+  const p=createPose();p.speed=8;
+  for(const heading of [0,Math.PI/2,Math.PI,-Math.PI/2])for(const bank of [-.3,.3]){
+    p.headingY=heading;p.rollAngle=bank;
+    const right=new T.Vector3(-Math.cos(heading),0,Math.sin(heading));
+    const f=frameElmwoodCamera('first',p,false),cam=new T.PerspectiveCamera();cam.position.copy(f.eye);cam.lookAt(f.target);cam.rotateZ(f.roll);
+    const eyeUp=new T.Vector3(0,1,0).applyQuaternion(cam.quaternion);
+    assert.ok(eyeUp.dot(right)*bank<0,'eye tilt follows the physical bank');
+    const lookingRight=frameElmwoodCamera('first',p,false,cameraFrame(),{yaw:-.25,pitch:0});
+    assert.ok(lookingRight.target.clone().sub(lookingRight.eye).dot(right)>0,'negative look yaw faces screen right');
+    const calm=frameElmwoodCamera('first',p,true);assert.ok(Math.abs(calm.roll)<.02);
+  }
 });
 test('side, overhead and low cameras remain distinct when rider turns',()=>{
   const p=createPose();p.headingY=Math.PI/2;

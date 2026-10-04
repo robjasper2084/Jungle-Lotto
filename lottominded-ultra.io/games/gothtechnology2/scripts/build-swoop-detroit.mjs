@@ -3,27 +3,35 @@ import {buildRelease,readableTree,runtimeLicenses,modelDependencies} from './gam
 import {resolve,dirname,basename} from 'node:path';
 import {createRequire} from 'node:module';
 import {pathToFileURL} from 'node:url';
+import {syncLottoComponents} from '../swoop-source/scripts/sync_lotto_components.mjs';
 export async function prepareSwoop(source=resolve(import.meta.dirname,'../swoop-source'),pack=process.env.SWOOP_ASSET_PACK||resolve(import.meta.dirname,'../../../../../Digital_Static_Street_Asset_Pack')){
 source=resolve(source);pack=resolve(pack);
+await syncLottoComponents(source);
 const require=createRequire(resolve(source,'package.json'));
 const {build}=await import(pathToFileURL(require.resolve('vite')).href);
+await readableTree(resolve(source,'public/love-tag/swoop-detroit.json'));
 const bridge=await readFile(resolve(import.meta.dirname,'swoop-reward-bridge.ts'),'utf8');
 function replace(code,from,to){if(!code.includes(from))throw Error('Elmwood source changed: '+from.slice(0,70));return code.replace(from,to);}
 const files=[];
 files.push('exports/glb/DS_Bicycle_Styles/DS_Bicycle_Styles_LOD1.glb','exports/glb/DS_Bicycle_Styles/manifest.json');
 for(const dir of ['exports/architecture','exports/cut','textures/architecture','textures/cut','textures/trees','textures/realistic'])for(const name of await readdir(resolve(pack,dir)))if(/\.(glb|png|jpg|hdr)$/i.test(name)&&!(dir==='textures/cut'&&name.endsWith('.png'))&&!(dir==='exports/architecture'&&!['DS_Detroit_Globe_OAC.glb','DS_Detroit_Shed_3.glb'].includes(name)))files.push(dir+'/'+name);
 for(const id of ['DS_Man_01','DS_EUC_01','DS_Boerboel_01','DS_Pedestrian_01','DS_Cyclist_01','DS_Bicycle_01','DS_Hazard_Cone_01','DS_Hazard_Barrier_01','DS_Hoodie_Man_01','DS_Hoodie_Woman_01','DS_Mascot_Suit_01','DS_Mascot_Hoodie_01'])files.push(`exports/glb/${id}/${id}_LOD${id==='DS_Man_01'?0:1}.glb`);
+// New source-authored riders are not part of the original external asset pack.
+const sourceFiles=['exports/glb/DS_Armored_Rider_01/DS_Armored_Rider_01_LOD1.glb'];
+sourceFiles.push(...await modelDependencies(resolve(source,'public'),sourceFiles));
+for(const file of sourceFiles)await readableTree(resolve(source,'public',file));
 for(const id of ['DS_Segway_01','DS_InlineSkate_01'])files.push(`exports/mobility/${id}.glb`);
 // Check all inputs before touching the previous working package.
 files.push(...await modelDependencies(pack,files));
 for(const file of files)await readableTree(resolve(pack,file));
 for(const dir of ['audio/swoop','detroit/geospatial'])await readableTree(resolve(pack,dir));
-for(const file of ['exports/boutique','exports/gallery','exports/scooter','exports/atwater','mural-credits.html','manifest.webmanifest','touch-icon.png'])await readableTree(resolve(source,'public',file));
+for(const file of ['exports/boutique','exports/gallery','exports/scooter','exports/atwater','exports/polish','exports/visitors','exports/waterfront','exports/street-furniture','exports/valade','mural-credits.html','manifest.webmanifest','touch-icon.png'])await readableTree(resolve(source,'public',file));
 const licenses=await runtimeLicenses(source);licenses.push({input:resolve(source,'node_modules/@digital-static/ridecore/LICENSE.txt'),output:'LICENSE-RideCore.txt'});
+licenses.push({input:resolve(source,'src/vendor/LICENSE-hls.js.txt'),output:'LICENSE-hls.js.txt'});
 await readableTree(resolve(source,'node_modules/@digital-static/ridecore/LICENSE.txt'));
 await readableTree(resolve(pack,'detroit/licenses'));
 return {name:'swoop-detroit',entry:'index.html',source,soundtrackRoot:resolve(pack,'audio/swoop'),async build(out){
-await build({root:source,configFile:false,base:'./',publicDir:false,plugins:[{
+await build({root:source,configFile:false,base:'./',publicDir:false,resolve:{dedupe:['three','@dimforge/rapier3d-compat']},plugins:[{
  name:'swoop-store',enforce:'pre',
  transform(code,id){id=id.replaceAll('\\','/');if(!id.includes('/src/'))return;code=code.replaceAll('\r\n','\n');
   code=code.replace(/(['"`])\/(exports|textures|audio)\//g,'$1./$2/');
@@ -45,10 +53,16 @@ await build({root:source,configFile:false,base:'./',publicDir:false,plugins:[{
 }],build:{outDir:out,emptyOutDir:true,target:'es2022',rollupOptions:{input:Object.fromEntries(['detroit','rider-studio','companion-studio','traffic-studio'].map(name=>[name,resolve(source,name+'.html')]))}}});
 await rename(resolve(out,'detroit.html'),resolve(out,'index.html'));
 for(const file of files){const target=resolve(out,file);await mkdir(dirname(target),{recursive:true});await copyFile(resolve(pack,file),target);}
+for(const file of sourceFiles){const target=resolve(out,file);await mkdir(dirname(target),{recursive:true});await copyFile(resolve(source,'public',file),target);}
 await cp(resolve(source,'public/exports/boutique'),resolve(out,'exports/boutique'),{recursive:true});
 await cp(resolve(source,'public/exports/gallery'),resolve(out,'exports/gallery'),{recursive:true});
 await cp(resolve(source,'public/exports/scooter'),resolve(out,'exports/scooter'),{recursive:true});
 await cp(resolve(source,'public/exports/atwater'),resolve(out,'exports/atwater'),{recursive:true});
+await cp(resolve(source,'public/exports/waterfront'),resolve(out,'exports/waterfront'),{recursive:true});
+await cp(resolve(source,'public/exports/street-furniture'),resolve(out,'exports/street-furniture'),{recursive:true});
+await cp(resolve(source,'public/exports/valade'),resolve(out,'exports/valade'),{recursive:true});
+await cp(resolve(source,'public/exports/polish'),resolve(out,'exports/polish'),{recursive:true});
+await cp(resolve(source,'public/exports/visitors'),resolve(out,'exports/visitors'),{recursive:true});
 await copyFile(resolve(source,'public/mural-credits.html'),resolve(out,'mural-credits.html'));
 for(const file of ['manifest.webmanifest','touch-icon.png'])await copyFile(resolve(source,'public',file),resolve(out,file));
 // Removed by request: Digital static (2). Preserve the original asset pack.
@@ -56,6 +70,9 @@ await cp(resolve(pack,'audio/swoop'),resolve(out,'audio/swoop'),{recursive:true,
 const soundtrackCatalog=JSON.parse(await readFile(resolve(pack,'audio/swoop/catalog.json'),'utf8'));
 await writeFile(resolve(out,'audio/swoop/catalog.json'),JSON.stringify(soundtrackCatalog.filter(track=>track.id!=='track-12'),null,2)+'\n');
 await cp(resolve(pack,'detroit/geospatial'),resolve(out,'geospatial'),{recursive:true});
+await cp(resolve(source,'public/love-tag'),resolve(out,'love-tag'),{recursive:true});
+await cp(resolve(source,'public/exports/nature'),resolve(out,'exports/nature'),{recursive:true});
+await cp(resolve(source,'public/audio/nature'),resolve(out,'audio/nature'),{recursive:true});
 await writeFile(resolve(out,'SOURCE.md'),'Digital Static Ride Detroit, supplied via Digital_Static_Street_Asset_Pack/integrations/digital-static-ride. Dequindre Cut with navigation to the separately packaged Elmwood Explorer; original riding, rider, dog, touch, controller and physics retained. Built by scripts/build-swoop-detroit.mjs from versioned swoop-source; original external asset pack remains unchanged. Store additions: portable assets, saved sound preference respected, reduced-motion scenery, shared discount-preview receipts for native earned scores. Reference geometry and placement remain approximate as disclosed by the game.\n');
 console.log('Packaged Swoop Detroit: '+files.length+' assets');
 

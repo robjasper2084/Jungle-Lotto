@@ -1,7 +1,7 @@
 import {HUMAN_PROFILE,MASCOT_PROFILE,type RiderProfile} from '@digital-static/ridecore';
 import {ThreeRiderView} from '@digital-static/ridecore/three';
 import type {TerrainSampler} from '@digital-static/ridecore';
-import type {GLTF} from 'three/addons/loaders/GLTFLoader.js';
+import type {GLTF} from './compressedGLTFLoader.ts';
 // Circuit characters have a different EUC and authored pedal spacing.
 export const CIRCUIT_PROFILE:RiderProfile={...MASCOT_PROFILE,id:'circuit',wheelScale:1,pedalHeight:.249,pedalHalfSpacing:.20};
 export const SWOOP_RIDERS=[
@@ -18,4 +18,4 @@ export function createRideCoreRiders(original:Map<string,GLTF>,circuit:Map<strin
     riders.set(id,new ThreeRiderView({...source,animations:source.animations.filter(a=>a.name==='Idle')},circuit.get('euc')!,terrain,{...CIRCUIT_PROFILE,id:'circuit-'+id}));
   }
   return riders;
-}
+}

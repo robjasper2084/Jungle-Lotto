@@ -15,6 +15,8 @@ export const CUT_LANDMARKS=[
  {id:'mogo',name:'MoGo / bike repair',at:2130,offset:-6.3},
 ] as const;
 type Label=(g:T.Group,text:string,x:number,y:number,z:number,w?:number,h?:number,ry?:number)=>void;
+/** The trail bench's open side is local +X; face the adjacent travel lane. */
+export function trailBenchHeading(d:number,u:number){const p=cutPoint(d,u),q=cutPoint(d);return Math.atan2(p.z-q.z,q.x-p.x);}
 export function buildCutLandmarks(world:DetroitWorld,groupAt:(x:number,z:number)=>T.Group,label:Label){
  const steel=new T.MeshStandardMaterial({color:'#263b39',metalness:.55,roughness:.45}),wood=new T.MeshStandardMaterial({color:'#806548',roughness:.88}),stone=new T.MeshStandardMaterial({color:'#afa694',roughness:.98}),red=new T.MeshStandardMaterial({color:'#b43e34',roughness:.65}),cream=new T.MeshStandardMaterial({color:'#d4d4bc',roughness:.85});
  const bulb=new T.MeshStandardMaterial({color:'#ffe2ac',emissive:'#efbc70',emissiveIntensity:.55});
@@ -28,7 +30,7 @@ export function buildCutLandmarks(world:DetroitWorld,groupAt:(x:number,z:number)
  for(const post of signSupports(p.x,p.z,yaw,w,y+.15,heightAt)){const pole=box(g,post.x,post.y,post.z,.085,post.height,.085);pole.name='Grounded sign post';box(g,post.x,post.base+.14,post.z,.23,.12,.23,stone);}
  label(g,text,p.x,y,p.z,w,.52,yaw);}
 
- function bench(d:number,u:number){const g=spot(d,u,'Slatted trail bench');for(const z of [-.65,.65])box(g,0,.25,z,.55,.5,.065);for(let x=-.22;x<=.23;x+=.11)box(g,x,.48,0,.09,.065,1.65,wood);for(let y=.65;y<1;y+=.12)box(g,-.27,y,0,.065,.09,1.65,wood);solid(g,.62,1,1.75);}
+ function bench(d:number,u:number){const g=spot(d,u,'Slatted trail bench');g.rotation.y=trailBenchHeading(d,u);for(const z of [-.65,.65])box(g,0,.25,z,.55,.5,.065);for(let x=-.22;x<=.23;x+=.11)box(g,x,.48,0,.09,.065,1.65,wood);for(let y=.65;y<1;y+=.12)box(g,-.27,y,0,.065,.09,1.65,wood);solid(g,.62,1,1.75);}
  // Google Maps Campbell Terrace pin: 42.3406046, -83.0315474.
  // West bank immediately north of the Lafayette ramp foot; dimensions are approximate.
  const c=CUT_LANDMARKS[1],stage=spot(c.at,c.offset,'David Campbell Terrace stage');

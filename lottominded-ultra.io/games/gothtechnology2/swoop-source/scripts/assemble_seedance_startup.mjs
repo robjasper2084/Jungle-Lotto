@@ -1,0 +1,14 @@
+import {mkdir,writeFile} from 'node:fs/promises';import {resolve} from 'node:path';import {spawnSync} from 'node:child_process';
+const root=resolve(import.meta.dirname,'..'),art=resolve(root,'art/cinematics'),out=resolve(root,'public/exports/polish'),input=resolve(art,'seedance-original-30.mp4');await mkdir(out,{recursive:true});
+const metadata=JSON.parse(spawnSync('ffprobe',['-v','error','-show_streams','-show_format','-of','json',input],{encoding:'utf8'}).stdout);const audio=metadata.streams.some(s=>s.codec_type==='audio');
+function run(args){const p=spawnSync('ffmpeg',['-y','-hide_banner','-loglevel','error',...args],{stdio:'inherit'});if(p.status!==0)throw Error('Seedance edit failed');}
+const normalize='scale=1920:1080:force_original_aspect_ratio=decrease,pad=1920:1080:(ow-iw)/2:(oh-ih)/2,setsar=1,fps=24,format=yuv420p';
+const encode=['-c:v','libx264','-preset','fast','-crf','20','-pix_fmt','yuv420p',...(audio?['-c:a','aac','-b:a','192k']:['-an']),'-movflags','+faststart'];
+run(['-i',input,'-vf',normalize+',tpad=stop_mode=clone:stop_duration=1,fade=t=in:st=0:d=0.2,fade=t=out:st=29.5:d=0.5',...(audio?['-af','apad,afade=t=in:st=0:d=0.2,afade=t=out:st=29.5:d=0.5']:[]),'-t','30',...encode,resolve(out,'swoop-seedance-intro-30.mp4')]);
+const starts=(process.argv[2]??'0,10,25').split(',').map(Number);if(starts.length!==3||starts.some(s=>!Number.isFinite(s)||s<0||s>25))throw Error('Choose three five-second source shots');
+const filters=starts.map((s,i)=>`[0:v]trim=start=${s}:duration=5,setpts=PTS-STARTPTS,${normalize}[v${i}]`);
+filters.push('[v0][v1]xfade=transition=fade:duration=0.3:offset=4.7[v01]','[v01][v2]xfade=transition=fade:duration=0.3:offset=9.4[v012]','[v012]tpad=stop_mode=clone:stop_duration=0.6,fade=t=in:st=0:d=0.2,fade=t=out:st=14.5:d=0.5[film]');
+if(audio){starts.forEach((s,i)=>filters.push(`[0:a]atrim=start=${s}:duration=5,asetpts=PTS-STARTPTS[a${i}]`));filters.push('[a0][a1]acrossfade=d=0.3[a01]','[a01][a2]acrossfade=d=0.3,apad,afade=t=in:st=0:d=0.2,afade=t=out:st=14.5:d=0.5[sound]');}
+run(['-i',input,'-filter_complex',filters.join(';'),'-map','[film]',...(audio?['-map','[sound]']:[]),'-t','15',...encode,resolve(out,'swoop-seedance-intro-15.mp4')]);
+await writeFile(resolve(art,'seedance-edit-manifest.json'),JSON.stringify({model:'seedance_2_5',job:'3cc61bcc-9f5a-4f37-b808-41e91f53ecd9',referenceJob:'8ec69595-706f-44b2-a5e3-c93f40d298df',referenceSHA256:'1652ccb12c1c742d12842d77194c5cab712e2e22d3d77bce02fbb643ca953596',approvedCredits:360,source:'seedance-original-30.mp4',generatedAudio:audio,resolution:[1920,1080],fps:24,edits:[{file:'swoop-seedance-intro-30.mp4',duration:30,sourceRange:[0,30]},{file:'swoop-seedance-intro-15.mp4',duration:15,starts,shotDuration:5,dissolves:.3}],gameplayFootage:false,arrivalPreserved:'gothtech-arrival-15.mp4'},null,2));
+console.log('SEEDANCE_STARTUP_15_AND_30_OK');

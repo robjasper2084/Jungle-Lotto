@@ -1,0 +1,177 @@
+[
+  {
+    "name": "hero",
+    "bounds": [
+      [
+        -0.9510578513145447,
+        0.9510578513145447
+      ],
+      [
+        -0.9999999403953552,
+        0.9999999403953552
+      ],
+      [
+        -1.0,
+        1.8318747282028198
+      ]
+    ],
+    "roots": [
+      "DS_Man_01",
+      "Icosphere"
+    ],
+    "bones": [
+      "Hips",
+      "LeftUpLeg",
+      "LeftLeg",
+      "LeftFoot",
+      "LeftToeBase",
+      "RightUpLeg",
+      "RightLeg",
+      "RightFoot",
+      "RightToeBase",
+      "Spine02",
+      "Spine01",
+      "Spine",
+      "LeftShoulder",
+      "LeftArm",
+      "LeftForeArm",
+      "LeftHand",
+      "neck",
+      "Head",
+      "head_end",
+      "headfront",
+      "RightShoulder",
+      "RightArm",
+      "RightForeArm",
+      "RightHand"
+    ],
+    "actions": [
+      "EUC_Ride_Idle"
+    ]
+  },
+  {
+    "name": "wheel",
+    "bounds": [
+      [
+        -0.2749999761581421,
+        0.2749999761581421
+      ],
+      [
+        -0.2546154856681824,
+        0.2546154856681824
+      ],
+      [
+        0.0003845095634460449,
+        0.8722777962684631
+      ]
+    ],
+    "roots": [
+      "EUC_ROOT"
+    ],
+    "bones": [],
+    "actions": [
+      "EUC_Pedals_Fold",
+      "EUC_Pedals_Unfold",
+      "EUC_Ride_Idle",
+      "EUC_Suspension_Compress",
+      "EUC_Wheel_Spin"
+    ]
+  },
+  {
+    "name": "dog",
+    "bounds": [
+      [
+        -0.9510578513145447,
+        0.9510578513145447
+      ],
+      [
+        -0.9999999403953552,
+        0.9999999403953552
+      ],
+      [
+        -1.0,
+        1.0
+      ]
+    ],
+    "roots": [
+      "Icosphere.001",
+      "Boerboel_Rig"
+    ],
+    "bones": [
+      "root",
+      "pelvis",
+      "hind_upper_L",
+      "hind_lower_L",
+      "hind_ankle_L",
+      "hind_paw_L",
+      "hind_upper_R",
+      "hind_lower_R",
+      "hind_ankle_R",
+      "hind_paw_R",
+      "spine",
+      "chest",
+      "front_upper_L",
+      "front_lower_L",
+      "front_ankle_L",
+      "front_paw_L",
+      "front_upper_R",
+      "front_lower_R",
+      "front_ankle_R",
+      "front_paw_R",
+      "neck",
+      "head",
+      "jaw",
+      "tail"
+    ],
+    "actions": [
+      "Dog_Down",
+      "Dog_Idle",
+      "Dog_Run",
+      "Dog_Sit",
+      "Dog_Trot",
+      "Dog_Walk",
+      "EUC_Pedals_Fold",
+      "EUC_Pedals_Unfold",
+      "EUC_Ride_Idle",
+      "EUC_Suspension_Compress",
+      "EUC_Wheel_Spin"
+    ]
+  },
+  {
+    "name": "towers",
+    "bounds": [
+      [
+        -82.69999694824219,
+        133.35000610351562
+      ],
+      [
+        -84.3499984741211,
+        82.69999694824219
+      ],
+      [
+        0.0,
+        227.5
+      ]
+    ],
+    "roots": [
+      "Tower podium",
+      "Floor band",
+      "Mechanical roof",
+      "RenCen tower 0"
+    ],
+    "bones": [],
+    "actions": [
+      "Dog_Down",
+      "Dog_Idle",
+      "Dog_Run",
+      "Dog_Sit",
+      "Dog_Trot",
+      "Dog_Walk",
+      "EUC_Pedals_Fold",
+      "EUC_Pedals_Unfold",
+      "EUC_Ride_Idle",
+      "EUC_Suspension_Compress",
+      "EUC_Wheel_Spin"
+    ]
+  }
+]

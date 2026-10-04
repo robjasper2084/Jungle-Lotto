@@ -11,6 +11,6 @@ export function dogBalance(speed:number,phase:number,turnRate:number,time:number
   headYaw:clamp(turnRate*.055+lookYaw*.45,-.16,.16),
   neckYaw:clamp(lookYaw*.35+turnRate*.02,-.12,.12),
   neckPitch:-chestPitch*.7+idle*Math.sin(time*1.8)*.006,
-  tailYaw:(idle*.10+walk*.035+trot*.025+run*.014)*Math.sin(a-.7+idle*time*2.1)-clamp(turnRate*.025,-.055,.055),
+  tailYaw:0,
  };
 }

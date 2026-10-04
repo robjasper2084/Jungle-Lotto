@@ -1,7 +1,7 @@
 import {dogBalance} from './dogBalance.ts';
 import * as T from 'three';
 import {clone} from 'three/addons/utils/SkeletonUtils.js';
-import type {GLTF} from 'three/addons/loaders/GLTFLoader.js';
+import type {GLTF} from './compressedGLTFLoader.ts';
 import type {DogPose} from './companion.ts';
 import type {TerrainSampler} from './terrain.ts';
 import {createGroundSample} from './terrain.ts';
@@ -29,6 +29,7 @@ function plant(paw:Paw,target:T.Vector3,pole:T.Vector3,rotation:T.Quaternion){
   paw.foot.quaternion.copy(paw.foot.parent!.getWorldQuaternion(q()).invert().multiply(rotation));paw.foot.updateWorldMatrix(false,true);
 }
 export class CompanionView {
+  private commandActions:T.AnimationAction[]=[];
   root=new T.Group();ground=new T.Group();model:T.Object3D;mixer:T.AnimationMixer;gait='idle';
   paws:Paw[]=[];private blendedSpeed=0;private lastTime=-1;private lastPosition=v();private sample=createGroundSample();
   private terrain?:TerrainSampler;
@@ -43,8 +44,10 @@ export class CompanionView {
       const clip=asset.animations.find(c=>c.name===name);
       if(!clip)throw new Error(`Boerboel animation missing: ${name}`);
       const start=Math.min(...clip.tracks.map(t=>t.times[0]));
-      this.clips.push({action:this.mixer.clipAction(clip).play(),start,duration:clip.duration-start});
+      const fixed=clip.clone();fixed.tracks=fixed.tracks.filter(t=>!t.name.startsWith('tail.'));
+      this.clips.push({action:this.mixer.clipAction(fixed).play(),start,duration:clip.duration-start});
     }
+    for(const name of ['Dog_Sit','Dog_Down']){const clip=asset.animations.find(c=>c.name===name);if(!clip)throw new Error('Missing companion pose: '+name);this.commandActions.push(this.mixer.clipAction(clip).setEffectiveWeight(0).play());}
     this.root.updateMatrixWorld(true);
     this.model.traverse(bone=>{if((bone as T.Bone).isBone)this.animated.push({bone,position:bone.position.clone(),rotation:bone.quaternion.clone(),scale:bone.scale.clone()});});
     for(const [prefix,side] of [['front','L'],['front','R'],['hind','L'],['hind','R']]){
@@ -61,17 +64,22 @@ export class CompanionView {
     head.rotateY(T.MathUtils.clamp(Math.atan2(Math.sin(yaw),Math.cos(yaw)),-.4,.4)*.45);
   }
   apply(p:DogPose){
+    const lie=T.MathUtils.clamp(p.lie??0,0,1),sit=T.MathUtils.clamp(p.sit??0,0,1-lie),commanded=sit+lie;
     this.root.position.set(p.x,p.y,p.z);this.root.rotation.y=p.heading;
+    // Quaternion crossfades cut across the tucked haunch arc. Give mixed poses
+    // a small clearance lift; settled clips retain their authored ground contact.
+    this.ground.position.y=.16*(sit*lie+commanded*(1-commanded));
     this.ground.rotation.set(p.pitch,0,p.roll);
     const gaitSpeed=p.gaitSpeed??p.speed;
     const elapsed=p.time-this.lastTime;
     if(this.lastTime<0||elapsed<0||elapsed>.25||p.time===0)this.blendedSpeed=gaitSpeed;
     else if(elapsed>0)this.blendedSpeed+=(gaitSpeed-this.blendedSpeed)*(1-Math.exp(-9*elapsed));
     const weights=gaitWeights(this.blendedSpeed);
-    this.gait=['idle','walk','trot','run'][weights.indexOf(Math.max(...weights))];
+    this.gait=lie>.5?'down':sit>.5?'sit':['idle','walk','trot','run'][weights.indexOf(Math.max(...weights))];
     const jumping=(p.jumpHeight??0)>.005;
     if(jumping)this.gait='jump';
-    this.clips.forEach((c,i)=>{c.action.setEffectiveWeight(weights[i]);c.action.time=c.start+((i?p.phase:p.time*.4)%1)*c.duration;});
+    this.clips.forEach((c,i)=>{c.action.setEffectiveWeight(weights[i]*(1-commanded));c.action.time=c.start+((i?p.phase:p.time*.4)%1)*c.duration;});
+    this.commandActions.forEach((a,i)=>{a.setEffectiveWeight(i?lie:sit);a.time=(p.time*.25%1)*a.getClip().duration;});
     // The mixer skips unchanged properties. Restore its previous output before
     // applying IK so repeated paused frames cannot accumulate bone corrections.
     for(const a of this.animated){a.bone.position.copy(a.position);a.bone.quaternion.copy(a.rotation);a.bone.scale.copy(a.scale);}
@@ -83,8 +91,8 @@ export class CompanionView {
     this.model.getObjectByName('neck')?.rotateX(balance.neckPitch);
     this.model.getObjectByName('neck')?.rotateY(balance.neckYaw);
     this.model.getObjectByName('head')?.rotateY(balance.headYaw);
-    this.model.getObjectByName('tail')?.rotateY(balance.tailYaw);
     this.model.getObjectByName('pelvis')?.rotateZ(balance.hipRoll);
+    if(p.barking){this.model.getObjectByName('jaw')?.rotateX(Math.max(0,Math.sin((1.3-p.barking)*Math.PI*5))*.16);this.model.getObjectByName('head')?.rotateX(Math.sin((1.3-p.barking)*Math.PI*5)*.025);}
     this.root.updateMatrixWorld(true);
     const dt=p.time-this.lastTime,reset=this.lastTime<0||dt<0||dt>.25||this.lastPosition.distanceTo(this.root.position)>2;
     if(reset)for(const paw of this.paws)paw.anchor=null;
@@ -94,6 +102,7 @@ export class CompanionView {
     const rotation=pelvis.getWorldQuaternion(q()).premultiply(q().setFromAxisAngle(new T.Vector3(0,0,1).transformDirection(this.ground.matrixWorld),bank));
     pelvis.quaternion.copy(pelvis.parent!.getWorldQuaternion(q()).invert().multiply(rotation));this.root.updateMatrixWorld(true);
     for(const [i,paw] of this.paws.entries()){
+      if(commanded>.01){paw.anchor=null;continue;}
       const animated=paw.foot.getWorldPosition(v()),rotation=paw.foot.getWorldQuaternion(q());
       const contact=jumping?0:pawContact(gaitSpeed,p.phase,i);paw.contact=contact;
       if(contact<.05||gaitSpeed<.04)paw.anchor=null;

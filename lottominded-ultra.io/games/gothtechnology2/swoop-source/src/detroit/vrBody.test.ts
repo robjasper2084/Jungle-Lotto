@@ -32,6 +32,10 @@ for(const {id} of RIDER_CHOICES){
     const indices=new Set(m.geometry.index!.array),skin=m.geometry.getAttribute('skinIndex'),weight=m.geometry.getAttribute('skinWeight');
     for(const limb of ['LeftHand','RightHand','LeftFoot','RightFoot']){
      const bone=m.skeleton.bones.findIndex(b=>b.name===limb);if(bone<0)continue;
+     const full=original.get(m)!,fullIndices=full.index?.array??Array.from({length:skin.count},(_,i)=>i);
+     // An exported material primitive need not contain every limb. Require VR
+     // to preserve each limb that was actually present in that primitive.
+     if(![...fullIndices].some(i=>[0,1,2,3].some(c=>skin.getComponent(i,c)===bone&&weight.getComponent(i,c)>.5)))continue;
      assert.ok([...indices].some(i=>[0,1,2,3].some(c=>skin.getComponent(i,c)===bone&&weight.getComponent(i,c)>.5)),limb+' remains visible');
     }
    }

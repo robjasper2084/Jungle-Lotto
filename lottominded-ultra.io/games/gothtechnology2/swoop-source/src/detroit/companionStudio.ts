@@ -1,5 +1,5 @@
 import * as T from 'three';
-import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import {GLTFLoader} from './compressedGLTFLoader.ts';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 import {CompanionView} from './companionView.ts';
 import {dogSteering} from './dogSteering.ts';

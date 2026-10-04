@@ -4,8 +4,14 @@ export type GroundSample={height:number;normal:Vec3;surface:SurfaceId;offCourse:
 export type ObstacleHit={distance:number;halfExtentX:number;halfExtentZ:number};
 /** Velocity is the recipient's post-contact momentum in this terrain's coordinate frame. */
 export type ActorImpact={speed:number;vx:number;vz:number};
-export type NavigationObstacle={id:string;x:number;y:number;z:number;radius:number;height:number;kind:string;vx:number;vz:number;onImpact?:(impact:ActorImpact)=>void;fallen?:boolean};
+export type NavigationObstacle={id:string;x:number;y:number;z:number;radius:number;height:number;kind:string;vx:number;vz:number;raycastSolid?:boolean;onImpact?:(impact:ActorImpact)=>void;fallen?:boolean};
 export interface TerrainSampler {
+  /** Unsupported water stops ground travel; bridges and dock decks remain usable. */
+  waterAt?(x:number,z:number,referenceY:number):boolean;
+  /** Authored indoor areas keep mounted riders upright through all impacts. */
+  riderProtectionAt?(x:number,z:number):boolean;
+  /** A scoped query view: steering can use the original terrain while selected actors are non-solid. */
+  withActorPassThrough?(predicate:(actor:NavigationObstacle)=>boolean):TerrainSampler;
   mountedClear?(p:Vec3,heading:number,radius:number,height:number):boolean;
   /** Brief spawn exclusion after validated player recovery; existing actors still move. */
   reserveRecoverySpace?(p:Vec3,radius:number,height:number):void;

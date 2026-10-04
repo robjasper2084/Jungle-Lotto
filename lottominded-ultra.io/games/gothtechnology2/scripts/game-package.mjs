@@ -1,4 +1,4 @@
-import {access,stat,readdir,readFile,writeFile,mkdir,rename,rmdir} from 'node:fs/promises';
+import {access,stat,readdir,readFile,writeFile,mkdir,rename,rmdir,realpath} from 'node:fs/promises';
 import {resolve,dirname,relative} from 'node:path';
 import {randomUUID} from 'node:crypto';
 
@@ -12,8 +12,30 @@ export async function runtimeLicenses(source,{ridecore=false}={}){
   const files=['three','@dimforge/rapier3d-compat','fflate'].map(name=>({
     input:resolve(source,'node_modules',name,'LICENSE'),output:'licenses/'+name.replaceAll('/','-')+'.txt'
   }));
+  files.push({input:resolve(import.meta.dirname,'notices/meshoptimizer-LICENSE.txt'),output:'licenses/meshoptimizer-LICENSE.txt'});
   if(ridecore)files.push({input:resolve(source,'LICENSE'),output:'LICENSE-EUC-Thrills.txt'},
     {input:resolve(source,'node_modules/@digital-static/ridecore/LICENSE.txt'),output:'LICENSE-RideCore.txt'});
+  // RideCore's online client is bundled from its own linked dependencies.
+  // Preserve the installed SDK and dependency notices alongside the game.
+  const core=await realpath(resolve(source,'node_modules/@digital-static/ridecore'));
+  const seen=new Set();
+  async function include(name,owner){
+    if(seen.has(name))return;seen.add(name);
+    let directory,ancestor=owner;
+    for(;;){
+      const candidate=resolve(ancestor,'node_modules',name);
+      try{await access(resolve(candidate,'package.json'));directory=candidate;break;}catch(error){if(error.code!=='ENOENT')throw error;}
+      const parent=dirname(ancestor);if(parent===ancestor)throw Error('Missing runtime license dependency: '+name);ancestor=parent;
+    }
+    const metadata=JSON.parse(await readFile(resolve(directory,'package.json'),'utf8'));
+    const notices=(await readdir(directory)).filter(file=>/^(?:license|copying|copyrightnotice|notice)(?:\.|$)/i.test(file));
+    // Some npm distributions omit their notice. Preserve their original
+    // metadata for the release audit; this does not replace a missing license.
+    if(!notices.length)files.push({input:resolve(directory,'package.json'),output:'licenses/'+name.replaceAll('/','-')+'-MISSING-NOTICE.package.json'});
+    for(const notice of notices)files.push({input:resolve(directory,notice),output:'licenses/'+name.replaceAll('/','-')+'-'+notice});
+    for(const dependency of Object.keys(metadata.dependencies??{}))await include(dependency,directory);
+  }
+  await include('@colyseus/sdk',core);
   for(const f of files)await readableTree(f.input);
   return files;
 }

@@ -1,24 +1,26 @@
 import {GamepadRideInput,emptyPad,type PadLike} from './gamepadInput.ts';
 import {NEUTRAL_ACTIONS,type RideActions} from './controller.ts';
 import {NeutralRearm,RIDE_RULES} from './rideRules.ts';
-export type SplitBinding='wasd'|'arrows'|`pad:${number}`;
+export type SplitBinding='wasd'|'arrows'|'ijkl'|'numpad'|`pad:${number}`;
 export const SPLIT_KEYS=[{up:'KeyW',down:'KeyS',left:'KeyA',right:'KeyD',hop:'Space',crouch:'ShiftLeft',recover:'KeyR',camera:'KeyC',trick:'KeyT',sit:'KeyX',cruise:'KeyV'},
- {up:'ArrowUp',down:'ArrowDown',left:'ArrowLeft',right:'ArrowRight',hop:'Enter',crouch:'ShiftRight',recover:'Backspace',camera:'Slash',trick:'Period',sit:'Comma',cruise:'Quote'}];
-export function splitBindingLabel(binding:SplitBinding){return binding==='wasd'?'WASD · Space hop · R recover · C camera':binding==='arrows'?'Arrows · Enter hop · Backspace recover · / camera':`Controller ${Number(binding.slice(4))+1} · A hop · X recover · Y camera`;}
+ {up:'ArrowUp',down:'ArrowDown',left:'ArrowLeft',right:'ArrowRight',hop:'Enter',crouch:'ShiftRight',recover:'Backspace',camera:'Slash',trick:'Period',sit:'Comma',cruise:'Quote'},
+ {up:'KeyI',down:'KeyK',left:'KeyJ',right:'KeyL',hop:'KeyU',crouch:'KeyO',recover:'KeyY',camera:'KeyB',trick:'KeyH',sit:'KeyM',cruise:'KeyF'},
+ {up:'Numpad8',down:'Numpad5',left:'Numpad4',right:'Numpad6',hop:'Numpad0',crouch:'Numpad1',recover:'Numpad7',camera:'Numpad9',trick:'Numpad3',sit:'Numpad2',cruise:'NumpadDecimal'}];
+export function splitBindingLabel(binding:SplitBinding){return binding==='wasd'?'WASD · Space hop · R recover · C camera':binding==='arrows'?'Arrows · Enter hop · Backspace recover · / camera':binding==='ijkl'?'IJKL · U hop · Y recover · B camera':binding==='numpad'?'Numpad 8456 · 0 hop · 7 recover · 9 camera':`Controller ${Number(binding.slice(4))+1} · A hop · X recover · Y camera`;}
 export function splitSetupError(bindings:readonly SplitBinding[],pads:readonly (PadLike|null)[]){
- if(bindings[0]===bindings[1])return 'Choose a different control set for each player.';
+ if(new Set(bindings).size!==bindings.length)return 'Choose a different control set for each player.';
  for(const binding of bindings)if(binding.startsWith('pad:')&&!pads.some(p=>p?.connected&&p.mapping==='standard'&&p.index===Number(binding.slice(4))))return `${splitBindingLabel(binding).split(' · ')[0]} is not connected. Press a button on it, or choose a keyboard layout.`;
  return '';
 }
 export class SplitRideInput {
- readonly bindings:readonly [SplitBinding,SplitBinding];
- private keys=new Set<string>();private gates=[new NeutralRearm(),new NeutralRearm()];
- private readers=[new GamepadRideInput(),new GamepadRideInput()];private pads=[emptyPad(),emptyPad()];
- private ready=[false,false];private pending=[this.empty(),this.empty()];private identities=['',''];private seated=[false,false];
- readonly cruising=[false,false];private speeds:readonly number[]=[0,0];
- constructor(bindings:readonly [SplitBinding,SplitBinding]){this.bindings=bindings;this.clear();}
+ readonly bindings:readonly SplitBinding[];
+ private keys=new Set<string>();private gates:NeutralRearm[];
+ private readers:GamepadRideInput[];private pads:ReturnType<typeof emptyPad>[];
+ private ready:boolean[];private pending:ReturnType<SplitRideInput['empty']>[];private identities:string[];private seated:boolean[];
+ readonly cruising:boolean[];private speeds:readonly number[]=[];
+ constructor(bindings:readonly SplitBinding[]){if(bindings.length<2||bindings.length>4)throw Error('Split play supports 2–4 players.');this.bindings=bindings;this.gates=bindings.map(()=>new NeutralRearm());this.readers=bindings.map(()=>new GamepadRideInput());this.pads=bindings.map(()=>emptyPad());this.ready=bindings.map(()=>false);this.pending=bindings.map(()=>this.empty());this.identities=bindings.map(()=>'');this.seated=bindings.map(()=>false);this.cruising=bindings.map(()=>false);this.clear();}
  private empty(){return{hop:false,recover:false,camera:false,trick:false,sit:false,cruise:false};}
- private layout(i:number){return SPLIT_KEYS[this.bindings[i]==='arrows'?1:0];}
+ private layout(i:number){return SPLIT_KEYS[this.bindings[i]==='arrows'?1:this.bindings[i]==='ijkl'?2:this.bindings[i]==='numpad'?3:0];}
  ownsKey(code:string){return this.bindings.some((b,i)=>!b.startsWith('pad:')&&Object.values(this.layout(i)).includes(code));}
  handleKey(code:string,down:boolean){
   const was=this.keys.has(code);let owned=false;
@@ -29,7 +31,7 @@ export class SplitRideInput {
   if(owned){if(down)this.keys.add(code);else this.keys.delete(code);}return owned;
  }
  clear(index?:number){
-  for(const i of index===undefined?[0,1]:[index]){if(!this.bindings[i].startsWith('pad:'))for(const key of Object.values(this.layout(i)))this.keys.delete(key);this.pending[i]=this.empty();this.gates[i].interrupt();this.ready[i]=false;this.cruising[i]=false;}
+  for(const i of index===undefined?this.bindings.map((_,i)=>i):[index]){if(!this.bindings[i].startsWith('pad:'))for(const key of Object.values(this.layout(i)))this.keys.delete(key);this.pending[i]=this.empty();this.gates[i].interrupt();this.ready[i]=false;this.cruising[i]=false;}
  }
  poll(pads:readonly (PadLike|null)[],speeds:readonly number[],dt:number){
   let pause=false,disconnected=false;this.speeds=speeds;

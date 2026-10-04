@@ -2,6 +2,9 @@ import * as T from 'three';
 import data from './harbor-data.json' with {type:'json'};
 import type {DetroitWorld} from './world.ts';
 export const harborBoundary=data.ways.find(w=>w.tags.leisure==='marina')!.points;
+const harborBounds={minX:Math.min(...harborBoundary.map(p=>p[0]))-12,maxX:Math.max(...harborBoundary.map(p=>p[0]))+12,minZ:Math.min(...harborBoundary.map(p=>p[1]))-12,maxZ:Math.max(...harborBoundary.map(p=>p[1]))+12};
+/** A coarse 20 m grid makes the basin's edge spill diagonally into its paths. */
+export const harborTerrainDetail=(x:number,z:number)=>x+50>=harborBounds.minX&&x-50<=harborBounds.maxX&&z+50>=harborBounds.minZ&&z-50<=harborBounds.maxZ;
 export function inHarbor(x:number,z:number){let inside=false;for(let i=0,j=harborBoundary.length-1;i<harborBoundary.length;j=i++){const a=harborBoundary[i],b=harborBoundary[j];if((a[1]>z)!==(b[1]>z)&&x<(b[0]-a[0])*(z-a[1])/(b[1]-a[1])+a[0])inside=!inside;}return inside;}
 /** OSM pier centrelines; deck width and fittings are authored visual detail. */
 export function buildHarbor(world:DetroitWorld,groupAt:(x:number,z:number)=>T.Group){

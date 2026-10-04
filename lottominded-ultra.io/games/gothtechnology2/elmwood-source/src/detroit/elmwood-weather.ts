@@ -1,4 +1,5 @@
 import * as T from 'three';
+export {makeElmwoodWater} from './elmwood-water.ts';
 
 export type ElmwoodWeather='clear'|'cloudy'|'rain'|'mist';
 export const WEATHER={
@@ -21,7 +22,7 @@ export function elmwoodSun(hour:number,date:string){
 }
 
 export function makeElmwoodWeather(scene:T.Scene,camera:T.Camera,sun:T.DirectionalLight,hemi:T.HemisphereLight,renderer:T.WebGLRenderer){
- const uniforms={time:{value:0},cloud:{value:WEATHER.clear.cloud as number},rain:{value:0},wet:{value:0},wind:{value:.4}};
+ const uniforms={time:{value:0},waterTime:{value:0},waterDetail:{value:1},cloud:{value:WEATHER.clear.cloud as number},rain:{value:0},wet:{value:0},wind:{value:.4}};
  let mode:ElmwoodWeather='clear';const state={...WEATHER.clear} as Record<keyof typeof WEATHER.clear,number>;
  const count=900,a=new Float32Array(count*6),geo=new T.BufferGeometry();geo.setAttribute('position',new T.BufferAttribute(a,3));
  const rain=new T.LineSegments(geo,new T.LineBasicMaterial({color:'#bbd2d9',transparent:true,opacity:.28,depthWrite:false}));rain.frustumCulled=false;rain.name='Camera-local rain';scene.add(rain);
@@ -35,8 +36,9 @@ export function makeElmwoodWeather(scene:T.Scene,camera:T.Camera,sun:T.Direction
    s.fragmentShader=s.fragmentShader.replace('#include <color_fragment>','#include <color_fragment>\ndiffuseColor.rgb*=1.-elmwoodWet*.20;');};m.customProgramCacheKey=()=>key+'-weather-wet-v1';m.needsUpdate=true;
  }
  return {uniforms,attach,set(value:ElmwoodWeather){if(value in WEATHER)mode=value;},get mode(){return mode;},
- update(dt:number,solar:T.Vector3,visible:boolean,paused=false){
+ update(dt:number,solar:T.Vector3,visible:boolean,paused=false,waterOptions={reducedMotion:false,detail:1}){
   if(!paused){elapsed+=dt;const blend=1-Math.exp(-dt*.7),target=WEATHER[mode];for(const k of Object.keys(state) as (keyof typeof state)[])state[k]+=(target[k as keyof typeof target]-state[k])*blend;wetness+=(state.wet-wetness)*(1-Math.exp(-dt*(state.wet>wetness?.15:.035)));}
+  if(!paused&&!waterOptions.reducedMotion)uniforms.waterTime.value+=dt;uniforms.waterDetail.value=waterOptions.detail;
   uniforms.time.value=elapsed;uniforms.cloud.value=state.cloud;uniforms.rain.value=state.rain;uniforms.wet.value=wetness;uniforms.wind.value=state.wind;
   const day=T.MathUtils.smoothstep(solar.y,-.10,.20),gold=1-T.MathUtils.smoothstep(solar.y,.015,.40);
   sun.intensity=Math.max(0,solar.y)*4.1*state.sun;sun.color.set('#fff4df').lerp(scratch.set('#ffa267'),gold*.77);
@@ -52,20 +54,4 @@ export function makeElmwoodWeather(scene:T.Scene,camera:T.Camera,sun:T.Direction
    }geo.attributes.position.needsUpdate=true;(rain.material as T.LineBasicMaterial).opacity=state.rain*.25;
   }
  }};
-}
-
-/** Reflection-lit pond surface with crossing wind waves and rain ripples; no extra scene render. */
-export function makeElmwoodWater(source:T.MeshStandardMaterial,u:ReturnType<typeof makeElmwoodWeather>['uniforms']){
- const m=new T.MeshPhysicalMaterial({name:source.name,color:'#34554c',roughness:.16,metalness:.08,ior:1.333,reflectivity:.38,envMapIntensity:1.5,clearcoat:.75,clearcoatRoughness:.16});
- m.onBeforeCompile=s=>{s.uniforms.pondTime=u.time;s.uniforms.pondRain=u.rain;s.uniforms.pondWind=u.wind;
-  s.vertexShader='varying vec3 pondWorld;\n'+s.vertexShader;s.vertexShader=s.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\npondWorld=(modelMatrix*vec4(position,1.)).xyz;');
-  s.fragmentShader='uniform float pondTime,pondRain,pondWind; varying vec3 pondWorld;\n'+s.fragmentShader;
-  s.fragmentShader=s.fragmentShader.replace('#include <normal_fragment_maps>',`#include <normal_fragment_maps>
-   vec2 p=pondWorld.xz;float t=pondTime;
-   vec2 waves=vec2(sin(p.x*.61+p.y*.39+t*1.2)+.36*sin(p.y*2.3-t*1.9),cos(p.y*.75-p.x*.28+t*.9)+.29*sin(p.x*2.7+t*2.1));
-   vec2 id=floor(p*1.9),cell=fract(p*1.9)-.5;float seed=fract(sin(dot(id,vec2(127.1,311.7)))*43758.5453);float age=fract(t*1.7+seed*19.);
-   float ring=sin((length(cell)-age*.48)*80.)*exp(-pow((length(cell)-age*.48)*18.,2.))*(1.-age)*pondRain*.36;
-   normal=normalize(normal+mat3(viewMatrix)*vec3(waves.x*(.045+pondWind*.025)+ring*.07,0.,waves.y*(.045+pondWind*.025)+ring*.07));`);
-  s.fragmentShader=s.fragmentShader.replace('#include <color_fragment>','#include <color_fragment>\ndiffuseColor.rgb*=.93+.07*sin(pondWorld.x*.25+pondWorld.z*.31);');
- };m.customProgramCacheKey=()=> 'elmwood-reflection-water-v3';return m;
 }

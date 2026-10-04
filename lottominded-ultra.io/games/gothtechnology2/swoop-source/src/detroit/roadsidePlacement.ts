@@ -1,4 +1,5 @@
-import {CITY,riverEdge} from './geography.ts';
+import {CITY} from './geography.ts';
+import {dryStreetSite} from './dryStreetSite.ts';
 
 type Point={x:number;z:number};
 export function segmentDistance(p:Point,a:number[],b:number[]){
@@ -10,6 +11,21 @@ const roads=CITY.roads.flatMap(r=>r.points.slice(1).map((b,i)=>({a:r.points[i],b
 const cells=new Map<string,typeof roads>();
 for(const s of roads){const m=s.half+32;for(let x=Math.floor((Math.min(s.a[0],s.b[0])-m)/64);x<=Math.floor((Math.max(s.a[0],s.b[0])+m)/64);x++)for(let z=Math.floor((Math.min(s.a[1],s.b[1])-m)/64);z<=Math.floor((Math.max(s.a[1],s.b[1])+m)/64);z++){const key=x+','+z,list=cells.get(key)??[];list.push(s);cells.set(key,list);}}
 const buildings=CITY.buildings.map(b=>({points:b.points,minX:Math.min(...b.points.map(p=>p[0]))-.7,maxX:Math.max(...b.points.map(p=>p[0]))+.7,minZ:Math.min(...b.points.map(p=>p[1]))-.7,maxZ:Math.max(...b.points.map(p=>p[1]))+.7}));
+/** Aim the open +Z side of a bench at the road from its final placement.
+ * A clearance search can move furniture across its original road segment. */
+export function nearestStreetPoint(p:Point,street?:string){
+ let nearest:{x:number;z:number;distance:number;street:string}|undefined;
+ for(const r of CITY.roads){
+  if(!r.name||street&&r.name!==street||['cycleway','footway','path','pedestrian','steps'].includes(r.kind)||r.bridge)continue;
+  for(let i=1;i<r.points.length;i++){
+   const a=r.points[i-1],b=r.points[i],dx=b[0]-a[0],dz=b[1]-a[1],l2=dx*dx+dz*dz;if(l2<.01)continue;
+   const t=Math.max(0,Math.min(1,((p.x-a[0])*dx+(p.z-a[1])*dz)/l2)),x=a[0]+dx*t,z=a[1]+dz*t,distance=Math.hypot(x-p.x,z-p.z);
+   if(!nearest||distance<nearest.distance)nearest={x,z,distance,street:r.name};
+  }
+ }
+ return nearest;
+}
+export function streetFacingHeading(p:Point,street?:string){const q=nearestStreetPoint(p,street);return q?Math.atan2(q.x-p.x,q.z-p.z):0;}
 /** Test the union of ALL road/path envelopes, including intersection corners. */
 export function roadwayClearance(p:Point){
  let clearance=Infinity;
@@ -35,7 +51,7 @@ function inBuilding(p:Point){
 export function roadsidePoint(x:number,z:number,allowed:(x:number,z:number)=>boolean=()=>true){
  // Keep original orientation/approach. Only move the post to the closest clear
  // verge, with enough room for the sign face as well as the post.
- const valid=(p:Point)=>allowed(p.x,p.z)&&p.x>riverEdge(p.z)+1&&roadwayClearance(p)>=1.15&&!inBuilding(p);
+ const valid=(p:Point)=>allowed(p.x,p.z)&&dryStreetSite(p.x,p.z)&&roadwayClearance(p)>=1.15&&!inBuilding(p);
  if(valid({x,z}))return{x,z};
  for(let radius=.75;radius<=24;radius+=.75){
   const n=Math.max(16,Math.ceil(radius*8));

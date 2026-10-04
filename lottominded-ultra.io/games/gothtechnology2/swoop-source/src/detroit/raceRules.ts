@@ -12,7 +12,7 @@ export class RaceRules {
  countdown=3;elapsed=0;done=false;racers:Racer[];
  private waitForAll:boolean;
  constructor(player:RiderId,options?:{opponents:readonly RiderId[];waitForAll?:boolean}){
-  const ids=[player,...(options?.opponents??RIDER_CHOICES.map(r=>r.id).filter(id=>id!==player))];
+  const ids=[player,...(options?.opponents??RIDER_CHOICES.map(r=>r.id).filter(id=>id!==player).slice(0,3))];
   if(new Set(ids).size!==ids.length)throw Error('Each racer needs a different character');
   this.waitForAll=options?.waitForAll??false;
   this.racers=ids.map((id,i)=>({id,player:i===0,station:RACE_ROUTE.start-i*2.2,offset:0,speed:0,gate:0,finish:null,previous:RACE_ROUTE.start-i*2.2,missed:false}));

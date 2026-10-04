@@ -1,0 +1,1 @@
+Original cabinet graphics authored for Swoop Detroit. Cabinet profiles, control deck, CRT recess, marquee and coin door informed by the six user-supplied vintage arcade photographs. Reference photos are not used as flat cabinet textures.

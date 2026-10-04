@@ -10,7 +10,7 @@ import type {TerrainSampler,Vec3,ActorImpact,NavigationObstacle} from './terrain
 import {RIDE_TUNING as tune,clamp,damp,angle,spring,advanceSpring,advanceDrive} from './rideDynamics.ts';
 
 export const NEUTRAL_ACTIONS={throttle:0,steer:0,crouch:false,hop:false,hopHeld:false,reset:false,trick:0};
-export type RideActions=typeof NEUTRAL_ACTIONS & {seated?:boolean};
+export type RideActions=typeof NEUTRAL_ACTIONS & {seated?:boolean;eyeControl?:boolean};
 export function createPose(){return {
   seated:0,stopFoot:0,stopFootX:0,stopFootY:0,stopFootZ:0,warningLevel:0,beepPulse:0,scrape:0,scrapeSide:0,scrapeX:0,scrapeY:0,scrapeZ:0,scrapeHard:0,
   trickFoot:0,x:0,y:0,z:0,headingY:0,speed:0,wheelSpin:0,groundPitch:0,groundRoll:0,
@@ -69,9 +69,10 @@ export class RideController {
     this.groundClearance=0;this.touchedDown=false;this.groundAge=0;this.hopQueue=0;this.hopDown=false;
     this.brakeLatch=false;this.reverseReady=false;this.lastLandingImpact=0;this.lastHopCharge=0;this.lastLandingQuality='clean';
   }
-  private fall(reason:string,impact?:ActorImpact){if(this.crashed)return;this.crashed=true;this.crashCause=reason;this.counts.crashes++;this.crashAge=0;this.fallMotion=new FallMotion(this.pose,reason,tune.wheelRadius*this.wheelScale,impact);this.charge=this.hopQueue=this.hopWindup=this.pendingCharge=this.motor=0;this.pose.driveIntent=0;this.tricks.cancel();}
+  private indoorProtected(){return !!this.terrain.riderProtectionAt?.(this.pose.x,this.pose.z);}
+  private fall(reason:string,impact?:ActorImpact){if(this.crashed||this.indoorProtected())return;this.crashed=true;this.crashCause=reason;this.counts.crashes++;this.crashAge=0;this.fallMotion=new FallMotion(this.pose,reason,tune.wheelRadius*this.wheelScale,impact);this.charge=this.hopQueue=this.hopWindup=this.pendingCharge=this.motor=0;this.pose.driveIntent=0;this.tricks.cancel();}
   receiveImpact(impact:ActorImpact){
-    if(!Number.isFinite(impact.speed+impact.vx+impact.vz)||impact.speed<4.2||this.crashed||this.recoveryPose)return false;
+    if(!Number.isFinite(impact.speed+impact.vx+impact.vz)||impact.speed<4.2||this.crashed||this.recoveryPose||this.indoorProtected())return false;
     this.fall('collision',impact);return true;
   }
   /** The reserved fallen envelope follows both body and wheel, not an invisible upright rider. */
@@ -134,7 +135,7 @@ export class RideController {
     const plantX=p.x+Math.cos(p.headingY)*.39+Math.sin(p.headingY)*.035,plantZ=p.z-Math.sin(p.headingY)*.39+Math.cos(p.headingY)*.035;
     this.terrain.sampleGround(plantX,plantZ,this.ahead,p.y);
     const safePlant=Math.abs(this.ahead.height-this.ground.height)<.08&&!this.ahead.offCourse;
-    p.stopFoot=damp(p.stopFoot,this.stoppedFor>.45&&safePlant?1:0,resting?7:24,dt);
+    p.stopFoot=damp(p.stopFoot,!this.indoorProtected()&&this.stoppedFor>.45&&safePlant?1:0,resting?7:24,dt);
     if(p.stopFoot<.001)p.stopFoot=0;
     p.stopFootX=plantX;p.stopFootY=this.ahead.height;p.stopFootZ=plantZ;
     if(absSpeed<.08&&throttle>=-.05){this.reverseReady=true;this.brakeLatch=false;}
@@ -159,7 +160,7 @@ export class RideController {
       p.speed=clamp(speed,-tune.reverseSpeed,tune.maxSpeed);
     }
     this.acceleration=damp(this.acceleration,(p.speed-speedBefore)/dt,10,dt);
-    const balance=this.balance.step(dt,{steer,speed:p.speed,grounded:this.grounded,crouch:input.crouch,precision:this.precisionSteering,grip:ice?.14:rough?.60:.9});
+    const balance=this.balance.step(dt,{steer,speed:p.speed,grounded:this.grounded,crouch:input.crouch,precision:this.precisionSteering,eyeControl:input.eyeControl,grip:ice?.14:rough?.60:.9});
     const intent=balance.intent,moving=clamp(absSpeed/.8,0,1),technical=1-clamp((absSpeed-1.5)/3.8,0,1);
     p.yawRate=balance.yawRate;p.headingY+=p.yawRate*dt+this.tricks.airStep(dt)+this.tricks.groundYaw;
     const s=Math.sin(p.headingY),c=Math.cos(p.headingY);
@@ -198,9 +199,11 @@ export class RideController {
       this.grounded=false;this.groundAge=1;this.flightYaw=p.headingY;this.charge=this.hopQueue=0;this.counts.hops++;p.takeoffExtension=1;this.tricks.launch(this.velocityY);
     }
     const dx=this.vx*dt,dz=this.vz*dt,travel=Math.hypot(dx,dz);
-    if(travel>1e-8){
+    if(travel>1e-8&&this.terrain.waterAt?.(p.x+dx,p.z+dz,p.y)){
+      p.speed=this.vx=this.vz=this.motor=0;
+    }else if(travel>1e-8){
       const hit=this.terrain.raycastObstacle({x:p.x,y:p.y+.65,z:p.z},{x:dx,y:0,z:dz},travel+.32,.28);
-      const actors=(this.terrain.navigationObstacles?.(p.x,p.z,travel+2)??[]).filter(isCharacter);
+      const actors=(this.terrain.navigationObstacles?.(p.x,p.z,travel+2)??[]).filter(o=>isCharacter(o)&&!(o.kind==='dog'&&this.indoorProtected()));
       const {fraction,actor}=actorContact(p,dx,dz,this.mountedVolume.radius,this.mountedVolume.height,actors);
       const solidFraction=hit===null?1:clamp((hit-.33)/travel,0,1);
       if(actor&&fraction<1&&fraction<=solidFraction){
@@ -222,7 +225,7 @@ export class RideController {
         const freeZ=Math.abs(oz)>1e-5&&this.terrain.raycastObstacle({x:p.x,y:p.y+.65,z:p.z},{x:0,y:0,z:oz},Math.abs(oz)+.34,.28)===null;
         const slideX=freeX&&(!freeZ||Math.abs(ox)>Math.abs(oz)),slideZ=freeZ&&!slideX;
         const normalSpeed=slideX?Math.abs(this.vz):slideZ?Math.abs(this.vx):Math.hypot(this.vx,this.vz);
-        if(normalSpeed>4.2)this.fall('collision');
+        if(normalSpeed>4.2&&!this.indoorProtected())this.fall('collision');
         else if(slideX||slideZ){if(slideX){p.x+=ox*.75;this.vx*=.75;this.vz=0;}else{p.z+=oz*.75;this.vz*=.75;this.vx=0;}p.speed=this.vx*Math.sin(p.headingY)+this.vz*Math.cos(p.headingY);this.motor=0;}
         else{p.speed=this.vx=this.vz=this.motor=0;}}
       else{p.x+=dx;p.z+=dz;}
@@ -239,9 +242,9 @@ export class RideController {
         this.counts.spins+=Math.floor((Math.abs(p.headingY-this.flightYaw)+.15)/(Math.PI*2));
         const momentum=Math.hypot(this.vx,this.vz),alignment=momentum>.1?Math.cos(Math.atan2(this.vx,this.vz)-p.headingY):1;
         p.speed=momentum*(alignment<0?-1:1)*(.9+.1*Math.abs(alignment));p.landingCompression=clamp(this.lastLandingImpact/6,0,1);this.suspension.velocity-=this.lastLandingImpact*.26;
-        this.lastLandingQuality=this.lastLandingImpact>tune.crashImpact?'crash':this.lastLandingImpact>6.5?'heavy':this.lastHopCharge>.45?'charged':'clean';
+        this.lastLandingQuality=this.lastLandingImpact>tune.crashImpact&&!this.indoorProtected()?'crash':this.lastLandingImpact>6.5?'heavy':this.lastHopCharge>.45?'charged':'clean';
         if(this.lastLandingImpact>tune.crashImpact)this.fall('hard landing');
-        else if(momentum*Math.sqrt(Math.max(0,1-alignment*alignment))>5.5){this.lastLandingQuality='crash';this.fall('sideways landing');}
+        else if(momentum*Math.sqrt(Math.max(0,1-alignment*alignment))>5.5&&!this.indoorProtected()){this.lastLandingQuality='crash';this.fall('sideways landing');}
         this.tricks.land(this.lastLandingQuality);
       }
     }

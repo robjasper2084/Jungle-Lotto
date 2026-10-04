@@ -1,0 +1,4 @@
+/** An explicit local development action; production browsers never show this control. */
+export function localFootageButton(getVideo:()=>Blob|undefined,status:HTMLElement){
+ const button=document.createElement('button');button.textContent='Save footage to local project';button.hidden=!['127.0.0.1','localhost'].includes(location.hostname);button.onclick=async()=>{const video=getVideo();if(!video){status.textContent='Create a gameplay clip first.';return;}button.disabled=true;try{const response=await fetch('/__swoop_capture',{method:'POST',headers:{'Content-Type':video.type},body:video});if(!response.ok)throw Error();const saved=await response.json();status.textContent='Saved to art/cinematics/'+saved.file;}catch{status.textContent='Local project save unavailable. Use Download to save this clip.';}finally{button.disabled=false;}};return button;
+}

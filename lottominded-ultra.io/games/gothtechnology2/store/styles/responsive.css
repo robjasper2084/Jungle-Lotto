@@ -1,0 +1,30 @@
+/* Shared responsive finishing pass: retain the Armory's typography and imagery. */
+main,main :is(article,section,form,fieldset),.dialog-heading>div{min-width:0}
+.arcade-card h2{overflow-wrap:anywhere}
+.dialog-heading>.icon-button{flex-shrink:0}
+body #rahbee-promo{overflow-y:auto;overscroll-behavior:contain;max-height:calc(100dvh - 24px)}
+.mobile-menu .dialog-heading,.drawer .dialog-heading{position:sticky;top:0;z-index:3;background:#0a0c0f;padding-block:8px}
+@media(max-width:680px){
+ .site-header{padding-left:max(12px,env(safe-area-inset-left));padding-right:max(12px,env(safe-area-inset-right))}
+ .site-header .wordmark{min-width:0}
+ .site-footer{padding-bottom:max(28px,env(safe-area-inset-bottom))}
+ .compact-product .product-card-copy h3{font-size:14px;line-height:1.4}
+ .compact-product .card-actions .text-button,.compact-product .card-actions .button{font-size:11px;min-height:44px;white-space:normal}
+ .product-card-info>summary{min-height:44px}
+ .signal-card h3,.equipment-case h3{font-size:13px}
+ .site-footer nav a{font-size:12px}
+ .mobile-menu{padding:16px max(20px,env(safe-area-inset-right)) max(20px,env(safe-area-inset-bottom)) max(20px,env(safe-area-inset-left))}
+ .mobile-product-bar{flex-wrap:wrap}
+ .mobile-product-bar>*{min-width:0}
+ .mobile-product-bar .button{flex:1;min-width:120px;white-space:normal}
+}
+@media(max-width:360px){.site-header .wordmark span{font-size:7px;letter-spacing:.12em}.site-header .nav-utilities{gap:0}.site-header .nav-utilities .icon-button{min-width:44px;min-height:44px;padding:8px}}
+@media(max-height:540px) and (orientation:landscape){
+ .site-header{min-height:60px;padding-block:8px}
+ .commerce-notice{padding-block:6px}
+ .mobile-menu nav a{padding-block:12px;min-height:44px}
+ body #rahbee-promo .rahbee-promo-card,body #rahbee-promo .rahbee-promo-copy{min-height:0}
+ body #rahbee-promo .rahbee-promo-copy{width:55%;padding:32px 28px}
+ body #rahbee-promo .rahbee-promo-copy h2{font-size:56px;margin-bottom:18px}
+ .play-frame-wrap{min-height:300px;height:calc(100dvh - 110px)}
+}

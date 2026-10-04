@@ -3,7 +3,7 @@ import * as T from 'three';
 /** Keep the animated body, but remove eye-level geometry from the wearer's view.
  * Filtering indices leaves the shared asset, skin weights and rig untouched. */
 export class RiderVisibility {
- private meshes:{mesh:T.Mesh;full:T.BufferGeometry;body:T.BufferGeometry}[]=[];
+ private meshes:{mesh:T.Mesh;full:T.BufferGeometry;body:T.BufferGeometry;visible:boolean}[]=[];
  private attachments:{object:T.Object3D;visible:boolean}[]=[];
  private immersive=false;
  constructor(rider:T.Object3D,head?:T.Object3D){
@@ -29,12 +29,12 @@ export class RiderVisibility {
     }
     body.addGroup(start,kept.length-start,group.materialIndex);
    }
-   body.setIndex(kept);this.meshes.push({mesh,full,body});
+   body.setIndex(kept);this.meshes.push({mesh,full,body,visible:mesh.visible});
   });
  }
  setVR(enabled:boolean){
   if(enabled===this.immersive)return;this.immersive=enabled;
-  for(const entry of this.meshes)entry.mesh.geometry=enabled?entry.body:entry.full;
+  for(const entry of this.meshes){entry.mesh.geometry=enabled?entry.body:entry.full;entry.mesh.visible=entry.visible&&(!enabled||!!entry.body.index?.count);}
   for(const entry of this.attachments)entry.object.visible=enabled?false:entry.visible;
  }
  dispose(){this.setVR(false);for(const entry of this.meshes)entry.body.dispose();}

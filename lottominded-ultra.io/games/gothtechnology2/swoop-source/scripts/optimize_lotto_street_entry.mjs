@@ -1,0 +1,12 @@
+import {createRequire} from 'node:module';
+import {resolve} from 'node:path';
+import {writeFile,stat} from 'node:fs/promises';
+const root=resolve(import.meta.dirname,'..'),require=createRequire(resolve(root,'scripts/asset-tools/package.json'));
+const {NodeIO}=require('@gltf-transform/core'),{ALL_EXTENSIONS}=require('@gltf-transform/extensions');
+const {dedup,prune,weld,textureCompress}=require('@gltf-transform/functions'),sharp=require('sharp');
+const io=new NodeIO().registerExtensions(ALL_EXTENSIONS),source=resolve(root,'art/studio-retail/lottomind-store-authoring.glb'),target=resolve(root,'public/exports/atwater/lottomind-store.glb'),doc=await io.read(source);
+await doc.transform(weld(),dedup(),textureCompress({encoder:sharp,targetFormat:'jpeg',resize:[768,768],quality:86}),prune());
+await io.write(target,doc);
+const report={sourceBytes:(await stat(source)).size,runtimeBytes:(await stat(target)).size,meshes:doc.getRoot().listMeshes().length,textures:doc.getRoot().listTextures().length};
+await writeFile(resolve(root,'art/studio-retail/street-entry-optimization.json'),JSON.stringify(report,null,2)+'\n');
+console.log(report);

@@ -1,0 +1,28 @@
+{
+  "provider": "Higgsfield",
+  "model": "gpt_image_2_5",
+  "approvedCreditLimit": 0.5,
+  "jobs": [
+    {
+      "id": "85ee3f5e-7072-45c9-8ded-12276335c381",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20261003_152937_85ee3f5e-7072-45c9-8ded-12276335c381.png",
+      "tiles": [
+        "walnut",
+        "charcoal",
+        "plaster",
+        "cotton"
+      ]
+    },
+    {
+      "id": "6cbd9464-03bd-4aa3-991e-d5ed32a6187a",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20261003_152945_6cbd9464-03bd-4aa3-991e-d5ed32a6187a.png",
+      "tiles": [
+        "travertine",
+        "brass",
+        "linen",
+        "brick"
+      ]
+    }
+  ],
+  "processing": "Equal quadrants cropped 4 pixels; resize 768; albedo-derived normals. Original supplied artwork preserved."
+}

@@ -1,0 +1,1 @@
+Original Blender 5.2 street furniture, metre scale. GLB Y-up for browser; editable .blend and FBX for authoring. Camera models are decorative game assets, with no video capture or networking. Forms informed by Detroit riverfront photographs and the City Project Green Light program; locations and dimensions are authored estimates. No reference photographs are redistributed.

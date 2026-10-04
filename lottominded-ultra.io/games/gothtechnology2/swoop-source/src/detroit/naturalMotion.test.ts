@@ -18,7 +18,8 @@ test('hop arms sweep from preload into lift and relaxed wrists settle after land
   assert.ok(p.wristL<-.03&&p.wristR<-.03,'wrists should hang softly during the reach');
   assert.ok(Math.abs(p.wristL)<=.24&&Math.abs(p.wristR)<=.24);
   Object.assign(p,createPose());for(let i=0;i<900;i++)engine.step(1/120,p,0);
-  assert.ok(Math.abs(p.wristL)<1e-6&&Math.abs(p.wristR)<1e-6,'hands must settle without perpetual flutter');
+  const relaxed=stanceTargets(p);
+  assert.ok(Math.abs(p.wristL-relaxed.hands[0].wrist)<.006&&Math.abs(p.wristR-relaxed.hands[1].wrist)<.006,'wrists settle at the authored relaxed angle with only small breathing motion');
 });
 test('opposite carving directions mirror hand reach and shoulder counterbalance',()=>{
   const run=(side:number)=>{const p=createPose(),engine=new NaturalMotionEngine();engine.step(1/120,p,0);
@@ -59,7 +60,7 @@ test('gaze leads the torso, arms ease through a reversal, and the body settles a
   const target=stanceTargets(p);
   assert.ok(Math.abs(p.bodyDrop-target.drop)<.005);assert.ok(Math.abs(p.bodyPitch-target.pitch)<.007);
   assert.ok(Math.abs(p.bodyLook)<.046&&Math.abs(p.bodyTwist)<1e-6);
-  assert.ok(Math.abs(p.handLZ-target.hands[0].z)<1e-6);
+  assert.ok(Math.abs(p.handLZ-target.hands[0].z)<.003,'stationary hand breathing remains below 3 mm');
 });
 test('complete body state replays identically at 30, 60 and 144 render Hz and after reset',()=>{
   const c=new RideController(flat),p=createPose();

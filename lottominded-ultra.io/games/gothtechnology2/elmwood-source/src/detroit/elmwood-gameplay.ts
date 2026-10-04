@@ -17,9 +17,10 @@ function sweptDistance(a:Point,b:Point,p:Point){const dx=b.x-a.x,dz=b.z-a.z,t=Ma
 export class ElmwoodRun {
   mode:RunMode='free';elapsed=0;score=0;gate=1;finished=false;failed=false;finishTime=0;message='';messageTime=0;distance=0;
   private previous?:Point;
+  splits:number[]=[];referenceSplits:readonly number[]=[];
   readonly gates:Point[];
   constructor(gates:Point[]){this.gates=gates;}
-  reset(mode:RunMode,position:Point){this.mode=mode;this.elapsed=this.score=this.distance=this.finishTime=0;this.gate=1;this.finished=this.failed=false;this.message='';this.messageTime=0;this.previous={...position};}
+  reset(mode:RunMode,position:Point){this.mode=mode;this.elapsed=this.score=this.distance=this.finishTime=0;this.gate=1;this.finished=this.failed=false;this.message='';this.messageTime=0;this.previous={...position};this.splits=[];}
   relocate(position:Point){this.previous={...position};}
   update(dt:number,position:Point,events:readonly RideEvent[],paused=false){
     if(paused||this.finished||this.failed)return;
@@ -33,18 +34,17 @@ export class ElmwoodRun {
     if(this.mode==='sprint'||this.mode==='tour'){
       const target=this.gates[this.gate];
       if(target&&this.previous&&moved<5&&sweptDistance(this.previous,position,target)<3.6){
-        this.gate++;this.score+=100;this.message='Checkpoint '+(this.gate-1);this.messageTime=2;
+        this.splits.push(this.elapsed);const reference=this.referenceSplits[this.splits.length-1],gap=Number.isFinite(reference)?this.elapsed-reference:null;
+        this.gate++;this.score+=100;this.message='Checkpoint '+(this.gate-1)+' · +100'+(gap===null?'':' · '+Math.abs(gap).toFixed(2)+' s '+(gap<=0?'ahead of':'behind')+' your best');this.messageTime=3;
         if(this.gate>=this.gates.length){this.finished=true;this.finishTime=this.elapsed;this.message='Finished in '+this.elapsed.toFixed(1)+'s';this.messageTime=Infinity;}
-      }
-      if(this.mode==='sprint'&&!this.finished&&this.elapsed>=120){this.failed=true;this.message='Time up · Retry in Settings';this.messageTime=Infinity;}
-    }
+      }    }
     if(this.mode==='tricks'&&this.elapsed>=120){this.finished=true;this.message='Session complete · '+this.score+' points';this.messageTime=Infinity;}
     this.previous={...position};
   }
   get label(){
     if(this.finished||this.failed)return this.message;
     if(this.mode==='tricks')return `${Math.ceil(Math.max(0,120-this.elapsed))}s · ${this.score} pts`;
-    if(this.mode==='sprint'||this.mode==='tour')return `${this.gate-1}/${Math.max(0,this.gates.length-1)} gates${this.mode==='sprint'?' · '+Math.ceil(Math.max(0,120-this.elapsed))+'s':''}`;
+    if(this.mode==='sprint'||this.mode==='tour')return `${this.gate-1}/${Math.max(0,this.gates.length-1)} gates${this.mode==='sprint'?' · '+this.elapsed.toFixed(1)+'s':''}`;
     return `${(this.distance/1000).toFixed(2)} km · ${this.score} pts`;
   }
 }

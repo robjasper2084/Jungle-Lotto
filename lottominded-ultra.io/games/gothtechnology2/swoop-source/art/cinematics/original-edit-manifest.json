@@ -1,0 +1,68 @@
+{
+  "fps": 24,
+  "resolution": [
+    1280,
+    720
+  ],
+  "silent": true,
+  "blender": "5.2.1 LTS",
+  "master": "Swoop_Original_Group_Startup.blend",
+  "originalImage": "public/art/swoop-rivals-master.png",
+  "higgsfield": {
+    "job": "2d51f750-413a-4790-8fe5-776e8d906c4b",
+    "type": "Free Genjutsu motion transfer",
+    "duration": 5
+  },
+  "captures": [
+    {
+      "name": "gameplay-cut",
+      "source": "gameplay-fdfe283d-64c5-4c47-bc35-95276cfa3a87.mp4",
+      "start": 0,
+      "description": "Actual four-player race recording, original rider, Atwater Street"
+    },
+    {
+      "name": "gameplay-cut-air",
+      "source": "gameplay-fdfe283d-64c5-4c47-bc35-95276cfa3a87.mp4",
+      "start": 5,
+      "description": "Actual four-player race recording, in-game camera transition"
+    },
+    {
+      "name": "gameplay-woman",
+      "source": "gameplay-d10ed2c9-b366-433b-94ef-26efdd611ad2.mp4",
+      "start": 0,
+      "description": "Actual woman rider, player two, side tracking replay"
+    },
+    {
+      "name": "gameplay-dog",
+      "source": "gameplay-5792c82a-bff1-4da3-94ce-d4ba701cf62c.mp4",
+      "start": 0,
+      "description": "Actual free ride with Boerboel; live Come command used while riding"
+    }
+  ],
+  "edits": [
+    {
+      "name": "swoop-intro-15",
+      "duration": 15,
+      "shots": [
+        "original-art",
+        "rivals",
+        "gameplay-woman"
+      ]
+    },
+    {
+      "name": "swoop-intro-30",
+      "duration": 30,
+      "shots": [
+        "original-art",
+        "rivals",
+        "gameplay-cut",
+        "gameplay-woman",
+        "gameplay-cut-air",
+        "gameplay-dog"
+      ]
+    }
+  ],
+  "transitionSeconds": 0.3,
+  "arrivalPreserved": "public/exports/polish/gothtech-arrival-15.mp4",
+  "notes": "Gameplay is captured from this runtime with its real physics, map, characters and replay cameras. Original artwork remains unaltered in the Blender opening shot. AI footage does not represent gameplay."
+}

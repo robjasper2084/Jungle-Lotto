@@ -1,0 +1,31 @@
+{
+  "fps": 24,
+  "resolution": [
+    1280,
+    720
+  ],
+  "silent": true,
+  "blender": "5.2.1 LTS",
+  "blenderMaster": "Swoop_Detroit_Cinematics.blend",
+  "approvedCreditCap": 6.25,
+  "freeGenjutsuRuns": 1,
+  "sources": [
+    {
+      "name": "companion",
+      "job": "10c0f4ec-0a53-48b9-a51c-91164aa801ee",
+      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20261003_165715_10c0f4ec-0a53-48b9-a51c-91164aa801ee.mp4"
+    }
+  ],
+  "edits": [
+    {
+      "name": "swoop-intro-15",
+      "duration": 15,
+      "shots": [
+        "companion",
+        "ride",
+        "studio"
+      ]
+    }
+  ],
+  "transition": "0.3-second dissolves; final frame pads preserve exact 15/30-second duration; no camera motion synthesized from static images."
+}

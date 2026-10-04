@@ -1,0 +1,63 @@
+{
+    "editor": "6000.3.24f1",
+    "rigging": "1.4.1",
+    "gltfast": "6.20.0",
+    "clips": [
+        {
+            "name": "Dog_Idle",
+            "duration": 4.0,
+            "minY": -0.0009797215461730958,
+            "maxY": 0.9213141202926636,
+            "chestY": 0.6392650008201599,
+            "bindings": 250,
+            "finite": true
+        },
+        {
+            "name": "Dog_Walk",
+            "duration": 4.0,
+            "minY": -0.0007044672966003418,
+            "maxY": 0.9039500951766968,
+            "chestY": 0.6234865784645081,
+            "bindings": 250,
+            "finite": true
+        },
+        {
+            "name": "Dog_Trot",
+            "duration": 4.0,
+            "minY": -0.0009809136390686036,
+            "maxY": 0.8888981342315674,
+            "chestY": 0.5891245603561401,
+            "bindings": 250,
+            "finite": true
+        },
+        {
+            "name": "Dog_Run",
+            "duration": 4.0,
+            "minY": -0.0008560419082641602,
+            "maxY": 0.8586728572845459,
+            "chestY": 0.5944044589996338,
+            "bindings": 250,
+            "finite": true
+        },
+        {
+            "name": "Dog_Sit",
+            "duration": 4.0,
+            "minY": 0.01199999451637268,
+            "maxY": 1.0085936784744263,
+            "chestY": 0.6084248423576355,
+            "bindings": 250,
+            "finite": true
+        },
+        {
+            "name": "Dog_Down",
+            "duration": 4.0,
+            "minY": 0.01199987530708313,
+            "maxY": 1.0085935592651368,
+            "chestY": 0.36989516019821169,
+            "bindings": 250,
+            "finite": true
+        }
+    ],
+    "glbClips": 6,
+    "imported": true
+}

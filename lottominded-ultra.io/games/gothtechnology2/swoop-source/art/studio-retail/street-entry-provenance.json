@@ -1,0 +1,25 @@
+{
+  "name": "LottoMind with two walk-in street entries",
+  "meshes": 17,
+  "triangles": 31036,
+  "bytes": 15098460,
+  "min": [
+    -6.949999809265137,
+    -10.450000762939453,
+    0.0
+  ],
+  "max": [
+    6.949999809265137,
+    9.649999618530273,
+    9.970000267028809
+  ],
+  "portal": {
+    "u": -4.35,
+    "v": -9.35,
+    "width": 2.6,
+    "height": 3.04
+  },
+  "ticketDisplayObjectsRelocated": 74,
+  "sourceMaster": "before-street-entry/LottoMind_Store.blend",
+  "textures": "Existing original LottoMind identity and Higgsfield retail materials; no new external images"
+}

@@ -1,7 +1,7 @@
 import {gentleSteering} from '@digital-static/ridecore';
 import {RIDE_TUNING as tune,advanceSpring,clamp,damp,spring} from './rideDynamics.ts';
 
-export type BalanceInput={steer:number;speed:number;grounded:boolean;crouch:boolean;grip:number;precision?:boolean};
+export type BalanceInput={steer:number;speed:number;grounded:boolean;crouch:boolean;grip:number;precision?:boolean;eyeControl?:boolean};
 /** Original EUC balance model. Steering shifts weight; the bank then bends the
  * contact trajectory. At walking pace a blended body pivot keeps tight turns usable.
  * No reference-game code or constants are used here. Units: metres, seconds, radians. */
@@ -15,8 +15,9 @@ export class BalanceEngine {
     const speed=Math.abs(a.speed),direction=a.speed<-.05?-1:1;
     const raw=Number.isFinite(a.steer)?clamp(a.steer,-1,1):0;
     // Gentle around stick centre, but keyboard/full stick still reaches full lock.
-    const command=a.precision?.82*raw+.18*raw*raw*raw:gentleSteering(raw);
-    const intent=advanceSpring(this.input,command,a.precision?16:10,dt);
+    const eyeControl=!!a.eyeControl&&a.grounded;
+    const command=a.precision?.82*raw+.18*raw*raw*raw:gentleSteering(raw,eyeControl);
+    const intent=advanceSpring(this.input,command,eyeControl?18:a.precision?16:10,dt);
     const moving=clamp(speed/.8,0,1),technical=1-clamp((speed-1.5)/3.8,0,1);
     const maxYaw=tune.highSpeedYaw+(tune.lowSpeedYaw-tune.highSpeedYaw)*Math.exp(-speed/4.8);
     const yawDemand=-intent*maxYaw*moving*direction;
@@ -28,7 +29,7 @@ export class BalanceEngine {
     const requestedBank=clamp(Math.atan2(desiredLateral,tune.gravity)-Math.sign(intent)*overlean,-tune.maxLean,tune.maxLean);
     let targetYaw:number;
     if(a.grounded){
-      advanceSpring(this.bank,requestedBank,15,dt);
+      advanceSpring(this.bank,requestedBank,eyeControl?18:15,dt);
       const bankYaw=tune.gravity*Math.tan(this.bank.value)/Math.max(speed,.8)*direction;
       // Pivot on the tyre at walking pace; progressively let weight/bank own the arc.
       targetYaw=yawDemand*technical+bankYaw*(1-technical);
@@ -38,7 +39,7 @@ export class BalanceEngine {
       advanceSpring(this.bank,this.bank.value*.98,3,dt);
       targetYaw=-intent*(a.crouch?7.2:4.4);
     }
-    this.yaw=damp(this.yaw,targetYaw,a.grounded?16:10,dt);
+    this.yaw=damp(this.yaw,targetYaw,a.grounded?(eyeControl?22:16):10,dt);
     this.load=damp(this.load,a.grounded?clamp(Math.abs(this.yaw*a.speed)/Math.max(.1,lateralLimit),0,1):0,12,dt);
     return {intent,bank:this.bank.value,bankVelocity:this.bank.velocity,yawRate:this.yaw,
       technical:technical*Math.abs(intent)*moving,

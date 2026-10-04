@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "author": "Digital Static",
+  "license": "Original project assets; no third-party meshes or textures",
+  "tools": [
+    "Blender 5.2",
+    "Geometry Nodes",
+    "Digital Static Nature Pack add-on"
+  ],
+  "trees": [
+    "cherry-blossom-1.glb",
+    "cherry-blossom-2.glb"
+  ],
+  "bird": "american-robin.glb",
+  "petal": "cherry-petal.glb"
+}

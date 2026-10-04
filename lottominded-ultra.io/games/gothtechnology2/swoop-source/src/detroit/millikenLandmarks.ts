@@ -1,5 +1,5 @@
 import * as T from 'three';
-import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import {GLTFLoader} from './compressedGLTFLoader.ts';
 import {cityPoint} from './atwater.ts';
 import {MILLIKEN_BERM} from './millikenTerrain.ts';
 import {heightAt,type DetroitWorld} from './world.ts';

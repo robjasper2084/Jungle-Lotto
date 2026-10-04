@@ -1,0 +1,14 @@
+[
+  {
+    "name": "penny-exchange",
+    "sourceBytes": 12320416,
+    "runtimeBytes": 1954020,
+    "meshes": 11
+  },
+  {
+    "name": "lotto-game-kiosk",
+    "sourceBytes": 3904200,
+    "runtimeBytes": 505148,
+    "meshes": 5
+  }
+]

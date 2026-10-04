@@ -1,6 +1,8 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {trafficAt,CUT_TRAFFIC,TRAFFIC_RUNOUT} from './world.ts';
+import {trafficAt,CUT_TRAFFIC,TRAFFIC_RUNOUT,DetroitWorld,cutPoint,heightAt} from './world.ts';
+import {trafficPoint} from './trafficRoute.ts';
+import {roadAt} from './geography.ts';
 
 test('pedestrians, bikes, scooters and skaters travel continuously in their original direction',()=>{
   const kinds=new Set<string>();
@@ -39,4 +41,29 @@ test('cones and barriers remain static over a long session',()=>{
     const a=trafficAt(id,0);if(a.speed)continue;
     for(const time of [30,120,1200,7200])assert.deepEqual(trafficAt(id,time),a);
   }
+});
+
+test('the southern traffic exit stays on the dry mapped Riverwalk',()=>{
+  for(let d=-TRAFFIC_RUNOUT;d< -8;d+=2){
+    const center=trafficPoint(d,0);
+    assert.equal(roadAt(center.x,center.z)?.name,'Detroit Riverwalk',`exit station ${d}`);
+    for(const lane of [-1.65,0,1.65]){const p=trafficPoint(d,lane);assert.ok(heightAt(p.x,p.z)>-.2,`water at exit ${d}, lane ${lane}`);}
+  }
+});
+
+test('a ten-minute mapped traffic session does not pile up at the waterfront entrance',async()=>{
+  const map=await new DetroitWorld().init(),player=cutPoint(0,14),blocked=new Map<number,number>();
+  try{
+    for(let tick=0;tick<=2400;tick++){
+      map.updateTraffic(tick/4,player.x,player.z);map.step();
+      const present=new Set<number>();
+      for(const actor of map.traffic){
+        if(actor.direction===0||actor.routeDistance!>100||actor.routeDistance!< -175)continue;
+        present.add(actor.id);const seconds=actor.speed<.05?(blocked.get(actor.id)??0)+.25:0;
+        blocked.set(actor.id,seconds);
+        assert.ok(seconds<20,`actor ${actor.id} queued at ${actor.routeDistance} for ${seconds}s`);
+      }
+      for(const id of blocked.keys())if(!present.has(id))blocked.delete(id);
+    }
+  }finally{map.physics.free();}
 });

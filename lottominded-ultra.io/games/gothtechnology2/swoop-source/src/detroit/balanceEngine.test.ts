@@ -14,14 +14,28 @@ test('the rider shifts weight and banks before reaching the steady turning arc',
   assert.ok(achievedLateral<bankLateral,'yaw should follow the lean during turn-in');
 });
 test('high-speed steering stays within the tyre grip and the bank limit',()=>{
-  for(const speed of [6,12,21.8])for(const grip of [.14,.6,.9]){
+  for(const speed of [6,12,21.8])for(const grip of [.14,.6,.9])for(const eyeControl of [false,true]){
     const b=new BalanceEngine();
     for(let i=0;i<720;i++){
-      const p=b.step(dt,{...command,speed,grip,steer:i<360?1:-1});
+      const p=b.step(dt,{...command,speed,grip,eyeControl,steer:i<360?1:-1});
       assert.ok(Math.abs(p.lateralAcceleration)<=tune.gravity*grip+1e-6);
       assert.ok(Math.abs(p.bank)<=tune.maxLean+1e-6);
     }
   }
+});
+
+test('eye-mode carves respond to partial stick and reverse sooner without stronger full lock',()=>{
+  const reverse=(eyeControl:boolean)=>{
+    const b=new BalanceEngine(),input={...command,speed:6,steer:-.5,eyeControl};
+    for(let i=0;i<120;i++)b.step(dt,input);
+    for(let i=1;i<=120;i++)if(b.step(dt,{...input,steer:.5}).yawRate<0)return i*dt;
+    return Infinity;
+  };
+  assert.ok(reverse(true)+.04<reverse(false));
+  const turn=(steer:number,eyeControl:boolean)=>{const b=new BalanceEngine();let p;for(let i=0;i<240;i++)p=b.step(dt,{...command,speed:6,steer,eyeControl});return Math.abs(p!.yawRate);};
+  assert.ok(turn(.5,true)>turn(.5,false)*1.25);
+  assert.ok(Math.abs(turn(1,true)-turn(1,false))<.001);
+  assert.equal(turn(.03,true),0);
 });
 test('release returns the wheel upright without a lingering yaw or pose offset',()=>{
   const b=new BalanceEngine();for(let i=0;i<240;i++)b.step(dt,command);

@@ -2,8 +2,15 @@ import type {TerrainChunk} from './world.ts';
 import {nearestCut,CUT_METRES} from './geography.ts';
 import {profileLevel} from './geo-profile.ts';
 
+/** Distinct overlay heights keep a parallel walk from fighting the road depth.
+ * The same triangles are registered for riding, so the curb-free seam is tiny. */
+export const streetSurfaceLift=(road:{kind:string})=>['footway','pedestrian'].includes(road.kind)?.06:['cycleway','path'].includes(road.kind)?.055:.035;
+
 export function streetElevation(road:{kind:string;bridge?:boolean},x:number,z:number,terrain:number){
   const c=nearestCut(x,z),walk=['cycleway','footway','path','pedestrian'].includes(road.kind);
+  // Mapped waterfront walks and bridges keep a dry support surface above the
+  // basin cutout. The marina area includes some edge paths as well as water.
+  if(walk&&x<30&&z<-1000&&terrain<0)return 0;
   return c.d>280&&c.d<=CUT_METRES&&Math.abs(c.u)<35&&(!walk||road.bridge)?profileLevel(c.d,'street'):terrain;
 }
 

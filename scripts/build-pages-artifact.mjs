@@ -1,5 +1,6 @@
 import {optimizePagesImages} from './optimize-pages-images.mjs';
 import {shareRideTextures} from './share-ride-textures.mjs';
+import {compressRideModels} from './compress-ride-models.mjs';
 import { execFileSync } from "node:child_process";
 import { copyFile, mkdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { basename, dirname, extname, relative, resolve, sep } from "node:path";
@@ -214,7 +215,8 @@ const sharedStoreBuild = await shareShadowOpsAssets(storeBuild, outputRoot);
 const copiedBytes = publicBytes + await copyGothtechnologyBuild(sharedStoreBuild, outputRoot);
 const rideTextureSharing = await shareRideTextures(outputRoot);
 const imageOptimization = await optimizePagesImages(outputRoot);
-const totalBytes = copiedBytes - rideTextureSharing.saved - imageOptimization.saved;
+const rideModelCompression = await compressRideModels(outputRoot);
+const totalBytes = copiedBytes - rideTextureSharing.saved - imageOptimization.saved - rideModelCompression.saved;
 
 for (const route of requiredRoutes) {
   const routeStats = await stat(outputPathFor(route)).catch(() => null);
@@ -243,6 +245,7 @@ const manifest = {
   omittedMediaMebibytes: Number((artifactPlan.omittedBytes / 1024 / 1024).toFixed(1)),
   imageOptimization,
   rideTextureSharing,
+  rideModelCompression,
   bytes: totalBytes,
   mebibytes: Number((totalBytes / 1024 / 1024).toFixed(1)),
   maxMebibytes: Number((maxBytes / 1024 / 1024).toFixed(1)),

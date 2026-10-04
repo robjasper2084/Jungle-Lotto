@@ -1,0 +1,42 @@
+[
+  {
+    "file": "gothtech-arrival-15.mp4",
+    "encoder": "NVIDIA h264_nvenc",
+    "old_bytes": 3595564,
+    "new_bytes": 4284594,
+    "ssim": 0.991392,
+    "used": false
+  },
+  {
+    "file": "swoop-intro-15.mp4",
+    "encoder": "NVIDIA h264_nvenc",
+    "old_bytes": 4317022,
+    "new_bytes": 4499321,
+    "ssim": 0.990514,
+    "used": false
+  },
+  {
+    "file": "swoop-intro-30.mp4",
+    "encoder": "NVIDIA h264_nvenc",
+    "old_bytes": 9709410,
+    "new_bytes": 9302063,
+    "ssim": 0.990112,
+    "used": true
+  },
+  {
+    "file": "swoop-seedance-intro-15.mp4",
+    "encoder": "NVIDIA h264_nvenc",
+    "old_bytes": 10331733,
+    "new_bytes": 4764626,
+    "ssim": 0.980551,
+    "used": true
+  },
+  {
+    "file": "swoop-seedance-intro-30.mp4",
+    "encoder": "NVIDIA h264_nvenc",
+    "old_bytes": 23731042,
+    "new_bytes": 9709944,
+    "ssim": 0.981027,
+    "used": true
+  }
+]

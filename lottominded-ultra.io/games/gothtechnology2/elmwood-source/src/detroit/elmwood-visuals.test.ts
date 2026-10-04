@@ -6,8 +6,8 @@ import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {ElmwoodWalkerView,walkingFoot} from './elmwood-walker-view.ts';
 import {resolveQuality,QUALITY_PRESETS} from './elmwood-quality.ts';
 import {SWOOP_RIDERS,createRideCoreRiders} from './ridecore-riders.ts';
-test('graphics respects an explicit choice and uses a conservative automatic setting',()=>{
- assert.equal(resolveQuality('auto',4,4),'low');assert.equal(resolveQuality('auto',16,16),'balanced');assert.equal(resolveQuality('high',2,2),'high');assert.ok(QUALITY_PRESETS.low.pixelRatio<QUALITY_PRESETS.high.pixelRatio);assert.equal(QUALITY_PRESETS.low.shadows,0);
+test('graphics respects an explicit choice and uses HD for capable hardware',()=>{
+ assert.equal(resolveQuality('auto',4,4),'low');assert.equal(resolveQuality('auto',16,16),'high');assert.equal(resolveQuality('high',2,2),'high');assert.ok(QUALITY_PRESETS.low.pixelRatio<QUALITY_PRESETS.high.pixelRatio);assert.equal(QUALITY_PRESETS.low.shadows,0);
 });
 const loader=new GLTFLoader();loader.register(()=>({name:'headless',loadTexture:()=>Promise.resolve(new T.Texture())}));
 async function asset(path:string){const b=await fs.readFile(new URL('../../public/'+path,import.meta.url));return loader.parseAsync(b.buffer.slice(b.byteOffset,b.byteOffset+b.byteLength),'');}

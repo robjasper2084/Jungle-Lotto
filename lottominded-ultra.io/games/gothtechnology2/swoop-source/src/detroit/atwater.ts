@@ -1,5 +1,5 @@
 import * as T from 'three';
-import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import {GLTFLoader} from './compressedGLTFLoader.ts';
 /** Existing city projection, in metres. Keep the skyline at its geographic anchor. */
 export function cityPoint(lat:number,lon:number){const e=(lon+83.0399)*111320*Math.cos(42.3283*Math.PI/180),n=(lat-42.3283)*111320;return{x:-.5*e+.8660254*n,z:-.8660254*e-.5*n};}
 export async function buildAtwaterSkyline(scene:T.Scene){

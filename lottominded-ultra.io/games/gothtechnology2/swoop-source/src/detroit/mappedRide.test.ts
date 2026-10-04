@@ -6,6 +6,8 @@ import {toLocal,toMap,GEO} from './geo-profile.ts';
 import {RideController,NEUTRAL_ACTIONS} from './controller.ts';
 import {createGroundSample} from './terrain.ts';
 import {nextCheckpoint,GATES} from './progress.ts';
+import {DogFollower} from './companion.ts';
+import {LandmarkMission} from './landmarkMission.ts';
 const mapWorld=await new DetroitWorld().init(),world=new GeoTerrain(mapWorld),g=createGroundSample(),dt=1/120;
 function local(d:number,u=0){const p=cutPoint(d,u);return {...toLocal(p.x,heightAt(p.x,p.z),p.z),heading:-p.heading};}
 function rider(d=150,u=0){const p=local(d,u);return new RideController(world,{spawn:{position:p,headingY:p.heading}});}
@@ -31,6 +33,16 @@ test('whole mapped Cut is traversable by Motion 4 at cruising speed',t=>{
   s.step(dt,{...NEUTRAL_ACTIONS,throttle:clamp((6.5-a.speed)*.45,-.25,.55),steer:clamp(-error*2.5,-1,1)});if(s.crashed)break;
  }
  const a=s.snapshot();assert.equal(a.crashed,false,JSON.stringify({station,cause:a.crashCause,maxLateral}));assert.ok(station>CUT_LENGTH-45,`stopped at ${station}`);assert.ok(maxLateral<1,`lateral drift ${maxLateral}`);t.diagnostic(`${a.distanceTravelled.toFixed(1)} m, ${count/120} s, maximum centerline drift ${maxLateral.toFixed(3)} m`);
+});
+
+test('landmark mission completes six real terrain crossings with the recalled dog following',t=>{
+ const s=rider(30),dog=new DogFollower(world),mission=new LandmarkMission();dog.reset(s.pose);dog.order('sit');
+ function observe(){const p=toMap(s.pose.x,s.pose.y,s.pose.z),c=cutCoords(p.x,p.z);mission.step(dt,{station:c.d,offset:c.u,speed:s.pose.speed,crashed:s.crashed,dogDistance:Math.hypot(dog.current.x-s.pose.x,dog.current.z-s.pose.z),dogCommand:dog.command,sit:dog.sit});return c;}
+ for(let i=0;i<240;i++){dog.step(dt,s.pose);observe();}assert.equal(mission.phase,'come');dog.order('come');
+ for(let i=0;i<240;i++){dog.step(dt,s.pose);observe();}assert.equal(mission.phase,'ride');
+ let count=0,maxGap=0;
+ while(mission.phase!=='complete'&&count++<60000){const c=observe(),a=s.snapshot(),target=local(c.d+8),desired=Math.atan2(target.x-a.position.x,target.z-a.position.z),error=Math.atan2(Math.sin(desired-a.headingY),Math.cos(desired-a.headingY));s.step(dt,{...NEUTRAL_ACTIONS,throttle:clamp((6.5-a.speed)*.45,-.25,.55),steer:clamp(-error*2.5,-1,1)});dog.step(dt,s.pose);maxGap=Math.max(maxGap,Math.hypot(dog.current.x-s.pose.x,dog.current.z-s.pose.z));if(s.crashed)break;}
+ assert.equal(s.crashed,false);assert.equal(mission.phase,'complete',`stopped at ${observe().d}, gate ${mission.gate}`);assert.equal(mission.gate,6);assert.ok(maxGap<8,`dog stuck or lost: ${maxGap} m`);t.diagnostic(`${s.snapshot().distanceTravelled.toFixed(1)} m across all six markers, max companion gap ${maxGap.toFixed(2)} m`);
 });
 test('all three access ramp centreline segments support actual Motion 4 riding uphill',()=>{
  for(const r of GEO.ramps)for(let i=1;i<r.points.length;i++){

@@ -1,0 +1,11 @@
+{
+  "backend": "NVIDIA OptiX",
+  "devices": [
+    "NVIDIA GeForce RTX 3080"
+  ],
+  "ao_resolution": 1024,
+  "samples": 32,
+  "bake_seconds": 30.99,
+  "glb_bytes": 3343372,
+  "bones": 24
+}

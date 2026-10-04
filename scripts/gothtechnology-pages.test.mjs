@@ -2,6 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { shareModelTextures, shareRideTextures } from './share-ride-textures.mjs';
+import {compressRideModel} from './compress-ride-models.mjs';
+import {createRequire} from 'node:module';
 import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { basename, dirname, join, resolve } from 'node:path';
@@ -60,11 +62,58 @@ test('Pages shares identical ride textures and preserves mesh bytes and model-re
   assert.deepEqual(await readFile(join(root, canonical)), texture);
 });
 
+test('ride sharing stores repeated embedded textures once without changing pixels', async t => {
+  const root = await fixture(t), texture = Buffer.alloc(4096, 71);
+  const base = 'lottominded-ultra.io/games/gothtechnology2/arcade/swoop-detroit/exports/glb/';
+  const input = texturedModel(texture);
+  await write(root, base + 'first.glb', input);
+  await write(root, base + 'second.glb', input);
+  const result = await shareRideTextures(root);
+  let total = 0, sharedPath;
+  for (const name of ['first.glb', 'second.glb']) {
+    const path = join(root, base, name), output = await readFile(path);
+    total += output.length;
+    const n = output.readUInt32LE(12), gltf = JSON.parse(output.toString('utf8', 20, 20 + n));
+    const imagePath = resolve(dirname(path), gltf.images[0].uri);
+    assert.deepEqual(await readFile(imagePath), texture);
+    if (sharedPath) assert.equal(imagePath, sharedPath);
+    sharedPath = imagePath;
+  }
+  assert.equal(result.models, 2);
+  assert.equal(result.saved, input.length * 2 - total - texture.length);
+  assert.ok(result.saved > 0);
+});
+
 test('Ride sharing leaves unmatched textures intact', () => {
   const texture = Buffer.alloc(1024, 71), input = texturedModel(texture);
   assert.equal(shareModelTextures(input, '/game/dog.glb', new Map()), input);
   const hash = createHash('sha256').update(texture).digest('hex');
   assert.equal(shareModelTextures(input, '/game/dog.glb', new Map([[hash, { path: '/other.jpg', mime: 'image/jpeg' }]])), input);
+});
+
+test('ride compression preserves exact accessor bytes, index order, image payload and metadata',async()=>{
+ const require=createRequire(new URL('../lottominded-ultra.io/games/gothtechnology2/package.json',import.meta.url));
+ const {MeshoptDecoder}=require('meshoptimizer');await MeshoptDecoder.ready;
+ const texture=Buffer.alloc(4096,71),input=texturedModel(texture);
+ // Enlarge the geometry buffer enough for actual attribute compression.
+ const n=input.readUInt32LE(12),gltf=JSON.parse(input.toString('utf8',20,20+n));
+ const geometry=Buffer.alloc(12288);for(let i=0;i<1024;i++){geometry.writeFloatLE(i%16,i*12);geometry.writeFloatLE(0,i*12+4);geometry.writeFloatLE(Math.floor(i/16),i*12+8);}
+ gltf.buffers[0].byteLength=texture.length+geometry.length;
+ gltf.bufferViews[1].byteLength=geometry.length;gltf.bufferViews[1].target=34962;
+ gltf.accessors[0]={bufferView:1,componentType:5126,count:1024,type:'VEC3'};
+ gltf.extras={identity:'keep-me'};
+ const json=Buffer.from(JSON.stringify(gltf)),pad=Buffer.alloc(Math.ceil(json.length/4)*4,32);json.copy(pad);
+ const full=Buffer.alloc(28+pad.length+texture.length+geometry.length);
+ [0x46546c67,2,full.length,pad.length,0x4e4f534a].forEach((v,i)=>full.writeUInt32LE(v,i*4));pad.copy(full,20);
+ full.writeUInt32LE(texture.length+geometry.length,20+pad.length);full.writeUInt32LE(0x004e4942,24+pad.length);texture.copy(full,28+pad.length);geometry.copy(full,28+pad.length+texture.length);
+ const output=await compressRideModel(full);assert.ok(output.length<full.length);
+ const size=output.readUInt32LE(12),result=JSON.parse(output.toString('utf8',20,20+size)),binary=output.subarray(28+size);
+ assert.deepEqual(result.accessors,gltf.accessors);assert.deepEqual(result.images,gltf.images);assert.deepEqual(result.extras,gltf.extras);
+ const image=result.bufferViews[0];assert.deepEqual(binary.subarray(image.byteOffset,image.byteOffset+image.byteLength),texture);
+ const ext=result.bufferViews[1].extensions.EXT_meshopt_compression,decoded=new Uint8Array(geometry.length);
+ MeshoptDecoder.decodeGltfBuffer(decoded,ext.count,ext.byteStride,binary.subarray(ext.byteOffset,ext.byteOffset+ext.byteLength),ext.mode,ext.filter);
+ assert.deepEqual(Buffer.from(decoded),geometry);
+ assert.ok(result.extensionsRequired.includes('EXT_meshopt_compression'));
 });
 
 test('Pages assembly fails before publishing an absent or partial store build', async t => {

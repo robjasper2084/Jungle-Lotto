@@ -1,0 +1,37 @@
+{
+  "model": "seedance_2_5",
+  "job": "3cc61bcc-9f5a-4f37-b808-41e91f53ecd9",
+  "referenceJob": "8ec69595-706f-44b2-a5e3-c93f40d298df",
+  "referenceSHA256": "1652ccb12c1c742d12842d77194c5cab712e2e22d3d77bce02fbb643ca953596",
+  "approvedCredits": 360,
+  "source": "seedance-original-30.mp4",
+  "generatedAudio": true,
+  "resolution": [
+    1920,
+    1080
+  ],
+  "fps": 24,
+  "edits": [
+    {
+      "file": "swoop-seedance-intro-30.mp4",
+      "duration": 30,
+      "sourceRange": [
+        0,
+        30
+      ]
+    },
+    {
+      "file": "swoop-seedance-intro-15.mp4",
+      "duration": 15,
+      "starts": [
+        0,
+        10,
+        25
+      ],
+      "shotDuration": 5,
+      "dissolves": 0.3
+    }
+  ],
+  "gameplayFootage": false,
+  "arrivalPreserved": "gothtech-arrival-15.mp4"
+}
