@@ -39,3 +39,9 @@ Local Chrome Explorer rendering still measured approximately 27-30 FPS in an act
 Next runnable task: use the released Explorer performance readout and per-stage canvas measurements on a repeatable entrance-bend route, with one game tab and fixed quality/resolution; compare active movement and render p95. Repeat Swoop's route at the same settings, then check browser phone-size controls. Hosted LOVE TAG server verification remains a separate existing release limitation.
 
 Publication state and exact source/generated revisions will be recorded after the scoped build and GitHub deployment complete.
+
+## Isolated release build
+
+Packaged against source revision `0c62d1acee42644d5066c1f93526ba1dc929f3d8` after merging production `8d89e4e55dcaa71ba2e0d0b737cdad976b40c5d5`. Shared RideCore was compiled from the versioned release source. Both release source type checks passed; Swoop selected tests passed 33/33 and Explorer passed 21/21. The Explorer audit-output directory was created before the retry (the first run failed only while writing its report to a missing directory). Existing production map, model, audio and texture bytes were retained.
+
+Generated entries: Swoop `detroit-CQx51PY5.js` with `main-DE-rcfwk.js`; Explorer `elmwood-D9eW2LaB.js`. Public deployment verification is pending.
