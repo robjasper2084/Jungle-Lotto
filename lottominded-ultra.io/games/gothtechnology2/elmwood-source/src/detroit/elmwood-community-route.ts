@@ -37,5 +37,5 @@ export function elmwoodCommunityRoute(features:readonly Feature[]){
   for(let j=0;j<=8;j++){const t=j/8,u=1-t;rounded.push({x:u*u*start.x+2*u*t*p.x+t*t*end.x,z:u*u*start.z+2*u*t*p.z+t*t*end.z,width:angle>.6?3.4:4});}
  }
  rounded.push(points.at(-1)!);
- return new LaneRoute(rounded);
+ return new LaneRoute(rounded,true);
 }

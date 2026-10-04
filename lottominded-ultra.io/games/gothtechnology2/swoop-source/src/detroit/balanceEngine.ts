@@ -1,17 +1,19 @@
 import {gentleSteering} from '@digital-static/ridecore';
-import {RIDE_TUNING as tune,advanceSpring,clamp,damp,spring} from './rideDynamics.ts';
+import {RIDE_TUNING as tune,advanceSpring,clamp,damp,spring,type RideTuning} from './rideDynamics.ts';
 
 export type BalanceInput={steer:number;speed:number;grounded:boolean;crouch:boolean;grip:number;precision?:boolean;eyeControl?:boolean};
 /** Original EUC balance model. Steering shifts weight; the bank then bends the
  * contact trajectory. At walking pace a blended body pivot keeps tight turns usable.
  * No reference-game code or constants are used here. Units: metres, seconds, radians. */
 export class BalanceEngine {
+  constructor(private tuning:RideTuning=tune){}
   private input=spring();
   private bank=spring();
   private yaw=0;
   private load=0;
 
   step(dt:number,a:BalanceInput){
+    const tune=this.tuning;
     const speed=Math.abs(a.speed),direction=a.speed<-.05?-1:1;
     const raw=Number.isFinite(a.steer)?clamp(a.steer,-1,1):0;
     // Gentle around stick centre, but keyboard/full stick still reaches full lock.

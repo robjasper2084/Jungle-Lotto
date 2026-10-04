@@ -19,20 +19,21 @@ test('Elmwood group completes the real Creek Lane corridor without an off-road s
  const state=JSON.stringify(ride.riders);ride.step(1,{...route.at(149),y:0,speed:0});assert.equal(JSON.stringify(ride.riders),state);map.physics.free();
 });
 
-test('Elmwood cyclists set off automatically and complete a connected tour of every side of the grounds',async t=>{
+test('Elmwood cyclists set off automatically and ride repeated laps on a connected tour of every side of the grounds',async t=>{
  const [grid,site,placements]=await Promise.all(['terrain.json','site.json','placements.json'].map(read));const map=new ElmwoodTerrain(grid,site.features,placements);await map.init();t.after(()=>map.physics.free());
  const route=elmwoodCommunityRoute(map.features),ride=new CommunityRide(route,rideCoreTerrain(map),COMMUNITY_PACE,4);ride.autoStart=true;
  assert.ok(route.length>1800);assert.ok(Math.min(...route.points.map(p=>p.x))<-400);assert.ok(Math.max(...route.points.map(p=>p.x))>140);assert.ok(Math.min(...route.points.map(p=>p.z))<-880);
- let furthest=0,minimum=Infinity,stalled=0;
- for(let i=0;i<1200*60&&ride.stage!=='complete';i++){
-  ride.step(1/60,{x:10000,y:0,z:10000,speed:0});
+ assert.equal(route.loop,true);let furthest=0,minimum=Infinity,stalled=0,maxStep=0,seamStep=0;
+ for(let i=0;i<1800*20&&ride.laps<3;i++){
+  const before=ride.riders.map(r=>({x:r.x,z:r.z,s:r.s}));ride.step(1/20,{x:10000,y:0,z:10000,speed:0});
+  ride.riders.forEach((r,i)=>{const distance=Math.hypot(r.x-before[i].x,r.z-before[i].z);maxStep=Math.max(maxStep,distance);if(Math.floor(r.s/route.length)!==Math.floor(before[i].s/route.length))seamStep=Math.max(seamStep,distance);});
   stalled=ride.stage==='riding'&&ride.riders.every(r=>r.speed<.01)?stalled+1:0;
-  assert.ok(stalled<10*60,'tour cannot remain stuck: '+JSON.stringify(ride.riders));
-  if(i===12*60)assert.ok(ride.riders.every(r=>r.s>20),'every cyclist leaves the gathering: '+JSON.stringify(ride.riders));
+  assert.ok(stalled<10*20,'tour cannot remain stuck: '+JSON.stringify(ride.riders));
+  if(i===12*20)assert.ok(ride.riders.every(r=>r.s>20),'every cyclist leaves the gathering: '+JSON.stringify(ride.riders));
   for(const r of ride.riders){const g=map.sampleGround(r.x,r.z,createGroundSample());assert.equal(g.offCourse,false);assert.notEqual(g.surface,'grass','tour stays on lanes');furthest=Math.max(furthest,r.s);}
   for(let j=1;j<4;j++)for(let k=0;k<j;k++)minimum=Math.min(minimum,Math.hypot(ride.riders[j].x-ride.riders[k].x,ride.riders[j].z-ride.riders[k].z));
  }
- assert.equal(ride.stage,'complete',JSON.stringify({length:route.length,furthest,riders:ride.riders}));assert.ok(ride.riders.every(r=>r.s>route.length-15),JSON.stringify(ride.riders));assert.ok(minimum>1.24,String(minimum));
- t.diagnostic(JSON.stringify({metres:route.length,seconds:ride.elapsed,separation:minimum}));
+ assert.equal(ride.stage,'riding',JSON.stringify({length:route.length,furthest,riders:ride.riders}));assert.equal(ride.laps,3);assert.equal(ride.completed,false);assert.ok(ride.riders.every(r=>!r.parked&&r.speed>1),JSON.stringify(ride.riders));assert.ok(maxStep<1.25,'bounded movement: '+maxStep);assert.ok(seamStep<.6,'continuous lap boundary: '+seamStep);assert.ok(minimum>1.24,String(minimum));
+ t.diagnostic(JSON.stringify({metres:route.length,seconds:ride.elapsed,separation:minimum,laps:ride.laps,maxStep,seamStep}));
 });
 

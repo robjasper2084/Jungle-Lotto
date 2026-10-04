@@ -1,3 +1,4 @@
+import {SpatialAssetStream,type StreamPoint} from './spatialAssetStream.ts';
 import {signSupports} from './signSupports.ts';
 import {terrainVisualSurface} from './parkPaths.ts';
 import {buildAtwaterSkyline} from './atwater.ts';
@@ -31,7 +32,8 @@ import {loadEnvironmentMaterials,surfaceUV} from './environmentMaterials.ts';
 import {makeTreeBatch,wind} from './trees.ts';
 import {roadwayClearance} from './roadsidePlacement.ts';
 import type {TreeSite} from './trees.ts';
-export async function buildScenery(scene:T.Scene,world:DetroitWorld,polish=true){
+export async function buildScenery(scene:T.Scene,world:DetroitWorld,polish=true,start?:StreamPoint){
+  const stream=new SpatialAssetStream(2);
   const loader=new GLTFLoader(),tl=new T.TextureLoader();
   const names=['asphalt','grass','brick','concrete','limestone','mural_heron','mural_detroit','mural_music'];
   const mats:Record<string,T.MeshStandardMaterial>={};
@@ -125,7 +127,7 @@ export async function buildScenery(scene:T.Scene,world:DetroitWorld,polish=true)
       const mesh=new T.Mesh(new T.IcosahedronGeometry(1,1),mats.limestone);mesh.scale.set(s.hx,s.hy,s.hz);mesh.position.set(s.x,s.y,s.z);mesh.rotation.y=s.yaw??0;mesh.castShadow=mesh.receiveShadow=true;g.add(mesh);
     }
   }
-  const container=await loader.loadAsync('/exports/cut/DS_Cut_Freight_Container_01.glb');
+  const freightCenters=Array.from({length:9},(_,i)=>cutPoint(2045+Math.floor(i/3)*9,-16-(i%3)*8));
   for(let d=30;d<CUT_METRES;d+=8){
     const p=cutPoint(d),g=groupAt(p.x,p.z),y=heightAt(p.x,p.z);
     box(g,p.x,y+.049,p.z,.085,.006,3,gold,pointOnCut(d).heading-Math.PI);
@@ -163,12 +165,10 @@ export async function buildScenery(scene:T.Scene,world:DetroitWorld,polish=true)
     }
   }
   for(const r of GEO.ramps)postSign(r.name,r.at);
-  for(let i=0;i<9;i++){
-    const d=2045+Math.floor(i/3)*9,p=cutPoint(d,-16-(i%3)*8),g=groupAt(p.x,p.z),o=container.scene.clone(true),y=heightAt(p.x,p.z);o.position.set(p.x,y,p.z);o.rotation.y=p.heading;g.add(o);
-    world.addBox({x:p.x,y:y+1.3,z:p.z,hx:3,hy:1.3,hz:2,kind:'container',yaw:p.heading});
-  }
+  for(const p of freightCenters){const y=heightAt(p.x,p.z);world.addBox({x:p.x,y:y+1.3,z:p.z,hx:3,hy:1.3,hz:2,kind:'container',yaw:p.heading});}
+  stream.add({id:'freight-yard',centers:freightCenters,async load(){const container=await loader.loadAsync('/exports/cut/DS_Cut_Freight_Container_01.glb');for(const p of freightCenters){const o=container.scene.clone(true);o.position.set(p.x,heightAt(p.x,p.z),p.z);o.rotation.y=p.heading;groupAt(p.x,p.z).add(o);}}});
   const wp=cutPoint(2052,-10),wg=groupAt(wp.x,wp.z);label(wg,'EASTERN MARKET / FREIGHT YARD',wp.x,heightAt(wp.x,wp.z)+3,wp.z,7,.8,wp.heading-Math.PI);for(const post of signSupports(wp.x,wp.z,wp.heading-Math.PI,7,heightAt(wp.x,wp.z)+3.2,heightAt))box(wg,post.x,post.y,post.z,.10,post.height,.10,steel);
-  const architecture=await buildCity(scene,world,groupAt,skins);
+  const architecture=await buildCity(scene,world,groupAt,skins,stream);
   const streetFurniture=await buildStreetFurniture(scene,world,groupAt);
   await buildAtwaterSkyline(scene);
   await buildMillikenLandmarks(scene,world);
@@ -179,18 +179,18 @@ export async function buildScenery(scene:T.Scene,world:DetroitWorld,polish=true)
   const landmarks=buildCutLandmarks(world,groupAt,label);
   const flowers=buildCutFlowers(scene,world);
   if(polish)polishSection(groupAt,mats.asphalt);
-  const routeArt=polish?await buildRouteArt(world,groupAt):{billboards:0,murals:0};
+  let routeArt:Awaited<ReturnType<typeof buildRouteArt>>|{billboards:number;murals:number}={billboards:0,murals:0};if(polish)stream.add({id:'route-art',centers:[1080,1600,1900,2425].map(d=>cutPoint(d)),async load(){routeArt=await buildRouteArt(world,groupAt);world.step();}});
   if(polish)buildTrailPaint(groupAt);
-  const cutMurals=polish?await buildCutMurals(world,groupAt):{walls:0,ceilings:0};
+  let cutMurals={walls:0,ceilings:0};if(polish)stream.add({id:'cut-murals',centers:GEO.bridges.map(b=>cutPoint(b.at)),async load(){cutMurals=await buildCutMurals(world,groupAt);}});
   // Consolidate static geometry by material inside each streamable tile.
   for(const g of groups)batchStaticGroup(g);
   const grass=polish?await buildGrassField(scene,world,mats.grass):undefined;
-  world.step();
+  if(start)await stream.warm([start],120);world.step();
   const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)'),mobile=matchMedia('(max-width:700px)');
   const trees=treeBatches.reduce((n,b)=>n+b.count,0);
   const allLighting={count:lighting.count+streetFurniture.count,setDusk(value:boolean){lighting.setDusk(value);streetFurniture.setDusk(value);}};
-  return {lighting:allLighting,streetFurniture:streetFurniture.counts,materials:mats,architecture,waterfront,valade,trees,routeArt:{...routeArt,cutMurals},rails,landmarks,flowers:flowers.count,grassClumps:grass?.count??0,skins:8,update(x:number,z:number,time=0){
-    lighting.update(x,z);
+  return {lighting:allLighting,streetFurniture:streetFurniture.counts,materials:mats,architecture,waterfront,valade,trees,stream,get routeArt(){return {...routeArt,cutMurals};},rails,landmarks,flowers:flowers.count,grassClumps:grass?.count??0,skins:8,update(x:number,z:number,time=0){
+    stream.update([{x,z}],(Number(document.documentElement.dataset.drawDistance)||360)+100);lighting.update(x,z);
     streetFurniture.update(x,z);
     riverfront.update(time);
     treeTime.value=document.documentElement.dataset.renderQuality==='compact'?0:time;

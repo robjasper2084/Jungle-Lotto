@@ -4,7 +4,7 @@ import {profileLevel} from './geo-profile.ts';
 
 /** Distinct overlay heights keep a parallel walk from fighting the road depth.
  * The same triangles are registered for riding, so the curb-free seam is tiny. */
-export const streetSurfaceLift=(road:{kind:string})=>['footway','pedestrian'].includes(road.kind)?.06:['cycleway','path'].includes(road.kind)?.055:.035;
+export const streetSurfaceLift=(road:{kind:string;name?:string})=>road.name==='Dequindre Cut Greenway'?.075:['footway','pedestrian'].includes(road.kind)?.06:['cycleway','path'].includes(road.kind)?.055:.035;
 
 export function streetElevation(road:{kind:string;bridge?:boolean},x:number,z:number,terrain:number){
   const c=nearestCut(x,z),walk=['cycleway','footway','path','pedestrian'].includes(road.kind);
@@ -15,12 +15,29 @@ export function streetElevation(road:{kind:string;bridge?:boolean},x:number,z:nu
 }
 
 type Point={x:number;z:number};
-export type StreetRibbon={a:Point;b:Point;half:number;offset:number;lift:number};
+export type StreetRibbon={a:Point;b:Point;half:number;offset:number;lift:number;maxSpan?:number};
 /** Clip a mapped road onto the actual terrain triangles. This prevents both
  * buried asphalt on coarse terrain and a long street belonging to one distant tile. */
-export function drapeStreet(r:StreetRibbon,chunks:TerrainChunk[],height:(x:number,z:number,terrain:number)=>number){
+export function drapeStreet(r:StreetRibbon,chunks:TerrainChunk[],height:(x:number,z:number,terrain:number)=>number):{chunk:TerrainChunk;positions:number[]}[]{
   const dx=r.b.x-r.a.x,dz=r.b.z-r.a.z,len=Math.hypot(dx,dz);
   if(len<.001)return [];
+  // Curb cuts change height within a metre. Sampling only terrain triangle
+  // corners stretches that ramp over an entire street and makes jagged wedges.
+  if(r.maxSpan&&len>r.maxSpan){
+    const count=Math.ceil(len/r.maxSpan),pieces:ReturnType<typeof drapeStreet>=[],cuts=new Set([0,count]),nx=-dz/len,nz=dx/len;
+    const levels=(t:number)=>[-r.half,r.half].map(side=>height(r.a.x+dx*t+nx*(r.offset+side),r.a.z+dz*t+nz*(r.offset+side),0));
+    let previous=levels(0);
+    for(let i=1;i<=count;i++){
+      const next=levels(i/count),mid=levels((i-.5)/count);
+      if(next.some((v,k)=>Math.abs(v-previous[k])>.003||Math.abs(mid[k]-(v+previous[k])/2)>.003)){cuts.add(i-1);cuts.add(i);}
+      previous=next;
+    }
+    // Keep flat stretches coarse; only ramp transitions need fine tessellation.
+    // This avoids millions of unnecessary sidewalk triangles on weak devices.
+    const stations=[...cuts].sort((a,b)=>a-b);
+    for(let i=1;i<stations.length;i++)pieces.push(...drapeStreet({...r,maxSpan:undefined,a:{x:r.a.x+dx*stations[i-1]/count,z:r.a.z+dz*stations[i-1]/count},b:{x:r.a.x+dx*stations[i]/count,z:r.a.z+dz*stations[i]/count}},chunks,height));
+    return pieces;
+  }
   const nx=-dz/len,nz=dx/len;
   const poly=[
     {x:r.a.x+nx*(r.offset-r.half),z:r.a.z+nz*(r.offset-r.half)},

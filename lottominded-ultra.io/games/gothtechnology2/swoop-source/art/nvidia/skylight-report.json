@@ -1,0 +1,14 @@
+{
+  "tool": "Blender Cycles / NVIDIA OptiX",
+  "gpu": [
+    "NVIDIA GeForce RTX 3080"
+  ],
+  "size": [
+    1024,
+    512
+  ],
+  "samples": 64,
+  "seconds": 3.22,
+  "bytes": 415651,
+  "note": "Original procedural outdoor environment; no photogrammetry or real-world scan claim"
+}

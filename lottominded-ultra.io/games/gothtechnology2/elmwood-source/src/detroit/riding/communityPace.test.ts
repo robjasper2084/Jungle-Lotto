@@ -3,6 +3,20 @@ import assert from 'node:assert/strict';
 import {CommunityRide,LaneRoute} from './communityRide.ts';
 import {createGroundSample,type TerrainSampler,type NavigationObstacle} from '@digital-static/ridecore';
 const flat:TerrainSampler={sampleGround(_x,_z,out){return Object.assign(out,createGroundSample());},raycast:()=>null,raycastObstacle:()=>null};
+test('a narrow-lane crowd jam releases and the group can ride through its player',()=>{
+ const route=new LaneRoute([{x:0,z:0,width:3.4},{x:0,z:400,width:3.4}]),ride=new CommunityRide(route,flat);ride.autoStart=true;
+ const people=[-1.2,0,1.2].map((x,i):NavigationObstacle=>({id:'walker-'+i,x,y:0,z:45,radius:.7,height:1.8,kind:'person',vx:0,vz:0}));
+ for(let i=0;i<45*60;i++)ride.step(1/60,{x:0,y:0,z:70,speed:0},people);
+ assert.ok(ride.riders.every(r=>r.s>110),'all riders pass the crowd and the stationary hero: '+JSON.stringify(ride.riders));
+ assert.ok(ride.riders.every(r=>r.speed>2));
+});
+test('crowd recovery keeps a blocked physical passage solid',()=>{
+ const wall:TerrainSampler={...flat,raycastObstacle:(o,d,max)=>d.z>0&&o.z<40&&o.z+d.z*max>=40?(40-o.z)/d.z:null};
+ const ride=new CommunityRide(new LaneRoute([{x:0,z:0,width:3.4},{x:0,z:200,width:3.4}]),wall);ride.autoStart=true;
+ const person:NavigationObstacle={id:'walker',x:0,y:0,z:39,radius:.7,height:1.8,kind:'person',vx:0,vz:0};
+ for(let i=0;i<30*60;i++)ride.step(1/60,{x:0,y:0,z:100,speed:0},[person]);
+ assert.ok(ride.riders.every(r=>r.z<40),'solid scenery cannot be passed through');
+});
 test('wide paths carry a compact staggered pack at cruising speed without a scripted stop',()=>{
  const ride=new CommunityRide(new LaneRoute([{x:0,z:0,width:5},{x:0,z:500,width:5}]),flat);
  ride.join({x:-1,z:1});ride.continue();let minimum=Infinity,spread=0;
