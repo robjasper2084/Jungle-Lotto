@@ -9,6 +9,7 @@ import {inHarbor} from './harbor.ts';
 import {inWaterfrontPond,polygonContains,WATERFRONT} from './waterfrontSite.ts';
 import {roadwayClearance} from './roadsidePlacement.ts';
 import type {DetroitWorld} from './world.ts';
+import {grassTreeSite} from './treePlacement.ts';
 /** Grounded Blender meshes, instanced in short independently culled trail sections. */
 export async function buildGrassField(scene:T.Scene,world:DetroitWorld,ground:T.MeshStandardMaterial){
  const [asset,albedo,normal]=await Promise.all([
@@ -29,7 +30,7 @@ export async function buildGrassField(scene:T.Scene,world:DetroitWorld,ground:T.
    float tip=smoothstep(0.0,.25,position.y),nearby=1.0-smoothstep(.5,1.7,distance(wp.xz,fieldRider.xz));
    transformed.x+=tip*(sin(fieldTime*1.3+wp.x*.8+wp.z*.5)*.026*(.75+.45*sin(fieldTime*.43))+nearby*.07);
    transformed.z+=tip*cos(fieldTime+wp.x)*.011;
-  `);};material.customProgramCacheKey=()=> 'swoop-field-blades-1';materials.push(material);return {geometry,material};});
+  `);};material.customProgramCacheKey=()=> 'swoop-field-blades-1';materials.push(material);geometry.computeBoundingBox();const b=geometry.boundingBox!;const radius=Math.hypot(Math.max(Math.abs(b.min.x),Math.abs(b.max.x)),Math.max(Math.abs(b.min.z),Math.abs(b.max.z)));return {geometry,material,radius};});
  const chunks:{group:T.Group;x:number;z:number}[]=[],dummy=new T.Object3D();let total=0;
  for(let start=350;start<CUT_METRES;start+=50){
   const positions:{x:number;y:number;z:number;scale:number;rotation:number;type:number}[]=[];
@@ -37,7 +38,9 @@ export async function buildGrassField(scene:T.Scene,world:DetroitWorld,ground:T.
    const seed=d*61+side*7+band*83;if(hash(seed)<.16)continue;
    const u=side*(cutWidth(d)/2+.38+band*.55+hash(seed+9)*.35),p=cutPoint(d+hash(seed+4)*1.1,u);
    if(surfaceAt(p.x,p.z)!=='grass'||nearestRamp(p.x,p.z).distance<2.6||world.solids.some(s=>Math.hypot(p.x-s.x,p.z-s.z)<Math.hypot(s.hx,s.hz)+.4))continue;
-   positions.push({...p,y:heightAt(p.x,p.z)+.005,scale:(band<2?.5:.8)+hash(seed+1)*.6,rotation:hash(seed+2)*Math.PI*2,type:hash(seed+3)<.12?1:hash(seed+5)<.18?2:0});
+   const scale=(band<2?.5:.8)+hash(seed+1)*.6,type=hash(seed+3)<.12?1:hash(seed+5)<.18?2:0;
+   if(!grassTreeSite(p.x,p.z,sources[type].radius*scale+.12))continue;
+   positions.push({...p,y:heightAt(p.x,p.z)+.005,scale,rotation:hash(seed+2)*Math.PI*2,type});
   }
   const group=new T.Group(),centre=cutPoint(start+25);group.name='Swoop botanical grass '+start;
   sources.forEach((source,type)=>{const list=positions.filter(p=>p.type===type);if(!list.length)return;const mesh=new T.InstancedMesh(source.geometry,source.material,list.length);mesh.receiveShadow=true;mesh.castShadow=false;
@@ -53,7 +56,9 @@ export async function buildGrassField(scene:T.Scene,world:DetroitWorld,ground:T.
    const seed=x*71+z*37,px=x+hash(seed)*2,pz=z+hash(seed+9)*2;
    if(!(inMillikenPark(px,pz)&&pz>-1510||inValadePark(px,pz))||inValadeInlet(px,pz)||inValadeBeach(px,pz)||inHarbor(px,pz)||inWaterfrontPond(px,pz)||heightAt(px,pz)<0||roadwayClearance({x:px,z:pz})<.65)continue;
    if(WATERFRONT.buildings.some(b=>polygonContains(b.points,px,pz))||Math.hypot(px-VALADE.play.x,pz-VALADE.play.z)<7||world.solids.some(s=>Math.abs(s.x-px)<s.hx+.5&&Math.abs(s.z-pz)<s.hz+.5))continue;
-   positions.push({x:px,y:heightAt(px,pz)+.008,z:pz,scale:.33+hash(seed+1)*.30,rotation:hash(seed+2)*Math.PI*2,type:hash(seed+3)<.25?2:0});
+   const scale=.33+hash(seed+1)*.30,type=hash(seed+3)<.25?2:0;
+   if(!grassTreeSite(px,pz,sources[type].radius*scale+.12))continue;
+   positions.push({x:px,y:heightAt(px,pz)+.008,z:pz,scale,rotation:hash(seed+2)*Math.PI*2,type});
   }
   if(!positions.length)continue;const group=new T.Group();group.name='Riverfront lawn detail '+c.x+','+c.z;
   sources.forEach((source,type)=>{const list=positions.filter(p=>p.type===type);if(!list.length)return;const mesh=new T.InstancedMesh(source.geometry,source.material,list.length);mesh.receiveShadow=true;

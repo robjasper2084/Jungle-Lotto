@@ -2,8 +2,8 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {drapeStreet,streetVertexNormal,subtractStreetFootprint} from './street-geometry.ts';
 import {streetJoinExclusions} from './streetJunctions.ts';
-import {CITY} from './geography.ts';
-import {heightAt} from './world.ts';
+import {CITY,nearestCut} from './geography.ts';
+import {heightAt,terrainChunks} from './world.ts';
 import type {TerrainChunk} from './world.ts';
 const tile:TerrainChunk={x:50,z:50,vertices:new Float32Array([0,0,0,100,0,0,0,0,100,100,0,100]),indices:new Uint32Array([0,2,1,1,2,3]),surfaces:['grass','grass']};
 const area=(p:{x:number;z:number}[])=>Math.abs(p.reduce((a,v,i)=>{const w=p[(i+1)%p.length];return a+v.x*w.z-v.z*w.x;},0))/2;
@@ -46,4 +46,18 @@ test('coarse asphalt fringe is cleared beside mapped roads across the city',asyn
   assert.equal(terrainVisualSurface(x,z,'pavement'),'grass',name);
   if(name!=='Atwater Street')assert.equal(terrainVisualSurface(x,z,'brick'),'brick','retain brick plazas');
  }
+});
+
+test('long trail sections below Larned and Lafayette retain their full paved area',()=>{
+ const r=CITY.roads.find(r=>r.name==='Dequindre Cut Greenway'&&r.points.length>70)!,chunks=terrainChunks();
+ const triangleArea=(p:number[])=>{let result=0;for(let i=0;i<p.length;i+=9)result+=Math.abs((p[i+3]-p[i])*(p[i+8]-p[i+2])-(p[i+6]-p[i])*(p[i+5]-p[i+2]))/2;return result;};
+ let checked=0;
+ for(let i=1;i<r.points.length;i++){
+  const a=r.points[i-1],b=r.points[i],d=nearestCut((a[0]+b[0])/2,(a[1]+b[1])/2).d;
+  if(d<300||d>1500||Math.hypot(b[0]-a[0],b[1]-a[1])<200)continue;
+  const ribbon={a:{x:a[0],z:a[1]},b:{x:b[0],z:b[1]},half:r.width/2,offset:0,lift:.075,joinA:streetVertexNormal(r.points,i-1),joinB:streetVertexNormal(r.points,i)};
+  const sum=(exclude?:{x:number;z:number}[][])=>drapeStreet({...ribbon,exclude},chunks,(_x,_z,y)=>y).reduce((n,p)=>n+triangleArea(p.positions),0);
+  assert.ok(sum(streetJoinExclusions(r,a,b,7,heightAt))>sum()*.99,`trail at ${Math.round(d)}m loses pavement to a different-height street`);checked++;
+ }
+ assert.ok(checked>=2);
 });

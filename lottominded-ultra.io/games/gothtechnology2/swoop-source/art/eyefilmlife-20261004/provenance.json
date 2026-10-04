@@ -1,0 +1,143 @@
+{
+  "date": "2026-10-04",
+  "credit": "eyefilmlife",
+  "treatment": "Original JPEGs retained byte-for-byte; WebP copies only resized inside native bounds and encoded. No cropping, generated content or credit removal.",
+  "titles": "Descriptive game display labels",
+  "duplicates": [
+    {
+      "file": "518734850_10165513574029167_8086440540624854807_n.jpg",
+      "sameAs": "518734850_10165513574029167_8086440540624854807_n (1).jpg",
+      "sha256": "1d3ff9af001facd70d0e3a725fba4b38ff57eb6d1d0f6c68103ee278de9e31ae"
+    }
+  ],
+  "images": [
+    {
+      "id": "creek-jump",
+      "title": "Creek Jump",
+      "file": "517937947_10165489201474167_1480004435301090690_n.jpg",
+      "width": 604,
+      "height": 453,
+      "sha256": "66585f42d0bb818b59a74c8e7506e3179af7a6d7036f5de3b64a8e7e2964ce28"
+    },
+    {
+      "id": "mother-and-child",
+      "title": "Mother and Child",
+      "file": "518730703_10165496751734167_3091735875024923579_n.jpg",
+      "width": 604,
+      "height": 453,
+      "sha256": "0e836a2300a674be899ca5ba44b8e75cddb57a626710ef57ea294315439ef8be"
+    },
+    {
+      "id": "detroit-sunset",
+      "title": "Detroit Sunset",
+      "file": "517403130_10165511826544167_330077518599757706_n.jpg",
+      "width": 604,
+      "height": 419,
+      "sha256": "19f2c3fc9506198e0217ad734af2c7ef258acee80cb451e8281b7020833c795e"
+    },
+    {
+      "id": "moon-and-branches",
+      "title": "Moon and Branches",
+      "file": "518734850_10165513574029167_8086440540624854807_n (1).jpg",
+      "width": 604,
+      "height": 478,
+      "sha256": "1d3ff9af001facd70d0e3a725fba4b38ff57eb6d1d0f6c68103ee278de9e31ae"
+    },
+    {
+      "id": "full-moon",
+      "title": "Full Moon",
+      "file": "518358427_10165520066874167_5915397115667677762_n.jpg",
+      "width": 604,
+      "height": 496,
+      "sha256": "473265f7287ac7eab7f3cc67a87eccda9814b2e53e8dfd0d1745642e0695907d"
+    },
+    {
+      "id": "winter-companions",
+      "title": "Winter Companions",
+      "file": "518297825_10165485477154167_5849212025415305425_n.jpg",
+      "width": 604,
+      "height": 453,
+      "sha256": "745da8a7fd0d66a6f0ef11fffbc56cf9ba06727808b41410bd0414362c63a097"
+    },
+    {
+      "id": "portrait-under-clouds",
+      "title": "Portrait under Clouds",
+      "file": "468354609_10164195022194167_2279850597944803839_n.jpg",
+      "width": 960,
+      "height": 638,
+      "sha256": "9821d9cad05d27362d65361a1b6c17deee028f660c3fd3bfcf08498bb1abf830"
+    },
+    {
+      "id": "river-watch",
+      "title": "River Watch",
+      "file": "518485934_10165494048259167_1432854961935225825_n.jpg",
+      "width": 604,
+      "height": 453,
+      "sha256": "46666157cd9de3e8971134d5a3b6cb33b6b6fade9e11a143e2d92a022d63d90f"
+    },
+    {
+      "id": "belle-isle-blossoms",
+      "title": "Belle Isle Blossoms",
+      "file": "648900272_10166815619939167_1565099204184370703_n.jpg",
+      "width": 720,
+      "height": 478,
+      "sha256": "702b4e0abd0136cfa4c5805c9b4d8fabd69760d982a867f5c92dea68585603f1"
+    },
+    {
+      "id": "detroit-night-rider",
+      "title": "Detroit Night Rider",
+      "file": "52141152_10158188552059167_6957191693409976320_n.jpg",
+      "width": 1600,
+      "height": 900,
+      "sha256": "4062a06763067ed930847c669a9084e94f0b5aa09fca2380dc53f1f0e69b6616"
+    },
+    {
+      "id": "meadow-portrait",
+      "title": "Meadow Portrait",
+      "file": "468401009_10164195037319167_4596278891794552370_n.jpg",
+      "width": 960,
+      "height": 638,
+      "sha256": "a2110de96096c86be08203747efc5a3d1b2c704c7cc224e207f28447a7e5b821"
+    },
+    {
+      "id": "child-at-the-river",
+      "title": "Child at the River",
+      "file": "519490409_10165531369684167_8308764503394767287_n.jpg",
+      "width": 720,
+      "height": 540,
+      "sha256": "0083cc3c2c9d4277de02787354ea47f58e0f8d62864b766407ae4d641a44b088"
+    },
+    {
+      "id": "detroit-lightning",
+      "title": "Detroit Lightning",
+      "file": "518288805_10165532584654167_3013873112947574041_n.jpg",
+      "width": 597,
+      "height": 447,
+      "sha256": "7e618e07fc52f55bc2b392936c8f88d2c1a835f9e942f1323a4c2b7d76acd2a5"
+    },
+    {
+      "id": "underpass-companion",
+      "title": "Underpass Companion",
+      "file": "518091936_10165525657299167_3562928580297239489_n.jpg",
+      "width": 720,
+      "height": 540,
+      "sha256": "5a1da6317b9d378344529d8043e605ec30bed29616fdb3bce758f8d0399188ac"
+    },
+    {
+      "id": "shoreline-companion",
+      "title": "Shoreline Companion",
+      "file": "518327198_10165518065574167_6014722230956052254_n.jpg",
+      "width": 604,
+      "height": 453,
+      "sha256": "f5a9210f4ecfa42e56a264eb8d9e563454f0f411527f8daa67ff86c5062bd192"
+    },
+    {
+      "id": "elmwood-companion",
+      "title": "Elmwood Companion",
+      "file": "650383280_10166836507209167_4914201967983387915_n.jpg",
+      "width": 720,
+      "height": 478,
+      "sha256": "0e51c7390ac76817cdfc4b473eca6f06cb2119a0e9194298a354018ab0cecaf9"
+    }
+  ]
+}

@@ -18,6 +18,7 @@ for(const dir of ['exports/architecture','exports/cut','textures/architecture','
 for(const id of ['DS_Man_01','DS_EUC_01','DS_Boerboel_01','DS_Pedestrian_01','DS_Cyclist_01','DS_Bicycle_01','DS_Hazard_Cone_01','DS_Hazard_Barrier_01','DS_Hoodie_Man_01','DS_Hoodie_Woman_01','DS_Mascot_Suit_01','DS_Mascot_Hoodie_01'])files.push(`exports/glb/${id}/${id}_LOD${id==='DS_Man_01'?0:1}.glb`);
 // New source-authored riders are not part of the original external asset pack.
 const sourceFiles=[...['talaria','ultra','sr','varg'].map(id=>'exports/electric/Ebike_'+id+'.glb'),...['city','tour','trail','speed'].map(id=>'exports/electric/Euc_'+id+'.glb'),'exports/electric/NOTICE.md','exports/glb/DS_Armored_Rider_01/DS_Armored_Rider_01_LOD1.glb'];
+sourceFiles.push('art/loading-trailer.mp4','art/loading-trailer-poster.webp',...['serengeti','lottomind','penny-auction'].flatMap(id=>['art/entrances/'+id+'.mp4','art/entrances/'+id+'.webp']));
 sourceFiles.push(...await modelDependencies(resolve(source,'public'),sourceFiles));
 for(const file of sourceFiles)await readableTree(resolve(source,'public',file));
 for(const id of ['DS_Segway_01','DS_InlineSkate_01'])files.push(`exports/mobility/${id}.glb`);

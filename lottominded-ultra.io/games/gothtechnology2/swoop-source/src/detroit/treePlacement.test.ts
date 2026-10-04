@@ -6,6 +6,7 @@ import {grassTreeSite,cherryTreeSites} from './treePlacement.ts';
 import {hasStreetCurb} from './streetCurbs.ts';
 import {sidewalkHalfWidth} from './streetFurnitureLayout.ts';
 import {segmentDistance} from './roadsidePlacement.ts';
+import {cutWidth} from './geo-profile.ts';
 
 test('cherry tree at the Atwater Cut entrance moves out of the paved apron into real lawn',()=>{
  const old=pointOnCut(35,-7);assert.equal(grassTreeSite(old.x,old.z,1.1),false);
@@ -20,4 +21,10 @@ test('every relocated cherry trunk clears the full street sidewalk and every par
 test('an entire sidewalk footprint is excluded even when its underlying terrain is lawn',()=>{
  const road=CITY.roads.find(r=>r.name==='Atwater Street'&&r.points.length>2)!,a=road.points[0],b=road.points[1],dx=b[0]-a[0],dz=b[1]-a[1],l=Math.hypot(dx,dz),offset=road.width/2+sidewalkHalfWidth(road);
  assert.equal(grassTreeSite((a[0]+b[0])/2-dz/l*offset,(a[1]+b[1])/2+dx/l*offset),false);
+});
+
+test('scaled vegetation footprints never cross the paved trail edge anywhere along the Cut',()=>{
+ for(let d=350;d<2600;d+=17){
+  for(const side of [-1,1]){const p=pointOnCut(d,side*(cutWidth(d)/2+.2));assert.equal(grassTreeSite(p.x,p.z,.45),false,`clump overlaps paving at ${d}m`);}
+ }
 });

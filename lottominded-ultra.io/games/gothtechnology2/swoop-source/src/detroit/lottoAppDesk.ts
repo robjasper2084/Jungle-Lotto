@@ -11,11 +11,11 @@ export class LottoAppDesk {
  private readonly expandButton=document.createElement('button');
  private readonly loading=document.createElement('p');
  private tools?:LottoComponents;
- private toolsOpen=false;
+ private toolsOpen=false;private entering=false;
  private external=document.createElement('a');
- constructor(private readonly panel:HTMLDetailsElement,private readonly onOpen:()=>void,private readonly onClose:()=>void){
-  this.launch.type='button';this.launch.className='lotto-app-launch';this.launch.textContent='Open LottoMind app here';this.launch.onclick=()=>this.open();
-  this.toolsLaunch.type='button';this.toolsLaunch.className='lotto-app-launch';this.toolsLaunch.textContent='Use LottoMind store tools';this.toolsLaunch.onclick=()=>this.openTools();
+ constructor(private readonly panel:HTMLDetailsElement,private readonly onOpen:()=>void,private readonly onClose:()=>void,private readonly beforeEnter:()=>Promise<void>=async()=>{}){
+  this.launch.type='button';this.launch.className='lotto-app-launch';this.launch.textContent='Open LottoMind app here';this.launch.onclick=()=>{void this.arrive(()=>this.open());};
+  this.toolsLaunch.type='button';this.toolsLaunch.className='lotto-app-launch';this.toolsLaunch.textContent='Use LottoMind store tools';this.toolsLaunch.onclick=()=>{void this.arrive(()=>this.openTools());};
   this.view.className='lotto-app-view';this.view.hidden=true;this.view.setAttribute('aria-label','Live LottoMind app');
   const toolbar=document.createElement('div');toolbar.className='lotto-app-toolbar';
   const toolsButton=document.createElement('button');toolsButton.type='button';toolsButton.textContent='Store tools';toolsButton.onclick=()=>this.openTools();
@@ -26,6 +26,10 @@ export class LottoAppDesk {
   this.loading.textContent='Loading LottoMind…';this.loading.setAttribute('role','status');this.view.append(toolbar,this.loading);
   panel.addEventListener('toggle',()=>{if(!panel.open)this.close(false);});
   panel.addEventListener('keydown',event=>{if(this.active&&event.key==='Escape'){event.preventDefault();this.close();}});
+ }
+ private async arrive(open:()=>void){
+  if(this.entering)return;this.entering=true;this.launch.disabled=this.toolsLaunch.disabled=true;
+  try{await this.beforeEnter();open();}finally{this.entering=false;this.launch.disabled=this.toolsLaunch.disabled=false;}
  }
  get active(){return !!this.frame||this.toolsOpen;}
  private begin(){

@@ -3,6 +3,17 @@ import {WATERFRONT,mappedShorelineAt,inWaterfrontPond,waterfrontBuildings,polygo
 import {CITY,roadAt} from './geography.ts';import {DetroitWorld,SPOTS,heightAt,terrainChunks} from './world.ts';
 import {HARBOR_GANGWAY,DOCK_TOP,harborFixtures} from './harborLayout.ts';
 import {harborTerrainDetail} from './harbor.ts';
+import {ARETHA_ENTRANCE} from './arethaEntrance.ts';
+import {gateDirection} from './waterfrontRails.ts';
+test('Aretha arch follows the mapped venue gate and leaves its path and approach clear',()=>{
+ const e=ARETHA_ENTRANCE,g=WATERFRONT.gates.find(g=>g.id==='6913854882')!,axis=gateDirection(g.point);
+ assert.equal(e.x,g.point[0]);assert.equal(e.z,g.point[1]);assert.ok(Math.hypot(e.x+137,e.z+1770)>100);
+ assert.equal(roadAt(e.x,e.z)?.kind,'path');assert.equal(inWaterfrontPond(e.x,e.z),false);
+ for(const p of [...e.posts,e.approach]){assert.equal(heightAt(p.x,p.z),0);assert.equal(inWaterfrontPond(p.x,p.z),false);assert.ok(p.x>mappedShorelineAt(p.z)!);}
+ for(const p of e.posts){assert.ok(Math.hypot(p.x-e.x,p.z-e.z)>4);assert.ok(Math.abs((p.x-e.x)*axis[1]-(p.z-e.z)*axis[0])<1e-8);}
+ const s=SPOTS.find(s=>s.name==='Chene Park / The Aretha entrance')!;
+ assert.ok(Math.abs(Math.hypot(s.x-e.x,s.z-e.z)-12)<1e-8);assert.ok((e.x-s.x)*Math.sin(s.heading)+(e.z-s.z)*Math.cos(s.heading)>11.99);
+});
 test('Chene park is dry land behind the actual bank; pond outline remains water',()=>{
  assert.ok(mappedShorelineAt(-1625)!< -240);assert.equal(heightAt(-211,-1625),0);
  assert.ok(inWaterfrontPond(-135,-1700));assert.equal(heightAt(-135,-1700),-.7);

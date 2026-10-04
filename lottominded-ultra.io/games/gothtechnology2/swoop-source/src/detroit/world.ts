@@ -1,6 +1,7 @@
 import {inHarbor,harborTerrainDetail} from './harbor.ts';
 import {inValadeInlet,inValadePark,valadeTerrainDetail} from './valadeSite.ts';
 import {HARBOR_GANGWAY} from './harborLayout.ts';
+import {ARETHA_ENTRANCE} from './arethaEntrance.ts';
 import {ARETHA,waterfrontCorridor,waterfrontBuildings,inWaterfrontPond} from './waterfrontSite.ts';
 import {parkContains} from './freestylePark.ts';
 import {MACK_STUDIO,studioGrade,studioLot} from './mackStudioSite.ts';
@@ -61,7 +62,7 @@ export const SPOTS=[
  {name:'Adelaide / Detroit mural',...cutPoint(1864),heading:pointOnCut(1864).heading-Math.PI/2},
  {name:'Atwater / Milliken Harbor docks',x:-95,z:-1385,heading:-Math.PI/2},
  {name:'Milliken Harbor / Riverwalk gate',x:HARBOR_GANGWAY.shore.x+5.89,z:HARBOR_GANGWAY.shore.z-.58,heading:-1.472},
- {name:'Chene Park / The Aretha entrance',x:-136,z:-1753,heading:.10},
+ {name:'Chene Park / The Aretha entrance',...ARETHA_ENTRANCE.approach},
  {name:'The Aretha / riverfront canopy',x:-250,z:-1750,heading:.30},
  {name:'Chene Street / Atwater waterfront',x:-115,z:-1759,heading:Math.PI/2},
  {name:'Robert C. Valade Park / beach and The Shed',x:-131,z:-1799.4,heading:-2.29},

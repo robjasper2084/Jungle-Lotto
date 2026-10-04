@@ -15,8 +15,17 @@ export const CUT_MURALS=[
  {artist:'Blue dragon - supplied reference (placement provisional)',year:2013,bridge:'Chestnut Street',side:-1,file:'blue-dragon-user.jpg',crop:[0,.21,1,.91],ceiling:false},
 ] as const;
 
+/** User-supplied art added only to spans with no existing mural. */
+export const SUPPLIED_CUT_MURALS=[
+ {title:'Red graffiti / wide',bridge:'East Jefferson Avenue',side:-1,aspect:4/3},
+ {title:'Red graffiti / wall',bridge:'Pedestrian bridge 51600816',side:1,aspect:4/3},
+ {title:'Red graffiti / close',bridge:'East Lafayette Street',side:-1,aspect:1.4514889529298751},
+ {title:'Hooded portrait',bridge:'Vernor pedestrian bridge',side:1,aspect:4/3},
+ {title:'Golden abstract',bridge:'Gratiot Avenue',side:1,aspect:1},
+] as const;
+
 /** Shared rendered/physical art returns, also used by route regression checks. */
-export function muralBacking(site:typeof CUT_MURALS[number]){
+export function muralBacking(site:{bridge:string;side:number}){
  const b=GEO.bridges.find(b=>b.name===site.bridge)!,f=bridgeFrame(b),side=site.side,x=side*7.4,mid=(f.near+f.far)/2;
  let width=Math.min(14,(f.far-f.near)-1.2);
  while(width>3&&[-1,1].some(end=>{const p=f.point(x,mid+end*width/2);return Math.abs(cutCoords(p.x,p.z).u)<5.1||nearestRamp(p.x,p.z).distance<3;}))width-=.5;
@@ -36,6 +45,11 @@ export async function buildCutMurals(world:DetroitWorld,groupAt:(x:number,z:numb
   new URL('../../art/cut-murals/we-are-detroit-user.jpg',import.meta.url).href,
   new URL('../../art/cut-murals/blue-dragon-user.jpg',import.meta.url).href,
   new URL('../../art/cut-murals/hdl-user.jpg',import.meta.url).href,
+  new URL('../../art/supplied-murals-20261004/red-graffiti-wide.webp',import.meta.url).href,
+  new URL('../../art/supplied-murals-20261004/red-graffiti-wall.webp',import.meta.url).href,
+  new URL('../../art/supplied-murals-20261004/red-graffiti-close.webp',import.meta.url).href,
+  new URL('../../art/supplied-murals-20261004/hooded-portrait.webp',import.meta.url).href,
+  new URL('../../art/supplied-murals-20261004/golden-abstract.webp',import.meta.url).href,
  ];
  const maps=await Promise.all(urls.map(u=>new T.TextureLoader().loadAsync(u)));
  const materials=maps.map(map=>{map.colorSpace=T.SRGBColorSpace;map.anisotropy=4;return new T.MeshStandardMaterial({map,roughness:1,side:T.DoubleSide,polygonOffset:true,polygonOffsetFactor:-1});});
@@ -72,5 +86,13 @@ export async function buildCutMurals(world:DetroitWorld,groupAt:(x:number,z:numb
  const s={x:p.x,y:base+h/2,z:p.z,hx:w/2,hy:h/2,hz:.225,yaw,kind:'mural-wall'};world.solids.push(s);world.addBox(s);
  const v=(u:number,y:number)=>new T.Vector3(p.x+Math.cos(yaw)*u+Math.sin(yaw)*.242,y,p.z-Math.sin(yaw)*u+Math.cos(yaw)*.242);
  panel([v(-w/2,base),v(w/2,base),v(w/2,base+h),v(-w/2,base+h)],[.033,.23,.965,.99],materials[7],'Hygienic Dress League — 2014');walls++;
- return {walls,ceilings,source:'Detroit Riverfront Conservancy Art Walk 2025',placements:'approximate'};
+ SUPPLIED_CUT_MURALS.forEach((site,i)=>{
+  const placement=muralBacking(site);if(!placement)throw Error('No clear wall for supplied mural: '+site.bridge);
+  const {f,side,x,mid,width,roof,base,back,wallYaw,solid}=placement;
+  const backing=new T.Mesh(new T.BoxGeometry(.3,roof-base,width),concrete);backing.position.set(back.x,(base+roof)/2,back.z);backing.rotation.y=wallYaw;backing.receiveShadow=true;groupAt(back.x,back.z).add(backing);world.solids.push(solid);world.addBox(solid);
+  const artWidth=Math.min(width-.15,(roof-base-.2)*site.aspect),artHeight=artWidth/site.aspect,low=base+(roof-base-artHeight)/2,a=mid+(side<0?-1:1)*artWidth/2,c=mid-(side<0?-1:1)*artWidth/2;
+  const vertex=(y:number,z:number)=>{const p=f.point(x,z);return new T.Vector3(p.x,y,p.z);};
+  panel([vertex(low,a),vertex(low,c),vertex(low+artHeight,c),vertex(low+artHeight,a)],[0,0,1,1],materials[8+i],site.title+' / supplied game mural / '+site.bridge);walls++;
+ });
+ return {walls,ceilings,source:'Detroit Riverfront Conservancy Art Walk 2025 plus five user-supplied game murals',placements:'approximate'};
 }

@@ -45,6 +45,7 @@ export const STUDIO_VIEWS={
  galleryfront:{eye:[-12,2.65,20],target:[-12,2.0,3],horizontal:90},
  store:{eye:[12,2.25,7.5],target:[12,1.8,.1],horizontal:90},
  gallery:{eye:[-12,2.25,7.8],target:[-12,1.8,-.7],horizontal:90},
+ galleryphotos:{eye:[-12,2.65,4.9],target:[-20.65,2.55,4.9],horizontal:80},
  cinema:{eye:[15.55,2.1,12.6],target:[15.55,3.05,21.58],horizontal:78},
  stream:{eye:[-15,2.1,15.55],target:[-23.98,3.05,15.55],horizontal:78},
  arcade:{eye:[-9.7,1.7,17.5],target:[-9.7,1.3,20.65],horizontal:80},
