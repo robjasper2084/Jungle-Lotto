@@ -5,7 +5,7 @@ import {createRequire} from 'node:module';
 import {pathToFileURL} from 'node:url';
 import {buildRelease,readableTree,runtimeLicenses,modelDependencies} from './game-package.mjs';
 import {fitElmwoodTouch} from './elmwood-touch-layout.mjs';
-export async function prepareElmwood(source=process.env.ELMWOOD_SOURCE||resolve(import.meta.dirname,'../../../../../euc-detroit-riverwalk'),soundtrackRoot=resolve(import.meta.dirname,'../store/public/arcade/swoop-detroit/audio/swoop')){
+export async function prepareElmwood(source=process.env.ELMWOOD_SOURCE||resolve(import.meta.dirname,'../elmwood-source'),soundtrackRoot=resolve(import.meta.dirname,'../store/public/arcade/swoop-detroit/audio/swoop')){
 source=resolve(source);
 const require=createRequire(resolve(source,'package.json')),{build}=await import(pathToFileURL(require.resolve('vite')).href);
 const css=(await readFile(resolve(import.meta.dirname,'elmwood-explorer-embed.css'),'utf8'))+(await readFile(resolve(import.meta.dirname,'mobile-hud.css'),'utf8')),js=`const fitElmwoodTouch=${fitElmwoodTouch.toString()};\n`+await readFile(resolve(import.meta.dirname,'elmwood-explorer-embed.js'),'utf8'),assetRevision=Date.now().toString(36);

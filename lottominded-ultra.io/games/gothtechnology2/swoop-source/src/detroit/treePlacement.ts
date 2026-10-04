@@ -7,8 +7,10 @@ import {sidewalkHalfWidth} from './streetFurnitureLayout.ts';
 import {segmentDistance} from './roadsidePlacement.ts';
 import {polygonContains} from './waterfrontSite.ts';
 import {inValadeBeach} from './valadeSite.ts';
+import {cutWidth} from './geo-profile.ts';
+import {nearestCut} from './geography.ts';
 
-const segments=CITY.roads.flatMap(r=>r.points.slice(1).map((b,i)=>({a:r.points[i],b,edge:r.width/2+(hasStreetCurb(r)?2*sidewalkHalfWidth(r):0)})));
+const segments=CITY.roads.flatMap(r=>r.points.slice(1).map((b,i)=>({a:r.points[i],b,edge:(r.name==='Dequindre Cut Greenway'?cutWidth(nearestCut((r.points[i][0]+b[0])/2,(r.points[i][1]+b[1])/2).d):r.width)/2+(hasStreetCurb(r)?.30+2*sidewalkHalfWidth(r):0)})));
 const cells=new Map<string,typeof segments>();
 for(const s of segments){const m=s.edge+4;for(let x=Math.floor((Math.min(s.a[0],s.b[0])-m)/64);x<=Math.floor((Math.max(s.a[0],s.b[0])+m)/64);x++)for(let z=Math.floor((Math.min(s.a[1],s.b[1])-m)/64);z<=Math.floor((Math.max(s.a[1],s.b[1])+m)/64);z++){const key=x+','+z,list=cells.get(key)??[];list.push(s);cells.set(key,list);}}
 const buildings=CITY.buildings.map(b=>({points:b.points,minX:Math.min(...b.points.map(p=>p[0])),maxX:Math.max(...b.points.map(p=>p[0])),minZ:Math.min(...b.points.map(p=>p[1])),maxZ:Math.max(...b.points.map(p=>p[1]))}));

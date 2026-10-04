@@ -1,0 +1,137 @@
+{
+  "generator": "Higgsfield",
+  "model": "seedance_2_5",
+  "date": "2026-10-04",
+  "films": [
+    {
+      "jobId": "a7d38ab5-aa61-4030-8bfc-3262120543f5",
+      "file": "seedance-2.5-euc-final.mp4",
+      "sourceUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20261004_213910_a7d38ab5-aa61-4030-8bfc-3262120543f5.mp4",
+      "params": {
+        "model": "seedance_2_5",
+        "mode": "omni_reference",
+        "aspect_ratio": "16:9",
+        "duration": 20,
+        "resolution": "1080p",
+        "generate_audio": false,
+        "bitrate_mode": "standard",
+        "medias": [
+          {
+            "role": "image",
+            "value": "d78716ec-da9c-4e81-91b6-6044601bd369"
+          },
+          {
+            "role": "image",
+            "value": "d1620615-1b0b-4af7-a8d8-6a58440dfa82"
+          },
+          {
+            "role": "image",
+            "value": "d655072c-e54f-467b-bea6-e6593578076e"
+          },
+          {
+            "role": "image",
+            "value": "009f6bfa-45c3-4f34-befd-40ed44c0b320"
+          },
+          {
+            "role": "image",
+            "value": "4477eeb9-cd59-41a0-9227-0e7068028d9c"
+          },
+          {
+            "role": "image",
+            "value": "42e102a2-33f0-4314-afe8-46307bb74805"
+          }
+        ],
+        "prompt": "Make a 20-second cinematic action-movie loading teaser for SWOOP DETROIT, a family-friendly electric-unicycle videogame. ONLY TWO RIDERS, EACH ON AN ELECTRIC UNICYCLE. No e-bikes, bicycles, motorcycles, scooters, handlebars or two-wheeled vehicles in any shot. Detroit, Michigan must be geographically recognizable and consistent throughout. The attached wide night-riding photo and square crop are authoritative references for the ACTUAL DETROIT Renaissance Center cylindrical glass towers and riverside street: faithfully reproduce those buildings and their relative silhouettes, their warm illuminated roof rings at night, low Detroit brick warehouse architecture, the Detroit Riverwalk and sunken Dequindre Cut greenway's graffiti underpasses. Do not introduce invented skyline towers or landmarks from another city. Hero is the same adult Black male rider in the attached sheets: long dreadlocks, full beard, dark sunglasses, black riding clothes, gloves and black boots. For this sequence his outer layer is the actual segmented black/charcoal body armor and back plate from the two night-riding photos; preserve its angular overlapping plate design and the compact black/red SINGLE-WHEEL electric unicycle beneath both side pedals. A small cyan circular circuit-brain badge is centered on the back plate. FEMALE COMPANION is the game's adult woman in a muted olive Detroit hoodie, dark slim jeans and black riding boots, dark hair tied back, riding her own compact SINGLE-WHEEL electric unicycle. Keep the same woman and the same hero across every shot. ACCESSORY: the FIRST reference image is the exact keychain to match: gold lobster clasp and split ring, black LottoMind strap with gold circuit pattern and lettering, small gold outlined tag, purple bear wearing black fedora, round gold sunglasses and dark pinstripe suit. Keep its silhouette, colors and parts. Hang this small keychain from the SECOND attachment down on the LEFT COLUMN of the hero's BACK BODY ARMOR. It hangs from the left lower back plate, swings lightly from its gold clasp, and is NEVER attached to the wheel, leg, belt or backpack. The strap/charm is realistically palm-sized. Shot 1 0-5s: medium rear tracking shot of the armored hero and female rider gliding side by side at dusk on Detroit's empty riverfront pavement, faithfully referenced Renaissance Center ahead, both unicycles clearly visible with exactly one wheel each. Shot 2 5-8s: elegant moving close-up of the hero's LEFT BACK ARMOR FASTENER, showing the gold clasp, LottoMind black strap and suited purple bear swinging naturally; retain the armor's circuit-brain badge nearby. Shot 3 8-15s: low wide side-tracking action shot of those SAME TWO EUC riders carving the broad smooth paved Dequindre Cut under a graffiti-covered concrete bridge; believable hips, foot placement and leaning, no impossible wheel mechanics, all grass on the banks away from asphalt. Shot 4 15-20s: sweeping rear three-quarter shot of both riders returning toward the Detroit Riverwalk with the authentic cylindrical Renaissance Center skyline. Cinematic teal and warm gold lighting, polished detailed videogame aesthetics, grounded tire contact, smooth energetic movement, comfortable cuts. The first and last shot have compatible forward motion for repeating during loading. Do not turn the multi-view reference sheets into a collage or split screen. No captions, titles, text overlays, HUD, credits or soundtrack. The small keychain's printed LottoMind text is the only requested lettering. No violence, collisions, dangerous interaction with pedestrians or weapons."
+      },
+      "status": "superseded / archived"
+    },
+    {
+      "jobId": "3226e9e9-6804-4a7c-a997-d5bef31d9068",
+      "file": "seedance-2.5-detroit-hoodie.mp4",
+      "sourceUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20261004_214230_3226e9e9-6804-4a7c-a997-d5bef31d9068.mp4",
+      "params": {
+        "model": "seedance_2_5",
+        "mode": "omni_reference",
+        "duration": 10,
+        "resolution": "1080p",
+        "aspect_ratio": "16:9",
+        "generate_audio": false,
+        "bitrate_mode": "standard",
+        "medias": [
+          {
+            "role": "image",
+            "value": "8ceba991-4033-4fca-bd1c-16cfcea1a821"
+          },
+          {
+            "role": "image",
+            "value": "b147f4d0-2361-4501-914d-06b7ed02f793"
+          },
+          {
+            "role": "image",
+            "value": "009f6bfa-45c3-4f34-befd-40ed44c0b320"
+          },
+          {
+            "role": "image",
+            "value": "4477eeb9-cd59-41a0-9227-0e7068028d9c"
+          },
+          {
+            "role": "image",
+            "value": "d1620615-1b0b-4af7-a8d8-6a58440dfa82"
+          },
+          {
+            "role": "image",
+            "value": "d78716ec-da9c-4e81-91b6-6044601bd369"
+          }
+        ],
+        "prompt": "Generate a 10-second TWO-SHOT cinematic videogame loading-trailer continuation for SWOOP DETROIT. Location is unmistakably DETROIT MICHIGAN, anchored by the actual Renaissance Center's clustered CYLINDRICAL glass towers and warm roof rings in the attached Detroit night riding photo. Two riders only, our same Black adult male hero with long dreadlocks, full beard and black sunglasses from the supplied character sheets, and an adult female companion with dark tied-back hair in muted olive Detroit hoodie, dark fitted jeans and black boots. BOTH ride compact electric unicycles with EXACTLY ONE wheel beneath their feet and both feet on side pedals. Absolutely no e-bikes, bicycles, motorcycles, scooters, handlebars or two-wheel vehicles anywhere. WARDROBE: in BOTH shots the male hero wears the EXACT BLACK PULLOVER HOODIE in image 1. Faithfully copy its gold 313 on the hood, gold eyelets and drawstring tips, kangaroo pocket, sleeve patch with red heart and golden rising sun, and embroidered I LOVE DETROIT artwork centered on his CHEST. Image 2 gives the exact chest embroidery: dark blue I with EST. and vertical 1701, red heart with Detroit skyline silhouette, golden rising sun, multicolor Detroit city letters incorporating skyline towers and a fist motif. Preserve the emblem's exact layout, colors and stitching, avoid inventing a different graphic. Hoodie hood down so his long dreadlocks and face are visible. Black pants and black boots. Articulated charcoal armor is worn ONLY ON HIS BACK over the hoodie, leaving the chest embroidery fully visible. On the second fastener down the left back armor column hangs the exact keychain in image 6: gold clasp, black LottoMind strap with gold circuits, little gold tag, suited purple fedora bear. This accessory stays on the BACK ARMOR, never the wheel. Shot 1, 0-5 seconds: medium FRONT three-quarter tracking shot of the two EUC riders moving at relaxed pace along Detroit's waterfront pavement at blue hour. Male hero's hoodie chest design is clearly readable and detailed, female rides at his side, both SINGLE WHEELS and pedal foot placement visible. The authentic Renaissance Center skyline appears behind them. Smooth cinematic camera, natural rider lean and calm control. Shot 2, 5-10 seconds: wide SIDE tracking shot of these same two riders on electric unicycles gliding beneath a colorful graffiti-covered bridge in Detroit's DEQUINDRE CUT. Male hero is still wearing that exact Detroit hoodie, side angle shows chest embroidery and small back armor accessory; female companion stays beside him. Smooth asphalt with grass only on the banks. Warm street lamps, cool teal reflections, realistic proportions, premium grounded videogame rendering, gentle energetic motion. References are for subjects and wardrobe; do not show a retail shop, packaging, reference-sheet collage or split screen. No film titles, captions, HUD or watermark. No music, dialogue or sound. No collisions, violence or weapons. Preserve both riders' identity between shots and their unicycle wheel geometry."
+      },
+      "status": "superseded / archived"
+    },
+    {
+      "jobId": "24037e7a-9c58-4833-86ce-2bb4ba59111e",
+      "file": "seedance-2.5-detroit-opening-with-sound.mp4",
+      "status": "runtime opening",
+      "sourceUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20261004_223815_24037e7a-9c58-4833-86ce-2bb4ba59111e.mp4",
+      "params": {
+        "model": "seedance_2_5",
+        "mode": "omni_reference",
+        "duration": 20,
+        "aspect_ratio": "16:9",
+        "resolution": "1080p",
+        "generate_audio": true,
+        "bitrate_mode": "standard",
+        "medias": [
+          {
+            "role": "image",
+            "value": "10d739b4-4b1b-4767-aab3-a89206bb6abd"
+          },
+          {
+            "role": "image",
+            "value": "d1620615-1b0b-4af7-a8d8-6a58440dfa82"
+          },
+          {
+            "role": "image",
+            "value": "8ceba991-4033-4fca-bd1c-16cfcea1a821"
+          },
+          {
+            "role": "image",
+            "value": "d78716ec-da9c-4e81-91b6-6044601bd369"
+          }
+        ],
+        "prompt": "Create a COHERENT 20-second videogame opening film WITH GENERATED ORIGINAL AUDIO, not a montage, called SWOOP DETROIT. One short story: two electric-unicycle riders begin a dawn ride along the Detroit Riverwalk, enter the Dequindre Cut, and glide forward into sunlight. Actual DETROIT Michigan: recognizable Renaissance Center FIVE CYLINDRICAL towers and Detroit River, then sunken Dequindre Cut paved greenway under Detroit brick/stone overpass with graffiti on retaining walls. All shots use ONE CONTINUOUS cool dawn / warm gold light direction, same weather, same adult hero, same female companion, same two EUCs, same outfits; match movement left-to-right and forward throughout. Reference image 1 is a verified cinematic Detroit Riverwalk architectural anchor: retain its actual tiered cylindrical Renaissance Center tower geometry, exactly, not generic tilted slab towers. Reference image 2: adult athletic Black male hero's riding posture and black segmented back body armor on exactly ONE wheel, feet on side pedals. Across EVERY shot he wears matte black full-face safety helmet with small green/yellow GothTech Ghoulies rear decal, black protective gloves/trousers/boots, black hoodie from reference image 3 with I LOVE DETROIT embroidered chest emblem and small gold 313 hood, and same charcoal articulated back armor over hoodie. Never switch to a suit, never change rider appearance. Female adult companion wears olive-gray hoodie and black trousers, riding her own single-wheel EUC alongside on the right. Exactly ONE wheel under each rider, feet on side pedals, no handlebars. No e-bikes, bicycles, motorcycles, cars or extra riders anywhere. Reference image 4: small realistic exact full gold clasp, LottoMind black/gold circuit strap, purple fedora bear keychain clipped to second LEFT column of fasteners on LOWER BACK body armor; no keychain on chest or waist front. SCRIPT with only three motivated transitions, never unrelated cuts: 0-5s establishing rear three-quarter tracking along empty clean Riverwalk pavement, both wheels clearly visible, camera glides low beside riders and rises gently, Renaissance Center cylinders and water clearly establish Detroit. 5-9s MATCH ON ACTION, one brief close tracking detail from rear-left of same moving hero, the small keychain sways from LEFT lower back while hoodie gold 313 is visible; never turn it into a huge product photo. 9-15s camera PULLS BACK naturally to both same riders going under a graffiti overpass into the Dequindre Cut; still grounded EUCs, road center clear, grass only banks. 15-20s smooth low trailing shot of both riders emerging from bridge shadow into same golden dawn light, forward momentum settles into a composed wide view with clear empty path ahead; hold the final composition for last 2 seconds to make transition into gameplay comfortable. Premium cinematic videogame render, warm/cool color grade, 35mm lens, grounded wheel contact, subtle speed, inspiring exploration rather than aggressive racing. No random outfit shots, no aerial unrelated city, no storefront insert, no flash cuts, no text, no logo title, no HUD, no captions, no narration. Generate synchronized original audio: restrained cinematic electronic Detroit-inspired instrumental score, gradual inspiring pulse, soft EUC electric motor whine, tires rolling on pavement, light wind and river ambience, a brief bridge reverberation, warm resolve at end. No gasoline engine sounds, no voices, no spoken words, no copyrighted music. Moderate consistent loudness, no sudden loud blasts. Audio supports the one continuous dawn journey and never overwhelms it."
+      }
+    }
+  ],
+  "encoding": {
+    "codec": "H.264",
+    "resolution": "1280x720",
+    "fps": 24,
+    "crf": 28,
+    "audio": "AAC stereo 128k; loudnorm I=-20 TP=-2 LRA=11",
+    "fastStart": true
+  },
+  "runtime": "20 second coherent dawn journey loops only during actual 3D loading; readiness ends immediately. Opening replay from menu. Sound enabled by explicit Sound on choice.",
+  "references": "User supplied Detroit EUC rider, new complete keychain and black I Love Detroit 313 hoodie references",
+  "supersededSourceRetained": "seedance-2.5-original.mp4",
+  "review": "Eight samples inspected: actual Renaissance Center cylindrical towers, two EUCs, continuous dawn journey into the Cut. Generated accessory and helmet placement varies; playable rider retains authored positions. Audio verified AAC stereo 20.05s; source mean -28.1 dB and peak -6.5 dB before normalization."
+}

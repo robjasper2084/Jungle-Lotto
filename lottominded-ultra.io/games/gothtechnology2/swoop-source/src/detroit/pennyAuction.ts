@@ -1,5 +1,6 @@
 import {ONLINE_CONFIG} from './onlineConfig.ts';
 import './pennyAuction.css';
+import {photographyCollection} from './photographyExhibition.ts';
 type Product={id:string;name:string;brand:string;source_url:string;kind:string;availability:string;image:string;reference_price_cents:number|null;concept:number};
 type Auction={id:string;product_id:string;mode:'test'|'live';model:'paid'|'free';state:string;price_cents:number;ends_at:number;reset_ms:number;leader:string|null;bid_fee_cents:number;history:{bidder:string;price_cents:number;at:number}[]};
 type Catalog={serverTime:number;state:string;products:Product[];auctions:Auction[];testEnabled:boolean};
@@ -23,7 +24,7 @@ export class PennyAuction {
   const note=document.createElement('p');note.className='penny-notice';note.textContent='Existing GothTechnology merchandise images and reference prices are preserved. Concept artwork and catalog drafts do not establish sale inventory. Confirm garment sizes, quantities and fulfillment before opening real lots. Auction credits are separate from your LottoMind lottery wallet. Test auctions charge nothing and award no products.';
   const accountDetails=document.createElement('details');accountDetails.className='penny-account';const accountSummary=document.createElement('summary');accountSummary.textContent='Already have an auction account? Sign in';accountDetails.append(accountSummary,login,this.signOut);
   const browse=document.createElement('section');browse.className='penny-browse';const title=document.createElement('h2');title.textContent='Browse all GothTech merch';const label=document.createElement('label');label.textContent='Find a hoodie, hat, shirt or charm';const search=document.createElement('input');search.type='search';search.placeholder='Search the collection';search.oninput=()=>{this.productQuery=search.value.trim().toLowerCase();this.render();};label.append(search);this.matches.className='penny-matches';this.matches.setAttribute('role','status');browse.append(title,label,this.matches,this.products);
-  content.append(training,this.activeAuctions,this.status,browse,accountDetails,note);this.panel.append(header,content);this.panel.addEventListener('cancel',e=>{e.preventDefault();this.close();});this.panel.addEventListener('keydown',e=>e.stopPropagation());document.body.append(this.panel);
+  content.append(photographyCollection(),training,this.activeAuctions,this.status,browse,accountDetails,note);this.panel.append(header,content);this.panel.addEventListener('cancel',e=>{e.preventDefault();this.close();});this.panel.addEventListener('keydown',e=>e.stopPropagation());document.body.append(this.panel);
  }
  get active(){return this.panel.open;}
  async open(){if(this.active)return;this.returnTo=document.activeElement as HTMLElement;this.entered();this.panel.showModal();this.status.textContent='Connecting to auction desk…';

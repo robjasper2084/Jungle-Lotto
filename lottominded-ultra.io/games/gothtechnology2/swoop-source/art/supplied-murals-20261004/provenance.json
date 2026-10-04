@@ -1,0 +1,38 @@
+{
+  "date": "2026-10-04",
+  "tool": "Built-in image_gen.imagegen",
+  "mode": "Five independent reference-image edits",
+  "purpose": "Flatten original artwork to front-facing wall textures; remove photographic flash glare from graffiti references; retain original composition and color. Original references are retained. Game placements are authored additions, not surveyed installations.",
+  "images": [
+    {
+      "id": "red-graffiti-wide",
+      "source": "518320733_10165501034869167_8418310391678743448_n.jpg",
+      "generated": "exec-0f0e468a-dc90-4aaf-8fbc-2bcd6c90d162.png",
+      "aspect": 1.3333333333333333
+    },
+    {
+      "id": "red-graffiti-wall",
+      "source": "519984973_10165501034829167_839766338145970980_n.jpg",
+      "generated": "exec-177fa4c9-34e9-4e6a-8b1d-81d354922302.png",
+      "aspect": 1.3333333333333333
+    },
+    {
+      "id": "red-graffiti-close",
+      "source": "518326055_10165501038849167_1991383604107476574_n.jpg",
+      "generated": "exec-abb347a2-ab94-48fb-ac3a-beff16d0d8a4.png",
+      "aspect": 1.4514889529298751
+    },
+    {
+      "id": "hooded-portrait",
+      "source": "468733167_10164319597079167_8142571907843541116_n.jpg",
+      "generated": "exec-c87fbbda-ab39-421a-885e-f8d452d1ad3b.png",
+      "aspect": 1.3333333333333333
+    },
+    {
+      "id": "golden-abstract",
+      "source": "67343095_10158638845089167_562486036823801856_n.jpg",
+      "generated": "exec-d824e75e-1141-4a20-b4ab-7e851352e50a.png",
+      "aspect": 1
+    }
+  ]
+}

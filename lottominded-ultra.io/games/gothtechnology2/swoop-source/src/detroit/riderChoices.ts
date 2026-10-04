@@ -6,4 +6,4 @@ export const RIDER_CHOICES=[
   {id:'DS_Armored_Rider_01',label:'Armored rider · Night Sentinel'},
 ] as const;
 export type RiderId=typeof RIDER_CHOICES[number]['id'];
-export function riderChoice(value:string|null):RiderId{return RIDER_CHOICES.find(r=>r.id===value)?.id??'DS_Man_01';}
+export function riderChoice(value:string|null):RiderId{return RIDER_CHOICES.find(r=>r.id===value)?.id??'DS_Armored_Rider_01';}

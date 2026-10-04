@@ -1,3 +1,4 @@
+import {makeRidePicker} from './ridePicker.ts';
 import {RACE_ROUTE} from './raceRules.ts';
 import {CHALLENGES} from './district.ts';
 import {RIDER_CHOICES} from './riderChoices.ts';
@@ -28,10 +29,11 @@ export function installLobby(elmwood:boolean,onRace:()=>void,onSplit:()=>void){
  const splitHelp=document.createElement('details');splitHelp.className='lobbyDisclosure';splitHelp.innerHTML='<summary>How to play together</summary>';for(const p of [...splitSetup.querySelectorAll('p')].slice(1,3))splitHelp.append(p);splitSetup.append(splitHelp);
  const customize=document.createElement('details');customize.id='rideCustomize';customize.className='lobbyDisclosure';customize.innerHTML='<summary><span>Customize your ride</span><small>Rider, wheels & starting point</small></summary>';
  const customBody=document.createElement('div');customBody.className='lobbyDisclosureBody';customBody.append(setup.querySelector('.options')!,$('ride-vehicle').closest('.cycleOptions')!);customize.append(customBody);setup.append(customize);
- const actions=document.createElement('div');actions.className='launchActions';actions.append($('resumeRide'),$('start'));setupHeading.after($('setupSummary'),actions,$('startReason'));
+ const wheels=makeRidePicker($('ride-vehicle') as HTMLSelectElement);setupHeading.after(wheels.root);
+ const actions=document.createElement('div');actions.className='launchActions';actions.append($('resumeRide'),$('start'));wheels.root.after($('setupSummary'),actions,$('startReason'));
  const places=document.createElement('details');places.id='ridePlaces';places.className='lobbyDisclosure';places.hidden=elmwood;places.innerHTML='<summary><span>Places & activities</span><small>Stores, skate park & landmark mission</small></summary>';
  const placeBody=document.createElement('div');placeBody.className='lobbyDisclosureBody';const placeButtons=document.createElement('div');placeButtons.className='lobbyPlaceButtons';placeBody.append(placeButtons);places.append(placeBody);setup.append(places);placeButtons.append($('community-start'));$('community-start').hidden=elmwood;
- const essentials=document.createElement('p');essentials.className='lobbyEssentials';essentials.innerHTML='<strong>You can go at your own pace.</strong> Pause or return to the menu at any time.';actions.after(essentials);
+ const essentials=document.createElement('p');essentials.className='lobbyEssentials';essentials.innerHTML='<strong>Pick your wheels → Press Play → Explore!</strong> Use arrow keys or the left stick. Pause any time.';actions.after(essentials);
  const settings=document.createElement('div');settings.id='lobbySettings';settings.className='lobbyPanel';settings.innerHTML='<p class="eyebrow">MAKE IT YOUR RIDE</p><h2>Settings</h2><p>Choose your steering, comfort speed and view. Your riding controls stay the same.</p>';
  settings.append(setup.querySelector('.vrControls')!,$('enterVR'),$('controllerStatus'));
  for(const hint of [...setup.querySelectorAll('.hint,.touchHint')])settings.append(hint);
@@ -51,6 +53,7 @@ export function installLobby(elmwood:boolean,onRace:()=>void,onSplit:()=>void){
   const practice=document.getElementById('practiceRoute');if(practice)practice.hidden=tab!=='race';
   const learn=document.getElementById('learnRide');if(learn)learn.hidden=tab!=='ride';places.hidden=elmwood||tab!=='ride';essentials.hidden=tab!=='ride';if(changed)customize.open=tab==='race'||tab==='split';
   $('ride-vehicle').closest<HTMLElement>('.cycleOptions')!.hidden=tab==='split';customize.querySelector('summary small')!.textContent=tab==='split'?'Choose player 1 and your map':'Rider, wheels & starting point';
+  wheels.root.hidden=tab==='split';
   setupHeading.textContent=tab==='split'?'Play on one screen.':tab==='race'?'Ready to race?':elmwood?'Explore Elmwood.':'Ready to ride?';
   if(tab==='ride'||tab==='race'||tab==='split'){
    mode.value=tab==='split'?'split':tab==='race'&&!elmwood?'race':'free';mode.dispatchEvent(new Event('change'));

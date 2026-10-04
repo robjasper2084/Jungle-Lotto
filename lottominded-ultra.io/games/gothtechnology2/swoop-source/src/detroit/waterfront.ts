@@ -7,6 +7,7 @@ import {heightAt,type DetroitWorld} from './world.ts';
 import {makeRoadSign} from './roadSigns.ts';
 import {roadsidePoint,streetFacingHeading} from './roadsidePlacement.ts';
 import {dryStreetSite} from './dryStreetSite.ts';
+import {ARETHA_ENTRANCE} from './arethaEntrance.ts';
 /** Original Blender art follows refreshed mapped geometry. Finishes/furniture are visual estimates. */
 export async function buildWaterfront(scene:T.Scene,world:DetroitWorld,groupAt:(x:number,z:number)=>T.Group){
  const names=['aretha-amphitheatre','aretha-entry','shore-railing','dock-service','harbor-cruiser'];
@@ -15,8 +16,13 @@ export async function buildWaterfront(scene:T.Scene,world:DetroitWorld,groupAt:(
  const root=assets[0].scene;root.name=ARETHA.name;root.position.set(ARETHA.x,0,ARETHA.z);groupAt(ARETHA.x,ARETHA.z).add(root);
  root.updateMatrixWorld(true);root.traverse(o=>{if(!(o as T.Mesh).isMesh)return;const m=o as T.Mesh,materials=Array.isArray(m.material)?m.material:[m.material];if(!materials.some(a=>a.name==='Stepped concrete'))return;const geo=m.geometry.clone().applyMatrix4(m.matrixWorld),tri=geo.index?geo.toNonIndexed():geo;world.addRideSurface(tri.attributes.position.array as Float32Array);if(tri!==geo)tri.dispose();geo.dispose();});
  const clone=(index:number,x:number,y:number,z:number,angle=0,scale=1)=>{const o=assets[index].scene.clone(true);o.position.set(x,y,z);o.rotation.y=angle;o.scale.setScalar(scale);groupAt(x,z).add(o);return o;};
- clone(1,-137,0,-1770,.09);
- for(const x of [-142,-132])world.addBox({x,y:3,z:-1770,hx:.7,hy:3,hz:.7,kind:'amphitheatre entry'});
+ const entry=ARETHA_ENTRANCE,arch=clone(1,entry.x,heightAt(entry.x,entry.z),entry.z,entry.yaw);
+ arch.name='The Aretha · mapped main entrance';arch.userData.osmId=entry.osmId;
+ // Cancel the map's X reflection on the lettering only. Each side gets its own
+ // outward-facing letters, so neither approach reads through a reversed sign.
+ const letters:T.Mesh[]=[];arch.traverse(o=>{if(!(o as T.Mesh).isMesh)return;const m=o as T.Mesh,materials=Array.isArray(m.material)?m.material:[m.material];if(materials.some(a=>a.name==='Entry white lettering'))letters.push(m);});
+ for(const face of letters){face.scale.x*=-1;const reverse=face.clone();reverse.name='The Aretha · inward lettering';reverse.position.z*=-1;reverse.quaternion.premultiply(new T.Quaternion().setFromAxisAngle(new T.Vector3(0,1,0),Math.PI));face.parent!.add(reverse);}
+ for(const p of entry.posts)world.addBox({...p,y:3,hx:.65,hy:3,hz:.65,yaw:entry.yaw,kind:'amphitheatre entry'});
  world.addBox({x:ARETHA.x-27,y:.65,z:ARETHA.z,hx:6,hy:.65,hz:12,kind:'stage'});
  // Support columns share the tent's OSM perimeter, leaving its interior navigable.
  const plan=WATERFRONT.buildings.find(b=>b.id===ARETHA.osmId)!;

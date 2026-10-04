@@ -1,0 +1,136 @@
+{
+  "generator": "Higgsfield",
+  "date": "2026-10-04",
+  "requests": [
+    {
+      "index": 0,
+      "params": {
+        "model": "seedance_2_5",
+        "mode": "omni_reference",
+        "duration": 8,
+        "aspect_ratio": "16:9",
+        "resolution": "1080p",
+        "generate_audio": false,
+        "bitrate_mode": "standard",
+        "medias": [
+          {
+            "role": "image",
+            "value": "7d76f585-e409-4d03-b707-5143b099851b"
+          },
+          {
+            "role": "image",
+            "value": "009f6bfa-45c3-4f34-befd-40ed44c0b320"
+          },
+          {
+            "role": "image",
+            "value": "8ceba991-4033-4fca-bd1c-16cfcea1a821"
+          },
+          {
+            "role": "image",
+            "value": "d78716ec-da9c-4e81-91b6-6044601bd369"
+          }
+        ],
+        "prompt": "Eight-second cinematic store-entry cutscene for SWOOP DETROIT videogame, in Detroit, Michigan on Mack Avenue. Reference image 1 is the ACTUAL game storefront: preserve the same facade proportions, central entrance, color palette, window frames and interior arrangement, improving only lighting/material realism. Reference image 2 establishes the hero: adult Black man, beard, long dreadlocks and dark sunglasses; retain his identity and black body armor backpack. Reference image 3 shows his black I LOVE DETROIT embroidered hoodie with small gold 313 on the hood; wear this underneath the back armor. Reference image 4 is the small complete LottoMind gold-clasp purple pinstripe fedora bear keychain, clipped to the second attachment column on LEFT side of BACK armor, hanging naturally. Exactly one compact electric UNICYCLE with one central wheel, pedals under feet and no handlebars. No bicycles, e-bikes, motorcycles or two-wheeled vehicles anywhere. Steady camera, family-friendly, teal/gold Detroit atmosphere. 0-2 seconds wide exterior, hero arrives slowly on EUC. 2-4 seconds he stops, steps off, parks the wheel upright to side of entrance. 4-6 seconds rear tracking as he walks through central doorway. 6-8 seconds smooth interior reveal with hero looking around. Natural footfalls, maintain physical geography from facade to inside, no teleporting, no impossible walls. Only existing store signage, no subtitles, no HUD, no narration or soundtrack. SERENGETI GALLERIES: match the green horizontal fascia with white SERENGETI GALLERIES lettering, broad full-height glass windows with slim gold mullions, open central door, low warm wood plinths, green framed-art display boards in windows, white photo walls with framed dog, Detroit skyline and portrait photographs, green rear wall and emerald low couch, two topiary plants. Hero enters an elegant welcoming Detroit art gallery; final shot travels toward framed photography."
+      }
+    },
+    {
+      "index": 1,
+      "params": {
+        "model": "seedance_2_5",
+        "mode": "omni_reference",
+        "duration": 8,
+        "aspect_ratio": "16:9",
+        "resolution": "1080p",
+        "generate_audio": false,
+        "bitrate_mode": "standard",
+        "medias": [
+          {
+            "role": "image",
+            "value": "7288eee1-3cc9-4422-bed4-a5c64108ebe9"
+          },
+          {
+            "role": "image",
+            "value": "009f6bfa-45c3-4f34-befd-40ed44c0b320"
+          },
+          {
+            "role": "image",
+            "value": "8ceba991-4033-4fca-bd1c-16cfcea1a821"
+          },
+          {
+            "role": "image",
+            "value": "d78716ec-da9c-4e81-91b6-6044601bd369"
+          }
+        ],
+        "prompt": "Eight-second cinematic store-entry cutscene for SWOOP DETROIT videogame, in Detroit, Michigan on Mack Avenue. Reference image 1 is the ACTUAL game storefront: preserve the same facade proportions, central entrance, color palette, window frames and interior arrangement, improving only lighting/material realism. Reference image 2 establishes the hero: adult Black man, beard, long dreadlocks and dark sunglasses; retain his identity and black body armor backpack. Reference image 3 shows his black I LOVE DETROIT embroidered hoodie with small gold 313 on the hood; wear this underneath the back armor. Reference image 4 is the small complete LottoMind gold-clasp purple pinstripe fedora bear keychain, clipped to the second attachment column on LEFT side of BACK armor, hanging naturally. Exactly one compact electric UNICYCLE with one central wheel, pedals under feet and no handlebars. No bicycles, e-bikes, motorcycles or two-wheeled vehicles anywhere. Steady camera, family-friendly, teal/gold Detroit atmosphere. 0-2 seconds wide exterior, hero arrives slowly on EUC. 2-4 seconds he stops, steps off, parks the wheel upright to side of entrance. 4-6 seconds rear tracking as he walks through central doorway. 6-8 seconds smooth interior reveal with hero looking around. Natural footfalls, maintain physical geography from facade to inside, no teleporting, no impossible walls. Only existing store signage, no subtitles, no HUD, no narration or soundtrack. LOTTOMIND APP STORE: match three-level red brick building with rectangular dark upper windows, large blue/navy illuminated LOTTOMIND sign and yellow skyline mark, slim gold border, navy APP LOUNGE / PLAY DESK fascia, broad glass and central gold-framed double doorway. Interior white walls, navy cushioned window benches, blue app display kiosks on left, framed navy game screen on right, simple rear app desk. Hero enters and approaches an app kiosk; no invented cash, gambling or money transactions."
+      }
+    },
+    {
+      "index": 2,
+      "params": {
+        "model": "seedance_2_5",
+        "mode": "omni_reference",
+        "duration": 8,
+        "aspect_ratio": "16:9",
+        "resolution": "1080p",
+        "generate_audio": false,
+        "bitrate_mode": "standard",
+        "medias": [
+          {
+            "role": "image",
+            "value": "0c4be8c9-7206-4c26-8fca-f93cb77cf52e"
+          },
+          {
+            "role": "image",
+            "value": "009f6bfa-45c3-4f34-befd-40ed44c0b320"
+          },
+          {
+            "role": "image",
+            "value": "8ceba991-4033-4fca-bd1c-16cfcea1a821"
+          },
+          {
+            "role": "image",
+            "value": "d78716ec-da9c-4e81-91b6-6044601bd369"
+          }
+        ],
+        "prompt": "Eight-second cinematic store-entry cutscene for SWOOP DETROIT videogame, in Detroit, Michigan on Mack Avenue. Reference image 1 is the ACTUAL game storefront: preserve the same facade proportions, central entrance, color palette, window frames and interior arrangement, improving only lighting/material realism. Reference image 2 establishes the hero: adult Black man, beard, long dreadlocks and dark sunglasses; retain his identity and black body armor backpack. Reference image 3 shows his black I LOVE DETROIT embroidered hoodie with small gold 313 on the hood; wear this underneath the back armor. Reference image 4 is the small complete LottoMind gold-clasp purple pinstripe fedora bear keychain, clipped to the second attachment column on LEFT side of BACK armor, hanging naturally. Exactly one compact electric UNICYCLE with one central wheel, pedals under feet and no handlebars. No bicycles, e-bikes, motorcycles or two-wheeled vehicles anywhere. Steady camera, family-friendly, teal/gold Detroit atmosphere. 0-2 seconds wide exterior, hero arrives slowly on EUC. 2-4 seconds he stops, steps off, parks the wheel upright to side of entrance. 4-6 seconds rear tracking as he walks through central doorway. 6-8 seconds smooth interior reveal with hero looking around. Natural footfalls, maintain physical geography from facade to inside, no teleporting, no impossible walls. Only existing store signage, no subtitles, no HUD, no narration or soundtrack. PENNY AUCTION / PENNY EXCHANGE: match low white/glass storefront beside the LottoMind brick building, flat dark thin projecting roof with small linear lights, red brick base below white window panels, gold narrow mullions and central unobstructed doorway. The giant grey structure above in reference is an occluding part of the game's neighboring building, do not turn it into the storefront. Inside white walls lined with framed supplied photography, warm wood floor, low glass display cases, dark navy furnishings and green service counter. Hero walks in to view the framed photography and merchandise cases; no bids, checkout, money or fake prices."
+      }
+    }
+  ],
+  "jobs": [
+    {
+      "index": 0,
+      "job_id": "52534477-409c-4dac-aa81-ea80bb664c87",
+      "status": "completed",
+      "type": "video",
+      "model": "seedance_2_5",
+      "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20261004_221836_52534477-409c-4dac-aa81-ea80bb664c87.mp4"
+    },
+    {
+      "index": 1,
+      "job_id": "2f30f6d2-f2f0-4626-bdc1-135e534adeef",
+      "status": "completed",
+      "type": "video",
+      "model": "seedance_2_5",
+      "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20261004_221835_2f30f6d2-f2f0-4626-bdc1-135e534adeef.mp4"
+    },
+    {
+      "index": 2,
+      "job_id": "316e91ba-6136-4084-a828-eb9856ea5494",
+      "status": "completed",
+      "type": "video",
+      "model": "seedance_2_5",
+      "result_url": "https://d8j0ntlcm91z4.cloudfront.net/user_2vm1zUlZVo7Zg51Fx2ETKBgAmnM/hf_20261004_221835_316e91ba-6136-4084-a828-eb9856ea5494.mp4"
+    }
+  ],
+  "captureSource": "Actual runtime Studio camera PNG captures",
+  "runtime": "Eight seconds, muted, first entrance per store per session; Skip/Escape, reduced motion bypass, failure unlock.",
+  "encoding": {
+    "codec": "H.264",
+    "resolution": "1280x720",
+    "fps": 24,
+    "crf": 28,
+    "audio": false,
+    "fastStart": true
+  },
+  "review": "Multiple timestamps inspected for all three: matching green/gold gallery, blue/gold brick LottoMind app store and glass/brick Penny front; hero on one electric unicycle, steps off and enters. Generated accessories and portraits may vary."
+}

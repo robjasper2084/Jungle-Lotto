@@ -1,7 +1,9 @@
+import {loadingCinema} from './loadingCinema.ts';
 import './style.css';
 import './lobby.css';
 import {BootLifecycle} from './bootLifecycle.ts';
 export const boot=new BootLifecycle();
+const cinema=loadingCinema();
 const node=(id:string)=>document.getElementById(id)!;
 document.getElementById('menu')!.style.setProperty('--lobby-art',`url("${new URL('../../public/art/swoop-rivals.webp',import.meta.url).href}")`);
 node('start').before(node('loading'));
@@ -17,6 +19,7 @@ window.fetch=async (...args:Parameters<typeof fetch>)=>{
 };
 export function renderBoot(){
  document.body.dataset.boot=boot.stage;
+ if(boot.stage==='ready'||boot.stage==='error')cinema.finish();else cinema.status(boot.message);
  const loading=node('loading');loading.hidden=boot.stage==='ready'||boot.stage==='error';
  const status=document.getElementById('startupStatus');if(status)status.textContent=boot.message;
  if(previous!==boot.message){loading.textContent=boot.message;node('startReason').textContent=boot.stage==='ready'?'Your ride is ready.':boot.message;previous=boot.message;}

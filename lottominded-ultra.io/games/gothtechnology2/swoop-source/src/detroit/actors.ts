@@ -17,6 +17,8 @@ import type {RiderId} from './riderChoices.ts';
 import type {TerrainSampler} from './terrain.ts';
 import {createGroundSample} from './terrain.ts';
 import {assetConcurrency,loadAssetQueue} from './assetQueue.ts';
+import {ArmorKeychain} from './armorKeychain.ts';
+import {HelmetSkinDecal} from './helmetSkin.ts';
 
 type Limb={upper:T.Object3D;knee:T.Object3D;foot:T.Object3D;target:T.Vector3;rotation:T.Quaternion;};
 const v=()=>new T.Vector3(),q=()=>new T.Quaternion();
@@ -59,6 +61,7 @@ export class Hero {
   readonly wheelScale:number;readonly motionScale:number;readonly mountHeight:number;
   skateboarding=false;private skateContact?:CrashContact;private skateboard=new T.Group();private skateWheels:T.Mesh[]=[];
   private saddle:T.Mesh;private hairWind:HairWind;
+  private armorKeychain?:ArmorKeychain;private helmetSkin?:HelmetSkinDecal;
   readonly visibility:RiderVisibility;readonly vrEyeHeight:number;readonly mountedVolume:{radius:number;height:number};
   constructor(data:Map<string,GLTF>,terrain?:TerrainSampler,riderId:RiderId='DS_Man_01'){
     this.terrain=terrain;this.riderId=riderId;
@@ -89,12 +92,13 @@ export class Hero {
     this.root.name='Digital Static â€¢ '+riderId+' on separate EUC';
     if(this.hips)this.fallPivot.copy(this.rider.worldToLocal(this.hips.getWorldPosition(v())));
     this.riderContact=new CrashContact(this.rider);this.wheelContact=new CrashContact(this.vehicle);
+    if(riderId==='DS_Armored_Rider_01'){this.armorKeychain=new ArmorKeychain(this.rider);this.helmetSkin=new HelmetSkinDecal(this.rider);}
     this.visibility=new RiderVisibility(this.rider,this.head);
     this.vrEyeHeight=(this.head?.getWorldPosition(v()).y??1.75)+.065;
       this.apply({...initialMountedPose()});const box=new T.Box3().setFromObject(this.root,true);
       this.mountedVolume={radius:Math.max(.4,Math.abs(box.min.x),Math.abs(box.max.x),Math.abs(box.min.z),Math.abs(box.max.z))+.06,height:box.max.y+.08};
   }
-  dispose(){this.skateboard.traverse(o=>{if(o instanceof T.Mesh){o.geometry.dispose();(o.material as T.Material).dispose();}});this.hairWind.dispose();this.saddle.geometry.dispose();(this.saddle.material as T.Material).dispose();this.visibility.dispose();this.root.removeFromParent();this.rider.traverse(o=>{if((o as T.SkinnedMesh).isSkinnedMesh)(o as T.SkinnedMesh).skeleton.dispose();});}
+  dispose(){this.armorKeychain?.dispose();this.helmetSkin?.dispose();this.skateboard.traverse(o=>{if(o instanceof T.Mesh){o.geometry.dispose();(o.material as T.Material).dispose();}});this.hairWind.dispose();this.saddle.geometry.dispose();(this.saddle.material as T.Material).dispose();this.visibility.dispose();this.root.removeFromParent();this.rider.traverse(o=>{if((o as T.SkinnedMesh).isSkinnedMesh)(o as T.SkinnedMesh).skeleton.dispose();});}
   pedalTarget(l:Limb,suspensionOffset:number){return this.vehicle.localToWorld(l.target.clone().add(new T.Vector3(0,suspensionOffset,0)));}
   footTarget(index:number,p:RidePose){
     const target=this.pedalTarget(this.legs[index],p.suspensionOffset);
@@ -110,6 +114,7 @@ export class Hero {
     return target;
   }
   apply(p:RidePose){
+    this.armorKeychain?.update(p,typeof matchMedia!=='undefined'&&matchMedia('(prefers-reduced-motion: reduce)').matches);
     if(this.skateboarding&&p.crashBlend===0)p={...p,stopFoot:0,seated:0};
     this.hairWind.update(p.speed,p.headingY,typeof matchMedia!=='undefined'&&matchMedia('(prefers-reduced-motion: reduce)').matches);
     // A recovered/mounted pose must not inherit a previous fall's body or wheel

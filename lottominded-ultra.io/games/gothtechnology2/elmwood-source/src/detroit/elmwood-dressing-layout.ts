@@ -27,6 +27,11 @@ export function layoutElmwoodDressing<P extends Dressing>(terrain:ElmwoodTerrain
  return placements.flatMap(p=>{
   const [x,north]=p.position;
   if(p.asset==='elmwood-park-bench')return [{...p,rotation:elmwoodBenchHeading(terrain,x,north)}];
+  // The complete grass clump stays in lawn, including its scaled footprint.
+  if(p.asset==='grass-tuft'&&!elmwoodGrassTreeSite(terrain,boundary,x,north,.8*p.scale+.12)){
+   for(let r=.5;r<=5;r+=.5)for(let i=0;i<24;i++){const a=i*Math.PI/12,px=x+Math.cos(a)*r,pn=north+Math.sin(a)*r;if(elmwoodGrassTreeSite(terrain,boundary,px,pn,.8*p.scale+.12))return [{...p,position:[px,pn,terrain.surfaceGround(px,pn)]}];}
+   return [];
+  }
   if(!trees.has(p.asset))return [p];
   const radius=Math.max(1.1,.65*p.scale+.4);
   if(elmwoodGrassTreeSite(terrain,boundary,x,north,radius))return [p];
