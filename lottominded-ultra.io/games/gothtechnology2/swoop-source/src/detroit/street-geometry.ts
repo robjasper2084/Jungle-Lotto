@@ -4,7 +4,7 @@ import {profileLevel} from './geo-profile.ts';
 
 /** Distinct overlay heights keep a parallel walk from fighting the road depth.
  * The same triangles are registered for riding, so the curb-free seam is tiny. */
-export const streetSurfaceLift=(road:{kind:string})=>['footway','pedestrian'].includes(road.kind)?.06:['cycleway','path'].includes(road.kind)?.055:.035;
+export const streetSurfaceLift=(road:{kind:string;name?:string})=>road.name==='Dequindre Cut Greenway'?.075:['footway','pedestrian'].includes(road.kind)?.06:['cycleway','path'].includes(road.kind)?.055:.035;
 
 export function streetElevation(road:{kind:string;bridge?:boolean},x:number,z:number,terrain:number){
   const c=nearestCut(x,z),walk=['cycleway','footway','path','pedestrian'].includes(road.kind);

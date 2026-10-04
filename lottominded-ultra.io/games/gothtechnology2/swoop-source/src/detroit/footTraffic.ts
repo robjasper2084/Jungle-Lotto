@@ -1,3 +1,4 @@
+import {mocapWalking} from './mocapWalking.ts';
 import * as T from 'three';
 import {clone} from 'three/addons/utils/SkeletonUtils.js';
 import type {GLTF} from './compressedGLTFLoader.ts';
@@ -94,6 +95,7 @@ export class FootTraffic {
       const rotation=this.root.getWorldQuaternion(q()).multiply(q().setFromAxisAngle(new T.Vector3(1,0,0),strides[i].pitch*effort)).multiply(l.rotation);
       solveFootContact(l,world,forward.clone(),rotation);
     }
+    if(!this.jog)mocapWalking(this.bones,this.phase,effort);
     for(let i=0;i<2;i++){
       const l=this.arms[i],side=Math.sign(l.rest.x),swing=Math.cos((this.phase+i*.5)*tau-.10)*effort;
       const shoulder=l.upper.getWorldPosition(v()),elbow=l.joint.getWorldPosition(v()),hand=l.end.getWorldPosition(v()),upper=shoulder.distanceTo(elbow),lower=elbow.distanceTo(hand);

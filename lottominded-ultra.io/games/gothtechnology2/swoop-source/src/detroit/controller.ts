@@ -7,7 +7,7 @@ import {BalanceEngine} from './balanceEngine.ts';
 import {NaturalMotionEngine} from './naturalMotion.ts';
 import {createGroundSample} from './terrain.ts';
 import type {TerrainSampler,Vec3,ActorImpact,NavigationObstacle} from './terrain.ts';
-import {RIDE_TUNING as tune,clamp,damp,angle,spring,advanceSpring,advanceDrive} from './rideDynamics.ts';
+import {RIDE_TUNING as tune,clamp,damp,angle,spring,advanceSpring,advanceDrive,type RideTuning} from './rideDynamics.ts';
 
 export const NEUTRAL_ACTIONS={throttle:0,steer:0,crouch:false,hop:false,hopHeld:false,reset:false,trick:0};
 export type RideActions=typeof NEUTRAL_ACTIONS & {seated?:boolean;eyeControl?:boolean};
@@ -35,6 +35,8 @@ type Spawn={position:Vec3;headingY:number};
 /** Original Motion 4: jerk-limited motor, bank-led steering and articulated body at 120 Hz. */
 export class RideController {
   terrain:TerrainSampler;
+  private tuning:RideTuning={...tune};
+  setHandling(profile:Partial<RideTuning>){Object.assign(this.tuning,profile);}
   wheelScale=.86;
   precisionSteering=false; // Path-following AI supplies an exact steering demand, without thumb filtering.
   mountedVolume:MountedVolume={...DEFAULT_MOUNTED_VOLUME};
@@ -61,7 +63,7 @@ export class RideController {
     this.pose=createPose();Object.assign(this.pose,this.spawn.position,{headingY:spawn.headingY});
     this.pose.y=this.terrain.sampleGround(this.pose.x,this.pose.z,this.ground,this.pose.y).height;
     this.velocityY=this.vx=this.vz=this.acceleration=this.charge=this.motor=this.crashAge=this.distance=this.idlePhase=0;
-    this.balance=new BalanceEngine();this.pitch=spring();this.suspension=spring();this.hip=spring();this.arms=spring();
+    this.balance=new BalanceEngine(this.tuning);this.pitch=spring();this.suspension=spring();this.hip=spring();this.arms=spring();
     this.naturalMotion=new NaturalMotionEngine();this.feedback=new RideFeedback();this.tricks.reset();
     this.stoppedFor=0;this.recoveryAge=0;this.recoveryPose=undefined;
     this.hopWindup=this.pendingCharge=0;this.fallMotion=undefined;
@@ -94,6 +96,7 @@ export class RideController {
     return true;
   }
   step(dt:number,input:RideActions){
+    const tune=this.tuning;
     if(!Number.isFinite(dt)||dt<=0)return;dt=Math.min(dt,1/30);this.touchedDown=false;
     if(input.reset){this.recover();return;}const p=this.pose;
     if(this.recoveryPose){
@@ -145,11 +148,11 @@ export class RideController {
       else if(this.reverseReady&&!this.brakeLatch)requested=throttle*3.4;
     }else if(throttle>.05){requested=throttle*(p.speed<0?tune.brakeAcceleration:tune.driveAcceleration);this.brakeLatch=false;}
     const braking=(requested*p.speed<-.02)||this.brakeLatch;
-    this.motor=advanceDrive(this.motor,requested,braking,dt);p.brakeAmount=damp(p.brakeAmount,braking?Math.abs(throttle):0,12,dt);
+    this.motor=advanceDrive(this.motor,requested,braking,dt,tune);p.brakeAmount=damp(p.brakeAmount,braking?Math.abs(throttle):0,12,dt);
     // Hold a stationary wheel against the hill while both boots stay on the pedals.
     if(resting)this.motor=0;
-    p.tiltback=damp(p.tiltback,clamp((absSpeed-18.5)/3,0,1),4,dt);
-    const powerTaper=clamp((tune.maxSpeed-absSpeed)/6.5,0,1),force=this.motor*(braking||p.speed<0?1:powerTaper);
+    p.tiltback=damp(p.tiltback,clamp((absSpeed-tune.maxSpeed*.85)/Math.max(1,tune.maxSpeed*.15),0,1),4,dt);
+    const powerTaper=this.tuning.version==='Digital Static Motion 4.1'?clamp((tune.maxSpeed-absSpeed)/6.5,0,1):1,force=this.motor*(braking||p.speed<0?1:powerTaper);
     const drag=p.speed*(rough?.5:.055)+p.speed*absSpeed*(input.crouch?.004:.006);
     const hill=tune.gravity*(this.ground.normal.x*Math.sin(p.headingY)+this.ground.normal.z*Math.cos(p.headingY));
     if(this.grounded){
@@ -243,8 +246,16 @@ export class RideController {
     }
     this.terrain.sampleGround(p.x,p.z,this.ground,p.y);const floor=this.ground.height;
     if(this.grounded){
-      if(oldY-floor>.07&&Math.abs(p.speed)>2){this.grounded=false;this.groundAge=0;this.flightYaw=p.headingY;this.velocityY=Math.max(0,this.velocityY);}
-      else{p.y=floor;this.velocityY=damp(this.velocityY,(floor-oldY)/dt,18,dt);}
+      // Ordinary curbs and overlay seams are ground contact, not a takeoff.
+      // Only larger drops enter flight; deliberate hops already set grounded=false.
+      if(oldY-floor>.22&&Math.abs(p.speed)>2){this.grounded=false;this.groundAge=0;this.flightYaw=p.headingY;this.velocityY=Math.max(0,this.velocityY);}
+      else{
+        p.y=floor;
+        // A discrete 15 cm step divided by a physics tick creates an artificial
+        // upward impulse. Retain real ramp momentum from the contact normal.
+        const gradeVelocity=-(this.ground.normal.x*this.vx+this.ground.normal.z*this.vz)/Math.max(.5,this.ground.normal.y);
+        this.velocityY=damp(this.velocityY,clamp(gradeVelocity,-Math.abs(p.speed),Math.abs(p.speed)),18,dt);
+      }
     }
     if(!this.grounded){
       this.velocityY-=tune.gravity*dt;p.y+=this.velocityY*dt;
@@ -311,7 +322,7 @@ export class RideController {
     return overhead===null&&ahead===null;
   }
   writePose(out:RidePose){copyPose(this.pose,out);}
-  snapshot(){const p=this.pose;return {
+  snapshot(){const p=this.pose,tune=this.tuning;return {
     speed:p.speed,speedKph:p.speed*3.6,position:{x:p.x,y:p.y,z:p.z},headingY:p.headingY,riderPitch:p.riderPitch,rollAngle:p.rollAngle,grounded:this.grounded,crashed:this.crashed,
     fallPhase:this.fallMotion?.phase??'none',crashCause:this.crashCause,powerStage:p.tiltback>.2?'tiltback':Math.abs(p.speed)>17?'speed warning':'normal',crouchCharge:this.charge,distanceTravelled:this.distance,...this.counts,
     trick:this.tricks.snapshot(),oneFootStop:p.stopFoot,pedalScrape:p.scrape,warningLevel:p.warningLevel,

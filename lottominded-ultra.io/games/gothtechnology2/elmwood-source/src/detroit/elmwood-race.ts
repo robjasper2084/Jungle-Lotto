@@ -1,3 +1,5 @@
+import {EbikeController} from './ebikeController.ts';
+import {EBIKES,EUC_MODELS,eucHandling,eucSteering,type EbikeProfile,type EucProfile} from './electricVehicles.ts';
 import {BicycleController} from '@digital-static/ridecore/cycling';
 import {RideController,createPose,createGroundSample,NEUTRAL_ACTIONS,type TerrainSampler} from '@digital-static/ridecore';
 import {LaneRoute} from './riding/communityRide.ts';
@@ -7,9 +9,9 @@ const clamp=(n:number,a:number,b:number)=>Math.max(a,Math.min(b,n));
 export class ElmwoodRacePilot {
  readonly sim:RideController;readonly pose=createPose();readonly run:ElmwoodRun;readonly route:LaneRoute;
  private accumulator=0;station=0;offset=0;targetOffset=0;private sample=createGroundSample();private think=0;private commitment=0;private blockedFor=0;private backoff=0;private recovery=0;recoveries=0;
- readonly terrain:TerrainSampler;readonly index:number;readonly cycling:boolean;readonly difficulty:'club'|'expert';
- constructor(terrain:TerrainSampler,points:readonly Point[],gates:Point[],index:number,cycling:boolean,difficulty:'club'|'expert'='club'){this.difficulty=difficulty;this.terrain=terrain;this.index=index;this.cycling=cycling;
-  this.route=new LaneRoute(points.map(p=>({...p,width:4})));this.run=new ElmwoodRun(gates);this.sim=cycling?new BicycleController(terrain):new RideController(terrain);this.reset();
+ readonly terrain:TerrainSampler;readonly index:number;readonly cycling:boolean;readonly difficulty:'club'|'expert';readonly electric?:EbikeProfile;readonly wheel?:EucProfile;
+ constructor(terrain:TerrainSampler,points:readonly Point[],gates:Point[],index:number,cycling:boolean,difficulty:'club'|'expert'='club',electric?:EbikeProfile,wheel?:EucProfile){this.difficulty=difficulty;this.terrain=terrain;this.index=index;this.cycling=cycling;this.electric=electric?EBIKES[(EBIKES.findIndex(p=>p.id===electric.id)+index+1)%4]:undefined;this.wheel=wheel?EUC_MODELS[(EUC_MODELS.findIndex(p=>p.id===wheel.id)+index+1)%4]:undefined;
+  this.route=new LaneRoute(points.map(p=>({...p,width:4})));this.run=new ElmwoodRun(gates);this.sim=this.electric?new EbikeController(terrain,this.electric):cycling?new BicycleController(terrain):new RideController(terrain);if(this.wheel)this.sim.setHandling(eucHandling(this.wheel));this.reset();
  }
  reset(){this.accumulator=0;this.station=0;this.offset=this.targetOffset=[-.95,.95,0][this.index];this.think=this.commitment=this.blockedFor=this.backoff=this.recovery=this.recoveries=0;
   const a=this.route.at(0,this.offset),back=(this.index+1)*1.9,x=a.x-Math.sin(a.headingY)*back,z=a.z-Math.cos(a.headingY)*back;
@@ -46,12 +48,13 @@ export class ElmwoodRacePilot {
   this.offset+=clamp(this.targetOffset-this.offset,-dt*1.5,dt*1.5);
   const target=this.route.at(this.station+look,this.offset),desired=Math.atan2(target.x-p.x,target.z-p.z),error=Math.atan2(Math.sin(desired-p.headingY),Math.cos(desired-p.headingY));
   const a=this.route.at(this.station),b=this.route.at(this.station+9),bend=Math.abs(Math.atan2(Math.sin(b.headingY-a.headingY),Math.cos(b.headingY-a.headingY)))/9;
-  let pace=Math.min((this.cycling?(this.difficulty==='expert'?7.2:6.5):(this.difficulty==='expert'?10:8.8))+[.1,-.15,.02][this.index],Math.sqrt(2.5/Math.max(.018,bend)));pace*=clamp(1-Math.abs(error)*.45,.35,1);
+  const skill=this.difficulty==='expert'?1:.88;
+  let pace=Math.min((this.electric?Math.min(19,this.electric.topKph/3.6*.68)*skill:this.wheel?Math.min(13,this.wheel.topKph/3.6*.8)*skill:this.cycling?(this.difficulty==='expert'?7.2:6.5):(this.difficulty==='expert'?10:8.8))+[.1,-.15,.02][this.index],Math.sqrt(2.5/Math.max(.005,bend)));pace*=clamp(1-Math.abs(error)*.45,.35,1);
   if(!this.clear(this.offset,Math.max(1.2,p.speed*.6)))pace=Math.min(pace,2);
   for(const o of others){const gap=o.station-this.station;if(o!==this&&gap>0&&gap<7&&Math.abs(o.offset-this.offset)<1.1)pace=Math.min(pace,Math.max(1,o.pose.speed+(gap-2.4)*1.4));}
-  const drag=this.cycling?.13+p.speed*p.speed*.009:p.speed*.055+p.speed*p.speed*.006;
-  const throttle=clamp((pace-p.speed)*.8+drag/(this.cycling?2.35:5),-.8,1);
-  this.sim.step(dt,{...NEUTRAL_ACTIONS,throttle,steer:clamp(-error*(this.cycling?2.8:2.5),-.85,.85)});this.sim.writePose(p);
+  const drag=this.electric?.09+.32*p.speed*p.speed/(this.electric.mass+80):this.cycling?.13+p.speed*p.speed*.009:p.speed*.055+p.speed*p.speed*.006;
+  const throttle=clamp((pace-p.speed)*.8+drag/(this.electric?this.electric.acceleration:this.cycling?2.35:5),-.8,1);
+  this.sim.step(dt,{...NEUTRAL_ACTIONS,throttle,steer:this.wheel?eucSteering(this.wheel,p.speed,clamp(-error*2.5,-.85,.85)):clamp(-error*(this.cycling?2.8:2.5),-.85,.85)});this.sim.writePose(p);
   this.blockedFor=Math.abs(p.speed)<.15?this.blockedFor+dt:0;
   if(this.cycling&&(this.sim as BicycleController).blocked&&this.blockedFor>.3){this.backoff=1.6;this.blockedFor=0;this.commitment=3;this.think=0;}
   if(this.sim.crashed||this.blockedFor>2.5){this.recovery+=dt;
@@ -64,7 +67,7 @@ export class ElmwoodRacePilot {
  }
 }
 export function elmwoodRaceOrder(player:ElmwoodRun,position:Point,route:LaneRoute,pilots:readonly ElmwoodRacePilot[]){
- return [{name:'YOU',run:player,station:route.nearest(position).s},...pilots.map((p,i)=>({name:'Rider '+(i+1),run:p.run,station:p.station}))].sort((a,b)=>a.run.finished&&b.run.finished?a.run.finishTime-b.run.finishTime:a.run.finished?-1:b.run.finished?1:b.run.gate-a.run.gate||b.station-a.station);
+ return [{name:'YOU',run:player,station:route.nearest(position).s},...pilots.map((p,i)=>({name:p.electric?.name??p.wheel?.name??'Rider '+(i+1),run:p.run,station:p.station}))].sort((a,b)=>a.run.finished&&b.run.finished?a.run.finishTime-b.run.finishTime:a.run.finished?-1:b.run.finished?1:b.run.gate-a.run.gate||b.station-a.station);
 }
 /** Advance neighbors together; frame-sized batches per rider distort following gaps. */
 export class ElmwoodRacePack {

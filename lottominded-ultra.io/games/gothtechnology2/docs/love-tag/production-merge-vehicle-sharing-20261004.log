@@ -1,0 +1,14 @@
+Shared 8 identical electric vehicles; saved 0.0 MiB.
+✔ identical vehicles retain canonical bytes and rewrite the published loader (30.2696ms)
+✔ a mismatch fails before any loader edit or model deletion (21.437ms)
+Shared 8 identical electric vehicles; saved 0.0 MiB.
+✔ different relative texture names share only after actual pixels and geometry match (24.2525ms)
+✔ different external pixels cannot be mistaken for the same vehicle (20.4055ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 192.3966

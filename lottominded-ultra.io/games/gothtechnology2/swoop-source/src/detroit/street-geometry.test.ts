@@ -5,6 +5,11 @@ import {terrainChunks} from './world.ts';
 import type {TerrainChunk} from './world.ts';
 import {CITY} from './geography.ts';
 const chunks=terrainChunks();
+test('the greenway remains asphalt through overlapping concrete pedestrian crossings',()=>{
+ const cut=streetSurfaceLift({kind:'cycleway',name:'Dequindre Cut Greenway'});
+ assert.ok(cut-streetSurfaceLift({kind:'footway'})>=.014,'separate depth keeps a concrete corner from cutting across the trail');
+ assert.ok(cut<.08,'the crossing stays a small rideable seam');
+});
 const area=(p:number[])=>{let sum=0;for(let i=0;i<p.length;i+=9)sum+=Math.abs((p[i+3]-p[i])*(p[i+8]-p[i+2])-(p[i+5]-p[i+2])*(p[i+6]-p[i]))/2;return sum;};
 test('curb ramp stays local to the crossing instead of stretching across a long sidewalk',()=>{
  const tile:TerrainChunk={x:50,z:50,vertices:new Float32Array([0,0,0,100,0,0,0,0,100,100,0,100]),indices:new Uint32Array([0,2,1,1,2,3]),surfaces:['grass','grass']};
@@ -61,4 +66,3 @@ test('mapped Lafayette, Larned, Franklin and Antietam street sections survive bo
     assert.ok(recovered>10,`${name}: expected real mapped sections previously culled at their midpoint`);
   }
 });
-

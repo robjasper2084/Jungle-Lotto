@@ -1,0 +1,10 @@
+{
+  "pavedAreaM2": 34383.27702036896,
+  "triangles": 46699,
+  "minimumGroundClearanceM": 0.04599999999999982,
+  "removedVegetationInstances": 5054,
+  "preservedPlacements": 6116,
+  "roadUnionOverlapM2": 0,
+  "terrainProjection": "Exact source triangle planes",
+  "bridgeDecks": "Dedicated stone models retained; five metre approach transitions"
+}

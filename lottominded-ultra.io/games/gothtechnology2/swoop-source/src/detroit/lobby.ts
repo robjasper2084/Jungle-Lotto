@@ -57,7 +57,7 @@ export function installLobby(elmwood:boolean,onRace:()=>void,onSplit:()=>void){
    $('menuCopy').textContent=tab==='split'?'2–4 players. Share a screen with separate keyboards or controllers.':tab==='race'?'Follow the gates. Find your pace. Race to Mack Avenue.':elmwood?'Quiet lanes. Rolling hills. Explore at your own pace.':'Explore Detroit. Ride with your dog. Find your own adventure.';
    $('start').textContent=tab==='split'?'Start playing together →':tab==='race'?'Start race →':'Start riding →';
    if(tab==='race'&&elmwood){raceInfo.textContent='Rival racing starts on the Dequindre Cut. Continue to the race setup, then choose your rider and pace.';$('start').textContent='GO TO THE CUT →';}
-   $('start').onclick=tab==='split'?onSplit:tab==='race'?onRace:originalStart;
+   $('start').onclick=tab==='split'?()=>onSplit():tab==='race'?()=>onRace():originalStart;
   }
   if(tab==='challenges'){mode.value='free';mode.dispatchEvent(new Event('change'));}
   menu.scrollTop=0;

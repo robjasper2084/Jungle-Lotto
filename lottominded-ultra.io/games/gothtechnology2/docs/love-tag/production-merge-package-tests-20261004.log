@@ -1,0 +1,22 @@
+Shared identical ride textures in 1 models; saved 0.0 MiB.
+✔ Pages shares identical ride textures and preserves mesh bytes and model-relative URLs (23.9414ms)
+Shared identical ride textures in 2 models; saved 0.0 MiB.
+✔ ride sharing stores repeated embedded textures once without changing pixels (19.3446ms)
+✔ Ride sharing leaves unmatched textures intact (0.5351ms)
+✔ ride compression preserves exact accessor bytes, index order, image payload and metadata (3.1913ms)
+✔ Pages assembly fails before publishing an absent or partial store build (8.0207ms)
+✔ Pages assembly includes compiled routes, lazy chunks and videos without touching other apps (43.8296ms)
+✔ Pages assembly refuses private environment files in generated output (15.4083ms)
+✔ Pages shares identical cabinet assets and resolves both document and module URLs (19.9278ms)
+✔ Pages retains original media URLs consumed by Vault Rush and the arcade catalog (15.0472ms)
+Shared 8 identical electric vehicles; saved 0.0 MiB.
+✔ identical vehicles retain canonical bytes and rewrite the published loader (33.561ms)
+✔ a mismatch fails before any loader edit or model deletion (21.037ms)
+ℹ tests 11
+ℹ suites 0
+ℹ pass 11
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 260.7219

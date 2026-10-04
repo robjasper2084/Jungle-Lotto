@@ -25,7 +25,7 @@ function pointBone(bone:T.Object3D,child:T.Object3D,target:T.Vector3){
   const world=bone.getWorldQuaternion(q()).premultiply(q().setFromUnitVectors(from,to));
   bone.quaternion.copy(bone.parent!.getWorldQuaternion(q()).invert().multiply(world));bone.updateWorldMatrix(false,true);
 }
-function solve(l:Limb,target:T.Vector3,pole:T.Vector3,rotation?:T.Quaternion,reachFraction=1){
+export function solve(l:Limb,target:T.Vector3,pole:T.Vector3,rotation?:T.Quaternion,reachFraction=1){
   const a=l.upper.getWorldPosition(v()),b=l.knee.getWorldPosition(v()),c=l.foot.getWorldPosition(v());
   const l1=a.distanceTo(b),l2=b.distanceTo(c),dir=target.clone().sub(a);
   const d=clamp(dir.length(),.03,(l1+l2)*reachFraction-.0001);dir.normalize();

@@ -1,3 +1,5 @@
+import {EBIKES,EUC_MODELS,type EbikeProfile,type EucProfile} from './electricVehicles.ts';
+import {EbikeView} from './electricVehicleView.ts';
 import {BicycleView} from '@digital-static/ridecore/cycling-view';
 import {routeGuide} from './routeGuide.ts';
 import * as T from 'three';
@@ -65,13 +67,13 @@ export class RivalRace {
 
 
 
- constructor(scene:T.Scene,terrain:TerrainSampler,data:Awaited<ReturnType<typeof loadActors>>,player:RiderId,readonly difficulty:RaceDifficulty,playerController?:RideController,readonly cycling=false,readonly cyclingOpponents=cycling){
+ constructor(scene:T.Scene,terrain:TerrainSampler,data:Awaited<ReturnType<typeof loadActors>>,player:RiderId,readonly difficulty:RaceDifficulty,playerController?:RideController,readonly cycling=false,readonly cyclingOpponents=cycling,readonly electric?:EbikeProfile,readonly wheel?:EucProfile){
 
 
-  this.rules=new RaceRules(player);this.pilots=this.rules.racers.slice(1).map((r,i)=>new RacePilot(terrain,r.id,i,difficulty,()=>playerController?playerController.obstacles('human-player'):this.playerPose?[{id:'human-player',x:this.playerPose.x,y:this.playerPose.y,z:this.playerPose.z,radius:.52,height:2.2,kind:'rider',vx:this.playerPose.velocityX,vz:this.playerPose.velocityZ}]:[],cyclingOpponents));
+  this.rules=new RaceRules(player);this.pilots=this.rules.racers.slice(1).map((r,i)=>new RacePilot(terrain,r.id,i,difficulty,()=>playerController?playerController.obstacles('human-player'):this.playerPose?[{id:'human-player',x:this.playerPose.x,y:this.playerPose.y,z:this.playerPose.z,radius:.52,height:2.2,kind:'rider',vx:this.playerPose.velocityX,vz:this.playerPose.velocityZ}]:[],cyclingOpponents,electric?EBIKES[(EBIKES.findIndex(p=>p.id===electric.id)+i+1)%4]:undefined,wheel?EUC_MODELS[(EUC_MODELS.findIndex(p=>p.id===wheel.id)+i+1)%4]:undefined));
 
 
-  this.heroes=this.pilots.map(p=>{const h=cyclingOpponents?new BicycleView(data.get('DS_Bicycle_01')!,data.get('DS_Cyclist_01')!,p.index+1,true):new Hero(data,terrain,p.id);if(h instanceof Hero)p.sim.mountedVolume=h.mountedVolume;h.apply(p.pose);scene.add(h.root);return h;});
+  this.heroes=this.pilots.map(p=>{const riderData=new Map(data);if(p.wheel)riderData.set('DS_EUC_01',data.get('Euc_'+p.wheel.id)!);const h=p.electric?new EbikeView(data.get('Ebike_'+p.electric.id)!,data.get('DS_Cyclist_01')!,p.electric,true):cyclingOpponents?new BicycleView(data.get('DS_Bicycle_01')!,data.get('DS_Cyclist_01')!,p.index+1,true):new Hero(riderData,terrain,p.id);if(h instanceof Hero)p.sim.mountedVolume=h.mountedVolume;h.apply(p.pose);scene.add(h.root);return h;});
 
 
 
@@ -136,7 +138,7 @@ export class RivalRace {
 
 
 
-  $('raceOrder').replaceChildren(...r.order.map((p,i)=>{const li=document.createElement('li');li.textContent=`${i+1}. ${p.player?'YOU':this.cyclingOpponents?'Cyclist '+(this.pilots.findIndex(r=>r.id===p.id)+1):name(p.id)}${p.finish!==null?' · '+p.finish.toFixed(1)+' s':!p.player?' · '+Math.round(p.speed*3.6)+' km/h':''}`;li.classList.toggle('isPlayer',p.player);return li;}));
+  $('raceOrder').replaceChildren(...r.order.map((p,i)=>{const li=document.createElement('li');li.textContent=`${i+1}. ${p.player?'YOU':this.electric||this.wheel?this.pilots.find(r=>r.id===p.id)!.vehicleLabel:this.cyclingOpponents?'Cyclist '+(this.pilots.findIndex(r=>r.id===p.id)+1):name(p.id)}${p.finish!==null?' · '+p.finish.toFixed(1)+' s':!p.player?' · '+Math.round(p.speed*3.6)+' km/h':''}`;li.classList.toggle('isPlayer',p.player);return li;}));
 
 
 
@@ -160,7 +162,7 @@ export class RivalRace {
 
 
 
-  if(r.player.finish!==null)try{const key=`swoop-rivals-best:${this.cycling?'bicycle-v1:':''}${RACE_ROUTE.id}:${this.difficulty}:${r.player.id}`,old=Number(localStorage.getItem(key));if(!old||r.player.finish<old){localStorage.setItem(key,String(r.player.finish));$('raceResultCopy').textContent+=' · NEW PERSONAL BEST';}else $('raceResultCopy').textContent+=` · Best ${old.toFixed(2)} s`;}catch{}
+  if(r.player.finish!==null)try{const key=`swoop-rivals-best:${this.electric?'ebike-'+this.electric.id+':':this.wheel?'euc-'+this.wheel.id+':':this.cycling?'bicycle-v1:':''}${RACE_ROUTE.id}:${this.difficulty}:${r.player.id}`,old=Number(localStorage.getItem(key));if(!old||r.player.finish<old){localStorage.setItem(key,String(r.player.finish));$('raceResultCopy').textContent+=' · NEW PERSONAL BEST';}else $('raceResultCopy').textContent+=` · Best ${old.toFixed(2)} s`;}catch{}
 
 
 

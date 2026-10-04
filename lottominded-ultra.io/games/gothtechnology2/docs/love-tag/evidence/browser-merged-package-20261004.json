@@ -1,0 +1,35 @@
+{
+  "at": "2026-10-04T20:27:42.746Z",
+  "scope": "Focused merged package review; full rounds remain pre-merge evidence",
+  "swoop": {
+    "lighting": "NVIDIA OptiX baked skylight",
+    "loveTag": "{\"product\":\"swoop-detroit\",\"phase\":\"active\",\"rules\":\"classic\",\"online\":true,\"humans\":1,\"bots\":3,\"round\":\"580f2a97-6a5d-4da9-b592-2a587d53fe0f\",\"tick\":3775,\"me\":\"nWv1KjTGp\",\"role\":\"it\",\"pose\":{\"x\":1735.3338384722185,\"y\":5.318760000000001,\"z\":114.6422179903612},\"ack\":3726,\"hash\":\"8692124ce27f6b62ce39f669d5e53832a10a716862fddcc6b73518a4b1521329\",\"actors\":[{\"id\":\"nWv1KjTGp\",\"name\":\"Rider\",\"connected\":true,\"bot\":false,\"role\":\"it\",\"ammo\":3,\"tags\":0,\"itTime\":56.91666666666472,\"resets\":0,\"pose\":{\"x\":1735.3338384722185,\"y\":5.318760000000001,\"z\":114.6422179903612,\"heading\":-1.682040902270524}},{\"id\":\"bot-c122825d-4e24-4b30-9428-dc50078b0bec\",\"name\":\"Bot 2\",\"connected\":false,\"bot\":true,\"role\":\"runner\",\"ammo\":3,\"tags\":0,\"itTime\":0,\"resets\":0,\"pose\":{\"x\":1617.584588638274,\"y\":5.318760000000001,\"z\":66.69736575454058,\"heading\":-4.561063877293229}},{\"id\":\"bot-08db2a15-3e2f-4514-991f-1e74c122d1e4\",\"name\":\"Bot 3\",\"connected\":false,\"bot\":true,\"role\":\"runner\",\"ammo\":3,\"tags\":0,\"itTime\":0,\"resets\":0,\"pose\":{\"x\":1676.0873659923293,\"y\":5.318760000000001,\"z\":204.54446242639247,\"heading\":-0.6155171327334219}},{\"id\":\"bot-c210da89-6f06-4ba8-98ac-18246e8682b0\",\"name\":\"Bot 4\",\"connected\":false,\"bot\":true,\"role\":\"runner\",\"ammo\":3,\"tags\":0,\"itTime\":0,\"resets\":0,\"pose\":{\"x\":1673.7944793002835,\"y\":5.318760000000001,\"z\":170.22519215610814,\"heading\":1.8334568043067525}}],\"events\":[],\"winners\":[],\"remaining\":123.08333333333562,\"correctionP95\":0}",
+    "module": "./assets/detroit-CEyb3LjB.js",
+    "tagRender": "{\"focus\":{\"x\":1735.3338384722185,\"y\":5.318760000000001,\"z\":114.6422179903612,\"headingY\":-1.682040902270524},\"resolutionScale\":1,\"drawCalls\":1131,\"streaming\":{\"total\":4,\"loaded\":4,\"loading\":0,\"deferred\":0,\"errors\":0}}"
+  },
+  "elmwood": {
+    "lighting": "NVIDIA OptiX baked skylight",
+    "loveTag": "{\"product\":\"elmwood-explorer\",\"phase\":\"active\",\"rules\":\"classic\",\"online\":true,\"humans\":1,\"bots\":3,\"round\":\"e26c5ec1-82af-4f66-8507-fb58fecea472\",\"tick\":3771,\"me\":\"ArzfvMoxf\",\"role\":\"it\",\"pose\":{\"x\":-327.6500486428413,\"y\":3.020778834827881,\"z\":-829.7597038327094},\"ack\":3758,\"hash\":\"81394a54680a00577d94367d07f455cae77cd9cacbbfb4e8b20806a9bb50600b\",\"actors\":[{\"id\":\"ArzfvMoxf\",\"name\":\"Rider\",\"connected\":true,\"bot\":false,\"role\":\"it\",\"ammo\":3,\"tags\":0,\"itTime\":56.849999999998055,\"resets\":0,\"pose\":{\"x\":-327.6500486428413,\"y\":3.020778834827881,\"z\":-829.7597038327094,\"heading\":0.6294964973505196}},{\"id\":\"bot-f837c0f6-5a23-4c31-88d4-9ef5acbc5877\",\"name\":\"Bot 2\",\"connected\":false,\"bot\":true,\"role\":\"runner\",\"ammo\":3,\"tags\":0,\"itTime\":0,\"resets\":0,\"pose\":{\"x\":-320.8975155461816,\"y\":4.016127405117664,\"z\":-738.1515365616402,\"heading\":1.5051844196391968}},{\"id\":\"bot-fde8df7c-3007-46ed-9dc5-4df7f22a1b60\",\"name\":\"Bot 3\",\"connected\":false,\"bot\":true,\"role\":\"runner\",\"ammo\":3,\"tags\":0,\"itTime\":0,\"resets\":0,\"pose\":{\"x\":-245.49107021122327,\"y\":4.7118427424473515,\"z\":-812.8597440586506,\"heading\":2.9341487877141748}},{\"id\":\"bot-7ecff911-431c-4998-91f0-343b4509eaaf\",\"name\":\"Bot 4\",\"connected\":false,\"bot\":true,\"role\":\"runner\",\"ammo\":3,\"tags\":0,\"itTime\":0,\"resets\":0,\"pose\":{\"x\":-301.3743959277581,\"y\":3.311078918021175,\"z\":-692.1770490627116,\"heading\":0.3492521058083557}}],\"events\":[],\"winners\":[],\"remaining\":123.15000000000228,\"correctionP95\":0}",
+    "module": "./assets/elmwood-DC9dAfSM.js",
+    "tagRender": "{\"focus\":{\"x\":-327.6500486428413,\"y\":3.020778834827881,\"z\":-829.7597038327094,\"headingY\":0.6294964973505196},\"resolutionScale\":1,\"drawCalls\":1707,\"streaming\":{\"total\":39,\"loaded\":39,\"loading\":0,\"deferred\":0,\"errors\":0}}"
+  },
+  "exits": {
+    "swoop": true,
+    "elmwood": true
+  },
+  "phoneSwoop": {
+    "height": 960,
+    "overflow": false,
+    "width": 1706
+  },
+  "viewportLimitation": "Viewport override did not resize the targeted Swoop review (actual 1706x960); do not count the cropped image as a phone pass.",
+  "logs": {
+    "swoop": [],
+    "elmwood": []
+  },
+  "phoneElmwood": {
+    "height": 844,
+    "overflow": false,
+    "width": 390
+  }
+}

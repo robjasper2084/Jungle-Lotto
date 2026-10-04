@@ -17,7 +17,7 @@ files.push('exports/glb/DS_Bicycle_Styles/DS_Bicycle_Styles_LOD1.glb','exports/g
 for(const dir of ['exports/architecture','exports/cut','textures/architecture','textures/cut','textures/trees','textures/realistic'])for(const name of await readdir(resolve(pack,dir)))if(/\.(glb|png|jpg|hdr)$/i.test(name)&&!(dir==='textures/cut'&&name.endsWith('.png'))&&!(dir==='exports/architecture'&&!['DS_Detroit_Globe_OAC.glb','DS_Detroit_Shed_3.glb'].includes(name)))files.push(dir+'/'+name);
 for(const id of ['DS_Man_01','DS_EUC_01','DS_Boerboel_01','DS_Pedestrian_01','DS_Cyclist_01','DS_Bicycle_01','DS_Hazard_Cone_01','DS_Hazard_Barrier_01','DS_Hoodie_Man_01','DS_Hoodie_Woman_01','DS_Mascot_Suit_01','DS_Mascot_Hoodie_01'])files.push(`exports/glb/${id}/${id}_LOD${id==='DS_Man_01'?0:1}.glb`);
 // New source-authored riders are not part of the original external asset pack.
-const sourceFiles=['exports/glb/DS_Armored_Rider_01/DS_Armored_Rider_01_LOD1.glb'];
+const sourceFiles=[...['talaria','ultra','sr','varg'].map(id=>'exports/electric/Ebike_'+id+'.glb'),...['city','tour','trail','speed'].map(id=>'exports/electric/Euc_'+id+'.glb'),'exports/electric/NOTICE.md','exports/glb/DS_Armored_Rider_01/DS_Armored_Rider_01_LOD1.glb'];
 sourceFiles.push(...await modelDependencies(resolve(source,'public'),sourceFiles));
 for(const file of sourceFiles)await readableTree(resolve(source,'public',file));
 for(const id of ['DS_Segway_01','DS_InlineSkate_01'])files.push(`exports/mobility/${id}.glb`);

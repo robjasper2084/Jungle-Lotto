@@ -1,0 +1,14 @@
+(node:3712) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ Expert selectable EUC pack retains three models and earns all Creek Lane gates (10988.5348ms)
+ℹ {"finishes":[30.083333333332266,28.091666666665713,31.483333333332187],"recoveries":[0,0,0]}
+✔ Expert electric bicycle pack retains three models and earns all Creek Lane gates (3388.5328ms)
+ℹ {"finishes":[21.108333333332777,20.424999999999482,21.216666666666104],"recoveries":[0,0,0]}
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 14983.6918
