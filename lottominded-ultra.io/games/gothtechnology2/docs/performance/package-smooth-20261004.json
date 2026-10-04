@@ -1,0 +1,62 @@
+{
+  "sourceRevision": "0c62d1acee42644d5066c1f93526ba1dc929f3d8",
+  "packages": [
+    {
+      "name": "swoop-detroit",
+      "entry": "index.html",
+      "assets": [
+        "blue-dragon-user-Dr4YzOXo.jpg",
+        "bootUi-CidZEMZx.js",
+        "bootUi-DVLei5z6.css",
+        "browser-BzBbrBKd.js",
+        "carsmuraldequindrecut-BryLlqOB.jpg",
+        "companion-studio-CdEsx4Ux.js",
+        "detroit-CQx51PY5.js",
+        "detroit-dreams-CuCNr6m2.jpg",
+        "detroit-heart-Cs8E2Zx8.png",
+        "detroit-skylight-D_6A6MdD.hdr",
+        "dogSteering-Dnxmk9Ju.js",
+        "fel3000mural-DsTDehD4.jpg",
+        "field-assets-CqvsqzPk.glb",
+        "freddymural-DKOKEo-L.jpg",
+        "gothtechnology-refined-DyG7icho.png",
+        "grass_01-Bk--EHD6.jpg",
+        "grass_01_normal-CeLXfj89.jpg",
+        "hdl-user-CjJCRD_J.jpg",
+        "hls.light-Cm5ppQ94.js",
+        "humanFallRig-DTqWGkkz.js",
+        "ivanmontoyamural-Paas6vPy.jpg",
+        "lottomind-refined-6R7q-npO.png",
+        "main-BRnbtEWn.css",
+        "main-DE-rcfwk.js",
+        "mission-cover-B7obQXgy.webp",
+        "modulepreload-polyfill-B5Qt9EMX.js",
+        "OrbitControls-DnBgMm1h.js",
+        "rapier-BmiOR-CW.js",
+        "rideAudio-C19J8wjh.css",
+        "rideAudio-DobY5gUH.js",
+        "rideComfort-mVGT1cy6.js",
+        "rider-studio-CvWUPr6Q.js",
+        "roomChat-BdlT6puf.js",
+        "serengeti-refined-B6GS_DkN.png",
+        "swoop-rivals-DPfBVZbw.webp",
+        "sydneyjames2-BHs59PaF.jpg",
+        "tagClient-COW4Wd9Z.js",
+        "terrain-DwcTC--K.js",
+        "three.core-XadA8wUa.js",
+        "traffic-studio-BqfmmV0K.js",
+        "we-are-detroit-user-DPh9B28-.jpg"
+      ]
+    },
+    {
+      "name": "elmwood-explorer",
+      "entry": "elmwood.html",
+      "assets": [
+        "browser-BzBbrBKd.js",
+        "elmwood-BLGHvmjZ.css",
+        "elmwood-D9eW2LaB.js",
+        "elmwood-skylight-fHSiey3W.hdr"
+      ]
+    }
+  ]
+}
