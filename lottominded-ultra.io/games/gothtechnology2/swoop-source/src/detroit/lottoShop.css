@@ -1,0 +1,29 @@
+.lotto-shop{position:fixed;z-index:26;left:16px;bottom:120px;width:min(350px,calc(100vw - 32px));max-height:65vh;overflow:auto;background:#0b1730f0;color:#f3efd8;border:1px solid #b8c754;border-radius:9px;padding:10px 12px;font-size:12px}.lotto-shop[hidden]{display:none}.lotto-shop summary{min-height:44px;line-height:44px;font-weight:bold;cursor:pointer}.lotto-shop strong{display:block;letter-spacing:.10em;padding:10px 0}.lotto-shop a{display:flex;align-items:center;justify-content:center;min-height:44px;padding:8px;margin:7px 0;border:1px solid #7d98bd;background:#234272;color:#fff;text-decoration:none;border-radius:5px}.lotto-shop p{line-height:1.6;color:#d2dbd9}.lotto-shop button{min-height:44px;padding:8px;border:1px solid #6f88a9;border-radius:4px;background:#183552;color:#fff;cursor:pointer;margin:3px}.lotto-picks{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin:8px 0}.lotto-picks button{padding:5px;margin:0}.lotto-picks button[aria-pressed=true]{background:#b5cf4f;color:#0b1630;font-weight:bold}.lotto-picks button:disabled{opacity:.4}.lotto-shop :focus-visible{outline:2px solid #ddeb93;outline-offset:2px}@media(max-width:600px){.lotto-shop{left:10px;bottom:65px;width:calc(100vw - 20px);max-height:52vh}}
+.lotto-app-launch{display:block;width:100%;margin:7px 0!important;background:#234272!important;font-weight:bold}
+.lotto-practice{border-top:1px solid #7d98bd55;margin-top:8px}
+.lotto-shop.app-open{display:flex;flex-direction:column;box-sizing:border-box;z-index:60;width:min(520px,calc(100vw - 32px));height:min(720px,calc(100dvh - 150px));max-height:none;overflow:hidden}
+.lotto-shop.app-open>.lotto-shop-home,.lotto-shop.app-open>.lotto-practice,.lotto-shop.app-open>strong{display:none}
+.lotto-app-view{position:absolute;inset:56px 12px 12px;display:flex;flex-direction:column;min-height:0;gap:8px}
+.lotto-app-view[hidden]{display:none}
+.lotto-app-toolbar{display:flex;align-items:center;flex-wrap:wrap;flex-shrink:0;gap:5px}
+.lotto-app-toolbar button,.lotto-app-toolbar a{box-sizing:border-box;min-height:44px;margin:0;font:inherit}
+.lotto-app-toolbar a{padding:8px;flex:1;white-space:nowrap}
+.lotto-app-frame{display:block;border:1px solid #7d98bd;background:#071123;border-radius:5px;width:100%;flex:1;min-height:0}
+.lotto-app-view>p{margin:0}
+@media(max-width:600px){.lotto-shop.app-open{left:8px;bottom:12px;top:60px;width:calc(100vw - 16px);height:auto;max-height:none;padding:8px}.lotto-app-toolbar a{flex-basis:100%}}
+.lotto-shop.app-expanded{left:12px;right:12px;top:12px;bottom:12px;z-index:60;width:auto;height:auto;max-height:none}
+@media(prefers-reduced-motion:reduce){.lotto-app-view,.lotto-app-frame,.lotto-app-toolbar{animation:none;transition:none}}
+.lotto-shop{box-sizing:border-box;left:max(12px,env(safe-area-inset-left));top:112px;bottom:auto;max-height:calc(100dvh - 208px);padding:10px;background:#0d1b30fa;border-color:#5b786d;border-radius:12px;box-shadow:0 8px 24px #0005}
+.lotto-shop:not([open]){width:224px;max-height:64px;padding:6px 10px;background:#13272cf5;box-shadow:0 4px 14px #0003}
+.lotto-shop>summary{display:flex;align-items:center;gap:10px;min-height:44px;line-height:1.2;list-style:none}
+.lotto-shop>summary::-webkit-details-marker{display:none}
+.lotto-shop>summary::after{content:'+';margin-left:auto;font-size:22px;color:#a9d5c6;font-weight:400}
+.lotto-shop[open]>summary::after{content:'−'}
+.lotto-shop-icon{display:grid;place-items:center;flex:0 0 36px;height:36px;border:1px solid #73b2a4;border-radius:9px;color:#b8e3d4;background:#254c49;font-size:12px;letter-spacing:.08em}
+.lotto-shop-title{font-size:14px;font-weight:700}
+.lotto-shop-title small{display:block;margin-top:4px;font-size:10px;font-weight:400;color:#bbccc9;letter-spacing:.02em}
+.lotto-shop.app-open{top:112px;bottom:20px;height:auto;max-height:none;background:#0d1b30fc}
+.lotto-shop.app-open .lotto-shop-title small{font-size:10px}
+.lotto-shop.app-expanded{top:12px;bottom:12px}
+@media(max-width:600px){.lotto-shop{left:10px;top:112px;width:min(350px,calc(100vw - 20px));max-height:calc(100dvh - 188px)}.lotto-shop:not([open]){width:210px;max-height:64px}.lotto-shop.app-open{left:8px;top:74px;bottom:12px;width:calc(100vw - 16px)}.lotto-shop.app-expanded{top:12px}}
+@media(max-height:500px){.lotto-shop{top:76px;max-height:calc(100dvh - 96px)}.lotto-shop.app-open{top:12px;bottom:12px}}

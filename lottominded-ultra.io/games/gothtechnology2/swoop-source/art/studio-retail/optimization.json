@@ -1,0 +1,30 @@
+[
+  {
+    "file": "atwater/mack-gothtech-studio.glb",
+    "beforeBytes": 16461792,
+    "bytes": 4255732,
+    "meshes": 37,
+    "textures": 17
+  },
+  {
+    "file": "boutique/GothTechnology-Store.glb",
+    "beforeBytes": 13999384,
+    "bytes": 4309784,
+    "meshes": 32,
+    "textures": 29
+  },
+  {
+    "file": "gallery/Serengeti-Galleries.glb",
+    "beforeBytes": 14090340,
+    "bytes": 2456624,
+    "meshes": 17,
+    "textures": 16
+  },
+  {
+    "file": "atwater/lottomind-store.glb",
+    "beforeBytes": 15224460,
+    "bytes": 3186008,
+    "meshes": 19,
+    "textures": 15
+  }
+]

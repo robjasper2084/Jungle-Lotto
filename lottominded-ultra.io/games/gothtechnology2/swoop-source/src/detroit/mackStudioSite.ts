@@ -6,7 +6,9 @@ const a=3.16/Math.hypot(3.16,48.43),b=48.43/Math.hypot(3.16,48.43);
 export function studioMap(u:number,v:number){return{x:MACK_STUDIO.x+a*u+b*v,z:MACK_STUDIO.z+b*u-a*v};}
 export function studioCoordinates(x:number,z:number){const dx=x-MACK_STUDIO.x,dz=z-MACK_STUDIO.z;return{u:a*dx+b*dz,v:b*dx-a*dz};}
 export function studioLot(x:number,z:number){const {u,v}=studioCoordinates(x,z);return u>=-102&&u<=46&&v>=-96&&v<=40;}
-export function studioGrade(x:number,z:number,terrain:number){const {u,v}=studioCoordinates(x,z),distance=Math.max(Math.abs(u)-26,-24-v,v-34,0),t=Math.max(0,1-distance/10),blend=t*t*(3-2*t);return terrain+(MACK_STUDIO.floor-terrain)*blend;}
+export function studioGrade(x:number,z:number,terrain:number){const {u,v}=studioCoordinates(x,z),distance=Math.max(-94-u,u-38,-88-v,v-34,0),t=Math.max(0,1-distance/10),blend=t*t*(3-2*t);return terrain+(MACK_STUDIO.floor-terrain)*blend;}
+/** The paved yard ends at the foundation, rather than passing through the rooms. */
+export function studioPavingCell(u0:number,v0:number,u1:number,v1:number){const w=MACK_STUDIO.width/2+.14,d=MACK_STUDIO.depth/2+.14;return u1<=-w||u0>=w||v1<=-d||v0>=d;}
 export function studioRoom(store:boolean){return{u:store?12:-12,v:3};}
 /** A shared loading entrance gives both interiors a clear, unobstructed aisle. */
 export function studioWalk(store:boolean){const r=studioRoom(store);return[studioMap(0,27),studioMap(0,18),studioMap(r.u,18),studioMap(r.u,r.v+(store?3:5))];}

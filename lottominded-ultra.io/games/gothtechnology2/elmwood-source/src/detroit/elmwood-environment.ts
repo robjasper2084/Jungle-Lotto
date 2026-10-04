@@ -256,11 +256,12 @@ export function makeElmwoodEnvironment(scene:T.Scene,world:T.Group,foundation:T.
 
 
 
- const sprayMaterial=new T.PointsMaterial({color:'#edf8fa',size:.065,transparent:true,opacity:.73,depthWrite:false,sizeAttenuation:true});const spray=new T.Points(dropsGeometry,sprayMaterial);spray.frustumCulled=false;fountain.add(spray);
+ const sprayMaterial=new T.PointsMaterial({color:'#edf8fa',size:.085,transparent:true,opacity:.64,depthWrite:false,sizeAttenuation:true});
+ sprayMaterial.onBeforeCompile=s=>{s.fragmentShader=s.fragmentShader.replace('#include <map_particle_fragment>', '#include <map_particle_fragment>\nfloat dropRadius=length(gl_PointCoord-.5);diffuseColor.a*=1.-smoothstep(.18,.5,dropRadius);');};sprayMaterial.customProgramCacheKey=()=> 'elmwood-soft-fountain-v1';const spray=new T.Points(dropsGeometry,sprayMaterial);spray.frustumCulled=false;fountain.add(spray);
 
 
 
- const rippleMaterial=new T.MeshBasicMaterial({color:'#c7e2dd',transparent:true,opacity:.16,depthWrite:false,side:T.DoubleSide});const ripples=Array.from({length:5},()=>{const r=mesh(fountain,new T.RingGeometry(.94,1,48),rippleMaterial);r.rotation.x=-Math.PI/2;r.position.y=.045;r.castShadow=false;return r;});
+ const rippleMaterial=new T.MeshBasicMaterial({color:'#c7e2dd',transparent:true,opacity:.16,depthWrite:false,side:T.DoubleSide});const ripples=Array.from({length:5},()=>{const r=mesh(fountain,new T.RingGeometry(.97,1,48),rippleMaterial.clone());r.rotation.x=-Math.PI/2;r.position.y=.045;r.castShadow=false;return r;});
 
 
 
@@ -373,7 +374,7 @@ export function makeElmwoodEnvironment(scene:T.Scene,world:T.Group,foundation:T.
 
 
 
- return {root,young,fountain,gate,birds,sky,update(dt:number,rider:WildlifeRider,sunDirection:T.Vector3,paused=false,weather?:{cloud:{value:number};time:{value:number};rain:{value:number}},dogs:readonly WildlifeDog[]=[]){
+ return {root,young,fountain,gate,birds,sky,update(dt:number,rider:WildlifeRider,sunDirection:T.Vector3,paused=false,weather?:{cloud:{value:number};time:{value:number};rain:{value:number};waterTime?:{value:number};waterDetail?:{value:number}},dogs:readonly WildlifeDog[]=[]){
 
 
 
@@ -389,11 +390,12 @@ export function makeElmwoodEnvironment(scene:T.Scene,world:T.Group,foundation:T.
 
 
 
-  for(let i=0;i<dropCount;i++){const jet=i%12,theta=jet*Math.PI/6,phase=((elapsed*(.78+(jet%3)*.05)+i*.618)%1),vy=jet<3?8:6.1,flight=2*vy/9.81,age=phase*flight,r=(jet<3?.48:1.8)*age;dropArray[i*3]=Math.cos(theta)*r;dropArray[i*3+1]=.20+vy*age-4.905*age*age;dropArray[i*3+2]=Math.sin(theta)*r;}dropsGeometry.attributes.position.needsUpdate=true;
+  const fountainTime=weather?.waterTime?.value??elapsed,visibleDrops=(weather?.waterDetail?.value??1)<.5?180:dropCount;dropsGeometry.setDrawRange(0,visibleDrops);
+  for(let i=0;i<visibleDrops;i++){const jet=i%12,theta=jet*Math.PI/6,phase=((fountainTime*(.78+(jet%3)*.05)+i*.618)%1),vy=jet<3?8:6.1,flight=2*vy/9.81,age=phase*flight,r=(jet<3?.48:1.8)*age;dropArray[i*3]=Math.cos(theta)*r;dropArray[i*3+1]=.20+vy*age-4.905*age*age;dropArray[i*3+2]=Math.sin(theta)*r;}dropsGeometry.attributes.position.needsUpdate=true;
 
 
 
-  ripples.forEach((r,i)=>{r.scale.setScalar(1+(elapsed*.6+i*.65)%3.5);});
+  ripples.forEach((r,i)=>{const phase=(fountainTime*.22+i/5)%1;r.scale.setScalar(.8+phase*4.5);(r.material as T.MeshBasicMaterial).opacity=Math.sin(phase*Math.PI)*.09;});
 
 
 

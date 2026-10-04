@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { readdir, readFile, writeFile } from 'node:fs/promises';
+import { readdir, readFile, writeFile, mkdir } from 'node:fs/promises';
 import { dirname, relative, resolve } from 'node:path';
 
 // Reuse identical Elmwood textures in the published Swoop models. Source models
@@ -72,7 +72,30 @@ export async function shareRideTextures(outputRoot) {
     const hash = createHash('sha256').update(await readFile(path)).digest('hex');
     textures.set(hash, { path, mime: entry.name.endsWith('.png') ? 'image/png' : 'image/jpeg' });
   }
-  let saved = 0, models = 0;
+  // Also share repeated shop/gallery textures within Swoop. Keep every pixel;
+  // only the duplicate embedded payloads are removed from the published models.
+  const repeated = new Map();
+  async function collect(directory){
+    for(const entry of await readdir(directory,{withFileTypes:true}).catch(()=>[])){
+      const path=resolve(directory,entry.name);
+      if(entry.isDirectory())await collect(path);
+      else if(entry.name.endsWith('.glb')){
+        const input=await readFile(path),n=input.readUInt32LE(12),gltf=JSON.parse(input.toString('utf8',20,20+n)),bin=input.subarray(28+n);
+        for(const image of gltf.images??[]){
+          if(image.bufferView===undefined||!['image/png','image/jpeg'].includes(image.mimeType))continue;
+          const view=gltf.bufferViews[image.bufferView],bytes=bin.subarray(view.byteOffset??0,(view.byteOffset??0)+view.byteLength),hash=createHash('sha256').update(bytes).digest('hex');
+          const found=repeated.get(hash);if(found)found.count++;else repeated.set(hash,{bytes,mime:image.mimeType,count:1});
+        }
+      }
+    }
+  }
+  await collect(resolve(arcade,'swoop-detroit'));
+  let added=0;
+  for(const [hash,image]of repeated)if(image.count>1&&!textures.has(hash)){
+    await mkdir(canonical,{recursive:true});const path=resolve(canonical,hash+(image.mime==='image/png'?'.png':'.jpg'));
+    await writeFile(path,image.bytes);textures.set(hash,{path,mime:image.mime});added+=image.bytes.length;
+  }
+  let saved = -added, models = 0;
   async function walk(directory) {
     for (const entry of await readdir(directory, { withFileTypes: true }).catch(() => [])) {
       const path = resolve(directory, entry.name);

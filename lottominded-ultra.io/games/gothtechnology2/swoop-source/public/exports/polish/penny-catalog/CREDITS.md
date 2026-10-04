@@ -1,0 +1,1 @@
+Existing user-supplied GothTechnology / LottoMind reference artwork. Catalog drafts only; garment sizes, final I Love Detroit artwork, stock, shipping and prices require operator verification. No Google Images photo is redistributed.

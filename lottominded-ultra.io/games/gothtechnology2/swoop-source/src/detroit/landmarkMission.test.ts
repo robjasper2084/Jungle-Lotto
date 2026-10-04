@@ -1,0 +1,7 @@
+import test from 'node:test';import assert from 'node:assert/strict';
+import {LandmarkMission,COMPANION_ROUTE,readMissionBest} from './landmarkMission.ts';
+const base={station:0,offset:0,speed:0,crashed:false,dogDistance:1,dogCommand:'sit',sit:1};
+function riding(){const m=new LandmarkMission();for(let i=0;i<61;i++)m.step(1/120,base);assert.equal(m.phase,'come');m.step(1/120,{...base,dogCommand:'come',sit:0});return m;}
+test('mission requires a settled nearby sit and recall before ordered gates',()=>{const m=new LandmarkMission();for(let i=0;i<120;i++)m.step(1/120,{...base,dogDistance:10});assert.equal(m.phase,'sit');const r=riding();for(const p of COMPANION_ROUTE){r.step(1/120,{...base,station:p.station-1});r.step(1/120,{...base,station:p.station});}assert.equal(r.phase,'complete');assert.equal(r.gate,6);const elapsed=r.elapsed;r.step(10,base);assert.equal(r.elapsed,elapsed);});
+test('missed gates and teleports do not progress; one fall adds one penalty',()=>{const m=riding();m.step(1/120,{...base,station:100});assert.equal(m.gate,0);m.step(1/120,{...base,station:37});m.step(1/120,{...base,station:38,offset:4});assert.equal(m.gate,0);const t=m.elapsed;for(let i=0;i<120;i++)m.step(1/120,{...base,crashed:true});assert.ok(Math.abs(m.elapsed-t-6)<1e-8);assert.equal(m.penalties,1);});
+test('invalid records do not poison the personal best',()=>{assert.equal(readMissionBest('{'),undefined);assert.equal(readMissionBest('{"seconds":-1,"rides":1}'),undefined);assert.deepEqual(readMissionBest('{"seconds":180,"rides":2}'),{seconds:180,rides:2});});

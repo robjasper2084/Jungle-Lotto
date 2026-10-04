@@ -1,5 +1,5 @@
 import * as T from 'three';
-import {GLTFLoader,type GLTF} from 'three/addons/loaders/GLTFLoader.js';
+import {GLTFLoader,type GLTF} from './compressedGLTFLoader.ts';
 import {Hero,solve} from './actors.ts';
 import type {EucPose} from '../simulation/EucController.ts';
 import {WHEEL} from '../data/tuning.ts';

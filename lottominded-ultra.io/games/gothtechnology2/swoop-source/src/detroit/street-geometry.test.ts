@@ -1,11 +1,18 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {drapeStreet,drapeJunction} from './street-geometry.ts';
+import {drapeStreet,drapeJunction,streetSurfaceLift} from './street-geometry.ts';
 import {terrainChunks} from './world.ts';
 import type {TerrainChunk} from './world.ts';
 import {CITY} from './geography.ts';
 const chunks=terrainChunks();
 const area=(p:number[])=>{let sum=0;for(let i=0;i<p.length;i+=9)sum+=Math.abs((p[i+3]-p[i])*(p[i+8]-p[i+2])-(p[i+5]-p[i+2])*(p[i+6]-p[i]))/2;return sum;};
+test('overlapping road and walking surfaces have stable separated depth with a small rideable seam',()=>{
+ const tile:TerrainChunk={x:50,z:50,vertices:new Float32Array([0,0,0,100,0,0,0,0,100,100,0,100]),indices:new Uint32Array([0,2,1,1,2,3]),surfaces:['grass','grass']};
+ const ribbon={a:{x:5,z:50},b:{x:95,z:50},half:4,offset:0};
+ const surfaces=['unclassified','cycleway','footway'].map(kind=>drapeStreet({...ribbon,lift:streetSurfaceLift({kind})},[tile],()=>0)[0].positions);
+ const heights=surfaces.map(p=>p.filter((_,i)=>i%3===1));
+ for(let i=1;i<heights.length;i++){const rise=heights[i][0]-heights[i-1][0];assert.ok(rise>=.004&&rise<.03);assert.ok(heights[i].every(y=>y===heights[i][0]));}
+});
 test('curved street joins fill the outside wedge between rectangular segments',()=>{
   const tile:TerrainChunk={x:50,z:50,vertices:new Float32Array([0,0,0,100,0,0,0,0,100,100,0,100]),indices:new Uint32Array([0,2,1,1,2,3]),surfaces:['grass','grass']};
   const positions=drapeJunction(50,40,4,[tile],(_x,_z,y)=>y,.035)[0].positions;

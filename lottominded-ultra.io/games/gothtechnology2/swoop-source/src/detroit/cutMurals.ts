@@ -12,8 +12,19 @@ export const CUT_MURALS=[
  {artist:'Fel3000ft',year:2012,bridge:'Antietam Avenue',side:-1,file:'fel3000mural.jpg',crop:[0,.33,1,.74],ceiling:false},
  {artist:'Mitchell Schorr',year:2014,bridge:'East Larned Street',side:1,file:'carsmuraldequindrecut.jpg',crop:[.02,.23,.98,.93],ceiling:false},
  {artist:'Mike Han / We Are Detroit',year:2013,bridge:'Antietam Avenue',side:1,file:'we-are-detroit-user.jpg',crop:[.045,.25,.98,.47],ceiling:false},
- {artist:'Blue dragon — supplied reference (placement provisional)',year:2013,bridge:'Chestnut Street',side:-1,file:'blue-dragon-user.jpg',crop:[0,.21,1,.91],ceiling:false},
+ {artist:'Blue dragon - supplied reference (placement provisional)',year:2013,bridge:'Chestnut Street',side:-1,file:'blue-dragon-user.jpg',crop:[0,.21,1,.91],ceiling:false},
 ] as const;
+
+/** Shared rendered/physical art returns, also used by route regression checks. */
+export function muralBacking(site:typeof CUT_MURALS[number]){
+ const b=GEO.bridges.find(b=>b.name===site.bridge)!,f=bridgeFrame(b),side=site.side,x=side*7.4,mid=(f.near+f.far)/2;
+ let width=Math.min(14,(f.far-f.near)-1.2);
+ while(width>3&&[-1,1].some(end=>{const p=f.point(x,mid+end*width/2);return Math.abs(cutCoords(p.x,p.z).u)<5.1||nearestRamp(p.x,p.z).distance<3;}))width-=.5;
+ const roof=profileLevel(b.at,'street')-BRIDGE_SLAB_DEPTH-.3,origin=f.point(x,mid),base=Math.max(heightAt(origin.x,origin.z)+.10,roof-5.2);
+ if(roof-base<.7||nearestRamp(origin.x,origin.z).distance<3)return undefined;
+ const back=f.point(x+side*.17,mid),wallYaw=Math.atan2(f.matrix.elements[8],f.matrix.elements[10]);
+ return {b,f,side,x,mid,width,roof,base,back,wallYaw,solid:{x:back.x,y:(base+roof)/2,z:back.z,hx:.15,hy:(roof-base)/2,hz:width/2,yaw:wallYaw,kind:'mural-abutment'}};
+}
 
 export async function buildCutMurals(world:DetroitWorld,groupAt:(x:number,z:number)=>T.Group){
  const urls=[
@@ -35,20 +46,14 @@ export async function buildCutMurals(world:DetroitWorld,groupAt:(x:number,z:numb
  };
  let walls=0,ceilings=0;
  CUT_MURALS.forEach((site,i)=>{
-  const b=GEO.bridges.find(b=>b.name===site.bridge)!,f=bridgeFrame(b),side=site.side;
+  const placement=muralBacking(site);if(!placement)return;
+  const {b,f,side,x,mid,width,roof,base,back,wallYaw,solid}=placement;
   // A shallow concrete art return brings the abutment artwork down to trail
   // level; the simplified outer road supports otherwise bury it in the bank.
-  const x=side*7.4,mid=(f.near+f.far)/2;
-  let width=Math.min(14,(f.far-f.near)-1.2);
-  while(width>3&&[-1,1].some(end=>{const p=f.point(x,mid+end*width/2);return Math.abs(cutCoords(p.x,p.z).u)<5.1||nearestRamp(p.x,p.z).distance<3;}))width-=.5;
   const za=mid-width/2,zb=mid+width/2;
-  const roof=profileLevel(b.at,'street')-BRIDGE_SLAB_DEPTH-.3;
-  const origin=f.point(x,mid),base=Math.max(heightAt(origin.x,origin.z)+.10,roof-5.2);
-  if(roof-base<.7||nearestRamp(origin.x,origin.z).distance<3)return;
-  const wallYaw=Math.atan2(f.matrix.elements[8],f.matrix.elements[10]);
   const backing=new T.Mesh(new T.BoxGeometry(.3,roof-base,width),new T.MeshStandardMaterial({color:'#a4a197',roughness:1}));
-  const back=f.point(x+side*.17,mid);backing.position.set(back.x,(base+roof)/2,back.z);backing.rotation.y=wallYaw;backing.receiveShadow=true;groupAt(back.x,back.z).add(backing);
-  const solid={x:back.x,y:(base+roof)/2,z:back.z,hx:.15,hy:(roof-base)/2,hz:width/2,yaw:wallYaw,kind:'mural-abutment'};world.solids.push(solid);world.addBox(solid);
+  backing.position.set(back.x,(base+roof)/2,back.z);backing.rotation.y=wallYaw;backing.receiveShadow=true;groupAt(back.x,back.z).add(backing);
+  world.solids.push(solid);world.addBox(solid);
   const vertex=(xx:number,y:number,z:number)=>{const p=f.point(xx,z);return new T.Vector3(p.x,y,p.z);};
   const [u0,v0,u1,v1]=site.crop,split=site.ceiling?v0+(v1-v0)*.68:v1;
   // Order the face along the trail consistently on either bank.

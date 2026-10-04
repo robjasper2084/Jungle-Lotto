@@ -11,9 +11,15 @@ import type {TerrainSampler} from './terrain.ts';
 import {CompanionView} from './companionView.ts';
 import {DOG_GAITS,gaitCadence} from './dogGait.ts';
 import {FallMotion} from './fallMotion.ts';
-import {bindCyclist,advanceCyclist} from '../../test-support/cyclist-animation.mjs';
+import {SplitRaceSimulation} from './splitRaceSimulation.ts';
+import {RIDER_CHOICES} from './riderChoices.ts';
+import {CHALLENGES} from './district.ts';
+import {createGroundSample} from './terrain.ts';
+import {DetroitWorld,SPOTS} from './world.ts';
+import {GeoTerrain} from './geo-terrain.ts';
+import {toLocal} from './geo-profile.ts';
 async function mesh(id:string,lod:number){
-  const buf=await readFile(resolve('../../exports/glb',id,`${id}_LOD${lod}.glb`)),n=buf.readUInt32LE(12),j=JSON.parse(buf.subarray(20,20+n).toString());
+  const buf=await readFile(id==='DS_Boerboel_01'?new URL('../../public/exports/polish/DS_Boerboel_Polished.glb',import.meta.url):resolve('../../exports/glb',id,`${id}_LOD${lod}.glb`)),n=buf.readUInt32LE(12),j=JSON.parse(buf.subarray(20,20+n).toString());
   // Headless geometry/skeleton test; omit texture decoding only. No source asset is modified.
   delete j.images;delete j.textures;delete j.materials;for(const m of j.meshes)for(const p of m.primitives)delete p.material;
   const json=Buffer.from(JSON.stringify(j)),length=Math.ceil(json.length/4)*4,jsonPad=Buffer.alloc(length,32);json.copy(jsonPad);const bin=buf.subarray(20+n),out=Buffer.alloc(20+length+bin.length);out.writeUInt32LE(0x46546c67,0);out.writeUInt32LE(2,4);out.writeUInt32LE(out.length,8);out.writeUInt32LE(length,12);out.writeUInt32LE(0x4e4f534a,16);jsonPad.copy(out,20);bin.copy(out,20+length);
@@ -223,6 +229,25 @@ test('the actual Motion 4 acceleration, carve, crouch and jump sequence keeps bo
 });
 const cyclistData=new Map([['DS_Cyclist_01',await mesh('DS_Cyclist_01',1)],['DS_Bicycle_01',await mesh('DS_Bicycle_01',1)]]);
 const dogData=new Map([['DS_Boerboel_01',await mesh('DS_Boerboel_01',Number(process.env.DOG_TEST_LOD??1))]]);
+
+test('sit and down blend without sinking the skin, stretching bones or drifting while paused',t=>{
+ const dog=new CompanionView(dogData),skin=dog.model.getObjectByProperty('isSkinnedMesh',true) as SkinnedMesh;
+ const rest=dog.paws.map(p=>p.upper.getWorldPosition(new Vector3()).distanceTo(p.lower.getWorldPosition(new Vector3())));
+ let lowest=Infinity;
+ for(const command of ['sit','lie'])for(const weight of [.1,.3,.5,.7,1])for(const time of [.1,1,2,3.9]){
+  const pose={x:0,y:0,z:0,heading:0,pitch:0,roll:0,speed:0,phase:0,time,turnRate:0,[command]:weight};dog.apply(pose);
+  skin.skeleton.update();for(let i=0;i<skin.geometry.attributes.position.count;i++){const v=skin.getVertexPosition(i,new Vector3()).applyMatrix4(skin.matrixWorld);assert.ok(v.toArray().every(Number.isFinite));lowest=Math.min(lowest,v.y);}
+  const paws=dog.paws.map(p=>p.foot.getWorldPosition(new Vector3()));
+  for(let i=0;i<8;i++)dog.apply(pose);
+  dog.paws.forEach((p,i)=>{assert.ok(p.foot.getWorldPosition(new Vector3()).distanceTo(paws[i])<1e-6,'paused command drift');assert.ok(Math.abs(p.upper.getWorldPosition(new Vector3()).distanceTo(p.lower.getWorldPosition(new Vector3()))-rest[i])<.001,'stretched command limb');});
+ }
+ assert.ok(lowest>-.025,`command skin penetrates ground: ${lowest} m`);t.diagnostic(`Lowest command transition skin: ${(lowest*1000).toFixed(2)} mm`);
+ const settled={x:0,y:0,z:0,heading:0,pitch:0,roll:0,speed:0,phase:0,time:1,turnRate:0};
+ dog.apply({...settled,sit:1});const sitChest=dog.model.getObjectByName('chest')!.getWorldPosition(new Vector3()).y;
+ dog.apply({...settled,lie:1});const downChest=dog.model.getObjectByName('chest')!.getWorldPosition(new Vector3()).y;
+ assert.ok(downChest<sitChest-.05,`down must lower the chest: sit=${sitChest}, down=${downChest}`);
+ t.diagnostic(`Command chest heights: sit ${sitChest.toFixed(3)} m, down ${downChest.toFixed(3)} m`);
+});
 test('Boerboel has four loopable gaits, moving paws and a stationary root',()=>{
   const dog=new CompanionView(dogData),pose={x:1.3,y:0,z:0,heading:0,pitch:0,roll:0,speed:0,phase:0,time:0,turnRate:0};
   for(const speed of [0,1,3,7]){
@@ -342,11 +367,10 @@ test('Boerboel skin stays continuous across the shoulder and thigh during a gath
   assert.ok(worst<.05,`short skin edge opens to ${worst} m: ${detail}`);
   t.diagnostic(`Maximum deformed short edge: ${(worst*1000).toFixed(2)} mm`);
 });
-test('the screenshot viewer keeps the repaired knees and pedals aligned for a full cycle',()=>{
-  const scene=new Scene(),view=new TrafficView(scene,cyclistData);view.update([{id:9,kind:'cyclist',x:0,y:0,z:0,heading:0,speed:0}],0);
-  const item=view.items.get(9)!,binding=bindCyclist(item.root,item.mixers[0],cyclistData.get('DS_Cyclist_01')!.animations[0]);
+test('distant cyclists receive a fitted first pose and retain pedal contact at reduced animation cadence',()=>{
+  const scene=new Scene(),view=new TrafficView(scene,cyclistData),traffic={id:9,kind:'cyclist' as const,x:0,y:0,z:0,heading:0,speed:4.2};
   for(let i=0;i<=120;i++){
-    advanceCyclist(binding,i?2*Math.PI*.34*2.5/120:0);scene.updateMatrixWorld(true);
+    view.update([traffic],i?1/60:0,{x:0,z:100});scene.updateMatrixWorld(true);const item=view.items.get(9)!;
     for(const [side,pedal,sign]of [['Left','R',1],['Right','L',-1]] as const){
       const world=(name:string)=>item.root.getObjectByName(name)!.getWorldPosition(new Vector3());
       const hip=world(side+'UpLeg'),knee=world(side+'Leg'),foot=world(side+'Foot'),axis=foot.clone().sub(hip).normalize(),bend=knee.sub(hip);
@@ -454,6 +478,31 @@ test('both heroes lift one boot for a glide while the supporting boot remains on
 
 test('human recovery envelopes use the loaded mounted mesh dimensions',()=>{
  for(const id of ['DS_Man_01','DS_Hoodie_Woman_01'] as const){const hero=new Hero(data,undefined,id);assert.ok(hero.mountedVolume.radius>.4&&hero.mountedVolume.radius<1);assert.ok(hero.mountedVolume.height>1.6&&hero.mountedVolume.height<2.5);hero.dispose();}
+});
+
+test('two to four loaded mounted riders can launch independently in every room mode',async()=>{
+ for(const {id} of RIDER_CHOICES)if(!data.has(id))data.set(id,await mesh(id,1));
+ const ids=RIDER_CHOICES.map(r=>r.id).slice(-4),heroes=ids.map(id=>new Hero(data,undefined,id));
+ const flat:TerrainSampler={sampleGround(_x,_z,out){return Object.assign(out,createGroundSample());},raycast:()=>null,raycastObstacle:()=>null};
+ const mapped=await new DetroitWorld().init();mapped.updateTraffic(0,1e8,1e8);mapped.step();
+ try{
+  const spot=SPOTS[0],spawn={...toLocal(spot.x,0,spot.z),heading:-spot.heading};
+  for(const count of [2,3,4])for(const options of [{mode:'free' as const,spawn},{mode:'race' as const},...CHALLENGES.map(challenge=>({mode:'challenge' as const,challenge}))]){
+   const room=new SplitRaceSimulation(options.mode==='free'?new GeoTerrain(mapped):flat,ids.slice(0,count),options);
+   room.riders.forEach((r,i)=>r.sim.mountedVolume=heroes[i].mountedVolume);
+   const starts=room.riders.map(r=>({...r.pose}));
+   for(let i=0;i<count;i++)for(let j=0;j<i;j++)assert.ok(Math.hypot(starts[i].x-starts[j].x,starts[i].z-starts[j].z)>heroes[i].mountedVolume.radius+heroes[j].mountedVolume.radius+.06,`${count} ${options.mode} overlapping loaded riders`);
+   // Accelerate each actual controller while the other riders remain solid.
+   for(let tick=0;tick<720;tick++)room.step(1/120,room.riders.map(()=>({...NEUTRAL_ACTIONS,throttle:.5})));
+   room.riders.forEach((r,i)=>{assert.ok(!r.sim.crashed,`${count} ${options.mode} rider ${i+1} crashed leaving the grid`);assert.ok(Math.hypot(r.pose.x-starts[i].x,r.pose.z-starts[i].z)>2,`${count} ${options.mode} rider ${i+1} blocked at launch`);});
+  }
+  const recovery=new SplitRaceSimulation(flat,ids);recovery.riders.forEach((r,i)=>r.sim.mountedVolume=heroes[i].mountedVolume);
+  recovery.step(3,ids.map(()=>NEUTRAL_ACTIONS));
+  const others=recovery.riders.slice(0,3).map(r=>({...r.pose}));
+  assert.equal(recovery.recover(3),true,'the fourth rider needs a separate recovery space');
+  assert.deepEqual(recovery.riders.slice(0,3).map(r=>r.pose),others,'recovery cannot move the other players');
+  for(const r of recovery.riders.slice(0,3))assert.ok(Math.hypot(r.pose.x-recovery.riders[3].pose.x,r.pose.z-recovery.riders[3].pose.z)>r.sim.mountedVolume.radius+recovery.riders[3].sim.mountedVolume.radius+.06);
+ }finally{mapped.physics.free();heroes.forEach(h=>h.dispose());}
 });
 
 test('dog pivot steps lift paws and planted contacts remain stable through a curved path',()=>{

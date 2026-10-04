@@ -36,7 +36,59 @@ body:not(.playing)>header,body:not(.playing)>.speed,body:not(.playing)>.session,
 
 #menu{pointer-events:auto;z-index:8}
 
+/* A short first screen; choices open only when the player wants them. */
+#menu{padding-top:24px;padding-bottom:max(24px,env(safe-area-inset-bottom));scroll-padding-block:24px}
+.lobbyChrome{gap:24px;padding-bottom:18px}.lobbyTabs{align-items:center;justify-content:flex-end}
+.lobbyTabs>button,.lobbyMore>summary{font-size:16px;min-height:48px;padding:12px 18px;letter-spacing:0}
+.lobbyMore{position:relative}.lobbyMore>summary{display:flex;gap:10px;align-items:center;justify-content:center;border:1px solid var(--edge);border-radius:8px;cursor:pointer;font-weight:600;color:var(--paper);list-style:none;background:#0b1725cc}
+.lobbyMore>summary::-webkit-details-marker{display:none}.lobbyMore[open]>summary,.lobbyMore[data-active=true]>summary{border-color:var(--ice);color:var(--ice)}
+.lobbyMoreItems{position:absolute;right:0;top:calc(100% + 8px);z-index:12;width:250px;display:grid;gap:5px;padding:10px;background:#0b1725;border:1px solid #91c7e270;border-radius:12px;box-shadow:0 18px 50px #0009}
+.lobbyMoreItems button{width:100%;text-align:left;min-height:48px;border-color:var(--edge);font-size:16px;color:var(--paper)}
+.lobbyIntro{padding:30px 0 22px;max-width:730px}.lobbyKicker{margin-bottom:14px;font-size:12px;letter-spacing:2px}
+#menu #menuTitle{font-size:clamp(50px,5.7vw,88px);letter-spacing:-3px;line-height:.98;margin-bottom:14px;max-width:730px}
+#menu #menuCopy{font-size:18px;line-height:1.5;max-width:560px}
+.lobbyDeck{width:min(100%,580px)}#menu .menuInner{padding:26px;border-color:#91c7e250}
+#menu h2{font-size:28px;margin-bottom:12px}
+#menu #setupSummary{font-size:15px;line-height:1.5;color:var(--muted);margin:0 0 18px;overflow-wrap:anywhere}
+#menu .launchActions{display:grid;grid-template-columns:1.25fr 1fr;gap:10px;margin:0}
+#menu #start,#menu #learnRide{min-height:56px;font-size:17px;letter-spacing:0;padding:14px;font-weight:750}
+#menu #learnRide{background:#16363f;border:1px solid #79b3be80;color:var(--paper)}#menu #learnRide:hover{background:#204c55}
+#menu:not([data-tab=ride]) .launchActions{grid-template-columns:1fr}
+#menu #resumeRide{grid-column:1/-1;min-height:50px;font-size:16px}
+#menu .lobbyEssentials{font-size:15px;line-height:1.5;color:var(--muted);margin:16px 0 0}#menu .lobbyEssentials strong{display:block;color:var(--paper);font-weight:600}
+#menu #startReason{font-size:14px;line-height:1.5;color:var(--muted);margin:10px 0 16px}
+#menu .lobbyDisclosure{border:1px solid var(--edge);border-radius:10px;background:#10203480;margin:12px 0 0;overflow:hidden}
+#menu .lobbyDisclosure>summary{position:relative;display:flex;flex-direction:column;justify-content:center;gap:3px;padding:14px 42px 14px 16px;min-height:64px;list-style:none;cursor:pointer;font-size:17px;font-weight:650;line-height:1.3;color:var(--paper)}
+#menu .lobbyDisclosure>summary::-webkit-details-marker{display:none}
+#menu .lobbyDisclosure>summary::after{content:'+';position:absolute;right:16px;top:50%;transform:translateY(-50%);font-size:24px;color:var(--ice);font-weight:400}
+#menu .lobbyDisclosure[open]>summary::after{content:'−'}#menu .lobbyDisclosure[open]>summary{border-bottom:1px solid var(--edge)}
+#menu .lobbyDisclosure>summary small{font-size:14px;color:var(--muted);font-weight:400;letter-spacing:0}
+#menu .lobbyDisclosureBody{padding:16px}#menu .lobbyDisclosureBody .options{margin:0;gap:16px}
+#menu label{font-size:15px;letter-spacing:0;font-weight:600;line-height:1.4;color:#d5e3ef;min-width:0}
+#menu .options label,#menu .cycleOptions label,#menu #splitSetup label{display:flex;flex-direction:column;gap:8px}
+#menu select{font-size:16px;min-height:50px;padding:12px;min-width:0}
+#menu .cycleOptions{display:grid;gap:16px;margin-top:16px}#menu #bikeOptions p{font-size:15px;line-height:1.5;font-weight:400;color:var(--muted);margin:10px 0 0}
+#menu .lobbyPlaceButtons{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+#menu .lobbyPlaceButtons button{min-height:60px;text-align:left;padding:14px;font-size:16px;line-height:1.4;background:#193044;color:var(--paper);border-color:#6e95b270}
+#menu .landmarkMissionCard{margin:16px 0 0;padding:18px}#menu .landmarkMissionCard p{font-size:15px}#menu .landmarkMissionCard button{font-size:16px;min-height:48px}
+#menu #raceInfo,#menu #splitSetup p{font-size:16px;line-height:1.6;color:var(--muted)}#menu #splitSetup{margin-top:18px}#menu #splitSetup>label{margin:12px 0}
+#menu #splitSetup .lobbyDisclosure p{padding:0 16px}#menu #practiceRoute{font-size:16px;min-height:48px;margin:12px 0}
+#menu button,#menu summary{touch-action:manipulation}#menu .lobbyPanel button{min-height:48px;font-size:16px}
+.lobbyFooter{font-size:11px;letter-spacing:1px;min-height:48px;padding-top:24px}
+@media(max-width:1000px){.lobbyTabs{justify-content:flex-start}.lobbyIntro{padding-top:24px}#menu #menuTitle{font-size:64px}}
+@media(max-width:650px){
+ #menu{padding:calc(16px + env(safe-area-inset-top)) 16px calc(20px + env(safe-area-inset-bottom))}.lobbyChrome{gap:14px;padding-bottom:16px}.offlineBadge{display:none}
+ .lobbyTabs{display:grid;grid-template-columns:1fr .8fr 1.2fr .75fr;gap:6px}.lobbyTabs>button,.lobbyMore>summary{font-size:14px;min-height:52px;padding:10px 6px;line-height:1.25;height:100%}.lobbyMore{height:100%}.lobbyMoreItems{width:min(280px,calc(100vw - 32px))}
+ .lobbyIntro{padding:24px 0 20px}#menu #menuTitle{font-size:clamp(40px,10vw,60px);letter-spacing:-2px;max-width:100%;overflow-wrap:anywhere}#menu #menuCopy{font-size:17px}.lobbyKicker{font-size:11px;letter-spacing:1.5px}
+ #menu .menuInner{padding:20px}#menu h2{font-size:26px}#menu .lobbyDisclosureBody{padding:14px}#menu .options{grid-template-columns:1fr}#menu .lobbyPlaceButtons{grid-template-columns:1fr}
+ .lobbyFooter{flex-direction:column;gap:8px;font-size:11px}#menu .lobbyPanel,#menu #districtBoard{padding:20px;margin-top:24px}
+}
+@media(max-width:420px){#menu .launchActions{grid-template-columns:1fr}#menu .lobbyDisclosure>summary{font-size:16px}#menu .lobbyDisclosure>summary small{font-size:13px}}
+@media(max-height:540px) and (orientation:landscape){.lobbyIntro{padding:18px 0}#menu #menuTitle{font-size:48px}.lobbyDeck{width:min(580px,100%)}.lobbyTabs{width:auto}.lobbyMoreItems{max-height:220px;overflow:auto}}
+
 body.playing.racing #flowHUD{top:auto;bottom:104px;left:25px;max-width:280px}
 body.playing.racing #toast{top:350px}
+/* The mobile More tab starts a new row; keep its flyout inside the screen. */
+@media(max-width:650px){.lobbyMoreItems{left:0;right:auto;width:min(280px,calc(100vw - 32px));max-height:min(360px,55dvh);overflow:auto;overscroll-behavior:contain}}
 @media(max-width:650px){body.playing.racing #flowHUD{bottom:245px;left:12px;max-width:220px;font-size:10px}body.playing.racing #toast{top:320px}}
 @media(max-height:540px) and (orientation:landscape){body.playing.racing #flowHUD{top:170px;bottom:auto;font-size:10px}body.playing.racing #toast{top:220px}}

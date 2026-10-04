@@ -1,0 +1,6 @@
+import {test} from 'node:test';import assert from 'node:assert/strict';
+import {freeRideLaunch} from './rideLaunch.ts';import {createGroundSample,type TerrainSampler} from './terrain.ts';
+const terrain:TerrainSampler={sampleGround(_x,_z,out){return Object.assign(out,createGroundSample());},raycast:()=>null,raycastObstacle:()=>null,mountedClear:p=>p.z<0||p.x>1};
+test('a blocked free-ride spawn moves to nearby clear pavement, never through another rider',()=>{const p=freeRideLaunch(terrain,{x:0,y:0,z:0,heading:0},[{x:0,y:0,z:-1.5}]);assert.ok(terrain.mountedClear!(p,p.heading,.52,2.2));assert.ok(Math.hypot(p.x,p.z)<10);assert.ok(Math.hypot(p.x,p.z+1.5)>=1.12);});
+test('an open launch position and its heading stay exactly at the selected place',()=>{const p={x:5,y:0,z:5,heading:1};assert.deepEqual(freeRideLaunch({...terrain,mountedClear:()=>true},p),p);});
+test('the launch search refuses an elevated deck and stays on the selected floor',()=>{const ledge={...terrain,sampleGround(x:number,z:number,out:ReturnType<typeof createGroundSample>){return Object.assign(out,createGroundSample(),{height:z<0?4:0});}};const p=freeRideLaunch(ledge,{x:0,y:0,z:0,heading:0});assert.equal(p.y,0);assert.ok(p.x>1);});

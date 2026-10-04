@@ -1,0 +1,2413 @@
+{
+  "at": "2026-10-04T03:37:33.717Z",
+  "scope": "Bloody Run Creek open reaches, both banks, 20 metre centreline corridor",
+  "originalPlacementCount": 6160,
+  "updatedPlacementCount": 6017,
+  "candidates": 159,
+  "retained": 16,
+  "removed": 143,
+  "reductionPercent": 89.937106918239,
+  "minimumRetainedSpacingM": 38.16785935014761,
+  "baselineSha256": "8bb51864fde6f1acee2db3cd0dba6ab56c055bd7f9be2b412f98b6196bc73cf0",
+  "updatedSha256": "cac9db165c1e2340f33ff0eb46c71cabad58e24fae5d8a1b855db77bbfcb3af5",
+  "retainedPlacements": [
+    {
+      "asset": "ledger",
+      "position": [
+        -38.418505006942674,
+        120.51746785848626,
+        -3.0574329869157513
+      ],
+      "rotation": 0.4,
+      "scale": 0.9132893100228944,
+      "layer": "estimated",
+      "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+    },
+    {
+      "asset": "headstone",
+      "position": [
+        -298.0440862852698,
+        514.9967342738064,
+        -2.176238631687169
+      ],
+      "rotation": 0.4,
+      "scale": 0.7687694799981467,
+      "layer": "estimated",
+      "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+    },
+    {
+      "asset": "headstone-arched",
+      "position": [
+        -137.96982996644525,
+        340.30363349340354,
+        -0.8762748303335102
+      ],
+      "rotation": 0.4,
+      "scale": 0.9768521549780851,
+      "layer": "estimated",
+      "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+    },
+    {
+      "asset": "ledger",
+      "position": [
+        -33.33045033658948,
+        255.1565526386007,
+        -3.7041241399030467
+      ],
+      "rotation": 0.4,
+      "scale": 0.9655706281777896,
+      "layer": "estimated",
+      "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+    },
+    {
+      "asset": "headstone",
+      "position": [
+        -238.28869225590574,
+        405.0980932657571,
+        -1.8847723804615222
+      ],
+      "rotation": 0.4,
+      "scale": 1.073354723322008,
+      "layer": "estimated",
+      "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+    },
+    {
+      "asset": "headstone-cross",
+      "position": [
+        -208.32815191026734,
+        340.2380314816627,
+        -2.218698653668727
+      ],
+      "rotation": 0.4,
+      "scale": 1.1417339882802473,
+      "layer": "estimated",
+      "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+    },
+    {
+      "asset": "ledger",
+      "position": [
+        -112.71163505341104,
+        275.28121684570647,
+        -2.76404470583196
+      ],
+      "rotation": 0.4,
+      "scale": 1.1808299799753224,
+      "layer": "estimated",
+      "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+    },
+    {
+      "asset": "headstone",
+      "position": [
+        -247.67136669384115,
+        470.1499148367444,
+        -3.230420082024244
+      ],
+      "rotation": 0.4,
+      "scale": 0.7859654975063135,
+      "layer": "estimated",
+      "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+    },
+    {
+      "asset": "headstone",
+      "position": [
+        16.987340521495625,
+        155.60897581976175,
+        -1.424117049506145
+      ],
+      "rotation": 0.4,
+      "scale": 1.1445440204017203,
+      "layer": "estimated",
+      "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+    },
+    {
+      "asset": "headstone",
+      "position": [
+        -37.894551069076996,
+        180.04901897983106,
+        -4.460135706523205
+      ],
+      "rotation": 0.4,
+      "scale": 1.035552258243879,
+      "layer": "estimated",
+      "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+    },
+    {
+      "asset": "ledger",
+      "position": [
+        -293.45841193351833,
+        465.400556146544,
+        1.5507145754616063
+      ],
+      "rotation": 0.4,
+      "scale": 0.8204189453772319,
+      "layer": "estimated",
+      "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+    },
+    {
+      "asset": "ledger",
+      "position": [
+        -67.70327758211249,
+        285.4574626405651,
+        -3.07406749129261
+      ],
+      "rotation": 0.4,
+      "scale": 1.1227978121679958,
+      "layer": "estimated",
+      "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+    },
+    {
+      "asset": "headstone",
+      "position": [
+        -177.71359533479608,
+        310.08981701608894,
+        -1.3188130054906722
+      ],
+      "rotation": 0.4,
+      "scale": 1.1057926006869216,
+      "layer": "estimated",
+      "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+    },
+    {
+      "asset": "headstone",
+      "position": [
+        -203.5058242630011,
+        380.6705476983759,
+        -3.5071564102500385
+      ],
+      "rotation": 0.4,
+      "scale": 0.8938454623921488,
+      "layer": "estimated",
+      "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+    },
+    {
+      "asset": "headstone-cross",
+      "position": [
+        -53.02896564607975,
+        219.98740352444085,
+        -4.821529601333595
+      ],
+      "rotation": 0.4,
+      "scale": 1.107378952874944,
+      "layer": "estimated",
+      "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+    },
+    {
+      "asset": "headstone",
+      "position": [
+        -262.9426929320001,
+        435.17031960894957,
+        3.115996791967828
+      ],
+      "rotation": 0.4,
+      "scale": 1.0225051913935996,
+      "layer": "estimated",
+      "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+    }
+  ],
+  "removedPlacements": [
+    {
+      "originalIndex": 515,
+      "placement": {
+        "asset": "ledger",
+        "position": [
+          -28.278526668479216,
+          125.24801741122816,
+          -3.635792486121114
+        ],
+        "rotation": 0.4,
+        "scale": 1.1418827850729663,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 539,
+      "placement": {
+        "asset": "headstone",
+        "position": [
+          -27.676225227857845,
+          130.6997756919906,
+          -3.820739752528277
+        ],
+        "rotation": 0.4,
+        "scale": 1.1161540630572586,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 556,
+      "placement": {
+        "asset": "ledger",
+        "position": [
+          -28.5289745978464,
+          135.3590360867436,
+          -3.9827644344197406
+        ],
+        "rotation": 0.4,
+        "scale": 0.7741246137385296,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 557,
+      "placement": {
+        "asset": "headstone",
+        "position": [
+          -22.69931029574658,
+          135.2524762231471,
+          -4.08139292673185
+        ],
+        "rotation": 0.4,
+        "scale": 0.7793231251603128,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 579,
+      "placement": {
+        "asset": "headstone-cross",
+        "position": [
+          -23.45935724402629,
+          140.11943144712058,
+          -4.252187933644253
+        ],
+        "rotation": 0.4,
+        "scale": 0.7836187123218759,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 597,
+      "placement": {
+        "asset": "headstone-arched",
+        "position": [
+          -12.87673031151451,
+          145.45670059100442,
+          -4.518070882053964
+        ],
+        "rotation": 0.4,
+        "scale": 0.9518524873820998,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 619,
+      "placement": {
+        "asset": "headstone",
+        "position": [
+          -17.741102125227755,
+          150.60036714018722,
+          -4.494375787154066
+        ],
+        "rotation": 0.4,
+        "scale": 0.8336698723236816,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 642,
+      "placement": {
+        "asset": "ledger",
+        "position": [
+          -23.143825604438746,
+          155.6719627308204,
+          -4.448084550519725
+        ],
+        "rotation": 0.4,
+        "scale": 1.1690446772369476,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 643,
+      "placement": {
+        "asset": "headstone",
+        "position": [
+          -18.139912909077545,
+          155.62623755855492,
+          -4.493952762332934
+        ],
+        "rotation": 0.4,
+        "scale": 0.8810045408950788,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 644,
+      "placement": {
+        "asset": "headstone-arched",
+        "position": [
+          -12.657294282118952,
+          155.18876133404316,
+          -4.647846595977228
+        ],
+        "rotation": 0.4,
+        "scale": 1.0032352996113052,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 645,
+      "placement": {
+        "asset": "ledger",
+        "position": [
+          11.607470080978072,
+          155.52219924291435,
+          -2.126472665238431
+        ],
+        "rotation": 0.4,
+        "scale": 0.9030452270891387,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 667,
+      "placement": {
+        "asset": "ledger",
+        "position": [
+          -18.15989898012878,
+          160.24971088160785,
+          -4.427194636341099
+        ],
+        "rotation": 0.4,
+        "scale": 0.7863619013352349,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 704,
+      "placement": {
+        "asset": "headstone-cross",
+        "position": [
+          -32.982507888347605,
+          170.5825538296635,
+          -4.44972464661862
+        ],
+        "rotation": 0.4,
+        "scale": 1.0592344739637864,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 742,
+      "placement": {
+        "asset": "headstone-arched",
+        "position": [
+          -33.041561269762504,
+          180.063213101658,
+          -4.561820288207352
+        ],
+        "rotation": 0.4,
+        "scale": 1.142093218722689,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 840,
+      "placement": {
+        "asset": "headstone-arched",
+        "position": [
+          -47.689713147573656,
+          205.00895446881862,
+          -4.611289963305047
+        ],
+        "rotation": 0.4,
+        "scale": 0.7804630186411775,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 916,
+      "placement": {
+        "asset": "headstone",
+        "position": [
+          -57.819856634778354,
+          225.29713956920995,
+          -4.824715335392142
+        ],
+        "rotation": 0.4,
+        "scale": 0.8177265392304163,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 917,
+      "placement": {
+        "asset": "headstone",
+        "position": [
+          -53.221610309657954,
+          225.19311191770183,
+          -4.83743468841013
+        ],
+        "rotation": 0.4,
+        "scale": 0.9963620236189937,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 939,
+      "placement": {
+        "asset": "headstone",
+        "position": [
+          -57.73853009603364,
+          230.50441238078238,
+          -4.826863925959932
+        ],
+        "rotation": 0.4,
+        "scale": 1.1800468270022417,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 940,
+      "placement": {
+        "asset": "ledger",
+        "position": [
+          -53.345862428382176,
+          230.01694197949664,
+          -4.795031060189775
+        ],
+        "rotation": 0.4,
+        "scale": 1.1952090718414075,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 983,
+      "placement": {
+        "asset": "headstone",
+        "position": [
+          -63.31685313193283,
+          240.739563678021,
+          -4.540333097553917
+        ],
+        "rotation": 0.4,
+        "scale": 0.766720947259172,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 984,
+      "placement": {
+        "asset": "headstone",
+        "position": [
+          -53.027741776831526,
+          240.10709453327985,
+          -4.576953582836595
+        ],
+        "rotation": 0.4,
+        "scale": 0.9116664186219297,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1006,
+      "placement": {
+        "asset": "headstone",
+        "position": [
+          -73.01401876703612,
+          245.60794174650985,
+          -4.724995030236784
+        ],
+        "rotation": 0.4,
+        "scale": 1.088122986425221,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1007,
+      "placement": {
+        "asset": "headstone-weathered",
+        "position": [
+          -62.87895686788045,
+          245.37676550336326,
+          -4.480566994666753
+        ],
+        "rotation": 0.4,
+        "scale": 0.9507728850612673,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1008,
+      "placement": {
+        "asset": "headstone-weathered",
+        "position": [
+          -58.53749070475688,
+          245.08370160616712,
+          -4.357404206522718
+        ],
+        "rotation": 0.4,
+        "scale": 1.0209903004934282,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1028,
+      "placement": {
+        "asset": "headstone",
+        "position": [
+          -78.17508674523309,
+          250.58507639944,
+          -4.153095002510093
+        ],
+        "rotation": 0.4,
+        "scale": 0.829233848087159,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1029,
+      "placement": {
+        "asset": "headstone",
+        "position": [
+          -73.11662528431684,
+          250.0306747448489,
+          -4.7185957752516146
+        ],
+        "rotation": 0.4,
+        "scale": 0.966936219641026,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1030,
+      "placement": {
+        "asset": "headstone",
+        "position": [
+          -67.77790286668488,
+          250.5658522405142,
+          -4.725144836502847
+        ],
+        "rotation": 0.4,
+        "scale": 0.9278975565881069,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1052,
+      "placement": {
+        "asset": "headstone",
+        "position": [
+          -78.239256578641,
+          255.68677502514566,
+          -4.217473898867522
+        ],
+        "rotation": 0.4,
+        "scale": 1.1630738739520834,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1053,
+      "placement": {
+        "asset": "headstone",
+        "position": [
+          -68.20584510459304,
+          255.5612979454363,
+          -4.698614057419554
+        ],
+        "rotation": 0.4,
+        "scale": 1.1790027736410869,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1054,
+      "placement": {
+        "asset": "ledger",
+        "position": [
+          -47.79219435364441,
+          254.98779634196072,
+          -4.784268249434655
+        ],
+        "rotation": 0.4,
+        "scale": 0.9366026601045658,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1055,
+      "placement": {
+        "asset": "headstone-arched",
+        "position": [
+          -42.987067517228304,
+          254.98021617703657,
+          -4.804938237252967
+        ],
+        "rotation": 0.4,
+        "scale": 0.8500242278584205,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1056,
+      "placement": {
+        "asset": "headstone-weathered",
+        "position": [
+          -38.514451439244596,
+          254.97432479537017,
+          -4.7868443222265835
+        ],
+        "rotation": 0.4,
+        "scale": 1.1803478671645762,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1082,
+      "placement": {
+        "asset": "headstone",
+        "position": [
+          -93.08011322430664,
+          260.27969006164557,
+          -3.2239394608508842
+        ],
+        "rotation": 0.4,
+        "scale": 0.766666242087961,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1083,
+      "placement": {
+        "asset": "headstone",
+        "position": [
+          -78.09019331085538,
+          260.57570789935414,
+          -4.064160108081604
+        ],
+        "rotation": 0.4,
+        "scale": 0.7514561194149216,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1084,
+      "placement": {
+        "asset": "headstone-weathered",
+        "position": [
+          -72.83261916597817,
+          260.3389058232704,
+          -4.756470362407935
+        ],
+        "rotation": 0.4,
+        "scale": 1.1226062420421372,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1085,
+      "placement": {
+        "asset": "urn",
+        "position": [
+          -52.9265152686638,
+          260.40518626662896,
+          -4.8071439168413495
+        ],
+        "rotation": 0.4,
+        "scale": 0.9616717223391362,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1086,
+      "placement": {
+        "asset": "headstone-arched",
+        "position": [
+          -38.46420499663997,
+          260.23732030862254,
+          -4.281440167087782
+        ],
+        "rotation": 0.4,
+        "scale": 0.8916838789395481,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1107,
+      "placement": {
+        "asset": "headstone",
+        "position": [
+          -53.26614626127513,
+          265.1090300369646,
+          -4.793093478673919
+        ],
+        "rotation": 0.4,
+        "scale": 0.9540114873224435,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1108,
+      "placement": {
+        "asset": "headstone",
+        "position": [
+          -47.727601420554706,
+          265.6184916006085,
+          -4.713689759173359
+        ],
+        "rotation": 0.4,
+        "scale": 1.0314813076386506,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1131,
+      "placement": {
+        "asset": "headstone-arched",
+        "position": [
+          -58.47113506057889,
+          270.35030798184596,
+          -4.797065055193038
+        ],
+        "rotation": 0.4,
+        "scale": 0.9793346742165618,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1132,
+      "placement": {
+        "asset": "headstone-cross",
+        "position": [
+          -52.779054307056136,
+          269.95258341440376,
+          -4.7761960434987625
+        ],
+        "rotation": 0.4,
+        "scale": 1.1841071582653078,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1133,
+      "placement": {
+        "asset": "headstone-weathered",
+        "position": [
+          -48.057965029189305,
+          270.30002963936903,
+          -4.73436633258018
+        ],
+        "rotation": 0.4,
+        "scale": 0.9763900900229473,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1152,
+      "placement": {
+        "asset": "headstone",
+        "position": [
+          -73.34042441826163,
+          275.3643784261613,
+          -3.869615057360564
+        ],
+        "rotation": 0.4,
+        "scale": 0.806784370974828,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1153,
+      "placement": {
+        "asset": "headstone",
+        "position": [
+          -67.83847208764236,
+          275.49791775384443,
+          -4.353931109832497
+        ],
+        "rotation": 0.4,
+        "scale": 1.0531148098441208,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1154,
+      "placement": {
+        "asset": "ledger",
+        "position": [
+          -62.68004649870847,
+          275.59890971069865,
+          -4.757457090283913
+        ],
+        "rotation": 0.4,
+        "scale": 0.9047101094078558,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1155,
+      "placement": {
+        "asset": "headstone-weathered",
+        "position": [
+          -57.95875439887437,
+          274.9774178284661,
+          -4.750862480521611
+        ],
+        "rotation": 0.4,
+        "scale": 0.8310186812351655,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1156,
+      "placement": {
+        "asset": "headstone",
+        "position": [
+          -48.42214409804613,
+          275.5644282804492,
+          -4.554711448399251
+        ],
+        "rotation": 0.4,
+        "scale": 0.758967923442074,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1175,
+      "placement": {
+        "asset": "headstone",
+        "position": [
+          -53.347011457109275,
+          280.42356847610273,
+          -4.297244676259941
+        ],
+        "rotation": 0.4,
+        "scale": 1.1429212807515574,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1194,
+      "placement": {
+        "asset": "ledger",
+        "position": [
+          -63.34908493246752,
+          285.42168167600414,
+          -3.3160791616093808
+        ],
+        "rotation": 0.4,
+        "scale": 1.0862518009405497,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1211,
+      "placement": {
+        "asset": "headstone",
+        "position": [
+          -142.90111761570694,
+          290.38372473572815,
+          -2.0438114454075462
+        ],
+        "rotation": 0.4,
+        "scale": 1.08949091906632,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1225,
+      "placement": {
+        "asset": "headstone",
+        "position": [
+          -142.7307126873701,
+          295.30637020659884,
+          -3.5375121447309135
+        ],
+        "rotation": 0.4,
+        "scale": 1.1307725762551948,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1247,
+      "placement": {
+        "asset": "headstone-weathered",
+        "position": [
+          -148.25805528465946,
+          300.6647356274345,
+          -3.376000807704953
+        ],
+        "rotation": 0.4,
+        "scale": 0.9139588273099398,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1265,
+      "placement": {
+        "asset": "headstone-weathered",
+        "position": [
+          -183.51907429705312,
+          305.1758958478902,
+          -0.6903405633494437
+        ],
+        "rotation": 0.4,
+        "scale": 0.9589714623190505,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1283,
+      "placement": {
+        "asset": "ledger",
+        "position": [
+          -197.99879133214316,
+          310.3899035099785,
+          0.5332405728051726
+        ],
+        "rotation": 0.4,
+        "scale": 0.9953533068275292,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1284,
+      "placement": {
+        "asset": "ledger",
+        "position": [
+          -188.47469764533022,
+          310.6810388842146,
+          -0.829725425204255
+        ],
+        "rotation": 0.4,
+        "scale": 0.8453381912649525,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1303,
+      "placement": {
+        "asset": "headstone",
+        "position": [
+          -197.9652944773134,
+          315.19540464687935,
+          -0.5875540845684096
+        ],
+        "rotation": 0.4,
+        "scale": 1.008784886192986,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1304,
+      "placement": {
+        "asset": "ledger",
+        "position": [
+          -178.13293254835088,
+          315.52169562566047,
+          -2.079736253681787
+        ],
+        "rotation": 0.4,
+        "scale": 0.8807969744142234,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1305,
+      "placement": {
+        "asset": "headstone-arched",
+        "position": [
+          -128.28953576103834,
+          315.22284291421244,
+          -3.341960857137073
+        ],
+        "rotation": 0.4,
+        "scale": 0.9417884703867424,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1316,
+      "placement": {
+        "asset": "headstone",
+        "position": [
+          -198.1716680335025,
+          320.2071517858657,
+          -1.6289778603706755
+        ],
+        "rotation": 0.4,
+        "scale": 1.0667957379779618,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1317,
+      "placement": {
+        "asset": "headstone",
+        "position": [
+          -193.46625021731938,
+          320.4037146455682,
+          -2.351832611776179
+        ],
+        "rotation": 0.4,
+        "scale": 1.0071329028043992,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1337,
+      "placement": {
+        "asset": "headstone",
+        "position": [
+          -202.72608059293475,
+          325.6137133673372,
+          -1.559059777379812
+        ],
+        "rotation": 0.4,
+        "scale": 1.0642791891115582,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1338,
+      "placement": {
+        "asset": "headstone-arched",
+        "position": [
+          -198.07007462156042,
+          325.71409446033874,
+          -2.3144026814242755
+        ],
+        "rotation": 0.4,
+        "scale": 0.8879992211599972,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1339,
+      "placement": {
+        "asset": "headstone-arched",
+        "position": [
+          -193.04845967320458,
+          324.98256405027774,
+          -3.1506824823686235
+        ],
+        "rotation": 0.4,
+        "scale": 1.153970442414824,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1355,
+      "placement": {
+        "asset": "headstone",
+        "position": [
+          -198.04842743717666,
+          330.5304947122169,
+          -3.0266464264495534
+        ],
+        "rotation": 0.4,
+        "scale": 0.9448841451990174,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1356,
+      "placement": {
+        "asset": "headstone-arched",
+        "position": [
+          -183.0976156117109,
+          330.01044733399647,
+          -3.6963754100907265
+        ],
+        "rotation": 0.4,
+        "scale": 0.9467346151846013,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1370,
+      "placement": {
+        "asset": "headstone",
+        "position": [
+          -203.34016298910862,
+          335.42319327314357,
+          -2.6258929879919246
+        ],
+        "rotation": 0.4,
+        "scale": 0.7630926735263898,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1371,
+      "placement": {
+        "asset": "headstone-cross",
+        "position": [
+          -178.40177170572488,
+          335.05239244525,
+          -3.566956148590078
+        ],
+        "rotation": 0.4,
+        "scale": 1.0752737166834758,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1372,
+      "placement": {
+        "asset": "ledger",
+        "position": [
+          -138.141784862527,
+          335.18036796421995,
+          -2.741477235242445
+        ],
+        "rotation": 0.4,
+        "scale": 0.9234656146912207,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1393,
+      "placement": {
+        "asset": "headstone",
+        "position": [
+          -203.11902085064,
+          340.4545549128927,
+          -3.0623659854013754
+        ],
+        "rotation": 0.4,
+        "scale": 0.8044879818700121,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1394,
+      "placement": {
+        "asset": "headstone-arched",
+        "position": [
+          -187.7951137421268,
+          340.5939666870733,
+          -3.445213872199633
+        ],
+        "rotation": 0.4,
+        "scale": 0.8885184782502407,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1395,
+      "placement": {
+        "asset": "headstone",
+        "position": [
+          -148.45541337387075,
+          340.488325942705,
+          -2.915840204960668
+        ],
+        "rotation": 0.4,
+        "scale": 1.1027755885631882,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1420,
+      "placement": {
+        "asset": "headstone-weathered",
+        "position": [
+          -212.8920470830475,
+          345.00540240311443,
+          -1.7602364664263757
+        ],
+        "rotation": 0.4,
+        "scale": 1.0351368647053512,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1421,
+      "placement": {
+        "asset": "headstone",
+        "position": [
+          -202.67557215382,
+          345.4866632572638,
+          -3.4225604823323357
+        ],
+        "rotation": 0.4,
+        "scale": 0.9780295628390037,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1422,
+      "placement": {
+        "asset": "headstone-arched",
+        "position": [
+          -188.31666565248207,
+          345.386175945194,
+          -3.412863151633522
+        ],
+        "rotation": 0.4,
+        "scale": 0.8551501935832043,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1423,
+      "placement": {
+        "asset": "headstone-cross",
+        "position": [
+          -148.37202191417947,
+          345.06202235598744,
+          -1.1706501774083558
+        ],
+        "rotation": 0.4,
+        "scale": 0.99727589819778,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1424,
+      "placement": {
+        "asset": "headstone-weathered",
+        "position": [
+          -143.42264559116722,
+          345.641657703249,
+          0.22134080561900119
+        ],
+        "rotation": 0.4,
+        "scale": 0.9099337563936483,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1425,
+      "placement": {
+        "asset": "headstone-arched",
+        "position": [
+          -138.38270081096022,
+          345.27732492137153,
+          1.3005519394360867
+        ],
+        "rotation": 0.4,
+        "scale": 0.9612982565117257,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1440,
+      "placement": {
+        "asset": "ledger",
+        "position": [
+          -193.14673646978326,
+          350.6034060540913,
+          -3.6670823084352357
+        ],
+        "rotation": 0.4,
+        "scale": 0.9124836454685076,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1441,
+      "placement": {
+        "asset": "headstone",
+        "position": [
+          -187.93316090031777,
+          350.0591356216796,
+          -3.5286436076773593
+        ],
+        "rotation": 0.4,
+        "scale": 1.1259095572383044,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1442,
+      "placement": {
+        "asset": "ledger",
+        "position": [
+          -183.11083734200687,
+          350.48987920198425,
+          -3.4916247956917204
+        ],
+        "rotation": 0.4,
+        "scale": 0.7706589406728706,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1443,
+      "placement": {
+        "asset": "obelisk",
+        "position": [
+          -167.83029525635197,
+          349.99637662275785,
+          -3.503125605283832
+        ],
+        "rotation": 0.4,
+        "scale": 0.9065545350853187,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1444,
+      "placement": {
+        "asset": "headstone",
+        "position": [
+          -148.25917419420838,
+          350.63937469224044,
+          1.0385549091237274
+        ],
+        "rotation": 0.4,
+        "scale": 0.8335519521894753,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1445,
+      "placement": {
+        "asset": "ledger",
+        "position": [
+          -143.35856411447926,
+          350.0643255055385,
+          1.5153081567538647
+        ],
+        "rotation": 0.4,
+        "scale": 1.0156512114422303,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1461,
+      "placement": {
+        "asset": "headstone-arched",
+        "position": [
+          -213.38112231097392,
+          355.5564375666848,
+          -2.1777928397776756
+        ],
+        "rotation": 0.4,
+        "scale": 1.001174311354069,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1462,
+      "placement": {
+        "asset": "headstone-arched",
+        "position": [
+          -208.06842525141417,
+          355.0248275757066,
+          -2.9286268689435215
+        ],
+        "rotation": 0.4,
+        "scale": 0.9419224734124122,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1463,
+      "placement": {
+        "asset": "headstone-weathered",
+        "position": [
+          -188.23038483771685,
+          355.2896088457765,
+          -3.598449027980254
+        ],
+        "rotation": 0.4,
+        "scale": 1.0401784750650085,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1464,
+      "placement": {
+        "asset": "headstone-arched",
+        "position": [
+          -182.94340241417234,
+          355.049781962961,
+          -3.499518895107148
+        ],
+        "rotation": 0.4,
+        "scale": 0.8751913472667925,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1483,
+      "placement": {
+        "asset": "headstone-weathered",
+        "position": [
+          -192.78914240025586,
+          360.2638649253409,
+          -3.58471698450043
+        ],
+        "rotation": 0.4,
+        "scale": 1.0668235290131092,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1502,
+      "placement": {
+        "asset": "headstone",
+        "position": [
+          -192.6814560076332,
+          365.4584563767391,
+          -3.497892275154339
+        ],
+        "rotation": 0.4,
+        "scale": 1.0150021078768852,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1516,
+      "placement": {
+        "asset": "ledger",
+        "position": [
+          -217.78684895569103,
+          370.7213806706407,
+          -2.4384533327864624
+        ],
+        "rotation": 0.4,
+        "scale": 0.7548955857802251,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1517,
+      "placement": {
+        "asset": "headstone",
+        "position": [
+          -197.66834970810314,
+          370.203005210176,
+          -3.542149814950933
+        ],
+        "rotation": 0.4,
+        "scale": 0.9947865920620445,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1518,
+      "placement": {
+        "asset": "headstone",
+        "position": [
+          -193.17569402683264,
+          370.0274125892602,
+          -3.4935989211583527
+        ],
+        "rotation": 0.4,
+        "scale": 1.1136001331430827,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1541,
+      "placement": {
+        "asset": "headstone",
+        "position": [
+          -193.43022629118423,
+          375.62026426348547,
+          -3.4065136135226544
+        ],
+        "rotation": 0.4,
+        "scale": 1.1681009820768216,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1567,
+      "placement": {
+        "asset": "headstone",
+        "position": [
+          -228.4533148314808,
+          380.47898587445326,
+          -1.9016825834601094
+        ],
+        "rotation": 0.4,
+        "scale": 1.179527420868957,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1568,
+      "placement": {
+        "asset": "headstone",
+        "position": [
+          -222.866550923048,
+          380.72277971164215,
+          -2.437343253771227
+        ],
+        "rotation": 0.4,
+        "scale": 1.0060693659055755,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1597,
+      "placement": {
+        "asset": "headstone-weathered",
+        "position": [
+          -232.72766867883695,
+          385.13653231414,
+          -1.4550975968806215
+        ],
+        "rotation": 0.4,
+        "scale": 0.8283279817762237,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1598,
+      "placement": {
+        "asset": "headstone-weathered",
+        "position": [
+          -227.86739454598435,
+          384.9801139086597,
+          -2.074054099170816
+        ],
+        "rotation": 0.4,
+        "scale": 0.8312127270988261,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1599,
+      "placement": {
+        "asset": "ledger",
+        "position": [
+          -222.95191634112328,
+          385.5154626952616,
+          -2.6634775778085484
+        ],
+        "rotation": 0.4,
+        "scale": 0.8339151642533008,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1600,
+      "placement": {
+        "asset": "headstone-arched",
+        "position": [
+          -208.29363437727056,
+          385.2706309164324,
+          -3.6171303420962593
+        ],
+        "rotation": 0.4,
+        "scale": 0.822592490638409,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1624,
+      "placement": {
+        "asset": "ledger",
+        "position": [
+          -233.11633775636238,
+          390.22618353537547,
+          -1.6942655901065833
+        ],
+        "rotation": 0.4,
+        "scale": 1.0901865372942803,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1625,
+      "placement": {
+        "asset": "obelisk",
+        "position": [
+          -222.6645062423448,
+          390.7039302133395,
+          -3.0588623637383217
+        ],
+        "rotation": 0.4,
+        "scale": 0.9612295020828293,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1626,
+      "placement": {
+        "asset": "obelisk",
+        "position": [
+          -207.7383200998554,
+          390.74665536600224,
+          -3.5800091449419575
+        ],
+        "rotation": 0.4,
+        "scale": 0.845064975101698,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1627,
+      "placement": {
+        "asset": "headstone-cross",
+        "position": [
+          -203.05577510468888,
+          390.53637022409833,
+          -3.537174356628738
+        ],
+        "rotation": 0.4,
+        "scale": 1.0879106227195496,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1650,
+      "placement": {
+        "asset": "ledger",
+        "position": [
+          -212.93145836647437,
+          395.39963687665335,
+          -3.8275201309798983
+        ],
+        "rotation": 0.4,
+        "scale": 0.8270481577822497,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1671,
+      "placement": {
+        "asset": "headstone",
+        "position": [
+          -228.40375553776113,
+          400.19157372491026,
+          -2.734678262713579
+        ],
+        "rotation": 0.4,
+        "scale": 0.7670104305393595,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1697,
+      "placement": {
+        "asset": "headstone",
+        "position": [
+          -227.6599253487593,
+          405.22011243202104,
+          -3.173086754571823
+        ],
+        "rotation": 0.4,
+        "scale": 0.7537399552137686,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1715,
+      "placement": {
+        "asset": "ledger",
+        "position": [
+          -232.84512666426048,
+          410.0634389561978,
+          -2.800807069057281
+        ],
+        "rotation": 0.4,
+        "scale": 0.8463367527427178,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1735,
+      "placement": {
+        "asset": "headstone",
+        "position": [
+          -233.30721500949892,
+          415.3623701101431,
+          -3.0819842826472668
+        ],
+        "rotation": 0.4,
+        "scale": 0.8139474018032702,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1736,
+      "placement": {
+        "asset": "headstone",
+        "position": [
+          -217.69643492121185,
+          415.0886409406955,
+          -3.6006991316299968
+        ],
+        "rotation": 0.4,
+        "scale": 1.1286118044789184,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1737,
+      "placement": {
+        "asset": "ledger",
+        "position": [
+          -213.17039147402323,
+          415.70973931169146,
+          -3.5575431084294666
+        ],
+        "rotation": 0.4,
+        "scale": 0.9128541345370786,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1763,
+      "placement": {
+        "asset": "headstone",
+        "position": [
+          -233.22644037646216,
+          420.162884770226,
+          -3.3261566580742037
+        ],
+        "rotation": 0.4,
+        "scale": 1.048919389488051,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1797,
+      "placement": {
+        "asset": "ledger",
+        "position": [
+          -233.4885185225645,
+          425.46498642697594,
+          -3.6502412284761183
+        ],
+        "rotation": 0.4,
+        "scale": 1.1855062669503147,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1820,
+      "placement": {
+        "asset": "headstone",
+        "position": [
+          -243.50892891835426,
+          430.074672345363,
+          -2.5521459966065576
+        ],
+        "rotation": 0.4,
+        "scale": 0.9592411294162988,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1855,
+      "placement": {
+        "asset": "headstone-cross",
+        "position": [
+          -247.81889701328797,
+          435.06252297475515,
+          -2.283943481327252
+        ],
+        "rotation": 0.4,
+        "scale": 1.1993412766475715,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1856,
+      "placement": {
+        "asset": "headstone-cross",
+        "position": [
+          -243.01231125025183,
+          435.6561390947712,
+          -3.1566207018680967
+        ],
+        "rotation": 0.4,
+        "scale": 1.046815121849306,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1857,
+      "placement": {
+        "asset": "headstone",
+        "position": [
+          -223.3688995567513,
+          435.2357127269436,
+          -3.4144103670186183
+        ],
+        "rotation": 0.4,
+        "scale": 1.0276532513608296,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1886,
+      "placement": {
+        "asset": "headstone",
+        "position": [
+          -268.19240908398984,
+          440.2172964852001,
+          3.1890343034557196
+        ],
+        "rotation": 0.4,
+        "scale": 1.12075526890473,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1887,
+      "placement": {
+        "asset": "headstone",
+        "position": [
+          -253.46338271779635,
+          440.40947463544893,
+          -2.049888147463116
+        ],
+        "rotation": 0.4,
+        "scale": 1.0995957479732845,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1910,
+      "placement": {
+        "asset": "headstone",
+        "position": [
+          -272.6683447586049,
+          445.0115128167526,
+          3.174479771479806
+        ],
+        "rotation": 0.4,
+        "scale": 0.885979544111632,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1911,
+      "placement": {
+        "asset": "headstone",
+        "position": [
+          -253.00157430472638,
+          445.10238148611626,
+          -2.9250752855221998
+        ],
+        "rotation": 0.4,
+        "scale": 1.0946306993698087,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1927,
+      "placement": {
+        "asset": "headstone-arched",
+        "position": [
+          -263.2541737064586,
+          450.6243127931588,
+          -2.0137194332101878
+        ],
+        "rotation": 0.4,
+        "scale": 1.194277276822634,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1928,
+      "placement": {
+        "asset": "headstone-weathered",
+        "position": [
+          -232.6584065455143,
+          450.1714286751515,
+          -3.2582917682777106
+        ],
+        "rotation": 0.4,
+        "scale": 0.8949833283349983,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1946,
+      "placement": {
+        "asset": "obelisk",
+        "position": [
+          -243.02173763256081,
+          455.07128398450095,
+          -3.400490642172744
+        ],
+        "rotation": 0.4,
+        "scale": 1.163109071264365,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1969,
+      "placement": {
+        "asset": "ledger",
+        "position": [
+          -288.5179713002538,
+          460.3811858315391,
+          2.3074802147553575
+        ],
+        "rotation": 0.4,
+        "scale": 1.0536574187138803,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1970,
+      "placement": {
+        "asset": "headstone-cross",
+        "position": [
+          -243.32707553683383,
+          460.24229244073643,
+          -3.3459982709004326
+        ],
+        "rotation": 0.4,
+        "scale": 0.9291738845440665,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1993,
+      "placement": {
+        "asset": "headstone",
+        "position": [
+          -287.76228221446564,
+          465.4679101756051,
+          1.4468532286341504
+        ],
+        "rotation": 0.4,
+        "scale": 1.0564604343630373,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 1994,
+      "placement": {
+        "asset": "headstone-arched",
+        "position": [
+          -248.14006694789862,
+          465.7018300152631,
+          -3.3677401208916513
+        ],
+        "rotation": 0.4,
+        "scale": 0.9662972621061506,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 2023,
+      "placement": {
+        "asset": "headstone-weathered",
+        "position": [
+          -292.734886376154,
+          470.30148957474205,
+          0.6191933358703517
+        ],
+        "rotation": 0.4,
+        "scale": 1.1152678484018854,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 2024,
+      "placement": {
+        "asset": "ledger",
+        "position": [
+          -288.4063788960325,
+          470.011644899232,
+          -0.042464842732316876
+        ],
+        "rotation": 0.4,
+        "scale": 0.9201736478600778,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 2025,
+      "placement": {
+        "asset": "headstone-arched",
+        "position": [
+          -262.9112872403731,
+          470.40962144070147,
+          -3.424380161242316
+        ],
+        "rotation": 0.4,
+        "scale": 0.8375287372954728,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 2026,
+      "placement": {
+        "asset": "headstone",
+        "position": [
+          -253.126820589653,
+          470.2181821831856,
+          -3.3590554677593447
+        ],
+        "rotation": 0.4,
+        "scale": 1.1303469127706502,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 2050,
+      "placement": {
+        "asset": "headstone",
+        "position": [
+          -268.15097455361763,
+          475.0783240949581,
+          -3.471643134894415
+        ],
+        "rotation": 0.4,
+        "scale": 0.8132989716302013,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 2051,
+      "placement": {
+        "asset": "headstone-arched",
+        "position": [
+          -252.70732231327887,
+          475.7351834090239,
+          -3.1890212819931287
+        ],
+        "rotation": 0.4,
+        "scale": 0.9716764959523119,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 2070,
+      "placement": {
+        "asset": "headstone",
+        "position": [
+          -267.9861648972881,
+          480.4796156812753,
+          -3.365782050211826
+        ],
+        "rotation": 0.4,
+        "scale": 0.9661238245708721,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 2104,
+      "placement": {
+        "asset": "headstone-arched",
+        "position": [
+          -268.1836650093424,
+          485.3046290235771,
+          -3.2533980221730987
+        ],
+        "rotation": 0.4,
+        "scale": 1.053804875065046,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 2136,
+      "placement": {
+        "asset": "headstone",
+        "position": [
+          -278.271311064268,
+          490.4829694943213,
+          -3.1403601898808398
+        ],
+        "rotation": 0.4,
+        "scale": 0.9102163587291677,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 2167,
+      "placement": {
+        "asset": "headstone-cross",
+        "position": [
+          -278.16420406712825,
+          495.2176181805825,
+          -2.925481086817679
+        ],
+        "rotation": 0.4,
+        "scale": 1.123127614086654,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 2197,
+      "placement": {
+        "asset": "headstone-cross",
+        "position": [
+          -308.3681030899187,
+          500.2812548714828,
+          0.05279750998278723
+        ],
+        "rotation": 0.4,
+        "scale": 0.8607999434069754,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 2198,
+      "placement": {
+        "asset": "headstone",
+        "position": [
+          -283.26786514219435,
+          500.6979280105759,
+          -2.4739920562749393
+        ],
+        "rotation": 0.4,
+        "scale": 1.1618424930897568,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 2199,
+      "placement": {
+        "asset": "headstone",
+        "position": [
+          -277.7833952420398,
+          500.4671351025611,
+          -2.511608253252151
+        ],
+        "rotation": 0.4,
+        "scale": 1.1289925906443767,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 2217,
+      "placement": {
+        "asset": "ledger",
+        "position": [
+          -302.930196750454,
+          505.3504823494741,
+          -1.18831261836296
+        ],
+        "rotation": 0.4,
+        "scale": 1.1613090314088172,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 2218,
+      "placement": {
+        "asset": "ledger",
+        "position": [
+          -297.92982744177385,
+          505.45770603400587,
+          -1.7350904692919855
+        ],
+        "rotation": 0.4,
+        "scale": 0.9476944120600647,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    },
+    {
+      "originalIndex": 2231,
+      "placement": {
+        "asset": "headstone",
+        "position": [
+          -293.15642382321647,
+          510.04485532693826,
+          -2.0904891742353313
+        ],
+        "rotation": 0.4,
+        "scale": 0.8398555194213043,
+        "layer": "estimated",
+        "confidence": "Unidentified density-study grave; no personal inscription or claimed real coordinate"
+      }
+    }
+  ],
+  "unchanged": "All placements outside this creek corridor, named/mapped memorials, architecture, trees, flowers and benches",
+  "physics": {
+    "beforeColliders": 4917,
+    "afterColliders": 4774,
+    "removedColliders": 143,
+    "result": "PASS"
+  },
+  "sourceFiles": [
+    {
+      "path": "euc-detroit-riverwalk/public/elmwood/placements.json",
+      "sha256": "cac9db165c1e2340f33ff0eb46c71cabad58e24fae5d8a1b855db77bbfcb3af5"
+    },
+    {
+      "path": "_goth_swoop_release_20260916/lottominded-ultra.io/games/gothtechnology2/elmwood-source/public/elmwood/placements.json",
+      "sha256": "cac9db165c1e2340f33ff0eb46c71cabad58e24fae5d8a1b855db77bbfcb3af5"
+    },
+    {
+      "path": "euc-detroit-riverwalk/public/love-tag/elmwood-explorer.json",
+      "sha256": "8013406780f8e9a087d519ce6c6f66121dad18ae7d105e5d290f85999dbe84ad"
+    },
+    {
+      "path": "_goth_swoop_release_20260916/lottominded-ultra.io/games/gothtechnology2/elmwood-source/public/love-tag/elmwood-explorer.json",
+      "sha256": "8013406780f8e9a087d519ce6c6f66121dad18ae7d105e5d290f85999dbe84ad"
+    },
+    {
+      "path": "_goth_swoop_release_20260916/lottominded-ultra.io/games/gothtechnology2/swoop-source/public/love-tag/elmwood-explorer.json",
+      "sha256": "8013406780f8e9a087d519ce6c6f66121dad18ae7d105e5d290f85999dbe84ad"
+    },
+    {
+      "path": "_goth_swoop_release_20260916/lottominded-ultra.io/games/gothtechnology2/love-tag-server/fixtures/elmwood-explorer.json",
+      "sha256": "8013406780f8e9a087d519ce6c6f66121dad18ae7d105e5d290f85999dbe84ad"
+    },
+    {
+      "path": "_goth_swoop_release_20260916/lottominded-ultra.io/games/gothtechnology2/scripts/export-love-tag-fixtures.mjs",
+      "sha256": "9a47d9a0e460fa038a218c68de24312267d5cc720e1227bf79bc3ee3680bcb36"
+    }
+  ],
+  "checks": {
+    "placementMirror": "PASS",
+    "stagedPlacementAsset": "PASS",
+    "sceneryTests": {
+      "passed": 4,
+      "failed": 0
+    },
+    "build": "PASS",
+    "fixtureSourceMirrorStage": "PASS",
+    "roomCompatibility": "PASS",
+    "browserViews": [
+      "Bloody Run flowers and willows",
+      "New creek overlook bench"
+    ],
+    "reducedMotionView": "PASS, existing reducedMotion=1 option",
+    "capturedConsoleErrors": 0,
+    "hosted": "NOT RUN"
+  },
+  "screenshots": [
+    "C:/Users/digit/.codex/visualizations/2026/09/05/01a073f6-892e-70c1-a9a8-7659bc278528/elmwood-creek-thinned-20261003.png",
+    "C:/Users/digit/.codex/visualizations/2026/09/05/01a073f6-892e-70c1-a9a8-7659bc278528/elmwood-creek-thinned-bench-20261003.png"
+  ]
+}

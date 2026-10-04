@@ -1,0 +1,122 @@
+[
+  {
+    "folder": "street-furniture",
+    "name": "street-lamp",
+    "bytes": 40312,
+    "meshes": 3,
+    "triangles": 852,
+    "positions": 0
+  },
+  {
+    "folder": "street-furniture",
+    "name": "camera-pole",
+    "bytes": 94296,
+    "meshes": 6,
+    "triangles": 2012,
+    "positions": 0
+  },
+  {
+    "folder": "street-furniture",
+    "name": "hydrant",
+    "bytes": 28020,
+    "meshes": 3,
+    "triangles": 816,
+    "positions": 0
+  },
+  {
+    "folder": "street-furniture",
+    "name": "bench",
+    "bytes": 85664,
+    "meshes": 2,
+    "triangles": 1788,
+    "positions": 0
+  },
+  {
+    "folder": "street-furniture",
+    "name": "waste-bin",
+    "bytes": 132860,
+    "meshes": 2,
+    "triangles": 2524,
+    "positions": 0
+  },
+  {
+    "folder": "street-furniture",
+    "name": "bike-rack",
+    "bytes": 89844,
+    "meshes": 2,
+    "triangles": 2232,
+    "positions": 0
+  },
+  {
+    "folder": "street-furniture",
+    "name": "drain-grate",
+    "bytes": 82836,
+    "meshes": 1,
+    "triangles": 1512,
+    "positions": 0
+  },
+  {
+    "folder": "street-furniture",
+    "name": "utility-cover",
+    "bytes": 71040,
+    "meshes": 3,
+    "triangles": 1312,
+    "positions": 0
+  },
+  {
+    "folder": "valade",
+    "name": "valade-shed",
+    "bytes": 1038676,
+    "meshes": 3,
+    "triangles": 20536,
+    "positions": 0
+  },
+  {
+    "folder": "valade",
+    "name": "valade-play-towers",
+    "bytes": 311916,
+    "meshes": 6,
+    "triangles": 6964,
+    "positions": 0
+  },
+  {
+    "folder": "valade",
+    "name": "valade-barge",
+    "bytes": 608508,
+    "meshes": 5,
+    "triangles": 13916,
+    "positions": 0
+  },
+  {
+    "folder": "valade",
+    "name": "valade-chair",
+    "bytes": 77096,
+    "meshes": 1,
+    "triangles": 1472,
+    "positions": 0
+  },
+  {
+    "folder": "valade",
+    "name": "valade-musical-garden",
+    "bytes": 60972,
+    "meshes": 3,
+    "triangles": 1168,
+    "positions": 0
+  },
+  {
+    "folder": "valade",
+    "name": "valade-picnic-table",
+    "bytes": 60492,
+    "meshes": 2,
+    "triangles": 1148,
+    "positions": 0
+  },
+  {
+    "folder": "valade",
+    "name": "valade-bbq",
+    "bytes": 24244,
+    "meshes": 2,
+    "triangles": 500,
+    "positions": 0
+  }
+]

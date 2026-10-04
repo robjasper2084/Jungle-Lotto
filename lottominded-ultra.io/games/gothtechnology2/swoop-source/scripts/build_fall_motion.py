@@ -1,4 +1,4 @@
-"""Bake portable fall control curves with Blender's built-in Action editor. No add-ons."""
+"""Bake portable fall controls and an editable Rigify reference with free Blender tools."""
 import bpy, json
 from pathlib import Path
 root=Path(__file__).resolve().parents[1]
@@ -25,7 +25,9 @@ keys={
 for channel,poses in keys.items():
  control[channel]=0.0
  for seconds,value in poses:
-  control[channel]=value
+  # Custom properties change type on assignment. Integer keys previously turned
+  # reach/absorb into binary switches instead of continuous animation curves.
+  control[channel]=float(value)
   control.keyframe_insert(data_path='["'+channel+'"]',frame=seconds*120,group='Contact-aware fall')
 action=control.animation_data.action
 action.name='Swoop_Brace_Impact_Roll_Settle'
@@ -42,6 +44,25 @@ for frame in range(241):
  samples.append([round(float(control[name]),6) for name in keys])
 data={'source':'Blender built-in Action/F-curve tools; authored for Swoop, no external animation copied','fps':120,'channels':list(keys),'samples':samples}
 (root/'src'/'detroit'/'fall-curves.json').write_text(json.dumps(data,separators=(',',':')))
+scene.frame_set(60)
+bpy.ops.preferences.addon_enable(module='rigify')
+bpy.ops.object.armature_human_metarig_add()
+rig=bpy.context.object
+rig.name='Fall_Posture_Rigify_Reference'
+rig.show_in_front=True
+rig['purpose']='Editable posture reference; game retargets these controls to the supplied rider skins using IK.'
+for frame,row in enumerate(samples):
+ reach,absorb,curl,tuck,stagger=row
+ for side,sign in [('L',1),('R',-1)]:
+  for name,rotation in [(f'upper_arm.{side}',(-.7*reach+.35*absorb,0,sign*(.12+.2*stagger))),
+                        (f'forearm.{side}',(-.25-.65*absorb-.3*curl,0,0)),
+                        (f'thigh.{side}',(-.75*curl*(1 if side=='L' else .72),0,sign*.08*curl)),
+                        (f'shin.{side}',(1.25*curl,0,0)),('spine.006',(.3*tuck,0,0))]:
+   bone=rig.pose.bones.get(name)
+   if bone:
+    bone.rotation_mode='XYZ';bone.rotation_euler=rotation
+    bone.keyframe_insert(data_path='rotation_euler',frame=frame,group='Fall posture')
+rig.animation_data.action.name='Brace_Absorb_Shoulder_Roll'
 scene.frame_set(60)
 bpy.ops.wm.save_as_mainfile(filepath=str(out/'Swoop_Fall_Motion.blend'))
 (out/'README.md').write_text('# Swoop fall motion controls\n\nEditable Blender Action with five contact-relative posture channels. 120 Hz samples ship in src/detroit/fall-curves.json. The game retargets these controls to all four supplied rider skeletons with its existing two-bone IK; terrain sweeps remain authoritative. This is a procedural animation control asset, not motion capture or a ragdoll. No paid plug-in is required.\n\nRebuild: blender --background --factory-startup --python scripts/build_fall_motion.py\n')

@@ -13,7 +13,7 @@ export function controlRect(p:ControlPosition,w:number,h:number,vw:number,vh:num
 export function defaultTouchPosition(id:ControlId,w:number,h:number):ControlPosition{
  const short=h<540,point=(right:number,bottom:number)=>({x:(w-right)/w,y:(h-bottom)/h,scale:1,opacity:.8});
  if(id==='stick')return {x:Math.max(68,w*.16)/w,y:(h-(short?110:145))/h,scale:w<360?.8:w<400?.9:1,opacity:.75};
- return id==='hop'?point(65,short?143:160):id==='crouch'?point(65,short?60:70):id==='brake'?point(150,short?60:70):id==='specialMove'?point(153,short?143:160):point(65,short?223:248);
+ return id==='hop'?point(65,short?168:195):id==='crouch'?point(65,short?88:110):id==='brake'?point(150,short?88:110):id==='specialMove'?point(153,short?168:195):point(short?235:65,short?168:280);
 }
 export function installTouchLayout(beforeEdit:()=>void){
  const orientation=()=>innerWidth>=innerHeight?'landscape':'portrait';

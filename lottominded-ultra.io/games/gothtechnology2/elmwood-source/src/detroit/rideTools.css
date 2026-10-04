@@ -1,0 +1,40 @@
+/* Secondary tools stay above the joystick and clear of the map and action buttons. */
+body #ride-tools{--tools-top:164px;--tools-bottom:384px;position:fixed;z-index:26;left:max(12px,env(safe-area-inset-left));top:calc(var(--tools-top) + env(safe-area-inset-top));right:auto;bottom:auto;box-sizing:border-box;width:min(240px,calc(100vw - 224px));max-height:calc(100dvh - var(--tools-top) - var(--tools-bottom) - env(safe-area-inset-top) - env(safe-area-inset-bottom));overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;padding:0 10px;color:var(--touch-ink,#fffef4);background:var(--touch-glass,#102621ed);border:1px solid var(--touch-ring,#f1f4ebbd);border-radius:8px;box-shadow:0 4px 16px #0003;font:12px/1.4 system-ui;touch-action:pan-y}
+body #ride-tools[hidden]{display:none!important}
+body #ride-tools:not([open]){width:min(166px,calc(100vw - 224px))}
+body #ride-tools>summary{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:44px;cursor:pointer;list-style:none;font-weight:700}
+body #ride-tools>summary::-webkit-details-marker{display:none}
+body #ride-tools>summary::after{content:'+';font-size:20px;color:var(--touch-accent,#e5cc86)}
+body #ride-tools[open]>summary{position:sticky;top:0;z-index:1;background:#142b27}
+body #ride-tools[open]>summary::after{content:'−'}
+/* Override each panel's former fixed bottom anchor, including small-screen rules. */
+body .ride-tools#ride-tools>details.ride-tool-panel:is([open],:not([open])){position:static;inset:auto;transform:none;box-sizing:border-box;width:100%;max-width:none;max-height:none;overflow:visible;margin:0;padding:4px 0 8px;border:0;border-top:1px solid #8eb3a54d;border-radius:0;background:transparent;box-shadow:none;font-size:12px}
+body #ride-tools .ride-tool-panel>summary{display:flex;align-items:center;min-height:44px;line-height:1.35;font-size:12px}
+body #ride-tools .ride-tool-panel :is(button,select,input,a){box-sizing:border-box;max-width:100%;min-height:44px}
+body #ride-tools .ride-tool-panel button{white-space:normal}
+body #ride-tools .ride-tool-panel .screen-actions{flex-wrap:wrap}
+body #ride-tools .ride-tool-panel .screen-actions button{flex:1 1 90px}
+body #ride-tools .studio-capture div{display:grid;grid-template-columns:1fr}
+body #ride-tools :focus-visible{outline:3px solid var(--touch-accent,#e5cc86);outline-offset:2px}
+body:has(#practiceHUD:not([hidden])) #ride-tools,body:has(.elmwood-lesson:not([hidden])) #ride-tools,body.layout-editing #ride-tools{display:none}
+/* Elmwood's session counter occupies the space below its film toolbar. */
+body:has(#view[data-riding=true]) #ride-tools{--tools-top:224px;--tools-bottom:384px}
+@media(min-height:841px){body #ride-tools{--tools-bottom:280px}}
+@media(max-height:540px) and (orientation:landscape){
+ body #ride-tools,body:has(#view[data-riding=true]) #ride-tools{--tools-top:116px;--tools-bottom:190px;width:170px}
+ body #ride-tools[open],body:has(#view[data-riding=true]) #ride-tools[open]{--tools-top:64px}
+ body:has(#ride-tools[open]:not([hidden])) .game-film-toolbar,body:has(#ride-tools[open]:not([hidden])) #flowHUD,body:has(#ride-tools[open]:not([hidden])) .session-hud{visibility:hidden}
+}
+@media(prefers-reduced-motion:reduce){body #ride-tools{scroll-behavior:auto}}
+/* A collapsed launcher always keeps its full touch target, even on short phones. */
+body #ride-tools:not([open]){max-height:none;overflow:visible}
+body #ride-tools[open]{--tools-top:120px;--tools-bottom:240px;width:min(280px,calc(100vw - 132px));max-height:max(120px,calc(100dvh - var(--tools-top) - var(--tools-bottom) - env(safe-area-inset-top) - env(safe-area-inset-bottom)))}
+body:has(#ride-tools[open]:not([hidden])) :is(#flowHUD,.game-film-toolbar,.session-hud){visibility:hidden}
+body:has(#ride-tools[open]:not([hidden])) :is(.dogActionHud,.tactical-minimap){visibility:hidden}
+body #ride-tools .cabinet-choice{width:100%;margin:4px 0}
+body #ride-tools .cabinet-directions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+body #ride-tools .cabinet-directions button{margin:3px 0;min-width:0}
+@media(max-height:540px) and (orientation:landscape){
+ body #ride-tools[open],body:has(#view[data-riding=true]) #ride-tools[open]{--tools-top:64px;--tools-bottom:150px;width:min(250px,calc(100vw - 350px))}
+}
+@media(max-width:360px) and (orientation:portrait){body #ride-tools:not([open]){--tools-top:122px;width:140px}body #ride-tools[open]{--tools-top:90px;--tools-bottom:235px}}

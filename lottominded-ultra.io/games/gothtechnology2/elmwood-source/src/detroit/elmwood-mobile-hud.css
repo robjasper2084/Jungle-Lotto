@@ -1,0 +1,65 @@
+/* Riding HUD: keep the scenery clear; inline saved touch/map positions still win. */
+body:has(#view[data-riding="true"]){--ride-panel:#172329dc;--ride-line:#e8f0ef63;--ride-accent:#f4d778}
+body:has(#view[data-riding="true"]) header{position:fixed;left:max(12px,env(safe-area-inset-left));top:max(10px,env(safe-area-inset-top));max-width:calc(100vw - 208px);padding:0;pointer-events:none}
+body:has(#view[data-riding="true"]) header h1{font:700 16px/1.2 system-ui,sans-serif;margin:0;color:#fff;text-shadow:0 2px 5px #000}
+body:has(#view[data-riding="true"]) header small,body:has(#view[data-riding="true"]) header p,body:has(#view[data-riding="true"]) header .ridecore-brand,body:has(#view[data-riding="true"]) #bike-recover{display:none}
+body:has(#view[data-riding="true"]) #elmwood-controls{position:fixed;left:max(12px,env(safe-area-inset-left));top:calc(38px + env(safe-area-inset-top));right:auto;display:flex;flex-wrap:nowrap;gap:5px;width:auto;max-width:calc(100vw - 198px);z-index:8}
+body:has(#view[data-riding="true"]) #elmwood-controls button{min-width:52px;min-height:44px;width:auto;flex:none;padding:7px 9px;font:600 12px system-ui;border-radius:4px;border:1px solid var(--ride-line)!important;background:var(--ride-panel)!important;color:#fff!important;box-shadow:0 2px 6px #0004}
+body:has(#view[data-riding="true"]) #elmwood-start,body:has(#view[data-riding="true"]) #elmwood-camera,body:has(#view[data-riding="true"]) #elmwood-return,body:has(#view[data-riding="true"]) #elmwood-controls button[aria-describedby="elmwood-vr-status"]{display:none}
+body:has(#view[data-riding="true"]) #elmwood-menu{display:block}
+body:has(#view[data-riding="true"]) .session-hud{left:max(12px,env(safe-area-inset-left));top:calc(151px + env(safe-area-inset-top));max-width:176px;padding:6px 9px;font:11px/1.45 system-ui;border-radius:3px;border:1px solid var(--ride-line);border-left:3px solid var(--ride-accent);background:var(--ride-panel);color:#fff}
+body:has(#view[data-riding="true"]) .session-hud strong{font:700 15px/1.4 system-ui;color:#fff}
+body:has(#view[data-riding="true"]) .tactical-minimap{top:max(10px,env(safe-area-inset-top));right:max(12px,env(safe-area-inset-right));width:176px;border-radius:3px!important;border-color:var(--ride-line)!important;background:var(--ride-panel)!important}
+body:has(#view[data-riding="true"]) .tactical-minimap .tactical-map-open{padding:0;border:0;border-radius:0;background:transparent;color:#fff}
+body:has(#view[data-riding="true"]) .tactical-minimap span{font:600 10px/1.25 system-ui;padding:5px}
+body:has(#view[data-riding="true"]) .mini-map-zoom button{min-height:44px;background:var(--ride-panel)!important;color:#fff}
+body:has(#view[data-riding="true"]) .tactical-compass{top:max(10px,env(safe-area-inset-top));left:50%;right:auto;transform:translateX(-50%);width:min(280px,27vw);height:38px;color:#fff}
+body:has(#view[data-riding="true"]) .game-film-toolbar{top:calc(88px + env(safe-area-inset-top));left:max(12px,env(safe-area-inset-left));transform:none;max-width:calc(100vw - 198px);padding:0;border:0;background:transparent;box-shadow:none}
+body:has(#view[data-riding="true"]) .film-actions{gap:5px;flex-wrap:nowrap}
+body:has(#view[data-riding="true"]) .game-film-toolbar button{min-height:44px;padding:6px 9px;border-radius:4px;background:var(--ride-panel);border:1px solid var(--ride-line);color:#fff;font:600 11px system-ui}
+body:has(#view[data-riding="true"]) .game-film-toolbar button:disabled{display:none}
+body:has(#view[data-riding="true"]) .community-panel{top:auto;bottom:max(16px,env(safe-area-inset-bottom));width:min(340px,calc(100vw - 24px));max-height:36dvh;padding:8px 12px;border:1px solid var(--ride-line);border-radius:5px;background:var(--ride-panel);color:#fff;box-shadow:0 3px 14px #0005}
+body:has(#view[data-riding="true"]) .community-panel:not([open]){width:max-content;max-width:44vw;padding:0 12px}
+body:has(#view[data-riding="true"]) .community-panel summary{display:flex;align-items:center;gap:7px;min-height:44px;font:600 12px system-ui;list-style:none}
+body:has(#view[data-riding="true"]) .community-panel summary::before{content:'▸';color:var(--ride-accent)}
+body:has(#view[data-riding="true"]) .community-panel[open]{bottom:calc(138px + env(safe-area-inset-bottom))}
+body:has(#view[data-riding="true"]) .community-panel[open] summary::before{content:'▾'}
+body:has(#view[data-riding="true"]) .duo-touch-pane button,body:has(#view[data-riding="true"]) #elmwood-touch button{border:1px solid #f0f4f3b0;background:#28353c7a;color:#fff;text-shadow:0 1px 3px #000;box-shadow:inset 0 0 0 2px #07131822,0 2px 7px #0002}
+body:has(#view[data-riding="true"]) .duo-touch-pane button[aria-pressed="true"],body:has(#view[data-riding="true"]) #elmwood-touch button[aria-pressed="true"]{background:#b999398c;border-color:#fff4bc}
+body:has(#view[data-riding="true"]) #status{max-width:40vw;bottom:calc(66px + env(safe-area-inset-bottom));font:10px/1.4 system-ui;background:#172329b5;color:#fff;border:0}
+body.touch-riding:has(#view[data-riding="true"]) #status{display:none}
+body:has(#view[data-riding="true"]) :focus-visible{outline:3px solid var(--ride-accent);outline-offset:3px}
+body.layout-editing .community-panel,body.layout-editing .game-film-toolbar,body.layout-editing .session-hud{visibility:hidden!important}
+@media(max-width:600px){
+  body:has(#view[data-riding="true"]) .tactical-minimap{width:150px}
+  body:has(#view[data-riding="true"]) #elmwood-controls,body:has(#view[data-riding="true"]) .game-film-toolbar{max-width:calc(100vw - 178px)}
+  body:has(#view[data-riding="true"]) #elmwood-controls button{min-width:48px;font-size:11px;padding:6px}
+  body:has(#view[data-riding="true"]) .tactical-compass{left:auto;right:12px;transform:none;top:calc(173px + env(safe-area-inset-top));width:150px}
+  body:has(#view[data-riding="true"]) .community-panel:not([open]) summary{font-size:11px}
+}
+@media(max-height:500px){
+  body:has(#view[data-riding="true"]) .tactical-minimap{width:144px}
+  body:has(#view[data-riding="true"]) .session-hud{top:calc(88px + env(safe-area-inset-top))}
+  body:has(#view[data-riding="true"]) .game-film-toolbar{top:auto;bottom:max(12px,env(safe-area-inset-bottom));left:max(12px,env(safe-area-inset-left))}
+  body:has(#view[data-riding="true"]) .tactical-compass{top:10px;left:50%;right:auto;transform:translateX(-50%);width:26vw}
+  body:has(#view[data-riding="true"]) .community-panel[open]{bottom:74px;max-height:55dvh}
+  body:has(#view[data-riding="true"]) #status{display:none}
+}
+/* Small phones reserve separate left and right HUD columns. */
+@media(max-width:380px) and (orientation:portrait){
+ body:has(#view[data-riding="true"]) header{max-width:calc(100vw - 178px)}
+ body:has(#view[data-riding="true"]) header h1{font-size:13px;white-space:nowrap}
+ body:has(#view[data-riding="true"]) #elmwood-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:calc(100vw - 178px);max-width:none}
+ body:has(#view[data-riding="true"]) #elmwood-controls button{min-width:0;padding:4px;font-size:10px;white-space:normal}
+ body:has(#view[data-riding="true"]) #elmwood-menu{grid-column:1/-1}
+ body:has(#view[data-riding="true"]) .game-film-toolbar{top:138px;bottom:auto;height:max-content}
+ body:has(#view[data-riding="true"]) .session-hud{top:190px!important;max-width:calc(100vw - 178px)}
+ body:has(#view[data-riding="true"]) #ride-tools:not([open]){--tools-top:258px;width:140px}
+ body:has(#view[data-riding="true"]) .dogActionHud{left:auto;right:max(12px,env(safe-area-inset-right));top:176px;bottom:auto;width:140px}
+ body:has(#view[data-riding="true"]) .tactical-compass{display:none}
+ body:has(#view[data-riding="true"]) .elmwood-lesson{top:138px;max-height:calc(100dvh - 400px)}
+}
+@media(max-height:540px) and (orientation:landscape){
+ body:has(#view[data-riding="true"]) .game-film-toolbar{top:64px;bottom:auto;left:196px;height:max-content}
+ body:has(#view[data-riding="true"]) #ride-tools:not([open]){--tools-top:146px}
+}

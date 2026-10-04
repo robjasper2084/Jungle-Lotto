@@ -5,6 +5,8 @@ import type {TerrainSampler} from './terrain.ts';
 import {createGroundSample} from './terrain.ts';
 import {advanceSpring,spring,damp} from './rideDynamics.ts';
 type Point={x:number;y:number;z:number};
+/** Preserve enough horizontal framing for the rider and nearby companion on phones. */
+export function chaseFrameFov(vertical:number,aspect:number){return Math.min(95,Math.max(vertical,2*Math.atan(Math.tan(Math.PI/8)/Math.max(.3,aspect))*180/Math.PI));}
 const axes=['x','y','z'] as const;
 /** Critically damped chase rig: turn anticipation, travel lead, impact isolation and collision clearance. */
 export class FollowCamera {

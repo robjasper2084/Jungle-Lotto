@@ -1,0 +1,43 @@
+{
+  "name": "Mack studio cinema on adjacent left wall",
+  "meshes": 37,
+  "triangles": 65187,
+  "bytes": 16457548,
+  "min": [
+    -24.464000701904297,
+    -23.360000610351562,
+    -1.399999976158142
+  ],
+  "max": [
+    24.411500930786133,
+    22.506000518798828,
+    7.150000095367432
+  ],
+  "movedObjects": [
+    "Giant wall display aluminum chassis.001",
+    "Display top and bottom brass edge.002",
+    "Display top and bottom brass edge.003",
+    "Display vertical brass edge.002",
+    "Display vertical brass edge.003",
+    "Wall surround loudspeaker.002",
+    "Wall surround loudspeaker.003",
+    "Wall screen program label.001",
+    "Wall display status strip.001"
+  ],
+  "chassis": {
+    "u": 15.55,
+    "v": 21.7,
+    "y": 3.05
+  },
+  "videoSurface": {
+    "u": 15.55,
+    "v": 21.58,
+    "y": 3.05,
+    "normal": [
+      0,
+      0,
+      -1
+    ]
+  },
+  "sourceMaster": "before-cinema-left-wall/Mack_Production_Studio.blend"
+}

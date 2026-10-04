@@ -1,0 +1,42 @@
+{
+  "source": "C:\\Users\\digit\\Documents\\phone\\euc-detroit-riverwalk\\art\\elmwood\\landmark-pass\\Unity\\Assets\\Kevin Iglesias\\Human Animations\\Animations\\Male\\Movement\\Walk\\HumanM@Walk01_Forward.fbx",
+  "hero": "C:\\Users\\digit\\Documents\\phone\\Digital_Static_Street_Asset_Pack\\exports\\glb\\DS_Man_01\\DS_Man_01_LOD0.glb",
+  "frames": 21,
+  "fps": 24,
+  "duration": 0.8333333333333334,
+  "mappedBones": [
+    "Hips",
+    "Spine02",
+    "Spine01",
+    "Spine",
+    "neck",
+    "Head",
+    "LeftShoulder",
+    "LeftArm",
+    "LeftForeArm",
+    "LeftHand",
+    "LeftUpLeg",
+    "LeftLeg",
+    "LeftFoot",
+    "RightShoulder",
+    "RightArm",
+    "RightForeArm",
+    "RightHand",
+    "RightUpLeg",
+    "RightLeg",
+    "RightFoot"
+  ],
+  "sourcePelvisMetres": [
+    [
+      -0.00011340002674842253,
+      -0.02958502806723118,
+      0.9370710253715515
+    ],
+    [
+      -0.00011299999459879473,
+      -0.029585029929876328,
+      0.9301440119743347
+    ]
+  ],
+  "master": "GothTech_Hero_Retail_Walk.blend"
+}

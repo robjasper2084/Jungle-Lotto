@@ -1,4 +1,5 @@
 import * as T from 'three';
+import {localFootageButton} from './localFootage.ts';
 import {blockingFiles,blockingMime,blockingSize,validateShot,type BlockingShot,type BlockingSample} from './blockingPack.ts';
 
 type Actor={name:string;root:T.Object3D};
@@ -9,6 +10,7 @@ export class FilmBlocking{
  private start=document.createElement('input');private end=document.createElement('input');private aspect=document.createElement('select');private style=document.createElement('select');private notes=document.createElement('textarea');private make=document.createElement('button');private cancel=document.createElement('button');private download=document.createElement('a');private status=document.createElement('p');private url='';private job?:Job;
  private preview=document.createElement('details');private video=document.createElement('video');private stills=document.createElement('div');private previewUrls:string[]=[];
  private game:string;private canvas:HTMLCanvasElement;private getClip:()=>{duration:number;camera:string;subject:string};private begin:(shot:BlockingShot)=>()=>void;
+ private completedVideo?:Blob;
  constructor(game:string,canvas:HTMLCanvasElement,getClip:()=>{duration:number;camera:string;subject:string},begin:(shot:BlockingShot)=>()=>void){
   this.game=game;this.canvas=canvas;this.getClip=getClip;this.begin=begin;
   this.panel.className='film-blocking';const summary=document.createElement('summary');summary.textContent='Blocking video / Higgsfield files';this.panel.append(summary);
@@ -22,6 +24,7 @@ export class FilmBlocking{
   const actions=document.createElement('div');actions.className='film-actions';this.make.textContent='Create Higgsfield pack';this.cancel.textContent='Cancel export';this.cancel.hidden=true;this.download.textContent='Download blocking pack (.zip)';this.download.hidden=true;actions.append(this.make,this.cancel,this.download);this.panel.append(actions,this.status);this.status.setAttribute('role','status');this.status.setAttribute('aria-live','polite');
   this.preview.className='film-blocking-preview';this.preview.hidden=true;const previewTitle=document.createElement('summary');previewTitle.textContent='Preview video and reference images';this.video.controls=true;this.video.playsInline=true;this.video.muted=true;this.video.preload='metadata';this.video.setAttribute('aria-label','Blocking video preview');this.stills.className='film-blocking-stills';this.preview.append(previewTitle,this.video,this.stills);this.panel.append(this.preview);
   this.make.onclick=()=>this.create();this.cancel.onclick=()=>this.abort('Export cancelled. Your replay is unchanged.');
+  actions.append(localFootageButton(()=>this.completedVideo,this.status));
   document.addEventListener('visibilitychange',()=>{if(document.hidden&&this.job)this.abort('Export cancelled because the tab was hidden. Keep the game visible while exporting.');});
   canvas.addEventListener('webglcontextlost',()=>this.abort('Graphics context lost. Restore the game before exporting again.'));
  }
@@ -70,6 +73,7 @@ export class FilmBlocking{
  private async finish(j:Job){
   try{
    const video=new Blob(j.chunks,{type:j.mime});if(video.size<100)throw Error('Video encoder produced an empty file.');
+   this.completedVideo=video;
    const name='blocking.'+(j.mime.includes('mp4')?'mp4':'webm'),{zipSync,strToU8}=await import('fflate');
    const files:Record<string,Uint8Array>={[name]:new Uint8Array(await video.arrayBuffer())},images:Blob[]=[];
    for(const still of j.images){const image=await still.promise;images.push(image);files[still.file]=new Uint8Array(await image.arrayBuffer());}

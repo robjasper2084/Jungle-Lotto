@@ -1,5 +1,5 @@
 import * as T from 'three';
-import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import {GLTFLoader} from './compressedGLTFLoader.ts';
 let source:Promise<T.Group>|undefined;
 export function loadElmwoodGoose(){
  return source??=new GLTFLoader().loadAsync('/elmwood/models/canada-goose.glb').then(g=>{

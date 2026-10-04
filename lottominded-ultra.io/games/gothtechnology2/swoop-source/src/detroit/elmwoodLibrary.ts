@@ -1,5 +1,5 @@
 import * as T from 'three';
-import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import {GLTFLoader} from './compressedGLTFLoader.ts';
 import {wind,type TreeSite} from './trees.ts';
 
 export const ELM_TREE_SPECIES=['white-oak','red-maple','american-elm','white-pine','weeping-willow'] as const;

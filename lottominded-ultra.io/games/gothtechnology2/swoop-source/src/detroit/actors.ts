@@ -1,8 +1,8 @@
-import {styleCyclist} from '@digital-static/ridecore/cycling-view';
+import {BicycleView,CyclistMotion} from '@digital-static/ridecore/cycling-view';
 import {HairWind} from './windMotion.ts';
 import * as T from 'three';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import type { GLTF } from 'three/addons/loaders/GLTFLoader.js';
+import { GLTFLoader } from './compressedGLTFLoader.ts';
+import type { GLTF } from './compressedGLTFLoader.ts';
 import { clone } from 'three/addons/utils/SkeletonUtils.js';
 import {createPose as initialMountedPose,type RidePose} from './controller.ts';
 import type { TrafficState } from './world.ts';
@@ -16,6 +16,7 @@ import {HumanFallRig} from './humanFallRig.ts';
 import type {RiderId} from './riderChoices.ts';
 import type {TerrainSampler} from './terrain.ts';
 import {createGroundSample} from './terrain.ts';
+import {assetConcurrency,loadAssetQueue} from './assetQueue.ts';
 
 type Limb={upper:T.Object3D;knee:T.Object3D;foot:T.Object3D;target:T.Vector3;rotation:T.Quaternion;};
 const v=()=>new T.Vector3(),q=()=>new T.Quaternion();
@@ -38,13 +39,13 @@ function rotateWorld(bone:T.Object3D|undefined,axis:T.Vector3,angle:number){if(!
 function prepare(o:T.Object3D){o.traverse(n=>{const m=n as T.Mesh;if(m.isMesh){m.castShadow=true;m.receiveShadow=true;m.frustumCulled=!(m as T.SkinnedMesh).isSkinnedMesh;}});}
 export async function loadActors(){
   const loader=new GLTFLoader(),data=new Map<string,GLTF>();
-  await Promise.all(['DS_Man_01','DS_EUC_01','DS_Boerboel_01','DS_Pedestrian_01','DS_Cyclist_01','DS_Bicycle_01','DS_Hazard_Cone_01','DS_Hazard_Barrier_01'].map(async id=>{
+  const ids=['DS_Man_01','DS_EUC_01','DS_Boerboel_01','DS_Pedestrian_01','DS_Cyclist_01','DS_Bicycle_01','DS_Hazard_Cone_01','DS_Hazard_Barrier_01','DS_Segway_01','DS_InlineSkate_01','SW_Scooter_01','SW_Detroit_Tee_Rider','DS_Hoodie_Man_01','DS_Hoodie_Woman_01','DS_Mascot_Suit_01','DS_Mascot_Hoodie_01','DS_Armored_Rider_01'];
+  await loadAssetQueue(ids,assetConcurrency(),async id=>{
+    if(id==='DS_Segway_01'||id==='DS_InlineSkate_01'){data.set(id,await loader.loadAsync(`/exports/mobility/${id}.glb`));return;}
+    if(id.startsWith('SW_')){data.set(id,await loader.loadAsync(`/exports/scooter/${id}.glb`));return;}
     const original=()=>loader.loadAsync(`/exports/glb/${id}/${id}_LOD${id==='DS_Man_01'?0:1}.glb`);
-    data.set(id,id==='DS_Bicycle_01'?await loader.loadAsync('/exports/glb/DS_Bicycle_Styles/DS_Bicycle_Styles_LOD1.glb').catch(original):await original());
-  }));
-  await Promise.all(['DS_Segway_01','DS_InlineSkate_01'].map(async id=>data.set(id,await loader.loadAsync(`/exports/mobility/${id}.glb`))));
-  await Promise.all(['SW_Scooter_01','SW_Detroit_Tee_Rider'].map(async id=>data.set(id,await loader.loadAsync(`/exports/scooter/${id}.glb`))));
-  await Promise.all(['DS_Hoodie_Man_01','DS_Hoodie_Woman_01','DS_Mascot_Suit_01','DS_Mascot_Hoodie_01'].map(async id=>data.set(id,await loader.loadAsync(`/exports/glb/${id}/${id}_LOD1.glb`))));
+    data.set(id,id==='DS_Boerboel_01'?await loader.loadAsync('/exports/polish/DS_Boerboel_Polished.glb'):id==='DS_Bicycle_01'?await loader.loadAsync('/exports/glb/DS_Bicycle_Styles/DS_Bicycle_Styles_LOD1.glb').catch(original):await original());
+  });
   return data;
 }
 export class Hero {
@@ -85,7 +86,7 @@ export class Hero {
     }
     for(const l of this.legs){l.target.divideScalar(this.wheelScale);l.target.x=Math.sign(l.target.x)*.195;}
     this.saddle=new T.Mesh(new T.BoxGeometry(mascot?.23:.27,.055,mascot?.23:.29),new T.MeshStandardMaterial({color:0x202828,roughness:.85}));this.saddle.name='Seated riding saddle';this.saddle.position.set(0,mascot?.41:.76,mascot?-.19:-.065);this.saddle.visible=false;this.lean.add(this.saddle);
-    this.root.name='Digital Static • '+riderId+' on separate EUC';
+    this.root.name='Digital Static â€¢ '+riderId+' on separate EUC';
     if(this.hips)this.fallPivot.copy(this.rider.worldToLocal(this.hips.getWorldPosition(v())));
     this.riderContact=new CrashContact(this.rider);this.wheelContact=new CrashContact(this.vehicle);
     this.visibility=new RiderVisibility(this.rider,this.head);
@@ -201,36 +202,30 @@ export class Hero {
       const shoulder=l.upper.getWorldPosition(v()),elbow=l.knee.getWorldPosition(v()),hand=l.foot.getWorldPosition(v());
       const length=shoulder.distanceTo(elbow)+elbow.distanceTo(hand),worldUp=new T.Vector3(0,1,0);
       const down=new T.Vector3(Math.sin(motion.armBank),-1,Math.sin(motion.armSwing)).normalize().transformDirection(this.root.matrixWorld);
-      const target=shoulder.clone().addScaledVector(down,length*.90).addScaledVector(worldUp,offset.y)
+      const target=shoulder.clone().addScaledVector(down,length*.98).addScaledVector(worldUp,offset.y)
         .addScaledVector(right,offset.x).addScaledVector(forward,offset.z);
-      if(sit){const knee=this.legs[i]?.knee.getWorldPosition(v());if(knee)target.lerp(knee.addScaledVector(up,.07*this.motionScale).addScaledVector(forward,-.07*this.motionScale),sit);}
       // Elbows open sideways as the hands rise, rather than remaining pinned behind
       // the torso during a hop or low-speed balance turn.
       const elbowOpen=clamp(offset.y/this.motionScale,0,.4);
-      const armPole=forward.clone().multiplyScalar(-1).addScaledVector(right,(i===0?1:-1)*(.25+elbowOpen*1.3));
+      const armPole=forward.clone().multiplyScalar(-1).addScaledVector(right,(i===0?1:-1)*(.70+elbowOpen*1.3));
       if(p.crashMotion){
         const bodyUp=new T.Vector3(0,1,0).transformDirection(this.rider.matrixWorld),bodyForward=new T.Vector3(0,0,1).transformDirection(this.rider.matrixWorld),bodyRight=new T.Vector3(1,0,0).transformDirection(this.rider.matrixWorld),side=i===0?1:-1;
-        const lowerSide=side===(p.crashSide||Math.sign(p.crashLateral)||1),direction=p.crashDirection||1;
-        const reach=p.crashReach,absorb=p.crashAbsorb,curl=p.crashCurl;
-        // The contact-side hand braces first. The other forearm protects the chest/head.
-        // Elbow compression follows impact rather than holding a rigid two-arm plank.
-        const down=lowerSide?.28-.17*absorb:.02-.10*curl;
-        const front=lowerSide?.28+.38*reach-.22*absorb:.30+.12*reach;
-        const width=lowerSide?.32+.13*reach-.25*absorb:.17;
-        const protective=shoulder.clone().addScaledVector(bodyUp,-length*down)
-          .addScaledVector(bodyForward,length*front*direction).addScaledVector(bodyRight,side*length*width);
-        const rest=shoulder.clone().addScaledVector(bodyUp,-length*(lowerSide?.18:.10))
-          .addScaledVector(bodyForward,length*(lowerSide?.28:.36)).addScaledVector(bodyRight,-side*length*.10);
+        const lower=side===(p.crashSide||1);
+        const protective=shoulder.clone().addScaledVector(bodyUp,-length*(.25+.20*p.crashAbsorb)).addScaledVector(bodyForward,length*(.34+.36*p.crashReach-.16*p.crashAbsorb)).addScaledVector(bodyRight,side*length*(lower?.34:.24));
+        protective.y=Math.max(p.y-p.airHeight+.055,protective.y);
+        // After contact, fold the lower arm inward instead of balancing the whole body on fingertips.
+        const rest=shoulder.clone().addScaledVector(bodyUp,-length*.30).addScaledVector(bodyForward,length*.25).addScaledVector(bodyRight,-side*length*.22);
         protective.lerp(rest,p.crashSettle);
         target.lerp(protective,Math.min(1,p.crashBrace*1.7+p.crashRelease));
-        armPole.copy(bodyForward).multiplyScalar(-.35).addScaledVector(bodyRight,side*.6).addScaledVector(bodyUp,-.7);
-
+        armPole.lerp(bodyUp.negate().addScaledVector(bodyForward,.25),p.crashSettle);
       }
-      solve(l,target,armPole,undefined,.95);
-      // Let the hand follow its forearm. Locking the palm to world-down made a raised
-      // arm bend sharply at the wrist, especially during slow turns and deep tucks.
-      const rotation=this.root.getWorldQuaternion(q()).multiply(l.rotation)
-        .slerp(l.foot.getWorldQuaternion(q()),.92).premultiply(q().setFromAxisAngle(right,offset.wrist));
+      solve(l,target,armPole,undefined,.975);
+      // Bone reset preserved the authored hand-to-forearm orientation. Follow that
+      // frame completely, then add a small passive flex about its own lateral axis.
+      // A world-down blend was still pulling against the elbow's balance movement.
+      const rotation=l.foot.getWorldQuaternion(q());
+      const wristAxis=right.clone().addScaledVector(up,-(i===0?1:-1)*.22).normalize();
+      rotation.premultiply(q().setFromAxisAngle(wristAxis,p.crashMotion?-.18*p.crashAbsorb+.12*p.crashCurl:offset.wrist));
       l.foot.quaternion.copy(l.foot.parent!.getWorldQuaternion(q()).invert().multiply(rotation));
     }
     this.vehicle.visible=!this.skateboarding;this.skateboard.visible=this.skateboarding;
@@ -256,38 +251,41 @@ export class Hero {
   }
 }
 export class TrafficView {
-  scene:T.Scene;data:Map<string,GLTF>;items=new Map<number,{root:T.Group;mixers:T.AnimationMixer[];pedalPhase:number;clipStart:number;clipDuration:number;mobility?:MobilityRider;foot?:FootTraffic;fallRig?:HumanFallRig;disposeStyle?:()=>void}>();
+  scene:T.Scene;data:Map<string,GLTF>;items=new Map<number,{root:T.Group;mixers:T.AnimationMixer[];pedalPhase:number;clipStart:number;clipDuration:number;animationAge?:number;mobility?:MobilityRider;foot?:FootTraffic;cycling?:BicycleView;motion?:CyclistMotion;fallRig?:HumanFallRig;disposeStyle?:()=>void}>();
   constructor(scene:T.Scene,data:Map<string,GLTF>,readonly terrain?:TerrainSampler){this.scene=scene;this.data=data;}
-  update(actors:TrafficState[],dt:number){const keep=new Set<number>();for(const a of actors){keep.add(a.id);let item=this.items.get(a.id);
+  update(actors:TrafficState[],dt:number,focus?:{x:number;z:number},drawDistance=300){const keep=new Set<number>();for(const a of actors){keep.add(a.id);let item=this.items.get(a.id);
     if(!item){const root=new T.Group(),mixers:T.AnimationMixer[]=[];const add=(id:string,animate=false)=>{const d=this.data.get(id)!,o=animate?clone(d.scene):d.scene.clone(true);root.add(o);prepare(o);if(animate&&d.animations.length){const m=new T.AnimationMixer(o);m.clipAction(d.animations[0]).play();mixers.push(m);}};
-      let mobility:MobilityRider|undefined,foot:FootTraffic|undefined,disposeStyle:(()=>void)|undefined;
+      let mobility:MobilityRider|undefined,foot:FootTraffic|undefined,cycling:BicycleView|undefined,motion:CyclistMotion|undefined,disposeStyle:(()=>void)|undefined;
       if(a.kind==='segway'||a.kind==='skater'||a.kind==='scooter'){mobility=new MobilityRider(a.kind,this.data);mobility.phase=(a.id*.37)%1;root.add(mobility.root);}
       else if(a.kind==='pedestrian'||a.kind==='jogger'){foot=new FootTraffic(this.data.get(Math.floor(a.id/2)%2?'DS_Hoodie_Woman_01':'DS_Hoodie_Man_01')!,a.kind==='jogger');foot.phase=(a.id*.37)%1;root.add(foot.root);}
-      else if(a.kind==='cyclist'){add('DS_Cyclist_01',true);add('DS_Bicycle_01');disposeStyle=styleCyclist(root.children[1],root.children[0],Math.abs((a.id*7)^(a.id>>>1))%6);}else add(a.kind==='cone'?'DS_Hazard_Cone_01':'DS_Hazard_Barrier_01');
+      else if(a.kind==='cyclist'){cycling=new BicycleView(this.data.get('DS_Bicycle_01')!,this.data.get('DS_Cyclist_01')!,Math.abs((a.id*7)^(a.id>>>1))%6,true);motion=new CyclistMotion(a.id);root.add(cycling.root);}else add(a.kind==='cone'?'DS_Hazard_Cone_01':'DS_Hazard_Barrier_01');
       const clip=this.data.get('DS_Cyclist_01')?.animations[0],clipStart=clip?Math.min(...clip.tracks.map(t=>t.times[0])):0;
-      item={root,mixers,pedalPhase:0,clipStart,clipDuration:(clip?.duration??2)-clipStart,mobility,foot,disposeStyle};this.items.set(a.id,item);this.scene.add(root);
+      item={root,mixers,pedalPhase:0,clipStart,clipDuration:(clip?.duration??2)-clipStart,mobility,foot,cycling,motion,disposeStyle};this.items.set(a.id,item);this.scene.add(root);
     }
     item.root.position.set(a.x,a.y,a.z);item.root.rotation.y=a.heading;
+    const distance=focus?Math.hypot(a.x-focus.x,a.z-focus.z):0;
+    item.root.visible=distance<drawDistance;
+    const firstPose=item.animationAge===undefined;item.animationAge=(item.animationAge??0)+dt;
+    // World collisions and actor positions still tick normally; only distant posing is paced.
+    if(!firstPose&&!a.fall&&distance>60&&item.animationAge<.1)continue;
+    const animationDt=item.animationAge;item.animationAge=0;
     if(a.fall){
       if(!item.fallRig){
         const mobility=item.mobility;
         if(mobility?.kind==='skater'){item.root.updateMatrixWorld(true);mobility.skates.forEach((skate,i)=>mobility.legs[i].end.attach(skate));}
-        const rider=item.foot?.rider??mobility?.rider??item.root.children[0],equipment=mobility?mobility.root.children.filter(o=>o!==rider):a.kind==='cyclist'?item.root.children.slice(1):[];
+        const rider=item.foot?.rider??mobility?.rider??item.cycling?.rider??item.root.children[0],equipment=mobility?mobility.root.children.filter(o=>o!==rider):item.cycling?[item.cycling.bike]:[];
         item.fallRig=new HumanFallRig(rider,equipment,this.terrain);
       }
       item.root.updateMatrixWorld(true);item.fallRig.apply(a.fall,a.y);continue;
     }
     if(item.fallRig){item.fallRig.restore();item.fallRig=undefined;if(item.mobility?.kind==='skater'){const m=item.mobility;m.skates.forEach(s=>{m.root.attach(s);s.rotation.set(0,0,0);});}}
-    if(item.foot){item.root.updateMatrixWorld(true);item.foot.apply(a.speed,dt);}
-    else if(item.mobility){item.root.updateMatrixWorld(true);item.mobility.apply(a.speed,dt);}
-    else if(a.kind==='cyclist'){
-      // One phase owns the baked legs, crank and opposing, level pedals. A 2.5:1 gear ratio.
-      const wheelTurn=a.speed*dt/.34;item.pedalPhase=(item.pedalPhase+wheelTurn/2.5)%(Math.PI*2);
-      for(const m of item.mixers)m.setTime(item.clipStart+item.pedalPhase/(Math.PI*2)*item.clipDuration);
-      const crank=item.root.getObjectByName('Bicycle_Crank_Pivot');if(crank)crank.rotation.x=item.pedalPhase;
-      for(const name of ['Bicycle_Pedal_L_Pivot','Bicycle_Pedal_R_Pivot']){const pedal=item.root.getObjectByName(name);if(pedal)pedal.rotation.x=-item.pedalPhase;}
-      for(const name of ['Bicycle_Front_Wheel_Pivot','Bicycle_Rear_Wheel_Pivot']){const w=item.root.getObjectByName(name);if(w)w.rotation.x+=wheelTurn;}
-    }else for(const m of item.mixers)m.update(dt);
-  }for(const[id,item]of this.items)if(!keep.has(id)){item.root.removeFromParent();item.mixers.forEach(m=>m.stopAllAction());item.mobility?.dispose();item.disposeStyle?.();this.items.delete(id);}}
+    if(item.foot){item.root.updateMatrixWorld(true);item.foot.apply(a.speed,animationDt);}
+    else if(item.mobility){item.root.updateMatrixWorld(true);item.mobility.apply(a.speed,animationDt);}
+    else if(item.cycling&&item.motion){
+      // Grounded hands and feet share the same fitted rig as the player's bicycle.
+      const pose=item.motion.step(animationDt,{...a,headingY:a.heading});item.pedalPhase=item.motion.pedals;
+      item.cycling.apply({...pose,x:0,y:0,z:0,headingY:0},item.motion.steering,item.motion.pedals);
+    }else for(const m of item.mixers)m.update(animationDt);
+  }for(const[id,item]of this.items)if(!keep.has(id)){item.root.removeFromParent();item.mixers.forEach(m=>m.stopAllAction());item.mobility?.dispose();item.cycling?.dispose();item.disposeStyle?.();this.items.delete(id);}}
 }
 

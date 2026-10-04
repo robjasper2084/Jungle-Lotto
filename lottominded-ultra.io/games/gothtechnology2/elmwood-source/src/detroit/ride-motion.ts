@@ -1,6 +1,7 @@
 import {BicycleController} from '@digital-static/ridecore/cycling';
 import {NEUTRAL_ACTIONS} from '@digital-static/ridecore';
-import {RideCore,FollowCamera,RIDECORE,HUMAN_PROFILE,createPose,copyPose,lerpPose} from '@digital-static/ridecore';
+import {FollowCamera} from './riding/followCamera.ts';
+import {RideCore,RIDECORE,HUMAN_PROFILE,createPose,copyPose,lerpPose} from '@digital-static/ridecore';
 import type {RideActions,RiderProfile,Vec3,RideEvent} from '@digital-static/ridecore';
 import type {TerrainSampler} from '../simulation/world.ts';
 import {rideCoreTerrain} from './ridecore-terrain.ts';

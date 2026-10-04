@@ -1,6 +1,6 @@
 import * as T from 'three';
 import {clone} from 'three/addons/utils/SkeletonUtils.js';
-import type {GLTF} from 'three/addons/loaders/GLTFLoader.js';
+import type {GLTF} from './compressedGLTFLoader.ts';
 
 type Limb={upper:T.Object3D;joint:T.Object3D;end:T.Object3D;rest:T.Vector3;rotation:T.Quaternion;sole?:T.Vector3[]};
 const v=()=>new T.Vector3(),q=()=>new T.Quaternion(),tau=Math.PI*2;
@@ -29,7 +29,7 @@ function point(b:T.Object3D,child:T.Object3D,target:T.Vector3){
   const rotation=b.getWorldQuaternion(q()).premultiply(q().setFromUnitVectors(from,to));
   b.quaternion.copy(b.parent!.getWorldQuaternion(q()).invert().multiply(rotation));b.updateWorldMatrix(false,true);
 }
-function solve(l:Limb,target:T.Vector3,pole:T.Vector3,rotation?:T.Quaternion){
+export function solveFootContact(l:Limb,target:T.Vector3,pole:T.Vector3,rotation?:T.Quaternion){
   const a=l.upper.getWorldPosition(v()),b=l.joint.getWorldPosition(v()),c=l.end.getWorldPosition(v());
   const l1=a.distanceTo(b),l2=b.distanceTo(c),dir=target.clone().sub(a),d=Math.max(.03,Math.min(dir.length(),l1+l2-.0001));dir.normalize();
   pole.addScaledVector(dir,-pole.dot(dir)).normalize();
@@ -92,7 +92,7 @@ export class FootTraffic {
     for(let i=0;i<2;i++){
       const l=this.legs[i],world=this.footTargets[i];
       const rotation=this.root.getWorldQuaternion(q()).multiply(q().setFromAxisAngle(new T.Vector3(1,0,0),strides[i].pitch*effort)).multiply(l.rotation);
-      solve(l,world,forward.clone(),rotation);
+      solveFootContact(l,world,forward.clone(),rotation);
     }
     for(let i=0;i<2;i++){
       const l=this.arms[i],side=Math.sign(l.rest.x),swing=Math.cos((this.phase+i*.5)*tau-.10)*effort;

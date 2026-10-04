@@ -1,0 +1,27 @@
+[
+  {
+    "name": "aretha-amphitheatre",
+    "bytes": 5777200,
+    "meshes": 7
+  },
+  {
+    "name": "aretha-entry",
+    "bytes": 45176,
+    "meshes": 3
+  },
+  {
+    "name": "shore-railing",
+    "bytes": 21264,
+    "meshes": 1
+  },
+  {
+    "name": "dock-service",
+    "bytes": 7808,
+    "meshes": 4
+  },
+  {
+    "name": "harbor-cruiser",
+    "bytes": 30940,
+    "meshes": 5
+  }
+]

@@ -1,0 +1,6 @@
+import {test} from 'node:test';import assert from 'node:assert/strict';import {fitElmwoodTouch} from './elmwood-touch-layout.mjs';
+for(const [width,height]of [[390,844],[844,390],[667,375]])test(`saved desktop layout fits ${width}x${height} without overlapping or rewriting saves`,()=>{
+ const sizes={stick:136,brake:64,hop:82,crouch:64,recover:56,camera:56,trick:64},layout=Object.fromEntries(Object.entries(sizes).map(([id,size],i)=>[id,{x:id==='stick'?.16:.87+i*.016,y:.8-i*.024,size}])),before=JSON.stringify(layout),fit=fitElmwoodTouch(layout,width,height);
+ assert.equal(JSON.stringify(layout),before);for(const [id,p]of Object.entries(fit)){const r=sizes[id]/2;assert.ok(p.x-r>=0&&p.x+r<=width&&p.y-r>=0&&p.y+r<=height);if(height<540)assert.ok(p.x+r<=width-184||p.y-r>=Math.min(204,height*.55),`${id} overlaps the map`);for(const [other,q]of Object.entries(fit))if(id!==other)assert.ok(Math.abs(p.x-q.x)>=r+sizes[other]/2+5.99||Math.abs(p.y-q.y)>=r+sizes[other]/2+5.99,`${id} overlaps ${other}`);}
+});
+test('a valid custom position remains at the authored position',()=>{const layout={stick:{x:.15,y:.7,size:108},hop:{x:.75,y:.7,size:82}};assert.deepEqual(fitElmwoodTouch(layout,844,390),{stick:{x:126.6,y:273},hop:{x:633,y:273}});});

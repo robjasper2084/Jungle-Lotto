@@ -1,12 +1,15 @@
 import * as T from 'three';
 import {orleansFloors,orleansMaterial} from './orleansLanding.ts';
 import {inMillikenPark} from './parkPaths.ts';
-import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import {inValadePark} from './valadeSite.ts';
+import {GLTFLoader} from './compressedGLTFLoader.ts';
 import {CITY,nearestCut} from './geography.ts';
 import {GEO,cutWidth} from './geo-profile.ts';
 import {hash} from './world.ts';
-import {drapeStreet,drapeJunction,streetElevation} from './street-geometry.ts';
+import {drapeStreet,drapeJunction,streetElevation,streetSurfaceLift} from './street-geometry.ts';
 import {curbRise,hasStreetCurb} from './streetCurbs.ts';
+import {parallelStreetSidewalk} from './streetSidewalk.ts';
+import {clearStreetJunction,sidewalkHalfWidth,streetMarkingStyle} from './streetFurnitureLayout.ts';
 import type {DetroitWorld} from './world.ts';
 
 /** Mapped polygons own both visible structure and collision. Facades remain authored art. */
@@ -21,7 +24,9 @@ export async function buildCity(_scene:T.Scene,world:DetroitWorld,groupAt:(x:num
  const parkMat=skins.asphalt.clone();parkMat.color.set('#a5aaa8');parkMat.normalScale.set(.13,.13);parkMat.roughness=.98;parkMat.polygonOffset=true;parkMat.polygonOffsetFactor=-1;
  const parkEdge=skins.concrete.clone();parkEdge.color.set('#c5c3b8');parkEdge.polygonOffset=true;parkEdge.polygonOffsetFactor=-1;
  const sidewalk=skins.sidewalk;
- const paint=new T.MeshStandardMaterial({color:'#d8bc68',roughness:.95,polygonOffset:true,polygonOffsetFactor:-2});
+ const paint=new T.MeshStandardMaterial({color:'#e8c75d',roughness:.88,polygonOffset:true,polygonOffsetFactor:-2});
+ const whitePaint=new T.MeshStandardMaterial({color:'#ebece1',roughness:.92,polygonOffset:true,polygonOffsetFactor:-2});
+ const seam=new T.MeshStandardMaterial({color:'#8b8982',roughness:1,polygonOffset:true,polygonOffsetFactor:-2});
  const paths=new Map<T.Group,Map<T.Material,number[]>>();
  let streetTriangles=0,streetSections=0;
  function append(material:T.Material,pieces:ReturnType<typeof drapeStreet>){
@@ -40,26 +45,29 @@ export async function buildCity(_scene:T.Scene,world:DetroitWorld,groupAt:(x:num
    const a=road.points[i-1],b=road.points[i],dx=b[0]-a[0],dz=b[1]-a[1],length=Math.hypot(dx,dz),x=(a[0]+b[0])/2,z=(a[1]+b[1])/2;
    if(length<.2)continue;
    const walk=['cycleway','footway','path','pedestrian'].includes(road.kind),width=(road.name==='Dequindre Cut Greenway'?cutWidth(nearestCut(x,z).d):road.width)/2;
+   if(walk&&road.name!=='Dequindre Cut Greenway'&&parallelStreetSidewalk(a,b))continue;
    // Cull by the complete envelope, never by its midpoint. Each clipped piece owns its terrain tile.
    if(!world.chunks.some(c=>Math.max(a[0],b[0])+width+2>=c.x-50&&Math.min(a[0],b[0])-width-2<=c.x+50&&Math.max(a[1],b[1])+width+2>=c.z-50&&Math.min(a[1],b[1])-width-2<=c.z+50))continue;
    streetSections++;
    const concreteWalk=['footway','pedestrian'].includes(road.kind)&&road.name!=='Dequindre Cut Greenway';
-   const parkWalk=walk&&inMillikenPark(x,z)&&road.name!=='Dequindre Cut Greenway';
-   const surface=parkWalk?parkMat:concreteWalk?sidewalk:roadMat;
+   const valadeWalk=walk&&inValadePark(x,z);
+   const parkWalk=walk&&(inMillikenPark(x,z)||valadeWalk)&&road.name!=='Dequindre Cut Greenway';
+   const surface=valadeWalk?sidewalk:parkWalk?parkMat:concreteWalk?sidewalk:roadMat;
+   const lift=streetSurfaceLift(road);
    const elevation=(px:number,pz:number,terrain:number)=>streetElevation(road,px,pz,terrain);
    // Thin flush aggregate border, batched underneath the entire path surface.
    if(parkWalk)strip(parkEdge,a[0],a[1],b[0],b[1],width+.14,0,elevation,.025);
-   strip(surface,a[0],a[1],b[0],b[1],width,0,elevation,.035);
+   strip(surface,a[0],a[1],b[0],b[1],width,0,elevation,lift);
    for(const p of [a,b]){
      const key=`${p[0]},${p[1]},${width},${walk},${road.bridge},${concreteWalk},${parkWalk}`;
      if(junctions.has(key))continue;junctions.add(key);
      if(parkWalk)append(parkEdge,drapeJunction(p[0],p[1],width+.14,world.chunks,elevation,.025));
-     append(surface,drapeJunction(p[0],p[1],width,world.chunks,elevation,.035));
+     append(surface,drapeJunction(p[0],p[1],width,world.chunks,elevation,lift));
    }
    if(hasStreetCurb(road)){
      for(const sign of [-1,1]){
        const raised=(px:number,pz:number,terrain:number)=>elevation(px,pz,terrain)+curbRise(road,px,pz);
-       const walkHalf=road.name==='Atwater Street'?1.4:.85;
+       const walkHalf=sidewalkHalfWidth(road);
        strip(sidewalk,a[0],a[1],b[0],b[1],walkHalf,sign*(width+.15+walkHalf),raised,.035);
        // A chamfered front and a separate cap replace the nearly flat painted ribbon.
        const face=(px:number,pz:number,terrain:number)=>{
@@ -68,20 +76,37 @@ export async function buildCity(_scene:T.Scene,world:DetroitWorld,groupAt:(x:num
        };
        strip(curb,a[0],a[1],b[0],b[1],.04,sign*(width+.04),face,.035);
        strip(curb,a[0],a[1],b[0],b[1],.12,sign*(width+.20),raised,.035);
+       // Fine expansion joints distinguish slabs without making physical bumps.
+       for(let d=1.6;d<length-.4;d+=2.1){
+        const px=a[0]+dx*d/length,pz=a[1]+dz*d/length;
+        if(!clearStreetJunction(road,px,pz,3))continue;
+        const offset=sign*(width+.15+walkHalf),nx=-dz/length,nz=dx/length;
+        strip(seam,px+nx*(offset-walkHalf+.04),pz+nz*(offset-walkHalf+.04),px+nx*(offset+walkHalf-.04),pz+nz*(offset+walkHalf-.04),.009,0,raised,.044);
+       }
      }
-     if(['primary','secondary','tertiary','residential'].includes(road.kind)){
-       for(let d=0;d<length;d+=8){const end=Math.min(d+4,length);strip(paint,a[0]+dx*d/length,a[1]+dz*d/length,a[0]+dx*end/length,a[1]+dz*end/length,.045,0,elevation,.045);}
+     const marking=streetMarkingStyle(road);
+     if(marking!=='none'){
+       // Short draped pieces follow bends and preserve unpainted junction mouths.
+       for(let d=0;d<length;d+=2){
+        const end=Math.min(d+2,length),mid=(d+end)/2,px=a[0]+dx*mid/length,pz=a[1]+dz*mid/length;
+        if(!clearStreetJunction(road,px,pz,3))continue;
+        const x0=a[0]+dx*d/length,z0=a[1]+dz*d/length,x1=a[0]+dx*end/length,z1=a[1]+dz*end/length;
+        if(marking==='double-yellow')for(const offset of [-.10,.10])strip(paint,x0,z0,x1,z1,.055,offset,elevation,.047);
+        else if(Math.floor(d/2)%4<2)strip(paint,x0,z0,x1,z1,.06,0,elevation,.047);
+        for(const side of [-1,1])strip(whitePaint,x0,z0,x1,z1,.055,side*(width-.32),elevation,.048);
+       }
      }
    }
  }
  for(const[g,bins]of paths)for(const[material,positions]of bins){const geo=new T.BufferGeometry();geo.setAttribute('position',new T.Float32BufferAttribute(positions,3));
    // These ribbons can sit above the bank terrain and extend beyond the deck.
    // Share their exact surface with riding, dog paws, falls and camera queries.
-   if(material!==paint)world.addRideSurface(geo.attributes.position.array as Float32Array);
+   if(material!==paint&&material!==whitePaint&&material!==seam)world.addRideSurface(geo.attributes.position.array as Float32Array);
    const uv=[],scale=material===parkMat?1.1:material===sidewalk?4:2;for(let i=0;i<positions.length;i+=3)uv.push(positions[i]/scale-Math.floor(g.userData.center.x/scale),positions[i+2]/scale-Math.floor(g.userData.center.z/scale));geo.setAttribute('uv',new T.Float32BufferAttribute(uv,2));geo.computeVertexNormals();const m=new T.Mesh(geo,material);m.name=material===parkMat?'Milliken smooth park paths':material===sidewalk?'Concrete sidewalks':'Mapped street surface';m.receiveShadow=true;g.add(m);}
  const residential=new Map([[3,orleansMaterial(3)],[4,orleansMaterial(4)]]);
  const landmarks:string[]=[];
  for(const{data:b,geometry:geo}of world.buildingMeshes){
+   if(b.id==='777936143')continue; // Original Blender Shed replaces generic facade, retaining footprint collision.
    geo.computeBoundingBox();const bounds=geo.boundingBox!,center=bounds.getCenter(new T.Vector3()),g=groupAt(center.x,center.z);
    const pos=geo.getAttribute('position'),normal=geo.getAttribute('normal'),uv=geo.getAttribute('uv');
    // Eight metre facade repeat preserves plausible door/window scale.

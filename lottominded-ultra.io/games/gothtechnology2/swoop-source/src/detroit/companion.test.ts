@@ -25,7 +25,7 @@ test('the dog responds promptly to a normal riding start without snapping or exc
 test('a fast rider leaves the dog behind without speed matching or distance teleports',()=>{
  const h=createPose(),dog=new DogFollower(flat);dog.reset(h);h.speed=18;let previousZ=dog.current.z;
  for(let i=0;i<2400;i++){h.z+=18/120;dog.step(1/120,h);assert.ok(dog.current.speed<=DOG_MAX_SPEED+.001);assert.ok(dog.current.z-previousZ<=DOG_MAX_SPEED/120+.001);previousZ=dog.current.z;}
- assert.ok(h.z-dog.current.z>180);
+ assert.ok(h.z-dog.current.z>100,'very fast riding still respects the finite sprint limit');
  h.speed=0;for(let i=0;i<7200;i++)dog.step(1/120,h);
  assert.ok(Math.hypot(dog.current.x-h.x,dog.current.z-h.z)<1.5,'dog catches up when the rider waits');
 });
@@ -74,6 +74,21 @@ test('a fully blocked dog stops and a paused dog freezes both translation and ga
 });
 
 test('dog catches up at a brisk 8 metres per second without teleporting',()=>{const h=createPose(),dog=new DogFollower(flat);dog.reset(h);h.speed=8;for(let i=0;i<2400;i++){h.z+=8/120;dog.step(1/120,h);}assert.ok(Math.abs(h.z-dog.current.z)<.7);assert.ok(dog.current.speed<=DOG_MAX_SPEED+.001);});
+
+test('dog regains the formation after acceleration to 36 km/h and a short delay',()=>{
+ for(const hz of [30,60,120]){const h=createPose(),dog=new DogFollower(flat);dog.reset(h);h.speed=10;
+  for(let i=0;i<hz*12;i++){h.z+=10/hz;if(i<hz)continue;const before={...dog.current};dog.step(1/hz,h);assert.ok(Math.hypot(dog.current.x-before.x,dog.current.z-before.z)<=DOG_MAX_SPEED/hz+.001);}
+  assert.ok(Math.abs(h.z-dog.current.z)<.7,'catches up after being left ten metres behind');
+ }
+});
+
+test('narrow waterfront paths keep the dog on supported paving instead of beside the rider in water',()=>{
+ const narrow:TerrainSampler={...flat,sampleGround(x,z,out){flat.sampleGround(x,z,out);out.height=Math.abs(x)<.85?0:-1.1;return out;}};
+ const h=createPose(),dog=new DogFollower(narrow);dog.reset(h);h.speed=4;
+ for(let i=0;i<1200;i++){h.z+=4/120;dog.step(1/120,h);assert.ok(Math.abs(dog.current.x)<.85);assert.ok(dog.current.y>-.01);}
+ assert.ok(h.z-dog.current.z<1.5);
+ dog.order('stay');const before={...dog.current};h.z+=20;for(let i=0;i<240;i++)dog.step(1/120,h);assert.equal(dog.current.x,before.x);assert.equal(dog.current.z,before.z);
+});
 
 test('a dog stalled against a railing promptly turns along it and reunites around the end',()=>{
  const fenced:TerrainSampler={...flat,raycastObstacle(origin,direction,max){

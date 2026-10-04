@@ -1,6 +1,6 @@
 import * as T from 'three';
 import {clone} from 'three/addons/utils/SkeletonUtils.js';
-import type {GLTF} from 'three/addons/loaders/GLTFLoader.js';
+import type {GLTF} from './compressedGLTFLoader.ts';
 import {solve} from './actors.ts';
 
 export const WALK_CYCLE_METRES=1.08;

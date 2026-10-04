@@ -1,0 +1,15 @@
+{
+  "tool": "glTF Transform 4.5.1",
+  "beforeBytes": 8552224,
+  "afterBytes": 3035972,
+  "clips": [
+    "Dog_Idle",
+    "Dog_Walk",
+    "Dog_Trot",
+    "Dog_Run",
+    "Dog_Sit",
+    "Dog_Down"
+  ],
+  "meshes": 1,
+  "skeletons": 1
+}

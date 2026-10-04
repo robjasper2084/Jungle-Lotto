@@ -9,6 +9,7 @@ import {cutPoint} from './world.ts';
 import {createGroundSample} from './terrain.ts';
 import {routePosition} from './districtView.ts';
 import {ROUTE_BILLBOARDS,billboardPlacement} from './routeArt.ts';
+import {CUT_MURALS,muralBacking} from './cutMurals.ts';
 const player='DS_Man_01';
 test('each selected rider races against the other three, without duplicates',()=>{for(const r of RIDER_CHOICES){const rules=new RaceRules(r.id);assert.equal(rules.player.id,r.id);assert.equal(new Set(rules.racers.map(r=>r.id)).size,4);}});
 test('countdown locks progress; zero dt pauses the clock',()=>{const r=new RaceRules(player);assert.equal(r.advance(2),0);r.observe(player,1760,0,.1);assert.equal(r.player.gate,0);assert.equal(r.advance(0),0);assert.equal(r.elapsed,0);assert.equal(r.advance(1.1),.10000000000000009);assert.ok(r.elapsed<.11);});
@@ -16,6 +17,41 @@ test('shortcuts and missed gates do not finish; recovery preserves time and earn
 test('off-course crossing cannot earn a gate and reverse crossing cannot repair it',()=>{const r=new RaceRules(player);r.advance(3);for(let d=(RACE_ROUTE.start+.1);d<(RACE_ROUTE.gates[0]+2);d+=.1)r.observe(player,d,3,.02);assert.equal(r.player.gate,0);r.observe(player,(RACE_ROUTE.gates[0]-1),0,.02);assert.equal(r.player.gate,0);});
 test('ordered gates finish the player and freeze elapsed time',()=>{const r=new RaceRules(player);r.advance(3);for(let d=(RACE_ROUTE.start+.1);d<RACE_ROUTE.end+.2;d+=.1){r.advance(.02);r.observe(player,d,0,.02);}assert.ok(r.done);assert.equal(r.player.gate,RACE_ROUTE.gates.length);assert.ok(r.player.finish!>77);const time=r.elapsed;r.advance(10);assert.equal(r.elapsed,time);assert.equal(r.place,1);});
 const mapped=await new DetroitWorld().init(),terrain=new GeoTerrain(mapped),dt=1/120;
+
+test('all bicycle rivals accelerate off the mapped grid promptly with seeded props and a nearby player',()=>{
+ mapped.setHazards(23,RACE_ROUTE.start,true);mapped.updateTraffic(0,1e8,1e8);mapped.step();
+ const human=routePosition(RACE_ROUTE.start),rules=new RaceRules(player),pilots=rules.racers.slice(1).map((r,i)=>new RacePilot(terrain,r.id,i,'club',()=>[{id:'human-player',...human,radius:.63,height:2.1,kind:'rider',vx:0,vz:0}],true));
+ terrain.extraActors=()=>pilots.flatMap((p,i)=>p.sim.obstacles('rival-'+i));
+ try{
+  rules.advance(3);
+  for(let i=0;i<10*120;i++){rules.advance(dt);mapped.step();for(const p of pilots)p.step(dt,rules);}
+  for(const [i,p] of pilots.entries()){assert.ok(rules.racers[i+1].station>RACE_ROUTE.start+25,JSON.stringify({racer:rules.racers[i+1],state:p.sim.snapshot()}));assert.ok(p.pose.speed>3);}
+ }finally{terrain.extraActors=()=>[];mapped.setHazards(0,RACE_ROUTE.end);mapped.step();}
+});
+test('cruise bicycle rivals finish the browser seed with live route traffic',t=>{
+ const rules=new RaceRules(player),human=routePosition(RACE_ROUTE.start);
+ const pilots=rules.racers.slice(1).map((r,i)=>new RacePilot(terrain,r.id,i,'cruise',()=>[{id:'human-player',...human,radius:.63,height:2.1,kind:'rider',vx:0,vz:0}],true));
+ terrain.extraActors=()=>pilots.flatMap((p,i)=>p.sim.obstacles('rival-'+i));
+ const previousSolids=mapped.solids.length,wallColliders=CUT_MURALS.flatMap(site=>{const placement=muralBacking(site);if(!placement)return [];mapped.solids.push(placement.solid);return [mapped.addBox(placement.solid)];});
+ try{
+  mapped.setHazards(1682877823,RACE_ROUTE.start,true);rules.advance(3);
+  for(let tick=0;tick<720*120&&!rules.racers.slice(1).every(r=>r.finish!==null);tick++){
+   rules.advance(dt);if(tick%6===0){const m=cutPoint(RACE_ROUTE.start);mapped.updateTraffic(rules.elapsed,m.x,m.z);}mapped.step();for(const p of pilots)p.step(dt,rules);
+  }
+  for(const [i,r]of rules.racers.slice(1).entries())assert.notEqual(r.finish,null,JSON.stringify({racer:r,pose:pilots[i].pose,blocked:pilots[i].sim.bicycle.blocked}));
+  t.diagnostic(JSON.stringify(rules.racers.slice(1).map(r=>({finish:r.finish,gate:r.gate}))));
+ }finally{for(const collider of wallColliders)mapped.physics.removeCollider(collider,true);mapped.solids.length=previousSolids;terrain.extraActors=()=>[];mapped.setHazards(0,RACE_ROUTE.end);mapped.updateTraffic(0,1e8,1e8);mapped.step();}
+});
+test('all cycling rivals go around a parked companion and seeded route props',()=>{
+ const rules=new RaceRules(player),dog=routePosition(7.75,1.3),human=routePosition(RACE_ROUTE.start);
+ const pilots=rules.racers.slice(1).map((r,i)=>new RacePilot(terrain,r.id,i,'club',()=>[{id:'human-player',...human,radius:.63,height:2.1,kind:'rider',vx:0,vz:0}],true));
+ terrain.extraActors=()=>[{id:'companion',...dog,radius:.36,height:.85,kind:'dog',vx:0,vz:0},...pilots.flatMap((p,i)=>p.sim.obstacles('rival-'+i))];
+ try{
+  mapped.setHazards(23,RACE_ROUTE.start,true);mapped.updateTraffic(0,1e8,1e8);mapped.step();rules.advance(3);
+  for(let tick=0;tick<800*120&&!rules.racers.slice(1).every(r=>r.finish!==null);tick++){rules.advance(dt);mapped.step();for(const p of pilots)p.step(dt,rules);}
+  for(const r of rules.racers.slice(1))assert.ok(r.finish!==null&&r.gate===RACE_ROUTE.gates.length,JSON.stringify(r));
+ }finally{terrain.extraActors=()=>[];mapped.setHazards(0,RACE_ROUTE.end);mapped.step();}
+});
 test('bicycle rivals pedal through the full mapped race with cycling speed limits',()=>{
  const r=new RaceRules(player),pilots=r.racers.slice(1).map((p,i)=>new RacePilot(terrain,p.id,i,'club',()=>[],true));r.advance(3);
  for(let i=0;i<120*800&&!r.racers.slice(1).every(p=>p.finish!==null);i++){r.advance(dt);mapped.step();for(const p of pilots)p.step(dt,r);}

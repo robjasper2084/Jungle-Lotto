@@ -17,13 +17,15 @@ export function buildRiverfrontDetails(scene:T.Scene,world:DetroitWorld,groupAt:
  }
  // Orleans/Atwater all-way stop visible in Google Street View, Nov 2024.
  // Positions follow mapped curb approaches; offsets are approximate, not surveyed.
- const junctionX=-69.07,junctionZ=-1134.33;
- for(const [ux,uz] of [[.996,-.086],[.079,.997],[-.079,-.997]]){
+ for(const [junctionX,junctionZ] of [[-69.07,-1134.33],[-124.69,-1759.6]])for(const [ux,uz] of [[.996,-.086],[.079,.997],[-.079,-.997]]){
   sign(junctionX+ux*9-uz*5.5,junctionZ+uz*9+ux*5.5,'STOP',true,Math.atan2(ux,uz),true);
   // Paired crosswalk boundary lines and a stop bar, as seen in the Orleans panorama.
   const angle=Math.atan2(ux,uz);
   for(const distance of [5.2,7.5]){const x=junctionX+ux*distance,z=junctionZ+uz*distance;box(x,heightAt(x,z)+.07,z,8.6,.012,.12,white,angle);}
   const x=junctionX+ux*9-uz*2.25,z=junctionZ+uz*9+ux*2.25;box(x,heightAt(x,z)+.075,z,4.2,.015,.30,white,angle);
+   // Flush tactile panels mark the lowered sidewalk corners.
+  const tactile=new T.MeshStandardMaterial({color:'#cab36b',roughness:.95});
+  for(const side of [-1,1]){const tx=junctionX+ux*6.2-uz*side*5.2,tz=junctionZ+uz*6.2+ux*side*5.2,y=heightAt(tx,tz)+.09;box(tx,y,tz,1.1,.018,.6,tactile,angle);}
  }
  // Other controls remain authored outside the Atwater corridor; do not fabricate its inventory.
  const stops:{x:number;z:number}[]=[];
@@ -57,7 +59,7 @@ export function buildRiverfrontDetails(scene:T.Scene,world:DetroitWorld,groupAt:
  }
 
  // River surface follows the mapped shoreline instead of covering park terrain.
- const positions:number[]=[];for(let z=-1900;z<450;z+=20){const a=riverEdge(z)-3,c=riverEdge(z+20)-3;positions.push(a,-.3,z,a-1400,-.3,z,c,-.3,z+20,c,-.3,z+20,a-1400,-.3,z,c-1400,-.3,z+20);}
+ const positions:number[]=[];for(let z=-2250;z<450;z+=20){const a=riverEdge(z)-3,c=riverEdge(z+20)-3;positions.push(a,-.3,z,a-1400,-.3,z,c,-.3,z+20,c,-.3,z+20,a-1400,-.3,z,c-1400,-.3,z+20);}
  const shape=new T.Shape(harborBoundary.map(p=>new T.Vector2(p[0],-p[1]))),basin=new T.ShapeGeometry(shape);basin.rotateX(-Math.PI/2);const basinMesh=new T.Mesh(basin,new T.MeshStandardMaterial({color:0x285d68,metalness:.35,roughness:.3}));basinMesh.position.y=-.3;basinMesh.name='Milliken Harbor basin';scene.add(basinMesh);buildHarbor(world,groupAt);
  const geometry=new T.BufferGeometry();geometry.setAttribute('position',new T.Float32BufferAttribute(positions,3));geometry.computeVertexNormals();const time={value:0};const water=new T.MeshStandardMaterial({color:0x285d68,metalness:.35,roughness:.3,side:T.DoubleSide});water.onBeforeCompile=s=>{s.uniforms.riverTime=time;s.vertexShader='uniform float riverTime;\n'+s.vertexShader;s.vertexShader=s.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\ntransformed.y += .055*sin(position.x*.16+riverTime*.8)+.035*cos(position.z*.22-riverTime*.6);');};const mesh=new T.Mesh(geometry,water);mesh.name='Detroit River shoreline';scene.add(mesh);
  return {update:(seconds:number)=>{time.value=seconds;}};

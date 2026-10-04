@@ -1,4 +1,4 @@
-import {riderEyeMotion} from '@digital-static/ridecore';
+import {riderEyeMotion,RIDER_EYE_PITCH} from '@digital-static/ridecore';
 import * as T from 'three';
 import type {RidePose} from '@digital-static/ridecore';
 
@@ -25,7 +25,7 @@ export function frameElmwoodCamera(mode:ElmwoodCameraMode,p:RidePose,reducedMoti
   out.target.set(p.x,p.y+1.05,p.z);
   let back=5,height=2.45,side=0;
   if(mode==='first'){
-    const motion=swoopFirstPersonMotion(p,reducedMotion),yaw=p.headingY+(first?.yaw??0),pitch=(first?.pitch??-.10)+motion.pitch;
+    const motion=swoopFirstPersonMotion(p,reducedMotion),yaw=p.headingY+(first?.yaw??0),pitch=(first?.pitch??RIDER_EYE_PITCH)+motion.pitch;
     out.eye.copy(first?.head??new T.Vector3(p.x,p.y+1.85-p.crouch*.43+p.bodyBob+p.suspensionOffset,p.z));out.eye.add(new T.Vector3(s*.10,.065,c*.10));
     out.target.copy(out.eye).add(new T.Vector3(Math.sin(yaw)*Math.cos(pitch)*12,Math.sin(pitch)*12,Math.cos(yaw)*Math.cos(pitch)*12));
     out.roll=motion.roll;out.fov=74;return out;

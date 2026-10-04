@@ -40,11 +40,21 @@ export class NaturalMotionEngine {
     p.shoulderL=move('shoulderL',clamp(shoulderLift+p.rollVelocity*.045,-.07,.16),8);
     p.shoulderR=move('shoulderR',clamp(shoulderLift-p.rollVelocity*.045,-.07,.16),8);
     const hands=t.hands.map((h,i)=>{
-      const x=move(`hand${i}x`,h.x+counter,7),y=move(`hand${i}y`,h.y+lift,9);
-      const z=move(`hand${i}z`,h.z+foreaft-(i===0?1:-1)*yawLag,6.5);
-      // The hand trails the arm's lift/reach, then relaxes; no idle gesture loop.
+      const side=i===0?1:-1;
+      // Loose hands breathe with the chest at rest. At steady road speed, small,
+      // unsynchronised corrections keep the arms alive without a walking arm pump.
+      // Steering, tuck and flight take priority over this background balance.
+      const cruising=clamp(Math.abs(p.speed)/6,0,1)*(1-clamp(Math.abs(p.turnIntent)*2,0,1))
+        *(1-p.airBlend)*(1-clamp(Math.max(p.crouch,p.tuck),0,1))*live;
+      const sway=Math.sin(this.idleTime*(i===0?1.35:1.12)+(i===0?0:1.7))*cruising;
+      const x=move(`hand${i}x`,h.x+counter+side*(breath*.002+sway*.007),7);
+      const y=move(`hand${i}y`,h.y+lift+breath*.003+Math.abs(sway)*.006,9);
+      const z=move(`hand${i}z`,h.z+foreaft-side*yawLag+breath*.002+sway*.018,6.5);
+      // Wrist flex trails both arm reach and apparent gravity, relative to the
+      // forearm rather than holding a world-facing palm through a turn.
       const lag=clamp(-this.channels.get(`hand${i}z`)!.velocity*.10
-        -this.channels.get(`hand${i}y`)!.velocity*.06,-.12,.12)*live;
+        -this.channels.get(`hand${i}y`)!.velocity*.06
+        -(this.channels.get('armSwing')?.velocity??0)*.035,-.12,.12)*live;
       return {x,y,z,wrist:move(`wrist${i}`,clamp(h.wrist+lag,-.24,.24),6)};
     });
     [p.handLX,p.handLY,p.handLZ,p.wristL]=[hands[0].x,hands[0].y,hands[0].z,hands[0].wrist];

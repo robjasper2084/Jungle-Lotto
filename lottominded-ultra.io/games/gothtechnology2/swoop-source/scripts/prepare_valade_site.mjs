@@ -1,0 +1,10 @@
+import {readFile,writeFile} from 'node:fs/promises';
+const root=new URL('../',import.meta.url),d=JSON.parse(await readFile(new URL('art/valade/reference.json',root),'utf8'));
+const park=d.ways.find(w=>w.id==='653696195');
+const paths=d.ways.filter(w=>['cycleway','footway','path','pedestrian'].includes(w.tags.highway)&&w.points.some(p=>p[0]<-130&&p[0]>-270&&p[1]<-1790&&p[1]>-1930)).map(w=>({id:w.id,name:w.tags.name??'',kind:w.tags.highway,width:w.tags.highway==='cycleway'?3.4:3,bridge:w.tags.bridge==='yes',points:w.points}));
+const inlet=[[-263.933,-1843.190],[-192.268,-1848.216],[-186.077,-1848.759],[-158.485,-1851.195],[-159.528,-1866.606],[-186.864,-1864.593],[-193.248,-1864.052],[-205.072,-1862.824],[-205.854,-1870.858],[-204.263,-1871.130],[-201.686,-1873.702],[-202.139,-1876.690],[-204.577,-1879.578],[-205.612,-1879.522],[-206.184,-1886.813],[-264.202,-1884.667]];
+const buildings=d.ways.filter(w=>['777936143','777936147'].includes(w.id)).map(w=>({id:w.id,points:w.points,open:w.tags.building==='roof'}));
+const barge=d.ways.find(w=>w.id==='777936144');
+const site={source:d.source,retrieved:d.retrieved,attribution:d.attribution,park:park.points,inlet,paths,buildings,barge:barge.points,shed:{x:-145,z:-1857},play:{x:-154,z:-1820},beach:[[-245,-1797],[-212,-1800],[-207,-1828],[-245,-1833]],notes:'Mapped footprints and path centrelines. Path widths, beach outline, furniture, heights and finishes are visual estimates from Google Maps and Conservancy references.'};
+await writeFile(new URL('src/detroit/valade-data.json',root),JSON.stringify(site,null,2)+'\n');
+console.log({paths:paths.length,buildings:buildings.length});

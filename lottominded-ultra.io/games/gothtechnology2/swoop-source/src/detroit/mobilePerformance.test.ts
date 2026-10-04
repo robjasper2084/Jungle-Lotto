@@ -1,12 +1,19 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {budgetPixelRatio} from './renderBudget.ts';
-import {GRAPHICS_PRESETS,resolveGraphics} from './graphicsQuality.ts';
+import {GRAPHICS_PRESETS,resolveGraphics,antialiasForDevice,parseGraphicsTuning} from './graphicsQuality.ts';
 import {FrameSchedule} from './frameSchedule.ts';
 import {CONTROL_IDS,defaultTouchPosition,controlRect} from './touchLayout.ts';
-test('Automatic is conservative on low memory and unknown devices; manual High remains available',()=>{
- assert.equal(resolveGraphics('auto'),'low');assert.equal(resolveGraphics('auto',8,4),'low');assert.equal(resolveGraphics('auto',8,8),'balanced');assert.equal(resolveGraphics('high',2,2),'high');
+test('Automatic uses High on capable desktops and lighter budgets on phones or weak hardware',()=>{
+ assert.equal(resolveGraphics('auto'),'balanced');assert.equal(resolveGraphics('auto',8,4),'balanced');assert.equal(resolveGraphics('auto',8,8),'high');assert.equal(resolveGraphics('auto',12,undefined),'high');assert.equal(resolveGraphics('auto',4,4),'low');assert.equal(resolveGraphics('auto',12,8,false,'SwiftShader'),'low');assert.equal(resolveGraphics('auto',6,undefined,true),'balanced');assert.equal(resolveGraphics('auto',8,8,true),'high');assert.equal(resolveGraphics('auto',4,4,true),'low');assert.equal(resolveGraphics('high',2,2),'high');assert.equal(resolveGraphics('ultra',2,2),'ultra');
  assert.equal(GRAPHICS_PRESETS.low.shadows,0);assert.equal(GRAPHICS_PRESETS.low.fps,30);
+});
+test('automatic antialiasing enables capable desktops and high-end mobiles while manual choices win',()=>{
+ assert.equal(antialiasForDevice('auto',12,undefined),true);assert.equal(antialiasForDevice('auto',2,2),false);assert.equal(antialiasForDevice('auto',8,8,true),true);assert.equal(antialiasForDevice('auto',4,4,true),false);assert.equal(antialiasForDevice('off',16,16),false);assert.equal(antialiasForDevice('on',2,2,true),true);
+});
+test('saved graphics controls reject corrupted or unsupported values',()=>{
+ assert.deepEqual(parseGraphicsTuning('{"fps":120,"shadows":4096,"aa":"on","resolution":1.25}'),{resolution:1.25,fps:120,shadows:4096,aa:'on'});
+ for(const raw of ['null','bad','{"fps":0,"shadows":-1,"textureSize":999999,"distance":0,"resolution":100,"aa":"bad"}'])assert.deepEqual(parseGraphicsTuning(raw),{});
 });
 test('render budget limits large screens and honors smaller device ratios',()=>{
  for(const [w,h] of [[390,844],[844,390],[2560,1600],[3840,2160]]){
@@ -22,4 +29,3 @@ test('default phone and tablet controls remain on screen without overlap',()=>{
   for(let a=0;a<circles.length;a++)for(let b=a+1;b<circles.length;b++){const x=circles[a],y=circles[b];assert.ok(Math.hypot(x.x-y.x,x.y-y.y)>=x.r+y.r,`${w}x${h}: ${x.id} and ${y.id} overlap`);}
  }
 });
-

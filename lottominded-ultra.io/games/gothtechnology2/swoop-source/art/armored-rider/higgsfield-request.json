@@ -1,0 +1,15 @@
+{
+  "model": "gpt_image_2_5",
+  "aspect_ratio": "3:2",
+  "count": 1,
+  "quality": "high",
+  "resolution": "4k",
+  "background": "opaque",
+  "medias": [
+    {
+      "role": "image",
+      "value": "450038fa-9d9c-43ee-89e9-10d75c7f040e"
+    }
+  ],
+  "prompt": "Create a photorealistic production character turnaround sheet for a Blender game character, based on the protective urban electric unicycle rider in the supplied reference photograph. NOT a collage of the original photo. Show exactly SIX full-body views of the same consistent adult male rider on a clean neutral studio-gray background, arranged in a 3-column by 2-row contact sheet with clear spacing, same scale, feet fully visible: front, left profile, back, right profile, front three-quarter, rear three-quarter. Neutral relaxed A-pose (arms held slightly out so torso armor and hands can be modeled), standing on the ground without a wheel. All sides must match the reference's dark charcoal hooded armored jacket, strong olive/graphite articulated motorcycle-style shoulder/elbow forearm protectors, layered segmented spinal armor and broad sculpted protective back plate, backpack-style straps, dark black reinforced cargo riding pants, black gloves, tall protective black riding boots, and a compact black riding helmet. Heroic realistic human proportions 1.83 m, natural cloth folds, authentic scuffed matte hard-shell panels, charcoal nylon and tiny muted metallic fasteners, red accents only minimal. Maintain the distinctive curved X-shaped back protector and lower spine/lumbar plating from the photo. The face is not visible in the photo; invent a plausible original adult face partly obscured by a low visor rather than claiming an exact likeness. Even softbox lighting, no nighttime lighting, no bloom, no skyline or other people, no weapons, no cropped feet, no perspective distortion in the four cardinal views, realistic game-art material reference with detailed stitching and seams. Small view labels only. Include ONE small separate inset at the bottom corner showing a faithful red-and-black compact electric unicycle with broad tire and folded side pedals from the reference, rear and profile combined, smaller than the character views. Main sheet priority is complete consistent rider views."
+}

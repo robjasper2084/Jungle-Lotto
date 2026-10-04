@@ -18,7 +18,7 @@ async function mesh(id:string,lod:number){
 
 const ids=['DS_Mascot_Suit_01','DS_Mascot_Hoodie_01'] as const;
 const data=new Map(await Promise.all(['DS_EUC_01',...ids].map(async id=>[id,await mesh(id,1)] as const)));
-test('both mascot choices persist and old choices remain selectable',()=>{assert.equal(RIDER_CHOICES.length,4);for(const id of ids)assert.equal(riderChoice(id),id);assert.equal(riderChoice('invalid'),'DS_Man_01');});
+test('both mascot choices persist and old choices remain selectable',()=>{for(const id of [...ids,'DS_Man_01','DS_Hoodie_Woman_01','DS_Armored_Rider_01'])assert.equal(riderChoice(id),id);assert.equal(riderChoice('invalid'),'DS_Man_01');});
 for(const id of ids)test(id+' has complete limbs and reachable pedals across riding poses',t=>{
  const h=new Hero(data,undefined,id);assert.equal(h.legs.length,2);assert.equal(h.arms.length,2);let error=0;
  for(const crouch of [0,.5,1])for(const bank of [-.5,0,.5]){

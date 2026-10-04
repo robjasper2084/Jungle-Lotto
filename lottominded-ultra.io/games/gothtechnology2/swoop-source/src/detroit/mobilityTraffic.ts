@@ -1,6 +1,6 @@
 import * as T from 'three';
 import {clone} from 'three/addons/utils/SkeletonUtils.js';
-import type {GLTF} from 'three/addons/loaders/GLTFLoader.js';
+import type {GLTF} from './compressedGLTFLoader.ts';
 
 type Limb={upper:T.Object3D;joint:T.Object3D;end:T.Object3D;rest:T.Vector3;rotation:T.Quaternion};
 const v=()=>new T.Vector3(),q=()=>new T.Quaternion();

@@ -8,7 +8,7 @@ export function parseDogCommand(text:string):{command:DogCommand;target?:'birds'
   if(words.includes('bark')||words.includes('speak'))return {command:'bark',target:words.some(w=>['people','person','walkers'].includes(w))?'people':undefined};
   if(words.includes('chase'))return {command:'chase',target:words.some(w=>['people','person','walkers'].includes(w))?'people':'birds'};
   if(words.includes('stay'))return {command:'stay'};
-  if(words.includes('down')||words.includes('lie'))return {command:'down'};
+  if(words.includes('down')||words.includes('lie')||words.includes('lay'))return {command:'down'};
   if(words.includes('sit'))return {command:'sit'};
   if(words.includes('come')||words.includes('follow'))return {command:'come'};
 }

@@ -18,7 +18,8 @@ window.fetch=async (...args:Parameters<typeof fetch>)=>{
 export function renderBoot(){
  document.body.dataset.boot=boot.stage;
  const loading=node('loading');loading.hidden=boot.stage==='ready'||boot.stage==='error';
- if(previous!==boot.message){loading.textContent=boot.message;node('startReason').textContent=boot.stage==='ready'?'Choose your ride, then select Let’s ride.':boot.message;previous=boot.message;}
+ const status=document.getElementById('startupStatus');if(status)status.textContent=boot.message;
+ if(previous!==boot.message){loading.textContent=boot.message;node('startReason').textContent=boot.stage==='ready'?'Your ride is ready.':boot.message;previous=boot.message;}
  if(boot.stage==='error'){
   const firstError=node('bootError').hidden;
   node('bootError').hidden=false;node('bootErrorMessage').textContent=boot.message;

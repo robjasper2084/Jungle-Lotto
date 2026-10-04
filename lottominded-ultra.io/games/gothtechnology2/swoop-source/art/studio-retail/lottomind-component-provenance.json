@@ -1,0 +1,17 @@
+{
+  "sources": [
+    {
+      "source": "lotto mind refined/systems/core.js",
+      "sha256": "4a759d1088fb226475f5111904ebe740877341ff0df996444a6be1c18f3b204d"
+    },
+    {
+      "source": "lotto mind refined/systems/registry.js",
+      "sha256": "53169d38ce048d73f5b6c957972e5ec7d43f4ac78cbf1413a5531ce57d05e1e3"
+    },
+    {
+      "source": "lotto mind refined/systems/ui.js",
+      "sha256": "6e27153f4be9f427382660c4b52d50af3b3b49102802595f6d3b018b3c802dae"
+    }
+  ],
+  "note": "Formula and UI reuse; account, wallet and online services stay in the hosted app. In-store history starts empty."
+}

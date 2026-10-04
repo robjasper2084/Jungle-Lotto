@@ -2,7 +2,7 @@
 Primary references and approximations are documented in mack-studio.md.
 Run in a separate Blender background process; never alters an open user scene.
 """
-import bpy, math, random
+import bpy, math, random, os
 from pathlib import Path
 from mathutils import Vector
 ROOT=Path(__file__).resolve().parent
@@ -74,7 +74,7 @@ text('Entrance wayfinding','SERENGETI  /  GOTHTECH',0,4.53,F+.28,.24,white)
 text('Gallery lobby sign','SERENGETI GALLERIES',-12,4.75,16,.39,white)
 text('Store lobby sign','GOTHTECH STORE',12,4.75,16,.48,white)
 # Interior studio work area behind the two retained retail/gallery collections.
-for x in [-14,0,14]:
+for x in ([] if os.environ.get('SWOOP_PRODUCTION_INTERIOR') else [-14,0,14]):
  box('Studio work table',x,.77,-12,5,.12,1.3,cream)
  for dx in [-2,2]:box('Table support',x+dx,.38,-12,.10,.76,1.05,black)
  box('Studio equipment',x,1.16,-12.1,1.25,.65,.12,black)
@@ -101,6 +101,7 @@ for m in list(bpy.data.materials):
  bpy.ops.object.select_all(action='DESELECT')
  for o in items:o.select_set(True)
  bpy.context.view_layer.objects.active=items[0];bpy.ops.object.join();bpy.context.object.name=m.name
-bpy.ops.wm.save_as_mainfile(filepath=str(ROOT/'Mack_GothTech_Studio.blend'))
-bpy.ops.export_scene.gltf(filepath=str(OUT/'mack-gothtech-studio.glb'),export_format='GLB')
+if not os.environ.get('SWOOP_PRODUCTION_INTERIOR'):
+ bpy.ops.wm.save_as_mainfile(filepath=str(ROOT/'Mack_GothTech_Studio.blend'))
+ bpy.ops.export_scene.gltf(filepath=str(OUT/'mack-gothtech-studio.glb'),export_format='GLB')
 print('MACK_STUDIO_EXPORT',sum(len(o.data.polygons) for o in bpy.context.scene.objects if o.type=='MESH'),'faces')

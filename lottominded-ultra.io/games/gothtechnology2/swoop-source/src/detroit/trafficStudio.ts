@@ -1,6 +1,6 @@
 import * as T from 'three';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
-import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import {GLTFLoader} from './compressedGLTFLoader.ts';
 import {FootTraffic} from './footTraffic.ts';
 import {MobilityRider} from './mobilityTraffic.ts';
 import {HumanFallRig} from './humanFallRig.ts';

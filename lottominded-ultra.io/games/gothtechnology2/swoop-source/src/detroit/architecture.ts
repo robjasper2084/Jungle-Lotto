@@ -1,5 +1,5 @@
 import * as T from 'three';
-import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
+import {GLTFLoader} from './compressedGLTFLoader.ts';
 import type {Solid} from './world.ts';
 import {hash} from './world.ts';
 import {DETROIT_LANDMARKS,SKYLINE_ID} from './architectureData.ts';

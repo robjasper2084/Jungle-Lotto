@@ -12,6 +12,8 @@ export const hasStreetCurb=(road:Road)=>!['cycleway','footway','path','pedestria
  * not a claim of a surveyed curb inventory. The greenway remains uncurbed. */
 export function curbRise(road:Road,x:number,z:number){
  let amount=1;
+ let streetDX=0,streetDZ=0,closest=Infinity;
+ for(let i=1;i<road.points.length;i++){const a=road.points[i-1],b=road.points[i],dx=b[0]-a[0],dz=b[1]-a[1],l2=dx*dx+dz*dz;if(l2<.01)continue;const t=clamp(((x-a[0])*dx+(z-a[1])*dz)/l2),distance=Math.hypot(x-a[0]-dx*t,z-a[1]-dz*t);if(distance<closest){closest=distance;streetDX=dx;streetDZ=dz;}}
  const ramp=nearestRamp(x,z);amount=Math.min(amount,clamp((ramp.distance-ramp.width/2-.7)/1.2));
  const cut=nearestCut(x,z);
  // At the two level termini, leave the entire greenway mouth open.
@@ -22,6 +24,8 @@ export function curbRise(road:Road,x:number,z:number){
   const walk=['cycleway','footway','path','pedestrian'].includes(other.kind);
   if(walk&&Math.abs(cut.u)<12&&cut.d>12&&cut.d<2585)continue;
    if(l2<.01)continue;
+   // A parallel sidewalk/cycleway is not a junction that lowers the entire curb.
+   if(walk&&Math.abs(streetDX*dx+streetDZ*dz)/Math.sqrt((streetDX*streetDX+streetDZ*streetDZ)*l2)>.94)continue;
    const t=clamp(((x-a[0])*dx+(z-a[1])*dz)/l2),distance=Math.hypot(x-a[0]-dx*t,z-a[1]-dz*t);
    amount=Math.min(amount,clamp((distance-other.width/2-(walk?.5:2))/1.2));
    if(amount===0)return 0;
