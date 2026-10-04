@@ -13,6 +13,9 @@ export class FollowCamera {
   world:TerrainSampler;
   eye:Point={x:0,y:2,z:5};target:Point={x:0,y:1,z:0};
   fov=55;roll=0;impact=0;
+  private previousEye:Point={x:0,y:2,z:5};private previousTarget:Point={x:0,y:1,z:0};private previousRoll=0;private previousFov=55;
+  readonly frame={eye:{x:0,y:2,z:5},target:{x:0,y:1,z:0},roll:0,fov:55};
+  sample(alpha:number){const t=Math.max(0,Math.min(1,alpha));for(const k of axes){this.frame.eye[k]=this.previousEye[k]+(this.eye[k]-this.previousEye[k])*t;this.frame.target[k]=this.previousTarget[k]+(this.target[k]-this.previousTarget[k])*t;}this.frame.roll=this.previousRoll+(this.roll-this.previousRoll)*t;this.frame.fov=this.previousFov+(this.fov-this.previousFov)*t;return this.frame;}
   distance=4.6;
   private ground=createGroundSample();
   private eyeSpring={x:spring(),y:spring(),z:spring()};
@@ -21,11 +24,12 @@ export class FollowCamera {
   reset(p:RidePose){
     this.target={x:p.x,y:p.y+1.05,z:p.z};this.eye={x:p.x-Math.sin(p.headingY)*5,y:p.y+2.2,z:p.z-Math.cos(p.headingY)*5};
     this.eye.y=Math.min(underpassCameraHeight(this.world,p,this.eye.y),underpassCameraHeight(this.world,this.eye,this.eye.y,p.y));
-    this.impact=0;this.roll=0;this.fov=55;
+    this.impact=0;this.roll=0;this.fov=55;Object.assign(this.previousEye,this.eye);Object.assign(this.previousTarget,this.target);this.previousRoll=this.roll;this.previousFov=this.fov;
     for(const k of axes){Object.assign(this.eyeSpring[k],{value:this.eye[k],velocity:0});Object.assign(this.targetSpring[k],{value:this.target[k],velocity:0});}
   }
   landing(impact:number){this.impact=Math.min(.14,impact*.013);}
   step(dt:number,p:RidePose){
+    Object.assign(this.previousEye,this.eye);Object.assign(this.previousTarget,this.target);this.previousRoll=this.roll;this.previousFov=this.fov;
     const speed=Math.abs(p.speed),distance=this.distance+Math.min(2,speed*.1);
     // Keep the landing zone in view during an air rotation.
     const velocity=Math.hypot(p.velocityX,p.velocityZ);

@@ -1,3 +1,4 @@
+import {SegmentIndex} from './segmentIndex.ts';
 import RAPIER from '@dimforge/rapier3d-compat';
 import {DetroitWorld,trafficBounds,type TerrainChunk} from './world.ts';
 import {MAP_ORIGIN} from './geo-profile.ts';
@@ -39,8 +40,9 @@ export const ELM_ROADS=[
  [[398,405],[410,420],[426,469],[435,485],[450,493]]
 ];
 export const ELM_PATHS=ELM_ROADS.map(ps=>mappedSpline(ps.map(([x,z])=>{const p=elmPoint(x,z);return[p.x,p.z];})));
+const laneIndex=new SegmentIndex(ELM_PATHS.flatMap(path=>path.samples.slice(1).map((b,i)=>({ax:path.samples[i].x,ay:path.samples[i].z,bx:b.x,by:b.z}))));
 export const ELM_SPOTS=[{name:'Elmwood · Entrance',px:1075,pz:485},{name:'Pond / Lake View',px:799,pz:414},{name:'Indian Mound',px:735,pz:235},{name:'Hazel Dell',px:577,pz:280},{name:'West garden lanes',px:180,pz:424}].map(s=>{const target=elmPoint(s.px,s.pz);let best=Infinity,point=ELM_PATHS[0].sample(0);for(const path of ELM_PATHS){let d=0;for(let i=0;i<path.samples.length;i++){if(i)d+=path.samples[i].distanceTo(path.samples[i-1]);const p=path.sample(d),distance=Math.hypot(p.x-target.x,p.z-target.z);if(distance<best){best=distance;point=p;}}}return{name:s.name,...point};});
-export function elmDistance(x:number,z:number){let best=Infinity;for(const path of ELM_PATHS)for(let i=1;i<path.samples.length;i++){const a=path.samples[i-1],b=path.samples[i],dx=b.x-a.x,dz=b.z-a.z,t=Math.max(0,Math.min(1,((x-a.x)*dx+(z-a.z)*dz)/(dx*dx+dz*dz)));best=Math.min(best,Math.hypot(x-a.x-dx*t,z-a.z-dz*t));}return best;}
+export function elmDistance(x:number,z:number){return laneIndex.nearest(x,z).distance;}
 export function elmInside(x:number,z:number){const p=planPoint(x,z);let inside=false;for(let i=0,j=ELM_BOUNDARY.length-1;i<ELM_BOUNDARY.length;j=i++){const a=ELM_BOUNDARY[i],b=ELM_BOUNDARY[j];if((a[1]>p.z)!==(b[1]>p.z)&&p.x<(b[0]-a[0])*(p.z-a[1])/(b[1]-a[1])+a[0])inside=!inside;}return inside;}
 export function elmElevation(px:number,pz:number){
  const u=Math.max(0,Math.min(ELM_DEM.width-1.001,(px-ELM_DEM.planX)/ELM_DEM.step)),v=Math.max(0,Math.min(ELM_DEM.height-1.001,(pz-ELM_DEM.planZ)/ELM_DEM.step)),i=Math.floor(u),j=Math.floor(v),fx=u-i,fz=v-j,k=j*ELM_DEM.width;

@@ -14,7 +14,7 @@ export class TacticalMap{
  private mini=document.createElement('canvas');private full=document.createElement('canvas');
  private caption=document.createElement('span');private note=document.createElement('p');
  private compass=document.createElement('div');private compassTrack=document.createElement('div');private bearing=document.createElement('strong');
- private trail:MapPoint[][]=[];private trailLabel='';private legend=document.createElement('span');
+ private compassTicks:HTMLElement[]=[];private trail:MapPoint[][]=[];private trailLabel='';private legend=document.createElement('span');
  private lines:MapLine[]=[];private labels:{point:MapPoint;text:string}[]=[];
  private markers:MapMarker[]=[];private route:MapPoint[]=[];private approach:MapPoint[]=[];
  private race?:RaceMapCourse;private raceProgress?:ReturnType<typeof raceMapProgress>;private courseFit=false;private navCaption='';private courseButton=document.createElement('button');
@@ -63,7 +63,7 @@ export class TacticalMap{
   const heading=this.markers[0]?.heading??0,reading=compassReading(heading);
   this.compass.setAttribute('aria-label','Compass: '+reading.direction+' '+reading.bearing+' degrees');
   this.bearing.textContent=reading.direction+' '+String(reading.bearing).padStart(3,'0')+'°';
-  this.compassTrack.replaceChildren(...compassTicks(heading).map(t=>{const tick=document.createElement('b');tick.style.left=t.position+'%';tick.textContent=t.label;tick.className=t.major?'major':'';return tick;}));
+  const ticks=compassTicks(heading);ticks.forEach((t,i)=>{let tick=this.compassTicks[i];if(!tick){tick=document.createElement('b');this.compassTicks[i]=tick;this.compassTrack.append(tick);}tick.hidden=false;tick.style.left=t.position+'%';if(tick.textContent!==t.label)tick.textContent=t.label;tick.className=t.major?'major':'';});for(let i=ticks.length;i<this.compassTicks.length;i++)this.compassTicks[i].hidden=true;
   const p=this.markers[0]??{x:this.bounds.x+this.bounds.w/2,y:this.bounds.y+this.bounds.h/2};const range=this.zoomSteps[this.miniZoom];
   this.paint(this.mini,miniMapView(p,range,this.mini.width/this.mini.height),true);
   if(this.dialog.open){let b=this.bounds;
