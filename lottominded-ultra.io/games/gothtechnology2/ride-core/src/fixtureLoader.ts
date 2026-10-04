@@ -1,0 +1,2 @@
+import {gunzipSync,strFromU8} from 'fflate';
+export async function loadFixture(url:string){const zippedUrl=url.replace(/([?#].*)?$/,'.gz$1');const zipped=await fetch(zippedUrl);if(zipped.ok){if(typeof DecompressionStream!=='undefined'&&zipped.body)return new Response(zipped.body.pipeThrough(new DecompressionStream('gzip'))).json();return JSON.parse(strFromU8(gunzipSync(new Uint8Array(await zipped.arrayBuffer()))));}const r=await fetch(url);if(!r.ok)throw Error('Map unavailable. Rebuild this game package.');return r.json();}

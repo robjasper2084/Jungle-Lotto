@@ -18,5 +18,5 @@ export function makeElmwoodQuality(renderer:T.WebGLRenderer,_sun:T.DirectionalLi
  host.replaceWith(host.firstElementChild!);
  const select=document.querySelector<HTMLSelectElement>('[aria-label="Graphics detail"]')!;select.id='elmwood-quality';
  const description=select.closest('fieldset')!.querySelector<HTMLElement>('[role="status"]')!;description.id='quality-description';select.setAttribute('aria-describedby',description.id);
- return {get current(){return {...graphics.current,flowers:density[canvas.dataset.quality as keyof typeof density]??1,wind:canvas.dataset.quality!=='low'};},get choice(){return graphics.choice;},apply:graphics.apply,resize:graphics.resize,setAdaptiveDetail:graphics.setAdaptiveDetail,setResolutionScale:graphics.setResolutionScale,downgradeAuto:graphics.downgradeAuto};
+ return {get current(){return {...graphics.current,flowers:density[canvas.dataset.quality as keyof typeof density]??1,wind:canvas.dataset.quality!=='low'};},get choice(){return graphics.choice;},apply:graphics.apply,mount:graphics.mount,resize:graphics.resize,setAdaptiveDetail:graphics.setAdaptiveDetail,setResolutionScale:graphics.setResolutionScale,downgradeAuto:graphics.downgradeAuto};
 }

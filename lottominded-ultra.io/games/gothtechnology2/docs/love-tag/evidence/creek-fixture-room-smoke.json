@@ -1,0 +1,11 @@
+{
+  "at": "2026-10-04T03:46:22.104Z",
+  "scope": "Local SDK create/lookup/join/leave compatibility only; no full round or hosted test",
+  "fixtureRevision": "20261003.2",
+  "fixtureHash": "dab18d0638db3746073199e1ee8d3cde01d2a14ef80539e899fc94eb5cfdcc35",
+  "create": "PASS",
+  "validCode": "PASS",
+  "lookup": "PASS",
+  "independentSessions": "PASS",
+  "join": "PASS"
+}

@@ -9,7 +9,7 @@ source=resolve(source);pack=resolve(pack);
 await syncLottoComponents(source);
 const require=createRequire(resolve(source,'package.json'));
 const {build}=await import(pathToFileURL(require.resolve('vite')).href);
-await readableTree(resolve(source,'public/love-tag/swoop-detroit.json'));
+await readableTree(resolve(source,'public/love-tag/swoop-detroit.json.gz'));
 const bridge=await readFile(resolve(import.meta.dirname,'swoop-reward-bridge.ts'),'utf8');
 function replace(code,from,to){if(!code.includes(from))throw Error('Elmwood source changed: '+from.slice(0,70));return code.replace(from,to);}
 const files=[];
@@ -61,7 +61,7 @@ await cp(resolve(source,'public/exports/atwater'),resolve(out,'exports/atwater')
 await cp(resolve(source,'public/exports/waterfront'),resolve(out,'exports/waterfront'),{recursive:true});
 await cp(resolve(source,'public/exports/street-furniture'),resolve(out,'exports/street-furniture'),{recursive:true});
 await cp(resolve(source,'public/exports/valade'),resolve(out,'exports/valade'),{recursive:true});
-await cp(resolve(source,'public/exports/polish'),resolve(out,'exports/polish'),{recursive:true});
+await cp(resolve(source,'public/exports/polish'),resolve(out,'exports/polish'),{recursive:true,filter:file=>basename(file)!=='swoop-intro-30.mp4'});
 await cp(resolve(source,'public/exports/visitors'),resolve(out,'exports/visitors'),{recursive:true});
 await copyFile(resolve(source,'public/mural-credits.html'),resolve(out,'mural-credits.html'));
 for(const file of ['manifest.webmanifest','touch-icon.png'])await copyFile(resolve(source,'public',file),resolve(out,file));
@@ -70,7 +70,9 @@ await cp(resolve(pack,'audio/swoop'),resolve(out,'audio/swoop'),{recursive:true,
 const soundtrackCatalog=JSON.parse(await readFile(resolve(pack,'audio/swoop/catalog.json'),'utf8'));
 await writeFile(resolve(out,'audio/swoop/catalog.json'),JSON.stringify(soundtrackCatalog.filter(track=>track.id!=='track-12'),null,2)+'\n');
 await cp(resolve(pack,'detroit/geospatial'),resolve(out,'geospatial'),{recursive:true});
-await cp(resolve(source,'public/love-tag'),resolve(out,'love-tag'),{recursive:true});
+// The canonical Swoop JSON exceeds GitHub's blob limit. Both modern and older
+// browsers decode the same gzip fixture; authoring JSON stays outside release.
+await cp(resolve(source,'public/love-tag'),resolve(out,'love-tag'),{recursive:true,filter:file=>!['swoop-detroit.json','elmwood-explorer.json'].includes(basename(file))});
 await cp(resolve(source,'public/exports/nature'),resolve(out,'exports/nature'),{recursive:true});
 await cp(resolve(source,'public/audio/nature'),resolve(out,'audio/nature'),{recursive:true});
 await writeFile(resolve(out,'SOURCE.md'),'Digital Static Ride Detroit, supplied via Digital_Static_Street_Asset_Pack/integrations/digital-static-ride. Dequindre Cut with navigation to the separately packaged Elmwood Explorer; original riding, rider, dog, touch, controller and physics retained. Built by scripts/build-swoop-detroit.mjs from versioned swoop-source; original external asset pack remains unchanged. Store additions: portable assets, saved sound preference respected, reduced-motion scenery, shared discount-preview receipts for native earned scores. Reference geometry and placement remain approximate as disclosed by the game.\n');

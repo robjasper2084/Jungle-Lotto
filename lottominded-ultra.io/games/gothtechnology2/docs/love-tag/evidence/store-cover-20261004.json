@@ -1,0 +1,22 @@
+{
+  "at": "2026-10-04T16:17:26.503Z",
+  "hash": "8692124ce27f6b62ce39f669d5e53832a10a716862fddcc6b73518a4b1521329",
+  "kind": "actual exported source geometry; no browser evidence",
+  "evidence": [
+    {
+      "name": "LottoMind side wall",
+      "blocked": true,
+      "hit": 0.9699841737747192
+    },
+    {
+      "name": "LottoMind front central entrance",
+      "blocked": false,
+      "hit": null
+    },
+    {
+      "name": "LottoMind street entrance",
+      "blocked": false,
+      "hit": null
+    }
+  ]
+}

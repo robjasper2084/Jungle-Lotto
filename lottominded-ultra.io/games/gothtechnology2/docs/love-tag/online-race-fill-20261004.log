@@ -1,0 +1,12 @@
+(node:21972) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ three host-driven expert EUC rivals earn every Cut checkpoint with a stopped human still in the room (14407.2922ms)
+ℹ {"bots":3,"peakKmh":71.65022585108078,"results":[{"id":"DS_Hoodie_Woman_01","gates":12,"time":163.78783872838},{"id":"DS_Mascot_Suit_01","gates":12,"time":152.60383526200366},{"id":"DS_Mascot_Hoodie_01","gates":12,"time":155.4892449942191}]}
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 14967.4386

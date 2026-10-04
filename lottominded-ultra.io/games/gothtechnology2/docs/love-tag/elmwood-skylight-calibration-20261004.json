@@ -1,0 +1,7 @@
+{
+  "previousWeightedLuminance": 0.5696567084077545,
+  "optixWeightedLuminance": 0.9596239180446011,
+  "method": "HDRLoader half-float decode; spherical sine-weighted luminance average. Matches approximate prior environment energy, not a physical survey.",
+  "calibratedIntensity": 0.475,
+  "previousIntensity": 0.8
+}

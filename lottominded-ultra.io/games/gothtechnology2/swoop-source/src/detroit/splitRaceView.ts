@@ -13,7 +13,9 @@ import {routePosition} from './districtView.ts';
 import {underpassCameraHeight} from './cameraClearance.ts';
 import {SplitRaceSimulation} from './splitRaceSimulation.ts';
 import {splitBindingLabel,type SplitBinding} from './splitInput.ts';
-import {splitViewports} from './splitLayout.ts';
+import {splitVisibleViews,splitControlSeat} from './splitLayout.ts';
+import {mountSplitTouch} from './splitTouchControls.ts';
+import type {SplitRideInput} from './splitInput.ts';
 import {RIDER_CHOICES} from './riderChoices.ts';
 import './splitRace.css';
 
@@ -26,10 +28,11 @@ export class SplitRaceView {
  private follows:FollowCamera[];private first:boolean[];private effects:ContactEffects[];private sparks:PedalSparks[];private photoFocus:(T.Vector3|undefined)[];
  private course=new T.Group();private courseGeometries:T.BufferGeometry[]=[];private courseMaterials:T.Material[]=[];
  readonly hud=document.createElement('section');private results=document.createElement('section');private resultShown=false;
+ private pads:(ReturnType<typeof mountSplitTouch>|undefined)[]=[];private showAll=false;
  private panels:HTMLElement[]=[];private clock:HTMLElement;private pauseButton:HTMLButtonElement;
- readonly bindings:readonly SplitBinding[];
- constructor(scene:T.Scene,simulation:SplitRaceSimulation,data:Awaited<ReturnType<typeof loadActors>>,bindings:readonly SplitBinding[],actions:{pause:()=>void;restart:()=>void;menu:()=>void;recover:(i:number)=>void;camera:(i:number)=>void;cruise:(i:number)=>void;photo?:(i:number)=>void},patches:readonly EffectPatch[]=[],audio:readonly RideAudio[]=[]){
-  this.simulation=simulation;this.bindings=bindings;this.audio=audio;this.lamps=simulation.riders.map(()=>new RiderLamp(scene,simulation.terrain));
+ readonly bindings:readonly SplitBinding[];private ownerSlot?:number;private onlineSplit?:()=>boolean;
+ constructor(scene:T.Scene,simulation:SplitRaceSimulation,data:Awaited<ReturnType<typeof loadActors>>,bindings:readonly SplitBinding[],actions:{pause:()=>void;restart:()=>void;menu:()=>void;recover:(i:number)=>void;camera:(i:number)=>void;cruise:(i:number)=>void;photo?:(i:number)=>void;display?:()=>void;input?:SplitRideInput;onlineSlot?:number;bots?:readonly number[];splitView?:()=>boolean},patches:readonly EffectPatch[]=[],audio:readonly RideAudio[]=[]){
+  this.simulation=simulation;this.bindings=bindings;this.ownerSlot=actions.onlineSlot;this.onlineSplit=actions.splitView;this.audio=audio;this.lamps=simulation.riders.map(()=>new RiderLamp(scene,simulation.terrain));
   this.poses=simulation.riders.map(()=>createPose());this.lastGates=simulation.riders.map(()=>0);this.first=simulation.riders.map(()=>false);this.cameras=simulation.riders.map(()=>new T.PerspectiveCamera(55,1,.08,1500));this.photoFocus=simulation.riders.map(()=>undefined);
   this.heroes=simulation.riders.map(r=>{const h=new Hero(data,r.sim.terrain,r.id);r.sim.mountedVolume=h.mountedVolume;h.apply(r.pose);scene.add(h.root);return h;});
   this.follows=simulation.riders.map(r=>{const f=new FollowCamera(simulation.terrain);f.reset(r.pose);return f;});
@@ -44,17 +47,21 @@ export class SplitRaceView {
   this.course.visible=simulation.sessionMode!=='free';this.hud.id='splitHUD';this.hud.setAttribute('aria-label',simulation.riders.length+' player split screen');this.hud.dataset.players=String(simulation.riders.length);
   const bar=document.createElement('div');bar.className='splitBar';bar.innerHTML='<strong>SWOOP <span></span></strong><b class="splitClock"></b><nav></nav>';bar.querySelector('span')!.textContent='LOCAL / '+simulation.riders.length+'P / '+simulation.sessionMode.toUpperCase();this.clock=bar.querySelector('b')!;
   const button=(text:string,fn:()=>void)=>{const b=document.createElement('button');b.textContent=text;b.onclick=fn;return b;};
-  this.pauseButton=button('Pause',actions.pause);bar.querySelector('nav')!.append(this.pauseButton,button('Restart',actions.restart),button('Menu',actions.menu));this.hud.append(bar);
+  this.pauseButton=button('Pause',actions.pause);if(actions.display)bar.querySelector('nav')!.append(button('My display',actions.display));bar.querySelector('nav')!.append(this.pauseButton,button('Restart',actions.restart),button('Menu',actions.menu));this.hud.append(bar);
   for(let i=0;i<simulation.riders.length;i++){
    const panel=document.createElement('section');panel.className='splitPane';panel.dataset.player=String(i+1);panel.setAttribute('aria-label',`Player ${i+1} view`);
    panel.innerHTML='<div class="splitIdentity"><b></b><span></span></div><div class="splitMeters"><strong></strong><span></span></div><p class="splitProgress"></p><p class="splitNotice" role="status"></p><div class="splitBottom"><div class="splitScore"></div><small></small><nav></nav></div>';
-   panel.querySelector('.splitIdentity b')!.textContent='PLAYER '+(i+1);panel.querySelector('.splitIdentity span')!.textContent=riderName(simulation.riders[i].id);
-   panel.querySelector('small')!.textContent=splitBindingLabel(bindings[i]);panel.querySelector('nav')!.append(button('Recover',()=>actions.recover(i)),button('Camera',()=>actions.camera(i)),button('Cruise · 24',()=>actions.cruise(i)));if(simulation.riders[i].challenge?.challenge.kind==='discovery')panel.querySelector('nav')!.append(button('Frame / take photo',()=>actions.photo?.(i)));this.panels.push(panel);this.hud.append(panel);this.cues.push(new RideConfirmation(panel));
+   panel.querySelector('.splitIdentity b')!.textContent='PLAYER '+(i+1);panel.querySelector('.splitIdentity span')!.textContent=riderName(simulation.riders[i].id)+(actions.bots?.includes(i)?' · AI RIVAL':'');
+   panel.querySelector('small')!.textContent=splitBindingLabel(bindings[i]);panel.querySelector('nav')!.append(button('Recover',()=>actions.recover(i)),button('Camera',()=>actions.camera(i)),button('Cruise · 24',()=>actions.cruise(i)));if(simulation.riders[i].challenge?.challenge.kind==='discovery')panel.querySelector('nav')!.append(button('Frame / take photo',()=>actions.photo?.(i)));const reader=actions.bots?.includes(i)?null:splitControlSeat(i,actions.onlineSlot);
+   if(reader===null){panel.querySelector('small')!.textContent=actions.bots?.includes(i)?'AI RIVAL · Host-controlled opponent':'REMOTE VIEW · They control this rider on their own device';for(const b of panel.querySelectorAll<HTMLButtonElement>('nav button'))b.hidden=true;}
+   else {panel.querySelector('.splitIdentity b')!.textContent=(actions.onlineSlot===undefined?'PLAYER ':'YOU · P')+(i+1);panel.querySelector('small')!.textContent='Move: up ride · down brake / reverse · sideways steer · '+splitBindingLabel(bindings[reader]);}
+   this.pads[i]=reader!==null&&actions.input?mountSplitTouch(panel,actions.input.touch[reader],()=>actions.input!.touchTrick(reader)):undefined;this.panels.push(panel);this.hud.append(panel);this.cues.push(new RideConfirmation(panel));
   }
   this.results.id='splitResults';this.results.hidden=true;this.results.setAttribute('role','dialog');this.results.setAttribute('aria-modal','true');this.results.setAttribute('aria-labelledby','splitResultTitle');
   this.results.innerHTML='<div><p class="eyebrow">LOCAL RACE / DEQUINDRE CUT</p><h2 id="splitResultTitle"></h2><ol></ol><p>Local match only. Solo records, rewards and saves stay unchanged.</p><nav></nav></div>';
   this.results.querySelector('nav')!.append(button('Race again',actions.restart),button('Main menu',actions.menu));document.body.append(this.hud,this.results);
  }
+ resetTouch(slot?:number){if(slot===undefined)this.pads.forEach(p=>p?.reset());else this.pads[slot]?.reset();}
  afterStep(dt:number){
   if(this.simulation.rules.countdown>0)return;
   this.simulation.riders.forEach((r,i)=>{
@@ -74,12 +81,13 @@ export class SplitRaceView {
  photoCheck(i:number,target:{x:number;y:number;z:number}){const p=this.simulation.riders[i].pose,camera=this.cameras[i],point=new T.Vector3(target.x,target.y,target.z),ray=point.clone().sub(camera.position),distance=ray.length(),projected=point.clone().project(camera),hit=this.simulation.terrain.raycast(camera.position,ray.clone().normalize(),Math.max(0,distance-.8));return {distance:Math.hypot(target.x-p.x,target.z-p.z),speed:p.speed,inFrame:Math.abs(projected.x)<.85&&Math.abs(projected.y)<.85&&projected.z>-1&&projected.z<1,unobstructed:hit===null||hit>=distance-.8};}
  render(renderer:T.WebGLRenderer,scene:T.Scene,dt:number,alpha:number,active:boolean,paused:boolean,visible:boolean,beforeView:(p:RidePose,camera:T.PerspectiveCamera)=>void,connectionMessage='',cruising:readonly boolean[]=[false,false],dusk=false){
   this.hud.hidden=!visible;this.results.hidden=!visible||!this.simulation.rules.done;
-  const rules=this.simulation.rules,rects=splitViewports(innerWidth,innerHeight,this.simulation.riders.length);
+  const rules=this.simulation.rules;const wanted=this.onlineSplit?.()??false;if(wanted!==this.showAll){this.resetTouch();this.showAll=wanted;}const views=splitVisibleViews(innerWidth,innerHeight,this.simulation.riders.length,this.ownerSlot,this.showAll);this.hud.dataset.onlineView=this.ownerSlot===undefined?'local':this.showAll?'split':'mine';
   this.pauseButton.textContent=paused?'Resume':'Pause';this.clock.textContent=paused?'PAUSED':rules.countdown>0?`START IN ${Math.ceil(rules.countdown)}`:rules.done?'RACE COMPLETE':rules.elapsed.toFixed(1)+' s';
   this.simulation.riders.forEach((r,i)=>{
    lerpPose(r.previous,r.pose,alpha,this.poses[i]);this.heroes[i].apply(this.poses[i]);this.heroes[i].rider.visible=true;this.cues[i].render(visible&&!rules.done);this.lamps[i].update(dt,this.poses[i],dusk,visible);
    this.effects[i].update(dt,this.poses[i],this.heroes[i],undefined,false,active);this.sparks[i].update(dt,this.poses[i],active&&!r.sim.crashed);
-   const rect=rects[i],panel=this.panels[i],progress=rules.racers[i],place=rules.order.findIndex(x=>x.id===r.id)+1;
+   const rect=views.find(v=>v.slot===i)?.rect,panel=this.panels[i],progress=rules.racers[i],place=rules.order.findIndex(x=>x.id===r.id)+1;
+   panel.hidden=!rect;this.pads[i]?.setEnabled(!!rect&&visible&&!paused&&rules.countdown<=0&&!rules.done&&!r.sim.crashed&&progress.finish===null&&!connectionMessage);if(!rect)return;
    Object.assign(panel.style,{left:rect.x+'px',top:rect.y+'px',width:rect.width+'px',height:rect.height+'px'});
    panel.querySelector('.splitMeters strong')!.textContent=Math.round(Math.abs(r.pose.speed)*3.6)+' km/h';panel.querySelector('.splitMeters span')!.textContent=this.simulation.sessionMode==='race'?`${place} / ${this.simulation.riders.length}`:'P'+(i+1);
    panel.querySelector('.splitProgress')!.textContent=progress.finish!==null?`FINISHED · ${progress.finish.toFixed(2)} s`:progress.missed?'MISSED GATE · Recover to last checkpoint':`Gate ${Math.min(progress.gate+1,RACE_ROUTE.gates.length)}/${RACE_ROUTE.gates.length} · ${Math.max(0,Math.round(RACE_ROUTE.end-progress.station))} m`;
@@ -92,8 +100,8 @@ export class SplitRaceView {
    buttons[2].disabled=paused||rules.countdown>0||rules.done||progress.finish!==null||r.sim.crashed;buttons[2].setAttribute('aria-pressed',String(cruising[i]));buttons[2].textContent=cruising[i]?'Cruise on · 24':'Cruise · 24';
   });
   renderer.setScissorTest(false);renderer.setViewport(0,0,innerWidth,innerHeight);renderer.clear();renderer.info.reset();renderer.info.autoReset=false;renderer.setScissorTest(true);
-  for(let i=0;i<this.simulation.riders.length;i++){
-   const p=this.poses[i],camera=this.cameras[i],rect=rects[i],f=this.follows[i],first=this.first[i]&&!this.simulation.riders[i].sim.crashed;
+  for(const {slot:i,rect}of views){
+   const p=this.poses[i],camera=this.cameras[i],f=this.follows[i],first=this.first[i]&&!this.simulation.riders[i].sim.crashed;
    if(first){const eye=this.heroes[i].head?.getWorldPosition(new T.Vector3())??new T.Vector3(p.x,p.y+1.85,p.z);eye.add(new T.Vector3(Math.sin(p.headingY)*.1,.065,Math.cos(p.headingY)*.1));eye.y=underpassCameraHeight(this.simulation.terrain,eye,eye.y,p.y);camera.position.copy(eye);camera.lookAt(eye.x+Math.sin(p.headingY)*10,eye.y-.5,eye.z+Math.cos(p.headingY)*10);camera.fov=74;}
    else{camera.position.set(f.eye.x,f.eye.y,f.eye.z);camera.lookAt(f.target.x,f.target.y,f.target.z);camera.fov=f.fov;}
    if(this.photoFocus[i]){camera.position.set(p.x,underpassCameraHeight(this.simulation.terrain,p,p.y+2.35),p.z);camera.lookAt(this.photoFocus[i]!);camera.fov=60;}
@@ -109,5 +117,5 @@ export class SplitRaceView {
    this.results.querySelector<HTMLButtonElement>('button')?.focus();
   }
  }
- dispose(){this.cues.forEach(c=>c.dispose());this.lamps.forEach(l=>l.dispose());this.heroes.forEach(h=>h.dispose());this.effects.forEach(e=>e.dispose());this.sparks.forEach(e=>e.dispose());this.course.removeFromParent();this.courseGeometries.forEach(g=>g.dispose());this.courseMaterials.forEach(m=>m.dispose());this.hud.remove();this.results.remove();}
+ dispose(){this.pads.forEach(p=>p?.dispose());this.cues.forEach(c=>c.dispose());this.lamps.forEach(l=>l.dispose());this.heroes.forEach(h=>h.dispose());this.effects.forEach(e=>e.dispose());this.sparks.forEach(e=>e.dispose());this.course.removeFromParent();this.courseGeometries.forEach(g=>g.dispose());this.courseMaterials.forEach(m=>m.dispose());this.hud.remove();this.results.remove();}
 }

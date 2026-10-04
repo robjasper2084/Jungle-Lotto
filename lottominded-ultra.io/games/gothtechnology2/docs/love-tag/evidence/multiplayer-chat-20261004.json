@@ -1,0 +1,26 @@
+{
+  "at": "2026-10-04T17:32:38.075Z",
+  "scope": "Loopback real Colyseus SDK clients, not browser or hosted evidence",
+  "evidence": [
+    {
+      "product": "swoop-detroit",
+      "humans": 2,
+      "actualServer": true,
+      "roomIsolation": true,
+      "serverIdentity": true,
+      "rateLimit": true,
+      "textOnlyPayload": true,
+      "cleanLeave": true
+    },
+    {
+      "product": "elmwood-explorer",
+      "humans": 2,
+      "actualServer": true,
+      "roomIsolation": true,
+      "serverIdentity": true,
+      "rateLimit": true,
+      "textOnlyPayload": true,
+      "cleanLeave": true
+    }
+  ]
+}

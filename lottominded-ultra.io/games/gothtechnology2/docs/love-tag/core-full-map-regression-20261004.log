@@ -1,0 +1,70 @@
+(node:11012) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ fall camera frames the rider and wheel midpoint in world space and leaves riding unchanged (2.613ms)
+✔ fall preserves the entry posture, releases feet before impact, and settles without perpetual bouncing (2.9796ms)
+✔ fall direction follows travel and bank; faster crashes slide further (0.7029ms)
+✔ fall transforms are continuous, finite and deterministic at fixed simulation times (7.5849ms)
+✔ the drop accelerates before impact and the slide stops completely after contact (0.3137ms)
+✔ collision fall respects the wall sweep and recovery clears all fall channels (19.5815ms)
+(node:21296) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ walking-speed carving fits a lane and the rider looks into the turn (32.8994ms)
+ℹ Walking-speed turn radius: 0.64 m
+✔ mirrored steering produces mirrored trajectories and no stationary orbit (32.2234ms)
+✔ steering reversal is continuous and clean full-speed carving has no artificial wobble (23.4811ms)
+✔ air steering rotates the rider without redirecting or accelerating flight (17.0055ms)
+✖ a fast sideways landing falls once and recovers cleanly (10.937ms)
+✔ holding hop through landing cannot repeatedly bounce (10.0954ms)
+✔ a new hop pressed just before touchdown is buffered to the next ground contact (2.7592ms)
+✔ a hop just after rolling off an edge gets coyote time (7.5146ms)
+✔ landing drives compression and suspension, then settles without persistent jitter (8.7112ms)
+ℹ Landing compression peak: 0.793; suspension travel: 3.5 cm
+✔ forward drive has a stable soft top speed and braking brings it to rest (32.2328ms)
+ℹ 8 s speed: 68.6 km/h; top: 68.6 km/h; stop: 1.98 s / 20.0 m
+✔ fixed 120 Hz simulation produces the same motion at 30, 60 and 144 rendered frames per second (32.299ms)
+✔ critical spring solves a constant target consistently across update frequencies (0.2908ms)
+(node:39764) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ snapshot JSON restore replays all controller state, airborne, springs and trick state (26.3892ms)
+✔ handling injection leaves default controller tuning unchanged (0.6128ms)
+✔ relative swept collision catches moving crossings and rejects elevation separation (0.2333ms)
+✔ Classic transfer, locks and stale projectile epoch enforce one It (24.178ms)
+✔ wall at muzzle blocks a heart and does not confirm a tag (6.0144ms)
+✔ Spread final catch precedes deterministic result and no caught runner returns (24.6016ms)
+✔ head start disables It movement and tagging; resources regenerate only active (8.2363ms)
+✔ forged, stale, duplicate, nonfinite and overbound commands rejected (0.4526ms)
+✔ manual reset preserves ammunition and burst, incurs penalty and role (11.1591ms)
+✔ three minute canonical rules and heart speed are unchanged (0.2104ms)
+✔ batched network commands preserve one-shot actions until one simulation tick consumes them (13.6363ms)
+ℹ tests 29
+ℹ suites 0
+ℹ pass 28
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 486.8822
+
+✖ failing tests:
+
+test at tests\motionV2.test.ts:37:1
+✖ a fast sideways landing falls once and recovers cleanly (10.937ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  true !== false
+  
+      at TestContext.<anonymous> (C:\Users\digit\Documents\phone\Digital_Static_RideCore\tests\motionV2.test.ts:40:31)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

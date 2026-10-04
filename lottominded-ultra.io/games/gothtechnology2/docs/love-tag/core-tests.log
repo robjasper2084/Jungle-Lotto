@@ -1,0 +1,20 @@
+(node:39484) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ snapshot JSON restore replays all controller state, airborne, springs and trick state (31.3866ms)
+✔ handling injection leaves default controller tuning unchanged (0.6165ms)
+✔ relative swept collision catches moving crossings and rejects elevation separation (0.2137ms)
+✔ Classic transfer, locks and stale projectile epoch enforce one It (23.9772ms)
+✔ wall at muzzle blocks a heart and does not confirm a tag (7.2051ms)
+✔ Spread final catch precedes deterministic result and no caught runner returns (24.1151ms)
+✔ head start disables It movement and tagging; resources regenerate only active (6.8972ms)
+✔ forged, stale, duplicate, nonfinite and overbound commands rejected (0.3401ms)
+✔ manual reset preserves ammunition and burst, incurs penalty and role (10.9502ms)
+✔ three minute canonical rules and heart speed are unchanged (0.2063ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 10
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 443.2026

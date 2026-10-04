@@ -1,0 +1,366 @@
+{
+  "at": "2026-10-04T07:18:53.348Z",
+  "scope": "Local review only; no original or hosted build promoted",
+  "head": "9f6f2cbcf2aea87a22a123fdd23bddcacea69797",
+  "branch": "upgrade-redesign",
+  "sourceRepositories": {
+    "actualExplorer": {
+      "root": "C:/Users/digit/Documents/phone/euc-detroit-riverwalk",
+      "head": "No Git revision available; use individual source hashes"
+    },
+    "rideCore": {
+      "root": "C:/Users/digit/Documents/phone/Digital_Static_RideCore",
+      "head": "No Git revision available; use individual source hashes"
+    },
+    "server": {
+      "root": "C:/Users/digit/Documents/phone/_goth_swoop_release_20260916",
+      "head": "9f6f2cbcf2aea87a22a123fdd23bddcacea69797"
+    }
+  },
+  "workingChanges": "Current files individually hashed; remaining dirty work retained. No commit or push performed by this run; HEAD advanced externally during work.",
+  "node": "v24.16.0",
+  "mirrors": [
+    {
+      "file": "elmwood-race.ts",
+      "actual": "82a0908e3507065255c596c2294cf7f5918ad334414ea530abafe2dc4e12944e",
+      "mirror": "82a0908e3507065255c596c2294cf7f5918ad334414ea530abafe2dc4e12944e",
+      "match": true
+    },
+    {
+      "file": "elmwood-race.test.ts",
+      "actual": "ff90b3883a3f5f06b9db19742300b893482d33111c629a8e34161d678f961b1c",
+      "mirror": "ff90b3883a3f5f06b9db19742300b893482d33111c629a8e34161d678f961b1c",
+      "match": true
+    },
+    {
+      "file": "elmwood-gameplay.ts",
+      "actual": "856090333ac86e0b82a3ef44750b6bbecb4b4f5431e97c0d0256eb494d42e175",
+      "mirror": "856090333ac86e0b82a3ef44750b6bbecb4b4f5431e97c0d0256eb494d42e175",
+      "match": true
+    },
+    {
+      "file": "elmwood-main-menu.ts",
+      "actual": "097c51a0b1f2ac40c12204c5ec95dce2d491f6048b2697891f9ac1d8ed4bb6d8",
+      "mirror": "097c51a0b1f2ac40c12204c5ec95dce2d491f6048b2697891f9ac1d8ed4bb6d8",
+      "match": true
+    },
+    {
+      "file": "elmwood-ride.ts",
+      "actual": "533fb1593742a6f6835e92b3ec6458c31e331cc724b5a47b534c44f8ca548587",
+      "mirror": "533fb1593742a6f6835e92b3ec6458c31e331cc724b5a47b534c44f8ca548587",
+      "match": true
+    },
+    {
+      "file": "elmwood-water.ts",
+      "actual": "b2bf63788cdf6ab6d5d897e1d6ff83e2451ea4a56f614ce356c8336bf7871aad",
+      "mirror": "b2bf63788cdf6ab6d5d897e1d6ff83e2451ea4a56f614ce356c8336bf7871aad",
+      "match": true
+    },
+    {
+      "file": "elmwood-water.test.ts",
+      "actual": "9cebc5b19805620987adaa53e0ba78f57978d060a38d8540d56de8c72a4d478f",
+      "mirror": "9cebc5b19805620987adaa53e0ba78f57978d060a38d8540d56de8c72a4d478f",
+      "match": true
+    },
+    {
+      "file": "elmwood-weather.ts",
+      "actual": "905190ddd12dfa0df938b8d9068f4f0873285c349c2fc5a1ce677f8ff65c30bf",
+      "mirror": "905190ddd12dfa0df938b8d9068f4f0873285c349c2fc5a1ce677f8ff65c30bf",
+      "match": true
+    },
+    {
+      "file": "elmwood-environment.ts",
+      "actual": "943e5d835ddc5ccfca931e2cc9827eeefbac4c591ba630dd4ec17fb8858a25ed",
+      "mirror": "943e5d835ddc5ccfca931e2cc9827eeefbac4c591ba630dd4ec17fb8858a25ed",
+      "match": true
+    },
+    {
+      "file": "elmwood.ts",
+      "actual": "744806f79d5902cc3d7f414858577a03f1374b54101355e8c23f2ae9c7575ae1",
+      "mirror": "744806f79d5902cc3d7f414858577a03f1374b54101355e8c23f2ae9c7575ae1",
+      "match": true
+    },
+    {
+      "file": "elmwood-mobile-hud.css",
+      "actual": "1e441be6ff1260092bfc75afdc4bf124b9e8e59fa2f5a9cd669510fcc60dcb80",
+      "mirror": "1e441be6ff1260092bfc75afdc4bf124b9e8e59fa2f5a9cd669510fcc60dcb80",
+      "match": true
+    },
+    {
+      "file": "riding/bicycleView.ts",
+      "actual": "4b1b2d246a040b2441629837401e1d266b17cb7c8da16137638f9da2eafebc4f",
+      "mirror": "4b1b2d246a040b2441629837401e1d266b17cb7c8da16137638f9da2eafebc4f",
+      "match": true
+    },
+    {
+      "file": "dogActions.css",
+      "actual": "a2efc27f6889ca4121d8381a5bdf262c9f8e72eb2ba2cd183c03fd1d3512dc1b",
+      "mirror": "a2efc27f6889ca4121d8381a5bdf262c9f8e72eb2ba2cd183c03fd1d3512dc1b",
+      "match": true
+    }
+  ],
+  "sources": [
+    {
+      "path": "C:\\Users\\digit\\Documents\\phone\\_goth_swoop_release_20260916\\lottominded-ultra.io\\games\\gothtechnology2\\swoop-source\\src\\detroit\\racePilot.ts",
+      "sha256": "38fc218dc4378efc6f61279e2d8a1eb890e6243876567e670dfbebf06918b50d"
+    },
+    {
+      "path": "C:\\Users\\digit\\Documents\\phone\\_goth_swoop_release_20260916\\lottominded-ultra.io\\games\\gothtechnology2\\swoop-source\\src\\detroit\\raceRules.ts",
+      "sha256": "9820a80fce17f0ecdd2778616ac060bc893fafcc02197a2a11ef16b649849b9b"
+    },
+    {
+      "path": "C:\\Users\\digit\\Documents\\phone\\_goth_swoop_release_20260916\\lottominded-ultra.io\\games\\gothtechnology2\\swoop-source\\src\\detroit\\raceView.ts",
+      "sha256": "5dcef00363020b3dba50e0ace3281fbf6e398394227ad134fd9c5d8ca681c89d"
+    },
+    {
+      "path": "C:\\Users\\digit\\Documents\\phone\\_goth_swoop_release_20260916\\lottominded-ultra.io\\games\\gothtechnology2\\swoop-source\\src\\detroit\\mobileHud.css",
+      "sha256": "08bd5fea74c5aecdcfec115be34fa276859779b32766bed1632b4fe754c3a6c1"
+    },
+    {
+      "path": "C:\\Users\\digit\\Documents\\phone\\_goth_swoop_release_20260916\\lottominded-ultra.io\\games\\gothtechnology2\\swoop-source\\src\\detroit\\dogCommandHud.ts",
+      "sha256": "66167c2bc6fbcdaf359ff2fabf3252c890ec2c2ab0bbab2f11f60ff95cccd0bf"
+    },
+    {
+      "path": "C:\\Users\\digit\\Documents\\phone\\_goth_swoop_release_20260916\\lottominded-ultra.io\\games\\gothtechnology2\\swoop-source\\src\\detroit\\dogActions.css",
+      "sha256": "a2efc27f6889ca4121d8381a5bdf262c9f8e72eb2ba2cd183c03fd1d3512dc1b"
+    },
+    {
+      "path": "C:\\Users\\digit\\Documents\\phone\\_goth_swoop_release_20260916\\lottominded-ultra.io\\games\\gothtechnology2\\swoop-source\\src\\detroit\\controller.ts",
+      "sha256": "78d36d59025a4f33b7ca6f946110df78a1e517dfbf88c68815bebc240321e3d3"
+    },
+    {
+      "path": "C:\\Users\\digit\\Documents\\phone\\_goth_swoop_release_20260916\\lottominded-ultra.io\\games\\gothtechnology2\\swoop-source\\src\\detroit\\recovery.ts",
+      "sha256": "b52f78dcd6d92fa3e4ce33d9dc665550f133f5b0b38c8ef7ef565ab19dcfc751"
+    },
+    {
+      "path": "C:\\Users\\digit\\Documents\\phone\\_goth_swoop_release_20260916\\lottominded-ultra.io\\games\\gothtechnology2\\swoop-source\\src\\detroit\\world.ts",
+      "sha256": "5e54a1b4e340b0a788fc8cbd4650cf7b06ce41b9b99da94b08564d19f12ab5cc"
+    },
+    {
+      "path": "C:\\Users\\digit\\Documents\\phone\\_goth_swoop_release_20260916\\lottominded-ultra.io\\games\\gothtechnology2\\swoop-source\\src\\detroit\\water-recovery.test.ts",
+      "sha256": "f472a82b238d196fcf42da11695bc8a48ae6416afea831962e14bff539fb2830"
+    },
+    {
+      "path": "C:\\Users\\digit\\Documents\\phone\\Digital_Static_RideCore\\src\\cyclingView.ts",
+      "sha256": "6f485e153ea7674733c28c915fb7da31bee0756dc0d6d1bdc0c80a901302f505"
+    },
+    {
+      "path": "C:\\Users\\digit\\Documents\\phone\\Digital_Static_RideCore\\src\\tagClient.ts",
+      "sha256": "2c93d51e48817a66fa9985ad212a7ec71d4f07bda31d8d8f220b4c509416f27e"
+    },
+    {
+      "path": "C:\\Users\\digit\\Documents\\phone\\Digital_Static_RideCore\\src\\tag\\rules.ts",
+      "sha256": "82ab7ba1e429f169f872757bcbc33fc78923e47e4d3d193acdde25671d6f5a16"
+    },
+    {
+      "path": "C:\\Users\\digit\\Documents\\phone\\Digital_Static_RideCore\\tests\\tag.test.ts",
+      "sha256": "8879c759d7bc8deb053cc59ba2787a57a51d94bfcfa5dbb263d573809700be98"
+    },
+    {
+      "path": "C:\\Users\\digit\\Documents\\phone\\euc-detroit-riverwalk\\src\\detroit\\elmwood-walkers.ts",
+      "sha256": "e7b5601266b33e6ca9d16784a965094aa5029f95811dcda511b33e2cb8446a80"
+    },
+    {
+      "path": "C:\\Users\\digit\\Documents\\phone\\euc-detroit-riverwalk\\src\\detroit\\dogCommandHud.ts",
+      "sha256": "66167c2bc6fbcdaf359ff2fabf3252c890ec2c2ab0bbab2f11f60ff95cccd0bf"
+    },
+    {
+      "path": "C:\\Users\\digit\\Documents\\phone\\_goth_swoop_release_20260916\\lottominded-ultra.io\\games\\gothtechnology2\\elmwood-source\\src\\detroit\\dogCommandHud.ts",
+      "sha256": "2d36a6c82d8454b366d207d0080e1c0cb42e70d92a41880a6158b1a62ee197c2"
+    },
+    {
+      "path": "C:\\Users\\digit\\Documents\\phone\\euc-detroit-riverwalk\\src\\detroit\\elmwood-race.ts",
+      "sha256": "82a0908e3507065255c596c2294cf7f5918ad334414ea530abafe2dc4e12944e"
+    },
+    {
+      "path": "C:\\Users\\digit\\Documents\\phone\\_goth_swoop_release_20260916\\lottominded-ultra.io\\games\\gothtechnology2\\elmwood-source\\src\\detroit\\elmwood-race.ts",
+      "sha256": "82a0908e3507065255c596c2294cf7f5918ad334414ea530abafe2dc4e12944e"
+    },
+    {
+      "path": "C:\\Users\\digit\\Documents\\phone\\euc-detroit-riverwalk\\src\\detroit\\elmwood-race.test.ts",
+      "sha256": "ff90b3883a3f5f06b9db19742300b893482d33111c629a8e34161d678f961b1c"
+    },
+    {
+      "path": "C:\\Users\\digit\\Documents\\phone\\_goth_swoop_release_20260916\\lottominded-ultra.io\\games\\gothtechnology2\\elmwood-source\\src\\detroit\\elmwood-race.test.ts",
+      "sha256": "ff90b3883a3f5f06b9db19742300b893482d33111c629a8e34161d678f961b1c"
+    },
+    {
+      "path": "C:\\Users\\digit\\Documents\\phone\\euc-detroit-riverwalk\\src\\detroit\\elmwood-gameplay.ts",
+      "sha256": "856090333ac86e0b82a3ef44750b6bbecb4b4f5431e97c0d0256eb494d42e175"
+    },
+    {
+      "path": "C:\\Users\\digit\\Documents\\phone\\_goth_swoop_release_20260916\\lottominded-ultra.io\\games\\gothtechnology2\\elmwood-source\\src\\detroit\\elmwood-gameplay.ts",
+      "sha256": "856090333ac86e0b82a3ef44750b6bbecb4b4f5431e97c0d0256eb494d42e175"
+    },
+    {
+      "path": "C:\\Users\\digit\\Documents\\phone\\euc-detroit-riverwalk\\src\\detroit\\elmwood-main-menu.ts",
+      "sha256": "097c51a0b1f2ac40c12204c5ec95dce2d491f6048b2697891f9ac1d8ed4bb6d8"
+    },
+    {
+      "path": "C:\\Users\\digit\\Documents\\phone\\_goth_swoop_release_20260916\\lottominded-ultra.io\\games\\gothtechnology2\\elmwood-source\\src\\detroit\\elmwood-main-menu.ts",
+      "sha256": "097c51a0b1f2ac40c12204c5ec95dce2d491f6048b2697891f9ac1d8ed4bb6d8"
+    },
+    {
+      "path": "C:\\Users\\digit\\Documents\\phone\\euc-detroit-riverwalk\\src\\detroit\\elmwood-ride.ts",
+      "sha256": "533fb1593742a6f6835e92b3ec6458c31e331cc724b5a47b534c44f8ca548587"
+    },
+    {
+      "path": "C:\\Users\\digit\\Documents\\phone\\_goth_swoop_release_20260916\\lottominded-ultra.io\\games\\gothtechnology2\\elmwood-source\\src\\detroit\\elmwood-ride.ts",
+      "sha256": "533fb1593742a6f6835e92b3ec6458c31e331cc724b5a47b534c44f8ca548587"
+    },
+    {
+      "path": "C:\\Users\\digit\\Documents\\phone\\euc-detroit-riverwalk\\src\\detroit\\elmwood-water.ts",
+      "sha256": "b2bf63788cdf6ab6d5d897e1d6ff83e2451ea4a56f614ce356c8336bf7871aad"
+    },
+    {
+      "path": "C:\\Users\\digit\\Documents\\phone\\_goth_swoop_release_20260916\\lottominded-ultra.io\\games\\gothtechnology2\\elmwood-source\\src\\detroit\\elmwood-water.ts",
+      "sha256": "b2bf63788cdf6ab6d5d897e1d6ff83e2451ea4a56f614ce356c8336bf7871aad"
+    },
+    {
+      "path": "C:\\Users\\digit\\Documents\\phone\\euc-detroit-riverwalk\\src\\detroit\\elmwood-water.test.ts",
+      "sha256": "9cebc5b19805620987adaa53e0ba78f57978d060a38d8540d56de8c72a4d478f"
+    },
+    {
+      "path": "C:\\Users\\digit\\Documents\\phone\\_goth_swoop_release_20260916\\lottominded-ultra.io\\games\\gothtechnology2\\elmwood-source\\src\\detroit\\elmwood-water.test.ts",
+      "sha256": "9cebc5b19805620987adaa53e0ba78f57978d060a38d8540d56de8c72a4d478f"
+    },
+    {
+      "path": "C:\\Users\\digit\\Documents\\phone\\euc-detroit-riverwalk\\src\\detroit\\elmwood-weather.ts",
+      "sha256": "905190ddd12dfa0df938b8d9068f4f0873285c349c2fc5a1ce677f8ff65c30bf"
+    },
+    {
+      "path": "C:\\Users\\digit\\Documents\\phone\\_goth_swoop_release_20260916\\lottominded-ultra.io\\games\\gothtechnology2\\elmwood-source\\src\\detroit\\elmwood-weather.ts",
+      "sha256": "905190ddd12dfa0df938b8d9068f4f0873285c349c2fc5a1ce677f8ff65c30bf"
+    },
+    {
+      "path": "C:\\Users\\digit\\Documents\\phone\\euc-detroit-riverwalk\\src\\detroit\\elmwood-environment.ts",
+      "sha256": "943e5d835ddc5ccfca931e2cc9827eeefbac4c591ba630dd4ec17fb8858a25ed"
+    },
+    {
+      "path": "C:\\Users\\digit\\Documents\\phone\\_goth_swoop_release_20260916\\lottominded-ultra.io\\games\\gothtechnology2\\elmwood-source\\src\\detroit\\elmwood-environment.ts",
+      "sha256": "943e5d835ddc5ccfca931e2cc9827eeefbac4c591ba630dd4ec17fb8858a25ed"
+    },
+    {
+      "path": "C:\\Users\\digit\\Documents\\phone\\euc-detroit-riverwalk\\src\\detroit\\elmwood.ts",
+      "sha256": "744806f79d5902cc3d7f414858577a03f1374b54101355e8c23f2ae9c7575ae1"
+    },
+    {
+      "path": "C:\\Users\\digit\\Documents\\phone\\_goth_swoop_release_20260916\\lottominded-ultra.io\\games\\gothtechnology2\\elmwood-source\\src\\detroit\\elmwood.ts",
+      "sha256": "744806f79d5902cc3d7f414858577a03f1374b54101355e8c23f2ae9c7575ae1"
+    },
+    {
+      "path": "C:\\Users\\digit\\Documents\\phone\\euc-detroit-riverwalk\\src\\detroit\\elmwood-mobile-hud.css",
+      "sha256": "1e441be6ff1260092bfc75afdc4bf124b9e8e59fa2f5a9cd669510fcc60dcb80"
+    },
+    {
+      "path": "C:\\Users\\digit\\Documents\\phone\\_goth_swoop_release_20260916\\lottominded-ultra.io\\games\\gothtechnology2\\elmwood-source\\src\\detroit\\elmwood-mobile-hud.css",
+      "sha256": "1e441be6ff1260092bfc75afdc4bf124b9e8e59fa2f5a9cd669510fcc60dcb80"
+    },
+    {
+      "path": "C:\\Users\\digit\\Documents\\phone\\euc-detroit-riverwalk\\src\\detroit\\riding\\bicycleView.ts",
+      "sha256": "4b1b2d246a040b2441629837401e1d266b17cb7c8da16137638f9da2eafebc4f"
+    },
+    {
+      "path": "C:\\Users\\digit\\Documents\\phone\\_goth_swoop_release_20260916\\lottominded-ultra.io\\games\\gothtechnology2\\elmwood-source\\src\\detroit\\riding\\bicycleView.ts",
+      "sha256": "4b1b2d246a040b2441629837401e1d266b17cb7c8da16137638f9da2eafebc4f"
+    },
+    {
+      "path": "C:\\Users\\digit\\Documents\\phone\\euc-detroit-riverwalk\\src\\detroit\\dogActions.css",
+      "sha256": "a2efc27f6889ca4121d8381a5bdf262c9f8e72eb2ba2cd183c03fd1d3512dc1b"
+    },
+    {
+      "path": "C:\\Users\\digit\\Documents\\phone\\_goth_swoop_release_20260916\\lottominded-ultra.io\\games\\gothtechnology2\\elmwood-source\\src\\detroit\\dogActions.css",
+      "sha256": "a2efc27f6889ca4121d8381a5bdf262c9f8e72eb2ba2cd183c03fd1d3512dc1b"
+    },
+    {
+      "path": "C:\\Users\\digit\\Documents\\phone\\_goth_swoop_release_20260916\\lottominded-ultra.io\\games\\gothtechnology2\\scripts\\build-swoop-detroit.mjs",
+      "sha256": "214062d83dda1cc53c37cc575d76e48c6b656bd1975c4fbab5a1bbd702fb01cf"
+    },
+    {
+      "path": "C:\\Users\\digit\\Documents\\phone\\_goth_swoop_release_20260916\\lottominded-ultra.io\\games\\gothtechnology2\\scripts\\build-elmwood-explorer.mjs",
+      "sha256": "29cb8731d405b9c07b6feb6ea41aeb7b994b25f2fee9b564438ea43a7376fe18"
+    },
+    {
+      "path": "C:\\Users\\digit\\Documents\\phone\\_goth_swoop_release_20260916\\lottominded-ultra.io\\games\\gothtechnology2\\scripts\\elmwood-explorer-embed.js",
+      "sha256": "bc9b0a008749ca99dbfaacba800b5173f032c48810316cbbdc65c48fe5f93a96"
+    },
+    {
+      "path": "C:\\Users\\digit\\Documents\\phone\\_goth_swoop_release_20260916\\lottominded-ultra.io\\games\\gothtechnology2\\scripts\\elmwood-touch-layout.mjs",
+      "sha256": "f1891120cfb4bd257264530d7eecd667b18b9d0f2e303884dd79d8664a2cb0e7"
+    },
+    {
+      "path": "C:\\Users\\digit\\Documents\\phone\\_goth_swoop_release_20260916\\lottominded-ultra.io\\games\\gothtechnology2\\scripts\\elmwood-touch-layout.test.mjs",
+      "sha256": "a642b6d886727cb6daa58a234e412f65af80ef70ebff65d532d4a46373a35d13"
+    },
+    {
+      "path": "C:\\Users\\digit\\Documents\\phone\\_goth_swoop_release_20260916\\lottominded-ultra.io\\games\\gothtechnology2\\love-tag-server\\src\\server.ts",
+      "sha256": "c0c7b860ab132ebf962f546b4d4ea9da484ea8a0fb551083ba8c78d356822805"
+    },
+    {
+      "path": "C:\\Users\\digit\\Documents\\phone\\_goth_swoop_release_20260916\\lottominded-ultra.io\\games\\gothtechnology2\\love-tag-server\\dist\\server.js",
+      "sha256": "2f55dfb88efd12107ea2c3934c09784f4c9454c37a83106ce1e5c9e34e712e65"
+    },
+    {
+      "path": "C:\\Users\\digit\\Documents\\phone\\_goth_swoop_release_20260916\\lottominded-ultra.io\\games\\gothtechnology2\\love-tag-server\\package.json",
+      "sha256": "ee88325729977f3d8edd86e24462130683e179f78842549119628882363acf51"
+    },
+    {
+      "path": "C:\\Users\\digit\\Documents\\phone\\_goth_swoop_release_20260916\\lottominded-ultra.io\\games\\gothtechnology2\\love-tag-server\\tests\\local-online.mjs",
+      "sha256": "2572050bf26d258c378ae8e07b811a1a518b717c15ff203f8163a2b9d5c85190"
+    },
+    {
+      "path": "C:\\Users\\digit\\Documents\\phone\\_goth_swoop_release_20260916\\lottominded-ultra.io\\games\\gothtechnology2\\love-tag-server\\tests\\map-ai.mjs",
+      "sha256": "dca85c6b74c4c5565c79881cfdc1ee05d27d8bb784f14f49c697d7feb8b0251b"
+    },
+    {
+      "path": "C:\\Users\\digit\\Documents\\phone\\_goth_swoop_release_20260916\\lottominded-ultra.io\\games\\gothtechnology2\\love-tag-server\\fixtures\\swoop-detroit.json",
+      "sha256": "26094132c26439886f3780f200dbc362cd6987f90057a1a6e462f10a95f8e125"
+    },
+    {
+      "path": "C:\\Users\\digit\\Documents\\phone\\_goth_swoop_release_20260916\\lottominded-ultra.io\\games\\gothtechnology2\\love-tag-server\\fixtures\\elmwood-explorer.json",
+      "sha256": "8013406780f8e9a087d519ce6c6f66121dad18ae7d105e5d290f85999dbe84ad"
+    }
+  ],
+  "packaged": [
+    {
+      "path": "C:\\Users\\digit\\Documents\\phone\\_goth_swoop_release_20260916\\lottominded-ultra.io\\games\\gothtechnology2\\.game-builds\\love-tag-review\\swoop-detroit\\index.html",
+      "sha256": "e991ee37711384427363d4703bce2b443f3189c7cdd02591461ea24a4a1df304"
+    },
+    {
+      "path": "C:\\Users\\digit\\Documents\\phone\\_goth_swoop_release_20260916\\lottominded-ultra.io\\games\\gothtechnology2\\.game-builds\\love-tag-review\\swoop-detroit\\assets\\detroit-DKFciJBW.js",
+      "sha256": "370d792f36e2ae51ae0dad0e788cbbf3c55952b566434b3c7dc8269b5dacf5fa"
+    },
+    {
+      "path": "C:\\Users\\digit\\Documents\\phone\\_goth_swoop_release_20260916\\lottominded-ultra.io\\games\\gothtechnology2\\.game-builds\\love-tag-review\\swoop-detroit\\assets\\modulepreload-polyfill-B5Qt9EMX.js",
+      "sha256": "d2a32840421496e872ade591618d2fa5c33797605d1aec04301717e5a90757d0"
+    },
+    {
+      "path": "C:\\Users\\digit\\Documents\\phone\\_goth_swoop_release_20260916\\lottominded-ultra.io\\games\\gothtechnology2\\.game-builds\\love-tag-review\\swoop-detroit\\assets\\bootUi-CidZEMZx.js",
+      "sha256": "270013a72d8ffe695672d2a81cedc9cdd87d3dfc2961ebf7ee276be284e15537"
+    },
+    {
+      "path": "C:\\Users\\digit\\Documents\\phone\\_goth_swoop_release_20260916\\lottominded-ultra.io\\games\\gothtechnology2\\.game-builds\\love-tag-review\\swoop-detroit\\assets\\bootUi-DVLei5z6.css",
+      "sha256": "ec93ff0494e152294de55b0f071c19a463a5b923185d2fa7a1ea3f80b748e61d"
+    },
+    {
+      "path": "C:\\Users\\digit\\Documents\\phone\\_goth_swoop_release_20260916\\lottominded-ultra.io\\games\\gothtechnology2\\.game-builds\\love-tag-review\\swoop-detroit\\love-tag\\swoop-detroit.json",
+      "sha256": "26094132c26439886f3780f200dbc362cd6987f90057a1a6e462f10a95f8e125"
+    },
+    {
+      "path": "C:\\Users\\digit\\Documents\\phone\\_goth_swoop_release_20260916\\lottominded-ultra.io\\games\\gothtechnology2\\.game-builds\\love-tag-review\\elmwood-explorer\\elmwood.html",
+      "sha256": "a9ec8230cfb6f2773ba6e0399fda6ee890f1bf8f06370d191b9dfb283c2f2450"
+    },
+    {
+      "path": "C:\\Users\\digit\\Documents\\phone\\_goth_swoop_release_20260916\\lottominded-ultra.io\\games\\gothtechnology2\\.game-builds\\love-tag-review\\elmwood-explorer\\assets\\elmwood-_bLtE3vD.js",
+      "sha256": "461c9cb64f382286b68b030903298ce1b5919faa4ac15096c82493d61d02eb76"
+    },
+    {
+      "path": "C:\\Users\\digit\\Documents\\phone\\_goth_swoop_release_20260916\\lottominded-ultra.io\\games\\gothtechnology2\\.game-builds\\love-tag-review\\elmwood-explorer\\assets\\elmwood--OwAkoHn.css",
+      "sha256": "ab079155801725c8ca3c7537c3b38717642f4ac39f4381a0b700575cfdc2e4b4"
+    },
+    {
+      "path": "C:\\Users\\digit\\Documents\\phone\\_goth_swoop_release_20260916\\lottominded-ultra.io\\games\\gothtechnology2\\.game-builds\\love-tag-review\\elmwood-explorer\\love-tag\\elmwood-explorer.json",
+      "sha256": "8013406780f8e9a087d519ce6c6f66121dad18ae7d105e5d290f85999dbe84ad"
+    }
+  ]
+}

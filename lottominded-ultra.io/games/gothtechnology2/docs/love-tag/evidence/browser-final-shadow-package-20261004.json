@@ -1,0 +1,39 @@
+{
+  "swoop": {
+    "menu": "- generic \"Detroit electric unicycle riding game\" [active]\n- link \"Swoop Detroit home\":\n  - /url: \"#\"\n  - text: SWOOP\n  - generic: DETROIT / ELECTRIC CULTURE\n- navigation \"Main menu\":\n  - button \"Free ride\" [pressed]\n  - button \"Race\"\n  - button \"Local split\"\n  - button \"Online multiplayer\": Online\n  - generic \"More\":\n    - text: More\n    - generic: ⌄\n- link \"← Back to GOTHTECHNOLOGY\":\n  - /url: ../../\n- paragraph: FIND YOUR LINE. OWN THE CUT.\n- heading \"Swoop . Detroit\" [level=1]\n- paragraph: Explore Detroit. Ride with your dog. Find your own adventure.\n- heading \"Ready to ride?\" [level=2]\n- paragraph: One wheel · Original suited man · Atwater Street / Renaissance Center view\n- button \"Start riding →\"\n- button \"Learn to ride\"\n- button \"LOVE TAG · Heart Rush\"\n- paragraph:\n  - strong: You can go at your own pace.\n  - text: Pause or return to the menu at any time.\n- status: Your ride is ready.\n- text: +\n- generic \"Customize your ride Rider, wheels & starting point +\":\n  - generic: Customize your ride\n  - generic: Rider, wheels & starting point\n  - text: +\n- option \"Dequindre Cut\" [selected]\n- option \"Elmwood Explorer\"\n- option \"Original suited man\" [selected]\n- option \"Woman · Detroit hoodie\"\n- option \"Mascot · Pinstripe suit\"\n- option \"Mascot · Detroit hoodie\"\n- option \"Armored rider · Night Sentinel\"\n- option \"Bring your dog (Boerboel)\" [selected]\n- option \"Ride solo\"\n- option \"Atwater Street / Renaissance Center view\" [selected]\n- option \"Gratiot / geographic origin\"\n- option \"Lafayette ramp\"\n- option \"Chestnut overpass\"\n- option \"Eastern Market / Freight Yard\"\n- option \"Wilkins ramp\"\n- option \"Mack Avenue\"\n- option \"Division Street overpass\"\n- option \"Campbell Terrace / flower garden\"\n- option \"Flower banks\"\n- option \"Woodbridge / Fit Park\"\n- option \"MoGo / bike repair\"\n- option \"Detroit heart / field sign\"\n- option \"Ze Mound overlook\"\n- option \"Adelaide / Detroit mural\"\n- option \"Atwater / Milliken Harbor docks\"\n- option \"Milliken Harbor / Riverwalk gate\"\n- option \"Chene Park / The Aretha entrance\"\n- option \"The Aretha / riverfront canopy\"\n- option \"Chene Street / Atwater waterfront\"\n- option \"Robert C. Valade Park / beach and The Shed\"\n- option \"Freestyle Yard / pump & trick park\"\n- option \"Mack Avenue / Gallery arrival\"\n- option \"Serengeti Galleries forecourt · 2000 Mack\"\n- option \"GothTechnology store · 2000 Mack\"\n- option \"Green screen studio · 2000 Mack\"\n- option \"GothTech showroom · 2000 Mack\"\n- option \"Serengeti print shop · 2000 Mack\"\n- option \"LottoMind store · Mack Avenue\"\n- option \"LottoMind storefront · Mack Avenue\"\n- option \"LottoMind street entrance\"\n- option \"Studio arcade · 2000 Mack\"\n- option \"GothTech arcade · Underground\"\n- option \"Penny Exchange · next to LottoMind\"\n- option \"Electric unicycle (one wheel)\" [selected]\n- option \"Bicycle\"\n- generic \"Places & activities Stores, skate park & landmark mission +\":\n  - generic: Places & activities\n  - generic: Stores, skate park & landmark mission\n  - text: +\n- generic: ONE WHEEL. FOUR PERSONALITIES.\n- generic: KEYBOARD / TOUCH / CONTROLLER / VR\n- text: + ▸ ▸",
+    "canvas": {
+      "lighting": "NVIDIA OptiX baked skylight",
+      "modules": [
+        "./assets/detroit-DU8hlhFx.js",
+        "../reward-tracker.js",
+        "../swoop-store-return.js"
+      ]
+    },
+    "logs": [
+      {
+        "level": "warn",
+        "message": "THREE.WebGLShadowMap: PCFSoftShadowMap has been deprecated. Using PCFShadowMap instead.",
+        "timestamp": "2026-10-04T19:43:56.758Z",
+        "url": "http://127.0.0.1:8212/Jungle-Lotto/lottominded-ultra.io/games/gothtechnology2/arcade/swoop-detroit/assets/three.core-GLBDqZcy.js"
+      }
+    ]
+  },
+  "elmwood": {
+    "menu": "- banner:\n  - text: DIGITAL STATIC · DETROIT\n  - heading \"Elmwood Cemetery\" [level=1]\n  - 'generic \"Motion system: Digital Static RideCore\"': Digital Static RideCore\n- generic \"Interactive Elmwood Cemetery 3D environment\"\n- status: USGS 1m source / 2m display · 41 mapped paths · 42 assets · 6,007 estimated landscape instances\n- navigation \"Ride controls\":\n  - button \"Ride Elmwood\"\n  - button \"Pause ride\" [disabled]\n  - button \"Camera\"\n  - button \"Main menu\"\n  - button \"Settings\"\n  - link \"← Swoop Detroit\":\n    - /url: ../swoop-detroit/\n  - button \"VR headset not detected\" [disabled]\n- text: + ▸ ▸\n- dialog \"Elmwood Explorer\":\n  - paragraph: DIGITAL STATIC · DETROIT\n  - heading \"Elmwood Explorer\" [level=1]:\n    - text: Elmwood\n    - generic: Explorer\n  - paragraph: Ride, race, or play tag. New here? Try Practice first.\n  - group \"Game mode\":\n    - generic: Game mode\n    - radio \"Explore freely Explore the cemetery at your own pace.\" [checked]\n    - strong: Explore freely\n    - generic: Explore the cemetery at your own pace.\n    - radio \"Race the riders Race three riders through Creek Lane. No time limit.\"\n    - strong: Race the riders\n    - generic: Race three riders through Creek Lane. No time limit.\n  - button \"Play · free ride\" [active]\n  - button \"Practice · recommended first\"\n  - button \"LOVE TAG · Heart Rush\"\n  - button \"VR headset not detected\" [disabled]\n  - paragraph: 1. Choose a ride. 2. Press Play. 3. Use the left stick or arrow keys to move. Pause whenever you like.\n  - link \"← Back to Swoop Detroit\":\n    - /url: ../swoop-detroit/\n  - generic \"More options Rider, bike, graphics & playing together\":\n    - text: More options\n    - generic: Rider, bike, graphics & playing together\n  - option \"Solo ride\" [selected]\n  - option \"2 players · split screen\"\n  - option \"Original rider\" [selected]\n  - option \"Circuit · Hoodie\"\n  - option \"Circuit · Suit\"\n  - option \"Woman · Detroit hoodie\"\n  - option \"Mascot · Pinstripe suit\"\n  - option \"Mascot · Detroit hoodie\"\n  - option \"Armored rider · Night Sentinel\"\n  - option \"Automatic · match this device\"\n  - option \"Smooth · phones / weak systems\"\n  - option \"Balanced\"\n  - option \"HD · high detail\"\n  - option \"Ultra · maximum detail\" [selected]\n  - option \"Electric unicycle · all modes\" [selected]\n  - option \"Bicycle · free ride, race and tour\"\n  - option \"Teal city\" [selected]\n  - option \"Coral commuter\"\n  - option \"Golden cruiser\"\n  - option \"Violet touring\"\n  - option \"Sky blue road\"\n  - option \"Lime trail\"\n  - option \"Expert · fast AI rivals\" [selected]\n  - option \"Club · competitive\"",
+    "canvas": {
+      "lighting": "NVIDIA OptiX baked skylight",
+      "modules": [
+        "./assets/elmwood-B7-7VCxi.js"
+      ],
+      "streaming": "{\"total\":39,\"loaded\":23,\"loading\":0,\"deferred\":16,\"errors\":0}"
+    },
+    "logs": [
+      {
+        "level": "warn",
+        "message": "THREE.WebGLShadowMap: PCFSoftShadowMap has been deprecated. Using PCFShadowMap instead.",
+        "timestamp": "2026-10-04T19:43:56.682Z",
+        "url": "http://127.0.0.1:8212/Jungle-Lotto/lottominded-ultra.io/games/gothtechnology2/arcade/elmwood-explorer/assets/elmwood-oa_YdBnZ.js"
+      }
+    ]
+  }
+}

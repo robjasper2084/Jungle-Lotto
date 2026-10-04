@@ -1,0 +1,28 @@
+00:02.328  cycles           | WARNING HIPEW initialization failed: Error opening HIP dynamic library
+C:\Users\digit\Documents\phone\_goth_swoop_release_20260916\lottominded-ultra.io\games\gothtechnology2\scripts\bake-skylights-optix.py:21: DeprecationWarning: 'World.use_nodes' is expected to be removed in Blender 6.0
+  world=bpy.data.worlds.new(name+' procedural daylight');scene.world=world;world.use_nodes=True
+C:\Users\digit\Documents\phone\_goth_swoop_release_20260916\lottominded-ultra.io\games\gothtechnology2\scripts\bake-skylights-optix.py:33: DeprecationWarning: 'Material.use_nodes' is expected to be removed in Blender 6.0
+  material=bpy.data.materials.new('Original ground reflectance');material.use_nodes=True
+00:02.781  cycles           | WARNING Failed to execute query: unable to open database file (code: 14)
+                            | Statement: PRAGMA synchronous = OFF;
+                            | 
+00:02.781  cycles           | WARNING Error when configuring the database.
+                            | Unable to initialize the OptiX cache database at path C:\Users\digit\AppData\Local/NVIDIA/OptixCache/optix7cache.db. Delete or rename the file if this problem persists.
+00:06.047  render           | Saved: 'C:\Users\digit\Documents\phone\_goth_swoop_release_20260916\lottominded-ultra.io\games\gothtechnology2\.game-builds\nvidia-polish\detroit-skylight.hdr'
+00:06.062  image.write      | ERROR OpenImageIO write failed: Could not open file "\.thumbnails\large\blender_18108_3007f163b68755daec1c50489962de75.png.png"
+00:06.391  cycles           | WARNING Failed to execute query: unable to open database file (code: 14)
+                            | Statement: PRAGMA synchronous = OFF;
+                            | 
+00:06.391  cycles           | WARNING Error when configuring the database.
+                            | Unable to initialize the OptiX cache database at path C:\Users\digit\AppData\Local/NVIDIA/OptixCache/optix7cache.db. Delete or rename the file if this problem persists.
+00:09.859  render           | Saved: 'C:\Users\digit\Documents\phone\_goth_swoop_release_20260916\lottominded-ultra.io\games\gothtechnology2\.game-builds\nvidia-polish\elmwood-skylight.hdr'
+00:09.875  image.write      | ERROR OpenImageIO write failed: Could not open file "\.thumbnails\large\blender_18108_2d8d2f3ec90b658214d7f45f971d4d23.png.png"
+Extensions: writing cache failed ([Errno 13] Permission denied: 'C:\\Users\\digit\\AppData\\Roaming\\Blender Foundation\\Blender\\5.2\\extensions\\.cache\\compat.dat').
+addon_utils.disable: bl_ext.blender_lab.mcp not enabled
+Info: Saved as "detroit-skylight.blend"
+Extensions: writing cache failed ([Errno 13] Permission denied: 'C:\\Users\\digit\\AppData\\Roaming\\Blender Foundation\\Blender\\5.2\\extensions\\.cache\\compat.dat').
+Info: Saved as "elmwood-skylight.blend"
+NVIDIA_LIGHTING_COMPLETE [{"asset": "detroit-skylight", "engine": "Blender Cycles / NVIDIA OptiX", "device": ["NVIDIA GeForce RTX 3080"], "samples": 64, "size": [1024, 512], "seconds": 3.72, "bytes": 1032923, "provenance": "Original procedural sky and rough ground bounce; no location scan or photograph"}, {"asset": "elmwood-skylight", "engine": "Blender Cycles / NVIDIA OptiX", "device": ["NVIDIA GeForce RTX 3080"], "samples": 64, "size": [1024, 512], "seconds": 3.75, "bytes": 1060827, "provenance": "Original procedural sky and rough ground bounce; no location scan or photograph"}]
+Blender 5.2.1 LTS (hash 9e2066aef7ef built 2026-08-25 02:38:20)
+
+Blender quit

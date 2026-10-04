@@ -1,0 +1,848 @@
+{
+  "at": "2026-10-04T06:42:33.962Z",
+  "scope": "Actual offline browser matches in separate packaged products; no room created. Human controls used through real UI.",
+  "swoop": {
+    "classic": {
+      "product": "swoop-detroit",
+      "phase": "results",
+      "rules": "classic",
+      "online": false,
+      "humans": 1,
+      "bots": 3,
+      "round": "a8a7997b-2c40-4aa9-9fe4-f45c86995261",
+      "tick": 11160,
+      "me": "offline-human",
+      "role": "runner",
+      "pose": {
+        "x": 1728.454990205634,
+        "y": 5.3187999999999995,
+        "z": 113.57085689113563
+      },
+      "ack": 11161,
+      "hash": "71b7fee49b94129344e2ea5dd3a63250af7983e5ae32e8459e90a9873babc59e",
+      "actors": [
+        {
+          "id": "offline-human",
+          "name": "Swoop Offline",
+          "connected": true,
+          "bot": false,
+          "role": "runner",
+          "ammo": 3,
+          "tags": 1,
+          "itTime": 104.11666666666204,
+          "resets": 0,
+          "pose": {
+            "x": 1728.454990205634,
+            "y": 5.3187999999999995,
+            "z": 113.57085689113563,
+            "heading": -1.7257915997484687
+          }
+        },
+        {
+          "id": "bot-1",
+          "name": "Bot 1",
+          "connected": false,
+          "bot": true,
+          "role": "it",
+          "ammo": 0,
+          "tags": 1,
+          "itTime": 9.950000000000074,
+          "resets": 0,
+          "pose": {
+            "x": 1634.5934332054253,
+            "y": 5.3188,
+            "z": 104.41555939123504,
+            "heading": 7.940248919570746
+          }
+        },
+        {
+          "id": "bot-2",
+          "name": "Bot 2",
+          "connected": false,
+          "bot": true,
+          "role": "runner",
+          "ammo": 3,
+          "tags": 2,
+          "itTime": 60.316666666664524,
+          "resets": 2,
+          "pose": {
+            "x": 1652.8919259470888,
+            "y": 5.3188,
+            "z": 103.40734849768201,
+            "heading": -4.62895660533126
+          }
+        },
+        {
+          "id": "bot-3",
+          "name": "Bot 3",
+          "connected": false,
+          "bot": true,
+          "role": "runner",
+          "ammo": 3,
+          "tags": 2,
+          "itTime": 5.649999999999985,
+          "resets": 1,
+          "pose": {
+            "x": 1722.6267802591317,
+            "y": 5.3188,
+            "z": 113.19178201263017,
+            "heading": -4.7674479997319175
+          }
+        }
+      ],
+      "events": [
+        {
+          "id": "a8a7997b-2c40-4aa9-9fe4-f45c86995261:30",
+          "tick": 8635,
+          "kind": "shot",
+          "actor": "bot-2"
+        },
+        {
+          "id": "a8a7997b-2c40-4aa9-9fe4-f45c86995261:31",
+          "tick": 8677,
+          "kind": "shot",
+          "actor": "bot-2"
+        },
+        {
+          "id": "a8a7997b-2c40-4aa9-9fe4-f45c86995261:32",
+          "tick": 8761,
+          "kind": "shot",
+          "actor": "bot-2"
+        },
+        {
+          "id": "a8a7997b-2c40-4aa9-9fe4-f45c86995261:33",
+          "tick": 8881,
+          "kind": "shot",
+          "actor": "bot-2"
+        },
+        {
+          "id": "a8a7997b-2c40-4aa9-9fe4-f45c86995261:34",
+          "tick": 9001,
+          "kind": "shot",
+          "actor": "bot-2"
+        },
+        {
+          "id": "a8a7997b-2c40-4aa9-9fe4-f45c86995261:35",
+          "tick": 9121,
+          "kind": "shot",
+          "actor": "bot-2"
+        },
+        {
+          "id": "a8a7997b-2c40-4aa9-9fe4-f45c86995261:36",
+          "tick": 9241,
+          "kind": "shot",
+          "actor": "bot-2"
+        },
+        {
+          "id": "a8a7997b-2c40-4aa9-9fe4-f45c86995261:37",
+          "tick": 9361,
+          "kind": "shot",
+          "actor": "bot-2"
+        },
+        {
+          "id": "a8a7997b-2c40-4aa9-9fe4-f45c86995261:38",
+          "tick": 10065,
+          "kind": "shot",
+          "actor": "bot-2"
+        },
+        {
+          "id": "a8a7997b-2c40-4aa9-9fe4-f45c86995261:39",
+          "tick": 10107,
+          "kind": "shot",
+          "actor": "bot-2"
+        },
+        {
+          "id": "a8a7997b-2c40-4aa9-9fe4-f45c86995261:40",
+          "tick": 10149,
+          "kind": "shot",
+          "actor": "bot-2"
+        },
+        {
+          "id": "a8a7997b-2c40-4aa9-9fe4-f45c86995261:41",
+          "tick": 10209,
+          "kind": "shot",
+          "actor": "bot-2"
+        },
+        {
+          "id": "a8a7997b-2c40-4aa9-9fe4-f45c86995261:42",
+          "tick": 10251,
+          "kind": "shot",
+          "actor": "bot-2"
+        },
+        {
+          "id": "a8a7997b-2c40-4aa9-9fe4-f45c86995261:43",
+          "tick": 10321,
+          "kind": "shot",
+          "actor": "bot-2"
+        },
+        {
+          "id": "a8a7997b-2c40-4aa9-9fe4-f45c86995261:44",
+          "tick": 10441,
+          "kind": "shot",
+          "actor": "bot-2"
+        },
+        {
+          "id": "a8a7997b-2c40-4aa9-9fe4-f45c86995261:45",
+          "tick": 10561,
+          "kind": "shot",
+          "actor": "bot-2"
+        },
+        {
+          "id": "a8a7997b-2c40-4aa9-9fe4-f45c86995261:46",
+          "tick": 10681,
+          "kind": "shot",
+          "actor": "bot-2"
+        },
+        {
+          "id": "a8a7997b-2c40-4aa9-9fe4-f45c86995261:47",
+          "tick": 10686,
+          "kind": "tag",
+          "actor": "bot-2",
+          "target": "bot-1"
+        },
+        {
+          "id": "a8a7997b-2c40-4aa9-9fe4-f45c86995261:48",
+          "tick": 10806,
+          "kind": "shot",
+          "actor": "bot-1"
+        },
+        {
+          "id": "a8a7997b-2c40-4aa9-9fe4-f45c86995261:49",
+          "tick": 10932,
+          "kind": "shot",
+          "actor": "bot-1"
+        },
+        {
+          "id": "a8a7997b-2c40-4aa9-9fe4-f45c86995261:50",
+          "tick": 10974,
+          "kind": "shot",
+          "actor": "bot-1"
+        },
+        {
+          "id": "a8a7997b-2c40-4aa9-9fe4-f45c86995261:51",
+          "tick": 11016,
+          "kind": "shot",
+          "actor": "bot-1"
+        },
+        {
+          "id": "a8a7997b-2c40-4aa9-9fe4-f45c86995261:52",
+          "tick": 11058,
+          "kind": "shot",
+          "actor": "bot-1"
+        },
+        {
+          "id": "a8a7997b-2c40-4aa9-9fe4-f45c86995261:53",
+          "tick": 11160,
+          "kind": "result",
+          "actor": "server"
+        }
+      ],
+      "winners": [
+        "bot-3"
+      ],
+      "remaining": 0,
+      "correctionP95": 0
+    },
+    "spread": {
+      "product": "swoop-detroit",
+      "phase": "results",
+      "rules": "spread",
+      "online": false,
+      "humans": 1,
+      "bots": 3,
+      "round": "5af89336-95e8-46c6-9fc9-7a362f6a2bd8",
+      "tick": 11160,
+      "me": "offline-human",
+      "role": "it",
+      "pose": {
+        "x": 1735.3338384722185,
+        "y": 5.3188,
+        "z": 114.6422179903612
+      },
+      "ack": 11161,
+      "hash": "71b7fee49b94129344e2ea5dd3a63250af7983e5ae32e8459e90a9873babc59e",
+      "actors": [
+        {
+          "id": "offline-human",
+          "name": "Swoop Offline",
+          "connected": true,
+          "bot": false,
+          "role": "it",
+          "ammo": 3,
+          "tags": 0,
+          "itTime": 180.00000000003539,
+          "resets": 0,
+          "pose": {
+            "x": 1735.3338384722185,
+            "y": 5.3188,
+            "z": 114.6422179903612,
+            "heading": -1.682040902270524
+          }
+        },
+        {
+          "id": "bot-1",
+          "name": "Bot 1",
+          "connected": false,
+          "bot": true,
+          "role": "runner",
+          "ammo": 3,
+          "tags": 0,
+          "itTime": 0,
+          "resets": 0,
+          "pose": {
+            "x": 1405.4607664555456,
+            "y": 0.7424686131644365,
+            "z": 87.13824465437413,
+            "heading": -7.805548485463829
+          }
+        },
+        {
+          "id": "bot-2",
+          "name": "Bot 2",
+          "connected": false,
+          "bot": true,
+          "role": "runner",
+          "ammo": 3,
+          "tags": 0,
+          "itTime": 0,
+          "resets": 0,
+          "pose": {
+            "x": 1607.8072545522243,
+            "y": 5.3188,
+            "z": 97.7361664120788,
+            "heading": -7.653492478322414
+          }
+        },
+        {
+          "id": "bot-3",
+          "name": "Bot 3",
+          "connected": false,
+          "bot": true,
+          "role": "runner",
+          "ammo": 3,
+          "tags": 0,
+          "itTime": 0,
+          "resets": 0,
+          "pose": {
+            "x": 1651.651224311206,
+            "y": 5.3188,
+            "z": 105.58400216702606,
+            "heading": 7.908965783813015
+          }
+        }
+      ],
+      "events": [
+        {
+          "id": "5af89336-95e8-46c6-9fc9-7a362f6a2bd8:1",
+          "tick": 11160,
+          "kind": "result",
+          "actor": "server"
+        }
+      ],
+      "winners": [
+        "bot-1",
+        "bot-2",
+        "bot-3"
+      ],
+      "remaining": 0,
+      "correctionP95": 0
+    },
+    "exit": {
+      "normalMenu": true,
+      "tag": "",
+      "tagBody": false
+    }
+  },
+  "elmwood": {
+    "classic": {
+      "product": "elmwood-explorer",
+      "phase": "results",
+      "rules": "classic",
+      "online": false,
+      "humans": 1,
+      "bots": 3,
+      "round": "26860163-703f-451e-803b-9572cfdf3074",
+      "tick": 11160,
+      "me": "offline-human",
+      "role": "runner",
+      "pose": {
+        "x": -151.33391346836137,
+        "y": 3.3550330139546203,
+        "z": -247.42157222681556
+      },
+      "ack": 11160,
+      "hash": "dab18d0638db3746073199e1ee8d3cde01d2a14ef80539e899fc94eb5cfdcc35",
+      "actors": [
+        {
+          "id": "offline-human",
+          "name": "Elmwood Offline",
+          "connected": true,
+          "bot": false,
+          "role": "runner",
+          "ammo": 3,
+          "tags": 0,
+          "itTime": 79.0499999999968,
+          "resets": 0,
+          "pose": {
+            "x": -151.33391346836137,
+            "y": 3.3550330139546203,
+            "z": -247.42157222681556,
+            "heading": -1.9980984725701294
+          }
+        },
+        {
+          "id": "bot-1",
+          "name": "Bot 1",
+          "connected": false,
+          "bot": true,
+          "role": "runner",
+          "ammo": 3,
+          "tags": 16,
+          "itTime": 44.3833333333321,
+          "resets": 2,
+          "pose": {
+            "x": -145.49447342243735,
+            "y": 2.5207988590916406,
+            "z": -263.38750258489495,
+            "heading": 0.6881416490564791
+          }
+        },
+        {
+          "id": "bot-2",
+          "name": "Bot 2",
+          "connected": false,
+          "bot": true,
+          "role": "runner",
+          "ammo": 3,
+          "tags": 0,
+          "itTime": 0,
+          "resets": 0,
+          "pose": {
+            "x": -92.57005739605243,
+            "y": 3.1701076535502253,
+            "z": -133.71133410316378,
+            "heading": 6.50496055099021
+          }
+        },
+        {
+          "id": "bot-3",
+          "name": "Bot 3",
+          "connected": false,
+          "bot": true,
+          "role": "it",
+          "ammo": 0,
+          "tags": 15,
+          "itTime": 56.59999999999807,
+          "resets": 3,
+          "pose": {
+            "x": -161.83764651794934,
+            "y": -0.8561173737726702,
+            "z": -298.2190621477968,
+            "heading": 0.4076695999228903
+          }
+        }
+      ],
+      "events": [
+        {
+          "id": "26860163-703f-451e-803b-9572cfdf3074:67",
+          "tick": 9486,
+          "kind": "tag",
+          "actor": "bot-3",
+          "target": "bot-1"
+        },
+        {
+          "id": "26860163-703f-451e-803b-9572cfdf3074:68",
+          "tick": 9606,
+          "kind": "shot",
+          "actor": "bot-1"
+        },
+        {
+          "id": "26860163-703f-451e-803b-9572cfdf3074:69",
+          "tick": 9648,
+          "kind": "shot",
+          "actor": "bot-1"
+        },
+        {
+          "id": "26860163-703f-451e-803b-9572cfdf3074:70",
+          "tick": 9690,
+          "kind": "shot",
+          "actor": "bot-1"
+        },
+        {
+          "id": "26860163-703f-451e-803b-9572cfdf3074:71",
+          "tick": 9694,
+          "kind": "tag",
+          "actor": "bot-1",
+          "target": "bot-3"
+        },
+        {
+          "id": "26860163-703f-451e-803b-9572cfdf3074:72",
+          "tick": 9814,
+          "kind": "shot",
+          "actor": "bot-3"
+        },
+        {
+          "id": "26860163-703f-451e-803b-9572cfdf3074:73",
+          "tick": 9815,
+          "kind": "tag",
+          "actor": "bot-3",
+          "target": "bot-1"
+        },
+        {
+          "id": "26860163-703f-451e-803b-9572cfdf3074:74",
+          "tick": 9935,
+          "kind": "shot",
+          "actor": "bot-1"
+        },
+        {
+          "id": "26860163-703f-451e-803b-9572cfdf3074:75",
+          "tick": 9974,
+          "kind": "tag",
+          "actor": "bot-1",
+          "target": "bot-3"
+        },
+        {
+          "id": "26860163-703f-451e-803b-9572cfdf3074:76",
+          "tick": 10094,
+          "kind": "shot",
+          "actor": "bot-3"
+        },
+        {
+          "id": "26860163-703f-451e-803b-9572cfdf3074:77",
+          "tick": 10097,
+          "kind": "tag",
+          "actor": "bot-3",
+          "target": "bot-1"
+        },
+        {
+          "id": "26860163-703f-451e-803b-9572cfdf3074:78",
+          "tick": 10217,
+          "kind": "shot",
+          "actor": "bot-1"
+        },
+        {
+          "id": "26860163-703f-451e-803b-9572cfdf3074:79",
+          "tick": 10219,
+          "kind": "tag",
+          "actor": "bot-1",
+          "target": "bot-3"
+        },
+        {
+          "id": "26860163-703f-451e-803b-9572cfdf3074:80",
+          "tick": 10339,
+          "kind": "shot",
+          "actor": "bot-3"
+        },
+        {
+          "id": "26860163-703f-451e-803b-9572cfdf3074:81",
+          "tick": 10541,
+          "kind": "reset",
+          "actor": "bot-3"
+        },
+        {
+          "id": "26860163-703f-451e-803b-9572cfdf3074:82",
+          "tick": 10541,
+          "kind": "shot",
+          "actor": "bot-3"
+        },
+        {
+          "id": "26860163-703f-451e-803b-9572cfdf3074:83",
+          "tick": 10583,
+          "kind": "shot",
+          "actor": "bot-3"
+        },
+        {
+          "id": "26860163-703f-451e-803b-9572cfdf3074:84",
+          "tick": 10625,
+          "kind": "shot",
+          "actor": "bot-3"
+        },
+        {
+          "id": "26860163-703f-451e-803b-9572cfdf3074:85",
+          "tick": 10667,
+          "kind": "shot",
+          "actor": "bot-3"
+        },
+        {
+          "id": "26860163-703f-451e-803b-9572cfdf3074:86",
+          "tick": 10709,
+          "kind": "shot",
+          "actor": "bot-3"
+        },
+        {
+          "id": "26860163-703f-451e-803b-9572cfdf3074:87",
+          "tick": 10801,
+          "kind": "shot",
+          "actor": "bot-3"
+        },
+        {
+          "id": "26860163-703f-451e-803b-9572cfdf3074:88",
+          "tick": 10921,
+          "kind": "shot",
+          "actor": "bot-3"
+        },
+        {
+          "id": "26860163-703f-451e-803b-9572cfdf3074:89",
+          "tick": 11041,
+          "kind": "shot",
+          "actor": "bot-3"
+        },
+        {
+          "id": "26860163-703f-451e-803b-9572cfdf3074:90",
+          "tick": 11160,
+          "kind": "result",
+          "actor": "server"
+        }
+      ],
+      "winners": [
+        "bot-2"
+      ],
+      "remaining": 0,
+      "correctionP95": 0
+    },
+    "rematchUi": {
+      "results": "",
+      "startVisible": false,
+      "state": "{\"product\":\"elmwood-explorer\",\"phase\":\"countdown\",\"rules\":\"classic\",\"online\":false,\"humans\":1,\"bots\":3,\"round\":\"173dd688-546e-401d-af27-1b2d4404ab68\",\"tick\":19,\"me\":\"offline-human\",\"role\":\"runner\",\"pose\":{\"x\":-150.29543725736042,\"y\":3.3447326772296133,\"z\":-246.94525161732602},\"ack\":0,\"hash\":\"dab18d0638db3746073199e1ee8d3cde01d2a14ef80539e899fc94eb5cfdcc35\",\"actors\":[{\"id\":\"offline-human\",\"name\":\"Elmwood Offline\",\"connected\":true,\"bot\":false,\"role\":\"runner\",\"ammo\":3,\"tags\":0,\"itTime\":0,\"resets\":0,\"pose\":{\"x\":-150.29543725736042,\"y\":3.3447326772296133,\"z\":-246.94525161732602,\"heading\":-2.0401533166418777}},{\"id\":\"bot-1\",\"name\":\"Bot 1\",\"connected\":false,\"bot\":true,\"role\":\"it\",\"ammo\":3,\"tags\":0,\"itTime\":0,\"resets\":0,\"pose\":{\"x\":-159.33409910750038,\"y\":3.500928343612493,\"z\":-251.27548674984087,\"heading\":-1.983537361553087}},{\"id\":\"bot-2\",\"name\":\"Bot 2\",\"connected\":false,\"bot\":true,\"role\":\"runner\",\"ammo\":3,\"tags\":0,\"itTime\":0,\"resets\":0,\"pose\":{\"x\":-165.8390991075004,\"y\":3.671854979856068,\"z\":-254.12398674984087,\"heading\":-1.9835373615530885}},{\"id\":\"bot-3\",\"name\":\"Bot 3\",\"connected\":false,\"bot\":true,\"role\":\"runner\",\"ammo\":3,\"tags\":0,\"itTime\":0,\"resets\":0,\"pose\":{\"x\":-182.0359469524157,\"y\":3.999306763048972,\"z\":-264.5559146830961,\"heading\":-2.3749282111846304}}],\"events\":[],\"winners\":[],\"remaining\":180,\"correctionP95\":0}"
+    },
+    "spread": {
+      "product": "elmwood-explorer",
+      "phase": "results",
+      "rules": "spread",
+      "online": false,
+      "humans": 1,
+      "bots": 3,
+      "round": "f4368748-ae68-4fa4-a71f-f26aa3f5787f",
+      "tick": 8196,
+      "me": "offline-human",
+      "role": "it",
+      "pose": {
+        "x": -150.29543725736042,
+        "y": 3.3447326772296133,
+        "z": -246.94525161732602
+      },
+      "ack": 8197,
+      "hash": "dab18d0638db3746073199e1ee8d3cde01d2a14ef80539e899fc94eb5cfdcc35",
+      "actors": [
+        {
+          "id": "offline-human",
+          "name": "Elmwood Offline",
+          "connected": true,
+          "bot": false,
+          "role": "it",
+          "ammo": 3,
+          "tags": 0,
+          "itTime": 130.59999999999607,
+          "resets": 0,
+          "pose": {
+            "x": -150.29543725736042,
+            "y": 3.3447326772296133,
+            "z": -246.94525161732602,
+            "heading": -2.0401533166418777
+          }
+        },
+        {
+          "id": "bot-1",
+          "name": "Bot 1",
+          "connected": false,
+          "bot": true,
+          "role": "it",
+          "ammo": 0,
+          "tags": 2,
+          "itTime": 51.56666666666502,
+          "resets": 1,
+          "pose": {
+            "x": -165.78906225478445,
+            "y": -2.431390468713027,
+            "z": -314.54889356505925,
+            "heading": 3.5034505678944687
+          }
+        },
+        {
+          "id": "bot-2",
+          "name": "Bot 2",
+          "connected": false,
+          "bot": true,
+          "role": "it",
+          "ammo": 3,
+          "tags": 0,
+          "itTime": 0,
+          "resets": 0,
+          "pose": {
+            "x": -162.0762599948944,
+            "y": -3.2331967803172317,
+            "z": -327.7307368530781,
+            "heading": -10.352266116747522
+          }
+        },
+        {
+          "id": "bot-3",
+          "name": "Bot 3",
+          "connected": false,
+          "bot": true,
+          "role": "it",
+          "ammo": 3,
+          "tags": 0,
+          "itTime": 47.933333333331895,
+          "resets": 0,
+          "pose": {
+            "x": -92.84145738707177,
+            "y": 3.1569160989076193,
+            "z": -132.85046677887794,
+            "heading": 5.290924465370693
+          }
+        }
+      ],
+      "events": [
+        {
+          "id": "f4368748-ae68-4fa4-a71f-f26aa3f5787f:1",
+          "tick": 5103,
+          "kind": "tag",
+          "actor": "offline-human",
+          "target": "bot-1"
+        },
+        {
+          "id": "f4368748-ae68-4fa4-a71f-f26aa3f5787f:2",
+          "tick": 5103,
+          "kind": "reset",
+          "actor": "bot-1"
+        },
+        {
+          "id": "f4368748-ae68-4fa4-a71f-f26aa3f5787f:3",
+          "tick": 5244,
+          "kind": "shot",
+          "actor": "bot-1"
+        },
+        {
+          "id": "f4368748-ae68-4fa4-a71f-f26aa3f5787f:4",
+          "tick": 5287,
+          "kind": "shot",
+          "actor": "bot-1"
+        },
+        {
+          "id": "f4368748-ae68-4fa4-a71f-f26aa3f5787f:5",
+          "tick": 5320,
+          "kind": "tag",
+          "actor": "bot-1",
+          "target": "bot-3"
+        },
+        {
+          "id": "f4368748-ae68-4fa4-a71f-f26aa3f5787f:6",
+          "tick": 5330,
+          "kind": "shot",
+          "actor": "bot-1"
+        },
+        {
+          "id": "f4368748-ae68-4fa4-a71f-f26aa3f5787f:7",
+          "tick": 5373,
+          "kind": "shot",
+          "actor": "bot-1"
+        },
+        {
+          "id": "f4368748-ae68-4fa4-a71f-f26aa3f5787f:8",
+          "tick": 5416,
+          "kind": "shot",
+          "actor": "bot-1"
+        },
+        {
+          "id": "f4368748-ae68-4fa4-a71f-f26aa3f5787f:9",
+          "tick": 5441,
+          "kind": "shot",
+          "actor": "bot-3"
+        },
+        {
+          "id": "f4368748-ae68-4fa4-a71f-f26aa3f5787f:10",
+          "tick": 7296,
+          "kind": "shot",
+          "actor": "bot-1"
+        },
+        {
+          "id": "f4368748-ae68-4fa4-a71f-f26aa3f5787f:11",
+          "tick": 7339,
+          "kind": "shot",
+          "actor": "bot-1"
+        },
+        {
+          "id": "f4368748-ae68-4fa4-a71f-f26aa3f5787f:12",
+          "tick": 7382,
+          "kind": "shot",
+          "actor": "bot-1"
+        },
+        {
+          "id": "f4368748-ae68-4fa4-a71f-f26aa3f5787f:13",
+          "tick": 7425,
+          "kind": "shot",
+          "actor": "bot-1"
+        },
+        {
+          "id": "f4368748-ae68-4fa4-a71f-f26aa3f5787f:14",
+          "tick": 7468,
+          "kind": "shot",
+          "actor": "bot-1"
+        },
+        {
+          "id": "f4368748-ae68-4fa4-a71f-f26aa3f5787f:15",
+          "tick": 7561,
+          "kind": "shot",
+          "actor": "bot-1"
+        },
+        {
+          "id": "f4368748-ae68-4fa4-a71f-f26aa3f5787f:16",
+          "tick": 7681,
+          "kind": "shot",
+          "actor": "bot-1"
+        },
+        {
+          "id": "f4368748-ae68-4fa4-a71f-f26aa3f5787f:17",
+          "tick": 7801,
+          "kind": "shot",
+          "actor": "bot-1"
+        },
+        {
+          "id": "f4368748-ae68-4fa4-a71f-f26aa3f5787f:18",
+          "tick": 7921,
+          "kind": "shot",
+          "actor": "bot-1"
+        },
+        {
+          "id": "f4368748-ae68-4fa4-a71f-f26aa3f5787f:19",
+          "tick": 8041,
+          "kind": "shot",
+          "actor": "bot-1"
+        },
+        {
+          "id": "f4368748-ae68-4fa4-a71f-f26aa3f5787f:20",
+          "tick": 8161,
+          "kind": "shot",
+          "actor": "bot-1"
+        },
+        {
+          "id": "f4368748-ae68-4fa4-a71f-f26aa3f5787f:21",
+          "tick": 8196,
+          "kind": "tag",
+          "actor": "bot-1",
+          "target": "bot-2"
+        },
+        {
+          "id": "f4368748-ae68-4fa4-a71f-f26aa3f5787f:22",
+          "tick": 8196,
+          "kind": "result",
+          "actor": "server"
+        }
+      ],
+      "winners": [
+        "offline-human",
+        "bot-1",
+        "bot-2",
+        "bot-3"
+      ],
+      "remaining": 49.39999999999915,
+      "correctionP95": 0
+    },
+    "exit": {
+      "normalMenu": true,
+      "tag": "",
+      "tagBody": false
+    }
+  }
+}

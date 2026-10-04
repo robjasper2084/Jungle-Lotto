@@ -1,0 +1,101 @@
+{
+  "name": "@digital-static/ridecore",
+  "version": "1.2.0",
+  "description": "Reusable Digital Static electric-unicycle simulation, rider articulation and tricks",
+  "type": "module",
+  "license": "UNLICENSED",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    "./tag": {
+      "types": "./dist/tag.d.ts",
+      "import": "./dist/tag.js"
+    },
+    "./tag-client": {
+      "types": "./dist/tagClient.d.ts",
+      "import": "./dist/tagClient.js"
+    },
+    "./cycling": {
+      "types": "./dist/cycling.d.ts",
+      "import": "./dist/cycling.js"
+    },
+    "./cycling-view": {
+      "types": "./dist/cyclingView.d.ts",
+      "import": "./dist/cyclingView.js"
+    },
+    "./community-panel": {
+      "types": "./dist/communityPanel.d.ts",
+      "import": "./dist/communityPanel.js"
+    },
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./three": {
+      "types": "./dist/three.d.ts",
+      "import": "./dist/three.js"
+    },
+    "./audio": {
+      "types": "./dist/rideAudio.d.ts",
+      "import": "./dist/rideAudio.js"
+    },
+    "./touch": {
+      "types": "./dist/touchInput.d.ts",
+      "import": "./dist/touchInput.js"
+    },
+    "./input": {
+      "types": "./dist/input.d.ts",
+      "import": "./dist/input.js"
+    },
+    "./vr": {
+      "types": "./dist/vrRide.d.ts",
+      "import": "./dist/vrRide.js"
+    },
+    "./companion": {
+      "types": "./dist/companion.d.ts",
+      "import": "./dist/companion.js"
+    },
+    "./chat": {
+      "types": "./dist/roomChat.d.ts",
+      "import": "./dist/roomChat.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src",
+    "examples",
+    "docs",
+    "licenses",
+    "README.md",
+    "CHANGELOG.md",
+    "SOURCE_SNAPSHOT.json",
+    "LICENSE.txt"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "node --test tests/*.test.ts",
+    "demo": "node examples/headless.mjs"
+  },
+  "engines": {
+    "node": ">=22.18"
+  },
+  "dependencies": {
+    "@colyseus/sdk": "0.18.5",
+    "@dimforge/rapier3d-compat": "0.20.0",
+    "fflate": "0.8.3"
+  },
+  "peerDependencies": {
+    "three": "0.185.1"
+  },
+  "peerDependenciesMeta": {
+    "three": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@types/node": "24.0.0",
+    "@types/three": "^0.185.3",
+    "three": "0.185.1",
+    "typescript": "5.9.3"
+  }
+}

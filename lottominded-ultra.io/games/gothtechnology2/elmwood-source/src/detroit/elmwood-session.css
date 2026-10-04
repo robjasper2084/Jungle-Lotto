@@ -47,3 +47,25 @@
 #elmwood-main-menu .menu-selectors{grid-template-columns:repeat(2,minmax(0,1fr))}
 #elmwood-main-menu .menu-selectors label{min-width:0}
 @media(max-width:380px){#elmwood-main-menu .menu-selectors{grid-template-columns:1fr}}
+
+/* Clear first choices; secondary options remain reachable without filling the screen. */
+#elmwood-main-menu .menu-inner{width:min(640px,100%);padding:clamp(20px,4vh,44px) clamp(20px,4vw,56px)}
+#elmwood-main-menu .mode-card{min-height:92px;font-size:16px;padding:14px}
+#elmwood-main-menu .mode-card small{font-size:14px;line-height:1.45}
+#elmwood-main-menu .menu-inner>h1+p{font-size:17px;max-width:460px}
+#elmwood-main-menu .menu-actions{grid-template-columns:1fr 1fr;gap:10px}
+#elmwood-main-menu .menu-actions button{min-height:52px;font-size:16px}
+#elmwood-main-menu #menu-play{grid-column:1/-1;font-size:19px}
+#elmwood-main-menu #menu-resume{grid-column:1/-1}
+#elmwood-main-menu .menu-practice{background:#285444;border-color:#a6c3a7}
+#menu-more-options{margin:14px 0;border:1px solid #91a89670;border-radius:10px;background:#102a23df}
+#menu-more-options>summary{min-height:64px;padding:14px 16px;font-size:17px;cursor:pointer;touch-action:manipulation}
+#menu-more-options>summary small{display:block;font-size:13px;color:#c5d4cc;margin-top:4px}
+#menu-more-options>label,#menu-more-options>select{margin:12px 16px;width:calc(100% - 32px)}
+#menu-more-options .menu-selectors,#menu-more-options>fieldset,#menu-more-activities{margin:12px 16px}
+#menu-more-options .menu-selectors label{font-size:15px;text-transform:none;letter-spacing:0}
+#menu-more-activities{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding-bottom:14px}
+#elmwood-main-menu #menu-more-activities button{font-size:15px;min-height:48px}
+#elmwood-main-menu .menu-simple-help{font-size:14px;line-height:1.65;color:#d4dfd4;margin:8px 0}
+@media(max-width:420px){#elmwood-main-menu .menu-inner{padding:22px 18px}#elmwood-main-menu .mode-card{padding:12px;font-size:15px}#elmwood-main-menu .mode-card small{font-size:13px}#menu-more-activities{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){#elmwood-main-menu button{transition:none;scroll-behavior:auto}}

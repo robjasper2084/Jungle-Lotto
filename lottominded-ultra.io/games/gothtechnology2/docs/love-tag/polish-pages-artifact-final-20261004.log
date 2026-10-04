@@ -1,0 +1,11 @@
+Shared identical ride textures in 31 models; saved 69.0 MiB.
+Optimized 217 web PNGs; saved 393.7 MiB. Original sources retained.
+Losslessly compressed 127 ride models; saved 78.0 MiB.
+file:///C:/Users/digit/Documents/phone/_goth_swoop_release_20260916/scripts/build-pages-artifact.mjs:229
+  throw new Error(
+        ^
+
+Error: Pages artifact is 1048.6 MiB, above the 1024.0 MiB limit.
+    at file:///C:/Users/digit/Documents/phone/_goth_swoop_release_20260916/scripts/build-pages-artifact.mjs:229:9
+
+Node.js v24.16.0

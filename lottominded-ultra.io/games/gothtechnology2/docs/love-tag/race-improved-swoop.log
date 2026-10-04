@@ -1,0 +1,58 @@
+(node:35924) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ each selected rider races against the other three, without duplicates (0.8867ms)
+✔ countdown locks progress; zero dt pauses the clock (0.292ms)
+✔ shortcuts and missed gates do not finish; recovery preserves time and earned gates (0.3552ms)
+✔ off-course crossing cannot earn a gate and reverse crossing cannot repair it (0.2867ms)
+✔ ordered gates finish the player and freeze elapsed time (2.8546ms)
+✔ all bicycle rivals accelerate off the mapped grid promptly with seeded props and a nearby player (439.9494ms)
+✔ cruise bicycle rivals finish the browser seed with live route traffic (48775.5761ms)
+ℹ [{"finish":459.9106781806915,"gate":12},{"finish":474.0710428553766,"gate":12},{"finish":467.18024116065766,"gate":12}]
+✔ all cycling rivals go around a parked companion and seeded route props (9106.1775ms)
+✔ bicycle rivals pedal through the full mapped race with cycling speed limits (7601.1006ms)
+✔ the existing Freight Yard side line has continuous support and rejoins before the next main-route checkpoint (2.2071ms)
+✔ all three cruise rivals complete the real mapped course (10478.0258ms)
+ℹ DS_Hoodie_Woman_01: 256.22 s
+ℹ DS_Mascot_Suit_01: 257.39 s
+ℹ DS_Mascot_Hoodie_01: 256.74 s
+✔ all three club rivals complete the real mapped course (7279.3722ms)
+ℹ DS_Hoodie_Woman_01: 171.64 s
+ℹ DS_Mascot_Suit_01: 172.36 s
+ℹ DS_Mascot_Hoodie_01: 172.23 s
+✔ all three expert rivals complete the real mapped course (6217.958ms)
+ℹ DS_Hoodie_Woman_01: 150.05 s
+ℹ DS_Mascot_Suit_01: 150.84 s
+ℹ DS_Mascot_Hoodie_01: 150.40 s
+✔ a fallen rival simulates settling and waits when its recovery area is occupied (32.7471ms)
+✔ a long or slow race never ends on the old time cutoff or Freight Yard gate (0.9605ms)
+✔ expert racers pass a stopped human and each other with solid rider envelopes (7328.69ms)
+ℹ {"minimum":1.3499785876220471,"finishes":[150.1750965505387,156.26599794178318,153.42348999472227]}
+✖ expert rivals navigate seeded hazards to Mack without striking a prop (6402.8743ms)
+ℹ tests 17
+ℹ suites 0
+ℹ pass 16
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 107321.8205
+
+✖ failing tests:
+
+test at src\detroit\race.test.ts:113:1
+✖ expert rivals navigate seeded hazards to Mack without striking a prop (6402.8743ms)
+  AssertionError [ERR_ASSERTION]: {"tick":16886,"racer":"DS_Mascot_Suit_01","state":{"speed":19.40698040670575,"speedKph":69.8651294641407,"position":{"x":-689.4068340572578,"y":6.9254952294921885,"z":-46.36809613154146},"headingY":-1.7050590246868762,"riderPitch":0.053053584602166956,"rollAngle":-0.03869564468020226,"grounded":true,"crashed":true,"fallPhase":"brace","crashCause":"collision","powerStage":"tiltback","crouchCharge":0,"distanceTravelled":2436.2146404362484,"hops":0,"landings":0,"crashes":1,"spins":0,"trick":{"id":0,"name":"","phase":"idle","rotation":0,"foot":0,"completed":0,"pending":0,"settleProgress":0,"settleSeconds":0.6,"cooldown":0},"oneFootStop":0,"pedalScrape":0,"warningLevel":0,"velocity":{"x":-19.229661650031467,"y":0.16528690194555287,"z":-2.57776867312651},"yawRate":-0.02391719329697715,"engine":"Digital Static Motion 4.1","tractionUsage":0.06543060226855317,"lateralAcceleration":-0.46416050169782963,"state":"falling"},"route":{"id":"DS_Mascot_Suit_01","player":false,"station":2439.60097332535,"offset":1.1877873171342914,"speed":18.68645398243557,"gate":11,"finish":null,"previous":2439.60097332535,"missed":false}}
+      at TestContext.<anonymous> (C:\Users\digit\Documents\phone\_goth_swoop_release_20260916\lottominded-ultra.io\games\gothtechnology2\swoop-source\src\detroit\race.test.ts:121:146)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: undefined,
+    operator: 'fail',
+    diff: 'simple'
+  }

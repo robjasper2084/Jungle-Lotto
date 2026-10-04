@@ -4,7 +4,7 @@ import {MapLayout} from './mapLayout.ts';
 import {compassReading,compassTicks,miniMapView} from './mapHeading.ts';
 export type MapPoint={x:number;y:number};
 export type MapLine={points:MapPoint[];color:string;width:number;fill?:boolean};
-export type MapMarker=MapPoint&{heading:number;color?:string};
+export type MapMarker=MapPoint&{heading:number;color?:string;label?:string};
 /** DOM/canvas HUD: no second WebGL renderer, physics loop or tile requests. */
 export class TacticalMap{
  readonly button=document.createElement('button');
@@ -97,7 +97,7 @@ export class TacticalMap{
    }
   }
   if(!mini&&!this.race){c.font='600 13px system-ui';c.textAlign='center';for(const l of this.labels){const p=point(l.point);c.fillStyle='#101f1ccc';const tw=c.measureText(l.text).width;c.fillRect(p.x-tw/2-4,p.y-16,tw+8,20);c.fillStyle='#eee7ce';c.fillText(l.text,p.x,p.y);}}
-  for(const [i,m] of this.markers.entries()){const p=point(m);c.save();c.translate(p.x,p.y);c.rotate(m.heading);c.fillStyle=m.color??(i?'#f5d078':'#ffffff');c.strokeStyle='#04151d';c.lineWidth=2;c.beginPath();c.moveTo(0,-13);c.lineTo(9,10);c.lineTo(0,5);c.lineTo(-9,10);c.closePath();c.fill();c.stroke();c.restore();}
+  for(const [i,m] of this.markers.entries()){const p=point(m);c.save();c.translate(p.x,p.y);c.rotate(m.heading);c.fillStyle=m.color??(i?'#f5d078':'#ffffff');c.strokeStyle='#04151d';c.lineWidth=2;c.beginPath();c.moveTo(0,-13);c.lineTo(9,10);c.lineTo(0,5);c.lineTo(-9,10);c.closePath();c.fill();c.stroke();c.restore();if(m.label){c.font='700 12px system-ui';c.textAlign='center';c.fillStyle='#06131ce8';const width=c.measureText(m.label).width+8;c.fillRect(p.x-width/2,p.y+14,width,18);c.fillStyle=m.color??'#ffffff';c.fillText(m.label,p.x,p.y+27);}}
   c.fillStyle='#d9e4d8';c.font='600 11px system-ui';c.textAlign='left';const metres=mini?50:Math.round(view.w/5/50)*50;const px=metres*scale;c.fillRect(12,h-20,px,2);c.fillText(metres+' m',12,h-27);if(!mini)c.fillText('N ↑',w-42,24);
  }
 }

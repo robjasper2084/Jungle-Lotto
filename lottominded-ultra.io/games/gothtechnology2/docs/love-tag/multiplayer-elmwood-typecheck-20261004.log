@@ -1,0 +1,40 @@
+src/detroit/actors.ts(60,56): error TS2339: Property 'env' does not exist on type 'ImportMeta'.
+src/detroit/actors.ts(61,76): error TS2339: Property 'env' does not exist on type 'ImportMeta'.
+src/detroit/building-skins-preview.ts(14,57): error TS2339: Property 'env' does not exist on type 'ImportMeta'.
+src/detroit/building-skins-preview.ts(19,74): error TS2339: Property 'env' does not exist on type 'ImportMeta'.
+src/detroit/building-skins-preview.ts(31,75): error TS2339: Property 'env' does not exist on type 'ImportMeta'.
+src/detroit/circuit-rider.ts(10,108): error TS2339: Property 'env' does not exist on type 'ImportMeta'.
+src/detroit/city-asset-viewer.ts(10,56): error TS2339: Property 'env' does not exist on type 'ImportMeta'.
+src/detroit/city-asset-viewer.ts(15,36): error TS2339: Property 'env' does not exist on type 'ImportMeta'.
+src/detroit/city-asset-viewer.ts(16,372): error TS2339: Property 'env' does not exist on type 'ImportMeta'.
+src/detroit/city-assets.ts(19,26): error TS2339: Property 'env' does not exist on type 'ImportMeta'.
+src/detroit/city-render.ts(12,91): error TS2339: Property 'env' does not exist on type 'ImportMeta'.
+src/detroit/city-render.ts(12,135): error TS2339: Property 'env' does not exist on type 'ImportMeta'.
+src/detroit/city-render.ts(118,103): error TS2339: Property 'env' does not exist on type 'ImportMeta'.
+src/detroit/city-render.ts(119,103): error TS2339: Property 'env' does not exist on type 'ImportMeta'.
+src/detroit/city-render.ts(120,111): error TS2339: Property 'env' does not exist on type 'ImportMeta'.
+src/detroit/companion.test.ts(10,7): error TS2741: Property 'raycast' is missing in type '{ sampleGround(x: number, z: number, out: GroundSample): GroundSample; raycastObstacle(): null; }' but required in type 'TerrainSampler'.
+src/detroit/companion.test.ts(10,41): error TS6133: 'x' is declared but its value is never read.
+src/detroit/companion.test.ts(10,43): error TS6133: 'z' is declared but its value is never read.
+src/detroit/elmwood-dog.test.ts(10,7): error TS2741: Property 'raycast' is missing in type '{ sampleGround(_x: number, _z: number, out: GroundSample): GroundSample; raycastObstacle(): null; }' but required in type 'TerrainSampler'.
+src/detroit/elmwood-main-menu.ts(4,70): error TS2339: Property 'env' does not exist on type 'ImportMeta'.
+src/detroit/elmwood-ride.ts(153,77): error TS2339: Property 'env' does not exist on type 'ImportMeta'.
+src/detroit/elmwood-ride.ts(194,360): error TS2339: Property 'mountedVolume' does not exist on type 'RideController'.
+src/detroit/elmwood-ride.ts(194,399): error TS2339: Property 'mountedVolume' does not exist on type 'ThreeRiderView'.
+src/detroit/elmwood-session.test.ts(22,117): error TS2542: Index signature in type 'readonly { pressed: boolean; value: number; }[]' only permits reading.
+src/detroit/elmwood-traffic-steering.test.ts(7,7): error TS2741: Property 'raycast' is missing in type '{ sampleGround(_x: number, _z: number, out: GroundSample): GroundSample; raycastObstacle(): null; }' but required in type 'TerrainSampler'.
+src/detroit/elmwood-visuals.test.ts(22,53): error TS2345: Argument of type '{ sampleGround(_x: number, _z: number, out: any): any; raycastObstacle(): null; }' is not assignable to parameter of type 'TerrainSampler'.
+  Property 'raycast' is missing in type '{ sampleGround(_x: number, _z: number, out: any): any; raycastObstacle(): null; }' but required in type 'TerrainSampler'.
+src/detroit/ride-motion.test.ts(14,37): error TS2345: Argument of type '{ raycastObstacle: () => null; sampleGround(x: number, z: number, out: GroundSample): GroundSample; raycast(origin: Vec3, direction: Vec3, maxDistance: number): number | null; }' is not assignable to parameter of type 'TerrainSampler'.
+  Types of property 'sampleGround' are incompatible.
+    Type '(x: number, z: number, out: GroundSample) => GroundSample' is not assignable to type '(x: number, z: number, out: GroundSample, referenceY?: number | undefined) => GroundSample'.
+      Types of parameters 'out' and 'out' are incompatible.
+        Type 'import("C:/Users/digit/Documents/phone/Digital_Static_RideCore/dist/terrain").GroundSample' is not assignable to type 'import("C:/Users/digit/Documents/phone/euc-detroit-riverwalk/src/simulation/world").GroundSample'.
+          Types of property 'surface' are incompatible.
+            Type 'import("C:/Users/digit/Documents/phone/Digital_Static_RideCore/dist/terrain").SurfaceId' is not assignable to type 'import("C:/Users/digit/Documents/phone/euc-detroit-riverwalk/src/simulation/world").SurfaceId'.
+              Type '"metal"' is not assignable to type 'SurfaceId'.
+src/detroit/scenery.ts(25,46): error TS2339: Property 'env' does not exist on type 'ImportMeta'.
+src/detroit/scenery.ts(137,51): error TS2339: Property 'env' does not exist on type 'ImportMeta'.
+src/detroit/scenery.ts(180,54): error TS2339: Property 'env' does not exist on type 'ImportMeta'.
+src/detroit/scenery.ts(230,49): error TS2339: Property 'env' does not exist on type 'ImportMeta'.
+tools/rider-leg-preview.ts(21,191): error TS2556: A spread argument must either have a tuple type or be passed to a rest parameter.

@@ -1,0 +1,71 @@
+vite v7.3.6 building client environment for production...
+transforming...
+✓ 318 modules transformed.
+rendering chunks...
+computing gzip size...
+../.game-builds/love-tag-review/swoop-detroit/traffic-studio.html                             2.41 kB │ gzip:     1.17 kB
+../.game-builds/love-tag-review/swoop-detroit/companion-studio.html                           2.46 kB │ gzip:     1.11 kB
+../.game-builds/love-tag-review/swoop-detroit/rider-studio.html                               3.61 kB │ gzip:     1.57 kB
+../.game-builds/love-tag-review/swoop-detroit/assets/we-are-detroit-user-DPh9B28-.jpg        10.77 kB
+../.game-builds/love-tag-review/swoop-detroit/detroit.html                                   11.99 kB │ gzip:     4.94 kB
+../.game-builds/love-tag-review/swoop-detroit/assets/field-assets-CqvsqzPk.glb               36.92 kB
+../.game-builds/love-tag-review/swoop-detroit/assets/blue-dragon-user-Dr4YzOXo.jpg           42.01 kB
+../.game-builds/love-tag-review/swoop-detroit/assets/carsmuraldequindrecut-BryLlqOB.jpg      50.59 kB
+../.game-builds/love-tag-review/swoop-detroit/assets/sydneyjames2-BHs59PaF.jpg               64.28 kB
+../.game-builds/love-tag-review/swoop-detroit/assets/ivanmontoyamural-Paas6vPy.jpg           72.05 kB
+../.game-builds/love-tag-review/swoop-detroit/assets/freddymural-DKOKEo-L.jpg                76.98 kB
+../.game-builds/love-tag-review/swoop-detroit/assets/fel3000mural-DsTDehD4.jpg               77.40 kB
+../.game-builds/love-tag-review/swoop-detroit/assets/mission-cover-B7obQXgy.webp            113.61 kB
+../.game-builds/love-tag-review/swoop-detroit/assets/swoop-rivals-DPfBVZbw.webp             216.13 kB
+../.game-builds/love-tag-review/swoop-detroit/assets/hdl-user-CjJCRD_J.jpg                  260.24 kB
+../.game-builds/love-tag-review/swoop-detroit/assets/detroit-dreams-CuCNr6m2.jpg            443.86 kB
+../.game-builds/love-tag-review/swoop-detroit/assets/grass_01_normal-CeLXfj89.jpg           484.81 kB
+../.game-builds/love-tag-review/swoop-detroit/assets/grass_01-Bk--EHD6.jpg                  534.53 kB
+../.game-builds/love-tag-review/swoop-detroit/assets/lottomind-refined-6R7q-npO.png       1,234.91 kB
+../.game-builds/love-tag-review/swoop-detroit/assets/gothtechnology-refined-DyG7icho.png  1,405.62 kB
+../.game-builds/love-tag-review/swoop-detroit/assets/serengeti-refined-B6GS_DkN.png       1,533.17 kB
+../.game-builds/love-tag-review/swoop-detroit/assets/detroit-heart-Cs8E2Zx8.png           2,277.76 kB
+../.game-builds/love-tag-review/swoop-detroit/assets/rideAudio-C19J8wjh.css                   0.95 kB │ gzip:     0.51 kB
+../.game-builds/love-tag-review/swoop-detroit/assets/bootUi-DVLei5z6.css                     40.47 kB │ gzip:     9.40 kB
+../.game-builds/love-tag-review/swoop-detroit/assets/main-CWkGI2kH.css                       72.78 kB │ gzip:    14.42 kB
+../.game-builds/love-tag-review/swoop-detroit/assets/rideComfort-mVGT1cy6.js                  0.44 kB │ gzip:     0.31 kB
+../.game-builds/love-tag-review/swoop-detroit/assets/detroit-CywzSZoy.js                      0.64 kB │ gzip:     0.42 kB
+../.game-builds/love-tag-review/swoop-detroit/assets/modulepreload-polyfill-B5Qt9EMX.js       0.71 kB │ gzip:     0.40 kB
+../.game-builds/love-tag-review/swoop-detroit/assets/companion-studio-DATdUyR1.js             3.60 kB │ gzip:     1.74 kB
+../.game-builds/love-tag-review/swoop-detroit/assets/bootUi-CidZEMZx.js                       4.04 kB │ gzip:     1.88 kB
+../.game-builds/love-tag-review/swoop-detroit/assets/traffic-studio-C6EMG31s.js               4.67 kB │ gzip:     2.27 kB
+../.game-builds/love-tag-review/swoop-detroit/assets/dogSteering-Cy_brsY7.js                  7.99 kB │ gzip:     3.24 kB
+../.game-builds/love-tag-review/swoop-detroit/assets/rider-studio-C75UuQ8M.js                 8.64 kB │ gzip:     3.76 kB
+../.game-builds/love-tag-review/swoop-detroit/assets/OrbitControls-Bn3jtEq7.js               19.76 kB │ gzip:     4.48 kB
+../.game-builds/love-tag-review/swoop-detroit/assets/browser-BzBbrBKd.js                     32.14 kB │ gzip:    12.33 kB
+../.game-builds/love-tag-review/swoop-detroit/assets/humanFallRig-DWgKAnka.js                68.09 kB │ gzip:    24.08 kB
+../.game-builds/love-tag-review/swoop-detroit/assets/tagClient-Dlgxy3Ds.js                  213.82 kB │ gzip:    68.78 kB
+../.game-builds/love-tag-review/swoop-detroit/assets/three.core-BjRw1Yol.js                 279.80 kB │ gzip:    76.76 kB
+../.game-builds/love-tag-review/swoop-detroit/assets/hls.light-Cm5ppQ94.js                  370.93 kB │ gzip:   117.84 kB
+../.game-builds/love-tag-review/swoop-detroit/assets/terrain-DKDmByyw.js                    399.78 kB │ gzip:   100.75 kB
+../.game-builds/love-tag-review/swoop-detroit/assets/main-Cxj7Dfaf.js                     2,089.06 kB │ gzip:   600.54 kB
+../.game-builds/love-tag-review/swoop-detroit/assets/rideAudio-Ci273QZ4.js                2,260.77 kB │ gzip:   559.41 kB
+../.game-builds/love-tag-review/swoop-detroit/assets/rapier-CeAOKAel.js                   2,896.33 kB │ gzip: 1,094.30 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 6.86s
+Packaged Swoop Detroit: 56 assets
+vite v7.3.6 building client environment for production...
+transforming...
+✓ 190 modules transformed.
+rendering chunks...
+computing gzip size...
+../_goth_swoop_release_20260916/lottominded-ultra.io/games/gothtechnology2/.game-builds/love-tag-review/elmwood-explorer/elmwood.html                    33.52 kB │ gzip:    10.02 kB
+../_goth_swoop_release_20260916/lottominded-ultra.io/games/gothtechnology2/.game-builds/love-tag-review/elmwood-explorer/assets/elmwood-CLThjepT.css     44.95 kB │ gzip:     9.03 kB
+../_goth_swoop_release_20260916/lottominded-ultra.io/games/gothtechnology2/.game-builds/love-tag-review/elmwood-explorer/assets/browser-BzBbrBKd.js      32.14 kB │ gzip:    12.33 kB
+../_goth_swoop_release_20260916/lottominded-ultra.io/games/gothtechnology2/.game-builds/love-tag-review/elmwood-explorer/assets/elmwood-DrwXZh8T.js   6,846.32 kB │ gzip: 2,013.07 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 4.36s
+{"files":116,"textures":76,"megabytes":275}

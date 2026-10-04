@@ -1,0 +1,26 @@
+{
+  "checked": "2026-09-15",
+  "method": "Actual GLB geometry and skeletons, textures omitted for headless parsing; source Hero versus packaged ThreeRiderView",
+  "results": [
+    {
+      "id": "DS_Man_01",
+      "poses": 34,
+      "maxBonePositionDifferenceMetres": 0
+    },
+    {
+      "id": "DS_Hoodie_Woman_01",
+      "poses": 34,
+      "maxBonePositionDifferenceMetres": 0
+    },
+    {
+      "id": "DS_Mascot_Suit_01",
+      "poses": 34,
+      "maxBonePositionDifferenceMetres": 0
+    },
+    {
+      "id": "DS_Mascot_Hoodie_01",
+      "poses": 34,
+      "maxBonePositionDifferenceMetres": 0
+    }
+  ]
+}

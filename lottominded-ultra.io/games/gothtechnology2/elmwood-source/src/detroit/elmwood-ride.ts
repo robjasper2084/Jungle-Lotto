@@ -1,3 +1,4 @@
+import {elmwoodRaceRecovery} from './elmwood-race-recovery.ts';
 import {isCycle,ebikeProfile,eucProfile,vehicleOptions,vehicleSummary} from './electricVehicles.ts';
 import {EbikeView,loadElectricAssets} from './electricVehicleView.ts';
 import {installDogCommandHud} from './dogCommandHud.ts';
@@ -40,13 +41,13 @@ import './elmwood-session.css';
 import './elmwood-mobile-hud.css';
 
 type Spawn={x:number;north:number;heading:number};
-type Seat={bike?:BicycleView;motion:RideMotion;riders:Map<string,ThreeRiderView>;hero:ThreeRiderView;camera:T.PerspectiveCamera;lastCamera:string;framing:ReturnType<typeof cameraFrame>;droneTarget:T.Vector3;firstYaw:number;firstPitch:number;run:ElmwoodRun;spawn:Spawn;dog?:ElmwoodCompanion;dogView?:DogView;bestRecorded:boolean};
+type Seat={raceRecovery?:ReturnType<typeof elmwoodRaceRecovery>;bike?:BicycleView;motion:RideMotion;riders:Map<string,ThreeRiderView>;hero:ThreeRiderView;camera:T.PerspectiveCamera;lastCamera:string;framing:ReturnType<typeof cameraFrame>;droneTarget:T.Vector3;firstYaw:number;firstPitch:number;run:ElmwoodRun;spawn:Spawn;dog?:ElmwoodCompanion;dogView?:DogView;bestRecorded:boolean};
 export function splitRects(w:number,h:number,count:number,layout:string){
   if(count===1)return [{x:0,y:0,width:w,height:h}];
   const vertical=layout==='stacked'||layout==='auto'&&h>w;
   return vertical?[{x:0,y:0,width:w,height:Math.floor(h/2)},{x:0,y:Math.floor(h/2),width:w,height:h-Math.floor(h/2)}]:[{x:0,y:0,width:Math.floor(w/2),height:h},{x:Math.floor(w/2),y:0,width:w-Math.floor(w/2),height:h}];
 }
-export function makeElmwoodRide(scene:T.Scene,camera:T.PerspectiveCamera,controls:OrbitControls,canvas:HTMLCanvasElement,status:(s:string)=>void,showSite:()=>void,birdTargets:()=>DogTarget[]=()=>[]) {
+export function makeElmwoodRide(scene:T.Scene,camera:T.PerspectiveCamera,controls:OrbitControls,canvas:HTMLCanvasElement,status:(s:string)=>void,showSite:()=>void,birdTargets:()=>DogTarget[]=()=>[],mountDisplay?:(parent:HTMLElement)=>void) {
   const el=<E extends HTMLElement>(id:string)=>document.getElementById(id) as E;
   const button=el<HTMLButtonElement>('ride-start'),outfit=el<HTMLSelectElement>('ride-outfit'),cameraSelect=el<HTMLSelectElement>('ride-camera'),cameraButton=el<HTMLButtonElement>('ride-camera-next');
   const bikeRecover=document.createElement('button');bikeRecover.id='bike-recover';bikeRecover.type='button';bikeRecover.textContent='Recover bike · R';bikeRecover.style.minHeight='44px';bikeRecover.hidden=true;document.querySelector('header')!.append(bikeRecover);bikeRecover.onclick=()=>{if(active){resetSeat(0,true);canvas.focus();}};
@@ -57,7 +58,7 @@ export function makeElmwoodRide(scene:T.Scene,camera:T.PerspectiveCamera,control
     <div id="session-player-two"><label for="session-input-1">Player 2 controls</label><select id="session-input-1"></select><label for="session-outfit-1">Player 2 rider</label><select id="session-outfit-1"></select><label for="session-camera-1">Player 2 camera</label><select id="session-camera-1"></select><button id="session-recover-1">Recover player 2</button></div>
     <button id="session-touch-edit">Arrange split-screen touch controls</button>
     <label for="session-dog">Boerboel companion</label><select id="session-dog"><option value="off">Off</option><option value="p1">Run with player 1</option><option value="p2">Run with player 2</option><option value="both">One dog per rider</option></select>
-    <label for="session-mode">Game mode</label><select id="session-mode"></select><button id="session-retry">Start / retry selected mode</button>
+    <label for="session-race-difficulty">Race difficulty</label><select id="session-race-difficulty"><option value="expert">Expert · fast AI rivals</option><option value="club">Club · competitive</option></select><label for="session-mode">Game mode</label><select id="session-mode"></select><button id="session-retry">Start / retry selected mode</button>
     <label for="session-trick">Trick</label><select id="session-trick"></select><div class="row"><button id="session-trick-go">Perform trick · T</button><button id="session-cruise">Cruise · V</button></div>
     <button id="session-map">Route map · M</button><label><input id="session-audio" type="checkbox" checked> Ride, dog, birds &amp; water sounds</label><label for="session-camera-motion">Camera motion</label><select id="session-camera-motion"><option value="dynamic">Dynamic · turn and speed feedback</option><option value="calm">Calm · steady horizon</option></select>
     <label><input id="session-spirits" type="checkbox" checked> Rare ghost encounters · 1–2 per ride</label><label><input id="session-spirit-sound" type="checkbox"> Ghost sound</label>
@@ -162,12 +163,17 @@ export function makeElmwoodRide(scene:T.Scene,camera:T.PerspectiveCamera,control
   dogSelect.onchange=()=>{try{localStorage.setItem('elmwood-companion',dogSelect.value);}catch{}void updateDogs();};
   function resetSeat(i:number,recover=false){
     const s=seats[i];if(!s||!terrain)return;
+    if(!recover)s.raceRecovery=undefined;
+    if(recover&&s.raceRecovery)return;
+    const recovery=recover?elmwoodRaceRecovery(s.run,s.motion.terrain,count===2?(i?-.65:.65):0):undefined;
+    if(recover&&s.run.mode==='sprint'&&!s.run.finished&&!recovery){message.textContent='The earned checkpoint is blocked. Move the obstruction and try Recover again.';return;}
     if(recover&&!s.motion.cycling&&s.motion.sim.crashed){
+      if(recovery){s.raceRecovery=recovery;s.run.elapsed+=5;}
       community?.ride.recover();s.motion.update(1/120,{reset:true});clearInput(i);if(!i)practice?.action('recover');return;
     }
     let spawn=s.spawn;
-    if(recover){community?.ride.recover();const p=s.motion.pose,near=terrain.nearest(p.x,-p.z);spawn={x:near.x,north:near.north,heading:p.headingY};if(s.run.mode==='sprint')s.run.elapsed+=5;}
-    const side=count===2?(i?-.65:.65):0;
+    if(recover){community?.ride.recover();const p=s.motion.pose,near=terrain.nearest(p.x,-p.z);spawn=recovery?{x:recovery.position.x,north:-recovery.position.z,heading:recovery.heading}:{x:near.x,north:near.north,heading:p.headingY};if(s.run.mode==='sprint')s.run.elapsed+=5;}
+    const side=recovery?0:count===2?(i?-.65:.65):0;
     const x=spawn.x+Math.cos(spawn.heading)*side,z=-spawn.north-Math.sin(spawn.heading)*side;
     s.motion.setProfile(s.hero.profile);s.motion.reset({x,y:terrain.sampleGround(x,z,sample).height,z},spawn.heading);s.lastCamera='';
     clearInput(i);s.dog?.reset(s.motion.pose);s.run.relocate(s.motion.pose);
@@ -188,8 +194,8 @@ export function makeElmwoodRide(scene:T.Scene,camera:T.PerspectiveCamera,control
       try{const splits=JSON.parse(localStorage.getItem('elmwood-splits-'+selected+(s.motion.vehicleId!=='euc'?'-'+s.motion.vehicleId:''))||'[]');if(Array.isArray(splits)&&splits.length===s.run.gates.length-1&&splits.every((n,j)=>Number.isFinite(n)&&n>0&&(!j||n>splits[j-1])))s.run.referenceSplits=splits;}catch{}
     }
     if(selected==='sprint'&&count===1&&!vrMode){
-      racePilots=Array.from({length:3},(_,i)=>new ElmwoodRacePilot(seats[0].motion.terrain,raceLine,route,i,cycling,ebikeProfile(vehicle.value),eucProfile(vehicle.value)));
-      raceViews=racePilots.map((p,i)=>{const moto=(p.sim as import('./ebikeController.ts').EbikeController).profile;const view=moto?new EbikeView(cycleAssets!.get('Ebike_'+moto.id)!,cycleAssets!.get('DS_Cyclist_01')!,moto,true):cycling?new BicycleView(cycleAssets!.get('DS_Bicycle_01')!,cycleAssets!.get('DS_Cyclist_01')!,i+1,true):new ThreeRiderView(cycleAssets!.get('DS_Man_01')!,cycleAssets!.get('Euc_'+p.wheel?.id)??cycleAssets!.get('DS_EUC_01')!,p.terrain);view.apply(p.pose);scene.add(view.root);return view;});
+      racePilots=Array.from({length:3},(_,i)=>new ElmwoodRacePilot(seats[0].motion.terrain,raceLine,route,i,cycling,el<HTMLSelectElement>('session-race-difficulty').value as 'club'|'expert',ebikeProfile(vehicle.value),eucProfile(vehicle.value)));
+      const rivals=SWOOP_RIDERS.filter(r=>r.id!==outfit.value).slice(0,3);raceViews=racePilots.map((p,i)=>{const rival=rivals[i],moto=p.electric,view=moto?new EbikeView(cycleAssets!.get('Ebike_'+moto.id)!,cycleAssets!.get('DS_Cyclist_01')!,moto,true):cycling?new BicycleView(cycleAssets!.get('DS_Bicycle_01')!,cycleAssets!.get('DS_Cyclist_01')!,i+1,true):new ThreeRiderView(cycleAssets!.get(rival.id)!,cycleAssets!.get('Euc_'+p.wheel?.id)??cycleAssets!.get('DS_EUC_01')!,p.terrain,rival.profile);if(!cycling)p.sim.wheelScale=rival.profile.wheelScale;view.apply(p.pose);scene.add(view.root);return view;});
     }
     countdown=selected==='sprint'?3:0;paused=false;canvas.dataset.paused='false';best.textContent='';message.textContent=selected==='free'?'Free ride: explore, cruise or practice tricks.':selected==='tricks'?'Land completed tricks to score. Both players have two minutes.':'Follow the colored gates along Creek Lane.';canvas.focus();
   }
@@ -221,11 +227,11 @@ export function makeElmwoodRide(scene:T.Scene,camera:T.PerspectiveCamera,control
   async function travelCommunity(){practice=undefined;practicePanel.hidden=true;if(!active||count!==1||vrMode||seats[0].run.mode!=='free'||seats[0].motion.cycling!==(isCycle(vehicle.value))||seats[0].bike?.style!==Number(bikeStyle.value)){if(active)stop();players.value='1';mode.value='free';await toggleRide();}if(!active||!community)return;const at=community.ride.route.at(0,-.5);const s=seats[0];s.spawn={x:at.x,north:-at.z,heading:at.headingY};community.ride.recover();resetSeat(0);pause(false);community.ui.panel.open=true;document.body.classList.remove('controls-open');document.querySelector<HTMLDialogElement>('#elmwood-main-menu')?.close();canvas.focus();}
   el<HTMLButtonElement>('session-community').onclick=async()=>{await travelCommunity();community?.ride.restart();};
   vehicle.onchange=bikeStyle.onchange=()=>{performanceCard.textContent=vehicleSummary(vehicle.value);bikeStyle.closest('label')?.toggleAttribute('hidden',vehicle.value!=='bicycle');if(active)pause(true);message.textContent='Vehicle and bike style apply when starting a solo free ride, race or tour.';};
-  const mainMenu=makeElmwoodMainMenu(canvas,()=>pause(true),()=>pause(false),async(selected,n)=>{document.body.classList.remove('controls-open');document.getElementById('elmwood-menu')?.setAttribute('aria-expanded','false');if(active)stop();players.value=String(n);mode.value=selected;settingsChanged();await toggleRide();},()=>{document.body.classList.add('controls-open');document.getElementById('elmwood-menu')?.setAttribute('aria-expanded','true');});const communityMenu=document.createElement('button');communityMenu.textContent='Meet the Elmwood riders';communityMenu.onclick=()=>el<HTMLButtonElement>('session-community').click();document.querySelector('#elmwood-main-menu .menu-actions')!.append(communityMenu);mainMenu.open();
+  const mainMenu=makeElmwoodMainMenu(canvas,()=>pause(true),()=>pause(false),async(selected,n)=>{document.body.classList.remove('controls-open');document.getElementById('elmwood-menu')?.setAttribute('aria-expanded','false');if(active)stop();players.value=String(n);mode.value=selected;settingsChanged();await toggleRide();},()=>{document.body.classList.add('controls-open');document.getElementById('elmwood-menu')?.setAttribute('aria-expanded','true');});const communityMenu=document.createElement('button');communityMenu.textContent='Meet the Elmwood riders';communityMenu.onclick=()=>el<HTMLButtonElement>('session-community').click();document.querySelector('#menu-more-activities')!.append(communityMenu);mainMenu.open();
   const practiceButton=document.createElement('button');practiceButton.type='button';
   const practiceKey=()=>`elmwood-practice-v1-${vehicle.value}`;
   function practiceLabel(){try{practiceButton.textContent=localStorage.getItem(practiceKey())==='complete'?'Replay riding practice':'Practice · recommended first';}catch{practiceButton.textContent='Practice · optional';}}
-  practiceLabel();vehicle.addEventListener('change',practiceLabel);
+  practiceLabel();practiceButton.className='menu-practice';vehicle.addEventListener('change',practiceLabel);
   practiceButton.onclick=async()=>{practiceButton.disabled=true;try{if(active)stop();players.value='1';mode.value='free';settingsChanged();await toggleRide();if(!active)return;practice=new RidePractice(seats[0].motion.cycling);community?.ride.cancel();document.querySelector<HTMLDialogElement>('#elmwood-main-menu')?.close();canvas.focus();}finally{practiceButton.disabled=false;}};
   document.querySelector('#elmwood-main-menu .menu-actions')!.append(practiceButton);
   canvas.addEventListener('elmwood-stop-ride',stop);
@@ -291,13 +297,13 @@ export function makeElmwoodRide(scene:T.Scene,camera:T.PerspectiveCamera,control
     {name:'Replay',nodes:[film.panel]}
   ],'Landmarks');
   document.body.classList.add('elmwood-tactical-ui');
-  const loveTag=new LoveTagClient({product:'elmwood-explorer',scene,camera,canvas,menu:document.querySelector<HTMLElement>('#elmwood-main-menu .menu-actions')!,
+  const loveTag=new LoveTagClient({product:'elmwood-explorer',scene,camera,canvas,mountDisplay,menu:document.querySelector<HTMLElement>('#elmwood-main-menu .menu-actions')!,
     fixtureUrl:new URL('./love-tag/elmwood-explorer.json',location.href).href,configUrl:new URL('./love-tag/config.json',location.href).href,
     prepare:initialize,async createView(tagTerrain){return new ThreeRiderView(cycleAssets!.get('DS_Man_01')!,cycleAssets!.get('DS_EUC_01')!,tagTerrain);},
     suspend(){const wasPaused=paused,orbitEnabled=controls.enabled;pause(true);controls.enabled=false;const roots=[...seats.flatMap(s=>[s.hero.root,s.bike?.root,s.dogView?.root]),walkers?.root,community?.view.root,gates].filter((o):o is T.Group=>!!o);const saved=roots.map(o=>({o,visible:o.visible}));for(const {o}of saved)o.visible=false;
       music.update(0,'ride',false,0,0,0);return ()=>{for(const {o,visible}of saved)o.visible=visible;controls.enabled=orbitEnabled;pause(wasPaused);clearInput();mainMenu.open();};}});
   installLoveTagMainMenu(loveTag,()=>mainMenu.open());
-  return {stop,pause,dogThreats,tagUpdate(dt:number){const tagging=loveTag.update(dt);if(tagging){miniMap.setRaceCourse(null);miniMap.update([],false);}return tagging;},async startVR(){
+  return {stop,pause,dogThreats,tagFocus:()=>loveTag.sceneFocus,tagUpdate(dt:number){const tagging=loveTag.update(dt);if(tagging){miniMap.setRaceCourse(null);miniMap.update([],false);}return tagging;},async startVR(){
     if(active&&(count!==1||seats[0].motion.cycling))stop();vehicle.value='euc';players.value='1';inputs[0].value='wasd';
     if(!active)await toggleRide();if(!active)throw new Error('The rider could not load.');
     count=1;configure();clearInput();vrMode=true;vrPacket=undefined;pause(false);
@@ -319,7 +325,9 @@ export function makeElmwoodRide(scene:T.Scene,camera:T.PerspectiveCamera,control
     for(let i=0;i<count;i++){
       const s=seats[i],packet=vrMode&&vrPacket?{actions:vrPacket.actions,recover:!paused&&vrPacket.recover,camera:false}:input.consume(i,s.motion.pose.speed,Number(trick.value));if(packet.recover){resetSeat(i,true);packet.actions={...NEUTRAL_ACTIONS};}if(packet.camera&&!vrMode)cycleCamera(i);
       const lastGate=s.run.gate,lastFinished=s.run.finished;
-      s.motion.update(dt,{...packet.actions,eyeControl:!vrMode&&cameras[i].value==='first'},paused||countdown>0);s.run.update(dt,s.motion.pose,s.motion.events,paused||countdown>0);
+      s.motion.update(dt,{...packet.actions,eyeControl:!vrMode&&cameras[i].value==='first'},paused||countdown>0);
+      if(s.raceRecovery&&!s.motion.sim.crashed){const r=s.raceRecovery;s.raceRecovery=undefined;s.motion.reset(r.position,r.heading);s.run.relocate(s.motion.pose);s.lastCamera='';s.dog?.reset(s.motion.pose);clearInput(i);}
+      s.run.update(dt,s.motion.pose,s.motion.events,paused||countdown>0);
       if(!i&&!paused&&countdown<=0){for(const event of s.motion.events){if(event.type==='landing')audio.landing(event.impact,s.motion.terrain.sampleGround(s.motion.pose.x,s.motion.pose.z,audioSample).surface);if(event.type==='trick'&&event.points>0)audio.confirm('trick');}if(s.run.gate>lastGate)audio.confirm(s.run.finished&&!lastFinished?'finish':'checkpoint');}
       saveBest(s);frameSeat(s,i,dt);
       if(s.dog&&s.dogView&&wantsDog(i)){if(!paused)s.dog.update(s.motion.pose,dt,contacts);s.dogView.update(s.dog,paused?0:dt);}

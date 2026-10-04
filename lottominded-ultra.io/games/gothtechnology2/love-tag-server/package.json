@@ -1,0 +1,29 @@
+{
+  "name": "digital-static-love-tag-server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "npm run build && node dist/server.js",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/server.js",
+    "test": "node tests/local-online.mjs",
+    "test:online": "node tests/local-online.mjs"
+  },
+  "dependencies": {
+    "@colyseus/core": "0.18.9",
+    "@colyseus/ws-transport": "0.18.4",
+    "@colyseus/sdk": "0.18.5",
+    "@digital-static/ridecore": "file:../ride-core",
+    "express": "5.1.0"
+  },
+  "devDependencies": {
+    "@types/express": "5.0.3",
+    "@types/node": "24.0.0",
+    "typescript": "5.9.3",
+    "tsx": "4.20.6"
+  },
+  "engines": {
+    "node": ">=22.18"
+  }
+}

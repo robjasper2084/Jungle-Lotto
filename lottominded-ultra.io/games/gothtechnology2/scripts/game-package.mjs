@@ -31,7 +31,12 @@ export async function runtimeLicenses(source,{ridecore=false}={}){
     const notices=(await readdir(directory)).filter(file=>/^(?:license|copying|copyrightnotice|notice)(?:\.|$)/i.test(file));
     // Some npm distributions omit their notice. Preserve their original
     // metadata for the release audit; this does not replace a missing license.
-    if(!notices.length)files.push({input:resolve(directory,'package.json'),output:'licenses/'+name.replaceAll('/','-')+'-MISSING-NOTICE.package.json'});
+    if(!notices.length){
+      if(name==='@better-auth/utils'&&metadata.version==='0.3.1'){
+        files.push({input:resolve(import.meta.dirname,'notices/better-auth-utils-LICENSE.txt'),output:'licenses/better-auth-utils-LICENSE.txt'},
+          {input:resolve(import.meta.dirname,'notices/better-auth-utils-PROVENANCE.md'),output:'licenses/better-auth-utils-PROVENANCE.md'});
+      }else throw Error('Missing upstream runtime notice: '+name+' '+metadata.version);
+    }
     for(const notice of notices)files.push({input:resolve(directory,notice),output:'licenses/'+name.replaceAll('/','-')+'-'+notice});
     for(const dependency of Object.keys(metadata.dependencies??{}))await include(dependency,directory);
   }

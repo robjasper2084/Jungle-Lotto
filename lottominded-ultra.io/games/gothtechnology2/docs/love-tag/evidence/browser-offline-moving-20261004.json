@@ -1,0 +1,188 @@
+{
+  "swoop": {
+    "ack": 6163,
+    "actors": [
+      {
+        "ammo": 3,
+        "bot": false,
+        "connected": true,
+        "id": "offline-human",
+        "itTime": 96.71666666666246,
+        "name": "Rider",
+        "pose": {
+          "heading": -1.682040902270524,
+          "x": 1325.9953483582765,
+          "y": 2.678787313232423,
+          "z": 68.91675266570469
+        },
+        "resets": 0,
+        "role": "it",
+        "tags": 0
+      },
+      {
+        "ammo": 3,
+        "bot": true,
+        "connected": false,
+        "id": "bot-1",
+        "itTime": 0,
+        "name": "Bot 1",
+        "pose": {
+          "heading": -3.188419624761326,
+          "x": 1652.1928276368235,
+          "y": 5.318760000000001,
+          "z": 24.301047046575952
+        },
+        "resets": 0,
+        "role": "runner",
+        "tags": 0
+      },
+      {
+        "ammo": 3,
+        "bot": true,
+        "connected": false,
+        "id": "bot-2",
+        "itTime": 0,
+        "name": "Bot 2",
+        "pose": {
+          "heading": 3.1491792270732537,
+          "x": 1676.7742308926283,
+          "y": 5.318760000000001,
+          "z": 225.5272969468332
+        },
+        "resets": 0,
+        "role": "runner",
+        "tags": 0
+      },
+      {
+        "ammo": 3,
+        "bot": true,
+        "connected": false,
+        "id": "bot-3",
+        "itTime": 0,
+        "name": "Bot 3",
+        "pose": {
+          "heading": 7.892746131722707,
+          "x": 1726.3053822056445,
+          "y": 5.318760000000001,
+          "z": 195.4881964934471
+        },
+        "resets": 0,
+        "role": "runner",
+        "tags": 0
+      }
+    ],
+    "bots": 3,
+    "correctionP95": 0,
+    "events": [],
+    "hash": "8692124ce27f6b62ce39f669d5e53832a10a716862fddcc6b73518a4b1521329",
+    "humans": 1,
+    "me": "offline-human",
+    "online": false,
+    "phase": "active",
+    "pose": {
+      "x": 1325.9953483582765,
+      "y": 2.678787313232423,
+      "z": 68.91675266570469
+    },
+    "product": "swoop-detroit",
+    "remaining": 83.28333333333788,
+    "role": "it",
+    "round": "7d81f01a-6757-4419-93c1-8013c91ed3f8",
+    "rules": "classic",
+    "tick": 6163,
+    "winners": []
+  },
+  "elmwood": {
+    "ack": 6196,
+    "actors": [
+      {
+        "ammo": 3,
+        "bot": false,
+        "connected": true,
+        "id": "offline-human",
+        "itTime": 97.26666666666245,
+        "name": "Rider",
+        "pose": {
+          "heading": 0.6294964973505196,
+          "x": -288.6008209148485,
+          "y": 4.894318308376552,
+          "z": -775.6070766023527
+        },
+        "resets": 0,
+        "role": "it",
+        "tags": 0
+      },
+      {
+        "ammo": 3,
+        "bot": true,
+        "connected": false,
+        "id": "bot-1",
+        "itTime": 0,
+        "name": "Bot 1",
+        "pose": {
+          "heading": -2.314635189272557,
+          "x": -425.108751050724,
+          "y": 5.388402427918444,
+          "z": -911.793946688472
+        },
+        "resets": 0,
+        "role": "runner",
+        "tags": 0
+      },
+      {
+        "ammo": 3,
+        "bot": true,
+        "connected": false,
+        "id": "bot-2",
+        "itTime": 0,
+        "name": "Bot 2",
+        "pose": {
+          "heading": 0.504715851007494,
+          "x": -243.06126671607345,
+          "y": 4.689579208626929,
+          "z": -811.4323810370346
+        },
+        "resets": 0,
+        "role": "runner",
+        "tags": 0
+      },
+      {
+        "ammo": 3,
+        "bot": true,
+        "connected": false,
+        "id": "bot-3",
+        "itTime": 0,
+        "name": "Bot 3",
+        "pose": {
+          "heading": 0.5376212995664812,
+          "x": -306.5251493777235,
+          "y": 2.9920708152273456,
+          "z": -607.6891882791763
+        },
+        "resets": 0,
+        "role": "runner",
+        "tags": 0
+      }
+    ],
+    "bots": 3,
+    "correctionP95": 0,
+    "events": [],
+    "hash": "81394a54680a00577d94367d07f455cae77cd9cacbbfb4e8b20806a9bb50600b",
+    "humans": 1,
+    "me": "offline-human",
+    "online": false,
+    "phase": "active",
+    "pose": {
+      "x": -288.6008209148485,
+      "y": 4.894318308376552,
+      "z": -775.6070766023527
+    },
+    "product": "elmwood-explorer",
+    "remaining": 82.73333333333791,
+    "role": "it",
+    "round": "0cdaf3fb-85b1-40d4-97f5-0f27cd7cb7e0",
+    "rules": "classic",
+    "tick": 6196,
+    "winners": []
+  }
+}

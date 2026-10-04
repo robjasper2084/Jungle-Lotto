@@ -1,0 +1,942 @@
+{
+  "at": "2026-10-04T06:56:30.813Z",
+  "scope": "Effective browser viewports only, not physical hardware or simultaneous thumbs. Water clock pause/reduced-motion observations are DOM readings from actual render loop.",
+  "water": {
+    "pauseStart": {
+      "detail": "0.35",
+      "paused": "true",
+      "time": "389.28"
+    },
+    "pauseEnd": {
+      "detail": "0.35",
+      "paused": "true",
+      "time": "389.28"
+    },
+    "reducedStart": {
+      "detail": "0.35",
+      "time": "0.00",
+      "url": "http://127.0.0.1:8212/Jungle-Lotto/lottominded-ultra.io/games/gothtechnology2/arcade/elmwood-explorer/elmwood.html?reducedMotion=1"
+    },
+    "reducedEnd": {
+      "detail": "0.35",
+      "time": "0.00",
+      "url": "http://127.0.0.1:8212/Jungle-Lotto/lottominded-ultra.io/games/gothtechnology2/arcade/elmwood-explorer/elmwood.html?reducedMotion=1"
+    }
+  },
+  "phone": {
+    "elmwood": {
+      "landscape": {
+        "buttons": [
+          {
+            "h": 136,
+            "label": "Move joystick",
+            "w": 136,
+            "x": 67.02083587646484,
+            "y": 230
+          },
+          {
+            "h": 64,
+            "label": "Brake",
+            "w": 64,
+            "x": 676,
+            "y": 302
+          },
+          {
+            "h": 80,
+            "label": "Hop",
+            "w": 80,
+            "x": 748,
+            "y": 286
+          },
+          {
+            "h": 64,
+            "label": "Crouch",
+            "w": 64,
+            "x": 760,
+            "y": 212
+          },
+          {
+            "h": 56,
+            "label": "Recover",
+            "w": 56,
+            "x": 772,
+            "y": 148
+          },
+          {
+            "h": 56,
+            "label": "Camera",
+            "w": 56,
+            "x": 694,
+            "y": 166
+          },
+          {
+            "h": 64,
+            "label": "Trick",
+            "w": 64,
+            "x": 676,
+            "y": 230
+          }
+        ],
+        "height": 390,
+        "width": 844
+      }
+    },
+    "elmwoodPortrait": {
+      "height": 844,
+      "hop": 82,
+      "quality": "low",
+      "rivals": "[{\"gate\":13,\"station\":308.60027097755477,\"speed\":6.345393008890625,\"finished\":true,\"recoveries\":0},{\"gate\":13,\"station\":308.42039720068357,\"speed\":4.635627679292314,\"finished\":true,\"recoveries\":0},{\"gate\":13,\"station\":308.46019957140356,\"speed\":6.351717184308515,\"finished\":true,\"recoveries\":0}]",
+      "touch": [
+        {
+          "name": "Move joystick",
+          "rect": {
+            "bottom": 803.2083740234375,
+            "height": 136,
+            "left": 16,
+            "right": 152,
+            "top": 667.2083740234375,
+            "width": 136,
+            "x": 16,
+            "y": 667.2083740234375
+          }
+        },
+        {
+          "name": "Brake",
+          "rect": {
+            "bottom": 820,
+            "height": 64,
+            "left": 220,
+            "right": 284,
+            "top": 756,
+            "width": 64,
+            "x": 220,
+            "y": 756
+          }
+        },
+        {
+          "name": "Hop",
+          "rect": {
+            "bottom": 777.7083740234375,
+            "height": 82,
+            "left": 292,
+            "right": 374,
+            "top": 695.7083740234375,
+            "width": 82,
+            "x": 292,
+            "y": 695.7083740234375
+          }
+        },
+        {
+          "name": "Crouch",
+          "rect": {
+            "bottom": 748,
+            "height": 64,
+            "left": 220,
+            "right": 284,
+            "top": 684,
+            "width": 64,
+            "x": 220,
+            "y": 684
+          }
+        },
+        {
+          "name": "Recover",
+          "rect": {
+            "bottom": 688,
+            "height": 56,
+            "left": 316,
+            "right": 372,
+            "top": 632,
+            "width": 56,
+            "x": 316,
+            "y": 632
+          }
+        },
+        {
+          "name": "Camera",
+          "rect": {
+            "bottom": 676,
+            "height": 56,
+            "left": 178,
+            "right": 234,
+            "top": 620,
+            "width": 56,
+            "x": 178,
+            "y": 620
+          }
+        },
+        {
+          "name": "Trick",
+          "rect": {
+            "bottom": 676,
+            "height": 64,
+            "left": 244,
+            "right": 308,
+            "top": 612,
+            "width": 64,
+            "x": 244,
+            "y": 612
+          }
+        }
+      ],
+      "width": 390
+    },
+    "elmwoodLandscape": {
+      "height": 390,
+      "hud": "0 km/h\n0/12 gates · 175.4s · 4/4 place",
+      "hudRect": {
+        "bottom": 273.6041679382324,
+        "height": 51.60416793823242,
+        "left": 12,
+        "right": 177.625,
+        "top": 222,
+        "width": 165.625,
+        "x": 12,
+        "y": 222
+      },
+      "map": {
+        "bottom": 191.33334350585935,
+        "height": 181.33334350585935,
+        "left": 688,
+        "right": 832,
+        "top": 10,
+        "width": 144,
+        "x": 688,
+        "y": 10
+      },
+      "rivals": "[{\"gate\":13,\"station\":308.60027097755477,\"speed\":6.345393008890625,\"finished\":true,\"recoveries\":0},{\"gate\":13,\"station\":308.42039720068357,\"speed\":4.635627679292314,\"finished\":true,\"recoveries\":0},{\"gate\":13,\"station\":308.46019957140356,\"speed\":6.351717184308515,\"finished\":true,\"recoveries\":0}]",
+      "touch": [
+        {
+          "name": "Move joystick",
+          "rect": {
+            "bottom": 366,
+            "height": 136,
+            "left": 67.02083587646484,
+            "right": 203.02083587646484,
+            "top": 230,
+            "width": 136,
+            "x": 67.02083587646484,
+            "y": 230
+          }
+        },
+        {
+          "name": "Brake",
+          "rect": {
+            "bottom": 366,
+            "height": 64,
+            "left": 676,
+            "right": 740,
+            "top": 302,
+            "width": 64,
+            "x": 676,
+            "y": 302
+          }
+        },
+        {
+          "name": "Hop",
+          "rect": {
+            "bottom": 366,
+            "height": 80,
+            "left": 748,
+            "right": 828,
+            "top": 286,
+            "width": 80,
+            "x": 748,
+            "y": 286
+          }
+        },
+        {
+          "name": "Crouch",
+          "rect": {
+            "bottom": 276,
+            "height": 64,
+            "left": 760,
+            "right": 824,
+            "top": 212,
+            "width": 64,
+            "x": 760,
+            "y": 212
+          }
+        },
+        {
+          "name": "Recover",
+          "rect": {
+            "bottom": 330,
+            "height": 56,
+            "left": 610,
+            "right": 666,
+            "top": 274,
+            "width": 56,
+            "x": 610,
+            "y": 274
+          }
+        },
+        {
+          "name": "Camera",
+          "rect": {
+            "bottom": 264,
+            "height": 56,
+            "left": 610,
+            "right": 666,
+            "top": 208,
+            "width": 56,
+            "x": 610,
+            "y": 208
+          }
+        },
+        {
+          "name": "Trick",
+          "rect": {
+            "bottom": 294,
+            "height": 64,
+            "left": 676,
+            "right": 740,
+            "top": 230,
+            "width": 64,
+            "x": 676,
+            "y": 230
+          }
+        }
+      ],
+      "width": 844
+    },
+    "elmwoodLandscapeFinal": {
+      "height": 390,
+      "hud": "0 km/h\n0/12 gates · 34.0s · 4/4 place",
+      "hudRect": {
+        "bottom": 167.60416793823242,
+        "height": 51.60416793823242,
+        "left": 12,
+        "right": 171.70834350585938,
+        "top": 116,
+        "width": 159.70834350585938,
+        "x": 12,
+        "y": 116
+      },
+      "map": {
+        "bottom": 191.33334350585935,
+        "height": 181.33334350585935,
+        "left": 688,
+        "right": 832,
+        "top": 10,
+        "width": 144,
+        "x": 688,
+        "y": 10
+      },
+      "touch": [
+        {
+          "name": "Move joystick",
+          "rect": {
+            "bottom": 366,
+            "height": 136,
+            "left": 67.02083587646484,
+            "right": 203.02083587646484,
+            "top": 230,
+            "width": 136,
+            "x": 67.02083587646484,
+            "y": 230
+          }
+        },
+        {
+          "name": "Brake",
+          "rect": {
+            "bottom": 366,
+            "height": 64,
+            "left": 676,
+            "right": 740,
+            "top": 302,
+            "width": 64,
+            "x": 676,
+            "y": 302
+          }
+        },
+        {
+          "name": "Hop",
+          "rect": {
+            "bottom": 366,
+            "height": 80,
+            "left": 748,
+            "right": 828,
+            "top": 286,
+            "width": 80,
+            "x": 748,
+            "y": 286
+          }
+        },
+        {
+          "name": "Crouch",
+          "rect": {
+            "bottom": 276,
+            "height": 64,
+            "left": 760,
+            "right": 824,
+            "top": 212,
+            "width": 64,
+            "x": 760,
+            "y": 212
+          }
+        },
+        {
+          "name": "Recover",
+          "rect": {
+            "bottom": 330,
+            "height": 56,
+            "left": 610,
+            "right": 666,
+            "top": 274,
+            "width": 56,
+            "x": 610,
+            "y": 274
+          }
+        },
+        {
+          "name": "Camera",
+          "rect": {
+            "bottom": 264,
+            "height": 56,
+            "left": 610,
+            "right": 666,
+            "top": 208,
+            "width": 56,
+            "x": 610,
+            "y": 208
+          }
+        },
+        {
+          "name": "Trick",
+          "rect": {
+            "bottom": 294,
+            "height": 64,
+            "left": 676,
+            "right": 740,
+            "top": 230,
+            "width": 64,
+            "x": 676,
+            "y": 230
+          }
+        }
+      ],
+      "width": 844,
+      "rivals": "[{\"gate\":13,\"station\":308.57102422528453,\"speed\":6.430794801256387,\"finished\":true,\"recoveries\":0},{\"gate\":13,\"station\":308.43732710966594,\"speed\":4.596069763494916,\"finished\":true,\"recoveries\":0},{\"gate\":13,\"station\":308.4340447442033,\"speed\":6.358479051242452,\"finished\":true,\"recoveries\":0}]"
+    },
+    "swoopPortraitFinal": {
+      "compass": {
+        "bottom": 384,
+        "height": 44,
+        "left": 12,
+        "right": 210.39584350585935,
+        "top": 340,
+        "width": 198.39584350585935,
+        "x": 12,
+        "y": 340
+      },
+      "controls": [
+        {
+          "name": "Settings",
+          "rect": {
+            "bottom": 58,
+            "height": 48,
+            "left": 136.77084350585938,
+            "right": 190.16667938232425,
+            "top": 10,
+            "width": 53.39583587646485,
+            "x": 136.77084350585938,
+            "y": 10
+          }
+        },
+        {
+          "name": "Pause",
+          "rect": {
+            "bottom": 58,
+            "height": 48,
+            "left": 194.1666717529297,
+            "right": 238.25000762939453,
+            "top": 10,
+            "width": 44.08333587646485,
+            "x": 194.1666717529297,
+            "y": 10
+          }
+        },
+        {
+          "name": "Recover bike · R",
+          "rect": {
+            "bottom": 58,
+            "height": 48,
+            "left": 242.25,
+            "right": 330.6666717529297,
+            "top": 10,
+            "width": 88.41667175292969,
+            "x": 242.25,
+            "y": 10
+          }
+        },
+        {
+          "name": "Menu",
+          "rect": {
+            "bottom": 58,
+            "height": 48,
+            "left": 334.66668701171875,
+            "right": 378.6666870117187,
+            "top": 10,
+            "width": 44,
+            "x": 334.66668701171875,
+            "y": 10
+          }
+        },
+        {
+          "name": "Ride options",
+          "rect": {
+            "bottom": 832,
+            "height": 48,
+            "left": 125.33333587646484,
+            "right": 265.33333587646484,
+            "top": 784,
+            "width": 140,
+            "x": 125.33333587646484,
+            "y": 784
+          }
+        },
+        {
+          "name": "Steer and accelerate joystick",
+          "rect": {
+            "bottom": 760.1875228881836,
+            "height": 122.39583587646484,
+            "left": 12,
+            "right": 134.39583587646484,
+            "top": 637.7916870117188,
+            "width": 122.39583587646484,
+            "x": 12,
+            "y": 637.7916870117188
+          }
+        },
+        {
+          "name": "Trick",
+          "rect": {
+            "bottom": 681,
+            "height": 64,
+            "left": 205,
+            "right": 269,
+            "top": 617,
+            "width": 64,
+            "x": 205,
+            "y": 617
+          }
+        },
+        {
+          "name": "Brake",
+          "rect": {
+            "bottom": 766,
+            "height": 64,
+            "left": 208,
+            "right": 272,
+            "top": 702,
+            "width": 64,
+            "x": 208,
+            "y": 702
+          }
+        },
+        {
+          "name": "Crouch",
+          "rect": {
+            "bottom": 766,
+            "height": 64,
+            "left": 293,
+            "right": 357,
+            "top": 702,
+            "width": 64,
+            "x": 293,
+            "y": 702
+          }
+        },
+        {
+          "name": "Hold / hop",
+          "rect": {
+            "bottom": 689,
+            "height": 80,
+            "left": 285,
+            "right": 365,
+            "top": 609,
+            "width": 80,
+            "x": 285,
+            "y": 609
+          }
+        },
+        {
+          "name": "Recover",
+          "rect": {
+            "bottom": 596,
+            "height": 64,
+            "left": 293,
+            "right": 357,
+            "top": 532,
+            "width": 64,
+            "x": 293,
+            "y": 532
+          }
+        },
+        {
+          "name": "Open Dequindre Cut map",
+          "rect": {
+            "bottom": 185.31250762939453,
+            "height": 118.97917175292967,
+            "left": 223.75,
+            "right": 377.3333435058594,
+            "top": 66.33333587646484,
+            "width": 153.58334350585938,
+            "x": 223.75,
+            "y": 66.33333587646484
+          }
+        },
+        {
+          "name": "Zoom out mini-map",
+          "rect": {
+            "bottom": 263.6458435058594,
+            "height": 44,
+            "left": 223.75,
+            "right": 299.875,
+            "top": 219.64584350585935,
+            "width": 76.125,
+            "x": 223.75,
+            "y": 219.64584350585935
+          }
+        },
+        {
+          "name": "Zoom in mini-map",
+          "rect": {
+            "bottom": 263.6458435058594,
+            "height": 44,
+            "left": 299.875,
+            "right": 377.3333358764648,
+            "top": 219.64584350585935,
+            "width": 77.45833587646484,
+            "x": 299.875,
+            "y": 219.64584350585935
+          }
+        },
+        {
+          "name": "Restart race",
+          "rect": {
+            "bottom": 318.75,
+            "height": 44,
+            "left": 23.33333396911621,
+            "right": 116.72916984558104,
+            "top": 274.75,
+            "width": 93.39583587646484,
+            "x": 23.33333396911621,
+            "y": 274.75
+          }
+        },
+        {
+          "name": "Dog actions · G",
+          "rect": {
+            "bottom": 508,
+            "height": 44,
+            "left": 254.6666717529297,
+            "right": 378.6666717529297,
+            "top": 464,
+            "width": 124,
+            "x": 254.6666717529297,
+            "y": 464
+          }
+        },
+        {
+          "name": "Dog Sit",
+          "rect": {
+            "bottom": 349.7083435058594,
+            "height": 58,
+            "left": 310.29168701171875,
+            "right": 368.2916870117187,
+            "top": 291.7083435058594,
+            "width": 58,
+            "x": 310.29168701171875,
+            "y": 291.7083435058594
+          }
+        },
+        {
+          "name": "Dog Come",
+          "rect": {
+            "bottom": 434.1041870117187,
+            "height": 58,
+            "left": 310.29168701171875,
+            "right": 368.2916870117187,
+            "top": 376.1041870117187,
+            "width": 58,
+            "x": 310.29168701171875,
+            "y": 376.1041870117187
+          }
+        }
+      ],
+      "dogExpanded": "false",
+      "h": 844,
+      "hud": {
+        "bottom": 330.0833435058594,
+        "height": 254.08334350585935,
+        "left": 12,
+        "right": 210.39584350585935,
+        "top": 76,
+        "width": 198.39584350585935,
+        "x": 12,
+        "y": 76
+      },
+      "map": {
+        "bottom": 264.9791717529297,
+        "height": 199.9791717529297,
+        "left": 222.4166717529297,
+        "right": 378.6666717529297,
+        "top": 65,
+        "width": 156.25,
+        "x": 222.4166717529297,
+        "y": 65
+      },
+      "recordVisible": false,
+      "text": "RIVAL RACE4 / 422.2 s2621 m to finish · Gate 1/12 / AHEAD / 30 m to next gate1. Cyclist 1 · 20 km/h2. Cyclist 3 · 20 km/h3. Cyclist 2 · 21 km/h4. YOURestart race",
+      "w": 390
+    },
+    "swoopLandscapeFinal": {
+      "compass": {
+        "bottom": 109,
+        "height": 44,
+        "left": 312.28125,
+        "right": 531.71875,
+        "top": 65,
+        "width": 219.4375,
+        "x": 312.28125,
+        "y": 65
+      },
+      "controls": [
+        {
+          "name": "Settings",
+          "rect": {
+            "bottom": 58,
+            "height": 48,
+            "left": 569.0833740234375,
+            "right": 628.1458740234375,
+            "top": 10,
+            "width": 59.0625,
+            "x": 569.0833740234375,
+            "y": 10
+          }
+        },
+        {
+          "name": "Pause",
+          "rect": {
+            "bottom": 58,
+            "height": 48,
+            "left": 632.1458740234375,
+            "right": 680.9792098999023,
+            "top": 10,
+            "width": 48.83333587646485,
+            "x": 632.1458740234375,
+            "y": 10
+          }
+        },
+        {
+          "name": "Recover bike · R",
+          "rect": {
+            "bottom": 58,
+            "height": 48,
+            "left": 684.9791870117188,
+            "right": 782.5833587646484,
+            "top": 10,
+            "width": 97.60417175292967,
+            "x": 684.9791870117188,
+            "y": 10
+          }
+        },
+        {
+          "name": "Menu",
+          "rect": {
+            "bottom": 58,
+            "height": 48,
+            "left": 786.5833740234375,
+            "right": 832.0000419616699,
+            "top": 10,
+            "width": 45.41666793823242,
+            "x": 786.5833740234375,
+            "y": 10
+          }
+        },
+        {
+          "name": "Ride options",
+          "rect": {
+            "bottom": 378.6666870117187,
+            "height": 48,
+            "left": 352,
+            "right": 492,
+            "top": 330.66668701171875,
+            "width": 140,
+            "x": 352,
+            "y": 330.66668701171875
+          }
+        },
+        {
+          "name": "Steer and accelerate joystick",
+          "rect": {
+            "bottom": 348,
+            "height": 136,
+            "left": 67.02083587646484,
+            "right": 203.02083587646484,
+            "top": 212,
+            "width": 136,
+            "x": 67.02083587646484,
+            "y": 212
+          }
+        },
+        {
+          "name": "Trick",
+          "rect": {
+            "bottom": 254,
+            "height": 64,
+            "left": 659,
+            "right": 723,
+            "top": 190,
+            "width": 64,
+            "x": 659,
+            "y": 190
+          }
+        },
+        {
+          "name": "Brake",
+          "rect": {
+            "bottom": 334,
+            "height": 64,
+            "left": 662,
+            "right": 726,
+            "top": 270,
+            "width": 64,
+            "x": 662,
+            "y": 270
+          }
+        },
+        {
+          "name": "Crouch",
+          "rect": {
+            "bottom": 334,
+            "height": 64,
+            "left": 747,
+            "right": 811,
+            "top": 270,
+            "width": 64,
+            "x": 747,
+            "y": 270
+          }
+        },
+        {
+          "name": "Hold / hop",
+          "rect": {
+            "bottom": 262,
+            "height": 80,
+            "left": 739,
+            "right": 819,
+            "top": 182,
+            "width": 80,
+            "x": 739,
+            "y": 182
+          }
+        },
+        {
+          "name": "Recover",
+          "rect": {
+            "bottom": 254,
+            "height": 64,
+            "left": 577,
+            "right": 641,
+            "top": 190,
+            "width": 64,
+            "x": 577,
+            "y": 190
+          }
+        },
+        {
+          "name": "Open Dequindre Cut map",
+          "rect": {
+            "bottom": 177.3541717529297,
+            "height": 114.02083587646484,
+            "left": 683.3333740234375,
+            "right": 824.6667175292969,
+            "top": 63.33333587646485,
+            "width": 141.33334350585938,
+            "x": 683.3333740234375,
+            "y": 63.33333587646485
+          }
+        },
+        {
+          "name": "Restart race",
+          "rect": {
+            "bottom": 179.6666717529297,
+            "height": 44,
+            "left": 36.33333587646485,
+            "right": 129.7291717529297,
+            "top": 135.6666717529297,
+            "width": 93.39583587646484,
+            "x": 36.33333587646485,
+            "y": 135.6666717529297
+          }
+        },
+        {
+          "name": "Dog actions · G",
+          "rect": {
+            "bottom": 220.6666717529297,
+            "height": 44,
+            "left": 360,
+            "right": 484,
+            "top": 176.6666717529297,
+            "width": 124,
+            "x": 360,
+            "y": 176.6666717529297
+          }
+        },
+        {
+          "name": "Dog Sit",
+          "rect": {
+            "bottom": 295,
+            "height": 58,
+            "left": 308.5833435058594,
+            "right": 366.5833435058594,
+            "top": 237,
+            "width": 58,
+            "x": 308.5833435058594,
+            "y": 237
+          }
+        },
+        {
+          "name": "Dog Come",
+          "rect": {
+            "bottom": 295,
+            "height": 58,
+            "left": 393,
+            "right": 451,
+            "top": 237,
+            "width": 58,
+            "x": 393,
+            "y": 237
+          }
+        }
+      ],
+      "dogExpanded": "false",
+      "h": 390,
+      "hud": {
+        "bottom": 191,
+        "height": 126,
+        "left": 25,
+        "right": 245,
+        "top": 65,
+        "width": 220,
+        "x": 25,
+        "y": 65
+      },
+      "map": {
+        "bottom": 178.6875,
+        "height": 116.6875,
+        "left": 682,
+        "right": 826,
+        "top": 62,
+        "width": 144,
+        "x": 682,
+        "y": 62
+      },
+      "recordVisible": false,
+      "w": 844
+    }
+  }
+}

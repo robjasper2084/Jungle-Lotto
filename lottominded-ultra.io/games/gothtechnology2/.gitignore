@@ -15,3 +15,8 @@ dist/
 
 .swoop-builds/
 .game-builds/
+
+# Generated authoring data exceeds GitHub's 100 MB blob limit. Release uses gzip.
+/swoop-source/public/love-tag/swoop-detroit.json
+/love-tag-server/fixtures/swoop-detroit.json
+/store/public/arcade/swoop-detroit/love-tag/swoop-detroit.json

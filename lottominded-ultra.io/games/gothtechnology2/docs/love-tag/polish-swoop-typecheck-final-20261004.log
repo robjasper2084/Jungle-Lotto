@@ -1,0 +1,4 @@
+
+> digital-static-ride@0.9.0 check
+> tsc -p tsconfig.json
+

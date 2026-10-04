@@ -1,0 +1,19 @@
+{"product":"swoop-detroit","rules":"classic","phase":"results","simulatedSeconds":186.00000000004016,"elapsedMs":54824.5181,"graphNodes":14338,"distances":[89.61880240479783,620.41942572965,532.6148553024749,614.336210901566],"visited":[14,41,83,82],"illegalTicks":[0,180,0,0],"resets":[0,1,0,0],"tags":[0,1,0,0],"winners":["bot-2","bot-3"]}
+{"product":"swoop-detroit","rules":"spread","phase":"results","simulatedSeconds":186.00000000004016,"elapsedMs":60668.812900000004,"graphNodes":14338,"distances":[89.61880240479783,628.7972285611484,547.0190875742948,623.2190453405394],"visited":[14,48,84,83],"illegalTicks":[0,180,0,0],"resets":[0,1,0,0],"tags":[0,0,0,0],"winners":["bot-2","bot-3"]}
+{"product":"elmwood-explorer","rules":"classic","phase":"results","simulatedSeconds":186.00000000004016,"elapsedMs":6608.63440000001,"graphNodes":2341,"distances":[18.705517471718125,473.2810433976645,545.3866479637007,413.5579639632738],"visited":[5,15,56,41],"illegalTicks":[0,0,0,0],"resets":[0,0,0,0],"tags":[0,0,0,0],"winners":["bot-1","bot-2","bot-3"]}
+{"product":"elmwood-explorer","rules":"spread","phase":"results","simulatedSeconds":186.00000000004016,"elapsedMs":6380.88029999999,"graphNodes":2341,"distances":[18.705517471718125,473.2810433976645,545.3866479637007,413.5579639632738],"visited":[5,15,56,41],"illegalTicks":[0,0,0,0],"resets":[0,0,0,0],"tags":[0,0,0,0],"winners":["bot-1","bot-2","bot-3"]}
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: {"product":"swoop-detroit","rules":"classic","phase":"results","simulatedSeconds":186.00000000004016,"elapsedMs":54824.5181,"graphNodes":14338,"distances":[89.61880240479783,620.41942572965,532.6148553024749,614.336210901566],"visited":[14,41,83,82],"illegalTicks":[0,180,0,0],"resets":[0,1,0,0],"tags":[0,1,0,0],"winners":["bot-2","bot-3"]}
+    at file:///C:/Users/digit/Documents/phone/_goth_swoop_release_20260916/lottominded-ultra.io/games/gothtechnology2/love-tag-server/tests/map-ai.mjs:20:9 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: false,
+  expected: true,
+  operator: '==',
+  diff: 'simple'
+}
+
+Node.js v24.16.0

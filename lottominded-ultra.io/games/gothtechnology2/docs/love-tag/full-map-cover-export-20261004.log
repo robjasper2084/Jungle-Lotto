@@ -1,0 +1,3 @@
+(node:27472) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+{"product":"swoop-detroit","hash":"b711eab42414650e3ae3a3200e77a0a38a8303c4be881a97c19f29aef6836545","lanes":11372,"spawns":40,"colliders":1220,"bytes":141399891,"bounds":[-1143,-563,1552,1052]}

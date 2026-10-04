@@ -1,0 +1,50 @@
+(node:18648) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ four electric motos reach distinct speed limits, brake and steer with different geometry (46.2317ms)
+✔ unicycles retain original default and apply four distinct acceleration, turning and speed ceilings (229.0221ms)
+✔ fast motos stop before scenery and cross a small curb without a vertical snap (6.9784ms)
+✔ Blender motos have mechanical pivots and fitted joined rider limbs (268.5714ms)
+(node:19020) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ share drafts preserve the complete invitation including query and room fragment (1.6546ms)
+✔ TikTok opens its site while the copyable text contains the code and join instructions (0.3245ms)
+(node:30592) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ two thumb sticks steer independently; hopping and cancellation stay on the owning rider (3.1371ms)
+✔ release before resume, reverse steering and dedicated brake cannot latch cruise (1.0385ms)
+✔ guest roster slot owns input zero and no device controls a remote pane (0.58ms)
+✔ split-view preference defaults off, persists locally and does not change another device (1.3759ms)
+✔ opt-in AI fill validates host-generated seats without letting presence or peers substitute bots (0.9412ms)
+(node:2504) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ three host-driven expert EUC rivals earn every Cut checkpoint with a stopped human still in the room (14343.7346ms)
+ℹ {"bots":3,"peakKmh":71.65022585108078,"results":[{"id":"DS_Hoodie_Woman_01","gates":12,"time":163.78783872838},{"id":"DS_Mascot_Suit_01","gates":12,"time":152.60383526200366},{"id":"DS_Mascot_Hoodie_01","gates":12,"time":155.4892449942191}]}
+(node:30288) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ the greenway remains asphalt through overlapping concrete pedestrian crossings (1.2791ms)
+✔ curb ramp stays local to the crossing instead of stretching across a long sidewalk (1.8656ms)
+✔ overlapping road and walking surfaces have stable separated depth with a small rideable seam (0.4448ms)
+✔ curved street joins fill the outside wedge between rectangular segments (0.4217ms)
+✔ a road whose midpoint is outside the terrain still reaches every intersected tile (0.3243ms)
+✔ streets follow the rendered coarse terrain exactly with upward-facing asphalt (0.2138ms)
+✔ mapped Lafayette, Larned, Franklin and Antietam street sections survive boundary clipping (4.6921ms)
+(node:26136) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ crossing exclusion keeps both approaches and removes only the street footprint (1.5312ms)
+✔ empty and fully covered approaches leave no sliver triangles (1.0784ms)
+✔ curved offset sidewalks share exactly the same cross section at the bend (1.7066ms)
+✔ draped walking triangles do not cover motor roads or lose terrain support outside them (0.4471ms)
+✔ Atwater crossing finds mapped street footprints while raised bridges keep their layer (1.9001ms)
+✔ coarse asphalt fringe is cleared beside mapped roads across the city (55.9061ms)
+(node:25428) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ the parallel Riverwalk beside Atwater uses the existing concrete sidewalk (7.8144ms)
+✔ Atwater curb remains raised beside a parallel walking route (1.0859ms)
+ℹ tests 27
+ℹ suites 0
+ℹ pass 27
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 15207.1452

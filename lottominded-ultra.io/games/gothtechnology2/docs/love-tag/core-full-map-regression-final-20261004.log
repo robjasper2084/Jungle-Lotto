@@ -1,0 +1,47 @@
+(node:38124) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ fall camera frames the rider and wheel midpoint in world space and leaves riding unchanged (2.6212ms)
+✔ fall preserves the entry posture, releases feet before impact, and settles without perpetual bouncing (2.7875ms)
+✔ fall direction follows travel and bank; faster crashes slide further (0.7273ms)
+✔ fall transforms are continuous, finite and deterministic at fixed simulation times (4.2419ms)
+✔ the drop accelerates before impact and the slide stops completely after contact (0.2921ms)
+✔ collision fall respects the wall sweep and recovery clears all fall channels (15.6665ms)
+(node:25772) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ walking-speed carving fits a lane and the rider looks into the turn (31.9516ms)
+ℹ Walking-speed turn radius: 0.64 m
+✔ mirrored steering produces mirrored trajectories and no stationary orbit (25.2599ms)
+✔ steering reversal is continuous and clean full-speed carving has no artificial wobble (20.9006ms)
+✔ air steering rotates the rider without redirecting or accelerating flight (13.3496ms)
+✔ a fast sideways landing falls once and recovers cleanly (11.1806ms)
+✔ holding hop through landing cannot repeatedly bounce (10.2538ms)
+✔ a new hop pressed just before touchdown is buffered to the next ground contact (2.4852ms)
+✔ a hop just after rolling off an edge gets coyote time (3.7092ms)
+✔ landing drives compression and suspension, then settles without persistent jitter (7.2231ms)
+ℹ Landing compression peak: 0.793; suspension travel: 3.5 cm
+✔ forward drive has a stable soft top speed and braking brings it to rest (26.2835ms)
+ℹ 8 s speed: 68.6 km/h; top: 68.6 km/h; stop: 1.98 s / 20.0 m
+✔ fixed 120 Hz simulation produces the same motion at 30, 60 and 144 rendered frames per second (32.0443ms)
+✔ critical spring solves a constant target consistently across update frequencies (0.2577ms)
+(node:18260) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ bots cannot route toward the nearest rejected isolated map endpoint (2.9918ms)
+✔ snapshot JSON restore replays all controller state, airborne, springs and trick state (23.01ms)
+✔ handling injection leaves default controller tuning unchanged (0.8703ms)
+✔ relative swept collision catches moving crossings and rejects elevation separation (0.2691ms)
+✔ Classic transfer, locks and stale projectile epoch enforce one It (20.0582ms)
+✔ wall at muzzle blocks a heart and does not confirm a tag (5.1158ms)
+✔ Spread final catch precedes deterministic result and no caught runner returns (22.4384ms)
+✔ head start disables It movement and tagging; resources regenerate only active (6.8325ms)
+✔ forged, stale, duplicate, nonfinite and overbound commands rejected (0.3513ms)
+✔ manual reset preserves ammunition and burst, incurs penalty and role (13.2805ms)
+✔ three minute canonical rules and heart speed are unchanged (0.2142ms)
+✔ batched network commands preserve one-shot actions until one simulation tick consumes them (12.5241ms)
+ℹ tests 30
+ℹ suites 0
+ℹ pass 30
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 424.1156

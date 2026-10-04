@@ -1,0 +1,260 @@
+{
+  "at": "2026-10-04T05:36:54.566Z",
+  "scope": "Actual packaged browser rival runs; player remained on grid. Full player course covered by controller tests, not manual browser driving.",
+  "swoop": {
+    "height": 960,
+    "race": {
+      "countdown": 0,
+      "done": false,
+      "elapsed": 546.8083333330004,
+      "pilots": [
+        {
+          "backoff": 0,
+          "blocked": false,
+          "blockedFor": 0,
+          "forward": null,
+          "ground": [
+            {
+              "distance": -0.6,
+              "height": 8.40176008718495,
+              "offCourse": false,
+              "surface": "pavement"
+            },
+            {
+              "distance": -0.53,
+              "height": 8.40176008718495,
+              "offCourse": false,
+              "surface": "pavement"
+            },
+            {
+              "distance": 0,
+              "height": 8.40176008718495,
+              "offCourse": false,
+              "surface": "pavement"
+            },
+            {
+              "distance": 0.56,
+              "height": 8.40176008718495,
+              "offCourse": false,
+              "surface": "pavement"
+            },
+            {
+              "distance": 0.65,
+              "height": 8.40176008718495,
+              "offCourse": false,
+              "surface": "pavement"
+            }
+          ],
+          "heading": -2.604326781032938,
+          "nearby": [],
+          "position": {
+            "x": -882.1398613242561,
+            "y": 8.401760182552382,
+            "z": -60.86087429021322
+          },
+          "speed": 0,
+          "state": "stopped"
+        },
+        {
+          "backoff": 0,
+          "blocked": false,
+          "blockedFor": 0,
+          "forward": null,
+          "ground": [
+            {
+              "distance": -0.6,
+              "height": 8.4267599513465,
+              "offCourse": false,
+              "surface": "pavement"
+            },
+            {
+              "distance": -0.53,
+              "height": 8.4267599513465,
+              "offCourse": false,
+              "surface": "pavement"
+            },
+            {
+              "distance": 0,
+              "height": 8.4267599513465,
+              "offCourse": false,
+              "surface": "pavement"
+            },
+            {
+              "distance": 0.56,
+              "height": 8.4267599513465,
+              "offCourse": false,
+              "surface": "pavement"
+            },
+            {
+              "distance": 0.65,
+              "height": 8.4267599513465,
+              "offCourse": false,
+              "surface": "pavement"
+            }
+          ],
+          "heading": -2.593425400259802,
+          "lane": 0,
+          "lastBlock": {
+            "actors": [
+              "traffic-1001"
+            ],
+            "groundHeight": 0.5389016527219974,
+            "heading": -1.7036575142571535,
+            "hit": null,
+            "offCourse": false,
+            "x": 931.994338616877,
+            "y": 0.5386658627077303,
+            "z": 55.18112247873761
+          },
+          "nearby": [],
+          "position": {
+            "x": -882.2361525171485,
+            "y": 8.426760046713932,
+            "z": -58.12532752544282
+          },
+          "speed": 0,
+          "state": "stopped"
+        },
+        {
+          "backoff": 0,
+          "blocked": false,
+          "blockedFor": 0,
+          "forward": null,
+          "ground": [
+            {
+              "distance": -0.6,
+              "height": 8.40176009601682,
+              "offCourse": false,
+              "surface": "pavement"
+            },
+            {
+              "distance": -0.53,
+              "height": 8.40176009601682,
+              "offCourse": false,
+              "surface": "pavement"
+            },
+            {
+              "distance": 0,
+              "height": 8.40176009601682,
+              "offCourse": false,
+              "surface": "pavement"
+            },
+            {
+              "distance": 0.56,
+              "height": 8.40176009601682,
+              "offCourse": false,
+              "surface": "pavement"
+            },
+            {
+              "distance": 0.65,
+              "height": 8.40176009601682,
+              "offCourse": false,
+              "surface": "pavement"
+            }
+          ],
+          "heading": -2.6071268460109955,
+          "lane": -1.65,
+          "lastBlock": {
+            "actors": [
+              "traffic-1001"
+            ],
+            "groundHeight": 0.538904363727502,
+            "heading": -1.6464110475503018,
+            "hit": null,
+            "offCourse": false,
+            "x": 931.963814239526,
+            "y": 0.538667977666787,
+            "z": 55.546550914214656
+          },
+          "nearby": [],
+          "position": {
+            "x": -882.1765319827023,
+            "y": 8.401760191384252,
+            "z": -60.06683357026855
+          },
+          "speed": 0,
+          "state": "stopped"
+        }
+      ],
+      "place": 4,
+      "racers": [
+        {
+          "finish": null,
+          "gate": 0,
+          "id": "DS_Man_01",
+          "missed": false,
+          "offset": -1.0151845439331343e-13,
+          "player": true,
+          "previous": 8.000000000000066,
+          "speed": 4.4e-323,
+          "station": 8.000000000000066
+        },
+        {
+          "finish": 371.3499519076544,
+          "gate": 12,
+          "id": "DS_Hoodie_Woman_01",
+          "missed": false,
+          "offset": -1.2867123569411127,
+          "player": false,
+          "previous": 2629.242934991984,
+          "speed": 7.047721618932952,
+          "station": 2629.242934991984
+        },
+        {
+          "finish": 384.2774766260089,
+          "gate": 12,
+          "id": "DS_Mascot_Suit_01",
+          "missed": false,
+          "offset": 1.4115961597839672,
+          "player": false,
+          "previous": 2629.282533113942,
+          "speed": 6.996125624144186,
+          "station": 2629.282533113942
+        },
+        {
+          "finish": 377.1935318874298,
+          "gate": 12,
+          "id": "DS_Mascot_Hoodie_01",
+          "missed": false,
+          "offset": -0.4884072847689038,
+          "player": false,
+          "previous": 2629.2866754779716,
+          "speed": 7.025493170552582,
+          "station": 2629.2866754779716
+        }
+      ]
+    },
+    "url": "http://127.0.0.1:8212/Jungle-Lotto/lottominded-ultra.io/games/gothtechnology2/arcade/swoop-detroit/?tagReview=1",
+    "width": 1706
+  },
+  "elmwood": {
+    "elapsed": "0 km/h\n0/12 gates · 529.9s · 4/4 place",
+    "height": 844,
+    "quality": "low",
+    "rivals": [
+      {
+        "finished": true,
+        "gate": 13,
+        "recoveries": 0,
+        "speed": 3.3249907799019116,
+        "station": 308.4120754123998
+      },
+      {
+        "finished": true,
+        "gate": 13,
+        "recoveries": 0,
+        "speed": 6.159519785629229,
+        "station": 308.45640562332125
+      },
+      {
+        "finished": true,
+        "gate": 13,
+        "recoveries": 0,
+        "speed": 6.300783240499932,
+        "station": 308.4792272913415
+      }
+    ],
+    "url": "http://127.0.0.1:8212/Jungle-Lotto/lottominded-ultra.io/games/gothtechnology2/arcade/elmwood-explorer/elmwood.html?tagReview=1",
+    "width": 390
+  }
+}

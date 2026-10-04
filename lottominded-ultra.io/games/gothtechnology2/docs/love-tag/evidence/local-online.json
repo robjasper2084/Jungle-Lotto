@@ -1,0 +1,71 @@
+{
+  "at": "2026-10-04T16:26:19.703Z",
+  "endpoint": "http://127.0.0.1:8211",
+  "kind": "actual Colyseus server + independent SDK clients, not browser QA",
+  "evidence": [
+    {
+      "product": "elmwood-explorer",
+      "ruleset": "spread",
+      "roomId": "CsXpB6ykS",
+      "code": "60196CAA",
+      "humans": 2,
+      "bots": 2,
+      "independentMovement": true,
+      "serverTag": true,
+      "reconnectSeconds": 5,
+      "seatRetained": true,
+      "canonicalDuration": 180,
+      "resultIdentical": true,
+      "rematch": true,
+      "hash": "81394a54680a00577d94367d07f455cae77cd9cacbbfb4e8b20806a9bb50600b"
+    },
+    {
+      "product": "elmwood-explorer",
+      "ruleset": "classic",
+      "roomId": "CaH3bScr6",
+      "code": "C7AA8C53",
+      "humans": 2,
+      "bots": 0,
+      "independentMovement": true,
+      "serverTag": true,
+      "reconnectSeconds": 5,
+      "seatRetained": true,
+      "canonicalDuration": 180,
+      "resultIdentical": true,
+      "rematch": true,
+      "hash": "81394a54680a00577d94367d07f455cae77cd9cacbbfb4e8b20806a9bb50600b"
+    },
+    {
+      "product": "swoop-detroit",
+      "ruleset": "spread",
+      "roomId": "jfddbh3xX",
+      "code": "333A6EE6",
+      "humans": 2,
+      "bots": 2,
+      "independentMovement": true,
+      "serverTag": true,
+      "reconnectSeconds": 5,
+      "seatRetained": true,
+      "canonicalDuration": 180,
+      "resultIdentical": true,
+      "rematch": true,
+      "hash": "8692124ce27f6b62ce39f669d5e53832a10a716862fddcc6b73518a4b1521329"
+    },
+    {
+      "product": "swoop-detroit",
+      "ruleset": "classic",
+      "roomId": "FMf0Ulq1Y",
+      "code": "0775D666",
+      "humans": 2,
+      "bots": 0,
+      "independentMovement": true,
+      "serverTag": true,
+      "reconnectSeconds": 5,
+      "seatRetained": true,
+      "canonicalDuration": 180,
+      "resultIdentical": true,
+      "rematch": true,
+      "hash": "8692124ce27f6b62ce39f669d5e53832a10a716862fddcc6b73518a4b1521329"
+    }
+  ]
+}

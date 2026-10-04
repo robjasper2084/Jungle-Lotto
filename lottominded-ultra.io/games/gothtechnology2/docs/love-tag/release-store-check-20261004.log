@@ -1,0 +1,4 @@
+
+> gothtechnology-game@1.0.0 check:store
+> tsc --noEmit
+

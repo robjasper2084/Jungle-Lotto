@@ -1,0 +1,39 @@
+(node:39452) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ two thumb sticks steer independently; hopping and cancellation stay on the owning rider (2.213ms)
+✔ release before resume, reverse steering and dedicated brake cannot latch cruise (0.5186ms)
+✔ guest roster slot owns input zero and no device controls a remote pane (0.3451ms)
+✔ split-view preference defaults off, persists locally and does not change another device (0.8069ms)
+✔ opt-in AI fill validates host-generated seats without letting presence or peers substitute bots (0.7323ms)
+(node:37128) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ invites require a complete high-entropy code; input rejects non-finite and out-of-range controls (1.5625ms)
+✔ host has slot one, four actual identities are admitted and avatars remain distinct (0.5959ms)
+✔ network poses only enter the current match in sequence with bounded numbers (0.8083ms)
+✔ malformed launches cannot throw or substitute a participant or map (0.5891ms)
+(node:12804) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ two keyboards own separate throttle, steering, hop and recovery controls (3.5748ms)
+✔ per-player cruise cancels on braking or interruption without affecting the other rider (0.856ms)
+✔ controller assignments never broadcast a pad to both riders and interruption requires neutral (1.9548ms)
+✔ one finish does not stop the other player and ordered gates are required for each (12.0367ms)
+✔ two-player countdown, paused zero ticks, and restart preserve fairness without records (5.38ms)
+✔ a local crash settles independently and recovery cannot move the other rider or advance gates (64.2925ms)
+✔ split viewports cover odd and portrait dimensions once, without overlap or hidden panes (0.271ms)
+✔ both local riders can complete the full route to Mack Avenue with the existing controllers (16845.7795ms)
+ℹ [{"id":"DS_Man_01","seconds":409.28977020906257,"gates":12},{"id":"DS_Hoodie_Woman_01","seconds":464.92322450882773,"gates":12}]
+(node:25660) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ a second finger cannot steal the riding stick or release it (2.0431ms)
+✔ diagonal input stays in a unit circle and small thumb jitter is neutral (0.8987ms)
+✔ hold and release jump supports simultaneous steering and queues exactly one hop (0.3767ms)
+✔ cancelled jumps and lost touches never trigger a hop or stick a button (0.2754ms)
+✔ brake stops both forward and reverse travel without initiating reverse at rest (0.2238ms)
+ℹ tests 22
+ℹ suites 0
+ℹ pass 22
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 17658.9315

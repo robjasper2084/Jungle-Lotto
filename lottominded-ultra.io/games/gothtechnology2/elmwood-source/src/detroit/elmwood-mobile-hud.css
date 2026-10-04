@@ -30,6 +30,11 @@ body:has(#view[data-riding="true"]) #status{max-width:40vw;bottom:calc(66px + en
 body.touch-riding:has(#view[data-riding="true"]) #status{display:none}
 body:has(#view[data-riding="true"]) :focus-visible{outline:3px solid var(--ride-accent);outline-offset:3px}
 body.layout-editing .community-panel,body.layout-editing .game-film-toolbar,body.layout-editing .session-hud{visibility:hidden!important}
+
+/* Keep race feedback above the left thumb on short landscape screens. */
+@media (orientation:landscape) and (max-height:540px){
+ body:has(#view[data-riding="true"]) .session-hud{top:116px!important;max-height:calc(100dvh - 274px);overflow:auto;max-width:176px}
+}
 @media(max-width:600px){
   body:has(#view[data-riding="true"]) .tactical-minimap{width:150px}
   body:has(#view[data-riding="true"]) #elmwood-controls,body:has(#view[data-riding="true"]) .game-film-toolbar{max-width:calc(100vw - 178px)}

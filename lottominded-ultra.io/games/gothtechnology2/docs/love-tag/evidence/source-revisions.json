@@ -1,0 +1,369 @@
+{
+  "at": "2026-10-04T03:50:20.847Z",
+  "repositoryHead": "aeb36453d24b1ab30798a2af78809bc639070aac",
+  "branch": "upgrade-redesign",
+  "dirty": true,
+  "note": "Latest file receipt including race maps, standalone Explorer creek-side thinning, and Elmwood TAG fixture 20261003.2. Local review only; older full-round evidence predates these changes.",
+  "files": [
+    {
+      "path": "_goth_swoop_release_20260916/lottominded-ultra.io/games/gothtechnology2/elmwood-source/public/elmwood/placements.json",
+      "sha256": "cac9db165c1e2340f33ff0eb46c71cabad58e24fae5d8a1b855db77bbfcb3af5"
+    },
+    {
+      "path": "_goth_swoop_release_20260916/lottominded-ultra.io/games/gothtechnology2/elmwood-source/public/love-tag/elmwood-explorer.json",
+      "sha256": "8013406780f8e9a087d519ce6c6f66121dad18ae7d105e5d290f85999dbe84ad"
+    },
+    {
+      "path": "_goth_swoop_release_20260916/lottominded-ultra.io/games/gothtechnology2/elmwood-source/src/detroit/elmwood-ride.ts",
+      "sha256": "91a3709462eb15e605114520f3b4b34af511a3a4fec2dcca6111e646043c56af"
+    },
+    {
+      "path": "_goth_swoop_release_20260916/lottominded-ultra.io/games/gothtechnology2/elmwood-source/src/detroit/elmwoodRaceMap.test.ts",
+      "sha256": "bb0b02f05f5423185b7651d25ededa32d7e3dedd555c48f3aef621d46f0b2f3e"
+    },
+    {
+      "path": "_goth_swoop_release_20260916/lottominded-ultra.io/games/gothtechnology2/elmwood-source/src/detroit/elmwoodRaceMap.ts",
+      "sha256": "20c618987437f4d1ea7b33d64702980ead708dc155ac5e131d83115d1f94f0c3"
+    },
+    {
+      "path": "_goth_swoop_release_20260916/lottominded-ultra.io/games/gothtechnology2/elmwood-source/src/detroit/raceMap.test.ts",
+      "sha256": "3d1942e62efcdd3fca2dad500590229edf4c42c738030ae99a86e091a4b6304c"
+    },
+    {
+      "path": "_goth_swoop_release_20260916/lottominded-ultra.io/games/gothtechnology2/elmwood-source/src/detroit/raceMap.ts",
+      "sha256": "c5c6e73d9dfc8417cea0148fceab77a9cd2e83ad6e4a35d77c01e3eba94cb663"
+    },
+    {
+      "path": "_goth_swoop_release_20260916/lottominded-ultra.io/games/gothtechnology2/elmwood-source/src/detroit/tacticalHud.css",
+      "sha256": "97425b6f72d2adc78932d86e36547327de2b7843e0ea08b27c76e6c489affbda"
+    },
+    {
+      "path": "_goth_swoop_release_20260916/lottominded-ultra.io/games/gothtechnology2/elmwood-source/src/detroit/tacticalMap.ts",
+      "sha256": "7cd4066fd437fe0d2723101307dfcf91d4045086ee792b53e5021b9421e4d3d6"
+    },
+    {
+      "path": "_goth_swoop_release_20260916/lottominded-ultra.io/games/gothtechnology2/love-tag-server/fixtures/elmwood-explorer.json",
+      "sha256": "8013406780f8e9a087d519ce6c6f66121dad18ae7d105e5d290f85999dbe84ad"
+    },
+    {
+      "path": "_goth_swoop_release_20260916/lottominded-ultra.io/games/gothtechnology2/love-tag-server/package-lock.json",
+      "sha256": "13de6c697d3e9317c6e3da5de7fa236c25ffaa3bb3e4e0e3989426792c231b0c"
+    },
+    {
+      "path": "_goth_swoop_release_20260916/lottominded-ultra.io/games/gothtechnology2/love-tag-server/package.json",
+      "sha256": "ee88325729977f3d8edd86e24462130683e179f78842549119628882363acf51"
+    },
+    {
+      "path": "_goth_swoop_release_20260916/lottominded-ultra.io/games/gothtechnology2/love-tag-server/src/server.ts",
+      "sha256": "c0c7b860ab132ebf962f546b4d4ea9da484ea8a0fb551083ba8c78d356822805"
+    },
+    {
+      "path": "_goth_swoop_release_20260916/lottominded-ultra.io/games/gothtechnology2/scripts/build-elmwood-explorer.mjs",
+      "sha256": "d184b291361e3e0a66b46242570e8b38a51cbe8fa1afafaefe2291dc269410dd"
+    },
+    {
+      "path": "_goth_swoop_release_20260916/lottominded-ultra.io/games/gothtechnology2/scripts/build-love-tag-preview.mjs",
+      "sha256": "521f71dbd8134b314c169338236905f041df8dcf6b4ef336a5af765f546fa583"
+    },
+    {
+      "path": "_goth_swoop_release_20260916/lottominded-ultra.io/games/gothtechnology2/scripts/build-swoop-detroit.mjs",
+      "sha256": "1f7d8ad7426b0f1f54350b149aae436be7a3900915cbe8a8ccf768db9f135a25"
+    },
+    {
+      "path": "_goth_swoop_release_20260916/lottominded-ultra.io/games/gothtechnology2/scripts/export-love-tag-fixtures.mjs",
+      "sha256": "9a47d9a0e460fa038a218c68de24312267d5cc720e1227bf79bc3ee3680bcb36"
+    },
+    {
+      "path": "_goth_swoop_release_20260916/lottominded-ultra.io/games/gothtechnology2/scripts/game-package.mjs",
+      "sha256": "66f3f7a28a04d40b2b41390118bf6b884c7c4dbb83f6c25830a0166ea96fb2fe"
+    },
+    {
+      "path": "_goth_swoop_release_20260916/lottominded-ultra.io/games/gothtechnology2/swoop-source/detroit.html",
+      "sha256": "bff4625afd02c8d96a90f516ba410a0e4cd798e76590de7158fd48b29eaeceac"
+    },
+    {
+      "path": "_goth_swoop_release_20260916/lottominded-ultra.io/games/gothtechnology2/swoop-source/public/love-tag/elmwood-explorer.json",
+      "sha256": "8013406780f8e9a087d519ce6c6f66121dad18ae7d105e5d290f85999dbe84ad"
+    },
+    {
+      "path": "_goth_swoop_release_20260916/lottominded-ultra.io/games/gothtechnology2/swoop-source/src/detroit/detroitRaceMap.test.ts",
+      "sha256": "a4926e32bdc8f88db95f5a7bd19cb624f702cf0436f68a7d1df7dc12892a59e4"
+    },
+    {
+      "path": "_goth_swoop_release_20260916/lottominded-ultra.io/games/gothtechnology2/swoop-source/src/detroit/detroitRaceMap.ts",
+      "sha256": "633d6d0fbfb125ae688517345b372367a4545cdf1e881a9e73498b3e0b406474"
+    },
+    {
+      "path": "_goth_swoop_release_20260916/lottominded-ultra.io/games/gothtechnology2/swoop-source/src/detroit/dryStreetSite.ts",
+      "sha256": "ba1fe481c09e5b475b6fbcfc982311597511c06b24bf22361016bb0125398dfd"
+    },
+    {
+      "path": "_goth_swoop_release_20260916/lottominded-ultra.io/games/gothtechnology2/swoop-source/src/detroit/main.ts",
+      "sha256": "fc663f685ef039a2fdf5a5361acf574f40cfe1ba8967952083721e15adba8479"
+    },
+    {
+      "path": "_goth_swoop_release_20260916/lottominded-ultra.io/games/gothtechnology2/swoop-source/src/detroit/raceMap.test.ts",
+      "sha256": "3d1942e62efcdd3fca2dad500590229edf4c42c738030ae99a86e091a4b6304c"
+    },
+    {
+      "path": "_goth_swoop_release_20260916/lottominded-ultra.io/games/gothtechnology2/swoop-source/src/detroit/raceMap.ts",
+      "sha256": "c5c6e73d9dfc8417cea0148fceab77a9cd2e83ad6e4a35d77c01e3eba94cb663"
+    },
+    {
+      "path": "_goth_swoop_release_20260916/lottominded-ultra.io/games/gothtechnology2/swoop-source/src/detroit/tacticalHud.css",
+      "sha256": "aeeb5b65c3cde2820de7fc4d10f47fdb76aabf89cae53f4e6baf4b663d3ee21b"
+    },
+    {
+      "path": "_goth_swoop_release_20260916/lottominded-ultra.io/games/gothtechnology2/swoop-source/src/detroit/tacticalMap.ts",
+      "sha256": "7cd4066fd437fe0d2723101307dfcf91d4045086ee792b53e5021b9421e4d3d6"
+    },
+    {
+      "path": "Digital_Static_RideCore/src/animationCadence.ts",
+      "sha256": "b32875eb7eb806e29cbe26ab8702595dadcbbeddb300607eb99d51c4c119c347"
+    },
+    {
+      "path": "Digital_Static_RideCore/src/balanceEngine.ts",
+      "sha256": "12445ba2de9269882906fe5c70009f96eb4e386f4541b5b87b4a60402dcd32b6"
+    },
+    {
+      "path": "Digital_Static_RideCore/src/bicycle.ts",
+      "sha256": "086ec46602f40ccc89c90643d8ba298365e7f698bce8909d0fbd9521ab4f89e2"
+    },
+    {
+      "path": "Digital_Static_RideCore/src/cameraClearance.ts",
+      "sha256": "c48a8ca69051f0ce7934d563cf6c71b9badba0133f35b797f6c34784c7913189"
+    },
+    {
+      "path": "Digital_Static_RideCore/src/communityPanel.ts",
+      "sha256": "21fec08f772d3cba55588a87fdbe8fec0d7807bdd6db95584ee3b1194ad7db5d"
+    },
+    {
+      "path": "Digital_Static_RideCore/src/communityRide.ts",
+      "sha256": "52d0a1e9ba44e0535bfc25abaa0477731d14c777001008a18f6e0b484239267f"
+    },
+    {
+      "path": "Digital_Static_RideCore/src/companion.ts",
+      "sha256": "f6d6364dc7f283bd2087412c84daf2331dc4b2436c57a8aadecdbb8f8377d054"
+    },
+    {
+      "path": "Digital_Static_RideCore/src/companionNavigation.ts",
+      "sha256": "ee888ce0c36875e24e5d6a8afdd6207af1b9b4a021af3702756acc139e8ac923"
+    },
+    {
+      "path": "Digital_Static_RideCore/src/controller.ts",
+      "sha256": "95b790f5f204847f1b1ae2961fd5ed6708143a54771b2f454c50a86316f19563"
+    },
+    {
+      "path": "Digital_Static_RideCore/src/crashContact.ts",
+      "sha256": "b942e39eae1e90383a19f4de1bac91400c552dede7aad7920bb2ac56b359380c"
+    },
+    {
+      "path": "Digital_Static_RideCore/src/cycling.ts",
+      "sha256": "8adec76a94f1ec00fcb9f4179aa7fdc7e37af84112ade4421611d48ab6f0e723"
+    },
+    {
+      "path": "Digital_Static_RideCore/src/cyclingSession.ts",
+      "sha256": "8d4d3159f1076663c384e9fbc6014385f732a41e66bae7a0f031d9e43eb925ce"
+    },
+    {
+      "path": "Digital_Static_RideCore/src/cyclingView.ts",
+      "sha256": "8fdb85128100f441a52d428a0b8b1f9299f536819eb40515cfbf46c26b27e7a7"
+    },
+    {
+      "path": "Digital_Static_RideCore/src/cyclistMotion.ts",
+      "sha256": "bda737ea7c787285dc4bab467d324cd360028d2161a0051d7550aa6db7aef805"
+    },
+    {
+      "path": "Digital_Static_RideCore/src/dog-gaits.json",
+      "sha256": "d1043991d37ae7278e0a653fcabac87a552225cb3614bb7c72f5f605342eb086"
+    },
+    {
+      "path": "Digital_Static_RideCore/src/dogGait.ts",
+      "sha256": "25bd4fb489b7c4516e5bae72b1d69032b96b7fef4c3923e72c98514cc31f3259"
+    },
+    {
+      "path": "Digital_Static_RideCore/src/fall-curves.json",
+      "sha256": "e1409c39bdca096576244b57f2f287226a76602e0bc6f85acf61216d4c1fea72"
+    },
+    {
+      "path": "Digital_Static_RideCore/src/fallMotion.ts",
+      "sha256": "1ba78d409c5a5e95b560860bde8d85bb44cb509956e7bd57aad949a5396a41c5"
+    },
+    {
+      "path": "Digital_Static_RideCore/src/fallPosture.ts",
+      "sha256": "01a32bbd14ee9de46c683f0063fcccc17de0bb030a757cde5b735a50e872bafe"
+    },
+    {
+      "path": "Digital_Static_RideCore/src/followCamera.ts",
+      "sha256": "2243d8ec0dee342fb3812b28753081385dc0ee5b57da4b93286c665d508d5d25"
+    },
+    {
+      "path": "Digital_Static_RideCore/src/gamepadInput.ts",
+      "sha256": "4f401231c8b46d8c0f4d97c2bb36342bdaded7d7525edd681b0185e83b7bb371"
+    },
+    {
+      "path": "Digital_Static_RideCore/src/handlebarGrip.ts",
+      "sha256": "82135c53277de4d081fbce7b80672d20943c2d9e48a2be6326d59efa3d463ad4"
+    },
+    {
+      "path": "Digital_Static_RideCore/src/index.ts",
+      "sha256": "c688d5bbc3eda920f0196db59c0baab309d74029028a75ce652de54bd240cba4"
+    },
+    {
+      "path": "Digital_Static_RideCore/src/input.ts",
+      "sha256": "55d7f85f1d75b39eef1f24cf5e73eb7f9adb0488ca1e3eeff67ec264d54beb92"
+    },
+    {
+      "path": "Digital_Static_RideCore/src/naturalMotion.ts",
+      "sha256": "a3ec852183c3ce3a03c542ddd925f9cdfc6da81d5409417c2a87d6b189a82151"
+    },
+    {
+      "path": "Digital_Static_RideCore/src/pedalSparks.ts",
+      "sha256": "c0d749ca3b50dad378dc3949333123cac1b42792abf23de597f5f71c5fbfaa6f"
+    },
+    {
+      "path": "Digital_Static_RideCore/src/profiles.ts",
+      "sha256": "1fb1061a5b7ec3a38709630e13530c10be00204b951cacd1a362a46c88428118"
+    },
+    {
+      "path": "Digital_Static_RideCore/src/rideAudio.ts",
+      "sha256": "d6fb925e1c2caa9f296707c867545dd6acefbda0430bbd638635fcaf96f6e862"
+    },
+    {
+      "path": "Digital_Static_RideCore/src/rideComfort.ts",
+      "sha256": "07979ec9bd57036f32e280f33be96abf26c12c40c30541572dd5388c23646800"
+    },
+    {
+      "path": "Digital_Static_RideCore/src/ridecore.ts",
+      "sha256": "4695c66c0f2a96b9f85583fc47350787f17365f6eced7110aca815600e99a390"
+    },
+    {
+      "path": "Digital_Static_RideCore/src/rideDynamics.ts",
+      "sha256": "36f687fa19ad69aad6d2bb577c4c59637dd00ef46b5608fc402c64942f853c76"
+    },
+    {
+      "path": "Digital_Static_RideCore/src/rideFeedback.ts",
+      "sha256": "32d39f2139566c55687d952053a2e1007345f7d568cdf44d73157ff03e0776dd"
+    },
+    {
+      "path": "Digital_Static_RideCore/src/ridePractice.ts",
+      "sha256": "96f67d2c76fe3f4bdc851cb14f8bd385dc292eed6ce2818da7ca7f64c625b5c3"
+    },
+    {
+      "path": "Digital_Static_RideCore/src/riderMotion.ts",
+      "sha256": "6834f1465d45039c3a428bcdc203c352122a74cff4abb37262424233956776c7"
+    },
+    {
+      "path": "Digital_Static_RideCore/src/specialMoves.ts",
+      "sha256": "9e1423af2fd86724071666d42a399af7b014a127180a9f5956de40858c6e41ad"
+    },
+    {
+      "path": "Digital_Static_RideCore/src/tag.ts",
+      "sha256": "5194adc0ff05e61826767f37e6be546c81324c4f6a582f45b9491f0e5299e0ae"
+    },
+    {
+      "path": "Digital_Static_RideCore/src/tag/fixture.ts",
+      "sha256": "a284694054ae42704c2b7b332fc931e9e207237a2c7f6f09e16801063b23e754"
+    },
+    {
+      "path": "Digital_Static_RideCore/src/tag/navigation.ts",
+      "sha256": "d833be7331c61c46a36cd70a4fe05de55c5b801408eebc2dd067e111da11cb04"
+    },
+    {
+      "path": "Digital_Static_RideCore/src/tag/rules.ts",
+      "sha256": "3051ba58b776c0f5b0b58ab01a39aec31cb0b3b1185d3fa51b2f15eddbab97bb"
+    },
+    {
+      "path": "Digital_Static_RideCore/src/tagClient.ts",
+      "sha256": "23d9a8194568ba558aff627222cf3e31463091a633a442dcaab2a8c7a3eb029c"
+    },
+    {
+      "path": "Digital_Static_RideCore/src/terrain.ts",
+      "sha256": "c2fc1bdb082e070b8db4de2cf6ee334df975d1cdb7b652b5901fcce064f1b074"
+    },
+    {
+      "path": "Digital_Static_RideCore/src/three.ts",
+      "sha256": "affb07e563269de8d25dbed0b29921c37a4cf9d9a0d92a03d0cc50b70f41f5f3"
+    },
+    {
+      "path": "Digital_Static_RideCore/src/threeRiderView.ts",
+      "sha256": "37eafcb6e6c84dff6db39493d64e9697ae0353bf2e24179f4fffd917b112801e"
+    },
+    {
+      "path": "Digital_Static_RideCore/src/touchInput.ts",
+      "sha256": "0b0e9b832e73d47ed889e1dcd2b02104bee56337650ac7f97b83aa702d6df4f7"
+    },
+    {
+      "path": "Digital_Static_RideCore/src/vrRide.ts",
+      "sha256": "641f61c3a436ac6d59ee5b42b73e85b02d5d99ea170a8cdc2b4d2a8e26f87d34"
+    },
+    {
+      "path": "Digital_Static_RideCore/src/xrInput.ts",
+      "sha256": "e84ee91e1e19f34103682d2c73a712f1ac910e61a8b859611725b957c8942d52"
+    },
+    {
+      "path": "euc-detroit-riverwalk/package-lock.json",
+      "sha256": "2d285dfa392fb909a404b3bce37c2c587e5f0ffa9e47d465468a165ef77c3d19"
+    },
+    {
+      "path": "euc-detroit-riverwalk/package.json",
+      "sha256": "4a1951b448cc239a08cc6c87a00fed641ded05fec3927f936e829be3c65ec5b8"
+    },
+    {
+      "path": "euc-detroit-riverwalk/public/elmwood/placements.json",
+      "sha256": "cac9db165c1e2340f33ff0eb46c71cabad58e24fae5d8a1b855db77bbfcb3af5"
+    },
+    {
+      "path": "euc-detroit-riverwalk/public/love-tag/elmwood-explorer.json",
+      "sha256": "8013406780f8e9a087d519ce6c6f66121dad18ae7d105e5d290f85999dbe84ad"
+    },
+    {
+      "path": "euc-detroit-riverwalk/src/detroit/elmwood-mobile-hud.css",
+      "sha256": "d42fc6d7d5018865749595e7d27d7941c1ee63d52fe73ea9a40715ed425a77b2"
+    },
+    {
+      "path": "euc-detroit-riverwalk/src/detroit/elmwood-nature-sites.test.ts",
+      "sha256": "08b5a8ab3c7de29d3babfe4f6ab0692fb3905e2b54932dda37e227c1e7f6f905"
+    },
+    {
+      "path": "euc-detroit-riverwalk/src/detroit/elmwood-nature-sites.ts",
+      "sha256": "0df5da3bf570d25cda7f5970a7873e0ec1c4e810d6ee1eac8410870c0f3df0fa"
+    },
+    {
+      "path": "euc-detroit-riverwalk/src/detroit/elmwood-ride.ts",
+      "sha256": "91a3709462eb15e605114520f3b4b34af511a3a4fec2dcca6111e646043c56af"
+    },
+    {
+      "path": "euc-detroit-riverwalk/src/detroit/elmwood-session.css",
+      "sha256": "b79a17afd052532c2d762ffe5630725898565bda2b080167c136f941f25e9e26"
+    },
+    {
+      "path": "euc-detroit-riverwalk/src/detroit/elmwood.ts",
+      "sha256": "92d7d84d4fc5f5d9981e639df3567749245da2e857b2d361e4caf7c883f11e24"
+    },
+    {
+      "path": "euc-detroit-riverwalk/src/detroit/elmwoodRaceMap.test.ts",
+      "sha256": "bb0b02f05f5423185b7651d25ededa32d7e3dedd555c48f3aef621d46f0b2f3e"
+    },
+    {
+      "path": "euc-detroit-riverwalk/src/detroit/elmwoodRaceMap.ts",
+      "sha256": "20c618987437f4d1ea7b33d64702980ead708dc155ac5e131d83115d1f94f0c3"
+    },
+    {
+      "path": "euc-detroit-riverwalk/src/detroit/raceMap.test.ts",
+      "sha256": "3d1942e62efcdd3fca2dad500590229edf4c42c738030ae99a86e091a4b6304c"
+    },
+    {
+      "path": "euc-detroit-riverwalk/src/detroit/raceMap.ts",
+      "sha256": "c5c6e73d9dfc8417cea0148fceab77a9cd2e83ad6e4a35d77c01e3eba94cb663"
+    },
+    {
+      "path": "euc-detroit-riverwalk/src/detroit/tacticalHud.css",
+      "sha256": "97425b6f72d2adc78932d86e36547327de2b7843e0ea08b27c76e6c489affbda"
+    },
+    {
+      "path": "euc-detroit-riverwalk/src/detroit/tacticalMap.ts",
+      "sha256": "7cd4066fd437fe0d2723101307dfcf91d4045086ee792b53e5021b9421e4d3d6"
+    }
+  ]
+}

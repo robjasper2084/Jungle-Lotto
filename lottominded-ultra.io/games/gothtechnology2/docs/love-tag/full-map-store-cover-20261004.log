@@ -1,0 +1,3 @@
+(node:16084) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+[{"name":"LottoMind side wall","blocked":true,"hit":0.9699841737747192},{"name":"LottoMind front central entrance","blocked":false,"hit":null},{"name":"LottoMind street entrance","blocked":false,"hit":null}]

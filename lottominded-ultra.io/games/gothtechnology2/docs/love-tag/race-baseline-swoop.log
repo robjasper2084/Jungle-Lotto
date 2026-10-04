@@ -1,0 +1,39 @@
+(node:34688) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ each selected rider races against the other three, without duplicates (1.5151ms)
+✔ countdown locks progress; zero dt pauses the clock (0.3114ms)
+✔ shortcuts and missed gates do not finish; recovery preserves time and earned gates (0.3705ms)
+✔ off-course crossing cannot earn a gate and reverse crossing cannot repair it (0.288ms)
+✔ ordered gates finish the player and freeze elapsed time (2.9747ms)
+✔ all bicycle rivals accelerate off the mapped grid promptly with seeded props and a nearby player (369.529ms)
+✔ cruise bicycle rivals finish the browser seed with live route traffic (56511.652ms)
+ℹ [{"finish":532.2148425607685,"gate":12},{"finish":574.2016126955733,"gate":12},{"finish":512.9635654460925,"gate":12}]
+✔ all cycling rivals go around a parked companion and seeded route props (9955.3684ms)
+✔ bicycle rivals pedal through the full mapped race with cycling speed limits (8449.1866ms)
+✔ the existing Freight Yard side line has continuous support and rejoins before the next main-route checkpoint (2.2056ms)
+✔ all three cruise rivals complete the real mapped course (11030.5641ms)
+ℹ DS_Hoodie_Woman_01: 264.49 s
+ℹ DS_Mascot_Suit_01: 267.97 s
+ℹ DS_Mascot_Hoodie_01: 259.60 s
+✔ all three club rivals complete the real mapped course (7414.0976ms)
+ℹ DS_Hoodie_Woman_01: 175.32 s
+ℹ DS_Mascot_Suit_01: 176.69 s
+ℹ DS_Mascot_Hoodie_01: 173.48 s
+✔ all three expert rivals complete the real mapped course (6840.162ms)
+ℹ DS_Hoodie_Woman_01: 160.73 s
+ℹ DS_Mascot_Suit_01: 156.35 s
+ℹ DS_Mascot_Hoodie_01: 151.89 s
+✔ a fallen rival simulates settling and waits when its recovery area is occupied (27.4631ms)
+✔ a long or slow race never ends on the old time cutoff or Freight Yard gate (1.0183ms)
+✔ expert racers pass a stopped human and each other with solid rider envelopes (6728.1894ms)
+ℹ {"minimum":1.2825073635233948,"finishes":[151.67573483251394,160.3452549902976,155.1821681069025]}
+✔ expert rivals navigate seeded hazards to Mack without striking a prop (6837.6708ms)
+ℹ {"hazards":8,"finishes":[162.19870805587706,156.81299912356658,152.1827536468515],"impacts":0}
+ℹ tests 17
+ℹ suites 0
+ℹ pass 17
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 117824.8688

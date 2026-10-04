@@ -1,0 +1,19 @@
+(node:16816) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ pond is below its visible water surface and clear of mapped riding lanes (8.5266ms)
+✔ avenue trees preserve lane and architecture clearance (14.3391ms)
+✔ Blender export includes an upward facing pond surface and entrance sign (22.3306ms)
+(node:16400) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ subdivision retains the authored water level and triangle footprint (3.3748ms)
+✔ pond data distinguishes shallow shoreline from the actual lowered pond bed (0.5556ms)
+✔ creek flow follows every real stream segment downstream (1.7437ms)
+✔ water animation freezes on pause and reduced motion while quality remains selectable (2.4703ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 338.4688

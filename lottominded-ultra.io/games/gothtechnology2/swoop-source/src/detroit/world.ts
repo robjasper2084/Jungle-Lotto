@@ -276,8 +276,12 @@ export class DetroitWorld implements TerrainSampler{
     return out;
   }
   waterAt(x:number,z:number,referenceY:number){
-    if(!(inHarbor(x,z)||inValadeInlet(x,z)||inWaterfrontPond(x,z)||x<riverEdge(z)-3))return false;
-    return this.sampleGround(x,z,{height:0,normal:{x:0,y:1,z:0},surface:'pavement',offCourse:false},referenceY).height<-.25;
+    const pond=inWaterfrontPond(x,z);
+    if(!(inHarbor(x,z)||inValadeInlet(x,z)||pond||x<riverEdge(z)-3))return false;
+    // Pond artwork sits at -0.18 m. The old -0.25 cutoff admitted the wheel
+    // under its surface and left it blocked on the next bank sample.
+    // sampleGround still selects a reachable dock/bridge above the water.
+    return this.sampleGround(x,z,{height:0,normal:{x:0,y:1,z:0},surface:'pavement',offCourse:false},referenceY).height<(pond?-.18:-.25);
   }
   navigationObstacles(x:number,z:number,radius:number):NavigationObstacle[]{
     return [...this.traffic.map(t=>({...trafficObstacle(t),onImpact:(impact:ActorImpact)=>this.receiveTrafficImpact(t.id,impact)})),

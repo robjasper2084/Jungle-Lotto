@@ -1,16 +1,15 @@
+import {registerRetailShell} from './tagSceneryCollisions.ts';
 import * as T from 'three';
 import {GLTFLoader} from './compressedGLTFLoader.ts';
 import {toLocal,toMap} from './geo-profile.ts';
-import {LOTTO_SHOP,lottoMap,lottoCoordinates,LOTTO_OFFICIAL_URL,LOTTO_FIXTURES,LOTTO_WALLS,lottoToolsAvailable,practiceNumbers,validPracticePick} from './lottoShopSite.ts';
+import {LOTTO_SHOP,lottoCoordinates,LOTTO_OFFICIAL_URL,lottoToolsAvailable,practiceNumbers,validPracticePick} from './lottoShopSite.ts';
 import type {DetroitWorld} from './world.ts';
 import {storefrontDetails} from './storefrontDetails.ts';
 import {LottoAppDesk} from './lottoAppDesk.ts';
 import './lottoShop.css';
 export async function buildLottoShop(scene:T.Scene,world:DetroitWorld,focus:()=>void,appOpened:()=>void=focus,appClosed:()=>void=focus){
  const building=(await new GLTFLoader().loadAsync('/exports/atwater/lottomind-store.glb?v=street-entry-20261003')).scene;building.name='LottoMind Mack Avenue virtual store';const at=toLocal(LOTTO_SHOP.x,LOTTO_SHOP.floor,LOTTO_SHOP.z);building.position.set(at.x,at.y,at.z);building.rotation.y=LOTTO_SHOP.heading;scene.add(building);building.traverse(o=>{const mesh=o as T.Mesh;if(mesh.isMesh){mesh.receiveShadow=true;const materials=Array.isArray(mesh.material)?mesh.material:[mesh.material];mesh.castShadow=!materials.some(m=>m.transparent);}});
- function solid(u:number,v:number,w:number,h:number,d:number,y=h/2){const p=lottoMap(u,v);world.addBox({x:p.x,y:LOTTO_SHOP.floor+y,z:p.z,hx:w/2,hy:h/2,hz:d/2,yaw:-LOTTO_SHOP.heading,kind:'LottoMind shop'});}
- for(const p of LOTTO_WALLS)solid(p.u,p.v,p.width,p.height,p.depth,p.y);for(const p of LOTTO_FIXTURES)solid(p.u,p.v,p.width,p.height,p.depth);
- const corners=[[-6.7,-9.4],[-6.7,9.4],[6.7,9.4],[6.7,-9.4]].map(([u,v])=>lottoMap(u,v));world.addRideSurface(new Float32Array([0,2,1,0,3,2].flatMap(i=>[corners[i].x,LOTTO_SHOP.floor+.068,corners[i].z])),true);
+ registerRetailShell(world,'lotto');
  const glass=new T.MeshPhysicalMaterial({color:0xe5eee4,transparent:true,opacity:.10,roughness:.17,metalness:.10,depthWrite:false,side:T.DoubleSide});for(const u of [-4.05,4.05]){const pane=new T.Mesh(new T.PlaneGeometry(5.15,2.85),glass);pane.position.set(u,1.58,9.48);building.add(pane);}
  for(const u of [-3.5,3.5]){const light=new T.PointLight(0xffecd0,55,15,2);light.position.set(u,3.75,0);building.add(light);}
  await storefrontDetails(building,world,true);

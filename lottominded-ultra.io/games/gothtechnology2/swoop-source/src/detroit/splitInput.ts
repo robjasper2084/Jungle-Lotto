@@ -1,6 +1,7 @@
 import {GamepadRideInput,emptyPad,type PadLike} from './gamepadInput.ts';
 import {NEUTRAL_ACTIONS,type RideActions} from './controller.ts';
 import {NeutralRearm,RIDE_RULES} from './rideRules.ts';
+import {TouchRideInput} from './touchInput.ts';
 export type SplitBinding='wasd'|'arrows'|'ijkl'|'numpad'|`pad:${number}`;
 export const SPLIT_KEYS=[{up:'KeyW',down:'KeyS',left:'KeyA',right:'KeyD',hop:'Space',crouch:'ShiftLeft',recover:'KeyR',camera:'KeyC',trick:'KeyT',sit:'KeyX',cruise:'KeyV'},
  {up:'ArrowUp',down:'ArrowDown',left:'ArrowLeft',right:'ArrowRight',hop:'Enter',crouch:'ShiftRight',recover:'Backspace',camera:'Slash',trick:'Period',sit:'Comma',cruise:'Quote'},
@@ -14,11 +15,13 @@ export function splitSetupError(bindings:readonly SplitBinding[],pads:readonly (
 }
 export class SplitRideInput {
  readonly bindings:readonly SplitBinding[];
+ readonly touch:TouchRideInput[];
  private keys=new Set<string>();private gates:NeutralRearm[];
  private readers:GamepadRideInput[];private pads:ReturnType<typeof emptyPad>[];
  private ready:boolean[];private pending:ReturnType<SplitRideInput['empty']>[];private identities:string[];private seated:boolean[];
  readonly cruising:boolean[];private speeds:readonly number[]=[];
- constructor(bindings:readonly SplitBinding[]){if(bindings.length<2||bindings.length>4)throw Error('Split play supports 2–4 players.');this.bindings=bindings;this.gates=bindings.map(()=>new NeutralRearm());this.readers=bindings.map(()=>new GamepadRideInput());this.pads=bindings.map(()=>emptyPad());this.ready=bindings.map(()=>false);this.pending=bindings.map(()=>this.empty());this.identities=bindings.map(()=>'');this.seated=bindings.map(()=>false);this.cruising=bindings.map(()=>false);this.clear();}
+ constructor(bindings:readonly SplitBinding[]){if(bindings.length<2||bindings.length>4)throw Error('Split play supports 2–4 players.');this.bindings=bindings;this.touch=bindings.map(()=>new TouchRideInput());this.gates=bindings.map(()=>new NeutralRearm());this.readers=bindings.map(()=>new GamepadRideInput());this.pads=bindings.map(()=>emptyPad());this.ready=bindings.map(()=>false);this.pending=bindings.map(()=>this.empty());this.identities=bindings.map(()=>'');this.seated=bindings.map(()=>false);this.cruising=bindings.map(()=>false);this.clear();}
+ touchTrick(i:number){if(this.ready[i])this.pending[i].trick=true;}
  private empty(){return{hop:false,recover:false,camera:false,trick:false,sit:false,cruise:false};}
  private layout(i:number){return SPLIT_KEYS[this.bindings[i]==='arrows'?1:this.bindings[i]==='ijkl'?2:this.bindings[i]==='numpad'?3:0];}
  ownsKey(code:string){return this.bindings.some((b,i)=>!b.startsWith('pad:')&&Object.values(this.layout(i)).includes(code));}
@@ -31,7 +34,7 @@ export class SplitRideInput {
   if(owned){if(down)this.keys.add(code);else this.keys.delete(code);}return owned;
  }
  clear(index?:number){
-  for(const i of index===undefined?this.bindings.map((_,i)=>i):[index]){if(!this.bindings[i].startsWith('pad:'))for(const key of Object.values(this.layout(i)))this.keys.delete(key);this.pending[i]=this.empty();this.gates[i].interrupt();this.ready[i]=false;this.cruising[i]=false;}
+  for(const i of index===undefined?this.bindings.map((_,i)=>i):[index]){if(!this.bindings[i].startsWith('pad:'))for(const key of Object.values(this.layout(i)))this.keys.delete(key);this.touch[i].reset();this.pending[i]=this.empty();this.gates[i].interrupt();this.ready[i]=false;this.cruising[i]=false;}
  }
  poll(pads:readonly (PadLike|null)[],speeds:readonly number[],dt:number){
   let pause=false,disconnected=false;this.speeds=speeds;
@@ -42,7 +45,7 @@ export class SplitRideInput {
    if(!this.identities[i]&&id)this.identities[i]=id;
    const p=this.pads[i]=this.readers[i].sample(assigned?[assigned]:[],speeds[i]);pause ||= p.pause;
    const k=this.layout(i),active=binding.startsWith('pad:')?Math.abs(p.throttle)+Math.abs(p.steer)>.05||p.hopHeld||p.crouch:Object.values(k).some(c=>this.keys.has(c));
-   this.ready[i]=this.gates[i].sample(dt,active);
+   const t=this.touch[i];this.ready[i]=this.gates[i].sample(dt,active||Math.abs(t.throttle)+Math.abs(t.steer)>.05||t.braking||t.hopHeld||t.crouch);
    if(this.ready[i])for(const event of ['hop','recover','camera','trick','sit'] as const)this.pending[i][event] ||= p[event];
    else this.pending[i]=this.empty();
   });
@@ -54,6 +57,8 @@ export class SplitRideInput {
   if(!this.ready[i])return {...NEUTRAL_ACTIONS};
   const binding=this.bindings[i],p=this.pads[i],k=this.layout(i),held=(code:string)=>this.keys.has(code);
   const out={...NEUTRAL_ACTIONS,throttle:binding.startsWith('pad:')?p.throttle:Number(held(k.up))-Number(held(k.down)),steer:binding.startsWith('pad:')?p.steer:Number(held(k.right))-Number(held(k.left)),crouch:binding.startsWith('pad:')?p.crouch:held(k.crouch),hopHeld:binding.startsWith('pad:')?p.hopHeld:held(k.hop),hop:this.pending[i].hop,trick:this.pending[i].trick?1:0,seated:this.seated[i]};
+  const t=this.touch[i];out.throttle=Math.max(-1,Math.min(1,out.throttle+t.throttle));out.steer=Math.max(-1,Math.min(1,out.steer+t.steer));out.crouch ||= t.crouch;out.hopHeld ||= t.hopHeld;out.hop ||= t.consumeHop();
+  if(t.braking){out.throttle=t.brakeThrottle(this.speeds[i]??0);this.cruising[i]=false;}
   if(out.throttle<0)this.cruising[i]=false;
   if(this.cruising[i]&&Math.abs(out.throttle)<.01)out.throttle=Math.max(-.3,Math.min(.5,(RIDE_RULES.cruiseSpeed-this.speeds[i])*.45));
   this.pending[i].hop=this.pending[i].trick=false;return out;

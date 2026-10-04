@@ -1,0 +1,7 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {DetroitWorld} from './world.ts';import {GeoTerrain} from './geo-terrain.ts';import {SplitRaceSimulation} from './splitRaceSimulation.ts';import {RIDER_CHOICES} from './riderChoices.ts';import {NEUTRAL_ACTIONS} from './controller.ts';import {RACE_ROUTE} from './raceRules.ts';
+test('three host-driven expert EUC rivals earn every Cut checkpoint with a stopped human still in the room',async t=>{
+ const map=await new DetroitWorld().init();t.after(()=>map.physics.free());map.updateTraffic(0,1e8,1e8);map.step();const terrain=new GeoTerrain(map),sim=new SplitRaceSimulation(terrain,RIDER_CHOICES.slice(0,4).map(r=>r.id));sim.fillRivals([1,2,3],'expert');let peak=0;
+ for(let tick=0;tick<700*120&&!sim.rules.racers.slice(1).every(r=>r.finish!==null);tick++){map.step();sim.step(1/120,sim.riders.map(()=>({...NEUTRAL_ACTIONS})));for(const r of sim.riders.slice(1))peak=Math.max(peak,r.pose.speed);}
+ for(const r of sim.rules.racers.slice(1)){assert.equal(r.gate,RACE_ROUTE.gates.length,JSON.stringify({r,pose:sim.riders.find(p=>p.id===r.id)?.pose}));assert.ok(r.finish!==null);}
+ assert.ok(peak>18,'Expert rivals must retain the existing expert pace');assert.equal(sim.rules.player.gate,0,'Bot fill cannot manufacture human progress');assert.equal(sim.rules.done,false,'The human must still earn their own finish');t.diagnostic(JSON.stringify({bots:3,peakKmh:peak*3.6,results:sim.rules.racers.slice(1).map(r=>({id:r.id,gates:r.gate,time:r.finish}))}));
+});

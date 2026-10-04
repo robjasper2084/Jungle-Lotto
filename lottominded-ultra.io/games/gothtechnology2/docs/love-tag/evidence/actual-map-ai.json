@@ -1,0 +1,178 @@
+{
+  "at": "2026-10-04T16:21:43.281Z",
+  "kind": "canonical-duration actual fixture headless simulation, not browser enjoyment proof",
+  "evidence": [
+    {
+      "product": "swoop-detroit",
+      "rules": "classic",
+      "phase": "results",
+      "simulatedSeconds": 186.00000000004016,
+      "elapsedMs": 56418.201499999996,
+      "graphNodes": 14338,
+      "distances": [
+        89.61880240479783,
+        609.8129332358141,
+        617.3867006875118,
+        676.773903106618
+      ],
+      "visited": [
+        14,
+        88,
+        93,
+        100
+      ],
+      "illegalTicks": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "resets": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "tags": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "winners": [
+        "bot-1",
+        "bot-2",
+        "bot-3"
+      ]
+    },
+    {
+      "product": "swoop-detroit",
+      "rules": "spread",
+      "phase": "results",
+      "simulatedSeconds": 186.00000000004016,
+      "elapsedMs": 43886.610400000005,
+      "graphNodes": 14338,
+      "distances": [
+        89.61880240479783,
+        609.8129332358141,
+        617.3867006875118,
+        676.773903106618
+      ],
+      "visited": [
+        14,
+        88,
+        93,
+        100
+      ],
+      "illegalTicks": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "resets": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "tags": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "winners": [
+        "bot-1",
+        "bot-2",
+        "bot-3"
+      ]
+    },
+    {
+      "product": "elmwood-explorer",
+      "rules": "classic",
+      "phase": "results",
+      "simulatedSeconds": 186.00000000004016,
+      "elapsedMs": 5839.777099999992,
+      "graphNodes": 2341,
+      "distances": [
+        18.705517471718125,
+        442.91327685302446,
+        565.0301824575511,
+        571.9113519571869
+      ],
+      "visited": [
+        5,
+        50,
+        63,
+        63
+      ],
+      "illegalTicks": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "resets": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "tags": [
+        1,
+        0,
+        1,
+        0
+      ],
+      "winners": [
+        "bot-1",
+        "bot-3"
+      ]
+    },
+    {
+      "product": "elmwood-explorer",
+      "rules": "spread",
+      "phase": "results",
+      "simulatedSeconds": 12.616666666666873,
+      "elapsedMs": 469.133600000001,
+      "graphNodes": 2341,
+      "distances": [
+        18.705517471718125,
+        16.358396596500803,
+        15.1973715444792,
+        20.293202321553007
+      ],
+      "visited": [
+        5,
+        5,
+        4,
+        6
+      ],
+      "illegalTicks": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "resets": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "tags": [
+        1,
+        0,
+        2,
+        0
+      ],
+      "winners": [
+        "human",
+        "bot-1",
+        "bot-2",
+        "bot-3"
+      ]
+    }
+  ]
+}

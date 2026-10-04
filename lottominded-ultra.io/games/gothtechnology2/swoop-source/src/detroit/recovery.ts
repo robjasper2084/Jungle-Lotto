@@ -4,6 +4,12 @@ export type RideSpawn={position:Vec3;headingY:number};
 export const DEFAULT_MOUNTED_VOLUME:MountedVolume={radius:.48,height:2.15};
 export const RECOVERY_SPACE_SECONDS=1.2;
 
+/** Check the wheel and its support margin; a flat pond bed is not a safe remount. */
+export function dryMountedSupport(terrain:TerrainSampler,p:Vec3,radius:number){
+ if(!terrain.waterAt)return true;
+ return [[0,0],[radius,0],[-radius,0],[0,radius],[0,-radius]].every(([dx,dz])=>!terrain.waterAt!(p.x+dx,p.z+dz,p.y));
+}
+
 /** Same vertical envelope and swept clearance for recovery and traffic activation. */
 export function actorBlocksMountedSpace(o:NavigationObstacle,p:Vec3,volume:MountedVolume,seconds=RECOVERY_SPACE_SECONDS){
  if(o.y>p.y+volume.height||o.y+o.height<p.y+.1)return false;
@@ -15,7 +21,7 @@ export function actorBlocksMountedSpace(o:NavigationObstacle,p:Vec3,volume:Mount
 /** Full mounted envelope plus tyre support and a short prediction of moving actors. */
 export function clearMountedPosition(terrain:TerrainSampler,p:Vec3,heading:number,volume:MountedVolume){
  const sample=createGroundSample(),g=terrain.sampleGround(p.x,p.z,sample,p.y);
- if(g.offCourse||g.normal.y<.91||Math.abs(g.height-p.y)>.12)return false;
+ if(g.offCourse||g.normal.y<.91||Math.abs(g.height-p.y)>.12||!dryMountedSupport(terrain,p,volume.radius))return false;
  for(const [x,z]of [[1,0],[-1,0],[0,1],[0,-1]]){
   const edge=terrain.sampleGround(p.x+x*volume.radius,p.z+z*volume.radius,createGroundSample(),p.y);
   if(edge.offCourse||Math.abs(edge.height-p.y)>.22)return false;

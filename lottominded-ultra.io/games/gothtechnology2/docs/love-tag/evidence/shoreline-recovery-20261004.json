@@ -1,0 +1,44 @@
+{
+  "at": "2026-10-04T07:19:16.190Z",
+  "scope": "Local review only; original and live builds not replaced",
+  "originalBefore": {
+    "x": 1776.15,
+    "z": -254.44,
+    "height": 5.069,
+    "paused": true,
+    "distance": 453.4,
+    "score": 623,
+    "asset": "detroit-vnlrk61m.js"
+  },
+  "originalAfter": {
+    "distance": "453.4",
+    "height": "5.319",
+    "paused": "true",
+    "score": "623",
+    "x": "1775.26",
+    "z": "-253.64"
+  },
+  "reviewApproach": {
+    "x": 1786.26,
+    "z": -343.58,
+    "height": 5.031,
+    "distance": 71.9,
+    "crashed": false
+  },
+  "reviewAfter": {
+    "assets": [
+      "./assets/detroit-DKFciJBW.js",
+      "../reward-tracker.js",
+      "../swoop-store-return.js"
+    ],
+    "crashed": "false",
+    "cruise": "false",
+    "distance": "71.9",
+    "height": "5.145",
+    "paused": "true",
+    "speed": "0.000",
+    "x": "1787.27",
+    "z": "-353.63"
+  },
+  "input": "Real UI Start riding, Cruise, Recover and Pause; exact-bank reverse verified in Rapier/controller regression test; no hidden-state injection"
+}

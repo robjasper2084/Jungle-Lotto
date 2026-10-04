@@ -1,0 +1,17 @@
+(node:4440) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ all bicycle rivals accelerate off the mapped grid promptly with seeded props and a nearby player (438.587ms)
+✔ cruise bicycle rivals finish the browser seed with live route traffic (75348.994ms)
+ℹ [{"finish":459.9106781806915,"gate":12},{"finish":474.0710428553766,"gate":12},{"finish":467.18024116065766,"gate":12}]
+✔ all cycling rivals go around a parked companion and seeded route props (9716.3251ms)
+✔ bicycle rivals pedal through the full mapped race with cycling speed limits (7966.7542ms)
+✔ expert rivals navigate seeded hazards to Mack without striking a prop (7422.6672ms)
+ℹ {"hazards":8,"finishes":[162.19870805587706,156.81299912356658,152.1827536468515],"impacts":0}
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 105073.7257

@@ -9,8 +9,8 @@ const clamp=(n:number,a:number,b:number)=>Math.max(a,Math.min(b,n));
 export class ElmwoodRacePilot {
  readonly sim:RideController;readonly pose=createPose();readonly run:ElmwoodRun;readonly route:LaneRoute;
  private accumulator=0;station=0;offset=0;targetOffset=0;private sample=createGroundSample();private think=0;private commitment=0;private blockedFor=0;private backoff=0;private recovery=0;recoveries=0;
- readonly terrain:TerrainSampler;readonly index:number;readonly cycling:boolean;readonly electric?:EbikeProfile;readonly wheel?:EucProfile;
- constructor(terrain:TerrainSampler,points:readonly Point[],gates:Point[],index:number,cycling:boolean,electric?:EbikeProfile,wheel?:EucProfile){this.terrain=terrain;this.index=index;this.cycling=cycling;this.electric=electric?EBIKES[(EBIKES.findIndex(p=>p.id===electric.id)+index+1)%4]:undefined;this.wheel=wheel?EUC_MODELS[(EUC_MODELS.findIndex(p=>p.id===wheel.id)+index+1)%4]:undefined;
+ readonly terrain:TerrainSampler;readonly index:number;readonly cycling:boolean;readonly difficulty:'club'|'expert';readonly electric?:EbikeProfile;readonly wheel?:EucProfile;
+ constructor(terrain:TerrainSampler,points:readonly Point[],gates:Point[],index:number,cycling:boolean,difficulty:'club'|'expert'='club',electric?:EbikeProfile,wheel?:EucProfile){this.difficulty=difficulty;this.terrain=terrain;this.index=index;this.cycling=cycling;this.electric=electric?EBIKES[(EBIKES.findIndex(p=>p.id===electric.id)+index+1)%4]:undefined;this.wheel=wheel?EUC_MODELS[(EUC_MODELS.findIndex(p=>p.id===wheel.id)+index+1)%4]:undefined;
   this.route=new LaneRoute(points.map(p=>({...p,width:4})));this.run=new ElmwoodRun(gates);this.sim=this.electric?new EbikeController(terrain,this.electric):cycling?new BicycleController(terrain):new RideController(terrain);if(this.wheel)this.sim.setHandling(eucHandling(this.wheel));this.reset();
  }
  reset(){this.accumulator=0;this.station=0;this.offset=this.targetOffset=[-.95,.95,0][this.index];this.think=this.commitment=this.blockedFor=this.backoff=this.recovery=this.recoveries=0;
@@ -38,7 +38,7 @@ export class ElmwoodRacePilot {
   }
   this.think-=dt;this.commitment=Math.max(0,this.commitment-dt);
   const base=[-.95,.95,0][this.index],look=2.1+Math.abs(p.speed)*.48;
-  if(this.think<=0){this.think=.14;const obstructed=!this.clear(this.targetOffset,Math.max(5,p.speed*1.5));
+  if(this.think<=0){this.think=this.difficulty==='expert'?.09:.14;const obstructed=!this.clear(this.targetOffset,Math.max(5,p.speed*1.5));
    const front=others.find(o=>o!==this&&o.station-this.station>0&&o.station-this.station<Math.max(6,p.speed*1.2)&&Math.abs(o.offset-this.targetOffset)<1.2);
    if(obstructed||front&&this.commitment<=0){
     const candidates=[base,-base,-1.15,1.15,0].filter(u=>this.clear(u,Math.max(5,p.speed*1.5))).map(u=>({u,cost:Math.abs(u-this.offset)*.2+others.reduce((c,o)=>c+(o!==this&&Math.abs(o.station-this.station)<10&&Math.abs(u-o.offset)<1.15?4:0),0)})).sort((a,b)=>a.cost-b.cost);
@@ -48,7 +48,8 @@ export class ElmwoodRacePilot {
   this.offset+=clamp(this.targetOffset-this.offset,-dt*1.5,dt*1.5);
   const target=this.route.at(this.station+look,this.offset),desired=Math.atan2(target.x-p.x,target.z-p.z),error=Math.atan2(Math.sin(desired-p.headingY),Math.cos(desired-p.headingY));
   const a=this.route.at(this.station),b=this.route.at(this.station+9),bend=Math.abs(Math.atan2(Math.sin(b.headingY-a.headingY),Math.cos(b.headingY-a.headingY)))/9;
-  let pace=Math.min((this.electric?Math.min(19,this.electric.topKph/3.6*.68):this.wheel?Math.min(13,this.wheel.topKph/3.6*.8):this.cycling?6.5:8.8)+[.1,-.15,.02][this.index],Math.sqrt(2.5/Math.max(.005,bend)));pace*=clamp(1-Math.abs(error)*.45,.35,1);
+  const skill=this.difficulty==='expert'?1:.88;
+  let pace=Math.min((this.electric?Math.min(19,this.electric.topKph/3.6*.68)*skill:this.wheel?Math.min(13,this.wheel.topKph/3.6*.8)*skill:this.cycling?(this.difficulty==='expert'?7.2:6.5):(this.difficulty==='expert'?10:8.8))+[.1,-.15,.02][this.index],Math.sqrt(2.5/Math.max(.005,bend)));pace*=clamp(1-Math.abs(error)*.45,.35,1);
   if(!this.clear(this.offset,Math.max(1.2,p.speed*.6)))pace=Math.min(pace,2);
   for(const o of others){const gap=o.station-this.station;if(o!==this&&gap>0&&gap<7&&Math.abs(o.offset-this.offset)<1.1)pace=Math.min(pace,Math.max(1,o.pose.speed+(gap-2.4)*1.4));}
   const drag=this.electric?.09+.32*p.speed*p.speed/(this.electric.mass+80):this.cycling?.13+p.speed*p.speed*.009:p.speed*.055+p.speed*p.speed*.006;

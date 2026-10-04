@@ -1,10 +1,11 @@
+import {registerRetailShell} from './tagSceneryCollisions.ts';
 import * as T from 'three';
 import {GLTFLoader} from './compressedGLTFLoader.ts';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {MACK_STUDIO,studioMap,studioPavingCell} from './mackStudioSite.ts';
 import {toLocal,toMap} from './geo-profile.ts';
 import {heightAt,type DetroitWorld} from './world.ts';
-import {STUDIO_FIXTURES,RETAIL_FIXTURES} from './studioInteriorLayout.ts';
+
 import {storefrontDetails} from './storefrontDetails.ts';
 /** A single shared exterior; retail rooms are supplied by GalleryVisit. */
 export async function buildMackStudio(scene:T.Scene,world:DetroitWorld){
@@ -53,17 +54,13 @@ export async function buildMackStudio(scene:T.Scene,world:DetroitWorld){
  // Sliding gate retracted beside a genuine 11 m vehicle/pedestrian opening.
  fence([17,39.6],[28,39.6]);box(29,40,1.2,.15,2.4,.15,steel,true);box(40,40,1.2,.15,2.4,.15,steel,true);
  // Matching shell colliders with the central loading entrance left open.
- function shell(x:number,z:number,w:number,h:number,d:number,y=h/2){const p=studioMap(x,z);world.addBox({x:p.x,y:MACK_STUDIO.floor+y,z:p.z,hx:w/2,hy:h/2,hz:d/2,yaw:-MACK_STUDIO.heading,kind:'studio building'});}
- shell(-24.266,0,.26,6.1,43.912);shell(24.266,0,.26,6.1,43.912);shell(0,-21.956,48.533,6.1,.26);
- for(const side of [-1,1])shell(side*13.048,21.956,22.436,6.1,.26);
- shell(0,21.956,3.66,1.2,.26,5.5);
- for(const p of [...STUDIO_FIXTURES,...RETAIL_FIXTURES])shell(p.u,p.v,p.width,p.height,p.depth,p.y??p.height/2);
+ registerRetailShell(world,'studio');
  for(const [u,v,y,color,power]of [[0,-16,4.6,0xf2faff,110],[12,1,3.7,0xffdfb5,70],[-12,1,3.7,0xffebcf,70]]){
   const p=studioMap(u,v),at=toLocal(p.x,MACK_STUDIO.floor+y,p.z),light=new T.PointLight(color,power,18,2);light.position.set(at.x,at.y,at.z);group.add(light);
  }
  const glazing=new T.MeshPhysicalMaterial({color:0xd6e4dd,transparent:true,opacity:.10,roughness:.16,metalness:.1,side:T.DoubleSide,depthWrite:false});
  for(const room of [-12,12])for(const dx of [-5.55,5.55]){const p=studioMap(room+dx,9),at=toLocal(p.x,MACK_STUDIO.floor+2.06,p.z),window=new T.Mesh(new T.PlaneGeometry(6.5,3.6),glazing);window.position.set(at.x,at.y,at.z);window.rotation.y=MACK_STUDIO.heading;group.add(window);}
- const q=[[-24.266,-21.956],[-24.266,21.956],[24.266,21.956],[24.266,-21.956]].map(([u,v])=>studioMap(u,v));world.addRideSurface(new Float32Array([0,2,1,0,3,2].flatMap(i=>[q[i].x,MACK_STUDIO.floor+.05,q[i].z])),true);
+
  for(const [mat,parts]of bins){const g=mergeGeometries(parts),m=new T.Mesh(g,mat);m.castShadow=m.receiveShadow=true;group.add(m);parts.forEach(p=>p.dispose());}
  await storefrontDetails(building,world);
  const fineDetails:T.Object3D[]=[];building.traverse(o=>{const m=o as T.Mesh;if(m.isMesh&&['Recessed block joints','Green seam highlights'].includes((m.material as T.Material).name))fineDetails.push(o);});

@@ -7,9 +7,11 @@ import {GLTFLoader} from './compressedGLTFLoader.ts';
 import {CITY,nearestCut} from './geography.ts';
 import {GEO,cutWidth} from './geo-profile.ts';
 import {hash} from './world.ts';
-import {drapeStreet,drapeJunction,streetElevation,streetSurfaceLift} from './street-geometry.ts';
+import {drapeStreet,drapeJunction,streetElevation,streetSurfaceLift,streetVertexNormal,type StreetPoint} from './street-geometry.ts';
 import {curbRise,hasStreetCurb} from './streetCurbs.ts';
 import {parallelStreetSidewalk} from './streetSidewalk.ts';
+import {streetJoinExclusions} from './streetJunctions.ts';
+import {heightAt} from './world.ts';
 import {clearStreetJunction,sidewalkHalfWidth,streetMarkingStyle} from './streetFurnitureLayout.ts';
 import type {DetroitWorld} from './world.ts';
 
@@ -38,8 +40,8 @@ export async function buildCity(_scene:T.Scene,world:DetroitWorld,groupAt:(x:num
      streetTriangles+=positions.length/9;
    }
  }
- function strip(material:T.Material,x0:number,z0:number,x1:number,z1:number,half:number,offset:number,elevation:(x:number,z:number,terrain:number)=>number,lift:number,maxSpan?:number){
-   append(material,drapeStreet({a:{x:x0,z:z0},b:{x:x1,z:z1},half,offset,lift,maxSpan},world.chunks,elevation));
+ function strip(material:T.Material,x0:number,z0:number,x1:number,z1:number,half:number,offset:number,elevation:(x:number,z:number,terrain:number)=>number,lift:number,maxSpan?:number,joins?:{joinA:StreetPoint;joinB:StreetPoint},exclude?:StreetPoint[][]){
+   append(material,drapeStreet({a:{x:x0,z:z0},b:{x:x1,z:z1},half,offset,lift,maxSpan,...joins,exclude},world.chunks,elevation));
  }
  const junctions=new Set<string>();
  for(const road of CITY.roads)for(let i=1;i<road.points.length;i++){
@@ -54,29 +56,30 @@ export async function buildCity(_scene:T.Scene,world:DetroitWorld,groupAt:(x:num
    const valadeWalk=walk&&inValadePark(x,z);
    const parkWalk=walk&&(inMillikenPark(x,z)||valadeWalk)&&road.name!=='Dequindre Cut Greenway';
    const surface=valadeWalk?sidewalk:parkWalk?parkMat:concreteWalk?sidewalk:roadMat;
-   const lift=streetSurfaceLift(road);
+   const lift=streetSurfaceLift(road),joins={joinA:streetVertexNormal(road.points,i-1),joinB:streetVertexNormal(road.points,i)};
+   const exclusions=streetJoinExclusions(road,a,b,width+4,heightAt);
    const elevation=(px:number,pz:number,terrain:number)=>streetElevation(road,px,pz,terrain);
    // Thin flush aggregate border, batched underneath the entire path surface.
-   if(parkWalk)strip(parkEdge,a[0],a[1],b[0],b[1],width+.14,0,elevation,.025);
-   strip(surface,a[0],a[1],b[0],b[1],width,0,elevation,lift);
+   if(parkWalk)strip(parkEdge,a[0],a[1],b[0],b[1],width+.14,0,elevation,.025,undefined,joins,exclusions);
+   strip(surface,a[0],a[1],b[0],b[1],width,0,elevation,lift,undefined,joins,walk?exclusions:undefined);
    for(const p of [a,b]){
      const key=`${p[0]},${p[1]},${width},${walk},${road.bridge},${concreteWalk},${parkWalk}`;
      if(junctions.has(key))continue;junctions.add(key);
-     if(parkWalk)append(parkEdge,drapeJunction(p[0],p[1],width+.14,world.chunks,elevation,.025));
-     append(surface,drapeJunction(p[0],p[1],width,world.chunks,elevation,lift));
+     if(parkWalk)append(parkEdge,drapeJunction(p[0],p[1],width+.14,world.chunks,elevation,.025,exclusions));
+     append(surface,drapeJunction(p[0],p[1],width,world.chunks,elevation,lift,walk?exclusions:undefined));
    }
    if(hasStreetCurb(road)){
      for(const sign of [-1,1]){
        const raised=(px:number,pz:number,terrain:number)=>elevation(px,pz,terrain)+curbRise(road,px,pz);
        const walkHalf=sidewalkHalfWidth(road);
-       strip(sidewalk,a[0],a[1],b[0],b[1],walkHalf,sign*(width+.15+walkHalf),raised,.035,1.2);
+       strip(sidewalk,a[0],a[1],b[0],b[1],walkHalf,sign*(width+.15+walkHalf),raised,.035,1.2,joins,exclusions);
        // A chamfered front and a separate cap replace the nearly flat painted ribbon.
        const face=(px:number,pz:number,terrain:number)=>{
          const lateral=Math.abs((px-a[0])*(-dz/length)+(pz-a[1])*(dx/length));
          return elevation(px,pz,terrain)+curbRise(road,px,pz)*Math.max(0,Math.min(1,(lateral-width)/.08));
        };
-       strip(curb,a[0],a[1],b[0],b[1],.04,sign*(width+.04),face,.035,1.2);
-       strip(curb,a[0],a[1],b[0],b[1],.12,sign*(width+.20),raised,.035,1.2);
+       strip(curb,a[0],a[1],b[0],b[1],.04,sign*(width+.04),face,.035,1.2,joins,exclusions);
+       strip(curb,a[0],a[1],b[0],b[1],.12,sign*(width+.20),raised,.035,1.2,joins,exclusions);
        // Fine expansion joints distinguish slabs without making physical bumps.
        for(let d=1.6;d<length-.4;d+=2.1){
         const px=a[0]+dx*d/length,pz=a[1]+dz*d/length;
