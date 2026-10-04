@@ -9,7 +9,7 @@ export function installDogCommandHud(parent:HTMLElement,key:string,order:(comman
  const summary=document.createElement('button');summary.type='button';summary.className='dogActionToggle';summary.textContent='Dog actions · G';summary.setAttribute('aria-expanded','true');summary.setAttribute('aria-controls','dogLiveActions');
  const feedback=document.createElement('p');feedback.setAttribute('role','status');feedback.setAttribute('aria-live','polite');feedback.textContent='Use while riding · Alt + 1–6';
  const trayButtons=document.createElement('div');trayButtons.id='dogLiveActions';trayButtons.setAttribute('role','group');trayButtons.setAttribute('aria-label','Dog commands');tray.append(summary,trayButtons,feedback);document.body.append(tray);
- let collapsed=false;
+ let collapsed=matchMedia('(max-width:1024px), (any-pointer:coarse)').matches;trayButtons.hidden=feedback.hidden=collapsed;tray.dataset.collapsed=String(collapsed);summary.setAttribute('aria-expanded',String(!collapsed));
  const toggle=()=>{collapsed=!collapsed;tray.dataset.collapsed=String(collapsed);trayButtons.hidden=feedback.hidden=collapsed;summary.setAttribute('aria-expanded',String(!collapsed));place();};
  summary.onclick=toggle;summary.onpointerdown=e=>{e.preventDefault();e.stopPropagation();};
  const pads=[0,1].map(i=>{const b=document.createElement('button');b.type='button';b.style.cssText='position:fixed;z-index:35;border-radius:50%;background:#15382ddd;color:#fff;border:1px solid #c4b779;touch-action:none;min-width:44px;min-height:44px';b.setAttribute('aria-label','Dog command '+(i+1));document.body.append(b);return b;});

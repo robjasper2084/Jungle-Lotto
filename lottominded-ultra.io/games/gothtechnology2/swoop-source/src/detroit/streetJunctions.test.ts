@@ -1,0 +1,49 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {drapeStreet,streetVertexNormal,subtractStreetFootprint} from './street-geometry.ts';
+import {streetJoinExclusions} from './streetJunctions.ts';
+import {CITY} from './geography.ts';
+import {heightAt} from './world.ts';
+import type {TerrainChunk} from './world.ts';
+const tile:TerrainChunk={x:50,z:50,vertices:new Float32Array([0,0,0,100,0,0,0,0,100,100,0,100]),indices:new Uint32Array([0,2,1,1,2,3]),surfaces:['grass','grass']};
+const area=(p:{x:number;z:number}[])=>Math.abs(p.reduce((a,v,i)=>{const w=p[(i+1)%p.length];return a+v.x*w.z-v.z*w.x;},0))/2;
+test('crossing exclusion keeps both approaches and removes only the street footprint',()=>{
+ const path=[{x:5,z:48},{x:95,z:48},{x:95,z:52},{x:5,z:52}],road=[{x:45,z:0},{x:55,z:0},{x:55,z:100},{x:45,z:100}];
+ for(const cut of [road,[...road].reverse()]){
+  const result=subtractStreetFootprint(path,cut);
+  assert.equal(result.length,2);assert.equal(result.reduce((a,p)=>a+area(p),0),320);
+  for(const p of result)assert.ok(p.every(v=>v.x<=45)||p.every(v=>v.x>=55));
+ }
+});
+test('empty and fully covered approaches leave no sliver triangles',()=>{
+ const path=[{x:10,z:10},{x:20,z:10},{x:20,z:20},{x:10,z:20}];
+ assert.deepEqual(subtractStreetFootprint(path,[{x:0,z:0},{x:30,z:0},{x:30,z:30},{x:0,z:30}]),[]);
+ assert.equal(subtractStreetFootprint(path,[{x:25,z:25},{x:30,z:25},{x:30,z:30},{x:25,z:30}]).reduce((a,p)=>a+area(p),0),100);
+});
+test('curved offset sidewalks share exactly the same cross section at the bend',()=>{
+ const points=[[10,20],[50,20],[80,50]],normal=streetVertexNormal(points,1),join={x:50+normal.x*6,z:20+normal.z*6};
+ assert.ok(Math.hypot(normal.x,normal.z)<2);
+ const left=drapeStreet({a:{x:10,z:20},b:{x:50,z:20},joinB:normal,half:1,offset:5,lift:.035},[tile],()=>0);
+ const right=drapeStreet({a:{x:50,z:20},b:{x:80,z:50},joinA:normal,half:1,offset:5,lift:.035},[tile],()=>0);
+ for(const pieces of [left,right])assert.ok(pieces.some(({positions:p})=>p.some((_,i)=>i%3===0&&Math.hypot(p[i]-join.x,p[i+2]-join.z)<1e-6)));
+});
+test('draped walking triangles do not cover motor roads or lose terrain support outside them',()=>{
+ const exclusion=[{x:45,z:0},{x:55,z:0},{x:55,z:100},{x:45,z:100}];
+ const pieces=drapeStreet({a:{x:5,z:50},b:{x:95,z:50},half:2,offset:0,lift:.055,exclude:[exclusion]},[tile],()=>0);
+ let sum=0;for(const {positions:p}of pieces)for(let i=0;i<p.length;i+=9){const xs=[p[i],p[i+3],p[i+6]];assert.ok(Math.max(...xs)<=45+1e-6||Math.min(...xs)>=55-1e-6);sum+=Math.abs((p[i+3]-p[i])*(p[i+8]-p[i+2])-(p[i+6]-p[i])*(p[i+5]-p[i+2]))/2;for(const j of [1,4,7])assert.equal(p[i+j],.055);}assert.ok(Math.abs(sum-320)<1e-6);
+});
+test('Atwater crossing finds mapped street footprints while raised bridges keep their layer',()=>{
+ const owner=CITY.roads.find(r=>r.id==='69706033')!;
+ const cuts=streetJoinExclusions(owner,[-80,-1194],[-65,-1194],8,heightAt);assert.ok(cuts.length>0,'mapped Atwater intersection');
+ assert.equal(streetJoinExclusions({...owner,bridge:true},[-80,-1194],[-65,-1194],8,heightAt).length,0);
+});
+
+test('coarse asphalt fringe is cleared beside mapped roads across the city',async()=>{
+ const {terrainVisualSurface}=await import('./parkPaths.ts');
+ for(const name of ['Atwater Street','East Lafayette Street','East Larned Street','Antietam Avenue']){
+  const r=CITY.roads.find(r=>r.name===name)!;const a=r.points[0],b=r.points[1],length=Math.hypot(b[0]-a[0],b[1]-a[1]),offset=r.width/2+8;
+  const x=(a[0]+b[0])/2-(b[1]-a[1])/length*offset,z=(a[1]+b[1])/2+(b[0]-a[0])/length*offset;
+  assert.equal(terrainVisualSurface(x,z,'pavement'),'grass',name);
+  if(name!=='Atwater Street')assert.equal(terrainVisualSurface(x,z,'brick'),'brick','retain brick plazas');
+ }
+});

@@ -14,29 +14,89 @@ export function streetElevation(road:{kind:string;bridge?:boolean},x:number,z:nu
   return c.d>280&&c.d<=CUT_METRES&&Math.abs(c.u)<35&&(!walk||road.bridge)?profileLevel(c.d,'street'):terrain;
 }
 
-type Point={x:number;z:number};
-export type StreetRibbon={a:Point;b:Point;half:number;offset:number;lift:number};
+export type StreetPoint={x:number;z:number};
+type Point=StreetPoint;
+export type StreetRibbon={a:Point;b:Point;half:number;offset:number;lift:number;maxSpan?:number;joinA?:Point;joinB?:Point;exclude?:Point[][]};
+/** One miter per shared vertex keeps offset sidewalks/curbs joined at bends.
+ * Limit acute corners rather than extruding a long spike into the junction. */
+export function streetVertexNormal(points:number[][],index:number):Point{
+ const normal=(a:number[],b:number[])=>{const dx=b[0]-a[0],dz=b[1]-a[1],length=Math.hypot(dx,dz)||1;return {x:-dz/length,z:dx/length};};
+ const p=points[index],before=points[index-1],after=points[index+1];
+ if(!before)return normal(p,after);if(!after)return normal(before,p);
+ const a=normal(before,p),b=normal(p,after),den=1+a.x*b.x+a.z*b.z;
+ if(den<.25)return b;
+ return {x:(a.x+b.x)/den,z:(a.z+b.z)/den};
+}
+/** Subtract a convex road footprint from a convex surface. Outside pieces are
+ * disjoint, retain winding, and are clipped BEFORE terrain tessellation. */
+export function subtractStreetFootprint(poly:Point[],footprint:Point[]):Point[][]{
+ if(footprint.length<3)return [poly];
+ let signed=0;for(let i=0;i<footprint.length;i++){const a=footprint[i],b=footprint[(i+1)%footprint.length];signed+=a.x*b.z-a.z*b.x;}
+ const direction=signed>=0?1:-1,out:Point[][]=[];let remaining=poly;
+ for(let e=0;e<footprint.length&&remaining.length>=3;e++){
+  const a=footprint[e],b=footprint[(e+1)%footprint.length],inside:Point[]=[],outside:Point[]=[];
+  const side=(p:Point)=>direction*((b.x-a.x)*(p.z-a.z)-(b.z-a.z)*(p.x-a.x));
+  for(let i=0;i<remaining.length;i++){
+   const p=remaining[i],q=remaining[(i+1)%remaining.length],sp=side(p),sq=side(q);
+   (sp>=-1e-8?inside:outside).push(p);
+   if((sp>1e-8&&sq<-1e-8)||(sp<-1e-8&&sq>1e-8)){const t=sp/(sp-sq),cut={x:p.x+(q.x-p.x)*t,z:p.z+(q.z-p.z)*t};inside.push(cut);outside.push(cut);}
+  }
+  if(outside.length>=3)out.push(outside);remaining=inside;
+ }
+ return out;
+}
 /** Clip a mapped road onto the actual terrain triangles. This prevents both
  * buried asphalt on coarse terrain and a long street belonging to one distant tile. */
-export function drapeStreet(r:StreetRibbon,chunks:TerrainChunk[],height:(x:number,z:number,terrain:number)=>number){
+export function drapeStreet(r:StreetRibbon,chunks:TerrainChunk[],height:(x:number,z:number,terrain:number)=>number):{chunk:TerrainChunk;positions:number[]}[]{
   const dx=r.b.x-r.a.x,dz=r.b.z-r.a.z,len=Math.hypot(dx,dz);
   if(len<.001)return [];
-  const nx=-dz/len,nz=dx/len;
+  // Curb cuts change height within a metre. Sampling only terrain triangle
+  // corners stretches that ramp over an entire street and makes jagged wedges.
+  if(r.maxSpan&&len>r.maxSpan){
+    const count=Math.ceil(len/r.maxSpan),pieces:ReturnType<typeof drapeStreet>=[],cuts=new Set([0,count]),nx=-dz/len,nz=dx/len;
+    const levels=(t:number)=>[-r.half,r.half].map(side=>height(r.a.x+dx*t+nx*(r.offset+side),r.a.z+dz*t+nz*(r.offset+side),0));
+    let previous=levels(0);
+    for(let i=1;i<=count;i++){
+      const next=levels(i/count),mid=levels((i-.5)/count);
+      if(next.some((v,k)=>Math.abs(v-previous[k])>.003||Math.abs(mid[k]-(v+previous[k])/2)>.003)){cuts.add(i-1);cuts.add(i);}
+      previous=next;
+    }
+    // Keep flat stretches coarse; only ramp transitions need fine tessellation.
+    // This avoids millions of unnecessary sidewalk triangles on weak devices.
+    const stations=[...cuts].sort((a,b)=>a-b);
+    for(let i=1;i<stations.length;i++)pieces.push(...drapeStreet({...r,maxSpan:undefined,joinA:i===1?r.joinA:undefined,joinB:i===stations.length-1?r.joinB:undefined,a:{x:r.a.x+dx*stations[i-1]/count,z:r.a.z+dz*stations[i-1]/count},b:{x:r.a.x+dx*stations[i]/count,z:r.a.z+dz*stations[i]/count}},chunks,height));
+    return pieces;
+  }
+  const na=r.joinA??{x:-dz/len,z:dx/len},nb=r.joinB??{x:-dz/len,z:dx/len};
   const poly=[
-    {x:r.a.x+nx*(r.offset-r.half),z:r.a.z+nz*(r.offset-r.half)},
-    {x:r.b.x+nx*(r.offset-r.half),z:r.b.z+nz*(r.offset-r.half)},
-    {x:r.b.x+nx*(r.offset+r.half),z:r.b.z+nz*(r.offset+r.half)},
-    {x:r.a.x+nx*(r.offset+r.half),z:r.a.z+nz*(r.offset+r.half)}
+    {x:r.a.x+na.x*(r.offset-r.half),z:r.a.z+na.z*(r.offset-r.half)},
+    {x:r.b.x+nb.x*(r.offset-r.half),z:r.b.z+nb.z*(r.offset-r.half)},
+    {x:r.b.x+nb.x*(r.offset+r.half),z:r.b.z+nb.z*(r.offset+r.half)},
+    {x:r.a.x+na.x*(r.offset+r.half),z:r.a.z+na.z*(r.offset+r.half)}
   ];
-  return drapePolygon(poly,chunks,height,r.lift);
+  return drapePolygon(poly,chunks,height,r.lift,r.exclude);
 }
-export function drapeJunction(x:number,z:number,radius:number,chunks:TerrainChunk[],height:(x:number,z:number,terrain:number)=>number,lift:number){
-  return drapePolygon(Array.from({length:16},(_,i)=>({x:x+Math.cos(i*Math.PI/8)*radius,z:z+Math.sin(i*Math.PI/8)*radius})),chunks,height,lift);
+export function drapeJunction(x:number,z:number,radius:number,chunks:TerrainChunk[],height:(x:number,z:number,terrain:number)=>number,lift:number,exclude?:Point[][]){
+  return drapePolygon(Array.from({length:16},(_,i)=>({x:x+Math.cos(i*Math.PI/8)*radius,z:z+Math.sin(i*Math.PI/8)*radius})),chunks,height,lift,exclude);
 }
-function drapePolygon(poly:Point[],chunks:TerrainChunk[],height:(x:number,z:number,terrain:number)=>number,lift:number){
+// Cache resident terrain tiles by their 100 m grid. Road construction visits
+// only intersecting tiles instead of scanning the full map for every strip.
+const chunkIndexes=new WeakMap<TerrainChunk[],{length:number;cells:Map<string,TerrainChunk>;minX:number;maxX:number;minZ:number;maxZ:number}>();
+function streetChunks(chunks:TerrainChunk[],minX:number,maxX:number,minZ:number,maxZ:number){
+ let index=chunkIndexes.get(chunks);
+ if(!index||index.length!==chunks.length){const cells=new Map<string,TerrainChunk>();let lowX=Infinity,highX=-Infinity,lowZ=Infinity,highZ=-Infinity;
+  for(const c of chunks){const x=Math.floor((c.x-50)/100),z=Math.floor((c.z-50)/100);cells.set(x+','+z,c);lowX=Math.min(lowX,x);highX=Math.max(highX,x);lowZ=Math.min(lowZ,z);highZ=Math.max(highZ,z);}
+  index={length:chunks.length,cells,minX:lowX,maxX:highX,minZ:lowZ,maxZ:highZ};chunkIndexes.set(chunks,index);
+ }
+ const result:TerrainChunk[]=[];
+ for(let z=Math.max(index.minZ,Math.floor(minZ/100));z<=Math.min(index.maxZ,Math.floor(maxZ/100));z++)for(let x=Math.max(index.minX,Math.floor(minX/100));x<=Math.min(index.maxX,Math.floor(maxX/100));x++){const c=index.cells.get(x+','+z);if(c)result.push(c);}
+ return result;
+}
+function drapePolygon(poly:Point[],chunks:TerrainChunk[],height:(x:number,z:number,terrain:number)=>number,lift:number,exclude?:Point[][]):{chunk:TerrainChunk;positions:number[]}[]{
+  if(exclude?.length){let pieces=[poly];for(const footprint of exclude)pieces=pieces.flatMap(p=>subtractStreetFootprint(p,footprint));return pieces.flatMap(p=>drapePolygon(p,chunks,height,lift));}
   const minX=Math.min(...poly.map(p=>p.x)),maxX=Math.max(...poly.map(p=>p.x)),minZ=Math.min(...poly.map(p=>p.z)),maxZ=Math.max(...poly.map(p=>p.z));
   const result:{chunk:TerrainChunk;positions:number[]}[]=[];
-  for(const chunk of chunks){
+  for(const chunk of streetChunks(chunks,minX,maxX,minZ,maxZ)){
     const x0=chunk.x-50,z0=chunk.z-50;
     if(maxX<x0||minX>x0+100||maxZ<z0||minZ>z0+100)continue;
     const n=Math.round(Math.sqrt(chunk.vertices.length/3))-1,step=100/n,out:number[]=[];

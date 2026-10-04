@@ -2,8 +2,8 @@ import {test} from 'node:test';import assert from 'node:assert/strict';import fs
 import {ElmwoodTerrain} from './elmwood-terrain.ts';import {rideCoreTerrain} from './ridecore-terrain.ts';import {laneGates,ElmwoodRun} from './elmwood-gameplay.ts';import {ElmwoodRacePilot,ElmwoodRacePack} from './elmwood-race.ts';
 const read=(n:string)=>JSON.parse(fs.readFileSync(new URL('../../public/elmwood/'+n,import.meta.url),'utf8')),site=read('site.json'),terrain=new ElmwoodTerrain(read('terrain.json'),site.features,read('placements.json'));await terrain.init();
 const points=site.features.find((f:any)=>f.id==='59197492').points.map((p:number[])=>({x:p[0],z:-p[1]})),gates=laneGates(site.features.find((f:any)=>f.id==='59197492').points);
-for(const cycling of [true,false])test('all three '+(cycling?'bicycle':'EUC')+' racers finish the actual Creek Lane course',t=>{
- const rivals=Array.from({length:3},(_,i)=>new ElmwoodRacePilot(rideCoreTerrain(terrain),points,gates,i,cycling));let stops=0;
+for(const difficulty of ['club','expert'] as const)for(const cycling of [true,false])test(difficulty+' all three '+(cycling?'bicycle':'EUC')+' racers finish the actual Creek Lane course',t=>{
+ const rivals=Array.from({length:3},(_,i)=>new ElmwoodRacePilot(rideCoreTerrain(terrain),points,gates,i,cycling,difficulty));let stops=0;
  for(let i=0;i<240*120&&!rivals.every(r=>r.run.finished);i++)for(const r of rivals){r.step(1/120,rivals);if(i>600&&r.station<r.route.length-5&&Math.abs(r.pose.speed)<.1)stops++;}
  for(const r of rivals)assert.ok(r.run.finished,JSON.stringify({station:r.station,gate:r.run.gate,pose:r.pose,recoveries:r.recoveries}));
  t.diagnostic(JSON.stringify({vehicle:cycling?'bicycle':'EUC',finishes:rivals.map(r=>r.run.finishTime),recoveries:rivals.map(r=>r.recoveries),stoppedTicks:stops}));

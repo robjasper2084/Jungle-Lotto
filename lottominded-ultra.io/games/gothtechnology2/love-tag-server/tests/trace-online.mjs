@@ -1,0 +1,8 @@
+import {readFile} from 'node:fs/promises';import {Client} from '@colyseus/sdk';import {neutralCommand,TagTerrain} from '@digital-static/ridecore/tag';
+const product=process.argv[2]??'elmwood-explorer',f=JSON.parse(await readFile('fixtures/'+product+'.json')),terrain=await TagTerrain.create(f),sdk=new Client('http://127.0.0.1:8211'),options={product,version:'heart-rush-1',hash:f.hash,ruleset:'classic',target:2,botFill:false};
+const sleep=ms=>new Promise(r=>setTimeout(r,ms)),a=await sdk.create('love-tag',{...options,name:'A'});let s;a.onMessage('welcome',()=>a.send('ready',{hash:f.hash}));a.onMessage('snapshot',v=>s=v);a.onMessage('notice',console.log);a.onMessage('host',()=>{});a.send('hello');
+const b=await sdk.joinById(a.roomId,{...options,name:'B'});b.onMessage('welcome',()=>b.send('ready',{hash:f.hash}));b.onMessage('snapshot',()=>{});b.onMessage('notice',console.log);b.onMessage('host',()=>{});b.send('hello');await sleep(500);a.send('start');await sleep(6600);
+let seq=0;for(let i=0;i<180;i++){const u=s.actors.find(p=>p.id===a.sessionId),v=s.actors.find(p=>p.id===b.sessionId),d={x:v.pose.x-u.pose.x,y:v.pose.y-u.pose.y,z:v.pose.z-u.pose.z},dist=Math.hypot(d.x,d.z),yaw=Math.atan2(Math.sin(Math.atan2(d.x,d.z)-u.pose.headingY),Math.cos(Math.atan2(d.x,d.z)-u.pose.headingY));
+ if(i===0||i===179)console.log(JSON.stringify({product,actors:s.actors,events:s.events,obstacle:terrain.raycastObstacle({...u.pose,y:u.pose.y+1.05},d,Math.hypot(d.x,d.y,d.z),.14),yaw}));
+ a.send('input',{...neutralCommand(s.round,++seq,s.tick),aimYaw:Math.max(-1.35,Math.min(1.35,yaw)),aimPitch:Math.atan2(d.y,dist),fire:true,shot:seq});await sleep(17);}
+await b.leave();await a.leave();terrain.dispose();

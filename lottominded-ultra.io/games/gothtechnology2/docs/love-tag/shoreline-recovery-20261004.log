@@ -1,0 +1,62 @@
+(node:37884) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ bicycle recovery uses current bike location and preserves distance (10.9832ms)
+✔ occupied recovery does not move the bicycle (1.8332ms)
+(node:38116) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ holding the brake stops without unexpectedly reversing; releasing and reapplying reverses (40.2743ms)
+✔ hop input during flight cannot add a second impulse (8.5313ms)
+✔ visual lean points into a forward carve and ground roll follows a bank normal (7.612ms)
+✔ a charged jump rises higher than a tap hop (11.2983ms)
+✔ invalid device axes cannot introduce non-finite rider transforms (3.1658ms)
+✔ recover preserves session distance while resetting fall pose and speed (12.733ms)
+✔ follow camera tracks a turn and widens with speed without non-finite coordinates (4.2153ms)
+✔ follow camera stays in front of a blocking wall and above terrain (0.4227ms)
+(node:39228) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ each selected rider races against the other three, without duplicates (0.879ms)
+✔ countdown locks progress; zero dt pauses the clock (0.3845ms)
+✔ shortcuts and missed gates do not finish; recovery preserves time and earned gates (0.4726ms)
+✔ off-course crossing cannot earn a gate and reverse crossing cannot repair it (0.2739ms)
+✔ ordered gates finish the player and freeze elapsed time (2.6968ms)
+✔ all bicycle rivals accelerate off the mapped grid promptly with seeded props and a nearby player (446.4783ms)
+✔ cruise bicycle rivals finish the browser seed with live route traffic (45121.681ms)
+ℹ [{"finish":459.9106781806915,"gate":12},{"finish":474.0710428553766,"gate":12},{"finish":467.18024116065766,"gate":12}]
+✔ all cycling rivals go around a parked companion and seeded route props (8817.3919ms)
+✔ bicycle rivals pedal through the full mapped race with cycling speed limits (7599.4793ms)
+✔ the existing Freight Yard side line has continuous support and rejoins before the next main-route checkpoint (2.1852ms)
+✔ all three cruise rivals complete the real mapped course (10641.5069ms)
+ℹ DS_Hoodie_Woman_01: 264.49 s
+ℹ DS_Mascot_Suit_01: 267.97 s
+ℹ DS_Mascot_Hoodie_01: 259.60 s
+✔ all three club rivals complete the real mapped course (7191.1733ms)
+ℹ DS_Hoodie_Woman_01: 175.32 s
+ℹ DS_Mascot_Suit_01: 176.69 s
+ℹ DS_Mascot_Hoodie_01: 173.48 s
+✔ all three expert rivals complete the real mapped course (6483.4484ms)
+ℹ DS_Hoodie_Woman_01: 160.73 s
+ℹ DS_Mascot_Suit_01: 156.35 s
+ℹ DS_Mascot_Hoodie_01: 151.89 s
+✔ a fallen rival simulates settling and waits when its recovery area is occupied (26.6569ms)
+✔ a long or slow race never ends on the old time cutoff or Freight Yard gate (0.853ms)
+✔ expert racers pass a stopped human and each other with solid rider envelopes (6647.9617ms)
+ℹ {"minimum":1.2825073635233948,"finishes":[151.67573483251394,160.3452549902976,155.1821681069025]}
+✔ expert rivals navigate seeded hazards to Mack without striking a prop (6907.3834ms)
+ℹ {"hazards":8,"finishes":[162.19870805587706,156.81299912356658,152.1827536468515],"impacts":0}
+(node:10600) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ a newly streamed cyclist cannot appear through a successful remount (3890.4148ms)
+✔ the reservation expires by simulation ticks, preserves active traffic, and never removes static hazards (3099.5299ms)
+(node:15144) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ recovery rejects water under the wheel and around the mounted footprint (1.1562ms)
+✔ the reported Chene Park bank allows backing out and recovers fully onto land (3663.7907ms)
+✔ dry-ground approach stops at water; submerged flat travel is blocked and decks stay rideable (30.0414ms)
+ℹ tests 32
+ℹ suites 0
+ℹ pass 32
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 104104.0584

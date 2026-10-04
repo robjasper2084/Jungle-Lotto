@@ -8,6 +8,8 @@ import {FlowCombo} from './replayRules.ts';
 import type {RiderId} from './riderChoices.ts';
 import {DistrictRun,type Challenge} from './district.ts';
 import {freeRideLaunch} from './rideLaunch.ts';
+import {RacePilot} from './racePilot.ts';
+import type {RaceDifficulty} from './raceRules.ts';
 
 /** Two to four existing RideControllers, advanced only by the main loop's 120 Hz ticks.
  * Local room scores have no persistence/reward adapter. Each rider sees the other as a solid moving actor.
@@ -19,6 +21,11 @@ export class SplitRaceSimulation {
  readonly terrain:TerrainSampler;
  readonly remoteFallPhase=new Map<number,string>();
  newCrashes:number[]=[];
+ private pilots=new Map<number,RacePilot>();
+ fillRivals(slots:readonly number[],difficulty:RaceDifficulty='expert'){
+  if(this.sessionMode!=='race')return;
+  slots.forEach((slot,index)=>{const r=this.riders[slot];if(!r)return;const pilot=new RacePilot(this.terrain,r.id,index,difficulty,()=>this.riders.flatMap((other,i)=>i===slot?[]:other.sim.obstacles('online-'+i)));pilot.sim.mountedVolume=r.sim.mountedVolume;pilot.reset(RACE_ROUTE.start-(slot+1)*2.2);r.sim=pilot.sim;copyPose(pilot.pose,r.pose);copyPose(r.pose,r.previous);const c=cutCoords(toMap(r.pose.x,r.pose.y,r.pose.z).x,toMap(r.pose.x,r.pose.y,r.pose.z).z);Object.assign(this.rules.racers[slot],{station:c.d,previous:c.d,offset:c.u});this.pilots.set(slot,pilot);});
+ }
  constructor(terrain:TerrainSampler,ids:readonly RiderId[],options:{mode?:'free'|'race'|'challenge';spawn?:{x:number;y:number;z:number;heading:number};challenge?:Challenge}={}){
   if(ids.length<2||ids.length>4)throw Error('Split play supports 2–4 riders.');
   this.sessionMode=options.mode??'race';if(this.sessionMode==='challenge'&&!options.challenge)throw Error('Choose a challenge.');
@@ -46,13 +53,13 @@ export class SplitRaceSimulation {
   this.newCrashes=[];const elapsed=this.rules.advance(dt);if(this.rules.done){this.riders.forEach((r,i)=>{if(this.rules.racers[i].finish===null)r.flow.cancel();});return;}if(elapsed<=0)return;
   this.riders.forEach((r,i)=>{
    copyPose(r.pose,r.previous);const before=this.rules.racers[i].finish,wasCrashed=r.sim.crashed;
-   r.sim.step(elapsed,before===null?actions[i]:{...NEUTRAL_ACTIONS,throttle:Math.abs(r.pose.speed)>.08?-Math.sign(r.pose.speed):0});r.sim.writePose(r.pose);
+   const pilot=this.pilots.get(i);if(pilot&&before===null)pilot.step(elapsed,this.rules);else r.sim.step(elapsed,before===null?actions[i]:{...NEUTRAL_ACTIONS,throttle:Math.abs(r.pose.speed)>.08?-Math.sign(r.pose.speed):0});r.sim.writePose(r.pose);
    if(!wasCrashed&&r.sim.crashed){this.newCrashes.push(i);r.message='Fall · recover when settled';}
    if(before!==null)return;
    r.flow.step(elapsed,r.pose,r.sim.snapshot().grounded,r.sim.touchedDown?r.sim.lastLandingQuality:undefined,r.sim.tricks.award?r.sim.tricks.event:undefined,r.sim.tricks.active,r.sim.tricks.award);
    if(r.sim.tricks.event)r.message=r.sim.tricks.event;
    const p=toMap(r.pose.x,r.pose.y,r.pose.z),c=cutCoords(p.x,p.z);
-   if(this.sessionMode==='race'&&!r.sim.crashed)this.rules.observe(r.id,c.d,c.u,elapsed);
+   if(this.sessionMode==='race'&&!r.sim.crashed&&!pilot)this.rules.observe(r.id,c.d,c.u,elapsed);
    else if(r.challenge){const s=r.sim.snapshot();r.challenge.step(elapsed,{station:c.d,offset:c.u,speed:r.pose.speed,grounded:s.grounded,crashed:r.sim.crashed,roll:r.pose.rollAngle,slip:r.pose.slipAngle,traction:r.pose.tractionUsage,airHeight:r.pose.airHeight,landing:r.sim.touchedDown?r.sim.lastLandingQuality:undefined,hopCharge:r.sim.lastHopCharge});Object.assign(this.rules.racers[i],{station:c.d,offset:c.u,gate:r.challenge.gateCount});r.message=r.challenge.reason||r.challenge.progress;if(r.challenge.done||r.challenge.failed)this.rules.racers[i].finish=r.challenge.elapsed;}
    else if(this.sessionMode==='free')Object.assign(this.rules.racers[i],{station:c.d,offset:c.u});
    if(this.rules.racers[i].finish!==null){if(r.challenge?.failed){r.flow.cancel();r.message='Attempt ended · '+r.challenge.reason;}else {r.flow.bank();r.message='Finished · waiting for the other riders';}}

@@ -1,3 +1,6 @@
+import {registerDestinationCollision} from './tagSceneryCollisions.ts';
+import {SpatialAssetStream} from './spatialAssetStream.ts';
+import {isCharacter} from './actorAvoidance.ts';
 import {installDogCommandHud} from './dogCommandHud.ts';
 import type {LoveTagClient} from '@digital-static/ridecore/tag-client';
 let loveTag:LoveTagClient|undefined;
@@ -48,7 +51,8 @@ import {RideConfirmation,RiderLamp} from './rideEffects.ts';
 import {ContactEffects} from './contactEffects.ts';
 import {SplitRaceSimulation} from './splitRaceSimulation.ts';
 import {SplitRaceView} from './splitRaceView.ts';
-import {SplitRideInput,splitSetupError,splitBindingLabel,type SplitBinding} from './splitInput.ts';
+import {OnlineViewPreference} from './onlineViewPreference.ts';
+import {SplitRideInput,splitSetupError,type SplitBinding} from './splitInput.ts';
 import {EncounterWarning} from './encounterWarning.ts';
 import {PracticeCoach} from './practiceCoach.ts';
 import {RIDE_RULES,NeutralRearm} from './rideRules.ts';
@@ -68,7 +72,7 @@ import {FollowCamera,chaseFrameFov} from './followCamera.ts';
 import {underpassCameraHeight} from './cameraClearance.ts';
 import {RIDE_TUNING} from './rideDynamics.ts';
 import * as T from 'three';
-import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+
 import {HDRLoader} from 'three/addons/loaders/HDRLoader.js';
 import { createPose,copyPose,lerpPose } from './controller.ts';
 import { NEUTRAL_ACTIONS } from './controller.ts';
@@ -113,18 +117,20 @@ const renderer=new T.WebGLRenderer({canvas,antialias:startupAntialias(),powerPre
 // Catch loss during asset loading too, before input and the simulation exist.
 canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();canvas.dataset.paused='true';renderer.setAnimationLoop(null);boot.fail('Graphics were interrupted. Reload to return to the menu.','WebGL context lost; reload releases this session before retrying.');renderBoot();});
 const adaptiveQuality=new AdaptiveQuality();renderer.setPixelRatio(Math.min(devicePixelRatio,1));renderer.setSize(innerWidth,innerHeight);
-renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFSoftShadowMap;
+renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFShadowMap;
 renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=elmwood?1.0:1.1;
 const scene=new T.Scene();scene.background=new T.Color('#c9dce0');scene.fog=new T.Fog('#c9dce0',elmwood&&compactElmwood?65:130,elmwood&&compactElmwood?165:370);
 const graphics=createGraphicsQuality(renderer,scene,canvas);
+const onlineView=new OnlineViewPreference(typeof localStorage==='undefined'?undefined:localStorage);
 const sky=new RouteSky();scene.add(sky);
 const camera=new T.PerspectiveCamera(55,innerWidth/innerHeight,.08,1500);
 const pm=new T.PMREMGenerator(renderer);
+try{
 if(elmwood){
   const hdr=await new HDRLoader().loadAsync('/textures/elmwood-library/forest_grove_2k.hdr');
   scene.environment=pm.fromEquirectangular(hdr).texture;scene.environmentIntensity=.55;hdr.dispose();
-}else{const room=new RoomEnvironment();scene.environment=pm.fromScene(room,.03).texture;scene.environmentIntensity=.6;room.dispose();}
-pm.dispose();
+}else{const hdr=await new HDRLoader().loadAsync(new URL('../../art/nvidia/detroit-skylight.hdr',import.meta.url).href);scene.environment=pm.fromEquirectangular(hdr).texture;scene.environmentIntensity=.6;hdr.dispose();canvas.dataset.lighting='NVIDIA OptiX baked skylight';}
+}catch(error){console.warn('Skylight unavailable; using scene lights',error);canvas.dataset.lighting='Scene lights';}finally{pm.dispose();}
 const hemi=new T.HemisphereLight('#d3e9f6','#7d7659',elmwood?.95:1.15),sun=new T.DirectionalLight('#ffe4b7',elmwood?2.5:2.0);
 sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);Object.assign(sun.shadow.camera,{left:-32,right:32,top:36,bottom:-30,near:.1,far:100});sun.shadow.normalBias=.035;sun.shadow.bias=-.00015;scene.add(hemi,sun,sun.target);
 const fill=new T.DirectionalLight('#c1d7ed',elmwood?.22:.55);scene.add(fill,fill.target);if(elmwood)scene.environmentIntensity=.4;
@@ -186,13 +192,13 @@ let challengeRun:DistrictRun|undefined,photoPending=false;
 world.extraActors=()=>[...(communityActive()?community?.ride.obstacles()??[]:[]),...(race?.obstacles()??[]),...(running&&dogEnabled&&!split?[{id:'companion',x:dog.current.x,y:dog.current.y,z:dog.current.z,radius:.36,height:.85,kind:'dog',vx:Math.sin(dog.current.heading)*dog.current.speed,vz:Math.cos(dog.current.heading)*dog.current.speed}]:[])];
 mapWorld.crowdActors=()=>[...(communityActive()?community?.ride.obstacles().map(o=>({...o,...toMap(o.x,o.y,o.z),vx:-o.vx}))??[]:[]),...(running&&dogEnabled&&!split?[{id:'companion',...toMap(dog.current.x,dog.current.y,dog.current.z),radius:.36,height:.85,kind:'dog',vx:-Math.sin(dog.current.heading)*dog.current.speed,vz:Math.cos(dog.current.heading)*dog.current.speed}]:[])];
 let race:RivalRace|undefined;let practice:PracticeCoach|undefined;const encounterWarning=new EncounterWarning();
-const riderTerrain=world.withActorPassThrough(o=>ridingCompanion(o,communityActive()&&!!community?.ride.joined,!!race?.cyclingOpponents)||(o.kind==='dog'&&!!world.riderProtectionAt(current.x,current.z)));
+const riderTerrain=world.withActorPassThrough(o=>ridingCompanion(o,communityActive()&&!!community?.ride.joined,!!race?.cyclingOpponents)||(o.kind==='dog'&&!!world.riderProtectionAt(current.x,current.z))).withActorRayPassThrough(isCharacter);
 const bikeInvitation=new BikeRaceInvitation(()=>startRace(true),()=>canvas.focus());
 let split:{simulation:SplitRaceSimulation;view:SplitRaceView;input:SplitRideInput;audio:RideAudio[]}|undefined,startingOnline=false;
 const splitPhotoAim=new Map<number,string>();
-function stopSplit(){if(!split)return;if(online.active&&!startingOnline)void online.leave(false);split.view.dispose();split.audio.forEach(a=>void a.dispose());split=undefined;splitPhotoAim.clear();document.body.classList.remove('splitPlaying');delete canvas.dataset.splitRace;delete canvas.dataset.online;renderer.setScissorTest(false);renderer.setViewport(0,0,innerWidth,innerHeight);hero.root.visible=true;dogView.root.visible=dogEnabled;}
+function stopSplit(){if(!split)return;if(online.active&&!startingOnline)void online.leave(false);split.view.dispose();split.audio.forEach(a=>void a.dispose());split=undefined;splitPhotoAim.clear();document.body.classList.remove('splitPlaying','onlinePlaying');delete canvas.dataset.splitRace;delete canvas.dataset.online;renderer.setScissorTest(false);renderer.setViewport(0,0,innerWidth,innerHeight);hero.root.visible=true;dogView.root.visible=dogEnabled;}
 function stopRace(){miniMap?.hud.setRaceCourse(null);stopSplit();race?.dispose();race=undefined;document.body.classList.remove('racing');}
-function recoverSplit(index:number){if(!split||paused&&!online.active)return;if(split.simulation.recover(index)){split.input.clear(online.active?0:index);split.view.recovered(index);canvas.focus();}}
+function recoverSplit(index:number){if(!split||paused&&!online.active)return;if(split.simulation.recover(index)){split.input.clear(online.active?0:index);split.view.resetTouch(index);split.view.recovered(index);canvas.focus();}}
 function cruiseSplit(index:number){const slot=online.active?online.slot:index;if(!split||paused||finished||slot<0||split.simulation.rules.countdown>0||split.simulation.riders[slot].sim.crashed||split.simulation.rules.racers[slot].finish!==null)return;split.input.toggleCruise(index);canvas.focus();}
 function photoSplit(index:number){if(!split||paused&&!online.active)return;const rider=split.simulation.riders[index],run=rider.challenge;if(!run||run.challenge.kind!=='discovery')return;const target=district.targets.filter(t=>!run.photos.has(t.id)).sort((a,b)=>Math.hypot(a.x-rider.pose.x,a.z-rider.pose.z)-Math.hypot(b.x-rider.pose.x,b.z-rider.pose.z))[0];if(!target){rider.message='All photos collected. Follow the gates to Mack.';return;}if(splitPhotoAim.get(index)!==target.id){splitPhotoAim.set(index,target.id);split.view.framePhoto(index,target);rider.message='Framing '+target.name+' · stop and press Photo again';}else {const check=split.view.photoCheck(index,target);const saved=run.capture(target.id,check);rider.message=saved?'PHOTO SAVED · '+target.name:'Stop within 3–42 m with a clear view of '+target.name;if(saved){split.view.clearPhoto(index);splitPhotoAim.delete(index);}}canvas.focus();}
 function startSplit(){
@@ -204,7 +210,7 @@ function startSplit(){
  stopRace();practice=undefined;$('practiceHUD').hidden=true;challengeRun=undefined;district.setRun();loop.stopReplay(false);loop.flow.cancel();mode='split';reset(selectedSpot,RACE_ROUTE.start);mapWorld.updateTraffic(0,1e8,1e8);mapWorld.step();
  const selected=$<HTMLSelectElement>('splitSessionMode').value,challenge=CHALLENGES.find(c=>c.id===selected),sessionMode=selected==='free'?'free':selected==='race'?'race':'challenge';if(sessionMode==='free'){selectedSpot=Number($<HTMLSelectElement>('spawn').value);reset(selectedSpot);}
  const simulation=new SplitRaceSimulation(world,ids,{mode:sessionMode,spawn:SPOTS[selectedSpot],challenge}),input=new SplitRideInput(bindings),audio=ids.slice(1).map(()=>new RideAudio());
- const view=new SplitRaceView(scene,simulation,actorData,bindings,{pause,restart:startSplit,menu:()=>$('menuButton').click(),recover:recoverSplit,cruise:cruiseSplit,photo:photoSplit,camera:i=>{split?.view.toggleCamera(i);canvas.focus();}},effectPatches,[rideAudio,...audio]);
+ const view=new SplitRaceView(scene,simulation,actorData,bindings,{pause,input,display:openDisplaySettings,restart:startSplit,menu:()=>$('menuButton').click(),recover:recoverSplit,cruise:cruiseSplit,photo:photoSplit,camera:i=>{split?.view.toggleCamera(i);canvas.focus();}},effectPatches,[rideAudio,...audio]);
  split={simulation,input,view,audio};loop.startRun(undefined,selectedRider,actorData,current);beginRide();document.body.classList.add('splitPlaying');hero.root.visible=false;dogView.root.visible=false;traffic.update(mapWorld.traffic.map(t=>({...t,...toLocal(t.x,t.y,t.z),heading:-t.heading})),0);contactEffects?.reset();confirmation.reset();pedalSparks.reset();audio.forEach(a=>void a.enable(!muted));canvas.focus();
 }
 function startRace(bicycleOpponents=false){if(!ready)return;chooseVehicle(vehicle.value==='bicycle'&&!vr.active);community?.ride.cancel();practice=undefined;$('practiceHUD').hidden=true;if(elmwood){const url=new URL(location.href);url.searchParams.delete('map');url.searchParams.set('tab','race');location.assign(url.href);return;}stopRace();challengeRun=undefined;district.setRun();mode='race';reset(selectedSpot,RACE_ROUTE.start);mapWorld.updateTraffic(0,1e8,1e8);mapWorld.step();race=new RivalRace(scene,world,actorData,selectedRider,$<HTMLSelectElement>('raceDifficulty').value as RaceDifficulty,sim,sim.cycling,bicycleOpponents||sim.cycling);loop.startRun(undefined,selectedRider,actorData,current);beginRide();document.body.classList.add('racing');setCamera('chase');toast((race.cyclingOpponents?'Cyclists':'Rivals')+' ready · follow the gates to Mack Avenue. No time cutoff.');}
@@ -232,8 +238,9 @@ function showAudioState(){const button=$('audio');button.textContent=muted?'Soun
 // Starting/resuming is a user gesture: unlock Web Audio here on phones and desktop.
 function unlockRideAudio(){void rideAudio.enable(!muted).then(showAudioState).catch(()=>{muted=true;void rideAudio.enable(false);showAudioState();});showAudioState();}
 showAudioState();
+canvas.addEventListener('online-release-input',()=>clearInput());
 function clearInput(){
- split?.input.clear();
+ split?.input.clear();split?.view.resetTouch();
  trickRequest=0;keys.clear();resetTouch();hop=false;resetPressed=false;cruise=false;acc=0;
  deviceRearm.interrupt();clearCameraTouches();encounterWarning.reset();toastUntil=0;$('toast').hidden=true;
  $('stickThumb').style.transform='translate(-50%,-50%)';
@@ -278,7 +285,7 @@ function reset(spot=selectedSpot,station?:number){
   handledCrash=0;clock=0;lastTraffic=0;const p=toMap(s.x,0,s.z);mapWorld.updateTraffic(0,p.x,p.z);mapWorld.step();gate=0;score=0;finished=false;acc=0;clearInput();$('paused').hidden=true;
 }
 function beginRide(){if(!$('menu').hidden)startupCinema?.arrive();unlockRideAudio();loop.music.unlock();document.body.classList.add('playing');setCompanion($<HTMLSelectElement>('companion').value==='dog');running=true;paused=false;photoPending=false;$('menu').hidden=true;$('mapPanel').hidden=true;$('helpPanel').hidden=true;$('pause').textContent='Pause';$('paused').hidden=true;$('status').textContent='';$('run').textContent=challengeRun?.progress??'FREE RIDE';canvas.focus();}
-function start(){if(!ready)return;practice=undefined;$('practiceHUD').hidden=true;const selected=$<HTMLSelectElement>('mode').value;if(vehicle.value==='bicycle'&&!['free','race'].includes(selected)){toast('Choose Free ride or Rival race for bicycles.');$('status').textContent='Select Free ride or Rival race for the bicycle.';return;}chooseVehicle(vehicle.value==='bicycle'&&!vr.active);if(community?.ride.stage==='cleanup')community.ride.restart();if(selected==='race'){startRace();return;}if(selected==='split'){startSplit();return;}stopRace();if(selected!=='free'){startChallenge(CHALLENGES.find(c=>c.kind===selected)!);return;}challengeRun=undefined;district.setRun();mode='free';selectedSpot=Number($<HTMLSelectElement>('spawn').value);reset();loop.startRun(undefined,selectedRider,actorData,current);beginRide();setCamera('chase');}
+async function start(){if(!ready||preparingSpawn)return;await prepareSpawn(Number($<HTMLSelectElement>('spawn').value));practice=undefined;$('practiceHUD').hidden=true;const selected=$<HTMLSelectElement>('mode').value;if(vehicle.value==='bicycle'&&!['free','race'].includes(selected)){toast('Choose Free ride or Rival race for bicycles.');$('status').textContent='Select Free ride or Rival race for the bicycle.';return;}chooseVehicle(vehicle.value==='bicycle'&&!vr.active);if(community?.ride.stage==='cleanup')community.ride.restart();if(selected==='race'){startRace();return;}if(selected==='split'){startSplit();return;}stopRace();if(selected!=='free'){startChallenge(CHALLENGES.find(c=>c.kind===selected)!);return;}challengeRun=undefined;district.setRun();mode='free';selectedSpot=Number($<HTMLSelectElement>('spawn').value);reset();loop.startRun(undefined,selectedRider,actorData,current);beginRide();setCamera('chase');}
 function startChallenge(c:Challenge){if(!ready)return;chooseVehicle(false);community?.ride.cancel();practice=undefined;$('practiceHUD').hidden=true;stopRace();district.selected=c.id;mode=c.kind;challengeRun=new DistrictRun(c);reset(selectedSpot,c.start);district.setRun(challengeRun);loop.startRun(c,selectedRider,actorData,current);if(c.id.startsWith('daily-')&&night)toggleLight();beginRide();setCamera(c.kind==='discovery'?'photo':'chase');toast(c.kind==='trial'?'GO · Follow the gold gates. Brake for people.':c.description);}
 function freeRideHere(){mapWorld.courseFeatures=[];courseView.set([]);canvas.dataset.hazards=JSON.stringify({seed:mapWorld.hazardSeed,count:mapWorld.hazards.length,features:[]});practice=undefined;practiceHUD.hidden=true;stopRace();challengeRun=undefined;district.setRun();mode='free';finished=false;paused=false;clearInput();loop.startRun(undefined,selectedRider,actorData,current);beginRide();setCamera('chase');$<HTMLSelectElement>('mode').value='free';district.filter('free');}
 function completeChallenge(){if(finished||!challengeRun)return;if(challengeRun.failed&&sim.crashed){const cause=sim.crashCause;challengeRun.reason=cause==='collision'?'Collision. Leave room for other path users and brake before obstacles. Retry / N starts immediately.':cause==='hard landing'?'Hard landing. Use a smaller hop and absorb the touchdown with a crouch. Retry / N starts immediately.':cause==='sideways landing'?'Sideways landing. Align the wheel with your direction of travel before touchdown. Retry / N starts immediately.':cause==='trail boundary'?'Outside the rideable trail. Follow the marked line. Retry / N starts immediately.':cause+'. Retry / N starts immediately.';}finished=true;clearInput();if(challengeRun.failed)loop.flow.cancel();district.finish(challengeRun);loop.finish(challengeRun,current);}
@@ -326,7 +333,7 @@ const setupSummary=document.createElement('p');setupSummary.id='setupSummary';se
 function describeSetup(){const name=SPOTS[Number($<HTMLSelectElement>('spawn').value)]?.name??'Choose a starting location',cycling=vehicle.value==='bicycle'&&['free','race'].includes($<HTMLSelectElement>('mode').value),rider=RIDER_CHOICES.find(r=>r.id===(cycling?'DS_Man_01':$<HTMLSelectElement>('heroSelect').value))?.label??'Choose a rider';setupSummary.textContent=`${cycling?'Bicycle':'One wheel'} · ${rider} · ${name}`;setupSummary.hidden=$<HTMLSelectElement>('mode').value!=='free';$('bikeOptions').hidden=!cycling;$<HTMLSelectElement>('heroSelect').disabled=cycling;}
 vehicle.addEventListener('change',describeSetup);
 $('spawn').addEventListener('change',describeSetup);$('heroSelect').addEventListener('change',describeSetup);$('mode').addEventListener('change',describeSetup);describeSetup();
-$('start').onclick=start;$('pause').onclick=pause;$('camera').onchange=()=>setCamera($<HTMLSelectElement>('camera').value,true);
+$('start').onclick=()=>{void start().catch(()=>toast('The starting area could not load. Try again.'));};$('pause').onclick=pause;$('camera').onchange=()=>setCamera($<HTMLSelectElement>('camera').value,true);
 $('companion').onchange=()=>setCompanion($<HTMLSelectElement>('companion').value==='dog');
 $('heroSelect').onchange=()=>setRider($<HTMLSelectElement>('heroSelect').value);
 $('riderQuick').onclick=()=>{setRider(RIDER_CHOICES[(RIDER_CHOICES.findIndex(r=>r.id===selectedRider)+1)%RIDER_CHOICES.length].id);canvas.focus();};
@@ -395,15 +402,16 @@ const splitOption=document.createElement('option');splitOption.value='split';spl
 const lobby=installLobby(elmwood,startRace,startSplit);
 const startupCinema=elmwood?undefined:new StartupCinema();
 const online=new OnlineRooms(elmwood?'elmwood':'cut',()=>ready,()=>Number($<HTMLSelectElement>('spawn').value),startOnline,()=>{if(split){stopSplit();running=false;clearInput();$('menu').hidden=false;document.body.classList.remove('playing');$('resumeRide').hidden=true;}});
-function startOnline(match:RoomMatch,slot:number){
- if(!ready)return;startingOnline=true;stopRace();startingOnline=false;chooseVehicle(false);community?.ride.cancel();practice=undefined;challengeRun=undefined;district.setRun();loop.stopReplay(false);loop.flow.cancel();mode='split';selectedSpot=match.spawn;
+async function startOnline(match:RoomMatch,slot:number){
+ if(!ready||preparingSpawn)return;try{await prepareSpawn(match.spawn);}catch{toast('Room location could not load. Try joining again.');return;}startingOnline=true;stopRace();startingOnline=false;chooseVehicle(false);community?.ride.cancel();practice=undefined;challengeRun=undefined;district.setRun();loop.stopReplay(false);loop.flow.cancel();mode='split';selectedSpot=match.spawn;
  const challenge=CHALLENGES.find(c=>c.id===match.mode),sessionMode=match.mode==='free'?'free':match.mode==='race'?'race':'challenge';reset(selectedSpot,sessionMode==='free'?undefined:challenge?.start??RACE_ROUTE.start);
  if(!elmwood){mapWorld.setHazards(match.seed,challenge?.start??RACE_ROUTE.start,sessionMode!=='free');courseView.set(mapWorld.courseFeatures);mapWorld.updateTraffic(0,1e8,1e8);mapWorld.step();}
  const ids=match.members.map(m=>m.rider),bindings:SplitBinding[]=ids.map((_,i)=>i===0?online.binding:(['wasd','arrows','ijkl','numpad'] as const)[i]),simulation=new SplitRaceSimulation(world,ids,{mode:sessionMode,spawn:SPOTS[selectedSpot],challenge}),input=new SplitRideInput(bindings),audio=ids.slice(1).map(()=>new RideAudio());simulation.rules.countdown=Math.max(0,(match.startAt-Date.now())/1000);
+ if(online.isHost)simulation.fillRivals(match.members.flatMap((m,i)=>m.bot?[i]:[]),match.difficulty??'expert');
  const own=(i:number)=>i===slot;
- const view=new SplitRaceView(scene,simulation,actorData,bindings,{pause,restart:()=>toast('Leave the match and create a new room to restart.'),menu:()=>$('menuButton').click(),recover:i=>{if(own(i)){if(online.isHost)recoverSplit(i);else online.command({...NEUTRAL_ACTIONS,reset:true});}},cruise:i=>{if(own(i))cruiseSplit(0);},photo:i=>{if(own(i)){if(online.isHost)photoSplit(i);else online.command({...NEUTRAL_ACTIONS},false,true);}},camera:i=>{if(own(i))split?.view.toggleCamera(i);}},effectPatches,[rideAudio,...audio]);
+ const view=new SplitRaceView(scene,simulation,actorData,bindings,{pause,input,display:openDisplaySettings,onlineSlot:slot,bots:match.members.flatMap((m,i)=>m.bot?[i]:[]),splitView:()=>onlineView.split,restart:()=>toast('Leave the match and create a new room to restart.'),menu:()=>$('menuButton').click(),recover:i=>{if(own(i)){if(online.isHost)recoverSplit(i);else online.command({...NEUTRAL_ACTIONS,reset:true});}},cruise:i=>{if(own(i))cruiseSplit(0);},photo:i=>{if(own(i)){if(online.isHost)photoSplit(i);else online.command({...NEUTRAL_ACTIONS},false,true);}},camera:i=>{if(own(i))split?.view.toggleCamera(i);}},effectPatches,[rideAudio,...audio]);
  split={simulation,input,view,audio};beginRide();document.body.classList.add('splitPlaying');hero.root.visible=false;dogView.root.visible=false;contactEffects?.reset();confirmation.reset();pedalSparks.reset();canvas.focus();
- for(const pane of view.hud.querySelectorAll<HTMLElement>('.splitPane')){const i=Number(pane.dataset.player)-1;pane.querySelector('small')!.textContent=own(i)?'YOU / '+splitBindingLabel(online.binding):'ONLINE PLAYER / remote controls';if(!own(i))for(const button of pane.querySelectorAll<HTMLButtonElement>('nav button'))button.hidden=true;}
+ document.body.classList.add('onlinePlaying');
  view.hud.querySelector('.splitBar span')!.textContent='ONLINE / '+ids.length+'P / '+match.mode.toUpperCase();
 }
 function welcomeGothTech(area:'studio'|'store'){
@@ -418,7 +426,7 @@ function startLandmarkMission(){
  reset(0);landmarkMission?.start();loop.startRun(undefined,selectedRider,actorData,current);beginRide();setCamera('chase');
  toast('Landmark mission · open Dog commands to Sit, then Come.');
 }
-graphics.mount($('lobbySettings'));
+graphics.mount($('lobbySettings'));onlineView.mount($('helpPanel'),()=>clearInput());onlineView.mount($('lobbySettings'),()=>clearInput());
 const lobbyLayout=document.createElement('button');lobbyLayout.textContent='Control settings';lobbyLayout.setAttribute('aria-controls','helpPanel');lobbyLayout.onclick=openControlSettings;$('lobbySettings').querySelector('h2')!.after(lobbyLayout);
 const settingsGame=document.createElement('div');
 const commandBark=new DogBarkAudio();
@@ -433,7 +441,8 @@ const settingsTabs=settingsPanel($('helpPanel'),$<HTMLButtonElement>('closeHelp'
  {name:'Controls',nodes:[mapLayoutButton,...$('helpPanel').querySelectorAll('fieldset:not(.graphicsSettings)'),layoutHelp]},
  {name:'Graphics',nodes:[...$('helpPanel').querySelectorAll('.graphicsSettings')]},
  {name:'Audio',nodes:[settingsAudio]},{name:'Gameplay',nodes:[settingsGame]},{name:'Replay',nodes:[film.panel]}
-]);$('help').textContent='Settings';rideControlSettings.textContent='Settings';lobbyLayout.textContent='Open settings';
+]);function openDisplaySettings(){openControlSettings();settingsTabs.select(1);}
+$('help').textContent='Settings';rideControlSettings.textContent='Settings';lobbyLayout.textContent='Open settings';
 const practiceHUD=document.createElement('section');practiceHUD.id='practiceHUD';practiceHUD.hidden=true;practiceHUD.setAttribute('aria-label','Riding lesson');practiceHUD.innerHTML='<strong>Learn to ride</strong><p id="practiceCopy" role="status"></p><button id="practiceFree">Finish lesson · free ride</button><details><summary>Lesson options</summary><button id="practiceRace">Try a timed challenge</button><button id="practiceAgain">Restart lesson</button></details>';document.body.append(practiceHUD);
 function startPractice(){if(!ready||vr.active)return;chooseVehicle(vehicle.value==='bicycle');community?.ride.cancel();stopRace();challengeRun=undefined;district.setRun();mode='free';selectedSpot=Number($<HTMLSelectElement>('spawn').value);reset(selectedSpot,elmwood?undefined:RACE_ROUTE.start);loop.startRun(undefined,selectedRider,actorData,current);practice=new PracticeCoach(sim.cycling);practiceCompleted=false;try{practiceCompleted=localStorage.getItem(practiceKey())==='complete';}catch{}beginRide();setCamera('chase');practiceHUD.hidden=false;}
 $('practiceRace').hidden=elmwood;$('practiceRace').onclick=()=>startChallenge(CHALLENGES.find(c=>c.id==='gratiot-dash')!);$('practiceFree').onclick=freeRideHere;$('practiceAgain').onclick=startPractice;
@@ -444,8 +453,8 @@ let practiceCompleted=false;try{practiceCompleted=localStorage.getItem('swoop-pr
 const quickPractice=document.createElement('button');quickPractice.id='learnRide';quickPractice.textContent=practiceCompleted?'Practice again':'Learn to ride';quickPractice.disabled=true;quickPractice.hidden=$('menu').dataset.tab!=='ride';quickPractice.onclick=startPractice;lobby.actions.append(quickPractice);
 const quickPark=document.createElement('button');quickPark.textContent='Freestyle Yard / skateboard';quickPark.onclick=()=>{const i=SPOTS.findIndex(s=>s.name===PARK_SPAWN.name);if(i<0||!ready)return;stopRace();challengeRun=undefined;district.setRun();mode='free';selectedSpot=i;reset(i);beginRide();};
 quickPark.hidden=elmwood;lobby.placeButtons.append(quickPark);
-const quickStudio=document.createElement('button');quickStudio.textContent='GothTech Studio · 2000 Mack';quickStudio.hidden=elmwood;quickStudio.onclick=()=>{const i=SPOTS.findIndex(s=>s.name.startsWith('Green screen studio'));if(i<0||!ready)return;stopRace();challengeRun=undefined;district.setRun();mode='free';selectedSpot=i;reset(i);setCamera('chase');beginRide();studioCapture?.open();};lobby.placeButtons.append(quickStudio);
-for(const [label,name]of [['Penny Exchange · merch auctions','Penny Exchange · next to LottoMind'],['LottoMind store · app + play','LottoMind store · Mack Avenue'],['Studio arcade · 3D joysticks','Studio arcade · 2000 Mack'],['GothTech arcade · Underground','GothTech arcade · Underground']]){const b=document.createElement('button');b.textContent=label;b.hidden=elmwood;b.onclick=()=>{const i=SPOTS.findIndex(s=>s.name===name);if(i<0||!ready)return;stopRace();challengeRun=undefined;district.setRun();mode='free';selectedSpot=i;reset(i);setCamera('chase');beginRide();};lobby.placeButtons.append(b);}lobby.finish();
+const quickStudio=document.createElement('button');quickStudio.textContent='GothTech Studio · 2000 Mack';quickStudio.hidden=elmwood;quickStudio.onclick=async()=>{const i=SPOTS.findIndex(s=>s.name.startsWith('Green screen studio'));if(i<0||!ready||preparingSpawn)return;try{await prepareSpawn(i);}catch{toast('Studio could not load. Try again.');return;}stopRace();challengeRun=undefined;district.setRun();mode='free';selectedSpot=i;reset(i);setCamera('chase');beginRide();studioCapture?.open();};lobby.placeButtons.append(quickStudio);
+for(const [label,name]of [['Penny Exchange · merch auctions','Penny Exchange · next to LottoMind'],['LottoMind store · app + play','LottoMind store · Mack Avenue'],['Studio arcade · 3D joysticks','Studio arcade · 2000 Mack'],['GothTech arcade · Underground','GothTech arcade · Underground']]){const b=document.createElement('button');b.textContent=label;b.hidden=elmwood;b.onclick=async()=>{const i=SPOTS.findIndex(s=>s.name===name);if(i<0||!ready||preparingSpawn)return;try{await prepareSpawn(i);}catch{toast('This place could not load. Try again.');return;}stopRace();challengeRun=undefined;district.setRun();mode='free';selectedSpot=i;reset(i);setCamera('chase');beginRide();};lobby.placeButtons.append(b);}lobby.finish();
 const parkHUD=document.createElement('section');parkHUD.id='parkCoach';parkHUD.hidden=true;parkHUD.setAttribute('aria-label','Freestyle Yard session');document.body.append(parkHUD);
 let parkLandings=0,parkLastLanding=-Infinity;
 const courseView=new CourseFeatureView(scene);
@@ -458,6 +467,37 @@ const gallery=elmwood?undefined:new GalleryVisit(scene,()=>{
 const boutique=elmwood?undefined:new GalleryVisit(scene,()=>{
  if(split||sim.crashed||Math.abs(current.speed)>.5)return;freeRideHere();clearInput();paused=true;boutique!.start(actorData,selectedRider,hero,current);welcomeGothTech('store');
 },()=>{clearInput();paused=false;canvas.focus();},true);
+const interiorStream=new SpatialAssetStream(1,()=>{canvas.dataset.interiorStreaming=JSON.stringify(interiorStream.status);});
+const retailAnchor=toLocal(MACK_STUDIO.x,0,MACK_STUDIO.z);
+const retailLoads=new Map<string,Promise<unknown>>();
+function loadRetail<V>(id:string,load:()=>Promise<V>):Promise<V>{
+ const existing=retailLoads.get(id);if(existing)return existing as Promise<V>;
+ const promise=Promise.resolve().then(load).catch(error=>{retailLoads.delete(id);throw error;});retailLoads.set(id,promise);return promise;
+}
+interiorStream.add({id:'mack-retail',centers:[retailAnchor],async load(){
+  const interiors=elmwood?undefined:await Promise.all([
+    loadRetail('studio',()=>buildMackStudio(scene,mapWorld as DetroitWorld)),
+    loadRetail('lotto',()=>buildLottoShop(scene,mapWorld as DetroitWorld,()=>clearInput(),()=>{clearInput();lottoAppPausedRide=running&&!paused;if(lottoAppPausedRide)pause();},()=>{clearInput();const ridingView=$('menu').hidden&&$('helpPanel').hidden&&$('mapPanel').hidden;if(lottoAppPausedRide&&running&&paused&&ridingView)pause();lottoAppPausedRide=false;if(ridingView)canvas.focus();})),
+    loadRetail('penny',()=>buildPennyShop(scene,mapWorld as DetroitWorld,()=>{clearInput();pennyPausedRide=running&&!paused;if(pennyPausedRide){paused=true;$('pause').textContent='Resume';rideAudio.update(pose,false);}},()=>{clearInput();if(pennyPausedRide&&running){paused=false;$('pause').textContent='Pause';}$('paused').hidden=!paused;pennyPausedRide=false;canvas.focus();})),
+    loadRetail('gallery',()=>gallery!.load()),loadRetail('boutique',()=>boutique!.load())
+  ]);
+  if(!elmwood){mackStudio=interiors![0];studioScreens=new StudioScreens(mackStudio.building,()=>{clearInput();canvas.focus();});lottoShop=interiors![1];cabinets!.add(mackStudio.building,-9,20.65,Math.PI,'wave','2084 Static Wave');cabinets!.add(mackStudio.building,-10.4,20.65,Math.PI,'rahbe','Robot RAHBE · Vault Rush');cabinets!.add(boutique!.building,2.35,-4.7,0,'underground','ROBOT RAHBE: Underground');}
+  if(!elmwood){pennyShop=interiors![2];lottoShop!.building.add(pennyShop.kiosk);cabinets!.add(lottoShop!.building,3.4,5.25,0,'wave','2084 Static Wave · LottoMind game kiosk');const q=lottoMap(3.4,5.25);(mapWorld as DetroitWorld).addBox({x:q.x,y:LOTTO_SHOP.floor+.8,z:q.z,hx:.64,hy:.8,hz:.55,yaw:-LOTTO_SHOP.heading,kind:'retail game kiosk'});}
+  for(const destination of [gallery,boutique])if(destination)registerDestinationCollision(mapWorld as DetroitWorld,destination.store);
+  mapWorld.step();graphics.apply();
+}});
+let preparingSpawn=false;
+async function prepareSpawn(spot:number){
+ const point=SPOTS[spot];if(!point)return;
+ preparingSpawn=true;
+ try{
+ if(!elmwood&&Math.hypot(point.x-retailAnchor.x,point.z-retailAnchor.z)<350&&interiorStream.status.loaded===0){
+  $('status').textContent='Preparing the store and nearby scenery…';
+  await interiorStream.ensure('mack-retail');
+ }
+ if(scenery&&'stream' in scenery){const p=toMap(point.x,0,point.z);await scenery.stream.warm([p],120);}
+ }finally{preparingSpawn=false;$('status').textContent='';}
+}
 try{
   bootStage('loading','Loading your rider and Detroit district…');
   const [data]=await Promise.all([loadActors(),mapWorld.init()]);
@@ -467,35 +507,13 @@ try{
   const cherryAnchors=cherrySites.map(m=>{const p=toLocal(m.x,0,m.z);return{x:p.x,z:p.z,y:world.sampleGround(p.x,p.z,cherryGround).height,scale:m.scale};});
   nature=new NatureWorld(scene,cherryAnchors,(x,z)=>world.sampleGround(x,z,cherryGround).height);void nature.load();
   natureAudio=new NatureAudio([{file:'birdsong.mp3',points:cherryAnchors,radius:65,volume:.15}],()=>!muted&&running&&!paused&&$('menu').hidden);
-  const interiors=elmwood?undefined:await Promise.all([
-    buildMackStudio(scene,mapWorld as DetroitWorld),
-    buildLottoShop(scene,mapWorld as DetroitWorld,()=>clearInput(),()=>{clearInput();lottoAppPausedRide=running&&!paused;if(lottoAppPausedRide)pause();},()=>{clearInput();const ridingView=$('menu').hidden&&$('helpPanel').hidden&&$('mapPanel').hidden;if(lottoAppPausedRide&&running&&paused&&ridingView)pause();lottoAppPausedRide=false;if(ridingView)canvas.focus();}),
-    buildPennyShop(scene,mapWorld as DetroitWorld,()=>{clearInput();pennyPausedRide=running&&!paused;if(pennyPausedRide){paused=true;$('pause').textContent='Resume';rideAudio.update(pose,false);}},()=>{clearInput();if(pennyPausedRide&&running){paused=false;$('pause').textContent='Pause';}$('paused').hidden=!paused;pennyPausedRide=false;canvas.focus();}),
-    gallery!.load(),boutique!.load()
-  ]);
-  if(!elmwood){mackStudio=interiors![0];studioScreens=new StudioScreens(mackStudio.building,()=>{clearInput();canvas.focus();});lottoShop=interiors![1];cabinets!.add(mackStudio.building,-9,20.65,Math.PI,'wave','2084 Static Wave');cabinets!.add(mackStudio.building,-10.4,20.65,Math.PI,'rahbe','Robot RAHBE · Vault Rush');cabinets!.add(boutique!.building,2.35,-4.7,0,'underground','ROBOT RAHBE: Underground');}
-  if(!elmwood){pennyShop=interiors![2];lottoShop!.building.add(pennyShop.kiosk);cabinets!.add(lottoShop!.building,3.4,5.25,0,'wave','2084 Static Wave · LottoMind game kiosk');const q=lottoMap(3.4,5.25);(mapWorld as DetroitWorld).addBox({x:q.x,y:LOTTO_SHOP.floor+.8,z:q.z,hx:.64,hy:.8,hz:.55,yaw:-LOTTO_SHOP.heading,kind:'retail game kiosk'});}
-  for(const destination of [gallery,boutique])if(destination){
-    destination.building.updateMatrixWorld(true);
-    const localMap=(x:number,y:number,z:number)=>{const p=new T.Vector3(x,y,z).applyMatrix4(destination.building.matrixWorld);return toMap(p.x,p.y,p.z);};
-    // Floors share the visible prefab coordinates. A solid building foundation
-    // is base ground, not an overhead bridge: paws and tires must stand on it.
-    for(const [near,far,y] of [[-7.5,7.5,.06],[6,10.4,0]] as const){
-      const corners=[[-9,near],[-9,far],[9,far],[9,near]].map(([x,z])=>localMap(x,y,z));
-      const vertices=new Float32Array([0,2,1,0,3,2].flatMap(i=>{const p=corners[i];return[p.x,p.y,p.z];}));
-      (mapWorld as DetroitWorld).addRideSurface(vertices,true);
-    }
-    // Wall colliders leave the central shop entrance and aisle open.
-    for(const [x,z,w,d] of [[-9,0,.3,12],[9,0,.3,12],[0,-6,18,.3]] as const){
-      const m=localMap(x,3.6,z),scale=destination.building.scale.x;
-      mapWorld.addBox({x:m.x,y:m.y,z:m.z,hx:w*scale/2,hy:3.6*scale,hz:d*scale/2,yaw:-destination.building.rotation.y,kind:'building'});
-    }
-  }
+  await interiorStream.warm([SPOTS[Number($<HTMLSelectElement>('spawn').value)]],350);
+
 
   boot.assertActive();bootStage('preparing','Preparing the ride and controls…');
   if(!elmwood&&!qaVisualBaseline)ambience=new RouteAmbience(scene,world,effectPatches);
   if(!elmwood)buildFreestylePark(mapScene,mapWorld as DetroitWorld);
-  actorData=data;scenery=elmwood?await buildElmwood(mapScene,mapWorld as ElmwoodWorld,()=>compactElmwood||vr.active):await buildScenery(mapScene,mapWorld,!qaVisualBaseline);setRider(selectedRider);traffic=new TrafficView(scene,data,world);dogView=new CompanionView(data,world);scene.add(dogView.root);
+  actorData=data;scenery=elmwood?await buildElmwood(mapScene,mapWorld as ElmwoodWorld,()=>compactElmwood||vr.active):await buildScenery(mapScene,mapWorld,!qaVisualBaseline,toMap(SPOTS[selectedSpot].x,0,SPOTS[selectedSpot].z));setRider(selectedRider);traffic=new TrafficView(scene,data,world);dogView=new CompanionView(data,world);scene.add(dogView.root);
   setCompanion(dogEnabled);
   if(elmwood&&'waterGroup' in scenery&&!compactElmwood){
     // One reflection capture of the actual banks and trees, outside the frame loop.
@@ -511,9 +529,9 @@ try{
   if(!elmwood){community=new CyclingSession('Swoop Detroit',scene,actorData,world.withActorPassThrough(computerBikeContact),new LaneRoute(Array.from({length:31},(_,i)=>({...routePosition(850+i*5),width:5}))),()=>current,travelCommunity,()=>canvas.focus());community.ride.passThroughContact=o=>computerBikeContact(o)||o.id==='player'&&!!community?.ride.joined;}
   boot.assertActive();
   if(!boot.finish(!!actorData.get(selectedRider),!!SPOTS[Number($<HTMLSelectElement>('spawn').value)],!!scenery,!!sim))throw new Error('Rider, start location, scene or controller is unavailable');
-  renderBoot();graphics.apply();ready=true;loop.ready();canvas.dataset.ready='true';canvas.dataset.hero=selectedRider;canvas.dataset.controller=RIDE_TUNING.version;canvas.dataset.physics='Rapier terrain + Digital Static controller';canvas.dataset.routeLength=String(LENGTH);$('loading').hidden=true;$<HTMLButtonElement>('start').disabled=false;quickPractice.disabled=false;document.querySelectorAll<HTMLButtonElement>('.districtCard').forEach(b=>b.disabled=false);
+  renderBoot();graphics.apply();ready=true;loop.ready();canvas.dataset.ready='true';canvas.dataset.firstPlayableMs=String(Math.round(performance.now()-bootStarted));canvas.dataset.hero=selectedRider;canvas.dataset.controller=RIDE_TUNING.version;canvas.dataset.physics='Rapier terrain + Digital Static controller';canvas.dataset.routeLength=String(LENGTH);$('loading').hidden=true;$<HTMLButtonElement>('start').disabled=false;quickPractice.disabled=false;document.querySelectorAll<HTMLButtonElement>('.districtCard').forEach(b=>b.disabled=false);
   const {LoveTagClient}=await import('@digital-static/ridecore/tag-client');
-  loveTag=new LoveTagClient({product:'swoop-detroit',scene,camera,canvas,menu:document.querySelector<HTMLElement>('.launchActions')??$('menu'),
+  loveTag=new LoveTagClient({product:'swoop-detroit',scene,camera,canvas,mountDisplay:graphics.mount,menu:document.querySelector<HTMLElement>('.launchActions')??$('menu'),
     fixtureUrl:new URL('./love-tag/swoop-detroit.json',location.href).href,configUrl:new URL('./love-tag/config.json',location.href).href,
     async createView(terrain){return new Hero(actorData,terrain as any,selectedRider);},
     suspend(){const state={running,paused};running=false;paused=true;clearInput();rideAudio.update(current,false);natureAudio.update(current,current.headingY,false);
@@ -526,8 +544,8 @@ const frameSchedule=new FrameSchedule();
 let hudAt=0,frames=0,fpsAt=performance.now(),fps=0;
 function advanceOnlineHost(dt:number){
  const room=split!;acc+=dt;
- while(acc>=1/120&&!room.simulation.rules.done){mapWorld.step();const inputs=online.inputs(paused||document.hidden||!$('menu').hidden?{...NEUTRAL_ACTIONS}:room.input.consume(0));for(let i=0;i<inputs.length;i++){if(inputs[i].reset){recoverSplit(i);inputs[i].reset=false;}if(online.events(i).photo)photoSplit(i);}room.simulation.step(1/120,inputs);for(const i of room.simulation.newCrashes)room.input.clear(i===online.slot?0:i);room.view.afterStep(1/120);acc=Math.max(0,acc-1/120);}
- online.update(dt,room.simulation,paused||document.hidden?{...NEUTRAL_ACTIONS}:room.input.consume(0));
+ while(acc>=1/120&&!room.simulation.rules.done){mapWorld.step();const inputs=online.inputs(paused||document.hidden||online.inputBlocked||!$('menu').hidden?{...NEUTRAL_ACTIONS}:room.input.consume(0));for(let i=0;i<inputs.length;i++){if(inputs[i].reset){recoverSplit(i);inputs[i].reset=false;}if(online.events(i).photo)photoSplit(i);}room.simulation.step(1/120,inputs);for(const i of room.simulation.newCrashes)room.input.clear(i===online.slot?0:i);room.view.afterStep(1/120);acc=Math.max(0,acc-1/120);}
+ online.update(dt,room.simulation,paused||document.hidden||online.inputBlocked?{...NEUTRAL_ACTIONS}:room.input.consume(0));
 }
 // Browsers throttle hidden tabs. Keep the authoritative room clock and remote riders moving.
 let backgroundRoomAt=performance.now();
@@ -538,7 +556,7 @@ function frameSplit(now:number,dt:number){
  if(controls.pause){if(!$('menu').hidden)resumeRide.click();else pause();}
  for(let i=0;i<room.simulation.riders.length;i++){const event=room.input.events(i),slot=online.active?online.slot:i;if(online.active&&i!==0)continue;if(event.recover){if(online.active&&!online.isHost)online.command({...NEUTRAL_ACTIONS,reset:true});else recoverSplit(slot);}if(event.camera)room.view.toggleCamera(slot);if(event.cruise)cruiseSplit(online.active?0:i);}
  const visible=$('menu').hidden,active=running&&!finished&&(online.active&&online.isHost||!paused&&visible);
- if(online.active&&!online.isHost){const f=online.frame;if(f){room.simulation.rules.countdown=f.countdown;room.simulation.rules.elapsed=f.elapsed;room.simulation.rules.done=f.done;f.riders.forEach((r,i)=>{const local=room.simulation.riders[i];lerpPose(local.pose,r.pose,1-Math.exp(-dt*16),local.pose);copyPose(local.pose,local.previous);Object.assign(room.simulation.rules.racers[i],{gate:r.gate,station:r.station,finish:r.finish,missed:r.missed});local.flow.banked=r.banked;local.message=r.message;local.sim.crashed=r.crashed;room.simulation.remoteFallPhase.set(i,r.fallPhase??'none');if(local.challenge&&r.challenge){Object.assign(local.challenge,r.challenge);local.challenge.photos=new Set(r.challenge.photos);}});}acc=0;const input=active?room.input.consume(0):{...NEUTRAL_ACTIONS};if(input.hop||input.trick)online.command(input);online.update(dt,room.simulation,input);}
+ if(online.active&&!online.isHost){const f=online.frame;if(f){room.simulation.rules.countdown=f.countdown;room.simulation.rules.elapsed=f.elapsed;room.simulation.rules.done=f.done;f.riders.forEach((r,i)=>{const local=room.simulation.riders[i];lerpPose(local.pose,r.pose,1-Math.exp(-dt*16),local.pose);copyPose(local.pose,local.previous);Object.assign(room.simulation.rules.racers[i],{gate:r.gate,station:r.station,finish:r.finish,missed:r.missed});local.flow.banked=r.banked;local.message=r.message;local.sim.crashed=r.crashed;room.simulation.remoteFallPhase.set(i,r.fallPhase??'none');if(local.challenge&&r.challenge){Object.assign(local.challenge,r.challenge);local.challenge.photos=new Set(r.challenge.photos);}});}acc=0;const input=active&&!online.inputBlocked?room.input.consume(0):{...NEUTRAL_ACTIONS};if(input.hop||input.trick)online.command(input);online.update(dt,room.simulation,input);}
  else if(active){if(online.active)advanceOnlineHost(dt);else {acc+=dt;while(acc>=1/120&&!room.simulation.rules.done){mapWorld.step();room.simulation.step(1/120,room.simulation.riders.map((_,i)=>room.input.consume(i)));for(const i of room.simulation.newCrashes)room.input.clear(i);room.view.afterStep(1/120);acc=Math.max(0,acc-1/120);}}}
  else acc=0;
  if(room.simulation.rules.done&&!finished){finished=true;clearInput();}
@@ -556,7 +574,7 @@ function frameSplit(now:number,dt:number){
  room.audio.forEach((a,i)=>{if(a.enabled!==!muted)void a.enable(!muted);a.update(room.simulation.riders[i+1].pose,driving&&!room.simulation.riders[i+1].sim.crashed);});
  loop.music.update(dt,finished?'results':'ride',!document.hidden&&(!paused||!visible||finished),0,0,0);
  if(now-hudAt>120){
-  const navSlot=online.active?online.slot:0,navPose=room.simulation.riders[navSlot].pose,navPoint=toMap(navPose.x,navPose.y,navPose.z);miniMap?.hud.setRaceCourse(room.simulation.sessionMode==='race'?{...DETROIT_RACE_COURSE,next:room.simulation.rules.racers[navSlot].gate,finished:room.simulation.rules.racers[navSlot].finish!==null}:null);miniMap?.update(navPoint.x,navPoint.z,navPose.headingY,visible);
+  const navSlot=online.active?online.slot:0,navPose=room.simulation.riders[navSlot].pose,navPoint=toMap(navPose.x,navPose.y,navPose.z);miniMap?.hud.setRaceCourse(room.simulation.sessionMode==='race'?{...DETROIT_RACE_COURSE,next:room.simulation.rules.racers[navSlot].gate,finished:room.simulation.rules.racers[navSlot].finish!==null}:null);miniMap?.update(navPoint.x,navPoint.z,navPose.headingY,visible,room.simulation.riders.flatMap((r,i)=>i===navSlot?[]:[{...toMap(r.pose.x,r.pose.y,r.pose.z),heading:r.pose.headingY,label:(online.match?.members[i]?.bot?'AI ':'P')+(i+1),color:online.match?.members[i]?.bot?'#ffce76':'#73eafa'}]));
   canvas.dataset.effects=JSON.stringify({players:room.view.feedback,patches:effectPatches.length});
   canvas.dataset.splitRace=JSON.stringify({...room.simulation.snapshot,paused,bindings:room.input.bindings,cruise:room.input.cruising});
   if(online.active)canvas.dataset.online=JSON.stringify(online.state);else delete canvas.dataset.online;
@@ -567,11 +585,19 @@ function frameSplit(now:number,dt:number){
 function frame(now:number,xrFrame?:XRFrame){
   bikeRecover.hidden=!(ready&&running&&sim?.cycling&&!vr.active&&!film.playing&&$('menu').hidden);
   if(!ready||boot.stage==='error'||(document.hidden&&!vr.active)){last=now;return;}
-  if(!frameSchedule.shouldRender(now,(!running||paused)&&!film.playing&&!gallery?.active&&!boutique?.active,vr.active,graphics.current.fps))return;
+  if(!frameSchedule.shouldRender(now,(!running||paused)&&!loveTag?.isActive&&!film.playing&&!gallery?.active&&!boutique?.active,vr.active,graphics.current.fps))return;
   const rawFrameMs=Math.max(0,now-last),dt=Math.min(rawFrameMs/1000,.06);last=now;
-  if(loveTag?.update(dt)){miniMap?.hud.setRaceCourse(null);miniMap?.hud.update([],false);renderer.setScissorTest(false);renderer.setViewport(0,0,innerWidth,innerHeight);renderer.render(scene,camera);return;}
+  if(loveTag?.update(dt)){
+    const p=loveTag.sceneFocus??{x:camera.position.x,y:camera.position.y,z:camera.position.z,headingY:0},m=toMap(p.x,p.y,p.z);
+    scenery.update(m.x,m.z,now/1000);interiorStream.update([p],650);mackStudio?.update(p.x,p.z);
+    for(const destination of [gallery,boutique])if(destination)destination.building.visible=Math.hypot(p.x-destination.building.position.x,p.z-destination.building.position.z)<220;
+    followStableSun(sun,p,night?DUSK_SUN:DAY_SUN);fill.position.set(p.x-12,p.y+8,p.z-13);fill.target.position.set(p.x,p.y+1,p.z);
+    if(adaptiveQuality.sample(rawFrameMs,graphics.choice==='auto'&&!vr.active&&now-bootStarted>5000,graphics.current.fps)){graphics.setAdaptiveDetail(adaptiveQuality.detail);graphics.setResolutionScale(adaptiveQuality.scale);}
+    miniMap?.hud.setRaceCourse(null);miniMap?.hud.update([],false);renderer.setScissorTest(false);renderer.setViewport(0,0,innerWidth,innerHeight);renderer.render(scene,camera);
+    canvas.dataset.tagRender=JSON.stringify({focus:p,resolutionScale:adaptiveQuality.scale,drawCalls:renderer.info.render.calls,streaming:"stream" in scenery?scenery.stream.status:undefined});return;
+  }
   nature.update(dt,current,!running||paused,graphics.current.shadows===0,matchMedia('(prefers-reduced-motion: reduce)').matches||document.documentElement.dataset.reducedMotion==='true');natureAudio.update(current,current.headingY,running&&!paused&&!film.playing&&!gallery?.active&&!boutique?.active);canvas.dataset.nature=JSON.stringify(nature.status);canvas.dataset.natureAudio=natureAudio.status;
-  if(!loadedAt)loadedAt=now;const budgetActive=graphics.choice==='auto'&&graphics.current.fps===60&&!document.hidden&&!vr.active&&running&&!paused&&now-loadedAt>5000;if(adaptiveQuality.sample(rawFrameMs,budgetActive)){if(adaptiveQuality.scale<=.7&&graphics.downgradeAuto())adaptiveQuality.reset();graphics.setResolutionScale(adaptiveQuality.scale);document.documentElement.dataset.renderQuality=graphics.current.shadows===0||adaptiveQuality.scale<.85?'compact':'detailed';}canvas.dataset.renderBudget=JSON.stringify({targetFPS:graphics.current.fps,quality:graphics.choice,resolutionScale:adaptiveQuality.scale,pixelRatio:renderer.getPixelRatio(),xr:vr.active});for(const destination of [gallery,boutique])if(destination)destination.building.visible=destination.active||Math.hypot(current.x-destination.building.position.x,current.z-destination.building.position.z)<220;mackStudio?.update(current.x,current.z);if(running&&!paused&&!document.hidden&&!film.playing){frameTimes.push(rawFrameMs);if(frameTimes.length>480)frameTimes.shift();}
+  if(!loadedAt)loadedAt=now;if(!document.hidden&&running&&!paused){interiorStream.update([current],650);canvas.dataset.interiorStreaming=JSON.stringify(interiorStream.status);}const budgetActive=graphics.choice==='auto'&&!document.hidden&&!vr.active&&running&&!paused&&now-loadedAt>5000;if(!budgetActive&&graphics.choice!=='auto')adaptiveQuality.reset();if(adaptiveQuality.sample(rawFrameMs,budgetActive,graphics.current.fps)){graphics.setAdaptiveDetail(adaptiveQuality.detail);graphics.setResolutionScale(adaptiveQuality.scale);document.documentElement.dataset.renderQuality=graphics.current.shadows===0||adaptiveQuality.scale<.85?'compact':'detailed';}canvas.dataset.renderBudget=JSON.stringify({targetFPS:graphics.current.fps,quality:graphics.choice,resolutionScale:adaptiveQuality.scale,detail:adaptiveQuality.detail,pixelRatio:renderer.getPixelRatio(),xr:vr.active});for(const destination of [gallery,boutique])if(destination)destination.building.visible=destination.active||Math.hypot(current.x-destination.building.position.x,current.z-destination.building.position.z)<220;mackStudio?.update(current.x,current.z);if(running&&!paused&&!document.hidden&&!film.playing){frameTimes.push(rawFrameMs);if(frameTimes.length>480)frameTimes.shift();}
   if(film.playing||gallery?.active||boutique?.active||split){studioScreens?.update(current.x,current.z,false);lottoShop?.update(current.x,current.z,false);cabinets?.update(current.x,current.z,false,camera);}
   for(const destination of [gallery,boutique])destination?.animateVisitors((running&&!paused||gallery?.active||boutique?.active||film.playing)?dt:0);
   if(film.playing){studioCapture?.update(current.x,current.z,false,camera);film.render(dt,renderer,scene,camera,(focus,wanted)=>{const mapped=toMap(focus.x,focus.y,focus.z);scenery.update(mapped.x,mapped.z,clock);wanted.y=Math.max(wanted.y,world.sampleGround(wanted.x,wanted.z,ground).height+.5);followStableSun(sun,focus,night?DUSK_SUN:DAY_SUN);});return;}

@@ -1,0 +1,12 @@
+✔ saved desktop layout fits 390x844 without overlapping or rewriting saves (5.3668ms)
+✔ saved desktop layout fits 844x390 without overlapping or rewriting saves (2.7771ms)
+✔ saved desktop layout fits 667x375 without overlapping or rewriting saves (1.4929ms)
+✔ a valid custom position remains at the authored position (0.9878ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 106.7778

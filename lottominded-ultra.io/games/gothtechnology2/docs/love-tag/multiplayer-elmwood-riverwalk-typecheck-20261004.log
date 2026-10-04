@@ -1,0 +1,2 @@
+src/detroit/elmwood-ride.ts(194,360): error TS2339: Property 'mountedVolume' does not exist on type 'RideController'.
+src/detroit/elmwood-ride.ts(194,399): error TS2339: Property 'mountedVolume' does not exist on type 'ThreeRiderView'.

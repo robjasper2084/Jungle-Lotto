@@ -1,0 +1,29 @@
+✔ externalized model textures are included and missing ones fail before packaging (14.8799ms)
+✔ second build failure preserves both previous packages (23.4813ms)
+✔ second promotion failure rolls back the first package and retains staged work (27.3524ms)
+✔ missing late asset or license fails preflight without changing an existing output (5.7749ms)
+{
+  "time": "2026-10-04T17:28:34.761Z",
+  "backup": "C:\\Users\\digit\\AppData\\Local\\Temp\\riding-package-Q6Vx5M\\.game-builds\\6c8b2e84-32ee-4fa3-ad92-5c0f106ce178\\previous",
+  "packages": [
+    {
+      "name": "swoop-detroit",
+      "source": "fixture",
+      "entry": "index.html"
+    },
+    {
+      "name": "elmwood-explorer",
+      "source": "fixture",
+      "entry": "elmwood.html"
+    }
+  ]
+}
+✔ nested entry validation rejects missing bundles; successful paired build retains both backups (39.7027ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 216.5547

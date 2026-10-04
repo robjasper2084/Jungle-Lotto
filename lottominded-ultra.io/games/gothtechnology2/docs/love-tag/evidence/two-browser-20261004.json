@@ -1,0 +1,3729 @@
+{
+  "at": "2026-10-04T04:44:02.422Z",
+  "kind": "Actual browser UI with authoritative loopback server; not LAN or hosted",
+  "swoop": {
+    "code": "DE9D5F2D",
+    "invitation": "http://127.0.0.1:8212/Jungle-Lotto/lottominded-ultra.io/games/gothtechnology2/arcade/swoop-detroit/?tagRoom=B1D7A75E&tagProduct=swoop-detroit&tagVersion=heart-rush-1&tagArena=cut-gratiot-pursuit",
+    "before": [
+      {
+        "product": "swoop-detroit",
+        "phase": "active",
+        "rules": "classic",
+        "online": true,
+        "humans": 2,
+        "bots": 0,
+        "round": "3a45a9b9-acb6-4e53-aa79-7bd64cdb74d7",
+        "tick": 1416,
+        "me": "6G_x49zJa",
+        "role": "it",
+        "pose": {
+          "x": 1735.3338384722185,
+          "y": 5.3188,
+          "z": 114.6422179903612
+        },
+        "ack": 1412,
+        "hash": "71b7fee49b94129344e2ea5dd3a63250af7983e5ae32e8459e90a9873babc59e",
+        "actors": [
+          {
+            "id": "6G_x49zJa",
+            "name": "Review A",
+            "connected": true,
+            "bot": false,
+            "role": "it",
+            "ammo": 3,
+            "tags": 0,
+            "itTime": 17.600000000000282,
+            "resets": 0,
+            "pose": {
+              "x": 1735.3338384722185,
+              "y": 5.3188,
+              "z": 114.6422179903612,
+              "heading": -1.682040902270524
+            }
+          },
+          {
+            "id": "lyz6BLf6f",
+            "name": "Review B",
+            "connected": true,
+            "bot": false,
+            "role": "runner",
+            "ammo": 3,
+            "tags": 0,
+            "itTime": 0,
+            "resets": 0,
+            "pose": {
+              "x": 1723.39133416002,
+              "y": 5.3188,
+              "z": 113.51010012470219,
+              "heading": -1.6318497264806633
+            }
+          }
+        ],
+        "events": [],
+        "winners": [],
+        "remaining": 162.40000000000006,
+        "correctionP95": 0
+      },
+      {
+        "product": "swoop-detroit",
+        "phase": "active",
+        "rules": "classic",
+        "online": true,
+        "humans": 2,
+        "bots": 0,
+        "round": "3a45a9b9-acb6-4e53-aa79-7bd64cdb74d7",
+        "tick": 1416,
+        "me": "lyz6BLf6f",
+        "role": "runner",
+        "pose": {
+          "x": 1723.39133416002,
+          "y": 5.3188,
+          "z": 113.51010012470219
+        },
+        "ack": 1413,
+        "hash": "71b7fee49b94129344e2ea5dd3a63250af7983e5ae32e8459e90a9873babc59e",
+        "actors": [
+          {
+            "id": "6G_x49zJa",
+            "name": "Review A",
+            "connected": true,
+            "bot": false,
+            "role": "it",
+            "ammo": 3,
+            "tags": 0,
+            "itTime": 17.600000000000282,
+            "resets": 0,
+            "pose": {
+              "x": 1735.3338384722185,
+              "y": 5.3188,
+              "z": 114.6422179903612,
+              "heading": -1.682040902270524
+            }
+          },
+          {
+            "id": "lyz6BLf6f",
+            "name": "Review B",
+            "connected": true,
+            "bot": false,
+            "role": "runner",
+            "ammo": 3,
+            "tags": 0,
+            "itTime": 0,
+            "resets": 0,
+            "pose": {
+              "x": 1723.39133416002,
+              "y": 5.3188,
+              "z": 113.51010012470219,
+              "heading": -1.6318497264806633
+            }
+          }
+        ],
+        "events": [],
+        "winners": [],
+        "remaining": 162.40000000000006,
+        "correctionP95": 0
+      }
+    ],
+    "afterMovement": [
+      {
+        "product": "swoop-detroit",
+        "phase": "active",
+        "rules": "classic",
+        "online": true,
+        "humans": 2,
+        "bots": 0,
+        "round": "3a45a9b9-acb6-4e53-aa79-7bd64cdb74d7",
+        "tick": 4209,
+        "me": "6G_x49zJa",
+        "role": "it",
+        "pose": {
+          "x": 1551.179453275628,
+          "y": 5.3188,
+          "z": 100.43047534769104
+        },
+        "ack": 4204,
+        "hash": "71b7fee49b94129344e2ea5dd3a63250af7983e5ae32e8459e90a9873babc59e",
+        "actors": [
+          {
+            "id": "6G_x49zJa",
+            "name": "Review A",
+            "connected": true,
+            "bot": false,
+            "role": "it",
+            "ammo": 3,
+            "tags": 1,
+            "itTime": 62.03333333333109,
+            "resets": 1,
+            "pose": {
+              "x": 1551.179453275628,
+              "y": 5.3188,
+              "z": 100.43047534769104,
+              "heading": -1.533383253609298
+            }
+          },
+          {
+            "id": "lyz6BLf6f",
+            "name": "Review B",
+            "connected": true,
+            "bot": false,
+            "role": "runner",
+            "ammo": 3,
+            "tags": 1,
+            "itTime": 2.116666666666664,
+            "resets": 0,
+            "pose": {
+              "x": 1716.6425577757946,
+              "y": 5.3188,
+              "z": 113.38990864185442,
+              "heading": -1.5880990290027188
+            }
+          }
+        ],
+        "events": [
+          {
+            "id": "3a45a9b9-acb6-4e53-aa79-7bd64cdb74d7:1",
+            "tick": 2700,
+            "kind": "shot",
+            "actor": "6G_x49zJa"
+          },
+          {
+            "id": "3a45a9b9-acb6-4e53-aa79-7bd64cdb74d7:2",
+            "tick": 2726,
+            "kind": "tag",
+            "actor": "6G_x49zJa",
+            "target": "lyz6BLf6f"
+          },
+          {
+            "id": "3a45a9b9-acb6-4e53-aa79-7bd64cdb74d7:3",
+            "tick": 2853,
+            "kind": "tag",
+            "actor": "lyz6BLf6f",
+            "target": "6G_x49zJa"
+          },
+          {
+            "id": "3a45a9b9-acb6-4e53-aa79-7bd64cdb74d7:4",
+            "tick": 4022,
+            "kind": "reset",
+            "actor": "6G_x49zJa"
+          }
+        ],
+        "winners": [],
+        "remaining": 115.8500000000027,
+        "correctionP95": 0.30596887041132464
+      },
+      {
+        "product": "swoop-detroit",
+        "phase": "active",
+        "rules": "classic",
+        "online": true,
+        "humans": 2,
+        "bots": 0,
+        "round": "3a45a9b9-acb6-4e53-aa79-7bd64cdb74d7",
+        "tick": 4209,
+        "me": "lyz6BLf6f",
+        "role": "runner",
+        "pose": {
+          "x": 1716.6425577757946,
+          "y": 5.3188,
+          "z": 113.38990864185442
+        },
+        "ack": 4205,
+        "hash": "71b7fee49b94129344e2ea5dd3a63250af7983e5ae32e8459e90a9873babc59e",
+        "actors": [
+          {
+            "id": "6G_x49zJa",
+            "name": "Review A",
+            "connected": true,
+            "bot": false,
+            "role": "it",
+            "ammo": 3,
+            "tags": 1,
+            "itTime": 62.03333333333109,
+            "resets": 1,
+            "pose": {
+              "x": 1551.179453275628,
+              "y": 5.3188,
+              "z": 100.43047534769104,
+              "heading": -1.533383253609298
+            }
+          },
+          {
+            "id": "lyz6BLf6f",
+            "name": "Review B",
+            "connected": true,
+            "bot": false,
+            "role": "runner",
+            "ammo": 3,
+            "tags": 1,
+            "itTime": 2.116666666666664,
+            "resets": 0,
+            "pose": {
+              "x": 1716.6425577757946,
+              "y": 5.3188,
+              "z": 113.38990864185442,
+              "heading": -1.5880990290027188
+            }
+          }
+        ],
+        "events": [
+          {
+            "id": "3a45a9b9-acb6-4e53-aa79-7bd64cdb74d7:1",
+            "tick": 2700,
+            "kind": "shot",
+            "actor": "6G_x49zJa"
+          },
+          {
+            "id": "3a45a9b9-acb6-4e53-aa79-7bd64cdb74d7:2",
+            "tick": 2726,
+            "kind": "tag",
+            "actor": "6G_x49zJa",
+            "target": "lyz6BLf6f"
+          },
+          {
+            "id": "3a45a9b9-acb6-4e53-aa79-7bd64cdb74d7:3",
+            "tick": 2853,
+            "kind": "tag",
+            "actor": "lyz6BLf6f",
+            "target": "6G_x49zJa"
+          },
+          {
+            "id": "3a45a9b9-acb6-4e53-aa79-7bd64cdb74d7:4",
+            "tick": 4022,
+            "kind": "reset",
+            "actor": "6G_x49zJa"
+          }
+        ],
+        "winners": [],
+        "remaining": 115.8500000000027,
+        "correctionP95": 0.0071129695561086
+      }
+    ],
+    "results": [
+      {
+        "product": "swoop-detroit",
+        "phase": "results",
+        "rules": "classic",
+        "online": true,
+        "humans": 2,
+        "bots": 0,
+        "round": "3a45a9b9-acb6-4e53-aa79-7bd64cdb74d7",
+        "tick": 11160,
+        "me": "6G_x49zJa",
+        "role": "it",
+        "pose": {
+          "x": 1523.974232026001,
+          "y": 5.3188,
+          "z": 98.0160428610893
+        },
+        "ack": 10524,
+        "hash": "71b7fee49b94129344e2ea5dd3a63250af7983e5ae32e8459e90a9873babc59e",
+        "actors": [
+          {
+            "id": "6G_x49zJa",
+            "name": "Review A",
+            "connected": true,
+            "bot": false,
+            "role": "it",
+            "ammo": 3,
+            "tags": 1,
+            "itTime": 177.88333333336703,
+            "resets": 2,
+            "pose": {
+              "x": 1523.974232026001,
+              "y": 5.3188,
+              "z": 98.0160428610893,
+              "heading": -1.8975680462666233
+            }
+          },
+          {
+            "id": "lyz6BLf6f",
+            "name": "Review B",
+            "connected": false,
+            "bot": false,
+            "role": "runner",
+            "ammo": 3,
+            "tags": 1,
+            "itTime": 2.116666666666664,
+            "resets": 0,
+            "pose": {
+              "x": 1681.5639089133208,
+              "y": 5.3188,
+              "z": 106.36821613582158,
+              "heading": -1.7196304443336425
+            }
+          }
+        ],
+        "events": [
+          {
+            "id": "3a45a9b9-acb6-4e53-aa79-7bd64cdb74d7:1",
+            "tick": 2700,
+            "kind": "shot",
+            "actor": "6G_x49zJa"
+          },
+          {
+            "id": "3a45a9b9-acb6-4e53-aa79-7bd64cdb74d7:2",
+            "tick": 2726,
+            "kind": "tag",
+            "actor": "6G_x49zJa",
+            "target": "lyz6BLf6f"
+          },
+          {
+            "id": "3a45a9b9-acb6-4e53-aa79-7bd64cdb74d7:3",
+            "tick": 2853,
+            "kind": "tag",
+            "actor": "lyz6BLf6f",
+            "target": "6G_x49zJa"
+          },
+          {
+            "id": "3a45a9b9-acb6-4e53-aa79-7bd64cdb74d7:4",
+            "tick": 4022,
+            "kind": "reset",
+            "actor": "6G_x49zJa"
+          },
+          {
+            "id": "3a45a9b9-acb6-4e53-aa79-7bd64cdb74d7:5",
+            "tick": 4601,
+            "kind": "reset",
+            "actor": "6G_x49zJa"
+          },
+          {
+            "id": "3a45a9b9-acb6-4e53-aa79-7bd64cdb74d7:6",
+            "tick": 11160,
+            "kind": "result",
+            "actor": "server"
+          }
+        ],
+        "winners": [
+          "6G_x49zJa"
+        ],
+        "remaining": 0,
+        "correctionP95": 0
+      },
+      {
+        "product": "swoop-detroit",
+        "phase": "results",
+        "rules": "classic",
+        "online": true,
+        "humans": 2,
+        "bots": 0,
+        "round": "3a45a9b9-acb6-4e53-aa79-7bd64cdb74d7",
+        "tick": 11160,
+        "me": "OG8np2IyS",
+        "hash": "71b7fee49b94129344e2ea5dd3a63250af7983e5ae32e8459e90a9873babc59e",
+        "actors": [
+          {
+            "id": "6G_x49zJa",
+            "name": "Review A",
+            "connected": true,
+            "bot": false,
+            "role": "it",
+            "ammo": 3,
+            "tags": 1,
+            "itTime": 177.88333333336703,
+            "resets": 2,
+            "pose": {
+              "x": 1523.974232026001,
+              "y": 5.3188,
+              "z": 98.0160428610893,
+              "heading": -1.8975680462666233
+            }
+          },
+          {
+            "id": "lyz6BLf6f",
+            "name": "Review B",
+            "connected": false,
+            "bot": false,
+            "role": "runner",
+            "ammo": 3,
+            "tags": 1,
+            "itTime": 2.116666666666664,
+            "resets": 0,
+            "pose": {
+              "x": 1681.5639089133208,
+              "y": 5.3188,
+              "z": 106.36821613582158,
+              "heading": -1.7196304443336425
+            }
+          }
+        ],
+        "events": [
+          {
+            "id": "3a45a9b9-acb6-4e53-aa79-7bd64cdb74d7:1",
+            "tick": 2700,
+            "kind": "shot",
+            "actor": "6G_x49zJa"
+          },
+          {
+            "id": "3a45a9b9-acb6-4e53-aa79-7bd64cdb74d7:2",
+            "tick": 2726,
+            "kind": "tag",
+            "actor": "6G_x49zJa",
+            "target": "lyz6BLf6f"
+          },
+          {
+            "id": "3a45a9b9-acb6-4e53-aa79-7bd64cdb74d7:3",
+            "tick": 2853,
+            "kind": "tag",
+            "actor": "lyz6BLf6f",
+            "target": "6G_x49zJa"
+          },
+          {
+            "id": "3a45a9b9-acb6-4e53-aa79-7bd64cdb74d7:4",
+            "tick": 4022,
+            "kind": "reset",
+            "actor": "6G_x49zJa"
+          },
+          {
+            "id": "3a45a9b9-acb6-4e53-aa79-7bd64cdb74d7:5",
+            "tick": 4601,
+            "kind": "reset",
+            "actor": "6G_x49zJa"
+          },
+          {
+            "id": "3a45a9b9-acb6-4e53-aa79-7bd64cdb74d7:6",
+            "tick": 11160,
+            "kind": "result",
+            "actor": "server"
+          }
+        ],
+        "winners": [
+          "6G_x49zJa"
+        ],
+        "remaining": 0,
+        "correctionP95": 0
+      }
+    ],
+    "rematch": [
+      {
+        "product": "swoop-detroit",
+        "phase": "active",
+        "rules": "classic",
+        "online": true,
+        "humans": 2,
+        "bots": 0,
+        "round": "df989efb-1378-4a31-91ba-dd9cbb8a6714",
+        "tick": 965,
+        "me": "6G_x49zJa",
+        "role": "runner",
+        "pose": {
+          "x": 1735.3338384722185,
+          "y": 5.3188,
+          "z": 114.6422179903612
+        },
+        "ack": 950,
+        "hash": "71b7fee49b94129344e2ea5dd3a63250af7983e5ae32e8459e90a9873babc59e",
+        "actors": [
+          {
+            "id": "6G_x49zJa",
+            "name": "Review A",
+            "connected": true,
+            "bot": false,
+            "role": "runner",
+            "ammo": 3,
+            "tags": 0,
+            "itTime": 0,
+            "resets": 0,
+            "pose": {
+              "x": 1735.3338384722185,
+              "y": 5.3188,
+              "z": 114.6422179903612,
+              "heading": -1.682040902270524
+            }
+          },
+          {
+            "id": "OG8np2IyS",
+            "name": "Rider",
+            "connected": true,
+            "bot": false,
+            "role": "it",
+            "ammo": 3,
+            "tags": 0,
+            "itTime": 10.083333333333414,
+            "resets": 0,
+            "pose": {
+              "x": 1723.39133416002,
+              "y": 5.3188,
+              "z": 113.51010012470219,
+              "heading": -1.6318497264806633
+            }
+          }
+        ],
+        "events": [],
+        "winners": [],
+        "remaining": 169.9166666666663,
+        "correctionP95": 0
+      },
+      {
+        "product": "swoop-detroit",
+        "phase": "active",
+        "rules": "classic",
+        "online": true,
+        "humans": 2,
+        "bots": 0,
+        "round": "df989efb-1378-4a31-91ba-dd9cbb8a6714",
+        "tick": 968,
+        "me": "OG8np2IyS",
+        "role": "it",
+        "pose": {
+          "x": 1723.39133416002,
+          "y": 5.3188,
+          "z": 113.51010012470219
+        },
+        "ack": 946,
+        "hash": "71b7fee49b94129344e2ea5dd3a63250af7983e5ae32e8459e90a9873babc59e",
+        "actors": [
+          {
+            "id": "6G_x49zJa",
+            "name": "Review A",
+            "connected": true,
+            "bot": false,
+            "role": "runner",
+            "ammo": 3,
+            "tags": 0,
+            "itTime": 0,
+            "resets": 0,
+            "pose": {
+              "x": 1735.3338384722185,
+              "y": 5.3188,
+              "z": 114.6422179903612,
+              "heading": -1.682040902270524
+            }
+          },
+          {
+            "id": "OG8np2IyS",
+            "name": "Rider",
+            "connected": true,
+            "bot": false,
+            "role": "it",
+            "ammo": 3,
+            "tags": 0,
+            "itTime": 10.133333333333416,
+            "resets": 0,
+            "pose": {
+              "x": 1723.39133416002,
+              "y": 5.3188,
+              "z": 113.51010012470219,
+              "heading": -1.6318497264806633
+            }
+          }
+        ],
+        "events": [],
+        "winners": [],
+        "remaining": 169.8666666666663,
+        "correctionP95": 0
+      }
+    ],
+    "normalExit": {
+      "active": false,
+      "data": "",
+      "menu": null
+    },
+    "finalBefore": [
+      {
+        "product": "swoop-detroit",
+        "phase": "active",
+        "rules": "classic",
+        "online": true,
+        "humans": 2,
+        "bots": 0,
+        "round": "ea3f647e-f8e2-4730-ae90-7704e5b3dd38",
+        "tick": 1215,
+        "me": "5hhT-0ie4",
+        "role": "it",
+        "pose": {
+          "x": 1735.3338384722185,
+          "y": 5.3188,
+          "z": 114.6422179903612
+        },
+        "ack": 1212,
+        "hash": "71b7fee49b94129344e2ea5dd3a63250af7983e5ae32e8459e90a9873babc59e",
+        "actors": [
+          {
+            "id": "5hhT-0ie4",
+            "name": "Review A",
+            "connected": true,
+            "bot": false,
+            "role": "it",
+            "ammo": 3,
+            "tags": 0,
+            "itTime": 14.250000000000288,
+            "resets": 0,
+            "pose": {
+              "x": 1735.3338384722185,
+              "y": 5.3188,
+              "z": 114.6422179903612,
+              "heading": -1.682040902270524
+            }
+          },
+          {
+            "id": "W_r4-3Srv",
+            "name": "Review B",
+            "connected": true,
+            "bot": false,
+            "role": "runner",
+            "ammo": 3,
+            "tags": 0,
+            "itTime": 0,
+            "resets": 0,
+            "pose": {
+              "x": 1723.39133416002,
+              "y": 5.3188,
+              "z": 113.51010012470219,
+              "heading": -1.6318497264806633
+            }
+          }
+        ],
+        "events": [],
+        "winners": [],
+        "remaining": 165.74999999999986,
+        "correctionP95": 0
+      },
+      {
+        "product": "swoop-detroit",
+        "phase": "active",
+        "rules": "classic",
+        "online": true,
+        "humans": 2,
+        "bots": 0,
+        "round": "ea3f647e-f8e2-4730-ae90-7704e5b3dd38",
+        "tick": 1217,
+        "me": "W_r4-3Srv",
+        "role": "runner",
+        "pose": {
+          "x": 1723.39133416002,
+          "y": 5.3188,
+          "z": 113.51010012470219
+        },
+        "ack": 1214,
+        "hash": "71b7fee49b94129344e2ea5dd3a63250af7983e5ae32e8459e90a9873babc59e",
+        "actors": [
+          {
+            "id": "5hhT-0ie4",
+            "name": "Review A",
+            "connected": true,
+            "bot": false,
+            "role": "it",
+            "ammo": 3,
+            "tags": 0,
+            "itTime": 14.283333333333623,
+            "resets": 0,
+            "pose": {
+              "x": 1735.3338384722185,
+              "y": 5.3188,
+              "z": 114.6422179903612,
+              "heading": -1.682040902270524
+            }
+          },
+          {
+            "id": "W_r4-3Srv",
+            "name": "Review B",
+            "connected": true,
+            "bot": false,
+            "role": "runner",
+            "ammo": 3,
+            "tags": 0,
+            "itTime": 0,
+            "resets": 0,
+            "pose": {
+              "x": 1723.39133416002,
+              "y": 5.3188,
+              "z": 113.51010012470219,
+              "heading": -1.6318497264806633
+            }
+          }
+        ],
+        "events": [],
+        "winners": [],
+        "remaining": 165.71666666666653,
+        "correctionP95": 0
+      }
+    ],
+    "reconnect": {
+      "before": {
+        "product": "swoop-detroit",
+        "phase": "active",
+        "rules": "classic",
+        "online": true,
+        "humans": 2,
+        "bots": 0,
+        "round": "ea3f647e-f8e2-4730-ae90-7704e5b3dd38",
+        "tick": 1290,
+        "me": "W_r4-3Srv",
+        "role": "it",
+        "pose": {
+          "x": 1723.2215577167233,
+          "y": 5.3188,
+          "z": 113.49539016960314
+        },
+        "ack": 1274,
+        "hash": "71b7fee49b94129344e2ea5dd3a63250af7983e5ae32e8459e90a9873babc59e",
+        "actors": [
+          {
+            "id": "5hhT-0ie4",
+            "name": "Review A",
+            "connected": true,
+            "bot": false,
+            "role": "runner",
+            "ammo": 2,
+            "tags": 1,
+            "itTime": 14.850000000000318,
+            "resets": 0,
+            "pose": {
+              "x": 1735.3338384722185,
+              "y": 5.3188,
+              "z": 114.6422179903612,
+              "heading": -1.682040902270524
+            }
+          },
+          {
+            "id": "W_r4-3Srv",
+            "name": "Review B",
+            "connected": true,
+            "bot": false,
+            "role": "it",
+            "ammo": 3,
+            "tags": 0,
+            "itTime": 0.6500000000000004,
+            "resets": 0,
+            "pose": {
+              "x": 1723.2215577167233,
+              "y": 5.3188,
+              "z": 113.49539016960314,
+              "heading": -1.6720780438850429
+            }
+          }
+        ],
+        "events": [
+          {
+            "id": "ea3f647e-f8e2-4730-ae90-7704e5b3dd38:1",
+            "tick": 1225,
+            "kind": "shot",
+            "actor": "5hhT-0ie4"
+          },
+          {
+            "id": "ea3f647e-f8e2-4730-ae90-7704e5b3dd38:2",
+            "tick": 1251,
+            "kind": "tag",
+            "actor": "5hhT-0ie4",
+            "target": "W_r4-3Srv"
+          }
+        ],
+        "winners": [],
+        "remaining": 164.49999999999994,
+        "correctionP95": 0
+      },
+      "after": {
+        "product": "swoop-detroit",
+        "phase": "active",
+        "rules": "classic",
+        "online": true,
+        "humans": 2,
+        "bots": 0,
+        "round": "ea3f647e-f8e2-4730-ae90-7704e5b3dd38",
+        "tick": 2607,
+        "me": "W_r4-3Srv",
+        "role": "it",
+        "pose": {
+          "x": 1723.39133416002,
+          "y": 5.3188,
+          "z": 113.51010012470219
+        },
+        "ack": 1374,
+        "hash": "71b7fee49b94129344e2ea5dd3a63250af7983e5ae32e8459e90a9873babc59e",
+        "actors": [
+          {
+            "id": "5hhT-0ie4",
+            "name": "Review A",
+            "connected": true,
+            "bot": false,
+            "role": "runner",
+            "ammo": 3,
+            "tags": 1,
+            "itTime": 20.983333333333423,
+            "resets": 0,
+            "pose": {
+              "x": 1735.3338384722185,
+              "y": 5.3188,
+              "z": 114.6422179903612,
+              "heading": -1.682040902270524
+            }
+          },
+          {
+            "id": "W_r4-3Srv",
+            "name": "Review B",
+            "connected": true,
+            "bot": false,
+            "role": "it",
+            "ammo": 3,
+            "tags": 1,
+            "itTime": 16.48333333333368,
+            "resets": 1,
+            "pose": {
+              "x": 1723.39133416002,
+              "y": 5.3188,
+              "z": 113.51010012470219,
+              "heading": -1.6318497264806633
+            }
+          }
+        ],
+        "events": [
+          {
+            "id": "ea3f647e-f8e2-4730-ae90-7704e5b3dd38:1",
+            "tick": 1225,
+            "kind": "shot",
+            "actor": "5hhT-0ie4"
+          },
+          {
+            "id": "ea3f647e-f8e2-4730-ae90-7704e5b3dd38:2",
+            "tick": 1251,
+            "kind": "tag",
+            "actor": "5hhT-0ie4",
+            "target": "W_r4-3Srv"
+          },
+          {
+            "id": "ea3f647e-f8e2-4730-ae90-7704e5b3dd38:3",
+            "tick": 1372,
+            "kind": "shot",
+            "actor": "W_r4-3Srv"
+          },
+          {
+            "id": "ea3f647e-f8e2-4730-ae90-7704e5b3dd38:4",
+            "tick": 1458,
+            "kind": "shot",
+            "actor": "W_r4-3Srv"
+          },
+          {
+            "id": "ea3f647e-f8e2-4730-ae90-7704e5b3dd38:5",
+            "tick": 1501,
+            "kind": "shot",
+            "actor": "W_r4-3Srv"
+          },
+          {
+            "id": "ea3f647e-f8e2-4730-ae90-7704e5b3dd38:6",
+            "tick": 1544,
+            "kind": "shot",
+            "actor": "W_r4-3Srv"
+          },
+          {
+            "id": "ea3f647e-f8e2-4730-ae90-7704e5b3dd38:7",
+            "tick": 1587,
+            "kind": "shot",
+            "actor": "W_r4-3Srv"
+          },
+          {
+            "id": "ea3f647e-f8e2-4730-ae90-7704e5b3dd38:8",
+            "tick": 1622,
+            "kind": "tag",
+            "actor": "W_r4-3Srv",
+            "target": "5hhT-0ie4"
+          },
+          {
+            "id": "ea3f647e-f8e2-4730-ae90-7704e5b3dd38:9",
+            "tick": 1990,
+            "kind": "tag",
+            "actor": "5hhT-0ie4",
+            "target": "W_r4-3Srv"
+          },
+          {
+            "id": "ea3f647e-f8e2-4730-ae90-7704e5b3dd38:10",
+            "tick": 1990,
+            "kind": "reset",
+            "actor": "W_r4-3Srv"
+          }
+        ],
+        "winners": [],
+        "remaining": 142.55000000000118,
+        "correctionP95": 0
+      },
+      "interruptionSeconds": 5
+    },
+    "finalResults": [
+      {
+        "product": "swoop-detroit",
+        "phase": "results",
+        "rules": "classic",
+        "online": true,
+        "humans": 2,
+        "bots": 0,
+        "round": "ea3f647e-f8e2-4730-ae90-7704e5b3dd38",
+        "tick": 11160,
+        "me": "5hhT-0ie4",
+        "role": "runner",
+        "pose": {
+          "x": 1735.3338384722185,
+          "y": 5.3188,
+          "z": 114.6422179903612
+        },
+        "ack": 11101,
+        "hash": "71b7fee49b94129344e2ea5dd3a63250af7983e5ae32e8459e90a9873babc59e",
+        "actors": [
+          {
+            "id": "5hhT-0ie4",
+            "name": "Review A",
+            "connected": true,
+            "bot": false,
+            "role": "runner",
+            "ammo": 3,
+            "tags": 1,
+            "itTime": 20.983333333333423,
+            "resets": 0,
+            "pose": {
+              "x": 1735.3338384722185,
+              "y": 5.3188,
+              "z": 114.6422179903612,
+              "heading": -1.682040902270524
+            }
+          },
+          {
+            "id": "W_r4-3Srv",
+            "name": "Review B",
+            "connected": true,
+            "bot": false,
+            "role": "it",
+            "ammo": 3,
+            "tags": 1,
+            "itTime": 159.03333333335203,
+            "resets": 1,
+            "pose": {
+              "x": 1723.39133416002,
+              "y": 5.3188,
+              "z": 113.51010012470219,
+              "heading": -1.6318497264806633
+            }
+          }
+        ],
+        "events": [
+          {
+            "id": "ea3f647e-f8e2-4730-ae90-7704e5b3dd38:1",
+            "tick": 1225,
+            "kind": "shot",
+            "actor": "5hhT-0ie4"
+          },
+          {
+            "id": "ea3f647e-f8e2-4730-ae90-7704e5b3dd38:2",
+            "tick": 1251,
+            "kind": "tag",
+            "actor": "5hhT-0ie4",
+            "target": "W_r4-3Srv"
+          },
+          {
+            "id": "ea3f647e-f8e2-4730-ae90-7704e5b3dd38:3",
+            "tick": 1372,
+            "kind": "shot",
+            "actor": "W_r4-3Srv"
+          },
+          {
+            "id": "ea3f647e-f8e2-4730-ae90-7704e5b3dd38:4",
+            "tick": 1458,
+            "kind": "shot",
+            "actor": "W_r4-3Srv"
+          },
+          {
+            "id": "ea3f647e-f8e2-4730-ae90-7704e5b3dd38:5",
+            "tick": 1501,
+            "kind": "shot",
+            "actor": "W_r4-3Srv"
+          },
+          {
+            "id": "ea3f647e-f8e2-4730-ae90-7704e5b3dd38:6",
+            "tick": 1544,
+            "kind": "shot",
+            "actor": "W_r4-3Srv"
+          },
+          {
+            "id": "ea3f647e-f8e2-4730-ae90-7704e5b3dd38:7",
+            "tick": 1587,
+            "kind": "shot",
+            "actor": "W_r4-3Srv"
+          },
+          {
+            "id": "ea3f647e-f8e2-4730-ae90-7704e5b3dd38:8",
+            "tick": 1622,
+            "kind": "tag",
+            "actor": "W_r4-3Srv",
+            "target": "5hhT-0ie4"
+          },
+          {
+            "id": "ea3f647e-f8e2-4730-ae90-7704e5b3dd38:9",
+            "tick": 1990,
+            "kind": "tag",
+            "actor": "5hhT-0ie4",
+            "target": "W_r4-3Srv"
+          },
+          {
+            "id": "ea3f647e-f8e2-4730-ae90-7704e5b3dd38:10",
+            "tick": 1990,
+            "kind": "reset",
+            "actor": "W_r4-3Srv"
+          },
+          {
+            "id": "ea3f647e-f8e2-4730-ae90-7704e5b3dd38:11",
+            "tick": 11160,
+            "kind": "result",
+            "actor": "server"
+          }
+        ],
+        "winners": [
+          "5hhT-0ie4"
+        ],
+        "remaining": 0,
+        "correctionP95": 0
+      },
+      {
+        "product": "swoop-detroit",
+        "phase": "results",
+        "rules": "classic",
+        "online": true,
+        "humans": 2,
+        "bots": 0,
+        "round": "ea3f647e-f8e2-4730-ae90-7704e5b3dd38",
+        "tick": 11160,
+        "me": "W_r4-3Srv",
+        "role": "it",
+        "pose": {
+          "x": 1723.39133416002,
+          "y": 5.3188,
+          "z": 113.51010012470219
+        },
+        "ack": 9503,
+        "hash": "71b7fee49b94129344e2ea5dd3a63250af7983e5ae32e8459e90a9873babc59e",
+        "actors": [
+          {
+            "id": "5hhT-0ie4",
+            "name": "Review A",
+            "connected": true,
+            "bot": false,
+            "role": "runner",
+            "ammo": 3,
+            "tags": 1,
+            "itTime": 20.983333333333423,
+            "resets": 0,
+            "pose": {
+              "x": 1735.3338384722185,
+              "y": 5.3188,
+              "z": 114.6422179903612,
+              "heading": -1.682040902270524
+            }
+          },
+          {
+            "id": "W_r4-3Srv",
+            "name": "Review B",
+            "connected": true,
+            "bot": false,
+            "role": "it",
+            "ammo": 3,
+            "tags": 1,
+            "itTime": 159.03333333335203,
+            "resets": 1,
+            "pose": {
+              "x": 1723.39133416002,
+              "y": 5.3188,
+              "z": 113.51010012470219,
+              "heading": -1.6318497264806633
+            }
+          }
+        ],
+        "events": [
+          {
+            "id": "ea3f647e-f8e2-4730-ae90-7704e5b3dd38:1",
+            "tick": 1225,
+            "kind": "shot",
+            "actor": "5hhT-0ie4"
+          },
+          {
+            "id": "ea3f647e-f8e2-4730-ae90-7704e5b3dd38:2",
+            "tick": 1251,
+            "kind": "tag",
+            "actor": "5hhT-0ie4",
+            "target": "W_r4-3Srv"
+          },
+          {
+            "id": "ea3f647e-f8e2-4730-ae90-7704e5b3dd38:3",
+            "tick": 1372,
+            "kind": "shot",
+            "actor": "W_r4-3Srv"
+          },
+          {
+            "id": "ea3f647e-f8e2-4730-ae90-7704e5b3dd38:4",
+            "tick": 1458,
+            "kind": "shot",
+            "actor": "W_r4-3Srv"
+          },
+          {
+            "id": "ea3f647e-f8e2-4730-ae90-7704e5b3dd38:5",
+            "tick": 1501,
+            "kind": "shot",
+            "actor": "W_r4-3Srv"
+          },
+          {
+            "id": "ea3f647e-f8e2-4730-ae90-7704e5b3dd38:6",
+            "tick": 1544,
+            "kind": "shot",
+            "actor": "W_r4-3Srv"
+          },
+          {
+            "id": "ea3f647e-f8e2-4730-ae90-7704e5b3dd38:7",
+            "tick": 1587,
+            "kind": "shot",
+            "actor": "W_r4-3Srv"
+          },
+          {
+            "id": "ea3f647e-f8e2-4730-ae90-7704e5b3dd38:8",
+            "tick": 1622,
+            "kind": "tag",
+            "actor": "W_r4-3Srv",
+            "target": "5hhT-0ie4"
+          },
+          {
+            "id": "ea3f647e-f8e2-4730-ae90-7704e5b3dd38:9",
+            "tick": 1990,
+            "kind": "tag",
+            "actor": "5hhT-0ie4",
+            "target": "W_r4-3Srv"
+          },
+          {
+            "id": "ea3f647e-f8e2-4730-ae90-7704e5b3dd38:10",
+            "tick": 1990,
+            "kind": "reset",
+            "actor": "W_r4-3Srv"
+          },
+          {
+            "id": "ea3f647e-f8e2-4730-ae90-7704e5b3dd38:11",
+            "tick": 11160,
+            "kind": "result",
+            "actor": "server"
+          }
+        ],
+        "winners": [
+          "5hhT-0ie4"
+        ],
+        "remaining": 0,
+        "correctionP95": 0
+      }
+    ],
+    "finalRematch": [
+      {
+        "product": "swoop-detroit",
+        "phase": "active",
+        "rules": "classic",
+        "online": true,
+        "humans": 2,
+        "bots": 0,
+        "round": "44b18cdf-30f3-42d8-ae6e-0ecb10171513",
+        "tick": 2930,
+        "me": "5hhT-0ie4",
+        "role": "runner",
+        "pose": {
+          "x": 1735.3338384722185,
+          "y": 5.3188,
+          "z": 114.6422179903612
+        },
+        "ack": 2858,
+        "hash": "71b7fee49b94129344e2ea5dd3a63250af7983e5ae32e8459e90a9873babc59e",
+        "actors": [
+          {
+            "id": "5hhT-0ie4",
+            "name": "Review A",
+            "connected": true,
+            "bot": false,
+            "role": "runner",
+            "ammo": 3,
+            "tags": 0,
+            "itTime": 0,
+            "resets": 0,
+            "pose": {
+              "x": 1735.3338384722185,
+              "y": 5.3188,
+              "z": 114.6422179903612,
+              "heading": -1.682040902270524
+            }
+          },
+          {
+            "id": "W_r4-3Srv",
+            "name": "Review B",
+            "connected": true,
+            "bot": false,
+            "role": "it",
+            "ammo": 3,
+            "tags": 0,
+            "itTime": 42.833333333332185,
+            "resets": 0,
+            "pose": {
+              "x": 1723.39133416002,
+              "y": 5.3188,
+              "z": 113.51010012470219,
+              "heading": -1.6318497264806633
+            }
+          }
+        ],
+        "events": [],
+        "winners": [],
+        "remaining": 137.16666666666816,
+        "correctionP95": 0
+      },
+      {
+        "product": "swoop-detroit",
+        "phase": "active",
+        "rules": "classic",
+        "online": true,
+        "humans": 2,
+        "bots": 0,
+        "round": "44b18cdf-30f3-42d8-ae6e-0ecb10171513",
+        "tick": 2936,
+        "me": "W_r4-3Srv",
+        "role": "it",
+        "pose": {
+          "x": 1723.39133416002,
+          "y": 5.3188,
+          "z": 113.51010012470219
+        },
+        "ack": 2866,
+        "hash": "71b7fee49b94129344e2ea5dd3a63250af7983e5ae32e8459e90a9873babc59e",
+        "actors": [
+          {
+            "id": "5hhT-0ie4",
+            "name": "Review A",
+            "connected": true,
+            "bot": false,
+            "role": "runner",
+            "ammo": 3,
+            "tags": 0,
+            "itTime": 0,
+            "resets": 0,
+            "pose": {
+              "x": 1735.3338384722185,
+              "y": 5.3188,
+              "z": 114.6422179903612,
+              "heading": -1.682040902270524
+            }
+          },
+          {
+            "id": "W_r4-3Srv",
+            "name": "Review B",
+            "connected": true,
+            "bot": false,
+            "role": "it",
+            "ammo": 3,
+            "tags": 0,
+            "itTime": 42.93333333333218,
+            "resets": 0,
+            "pose": {
+              "x": 1723.39133416002,
+              "y": 5.3188,
+              "z": 113.51010012470219,
+              "heading": -1.6318497264806633
+            }
+          }
+        ],
+        "events": [],
+        "winners": [],
+        "remaining": 137.06666666666817,
+        "correctionP95": 0
+      }
+    ],
+    "finalExitB": {
+      "body": "",
+      "openDialogs": [],
+      "tag": ""
+    },
+    "finalExitA": {
+      "body": "",
+      "tag": ""
+    },
+    "spreadInviteFollowed": {
+      "url": "http://127.0.0.1:8212/Jungle-Lotto/lottominded-ultra.io/games/gothtechnology2/arcade/swoop-detroit/?tagRoom=5B8C0C69&tagProduct=swoop-detroit&tagVersion=heart-rush-1&tagArena=cut-gratiot-pursuit",
+      "joined": {
+        "ack": 0,
+        "actors": [
+          {
+            "ammo": 3,
+            "bot": false,
+            "connected": true,
+            "id": "Y3p7IsOYD",
+            "itTime": 0,
+            "name": "Spread A",
+            "pose": {
+              "heading": -1.682040902270524,
+              "x": 1735.3338384722183,
+              "y": 5.3188,
+              "z": 114.6422179903612
+            },
+            "resets": 0,
+            "role": "runner",
+            "tags": 0
+          },
+          {
+            "ammo": 3,
+            "bot": false,
+            "connected": true,
+            "id": "Ea5zQjf-L",
+            "itTime": 0,
+            "name": "Spread B",
+            "pose": {
+              "heading": -1.6318497264806633,
+              "x": 1723.39133416002,
+              "y": 5.3188,
+              "z": 113.5101001247022
+            },
+            "resets": 0,
+            "role": "runner",
+            "tags": 0
+          }
+        ],
+        "bots": 0,
+        "correctionP95": 0,
+        "events": [],
+        "hash": "71b7fee49b94129344e2ea5dd3a63250af7983e5ae32e8459e90a9873babc59e",
+        "humans": 2,
+        "me": "Ea5zQjf-L",
+        "online": true,
+        "phase": "lobby",
+        "pose": {
+          "x": 1723.39133416002,
+          "y": 5.3188,
+          "z": 113.5101001247022
+        },
+        "product": "swoop-detroit",
+        "remaining": 180,
+        "role": "runner",
+        "round": "",
+        "rules": "spread",
+        "tick": 0,
+        "winners": []
+      }
+    },
+    "spreadResultsA": {
+      "product": "swoop-detroit",
+      "phase": "results",
+      "rules": "spread",
+      "online": true,
+      "humans": 2,
+      "bots": 2,
+      "round": "f12ef374-1082-49d1-8073-3cf1aa3bcecd",
+      "tick": 5968,
+      "me": "Y3p7IsOYD",
+      "role": "it",
+      "pose": {
+        "x": 1735.3338384722185,
+        "y": 5.3188,
+        "z": 114.6422179903612
+      },
+      "ack": 5955,
+      "hash": "71b7fee49b94129344e2ea5dd3a63250af7983e5ae32e8459e90a9873babc59e",
+      "actors": [
+        {
+          "id": "Y3p7IsOYD",
+          "name": "Spread A",
+          "connected": true,
+          "bot": false,
+          "role": "it",
+          "ammo": 3,
+          "tags": 1,
+          "itTime": 93.46666666666265,
+          "resets": 0,
+          "pose": {
+            "x": 1735.3338384722185,
+            "y": 5.3188,
+            "z": 114.6422179903612,
+            "heading": -1.682040902270524
+          }
+        },
+        {
+          "id": "Ea5zQjf-L",
+          "name": "Spread B",
+          "connected": true,
+          "bot": false,
+          "role": "it",
+          "ammo": 3,
+          "tags": 1,
+          "itTime": 49.11666666666516,
+          "resets": 0,
+          "pose": {
+            "x": 1714.6547918291383,
+            "y": 5.3188,
+            "z": 112.26366740058283,
+            "heading": -1.713386098901244
+          }
+        },
+        {
+          "id": "bot-d339ea6c-b1ef-4aa9-a259-e85e29b2e7cd",
+          "name": "Bot 3",
+          "connected": false,
+          "bot": true,
+          "role": "it",
+          "ammo": 0,
+          "tags": 1,
+          "itTime": 31.416666666666163,
+          "resets": 0,
+          "pose": {
+            "x": 1612.2146557487204,
+            "y": 5.3188,
+            "z": 98.87867824145049,
+            "heading": -1.7777747777960355
+          }
+        },
+        {
+          "id": "bot-ff922caf-fe38-49d0-b1f0-af54e7b28203",
+          "name": "Bot 4",
+          "connected": false,
+          "bot": true,
+          "role": "it",
+          "ammo": 3,
+          "tags": 0,
+          "itTime": 0,
+          "resets": 0,
+          "pose": {
+            "x": 1590.954257858153,
+            "y": 5.3188,
+            "z": 100.9341325650345,
+            "heading": 1.631364731852912
+          }
+        }
+      ],
+      "events": [
+        {
+          "id": "f12ef374-1082-49d1-8073-3cf1aa3bcecd:1",
+          "tick": 2995,
+          "kind": "shot",
+          "actor": "Y3p7IsOYD"
+        },
+        {
+          "id": "f12ef374-1082-49d1-8073-3cf1aa3bcecd:2",
+          "tick": 3021,
+          "kind": "tag",
+          "actor": "Y3p7IsOYD",
+          "target": "Ea5zQjf-L"
+        },
+        {
+          "id": "f12ef374-1082-49d1-8073-3cf1aa3bcecd:3",
+          "tick": 4083,
+          "kind": "tag",
+          "actor": "Ea5zQjf-L",
+          "target": "bot-d339ea6c-b1ef-4aa9-a259-e85e29b2e7cd"
+        },
+        {
+          "id": "f12ef374-1082-49d1-8073-3cf1aa3bcecd:4",
+          "tick": 4204,
+          "kind": "shot",
+          "actor": "bot-d339ea6c-b1ef-4aa9-a259-e85e29b2e7cd"
+        },
+        {
+          "id": "f12ef374-1082-49d1-8073-3cf1aa3bcecd:5",
+          "tick": 5784,
+          "kind": "shot",
+          "actor": "bot-d339ea6c-b1ef-4aa9-a259-e85e29b2e7cd"
+        },
+        {
+          "id": "f12ef374-1082-49d1-8073-3cf1aa3bcecd:6",
+          "tick": 5827,
+          "kind": "shot",
+          "actor": "bot-d339ea6c-b1ef-4aa9-a259-e85e29b2e7cd"
+        },
+        {
+          "id": "f12ef374-1082-49d1-8073-3cf1aa3bcecd:7",
+          "tick": 5870,
+          "kind": "shot",
+          "actor": "bot-d339ea6c-b1ef-4aa9-a259-e85e29b2e7cd"
+        },
+        {
+          "id": "f12ef374-1082-49d1-8073-3cf1aa3bcecd:8",
+          "tick": 5913,
+          "kind": "shot",
+          "actor": "bot-d339ea6c-b1ef-4aa9-a259-e85e29b2e7cd"
+        },
+        {
+          "id": "f12ef374-1082-49d1-8073-3cf1aa3bcecd:9",
+          "tick": 5968,
+          "kind": "tag",
+          "actor": "bot-d339ea6c-b1ef-4aa9-a259-e85e29b2e7cd",
+          "target": "bot-ff922caf-fe38-49d0-b1f0-af54e7b28203"
+        },
+        {
+          "id": "f12ef374-1082-49d1-8073-3cf1aa3bcecd:10",
+          "tick": 5968,
+          "kind": "result",
+          "actor": "server"
+        }
+      ],
+      "winners": [
+        "Y3p7IsOYD",
+        "Ea5zQjf-L",
+        "bot-d339ea6c-b1ef-4aa9-a259-e85e29b2e7cd",
+        "bot-ff922caf-fe38-49d0-b1f0-af54e7b28203"
+      ],
+      "remaining": 86.5333333333377,
+      "correctionP95": 0
+    },
+    "spreadResultsB": {
+      "product": "swoop-detroit",
+      "phase": "results",
+      "rules": "spread",
+      "online": true,
+      "humans": 2,
+      "bots": 2,
+      "round": "f12ef374-1082-49d1-8073-3cf1aa3bcecd",
+      "tick": 5968,
+      "me": "Ea5zQjf-L",
+      "role": "it",
+      "pose": {
+        "x": 1714.6547918291383,
+        "y": 5.3188,
+        "z": 112.26366740058283
+      },
+      "ack": 5957,
+      "hash": "71b7fee49b94129344e2ea5dd3a63250af7983e5ae32e8459e90a9873babc59e",
+      "actors": [
+        {
+          "id": "Y3p7IsOYD",
+          "name": "Spread A",
+          "connected": true,
+          "bot": false,
+          "role": "it",
+          "ammo": 3,
+          "tags": 1,
+          "itTime": 93.46666666666265,
+          "resets": 0,
+          "pose": {
+            "x": 1735.3338384722185,
+            "y": 5.3188,
+            "z": 114.6422179903612,
+            "heading": -1.682040902270524
+          }
+        },
+        {
+          "id": "Ea5zQjf-L",
+          "name": "Spread B",
+          "connected": true,
+          "bot": false,
+          "role": "it",
+          "ammo": 3,
+          "tags": 1,
+          "itTime": 49.11666666666516,
+          "resets": 0,
+          "pose": {
+            "x": 1714.6547918291383,
+            "y": 5.3188,
+            "z": 112.26366740058283,
+            "heading": -1.713386098901244
+          }
+        },
+        {
+          "id": "bot-d339ea6c-b1ef-4aa9-a259-e85e29b2e7cd",
+          "name": "Bot 3",
+          "connected": false,
+          "bot": true,
+          "role": "it",
+          "ammo": 0,
+          "tags": 1,
+          "itTime": 31.416666666666163,
+          "resets": 0,
+          "pose": {
+            "x": 1612.2146557487204,
+            "y": 5.3188,
+            "z": 98.87867824145049,
+            "heading": -1.7777747777960355
+          }
+        },
+        {
+          "id": "bot-ff922caf-fe38-49d0-b1f0-af54e7b28203",
+          "name": "Bot 4",
+          "connected": false,
+          "bot": true,
+          "role": "it",
+          "ammo": 3,
+          "tags": 0,
+          "itTime": 0,
+          "resets": 0,
+          "pose": {
+            "x": 1590.954257858153,
+            "y": 5.3188,
+            "z": 100.9341325650345,
+            "heading": 1.631364731852912
+          }
+        }
+      ],
+      "events": [
+        {
+          "id": "f12ef374-1082-49d1-8073-3cf1aa3bcecd:1",
+          "tick": 2995,
+          "kind": "shot",
+          "actor": "Y3p7IsOYD"
+        },
+        {
+          "id": "f12ef374-1082-49d1-8073-3cf1aa3bcecd:2",
+          "tick": 3021,
+          "kind": "tag",
+          "actor": "Y3p7IsOYD",
+          "target": "Ea5zQjf-L"
+        },
+        {
+          "id": "f12ef374-1082-49d1-8073-3cf1aa3bcecd:3",
+          "tick": 4083,
+          "kind": "tag",
+          "actor": "Ea5zQjf-L",
+          "target": "bot-d339ea6c-b1ef-4aa9-a259-e85e29b2e7cd"
+        },
+        {
+          "id": "f12ef374-1082-49d1-8073-3cf1aa3bcecd:4",
+          "tick": 4204,
+          "kind": "shot",
+          "actor": "bot-d339ea6c-b1ef-4aa9-a259-e85e29b2e7cd"
+        },
+        {
+          "id": "f12ef374-1082-49d1-8073-3cf1aa3bcecd:5",
+          "tick": 5784,
+          "kind": "shot",
+          "actor": "bot-d339ea6c-b1ef-4aa9-a259-e85e29b2e7cd"
+        },
+        {
+          "id": "f12ef374-1082-49d1-8073-3cf1aa3bcecd:6",
+          "tick": 5827,
+          "kind": "shot",
+          "actor": "bot-d339ea6c-b1ef-4aa9-a259-e85e29b2e7cd"
+        },
+        {
+          "id": "f12ef374-1082-49d1-8073-3cf1aa3bcecd:7",
+          "tick": 5870,
+          "kind": "shot",
+          "actor": "bot-d339ea6c-b1ef-4aa9-a259-e85e29b2e7cd"
+        },
+        {
+          "id": "f12ef374-1082-49d1-8073-3cf1aa3bcecd:8",
+          "tick": 5913,
+          "kind": "shot",
+          "actor": "bot-d339ea6c-b1ef-4aa9-a259-e85e29b2e7cd"
+        },
+        {
+          "id": "f12ef374-1082-49d1-8073-3cf1aa3bcecd:9",
+          "tick": 5968,
+          "kind": "tag",
+          "actor": "bot-d339ea6c-b1ef-4aa9-a259-e85e29b2e7cd",
+          "target": "bot-ff922caf-fe38-49d0-b1f0-af54e7b28203"
+        },
+        {
+          "id": "f12ef374-1082-49d1-8073-3cf1aa3bcecd:10",
+          "tick": 5968,
+          "kind": "result",
+          "actor": "server"
+        }
+      ],
+      "winners": [
+        "Y3p7IsOYD",
+        "Ea5zQjf-L",
+        "bot-d339ea6c-b1ef-4aa9-a259-e85e29b2e7cd",
+        "bot-ff922caf-fe38-49d0-b1f0-af54e7b28203"
+      ],
+      "remaining": 86.5333333333377,
+      "correctionP95": 0
+    },
+    "actionFixA": {
+      "product": "swoop-detroit",
+      "phase": "active",
+      "rules": "spread",
+      "online": true,
+      "humans": 2,
+      "bots": 2,
+      "round": "56bfcd62-8200-4f52-a811-7e044c4bded5",
+      "tick": 6466,
+      "me": "T0oRd9AaE",
+      "role": "it",
+      "pose": {
+        "x": 1728.4385585141533,
+        "y": 5.3188,
+        "z": 113.55416558206794
+      },
+      "ack": 5436,
+      "hash": "71b7fee49b94129344e2ea5dd3a63250af7983e5ae32e8459e90a9873babc59e",
+      "actors": [
+        {
+          "id": "T0oRd9AaE",
+          "name": "Swoop Final A",
+          "connected": true,
+          "bot": false,
+          "role": "it",
+          "ammo": 2,
+          "tags": 0,
+          "itTime": 40.266666666665664,
+          "resets": 1,
+          "pose": {
+            "x": 1728.4385585141533,
+            "y": 5.3188,
+            "z": 113.55416558206794,
+            "heading": -1.7370264394851704
+          }
+        },
+        {
+          "id": "P8WGNm4Xa",
+          "name": "Swoop Final B",
+          "connected": true,
+          "bot": false,
+          "role": "it",
+          "ammo": 3,
+          "tags": 0,
+          "itTime": 101.76666666666218,
+          "resets": 1,
+          "pose": {
+            "x": 1716.4306569516043,
+            "y": 5.3188,
+            "z": 113.38624181905979,
+            "heading": -1.5880990290027188
+          }
+        },
+        {
+          "id": "bot-0ddb4fb6-360c-4807-9367-d34a76b6b1aa",
+          "name": "Bot 3",
+          "connected": false,
+          "bot": true,
+          "role": "runner",
+          "ammo": 3,
+          "tags": 0,
+          "itTime": 0,
+          "resets": 0,
+          "pose": {
+            "x": 1645.823103771855,
+            "y": 5.3188,
+            "z": 105.60243042846471,
+            "heading": -4.687880330310054
+          }
+        },
+        {
+          "id": "bot-431969ed-802c-4dee-b01c-062a83e386a9",
+          "name": "Bot 4",
+          "connected": false,
+          "bot": true,
+          "role": "runner",
+          "ammo": 3,
+          "tags": 0,
+          "itTime": 0,
+          "resets": 0,
+          "pose": {
+            "x": 1468.6577266161892,
+            "y": 3.5320593396531916,
+            "z": 90.277644398785,
+            "heading": 0.8491631828413647
+          }
+        }
+      ],
+      "events": [
+        {
+          "id": "56bfcd62-8200-4f52-a811-7e044c4bded5:4",
+          "tick": 2931,
+          "kind": "reset",
+          "actor": "P8WGNm4Xa"
+        },
+        {
+          "id": "56bfcd62-8200-4f52-a811-7e044c4bded5:5",
+          "tick": 2967,
+          "kind": "shot",
+          "actor": "P8WGNm4Xa"
+        },
+        {
+          "id": "56bfcd62-8200-4f52-a811-7e044c4bded5:6",
+          "tick": 4051,
+          "kind": "tag",
+          "actor": "P8WGNm4Xa",
+          "target": "T0oRd9AaE"
+        },
+        {
+          "id": "56bfcd62-8200-4f52-a811-7e044c4bded5:7",
+          "tick": 4051,
+          "kind": "reset",
+          "actor": "T0oRd9AaE"
+        },
+        {
+          "id": "56bfcd62-8200-4f52-a811-7e044c4bded5:8",
+          "tick": 6403,
+          "kind": "shot",
+          "actor": "T0oRd9AaE"
+        }
+      ],
+      "winners": [],
+      "remaining": 78.23333333333817,
+      "correctionP95": 0
+    },
+    "actionFixB": {
+      "product": "swoop-detroit",
+      "phase": "active",
+      "rules": "spread",
+      "online": true,
+      "humans": 2,
+      "bots": 2,
+      "round": "56bfcd62-8200-4f52-a811-7e044c4bded5",
+      "tick": 6469,
+      "me": "P8WGNm4Xa",
+      "role": "it",
+      "pose": {
+        "x": 1716.4306569516043,
+        "y": 5.3188,
+        "z": 113.38624181905979
+      },
+      "ack": 5211,
+      "hash": "71b7fee49b94129344e2ea5dd3a63250af7983e5ae32e8459e90a9873babc59e",
+      "actors": [
+        {
+          "id": "T0oRd9AaE",
+          "name": "Swoop Final A",
+          "connected": true,
+          "bot": false,
+          "role": "it",
+          "ammo": 2,
+          "tags": 0,
+          "itTime": 40.31666666666566,
+          "resets": 1,
+          "pose": {
+            "x": 1728.421868138751,
+            "y": 5.3188,
+            "z": 113.5513423713884,
+            "heading": -1.742623506331866
+          }
+        },
+        {
+          "id": "P8WGNm4Xa",
+          "name": "Swoop Final B",
+          "connected": true,
+          "bot": false,
+          "role": "it",
+          "ammo": 3,
+          "tags": 0,
+          "itTime": 101.81666666666217,
+          "resets": 1,
+          "pose": {
+            "x": 1716.4306569516043,
+            "y": 5.3188,
+            "z": 113.38624181905979,
+            "heading": -1.5880990290027188
+          }
+        },
+        {
+          "id": "bot-0ddb4fb6-360c-4807-9367-d34a76b6b1aa",
+          "name": "Bot 3",
+          "connected": false,
+          "bot": true,
+          "role": "runner",
+          "ammo": 3,
+          "tags": 0,
+          "itTime": 0,
+          "resets": 0,
+          "pose": {
+            "x": 1646.0935643457412,
+            "y": 5.3188,
+            "z": 105.59565714415328,
+            "heading": -4.69611713822608
+          }
+        },
+        {
+          "id": "bot-431969ed-802c-4dee-b01c-062a83e386a9",
+          "name": "Bot 4",
+          "connected": false,
+          "bot": true,
+          "role": "runner",
+          "ammo": 3,
+          "tags": 0,
+          "itTime": 0,
+          "resets": 0,
+          "pose": {
+            "x": 1468.7037685091693,
+            "y": 3.534399673876864,
+            "z": 90.31837044898022,
+            "heading": 0.7848061600125985
+          }
+        }
+      ],
+      "events": [
+        {
+          "id": "56bfcd62-8200-4f52-a811-7e044c4bded5:4",
+          "tick": 2931,
+          "kind": "reset",
+          "actor": "P8WGNm4Xa"
+        },
+        {
+          "id": "56bfcd62-8200-4f52-a811-7e044c4bded5:5",
+          "tick": 2967,
+          "kind": "shot",
+          "actor": "P8WGNm4Xa"
+        },
+        {
+          "id": "56bfcd62-8200-4f52-a811-7e044c4bded5:6",
+          "tick": 4051,
+          "kind": "tag",
+          "actor": "P8WGNm4Xa",
+          "target": "T0oRd9AaE"
+        },
+        {
+          "id": "56bfcd62-8200-4f52-a811-7e044c4bded5:7",
+          "tick": 4051,
+          "kind": "reset",
+          "actor": "T0oRd9AaE"
+        },
+        {
+          "id": "56bfcd62-8200-4f52-a811-7e044c4bded5:8",
+          "tick": 6403,
+          "kind": "shot",
+          "actor": "T0oRd9AaE"
+        }
+      ],
+      "winners": [],
+      "remaining": 78.18333333333817,
+      "correctionP95": 0
+    }
+  },
+  "elmwood": {
+    "before": [
+      {
+        "product": "elmwood-explorer",
+        "phase": "active",
+        "rules": "classic",
+        "online": true,
+        "humans": 2,
+        "bots": 0,
+        "round": "ef9bffa2-c344-4fef-bd4d-57ce5188e0ff",
+        "tick": 4993,
+        "me": "Tis5MCUxE",
+        "role": "it",
+        "pose": {
+          "x": -150.29543725736042,
+          "y": 3.3447326772296133,
+          "z": -246.94525161732602
+        },
+        "ack": 4755,
+        "hash": "dab18d0638db3746073199e1ee8d3cde01d2a14ef80539e899fc94eb5cfdcc35",
+        "actors": [
+          {
+            "id": "Tis5MCUxE",
+            "name": "Elmwood A",
+            "connected": true,
+            "bot": false,
+            "role": "it",
+            "ammo": 3,
+            "tags": 0,
+            "itTime": 77.21666666666357,
+            "resets": 0,
+            "pose": {
+              "x": -150.29543725736042,
+              "y": 3.3447326772296133,
+              "z": -246.94525161732602,
+              "heading": -2.0401533166418777
+            }
+          },
+          {
+            "id": "N9L2KSGZ1",
+            "name": "Elmwood B",
+            "connected": true,
+            "bot": false,
+            "role": "runner",
+            "ammo": 3,
+            "tags": 0,
+            "itTime": 0,
+            "resets": 0,
+            "pose": {
+              "x": -159.33409910750038,
+              "y": 3.500928343612493,
+              "z": -251.27548674984087,
+              "heading": -1.983537361553087
+            }
+          }
+        ],
+        "events": [],
+        "winners": [],
+        "remaining": 102.78333333333677,
+        "correctionP95": 0
+      },
+      {
+        "product": "elmwood-explorer",
+        "phase": "active",
+        "rules": "classic",
+        "online": true,
+        "humans": 2,
+        "bots": 0,
+        "round": "ef9bffa2-c344-4fef-bd4d-57ce5188e0ff",
+        "tick": 4993,
+        "me": "N9L2KSGZ1",
+        "role": "runner",
+        "pose": {
+          "x": -159.33409910750038,
+          "y": 3.500928343612493,
+          "z": -251.27548674984087
+        },
+        "ack": 4757,
+        "hash": "dab18d0638db3746073199e1ee8d3cde01d2a14ef80539e899fc94eb5cfdcc35",
+        "actors": [
+          {
+            "id": "Tis5MCUxE",
+            "name": "Elmwood A",
+            "connected": true,
+            "bot": false,
+            "role": "it",
+            "ammo": 3,
+            "tags": 0,
+            "itTime": 77.21666666666357,
+            "resets": 0,
+            "pose": {
+              "x": -150.29543725736042,
+              "y": 3.3447326772296133,
+              "z": -246.94525161732602,
+              "heading": -2.0401533166418777
+            }
+          },
+          {
+            "id": "N9L2KSGZ1",
+            "name": "Elmwood B",
+            "connected": true,
+            "bot": false,
+            "role": "runner",
+            "ammo": 3,
+            "tags": 0,
+            "itTime": 0,
+            "resets": 0,
+            "pose": {
+              "x": -159.33409910750038,
+              "y": 3.500928343612493,
+              "z": -251.27548674984087,
+              "heading": -1.983537361553087
+            }
+          }
+        ],
+        "events": [],
+        "winners": [],
+        "remaining": 102.78333333333677,
+        "correctionP95": 0
+      }
+    ],
+    "afterMovement": {
+      "product": "elmwood-explorer",
+      "phase": "active",
+      "rules": "classic",
+      "online": true,
+      "humans": 2,
+      "bots": 0,
+      "round": "ef9bffa2-c344-4fef-bd4d-57ce5188e0ff",
+      "tick": 6598,
+      "me": "Tis5MCUxE",
+      "role": "runner",
+      "pose": {
+        "x": -150.59534758570885,
+        "y": 3.346856250166827,
+        "z": -247.13665368947755
+      },
+      "ack": 6360,
+      "hash": "dab18d0638db3746073199e1ee8d3cde01d2a14ef80539e899fc94eb5cfdcc35",
+      "actors": [
+        {
+          "id": "Tis5MCUxE",
+          "name": "Elmwood A",
+          "connected": true,
+          "bot": false,
+          "role": "runner",
+          "ammo": 3,
+          "tags": 1,
+          "itTime": 77.7833333333302,
+          "resets": 0,
+          "pose": {
+            "x": -150.59534758570885,
+            "y": 3.346856250166827,
+            "z": -247.13665368947755,
+            "heading": -2.251926741591459
+          }
+        },
+        {
+          "id": "N9L2KSGZ1",
+          "name": "Elmwood B",
+          "connected": false,
+          "bot": false,
+          "role": "it",
+          "ammo": 3,
+          "tags": 0,
+          "itTime": 26.183333333333128,
+          "resets": 0,
+          "pose": {
+            "x": -159.5911616045483,
+            "y": 3.505086739523893,
+            "z": -251.37768168581746,
+            "heading": -1.9348200178694643
+          }
+        }
+      ],
+      "events": [
+        {
+          "id": "ef9bffa2-c344-4fef-bd4d-57ce5188e0ff:1",
+          "tick": 5006,
+          "kind": "shot",
+          "actor": "Tis5MCUxE"
+        },
+        {
+          "id": "ef9bffa2-c344-4fef-bd4d-57ce5188e0ff:2",
+          "tick": 5027,
+          "kind": "tag",
+          "actor": "Tis5MCUxE",
+          "target": "N9L2KSGZ1"
+        }
+      ],
+      "winners": [],
+      "remaining": 76.03333333333829,
+      "correctionP95": 0.006174159431607785
+    },
+    "reconnect": {
+      "before": {
+        "product": "elmwood-explorer",
+        "phase": "active",
+        "rules": "classic",
+        "online": true,
+        "humans": 2,
+        "bots": 0,
+        "round": "ef9bffa2-c344-4fef-bd4d-57ce5188e0ff",
+        "tick": 6578,
+        "me": "N9L2KSGZ1",
+        "role": "it",
+        "pose": {
+          "x": -159.55730040615353,
+          "y": 3.5045525037716065,
+          "z": -251.36460482989145
+        },
+        "ack": 6331,
+        "hash": "dab18d0638db3746073199e1ee8d3cde01d2a14ef80539e899fc94eb5cfdcc35",
+        "actors": [
+          {
+            "id": "Tis5MCUxE",
+            "name": "Elmwood A",
+            "connected": true,
+            "bot": false,
+            "role": "runner",
+            "ammo": 3,
+            "tags": 1,
+            "itTime": 77.7833333333302,
+            "resets": 0,
+            "pose": {
+              "x": -150.50503475333488,
+              "y": 3.346038752838233,
+              "z": -247.06533979102412,
+              "heading": -2.2221592540615633
+            }
+          },
+          {
+            "id": "N9L2KSGZ1",
+            "name": "Elmwood B",
+            "connected": true,
+            "bot": false,
+            "role": "it",
+            "ammo": 3,
+            "tags": 0,
+            "itTime": 25.849999999999813,
+            "resets": 0,
+            "pose": {
+              "x": -159.55730040615353,
+              "y": 3.5045525037716065,
+              "z": -251.36460482989145,
+              "heading": -1.9430528472113437
+            }
+          }
+        ],
+        "events": [
+          {
+            "id": "ef9bffa2-c344-4fef-bd4d-57ce5188e0ff:1",
+            "tick": 5006,
+            "kind": "shot",
+            "actor": "Tis5MCUxE"
+          },
+          {
+            "id": "ef9bffa2-c344-4fef-bd4d-57ce5188e0ff:2",
+            "tick": 5027,
+            "kind": "tag",
+            "actor": "Tis5MCUxE",
+            "target": "N9L2KSGZ1"
+          }
+        ],
+        "winners": [],
+        "remaining": 76.3666666666716,
+        "correctionP95": 0
+      },
+      "after": {
+        "product": "elmwood-explorer",
+        "phase": "results",
+        "rules": "classic",
+        "online": true,
+        "humans": 2,
+        "bots": 0,
+        "round": "ef9bffa2-c344-4fef-bd4d-57ce5188e0ff",
+        "tick": 11160,
+        "me": "N9L2KSGZ1",
+        "role": "it",
+        "pose": {
+          "x": -159.33409910750038,
+          "y": 3.500928343612493,
+          "z": -251.27548674984087
+        },
+        "ack": 6432,
+        "hash": "dab18d0638db3746073199e1ee8d3cde01d2a14ef80539e899fc94eb5cfdcc35",
+        "actors": [
+          {
+            "id": "Tis5MCUxE",
+            "name": "Elmwood A",
+            "connected": true,
+            "bot": false,
+            "role": "runner",
+            "ammo": 3,
+            "tags": 1,
+            "itTime": 88.86666666666291,
+            "resets": 0,
+            "pose": {
+              "x": -151.15990712561003,
+              "y": 3.351110646369349,
+              "z": -247.59607168663496,
+              "heading": -2.2540168175054407
+            }
+          },
+          {
+            "id": "N9L2KSGZ1",
+            "name": "Elmwood B",
+            "connected": true,
+            "bot": false,
+            "role": "it",
+            "ammo": 3,
+            "tags": 1,
+            "itTime": 91.14999999999611,
+            "resets": 1,
+            "pose": {
+              "x": -159.33409910750038,
+              "y": 3.500928343612493,
+              "z": -251.27548674984087,
+              "heading": -1.983537361553087
+            }
+          }
+        ],
+        "events": [
+          {
+            "id": "ef9bffa2-c344-4fef-bd4d-57ce5188e0ff:1",
+            "tick": 5006,
+            "kind": "shot",
+            "actor": "Tis5MCUxE"
+          },
+          {
+            "id": "ef9bffa2-c344-4fef-bd4d-57ce5188e0ff:2",
+            "tick": 5027,
+            "kind": "tag",
+            "actor": "Tis5MCUxE",
+            "target": "N9L2KSGZ1"
+          },
+          {
+            "id": "ef9bffa2-c344-4fef-bd4d-57ce5188e0ff:3",
+            "tick": 6627,
+            "kind": "shot",
+            "actor": "N9L2KSGZ1"
+          },
+          {
+            "id": "ef9bffa2-c344-4fef-bd4d-57ce5188e0ff:4",
+            "tick": 6670,
+            "kind": "shot",
+            "actor": "N9L2KSGZ1"
+          },
+          {
+            "id": "ef9bffa2-c344-4fef-bd4d-57ce5188e0ff:5",
+            "tick": 6756,
+            "kind": "shot",
+            "actor": "N9L2KSGZ1"
+          },
+          {
+            "id": "ef9bffa2-c344-4fef-bd4d-57ce5188e0ff:6",
+            "tick": 6799,
+            "kind": "shot",
+            "actor": "N9L2KSGZ1"
+          },
+          {
+            "id": "ef9bffa2-c344-4fef-bd4d-57ce5188e0ff:7",
+            "tick": 6831,
+            "kind": "tag",
+            "actor": "N9L2KSGZ1",
+            "target": "Tis5MCUxE"
+          },
+          {
+            "id": "ef9bffa2-c344-4fef-bd4d-57ce5188e0ff:8",
+            "tick": 7496,
+            "kind": "tag",
+            "actor": "Tis5MCUxE",
+            "target": "N9L2KSGZ1"
+          },
+          {
+            "id": "ef9bffa2-c344-4fef-bd4d-57ce5188e0ff:9",
+            "tick": 7496,
+            "kind": "reset",
+            "actor": "N9L2KSGZ1"
+          },
+          {
+            "id": "ef9bffa2-c344-4fef-bd4d-57ce5188e0ff:10",
+            "tick": 11160,
+            "kind": "result",
+            "actor": "server"
+          }
+        ],
+        "winners": [
+          "Tis5MCUxE"
+        ],
+        "remaining": 0,
+        "correctionP95": 0
+      },
+      "interruptionSeconds": 5
+    },
+    "results": [
+      {
+        "product": "elmwood-explorer",
+        "phase": "results",
+        "rules": "classic",
+        "online": true,
+        "humans": 2,
+        "bots": 0,
+        "round": "ef9bffa2-c344-4fef-bd4d-57ce5188e0ff",
+        "tick": 11160,
+        "me": "Tis5MCUxE",
+        "role": "runner",
+        "pose": {
+          "x": -151.15990712561003,
+          "y": 3.351110646369349,
+          "z": -247.59607168663496
+        },
+        "ack": 10785,
+        "hash": "dab18d0638db3746073199e1ee8d3cde01d2a14ef80539e899fc94eb5cfdcc35",
+        "actors": [
+          {
+            "id": "Tis5MCUxE",
+            "name": "Elmwood A",
+            "connected": true,
+            "bot": false,
+            "role": "runner",
+            "ammo": 3,
+            "tags": 1,
+            "itTime": 88.86666666666291,
+            "resets": 0,
+            "pose": {
+              "x": -151.15990712561003,
+              "y": 3.351110646369349,
+              "z": -247.59607168663496,
+              "heading": -2.2540168175054407
+            }
+          },
+          {
+            "id": "N9L2KSGZ1",
+            "name": "Elmwood B",
+            "connected": true,
+            "bot": false,
+            "role": "it",
+            "ammo": 3,
+            "tags": 1,
+            "itTime": 91.14999999999611,
+            "resets": 1,
+            "pose": {
+              "x": -159.33409910750038,
+              "y": 3.500928343612493,
+              "z": -251.27548674984087,
+              "heading": -1.983537361553087
+            }
+          }
+        ],
+        "events": [
+          {
+            "id": "ef9bffa2-c344-4fef-bd4d-57ce5188e0ff:1",
+            "tick": 5006,
+            "kind": "shot",
+            "actor": "Tis5MCUxE"
+          },
+          {
+            "id": "ef9bffa2-c344-4fef-bd4d-57ce5188e0ff:2",
+            "tick": 5027,
+            "kind": "tag",
+            "actor": "Tis5MCUxE",
+            "target": "N9L2KSGZ1"
+          },
+          {
+            "id": "ef9bffa2-c344-4fef-bd4d-57ce5188e0ff:3",
+            "tick": 6627,
+            "kind": "shot",
+            "actor": "N9L2KSGZ1"
+          },
+          {
+            "id": "ef9bffa2-c344-4fef-bd4d-57ce5188e0ff:4",
+            "tick": 6670,
+            "kind": "shot",
+            "actor": "N9L2KSGZ1"
+          },
+          {
+            "id": "ef9bffa2-c344-4fef-bd4d-57ce5188e0ff:5",
+            "tick": 6756,
+            "kind": "shot",
+            "actor": "N9L2KSGZ1"
+          },
+          {
+            "id": "ef9bffa2-c344-4fef-bd4d-57ce5188e0ff:6",
+            "tick": 6799,
+            "kind": "shot",
+            "actor": "N9L2KSGZ1"
+          },
+          {
+            "id": "ef9bffa2-c344-4fef-bd4d-57ce5188e0ff:7",
+            "tick": 6831,
+            "kind": "tag",
+            "actor": "N9L2KSGZ1",
+            "target": "Tis5MCUxE"
+          },
+          {
+            "id": "ef9bffa2-c344-4fef-bd4d-57ce5188e0ff:8",
+            "tick": 7496,
+            "kind": "tag",
+            "actor": "Tis5MCUxE",
+            "target": "N9L2KSGZ1"
+          },
+          {
+            "id": "ef9bffa2-c344-4fef-bd4d-57ce5188e0ff:9",
+            "tick": 7496,
+            "kind": "reset",
+            "actor": "N9L2KSGZ1"
+          },
+          {
+            "id": "ef9bffa2-c344-4fef-bd4d-57ce5188e0ff:10",
+            "tick": 11160,
+            "kind": "result",
+            "actor": "server"
+          }
+        ],
+        "winners": [
+          "Tis5MCUxE"
+        ],
+        "remaining": 0,
+        "correctionP95": 0
+      },
+      {
+        "product": "elmwood-explorer",
+        "phase": "results",
+        "rules": "classic",
+        "online": true,
+        "humans": 2,
+        "bots": 0,
+        "round": "ef9bffa2-c344-4fef-bd4d-57ce5188e0ff",
+        "tick": 11160,
+        "me": "N9L2KSGZ1",
+        "role": "it",
+        "pose": {
+          "x": -159.33409910750038,
+          "y": 3.500928343612493,
+          "z": -251.27548674984087
+        },
+        "ack": 6432,
+        "hash": "dab18d0638db3746073199e1ee8d3cde01d2a14ef80539e899fc94eb5cfdcc35",
+        "actors": [
+          {
+            "id": "Tis5MCUxE",
+            "name": "Elmwood A",
+            "connected": true,
+            "bot": false,
+            "role": "runner",
+            "ammo": 3,
+            "tags": 1,
+            "itTime": 88.86666666666291,
+            "resets": 0,
+            "pose": {
+              "x": -151.15990712561003,
+              "y": 3.351110646369349,
+              "z": -247.59607168663496,
+              "heading": -2.2540168175054407
+            }
+          },
+          {
+            "id": "N9L2KSGZ1",
+            "name": "Elmwood B",
+            "connected": true,
+            "bot": false,
+            "role": "it",
+            "ammo": 3,
+            "tags": 1,
+            "itTime": 91.14999999999611,
+            "resets": 1,
+            "pose": {
+              "x": -159.33409910750038,
+              "y": 3.500928343612493,
+              "z": -251.27548674984087,
+              "heading": -1.983537361553087
+            }
+          }
+        ],
+        "events": [
+          {
+            "id": "ef9bffa2-c344-4fef-bd4d-57ce5188e0ff:1",
+            "tick": 5006,
+            "kind": "shot",
+            "actor": "Tis5MCUxE"
+          },
+          {
+            "id": "ef9bffa2-c344-4fef-bd4d-57ce5188e0ff:2",
+            "tick": 5027,
+            "kind": "tag",
+            "actor": "Tis5MCUxE",
+            "target": "N9L2KSGZ1"
+          },
+          {
+            "id": "ef9bffa2-c344-4fef-bd4d-57ce5188e0ff:3",
+            "tick": 6627,
+            "kind": "shot",
+            "actor": "N9L2KSGZ1"
+          },
+          {
+            "id": "ef9bffa2-c344-4fef-bd4d-57ce5188e0ff:4",
+            "tick": 6670,
+            "kind": "shot",
+            "actor": "N9L2KSGZ1"
+          },
+          {
+            "id": "ef9bffa2-c344-4fef-bd4d-57ce5188e0ff:5",
+            "tick": 6756,
+            "kind": "shot",
+            "actor": "N9L2KSGZ1"
+          },
+          {
+            "id": "ef9bffa2-c344-4fef-bd4d-57ce5188e0ff:6",
+            "tick": 6799,
+            "kind": "shot",
+            "actor": "N9L2KSGZ1"
+          },
+          {
+            "id": "ef9bffa2-c344-4fef-bd4d-57ce5188e0ff:7",
+            "tick": 6831,
+            "kind": "tag",
+            "actor": "N9L2KSGZ1",
+            "target": "Tis5MCUxE"
+          },
+          {
+            "id": "ef9bffa2-c344-4fef-bd4d-57ce5188e0ff:8",
+            "tick": 7496,
+            "kind": "tag",
+            "actor": "Tis5MCUxE",
+            "target": "N9L2KSGZ1"
+          },
+          {
+            "id": "ef9bffa2-c344-4fef-bd4d-57ce5188e0ff:9",
+            "tick": 7496,
+            "kind": "reset",
+            "actor": "N9L2KSGZ1"
+          },
+          {
+            "id": "ef9bffa2-c344-4fef-bd4d-57ce5188e0ff:10",
+            "tick": 11160,
+            "kind": "result",
+            "actor": "server"
+          }
+        ],
+        "winners": [
+          "Tis5MCUxE"
+        ],
+        "remaining": 0,
+        "correctionP95": 0
+      }
+    ],
+    "rematch": [
+      {
+        "product": "elmwood-explorer",
+        "phase": "active",
+        "rules": "classic",
+        "online": true,
+        "humans": 2,
+        "bots": 0,
+        "round": "b26a5173-08a3-4e2b-8e18-e3054435bebc",
+        "tick": 2915,
+        "me": "Tis5MCUxE",
+        "role": "runner",
+        "pose": {
+          "x": -150.29543725736042,
+          "y": 3.3447326772296133,
+          "z": -246.94525161732602
+        },
+        "ack": 2860,
+        "hash": "dab18d0638db3746073199e1ee8d3cde01d2a14ef80539e899fc94eb5cfdcc35",
+        "actors": [
+          {
+            "id": "Tis5MCUxE",
+            "name": "Elmwood A",
+            "connected": true,
+            "bot": false,
+            "role": "runner",
+            "ammo": 3,
+            "tags": 0,
+            "itTime": 0,
+            "resets": 0,
+            "pose": {
+              "x": -150.29543725736042,
+              "y": 3.3447326772296133,
+              "z": -246.94525161732602,
+              "heading": -2.0401533166418777
+            }
+          },
+          {
+            "id": "N9L2KSGZ1",
+            "name": "Elmwood B",
+            "connected": true,
+            "bot": false,
+            "role": "it",
+            "ammo": 3,
+            "tags": 0,
+            "itTime": 42.5833333333322,
+            "resets": 0,
+            "pose": {
+              "x": -159.33409910750038,
+              "y": 3.500928343612493,
+              "z": -251.27548674984087,
+              "heading": -1.983537361553087
+            }
+          }
+        ],
+        "events": [],
+        "winners": [],
+        "remaining": 137.41666666666814,
+        "correctionP95": 0
+      },
+      {
+        "product": "elmwood-explorer",
+        "phase": "active",
+        "rules": "classic",
+        "online": true,
+        "humans": 2,
+        "bots": 0,
+        "round": "b26a5173-08a3-4e2b-8e18-e3054435bebc",
+        "tick": 3299,
+        "me": "N9L2KSGZ1",
+        "role": "it",
+        "pose": {
+          "x": -159.33409910750038,
+          "y": 3.500928343612493,
+          "z": -251.27548674984087
+        },
+        "ack": 3241,
+        "hash": "dab18d0638db3746073199e1ee8d3cde01d2a14ef80539e899fc94eb5cfdcc35",
+        "actors": [
+          {
+            "id": "Tis5MCUxE",
+            "name": "Elmwood A",
+            "connected": true,
+            "bot": false,
+            "role": "runner",
+            "ammo": 3,
+            "tags": 0,
+            "itTime": 0,
+            "resets": 0,
+            "pose": {
+              "x": -150.29543725736042,
+              "y": 3.3447326772296133,
+              "z": -246.94525161732602,
+              "heading": -2.0401533166418777
+            }
+          },
+          {
+            "id": "N9L2KSGZ1",
+            "name": "Elmwood B",
+            "connected": true,
+            "bot": false,
+            "role": "it",
+            "ammo": 3,
+            "tags": 0,
+            "itTime": 48.983333333331835,
+            "resets": 0,
+            "pose": {
+              "x": -159.33409910750038,
+              "y": 3.500928343612493,
+              "z": -251.27548674984087,
+              "heading": -1.983537361553087
+            }
+          }
+        ],
+        "events": [],
+        "winners": [],
+        "remaining": 131.0166666666685,
+        "correctionP95": 0
+      }
+    ],
+    "invitation": "http://127.0.0.1:8212/Jungle-Lotto/lottominded-ultra.io/games/gothtechnology2/arcade/elmwood-explorer/elmwood.html?tagRoom=8B15160A&tagProduct=elmwood-explorer&tagVersion=heart-rush-1&tagArena=elmwood-creek-lanes",
+    "exitB": {
+      "body": "elmwood-tactical-ui",
+      "openDialogs": [
+        null
+      ],
+      "tag": ""
+    },
+    "exitA": {
+      "body": "elmwood-tactical-ui",
+      "tag": ""
+    },
+    "spreadInviteFollowed": {
+      "url": "http://127.0.0.1:8212/Jungle-Lotto/lottominded-ultra.io/games/gothtechnology2/arcade/elmwood-explorer/elmwood.html?tagRoom=D66D2F6D&tagProduct=elmwood-explorer&tagVersion=heart-rush-1&tagArena=elmwood-creek-lanes",
+      "joined": {
+        "product": "elmwood-explorer",
+        "phase": "countdown",
+        "rules": "spread",
+        "online": true,
+        "humans": 2,
+        "bots": 2,
+        "round": "52104e92-3fc6-46a6-8345-89e6afd3ee28",
+        "tick": 17,
+        "me": "Ws11ll5NM",
+        "role": "runner",
+        "pose": {
+          "x": -159.33409910750038,
+          "y": 3.500928343612493,
+          "z": -251.27548674984087
+        },
+        "ack": 17,
+        "hash": "dab18d0638db3746073199e1ee8d3cde01d2a14ef80539e899fc94eb5cfdcc35",
+        "actors": [
+          {
+            "id": "qWZP-Tw1V",
+            "name": "Elm Spread A",
+            "connected": true,
+            "bot": false,
+            "role": "it",
+            "ammo": 3,
+            "tags": 0,
+            "itTime": 0,
+            "resets": 0,
+            "pose": {
+              "x": -150.29543725736042,
+              "y": 3.3447326772296133,
+              "z": -246.94525161732602,
+              "heading": -2.0401533166418777
+            }
+          },
+          {
+            "id": "Ws11ll5NM",
+            "name": "Elm Spread B",
+            "connected": true,
+            "bot": false,
+            "role": "runner",
+            "ammo": 3,
+            "tags": 0,
+            "itTime": 0,
+            "resets": 0,
+            "pose": {
+              "x": -159.33409910750038,
+              "y": 3.500928343612493,
+              "z": -251.27548674984087,
+              "heading": -1.983537361553087
+            }
+          },
+          {
+            "id": "bot-d07c6801-c368-49e4-bee8-079e6f08f5f4",
+            "name": "Bot 3",
+            "connected": false,
+            "bot": true,
+            "role": "runner",
+            "ammo": 3,
+            "tags": 0,
+            "itTime": 0,
+            "resets": 0,
+            "pose": {
+              "x": -165.8390991075004,
+              "y": 3.671854979856068,
+              "z": -254.12398674984087,
+              "heading": -1.9835373615530885
+            }
+          },
+          {
+            "id": "bot-ef6a0aec-7109-4378-b7bd-5cbdf84c5657",
+            "name": "Bot 4",
+            "connected": false,
+            "bot": true,
+            "role": "runner",
+            "ammo": 3,
+            "tags": 0,
+            "itTime": 0,
+            "resets": 0,
+            "pose": {
+              "x": -182.0359469524157,
+              "y": 3.999306763048972,
+              "z": -264.5559146830961,
+              "heading": -2.3749282111846304
+            }
+          }
+        ],
+        "events": [],
+        "winners": [],
+        "remaining": 180,
+        "correctionP95": 0
+      }
+    },
+    "spreadBefore": {
+      "product": "elmwood-explorer",
+      "phase": "active",
+      "rules": "spread",
+      "online": true,
+      "humans": 2,
+      "bots": 2,
+      "round": "52104e92-3fc6-46a6-8345-89e6afd3ee28",
+      "tick": 1827,
+      "me": "Ws11ll5NM",
+      "role": "runner",
+      "pose": {
+        "x": -159.33409910750038,
+        "y": 3.500928343612493,
+        "z": -251.27548674984087
+      },
+      "ack": 1825,
+      "hash": "dab18d0638db3746073199e1ee8d3cde01d2a14ef80539e899fc94eb5cfdcc35",
+      "actors": [
+        {
+          "id": "qWZP-Tw1V",
+          "name": "Elm Spread A",
+          "connected": true,
+          "bot": false,
+          "role": "it",
+          "ammo": 3,
+          "tags": 0,
+          "itTime": 24.449999999999893,
+          "resets": 0,
+          "pose": {
+            "x": -150.29543725736042,
+            "y": 3.3447326772296133,
+            "z": -246.94525161732602,
+            "heading": -2.0401533166418777
+          }
+        },
+        {
+          "id": "Ws11ll5NM",
+          "name": "Elm Spread B",
+          "connected": true,
+          "bot": false,
+          "role": "runner",
+          "ammo": 3,
+          "tags": 0,
+          "itTime": 0,
+          "resets": 0,
+          "pose": {
+            "x": -159.33409910750038,
+            "y": 3.500928343612493,
+            "z": -251.27548674984087,
+            "heading": -1.983537361553087
+          }
+        },
+        {
+          "id": "bot-d07c6801-c368-49e4-bee8-079e6f08f5f4",
+          "name": "Bot 3",
+          "connected": false,
+          "bot": true,
+          "role": "runner",
+          "ammo": 3,
+          "tags": 0,
+          "itTime": 0,
+          "resets": 0,
+          "pose": {
+            "x": -166.84804562487327,
+            "y": -2.6804303044147186,
+            "z": -317.6697974306674,
+            "heading": -3.1281618421120356
+          }
+        },
+        {
+          "id": "bot-ef6a0aec-7109-4378-b7bd-5cbdf84c5657",
+          "name": "Bot 4",
+          "connected": false,
+          "bot": true,
+          "role": "runner",
+          "ammo": 3,
+          "tags": 0,
+          "itTime": 0,
+          "resets": 0,
+          "pose": {
+            "x": -165.70603959085307,
+            "y": -2.396963138954618,
+            "z": -314.1152302718036,
+            "heading": -2.809067439971818
+          }
+        }
+      ],
+      "events": [],
+      "winners": [],
+      "remaining": 155.55000000000044,
+      "correctionP95": 0
+    },
+    "spreadIndependent": {
+      "product": "elmwood-explorer",
+      "phase": "active",
+      "rules": "spread",
+      "online": true,
+      "humans": 2,
+      "bots": 2,
+      "round": "52104e92-3fc6-46a6-8345-89e6afd3ee28",
+      "tick": 6792,
+      "me": "Ws11ll5NM",
+      "role": "runner",
+      "pose": {
+        "x": -159.70464724680838,
+        "y": 3.50640177921032,
+        "z": -251.4471126252167
+      },
+      "ack": 5512,
+      "hash": "dab18d0638db3746073199e1ee8d3cde01d2a14ef80539e899fc94eb5cfdcc35",
+      "actors": [
+        {
+          "id": "qWZP-Tw1V",
+          "name": "Elm Spread A",
+          "connected": true,
+          "bot": false,
+          "role": "it",
+          "ammo": 3,
+          "tags": 0,
+          "itTime": 107.1999999999952,
+          "resets": 0,
+          "pose": {
+            "x": -150.32094876479138,
+            "y": 3.3448985053661344,
+            "z": -246.95800670339761,
+            "heading": -2.0285519398249074
+          }
+        },
+        {
+          "id": "Ws11ll5NM",
+          "name": "Elm Spread B",
+          "connected": true,
+          "bot": false,
+          "role": "runner",
+          "ammo": 3,
+          "tags": 0,
+          "itTime": 0,
+          "resets": 0,
+          "pose": {
+            "x": -159.70464724680838,
+            "y": 3.50640177921032,
+            "z": -251.4471126252167,
+            "heading": -2.0079199664089904
+          }
+        },
+        {
+          "id": "bot-d07c6801-c368-49e4-bee8-079e6f08f5f4",
+          "name": "Bot 3",
+          "connected": false,
+          "bot": true,
+          "role": "runner",
+          "ammo": 3,
+          "tags": 0,
+          "itTime": 0,
+          "resets": 0,
+          "pose": {
+            "x": -163.98159857333934,
+            "y": -3.16280561046713,
+            "z": -325.4562576906267,
+            "heading": 6.851812954148566
+          }
+        },
+        {
+          "id": "bot-ef6a0aec-7109-4378-b7bd-5cbdf84c5657",
+          "name": "Bot 4",
+          "connected": false,
+          "bot": true,
+          "role": "runner",
+          "ammo": 3,
+          "tags": 0,
+          "itTime": 0,
+          "resets": 0,
+          "pose": {
+            "x": -77.43944383697867,
+            "y": -3.788071113536631,
+            "z": -237.65853999765625,
+            "heading": -5.65866059795703
+          }
+        }
+      ],
+      "events": [
+        {
+          "id": "52104e92-3fc6-46a6-8345-89e6afd3ee28:1",
+          "tick": 1851,
+          "kind": "shot",
+          "actor": "qWZP-Tw1V"
+        }
+      ],
+      "winners": [],
+      "remaining": 72.80000000000514,
+      "correctionP95": 0
+    },
+    "spreadResultsB": {
+      "product": "elmwood-explorer",
+      "phase": "results",
+      "rules": "spread",
+      "online": true,
+      "humans": 2,
+      "bots": 2,
+      "round": "52104e92-3fc6-46a6-8345-89e6afd3ee28",
+      "tick": 11160,
+      "me": "Ws11ll5NM",
+      "role": "runner",
+      "pose": {
+        "x": -159.70464724680838,
+        "y": 3.50640177921032,
+        "z": -251.4471126252167
+      },
+      "ack": 7999,
+      "hash": "dab18d0638db3746073199e1ee8d3cde01d2a14ef80539e899fc94eb5cfdcc35",
+      "actors": [
+        {
+          "id": "qWZP-Tw1V",
+          "name": "Elm Spread A",
+          "connected": true,
+          "bot": false,
+          "role": "it",
+          "ammo": 3,
+          "tags": 0,
+          "itTime": 180.00000000003539,
+          "resets": 0,
+          "pose": {
+            "x": -150.9902218384821,
+            "y": 3.3513017104962444,
+            "z": -247.2742346808046,
+            "heading": -2.0106771508737427
+          }
+        },
+        {
+          "id": "Ws11ll5NM",
+          "name": "Elm Spread B",
+          "connected": true,
+          "bot": false,
+          "role": "runner",
+          "ammo": 3,
+          "tags": 0,
+          "itTime": 0,
+          "resets": 0,
+          "pose": {
+            "x": -159.70464724680838,
+            "y": 3.50640177921032,
+            "z": -251.4471126252167,
+            "heading": -2.0079199664089904
+          }
+        },
+        {
+          "id": "bot-d07c6801-c368-49e4-bee8-079e6f08f5f4",
+          "name": "Bot 3",
+          "connected": false,
+          "bot": true,
+          "role": "runner",
+          "ammo": 3,
+          "tags": 0,
+          "itTime": 0,
+          "resets": 0,
+          "pose": {
+            "x": -96.07169443571918,
+            "y": -3.731900736025092,
+            "z": -271.0919267169256,
+            "heading": 13.411060790449323
+          }
+        },
+        {
+          "id": "bot-ef6a0aec-7109-4378-b7bd-5cbdf84c5657",
+          "name": "Bot 4",
+          "connected": false,
+          "bot": true,
+          "role": "runner",
+          "ammo": 3,
+          "tags": 0,
+          "itTime": 0,
+          "resets": 0,
+          "pose": {
+            "x": -165.53998589193614,
+            "y": -2.1555023597825573,
+            "z": -311.2783734390533,
+            "heading": 0.26356688651956983
+          }
+        }
+      ],
+      "events": [
+        {
+          "id": "52104e92-3fc6-46a6-8345-89e6afd3ee28:1",
+          "tick": 1851,
+          "kind": "shot",
+          "actor": "qWZP-Tw1V"
+        },
+        {
+          "id": "52104e92-3fc6-46a6-8345-89e6afd3ee28:2",
+          "tick": 11160,
+          "kind": "result",
+          "actor": "server"
+        }
+      ],
+      "winners": [
+        "Ws11ll5NM",
+        "bot-d07c6801-c368-49e4-bee8-079e6f08f5f4",
+        "bot-ef6a0aec-7109-4378-b7bd-5cbdf84c5657"
+      ],
+      "remaining": 0,
+      "correctionP95": 0
+    },
+    "spreadResultsA": {
+      "product": "elmwood-explorer",
+      "phase": "results",
+      "rules": "spread",
+      "online": true,
+      "humans": 2,
+      "bots": 2,
+      "round": "52104e92-3fc6-46a6-8345-89e6afd3ee28",
+      "tick": 11160,
+      "me": "qWZP-Tw1V",
+      "role": "it",
+      "pose": {
+        "x": -150.9902218384821,
+        "y": 3.3513017104962444,
+        "z": -247.2742346808046
+      },
+      "ack": 11152,
+      "hash": "dab18d0638db3746073199e1ee8d3cde01d2a14ef80539e899fc94eb5cfdcc35",
+      "actors": [
+        {
+          "id": "qWZP-Tw1V",
+          "name": "Elm Spread A",
+          "connected": true,
+          "bot": false,
+          "role": "it",
+          "ammo": 3,
+          "tags": 0,
+          "itTime": 180.00000000003539,
+          "resets": 0,
+          "pose": {
+            "x": -150.9902218384821,
+            "y": 3.3513017104962444,
+            "z": -247.2742346808046,
+            "heading": -2.0106771508737427
+          }
+        },
+        {
+          "id": "Ws11ll5NM",
+          "name": "Elm Spread B",
+          "connected": true,
+          "bot": false,
+          "role": "runner",
+          "ammo": 3,
+          "tags": 0,
+          "itTime": 0,
+          "resets": 0,
+          "pose": {
+            "x": -159.70464724680838,
+            "y": 3.50640177921032,
+            "z": -251.4471126252167,
+            "heading": -2.0079199664089904
+          }
+        },
+        {
+          "id": "bot-d07c6801-c368-49e4-bee8-079e6f08f5f4",
+          "name": "Bot 3",
+          "connected": false,
+          "bot": true,
+          "role": "runner",
+          "ammo": 3,
+          "tags": 0,
+          "itTime": 0,
+          "resets": 0,
+          "pose": {
+            "x": -96.07169443571918,
+            "y": -3.731900736025092,
+            "z": -271.0919267169256,
+            "heading": 13.411060790449323
+          }
+        },
+        {
+          "id": "bot-ef6a0aec-7109-4378-b7bd-5cbdf84c5657",
+          "name": "Bot 4",
+          "connected": false,
+          "bot": true,
+          "role": "runner",
+          "ammo": 3,
+          "tags": 0,
+          "itTime": 0,
+          "resets": 0,
+          "pose": {
+            "x": -165.53998589193614,
+            "y": -2.1555023597825573,
+            "z": -311.2783734390533,
+            "heading": 0.26356688651956983
+          }
+        }
+      ],
+      "events": [
+        {
+          "id": "52104e92-3fc6-46a6-8345-89e6afd3ee28:1",
+          "tick": 1851,
+          "kind": "shot",
+          "actor": "qWZP-Tw1V"
+        },
+        {
+          "id": "52104e92-3fc6-46a6-8345-89e6afd3ee28:2",
+          "tick": 11160,
+          "kind": "result",
+          "actor": "server"
+        }
+      ],
+      "winners": [
+        "Ws11ll5NM",
+        "bot-d07c6801-c368-49e4-bee8-079e6f08f5f4",
+        "bot-ef6a0aec-7109-4378-b7bd-5cbdf84c5657"
+      ],
+      "remaining": 0,
+      "correctionP95": 0
+    },
+    "resetFailedBeforeServerLatch": {
+      "product": "elmwood-explorer",
+      "phase": "results",
+      "rules": "spread",
+      "online": true,
+      "humans": 2,
+      "bots": 2,
+      "round": "4d894f62-c64d-4924-bc89-ff90dcda812b",
+      "tick": 11160,
+      "me": "S0OySugAB",
+      "role": "runner",
+      "pose": {
+        "x": -159.33409910750038,
+        "y": 3.500928343612493,
+        "z": -251.27548674984087
+      },
+      "ack": 10346,
+      "hash": "dab18d0638db3746073199e1ee8d3cde01d2a14ef80539e899fc94eb5cfdcc35",
+      "actors": [
+        {
+          "id": "qWuTpPN3Q",
+          "name": "Reset A",
+          "connected": true,
+          "bot": false,
+          "role": "it",
+          "ammo": 3,
+          "tags": 0,
+          "itTime": 180.00000000003539,
+          "resets": 0,
+          "pose": {
+            "x": -150.29543725736042,
+            "y": 3.3447326772296133,
+            "z": -246.94525161732602,
+            "heading": -2.0401533166418777
+          }
+        },
+        {
+          "id": "S0OySugAB",
+          "name": "Reset B",
+          "connected": true,
+          "bot": false,
+          "role": "runner",
+          "ammo": 3,
+          "tags": 0,
+          "itTime": 0,
+          "resets": 0,
+          "pose": {
+            "x": -159.33409910750038,
+            "y": 3.500928343612493,
+            "z": -251.27548674984087,
+            "heading": -1.983537361553087
+          }
+        },
+        {
+          "id": "bot-bb095d94-c939-4fcb-8ecf-af1674b1b10c",
+          "name": "Bot 3",
+          "connected": false,
+          "bot": true,
+          "role": "runner",
+          "ammo": 3,
+          "tags": 0,
+          "itTime": 0,
+          "resets": 0,
+          "pose": {
+            "x": -96.07169443571918,
+            "y": -3.731900736025092,
+            "z": -271.0919267169256,
+            "heading": 13.411060790449323
+          }
+        },
+        {
+          "id": "bot-f23dee53-f8cf-49eb-9265-76a6cb4e70af",
+          "name": "Bot 4",
+          "connected": false,
+          "bot": true,
+          "role": "runner",
+          "ammo": 3,
+          "tags": 0,
+          "itTime": 0,
+          "resets": 0,
+          "pose": {
+            "x": -165.53998589193614,
+            "y": -2.1555023597825573,
+            "z": -311.2783734390533,
+            "heading": 0.26356688651956983
+          }
+        }
+      ],
+      "events": [
+        {
+          "id": "4d894f62-c64d-4924-bc89-ff90dcda812b:1",
+          "tick": 11160,
+          "kind": "result",
+          "actor": "server"
+        }
+      ],
+      "winners": [
+        "S0OySugAB",
+        "bot-bb095d94-c939-4fcb-8ecf-af1674b1b10c",
+        "bot-f23dee53-f8cf-49eb-9265-76a6cb4e70af"
+      ],
+      "remaining": 0,
+      "correctionP95": 0
+    },
+    "actionFix": {
+      "product": "elmwood-explorer",
+      "phase": "active",
+      "rules": "spread",
+      "online": true,
+      "humans": 2,
+      "bots": 2,
+      "round": "dc818c47-cabb-420a-8d4f-5acbf92bf583",
+      "tick": 4190,
+      "me": "kf31wv9o0",
+      "role": "it",
+      "pose": {
+        "x": -159.7770040284099,
+        "y": 3.5081181685850247,
+        "z": -251.4546465822022
+      },
+      "ack": 3490,
+      "hash": "dab18d0638db3746073199e1ee8d3cde01d2a14ef80539e899fc94eb5cfdcc35",
+      "actors": [
+        {
+          "id": "AjTUOQIX4",
+          "name": "Final A",
+          "connected": true,
+          "bot": false,
+          "role": "it",
+          "ammo": 2,
+          "tags": 0,
+          "itTime": 63.83333333333099,
+          "resets": 0,
+          "pose": {
+            "x": -150.3260111947917,
+            "y": 3.3449288709638045,
+            "z": -246.96104595786414,
+            "heading": -2.055173394921843
+          }
+        },
+        {
+          "id": "kf31wv9o0",
+          "name": "Final B",
+          "connected": true,
+          "bot": false,
+          "role": "it",
+          "ammo": 3,
+          "tags": 0,
+          "itTime": 23.633333333333272,
+          "resets": 1,
+          "pose": {
+            "x": -159.7770040284099,
+            "y": 3.5081181685850247,
+            "z": -251.4546465822022,
+            "heading": -1.950363296054136
+          }
+        },
+        {
+          "id": "bot-43f899b1-f494-478a-82f2-afab3315037c",
+          "name": "Bot 3",
+          "connected": false,
+          "bot": true,
+          "role": "runner",
+          "ammo": 3,
+          "tags": 0,
+          "itTime": 0,
+          "resets": 0,
+          "pose": {
+            "x": -116.99198389045048,
+            "y": -3.662565354174041,
+            "z": -285.0733289735843,
+            "heading": -2.179905441712685
+          }
+        },
+        {
+          "id": "bot-1d57f317-fd12-4980-a222-ae19337878f8",
+          "name": "Bot 4",
+          "connected": false,
+          "bot": true,
+          "role": "runner",
+          "ammo": 3,
+          "tags": 0,
+          "itTime": 0,
+          "resets": 0,
+          "pose": {
+            "x": -124.44456858839976,
+            "y": -3.653257126678725,
+            "z": -290.94416059677974,
+            "heading": -2.8316907071743382
+          }
+        }
+      ],
+      "events": [
+        {
+          "id": "dc818c47-cabb-420a-8d4f-5acbf92bf583:1",
+          "tick": 2773,
+          "kind": "tag",
+          "actor": "AjTUOQIX4",
+          "target": "kf31wv9o0"
+        },
+        {
+          "id": "dc818c47-cabb-420a-8d4f-5acbf92bf583:2",
+          "tick": 2773,
+          "kind": "reset",
+          "actor": "kf31wv9o0"
+        },
+        {
+          "id": "dc818c47-cabb-420a-8d4f-5acbf92bf583:3",
+          "tick": 4068,
+          "kind": "shot",
+          "actor": "kf31wv9o0"
+        },
+        {
+          "id": "dc818c47-cabb-420a-8d4f-5acbf92bf583:4",
+          "tick": 4140,
+          "kind": "shot",
+          "actor": "AjTUOQIX4"
+        }
+      ],
+      "winners": [],
+      "remaining": 116.16666666666934,
+      "correctionP95": 0.005705755517895337
+    },
+    "actionFixA": {
+      "product": "elmwood-explorer",
+      "phase": "active",
+      "rules": "spread",
+      "online": true,
+      "humans": 2,
+      "bots": 2,
+      "round": "dc818c47-cabb-420a-8d4f-5acbf92bf583",
+      "tick": 9905,
+      "me": "AjTUOQIX4",
+      "role": "it",
+      "pose": {
+        "x": -151.01450861278963,
+        "y": 3.3512977517060465,
+        "z": -247.33817205204372
+      },
+      "ack": 9891,
+      "hash": "dab18d0638db3746073199e1ee8d3cde01d2a14ef80539e899fc94eb5cfdcc35",
+      "actors": [
+        {
+          "id": "AjTUOQIX4",
+          "name": "Final A",
+          "connected": true,
+          "bot": false,
+          "role": "it",
+          "ammo": 3,
+          "tags": 0,
+          "itTime": 159.08333333335207,
+          "resets": 0,
+          "pose": {
+            "x": -151.01450861278963,
+            "y": 3.3512977517060465,
+            "z": -247.33817205204372,
+            "heading": -2.073366908318127
+          }
+        },
+        {
+          "id": "kf31wv9o0",
+          "name": "Final B",
+          "connected": true,
+          "bot": false,
+          "role": "it",
+          "ammo": 3,
+          "tags": 0,
+          "itTime": 118.88333333332787,
+          "resets": 1,
+          "pose": {
+            "x": -159.86737810678582,
+            "y": 3.5097559827449585,
+            "z": -251.49069774990005,
+            "heading": -1.9503630278057258
+          }
+        },
+        {
+          "id": "bot-43f899b1-f494-478a-82f2-afab3315037c",
+          "name": "Bot 3",
+          "connected": false,
+          "bot": true,
+          "role": "runner",
+          "ammo": 3,
+          "tags": 0,
+          "itTime": 0,
+          "resets": 0,
+          "pose": {
+            "x": -160.75313777230295,
+            "y": -3.162182958658401,
+            "z": -323.20042550201936,
+            "heading": 0.7253991206882312
+          }
+        },
+        {
+          "id": "bot-1d57f317-fd12-4980-a222-ae19337878f8",
+          "name": "Bot 4",
+          "connected": false,
+          "bot": true,
+          "role": "runner",
+          "ammo": 3,
+          "tags": 0,
+          "itTime": 0,
+          "resets": 0,
+          "pose": {
+            "x": -108.32794152111637,
+            "y": -3.73913697428834,
+            "z": -280.159832089584,
+            "heading": -2.054933219075149
+          }
+        }
+      ],
+      "events": [
+        {
+          "id": "dc818c47-cabb-420a-8d4f-5acbf92bf583:1",
+          "tick": 2773,
+          "kind": "tag",
+          "actor": "AjTUOQIX4",
+          "target": "kf31wv9o0"
+        },
+        {
+          "id": "dc818c47-cabb-420a-8d4f-5acbf92bf583:2",
+          "tick": 2773,
+          "kind": "reset",
+          "actor": "kf31wv9o0"
+        },
+        {
+          "id": "dc818c47-cabb-420a-8d4f-5acbf92bf583:3",
+          "tick": 4068,
+          "kind": "shot",
+          "actor": "kf31wv9o0"
+        },
+        {
+          "id": "dc818c47-cabb-420a-8d4f-5acbf92bf583:4",
+          "tick": 4140,
+          "kind": "shot",
+          "actor": "AjTUOQIX4"
+        }
+      ],
+      "winners": [],
+      "remaining": 20.916666666643152,
+      "correctionP95": 0
+    },
+    "actionFixResult": {
+      "product": "elmwood-explorer",
+      "phase": "results",
+      "rules": "spread",
+      "online": true,
+      "humans": 2,
+      "bots": 2,
+      "round": "dc818c47-cabb-420a-8d4f-5acbf92bf583",
+      "tick": 11160,
+      "me": "AjTUOQIX4",
+      "role": "it",
+      "pose": {
+        "x": -151.01450861278963,
+        "y": 3.3512977517060465,
+        "z": -247.33817205204372
+      },
+      "ack": 11147,
+      "hash": "dab18d0638db3746073199e1ee8d3cde01d2a14ef80539e899fc94eb5cfdcc35",
+      "actors": [
+        {
+          "id": "AjTUOQIX4",
+          "name": "Final A",
+          "connected": true,
+          "bot": false,
+          "role": "it",
+          "ammo": 3,
+          "tags": 0,
+          "itTime": 180.00000000003539,
+          "resets": 0,
+          "pose": {
+            "x": -151.01450861278963,
+            "y": 3.3512977517060465,
+            "z": -247.33817205204372,
+            "heading": -2.073366908318127
+          }
+        },
+        {
+          "id": "kf31wv9o0",
+          "name": "Final B",
+          "connected": false,
+          "bot": false,
+          "role": "it",
+          "ammo": 3,
+          "tags": 0,
+          "itTime": 139.8000000000034,
+          "resets": 1,
+          "pose": {
+            "x": -185.31179834419456,
+            "y": 4.0146654381872375,
+            "z": -268.0039967103957,
+            "heading": -2.4254889763313305
+          }
+        },
+        {
+          "id": "bot-43f899b1-f494-478a-82f2-afab3315037c",
+          "name": "Bot 3",
+          "connected": false,
+          "bot": true,
+          "role": "runner",
+          "ammo": 3,
+          "tags": 0,
+          "itTime": 0,
+          "resets": 0,
+          "pose": {
+            "x": -166.70732866665227,
+            "y": -2.607754177648464,
+            "z": -316.7646999164481,
+            "heading": 0.1313861727757701
+          }
+        },
+        {
+          "id": "bot-1d57f317-fd12-4980-a222-ae19337878f8",
+          "name": "Bot 4",
+          "connected": false,
+          "bot": true,
+          "role": "runner",
+          "ammo": 3,
+          "tags": 0,
+          "itTime": 0,
+          "resets": 0,
+          "pose": {
+            "x": -166.03844865440212,
+            "y": -2.3506777267607584,
+            "z": -313.525783106658,
+            "heading": 0.2071157366958225
+          }
+        }
+      ],
+      "events": [
+        {
+          "id": "dc818c47-cabb-420a-8d4f-5acbf92bf583:1",
+          "tick": 2773,
+          "kind": "tag",
+          "actor": "AjTUOQIX4",
+          "target": "kf31wv9o0"
+        },
+        {
+          "id": "dc818c47-cabb-420a-8d4f-5acbf92bf583:2",
+          "tick": 2773,
+          "kind": "reset",
+          "actor": "kf31wv9o0"
+        },
+        {
+          "id": "dc818c47-cabb-420a-8d4f-5acbf92bf583:3",
+          "tick": 4068,
+          "kind": "shot",
+          "actor": "kf31wv9o0"
+        },
+        {
+          "id": "dc818c47-cabb-420a-8d4f-5acbf92bf583:4",
+          "tick": 4140,
+          "kind": "shot",
+          "actor": "AjTUOQIX4"
+        },
+        {
+          "id": "dc818c47-cabb-420a-8d4f-5acbf92bf583:5",
+          "tick": 11160,
+          "kind": "result",
+          "actor": "server"
+        }
+      ],
+      "winners": [
+        "bot-43f899b1-f494-478a-82f2-afab3315037c",
+        "bot-1d57f317-fd12-4980-a222-ae19337878f8"
+      ],
+      "remaining": 0,
+      "correctionP95": 0
+    }
+  }
+}

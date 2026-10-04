@@ -1,0 +1,21 @@
+(node:18900) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+{
+  "scope": "Actual mapped road and path CPU tessellation; excludes rendering, curb overlays and GPU frames",
+  "report": [
+    {
+      "joined": false,
+      "sections": 28764,
+      "triangles": 387152,
+      "maxPieces": 7,
+      "seconds": 13.461
+    },
+    {
+      "joined": true,
+      "sections": 28764,
+      "triangles": 356555,
+      "maxPieces": 175,
+      "seconds": 14.416
+    }
+  ]
+}

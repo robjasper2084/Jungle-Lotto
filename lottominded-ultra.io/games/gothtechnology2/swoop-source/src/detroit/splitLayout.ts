@@ -5,3 +5,10 @@ export function splitViewports(width:number,height:number,count=2){
   [{x:0,y:top,width:Math.floor(width/2),height:h},{x:Math.floor(width/2),y:top,width:width-Math.floor(width/2),height:h}]:
   [{x:0,y:top,width,height:Math.floor(h/2)},{x:0,y:top+Math.floor(h/2),width,height:h-Math.floor(h/2)}];
 }
+
+/** The online device reads input 0, even when it owns a different roster slot. */
+export function splitControlSeat(viewSlot:number,onlineSlot?:number){return onlineSlot===undefined?viewSlot:viewSlot===onlineSlot?0:null;}
+export function splitVisibleViews(width:number,height:number,count:number,onlineSlot?:number,showAll=false){
+ if(onlineSlot!==undefined&&!showAll)return [{slot:onlineSlot,rect:{x:0,y:52,width,height:Math.max(1,height-52)}}];
+ return splitViewports(width,height,count).map((rect,slot)=>({slot,rect}));
+}

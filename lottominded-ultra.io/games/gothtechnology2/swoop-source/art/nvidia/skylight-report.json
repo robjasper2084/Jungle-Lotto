@@ -1,0 +1,32 @@
+[
+  {
+    "asset": "detroit-skylight",
+    "engine": "Blender Cycles / NVIDIA OptiX",
+    "device": [
+      "NVIDIA GeForce RTX 3080"
+    ],
+    "samples": 64,
+    "size": [
+      1024,
+      512
+    ],
+    "seconds": 3.72,
+    "bytes": 1032923,
+    "provenance": "Original procedural sky and rough ground bounce; no location scan or photograph"
+  },
+  {
+    "asset": "elmwood-skylight",
+    "engine": "Blender Cycles / NVIDIA OptiX",
+    "device": [
+      "NVIDIA GeForce RTX 3080"
+    ],
+    "samples": 64,
+    "size": [
+      1024,
+      512
+    ],
+    "seconds": 3.75,
+    "bytes": 1060827,
+    "provenance": "Original procedural sky and rough ground bounce; no location scan or photograph"
+  }
+]

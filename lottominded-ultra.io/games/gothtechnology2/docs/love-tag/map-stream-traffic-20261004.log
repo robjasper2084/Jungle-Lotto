@@ -1,0 +1,23 @@
+(node:35108) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ a person steps aside for a rider approaching from behind and resumes their route (2.7645ms)
+✔ people use visible raised pavement as their footing and keep moving across it (4164.5088ms)
+✔ walking and skating envelopes leave a visible gap without granting pass-through (0.9727ms)
+✔ the riding view uses one character sweep while retaining contact and recovery checks (3088.5567ms)
+(node:37604) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ parking surfaces and painted bays stay outside the rotated studio footprint (1.3418ms)
+(node:16712) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ starting area loads without downloading distant art, then follows the player (10.898ms)
+✔ nearest pending work wins and outstanding requests stay bounded after teleporting (1.8062ms)
+✔ explicit visits share an outstanding request; failures remain retryable (1.0357ms)
+✔ all split-screen players and multiple sites can request the same asset once (1.3577ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 9
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 7844.6829

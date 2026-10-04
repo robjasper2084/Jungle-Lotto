@@ -1,0 +1,90 @@
+vite v7.3.6 building client environment for production...
+transforming...
+✓ 330 modules transformed.
+rendering chunks...
+computing gzip size...
+../.game-builds/57e03af7-0420-4c59-bbd7-cd304fea417a/swoop-detroit/traffic-studio.html                             2.41 kB │ gzip:     1.17 kB
+../.game-builds/57e03af7-0420-4c59-bbd7-cd304fea417a/swoop-detroit/companion-studio.html                           2.46 kB │ gzip:     1.11 kB
+../.game-builds/57e03af7-0420-4c59-bbd7-cd304fea417a/swoop-detroit/rider-studio.html                               3.61 kB │ gzip:     1.57 kB
+../.game-builds/57e03af7-0420-4c59-bbd7-cd304fea417a/swoop-detroit/assets/we-are-detroit-user-DPh9B28-.jpg        10.77 kB
+../.game-builds/57e03af7-0420-4c59-bbd7-cd304fea417a/swoop-detroit/detroit.html                                   11.99 kB │ gzip:     4.94 kB
+../.game-builds/57e03af7-0420-4c59-bbd7-cd304fea417a/swoop-detroit/assets/field-assets-CqvsqzPk.glb               36.92 kB
+../.game-builds/57e03af7-0420-4c59-bbd7-cd304fea417a/swoop-detroit/assets/blue-dragon-user-Dr4YzOXo.jpg           42.01 kB
+../.game-builds/57e03af7-0420-4c59-bbd7-cd304fea417a/swoop-detroit/assets/carsmuraldequindrecut-BryLlqOB.jpg      50.59 kB
+../.game-builds/57e03af7-0420-4c59-bbd7-cd304fea417a/swoop-detroit/assets/sydneyjames2-BHs59PaF.jpg               64.28 kB
+../.game-builds/57e03af7-0420-4c59-bbd7-cd304fea417a/swoop-detroit/assets/ivanmontoyamural-Paas6vPy.jpg           72.05 kB
+../.game-builds/57e03af7-0420-4c59-bbd7-cd304fea417a/swoop-detroit/assets/freddymural-DKOKEo-L.jpg                76.98 kB
+../.game-builds/57e03af7-0420-4c59-bbd7-cd304fea417a/swoop-detroit/assets/fel3000mural-DsTDehD4.jpg               77.40 kB
+../.game-builds/57e03af7-0420-4c59-bbd7-cd304fea417a/swoop-detroit/assets/mission-cover-B7obQXgy.webp            113.61 kB
+../.game-builds/57e03af7-0420-4c59-bbd7-cd304fea417a/swoop-detroit/assets/swoop-rivals-DPfBVZbw.webp             216.13 kB
+../.game-builds/57e03af7-0420-4c59-bbd7-cd304fea417a/swoop-detroit/assets/hdl-user-CjJCRD_J.jpg                  260.24 kB
+../.game-builds/57e03af7-0420-4c59-bbd7-cd304fea417a/swoop-detroit/assets/detroit-dreams-CuCNr6m2.jpg            443.86 kB
+../.game-builds/57e03af7-0420-4c59-bbd7-cd304fea417a/swoop-detroit/assets/grass_01_normal-CeLXfj89.jpg           484.81 kB
+../.game-builds/57e03af7-0420-4c59-bbd7-cd304fea417a/swoop-detroit/assets/grass_01-Bk--EHD6.jpg                  534.53 kB
+../.game-builds/57e03af7-0420-4c59-bbd7-cd304fea417a/swoop-detroit/assets/detroit-skylight-D_6A6MdD.hdr        1,032.92 kB
+../.game-builds/57e03af7-0420-4c59-bbd7-cd304fea417a/swoop-detroit/assets/lottomind-refined-6R7q-npO.png       1,234.91 kB
+../.game-builds/57e03af7-0420-4c59-bbd7-cd304fea417a/swoop-detroit/assets/gothtechnology-refined-DyG7icho.png  1,405.62 kB
+../.game-builds/57e03af7-0420-4c59-bbd7-cd304fea417a/swoop-detroit/assets/serengeti-refined-B6GS_DkN.png       1,533.17 kB
+../.game-builds/57e03af7-0420-4c59-bbd7-cd304fea417a/swoop-detroit/assets/detroit-heart-Cs8E2Zx8.png           2,277.76 kB
+../.game-builds/57e03af7-0420-4c59-bbd7-cd304fea417a/swoop-detroit/assets/rideAudio-C19J8wjh.css                   0.95 kB │ gzip:     0.51 kB
+../.game-builds/57e03af7-0420-4c59-bbd7-cd304fea417a/swoop-detroit/assets/bootUi-DVLei5z6.css                     40.47 kB │ gzip:     9.40 kB
+../.game-builds/57e03af7-0420-4c59-bbd7-cd304fea417a/swoop-detroit/assets/main-BRnbtEWn.css                       75.99 kB │ gzip:    15.01 kB
+../.game-builds/57e03af7-0420-4c59-bbd7-cd304fea417a/swoop-detroit/assets/rideComfort-mVGT1cy6.js                  0.44 kB │ gzip:     0.31 kB
+../.game-builds/57e03af7-0420-4c59-bbd7-cd304fea417a/swoop-detroit/assets/detroit-DyDp-EXK.js                      0.67 kB │ gzip:     0.45 kB
+../.game-builds/57e03af7-0420-4c59-bbd7-cd304fea417a/swoop-detroit/assets/modulepreload-polyfill-B5Qt9EMX.js       0.71 kB │ gzip:     0.40 kB
+../.game-builds/57e03af7-0420-4c59-bbd7-cd304fea417a/swoop-detroit/assets/companion-studio-pDTaShQo.js             3.60 kB │ gzip:     1.75 kB
+../.game-builds/57e03af7-0420-4c59-bbd7-cd304fea417a/swoop-detroit/assets/bootUi-CidZEMZx.js                       4.04 kB │ gzip:     1.88 kB
+../.game-builds/57e03af7-0420-4c59-bbd7-cd304fea417a/swoop-detroit/assets/traffic-studio-BDHBy6gZ.js               4.67 kB │ gzip:     2.28 kB
+../.game-builds/57e03af7-0420-4c59-bbd7-cd304fea417a/swoop-detroit/assets/roomChat-DiFC9mRX.js                     4.76 kB │ gzip:     1.90 kB
+../.game-builds/57e03af7-0420-4c59-bbd7-cd304fea417a/swoop-detroit/assets/dogSteering-CfygqEdE.js                  7.99 kB │ gzip:     3.24 kB
+../.game-builds/57e03af7-0420-4c59-bbd7-cd304fea417a/swoop-detroit/assets/rider-studio-Bd5v0429.js                 8.64 kB │ gzip:     3.77 kB
+../.game-builds/57e03af7-0420-4c59-bbd7-cd304fea417a/swoop-detroit/assets/OrbitControls-CTDBcYPl.js               19.76 kB │ gzip:     4.48 kB
+../.game-builds/57e03af7-0420-4c59-bbd7-cd304fea417a/swoop-detroit/assets/browser-BzBbrBKd.js                     32.14 kB │ gzip:    12.33 kB
+../.game-builds/57e03af7-0420-4c59-bbd7-cd304fea417a/swoop-detroit/assets/humanFallRig-BoW4ixSQ.js                68.51 kB │ gzip:    24.22 kB
+../.game-builds/57e03af7-0420-4c59-bbd7-cd304fea417a/swoop-detroit/assets/tagClient-CcXsgp5d.js                  229.13 kB │ gzip:    74.45 kB
+../.game-builds/57e03af7-0420-4c59-bbd7-cd304fea417a/swoop-detroit/assets/three.core-GLBDqZcy.js                 280.53 kB │ gzip:    77.61 kB
+../.game-builds/57e03af7-0420-4c59-bbd7-cd304fea417a/swoop-detroit/assets/hls.light-Cm5ppQ94.js                  370.93 kB │ gzip:   117.84 kB
+../.game-builds/57e03af7-0420-4c59-bbd7-cd304fea417a/swoop-detroit/assets/terrain-f17sGLT1.js                    426.32 kB │ gzip:   108.15 kB
+../.game-builds/57e03af7-0420-4c59-bbd7-cd304fea417a/swoop-detroit/assets/main-Ce4BF0c5.js                     2,109.32 kB │ gzip:   607.72 kB
+../.game-builds/57e03af7-0420-4c59-bbd7-cd304fea417a/swoop-detroit/assets/rideAudio-D74KjSA4.js                2,261.76 kB │ gzip:   560.77 kB
+../.game-builds/57e03af7-0420-4c59-bbd7-cd304fea417a/swoop-detroit/assets/rapier-CeAOKAel.js                   2,896.33 kB │ gzip: 1,094.30 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 6.31s
+Packaged Swoop Detroit: 56 assets
+vite v7.3.6 building client environment for production...
+transforming...
+✓ 198 modules transformed.
+rendering chunks...
+computing gzip size...
+../_goth_swoop_release_20260916/lottominded-ultra.io/games/gothtechnology2/.game-builds/57e03af7-0420-4c59-bbd7-cd304fea417a/elmwood-explorer/elmwood.html                             34.46 kB │ gzip:    10.49 kB
+../_goth_swoop_release_20260916/lottominded-ultra.io/games/gothtechnology2/.game-builds/57e03af7-0420-4c59-bbd7-cd304fea417a/elmwood-explorer/assets/elmwood-skylight-fHSiey3W.hdr  1,060.83 kB
+../_goth_swoop_release_20260916/lottominded-ultra.io/games/gothtechnology2/.game-builds/57e03af7-0420-4c59-bbd7-cd304fea417a/elmwood-explorer/assets/elmwood-BQSffr0m.css              47.10 kB │ gzip:     9.38 kB
+../_goth_swoop_release_20260916/lottominded-ultra.io/games/gothtechnology2/.game-builds/57e03af7-0420-4c59-bbd7-cd304fea417a/elmwood-explorer/assets/browser-BzBbrBKd.js               32.14 kB │ gzip:    12.33 kB
+../_goth_swoop_release_20260916/lottominded-ultra.io/games/gothtechnology2/.game-builds/57e03af7-0420-4c59-bbd7-cd304fea417a/elmwood-explorer/assets/elmwood-D-3IlQkc.js            6,900.17 kB │ gzip: 2,030.78 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 4.17s
+{"files":117,"textures":76,"megabytes":283}
+{
+  "time": "2026-10-04T18:53:54.509Z",
+  "backup": "C:\\Users\\digit\\Documents\\phone\\_goth_swoop_release_20260916\\lottominded-ultra.io\\games\\gothtechnology2\\.game-builds\\57e03af7-0420-4c59-bbd7-cd304fea417a\\previous",
+  "packages": [
+    {
+      "name": "swoop-detroit",
+      "source": "C:\\Users\\digit\\Documents\\phone\\_goth_swoop_release_20260916\\lottominded-ultra.io\\games\\gothtechnology2\\swoop-source",
+      "entry": "index.html"
+    },
+    {
+      "name": "elmwood-explorer",
+      "source": "C:\\Users\\digit\\Documents\\phone\\euc-detroit-riverwalk",
+      "entry": "elmwood.html"
+    }
+  ]
+}

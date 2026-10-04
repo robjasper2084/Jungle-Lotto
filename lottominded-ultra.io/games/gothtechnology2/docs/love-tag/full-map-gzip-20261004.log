@@ -1,0 +1,4 @@
+PASS swoop-detroit native stream canonical full map
+PASS swoop-detroit fflate fallback canonical full map
+PASS elmwood-explorer native stream canonical full map
+PASS elmwood-explorer fflate fallback canonical full map

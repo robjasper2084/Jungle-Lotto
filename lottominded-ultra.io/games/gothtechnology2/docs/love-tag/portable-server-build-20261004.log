@@ -1,0 +1,64 @@
+
+> digital-static-love-tag-server@0.1.0 build
+> tsc -p tsconfig.json
+
+src/server.ts(1,68): error TS2307: Cannot find module '@colyseus/core' or its corresponding type declarations.
+src/server.ts(2,34): error TS2307: Cannot find module '@colyseus/ws-transport' or its corresponding type declarations.
+src/server.ts(3,42): error TS2307: Cannot find module '@digital-static/ridecore/chat' or its corresponding type declarations.
+src/server.ts(4,111): error TS2307: Cannot find module '@digital-static/ridecore/tag' or its corresponding type declarations.
+src/server.ts(5,24): error TS2591: Cannot find name 'node:fs/promises'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+src/server.ts(6,54): error TS2591: Cannot find name 'node:crypto'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+src/server.ts(7,23): error TS2591: Cannot find name 'node:path'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+src/server.ts(8,29): error TS2591: Cannot find name 'node:url'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+src/server.ts(9,26): error TS2591: Cannot find name 'node:zlib'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+src/server.ts(16,154): error TS2339: Property 'unref' does not exist on type 'number'.
+src/server.ts(18,26): error TS2591: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+src/server.ts(19,62): error TS2591: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+src/server.ts(19,169): error TS2591: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+src/server.ts(28,214): error TS2339: Property 'setPrivate' does not exist on type 'LoveTagRoom'.
+src/server.ts(30,38): error TS2339: Property 'roomId' does not exist on type 'LoveTagRoom'.
+src/server.ts(31,10): error TS2339: Property 'onMessage' does not exist on type 'LoveTagRoom'.
+src/server.ts(31,25): error TS7006: Parameter 'client' implicitly has an 'any' type.
+src/server.ts(31,32): error TS7006: Parameter 'type' implicitly has an 'any' type.
+src/server.ts(31,37): error TS7006: Parameter 'data' implicitly has an 'any' type.
+src/server.ts(34,213): error TS2339: Property 'broadcast' does not exist on type 'LoveTagRoom'.
+src/server.ts(39,17): error TS2339: Property 'clients' does not exist on type 'LoveTagRoom'.
+src/server.ts(39,30): error TS7006: Parameter 'c' implicitly has an 'any' type.
+src/server.ts(40,52): error TS7006: Parameter 'a' implicitly has an 'any' type.
+src/server.ts(40,188): error TS7006: Parameter 'a' implicitly has an 'any' type.
+src/server.ts(40,309): error TS2339: Property 'clients' does not exist on type 'LoveTagRoom'.
+src/server.ts(40,322): error TS7006: Parameter 'c' implicitly has an 'any' type.
+src/server.ts(45,10): error TS2339: Property 'setSimulationInterval' does not exist on type 'LoveTagRoom'.
+src/server.ts(45,32): error TS7006: Parameter 'ms' implicitly has an 'any' type.
+src/server.ts(47,57): error TS2339: Property 'clients' does not exist on type 'LoveTagRoom'.
+src/server.ts(48,103): error TS2339: Property 'clients' does not exist on type 'LoveTagRoom'.
+src/server.ts(48,219): error TS2591: Cannot find name 'Buffer'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+src/server.ts(50,172): error TS2339: Property 'roomId' does not exist on type 'LoveTagRoom'.
+src/server.ts(51,56): error TS2339: Property 'disconnect' does not exist on type 'LoveTagRoom'.
+src/server.ts(69,60): error TS7006: Parameter 'a' implicitly has an 'any' type.
+src/server.ts(69,166): error TS2339: Property 'allowReconnection' does not exist on type 'LoveTagRoom'.
+src/server.ts(70,65): error TS7006: Parameter 'a' implicitly has an 'any' type.
+src/server.ts(71,310): error TS2339: Property 'clients' does not exist on type 'LoveTagRoom'.
+src/server.ts(71,323): error TS7006: Parameter 'c' implicitly has an 'any' type.
+src/server.ts(71,378): error TS2339: Property 'broadcast' does not exist on type 'LoveTagRoom'.
+src/server.ts(72,39): error TS2339: Property 'roomId' does not exist on type 'LoveTagRoom'.
+src/server.ts(74,128): error TS7006: Parameter 'app' implicitly has an 'any' type.
+src/server.ts(75,12): error TS7006: Parameter 'req' implicitly has an 'any' type.
+src/server.ts(75,16): error TS7006: Parameter 'res' implicitly has an 'any' type.
+src/server.ts(75,20): error TS7006: Parameter 'next' implicitly has an 'any' type.
+src/server.ts(76,27): error TS7006: Parameter 'req' implicitly has an 'any' type.
+src/server.ts(76,31): error TS7006: Parameter 'res' implicitly has an 'any' type.
+src/server.ts(76,50): error TS2591: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+src/server.ts(76,169): error TS2591: Cannot find name 'Buffer'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+src/server.ts(76,205): error TS2591: Cannot find name 'Buffer'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+src/server.ts(76,397): error TS2591: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+src/server.ts(77,22): error TS7006: Parameter '_req' implicitly has an 'any' type.
+src/server.ts(77,27): error TS7006: Parameter 'res' implicitly has an 'any' type.
+src/server.ts(78,29): error TS7006: Parameter 'req' implicitly has an 'any' type.
+src/server.ts(78,33): error TS7006: Parameter 'res' implicitly has an 'any' type.
+src/server.ts(81,4): error TS2591: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+src/server.ts(82,30): error TS2591: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+src/server.ts(82,54): error TS2591: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+src/server.ts(82,138): error TS2591: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+src/server.ts(83,53): error TS2591: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+src/server.ts(83,125): error TS2591: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.

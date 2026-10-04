@@ -1,0 +1,4 @@
+
+> @digital-static/ridecore@1.2.0 build
+> tsc -p tsconfig.json
+

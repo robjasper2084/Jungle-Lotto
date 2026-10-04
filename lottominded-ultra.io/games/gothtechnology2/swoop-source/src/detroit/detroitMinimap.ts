@@ -16,8 +16,8 @@ export function detroitMinimap(pause:()=>void,focus:()=>void){
  hud.setMap(lines,[{point:northUp(cut.x,cut.z),text:'CUT ENTRANCE'},{point:northUp(MILLIKEN_BERM.x,MILLIKEN_BERM.z),text:'ZE MOUND'},{point:northUp(mack.x,mack.z),text:'MACK'},{point:northUp(MACK_STUDIO.x,MACK_STUDIO.z),text:'GOTHTECH STUDIO'},{point:northUp(penny.x,penny.z),text:'PENNY EXCHANGE / LOTTOMIND'}]);
  hud.setTrail(CITY.roads.filter(r=>r.name==='Dequindre Cut Greenway').map(r=>r.points.map(p=>northUp(p[0],p[1]))),'Dequindre Cut');
  let last={x:Infinity,z:Infinity};
- return{hud,update(x:number,z:number,heading:number,visible:boolean){
+ return{hud,update(x:number,z:number,heading:number,visible:boolean,players:{x:number;z:number;heading:number;label:string;color:string}[]=[]){
   if(Math.hypot(x-last.x,z-last.z)>4){last={x,z};const r=routeToCut(x,z);hud.setRoute(r.path.map(p=>northUp(p.x,p.z)),r.approach.map(p=>northUp(p.x,p.z)),r.arrived?'Dequindre Cut · on route':Number.isFinite(r.distance)?`CUT · ${Math.round(r.distance)} m`:'Join a mapped street');}
-  const p=northUp(x,z),ahead=northUp(x-Math.sin(heading),z+Math.cos(heading));hud.update([{...p,heading:Math.atan2(ahead.x-p.x,-(ahead.y-p.y))}],visible);
+  const p=northUp(x,z),ahead=northUp(x-Math.sin(heading),z+Math.cos(heading));hud.update([{...p,heading:Math.atan2(ahead.x-p.x,-(ahead.y-p.y)) ,label:'YOU'},...players.map(m=>{const p=northUp(m.x,m.z),ahead=northUp(m.x-Math.sin(m.heading),m.z+Math.cos(m.heading));return {...p,heading:Math.atan2(ahead.x-p.x,-(ahead.y-p.y)),label:m.label,color:m.color};})],visible);
  }};
 }

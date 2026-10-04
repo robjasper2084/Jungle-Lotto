@@ -1,0 +1,661 @@
+{
+  "at": "2026-10-04T19:13:50.253Z",
+  "scope": "Two real UI-driven browser players per product on loopback; initial full-map hashes verified; not hosted internet or every map edge",
+  "swoop": {
+    "before": {
+      "ack": 1640,
+      "actors": [
+        {
+          "ammo": 3,
+          "bot": false,
+          "connected": true,
+          "id": "lvI9BPtaT",
+          "itTime": 120.86666666666108,
+          "name": "Swoop QA Host",
+          "pose": {
+            "heading": -1.682040902270524,
+            "x": 1735.3338384722183,
+            "y": 5.318760000000001,
+            "z": 114.6422179903612
+          },
+          "resets": 0,
+          "role": "it",
+          "tags": 0
+        },
+        {
+          "ammo": 3,
+          "bot": false,
+          "connected": true,
+          "id": "5PJ7MwTK4",
+          "itTime": 0,
+          "name": "Swoop QA Guest",
+          "pose": {
+            "heading": -1.682040902270524,
+            "x": 1732.352382369795,
+            "y": 5.318760000000001,
+            "z": 114.30917218372224
+          },
+          "resets": 0,
+          "role": "runner",
+          "tags": 0
+        },
+        {
+          "ammo": 3,
+          "bot": true,
+          "connected": false,
+          "id": "bot-4a398324-d2e3-452f-b1d2-759f12aed4e7",
+          "itTime": 0,
+          "name": "Bot 3",
+          "pose": {
+            "heading": -6.232712816476655,
+            "x": 1652.4004299172364,
+            "y": 5.318760000000001,
+            "z": 172.79053466744642
+          },
+          "resets": 0,
+          "role": "runner",
+          "tags": 0
+        },
+        {
+          "ammo": 3,
+          "bot": true,
+          "connected": false,
+          "id": "bot-8b606d5b-72de-4e76-9675-98114752f4f9",
+          "itTime": 0,
+          "name": "Bot 4",
+          "pose": {
+            "heading": 0.450615784011515,
+            "x": 1837.7709170094015,
+            "y": 12.349620900878907,
+            "z": 245.38970394276905
+          },
+          "resets": 0,
+          "role": "runner",
+          "tags": 0
+        }
+      ],
+      "bots": 2,
+      "correctionP95": 0,
+      "events": [],
+      "hash": "8692124ce27f6b62ce39f669d5e53832a10a716862fddcc6b73518a4b1521329",
+      "humans": 2,
+      "me": "5PJ7MwTK4",
+      "online": true,
+      "phase": "active",
+      "pose": {
+        "x": 1732.352382369795,
+        "y": 5.318760000000001,
+        "z": 114.30917218372224
+      },
+      "product": "swoop-detroit",
+      "remaining": 59.13333333333925,
+      "role": "runner",
+      "round": "d46d0759-32ba-4c81-ab10-998ba31c228d",
+      "rules": "classic",
+      "tick": 7612,
+      "winners": []
+    },
+    "result": {
+      "ack": 2825,
+      "actors": [
+        {
+          "ammo": 3,
+          "bot": false,
+          "connected": true,
+          "id": "lvI9BPtaT",
+          "itTime": 180.0000000000354,
+          "name": "Swoop QA Host",
+          "pose": {
+            "heading": -1.682040902270524,
+            "x": 1735.3338384722183,
+            "y": 5.318760000000001,
+            "z": 114.6422179903612
+          },
+          "resets": 0,
+          "role": "it",
+          "tags": 0
+        },
+        {
+          "ammo": 3,
+          "bot": false,
+          "connected": true,
+          "id": "5PJ7MwTK4",
+          "itTime": 0,
+          "name": "Swoop QA Guest",
+          "pose": {
+            "heading": -1.682040902270524,
+            "x": 1328.5941070940685,
+            "y": 2.651451192626954,
+            "z": 69.20704897384651
+          },
+          "resets": 0,
+          "role": "runner",
+          "tags": 0
+        },
+        {
+          "ammo": 3,
+          "bot": true,
+          "connected": false,
+          "id": "bot-4a398324-d2e3-452f-b1d2-759f12aed4e7",
+          "itTime": 0,
+          "name": "Bot 3",
+          "pose": {
+            "heading": 1.6465347144565474,
+            "x": 1704.091459762814,
+            "y": 5.318760000000001,
+            "z": 193.5133447659267
+          },
+          "resets": 0,
+          "role": "runner",
+          "tags": 0
+        },
+        {
+          "ammo": 3,
+          "bot": true,
+          "connected": false,
+          "id": "bot-8b606d5b-72de-4e76-9675-98114752f4f9",
+          "itTime": 0,
+          "name": "Bot 4",
+          "pose": {
+            "heading": 0.8173781476066896,
+            "x": 1865.061928988488,
+            "y": 4.931930623779298,
+            "z": 404.9095613374248
+          },
+          "resets": 0,
+          "role": "runner",
+          "tags": 0
+        }
+      ],
+      "bots": 2,
+      "correctionP95": 0,
+      "events": [
+        {
+          "actor": "server",
+          "id": "d46d0759-32ba-4c81-ab10-998ba31c228d:1",
+          "kind": "result",
+          "tick": 11160
+        }
+      ],
+      "hash": "8692124ce27f6b62ce39f669d5e53832a10a716862fddcc6b73518a4b1521329",
+      "humans": 2,
+      "me": "5PJ7MwTK4",
+      "online": true,
+      "phase": "results",
+      "pose": {
+        "x": 1328.5941070940685,
+        "y": 2.651451192626954,
+        "z": 69.20704897384651
+      },
+      "product": "swoop-detroit",
+      "remaining": 0,
+      "role": "runner",
+      "round": "d46d0759-32ba-4c81-ab10-998ba31c228d",
+      "rules": "classic",
+      "tick": 11160,
+      "winners": [
+        "5PJ7MwTK4",
+        "bot-4a398324-d2e3-452f-b1d2-759f12aed4e7",
+        "bot-8b606d5b-72de-4e76-9675-98114752f4f9"
+      ]
+    }
+  },
+  "elmwood": {
+    "before": {
+      "ack": 1379,
+      "actors": [
+        {
+          "ammo": 3,
+          "bot": false,
+          "connected": true,
+          "id": "-5wob9W-6",
+          "itTime": 59.81666666666455,
+          "name": "Elmwood QA Host",
+          "pose": {
+            "heading": 0.6294964973505196,
+            "x": -327.6500486428413,
+            "y": 3.020778834827881,
+            "z": -829.7597038327094
+          },
+          "resets": 0,
+          "role": "it",
+          "tags": 0
+        },
+        {
+          "ammo": 3,
+          "bot": false,
+          "connected": true,
+          "id": "I7S2Uuwxm",
+          "itTime": 0,
+          "name": "Elmwood QA Guest",
+          "pose": {
+            "heading": 0.6294964973505196,
+            "x": -325.8838351249722,
+            "y": 3.0556179306124287,
+            "z": -827.3347317072414
+          },
+          "resets": 0,
+          "role": "runner",
+          "tags": 0
+        },
+        {
+          "ammo": 3,
+          "bot": true,
+          "connected": false,
+          "id": "bot-0d71f184-7d43-4773-820b-0fe114ef5857",
+          "itTime": 0,
+          "name": "Bot 3",
+          "pose": {
+            "heading": 0.4673568205986744,
+            "x": -243.2280898877629,
+            "y": 4.685271259807729,
+            "z": -811.5010185531947
+          },
+          "resets": 0,
+          "role": "runner",
+          "tags": 0
+        },
+        {
+          "ammo": 3,
+          "bot": true,
+          "connected": false,
+          "id": "bot-0633e07b-f25f-4722-b9dc-03be44836992",
+          "itTime": 0,
+          "name": "Bot 4",
+          "pose": {
+            "heading": -1.2497288464296623,
+            "x": -326.6032332301036,
+            "y": 2.5630004061146776,
+            "z": -715.3054682935208
+          },
+          "resets": 0,
+          "role": "runner",
+          "tags": 0
+        }
+      ],
+      "bots": 2,
+      "correctionP95": 0,
+      "events": [],
+      "hash": "81394a54680a00577d94367d07f455cae77cd9cacbbfb4e8b20806a9bb50600b",
+      "humans": 2,
+      "me": "I7S2Uuwxm",
+      "online": true,
+      "phase": "active",
+      "pose": {
+        "x": -325.8838351249722,
+        "y": 3.0556179306124287,
+        "z": -827.3347317072414
+      },
+      "product": "elmwood-explorer",
+      "remaining": 120.18333333333578,
+      "role": "runner",
+      "round": "81fb12d4-dfcc-4226-bf7e-432d30673f47",
+      "rules": "classic",
+      "tick": 3949,
+      "winners": []
+    },
+    "result": {
+      "ack": 3734,
+      "actors": [
+        {
+          "ammo": 3,
+          "bot": false,
+          "connected": true,
+          "id": "-5wob9W-6",
+          "itTime": 180.0000000000354,
+          "name": "Elmwood QA Host",
+          "pose": {
+            "heading": 0.6294964973505196,
+            "x": -327.6500486428413,
+            "y": 3.020778834827881,
+            "z": -829.7597038327094
+          },
+          "resets": 0,
+          "role": "it",
+          "tags": 0
+        },
+        {
+          "ammo": 3,
+          "bot": false,
+          "connected": true,
+          "id": "I7S2Uuwxm",
+          "itTime": 0,
+          "name": "Elmwood QA Guest",
+          "pose": {
+            "heading": 0.6294964973505196,
+            "x": -288.6184409917911,
+            "y": 4.8948487240284315,
+            "z": -775.6344916501844
+          },
+          "resets": 0,
+          "role": "runner",
+          "tags": 0
+        },
+        {
+          "ammo": 3,
+          "bot": true,
+          "connected": false,
+          "id": "bot-0d71f184-7d43-4773-820b-0fe114ef5857",
+          "itTime": 0,
+          "name": "Bot 3",
+          "pose": {
+            "heading": 0.4990292417525546,
+            "x": -242.8647509023799,
+            "y": 4.694315274233696,
+            "z": -811.3899642019999
+          },
+          "resets": 0,
+          "role": "runner",
+          "tags": 0
+        },
+        {
+          "ammo": 3,
+          "bot": true,
+          "connected": false,
+          "id": "bot-0633e07b-f25f-4722-b9dc-03be44836992",
+          "itTime": 0,
+          "name": "Bot 4",
+          "pose": {
+            "heading": -5.420334881230955,
+            "x": -357.891851663946,
+            "y": 3.1210633216448502,
+            "z": -819.6374738651414
+          },
+          "resets": 0,
+          "role": "runner",
+          "tags": 0
+        }
+      ],
+      "bots": 2,
+      "correctionP95": 0,
+      "events": [
+        {
+          "actor": "server",
+          "id": "81fb12d4-dfcc-4226-bf7e-432d30673f47:1",
+          "kind": "result",
+          "tick": 11160
+        }
+      ],
+      "hash": "81394a54680a00577d94367d07f455cae77cd9cacbbfb4e8b20806a9bb50600b",
+      "humans": 2,
+      "me": "I7S2Uuwxm",
+      "online": true,
+      "phase": "results",
+      "pose": {
+        "x": -288.6184409917911,
+        "y": 4.8948487240284315,
+        "z": -775.6344916501844
+      },
+      "product": "elmwood-explorer",
+      "remaining": 0,
+      "role": "runner",
+      "round": "81fb12d4-dfcc-4226-bf7e-432d30673f47",
+      "rules": "classic",
+      "tick": 11160,
+      "winners": [
+        "I7S2Uuwxm",
+        "bot-0d71f184-7d43-4773-820b-0fe114ef5857",
+        "bot-0633e07b-f25f-4722-b9dc-03be44836992"
+      ]
+    },
+    "reconnect": {
+      "ack": 8929,
+      "actors": [
+        {
+          "ammo": 3,
+          "bot": false,
+          "connected": true,
+          "id": "-5wob9W-6",
+          "itTime": 152.6666666666803,
+          "name": "Elmwood QA Host",
+          "pose": {
+            "heading": 0.6294964973505196,
+            "x": -327.6500486428413,
+            "y": 3.020778834827881,
+            "z": -829.7597038327094
+          },
+          "resets": 0,
+          "role": "it",
+          "tags": 0
+        },
+        {
+          "ammo": 3,
+          "bot": false,
+          "connected": true,
+          "id": "I7S2Uuwxm",
+          "itTime": 15.516666666667016,
+          "name": "Elmwood QA Guest",
+          "pose": {
+            "heading": -2.8993343455121794,
+            "x": -326.9436912257977,
+            "y": 3.00350714997207,
+            "z": -828.1066998869885
+          },
+          "resets": 0,
+          "role": "runner",
+          "tags": 1
+        },
+        {
+          "ammo": 3,
+          "bot": true,
+          "connected": false,
+          "id": "bot-0d71f184-7d43-4773-820b-0fe114ef5857",
+          "itTime": 0,
+          "name": "Bot 3",
+          "pose": {
+            "heading": 0.49103550744268143,
+            "x": -242.88706885984527,
+            "y": 4.693767417913531,
+            "z": -811.393811886139
+          },
+          "resets": 0,
+          "role": "runner",
+          "tags": 0
+        },
+        {
+          "ammo": 3,
+          "bot": true,
+          "connected": false,
+          "id": "bot-0633e07b-f25f-4722-b9dc-03be44836992",
+          "itTime": 0,
+          "name": "Bot 4",
+          "pose": {
+            "heading": 1.176670599554945,
+            "x": -143.78304135472473,
+            "y": 3.678054681895309,
+            "z": -446.9929854816565
+          },
+          "resets": 0,
+          "role": "runner",
+          "tags": 0
+        }
+      ],
+      "bots": 2,
+      "correctionP95": 0,
+      "events": [
+        {
+          "actor": "I7S2Uuwxm",
+          "id": "e2d8f4e1-80e8-406c-8039-fc1966d57522:2",
+          "kind": "shot",
+          "tick": 1155
+        },
+        {
+          "actor": "I7S2Uuwxm",
+          "id": "e2d8f4e1-80e8-406c-8039-fc1966d57522:3",
+          "kind": "shot",
+          "tick": 1198
+        },
+        {
+          "actor": "I7S2Uuwxm",
+          "id": "e2d8f4e1-80e8-406c-8039-fc1966d57522:4",
+          "kind": "shot",
+          "tick": 1241
+        },
+        {
+          "actor": "I7S2Uuwxm",
+          "id": "e2d8f4e1-80e8-406c-8039-fc1966d57522:5",
+          "kind": "shot",
+          "tick": 1284
+        },
+        {
+          "actor": "I7S2Uuwxm",
+          "id": "e2d8f4e1-80e8-406c-8039-fc1966d57522:6",
+          "kind": "tag",
+          "target": "-5wob9W-6",
+          "tick": 1291
+        }
+      ],
+      "hash": "81394a54680a00577d94367d07f455cae77cd9cacbbfb4e8b20806a9bb50600b",
+      "humans": 2,
+      "me": "I7S2Uuwxm",
+      "online": true,
+      "phase": "active",
+      "pose": {
+        "x": -326.9436912257977,
+        "y": 3.00350714997207,
+        "z": -828.1066998869885
+      },
+      "product": "elmwood-explorer",
+      "remaining": 11.81666666663591,
+      "role": "runner",
+      "round": "e2d8f4e1-80e8-406c-8039-fc1966d57522",
+      "rules": "classic",
+      "tick": 10451,
+      "winners": []
+    },
+    "afterRematch": {
+      "ack": 9640,
+      "actors": [
+        {
+          "ammo": 3,
+          "bot": false,
+          "connected": true,
+          "id": "-5wob9W-6",
+          "itTime": 164.48333333335637,
+          "name": "Elmwood QA Host",
+          "pose": {
+            "heading": 0.6294964973505196,
+            "x": -327.6500486428413,
+            "y": 3.020778834827881,
+            "z": -829.7597038327094
+          },
+          "resets": 0,
+          "role": "it",
+          "tags": 0
+        },
+        {
+          "ammo": 3,
+          "bot": false,
+          "connected": true,
+          "id": "I7S2Uuwxm",
+          "itTime": 15.516666666667016,
+          "name": "Elmwood QA Guest",
+          "pose": {
+            "heading": -2.8993343455121794,
+            "x": -326.9436912257977,
+            "y": 3.00350714997207,
+            "z": -828.1066998869885
+          },
+          "resets": 0,
+          "role": "runner",
+          "tags": 1
+        },
+        {
+          "ammo": 3,
+          "bot": true,
+          "connected": false,
+          "id": "bot-0d71f184-7d43-4773-820b-0fe114ef5857",
+          "itTime": 0,
+          "name": "Bot 3",
+          "pose": {
+            "heading": 0.49415132650035026,
+            "x": -242.86329309862975,
+            "y": 4.694343233042634,
+            "z": -811.3898870290192
+          },
+          "resets": 0,
+          "role": "runner",
+          "tags": 0
+        },
+        {
+          "ammo": 3,
+          "bot": true,
+          "connected": false,
+          "id": "bot-0633e07b-f25f-4722-b9dc-03be44836992",
+          "itTime": 0,
+          "name": "Bot 4",
+          "pose": {
+            "heading": 1.7980212473815316,
+            "x": -105.19727025709898,
+            "y": 4.016670597709519,
+            "z": -443.4477973467497
+          },
+          "resets": 0,
+          "role": "runner",
+          "tags": 0
+        }
+      ],
+      "bots": 2,
+      "correctionP95": 0,
+      "events": [
+        {
+          "actor": "I7S2Uuwxm",
+          "id": "e2d8f4e1-80e8-406c-8039-fc1966d57522:2",
+          "kind": "shot",
+          "tick": 1155
+        },
+        {
+          "actor": "I7S2Uuwxm",
+          "id": "e2d8f4e1-80e8-406c-8039-fc1966d57522:3",
+          "kind": "shot",
+          "tick": 1198
+        },
+        {
+          "actor": "I7S2Uuwxm",
+          "id": "e2d8f4e1-80e8-406c-8039-fc1966d57522:4",
+          "kind": "shot",
+          "tick": 1241
+        },
+        {
+          "actor": "I7S2Uuwxm",
+          "id": "e2d8f4e1-80e8-406c-8039-fc1966d57522:5",
+          "kind": "shot",
+          "tick": 1284
+        },
+        {
+          "actor": "I7S2Uuwxm",
+          "id": "e2d8f4e1-80e8-406c-8039-fc1966d57522:6",
+          "kind": "tag",
+          "target": "-5wob9W-6",
+          "tick": 1291
+        },
+        {
+          "actor": "server",
+          "id": "e2d8f4e1-80e8-406c-8039-fc1966d57522:7",
+          "kind": "result",
+          "tick": 11160
+        }
+      ],
+      "hash": "81394a54680a00577d94367d07f455cae77cd9cacbbfb4e8b20806a9bb50600b",
+      "humans": 2,
+      "me": "I7S2Uuwxm",
+      "online": true,
+      "phase": "results",
+      "pose": {
+        "x": -326.9436912257977,
+        "y": 3.00350714997207,
+        "z": -828.1066998869885
+      },
+      "product": "elmwood-explorer",
+      "remaining": 0,
+      "role": "runner",
+      "round": "e2d8f4e1-80e8-406c-8039-fc1966d57522",
+      "rules": "classic",
+      "tick": 11160,
+      "winners": [
+        "bot-0d71f184-7d43-4773-820b-0fe114ef5857",
+        "bot-0633e07b-f25f-4722-b9dc-03be44836992"
+      ]
+    }
+  }
+}

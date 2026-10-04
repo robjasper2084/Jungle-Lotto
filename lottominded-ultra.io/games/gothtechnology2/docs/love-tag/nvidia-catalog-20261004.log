@@ -1,0 +1,21 @@
+
+|
+•   codex  Agent detected — installing non-interactively
+[?25l|
+o  Source: https://github.com/nvidia/skills.git
+[?25h[?25l|
+•  Cloning repository…[1G[Jo  Cloning repository…|
+x  Failed to clone repository
+|
+|  Failed to clone https://github.com/nvidia/skills.git: Cloning into 'C:\Users\digit\AppData\Local\Temp\skills-MODO2O'...
+|
+|  fatal: unable to access 'https://github.com/nvidia/skills.git/': schannel: AcquireCredentialsHandle failed: SEC_E_NO_CREDENTIALS (0x8009030e) - No credentials are available in the security package
+|
+|
+|
+|  Tip: use the --yes (-y) and --global (-g) flags to install without prompts.
+|
+—  Installation failed
+
+[1G[Jx  Canceled
+[?25h

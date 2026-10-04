@@ -1,0 +1,38 @@
+(node:15248) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ all three bicycle racers finish the actual Creek Lane course (7059.0591ms)
+ℹ {"vehicle":"bicycle","finishes":[48.73333333333121,50.674999999997766,50.54166666666444],"recoveries":[0,0,0],"stoppedTicks":0}
+✔ all three EUC racers finish the actual Creek Lane course (13716.9519ms)
+ℹ {"vehicle":"EUC","finishes":[37.34166666666519,38.34999999999847,38.68333333333178],"recoveries":[0,0,0],"stoppedTicks":0}
+✖ the race has no time cutoff and recovery relocation cannot grant a gate (1.2958ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 2
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 21174.4541
+
+✖ failing tests:
+
+test at src\detroit\elmwood-race.test.ts:11:1
+✖ the race has no time cutoff and recovery relocation cannot grant a gate (1.2958ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  true !== false
+  
+      at TestContext.<anonymous> (C:\Users\digit\Documents\phone\euc-detroit-riverwalk\src\detroit\elmwood-race.test.ts:11:183)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

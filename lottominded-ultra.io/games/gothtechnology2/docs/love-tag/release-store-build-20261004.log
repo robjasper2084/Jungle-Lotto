@@ -1,0 +1,73 @@
+
+> gothtechnology-game@1.0.0 build
+> astro build
+
+13:36:04 [vite] Re-optimizing dependencies because vite config has changed
+13:36:04 [types] Generated 323ms
+13:36:04 [build] output: "static"
+13:36:04 [build] mode: "static"
+13:36:04 [build] directory: C:\Users\digit\Documents\phone\_goth_swoop_release_20260916\lottominded-ultra.io\games\gothtechnology2\dist\
+13:36:04 [build] Collecting build info...
+13:36:04 [build] ✓ Completed in 378ms.
+13:36:04 [build] Building static entrypoints...
+13:36:05 [vite] ✓ built in 607ms
+13:36:07 [WARN] [vite] [plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+13:36:07 [vite] ✓ built in 1.62s
+13:36:07 [build] Rearranging server assets...
+
+ generating static routes 
+13:36:07   ├─ /404.html (+19ms) 
+13:36:07   ├─ /about/index.html (+15ms) 
+13:36:07   ├─ /api/companion.json (+7ms) 
+13:36:07   ├─ /collections/night-protocol/index.html (+18ms) 
+13:36:07   ├─ /collections/detroit-2084/index.html (+11ms) 
+13:36:07   ├─ /collections/static-saints/index.html (+12ms) 
+13:36:07   ├─ /collections/cyber-cathedral/index.html (+13ms) 
+13:36:07   ├─ /collections/black-signal/index.html (+11ms) 
+13:36:07   ├─ /collections/founder-transmission/index.html (+12ms) 
+13:36:07   ├─ /collections/combat-systems/index.html (+29ms) 
+13:36:07   ├─ /collections/original-artwork/index.html (+36ms) 
+13:36:07   ├─ /collections/armory-fragrance/index.html (+12ms) 
+13:36:07   ├─ /collections/index.html (+9ms) 
+13:36:07   ├─ /lookbook/index.html (+6ms) 
+13:36:07   ├─ /lottomind/index.html (+7ms) 
+13:36:07   ├─ /manifest.webmanifest (+4ms) 
+13:36:07   ├─ /play/index.html (+7ms) 
+13:36:07   ├─ /products/night-protocol-hoodie/index.html (+9ms) 
+13:36:07   ├─ /products/boogeyman-graphic-hoodie/index.html (+6ms) 
+13:36:07   ├─ /products/detroit-2084-shirt/index.html (+6ms) 
+13:36:07   ├─ /products/armory-fragrance-roller-collection/index.html (+4ms) 
+13:36:07   ├─ /products/black-signal-beanie/index.html (+8ms) 
+13:36:07   ├─ /products/detroit-skull-cap-alt/index.html (+6ms) 
+13:36:07   ├─ /products/gothtechnology-luggage-charm/index.html (+8ms) 
+13:36:07   ├─ /products/static-saints-patch-set/index.html (+7ms) 
+13:36:07   ├─ /products/static-saints-detroit-rug/index.html (+6ms) 
+13:36:07   ├─ /products/cyber-cathedral-art-print/index.html (+8ms) 
+13:36:07   ├─ /products/mobster-luggage-charm/index.html (+8ms) 
+13:36:07   ├─ /products/key-knife-keychain/index.html (+7ms) 
+13:36:07   ├─ /products/black-signal-digital-pack/index.html (+6ms) 
+13:36:07   ├─ /products/mobster-charm-key-knife-bundle/index.html (+6ms) 
+13:36:07   ├─ /products/key-knife-gun-attachment-bundle/index.html (+5ms) 
+13:36:07   ├─ /products/founder-loadout-bundle/index.html (+6ms) 
+13:36:07   ├─ /products/detroit-skyline-cap/index.html (+6ms) 
+13:36:07   ├─ /products/detroit-riverfront-sunset-artwork/index.html (+5ms) 
+13:36:07   ├─ /products/detroit-winter-sunset-artwork/index.html (+6ms) 
+13:36:07   ├─ /shop/index.html (+14ms) 
+13:36:07   ├─ /sitemap.xml (+6ms) 
+13:36:07   ├─ /contact/index.html (+4ms) 
+13:36:07   ├─ /faq/index.html (+3ms) 
+13:36:07   ├─ /shipping/index.html (+3ms) 
+13:36:07   ├─ /returns/index.html (+3ms) 
+13:36:07   ├─ /privacy/index.html (+4ms) 
+13:36:07   ├─ /terms/index.html (+4ms) 
+13:36:07   ├─ /accessibility/index.html (+4ms) 
+13:36:07   ├─ /index.html (+14ms) 
+13:36:07 ✓ Completed in 479ms.
+
+13:36:07 [build] ✓ Completed in 2.94s.
+13:36:07 [build] 43 page(s) built in 3.82s
+13:36:07 [build] Complete!

@@ -1,0 +1,14 @@
+(node:39488) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ Elmwood RideCore poses remain finite and anticipate turns with the new body adapter (3.8783ms)
+✔ Elmwood calm chase camera retains terrain clearance without roll or dynamic zoom (3.2532ms)
+✔ Elmwood cyclists coast, brake and plant a foot; distant detail is throttled (1.6135ms)
+✔ Elmwood split feedback uses actual checkpoints and does not award skipped gates (0.9474ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 186.8106

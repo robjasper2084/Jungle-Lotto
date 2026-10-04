@@ -1,6 +1,6 @@
 import {actorContact,isCharacter} from './actorAvoidance.ts';
 import {FallMotion,getUpPose} from './fallMotion.ts';
-import {safeRecovery,DEFAULT_MOUNTED_VOLUME,type MountedVolume,type RideSpawn} from './recovery.ts';
+import {safeRecovery,dryMountedSupport,DEFAULT_MOUNTED_VOLUME,type MountedVolume,type RideSpawn} from './recovery.ts';
 import {RideFeedback} from './rideFeedback.ts';
 import {SpecialMoves,moveReadiness} from './specialMoves.ts';
 import {BalanceEngine} from './balanceEngine.ts';
@@ -199,8 +199,19 @@ export class RideController {
       this.grounded=false;this.groundAge=1;this.flightYaw=p.headingY;this.charge=this.hopQueue=0;this.counts.hops++;p.takeoffExtension=1;this.tricks.launch(this.velocityY);
     }
     const dx=this.vx*dt,dz=this.vz*dt,travel=Math.hypot(dx,dz);
-    if(travel>1e-8&&this.terrain.waterAt?.(p.x+dx,p.z+dz,p.y)){
-      p.speed=this.vx=this.vz=this.motor=0;
+    // Older positions can lie below the visible water on a triangulated bank.
+    // Allow climbing out through wet slope samples, while blocking entry and
+    // level/downhill travel through water. Solid/actor sweeps still apply.
+    const nextWet=travel>1e-8&&this.terrain.waterAt?.(p.x+dx,p.z+dz,p.y);
+    const currentlyWet=nextWet&&this.terrain.waterAt?.(p.x,p.z,p.y);
+    // Use the bank normal for tiny startup steps: float32 ray heights can be
+    // identical across those samples even when travel is genuinely uphill.
+    const climbingOut=currentlyWet&&this.ground.normal.x*dx+this.ground.normal.z*dz< -travel*.01&&this.terrain.sampleGround(p.x+dx,p.z+dz,this.ahead,p.y).height>=this.ground.height-.001;
+    if(nextWet&&!climbingOut){
+      p.speed=this.vx=this.vz=0;
+      // Keep the jerk-limited drive building against bank gravity. Resetting
+      // it each blocked tick prevents reverse ever producing uphill force.
+      if(!currentlyWet)this.motor=0;
     }else if(travel>1e-8){
       const hit=this.terrain.raycastObstacle({x:p.x,y:p.y+.65,z:p.z},{x:dx,y:0,z:dz},travel+.32,.28);
       const actors=(this.terrain.navigationObstacles?.(p.x,p.z,travel+2)??[]).filter(o=>isCharacter(o)&&!(o.kind==='dog'&&this.indoorProtected()));
@@ -290,7 +301,7 @@ export class RideController {
       p.speed*=ratio;this.vx*=ratio;this.vz*=ratio;
     }
     if(this.ground.offCourse)this.fall('trail boundary');
-    if(this.grounded&&!this.crashed&&Math.abs(p.rollAngle)<.12&&this.terrain.raycastObstacle({x:p.x,y:p.y+.65,z:p.z},{x:s,y:0,z:c},3,.35)===null)this.safe={position:{x:p.x,y:floor,z:p.z},headingY:p.headingY};
+    if(this.grounded&&!this.crashed&&!this.ground.offCourse&&Math.abs(p.rollAngle)<.12&&dryMountedSupport(this.terrain,p,this.mountedVolume.radius)&&this.terrain.raycastObstacle({x:p.x,y:p.y+.65,z:p.z},{x:s,y:0,z:c},3,.35)===null)this.safe={position:{x:p.x,y:floor,z:p.z},headingY:p.headingY};
   }
   moveReadiness(id:number){return moveReadiness(id,{grounded:this.grounded,crashed:this.crashed,speed:this.pose.speed,bank:this.pose.rollAngle,cooldown:this.tricks.cooldown,active:this.tricks.active,clear:this.trickClearance()});}
   private trickClearance(){

@@ -1,0 +1,17 @@
+(node:7692) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ all three bicycle racers finish the actual Creek Lane course (9869.7134ms)
+ℹ {"vehicle":"bicycle","finishes":[48.73333333333121,50.674999999997766,50.54166666666444],"recoveries":[0,0,0],"stoppedTicks":0}
+✔ all three EUC racers finish the actual Creek Lane course (15593.2681ms)
+ℹ {"vehicle":"EUC","finishes":[37.34166666666519,38.34999999999847,38.68333333333178],"recoveries":[0,0,0],"stoppedTicks":0}
+✔ the race has no time cutoff and recovery relocation cannot grant a gate (0.3015ms)
+✔ pack finishes together with 15 Hz render frames (8416.9559ms)
+✔ pack finishes together with 30 Hz render frames (8527.6981ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 43030.9356

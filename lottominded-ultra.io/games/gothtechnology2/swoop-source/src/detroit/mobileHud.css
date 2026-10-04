@@ -1,5 +1,21 @@
 /* Thumb HUD shared by Swoop and Elmwood. Icons are original SVG linework. */
 :root{--touch-ring:#f1f4ebbd;--touch-ink:#fffef4;--touch-accent:#e5cc86;--touch-glass:#102621bf}
+/* Race feedback gets the corner; recording remains available in Settings. */
+body:has(#raceHUD:not([hidden])) .game-film-toolbar{display:none}
+body #raceRetry{min-height:44px}
+@media(max-width:650px) and (orientation:portrait){
+ body:has(#raceHUD:not([hidden])){--race-mini-width:clamp(128px,40vw,160px)}
+ body:has(#raceHUD:not([hidden])) .tactical-minimap{width:var(--race-mini-width)}
+ body #raceHUD{width:calc(100vw - var(--race-mini-width) - 36px);padding:10px}
+ body #raceHUD .raceHudTop{display:grid;grid-template-columns:1fr auto;gap:4px}
+ body #raceHUD .raceHudTop small{grid-column:1/-1}
+ body #raceOrder{font-size:11px}
+ body:has(#raceHUD:not([hidden])) .tactical-compass{left:12px;right:auto;top:340px;transform:none;width:calc(100vw - var(--race-mini-width) - 36px)}
+}
+@media(max-width:650px) and (max-height:700px) and (orientation:portrait){
+ body #raceOrder{display:none}
+ body:has(#raceHUD:not([hidden])) .tactical-compass{top:250px}
+}
 body.playing .touchActions{display:contents;pointer-events:none}
 .touchActions button,#elmwood-touch .touch-action,.duo-touch-pane button:not(.duo-stick){border:1.5px solid var(--touch-ring)!important;border-radius:50%!important;background:var(--touch-glass)!important;color:var(--touch-ink)!important;box-shadow:inset 0 0 0 3px #ffffff0d,0 2px 7px #0003;text-shadow:0 1px 3px #000;font:600 12px/1.1 system-ui!important;letter-spacing:0;padding:30px 3px 7px!important;display:flex;align-items:flex-end;justify-content:center;white-space:normal;overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none;pointer-events:auto;transition:background .12s,border-color .12s}
 .touchActions button:before,#elmwood-touch .touch-action:before,.duo-touch-pane button:not(.duo-stick):before{content:'';position:absolute;width:30px;height:30px;left:calc(50% - 15px);top:calc(45% - 18px);background:currentColor;mask:var(--touch-icon) center/contain no-repeat;-webkit-mask:var(--touch-icon) center/contain no-repeat;pointer-events:none}

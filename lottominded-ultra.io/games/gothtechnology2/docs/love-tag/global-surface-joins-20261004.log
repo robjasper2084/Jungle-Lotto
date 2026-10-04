@@ -1,0 +1,27 @@
+(node:28360) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ curb ramp stays local to the crossing instead of stretching across a long sidewalk (2.0856ms)
+✔ overlapping road and walking surfaces have stable separated depth with a small rideable seam (0.3892ms)
+✔ curved street joins fill the outside wedge between rectangular segments (0.4495ms)
+✔ a road whose midpoint is outside the terrain still reaches every intersected tile (0.3039ms)
+✔ streets follow the rendered coarse terrain exactly with upward-facing asphalt (0.2178ms)
+✔ mapped Lafayette, Larned, Franklin and Antietam street sections survive boundary clipping (7.2774ms)
+(node:7692) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ crossing exclusion keeps both approaches and removes only the street footprint (1.0509ms)
+✔ empty and fully covered approaches leave no sliver triangles (0.6134ms)
+✔ curved offset sidewalks share exactly the same cross section at the bend (0.873ms)
+✔ draped walking triangles do not cover motor roads or lose terrain support outside them (0.287ms)
+✔ Atwater crossing finds mapped street footprints while raised bridges keep their layer (1.0472ms)
+(node:17164) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ the parallel Riverwalk beside Atwater uses the existing concrete sidewalk (6.7224ms)
+✔ Atwater curb remains raised beside a parallel walking route (0.8163ms)
+ℹ tests 13
+ℹ suites 0
+ℹ pass 13
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2953.3669

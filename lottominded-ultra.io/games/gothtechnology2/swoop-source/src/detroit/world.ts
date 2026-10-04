@@ -181,8 +181,11 @@ export function trafficAt(id:number,time:number):TrafficState{
 }
 function trafficObstacle(t:TrafficState):NavigationObstacle{
   const b=trafficBounds(t.kind),p=t.fall,c=Math.cos(t.heading),s=Math.sin(t.heading);
-  return {id:'traffic-'+t.id,x:t.x+(p?c*p.crashLateral+s*p.crashForward:0),y:t.y,z:t.z+(p?-s*p.crashLateral+c*p.crashForward:0),radius:p?.85:Math.hypot(b.hx,b.hz),height:b.hy*2,kind:t.kind,vx:Math.sin(t.heading)*t.speed,vz:Math.cos(t.heading)*t.speed,fallen:!!p};
+  return {id:'traffic-'+t.id,x:t.x+(p?c*p.crashLateral+s*p.crashForward:0),y:t.y,z:t.z+(p?-s*p.crashLateral+c*p.crashForward:0),radius:p?.85:trafficNavigationRadius(t.kind),height:b.hy*2,kind:t.kind,vx:Math.sin(t.heading)*t.speed,vz:Math.cos(t.heading)*t.speed,fallen:!!p};
 }
+// A circular navigation envelope should match the body width. Using the
+// diagonal of long scooters/bikes as its radius closed visibly open gaps.
+export const trafficNavigationRadius=(kind:TrafficState['kind'])=>['pedestrian','jogger'].includes(kind)?.32:['segway','skater'].includes(kind)?.46:kind==='scooter'?.4:Math.hypot(trafficBounds(kind).hx,trafficBounds(kind).hz);
 export class DetroitWorld implements TerrainSampler{
   physics!:RAPIER.World;
   chunks=terrainChunks();solids=worldSolids();
@@ -273,8 +276,12 @@ export class DetroitWorld implements TerrainSampler{
     return out;
   }
   waterAt(x:number,z:number,referenceY:number){
-    if(!(inHarbor(x,z)||inValadeInlet(x,z)||inWaterfrontPond(x,z)||x<riverEdge(z)-3))return false;
-    return this.sampleGround(x,z,{height:0,normal:{x:0,y:1,z:0},surface:'pavement',offCourse:false},referenceY).height<-.25;
+    const pond=inWaterfrontPond(x,z);
+    if(!(inHarbor(x,z)||inValadeInlet(x,z)||pond||x<riverEdge(z)-3))return false;
+    // Pond artwork sits at -0.18 m. The old -0.25 cutoff admitted the wheel
+    // under its surface and left it blocked on the next bank sample.
+    // sampleGround still selects a reachable dock/bridge above the water.
+    return this.sampleGround(x,z,{height:0,normal:{x:0,y:1,z:0},surface:'pavement',offCourse:false},referenceY).height<(pond?-.18:-.25);
   }
   navigationObstacles(x:number,z:number,radius:number):NavigationObstacle[]{
     return [...this.traffic.map(t=>({...trafficObstacle(t),onImpact:(impact:ActorImpact)=>this.receiveTrafficImpact(t.id,impact)})),
@@ -318,10 +325,11 @@ export class DetroitWorld implements TerrainSampler{
   updateTraffic(time:number,px:number,pz:number){
     this.advanceTrafficFalls(time,px,pz);
     this.traffic=[];const active=new Set<number>();
-    if(!this.crowd.length||time<this.crowdTime){this.crowd=Array.from({length:62},(_,id)=>{const t=trafficAt(id,time),b=trafficBounds(t.kind),width=cutWidth(clamp(t.routeDistance!,0,CUT_METRES));return {id:'traffic-'+id,kind:t.kind,distance:t.routeDistance!,lane:t.speed?t.direction!*Math.min(1.65,width/2-.65):width/2+1.2,direction:t.direction!,pace:t.speed,speed:t.speed,radius:Math.hypot(b.hx,b.hz),height:b.hy*2,x:t.x,y:t.y,z:t.z,heading:t.heading};});this.crowdTime=time;} 
-    const trafficHandles=new Set([...this.trafficBodies.values()].map(c=>c.handle));const visitorShape=new RAPIER.Cuboid(.38,.65,.38);
+    if(!this.crowd.length||time<this.crowdTime){this.crowd=Array.from({length:62},(_,id)=>{const t=trafficAt(id,time),b=trafficBounds(t.kind),width=cutWidth(clamp(t.routeDistance!,0,CUT_METRES));return {id:'traffic-'+id,kind:t.kind,distance:t.routeDistance!,lane:t.speed?t.direction!*Math.min(1.65,width/2-.65):width/2+1.2,direction:t.direction!,pace:t.speed,speed:t.speed,radius:trafficNavigationRadius(t.kind),height:b.hy*2,x:t.x,y:t.y,z:t.z,heading:t.heading};});this.crowdTime=time;}
+    const trafficHandles=new Set([...this.trafficBodies.values()].map(c=>c.handle));const visitorShape=new RAPIER.Cuboid(.3,.65,.3);
+    const crowdGround={height:0,normal:{x:0,y:1,z:0},surface:'pavement' as const,offCourse:false},footing=(x:number,z:number)=>this.sampleGround(x,z,crowdGround,heightAt(x,z)).height;
     let remaining=Math.max(0,Math.min(2,time-this.crowdTime));this.crowdTime=time;
-    while(remaining>1e-8){const step=Math.min(1/30,remaining);remaining-=step;advanceCrowd(this.crowd,step,{length:CUT_TRAFFIC.length,runout:TRAFFIC_RUNOUT,offsetSign:-1,point:(d,u)=>{const p=trafficPoint(d,u);return {...p,y:heightAt(p.x,p.z)};},width:d=>cutWidth(clamp(d,0,CUT_METRES))+1.6,walkable:(x,y,z)=>Math.abs(heightAt(x+.2,z)-heightAt(x-.2,z))<.2&&Math.abs(heightAt(x,z+.2)-heightAt(x,z-.2))<.2&&Number.isFinite(y)&&!this.physics.intersectionWithShape({x,y:y+.85,z},{x:0,y:0,z:0,w:1},visitorShape,undefined,0xffff0006,undefined,undefined,c=>!trafficHandles.has(c.handle))},[{id:'player',x:px,y:heightAt(px,pz),z:pz,radius:.52,height:2.2,kind:'rider',vx:Math.sin(this.rideIntent.heading)*this.rideIntent.speed,vz:Math.cos(this.rideIntent.heading)*this.rideIntent.speed},...this.hazards.map(trafficObstacle),...this.crowdActors()]);}
+    while(remaining>1e-8){const step=Math.min(1/30,remaining);remaining-=step;advanceCrowd(this.crowd,step,{length:CUT_TRAFFIC.length,runout:TRAFFIC_RUNOUT,offsetSign:-1,point:(d,u)=>{const p=trafficPoint(d,u);return {...p,y:footing(p.x,p.z)};},width:d=>cutWidth(clamp(d,0,CUT_METRES))+1.6,walkable:(x,y,z)=>Math.abs(heightAt(x+.2,z)-heightAt(x-.2,z))<.2&&Math.abs(heightAt(x,z+.2)-heightAt(x,z-.2))<.2&&Number.isFinite(y)&&!this.physics.intersectionWithShape({x,y:y+.85,z},{x:0,y:0,z:0,w:1},visitorShape,undefined,0xffff0006,undefined,undefined,c=>!trafficHandles.has(c.handle))},[{id:'player',x:px,y:footing(px,pz),z:pz,radius:.52,height:2.2,kind:'rider',vx:Math.sin(this.rideIntent.heading)*this.rideIntent.speed,vz:Math.cos(this.rideIntent.heading)*this.rideIntent.speed},...this.hazards.map(trafficObstacle),...this.crowdActors()]);}
     const candidates:TrafficState[]=this.crowd.map<TrafficState>((agent,id)=>this.applyTrafficFall({...trafficAt(id,time),x:agent.x,y:agent.y,z:agent.z,heading:agent.heading,speed:agent.motionSpeed??agent.speed,routeDistance:agent.distance})).concat(this.hazards);
     for(const t of candidates){const id=t.id;if(id<1000&&Math.hypot(t.x-px,t.z-pz)>115)continue;
       if(!this.trafficMayActivate(t))continue;

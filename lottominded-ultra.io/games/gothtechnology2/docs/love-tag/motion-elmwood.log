@@ -1,0 +1,20 @@
+(node:33112) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ DS_Cyclist_01 keeps hands on turned grips and feet on the crank through full pedal revolutions (98.3639ms)
+✔ DS_Man_01 keeps hands on turned grips and feet on the crank through full pedal revolutions (112.0064ms)
+✔ gripping poses bend the supplied fingers without mutating the shared rider geometry (67.383ms)
+(node:26004) ExperimentalWarning: Transform Types is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ Elmwood motion uses Digital Static RideCore acceleration, carve, braking and reverse at 30/60/144 fps (346.3225ms)
+✔ rendered motion interpolates between simulation ticks at high display refresh rates (8.4633ms)
+✔ pause freezes pose and camera, drops pending hops and reset clears interpolation history (15.9802ms)
+✔ a hop tapped between physics ticks is consumed once and lands through the reference controller (40.192ms)
+✔ production host executes the actual RideCore package and natural motion engine (22.2181ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 8
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 799.6005

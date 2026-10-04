@@ -1,0 +1,1 @@
+Installed @better-auth/utils 0.3.1 declares MIT and repository better-auth/utils. License fetched from the original repository https://raw.githubusercontent.com/better-auth/utils/refs/heads/main/LICENSE on 2026-10-04T17:18:16.167Z.

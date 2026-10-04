@@ -6,6 +6,16 @@ import type {TerrainChunk} from './world.ts';
 import {CITY} from './geography.ts';
 const chunks=terrainChunks();
 const area=(p:number[])=>{let sum=0;for(let i=0;i<p.length;i+=9)sum+=Math.abs((p[i+3]-p[i])*(p[i+8]-p[i+2])-(p[i+5]-p[i+2])*(p[i+6]-p[i]))/2;return sum;};
+test('curb ramp stays local to the crossing instead of stretching across a long sidewalk',()=>{
+ const tile:TerrainChunk={x:50,z:50,vertices:new Float32Array([0,0,0,100,0,0,0,0,100,100,0,100]),indices:new Uint32Array([0,2,1,1,2,3]),surfaces:['grass','grass']};
+ const rise=(x:number)=>.15*Math.min(1,Math.max(0,(Math.abs(x-50)-2)/1.2));
+ const result=drapeStreet({a:{x:5,z:40},b:{x:95,z:40},half:1.4,offset:0,lift:.035,maxSpan:1.2},[tile],x=>rise(x));
+ assert.ok(Math.abs(result.reduce((sum,r)=>sum+area(r.positions),0)-90*2.8)<1e-5,'continuous sidewalk area');
+ for(const {positions:p} of result)for(let i=0;i<p.length;i+=9){
+  const xs=[p[i],p[i+3],p[i+6]],ys=[p[i+1],p[i+4],p[i+7]];if(Math.max(...ys)-Math.min(...ys)>.004)assert.ok(Math.max(...xs)-Math.min(...xs)<=1.201);
+  for(let k=0;k<3;k++){const x=p[i+k*3],y=p[i+k*3+1];assert.ok(Math.abs(y-rise(x)-.035)<1e-6);if(Math.abs(x-50)>3.3)assert.ok(y>.184);if(Math.abs(x-50)<2)assert.ok(y<.036);}
+ }
+});
 test('overlapping road and walking surfaces have stable separated depth with a small rideable seam',()=>{
  const tile:TerrainChunk={x:50,z:50,vertices:new Float32Array([0,0,0,100,0,0,0,0,100,100,0,100]),indices:new Uint32Array([0,2,1,1,2,3]),surfaces:['grass','grass']};
  const ribbon={a:{x:5,z:50},b:{x:95,z:50},half:4,offset:0};

@@ -1,0 +1,59 @@
+
+> @digital-static/ridecore@1.0.0 demo
+> node examples/headless.mjs
+
+Rolling pirouette · balance
+Rolling pirouette · clean +240
+{
+  "speed": 0,
+  "speedKph": 0,
+  "position": {
+    "x": -0.03420330097139961,
+    "y": 0,
+    "z": -0.023066875652111365
+  },
+  "headingY": 6.283185307179586,
+  "riderPitch": -5.294644639726771e-12,
+  "rollAngle": 0,
+  "grounded": true,
+  "crashed": false,
+  "fallPhase": "none",
+  "crashCause": "",
+  "powerStage": "normal",
+  "crouchCharge": 0,
+  "distanceTravelled": 0.6950227040694972,
+  "hops": 0,
+  "landings": 0,
+  "crashes": 0,
+  "spins": 0,
+  "trick": {
+    "id": 0,
+    "name": "",
+    "phase": "idle",
+    "rotation": 6.283185307179586,
+    "foot": 0,
+    "completed": 1
+  },
+  "oneFootStop": 0,
+  "pedalScrape": 0,
+  "warningLevel": 0,
+  "velocity": {
+    "x": 0,
+    "y": 0,
+    "z": 0
+  },
+  "yawRate": 0,
+  "engine": "Digital Static Motion 4.1",
+  "tractionUsage": 0,
+  "lateralAcceleration": 0,
+  "state": "balancing",
+  "rideCore": "1.0.0",
+  "profile": "mascot",
+  "library": {
+    "name": "Digital Static RideCore",
+    "version": "1.0.0",
+    "fixedHz": 120,
+    "sourceMotion": "Digital Static Motion 4.1"
+  },
+  "score": 240
+}

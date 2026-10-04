@@ -1,0 +1,65 @@
+{
+  "serverStopped": true,
+  "display50Percent": {
+    "selected": "0.5",
+    "pixelRatio": 0.375,
+    "canvasWidth": 138,
+    "canvasHeight": 316,
+    "restored": "Preset"
+  },
+  "review": {
+    "swoop": {
+      "canvas": {
+        "lighting": "NVIDIA OptiX baked skylight",
+        "loveTag": "{\"product\":\"swoop-detroit\",\"phase\":\"active\",\"rules\":\"classic\",\"online\":false,\"humans\":1,\"bots\":3,\"round\":\"7d81f01a-6757-4419-93c1-8013c91ed3f8\",\"tick\":2416,\"me\":\"offline-human\",\"role\":\"it\",\"pose\":{\"x\":1735.3338384722185,\"y\":5.318760000000001,\"z\":114.6422179903612},\"ack\":2416,\"hash\":\"8692124ce27f6b62ce39f669d5e53832a10a716862fddcc6b73518a4b1521329\",\"actors\":[{\"id\":\"offline-human\",\"name\":\"Rider\",\"connected\":true,\"bot\":false,\"role\":\"it\",\"ammo\":3,\"tags\":0,\"itTime\":34.266666666666005,\"resets\":0,\"pose\":{\"x\":1735.3338384722185,\"y\":5.318760000000001,\"z\":114.6422179903612,\"heading\":-1.682040902270524}},{\"id\":\"bot-1\",\"name\":\"Bot 1\",\"connected\":false,\"bot\":true,\"role\":\"runner\",\"ammo\":3,\"tags\":0,\"itTime\":0,\"resets\":0,\"pose\":{\"x\":1586.0939419086906,\"y\":5.318760000000001,\"z\":98.01264522615374,\"heading\":-1.0909759544205477}},{\"id\":\"bot-2\",\"name\":\"Bot 2\",\"connected\":false,\"bot\":true,\"role\":\"runner\",\"ammo\":3,\"tags\":0,\"itTime\":0,\"resets\":0,\"pose\":{\"x\":1653.1255627809785,\"y\":5.318760000000001,\"z\":146.3735307016217,\"heading\":0.05627378063795354}},{\"id\":\"bot-3\",\"name\":\"Bot 3\",\"connected\":false,\"bot\":true,\"role\":\"runner\",\"ammo\":3,\"tags\":0,\"itTime\":0,\"resets\":0,\"pose\":{\"x\":1651.7527238988662,\"y\":5.318760000000001,\"z\":125.77834145037755,\"heading\":-0.040541328737788776}}],\"events\":[],\"winners\":[],\"remaining\":145.73333333333434,\"correctionP95\":0}",
+        "tagRender": "{\"focus\":{\"x\":1735.3338384722185,\"y\":5.318760000000001,\"z\":114.6422179903612,\"headingY\":-1.682040902270524},\"resolutionScale\":1,\"drawCalls\":358,\"streaming\":{\"total\":4,\"loaded\":1,\"loading\":0,\"deferred\":3,\"errors\":0}}"
+      },
+      "height": 390,
+      "overflow": false,
+      "status": [
+        "Ready to ride",
+        "Your ride is ready.",
+        "Ready to ride",
+        "No immersive VR headset is available in this browser.",
+        "Controller: connect USB/Bluetooth, then press a button.",
+        "Smooth · phones / weak systems · 30 FPS target · shadows off · antialiasing on. Saved for both games on this device.",
+        "Smooth · phones / weak systems · 30 FPS target · shadows off · antialiasing on. Saved for both games on this device.",
+        "Music starts when you ride.",
+        "PNG photos · silent video · up to 30 seconds",
+        "Gathering · join nearby, on a bicycle or EUC. Gathering 841 m away",
+        "Use while riding · Alt + 1–6",
+        "Park your wheel and explore the studio. Shop online on each brand’s website.",
+        "Park your wheel and explore the studio. Shop online on each brand’s website.",
+        "Full map: run and hide on safe open ground. Water and solid scenery stay blocked. Offline works without a server.",
+        "OFFLINE · CLASSIC · active · 146s · Hearts 3/3 · Burst 100%",
+        "Smooth · phones / weak systems · 30 FPS target · shadows off · antialiasing on. Saved for both games on this device."
+      ],
+      "width": 844
+    },
+    "elmwood": {
+      "canvas": {
+        "lighting": "NVIDIA OptiX baked skylight",
+        "loveTag": "{\"product\":\"elmwood-explorer\",\"phase\":\"active\",\"rules\":\"classic\",\"online\":false,\"humans\":1,\"bots\":3,\"round\":\"0cdaf3fb-85b1-40d4-97f5-0f27cd7cb7e0\",\"tick\":2435,\"me\":\"offline-human\",\"role\":\"it\",\"pose\":{\"x\":-327.6500486428413,\"y\":3.020778834827881,\"z\":-829.7597038327094},\"ack\":2435,\"hash\":\"81394a54680a00577d94367d07f455cae77cd9cacbbfb4e8b20806a9bb50600b\",\"actors\":[{\"id\":\"offline-human\",\"name\":\"Rider\",\"connected\":true,\"bot\":false,\"role\":\"it\",\"ammo\":3,\"tags\":0,\"itTime\":34.583333333332654,\"resets\":0,\"pose\":{\"x\":-327.6500486428413,\"y\":3.020778834827881,\"z\":-829.7597038327094,\"heading\":0.6294964973505196}},{\"id\":\"bot-1\",\"name\":\"Bot 1\",\"connected\":false,\"bot\":true,\"role\":\"runner\",\"ammo\":3,\"tags\":0,\"itTime\":0,\"resets\":0,\"pose\":{\"x\":-329.36037815752684,\"y\":4.100105536935476,\"z\":-794.6003717052903,\"heading\":1.5969264096068352}},{\"id\":\"bot-2\",\"name\":\"Bot 2\",\"connected\":false,\"bot\":true,\"role\":\"runner\",\"ammo\":3,\"tags\":0,\"itTime\":0,\"resets\":0,\"pose\":{\"x\":-251.50332442849248,\"y\":4.703049022195595,\"z\":-809.5196382227364,\"heading\":0.47356153829759057}},{\"id\":\"bot-3\",\"name\":\"Bot 3\",\"connected\":false,\"bot\":true,\"role\":\"runner\",\"ammo\":3,\"tags\":0,\"itTime\":0,\"resets\":0,\"pose\":{\"x\":-326.5386417466615,\"y\":4.695605808695151,\"z\":-767.6609073373343,\"heading\":0.5065655789828618}}],\"events\":[],\"winners\":[],\"remaining\":145.41666666666768,\"correctionP95\":0}",
+        "streaming": "{\"total\":39,\"loaded\":29,\"loading\":0,\"deferred\":10,\"errors\":0}",
+        "tagRender": "{\"focus\":{\"x\":-327.6500486428413,\"y\":3.020778834827881,\"z\":-829.7597038327094,\"headingY\":0.6294964973505196},\"resolutionScale\":1,\"drawCalls\":409,\"streaming\":{\"total\":39,\"loaded\":29,\"loading\":0,\"deferred\":10,\"errors\":0}}"
+      },
+      "height": 844,
+      "overflow": false,
+      "status": [
+        "Headset: left stick ride/steer, left grip brake, right A hop, right grip crouch, right B recover, left X pause. Use the headset system menu to exit.",
+        "Smooth · phones / weak systems · 30 FPS target · shadows off · antialiasing on. Saved for both games on this device.",
+        "Enable music to listen while you ride.",
+        "Down means lie down. Come resumes following. Your dog sits after you stop for a second.",
+        "Press Ride Elmwood to use these controls.",
+        "Loading your riders…",
+        "Gathering · join nearby, on a bicycle or EUC. Gathering 97 m away",
+        "Protective birds are chasing — keep moving to give them space.",
+        "Use while riding · Alt + 1–6",
+        "Full map: run and hide on safe open ground. Water and solid scenery stay blocked. Offline works without a server.",
+        "OFFLINE · CLASSIC · active · 146s · Hearts 3/3 · Burst 100%",
+        "Smooth · phones / weak systems · 30 FPS target · shadows off · antialiasing on. Saved for both games on this device."
+      ],
+      "width": 369
+    }
+  }
+}

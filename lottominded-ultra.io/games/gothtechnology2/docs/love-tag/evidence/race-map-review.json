@@ -1,0 +1,178 @@
+{
+  "at": "2026-10-04T03:30:31.015Z",
+  "repositoryHead": "aeb36453d24b1ab30798a2af78809bc639070aac",
+  "branch": "upgrade-redesign",
+  "release": "LOCAL_REVIEW_ONLY",
+  "port": 8212,
+  "files": [
+    {
+      "path": "_goth_swoop_release_20260916/lottominded-ultra.io/games/gothtechnology2/swoop-source/src/detroit/raceMap.ts",
+      "sha256": "c5c6e73d9dfc8417cea0148fceab77a9cd2e83ad6e4a35d77c01e3eba94cb663"
+    },
+    {
+      "path": "_goth_swoop_release_20260916/lottominded-ultra.io/games/gothtechnology2/swoop-source/src/detroit/raceMap.test.ts",
+      "sha256": "3d1942e62efcdd3fca2dad500590229edf4c42c738030ae99a86e091a4b6304c"
+    },
+    {
+      "path": "_goth_swoop_release_20260916/lottominded-ultra.io/games/gothtechnology2/swoop-source/src/detroit/tacticalMap.ts",
+      "sha256": "7cd4066fd437fe0d2723101307dfcf91d4045086ee792b53e5021b9421e4d3d6"
+    },
+    {
+      "path": "_goth_swoop_release_20260916/lottominded-ultra.io/games/gothtechnology2/swoop-source/src/detroit/tacticalHud.css",
+      "sha256": "aeeb5b65c3cde2820de7fc4d10f47fdb76aabf89cae53f4e6baf4b663d3ee21b"
+    },
+    {
+      "path": "_goth_swoop_release_20260916/lottominded-ultra.io/games/gothtechnology2/swoop-source/src/detroit/detroitRaceMap.ts",
+      "sha256": "633d6d0fbfb125ae688517345b372367a4545cdf1e881a9e73498b3e0b406474"
+    },
+    {
+      "path": "_goth_swoop_release_20260916/lottominded-ultra.io/games/gothtechnology2/swoop-source/src/detroit/detroitRaceMap.test.ts",
+      "sha256": "a4926e32bdc8f88db95f5a7bd19cb624f702cf0436f68a7d1df7dc12892a59e4"
+    },
+    {
+      "path": "_goth_swoop_release_20260916/lottominded-ultra.io/games/gothtechnology2/swoop-source/src/detroit/main.ts",
+      "sha256": "fc663f685ef039a2fdf5a5361acf574f40cfe1ba8967952083721e15adba8479"
+    },
+    {
+      "path": "euc-detroit-riverwalk/src/detroit/raceMap.ts",
+      "sha256": "c5c6e73d9dfc8417cea0148fceab77a9cd2e83ad6e4a35d77c01e3eba94cb663"
+    },
+    {
+      "path": "euc-detroit-riverwalk/src/detroit/raceMap.test.ts",
+      "sha256": "3d1942e62efcdd3fca2dad500590229edf4c42c738030ae99a86e091a4b6304c"
+    },
+    {
+      "path": "euc-detroit-riverwalk/src/detroit/tacticalMap.ts",
+      "sha256": "7cd4066fd437fe0d2723101307dfcf91d4045086ee792b53e5021b9421e4d3d6"
+    },
+    {
+      "path": "euc-detroit-riverwalk/src/detroit/tacticalHud.css",
+      "sha256": "97425b6f72d2adc78932d86e36547327de2b7843e0ea08b27c76e6c489affbda"
+    },
+    {
+      "path": "euc-detroit-riverwalk/src/detroit/elmwoodRaceMap.ts",
+      "sha256": "20c618987437f4d1ea7b33d64702980ead708dc155ac5e131d83115d1f94f0c3"
+    },
+    {
+      "path": "euc-detroit-riverwalk/src/detroit/elmwoodRaceMap.test.ts",
+      "sha256": "bb0b02f05f5423185b7651d25ededa32d7e3dedd555c48f3aef621d46f0b2f3e"
+    },
+    {
+      "path": "euc-detroit-riverwalk/src/detroit/elmwood-ride.ts",
+      "sha256": "91a3709462eb15e605114520f3b4b34af511a3a4fec2dcca6111e646043c56af"
+    },
+    {
+      "path": "_goth_swoop_release_20260916/lottominded-ultra.io/games/gothtechnology2/elmwood-source/src/detroit/raceMap.ts",
+      "sha256": "c5c6e73d9dfc8417cea0148fceab77a9cd2e83ad6e4a35d77c01e3eba94cb663"
+    },
+    {
+      "path": "_goth_swoop_release_20260916/lottominded-ultra.io/games/gothtechnology2/elmwood-source/src/detroit/raceMap.test.ts",
+      "sha256": "3d1942e62efcdd3fca2dad500590229edf4c42c738030ae99a86e091a4b6304c"
+    },
+    {
+      "path": "_goth_swoop_release_20260916/lottominded-ultra.io/games/gothtechnology2/elmwood-source/src/detroit/tacticalMap.ts",
+      "sha256": "7cd4066fd437fe0d2723101307dfcf91d4045086ee792b53e5021b9421e4d3d6"
+    },
+    {
+      "path": "_goth_swoop_release_20260916/lottominded-ultra.io/games/gothtechnology2/elmwood-source/src/detroit/tacticalHud.css",
+      "sha256": "97425b6f72d2adc78932d86e36547327de2b7843e0ea08b27c76e6c489affbda"
+    },
+    {
+      "path": "_goth_swoop_release_20260916/lottominded-ultra.io/games/gothtechnology2/elmwood-source/src/detroit/elmwoodRaceMap.ts",
+      "sha256": "20c618987437f4d1ea7b33d64702980ead708dc155ac5e131d83115d1f94f0c3"
+    },
+    {
+      "path": "_goth_swoop_release_20260916/lottominded-ultra.io/games/gothtechnology2/elmwood-source/src/detroit/elmwoodRaceMap.test.ts",
+      "sha256": "bb0b02f05f5423185b7651d25ededa32d7e3dedd555c48f3aef621d46f0b2f3e"
+    },
+    {
+      "path": "_goth_swoop_release_20260916/lottominded-ultra.io/games/gothtechnology2/elmwood-source/src/detroit/elmwood-ride.ts",
+      "sha256": "91a3709462eb15e605114520f3b4b34af511a3a4fec2dcca6111e646043c56af"
+    }
+  ],
+  "mirrorChecks": [
+    {
+      "file": "raceMap.ts",
+      "identical": true
+    },
+    {
+      "file": "raceMap.test.ts",
+      "identical": true
+    },
+    {
+      "file": "tacticalMap.ts",
+      "identical": true
+    },
+    {
+      "file": "tacticalHud.css",
+      "identical": true
+    },
+    {
+      "file": "elmwoodRaceMap.ts",
+      "identical": true
+    },
+    {
+      "file": "elmwoodRaceMap.test.ts",
+      "identical": true
+    },
+    {
+      "file": "elmwood-ride.ts",
+      "identical": true
+    }
+  ],
+  "sharedChecks": [
+    {
+      "file": "raceMap.ts",
+      "identical": true
+    },
+    {
+      "file": "raceMap.test.ts",
+      "identical": true
+    },
+    {
+      "file": "tacticalMap.ts",
+      "identical": true
+    }
+  ],
+  "checks": {
+    "swoop": {
+      "route": "Dequindre Cut entrance to Mack Avenue",
+      "checkpoints": 12,
+      "tests": {
+        "passed": 5,
+        "failed": 0
+      },
+      "typecheck": "PASS",
+      "build": "PASS",
+      "browserMap": "PASS",
+      "freeRideClearsRace": "PASS",
+      "capturedConsoleErrors": 0
+    },
+    "elmwood": {
+      "project": "actual standalone euc-detroit-riverwalk",
+      "route": "Creek Lane",
+      "checkpoints": 12,
+      "tests": {
+        "passed": 5,
+        "failed": 0
+      },
+      "typecheck": "PASS",
+      "build": "PASS",
+      "browserMap": "PASS",
+      "actualGatesPassed": 2,
+      "nextCheckpointObserved": 3,
+      "freeRideClearsRace": "PASS",
+      "capturedConsoleErrors": 0
+    }
+  },
+  "screenshots": [
+    "C:/Users/digit/.codex/visualizations/2026/09/05/01a073f6-892e-70c1-a9a8-7659bc278528/swoop-race-route-20261003.png",
+    "C:/Users/digit/.codex/visualizations/2026/09/05/01a073f6-892e-70c1-a9a8-7659bc278528/elmwood-race-route-20261003.png"
+  ],
+  "notRun": [
+    "Entire race completion in either product",
+    "Actual split/online browser race overlay",
+    "Physical phone/gamepad/VR",
+    "Hosted release verification"
+  ]
+}

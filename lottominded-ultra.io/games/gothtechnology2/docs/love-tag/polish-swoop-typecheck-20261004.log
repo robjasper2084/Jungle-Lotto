@@ -1,0 +1,6 @@
+
+> digital-static-ride@0.9.0 check
+> tsc -p tsconfig.json
+
+src/detroit/main.ts(597,147): error TS2339: Property 'stream' does not exist on type '{ lighting: { count: number; setDusk(value: boolean): void; }; streetFurniture: Record<StreetAsset, number>; materials: Record<string, MeshStandardMaterial>; ... 11 more ...; update(x: number, z: number, time?: number): number; } | { ...; }'.
+  Property 'stream' does not exist on type '{ materials: { lawn: MeshStandardMaterial; lane: MeshStandardMaterial; limestone: MeshStandardMaterial; memorial: MeshStandardMaterial; }; ... 6 more ...; update(x: number, z: number, t?: number): number; }'.

@@ -72,8 +72,9 @@ export async function shareRideTextures(outputRoot) {
     const hash = createHash('sha256').update(await readFile(path)).digest('hex');
     textures.set(hash, { path, mime: entry.name.endsWith('.png') ? 'image/png' : 'image/jpeg' });
   }
-  // Also share repeated shop/gallery textures within Swoop. Keep every pixel;
-  // only the duplicate embedded payloads are removed from the published models.
+  // Externalize model images into the same canonical pool, including unique
+  // images, so the existing image optimizer can inspect color vs. data maps.
+  // Extraction retains the exact original bytes; source models stay intact.
   const repeated = new Map();
   async function collect(directory){
     for(const entry of await readdir(directory,{withFileTypes:true}).catch(()=>[])){
@@ -89,9 +90,10 @@ export async function shareRideTextures(outputRoot) {
       }
     }
   }
-  await collect(resolve(arcade,'swoop-detroit'));
+  const products = ['swoop-detroit', 'elmwood-explorer', 'ride-the-cut'];
+  for (const product of products) await collect(resolve(arcade, product));
   let added=0;
-  for(const [hash,image]of repeated)if(image.count>1&&!textures.has(hash)){
+  for(const [hash,image]of repeated)if(!textures.has(hash)){
     await mkdir(canonical,{recursive:true});const path=resolve(canonical,hash+(image.mime==='image/png'?'.png':'.jpg'));
     await writeFile(path,image.bytes);textures.set(hash,{path,mime:image.mime});added+=image.bytes.length;
   }
@@ -110,7 +112,7 @@ export async function shareRideTextures(outputRoot) {
       }
     }
   }
-  await walk(resolve(arcade, 'swoop-detroit'));
+  for (const product of products) await walk(resolve(arcade, product));
   console.log(`Shared identical ride textures in ${models} models; saved ${(saved / 1048576).toFixed(1)} MiB.`);
   return { saved, models };
 }
