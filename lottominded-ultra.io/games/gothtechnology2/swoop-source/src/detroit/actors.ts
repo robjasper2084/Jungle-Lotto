@@ -19,6 +19,8 @@ import {createGroundSample} from './terrain.ts';
 import {assetConcurrency,loadAssetQueue} from './assetQueue.ts';
 import {ArmorKeychain} from './armorKeychain.ts';
 import {HelmetSkinDecal} from './helmetSkin.ts';
+import {transportedBend} from './limbBend.ts';
+import {WheelLights} from './wheelLights.ts';
 
 type Limb={upper:T.Object3D;knee:T.Object3D;foot:T.Object3D;target:T.Vector3;rotation:T.Quaternion;};
 const v=()=>new T.Vector3(),q=()=>new T.Quaternion();
@@ -30,7 +32,7 @@ function pointBone(bone:T.Object3D,child:T.Object3D,target:T.Vector3){
 export function solve(l:Limb,target:T.Vector3,pole:T.Vector3,rotation?:T.Quaternion,reachFraction=1){
   const a=l.upper.getWorldPosition(v()),b=l.knee.getWorldPosition(v()),c=l.foot.getWorldPosition(v());
   const l1=a.distanceTo(b),l2=b.distanceTo(c),dir=target.clone().sub(a);
-  const d=clamp(dir.length(),.03,(l1+l2)*reachFraction-.0001);dir.normalize();
+  const d=clamp(dir.length(),Math.abs(l1-l2)+.0001,(l1+l2)*reachFraction-.0001);dir.normalize();
   const reachableTarget=a.clone().addScaledVector(dir,d);
   pole.addScaledVector(dir,-pole.dot(dir)).normalize();if(pole.lengthSq()<.01)pole.set(1,0,0);
   const along=(l1*l1+d*d-l2*l2)/(2*d),bend=Math.sqrt(Math.max(0,l1*l1-along*along));
@@ -51,6 +53,7 @@ export async function loadActors(){
   return data;
 }
 export class Hero {
+  readonly lights:WheelLights;
   root=new T.Group();ground=new T.Group();lean=new T.Group();vehicle:T.Object3D;rider:T.Object3D;
   wheel?:T.Object3D;body?:T.Object3D;bodyRestY=0;hips?:T.Object3D;head?:T.Object3D;chest?:T.Object3D;
   spine:T.Object3D[]=[];neck?:T.Object3D;shoulders:T.Object3D[]=[];
@@ -74,7 +77,7 @@ export class Hero {
     for(const z of [-.29,.29]){const truck=new T.Mesh(new T.BoxGeometry(.25,.05,.07),new T.MeshStandardMaterial({color:'#b4b8b9',metalness:.8,roughness:.3}));truck.position.set(0,.095,z);this.skateboard.add(truck);for(const x of [-.145,.145]){const wheel=new T.Mesh(new T.CylinderGeometry(.06,.06,.045,12),new T.MeshStandardMaterial({color:'#e4cf98',roughness:.7}));wheel.rotation.z=Math.PI/2;wheel.position.set(x,.06,z);this.skateboard.add(wheel);this.skateWheels.push(wheel);}}
     this.skateboard.visible=false;this.skateContact=new CrashContact(this.skateboard);
     const clip=data.get(riderId)!.animations[0];if(clip){const m=new T.AnimationMixer(this.rider);m.clipAction(clip).play();m.setTime(0);}
-    prepare(this.root);this.root.updateMatrixWorld(true);
+    prepare(this.root);this.root.updateMatrixWorld(true);this.lights=new WheelLights(this.vehicle);
     this.wheel=this.vehicle.getObjectByName('Wheel_Pivot');this.body=this.vehicle.getObjectByName('Body_Suspension');this.bodyRestY=this.body?.position.y??0;this.hips=this.rider.getObjectByName('Hips');this.head=this.rider.getObjectByName('Head');
     // This asset names the spine from the chest DOWN. Bind in anatomical parent order.
     this.spine=['Spine02','Spine01','Spine'].map(name=>this.rider.getObjectByName(name)).filter((bone):bone is T.Object3D=>!!bone);
@@ -98,7 +101,7 @@ export class Hero {
       this.apply({...initialMountedPose()});const box=new T.Box3().setFromObject(this.root,true);
       this.mountedVolume={radius:Math.max(.4,Math.abs(box.min.x),Math.abs(box.max.x),Math.abs(box.min.z),Math.abs(box.max.z))+.06,height:box.max.y+.08};
   }
-  dispose(){this.armorKeychain?.dispose();this.helmetSkin?.dispose();this.skateboard.traverse(o=>{if(o instanceof T.Mesh){o.geometry.dispose();(o.material as T.Material).dispose();}});this.hairWind.dispose();this.saddle.geometry.dispose();(this.saddle.material as T.Material).dispose();this.visibility.dispose();this.root.removeFromParent();this.rider.traverse(o=>{if((o as T.SkinnedMesh).isSkinnedMesh)(o as T.SkinnedMesh).skeleton.dispose();});}
+  dispose(){this.lights.dispose();this.armorKeychain?.dispose();this.helmetSkin?.dispose();this.skateboard.traverse(o=>{if(o instanceof T.Mesh){o.geometry.dispose();(o.material as T.Material).dispose();}});this.hairWind.dispose();this.saddle.geometry.dispose();(this.saddle.material as T.Material).dispose();this.visibility.dispose();this.root.removeFromParent();this.rider.traverse(o=>{if((o as T.SkinnedMesh).isSkinnedMesh)(o as T.SkinnedMesh).skeleton.dispose();});}
   pedalTarget(l:Limb,suspensionOffset:number){return this.vehicle.localToWorld(l.target.clone().add(new T.Vector3(0,suspensionOffset,0)));}
   footTarget(index:number,p:RidePose){
     const target=this.pedalTarget(this.legs[index],p.suspensionOffset);
@@ -114,6 +117,7 @@ export class Hero {
     return target;
   }
   apply(p:RidePose){
+    this.lights.update(p,typeof matchMedia!=='undefined'&&(matchMedia('(prefers-reduced-motion: reduce)').matches||document.documentElement.dataset.reducedMotion==='true'));
     this.armorKeychain?.update(p,typeof matchMedia!=='undefined'&&matchMedia('(prefers-reduced-motion: reduce)').matches);
     if(this.skateboarding&&p.crashBlend===0)p={...p,stopFoot:0,seated:0};
     this.hairWind.update(p.speed,p.headingY,typeof matchMedia!=='undefined'&&matchMedia('(prefers-reduced-motion: reduce)').matches);
@@ -224,7 +228,7 @@ export class Hero {
         target.lerp(protective,Math.min(1,p.crashBrace*1.7+p.crashRelease));
         armPole.lerp(bodyUp.negate().addScaledVector(bodyForward,.25),p.crashSettle);
       }
-      solve(l,target,armPole,undefined,.975);
+      solve(l,target,transportedBend(shoulder,elbow,hand,target,armPole),undefined,.975);
       // Bone reset preserved the authored hand-to-forearm orientation. Follow that
       // frame completely, then add a small passive flex about its own lateral axis.
       // A world-down blend was still pulling against the elbow's balance movement.

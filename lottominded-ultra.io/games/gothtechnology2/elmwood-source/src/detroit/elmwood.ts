@@ -1,4 +1,6 @@
 import {FrameSchedule} from './frameSchedule.ts';
+import {loadingCinema} from './loadingCinema.ts';
+const loadingCard=loadingCinema();
 import {SpatialAssetStream} from './spatialAssetStream.ts';
 
 import {makeElmwoodVR} from './elmwood-vr.ts';
@@ -789,3 +791,4 @@ if(measured){canvas.dataset.rideMsP95=frameStats.rideMsP95.toFixed(2);canvas.dat
 
 
 
+loadingCard.finish();

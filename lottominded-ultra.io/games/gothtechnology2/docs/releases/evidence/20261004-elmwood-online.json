@@ -1,0 +1,82 @@
+{
+  "host": {
+    "bots": 0,
+    "connected": true,
+    "difficulty": "expert",
+    "healthy": true,
+    "host": true,
+    "local": false,
+    "match": "72e9bf0d-59db-4dad-ab8a-1ab4fa4309d2",
+    "mode": "free",
+    "own": 0,
+    "players": 2,
+    "positions": [
+      {
+        "x": 4.7674411036696105,
+        "z": 9.695732839398394
+      },
+      {
+        "x": 86.81798677656911,
+        "z": -32.17799080346839
+      }
+    ],
+    "remoteInputs": [
+      null,
+      {
+        "age": 17.400000035762787,
+        "seq": 867,
+        "throttle": 0.65
+      }
+    ],
+    "room": "06e1169d3b79b2c87989fc25f9e7ad81",
+    "sentInput": {
+      "crouch": false,
+      "hop": false,
+      "hopHeld": false,
+      "reset": false,
+      "steer": 0,
+      "throttle": 0,
+      "trick": 0
+    },
+    "sequence": -1,
+    "slot": 0
+  },
+  "guest": {
+    "bots": 0,
+    "connected": true,
+    "difficulty": "expert",
+    "healthy": true,
+    "host": false,
+    "local": false,
+    "match": "72e9bf0d-59db-4dad-ab8a-1ab4fa4309d2",
+    "mode": "free",
+    "own": 1,
+    "players": 2,
+    "positions": [
+      {
+        "x": 4.7674411036696105,
+        "z": 9.695732839398394
+      },
+      {
+        "x": 86.8179867765691,
+        "z": -32.17799080346838
+      }
+    ],
+    "remoteInputs": [
+      null,
+      null
+    ],
+    "room": "06e1169d3b79b2c87989fc25f9e7ad81",
+    "sentInput": {
+      "crouch": false,
+      "hop": false,
+      "hopHeld": false,
+      "reset": false,
+      "steer": 0,
+      "throttle": 0.65,
+      "trick": 0
+    },
+    "sequence": 854,
+    "slot": 1
+  }
+}

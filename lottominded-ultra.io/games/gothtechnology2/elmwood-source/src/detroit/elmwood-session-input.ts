@@ -1,11 +1,13 @@
 import {NEUTRAL_ACTIONS,type RideActions} from '@digital-static/ridecore';
 
-export type Binding='wasd'|'arrows'|'touch'|`pad:${number}`;
+export type Binding='wasd'|'arrows'|'ijkl'|'numpad'|'touch'|`pad:${number}`;
 export type Action='forward'|'brake'|'left'|'right'|'crouch'|'hop'|'recover'|'camera'|'trick'|'cruise';
 export type Pad={index:number;id:string;connected:boolean;axes:readonly number[];buttons:readonly {pressed:boolean;value:number}[]};
-export const KEYSETS:Record<'wasd'|'arrows',Record<string,Action>>={
+export const KEYSETS:Record<'wasd'|'arrows'|'ijkl'|'numpad',Record<string,Action>>={
   wasd:{KeyW:'forward',KeyS:'brake',KeyA:'left',KeyD:'right',Space:'hop',ShiftLeft:'crouch',KeyR:'recover',KeyC:'camera',KeyT:'trick',KeyV:'cruise'},
   arrows:{ArrowUp:'forward',ArrowDown:'brake',ArrowLeft:'left',ArrowRight:'right',Enter:'hop',ShiftRight:'crouch',Backspace:'recover',Slash:'camera',Period:'trick',Quote:'cruise'},
+  ijkl:{KeyI:'forward',KeyK:'brake',KeyJ:'left',KeyL:'right',KeyU:'hop',KeyO:'crouch',KeyY:'recover',KeyB:'camera',KeyH:'trick',KeyF:'cruise'},
+  numpad:{Numpad8:'forward',Numpad5:'brake',Numpad4:'left',Numpad6:'right',Numpad0:'hop',Numpad1:'crouch',Numpad7:'recover',Numpad9:'camera',Numpad3:'trick',NumpadDecimal:'cruise'},
 };
 const edgeActions=new Set<Action>(['hop','recover','camera','trick','cruise']);
 const dead=(n:number)=>Number.isFinite(n)&&Math.abs(n)>.15?Math.sign(n)*(Math.min(1,Math.abs(n))-.15)/.85:0;
@@ -27,11 +29,11 @@ class SeatInput {
 }
 /** Device events stay outside the fixed-step simulation. Edge actions are consumed once. */
 export class ElmwoodSessionInput {
-  seats=[new SeatInput(),new SeatInput()];bindings:Binding[]=['wasd','arrows'];count=1;
+  seats=Array.from({length:4},()=>new SeatInput());bindings:Binding[]=['wasd','arrows'];count=1;
   configure(bindings:Binding[]){this.clear();this.bindings=bindings;this.count=bindings.length;for(const s of this.seats)s.padId='';}
   clear(seat?:number){if(seat===undefined)this.seats.forEach(s=>s.clear());else this.seats[seat].clear();}
   key(code:string,down:boolean,repeat=false){let handled=false;for(let i=0;i<this.count;i++){
-    const b=this.bindings[i];let action=b==='wasd'||b==='arrows'?KEYSETS[b][code]:undefined;
+    const b=this.bindings[i];let action=b==='wasd'||b==='arrows'||b==='ijkl'||b==='numpad'?KEYSETS[b][code]:undefined;
     // Preserve the original single-player arrow-key fallback.
     if(this.count===1&&b==='wasd')action??=KEYSETS.arrows[code];
     if(action){if(!down||!repeat)this.seats[i].set('keyboard',action,down);handled=true;}

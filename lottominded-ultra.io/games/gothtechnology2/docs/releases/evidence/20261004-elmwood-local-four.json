@@ -1,0 +1,4 @@
+{
+  "online": "{\"bots\":0,\"connected\":false,\"room\":\"\",\"host\":false,\"slot\":-1,\"players\":4,\"sequence\":-1,\"healthy\":false,\"sentInput\":{\"throttle\":0,\"steer\":0,\"crouch\":false,\"hop\":false,\"hopHeld\":false,\"reset\":false,\"trick\":0},\"local\":true,\"own\":0,\"positions\":[{\"x\":8.474971022280767,\"z\":7.875495416832091},{\"x\":6.423925695868485,\"z\":9.851446304456797},{\"x\":3.843754183960262,\"z\":10.149567620250961},{\"x\":2.3550363569138137,\"z\":9.321161967826535}]}",
+  "players": "4"
+}

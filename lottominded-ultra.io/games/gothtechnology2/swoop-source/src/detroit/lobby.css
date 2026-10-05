@@ -45,13 +45,13 @@ body:not(.playing)>header,body:not(.playing)>.speed,body:not(.playing)>.session,
 .lobbyMoreItems{position:absolute;right:0;top:calc(100% + 8px);z-index:12;width:250px;display:grid;gap:5px;padding:10px;background:#0b1725;border:1px solid #91c7e270;border-radius:12px;box-shadow:0 18px 50px #0009}
 .lobbyMoreItems button{width:100%;text-align:left;min-height:48px;border-color:var(--edge);font-size:16px;color:var(--paper)}
 .lobbyIntro{padding:30px 0 22px;max-width:730px}.lobbyKicker{margin-bottom:14px;font-size:12px;letter-spacing:2px}
-#menu #menuTitle{font-size:clamp(50px,5.7vw,88px);letter-spacing:-3px;line-height:.98;margin-bottom:14px;max-width:730px}
-#menu #menuCopy{font-size:18px;line-height:1.5;max-width:560px}
-.lobbyDeck{width:min(100%,580px)}#menu .menuInner{padding:26px;border-color:#91c7e250}
-#menu h2{font-size:28px;margin-bottom:12px}
-#menu #setupSummary{font-size:15px;line-height:1.5;color:var(--muted);margin:0 0 18px;overflow-wrap:anywhere}
+#menu #menuTitle{font-size:clamp(44px,4.4vw,68px);letter-spacing:-2px;line-height:1.02;margin-bottom:14px;max-width:730px}
+#menu #menuCopy{font-size:16px;line-height:1.5;max-width:560px}
+.lobbyDeck{width:min(100%,460px)}#menu .menuInner{padding:24px;border-color:#91c7e250;box-shadow:0 20px 60px #0003}
+#menu h2{font-size:24px;margin-bottom:12px}
+#menu #setupSummary{font-size:14px;line-height:1.5;color:var(--muted);margin:0 0 18px;overflow-wrap:anywhere}
 #menu .launchActions{display:grid;grid-template-columns:1.25fr 1fr;gap:10px;margin:0}
-#menu #start,#menu #learnRide{min-height:56px;font-size:17px;letter-spacing:0;padding:14px;font-weight:750}
+#menu #start,#menu #learnRide{min-height:50px;font-size:15px;letter-spacing:0;padding:12px;font-weight:750}
 #menu #learnRide{background:#16363f;border:1px solid #79b3be80;color:var(--paper)}#menu #learnRide:hover{background:#204c55}
 #menu:not([data-tab=ride]) .launchActions{grid-template-columns:1fr}
 #menu #resumeRide{grid-column:1/-1;min-height:50px;font-size:16px}
@@ -68,6 +68,7 @@ body:not(.playing)>header,body:not(.playing)>.speed,body:not(.playing)>.session,
 #menu .options label,#menu .cycleOptions label,#menu #splitSetup label{display:flex;flex-direction:column;gap:8px}
 #menu select{font-size:16px;min-height:50px;padding:12px;min-width:0}
 #menu .cycleOptions{display:grid;gap:16px;margin-top:16px}#menu #bikeOptions p{font-size:15px;line-height:1.5;font-weight:400;color:var(--muted);margin:10px 0 0}
+#menu .cycleOptions>label[for="ride-vehicle"]{display:none}
 #menu .lobbyPlaceButtons{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 #menu .lobbyPlaceButtons button{min-height:60px;text-align:left;padding:14px;font-size:16px;line-height:1.4;background:#193044;color:var(--paper);border-color:#6e95b270}
 #menu .landmarkMissionCard{margin:16px 0 0;padding:18px}#menu .landmarkMissionCard p{font-size:15px}#menu .landmarkMissionCard button{font-size:16px;min-height:48px}

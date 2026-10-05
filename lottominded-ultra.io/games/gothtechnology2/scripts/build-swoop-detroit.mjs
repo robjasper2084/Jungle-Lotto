@@ -67,9 +67,9 @@ await cp(resolve(source,'public/exports/visitors'),resolve(out,'exports/visitors
 await copyFile(resolve(source,'public/mural-credits.html'),resolve(out,'mural-credits.html'));
 for(const file of ['manifest.webmanifest','touch-icon.png'])await copyFile(resolve(source,'public',file),resolve(out,file));
 // Removed by request: Digital static (2). Preserve the original asset pack.
-await cp(resolve(pack,'audio/swoop'),resolve(out,'audio/swoop'),{recursive:true,filter:file=>!['track-12.mp3','catalog.json'].includes(basename(file))});
+await cp(resolve(pack,'audio/swoop'),resolve(out,'audio/swoop'),{recursive:true,filter:file=>!['track-12.mp3','track-13.mp3','catalog.json'].includes(basename(file))});
 const soundtrackCatalog=JSON.parse(await readFile(resolve(pack,'audio/swoop/catalog.json'),'utf8'));
-await writeFile(resolve(out,'audio/swoop/catalog.json'),JSON.stringify(soundtrackCatalog.filter(track=>track.id!=='track-12'),null,2)+'\n');
+await writeFile(resolve(out,'audio/swoop/catalog.json'),JSON.stringify(soundtrackCatalog.filter(track=>!['track-12','track-13'].includes(track.id)),null,2)+'\n');
 await cp(resolve(pack,'detroit/geospatial'),resolve(out,'geospatial'),{recursive:true});
 // The canonical Swoop JSON exceeds GitHub's blob limit. Both modern and older
 // browsers decode the same gzip fixture; authoring JSON stays outside release.

@@ -168,7 +168,7 @@ export type EucProfile=typeof EUC_MODELS[number];
 export const isCycle=(value:string)=>value==='bicycle'||value.startsWith('ebike:');
 export const ebikeProfile=(value:string)=>EBIKES.find(p=>value==='ebike:'+p.id);
 export const eucProfile=(value:string)=>EUC_MODELS.find(p=>value==='euc:'+p.id);
-export function vehicleOptions(select:HTMLSelectElement){for(const p of EUC_MODELS)select.add(new Option(p.name+' · '+Math.round(p.topKph)+' km/h','euc:'+p.id));for(const p of EBIKES)select.add(new Option('Electric moto · '+p.name+' · '+Math.round(p.topKph)+' km/h','ebike:'+p.id));}
+export function vehicleOptions(select:HTMLSelectElement){const previous=select.value;select.replaceChildren(new Option('Classic electric unicycle','euc'),...EUC_MODELS.map(p=>new Option(p.name+' · '+Math.round(p.topKph)+' km/h','euc:'+p.id)));select.value=[...select.options].some(o=>o.value===previous)?previous:'euc';}
 export function vehicleSummary(value:string){const p=ebikeProfile(value)||eucProfile(value);return p?p.name+' · '+Math.round(p.topKph)+' km/h ceiling ('+Math.round(p.topKph/1.609344)+' mph) · '+p.feel:value==='bicycle'?'Bicycle · pedal, coast and brake.':'Original electric unicycle · familiar ride and tricks.';}
 export function eucHandling(p:EucProfile){return {maxSpeed:p.topKph/3.6,reverseSpeed:2.8,driveAcceleration:p.driveAcceleration,brakeAcceleration:p.brakeAcceleration,launchJerk:p.launchJerk,brakeJerk:60,releaseJerk:25,lowSpeedYaw:p.lowSpeedYaw,highSpeedYaw:p.highSpeedYaw,maxLean:p.maxLean,hopSpeed:p.hopSpeed,version:'Digital Static Motion 4.1 / '+p.name};}
 
