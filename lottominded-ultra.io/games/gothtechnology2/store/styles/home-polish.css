@@ -84,6 +84,7 @@ body[data-cinematic=true] #underground-dialog .reward-live{font:14px/1.5 var(--s
   body[data-cinematic=true] .cathedral-hero{min-height:620px}
 }
 @media(max-width:900px){
+  body[data-cinematic=true] .cathedral-hero .hero-image{object-position:82% center}
   body[data-cinematic=true] .cathedral-hero .hero-copy{inset:28px 24px auto}
   body[data-cinematic=true] .cathedral-hero .hero-copy .hero-kicker{font:12px/1.4 var(--mono);letter-spacing:.22em;max-width:none;margin:0 0 10px}
   body[data-cinematic=true] .cathedral-hero .hero-copy .hero-support{font:16px/1.5 var(--sans);max-width:40ch;margin:12px auto 0;text-wrap:balance}
