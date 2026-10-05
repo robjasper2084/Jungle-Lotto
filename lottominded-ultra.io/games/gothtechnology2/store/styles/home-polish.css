@@ -78,3 +78,33 @@ body[data-cinematic=true] #underground-dialog .reward-live{font:14px/1.5 var(--s
   body[data-cinematic=true] #underground-rewards .reward-scoring>div{grid-template-columns:1fr;gap:4px}
 }
 @media(max-width:480px){body[data-cinematic=true] #underground-rewards .reward-games{grid-template-columns:1fr}}
+
+/* Keep the supplied opening composition readable on tablets and phones. */
+@media(max-width:1280px){
+  body[data-cinematic=true] .cathedral-hero{min-height:620px}
+}
+@media(max-width:900px){
+  body[data-cinematic=true] .cathedral-hero .hero-copy{inset:28px 24px auto}
+  body[data-cinematic=true] .cathedral-hero .hero-copy .hero-kicker{font:12px/1.4 var(--mono);letter-spacing:.22em;max-width:none;margin:0 0 10px}
+  body[data-cinematic=true] .cathedral-hero .hero-copy .hero-support{font:16px/1.5 var(--sans);max-width:40ch;margin:12px auto 0;text-wrap:balance}
+}
+@media(max-width:760px){
+  /* Music remains available beside the background controls in the hero. */
+  body[data-cinematic=true] .site-header .music-toggle{display:none}
+  body[data-cinematic=true] .site-header{padding:8px 14px;min-height:60px}
+  body[data-cinematic=true] .cathedral-hero{height:calc(100svh - 122px);min-height:650px;max-height:none;display:flex;flex-direction:column;justify-content:space-between;padding:24px 20px 16px}
+  body[data-cinematic=true] .cathedral-hero .hero-copy{position:relative;inset:auto;width:100%;padding:0}
+  body[data-cinematic=true] .cathedral-hero h1{font-size:clamp(32px,8.5vw,52px);line-height:1.02}
+  body[data-cinematic=true] .cathedral-hero .hero-copy .hero-support{font-size:14px;max-width:38ch}
+  body[data-cinematic=true] .cathedral-hero .hero-image{inset:140px 0 auto;width:100%;height:calc(100% - 190px);object-position:82% center}
+  body[data-cinematic=true] .cathedral-hero:before{background:linear-gradient(180deg,#050605 0,#050605e8 16%,transparent 35%,transparent 58%,#050605e8 88%,#050605 100%)}
+  body[data-cinematic=true] .cathedral-hero .hero-opening-footer{position:relative;inset:auto;width:100%;gap:12px}
+  body[data-cinematic=true] .cathedral-hero .cathedral-actions{width:100%}
+  body[data-cinematic=true] .cathedral-hero .hero-primary-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:100%;gap:8px}
+  body[data-cinematic=true] .cathedral-hero .cathedral-actions .button{min-width:0;min-height:48px;font-size:12px;padding:12px 8px;letter-spacing:.035em}
+  body[data-cinematic=true] main .cathedral-hero .cathedral-caption{font-size:11px;line-height:1.45;flex-direction:column;gap:2px}
+  body[data-cinematic=true] .cathedral-hero .hero-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;width:100%}
+  body[data-cinematic=true] .cathedral-hero .hero-controls .text-button{min-height:44px;font-size:12px;padding:10px 8px}
+  body[data-cinematic=true] .cathedral-hero .hero-settings{grid-column:1/-1;justify-self:center}
+}
+
