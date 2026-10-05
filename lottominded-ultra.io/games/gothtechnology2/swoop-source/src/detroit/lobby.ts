@@ -29,18 +29,18 @@ export function installLobby(elmwood:boolean,onRace:()=>void,onSplit:()=>void){
  const splitHelp=document.createElement('details');splitHelp.className='lobbyDisclosure';splitHelp.innerHTML='<summary>How to play together</summary>';for(const p of [...splitSetup.querySelectorAll('p')].slice(1,3))splitHelp.append(p);splitSetup.append(splitHelp);
  const customize=document.createElement('details');customize.id='rideCustomize';customize.className='lobbyDisclosure';customize.innerHTML='<summary><span>Customize your ride</span><small>Rider, wheels & starting point</small></summary>';
  const customBody=document.createElement('div');customBody.className='lobbyDisclosureBody';customBody.append(setup.querySelector('.options')!,$('ride-vehicle').closest('.cycleOptions')!);customize.append(customBody);setup.append(customize);
- const wheels=makeRidePicker($('ride-vehicle') as HTMLSelectElement);setupHeading.after(wheels.root);
- const actions=document.createElement('div');actions.className='launchActions';actions.append($('resumeRide'),$('start'));wheels.root.after($('setupSummary'),actions,$('startReason'));
+ const wheels=makeRidePicker($('ride-vehicle') as HTMLSelectElement);customBody.insertBefore(wheels.root,$('ride-vehicle').closest('.cycleOptions'));
+ const actions=document.createElement('div');actions.className='launchActions';actions.append($('resumeRide'),$('start'));setupHeading.after($('setupSummary'),actions,$('startReason'));
  const places=document.createElement('details');places.id='ridePlaces';places.className='lobbyDisclosure';places.hidden=elmwood;places.innerHTML='<summary><span>Places & activities</span><small>Stores, skate park & landmark mission</small></summary>';
  const placeBody=document.createElement('div');placeBody.className='lobbyDisclosureBody';const placeButtons=document.createElement('div');placeButtons.className='lobbyPlaceButtons';placeBody.append(placeButtons);places.append(placeBody);setup.append(places);placeButtons.append($('community-start'));$('community-start').hidden=elmwood;
- const essentials=document.createElement('p');essentials.className='lobbyEssentials';essentials.innerHTML='<strong>Pick your wheels → Press Play → Explore!</strong> Use arrow keys or the left stick. Pause any time.';actions.after(essentials);
+ const essentials=document.createElement('p');essentials.className='lobbyEssentials';essentials.innerHTML='<strong>You can go at your own pace.</strong> Pause or return to the menu at any time.';actions.after(essentials);
  const settings=document.createElement('div');settings.id='lobbySettings';settings.className='lobbyPanel';settings.innerHTML='<p class="eyebrow">MAKE IT YOUR RIDE</p><h2>Settings</h2><p>Choose your steering, comfort speed and view. Your riding controls stay the same.</p>';
  settings.append(setup.querySelector('.vrControls')!,$('enterVR'),$('controllerStatus'));
  for(const hint of [...setup.querySelectorAll('.hint,.touchHint')])settings.append(hint);
  const garage=document.createElement('div');garage.id='lobbyGarage';garage.className='lobbyPanel';garage.innerHTML='<p class="eyebrow">YOUR OWN FREQUENCY</p><h2>Garage & soundtrack</h2>';
  garage.append($('rideGarage'),$('musicPanel'));garage.querySelectorAll('details').forEach(d=>d.open=true);
  deck.append(garage,settings);
- const footer=document.createElement('div');footer.className='lobbyFooter';footer.innerHTML='<span>ONE WHEEL. FOUR PERSONALITIES.</span><span>KEYBOARD / TOUCH / CONTROLLER / VR</span>';menu.append(footer);
+ const footer=document.createElement('div');footer.className='lobbyFooter';footer.innerHTML='<span>ONE WHEEL. FIVE HEROES.</span><span>KEYBOARD / TOUCH / CONTROLLER / VR</span>';menu.append(footer);
  const mode=$('mode') as HTMLSelectElement;mode.closest('label')!.hidden=true;
  const tabs=chrome.querySelector('nav')!;
  const more=document.createElement('details');more.className='lobbyMore';more.innerHTML='<summary>More <span aria-hidden="true">⌄</span></summary><div class="lobbyMoreItems"></div>';const moreItems=more.querySelector<HTMLElement>('.lobbyMoreItems')!;
@@ -78,7 +78,7 @@ export function installLobby(elmwood:boolean,onRace:()=>void,onSplit:()=>void){
  chrome.querySelector('a')!.onclick=e=>{e.preventDefault();show('ride');};
  $('menuButton').addEventListener('click',()=>show(['race','split'].includes(mode.value)?mode.value:'ride'));
  show(['race','split'].includes(new URLSearchParams(location.search).get('tab')??'')?new URLSearchParams(location.search).get('tab')!:'ride');
- return {actions,placeButtons,placeBody,finish(){
+ return {actions,moreItems,placeButtons,placeBody,finish(){
   // Late-created features keep their existing click handlers when grouped here.
   for(const button of [...tabs.querySelectorAll<HTMLButtonElement>(':scope > button')])if(!['ride','race','split','online'].includes(button.dataset.lobbyTab??'')){moreItems.append(button);button.addEventListener('click',()=>{more.dataset.active='true';});}
  }};

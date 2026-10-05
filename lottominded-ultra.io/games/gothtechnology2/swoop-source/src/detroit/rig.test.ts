@@ -29,6 +29,31 @@ const data=new Map([['DS_Man_01',await mesh('DS_Man_01',0)],['DS_EUC_01',await m
 const h=new Hero(data);
 const hoodie=await mesh('DS_Hoodie_Woman_01',1);data.set('DS_Hoodie_Woman_01',hoodie);
 
+test('all five heroes retain limb lengths and continuous skin during riding and falls',async t=>{
+ for(const {id} of RIDER_CHOICES){
+  if(!data.has(id))data.set(id,await mesh(id,1));
+  const hero=new Hero(data,undefined,id),limbs=[...hero.legs,...hero.arms];
+  const lengths=limbs.map(l=>[l.upper.getWorldPosition(new Vector3()).distanceTo(l.knee.getWorldPosition(new Vector3())),l.knee.getWorldPosition(new Vector3()).distanceTo(l.foot.getWorldPosition(new Vector3()))]);
+  const surfaces:{mesh:SkinnedMesh;edges:[number,number][];posed:Vector3[]}[]=[];
+  hero.rider.traverse(o=>{const m=o as SkinnedMesh;if(!m.isSkinnedMesh||!m.geometry.index)return;const p=m.geometry.attributes.position,index=m.geometry.index,edges:[number,number][]=[],a=new Vector3(),b=new Vector3();
+   for(let i=0;i<index.count;i+=3)for(let k=0;k<3;k++){const u=index.getX(i+k),v=index.getX(i+(k+1)%3);a.fromBufferAttribute(p,u);b.fromBufferAttribute(p,v);if(a.distanceTo(b)<.004)edges.push([u,v]);}
+   surfaces.push({mesh:m,edges,posed:Array.from({length:p.count},()=>new Vector3())});
+  });
+  assert.ok(surfaces.some(s=>s.edges.length>100),id+' needs actual dense skin');
+  let worst=0;
+  const p=createPose(),fall=new FallMotion({...p,speed:8},'collision');
+  for(let f=0;f<48;f++){
+   const pose=createPose();
+   if(f<24)Object.assign(pose,{speed:7,rollAngle:Math.sin(f/24*Math.PI*2)*.45,riderRoll:Math.sin(f/24*Math.PI*2)*.3,crouch:Math.sin(f/24*Math.PI)**2,riderPitch:.32,naturalMotion:1,bodyPitch:.35,bodyDrop:.16});
+   else fall.sample((f-24)/23*2,pose);
+   hero.apply(pose);
+   limbs.forEach((l,i)=>{const a=l.upper.getWorldPosition(new Vector3()),b=l.knee.getWorldPosition(new Vector3()),c=l.foot.getWorldPosition(new Vector3());assert.ok(Math.abs(a.distanceTo(b)-lengths[i][0])<.001,id+' stretched upper limb');assert.ok(Math.abs(b.distanceTo(c)-lengths[i][1])<.001,id+' stretched lower limb');});
+   for(const {mesh:m,edges,posed} of surfaces){m.skeleton.update();posed.forEach((v,i)=>{m.getVertexPosition(i,v);assert.ok(v.toArray().every(Number.isFinite),id+' non-finite skin');});for(const [u,v]of edges)worst=Math.max(worst,posed[u].distanceTo(posed[v]));}
+  }
+  assert.ok(worst<.05,`${id} tiny skin edge opens into a ${worst}m seam`);t.diagnostic(`${id} maximum short skin edge ${(worst*1000).toFixed(2)}mm`);hero.dispose();
+ }
+});
+
 test('inactive fall offsets cannot leave a mounted rider beside the wheel after recovery',()=>{
  for(const id of ['DS_Man_01','DS_Hoodie_Woman_01'] as const){
   const hero=new Hero(data,undefined,id),normal=createPose();Object.assign(normal,{x:12,y:3,z:-40,headingY:1.4});hero.apply(normal);

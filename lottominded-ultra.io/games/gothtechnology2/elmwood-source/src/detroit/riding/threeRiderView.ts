@@ -9,6 +9,8 @@ import {HUMAN_PROFILE,type RiderProfile} from '@digital-static/ridecore';
 import { riderMotion } from './riderMotion.ts';
 import {CrashContact} from './crashContact.ts';
 import type {TerrainSampler} from '@digital-static/ridecore';
+import {transportedBend} from '../limbBend.ts';
+import {WheelLights} from '../wheelLights.ts';
 
 type Limb={upper:T.Object3D;knee:T.Object3D;foot:T.Object3D;target:T.Vector3;rotation:T.Quaternion;};
 const v=()=>new T.Vector3(),q=()=>new T.Quaternion();
@@ -20,7 +22,7 @@ function pointBone(bone:T.Object3D,child:T.Object3D,target:T.Vector3){
 function solve(l:Limb,target:T.Vector3,pole:T.Vector3,rotation?:T.Quaternion,reachFraction=1){
   const a=l.upper.getWorldPosition(v()),b=l.knee.getWorldPosition(v()),c=l.foot.getWorldPosition(v());
   const l1=a.distanceTo(b),l2=b.distanceTo(c),dir=target.clone().sub(a);
-  const d=clamp(dir.length(),.03,(l1+l2)*reachFraction-.0001);dir.normalize();
+  const d=clamp(dir.length(),Math.abs(l1-l2)+.0001,(l1+l2)*reachFraction-.0001);dir.normalize();
   const reachableTarget=a.clone().addScaledVector(dir,d);
   pole.addScaledVector(dir,-pole.dot(dir)).normalize();if(pole.lengthSq()<.01)pole.set(1,0,0);
   const along=(l1*l1+d*d-l2*l2)/(2*d),bend=Math.sqrt(Math.max(0,l1*l1-along*along));
@@ -30,6 +32,7 @@ function solve(l:Limb,target:T.Vector3,pole:T.Vector3,rotation?:T.Quaternion,rea
 function rotateWorld(bone:T.Object3D|undefined,axis:T.Vector3,angle:number){if(!bone)return;const w=bone.getWorldQuaternion(q()).premultiply(q().setFromAxisAngle(axis,angle));bone.quaternion.copy(bone.parent!.getWorldQuaternion(q()).invert().multiply(w));bone.updateWorldMatrix(false,true);}
 function prepare(o:T.Object3D){o.traverse(n=>{const m=n as T.Mesh;if(m.isMesh){m.castShadow=true;m.receiveShadow=true;m.frustumCulled=!(m as T.SkinnedMesh).isSkinnedMesh;}});}
 export class ThreeRiderView {
+  readonly lights:WheelLights;
   root=new T.Group();ground=new T.Group();lean=new T.Group();vehicle:T.Object3D;rider:T.Object3D;
   wheel?:T.Object3D;body?:T.Object3D;bodyRestY=0;hips?:T.Object3D;head?:T.Object3D;chest?:T.Object3D;
   spine:T.Object3D[]=[];neck?:T.Object3D;shoulders:T.Object3D[]=[];
@@ -45,7 +48,7 @@ export class ThreeRiderView {
     this.vehicle=wheelAsset.scene.clone(true);this.rider=clone(riderAsset.scene);
     this.vehicle.scale.setScalar(this.wheelScale);this.rider.position.y=this.mountHeight;this.lean.add(this.vehicle,this.rider);
     const clip=riderAsset.animations[0];if(clip){const m=new T.AnimationMixer(this.rider);m.clipAction(clip).play();m.setTime(0);}
-    prepare(this.root);this.root.updateMatrixWorld(true);
+    prepare(this.root);this.root.updateMatrixWorld(true);this.lights=new WheelLights(this.vehicle);
     this.wheel=this.vehicle.getObjectByName('Wheel_Pivot');this.body=this.vehicle.getObjectByName('Body_Suspension');this.bodyRestY=this.body?.position.y??0;this.hips=this.rider.getObjectByName('Hips');this.head=this.rider.getObjectByName('Head');
     // This asset names the spine from the chest DOWN. Bind in anatomical parent order.
     this.spine=['Spine02','Spine01','Spine'].map(name=>this.rider.getObjectByName(name)).filter((bone):bone is T.Object3D=>!!bone);
@@ -64,7 +67,7 @@ export class ThreeRiderView {
     this.riderContact=new CrashContact(this.rider);this.wheelContact=new CrashContact(this.vehicle);
     if(this.rider.getObjectByName('Armored_Rider_Surface')){this.armorKeychain=new ArmorKeychain(this.rider);this.helmetSkin=new HelmetSkinDecal(this.rider);}
   }
-  dispose(){this.armorKeychain?.dispose();this.helmetSkin?.dispose();this.root.removeFromParent();this.rider.traverse(o=>{if((o as T.SkinnedMesh).isSkinnedMesh)(o as T.SkinnedMesh).skeleton.dispose();});}
+  dispose(){this.lights.dispose();this.armorKeychain?.dispose();this.helmetSkin?.dispose();this.root.removeFromParent();this.rider.traverse(o=>{if((o as T.SkinnedMesh).isSkinnedMesh)(o as T.SkinnedMesh).skeleton.dispose();});}
   pedalTarget(l:Limb,suspensionOffset:number){return this.vehicle.localToWorld(l.target.clone().add(new T.Vector3(0,suspensionOffset,0)));}
   footTarget(index:number,p:RidePose){
     const target=this.pedalTarget(this.legs[index],p.suspensionOffset);
@@ -80,6 +83,7 @@ export class ThreeRiderView {
     return target;
   }
   apply(p:RidePose){
+    this.lights.update(p,typeof matchMedia!=='undefined'&&(matchMedia('(prefers-reduced-motion: reduce)').matches||document.documentElement.dataset.reducedMotion==='true'));
     this.armorKeychain?.update(p,typeof matchMedia!=='undefined'&&matchMedia('(prefers-reduced-motion: reduce)').matches);
     // A recovered/mounted pose must not inherit a previous fall's body or wheel
     // displacement, including when a paused preview supplies a partial pose.
@@ -178,7 +182,7 @@ export class ThreeRiderView {
         target.lerp(protective,Math.min(1,p.crashBrace*1.7+p.crashRelease));
         armPole.lerp(bodyUp.negate().addScaledVector(bodyForward,.25),p.crashSettle);
       }
-      solve(l,target,armPole,undefined,.975);
+      solve(l,target,transportedBend(shoulder,elbow,hand,target,armPole),undefined,.975);
       // Bone reset preserved the authored hand-to-forearm orientation. Follow that
       // frame completely, then add a small passive flex about its own lateral axis.
       // A world-down blend was still pulling against the elbow's balance movement.

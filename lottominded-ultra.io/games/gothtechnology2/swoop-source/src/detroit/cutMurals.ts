@@ -1,6 +1,6 @@
 import * as T from 'three';
 import {GEO,profileLevel,BRIDGE_SLAB_DEPTH,nearestRamp} from './geo-profile.ts';
-import {bridgeFrame} from './bridges.ts';
+import {bridgeFrame,completeBridges} from './bridges.ts';
 import {cutPoint,cutCoords,heightAt,type DetroitWorld} from './world.ts';
 
 /** Photo sources and section locations: Conservancy 2025 Art Walk map.
@@ -25,14 +25,35 @@ export const SUPPLIED_CUT_MURALS=[
 ] as const;
 
 /** Shared rendered/physical art returns, also used by route regression checks. */
-export function muralBacking(site:{bridge:string;side:number}){
+export function muralBacking(site:{bridge:string;side:number},fullSpan=false){
  const b=GEO.bridges.find(b=>b.name===site.bridge)!,f=bridgeFrame(b),side=site.side,x=side*7.4,mid=(f.near+f.far)/2;
- let width=Math.min(14,(f.far-f.near)-1.2);
+ let width=fullSpan?f.far-f.near-.04:Math.min(14,(f.far-f.near)-1.2);
  while(width>3&&[-1,1].some(end=>{const p=f.point(x,mid+end*width/2);return Math.abs(cutCoords(p.x,p.z).u)<5.1||nearestRamp(p.x,p.z).distance<3;}))width-=.5;
- const roof=profileLevel(b.at,'street')-BRIDGE_SLAB_DEPTH-.3,origin=f.point(x,mid),base=Math.max(heightAt(origin.x,origin.z)+.10,roof-5.2);
+ const roof=profileLevel(b.at,'street')-BRIDGE_SLAB_DEPTH-(fullSpan?.025:.3),origin=f.point(x,mid),base=fullSpan?heightAt(origin.x,origin.z)+.02:Math.max(heightAt(origin.x,origin.z)+.10,roof-5.2);
  if(roof-base<.7||nearestRamp(origin.x,origin.z).distance<3)return undefined;
  const back=f.point(x+side*.17,mid),wallYaw=Math.atan2(f.matrix.elements[8],f.matrix.elements[10]);
  return {b,f,side,x,mid,width,roof,base,back,wallYaw,solid:{x:back.x,y:(base+roof)/2,z:back.z,hx:.15,hy:(roof-base)/2,hz:width/2,yaw:wallYaw,kind:'mural-abutment'}};
+}
+
+/** Cover the concrete without stretching the original photographed artwork. */
+export function muralCoverCrop(width:number,height:number,aspect:number){
+ const target=width/height;
+ return target>aspect?[0,(1-aspect/target)/2,1,(1+aspect/target)/2]:[(1-target/aspect)/2,0,(1+target/aspect)/2,1];
+}
+
+function sprayPaintMaterial(map:T.Texture){
+ const material=new T.MeshStandardMaterial({map,roughness:1,metalness:0,side:T.FrontSide,polygonOffset:true,polygonOffsetFactor:-1});
+ // The paint follows the concrete's world-space pores, including the soffit.
+ // No frame, glossy paper layer, additional lighting, or per-frame texture work.
+ material.onBeforeCompile=shader=>{
+  shader.vertexShader='varying vec3 vPaintWorld;\n'+shader.vertexShader;
+  shader.vertexShader=shader.vertexShader.replace('#include <worldpos_vertex>','#include <worldpos_vertex>\nvPaintWorld = (modelMatrix * vec4(transformed, 1.0)).xyz;');
+  shader.fragmentShader='varying vec3 vPaintWorld;\nfloat paintGrain(vec3 p) { return fract(sin(dot(floor(p), vec3(12.9898,78.233,37.719))) * 43758.5453); }\n'+shader.fragmentShader;
+  shader.fragmentShader=shader.fragmentShader.replace('#include <map_fragment>','#include <map_fragment>\nfloat pores = paintGrain(vPaintWorld * 115.0);\nfloat wear = smoothstep(0.89, 1.0, pores) * 0.18;\ndiffuseColor.rgb = mix(diffuseColor.rgb * (0.93 + pores * 0.07), vec3(0.32,0.33,0.30), wear);');
+ };
+ material.customProgramCacheKey=()=> 'cut-concrete-spray-v1';
+ material.userData.finish='spray paint on concrete';
+ return material;
 }
 
 export async function buildCutMurals(world:DetroitWorld,groupAt:(x:number,z:number)=>T.Group){
@@ -53,10 +74,10 @@ export async function buildCutMurals(world:DetroitWorld,groupAt:(x:number,z:numb
  ];
  const maps=await Promise.all(urls.map(u=>new T.TextureLoader().loadAsync(u)));
  const materials=maps.map(map=>{map.colorSpace=T.SRGBColorSpace;map.anisotropy=4;return new T.MeshStandardMaterial({map,roughness:1,side:T.DoubleSide,polygonOffset:true,polygonOffsetFactor:-1});});
- const panel=(points:T.Vector3[],crop:readonly number[],material:T.Material,name:string)=>{
+ const panel=(points:T.Vector3[],crop:readonly number[],material:T.Material,name:string,readableFront=false)=>{
   const [u0,v0,u1,v1]=crop,g=new T.BufferGeometry();g.setFromPoints(points);g.setIndex([0,1,2,0,2,3]);
   // Same handedness correction as the route art; preserve signatures and readable lettering.
-  g.setAttribute('uv',new T.Float32BufferAttribute([u1,v0,u0,v0,u0,v1,u1,v1],2));g.computeVertexNormals();const mesh=new T.Mesh(g,material);mesh.name=name;mesh.receiveShadow=true;const p=points[0];groupAt(p.x,p.z).add(mesh);
+  g.setAttribute('uv',new T.Float32BufferAttribute(readableFront?[u0,v0,u1,v0,u1,v1,u0,v1]:[u1,v0,u0,v0,u0,v1,u1,v1],2));g.computeVertexNormals();const mesh=new T.Mesh(g,material);mesh.name=name;mesh.receiveShadow=true;const p=points[0];groupAt(p.x,p.z).add(mesh);
  };
  let walls=0,ceilings=0;
  CUT_MURALS.forEach((site,i)=>{
@@ -86,13 +107,38 @@ export async function buildCutMurals(world:DetroitWorld,groupAt:(x:number,z:numb
  const s={x:p.x,y:base+h/2,z:p.z,hx:w/2,hy:h/2,hz:.225,yaw,kind:'mural-wall'};world.solids.push(s);world.addBox(s);
  const v=(u:number,y:number)=>new T.Vector3(p.x+Math.cos(yaw)*u+Math.sin(yaw)*.242,y,p.z-Math.sin(yaw)*u+Math.cos(yaw)*.242);
  panel([v(-w/2,base),v(w/2,base),v(w/2,base+h),v(-w/2,base+h)],[.033,.23,.965,.99],materials[7],'Hygienic Dress League — 2014');walls++;
+ const bridgeBeams=completeBridges(heightAt);
  SUPPLIED_CUT_MURALS.forEach((site,i)=>{
-  const placement=muralBacking(site);if(!placement)throw Error('No clear wall for supplied mural: '+site.bridge);
+  const placement=muralBacking(site,true);if(!placement)throw Error('No clear wall for supplied mural: '+site.bridge);
   const {f,side,x,mid,width,roof,base,back,wallYaw,solid}=placement;
   const backing=new T.Mesh(new T.BoxGeometry(.3,roof-base,width),concrete);backing.position.set(back.x,(base+roof)/2,back.z);backing.rotation.y=wallYaw;backing.receiveShadow=true;groupAt(back.x,back.z).add(backing);world.solids.push(solid);world.addBox(solid);
-  const artWidth=Math.min(width-.15,(roof-base-.2)*site.aspect),artHeight=artWidth/site.aspect,low=base+(roof-base-artHeight)/2,a=mid+(side<0?-1:1)*artWidth/2,c=mid-(side<0?-1:1)*artWidth/2;
+  const paint=sprayPaintMaterial(maps[8+i]);
+  const a=mid+(side<0?1:-1)*width/2,c=mid-(side<0?1:-1)*width/2;
   const vertex=(y:number,z:number)=>{const p=f.point(x,z);return new T.Vector3(p.x,y,p.z);};
-  panel([vertex(low,a),vertex(low,c),vertex(low+artHeight,c),vertex(low+artHeight,a)],[0,0,1,1],materials[8+i],site.title+' / supplied game mural / '+site.bridge);walls++;
+  panel([vertex(base,a),vertex(base,c),vertex(roof,c),vertex(roof,a)],muralCoverCrop(width,roof-base,site.aspect),paint,site.title+' / supplied game mural / '+site.bridge,true);walls++;
+  // Fit the entire mapped underside, including skew corners, rather than placing
+  // a rectangular poster or painting a strip that leaves bare concrete beside it.
+  const y=profileLevel(placement.b.at,'street')-BRIDGE_SLAB_DEPTH-.012;
+  const [u0,v0,u1,v1]=muralCoverCrop(f.hi-f.lo,f.far-f.near,site.aspect);
+  const geometry=new T.BufferGeometry(),positions:number[]=[],uvs:number[]=[];
+  for(const [xx,zz] of f.polygon){const p=f.point(xx,zz);positions.push(p.x,y,p.z);uvs.push(u0+(xx-f.lo)/(f.hi-f.lo)*(u1-u0),v0+(zz-f.near)/(f.far-f.near)*(v1-v0));}
+  const indices=T.ShapeUtils.triangulateShape(f.polygon.map(p=>new T.Vector2(...p)),[]).flat();
+  geometry.setAttribute('position',new T.Float32BufferAttribute(positions,3));geometry.setAttribute('uv',new T.Float32BufferAttribute(uvs,2));geometry.setIndex(indices);geometry.computeVertexNormals();
+  if(geometry.getAttribute('normal').getY(0)>0){for(let k=0;k<indices.length;k+=3)[indices[k+1],indices[k+2]]=[indices[k+2],indices[k+1]];geometry.setIndex(indices);geometry.computeVertexNormals();}
+  const underside=new T.Mesh(geometry,paint);underside.name=site.title+' / supplied painted underside / '+site.bridge;underside.receiveShadow=true;groupAt(back.x,back.z).add(underside);ceilings++;
+  // Wrap the same projected paint around the exposed stringers. Leaving their
+  // bottom and side faces bare would break the full underside into poster strips.
+  const beam=bridgeBeams.find(b=>b.bridge===site.bridge&&b.kind==='beam');
+  if(beam){
+   const source=beam.geometry.index?beam.geometry.toNonIndexed():beam.geometry,p=source.getAttribute('position'),n=source.getAttribute('normal'),positions:number[]=[],uvs:number[]=[];
+   for(let v=0;v<p.count;v+=3){
+    const maxY=Math.max(p.getY(v),p.getY(v+1),p.getY(v+2)),minY=Math.min(p.getY(v),p.getY(v+1),p.getY(v+2));
+    if(maxY>y+.03||minY>y-.03||n.getY(v)>.3)continue;
+    for(let k=0;k<3;k++){const j=v+k,x=p.getX(j)+n.getX(j)*.005,z=p.getZ(j)+n.getZ(j)*.005,[xx,zz]=f.project(x,z);positions.push(x,p.getY(j)+n.getY(j)*.005,z);uvs.push(u0+(xx-f.lo)/(f.hi-f.lo)*(u1-u0),v0+(zz-f.near)/(f.far-f.near)*(v1-v0));}
+   }
+   const wrap=new T.BufferGeometry();wrap.setAttribute('position',new T.Float32BufferAttribute(positions,3));wrap.setAttribute('uv',new T.Float32BufferAttribute(uvs,2));wrap.computeVertexNormals();const mesh=new T.Mesh(wrap,paint);mesh.name=site.title+' / painted underside stringers / '+site.bridge;mesh.receiveShadow=true;groupAt(back.x,back.z).add(mesh);if(source!==beam.geometry)source.dispose();
+  }
  });
- return {walls,ceilings,source:'Detroit Riverfront Conservancy Art Walk 2025 plus five user-supplied game murals',placements:'approximate'};
+ for(const beam of bridgeBeams)beam.geometry.dispose();
+ return {walls,ceilings,suppliedFinish:'full concrete walls and bridge undersides, spray paint',source:'Detroit Riverfront Conservancy Art Walk 2025 plus five user-supplied game murals',placements:'approximate'};
 }

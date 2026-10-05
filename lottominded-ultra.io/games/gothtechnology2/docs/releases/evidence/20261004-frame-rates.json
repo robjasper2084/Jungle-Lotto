@@ -1,0 +1,2842 @@
+[
+  {
+    "label": "Detroit riverfront / east Jefferson",
+    "samples": [
+      {
+        "crashed": "false",
+        "drawCalls": "835",
+        "fps": "42.6",
+        "hidden": false,
+        "indoor": "outside",
+        "paused": "false",
+        "performance": {
+          "frameP50": 16.70000000001164,
+          "frameP95": 33.40000000002328,
+          "geometries": 2550,
+          "heapMB": 856.7870941162109,
+          "loadMs": 35161.60000002384,
+          "programs": 49,
+          "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3080 (0x00002206) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "sampleFrames": 480,
+          "textures": 176,
+          "visualBaseline": false
+        },
+        "quality": "ultra",
+        "renderBudget": {
+          "detail": 1,
+          "pixelRatio": 1.632557871120848,
+          "quality": "ultra",
+          "resolutionScale": 1,
+          "targetFPS": 90,
+          "xr": false
+        },
+        "running": "true",
+        "speed": "4.793",
+        "stamp": 1791163363337,
+        "triangles": "1379725",
+        "viewport": [
+          2144,
+          1400
+        ],
+        "x": "1409.47",
+        "z": "85.30"
+      },
+      {
+        "crashed": "true",
+        "drawCalls": "820",
+        "fps": "43.3",
+        "hidden": false,
+        "indoor": "outside",
+        "paused": "false",
+        "performance": {
+          "frameP50": 16.70000000001164,
+          "frameP95": 33.40000000002328,
+          "geometries": 2550,
+          "heapMB": 865.187352180481,
+          "loadMs": 35161.60000002384,
+          "programs": 49,
+          "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3080 (0x00002206) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "sampleFrames": 480,
+          "textures": 176,
+          "visualBaseline": false
+        },
+        "quality": "ultra",
+        "renderBudget": {
+          "detail": 1,
+          "pixelRatio": 1.632557871120848,
+          "quality": "ultra",
+          "resolutionScale": 1,
+          "targetFPS": 90,
+          "xr": false
+        },
+        "running": "true",
+        "speed": "2.084",
+        "stamp": 1791163364392,
+        "triangles": "1343971",
+        "viewport": [
+          2144,
+          1400
+        ],
+        "x": "1408.69",
+        "z": "80.41"
+      },
+      {
+        "crashed": "true",
+        "drawCalls": "781",
+        "fps": "41.3",
+        "hidden": false,
+        "indoor": "outside",
+        "paused": "false",
+        "performance": {
+          "frameP50": 16.70000000001164,
+          "frameP95": 33.40000000002328,
+          "geometries": 2550,
+          "heapMB": 878.4932203292847,
+          "loadMs": 35161.60000002384,
+          "programs": 49,
+          "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3080 (0x00002206) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "sampleFrames": 480,
+          "textures": 176,
+          "visualBaseline": false
+        },
+        "quality": "ultra",
+        "renderBudget": {
+          "detail": 1,
+          "pixelRatio": 1.632557871120848,
+          "quality": "ultra",
+          "resolutionScale": 1,
+          "targetFPS": 90,
+          "xr": false
+        },
+        "running": "true",
+        "speed": "0.014",
+        "stamp": 1791163365465,
+        "triangles": "1306358",
+        "viewport": [
+          2144,
+          1400
+        ],
+        "x": "1408.69",
+        "z": "80.41"
+      },
+      {
+        "crashed": "true",
+        "drawCalls": "780",
+        "fps": "32.4",
+        "hidden": false,
+        "indoor": "outside",
+        "paused": "false",
+        "performance": {
+          "frameP50": 16.70000000001164,
+          "frameP95": 33.40000000002328,
+          "geometries": 2550,
+          "heapMB": 870.0435180664062,
+          "loadMs": 35161.60000002384,
+          "programs": 49,
+          "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3080 (0x00002206) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "sampleFrames": 480,
+          "textures": 176,
+          "visualBaseline": false
+        },
+        "quality": "ultra",
+        "renderBudget": {
+          "detail": 1,
+          "pixelRatio": 1.632557871120848,
+          "quality": "ultra",
+          "resolutionScale": 1,
+          "targetFPS": 90,
+          "xr": false
+        },
+        "running": "true",
+        "speed": "0.000",
+        "stamp": 1791163366575,
+        "triangles": "1306242",
+        "viewport": [
+          2144,
+          1400
+        ],
+        "x": "1408.69",
+        "z": "80.41"
+      },
+      {
+        "crashed": "true",
+        "drawCalls": "780",
+        "fps": "31.0",
+        "hidden": false,
+        "indoor": "outside",
+        "paused": "false",
+        "performance": {
+          "frameP50": 16.70000000001164,
+          "frameP95": 33.40000000002328,
+          "geometries": 2550,
+          "heapMB": 869.6650352478027,
+          "loadMs": 35161.60000002384,
+          "programs": 49,
+          "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3080 (0x00002206) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "sampleFrames": 480,
+          "textures": 176,
+          "visualBaseline": false
+        },
+        "quality": "ultra",
+        "renderBudget": {
+          "detail": 1,
+          "pixelRatio": 1.632557871120848,
+          "quality": "ultra",
+          "resolutionScale": 1,
+          "targetFPS": 90,
+          "xr": false
+        },
+        "running": "true",
+        "speed": "0.000",
+        "stamp": 1791163367622,
+        "triangles": "1306242",
+        "viewport": [
+          2144,
+          1400
+        ],
+        "x": "1408.69",
+        "z": "80.41"
+      },
+      {
+        "crashed": "true",
+        "drawCalls": "780",
+        "fps": "37.4",
+        "hidden": false,
+        "indoor": "outside",
+        "paused": "false",
+        "performance": {
+          "frameP50": 16.70000000001164,
+          "frameP95": 33.40000000002328,
+          "geometries": 2550,
+          "heapMB": 853.6278400421143,
+          "loadMs": 35161.60000002384,
+          "programs": 49,
+          "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3080 (0x00002206) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "sampleFrames": 480,
+          "textures": 176,
+          "visualBaseline": false
+        },
+        "quality": "ultra",
+        "renderBudget": {
+          "detail": 1,
+          "pixelRatio": 1.632557871120848,
+          "quality": "ultra",
+          "resolutionScale": 1,
+          "targetFPS": 90,
+          "xr": false
+        },
+        "running": "true",
+        "speed": "0.000",
+        "stamp": 1791163368689,
+        "triangles": "1306242",
+        "viewport": [
+          2144,
+          1400
+        ],
+        "x": "1408.69",
+        "z": "80.41"
+      },
+      {
+        "crashed": "true",
+        "drawCalls": "780",
+        "fps": "38.7",
+        "hidden": false,
+        "indoor": "outside",
+        "paused": "false",
+        "performance": {
+          "frameP50": 16.79999999998836,
+          "frameP95": 33.5,
+          "geometries": 2550,
+          "heapMB": 865.6312665939331,
+          "loadMs": 35161.60000002384,
+          "programs": 49,
+          "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3080 (0x00002206) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "sampleFrames": 480,
+          "textures": 176,
+          "visualBaseline": false
+        },
+        "quality": "ultra",
+        "renderBudget": {
+          "detail": 1,
+          "pixelRatio": 1.632557871120848,
+          "quality": "ultra",
+          "resolutionScale": 1,
+          "targetFPS": 90,
+          "xr": false
+        },
+        "running": "true",
+        "speed": "0.000",
+        "stamp": 1791163369745,
+        "triangles": "1306242",
+        "viewport": [
+          2144,
+          1400
+        ],
+        "x": "1408.69",
+        "z": "80.41"
+      },
+      {
+        "crashed": "true",
+        "drawCalls": "765",
+        "fps": "30.5",
+        "hidden": false,
+        "indoor": "outside",
+        "paused": "false",
+        "performance": {
+          "frameP50": 16.79999999998836,
+          "frameP95": 33.40000000002328,
+          "geometries": 2550,
+          "heapMB": 876.648419380188,
+          "loadMs": 35161.60000002384,
+          "programs": 49,
+          "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3080 (0x00002206) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "sampleFrames": 480,
+          "textures": 176,
+          "visualBaseline": false
+        },
+        "quality": "ultra",
+        "renderBudget": {
+          "detail": 1,
+          "pixelRatio": 1.632557871120848,
+          "quality": "ultra",
+          "resolutionScale": 1,
+          "targetFPS": 90,
+          "xr": false
+        },
+        "running": "true",
+        "speed": "0.000",
+        "stamp": 1791163370785,
+        "triangles": "1296642",
+        "viewport": [
+          2144,
+          1400
+        ],
+        "x": "1408.69",
+        "z": "80.41"
+      },
+      {
+        "crashed": "true",
+        "drawCalls": "765",
+        "fps": "41.6",
+        "hidden": false,
+        "indoor": "outside",
+        "paused": "false",
+        "performance": {
+          "frameP50": 16.79999999998836,
+          "frameP95": 33.40000000002328,
+          "geometries": 2550,
+          "heapMB": 871.8711223602295,
+          "loadMs": 35161.60000002384,
+          "programs": 49,
+          "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3080 (0x00002206) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "sampleFrames": 480,
+          "textures": 176,
+          "visualBaseline": false
+        },
+        "quality": "ultra",
+        "renderBudget": {
+          "detail": 1,
+          "pixelRatio": 1.632557871120848,
+          "quality": "ultra",
+          "resolutionScale": 1,
+          "targetFPS": 90,
+          "xr": false
+        },
+        "running": "true",
+        "speed": "0.000",
+        "stamp": 1791163371832,
+        "triangles": "1296642",
+        "viewport": [
+          2144,
+          1400
+        ],
+        "x": "1408.69",
+        "z": "80.41"
+      },
+      {
+        "crashed": "true",
+        "drawCalls": "765",
+        "fps": "41.3",
+        "hidden": false,
+        "indoor": "outside",
+        "paused": "false",
+        "performance": {
+          "frameP50": 16.800000000046566,
+          "frameP95": 33.40000000002328,
+          "geometries": 2550,
+          "heapMB": 857.1576833724976,
+          "loadMs": 35161.60000002384,
+          "programs": 49,
+          "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3080 (0x00002206) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "sampleFrames": 480,
+          "textures": 176,
+          "visualBaseline": false
+        },
+        "quality": "ultra",
+        "renderBudget": {
+          "detail": 1,
+          "pixelRatio": 1.632557871120848,
+          "quality": "ultra",
+          "resolutionScale": 1,
+          "targetFPS": 90,
+          "xr": false
+        },
+        "running": "true",
+        "speed": "0.000",
+        "stamp": 1791163372897,
+        "triangles": "1296642",
+        "viewport": [
+          2144,
+          1400
+        ],
+        "x": "1408.69",
+        "z": "80.41"
+      },
+      {
+        "crashed": "true",
+        "drawCalls": "765",
+        "fps": "42.0",
+        "hidden": false,
+        "indoor": "outside",
+        "paused": "false",
+        "performance": {
+          "frameP50": 33.20000000001164,
+          "frameP95": 33.40000000002328,
+          "geometries": 2550,
+          "heapMB": 877.1861181259155,
+          "loadMs": 35161.60000002384,
+          "programs": 49,
+          "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3080 (0x00002206) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "sampleFrames": 480,
+          "textures": 176,
+          "visualBaseline": false
+        },
+        "quality": "ultra",
+        "renderBudget": {
+          "detail": 1,
+          "pixelRatio": 1.632557871120848,
+          "quality": "ultra",
+          "resolutionScale": 1,
+          "targetFPS": 90,
+          "xr": false
+        },
+        "running": "true",
+        "speed": "0.000",
+        "stamp": 1791163373955,
+        "triangles": "1296642",
+        "viewport": [
+          2144,
+          1400
+        ],
+        "x": "1408.69",
+        "z": "80.41"
+      },
+      {
+        "crashed": "true",
+        "drawCalls": "765",
+        "fps": "42.3",
+        "hidden": false,
+        "indoor": "outside",
+        "paused": "false",
+        "performance": {
+          "frameP50": 33.199999999953434,
+          "frameP95": 33.40000000002328,
+          "geometries": 2550,
+          "heapMB": 869.1151151657104,
+          "loadMs": 35161.60000002384,
+          "programs": 49,
+          "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3080 (0x00002206) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "sampleFrames": 480,
+          "textures": 176,
+          "visualBaseline": false
+        },
+        "quality": "ultra",
+        "renderBudget": {
+          "detail": 1,
+          "pixelRatio": 1.632557871120848,
+          "quality": "ultra",
+          "resolutionScale": 1,
+          "targetFPS": 90,
+          "xr": false
+        },
+        "running": "true",
+        "speed": "0.000",
+        "stamp": 1791163375025,
+        "triangles": "1296642",
+        "viewport": [
+          2144,
+          1400
+        ],
+        "x": "1408.69",
+        "z": "80.41"
+      },
+      {
+        "crashed": "true",
+        "drawCalls": "765",
+        "fps": "45.2",
+        "hidden": false,
+        "indoor": "outside",
+        "paused": "false",
+        "performance": {
+          "frameP50": 33.199999999953434,
+          "frameP95": 33.40000000002328,
+          "geometries": 2550,
+          "heapMB": 859.8610420227051,
+          "loadMs": 35161.60000002384,
+          "programs": 49,
+          "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3080 (0x00002206) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "sampleFrames": 480,
+          "textures": 176,
+          "visualBaseline": false
+        },
+        "quality": "ultra",
+        "renderBudget": {
+          "detail": 1,
+          "pixelRatio": 1.632557871120848,
+          "quality": "ultra",
+          "resolutionScale": 1,
+          "targetFPS": 90,
+          "xr": false
+        },
+        "running": "true",
+        "speed": "0.000",
+        "stamp": 1791163376083,
+        "triangles": "1296642",
+        "viewport": [
+          2144,
+          1400
+        ],
+        "x": "1408.69",
+        "z": "80.41"
+      },
+      {
+        "crashed": "true",
+        "drawCalls": "765",
+        "fps": "45.0",
+        "hidden": false,
+        "indoor": "outside",
+        "paused": "false",
+        "performance": {
+          "frameP50": 16.800000000046566,
+          "frameP95": 33.40000000002328,
+          "geometries": 2550,
+          "heapMB": 876.0265769958496,
+          "loadMs": 35161.60000002384,
+          "programs": 49,
+          "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3080 (0x00002206) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "sampleFrames": 480,
+          "textures": 176,
+          "visualBaseline": false
+        },
+        "quality": "ultra",
+        "renderBudget": {
+          "detail": 1,
+          "pixelRatio": 1.632557871120848,
+          "quality": "ultra",
+          "resolutionScale": 1,
+          "targetFPS": 90,
+          "xr": false
+        },
+        "running": "true",
+        "speed": "0.000",
+        "stamp": 1791163377130,
+        "triangles": "1296642",
+        "viewport": [
+          2144,
+          1400
+        ],
+        "x": "1408.69",
+        "z": "80.41"
+      },
+      {
+        "crashed": "true",
+        "drawCalls": "765",
+        "fps": "45.0",
+        "hidden": false,
+        "indoor": "outside",
+        "paused": "false",
+        "performance": {
+          "frameP50": 16.70000000001164,
+          "frameP95": 33.40000000002328,
+          "geometries": 2550,
+          "heapMB": 862.6919269561768,
+          "loadMs": 35161.60000002384,
+          "programs": 49,
+          "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3080 (0x00002206) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "sampleFrames": 480,
+          "textures": 176,
+          "visualBaseline": false
+        },
+        "quality": "ultra",
+        "renderBudget": {
+          "detail": 1,
+          "pixelRatio": 1.632557871120848,
+          "quality": "ultra",
+          "resolutionScale": 1,
+          "targetFPS": 90,
+          "xr": false
+        },
+        "running": "true",
+        "speed": "0.000",
+        "stamp": 1791163378164,
+        "triangles": "1296642",
+        "viewport": [
+          2144,
+          1400
+        ],
+        "x": "1408.69",
+        "z": "80.41"
+      },
+      {
+        "crashed": "true",
+        "drawCalls": "765",
+        "fps": "46.2",
+        "hidden": false,
+        "indoor": "outside",
+        "paused": "false",
+        "performance": {
+          "frameP50": 16.70000000001164,
+          "frameP95": 33.40000000002328,
+          "geometries": 2550,
+          "heapMB": 882.3856382369995,
+          "loadMs": 35161.60000002384,
+          "programs": 49,
+          "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3080 (0x00002206) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "sampleFrames": 480,
+          "textures": 176,
+          "visualBaseline": false
+        },
+        "quality": "ultra",
+        "renderBudget": {
+          "detail": 1,
+          "pixelRatio": 1.632557871120848,
+          "quality": "ultra",
+          "resolutionScale": 1,
+          "targetFPS": 90,
+          "xr": false
+        },
+        "running": "true",
+        "speed": "0.000",
+        "stamp": 1791163379209,
+        "triangles": "1296642",
+        "viewport": [
+          2144,
+          1400
+        ],
+        "x": "1408.69",
+        "z": "80.41"
+      },
+      {
+        "crashed": "true",
+        "drawCalls": "765",
+        "fps": "46.2",
+        "hidden": false,
+        "indoor": "outside",
+        "paused": "false",
+        "performance": {
+          "frameP50": 16.70000000001164,
+          "frameP95": 33.40000000002328,
+          "geometries": 2550,
+          "heapMB": 868.5736103057861,
+          "loadMs": 35161.60000002384,
+          "programs": 49,
+          "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3080 (0x00002206) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "sampleFrames": 480,
+          "textures": 176,
+          "visualBaseline": false
+        },
+        "quality": "ultra",
+        "renderBudget": {
+          "detail": 1,
+          "pixelRatio": 1.632557871120848,
+          "quality": "ultra",
+          "resolutionScale": 1,
+          "targetFPS": 90,
+          "xr": false
+        },
+        "running": "true",
+        "speed": "0.000",
+        "stamp": 1791163380274,
+        "triangles": "1296642",
+        "viewport": [
+          2144,
+          1400
+        ],
+        "x": "1408.69",
+        "z": "80.41"
+      },
+      {
+        "crashed": "true",
+        "drawCalls": "765",
+        "fps": "40.6",
+        "hidden": false,
+        "indoor": "outside",
+        "paused": "false",
+        "performance": {
+          "frameP50": 16.70000000001164,
+          "frameP95": 33.40000000002328,
+          "geometries": 2550,
+          "heapMB": 875.1329460144043,
+          "loadMs": 35161.60000002384,
+          "programs": 49,
+          "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3080 (0x00002206) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "sampleFrames": 480,
+          "textures": 176,
+          "visualBaseline": false
+        },
+        "quality": "ultra",
+        "renderBudget": {
+          "detail": 1,
+          "pixelRatio": 1.632938731471561,
+          "quality": "ultra",
+          "resolutionScale": 1,
+          "targetFPS": 90,
+          "xr": false
+        },
+        "running": "true",
+        "speed": "0.000",
+        "stamp": 1791163381338,
+        "triangles": "1296642",
+        "viewport": [
+          2143,
+          1400
+        ],
+        "x": "1408.69",
+        "z": "80.41"
+      },
+      {
+        "crashed": "true",
+        "drawCalls": "765",
+        "fps": "44.3",
+        "hidden": false,
+        "indoor": "outside",
+        "paused": "false",
+        "performance": {
+          "frameP50": 16.70000000001164,
+          "frameP95": 33.40000000002328,
+          "geometries": 2550,
+          "heapMB": 868.4791641235352,
+          "loadMs": 35161.60000002384,
+          "programs": 49,
+          "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3080 (0x00002206) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "sampleFrames": 480,
+          "textures": 176,
+          "visualBaseline": false
+        },
+        "quality": "ultra",
+        "renderBudget": {
+          "detail": 1,
+          "pixelRatio": 1.632938731471561,
+          "quality": "ultra",
+          "resolutionScale": 1,
+          "targetFPS": 90,
+          "xr": false
+        },
+        "running": "true",
+        "speed": "0.000",
+        "stamp": 1791163382408,
+        "triangles": "1296642",
+        "viewport": [
+          2143,
+          1400
+        ],
+        "x": "1408.69",
+        "z": "80.41"
+      },
+      {
+        "crashed": "true",
+        "drawCalls": "765",
+        "fps": "44.3",
+        "hidden": false,
+        "indoor": "outside",
+        "paused": "false",
+        "performance": {
+          "frameP50": 16.70000000001164,
+          "frameP95": 33.40000000002328,
+          "geometries": 2550,
+          "heapMB": 882.9614305496216,
+          "loadMs": 35161.60000002384,
+          "programs": 49,
+          "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3080 (0x00002206) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "sampleFrames": 480,
+          "textures": 176,
+          "visualBaseline": false
+        },
+        "quality": "ultra",
+        "renderBudget": {
+          "detail": 1,
+          "pixelRatio": 1.632938731471561,
+          "quality": "ultra",
+          "resolutionScale": 1,
+          "targetFPS": 90,
+          "xr": false
+        },
+        "running": "true",
+        "speed": "0.000",
+        "stamp": 1791163383500,
+        "triangles": "1296642",
+        "viewport": [
+          2143,
+          1400
+        ],
+        "x": "1408.69",
+        "z": "80.41"
+      }
+    ]
+  },
+  {
+    "label": "Detroit Eastern Market / Freight Yard",
+    "samples": [
+      {
+        "crashed": "false",
+        "drawCalls": 1001,
+        "fps": 27.5,
+        "hidden": false,
+        "indoor": "outside",
+        "paused": "false",
+        "performance": {
+          "frameP50": 33.20000000001164,
+          "frameP95": 33.40000000002328,
+          "geometries": 3518,
+          "heapMB": 941.892770767212,
+          "loadMs": 35161.60000002384,
+          "programs": 230,
+          "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3080 (0x00002206) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "sampleFrames": 480,
+          "textures": 304,
+          "visualBaseline": false
+        },
+        "quality": "ultra",
+        "renderBudget": {
+          "detail": 1,
+          "pixelRatio": 1.632938731471561,
+          "quality": "ultra",
+          "resolutionScale": 1,
+          "targetFPS": 90,
+          "xr": false
+        },
+        "running": "true",
+        "speed": "0.000",
+        "stamp": 1791163613738,
+        "triangles": 1822145,
+        "viewport": [
+          2143,
+          1400
+        ],
+        "x": "-300.77",
+        "z": "-19.88"
+      },
+      {
+        "crashed": "false",
+        "drawCalls": 1001,
+        "fps": 31.9,
+        "hidden": false,
+        "indoor": "outside",
+        "paused": "false",
+        "performance": {
+          "frameP50": 33.29999999993015,
+          "frameP95": 33.40000000002328,
+          "geometries": 3518,
+          "heapMB": 920.200068473816,
+          "loadMs": 35161.60000002384,
+          "programs": 230,
+          "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3080 (0x00002206) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "sampleFrames": 480,
+          "textures": 304,
+          "visualBaseline": false
+        },
+        "quality": "ultra",
+        "renderBudget": {
+          "detail": 1,
+          "pixelRatio": 1.632938731471561,
+          "quality": "ultra",
+          "resolutionScale": 1,
+          "targetFPS": 90,
+          "xr": false
+        },
+        "running": "true",
+        "speed": "0.000",
+        "stamp": 1791163614827,
+        "triangles": 1822145,
+        "viewport": [
+          2143,
+          1400
+        ],
+        "x": "-300.77",
+        "z": "-19.88"
+      },
+      {
+        "crashed": "false",
+        "drawCalls": 1001,
+        "fps": 28.9,
+        "hidden": false,
+        "indoor": "outside",
+        "paused": "false",
+        "performance": {
+          "frameP50": 33.29999999998836,
+          "frameP95": 33.5,
+          "geometries": 3518,
+          "heapMB": 927.6724739074708,
+          "loadMs": 35161.60000002384,
+          "programs": 230,
+          "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3080 (0x00002206) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "sampleFrames": 480,
+          "textures": 304,
+          "visualBaseline": false
+        },
+        "quality": "ultra",
+        "renderBudget": {
+          "detail": 1,
+          "pixelRatio": 1.632938731471561,
+          "quality": "ultra",
+          "resolutionScale": 1,
+          "targetFPS": 90,
+          "xr": false
+        },
+        "running": "true",
+        "speed": "0.000",
+        "stamp": 1791163615914,
+        "triangles": 1822145,
+        "viewport": [
+          2143,
+          1400
+        ],
+        "x": "-300.77",
+        "z": "-19.88"
+      },
+      {
+        "crashed": "false",
+        "drawCalls": 1001,
+        "fps": 32.6,
+        "hidden": false,
+        "indoor": "outside",
+        "paused": "false",
+        "performance": {
+          "frameP50": 33.29999999998836,
+          "frameP95": 33.699999999953434,
+          "geometries": 3518,
+          "heapMB": 940.5123176574708,
+          "loadMs": 35161.60000002384,
+          "programs": 230,
+          "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3080 (0x00002206) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "sampleFrames": 480,
+          "textures": 304,
+          "visualBaseline": false
+        },
+        "quality": "ultra",
+        "renderBudget": {
+          "detail": 1,
+          "pixelRatio": 1.632938731471561,
+          "quality": "ultra",
+          "resolutionScale": 1,
+          "targetFPS": 90,
+          "xr": false
+        },
+        "running": "true",
+        "speed": "0.000",
+        "stamp": 1791163616973,
+        "triangles": 1822145,
+        "viewport": [
+          2143,
+          1400
+        ],
+        "x": "-300.77",
+        "z": "-19.88"
+      },
+      {
+        "crashed": "false",
+        "drawCalls": 1001,
+        "fps": 36.4,
+        "hidden": false,
+        "indoor": "outside",
+        "paused": "false",
+        "performance": {
+          "frameP50": 33.29999999998836,
+          "frameP95": 33.699999999953434,
+          "geometries": 3518,
+          "heapMB": 931.1011371612548,
+          "loadMs": 35161.60000002384,
+          "programs": 230,
+          "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3080 (0x00002206) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "sampleFrames": 480,
+          "textures": 304,
+          "visualBaseline": false
+        },
+        "quality": "ultra",
+        "renderBudget": {
+          "detail": 1,
+          "pixelRatio": 1.632938731471561,
+          "quality": "ultra",
+          "resolutionScale": 1,
+          "targetFPS": 90,
+          "xr": false
+        },
+        "running": "true",
+        "speed": "0.000",
+        "stamp": 1791163618022,
+        "triangles": 1822145,
+        "viewport": [
+          2143,
+          1400
+        ],
+        "x": "-300.77",
+        "z": "-19.88"
+      },
+      {
+        "crashed": "false",
+        "drawCalls": 1001,
+        "fps": 42.3,
+        "hidden": false,
+        "indoor": "outside",
+        "paused": "false",
+        "performance": {
+          "frameP50": 33.29999999993015,
+          "frameP95": 33.699999999953434,
+          "geometries": 3518,
+          "heapMB": 920.3682470321656,
+          "loadMs": 35161.60000002384,
+          "programs": 230,
+          "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3080 (0x00002206) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "sampleFrames": 480,
+          "textures": 304,
+          "visualBaseline": false
+        },
+        "quality": "ultra",
+        "renderBudget": {
+          "detail": 1,
+          "pixelRatio": 1.632938731471561,
+          "quality": "ultra",
+          "resolutionScale": 1,
+          "targetFPS": 90,
+          "xr": false
+        },
+        "running": "true",
+        "speed": "0.000",
+        "stamp": 1791163619085,
+        "triangles": 1822145,
+        "viewport": [
+          2143,
+          1400
+        ],
+        "x": "-300.77",
+        "z": "-19.88"
+      },
+      {
+        "crashed": "false",
+        "drawCalls": 1001,
+        "fps": 41.3,
+        "hidden": false,
+        "indoor": "outside",
+        "paused": "false",
+        "performance": {
+          "frameP50": 33.29999999993015,
+          "frameP95": 33.699999999953434,
+          "geometries": 3518,
+          "heapMB": 921.5726404190063,
+          "loadMs": 35161.60000002384,
+          "programs": 230,
+          "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3080 (0x00002206) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "sampleFrames": 480,
+          "textures": 304,
+          "visualBaseline": false
+        },
+        "quality": "ultra",
+        "renderBudget": {
+          "detail": 1,
+          "pixelRatio": 1.632938731471561,
+          "quality": "ultra",
+          "resolutionScale": 1,
+          "targetFPS": 90,
+          "xr": false
+        },
+        "running": "true",
+        "speed": "0.000",
+        "stamp": 1791163620158,
+        "triangles": 1822145,
+        "viewport": [
+          2143,
+          1400
+        ],
+        "x": "-300.77",
+        "z": "-19.88"
+      },
+      {
+        "crashed": "false",
+        "drawCalls": 1001,
+        "fps": 38.4,
+        "hidden": false,
+        "indoor": "outside",
+        "paused": "false",
+        "performance": {
+          "frameP50": 33.29999999993015,
+          "frameP95": 34.29999999993015,
+          "geometries": 3518,
+          "heapMB": 929.7484788894652,
+          "loadMs": 35161.60000002384,
+          "programs": 230,
+          "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3080 (0x00002206) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "sampleFrames": 480,
+          "textures": 304,
+          "visualBaseline": false
+        },
+        "quality": "ultra",
+        "renderBudget": {
+          "detail": 1,
+          "pixelRatio": 1.632938731471561,
+          "quality": "ultra",
+          "resolutionScale": 1,
+          "targetFPS": 90,
+          "xr": false
+        },
+        "running": "true",
+        "speed": "0.000",
+        "stamp": 1791163621225,
+        "triangles": 1822145,
+        "viewport": [
+          2143,
+          1400
+        ],
+        "x": "-300.77",
+        "z": "-19.88"
+      },
+      {
+        "crashed": "false",
+        "drawCalls": 1001,
+        "fps": 36.4,
+        "hidden": false,
+        "indoor": "outside",
+        "paused": "false",
+        "performance": {
+          "frameP50": 33.29999999993015,
+          "frameP95": 34.29999999993015,
+          "geometries": 3518,
+          "heapMB": 931.840132713318,
+          "loadMs": 35161.60000002384,
+          "programs": 230,
+          "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3080 (0x00002206) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "sampleFrames": 480,
+          "textures": 304,
+          "visualBaseline": false
+        },
+        "quality": "ultra",
+        "renderBudget": {
+          "detail": 1,
+          "pixelRatio": 1.632938731471561,
+          "quality": "ultra",
+          "resolutionScale": 1,
+          "targetFPS": 90,
+          "xr": false
+        },
+        "running": "true",
+        "speed": "0.000",
+        "stamp": 1791163622285,
+        "triangles": 1822145,
+        "viewport": [
+          2143,
+          1400
+        ],
+        "x": "-300.77",
+        "z": "-19.88"
+      },
+      {
+        "crashed": "false",
+        "drawCalls": 1001,
+        "fps": 39.3,
+        "hidden": false,
+        "indoor": "outside",
+        "paused": "false",
+        "performance": {
+          "frameP50": 33.29999999993015,
+          "frameP95": 34.29999999993015,
+          "geometries": 3518,
+          "heapMB": 917.4087800979614,
+          "loadMs": 35161.60000002384,
+          "programs": 230,
+          "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3080 (0x00002206) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "sampleFrames": 480,
+          "textures": 304,
+          "visualBaseline": false
+        },
+        "quality": "ultra",
+        "renderBudget": {
+          "detail": 1,
+          "pixelRatio": 1.632938731471561,
+          "quality": "ultra",
+          "resolutionScale": 1,
+          "targetFPS": 90,
+          "xr": false
+        },
+        "running": "true",
+        "speed": "0.000",
+        "stamp": 1791163623342,
+        "triangles": 1822145,
+        "viewport": [
+          2143,
+          1400
+        ],
+        "x": "-300.77",
+        "z": "-19.88"
+      },
+      {
+        "crashed": "false",
+        "drawCalls": 998,
+        "fps": 40.3,
+        "hidden": false,
+        "indoor": "outside",
+        "paused": "false",
+        "performance": {
+          "frameP50": 33.29999999993015,
+          "frameP95": 34.29999999993015,
+          "geometries": 3518,
+          "heapMB": 923.8071603775024,
+          "loadMs": 35161.60000002384,
+          "programs": 230,
+          "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3080 (0x00002206) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "sampleFrames": 480,
+          "textures": 308,
+          "visualBaseline": false
+        },
+        "quality": "ultra",
+        "renderBudget": {
+          "detail": 1,
+          "pixelRatio": 1.632938731471561,
+          "quality": "ultra",
+          "resolutionScale": 1,
+          "targetFPS": 90,
+          "xr": false
+        },
+        "running": "true",
+        "speed": "0.000",
+        "stamp": 1791163624409,
+        "triangles": 1872991,
+        "viewport": [
+          2143,
+          1400
+        ],
+        "x": "-300.77",
+        "z": "-19.88"
+      },
+      {
+        "crashed": "false",
+        "drawCalls": 978,
+        "fps": 39.7,
+        "hidden": false,
+        "indoor": "outside",
+        "paused": "false",
+        "performance": {
+          "frameP50": 33.29999999993015,
+          "frameP95": 33.5,
+          "geometries": 3518,
+          "heapMB": 926.2745895385742,
+          "loadMs": 35161.60000002384,
+          "programs": 230,
+          "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3080 (0x00002206) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "sampleFrames": 480,
+          "textures": 308,
+          "visualBaseline": false
+        },
+        "quality": "ultra",
+        "renderBudget": {
+          "detail": 1,
+          "pixelRatio": 1.632938731471561,
+          "quality": "ultra",
+          "resolutionScale": 1,
+          "targetFPS": 90,
+          "xr": false
+        },
+        "running": "true",
+        "speed": "0.000",
+        "stamp": 1791163625471,
+        "triangles": 1870975,
+        "viewport": [
+          2143,
+          1400
+        ],
+        "x": "-300.77",
+        "z": "-19.88"
+      },
+      {
+        "crashed": "false",
+        "drawCalls": 978,
+        "fps": 44.3,
+        "hidden": false,
+        "indoor": "outside",
+        "paused": "false",
+        "performance": {
+          "frameP50": 33.20000000006985,
+          "frameP95": 33.40000000002328,
+          "geometries": 3518,
+          "heapMB": 925.7607612609864,
+          "loadMs": 35161.60000002384,
+          "programs": 230,
+          "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3080 (0x00002206) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "sampleFrames": 480,
+          "textures": 308,
+          "visualBaseline": false
+        },
+        "quality": "ultra",
+        "renderBudget": {
+          "detail": 1,
+          "pixelRatio": 1.632938731471561,
+          "quality": "ultra",
+          "resolutionScale": 1,
+          "targetFPS": 90,
+          "xr": false
+        },
+        "running": "true",
+        "speed": "0.000",
+        "stamp": 1791163626520,
+        "triangles": 1870975,
+        "viewport": [
+          2143,
+          1400
+        ],
+        "x": "-300.77",
+        "z": "-19.88"
+      },
+      {
+        "crashed": "false",
+        "drawCalls": 978,
+        "fps": 41.6,
+        "hidden": false,
+        "indoor": "outside",
+        "paused": "false",
+        "performance": {
+          "frameP50": 33.199999999953434,
+          "frameP95": 33.40000000002328,
+          "geometries": 3518,
+          "heapMB": 947.1103057861328,
+          "loadMs": 35161.60000002384,
+          "programs": 230,
+          "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3080 (0x00002206) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "sampleFrames": 480,
+          "textures": 308,
+          "visualBaseline": false
+        },
+        "quality": "ultra",
+        "renderBudget": {
+          "detail": 1,
+          "pixelRatio": 1.632938731471561,
+          "quality": "ultra",
+          "resolutionScale": 1,
+          "targetFPS": 90,
+          "xr": false
+        },
+        "running": "true",
+        "speed": "0.000",
+        "stamp": 1791163627594,
+        "triangles": 1870975,
+        "viewport": [
+          2143,
+          1400
+        ],
+        "x": "-300.77",
+        "z": "-19.88"
+      },
+      {
+        "crashed": "false",
+        "drawCalls": 935,
+        "fps": 43.5,
+        "hidden": false,
+        "indoor": "outside",
+        "paused": "false",
+        "performance": {
+          "frameP50": 16.79999999993015,
+          "frameP95": 33.40000000002328,
+          "geometries": 3517,
+          "heapMB": 918.6586303710938,
+          "loadMs": 35161.60000002384,
+          "programs": 230,
+          "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3080 (0x00002206) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "sampleFrames": 480,
+          "textures": 308,
+          "visualBaseline": false
+        },
+        "quality": "ultra",
+        "renderBudget": {
+          "detail": 1,
+          "pixelRatio": 1.632938731471561,
+          "quality": "ultra",
+          "resolutionScale": 1,
+          "targetFPS": 90,
+          "xr": false
+        },
+        "running": "true",
+        "speed": "0.000",
+        "stamp": 1791163628654,
+        "triangles": 1818385,
+        "viewport": [
+          2143,
+          1400
+        ],
+        "x": "-300.77",
+        "z": "-19.88"
+      },
+      {
+        "crashed": "false",
+        "drawCalls": 927,
+        "fps": 47.2,
+        "hidden": false,
+        "indoor": "outside",
+        "paused": "false",
+        "performance": {
+          "frameP50": 16.70000000006985,
+          "frameP95": 33.40000000002328,
+          "geometries": 3517,
+          "heapMB": 926.751636505127,
+          "loadMs": 35161.60000002384,
+          "programs": 230,
+          "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3080 (0x00002206) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "sampleFrames": 480,
+          "textures": 308,
+          "visualBaseline": false
+        },
+        "quality": "ultra",
+        "renderBudget": {
+          "detail": 1,
+          "pixelRatio": 1.632938731471561,
+          "quality": "ultra",
+          "resolutionScale": 1,
+          "targetFPS": 90,
+          "xr": false
+        },
+        "running": "true",
+        "speed": "0.000",
+        "stamp": 1791163629708,
+        "triangles": 1766283,
+        "viewport": [
+          2143,
+          1400
+        ],
+        "x": "-300.77",
+        "z": "-19.88"
+      },
+      {
+        "crashed": "false",
+        "drawCalls": 975,
+        "fps": 42.6,
+        "hidden": false,
+        "indoor": "outside",
+        "paused": "false",
+        "performance": {
+          "frameP50": 16.70000000006985,
+          "frameP95": 33.40000000002328,
+          "geometries": 3542,
+          "heapMB": 931.2107753753662,
+          "loadMs": 35161.60000002384,
+          "programs": 230,
+          "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3080 (0x00002206) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "sampleFrames": 480,
+          "textures": 308,
+          "visualBaseline": false
+        },
+        "quality": "ultra",
+        "renderBudget": {
+          "detail": 1,
+          "pixelRatio": 1.632938731471561,
+          "quality": "ultra",
+          "resolutionScale": 1,
+          "targetFPS": 90,
+          "xr": false
+        },
+        "running": "true",
+        "speed": "6.015",
+        "stamp": 1791163630858,
+        "triangles": 1825810,
+        "viewport": [
+          2143,
+          1400
+        ],
+        "x": "-303.10",
+        "z": "-20.08"
+      },
+      {
+        "crashed": "false",
+        "drawCalls": 1026,
+        "fps": 39.7,
+        "hidden": false,
+        "indoor": "outside",
+        "paused": "false",
+        "performance": {
+          "frameP50": 16.70000000006985,
+          "frameP95": 33.40000000002328,
+          "geometries": 3554,
+          "heapMB": 942.9840307235718,
+          "loadMs": 35161.60000002384,
+          "programs": 230,
+          "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3080 (0x00002206) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "sampleFrames": 480,
+          "textures": 310,
+          "visualBaseline": false
+        },
+        "quality": "ultra",
+        "renderBudget": {
+          "detail": 1,
+          "pixelRatio": 1.632938731471561,
+          "quality": "ultra",
+          "resolutionScale": 1,
+          "targetFPS": 90,
+          "xr": false
+        },
+        "running": "true",
+        "speed": "12.441",
+        "stamp": 1791163631911,
+        "triangles": 1927047,
+        "viewport": [
+          2143,
+          1400
+        ],
+        "x": "-313.99",
+        "z": "-20.99"
+      },
+      {
+        "crashed": "false",
+        "drawCalls": 776,
+        "fps": 41.6,
+        "hidden": false,
+        "indoor": "outside",
+        "paused": "false",
+        "performance": {
+          "frameP50": 16.70000000006985,
+          "frameP95": 33.40000000002328,
+          "geometries": 3592,
+          "heapMB": 922.1039457321168,
+          "loadMs": 35161.60000002384,
+          "programs": 230,
+          "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3080 (0x00002206) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "sampleFrames": 480,
+          "textures": 315,
+          "visualBaseline": false
+        },
+        "quality": "ultra",
+        "renderBudget": {
+          "detail": 1,
+          "pixelRatio": 1.632938731471561,
+          "quality": "ultra",
+          "resolutionScale": 1,
+          "targetFPS": 90,
+          "xr": false
+        },
+        "running": "true",
+        "speed": "2.142",
+        "stamp": 1791163633034,
+        "triangles": 1627571,
+        "viewport": [
+          2143,
+          1400
+        ],
+        "x": "-322.50",
+        "z": "-22.20"
+      },
+      {
+        "crashed": "false",
+        "drawCalls": 1521,
+        "fps": 40.6,
+        "hidden": false,
+        "indoor": "outside",
+        "paused": "false",
+        "performance": {
+          "frameP50": 16.70000000006985,
+          "frameP95": 33.40000000002328,
+          "geometries": 4130,
+          "heapMB": 920.1161422729492,
+          "loadMs": 35161.60000002384,
+          "programs": 231,
+          "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3080 (0x00002206) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "sampleFrames": 480,
+          "textures": 352,
+          "visualBaseline": false
+        },
+        "quality": "ultra",
+        "renderBudget": {
+          "detail": 1,
+          "pixelRatio": 1.632938731471561,
+          "quality": "ultra",
+          "resolutionScale": 1,
+          "targetFPS": 90,
+          "xr": false
+        },
+        "running": "true",
+        "speed": "5.332",
+        "stamp": 1791163634516,
+        "triangles": 1821603,
+        "viewport": [
+          2143,
+          1400
+        ],
+        "x": "-321.70",
+        "z": "-23.91"
+      }
+    ]
+  },
+  {
+    "label": "Detroit Mack Avenue / store district approach",
+    "samples": [
+      {
+        "crashed": "false",
+        "drawCalls": 1591,
+        "fps": 27,
+        "hidden": false,
+        "indoor": "outside",
+        "paused": "false",
+        "performance": {
+          "frameP50": 33.300000000046566,
+          "frameP95": 50.09999999997672,
+          "geometries": 4894,
+          "heapMB": 912.009373664856,
+          "loadMs": 35161.60000002384,
+          "programs": 257,
+          "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3080 (0x00002206) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "sampleFrames": 480,
+          "textures": 471,
+          "visualBaseline": false
+        },
+        "quality": "ultra",
+        "renderBudget": {
+          "detail": 1,
+          "pixelRatio": 1.632938731471561,
+          "quality": "ultra",
+          "resolutionScale": 1,
+          "targetFPS": 90,
+          "xr": false
+        },
+        "running": "true",
+        "speed": "0.000",
+        "stamp": 1791163685393,
+        "triangles": 2135825,
+        "viewport": [
+          2143,
+          1400
+        ],
+        "x": "-858.47",
+        "z": "-57.97"
+      },
+      {
+        "crashed": "false",
+        "drawCalls": 1632,
+        "fps": 30.5,
+        "hidden": false,
+        "indoor": "outside",
+        "paused": "false",
+        "performance": {
+          "frameP50": 33.300000000046566,
+          "frameP95": 50.09999999997672,
+          "geometries": 4894,
+          "heapMB": 920.7269763946532,
+          "loadMs": 35161.60000002384,
+          "programs": 258,
+          "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3080 (0x00002206) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "sampleFrames": 480,
+          "textures": 471,
+          "visualBaseline": false
+        },
+        "quality": "ultra",
+        "renderBudget": {
+          "detail": 1,
+          "pixelRatio": 1.632938731471561,
+          "quality": "ultra",
+          "resolutionScale": 1,
+          "targetFPS": 90,
+          "xr": false
+        },
+        "running": "true",
+        "speed": "0.000",
+        "stamp": 1791163686490,
+        "triangles": 2139249,
+        "viewport": [
+          2143,
+          1400
+        ],
+        "x": "-858.47",
+        "z": "-57.97"
+      },
+      {
+        "crashed": "false",
+        "drawCalls": 1632,
+        "fps": 28.5,
+        "hidden": false,
+        "indoor": "outside",
+        "paused": "false",
+        "performance": {
+          "frameP50": 33.300000000046566,
+          "frameP95": 50.10000000009313,
+          "geometries": 4894,
+          "heapMB": 910.5238409042358,
+          "loadMs": 35161.60000002384,
+          "programs": 258,
+          "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3080 (0x00002206) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "sampleFrames": 480,
+          "textures": 471,
+          "visualBaseline": false
+        },
+        "quality": "ultra",
+        "renderBudget": {
+          "detail": 1,
+          "pixelRatio": 1.632938731471561,
+          "quality": "ultra",
+          "resolutionScale": 1,
+          "targetFPS": 90,
+          "xr": false
+        },
+        "running": "true",
+        "speed": "0.000",
+        "stamp": 1791163687545,
+        "triangles": 2139249,
+        "viewport": [
+          2143,
+          1400
+        ],
+        "x": "-858.47",
+        "z": "-57.97"
+      },
+      {
+        "crashed": "false",
+        "drawCalls": 1632,
+        "fps": 33,
+        "hidden": false,
+        "indoor": "outside",
+        "paused": "false",
+        "performance": {
+          "frameP50": 33.300000000046566,
+          "frameP95": 50.10000000009313,
+          "geometries": 4894,
+          "heapMB": 916.6721992492676,
+          "loadMs": 35161.60000002384,
+          "programs": 258,
+          "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3080 (0x00002206) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "sampleFrames": 480,
+          "textures": 471,
+          "visualBaseline": false
+        },
+        "quality": "ultra",
+        "renderBudget": {
+          "detail": 1,
+          "pixelRatio": 1.632938731471561,
+          "quality": "ultra",
+          "resolutionScale": 1,
+          "targetFPS": 90,
+          "xr": false
+        },
+        "running": "true",
+        "speed": "0.000",
+        "stamp": 1791163688598,
+        "triangles": 2139249,
+        "viewport": [
+          2143,
+          1400
+        ],
+        "x": "-858.47",
+        "z": "-57.97"
+      },
+      {
+        "crashed": "false",
+        "drawCalls": 1632,
+        "fps": 32.9,
+        "hidden": false,
+        "indoor": "outside",
+        "paused": "false",
+        "performance": {
+          "frameP50": 33.300000000046566,
+          "frameP95": 50.10000000009313,
+          "geometries": 4894,
+          "heapMB": 912.222264289856,
+          "loadMs": 35161.60000002384,
+          "programs": 258,
+          "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3080 (0x00002206) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "sampleFrames": 480,
+          "textures": 471,
+          "visualBaseline": false
+        },
+        "quality": "ultra",
+        "renderBudget": {
+          "detail": 1,
+          "pixelRatio": 1.632938731471561,
+          "quality": "ultra",
+          "resolutionScale": 1,
+          "targetFPS": 90,
+          "xr": false
+        },
+        "running": "true",
+        "speed": "0.000",
+        "stamp": 1791163689699,
+        "triangles": 2139249,
+        "viewport": [
+          2143,
+          1400
+        ],
+        "x": "-858.47",
+        "z": "-57.97"
+      },
+      {
+        "crashed": "false",
+        "drawCalls": 1632,
+        "fps": 25,
+        "hidden": false,
+        "indoor": "outside",
+        "paused": "false",
+        "performance": {
+          "frameP50": 33.300000000046566,
+          "frameP95": 66.59999999997672,
+          "geometries": 4894,
+          "heapMB": 910.4671230316162,
+          "loadMs": 35161.60000002384,
+          "programs": 258,
+          "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3080 (0x00002206) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "sampleFrames": 480,
+          "textures": 471,
+          "visualBaseline": false
+        },
+        "quality": "ultra",
+        "renderBudget": {
+          "detail": 1,
+          "pixelRatio": 1.632938731471561,
+          "quality": "ultra",
+          "resolutionScale": 1,
+          "targetFPS": 90,
+          "xr": false
+        },
+        "running": "true",
+        "speed": "0.000",
+        "stamp": 1791163690763,
+        "triangles": 2139249,
+        "viewport": [
+          2143,
+          1400
+        ],
+        "x": "-858.47",
+        "z": "-57.97"
+      },
+      {
+        "crashed": "false",
+        "drawCalls": 1632,
+        "fps": 28.1,
+        "hidden": false,
+        "indoor": "outside",
+        "paused": "false",
+        "performance": {
+          "frameP50": 33.39999999990687,
+          "frameP95": 66.59999999997672,
+          "geometries": 4894,
+          "heapMB": 916.1277494430542,
+          "loadMs": 35161.60000002384,
+          "programs": 258,
+          "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3080 (0x00002206) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "sampleFrames": 480,
+          "textures": 471,
+          "visualBaseline": false
+        },
+        "quality": "ultra",
+        "renderBudget": {
+          "detail": 1,
+          "pixelRatio": 1.632938731471561,
+          "quality": "ultra",
+          "resolutionScale": 1,
+          "targetFPS": 90,
+          "xr": false
+        },
+        "running": "true",
+        "speed": "0.000",
+        "stamp": 1791163692105,
+        "triangles": 2139249,
+        "viewport": [
+          2144,
+          1400
+        ],
+        "x": "-858.47",
+        "z": "-57.97"
+      },
+      {
+        "crashed": "false",
+        "drawCalls": 1632,
+        "fps": 10.2,
+        "hidden": false,
+        "indoor": "outside",
+        "paused": "false",
+        "performance": {
+          "frameP50": 33.39999999990687,
+          "frameP95": 66.69999999995343,
+          "geometries": 4894,
+          "heapMB": 911.5047206878662,
+          "loadMs": 35161.60000002384,
+          "programs": 258,
+          "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3080 (0x00002206) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "sampleFrames": 480,
+          "textures": 471,
+          "visualBaseline": false
+        },
+        "quality": "ultra",
+        "renderBudget": {
+          "detail": 1,
+          "pixelRatio": 1.632557871120848,
+          "quality": "ultra",
+          "resolutionScale": 1,
+          "targetFPS": 90,
+          "xr": false
+        },
+        "running": "true",
+        "speed": "0.000",
+        "stamp": 1791163693399,
+        "triangles": 2139249,
+        "viewport": [
+          2144,
+          1400
+        ],
+        "x": "-858.47",
+        "z": "-57.97"
+      },
+      {
+        "crashed": "false",
+        "drawCalls": 1632,
+        "fps": 14.1,
+        "hidden": false,
+        "indoor": "outside",
+        "paused": "false",
+        "performance": {
+          "frameP50": 33.40000000002328,
+          "frameP95": 66.70000000006985,
+          "geometries": 4894,
+          "heapMB": 913.9659900665284,
+          "loadMs": 35161.60000002384,
+          "programs": 258,
+          "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3080 (0x00002206) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "sampleFrames": 480,
+          "textures": 471,
+          "visualBaseline": false
+        },
+        "quality": "ultra",
+        "renderBudget": {
+          "detail": 1,
+          "pixelRatio": 1.632557871120848,
+          "quality": "ultra",
+          "resolutionScale": 1,
+          "targetFPS": 90,
+          "xr": false
+        },
+        "running": "true",
+        "speed": "0.000",
+        "stamp": 1791163694497,
+        "triangles": 2139249,
+        "viewport": [
+          2144,
+          1400
+        ],
+        "x": "-858.47",
+        "z": "-57.97"
+      },
+      {
+        "crashed": "false",
+        "drawCalls": 1632,
+        "fps": 16.5,
+        "hidden": false,
+        "indoor": "outside",
+        "paused": "false",
+        "performance": {
+          "frameP50": 33.40000000002328,
+          "frameP95": 66.70000000006985,
+          "geometries": 4894,
+          "heapMB": 910.9366884231569,
+          "loadMs": 35161.60000002384,
+          "programs": 258,
+          "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3080 (0x00002206) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "sampleFrames": 480,
+          "textures": 471,
+          "visualBaseline": false
+        },
+        "quality": "ultra",
+        "renderBudget": {
+          "detail": 1,
+          "pixelRatio": 1.632557871120848,
+          "quality": "ultra",
+          "resolutionScale": 1,
+          "targetFPS": 90,
+          "xr": false
+        },
+        "running": "true",
+        "speed": "0.000",
+        "stamp": 1791163695571,
+        "triangles": 2139249,
+        "viewport": [
+          2144,
+          1400
+        ],
+        "x": "-858.47",
+        "z": "-57.97"
+      },
+      {
+        "crashed": "false",
+        "drawCalls": 1632,
+        "fps": 27.5,
+        "hidden": false,
+        "indoor": "outside",
+        "paused": "false",
+        "performance": {
+          "frameP50": 33.40000000002328,
+          "frameP95": 66.70000000006985,
+          "geometries": 4894,
+          "heapMB": 906.6733646392822,
+          "loadMs": 35161.60000002384,
+          "programs": 258,
+          "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3080 (0x00002206) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "sampleFrames": 480,
+          "textures": 471,
+          "visualBaseline": false
+        },
+        "quality": "ultra",
+        "renderBudget": {
+          "detail": 1,
+          "pixelRatio": 1.632557871120848,
+          "quality": "ultra",
+          "resolutionScale": 1,
+          "targetFPS": 90,
+          "xr": false
+        },
+        "running": "true",
+        "speed": "0.000",
+        "stamp": 1791163696682,
+        "triangles": 2139249,
+        "viewport": [
+          2144,
+          1400
+        ],
+        "x": "-858.47",
+        "z": "-57.97"
+      },
+      {
+        "crashed": "false",
+        "drawCalls": 1632,
+        "fps": 27.1,
+        "hidden": false,
+        "indoor": "outside",
+        "paused": "false",
+        "performance": {
+          "frameP50": 33.40000000002328,
+          "frameP95": 66.70000000006985,
+          "geometries": 4894,
+          "heapMB": 910.3939170837402,
+          "loadMs": 35161.60000002384,
+          "programs": 258,
+          "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3080 (0x00002206) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "sampleFrames": 480,
+          "textures": 471,
+          "visualBaseline": false
+        },
+        "quality": "ultra",
+        "renderBudget": {
+          "detail": 1,
+          "pixelRatio": 1.632557871120848,
+          "quality": "ultra",
+          "resolutionScale": 1,
+          "targetFPS": 90,
+          "xr": false
+        },
+        "running": "true",
+        "speed": "0.000",
+        "stamp": 1791163697768,
+        "triangles": 2139249,
+        "viewport": [
+          2144,
+          1400
+        ],
+        "x": "-858.47",
+        "z": "-57.97"
+      },
+      {
+        "crashed": "false",
+        "drawCalls": 1632,
+        "fps": 24.6,
+        "hidden": false,
+        "indoor": "outside",
+        "paused": "false",
+        "performance": {
+          "frameP50": 33.40000000002328,
+          "frameP95": 66.70000000006985,
+          "geometries": 4894,
+          "heapMB": 906.883451461792,
+          "loadMs": 35161.60000002384,
+          "programs": 258,
+          "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3080 (0x00002206) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "sampleFrames": 480,
+          "textures": 471,
+          "visualBaseline": false
+        },
+        "quality": "ultra",
+        "renderBudget": {
+          "detail": 1,
+          "pixelRatio": 1.632557871120848,
+          "quality": "ultra",
+          "resolutionScale": 1,
+          "targetFPS": 90,
+          "xr": false
+        },
+        "running": "true",
+        "speed": "0.000",
+        "stamp": 1791163698870,
+        "triangles": 2139249,
+        "viewport": [
+          2144,
+          1400
+        ],
+        "x": "-858.47",
+        "z": "-57.97"
+      },
+      {
+        "crashed": "false",
+        "drawCalls": 1632,
+        "fps": 25.6,
+        "hidden": false,
+        "indoor": "outside",
+        "paused": "false",
+        "performance": {
+          "frameP50": 33.39999999990687,
+          "frameP95": 66.70000000006985,
+          "geometries": 4894,
+          "heapMB": 902.7638864517212,
+          "loadMs": 35161.60000002384,
+          "programs": 258,
+          "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3080 (0x00002206) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "sampleFrames": 480,
+          "textures": 471,
+          "visualBaseline": false
+        },
+        "quality": "ultra",
+        "renderBudget": {
+          "detail": 1,
+          "pixelRatio": 1.632557871120848,
+          "quality": "ultra",
+          "resolutionScale": 1,
+          "targetFPS": 90,
+          "xr": false
+        },
+        "running": "true",
+        "speed": "0.000",
+        "stamp": 1791163699957,
+        "triangles": 2139249,
+        "viewport": [
+          2144,
+          1400
+        ],
+        "x": "-858.47",
+        "z": "-57.97"
+      },
+      {
+        "crashed": "false",
+        "drawCalls": 1632,
+        "fps": 28.1,
+        "hidden": false,
+        "indoor": "outside",
+        "paused": "false",
+        "performance": {
+          "frameP50": 33.39999999990687,
+          "frameP95": 66.70000000006985,
+          "geometries": 4894,
+          "heapMB": 906.9427967071532,
+          "loadMs": 35161.60000002384,
+          "programs": 258,
+          "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3080 (0x00002206) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "sampleFrames": 480,
+          "textures": 471,
+          "visualBaseline": false
+        },
+        "quality": "ultra",
+        "renderBudget": {
+          "detail": 1,
+          "pixelRatio": 1.632557871120848,
+          "quality": "ultra",
+          "resolutionScale": 1,
+          "targetFPS": 90,
+          "xr": false
+        },
+        "running": "true",
+        "speed": "0.000",
+        "stamp": 1791163701035,
+        "triangles": 2139249,
+        "viewport": [
+          2144,
+          1400
+        ],
+        "x": "-858.47",
+        "z": "-57.97"
+      },
+      {
+        "crashed": "false",
+        "drawCalls": 1632,
+        "fps": 22,
+        "hidden": false,
+        "indoor": "outside",
+        "paused": "false",
+        "performance": {
+          "frameP50": 33.40000000002328,
+          "frameP95": 66.70000000006985,
+          "geometries": 4894,
+          "heapMB": 901.4457693099976,
+          "loadMs": 35161.60000002384,
+          "programs": 258,
+          "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3080 (0x00002206) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "sampleFrames": 480,
+          "textures": 471,
+          "visualBaseline": false
+        },
+        "quality": "ultra",
+        "renderBudget": {
+          "detail": 1,
+          "pixelRatio": 1.632557871120848,
+          "quality": "ultra",
+          "resolutionScale": 1,
+          "targetFPS": 90,
+          "xr": false
+        },
+        "running": "true",
+        "speed": "0.000",
+        "stamp": 1791163702105,
+        "triangles": 2139249,
+        "viewport": [
+          2144,
+          1400
+        ],
+        "x": "-858.47",
+        "z": "-57.97"
+      },
+      {
+        "crashed": "false",
+        "drawCalls": 1632,
+        "fps": 28.1,
+        "hidden": false,
+        "indoor": "outside",
+        "paused": "false",
+        "performance": {
+          "frameP50": 33.40000000002328,
+          "frameP95": 66.70000000006985,
+          "geometries": 4894,
+          "heapMB": 905.7892770767212,
+          "loadMs": 35161.60000002384,
+          "programs": 258,
+          "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3080 (0x00002206) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "sampleFrames": 480,
+          "textures": 471,
+          "visualBaseline": false
+        },
+        "quality": "ultra",
+        "renderBudget": {
+          "detail": 1,
+          "pixelRatio": 1.632557871120848,
+          "quality": "ultra",
+          "resolutionScale": 1,
+          "targetFPS": 90,
+          "xr": false
+        },
+        "running": "true",
+        "speed": "0.000",
+        "stamp": 1791163703223,
+        "triangles": 2139249,
+        "viewport": [
+          2144,
+          1400
+        ],
+        "x": "-858.47",
+        "z": "-57.97"
+      },
+      {
+        "crashed": "false",
+        "drawCalls": 1632,
+        "fps": 27.5,
+        "hidden": false,
+        "indoor": "outside",
+        "paused": "false",
+        "performance": {
+          "frameP50": 33.40000000002328,
+          "frameP95": 66.70000000006985,
+          "geometries": 4894,
+          "heapMB": 900.1481828689575,
+          "loadMs": 35161.60000002384,
+          "programs": 258,
+          "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3080 (0x00002206) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "sampleFrames": 480,
+          "textures": 471,
+          "visualBaseline": false
+        },
+        "quality": "ultra",
+        "renderBudget": {
+          "detail": 1,
+          "pixelRatio": 1.632557871120848,
+          "quality": "ultra",
+          "resolutionScale": 1,
+          "targetFPS": 90,
+          "xr": false
+        },
+        "running": "true",
+        "speed": "0.000",
+        "stamp": 1791163704273,
+        "triangles": 2139249,
+        "viewport": [
+          2144,
+          1400
+        ],
+        "x": "-858.47",
+        "z": "-57.97"
+      },
+      {
+        "crashed": "false",
+        "drawCalls": 1591,
+        "fps": 27.7,
+        "hidden": false,
+        "indoor": "outside",
+        "paused": "false",
+        "performance": {
+          "frameP50": 33.40000000002328,
+          "frameP95": 66.70000000006985,
+          "geometries": 4894,
+          "heapMB": 909.0493478775024,
+          "loadMs": 35161.60000002384,
+          "programs": 258,
+          "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3080 (0x00002206) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "sampleFrames": 480,
+          "textures": 471,
+          "visualBaseline": false
+        },
+        "quality": "ultra",
+        "renderBudget": {
+          "detail": 1,
+          "pixelRatio": 1.632557871120848,
+          "quality": "ultra",
+          "resolutionScale": 1,
+          "targetFPS": 90,
+          "xr": false
+        },
+        "running": "true",
+        "speed": "0.000",
+        "stamp": 1791163705346,
+        "triangles": 2135825,
+        "viewport": [
+          2144,
+          1400
+        ],
+        "x": "-858.47",
+        "z": "-57.97"
+      },
+      {
+        "crashed": "false",
+        "drawCalls": 1591,
+        "fps": 30.5,
+        "hidden": false,
+        "indoor": "outside",
+        "paused": "false",
+        "performance": {
+          "frameP50": 33.40000000002328,
+          "frameP95": 66.70000000006985,
+          "geometries": 4894,
+          "heapMB": 910.2786750793456,
+          "loadMs": 35161.60000002384,
+          "programs": 258,
+          "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3080 (0x00002206) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+          "sampleFrames": 480,
+          "textures": 471,
+          "visualBaseline": false
+        },
+        "quality": "ultra",
+        "renderBudget": {
+          "detail": 1,
+          "pixelRatio": 1.632938731471561,
+          "quality": "ultra",
+          "resolutionScale": 1,
+          "targetFPS": 90,
+          "xr": false
+        },
+        "running": "true",
+        "speed": "0.000",
+        "stamp": 1791163706447,
+        "triangles": 2135825,
+        "viewport": [
+          2143,
+          1469
+        ],
+        "x": "-858.47",
+        "z": "-57.97"
+      }
+    ]
+  },
+  {
+    "label": "Elmwood entry / mapped cemetery lanes",
+    "samples": [
+      {
+        "cpuMsP95": 14.4,
+        "drawCalls": "663",
+        "drawMsP95": 7.3,
+        "fps": 58,
+        "frameMsP95": 16.8,
+        "frameMsP99": 50,
+        "frames": 17391,
+        "hidden": false,
+        "paused": "false",
+        "pixelRatio": "1.8694854832386882",
+        "quality": "ultra",
+        "resolutionScale": "1",
+        "rideMsP95": 7.6,
+        "riding": "true",
+        "speed": "0.000",
+        "stamp": 1791164947200,
+        "viewport": [
+          1635,
+          1400
+        ],
+        "x": "4.46",
+        "z": "9.07"
+      },
+      {
+        "cpuMsP95": 13,
+        "drawCalls": "663",
+        "drawMsP95": 6.6,
+        "fps": 60,
+        "frameMsP95": 16.8,
+        "frameMsP99": 16.9,
+        "frames": 17452,
+        "hidden": false,
+        "paused": "false",
+        "pixelRatio": "1.8694854832386882",
+        "quality": "ultra",
+        "resolutionScale": "1",
+        "rideMsP95": 5.9,
+        "riding": "true",
+        "speed": "0.000",
+        "stamp": 1791164948220,
+        "viewport": [
+          1635,
+          1400
+        ],
+        "x": "4.46",
+        "z": "9.07"
+      },
+      {
+        "cpuMsP95": 12.9,
+        "drawCalls": "665",
+        "drawMsP95": 6.5,
+        "fps": 60,
+        "frameMsP95": 16.8,
+        "frameMsP99": 16.8,
+        "frames": 17515,
+        "hidden": false,
+        "paused": "false",
+        "pixelRatio": "1.8694854832386882",
+        "quality": "ultra",
+        "resolutionScale": "1",
+        "rideMsP95": 5.9,
+        "riding": "true",
+        "speed": "0.000",
+        "stamp": 1791164949283,
+        "viewport": [
+          1635,
+          1400
+        ],
+        "x": "4.46",
+        "z": "9.07"
+      },
+      {
+        "cpuMsP95": 16.1,
+        "drawCalls": "665",
+        "drawMsP95": 9.6,
+        "fps": 59,
+        "frameMsP95": 16.9,
+        "frameMsP99": 33.4,
+        "frames": 17577,
+        "hidden": false,
+        "paused": "false",
+        "pixelRatio": "1.8694854832386882",
+        "quality": "ultra",
+        "resolutionScale": "1",
+        "rideMsP95": 6.6,
+        "riding": "true",
+        "speed": "0.000",
+        "stamp": 1791164950318,
+        "viewport": [
+          1635,
+          1400
+        ],
+        "x": "4.46",
+        "z": "9.07"
+      },
+      {
+        "cpuMsP95": 12.8,
+        "drawCalls": "672",
+        "drawMsP95": 6.2,
+        "fps": 60,
+        "frameMsP95": 16.8,
+        "frameMsP99": 16.9,
+        "frames": 17639,
+        "hidden": false,
+        "paused": "false",
+        "pixelRatio": "1.8694854832386882",
+        "quality": "ultra",
+        "resolutionScale": "1",
+        "rideMsP95": 6,
+        "riding": "true",
+        "speed": "0.000",
+        "stamp": 1791164951350,
+        "viewport": [
+          1635,
+          1400
+        ],
+        "x": "4.46",
+        "z": "9.07"
+      },
+      {
+        "cpuMsP95": 13.3,
+        "drawCalls": "672",
+        "drawMsP95": 7,
+        "fps": 60,
+        "frameMsP95": 16.8,
+        "frameMsP99": 16.8,
+        "frames": 17701,
+        "hidden": false,
+        "paused": "false",
+        "pixelRatio": "1.8694854832386882",
+        "quality": "ultra",
+        "resolutionScale": "1",
+        "rideMsP95": 6,
+        "riding": "true",
+        "speed": "0.000",
+        "stamp": 1791164952394,
+        "viewport": [
+          1635,
+          1400
+        ],
+        "x": "4.46",
+        "z": "9.07"
+      },
+      {
+        "cpuMsP95": 14.8,
+        "drawCalls": "672",
+        "drawMsP95": 8.4,
+        "fps": 60,
+        "frameMsP95": 16.8,
+        "frameMsP99": 16.8,
+        "frames": 17763,
+        "hidden": false,
+        "paused": "false",
+        "pixelRatio": "1.8694854832386882",
+        "quality": "ultra",
+        "resolutionScale": "1",
+        "rideMsP95": 6.8,
+        "riding": "true",
+        "speed": "0.000",
+        "stamp": 1791164953419,
+        "viewport": [
+          1635,
+          1400
+        ],
+        "x": "4.46",
+        "z": "9.07"
+      },
+      {
+        "cpuMsP95": 21.8,
+        "drawCalls": "672",
+        "drawMsP95": 11,
+        "fps": 57,
+        "frameMsP95": 33.2,
+        "frameMsP99": 33.4,
+        "frames": 17817,
+        "hidden": false,
+        "paused": "false",
+        "pixelRatio": "1.8694854832386882",
+        "quality": "ultra",
+        "resolutionScale": "1",
+        "rideMsP95": 8.9,
+        "riding": "true",
+        "speed": "0.000",
+        "stamp": 1791164954452,
+        "viewport": [
+          1635,
+          1400
+        ],
+        "x": "4.46",
+        "z": "9.07"
+      },
+      {
+        "cpuMsP95": 21.8,
+        "drawCalls": "665",
+        "drawMsP95": 10.7,
+        "fps": 55,
+        "frameMsP95": 33.3,
+        "frameMsP99": 33.4,
+        "frames": 17880,
+        "hidden": false,
+        "paused": "false",
+        "pixelRatio": "1.8694854832386882",
+        "quality": "ultra",
+        "resolutionScale": "1",
+        "rideMsP95": 9.1,
+        "riding": "true",
+        "speed": "0.000",
+        "stamp": 1791164955506,
+        "viewport": [
+          1635,
+          1400
+        ],
+        "x": "4.46",
+        "z": "9.07"
+      },
+      {
+        "cpuMsP95": 14.9,
+        "drawCalls": "665",
+        "drawMsP95": 8.5,
+        "fps": 60,
+        "frameMsP95": 16.8,
+        "frameMsP99": 16.8,
+        "frames": 17943,
+        "hidden": false,
+        "paused": "false",
+        "pixelRatio": "1.8694854832386882",
+        "quality": "ultra",
+        "resolutionScale": "1",
+        "rideMsP95": 6.5,
+        "riding": "true",
+        "speed": "0.000",
+        "stamp": 1791164956549,
+        "viewport": [
+          1635,
+          1400
+        ],
+        "x": "4.46",
+        "z": "9.07"
+      },
+      {
+        "cpuMsP95": 14.4,
+        "drawCalls": "665",
+        "drawMsP95": 7.9,
+        "fps": 60,
+        "frameMsP95": 16.8,
+        "frameMsP99": 16.8,
+        "frames": 18005,
+        "hidden": false,
+        "paused": "false",
+        "pixelRatio": "1.8694854832386882",
+        "quality": "ultra",
+        "resolutionScale": "1",
+        "rideMsP95": 6.1,
+        "riding": "true",
+        "speed": "0.000",
+        "stamp": 1791164957586,
+        "viewport": [
+          1635,
+          1400
+        ],
+        "x": "4.46",
+        "z": "9.07"
+      },
+      {
+        "cpuMsP95": 14.6,
+        "drawCalls": "665",
+        "drawMsP95": 7.1,
+        "fps": 60,
+        "frameMsP95": 16.7,
+        "frameMsP99": 16.8,
+        "frames": 18067,
+        "hidden": false,
+        "paused": "false",
+        "pixelRatio": "1.8694854832386882",
+        "quality": "ultra",
+        "resolutionScale": "1",
+        "rideMsP95": 7.1,
+        "riding": "true",
+        "speed": "0.000",
+        "stamp": 1791164958618,
+        "viewport": [
+          1635,
+          1400
+        ],
+        "x": "4.46",
+        "z": "9.07"
+      },
+      {
+        "cpuMsP95": 12.8,
+        "drawCalls": "665",
+        "drawMsP95": 6.5,
+        "fps": 60,
+        "frameMsP95": 16.8,
+        "frameMsP99": 16.9,
+        "frames": 18129,
+        "hidden": false,
+        "paused": "false",
+        "pixelRatio": "1.8694854832386882",
+        "quality": "ultra",
+        "resolutionScale": "1",
+        "rideMsP95": 6,
+        "riding": "true",
+        "speed": "0.000",
+        "stamp": 1791164959651,
+        "viewport": [
+          1635,
+          1400
+        ],
+        "x": "4.46",
+        "z": "9.07"
+      },
+      {
+        "cpuMsP95": 15.3,
+        "drawCalls": "665",
+        "drawMsP95": 9.8,
+        "fps": 59,
+        "frameMsP95": 16.8,
+        "frameMsP99": 33.2,
+        "frames": 18190,
+        "hidden": false,
+        "paused": "false",
+        "pixelRatio": "1.8694854832386882",
+        "quality": "ultra",
+        "resolutionScale": "1",
+        "rideMsP95": 6,
+        "riding": "true",
+        "speed": "0.000",
+        "stamp": 1791164960686,
+        "viewport": [
+          1635,
+          1400
+        ],
+        "x": "4.46",
+        "z": "9.07"
+      },
+      {
+        "cpuMsP95": 15.6,
+        "drawCalls": "665",
+        "drawMsP95": 8.7,
+        "fps": 60,
+        "frameMsP95": 16.8,
+        "frameMsP99": 16.8,
+        "frames": 18253,
+        "hidden": false,
+        "paused": "false",
+        "pixelRatio": "1.8694854832386882",
+        "quality": "ultra",
+        "resolutionScale": "1",
+        "rideMsP95": 6.1,
+        "riding": "true",
+        "speed": "0.000",
+        "stamp": 1791164961734,
+        "viewport": [
+          1635,
+          1400
+        ],
+        "x": "4.46",
+        "z": "9.07"
+      },
+      {
+        "cpuMsP95": 12.9,
+        "drawCalls": "665",
+        "drawMsP95": 6.4,
+        "fps": 60,
+        "frameMsP95": 16.8,
+        "frameMsP99": 16.9,
+        "frames": 18316,
+        "hidden": false,
+        "paused": "false",
+        "pixelRatio": "1.8694854832386882",
+        "quality": "ultra",
+        "resolutionScale": "1",
+        "rideMsP95": 6,
+        "riding": "true",
+        "speed": "0.000",
+        "stamp": 1791164962783,
+        "viewport": [
+          1635,
+          1400
+        ],
+        "x": "4.46",
+        "z": "9.07"
+      },
+      {
+        "cpuMsP95": 12.5,
+        "drawCalls": "665",
+        "drawMsP95": 6.2,
+        "fps": 60,
+        "frameMsP95": 16.8,
+        "frameMsP99": 16.9,
+        "frames": 18378,
+        "hidden": false,
+        "paused": "false",
+        "pixelRatio": "1.8694854832386882",
+        "quality": "ultra",
+        "resolutionScale": "1",
+        "rideMsP95": 5.8,
+        "riding": "true",
+        "speed": "0.000",
+        "stamp": 1791164963818,
+        "viewport": [
+          1635,
+          1400
+        ],
+        "x": "4.46",
+        "z": "9.07"
+      },
+      {
+        "cpuMsP95": 12.8,
+        "drawCalls": "665",
+        "drawMsP95": 6.6,
+        "fps": 60,
+        "frameMsP95": 16.8,
+        "frameMsP99": 16.8,
+        "frames": 18440,
+        "hidden": false,
+        "paused": "false",
+        "pixelRatio": "1.8694854832386882",
+        "quality": "ultra",
+        "resolutionScale": "1",
+        "rideMsP95": 6,
+        "riding": "true",
+        "speed": "0.000",
+        "stamp": 1791164964851,
+        "viewport": [
+          1635,
+          1400
+        ],
+        "x": "4.46",
+        "z": "9.07"
+      },
+      {
+        "cpuMsP95": 16.2,
+        "drawCalls": "663",
+        "drawMsP95": 9.3,
+        "fps": 60,
+        "frameMsP95": 16.8,
+        "frameMsP99": 16.8,
+        "frames": 18502,
+        "hidden": false,
+        "paused": "false",
+        "pixelRatio": "1.8694854832386882",
+        "quality": "ultra",
+        "resolutionScale": "1",
+        "rideMsP95": 6.8,
+        "riding": "true",
+        "speed": "0.000",
+        "stamp": 1791164965884,
+        "viewport": [
+          1635,
+          1400
+        ],
+        "x": "4.46",
+        "z": "9.07"
+      },
+      {
+        "cpuMsP95": 13.4,
+        "drawCalls": "663",
+        "drawMsP95": 6.8,
+        "fps": 60,
+        "frameMsP95": 16.8,
+        "frameMsP99": 16.9,
+        "frames": 18564,
+        "hidden": false,
+        "paused": "false",
+        "pixelRatio": "1.8694854832386882",
+        "quality": "ultra",
+        "resolutionScale": "1",
+        "rideMsP95": 5.9,
+        "riding": "true",
+        "speed": "0.000",
+        "stamp": 1791164966918,
+        "viewport": [
+          1635,
+          1400
+        ],
+        "x": "4.46",
+        "z": "9.07"
+      }
+    ]
+  }
+]

@@ -2,6 +2,7 @@ import * as T from 'three';
 import {CrashContact} from './crashContact.ts';
 import type {RidePose} from './controller.ts';
 import type {TerrainSampler} from './terrain.ts';
+import {transportedBend} from './limbBend.ts';
 
 const v=()=>new T.Vector3(),q=()=>new T.Quaternion();
 function aim(b:T.Object3D,child:T.Object3D,target:T.Vector3){
@@ -58,7 +59,9 @@ export class HumanFallRig {
     target.copy(support.lerp(relaxed,stand));
    }
    target.y=Math.max(floor+.045,target.y);
-   ik(l,hand.lerp(target,Math.min(1,p.crashBrace*1.7+blend)),forward.clone().multiplyScalar(-.35).addScaledVector(right,l.side*.6).addScaledVector(up,-.7));
+   const handTarget=hand.clone().lerp(target,Math.min(1,p.crashBrace*1.7+blend));
+   const fallback=forward.clone().multiplyScalar(-.35).addScaledVector(right,l.side*.6).addScaledVector(up,-.7);
+   ik(l,handTarget,transportedBend(shoulder,elbow,hand,handTarget,fallback));
   }
   const head=rider.getObjectByName('Head');if(head){head.quaternion.multiply(q().setFromAxisAngle(new T.Vector3(1,0,0),p.crashHeadTuck*.3));}
   this.contact.settle(rider,floor,this.terrain,.025,p.crashContact);
