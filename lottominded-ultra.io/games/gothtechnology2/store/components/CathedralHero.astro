@@ -2,7 +2,7 @@
 import { href } from '../utilities/paths';
 ---
 <section class="hero cathedral-hero" id="arrival" aria-labelledby="hero-title" data-story-scene="arrival">
-  <img class="hero-image" srcset={`${href('media/armory-hero-v2-640.webp')} 640w, ${href('media/armory-hero-v2-960.webp')} 960w, ${href('media/armory-hero-v2-1600.webp')} 1600w, ${href('media/armory-hero-v2.webp')} 2048w`} sizes="100vw" src={href('media/armory-hero-v2.webp')} width="2048" height="768" alt="Concept artwork of the 313 Detroit hoodie and LottoMind charm in a gold-lit cathedral armory" fetchpriority="high"/>
+  <img class="hero-image" srcset={`${href('media/armory-hero-v2-640.webp')} 640w, ${href('media/armory-hero-v2-960.webp')} 960w, ${href('media/armory-hero-v2-1600.webp')} 1600w, ${href('media/armory-hero-v2.webp')} 2048w`} sizes="(max-width: 1100px) 2048px, 100vw" src={href('media/armory-hero-v2.webp')} width="2048" height="768" alt="Concept artwork of the 313 Detroit hoodie and LottoMind charm in a gold-lit cathedral armory" loading="eager" fetchpriority="high"/>
   <video id="hero-background-video" class="hero-image hero-video" data-src={href('media/armory-hero-higgsfield-loop.mp4')} poster={href('media/armory-hero-v2.webp')} width="1680" height="720" muted loop playsinline preload="none" aria-hidden="true" tabindex="-1"></video>
   <div class="hero-copy">
     <p class="hero-kicker">GOTHTECHNOLOGY</p>
@@ -33,3 +33,4 @@ import { href } from '../utilities/paths';
   :global(body[data-store-v2]) .cathedral-hero[data-video-ready="true"] .hero-video{opacity:.75}
   :global(body[data-store-v2]) .cathedral-hero[data-video-ready="true"] img.hero-image{opacity:0}
 </style>
+
