@@ -4,7 +4,7 @@ import {FootTraffic,solveFootContact} from './footTraffic.ts';
 import {VISITOR_IDS,VisitorJourney} from './retailVisitorRoutes.ts';
 let visitors:Promise<GLTF[]>|undefined;
 const assets=()=>visitors??=Promise.all(VISITOR_IDS.map(id=>new GLTFLoader().loadAsync('/exports/visitors/'+id+'.glb?v=reference-visitors-20261003')));
-type Visitor={walker:FootTraffic;journey:VisitorJourney;pose:number;camera?:T.Object3D;phone?:T.Object3D;charm?:T.Object3D;bag?:T.Object3D;cameraRest?:T.Vector3};
+type Visitor={walker:FootTraffic;journey:VisitorJourney;pose:number;lastAction?:string;camera?:T.Object3D;phone?:T.Object3D;charm?:T.Object3D;bag?:T.Object3D;cameraRest?:T.Vector3};
 export class RetailVisitors {
  readonly root=new T.Group();private people:Visitor[]=[];private accumulated=0;private age=0;private reduced=matchMedia('(prefers-reduced-motion: reduce)');
  constructor(readonly store:boolean){this.root.name=store?'GothTech reference shoppers':'Serengeti reference visitors';}
@@ -20,6 +20,7 @@ export class RetailVisitors {
   this.accumulated+=Math.min(dt,.1);if(this.accumulated<1/30)return;dt=this.accumulated;this.accumulated=0;this.age+=dt;
   for(let i=0;i<this.people.length;i++){
    const person=this.people[i],{walker:w,journey:j}=person;
+   const action=j.walking?'walking':j.action;if(action!==person.lastAction){if(action==='browse'||action==='checkout')w.playInteraction('reach');person.lastAction=action;}
    if(!this.reduced.matches)j.step(dt,this.people.filter((_,n)=>n!==i).map(p=>p.journey.position));
    w.root.position.set(j.position.x,.08,j.position.z);const diff=T.MathUtils.euclideanModulo(j.heading-w.root.rotation.y+Math.PI,Math.PI*2)-Math.PI;w.root.rotation.y+=diff*(1-Math.exp(-dt*5));w.apply(this.reduced.matches?0:j.speed,dt);
    const photo=!j.walking&&j.action==='photo'&&!!(person.camera||person.phone),inspect=!j.walking&&(j.action==='browse'||j.action==='checkout');person.pose=T.MathUtils.damp(person.pose,(photo||inspect)?1:0,8,dt);

@@ -4,6 +4,7 @@ export const STUDIO_SCREEN_WALLS=[
  {id:'stream',u:-23.90,v:15.55,y:3.05,width:8,height:4.5,angle:Math.PI/2},
 ] as const;
 export const GOTHTECH_CINEMATICS=[
+ {name:'GothTech · City in Motion · 37 seconds',url:'/exports/polish/gothtech-city-in-motion-20261005.mp4',credit:'Original Higgsfield Detroit ride + gallery, LottoMind and Penny Exchange footage · edited with Higgsedit · original generated soundtrack'},
  {name:'Swoop Detroit · cinematic · 30 seconds',url:'/exports/polish/swoop-seedance-intro-30.mp4',credit:'Original Swoop Detroit artwork · Higgsfield Seedance cinematic · 30-second film'},
  {name:'Swoop Detroit · cinematic · 15 seconds',url:'/exports/polish/swoop-seedance-intro-15.mp4',credit:'Original Swoop Detroit artwork · Higgsfield Seedance cinematic · 15-second cut'},
 ] as const;
