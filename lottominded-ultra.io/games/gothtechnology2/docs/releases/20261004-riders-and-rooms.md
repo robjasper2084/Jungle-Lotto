@@ -4,10 +4,10 @@
 
 - Elmwood supports 2–4 local riders and up to four online riders. Room codes, invitation links, readiness, chosen heroes, chat, free riding, Creek Lane races, tricks, discovery rides, AI race fill, camera choices and validated host-authoritative RideCore frames use the existing live Realtime service.
 - Elmwood rooms use a separate protocol so older Swoop clients cannot join an incompatible terrain simulation. The published Swoop SDK URL supplies the existing Realtime client; no database, authentication or billing contracts changed.
-- Loading is a static progress screen. Ready-to-ride keeps the original startup art, compact controls, five EUC choices and armored default. Pedal and electric bikes are excluded from the ride selectors. Swoop LOVE TAG is in More.
+- Loading is a static progress screen. Ready-to-ride keeps compact controls, five EUC choices and armored default. Pedal and electric bikes are excluded from the ride selectors. Swoop LOVE TAG is in More.
 - All five moving hero rigs preserve limb bend directions through riding and falls. New Blender/Unity dismount, wheel recovery and park-and-walk authoring files are delivered separately; these new clips are not wired into the browser state machines in this release.
 - New supplied murals cover their full fitted walls, face the trail, retain readable UVs and use a rough concrete-grain paint finish. All underpass ceilings and beams retain their original concrete; wall artwork remains intact.
-- Elmwood startup and loading artwork uses a new Higgsfield image with the five established heroes on electric unicycles beside the pond and chapel. A compressed, versioned WebP keeps the menu picture lightweight and avoids stale artwork.
+- Swoop and Elmwood startup/loading artwork uses new Higgsfield images with the two supplied circuit-face mascots, the suited man and the woman riding electric unicycles. The robot is removed from artwork only; its playable choice remains. Compressed, versioned WebP files keep the menu pictures lightweight and avoid stale artwork.
 - Wheel rear lights flash while riding, show a steady brighter red on braking, and respect reduced motion. Front lamp materials and the local player's headlight work in both maps.
 - Digital static (1), track-13, is removed from both soundtrack catalogs and excluded from Swoop packaging, including the audio file.
 

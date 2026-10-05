@@ -2,7 +2,7 @@ import {makeRidePicker} from './ridePicker.ts';
 import {RACE_ROUTE} from './raceRules.ts';
 import {CHALLENGES} from './district.ts';
 import {RIDER_CHOICES} from './riderChoices.ts';
-const artwork=new URL('../../public/art/swoop-rivals.webp',import.meta.url).href;
+const artwork=new URL('../../public/art/swoop-rivals-circuit-20261005.webp',import.meta.url).href;
 export function installLobby(elmwood:boolean,onRace:()=>void,onSplit:()=>void){
  const $=(id:string)=>document.getElementById(id)!;
  const menu=$('menu'),setup=menu.querySelector<HTMLElement>('.menuInner')!,board=$('districtBoard');
