@@ -1,5 +1,5 @@
 import * as T from 'three';
-import {NEUTRAL_ACTIONS,lerpPose,copyPose,RIDER_EYE_PITCH,type RideActions} from '@digital-static/ridecore';
+import {NEUTRAL_ACTIONS,lerpPose,copyPose,RIDER_EYE_PITCH,HUMAN_PROFILE,type RideActions} from '@digital-static/ridecore';
 import type {GLTF} from './compressedGLTFLoader.ts';
 import {ElmwoodOnlineRooms} from './onlineRooms.ts';
 import type {RoomMatch,RoomFrame} from './onlineProtocol.ts';
@@ -61,7 +61,7 @@ export class ElmwoodOnlineRide {
   const heading=runMode==='sprint'||runMode==='tour'?Math.atan2(gates[1].x-gates[0].x,gates[1].z-gates[0].z):spawn.heading;
   const base=runMode==='sprint'||runMode==='tour'?gates[0]:{x:spawn.x,z:-spawn.north};
   match.members.forEach((member,i)=>{
-   const profile=SWOOP_RIDERS.find(r=>r.id===member.rider)!.profile,motion=new RideMotion(terrain,profile);motion.selectVehicle(wheel);motion.follow.calm=document.documentElement.dataset.reducedMotion==='true'||matchMedia('(prefers-reduced-motion: reduce)').matches;
+   const profile=SWOOP_RIDERS.find(r=>r.id===member.rider)?.profile??HUMAN_PROFILE,motion=new RideMotion(terrain,profile);motion.selectVehicle(wheel);motion.follow.calm=document.documentElement.dataset.reducedMotion==='true'||matchMedia('(prefers-reduced-motion: reduce)').matches;
    const euc=eucProfile(wheel),view=new ThreeRiderView(assets.get(member.rider)!,assets.get(euc?'Euc_'+euc.id:'DS_EUC_01')??assets.get('DS_EUC_01')!,motion.terrain,profile);
    const side=(i%2?1:-1)*.7,back=Math.floor(i/2)*2,x=base.x+Math.cos(heading)*side-Math.sin(heading)*back,z=base.z-Math.sin(heading)*side-Math.cos(heading)*back;
    motion.reset({x,y:terrain.height(x,-z),z},heading);const run=new ElmwoodRun(gates);run.reset(runMode,motion.pose);

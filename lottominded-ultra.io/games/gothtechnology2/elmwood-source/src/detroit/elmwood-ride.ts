@@ -231,7 +231,7 @@ export function makeElmwoodRide(scene:T.Scene,camera:T.PerspectiveCamera,control
     if(onlineRide?.active){stop();return;}
     if(active){stop();status('Orbit review · choose a landmark or start another ride.');return;}
     count=Number(players.value);const error=setupError(inputs.slice(0,count).map(e=>e.value as Binding),pads());if(error){message.textContent=error;status(error);return;}
-    if(count>2){await startLocalMany(mode.value as RunMode,count);return;}
+    if(count>2){try{await startLocalMany(mode.value as RunMode,count);}catch(e){stop();message.textContent='Your ride could not load. Please try again.';console.error(e);}return;}
     const menu=document.querySelector<HTMLDialogElement>('#elmwood-main-menu'),wasOpen=!!menu?.open;menu?.close();const cinema=loadingCinema();cinema.status('Loading your rider and wheels…');button.disabled=true;music.unlock();void audio.enable(soundToggle.checked).catch(()=>{soundToggle.checked=false;message.textContent='Sound is unavailable in this browser.';});
     try{
       await initialize();await loadElectricAssets(cycleAssets!,vehicle.value,mode.value==='sprint');camera.getWorldDirection(direction);const spawn=chooseElmwoodSpawn(terrain!.segments,controls.target.x,-controls.target.z,direction);showSite();
