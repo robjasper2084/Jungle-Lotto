@@ -1,4 +1,4 @@
-import {mocapWalking} from './mocapWalking.ts';
+import {locomotionMocap,sampleMocap,INSTALLED_MOCAP_INFO,type MocapAction} from './installedMocap.ts';
 import * as T from 'three';
 import {clone} from 'three/addons/utils/SkeletonUtils.js';
 import type {GLTF} from './compressedGLTFLoader.ts';
@@ -8,7 +8,9 @@ const v=()=>new T.Vector3(),q=()=>new T.Quaternion(),tau=Math.PI*2;
 const smooth=(a:number,b:number,x:number)=>{const t=T.MathUtils.clamp((x-a)/(b-a),0,1);return t*t*(3-2*t);};
 export function gaitTiming(speed:number,jog:boolean,legLength=.9){
   const run=jog?smooth(2.65,4.2,speed):0;
-  return {run,cadence:(jog?1.42+run*.2:.88)*T.MathUtils.clamp(Math.sqrt(.9/legLength),.92,1.1),stance:jog?.44-run*.07:.62};
+  const stance=jog?.44-run*.07:.62;
+  const cadence=Math.max((jog?1.42+run*.2:.88)*T.MathUtils.clamp(Math.sqrt(.9/legLength),.92,1.1),speed*stance/(legLength*.75));
+  return {run,cadence,stance};
 }
 export function footStride(phase:number,speed:number,jog:boolean,legLength=.9){
   const {cadence,stance,run}=gaitTiming(speed,jog,legLength),stride=speed*stance/cadence;
@@ -19,7 +21,7 @@ export function footStride(phase:number,speed:number,jog:boolean,legLength=.9){
   if(t<stance){const s=t/stance;return {z:stride*(.5-s),lift:0,pitch:-heel*(1-smooth(0,.22,s))+toe*smooth(.65,1,s),stance:true};}
   const u=(t-stance)/(1-stance),ease=u*u*(3-2*u);
   const recovery=Math.pow(Math.sin(Math.PI*u),1.25)*(1+(jog?.65:.2)*Math.cos(Math.PI*u));
-  return {z:stride*(ease-.5),lift:(jog?.26+run*.10:.075)*recovery,pitch:toe*(1-smooth(0,.72,u))-heel*smooth(.72,1,u),stance:false};
+  return {z:stride*(ease-.5),lift:Math.min(jog?.26+run*.10:.075,legLength*.35)*recovery,pitch:toe*(1-smooth(0,.72,u))-heel*smooth(.72,1,u),stance:false};
 }
 function rotate(b:T.Object3D|undefined,axis:T.Vector3,angle:number){
   if(!b)return;const rotation=b.getWorldQuaternion(q()).premultiply(q().setFromAxisAngle(axis,angle));
@@ -32,7 +34,7 @@ function point(b:T.Object3D,child:T.Object3D,target:T.Vector3){
 }
 export function solveFootContact(l:Limb,target:T.Vector3,pole:T.Vector3,rotation?:T.Quaternion){
   const a=l.upper.getWorldPosition(v()),b=l.joint.getWorldPosition(v()),c=l.end.getWorldPosition(v());
-  const l1=a.distanceTo(b),l2=b.distanceTo(c),dir=target.clone().sub(a),d=Math.max(.03,Math.min(dir.length(),l1+l2-.0001));dir.normalize();
+  const l1=a.distanceTo(b),l2=b.distanceTo(c),dir=target.clone().sub(a),d=Math.max(Math.abs(l1-l2)+.0001,Math.min(dir.length(),l1+l2-.0001));dir.normalize();
   pole.addScaledVector(dir,-pole.dot(dir)).normalize();
   const along=(l1*l1+d*d-l2*l2)/(2*d),bend=Math.sqrt(Math.max(0,l1*l1-along*along));
   point(l.upper,l.joint,a.clone().addScaledVector(dir,along).addScaledVector(pole,bend));point(l.joint,l.end,a.clone().addScaledVector(dir,d));
@@ -43,7 +45,9 @@ export function solveFootContact(l:Limb,target:T.Vector3,pole:T.Vector3,rotation
 export class FootTraffic {
   readonly root=new T.Group();readonly rider:T.Object3D;readonly jog:boolean;
   bones:{o:T.Object3D;p:T.Vector3;q:T.Quaternion}[]=[];legs:Limb[]=[];arms:Limb[]=[];footTargets:T.Vector3[]=[];
-  hips:T.Object3D;phase=0;legLength=.9;private idleTime=0;
+  hips:T.Object3D;phase=0;legLength=.9;private idleTime=0;private interaction?:{action:MocapAction;time:number};
+  playInteraction(action:'door'|'pickup'|'reach'){this.interaction={action,time:0};}
+  get interactionActive(){return Boolean(this.interaction);}
   constructor(data:GLTF,jog:boolean){
     this.jog=jog;this.rider=clone(data.scene);this.root.add(this.rider);this.root.name=jog?'Detroit hoodie jogger':'Detroit hoodie walker';
     this.root.updateMatrixWorld(true);this.hips=this.rider.getObjectByName('Hips')!;
@@ -62,6 +66,10 @@ export class FootTraffic {
     this.idleTime+=Math.max(0,dt);
     const effort=Math.min(1,Math.abs(speed)/(this.jog?2.65:1.1)),timing=gaitTiming(Math.abs(speed),this.jog,this.legLength);
     this.phase=(this.phase+Math.max(0,dt)*timing.cadence*effort)%1;
+    const motion=locomotionMocap(this.phase,this.jog,timing.run);
+    let gesture:number[]|undefined,gestureWeight=0;
+    if(this.interaction){const c=this.interaction; c.time+=Math.max(0,dt);const duration=INSTALLED_MOCAP_INFO[c.action].duration;
+      if(c.time>=duration)this.interaction=undefined;else{gesture=sampleMocap(c.action,c.time/duration,false);gestureWeight=smooth(0,.12,c.time)*(1-smooth(duration-.18,duration,c.time));}}
     for(const b of this.bones){b.o.position.copy(b.p);b.o.quaternion.copy(b.q);}
     this.root.updateMatrixWorld(true);
     const forward=new T.Vector3(0,0,1).transformDirection(this.root.matrixWorld),right=new T.Vector3(1,0,0).transformDirection(this.root.matrixWorld),up=new T.Vector3(0,1,0);
@@ -70,7 +78,7 @@ export class FootTraffic {
     this.hips.position.copy(this.hips.parent!.worldToLocal(hips));this.root.updateMatrixWorld(true);
     rotate(this.hips,forward,wave*.025*effort);rotate(this.hips,up,wave*.04*effort);
     const spine=['Spine02','Spine01','Spine'].map(n=>this.rider.getObjectByName(n));
-    for(const b of spine)rotate(b,right,(this.jog?.13:.025)*effort/3);
+    for(const b of spine)rotate(b,right,(T.MathUtils.clamp(motion[8],-.10,this.jog?.32:.10)*effort+(gesture?T.MathUtils.clamp(gesture[8],0,.6)*gestureWeight:0))/3);
     rotate(spine[2],up,-wave*(this.jog?.14:.075)*effort);rotate(this.rider.getObjectByName('Head'),up,wave*(this.jog?.07:.035)*effort);
     rotate(this.rider.getObjectByName('Head'),right,-(this.jog?.10:.02)*effort);
     const strides=this.legs.map((_,i)=>footStride(this.phase+i*.5,Math.abs(speed),this.jog,this.legLength));
@@ -87,23 +95,33 @@ export class FootTraffic {
     for(let i=0;i<2;i++){
       const l=this.legs[i],a=l.upper.getWorldPosition(v()),b=l.joint.getWorldPosition(v()),c=l.end.getWorldPosition(v()),t=this.footTargets[i];
       const reach=(a.distanceTo(b)+b.distanceTo(c))*.998,horizontal=(a.x-t.x)**2+(a.z-t.z)**2;
-      lower=Math.max(lower,a.y-t.y-Math.sqrt(Math.max(.01,reach*reach-horizontal)));
+      lower=Math.max(lower,a.y-t.y-Math.sqrt(Math.max(.000001,reach*reach-horizontal)));
     }
     if(lower>0){const hip=this.hips.getWorldPosition(v());hip.y-=lower;this.hips.position.copy(this.hips.parent!.worldToLocal(hip));this.root.updateMatrixWorld(true);}
     for(let i=0;i<2;i++){
       const l=this.legs[i],world=this.footTargets[i];
+      // A short shin cannot fold all the way into a long thigh. Reduce swing
+      // height to the actual inner reach before solving the knee triangle.
+      const a=l.upper.getWorldPosition(v()),b=l.joint.getWorldPosition(v()),c=l.end.getWorldPosition(v());
+      const inner=Math.abs(a.distanceTo(b)-b.distanceTo(c))+.001,horizontal=(a.x-world.x)**2+(a.z-world.z)**2;
+      if(horizontal<inner*inner)world.y=Math.min(world.y,a.y-Math.sqrt(inner*inner-horizontal));
       const rotation=this.root.getWorldQuaternion(q()).multiply(q().setFromAxisAngle(new T.Vector3(1,0,0),strides[i].pitch*effort)).multiply(l.rotation);
       solveFootContact(l,world,forward.clone(),rotation);
     }
-    if(!this.jog)mocapWalking(this.bones,this.phase,effort);
+    // Recorded upper-body channels are retargeted to this skin; contact legs stay grounded.
     for(let i=0;i<2;i++){
       const l=this.arms[i],side=Math.sign(l.rest.x),swing=Math.cos((this.phase+i*.5)*tau-.10)*effort;
       const shoulder=l.upper.getWorldPosition(v()),elbow=l.joint.getWorldPosition(v()),hand=l.end.getWorldPosition(v()),upper=shoulder.distanceTo(elbow),lower=elbow.distanceTo(hand);
       // The upper arm drives the swing. On the backstroke the elbow opens a
       // little; the return hand rises toward the ribs with a relaxed wrist.
       // Keeping both forearms forward made running look like carrying a tray.
-      const shoulderAngle=this.jog?-.12-(.56+timing.run*.12)*swing:-.025-.23*swing;
-      const elbowAngle=this.jog?1.32-.18*swing:.16-.045*swing+.025*Math.sin((this.phase+i*.5)*tau)*effort;
+      const baseShoulder=this.jog?-.12-(.56+timing.run*.12)*swing:-.025-.23*swing;
+      let shoulderAngle=T.MathUtils.lerp(baseShoulder,T.MathUtils.clamp(motion[i*4],this.jog?-.95:-.32,this.jog?.75:.32)*effort,.6);
+      const baseElbow=this.jog?1.32-.18*swing:.16-.045*swing+.025*Math.sin((this.phase+i*.5)*tau)*effort;
+      let elbowAngle=T.MathUtils.lerp(baseElbow,T.MathUtils.clamp(motion[i*4+1],this.jog?1:.12,this.jog?1.7:.65),.6*effort);
+      if(gesture){shoulderAngle=T.MathUtils.lerp(shoulderAngle,T.MathUtils.clamp(gesture[i*4],-.8,1.1),gestureWeight);elbowAngle=T.MathUtils.lerp(elbowAngle,T.MathUtils.clamp(gesture[i*4+1],.12,2.1),gestureWeight);}
+      // Limit the recorded shoulder swing to the clearance of this hero's upper arm.
+      if(!gesture){const limit=Math.acos(Math.min(.95,.18/upper));shoulderAngle=T.MathUtils.clamp(shoulderAngle,-limit,limit);}
       // Anatomical elbow path gives a relaxed sagittal swing. Solving to a hand
       // point near full reach let tiny changes flip the elbow and twist sleeves.
       const elbowTarget=shoulder.clone().addScaledVector(up,-upper*Math.cos(shoulderAngle)).addScaledVector(forward,upper*Math.sin(shoulderAngle)).addScaledVector(right,side*(this.jog?.025:.012));
