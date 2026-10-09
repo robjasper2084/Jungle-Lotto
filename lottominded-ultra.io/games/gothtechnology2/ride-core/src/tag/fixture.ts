@@ -17,7 +17,7 @@ export const lanePoint=(p:Vec3,l:Lane)=>{const dx=l.b.x-l.a.x,dz=l.b.z-l.a.z,t=M
 export class TagTerrain implements TerrainSampler{
   private readonly support?:Uint8Array;
   private constructor(readonly fixture:TagFixture,readonly physics:R.World){if(fixture.walkable)this.support=Uint8Array.from(atob(fixture.walkable),c=>c.charCodeAt(0));}
-  static async create(fixture:TagFixture){await ready();const bytes=Uint8Array.from(atob(fixture.physics),c=>c.charCodeAt(0));return new TagTerrain(fixture,R.World.restoreSnapshot(bytes));}
+  static async create(fixture:TagFixture,physicsBytes?:Uint8Array){await ready();let bytes=physicsBytes;if(!bytes){const binary=atob(fixture.physics);bytes=new Uint8Array(binary.length);for(let i=0;i<binary.length;i++)bytes[i]=binary.charCodeAt(i);}return new TagTerrain(fixture,R.World.restoreSnapshot(bytes));}
   height(x:number,z:number){const g=this.fixture.grid,u=Math.max(0,Math.min(g.width-1,(x-g.x)/g.spacing)),v=Math.max(0,Math.min(g.height-1,(z-g.z)/g.spacing));
     const i=Math.floor(u),j=Math.floor(v),a=u-i,b=v-j,i1=Math.min(i+1,g.width-1),j1=Math.min(j+1,g.height-1);
     return (g.heights[j*g.width+i]*(1-a)+g.heights[j*g.width+i1]*a)*(1-b)+(g.heights[j1*g.width+i]*(1-a)+g.heights[j1*g.width+i1]*a)*b;}

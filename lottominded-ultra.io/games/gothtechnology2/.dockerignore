@@ -1,0 +1,16 @@
+**
+!ride-core/
+!ride-core/package*.json
+!ride-core/tsconfig.json
+!ride-core/LICENSE.txt
+!ride-core/src/
+!ride-core/src/**
+!love-tag-server/
+!love-tag-server/package*.json
+!love-tag-server/tsconfig*.json
+!love-tag-server/src/
+!love-tag-server/src/**
+!love-tag-server/scripts/
+!love-tag-server/scripts/prepare-host-fixtures.mjs
+!love-tag-server/fixtures/
+!love-tag-server/fixtures/*.json.gz
