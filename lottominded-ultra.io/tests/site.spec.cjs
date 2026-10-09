@@ -646,7 +646,7 @@ test("Robot RAHBEE route restores the embedded game after its commercial", async
   await expect(frameElement).toHaveAttribute("src", /shadow-ops-canvas/);
   const frame = page.frameLocator("[data-beat2-game-frame]");
   await expect(frame.locator("#game")).toBeVisible({ timeout: 15_000 });
-  await expect(frame.getByRole("heading", { name: "ROBOT RAHBEE" })).toBeVisible();
+  await expect(frame.getByRole("heading", { name: "ROBOT RAHBE" })).toBeVisible();
   expect(localFailures).toEqual([]);
 });
 
@@ -1024,6 +1024,38 @@ test("Jackpot Maze built route renders instead of a dev shell", async ({ page })
   await expect(page.getByRole("heading", { name: "LottoMind Jackpot Maze" })).toHaveCount(1);
   await expect(page.getByRole("button", { name: /Enter the Maze/i })).toBeVisible();
   expect(localFailures).toEqual([]);
+});
+
+test("Jackpot Maze advances when a resumed level has no hearts left", async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem("lottomind.jackpotMaze.checkpoint.v1", JSON.stringify({
+      version: 1,
+      savedAt: new Date().toISOString(),
+      world: 0,
+      draw: { mode: "pick3", main: [1, 2, 3] },
+      playStyle: "solo",
+      runVariant: "classic",
+      score: 1200,
+      activePlayer: 0,
+      playerScores: [1200, 0],
+      playerLives: [3, 3],
+      playerShields: [true, true],
+      lives: 3,
+      shielded: true,
+      revealed: [1, null, null],
+      nextReveal: 1,
+      pellets: 20,
+      villainEncounters: 0,
+      powerUpsUsed: 0,
+      remainingHeartKeys: [],
+      remainingPowerKeys: [],
+      worldCollected: 20
+    }));
+  });
+  await page.goto("/games/lottomind-jackpot-maze/", { waitUntil: "domcontentloaded" });
+  await page.getByRole("button", { name: /Resume Level 1/i }).click();
+
+  await expect(page.locator(".arcade-level > b")).toHaveText("LEVEL 2 / 10", { timeout: 15_000 });
 });
 
 for (const game of [

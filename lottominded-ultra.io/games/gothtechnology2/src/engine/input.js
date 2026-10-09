@@ -203,7 +203,8 @@ export class InputManager {
   }
 
   onKey(event, isDown) {
-    if (isEditableTarget(event.target)) return;
+    if (this.suspended) return;
+    if (isDown && isEditableTarget(event.target)) return;
     const action = this.keymap[event.code];
     if (!action) return;
     event.preventDefault();
@@ -279,6 +280,7 @@ export class InputManager {
   }
 
   pollGamepads() {
+    if (this.suspended) { this.gamepadHeld.clear(); return; }
     const nextHeld = new Set();
     for (const assignment of this.assignGamepads()) {
       if (!assignment?.pad) continue;

@@ -1,0 +1,5 @@
+type Action = { id: string; label: string; short?: string; icon?: string };
+type Control = { id: string; label: string; action?: string; stick?: boolean; role?: string; player?: number; x: number; landscapeX?: number; landscapeY?: number; y: number; size: number; opacity?: number };
+export function normalizeLayout(saved: unknown, defaults: Control[], actions: Action[]): Control[];
+export function stickDirections(x: number, y: number, radius: number, diagonal?: boolean): string[];
+export function createTouchDeck(options: { host: HTMLElement; storageKey: string; actions: Action[]; controls: Control[]; presets?: { id: string; label: string; controls: Control[] }[]; style?: 'classic' | 'battle'; diagonal?: boolean; title?: string; onPress: (action: string) => void; onRelease: (action: string) => void; onMove?: (player: number, directions: string[]) => void; onVector?: (role: string, vector: { x: number; y: number }, held: boolean) => void; onEdit: (editing: boolean) => void; onMenu?: () => void }): { root: HTMLElement; open(): void; clear(): void; reset(): void; setActive(value: boolean): void; destroy(): void };

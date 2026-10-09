@@ -1,5 +1,6 @@
 import { STR } from "../strings.js?v=fullscreen-button-1";
 import { createForgeReadout } from "./numberForge.js?v=number-forge-1";
+import { createStaticTouchControls, applyStaticTouchInput } from './touch-controls.js?v=pubg-controls-20261009';
 
 const WORLD = { w: 1280, h: 720 };
 const STEP = 1 / 60;
@@ -1430,6 +1431,20 @@ const touchCapable = Boolean(navigator.maxTouchPoints > 0 || matchMedia("(pointe
 shell.dataset.touch = touchCapable ? "true" : "false";
 
 let state = createState();
+let editingControls = false;
+let resumeAfterEditing = false;
+const mobileControls = createStaticTouchControls({
+  host: shell,
+  onMenu: togglePause,
+  onBomb: () => { if (state.status === 'running') input.bombQueued.add(0); },
+  onMute: () => bus.toggle(),
+  onEdit(editing) {
+    editingControls = editing;
+    if (editing) { resumeAfterEditing = state.status === 'running'; setPaused(true); }
+    else if (resumeAfterEditing) setPaused(false);
+  }
+});
+document.getElementById('controlsAction').addEventListener('click', () => mobileControls.deck.open());
 let lastFrame = performance.now();
 let accumulator = 0;
 let fpsFrames = 0;
@@ -1492,6 +1507,7 @@ addEventListener("focus", () => {
 });
 
 addEventListener("keydown", (event) => {
+  if (editingControls || event.target?.closest?.('button, input, select, textarea, [contenteditable="true"]')) return;
   if (event.code === "Enter" && !event.repeat) {
     event.preventDefault();
     primary();
@@ -1524,6 +1540,7 @@ addEventListener("keyup", (event) => {
 
 canvas.addEventListener("pointerdown", (event) => {
   if (state.status !== "running") return;
+  if (event.pointerType === 'touch' && getComputedStyle(mobileControls.deck.root).display !== 'none') { event.preventDefault(); return; }
   try {
     canvas.setPointerCapture?.(event.pointerId);
   } catch {
@@ -1768,6 +1785,9 @@ function togglePause() {
 }
 
 function setPaused(value) {
+  input.keys.clear();
+  input.mouse.down = false;
+  input.bombQueued.clear();
   if (value && state.status === "running") {
     clearTouchInput();
     state.status = "paused";
@@ -2446,6 +2466,7 @@ function collectCommands() {
   const commands = Array.from({ length: state.playerCount }, (_, id) => commandForKeyboard(id));
   applyGamepads(commands);
   if (commands[0]) applyPointerInput(commands[0]);
+  if (commands[0]) applyStaticTouchInput(commands[0], mobileControls.input, state.players[0]?.lastAim);
   applyTouchSquadInput(commands);
   applySquadFallback(commands);
   for (const id of input.bombQueued) {
@@ -2492,7 +2513,7 @@ function applyPointerInput(command) {
 }
 
 function applyTouchSquadInput(commands) {
-  if (!input.aimVector && input.moveTouch === null && input.aimTouch === null) return;
+  if (!input.aimVector && input.moveTouch === null && input.aimTouch === null && !mobileControls.input.moveHeld && !mobileControls.input.aimHeld && !mobileControls.input.fire && !mobileControls.input.autoFire) return;
   if (commands.length <= 1) return;
   const leader = state.players[0];
   if (!leader) return;
@@ -2504,11 +2525,14 @@ function applyTouchSquadInput(commands) {
     const dx = leader.x + slot.x - player.x;
     const dy = leader.y + slot.y - player.y;
     const distance = Math.hypot(dx, dy);
-    const follow = distance > 20 ? normalize(dx, dy) : input.moveVector;
+    const follow = distance > 20 ? normalize(dx, dy) : mobileControls.input.moveHeld ? mobileControls.input.move : input.moveVector;
     if (follow) command.move = normalize(command.move.x + follow.x, command.move.y + follow.y) ?? { x: 0, y: 0 };
     if (input.aimVector) {
       command.aim = input.aimVector;
       command.fire = true;
+    }
+    if (mobileControls.input.aimHeld || mobileControls.input.fire || mobileControls.input.autoFire) {
+      applyStaticTouchInput(command, { ...mobileControls.input, moveHeld: false }, player.lastAim);
     }
   }
 }
@@ -2553,6 +2577,7 @@ function emptyCommand() {
 }
 
 function clearTouchInput() {
+  mobileControls.clear();
   input.pointers.clear();
   input.moveTouch = null;
   input.aimTouch = null;
@@ -3469,6 +3494,7 @@ function drawLetterbox() {
 }
 
 function updateHud() {
+  mobileControls.deck.setActive(state.status === 'running' && !editingControls);
   hud.score.textContent = formatNumber(state.score);
   hud.level.textContent = String(Math.min(state.levelIndex + 1, LEVELS.length));
   const profile = currentLevel();
