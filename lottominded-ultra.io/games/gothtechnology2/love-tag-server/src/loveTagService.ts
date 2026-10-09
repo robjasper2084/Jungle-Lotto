@@ -11,6 +11,11 @@ const root=fileURLToPath(new URL('..',import.meta.url));
 const fixtures=new Map<TagProduct,TagFixture>();
 const fixturePhysics=new Map<TagProduct,()=>Promise<Uint8Array|undefined>>();
 for(const product of ['swoop-detroit','elmwood-explorer'] as const){const loaded=await loadHostFixture(resolve(root,'fixtures'),product);fixtures.set(product,loaded.fixture);fixturePhysics.set(product,loaded.physics);}
+// Terrain is immutable: matches query it; their actors/projectiles own all state.
+// Reuse at most two worlds instead of restoring the large Swoop snapshot per room.
+const terrains=new Map<TagProduct,Promise<TagTerrain>>();
+function terrainFor(product:TagProduct){let terrain=terrains.get(product);if(!terrain){terrain=(async()=>TagTerrain.create(fixtures.get(product)!,await fixturePhysics.get(product)!()))();terrains.set(product,terrain);terrain.catch(()=>terrains.delete(product));}return terrain;}
+export async function preloadTagMaps(){for(const product of fixtures.keys()){const started=performance.now();await terrainFor(product);console.log(JSON.stringify({stage:'map-ready',product,ms:Math.round(performance.now()-started),rssMiB:Math.round(process.memoryUsage().rss/1048576)}));}}
 const codes=new Map<string,{roomId:string;product:TagProduct;expires:number}>();
 // A small free test host must reject excess rooms before allocating map physics.
 const roomLimit=Number(process.env.TAG_MAX_ROOMS??0);
@@ -32,7 +37,7 @@ export class LoveTagRoom extends Room{
     if(roomLimit>0&&reservedRooms>=roomLimit)throw new ServerError(503,'TEST_SERVER_BUSY: Join the existing room or try again after it closes.');
     reservedRooms++;this.reserved=true;
     this.target=Math.max(options.ruleset==='spread'?4:2,Math.min(8,Number.isInteger(options.target)?options.target!:4));this.botFill=options.botFill!==false;
-    this.terrain=await TagTerrain.create(fixture,await fixturePhysics.get(options.product)!());this.match=new TagMatch(fixture,this.terrain,options.ruleset,['easy','normal','hard','expert'].includes(options.difficulty??'')?options.difficulty!:'normal');this.setPrivate(true);
+    this.terrain=await terrainFor(options.product);this.match=new TagMatch(fixture,this.terrain,options.ruleset,['easy','normal','hard','expert'].includes(options.difficulty??'')?options.difficulty!:'normal');this.setPrivate(true);
     do{this.code=randomBytes(5).toString('hex').slice(0,8).toUpperCase();}while(codes.has(this.code));
     codes.set(this.code,{roomId:this.roomId,product:options.product,expires:Date.now()+2*60*60*1000});
     this.onMessage('*',(client,type,data)=>{
@@ -76,7 +81,7 @@ export class LoveTagRoom extends Room{
   onDrop(client:Client){const actor=this.match.actors.find(a=>a.id===client.sessionId);if(actor)actor.connected=false;this.match.release(client.sessionId);void this.allowReconnection(client,20).catch(()=>{});}
   onReconnect(client:Client){const actor=this.match.actors.find(a=>a.id===client.sessionId);if(actor)actor.connected=true;this.lastCommand.set(client.sessionId,Date.now());this.welcome(client);}
   onLeave(client:Client){this.chatRate.forget(client.sessionId);this.match.leave(client.sessionId);this.spectators.delete(client.sessionId);this.ready.delete(client.sessionId);this.messageRates.delete(client.sessionId);this.lastCommand.delete(client.sessionId);if(client.sessionId===this.host){this.host=this.clients.find(c=>c.sessionId!==client.sessionId)?.sessionId??'';this.broadcast('host',this.host);}}
-  onDispose(){roomMetrics.delete(this.roomId);codes.delete(this.code);if(this.match)this.match.phase='disposing';this.terrain?.dispose();if(this.reserved){this.reserved=false;reservedRooms--;}}
+  onDispose(){roomMetrics.delete(this.roomId);codes.delete(this.code);if(this.match)this.match.phase='disposing';if(this.reserved){this.reserved=false;reservedRooms--;}}
 }
 export function createTagServer(extendApp?:(app:import('express').Application)=>void){const server=new Server({transport:new WebSocketTransport({maxPayload:8192,pingInterval:3000,pingMaxRetries:2}),express(app){
   app.use((req,res,next)=>{const origin=req.headers.origin??null;if(origin&&!originAllowed(origin)){res.status(403).json({error:'ORIGIN_NOT_ALLOWED'});return;}if(origin)res.setHeader('Access-Control-Allow-Origin',origin);res.setHeader('Vary','Origin');res.setHeader('Access-Control-Allow-Headers','Content-Type');res.setHeader('Access-Control-Allow-Methods','GET,POST,OPTIONS');if(req.method==='OPTIONS'){res.sendStatus(204);return;}if(!allowed('http:'+req.ip,120)){res.status(429).json({error:'REQUEST_RATE_LIMIT'});return;}next();});
