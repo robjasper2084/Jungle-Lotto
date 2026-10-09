@@ -48,7 +48,7 @@ test('shared game rewards combine actual play across the existing arcade games a
  const beforeStatic=(await read(page)).total;
  frame=await open('static-wave');await frame.getByRole('button',{name:'Start Sector 1',exact:true}).click();
  await frame.waitForFunction(()=>window.RahbeArcadeGame.getStats().seconds>=2);
- await frame.locator('#bombAction').click();
+ await frame.locator('#bombAction:visible, .td-battle [data-control="bomb"]:visible').click();
  await expect.poll(()=>frame.evaluate(()=>window.RahbeArcadeGame.getStats().score)).toBeGreaterThan(0);
  const staticRun=await frame.evaluate(()=>window.RahbeArcadeGame.getStats().runId);
  await close();await expect.poll(async()=>(await read(page)).total).toBeGreaterThan(beforeStatic);
@@ -56,7 +56,7 @@ test('shared game rewards combine actual play across the existing arcade games a
  frame=await open('static-wave');await frame.getByRole('button',{name:'Start Sector 1',exact:true}).click();
  expect(await frame.evaluate(()=>window.RahbeArcadeGame.getStats().runId)).not.toBe(staticRun);
  await frame.waitForFunction(()=>window.RahbeArcadeGame.getStats().seconds>=2);
- await frame.locator('#bombAction').click();
+ await frame.locator('#bombAction:visible, .td-battle [data-control="bomb"]:visible').click();
  await expect.poll(()=>frame.evaluate(()=>window.RahbeArcadeGame.getStats().score)).toBeGreaterThan(0);
  await close();await expect.poll(async()=>(await read(page)).total).toBeGreaterThan(afterStatic);
  await page.reload();
