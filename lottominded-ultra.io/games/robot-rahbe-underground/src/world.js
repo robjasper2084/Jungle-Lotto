@@ -1,11 +1,12 @@
 import {locationAt} from './detroit-locations.js';
+import {random} from './progression.js';
 export const WIDTH = 2880;
 export const STRIDE = 520;
 export const HEIGHT = 3700;
 export const floorY = i => 440 + i * STRIDE;
 export const DEPTHS = [
-  {name:'CITY STREET',short:'Street',color:'#75c8bd',note:'Find the subway access ladder →',lore:'A maintenance hatch beneath an empty city. The last train left years ago. Something below still keeps time.'},
-  {name:'SUBWAY',short:'Subway',color:'#85cbd1',note:'← Recover seal 03. Watch the train signals.',lore:'The platforms are silent until the signals turn red. Get above the tracks when the ghost train comes.'},
+  {name:'DETROIT RIVERWALK',short:'Riverwalk',color:'#75c8bd',note:'Find the Dequindre Cut access ladder →',lore:'A maintenance hatch beneath an empty city. The last train left years ago. Something below still keeps time.'},
+  {name:'DEQUINDRE CUT',short:'Cut',color:'#85cbd1',note:'← Recover seal 03. Watch the train signals.',lore:'The platforms are silent until the signals turn red. Get above the tracks when the ghost train comes.'},
   {name:'ABANDONED STATION',short:'Station',color:'#e3b475',note:'Cross the broken concourse →',lore:'The station was sealed overnight. Its floor remembers every footstep. Keep moving across the cracked tiles.'},
   {name:'MAINTENANCE TUNNELS',short:'Tunnels',color:'#d59868',note:'← Ride the cart. Recover seal 13.',lore:'The service carts still run. Use one to cross the tunnels, then jump free before the end of the line.'},
   {name:'NUMBER VAULT',short:'Vault',color:'#dfc378',note:'Follow the rolling coins into the vault →',lore:'The old machines minted numbers, not money. Their enormous coins still roll through the galleries.'},
@@ -13,7 +14,7 @@ export const DEPTHS = [
   {name:'THE WARDEN',short:'Warden',color:'#f0b971',note:'Use all three seals at the gate. Defeat the Warden.',lore:'The Number Warden guards the original draw. Break its golden core and bring the light back to the surface.'}
 ];
 export const checkpoint = i => ({x:i%2 ? 2670 : 190,y:floorY(i)});
-export function makeWorld(){
+export function makeWorld(seed=0){
   const w={platforms:[],ladders:[],ropes:[],hazards:[],coins:[],seals:[],enemies:[],walls:[],signs:[],carts:[],rolling:[],treasures:[]};
   let id=0;
   const platform=(x,y,width,kind='stone',extra={})=>w.platforms.push({id:id++,x,y,w:width,h:24,kind,...extra});
@@ -40,7 +41,7 @@ export function makeWorld(){
     const place=locationAt(i);
     w.signs.push({x:310,y:y-235,text:place.name.toUpperCase(),large:true});
     w.signs.push({x:310,y:y-200,text:place.street.toUpperCase(),small:true});
-    if(i===0)w.signs.push({x:1380,y:y-190,text:'CONGRESS ST →',large:true},{x:2240,y:y-235,text:'GRISWOLD ST',large:true});
+    if(i===0)w.signs.push({x:1380,y:y-190,text:'ATWATER STREET →',large:true},{x:2240,y:y-235,text:'RENAISSANCE CENTER',large:true});
     if(i>0&&i<6){w.enemies.push({id:id++,type:'guard',x:850,y,hp:3,min:760,max:1020,vx:48,shot:2,depth:i});w.enemies.push({id:id++,type:'drone',x:2080,y:y-185,baseY:y-185,hp:2,min:1950,max:2240,vx:-45,shot:3,depth:i});}
   }
   platform(1205,floorY(0)-35,135,'moving',{baseX:1205,baseY:floorY(0)-35,axis:'x',range:125,speed:1.1});
@@ -60,14 +61,24 @@ export function makeWorld(){
   w.seals=[{number:'03',depth:1,x:420,y:floorY(1)-40,taken:false},{number:'13',depth:3,x:1700,y:floorY(3)-40,taken:false},{number:'31',depth:5,x:700,y:floorY(5)-40,taken:false}];
   w.walls=[{id:'false-wall',x:2500,y:floorY(5)-190,w:40,h:190,hp:4,secret:true}];
   w.treasures=[{x:2600,y:floorY(5)-35,taken:false,wall:'false-wall'},{x:1880,y:floorY(2)-170,taken:false}];
-  w.signs.push({x:310,y:floorY(0)-94,text:'SUBWAY ACCESS →'});
-  w.signs.push({x:840,y:floorY(0)-194,text:'W / S · CLIMB     E · GRAB ROPE',small:true});
+  w.signs.push({x:310,y:floorY(0)-94,text:'DEQUINDRE CUT ACCESS →'});
+  w.signs.push({x:840,y:floorY(0)-194,text:'SPACE · CLIMB / GRAB     W · JUMP',small:true});
   w.signs.push({x:1700,y:floorY(1)-260,text:'03 / EASTBOUND',large:true});
   w.signs.push({x:920,y:floorY(2)-125,text:'UNSTABLE FLOOR',small:true});
-  w.signs.push({x:2320,y:floorY(3)-120,text:'E · BOARD CART',small:true});
+  w.signs.push({x:2320,y:floorY(3)-120,text:'SPACE · BOARD CART',small:true});
   w.signs.push({x:2170,y:floorY(5)-120,text:'HOLLOW STONE. TRY YOUR BLASTER.',small:true});
   w.gate={x:1000,y:floorY(6)-250,w:70,h:250,open:false};
   w.boss={x:2170,y:floorY(6),hp:65,maxHp:65,active:false,phase:0,shot:1.8,pulse:4,flash:0};
   w.exit={x:2640,y:floorY(6)-70};
+  const rng=random(seed);
+  w.branchRooms=[];
+  for(let depth=1;depth<6;depth++){
+    const x=seed?1320+Math.floor(rng()*150):1380;
+    platform(x,floorY(depth)-145,230,'ledge');
+    w.branchRooms.push({id:'branch-'+depth,depth,x:x+115,y:floorY(depth)-170,taken:false,reward:seed?100+Math.floor(rng()*4)*25:150});
+    w.signs.push({x:x+30,y:floorY(depth)-210,text:'OPTIONAL CACHE ↑',small:true});
+  }
+  for(const e of w.enemies){e.tactic=e.type==='drone'?'burst':e.depth%2?'sentinel':'rusher';if(seed){e.shot+=rng()*.8;e.vx*=.9+rng()*.2;}}
+  w.seed=seed;
   return w;
 }

@@ -1,12 +1,12 @@
 {
   "name": "robot-rahbe-underground",
-  "version": "1.1.0",
+  "version": "2.0.0",
   "private": true,
   "type": "module",
   "scripts": {
     "start": "node serve.cjs",
-    "check": "node --check src/main.js && node --check src/world.js && node --check src/simulation.js && node --check src/render.js && node --check src/input.js && node --check src/mobile-controls.js && node --check src/touch-deck.js && node --check src/rahbe-motions.js && node --check src/villain-motions.js && node --check src/detroit-art.js && node --check src/motion-gallery.js",
-    "test": "node --test tests/simulation.test.js tests/mobile-actions.test.js tests/assets.test.js && node tests/continuous-route.mjs",
-    "test:browser": "node tests/browser.cjs"
+    "check": "node --check src/main.js && node --check src/world.js && node --check src/simulation.js && node --check src/render.js && node --check src/input.js && node --check src/mobile-controls.js && node --check src/touch-deck.js && node --check src/rahbe-motions.js && node --check src/villain-motions.js && node --check src/detroit-art.js && node --check src/motion-gallery.js && node --check src/progression.js && node --check src/detroit-audio.js",
+    "test": "node --test tests/simulation.test.js tests/mobile-actions.test.js tests/assets.test.js tests/progression.test.js && node tests/continuous-route.mjs",
+    "test:browser": "node tests/browser.cjs && node tests/polish-browser.cjs"
   }
 }
