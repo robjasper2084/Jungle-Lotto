@@ -1,3 +1,5 @@
+import {DeathReplay} from './deathReplay.ts';
+import {ImpactEffect} from './impactEffect.ts';
 import {RoyaleRadarMap} from './radarMap.ts';
 import {JazzVisit} from '../jazzVisit.ts';
 import {mountHudTransparency} from '../../../../ride-core/src/hudTransparency.ts';
@@ -87,7 +89,10 @@ const seenShots=new Set<string>(),reducedEquipmentMotion=matchMedia('(prefers-re
 let scenery:Awaited<ReturnType<typeof buildDetroitArenaScene>>;
 let ambientPacks:AmbientCyclistPacks|undefined;let jazzVisit:JazzVisit|undefined;
 let terrain:DowntownArena,session:RoyaleSession,loaded=false,acc=0,last=performance.now(),hudAt=0,paused=false,layoutEditing=false,aimYaw=0,aimPitch=0,slot=0;
-const footControls=new FootControls();
+const footControls=new FootControls();const deathReplay=new DeathReplay(),impactEffect=new ImpactEffect();scene.add(impactEffect);const seenImpacts=new Set<string>(),fallenAt=new Map<string,number>();let hitFlashUntil=0;
+const bots=()=>Math.min(Number(el<HTMLSelectElement>('bot-count').value),Number(el<HTMLSelectElement>('match-size').value)-1);
+el('reentry-confirm').onclick=()=>{deathReplay.stop();release();session.requestReentry(true);};el('reentry-decline').onclick=()=>session.requestReentry(false);
+function playDeathReplay(){release();deathReplay.start(performance.now());if(deathReplay.playing)dialog.close();}el('death-replay').onclick=playDeathReplay;el('reentry-replay').onclick=playDeathReplay;el('replay-stop').onclick=()=>deathReplay.stop();
 const keys=new Set<string>(),held=new Set<string>(),tap=new Set<string>();let throttle=0,steer=0,aimPointer:number|undefined,aimX=0,aimY=0,stickPointer:number|undefined;
 const message=(s:string)=>el('message').textContent=s;
 function release(){footControls.clear();stanceGesture.reset();leanGesture.reset();touchAds=false;aimGesture.reset();lookYaw=lookPitch=0;keys.clear();held.clear();tap.clear();steer=throttle=0;aimPointer=stickPointer=undefined;resetPointers.forEach(reset=>reset());session?.release();}
@@ -112,12 +117,12 @@ async function prepare(){const hdr=await new HDRLoader().loadAsync(new URL('../.
  if(query.get('room')){el<HTMLInputElement>('code').value=query.get('room')!;el<HTMLDetailsElement>('online').open=true;}
 }
 el<HTMLInputElement>('use-relay').onchange=()=>{el<HTMLInputElement>('endpoint').closest('label')!.hidden=el<HTMLInputElement>('use-relay').checked;};
-function practice(){clearResults();session.offline(skin.value,wheel.value,el<HTMLSelectElement>('match-size').value==='10'?10:6,el<HTMLInputElement>('bot-chase').checked);slot=0;resume();}
+function practice(){clearResults();session.offline(skin.value,wheel.value,el<HTMLSelectElement>('match-size').value==='10'?10:6,el<HTMLInputElement>('bot-chase').checked,bots());slot=0;resume();}
 el('practice').onclick=()=>run(practice);
 let relayConfig:{endpoint:string;publishableKey:string}|undefined;
 async function connectRoom(create:boolean){if(!loaded)throw Error('Wait for the arena to finish loading.');const code=el<HTMLInputElement>('code').value.trim(),name=el<HTMLInputElement>('name').value,fill=el<HTMLInputElement>('botfill').checked,spectate=el<HTMLInputElement>('spectate').checked;
-if(relayConfig&&el<HTMLInputElement>('use-relay').checked)await session.supabase({...relayConfig,accessCode:el<HTMLInputElement>('test-code').value.trim()},create,code,name,skin.value,fill,spectate,wheel.value,el<HTMLSelectElement>('match-size').value==='10'?10:6,el<HTMLInputElement>('bot-chase').checked);
-else await session.online(el<HTMLInputElement>('endpoint').value,create,code,name,skin.value,fill,spectate,wheel.value,el<HTMLSelectElement>('match-size').value==='10'?10:6,el<HTMLInputElement>('bot-chase').checked);clearResults();}
+if(relayConfig&&el<HTMLInputElement>('use-relay').checked)await session.supabase({...relayConfig,accessCode:el<HTMLInputElement>('test-code').value.trim()},create,code,name,skin.value,fill,spectate,wheel.value,el<HTMLSelectElement>('match-size').value==='10'?10:6,el<HTMLInputElement>('bot-chase').checked,bots());
+else await session.online(el<HTMLInputElement>('endpoint').value,create,code,name,skin.value,fill,spectate,wheel.value,el<HTMLSelectElement>('match-size').value==='10'?10:6,el<HTMLInputElement>('bot-chase').checked,bots());clearResults();}
 el('create').onclick=()=>run(()=>connectRoom(true));
 el('join').onclick=()=>run(()=>connectRoom(false));
 el('ready').onclick=()=>session.readyUp();el('launch').onclick=()=>session.start();el('reconnect').onclick=()=>run(()=>{if(relayConfig&&el<HTMLInputElement>('use-relay').checked)session.relayConfig={...relayConfig,accessCode:el<HTMLInputElement>('test-code').value.trim()};return session.reconnect();});
@@ -127,7 +132,7 @@ el('connection-menu').onclick=()=>{showMenu();el<HTMLDetailsElement>('online').o
 el('invite').onclick=()=>run(async()=>{const u=new URL(location.href);u.searchParams.set('room',session.code);const field=el<HTMLInputElement>('invite-link');field.hidden=false;field.value=u.href;try{await navigator.clipboard.writeText(u.href);message('Invitation copied.');}catch{field.select();message('Select and copy this invitation.');}});
 void fetch('./royale-config.json').then(r=>r.ok?r.json():{}).then((c:{supabaseTest?:{endpoint:string;publishableKey:string};serverUrl?:string})=>{relayConfig=c.supabaseTest;el('supabase-test').hidden=!relayConfig;el<HTMLInputElement>('endpoint').closest('label')!.hidden=!!relayConfig;el<HTMLInputElement>('endpoint').value=c.serverUrl||(['localhost','127.0.0.1'].includes(location.hostname)?'http://127.0.0.1:8226':'');}).catch(()=>{});
 function buttonAction(action:string){if(action==='crouch'||action==='prone'){stanceGesture.down(action==='crouch'?1:2);return;}if(action==='hop')stanceGesture.reset();if(action==='lean-left'||action==='lean-right'){leanGesture.down(action==='lean-left'?-1:1);return;}if(action==='scope'){changeScope();return;}if(action==='camera'){cycleCamera();return;}if(action==='fire-left'){tap.add('fire-left');return;}if(action==='aim'){if(touchAim==='toggle')touchAds=!touchAds;return;}if(action==='switch'){slot=1-slot;return;}tap.add(action);}
-window.addEventListener('keydown',e=>{if((e.target as HTMLElement)?.matches('input,select,textarea,button')||dialog.open||session?.voice?.root.open)return;
+window.addEventListener('keydown',e=>{if((e.target as HTMLElement)?.matches('input,select,textarea,button')||dialog.open||deathReplay.playing||session?.voice?.root.open)return;
  if([...Object.values(bindings),'ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Digit1','Digit2','Escape'].includes(e.code))e.preventDefault();
  if(e.code==='Escape'||e.code===bindings.loadout){showMenu();return;}
  if(!keys.has(e.code)){if(e.code===bindings.crouch)stanceGesture.down(1);if(e.code===bindings.prone)stanceGesture.down(2);if(e.code===bindings.hop)stanceGesture.reset();for(const [key,action] of [['hop','hop'],['utility','utility'],['repair','repair'],['recover','recover'],['reload','reload'],['pickup','swap'],['cycleMode','cycleMode'],['dogAttack','dog-attack'],['dogRadar','dog-radar']] as const)if(e.code===bindings[key])tap.add(action);if(e.code===bindings.camera)cycleCamera();if(e.code===bindings.scope)changeScope();}
@@ -139,8 +144,8 @@ canvas.addEventListener('contextmenu',e=>e.preventDefault());
 canvas.addEventListener('wheel',e=>{if(dialog.open)return;e.preventDefault();slot=1-slot;},{passive:false});
 const aimGain=(gain:number)=>gain*sensitivity*(aimMode()===2?adsSensitivity/scopeZoom(selectedScope):1);
 function look(dx:number,dy:number,gain:number){const next=dragAim(aimYaw,aimPitch,dx,dy,aimGain(gain));aimYaw=next.yaw;aimPitch=next.pitch;}
-canvas.addEventListener('pointerdown',e=>{if(dialog.open||e.pointerType!=='mouse'&&(aimPointer!==undefined||e.clientX<innerWidth*.4))return;canvas.focus();canvas.setPointerCapture(e.pointerId);aimPointer=e.pointerId;aimX=e.clientX;aimY=e.clientY;if(e.pointerType==='mouse'){if(e.button===0){held.add('fire');tap.add('fire');}if(e.button===2)aimGesture.down(performance.now());}});
-canvas.addEventListener('pointermove',e=>{if(dialog.open||e.pointerType!=='mouse'&&aimPointer!==e.pointerId)return;
+canvas.addEventListener('pointerdown',e=>{if(dialog.open||deathReplay.playing||e.pointerType!=='mouse'&&(aimPointer!==undefined||e.clientX<innerWidth*.4))return;canvas.focus();canvas.setPointerCapture(e.pointerId);aimPointer=e.pointerId;aimX=e.clientX;aimY=e.clientY;if(e.pointerType==='mouse'){if(e.button===0){held.add('fire');tap.add('fire');}if(e.button===2)aimGesture.down(performance.now());}});
+canvas.addEventListener('pointermove',e=>{if(dialog.open||deathReplay.playing||e.pointerType!=='mouse'&&aimPointer!==e.pointerId)return;
  const dx=e.pointerType==='mouse'?e.movementX:e.clientX-aimX,dy=e.pointerType==='mouse'?e.movementY:e.clientY-aimY;
  if((keys.has(bindings.freeLook)||held.has('free-look'))){lookYaw=T.MathUtils.clamp(lookYaw-dx*.004,-1.8,1.8);lookPitch=T.MathUtils.clamp(lookPitch-dy*.003,-.8,.8);}
  else look(dx,dy,.004);
@@ -205,19 +210,19 @@ function draw(now:number){
  const delta=equipmentTime?Math.min(.1,(now-equipmentTime)/1000):0;equipmentTime=now;
  const motionDelta=paused&&!session?.room?0:delta,reducedMotion=reducedEquipmentMotion.matches||document.documentElement.dataset.reducedMotion==='true'||query.has('reducedMotion');
  atmosphereSky.tick(motionDelta,scene.fog?.color,graphics.current.shadows===0,reducedMotion,paused&&!session?.room);canvas.dataset.atmosphere=JSON.stringify(atmosphereSky.status);
- const s=session?.state;if(!s){for(const a of actors.values()){a.view.root.visible=a.weapon.visible=a.shield.visible=false;}companions?.dispose();jazzVisit?.stop();heartShots.reset();for(const m of items.values())m.root.visible=false;el('hud').hidden=el('reticle').hidden=el('scope-mask').hidden=true;return;}const rendered=new Set<string>();
+ const replayFrame=deathReplay.sample(now);const replaying=!!replayFrame;const s=replayFrame?.state??session?.state;el('replay-status').hidden=!replaying;if(!s){for(const a of actors.values()){a.view.root.visible=a.weapon.visible=a.shield.visible=false;}companions?.dispose();jazzVisit?.stop();heartShots.reset();for(const m of items.values())m.root.visible=false;el('hud').hidden=el('reticle').hidden=el('scope-mask').hidden=true;return;}const rendered=new Set<string>();
  radarMap?.update(s,now,!dialog.open&&!!s.self?.alive);
  const bikeObserver=s.actors.find(a=>a.id===session.me)?.pose??terrain.spawns[0].position;ambientPacks?.update(delta,bikeObserver,!dialog.open,paused,s.actors.filter(a=>a.alive).map(a=>({id:a.id,...a.pose,radius:.65,height:1.8,kind:'rider' as const,vx:Math.sin(a.pose.headingY)*a.pose.speed,vz:Math.cos(a.pose.headingY)*a.pose.speed})));ambientPacks?.report(canvas,delta);
- if(equipmentRound!==s.round){jazzVisit?.stop();equipmentRound=s.round;companions?.dispose();selectedScope=null;ownedScopeKey='';ambientPacks?.restart(undefined,bikeObserver);canvas.dataset.ambientPackStarts=JSON.stringify(ambientPacks?.starts);seenShots.clear();previousShotTick=-999;for(const item of items.values())item.dispose();items.clear();}
+ if(equipmentRound!==s.round){jazzVisit?.stop();equipmentRound=s.round;companions?.dispose();selectedScope=null;ownedScopeKey='';ambientPacks?.restart(undefined,bikeObserver);canvas.dataset.ambientPackStarts=JSON.stringify(ambientPacks?.starts);seenShots.clear();seenImpacts.clear();fallenAt.clear();impactEffect.reset();deathReplay.reset();previousShotTick=-999;for(const item of items.values())item.dispose();items.clear();}
  const owned=s.self?.scopes??[],scopeKey=owned.join(',');if(scopeKey!==ownedScopeKey){selectedScope=bestScope(owned);ownedScopeKey=scopeKey;}if(selectedScope&&!owned.includes(selectedScope))selectedScope=null;
  const firing=new Set<string>();
  // Only accepted server/offline-authority shots trigger recoil. No click-predicted damage or fire.
  if(s.self&&s.self.shotAt!==previousShotTick){if(s.self.shotAt>=0&&s.tick-s.self.shotAt<12)firing.add(s.self.id);previousShotTick=s.self.shotAt;}
  for(const projectile of s.projectiles){const key=projectile.owner+':'+projectile.shot;if(!seenShots.has(key)){seenShots.add(key);if(projectile.owner!==s.self?.id)firing.add(projectile.owner);}}
- for(const actor of s.actors){const a=view(actor.id,actor.skin,actor.wheelId??'euc');a.view.root.visible=actor.alive;a.weapon.visible=actor.alive;a.shield.visible=actor.alive&&actor.shieldActive;rendered.add(actor.id);let pose={...actor.pose};
-  if(actor.id===session.me&&session.room&&session.prediction)pose={...session.prediction.controller.poseValue};
-  else if(session.room){const old=session.previous?.actors.find(x=>x.id===actor.id)?.pose,t=T.MathUtils.clamp((now-session.received)/50,0,1);if(old){pose.x=T.MathUtils.lerp(old.x,pose.x,t);pose.y=T.MathUtils.lerp(old.y,pose.y,t);pose.z=T.MathUtils.lerp(old.z,pose.z,t);pose.headingY=old.headingY+Math.atan2(Math.sin(pose.headingY-old.headingY),Math.cos(pose.headingY-old.headingY))*t;}}
-  pose.stopFoot=0;a.view.apply({...pose,seated:0});const yaw=actor.id===session.me?aimYaw:actor.aimYaw,pitch=actor.id===session.me?aimPitch:actor.aimPitch;
+ for(const actor of s.actors){const a=view(actor.id,actor.skin,actor.wheelId??'euc');if(!actor.alive&&!fallenAt.has(actor.id))fallenAt.set(actor.id,s.tick);if(actor.alive)fallenAt.delete(actor.id);const falling=!actor.alive&&s.tick-(fallenAt.get(actor.id)??s.tick)<90;a.view.root.visible=actor.alive||falling;a.weapon.visible=actor.alive;a.shield.visible=actor.alive&&(actor.shieldActive||actor.protected);a.shield.scale.setScalar(actor.protected&&!actor.shieldActive?.88:1);rendered.add(actor.id);let pose={...actor.pose};
+  if(!replaying&&actor.id===session.me&&session.room&&session.prediction)pose={...session.prediction.controller.poseValue};
+  else if(!replaying&&session.room){const previous=session.previous?.actors.find(x=>x.id===actor.id);const old=previous?.spawnSerial===actor.spawnSerial?previous.pose:undefined,t=T.MathUtils.clamp((now-session.received)/50,0,1);if(old){pose.x=T.MathUtils.lerp(old.x,pose.x,t);pose.y=T.MathUtils.lerp(old.y,pose.y,t);pose.z=T.MathUtils.lerp(old.z,pose.z,t);pose.headingY=old.headingY+Math.atan2(Math.sin(pose.headingY-old.headingY),Math.cos(pose.headingY-old.headingY))*t;}}
+  if(falling)pose.crashBlend=Math.min(1,(s.tick-(fallenAt.get(actor.id)??s.tick))/24);pose.stopFoot=0;a.view.apply({...pose,seated:0});const yaw=actor.id===session.me&&!replaying?aimYaw:actor.aimYaw,pitch=actor.id===session.me&&!replaying?aimPitch:actor.aimPitch;
   a.optic.visible=!!(actor.id===session.me?selectedScope:actor.scope);a.equipment.select(actor.weapon);if(firing.has(actor.id)&&a.equipment.fire(reducedMotion))equipmentShots++;a.equipment.update(motionDelta,reducedMotion);a.weapon.visible=actor.alive&&pose.crashBlend<.05;
   if(a.weapon.visible)a.rig.apply({...pose,seated:0},yaw,pitch,actor.combat,s.tick);
   if(actor.id===session.me)canvas.dataset.rig=JSON.stringify({rider:actor.skin,wheel:actor.wheelId,rightError:a.rig.errorR,leftError:a.rig.errorL,supportLocked:a.rig.supportLocked});
@@ -234,7 +239,7 @@ function draw(now:number){
  fieldRing.update(s.field.x,s.field.z,s.field.radius,(x,z)=>terrain.ground(x,z).height);
  nextRing.update(s.field.x,s.field.z,s.field.nextRadius,(x,z)=>terrain.ground(x,z).height);
  canvas.dataset.field=JSON.stringify(s.field);
- const self=s.actors.find(a=>a.id===session.me);if(self){const p=session.room&&session.prediction?session.prediction.controller.poseValue:self.pose,mode=aimMode(),ads=mode===2;
+ const self=s.actors.find(a=>a.id===session.me);if(self){const p=!replaying&&session.room&&session.prediction?session.prediction.controller.poseValue:self.pose,mode=replaying?(self.combat.aimBlend>.8?2:0):aimMode(),ads=mode===2;
  if(!keys.has(bindings.freeLook)&&!held.has('free-look')){lookYaw*=Math.exp(-delta*10);lookPitch*=Math.exp(-delta*10);}
  const heading=p.headingY+aimYaw+lookYaw+self.combat.kickYaw,pitch=aimPitch+lookPitch+self.combat.kickPitch;
  const scale=self.skin.startsWith('DS_Mascot_')?.48:1,socket=weaponSocket(p,self.skin,aimYaw,aimPitch,self.combat.aimBlend,self.combat.lean);
@@ -260,13 +265,19 @@ function draw(now:number){
  canvas.dataset.optics=JSON.stringify({selected:selectedScope,owned,zoom:ads?scopeZoom(selectedScope):1,available:s.loot.filter(l=>isScope(l.kind)).length});
  canvas.dataset.aim=JSON.stringify({yaw:aimYaw,pitch:aimPitch,ads,steer,throttle,fire:held.has('fire')||held.has('fire-left'),lean:self.combat.lean,crouch:p.footCrouch,prone:p.footProne,footMode:p.footMode});for(const direction of [-1,1]){const b=el('touch').querySelector<HTMLButtonElement>(direction<0?'[data-action=lean-left]':'[data-action=lean-right]');b?.setAttribute('aria-pressed',String(self.combat.lean*direction>.1));}
  for(const [action,pressed]of [['crouch',p.footMode?p.footCrouch>.5:stanceGesture.value===1],['prone',p.footProne>.5]] as const)el('touch').querySelector('[data-action='+action+']')?.setAttribute('aria-pressed',String(pressed));
- jazzVisit?.update(p.x,p.z,!dialog.open&&self.alive,camera);
+ jazzVisit?.update(p.x,p.z,!dialog.open&&!replaying&&self.alive,camera);
  const adsButton=el('touch').querySelector<HTMLButtonElement>('[data-action=aim]')!;adsButton.setAttribute('aria-pressed',String(ads));
 
  }
+ if(replayFrame){camera.position.fromArray(replayFrame.camera.position);camera.quaternion.fromArray(replayFrame.camera.quaternion);camera.fov=replayFrame.camera.fov;camera.updateProjectionMatrix();}else deathReplay.observe(s,now,{position:camera.position.toArray(),quaternion:camera.quaternion.toArray(),fov:camera.fov});
+ if(!replaying)for(const e of s.events){if(e.kind!=='hit'&&e.kind!=='dog-knockoff')continue;const key=s.round+':'+e.tick+':'+e.kind+':'+e.actor+':'+e.target;if(seenImpacts.has(key))continue;seenImpacts.add(key);if(s.tick-e.tick>30)continue;const victim=s.actors.find(a=>a.id===e.target);if(victim)impactEffect.hit(victim.pose,now,victim.shieldActive);if(e.target===session.me){hitFlashUntil=now+450;el('hit-flash').dataset.kind=e.kind==='dog-knockoff'?'knockdown':'bullet';}}
+ if(seenImpacts.size>128){const oldest=seenImpacts.values().next().value;if(oldest)seenImpacts.delete(oldest);}
+ impactEffect.visible=!replaying;impactEffect.update(now,reducedMotion);el('hit-flash').style.opacity=now<hitFlashUntil?'1':'0';
  heartShots.update(s.projectiles,camera,now/1000,reducedMotion);
  canvas.dataset.projectileEffect='hearts-and-sparkles';
  if(now-hudAt>150){hudAt=now;const me=s.self;el('hud').hidden=false;for(const [action,label,until]of [['dog-attack','Dog',me?.dogPower.ready??0],['dog-radar','Radar',me?.dogPower.radarReady??0]] as const){const b=el('touch').querySelector<HTMLButtonElement>('[data-action='+action+']')!;b.disabled=!me?.dogPower.charges||until>s.tick;b.textContent=until>s.tick?label+' '+Math.ceil((until-s.tick)/60)+'s':label+' '+(me?.dogPower.charges??0);}el('phase').textContent=s.phase==='deployment'?'DEPLOYING · '+Math.ceil((PROTECTION-s.tick)/60)+'s':s.remaining+' RIDERS REMAIN';
+  const liveSelf=session.state?.self;const eligible=!!liveSelf?.reentry.eligible&&!dialog.open&&!replaying;el('reentry-panel').hidden=!eligible;el('reentry-countdown').textContent=liveSelf?'Confirm within '+Math.max(0,Math.ceil((liveSelf.reentry.until-(session.state?.tick??0))/60))+'s. New safe location; protection ends when you fight.':'';el<HTMLButtonElement>('reentry-replay').disabled=!deathReplay.available;el('death-replay').hidden=!deathReplay.available||!!liveSelf?.alive;
+  el<HTMLProgressElement>('health-meter').value=me?.integrity??0;el('health-value').textContent=String(Math.ceil(me?.integrity??0));el<HTMLProgressElement>('shield-meter').value=me?.shield??0;el('shield-value').textContent=String(Math.ceil(me?.shield??0));const healing=!!me&&me.healingUntil>s.tick;el('health-feedback').textContent=healing?'Healing · '+Math.ceil((me!.healingUntil-s.tick)/60)+'s':me?.reentry.protectedUntil&&me.reentry.protectedUntil>s.tick?'Protected · '+Math.ceil((me.reentry.protectedUntil-s.tick)/60)+'s · combat cancels':me?'Health packs · '+me.repairs+' · H to heal':'';const healthButton=el('touch').querySelector<HTMLButtonElement>('[data-action=repair]')!;healthButton.textContent=healing?'Healing…':'Heal '+(me?.repairs??0);healthButton.disabled=!me?.repairs||healing||!me.alive;
   el('vitals').textContent=me?'Integrity '+Math.ceil(me.integrity)+' / Shield '+Math.ceil(me.shield)+' / Flow '+Math.round(me.energy):'Spectator · private live positions';
   const w=me?.loadout[me.slot];el('weapon').textContent=w?WEAPONS[w].name+' · '+me!.combat.magazine[w]+' / '+(me!.ammo[w]-me!.combat.magazine[w])+' · '+FIRE_MODES[me!.combat.fireMode]+(me!.combat.reloadStart>=0?' · Reloading…':''):'';
   const scopeKeyLabel=bindings.scope.replace(/^(Key|Digit)/,'');const scopeLabel=selectedScope?SCOPES[selectedScope].label:'Iron sights';el('scope-select').textContent='Scope · '+scopeLabel+' · '+scopeKeyLabel;el<HTMLButtonElement>('scope-select').disabled=!owned.length;el<HTMLButtonElement>('scope-select').title=owned.length?'Switch collected scopes':'Find a scope and ride or walk over it';
@@ -276,13 +287,13 @@ function draw(now:number){
   el('scope-status').textContent=pickup?'Collected '+SCOPES[pickup.kind.slice(7) as Scope].label+' · Scope / '+scopeKeyLabel+' to switch':nearby&&nearby.d<30?SCOPES[nearby.l.kind as Scope].label+' · '+Math.ceil(nearby.d)+' m · ride or walk over to collect':'';
   el('speed').textContent=self?Math.round(Math.abs(self.pose.speed)*3.6)+' / '+Math.round(wheelProfile(self.wheelId).topKph)+' km/h · '+wheelProfile(self.wheelId).name+' · game estimate':'';
   el('field').textContent='Field '+Math.round(s.field.radius)+'m → '+Math.round(s.field.nextRadius)+'m · '+Math.ceil(s.field.remaining)+'s';
-  el('reticle').hidden=!me?.alive||dialog.open||!!(selectedScope&&aimMode()===2)||(!aimMode()&&viewMode!=='chase'&&viewMode!=='first');el('touch').hidden=(!(touchDisplay==='on'||touchDisplay==='auto'&&matchMedia('(any-pointer:coarse)').matches)||dialog.open||!me?.alive)&&!layoutEditing;
-  el('hint').textContent=layoutEditing?'Move controls, then open Menu to finish.':Math.abs(aimYaw)>1.20?'Turn your wheel to aim farther.':me&&!me.alive?'Eliminated · one life per round':s.phase==='deployment'?'Spawn protection · weapons unlock when the countdown ends':me&&Math.hypot((self?.pose.x??0)-s.field.x,(self?.pose.z??0)-s.field.z)>s.field.radius?'Outside the Static Field — ride toward the gold circle!':!el('touch').hidden?'Left stick: move · right side: aim · Fire: shoot · ADS: sights':'WASD ride · mouse aim · click fire · right click ADS · R reload · J get off/on';
+  el('reticle').hidden=!me?.alive||dialog.open||!!(selectedScope&&aimMode()===2)||(!aimMode()&&viewMode!=='chase'&&viewMode!=='first');el('touch').hidden=(!(touchDisplay==='on'||touchDisplay==='auto'&&matchMedia('(any-pointer:coarse)').matches)||dialog.open||replaying||!me?.alive)&&!layoutEditing;
+  el('hint').textContent=layoutEditing?'Move controls, then open Menu to finish.':Math.abs(aimYaw)>1.20?'Turn your wheel to aim farther.':replaying?'Last-view replay':me&&!me.alive?me.reentry.eligible?'Eliminated · one re-entry available':'Eliminated · last-view replay available':s.phase==='deployment'?'Spawn protection · weapons unlock when the countdown ends':me&&Math.hypot((self?.pose.x??0)-s.field.x,(self?.pose.z??0)-s.field.z)>s.field.radius?'Outside the Static Field — ride toward the gold circle!':!el('touch').hidden?'Left stick: move · right side: aim · Fire: shoot · ADS: sights':'WASD ride · mouse aim · click fire · right click ADS · R reload · J get off/on';
   el('room').hidden=!session.room;el('roomcode').textContent='Room '+session.code+(session.botFill?' · AI fill on':' · '+s.size+' human seats · AI fill off');
   el<HTMLButtonElement>('launch').disabled=session.host!==session.me;el('roster').replaceChildren(...s.roster.map(a=>{const li=document.createElement('li');li.textContent=a.name+(a.bot?' · AI':session.ready.includes(a.id)?' · Ready':' · Loading / not ready')+(!a.connected?' · Disconnected':'');return li;}));
   if(session.message)message(session.message);
   if(s.phase==='lobby'&&!dialog.open){showMenu();}if(s.phase==='deployment'&&dialog.open&&session.room){resume();}
-  if(s.phase==='results'){if(!dialog.open)showMenu();el('rematch').hidden=false;el('results').textContent=(s.winner===session.me?'YOU WIN':s.winner?(s.roster.find(a=>a.id===s.winner)?.name??'Rider')+' WINS':'DRAW')+' · '+s.reason;const stats=s.results.find(r=>r.id===session.me);if(stats)el('results').textContent+=' — '+stats.kills+' eliminations · '+stats.damage+' damage · '+stats.distance+' m ridden';}
+  if(s.phase==='results'){if(!dialog.open&&!replaying)showMenu();el('rematch').hidden=false;el('results').textContent=(s.winner===session.me?'YOU WIN':s.winner?(s.roster.find(a=>a.id===s.winner)?.name??'Rider')+' WINS':'DRAW')+' · '+s.reason;const stats=s.results.find(r=>r.id===session.me);if(stats)el('results').textContent+=' — '+stats.kills+' eliminations · '+stats.damage+' damage · '+stats.distance+' m ridden';}
  }
 }
 window.addEventListener('resize',()=>{release();graphics.resize();camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();loadLayout();});
@@ -295,13 +306,13 @@ function loop(now:number){requestAnimationFrame(loop);const rawFrameMs=now-last,
  const connection=session?.connectionStatus(now);el('connection-status').hidden=!connection?.text||dialog.open;el('connection-text').textContent=connection?.text??'';canvas.dataset.connection=connection?.state??'offline';
  if(!session?.state||session.state.phase!=='results')clearResults();
  footControls.update(session?.prediction?.controller.poseValue??session?.state?.actors.find(a=>a.id===session.me)?.pose??{},loaded&&!dialog.open&&!!session?.state?.self?.alive);
- if(loaded&&session.state&&(!paused||session.room)&&!layoutEditing){acc+=delta;let n=0;while(acc>=DT&&n++<9){try{session.step(dialog.open||paused||session.voice?.root.open?neutral(session.state.round):command());}catch(error){paused=true;release();showMenu();message('The simulation stopped safely. Start a new practice or reconnect: '+(error as Error).message);break;}acc-=DT;}}else acc=0;
+ if(loaded&&session.state&&(!paused||session.room)&&!layoutEditing){acc+=delta;let n=0;while(acc>=DT&&n++<9){try{session.step(dialog.open||paused||deathReplay.playing||session.voice?.root.open?neutral(session.state.round):command());}catch(error){paused=true;release();showMenu();message('The simulation stopped safely. Start a new practice or reconnect: '+(error as Error).message);break;}acc-=DT;}}else acc=0;
  if(!schedule.shouldRender(now,idle,false,graphics.current.fps))return;draw(now);renderer.render(scene,camera);samples.push(now-previousFrame);previousFrame=now;frames++;
  if(now-profileAt>2000){samples.sort((a,b)=>a-b);if(session?.state?.engine){canvas.dataset.engineModule=session.state.engine.module;canvas.dataset.engineFrames=String(session.state.engineInputFrames);canvas.dataset.engineTick=String(session.state.tick);}canvas.dataset.profile=JSON.stringify({fps:frames*1000/(now-profileAt),p95:samples[Math.floor(samples.length*.95)],calls:renderer.info.render.calls,triangles:renderer.info.render.triangles,geometries:renderer.info.memory.geometries,textures:renderer.info.memory.textures,idle,scale:adaptiveQuality.scale,detail:adaptiveQuality.detail});frames=0;profileAt=now;samples=[];}
 }
 canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();release();paused=true;showMenu();message('Graphics paused. Reload the page to restore the arena.');});
 requestAnimationFrame(loop);void run(prepare);
-window.addEventListener('pagehide',()=>{session?.leave();for(const a of actors.values()){a.view.dispose();a.equipment.dispose();a.shield.dispose();}for(const item of items.values())item.dispose();equipmentLibrary?.dispose();scopeLibrary?.dispose();terrain?.terrain.dispose();atmosphereSky.dispose();renderer.dispose();});
+window.addEventListener('pagehide',()=>{session?.leave();for(const a of actors.values()){a.view.dispose();a.equipment.dispose();a.shield.dispose();}for(const item of items.values())item.dispose();equipmentLibrary?.dispose();scopeLibrary?.dispose();terrain?.terrain.dispose();atmosphereSky.dispose();impactEffect.dispose();renderer.dispose();});
 
 
 

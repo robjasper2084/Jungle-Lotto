@@ -61,3 +61,8 @@ header,#hint{z-index:6}#touch{z-index:2}
  #touch button[aria-pressed="true"]{background:#e2d28a;color:#142f2c;box-shadow:0 0 0 2px #fbefb7;}
 @media(max-height:580px){.on-foot-controls{left:calc(118px + var(--touch-size,48px) + 12px)!important;top:auto!important;bottom:20px!important;max-width:48px!important}.on-foot-controls button{width:48px;font-size:9px;padding:4px!important}}
 @media(max-width:620px){#hud{max-width:calc(100vw - 122px)}}
+.health-bars{display:grid;gap:3px;margin:5px 0}.health-bars label{display:flex;align-items:center;gap:6px;font-size:10px;margin:0}.health-bars progress{width:112px;height:8px;accent-color:#67e6a0}.health-bars label+label progress{accent-color:#79dce9}.health-bars output{min-width:24px}#health-feedback{font-size:10px;color:#c6f5e5}
+#hit-flash{position:fixed;inset:0;pointer-events:none;opacity:0;z-index:4;box-shadow:inset 0 0 70px 15px #ff759260;transition:opacity .12s}#hit-flash[data-kind=knockdown]{box-shadow:inset 0 0 60px 12px #e4c07366}
+#reentry-panel{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:60;width:min(92vw,480px);padding:12px;background:#112b3285;border:1px solid #92e7d6;border-radius:12px;text-align:center;backdrop-filter:blur(4px)}#reentry-panel p{font-size:12px;margin:7px 0}#reentry-panel .actions{justify-content:center;flex-wrap:wrap}#reentry-panel button{font-size:12px;padding:10px}
+#replay-status{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);display:flex;gap:12px;align-items:center;z-index:61;background:#10283288;padding:10px;border-radius:10px;font-size:12px}#replay-status[hidden],#reentry-panel[hidden]{display:none}
+@media(prefers-reduced-motion:reduce){#hit-flash{transition:none;box-shadow:inset 0 0 0 5px #ff759299}}

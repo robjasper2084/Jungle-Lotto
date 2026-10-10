@@ -19,6 +19,7 @@ struct Actor {
  int mag[3]={20,0,0},pattern[3]{},fireMode[3]{},fireHeld=0,reloadHeld=0,modeHeld=0,burstLeft=0,fireSerial=0;
  int reloadStart=-1,reloadCommit=0,reloadEnd=0,reloadWeapon=-1,reloadCommitted=0;
  int dogCharges=0,dogUntil=0,dogReady=0,dogHit=0,dogHeld=0,radarUntil=0,radarReady=0,radarHeld=0;
+ int reentryUsed=0,reentryUntil=0,protectedUntil=0;
  double vx=0,vz=0,roll=0,air=0,rough=0,kickYaw=0,kickPitch=0,aimBlend=0,lean=0;
 };
 struct Projectile {int active=0,serial=0,salvo=0,pellet=0;double x=0,y=0,z=0,vx=0,vy=0,vz=0;int resolvedTick=-1;};
@@ -31,6 +32,7 @@ struct State {
  Actor actors[Slots];Projectile projectiles[Projectiles];Salvo salvos[Salvos];Loot loot[384];
  Event events[Events];Hit hits[Hits];
  int tick=0,phase=0,seed=0,winner=-1,reason=0,serial=0,stage=0,eventCount=0,hitCount=0,error=0;
+ int reentry=0;
  double radii[6]={320,210,130,60,16,0};
  double frames=0;double centers[5][2]={{0,0},{-12,0},{12,0},{0,-12},{0,12}};
 };
@@ -42,7 +44,7 @@ bool finite(double n,double lo,double hi){return std::isfinite(n)&&n>=lo&&n<=hi;
 int fail(State& s,int code){s.error=code;return -code;}
 double input(State& s,int who,int ch){auto p=s.inputs[who].getInput(static_cast<PlayerInputMap>(ch));return p?*p:0;}
 void event(State& s,int kind,int who,int target=-1){if(s.eventCount==Events){fail(s,20);return;}s.events[s.eventCount++]={s.tick,kind,who,target};}
-void hit(State& s,int target,double amount,int owner=-1,int bypass=0){if(s.hitCount==Hits){fail(s,21);return;}s.hits[s.hitCount++]={target,owner,bypass,amount};}
+void hit(State& s,int target,double amount,int owner=-1,int bypass=0){if(s.actors[target].protectedUntil>s.tick)return;if(s.hitCount==Hits){fail(s,21);return;}s.hits[s.hitCount++]={target,owner,bypass,amount};}
 struct Field {double x,z,radius,next,remaining,damage;int phase;};
 Field field(const State& s){
 
@@ -98,6 +100,7 @@ void rules(State& s){
   double targetAim=input(s,who,18);a.aimBlend+=std::clamp(targetAim-a.aimBlend,-1.0/w.adsTicks,1.0/w.adsTicks);
   a.lean+=std::clamp(input(s,who,19)-a.lean,-.08,.08);
   bool held=input(s,who,8)>0,edge=held&&!a.fireHeld,reload=input(s,who,16)>0,mode=input(s,who,17)>0;
+  if(held||reload||input(s,who,10)>0||input(s,who,26)>0||input(s,who,27)>0||input(s,who,18)>0)a.protectedUntil=0;
   a.lastShot=std::max(a.lastShot,a.commandShot);
   if(a.crashed||!a.alive){cancelReload(a);a.burstLeft=0;}
   if(mode&&!a.modeHeld){int id=a.loadout[a.slot];do{a.fireMode[id]=(a.fireMode[id]+1)%3;}while(!(w.modes&(1<<a.fireMode[id])));a.burstLeft=0;}
@@ -146,11 +149,11 @@ void finish(State& s){
  }
  for(int who=0;who<Slots;who++){auto& a=s.actors[who];if(a.present&&a.alive&&a.integrity<=0){a.alive=0;a.eliminated=s.tick;
   for(int i=s.hitCount-1;i>=0;i--)if(s.hits[i].target==who&&s.hits[i].owner>=0){++s.actors[s.hits[i].owner].kills;break;}
-  cancelReload(a);a.burstLeft=0;a.fireHeld=0;event(s,5,who);
+  cancelReload(a);a.burstLeft=0;a.fireHeld=0;if(s.reentry&&!a.reentryUsed)a.reentryUntil=s.tick+1800;event(s,5,who);
  }}
- int live=0,last=-1;for(int i=0;i<Slots;i++)if(s.actors[i].present&&s.actors[i].alive){++live;last=i;}
- if(s.phase==2&&live<=1){s.phase=3;s.winner=last;s.reason=live?1:2;}
- else if(s.phase==2&&s.tick>=21840){s.phase=3;s.winner=-1;s.reason=3;for(auto& a:s.actors)if(a.alive){a.alive=0;a.integrity=0;a.eliminated=s.tick;event(s,5,int(&a-s.actors));}}
+ int live=0,last=-1,total=0,pending=0;for(int i=0;i<Slots;i++){auto& a=s.actors[i];if(!a.present)continue;++total;if(a.alive){++live;last=i;}else if(s.reentry&&!a.reentryUsed&&a.connected&&a.reentryUntil>s.tick)++pending;}
+ if(s.phase==2&&live<=1&&!pending&&(total>1||!live)){s.phase=3;s.winner=last;s.reason=live?1:2;}
+ else if(s.phase==2&&s.tick>=21840){s.phase=3;s.winner=-1;s.reason=3;for(auto& a:s.actors)if(a.present&&a.alive){a.alive=0;a.integrity=0;a.eliminated=s.tick;event(s,5,int(&a-s.actors));}}
  if(s.phase==3){for(auto& p:s.projectiles)p.active=0;for(auto& a:s.inputs)a={};for(auto& a:s.actors){cancelReload(a);a.burstLeft=0;a.fireHeld=0;}event(s,6,s.winner);}
  for(int i=0;i<Salvos;i++){bool active=false;for(auto& p:s.projectiles)if(p.active&&p.salvo==i){active=true;break;}if(!active)s.salvos[i].active=0;}
  s.stage=0;
@@ -163,7 +166,7 @@ struct Stream {
  void integer(int& v,int lo,int hi){double n=v;number(n,lo,hi);if(reading){if(std::floor(n)!=n)ok=false;else v=int(n);}}
 };
 void serialize(State& s,Stream& v){
- int version=7;v.integer(version,7,7);
+ int version=8;v.integer(version,8,8);v.integer(s.reentry,0,1);
  for(auto& r:s.radii)v.number(r,0,10000);
  if(v.reading){for(int i=0;i<5;i++)if(s.radii[i]<=s.radii[i+1])v.ok=false;if(s.radii[5]!=0)v.ok=false;}
  for(auto& center:s.centers)for(auto& n:center)v.number(n,-10000,10000);
@@ -174,7 +177,7 @@ void serialize(State& s,Stream& v){
   v.integer(a.present,0,1);v.integer(a.alive,0,1);v.integer(a.connected,0,1);v.integer(a.drop,-1,21840);v.integer(a.slot,0,1);
   for(auto& n:a.loadout)v.integer(n,-1,2);for(int i=0;i<3;i++)v.integer(a.ammo[i],0,weapons[i].ammo);
   v.integer(a.utility,0,1);v.integer(a.repairs,0,2);v.integer(a.shieldUntil,0,22020);v.integer(a.repairUntil,0,22020);v.integer(a.switchUntil,0,22020);
-  v.integer(a.shotAt,-999,21840);v.integer(a.lastShot,0,2147483647);v.integer(a.lastDamage,-99999,21840);v.integer(a.kills,0,Slots-1);
+  v.integer(a.shotAt,-999,21840);v.integer(a.lastShot,0,2147483647);v.integer(a.lastDamage,-99999,21840);v.integer(a.kills,0,(Slots-1)*2);
   v.integer(a.shots,0,10000);v.integer(a.hits,0,100000);v.integer(a.eliminated,-1,21840);v.integer(a.crashed,0,1);
   v.integer(a.commandShot,0,2147483647);v.integer(a.commandSlot,0,1);
   v.number(a.integrity,0,100);v.number(a.shield,0,50);v.number(a.damage,0,1e7);
@@ -183,6 +186,7 @@ void serialize(State& s,Stream& v){
   v.integer(a.fireHeld,0,1);v.integer(a.reloadHeld,0,1);v.integer(a.modeHeld,0,1);v.integer(a.burstLeft,0,3);v.integer(a.fireSerial,0,10000);
   v.integer(a.reloadStart,-1,21840);v.integer(a.reloadCommit,0,22020);v.integer(a.reloadEnd,0,22020);v.integer(a.reloadWeapon,-1,2);v.integer(a.reloadCommitted,0,1);
   v.integer(a.dogCharges,0,2);v.integer(a.dogUntil,0,23000);v.integer(a.dogReady,0,24000);v.integer(a.dogHit,0,1);v.integer(a.dogHeld,0,1);v.integer(a.radarUntil,0,22020);v.integer(a.radarReady,0,23000);v.integer(a.radarHeld,0,1);
+  v.integer(a.reentryUsed,0,1);v.integer(a.reentryUntil,0,24000);v.integer(a.protectedUntil,0,24000);
   v.number(a.vx,-100,100);v.number(a.vz,-100,100);v.number(a.roll,-2,2);v.number(a.air,0,1);v.number(a.rough,0,1);v.number(a.kickYaw,-.12,.12);v.number(a.kickPitch,0,.22);v.number(a.aimBlend,0,1);v.number(a.lean,-1,1);
   if(v.reading&&a.reloadStart>=0&&(a.reloadWeapon<0||a.reloadCommit<a.reloadStart||a.reloadEnd<a.reloadCommit))v.ok=false;
   if(v.reading&&a.present&&(a.loadout[0]<0||a.loadout[a.slot]<0||(!a.alive&&a.integrity>0)))v.ok=false;
@@ -191,7 +195,7 @@ void serialize(State& s,Stream& v){
   v.number(p.x,-10000,10000);v.number(p.y,-10000,10000);v.number(p.z,-10000,10000);v.number(p.vx,-512,512);v.number(p.vy,-512,512);v.number(p.vz,-512,512);v.integer(p.resolvedTick,-1,21840);}
  for(auto& g:s.salvos){v.integer(g.active,0,1);v.integer(g.owner,0,Slots-1);v.integer(g.shot,0,2147483647);v.integer(g.weapon,0,2);v.integer(g.expires,0,22020);for(auto& n:g.awarded)v.number(n,0,48);}
  for(auto& l:s.loot){v.integer(l.present,0,1);v.integer(l.available,0,1);v.integer(l.kind,0,6);v.number(l.x,-10000,10000);v.number(l.y,-10000,10000);v.number(l.z,-10000,10000);}
- for(auto& e:s.events){v.integer(e.tick,0,21840);v.integer(e.kind,0,11);v.integer(e.actor,-1,Slots-1);v.integer(e.target,-1,Slots-1);}
+ for(auto& e:s.events){v.integer(e.tick,0,21840);v.integer(e.kind,0,12);v.integer(e.actor,-1,Slots-1);v.integer(e.target,-1,Slots-1);}
  for(auto& h:s.hits){v.integer(h.target,0,Slots-1);v.integer(h.owner,-1,Slots-1);v.integer(h.bypass,0,1);v.number(h.amount,0,999);}
  if(v.reading)for(auto& p:s.projectiles)if(p.active&&!s.salvos[p.salvo].active)v.ok=false;
 }
@@ -208,12 +212,17 @@ double bf_get(int id,int who,int channel){auto c=bf::get(id);if(!c||!bf::slot(wh
 int bf_frame(int id){auto c=bf::get(id);if(!c)return -1;++c->s.frames;return 1;}
 double bf_frames(int id){auto c=bf::get(id);return c?c->s.frames:-1;}
 int bf_add(int id,int who){auto c=bf::get(id);if(!c||!bf::slot(who)||c->s.phase||c->s.actors[who].present)return -1;c->s.actors[who]={};c->s.actors[who].present=1;return 1;}
-int bf_start(int id,int seed){auto c=bf::get(id);if(!c||seed<0||(c->s.phase!=0&&c->s.phase!=3))return -1;int count=0;for(auto& a:c->s.actors)count+=a.present;if(count!=6&&count!=10)return -2;
+int bf_start(int id,int seed){auto c=bf::get(id);if(!c||seed<0||(c->s.phase!=0&&c->s.phase!=3))return -1;int count=0;for(auto& a:c->s.actors)count+=a.present;if(count<1||count>bf::Slots)return -2;for(int i=0;i<bf::Slots;i++)if(c->s.actors[i].present!=(i<count))return -2;
  c->s={};for(int i=0;i<count;i++)c->s.actors[i].present=1;c->s.seed=seed;c->s.phase=1;return 1;}
+int bf_reentry_policy(int id,int enabled){auto c=bf::get(id);if(!c||c->s.tick||enabled<0||enabled>1)return -1;c->s.reentry=enabled;return 1;}
+int bf_reentry(int id,int who,int accept,double x,double y,double z){auto c=bf::get(id);if(!c||!bf::slot(who)||accept<0||accept>1)return -1;auto& s=c->s;auto& a=s.actors[who];if(s.stage||s.phase!=2||!s.reentry||!a.present||a.alive||!a.connected||a.reentryUsed||a.reentryUntil<=s.tick)return 0;
+ if(!accept){a.reentryUsed=1;a.reentryUntil=0;return 1;}if(!bf::finite(x,-10000,10000)||!bf::finite(y,-10000,10000)||!bf::finite(z,-10000,10000))return -1;
+ auto old=a;a={};a.present=1;a.connected=old.connected;a.reentryUsed=1;a.protectedUntil=s.tick+600;a.x=x;a.y=y;a.z=z;a.scale=old.scale;a.kills=old.kills;a.damage=old.damage;a.shots=old.shots;a.hits=old.hits;a.lastShot=old.lastShot;a.commandShot=old.commandShot;a.fireSerial=old.fireSerial;s.inputs[who]={};return 1;}
+int bf_reentry_state(int id,int who,int key){auto c=bf::get(id);if(!c||!bf::slot(who))return -1;auto& a=c->s.actors[who];return key==0?a.reentryUsed:key==1?a.reentryUntil:key==2?a.protectedUntil:-1;}
 int bf_connected(int id,int who,int connected){auto c=bf::get(id);if(!c||!bf::slot(who)||(connected!=0&&connected!=1))return -1;auto& a=c->s.actors[who];if(a.connected!=connected){a.connected=connected;a.drop=connected?-1:c->s.tick;}if(!connected)c->s.inputs[who]={};return 1;}
 int bf_loot(int id,int item,int kind,double x,double y,double z){auto c=bf::get(id);if(!c||item<0||item>=384||kind<0||kind>6||c->s.tick||!bf::finite(x,-10000,10000)||!bf::finite(y,-10000,10000)||!bf::finite(z,-10000,10000))return -1;c->s.loot[item]={1,1,kind,x,y,z};return 1;}
 // Called only by the host after its dog navigation, contact and cover checks.
-int bf_dog_contact(int id,int owner,int target,double x,double y,double z){auto c=bf::get(id);if(!c||!bf::slot(owner)||!bf::slot(target)||owner==target)return -1;auto& s=c->s;auto& a=s.actors[owner];auto& b=s.actors[target];if(s.stage!=2||s.phase!=2||!a.alive||!a.connected||!b.present||!b.alive||a.dogHit||a.dogUntil<=s.tick||b.shieldUntil>s.tick)return 0;if(!bf::finite(x,-10000,10000)||!bf::finite(y,-10000,10000)||!bf::finite(z,-10000,10000)||std::hypot(x-b.x,z-b.z)>1.6||std::abs(y-b.y)>1.2)return 0;a.dogHit=1;a.dogUntil=s.tick;bf::hit(s,target,25,owner);bf::event(s,11,owner,target);return 1;}
+int bf_dog_contact(int id,int owner,int target,double x,double y,double z){auto c=bf::get(id);if(!c||!bf::slot(owner)||!bf::slot(target)||owner==target)return -1;auto& s=c->s;auto& a=s.actors[owner];auto& b=s.actors[target];if(s.stage!=2||s.phase!=2||!a.alive||!a.connected||!b.present||!b.alive||a.dogHit||a.dogUntil<=s.tick||b.shieldUntil>s.tick||b.protectedUntil>s.tick)return 0;if(!bf::finite(x,-10000,10000)||!bf::finite(y,-10000,10000)||!bf::finite(z,-10000,10000)||std::hypot(x-b.x,z-b.z)>1.6||std::abs(y-b.y)>1.2)return 0;a.dogHit=1;a.dogUntil=s.tick;bf::hit(s,target,25,owner);bf::event(s,11,owner,target);return 1;}
 double bf_dog(int id,int who,int key){auto c=bf::get(id);if(!c||!bf::slot(who))return -1;auto& a=c->s.actors[who];switch(key){case 0:return a.dogCharges;case 1:return a.dogUntil;case 2:return a.dogReady;case 3:return a.radarUntil;case 4:return a.radarReady;default:return -1;}}
 int bf_zone(int id,int index,double x,double z){auto c=bf::get(id);if(!c||c->s.tick||index<0||index>=5||!bf::finite(x,-10000,10000)||!bf::finite(z,-10000,10000))return -1;c->s.centers[index][0]=x;c->s.centers[index][1]=z;return 1;}
 int bf_radii(int id,double a,double b,double d,double e,double f,double g){

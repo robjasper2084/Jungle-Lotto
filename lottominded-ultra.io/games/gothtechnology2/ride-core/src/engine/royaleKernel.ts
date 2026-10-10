@@ -14,8 +14,9 @@ export function routeBattleInput(core:EngineContext,slot:number,c:Command){
 export class RoyaleKernel{
  readonly core=new EngineContext();
  readonly identity=ENGINE_ID;
- constructor(actors:Actor[],seed:number,loot:Loot[],zones?:{x:number;z:number}[],radii?:readonly number[]){
+ constructor(actors:Actor[],seed:number,loot:Loot[],zones?:{x:number;z:number}[],radii?:readonly number[],reentry=false){
   actors.forEach((_,i)=>this.core.checked('add',i));this.core.checked('start',seed);
+  this.core.checked('reentry_policy',+reentry);
   if(zones){if(zones.length!==5)throw Error('Five field centers required');zones.forEach((p,i)=>this.core.checked('zone',i,p.x,p.z));}
   if(radii){if(radii.length!==6)throw Error('Six field radii required');this.core.checked('radii',...radii);}
   kernelLoot(loot).forEach((l,i)=>this.core.checked('loot',i,kinds.indexOf(l.kind),l.p.x,l.p.y,l.p.z));
@@ -45,6 +46,7 @@ export class RoyaleKernel{
  power(i:number){return {charges:this.core.call('dog',i,0),until:this.core.call('dog',i,1),ready:this.core.call('dog',i,2),radarUntil:this.core.call('dog',i,3),radarReady:this.core.call('dog',i,4)};}
  sync(actors:Actor[],loot:Loot[]){
   actors.forEach((a,i)=>{const v=(k:number)=>this.core.call('actor',i,k);
+   a.reentryUsed=!!this.core.call('reentry_state',i,0);a.reentryUntil=this.core.call('reentry_state',i,1);a.protectedUntil=this.core.call('reentry_state',i,2);
    Object.assign(a,{integrity:v(0),shield:v(1),alive:!!v(2),slot:v(3),loadout:[v(4),v(5)].filter(n=>n>=0).map(n=>weapons[n]),ammo:{static:v(6),heart:v(7),bass:v(8)},utility:v(9),repairs:v(10),shieldUntil:v(11),repairUntil:v(12),switchUntil:v(13),shotAt:v(14),lastShot:v(15),lastDamage:v(16),kills:v(17),damage:v(18),shots:v(19),hits:v(20),eliminatedAt:v(21)});
    a.dogPower={charges:this.core.call("dog",i,0),until:this.core.call("dog",i,1),ready:this.core.call("dog",i,2),radarUntil:this.core.call("dog",i,3),radarReady:this.core.call("dog",i,4)};
    const c=(key:number)=>this.core.call('combat',i,key);
