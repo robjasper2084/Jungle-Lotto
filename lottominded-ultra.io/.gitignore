@@ -7,6 +7,8 @@ test-results/
 dist-staging/
 dist-source-test/
 games/*/output/
+games/*/dist/
+games/*/source/dist/
 games/gothtechnology2/assets/sprite-production/higgsfield-v2/raw/
 games/gothtechnology2/assets/sprite-production/higgsfield-v2/masters/
 games/gothtechnology2/assets/sprite-production/higgsfield-v2/previews/
@@ -19,6 +21,7 @@ games/shadow-ops-canvas/tools/
 **/__pycache__/
 *.zip
 *.log
+*.tsbuildinfo
 .env
 .env.local
 video-optimization-report.csv

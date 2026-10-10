@@ -55,6 +55,7 @@ test('legacy dev middleware serves game entry before and after Astro strips the 
       assert.ok(html.includes('./legacy-game/reward-sdk.js'));
       assert.ok(html.includes('./legacy-game/bridge.js'));
       assert.ok(html.includes('./src/main.js'));
+      assert.ok(html.includes('body:not([data-phase="fight"]):not([data-phase="pause"]) #accessibleActions'));
     }
   }
 });

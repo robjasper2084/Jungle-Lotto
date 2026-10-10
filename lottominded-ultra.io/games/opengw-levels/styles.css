@@ -1862,6 +1862,21 @@ button[hidden],
   }
 }
 
+#shell:not([data-mode="running"]):not([data-mode="paused"]) > .td-battle { display: none; }
+@media (pointer: coarse), (max-width: 820px) {
+  #touchMarks, #bombAction, #pauseAction { display: none !important; }
+  #shell > .td-battle { --td-accent: #f5f8f7; }
+  #shell .forge-toggle { top: max(116px, calc(var(--safe-top) + 116px)); }
+}
+@media (orientation: landscape) and (min-width: 560px) and (pointer: coarse), (orientation: landscape) and (min-width: 560px) and (max-width: 820px) {
+  #shell .forge-toggle { top: max(12px, var(--safe-top)); left: 50%; right: auto; transform: translateX(-50%); }
+  #shell .forge-toggle:hover { transform: translate(-50%, -1px); }
+  #shell #statusStrip { max-width: min(200px, 30vw); }
+}
+@media (orientation: portrait) and (pointer: coarse), (orientation: portrait) and (max-width: 820px) {
+  #shell #statusStrip { top: max(116px, calc(var(--safe-top) + 116px)); bottom: auto; max-width: min(200px, calc(100vw - 160px)); }
+}
+
 @keyframes marquee-motion-breathe {
   0%, 100% {
     transform: translateY(0) scale(1);

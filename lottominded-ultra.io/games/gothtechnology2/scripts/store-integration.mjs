@@ -5,8 +5,8 @@ import { fileURLToPath } from 'node:url';
 import { linkedGameFile } from './linked-game-files.mjs';
 
 const root = resolve(import.meta.dirname, '..');
-const original = resolve(root, 'legacy-game/preserved-original-entry/index.html');
-const types = { '.js': 'text/javascript', '.mjs': 'text/javascript', '.json': 'application/json', '.webp': 'image/webp', '.jpg': 'image/jpeg', '.png': 'image/png', '.mp3': 'audio/mpeg', '.mp4': 'video/mp4', '.html': 'text/html' };
+const original = resolve(root, 'index.html');
+const types = { '.css': 'text/css', '.js': 'text/javascript', '.mjs': 'text/javascript', '.json': 'application/json', '.webp': 'image/webp', '.jpg': 'image/jpeg', '.png': 'image/png', '.mp3': 'audio/mpeg', '.mp4': 'video/mp4', '.html': 'text/html' };
 export async function legacyEntry(base) {
   const html = await readFile(original, 'utf8');
   return html.replace('<head>', `<head>\n    <base href="${base}">
@@ -44,7 +44,7 @@ export function legacyIntegration() {
     },
     'astro:build:done': async ({ dir }) => {
       const output = fileURLToPath(dir);
-      for (const folder of ['src', 'assets']) await cp(resolve(root, folder), resolve(output, folder), { recursive: true });
+      for (const folder of ['src', 'assets']) await cp(resolve(root, folder), resolve(output, folder), { recursive: true, filter: source => !/\.(?:ts|map)$/.test(source) });
       await mkdir(resolve(output, 'legacy-game'), { recursive: true });
       await writeFile(resolve(output, 'legacy-game/index.html'), await legacyEntry(base));
       await cp(resolve(root, '../../assets/js/lm-game-rewards-sdk.js'), resolve(output, 'legacy-game/reward-sdk.js'));
