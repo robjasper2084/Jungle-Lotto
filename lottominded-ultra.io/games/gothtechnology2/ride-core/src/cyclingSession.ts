@@ -8,7 +8,9 @@ import type {TerrainSampler,NavigationObstacle} from './terrain.ts';
 export class CyclingSession {
   readonly ride:CommunityRide;readonly view:CommunityView;readonly ui:ReturnType<typeof communityPanel>;
   private uiClock=0;private savedRun=-1;
-  constructor(readonly map:string,scene:T.Scene,assets:Map<string,GLTF>,terrain:TerrainSampler,route:LaneRoute,readonly player:()=>{x:number;y:number;z:number;speed:number},travel:()=>void,focus:()=>void){
+  readonly map:string;readonly player:()=>{x:number;y:number;z:number;speed:number};
+  constructor(map:string,scene:T.Scene,assets:Map<string,GLTF>,terrain:TerrainSampler,route:LaneRoute,player:()=>{x:number;y:number;z:number;speed:number},travel:()=>void,focus:()=>void){
+    this.map=map;this.player=player;
     this.ride=new CommunityRide(route,terrain,COMMUNITY_PACE,4);this.view=new CommunityView(this.ride,assets);scene.add(this.view.root);this.view.root.visible=false;
     this.ui=communityPanel(map+' community ride',this.ride,player,travel,focus);this.ui.update(false);
   }

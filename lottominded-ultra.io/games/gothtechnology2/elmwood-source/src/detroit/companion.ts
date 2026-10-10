@@ -2,12 +2,15 @@ import type {TerrainSampler} from '../simulation/world.ts';
 import {createGroundSample} from '../simulation/world.ts';
 
 export type CompanionRider={x:number;z:number;headingY:number;speed:number};
+export type CompanionObstacle={x:number;z:number;radius:number;vx?:number;vz?:number};
 const clamp=(x:number,a:number,b:number)=>Math.max(a,Math.min(b,x));
 const angle=(x:number)=>Math.atan2(Math.sin(x),Math.cos(x));
 export class DogCompanion {
   x=0;y=0;z=0;heading=0;speed=0;groundPitch=0;groundRoll=0;
   side=1;
   protected speedLimit=Infinity;
+  avoidance:readonly CompanionObstacle[]=[];
+  regroupAllowed:()=>boolean=()=>true;
   private ready=false;
   private ground=createGroundSample();
   private targetGround=createGroundSample();
@@ -25,7 +28,7 @@ export class DogCompanion {
     // Prefer the rider's left, including in reverse. Yield around obstacles.
     for(const [side,ahead] of [[1.35,.15],[1.05,-.8],[-1.35,-.4],[0,-1.8]]){
       const x=r.x+sx*side*this.side+fx*ahead,z=r.z+sz*side*this.side+fz*ahead,g=this.terrain.sampleGround(x,z,this.targetGround);
-      if(!g.offCourse&&g.normal.y>.65&&Math.abs(g.height-floor)<1.1&&this.clear(r.x,r.z,x,z,floor))return{x,y:g.height,z,heading};
+      if(!g.offCourse&&g.normal.y>.65&&Math.abs(g.height-floor)<1.1&&!this.avoidance.some(o=>Math.hypot(x-o.x-(o.vx??0)*.3,z-o.z-(o.vz??0)*.3)<o.radius+.7)&&this.clear(r.x,r.z,x,z,floor))return{x,y:g.height,z,heading};
     }
     return{x:r.x-fx*1.4,y:floor,z:r.z-fz*1.4,heading};
   }
@@ -33,7 +36,7 @@ export class DogCompanion {
   update(r:CompanionRider,seconds:number){
     if(!this.ready){this.reset(r);return;}
     const dt=clamp(seconds,0,.06);if(!dt)return;
-    if(Math.hypot(this.x-r.x,this.z-r.z)>45){this.reset(r);return;}
+    if(Math.hypot(this.x-r.x,this.z-r.z)>45&&this.regroupAllowed()){this.reset(r);return;}
     const target=this.goal(r),dx=target.x-this.x,dz=target.z-this.z,distance=Math.hypot(dx,dz);
     const desired=Math.min(this.speedLimit,Math.max(7,Math.abs(r.speed)*1.25),Math.max(0,distance-.055)*7);
     this.speed+=(desired-this.speed)*(1-Math.exp(-dt*10));
@@ -44,6 +47,7 @@ export class DogCompanion {
       const heading=direction+turn,x=this.x+Math.sin(heading)*step,z=this.z+Math.cos(heading)*step;
       const g=this.terrain.sampleGround(x,z,this.targetGround);
       if(g.offCourse||g.normal.y<.6||Math.abs(g.height-this.y)>.35||!this.clear(this.x,this.z,x,z,this.y))continue;
+      if(this.avoidance.some(o=>{const ox=o.x+(o.vx??0)*dt,oz=o.z+(o.vz??0)*dt,next=Math.hypot(x-ox,z-oz),old=Math.hypot(this.x-ox,this.z-oz);return next<o.radius+.65&&next<old;}))continue;
       this.x=x;this.z=z;this.y=g.height;this.heading+=angle(heading-this.heading)*(1-Math.exp(-dt*12));moved=true;break;
     }
     if(!moved)this.speed=0;

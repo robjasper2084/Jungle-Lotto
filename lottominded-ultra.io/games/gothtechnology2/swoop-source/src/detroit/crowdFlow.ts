@@ -24,9 +24,12 @@ export function advanceCrowd(agents:CrowdAgent[],dt:number,path:CrowdPath,extern
   if(threat&&!a.passing){
    const margin=a.radius+threat.o.radius+.3,candidates=[1,-1].map(side=>clamp(a.lane+a.direction*(path.offsetSign??1)*(threat.side+side*margin),-limit,limit));
    const clearance=(lane:number)=>{const goal=path.point(a.distance+a.direction*Math.max(2,threat.along),lane);if(path.walkable&&!path.walkable(goal.x,goal.y,goal.z))return -10;return Math.min(...obstacles.filter(o=>Math.hypot(o.x-goal.x,o.z-goal.z)<3).map(o=>Math.hypot(goal.x-o.x,goal.z-o.z)-o.radius-a.radius),10);};
-   target=clearance(candidates[0])>.1?candidates[0]:candidates[1];a.passing=threat.o.id;a.passLane=target;
+   const best=candidates.sort((b,c)=>clearance(c)-clearance(b))[0];
+   if(clearance(best)>.1){target=best;a.passing=threat.o.id;a.passLane=target;}
   }
-  if(threat&&solid.includes(threat.o)&&Math.abs(threat.side)<a.radius+threat.o.radius+.12){const margin=a.radius+threat.o.radius+.12,gap=threat.along-margin;
+  const passPoint=threat?path.point(a.distance+a.direction*Math.max(.8,threat.along),target):undefined;
+  const passingClear=threat&&passPoint&&Math.hypot(passPoint.x-threat.o.x,passPoint.z-threat.o.z)>a.radius+threat.o.radius+.2;
+  if(threat&&!passingClear&&solid.includes(threat.o)&&Math.abs(threat.side)<a.radius+threat.o.radius+.12){const margin=a.radius+threat.o.radius+.12,gap=threat.along-margin;
    // A slower lead actor gets a deliberate overtake; a blocked gap yields smoothly.
    pace=Math.min(pace,Math.sqrt(Math.max(0,gap)*2*1.5));
   }

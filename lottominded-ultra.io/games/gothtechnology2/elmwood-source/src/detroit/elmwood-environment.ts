@@ -4,7 +4,7 @@ import {loadElmwoodGoose} from './elmwood-goose.ts';
 
 
 
-import {Sky} from 'three/addons/objects/Sky.js';
+import {NaturalSky} from '../../../ride-core/src/naturalSky.ts';
 
 
 
@@ -108,25 +108,7 @@ export function makeElmwoodEnvironment(scene:T.Scene,world:T.Group,foundation:T.
 
 
 
- const sky=new Sky();sky.scale.setScalar(2200);scene.add(sky);const skyU=sky.material.uniforms;skyU.turbidity.value=3;skyU.rayleigh.value=1.55;skyU.mieCoefficient.value=.006;skyU.mieDirectionalG.value=.82;
-
-
-
- const clouds=new T.Mesh(new T.SphereGeometry(1700,24,12),new T.ShaderMaterial({side:T.BackSide,transparent:true,depthWrite:false,uniforms:{sunHeight:{value:.7},cloudCover:{value:.16},cloudTime:{value:0},rain:{value:0}},vertexShader:'varying vec3 d;void main(){d=normalize(position);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',fragmentShader:`varying vec3 d;uniform float sunHeight,cloudCover,cloudTime,rain;
-
-
-
- float n(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}float noise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(n(i),n(i+vec2(1,0)),f.x),mix(n(i+vec2(0,1)),n(i+1.),f.x),f.y);}
-
-
-
- void main(){vec3 v=normalize(d);vec2 p=v.xz/max(.15,v.y)*3.+vec2(cloudTime*.006,cloudTime*.002);float q=noise(p)*.65+noise(p*2.1)*.25+noise(p*4.3)*.1;float a=smoothstep(.69-cloudCover*.53,.87-cloudCover*.49,q)*smoothstep(.03,.2,v.y)*(.42+cloudCover*.56);gl_FragColor=vec4(mix(vec3(.92,.68,.46),vec3(.97-rain*.48),smoothstep(.02,.5,sunHeight))*mix(.10,1.,smoothstep(-.08,.1,sunHeight)),a);}` }));clouds.renderOrder=1;scene.add(clouds);
-
-
-
-
-
-
+ const sky=new NaturalSky();scene.add(sky);
 
  // Existing broad horizontal stripes came from stretched stone UVs. Replace that material with fine mineral grain.
 
@@ -374,15 +356,15 @@ export function makeElmwoodEnvironment(scene:T.Scene,world:T.Group,foundation:T.
 
 
 
- return {root,young,fountain,gate,birds,sky,update(dt:number,rider:WildlifeRider,sunDirection:T.Vector3,paused=false,weather?:{cloud:{value:number};time:{value:number};rain:{value:number};waterTime?:{value:number};waterDetail?:{value:number}},dogs:readonly WildlifeDog[]=[]){
+ return {root,young,fountain,gate,birds,sky,update(dt:number,rider:WildlifeRider,sunDirection:T.Vector3,paused=false,weather?:{cloud:{value:number};time:{value:number};rain:{value:number};waterTime?:{value:number};waterDetail?:{value:number};airReduced?:{value:boolean}},dogs:readonly WildlifeDog[]=[]){
 
 
 
-  sky.visible=world.visible;clouds.visible=world.visible;skyU.sunPosition.value.copy(sunDirection).normalize();(clouds.material as T.ShaderMaterial).uniforms.sunHeight.value=sunDirection.y/sunDirection.length();
+  sky.visible=world.visible;sky.update(dt,sunDirection,weather?.cloud.value??.16,weather?.rain.value??0,(weather?.waterDetail?.value??1)<.5,weather?.airReduced?.value??false,paused,scene.fog?.color);
 
 
 
-  if(weather){const u=(clouds.material as T.ShaderMaterial).uniforms;u.cloudCover.value=weather.cloud.value;u.cloudTime.value=weather.time.value;u.rain.value=weather.rain.value;skyU.turbidity.value=2.5+weather.cloud.value*7;skyU.rayleigh.value=1.6-weather.cloud.value*.5;}
+
 
 
 

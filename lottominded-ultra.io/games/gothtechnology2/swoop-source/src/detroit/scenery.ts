@@ -1,3 +1,4 @@
+import {buildJazzClubs} from './jazzClubs.ts';
 import type {SceneryWorld} from './sceneryWorld.ts';
 import {timeLoad} from './loadTiming.ts';
 import {foliageSightline} from './foliageSightline.ts';
@@ -26,6 +27,10 @@ import {buildCity} from './city-render.ts';
 import {buildStreetFurniture} from './streetFurniture.ts';
 import {grassTreeSite} from './treePlacement.ts';
 import {riverEdge,roadAt} from './geography.ts';
+import {AirAtmosphere} from '../../../ride-core/src/airAtmosphere.ts';
+import {buildFoodTrucks} from './foodTrucks.ts';
+import {buildFieldSign,fieldSignSightline} from './fieldSign.ts';
+import {LivingBirdFlock} from '../../../ride-core/src/livingBirds.ts';
 import * as T from 'three';
 import {GLTFLoader} from './compressedGLTFLoader.ts';
 import {batchStaticGroup} from './static-batch.ts';
@@ -101,7 +106,7 @@ export async function buildScenery(scene:T.Scene,world:SceneryWorld,polish=true,
     const corridor=cutCoords(c.x,c.z);
     const waterfrontTrees=inMillikenPark(c.x,c.z)||inValadePark(c.x,c.z);
     for(let i=0;i<(corridor.d>300&&Math.abs(corridor.u)<55?24:waterfrontTrees?12:3);i++){const x=c.x-46+hash(index*23+i)*92,z=c.z-46+hash(index*47+i)*92,cut=cutCoords(x,z);
-      if(!grassTreeSite(x,z)||inWaterfrontPond(x,z)||inValadeInlet(x,z)||inValadeBeach(x,z)||WATERFRONT.buildings.filter(b=>['60624913','105519122','777936143','777936147'].includes(b.id)).some(b=>polygonContains(b.points,x,z)))continue;
+      if(fieldSignSightline(x,z)||!grassTreeSite(x,z)||inWaterfrontPond(x,z)||inValadeInlet(x,z)||inValadeBeach(x,z)||WATERFRONT.buildings.filter(b=>['60624913','105519122','777936143','777936147'].includes(b.id)).some(b=>polygonContains(b.points,x,z)))continue;
       if(x<riverEdge(z)+8||roadAt(x,z)||surfaceAt(x,z)!=='grass'||Math.abs(cut.u)<12||world.solids.some(s=>Math.abs(s.x-x)<s.hx+4&&Math.abs(s.z-z)<s.hz+4))continue;
       if(Math.abs(cut.d-1600)<12&&cut.u<-8&&cut.u>-30)continue; // Keep the field artwork and its sightline clear.
       if(nearestRamp(x,z).distance<5||world.buildingMeshes.some(b=>{b.geometry.computeBoundingBox();const q=b.geometry.boundingBox!;return x>q.min.x-4&&x<q.max.x+4&&z>q.min.z-4&&z<q.max.z+4;}))continue;
@@ -170,6 +175,8 @@ export async function buildScenery(scene:T.Scene,world:SceneryWorld,polish=true,
   const streetFurniture=await timeLoad('street-furniture',()=>buildStreetFurniture(scene,world,groupAt));
   await timeLoad('skyline',()=>buildAtwaterSkyline(scene));
   await timeLoad('milliken',()=>buildMillikenLandmarks(scene,world));
+  const jazz=await timeLoad('jazz-clubs',()=>buildJazzClubs(scene,world));
+  const foodTrucks=await timeLoad('food-trucks',()=>buildFoodTrucks(scene,world));const fieldSign=await timeLoad('field-sign',()=>buildFieldSign(scene,world));const air=new AirAtmosphere(scene);
   const riverfront=buildRiverfrontDetails(scene,world,groupAt);
   const waterfront=await timeLoad('waterfront',()=>buildWaterfront(scene,world,groupAt));
   const valade=await timeLoad('valade',()=>buildValade(scene,world,groupAt,skins));
@@ -184,16 +191,20 @@ export async function buildScenery(scene:T.Scene,world:SceneryWorld,polish=true,
   for(const g of groups)batchStaticGroup(g);
   const grass=polish?await timeLoad('grass',()=>buildGrassField(scene,world,mats.grass)):undefined;
   if(start)await timeLoad('nearby-assets',()=>stream.warm([start],120));world.step();
-  const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)'),mobile=matchMedia('(max-width:700px)');
+  const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)'),mobile=matchMedia('(max-width:700px)'),motionOverride=new URLSearchParams(location.search).has('reducedMotion');
+  const birds=new LivingBirdFlock(scene,[0,650,1400,2200].map(at=>{const p=cutPoint(at);return {x:p.x,y:heightAt(p.x,p.z)+8,z:p.z};}).concat([{x:-140,y:9,z:-1360},{x:-220,y:10,z:-1820}]));
+  void birds.load('/exports/nature/living-crow.glb');
   const trees=treeBatches.reduce((n,b)=>n+b.count,0);
   const allLighting={count:lighting.count+streetFurniture.count,setDusk(value:boolean){lighting.setDusk(value);streetFurniture.setDusk(value);}};
-  return {lighting:allLighting,streetFurniture:streetFurniture.counts,materials:mats,architecture,waterfront,valade,trees,stream,get routeArt(){return {...routeArt,cutMurals};},rails,landmarks,flowers:flowers.count,grassClumps:grass?.count??0,skins:8,update(x:number,z:number,time=0){
+  return {get birds(){return birds.status;},jazz,foodTrucks:foodTrucks.count,lighting:allLighting,streetFurniture:streetFurniture.counts,materials:mats,architecture,waterfront,valade,trees,stream,get routeArt(){return {...routeArt,cutMurals};},rails,landmarks,flowers:flowers.count,grassClumps:grass?.count??0,skins:8,update(x:number,z:number,time=0){
     stream.update([{x,z}],(Number(document.documentElement.dataset.drawDistance)||360)+100);lighting.update(x,z);
-    streetFurniture.update(x,z);
-    riverfront.update(time);
-    treeTime.value=document.documentElement.dataset.renderQuality==='compact'?0:time;
+    streetFurniture.update(x,z);jazz.update(x,z);
+    const reduced=document.documentElement.dataset.reducedMotion==='true'||reducedMotion.matches||motionOverride,low=document.documentElement.dataset.renderQuality==='compact';
+    const waterTime=reduced?0:time;riverfront.update(waterTime);waterfront.update(waterTime);valade.update(waterTime);
+    birds.update(time,{x,z},low||mobile.matches,reduced);air.update(time,{x,y:heightAt(x,z),z},low||mobile.matches,reduced);foodTrucks.update(time,{x,z},low||mobile.matches,reduced);fieldSign.update(x,z,low);
+    treeTime.value=low||reduced?0:time;
     flowers.update(x,z,document.documentElement.dataset.renderQuality==='compact');
-    grass?.update(x,z,time,document.documentElement.dataset.reducedMotion==='true'||reducedMotion.matches,mobile.matches||document.documentElement.dataset.renderQuality==='compact');
+    grass?.update(x,z,time,reduced,mobile.matches||low);
     for(const b of treeBatches){const c=b.group.userData.center;b.update(Math.hypot(c.x-x,c.z-z));}
     let visible=0;for(const g of groups){const c=g.userData.center;g.visible=Math.hypot(c.x-x,c.z-z)<(Number(document.documentElement.dataset.drawDistance)||360);if(g.visible)visible++;}return visible;
   }};

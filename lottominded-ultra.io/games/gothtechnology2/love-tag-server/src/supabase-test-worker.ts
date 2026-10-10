@@ -22,7 +22,7 @@ async function command(link:Link,p:any){
   else if(o.action==='reconnect')room=await client.reconnect(String(o.token));
   else{if(!/^[A-F0-9]{8}$/.test(o.code))throw Error('Invalid room code');const r=await fetch(local+'/v1/royale/'+o.code);if(!r.ok)throw Error('Room not found');room=await client.joinById((await r.json()).roomId,o.options);}
   link.room=room;room.reconnection.enabled=false;
-  for(const type of ['welcome','lobby','snapshot','notice'])room.onMessage(type,data=>send(link,type,data));
+  for(const type of ['welcome','lobby','snapshot','notice','voice-roster','voice-signal'])room.onMessage(type,data=>send(link,type,data));
   room.onError((_code,message)=>send(link,'error',message??'Room error'));room.onLeave(()=>{send(link,'closed',{});if(![...links.values()].some(l=>l!==link&&l.room?.roomId===room.roomId))created.delete(room.roomId);});
   send(link,'joined',{sessionId:room.sessionId,roomId:room.roomId,reconnectionToken:room.reconnectionToken});room.send('hello',{});return;
  }
@@ -30,7 +30,7 @@ async function command(link:Link,p:any){
  if(!link.room)return;
  if(p.type==='leave'){await drop(link,true);return;}
  if(p.type==='inputs'&&Array.isArray(p.data)&&p.data.length<=15){for(const input of p.data)link.room.send('input',input);return;}
- if(['hello','ready','start','rematch','release'].includes(p.type))link.room.send(p.type,p.data);
+ if(['hello','ready','start','rematch','release','voice-state','voice-signal'].includes(p.type))link.room.send(p.type,p.data);
 }
 host.on('broadcast',{event:'hello'},({payload})=>{void (async()=>{
  try{const t=await open(key,payload,'royale-ticket-v1') as Ticket;if(t.expires<Date.now()||Date.now()-t.issued>60000||links.has(t.id)||links.size>=10)return;

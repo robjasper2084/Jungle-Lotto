@@ -4,6 +4,7 @@ import type {RidePose} from '../controller.ts';
 import {weaponSocket,type CombatState} from '../../../../ride-core/src/royale/rules.ts';
 import {EQUIPMENT_SOCKETS as sockets} from '../../../../ride-core/src/royale/combatProfiles.ts';
 import {WeaponView} from './equipment.ts';
+import leanProfile from './leanProfiles.json' with {type:'json'};
 
 /** Base riding pose -> torso -> independent weapon frame -> dominant IK ->
  * hand-mounted weapon -> support IK. No hand ever drives its own IK target. */
@@ -17,9 +18,14 @@ export class CombatRig {
     // A full turn on the top joint folds the jacket/armor around a fixed waist.
     const spine=h.spine.length?h.spine:h.chest?[h.chest]:[];
     const torsoYaw=T.MathUtils.clamp(yaw*.8,-1,1);
-    for(const bone of spine){
+    for(const [index,bone] of spine.entries()){
       const turn=T.MathUtils.clamp(torsoYaw/Math.max(1,spine.length),-.4,.4);
       const world=bone.getWorldQuaternion(new T.Quaternion()).premultiply(new T.Quaternion().setFromAxisAngle(new T.Vector3(0,1,0),turn));
+      // Blender-authored additive combat lean. Keep the hips/feet on Swoop's
+      // base pose, and let the existing authoritative lean blend drive it.
+      const lean=leanProfile.profiles.CombatLeanRight;
+      const axis=new T.Vector3(Math.sin(pose.headingY),0,Math.cos(pose.headingY));
+      world.premultiply(new T.Quaternion().setFromAxisAngle(axis,T.MathUtils.clamp(state.lean,-1,1)*lean.radians*(lean.weights[index]??0)));
       bone.quaternion.copy(bone.parent!.getWorldQuaternion(new T.Quaternion()).invert().multiply(world));bone.updateWorldMatrix(false,true);
     }
     const socket=weaponSocket(pose,h.riderId,yaw,pitch,state.aimBlend,state.lean);

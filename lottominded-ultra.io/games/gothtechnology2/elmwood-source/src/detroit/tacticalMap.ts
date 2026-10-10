@@ -1,3 +1,4 @@
+import {MiniMapControls} from '../../../ride-core/src/miniMapControls.ts';
 import './tacticalHud.css';
 import {raceMapProgress,checkpointScreenPoint,fitRaceCourse,type RaceMapCourse} from './raceMap.ts';
 import {MapLayout} from './mapLayout.ts';
@@ -10,7 +11,7 @@ export class TacticalMap{
  readonly button=document.createElement('button');
  private widget=document.createElement('div');
  readonly dialog=document.createElement('dialog');
- readonly layout:MapLayout;
+ readonly layout:MapLayout;readonly visibility:MiniMapControls;
  private mini=document.createElement('canvas');private full=document.createElement('canvas');
  private caption=document.createElement('span');private note=document.createElement('p');
  private compass=document.createElement('div');private compassTrack=document.createElement('div');private bearing=document.createElement('strong');
@@ -37,7 +38,7 @@ export class TacticalMap{
   this.button.onclick=()=>{pause();this.dialog.showModal();this.zoom=1;this.courseFit=!!this.race;this.draw();close.focus();};close.onclick=()=>this.dialog.close();this.dialog.onclose=()=>focus();
   this.dialog.addEventListener('keydown',e=>e.stopPropagation());this.dialog.addEventListener('pointerdown',e=>e.stopPropagation());
   this.widget.dataset.mapTitle=title;this.layout=new MapLayout(this.widget,title,pause);
-  const customize=document.createElement('button');customize.textContent='Customize mini-map';customize.onclick=()=>{this.dialog.close();this.layout.edit();};footer.append(customize);
+  const customize=document.createElement('button');customize.textContent='Customize mini-map';customize.onclick=()=>{this.dialog.close();this.layout.edit();};footer.append(customize);this.visibility=new MiniMapControls(this.widget,title,footer);
  }
  setMap(lines:MapLine[],labels:{point:MapPoint;text:string}[]=[]){this.lines=lines;this.labels=labels;const points=lines.flatMap(l=>l.points);if(!points.length)return;const xs=points.map(p=>p.x),ys=points.map(p=>p.y),x=Math.min(...xs),y=Math.min(...ys);this.bounds={x:x-25,y:y-25,w:Math.max(...xs)-x+50,h:Math.max(...ys)-y+50};}
  setTrail(segments:MapPoint[][],label:string){this.trail=segments;this.trailLabel=label;this.widget.dataset.trail=label;this.refreshNote();}
@@ -97,7 +98,8 @@ export class TacticalMap{
    }
   }
   if(!mini&&!this.race){c.font='600 13px system-ui';c.textAlign='center';for(const l of this.labels){const p=point(l.point);c.fillStyle='#101f1ccc';const tw=c.measureText(l.text).width;c.fillRect(p.x-tw/2-4,p.y-16,tw+8,20);c.fillStyle='#eee7ce';c.fillText(l.text,p.x,p.y);}}
-  for(const [i,m] of this.markers.entries()){const p=point(m);c.save();c.translate(p.x,p.y);c.rotate(m.heading);c.fillStyle=m.color??(i?'#f5d078':'#ffffff');c.strokeStyle='#04151d';c.lineWidth=2;c.beginPath();c.moveTo(0,-13);c.lineTo(9,10);c.lineTo(0,5);c.lineTo(-9,10);c.closePath();c.fill();c.stroke();c.restore();}
+  for(const [i,m] of this.markers.entries()){const p=point(m);c.save();c.translate(p.x,p.y);if(i===0){c.strokeStyle='#76ffe2';c.lineWidth=3;c.beginPath();c.arc(0,0,17,0,Math.PI*2);c.stroke();}c.rotate(m.heading);c.fillStyle=m.color??(i?'#f5d078':'#ffffff');c.strokeStyle='#04151d';c.lineWidth=2;c.beginPath();c.moveTo(0,-13);c.lineTo(9,10);c.lineTo(0,5);c.lineTo(-9,10);c.closePath();c.fill();c.stroke();c.restore();}
   c.fillStyle='#d9e4d8';c.font='600 11px system-ui';c.textAlign='left';const metres=mini?50:Math.round(view.w/5/50)*50;const px=metres*scale;c.fillRect(12,h-20,px,2);c.fillText(metres+' m',12,h-27);if(!mini)c.fillText('N ↑',w-42,24);
  }
 }
+

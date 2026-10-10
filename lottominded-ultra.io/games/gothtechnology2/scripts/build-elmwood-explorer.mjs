@@ -1,4 +1,6 @@
-import {readFile,writeFile,mkdir,copyFile,readdir} from 'node:fs/promises';
+import {readFile,writeFile,mkdir,readdir,stat} from 'node:fs/promises';
+import {copyFile,cp} from './review-asset-copy.mjs';
+import {ridecoreAliases} from './local-ridecore-alias.mjs';
 import {resolve,dirname,relative} from 'node:path';
 import {createHash} from 'node:crypto';
 import {createRequire} from 'node:module';
@@ -23,7 +25,7 @@ await readableTree(soundtrackRoot);
 for(const file of files)await readableTree(resolve(source,'public',file));
 await readableTree(resolve(source,'node_modules/@digital-static/ridecore/dist'));
 return {name:'elmwood-explorer',entry:'elmwood.html',source,async build(out){
-await build({root:source,configFile:false,base:'./',publicDir:false,resolve:{dedupe:['three','@dimforge/rapier3d-compat']},plugins:[{name:'elmwood-explorer-store',enforce:'pre',
+await build({root:source,configFile:false,base:'./',publicDir:false,resolve:{alias:ridecoreAliases,dedupe:['three','@dimforge/rapier3d-compat']},plugins:[{name:'elmwood-explorer-store',enforce:'pre',
  transform(code,id){id=id.replaceAll('\\','/');if(!id.includes('/src/'))return;
   code=code.replace(/(['"`])\/(elmwood|exports|audio)\//g,'$1./$2/');
   // Keep changed placements, terrain and model bytes from mixing across releases.
@@ -35,7 +37,13 @@ await build({root:source,configFile:false,base:'./',publicDir:false,resolve:{ded
  transformIndexHtml(html){return html.replaceAll('"/elmwood/','"./elmwood/').replace('<a href="/">Return to Detroit ride</a>','<a href="../swoop-detroit/" target="_top">Return to Swoop Detroit</a>').replace('</head>',`<style>${css}</style></head>`).replace('</body>',`<script>${js}</script></body>`);}
 }],build:{outDir:out,emptyOutDir:true,target:'es2022',rollupOptions:{input:resolve(source,'elmwood.html'),output:{banner:'/*! EUC Thrills (c) 2026 VibezZzCoder, MIT. Digital Static adaptation and RideCore. */'}}}});
 const textures=new Set();let total=0;
+// A local rebuild can reuse its own already-extracted immutable textures/models.
+// Live builds always repack from source. Newer source models invalidate the cache.
+const mediaCache=process.env.GAME_REVIEW_ASSET_ROOT?resolve(process.env.GAME_REVIEW_ELMWOOD_CACHE??resolve(process.env.GAME_REVIEW_ASSET_ROOT,'store/public/arcade/elmwood-explorer')):undefined;
+if(mediaCache)try{await cp(resolve(mediaCache,'shared-textures'),resolve(out,'shared-textures'),{recursive:true});}catch(error){if(error.code!=='ENOENT')throw error;}
 for(const file of files){const target=resolve(out,file),input=await readFile(resolve(source,'public',file));await mkdir(dirname(target),{recursive:true});
+ if(process.env.GAME_REVIEW_ASSET_ROOT&&/\.(?:png|jpe?g|webp|hdr|mp3|wav|ogg|mp4|webm|gz)$/i.test(file)){await copyFile(resolve(source,'public',file),target);total+=input.length;continue;}
+ if(mediaCache&&file.endsWith('.glb'))try{const cached=resolve(mediaCache,file),[a,b]=await Promise.all([stat(cached),stat(resolve(source,'public',file))]);if(a.mtimeMs>=b.mtimeMs){await copyFile(cached,target);total+=a.size;continue;}}catch(error){if(error.code!=='ENOENT')throw error;}
  if(!file.endsWith('.glb')){const data=file.endsWith('reference-gallery.html')?Buffer.from(input.toString().replaceAll('"/elmwood/','"./')):input;await writeFile(target,data);total+=data.length;continue;}
  const jsonLength=input.readUInt32LE(12),gltf=JSON.parse(input.toString('utf8',20,20+jsonLength)),bin=input.subarray(28+jsonLength),removed=new Set();
  for(const img of gltf.images??[]){if(img.bufferView===undefined)continue;const view=gltf.bufferViews[img.bufferView],data=bin.subarray(view.byteOffset??0,(view.byteOffset??0)+view.byteLength),hash=createHash('sha256').update(data).digest('hex'),ext=img.mimeType==='image/jpeg'?'jpg':img.mimeType==='image/png'?'png':null;if(!ext)throw Error('Unsupported image');
@@ -56,3 +64,4 @@ if(process.argv[1]&&resolve(process.argv[1])===import.meta.filename){
  if(!process.argv.includes('--preflight'))await buildRelease(resolve(import.meta.dirname,'..'),[plan]);
  else console.log('Elmwood preflight passed');
 }
+

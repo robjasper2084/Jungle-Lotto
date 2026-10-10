@@ -29,7 +29,7 @@ function plant(paw:Paw,target:T.Vector3,pole:T.Vector3,rotation:T.Quaternion){
   paw.foot.quaternion.copy(paw.foot.parent!.getWorldQuaternion(q()).invert().multiply(rotation));paw.foot.updateWorldMatrix(false,true);
 }
 export class CompanionView {
-  private commandActions:T.AnimationAction[]=[];
+  private commandActions:T.AnimationAction[]=[];private powerActions=new Map<string,T.AnimationAction>();
   root=new T.Group();ground=new T.Group();model:T.Object3D;mixer:T.AnimationMixer;gait='idle';
   paws:Paw[]=[];private blendedSpeed=0;private lastTime=-1;private lastPosition=v();private sample=createGroundSample();
   private terrain?:TerrainSampler;
@@ -63,7 +63,7 @@ export class CompanionView {
     const yaw=Math.atan2(hero.x-p.x,hero.z-p.z)-p.heading;
     head.rotateY(T.MathUtils.clamp(Math.atan2(Math.sin(yaw),Math.cos(yaw)),-.4,.4)*.45);
   }
-  apply(p:DogPose){
+  apply(p:DogPose&{power?:'pounce'|'radar'}){
     const lie=T.MathUtils.clamp(p.lie??0,0,1),sit=T.MathUtils.clamp(p.sit??0,0,1-lie),commanded=sit+lie;
     this.root.position.set(p.x,p.y,p.z);this.root.rotation.y=p.heading;
     // Quaternion crossfades cut across the tucked haunch arc. Give mixed poses
@@ -83,6 +83,7 @@ export class CompanionView {
     // The mixer skips unchanged properties. Restore its previous output before
     // applying IK so repeated paused frames cannot accumulate bone corrections.
     for(const a of this.animated){a.bone.position.copy(a.position);a.bone.quaternion.copy(a.rotation);a.bone.scale.copy(a.scale);}
+    for(const [key,action]of this.powerActions){action.setEffectiveWeight(p.power===key?.65:0);action.time=(key==='pounce'?(p.jumpProgress??0):(p.time%1))*action.getClip().duration;}
     this.mixer.update(0);
     for(const a of this.animated){a.position.copy(a.bone.position);a.rotation.copy(a.bone.quaternion);a.scale.copy(a.bone.scale);}
     const balance=dogBalance(this.blendedSpeed,p.phase,p.turnRate||0,p.time,p.landing??0,p.lookYaw??0);
@@ -131,3 +132,4 @@ export class CompanionView {
     this.root.updateMatrixWorld(true);
   }
 }
+

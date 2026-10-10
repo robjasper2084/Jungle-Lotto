@@ -17,5 +17,5 @@ export async function loadAssetQueue<T, R>(items: readonly T[], limit: number, l
 export function assetConcurrency(): number {
   if (typeof navigator === 'undefined') return 6;
   const device = navigator as Navigator & { deviceMemory?: number };
-  return /Android|iPhone|iPad|iPod/i.test(device.userAgent) || (device.deviceMemory ?? 8) <= 4 ? 3 : 6;
+  return /Android|iPhone|iPad|iPod/i.test(device.userAgent) || device.maxTouchPoints>1&&/Macintosh/.test(device.userAgent) || (device.deviceMemory ?? 8) <= 4 ? 3 : 6;
 }

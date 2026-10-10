@@ -48,8 +48,9 @@ test('a joined player can overlap the pack without stopping its riders; unjoined
  const rider=ride.riders[0],start=rider.s;
  for(let tick=0;tick<180;tick++)ride.step(1/60,{x:rider.x,y:0,z:rider.z+.2,speed:3});
  assert.ok(rider.s>start+4);assert.equal(rider.blocked,false);assert.ok(rider.speed>3);
- ride.leave();for(let tick=0;tick<60;tick++)ride.step(1/60,{x:rider.x,y:0,z:rider.z+.2,speed:0});
- assert.equal(rider.blocked,true);assert.equal(rider.speed,0);
+ ride.leave();const unjoined={x:rider.x,y:0,z:rider.z+1.5,speed:0};
+ for(let tick=0;tick<120;tick++){ride.step(1/60,unjoined);assert.ok(Math.hypot(rider.x-unjoined.x,rider.z-unjoined.z)>1.0,'unjoined player remains solid during the passing manoeuvre');}
+ assert.ok(rider.s<unjoined.z-1||Math.abs(rider.x-unjoined.x)>1,'stop or take a clear side lane');
 });
 test('mapped player passes through a joined companion using the actual rider controller',async()=>{
  const map=await new DetroitWorld().init(),world=new GeoTerrain(map),at=routePosition(850),ahead=routePosition(855);let joined=false;
@@ -75,3 +76,4 @@ test('only some nearby moving cyclists can issue invitations, with elevation and
  assert.equal(bikeChallenger(p,[bike('traffic-3',0,30),{...bike('community-0'),y:4}]),undefined);
  assert.equal(bikeChallenger(p,[bike('traffic-3',0,20),bike('community-2',0,4)])?.id,'community-2');
 });
+

@@ -1,2 +1,2 @@
 // Generated balance hash for room compatibility.
-export const COMBAT_HASH='1d6d1aa2f546ae983aae5680dbfc70b34085e72c25e452e4f68644c832f04e5b';
+export const COMBAT_HASH='98d3134fae34ab6a69bad56abb894dc792640ca28517972738e598b22ab298db';

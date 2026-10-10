@@ -1,3 +1,5 @@
+import {JAZZ_CLUBS,jazzGrade} from './jazzSites.ts';
+import {cityWalkRoutes,seedCityPeople,freshCrowdSeed,crowdRandom} from './cityWalkRoutes.ts';
 import {inHarbor,harborTerrainDetail} from './harbor.ts';
 import {inValadeInlet,inValadePark,valadeTerrainDetail} from './valadeSite.ts';
 import {HARBOR_GANGWAY} from './harborLayout.ts';
@@ -107,7 +109,7 @@ export function heightAt(x:number,z:number){
   // Campbell Terrace opens onto the path instead of sitting on the generic bank.
   if(c.u>3&&c.u<17&&Math.abs(c.d-930.563)<14){const f=(1-clamp((Math.abs(c.d-930.563)-9)/5,0,1))*(1-clamp((c.u-14)/3,0,1));h=h*(1-f)+floor*f;}
   const ramp=nearestRamp(x,z),blend=1-clamp((ramp.distance-ramp.width/2)/3,0,1);
-  return pennyGrade(x,z,lottoGrade(x,z,studioGrade(x,z,h*(1-blend)+ramp.height*blend)));
+  return jazzGrade(x,z,pennyGrade(x,z,lottoGrade(x,z,studioGrade(x,z,h*(1-blend)+ramp.height*blend))));
 }
 export function surfaceAt(x:number,z:number):SurfaceId{
   if(studioLot(x,z))return 'pavement';
@@ -169,7 +171,7 @@ export function trafficBounds(kind:TrafficState['kind']){
 export function trafficAt(id:number,time:number):TrafficState{
   const moving:TrafficState['kind'][]=['skater','segway','pedestrian','cyclist','jogger','scooter','jogger','pedestrian','scooter','pedestrian'];
   const kind=id%11===0?'barrier':id%7===0?'cone':moving[id%moving.length];
-  const speed=kind==='scooter'?4.2:kind==='cyclist'?3.4:kind==='segway'?2.6:kind==='skater'?2.9:kind==='jogger'?(id%3===0?3.8:2.65):kind==='pedestrian'?1.1:0;
+  const speed=kind==='scooter'?4.2:kind==='cyclist'?8.2:kind==='segway'?2.6:kind==='skater'?2.9:kind==='jogger'?(id%3===0?3.8:2.65):kind==='pedestrian'?1.1:0;
   const dir=id%2?1:-1,home=110+id*(CUT_TRAFFIC.length-220)/61;
   // One persistent direction per person. Complete the route, exit beyond its visible
   // end, then enter at the opposite end; never ping-pong inside a short patrol patch.
@@ -191,17 +193,20 @@ export class DetroitWorld implements TerrainSampler{
   physics!:RAPIER.World;
   chunks=terrainChunks();solids=worldSolids();
   geoMeshes=geospatialMeshes(heightAt);
-  buildingMeshes=waterfrontBuildings(CITY.buildings).filter(b=>![MACK_STUDIO.osmId,LOTTO_SHOP.osmId,PENNY_SHOP.osmId,ARETHA.osmId,'105519122','777936147'].includes(b.id)&&b.points.some(p=>this.chunks.some(c=>Math.abs(c.x-p[0])<50&&Math.abs(c.z-p[1])<50))).map(b=>({data:b,geometry:buildingEnvelope(b,heightAt)}));
+  buildingMeshes=waterfrontBuildings(CITY.buildings).filter(b=>![MACK_STUDIO.osmId,LOTTO_SHOP.osmId,PENNY_SHOP.osmId,ARETHA.osmId,'105519122','777936147',...JAZZ_CLUBS.map(s=>s.osmId)].includes(b.id)&&b.points.some(p=>this.chunks.some(c=>Math.abs(c.x-p[0])<50&&Math.abs(c.z-p[1])<50))).map(b=>({data:b,geometry:buildingEnvelope(b,heightAt)}));
   metadata=new Map<number,{hx:number;hz:number}>();
   rideIntent={speed:0,heading:0};rejectedEncounters=0;
   private recoverySpace:{position:Vec3;radius:number;height:number;remaining:number}|undefined;
   courseFeatures:CourseFeature[]=[];hazards:TrafficState[]=[];hazardSeed=0;crowdActors:()=>NavigationObstacle[]=()=>[];
-  private crowd:CrowdAgent[]=[];private crowdTime=-1;
+  private crowd:CrowdAgent[]=[];private crowdTime=-1;private crowdSeed=0;private cityCrowds:ReturnType<typeof seedCityPeople>=[];
+  randomizePeople(seed=freshCrowdSeed()){this.crowdSeed=seed;this.crowd=[];this.cityCrowds=[];this.crowdTime=-1;}
+  get peopleState(){return {seed:this.crowdSeed,routes:this.cityCrowds.map(g=>({name:g.name,count:g.agents.length})),positions:[...this.crowd,...this.cityCrowds.flatMap(g=>g.agents)].filter(a=>a.pace>0).map(a=>({id:a.id,x:a.x,z:a.z,speed:a.motionSpeed??a.speed}))};}
+  private crowdAgent(id:number){return this.crowd[id]??this.cityCrowds.flatMap(g=>g.agents).find(a=>a.id==='traffic-'+id);}
   protected trafficFalls=new Map<number,{fall:TrafficFall;entry:TrafficState;pace:number}>();
   protected fallClock=-1;
   receiveTrafficImpact(id:number,impact:ActorImpact){
     const entry=this.traffic.find(t=>t.id===id);if(!entry||entry.kind==='cone'||entry.kind==='barrier'||this.trafficFalls.has(id)||impact.speed<2.2)return;
-    const agent=this.crowd[id];this.trafficFalls.set(id,{fall:new TrafficFall(entry,impact),entry:{...entry},pace:agent?.pace??entry.speed});
+    const agent=this.crowdAgent(id);this.trafficFalls.set(id,{fall:new TrafficFall(entry,impact),entry:{...entry},pace:agent?.pace??entry.speed});
     if(agent){agent.incapacitated=true;agent.speed=agent.motionSpeed=0;}
   }
   protected advanceTrafficFalls(time:number,px:number,pz:number){
@@ -215,9 +220,9 @@ export class DetroitWorld implements TerrainSampler{
         return this.physics.castRay(new RAPIER.Ray(origin,{x:direction.x/n,y:direction.y/n,z:direction.z/n}),length,true,undefined,0xffff0006,this.trafficBodies.get(id))?.timeOfImpact??null;
       }};
       let remaining=elapsed;while(remaining>1e-8){const dt=Math.min(1/30,remaining);f.step(dt,terrain,canStand);remaining-=dt;}
-      const a=this.crowd[id];if(a){const at=f.position;a.x=at.x;a.y=at.y;a.z=at.z;a.radius=.85;}
+      const a=this.crowdAgent(id);if(a){const at=f.position;a.x=at.x;a.y=at.y;a.z=at.z;a.radius=.85;}
       if(f.done){
-        if(a){const at=f.position,route=cutCoords(at.x,at.z);a.distance=route.d;a.lane=route.u;a.x=at.x;a.z=at.z;a.y=this.sampleGround(at.x,at.z,{height:at.y,normal:{x:0,y:1,z:0},surface:'pavement',offCourse:false},at.y).height;a.incapacitated=false;a.speed=a.motionSpeed=0;a.pace=state.pace;a.radius=Math.hypot(trafficBounds(state.entry.kind).hx,trafficBounds(state.entry.kind).hz);a.passing=undefined;}
+        if(a){const at=f.position,group=this.cityCrowds.find(g=>g.agents.includes(a));if(group){let best=a.distance,error=Infinity;for(let delta=-8;delta<=8;delta+=.2){const q=group.path.point(a.distance+delta,a.lane),d=Math.hypot(q.x-at.x,q.z-at.z);if(d<error){error=d;best=a.distance+delta;}}a.distance=best;}else{const route=cutCoords(at.x,at.z);a.distance=route.d;a.lane=route.u;}a.x=at.x;a.z=at.z;a.y=this.sampleGround(at.x,at.z,{height:at.y,normal:{x:0,y:1,z:0},surface:'pavement',offCourse:false},at.y).height;a.incapacitated=false;a.speed=a.motionSpeed=0;a.pace=state.pace;a.radius=trafficNavigationRadius(state.entry.kind);a.passing=undefined;}
         this.onTrafficRecovered(id,f.position);this.trafficFalls.delete(id);
       }
     }
@@ -327,12 +332,14 @@ export class DetroitWorld implements TerrainSampler{
   updateTraffic(time:number,px:number,pz:number){
     this.advanceTrafficFalls(time,px,pz);
     this.traffic=[];const active=new Set<number>();
-    if(!this.crowd.length||time<this.crowdTime){this.crowd=Array.from({length:62},(_,id)=>{const t=trafficAt(id,time),b=trafficBounds(t.kind),width=cutWidth(clamp(t.routeDistance!,0,CUT_METRES));return {id:'traffic-'+id,kind:t.kind,distance:t.routeDistance!,lane:t.speed?t.direction!*Math.min(1.65,width/2-.65):width/2+1.2,direction:t.direction!,pace:t.speed,speed:t.speed,radius:trafficNavigationRadius(t.kind),height:b.hy*2,x:t.x,y:t.y,z:t.z,heading:t.heading};});this.crowdTime=time;}
+    if(!this.crowd.length||time<this.crowdTime){this.crowd=Array.from({length:62},(_,id)=>{const t=trafficAt(id,time+(this.crowdSeed?crowdRandom(this.crowdSeed+id)()*2000:0)),b=trafficBounds(t.kind),width=cutWidth(clamp(t.routeDistance!,0,CUT_METRES));return {id:'traffic-'+id,kind:t.kind,distance:t.routeDistance!,lane:t.speed?t.direction!*Math.min(1.65,width/2-.65):width/2+1.2,direction:t.direction!,pace:t.speed,speed:t.speed,radius:trafficNavigationRadius(t.kind),height:b.hy*2,x:t.x,y:t.y,z:t.z,heading:t.heading};});this.crowdTime=time;}
     const trafficHandles=new Set([...this.trafficBodies.values()].map(c=>c.handle));const visitorShape=new RAPIER.Cuboid(.3,.65,.3);
     const crowdGround={height:0,normal:{x:0,y:1,z:0},surface:'pavement' as const,offCourse:false},footing=(x:number,z:number)=>this.sampleGround(x,z,crowdGround,heightAt(x,z)).height;
+    const clear=(x:number,y:number,z:number)=>Number.isFinite(y)&&!this.physics.intersectionWithShape({x,y:y+.85,z},{x:0,y:0,z:0,w:1},visitorShape,undefined,0xffff0006,undefined,undefined,c=>!trafficHandles.has(c.handle));
+    if(this.crowdSeed&&!this.cityCrowds.length)this.cityCrowds=seedCityPeople(cityWalkRoutes(),this.crowdSeed,footing,clear);
     let remaining=Math.max(0,Math.min(2,time-this.crowdTime));this.crowdTime=time;
-    while(remaining>1e-8){const step=Math.min(1/30,remaining);remaining-=step;advanceCrowd(this.crowd,step,{length:CUT_TRAFFIC.length,runout:TRAFFIC_RUNOUT,offsetSign:-1,point:(d,u)=>{const p=trafficPoint(d,u);return {...p,y:footing(p.x,p.z)};},width:d=>cutWidth(clamp(d,0,CUT_METRES))+1.6,walkable:(x,y,z)=>Math.abs(heightAt(x+.2,z)-heightAt(x-.2,z))<.2&&Math.abs(heightAt(x,z+.2)-heightAt(x,z-.2))<.2&&Number.isFinite(y)&&!this.physics.intersectionWithShape({x,y:y+.85,z},{x:0,y:0,z:0,w:1},visitorShape,undefined,0xffff0006,undefined,undefined,c=>!trafficHandles.has(c.handle))},[{id:'player',x:px,y:footing(px,pz),z:pz,radius:.52,height:2.2,kind:'rider',vx:Math.sin(this.rideIntent.heading)*this.rideIntent.speed,vz:Math.cos(this.rideIntent.heading)*this.rideIntent.speed},...this.hazards.map(trafficObstacle),...this.crowdActors()]);}
-    const candidates:TrafficState[]=this.crowd.map<TrafficState>((agent,id)=>this.applyTrafficFall({...trafficAt(id,time),x:agent.x,y:agent.y,z:agent.z,heading:agent.heading,speed:agent.motionSpeed??agent.speed,routeDistance:agent.distance})).concat(this.hazards);
+    while(remaining>1e-8){const step=Math.min(1/30,remaining);remaining-=step;for(const g of this.cityCrowds){g.path.walkable=(x,y,z)=>Math.hypot(x-px,z-pz)>160||clear(x,y,z);advanceCrowd(g.agents,step,g.path,[{id:'player',x:px,y:footing(px,pz),z:pz,radius:.52,height:2.2,kind:'rider',vx:Math.sin(this.rideIntent.heading)*this.rideIntent.speed,vz:Math.cos(this.rideIntent.heading)*this.rideIntent.speed},...this.crowdActors()]);}advanceCrowd(this.crowd,step,{length:CUT_TRAFFIC.length,runout:TRAFFIC_RUNOUT,offsetSign:-1,point:(d,u)=>{const p=trafficPoint(d,u);return {...p,y:footing(p.x,p.z)};},width:d=>cutWidth(clamp(d,0,CUT_METRES))+1.6,walkable:(x,y,z)=>Math.abs(heightAt(x+.2,z)-heightAt(x-.2,z))<.2&&Math.abs(heightAt(x,z+.2)-heightAt(x,z-.2))<.2&&Number.isFinite(y)&&!this.physics.intersectionWithShape({x,y:y+.85,z},{x:0,y:0,z:0,w:1},visitorShape,undefined,0xffff0006,undefined,undefined,c=>!trafficHandles.has(c.handle))},[{id:'player',x:px,y:footing(px,pz),z:pz,radius:.52,height:2.2,kind:'rider',vx:Math.sin(this.rideIntent.heading)*this.rideIntent.speed,vz:Math.cos(this.rideIntent.heading)*this.rideIntent.speed},...this.hazards.map(trafficObstacle),...this.crowdActors()]);}
+    const candidates:TrafficState[]=this.crowd.map<TrafficState>((agent,id)=>this.applyTrafficFall({...trafficAt(id,time),x:agent.x,y:agent.y,z:agent.z,heading:agent.heading,speed:agent.motionSpeed??agent.speed,routeDistance:agent.distance})).concat(this.cityCrowds.flatMap(g=>g.agents.map(a=>this.applyTrafficFall({id:Number(a.id.slice(8)),kind:a.kind as TrafficState['kind'],x:a.x,y:a.y,z:a.z,heading:a.heading,speed:a.motionSpeed??a.speed,routeDistance:a.distance,direction:a.direction}))),this.hazards);
     for(const t of candidates){const id=t.id;if(id<1000&&Math.hypot(t.x-px,t.z-pz)>115)continue;
       if(!this.trafficMayActivate(t))continue;
       if(!this.trafficBodies.has(id)&&Math.abs(this.rideIntent.speed)>1){
@@ -358,3 +365,4 @@ export const RENCEN_TOWERS=[
   {x:114,z:1,r:19,h:159},{x:114,z:-97,r:19,h:159},
   {x:114,z:-180,r:18,h:103},{x:114,z:-235,r:18,h:103},
 ];
+

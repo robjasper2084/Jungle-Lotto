@@ -1,3 +1,4 @@
+import {interpolateFoot,footFields,footState,stepOnFoot} from '../../../ride-core/src/onFoot.ts';
 import {actorContact,isCharacter} from './actorAvoidance.ts';
 import {FallMotion,getUpPose} from './fallMotion.ts';
 import {safeRecovery,dryMountedSupport,DEFAULT_MOUNTED_VOLUME,type MountedVolume,type RideSpawn} from './recovery.ts';
@@ -10,8 +11,9 @@ import type {TerrainSampler,Vec3,ActorImpact,NavigationObstacle} from './terrain
 import {RIDE_TUNING as tune,clamp,damp,angle,spring,advanceSpring,advanceDrive,type RideTuning} from './rideDynamics.ts';
 
 export const NEUTRAL_ACTIONS={throttle:0,steer:0,crouch:false,hop:false,hopHeld:false,reset:false,trick:0};
-export type RideActions=typeof NEUTRAL_ACTIONS & {seated?:boolean;eyeControl?:boolean};
+export type RideActions=typeof NEUTRAL_ACTIONS & {seated?:boolean;eyeControl?:boolean;dismount?:boolean;run?:boolean};
 export function createPose(){return {
+  ...footFields(),
   seated:0,stopFoot:0,stopFootX:0,stopFootY:0,stopFootZ:0,warningLevel:0,beepPulse:0,scrape:0,scrapeSide:0,scrapeX:0,scrapeY:0,scrapeZ:0,scrapeHard:0,
   trickFoot:0,x:0,y:0,z:0,headingY:0,speed:0,wheelSpin:0,groundPitch:0,groundRoll:0,
   rollAngle:0,riderRoll:0,riderPitch:0,wheelPitch:0,suspensionOffset:0,
@@ -29,11 +31,12 @@ export function createPose(){return {
 };}
 export type RidePose=ReturnType<typeof createPose>;
 export function copyPose(from:RidePose,to:RidePose){Object.assign(to,from);}
-export function lerpPose(a:RidePose,b:RidePose,t:number,out:RidePose){const f=clamp(t,0,1);for(const key of Object.keys(a) as (keyof RidePose)[])out[key]=a[key]+(b[key]-a[key])*f;}
+export function lerpPose(a:RidePose,b:RidePose,t:number,out:RidePose){const f=clamp(t,0,1);for(const key of Object.keys(a) as (keyof RidePose)[])out[key]=a[key]+(b[key]-a[key])*f;interpolateFoot(a,b,f,out);}
 type Spawn={position:Vec3;headingY:number};
 
 /** Original Motion 4: jerk-limited motor, bank-led steering and articulated body at 120 Hz. */
 export class RideController {
+  private walking=footState();
   terrain:TerrainSampler;
   private tuning:RideTuning={...tune};
   setHandling(profile:Partial<RideTuning>){Object.assign(this.tuning,profile);}
@@ -59,6 +62,7 @@ export class RideController {
   lastLandingImpact=0;lastLandingQuality='clean';lastHopCharge=0;
   constructor(terrain:TerrainSampler,options?:{spawn:Spawn}){this.terrain=terrain;this.reset(options?.spawn);}
   reset(spawn:Spawn=this.spawn){
+    this.walking=footState();
     this.spawn={position:{...spawn.position},headingY:spawn.headingY};this.safe=this.spawn;
     this.pose=createPose();Object.assign(this.pose,this.spawn.position,{headingY:spawn.headingY});
     this.pose.y=this.terrain.sampleGround(this.pose.x,this.pose.z,this.ground,this.pose.y).height;
@@ -99,6 +103,9 @@ export class RideController {
     const tune=this.tuning;
     if(!Number.isFinite(dt)||dt<=0)return;dt=Math.min(dt,1/30);this.touchedDown=false;
     if(input.reset){this.recover();return;}const p=this.pose;
+    if(stepOnFoot(this.walking,p,this.terrain,dt,input,this.crashed)){
+      this.vx=this.vz=this.velocityY=this.motor=this.acceleration=0;this.tricks.cancel();this.grounded=p.airHeight<.01;return;
+    }
     if(this.recoveryPose){
       this.recoveryAge=Math.max(0,this.recoveryAge-dt);getUpPose(this.recoveryPose,1-this.recoveryAge/this.recoveryDuration,p,true);
       if(this.recoveryAge===0){const {x,y,z,headingY,wheelSpin}=p;Object.assign(p,createPose(),{x,y,z,headingY,wheelSpin});this.recoveryPose=undefined;}

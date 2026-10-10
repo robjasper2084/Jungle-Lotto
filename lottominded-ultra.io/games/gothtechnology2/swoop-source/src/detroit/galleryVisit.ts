@@ -39,7 +39,11 @@ export class GalleryVisit {
   data.scene.traverse(o=>{if(/^(Roof|Crown|Gothic Gothic|Forecourt|Entry canopy|Canopy|Bronze facade fin|Icosphere|Facade vertical joint)/.test(o.name.replace(/_/g,' ')))o.visible=false;});
   if(!this.store)await addPhotographyExhibition(this.building,'serengeti');
   this.visitors=new RetailVisitors(this.store);this.building.add(this.visitors.root);await this.visitors.load();this.panel.dataset.visitorCount=String(this.visitors.count);
-  if(this.store){for(const x of [-5,0,5]){const light=new T.PointLight(0xffe6c9,38,11,2);light.position.set(x,3.8,-1.5);this.building.add(light);}const response=await fetch('/exports/boutique/catalog.json');if(!response.ok)throw Error('Store catalog unavailable');const products=await response.json() as {title:string;image:string;url:string;price:number;pending:boolean;concept:boolean}[];
+  if(this.store){
+   const innovation=(await new GLTFLoader().loadAsync('/exports/boutique/innovation-floor-hoodie-display.glb')).scene;
+   innovation.name='Innovation Floor · navy hoodie';innovation.position.set(3.1,0,-5.54);innovation.traverse(o=>{if(o instanceof T.Mesh)o.castShadow=o.receiveShadow=true;});this.building.add(innovation);
+   this.panel.dataset.innovationHoodie='navy / supplied Detroit skyline';
+   for(const x of [-5,0,5]){const light=new T.PointLight(0xffe6c9,38,11,2);light.position.set(x,3.8,-1.5);this.building.add(light);}const response=await fetch('/exports/boutique/catalog.json');if(!response.ok)throw Error('Store catalog unavailable');const products=await response.json() as {title:string;image:string;url:string;price:number;pending:boolean;concept:boolean}[];
    const note=document.createElement('p');note.textContent='Official catalog concepts. Availability and checkout are managed by the storefront; concept items cannot be ordered.';this.catalog.append(note);
    for(const p of products){const a=document.createElement('a');a.href=p.url;a.target='_blank';a.rel='noopener noreferrer';const img=document.createElement('img');img.src='/exports/boutique/'+p.image;img.alt=p.title;img.loading='lazy';const label=document.createElement('strong');label.textContent=p.title;const status=document.createElement('span');status.textContent=(p.pending?'Price pending':new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(p.price))+(p.concept?' · Concept preview':'');a.append(img,label,status);this.catalog.append(a);}
   }

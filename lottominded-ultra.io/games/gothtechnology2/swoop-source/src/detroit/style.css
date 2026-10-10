@@ -145,3 +145,7 @@ body.visitingGallery > :not(canvas):not(:is(#galleryArrival,#boutiqueArrival)){v
 @media(max-width:650px){#challengeHUD{padding:10px;max-width:calc(100vw - 28px)}#challengeHUD strong{font-size:13px}#challengeHUD small{display:none}#challengeHint{font-size:11px;max-height:2.8em;overflow:auto}#challengeProgress{font-size:12px;line-height:1.5}#parkCoach{max-width:220px;font-size:11px;top:74px}.boutiqueCatalog[open] a{width:calc(50% - 12px)}}
 
 .graphicsSettings{min-width:0;margin:12px 0;padding:12px;border:1px solid #5c8275;border-radius:10px}.graphicsSettings legend{font-weight:700;font-size:15px}.graphicsSettings p{font-size:12px;line-height:1.5}.graphicsSettings label{display:block;margin:10px 0}.graphicsSettings select{display:block;width:100%;min-height:44px;margin-top:5px}.graphicsAdvanced summary{cursor:pointer;min-height:44px;padding:12px 0;font-weight:700}.graphicsAdvanced button[hidden]{display:none}
+/* Ride options opens only by request, on every screen size. */
+body.playing #ridingOptions:not(.expanded){display:none!important}
+body.playing #optionsToggle{display:block!important;position:fixed;bottom:calc(10px + env(safe-area-inset-bottom));left:50%;right:auto;transform:translateX(-50%);min-height:44px;z-index:8}
+body.playing #ridingOptions.expanded{display:flex;right:max(12px,env(safe-area-inset-right));bottom:calc(72px + env(safe-area-inset-bottom));top:auto;max-height:58dvh;overflow:auto;background:#123d35c4;z-index:9}

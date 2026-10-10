@@ -114,7 +114,7 @@ export class RacePilot {
    const bend=Math.abs(Math.atan2(Math.sin(after.heading-ahead.heading),Math.cos(after.heading-ahead.heading)))/10;
    if(bend>.002){const cornerSpeed=Math.sqrt(2.5/bend);curvePace=Math.min(curvePace,Math.sqrt(cornerSpeed*cornerSpeed+2*4*Math.max(0,distance-5)));}
   }
-  if(this.cycling&&!this.electric)pace=Math.min(pace,this.difficulty==='expert'?7.9:this.difficulty==='club'?7.2:5.8);
+  if(this.cycling&&!this.electric)pace=Math.min(pace,this.difficulty==='expert'?11.4:this.difficulty==='club'?10:8);
   pace=Math.min(pace,curvePace)*clamp(1-Math.abs(error)*.5,.4,1);
   const tuck=p.speed>12&&Math.abs(error)<.16&&this.sim.snapshot().grounded;
   // Feed-forward drag compensation lets the pilot reach its target instead of

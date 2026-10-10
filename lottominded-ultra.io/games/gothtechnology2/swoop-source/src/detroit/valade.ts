@@ -1,4 +1,5 @@
 import type {SceneryWorld} from './sceneryWorld.ts';
+import {waterSurface,waterDepths} from './waterSurface.ts';
 import * as T from 'three';
 import {GLTFLoader} from './compressedGLTFLoader.ts';
 import {VALADE,inValadeBeach} from './valadeSite.ts';
@@ -36,7 +37,7 @@ export async function buildValade(_scene:T.Scene,world:SceneryWorld,groupAt:(x:n
  for(const [x,z] of [[-165,-1839],[-177,-1840],[-157,-1891],[-169,-1891]]){place(5,x,z,.07);world.addBox({x,y:.5,z,hx:1,hy:.43,hz:.86,kind:'picnic table'});}
  place(6,-174,-1844,.05);world.addBox({x:-174,y:.58,z:-1844,hx:.55,hy:.53,hz:.27,kind:'barbecue'});
  // Inlet water and shore wall use the recorded shoreline, including its recess.
- polygon(VALADE.inlet,-.30,new T.MeshStandardMaterial({color:'#285d68',roughness:.3,metalness:.35}),'Valade water inlet');
+ const waterTime={value:0},inlet=polygon(VALADE.inlet,-.30,waterSurface(waterTime),'Valade water inlet');waterDepths(inlet.geometry,()=>2);
  for(let i=1;i<VALADE.inlet.length;i++){
   const a=VALADE.inlet[i-1],b=VALADE.inlet[i],l=Math.hypot(b[0]-a[0],b[1]-a[1]),angle=Math.atan2(b[0]-a[0],b[1]-a[1]);
   box((a[0]+b[0])/2,-.45,(a[1]+b[1])/2,.20,1.1,l,skins.concrete,angle);
@@ -56,5 +57,5 @@ export async function buildValade(_scene:T.Scene,world:SceneryWorld,groupAt:(x:n
    world.addBox({x:(a[0]+b[0])/2+nx*off,y:(ya+yb)/2+.55,z:(a[1]+b[1])/2+nz*off,hx:.07,hy:.55,hz:l/2,yaw:angle,kind:'Valade bridge rail'});
   }
  }
- return {name:'Robert C. Valade Park',models:names.length,chairs,inlet:true,mappedPaths:VALADE.paths.length,source:VALADE.source};
+ return {update:(seconds:number)=>{waterTime.value=seconds;},name:'Robert C. Valade Park',models:names.length,chairs,inlet:true,mappedPaths:VALADE.paths.length,source:VALADE.source};
 }

@@ -1,15 +1,16 @@
+import {shareCityData} from './share-city-data.mjs';
 import {optimizePagesImages} from './optimize-pages-images.mjs';
 import {shareRideTextures} from './share-ride-textures.mjs';
 import {compressRideModels} from './compress-ride-models.mjs';
 import {shareRideVehicles} from './share-ride-vehicles.mjs';
 import {shareRidingMedia} from './share-riding-media.mjs';
+import {losslessRidingTextures} from './lossless-riding-textures.mjs';
+import {shareUnityStage} from './share-unity-stage.mjs';
 import { execFileSync } from "node:child_process";
 import { copyFile, mkdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { basename, dirname, extname, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { gothtechnologyPath, requiredStoreFiles, readGothtechnologyBuild, copyGothtechnologyBuild, shareShadowOpsAssets } from "./gothtechnology-pages.mjs";
-import { copyGameBuilds, gameBuilds, readGameBuilds, requiredGameRoutes } from "./game-pages.mjs";
-import { MANIFEST as undergroundAssets } from "../lottominded-ultra.io/games/robot-rahbe-underground/src/render.js";
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const outputRoot = resolve(repoRoot, "_site");
@@ -32,18 +33,12 @@ const requiredRoutes = [
   "lottominded-ultra.io/index.html",
   "lottominded-ultra.io/features-app.html",
   "lottominded-ultra.io/games/lottomind-trivia/index.html",
-  "lottominded-ultra.io/games/robot-rahbe-underground/index.html",
-  "lottominded-ultra.io/games/robot-rahbe-underground/src/mobile-controls.js",
-  "lottominded-ultra.io/games/robot-rahbe-underground/assets/vendor/phaser.min.js",
-  "lottominded-ultra.io/games/robot-rahbe-underground/assets/environment/detroit/gm-renaissance-title.webp",
-  ...Object.values(undergroundAssets).map(file => "lottominded-ultra.io/games/robot-rahbe-underground/" + file),
   "lotto mind refined/index.html",
   "lotto mind refined/companion/index.html",
   "lotto mind refined/brand-connection.js",
   "assets/js/lottomind-merch-prices.js",
   "lottomind-stem-studio/index.html",
   ...requiredStoreFiles.map(file => gothtechnologyPath + "/" + file),
-  ...requiredGameRoutes,
 ];
 const referenceTextExtensions = new Set([
   ".cjs",
@@ -180,7 +175,7 @@ async function planArtifact(files, referenceFiles = files) {
       referenceCorpus.includes(token),
     );
 
-    if (isSmall || isReferenced || requiredRoutes.includes(file)) {
+    if (isSmall || isReferenced) {
       includedFiles.push(file);
       continue;
     }
@@ -208,12 +203,8 @@ const publicFiles = git(["ls-files", "-z", "--cached", "--others", "--exclude-st
   .filter(isPublicFile);
 // This game's production subtree comes only from the compiled Astro build.
 // Retain its source in the reference scan so shared arcade media stays included.
-const compiledPrefixes = [gothtechnologyPath, ...gameBuilds.map(({ path }) => path)];
-const sourceFiles = publicFiles.filter(file =>
-  !compiledPrefixes.some((prefix) => file.startsWith(prefix + "/")),
-);
+const sourceFiles = publicFiles.filter(file => !file.startsWith(gothtechnologyPath + "/"));
 const storeBuild = await readGothtechnologyBuild(repoRoot);
-const gameBuild = await readGameBuilds(repoRoot);
 
 if (!sourceFiles.length) {
   throw new Error("No public source files were found for the Pages artifact.");
@@ -226,13 +217,16 @@ await mkdir(outputRoot, { recursive: true });
 
 const publicBytes = await copyInBatches(artifactPlan.includedFiles);
 const sharedStoreBuild = await shareShadowOpsAssets(storeBuild, outputRoot);
-const copiedBytes = publicBytes + await copyGothtechnologyBuild(sharedStoreBuild, outputRoot) + await copyGameBuilds(gameBuild, outputRoot);
+const copiedBytes = publicBytes + await copyGothtechnologyBuild(sharedStoreBuild, outputRoot);
 const rideTextureSharing = await shareRideTextures(outputRoot);
 const imageOptimization = await optimizePagesImages(outputRoot);
 const rideModelCompression = await compressRideModels(outputRoot);
 const rideVehicleSharing = await shareRideVehicles(outputRoot);
 const ridingMediaSharing = await shareRidingMedia(outputRoot);
-const totalBytes = copiedBytes - rideTextureSharing.saved - imageOptimization.saved - rideModelCompression.saved - rideVehicleSharing.saved - ridingMediaSharing.saved;
+const textureConversion = await losslessRidingTextures(outputRoot);
+const stageVideo = await shareUnityStage(outputRoot);
+const cityDataSharing = await shareCityData(outputRoot);
+const totalBytes = copiedBytes - rideTextureSharing.saved - imageOptimization.saved - rideModelCompression.saved - rideVehicleSharing.saved - ridingMediaSharing.saved - textureConversion.saved - stageVideo.saved - cityDataSharing.saved;
 
 for (const route of requiredRoutes) {
   const routeStats = await stat(outputPathFor(route)).catch(() => null);
@@ -253,10 +247,9 @@ const manifest = {
   branch: process.env.GITHUB_REF_NAME || git(["branch", "--show-current"]),
   commit: git(["rev-parse", "HEAD"]),
   sourceFileCount: sourceFiles.length,
-  fileCount: artifactPlan.includedFiles.length + sharedStoreBuild.length + gameBuild.length,
+  fileCount: artifactPlan.includedFiles.length + sharedStoreBuild.length,
   gothtechnologyBuildFiles: sharedStoreBuild.length,
   sharedArcadeAssetCount: storeBuild.length - sharedStoreBuild.length,
-  compiledGameBuildFiles: gameBuild.length,
   omittedMediaFileCount: artifactPlan.omittedFiles.length,
   omittedMediaBytes: artifactPlan.omittedBytes,
   omittedMediaMebibytes: Number((artifactPlan.omittedBytes / 1024 / 1024).toFixed(1)),
@@ -265,6 +258,9 @@ const manifest = {
   rideModelCompression,
   rideVehicleSharing,
   ridingMediaSharing,
+  textureConversion,
+  unityStageSharing: stageVideo,
+  cityDataSharing,
   bytes: totalBytes,
   mebibytes: Number((totalBytes / 1024 / 1024).toFixed(1)),
   maxMebibytes: Number((maxBytes / 1024 / 1024).toFixed(1)),

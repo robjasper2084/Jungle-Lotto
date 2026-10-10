@@ -2,7 +2,6 @@ import * as T from 'three';
 import {clone} from 'three/addons/utils/SkeletonUtils.js';
 import type {GLTF} from 'three/addons/loaders/GLTFLoader.js';
 import type {RidePose} from './controller.ts';
-import {createPose} from './controller.ts';
 import {RoundedBoxGeometry} from 'three/addons/geometries/RoundedBoxGeometry.js';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {CyclistMotion,RiderCadence} from './cyclistMotion.ts';
@@ -126,6 +125,7 @@ export class CommunityView {
     if(!this.root.visible){return;}
     this.clock+=dt;this.ride.riders.forEach((r,i)=>{
       const view=this.views[i],distance=observer?Math.hypot(r.x-observer.x,r.z-observer.z):0;
+      view.root.visible=distance<140;if(!view.root.visible)return;
       // Translation stays frame-smooth; only distant skeletal fitting runs less often.
       const motion=this.motions[i],pose=motion.step(dt,r);
       if(this.cadence.due(i,dt,distance)){
@@ -141,3 +141,5 @@ export class CommunityView {
 
 export {CyclingSession} from './cyclingSession.ts';
 export {CyclistMotion} from './cyclistMotion.ts';
+
+export {AmbientCyclistPacks,cyclistCircuit,packStarts,AMBIENT_CYCLIST_PACE} from './ambientCyclists.ts';
