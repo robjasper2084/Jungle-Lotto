@@ -1494,7 +1494,7 @@ function armAudioFromGesture(event) {
 addEventListener("pointerdown", armAudioFromGesture, { passive: true });
 addEventListener("keydown", armAudioFromGesture);
 addEventListener("touchmove", (event) => {
-  if (event.target?.closest?.("#shell")) event.preventDefault();
+  if (event.target?.closest?.("#shell") && !event.target.closest('.td-editor')) event.preventDefault();
 }, { passive: false });
 addEventListener("gesturestart", (event) => event.preventDefault?.(), { passive: false });
 addEventListener("blur", () => {

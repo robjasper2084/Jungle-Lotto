@@ -144,6 +144,13 @@ const output = path.join(__dirname, '../games/gothtechnology2/output/pubg-contro
       assert.equal(await page.locator('.td-battle .td-control:not(:disabled)').count(), 0);
       await page.getByRole('button', { name: 'Open pause menu', exact: true }).click();
       await page.waitForSelector('.td-battle .td-control:not(:disabled)');
+      await page.getByRole('button', { name: 'Customize touch controls', exact: true }).click();
+      await session.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: 4, y: 280, id: 51 }] });
+      await session.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: 4, y: 180, id: 51 }] });
+      await session.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: 4, y: 100, id: 51 }] });
+      await session.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+      await page.waitForFunction(() => document.querySelector('.td-editor').scrollTop > 0);
+      await page.getByRole('button', { name: 'Cancel', exact: true }).click();
       assert.deepEqual(errors, []);
       console.log(`PASS ${game}: native multi-touch, release, presets, editor, pause, save/reload, four viewports`);
       await context.close();
