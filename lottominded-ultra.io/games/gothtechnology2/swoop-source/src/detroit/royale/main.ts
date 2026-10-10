@@ -28,7 +28,7 @@ const fromElmwood=query.get('from')==='elmwood',back=el<HTMLAnchorElement>('retu
 if(engineRequested())back.href+=(back.href.includes('?')?'&':'?')+'engine=breadflower';
 const menuBack=el<HTMLAnchorElement>('return-menu');menuBack.href=back.href;menuBack.textContent=back.textContent;
 dialog.close();dialog.showModal();
-for(const r of RIDER_CHOICES)skin.add(new Option(r.label,r.id));skin.value='DS_Man_01';
+for(const r of RIDER_CHOICES)skin.add(new Option(r.label,r.id));skin.value=riderChoice(null);
 const wheel=el<HTMLSelectElement>('wheel');for(const w of WHEELS)wheel.add(new Option(w.name+' · '+Math.round(w.topKph)+' km/h',w.id));
 const aimGesture=new AimGesture();let touchAds=false;let bindings=readBindings(null),lookYaw=0,lookPitch=0,firstPerson=false;
 try{bindings=readBindings(JSON.parse(localStorage.getItem('royale-combat-bindings')??'null'));const preset=localStorage.getItem('royale-aim-preset');if(['classic','hold','toggle'].includes(preset??''))aimGesture.preset=preset as AimPreset;}catch{}
