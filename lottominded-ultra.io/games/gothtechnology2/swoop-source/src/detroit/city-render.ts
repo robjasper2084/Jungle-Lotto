@@ -8,7 +8,7 @@ import {GLTFLoader} from './compressedGLTFLoader.ts';
 import {CITY,nearestCut} from './geography.ts';
 import {GEO,cutWidth} from './geo-profile.ts';
 import {hash} from './world.ts';
-import {drapeStreet,drapeJunction,streetElevation,streetSurfaceLift,streetVertexNormal,type StreetPoint} from './street-geometry.ts';
+import {drapeStreet,drapeJunction,streetElevation,streetSurfaceLift,streetVertexNormal,insideStreetFootprint,streetFootprint,type StreetPoint} from './street-geometry.ts';
 import {curbRise,hasStreetCurb} from './streetCurbs.ts';
 import {parallelStreetSidewalk} from './streetSidewalk.ts';
 import {streetJoinExclusions} from './streetJunctions.ts';
@@ -58,15 +58,19 @@ export async function buildCity(_scene:T.Scene,world:SceneryWorld,groupAt:(x:num
    const surface=valadeWalk?sidewalk:parkWalk?parkMat:concreteWalk?sidewalk:roadMat;
    const lift=streetSurfaceLift(road),joins={joinA:streetVertexNormal(road.points,i-1),joinB:streetVertexNormal(road.points,i)};
    const exclusions=streetJoinExclusions(road,a,b,width+4,heightAt);
+   const sidewalkApproach=!hasStreetCurb(road);
    const elevation=(px:number,pz:number,terrain:number)=>streetElevation(road,px,pz,terrain);
    // Thin flush aggregate border, batched underneath the entire path surface.
    if(parkWalk)strip(parkEdge,a[0],a[1],b[0],b[1],width+.14,0,elevation,.025,undefined,joins,exclusions);
-   strip(surface,a[0],a[1],b[0],b[1],width,0,elevation,lift,undefined,joins,walk?exclusions:undefined);
+   strip(surface,a[0],a[1],b[0],b[1],width,0,elevation,lift,undefined,joins,sidewalkApproach?exclusions:undefined);
    for(const p of [a,b]){
+     // A path or driveway stops at the sidewalk. A rounded cap centred
+     // inside that corridor can otherwise poke through into the opposite lawn.
+     if(sidewalkApproach&&exclusions.some(poly=>insideStreetFootprint({x:p[0],z:p[1]},poly)))continue;
      const key=`${p[0]},${p[1]},${width},${walk},${road.bridge},${concreteWalk},${parkWalk}`;
      if(junctions.has(key))continue;junctions.add(key);
      if(parkWalk)append(parkEdge,drapeJunction(p[0],p[1],width+.14,world.chunks,elevation,.025,exclusions));
-     append(surface,drapeJunction(p[0],p[1],width,world.chunks,elevation,lift,walk?exclusions:undefined));
+     append(surface,drapeJunction(p[0],p[1],width,world.chunks,elevation,lift,sidewalkApproach?exclusions:undefined));
    }
    if(hasStreetCurb(road)){
      for(const sign of [-1,1]){
@@ -95,9 +99,13 @@ export async function buildCity(_scene:T.Scene,world:SceneryWorld,groupAt:(x:num
         const end=Math.min(d+2,length),mid=(d+end)/2,px=a[0]+dx*mid/length,pz=a[1]+dz*mid/length;
         if(!clearStreetJunction(road,px,pz,3))continue;
         const x0=a[0]+dx*d/length,z0=a[1]+dz*d/length,x1=a[0]+dx*end/length,z1=a[1]+dz*end/length;
-        if(marking==='double-yellow')for(const offset of [-.10,.10])strip(paint,x0,z0,x1,z1,.055,offset,elevation,.047);
-        else if(Math.floor(d/2)%4<2)strip(paint,x0,z0,x1,z1,.06,0,elevation,.047);
-        for(const side of [-1,1])strip(whitePaint,x0,z0,x1,z1,.055,side*(width-.32),elevation,.048);
+        const mark=(material:T.Material,half:number,offset:number,lift:number)=>{
+          const boundary=streetFootprint({a:{x:a[0],z:a[1]},b:{x:b[0],z:b[1]},half,offset,lift,...joins});
+          append(material,drapeStreet({a:{x:x0,z:z0},b:{x:x1,z:z1},half,offset,lift,boundary,exclude:material===whitePaint?exclusions:undefined,joinA:d===0?joins.joinA:undefined,joinB:end===length?joins.joinB:undefined},world.chunks,elevation));
+        };
+        if(marking==='double-yellow')for(const offset of [-.10,.10])mark(paint,.055,offset,.047);
+        else if(Math.floor(d/2)%4<2)mark(paint,.06,0,.047);
+        for(const side of [-1,1])mark(whitePaint,.055,side*(width-.32),.048);
        }
      }
    }
