@@ -1,3 +1,4 @@
+import {shareCityData} from './share-city-data.mjs';
 import {optimizePagesImages} from './optimize-pages-images.mjs';
 import {shareRideTextures} from './share-ride-textures.mjs';
 import {compressRideModels} from './compress-ride-models.mjs';
@@ -224,7 +225,8 @@ const rideVehicleSharing = await shareRideVehicles(outputRoot);
 const ridingMediaSharing = await shareRidingMedia(outputRoot);
 const textureConversion = await losslessRidingTextures(outputRoot);
 const stageVideo = await shareUnityStage(outputRoot);
-const totalBytes = copiedBytes - rideTextureSharing.saved - imageOptimization.saved - rideModelCompression.saved - rideVehicleSharing.saved - ridingMediaSharing.saved - textureConversion.saved - stageVideo.saved;
+const cityDataSharing = await shareCityData(outputRoot);
+const totalBytes = copiedBytes - rideTextureSharing.saved - imageOptimization.saved - rideModelCompression.saved - rideVehicleSharing.saved - ridingMediaSharing.saved - textureConversion.saved - stageVideo.saved - cityDataSharing.saved;
 
 for (const route of requiredRoutes) {
   const routeStats = await stat(outputPathFor(route)).catch(() => null);
@@ -258,6 +260,7 @@ const manifest = {
   ridingMediaSharing,
   textureConversion,
   unityStageSharing: stageVideo,
+  cityDataSharing,
   bytes: totalBytes,
   mebibytes: Number((totalBytes / 1024 / 1024).toFixed(1)),
   maxMebibytes: Number((maxBytes / 1024 / 1024).toFixed(1)),
