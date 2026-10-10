@@ -3,7 +3,7 @@ import {clamp,ropeEnd} from './simulation.js';
 import {RAHBE_MOTIONS} from './rahbe-motions.js';
 import {DETROIT_ART,DETROIT_SCENES} from './detroit-art.js';
 import {VILLAIN_MOTIONS} from './villain-motions.js';
-export const MANIFEST={'title-gm':'assets/environment/detroit/gm-renaissance-title.webp',rahbe:'assets/characters/rahbe.png',...Object.fromEntries(Object.entries(RAHBE_MOTIONS).map(([name,data])=>['rahbe-'+name,data.sheet])),...Object.fromEntries(Object.entries(VILLAIN_MOTIONS).map(([name,data])=>['motion-'+name,data.sheet])),...DETROIT_ART};
+export const MANIFEST={'title-gm':'assets/environment/detroit/gm-renaissance-title.webp',rahbe:'assets/characters/rahbe.webp',...Object.fromEntries(Object.entries(RAHBE_MOTIONS).map(([name,data])=>['rahbe-'+name,data.sheet])),...Object.fromEntries(Object.entries(VILLAIN_MOTIONS).map(([name,data])=>['motion-'+name,data.sheet])),...DETROIT_ART};
 const noise=n=>{const x=Math.sin(n*127.1+311.7)*43758.5453;return x-Math.floor(x);};
 export class Renderer{
   constructor(images){this.images=images;this.camera={x:0,y:0};this.reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;this.previewTime=0;this.heroMotion='';this.heroMotionStart=0;this.villainStates=new WeakMap();this.villainMotions={};}

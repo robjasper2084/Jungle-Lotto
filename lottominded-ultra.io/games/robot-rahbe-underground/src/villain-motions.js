@@ -1,6 +1,6 @@
 export const VILLAIN_MOTIONS={
   "drone": {
-    "sheet": "assets/characters/villain-motions/drone.png",
+    "sheet": "assets/characters/villain-motions/drone.webp",
     "drawSize": 110,
     "states": {
       "idle": {
@@ -39,7 +39,7 @@ export const VILLAIN_MOTIONS={
     "frameCount": 24
   },
   "guard": {
-    "sheet": "assets/characters/villain-motions/guard.png",
+    "sheet": "assets/characters/villain-motions/guard.webp",
     "drawSize": 116,
     "states": {
       "idle": {
@@ -78,7 +78,7 @@ export const VILLAIN_MOTIONS={
     "frameCount": 24
   },
   "warden": {
-    "sheet": "assets/characters/villain-motions/warden.png",
+    "sheet": "assets/characters/villain-motions/warden.webp",
     "drawSize": 250,
     "states": {
       "idle": {
