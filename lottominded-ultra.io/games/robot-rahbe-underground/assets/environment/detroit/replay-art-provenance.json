@@ -1,0 +1,18 @@
+{
+  "provider": "Higgsfield",
+  "model": "gpt_image_2_5",
+  "date": "2026-10-10",
+  "assets": [
+    {
+      "name": "riverwalk.webp",
+      "job": "9dcf5d47-213d-4292-a03b-886cc3b9ec1e"
+    },
+    {
+      "name": "dequindre-cut.webp",
+      "job": "0cac30e6-f20c-49d8-b80f-b2bd12c0a35b"
+    }
+  ],
+  "originalGMCover": true,
+  "originalHero": true,
+  "renderer": "Sprite based; Blender models deferred at user request"
+}
