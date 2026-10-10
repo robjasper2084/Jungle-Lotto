@@ -1,4 +1,4 @@
-import { touchIcon } from './touch-icons.js?v=galaxy-a16-performance-v1';
+import { touchIcon } from './touch-icons.js?v=2.0.1';
 
 const clamp = (value, low, high) => Math.max(low, Math.min(high, value));
 const copy = (value) => JSON.parse(JSON.stringify(value));
