@@ -16,7 +16,12 @@ export function streetElevation(road:{kind:string;bridge?:boolean},x:number,z:nu
 
 export type StreetPoint={x:number;z:number};
 type Point=StreetPoint;
-export type StreetRibbon={a:Point;b:Point;half:number;offset:number;lift:number;maxSpan?:number;joinA?:Point;joinB?:Point;exclude?:Point[][]};
+export type StreetRibbon={a:Point;b:Point;half:number;offset:number;lift:number;maxSpan?:number;joinA?:Point;joinB?:Point;exclude?:Point[][];boundary?:Point[]};
+export function insideStreetFootprint(p:Point,poly:Point[]){
+ let positive=false,negative=false;
+ for(let i=0;i<poly.length;i++){const a=poly[i],b=poly[(i+1)%poly.length],cross=(b.x-a.x)*(p.z-a.z)-(b.z-a.z)*(p.x-a.x);positive ||= cross>1e-8;negative ||= cross< -1e-8;}
+ return poly.length>=3&&!(positive&&negative);
+}
 /** One miter per shared vertex keeps offset sidewalks/curbs joined at bends.
  * Limit acute corners rather than extruding a long spike into the junction. */
 export function streetVertexNormal(points:number[][],index:number):Point{
@@ -26,6 +31,44 @@ export function streetVertexNormal(points:number[][],index:number):Point{
  const a=normal(before,p),b=normal(p,after),den=1+a.x*b.x+a.z*b.z;
  if(den<.25)return b;
  return {x:(a.x+b.x)/den,z:(a.z+b.z)/den};
+}
+/** Intersect the strip with its two join planes. Joining the four offset
+ * corners directly can make a bow-tie when a bend is wider than its segment.
+ * A convex footprint trims that folded inner corner without painting a
+ * backwards triangle across the adjoining sidewalk. */
+export function streetFootprint(r:StreetRibbon):Point[]{
+ const dx=r.b.x-r.a.x,dz=r.b.z-r.a.z,len=Math.hypot(dx,dz);
+ if(len<.001||r.half<=0)return [];
+ const tx=dx/len,tz=dz/len,n={x:-tz,z:tx};
+ const valid=(join:Point|undefined)=>join&&join.x*n.x+join.z*n.z>.1?join:n;
+ const na=valid(r.joinA),nb=valid(r.joinB),low=r.offset-r.half,high=r.offset+r.half;
+ const ext=Math.max(Math.abs(low),Math.abs(high))*Math.max(Math.hypot(na.x,na.z),Math.hypot(nb.x,nb.z))+1;
+ let poly=[[-ext,low],[len+ext,low],[len+ext,high],[-ext,high]].map(([t,s])=>({x:r.a.x+tx*t+n.x*s,z:r.a.z+tz*t+n.z*s}));
+ for(const [origin,join,sign] of [[r.a,na,-1],[r.b,nb,1]] as const){
+  const input=poly;poly=[];
+  const distance=(p:Point)=>sign*(join.x*(p.z-origin.z)-join.z*(p.x-origin.x));
+  for(let i=0;i<input.length;i++){
+   const a=input[i],b=input[(i+1)%input.length],da=distance(a),db=distance(b);
+   if(da>=-1e-9)poly.push(a);
+   if((da>0&&db<0)||(da<0&&db>0)){const t=da/(da-db);poly.push({x:a.x+(b.x-a.x)*t,z:a.z+(b.z-a.z)*t});}
+  }
+ }
+ return poly.length>=3?poly:[];
+}
+/** Keep finely sampled curb ramps inside the original joined ribbon. */
+function intersectStreetFootprints(poly:Point[],clip:Point[]):Point[]{
+ if(clip.length<3)return [];
+ const signed=clip.reduce((sum,p,i)=>sum+p.x*clip[(i+1)%clip.length].z-p.z*clip[(i+1)%clip.length].x,0),direction=signed>=0?1:-1;
+ for(let edge=0;edge<clip.length&&poly.length;edge++){
+  const a=clip[edge],b=clip[(edge+1)%clip.length],input=poly;poly=[];
+  const side=(p:Point)=>direction*((b.x-a.x)*(p.z-a.z)-(b.z-a.z)*(p.x-a.x));
+  for(let i=0;i<input.length;i++){
+   const p=input[i],q=input[(i+1)%input.length],sp=side(p),sq=side(q);
+   if(sp>=-1e-9)poly.push(p);
+   if((sp>0&&sq<0)||(sp<0&&sq>0)){const t=sp/(sp-sq);poly.push({x:p.x+(q.x-p.x)*t,z:p.z+(q.z-p.z)*t});}
+  }
+ }
+ return poly.length>=3?poly:[];
 }
 /** Subtract a convex road footprint from a convex surface. Outside pieces are
  * disjoint, retain winding, and are clipped BEFORE terrain tessellation. */
@@ -38,7 +81,11 @@ export function subtractStreetFootprint(poly:Point[],footprint:Point[]):Point[][
   const side=(p:Point)=>direction*((b.x-a.x)*(p.z-a.z)-(b.z-a.z)*(p.x-a.x));
   for(let i=0;i<remaining.length;i++){
    const p=remaining[i],q=remaining[(i+1)%remaining.length],sp=side(p),sq=side(q);
-   (sp>=-1e-8?inside:outside).push(p);
+   // A vertex on the cut belongs to both halves. Dropping it from the outside
+   // half deleted entire approach triangles when a nearby cap merely touched
+   // a corner (including large faces nowhere inside the excluded street).
+   if(sp>=-1e-8)inside.push(p);
+   if(sp<=1e-8)outside.push(p);
    if((sp>1e-8&&sq<-1e-8)||(sp<-1e-8&&sq>1e-8)){const t=sp/(sp-sq),cut={x:p.x+(q.x-p.x)*t,z:p.z+(q.z-p.z)*t};inside.push(cut);outside.push(cut);}
   }
   if(outside.length>=3)out.push(outside);remaining=inside;
@@ -64,16 +111,16 @@ export function drapeStreet(r:StreetRibbon,chunks:TerrainChunk[],height:(x:numbe
     // Keep flat stretches coarse; only ramp transitions need fine tessellation.
     // This avoids millions of unnecessary sidewalk triangles on weak devices.
     const stations=[...cuts].sort((a,b)=>a-b);
-    for(let i=1;i<stations.length;i++)pieces.push(...drapeStreet({...r,maxSpan:undefined,joinA:i===1?r.joinA:undefined,joinB:i===stations.length-1?r.joinB:undefined,a:{x:r.a.x+dx*stations[i-1]/count,z:r.a.z+dz*stations[i-1]/count},b:{x:r.a.x+dx*stations[i]/count,z:r.a.z+dz*stations[i]/count}},chunks,height));
+    const envelope=r.boundary?intersectStreetFootprints(streetFootprint(r),r.boundary):streetFootprint(r);
+    for(let i=1;i<stations.length;i++){
+      const sub=streetFootprint({...r,maxSpan:undefined,joinA:i===1?r.joinA:undefined,joinB:i===stations.length-1?r.joinB:undefined,a:{x:r.a.x+dx*stations[i-1]/count,z:r.a.z+dz*stations[i-1]/count},b:{x:r.a.x+dx*stations[i]/count,z:r.a.z+dz*stations[i]/count}});
+      const poly=intersectStreetFootprints(sub,envelope);
+      if(poly.length)pieces.push(...drapePolygon(poly,chunks,height,r.lift,r.exclude));
+    }
     return pieces;
   }
-  const na=r.joinA??{x:-dz/len,z:dx/len},nb=r.joinB??{x:-dz/len,z:dx/len};
-  const poly=[
-    {x:r.a.x+na.x*(r.offset-r.half),z:r.a.z+na.z*(r.offset-r.half)},
-    {x:r.b.x+nb.x*(r.offset-r.half),z:r.b.z+nb.z*(r.offset-r.half)},
-    {x:r.b.x+nb.x*(r.offset+r.half),z:r.b.z+nb.z*(r.offset+r.half)},
-    {x:r.a.x+na.x*(r.offset+r.half),z:r.a.z+na.z*(r.offset+r.half)}
-  ];
+  const poly=r.boundary?intersectStreetFootprints(streetFootprint(r),r.boundary):streetFootprint(r);
+  if(!poly.length)return [];
   return drapePolygon(poly,chunks,height,r.lift,r.exclude);
 }
 export function drapeJunction(x:number,z:number,radius:number,chunks:TerrainChunk[],height:(x:number,z:number,terrain:number)=>number,lift:number,exclude?:Point[][]){
