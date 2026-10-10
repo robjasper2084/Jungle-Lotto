@@ -9,6 +9,7 @@ import { basename, dirname, extname, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { gothtechnologyPath, requiredStoreFiles, readGothtechnologyBuild, copyGothtechnologyBuild, shareShadowOpsAssets } from "./gothtechnology-pages.mjs";
 import { copyGameBuilds, gameBuilds, readGameBuilds, requiredGameRoutes } from "./game-pages.mjs";
+import { MANIFEST as undergroundAssets } from "../lottominded-ultra.io/games/robot-rahbe-underground/src/render.js";
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const outputRoot = resolve(repoRoot, "_site");
@@ -35,6 +36,7 @@ const requiredRoutes = [
   "lottominded-ultra.io/games/robot-rahbe-underground/src/mobile-controls.js",
   "lottominded-ultra.io/games/robot-rahbe-underground/assets/vendor/phaser.min.js",
   "lottominded-ultra.io/games/robot-rahbe-underground/assets/environment/detroit/gm-renaissance-title.webp",
+  ...Object.values(undergroundAssets).map(file => "lottominded-ultra.io/games/robot-rahbe-underground/" + file),
   "lotto mind refined/index.html",
   "lotto mind refined/companion/index.html",
   "lotto mind refined/brand-connection.js",
@@ -178,7 +180,7 @@ async function planArtifact(files, referenceFiles = files) {
       referenceCorpus.includes(token),
     );
 
-    if (isSmall || isReferenced) {
+    if (isSmall || isReferenced || requiredRoutes.includes(file)) {
       includedFiles.push(file);
       continue;
     }
