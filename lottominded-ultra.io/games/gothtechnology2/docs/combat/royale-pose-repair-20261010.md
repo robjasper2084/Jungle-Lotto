@@ -7,7 +7,7 @@ The repair preserves the shared Swoop Hero model and base pose, spreads aim rota
 Validation:
 
 - Existing real-GLB contact regression passes across all five riders, three weapons, aim blend, yaw, pitch, and bank combinations (1,215 scenarios).
-- New real-GLB posture regression covers mounted and on-foot poses at nine aim combinations for all five riders (90 scenarios). No elbow crosses the chest center plane; maximum added rotation per spine joint is 19.1 degrees. Existing skin continuity limits pass.
+- New real-GLB posture regression covers stationary and moving mounted poses at nine aim combinations for all five riders (90 scenarios). No elbow crosses the chest center plane; maximum added rotation per spine joint is 19.1 degrees. Existing skin continuity limits pass. The newer development checkout separately passed on-foot pose checks; that walking implementation is not included in this focused production release.
 - TypeScript check and production package build pass.
 - Local browser practice round starts with the armored hero and responds to riding input with no console errors.
 - Close-up comparison uses the actual game Hero and CombatRig classes. Front armored neutral, side upward aim, and rear suited sideways aim were visually inspected against the Swoop base pose.

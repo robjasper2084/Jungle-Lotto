@@ -34,8 +34,8 @@ test('combat keeps the Swoop torso shape and elbows outside the chest at every a
    for(let i=0;i<index.count;i+=3)for(let k=0;k<3;k++){const u=index.getX(i+k),v=index.getX(i+(k+1)%3);a.fromBufferAttribute(p,u);b.fromBufferAttribute(p,v);if(a.distanceTo(b)<.004)edges.push([u,v]);}
    surfaces.push({mesh,edges,posed:Array.from({length:p.count},()=>new Vector3())});
   });
-  for(const yaw of [-1.25,0,1.25])for(const pitch of [-.65,0,.65])for(const foot of [0,1]){
-   const p={...createPose(),headingY:.8,footMode:foot?2:0,footBlend:foot,speed:foot?4.4:10,footPhase:.3};hero.apply(p);
+  for(const yaw of [-1.25,0,1.25])for(const pitch of [-.65,0,.65])for(const speed of [0,10]){
+   const p={...createPose(),headingY:.8,speed};hero.apply(p);
    const original=hero.spine.map(b=>b.quaternion.clone());rig.apply(p,yaw,pitch,{...initialCombat(),aimBlend:1},260);
    hero.spine.forEach((b,i)=>worstSpine=Math.max(worstSpine,b.quaternion.clone().normalize().angleTo(original[i].normalize())));
    // Hands may cross toward a central weapon; elbows must remain on their own side.
